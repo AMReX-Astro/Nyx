@@ -44,19 +44,19 @@ BL_FORT_PROC_DECL(SET_METHOD_PARAMS, set_method_params)
     (const int& dm, const int& NumAdv, const int& do_hydro,
      const int& ppm_type, const int& ppm_ref,
      const int& ppm_flatten_before_integrals,
-     const int& use_colglaz, const int& use_flattening, 
-     const int& corner_coupling, 
+     const int& use_colglaz, const int& use_flattening,
+     const int& corner_coupling,
      const int& version_2, const int& use_const_species,
      const Real& gamma_in, const int& normalize_species,
-     const int& heat_cool_type); 
+     const int& heat_cool_type, const MPI_Comm& comm);
 
 BL_FORT_PROC_DECL(SET_EOS_PARAMS, set_eos_params)
      (const Real& h_species_in, const Real& he_species_in);
 
 BL_FORT_PROC_DECL(SET_SMALL_VALUES, set_small_values)
-    (const Real* average_dens, const Real* average_temp, 
-     const Real* comoving_a, 
-     const Real* small_dens, 
+    (const Real* average_dens, const Real* average_temp,
+     const Real* comoving_a,
+     const Real* small_dens,
      const Real* small_temp, const Real* small_pres);
 
 BL_FORT_PROC_DECL(SET_PROBLEM_PARAMS, set_problem_params)
@@ -66,7 +66,7 @@ BL_FORT_PROC_DECL(SET_PROBLEM_PARAMS, set_problem_params)
 
 BL_FORT_PROC_DECL(CA_INITDATA, ca_initdata)
     (const int& level, const Real& time, const int* lo, const int* hi,
-     const int& num_state, BL_FORT_FAB_ARG(state), 
+     const int& num_state, BL_FORT_FAB_ARG(state),
      const int& num_diag,  BL_FORT_FAB_ARG(diag_eos), const Real dx[],
      const Real xlo[], const Real xhi[]);
 
@@ -75,7 +75,7 @@ BL_FORT_PROC_DECL(FORT_CHECK_INITIAL_SPECIES, fort_check_initial_species)
 
 BL_FORT_PROC_DECL(INIT_E_FROM_T, init_e_from_t)
      (BL_FORT_FAB_ARG(state), const int* num_state,
-      BL_FORT_FAB_ARG( diag), const int* num_diag, 
+      BL_FORT_FAB_ARG( diag), const int* num_diag,
       const int* lo, const int* hi, Real* comoving_a);
 
 BL_FORT_PROC_DECL(INIT_E_FROM_RHOE, init_e_from_rhoe)
@@ -128,7 +128,7 @@ BL_FORT_PROC_DECL(FORT_ADVANCE_GAS, fort_advance_gas)
             const BL_FORT_FAB_ARG(zflux)),
      const Real* cflLoc,
      const Real* a_old, const Real* a_new,
-     const Real* e_added, const Real* ke_added, 
+     const Real* e_added, const Real* ke_added,
      const int* print_fortran_warnings,
      const int* do_gas);
 
@@ -139,7 +139,7 @@ BL_FORT_PROC_DECL(TIME_CENTER_SOURCES, time_center_sources)
      const Real* dt, const int* print_fortran_warnings);
 
 BL_FORT_PROC_DECL(ADJUST_HEAT_COOL, adjust_heat_cool)
-    (const int lo[], const int hi[], 
+    (const int lo[], const int hi[],
      BL_FORT_FAB_ARG(S_old), BL_FORT_FAB_ARG(S_new),
      BL_FORT_FAB_ARG(ext_src_old), BL_FORT_FAB_ARG(ext_src_new),
      const Real* a_old, const Real* a_new,
@@ -157,7 +157,7 @@ BL_FORT_PROC_DECL(RESET_INTERNAL_E, reset_internal_e)
     (BL_FORT_FAB_ARG(S_new),
      BL_FORT_FAB_ARG(D_new),
      const int lo[], const int hi[],
-     const int* print_fortran_warnings, 
+     const int* print_fortran_warnings,
      Real* comoving_a, Real* sum_energy_added,
      Real* sum_energy_total);
 
@@ -176,12 +176,12 @@ BL_FORT_PROC_DECL(SUM_OVER_LEVEL, sum_over_level)
      const Real dx[], Real* sum);
 
 BL_FORT_PROC_DECL(SUM_PRODUCT, sum_product)
-    (BL_FORT_FAB_ARG(fab1), BL_FORT_FAB_ARG(fab2), 
+    (BL_FORT_FAB_ARG(fab1), BL_FORT_FAB_ARG(fab2),
      const int lo[], const int hi[], const Real dx[], Real* sum);
 
 BL_FORT_PROC_DECL(SUM_PROD_PROD, sum_prod_prod)
-    (BL_FORT_FAB_ARG(fab1), BL_FORT_FAB_ARG(fab2), 
-     BL_FORT_FAB_ARG(fab3), 
+    (BL_FORT_FAB_ARG(fab1), BL_FORT_FAB_ARG(fab2),
+     BL_FORT_FAB_ARG(fab3),
      const int lo[], const int hi[], const Real dx[], Real* sum);
 
 BL_FORT_PROC_DECL(ENFORCE_NONNEGATIVE_SPECIES,
@@ -205,7 +205,7 @@ BL_FORT_PROC_DECL(CA_EXT_SRC, ca_ext_src)
      const Real* particle_locs_and_mass,
      const Real* particle_data,
      const Real* prob_lo, const Real* dx,
-     const Real* time, const Real* z, 
+     const Real* time, const Real* z,
      const Real* dt);
 #else
 BL_FORT_PROC_DECL(CA_EXT_SRC, ca_ext_src)
@@ -216,7 +216,7 @@ BL_FORT_PROC_DECL(CA_EXT_SRC, ca_ext_src)
      BL_FORT_FAB_ARG(new_diag),
      BL_FORT_FAB_ARG(ext_src),
      const Real* prob_lo, const Real* dx,
-     const Real* time, const Real* z, 
+     const Real* time, const Real* z,
      const Real* dt);
 #endif
 

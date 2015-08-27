@@ -109,7 +109,7 @@ Nyx::variable_setup()
     no_hydro_setup();
 
 #else
-    if (do_hydro == 1) 
+    if (do_hydro == 1)
     {
        hydro_setup();
     }
@@ -174,20 +174,20 @@ Nyx::hydro_setup()
             cnt += NumAux;
         }
     }
-    
+
     NUM_STATE = cnt;
 
     // Define NUM_GROW from the f90 module.
     BL_FORT_PROC_CALL(GET_METHOD_PARAMS, get_method_params)(&NUM_GROW);
 
     BL_FORT_PROC_CALL(SET_METHOD_PARAMS, set_method_params)
-        (dm, NumAdv, do_hydro, ppm_type, ppm_reference, 
+        (dm, NumAdv, do_hydro, ppm_type, ppm_reference,
          ppm_flatten_before_integrals,
          use_colglaz, use_flattening, corner_coupling, version_2,
-         use_const_species, gamma, normalize_species, 
-         heat_cool_type);
+         use_const_species, gamma, normalize_species,
+         heat_cool_type, ParallelDescriptor::Communicator());
 
-    if (use_const_species == 1) 
+    if (use_const_species == 1)
         BL_FORT_PROC_CALL(SET_EOS_PARAMS, set_eos_params)
             (h_species, he_species);
 
@@ -277,7 +277,7 @@ Nyx::hydro_setup()
         std::cout << '\n';
     }
 
-    if (use_const_species == 0) 
+    if (use_const_species == 0)
     {
         for (int i = 0; i < NumSpec; ++i)
         {
@@ -312,7 +312,7 @@ Nyx::hydro_setup()
         std::cout << '\n';
     }
 
-    if (use_const_species == 0) 
+    if (use_const_species == 0)
     {
         for (int i = 0; i < NumAux; ++i)
         {
@@ -451,12 +451,12 @@ Nyx::hydro_setup()
     //
     // X from rhoX
     //
-    if (use_const_species == 0) 
+    if (use_const_species == 0)
     {
         for (int i = 0; i < NumSpec; i++)
         {
             string spec_string = "X(" + spec_names[i] + ")";
-    
+
             derive_lst.add(spec_string, IndexType::TheCellType(), 1,
                            BL_FORT_PROC_CALL(CA_DERSPEC, ca_derspec), the_same_box);
             derive_lst.addComponent(spec_string, desc_lst, State_Type, Density, 1);
@@ -586,7 +586,7 @@ Nyx::hydro_setup()
     derive_lst.add("Rank", IndexType::TheCellType(), 1,
                    BL_FORT_PROC_CALL(CA_DERNULL, ca_dernull), grow_box_by_one);
 
-    if (use_const_species == 0) 
+    if (use_const_species == 0)
     {
         for (int i = 0; i < NumSpec; i++)
         {
@@ -621,11 +621,11 @@ Nyx::no_hydro_setup()
     BL_FORT_PROC_CALL(GET_METHOD_PARAMS, get_method_params)(&NUM_GROW);
 
     BL_FORT_PROC_CALL(SET_METHOD_PARAMS, set_method_params)
-        (dm, NumAdv, do_hydro, ppm_type, ppm_reference, 
+        (dm, NumAdv, do_hydro, ppm_type, ppm_reference,
          ppm_flatten_before_integrals,
-         use_colglaz, use_flattening, corner_coupling, version_2, 
-         use_const_species, gamma, normalize_species, 
-         heat_cool_type);
+         use_colglaz, use_flattening, corner_coupling, version_2,
+         use_const_species, gamma, normalize_species,
+         heat_cool_type, ParallelDescriptor::Communicator());
 
     int coord_type = Geometry::Coord();
     BL_FORT_PROC_CALL(SET_PROBLEM_PARAMS, set_problem_params)
@@ -653,7 +653,7 @@ Nyx::no_hydro_setup()
     desc_lst.setComponent(State_Type, 0, "density", bc,
                           BndryFunc(BL_FORT_PROC_CALL(GENERIC_FILL,
                                                       generic_fill)));
- 
+
     // This has only one dummy components
     store_in_checkpoint = false;
     desc_lst.addDescriptor(DiagEOS_Type, IndexType::TheCellType(),

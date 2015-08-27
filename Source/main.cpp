@@ -21,6 +21,9 @@
 
 #ifdef IN_SITU
 #include <boxlib_in_situ_analysis.H>
+#elif IN_TRANSIT
+#include <InTransitAnalysis.H>
+#include <Analysis.H>
 #endif
 
 #include "Nyx_output.H"
@@ -30,7 +33,15 @@ std::string inputs_name = "";
 int
 main (int argc, char* argv[])
 {
+#ifdef IN_TRANSIT
+    const int nSidecarProcs(8); // Gunther's "reeber" halo finding code requires the # of MPI tasks to be a power of 2
+    ParallelDescriptor::SetNProcsSidecar(nSidecarProcs);
+#endif
+
     BoxLib::Initialize(argc, argv);
+#ifdef IN_TRANSIT
+    if (ParallelDescriptor::InSidecarGroup()) return 0;
+#endif
 
 
     // save the inputs file name for later
@@ -124,6 +135,12 @@ main (int argc, char* argv[])
     Real dRunTime2 = ParallelDescriptor::second() - dRunTime1;
 
     ParallelDescriptor::ReduceRealMax(dRunTime2, IOProc);
+
+#ifdef IN_TRANSIT
+    int signal = Analysis::QuitSignal;
+    const int MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
+    ParallelDescriptor::Bcast(&signal, 1, MPI_IntraGroup_Broadcast_Rank, ParallelDescriptor::CommunicatorInter());
+#endif
 
     if (ParallelDescriptor::IOProcessor())
     {

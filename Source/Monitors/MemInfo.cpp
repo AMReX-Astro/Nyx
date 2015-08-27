@@ -23,6 +23,8 @@
 #include <cstdio>
 #include <string>
 
+#include <ParallelDescriptor.H>
+
 #include "MemInfo.H"
 
 MemInfo* MemInfo::classInstance = NULL;
@@ -107,9 +109,9 @@ void MemInfo::Init(const std::string& fname) {
   // Find min and max across all nodes:
   long min_pag = 0, max_pag = 0;
   MPI_Allreduce(&total_pages_, &min_pag, 1, MPI_LONG, MPI_MIN,
-                MPI_COMM_WORLD);
+                ParallelDescriptor::Communicator());
   MPI_Allreduce(&total_pages_, &max_pag, 1, MPI_LONG, MPI_MAX,
-                MPI_COMM_WORLD);
+                ParallelDescriptor::Communicator());
   global_min_ = static_cast<float>(min_pag) * psize_in_gb_;
   global_max_ = static_cast<float>(max_pag) * psize_in_gb_;
 
@@ -259,11 +261,11 @@ void MemInfo::LogSummary(const char* info) {
 
   long avg_pag = 0, min_pag = 0, max_pag = 0;
   MPI_Reduce(&avail_pages_, &min_pag, 1, MPI_LONG, MPI_MIN, master_rank_,
-             MPI_COMM_WORLD);
+             ParallelDescriptor::Communicator());
   MPI_Reduce(&avail_pages_, &max_pag, 1, MPI_LONG, MPI_MAX, master_rank_,
-             MPI_COMM_WORLD);
+             ParallelDescriptor::Communicator());
   MPI_Reduce(&avail_pages_, &avg_pag, 1, MPI_LONG, MPI_SUM, master_rank_,
-             MPI_COMM_WORLD);
+             ParallelDescriptor::Communicator());
 
   if (my_rank_ == master_rank_) {
     if (logfile_ == NULL) {

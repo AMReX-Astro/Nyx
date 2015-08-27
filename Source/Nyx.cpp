@@ -33,6 +33,8 @@ using std::string;
 
 #ifdef IN_SITU
 #include <boxlib_in_situ_analysis.H>
+#elif IN_TRANSIT
+#include <Analysis.H>
 #endif
 
 static int sum_interval = -1;
@@ -1279,8 +1281,8 @@ Nyx::set_small_values ()
 void
 Nyx::postCoarseTimeStep (Real cumtime)
 {
-#ifdef IN_SITU
    const Real cur_time = state[State_Type].curTime();
+#ifdef IN_SITU
 #if 1
    runInSituAnalysis(get_data(State_Type, cur_time), Geom(), nStep());
 #else
@@ -1292,6 +1294,17 @@ Nyx::postCoarseTimeStep (Real cumtime)
            std::cout << it->pos << " " << it->mass << std::endl;
    }
 #endif
+
+#elif IN_TRANSIT
+   int signal = Analysis::NyxHaloFinderSignal;
+   const int MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
+   ParallelDescriptor::Bcast(&signal, 1, MPI_IntraGroup_Broadcast_Rank, ParallelDescriptor::CommunicatorInter());
+   const MultiFab &mf = get_data(State_Type, cur_time);
+   const Geometry &geom = Geom();
+   int time_step = nStep();
+   MultiFab::SendMultiFabToSidecars(&(const_cast<MultiFab&>(mf)));
+   Geometry::SendGeometryToSidecars(&(const_cast<Geometry&>(geom)));
+   ParallelDescriptor::Bcast(&time_step, 1, MPI_IntraGroup_Broadcast_Rank, ParallelDescriptor::CommunicatorInter());
 #endif
     //
     // postCoarseTimeStep() is only called by level 0.

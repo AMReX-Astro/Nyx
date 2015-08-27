@@ -178,7 +178,8 @@
                                    ppm_flatten_before_integrals_in, &
                                    use_colglaz_in, use_flattening_in, &
                                    corner_coupling_in, version_2_in, &
-                                   use_const_species_in, gamma_in, normalize_species_in, heat_cool_in)
+                                   use_const_species_in, gamma_in, normalize_species_in, heat_cool_in, &
+                                   comm)
 
         ! Passing data from C++ into f90
 
@@ -206,13 +207,18 @@
         integer, intent(in) :: use_const_species_in
         integer, intent(in) :: normalize_species_in
         integer, intent(in) :: heat_cool_in
+        integer, intent(in), optional :: comm
 
         integer             :: QNEXT
         integer             :: UNEXT
 
         integer             :: iadv, ispec
 
-        call parallel_initialize()
+        if (present(comm)) then
+          call parallel_initialize(comm=comm)
+        else
+          call parallel_initialize()
+        end if
 
         use_const_species = use_const_species_in
 

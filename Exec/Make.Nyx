@@ -34,7 +34,27 @@ endif
 
 DEFINES += -DBL_NOLINEVALUES
 
+ifeq ($(USE_IN_TRANSIT), TRUE)
+  USE_IN_SITU = FALSE
+  DEFINES += -DIN_TRANSIT
+  DEFINES += -DREEBER_USE_BOXLIB_READER
+  INCLUDE_LOCATIONS += $(BOOST_DIR)/include
+  INCLUDE_LOCATIONS += $(DIY2_INCLUDE_DIR)
+  INCLUDE_LOCATIONS += $(REEBER_HOME)/include $(REEBER_HOME)/examples/include $(REEBER_HOME)/examples/local-global
+  VPATH_LOCATIONS += $(REEBER_HOME)/src $(REEBER_HOME)/examples/local-global
+  ifeq ($(wildcard $(BOOST_DIR)/lib/libboost_serialization-mt.*),)
+    LIBRARIES += -L$(BOOST_DIR)/lib -lboost_mpi -lboost_serialization
+  else
+    LIBRARIES += -L$(BOOST_DIR)/lib -lboost_mpi-mt -lboost_serialization-mt
+  endif
+  DEFINES += -DPARALLEL_MPI -DBOOST_DATE_TIME_NO_LOCALE
+  ifeq ($(DEBUG), TRUE)
+    DEFINES += -DDEBUG
+  endif
+endif
+
 ifeq ($(USE_IN_SITU), TRUE)
+  USE_IN_TRANSIT = FALSE
   DEFINES += -DREEBER_USE_BOXLIB_READER
   INCLUDE_LOCATIONS += $(BOOST_DIR)/include
   #INCLUDE_LOCATIONS += $(REEBER_HOME)/include $(REEBER_HOME)/examples/boxlib
