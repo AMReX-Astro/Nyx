@@ -31,21 +31,23 @@ f90EXE_sources += comoving_nd.f90
 f90EXE_sources += project_S.f90
 
 ifeq ($(USE_IN_SITU), TRUE)
-#CEXE_sources += log.cpp stats.cpp
-#CEXE_sources += boxlib-amr-reader.cpp compute-mt-boxlib-amr.cpp
-#CEXE_sources += compute-persistence-diagram-amr.cpp compute-persistent-integral-amr.cpp
-CEXE_sources += format.cpp
-CEXE_sources += boxlib_in_situ_analysis.cpp
-#CEXE_headers += log.h stats.h
-#CEXE_headers += boxlib-amr-reader.h compute-mt-boxlib-amr.h
-#CEXE_headers += compute-persistence-diagram-amr.h compute-persistent-integral-amr.h
-CEXE_headers += format.h
-CEXE_headers += boxlib_in_situ_analysis.H
+  #CEXE_sources += log.cpp stats.cpp
+  #CEXE_sources += boxlib-amr-reader.cpp compute-mt-boxlib-amr.cpp
+  #CEXE_sources += compute-persistence-diagram-amr.cpp compute-persistent-integral-amr.cpp
+  CEXE_sources += format.cpp
+  CEXE_sources += boxlib_in_situ_analysis.cpp
+  #CEXE_headers += log.h stats.h
+  #CEXE_headers += boxlib-amr-reader.h compute-mt-boxlib-amr.h
+  #CEXE_headers += compute-persistence-diagram-amr.h compute-persistent-integral-amr.h
+  CEXE_headers += format.h
+  CEXE_headers += boxlib_in_situ_analysis.H
 endif
 
 ifeq ($(USE_IN_TRANSIT), TRUE)
-CEXE_sources += format.cpp
-CEXE_sources += InTransitAnalysis.cpp
-CEXE_headers += format.h
-CEXE_headers += InTransitAnalysis.H
+  CEXE_sources += format.cpp
+  #CEXE_sources += boxlib_in_situ_analysis.cpp
+  CEXE_sources += InTransitAnalysis.cpp
+  CEXE_headers += format.h
+  #CEXE_headers += boxlib_in_situ_analysis.H
+  CEXE_headers += InTransitAnalysis.H
 endif

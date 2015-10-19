@@ -34,8 +34,10 @@ using std::string;
 #ifdef IN_SITU
 #include <boxlib_in_situ_analysis.H>
 #elif IN_TRANSIT
-#include <Analysis.H>
+#include <InTransitAnalysis.H>
 #endif
+
+const int NyxHaloFinderSignal = 42;
 
 static int sum_interval = -1;
 static Real fixed_dt    = -1.0;
@@ -1296,7 +1298,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
 #endif
 
 #elif IN_TRANSIT
-   int signal = Analysis::NyxHaloFinderSignal;
+   int signal = NyxHaloFinderSignal;
    const int MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
    ParallelDescriptor::Bcast(&signal, 1, MPI_IntraGroup_Broadcast_Rank, ParallelDescriptor::CommunicatorInter());
    const MultiFab &mf = get_data(State_Type, cur_time);
