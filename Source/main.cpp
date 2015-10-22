@@ -98,7 +98,7 @@ main (int argc, char* argv[])
     RunAtStatic();
     // Olders version of Reeber give wrong results if the # of sidecars is not
     // a power of 2. This bug has been fixed in newer versions.
-    const int nSidecarProcs(8);
+    const int nSidecarProcs(256);
     ParallelDescriptor::SetNProcsSidecar(nSidecarProcs);
 #endif
 

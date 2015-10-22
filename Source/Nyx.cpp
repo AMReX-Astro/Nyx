@@ -1298,15 +1298,27 @@ Nyx::postCoarseTimeStep (Real cumtime)
 #endif
 
 #elif IN_TRANSIT
-   int signal = NyxHaloFinderSignal;
-   const int MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
-   ParallelDescriptor::Bcast(&signal, 1, MPI_IntraGroup_Broadcast_Rank, ParallelDescriptor::CommunicatorInter());
-   const MultiFab &mf = get_data(State_Type, cur_time);
-   const Geometry &geom = Geom();
-   int time_step = nStep();
-   MultiFab::SendMultiFabToSidecars(&(const_cast<MultiFab&>(mf)));
-   Geometry::SendGeometryToSidecars(&(const_cast<Geometry&>(geom)));
-   ParallelDescriptor::Bcast(&time_step, 1, MPI_IntraGroup_Broadcast_Rank, ParallelDescriptor::CommunicatorInter());
+   // Don't even try to handshake with the sidecars unless we're at a special
+   // time step. This is awful because the "10" has to be a compile-time
+   // constant in about 5 different places. Need to be smarter about this
+   // somehow ...
+   const int halo_int = 10;
+   if (nStep() % halo_int == 0)
+   {
+     int signal = NyxHaloFinderSignal;
+     const int MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
+     ParallelDescriptor::Bcast(&signal, 1, MPI_IntraGroup_Broadcast_Rank, ParallelDescriptor::CommunicatorInter());
+     const MultiFab &mf = get_data(State_Type, cur_time);
+     const Geometry &geom = Geom();
+     int time_step = nStep();
+     Real time1 = MPI_Wtime();
+     MultiFab::SendMultiFabToSidecars(&(const_cast<MultiFab&>(mf)));
+     Geometry::SendGeometryToSidecars(&(const_cast<Geometry&>(geom)));
+     ParallelDescriptor::Bcast(&time_step, 1, MPI_IntraGroup_Broadcast_Rank, ParallelDescriptor::CommunicatorInter());
+     Real time2 = MPI_Wtime();
+     if (ParallelDescriptor::IOProcessor())
+       std::cout << "COMPUTE PROCESSES: time spent sending data to sidecars: " << time2 - time1 << std::endl;
+   }
 #endif
     //
     // postCoarseTimeStep() is only called by level 0.
