@@ -134,7 +134,7 @@ namespace
 
   static void SidecarInit() {
     if(ParallelDescriptor::InSidecarGroup() && ParallelDescriptor::IOProcessor()) {
-      std::cout << "Initializing Reeber on sidecars ... ";
+      std::cout << "Initializing Reeber on sidecars ... " << std::endl;
     }
     initInSituAnalysis();
   }
@@ -145,18 +145,7 @@ namespace
 int
 main (int argc, char* argv[])
 {
-#ifdef IN_TRANSIT
-    //RunAtStatic();
-    //// Olders version of Reeber give wrong results if the # of sidecars is not
-    //// a power of 2. This bug has been fixed in newer versions.
-    //const int nSidecarProcs(256);
-    //ParallelDescriptor::SetNProcsSidecar(nSidecarProcs);
-#endif
-
     BoxLib::Initialize(argc, argv);
-#ifdef IN_TRANSIT
-    //if (ParallelDescriptor::InSidecarGroup()) return 0;
-#endif
 
 
     // save the inputs file name for later
@@ -177,6 +166,7 @@ main (int argc, char* argv[])
 // via BoxLib::ExecOnInitialize() through the anonymous namespace defined in
 // Nyx.cpp
 #ifdef IN_SITU
+junk
       initInSituAnalysis();
 #endif
 
@@ -270,11 +260,13 @@ main (int argc, char* argv[])
 
     delete amrptr;
 
+#ifdef IN_TRANSIT
     if(nSidecarProcs > 0) {
       // ---- stop the sidecars
       sidecarSignal = ParallelDescriptor::SidecarQuitSignal;
       ParallelDescriptor::Bcast(&sidecarSignal, 1, MPI_IntraGroup_Broadcast_Rank, ParallelDescriptor::CommunicatorInter());
     }
+#endif
 
 
     }
@@ -290,9 +282,9 @@ main (int argc, char* argv[])
     ParallelDescriptor::ReduceRealMax(dRunTime2, IOProc);
 
 #ifdef IN_TRANSIT
-    int signal = ParallelDescriptor::SidecarQuitSignal;
-    MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
-    ParallelDescriptor::Bcast(&signal, 1, MPI_IntraGroup_Broadcast_Rank, ParallelDescriptor::CommunicatorInter());
+    //int signal = ParallelDescriptor::SidecarQuitSignal;
+    //MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
+    //ParallelDescriptor::Bcast(&signal, 1, MPI_IntraGroup_Broadcast_Rank, ParallelDescriptor::CommunicatorInter());
 #endif
 
     if (ParallelDescriptor::IOProcessor())
