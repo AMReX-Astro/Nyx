@@ -34,7 +34,7 @@ using std::string;
 #ifdef IN_SITU
 #include <boxlib_in_situ_analysis.H>
 #elif IN_TRANSIT
-#include <InTransitAnalysis.H>
+//#include <InTransitAnalysis.H>
 #endif
 
 const int NyxHaloFinderSignal = 42;
@@ -148,6 +148,14 @@ std::string Nyx::particle_plotfile_format = "IEEE32";
 #else
 std::string Nyx::particle_plotfile_format = "NATIVE";
 #endif
+
+namespace
+{
+const unsigned int msps(1000000);
+void USleep(double sleepsec) {
+  usleep(sleepsec * msps);
+}
+}
 
 // Note: Nyx::variableSetUp is in Nyx_setup.cpp
 void
@@ -1302,7 +1310,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
    // time step. This is awful because the "10" has to be a compile-time
    // constant in about 5 different places. Need to be smarter about this
    // somehow ...
-   const int halo_int = 10;
+   const int halo_int = 1;
    if (nStep() % halo_int == 0)
    {
      int signal = NyxHaloFinderSignal;

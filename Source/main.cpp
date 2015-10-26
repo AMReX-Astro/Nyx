@@ -19,11 +19,47 @@
 #include <ParmParse.H>
 #include <ParallelDescriptor.H>
 #include <AmrLevel.H>
+#include <Geometry.H>
+#include <MultiFab.H>
 
 #ifdef IN_SITU
 #include <boxlib_in_situ_analysis.H>
 #elif IN_TRANSIT
-#include <InTransitAnalysis.H>
+//#include <InTransitAnalysis.H>
+#endif
+
+#ifdef FAKE_REEBER
+#include <unistd.h>
+namespace
+{
+  const unsigned int msps(1000000);
+
+  void USleep(double sleepsec) {
+    usleep(sleepsec * msps);
+  }
+
+  void runInSituAnalysis(const MultiFab& simulation_data, const Geometry &geometry, int time_step)
+  {
+    if(ParallelDescriptor::IOProcessor()) {
+      std::cout << "<<||||||||||>> _in runInSituAnalysis:  faking it." << std::endl;
+    }
+    USleep(0.42);  // ---- seconds
+  }
+
+  void initInSituAnalysis()
+  {
+    if(ParallelDescriptor::IOProcessor()) {
+      std::cout << "|||||||||||||| _in initInSituAnalysis:  faking it." << std::endl;
+      std::cout << "|||||||||||||| nProcs (np all comp sidecar) ="
+		<< ParallelDescriptor::NProcs() << "  "
+		<< ParallelDescriptor::NProcsAll() << "  "
+		<< ParallelDescriptor::NProcsComp() << "  "
+		<< ParallelDescriptor::NProcsSidecar() << "  "
+                << std::endl;
+    }
+  }
+
+}
 #endif
 
 const int NyxHaloFinderSignal = 42;
@@ -33,60 +69,75 @@ const int NyxHaloFinderSignal = 42;
 namespace
 {
 #ifdef IN_TRANSIT
-  static int STATIC_SIGNAL_HANDLER (int in_signal) {
+  static void SidecarEventLoop() {
 
     BL_ASSERT(NyxHaloFinderSignal != ParallelDescriptor::SidecarQuitSignal);
 
-    int out_signal = in_signal;
+    bool finished(false);
+    int sidecarSignal(-1);
+    int myProcAll(ParallelDescriptor::MyProcAll());
+    const int quitSignal(ParallelDescriptor::SidecarQuitSignal);
+    bool bIOP(ParallelDescriptor::IOProcessor());
 
-    if (in_signal == NyxHaloFinderSignal)
-    {
-      if (ParallelDescriptor::IOProcessor())
-        std::cout << "Sidecars got the halo finder signal!" << std::endl;
+    while ( ! finished) {
+        // Receive the signal from the compute group.
+        ParallelDescriptor::Bcast(&sidecarSignal, 1, 0, ParallelDescriptor::CommunicatorInter());
 
-      MultiFab mf;
-      Geometry geom;
-      int time_step;
-      // Receive the necessary data for doing analysis.
-      MultiFab::SendMultiFabToSidecars(&mf);
-      Geometry::SendGeometryToSidecars(&geom);
-      ParallelDescriptor::Bcast(&time_step, 1, 0, ParallelDescriptor::CommunicatorInter());
+        switch(sidecarSignal) {
+          case NyxHaloFinderSignal:
+	  {
+            if(bIOP) {
+              std::cout << "Sidecars got the halo finder signal!" << std::endl;
+	    }
+            MultiFab mf;
+            Geometry geom;
+            int time_step;
+	    ParallelDescriptor::Barrier();
+            // Receive the necessary data for doing analysis.
+            MultiFab::SendMultiFabToSidecars(&mf);
+            Geometry::SendGeometryToSidecars(&geom);
+            ParallelDescriptor::Bcast(&time_step, 1, 0, ParallelDescriptor::CommunicatorInter());
 
-      // Here Reeber constructs the local-global merge trees and computes the
-      // halo locations.
-      runInSituAnalysis(mf, geom, time_step);
+            // Here Reeber constructs the local-global merge trees and computes the
+            // halo locations.
+            runInSituAnalysis(mf, geom, time_step);
 
-      if (ParallelDescriptor::IOProcessor())
-        std::cout << "Sidecars completed halo finding analysis." << std::endl;
+            if(ParallelDescriptor::IOProcessor()) {
+              std::cout << "Sidecars completed halo finding analysis." << std::endl;
+	    }
+	  }
+          break;
+
+          case quitSignal:
+	  {
+            if(ParallelDescriptor::IOProcessor()) {
+              std::cout << "Sidecars received the quit signal." << std::endl;
+            }
+            finished = true;
+	  }
+          break;
+
+          default:
+	  {
+            if(ParallelDescriptor::IOProcessor()) {
+              std::cout << "**** Sidecars received bad signal = " << sidecarSignal << std::endl;
+            }
+	  }
+          break;
+        }
+
     }
-    else if (in_signal != ParallelDescriptor::SidecarQuitSignal)
-    {
-      std::ostringstream ss_error_msg;
-      ss_error_msg << "Unknown signal sent to sidecars: -----> " << in_signal << " <-----" << std::endl;
-      BoxLib::Error(const_cast<const char*>(ss_error_msg.str().c_str()));
+    if(ParallelDescriptor::IOProcessor()) {
+      std::cout << "===== SIDECARS DONE. EXITING ... =====" << std::endl;
     }
-
-    return out_signal;
   }
 
-  static void STATIC_INIT () {
-    if (ParallelDescriptor::InSidecarGroup() && ParallelDescriptor::IOProcessor())
-        std::cout << "Initializing Reeber on sidecars ... ";
+  static void SidecarInit() {
+    if(ParallelDescriptor::InSidecarGroup() && ParallelDescriptor::IOProcessor()) {
+      std::cout << "Initializing Reeber on sidecars ... ";
+    }
     initInSituAnalysis();
-    if (ParallelDescriptor::InSidecarGroup() && ParallelDescriptor::IOProcessor())
-        std::cout << "done." << std::endl;
-    ParallelDescriptor::AddSignalHandler(STATIC_SIGNAL_HANDLER);
   }
-
-  static void STATIC_CLEAN () {
-    if (ParallelDescriptor::InSidecarGroup() && ParallelDescriptor::IOProcessor())
-        std::cout << "Sidecars all done!" << std::endl;
-  }
-
-  static void RunAtStatic () {
-    BoxLib::ExecOnInitialize(STATIC_INIT);
-    BoxLib::ExecOnFinalize(STATIC_CLEAN);
-  };
 #endif
 }
 
@@ -95,16 +146,16 @@ int
 main (int argc, char* argv[])
 {
 #ifdef IN_TRANSIT
-    RunAtStatic();
-    // Olders version of Reeber give wrong results if the # of sidecars is not
-    // a power of 2. This bug has been fixed in newer versions.
-    const int nSidecarProcs(256);
-    ParallelDescriptor::SetNProcsSidecar(nSidecarProcs);
+    //RunAtStatic();
+    //// Olders version of Reeber give wrong results if the # of sidecars is not
+    //// a power of 2. This bug has been fixed in newer versions.
+    //const int nSidecarProcs(256);
+    //ParallelDescriptor::SetNProcsSidecar(nSidecarProcs);
 #endif
 
     BoxLib::Initialize(argc, argv);
 #ifdef IN_TRANSIT
-    if (ParallelDescriptor::InSidecarGroup()) return 0;
+    //if (ParallelDescriptor::InSidecarGroup()) return 0;
 #endif
 
 
@@ -116,6 +167,11 @@ main (int argc, char* argv[])
     }
     BL_PROFILE_REGION_START("main()");
     BL_PROFILE_VAR("main()", pmain);
+
+    int MPI_IntraGroup_Broadcast_Rank;
+    int myProcAll(ParallelDescriptor::MyProcAll());
+    int nSidecarProcs(0), nSidecarProcsFromParmParse(-3), sidecarSignal(NyxHaloFinderSignal);
+
 
 // If we use sidecars (i.e., IN_TRANSIT), then this initialization gets called
 // via BoxLib::ExecOnInitialize() through the anonymous namespace defined in
@@ -141,6 +197,20 @@ main (int argc, char* argv[])
     pp.query("strt_time", strt_time);
     pp.query("stop_time", stop_time);
 
+    pp.get("nSidecars", nSidecarProcsFromParmParse);
+
+    if(ParallelDescriptor::IOProcessor()) {
+      std::cout << "nSidecarProcs from parmparse = " << nSidecarProcsFromParmParse << std::endl;
+    }
+    nSidecarProcs = nSidecarProcsFromParmParse;
+
+    ParallelDescriptor::SetNProcsSidecar(nSidecarProcs);
+    MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
+
+#ifdef IN_TRANSIT
+    SidecarInit();
+#endif
+
     if (strt_time < 0.0)
     {
         BoxLib::Abort("MUST SPECIFY a non-negative strt_time");
@@ -150,6 +220,11 @@ main (int argc, char* argv[])
     {
         BoxLib::Abort("Exiting because neither max_step nor stop_time is non-negative.");
     }
+
+
+    if(ParallelDescriptor::InSidecarGroup()) {
+      SidecarEventLoop();
+    } else {
 
     Amr* amrptr = new Amr;
 
@@ -194,6 +269,17 @@ main (int argc, char* argv[])
     }
 
     delete amrptr;
+
+    if(nSidecarProcs > 0) {
+      // ---- stop the sidecars
+      sidecarSignal = ParallelDescriptor::SidecarQuitSignal;
+      ParallelDescriptor::Bcast(&sidecarSignal, 1, MPI_IntraGroup_Broadcast_Rank, ParallelDescriptor::CommunicatorInter());
+    }
+
+
+    }
+
+
     //
     // This MUST follow the above delete as ~Amr() may dump files to disk.
     //
@@ -205,7 +291,7 @@ main (int argc, char* argv[])
 
 #ifdef IN_TRANSIT
     int signal = ParallelDescriptor::SidecarQuitSignal;
-    const int MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
+    MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
     ParallelDescriptor::Bcast(&signal, 1, MPI_IntraGroup_Broadcast_Rank, ParallelDescriptor::CommunicatorInter());
 #endif
 

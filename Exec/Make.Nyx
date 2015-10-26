@@ -34,6 +34,12 @@ endif
 
 DEFINES += -DBL_NOLINEVALUES
 
+ifeq ($(FAKE_REEBER), TRUE)
+ifeq ($(USE_IN_TRANSIT), TRUE)
+  USE_IN_SITU = FALSE
+  DEFINES += -DIN_TRANSIT
+endif
+else
 ifeq ($(USE_IN_TRANSIT), TRUE)
   USE_IN_SITU = FALSE
   DEFINES += -DIN_TRANSIT
@@ -51,6 +57,7 @@ ifeq ($(USE_IN_TRANSIT), TRUE)
   ifeq ($(DEBUG), TRUE)
     DEFINES += -DDEBUG
   endif
+endif
 endif
 
 ifeq ($(USE_IN_SITU), TRUE)

@@ -43,6 +43,8 @@ ifeq ($(USE_IN_SITU), TRUE)
   CEXE_headers += boxlib_in_situ_analysis.H
 endif
 
+ifeq ($(FAKE_REEBER), TRUE)
+else
 ifeq ($(USE_IN_TRANSIT), TRUE)
   CEXE_sources += format.cpp
   #CEXE_sources += boxlib_in_situ_analysis.cpp
@@ -50,4 +52,5 @@ ifeq ($(USE_IN_TRANSIT), TRUE)
   CEXE_headers += format.h
   #CEXE_headers += boxlib_in_situ_analysis.H
   CEXE_headers += InTransitAnalysis.H
+endif
 endif
