@@ -33,8 +33,6 @@ using std::string;
 
 #ifdef IN_SITU
 #include <boxlib_in_situ_analysis.H>
-#elif IN_TRANSIT
-//#include <InTransitAnalysis.H>
 #endif
 
 const int NyxHaloFinderSignal = 42;
@@ -148,6 +146,8 @@ std::string Nyx::particle_plotfile_format = "IEEE32";
 #else
 std::string Nyx::particle_plotfile_format = "NATIVE";
 #endif
+
+int Nyx::halo_int(0);
 
 namespace
 {
@@ -378,6 +378,8 @@ Nyx::read_params ()
       plot_z_values.resize(num_z_values);
       pp.queryarr("plot_z_values",plot_z_values,0,num_z_values);
     }
+
+    pp.query("halo_int", halo_int);
 }
 
 Nyx::Nyx ()
@@ -1310,20 +1312,20 @@ Nyx::postCoarseTimeStep (Real cumtime)
    // time step. This is awful because the "10" has to be a compile-time
    // constant in about 5 different places. Need to be smarter about this
    // somehow ...
-   const int halo_int = 1;
-   if (nStep() % halo_int == 0)
+   //const int halo_int = 2;
+   if (halo_int > 0 && nStep() % halo_int == 0 && ParallelDescriptor::NProcsSidecar() > 0)
    {
-     int signal = NyxHaloFinderSignal;
+     int sidecarSignal(NyxHaloFinderSignal);
      const int MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
-     ParallelDescriptor::Bcast(&signal, 1, MPI_IntraGroup_Broadcast_Rank, ParallelDescriptor::CommunicatorInter());
+     ParallelDescriptor::Bcast(&sidecarSignal, 1, MPI_IntraGroup_Broadcast_Rank, ParallelDescriptor::CommunicatorInter());
      const MultiFab &mf = get_data(State_Type, cur_time);
      const Geometry &geom = Geom();
      int time_step = nStep();
-     Real time1 = MPI_Wtime();
+     Real time1(ParallelDescriptor::second());
      MultiFab::SendMultiFabToSidecars(&(const_cast<MultiFab&>(mf)));
      Geometry::SendGeometryToSidecars(&(const_cast<Geometry&>(geom)));
      ParallelDescriptor::Bcast(&time_step, 1, MPI_IntraGroup_Broadcast_Rank, ParallelDescriptor::CommunicatorInter());
-     Real time2 = MPI_Wtime();
+     Real time2(ParallelDescriptor::second());
      if (ParallelDescriptor::IOProcessor())
        std::cout << "COMPUTE PROCESSES: time spent sending data to sidecars: " << time2 - time1 << std::endl;
    }

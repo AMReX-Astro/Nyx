@@ -80,14 +80,14 @@ namespace
     bool bIOP(ParallelDescriptor::IOProcessor());
 
     while ( ! finished) {
-        // Receive the signal from the compute group.
+        // Receive the sidecarSignal from the compute group.
         ParallelDescriptor::Bcast(&sidecarSignal, 1, 0, ParallelDescriptor::CommunicatorInter());
 
         switch(sidecarSignal) {
           case NyxHaloFinderSignal:
 	  {
             if(bIOP) {
-              std::cout << "Sidecars got the halo finder signal!" << std::endl;
+              std::cout << "Sidecars got the halo finder sidecarSignal!" << std::endl;
 	    }
             MultiFab mf;
             Geometry geom;
@@ -111,7 +111,7 @@ namespace
           case quitSignal:
 	  {
             if(ParallelDescriptor::IOProcessor()) {
-              std::cout << "Sidecars received the quit signal." << std::endl;
+              std::cout << "Sidecars received the quit sidecarSignal." << std::endl;
             }
             finished = true;
 	  }
@@ -120,7 +120,7 @@ namespace
           default:
 	  {
             if(ParallelDescriptor::IOProcessor()) {
-              std::cout << "**** Sidecars received bad signal = " << sidecarSignal << std::endl;
+              std::cout << "**** Sidecars received bad sidecarSignal = " << sidecarSignal << std::endl;
             }
 	  }
           break;
@@ -161,12 +161,7 @@ main (int argc, char* argv[])
     int myProcAll(ParallelDescriptor::MyProcAll());
     int nSidecarProcs(0), nSidecarProcsFromParmParse(-3), sidecarSignal(NyxHaloFinderSignal);
 
-
-// If we use sidecars (i.e., IN_TRANSIT), then this initialization gets called
-// via BoxLib::ExecOnInitialize() through the anonymous namespace defined in
-// Nyx.cpp
 #ifdef IN_SITU
-junk
       initInSituAnalysis();
 #endif
 
@@ -280,12 +275,6 @@ junk
     Real dRunTime2 = ParallelDescriptor::second() - dRunTime1;
 
     ParallelDescriptor::ReduceRealMax(dRunTime2, IOProc);
-
-#ifdef IN_TRANSIT
-    //int signal = ParallelDescriptor::SidecarQuitSignal;
-    //MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
-    //ParallelDescriptor::Bcast(&signal, 1, MPI_IntraGroup_Broadcast_Rank, ParallelDescriptor::CommunicatorInter());
-#endif
 
     if (ParallelDescriptor::IOProcessor())
     {

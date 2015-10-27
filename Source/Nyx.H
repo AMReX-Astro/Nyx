@@ -251,7 +251,7 @@ public:
     // Setup virtual particles if necessary
     //
     void setup_virtual_particles();
-    
+
     //
     // Remove virtual particles if necessary
     //
@@ -260,7 +260,7 @@ public:
     // Setup ghost particles (for finer levels) if necessary
     //
     void setup_ghost_particles();
-    
+
     //
     // Remove ghost particles (for this level) if necessary
     //
@@ -288,7 +288,7 @@ public:
 #ifdef NEUTRINO_PARTICLES
     static Real neutrino_cfl;
 #endif
-    
+
     //
     // Should we write particles into plotfiles?
     //
@@ -443,7 +443,7 @@ public:
     void get_new_source(Real old_time, Real new_time, Real dt, MultiFab& Rhs);
 
     Real vol_weight_sum(const std::string& name, Real time, bool masked);
-    Real vol_weight_sum(MultiFab& mf, bool masked); 
+    Real vol_weight_sum(MultiFab& mf, bool masked);
 
 #ifdef DER_AMOM
     void vol_weight_sum_angmom(Real* angsum1, Real* angsum2, Real* angsum3, const Real time);
@@ -481,7 +481,7 @@ public:
 
     static int FirstSpec, FirstAux, FirstAdv;
     static int NumSpec, NumAux, NumAdv;
-    
+
     static int strict_subcycling;
 
     static int init_with_sph_particles;
@@ -499,7 +499,7 @@ public:
 
 protected:
 
-    // 
+    //
     // Number of grow cells required for particle motion.
     //
     int grav_n_grow;
@@ -615,7 +615,7 @@ protected:
     // if true, define an additional source term
     static int add_ext_src;
 
-    // specifies the heating/cooling source term 
+    // specifies the heating/cooling source term
     static int heat_cool_type;
 
     // if true , incorporate the source term through Strang-splitting
@@ -632,6 +632,9 @@ protected:
     static Real average_dm_density;
     static Real average_neutr_density;
     static Real average_total_density;
+
+    // halo interval for the sidecars
+    static int halo_int;
 };
 
 //
