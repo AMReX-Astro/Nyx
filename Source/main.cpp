@@ -199,7 +199,8 @@ main (int argc, char* argv[])
 
     int MPI_IntraGroup_Broadcast_Rank;
     //int myProcAll(ParallelDescriptor::MyProcAll());
-    int nSidecarProcs(0), nSidecarProcsFromParmParse(-3), prevSidecarProcs(-2);
+    int nSidecarProcs(0), nSidecarProcsFromParmParse(-3);
+    int prevSidecarProcs(-2), maxSidecarProcs(0);
     int sidecarSignal(NyxHaloFinderSignal);
     bool resizeSidecars(false);
 
@@ -226,6 +227,7 @@ main (int argc, char* argv[])
 
 #ifdef IN_TRANSIT
     pp.query("nSidecars", nSidecarProcsFromParmParse);
+    pp.query("maxSidecarProcs", maxSidecarProcs);
     if(ParallelDescriptor::IOProcessor()) {
       std::cout << "nSidecarProcs from parmparse = " << nSidecarProcsFromParmParse << std::endl;
     }
@@ -353,9 +355,11 @@ DistributionMapping::Initialize();
       // ---- test resizing the sidecars
       prevSidecarProcs = nSidecarProcs;
       nSidecarProcs = BoxLib::Random_int(ParallelDescriptor::NProcsAll()/2);
+      nSidecarProcs = std::min(nSidecarProcs, maxSidecarProcs);
       ParallelDescriptor::Bcast(&nSidecarProcs, 1, 0, ParallelDescriptor::CommunicatorAll());
       if(ParallelDescriptor::IOProcessor()) {
         std::cout << "NNNNNNNN new nSidecarProcs = " << nSidecarProcs << std::endl;
+        std::cout << "NNNNNNNN     maxSidecarProcs = " << maxSidecarProcs << std::endl;
       }
 
       MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
