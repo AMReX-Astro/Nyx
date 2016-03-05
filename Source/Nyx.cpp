@@ -14,7 +14,6 @@ using std::ostream;
 using std::pair;
 using std::string;
 
-#include <Utility.H>
 #include <CONSTANTS.H>
 #include <Nyx.H>
 #include <Nyx_F.H>
@@ -22,6 +21,7 @@ using std::string;
 #include <VisMF.H>
 #include <TagBox.H>
 #include <Particles_F.H>
+#include <Utility.H>
 
 #if BL_USE_MPI
 #include "MemInfo.H"
@@ -113,6 +113,7 @@ int Nyx::do_grav       =  0;
 int Nyx::allow_untagging    = 0;
 int Nyx::use_const_species  = 0;
 int Nyx::normalize_species  = 0;
+int Nyx::do_special_tagging = 0;
 int Nyx::ppm_type           = 1;
 int Nyx::ppm_reference      = 1;
 int Nyx::corner_coupling    = 1;
@@ -203,7 +204,7 @@ Nyx::read_params ()
     pp.query("small_dens", small_dens);
     pp.query("small_temp", small_temp);
     pp.query("gamma", gamma);
-    
+
     pp.query("strict_subcycling",strict_subcycling);
 
     // Get boundary conditions
@@ -272,7 +273,7 @@ Nyx::read_params ()
 
     pp.get("do_hydro", do_hydro);
 #ifdef NO_HYDRO
-    if (do_hydro == 1) 
+    if (do_hydro == 1)
         BoxLib::Error("Cant have do_hydro == 1 when NO_HYDRO is true");
 #endif
 
@@ -293,7 +294,7 @@ Nyx::read_params ()
     if (heat_cool_type > 0 && add_ext_src == 0)
        BoxLib::Error("Nyx::must set add_ext_src to 1 if heat_cool_type > 0");
     if (heat_cool_type != 1 && heat_cool_type != 3)
-       BoxLib::Error("Nyx:: nonzero heat_cool_type must equal 1 or 3"); 
+       BoxLib::Error("Nyx:: nonzero heat_cool_type must equal 1 or 3");
     if (heat_cool_type == 0)
        BoxLib::Error("Nyx::contradiction -- HEATCOOL is defined but heat_cool_type == 0");
 #else
@@ -314,20 +315,20 @@ Nyx::read_params ()
 
     if (do_hydro == 1)
     {
-        if (do_hydro == 1 && use_const_species == 1) 
+        if (do_hydro == 1 && use_const_species == 1)
         {
            pp.get("h_species" ,  h_species);
            pp.get("he_species", he_species);
            BL_FORT_PROC_CALL(SET_XHYDROGEN,set_xhydrogen)(h_species);
            if (ParallelDescriptor::IOProcessor())
            {
-               std::cout << "Nyx::setting species concentrations to " 
+               std::cout << "Nyx::setting species concentrations to "
                          << h_species << " and " << he_species
                          << " in the hydro and in the EOS " << std::endl;
            }
         }
 
-        // 
+        //
         if (use_colglaz == 1)
         {
            if (ppm_type == 0 && ParallelDescriptor::IOProcessor())
@@ -350,12 +351,12 @@ Nyx::read_params ()
            BoxLib::Error("Nyx:: don't know what to do with version_2 flag");
 
         // Make sure ppm_type is set correctly.
-        if (ppm_type != 0 && ppm_type != 1 && ppm_type != 2) 
+        if (ppm_type != 0 && ppm_type != 1 && ppm_type != 2)
         {
            BoxLib::Error("Nyx::ppm_type must be 0, 1 or 2");
         }
     }
-    
+
     // Make sure not to call refluxing if we're not actually doing any hydro.
     if (do_hydro == 0) do_reflux = 0;
 
@@ -442,10 +443,10 @@ Nyx::Nyx (Amr&            papa,
        new_a = old_a;
     }
 
-     // Initialize "this_z" in the atomic_rates_module 
+     // Initialize "this_z" in the atomic_rates_module
      if (heat_cool_type == 1 || heat_cool_type == 3)
          BL_FORT_PROC_CALL(INIT_THIS_Z, init_this_z)(&old_a);
-    
+
     // Set grav_n_grow to 3 on init. It'll be reset in advance.
     grav_n_grow = 3;
 }
@@ -497,7 +498,7 @@ Nyx::setTimeLevel (Real time,
                    Real dt_new)
 {
     if (ParallelDescriptor::IOProcessor()) {
-       std::cout << "Setting the current time in the state data to " 
+       std::cout << "Setting the current time in the state data to "
                  << parent->cumTime() << std::endl;
     }
     AmrLevel::setTimeLevel(time, dt_old, dt_new);
@@ -523,7 +524,7 @@ Nyx::init (AmrLevel& old)
     setTimeLevel(cur_time, dt_old, dt_new);
 
 #ifndef NO_HYDRO
-    if (do_hydro == 1) 
+    if (do_hydro == 1)
     {
         MultiFab& S_new = get_new_data(State_Type);
         MultiFab& D_new = get_new_data(DiagEOS_Type);
@@ -644,7 +645,7 @@ Nyx::est_time_step (Real dt_old)
         const Real* dx = geom.CellSize();
 
 	Real dt = est_dt;
-	  
+
 #ifdef _OPENMP
 #pragma omp parallel firstprivate(dt)
 #endif
@@ -658,7 +659,7 @@ Nyx::est_time_step (Real dt_old)
                  &dt, &a);
 	    }
 #ifdef _OPENMP
-#pragma omp critical (nyx_estdt)	      
+#pragma omp critical (nyx_estdt)
 #endif
 	  {
 	    est_dt = std::min(est_dt, dt);
@@ -709,7 +710,7 @@ Nyx::computeNewDt (int                   finest_level,
     //
     if (level > 0)
         return;
-    
+
     int i;
 
     Real dt_0 = 1.0e+100;
@@ -744,7 +745,7 @@ Nyx::computeNewDt (int                   finest_level,
         {
             bool sub_unchanged=true;
             if ((parent->maxLevel() > 0) && (level == 0) &&
-                (parent->subcyclingMode() == "Optimal") && 
+                (parent->subcyclingMode() == "Optimal") &&
                 (parent->okToRegrid(level) || parent->levelSteps(0) == 0) )
             {
                 int new_cycle[finest_level+1];
@@ -779,9 +780,9 @@ Nyx::computeNewDt (int                   finest_level,
                         n_cycle[i] = new_cycle[i];
                     }
                 }
-                
+
             }
-            
+
             if (sub_unchanged)
             //
             // Limit dt's by change_max * old dt
@@ -982,7 +983,7 @@ Nyx::writePlotNow ()
 
         for (int i = 0; i < plot_z_values.size(); i++)
         {
-            if (std::abs(z_new - plot_z_values[i]) < (0.01 * (z_old - z_new)) ) 
+            if (std::abs(z_new - plot_z_values[i]) < (0.01 * (z_old - z_new)) )
                 found_one = true;
         }
     }
@@ -1009,14 +1010,14 @@ Nyx::post_timestep (int iteration)
     //
     int finest_level = parent->finestLevel();
     const int ncycle = parent->nCycle(level);
-    
+
     //
     // Remove virtual particles at this level if we have any.
     //
     remove_virtual_particles();
 
     //
-    // Remove Ghost particles on the final iteration 
+    // Remove Ghost particles on the final iteration
     //
     if (iteration == ncycle)
         remove_ghost_particles();
@@ -1028,7 +1029,7 @@ Nyx::post_timestep (int iteration)
     {
          for (int i = 0; i < theActiveParticles().size(); i++)
          {
-             theActiveParticles()[i]->Redistribute(false, true, level, grav_n_grow);    
+             theActiveParticles()[i]->Redistribute(false, true, level, grav_n_grow);
          }
     }
 
@@ -1038,7 +1039,7 @@ Nyx::post_timestep (int iteration)
         MultiFab& S_new_crse = get_new_data(State_Type);
 #ifdef GRAVITY
         MultiFab drho_and_drhoU;
-#ifdef CGRAV	  
+#ifdef CGRAV
         if (do_grav &&
             (gravity->get_gravity_type() == "PoissonGrav"||gravity->get_gravity_type() == "CompositeGrav"))
 #else
@@ -1069,7 +1070,7 @@ Nyx::post_timestep (int iteration)
 
 #ifdef GRAVITY
 #ifdef CGRAV
-        if (do_grav && 
+        if (do_grav &&
             (gravity->get_gravity_type() == "PoissonGrav"||gravity->get_gravity_type() == "CompositeGrav")
             && gravity->get_no_sync() == 0)
 #else
@@ -1108,7 +1109,7 @@ Nyx::post_timestep (int iteration)
                 gravity->get_new_grav_vector(lev, grad_phi_cc, cur_time);
 
 #ifdef _OPENMP
-#pragma omp parallel	      
+#pragma omp parallel
 #endif
 		{
 		  FArrayBox sync_src;
@@ -1145,7 +1146,7 @@ Nyx::post_timestep (int iteration)
         }
 #endif
     }
-#endif // end ifndef NO_HYDRO 
+#endif // end ifndef NO_HYDRO
 
     if (level < finest_level)
         average_down();
@@ -1219,7 +1220,7 @@ Nyx::post_restart ()
             gravity->set_mass_offset(cur_time);
 
             if (
-#ifdef CGRAV	  
+#ifdef CGRAV
             (gravity->get_gravity_type() == "PoissonGrav"||gravity->get_gravity_type() == "CompositeGrav")
 #else
 	    gravity->get_gravity_type() == "PoissonGrav"
@@ -1258,7 +1259,7 @@ Nyx::post_restart ()
 }
 
 #ifndef NO_HYDRO
-void 
+void
 Nyx::set_small_values ()
 {
        if (do_hydro == 0)
@@ -1277,7 +1278,7 @@ Nyx::set_small_values ()
        BL_FORT_PROC_CALL(GET_NUM_SPEC, get_num_spec)(&NumSpec);
        BL_FORT_PROC_CALL(GET_NUM_AUX , get_num_aux )(&NumAux);
 
-       BL_FORT_PROC_CALL(SET_SMALL_VALUES, set_small_values) 
+       BL_FORT_PROC_CALL(SET_SMALL_VALUES, set_small_values)
             (&average_gas_density, &average_temperature,
              &a,  &small_dens, &small_temp, &small_pres);
 
@@ -1312,7 +1313,6 @@ Nyx::postCoarseTimeStep (Real cumtime)
    // time step. This is awful because the "10" has to be a compile-time
    // constant in about 5 different places. Need to be smarter about this
    // somehow ...
-   //const int halo_int = 2;
    if (halo_int > 0 && nStep() % halo_int == 0 && ParallelDescriptor::NProcsSidecar() > 0)
    {
      int sidecarSignal(NyxHaloFinderSignal);
@@ -1351,7 +1351,7 @@ Nyx::post_regrid (int lbase,
         particle_redistribute(lbase);
 
     int which_level_being_advanced = parent->level_being_advanced();
- 
+
 #ifdef GRAVITY
     bool do_grav_solve_here;
     if (which_level_being_advanced >= 0)
@@ -1366,7 +1366,7 @@ Nyx::post_regrid (int lbase,
     const Real cur_time = state[PhiGrav_Type].curTime();
     if (do_grav && (cur_time > 0) && do_grav_solve_here)
     {
-#ifdef CGRAV	  
+#ifdef CGRAV
         if (gravity->get_gravity_type() == "PoissonGrav" || gravity->get_gravity_type() == "CompositeGrav")
 #else
         if (gravity->get_gravity_type() == "PoissonGrav")
@@ -1403,9 +1403,9 @@ Nyx::post_init (Real stop_time)
     if (do_grav)
     {
         const Real cur_time = state[PhiGrav_Type].curTime();
-        if 
-#ifdef CGRAV	  
-            (gravity->get_gravity_type() == "PoissonGrav" || 
+        if
+#ifdef CGRAV
+            (gravity->get_gravity_type() == "PoissonGrav" ||
              gravity->get_gravity_type() == "CompositeGrav")
 #else
 	    (gravity->get_gravity_type() == "PoissonGrav")
@@ -1557,7 +1557,7 @@ Nyx::enforce_nonnegative_species (MultiFab& S_new)
 {
 #ifdef _OPENMP
 #pragma omp parallel
-#endif    
+#endif
     for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
@@ -1573,13 +1573,13 @@ Nyx::enforce_consistent_e (MultiFab& S)
 {
 #ifdef _OPENMP
 #pragma omp parallel
-#endif    
+#endif
   for (MFIter mfi(S,true); mfi.isValid(); ++mfi)
     {
         const Box& box = mfi.tilebox();
         const int* lo = box.loVect();
         const int* hi = box.hiVect();
-        BL_FORT_PROC_CALL(ENFORCE_CONSISTENT_E, 
+        BL_FORT_PROC_CALL(ENFORCE_CONSISTENT_E,
 			  enforce_consistent_e)
 	  (lo, hi, BL_TO_FORTRAN(S[mfi]));
     }
@@ -1609,7 +1609,7 @@ Nyx::average_down (int state_index)
         // Coarsen() the fine stuff on processors owning the fine data.
         //
         BoxArray crse_S_fine_BA(S_fine.boxArray().size());
- 
+
         for (int i = 0; i < S_fine.boxArray().size(); ++i)
         {
             crse_S_fine_BA.set(i, BoxLib::coarsen(S_fine.boxArray()[i],
@@ -1624,7 +1624,7 @@ Nyx::average_down (int state_index)
 
 #ifdef _OPENMP
 #pragma omp parallel
-#endif    
+#endif
         for (MFIter mfi(crse_S_fine,true); mfi.isValid(); ++mfi)
         {
  	    const Box&       overlap  = mfi.tilebox();
@@ -1636,12 +1636,12 @@ Nyx::average_down (int state_index)
             FArrayBox&       crse_D_fab = crse_D_fine[mfi];
 
             BL_FORT_PROC_CALL(FORT_AVGDOWN, fort_avgdown)
-                (BL_TO_FORTRAN(crse_S_fab), num_comps, 
+                (BL_TO_FORTRAN(crse_S_fab), num_comps,
 		 BL_TO_FORTRAN(fine_S_fab),
                  overlap.loVect(), overlap.hiVect(), fine_ratio.getVect());
 
             BL_FORT_PROC_CALL(FORT_AVGDOWN, fort_avgdown)
-                (BL_TO_FORTRAN(crse_D_fab), num_D_comps, 
+                (BL_TO_FORTRAN(crse_D_fab), num_D_comps,
 		 BL_TO_FORTRAN(fine_D_fab),
                  overlap.loVect(), overlap.hiVect(), fine_ratio.getVect());
         }
@@ -1683,7 +1683,7 @@ Nyx::errorEst (TagBoxArray& tags,
             if (err_list[j].name() == "density")
             {
                 avg = average_gas_density;
-            } 
+            }
             else if (err_list[j].name() == "particle_mass_density")
             {
                 avg = average_dm_density;
@@ -1757,7 +1757,7 @@ Nyx::errorEst (TagBoxArray& tags,
 		const int*  dlo     = datbox.loVect();
 		const int*  dhi     = datbox.hiVect();
 		const int   ncomp   = datfab.nComp();
-		
+
                 if (err_list[j].errType() == ErrorRec::Standard)
                 {
                     err_list[j].errFunc()(tptr, ARLIM(tlo), ARLIM(thi), &tagval,
@@ -1804,7 +1804,7 @@ Nyx::derive (const std::string& name,
            (*derive_dat)[mfi].setVal(ParallelDescriptor::MyProc());
         }
         return derive_dat;
-    } else 
+    } else
         return particle_derive(name, time, ngrow);
 }
 
@@ -1847,8 +1847,8 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new)
         Real s  = 0;
         Real se = 0;
         BL_FORT_PROC_CALL(RESET_INTERNAL_E, reset_internal_e)
-            (BL_TO_FORTRAN(S_new[mfi]), BL_TO_FORTRAN(D_new[mfi]), 
-             bx.loVect(), bx.hiVect(), 
+            (BL_TO_FORTRAN(S_new[mfi]), BL_TO_FORTRAN(D_new[mfi]),
+             bx.loVect(), bx.hiVect(),
              &print_fortran_warnings, &a, &s, &se);
         sum_energy_added += s;
         sum_energy_total += se;
@@ -1885,6 +1885,9 @@ Nyx::compute_new_temp ()
 {
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
+    std::cout << "State_Type DiagEOS_Type = " << State_Type << "  " << DiagEOS_Type << std::endl;
+    std::cout << "S_new.DistributionMap() = " << S_new.DistributionMap() << std::endl;
+    std::cout << "D_new.DistributionMap() = " << D_new.DistributionMap() << std::endl;
 
     Real cur_time   = state[State_Type].curTime();
 
@@ -1900,8 +1903,8 @@ Nyx::compute_new_temp ()
         const Box& bx = mfi.tilebox();
 
         BL_FORT_PROC_CALL(COMPUTE_TEMP, compute_temp)
-            (bx.loVect(), bx.hiVect(), 
-            BL_TO_FORTRAN(S_new[mfi]), 
+            (bx.loVect(), bx.hiVect(),
+            BL_TO_FORTRAN(S_new[mfi]),
             BL_TO_FORTRAN(D_new[mfi]), &a,
              &print_fortran_warnings);
     }
@@ -1912,7 +1915,7 @@ Nyx::compute_new_temp ()
     int imax = -1;
     int jmax = -1;
     int kmax = -1;
- 
+
     Real den_maxt;
 
     // Find the cell which has the maximum temp -- but only if not the first
@@ -1926,17 +1929,17 @@ Nyx::compute_new_temp ()
             const Box& bx = mfi.validbox();
 
             BL_FORT_PROC_CALL(COMPUTE_MAX_TEMP_LOC, compute_max_temp_loc)
-                (bx.loVect(), bx.hiVect(), 
-                BL_TO_FORTRAN(S_new[mfi]), 
-                BL_TO_FORTRAN(D_new[mfi]), 
+                (bx.loVect(), bx.hiVect(),
+                BL_TO_FORTRAN(S_new[mfi]),
+                BL_TO_FORTRAN(D_new[mfi]),
                 &max_temp,&den_maxt,&imax,&jmax,&kmax);
         }
 
         if (verbose > 1 && ParallelDescriptor::IOProcessor())
             if (imax > -1 && jmax > -1 && kmax > -1)
             {
-              std::cout << "Maximum temp. at level " << level << " is " << max_temp 
-                        << " at density " << den_maxt 
+              std::cout << "Maximum temp. at level " << level << " is " << max_temp
+                        << " at density " << den_maxt
                         << " at (i,j,k) " << imax << " " << jmax << " " << kmax << std::endl;
             }
     }
@@ -1961,9 +1964,9 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& T_meanrho)
         const Box& bx = mfi.tilebox();
 
         BL_FORT_PROC_CALL(COMPUTE_RHO_TEMP, compute_rho_temp)
-            (bx.loVect(), bx.hiVect(), geom.CellSize(), 
+            (bx.loVect(), bx.hiVect(), geom.CellSize(),
              BL_TO_FORTRAN(S_new[mfi]),
-             BL_TO_FORTRAN(D_new[mfi]), &average_gas_density,  
+             BL_TO_FORTRAN(D_new[mfi]), &average_gas_density,
              &rho_T_sum, &T_sum, &T_meanrho_sum, &rho_sum, &vol_sum, &vol_mn_sum);
     }
     Real sums[6] = {rho_T_sum, rho_sum, T_sum, T_meanrho_sum, vol_sum, vol_mn_sum};
@@ -1971,9 +1974,497 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& T_meanrho)
 
     rho_T_avg = sums[0] / sums[1];  // density weighted T
         T_avg = sums[2] / sums[4];  // volume weighted T
-    if (sums[5] > 0) { 
+    if (sums[5] > 0) {
        T_meanrho = sums[3] / sums[5];  // T at mean density
        T_meanrho = pow(10.0, T_meanrho);
     }
 }
 #endif
+
+
+
+void
+Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
+                    int ioProcNumSCS, int ioProcNumAll, int scsMyId,
+                    MPI_Comm scsComm)
+{
+      AmrLevel::AddProcsToComp(aptr, nSidecarProcs, prevSidecarProcs,
+                               ioProcNumSCS, ioProcNumAll, scsMyId,
+                               scsComm);
+
+
+      // ---- pack up the bools
+      Array<int> allBools;  // ---- just use ints here
+      if(scsMyId == ioProcNumSCS) {
+        allBools.push_back(dump_old);
+        allBools.push_back(do_dm_particles);
+        allBools.push_back(particle_initrandom_serialize);
+        allBools.push_back(FillPatchedOldState_ok);
+      }
+
+      BoxLib::BroadcastArray(allBools, scsMyId, ioProcNumAll, scsComm);
+
+      // ---- unpack the bools
+      if(scsMyId != ioProcNumSCS) {
+        int count(0);
+        dump_old = allBools[count++];
+        do_dm_particles = allBools[count++];
+        particle_initrandom_serialize = allBools[count++];
+        FillPatchedOldState_ok = allBools[count++];
+        BL_ASSERT(count == allBools.size());
+      }
+
+
+      // ---- pack up the ints
+      Array<int> allInts;
+
+      if(scsMyId == ioProcNumSCS) {
+        allInts.push_back(write_parameters_in_plotfile);
+        allInts.push_back(print_fortran_warnings);
+        allInts.push_back(particle_verbose);
+        allInts.push_back(write_particles_in_plotfile);
+        allInts.push_back(write_particle_density_at_init);
+        allInts.push_back(write_coarsened_particles);
+        allInts.push_back(NUM_STATE);
+        allInts.push_back(Density);
+        allInts.push_back(Xmom);
+        allInts.push_back(Ymom);
+        allInts.push_back(Zmom);
+        allInts.push_back(Eden);
+        allInts.push_back(Eint);
+        allInts.push_back(Temp_comp);
+        allInts.push_back(Ne_comp);
+        allInts.push_back(FirstSpec);
+        allInts.push_back(FirstAux);
+        allInts.push_back(FirstAdv);
+        allInts.push_back(NumSpec);
+        allInts.push_back(NumAux);
+        allInts.push_back(NumAdv);
+        allInts.push_back(strict_subcycling);
+        allInts.push_back(init_with_sph_particles);
+        allInts.push_back(verbose);
+        allInts.push_back(show_timings);
+        allInts.push_back(do_reflux);
+        allInts.push_back(NUM_GROW);
+        allInts.push_back(nsteps_from_plotfile);
+        allInts.push_back(allow_untagging);
+        allInts.push_back(use_const_species);
+        allInts.push_back(normalize_species);
+        allInts.push_back(do_special_tagging);
+        allInts.push_back(ppm_type);
+        allInts.push_back(ppm_reference);
+        allInts.push_back(ppm_flatten_before_integrals);
+        allInts.push_back(use_colglaz);
+        allInts.push_back(use_flattening);
+        allInts.push_back(corner_coupling);
+        allInts.push_back(version_2);
+        allInts.push_back(use_exact_gravity);
+        allInts.push_back(particle_initrandom_iseed);
+        allInts.push_back(do_hydro);
+        allInts.push_back(do_grav);
+        allInts.push_back(add_ext_src);
+        allInts.push_back(heat_cool_type);
+        allInts.push_back(strang_split);
+        allInts.push_back(halo_int);
+        allInts.push_back(grav_n_grow);
+      }
+
+      BoxLib::BroadcastArray(allInts, scsMyId, ioProcNumAll, scsComm);
+
+      // ---- unpack the ints
+      if(scsMyId != ioProcNumSCS) {
+        int count(0), aSize(-1);
+
+        write_parameters_in_plotfile = allInts[count++];
+        print_fortran_warnings = allInts[count++];
+        particle_verbose = allInts[count++];
+        write_particles_in_plotfile = allInts[count++];
+        write_particle_density_at_init = allInts[count++];
+        write_coarsened_particles = allInts[count++];
+        NUM_STATE = allInts[count++];
+        Density = allInts[count++];
+        Xmom = allInts[count++];
+        Ymom = allInts[count++];
+        Zmom = allInts[count++];
+        Eden = allInts[count++];
+        Eint = allInts[count++];
+        Temp_comp = allInts[count++];
+        Ne_comp = allInts[count++];
+        FirstSpec = allInts[count++];
+        FirstAux = allInts[count++];
+        FirstAdv = allInts[count++];
+        NumSpec = allInts[count++];
+        NumAux = allInts[count++];
+        NumAdv = allInts[count++];
+        strict_subcycling = allInts[count++];
+        init_with_sph_particles = allInts[count++];
+        verbose = allInts[count++];
+        show_timings = allInts[count++];
+        do_reflux = allInts[count++];
+        NUM_GROW = allInts[count++];
+        nsteps_from_plotfile = allInts[count++];
+        allow_untagging = allInts[count++];
+        use_const_species = allInts[count++];
+        normalize_species = allInts[count++];
+        do_special_tagging = allInts[count++];
+        ppm_type = allInts[count++];
+        ppm_reference = allInts[count++];
+        ppm_flatten_before_integrals = allInts[count++];
+        use_colglaz = allInts[count++];
+        use_flattening = allInts[count++];
+        corner_coupling = allInts[count++];
+        version_2 = allInts[count++];
+        use_exact_gravity = allInts[count++];
+        particle_initrandom_iseed = allInts[count++];
+        do_hydro = allInts[count++];
+        do_grav = allInts[count++];
+        add_ext_src = allInts[count++];
+        heat_cool_type = allInts[count++];
+        strang_split = allInts[count++];
+        halo_int = allInts[count++];
+        grav_n_grow = allInts[count++];
+
+        BL_ASSERT(count == allInts.size());
+      }
+
+
+      // ---- longs
+      ParallelDescriptor::Bcast(&particle_initrandom_count, 1, ioProcNumAll, scsComm);
+
+
+      // ---- pack up the Reals
+      Array<Real> allReals;
+      if(scsMyId == ioProcNumSCS) {
+        allReals.push_back(initial_z);
+        allReals.push_back(final_a);
+        allReals.push_back(final_z);
+        allReals.push_back(relative_max_change_a);
+        allReals.push_back(old_a_time);
+        allReals.push_back(new_a_time);
+        allReals.push_back(old_a);
+        allReals.push_back(new_a);
+        allReals.push_back(particle_cfl);
+        allReals.push_back(cfl);
+        allReals.push_back(init_shrink);
+        allReals.push_back(change_max);
+        allReals.push_back(small_dens);
+        allReals.push_back(small_temp);
+        allReals.push_back(gamma);
+        allReals.push_back( h_species);
+        allReals.push_back(he_species);
+        allReals.push_back(particle_initrandom_mass);
+        allReals.push_back(average_gas_density);
+        allReals.push_back(average_dm_density);
+        allReals.push_back(average_neutr_density);
+        allReals.push_back(average_total_density);
+#ifdef NEUTRINO_PARTICLES
+        allReals.push_back(neutrino_cfl);
+#endif
+      }
+
+      BoxLib::BroadcastArray(allReals, scsMyId, ioProcNumAll, scsComm);
+      BoxLib::BroadcastArray(plot_z_values, scsMyId, ioProcNumAll, scsComm);
+
+      // ---- unpack the Reals
+      if(scsMyId != ioProcNumSCS) {
+        int count(0);
+        initial_z = allReals[count++];
+        final_a = allReals[count++];
+        final_z = allReals[count++];
+        relative_max_change_a = allReals[count++];
+        old_a_time = allReals[count++];
+        new_a_time = allReals[count++];
+        old_a = allReals[count++];
+        new_a = allReals[count++];
+        particle_cfl = allReals[count++];
+        cfl = allReals[count++];
+        init_shrink = allReals[count++];
+        change_max = allReals[count++];
+        small_dens = allReals[count++];
+        small_temp = allReals[count++];
+        gamma = allReals[count++];
+         h_species = allReals[count++];
+        he_species = allReals[count++];
+        particle_initrandom_mass = allReals[count++];
+        average_gas_density = allReals[count++];
+        average_dm_density = allReals[count++];
+        average_neutr_density = allReals[count++];
+        average_total_density = allReals[count++];
+#ifdef NEUTRINO_PARTICLES
+        neutrino_cfl = allReals[count++];
+#endif
+        BL_ASSERT(count == allReals.size());
+      }
+
+
+      // ---- pack up the strings
+      Array<std::string> allStrings;
+      Array<char> serialStrings;
+      if(scsMyId == ioProcNumSCS) {
+        allStrings.push_back(particle_plotfile_format);
+        allStrings.push_back(particle_init_type);
+        allStrings.push_back(particle_move_type);
+
+        serialStrings = BoxLib::SerializeStringArray(allStrings);
+      }
+
+      BoxLib::BroadcastArray(serialStrings, scsMyId, ioProcNumAll, scsComm);
+
+      // ---- unpack the strings
+      if(scsMyId != ioProcNumSCS) {
+        int count(0);
+        allStrings = BoxLib::UnSerializeStringArray(serialStrings);
+
+        particle_plotfile_format = allStrings[count++];
+        particle_init_type = allStrings[count++];
+        particle_move_type = allStrings[count++];
+      }
+
+
+      // ---- maps
+      std::cout << "_in AddProcsToComp:  fix maps." << std::endl;
+      //std::map<std::string,MultiFab*> auxDiag;
+      //static std::map<std::string,Array<std::string> > auxDiag_names;
+
+
+      // ---- pack up the IntVects
+      Array<int> allIntVects;
+      if(scsMyId == ioProcNumSCS) {
+        for(int i(0); i < BL_SPACEDIM; ++i)    { allIntVects.push_back(Nrep[i]); }
+
+        BL_ASSERT(allIntVects.size() == BL_SPACEDIM);
+      }
+
+      BoxLib::BroadcastArray(allIntVects, scsMyId, ioProcNumAll, scsComm);
+
+      // ---- unpack the IntVects
+      if(scsMyId != ioProcNumSCS) {
+          int count(0);
+
+          BL_ASSERT(allIntVects.size() == BL_SPACEDIM);
+          for(int i(0); i < BL_SPACEDIM; ++i)    { Nrep[i] = allIntVects[count++]; }
+
+          BL_ASSERT(allIntVects.size() == BL_SPACEDIM);
+      }
+
+
+
+      // ---- BCRec
+      Array<int> bcrLo(BL_SPACEDIM), bcrHi(BL_SPACEDIM);
+      if(scsMyId == ioProcNumSCS) {
+        for(int i(0); i < bcrLo.size(); ++i) { bcrLo[i] = phys_bc.lo(i); }
+        for(int i(0); i < bcrHi.size(); ++i) { bcrHi[i] = phys_bc.hi(i); }
+      }
+      ParallelDescriptor::Bcast(bcrLo.dataPtr(), bcrLo.size(), ioProcNumSCS, scsComm);
+      ParallelDescriptor::Bcast(bcrHi.dataPtr(), bcrHi.size(), ioProcNumSCS, scsComm);
+      if(scsMyId != ioProcNumSCS) {
+        for(int i(0); i < bcrLo.size(); ++i) { phys_bc.setLo(i, bcrLo[i]); }
+        for(int i(0); i < bcrHi.size(); ++i) { phys_bc.setHi(i, bcrHi[i]); }
+      }
+
+
+
+
+      // ---- ErrorList
+      if(scsMyId != ioProcNumSCS) {
+        InitErrorList();
+      }
+
+      // ---- DeriveList
+      if(scsMyId != ioProcNumSCS) {
+        InitDeriveList();
+      }
+
+
+
+      int isAllocated(0);
+#ifndef NO_HYDRO
+      // ---- FluxRegister
+      if(scsMyId == ioProcNumSCS) {
+        if(flux_reg == 0) {
+          isAllocated = 0;
+        } else {
+          isAllocated = 1;
+        }
+      }
+      ParallelDescriptor::Bcast(&isAllocated, 1, ioProcNumSCS, scsComm);
+      if(isAllocated == 1) {
+        if(scsMyId != ioProcNumSCS) {
+          BL_ASSERT(flux_reg == 0);
+          flux_reg = new FluxRegister;
+        }
+        flux_reg->AddProcsToComp(ioProcNumSCS, ioProcNumAll, scsMyId, scsComm);
+      }
+#endif
+
+
+      // ---- fine_mask
+      isAllocated = 0;
+      if(scsMyId == ioProcNumSCS) {
+        if(fine_mask == 0) {
+          isAllocated = 0;
+        } else {
+          isAllocated = 1;
+        }
+      }
+      ParallelDescriptor::Bcast(&isAllocated, 1, ioProcNumSCS, scsComm);
+      if(isAllocated == 1) {
+        if(scsMyId != ioProcNumSCS) {
+          BL_ASSERT(fine_mask == 0);
+std::cout << "**** check fine_mask." << std::endl;
+          fine_mask = build_fine_mask();
+        }
+        fine_mask->AddProcsToComp(ioProcNumSCS, ioProcNumAll, scsMyId, scsComm);
+      }
+
+
+
+/*
+      // ---- u_gdnv
+      isAllocated = 0;
+      if(scsMyId == ioProcNumSCS) {
+        if(u_gdnv == 0) {
+          isAllocated = 0;
+        } else {
+          isAllocated = 1;
+        }
+      }
+      ParallelDescriptor::Bcast(&isAllocated, 1, ioProcNumSCS, scsComm);
+      if(isAllocated == 1) {
+        if(scsMyId != ioProcNumSCS) {
+          BL_ASSERT(u_gdnv == 0);
+          u_gdnv = build_fine_mask();
+        }
+        u_gdnv->AddProcsToComp(ioProcNumSCS, ioProcNumAll, scsMyId, scsComm);
+      }
+*/
+
+
+
+#ifdef GRAVITY
+      // ---- gravity
+      // static class Gravity *gravity;
+      std::cout << "_in AddProcsToComp:  fix gravity." << std::endl;
+#endif
+
+
+}
+
+
+void
+Nyx::InitErrorList() {
+    //err_list.clear(true);
+    //err_list.add("FULLSTATE",1,ErrorRec::Special,FORT_DENERROR);
+}
+
+
+//static Box the_same_box (const Box& b) { return b; }
+
+
+void
+Nyx::InitDeriveList() {
+
+/*
+    derive_lst.clear();
+    //
+    // Set number of state variables
+    //
+    int counter = (int)Density + 1;
+    int Xmom = counter++;
+    int Ymom = counter++;
+#if(BL_SPACEDIM==3)
+    int Zmom = counter++;
+#endif
+    int Eden = counter++;
+#if(NADV>0)
+    int Tracer = counter++;
+#if(NADV>1)
+    BoxLib::Error("Prob::variableSetUp: Only one Advected quantity allowed");
+#endif
+#endif
+#ifdef BL_USE_CHEM
+    NumSpec = getChemDriver().numSpecies();
+    if (NumSpec > 0)
+    {
+        FirstSpec = counter++;
+        counter += NumSpec - 2;
+        LastSpec = counter++;
+    }
+
+    const int tmp = (int)Density;
+    FORT_SETCOMPS (&tmp, &Xmom,&Ymom,&Zmom,&Eden, &FirstSpec,&Tracer);
+
+    const Array<std::string>& names = getChemDriver().speciesNames();
+    if (ParallelDescriptor::IOProcessor())
+    {
+        std::cout << NumSpec << " Chemical species interpreted:\n { ";
+        for (int i = 0; i < names.size(); i++)
+            std::cout << names[i] << ' ' << ' ';
+        std::cout << '}' << '\n' << '\n';
+    }
+#endif
+
+    NUM_STATE = counter;
+
+    //
+    // DEFINE DERIVED QUANTITIES
+    //
+    // log of Density
+    //
+    derive_lst.add("log_den",IndexType::TheCellType(),1,FORT_DERLOGS,the_same_box);
+    derive_lst.addComponent("log_den",desc_lst,State_Type,Density,1);
+    //
+    // Pressure
+    //
+#ifdef BL_USE_CHEM
+    const int nWorkPres = 4 + NumSpec;
+#else
+    const int nWorkPres = 4;
+#endif
+    derive_lst.add("pressure",IndexType::TheCellType(),nWorkPres,
+                   FORT_DERPRES,the_same_box);
+    derive_lst.addComponent("pressure",desc_lst,State_Type,Density,NUM_STATE);
+
+#ifdef  PRISCILLA
+    // mach
+    derive_lst.add("mach",IndexType::TheCellType(),4, FORT_DERMACH,the_same_box);
+    derive_lst.addComponent("mach",desc_lst,State_Type,Density,NUM_STATE);
+#endif
+
+    //
+    // Xvel
+    //
+    derive_lst.add("xvel",IndexType::TheCellType(),1,FORT_DERVEL,the_same_box);
+    derive_lst.addComponent("xvel",desc_lst,State_Type,Density,2);
+    //
+    // Yvel
+    //
+    derive_lst.add("yvel",IndexType::TheCellType(),1,FORT_DERVEL,the_same_box);
+    derive_lst.addComponent("yvel",desc_lst,State_Type,Density,1);
+    derive_lst.addComponent("yvel",desc_lst,State_Type,Ymom,1);
+
+#if(BL_SPACEDIM==3)
+    //
+    // Zvel
+    //
+    derive_lst.add("zvel",IndexType::TheCellType(),1,FORT_DERVEL,the_same_box);
+    derive_lst.addComponent("zvel",desc_lst,State_Type,Density,1);
+    derive_lst.addComponent("zvel",desc_lst,State_Type,Zmom,1);
+#endif
+    //
+    // log of Eden
+    //
+    derive_lst.add("log_eden",IndexType::TheCellType(),1,FORT_DERLOGS,the_same_box);
+    derive_lst.addComponent("log_eden",desc_lst,State_Type,Eden,1);
+    //
+    // A derived quantity equal to all the state variables.
+    //
+    derive_lst.add("FULLSTATE",IndexType::TheCellType(),NUM_STATE,FORT_DERCOPY,the_same_box);
+    derive_lst.addComponent("FULLSTATE",desc_lst,State_Type,Density,NUM_STATE);
+*/
+}
+
+
+
+
+

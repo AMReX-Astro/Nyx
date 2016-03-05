@@ -107,6 +107,7 @@ public:
     //Define data descriptors.
     //
     static void variable_setup();
+    static void variable_setup_for_new_comp_procs();
     static void hydro_setup();
     static void no_hydro_setup();
 
@@ -497,7 +498,19 @@ public:
     MultiFab* fine_mask;
     MultiFab* build_fine_mask();
 
+
+    virtual void AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
+                                int ioProcNumSCS, int ioProcNumAll, int scsMyId,
+				MPI_Comm scsComm);
+    static void InitErrorList();
+    static void InitDeriveList();
+
 protected:
+
+    //
+    // Need to pass ugdnv out of cmpflx to do level sets
+    //
+    //MultiFab* u_gdnv;
 
     //
     // Number of grow cells required for particle motion.
@@ -609,8 +622,8 @@ protected:
     // permits gravity calculation to be turned on and off
     static int do_grav;
 
-    std::map<std::string,MultiFab*> auxDiag;
-    static std::map<std::string,Array<std::string> > auxDiag_names;
+    //std::map<std::string,MultiFab*> auxDiag;
+    //static std::map<std::string,Array<std::string> > auxDiag_names;
 
     // if true, define an additional source term
     static int add_ext_src;
