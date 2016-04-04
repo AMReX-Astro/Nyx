@@ -502,6 +502,9 @@ public:
     virtual void AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
                                 int ioProcNumSCS, int ioProcNumAll, int scsMyId,
 				MPI_Comm scsComm);
+    virtual void NyxParticlesAddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
+                                            int ioProcNumSCS, int ioProcNumAll, int scsMyId,
+				            MPI_Comm scsComm);
     static void InitErrorList();
     static void InitDeriveList();
 

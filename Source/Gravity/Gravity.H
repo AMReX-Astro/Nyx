@@ -110,6 +110,9 @@ public:
     void make_prescribed_grav(int level, Real time, MultiFab& grav, int addToExisting);
 #endif
 
+    virtual void AddProcsToComp(Amr *aptr, int level, AmrLevel *level_data_to_install,
+                                int ioProcNumSCS, int scsMyId, MPI_Comm scsComm);
+
 protected:
     //
     // Pointers to amr,amrlevel.

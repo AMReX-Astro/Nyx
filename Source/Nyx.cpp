@@ -150,13 +150,6 @@ std::string Nyx::particle_plotfile_format = "NATIVE";
 
 int Nyx::halo_int(0);
 
-namespace
-{
-const unsigned int msps(1000000);
-void USleep(double sleepsec) {
-  usleep(sleepsec * msps);
-}
-}
 
 // Note: Nyx::variableSetUp is in Nyx_setup.cpp
 void
@@ -178,6 +171,7 @@ Nyx::variable_cleanup ()
 void
 Nyx::read_params ()
 {
+    BL_PROFILE("Nyx::read_params()");
     static bool done = false;
 
     if (done) return;  // (caseywstark) when would this happen?
@@ -385,6 +379,7 @@ Nyx::read_params ()
 
 Nyx::Nyx ()
 {
+    BL_PROFILE("Nyx::Nyx()");
 #ifndef NO_HYDRO
     if (do_hydro == 1)
     {
@@ -402,6 +397,11 @@ Nyx::Nyx (Amr&            papa,
     :
     AmrLevel(papa,lev,level_geom,bl,time)
 {
+    BL_PROFILE("Nyx::Nyx(Amr)");
+if(ParallelDescriptor::IOProcessor()) {
+  std::cout << "************** sizeof(Nyx) = " << sizeof(Nyx) << std::endl;
+  std::cout << "************** sizeof(DarkMatterParticleContainer) = " << sizeof(DarkMatterParticleContainer) << std::endl;
+}
     build_metrics();
     fine_mask = 0;
 
@@ -422,14 +422,16 @@ Nyx::Nyx (Amr&            papa,
     if (do_grav)
     {
         // gravity is a static object, only alloc if not already there
-        if (gravity == 0)
-        gravity = new Gravity(parent, parent->finestLevel(), &phys_bc, Density);
+        if (gravity == 0) {
+          gravity = new Gravity(parent, parent->finestLevel(), &phys_bc, Density);
+	}
 
         gravity->install_level(level, this);
 
-        if (verbose && level == 0 && ParallelDescriptor::IOProcessor())
+        if (verbose && level == 0 && ParallelDescriptor::IOProcessor()) {
             std::cout << "Setting the gravity type to "
                       << gravity->get_gravity_type() << '\n';
+	}
    }
 #endif
 
@@ -449,6 +451,10 @@ Nyx::Nyx (Amr&            papa,
 
     // Set grav_n_grow to 3 on init. It'll be reset in advance.
     grav_n_grow = 3;
+BoxLib::USleep(ParallelDescriptor::MyProcAll()*2.0);
+std::cout << ParallelDescriptor::MyProcAll() << "_here 5900:  S_new.minmax(0) = "
+    << get_new_data(State_Type).min(0) << "  " << get_new_data(State_Type).max(0) << std::endl;
+ParallelDescriptor::Barrier();
 }
 
 Nyx::~Nyx ()
@@ -465,6 +471,7 @@ Nyx::restart (Amr&     papa,
               istream& is,
               bool     b_read_special)
 {
+    BL_PROFILE("Nyx::restart()");
     AmrLevel::restart(papa, is, b_read_special);
 
     build_metrics();
@@ -507,6 +514,7 @@ Nyx::setTimeLevel (Real time,
 void
 Nyx::init (AmrLevel& old)
 {
+    BL_PROFILE("Nyx::init(old)");
     Nyx* old_level = (Nyx*) &old;
     //
     // Create new grid data by fillpatching from old.
@@ -564,6 +572,7 @@ Nyx::init (AmrLevel& old)
 void
 Nyx::init ()
 {
+    BL_PROFILE("Nyx::init()");
     Real dt        = parent->dtLevel(level);
 #ifdef NO_HYDRO
     Real cur_time  = get_level(level-1).state[PhiGrav_Type].curTime();
@@ -600,6 +609,7 @@ Nyx::init ()
 Real
 Nyx::initial_time_step ()
 {
+    BL_PROFILE("Nyx::initial_time_step()");
     Real dummy_dt = 0;
     Real init_dt = 0;
 
@@ -622,6 +632,7 @@ Nyx::initial_time_step ()
 Real
 Nyx::est_time_step (Real dt_old)
 {
+    BL_PROFILE("Nyx::est_time_step()");
     if (fixed_dt > 0)
         return fixed_dt;
 
@@ -704,6 +715,7 @@ Nyx::computeNewDt (int                   finest_level,
                    Real                  stop_time,
                    int                   post_regrid_flag)
 {
+    BL_PROFILE("Nyx::computeNewDt()");
     //
     // We are at the start of a coarse grid timecycle.
     // Compute the timesteps for the next iteration.
@@ -879,6 +891,7 @@ Nyx::computeInitialDt (int                   finest_level,
                        Array<Real>&          dt_level,
                        Real                  stop_time)
 {
+    BL_PROFILE("Nyx::computeInitialDt()");
     //
     // Grids have been constructed, compute dt for all levels.
     //
@@ -960,6 +973,7 @@ Nyx::computeInitialDt (int                   finest_level,
 bool
 Nyx::writePlotNow ()
 {
+    BL_PROFILE("Nyx::writePlotNow()");
     if (level > 0)
         BoxLib::Error("Should only call writePlotNow at level 0!");
 
@@ -1004,6 +1018,7 @@ Nyx::do_energy_diagnostics ()
 void
 Nyx::post_timestep (int iteration)
 {
+    BL_PROFILE("Nyx::post_timestep()");
     //
     // Integration cycle on fine level grids is complete
     // do post_timestep stuff here.
@@ -1183,6 +1198,7 @@ Nyx::post_timestep (int iteration)
 void
 Nyx::post_restart ()
 {
+    BL_PROFILE("Nyx::post_restart()");
     if (level == 0)
         particle_post_restart(parent->theRestartFile());
 
@@ -1262,8 +1278,9 @@ Nyx::post_restart ()
 void
 Nyx::set_small_values ()
 {
-       if (do_hydro == 0)
+       if (do_hydro == 0) {
           return;
+       }
 
        Real small_pres;
 
@@ -1294,6 +1311,7 @@ Nyx::set_small_values ()
 void
 Nyx::postCoarseTimeStep (Real cumtime)
 {
+    BL_PROFILE("Nyx::postCoarseTimeStep()");
    const Real cur_time = state[State_Type].curTime();
 #ifdef IN_SITU
 #if 1
@@ -1341,6 +1359,7 @@ void
 Nyx::post_regrid (int lbase,
                   int new_finest)
 {
+    BL_PROFILE("Nyx::post_regrid()");
 #ifndef NO_HYDRO
 #ifdef TISF
      BL_FORT_PROC_CALL(FORT_SET_FINEST_LEVEL, fort_set_finest_level)(&new_finest);
@@ -1384,20 +1403,30 @@ Nyx::post_regrid (int lbase,
 void
 Nyx::post_init (Real stop_time)
 {
+ParallelDescriptor::Barrier();
+BoxLib::USleep(ParallelDescriptor::MyProc()*2.0);
+std::cout << ParallelDescriptor::MyProcAll() << "_here 2.300:  S_new.minmax(0) = "
+    << get_new_data(State_Type).min(0) << "  " << get_new_data(State_Type).max(0)
+    << std::endl;
+ParallelDescriptor::Barrier();
+
+    BL_PROFILE("Nyx::post_init()");
     if (level > 0)
         return;
 
     // If we restarted from a plotfile, we need to reset the level_steps counter
-    if (!parent->theRestartPlotFile().empty())
+    if ( ! parent->theRestartPlotFile().empty()) {
         parent->setLevelSteps(0,nsteps_from_plotfile);
+    }
 
     //
     // Average data down from finer levels
     // so that conserved data is consistent between levels.
     //
     int finest_level = parent->finestLevel();
-    for (int k = finest_level - 1; k >= 0; k--)
+    for (int k = finest_level - 1; k >= 0; --k) {
         get_level(k).average_down();
+    }
 
 #ifdef GRAVITY
     if (do_grav)
@@ -1488,6 +1517,7 @@ void
 Nyx::advance_aux (Real time,
                   Real dt)
 {
+    BL_PROFILE("Nyx::advance_aux()");
     if (verbose && ParallelDescriptor::IOProcessor())
         std::cout << "... special update for auxiliary variables \n";
 
@@ -1513,6 +1543,7 @@ Nyx::advance_aux (Real time,
 void
 Nyx::reflux ()
 {
+    BL_PROFILE("Nyx::reflux()");
     BL_ASSERT(level<parent->finestLevel());
 
     const Real strt = ParallelDescriptor::second();
@@ -1538,6 +1569,7 @@ Nyx::reflux ()
 void
 Nyx::average_down ()
 {
+    BL_PROFILE("Nyx::average_down()");
     if (level == parent->finestLevel()) return;
 
 #ifndef NO_HYDRO
@@ -1555,6 +1587,7 @@ Nyx::average_down ()
 void
 Nyx::enforce_nonnegative_species (MultiFab& S_new)
 {
+    BL_PROFILE("Nyx::enforce_nonnegative_species()");
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
@@ -1571,6 +1604,7 @@ Nyx::enforce_nonnegative_species (MultiFab& S_new)
 void
 Nyx::enforce_consistent_e (MultiFab& S)
 {
+    BL_PROFILE("Nyx::enforce_consistent_e()");
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
@@ -1589,6 +1623,7 @@ Nyx::enforce_consistent_e (MultiFab& S)
 void
 Nyx::average_down (int state_index)
 {
+    BL_PROFILE("Nyx::average_down(si)");
 #ifndef NO_HYDRO
     // We average DiagEOS_Type when average_down is called with State_Type
     if (state_index == DiagEOS_Type) return;
@@ -1665,6 +1700,7 @@ Nyx::errorEst (TagBoxArray& tags,
                int          n_error_buf,
                int          ngrow)
 {
+    BL_PROFILE("Nyx::errorEst()");
     const int*  domain_lo = geom.Domain().loVect();
     const int*  domain_hi = geom.Domain().hiVect();
     const Real* dx        = geom.CellSize();
@@ -1796,6 +1832,7 @@ Nyx::derive (const std::string& name,
              Real               time,
              int                ngrow)
 {
+    BL_PROFILE("Nyx::derive()");
     if (name == "Rank")
     {
         MultiFab* derive_dat = new MultiFab(grids, 1, 0);
@@ -1804,8 +1841,9 @@ Nyx::derive (const std::string& name,
            (*derive_dat)[mfi].setVal(ParallelDescriptor::MyProc());
         }
         return derive_dat;
-    } else
+    } else {
         return particle_derive(name, time, ngrow);
+    }
 }
 
 void
@@ -1814,6 +1852,7 @@ Nyx::derive (const std::string& name,
              MultiFab&          mf,
              int                dcomp)
 {
+    BL_PROFILE("Nyx::derive(mf)");
     AmrLevel::derive(name, time, mf, dcomp);
 }
 
@@ -1827,6 +1866,7 @@ Nyx::network_init ()
 void
 Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new)
 {
+    BL_PROFILE("Nyx::reset_internal_energy()");
     // Synchronize (rho e) and (rho E) so they are consistent with each other
 
     const Real  cur_time = state[State_Type].curTime();
@@ -1883,6 +1923,7 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new)
 void
 Nyx::compute_new_temp ()
 {
+    BL_PROFILE("Nyx::compute_new_temp()");
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
     std::cout << "State_Type DiagEOS_Type = " << State_Type << "  " << DiagEOS_Type << std::endl;
@@ -1950,6 +1991,7 @@ Nyx::compute_new_temp ()
 void
 Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& T_meanrho)
 {
+    BL_PROFILE("Nyx::compute_rho_temp()");
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
 
@@ -1988,6 +2030,7 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
                     int ioProcNumSCS, int ioProcNumAll, int scsMyId,
                     MPI_Comm scsComm)
 {
+      BL_PROFILE("Nyx::AddProcsToComp()");
       AmrLevel::AddProcsToComp(aptr, nSidecarProcs, prevSidecarProcs,
                                ioProcNumSCS, ioProcNumAll, scsMyId,
                                scsComm);
@@ -2073,7 +2116,7 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
 
       // ---- unpack the ints
       if(scsMyId != ioProcNumSCS) {
-        int count(0), aSize(-1);
+        int count(0);
 
         write_parameters_in_plotfile = allInts[count++];
         print_fortran_warnings = allInts[count++];
@@ -2343,10 +2386,16 @@ std::cout << "**** check fine_mask." << std::endl;
 
 #ifdef GRAVITY
       // ---- gravity
-      // static class Gravity *gravity;
-      std::cout << "_in AddProcsToComp:  fix gravity." << std::endl;
+      if(do_grav) {
+        if(gravity != 0) {
+          gravity->AddProcsToComp(parent, level, this, ioProcNumSCS, scsMyId, scsComm);
+	}
+   }
 #endif
 
+
+       NyxParticlesAddProcsToComp(parent, nSidecarProcs, prevSidecarProcs, ioProcNumSCS,
+                                  ioProcNumAll, scsMyId, scsComm);
 
 }
 
