@@ -193,12 +193,10 @@ main (int argc, char* argv[])
     //
     ParallelDescriptor::Barrier("Starting main.");
 
-    BL_PROFILE_REGION_START("main()");
-    BL_PROFILE_VAR("main()", pmain);
     BL_COMM_PROFILE_NAMETAG("main TOP");
 
     int MPI_IntraGroup_Broadcast_Rank;
-    //int myProcAll(ParallelDescriptor::MyProcAll());
+    int myProcAll(ParallelDescriptor::MyProcAll());
     int nSidecarProcs(0), nSidecarProcsFromParmParse(-3);
     int prevSidecarProcs(-2), maxSidecarProcs(0);
     int sidecarSignal(NyxHaloFinderSignal);
@@ -263,21 +261,43 @@ main (int argc, char* argv[])
     //}
 #endif
 
+ParallelDescriptor::Barrier(ParallelDescriptor::CommunicatorAll());
+BoxLib::USleep(myProcAll/10.0);
+std::cout << myProcAll << ":: _here 0" << std::endl;
+
 DistributionMapping::InitProximityMap();
 DistributionMapping::Initialize();
-    Amr *amrptr = new Amr;
+    //Amr *amrptr = new Amr;
+    Amr *amrptr;
     if(ParallelDescriptor::InCompGroup()) {
+ParallelDescriptor::Barrier();
+BoxLib::USleep(myProcAll/10.0);
+std::cout << myProcAll << ":: _here 1" << std::endl;
+
+      amrptr = new Amr;
+ParallelDescriptor::Barrier();
+BoxLib::USleep(myProcAll/10.0);
+std::cout << myProcAll << ":: _here 2" << std::endl;
+
       amrptr->init(strt_time,stop_time);
+ParallelDescriptor::Barrier();
+BoxLib::USleep(myProcAll/10.0);
+std::cout << myProcAll << ":: _here 3" << std::endl;
+
     }
 
     if(ParallelDescriptor::IOProcessor()) {
       std::cout << "************** sizeof(Amr)      = " << sizeof(Amr) << std::endl;
-      std::cout << "************** sizeof(*amrptr)  = " << sizeof(*amrptr) << std::endl;
+      //std::cout << "************** sizeof(*amrptr)  = " << sizeof(*amrptr) << std::endl;
       std::cout << "************** sizeof(AmrLevel) = " << sizeof(AmrLevel) << std::endl;
       //std::cout << "************** sizeof(Nyx)      = " << sizeof(Nyx) << std::endl;
       //amrptr->PrintData(std::cout);
     }
 
+
+ParallelDescriptor::Barrier(ParallelDescriptor::CommunicatorAll());
+BoxLib::USleep(myProcAll/10.0);
+std::cout << myProcAll << ":: _here 4" << std::endl;
 
     bool finished(false);
 
@@ -293,6 +313,9 @@ DistributionMapping::Initialize();
 
     } else {
 
+ParallelDescriptor::Barrier();
+BoxLib::USleep(myProcAll/10.0);
+std::cout << myProcAll << ":: _here 5" << std::endl;
 
     int sendstep(0), rtag(0);
 
@@ -314,6 +337,10 @@ DistributionMapping::Initialize();
     }
 
     const Real time_before_main_loop = ParallelDescriptor::second();
+ParallelDescriptor::Barrier();
+BoxLib::USleep(myProcAll/10.0);
+std::cout << myProcAll << ":: _here 10" << std::endl;
+
     if (amrptr->okToContinue()
            && (amrptr->levelSteps(0) < max_step || max_step < 0)
            && (amrptr->cumTime() < stop_time || stop_time < 0.0))
@@ -434,11 +461,11 @@ DistributionMapping::Initialize();
     }
 #endif
 
+    ParallelDescriptor::SetNProcsSidecar(0);
 
     delete amrptr;
 
 
-    if(ParallelDescriptor::InCompGroup()) {
     //
     // This MUST follow the above delete as ~Amr() may dump files to disk.
     //
@@ -452,7 +479,6 @@ DistributionMapping::Initialize();
     {
         std::cout << "Run time = " << dRunTime2 << std::endl;
         std::cout << "Run time w/o init = " << time_without_init << " sec" << std::endl;
-    }
     }
 
     BL_PROFILE_VAR_STOP(pmain);
