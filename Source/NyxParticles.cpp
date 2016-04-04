@@ -318,6 +318,8 @@ Nyx::read_particle_params ()
 void
 Nyx::init_particles ()
 {
+    BL_PROFILE("Nyx::init_particles()");
+
     if (level > 0)
         return;
 
@@ -572,12 +574,14 @@ Nyx::init_particles ()
 void
 Nyx::init_santa_barbara (int init_sb_vels)
 {
+    BL_PROFILE("Nyx::init_santa_barbara()");
     Real cur_time = state[State_Type].curTime();
     Real a = old_a;
 
-    if (ParallelDescriptor::IOProcessor())
+    if (ParallelDescriptor::IOProcessor()) {
         std::cout << "... time and comoving a when data is initialized at level " 
                   << level << " " << cur_time << " " << a << '\n';
+    }
 
     if (level == 0)
     {
@@ -585,30 +589,34 @@ Nyx::init_santa_barbara (int init_sb_vels)
         BL_FORT_PROC_CALL(GET_OMB, get_omb)(&omb);
         BL_FORT_PROC_CALL(GET_OMM, get_omm)(&omm);
         frac_for_hydro = omb;
-        Real omfrac = 1. - frac_for_hydro;
+        Real omfrac = 1.0 - frac_for_hydro;
  
-        if ( (init_with_sph_particles == 0) && (frac_for_hydro != 1.0) )
+        if ( (init_with_sph_particles == 0) && (frac_for_hydro != 1.0) ) {
             DMPC->MultiplyParticleMass(level, omfrac);
+	}
 
         PArray<MultiFab> particle_mf;
         if (init_sb_vels == 1)
         {
-            if (init_with_sph_particles == 1)
+            if (init_with_sph_particles == 1) {
                SPHPC->AssignDensityAndVels(particle_mf);
-            else
+	    } else {
                DMPC->AssignDensityAndVels(particle_mf);
+	    }
 
         } else {
-            if (init_with_sph_particles == 1)
+            if (init_with_sph_particles == 1) {
                 SPHPC->AssignDensity(particle_mf);
-            else
+	    } else {
                 DMPC->AssignDensity(particle_mf);
+	    }
         }
 
         // As soon as we have used the SPH particles to define the density
         //    and velocity on the grid, we can go ahead and destroy them.
-        if (init_with_sph_particles == 1)
+        if (init_with_sph_particles == 1) {
             delete SPHPC;
+	}
 
         for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
         {
@@ -663,8 +671,9 @@ Nyx::init_santa_barbara (int init_sb_vels)
         if (init_sb_vels == 1)
         {
             // Convert velocity to momentum
-            for (int i = 0; i < BL_SPACEDIM; i++)
+            for (int i = 0; i < BL_SPACEDIM; ++i) {
                MultiFab::Multiply(particle_mf[level], particle_mf[level], 0, 1+i, 1, 0);
+	    }
 
             // Add the particle momenta to the gas momenta (initially zero)
             MultiFab::Add(S_new, particle_mf[level], 1, Xmom, BL_SPACEDIM, S_new.nGrow());
@@ -682,9 +691,11 @@ Nyx::init_santa_barbara (int init_sb_vels)
         FillCoarsePatch(Phi_new, 0, cur_time, PhiGrav_Type, 0, Phi_new.nComp());
 
        // Convert (rho X)_i to X_i before calling init_e_from_T
-       if (use_const_species == 0)
-           for (int i = 0; i < NumSpec; i++)
+       if (use_const_species == 0) {
+           for (int i = 0; i < NumSpec; ++i) {
                MultiFab::Divide(S_new, S_new, Density, FirstSpec+i, 1, 0);
+	   }
+       }
     }
 
     // Make sure we've finished initializing the density before calling this.
@@ -708,9 +719,11 @@ Nyx::init_santa_barbara (int init_sb_vels)
     }
 
     // Convert X_i to (rho X)_i
-    if (use_const_species == 0)
-        for (int i = 0; i < NumSpec; i++)
+    if (use_const_species == 0) {
+        for (int i = 0; i < NumSpec; ++i) {
             MultiFab::Multiply(S_new, S_new, Density, FirstSpec+i, 1, 0);
+	}
+    }
 }
 #endif
 #endif
@@ -718,6 +731,8 @@ Nyx::init_santa_barbara (int init_sb_vels)
 void
 Nyx::particle_post_restart (const std::string& restart_file, bool is_checkpoint)
 {
+    BL_PROFILE("Nyx::particle_post_restart()");
+
     if (level > 0)
         return;
      
@@ -764,6 +779,7 @@ Nyx::particle_post_restart (const std::string& restart_file, bool is_checkpoint)
 void
 Nyx::particle_est_time_step (Real& est_dt)
 {
+    BL_PROFILE("Nyx::particle_est_time_step()");
     if (DMPC && particle_move_type == "Gravitational")
     {
         const Real cur_time = state[PhiGrav_Type].curTime();
@@ -772,6 +788,10 @@ Nyx::particle_est_time_step (Real& est_dt)
 if(ParallelDescriptor::IOProcessor()) {
   std::cout << "bbbbbbbbbbb grav.boxArray() = " << grav.boxArray() << std::endl;
   std::cout << "bbbbbbbbbbb grav.DistributionMap() = " << grav.DistributionMap() << std::endl;
+}
+ParallelDescriptor::Barrier();
+if(ParallelDescriptor::IOProcessor()) {
+  std::cout << "PPPPPPPP:  DMPC SPC APC NPC = " << DMPC << "  " << SPC << "  " << APC << "  " << NPC << std::endl;
 }
 ParallelDescriptor::Barrier();
         const Real est_dt_particle = DMPC->estTimestep(grav, a, level, particle_cfl);
@@ -816,6 +836,7 @@ ParallelDescriptor::Barrier();
 void
 Nyx::particle_redistribute (int lbase, bool init)
 {
+    BL_PROFILE("Nyx::particle_redistribute()");
     if (DMPC)
     {
         //  
@@ -900,6 +921,7 @@ Nyx::particle_redistribute (int lbase, bool init)
 void
 Nyx::particle_move_random ()
 {
+    BL_PROFILE("Nyx::particle_move_random()");
     if (DMPC && particle_move_type == "Random")
     {
         BL_ASSERT(level == 0);
@@ -911,6 +933,7 @@ Nyx::particle_move_random ()
 void
 Nyx::setup_virtual_particles()
 {
+    BL_PROFILE("Nyx::setup_virtual_particles()");
     if(Nyx::theDMPC() != 0 && !virtual_particles_set)
     {
         DarkMatterParticleContainer::PBox virts;
@@ -929,6 +952,7 @@ Nyx::setup_virtual_particles()
 void
 Nyx::remove_virtual_particles()
 {
+    BL_PROFILE("Nyx::remove_virtual_particles()");
     for (int i = 0; i < VirtualParticles.size(); i++)
     {
         if (VirtualParticles[i] != 0)
@@ -940,6 +964,7 @@ Nyx::remove_virtual_particles()
 void
 Nyx::setup_ghost_particles()
 {
+    BL_PROFILE("Nyx::setup_ghost_particles()");
     BL_ASSERT(level < parent->finestLevel());
     if(Nyx::theDMPC() != 0)
     {
@@ -968,9 +993,23 @@ Nyx::setup_ghost_particles()
 void
 Nyx::remove_ghost_particles()
 {
+    BL_PROFILE("Nyx::setup_ghost_particles()");
     for (int i = 0; i < GhostParticles.size(); i++)
     {
         if (GhostParticles[i] != 0)
             GhostParticles[i]->RemoveParticlesAtLevel(level);
     }
+}
+
+
+
+void
+Nyx::NyxParticlesAddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
+                    int ioProcNumSCS, int ioProcNumAll, int scsMyId,
+		                        MPI_Comm scsComm)
+{
+if(ParallelDescriptor::IOProcessor()) {
+  std::cout << "PPPPPPPP:  DMPC SPC APC NPC = " << DMPC << "  " << SPC << "  " << APC << "  " << NPC << std::endl;
+}
+
 }
