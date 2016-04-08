@@ -83,8 +83,6 @@ namespace
 
     bool finished(false);
     int sidecarSignal(-1);
-    int myProcAll(ParallelDescriptor::MyProcAll());
-    const int quitSignal(ParallelDescriptor::SidecarQuitSignal);
 
     while ( ! finished) {
         // Receive the sidecarSignal from the compute group.
@@ -117,7 +115,6 @@ namespace
 
           case resizeSignal:
 	  {
-	    int newSize(-1);
             if(ParallelDescriptor::IOProcessor()) {
               std::cout << "_in sidecars:  Sidecars received the resize sidecarSignal." << std::endl;
             }
@@ -196,7 +193,6 @@ main (int argc, char* argv[])
     BL_COMM_PROFILE_NAMETAG("main TOP");
 
     int MPI_IntraGroup_Broadcast_Rank;
-    int myProcAll(ParallelDescriptor::MyProcAll());
     int nSidecarProcs(0), nSidecarProcsFromParmParse(-3);
     int prevSidecarProcs(-2), maxSidecarProcs(0);
     int sidecarSignal(NyxHaloFinderSignal);
@@ -253,7 +249,6 @@ main (int argc, char* argv[])
     }
 
 #ifdef IN_TRANSIT
-    ParallelDescriptor::SetNProcsSidecar(nSidecarProcs);
     MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
 
     //if(nSidecarProcs > 0) {
@@ -265,19 +260,14 @@ ParallelDescriptor::Barrier(ParallelDescriptor::CommunicatorAll());
 BoxLib::USleep(myProcAll/10.0);
 std::cout << myProcAll << ":: _here 0" << std::endl;
 
-DistributionMapping::InitProximityMap();
-DistributionMapping::Initialize();
-    //Amr *amrptr = new Amr;
-    Amr *amrptr;
-    if(ParallelDescriptor::InCompGroup()) {
-ParallelDescriptor::Barrier();
-BoxLib::USleep(myProcAll/10.0);
-std::cout << myProcAll << ":: _here 1" << std::endl;
+//DistributionMapping::InitProximityMap();
+//DistributionMapping::Initialize();
+    Amr *amrptr = new Amr;
 
-      amrptr = new Amr;
-ParallelDescriptor::Barrier();
-BoxLib::USleep(myProcAll/10.0);
-std::cout << myProcAll << ":: _here 2" << std::endl;
+#ifdef BL_USE_MPI
+    ParallelDescriptor::SetNProcsSidecar(nSidecarProcs);
+#endif
+    if(ParallelDescriptor::InCompGroup()) {
 
       amrptr->init(strt_time,stop_time);
 ParallelDescriptor::Barrier();
@@ -288,10 +278,7 @@ std::cout << myProcAll << ":: _here 3" << std::endl;
 
     if(ParallelDescriptor::IOProcessor()) {
       std::cout << "************** sizeof(Amr)      = " << sizeof(Amr) << std::endl;
-      //std::cout << "************** sizeof(*amrptr)  = " << sizeof(*amrptr) << std::endl;
       std::cout << "************** sizeof(AmrLevel) = " << sizeof(AmrLevel) << std::endl;
-      //std::cout << "************** sizeof(Nyx)      = " << sizeof(Nyx) << std::endl;
-      //amrptr->PrintData(std::cout);
     }
 
 
@@ -312,12 +299,6 @@ std::cout << myProcAll << ":: _here 4" << std::endl;
       }
 
     } else {
-
-ParallelDescriptor::Barrier();
-BoxLib::USleep(myProcAll/10.0);
-std::cout << myProcAll << ":: _here 5" << std::endl;
-
-    int sendstep(0), rtag(0);
 
     //
     // If we set the regrid_on_restart flag and if we are *not* going to take

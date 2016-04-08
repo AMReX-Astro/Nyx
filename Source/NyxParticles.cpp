@@ -785,28 +785,17 @@ Nyx::particle_est_time_step (Real& est_dt)
         const Real cur_time = state[PhiGrav_Type].curTime();
         const Real a = get_comoving_a(cur_time);
         MultiFab& grav = get_new_data(Gravity_Type);
-if(ParallelDescriptor::IOProcessor()) {
-  std::cout << "bbbbbbbbbbb grav.boxArray() = " << grav.boxArray() << std::endl;
-  std::cout << "bbbbbbbbbbb grav.DistributionMap() = " << grav.DistributionMap() << std::endl;
-}
-ParallelDescriptor::Barrier();
-if(ParallelDescriptor::IOProcessor()) {
-  std::cout << "PPPPPPPP:  DMPC SPC APC NPC = " << DMPC << "  " << SPC << "  " << APC << "  " << NPC << std::endl;
-}
-ParallelDescriptor::Barrier();
         const Real est_dt_particle = DMPC->estTimestep(grav, a, level, particle_cfl);
-if(ParallelDescriptor::IOProcessor()) {
-  std::cout << "ccccccccccc grav.DistributionMap() = " << grav.DistributionMap() << std::endl;
-}
-ParallelDescriptor::Barrier();
 
-        if (est_dt_particle > 0)
+        if (est_dt_particle > 0) {
             est_dt = std::min(est_dt, est_dt_particle);
+	}
 
 #ifdef NEUTRINO_PARTICLES
         const Real est_dt_neutrino = NPC->estTimestep(grav, a, level, neutrino_cfl);
-        if (est_dt_neutrino > 0)
+        if (est_dt_neutrino > 0) {
             est_dt = std::min(est_dt, est_dt_neutrino);
+	}
 #endif
 
         if (verbose && ParallelDescriptor::IOProcessor())

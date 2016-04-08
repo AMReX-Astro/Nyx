@@ -1926,9 +1926,6 @@ Nyx::compute_new_temp ()
     BL_PROFILE("Nyx::compute_new_temp()");
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
-    std::cout << "State_Type DiagEOS_Type = " << State_Type << "  " << DiagEOS_Type << std::endl;
-    std::cout << "S_new.DistributionMap() = " << S_new.DistributionMap() << std::endl;
-    std::cout << "D_new.DistributionMap() = " << D_new.DistributionMap() << std::endl;
 
     Real cur_time   = state[State_Type].curTime();
 
