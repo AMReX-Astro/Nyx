@@ -34,8 +34,9 @@ MemInfo::MemInfo() {
   class_initialized_ = false;
   default_fname_ = "mem_info.log";
   bool success = MPIData();
-  if (!success)
+  if ( ! success) {
      puts("MemInfo::MemInfo(): MPI not initialized!");
+  }
   return;
 }
 
@@ -108,10 +109,10 @@ void MemInfo::Init(const std::string& fname) {
 
   // Find min and max across all nodes:
   long min_pag = 0, max_pag = 0;
-  MPI_Allreduce(&total_pages_, &min_pag, 1, MPI_LONG, MPI_MIN,
-                ParallelDescriptor::Communicator());
-  MPI_Allreduce(&total_pages_, &max_pag, 1, MPI_LONG, MPI_MAX,
-                ParallelDescriptor::Communicator());
+  BL_MPI_REQUIRE( MPI_Allreduce(&total_pages_, &min_pag, 1, MPI_LONG, MPI_MIN,
+                ParallelDescriptor::Communicator()) );
+  BL_MPI_REQUIRE( MPI_Allreduce(&total_pages_, &max_pag, 1, MPI_LONG, MPI_MAX,
+                ParallelDescriptor::Communicator()) );
   global_min_ = static_cast<float>(min_pag) * psize_in_gb_;
   global_max_ = static_cast<float>(max_pag) * psize_in_gb_;
 
@@ -136,13 +137,13 @@ void MemInfo::Init(const std::string& fname) {
 bool MemInfo::MPIData() {
   bool success = false;
   int flag = 0;
-  MPI_Initialized(&flag);
+  BL_MPI_REQUIRE( MPI_Initialized(&flag) );
 
   if (flag) {
-    MPI_Comm_size(MPI_COMM_WORLD, &num_ranks_);
-    MPI_Comm_rank(MPI_COMM_WORLD, &my_rank_);
+    BL_MPI_REQUIRE( MPI_Comm_size(ParallelDescriptor::Communicator(), &num_ranks_) );
+    BL_MPI_REQUIRE( MPI_Comm_rank(ParallelDescriptor::Communicator(), &my_rank_) );
     master_rank_ = 0;
-    MPI_Get_version(&mpi_v_, &mpi_subv_);
+    BL_MPI_REQUIRE( MPI_Get_version(&mpi_v_, &mpi_subv_) );
     success = true;
   } else {
     my_rank_ = master_rank_ = 0;
@@ -246,26 +247,28 @@ int MemInfo::BelowThreshold(float threshold) {
            my_rank_, hostname_);
 
   int sum = 0;
-  MPI_Allreduce(&i, &sum, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+  BL_MPI_REQUIRE( MPI_Allreduce(&i, &sum, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD) );
 
   return(num_ranks_ - sum);
 }
 
 
 void MemInfo::LogSummary(const char* info) {
-  if (!class_initialized_)
+  if ( ! class_initialized_) {
     Init(default_fname_);
+  }
   bool success = GetMyPages();
-  if (!success)
+  if ( ! success) {
     return;
+  }
 
   long avg_pag = 0, min_pag = 0, max_pag = 0;
-  MPI_Reduce(&avail_pages_, &min_pag, 1, MPI_LONG, MPI_MIN, master_rank_,
-             ParallelDescriptor::Communicator());
-  MPI_Reduce(&avail_pages_, &max_pag, 1, MPI_LONG, MPI_MAX, master_rank_,
-             ParallelDescriptor::Communicator());
-  MPI_Reduce(&avail_pages_, &avg_pag, 1, MPI_LONG, MPI_SUM, master_rank_,
-             ParallelDescriptor::Communicator());
+  BL_MPI_REQUIRE( MPI_Reduce(&avail_pages_, &min_pag, 1, MPI_LONG, MPI_MIN, master_rank_,
+             ParallelDescriptor::Communicator()) );
+  BL_MPI_REQUIRE( MPI_Reduce(&avail_pages_, &max_pag, 1, MPI_LONG, MPI_MAX, master_rank_,
+             ParallelDescriptor::Communicator()) );
+  BL_MPI_REQUIRE( MPI_Reduce(&avail_pages_, &avg_pag, 1, MPI_LONG, MPI_SUM, master_rank_,
+             ParallelDescriptor::Communicator()) );
 
   if (my_rank_ == master_rank_) {
     if (logfile_ == NULL) {
@@ -285,11 +288,13 @@ void MemInfo::LogSummary(const char* info) {
 
 
 void MemInfo::PrintAll(FILE* fout) {
-  if (fout == NULL)
+  if (fout == NULL) {
     return;
+  }
   
-  if (!class_initialized_)
+  if ( ! class_initialized_) {
     Init(default_fname_);
+  }
 
   float avail_mem, total_mem;
   bool success = GetMemInfo(&avail_mem, &total_mem);
@@ -298,11 +303,12 @@ void MemInfo::PrintAll(FILE* fout) {
   int len = 0;
   len += snprintf(buf, kStrLen, "Rank %6d on node %s:",
                   my_rank_, hostname_);
-  if (success)
+  if (success) {
     len += snprintf(buf+len, kStrLen-len, "%6.2fGB free, %5.2f%% of total\n",
                     avail_mem, avail_mem/total_mem*100.0);
-  else
+  } else {
     len += snprintf(buf+len, kStrLen-len, "could not get memory info");
+  }
 
   if (my_rank_ == 0) {
     StampSysInfo(fout);
@@ -310,12 +316,12 @@ void MemInfo::PrintAll(FILE* fout) {
     for (int i = 1; i < num_ranks_; ++i) {
       MPI_Status stat;
       buf[0] = '\0';
-      MPI_Recv(buf, kStrLen, MPI_CHAR, i, i, MPI_COMM_WORLD, &stat);
+      BL_MPI_REQUIRE( MPI_Recv(buf, kStrLen, MPI_CHAR, i, i, MPI_COMM_WORLD, &stat) );
       fprintf(fout, "%s", buf);
     }
     fflush(fout);
   } else {
-    MPI_Send(buf, kStrLen, MPI_CHAR, 0, my_rank_, MPI_COMM_WORLD);
+    BL_MPI_REQUIRE( MPI_Send(buf, kStrLen, MPI_CHAR, 0, my_rank_, MPI_COMM_WORLD) );
   }
 
   return;
@@ -323,8 +329,9 @@ void MemInfo::PrintAll(FILE* fout) {
 
 
 bool MemInfo::GetMemInfo(float* avail_mem, float* total_mem) {
-  if (!class_initialized_)
+  if ( ! class_initialized_) {
     Init(default_fname_);
+  }
   bool success = GetMyPages();
 
   if (success) {
