@@ -21,6 +21,7 @@
 #include <AmrLevel.H>
 #include <Geometry.H>
 #include <MultiFab.H>
+#include <MemInfo.H>
 
 #ifdef IN_SITU
 #include <boxlib_in_situ_analysis.H>
@@ -194,7 +195,7 @@ main (int argc, char* argv[])
 
     int MPI_IntraGroup_Broadcast_Rank;
     int nSidecarProcs(0), nSidecarProcsFromParmParse(-3);
-    int prevSidecarProcs(-2), maxSidecarProcs(0);
+    int prevSidecarProcs(0), maxSidecarProcs(0);
     int sidecarSignal(NyxHaloFinderSignal);
     bool resizeSidecars(false);
 
@@ -235,6 +236,8 @@ main (int argc, char* argv[])
       }
       nSidecarProcs = nSidecarProcsFromParmParse;
     }
+    nSidecarProcs = std::min(nSidecarProcs, maxSidecarProcs);
+    nSidecarProcs = std::max(nSidecarProcs, 0);
 
 #endif
 
@@ -260,21 +263,52 @@ ParallelDescriptor::Barrier(ParallelDescriptor::CommunicatorAll());
 BoxLib::USleep(myProcAll/10.0);
 std::cout << myProcAll << ":: _here 0" << std::endl;
 
-//DistributionMapping::InitProximityMap();
-//DistributionMapping::Initialize();
     Amr *amrptr = new Amr;
+    amrptr->init(strt_time,stop_time);
+
+#if BL_USE_MPI
+        // ---- initialize nyx memory monitoring
+        MemInfo *mInfo = MemInfo::GetInstance();
+        mInfo->LogSummary("MemInit  ");
+#endif
+
+    // ---- set initial sidecar size
+    ParallelDescriptor::Bcast(&nSidecarProcs, 1, 0, ParallelDescriptor::CommunicatorAll());
+    if(ParallelDescriptor::IOProcessor()) {
+      std::cout << "NNNNNNNN new nSidecarProcs = " << nSidecarProcs << std::endl;
+      std::cout << "NNNNNNNN     maxSidecarProcs = " << maxSidecarProcs << std::endl;
+    }
+
+    if(nSidecarProcs < prevSidecarProcs) {
+      ResizeSidecars(nSidecarProcs, amrptr);
+    }
+
+    if(ParallelDescriptor::InCompGroup()) {
+      if(nSidecarProcs > prevSidecarProcs) {
+        amrptr->AddProcsToSidecar(nSidecarProcs, prevSidecarProcs);
+      } else {
+      }
+    }
+
+    if(nSidecarProcs < prevSidecarProcs) {
+      amrptr->AddProcsToComp(nSidecarProcs, prevSidecarProcs);
+
+      amrptr->RedistributeGrids(how);
+    }
+
+    if(nSidecarProcs > prevSidecarProcs) {
+      ResizeSidecars(nSidecarProcs, amrptr);
+    }
+    if(ParallelDescriptor::IOProcessor()) {
+      std::cout << "@@@@@@@@ after resize sidecars:  restarting event loop." << std::endl;
+    }
 
 #ifdef BL_USE_MPI
     ParallelDescriptor::SetNProcsSidecar(nSidecarProcs);
 #endif
-    if(ParallelDescriptor::InCompGroup()) {
-
-      amrptr->init(strt_time,stop_time);
-ParallelDescriptor::Barrier();
-BoxLib::USleep(myProcAll/10.0);
-std::cout << myProcAll << ":: _here 3" << std::endl;
-
-    }
+    //if(ParallelDescriptor::InCompGroup()) {
+      //amrptr->init(strt_time,stop_time);
+    //}
 
     if(ParallelDescriptor::IOProcessor()) {
       std::cout << "************** sizeof(Amr)      = " << sizeof(Amr) << std::endl;
@@ -351,14 +385,13 @@ std::cout << myProcAll << ":: _here 10" << std::endl;
     }
     if(resizeSidecars && ! finished) {
 
-    if(ParallelDescriptor::InCompGroup()) {
-      // ---- stop the sidecars
-      if(nSidecarProcs > 0) {
-        int sidecarSignal(resizeSignal);
-        ParallelDescriptor::Bcast(&sidecarSignal, 1, MPI_IntraGroup_Broadcast_Rank,
-                                  ParallelDescriptor::CommunicatorInter());
+      if(ParallelDescriptor::InCompGroup()) {    // ---- stop the sidecars
+        if(nSidecarProcs > 0) {
+          int sidecarSignal(resizeSignal);
+          ParallelDescriptor::Bcast(&sidecarSignal, 1, MPI_IntraGroup_Broadcast_Rank,
+                                    ParallelDescriptor::CommunicatorInter());
+        }
       }
-    }
 
       // ---- test resizing the sidecars
       prevSidecarProcs = nSidecarProcs;
@@ -405,8 +438,7 @@ std::cout << myProcAll << ":: _here 10" << std::endl;
     }
 
     if(finished) {
-      if(ParallelDescriptor::InCompGroup()) {
-        // ---- stop the sidecars
+      if(ParallelDescriptor::InCompGroup()) {    // ---- stop the sidecars
         if(nSidecarProcs > 0) {
           int sidecarSignal(ParallelDescriptor::SidecarQuitSignal);
           ParallelDescriptor::Bcast(&sidecarSignal, 1, MPI_IntraGroup_Broadcast_Rank,
