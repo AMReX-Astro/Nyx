@@ -423,3 +423,48 @@
         coord_type = coord_type_in
 
       end subroutine set_problem_params
+
+! :::
+! ::: ----------------------------------------------------------------
+! :::
+
+      ! Get density component number from state data MultiFab. Useful
+      ! for accessing MultiFabs in C++.
+
+      function get_comp_urho() bind(C, name="get_comp_urho")
+        use meth_params_module
+        use, intrinsic :: iso_c_binding
+        implicit none
+        integer(c_int) :: get_comp_urho
+        get_comp_urho = URHO
+      end function get_comp_urho
+
+! :::
+! ::: ----------------------------------------------------------------
+! :::
+
+      ! Get temperature component number from EOS data MultiFab. Useful
+      ! for accessing MultiFabs in C++.
+
+      function get_comp_temp() bind(C, name="get_comp_temp")
+        use meth_params_module
+        use, intrinsic :: iso_c_binding
+        implicit none
+        integer(c_int) :: get_comp_temp
+        get_comp_temp = TEMP_COMP
+      end function get_comp_temp
+
+! :::
+! ::: ----------------------------------------------------------------
+! :::
+
+      ! Get internal energy component number from state data MultiFab.
+      ! Useful for accessing MultiFabs in C++.
+
+      function get_comp_e_int() bind(C, name="get_comp_e_int")
+        use meth_params_module
+        use, intrinsic :: iso_c_binding
+        implicit none
+        integer(c_int) :: get_comp_e_int
+        get_comp_e_int = UEINT
+      end function get_comp_e_int
