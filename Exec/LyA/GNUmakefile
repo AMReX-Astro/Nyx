@@ -1,15 +1,12 @@
 # BOXLIB_HOME defines the directory in which we will find all the BoxLib code
-BOXLIB_HOME ?= /project/projectdirs/nyx/src/BoxLib
-#BOXLIB_HOME = /home/vince/Development/BLMaster/BoxLib
+#BOXLIB_HOME ?= /project/projectdirs/nyx/src/BoxLib
+BOXLIB_HOME = /home/vince/Development/BoxLib.dsc
 
 HPGMG_DIR ?= /global/homes/f/friesen/hpgmg/finite-volume
 
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ../..
 
-# Reeber
-BOOST_DIR ?= /opt/local
-REEBER_HOME ?= $(HOME)/devel/Reeber/dev
 
 # compilation options
 COMP    = gcc
@@ -23,6 +20,46 @@ COMM_PROFILE  = FALSE
 
 PRECISION = DOUBLE
 DEBUG     = FALSE
+DEBUG     = TRUE
+
+BACKTRACE     = TRUE
+
+USE_CXX11     = TRUE
+
+DEFINES += -DBL_RANK_IN_PLT
+DEFINES += -DDEBUG_AFAP
+
+FFTW_INC = /usr/include
+FFTW_DIR = /usr/lib/x86_64-linux-gnu
+
+INCLUDE_LOCATIONS += /usr/include
+LIBRARY_LOCATIONS += /usr/lib/x86_64-linux-gnu
+#LIBRARIES += -lfftw3
+#LIBRARIES += /usr/lib/x86_64-linux-gnu/libfftw3_mpi.a
+
+GIMLET_DIR = /home/vince/Development/gimlet
+GIMLET = TRUE
+REEBER = FALSE
+ifeq ($(REEBER), TRUE)
+  DEFINES += -DREEBER
+  BOOST_DIR ?= /opt/local
+  BOOST_INCLUDE_DIR ?= $(HOME)/Downloads/boost_1_60_0
+  BOOST_LIB_DIR ?= $(HOME)/Downloads/boost_1_60_0/stage/lib
+  REEBER_HOME ?= $(HOME)/devel/Reeber/dev
+endif
+
+
+FAKE_REEBER = FALSE
+ifeq ($(FAKE_REEBER), TRUE)
+  DEFINES += -DFAKE_REEBER
+  BOOST_DIR =
+endif
+
+USE_IN_TRANSIT = TRUE
+ifeq ($(USE_IN_TRANSIT), TRUE)
+DEFINES += -DIN_TRANSIT
+endif
+
 
 USE_HPGMG = FALSE
 HPGMG_FCYCLES = FALSE
@@ -45,4 +82,7 @@ Bpack := ./Make.package
 Blocs := .
 
 include $(TOP)/Exec/Make.Nyx
+
+vpath %.a   $(LIBRARY_LOCATIONS)
+
 

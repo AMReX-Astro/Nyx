@@ -34,51 +34,80 @@ endif
 
 DEFINES += -DBL_NOLINEVALUES
 
+# Sanity check
+ifeq ($(USE_IN_SITU), TRUE)
+  ifeq ($(USE_IN_TRANSIT), TRUE)
+    $(error Nyx does not support both USE_IN_SITU and USE_IN_TRANSIT simultaneously)
+  endif
+endif
+
+# Another sanity check
+ifeq ($(REEBER), TRUE)
+  ifeq ($(GIMLET), TRUE)
+    $(error Nyx does not support both Reeber and Gimlet simultaneously)
+  endif
+endif
+
+# Another sanity check
+ifeq ($(USE_IN_SITU), TRUE)
+  ifneq ($(REEBER), TRUE)
+    ifneq ($(GIMLET), TRUE)
+      $(error USE_IN_SITU selected but no analysis code selected. What do you want to run in situ?)
+    endif
+  endif
+endif
+
+# Another sanity check
+ifeq ($(USE_IN_TRANSIT), TRUE)
+  ifneq ($(REEBER), TRUE)
+    ifneq ($(GIMLET), TRUE)
+      $(error USE_IN_TRANSIT selected but no analysis code selected. What do you want to run in-transit?)
+    endif
+  endif
+endif
+
+ifeq ($(USE_IN_SITU), TRUE)
+  USE_IN_TRANSIT = FALSE
+  DEFINES += -DIN_SITU
+else ifeq ($(USE_IN_TRANSIT), TRUE)
+  USE_IN_SITU = FALSE
+  DEFINES += -DIN_TRANSIT
+endif
+
+ifeq ($(REEBER), TRUE)
+  DEFINES += -DREEBER
+  DEFINES += -DREEBER_USE_BOXLIB_READER
+  DEFINES += -DPARALLEL_MPI -DBOOST_DATE_TIME_NO_LOCALE
+  INCLUDE_LOCATIONS += $(BOOST_INCLUDE_DIR)
+  INCLUDE_LOCATIONS += $(DIY2_INCLUDE_DIR)
+  INCLUDE_LOCATIONS += $(REEBER_HOME)/include $(REEBER_HOME)/examples/include $(REEBER_HOME)/examples/local-global
+  VPATH_LOCATIONS += $(REEBER_HOME)/src $(REEBER_HOME)/examples/local-global
+  ifeq ($(wildcard $(BOOST_LIB_DIR)/libboost_serialization-mt.*),)
+    LIBRARIES += -L$(BOOST_LIB_DIR) -lboost_mpi -lboost_serialization
+  else
+    LIBRARIES += -L$(BOOST_LIB_DIR) -lboost_mpi-mt -lboost_serialization-mt
+  endif
+  LIBRARIES += -lpthread
+endif
+ifeq ($(DEBUG), TRUE)
+  DEFINES += -DDEBUG
+endif
+
+ifeq ($(GIMLET), TRUE)
+  DEFINES += -DGIMLET
+  INCLUDE_LOCATIONS += $(GIMLET_DIR)
+  VPATH_LOCATIONS += $(GIMLET_DIR)
+  INCLUDE_LOCATIONS += $(FFTW_INC)
+  LIBRARIES += -L$(FFTW_DIR) -lfftw3_mpi -lfftw3
+endif
+
 ifeq ($(FAKE_REEBER), TRUE)
 ifeq ($(USE_IN_TRANSIT), TRUE)
   USE_IN_SITU = FALSE
   DEFINES += -DIN_TRANSIT
 endif
-else
-ifeq ($(USE_IN_TRANSIT), TRUE)
-  USE_IN_SITU = FALSE
-  DEFINES += -DIN_TRANSIT
-  DEFINES += -DREEBER_USE_BOXLIB_READER
-  INCLUDE_LOCATIONS += $(BOOST_DIR)/include
-  INCLUDE_LOCATIONS += $(DIY2_INCLUDE_DIR)
-  INCLUDE_LOCATIONS += $(REEBER_HOME)/include $(REEBER_HOME)/examples/include $(REEBER_HOME)/examples/local-global
-  VPATH_LOCATIONS += $(REEBER_HOME)/src $(REEBER_HOME)/examples/local-global
-  ifeq ($(wildcard $(BOOST_DIR)/lib/libboost_serialization-mt.*),)
-    LIBRARIES += -L$(BOOST_DIR)/lib -lboost_mpi -lboost_serialization
-  else
-    LIBRARIES += -L$(BOOST_DIR)/lib -lboost_mpi-mt -lboost_serialization-mt
-  endif
-  DEFINES += -DPARALLEL_MPI -DBOOST_DATE_TIME_NO_LOCALE
-  ifeq ($(DEBUG), TRUE)
-    DEFINES += -DDEBUG
-  endif
-endif
 endif
 
-ifeq ($(USE_IN_SITU), TRUE)
-  USE_IN_TRANSIT = FALSE
-  DEFINES += -DREEBER_USE_BOXLIB_READER
-  INCLUDE_LOCATIONS += $(BOOST_DIR)/include
-  #INCLUDE_LOCATIONS += $(REEBER_HOME)/include $(REEBER_HOME)/examples/boxlib
-  INCLUDE_LOCATIONS += $(DIY2_INCLUDE_DIR)
-  INCLUDE_LOCATIONS += $(REEBER_HOME)/include $(REEBER_HOME)/examples/include $(REEBER_HOME)/examples/local-global
-  VPATH_LOCATIONS += $(REEBER_HOME)/src $(REEBER_HOME)/examples/local-global
-  ifeq ($(wildcard $(BOOST_DIR)/lib/libboost_serialization-mt.*),)
-    LIBRARIES += -L$(BOOST_DIR)/lib -lboost_mpi -lboost_serialization
-  else
-    LIBRARIES += -L$(BOOST_DIR)/lib -lboost_mpi-mt -lboost_serialization-mt
-  endif
-  DEFINES += -DIN_SITU
-  DEFINES += -DPARALLEL_MPI -DBOOST_DATE_TIME_NO_LOCALE
-  ifeq ($(DEBUG), TRUE)
-    DEFINES += -DDEBUG
-  endif
-endif
 
 #These are the directories in Nyx 
 
