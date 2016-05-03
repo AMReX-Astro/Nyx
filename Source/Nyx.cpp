@@ -467,10 +467,6 @@ if(ParallelDescriptor::IOProcessor()) {
 
     // Set grav_n_grow to 3 on init. It'll be reset in advance.
     grav_n_grow = 3;
-BoxLib::USleep(ParallelDescriptor::MyProcAll()*2.0);
-std::cout << ParallelDescriptor::MyProcAll() << "_here 5900:  S_new.minmax(0) = "
-    << get_new_data(State_Type).min(0) << "  " << get_new_data(State_Type).max(0) << std::endl;
-ParallelDescriptor::Barrier();
 }
 
 Nyx::~Nyx ()
@@ -1383,7 +1379,8 @@ Nyx::postCoarseTimeStep (Real cumtime)
 
      Geometry::SendGeometryToSidecars(&geom);
 
-     ParallelDescriptor::Bcast(&time_step, 1, MPI_IntraGroup_Broadcast_Rank, ParallelDescriptor::CommunicatorInter());
+     ParallelDescriptor::Bcast(&time_step, 1, MPI_IntraGroup_Broadcast_Rank,
+                               ParallelDescriptor::CommunicatorInter());
 
      Real time2(ParallelDescriptor::second());
      if(ParallelDescriptor::IOProcessor()) {
@@ -1463,9 +1460,9 @@ Nyx::postCoarseTimeStep (Real cumtime)
      MultiFab *mfDest = 0;
      int srcComp(0), destComp(0), nComp(1);
      int srcNGhost(0), destNGhost(0);
-     MPI_Comm commInter(ParallelDescriptor::CommunicatorInter());
-     MPI_Comm commSrc(ParallelDescriptor::CommunicatorComp());
-     MPI_Comm commDest(ParallelDescriptor::CommunicatorSidecar());
+     const MPI_Comm &commInter = ParallelDescriptor::CommunicatorInter();
+     const MPI_Comm &commSrc = ParallelDescriptor::CommunicatorComp();
+     const MPI_Comm &commDest = ParallelDescriptor::CommunicatorSidecar();
      bool isSrc(true);
 
      BL_ASSERT(density.boxArray() == dm_density->boxArray());  // ---- need to check them all
@@ -1475,8 +1472,9 @@ Nyx::postCoarseTimeStep (Real cumtime)
      mfSource = &density;
      MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
                          srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
+
 BoxLib::USleep(ParallelDescriptor::MyProcAll());
-std::cout << ParallelDescriptor::MyProcAll() << "::_sending to gimlet:  after density" << std::endl;
+std::cout << ParallelDescriptor::MyProcAll() << "::_here 220:  denminmax = " << density.min(0) << "  " << density.max(0) << std::endl;
 ParallelDescriptor::Barrier();
 
      //MultiFab::SendMultiFabToSidecars(&(const_cast<MultiFab&>(temperature)));
@@ -1509,7 +1507,9 @@ ParallelDescriptor::Barrier();
      MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
                          srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
 
-     Geometry::SendGeometryToSidecars(&(const_cast<Geometry&>(geom)));
+     //Geometry::SendGeometryToSidecars(&(const_cast<Geometry&>(geom)));
+     Geometry::SendGeometryToSidecars(&geom);
+
      ParallelDescriptor::Bcast(&Nyx::new_a, 1, MPI_IntraGroup_Broadcast_Rank, commInter);
      ParallelDescriptor::Bcast(&omega_m, 1, MPI_IntraGroup_Broadcast_Rank, commInter);
      omega_b *= omega_m;
@@ -1517,8 +1517,9 @@ ParallelDescriptor::Barrier();
      ParallelDescriptor::Bcast(&comoving_h, 1, MPI_IntraGroup_Broadcast_Rank, commInter);
      ParallelDescriptor::Bcast(&time_step, 1, MPI_IntraGroup_Broadcast_Rank, commInter);
      const Real time2 = ParallelDescriptor::second();
-     if (ParallelDescriptor::IOProcessor())
+     if (ParallelDescriptor::IOProcessor()) {
        std::cout << "COMPUTE PROCESSES: time spent sending data to sidecars: " << time2 - time1 << std::endl;
+     }
    }
 #endif /* IN_SITU OR IN_TRANSIT */
 #endif /* GIMLET */

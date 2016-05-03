@@ -34,6 +34,8 @@
 #ifdef GIMLET
 #include <DoGimletAnalysis.H>
 #include <postprocess_tau_fields.H>
+#include <fftw3-mpi.h>
+#include <MakeFFTWBoxes.H>
 #endif
 
 
@@ -76,7 +78,8 @@ const int quitSignal(-44);
 namespace
 {
 #ifdef IN_TRANSIT
-  static void ResizeSidecars(int newSize, Amr *amrPtr) {
+  static void ResizeSidecars(int newSize) {
+#ifdef BL_USE_MPI
     // ---- everyone meets here
     ParallelDescriptor::Barrier(ParallelDescriptor::CommunicatorAll());
     if(ParallelDescriptor::IOProcessor()) {
@@ -95,9 +98,15 @@ namespace
 
     bool finished(false);
     int sidecarSignal(-1);
+    if(ParallelDescriptor::IOProcessor()) {
+      std::cout << "SSSSSSSS:  Starting SidecarEventLoop." << std::endl;
+    }
 
     while ( ! finished) {
-        // Receive the sidecarSignal from the compute group.
+        // ---- Receive the sidecarSignal from the compute group.
+        if(ParallelDescriptor::IOProcessor()) {
+          std::cout << "SSSSSSSS:  waiting for signal from comp..." << std::endl;
+        }
         ParallelDescriptor::Bcast(&sidecarSignal, 1, 0, ParallelDescriptor::CommunicatorInter());
 
         switch(sidecarSignal) {
@@ -163,46 +172,25 @@ namespace
             MultiFab *mfDest = 0;
             int srcComp(0), destComp(0), nComp(1), nGhost(0);
             int srcNGhost(0), destNGhost(0);
-            MPI_Comm commInter(ParallelDescriptor::CommunicatorInter());
-            MPI_Comm commSrc(ParallelDescriptor::CommunicatorComp());
-            MPI_Comm commDest(ParallelDescriptor::CommunicatorSidecar());
+            const MPI_Comm &commInter = ParallelDescriptor::CommunicatorInter();
+            const MPI_Comm &commSrc = ParallelDescriptor::CommunicatorComp();
+            const MPI_Comm &commDest = ParallelDescriptor::CommunicatorSidecar();
             bool isSrc(false);
 
-BoxLib::USleep(ParallelDescriptor::MyProcAll());
-std::cout << ParallelDescriptor::MyProcAll() << "::_in GimletSignal:  bac = " << bac << std::endl;
 	    // ---- we should probably combine all of these into one MultiFab
-BoxLib::USleep(ParallelDescriptor::MyProcAll());
-std::cout << ParallelDescriptor::MyProcAll() << "::_in GimletSignal:  before density:   np npa npc nps = "
-          << ParallelDescriptor::NProcs() << "  "
-          << ParallelDescriptor::NProcsAll() << "  "
-          << ParallelDescriptor::NProcsComp() << "  "
-          << ParallelDescriptor::NProcsSidecar() << "  "
-          << std::endl;
-Array<int> dmA(bac.size() + 1, 0);
-for(int i(0); i < dmA.size() - 1; ++i) {
-  dmA[i] = i % ParallelDescriptor::NProcs();
-}
-dmA[dmA.size() - 1] = ParallelDescriptor::MyProc();
-DistributionMapping dm(dmA);
-            MultiFab density(bac, nComp, nGhost, dm);
-BoxLib::USleep(ParallelDescriptor::MyProcAll());
-std::cout << ParallelDescriptor::MyProcAll() << "::_in GimletSignal:  after density" << std::endl;
-	    MultiFab temperature(bac, nComp, nGhost, dm);
-	    MultiFab e_int(bac, nComp, nGhost, dm);
-	    MultiFab dm_density(bac, nComp, nGhost, dm);
-	    MultiFab xmom(bac, nComp, nGhost, dm);
-	    MultiFab ymom(bac, nComp, nGhost, dm);
-	    MultiFab zmom(bac, nComp, nGhost, dm);
-
-BoxLib::USleep(ParallelDescriptor::MyProcAll());
-std::cout << ParallelDescriptor::MyProcAll() << "::_in GimletSignal:  after mf " << std::endl;
+            //MultiFab density;
+            MultiFab density(bac, nComp, nGhost);
+            MultiFab temperature(bac, nComp, nGhost);
+            MultiFab e_int(bac, nComp, nGhost);
+            MultiFab dm_density(bac, nComp, nGhost);
+            MultiFab xmom(bac, nComp, nGhost);
+            MultiFab ymom(bac, nComp, nGhost);
+            MultiFab zmom(bac, nComp, nGhost);
 
             //MultiFab::SendMultiFabToSidecars(&density);
 	    mfDest = &density;
             MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
                                 srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
-BoxLib::USleep(ParallelDescriptor::MyProcAll());
-std::cout << ParallelDescriptor::MyProcAll() << "::_in GimletSignal:  after copyInter density " << std::endl;
 
             //MultiFab::SendMultiFabToSidecars(&temperature);
 	    mfDest = &temperature;
@@ -234,12 +222,7 @@ std::cout << ParallelDescriptor::MyProcAll() << "::_in GimletSignal:  after copy
             MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
                                 srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
 
-BoxLib::USleep(ParallelDescriptor::MyProcAll());
-std::cout << ParallelDescriptor::MyProcAll() << "::_in GimletSignal:  after copyInter " << std::endl;
-
             Geometry::SendGeometryToSidecars(&geom);
-BoxLib::USleep(ParallelDescriptor::MyProcAll());
-std::cout << ParallelDescriptor::MyProcAll() << "::_in GimletSignal:  after copyGeom " << std::endl;
 
             ParallelDescriptor::Bcast(&new_a, 1, 0, commInter);
             ParallelDescriptor::Bcast(&omega_m, 1, 0, commInter);
@@ -252,18 +235,18 @@ std::cout << ParallelDescriptor::MyProcAll() << "::_in GimletSignal:  after copy
               std::cout << "===== Sidecars got everything ..." << std::endl;
             }
 
-      Real time1 = ParallelDescriptor::second();
-      do_analysis(omega_b, omega_m, omega_l, comoving_h, new_a, density, temperature,
-                  e_int, dm_density, xmom, ymom, zmom, geom, time_step);
-      Real dtime = ParallelDescriptor::second() - time1;
-      ParallelDescriptor::ReduceRealMax(dtime, ParallelDescriptor::IOProcessorNumber());
-      if(ParallelDescriptor::IOProcessor()) {
-        std::cout << std::endl << "===== Time for Gimlet in-transit to post-process (sec): "
-	          << dtime << " sec" << std::endl << std::flush;
-      }
-      ParallelDescriptor::Barrier();
+            Real time1 = ParallelDescriptor::second();
+            do_analysis(omega_b, omega_m, omega_l, comoving_h, new_a, density, temperature,
+                        e_int, dm_density, xmom, ymom, zmom, geom, time_step);
+            Real dtime = ParallelDescriptor::second() - time1;
+            ParallelDescriptor::ReduceRealMax(dtime, ParallelDescriptor::IOProcessorNumber());
+            if(ParallelDescriptor::IOProcessor()) {
+              std::cout << std::endl << "===== Time for Gimlet in-transit to post-process (sec): "
+	                << dtime << " sec" << std::endl << std::flush;
+            }
+            ParallelDescriptor::Barrier();
 #else
-      BoxLib::Abort("Nyx received gimlet finder signal but not compiled with gimlet");
+            BoxLib::Abort("Nyx received gimlet finder signal but not compiled with gimlet");
 #endif
 	  }
           break;
@@ -353,7 +336,7 @@ main (int argc, char* argv[])
     int nSidecarProcs(0), nSidecarProcsFromParmParse(-3);
     int prevSidecarProcs(0), minSidecarProcs(0), maxSidecarProcs(0);
     int sidecarSignal(NyxHaloFinderSignal);
-    bool resizeSidecars(false);
+    int resizeSidecars(false);  // ---- instead of bool for bcast
 
 
     Real dRunTime1 = ParallelDescriptor::second();
@@ -385,6 +368,8 @@ main (int argc, char* argv[])
     }
     if(prevSidecarProcs != nSidecarProcs) {
       resizeSidecars = true;
+    } else {
+      resizeSidecars = false;
     }
     prevSidecarProcs = nSidecarProcs;
     if(nSidecarProcsFromParmParse >= 0) {
@@ -409,63 +394,48 @@ main (int argc, char* argv[])
     }
 
 #ifdef IN_TRANSIT
-    MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
-
-    //if(nSidecarProcs > 0) {
-      SidecarInit();
-    //}
+    SidecarInit();
 #endif
-
-ParallelDescriptor::Barrier(ParallelDescriptor::CommunicatorAll());
-BoxLib::USleep(myProcAll/10.0);
-std::cout << myProcAll << ":: _here 0" << std::endl;
 
     Amr *amrptr = new Amr;
     amrptr->init(strt_time,stop_time);
 
 #if BL_USE_MPI
-        // ---- initialize nyx memory monitoring
-        MemInfo *mInfo = MemInfo::GetInstance();
-        mInfo->LogSummary("MemInit  ");
+    // ---- initialize nyx memory monitoring
+    MemInfo *mInfo = MemInfo::GetInstance();
+    mInfo->LogSummary("MemInit  ");
 #endif
 
     // ---- set initial sidecar size
     ParallelDescriptor::Bcast(&nSidecarProcs, 1, 0, ParallelDescriptor::CommunicatorAll());
     if(ParallelDescriptor::IOProcessor()) {
-      std::cout << "NNNNNNNN new nSidecarProcs = " << nSidecarProcs << std::endl;
-      std::cout << "NNNNNNNN     maxSidecarProcs = " << maxSidecarProcs << std::endl;
+      std::cout << "IIIIIIII new nSidecarProcs = " << nSidecarProcs << std::endl;
+      std::cout << "IIIIIIII     minSidecarProcs = " << minSidecarProcs << std::endl;
+      std::cout << "IIIIIIII     maxSidecarProcs = " << maxSidecarProcs << std::endl;
     }
 
     if(nSidecarProcs < prevSidecarProcs) {
-      ResizeSidecars(nSidecarProcs, amrptr);
+      ResizeSidecars(nSidecarProcs);
     }
 
     if(ParallelDescriptor::InCompGroup()) {
       if(nSidecarProcs > prevSidecarProcs) {
         amrptr->AddProcsToSidecar(nSidecarProcs, prevSidecarProcs);
-      } else {
       }
     }
 
     if(nSidecarProcs < prevSidecarProcs) {
       amrptr->AddProcsToComp(nSidecarProcs, prevSidecarProcs);
-
       amrptr->RedistributeGrids(how);
     }
 
     if(nSidecarProcs > prevSidecarProcs) {
-      ResizeSidecars(nSidecarProcs, amrptr);
-    }
-    if(ParallelDescriptor::IOProcessor()) {
-      std::cout << "@@@@@@@@ after resize sidecars:  restarting event loop." << std::endl;
+      ResizeSidecars(nSidecarProcs);
     }
 
 #ifdef BL_USE_MPI
     ParallelDescriptor::SetNProcsSidecar(nSidecarProcs);
 #endif
-    //if(ParallelDescriptor::InCompGroup()) {
-      //amrptr->init(strt_time,stop_time);
-    //}
 
     if(ParallelDescriptor::IOProcessor()) {
       std::cout << "************** sizeof(Amr)      = " << sizeof(Amr) << std::endl;
@@ -481,132 +451,113 @@ std::cout << myProcAll << ":: _here 4" << std::endl;
 
     while ( ! finished) {
 
+      if(ParallelDescriptor::InSidecarGroup()) {  // ------------------- start sidecars
 
-    if(ParallelDescriptor::InSidecarGroup()) {
-
-      int returnCode = SidecarEventLoop();
-      if(returnCode == ParallelDescriptor::SidecarQuitSignal) {
-        finished = true;
-      }
-
-    } else {
-
-    //
-    // If we set the regrid_on_restart flag and if we are *not* going to take
-    // a time step then we want to go ahead and regrid here.
-    //
-    if (amrptr->RegridOnRestart())
-    {
-        if (    (amrptr->levelSteps(0) >= max_step ) ||
-                ( (stop_time >= 0.0) &&
-                  (amrptr->cumTime() >= stop_time)  )    )
-        {
-            //
-            // Regrid only!
-            //
-            amrptr->RegridOnly(amrptr->cumTime());
+        int returnCode = SidecarEventLoop();
+        if(returnCode == quitSignal) {
+          finished = true;
         }
-    }
+        if(returnCode == resizeSignal) {
+          resizeSidecars = true;
+        } else {
+          resizeSidecars = false;
+        }
 
-    const Real time_before_main_loop = ParallelDescriptor::second();
-ParallelDescriptor::Barrier();
-BoxLib::USleep(myProcAll/10.0);
-std::cout << myProcAll << ":: _here 10" << std::endl;
+      } else {  // ----------------------------------------------------- start comp
 
-    if (amrptr->okToContinue()
-           && (amrptr->levelSteps(0) < max_step || max_step < 0)
-           && (amrptr->cumTime() < stop_time || stop_time < 0.0))
+        // If we set the regrid_on_restart flag and if we are *not* going to take
+        // a time step then we want to go ahead and regrid here.
+        //
+        if (amrptr->RegridOnRestart()) {
+          if (    (amrptr->levelSteps(0) >= max_step ) ||
+                  ( (stop_time >= 0.0) &&
+                    (amrptr->cumTime() >= stop_time)  )    )
+          {
+              // Regrid only!
+              amrptr->RegridOnly(amrptr->cumTime());
+          }
+        }
 
-    {
-        // ---- Do a timestep.
-        amrptr->coarseTimeStep(stop_time);
-    } else {
-      finished = true;
-    }
-    const Real time_without_init = ParallelDescriptor::second() - time_before_main_loop;
+        if (amrptr->okToContinue()
+             && (amrptr->levelSteps(0) < max_step || max_step < 0)
+             && (amrptr->cumTime() < stop_time || stop_time < 0.0))
 
-    }
+        {
+          amrptr->coarseTimeStep(stop_time);          // ---- Do a timestep.
+        } else {
+          finished = true;
+          resizeSidecars = false;
+        }
+
+
+	if( ! finished) {    // ---- test resizing the sidecars
+          prevSidecarProcs = nSidecarProcs;
+	  if(ParallelDescriptor::IOProcessor()) {
+            nSidecarProcs = BoxLib::Random_int(ParallelDescriptor::NProcsAll()/2);
+            nSidecarProcs = prevSidecarProcs - 1;
+            nSidecarProcs = std::min(nSidecarProcs, maxSidecarProcs);
+            nSidecarProcs = std::max(nSidecarProcs, minSidecarProcs);
+	  }
+          ParallelDescriptor::Bcast(&nSidecarProcs, 1, 0);
+          if(prevSidecarProcs != nSidecarProcs) {
+            resizeSidecars = true;
+          } else {
+            resizeSidecars = false;
+          }
+	}
+
+        if((finished || resizeSidecars) && nSidecarProcs > 0) {    // ---- stop the sidecars
+          int sidecarSignal(-1);
+          if(finished) {
+            sidecarSignal = quitSignal;
+	  } else if(resizeSidecars) {
+            sidecarSignal = resizeSignal;
+	  }
+          MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
+          ParallelDescriptor::Bcast(&sidecarSignal, 1, MPI_IntraGroup_Broadcast_Rank,
+                                    ParallelDescriptor::CommunicatorInter());
+        }
+
+      }  // ---------------- end start comp
+
 
 #ifdef IN_TRANSIT
-    if(ParallelDescriptor::IOProcessor()) {
-      std::cout << "************** nSidecarProcs prevSidecarProcs = " << nSidecarProcs << "  " << prevSidecarProcs << std::endl;
-    }
-    if(prevSidecarProcs != nSidecarProcs) {
-      resizeSidecars = true;
-    } else {
-      resizeSidecars = false;
-    }
+      if(resizeSidecars) {    // ---- both comp and sidecars are here
+        ParallelDescriptor::Bcast(&prevSidecarProcs, 1, 0, ParallelDescriptor::CommunicatorAll());
+        ParallelDescriptor::Bcast(&nSidecarProcs, 1, 0, ParallelDescriptor::CommunicatorAll());
+        if(ParallelDescriptor::InCompGroup()) {
+          if(ParallelDescriptor::IOProcessor()) {
+            std::cout << "NNNNNNNN new nSidecarProcs    = " << nSidecarProcs    << std::endl;
+            std::cout << "NNNNNNNN     prevSidecarProcs = " << prevSidecarProcs << std::endl;
+          }
+	}
 
-    if(amrptr->levelSteps(0) > 1) {
-      resizeSidecars = true;
-    }
-    if(resizeSidecars && ! finished) {
+        if(nSidecarProcs < prevSidecarProcs) {
+          ResizeSidecars(nSidecarProcs);
+        }
 
-      if(ParallelDescriptor::InCompGroup()) {    // ---- stop the sidecars
-        if(nSidecarProcs > 0) {
-          int sidecarSignal(resizeSignal);
-          ParallelDescriptor::Bcast(&sidecarSignal, 1, MPI_IntraGroup_Broadcast_Rank,
-                                    ParallelDescriptor::CommunicatorInter());
+        if(nSidecarProcs > prevSidecarProcs) {
+          if(ParallelDescriptor::InCompGroup()) {
+            amrptr->AddProcsToSidecar(nSidecarProcs, prevSidecarProcs);
+          } else {
+	    DistributionMapping::DeleteCache();
+	  }
+        }
+
+        if(nSidecarProcs < prevSidecarProcs) {
+          amrptr->AddProcsToComp(nSidecarProcs, prevSidecarProcs);
+          amrptr->RedistributeGrids(how);
+        }
+
+        if(nSidecarProcs > prevSidecarProcs) {
+          ResizeSidecars(nSidecarProcs);
+        }
+        if(ParallelDescriptor::IOProcessor()) {
+          std::cout << "@@@@@@@@ after resize sidecars:  restarting event loop." << std::endl;
         }
       }
-
-      // ---- test resizing the sidecars
-      prevSidecarProcs = nSidecarProcs;
-      nSidecarProcs = BoxLib::Random_int(ParallelDescriptor::NProcsAll()/2);
-      nSidecarProcs = std::min(nSidecarProcs, maxSidecarProcs);
-      nSidecarProcs = std::max(nSidecarProcs, minSidecarProcs);
-      ParallelDescriptor::Bcast(&nSidecarProcs, 1, 0, ParallelDescriptor::CommunicatorAll());
-      if(ParallelDescriptor::IOProcessor()) {
-        std::cout << "NNNNNNNN new nSidecarProcs = " << nSidecarProcs << std::endl;
-        std::cout << "NNNNNNNN     minSidecarProcs = " << minSidecarProcs << std::endl;
-        std::cout << "NNNNNNNN     maxSidecarProcs = " << maxSidecarProcs << std::endl;
-      }
-
-      MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
-
-    if(nSidecarProcs < prevSidecarProcs) {
-      ResizeSidecars(nSidecarProcs, amrptr);
-    }
-
-    if(ParallelDescriptor::InCompGroup()) {
-      if(nSidecarProcs > prevSidecarProcs) {
-        amrptr->AddProcsToSidecar(nSidecarProcs, prevSidecarProcs);
-      } else {
-      }
-    }
-
-    if(nSidecarProcs < prevSidecarProcs) {
-      amrptr->AddProcsToComp(nSidecarProcs, prevSidecarProcs);
-
-      amrptr->RedistributeGrids(how);
-    }
-
-    if(nSidecarProcs > prevSidecarProcs) {
-      ResizeSidecars(nSidecarProcs, amrptr);
-    }
-    MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
-    if(ParallelDescriptor::IOProcessor()) {
-      std::cout << "@@@@@@@@ after resize sidecars:  restarting event loop." << std::endl;
-    }
-    if(prevSidecarProcs != nSidecarProcs) {
-      resizeSidecars = true;
-    } else {
-      resizeSidecars = false;
-    }
-
-    }
-
-    if(finished) {
-      if(ParallelDescriptor::InCompGroup()) {    // ---- stop the sidecars
-        if(nSidecarProcs > 0) {
-          int sidecarSignal(ParallelDescriptor::SidecarQuitSignal);
-          ParallelDescriptor::Bcast(&sidecarSignal, 1, MPI_IntraGroup_Broadcast_Rank,
-                                    ParallelDescriptor::CommunicatorInter());
-        }
-      }
-    }
-
 #endif
+
 
     }  // ---- end while( ! finished)
 
@@ -617,16 +568,14 @@ std::cout << myProcAll << ":: _here 10" << std::endl;
       if (amrptr->stepOfLastCheckPoint() < amrptr->levelSteps(0)) {
         amrptr->checkPoint();
       }
-
       if (amrptr->stepOfLastPlotFile() < amrptr->levelSteps(0)) {
         amrptr->writePlotFile();
       }
     }
 
 #ifdef IN_TRANSIT
-    if(nSidecarProcs > 0) {
-      // ---- stop the sidecars
-      sidecarSignal = ParallelDescriptor::SidecarQuitSignal;
+    if(nSidecarProcs > 0) {    // ---- stop the sidecars
+      sidecarSignal = quitSignal;
       MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
       ParallelDescriptor::Bcast(&sidecarSignal, 1, MPI_IntraGroup_Broadcast_Rank,
                                 ParallelDescriptor::CommunicatorInter());
