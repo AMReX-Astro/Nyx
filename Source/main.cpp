@@ -129,9 +129,9 @@ namespace
             MultiFab *mfDest = &mf;
             int srcComp(0), destComp(0);
             int srcNGhost(0), destNGhost(0);
-            MPI_Comm commInter(ParallelDescriptor::CommunicatorInter());
-            MPI_Comm commSrc(ParallelDescriptor::CommunicatorComp());
-            MPI_Comm commDest(ParallelDescriptor::CommunicatorSidecar());
+            const MPI_Comm &commInter = ParallelDescriptor::CommunicatorInter();
+            const MPI_Comm &commSrc = ParallelDescriptor::CommunicatorComp();
+            const MPI_Comm &commDest = ParallelDescriptor::CommunicatorSidecar();
             bool isSrc(false);
 
             MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
@@ -157,6 +157,10 @@ namespace
 
           case GimletSignal:
 	  {
+	    BoxLib::USleep(ParallelDescriptor::MyProcAll());
+            std::cout << ParallelDescriptor::MyProcAll() << "::_here SSSS 5000:" << std::endl;
+	    MultiFab::PrintFAPointers();
+	  {
 #ifdef GIMLET
             if(ParallelDescriptor::IOProcessor()) {
               std::cout << "Sidecars got the halo finder GimletSignal!" << std::endl;
@@ -178,7 +182,6 @@ namespace
             bool isSrc(false);
 
 	    // ---- we should probably combine all of these into one MultiFab
-            //MultiFab density;
             MultiFab density(bac, nComp, nGhost);
             MultiFab temperature(bac, nComp, nGhost);
             MultiFab e_int(bac, nComp, nGhost);
@@ -187,37 +190,30 @@ namespace
             MultiFab ymom(bac, nComp, nGhost);
             MultiFab zmom(bac, nComp, nGhost);
 
-            //MultiFab::SendMultiFabToSidecars(&density);
 	    mfDest = &density;
             MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
                                 srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
 
-            //MultiFab::SendMultiFabToSidecars(&temperature);
 	    mfDest = &temperature;
             MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
                                 srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
 
-            //MultiFab::SendMultiFabToSidecars(&e_int);
 	    mfDest = &e_int;
             MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
                                 srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
 
-            //MultiFab::SendMultiFabToSidecars(&dm_density);
 	    mfDest = &dm_density;
             MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
                                 srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
 
-            //MultiFab::SendMultiFabToSidecars(&xmom);
 	    mfDest = &xmom;
             MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
                                 srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
 
-            //MultiFab::SendMultiFabToSidecars(&ymom);
 	    mfDest = &ymom;
             MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
                                 srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
 
-            //MultiFab::SendMultiFabToSidecars(&zmom);
 	    mfDest = &zmom;
             MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
                                 srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
@@ -248,6 +244,10 @@ namespace
 #else
             BoxLib::Abort("Nyx received gimlet finder signal but not compiled with gimlet");
 #endif
+	  }
+	    BoxLib::USleep(ParallelDescriptor::MyProcAll());
+            std::cout << ParallelDescriptor::MyProcAll() << "::_here SSSS 5200:" << std::endl;
+	    MultiFab::PrintFAPointers();
 	  }
           break;
 
@@ -545,6 +545,7 @@ std::cout << myProcAll << ":: _here 4" << std::endl;
         }
 
         if(nSidecarProcs < prevSidecarProcs) {
+
           amrptr->AddProcsToComp(nSidecarProcs, prevSidecarProcs);
           amrptr->RedistributeGrids(how);
         }

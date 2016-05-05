@@ -131,7 +131,10 @@ void
 Nyx::variable_setup_for_new_comp_procs()
 {
 std::cout << "***** fix Nyx::variable_setup_for_new_comp_procs()" << std::endl;
-//    BL_ASSERT(desc_lst.size() == 0);
+/*
+    BL_ASSERT(desc_lst.size() == 0);
+//    desc_lst.clear();
+//    derive_lst.clear();
 
     // Initialize the network
     network_init();
@@ -162,6 +165,7 @@ std::cout << "***** fix Nyx::variable_setup_for_new_comp_procs()" << std::endl;
     // DEFINE ERROR ESTIMATION QUANTITIES
     //
     error_setup();
+*/
 }
 
 #ifndef NO_HYDRO

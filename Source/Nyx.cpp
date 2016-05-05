@@ -2196,6 +2196,9 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
                     int ioProcNumSCS, int ioProcNumAll, int scsMyId,
                     MPI_Comm scsComm)
 {
+BoxLib::USleep(ParallelDescriptor::MyProcAll());
+std::cout << ParallelDescriptor::MyProcAll() << "::_here 8200::gravity:  do_grav  gravity = " << do_grav << "  " << gravity << std::endl;
+
       BL_PROFILE("Nyx::AddProcsToComp()");
       AmrLevel::AddProcsToComp(aptr, nSidecarProcs, prevSidecarProcs,
                                ioProcNumSCS, ioProcNumAll, scsMyId,
@@ -2528,33 +2531,14 @@ std::cout << "**** check fine_mask." << std::endl;
 
 
 
-/*
-      // ---- u_gdnv
-      isAllocated = 0;
-      if(scsMyId == ioProcNumSCS) {
-        if(u_gdnv == 0) {
-          isAllocated = 0;
-        } else {
-          isAllocated = 1;
-        }
-      }
-      ParallelDescriptor::Bcast(&isAllocated, 1, ioProcNumSCS, scsComm);
-      if(isAllocated == 1) {
-        if(scsMyId != ioProcNumSCS) {
-          BL_ASSERT(u_gdnv == 0);
-          u_gdnv = build_fine_mask();
-        }
-        u_gdnv->AddProcsToComp(ioProcNumSCS, ioProcNumAll, scsMyId, scsComm);
-      }
-*/
-
-
+BoxLib::USleep(ParallelDescriptor::MyProcAll());
+std::cout << ParallelDescriptor::MyProcAll() << "::_here 8300::gravity:  do_grav  gravity = " << do_grav << "  " << gravity << std::endl;
 
 #ifdef GRAVITY
       // ---- gravity
       if(do_grav) {
         if(gravity != 0) {
-          gravity->AddProcsToComp(parent, level, this, ioProcNumSCS, scsMyId, scsComm);
+          gravity->AddProcsToComp(parent, level, this, ioProcNumSCS, ioProcNumAll, scsMyId, scsComm);
 	}
    }
 #endif
