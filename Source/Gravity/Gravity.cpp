@@ -2198,7 +2198,7 @@ Gravity::set_boundary(BndryData& bd, MultiFab& rhs, const Real* dx)
 
 void
 Gravity::AddProcsToComp(Amr *aptr, int level, AmrLevel *level_data_to_install,
-                        int ioProcNumSCS, int scsMyId, MPI_Comm scsComm)
+                        int ioProcNumSCS, int ioProcNumAll, int scsMyId, MPI_Comm scsComm)
 {
    parent = aptr;
 
@@ -2277,7 +2277,6 @@ Gravity::AddProcsToComp(Amr *aptr, int level, AmrLevel *level_data_to_install,
    Array<char> serialStrings;
    if(scsMyId == ioProcNumSCS) {
      allStrings.push_back(gravity_type);
-
      serialStrings = BoxLib::SerializeStringArray(allStrings);
    }
 
@@ -2287,7 +2286,6 @@ Gravity::AddProcsToComp(Amr *aptr, int level, AmrLevel *level_data_to_install,
    if(scsMyId != ioProcNumSCS) {
      int count(0);
      allStrings = BoxLib::UnSerializeStringArray(serialStrings);
-
      gravity_type = allStrings[count++];
    }
 
@@ -2306,21 +2304,151 @@ Gravity::AddProcsToComp(Amr *aptr, int level, AmrLevel *level_data_to_install,
    }
 
 
-   // ---- these are set in install_level
-   // ---- BoxArrays
-   LevelData.resize(MAX_LEV),
-   grad_phi_curr.resize(MAX_LEV),
-   grad_phi_prev.resize(MAX_LEV),
-   phi_flux_reg.resize(MAX_LEV,PArrayManage),
+BoxLib::USleep(ParallelDescriptor::MyProcAll());
+std::cout << ParallelDescriptor::MyProcAll() << "::_here 9000::_in Gravity::AddProcsToComp:  "
+          << "LevelData.size  grad_phi_curr.size  grad_phi_prev.size  phi_flux_reg.size = "
+	  << LevelData.size() << "  " << grad_phi_curr.size() << "  "
+	  << grad_phi_prev.size() << "  " << phi_flux_reg.size() << std::endl;
+MultiFab::PrintFAPointers();
+BoxLib::USleep(ParallelDescriptor::MyProcAll());
+
+   // ---- MultiFabs
+
+   // ---- ---- grad_phi_curr :: Array< PArray<MultiFab> > grad_phi_curr;
+   if(scsMyId != ioProcNumSCS) {
+     for(int j(0); j < grad_phi_curr.size(); ++j) {
+       grad_phi_curr[j].clear();
+     }
+   }
+   int gpcSize(grad_phi_curr.size());
+   ParallelDescriptor::Bcast(&gpcSize, 1, ioProcNumSCS, scsComm);
+   if(scsMyId != ioProcNumSCS) {
+     grad_phi_curr.resize(gpcSize);
+   }
+
+   for(int j(0); j < grad_phi_curr.size(); ++j) {
+     Array<int> isDefined;
+
+     if(scsMyId == ioProcNumSCS) {
+       isDefined.resize(grad_phi_curr[j].size());
+       for(int i(0); i < grad_phi_curr[j].size(); ++i) {
+         isDefined[i] = grad_phi_curr[j].defined(i);
+       }
+     }
+     BoxLib::BroadcastArray(isDefined, scsMyId, ioProcNumAll, scsComm);
+     if(isDefined.size() > 0) {
+       BL_ASSERT(isDefined.size() == BL_SPACEDIM);
+       if(scsMyId != ioProcNumSCS) {
+         grad_phi_curr[j].resize(isDefined.size(), PArrayManage);
+         for(int i(0); i < grad_phi_curr[j].size(); ++i) {
+           if(isDefined[i]) {
+             grad_phi_curr[j].set(i, new MultiFab);
+	   }
+         }
+       }
+
+       for(int i(0); i < grad_phi_curr[j].size(); ++i) {
+         if(grad_phi_curr[j].defined(i)) {
+           grad_phi_curr[j][i].AddProcsToComp(ioProcNumSCS, ioProcNumAll, scsMyId, scsComm);
+         }
+       }
+     }
+   }
+
+
+   // ---- ---- grad_phi_prev :: Array< PArray<MultiFab> > grad_phi_prev;
+   if(scsMyId != ioProcNumSCS) {
+     for(int j(0); j < grad_phi_prev.size(); ++j) {
+       grad_phi_prev[j].clear();
+     }
+   }
+   int gppSize(grad_phi_prev.size());
+   ParallelDescriptor::Bcast(&gppSize, 1, ioProcNumSCS, scsComm);
+   if(scsMyId != ioProcNumSCS) {
+     grad_phi_prev.resize(gppSize);
+   }
+
+   for(int j(0); j < grad_phi_prev.size(); ++j) {
+     Array<int> isDefined;
+
+     if(scsMyId == ioProcNumSCS) {
+       isDefined.resize(grad_phi_prev[j].size());
+       for(int i(0); i < grad_phi_prev[j].size(); ++i) {
+         isDefined[i] = grad_phi_prev[j].defined(i);
+       }
+     }
+     BoxLib::BroadcastArray(isDefined, scsMyId, ioProcNumAll, scsComm);
+     if(isDefined.size() > 0) {
+       BL_ASSERT(isDefined.size() == BL_SPACEDIM);
+       if(scsMyId != ioProcNumSCS) {
+         grad_phi_prev[j].resize(isDefined.size(), PArrayManage);
+         for(int i(0); i < grad_phi_prev[j].size(); ++i) {
+           if(isDefined[i]) {
+             grad_phi_prev[j].set(i, new MultiFab);
+	   }
+         }
+       }
+       for(int i(0); i < grad_phi_prev[j].size(); ++i) {
+         if(grad_phi_prev[j].defined(i)) {
+           grad_phi_prev[j][i].AddProcsToComp(ioProcNumSCS, ioProcNumAll, scsMyId, scsComm);
+         }
+       }
+     }
+   }
+
+
+   // ---- FluxRegisters :: PArray<FluxRegister> phi_flux_reg;
+   if(scsMyId != ioProcNumSCS) {
+     phi_flux_reg.clear();
+   }
+   int pfrSize(phi_flux_reg.size());
+   ParallelDescriptor::Bcast(&pfrSize, 1, ioProcNumSCS, scsComm);
+   if(scsMyId != ioProcNumSCS) {
+     phi_flux_reg.resize(pfrSize);
+   }
+
+   Array<int> isDefined;
+
+   if(scsMyId == ioProcNumSCS) {
+     isDefined.resize(phi_flux_reg.size());
+     for(int i(0); i < phi_flux_reg.size(); ++i) {
+       isDefined[i] = phi_flux_reg.defined(i);
+     }
+   }
+   BoxLib::BroadcastArray(isDefined, scsMyId, ioProcNumAll, scsComm);
+   if(isDefined.size() > 0) {
+     if(scsMyId != ioProcNumSCS) {
+       phi_flux_reg.resize(isDefined.size(), PArrayManage);
+       for(int i(0); i < phi_flux_reg.size(); ++i) {
+         if(isDefined[i]) {
+           phi_flux_reg.set(i, new FluxRegister);
+	 }
+       }
+     }
+
+     for(int i(0); i < phi_flux_reg.size(); ++i) {
+       if(phi_flux_reg.defined(i)) {
+         phi_flux_reg[i].AddProcsToComp(ioProcNumSCS, ioProcNumAll, scsMyId, scsComm);
+       }
+     }
+   }
+
+
+
+   // ---- BoxArrays ?
    //for(int i(0); i < grids.size(); ++i) {
    //  BoxLib::BroadcastBoxArray(grids[i], scsMyId, ioProcNumSCS, scsComm);
    //}
 
-   install_level(level, level_data_to_install);
+
+BoxLib::USleep(ParallelDescriptor::MyProcAll());
+std::cout << ParallelDescriptor::MyProcAll() << "::_here 9200::_in Gravity::AddProcsToComp:  "
+          << "LevelData.size  grad_phi_curr.size  grad_phi_prev.size  phi_flux_reg.size = "
+	  << LevelData.size() << "  " << grad_phi_curr.size() << "  "
+	  << grad_phi_prev.size() << "  " << phi_flux_reg.size() << std::endl;
+MultiFab::PrintFAPointers();
+BoxLib::USleep(ParallelDescriptor::MyProcAll());
 
 }
-
-
-
 
 

@@ -111,7 +111,7 @@ public:
 #endif
 
     virtual void AddProcsToComp(Amr *aptr, int level, AmrLevel *level_data_to_install,
-                                int ioProcNumSCS, int scsMyId, MPI_Comm scsComm);
+                                int ioProcNumSCS, int ioProcNumAll, int scsMyId, MPI_Comm scsComm);
 
 protected:
     //
