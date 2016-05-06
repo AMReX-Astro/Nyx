@@ -22,6 +22,7 @@
 #include <Geometry.H>
 #include <MultiFab.H>
 #include <MemInfo.H>
+#include <Nyx.H>
 
 #ifdef REEBER
 #ifdef IN_SITU
@@ -157,10 +158,6 @@ namespace
 
           case GimletSignal:
 	  {
-	    BoxLib::USleep(ParallelDescriptor::MyProcAll());
-            std::cout << ParallelDescriptor::MyProcAll() << "::_here SSSS 5000:" << std::endl;
-	    MultiFab::PrintFAPointers();
-	  {
 #ifdef GIMLET
             if(ParallelDescriptor::IOProcessor()) {
               std::cout << "Sidecars got the halo finder GimletSignal!" << std::endl;
@@ -244,10 +241,6 @@ namespace
 #else
             BoxLib::Abort("Nyx received gimlet finder signal but not compiled with gimlet");
 #endif
-	  }
-	    BoxLib::USleep(ParallelDescriptor::MyProcAll());
-            std::cout << ParallelDescriptor::MyProcAll() << "::_here SSSS 5200:" << std::endl;
-	    MultiFab::PrintFAPointers();
 	  }
           break;
 
@@ -393,9 +386,12 @@ main (int argc, char* argv[])
         BoxLib::Abort("Exiting because neither max_step nor stop_time is non-negative.");
     }
 
+
 #ifdef IN_TRANSIT
     SidecarInit();
 #endif
+
+    Nyx::forceParticleRedist = true;
 
     Amr *amrptr = new Amr;
     amrptr->init(strt_time,stop_time);
@@ -451,6 +447,8 @@ std::cout << myProcAll << ":: _here 4" << std::endl;
 
     while ( ! finished) {
 
+      Nyx::forceParticleRedist = true;
+
       if(ParallelDescriptor::InSidecarGroup()) {  // ------------------- start sidecars
 
         int returnCode = SidecarEventLoop();
@@ -494,7 +492,6 @@ std::cout << myProcAll << ":: _here 4" << std::endl;
           prevSidecarProcs = nSidecarProcs;
 	  if(ParallelDescriptor::IOProcessor()) {
             nSidecarProcs = BoxLib::Random_int(ParallelDescriptor::NProcsAll()/2);
-            nSidecarProcs = prevSidecarProcs - 1;
             nSidecarProcs = std::min(nSidecarProcs, maxSidecarProcs);
             nSidecarProcs = std::max(nSidecarProcs, minSidecarProcs);
 	  }
@@ -521,6 +518,7 @@ std::cout << myProcAll << ":: _here 4" << std::endl;
       }  // ---------------- end start comp
 
 
+
 #ifdef IN_TRANSIT
       if(resizeSidecars) {    // ---- both comp and sidecars are here
         ParallelDescriptor::Bcast(&prevSidecarProcs, 1, 0, ParallelDescriptor::CommunicatorAll());
@@ -531,6 +529,7 @@ std::cout << myProcAll << ":: _here 4" << std::endl;
             std::cout << "NNNNNNNN     prevSidecarProcs = " << prevSidecarProcs << std::endl;
           }
 	}
+        Nyx::forceParticleRedist = true;
 
         if(nSidecarProcs < prevSidecarProcs) {
           ResizeSidecars(nSidecarProcs);
