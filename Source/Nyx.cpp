@@ -166,6 +166,7 @@ std::string Nyx::particle_plotfile_format = "NATIVE";
 
 int Nyx::halo_int(0);
 
+int Nyx::forceParticleRedist = false;
 
 // Note: Nyx::variableSetUp is in Nyx_setup.cpp
 void
@@ -1468,46 +1469,34 @@ Nyx::postCoarseTimeStep (Real cumtime)
      BL_ASSERT(density.boxArray() == dm_density->boxArray());  // ---- need to check them all
      BoxArray::SendBoxArray(density.boxArray());
 
-     //MultiFab::SendMultiFabToSidecars(&(const_cast<MultiFab&>(density)));
      mfSource = &density;
      MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
                          srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
 
-BoxLib::USleep(ParallelDescriptor::MyProcAll());
-std::cout << ParallelDescriptor::MyProcAll() << "::_here 220:  denminmax = " << density.min(0) << "  " << density.max(0) << std::endl;
-ParallelDescriptor::Barrier();
-
-     //MultiFab::SendMultiFabToSidecars(&(const_cast<MultiFab&>(temperature)));
      mfSource = &temperature;
      MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
                          srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
 
-     //MultiFab::SendMultiFabToSidecars(&(const_cast<MultiFab&>(e_int)));
      mfSource = &e_int;
      MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
                          srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
 
-     //MultiFab::SendMultiFabToSidecars(&(const_cast<MultiFab&>(*dm_density)));
      mfSource = dm_density;
      MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
                          srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
 
-     //MultiFab::SendMultiFabToSidecars(&(const_cast<MultiFab&>(*xmom)));
      mfSource = xmom;
      MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
                          srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
 
-     //MultiFab::SendMultiFabToSidecars(&(const_cast<MultiFab&>(*ymom)));
      mfSource = ymom;
      MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
                          srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
 
-     //MultiFab::SendMultiFabToSidecars(&(const_cast<MultiFab&>(*zmom)));
      mfSource = zmom;
      MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
                          srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
 
-     //Geometry::SendGeometryToSidecars(&(const_cast<Geometry&>(geom)));
      Geometry::SendGeometryToSidecars(&geom);
 
      ParallelDescriptor::Bcast(&Nyx::new_a, 1, MPI_IntraGroup_Broadcast_Rank, commInter);
@@ -1520,6 +1509,11 @@ ParallelDescriptor::Barrier();
      if (ParallelDescriptor::IOProcessor()) {
        std::cout << "COMPUTE PROCESSES: time spent sending data to sidecars: " << time2 - time1 << std::endl;
      }
+
+     delete dm_density;
+     delete xmom;
+     delete ymom;
+     delete zmom;
    }
 #endif /* IN_SITU OR IN_TRANSIT */
 #endif /* GIMLET */
@@ -1542,8 +1536,9 @@ Nyx::post_regrid (int lbase,
 #endif
 #endif
 
-    if (level == lbase)
-        particle_redistribute(lbase);
+    if (level == lbase) {
+        particle_redistribute(lbase, forceParticleRedist);
+    }
 
     int which_level_being_advanced = parent->level_being_advanced();
 
@@ -1580,8 +1575,9 @@ void
 Nyx::post_init (Real stop_time)
 {
     BL_PROFILE("Nyx::post_init()");
-    if (level > 0)
+    if (level > 0) {
         return;
+    }
 
     // If we restarted from a plotfile, we need to reset the level_steps counter
     if ( ! parent->theRestartPlotFile().empty()) {
@@ -1654,12 +1650,14 @@ Nyx::post_init (Real stop_time)
 int
 Nyx::okToContinue ()
 {
-    if (level > 0)
+    if (level > 0) {
         return 1;
+    }
 
     int test = 1;
-    if (parent->dtLevel(0) < dt_cutoff)
+    if (parent->dtLevel(0) < dt_cutoff) {
         test = 0;
+    }
 
     if ((test == 1) && (final_a > 0))
     {
@@ -1672,10 +1670,11 @@ Nyx::okToContinue ()
         if (a >= final_a) test = 0;
         if (verbose && ParallelDescriptor::IOProcessor())
         {
-            if (test == 0)
+            if (test == 0) {
                 std::cout << "...a " << a
                           << " is greater than or equal to final_a " << final_a
                           << '\n';
+	    }
         }
     }
     return test;
@@ -2196,10 +2195,10 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
                     int ioProcNumSCS, int ioProcNumAll, int scsMyId,
                     MPI_Comm scsComm)
 {
-BoxLib::USleep(ParallelDescriptor::MyProcAll());
-std::cout << ParallelDescriptor::MyProcAll() << "::_here 8200::gravity:  do_grav  gravity = " << do_grav << "  " << gravity << std::endl;
-
       BL_PROFILE("Nyx::AddProcsToComp()");
+
+      forceParticleRedist = true;
+
       AmrLevel::AddProcsToComp(aptr, nSidecarProcs, prevSidecarProcs,
                                ioProcNumSCS, ioProcNumAll, scsMyId,
                                scsComm);
@@ -2279,6 +2278,7 @@ std::cout << ParallelDescriptor::MyProcAll() << "::_here 8200::gravity:  do_grav
         allInts.push_back(strang_split);
         allInts.push_back(halo_int);
         allInts.push_back(grav_n_grow);
+        allInts.push_back(forceParticleRedist);
       }
 
       BoxLib::BroadcastArray(allInts, scsMyId, ioProcNumAll, scsComm);
@@ -2335,6 +2335,7 @@ std::cout << ParallelDescriptor::MyProcAll() << "::_here 8200::gravity:  do_grav
         strang_split = allInts[count++];
         halo_int = allInts[count++];
         grav_n_grow = allInts[count++];
+        forceParticleRedist = allInts[count++];
 
         BL_ASSERT(count == allInts.size());
       }
@@ -2523,16 +2524,12 @@ std::cout << ParallelDescriptor::MyProcAll() << "::_here 8200::gravity:  do_grav
       if(isAllocated == 1) {
         if(scsMyId != ioProcNumSCS) {
           BL_ASSERT(fine_mask == 0);
-std::cout << "**** check fine_mask." << std::endl;
+          std::cout << "**** check fine_mask." << std::endl;
           fine_mask = build_fine_mask();
         }
         fine_mask->AddProcsToComp(ioProcNumSCS, ioProcNumAll, scsMyId, scsComm);
       }
 
-
-
-BoxLib::USleep(ParallelDescriptor::MyProcAll());
-std::cout << ParallelDescriptor::MyProcAll() << "::_here 8300::gravity:  do_grav  gravity = " << do_grav << "  " << gravity << std::endl;
 
 #ifdef GRAVITY
       // ---- gravity
