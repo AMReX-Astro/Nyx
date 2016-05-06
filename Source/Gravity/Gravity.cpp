@@ -2429,10 +2429,11 @@ Gravity::AddProcsToComp(Amr *aptr, int level, AmrLevel *level_data_to_install,
 
 
 
-   // ---- BoxArrays ?
-   //for(int i(0); i < grids.size(); ++i) {
-   //  BoxLib::BroadcastBoxArray(grids[i], scsMyId, ioProcNumSCS, scsComm);
-   //}
+   // ---- LevelData
+    LevelData.clear(level);
+    LevelData.set(level, level_data_to_install);
+
+    grids[level] = LevelData[level].boxArray();
 
 }
 
