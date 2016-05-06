@@ -972,14 +972,16 @@ Gravity::actual_multilevel_solve (int                       level,
         fgeom[i] = parent->Geom(level+i);
 
     // FOR TIMINGS
-    if (show_timings)
+    if (show_timings) {
         ParallelDescriptor::Barrier();
+    }
 
     const Real strt_setup = ParallelDescriptor::second();
 
     // FOR TIMINGS
-    if (show_timings)
+    if (show_timings) {
         ParallelDescriptor::Barrier();
+    }
 
     if (show_timings)
     {
@@ -2304,14 +2306,6 @@ Gravity::AddProcsToComp(Amr *aptr, int level, AmrLevel *level_data_to_install,
    }
 
 
-BoxLib::USleep(ParallelDescriptor::MyProcAll());
-std::cout << ParallelDescriptor::MyProcAll() << "::_here 9000::_in Gravity::AddProcsToComp:  "
-          << "LevelData.size  grad_phi_curr.size  grad_phi_prev.size  phi_flux_reg.size = "
-	  << LevelData.size() << "  " << grad_phi_curr.size() << "  "
-	  << grad_phi_prev.size() << "  " << phi_flux_reg.size() << std::endl;
-MultiFab::PrintFAPointers();
-BoxLib::USleep(ParallelDescriptor::MyProcAll());
-
    // ---- MultiFabs
 
    // ---- ---- grad_phi_curr :: Array< PArray<MultiFab> > grad_phi_curr;
@@ -2439,15 +2433,6 @@ BoxLib::USleep(ParallelDescriptor::MyProcAll());
    //for(int i(0); i < grids.size(); ++i) {
    //  BoxLib::BroadcastBoxArray(grids[i], scsMyId, ioProcNumSCS, scsComm);
    //}
-
-
-BoxLib::USleep(ParallelDescriptor::MyProcAll());
-std::cout << ParallelDescriptor::MyProcAll() << "::_here 9200::_in Gravity::AddProcsToComp:  "
-          << "LevelData.size  grad_phi_curr.size  grad_phi_prev.size  phi_flux_reg.size = "
-	  << LevelData.size() << "  " << grad_phi_curr.size() << "  "
-	  << grad_phi_prev.size() << "  " << phi_flux_reg.size() << std::endl;
-MultiFab::PrintFAPointers();
-BoxLib::USleep(ParallelDescriptor::MyProcAll());
 
 }
 
