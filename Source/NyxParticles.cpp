@@ -848,8 +848,9 @@ Nyx::particle_redistribute (int lbase, bool init)
 
         int flev = parent->finestLevel();
 	
-        while (!parent->getAmrLevels().defined(flev))
+        while ( ! parent->getAmrLevels().defined(flev)) {
             flev--;
+	}
  
         if (ba.size() != flev+1)
         {
@@ -867,7 +868,7 @@ Nyx::particle_redistribute (int lbase, bool init)
                     //
                     changed = true;
 
-                if (!changed)
+                if ( ! changed)
                 {
                     if (dm[i] != parent->getLevel(i).get_new_data(0).DistributionMap())
                         //
