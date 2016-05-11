@@ -330,7 +330,18 @@ main (int argc, char* argv[])
     int prevSidecarProcs(0), minSidecarProcs(0), maxSidecarProcs(0);
     int sidecarSignal(NyxHaloFinderSignal);
     int resizeSidecars(false);  // ---- instead of bool for bcast
+    Array<int> sidecarSizes;
+    bool useRandomNSidecarProcs(false);
 
+    if(ParallelDescriptor::IOProcessor()) {
+      sidecarSizes.push_back(16);
+      sidecarSizes.push_back(32);
+      sidecarSizes.push_back(64);
+      sidecarSizes.push_back(128);
+      sidecarSizes.push_back(256);
+      sidecarSizes.push_back(512);
+      sidecarSizes.push_back(1024);
+    }
 
     Real dRunTime1 = ParallelDescriptor::second();
 
@@ -491,7 +502,12 @@ std::cout << myProcAll << ":: _here 4" << std::endl;
 	if( ! finished) {    // ---- test resizing the sidecars
           prevSidecarProcs = nSidecarProcs;
 	  if(ParallelDescriptor::IOProcessor()) {
-            nSidecarProcs = BoxLib::Random_int(ParallelDescriptor::NProcsAll()/2);
+	    if(useRandomNSidecarProcs) {
+              nSidecarProcs = BoxLib::Random_int(ParallelDescriptor::NProcsAll()/2);
+	    } else {
+              nSidecarProcs = sidecarSizes[BoxLib::Random_int(sidecarSizes.size())];
+	      std::cout << "Setting random fixed size:  nSidecarProcs = " << nSidecarProcs << std::endl;
+	    }
             nSidecarProcs = std::min(nSidecarProcs, maxSidecarProcs);
             nSidecarProcs = std::max(nSidecarProcs, minSidecarProcs);
 	  }
