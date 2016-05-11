@@ -362,6 +362,7 @@ main (int argc, char* argv[])
 
     int how(-1);
     pp.query("how",how);
+    pp.query("useRandomNSidecarProcs",useRandomNSidecarProcs);
 
 #ifdef IN_TRANSIT
     pp.query("nSidecars", nSidecarProcsFromParmParse);
@@ -506,8 +507,21 @@ std::cout << myProcAll << ":: _here 4" << std::endl;
               nSidecarProcs = BoxLib::Random_int(ParallelDescriptor::NProcsAll()/2);
 	    } else {
               nSidecarProcs = sidecarSizes[BoxLib::Random_int(sidecarSizes.size())];
-	      std::cout << "Setting random fixed size:  nSidecarProcs = " << nSidecarProcs << std::endl;
+              std::cout << "Setting random fixed size:  nSidecarProcs = " << nSidecarProcs << std::endl;
 	    }
+	    // ---- fftw does not like these values
+            if(nSidecarProcs == 12) {
+              std::cout << "12121212:  skipping 12 sidecars." << std::endl;
+              nSidecarProcs = 11;
+            }
+            if(nSidecarProcs == 14) {
+              std::cout << "14141414:  skipping 14 sidecars." << std::endl;
+              nSidecarProcs = 13;
+            }
+            if(nSidecarProcs == 15) {
+              std::cout << "15151515:  skipping 15 sidecars." << std::endl;
+              nSidecarProcs = 8;
+            }
             nSidecarProcs = std::min(nSidecarProcs, maxSidecarProcs);
             nSidecarProcs = std::max(nSidecarProcs, minSidecarProcs);
 	  }
