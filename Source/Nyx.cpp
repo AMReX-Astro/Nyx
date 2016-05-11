@@ -1349,7 +1349,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
 #endif
 #elif defined IN_TRANSIT
    const int sidecar_handshake_interval = 1;
-   if ((nStep()-1) % sidecar_handshake_interval == 0)
+   if ((nStep()-1) % sidecar_handshake_interval == 0 && ParallelDescriptor::NProcsSidecar() > 0)
    {
      int sidecarSignal(NyxHaloFinderSignal);
      const int MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
@@ -1428,7 +1428,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
    }
 #elif defined IN_TRANSIT
    const int sidecar_handshake_interval = 1;
-   if ((nStep()-1) % sidecar_handshake_interval == 0)
+   if ((nStep()-1) % sidecar_handshake_interval == 0 && ParallelDescriptor::NProcsSidecar() > 0)
    {
      int signal = GimletSignal;
      const int MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
