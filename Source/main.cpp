@@ -88,7 +88,8 @@ namespace
                 << newSize << std::endl;
     }
     ParallelDescriptor::Barrier(ParallelDescriptor::CommunicatorAll());
-    ParallelDescriptor::SetNProcsSidecar(newSize);
+    ParallelDescriptor::SetNProcsSidecars(newSize);
+#endif
   }
 
 
@@ -442,7 +443,7 @@ main (int argc, char* argv[])
     }
 
 #ifdef BL_USE_MPI
-    ParallelDescriptor::SetNProcsSidecar(nSidecarProcs);
+    ParallelDescriptor::SetNProcsSidecars(nSidecarProcs);
 #endif
 
     if(ParallelDescriptor::IOProcessor()) {
@@ -612,7 +613,9 @@ std::cout << myProcAll << ":: _here 4" << std::endl;
     }
 #endif
 
-    ParallelDescriptor::SetNProcsSidecar(0);
+#ifdef BL_USE_MPI
+    ParallelDescriptor::SetNProcsSidecars(0);
+#endif
 
     delete amrptr;
 
