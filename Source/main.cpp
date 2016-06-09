@@ -100,6 +100,7 @@ namespace
 
     bool finished(false);
     int sidecarSignal(-1);
+    int whichSidecar(0);  // ---- this is sidecar zero
     if(ParallelDescriptor::IOProcessor()) {
       std::cout << "SSSSSSSS:  Starting SidecarEventLoop." << std::endl;
     }
@@ -109,7 +110,7 @@ namespace
         if(ParallelDescriptor::IOProcessor()) {
           std::cout << "SSSSSSSS:  waiting for signal from comp..." << std::endl;
         }
-        ParallelDescriptor::Bcast(&sidecarSignal, 1, 0, ParallelDescriptor::CommunicatorInter());
+        ParallelDescriptor::Bcast(&sidecarSignal, 1, 0, ParallelDescriptor::CommunicatorInter(whichSidecar));
 
         switch(sidecarSignal) {
           case NyxHaloFinderSignal:
@@ -123,26 +124,27 @@ namespace
             int time_step, nComp(0), nGhost(0);
 
             // Receive the necessary data for doing analysis.
-            ParallelDescriptor::Bcast(&nComp, 1, 0, ParallelDescriptor::CommunicatorInter());
-	    BoxArray::RecvBoxArray(bac);
+            ParallelDescriptor::Bcast(&nComp, 1, 0, ParallelDescriptor::CommunicatorInter(whichSidecar));
+	    BoxArray::RecvBoxArray(bac, whichSidecar);
             MultiFab mf(bac, nComp, nGhost);
 
             MultiFab *mfSource = 0;
             MultiFab *mfDest = &mf;
             int srcComp(0), destComp(0);
             int srcNGhost(0), destNGhost(0);
-            const MPI_Comm &commInter = ParallelDescriptor::CommunicatorInter();
             const MPI_Comm &commSrc = ParallelDescriptor::CommunicatorComp();
             const MPI_Comm &commDest = ParallelDescriptor::CommunicatorSidecar();
+            const MPI_Comm &commInter = ParallelDescriptor::CommunicatorInter(whichSidecar);
+            const MPI_Comm &commBoth = ParallelDescriptor::CommunicatorBoth(whichSidecar);
             bool isSrc(false);
 
             MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
                                 srcNGhost, destNGhost,
-                                commSrc, commDest, commInter,
+                                commSrc, commDest, commInter, commBoth,
                                 isSrc);
 
-            Geometry::SendGeometryToSidecars(&geom);
-            ParallelDescriptor::Bcast(&time_step, 1, 0, ParallelDescriptor::CommunicatorInter());
+            Geometry::SendGeometryToSidecar(&geom, whichSidecar);
+            ParallelDescriptor::Bcast(&time_step, 1, 0, ParallelDescriptor::CommunicatorInter(whichSidecar));
 
             // Here Reeber constructs the local-global merge trees and computes the
             // halo locations.
@@ -168,15 +170,16 @@ namespace
             int time_step;
             Real new_a, omega_m, omega_b, omega_l, comoving_h;
 
-	    BoxArray::RecvBoxArray(bac);
+	    BoxArray::RecvBoxArray(bac, whichSidecar);
 
             MultiFab *mfSource = 0;
             MultiFab *mfDest = 0;
             int srcComp(0), destComp(0), nComp(1), nGhost(0);
             int srcNGhost(0), destNGhost(0);
-            const MPI_Comm &commInter = ParallelDescriptor::CommunicatorInter();
             const MPI_Comm &commSrc = ParallelDescriptor::CommunicatorComp();
             const MPI_Comm &commDest = ParallelDescriptor::CommunicatorSidecar();
+            const MPI_Comm &commInter = ParallelDescriptor::CommunicatorInter(whichSidecar);
+            const MPI_Comm &commBoth = ParallelDescriptor::CommunicatorBoth(whichSidecar);
             bool isSrc(false);
 
 	    // ---- we should probably combine all of these into one MultiFab
@@ -190,33 +193,33 @@ namespace
 
 	    mfDest = &density;
             MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                                srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
+                                srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
 
 	    mfDest = &temperature;
             MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                                srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
+                                srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
 
 	    mfDest = &e_int;
             MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                                srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
+                                srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
 
 	    mfDest = &dm_density;
             MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                                srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
+                                srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
 
 	    mfDest = &xmom;
             MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                                srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
+                                srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
 
 	    mfDest = &ymom;
             MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                                srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
+                                srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
 
 	    mfDest = &zmom;
             MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                                srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
+                                srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
 
-            Geometry::SendGeometryToSidecars(&geom);
+            Geometry::SendGeometryToSidecar(&geom, whichSidecar);
 
             ParallelDescriptor::Bcast(&new_a, 1, 0, commInter);
             ParallelDescriptor::Bcast(&omega_m, 1, 0, commInter);
@@ -542,8 +545,9 @@ std::cout << myProcAll << ":: _here 4" << std::endl;
             sidecarSignal = resizeSignal;
 	  }
           MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
+	  int whichSidecar(0);
           ParallelDescriptor::Bcast(&sidecarSignal, 1, MPI_IntraGroup_Broadcast_Rank,
-                                    ParallelDescriptor::CommunicatorInter());
+                                    ParallelDescriptor::CommunicatorInter(whichSidecar));
         }
 
       }  // ---------------- end start comp
@@ -607,9 +611,10 @@ std::cout << myProcAll << ":: _here 4" << std::endl;
 #ifdef IN_TRANSIT
     if(nSidecarProcs > 0) {    // ---- stop the sidecars
       sidecarSignal = quitSignal;
+      int whichSidecar(0);
       MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
       ParallelDescriptor::Bcast(&sidecarSignal, 1, MPI_IntraGroup_Broadcast_Rank,
-                                ParallelDescriptor::CommunicatorInter());
+                                ParallelDescriptor::CommunicatorInter(whichSidecar));
     }
 #endif
 

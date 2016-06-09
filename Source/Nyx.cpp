@@ -1324,8 +1324,11 @@ Nyx::set_small_values ()
 void
 Nyx::postCoarseTimeStep (Real cumtime)
 {
-    BL_PROFILE("Nyx::postCoarseTimeStep()");
+   BL_PROFILE("Nyx::postCoarseTimeStep()");
    const Real cur_time = state[State_Type].curTime();
+   const int whichSidecar(0);
+
+#ifdef REEBER
 #ifdef IN_SITU
 #if 1
    // The time step interval for in situ Reeber is done in ParmParse so we
@@ -1352,8 +1355,10 @@ Nyx::postCoarseTimeStep (Real cumtime)
    if ((nStep()-1) % sidecar_handshake_interval == 0 && ParallelDescriptor::NProcsSidecar(0) > 0)
    {
      int sidecarSignal(NyxHaloFinderSignal);
+     int whichSidecar(0);
      const int MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
-     ParallelDescriptor::Bcast(&sidecarSignal, 1, MPI_IntraGroup_Broadcast_Rank, ParallelDescriptor::CommunicatorInter());
+     ParallelDescriptor::Bcast(&sidecarSignal, 1, MPI_IntraGroup_Broadcast_Rank,
+                               ParallelDescriptor::CommunicatorInter(whichSidecar));
 
      Geometry geom(Geom());
      MultiFab *dm_density = particle_derive("particle_mass_density", cur_time, 0);
@@ -1361,27 +1366,28 @@ Nyx::postCoarseTimeStep (Real cumtime)
 
      Real time1(ParallelDescriptor::second());
      ParallelDescriptor::Bcast(&nComp, 1, MPI_IntraGroup_Broadcast_Rank,
-                               ParallelDescriptor::CommunicatorInter());
+                               ParallelDescriptor::CommunicatorInter(whichSidecar));
      BoxArray::SendBoxArray(dm_density->boxArray());
 
      MultiFab *mfSource = dm_density;
      MultiFab *mfDest = 0;
      int srcComp(0), destComp(0);
      int srcNGhost(0), destNGhost(0);
-     MPI_Comm commInter(ParallelDescriptor::CommunicatorInter());
      MPI_Comm commSrc(ParallelDescriptor::CommunicatorComp());
      MPI_Comm commDest(ParallelDescriptor::CommunicatorSidecar());
+     MPI_Comm commInter(ParallelDescriptor::CommunicatorInter(whichSidecar));
+     MPI_Comm commBoth(ParallelDescriptor::CommunicatorBoth(whichSidecar));
      bool isSrc(true);
 
      MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
                          srcNGhost, destNGhost,
-                         commSrc, commDest, commInter,
+                         commSrc, commDest, commInter, commBoth,
                          isSrc);
 
-     Geometry::SendGeometryToSidecars(&geom);
+     Geometry::SendGeometryToSidecars(&geom, whichSidecar);
 
      ParallelDescriptor::Bcast(&time_step, 1, MPI_IntraGroup_Broadcast_Rank,
-                               ParallelDescriptor::CommunicatorInter());
+                               ParallelDescriptor::CommunicatorInter(whichSidecar));
 
      Real time2(ParallelDescriptor::second());
      if(ParallelDescriptor::IOProcessor()) {
@@ -1432,7 +1438,8 @@ Nyx::postCoarseTimeStep (Real cumtime)
    {
      int signal = GimletSignal;
      const int MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
-     ParallelDescriptor::Bcast(&signal, 1, MPI_IntraGroup_Broadcast_Rank, ParallelDescriptor::CommunicatorInter());
+     ParallelDescriptor::Bcast(&signal, 1, MPI_IntraGroup_Broadcast_Rank,
+                               ParallelDescriptor::CommunicatorInter(whichSidecar));
 
      const MultiFab &state_data = get_data(State_Type, cur_time);
      const MultiFab &eos_data = get_data(DiagEOS_Type, cur_time);
@@ -1461,43 +1468,44 @@ Nyx::postCoarseTimeStep (Real cumtime)
      MultiFab *mfDest = 0;
      int srcComp(0), destComp(0), nComp(1);
      int srcNGhost(0), destNGhost(0);
-     const MPI_Comm &commInter = ParallelDescriptor::CommunicatorInter();
      const MPI_Comm &commSrc = ParallelDescriptor::CommunicatorComp();
      const MPI_Comm &commDest = ParallelDescriptor::CommunicatorSidecar();
+     const MPI_Comm &commInter = ParallelDescriptor::CommunicatorInter(whichSidecar);
+     const MPI_Comm &commBoth = ParallelDescriptor::CommunicatorBoth(whichSidecar);
      bool isSrc(true);
 
      BL_ASSERT(density.boxArray() == dm_density->boxArray());  // ---- need to check them all
-     BoxArray::SendBoxArray(density.boxArray());
+     BoxArray::SendBoxArray(density.boxArray(), whichSidecar);
 
      mfSource = &density;
      MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                         srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
+                         srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
 
      mfSource = &temperature;
      MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                         srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
+                         srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
 
      mfSource = &e_int;
      MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                         srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
+                         srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
 
      mfSource = dm_density;
      MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                         srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
+                         srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
 
      mfSource = xmom;
      MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                         srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
+                         srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
 
      mfSource = ymom;
      MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                         srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
+                         srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
 
      mfSource = zmom;
      MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                         srcNGhost, destNGhost, commSrc, commDest, commInter, isSrc);
+                         srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
 
-     Geometry::SendGeometryToSidecars(&geom);
+     Geometry::SendGeometryToSidecar(&geom, whichSidecar);
 
      ParallelDescriptor::Bcast(&Nyx::new_a, 1, MPI_IntraGroup_Broadcast_Rank, commInter);
      ParallelDescriptor::Bcast(&omega_m, 1, MPI_IntraGroup_Broadcast_Rank, commInter);
