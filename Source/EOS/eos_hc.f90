@@ -281,7 +281,7 @@ module eos_module
       nhp = 1.0d0 - ahp/(ahp + geh0 + ggh0ne)
 
       ! He+
-      smallest_val = 1.d0 / Huge(1.d0)
+      smallest_val = Tiny(1.0d0)
       if ((gehe0 + gghe0ne) .gt. smallest_val) then
 
          nhep  = YHELIUM/(1.0d0 + (ahep  + ad     )/(gehe0 + gghe0ne) &
