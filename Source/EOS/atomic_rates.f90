@@ -36,6 +36,7 @@ module atomic_rates_module
   double precision, public, save :: this_z, ggh0, gghe0, gghep, eh0, ehe0, ehep
  
   double precision, parameter, public :: TCOOLMIN = 0.0d0, TCOOLMAX = 9.0d0  ! in log10
+  double precision, parameter, public :: deltaT = (TCOOLMAX - TCOOLMIN)/NCOOLTAB
 
   double precision, parameter, public :: MPROTON = 1.6726231d-24, BOLTZMANN = 1.3806e-16
 
@@ -50,7 +51,7 @@ module atomic_rates_module
       integer :: i
       logical, parameter :: Katz96=.false.
       double precision, parameter :: t3=1.0d3, t5=1.0d5, t6=1.0d6
-      double precision :: t, U, E, y, sqrt_t, corr_term, deltaT
+      double precision :: t, U, E, y, sqrt_t, corr_term
       logical, save :: first=.true.
 
       !$OMP CRITICAL(TREECOOL_READ)
@@ -68,7 +69,6 @@ module atomic_rates_module
 
          ! Initialize cooling tables
          t = 10.0d0**TCOOLMIN
-         deltaT = (TCOOLMAX - TCOOLMIN)/NCOOLTAB;
          if (Katz96) then
             do i = 1, NCOOLTAB+1
                ! Rates are as in Katz et al. 1996
