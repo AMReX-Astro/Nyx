@@ -268,9 +268,9 @@ module eos_module
       gehep = flo*GammaeHep(j) + fhi*GammaeHep(j+1)
 
       if (ne .gt. 0.0d0) then
-         ggh0ne   = ggh0 /ne/nh
-         gghe0ne  = gghe0/ne/nh
-         gghepne  = gghep/ne/nh
+         ggh0ne   = ggh0 /(ne*nh)
+         gghe0ne  = gghe0/(ne*nh)
+         gghepne  = gghep/(ne*nh)
       else
          ggh0ne   = 0.0d0
          gghe0ne  = 0.0d0
