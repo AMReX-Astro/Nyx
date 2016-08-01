@@ -73,6 +73,7 @@ contains
                        flatn,f_l1,f_l2,f_l3,f_h1,f_h2,f_h3, &
                        Ip,Im,ilo1,ilo2,ihi1,ihi2,dx,dy,dz,dt_over_a,k3d,kc)
 
+    use mempool_module, only: bl_allocate, bl_deallocate
     use meth_params_module, only : ppm_type, ppm_flatten_before_integrals
     use bl_constants_module
 
@@ -98,28 +99,28 @@ contains
     ! local
     integer i,j,k
 
-    double precision, allocatable :: dsl(:), dsr(:), dsc(:)
-    double precision, allocatable :: sigma(:), s6(:)
+    double precision, pointer :: dsl(:), dsr(:), dsc(:)
+    double precision, pointer :: sigma(:), s6(:)
 
     ! s_{\ib,+}, s_{\ib,-}
-    double precision, allocatable :: sp(:)
-    double precision, allocatable :: sm(:)
+    double precision, pointer :: sp(:)
+    double precision, pointer :: sm(:)
 
     ! \delta s_{\ib}^{vL}
-    double precision, allocatable :: dsvl(:,:)
-    double precision, allocatable :: dsvlm(:,:)
-    double precision, allocatable :: dsvlp(:,:)
+    double precision, pointer :: dsvl(:,:)
+    double precision, pointer :: dsvlm(:,:)
+    double precision, pointer :: dsvlp(:,:)
 
     ! s_{i+\half}^{H.O.}
-    double precision, allocatable :: sedge(:,:)
-    double precision, allocatable :: sedgez(:,:,:)
+    double precision, pointer :: sedge(:,:)
+    double precision, pointer :: sedgez(:,:,:)
 
     ! cell-centered indexing
-    allocate(sp(ilo1-1:ihi1+1))
-    allocate(sm(ilo1-1:ihi1+1))
+    call bl_allocate(sp,ilo1-1,ihi1+1)
+    call bl_allocate(sm,ilo1-1,ihi1+1)
 
-    allocate(sigma(ilo1-1:ihi1+1))
-    allocate(s6(ilo1-1:ihi1+1))
+    call bl_allocate(sigma,ilo1-1,ihi1+1)
+    call bl_allocate(s6,ilo1-1,ihi1+1)
 
     if (ppm_type .ne. 1) &
          call bl_error("Should have ppm_type = 1 in ppm_type1")
@@ -141,15 +142,15 @@ contains
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     ! cell-centered indexing w/extra x-ghost cell
-    allocate(dsvl(ilo1-2:ihi1+2,ilo2-1:ihi2+1))
+    call bl_allocate(dsvl,ilo1-2,ihi1+2,ilo2-1,ihi2+1)
 
     ! edge-centered indexing for x-faces -- ppm_type = 1 only
-    allocate(sedge(ilo1-1:ihi1+2,ilo2-1:ihi2+1))
+    call bl_allocate(sedge,ilo1-1,ihi1+2,ilo2-1,ihi2+1)
 
     ! cell-centered indexing
-    allocate(dsc(ilo1-2:ihi1+2))
-    allocate(dsl(ilo1-2:ihi1+2))
-    allocate(dsr(ilo1-2:ihi1+2))
+    call bl_allocate(dsc,ilo1-2,ihi1+2)
+    call bl_allocate(dsl,ilo1-2,ihi1+2)
+    call bl_allocate(dsr,ilo1-2,ihi1+2)
 
     ! compute s at x-edges
 
@@ -278,23 +279,26 @@ contains
 
     end do
 
-    deallocate(dsc,dsl,dsr)
-    deallocate(sedge,dsvl)
+    call bl_deallocate(dsc)
+    call bl_deallocate(dsl)
+    call bl_deallocate(dsr)
+    call bl_deallocate(sedge)
+    call bl_deallocate(dsvl)
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! y-direction
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     ! cell-centered indexing w/extra y-ghost cell
-    allocate( dsvl(ilo1-1:ihi1+1,ilo2-2:ihi2+2))
+    call bl_allocate( dsvl,ilo1-1,ihi1+1,ilo2-2,ihi2+2)
 
     ! edge-centered indexing for y-faces
-    allocate(sedge(ilo1-1:ihi1+1,ilo2-1:ihi2+2))
+    call bl_allocate(sedge,ilo1-1,ihi1+1,ilo2-1,ihi2+2)
 
     ! cell-centered indexing
-    allocate(dsc(ilo1-1:ihi1+1))
-    allocate(dsl(ilo1-1:ihi1+1))
-    allocate(dsr(ilo1-1:ihi1+1))
+    call bl_allocate(dsc,ilo1-1,ihi1+1)
+    call bl_allocate(dsl,ilo1-1,ihi1+1)
+    call bl_allocate(dsr,ilo1-1,ihi1+1)
 
     ! compute s at y-edges
 
@@ -421,24 +425,27 @@ contains
 
     end do
 
-    deallocate(dsc,dsl,dsr)
-    deallocate(dsvl,sedge)
+    call bl_deallocate(dsc)
+    call bl_deallocate(dsl)
+    call bl_deallocate(dsr)
+    call bl_deallocate(dsvl)
+    call bl_deallocate(sedge)
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! z-direction
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     ! cell-centered indexing
-    allocate( dsvl(ilo1-1:ihi1+1,ilo2-1:ihi2+1))
-    allocate(dsvlm(ilo1-1:ihi1+1,ilo2-1:ihi2+1))
-    allocate(dsvlp(ilo1-1:ihi1+1,ilo2-1:ihi2+1))
+    call bl_allocate( dsvl,ilo1-1,ihi1+1,ilo2-1,ihi2+1)
+    call bl_allocate(dsvlm,ilo1-1,ihi1+1,ilo2-1,ihi2+1)
+    call bl_allocate(dsvlp,ilo1-1,ihi1+1,ilo2-1,ihi2+1)
 
     ! cell-centered indexing
-    allocate(dsc(ilo1-1:ihi1+1))
-    allocate(dsl(ilo1-1:ihi1+1))
-    allocate(dsr(ilo1-1:ihi1+1))
+    call bl_allocate(dsc,ilo1-1,ihi1+1)
+    call bl_allocate(dsl,ilo1-1,ihi1+1)
+    call bl_allocate(dsr,ilo1-1,ihi1+1)
 
-    allocate(sedgez(ilo1-1:ihi1+1,ilo2-2:ihi2+3,k3d-1:k3d+2))
+    call bl_allocate(sedgez,ilo1-1,ihi1+1,ilo2-2,ihi2+3,k3d-1,k3d+2)
 
     ! compute s at z-edges
 
@@ -587,8 +594,17 @@ contains
 
     end do
 
-    deallocate(dsc,dsl,dsr)
-    deallocate(dsvl,dsvlm,dsvlp,sp,sm,sedgez,sigma,s6)
+    call bl_deallocate(dsc)
+    call bl_deallocate(dsl)
+    call bl_deallocate(dsr)
+    call bl_deallocate(dsvl)
+    call bl_deallocate(dsvlm)
+    call bl_deallocate(dsvlp)
+    call bl_deallocate(sp)
+    call bl_deallocate(sm)
+    call bl_deallocate(sedgez)
+    call bl_deallocate(sigma)
+    call bl_deallocate(s6)
 
   end subroutine ppm_type1
 
