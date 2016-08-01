@@ -83,17 +83,17 @@ contains
     integer           f_l1, f_l2, f_l3, f_h1, f_h2, f_h3
     integer          ilo1,ilo2,ihi1,ihi2
 
-    double precision    s( s_l1: s_h1, s_l2: s_h2, s_l3: s_h3)
-    double precision    u(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,3)
-    double precision cspd(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
-    double precision flatn(f_l1: f_h1, f_l2: f_h2, f_l3: f_h3)
+    double precision, intent(in) :: s( s_l1: s_h1, s_l2: s_h2, s_l3: s_h3)
+    double precision, intent(in) :: u(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,3)
+    double precision, intent(in) :: cspd(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
+    double precision, intent(in) :: flatn(f_l1: f_h1, f_l2: f_h2, f_l3: f_h3)
 
-    double precision Ip(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3)
-    double precision Im(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3)
+    double precision, intent(out) :: Ip(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3)
+    double precision, intent(out) :: Im(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3)
 
     ! Note that dt_over_a = dt / a_old
-    double precision dx,dy,dz,dt_over_a
-    integer          k3d,kc
+    double precision, intent(in) :: dx,dy,dz,dt_over_a
+    integer, intent(in)          :: k3d,kc
 
     ! local
     integer i,j,k
