@@ -769,6 +769,7 @@ contains
                         ugdnvz,pgdnvz,pgdz_l1,pgdz_l2,pgdz_l3,pgdz_h1,pgdz_h2,pgdz_h3, &
                         cdtdz,ilo,ihi,jlo,jhi,km,kc,k3d)
 
+      use mempool_module, only: bl_allocate, bl_deallocate
       use meth_params_module, only : QVAR, NVAR, QRHO, QU, QV, QW, &
                                      QPRES, QREINT, &
                                      URHO, UMX, UMY, UMZ, UEDEN, &
@@ -801,22 +802,82 @@ contains
 
       double precision rrnew, rr
       double precision compn, compu
-      double precision, dimension(ilo:ihi,jlo:jhi) :: rrrx, rrry, rrlx, rrly
-      double precision, dimension(ilo:ihi,jlo:jhi) :: rurx, rury, rulx, ruly
-      double precision, dimension(ilo:ihi,jlo:jhi) :: rvrx, rvry, rvlx, rvly
-      double precision, dimension(ilo:ihi,jlo:jhi) :: rwrx, rwry, rwlx, rwly
-      double precision, dimension(ilo:ihi,jlo:jhi) :: ekenrx, ekenry, ekenlx, ekenly
-      double precision, dimension(ilo:ihi,jlo:jhi) :: rerx, rery, relx, rely
-      double precision, dimension(ilo:ihi,jlo:jhi) :: rrnewrx, rrnewry, rrnewlx, rrnewly
-      double precision, dimension(ilo:ihi,jlo:jhi) :: runewrx, runewry, runewlx, runewly
-      double precision, dimension(ilo:ihi,jlo:jhi) :: rvnewrx, rvnewry, rvnewlx, rvnewly
-      double precision, dimension(ilo:ihi,jlo:jhi) :: rwnewrx, rwnewry, rwnewlx, rwnewly
-      double precision, dimension(ilo:ihi,jlo:jhi) :: renewrx, renewry, renewlx, renewly
-      double precision, dimension(ilo:ihi,jlo:jhi) :: pnewrx,  pnewry,  pnewlx,  pnewly
-      double precision, dimension(ilo:ihi,jlo:jhi) :: rhoekenrx, rhoekenry, rhoekenlx, rhoekenly
-      double precision, dimension(ilo:ihi,jlo:jhi) :: pgp, pgm, ugp, ugm, dup, pav, du
+      double precision, pointer :: rrrx(:,:), rrry(:,:), rrlx(:,:), rrly(:,:)
+      double precision, pointer :: rurx(:,:), rury(:,:), rulx(:,:), ruly(:,:)
+      double precision, pointer :: rvrx(:,:), rvry(:,:), rvlx(:,:), rvly(:,:)
+      double precision, pointer :: rwrx(:,:), rwry(:,:), rwlx(:,:), rwly(:,:)
+      double precision, pointer :: ekenrx(:,:), ekenry(:,:), ekenlx(:,:), ekenly(:,:)
+      double precision, pointer :: rerx(:,:), rery(:,:), relx(:,:), rely(:,:)
+      double precision, pointer :: rrnewrx(:,:), rrnewry(:,:), rrnewlx(:,:), rrnewly(:,:)
+      double precision, pointer :: runewrx(:,:), runewry(:,:), runewlx(:,:), runewly(:,:)
+      double precision, pointer :: rvnewrx(:,:), rvnewry(:,:), rvnewlx(:,:), rvnewly(:,:)
+      double precision, pointer :: rwnewrx(:,:), rwnewry(:,:), rwnewlx(:,:), rwnewly(:,:)
+      double precision, pointer :: renewrx(:,:), renewry(:,:), renewlx(:,:), renewly(:,:)
+      double precision, pointer :: pnewrx(:,:),  pnewry(:,:),  pnewlx(:,:),  pnewly(:,:)
+      double precision, pointer :: rhoekenrx(:,:), rhoekenry(:,:), rhoekenlx(:,:), rhoekenly(:,:)
+      double precision, pointer :: pgp(:,:), pgm(:,:), ugp(:,:), ugm(:,:), dup(:,:), pav(:,:), du(:,:)
 
       integer          :: ipassive
+
+      call bl_allocate(rrrx, ilo, ihi, jlo, jhi)
+      call bl_allocate(rrry, ilo, ihi, jlo, jhi)
+      call bl_allocate(rrlx, ilo, ihi, jlo, jhi)
+      call bl_allocate(rrly, ilo, ihi, jlo, jhi)
+      call bl_allocate(rurx, ilo, ihi, jlo, jhi)
+      call bl_allocate(rury, ilo, ihi, jlo, jhi)
+      call bl_allocate(rulx, ilo, ihi, jlo, jhi)
+      call bl_allocate(ruly, ilo, ihi, jlo, jhi)
+      call bl_allocate(rvrx, ilo, ihi, jlo, jhi)
+      call bl_allocate(rvry, ilo, ihi, jlo, jhi)
+      call bl_allocate(rvlx, ilo, ihi, jlo, jhi)
+      call bl_allocate(rvly, ilo, ihi, jlo, jhi)
+      call bl_allocate(rwrx, ilo, ihi, jlo, jhi)
+      call bl_allocate(rwry, ilo, ihi, jlo, jhi)
+      call bl_allocate(rwlx, ilo, ihi, jlo, jhi)
+      call bl_allocate(rwly, ilo, ihi, jlo, jhi)
+      call bl_allocate(ekenrx, ilo, ihi, jlo, jhi)
+      call bl_allocate(ekenry, ilo, ihi, jlo, jhi)
+      call bl_allocate(ekenlx, ilo, ihi, jlo, jhi)
+      call bl_allocate(ekenly, ilo, ihi, jlo, jhi)
+      call bl_allocate(rerx, ilo, ihi, jlo, jhi)
+      call bl_allocate(rery, ilo, ihi, jlo, jhi)
+      call bl_allocate(relx, ilo, ihi, jlo, jhi)
+      call bl_allocate(rely, ilo, ihi, jlo, jhi)
+      call bl_allocate(rrnewrx, ilo, ihi, jlo, jhi)
+      call bl_allocate(rrnewry, ilo, ihi, jlo, jhi)
+      call bl_allocate(rrnewlx, ilo, ihi, jlo, jhi)
+      call bl_allocate(rrnewly, ilo, ihi, jlo, jhi)
+      call bl_allocate(runewrx, ilo, ihi, jlo, jhi)
+      call bl_allocate(runewry, ilo, ihi, jlo, jhi)
+      call bl_allocate(runewlx, ilo, ihi, jlo, jhi)
+      call bl_allocate(runewly, ilo, ihi, jlo, jhi)
+      call bl_allocate(rvnewrx, ilo, ihi, jlo, jhi)
+      call bl_allocate(rvnewry, ilo, ihi, jlo, jhi)
+      call bl_allocate(rvnewlx, ilo, ihi, jlo, jhi)
+      call bl_allocate(rvnewly, ilo, ihi, jlo, jhi)
+      call bl_allocate(rwnewrx, ilo, ihi, jlo, jhi)
+      call bl_allocate(rwnewry, ilo, ihi, jlo, jhi)
+      call bl_allocate(rwnewlx, ilo, ihi, jlo, jhi)
+      call bl_allocate(rwnewly, ilo, ihi, jlo, jhi)
+      call bl_allocate(renewrx, ilo, ihi, jlo, jhi)
+      call bl_allocate(renewry, ilo, ihi, jlo, jhi)
+      call bl_allocate(renewlx, ilo, ihi, jlo, jhi)
+      call bl_allocate(renewly, ilo, ihi, jlo, jhi)
+      call bl_allocate(pnewrx, ilo, ihi, jlo, jhi)
+      call bl_allocate(pnewry, ilo, ihi, jlo, jhi)
+      call bl_allocate(pnewlx, ilo, ihi, jlo, jhi)
+      call bl_allocate(pnewly, ilo, ihi, jlo, jhi)
+      call bl_allocate(rhoekenrx, ilo, ihi, jlo, jhi)
+      call bl_allocate(rhoekenry, ilo, ihi, jlo, jhi)
+      call bl_allocate(rhoekenlx, ilo, ihi, jlo, jhi)
+      call bl_allocate(rhoekenly, ilo, ihi, jlo, jhi)
+      call bl_allocate(pgp, ilo, ihi, jlo, jhi)
+      call bl_allocate(pgm, ilo, ihi, jlo, jhi)
+      call bl_allocate(ugp, ilo, ihi, jlo, jhi)
+      call bl_allocate(ugm, ilo, ihi, jlo, jhi)
+      call bl_allocate(dup, ilo, ihi, jlo, jhi)
+      call bl_allocate(pav, ilo, ihi, jlo, jhi)
+      call bl_allocate(du, ilo, ihi, jlo, jhi)
 
       do ipassive = 1,npassive
          n  = upass_map(ipassive)
@@ -1141,6 +1202,66 @@ contains
 
           enddo
       enddo
+
+      call bl_deallocate(rrrx)
+      call bl_deallocate(rrry)
+      call bl_deallocate(rrlx)
+      call bl_deallocate(rrly)
+      call bl_deallocate(rurx)
+      call bl_deallocate(rury)
+      call bl_deallocate(rulx)
+      call bl_deallocate(ruly)
+      call bl_deallocate(rvrx)
+      call bl_deallocate(rvry)
+      call bl_deallocate(rvlx)
+      call bl_deallocate(rvly)
+      call bl_deallocate(rwrx)
+      call bl_deallocate(rwry)
+      call bl_deallocate(rwlx)
+      call bl_deallocate(rwly)
+      call bl_deallocate(ekenrx)
+      call bl_deallocate(ekenry)
+      call bl_deallocate(ekenlx)
+      call bl_deallocate(ekenly)
+      call bl_deallocate(rerx)
+      call bl_deallocate(rery)
+      call bl_deallocate(relx)
+      call bl_deallocate(rely)
+      call bl_deallocate(rrnewrx)
+      call bl_deallocate(rrnewry)
+      call bl_deallocate(rrnewlx)
+      call bl_deallocate(rrnewly)
+      call bl_deallocate(runewrx)
+      call bl_deallocate(runewry)
+      call bl_deallocate(runewlx)
+      call bl_deallocate(runewly)
+      call bl_deallocate(rvnewrx)
+      call bl_deallocate(rvnewry)
+      call bl_deallocate(rvnewlx)
+      call bl_deallocate(rvnewly)
+      call bl_deallocate(rwnewrx)
+      call bl_deallocate(rwnewry)
+      call bl_deallocate(rwnewlx)
+      call bl_deallocate(rwnewly)
+      call bl_deallocate(renewrx)
+      call bl_deallocate(renewry)
+      call bl_deallocate(renewlx)
+      call bl_deallocate(renewly)
+      call bl_deallocate(pnewrx)
+      call bl_deallocate(pnewry)
+      call bl_deallocate(pnewlx)
+      call bl_deallocate(pnewly)
+      call bl_deallocate(rhoekenrx)
+      call bl_deallocate(rhoekenry)
+      call bl_deallocate(rhoekenlx)
+      call bl_deallocate(rhoekenly)
+      call bl_deallocate(pgp)
+      call bl_deallocate(pgm)
+      call bl_deallocate(ugp)
+      call bl_deallocate(ugm)
+      call bl_deallocate(dup)
+      call bl_deallocate(pav)
+      call bl_deallocate(du)
 
       end subroutine transz
 
