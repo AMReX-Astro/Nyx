@@ -31,6 +31,9 @@
 \setcounter{tocdepth}{3}
 \setcounter{secnumdepth}{3}
 
+% control sequences in verbatim
+\usepackage{fancyvrb}
+
 \newcommand{\sfrac}[2]{\mathchoice
   {\kern0em\raise.5ex\hbox{\the\scriptfont0 #1}\kern-.15em/
    \kern-.15em\lower.25ex\hbox{\the\scriptfont0 #2}}
@@ -70,6 +73,13 @@
 \def\half   {\frac{1}{2}}
 \def\myhalf {\sfrac{1}{2}}
 \def\nph    {{n+\myhalf}}
+
+% codes
+\newcommand{\nyx}{{\sf Nyx}}
+\newcommand{\yt}{{\sf yt}}
+\newcommand{\amrvis}{{\sf Amrvis}}
+\newcommand{\visit}{{\sf VisIt}}
+\newcommand{\boxlib}{{\sf BoxLib}}
 
 % Level Set Macros
 \def\ADDNODE       {{\tt{\bf ADDNODE}}}
@@ -126,8 +136,8 @@
 \maketitle
 \tableofcontents
 
-\chapter{Introduction}
-\input Introduction/NyxIntroduction
+%\chapter{Introduction}
+%\input Introduction/NyxIntroduction
 
 \chapter{Getting Started}
 \input GettingStarted/NyxGettingStarted
