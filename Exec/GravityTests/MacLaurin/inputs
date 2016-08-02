@@ -1,0 +1,101 @@
+# ------------------  INPUTS TO MAIN PROGRAM  -------------------
+max_step = 10000000
+max_step = 0
+
+nyx.ppm_type = 1
+
+#This is 1e-8 times the lowest density in plt00000
+nyx.small_dens = 1.e-16
+
+#This is 1e-5 times the constant temparature in plt00000
+nyx.small_temp = 1.e-16
+
+#This is 1e-8 times the lowest pressure in plt00000
+nyx.small_pres = 1.e-16
+
+gravity.sl_tol = 1.e-12
+
+nyx.initial_z = 0.
+nyx.final_a = -1.0
+
+#File written during the run: nstep | time | dt | redshift | a
+amr.data_log = runlog
+
+#This is how we restart from a checkpoint and write an ascii particle file
+#Leave this commented out in cvs version
+#amr.restart = chk00350
+#max_step = 350
+#particles.particle_output_file = particle_output
+
+gravity.gravity_type = PoissonGrav
+gravity.no_sync      = 1
+gravity.no_composite = 1
+
+gravity.dirichlet_bcs = 1
+
+mg.bottom_solver = 4
+
+# PROBLEM SIZE & GEOMETRY
+geometry.is_periodic =  0     0     0
+geometry.coord_sys   =  0
+
+geometry.prob_lo     =  0     0     0
+
+#Domain size in Mpc
+geometry.prob_hi     =  1. 1. 1.
+
+amr.n_cell           = 64 64 64
+amr.n_cell           = 32 32 32
+amr.max_grid_size    = 32
+
+#amr.n_cell           = 128 128 128
+#amr.max_grid_size    = 32
+
+#amr.n_cell           = 256 256 256
+#amr.max_grid_size    = 32
+
+# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
+# 0 = Interior           3 = Symmetry
+# 1 = Inflow             4 = SlipWall
+# 2 = Outflow
+# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
+nyx.lo_bc       =  2   2   2
+nyx.hi_bc       =  2   2   2
+
+# WHICH PHYSICS
+nyx.do_hydro = 1
+nyx.do_grav  = 1
+
+# PARTICLES
+nyx.do_dm_particles = 0
+
+# TIME STEP CONTROL
+nyx.cfl            = 0.5     # cfl number for hyperbolic system
+nyx.init_shrink    = 1.0     # scale back initial timestep
+nyx.change_max     = 1.1     # factor by which timestep can change
+nyx.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
+
+# DIAGNOSTICS & VERBOSITY
+nyx.sum_interval   = -1      # timesteps between computing mass
+nyx.v              = 1       # verbosity in Castro.cpp
+gravity.v             = 1       # verbosity in Gravity.cpp
+amr.v                 = 1       # verbosity in Amr.cpp
+mg.v                  = 2       # verbosity in Amr.cpp
+
+# REFINEMENT / REGRIDDING
+amr.max_level       = 0       # maximum level number allowed
+
+# CHECKPOINT FILES
+amr.check_file      = chk
+amr.check_int       = 10
+
+# PLOTFILES
+amr.plot_file       = plt
+amr.plot_int        = 10
+
+amr.plot_vars        = ALL
+nyx.plot_phi_grav    = 1
+
+#PROBIN FILENAME
+amr.probin_file = probin
+

@@ -1,0 +1,160 @@
+EBASE     = Nyx
+
+include $(BOXLIB_HOME)/Tools/C_mk/Make.defs
+
+USE_PARTICLES = TRUE
+NYX           = TRUE
+
+# Nyx now uses a coarse grained OMP approach
+DEFINES += -DCRSEGRNDOMP
+
+ifeq ($(USE_SINGLE_PRECISION_PARTICLES), TRUE)
+  DEFINES += -DBL_SINGLE_PRECISION_PARTICLES
+endif
+
+ifeq ($(USE_GRAV), TRUE)
+  DEFINES += -DGRAVITY
+endif
+
+ifeq ($(NO_HYDRO), TRUE)
+  DEFINES += -DNO_HYDRO
+endif
+
+ifeq ($(USE_AGN), TRUE)
+  DEFINES += -DAGN
+endif
+
+ifeq ($(NEUTRINO_PARTICLES), TRUE)
+  DEFINES += -DNEUTRINO_PARTICLES
+endif
+
+ifeq ($(USE_HEATCOOL), TRUE)
+  DEFINES += -DHEATCOOL
+endif
+
+DEFINES += -DBL_NOLINEVALUES
+
+ifeq ($(USE_IN_SITU), TRUE)
+  DEFINES += -DREEBER_USE_BOXLIB_READER
+  INCLUDE_LOCATIONS += $(BOOST_DIR)/include
+  #INCLUDE_LOCATIONS += $(REEBER_HOME)/include $(REEBER_HOME)/examples/boxlib
+  INCLUDE_LOCATIONS += $(DIY2_INCLUDE_DIR)
+  INCLUDE_LOCATIONS += $(REEBER_HOME)/include $(REEBER_HOME)/examples/include $(REEBER_HOME)/examples/local-global
+  VPATH_LOCATIONS += $(REEBER_HOME)/src $(REEBER_HOME)/examples/local-global
+  ifeq ($(wildcard $(BOOST_DIR)/lib/libboost_serialization-mt.*),)
+    LIBRARIES += -L$(BOOST_DIR)/lib -lboost_mpi -lboost_serialization
+  else
+    LIBRARIES += -L$(BOOST_DIR)/lib -lboost_mpi-mt -lboost_serialization-mt
+  endif
+  DEFINES += -DIN_SITU
+  DEFINES += -DPARALLEL_MPI -DBOOST_DATE_TIME_NO_LOCALE
+  ifeq ($(DEBUG), TRUE)
+    DEFINES += -DDEBUG
+  endif
+endif
+
+#These are the directories in Nyx 
+
+Bdirs 	:= Source Source/Src_3d Source/HydroFortran Source/Tagging Source/Initialization
+Bdirs 	+= Source/EOS Source/Network Source/HeatCool
+Bdirs 	+= Source/SourceTerms Source/DerivedQuantities
+ifeq ($(USE_MPI), TRUE)
+Bdirs 	+= Source/Monitors
+endif
+
+ifeq ($(USE_GRAV), TRUE)
+   Bdirs 	+= Source/Gravity
+endif
+ifeq ($(USE_AGN), TRUE)
+   Bdirs 	+= Source/AGN
+endif
+
+Bpack	+= $(foreach dir, $(Bdirs), $(TOP)/$(dir)/Make.package)
+Blocs	+= $(foreach dir, $(Bdirs), $(TOP)/$(dir))
+
+include $(Bpack)
+INCLUDE_LOCATIONS += $(Blocs)
+VPATH_LOCATIONS   += $(Blocs)
+
+#INCLUDE_LOCATIONS += $(TOP)/Source/MG
+#VPATH_LOCATIONS   += $(TOP)/Source/MG
+
+#These are the directories in BoxLib
+
+Pdirs   := C_BaseLib C_AMRLib C_BoundaryLib Extern/amrdata
+Ppack	+= $(foreach dir, $(Pdirs), $(BOXLIB_HOME)/Src/$(dir)/Make.package)
+Plocs	+= $(foreach dir, $(Pdirs), $(BOXLIB_HOME)/Src/$(dir))
+
+include $(Ppack)
+INCLUDE_LOCATIONS += $(Plocs)
+VPATH_LOCATIONS   += $(Plocs)
+
+include $(TOP)/Source/Constants/Make.package
+INCLUDE_LOCATIONS += $(TOP)/Source/Constants
+VPATH_LOCATIONS   += $(TOP)/Source/Constants
+
+USE_MG = FALSE
+ifeq ($(USE_GRAV), TRUE)
+  USE_MG = TRUE
+endif
+   
+ifeq ($(USE_MG), TRUE)
+  include $(BOXLIB_HOME)/Src/LinearSolvers/C_to_F_MG/Make.package
+  INCLUDE_LOCATIONS += $(BOXLIB_HOME)/Src/LinearSolvers/C_to_F_MG
+  VPATH_LOCATIONS   += $(BOXLIB_HOME)/Src/LinearSolvers/C_to_F_MG
+
+  include $(BOXLIB_HOME)/Src/LinearSolvers/C_CellMG/Make.package
+  INCLUDE_LOCATIONS += $(BOXLIB_HOME)/Src/LinearSolvers/C_CellMG
+  VPATH_LOCATIONS   += $(BOXLIB_HOME)/Src/LinearSolvers/C_CellMG
+
+  include $(BOXLIB_HOME)/Src/LinearSolvers/F_MG/FParallelMG.mak
+  INCLUDE_LOCATIONS += $(BOXLIB_HOME)/Src/LinearSolvers/F_MG
+  VPATH_LOCATIONS   += $(BOXLIB_HOME)/Src/LinearSolvers/F_MG
+endif
+
+include $(BOXLIB_HOME)/Src/F_BaseLib/FParallelMG.mak
+INCLUDE_LOCATIONS += $(BOXLIB_HOME)/Src/F_BaseLib
+VPATH_LOCATIONS   += $(BOXLIB_HOME)/Src/F_BaseLib
+
+VODE_dir    := $(TOP)/Util/VODE
+include $(VODE_dir)/Make.package
+
+BLAS_dir    := $(TOP)/Util/BLAS
+include $(BLAS_dir)/Make.package
+
+INCLUDE_LOCATIONS += $(VODE_dir)
+INCLUDE_LOCATIONS += $(BLAS_dir)
+
+VPATH_LOCATIONS   += $(VODE_dir)
+VPATH_LOCATIONS   += $(BLAS_dir)
+
+all: $(executable) 
+	$(SILENT) $(RM) buildInfo.cpp
+	@echo SUCCESS
+
+# job_info support
+CEXE_sources += buildInfo.cpp
+CEXE_headers += $(BOXLIB_HOME)/Tools/C_scripts/buildInfo.H
+INCLUDE_LOCATIONS +=  $(BOXLIB_HOME)/Tools/C_scripts
+
+buildInfo.cpp: 
+	$(BOXLIB_HOME)/Tools/C_scripts/makebuildinfo_C.py \
+          --boxlib_home "$(BOXLIB_HOME)" \
+          --COMP "$(COMP)" \
+          --FCOMP "$(FCOMP)" \
+          --GIT "$(TOP) $(BOXLIB_HOME)"
+
+vpath %.c   . $(VPATH_LOCATIONS)
+vpath %.cpp . $(VPATH_LOCATIONS)
+vpath %.h   . $(VPATH_LOCATIONS)
+vpath %.H   . $(VPATH_LOCATIONS)
+vpath %.F   . $(VPATH_LOCATIONS)
+vpath %.f90 . $(VPATH_LOCATIONS)
+vpath %.f   . $(VPATH_LOCATIONS)
+vpath %.fi  . $(VPATH_LOCATIONS)
+
+include $(BOXLIB_HOME)/Tools/C_mk/Make.rules
+
+clean::
+	$(SILENT) $(RM) buildInfo.cpp
+

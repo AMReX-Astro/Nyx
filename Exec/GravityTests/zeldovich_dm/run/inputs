@@ -1,0 +1,94 @@
+# ------------------  INPUTS TO MAIN PROGRAM  -------------------
+max_step = 10000000
+
+nyx.initial_z = 10.0
+nyx.final_z   =  0.0
+
+# File written during the run: nstep | time | dt | redshift | a
+amr.data_log = runlog
+
+# Restart options
+#amr.restart = chk00100
+#max_step = 100
+#particles.particle_output_file = particle_output
+
+gravity.gravity_type = PoissonGrav
+gravity.no_sync      = 1
+gravity.no_composite = 1
+
+mg.bottom_solver = 4
+
+# PROBLEM SIZE & GEOMETRY
+geometry.is_periodic = 1 1 1
+geometry.coord_sys   = 0
+geometry.prob_lo     = 0 0 0
+geometry.prob_hi     = 15.0 15.0 15.0
+
+amr.n_cell        = 64 64 64
+amr.max_grid_size = 32
+
+
+# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
+# 0 = Interior           3 = Symmetry
+# 1 = Inflow             4 = SlipWall
+# 2 = Outflow
+# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
+nyx.lo_bc = 0 0 0
+nyx.hi_bc = 0 0 0
+
+# WHICH PHYSICS
+nyx.do_hydro = 0
+nyx.do_grav  = 1
+
+# PARTICLES
+nyx.do_dm_particles = 1
+
+
+# >>>>>>>>>>>>>  PARTICLE INIT OPTIONS <<<<<<<<<<<<<<<<
+#  "AsciiFile"        "Random"	    "Cosmological"
+# >>>>>>>>>>>>>  PARTICLE INIT OPTIONS <<<<<<<<<<<<<<<<
+nyx.particle_init_type = AsciiFile
+nyx.ascii_particle_file = ../ics/zeldovich_particles.ascii
+
+
+# >>>>>>>>>>>>>  PARTICLE MOVE OPTIONS <<<<<<<<<<<<<<<<
+#  "Gravitational"    "Random"
+# >>>>>>>>>>>>>  PARTICLE MOVE OPTIONS <<<<<<<<<<<<<<<<
+nyx.particle_move_type = Gravitational
+
+
+# TIME STEP CONTROL
+nyx.cfl         = 0.9     # cfl number for hyperbolic system
+nyx.init_shrink = 1.0     # scale back initial timestep
+nyx.change_max  = 1.05    # scale back initial timestep
+nyx.dt_cutoff   = 5.e-20  # level 0 timestep below which we halt
+
+
+# DIAGNOSTICS & VERBOSITY
+# @todo: -1 sum_interval makes no sense.
+nyx.sum_interval = -1       # timesteps between computing mass
+nyx.v            =  1       # verbosity in Nyx.cpp
+gravity.v        =  1       # verbosity in Gravity.cpp
+amr.v            =  1       # verbosity in Amr.cpp
+mg.v             =  1       # verbosity in Amr.cpp
+particles.v      =  0       # verbosity in Particle class
+#amr.grid_log    =  grdlog  # name of grid logging file
+
+# REFINEMENT / REGRIDDING
+amr.max_level = 0  # maximum level number allowed, so this is fixed grid
+
+# CHECKPOINT FILES
+amr.check_file = chk
+amr.check_int  = 300
+
+# PLOTFILES
+amr.plot_file = plt
+amr.plot_int  = 5
+
+# these variables appear in the plotfile
+amr.derive_plot_vars = particle_count
+amr.plot_vars = NONE
+
+# probin filename
+amr.probin_file = probin
+

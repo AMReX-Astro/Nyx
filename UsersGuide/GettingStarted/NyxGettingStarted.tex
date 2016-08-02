@@ -1,0 +1,86 @@
+\section{Getting Started With Git}
+
+Please note that Nyx is not yet available for public release.  If you have
+heard about Nyx and are interested in trying it, please contact Ann Almgren at
+asalmgren@lbl.gov
+
+Nyx is now distributed in two parts using git -- 
+you must first download the BoxLib repository, then the Nyx repo.
+
+To use Nyx:
+
+\begin{enumerate}
+
+\item Assuming git is installed on your machine -- and we recommend 
+version 1.7.x or higher -- download the BoxLib repository by typing  \\
+
+\noindent git clone https://ccse.lbl.gov/pub/Downloads/BoxLib.git
+
+\noindent This will create a directory called BoxLib on your machine.  Put this somewhere out of the way and 
+set the environment variable, {\bf BOXLIB\_HOME}, on your machine to the path name where
+you have put BoxLib.    You will want to periodically update BoxLib by typing 
+
+\noindent git pull
+
+in the BoxLib directory.  
+
+\item We will have set up an account for you; follow the instructions 
+we have given you to access Nyx itself. 
+
+\end{enumerate}
+
+\clearpage
+
+\section{Building the Code}
+
+\begin{enumerate}
+
+\item From the directory in which you checked out Nyx, type
+
+cd Nyx/Exec/Test\_90Mpc
+
+This will put you into a directory in which you can run the 90Mpc test problem from 
+{\tt http://t8web.lanl.gov/people/heitmann/arxiv/}
+
+\item In Test\_90Mpc, edit the GNUmakefile, and set
+
+COMP = your favorite C++ compiler
+
+FCOMP = your favorite Fortran compiler (which must compile F90)
+
+DEBUG = FALSE
+
+We like COMP = gcc and FCOMP = gfortran. 
+
+\item Now type "make". The resulting executable will look something like 
+"Nyx3d.Linux.gcc.gfortran.ex", which means this is a 3-d version of the code, 
+made on a Linux machine, with COMP = gcc and FCOMP = gfortran.
+
+\end{enumerate}
+
+\section{Running the Code}
+
+\begin{enumerate}
+
+\item Type ``Nyx3d.Linux.gcc.gfortran.ex inputs''
+
+\item You will notice that running the code generates directories that look like 
+plt00000, plt00020, etc, and chk00000, chk00020, etc. These are "plotfiles" and 
+"checkpoint" files. The plotfiles are used for visualization, the checkpoint files are 
+used for restarting the code.
+
+\end{enumerate}
+
+\section{Visualization of the Results}
+
+\begin{enumerate}
+
+\item To visualize the plotfiles, you can use Visit, yt, or 
+a homegrown visualization tool known as {\bf amrvis}.
+
+To use {\bf amrvis}, please contact Ann Almgren (asalmgren@lbl.gov) for information on how
+to download it.  Visit and yt are available from their web sites.
+
+\end{enumerate}
+
+You have now completed a brief introduction to Nyx. 

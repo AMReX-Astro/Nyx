@@ -1,0 +1,8 @@
+&fortin
+
+  max_num_part = 0
+
+  comoving_OmM = 0.3
+  comoving_OmB = 0.045
+  comoving_h   = 0.7d0
+/

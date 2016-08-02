@@ -1,0 +1,11 @@
+#PBS -q regular
+#PBS -A cosmosim
+#PBS -l mppwidth=384
+#PBS -l walltime=48:00:00
+#PBS -j eo
+#PBS -V
+
+cd $PBS_O_WORKDIR
+setenv OMP_NUM_THREADS 6
+
+aprun -n 64 -N 4 -S 1 -d 6 ./Nyx3d.Linux.gcc.gfortran.MPI.OMP.ex inputs >& out

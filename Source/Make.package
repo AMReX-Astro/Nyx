@@ -1,0 +1,43 @@
+CEXE_sources += advance_particles.cpp
+
+CEXE_sources += Nyx.cpp
+CEXE_sources += Nyx_advance.cpp
+CEXE_sources += Nyx_output.cpp
+CEXE_sources += NyxBld.cpp
+CEXE_sources += main.cpp
+CEXE_sources += NyxParticles.cpp
+CEXE_sources += ParticleDerive.cpp
+CEXE_sources += two_particle_advance.cpp
+CEXE_sources += comoving.cpp
+CEXE_sources += write_info.cpp
+
+ifneq ($(NO_HYDRO), TRUE)
+CEXE_sources += Nyx_hydro.cpp
+CEXE_sources += sum_integrated_quantities.cpp
+CEXE_sources += sum_utils.cpp
+CEXE_sources += strang_splitting.cpp
+endif
+
+CEXE_headers += Nyx.H
+FEXE_headers += Nyx_F.H
+
+f90EXE_sources += Nyx_nd.f90
+f90EXE_sources +=  eos_params.f90
+f90EXE_sources += meth_params.f90
+f90EXE_sources += prob_params.f90
+f90EXE_sources += comoving_params.f90
+f90EXE_sources += comoving_nd.f90
+f90EXE_sources += project_S.f90
+
+ifeq ($(USE_IN_SITU), TRUE)
+#CEXE_sources += log.cpp stats.cpp
+#CEXE_sources += boxlib-amr-reader.cpp compute-mt-boxlib-amr.cpp
+#CEXE_sources += compute-persistence-diagram-amr.cpp compute-persistent-integral-amr.cpp
+CEXE_sources += format.cpp
+CEXE_sources += boxlib_in_situ_analysis.cpp
+#CEXE_headers += log.h stats.h
+#CEXE_headers += boxlib-amr-reader.h compute-mt-boxlib-amr.h
+#CEXE_headers += compute-persistence-diagram-amr.h compute-persistent-integral-amr.h
+CEXE_headers += format.h
+CEXE_headers += boxlib_in_situ_analysis.H
+endif

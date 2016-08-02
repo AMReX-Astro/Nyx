@@ -1,0 +1,100 @@
+# ------------------  INPUTS TO MAIN PROGRAM  -------------------
+max_step = 10
+
+#stop_time = 0.1
+
+nyx.initial_z = 0.0
+nyx.final_a = 1.01
+
+amr.data_log = runlog
+
+gravity.gravity_type = PoissonGrav
+gravity.no_sync      = 1
+gravity.no_composite = 1
+
+mg.bottom_solver = 1
+
+# PROBLEM SIZE & GEOMETRY
+geometry.is_periodic =  1     1     1
+geometry.coord_sys   =  0
+
+geometry.prob_lo     =   0.  0.  0.
+geometry.prob_hi     =  32. 32. 32.
+
+amr.n_cell           =  16  16  16
+amr.max_grid_size    = 16
+
+# >>>>>>>>>>>>>>>  SUBCYCLING CONTROLS <<<<<<<<<<<<<<<<
+#  "None"        "Auto"	        "Manual"    "Optimal"
+# >>>>>>>>>>>>>>>  SUBCYCLING CONTROLS <<<<<<<<<<<<<<<<
+amr.subcycling_mode = Manual
+amr.subcycling_iterations = 1 2 2 2
+
+# REFINEMENT / REGRIDDING
+amr.max_level       = 2
+amr.ref_ratio       = 2 2
+amr.blocking_factor = 8
+
+amr.regrid_int      = 2
+amr.use_efficient_regrid = 1
+#amr.grid_log        = grdlog
+
+# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
+# 0 = Interior           3 = Symmetry
+# 1 = Inflow             4 = SlipWall
+# 2 = Outflow
+# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
+nyx.lo_bc       =  0   0   0
+nyx.hi_bc       =  0   0   0
+
+# WHICH PHYSICS
+nyx.do_hydro = 1
+nyx.do_grav  = 1
+
+# PARTICLES
+nyx.do_dm_particles = 1
+
+particles.v = 3
+
+# >>>>>>>>>>>>>  PARTICLE INIT OPTIONS <<<<<<<<<<<<<<<<
+#  "AsciiFile"        "Random"	    "Cosmological"
+# >>>>>>>>>>>>>  PARTICLE INIT OPTIONS <<<<<<<<<<<<<<<<
+nyx.particle_init_type = AsciiFile
+nyx.ascii_particle_file = particle_file.2line
+particles.particle_output_file = final_particles
+
+# >>>>>>>>>>>>>  PARTICLE MOVE OPTIONS <<<<<<<<<<<<<<<<
+#  "Gravitational"    "Random"
+# >>>>>>>>>>>>>  PARTICLE MOVE OPTIONS <<<<<<<<<<<<<<<<
+nyx.particle_move_type = Gravitational
+
+# TIME STEP CONTROL
+nyx.cfl            = 0.9     # cfl number for hyperbolic system
+nyx.init_shrink    = 1.0     # scale back initial timestep
+nyx.change_max     = 1.1     # scale back initial timestep
+nyx.dt_cutoff      = 5.e-20  # level 0 timestep below which we halt
+
+# DIAGNOSTICS & VERBOSITY
+nyx.sum_interval   = -1      # timesteps between computing mass
+nyx.v              = 1       # verbosity in Castro.cpp
+gravity.v             = 1       # verbosity in Gravity.cpp
+amr.v                 = 1       # verbosity in Amr.cpp
+mg.v                  = 1       # verbosity in Amr.cpp
+particles.v           = 1       # verbosity in Amr.cpp
+#amr.grid_log         = grdlog  # name of grid logging file
+
+# CHECKPOINT FILES
+amr.checkpoint_files_output = 0
+amr.check_file      = chk
+amr.check_int       =  10
+
+# PLOTFILES
+amr.plot_file       = plt
+amr.plot_int        = 10
+
+amr.plot_vars        = density xmom ymom zmom rho_E rho_e phi_grav grav_x grav_y grav_z
+amr.derive_plot_vars = particle_count particle_mass_density 
+
+#PROBIN FILENAME
+amr.probin_file = probin
+
