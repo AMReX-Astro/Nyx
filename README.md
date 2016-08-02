@@ -39,8 +39,29 @@ While the merge window is closed, only bug fixes should be pushed into
 `development`.  Once the merge from `development` -> `master` is done,
 the merge window reopens.
 
-## Mailing list
+## Physics Included
+For the description of the N-body and adiabatic hydro algorithms in Nyx, see:  
+Almgren, Bell, Lijewski, Lukic & Van Andel (2013), ApJ, 765, 39  
+http://adsabs.harvard.edu/abs/2013ApJ...765...39A
 
-You can subscribe to the nyx-help mailing list at google groups:
+For the reaction and thermal rates of the primordial chemical composition gas 
+(and convergence tests in the context of the Lyman-alpha forest), see:  
+Lukic, Stark, Nugent, White, Meiksin & Almgren (2015), MNRAS, 446, 3697 
+http://adsabs.harvard.edu/abs/2015MNRAS.446.3697L
+
+For the synthesis model of the UV background, 
+which provides the photo-ionization and photo-heating rates, 
+we include the prescription of:  
+Onorbe, Hennawi & Lukic (2016)  
+http://adsabs.harvard.edu/abs/2016arXiv160704218O
+
+## Mailing List
+
+For questions on how to use `Nyx`, email Ann Almgren at ASAlmgren@lbl.gov
+
+For more information about the science being done with `Nyx`, 
+email Zarija Lukic at Zarija@lbl.gov
+
+You can also subscribe to the nyx-help mailing list at google groups:
 
 https://groups.google.com/forum/#!forum/nyx-help
