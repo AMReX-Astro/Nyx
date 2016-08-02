@@ -19,7 +19,7 @@ To build `Nyx`, you need a copy of the `BoxLib` library:
 
 https://github.com/BoxLib-Codes/BoxLib.git
 
-There is a User's Guide in `Nyx/Docs/` (type `make` to build
+There is a User's Guide in `Nyx/UsersGuide/` (type `make` to build
 from LaTeX source) that will guide you through running your first
 problem.  
 
