@@ -41,7 +41,6 @@ the merge window reopens.
 
 ## Mailing list
 
-For questions on how to use `Nyx`, email Ann Almgren at ASAlmgren@lbl.gov
+You can subscribe to the nyx-help mailing list at google groups:
 
-For more information about the science being done with `Nyx`, 
-email Zarija Lukic at Zarija@lbl.gov
+https://groups.google.com/forum/#!forum/nyx-help
