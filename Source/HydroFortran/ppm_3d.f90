@@ -99,6 +99,8 @@ contains
     ! local
     integer i,j,k
 
+    double precision :: dxinv,dyinv,dzinv
+
     double precision, pointer :: dsl(:), dsr(:), dsc(:)
     double precision, pointer :: sigma(:), s6(:)
 
@@ -114,6 +116,10 @@ contains
     ! s_{i+\half}^{H.O.}
     double precision, pointer :: sedge(:,:)
     double precision, pointer :: sedgez(:,:,:)
+
+    dxinv = 1.0d0/dx
+    dyinv = 1.0d0/dy
+    dzinv = 1.0d0/dz
 
     ! cell-centered indexing
     call bl_allocate(sp,ilo1-1,ihi1+1)
@@ -215,7 +221,7 @@ contains
        ! Im integrates to the left edge of a cell
 
        ! u-c wave
-       sigma = abs(u(ilo1-1:ihi1+1,j,k3d,1)-cspd(ilo1-1:ihi1+1,j,k3d))*dt_over_a/dx
+       sigma = abs(u(ilo1-1:ihi1+1,j,k3d,1)-cspd(ilo1-1:ihi1+1,j,k3d))*dt_over_a*dxinv
 
        do i = ilo1-1, ihi1+1
           if (u(i,j,k3d,1)-cspd(i,j,k3d) <= ZERO) then
@@ -236,7 +242,7 @@ contains
        end do
 
        ! u wave
-       sigma = abs(u(ilo1-1:ihi1+1,j,k3d,1))*dt_over_a/dx
+       sigma = abs(u(ilo1-1:ihi1+1,j,k3d,1))*dt_over_a*dxinv
 
        do i = ilo1-1, ihi1+1
           if (u(i,j,k3d,1) <= ZERO) then
@@ -257,7 +263,7 @@ contains
        end do
 
        ! u+c wave
-       sigma = abs(u(ilo1-1:ihi1+1,j,k3d,1)+cspd(ilo1-1:ihi1+1,j,k3d))*dt_over_a/dx
+       sigma = abs(u(ilo1-1:ihi1+1,j,k3d,1)+cspd(ilo1-1:ihi1+1,j,k3d))*dt_over_a*dxinv
 
        do i = ilo1-1, ihi1+1
           if (u(i,j,k3d,1)+cspd(i,j,k3d) <= ZERO) then
@@ -361,7 +367,7 @@ contains
        s6 = SIX*s(ilo1-1:ihi1+1,j,k3d) - THREE*(sm+sp)
 
        ! v-c wave
-       sigma = abs(u(ilo1-1:ihi1+1,j,k3d,2)-cspd(ilo1-1:ihi1+1,j,k3d))*dt_over_a/dy
+       sigma = abs(u(ilo1-1:ihi1+1,j,k3d,2)-cspd(ilo1-1:ihi1+1,j,k3d))*dt_over_a*dyinv
 
        do i = ilo1-1, ihi1+1
           if (u(i,j,k3d,2)-cspd(i,j,k3d) <= ZERO) then
@@ -382,7 +388,7 @@ contains
        end do
 
        ! v wave
-       sigma = abs(u(ilo1-1:ihi1+1,j,k3d,2))*dt_over_a/dy
+       sigma = abs(u(ilo1-1:ihi1+1,j,k3d,2))*dt_over_a*dyinv
 
        do i = ilo1-1, ihi1+1
           if (u(i,j,k3d,2) <= ZERO) then
@@ -403,7 +409,7 @@ contains
        end do
 
        ! v+c wave
-       sigma = abs(u(ilo1-1:ihi1+1,j,k3d,2)+cspd(ilo1-1:ihi1+1,j,k3d))*dt_over_a/dy
+       sigma = abs(u(ilo1-1:ihi1+1,j,k3d,2)+cspd(ilo1-1:ihi1+1,j,k3d))*dt_over_a*dyinv
 
        do i = ilo1-1, ihi1+1
           if (u(i,j,k3d,2)+cspd(i,j,k3d) <= ZERO) then
@@ -530,7 +536,7 @@ contains
        s6 = SIX*s(ilo1-1:ihi1+1,j,k3d) - THREE*(sm+sp)
 
        ! w-c wave
-       sigma = abs(u(ilo1-1:ihi1+1,j,k3d,3)-cspd(ilo1-1:ihi1+1,j,k3d))*dt_over_a/dz
+       sigma = abs(u(ilo1-1:ihi1+1,j,k3d,3)-cspd(ilo1-1:ihi1+1,j,k3d))*dt_over_a*dzinv
 
        do i = ilo1-1, ihi1+1
           if (u(i,j,k3d,3)-cspd(i,j,k3d) <= ZERO) then
@@ -551,7 +557,7 @@ contains
        end do
 
        ! w wave
-       sigma = abs(u(ilo1-1:ihi1+1,j,k3d,3))*dt_over_a/dz
+       sigma = abs(u(ilo1-1:ihi1+1,j,k3d,3))*dt_over_a*dzinv
 
        do i = ilo1-1, ihi1+1
           if (u(i,j,k3d,3) <= ZERO) then
@@ -572,7 +578,7 @@ contains
        end do
 
        ! w+c wave
-       sigma = abs(u(ilo1-1:ihi1+1,j,k3d,3)+cspd(ilo1-1:ihi1+1,j,k3d))*dt_over_a/dz
+       sigma = abs(u(ilo1-1:ihi1+1,j,k3d,3)+cspd(ilo1-1:ihi1+1,j,k3d))*dt_over_a*dzinv
 
        do i = ilo1-1, ihi1+1
           if (u(i,j,k3d,3)+cspd(i,j,k3d) <= ZERO) then
