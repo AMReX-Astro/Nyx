@@ -924,141 +924,106 @@ contains
       ugp(ilo:ihi,jlo:jhi) = ugdnvz(ilo:ihi,jlo:jhi,kc)
       ugm(ilo:ihi,jlo:jhi) = ugdnvz(ilo:ihi,jlo:jhi,km)
 
-      do i = ilo, ihi
 
-          if (i.ge.ilo+1) then
-            ! Convert to conservation form
-            rrrx(i,jlo:jhi) = qxp(i,jlo:jhi,km,QRHO)
-            rurx(i,jlo:jhi) = rrrx(i,jlo:jhi)*qxp(i,jlo:jhi,km,QU)
-            rvrx(i,jlo:jhi) = rrrx(i,jlo:jhi)*qxp(i,jlo:jhi,km,QV)
-            rwrx(i,jlo:jhi) = rrrx(i,jlo:jhi)*qxp(i,jlo:jhi,km,QW)
-            ekenrx(i,jlo:jhi) = HALF*rrrx(i,jlo:jhi)*(qxp(i,jlo:jhi,km,QU)**2 + qxp(i,jlo:jhi,km,QV)**2 &
-                 + qxp(i,jlo:jhi,km,QW)**2)
-            rerx(i,jlo:jhi) = qxp(i,jlo:jhi,km,QREINT) + ekenrx(i,jlo:jhi)
+      ! Convert to conservation form
+      rrrx(ilo+1:ihi,jlo:jhi) = qxp(ilo+1:ihi,jlo:jhi,km,QRHO)
+      rurx(ilo+1:ihi,jlo:jhi) = rrrx(ilo+1:ihi,jlo:jhi)*qxp(ilo+1:ihi,jlo:jhi,km,QU)
+      rvrx(ilo+1:ihi,jlo:jhi) = rrrx(ilo+1:ihi,jlo:jhi)*qxp(ilo+1:ihi,jlo:jhi,km,QV)
+      rwrx(ilo+1:ihi,jlo:jhi) = rrrx(ilo+1:ihi,jlo:jhi)*qxp(ilo+1:ihi,jlo:jhi,km,QW)
+      ekenrx(ilo+1:ihi,jlo:jhi) = HALF*rrrx(ilo+1:ihi,jlo:jhi)*(qxp(ilo+1:ihi,jlo:jhi,km,QU)**2 + qxp(ilo+1:ihi,jlo:jhi,km,QV)**2 &
+           + qxp(ilo+1:ihi,jlo:jhi,km,QW)**2)
+      rerx(ilo+1:ihi,jlo:jhi) = qxp(ilo+1:ihi,jlo:jhi,km,QREINT) + ekenrx(ilo+1:ihi,jlo:jhi)
 
-            ! Add transverse terms
-            rrnewrx(i,jlo:jhi) = rrrx(i,jlo:jhi) - cdtdz*(fz(i,jlo:jhi,kc,URHO ) - fz(i,jlo:jhi,km,URHO ))
-            runewrx(i,jlo:jhi) = rurx(i,jlo:jhi) - cdtdz*(fz(i,jlo:jhi,kc,UMX  ) - fz(i,jlo:jhi,km,UMX  ))
-            rvnewrx(i,jlo:jhi) = rvrx(i,jlo:jhi) - cdtdz*(fz(i,jlo:jhi,kc,UMY  ) - fz(i,jlo:jhi,km,UMY  ))
-            rwnewrx(i,jlo:jhi) = rwrx(i,jlo:jhi) - cdtdz*(fz(i,jlo:jhi,kc,UMZ  ) - fz(i,jlo:jhi,km,UMZ  ))
-            renewrx(i,jlo:jhi) = rerx(i,jlo:jhi) - cdtdz*(fz(i,jlo:jhi,kc,UEDEN) - fz(i,jlo:jhi,km,UEDEN))
-          end if
-
-      enddo
+      ! Add transverse terms
+      rrnewrx(ilo+1:ihi,jlo:jhi) = rrrx(ilo+1:ihi,jlo:jhi) - cdtdz*(fz(ilo+1:ihi,jlo:jhi,kc,URHO ) - fz(ilo+1:ihi,jlo:jhi,km,URHO ))
+      runewrx(ilo+1:ihi,jlo:jhi) = rurx(ilo+1:ihi,jlo:jhi) - cdtdz*(fz(ilo+1:ihi,jlo:jhi,kc,UMX  ) - fz(ilo+1:ihi,jlo:jhi,km,UMX  ))
+      rvnewrx(ilo+1:ihi,jlo:jhi) = rvrx(ilo+1:ihi,jlo:jhi) - cdtdz*(fz(ilo+1:ihi,jlo:jhi,kc,UMY  ) - fz(ilo+1:ihi,jlo:jhi,km,UMY  ))
+      rwnewrx(ilo+1:ihi,jlo:jhi) = rwrx(ilo+1:ihi,jlo:jhi) - cdtdz*(fz(ilo+1:ihi,jlo:jhi,kc,UMZ  ) - fz(ilo+1:ihi,jlo:jhi,km,UMZ  ))
+      renewrx(ilo+1:ihi,jlo:jhi) = rerx(ilo+1:ihi,jlo:jhi) - cdtdz*(fz(ilo+1:ihi,jlo:jhi,kc,UEDEN) - fz(ilo+1:ihi,jlo:jhi,km,UEDEN))
 
       do j = jlo, jhi
-          do i = ilo, ihi
-
-              if (i.ge.ilo+1) then
-                ! Reset to original value if adding transverse terms made density negative
-                if (rrnewrx(i,j) .lt. ZERO) then
-                   rrnewrx(i,j) = rrrx(i,j)
-                   runewrx(i,j) = rurx(i,j)
-                   rvnewrx(i,j) = rvrx(i,j)
-                   rwnewrx(i,j) = rwrx(i,j)
-                   renewrx(i,j) = rerx(i,j)
-                end if
-              end if
-
+          do i = ilo+1, ihi
+             ! Reset to original value if adding transverse terms made density negative
+             if (rrnewrx(i,j) .lt. ZERO) then
+                rrnewrx(i,j) = rrrx(i,j)
+                runewrx(i,j) = rurx(i,j)
+                rvnewrx(i,j) = rvrx(i,j)
+                rwnewrx(i,j) = rwrx(i,j)
+                renewrx(i,j) = rerx(i,j)
+             end if
           enddo
       enddo
 
-      do j = jlo, jhi
+      rrry(ilo:ihi,jlo+1:jhi) = qyp(ilo:ihi,jlo+1:jhi,km,QRHO)
+      rury(ilo:ihi,jlo+1:jhi) = rrry(ilo:ihi,jlo+1:jhi)*qyp(ilo:ihi,jlo+1:jhi,km,QU)
+      rvry(ilo:ihi,jlo+1:jhi) = rrry(ilo:ihi,jlo+1:jhi)*qyp(ilo:ihi,jlo+1:jhi,km,QV)
+      rwry(ilo:ihi,jlo+1:jhi) = rrry(ilo:ihi,jlo+1:jhi)*qyp(ilo:ihi,jlo+1:jhi,km,QW)
+      ekenry(ilo:ihi,jlo+1:jhi) = HALF*rrry(ilo:ihi,jlo+1:jhi)*(qyp(ilo:ihi,jlo+1:jhi,km,QU)**2 + qyp(ilo:ihi,jlo+1:jhi,km,QV)**2 &
+           + qyp(ilo:ihi,jlo+1:jhi,km,QW)**2)
+      rery(ilo:ihi,jlo+1:jhi) = qyp(ilo:ihi,jlo+1:jhi,km,QREINT) + ekenry(ilo:ihi,jlo+1:jhi)
 
-          if (j.ge.jlo+1) then
-            rrry(ilo:ihi,j) = qyp(ilo:ihi,j,km,QRHO)
-            rury(ilo:ihi,j) = rrry(ilo:ihi,j)*qyp(ilo:ihi,j,km,QU)
-            rvry(ilo:ihi,j) = rrry(ilo:ihi,j)*qyp(ilo:ihi,j,km,QV)
-            rwry(ilo:ihi,j) = rrry(ilo:ihi,j)*qyp(ilo:ihi,j,km,QW)
-            ekenry(ilo:ihi,j) = HALF*rrry(ilo:ihi,j)*(qyp(ilo:ihi,j,km,QU)**2 + qyp(ilo:ihi,j,km,QV)**2 &
-                 + qyp(ilo:ihi,j,km,QW)**2)
-            rery(ilo:ihi,j) = qyp(ilo:ihi,j,km,QREINT) + ekenry(ilo:ihi,j)
+      ! Add transverse terms
+      rrnewry(ilo:ihi,jlo+1:jhi) = rrry(ilo:ihi,jlo+1:jhi) - cdtdz*(fz(ilo:ihi,jlo+1:jhi,kc,URHO ) - fz(ilo:ihi,jlo+1:jhi,km,URHO ))
+      runewry(ilo:ihi,jlo+1:jhi) = rury(ilo:ihi,jlo+1:jhi) - cdtdz*(fz(ilo:ihi,jlo+1:jhi,kc,UMX  ) - fz(ilo:ihi,jlo+1:jhi,km,UMX  ))
+      rvnewry(ilo:ihi,jlo+1:jhi) = rvry(ilo:ihi,jlo+1:jhi) - cdtdz*(fz(ilo:ihi,jlo+1:jhi,kc,UMY  ) - fz(ilo:ihi,jlo+1:jhi,km,UMY  ))
+      rwnewry(ilo:ihi,jlo+1:jhi) = rwry(ilo:ihi,jlo+1:jhi) - cdtdz*(fz(ilo:ihi,jlo+1:jhi,kc,UMZ  ) - fz(ilo:ihi,jlo+1:jhi,km,UMZ  ))
+      renewry(ilo:ihi,jlo+1:jhi) = rery(ilo:ihi,jlo+1:jhi) - cdtdz*(fz(ilo:ihi,jlo+1:jhi,kc,UEDEN) - fz(ilo:ihi,jlo+1:jhi,km,UEDEN))
 
-            ! Add transverse terms
-            rrnewry(ilo:ihi,j) = rrry(ilo:ihi,j) - cdtdz*(fz(ilo:ihi,j,kc,URHO ) - fz(ilo:ihi,j,km,URHO ))
-            runewry(ilo:ihi,j) = rury(ilo:ihi,j) - cdtdz*(fz(ilo:ihi,j,kc,UMX  ) - fz(ilo:ihi,j,km,UMX  ))
-            rvnewry(ilo:ihi,j) = rvry(ilo:ihi,j) - cdtdz*(fz(ilo:ihi,j,kc,UMY  ) - fz(ilo:ihi,j,km,UMY  ))
-            rwnewry(ilo:ihi,j) = rwry(ilo:ihi,j) - cdtdz*(fz(ilo:ihi,j,kc,UMZ  ) - fz(ilo:ihi,j,km,UMZ  ))
-            renewry(ilo:ihi,j) = rery(ilo:ihi,j) - cdtdz*(fz(ilo:ihi,j,kc,UEDEN) - fz(ilo:ihi,j,km,UEDEN))
-          end if
-
-      enddo
-
-      do j = jlo, jhi
+      do j = jlo+1, jhi
           do i = ilo, ihi
-
-              if (j.ge.jlo+1) then
-                ! Reset to original value if adding transverse terms made density negative
-                if (rrnewry(i,j) .lt. ZERO) then
-                   rrnewry(i,j) = rrry(i,j)
-                   runewry(i,j) = rury(i,j)
-                   rvnewry(i,j) = rvry(i,j)
-                   rwnewry(i,j) = rwry(i,j)
-                   renewry(i,j) = rery(i,j)
-                end if
+              ! Reset to original value if adding transverse terms made density negative
+              if (rrnewry(i,j) .lt. ZERO) then
+                 rrnewry(i,j) = rrry(i,j)
+                 runewry(i,j) = rury(i,j)
+                 rvnewry(i,j) = rvry(i,j)
+                 rwnewry(i,j) = rwry(i,j)
+                 renewry(i,j) = rery(i,j)
               end if
-
           enddo
       enddo
 
-      do i = ilo, ihi
+      rrlx(ilo:ihi-1,jlo:jhi) = qxm(ilo+1:ihi,jlo:jhi,km,QRHO)
+      rulx(ilo:ihi-1,jlo:jhi) = rrlx(ilo:ihi-1,jlo:jhi)*qxm(ilo+1:ihi,jlo:jhi,km,QU)
+      rvlx(ilo:ihi-1,jlo:jhi) = rrlx(ilo:ihi-1,jlo:jhi)*qxm(ilo+1:ihi,jlo:jhi,km,QV)
+      rwlx(ilo:ihi-1,jlo:jhi) = rrlx(ilo:ihi-1,jlo:jhi)*qxm(ilo+1:ihi,jlo:jhi,km,QW)
+      ekenlx(ilo:ihi-1,jlo:jhi) = HALF*rrlx(ilo:ihi-1,jlo:jhi)*(qxm(ilo+1:ihi,jlo:jhi,km,QU)**2 + qxm(ilo+1:ihi,jlo:jhi,km,QV)**2 &
+           + qxm(ilo+1:ihi,jlo:jhi,km,QW)**2)
+      relx(ilo:ihi-1,jlo:jhi) = qxm(ilo+1:ihi,jlo:jhi,km,QREINT) + ekenlx(ilo:ihi-1,jlo:jhi)
 
-          if (i.le.ihi-1) then
-            rrlx(i,jlo:jhi) = qxm(i+1,jlo:jhi,km,QRHO)
-            rulx(i,jlo:jhi) = rrlx(i,jlo:jhi)*qxm(i+1,jlo:jhi,km,QU)
-            rvlx(i,jlo:jhi) = rrlx(i,jlo:jhi)*qxm(i+1,jlo:jhi,km,QV)
-            rwlx(i,jlo:jhi) = rrlx(i,jlo:jhi)*qxm(i+1,jlo:jhi,km,QW)
-            ekenlx(i,jlo:jhi) = HALF*rrlx(i,jlo:jhi)*(qxm(i+1,jlo:jhi,km,QU)**2 + qxm(i+1,jlo:jhi,km,QV)**2 &
-                 + qxm(i+1,jlo:jhi,km,QW)**2)
-            relx(i,jlo:jhi) = qxm(i+1,jlo:jhi,km,QREINT) + ekenlx(i,jlo:jhi)
-
-            ! Add transverse terms
-            rrnewlx(i,jlo:jhi) = rrlx(i,jlo:jhi) - cdtdz*(fz(i,jlo:jhi,kc,URHO ) - fz(i,jlo:jhi,km,URHO ))
-            runewlx(i,jlo:jhi) = rulx(i,jlo:jhi) - cdtdz*(fz(i,jlo:jhi,kc,UMX  ) - fz(i,jlo:jhi,km,UMX  ))
-            rvnewlx(i,jlo:jhi) = rvlx(i,jlo:jhi) - cdtdz*(fz(i,jlo:jhi,kc,UMY  ) - fz(i,jlo:jhi,km,UMY  ))
-            rwnewlx(i,jlo:jhi) = rwlx(i,jlo:jhi) - cdtdz*(fz(i,jlo:jhi,kc,UMZ  ) - fz(i,jlo:jhi,km,UMZ  ))
-            renewlx(i,jlo:jhi) = relx(i,jlo:jhi) - cdtdz*(fz(i,jlo:jhi,kc,UEDEN) - fz(i,jlo:jhi,km,UEDEN))
-          end if
-
-      enddo
+      ! Add transverse terms
+      rrnewlx(ilo:ihi-1,jlo:jhi) = rrlx(ilo:ihi-1,jlo:jhi) - cdtdz*(fz(ilo:ihi-1,jlo:jhi,kc,URHO ) - fz(ilo:ihi-1,jlo:jhi,km,URHO ))
+      runewlx(ilo:ihi-1,jlo:jhi) = rulx(ilo:ihi-1,jlo:jhi) - cdtdz*(fz(ilo:ihi-1,jlo:jhi,kc,UMX  ) - fz(ilo:ihi-1,jlo:jhi,km,UMX  ))
+      rvnewlx(ilo:ihi-1,jlo:jhi) = rvlx(ilo:ihi-1,jlo:jhi) - cdtdz*(fz(ilo:ihi-1,jlo:jhi,kc,UMY  ) - fz(ilo:ihi-1,jlo:jhi,km,UMY  ))
+      rwnewlx(ilo:ihi-1,jlo:jhi) = rwlx(ilo:ihi-1,jlo:jhi) - cdtdz*(fz(ilo:ihi-1,jlo:jhi,kc,UMZ  ) - fz(ilo:ihi-1,jlo:jhi,km,UMZ  ))
+      renewlx(ilo:ihi-1,jlo:jhi) = relx(ilo:ihi-1,jlo:jhi) - cdtdz*(fz(ilo:ihi-1,jlo:jhi,kc,UEDEN) - fz(ilo:ihi-1,jlo:jhi,km,UEDEN))
 
       do j = jlo, jhi
-          do i = ilo, ihi
-
-              if (i.le.ihi-1) then
-                ! Reset to original value if adding transverse terms made density negative
-                if (rrnewlx(i,j) .lt. ZERO) then
-                   rrnewlx(i,j) = rrlx(i,j)
-                   runewlx(i,j) = rulx(i,j)
-                   rvnewlx(i,j) = rvlx(i,j)
-                   rwnewlx(i,j) = rwlx(i,j)
-                   renewlx(i,j) = relx(i,j)
-                end if
-              end if
-
+          do i = ilo, ihi-1
+             ! Reset to original value if adding transverse terms made density negative
+             if (rrnewlx(i,j) .lt. ZERO) then
+                rrnewlx(i,j) = rrlx(i,j)
+                runewlx(i,j) = rulx(i,j)
+                rvnewlx(i,j) = rvlx(i,j)
+                rwnewlx(i,j) = rwlx(i,j)
+                renewlx(i,j) = relx(i,j)
+             end if
           enddo
       enddo
 
-      do j = jlo, jhi
+      rrly(ilo:ihi,jlo:jhi-1) = qym(ilo:ihi,jlo+1:jhi,km,QRHO)
+      ruly(ilo:ihi,jlo:jhi-1) = rrly(ilo:ihi,jlo:jhi-1)*qym(ilo:ihi,jlo+1:jhi,km,QU)
+      rvly(ilo:ihi,jlo:jhi-1) = rrly(ilo:ihi,jlo:jhi-1)*qym(ilo:ihi,jlo+1:jhi,km,QV)
+      rwly(ilo:ihi,jlo:jhi-1) = rrly(ilo:ihi,jlo:jhi-1)*qym(ilo:ihi,jlo+1:jhi,km,QW)
+      ekenly(ilo:ihi,jlo:jhi-1) = HALF*rrly(ilo:ihi,jlo:jhi-1)*(qym(ilo:ihi,jlo+1:jhi,km,QU)**2 + qym(ilo:ihi,jlo+1:jhi,km,QV)**2 &
+           + qym(ilo:ihi,jlo+1:jhi,km,QW)**2)
+      rely(ilo:ihi,jlo:jhi-1) = qym(ilo:ihi,jlo+1:jhi,km,QREINT) + ekenly(ilo:ihi,jlo:jhi-1)
 
-          if (j.le.jhi-1) then
-            rrly(ilo:ihi,j) = qym(ilo:ihi,j+1,km,QRHO)
-            ruly(ilo:ihi,j) = rrly(ilo:ihi,j)*qym(ilo:ihi,j+1,km,QU)
-            rvly(ilo:ihi,j) = rrly(ilo:ihi,j)*qym(ilo:ihi,j+1,km,QV)
-            rwly(ilo:ihi,j) = rrly(ilo:ihi,j)*qym(ilo:ihi,j+1,km,QW)
-            ekenly(ilo:ihi,j) = HALF*rrly(ilo:ihi,j)*(qym(ilo:ihi,j+1,km,QU)**2 + qym(ilo:ihi,j+1,km,QV)**2 &
-                 + qym(ilo:ihi,j+1,km,QW)**2)
-            rely(ilo:ihi,j) = qym(ilo:ihi,j+1,km,QREINT) + ekenly(ilo:ihi,j)
-
-            ! Add transverse terms
-            rrnewly(ilo:ihi,j) = rrly(ilo:ihi,j) - cdtdz*(fz(ilo:ihi,j,kc,URHO ) - fz(ilo:ihi,j,km,URHO )) 
-            runewly(ilo:ihi,j) = ruly(ilo:ihi,j) - cdtdz*(fz(ilo:ihi,j,kc,UMX  ) - fz(ilo:ihi,j,km,UMX  )) 
-            rvnewly(ilo:ihi,j) = rvly(ilo:ihi,j) - cdtdz*(fz(ilo:ihi,j,kc,UMY  ) - fz(ilo:ihi,j,km,UMY  ))
-            rwnewly(ilo:ihi,j) = rwly(ilo:ihi,j) - cdtdz*(fz(ilo:ihi,j,kc,UMZ  ) - fz(ilo:ihi,j,km,UMZ  ))
-            renewly(ilo:ihi,j) = rely(ilo:ihi,j) - cdtdz*(fz(ilo:ihi,j,kc,UEDEN) - fz(ilo:ihi,j,km,UEDEN))
-          end if
-
-      enddo
+      ! Add transverse terms
+      rrnewly(ilo:ihi,jlo:jhi-1) = rrly(ilo:ihi,jlo:jhi-1) - cdtdz*(fz(ilo:ihi,jlo:jhi-1,kc,URHO ) - fz(ilo:ihi,jlo:jhi-1,km,URHO ))
+      runewly(ilo:ihi,jlo:jhi-1) = ruly(ilo:ihi,jlo:jhi-1) - cdtdz*(fz(ilo:ihi,jlo:jhi-1,kc,UMX  ) - fz(ilo:ihi,jlo:jhi-1,km,UMX  ))
+      rvnewly(ilo:ihi,jlo:jhi-1) = rvly(ilo:ihi,jlo:jhi-1) - cdtdz*(fz(ilo:ihi,jlo:jhi-1,kc,UMY  ) - fz(ilo:ihi,jlo:jhi-1,km,UMY  ))
+      rwnewly(ilo:ihi,jlo:jhi-1) = rwly(ilo:ihi,jlo:jhi-1) - cdtdz*(fz(ilo:ihi,jlo:jhi-1,kc,UMZ  ) - fz(ilo:ihi,jlo:jhi-1,km,UMZ  ))
+      renewly(ilo:ihi,jlo:jhi-1) = rely(ilo:ihi,jlo:jhi-1) - cdtdz*(fz(ilo:ihi,jlo:jhi-1,kc,UEDEN) - fz(ilo:ihi,jlo:jhi-1,km,UEDEN))
 
       do j = jlo, jhi
           do i = ilo, ihi
@@ -1082,22 +1047,19 @@ contains
       du(ilo:ihi,jlo:jhi) = ugp(ilo:ihi,jlo:jhi)-ugm(ilo:ihi,jlo:jhi)
 
 
-      do i = ilo, ihi
+      ! Convert back to non-conservation form
+      qxpo(ilo+1:ihi,jlo:jhi,km,QRHO) = rrnewrx(ilo+1:ihi,jlo:jhi)
+      qxpo(ilo+1:ihi,jlo:jhi,km,QU) = runewrx(ilo+1:ihi,jlo:jhi)/qxpo(ilo+1:ihi,jlo:jhi,km,QRHO)
+      qxpo(ilo+1:ihi,jlo:jhi,km,QV) = rvnewrx(ilo+1:ihi,jlo:jhi)/qxpo(ilo+1:ihi,jlo:jhi,km,QRHO)
+      qxpo(ilo+1:ihi,jlo:jhi,km,QW) = rwnewrx(ilo+1:ihi,jlo:jhi)/qxpo(ilo+1:ihi,jlo:jhi,km,QRHO)
+      rhoekenrx(ilo+1:ihi,jlo:jhi) = HALF*(runewrx(ilo+1:ihi,jlo:jhi)**2 &
+                                         + rvnewrx(ilo+1:ihi,jlo:jhi)**2 &
+                                         + rwnewrx(ilo+1:ihi,jlo:jhi)**2) / &
+                                     qxpo(ilo+1:ihi,jlo:jhi,km,QRHO)
 
-          ! Convert back to non-conservation form
-          if (i.ge.ilo+1) then
-             qxpo(i,jlo:jhi,km,QRHO) = rrnewrx(i,jlo:jhi)
-             qxpo(i,jlo:jhi,km,QU) = runewrx(i,jlo:jhi)/qxpo(i,jlo:jhi,km,QRHO)
-             qxpo(i,jlo:jhi,km,QV) = rvnewrx(i,jlo:jhi)/qxpo(i,jlo:jhi,km,QRHO)
-             qxpo(i,jlo:jhi,km,QW) = rwnewrx(i,jlo:jhi)/qxpo(i,jlo:jhi,km,QRHO)
-             rhoekenrx(i,jlo:jhi) = HALF*(runewrx(i,jlo:jhi)**2 + rvnewrx(i,jlo:jhi)**2 + rwnewrx(i,jlo:jhi)**2) / &
-                                    qxpo(i,jlo:jhi,km,QRHO)
+      qxpo(ilo+1:ihi,jlo:jhi,km,QREINT)= renewrx(ilo+1:ihi,jlo:jhi) - rhoekenrx(ilo+1:ihi,jlo:jhi)
+      qxpo(ilo+1:ihi,jlo:jhi,km,QPRES) = qxpo(ilo+1:ihi,jlo:jhi,km,QREINT) * gamma_minus_1
 
-             qxpo(i,jlo:jhi,km,QREINT)= renewrx(i,jlo:jhi) - rhoekenrx(i,jlo:jhi)
-             qxpo(i,jlo:jhi,km,QPRES) = qxpo(i,jlo:jhi,km,QREINT) * gamma_minus_1
-          end if
-
-      enddo
 
       do j = jlo, jhi
           do i = ilo, ihi
@@ -1113,21 +1075,17 @@ contains
           enddo
       enddo
 
-      do j = jlo, jhi
+      qypo(ilo:ihi,jlo+1:jhi,km,QRHO) = rrnewry(ilo:ihi,jlo+1:jhi)
+      qypo(ilo:ihi,jlo+1:jhi,km,QU) = runewry(ilo:ihi,jlo+1:jhi)/qypo(ilo:ihi,jlo+1:jhi,km,QRHO)
+      qypo(ilo:ihi,jlo+1:jhi,km,QV) = rvnewry(ilo:ihi,jlo+1:jhi)/qypo(ilo:ihi,jlo+1:jhi,km,QRHO)
+      qypo(ilo:ihi,jlo+1:jhi,km,QW) = rwnewry(ilo:ihi,jlo+1:jhi)/qypo(ilo:ihi,jlo+1:jhi,km,QRHO)
+      rhoekenry(ilo:ihi,jlo+1:jhi) = HALF*(runewry(ilo:ihi,jlo+1:jhi)**2 &
+                                         + rvnewry(ilo:ihi,jlo+1:jhi)**2 &
+                                         + rwnewry(ilo:ihi,jlo+1:jhi)**2) / &
+                                     qypo(ilo:ihi,jlo+1:jhi,km,QRHO)
 
-          if (j.ge.jlo+1) then
-             qypo(ilo:ihi,j,km,QRHO) = rrnewry(ilo:ihi,j)
-             qypo(ilo:ihi,j,km,QU) = runewry(ilo:ihi,j)/qypo(ilo:ihi,j,km,QRHO)
-             qypo(ilo:ihi,j,km,QV) = rvnewry(ilo:ihi,j)/qypo(ilo:ihi,j,km,QRHO)
-             qypo(ilo:ihi,j,km,QW) = rwnewry(ilo:ihi,j)/qypo(ilo:ihi,j,km,QRHO)
-             rhoekenry(ilo:ihi,j) = HALF*(runewry(ilo:ihi,j)**2 + rvnewry(ilo:ihi,j)**2 + rwnewry(ilo:ihi,j)**2) / &
-                                    qypo(ilo:ihi,j,km,QRHO)
-
-             qypo(ilo:ihi,j,km,QREINT)= renewry(ilo:ihi,j) - rhoekenry(ilo:ihi,j)
-             qypo(ilo:ihi,j,km,QPRES) = qypo(ilo:ihi,j,km,QREINT) * gamma_minus_1
-          end if
-
-      enddo
+      qypo(ilo:ihi,jlo+1:jhi,km,QREINT)= renewry(ilo:ihi,jlo+1:jhi) - rhoekenry(ilo:ihi,jlo+1:jhi)
+      qypo(ilo:ihi,jlo+1:jhi,km,QPRES) = qypo(ilo:ihi,jlo+1:jhi,km,QREINT) * gamma_minus_1
 
       do j = jlo, jhi
           do i = ilo, ihi
@@ -1143,21 +1101,17 @@ contains
           enddo
       enddo
 
-      do i = ilo, ihi
+      qxmo(ilo+1:ihi,jlo:jhi,km,QRHO) = rrnewlx(ilo:ihi-1,jlo:jhi)
+      qxmo(ilo+1:ihi,jlo:jhi,km,QU) = runewlx(ilo:ihi-1,jlo:jhi)/qxmo(ilo+1:ihi,jlo:jhi,km,QRHO)
+      qxmo(ilo+1:ihi,jlo:jhi,km,QV) = rvnewlx(ilo:ihi-1,jlo:jhi)/qxmo(ilo+1:ihi,jlo:jhi,km,QRHO)
+      qxmo(ilo+1:ihi,jlo:jhi,km,QW) = rwnewlx(ilo:ihi-1,jlo:jhi)/qxmo(ilo+1:ihi,jlo:jhi,km,QRHO)
+      rhoekenlx(ilo:ihi-1,jlo:jhi) = HALF*(runewlx(ilo:ihi-1,jlo:jhi)**2 &
+                                         + rvnewlx(ilo:ihi-1,jlo:jhi)**2 &
+                                         + rwnewlx(ilo:ihi-1,jlo:jhi)**2) / &
+                                     qxmo(ilo+1:ihi,jlo:jhi,km,QRHO)
 
-          if (i.le.ihi-1) then
-             qxmo(i+1,jlo:jhi,km,QRHO) = rrnewlx(i,jlo:jhi)
-             qxmo(i+1,jlo:jhi,km,QU) = runewlx(i,jlo:jhi)/qxmo(i+1,jlo:jhi,km,QRHO)
-             qxmo(i+1,jlo:jhi,km,QV) = rvnewlx(i,jlo:jhi)/qxmo(i+1,jlo:jhi,km,QRHO)
-             qxmo(i+1,jlo:jhi,km,QW) = rwnewlx(i,jlo:jhi)/qxmo(i+1,jlo:jhi,km,QRHO)
-             rhoekenlx(i,jlo:jhi) = HALF*(runewlx(i,jlo:jhi)**2 + rvnewlx(i,jlo:jhi)**2 + rwnewlx(i,jlo:jhi)**2) / &
-                                    qxmo(i+1,jlo:jhi,km,QRHO)
-
-             qxmo(i+1,jlo:jhi,km,QREINT)= renewlx(i,jlo:jhi) - rhoekenlx(i,jlo:jhi)
-             qxmo(i+1,jlo:jhi,km,QPRES) = qxmo(i+1,jlo:jhi,km,QREINT) * gamma_minus_1
-          end if
-
-      enddo
+      qxmo(ilo+1:ihi,jlo:jhi,km,QREINT)= renewlx(ilo:ihi-1,jlo:jhi) - rhoekenlx(ilo:ihi-1,jlo:jhi)
+      qxmo(ilo+1:ihi,jlo:jhi,km,QPRES) = qxmo(ilo+1:ihi,jlo:jhi,km,QREINT) * gamma_minus_1
 
       do j = jlo, jhi
           do i = ilo, ihi
@@ -1173,21 +1127,17 @@ contains
           enddo
       enddo
 
-      do j = jlo, jhi
+      qymo(ilo:ihi,jlo+1:jhi,km,QRHO) = rrnewly(ilo:ihi,jlo:jhi-1)
+      qymo(ilo:ihi,jlo+1:jhi,km,QU) = runewly(ilo:ihi,jlo:jhi-1)/qymo(ilo:ihi,jlo+1:jhi,km,QRHO)
+      qymo(ilo:ihi,jlo+1:jhi,km,QV) = rvnewly(ilo:ihi,jlo:jhi-1)/qymo(ilo:ihi,jlo+1:jhi,km,QRHO)
+      qymo(ilo:ihi,jlo+1:jhi,km,QW) = rwnewly(ilo:ihi,jlo:jhi-1)/qymo(ilo:ihi,jlo+1:jhi,km,QRHO)
+      rhoekenly(ilo:ihi,jlo:jhi-1) = HALF*(runewly(ilo:ihi,jlo:jhi-1)**2 &
+                                         + rvnewly(ilo:ihi,jlo:jhi-1)**2 &
+                                         + rwnewly(ilo:ihi,jlo:jhi-1)**2) / &
+                                     qymo(ilo:ihi,jlo+1:jhi,km,QRHO)
 
-          if (j.le.jhi-1) then
-             qymo(ilo:ihi,j+1,km,QRHO) = rrnewly(ilo:ihi,j)
-             qymo(ilo:ihi,j+1,km,QU) = runewly(ilo:ihi,j)/qymo(ilo:ihi,j+1,km,QRHO)
-             qymo(ilo:ihi,j+1,km,QV) = rvnewly(ilo:ihi,j)/qymo(ilo:ihi,j+1,km,QRHO)
-             qymo(ilo:ihi,j+1,km,QW) = rwnewly(ilo:ihi,j)/qymo(ilo:ihi,j+1,km,QRHO)
-             rhoekenly(ilo:ihi,j) = HALF*(runewly(ilo:ihi,j)**2 + rvnewly(ilo:ihi,j)**2 + rwnewly(ilo:ihi,j)**2) / &
-                                    qymo(ilo:ihi,j+1,km,QRHO)
-
-             qymo(ilo:ihi,j+1,km,QREINT)= renewly(ilo:ihi,j) - rhoekenly(ilo:ihi,j)
-             qymo(ilo:ihi,j+1,km,QPRES) = qymo(ilo:ihi,j+1,km,QREINT) * gamma_minus_1
-          end if
-
-      enddo
+      qymo(ilo:ihi,jlo+1:jhi,km,QREINT)= renewly(ilo:ihi,jlo:jhi-1) - rhoekenly(ilo:ihi,jlo:jhi-1)
+      qymo(ilo:ihi,jlo+1:jhi,km,QPRES) = qymo(ilo:ihi,jlo+1:jhi,km,QREINT) * gamma_minus_1
 
       do j = jlo, jhi
           do i = ilo, ihi
