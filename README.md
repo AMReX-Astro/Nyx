@@ -46,7 +46,6 @@ http://adsabs.harvard.edu/abs/2013ApJ...765...39A
 
 For the reaction and thermal rates of the primordial chemical composition gas 
 (and convergence tests in the context of the Lyman-alpha forest), see:  
-Lukic, Stark, Nugent, White, Meiksin & Almgren (2015), MNRAS, 446, 3697 
 Lukic, Stark, Nugent, White, Meiksin & Almgren (2015), MNRAS, 446, 3697
 http://adsabs.harvard.edu/abs/2015MNRAS.446.3697L
 
