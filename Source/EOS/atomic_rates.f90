@@ -21,7 +21,7 @@ module atomic_rates_module
   public  :: tabulate_rates, interp_to_this_z
 
   ! Photo- rates (from file)
-  integer         , parameter, private :: NCOOLFILE=59
+  integer         , parameter, private :: NCOOLFILE=301
   double precision, dimension(NCOOLFILE), public :: lzr
   double precision, dimension(NCOOLFILE), public :: rggh0, rgghe0, rgghep
   double precision, dimension(NCOOLFILE), public :: reh0, rehe0, rehep
@@ -59,7 +59,7 @@ module atomic_rates_module
          first = .false.
 
          ! Read in photoionization rates and heating from a file
-         open(unit=11,file='TREECOOL_hm_12',status='old')
+         open(unit=11,file='TREECOOL_middle',status='old')
          do i = 1, NCOOLFILE
             read(11,*) lzr(i), rggh0(i), rgghe0(i), rgghep(i), &
                                 reh0(i),  rehe0(i),  rehep(i)
