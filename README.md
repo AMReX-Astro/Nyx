@@ -40,19 +40,18 @@ While the merge window is closed, only bug fixes should be pushed into
 the merge window reopens.
 
 ## Physics Included
-For the description of the N-body and adiabatic hydro algorithms in Nyx, see:  
-Almgren, Bell, Lijewski, Lukic & Van Andel (2013), ApJ, 765, 39  
+For the description of the N-body and adiabatic hydro algorithms in Nyx, see
+Almgren, Bell, Lijewski, Lukic & Van Andel (2013), ApJ, 765, 39:
 http://adsabs.harvard.edu/abs/2013ApJ...765...39A
 
 For the reaction and thermal rates of the primordial chemical composition gas 
-(and convergence tests in the context of the Lyman-alpha forest), see:  
-Lukic, Stark, Nugent, White, Meiksin & Almgren (2015), MNRAS, 446, 3697
+(and convergence tests in the context of the Lyman-alpha forest), see
+Lukic, Stark, Nugent, White, Meiksin & Almgren (2015), MNRAS, 446, 3697:
 http://adsabs.harvard.edu/abs/2015MNRAS.446.3697L
 
 For the synthesis model of the UV background, 
 which provides the photo-ionization and photo-heating rates, 
-we include the prescription of:  
-Onorbe, Hennawi & Lukic (2016)  
+we include the prescription of Onorbe, Hennawi & Lukic (2016):
 http://adsabs.harvard.edu/abs/2016arXiv160704218O
 
 ## Mailing List
