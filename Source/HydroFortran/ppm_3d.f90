@@ -646,6 +646,7 @@ contains
 
     ! Note that dt_over_a = dt / a_old
     double precision dx,dy,dz,dt_over_a
+    double precision dxinv,dyinv,dzinv
     integer          k3d,kc
 
     ! local
@@ -673,6 +674,10 @@ contains
 
     ! constant used in Colella 2008
     double precision, parameter :: C = 1.25d0
+
+    dxinv = 1.0d0/dx
+    dyinv = 1.0d0/dy
+    dzinv = 1.0d0/dz
 
     ! cell-centered indexing
     allocate(sp(ilo1-1:ihi1+1,ilo2-1:ihi2+1))
@@ -813,7 +818,7 @@ contains
           s6    = SIX*s(i,j,k3d) - THREE*(sm(i,j)+sp(i,j))
 
           ! u-c wave
-          sigma = abs(u(i,j,k3d,1)-cspd(i,j,k3d))*dt_over_a/dx
+          sigma = abs(u(i,j,k3d,1)-cspd(i,j,k3d))*dt_over_a*dxinv
 
           if (u(i,j,k3d,1)-cspd(i,j,k3d) <= ZERO) then
              Ip(i,j,kc,1,1) = sp(i,j)
@@ -830,7 +835,7 @@ contains
           endif
 
           ! u wave
-          sigma = abs(u(i,j,k3d,1))*dt_over_a/dx
+          sigma = abs(u(i,j,k3d,1))*dt_over_a*dxinv
 
           if (u(i,j,k3d,1) <= ZERO) then
              Ip(i,j,kc,1,2) = sp(i,j)
@@ -847,7 +852,7 @@ contains
           endif
 
           ! u+c wave
-          sigma = abs(u(i,j,k3d,1)+cspd(i,j,k3d))*dt_over_a/dx
+          sigma = abs(u(i,j,k3d,1)+cspd(i,j,k3d))*dt_over_a*dxinv
 
           if (u(i,j,k3d,1)+cspd(i,j,k3d) <= ZERO) then
              Ip(i,j,kc,1,3) = sp(i,j) 
@@ -988,7 +993,7 @@ contains
           s6    = SIX*s(i,j,k3d) - THREE*(sm(i,j)+sp(i,j))
 
           ! v-c wave
-          sigma = abs(u(i,j,k3d,2)-cspd(i,j,k3d))*dt_over_a/dy
+          sigma = abs(u(i,j,k3d,2)-cspd(i,j,k3d))*dt_over_a*dyinv
 
           if (u(i,j,k3d,2)-cspd(i,j,k3d) <= ZERO) then
              Ip(i,j,kc,2,1) = sp(i,j) 
@@ -1005,7 +1010,7 @@ contains
           endif
 
           ! v wave
-          sigma = abs(u(i,j,k3d,2))*dt_over_a/dy
+          sigma = abs(u(i,j,k3d,2))*dt_over_a*dyinv
 
           if (u(i,j,k3d,2) <= ZERO) then
              Ip(i,j,kc,2,2) = sp(i,j) 
@@ -1022,7 +1027,7 @@ contains
           endif
 
           ! v+c wave
-          sigma = abs(u(i,j,k3d,2)+cspd(i,j,k3d))*dt_over_a/dy
+          sigma = abs(u(i,j,k3d,2)+cspd(i,j,k3d))*dt_over_a*dyinv
 
           if (u(i,j,k3d,2)+cspd(i,j,k3d) <= ZERO) then
              Ip(i,j,kc,2,3) = sp(i,j) 
@@ -1166,7 +1171,7 @@ contains
           s6    = SIX*s(i,j,k3d) - THREE*(sm(i,j)+sp(i,j))
           
           ! w-c wave
-          sigma = abs(u(i,j,k3d,3)-cspd(i,j,k3d))*dt_over_a/dz
+          sigma = abs(u(i,j,k3d,3)-cspd(i,j,k3d))*dt_over_a*dzinv
           
           if (u(i,j,k3d,3)-cspd(i,j,k3d) <= ZERO) then
              Ip(i,j,kc,3,1) = sp(i,j) 
@@ -1183,7 +1188,7 @@ contains
           endif
 
           ! w wave
-          sigma = abs(u(i,j,k3d,3))*dt_over_a/dz
+          sigma = abs(u(i,j,k3d,3))*dt_over_a*dzinv
 
           if (u(i,j,k3d,3) <= ZERO) then
              Ip(i,j,kc,3,2) = sp(i,j)
@@ -1200,7 +1205,7 @@ contains
           endif
 
           ! w+c wave
-          sigma = abs(u(i,j,k3d,3)+cspd(i,j,k3d))*dt_over_a/dz
+          sigma = abs(u(i,j,k3d,3)+cspd(i,j,k3d))*dt_over_a*dzinv
 
           if (u(i,j,k3d,3)+cspd(i,j,k3d) <= ZERO) then
              Ip(i,j,kc,3,3) = sp(i,j) 
