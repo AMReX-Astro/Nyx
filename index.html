@@ -66,12 +66,8 @@
 	    <section class="box">
 	      <i class="icon big rounded color1 fa-rocket"></i>
 	      <h3>Physics Capabilities</h3>
-	      <p>Castro solves the equations of hydrodynamics on an
-		adaptive grid, with support for a general equation of
-		state, nuclear reaction networks, rotation, and full
-		self-gravity.  Radiation hydrodynamics through a
-		multigroup flux-limited diffusion approximation is
-		also supported.</p>
+	      <p>Nyx solves the equations of N-body + hydro on an
+		adaptive grid with full self-gravity.</p>
 	      <a href="about.html" class="button alt">learn more</a>
 	    </section>
 	  </div>
@@ -80,11 +76,11 @@
 	    <section class="box">
 	      <i class="icon big rounded color9 fa-tachometer"></i>
 	      <h3>Performance</h3>
-	      <p>Castro is built on the BoxLib adaptive mesh
-	      refinement library, and uses an advance MPI + tiled
-	      OpenMP approach to parallelism to get great performance
-		on modern architectures.  It scales from 1 to 100,000 cores,
-		and is run at most national supercomputing facilities.</p>
+	      <p>Nyx is built on the BoxLib adaptive mesh
+  	         refinement library, and uses an advanced MPI + tiled
+	         OpenMP approach to parallelism to get great performance
+		 on modern architectures.  It scales from 1 to 100,000 cores,
+		 and is run at most national supercomputing facilities.</p>
 	      <a href="about.html#performance" class="button alt">learn more</a>
 	    </section>
 	  </div>
@@ -93,10 +89,8 @@
 	    <section class="box">
 	      <i class="icon big rounded color6 fa-book"></i>
 	      <h3>Science</h3>
-	      <p>Castro has been used for scientific explorations of
-		Type Ia supernovae (the Chandra, sub-Chandra, and
-		merging white dwarf scenarios), core-collapse
-		supernovae, and pair instability supernovae.</p>
+	      <p>Nyx has been used for scientific explorations of
+                 the Lyman-alpha forest and other cosmological simulations.</p>
 		<a href="science.html" class="button alt">learn more</a>
 	    </section>
 	  </div>
@@ -109,51 +103,46 @@
       <div class="container">
 	<header class="major">
 	  <h2>Getting Started</h2>
-	  <p>a detailed walkthrough of running your first Castro problem is provided in the User's Guide</p>
+	  <p>a detailed walkthrough of running your first Nyx problem is provided in the User's Guide</p>
 	</header>
 	<!-- <section class="profiles"> -->
 	  <ul class="alt">
 	    <li><h3><span class="icon fa-download"></span> Clone</h3>
 	      <pre>
 git clone https://github.com/BoxLib-Codes/BoxLib.git
-git clone https://github.com/BoxLib-Codes/Castro.git
-git clone https://github.com/BoxLib-Codes/Microphysics.git</pre>
+git clone https://github.com/BoxLib-Codes/Nyx.git
 	    </li>
 
 	    <li><h3><span class="icon fa-cogs"></span> Setup your environment</h3>
 	      <pre>
-export CASTRO_HOME=/path/to/Castro
 export BOXLIB_HOME=/path/to/BoxLib
-export MICROPHYSICS_HOME=/path/to/Microphysics
-export BOXLIB_USE_MPI_WRAPPERS=1</pre>
 	    </li>
 
 	    <li><h3><span class="icon fa-magic"></span> Compile</h3>
 	      problems are compiled in their own directory.  E.g.,
 	      <pre>
-cd Castro/Exec/Sedov/
+cd Nyx/Exec/LyA/
 make DIM=2</pre>
 	    </li>
 
 	    <li><h3><span class="icon fa-laptop"></span> Run</h3>
-	      The executable name will start with <var>Castro2d</var>, and an input file
+	      The executable name will start with <var>Nyx3d</var>, and an input file
 	      is always required:
-	      <pre>
-./Castro2d.Linux.gcc.gfortran.MPI.ex inputs.2d.sph_in_cylcoords</pre>
+	      <pre> ./Nyx3d.Linux.gcc.gfortran.MPI.ex inputs.32</pre>
 	    </li>
 
 	    <li><h3><span class="icon fa-image"></span> Visualize</h3>
-	      Castro output (BoxLib format) is supported natively by yt, VisIt, and amrvis
+	      Nyx output (BoxLib format) is supported natively by yt, VisIt, and amrvis
 	    </li>
 
 	  </ul>
         <!-- </section> -->
 	<footer>
 	  <p>The User's Guide is the best place to learn more about
-	  how Castro is organized.  You can also ask for help on the Castro mailing list.</p>
+	  how Nyx is organized.  You can also ask for help on the Nyx mailing list.</p>
 	  <ul class="actions">
 	    <li>
-	      <a href="https://groups.google.com/forum/#!forum/castro-help" class="button big">Join the Castro mailing list</a>
+	      <a href="https://groups.google.com/forum/#!forum/nyx-help" class="button big">Join the Nyx mailing list</a>
 	    </li>
 	  </ul>
 	</footer>
@@ -165,18 +154,15 @@ make DIM=2</pre>
       <div class="container">
 	<header class="major">
 	  <h2>Development</h2>
-	  <p>Castro is BSD-licensed and hosted on github.  Contributions are welcomed.</p>
+	  <p>Nyx is BSD-licensed and hosted on github.  Contributions are welcomed.</p>
 	</header>
-	Castro is written in a mix of C++ and Fortran.  The main driver, memory
+	Nyx is written in a mix of C++ and Fortran.  The main driver, memory
 	management, and parallelization are implemented in C++ (using
 	the BoxLib framework) and the physics kernels are written in
 	Fortran.  New code features are done either on the "<tt>development</tt>" branch
 	or in a separate feature branch and periodically merged into "<tt>master</tt>".  If
-	you want to contribute to Castro, clone the Castro git repo, make your changes
-	on "<tt>development</tt>" and then issue a pull-request to the Castro "<tt>development</tt>" branch.
-
-	<p>Additional physics capabilities are provided by the CastroRadiation and Microphysics
-	  git repositories.
+	you want to contribute to Nyx, clone the Nyx git repo, make your changes
+	on "<tt>development</tt>" and then issue a pull-request to the Nyx "<tt>development</tt>" branch.
       </div>
     </section>
 
@@ -184,15 +170,15 @@ make DIM=2</pre>
     <footer id="footer">
       <div class="container">
 	<section class="ack">
-	  Support for Castro's development is/was provided by DOE
-	  Advanced Scientific Computing Research; DOE Office of
-	  Nuclear Physics; NSF Astronomy and Astrophysics
-	  Program; DOE NNSA via Lawrence Livermore National Lab.
+         The development of Nyx began as part of an LDRD-funded project
+         at Lawrence Berkeley National Laboratory and has continuing under funding 
+         from the SciDAC-3 project, <b>Computation-Driven Discovery for the Dark Universe.</b>
+
 	</section>
 	<div class="row">
 	  <div class="8u 12u$(medium)">
 	    <ul class="copyright">
-	      <li>&copy; Castro development team. All rights reserved.</li>
+	      <li>&copy; Nyx development team. All rights reserved.</li>
 	      <li>Design: <a href="http://templated.co">TEMPLATED</a></li>
 	    </ul>
 	  </div>
