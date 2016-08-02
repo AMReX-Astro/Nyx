@@ -19,6 +19,7 @@ CEXE_sources += strang_splitting.cpp
 endif
 
 CEXE_headers += Nyx.H
+CEXE_headers += Nyx_output.H
 FEXE_headers += Nyx_F.H
 
 f90EXE_sources += Nyx_nd.f90

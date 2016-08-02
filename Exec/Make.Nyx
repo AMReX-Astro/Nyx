@@ -140,8 +140,8 @@ INCLUDE_LOCATIONS +=  $(BOXLIB_HOME)/Tools/C_scripts
 buildInfo.cpp: 
 	$(BOXLIB_HOME)/Tools/C_scripts/makebuildinfo_C.py \
           --boxlib_home "$(BOXLIB_HOME)" \
-          --COMP "$(COMP)" \
-          --FCOMP "$(FCOMP)" \
+          --COMP "$(COMP)" --COMP_VERSION "$(COMP_VERSION)" \
+          --FCOMP "$(FCOMP)" --FCOMP_VERSION "$(FCOMP_VERSION)" \
           --GIT "$(TOP) $(BOXLIB_HOME)"
 
 vpath %.c   . $(VPATH_LOCATIONS)

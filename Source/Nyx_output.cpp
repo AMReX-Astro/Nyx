@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <Nyx.H>
 #include <Nyx_F.H>
+#include "Nyx_output.H"
 
 #include "buildInfo.H"
 
@@ -224,6 +225,8 @@ Nyx::writePlotFile (const std::string& dir,
 	jobInfoFile << " Nyx Job Information\n";
 	jobInfoFile << PrettyLine;
 
+	jobInfoFile << "inputs file: " << inputs_name << "\n\n";
+
 	jobInfoFile << "number of MPI processes: " << ParallelDescriptor::NProcs() << "\n";
 #ifdef _OPENMP
 	jobInfoFile << "number of threads:       " << omp_get_max_threads() << "\n";
@@ -279,8 +282,10 @@ Nyx::writePlotFile (const std::string& dir,
 
 	jobInfoFile << "\n";
 
-	jobInfoFile << "COMP:  " << buildInfoGetComp() << "\n";
-	jobInfoFile << "FCOMP: " << buildInfoGetFcomp() << "\n";
+	jobInfoFile << "COMP:          " << buildInfoGetComp() << "\n";
+	jobInfoFile << "COMP version:  " << buildInfoGetCompVersion() << "\n";
+	jobInfoFile << "FCOMP:         " << buildInfoGetFcomp() << "\n";
+	jobInfoFile << "FCOMP version: " << buildInfoGetFcompVersion() << "\n";
 
 	jobInfoFile << "\n";
 

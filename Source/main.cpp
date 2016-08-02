@@ -23,11 +23,22 @@
 #include <boxlib_in_situ_analysis.H>
 #endif
 
+#include "Nyx_output.H"
+
+std::string inputs_name = "";
+
 int
 main (int argc, char* argv[])
 {
     BoxLib::Initialize(argc, argv);
 
+
+    // save the inputs file name for later
+    if (argc > 1) {
+      if (!strchr(argv[1], '=')) {
+        inputs_name = argv[1];
+      }
+    }                                                                                                    
     BL_PROFILE_REGION_START("main()");
     BL_PROFILE_VAR("main()", pmain);
 
