@@ -23,7 +23,7 @@ There is a User's Guide in `Nyx/Docs/` (type `make` to build
 from LaTeX source) that will guide you through running your first
 problem.  
 
-## Development Model:
+## Development Model
 
 New features are committed to the `development` branch.  Nightly
 regression testing is used to ensure that no answers change (or if
@@ -39,7 +39,23 @@ While the merge window is closed, only bug fixes should be pushed into
 `development`.  Once the merge from `development` -> `master` is done,
 the merge window reopens.
 
-## Mailing list
+## Physics Included
+For the description of the N-body and adiabatic hydro algorithms in Nyx, see:  
+Almgren, Bell, Lijewski, Lukic & Van Andel (2013), ApJ, 765, 39  
+http://adsabs.harvard.edu/abs/2013ApJ...765...39A
+
+For the reaction and thermal rates of the primordial chemical composition gas 
+(and convergence tests in the context of the Lyman-alpha forest), see:  
+Lukic, Stark, Nugent, White, Meiksin & Almgren (2015), MNRAS, 446, 3697
+http://adsabs.harvard.edu/abs/2015MNRAS.446.3697L
+
+For the synthesis model of the UV background, 
+which provides the photo-ionization and photo-heating rates, 
+we include the prescription of:  
+Onorbe, Hennawi & Lukic (2016)  
+http://adsabs.harvard.edu/abs/2016arXiv160704218O
+
+## Mailing List
 
 For questions on how to use `Nyx`, email Ann Almgren at ASAlmgren@lbl.gov
 
