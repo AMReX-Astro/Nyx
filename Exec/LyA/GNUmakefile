@@ -1,6 +1,6 @@
 # BOXLIB_HOME defines the directory in which we will find all the BoxLib code
 #BOXLIB_HOME ?= /project/projectdirs/nyx/src/BoxLib
-BOXLIB_HOME = /home/vince/Development/BoxLib.dsc
+BOXLIB_HOME ?= /home/vince/Development/BoxLib.dsc
 
 HPGMG_DIR ?= /global/homes/f/friesen/hpgmg/finite-volume
 
@@ -37,7 +37,7 @@ LIBRARY_LOCATIONS += /usr/lib/x86_64-linux-gnu
 #LIBRARIES += -lfftw3
 #LIBRARIES += /usr/lib/x86_64-linux-gnu/libfftw3_mpi.a
 
-GIMLET_DIR = /home/vince/Development/gimlet
+GIMLET_DIR ?= /home/vince/Development/gimlet
 GIMLET = TRUE
 REEBER = FALSE
 ifeq ($(REEBER), TRUE)

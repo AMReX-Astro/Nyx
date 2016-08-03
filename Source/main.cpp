@@ -96,7 +96,7 @@ namespace
   static int SidecarEventLoop() {
 
 #ifdef BL_USE_MPI
-    BL_ASSERT(NyxHaloFinderSignal != ParallelDescriptor::SidecarQuitSignal);
+    BL_ASSERT(NyxHaloFinderSignal != quitSignal);
 
     bool finished(false);
     int sidecarSignal(-1);
@@ -454,11 +454,6 @@ main (int argc, char* argv[])
       std::cout << "************** sizeof(AmrLevel) = " << sizeof(AmrLevel) << std::endl;
     }
 
-
-ParallelDescriptor::Barrier(ParallelDescriptor::CommunicatorAll());
-BoxLib::USleep(myProcAll/10.0);
-std::cout << myProcAll << ":: _here 4" << std::endl;
-
     bool finished(false);
 
     while ( ! finished) {
@@ -637,7 +632,6 @@ std::cout << myProcAll << ":: _here 4" << std::endl;
     if (ParallelDescriptor::IOProcessor())
     {
         std::cout << "Run time = " << dRunTime2 << std::endl;
-        std::cout << "Run time w/o init = " << time_without_init << " sec" << std::endl;
     }
 
     BL_PROFILE_VAR_STOP(pmain);
