@@ -32,6 +32,10 @@
 #endif
 #endif
 
+#include "Nyx_output.H"
+
+std::string inputs_name = "";
+
 #ifdef GIMLET
 #include <DoGimletAnalysis.H>
 #include <postprocess_tau_fields.H>
