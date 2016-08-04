@@ -97,6 +97,10 @@ set_z_vel_bc(BCRec& bc, const BCRec& phys_bc)
 void
 Nyx::variable_setup()
 {
+
+  // initialize the start time for our CPU-time tracker
+  startCPUTime = ParallelDescriptor::second();
+
     BL_ASSERT(desc_lst.size() == 0);
 
     // Initialize the network

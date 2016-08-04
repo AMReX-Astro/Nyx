@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <iomanip>
 #include <Nyx.H>
 #include <Nyx_F.H>
 #include "Nyx_output.H"
@@ -231,6 +232,10 @@ Nyx::writePlotFile (const std::string& dir,
 #ifdef _OPENMP
 	jobInfoFile << "number of threads:       " << omp_get_max_threads() << "\n";
 #endif
+	jobInfoFile << "\n";
+	jobInfoFile << "CPU time used since start of simulation (CPU-hours): " <<
+	  getCPUTime()/3600.0;
+
 	jobInfoFile << "\n\n";
 
         // plotfile information
@@ -257,7 +262,7 @@ Nyx::writePlotFile (const std::string& dir,
 	jobInfoFile << " Cosmology Information\n";
 	jobInfoFile << PrettyLine;
 
-	Real comoving_OmM, comoving_OmL, comoving_h; 
+	Real comoving_OmM, comoving_OmL, comoving_h;
 	BL_FORT_PROC_CALL(GET_OMM, get_omm )(&comoving_OmM );
 	// Omega lambda is defined algebraically
 	comoving_OmL = 1. - comoving_OmM;
@@ -661,6 +666,20 @@ Nyx::checkPoint (const std::string& dir,
                  VisMF::How         how,
                  bool               dump_old_default)
 {
-    AmrLevel::checkPoint(dir, os, how, dump_old);
-    particle_check_point(dir);
+  AmrLevel::checkPoint(dir, os, how, dump_old);
+  particle_check_point(dir);
+
+  if (level == 0 && ParallelDescriptor::IOProcessor())
+    {
+      {
+	// store ellapsed CPU time
+	std::ofstream CPUFile;
+	std::string FullPathCPUFile = dir;
+	FullPathCPUFile += "/CPUtime";
+	CPUFile.open(FullPathCPUFile.c_str(), std::ios::out);
+
+	CPUFile << std::setprecision(15) << getCPUTime();
+	CPUFile.close();
+      }
+    }
 }
