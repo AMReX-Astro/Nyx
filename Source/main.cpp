@@ -337,13 +337,21 @@ main (int argc, char* argv[])
     Array<int> sidecarSizes;
     bool useRandomNSidecarProcs(false);
 
+    // ---- these sizes work with fftw
     if(ParallelDescriptor::IOProcessor()) {
-      sidecarSizes.push_back(16);
-      sidecarSizes.push_back(32);
-      sidecarSizes.push_back(64);
+//    sidecarSizes.push_back(16);
+//    sidecarSizes.push_back(32);
+//    sidecarSizes.push_back(64);
       sidecarSizes.push_back(128);
       sidecarSizes.push_back(256);
+      sidecarSizes.push_back(320);
       sidecarSizes.push_back(512);
+      sidecarSizes.push_back(640);
+      sidecarSizes.push_back(704);
+      sidecarSizes.push_back(768);
+      sidecarSizes.push_back(832);
+      sidecarSizes.push_back(896);
+      sidecarSizes.push_back(960);
       sidecarSizes.push_back(1024);
     }
 
@@ -506,7 +514,6 @@ main (int argc, char* argv[])
               nSidecarProcs = BoxLib::Random_int(ParallelDescriptor::NProcsAll()/2);
 	    } else {
               nSidecarProcs = sidecarSizes[BoxLib::Random_int(sidecarSizes.size())];
-              std::cout << "Setting random fixed size:  nSidecarProcs = " << nSidecarProcs << std::endl;
 	    }
 	    // ---- fftw does not like these values
             if(nSidecarProcs == 12) {
@@ -523,6 +530,11 @@ main (int argc, char* argv[])
             }
             nSidecarProcs = std::min(nSidecarProcs, maxSidecarProcs);
             nSidecarProcs = std::max(nSidecarProcs, minSidecarProcs);
+	    if(useRandomNSidecarProcs) {
+              std::cout << "Setting random size:  nSidecarProcs = " << nSidecarProcs << std::endl;
+	    } else {
+              std::cout << "Setting random fixed size:  nSidecarProcs = " << nSidecarProcs << std::endl;
+	    }
 	  }
           ParallelDescriptor::Bcast(&nSidecarProcs, 1, 0);
           if(prevSidecarProcs != nSidecarProcs) {
@@ -532,7 +544,8 @@ main (int argc, char* argv[])
           }
 	}
 
-        if((finished || resizeSidecars) && nSidecarProcs > 0) {    // ---- stop the sidecars
+        if((finished || resizeSidecars) && nSidecarProcs > 0 && prevSidecarProcs > 0) {
+	  // ---- stop the sidecars
           int sidecarSignal(-1);
           if(finished) {
             sidecarSignal = quitSignal;
