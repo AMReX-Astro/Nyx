@@ -67,5 +67,3 @@ Bpack := ./Make.package
 Blocs := .
 
 include $(TOP)/Exec/Make.Nyx
-
-vpath %.a   $(LIBRARY_LOCATIONS)
