@@ -1,3 +1,8 @@
+# This is an example script that shows how to run a small Nyx problem with
+# sidecars doing post-processing. The sidecar-specific parameters are at the
+# end of the inputs file. It chooses random numbers of sidecars after each time
+# step to do the post-processing.
+
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 max_step = 20
 max_step = 30

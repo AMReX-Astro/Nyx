@@ -1,3 +1,7 @@
+# This is an example script that shows how to run a larger Nyx problem with
+# sidecars doing post-processing. The sidecar-specific parameters are at the
+# end of the inputs file.
+
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 max_step = 400
 
