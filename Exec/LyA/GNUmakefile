@@ -29,13 +29,8 @@ USE_CXX11     = TRUE
 DEFINES += -DBL_RANK_IN_PLT
 DEFINES += -DDEBUG_AFAP
 
-FFTW_INC = /usr/include
-FFTW_DIR = /usr/lib/x86_64-linux-gnu
-
-INCLUDE_LOCATIONS += /usr/include
-LIBRARY_LOCATIONS += /usr/lib/x86_64-linux-gnu
-#LIBRARIES += -lfftw3
-#LIBRARIES += /usr/lib/x86_64-linux-gnu/libfftw3_mpi.a
+FFTW_INC ?= /usr/include
+FFTW_DIR ?= /usr/lib/x86_64-linux-gnu
 
 GIMLET_DIR ?= /home/vince/Development/gimlet
 GIMLET = TRUE
