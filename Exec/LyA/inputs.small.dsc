@@ -2,12 +2,6 @@
 max_step = 20
 max_step = 30
 
-nSidecars = 0
-minSidecarProcs = 1
-maxSidecarProcs = 16
-how = 2
-useRandomNSidecarProcs = true
-
 particles.nreaders=1
 
 nyx.ppm_type         = 0
@@ -121,13 +115,26 @@ amr.max_level          = 2        # maximum level number allowed
 # CHECKPOINT FILES
 amr.check_file      = chk
 amr.check_int       = 1
+amr.checkpoint_files_output = 0
 
 # PLOTFILES
 amr.plot_file       = plt
 amr.plot_int        = 1
+amr.plot_files_output = 0
 
 amr.plot_vars        = ALL
 amr.derive_plot_vars = particle_count particle_mass_density pressure magvel
 
 #PROBIN FILENAME
 amr.probin_file = probin
+
+# >>>>>>>>>>>>>>>>>>>> SIDECARS <<<<<<<<<<<<<<<<<<<<
+# how many MPI procs to use for sidecars?
+nSidecars = 0
+# if we choose random numbers of MPI procs for sidecars, what are lower and upper bounds?
+minSidecarProcs = 1
+maxSidecarProcs = 16
+# how to distribute grids on sidecar procs? "2" means random
+how = 2
+useRandomNSidecarProcs = true
+# >>>>>>>>>>>>>>>>>>>> SIDECARS <<<<<<<<<<<<<<<<<<<<
