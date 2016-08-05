@@ -512,11 +512,6 @@ public:
 protected:
 
     //
-    // Need to pass ugdnv out of cmpflx to do level sets
-    //
-    //MultiFab* u_gdnv;
-
-    //
     // Number of grow cells required for particle motion.
     //
     int grav_n_grow;
