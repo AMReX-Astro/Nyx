@@ -2196,6 +2196,7 @@ Gravity::set_boundary(BndryData& bd, MultiFab& rhs, const Real* dx)
 
 
 
+// Routine to duplicate Gravity class data onto sidecars
 void
 Gravity::AddProcsToComp(Amr *aptr, int level, AmrLevel *level_data_to_install,
                         int ioProcNumSCS, int ioProcNumAll, int scsMyId, MPI_Comm scsComm)
