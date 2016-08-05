@@ -1,6 +1,6 @@
 # BOXLIB_HOME defines the directory in which we will find all the BoxLib code
-#BOXLIB_HOME ?= /project/projectdirs/nyx/src/BoxLib
-BOXLIB_HOME ?= /home/vince/Development/BoxLib.dsc
+BOXLIB_HOME ?= /project/projectdirs/nyx/src/BoxLib
+#BOXLIB_HOME = /home/vince/Development/BLMaster/BoxLib
 
 HPGMG_DIR ?= /global/homes/f/friesen/hpgmg/finite-volume
 
