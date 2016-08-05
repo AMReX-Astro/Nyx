@@ -16,7 +16,7 @@ module heating_cooling_module
       use fundamental_constants_module, only: e_to_cgs, density_to_cgs, & 
                                               heat_from_cgs
       use eos_module, only: iterate_ne
-      use atomic_rates_module, ONLY: TCOOLMIN, TCOOLMAX, NCOOLTAB, & 
+      use atomic_rates_module, ONLY: TCOOLMIN, TCOOLMAX, NCOOLTAB, deltaT, &
                                      MPROTON, XHYDROGEN, &
                                      AlphaHp, AlphaHep, AlphaHepp, Alphad, &
                                      GammaeH0, GammaeHe0, GammaeHep, &
@@ -31,7 +31,7 @@ module heating_cooling_module
 
       double precision, parameter :: compt_c = 1.01765467d-37, T_cmb = 2.725d0
 
-      double precision :: logT, deltaT, tmp, fhi, flo
+      double precision :: logT, tmp, fhi, flo
       double precision :: ahp, ahep, ahepp, ad, geh0, gehe0, gehep
       double precision :: bh0, bhe0, bhep, bff1, bff4, rhp, rhep, rhepp
       double precision :: lambda_c, lambda_ff, lambda, heat
@@ -68,7 +68,6 @@ module heating_cooling_module
       endif
 
       ! Temperature floor
-      deltaT = (TCOOLMAX - TCOOLMIN)/NCOOLTAB;
       if (logT .le. TCOOLMIN) logT = TCOOLMIN + 0.5d0*deltaT
 
       ! Interpolate rates

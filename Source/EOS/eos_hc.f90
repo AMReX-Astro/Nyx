@@ -225,7 +225,7 @@ module eos_module
 
       use meth_params_module, only: gamma_minus_1
       use atomic_rates_module, ONLY: YHELIUM, MPROTON, BOLTZMANN, &
-                                     TCOOLMIN, TCOOLMAX, NCOOLTAB, &
+                                     TCOOLMIN, TCOOLMAX, NCOOLTAB, deltaT, &
                                      AlphaHp, AlphaHep, AlphaHepp, Alphad, &
                                      GammaeH0, GammaeHe0, GammaeHep, &
                                      ggh0, gghe0, gghep
@@ -234,7 +234,7 @@ module eos_module
       double precision, intent(  out) :: nhp, nhep, nhepp, t
       double precision :: ahp, ahep, ahepp, ad, geh0, gehe0, gehep
       double precision :: ggh0ne, gghe0ne, gghepne
-      double precision :: mu, tmp, logT, deltaT, flo, fhi
+      double precision :: mu, tmp, logT, flo, fhi
       double precision :: smallest_val
       integer :: j
 
@@ -250,7 +250,6 @@ module eos_module
       endif
 
       ! Temperature floor
-      deltaT = (TCOOLMAX - TCOOLMIN)/NCOOLTAB;
       if (logT .le. TCOOLMIN) logT = TCOOLMIN + 0.5d0*deltaT
 
       ! Interpolate rates
@@ -269,9 +268,9 @@ module eos_module
       gehep = flo*GammaeHep(j) + fhi*GammaeHep(j+1)
 
       if (ne .gt. 0.0d0) then
-         ggh0ne   = ggh0 /ne/nh
-         gghe0ne  = gghe0/ne/nh
-         gghepne  = gghep/ne/nh
+         ggh0ne   = ggh0 /(ne*nh)
+         gghe0ne  = gghe0/(ne*nh)
+         gghepne  = gghep/(ne*nh)
       else
          ggh0ne   = 0.0d0
          gghe0ne  = 0.0d0
@@ -282,7 +281,7 @@ module eos_module
       nhp = 1.0d0 - ahp/(ahp + geh0 + ggh0ne)
 
       ! He+
-      smallest_val = 1.d0 / Huge(1.d0)
+      smallest_val = Tiny(1.0d0)
       if ((gehe0 + gghe0ne) .gt. smallest_val) then
 
          nhep  = YHELIUM/(1.0d0 + (ahep  + ad     )/(gehe0 + gghe0ne) &
