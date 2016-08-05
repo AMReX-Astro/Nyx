@@ -142,4 +142,6 @@ maxSidecarProcs = 16
 # how to distribute grids on sidecar procs? "2" means random
 how = 2
 useRandomNSidecarProcs = true
+# time step interval for doing Gimlet analysis
+gimlet_int = 5
 # >>>>>>>>>>>>>>>>>>>> SIDECARS <<<<<<<<<<<<<<<<<<<<

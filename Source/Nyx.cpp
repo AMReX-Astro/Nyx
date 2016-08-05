@@ -165,6 +165,7 @@ std::string Nyx::particle_plotfile_format = "NATIVE";
 #endif
 
 int Nyx::halo_int(0);
+int Nyx::gimlet_int(0);
 
 int Nyx::forceParticleRedist = false;
 
@@ -392,6 +393,7 @@ Nyx::read_params ()
     }
 
     pp.query("halo_int", halo_int);
+    pp.query("gimlet_int", gimlet_int);
 }
 
 Nyx::Nyx ()
@@ -1399,7 +1401,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
 
 #ifdef GIMLET
 #ifdef IN_SITU
-   if ((nStep()-1) % 1 == 0) {
+   if ((nStep()-1) % gimlet_int == 0) {
      const Real time1 = ParallelDescriptor::second();
 
      const MultiFab &state_data = get_data(State_Type, cur_time);
@@ -1433,8 +1435,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
        std::cout << std::endl << "===== Time to post-process: " << time_to_postprocess << " sec" << std::endl;
    }
 #elif defined IN_TRANSIT
-   const int sidecar_handshake_interval = 1;
-   if ((nStep()-1) % sidecar_handshake_interval == 0 && ParallelDescriptor::NProcsSidecar(0) > 0)
+   if ((nStep()-1) % gimlet_int == 0 && ParallelDescriptor::NProcsSidecar(0) > 0)
    {
      int signal = GimletSignal;
      const int MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
@@ -2285,6 +2286,7 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         allInts.push_back(heat_cool_type);
         allInts.push_back(strang_split);
         allInts.push_back(halo_int);
+        allInts.push_back(gimlet_int);
         allInts.push_back(grav_n_grow);
         allInts.push_back(forceParticleRedist);
       }
@@ -2342,6 +2344,7 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         heat_cool_type = allInts[count++];
         strang_split = allInts[count++];
         halo_int = allInts[count++];
+        gimlet_int = allInts[count++];
         grav_n_grow = allInts[count++];
         forceParticleRedist = allInts[count++];
 

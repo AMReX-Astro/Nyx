@@ -644,6 +644,8 @@ protected:
 
     // halo interval for the sidecars
     static int halo_int;
+    // time step interval for doing Gimlet post-processing
+    static int gimlet_int;
 };
 
 //
