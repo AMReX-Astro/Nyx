@@ -20,41 +20,31 @@ COMM_PROFILE  = FALSE
 
 PRECISION = DOUBLE
 DEBUG     = FALSE
-DEBUG     = TRUE
-
-BACKTRACE     = TRUE
 
 USE_CXX11     = TRUE
 
 DEFINES += -DBL_RANK_IN_PLT
 DEFINES += -DDEBUG_AFAP
 
+GIMLET = TRUE
+REEBER = FALSE
+
+GIMLET_DIR ?= /home/vince/Development/gimlet
+# Gimlet needs FFTW MPI.
 FFTW_INC ?= /usr/include
 FFTW_DIR ?= /usr/lib/x86_64-linux-gnu
 
-GIMLET_DIR ?= /home/vince/Development/gimlet
-GIMLET = TRUE
-REEBER = FALSE
-ifeq ($(REEBER), TRUE)
-  DEFINES += -DREEBER
-  BOOST_DIR ?= /opt/local
-  BOOST_INCLUDE_DIR ?= $(HOME)/Downloads/boost_1_60_0
-  BOOST_LIB_DIR ?= $(HOME)/Downloads/boost_1_60_0/stage/lib
-  REEBER_HOME ?= $(HOME)/devel/Reeber/dev
-endif
+REEBER_HOME ?= $(HOME)/devel/Reeber/dev
+# Reeber needs Boost (both headers and libraries) and diy2.
+BOOST_INCLUDE_DIR ?= /usr/local/include
+BOOST_LIB_DIR ?= /usr/local/lib
+DIY2_INCLUDE_DIR ?= /usr/local/include
 
-
+# Vince's fake Reeber (just usleeps) since he didn't have access to Reeber
+# source while developing sidecars.
 FAKE_REEBER = FALSE
-ifeq ($(FAKE_REEBER), TRUE)
-  DEFINES += -DFAKE_REEBER
-  BOOST_DIR =
-endif
 
 USE_IN_TRANSIT = TRUE
-ifeq ($(USE_IN_TRANSIT), TRUE)
-DEFINES += -DIN_TRANSIT
-endif
-
 
 USE_HPGMG = FALSE
 HPGMG_FCYCLES = FALSE
@@ -79,5 +69,3 @@ Blocs := .
 include $(TOP)/Exec/Make.Nyx
 
 vpath %.a   $(LIBRARY_LOCATIONS)
-
-
