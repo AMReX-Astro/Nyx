@@ -621,9 +621,6 @@ protected:
     // permits gravity calculation to be turned on and off
     static int do_grav;
 
-    //std::map<std::string,MultiFab*> auxDiag;
-    //static std::map<std::string,Array<std::string> > auxDiag_names;
-
     // if true, define an additional source term
     static int add_ext_src;
 
