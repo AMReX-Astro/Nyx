@@ -2179,8 +2179,6 @@ Gravity::set_boundary(BndryData& bd, MultiFab& rhs, const Real* dx)
     for (MFIter mfi(rhs); mfi.isValid(); ++mfi ) {
       int i = mfi.index();
 
-      //const Box& bx = mfi.validbox();
-
       // Our default will be that the face of this grid is either touching another grid
       //  across an interior boundary or a periodic boundary.
       {
