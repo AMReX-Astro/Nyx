@@ -972,16 +972,14 @@ Gravity::actual_multilevel_solve (int                       level,
         fgeom[i] = parent->Geom(level+i);
 
     // FOR TIMINGS
-    if (show_timings) {
+    if (show_timings)
         ParallelDescriptor::Barrier();
-    }
 
     const Real strt_setup = ParallelDescriptor::second();
 
     // FOR TIMINGS
-    if (show_timings) {
+    if (show_timings)
         ParallelDescriptor::Barrier();
-    }
 
     if (show_timings)
     {
