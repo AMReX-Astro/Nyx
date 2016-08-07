@@ -142,12 +142,8 @@ amr.probin_file = probin
 # >>>>>>>>>>>>>>>>>>>> SIDECARS <<<<<<<<<<<<<<<<<<<<
 # how many MPI procs to use for sidecars?
 nSidecars = 256
-# if we choose random numbers of MPI procs for sidecars, what are lower and upper bounds?
-minSidecarProcs = 128
-maxSidecarProcs = 1024
 # how to distribute grids on sidecar procs? "2" means random
 how = 2
-useRandomNSidecarProcs = false
 # time step interval for doing Gimlet analysis
 nyx.gimlet_int = 5
 # >>>>>>>>>>>>>>>>>>>> SIDECARS <<<<<<<<<<<<<<<<<<<<

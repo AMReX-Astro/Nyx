@@ -335,11 +335,10 @@ main (int argc, char* argv[])
 
     const int MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
     int nSidecarProcs(0), nSidecarProcsFromParmParse(-3);
-    int prevSidecarProcs(0), minSidecarProcs(0), maxSidecarProcs(0);
+    int prevSidecarProcs(0);
     int sidecarSignal(NyxHaloFinderSignal);
     int resizeSidecars(false);  // ---- instead of bool for bcast
     Array<int> sidecarSizes;
-    bool useRandomNSidecarProcs(false);
 
     // ---- these sizes work with fftw
     if(ParallelDescriptor::IOProcessor()) {
@@ -375,12 +374,9 @@ main (int argc, char* argv[])
 
     int how(-1);
     pp.query("how",how);
-    pp.query("useRandomNSidecarProcs",useRandomNSidecarProcs);
 
 #ifdef IN_TRANSIT
     pp.query("nSidecars", nSidecarProcsFromParmParse);
-    pp.query("minSidecarProcs", minSidecarProcs);
-    pp.query("maxSidecarProcs", maxSidecarProcs);
     if(ParallelDescriptor::IOProcessor()) {
       std::cout << "nSidecarProcs from parmparse = " << nSidecarProcsFromParmParse << std::endl;
     }
@@ -392,9 +388,6 @@ main (int argc, char* argv[])
       }
       nSidecarProcs = nSidecarProcsFromParmParse;
     }
-    nSidecarProcs = std::min(nSidecarProcs, maxSidecarProcs);
-    nSidecarProcs = std::max(nSidecarProcs, minSidecarProcs);
-
 #endif
 
     if (strt_time < 0.0)
@@ -428,8 +421,6 @@ main (int argc, char* argv[])
     ParallelDescriptor::Bcast(&nSidecarProcs, 1, 0, ParallelDescriptor::CommunicatorAll());
     if(ParallelDescriptor::IOProcessor()) {
       std::cout << "IIIIIIII new nSidecarProcs = " << nSidecarProcs << std::endl;
-      std::cout << "IIIIIIII     minSidecarProcs = " << minSidecarProcs << std::endl;
-      std::cout << "IIIIIIII     maxSidecarProcs = " << maxSidecarProcs << std::endl;
     }
 
     if(nSidecarProcs < prevSidecarProcs) {
@@ -482,44 +473,6 @@ main (int argc, char* argv[])
           finished = true;
           resizeSidecars = false;
         }
-
-
-	if( ! finished) {    // ---- test resizing the sidecars
-          prevSidecarProcs = nSidecarProcs;
-	  if(ParallelDescriptor::IOProcessor()) {
-	    if(useRandomNSidecarProcs) {
-              nSidecarProcs = BoxLib::Random_int(ParallelDescriptor::NProcsAll()/2);
-	    } else {
-              nSidecarProcs = sidecarSizes[BoxLib::Random_int(sidecarSizes.size())];
-	    }
-	    // ---- fftw does not like these values
-            if(nSidecarProcs == 12) {
-              std::cout << "12121212:  skipping 12 sidecars." << std::endl;
-              nSidecarProcs = 11;
-            }
-            if(nSidecarProcs == 14) {
-              std::cout << "14141414:  skipping 14 sidecars." << std::endl;
-              nSidecarProcs = 13;
-            }
-            if(nSidecarProcs == 15) {
-              std::cout << "15151515:  skipping 15 sidecars." << std::endl;
-              nSidecarProcs = 8;
-            }
-            nSidecarProcs = std::min(nSidecarProcs, maxSidecarProcs);
-            nSidecarProcs = std::max(nSidecarProcs, minSidecarProcs);
-	    if(useRandomNSidecarProcs) {
-              std::cout << "Setting random size:  nSidecarProcs = " << nSidecarProcs << std::endl;
-	    } else {
-              std::cout << "Setting random fixed size:  nSidecarProcs = " << nSidecarProcs << std::endl;
-	    }
-	  }
-          ParallelDescriptor::Bcast(&nSidecarProcs, 1, 0);
-          if(prevSidecarProcs != nSidecarProcs) {
-            resizeSidecars = true;
-          } else {
-            resizeSidecars = false;
-          }
-	}
 
         if((finished || resizeSidecars) && nSidecarProcs > 0 && prevSidecarProcs > 0) {
 	  // ---- stop the sidecars
