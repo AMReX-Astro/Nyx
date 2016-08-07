@@ -443,10 +443,6 @@ main (int argc, char* argv[])
       ResizeSidecars(nSidecarProcs);
     }
 
-#ifdef BL_USE_MPI
-    ParallelDescriptor::SetNProcsSidecars(nSidecarProcs);
-#endif
-
     if(ParallelDescriptor::IOProcessor()) {
       std::cout << "************** sizeof(Amr)      = " << sizeof(Amr) << std::endl;
       std::cout << "************** sizeof(AmrLevel) = " << sizeof(AmrLevel) << std::endl;
