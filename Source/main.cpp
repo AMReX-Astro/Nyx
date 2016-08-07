@@ -387,11 +387,7 @@ main (int argc, char* argv[])
     if(ParallelDescriptor::IOProcessor()) {
       std::cout << "nSidecarProcs from parmparse = " << nSidecarProcsFromParmParse << std::endl;
     }
-    if(prevSidecarProcs != nSidecarProcs) {
-      resizeSidecars = true;
-    } else {
-      resizeSidecars = false;
-    }
+    resizeSidecars = !(prevSidecarProcs == nSidecarProcs);
     prevSidecarProcs = nSidecarProcs;
     if(nSidecarProcsFromParmParse >= 0) {
       if(nSidecarProcsFromParmParse >= ParallelDescriptor::NProcsAll()) {
