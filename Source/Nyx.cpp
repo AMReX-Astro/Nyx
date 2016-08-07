@@ -1343,8 +1343,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
      std::cout << std::endl << "===== Time to post-process: " << time2 - time1 << " sec" << std::endl;
    }
 #elif defined IN_TRANSIT
-   const int sidecar_handshake_interval = 1;
-   if ((nStep()-1) % sidecar_handshake_interval == 0 && ParallelDescriptor::NProcsSidecar(0) > 0)
+   if ((nStep()-1) % halo_int == 0 && ParallelDescriptor::NProcsSidecar(0) > 0)
    {
      int sidecarSignal(NyxHaloFinderSignal);
      int whichSidecar(0);
