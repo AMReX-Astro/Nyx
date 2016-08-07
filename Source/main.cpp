@@ -455,11 +455,7 @@ main (int argc, char* argv[])
         if(returnCode == quitSignal) {
           finished = true;
         }
-        if(returnCode == resizeSignal) {
-          resizeSidecars = true;
-        } else {
-          resizeSidecars = false;
-        }
+        resizeSidecars = (returnCode == resizeSignal);
 
       } else {  // ----------------------------------------------------- start comp
 
