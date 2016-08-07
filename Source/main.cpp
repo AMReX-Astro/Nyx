@@ -333,7 +333,7 @@ main (int argc, char* argv[])
 
     BL_COMM_PROFILE_NAMETAG("main TOP");
 
-    int MPI_IntraGroup_Broadcast_Rank;
+    const int MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
     int nSidecarProcs(0), nSidecarProcsFromParmParse(-3);
     int prevSidecarProcs(0), minSidecarProcs(0), maxSidecarProcs(0);
     int sidecarSignal(NyxHaloFinderSignal);
@@ -556,7 +556,6 @@ main (int argc, char* argv[])
 	  } else if(resizeSidecars) {
             sidecarSignal = resizeSignal;
 	  }
-          MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
 	  int whichSidecar(0);
           ParallelDescriptor::Bcast(&sidecarSignal, 1, MPI_IntraGroup_Broadcast_Rank,
                                     ParallelDescriptor::CommunicatorInter(whichSidecar));
@@ -624,7 +623,6 @@ main (int argc, char* argv[])
     if(nSidecarProcs > 0) {    // ---- stop the sidecars
       sidecarSignal = quitSignal;
       int whichSidecar(0);
-      MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
       ParallelDescriptor::Bcast(&sidecarSignal, 1, MPI_IntraGroup_Broadcast_Rank,
                                 ParallelDescriptor::CommunicatorInter(whichSidecar));
     }
