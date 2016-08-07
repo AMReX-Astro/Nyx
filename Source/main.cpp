@@ -247,7 +247,7 @@ namespace
             }
             ParallelDescriptor::Barrier();
 #else
-            BoxLib::Abort("Nyx received gimlet finder signal but not compiled with gimlet");
+            BoxLib::Abort("Nyx received Gimlet signal but not compiled with Gimlet");
 #endif
 	  }
           break;
