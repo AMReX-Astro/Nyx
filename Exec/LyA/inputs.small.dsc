@@ -143,5 +143,5 @@ maxSidecarProcs = 16
 how = 2
 useRandomNSidecarProcs = true
 # time step interval for doing Gimlet analysis
-gimlet_int = 5
+nyx.gimlet_int = 5
 # >>>>>>>>>>>>>>>>>>>> SIDECARS <<<<<<<<<<<<<<<<<<<<
