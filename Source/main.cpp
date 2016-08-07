@@ -338,22 +338,6 @@ main (int argc, char* argv[])
     int prevSidecarProcs(0);
     int sidecarSignal(NyxHaloFinderSignal);
     int resizeSidecars(false);  // ---- instead of bool for bcast
-    Array<int> sidecarSizes;
-
-    // ---- these sizes work with fftw
-    if(ParallelDescriptor::IOProcessor()) {
-      sidecarSizes.push_back(128);
-      sidecarSizes.push_back(256);
-      sidecarSizes.push_back(320);
-      sidecarSizes.push_back(512);
-      sidecarSizes.push_back(640);
-      sidecarSizes.push_back(704);
-      sidecarSizes.push_back(768);
-      sidecarSizes.push_back(832);
-      sidecarSizes.push_back(896);
-      sidecarSizes.push_back(960);
-      sidecarSizes.push_back(1024);
-    }
 
     Real dRunTime1 = ParallelDescriptor::second();
 
