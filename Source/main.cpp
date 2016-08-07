@@ -343,9 +343,6 @@ main (int argc, char* argv[])
 
     // ---- these sizes work with fftw
     if(ParallelDescriptor::IOProcessor()) {
-//    sidecarSizes.push_back(16);
-//    sidecarSizes.push_back(32);
-//    sidecarSizes.push_back(64);
       sidecarSizes.push_back(128);
       sidecarSizes.push_back(256);
       sidecarSizes.push_back(320);
