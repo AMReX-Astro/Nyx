@@ -1358,7 +1358,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
      Real time1(ParallelDescriptor::second());
      ParallelDescriptor::Bcast(&nComp, 1, MPI_IntraGroup_Broadcast_Rank,
                                ParallelDescriptor::CommunicatorInter(whichSidecar));
-     BoxArray::SendBoxArray(dm_density->boxArray());
+     BoxArray::SendBoxArray(dm_density->boxArray(), whichSidecar);
 
      MultiFab *mfSource = dm_density;
      MultiFab *mfDest = 0;
@@ -1375,7 +1375,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
                          commSrc, commDest, commInter, commBoth,
                          isSrc);
 
-     Geometry::SendGeometryToSidecars(&geom, whichSidecar);
+     Geometry::SendGeometryToSidecar(&geom, whichSidecar);
 
      ParallelDescriptor::Bcast(&time_step, 1, MPI_IntraGroup_Broadcast_Rank,
                                ParallelDescriptor::CommunicatorInter(whichSidecar));
