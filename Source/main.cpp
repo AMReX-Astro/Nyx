@@ -411,6 +411,7 @@ main (int argc, char* argv[])
     }
 
 
+    // This initialization is only for Reeber.
 #ifdef IN_TRANSIT
     SidecarInit();
 #endif
