@@ -642,7 +642,7 @@ protected:
     static Real average_neutr_density;
     static Real average_total_density;
 
-    // halo interval for the sidecars
+    // time step interval for finding halos
     static int halo_int;
     // time step interval for doing Gimlet post-processing
     static int gimlet_int;
