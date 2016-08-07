@@ -434,20 +434,12 @@ main (int argc, char* argv[])
 
     if(nSidecarProcs < prevSidecarProcs) {
       ResizeSidecars(nSidecarProcs);
-    }
-
-    if(ParallelDescriptor::InCompGroup()) {
-      if(nSidecarProcs > prevSidecarProcs) {
-        amrptr->AddProcsToSidecar(nSidecarProcs, prevSidecarProcs);
-      }
-    }
-
-    if(nSidecarProcs < prevSidecarProcs) {
       amrptr->AddProcsToComp(nSidecarProcs, prevSidecarProcs);
       amrptr->RedistributeGrids(how);
-    }
-
-    if(nSidecarProcs > prevSidecarProcs) {
+    } else if (nSidecarProcs > prevSidecarProcs) {
+      if(ParallelDescriptor::InCompGroup()) {
+        amrptr->AddProcsToSidecar(nSidecarProcs, prevSidecarProcs);
+      }
       ResizeSidecars(nSidecarProcs);
     }
 
