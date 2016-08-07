@@ -1332,7 +1332,6 @@ Nyx::postCoarseTimeStep (Real cumtime)
 
 #ifdef REEBER
 #ifdef IN_SITU
-#if 1
    // The time step interval for in situ Reeber is done in ParmParse so we
    // don't need to hard-code it here.
    const Real time1 = ParallelDescriptor::second();
@@ -1343,15 +1342,6 @@ Nyx::postCoarseTimeStep (Real cumtime)
    {
      std::cout << std::endl << "===== Time to post-process: " << time2 - time1 << " sec" << std::endl;
    }
-#else
-   std::vector<Halo> halos = findHalos(*this, cur_time, State_Type);
-   if (ParallelDescriptor::IOProcessor())
-   {
-       std::cout << "Found " << halos.size() << " halos." << std::endl;
-       for (std::vector<Halo>::iterator it = halos.begin(); it != halos.end(); ++it)
-           std::cout << it->pos << " " << it->mass << std::endl;
-   }
-#endif
 #elif defined IN_TRANSIT
    const int sidecar_handshake_interval = 1;
    if ((nStep()-1) % sidecar_handshake_interval == 0 && ParallelDescriptor::NProcsSidecar(0) > 0)
