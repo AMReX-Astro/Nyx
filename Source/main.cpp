@@ -265,12 +265,10 @@ namespace
 
 
   static void SidecarInit() {
-#ifdef IN_SITU
     if(ParallelDescriptor::InSidecarGroup() && ParallelDescriptor::IOProcessor()) {
       std::cout << "Initializing Reeber on sidecars ... " << std::endl;
     }
     initInSituAnalysis();
-#endif
   }
 #endif /* IN_TRANSIT */
 }
@@ -292,10 +290,6 @@ main (int argc, char* argv[])
     }
     BL_PROFILE_REGION_START("main()");
     BL_PROFILE_VAR("main()", pmain);
-
-#ifdef IN_SITU
-      initInSituAnalysis();
-#endif
 
     //
     // Don't start timing until all CPUs are ready to go.
