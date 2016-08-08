@@ -1353,7 +1353,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
 
      Geometry geom(Geom());
      MultiFab *dm_density = particle_derive("particle_mass_density", cur_time, 0);
-     int time_step(nStep()), nComp(dm_density->nComp());;
+     int time_step(nStep()-1), nComp(dm_density->nComp());;
 
      Real time1(ParallelDescriptor::second());
      ParallelDescriptor::Bcast(&nComp, 1, MPI_IntraGroup_Broadcast_Rank,
