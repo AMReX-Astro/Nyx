@@ -89,18 +89,18 @@ namespace
 
         switch(sidecarSignal) {
           case NyxHaloFinderSignal:
-	  {
+          {
 #ifdef REEBER
             if(ParallelDescriptor::IOProcessor()) {
               std::cout << "Sidecars got the halo finder sidecarSignal!" << std::endl;
-	    }
-	    BoxArray bac;
+            }
+            BoxArray bac;
             Geometry geom;
             int time_step, nComp(0), nGhost(0);
 
             // Receive the necessary data for doing analysis.
             ParallelDescriptor::Bcast(&nComp, 1, 0, ParallelDescriptor::CommunicatorInter(whichSidecar));
-	    BoxArray::RecvBoxArray(bac, whichSidecar);
+            BoxArray::RecvBoxArray(bac, whichSidecar);
             MultiFab mf(bac, nComp, nGhost);
 
             MultiFab *mfSource = 0;
@@ -127,25 +127,25 @@ namespace
 
             if(ParallelDescriptor::IOProcessor()) {
               std::cout << "Sidecars completed halo finding analysis." << std::endl;
-	    }
+            }
 #else
-      BoxLib::Abort("Nyx received halo finder signal but not compiled with Reeber");
+            BoxLib::Abort("Nyx received halo finder signal but not compiled with Reeber");
 #endif /* REEBER */
-	  }
+          }
           break;
 
           case GimletSignal:
-	  {
+          {
 #ifdef GIMLET
             if(ParallelDescriptor::IOProcessor()) {
               std::cout << "Sidecars got the halo finder GimletSignal!" << std::endl;
-	    }
-	    BoxArray bac;
+            }
+            BoxArray bac;
             Geometry geom;
             int time_step;
             Real new_a, omega_m, omega_b, omega_l, comoving_h;
 
-	    BoxArray::RecvBoxArray(bac, whichSidecar);
+            BoxArray::RecvBoxArray(bac, whichSidecar);
 
             MultiFab *mfSource = 0;
             MultiFab *mfDest = 0;
@@ -157,7 +157,7 @@ namespace
             const MPI_Comm &commBoth = ParallelDescriptor::CommunicatorBoth(whichSidecar);
             bool isSrc(false);
 
-	    // ---- we should probably combine all of these into one MultiFab
+            // ---- we should probably combine all of these into one MultiFab
             MultiFab density(bac, nComp, nGhost);
             MultiFab temperature(bac, nComp, nGhost);
             MultiFab e_int(bac, nComp, nGhost);
@@ -166,31 +166,31 @@ namespace
             MultiFab ymom(bac, nComp, nGhost);
             MultiFab zmom(bac, nComp, nGhost);
 
-	    mfDest = &density;
+            mfDest = &density;
             MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
                                 srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
 
-	    mfDest = &temperature;
+            mfDest = &temperature;
             MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
                                 srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
 
-	    mfDest = &e_int;
+            mfDest = &e_int;
             MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
                                 srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
 
-	    mfDest = &dm_density;
+            mfDest = &dm_density;
             MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
                                 srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
 
-	    mfDest = &xmom;
+            mfDest = &xmom;
             MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
                                 srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
 
-	    mfDest = &ymom;
+            mfDest = &ymom;
             MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
                                 srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
 
-	    mfDest = &zmom;
+            mfDest = &zmom;
             MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
                                 srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
 
@@ -214,39 +214,39 @@ namespace
             ParallelDescriptor::ReduceRealMax(dtime, ParallelDescriptor::IOProcessorNumber());
             if(ParallelDescriptor::IOProcessor()) {
               std::cout << std::endl << "===== Time for Gimlet in-transit to post-process (sec): "
-	                << dtime << " sec" << std::endl << std::flush;
+                        << dtime << " sec" << std::endl << std::flush;
             }
             ParallelDescriptor::Barrier();
 #else
             BoxLib::Abort("Nyx received Gimlet signal but not compiled with Gimlet");
 #endif /* GIMLET */
-	  }
+          }
           break;
 
           case resizeSignal:
-	  {
+          {
             if(ParallelDescriptor::IOProcessor()) {
               std::cout << "_in sidecars:  Sidecars received the resize sidecarSignal." << std::endl;
             }
-	    finished = true;
-	  }
+            finished = true;
+          }
           break;
 
           case quitSignal:
-	  {
+          {
             if(ParallelDescriptor::IOProcessor()) {
               std::cout << "Sidecars received the quit sidecarSignal." << std::endl;
             }
             finished = true;
-	  }
+          }
           break;
 
           default:
-	  {
+          {
             if(ParallelDescriptor::IOProcessor()) {
               std::cout << "**** Sidecars received bad sidecarSignal = " << sidecarSignal << std::endl;
             }
-	  }
+          }
           break;
         }
 
@@ -424,14 +424,14 @@ main (int argc, char* argv[])
         }
 
         if((finished || resizeSidecars) && nSidecarProcs > 0 && prevSidecarProcs > 0) {
-	  // ---- stop the sidecars
+          // ---- stop the sidecars
           int sidecarSignal(-1);
           if(finished) {
             sidecarSignal = quitSignal;
-	  } else if(resizeSidecars) {
+          } else if(resizeSidecars) {
             sidecarSignal = resizeSignal;
-	  }
-	  int whichSidecar(0);
+          }
+          int whichSidecar(0);
           ParallelDescriptor::Bcast(&sidecarSignal, 1, MPI_IntraGroup_Broadcast_Rank,
                                     ParallelDescriptor::CommunicatorInter(whichSidecar));
         }
@@ -449,7 +449,7 @@ main (int argc, char* argv[])
             std::cout << "NNNNNNNN new nSidecarProcs    = " << nSidecarProcs    << std::endl;
             std::cout << "NNNNNNNN     prevSidecarProcs = " << prevSidecarProcs << std::endl;
           }
-	}
+        }
         Nyx::forceParticleRedist = true;
 
         if(nSidecarProcs < prevSidecarProcs) {
@@ -460,8 +460,8 @@ main (int argc, char* argv[])
           if(ParallelDescriptor::InCompGroup()) {
             amrptr->AddProcsToSidecar(nSidecarProcs, prevSidecarProcs);
           } else {
-	    DistributionMapping::DeleteCache();
-	  }
+            DistributionMapping::DeleteCache();
+          }
         }
 
         if(nSidecarProcs < prevSidecarProcs) {
