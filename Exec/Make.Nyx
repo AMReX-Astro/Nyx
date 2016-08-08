@@ -101,14 +101,6 @@ ifeq ($(GIMLET), TRUE)
   LIBRARIES += -L$(FFTW_DIR) -lfftw3_mpi -lfftw3
 endif
 
-ifeq ($(FAKE_REEBER), TRUE)
-ifeq ($(USE_IN_TRANSIT), TRUE)
-  USE_IN_SITU = FALSE
-  DEFINES += -DIN_TRANSIT
-endif
-endif
-
-
 #These are the directories in Nyx 
 
 Bdirs 	:= Source Source/Src_3d Source/HydroFortran Source/Tagging Source/Initialization

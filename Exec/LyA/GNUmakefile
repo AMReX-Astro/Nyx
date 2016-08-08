@@ -40,10 +40,6 @@ BOOST_INCLUDE_DIR ?= /usr/local/include
 BOOST_LIB_DIR ?= /usr/local/lib
 DIY2_INCLUDE_DIR ?= /usr/local/include
 
-# Vince's fake Reeber (just usleeps) since he didn't have access to Reeber
-# source while developing sidecars.
-FAKE_REEBER = FALSE
-
 USE_IN_TRANSIT = TRUE
 
 USE_HPGMG = FALSE

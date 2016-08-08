@@ -43,35 +43,6 @@ std::string inputs_name = "";
 #include <MakeFFTWBoxes.H>
 #endif
 
-
-#ifdef FAKE_REEBER
-#include <unistd.h>
-namespace
-{
-  void runInSituAnalysis(const MultiFab& simulation_data, const Geometry &geometry, int time_step)
-  {
-    if(ParallelDescriptor::IOProcessor()) {
-      std::cout << "<<||||||||||>> _in runInSituAnalysis:  faking it." << std::endl;
-    }
-    BoxLib::USleep(0.42);  // ---- seconds
-  }
-
-  void initInSituAnalysis()
-  {
-    if(ParallelDescriptor::IOProcessor()) {
-      std::cout << "|||||||||||||| _in initInSituAnalysis:  faking it." << std::endl;
-      std::cout << "|||||||||||||| nProcs (np all comp sidecar) ="
-		<< ParallelDescriptor::NProcs() << "  "
-		<< ParallelDescriptor::NProcsAll() << "  "
-		<< ParallelDescriptor::NProcsComp() << "  "
-		<< ParallelDescriptor::NProcsSidecar() << "  "
-                << std::endl;
-    }
-  }
-
-}
-#endif
-
 const int NyxHaloFinderSignal(42);
 const int resizeSignal(43);
 const int GimletSignal(55);
