@@ -135,9 +135,31 @@ amr.probin_file = probin
 
 # >>>>>>>>>>>>>>>>>>>> SIDECARS <<<<<<<<<<<<<<<<<<<<
 # how many MPI procs to use for sidecars?
-nSidecars = 2
+# Reeber needs at least 8.
+nSidecars = 8
 # how to distribute grids on sidecar procs? "2" means random
 how = 2
 # time step interval for doing Gimlet analysis
 nyx.gimlet_int = 5
+
+# How many time steps between each halo find? Also note that nyx.halo_int and
+# reeber.halo_int need to be the same (for now).
+nyx.halo_int = 5
+
+# Parameters to Reeber. Remember that nyx.halo_int and reeber.halo_int need to
+# be the same.
+reeber.halo_int = 5
+reeber.component = 0
+reeber.negate = 1
+reeber.merge_tree_file = merge-tree-density
+reeber.merge_tree_int = 10
+reeber.compute_persistence_diagram = 1
+reeber.persistence_diagram_file = persistence-diagram-density
+reeber.persistence_diagram_int = 1
+reeber.persistence_diagram_eps = 1.0e9
+reeber.compute_halos = 1
+reeber.halo_extrema_threshold = 7.0e9
+reeber.halo_component_threshold = 6.0e9
+reeber.halo_extrema_threshold = 7.5e9
+reeber.halo_component_threshold = 7.0e9
 # >>>>>>>>>>>>>>>>>>>> SIDECARS <<<<<<<<<<<<<<<<<<<<
