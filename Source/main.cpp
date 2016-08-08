@@ -64,7 +64,7 @@ namespace
     }
     ParallelDescriptor::Barrier(ParallelDescriptor::CommunicatorAll());
     ParallelDescriptor::SetNProcsSidecars(newSize);
-#endif
+#endif /* BL_USE_MPI */
   }
 
 
@@ -130,7 +130,7 @@ namespace
 	    }
 #else
       BoxLib::Abort("Nyx received halo finder signal but not compiled with Reeber");
-#endif
+#endif /* REEBER */
 	  }
           break;
 
@@ -219,7 +219,7 @@ namespace
             ParallelDescriptor::Barrier();
 #else
             BoxLib::Abort("Nyx received Gimlet signal but not compiled with Gimlet");
-#endif
+#endif /* GIMLET */
 	  }
           break;
 
@@ -260,7 +260,7 @@ namespace
       }
     }
     return sidecarSignal;
-#endif
+#endif /* BL_USE_MPI */
   }
 
 
@@ -272,7 +272,7 @@ namespace
     initInSituAnalysis();
 #endif
   }
-#endif
+#endif /* IN_TRANSIT */
 }
 
 
