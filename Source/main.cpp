@@ -265,10 +265,12 @@ namespace
 
 
   static void SidecarInit() {
+#ifdef REEBER
     if(ParallelDescriptor::InSidecarGroup() && ParallelDescriptor::IOProcessor()) {
       std::cout << "Initializing Reeber on sidecars ... " << std::endl;
     }
     initInSituAnalysis();
+#endif /* REEBER */
   }
 #endif /* IN_TRANSIT */
 }
@@ -349,8 +351,6 @@ main (int argc, char* argv[])
         BoxLib::Abort("Exiting because neither max_step nor stop_time is non-negative.");
     }
 
-
-    // This initialization is only for Reeber.
 #ifdef IN_TRANSIT
     SidecarInit();
 #endif
