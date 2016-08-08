@@ -109,7 +109,7 @@ mg.v                  = 1       # verbosity in Amr.cpp
 particles.v           = 2       # verbosity in Particle class
 
 # REFINEMENT / REGRIDDING
-amr.max_level          = 2        # maximum level number allowed
+amr.max_level          = 0        # maximum level number allowed
 #amr.ref_ratio          = 2 2 2 2
 #amr.regrid_int         = 4 4 4 4
 #amr.n_error_buf        = 0 0 0 8
