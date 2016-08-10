@@ -18,24 +18,24 @@ Nyx::get_old_source (Real      old_time,
     MultiFab& S_old = get_old_data(State_Type);
     MultiFab& D_old = get_old_data(DiagEOS_Type);
     const int num_comps = S_old.nComp();
-
-    for (FillPatchIterator 
-         Old_fpi (*this, S_old, 4, old_time, State_Type, Density, num_comps),
-         Old_dfpi(*this, D_old, 4, old_time, DiagEOS_Type, 0, 2);
-         Old_fpi.isValid() && Old_dfpi.isValid();
-         ++Old_fpi, ++Old_dfpi)
+    FillPatch(*this, S_old, 4, old_time, State_Type, Density, num_comps);
+    FillPatch(*this, D_old, 4, old_time, DiagEOS_Type, 0, 2);
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
+    for (MFIter mfi(S_old,true); mfi.isValid(); ++mfi)
     {
-        const Box& bx = grids[Old_fpi.index()];
+        const Box& bx = mfi.tilebox();
         BL_FORT_PROC_CALL(CA_EXT_SRC, ca_ext_src)
             (bx.loVect(), bx.hiVect(), 
-             BL_TO_FORTRAN(Old_fpi()), BL_TO_FORTRAN(Old_fpi()), 
-             BL_TO_FORTRAN(Old_dfpi()), BL_TO_FORTRAN(Old_dfpi()), 
-             BL_TO_FORTRAN(ext_src[Old_fpi]),
+             BL_TO_FORTRAN(S_old[mfi]), BL_TO_FORTRAN(S_old[mfi]),
+             BL_TO_FORTRAN(D_old[mfi]), BL_TO_FORTRAN(D_old[mfi]),
+             BL_TO_FORTRAN(ext_src[mfi]),
              prob_lo, dx, &old_time, &z, &dt);
 
         // The formulae in subroutine ctoprim assume that the source term for density is zero
         // Here we abort if it is non-zero.
-        if (ext_src[Old_fpi].norm(0,Density,1) != 0)
+        if (ext_src[mfi].norm(0,Density,1) != 0)
         {
             std::cout << "The source terms for density are non-zero" << std::endl;
             BoxLib::Error();
@@ -70,21 +70,25 @@ Nyx::get_new_source (Real      old_time,
 
     MultiFab& S_old = get_old_data(State_Type);
     MultiFab& D_old = get_old_data(DiagEOS_Type);
+    MultiFab& S_new = get_old_data(State_Type);
+    MultiFab& D_new = get_old_data(DiagEOS_Type);
     const int num_comps = S_old.nComp();
+    FillPatch(*this, S_old, 4, old_time, State_Type, Density, num_comps);
+    FillPatch(*this, S_new, 4, new_time, State_Type, Density, num_comps);
+    FillPatch(*this, D_old, 4, old_time, DiagEOS_Type, 0, 2);
+    FillPatch(*this, D_new, 4, new_time, DiagEOS_Type, 0, 2);
 
-    for (FillPatchIterator Old_fpi(*this, S_old, 4, old_time, State_Type, Density, num_comps),
-                           New_fpi(*this, S_old, 4, new_time, State_Type, Density, num_comps),
-                           Old_dfpi(*this, D_old, 4, old_time, DiagEOS_Type, 0, 2),
-                           New_dfpi(*this, D_old, 4, new_time, DiagEOS_Type, 0, 2);
-         Old_fpi.isValid() && New_fpi.isValid() && Old_dfpi.isValid() && New_dfpi.isValid();
-         ++Old_fpi, ++New_fpi, ++Old_dfpi, ++New_dfpi)
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
+    for (MFIter mfi(S_old,true); mfi.isValid(); ++mfi)
     {
-        const Box& bx = grids[Old_fpi.index()];
+        const Box& bx = mfi.tilebox();
         BL_FORT_PROC_CALL(CA_EXT_SRC, ca_ext_src)
             (bx.loVect(), bx.hiVect(), 
-             BL_TO_FORTRAN(Old_fpi()), BL_TO_FORTRAN(New_fpi()), 
-             BL_TO_FORTRAN(Old_dfpi()), BL_TO_FORTRAN(New_dfpi()), 
-             BL_TO_FORTRAN(ext_src[Old_fpi]),
+             BL_TO_FORTRAN(S_old[mfi]), BL_TO_FORTRAN(S_new[mfi]),
+             BL_TO_FORTRAN(D_old[mfi]), BL_TO_FORTRAN(D_new[mfi]),
+             BL_TO_FORTRAN(ext_src[mfi]),
              prob_lo, dx, &new_time, &z, &dt);
     }
 
