@@ -53,7 +53,6 @@ const int quitSignal(-44);
 // in in-transit mode.
 namespace
 {
-#ifdef IN_TRANSIT
   static void ResizeSidecars(int newSize) {
 #ifdef BL_USE_MPI
     // ---- everyone meets here
@@ -262,17 +261,6 @@ namespace
     return sidecarSignal;
 #endif /* BL_USE_MPI */
   }
-
-
-  static void SidecarInit() {
-#ifdef REEBER
-    if(ParallelDescriptor::InSidecarGroup() && ParallelDescriptor::IOProcessor()) {
-      std::cout << "Initializing Reeber on sidecars ... " << std::endl;
-    }
-    initInSituAnalysis();
-#endif /* REEBER */
-  }
-#endif /* IN_TRANSIT */
 }
 
 
@@ -326,20 +314,21 @@ main (int argc, char* argv[])
     int how(-1);
     pp.query("how",how);
 
-#ifdef IN_TRANSIT
-    pp.query("nSidecars", nSidecarProcsFromParmParse);
-    if(ParallelDescriptor::IOProcessor()) {
-      std::cout << "nSidecarProcs from parmparse = " << nSidecarProcsFromParmParse << std::endl;
-    }
-    resizeSidecars = !(prevSidecarProcs == nSidecarProcs);
-    prevSidecarProcs = nSidecarProcs;
-    if(nSidecarProcsFromParmParse >= 0) {
-      if(nSidecarProcsFromParmParse >= ParallelDescriptor::NProcsAll()) {
-        BoxLib::Abort("**** Error:  nSidecarProcsFromParmParse >= nProcs");
+    // Set up sidecars if user wants them.
+    if (pp.query("nSidecars", nSidecarProcsFromParmParse))
+    {
+      if(ParallelDescriptor::IOProcessor()) {
+        std::cout << "nSidecarProcs from parmparse = " << nSidecarProcsFromParmParse << std::endl;
       }
-      nSidecarProcs = nSidecarProcsFromParmParse;
+      resizeSidecars = !(prevSidecarProcs == nSidecarProcs);
+      prevSidecarProcs = nSidecarProcs;
+      if(nSidecarProcsFromParmParse >= 0) {
+        if(nSidecarProcsFromParmParse >= ParallelDescriptor::NProcsAll()) {
+          BoxLib::Abort("**** Error:  nSidecarProcsFromParmParse >= nProcs");
+        }
+        nSidecarProcs = nSidecarProcsFromParmParse;
+      }
     }
-#endif
 
     if (strt_time < 0.0)
     {
@@ -351,11 +340,13 @@ main (int argc, char* argv[])
         BoxLib::Abort("Exiting because neither max_step nor stop_time is non-negative.");
     }
 
-#ifdef IN_TRANSIT
-    SidecarInit();
+    // Reeber has to do some initialization.
+#ifdef REEBER
+    initInSituAnalysis();
 #endif
 
-    Nyx::forceParticleRedist = true;
+    if (nSidecarProcs > 0)
+      Nyx::forceParticleRedist = true;
 
     Amr *amrptr = new Amr;
     amrptr->init(strt_time,stop_time);
@@ -440,7 +431,6 @@ main (int argc, char* argv[])
 
 
 
-#ifdef IN_TRANSIT
       if(resizeSidecars) {    // ---- both comp and sidecars are here
         ParallelDescriptor::Bcast(&prevSidecarProcs, 1, 0, ParallelDescriptor::CommunicatorAll());
         ParallelDescriptor::Bcast(&nSidecarProcs, 1, 0, ParallelDescriptor::CommunicatorAll());
@@ -477,9 +467,6 @@ main (int argc, char* argv[])
           std::cout << "@@@@@@@@ after resize sidecars:  restarting event loop." << std::endl;
         }
       }
-#endif
-
-
     }  // ---- end while( ! finished)
 
 
@@ -494,14 +481,12 @@ main (int argc, char* argv[])
       }
     }
 
-#ifdef IN_TRANSIT
     if(nSidecarProcs > 0) {    // ---- stop the sidecars
       sidecarSignal = quitSignal;
       int whichSidecar(0);
       ParallelDescriptor::Bcast(&sidecarSignal, 1, MPI_IntraGroup_Broadcast_Rank,
                                 ParallelDescriptor::CommunicatorInter(whichSidecar));
     }
-#endif
 
 #ifdef BL_USE_MPI
     ParallelDescriptor::SetNProcsSidecars(0);
