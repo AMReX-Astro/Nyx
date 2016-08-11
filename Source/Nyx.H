@@ -499,6 +499,7 @@ public:
     MultiFab* build_fine_mask();
 
     static int forceParticleRedist;  // ---- for dynamic sidecars
+    static int nSidecarProcs;
 
     virtual void AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
                                 int ioProcNumSCS, int ioProcNumAll, int scsMyId,

@@ -289,7 +289,8 @@ main (int argc, char* argv[])
     BL_COMM_PROFILE_NAMETAG("main TOP");
 
     const int MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
-    int nSidecarProcs(0), nSidecarProcsFromParmParse(-3);
+    int nSidecarProcsFromParmParse(-3);
+    Nyx::nSidecarProcs = 0;
     int prevSidecarProcs(0);
     int sidecarSignal(NyxHaloFinderSignal);
     int resizeSidecars(false);  // ---- instead of bool for bcast
@@ -320,13 +321,13 @@ main (int argc, char* argv[])
       if(ParallelDescriptor::IOProcessor()) {
         std::cout << "nSidecarProcs from parmparse = " << nSidecarProcsFromParmParse << std::endl;
       }
-      resizeSidecars = !(prevSidecarProcs == nSidecarProcs);
-      prevSidecarProcs = nSidecarProcs;
+      resizeSidecars = !(prevSidecarProcs == Nyx::nSidecarProcs);
+      prevSidecarProcs = Nyx::nSidecarProcs;
       if(nSidecarProcsFromParmParse >= 0) {
         if(nSidecarProcsFromParmParse >= ParallelDescriptor::NProcsAll()) {
           BoxLib::Abort("**** Error:  nSidecarProcsFromParmParse >= nProcs");
         }
-        nSidecarProcs = nSidecarProcsFromParmParse;
+        Nyx::nSidecarProcs = nSidecarProcsFromParmParse;
       }
     }
 
@@ -345,7 +346,7 @@ main (int argc, char* argv[])
     initInSituAnalysis();
 #endif
 
-    if (nSidecarProcs > 0)
+    if (Nyx::nSidecarProcs > 0)
       Nyx::forceParticleRedist = true;
 
     Amr *amrptr = new Amr;
@@ -358,20 +359,20 @@ main (int argc, char* argv[])
 #endif
 
     // ---- set initial sidecar size
-    ParallelDescriptor::Bcast(&nSidecarProcs, 1, 0, ParallelDescriptor::CommunicatorAll());
+    ParallelDescriptor::Bcast(&Nyx::nSidecarProcs, 1, 0, ParallelDescriptor::CommunicatorAll());
     if(ParallelDescriptor::IOProcessor()) {
-      std::cout << "IIIIIIII new nSidecarProcs = " << nSidecarProcs << std::endl;
+      std::cout << "IIIIIIII new nSidecarProcs = " << Nyx::nSidecarProcs << std::endl;
     }
 
-    if(nSidecarProcs < prevSidecarProcs) {
-      ResizeSidecars(nSidecarProcs);
-      amrptr->AddProcsToComp(nSidecarProcs, prevSidecarProcs);
+    if(Nyx::nSidecarProcs < prevSidecarProcs) {
+      ResizeSidecars(Nyx::nSidecarProcs);
+      amrptr->AddProcsToComp(Nyx::nSidecarProcs, prevSidecarProcs);
       amrptr->RedistributeGrids(how);
-    } else if (nSidecarProcs > prevSidecarProcs) {
+    } else if (Nyx::nSidecarProcs > prevSidecarProcs) {
       if(ParallelDescriptor::InCompGroup()) {
-        amrptr->AddProcsToSidecar(nSidecarProcs, prevSidecarProcs);
+        amrptr->AddProcsToSidecar(Nyx::nSidecarProcs, prevSidecarProcs);
       }
-      ResizeSidecars(nSidecarProcs);
+      ResizeSidecars(Nyx::nSidecarProcs);
     }
 
     bool finished(false);
@@ -414,7 +415,7 @@ main (int argc, char* argv[])
           resizeSidecars = false;
         }
 
-        if((finished || resizeSidecars) && nSidecarProcs > 0 && prevSidecarProcs > 0) {
+        if((finished || resizeSidecars) && Nyx::nSidecarProcs > 0 && prevSidecarProcs > 0) {
           // ---- stop the sidecars
           int sidecarSignal(-1);
           if(finished) {
@@ -433,35 +434,35 @@ main (int argc, char* argv[])
 
       if(resizeSidecars) {    // ---- both comp and sidecars are here
         ParallelDescriptor::Bcast(&prevSidecarProcs, 1, 0, ParallelDescriptor::CommunicatorAll());
-        ParallelDescriptor::Bcast(&nSidecarProcs, 1, 0, ParallelDescriptor::CommunicatorAll());
+        ParallelDescriptor::Bcast(&Nyx::nSidecarProcs, 1, 0, ParallelDescriptor::CommunicatorAll());
         if(ParallelDescriptor::InCompGroup()) {
           if(ParallelDescriptor::IOProcessor()) {
-            std::cout << "NNNNNNNN new nSidecarProcs    = " << nSidecarProcs    << std::endl;
+            std::cout << "NNNNNNNN new nSidecarProcs    = " << Nyx::nSidecarProcs    << std::endl;
             std::cout << "NNNNNNNN     prevSidecarProcs = " << prevSidecarProcs << std::endl;
           }
         }
         Nyx::forceParticleRedist = true;
 
-        if(nSidecarProcs < prevSidecarProcs) {
-          ResizeSidecars(nSidecarProcs);
+        if(Nyx::nSidecarProcs < prevSidecarProcs) {
+          ResizeSidecars(Nyx::nSidecarProcs);
         }
 
-        if(nSidecarProcs > prevSidecarProcs) {
+        if(Nyx::nSidecarProcs > prevSidecarProcs) {
           if(ParallelDescriptor::InCompGroup()) {
-            amrptr->AddProcsToSidecar(nSidecarProcs, prevSidecarProcs);
+            amrptr->AddProcsToSidecar(Nyx::nSidecarProcs, prevSidecarProcs);
           } else {
             DistributionMapping::DeleteCache();
           }
         }
 
-        if(nSidecarProcs < prevSidecarProcs) {
+        if(Nyx::nSidecarProcs < prevSidecarProcs) {
 
-          amrptr->AddProcsToComp(nSidecarProcs, prevSidecarProcs);
+          amrptr->AddProcsToComp(Nyx::nSidecarProcs, prevSidecarProcs);
           amrptr->RedistributeGrids(how);
         }
 
-        if(nSidecarProcs > prevSidecarProcs) {
-          ResizeSidecars(nSidecarProcs);
+        if(Nyx::nSidecarProcs > prevSidecarProcs) {
+          ResizeSidecars(Nyx::nSidecarProcs);
         }
         if(ParallelDescriptor::IOProcessor()) {
           std::cout << "@@@@@@@@ after resize sidecars:  restarting event loop." << std::endl;
@@ -481,7 +482,7 @@ main (int argc, char* argv[])
       }
     }
 
-    if(nSidecarProcs > 0) {    // ---- stop the sidecars
+    if(Nyx::nSidecarProcs > 0) {    // ---- stop the sidecars
       sidecarSignal = quitSignal;
       int whichSidecar(0);
       ParallelDescriptor::Bcast(&sidecarSignal, 1, MPI_IntraGroup_Broadcast_Rank,

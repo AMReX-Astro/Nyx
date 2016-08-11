@@ -168,6 +168,7 @@ int Nyx::halo_int(0);
 int Nyx::gimlet_int(0);
 
 int Nyx::forceParticleRedist = false;
+int Nyx::nSidecarProcs(0);
 
 // Note: Nyx::variableSetUp is in Nyx_setup.cpp
 void
