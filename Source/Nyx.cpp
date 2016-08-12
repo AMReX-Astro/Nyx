@@ -1328,11 +1328,11 @@ Nyx::postCoarseTimeStep (Real cumtime)
    const int whichSidecar(0);
 
 #ifdef REEBER
-   if ((nStep()-1) % halo_int == 0) {
+   if (nStep() % halo_int == 0) {
      if (ParallelDescriptor::NProcsSidecar(0) <= 0) { // we have no sidecars, so do everything in situ
        const Real time1 = ParallelDescriptor::second();
        const MultiFab *dm_density = particle_derive("particle_mass_density", cur_time, 0);
-       runInSituAnalysis(*dm_density, Geom(), nStep()-1);
+       runInSituAnalysis(*dm_density, Geom(), nStep());
        const Real time2 = ParallelDescriptor::second();
        if (ParallelDescriptor::IOProcessor())
        {
@@ -1346,7 +1346,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
 
        Geometry geom(Geom());
        MultiFab *dm_density = particle_derive("particle_mass_density", cur_time, 0);
-       int time_step(nStep()-1), nComp(dm_density->nComp());;
+       int time_step(nStep()), nComp(dm_density->nComp());;
 
        Real time1(ParallelDescriptor::second());
        ParallelDescriptor::Bcast(&nComp, 1, MPI_IntraGroup_Broadcast_Rank,
@@ -1382,7 +1382,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
 #endif /* REEBER */
 
 #ifdef GIMLET
-   if ((nStep()-1) % gimlet_int == 0) {
+   if (nStep() % gimlet_int == 0) {
      if (ParallelDescriptor::NProcsSidecar(0) <= 0) { // we have no sidecars, so do everything in situ
        const Real time1 = ParallelDescriptor::second();
 
