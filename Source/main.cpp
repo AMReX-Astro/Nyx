@@ -265,6 +265,8 @@ namespace
       } else if (ParallelDescriptor::IOProcessor()) {
         std::cout << "Initializing Reeber in situ ... " << std::endl;
       }
+      // Reeber reads its ParmParse stuff here so we don't need to do any of it
+      // in Nyx proper.
       initInSituAnalysis();
 #endif
     }

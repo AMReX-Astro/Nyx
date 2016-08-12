@@ -160,8 +160,8 @@ std::string Nyx::particle_plotfile_format = "IEEE32";
 std::string Nyx::particle_plotfile_format = "NATIVE";
 #endif
 
-int Nyx::halo_int(0);
-int Nyx::gimlet_int(0);
+int halo_int(0);
+int gimlet_int(0);
 
 int Nyx::forceParticleRedist = false;
 int Nyx::nSidecarProcs(0);
@@ -389,7 +389,6 @@ Nyx::read_params ()
       pp.queryarr("plot_z_values",plot_z_values,0,num_z_values);
     }
 
-    pp.query("halo_int", halo_int);
     pp.query("gimlet_int", gimlet_int);
 }
 
