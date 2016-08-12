@@ -255,8 +255,19 @@ namespace
       }
     }
     return sidecarSignal;
-#endif /* BL_USE_MPI */
-  }
+  #endif /* BL_USE_MPI */
+    }
+
+    static void SidecarInit() {
+#ifdef REEBER
+      if(ParallelDescriptor::InSidecarGroup() && ParallelDescriptor::IOProcessor()) {
+        std::cout << "Initializing Reeber on sidecars ... " << std::endl;
+      } else if (ParallelDescriptor::IOProcessor()) {
+        std::cout << "Initializing Reeber in situ ... " << std::endl;
+      }
+      initInSituAnalysis();
+#endif
+    }
 }
 
 
