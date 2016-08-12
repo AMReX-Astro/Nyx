@@ -32,11 +32,7 @@ using std::string;
 #endif
 
 #ifdef REEBER
-#ifdef IN_SITU
-#include <boxlib_in_situ_analysis.H>
-#elif defined IN_TRANSIT
 #include <InTransitAnalysis.H>
-#endif
 #endif
 
 #ifdef GIMLET
@@ -1332,189 +1328,182 @@ Nyx::postCoarseTimeStep (Real cumtime)
    const int whichSidecar(0);
 
 #ifdef REEBER
-#ifdef IN_SITU
-   // The time step interval for in situ Reeber is done in ParmParse so we
-   // don't need to hard-code it here.
-   const Real time1 = ParallelDescriptor::second();
-   const MultiFab *dm_density = particle_derive("particle_mass_density", cur_time, 0);
-   runInSituAnalysis(*dm_density, Geom(), nStep()-1);
-   const Real time2 = ParallelDescriptor::second();
-   if (ParallelDescriptor::IOProcessor())
-   {
-     std::cout << std::endl << "===== Time to post-process: " << time2 - time1 << " sec" << std::endl;
-   }
-#elif defined IN_TRANSIT
-   if ((nStep()-1) % halo_int == 0 && ParallelDescriptor::NProcsSidecar(0) > 0)
-   {
-     int sidecarSignal(NyxHaloFinderSignal);
-     int whichSidecar(0);
-     const int MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
-     ParallelDescriptor::Bcast(&sidecarSignal, 1, MPI_IntraGroup_Broadcast_Rank,
-                               ParallelDescriptor::CommunicatorInter(whichSidecar));
+   if ((nStep()-1) % halo_int == 0) {
+     if (ParallelDescriptor::NProcsSidecar(0) <= 0) { // we have no sidecars, so do everything in situ
+       const Real time1 = ParallelDescriptor::second();
+       const MultiFab *dm_density = particle_derive("particle_mass_density", cur_time, 0);
+       runInSituAnalysis(*dm_density, Geom(), nStep()-1);
+       const Real time2 = ParallelDescriptor::second();
+       if (ParallelDescriptor::IOProcessor())
+       {
+         std::cout << std::endl << "===== Time to post-process: " << time2 - time1 << " sec" << std::endl;
+       }
+     } else { // we have sidecars, so do everything in-transit
+       int sidecarSignal(NyxHaloFinderSignal);
+       const int MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
+       ParallelDescriptor::Bcast(&sidecarSignal, 1, MPI_IntraGroup_Broadcast_Rank,
+                                 ParallelDescriptor::CommunicatorInter(whichSidecar));
 
-     Geometry geom(Geom());
-     MultiFab *dm_density = particle_derive("particle_mass_density", cur_time, 0);
-     int time_step(nStep()-1), nComp(dm_density->nComp());;
+       Geometry geom(Geom());
+       MultiFab *dm_density = particle_derive("particle_mass_density", cur_time, 0);
+       int time_step(nStep()-1), nComp(dm_density->nComp());;
 
-     Real time1(ParallelDescriptor::second());
-     ParallelDescriptor::Bcast(&nComp, 1, MPI_IntraGroup_Broadcast_Rank,
-                               ParallelDescriptor::CommunicatorInter(whichSidecar));
-     BoxArray::SendBoxArray(dm_density->boxArray(), whichSidecar);
+       Real time1(ParallelDescriptor::second());
+       ParallelDescriptor::Bcast(&nComp, 1, MPI_IntraGroup_Broadcast_Rank,
+                                 ParallelDescriptor::CommunicatorInter(whichSidecar));
+       BoxArray::SendBoxArray(dm_density->boxArray(), whichSidecar);
 
-     MultiFab *mfSource = dm_density;
-     MultiFab *mfDest = 0;
-     int srcComp(0), destComp(0);
-     int srcNGhost(0), destNGhost(0);
-     MPI_Comm commSrc(ParallelDescriptor::CommunicatorComp());
-     MPI_Comm commDest(ParallelDescriptor::CommunicatorSidecar());
-     MPI_Comm commInter(ParallelDescriptor::CommunicatorInter(whichSidecar));
-     MPI_Comm commBoth(ParallelDescriptor::CommunicatorBoth(whichSidecar));
-     bool isSrc(true);
+       MultiFab *mfSource = dm_density;
+       MultiFab *mfDest = 0;
+       int srcComp(0), destComp(0);
+       int srcNGhost(0), destNGhost(0);
+       MPI_Comm commSrc(ParallelDescriptor::CommunicatorComp());
+       MPI_Comm commDest(ParallelDescriptor::CommunicatorSidecar());
+       MPI_Comm commInter(ParallelDescriptor::CommunicatorInter(whichSidecar));
+       MPI_Comm commBoth(ParallelDescriptor::CommunicatorBoth(whichSidecar));
+       bool isSrc(true);
 
-     MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                         srcNGhost, destNGhost,
-                         commSrc, commDest, commInter, commBoth,
-                         isSrc);
+       MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
+                           srcNGhost, destNGhost,
+                           commSrc, commDest, commInter, commBoth,
+                           isSrc);
 
-     Geometry::SendGeometryToSidecar(&geom, whichSidecar);
+       Geometry::SendGeometryToSidecar(&geom, whichSidecar);
 
-     ParallelDescriptor::Bcast(&time_step, 1, MPI_IntraGroup_Broadcast_Rank,
-                               ParallelDescriptor::CommunicatorInter(whichSidecar));
+       ParallelDescriptor::Bcast(&time_step, 1, MPI_IntraGroup_Broadcast_Rank,
+                                 ParallelDescriptor::CommunicatorInter(whichSidecar));
 
-     Real time2(ParallelDescriptor::second());
-     if(ParallelDescriptor::IOProcessor()) {
-       std::cout << "COMPUTE PROCESSES: time spent sending data to sidecars: " << time2 - time1 << std::endl;
+       Real time2(ParallelDescriptor::second());
+       if(ParallelDescriptor::IOProcessor()) {
+         std::cout << "COMPUTE PROCESSES: time spent sending data to sidecars: " << time2 - time1 << std::endl;
+       }
      }
    }
-#endif
-#endif
+#endif /* REEBER */
 
 #ifdef GIMLET
-#ifdef IN_SITU
    if ((nStep()-1) % gimlet_int == 0) {
-     const Real time1 = ParallelDescriptor::second();
+     if (ParallelDescriptor::NProcsSidecar(0) <= 0) { // we have no sidecars, so do everything in situ
+       const Real time1 = ParallelDescriptor::second();
 
-     const MultiFab &state_data = get_data(State_Type, cur_time);
-     const MultiFab &eos_data = get_data(DiagEOS_Type, cur_time);
+       const MultiFab &state_data = get_data(State_Type, cur_time);
+       const MultiFab &eos_data = get_data(DiagEOS_Type, cur_time);
 
-     // Grab only components of state and EOS data that gimlet needs.
-     MultiFab density (state_data.boxArray(), 1, 0);
-     density.copy(state_data, get_comp_urho()-1, 0, 1);
-     MultiFab temperature (state_data.boxArray(), 1, 0);
-     temperature.copy(eos_data, get_comp_temp()-1, 0, 1);
-     MultiFab e_int(state_data.boxArray(), 1, 0);
-     e_int.copy(state_data, get_comp_e_int()-1, 0, 1);
+       // Grab only components of state and EOS data that gimlet needs.
+       MultiFab density (state_data.boxArray(), 1, 0);
+       density.copy(state_data, get_comp_urho()-1, 0, 1);
+       MultiFab temperature (state_data.boxArray(), 1, 0);
+       temperature.copy(eos_data, get_comp_temp()-1, 0, 1);
+       MultiFab e_int(state_data.boxArray(), 1, 0);
+       e_int.copy(state_data, get_comp_e_int()-1, 0, 1);
 
-     MultiFab *dm_density = particle_derive("particle_mass_density", cur_time, 0);
-     MultiFab *xmom = particle_derive("xmom", cur_time, 0);
-     MultiFab *ymom = particle_derive("ymom", cur_time, 0);
-     MultiFab *zmom = particle_derive("zmom", cur_time, 0);
-     Geometry geom(Geom());
-     Real omega_m, omega_b, comoving_h;
-     BL_FORT_PROC_CALL(GET_OMM, get_omm)(&omega_m);
-     BL_FORT_PROC_CALL(GET_OMB, get_omb)(&omega_b);
-     omega_b *= omega_m;
-     BL_FORT_PROC_CALL(GET_HUBBLE, get_hubble)(&comoving_h);
-     const double omega_l = 1.0 - omega_m;
+       MultiFab *dm_density = particle_derive("particle_mass_density", cur_time, 0);
+       MultiFab *xmom = particle_derive("xmom", cur_time, 0);
+       MultiFab *ymom = particle_derive("ymom", cur_time, 0);
+       MultiFab *zmom = particle_derive("zmom", cur_time, 0);
+       Geometry geom(Geom());
+       Real omega_m, omega_b, comoving_h;
+       BL_FORT_PROC_CALL(GET_OMM, get_omm)(&omega_m);
+       BL_FORT_PROC_CALL(GET_OMB, get_omb)(&omega_b);
+       omega_b *= omega_m;
+       BL_FORT_PROC_CALL(GET_HUBBLE, get_hubble)(&comoving_h);
+       const double omega_l = 1.0 - omega_m;
 
-     do_analysis(omega_b, omega_m, omega_l, comoving_h, new_a, density,
-                 temperature, e_int, *dm_density, *xmom, *ymom, *zmom, geom, nStep());
+       do_analysis(omega_b, omega_m, omega_l, comoving_h, new_a, density,
+                   temperature, e_int, *dm_density, *xmom, *ymom, *zmom, geom, nStep());
 
-     const Real time_to_postprocess = ParallelDescriptor::second() - time1;
-     if (ParallelDescriptor::IOProcessor())
-       std::cout << std::endl << "===== Time to post-process: " << time_to_postprocess << " sec" << std::endl;
-   }
-#elif defined IN_TRANSIT
-   if ((nStep()-1) % gimlet_int == 0 && ParallelDescriptor::NProcsSidecar(0) > 0)
-   {
-     int signal = GimletSignal;
-     const int MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
-     ParallelDescriptor::Bcast(&signal, 1, MPI_IntraGroup_Broadcast_Rank,
-                               ParallelDescriptor::CommunicatorInter(whichSidecar));
+       const Real time_to_postprocess = ParallelDescriptor::second() - time1;
+       if (ParallelDescriptor::IOProcessor())
+         std::cout << std::endl << "===== Time to post-process: " << time_to_postprocess << " sec" << std::endl;
+     } else { // we have sidecars, so do everything in-transit
+       int signal = GimletSignal;
+       const int MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
+       ParallelDescriptor::Bcast(&signal, 1, MPI_IntraGroup_Broadcast_Rank,
+                                 ParallelDescriptor::CommunicatorInter(whichSidecar));
 
-     const MultiFab &state_data = get_data(State_Type, cur_time);
-     const MultiFab &eos_data = get_data(DiagEOS_Type, cur_time);
+       const MultiFab &state_data = get_data(State_Type, cur_time);
+       const MultiFab &eos_data = get_data(DiagEOS_Type, cur_time);
 
-     // Grab only components of state and EOS data that gimlet needs.
-     MultiFab density (state_data.boxArray(), 1, 0);
-     density.copy(state_data, get_comp_urho()-1, 0, 1);
-     MultiFab temperature (state_data.boxArray(), 1, 0);
-     temperature.copy(eos_data, get_comp_temp()-1, 0, 1);
-     MultiFab e_int(state_data.boxArray(), 1, 0);
-     e_int.copy(state_data, get_comp_e_int()-1, 0, 1);
+       // Grab only components of state and EOS data that gimlet needs.
+       MultiFab density (state_data.boxArray(), 1, 0);
+       density.copy(state_data, get_comp_urho()-1, 0, 1);
+       MultiFab temperature (state_data.boxArray(), 1, 0);
+       temperature.copy(eos_data, get_comp_temp()-1, 0, 1);
+       MultiFab e_int(state_data.boxArray(), 1, 0);
+       e_int.copy(state_data, get_comp_e_int()-1, 0, 1);
 
-     MultiFab *dm_density = particle_derive("particle_mass_density", cur_time, 0);
-     MultiFab *xmom = particle_derive("xmom", cur_time, 0);
-     MultiFab *ymom = particle_derive("ymom", cur_time, 0);
-     MultiFab *zmom = particle_derive("zmom", cur_time, 0);
-     Geometry geom(Geom());
-     int time_step = nStep();
-     Real omega_m, omega_b, comoving_h;
-     BL_FORT_PROC_CALL(GET_OMM, get_omm)(&omega_m);
-     BL_FORT_PROC_CALL(GET_OMB, get_omb)(&omega_b);
-     BL_FORT_PROC_CALL(GET_HUBBLE, get_hubble)(&comoving_h);
-     const Real time1 = ParallelDescriptor::second();
+       MultiFab *dm_density = particle_derive("particle_mass_density", cur_time, 0);
+       MultiFab *xmom = particle_derive("xmom", cur_time, 0);
+       MultiFab *ymom = particle_derive("ymom", cur_time, 0);
+       MultiFab *zmom = particle_derive("zmom", cur_time, 0);
+       Geometry geom(Geom());
+       int time_step = nStep();
+       Real omega_m, omega_b, comoving_h;
+       BL_FORT_PROC_CALL(GET_OMM, get_omm)(&omega_m);
+       BL_FORT_PROC_CALL(GET_OMB, get_omb)(&omega_b);
+       BL_FORT_PROC_CALL(GET_HUBBLE, get_hubble)(&comoving_h);
+       const Real time1 = ParallelDescriptor::second();
 
-     MultiFab *mfSource = 0;
-     MultiFab *mfDest = 0;
-     int srcComp(0), destComp(0), nComp(1);
-     int srcNGhost(0), destNGhost(0);
-     const MPI_Comm &commSrc = ParallelDescriptor::CommunicatorComp();
-     const MPI_Comm &commDest = ParallelDescriptor::CommunicatorSidecar();
-     const MPI_Comm &commInter = ParallelDescriptor::CommunicatorInter(whichSidecar);
-     const MPI_Comm &commBoth = ParallelDescriptor::CommunicatorBoth(whichSidecar);
-     bool isSrc(true);
+       MultiFab *mfSource = 0;
+       MultiFab *mfDest = 0;
+       int srcComp(0), destComp(0), nComp(1);
+       int srcNGhost(0), destNGhost(0);
+       const MPI_Comm &commSrc = ParallelDescriptor::CommunicatorComp();
+       const MPI_Comm &commDest = ParallelDescriptor::CommunicatorSidecar();
+       const MPI_Comm &commInter = ParallelDescriptor::CommunicatorInter(whichSidecar);
+       const MPI_Comm &commBoth = ParallelDescriptor::CommunicatorBoth(whichSidecar);
+       bool isSrc(true);
 
-     BL_ASSERT(density.boxArray() == dm_density->boxArray());  // ---- need to check them all
-     BoxArray::SendBoxArray(density.boxArray(), whichSidecar);
+       BL_ASSERT(density.boxArray() == dm_density->boxArray());  // ---- need to check them all
+       BoxArray::SendBoxArray(density.boxArray(), whichSidecar);
 
-     mfSource = &density;
-     MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                         srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
+       mfSource = &density;
+       MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
+                           srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
 
-     mfSource = &temperature;
-     MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                         srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
+       mfSource = &temperature;
+       MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
+                           srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
 
-     mfSource = &e_int;
-     MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                         srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
+       mfSource = &e_int;
+       MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
+                           srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
 
-     mfSource = dm_density;
-     MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                         srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
+       mfSource = dm_density;
+       MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
+                           srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
 
-     mfSource = xmom;
-     MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                         srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
+       mfSource = xmom;
+       MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
+                           srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
 
-     mfSource = ymom;
-     MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                         srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
+       mfSource = ymom;
+       MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
+                           srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
 
-     mfSource = zmom;
-     MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                         srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
+       mfSource = zmom;
+       MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
+                           srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
 
-     Geometry::SendGeometryToSidecar(&geom, whichSidecar);
+       Geometry::SendGeometryToSidecar(&geom, whichSidecar);
 
-     ParallelDescriptor::Bcast(&Nyx::new_a, 1, MPI_IntraGroup_Broadcast_Rank, commInter);
-     ParallelDescriptor::Bcast(&omega_m, 1, MPI_IntraGroup_Broadcast_Rank, commInter);
-     omega_b *= omega_m;
-     ParallelDescriptor::Bcast(&omega_b, 1, MPI_IntraGroup_Broadcast_Rank, commInter);
-     ParallelDescriptor::Bcast(&comoving_h, 1, MPI_IntraGroup_Broadcast_Rank, commInter);
-     ParallelDescriptor::Bcast(&time_step, 1, MPI_IntraGroup_Broadcast_Rank, commInter);
-     const Real time2 = ParallelDescriptor::second();
-     if (ParallelDescriptor::IOProcessor()) {
-       std::cout << "COMPUTE PROCESSES: time spent sending data to sidecars: " << time2 - time1 << std::endl;
+       ParallelDescriptor::Bcast(&Nyx::new_a, 1, MPI_IntraGroup_Broadcast_Rank, commInter);
+       ParallelDescriptor::Bcast(&omega_m, 1, MPI_IntraGroup_Broadcast_Rank, commInter);
+       omega_b *= omega_m;
+       ParallelDescriptor::Bcast(&omega_b, 1, MPI_IntraGroup_Broadcast_Rank, commInter);
+       ParallelDescriptor::Bcast(&comoving_h, 1, MPI_IntraGroup_Broadcast_Rank, commInter);
+       ParallelDescriptor::Bcast(&time_step, 1, MPI_IntraGroup_Broadcast_Rank, commInter);
+       const Real time2 = ParallelDescriptor::second();
+       if (ParallelDescriptor::IOProcessor()) {
+         std::cout << "COMPUTE PROCESSES: time spent sending data to sidecars: " << time2 - time1 << std::endl;
+       }
+
+       delete dm_density;
+       delete xmom;
+       delete ymom;
+       delete zmom;
      }
-
-     delete dm_density;
-     delete xmom;
-     delete ymom;
-     delete zmom;
    }
-#endif /* IN_SITU OR IN_TRANSIT */
 #endif /* GIMLET */
 
     //

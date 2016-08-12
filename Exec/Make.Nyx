@@ -34,44 +34,11 @@ endif
 
 DEFINES += -DBL_NOLINEVALUES
 
-# Sanity check
-ifeq ($(USE_IN_SITU), TRUE)
-  ifeq ($(USE_IN_TRANSIT), TRUE)
-    $(error Nyx does not support both USE_IN_SITU and USE_IN_TRANSIT simultaneously)
-  endif
-endif
-
 # Another sanity check
 ifeq ($(REEBER), TRUE)
   ifeq ($(GIMLET), TRUE)
     $(error Nyx does not support both Reeber and Gimlet simultaneously)
   endif
-endif
-
-# Another sanity check
-ifeq ($(USE_IN_SITU), TRUE)
-  ifneq ($(REEBER), TRUE)
-    ifneq ($(GIMLET), TRUE)
-      $(error USE_IN_SITU selected but no analysis code selected. What do you want to run in situ?)
-    endif
-  endif
-endif
-
-# Another sanity check
-ifeq ($(USE_IN_TRANSIT), TRUE)
-  ifneq ($(REEBER), TRUE)
-    ifneq ($(GIMLET), TRUE)
-      $(error USE_IN_TRANSIT selected but no analysis code selected. What do you want to run in-transit?)
-    endif
-  endif
-endif
-
-ifeq ($(USE_IN_SITU), TRUE)
-  USE_IN_TRANSIT = FALSE
-  DEFINES += -DIN_SITU
-else ifeq ($(USE_IN_TRANSIT), TRUE)
-  USE_IN_SITU = FALSE
-  DEFINES += -DIN_TRANSIT
 endif
 
 ifeq ($(REEBER), TRUE)

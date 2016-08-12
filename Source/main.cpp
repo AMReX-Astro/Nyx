@@ -25,11 +25,7 @@
 #include <Nyx.H>
 
 #ifdef REEBER
-#ifdef IN_SITU
-#include <boxlib_in_situ_analysis.H>
-#elif defined IN_TRANSIT
-#include <InTransitAnalysis.H>
-#endif
+#include <InTransitAnalysis.H> // This actually works both in situ and in-transit.
 #endif
 
 #include "Nyx_output.H"

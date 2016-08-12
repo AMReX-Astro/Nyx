@@ -35,8 +35,6 @@ BOOST_INCLUDE_DIR ?= /usr/local/include
 BOOST_LIB_DIR ?= /usr/local/lib
 DIY2_INCLUDE_DIR ?= /usr/local/include
 
-USE_IN_TRANSIT = TRUE
-
 USE_HPGMG = FALSE
 HPGMG_FCYCLES = FALSE
 HPGMG_POST_F_CYCLE_TYPE = V
@@ -50,9 +48,6 @@ HPGMG_SMOOTHER = GSRB
 DIM      = 3
 USE_GRAV = TRUE
 USE_HEATCOOL = TRUE
-
-# Analysis
-USE_IN_SITU = FALSE
 
 Bpack := ./Make.package
 Blocs := .

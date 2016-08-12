@@ -31,17 +31,10 @@ f90EXE_sources += comoving_nd.f90
 f90EXE_sources += project_S.f90
 
 ifeq ($(REEBER), TRUE)
-  ifeq ($(USE_IN_SITU), TRUE)
-    CEXE_sources += format.cpp
-    CEXE_sources += boxlib_in_situ_analysis.cpp
-    CEXE_headers += format.h
-    CEXE_headers += boxlib_in_situ_analysis.H
-  else ifeq ($(USE_IN_TRANSIT), TRUE)
-    CEXE_sources += format.cpp
-    CEXE_sources += InTransitAnalysis.cpp
-    CEXE_headers += format.h
-    CEXE_headers += InTransitAnalysis.H
-  endif
+  CEXE_sources += format.cpp
+  CEXE_sources += InTransitAnalysis.cpp
+  CEXE_headers += format.h
+  CEXE_headers += InTransitAnalysis.H
 endif
 
 ifeq ($(GIMLET), TRUE)
