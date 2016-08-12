@@ -54,6 +54,17 @@ which provides the photo-ionization and photo-heating rates,
 we include the prescription of Onorbe, Hennawi & Lukic (2016):
 http://adsabs.harvard.edu/abs/2016arXiv160704218O
 
+## Post-processing
+
+Nyx interfaces with two post-processing suites, Reeber and Gimlet. Reeber uses
+topological methods to construct merge trees of scalar fields, which Nyx in
+turn uses to find dark matter halos. Gimlet computes a variety of quantities
+about the simulation, including optical depths, Lyman-alpha fluxes, power
+spectra (both 1-D "line-of-sight" as well as fully 3-D), and probability
+distribution functions. These suites are fully MPI-parallel and can be run
+either "in situ" or "in-transit", or with a combination of both. A detailed
+description of their usage is provided in the Nyx User Guide.
+
 ## Mailing List
 
 For questions on how to use `Nyx`, email Ann Almgren at ASAlmgren@lbl.gov
