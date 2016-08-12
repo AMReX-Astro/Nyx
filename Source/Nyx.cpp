@@ -14,7 +14,6 @@ using std::ostream;
 using std::pair;
 using std::string;
 
-#include <Utility.H>
 #include <CONSTANTS.H>
 #include <Nyx.H>
 #include <Nyx_F.H>
@@ -22,6 +21,7 @@ using std::string;
 #include <VisMF.H>
 #include <TagBox.H>
 #include <Particles_F.H>
+#include <Utility.H>
 
 #if BL_USE_MPI
 #include "MemInfo.H"
@@ -31,9 +31,23 @@ using std::string;
 #include "Gravity.H"
 #endif
 
-#ifdef IN_SITU
-#include <boxlib_in_situ_analysis.H>
+#ifdef REEBER
+#include <InTransitAnalysis.H>
 #endif
+
+#ifdef GIMLET
+#include <DoGimletAnalysis.H>
+#include <postprocess_tau_fields.H>
+#endif
+
+extern "C" {
+  int get_comp_urho();
+  int get_comp_temp();
+  int get_comp_e_int();
+}
+
+const int NyxHaloFinderSignal = 42;
+const int GimletSignal = 55;
 
 static int sum_interval = -1;
 static Real fixed_dt    = -1.0;
@@ -111,6 +125,7 @@ int Nyx::do_grav       =  0;
 int Nyx::allow_untagging    = 0;
 int Nyx::use_const_species  = 0;
 int Nyx::normalize_species  = 0;
+int Nyx::do_special_tagging = 0;
 int Nyx::ppm_type           = 1;
 int Nyx::ppm_reference      = 1;
 int Nyx::corner_coupling    = 1;
@@ -150,6 +165,11 @@ Real         Nyx::previousCPUTimeUsed = 0.0;
 
 Real         Nyx::startCPUTime = 0.0;
 
+int halo_int(0);
+int gimlet_int(0);
+
+int Nyx::forceParticleRedist = false;
+int Nyx::nSidecarProcs(0);
 
 // Note: Nyx::variableSetUp is in Nyx_setup.cpp
 void
@@ -171,6 +191,7 @@ Nyx::variable_cleanup ()
 void
 Nyx::read_params ()
 {
+    BL_PROFILE("Nyx::read_params()");
     static bool done = false;
 
     if (done) return;  // (caseywstark) when would this happen?
@@ -372,10 +393,13 @@ Nyx::read_params ()
       plot_z_values.resize(num_z_values);
       pp.queryarr("plot_z_values",plot_z_values,0,num_z_values);
     }
+
+    pp.query("gimlet_int", gimlet_int);
 }
 
 Nyx::Nyx ()
 {
+    BL_PROFILE("Nyx::Nyx()");
 #ifndef NO_HYDRO
     if (do_hydro == 1)
     {
@@ -393,6 +417,11 @@ Nyx::Nyx (Amr&            papa,
     :
     AmrLevel(papa,lev,level_geom,bl,time)
 {
+    BL_PROFILE("Nyx::Nyx(Amr)");
+if(ParallelDescriptor::IOProcessor()) {
+  std::cout << "************** sizeof(Nyx) = " << sizeof(Nyx) << std::endl;
+  std::cout << "************** sizeof(DarkMatterParticleContainer) = " << sizeof(DarkMatterParticleContainer) << std::endl;
+}
     build_metrics();
     fine_mask = 0;
 
@@ -413,14 +442,16 @@ Nyx::Nyx (Amr&            papa,
     if (do_grav)
     {
         // gravity is a static object, only alloc if not already there
-        if (gravity == 0)
-        gravity = new Gravity(parent, parent->finestLevel(), &phys_bc, Density);
+        if (gravity == 0) {
+          gravity = new Gravity(parent, parent->finestLevel(), &phys_bc, Density);
+	}
 
         gravity->install_level(level, this);
 
-        if (verbose && level == 0 && ParallelDescriptor::IOProcessor())
+        if (verbose && level == 0 && ParallelDescriptor::IOProcessor()) {
             std::cout << "Setting the gravity type to "
                       << gravity->get_gravity_type() << '\n';
+	}
    }
 #endif
 
@@ -456,6 +487,7 @@ Nyx::restart (Amr&     papa,
               istream& is,
               bool     b_read_special)
 {
+    BL_PROFILE("Nyx::restart()");
     AmrLevel::restart(papa, is, b_read_special);
 
     build_metrics();
@@ -514,6 +546,7 @@ Nyx::setTimeLevel (Real time,
 void
 Nyx::init (AmrLevel& old)
 {
+    BL_PROFILE("Nyx::init(old)");
     Nyx* old_level = (Nyx*) &old;
     //
     // Create new grid data by fillpatching from old.
@@ -571,6 +604,7 @@ Nyx::init (AmrLevel& old)
 void
 Nyx::init ()
 {
+    BL_PROFILE("Nyx::init()");
     Real dt        = parent->dtLevel(level);
 #ifdef NO_HYDRO
     Real cur_time  = get_level(level-1).state[PhiGrav_Type].curTime();
@@ -607,6 +641,7 @@ Nyx::init ()
 Real
 Nyx::initial_time_step ()
 {
+    BL_PROFILE("Nyx::initial_time_step()");
     Real dummy_dt = 0;
     Real init_dt = 0;
 
@@ -629,6 +664,7 @@ Nyx::initial_time_step ()
 Real
 Nyx::est_time_step (Real dt_old)
 {
+    BL_PROFILE("Nyx::est_time_step()");
     if (fixed_dt > 0)
         return fixed_dt;
 
@@ -711,6 +747,7 @@ Nyx::computeNewDt (int                   finest_level,
                    Real                  stop_time,
                    int                   post_regrid_flag)
 {
+    BL_PROFILE("Nyx::computeNewDt()");
     //
     // We are at the start of a coarse grid timecycle.
     // Compute the timesteps for the next iteration.
@@ -886,6 +923,7 @@ Nyx::computeInitialDt (int                   finest_level,
                        Array<Real>&          dt_level,
                        Real                  stop_time)
 {
+    BL_PROFILE("Nyx::computeInitialDt()");
     //
     // Grids have been constructed, compute dt for all levels.
     //
@@ -967,6 +1005,7 @@ Nyx::computeInitialDt (int                   finest_level,
 bool
 Nyx::writePlotNow ()
 {
+    BL_PROFILE("Nyx::writePlotNow()");
     if (level > 0)
         BoxLib::Error("Should only call writePlotNow at level 0!");
 
@@ -1011,6 +1050,7 @@ Nyx::do_energy_diagnostics ()
 void
 Nyx::post_timestep (int iteration)
 {
+    BL_PROFILE("Nyx::post_timestep()");
     //
     // Integration cycle on fine level grids is complete
     // do post_timestep stuff here.
@@ -1190,6 +1230,7 @@ Nyx::post_timestep (int iteration)
 void
 Nyx::post_restart ()
 {
+    BL_PROFILE("Nyx::post_restart()");
     if (level == 0)
         particle_post_restart(parent->theRestartFile());
 
@@ -1269,8 +1310,9 @@ Nyx::post_restart ()
 void
 Nyx::set_small_values ()
 {
-       if (do_hydro == 0)
+       if (do_hydro == 0) {
           return;
+       }
 
        Real small_pres;
 
@@ -1301,20 +1343,189 @@ Nyx::set_small_values ()
 void
 Nyx::postCoarseTimeStep (Real cumtime)
 {
-#ifdef IN_SITU
+   BL_PROFILE("Nyx::postCoarseTimeStep()");
    const Real cur_time = state[State_Type].curTime();
-#if 1
-   runInSituAnalysis(get_data(State_Type, cur_time), Geom(), nStep());
-#else
-   std::vector<Halo> halos = findHalos(*this, cur_time, State_Type);
-   if (ParallelDescriptor::IOProcessor())
-   {
-       std::cout << "Found " << halos.size() << " halos." << std::endl;
-       for (std::vector<Halo>::iterator it = halos.begin(); it != halos.end(); ++it)
-           std::cout << it->pos << " " << it->mass << std::endl;
+   const int whichSidecar(0);
+
+#ifdef REEBER
+   if (nStep() % halo_int == 0) {
+     if (ParallelDescriptor::NProcsSidecar(0) <= 0) { // we have no sidecars, so do everything in situ
+       const Real time1 = ParallelDescriptor::second();
+       const MultiFab *dm_density = particle_derive("particle_mass_density", cur_time, 0);
+       runInSituAnalysis(*dm_density, Geom(), nStep());
+       const Real time2 = ParallelDescriptor::second();
+       if (ParallelDescriptor::IOProcessor())
+       {
+         std::cout << std::endl << "===== Time to post-process: " << time2 - time1 << " sec" << std::endl;
+       }
+     } else { // we have sidecars, so do everything in-transit
+       int sidecarSignal(NyxHaloFinderSignal);
+       const int MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
+       ParallelDescriptor::Bcast(&sidecarSignal, 1, MPI_IntraGroup_Broadcast_Rank,
+                                 ParallelDescriptor::CommunicatorInter(whichSidecar));
+
+       Geometry geom(Geom());
+       MultiFab *dm_density = particle_derive("particle_mass_density", cur_time, 0);
+       int time_step(nStep()), nComp(dm_density->nComp());;
+
+       Real time1(ParallelDescriptor::second());
+       ParallelDescriptor::Bcast(&nComp, 1, MPI_IntraGroup_Broadcast_Rank,
+                                 ParallelDescriptor::CommunicatorInter(whichSidecar));
+       BoxArray::SendBoxArray(dm_density->boxArray(), whichSidecar);
+
+       MultiFab *mfSource = dm_density;
+       MultiFab *mfDest = 0;
+       int srcComp(0), destComp(0);
+       int srcNGhost(0), destNGhost(0);
+       MPI_Comm commSrc(ParallelDescriptor::CommunicatorComp());
+       MPI_Comm commDest(ParallelDescriptor::CommunicatorSidecar());
+       MPI_Comm commInter(ParallelDescriptor::CommunicatorInter(whichSidecar));
+       MPI_Comm commBoth(ParallelDescriptor::CommunicatorBoth(whichSidecar));
+       bool isSrc(true);
+
+       MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
+                           srcNGhost, destNGhost,
+                           commSrc, commDest, commInter, commBoth,
+                           isSrc);
+
+       Geometry::SendGeometryToSidecar(&geom, whichSidecar);
+
+       ParallelDescriptor::Bcast(&time_step, 1, MPI_IntraGroup_Broadcast_Rank,
+                                 ParallelDescriptor::CommunicatorInter(whichSidecar));
+
+       Real time2(ParallelDescriptor::second());
+       if(ParallelDescriptor::IOProcessor()) {
+         std::cout << "COMPUTE PROCESSES: time spent sending data to sidecars: " << time2 - time1 << std::endl;
+       }
+     }
    }
-#endif
-#endif
+#endif /* REEBER */
+
+#ifdef GIMLET
+   if (nStep() % gimlet_int == 0) {
+     if (ParallelDescriptor::NProcsSidecar(0) <= 0) { // we have no sidecars, so do everything in situ
+       const Real time1 = ParallelDescriptor::second();
+
+       const MultiFab &state_data = get_data(State_Type, cur_time);
+       const MultiFab &eos_data = get_data(DiagEOS_Type, cur_time);
+
+       // Grab only components of state and EOS data that gimlet needs.
+       MultiFab density (state_data.boxArray(), 1, 0);
+       density.copy(state_data, get_comp_urho()-1, 0, 1);
+       MultiFab temperature (state_data.boxArray(), 1, 0);
+       temperature.copy(eos_data, get_comp_temp()-1, 0, 1);
+       MultiFab e_int(state_data.boxArray(), 1, 0);
+       e_int.copy(state_data, get_comp_e_int()-1, 0, 1);
+
+       MultiFab *dm_density = particle_derive("particle_mass_density", cur_time, 0);
+       MultiFab *xmom = particle_derive("xmom", cur_time, 0);
+       MultiFab *ymom = particle_derive("ymom", cur_time, 0);
+       MultiFab *zmom = particle_derive("zmom", cur_time, 0);
+       Geometry geom(Geom());
+       Real omega_m, omega_b, comoving_h;
+       BL_FORT_PROC_CALL(GET_OMM, get_omm)(&omega_m);
+       BL_FORT_PROC_CALL(GET_OMB, get_omb)(&omega_b);
+       omega_b *= omega_m;
+       BL_FORT_PROC_CALL(GET_HUBBLE, get_hubble)(&comoving_h);
+       const double omega_l = 1.0 - omega_m;
+
+       do_analysis(omega_b, omega_m, omega_l, comoving_h, new_a, density,
+                   temperature, e_int, *dm_density, *xmom, *ymom, *zmom, geom, nStep());
+
+       const Real time_to_postprocess = ParallelDescriptor::second() - time1;
+       if (ParallelDescriptor::IOProcessor())
+         std::cout << std::endl << "===== Time to post-process: " << time_to_postprocess << " sec" << std::endl;
+     } else { // we have sidecars, so do everything in-transit
+       int signal = GimletSignal;
+       const int MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
+       ParallelDescriptor::Bcast(&signal, 1, MPI_IntraGroup_Broadcast_Rank,
+                                 ParallelDescriptor::CommunicatorInter(whichSidecar));
+
+       const MultiFab &state_data = get_data(State_Type, cur_time);
+       const MultiFab &eos_data = get_data(DiagEOS_Type, cur_time);
+
+       // Grab only components of state and EOS data that gimlet needs.
+       MultiFab density (state_data.boxArray(), 1, 0);
+       density.copy(state_data, get_comp_urho()-1, 0, 1);
+       MultiFab temperature (state_data.boxArray(), 1, 0);
+       temperature.copy(eos_data, get_comp_temp()-1, 0, 1);
+       MultiFab e_int(state_data.boxArray(), 1, 0);
+       e_int.copy(state_data, get_comp_e_int()-1, 0, 1);
+
+       MultiFab *dm_density = particle_derive("particle_mass_density", cur_time, 0);
+       MultiFab *xmom = particle_derive("xmom", cur_time, 0);
+       MultiFab *ymom = particle_derive("ymom", cur_time, 0);
+       MultiFab *zmom = particle_derive("zmom", cur_time, 0);
+       Geometry geom(Geom());
+       int time_step = nStep();
+       Real omega_m, omega_b, comoving_h;
+       BL_FORT_PROC_CALL(GET_OMM, get_omm)(&omega_m);
+       BL_FORT_PROC_CALL(GET_OMB, get_omb)(&omega_b);
+       BL_FORT_PROC_CALL(GET_HUBBLE, get_hubble)(&comoving_h);
+       const Real time1 = ParallelDescriptor::second();
+
+       MultiFab *mfSource = 0;
+       MultiFab *mfDest = 0;
+       int srcComp(0), destComp(0), nComp(1);
+       int srcNGhost(0), destNGhost(0);
+       const MPI_Comm &commSrc = ParallelDescriptor::CommunicatorComp();
+       const MPI_Comm &commDest = ParallelDescriptor::CommunicatorSidecar();
+       const MPI_Comm &commInter = ParallelDescriptor::CommunicatorInter(whichSidecar);
+       const MPI_Comm &commBoth = ParallelDescriptor::CommunicatorBoth(whichSidecar);
+       bool isSrc(true);
+
+       BL_ASSERT(density.boxArray() == dm_density->boxArray());  // ---- need to check them all
+       BoxArray::SendBoxArray(density.boxArray(), whichSidecar);
+
+       mfSource = &density;
+       MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
+                           srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
+
+       mfSource = &temperature;
+       MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
+                           srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
+
+       mfSource = &e_int;
+       MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
+                           srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
+
+       mfSource = dm_density;
+       MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
+                           srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
+
+       mfSource = xmom;
+       MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
+                           srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
+
+       mfSource = ymom;
+       MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
+                           srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
+
+       mfSource = zmom;
+       MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
+                           srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
+
+       Geometry::SendGeometryToSidecar(&geom, whichSidecar);
+
+       ParallelDescriptor::Bcast(&Nyx::new_a, 1, MPI_IntraGroup_Broadcast_Rank, commInter);
+       ParallelDescriptor::Bcast(&omega_m, 1, MPI_IntraGroup_Broadcast_Rank, commInter);
+       omega_b *= omega_m;
+       ParallelDescriptor::Bcast(&omega_b, 1, MPI_IntraGroup_Broadcast_Rank, commInter);
+       ParallelDescriptor::Bcast(&comoving_h, 1, MPI_IntraGroup_Broadcast_Rank, commInter);
+       ParallelDescriptor::Bcast(&time_step, 1, MPI_IntraGroup_Broadcast_Rank, commInter);
+       const Real time2 = ParallelDescriptor::second();
+       if (ParallelDescriptor::IOProcessor()) {
+         std::cout << "COMPUTE PROCESSES: time spent sending data to sidecars: " << time2 - time1 << std::endl;
+       }
+
+       delete dm_density;
+       delete xmom;
+       delete ymom;
+       delete zmom;
+     }
+   }
+#endif /* GIMLET */
+
     //
     // postCoarseTimeStep() is only called by level 0.
     //
@@ -1326,14 +1537,16 @@ void
 Nyx::post_regrid (int lbase,
                   int new_finest)
 {
+    BL_PROFILE("Nyx::post_regrid()");
 #ifndef NO_HYDRO
 #ifdef TISF
      BL_FORT_PROC_CALL(FORT_SET_FINEST_LEVEL, fort_set_finest_level)(&new_finest);
 #endif
 #endif
 
-    if (level == lbase)
-        particle_redistribute(lbase);
+    if (level == lbase) {
+        particle_redistribute(lbase, forceParticleRedist);
+    }
 
     int which_level_being_advanced = parent->level_being_advanced();
 
@@ -1369,20 +1582,24 @@ Nyx::post_regrid (int lbase,
 void
 Nyx::post_init (Real stop_time)
 {
-    if (level > 0)
+    BL_PROFILE("Nyx::post_init()");
+    if (level > 0) {
         return;
+    }
 
     // If we restarted from a plotfile, we need to reset the level_steps counter
-    if (!parent->theRestartPlotFile().empty())
+    if ( ! parent->theRestartPlotFile().empty()) {
         parent->setLevelSteps(0,nsteps_from_plotfile);
+    }
 
     //
     // Average data down from finer levels
     // so that conserved data is consistent between levels.
     //
     int finest_level = parent->finestLevel();
-    for (int k = finest_level - 1; k >= 0; k--)
+    for (int k = finest_level - 1; k >= 0; --k) {
         get_level(k).average_down();
+    }
 
 #ifdef GRAVITY
     if (do_grav)
@@ -1441,12 +1658,14 @@ Nyx::post_init (Real stop_time)
 int
 Nyx::okToContinue ()
 {
-    if (level > 0)
+    if (level > 0) {
         return 1;
+    }
 
     int test = 1;
-    if (parent->dtLevel(0) < dt_cutoff)
+    if (parent->dtLevel(0) < dt_cutoff) {
         test = 0;
+    }
 
     if ((test == 1) && (final_a > 0))
     {
@@ -1459,10 +1678,11 @@ Nyx::okToContinue ()
         if (a >= final_a) test = 0;
         if (verbose && ParallelDescriptor::IOProcessor())
         {
-            if (test == 0)
+            if (test == 0) {
                 std::cout << "...a " << a
                           << " is greater than or equal to final_a " << final_a
                           << '\n';
+	    }
         }
     }
     return test;
@@ -1473,6 +1693,7 @@ void
 Nyx::advance_aux (Real time,
                   Real dt)
 {
+    BL_PROFILE("Nyx::advance_aux()");
     if (verbose && ParallelDescriptor::IOProcessor())
         std::cout << "... special update for auxiliary variables \n";
 
@@ -1498,6 +1719,7 @@ Nyx::advance_aux (Real time,
 void
 Nyx::reflux ()
 {
+    BL_PROFILE("Nyx::reflux()");
     BL_ASSERT(level<parent->finestLevel());
 
     const Real strt = ParallelDescriptor::second();
@@ -1523,6 +1745,7 @@ Nyx::reflux ()
 void
 Nyx::average_down ()
 {
+    BL_PROFILE("Nyx::average_down()");
     if (level == parent->finestLevel()) return;
 
 #ifndef NO_HYDRO
@@ -1540,6 +1763,7 @@ Nyx::average_down ()
 void
 Nyx::enforce_nonnegative_species (MultiFab& S_new)
 {
+    BL_PROFILE("Nyx::enforce_nonnegative_species()");
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
@@ -1556,6 +1780,7 @@ Nyx::enforce_nonnegative_species (MultiFab& S_new)
 void
 Nyx::enforce_consistent_e (MultiFab& S)
 {
+    BL_PROFILE("Nyx::enforce_consistent_e()");
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
@@ -1574,6 +1799,7 @@ Nyx::enforce_consistent_e (MultiFab& S)
 void
 Nyx::average_down (int state_index)
 {
+    BL_PROFILE("Nyx::average_down(si)");
 #ifndef NO_HYDRO
     // We average DiagEOS_Type when average_down is called with State_Type
     if (state_index == DiagEOS_Type) return;
@@ -1650,6 +1876,7 @@ Nyx::errorEst (TagBoxArray& tags,
                int          n_error_buf,
                int          ngrow)
 {
+    BL_PROFILE("Nyx::errorEst()");
     const int*  domain_lo = geom.Domain().loVect();
     const int*  domain_hi = geom.Domain().hiVect();
     const Real* dx        = geom.CellSize();
@@ -1781,6 +2008,7 @@ Nyx::derive (const std::string& name,
              Real               time,
              int                ngrow)
 {
+    BL_PROFILE("Nyx::derive()");
     if (name == "Rank")
     {
         MultiFab* derive_dat = new MultiFab(grids, 1, 0);
@@ -1789,8 +2017,9 @@ Nyx::derive (const std::string& name,
            (*derive_dat)[mfi].setVal(ParallelDescriptor::MyProc());
         }
         return derive_dat;
-    } else
+    } else {
         return particle_derive(name, time, ngrow);
+    }
 }
 
 void
@@ -1799,6 +2028,7 @@ Nyx::derive (const std::string& name,
              MultiFab&          mf,
              int                dcomp)
 {
+    BL_PROFILE("Nyx::derive(mf)");
     AmrLevel::derive(name, time, mf, dcomp);
 }
 
@@ -1812,6 +2042,7 @@ Nyx::network_init ()
 void
 Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new)
 {
+    BL_PROFILE("Nyx::reset_internal_energy()");
     // Synchronize (rho e) and (rho E) so they are consistent with each other
 
     const Real  cur_time = state[State_Type].curTime();
@@ -1868,6 +2099,7 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new)
 void
 Nyx::compute_new_temp ()
 {
+    BL_PROFILE("Nyx::compute_new_temp()");
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
 
@@ -1932,6 +2164,7 @@ Nyx::compute_new_temp ()
 void
 Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& T_meanrho)
 {
+    BL_PROFILE("Nyx::compute_rho_temp()");
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
 
@@ -1977,4 +2210,476 @@ Nyx::getCPUTime()
     previousCPUTimeUsed;
 
   return T;
+}
+
+void
+Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
+                    int ioProcNumSCS, int ioProcNumAll, int scsMyId,
+                    MPI_Comm scsComm)
+{
+      BL_PROFILE("Nyx::AddProcsToComp()");
+
+      forceParticleRedist = true;
+
+      AmrLevel::AddProcsToComp(aptr, nSidecarProcs, prevSidecarProcs,
+                               ioProcNumSCS, ioProcNumAll, scsMyId,
+                               scsComm);
+
+
+      // ---- pack up the bools
+      Array<int> allBools;  // ---- just use ints here
+      if(scsMyId == ioProcNumSCS) {
+        allBools.push_back(dump_old);
+        allBools.push_back(do_dm_particles);
+        allBools.push_back(particle_initrandom_serialize);
+        allBools.push_back(FillPatchedOldState_ok);
+      }
+
+      BoxLib::BroadcastArray(allBools, scsMyId, ioProcNumAll, scsComm);
+
+      // ---- unpack the bools
+      if(scsMyId != ioProcNumSCS) {
+        int count(0);
+        dump_old = allBools[count++];
+        do_dm_particles = allBools[count++];
+        particle_initrandom_serialize = allBools[count++];
+        FillPatchedOldState_ok = allBools[count++];
+        BL_ASSERT(count == allBools.size());
+      }
+
+
+      // ---- pack up the ints
+      Array<int> allInts;
+
+      if(scsMyId == ioProcNumSCS) {
+        allInts.push_back(write_parameters_in_plotfile);
+        allInts.push_back(print_fortran_warnings);
+        allInts.push_back(particle_verbose);
+        allInts.push_back(write_particles_in_plotfile);
+        allInts.push_back(write_particle_density_at_init);
+        allInts.push_back(write_coarsened_particles);
+        allInts.push_back(NUM_STATE);
+        allInts.push_back(Density);
+        allInts.push_back(Xmom);
+        allInts.push_back(Ymom);
+        allInts.push_back(Zmom);
+        allInts.push_back(Eden);
+        allInts.push_back(Eint);
+        allInts.push_back(Temp_comp);
+        allInts.push_back(Ne_comp);
+        allInts.push_back(FirstSpec);
+        allInts.push_back(FirstAux);
+        allInts.push_back(FirstAdv);
+        allInts.push_back(NumSpec);
+        allInts.push_back(NumAux);
+        allInts.push_back(NumAdv);
+        allInts.push_back(strict_subcycling);
+        allInts.push_back(init_with_sph_particles);
+        allInts.push_back(verbose);
+        allInts.push_back(show_timings);
+        allInts.push_back(do_reflux);
+        allInts.push_back(NUM_GROW);
+        allInts.push_back(nsteps_from_plotfile);
+        allInts.push_back(allow_untagging);
+        allInts.push_back(use_const_species);
+        allInts.push_back(normalize_species);
+        allInts.push_back(do_special_tagging);
+        allInts.push_back(ppm_type);
+        allInts.push_back(ppm_reference);
+        allInts.push_back(ppm_flatten_before_integrals);
+        allInts.push_back(use_colglaz);
+        allInts.push_back(use_flattening);
+        allInts.push_back(corner_coupling);
+        allInts.push_back(version_2);
+        allInts.push_back(use_exact_gravity);
+        allInts.push_back(particle_initrandom_iseed);
+        allInts.push_back(do_hydro);
+        allInts.push_back(do_grav);
+        allInts.push_back(add_ext_src);
+        allInts.push_back(heat_cool_type);
+        allInts.push_back(strang_split);
+        allInts.push_back(halo_int);
+        allInts.push_back(gimlet_int);
+        allInts.push_back(grav_n_grow);
+        allInts.push_back(forceParticleRedist);
+      }
+
+      BoxLib::BroadcastArray(allInts, scsMyId, ioProcNumAll, scsComm);
+
+      // ---- unpack the ints
+      if(scsMyId != ioProcNumSCS) {
+        int count(0);
+
+        write_parameters_in_plotfile = allInts[count++];
+        print_fortran_warnings = allInts[count++];
+        particle_verbose = allInts[count++];
+        write_particles_in_plotfile = allInts[count++];
+        write_particle_density_at_init = allInts[count++];
+        write_coarsened_particles = allInts[count++];
+        NUM_STATE = allInts[count++];
+        Density = allInts[count++];
+        Xmom = allInts[count++];
+        Ymom = allInts[count++];
+        Zmom = allInts[count++];
+        Eden = allInts[count++];
+        Eint = allInts[count++];
+        Temp_comp = allInts[count++];
+        Ne_comp = allInts[count++];
+        FirstSpec = allInts[count++];
+        FirstAux = allInts[count++];
+        FirstAdv = allInts[count++];
+        NumSpec = allInts[count++];
+        NumAux = allInts[count++];
+        NumAdv = allInts[count++];
+        strict_subcycling = allInts[count++];
+        init_with_sph_particles = allInts[count++];
+        verbose = allInts[count++];
+        show_timings = allInts[count++];
+        do_reflux = allInts[count++];
+        NUM_GROW = allInts[count++];
+        nsteps_from_plotfile = allInts[count++];
+        allow_untagging = allInts[count++];
+        use_const_species = allInts[count++];
+        normalize_species = allInts[count++];
+        do_special_tagging = allInts[count++];
+        ppm_type = allInts[count++];
+        ppm_reference = allInts[count++];
+        ppm_flatten_before_integrals = allInts[count++];
+        use_colglaz = allInts[count++];
+        use_flattening = allInts[count++];
+        corner_coupling = allInts[count++];
+        version_2 = allInts[count++];
+        use_exact_gravity = allInts[count++];
+        particle_initrandom_iseed = allInts[count++];
+        do_hydro = allInts[count++];
+        do_grav = allInts[count++];
+        add_ext_src = allInts[count++];
+        heat_cool_type = allInts[count++];
+        strang_split = allInts[count++];
+        halo_int = allInts[count++];
+        gimlet_int = allInts[count++];
+        grav_n_grow = allInts[count++];
+        forceParticleRedist = allInts[count++];
+
+        BL_ASSERT(count == allInts.size());
+      }
+
+
+      // ---- longs
+      ParallelDescriptor::Bcast(&particle_initrandom_count, 1, ioProcNumAll, scsComm);
+
+
+      // ---- pack up the Reals
+      Array<Real> allReals;
+      if(scsMyId == ioProcNumSCS) {
+        allReals.push_back(initial_z);
+        allReals.push_back(final_a);
+        allReals.push_back(final_z);
+        allReals.push_back(relative_max_change_a);
+        allReals.push_back(old_a_time);
+        allReals.push_back(new_a_time);
+        allReals.push_back(old_a);
+        allReals.push_back(new_a);
+        allReals.push_back(particle_cfl);
+        allReals.push_back(cfl);
+        allReals.push_back(init_shrink);
+        allReals.push_back(change_max);
+        allReals.push_back(small_dens);
+        allReals.push_back(small_temp);
+        allReals.push_back(gamma);
+        allReals.push_back( h_species);
+        allReals.push_back(he_species);
+        allReals.push_back(particle_initrandom_mass);
+        allReals.push_back(average_gas_density);
+        allReals.push_back(average_dm_density);
+        allReals.push_back(average_neutr_density);
+        allReals.push_back(average_total_density);
+#ifdef NEUTRINO_PARTICLES
+        allReals.push_back(neutrino_cfl);
+#endif
+      }
+
+      BoxLib::BroadcastArray(allReals, scsMyId, ioProcNumAll, scsComm);
+      BoxLib::BroadcastArray(plot_z_values, scsMyId, ioProcNumAll, scsComm);
+
+      // ---- unpack the Reals
+      if(scsMyId != ioProcNumSCS) {
+        int count(0);
+        initial_z = allReals[count++];
+        final_a = allReals[count++];
+        final_z = allReals[count++];
+        relative_max_change_a = allReals[count++];
+        old_a_time = allReals[count++];
+        new_a_time = allReals[count++];
+        old_a = allReals[count++];
+        new_a = allReals[count++];
+        particle_cfl = allReals[count++];
+        cfl = allReals[count++];
+        init_shrink = allReals[count++];
+        change_max = allReals[count++];
+        small_dens = allReals[count++];
+        small_temp = allReals[count++];
+        gamma = allReals[count++];
+         h_species = allReals[count++];
+        he_species = allReals[count++];
+        particle_initrandom_mass = allReals[count++];
+        average_gas_density = allReals[count++];
+        average_dm_density = allReals[count++];
+        average_neutr_density = allReals[count++];
+        average_total_density = allReals[count++];
+#ifdef NEUTRINO_PARTICLES
+        neutrino_cfl = allReals[count++];
+#endif
+        BL_ASSERT(count == allReals.size());
+      }
+
+
+      // ---- pack up the strings
+      Array<std::string> allStrings;
+      Array<char> serialStrings;
+      if(scsMyId == ioProcNumSCS) {
+        allStrings.push_back(particle_plotfile_format);
+        allStrings.push_back(particle_init_type);
+        allStrings.push_back(particle_move_type);
+
+        serialStrings = BoxLib::SerializeStringArray(allStrings);
+      }
+
+      BoxLib::BroadcastArray(serialStrings, scsMyId, ioProcNumAll, scsComm);
+
+      // ---- unpack the strings
+      if(scsMyId != ioProcNumSCS) {
+        int count(0);
+        allStrings = BoxLib::UnSerializeStringArray(serialStrings);
+
+        particle_plotfile_format = allStrings[count++];
+        particle_init_type = allStrings[count++];
+        particle_move_type = allStrings[count++];
+      }
+
+
+      // ---- maps
+      std::cout << "_in AddProcsToComp:  fix maps." << std::endl;
+      //std::map<std::string,MultiFab*> auxDiag;
+      //static std::map<std::string,Array<std::string> > auxDiag_names;
+
+
+      // ---- pack up the IntVects
+      Array<int> allIntVects;
+      if(scsMyId == ioProcNumSCS) {
+        for(int i(0); i < BL_SPACEDIM; ++i)    { allIntVects.push_back(Nrep[i]); }
+
+        BL_ASSERT(allIntVects.size() == BL_SPACEDIM);
+      }
+
+      BoxLib::BroadcastArray(allIntVects, scsMyId, ioProcNumAll, scsComm);
+
+      // ---- unpack the IntVects
+      if(scsMyId != ioProcNumSCS) {
+          int count(0);
+
+          BL_ASSERT(allIntVects.size() == BL_SPACEDIM);
+          for(int i(0); i < BL_SPACEDIM; ++i)    { Nrep[i] = allIntVects[count++]; }
+
+          BL_ASSERT(allIntVects.size() == BL_SPACEDIM);
+      }
+
+
+
+      // ---- BCRec
+      Array<int> bcrLo(BL_SPACEDIM), bcrHi(BL_SPACEDIM);
+      if(scsMyId == ioProcNumSCS) {
+        for(int i(0); i < bcrLo.size(); ++i) { bcrLo[i] = phys_bc.lo(i); }
+        for(int i(0); i < bcrHi.size(); ++i) { bcrHi[i] = phys_bc.hi(i); }
+      }
+      ParallelDescriptor::Bcast(bcrLo.dataPtr(), bcrLo.size(), ioProcNumSCS, scsComm);
+      ParallelDescriptor::Bcast(bcrHi.dataPtr(), bcrHi.size(), ioProcNumSCS, scsComm);
+      if(scsMyId != ioProcNumSCS) {
+        for(int i(0); i < bcrLo.size(); ++i) { phys_bc.setLo(i, bcrLo[i]); }
+        for(int i(0); i < bcrHi.size(); ++i) { phys_bc.setHi(i, bcrHi[i]); }
+      }
+
+
+
+
+      // ---- ErrorList
+      if(scsMyId != ioProcNumSCS) {
+        InitErrorList();
+      }
+
+      // ---- DeriveList
+      if(scsMyId != ioProcNumSCS) {
+        InitDeriveList();
+      }
+
+
+
+      int isAllocated(0);
+#ifndef NO_HYDRO
+      // ---- FluxRegister
+      if(scsMyId == ioProcNumSCS) {
+        if(flux_reg == 0) {
+          isAllocated = 0;
+        } else {
+          isAllocated = 1;
+        }
+      }
+      ParallelDescriptor::Bcast(&isAllocated, 1, ioProcNumSCS, scsComm);
+      if(isAllocated == 1) {
+        if(scsMyId != ioProcNumSCS) {
+          BL_ASSERT(flux_reg == 0);
+          flux_reg = new FluxRegister;
+        }
+        flux_reg->AddProcsToComp(ioProcNumSCS, ioProcNumAll, scsMyId, scsComm);
+      }
+#endif
+
+
+      // ---- fine_mask
+      isAllocated = 0;
+      if(scsMyId == ioProcNumSCS) {
+        if(fine_mask == 0) {
+          isAllocated = 0;
+        } else {
+          isAllocated = 1;
+        }
+      }
+      ParallelDescriptor::Bcast(&isAllocated, 1, ioProcNumSCS, scsComm);
+      if(isAllocated == 1) {
+        if(scsMyId != ioProcNumSCS) {
+          BL_ASSERT(fine_mask == 0);
+          std::cout << "**** check fine_mask." << std::endl;
+          fine_mask = build_fine_mask();
+        }
+        fine_mask->AddProcsToComp(ioProcNumSCS, ioProcNumAll, scsMyId, scsComm);
+      }
+
+
+#ifdef GRAVITY
+      // ---- gravity
+      if(do_grav) {
+        if(gravity != 0) {
+          gravity->AddProcsToComp(parent, level, this, ioProcNumSCS, ioProcNumAll, scsMyId, scsComm);
+	}
+   }
+#endif
+
+
+       NyxParticlesAddProcsToComp(parent, nSidecarProcs, prevSidecarProcs, ioProcNumSCS,
+                                  ioProcNumAll, scsMyId, scsComm);
+
+}
+
+
+void
+Nyx::InitErrorList() {
+    //err_list.clear(true);
+    //err_list.add("FULLSTATE",1,ErrorRec::Special,FORT_DENERROR);
+}
+
+
+//static Box the_same_box (const Box& b) { return b; }
+
+
+void
+Nyx::InitDeriveList() {
+
+/*
+    derive_lst.clear();
+    //
+    // Set number of state variables
+    //
+    int counter = (int)Density + 1;
+    int Xmom = counter++;
+    int Ymom = counter++;
+#if(BL_SPACEDIM==3)
+    int Zmom = counter++;
+#endif
+    int Eden = counter++;
+#if(NADV>0)
+    int Tracer = counter++;
+#if(NADV>1)
+    BoxLib::Error("Prob::variableSetUp: Only one Advected quantity allowed");
+#endif
+#endif
+#ifdef BL_USE_CHEM
+    NumSpec = getChemDriver().numSpecies();
+    if (NumSpec > 0)
+    {
+        FirstSpec = counter++;
+        counter += NumSpec - 2;
+        LastSpec = counter++;
+    }
+
+    const int tmp = (int)Density;
+    FORT_SETCOMPS (&tmp, &Xmom,&Ymom,&Zmom,&Eden, &FirstSpec,&Tracer);
+
+    const Array<std::string>& names = getChemDriver().speciesNames();
+    if (ParallelDescriptor::IOProcessor())
+    {
+        std::cout << NumSpec << " Chemical species interpreted:\n { ";
+        for (int i = 0; i < names.size(); i++)
+            std::cout << names[i] << ' ' << ' ';
+        std::cout << '}' << '\n' << '\n';
+    }
+#endif
+
+    NUM_STATE = counter;
+
+    //
+    // DEFINE DERIVED QUANTITIES
+    //
+    // log of Density
+    //
+    derive_lst.add("log_den",IndexType::TheCellType(),1,FORT_DERLOGS,the_same_box);
+    derive_lst.addComponent("log_den",desc_lst,State_Type,Density,1);
+    //
+    // Pressure
+    //
+#ifdef BL_USE_CHEM
+    const int nWorkPres = 4 + NumSpec;
+#else
+    const int nWorkPres = 4;
+#endif
+    derive_lst.add("pressure",IndexType::TheCellType(),nWorkPres,
+                   FORT_DERPRES,the_same_box);
+    derive_lst.addComponent("pressure",desc_lst,State_Type,Density,NUM_STATE);
+
+#ifdef  PRISCILLA
+    // mach
+    derive_lst.add("mach",IndexType::TheCellType(),4, FORT_DERMACH,the_same_box);
+    derive_lst.addComponent("mach",desc_lst,State_Type,Density,NUM_STATE);
+#endif
+
+    //
+    // Xvel
+    //
+    derive_lst.add("xvel",IndexType::TheCellType(),1,FORT_DERVEL,the_same_box);
+    derive_lst.addComponent("xvel",desc_lst,State_Type,Density,2);
+    //
+    // Yvel
+    //
+    derive_lst.add("yvel",IndexType::TheCellType(),1,FORT_DERVEL,the_same_box);
+    derive_lst.addComponent("yvel",desc_lst,State_Type,Density,1);
+    derive_lst.addComponent("yvel",desc_lst,State_Type,Ymom,1);
+
+#if(BL_SPACEDIM==3)
+    //
+    // Zvel
+    //
+    derive_lst.add("zvel",IndexType::TheCellType(),1,FORT_DERVEL,the_same_box);
+    derive_lst.addComponent("zvel",desc_lst,State_Type,Density,1);
+    derive_lst.addComponent("zvel",desc_lst,State_Type,Zmom,1);
+#endif
+    //
+    // log of Eden
+    //
+    derive_lst.add("log_eden",IndexType::TheCellType(),1,FORT_DERLOGS,the_same_box);
+    derive_lst.addComponent("log_eden",desc_lst,State_Type,Eden,1);
+    //
+    // A derived quantity equal to all the state variables.
+    //
+    derive_lst.add("FULLSTATE",IndexType::TheCellType(),NUM_STATE,FORT_DERCOPY,the_same_box);
+    derive_lst.addComponent("FULLSTATE",desc_lst,State_Type,Density,NUM_STATE);
+*/
 }

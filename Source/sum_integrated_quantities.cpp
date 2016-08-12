@@ -261,8 +261,9 @@ Nyx::compute_average_temperature (Real& average_temperature)
     // Divide by physical volume of domain.
     average_temperature = average_temperature / geom.ProbSize();
 
-    if (verbose > 0 && ParallelDescriptor::IOProcessor())
+    if (verbose > 0 && ParallelDescriptor::IOProcessor()) {
         std::cout << "Average temperature " << average_temperature << '\n';
+    }
 }
 
 void

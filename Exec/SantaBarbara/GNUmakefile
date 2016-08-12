@@ -40,10 +40,6 @@ USE_SINGLE_PRECISION_PARTICLES = FALSE
 DIM      = 3
 USE_GRAV = TRUE
 
-# Analysis
-USE_IN_SITU = TRUE
-USE_IN_SITU = FALSE
-
 Bpack := ./Make.package
 Blocs := .
 

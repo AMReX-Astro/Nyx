@@ -30,6 +30,7 @@ std::string readin_ics_fname;
 void
 Nyx::read_init_params ()
 {
+    BL_PROFILE("Nyx::read_init_params()");
     ParmParse pp("nyx");
 
     pp.query("do_santa_barbara", do_santa_barbara);
@@ -111,6 +112,8 @@ Nyx::read_init_params ()
 void
 Nyx::initData ()
 {
+    BL_PROFILE("Nyx::initData()");
+
     // Here we initialize the grid data and the particles from a plotfile.
     if (!parent->theRestartPlotFile().empty())
     {
@@ -290,6 +293,7 @@ Nyx::initData ()
 void
 Nyx::init_from_plotfile ()
 {
+    BL_PROFILE("Nyx::init_from_plotfile()");
     if (verbose && ParallelDescriptor::IOProcessor())
     {
         std::cout << " " << std::endl; 

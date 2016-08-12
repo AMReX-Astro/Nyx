@@ -107,6 +107,7 @@ public:
     //Define data descriptors.
     //
     static void variable_setup();
+    static void variable_setup_for_new_comp_procs();
     static void hydro_setup();
     static void no_hydro_setup();
 
@@ -497,6 +498,18 @@ public:
     MultiFab* fine_mask;
     MultiFab* build_fine_mask();
 
+    static int forceParticleRedist;  // ---- for dynamic sidecars
+    static int nSidecarProcs;
+
+    virtual void AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
+                                int ioProcNumSCS, int ioProcNumAll, int scsMyId,
+				MPI_Comm scsComm);
+    virtual void NyxParticlesAddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
+                                            int ioProcNumSCS, int ioProcNumAll, int scsMyId,
+				            MPI_Comm scsComm);
+    static void InitErrorList();
+    static void InitDeriveList();
+
 protected:
 
     //
@@ -609,9 +622,6 @@ protected:
     // permits gravity calculation to be turned on and off
     static int do_grav;
 
-    std::map<std::string,MultiFab*> auxDiag;
-    static std::map<std::string,Array<std::string> > auxDiag_names;
-
     // if true, define an additional source term
     static int add_ext_src;
 
@@ -643,6 +653,11 @@ protected:
 
 
 };
+
+// time step interval for finding halos
+extern int halo_int;
+// time step interval for doing Gimlet post-processing
+extern int gimlet_int;
 
 //
 // Inlines.

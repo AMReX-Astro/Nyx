@@ -1,0 +1,45 @@
+Nyx interfaces with two post-processing suites, Reeber and Gimlet.
+
+\section{Reeber}
+
+Reeber uses topological methods to construct merge trees of scalar fields.
+These trees are effectively parameter-independent and contain a complete
+description of the field topology. In the context of Nyx, the field of interest
+is the dark matter density. Nyx then queries the merge tree with user-defined
+runtime parameters in order to locate the volume-averaged center of dark matter
+halos. The same tree can be queried with any number of such parameters to find
+halos with different mass/density thresholds.
+
+\section{Gimlet}
+
+Gimlet computes a variety of quantities about the simulation, including optical
+depths, Lyman-alpha fluxes, power spectra (both 1-D ``line-of-sight'' as well as
+fully 3-D), and probability distribution functions. These suites are fully
+MPI-parallel and can be run either ``in situ'' or ``in-transit,'' or with a
+combination of both. A detailed description of their usage is provided in the
+Nyx User Guide.
+
+\section{Usage}
+
+Nyx can post-process with Gimlet alone, with Reeber alone, or with both
+simultaneously. To compile with Gimlet, add \texttt{GIMLET = TRUE} to the
+\texttt{GNUmakefile}; to compile with Reeber, add \texttt{REEBER = TRUE}. Note
+that these codes are in separate repositories and are not included with Nyx.
+
+Nyx and BoxLib provide the capability for the user to execute an arbitrary
+post-processing workflow either \textit{in situ} or in-transit. An \textit{in
+situ} workflow is one in which all MPI processes evolving the simulation stop
+at specified time steps and perform the post-processing before continuing with
+the simulation. In-transit means that BoxLib creates a disjoint group of MPI
+processes (``sidecars'') from the global pool and reserves them exclusively for
+post-processing. At specified time steps the group of processes evolving the
+simulation will send the necessary data to the sidecar group, and then will
+continue with the simulation. The two groups then work independently of one
+another on their particular tasks.
+
+To run the post-processing workflow \textit{in situ}, one sets the
+\texttt{nSidecars} parameter in the inputs file to \texttt{0}. To run the
+workflow in-transit, one sets \texttt{nSidecars > 0}. Note that the sum of all
+MPI processes is constant for the duration of the simulation, so whatever
+number the user dedicates to post-processing will be subtracted from the number
+doing the simulation itself.

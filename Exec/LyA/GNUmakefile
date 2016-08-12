@@ -7,9 +7,6 @@ HPGMG_DIR ?= /global/homes/f/friesen/hpgmg/finite-volume
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ../..
 
-# Reeber
-BOOST_DIR ?= /opt/local
-REEBER_HOME ?= $(HOME)/devel/Reeber/dev
 
 # compilation options
 COMP    = gcc
@@ -24,6 +21,20 @@ COMM_PROFILE  = FALSE
 PRECISION = DOUBLE
 DEBUG     = FALSE
 
+GIMLET = TRUE
+REEBER = FALSE
+
+GIMLET_DIR ?= /home/vince/Development/gimlet
+# Gimlet needs FFTW MPI.
+FFTW_INC ?= /usr/include
+FFTW_DIR ?= /usr/lib/x86_64-linux-gnu
+
+REEBER_HOME ?= $(HOME)/devel/Reeber/dev
+# Reeber needs Boost (both headers and libraries) and diy2.
+BOOST_INCLUDE_DIR ?= /usr/local/include
+BOOST_LIB_DIR ?= /usr/local/lib
+DIY2_INCLUDE_DIR ?= /usr/local/include
+
 USE_HPGMG = FALSE
 HPGMG_FCYCLES = FALSE
 HPGMG_POST_F_CYCLE_TYPE = V
@@ -37,9 +48,6 @@ HPGMG_SMOOTHER = GSRB
 DIM      = 3
 USE_GRAV = TRUE
 USE_HEATCOOL = TRUE
-
-# Analysis
-USE_IN_SITU = FALSE
 
 Bpack := ./Make.package
 Blocs := .

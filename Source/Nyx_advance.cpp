@@ -38,7 +38,7 @@ Nyx::advance (Real time,
 #endif
 
 #ifdef GRAVITY
-    if (!do_hydro)
+    if ( ! do_hydro)
     {
         return advance_particles_only(time, dt, iteration, ncycle);
     }

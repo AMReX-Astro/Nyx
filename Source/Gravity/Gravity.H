@@ -110,6 +110,10 @@ public:
     void make_prescribed_grav(int level, Real time, MultiFab& grav, int addToExisting);
 #endif
 
+    // Routine to duplicate Gravity class data onto sidecars
+    virtual void AddProcsToComp(Amr *aptr, int level, AmrLevel *level_data_to_install,
+                                int ioProcNumSCS, int ioProcNumAll, int scsMyId, MPI_Comm scsComm);
+
 protected:
     //
     // Pointers to amr,amrlevel.

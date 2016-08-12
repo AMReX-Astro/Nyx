@@ -178,7 +178,8 @@
                                    ppm_flatten_before_integrals_in, &
                                    use_colglaz_in, use_flattening_in, &
                                    corner_coupling_in, version_2_in, &
-                                   use_const_species_in, gamma_in, normalize_species_in, heat_cool_in)
+                                   use_const_species_in, gamma_in, normalize_species_in, heat_cool_in, &
+                                   comm)
 
         ! Passing data from C++ into f90
 
@@ -206,13 +207,18 @@
         integer, intent(in) :: use_const_species_in
         integer, intent(in) :: normalize_species_in
         integer, intent(in) :: heat_cool_in
+        integer, intent(in), optional :: comm
 
         integer             :: QNEXT
         integer             :: UNEXT
 
         integer             :: iadv, ispec
 
-        call parallel_initialize()
+        if (present(comm)) then
+          call parallel_initialize(comm=comm)
+        else
+          call parallel_initialize()
+        end if
 
         use_const_species = use_const_species_in
 
@@ -417,3 +423,48 @@
         coord_type = coord_type_in
 
       end subroutine set_problem_params
+
+! :::
+! ::: ----------------------------------------------------------------
+! :::
+
+      ! Get density component number from state data MultiFab. Useful
+      ! for accessing MultiFabs in C++.
+
+      function get_comp_urho() bind(C, name="get_comp_urho")
+        use meth_params_module
+        use, intrinsic :: iso_c_binding
+        implicit none
+        integer(c_int) :: get_comp_urho
+        get_comp_urho = URHO
+      end function get_comp_urho
+
+! :::
+! ::: ----------------------------------------------------------------
+! :::
+
+      ! Get temperature component number from EOS data MultiFab. Useful
+      ! for accessing MultiFabs in C++.
+
+      function get_comp_temp() bind(C, name="get_comp_temp")
+        use meth_params_module
+        use, intrinsic :: iso_c_binding
+        implicit none
+        integer(c_int) :: get_comp_temp
+        get_comp_temp = TEMP_COMP
+      end function get_comp_temp
+
+! :::
+! ::: ----------------------------------------------------------------
+! :::
+
+      ! Get internal energy component number from state data MultiFab.
+      ! Useful for accessing MultiFabs in C++.
+
+      function get_comp_e_int() bind(C, name="get_comp_e_int")
+        use meth_params_module
+        use, intrinsic :: iso_c_binding
+        implicit none
+        integer(c_int) :: get_comp_e_int
+        get_comp_e_int = UEINT
+      end function get_comp_e_int
