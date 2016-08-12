@@ -34,13 +34,6 @@ endif
 
 DEFINES += -DBL_NOLINEVALUES
 
-# Another sanity check
-ifeq ($(REEBER), TRUE)
-  ifeq ($(GIMLET), TRUE)
-    $(error Nyx does not support both Reeber and Gimlet simultaneously)
-  endif
-endif
-
 ifeq ($(REEBER), TRUE)
   DEFINES += -DREEBER
   DEFINES += -DREEBER_USE_BOXLIB_READER
