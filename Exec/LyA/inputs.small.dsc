@@ -1,7 +1,6 @@
 # This is an example script that shows how to run a small Nyx problem with
 # sidecars doing post-processing. The sidecar-specific parameters are at the
-# end of the inputs file. It chooses random numbers of sidecars after each time
-# step to do the post-processing.
+# end of the inputs file.
 
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 max_step = 20
@@ -141,10 +140,6 @@ nSidecars = 8
 how = 2
 # time step interval for doing Gimlet analysis
 nyx.gimlet_int = 5
-
-# How many time steps between each halo find? Also note that nyx.halo_int and
-# reeber.halo_int need to be the same (for now).
-nyx.halo_int = 5
 
 # Parameters to Reeber. Remember that nyx.halo_int and reeber.halo_int need to
 # be the same.
