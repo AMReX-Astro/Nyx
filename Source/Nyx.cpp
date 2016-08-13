@@ -418,10 +418,6 @@ Nyx::Nyx (Amr&            papa,
     AmrLevel(papa,lev,level_geom,bl,time)
 {
     BL_PROFILE("Nyx::Nyx(Amr)");
-if(ParallelDescriptor::IOProcessor()) {
-  std::cout << "************** sizeof(Nyx) = " << sizeof(Nyx) << std::endl;
-  std::cout << "************** sizeof(DarkMatterParticleContainer) = " << sizeof(DarkMatterParticleContainer) << std::endl;
-}
     build_metrics();
     fine_mask = 0;
 
