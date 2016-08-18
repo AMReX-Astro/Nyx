@@ -383,6 +383,7 @@ main (int argc, char* argv[])
       }
       ResizeSidecars(Nyx::nSidecarProcs);
     }
+    const Real time_before_main_loop = ParallelDescriptor::second();
 
     bool finished(false);
 
@@ -479,6 +480,8 @@ main (int argc, char* argv[])
       }
     }  // ---- end while( ! finished)
 
+    const Real time_without_init = ParallelDescriptor::second() - time_before_main_loop;
+    if (ParallelDescriptor::IOProcessor()) std::cout << "Time w/o init: " << time_without_init << std::endl;
 
 
     if(ParallelDescriptor::InCompGroup()) {
