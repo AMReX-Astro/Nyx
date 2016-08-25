@@ -103,8 +103,7 @@ Nyx::just_the_hydro (Real time,
 
 #ifdef GRAVITY
     gravity->get_old_grav_vector(level, grav_vector, time);
-    grav_vector.FillBoundary();
-    geom.FillPeriodicBoundary(grav_vector, 0, BL_SPACEDIM);
+    grav_vector.FillBoundary(geom.periodicity());
 #endif
 
     MultiFab fluxes[BL_SPACEDIM];

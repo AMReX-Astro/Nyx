@@ -42,7 +42,8 @@ Nyx::get_old_source (Real      old_time,
         }
     }
 
-    geom.FillPeriodicBoundary(ext_src, 0, NUM_STATE);
+    ext_src.EnforcePeriodicity(0, NUM_STATE, geom.periodicity());
+
     if (show_timings)
     {
         const int IOProc = ParallelDescriptor::IOProcessorNumber();
@@ -92,7 +93,8 @@ Nyx::get_new_source (Real      old_time,
              prob_lo, dx, &new_time, &z, &dt);
     }
 
-    geom.FillPeriodicBoundary(ext_src, 0, NUM_STATE);
+    ext_src.EnforcePeriodicity(0, NUM_STATE, geom.periodicity());
+
     if (show_timings)
     {
         const int IOProc = ParallelDescriptor::IOProcessorNumber();

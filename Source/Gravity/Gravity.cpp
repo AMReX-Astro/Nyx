@@ -1336,8 +1336,7 @@ Gravity::get_old_grav_vector (int       level,
         for (int i = 0; i < BL_SPACEDIM ; i++)
         {
             grad_phi_prev[level][i].setBndry(0);
-            grad_phi_prev[level][i].FillBoundary();
-            geom.FillPeriodicBoundary(grad_phi_prev[level][i]);
+            grad_phi_prev[level][i].FillBoundary(geom.periodicity());
         }
     }
     else
@@ -1357,8 +1356,7 @@ Gravity::get_old_grav_vector (int       level,
     }
 #endif
 
-    grav_vector.FillBoundary();
-    geom.FillPeriodicBoundary(grav_vector, 0, BL_SPACEDIM);
+    grav_vector.FillBoundary(geom.periodicity());
 
 #ifdef CGRAV
     }
@@ -1399,8 +1397,7 @@ Gravity::get_new_grav_vector (int       level,
             for (int i = 0; i < BL_SPACEDIM ; i++)
             {
                 grad_phi_curr[level][i].setBndry(0);
-                grad_phi_curr[level][i].FillBoundary();
-                geom.FillPeriodicBoundary(grad_phi_curr[level][i]);
+                grad_phi_curr[level][i].FillBoundary(geom.periodicity());
             }
         }
         else
@@ -1420,8 +1417,7 @@ Gravity::get_new_grav_vector (int       level,
         }
 #endif
 
-        grav_vector.FillBoundary();
-        geom.FillPeriodicBoundary(grav_vector, 0, BL_SPACEDIM);
+        grav_vector.FillBoundary(geom.periodicity());
     }
 
 #ifdef CGRAV
@@ -1681,7 +1677,7 @@ Gravity::fill_ec_grow (int                     level,
     for (int n = 0; n < BL_SPACEDIM; ++n)
     {
         ecF[n].FillBoundary();
-        fgeom.FillPeriodicBoundary(ecF[n], true);
+	ecF[n].EnforcePeriodicity(fgeom.periodicity());
     }
 }
 

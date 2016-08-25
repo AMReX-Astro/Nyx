@@ -74,9 +74,8 @@ void Nyx::icReadAndPrepareFab(std::string mfDirName, int nghost, MultiFab &mf)
 	}
     }
 
-    geom.FillPeriodicBoundary(mf, true);
-    //Of course we have to fill the ghost zones too!
     mf.FillBoundary();
+    mf.EnforcePeriodicity(geom.periodicity());
 
     //FIXME
     //mf.setVal(0);
