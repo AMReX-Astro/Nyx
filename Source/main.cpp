@@ -21,7 +21,9 @@
 #include <AmrLevel.H>
 #include <Geometry.H>
 #include <MultiFab.H>
+#ifdef BL_USE_MPI
 #include <MemInfo.H>
+#endif
 #include <Nyx.H>
 
 #ifdef REEBER
@@ -297,12 +299,14 @@ main (int argc, char* argv[])
 
     BL_COMM_PROFILE_NAMETAG("main TOP");
 
+#ifdef BL_USE_MPI
     const int MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
     int nSidecarProcsFromParmParse(-3);
     Nyx::nSidecarProcs = 0;
     int prevSidecarProcs(0);
     int sidecarSignal(NyxHaloFinderSignal);
     int resizeSidecars(false);  // ---- instead of bool for bcast
+#endif
 
     Real dRunTime1 = ParallelDescriptor::second();
 
@@ -324,6 +328,7 @@ main (int argc, char* argv[])
     int how(-1);
     pp.query("how",how);
 
+#ifdef BL_USE_MPI
     // Set up sidecars if user wants them.
     if (pp.query("nSidecars", nSidecarProcsFromParmParse))
     {
@@ -339,6 +344,7 @@ main (int argc, char* argv[])
         Nyx::nSidecarProcs = nSidecarProcsFromParmParse;
       }
     }
+#endif
 
     if (strt_time < 0.0)
     {
@@ -373,6 +379,7 @@ main (int argc, char* argv[])
       std::cout << "IIIIIIII new nSidecarProcs = " << Nyx::nSidecarProcs << std::endl;
     }
 
+#ifdef BL_USE_MPI
     if(Nyx::nSidecarProcs < prevSidecarProcs) {
       ResizeSidecars(Nyx::nSidecarProcs);
       amrptr->AddProcsToComp(Nyx::nSidecarProcs, prevSidecarProcs);
@@ -383,6 +390,7 @@ main (int argc, char* argv[])
       }
       ResizeSidecars(Nyx::nSidecarProcs);
     }
+#endif
     const Real time_before_main_loop = ParallelDescriptor::second();
 
     bool finished(false);
@@ -392,6 +400,7 @@ main (int argc, char* argv[])
       Nyx::forceParticleRedist = true;
 
       if(ParallelDescriptor::InSidecarGroup()) {  // ------------------- start sidecars
+#ifdef BL_USE_MPI
 
         int returnCode = SidecarEventLoop();
         if(returnCode == quitSignal) {
@@ -399,6 +408,7 @@ main (int argc, char* argv[])
         }
         resizeSidecars = (returnCode == resizeSignal);
 
+#endif
       } else {  // ----------------------------------------------------- start comp
 
         // If we set the regrid_on_restart flag and if we are *not* going to take
@@ -422,9 +432,12 @@ main (int argc, char* argv[])
           amrptr->coarseTimeStep(stop_time);          // ---- Do a timestep.
         } else {
           finished = true;
+#ifdef BL_USE_MPI
           resizeSidecars = false;
+#endif
         }
 
+#ifdef BL_USE_MPI
         if((finished || resizeSidecars) && Nyx::nSidecarProcs > 0 && prevSidecarProcs > 0) {
           // ---- stop the sidecars
           int sidecarSignal(-1);
@@ -437,11 +450,13 @@ main (int argc, char* argv[])
           ParallelDescriptor::Bcast(&sidecarSignal, 1, MPI_IntraGroup_Broadcast_Rank,
                                     ParallelDescriptor::CommunicatorInter(whichSidecar));
         }
+#endif
 
       }  // ---------------- end start comp
 
 
 
+#ifdef BL_USE_MPI
       if(resizeSidecars) {    // ---- both comp and sidecars are here
         ParallelDescriptor::Bcast(&prevSidecarProcs, 1, 0, ParallelDescriptor::CommunicatorAll());
         ParallelDescriptor::Bcast(&Nyx::nSidecarProcs, 1, 0, ParallelDescriptor::CommunicatorAll());
@@ -478,6 +493,7 @@ main (int argc, char* argv[])
           std::cout << "@@@@@@@@ after resize sidecars:  restarting event loop." << std::endl;
         }
       }
+#endif
     }  // ---- end while( ! finished)
 
     const Real time_without_init = ParallelDescriptor::second() - time_before_main_loop;
@@ -494,6 +510,7 @@ main (int argc, char* argv[])
       }
     }
 
+#ifdef BL_USE_MPI
     if(Nyx::nSidecarProcs > 0) {    // ---- stop the sidecars
       sidecarSignal = quitSignal;
       int whichSidecar(0);
@@ -501,7 +518,6 @@ main (int argc, char* argv[])
                                 ParallelDescriptor::CommunicatorInter(whichSidecar));
     }
 
-#ifdef BL_USE_MPI
     ParallelDescriptor::SetNProcsSidecars(0);
 #endif
 
