@@ -54,11 +54,21 @@ ifeq ($(DEBUG), TRUE)
 endif
 
 ifeq ($(GIMLET), TRUE)
+
+  ifneq ($(USE_OMP), TRUE)
+    $(error Gimlet requires compiling with OpenMP)
+  endif
+
+  ifneq ($(USE_MPI), TRUE)
+    $(error Gimlet requires compiling with MPI)
+  endif
+
   DEFINES += -DGIMLET
   INCLUDE_LOCATIONS += $(GIMLET_DIR)
   VPATH_LOCATIONS += $(GIMLET_DIR)
   INCLUDE_LOCATIONS += $(FFTW_INC)
-  LIBRARIES += -L$(FFTW_DIR) -lfftw3_mpi -lfftw3
+  LIBRARIES += -L$(FFTW_DIR) -lfftw3_mpi -lfftw3_omp -lfftw3
+
 endif
 
 #These are the directories in Nyx 
