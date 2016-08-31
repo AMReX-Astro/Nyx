@@ -124,8 +124,21 @@ Nyx::just_the_hydro (Real time,
     MultiFab D_old_tmp(D_old.boxArray(), 2, NUM_GROW);
     FillPatch(*this, D_old_tmp, NUM_GROW, time, DiagEOS_Type, 0, 2);
 
-    if (add_ext_src && strang_split)
+    if (add_ext_src && strang_split) {
+        Real strt_strang = ParallelDescriptor::second();
+        if (ParallelDescriptor::IOProcessor())
+           std::cout << "Calling strang for the first time " << std::endl;
         strang_first_step(time,dt,S_old_tmp,D_old_tmp);
+        ParallelDescriptor::Barrier();
+        if (ParallelDescriptor::IOProcessor())
+           std::cout << "Out of strang for the first time " << std::endl;
+        Real end = ParallelDescriptor::second() - strt_strang;
+        int IOProc = ParallelDescriptor::IOProcessorNumber();
+        ParallelDescriptor::ReduceRealMax(end,IOProc);
+        if (ParallelDescriptor::IOProcessor() && show_timings)
+           std::cout << "Time in first strang call " << end << '\n';
+    }
+
 
     const Real strt_fpi = ParallelDescriptor::second();
 
