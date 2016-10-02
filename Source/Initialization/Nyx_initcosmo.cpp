@@ -1,13 +1,13 @@
 #include <iomanip>
-#include <Nyx.H>
 
 #ifdef GRAVITY
 #include <Gravity.H>
 BL_FORT_PROC_DECL(GET_GRAV_CONST, get_grav_const)(Real* Gconst);
 #endif
 
-#include <Nyx_F.H>
 #include <Nyx.H>
+#include <Nyx_F.H>
+#include <NyxParticleContainer.H>
 #include <Particles_F.H>
 
 #ifdef GRAVITY
