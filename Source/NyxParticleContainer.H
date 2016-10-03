@@ -24,5 +24,34 @@ public:
                                  const Real particleMass, int disp_idx, int vel_idx, 
                                  BoxArray &baWhereNot, int lev);
 
+    void AssignDensityAndVels (PArray<MultiFab>& mf, int lev_min = 0) const;
+
 };
+
+// We make NeutrinoParticleContainer a class instead of a typedef so that
+//    we can have Nyx-specific functions here instead of in BoxLib
+class NeutrinoParticleContainer
+    : public AmrParticleContainer<2+BL_SPACEDIM>
+{
+
+    int         m_relativistic; // if 1 then we weight the mass by gamma in AssignDensity*
+    Real        m_csq;          // the square of the speed of light -- used to compute relativistic effects
+
+public:
+    NeutrinoParticleContainer (Amr* amr)
+        : AmrParticleContainer<2+BL_SPACEDIM>(amr)
+    { }
+
+    void SetRelativistic (int relativistic) { m_relativistic = relativistic; }
+
+    void SetCSquared (Real csq) { m_csq = csq; }
+
+    void AssignDensity (PArray<MultiFab>& mf, int lev_min = 0, int ncomp = 1, int finest_level = -1) const BL_OVERRIDE;
+
+    void AssignRelativisticDensitySingleLevel (MultiFab& mf, int level, int ncomp=1, int particle_lvl_offset = 0) const BL_OVERRIDE;
+    
+    void AssignRelativisticDensity (PArray<MultiFab>& mf, int lev_min = 0, int ncomp = 1, int finest_level = -1) const BL_OVERRIDE;
+
+};
+
 #endif /*_NyxParticleContainer_H_*/

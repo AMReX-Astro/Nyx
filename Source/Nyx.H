@@ -14,10 +14,8 @@
 using std::istream;
 using std::ostream;
 
-// typedef AmrParticleContainer<1+BL_SPACEDIM>   DarkMatterParticleContainer;
 typedef AmrParticleContainer<1+BL_SPACEDIM+3> StellarParticleContainer;
 typedef AmrParticleContainer<1+BL_SPACEDIM+3> AGNParticleContainer;
-typedef AmrParticleContainer<1+BL_SPACEDIM>   NeutrinoParticleContainer;
 
 #ifdef NO_HYDRO
 enum StateType {
