@@ -365,7 +365,6 @@ DarkMatterParticleContainer::InitCosmo(
     }
 
     BL_ASSERT(OK());
-    BL_ASSERT(N >= BL_SPACEDIM+1);
     //
     // FIXME: Will we ever need initial particles in grids deeper than 0?!
     //
