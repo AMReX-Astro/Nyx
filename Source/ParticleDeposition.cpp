@@ -9,7 +9,7 @@ DarkMatterParticleContainer::AssignDensityAndVels (PArray<MultiFab>& mf,
 
 #ifdef NEUTRINO_PARTICLES
 void
-NeutrinoParticleContainer::AssignDensity (PArray<MultiFab>& mf, int lev_min, int ncomp, int finest_level) const BL_OVERRIDE
+NeutrinoParticleContainer::AssignDensity (PArray<MultiFab>& mf, int lev_min, int ncomp, int finest_level) const 
 {
     AssignRelativisticDensity (mf,lev_min,ncomp,finest_level);
 }
