@@ -1,8 +1,9 @@
 EBASE     = Nyx
 
+USE_PARTICLES = TRUE
+
 include $(BOXLIB_HOME)/Tools/C_mk/Make.defs
 
-USE_PARTICLES = TRUE
 NYX           = TRUE
 
 # Nyx now uses a coarse grained OMP approach
