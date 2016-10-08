@@ -44,7 +44,7 @@ public:
     void SetParticleVelocities (Array<Real>& part_data);
 
     virtual Real sumParticleMass (int level) const override {
-	AmrParticleContainer<NR,NI>::sumParticleMass(0,level);
+	return AmrParticleContainer<NR,NI>::sumParticleMass(0,level);
     }
 
     void sumParticleMomentum (int lev, Real* mom) const;
@@ -53,12 +53,6 @@ public:
     { 
 	AmrParticleContainer<NR,NI>::AssignDensitySingleLevel(0, mf, level, ncomp, particle_lvl_offset);
     }
-#if 0
-    void AssignCellDensitySingleLevel (MultiFab& mf, int level, int ncomp=1, int particle_lvl_offset = 0) const
-    { 
-	AmrParticleContainer<NR,NI>::AssignCellDensitySingleLevel(0, mf, level, ncomp, particle_lvl_offset);
-    }
-#endif
     virtual void AssignDensity (PArray<MultiFab>& mf, int lev_min = 0, int ncomp = 1, int finest_level = -1) const override
     {
 	AmrParticleContainer<NR,NI>::AssignDensity(0, mf, lev_min, ncomp, finest_level);
