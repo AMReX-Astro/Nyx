@@ -14,8 +14,8 @@
 using std::istream;
 using std::ostream;
 
-typedef AmrParticleContainer<1+BL_SPACEDIM+3> StellarParticleContainer;
-typedef AmrParticleContainer<1+BL_SPACEDIM+3> AGNParticleContainer;
+typedef NyxParticleContainer<1+BL_SPACEDIM+3> StellarParticleContainer;
+typedef NyxParticleContainer<1+BL_SPACEDIM+3> AGNParticleContainer;
 
 #ifdef NO_HYDRO
 enum StateType {
@@ -454,9 +454,9 @@ public:
     void advance_aux(Real time, Real dt);
 #endif
 
-    static Array<ParticleContainerBase*>& theActiveParticles();
-    static Array<ParticleContainerBase*>& theVirtualParticles();
-    static Array<ParticleContainerBase*>& theGhostParticles();
+    static Array<NyxParticleContainerBase*>& theActiveParticles();
+    static Array<NyxParticleContainerBase*>& theVirtualParticles();
+    static Array<NyxParticleContainerBase*>& theGhostParticles();
 
     static DarkMatterParticleContainer* theDMPC();
     static DarkMatterParticleContainer* theVirtPC();
