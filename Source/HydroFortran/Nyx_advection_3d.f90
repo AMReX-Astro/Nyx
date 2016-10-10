@@ -910,7 +910,6 @@
       double precision :: dpdr, dpde
 
       integer          :: i, j, k
-      integer          :: pt_index(3)
       integer          :: ngp, ngf, loq(3), hiq(3)
       integer          :: n, nq
       integer          :: iadv, ispec
@@ -989,16 +988,12 @@
          do j = loq(2), hiq(2)
             do i = loq(1), hiq(1)
 
-               pt_index(1) = i
-               pt_index(2) = j
-               pt_index(3) = k
-
                ! If necessary, reset the energy using small_temp
                if (q(i,j,k,QREINT) .lt. ZERO) then
 
 !                 HACK HACK HACK 
 !                 call nyx_eos_given_RT(q(i,j,k,QREINT),q(i,j,k,QPRES),q(i,j,k,QRHO), &
-!                                       small_temp,diag_eos(i,j,k,NE_COMP),a_old,pt_index)
+!                                       small_temp,diag_eos(i,j,k,NE_COMP),a_old)
 
                   if (q(i,j,k,QREINT) .lt. ZERO) then
                      !

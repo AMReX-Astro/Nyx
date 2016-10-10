@@ -23,7 +23,6 @@
 
       ! Local variables
       integer          :: i,j,k
-      integer          :: pt_index(3)
       double precision :: Up, Vp, Wp, ke, rho_eint, eint_new
       double precision :: dummy_pres, rhoInv
 
@@ -56,11 +55,8 @@
            ! If not resetting and little e is negative ...
            else if (u(i,j,k,UEINT) .le. 0.d0) then
 
-              pt_index(1) = i
-              pt_index(2) = j
-              pt_index(3) = k
               call nyx_eos_given_RT(eint_new, dummy_pres, u(i,j,k,URHO), small_temp, &
-                                    d(i,j,k,NE_COMP),comoving_a, pt_index)
+                                    d(i,j,k,NE_COMP),comoving_a)
 
               if (print_fortran_warnings .gt. 0) then
                  print *,'   '
