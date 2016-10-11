@@ -35,7 +35,8 @@ class NyxParticleContainer
 {
 public:
     NyxParticleContainer (Amr* amr)
-	: AmrParticleContainer<NR,NI>(amr)
+	: AmrParticleContainer<NR,NI>(amr),
+	  sub_cycle(amr->subCycle())
     {}
 
     virtual ~NyxParticleContainer () {}
@@ -55,7 +56,7 @@ public:
     }
     virtual void AssignDensity (PArray<MultiFab>& mf, int lev_min = 0, int ncomp = 1, int finest_level = -1) const override
     {
-	AmrParticleContainer<NR,NI>::AssignDensity(0, mf, lev_min, ncomp, finest_level);
+	AmrParticleContainer<NR,NI>::AssignDensity(0, sub_cycle, mf, lev_min, ncomp, finest_level);
     }
 
     void MultiplyParticleMass (int lev, Real mult);
@@ -98,6 +99,9 @@ public:
     //    typedef typename std::map<int,PBox> PMap;
     typedef typename AmrParticleContainer<NR,NI>::PBox PBox;
     typedef typename AmrParticleContainer<NR,NI>::PMap PMap;
+
+protected:
+    bool sub_cycle;
 };
 
 template <int NR, int NI>
@@ -484,7 +488,7 @@ NyxParticleContainer<NR,NI>::moveKickDrift (MultiFab&       acceleration,
 
     if (ac_pointer != &acceleration) delete ac_pointer;
 
-    if (lev > 0 && this->m_gdb->subCycle())
+    if (lev > 0 && sub_cycle)
     {
         for (typename PMap::iterator pmap_it = pmap.begin(), pmapEnd = pmap.end(); pmap_it != pmapEnd; ++pmap_it)
         {
@@ -552,7 +556,7 @@ public:
     void InitCosmo1ppc (MultiFab& mf, const Real vel_fac[], const Real particleMass);
     void InitCosmo1ppcMultiLevel(MultiFab& mf, const Real disp_fac[], const Real vel_fac[], 
                                  const Real particleMass, int disp_idx, int vel_idx, 
-                                 BoxArray &baWhereNot, int lev);
+                                 BoxArray &baWhereNot, int lev, int nlevs);
 
     void AssignDensityAndVels (PArray<MultiFab>& mf, int lev_min = 0) const;
 

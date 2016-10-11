@@ -4,7 +4,7 @@ void
 DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
                         MultiFab& mf, const Real disp_fac[], const Real vel_fac[], 
                         const Real particleMass, int disp_idx, int vel_idx, 
-                        BoxArray &baWhereNot, int lev)
+                        BoxArray &baWhereNot, int lev, int nlevs)
 {
     BL_PROFILE("ParticleContainer<N>::InitCosmo1ppcMultiLevel()");
     const int       MyProc   = ParallelDescriptor::MyProc();
@@ -13,7 +13,7 @@ DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
 
     static Array<int> calls;
 
-    calls.resize(m_gdb->initialBaLevels()+1);
+    calls.resize(nlevs);
 
     calls[lev]++;
 
@@ -21,7 +21,7 @@ DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
 
     m_particles.reserve(15);  // So we don't ever have to do any copying on a resize.
 
-    m_particles.resize(m_gdb->initialBaLevels()+1);
+    m_particles.resize(nlevs);
 
     ParticleType p;
     Real         disp[BL_SPACEDIM];

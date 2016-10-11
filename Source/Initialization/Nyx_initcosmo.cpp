@@ -331,7 +331,7 @@ void Nyx::initcosmo()
 		                  particleMass, 
 				  part_dx, part_vx,
 				  myBaWhereNot,
-				  level);
+	                          level, parent->initialBaLevels()+1);
 //    Nyx::theDMPC()->InitCosmo(mf, vel_fac, n_part, particleMass);
     //Nyx::theDMPC()->InitCosmo(mf, vel_fac, n_part, particleMass, part_dx, part_vx);
 
