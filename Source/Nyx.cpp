@@ -1340,6 +1340,9 @@ void
 Nyx::postCoarseTimeStep (Real cumtime)
 {
    BL_PROFILE("Nyx::postCoarseTimeStep()");
+
+   AmrLevel::postCoarseTimeStep(cumtime);
+
    const Real cur_time = state[State_Type].curTime();
    const int whichSidecar(0);
 
