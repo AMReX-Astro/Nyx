@@ -7,6 +7,7 @@ CEXE_sources += NyxBld.cpp
 CEXE_sources += main.cpp
 CEXE_sources += NyxParticles.cpp
 CEXE_sources += ParticleDerive.cpp
+CEXE_sources += ParticleDeposition.cpp
 CEXE_sources += two_particle_advance.cpp
 CEXE_sources += comoving.cpp
 CEXE_sources += write_info.cpp

@@ -54,7 +54,7 @@ module eos_module
 
      ! ****************************************************************************
 
-      subroutine nyx_eos_S_given_Re(S, R, T, Ne, a, pt_index)
+      subroutine nyx_eos_S_given_Re(S, R, T, Ne, a)
 
         use bl_constants_module, only: M_PI
         use atomic_rates_module, ONLY: YHELIUM
@@ -64,7 +64,6 @@ module eos_module
 
         double precision,          intent(  out) :: S
         double precision,          intent(in   ) :: R, T, Ne, a
-        integer,         optional, intent(in   ) :: pt_index(:)
 
         double precision :: mu, dens, t1, t2, t3
 
@@ -83,7 +82,7 @@ module eos_module
 
      ! ****************************************************************************
 
-      subroutine nyx_eos_given_RT(e, P, R, T, Ne, a, pt_index)
+      subroutine nyx_eos_given_RT(e, P, R, T, Ne, a)
 
         use atomic_rates_module, ONLY: YHELIUM
         use fundamental_constants_module, only: mp_over_kb
@@ -93,7 +92,6 @@ module eos_module
         double precision,          intent(  out) :: e, P
         double precision,          intent(in   ) :: R, T, Ne
         double precision,          intent(in   ) :: a
-        integer,         optional, intent(in   ) :: pt_index(:)
 
         double precision :: mu
 
@@ -106,7 +104,7 @@ module eos_module
 
       ! ****************************************************************************
 
-      subroutine nyx_eos_T_given_Re(T, Ne, R_in, e_in, a, pt_index)
+      subroutine nyx_eos_T_given_Re(T, Ne, R_in, e_in, a)
 
       use atomic_rates_module, ONLY: XHYDROGEN, MPROTON
       use fundamental_constants_module, only: density_to_cgs, e_to_cgs
@@ -115,7 +113,6 @@ module eos_module
       double precision,           intent(inout) :: T, Ne
       double precision,           intent(in   ) :: R_in, e_in
       double precision,           intent(in   ) :: a
-      integer         , optional, intent(in   ) :: pt_index(:)
 
       double precision :: nh, nh0, nhep, nhp, nhe0, nhepp
       double precision :: z, rho, U

@@ -67,7 +67,6 @@ subroutine integrate_state_vode(lo, hi, &
     ! Do *not* assume this is just the valid region
     ! apply heating-cooling to UEDEN and UEINT
 
-    !$OMP PARALLEL DO PRIVATE(i,j,k,rho,e_orig,T_orig,ne_orig,T_out,ne_out,e_out)
     do k = lo(3),hi(3)
         do j = lo(2),hi(2)
             do i = lo(1),hi(1)
@@ -112,7 +111,6 @@ subroutine integrate_state_vode(lo, hi, &
             end do ! i
         end do ! j
     end do ! k
-    !$OMP END PARALLEL DO
 
 end subroutine integrate_state_vode
 

@@ -116,13 +116,12 @@ contains
 
   end subroutine nyx_eos_soundspeed
 
-  subroutine nyx_eos_T_given_Re(T, Ne, R, e, comoving_a, pt_index)
+  subroutine nyx_eos_T_given_Re(T, Ne, R, e, comoving_a)
 
      ! In/out variables
      real(kind=dp_t),           intent(inout) :: T, Ne
      real(kind=dp_t),           intent(in   ) :: R, e
      real(kind=dp_t),           intent(in   ) :: comoving_a
-     integer        , optional, intent(in   ) :: pt_index(:)
 
      ! Local variables
      logical :: do_diag
@@ -165,7 +164,7 @@ contains
 
   end subroutine nyx_eos_T_given_Re
 
-  subroutine nyx_eos_S_given_Re(S, R, e, T, Ne, comoving_a, pt_index)
+  subroutine nyx_eos_S_given_Re(S, R, e, T, Ne, comoving_a)
 
      implicit none
 
@@ -173,7 +172,6 @@ contains
      real(kind=dp_t),           intent(  out) :: S
      real(kind=dp_t),           intent(in   ) :: R, e, T, Ne
      real(kind=dp_t),           intent(in   ) :: comoving_a
-     integer, optional,         intent(in   ) :: pt_index(:)
 
      ! Local variables
      logical :: do_diag
@@ -212,13 +210,12 @@ contains
 
   end subroutine nyx_eos_S_given_Re
 
-  subroutine nyx_eos_given_RT(e, P, R, T, Ne, comoving_a, pt_index)
+  subroutine nyx_eos_given_RT(e, P, R, T, Ne, comoving_a)
 
      ! In/out variables
      real(kind=dp_t),           intent(  out) :: e, P
      real(kind=dp_t),           intent(in   ) :: R, T, Ne
      real(kind=dp_t),           intent(in   ) :: comoving_a
-     integer,         optional, intent(in   ) :: pt_index(:)
 
 
      ! Local variables
@@ -270,8 +267,7 @@ contains
                  pres, eint, c_v, &
                  dPdT, dPdR, dEdT, &
                  entropy, &
-                 do_eos_diag, &
-                 pt_index)
+                 do_eos_diag)
 
     use bl_error_module
     use fundamental_constants_module, only: k_B, n_A, hbar
@@ -304,8 +300,6 @@ contains
     real(kind=dp_t) :: c_v
     real(kind=dp_t) :: dPdT, dPdR, dedT
     real(kind=dp_t) :: entropy
-
-    integer, optional, intent(in   ) :: pt_index(:)
 
     ! local variables
     real(kind=dp_t) :: ymass(nspec)    

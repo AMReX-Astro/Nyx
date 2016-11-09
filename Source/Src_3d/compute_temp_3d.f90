@@ -25,7 +25,6 @@
       double precision :: rhoInv,eint
       double precision :: ke,dummy_pres
       double precision :: z
-      integer          :: pt_index(3)
 
       z = 1.d0/comoving_a - 1.d0
 
@@ -57,10 +56,6 @@
                if (state(i,j,k,UEINT) > 0.d0) then
 
                    eint = state(i,j,k,UEINT) * rhoInv
-
-                   pt_index(1) = i
-                   pt_index(2) = j
-                   pt_index(3) = k
 
                    call nyx_eos_T_given_Re(diag_eos(i,j,k,TEMP_COMP), diag_eos(i,j,k,NE_COMP), &
                                            state(i,j,k,URHO), eint, comoving_a)

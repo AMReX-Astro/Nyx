@@ -34,15 +34,15 @@ namespace
     //
     // Array of containers for all active particles
     //
-    Array<ParticleContainerBase*> ActiveParticles;
+    Array<NyxParticleContainerBase*> ActiveParticles;
     //
     // Array of containers for all virtual particles
     //
-    Array<ParticleContainerBase*> VirtualParticles;
+    Array<NyxParticleContainerBase*> VirtualParticles;
     //
     // Array of containers for all ghost particles
     //
-    Array<ParticleContainerBase*> GhostParticles;
+    Array<NyxParticleContainerBase*> GhostParticles;
 
     //
     // Containers for the real "active" Particles
@@ -120,19 +120,19 @@ Real Nyx::neutrino_cfl = 0.5;
 
 IntVect Nyx::Nrep;
 
-Array<ParticleContainerBase*>&
+Array<NyxParticleContainerBase*>&
 Nyx::theActiveParticles ()
 {
     return ActiveParticles;
 }
 
-Array<ParticleContainerBase*>&
+Array<NyxParticleContainerBase*>&
 Nyx::theGhostParticles ()
 {
     return GhostParticles;
 }
 
-Array<ParticleContainerBase*>&
+Array<NyxParticleContainerBase*>&
 Nyx::theVirtualParticles ()
 {
     return VirtualParticles;
@@ -1003,3 +1003,5 @@ if(ParallelDescriptor::IOProcessor()) {
 }
 
 }
+
+//NyxParticleContainerBase::~NyxParticleContainerBase() {}

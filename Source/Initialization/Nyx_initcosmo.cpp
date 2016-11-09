@@ -97,7 +97,7 @@ void Nyx::icReadAndPrepareFab(std::string mfDirName, int nghost, MultiFab &mf)
 void Nyx::initcosmo()
 {
 
-//     if(parent->useFixedUpToLevel<level)
+//     if(parent->useFixedUpToLevel()<level)
 //       return;
     if (ParallelDescriptor::IOProcessor())
        std::cout << "Calling InitCosmo for level " << level << std::endl;
@@ -112,7 +112,7 @@ void Nyx::initcosmo()
     Real redshift=-1;
     Array<int> n_part(BL_SPACEDIM);
 
-    if (level > Amr::useFixedUpToLevel)
+    if (level > parent->useFixedUpToLevel())
     {
         std::cout << "You have more refinement than grids, there might be a problem with your refinement criterion..." << std::endl;
 
@@ -331,7 +331,7 @@ void Nyx::initcosmo()
 		                  particleMass, 
 				  part_dx, part_vx,
 				  myBaWhereNot,
-				  level);
+	                          level, parent->initialBaLevels()+1);
 //    Nyx::theDMPC()->InitCosmo(mf, vel_fac, n_part, particleMass);
     //Nyx::theDMPC()->InitCosmo(mf, vel_fac, n_part, particleMass, part_dx, part_vx);
 
