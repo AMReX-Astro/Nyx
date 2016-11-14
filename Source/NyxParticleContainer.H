@@ -24,7 +24,7 @@ public:
     virtual Real sumParticleMass (int level) const = 0;
     virtual void AssignDensitySingleLevel (MultiFab& mf, int level, int ncomp=1,
 					   int particle_lvl_offset = 0) const = 0;
-    virtual void AssignDensity (PArray<MultiFab>& mf, int lev_min = 0, int ncomp = 1,
+    virtual void AssignDensity (Array<std::unique_ptr<MultiFab> >& mf, int lev_min = 0, int ncomp = 1,
 				int finest_level = -1) const = 0;
 };
 
@@ -54,7 +54,7 @@ public:
     { 
 	AmrParticleContainer<NR,NI>::AssignDensitySingleLevel(0, mf, level, ncomp, particle_lvl_offset);
     }
-    virtual void AssignDensity (PArray<MultiFab>& mf, int lev_min = 0, int ncomp = 1, int finest_level = -1) const override
+    virtual void AssignDensity (Array<std::unique_ptr<MultiFab> >& mf, int lev_min = 0, int ncomp = 1, int finest_level = -1) const override
     {
 	AmrParticleContainer<NR,NI>::AssignDensity(0, sub_cycle, mf, lev_min, ncomp, finest_level);
     }
@@ -558,7 +558,7 @@ public:
                                  const Real particleMass, int disp_idx, int vel_idx, 
                                  BoxArray &baWhereNot, int lev, int nlevs);
 
-    void AssignDensityAndVels (PArray<MultiFab>& mf, int lev_min = 0) const;
+    void AssignDensityAndVels (Array<std::unique_ptr<MultiFab> >& mf, int lev_min = 0) const;
 
 };
 
@@ -582,11 +582,11 @@ public:
 
     void SetCSquared (Real csq) { m_csq = csq; }
 
-    void AssignDensity (PArray<MultiFab>& mf, int lev_min = 0, int ncomp = 1, int finest_level = -1) const;
+    void AssignDensity (Array<std::unique_ptr<MultiFab> >& mf, int lev_min = 0, int ncomp = 1, int finest_level = -1) const;
 
     void AssignRelativisticDensitySingleLevel (MultiFab& mf, int level, int ncomp=1, int particle_lvl_offset = 0) const;
     
-    void AssignRelativisticDensity (PArray<MultiFab>& mf, int lev_min = 0, int ncomp = 1, int finest_level = -1) const;
+    void AssignRelativisticDensity (Array<std::unique_ptr<MultiFab> >& mf, int lev_min = 0, int ncomp = 1, int finest_level = -1) const;
 
 };
 

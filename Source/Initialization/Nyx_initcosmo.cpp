@@ -384,10 +384,10 @@ void Nyx::initcosmo()
      	S_new.mult(rhoB,  Density, 1, S_new.nGrow());
 
 //      //This block assigns "the same" density for the baryons as for the dm.
-//      PArray<MultiFab> particle_mf;
+//      Array<std::unique_ptr<MultiFab> > particle_mf;
 //      Nyx::theDMPC()->AssignDensity(particle_mf);
-//      particle_mf[0].mult(realOmB / comoving_OmD);
-//      S_new.copy(particle_mf[0], 0, Density, 1);
+//      particle_mf[0]->mult(realOmB / comoving_OmD);
+//      S_new.copy(*particle_mf[0], 0, Density, 1);
 
      	//copy velocities...
      	S_new.copy(mf, baryon_vx, Xmom, 3);

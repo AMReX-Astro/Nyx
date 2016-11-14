@@ -237,10 +237,10 @@ Nyx::init_particles()
 	     	S_new.mult(rhoB,  Density, 1, S_new.nGrow());
 
 //		//This block assigns "the same" density for the baryons as for the dm.
-//              PArray<MultiFab> particle_mf;
+//              Array<std::unique_ptr<MultiFab> > particle_mf;
 //              DMPC->AssignDensity(particle_mf);
-//              particle_mf[0].mult(realOmB / comoving_OmD);
-//              S_new.copy(particle_mf[0], 0, Density, 1);
+//              particle_mf[0]->mult(realOmB / comoving_OmD);
+//              S_new.copy(*particle_mf[0], 0, Density, 1);
 
 	     	//copy velocities...
 	     	S_new.copy(mf, 0, Xmom, 3);
@@ -306,23 +306,23 @@ Nyx::init_santa_barbara()
     if (level == 0 && frac_for_hydro != 1.0)
         DMPC->MultiplyParticleMass(level, omfrac);
 
-    PArray<MultiFab> particle_mf;
+    Array<std::unique_ptr<MultiFab> > particle_mf;
     DMPC->AssignDensity(particle_mf);
     for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
     {
         const IntVect ratio = parent->refRatio(lev);
-        Gravity::average_down(particle_mf[lev], particle_mf[lev+1], ratio);
+        Gravity::average_down(*particle_mf[lev], *particle_mf[lev+1], ratio);
     }
 
     if (frac_for_hydro == 1.0)
     {
        for (int lev = 0; lev <= level; lev++)
-          particle_mf[lev].mult(0.0);
+          particle_mf[lev]->mult(0.0);
     }
     else
     {
        for (int lev = 0; lev <= level; lev++)
-          particle_mf[lev].mult(frac_for_hydro / omfrac);
+          particle_mf[lev]->mult(frac_for_hydro / omfrac);
     }
 
     int ns = NUM_STATE;
@@ -356,7 +356,7 @@ Nyx::init_santa_barbara()
                  gridloc.lo(), gridloc.hi());
         }
 
-        MultiFab::Add(S_new, particle_mf[lev], 0, Density, 1, S_new.nGrow());
+        MultiFab::Add(S_new, *particle_mf[lev], 0, Density, 1, S_new.nGrow());
 
         // Make sure we've finished initializing the density before calling this.
         for (MFIter mfi(S_new); mfi.isValid(); ++mfi)
@@ -596,16 +596,16 @@ Nyx::particle_derive(const std::string& name, Real time, int ngrow)
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
         // coarse-fine distribution of particles correct.
-        PArray<MultiFab> particle_mf;
+        Array<std::unique_ptr<MultiFab> > particle_mf;
         DMPC->AssignDensity(particle_mf);
 
         for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
         {
             const IntVect ratio = parent->refRatio(lev);
-            Gravity::average_down(particle_mf[lev], particle_mf[lev+1], ratio);
+            Gravity::average_down(*particle_mf[lev], *particle_mf[lev+1], ratio);
         }
 
-        MultiFab::Copy(*derive_dat, particle_mf[level], 0, 0, 1, 0);
+        MultiFab::Copy(*derive_dat, *particle_mf[level], 0, 0, 1, 0);
 
         return derive_dat;
     }
@@ -621,16 +621,16 @@ Nyx::particle_derive(const std::string& name, Real time, int ngrow)
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
         // coarse-fine distribution of particles correct.
-        PArray<MultiFab> particle_mf;
+        Array<std::unique_ptr<MultiFab> > particle_mf;
         DMPC->AssignDensity(particle_mf);
 
         for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
         {
             const IntVect ratio = parent->refRatio(lev);
-            Gravity::average_down(particle_mf[lev], particle_mf[lev+1], ratio);
+            Gravity::average_down(*particle_mf[lev], *particle_mf[lev+1], ratio);
         }
 
-        MultiFab::Copy(*derive_dat, particle_mf[level], 0, 0, 1, 0);
+        MultiFab::Copy(*derive_dat, *particle_mf[level], 0, 0, 1, 0);
 
         MultiFab* gas_density = derive("density",time,0);
 

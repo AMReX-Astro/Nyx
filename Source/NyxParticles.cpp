@@ -595,7 +595,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
             DMPC->MultiplyParticleMass(level, omfrac);
 	}
 
-        PArray<MultiFab> particle_mf;
+        Array<std::unique_ptr<MultiFab> > particle_mf;
         if (init_sb_vels == 1)
         {
             if (init_with_sph_particles == 1) {
@@ -620,7 +620,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
 
         for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
         {
-            BoxLib::average_down(particle_mf[lev+1], particle_mf[lev],
+            BoxLib::average_down(*particle_mf[lev+1], *particle_mf[lev],
                                  parent->Geom(lev+1), parent->Geom(lev), 0, 1,
                                  parent->refRatio(lev));
         }
@@ -630,11 +630,11 @@ Nyx::init_santa_barbara (int init_sb_vels)
         {
             if (frac_for_hydro == 1.0)
             {
-                particle_mf[level].mult(0,0,1);
+                particle_mf[level]->mult(0,0,1);
             }
             else
             {
-                particle_mf[level].mult(frac_for_hydro / omfrac,0,1);
+                particle_mf[level]->mult(frac_for_hydro / omfrac,0,1);
             }
         }
 
@@ -666,17 +666,17 @@ Nyx::init_santa_barbara (int init_sb_vels)
         }
 
         // Add the particle density to the gas density 
-        MultiFab::Add(S_new, particle_mf[level], 0, Density, 1, S_new.nGrow());
+        MultiFab::Add(S_new, *particle_mf[level], 0, Density, 1, S_new.nGrow());
 
         if (init_sb_vels == 1)
         {
             // Convert velocity to momentum
             for (int i = 0; i < BL_SPACEDIM; ++i) {
-               MultiFab::Multiply(particle_mf[level], particle_mf[level], 0, 1+i, 1, 0);
+               MultiFab::Multiply(*particle_mf[level], *particle_mf[level], 0, 1+i, 1, 0);
 	    }
 
             // Add the particle momenta to the gas momenta (initially zero)
-            MultiFab::Add(S_new, particle_mf[level], 1, Xmom, BL_SPACEDIM, S_new.nGrow());
+            MultiFab::Add(S_new, *particle_mf[level], 1, Xmom, BL_SPACEDIM, S_new.nGrow());
         }
 
     } else {
@@ -848,7 +848,7 @@ Nyx::particle_redistribute (int lbase, bool init)
 
         int flev = parent->finestLevel();
 	
-        while ( ! parent->getAmrLevels().defined(flev)) {
+        while ( parent->getAmrLevels()[flev] == nullptr ) {
             flev--;
 	}
  

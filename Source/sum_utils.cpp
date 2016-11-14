@@ -18,7 +18,7 @@ Nyx::vol_weight_sum (const std::string& name,
     if (masked)
     {
         int flev = parent->finestLevel();
-        while (!parent->getAmrLevels().defined(flev))
+        while (parent->getAmrLevels()[flev] == nullptr)
             flev--;
 
         if (level < flev)
@@ -67,7 +67,7 @@ Nyx::vol_weight_sum (MultiFab& mf, bool masked)
     if (masked)
     {
         int flev = parent->finestLevel();
-        while (!parent->getAmrLevels().defined(flev)) flev--;
+        while (parent->getAmrLevels()[flev] == nullptr) flev--;
 
         if (level < flev)
         {
@@ -160,7 +160,7 @@ Nyx::vol_weight_squared_sum (const std::string& name,
     BL_ASSERT(mf != 0);
 
     int flev = parent->finestLevel();
-    while (!parent->getAmrLevels().defined(flev)) flev--;
+    while (parent->getAmrLevels()[flev] == nullptr) flev--;
 
     MultiFab* mask = 0;
     if (level < flev)

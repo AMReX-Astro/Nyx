@@ -1128,16 +1128,16 @@ Nyx::post_timestep (int iteration)
             gravity->reflux_phi(level, dphi);
 
             // Compute (cross-level) gravity sync based on drho, dphi
-            PArray<MultiFab> grad_delta_phi_cc(finest_level - level + 1,
-                                               PArrayManage);
+            Array<std::unique_ptr<MultiFab> > grad_delta_phi_cc(finest_level - level + 1);
             for (int lev = level; lev <= finest_level; lev++)
             {
-                grad_delta_phi_cc.set(lev - level,
+                grad_delta_phi_cc[lev-level].reset(
                                       new MultiFab(get_level(lev).boxArray(),BL_SPACEDIM, 0));
-                grad_delta_phi_cc[lev-level].setVal(0);
+                grad_delta_phi_cc[lev-level]->setVal(0);
             }
 
-            gravity->gravity_sync(level,finest_level,iteration,ncycle,drho_and_drhoU,dphi,grad_delta_phi_cc);
+            gravity->gravity_sync(level,finest_level,iteration,ncycle,drho_and_drhoU,dphi,
+				  BoxLib::GetArrOfPtrs(grad_delta_phi_cc));
             dphi.clear();
 
             for (int lev = level; lev <= finest_level; lev++)
@@ -1176,7 +1176,7 @@ Nyx::post_timestep (int iteration)
                     int i = mfi.index();
                     BL_FORT_PROC_CALL(FORT_SYNCGSRC,fort_syncgsrc)
                         (bx.loVect(), bx.hiVect(), BL_TO_FORTRAN(grad_phi_cc[i]),
-                         BL_TO_FORTRAN(grad_delta_phi_cc[lev-level][i]),
+                         BL_TO_FORTRAN((*grad_delta_phi_cc[lev-level])[i]),
                          BL_TO_FORTRAN(S_new_lev[i]), BL_TO_FORTRAN(dstate),
                          BL_TO_FORTRAN(sync_src), &a_new, dt_lev);
 

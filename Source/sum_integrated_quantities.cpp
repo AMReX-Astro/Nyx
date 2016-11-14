@@ -179,7 +179,7 @@ Nyx::compute_average_density ()
     // Define the dark matter density on all levels.
     if (Nyx::theDMPC())
     {
-        PArray<MultiFab> particle_mf;
+        Array<std::unique_ptr<MultiFab> > particle_mf;
         Nyx::theDMPC()->AssignDensity(particle_mf);
 
         // Note that we don't need to call the average_down routine because the 
@@ -190,13 +190,13 @@ Nyx::compute_average_density ()
         for (int lev = 0; lev <= finest_level; lev++)
         {
             Nyx& nyx_lev = get_level(lev);
-            average_dm_density += nyx_lev.vol_weight_sum(particle_mf[lev],true);
+            average_dm_density += nyx_lev.vol_weight_sum(*particle_mf[lev],true);
         }
     }
 #ifdef NEUTRINO_PARTICLES
     if (Nyx::theNPC())
     {
-        PArray<MultiFab> particle_mf;
+        Array<std::unique_ptr<MultiFab> > particle_mf;
         Nyx::theNPC()->AssignDensity(particle_mf);
 
         // Note that we don't need to call the average_down routine because the 
@@ -206,7 +206,7 @@ Nyx::compute_average_density ()
         for (int lev = 0; lev <= finest_level; lev++)
         {
             Nyx& nyx_lev = get_level(lev);
-            average_neutr_density += nyx_lev.vol_weight_sum(particle_mf[lev],true);
+            average_neutr_density += nyx_lev.vol_weight_sum(*particle_mf[lev],true);
         }
     }
 #endif

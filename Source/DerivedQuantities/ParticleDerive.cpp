@@ -92,17 +92,17 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
         // coarse-fine distribution of particles correct.
-        PArray<MultiFab> particle_mf;
+        Array<std::unique_ptr<MultiFab> > particle_mf;
         Nyx::theDMPC()->AssignDensity(particle_mf);
 
         for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
         {
-            BoxLib::average_down(particle_mf[lev+1], particle_mf[lev], 
+            BoxLib::average_down(*particle_mf[lev+1], *particle_mf[lev], 
                                  parent->Geom(lev+1), parent->Geom(lev), 0, 1, 
                                  parent->refRatio(lev));
         }
 
-        MultiFab::Copy(*derive_dat, particle_mf[level], 0, 0, 1, 0);
+        MultiFab::Copy(*derive_dat, *particle_mf[level], 0, 0, 1, 0);
 
         return derive_dat;
     }
@@ -113,17 +113,17 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
         // coarse-fine distribution of particles correct.
-        PArray<MultiFab> particle_mf;
+        Array<std::unique_ptr<MultiFab> > particle_mf;
         Nyx::theAPC()->AssignDensity(particle_mf);
 
         for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
         {
-            BoxLib::average_down(particle_mf[lev+1], particle_mf[lev], 
+            BoxLib::average_down(*particle_mf[lev+1], *particle_mf[lev], 
                                  parent->Geom(lev+1), parent->Geom(lev), 0, 1, 
                                  parent->refRatio(lev));
         }
 
-        MultiFab::Copy(*derive_dat, particle_mf[level], 0, 0, 1, 0);
+        MultiFab::Copy(*derive_dat, *particle_mf[level], 0, 0, 1, 0);
 
         return derive_dat;
     }
@@ -134,17 +134,17 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
         // coarse-fine distribution of particles correct.
-        PArray<MultiFab> particle_mf;
+        Array<std::unique_ptr<MultiFab> > particle_mf;
         Nyx::theNPC()->AssignDensity(particle_mf);
 
         for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
         {
-            BoxLib::average_down(particle_mf[lev+1], particle_mf[lev], 
+            BoxLib::average_down(*particle_mf[lev+1], *particle_mf[lev], 
                                  parent->Geom(lev+1), parent->Geom(lev), 0, 1, 
                                  parent->refRatio(lev));
         }
 
-        MultiFab::Copy(*derive_dat, particle_mf[level], 0, 0, 1, 0);
+        MultiFab::Copy(*derive_dat, *particle_mf[level], 0, 0, 1, 0);
 
         return derive_dat;
     }
@@ -159,17 +159,17 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
         // coarse-fine distribution of particles correct.
-        PArray<MultiFab> particle_mf;
+        Array<std::unique_ptr<MultiFab> > particle_mf;
         Nyx::theDMPC()->AssignDensity(particle_mf);
        
         for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
         {
-            BoxLib::average_down(particle_mf[lev+1], particle_mf[lev], 
+            BoxLib::average_down(*particle_mf[lev+1], *particle_mf[lev], 
                                  parent->Geom(lev+1), parent->Geom(lev), 0, 1, 
                                  parent->refRatio(lev));
         }
 
-        MultiFab::Copy(*derive_dat, particle_mf[level], 0, 0, 1, 0);
+        MultiFab::Copy(*derive_dat, *particle_mf[level], 0, 0, 1, 0);
 
 #ifndef NO_HYDRO
         MultiFab* gas_density = derive("density",time,0);
