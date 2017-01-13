@@ -1,6 +1,6 @@
 #ifndef _Gravity_F_H_
 #define _Gravity_F_H_
-#include <BLFort.H>
+#include <AMReX_BLFort.H>
 
 BL_FORT_PROC_DECL(FORT_AVGDOWN_PHI, fort_avgdown_phi)
     (BL_FORT_FAB_ARG(crse_fab),

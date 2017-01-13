@@ -1,17 +1,17 @@
 #include <cmath>
 
-#include <ParmParse.H>
+#include <AMReX_ParmParse.H>
 #include "Gravity.H"
 #include "Nyx.H"
 #include <Gravity_F.H>
 #include <Nyx_F.H>
 
-#include <MultiGrid.H>
-#include <Laplacian.H>
-#include <MacBndry.H>
-#include <LO_BCTYPES.H>
-#include <MGT_Solver.H>
-#include <stencil_types.H>
+#include <AMReX_MultiGrid.H>
+#include <AMReX_Laplacian.H>
+#include <AMReX_MacBndry.H>
+#include <AMReX_LO_BCTYPES.H>
+#include <AMReX_MGT_Solver.H>
+#include <AMReX_stencil_types.H>
 #include <mg_cpp_f.h>
 
 #ifdef USEHPGMG

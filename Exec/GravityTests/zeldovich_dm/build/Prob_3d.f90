@@ -118,7 +118,7 @@ subroutine ca_hypfill(adv, adv_l1, adv_l2, adv_l3, adv_h1, adv_h2, adv_h3, &
     use meth_params_module
 
     implicit none
-    include 'bc_types.fi'  ! not sure what this does
+    include 'AMReX_bc_types.fi'  ! not sure what this does
     integer adv_l1, adv_l2, adv_l3, adv_h1, adv_h2, adv_h3
     integer bc(3,2,*)
     integer domlo(3), domhi(3)
@@ -141,7 +141,7 @@ subroutine ca_denfill(adv, adv_l1, adv_l2, adv_l3, adv_h1, adv_h2, adv_h3, &
                       domlo, domhi, delta, xlo, time, bc)
 
     implicit none
-    include 'bc_types.fi'
+    include 'AMReX_bc_types.fi'
     integer adv_l1, adv_l2, adv_l3, adv_h1, adv_h2, adv_h3
     integer bc(3,2,*)
     integer domlo(3), domhi(3)
@@ -159,7 +159,7 @@ subroutine ca_xmomfill(adv, adv_l1, adv_l2, adv_l3, adv_h1, adv_h2, adv_h3, &
                        domlo, domhi, delta, xlo, time, bc)
 
     implicit none
-    include 'bc_types.fi'
+    include 'AMReX_bc_types.fi'
     integer adv_l1, adv_l2, adv_l3, adv_h1, adv_h2, adv_h3
     integer bc(3,2,*)
     integer domlo(3), domhi(3)
@@ -177,7 +177,7 @@ subroutine ca_ymomfill(adv, adv_l1, adv_l2, adv_l3, adv_h1, adv_h2, adv_h3, &
                        domlo, domhi, delta, xlo, time, bc)
 
     implicit none
-    include 'bc_types.fi'
+    include 'AMReX_bc_types.fi'
     integer adv_l1, adv_l2, adv_l3, adv_h1, adv_h2, adv_h3
     integer bc(3,2,*)
     integer domlo(3), domhi(3)
@@ -195,7 +195,7 @@ subroutine ca_zmomfill(adv, adv_l1, adv_l2, adv_l3, adv_h1, adv_h2, adv_h3, &
                        domlo, domhi, delta, xlo, time, bc)
 
     implicit none
-    include 'bc_types.fi'
+    include 'AMReX_bc_types.fi'
     integer adv_l1, adv_l2, adv_l3, adv_h1, adv_h2, adv_h3
     integer bc(3,2,*)
     integer domlo(3), domhi(3)
@@ -214,7 +214,7 @@ subroutine ca_gravxfill(grav, grav_l1, grav_l2, grav_l3, grav_h1, grav_h2, &
 
     use probdata_module
     implicit none
-    include 'bc_types.fi'
+    include 'AMReX_bc_types.fi'
 
     integer :: grav_l1, grav_l2, grav_l3, grav_h1, grav_h2, grav_h3
     integer :: bc(3,2,*)
@@ -235,7 +235,7 @@ subroutine ca_gravyfill(grav, grav_l1, grav_l2, grav_l3, grav_h1, grav_h2, &
 
     use probdata_module
     implicit none
-    include 'bc_types.fi'
+    include 'AMReX_bc_types.fi'
 
     integer :: grav_l1, grav_l2, grav_l3, grav_h1, grav_h2, grav_h3
     integer :: bc(3,2,*)
@@ -255,7 +255,7 @@ subroutine ca_gravzfill(grav, grav_l1, grav_l2, grav_l3, grav_h1, grav_h2, &
 
     use probdata_module
     implicit none
-    include 'bc_types.fi'
+    include 'AMReX_bc_types.fi'
 
     integer :: grav_l1, grav_l2, grav_l3, grav_h1, grav_h2, grav_h3
     integer :: bc(3,2,*)

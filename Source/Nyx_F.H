@@ -1,6 +1,6 @@
 #ifndef _Nyx_F_H_
 #define _Nyx_F_H_
-#include <BLFort.H>
+#include <AMReX_BLFort.H>
 
 BL_FORT_PROC_DECL(FILCC, filcc)
     (const Real * q, ARLIM_P(q_lo), ARLIM_P(q_hi),

@@ -1,6 +1,6 @@
 #ifndef _Nyx_error_F_H_
 #define _Nyx_error_F_H_
-#include <BLFort.H>
+#include <AMReX_BLFort.H>
 
 BL_FORT_PROC_DECL(TAG_LAPLAC_ERROR, tag_laplac_error)
     (int* tag, ARLIM_P(tag_lo), ARLIM_P(tag_hi),

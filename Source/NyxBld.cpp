@@ -1,5 +1,5 @@
 
-#include "LevelBld.H"
+#include "AMReX_LevelBld.H"
 #include "Nyx.H"
 
 class NyxBld

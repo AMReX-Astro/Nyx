@@ -1,10 +1,10 @@
 #ifndef _Gravity_H_
 #define _Gravity_H_
 
-#include <AmrLevel.H>
-#include <MacBndry.H>
-#include <FluxRegister.H>
-#include <Particles.H>
+#include <AMReX_AmrLevel.H>
+#include <AMReX_MacBndry.H>
+#include <AMReX_FluxRegister.H>
+#include <AMReX_Particles.H>
 
 class Gravity {
 

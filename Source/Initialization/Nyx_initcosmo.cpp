@@ -8,7 +8,7 @@ BL_FORT_PROC_DECL(GET_GRAV_CONST, get_grav_const)(Real* Gconst);
 #include <Nyx.H>
 #include <Nyx_F.H>
 #include <NyxParticleContainer.H>
-#include <Particles_F.H>
+#include <AMReX_Particles_F.H>
 
 #ifdef GRAVITY
 void Nyx::icReadAndPrepareFab(std::string mfDirName, int nghost, MultiFab &mf)

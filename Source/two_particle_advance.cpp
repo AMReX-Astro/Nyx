@@ -1,10 +1,10 @@
 #ifdef  GRAVITY
-#include <winstd.H>
+#include <AMReX_winstd.H>
 
 #include "Nyx.H"
 #include "Nyx_F.H"
 #include "Gravity.H"
-#include <Particles_F.H>
+#include <AMReX_Particles_F.H>
 
 BL_FORT_PROC_DECL(GET_GRAV_CONST, get_grav_const)(Real* Gconst);
 

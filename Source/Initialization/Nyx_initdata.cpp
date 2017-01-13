@@ -1,7 +1,7 @@
 #include <iomanip>
 #include <Nyx.H>
 #include <Nyx_F.H>
-#include <Particles_F.H>
+#include <AMReX_Particles_F.H>
 
 #ifdef GRAVITY
 #include <Gravity.H>

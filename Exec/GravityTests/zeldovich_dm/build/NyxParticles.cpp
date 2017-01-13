@@ -7,7 +7,7 @@
 #endif
 
 #include "Nyx_F.H"
-#include <Particles_F.H>
+#include <AMReX_Particles_F.H>
 
 static std::string ascii_particle_file;
 

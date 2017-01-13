@@ -1,7 +1,7 @@
 //
 // This is the version that reads input from PlotFiles.
 //
-#include <winstd.H>
+#include <AMReX_winstd.H>
 #include <iomanip>
 #include <iostream>
 #include <fstream>
@@ -18,8 +18,8 @@
 
 #include "Nyx.H"
 #include "Nyx_F.H"
-#include "DataServices.H"
-#include "Utility.H"
+#include "AMReX_DataServices.H"
+#include "AMReX_Utility.H"
 
 void
 Nyx::ReadPlotFile (bool               first,

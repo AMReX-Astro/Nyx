@@ -1,6 +1,6 @@
-#include <winstd.H>
+#include <AMReX_winstd.H>
 
-#include "LevelBld.H"
+#include "AMReX_LevelBld.H"
 
 #include "Nyx.H"
 #include "Nyx_F.H"
