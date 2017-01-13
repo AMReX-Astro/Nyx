@@ -6,7 +6,6 @@ TOP = ../../..
 
 # compilation options
 COMP    = gcc
-FCOMP   = gfortran
 
 USE_MPI = FALSE
 USE_OMP = FALSE

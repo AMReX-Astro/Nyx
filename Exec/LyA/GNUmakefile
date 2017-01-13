@@ -10,7 +10,6 @@ TOP = ../..
 
 # compilation options
 COMP    = gcc
-FCOMP   = gfortran
 USE_MPI = TRUE
 USE_OMP = FALSE
 

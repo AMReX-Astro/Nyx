@@ -13,7 +13,6 @@ REEBER_HOME ?= /project/projectdirs/nyx/ghweber/reeber2
 
 # compilation options
 COMP    = gcc
-FCOMP   = gfortran
 
 USE_MPI = TRUE
 USE_OMP = FALSE

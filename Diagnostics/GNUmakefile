@@ -8,7 +8,6 @@ EBASE     = AmrDerive
 
 # compilation options
 COMP    = gcc
-FCOMP   = gfortran
 
 USE_MPI = TRUE
 USE_OMP = FALSE
@@ -21,7 +20,7 @@ DIM      = 3
 
 DEFINES += -DBL_NOLINEVALUES
 
-include $(AMREX_HOME)/Tools/C_mk/Make.defs
+include $(AMREX_HOME)/Tools/GNUMake/Make.defs
 
 Bpack := ./Make.package
 Blocs := .
@@ -30,7 +29,7 @@ include $(Bpack)
 INCLUDE_LOCATIONS += $(Blocs)
 VPATH_LOCATIONS   += $(Blocs)
 
-Pdirs   := C_BaseLib Extern/amrdata
+Pdirs   := Base Extern/amrdata
 Ppack   += $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir)/Make.package)
 Plocs   += $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir))
 
@@ -50,4 +49,4 @@ vpath %.fi  . $(VPATH_LOCATIONS)
 all: $(executable) 
 	@echo SUCCESS
 
-include $(AMREX_HOME)/Tools/C_mk/Make.rules
+include $(AMREX_HOME)/Tools/GNUMake/Make.rules

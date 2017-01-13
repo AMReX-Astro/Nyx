@@ -2,7 +2,7 @@ EBASE     = Nyx
 
 USE_PARTICLES = TRUE
 
-include $(AMREX_HOME)/Tools/C_mk/Make.defs
+include $(AMREX_HOME)/Tools/GNUMake/Make.defs
 
 NYX           = TRUE
 
@@ -100,7 +100,7 @@ VPATH_LOCATIONS   += $(Blocs)
 
 #These are the directories in BoxLib
 
-Pdirs   := C_BaseLib C_AmrCoreLib C_AMRLib C_BoundaryLib C_ParticleLib Extern/amrdata
+Pdirs   := Base AmrCore Amr Boundary Particle Extern/amrdata
 Ppack	+= $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir)/Make.package)
 Plocs	+= $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir))
 
@@ -171,7 +171,7 @@ vpath %.f90 . $(VPATH_LOCATIONS)
 vpath %.f   . $(VPATH_LOCATIONS)
 vpath %.fi  . $(VPATH_LOCATIONS)
 
-include $(AMREX_HOME)/Tools/C_mk/Make.rules
+include $(AMREX_HOME)/Tools/GNUMake/Make.rules
 
 clean::
 	$(SILENT) $(RM) buildInfo.cpp

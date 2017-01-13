@@ -12,7 +12,6 @@ REEBER_HOME ?= $(HOME)/devel/Reeber/dev
 
 # compilation options
 COMP    = gcc
-FCOMP   = gfortran
 USE_OMP = FALSE
 USE_MPI = TRUE
 
