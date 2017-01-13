@@ -40,8 +40,9 @@ DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
     for (MFIter mfi(mf); mfi.isValid(); ++mfi)
     {
         FArrayBox&  myFab  = mf[mfi];
-        const int  *fab_lo = mfi.validbox().loVect();
-        const int  *fab_hi = mfi.validbox().hiVect();
+	const Box&  vbx    = mfi.validbox();
+        const int  *fab_lo = vbx.loVect();
+        const int  *fab_hi = vbx.hiVect();
 
         for (int kx = fab_lo[2]; kx <= fab_hi[2]; kx++)
         {
@@ -166,8 +167,9 @@ DarkMatterParticleContainer::InitCosmo1ppc(MultiFab& mf, const Real vel_fac[], c
     for (MFIter mfi(mf); mfi.isValid(); ++mfi)
     {
         FArrayBox&  myFab  = mf[mfi];
-        const int  *fab_lo = mfi.validbox().loVect();
-        const int  *fab_hi = mfi.validbox().hiVect();
+	const Box&  vbx    = mfi.validbox();
+        const int  *fab_lo = vbx.loVect();
+        const int  *fab_hi = vbx.hiVect();
 
         for (int kx = fab_lo[2]; kx <= fab_hi[2]; kx++)
         {
@@ -253,15 +255,16 @@ DarkMatterParticleContainer::InitCosmo(
     //
     for (MFIter mfi(mf); mfi.isValid(); ++mfi)
     {
-        const int  *fab_lo = mfi.validbox().loVect();
-        const int  *fab_hi = mfi.validbox().hiVect();
-        if (mfi.validbox().isEmpty())
+	const Box&  vbx    = mfi.validbox();
+        const int  *fab_lo = vbx.loVect();
+        const int  *fab_hi = vbx.hiVect();
+        if (vbx.isEmpty())
         {
            std::cout << "...bad grid lo " << fab_lo[0] << " " << fab_lo[1] << " " << fab_lo[2] << '\n';
            std::cout << "...bad grid hi " << fab_hi[0] << " " << fab_hi[1] << " " << fab_hi[2] << '\n';
            BoxLib::Error("Empty box in InitCosmo ");
         }
-        if (!geom.Domain().contains(mfi.validbox()))
+        if (!geom.Domain().contains(vbx))
         {
            std::cout << "...bad grid lo " << fab_lo[0] << " " << fab_lo[1] << " " << fab_lo[2] << '\n';
            std::cout << "...bad grid hi " << fab_hi[0] << " " << fab_hi[1] << " " << fab_hi[2] << '\n';

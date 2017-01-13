@@ -1217,7 +1217,15 @@ Gravity::actual_multilevel_solve (int                       level,
     //
     if (solve_with_cpp && (level == finest_level))
     {
-        solve_with_Cpp(level, *phi_p[0], grad_phi[0], *Rhs_p[0], tol, abs_tol);
+        // We can only use the C++ solvers for a single level solve, but it's ok if level > 0
+        solve_with_Cpp(level, *(phi_p[0]), grad_phi[0], *(Rhs_p[0]), tol, abs_tol);
+    }
+    else if ( solve_with_hpgmg && (level == finest_level) && (level == 0) )
+    {
+#ifdef USEHPGMG
+        // Right now we can only use HPGMG for a single level = 0 solve
+        solve_with_HPGMG(level, *(phi_p[0]), grad_phi[0], *(Rhs_p[0]), tol, abs_tol);
+#endif
     }
     else
     {
