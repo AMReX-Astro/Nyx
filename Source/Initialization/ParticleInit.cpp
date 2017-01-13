@@ -1,5 +1,7 @@
 #include "NyxParticleContainer.H"
 
+using namespace amrex;
+
 void
 DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
                         MultiFab& mf, const Real disp_fac[], const Real vel_fac[], 
@@ -93,7 +95,7 @@ DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
       		        ParticleBase::PeriodicShift(p,m_gdb);
 
                         if (!ParticleBase::Where(p,m_gdb))
-                            BoxLib::Abort("ParticleContainer<N>::InitCosmo1ppcMultiLevel():invalid particle");
+                            amrex::Abort("ParticleContainer<N>::InitCosmo1ppcMultiLevel():invalid particle");
                     }
 
 		    BL_ASSERT(p.m_lev >= 0 && p.m_lev <= m_gdb->finestLevel());
@@ -120,7 +122,7 @@ DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
 			    ParticleBase::PeriodicShift(newp[i],m_gdb);
     
 			    if (!ParticleBase::Where(newp[i],m_gdb))
-                                BoxLib::Abort("ParticleContainer<N>::InitCosmo1ppcMultiLevel():invalid particle");
+                                amrex::Abort("ParticleContainer<N>::InitCosmo1ppcMultiLevel():invalid particle");
 			}
 			m_particles[newp[i].m_lev][newp[i].m_grid].push_back(newp[i]);
 		      }
@@ -206,7 +208,7 @@ DarkMatterParticleContainer::InitCosmo1ppc(MultiFab& mf, const Real vel_fac[], c
       		        ParticleBase::PeriodicShift(p,m_gdb);
 
                         if (!ParticleBase::Where(p,m_gdb))
-                            BoxLib::Abort("ParticleContainer<N>::InitCosmo1ppc(): invalid particle");
+                            amrex::Abort("ParticleContainer<N>::InitCosmo1ppc(): invalid particle");
 		    }
 
 	            BL_ASSERT(p.m_lev >= 0 && p.m_lev <= m_gdb->finestLevel());
@@ -262,20 +264,20 @@ DarkMatterParticleContainer::InitCosmo(
         {
            std::cout << "...bad grid lo " << fab_lo[0] << " " << fab_lo[1] << " " << fab_lo[2] << '\n';
            std::cout << "...bad grid hi " << fab_hi[0] << " " << fab_hi[1] << " " << fab_hi[2] << '\n';
-           BoxLib::Error("Empty box in InitCosmo ");
+           amrex::Error("Empty box in InitCosmo ");
         }
         if (!geom.Domain().contains(vbx))
         {
            std::cout << "...bad grid lo " << fab_lo[0] << " " << fab_lo[1] << " " << fab_lo[2] << '\n';
            std::cout << "...bad grid hi " << fab_hi[0] << " " << fab_hi[1] << " " << fab_hi[2] << '\n';
-           BoxLib::Error("Box in InitCosmo not contained in domain");
+           amrex::Error("Box in InitCosmo not contained in domain");
         }
     }
     //
     // We will need one ghost cell, so check wether we have one.
     //
     if (mf.nGrow() < 1)
-        BoxLib::Abort("ParticleContainer<N>::InitCosmo: mf needs at least one correctly filled ghost zone!");
+        amrex::Abort("ParticleContainer<N>::InitCosmo: mf needs at least one correctly filled ghost zone!");
 
     if ( !(n_part[0] == n_part[1] && n_part[1] == n_part[2]) )
     {
@@ -339,7 +341,7 @@ DarkMatterParticleContainer::InitCosmo(
       		            ParticleBase::PeriodicShift(p,m_gdb);
 
                             if (!ParticleBase::Where(p,m_gdb))
-                                BoxLib::Abort("ParticleContainer<N>::InitCosmo(): invalid particle");
+                                amrex::Abort("ParticleContainer<N>::InitCosmo(): invalid particle");
 		        }
 
 	                BL_ASSERT(p.m_lev >= 0 && p.m_lev <= m_gdb->finestLevel());
@@ -415,7 +417,7 @@ DarkMatterParticleContainer::InitCosmo(
 	        ParticleBase::PeriodicShift(p,m_gdb);
 
                 if (!ParticleBase::Where(p,m_gdb))
-                    BoxLib::Abort("ParticleContainer<N>::InitCosmo(): invalid particle");
+                    amrex::Abort("ParticleContainer<N>::InitCosmo(): invalid particle");
 	    }
 
             ParticleBase::Reset(p,m_gdb,true);

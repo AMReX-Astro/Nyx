@@ -10,13 +10,15 @@ BL_FORT_PROC_DECL(GET_GRAV_CONST, get_grav_const)(Real* Gconst);
 #include <NyxParticleContainer.H>
 #include <AMReX_Particles_F.H>
 
+using namespace amrex;
+
 #ifdef GRAVITY
 void Nyx::icReadAndPrepareFab(std::string mfDirName, int nghost, MultiFab &mf)
 {
     if (level > 0 && nghost > 0)
     {
        std::cout << "Are sure you want to do what you are doing?" << std::endl;
-       BoxLib::Abort();
+       amrex::Abort();
     }
 
     //
@@ -26,7 +28,7 @@ void Nyx::icReadAndPrepareFab(std::string mfDirName, int nghost, MultiFab &mf)
 
     if (!mfDirName.empty() && mfDirName[mfDirName.length()-1] != '/')
        mfDirName += '/';
-    std::string Level = BoxLib::Concatenate("Level_", level, 1);
+    std::string Level = amrex::Concatenate("Level_", level, 1);
     mfDirName.append(Level);
     mfDirName.append("/Cell");
 
@@ -42,7 +44,7 @@ void Nyx::icReadAndPrepareFab(std::string mfDirName, int nghost, MultiFab &mf)
             if (mf_read.contains_nan(i, 1))
             {
                 std::cout << "Found NaNs in read_mf in component " << i << ". " << std::endl;
-                BoxLib::Abort("Nyx::init_particles: Your initial conditions contain NaNs!");
+                amrex::Abort("Nyx::init_particles: Your initial conditions contain NaNs!");
             }
         }
     }
@@ -70,7 +72,7 @@ void Nyx::icReadAndPrepareFab(std::string mfDirName, int nghost, MultiFab &mf)
 	}
 	ParallelDescriptor::Barrier();
 	if (ParallelDescriptor::IOProcessor()){
-            BoxLib::Abort();
+            amrex::Abort();
 	}
     }
 
@@ -87,7 +89,7 @@ void Nyx::icReadAndPrepareFab(std::string mfDirName, int nghost, MultiFab &mf)
             if (mf.contains_nan(i, 1, nghost))
             {
                 std::cout << "Found NaNs in component " << i << ". " << std::endl;
-                BoxLib::Abort("Nyx::init_particles: Your initial conditions contain NaNs!");
+                amrex::Abort("Nyx::init_particles: Your initial conditions contain NaNs!");
             }
         }
     }
@@ -161,7 +163,7 @@ void Nyx::initcosmo()
         	    std::cout << "You assume a non-flat universe - \\Omega_K = "
         		      << comoving_OmK << std::endl;
             }
-            BoxLib::Abort();
+            amrex::Abort();
     }
 
     //compute \rho_{baryon}=3H_0^2\Omega_{baryon}/(8\pi G)
@@ -305,7 +307,7 @@ void Nyx::initcosmo()
     {
        std::cout << "No clue from which code the initial coniditions originate..." << std::endl
 	         << "Aborting...!" << std::endl;
-       BoxLib::Abort();
+       amrex::Abort();
     }
 
     

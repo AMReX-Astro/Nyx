@@ -3,6 +3,8 @@
 #include <Gravity.H>
 #endif
 
+using namespace amrex;
+
 MultiFab*
 Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 {
@@ -63,13 +65,13 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
                 FArrayBox& cfab = ctemp_dat[mfi];
                 const Box& fbx = ffab.box();
 
-                BL_ASSERT(cfab.box() == BoxLib::coarsen(fbx, trr));
+                BL_ASSERT(cfab.box() == amrex::coarsen(fbx, trr));
 
                 for (IntVect p = fbx.smallEnd(); p <= fbx.bigEnd(); fbx.next(p))
                 {
                     const Real val = ffab(p);
                     if (val > 0)
-                        cfab(BoxLib::coarsen(p, trr)) += val;
+                        cfab(amrex::coarsen(p, trr)) += val;
                 }
             }
 
@@ -97,7 +99,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 
         for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
         {
-            BoxLib::average_down(*particle_mf[lev+1], *particle_mf[lev], 
+            amrex::average_down(*particle_mf[lev+1], *particle_mf[lev], 
                                  parent->Geom(lev+1), parent->Geom(lev), 0, 1, 
                                  parent->refRatio(lev));
         }
@@ -118,7 +120,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 
         for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
         {
-            BoxLib::average_down(*particle_mf[lev+1], *particle_mf[lev], 
+            amrex::average_down(*particle_mf[lev+1], *particle_mf[lev], 
                                  parent->Geom(lev+1), parent->Geom(lev), 0, 1, 
                                  parent->refRatio(lev));
         }
@@ -139,7 +141,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 
         for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
         {
-            BoxLib::average_down(*particle_mf[lev+1], *particle_mf[lev], 
+            amrex::average_down(*particle_mf[lev+1], *particle_mf[lev], 
                                  parent->Geom(lev+1), parent->Geom(lev), 0, 1, 
                                  parent->refRatio(lev));
         }
@@ -164,7 +166,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
        
         for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
         {
-            BoxLib::average_down(*particle_mf[lev+1], *particle_mf[lev], 
+            amrex::average_down(*particle_mf[lev+1], *particle_mf[lev], 
                                  parent->Geom(lev+1), parent->Geom(lev), 0, 1, 
                                  parent->refRatio(lev));
         }

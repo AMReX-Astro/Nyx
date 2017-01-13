@@ -3,6 +3,7 @@
 #include "Nyx.H"
 #include "Nyx_error_F.H"
 
+using namespace amrex;
 using std::string;
 
 void

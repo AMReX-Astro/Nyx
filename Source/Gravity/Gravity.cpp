@@ -18,6 +18,8 @@
 #include <BL_HPGMG.H>
 #endif
 
+using namespace amrex;
+
 // MAX_LEV defines the maximum number of AMR levels allowed by the parent "Amr" object
 #define MAX_LEV 15
 
@@ -106,13 +108,13 @@ Gravity::read_params ()
         if (gravity_type != "PoissonGrav" && gravity_type != "CompositeGrav" && gravity_type != "StaticGrav")
         {
             std::cout << "Sorry -- dont know this gravity type" << std::endl;
-            BoxLib::Abort("Options are PoissonGrav, CompositeGrav and StaticGrav");
+            amrex::Abort("Options are PoissonGrav, CompositeGrav and StaticGrav");
         }
 #else
         if (gravity_type != "PoissonGrav")
         {
             std::cout << "Sorry -- dont know this gravity type" << std::endl;
-            BoxLib::Abort("Options are PoissonGrav");
+            amrex::Abort("Options are PoissonGrav");
         }
 #endif
 
@@ -128,11 +130,11 @@ Gravity::read_params ()
         pp.query("solve_with_hpgmg", solve_with_hpgmg);
 
         if (solve_with_cpp && solve_with_hpgmg)
-          BoxLib::Error("Multiple gravity solvers selected.");
+          amrex::Error("Multiple gravity solvers selected.");
 
 #ifndef USEHPGMG
         if (solve_with_hpgmg)
-          BoxLib::Error("To use the HPGMG solver you must compile with USE_HPGMG = TRUE");
+          amrex::Error("To use the HPGMG solver you must compile with USE_HPGMG = TRUE");
 #endif
 
         // Allow run-time input of solver tolerances
@@ -237,13 +239,13 @@ Gravity::get_no_composite ()
 Array<MultiFab*>
 Gravity::get_grad_phi_prev (int level)
 {
-    return BoxLib::GetArrOfPtrs(grad_phi_prev[level]);
+    return amrex::GetArrOfPtrs(grad_phi_prev[level]);
 }
 
 Array<MultiFab*>
 Gravity::get_grad_phi_curr (int level)
 {
-    return BoxLib::GetArrOfPtrs(grad_phi_curr[level]);
+    return amrex::GetArrOfPtrs(grad_phi_curr[level]);
 }
 
 void
@@ -395,7 +397,7 @@ Gravity::solve_for_phi (int               level,
     if (Rhs.contains_nan(0,1,0))
     {
         std::cout << "Rhs in solve_for_phi at level " << level << " has NaNs" << std::endl;
-        BoxLib::Abort("");
+        amrex::Abort("");
     }
 #endif
 
@@ -710,8 +712,8 @@ Gravity::gravity_sync (int crse_level, int fine_level, int iteration, int ncycle
 
     // Do multi-level solve for delta_phi
     solve_for_delta_phi(crse_level, fine_level, crse_rhs, 
-			BoxLib::GetArrOfPtrs(delta_phi),
-			BoxLib::GetArrOfArrOfPtrs(ec_gdPhi));
+			amrex::GetArrOfPtrs(delta_phi),
+			amrex::GetArrOfArrOfPtrs(ec_gdPhi));
 
     crse_rhs.clear();
 
@@ -747,7 +749,7 @@ Gravity::gravity_sync (int crse_level, int fine_level, int iteration, int ncycle
     for (int lev = fine_level - 1; lev >= crse_level; lev--)
     {
         const IntVect& ratio = parent->refRatio(lev);
-        BoxLib::average_down(LevelData[lev+1]->get_new_data(PhiGrav_Type),
+        amrex::average_down(LevelData[lev+1]->get_new_data(PhiGrav_Type),
                              LevelData[lev  ]->get_new_data(PhiGrav_Type),
                              0, 1, ratio);
     }
@@ -768,8 +770,8 @@ Gravity::gravity_sync (int crse_level, int fine_level, int iteration, int ncycle
     for (int lev = crse_level; lev <= fine_level; lev++) {
         grad_delta_phi_cc[lev-crse_level]->setVal(0.0);
         const Geometry& geom = parent->Geom(lev);
-        BoxLib::average_face_to_cellcenter(*grad_delta_phi_cc[lev-crse_level],
-                                           BoxLib::GetArrOfConstPtrs(ec_gdPhi[lev-crse_level]),
+        amrex::average_face_to_cellcenter(*grad_delta_phi_cc[lev-crse_level],
+                                           amrex::GetArrOfConstPtrs(ec_gdPhi[lev-crse_level]),
                                            geom);
     }
 }
@@ -887,7 +889,7 @@ Gravity::multilevel_solve_for_new_phi (int level,
 
     int is_new = 1;
     actual_multilevel_solve(level, finest_level, 
-			    BoxLib::GetArrOfArrOfPtrs(grad_phi_curr),
+			    amrex::GetArrOfArrOfPtrs(grad_phi_curr),
                             is_new, use_previous_phi_as_guess);
 }
 
@@ -912,7 +914,7 @@ Gravity::multilevel_solve_for_old_phi (int level,
 
     int is_new = 0;
     actual_multilevel_solve(level, finest_level,
-			    BoxLib::GetArrOfArrOfPtrs(grad_phi_prev),
+			    amrex::GetArrOfArrOfPtrs(grad_phi_prev),
                             is_new, use_previous_phi_as_guess);
 }
 
@@ -1022,7 +1024,7 @@ Gravity::actual_multilevel_solve (int                       level,
        Rhs_particles[lev]->setVal(0.);
     }
 
-    const auto& rpp = BoxLib::GetArrOfPtrs(Rhs_particles);
+    const auto& rpp = amrex::GetArrOfPtrs(Rhs_particles);
     AddParticlesToRhs(level,finest_level,rpp);
     AddGhostParticlesToRhs(level,rpp);
     AddVirtualParticlesToRhs(finest_level,rpp);
@@ -1088,7 +1090,7 @@ Gravity::actual_multilevel_solve (int                       level,
     // Average phi from fine to coarse level before the solve.
     for (int lev = num_levels-1; lev > 0; lev--)
     {
-        BoxLib::average_down(*phi_p[lev], *phi_p[lev-1],
+        amrex::average_down(*phi_p[lev], *phi_p[lev-1],
                              0, 1, parent->refRatio(level+lev-1));
     }
 
@@ -1239,7 +1241,7 @@ Gravity::actual_multilevel_solve (int                       level,
         //
         // Call the solver
         //
-        mgt_solver.solve(phi_p, BoxLib::GetArrOfPtrs(Rhs_p),
+        mgt_solver.solve(phi_p, amrex::GetArrOfPtrs(Rhs_p),
 			 bndry, tol, abs_tol, always_use_bnorm, final_resnorm, need_grad_phi);
 
         for (int lev = 0; lev < num_levels; lev++)
@@ -1262,14 +1264,14 @@ Gravity::actual_multilevel_solve (int                       level,
     {
         if (is_new == 1)
         {
-            BoxLib::average_down(LevelData[lev  ]->get_new_data(PhiGrav_Type),
+            amrex::average_down(LevelData[lev  ]->get_new_data(PhiGrav_Type),
                                  LevelData[lev-1]->get_new_data(PhiGrav_Type),
                                  0, 1, parent->refRatio(lev-1));
 
         }
         else if (is_new == 0)
         {
-            BoxLib::average_down(LevelData[lev  ]->get_old_data(PhiGrav_Type),
+            amrex::average_down(LevelData[lev  ]->get_old_data(PhiGrav_Type),
                                  LevelData[lev-1]->get_old_data(PhiGrav_Type),
                                  0, 1, parent->refRatio(lev-1));
         }
@@ -1330,13 +1332,13 @@ Gravity::get_old_grav_vector (int       level,
     {
         Array<std::unique_ptr<MultiFab> > crse_grad_phi(BL_SPACEDIM);
         get_crse_grad_phi(level, crse_grad_phi, time);
-        fill_ec_grow(level, BoxLib::GetArrOfPtrs(grad_phi_prev[level]),
-	                    BoxLib::GetArrOfPtrs(crse_grad_phi));
+        fill_ec_grow(level, amrex::GetArrOfPtrs(grad_phi_prev[level]),
+	                    amrex::GetArrOfPtrs(crse_grad_phi));
     }
 
     // Average edge-centered gradients to cell centers.
-    BoxLib::average_face_to_cellcenter(grav_vector, 
-				       BoxLib::GetArrOfConstPtrs(grad_phi_prev[level]),
+    amrex::average_face_to_cellcenter(grav_vector, 
+				       amrex::GetArrOfConstPtrs(grad_phi_prev[level]),
 				       geom);
 
 #ifdef CGRAV
@@ -1394,13 +1396,13 @@ Gravity::get_new_grav_vector (int       level,
         {
             Array<std::unique_ptr<MultiFab> > crse_grad_phi(BL_SPACEDIM);
             get_crse_grad_phi(level, crse_grad_phi, time);
-            fill_ec_grow(level, BoxLib::GetArrOfPtrs(grad_phi_curr[level]),
-                                BoxLib::GetArrOfPtrs(crse_grad_phi));
+            fill_ec_grow(level, amrex::GetArrOfPtrs(grad_phi_curr[level]),
+                                amrex::GetArrOfPtrs(crse_grad_phi));
         }
 
         // Average edge-centered gradients to cell centers, excluding grow cells
-        BoxLib::average_face_to_cellcenter(grav_vector,
-					   BoxLib::GetArrOfConstPtrs(grad_phi_curr[level]),
+        amrex::average_face_to_cellcenter(grav_vector,
+					   amrex::GetArrOfConstPtrs(grad_phi_curr[level]),
 					   geom);
 
 #ifdef CGRAV
@@ -1499,7 +1501,7 @@ Gravity::average_fine_ec_onto_crse_ec(int level, int is_new)
     IntVect fine_ratio = parent->refRatio(level);
 
     for (int i = 0; i < crse_gphi_fine_BA.size(); ++i)
-        crse_gphi_fine_BA.set(i, BoxLib::coarsen(grids[level+1][i],
+        crse_gphi_fine_BA.set(i, amrex::coarsen(grids[level+1][i],
                                                  fine_ratio));
 
     Array<std::unique_ptr<MultiFab> > crse_gphi_fine(BL_SPACEDIM);
@@ -1511,8 +1513,8 @@ Gravity::average_fine_ec_onto_crse_ec(int level, int is_new)
 
     auto& grad_phi = (is_new) ? grad_phi_curr : grad_phi_prev;
 
-    BoxLib::average_down_faces(BoxLib::GetArrOfConstPtrs(grad_phi[level+1]),
-			       BoxLib::GetArrOfPtrs(crse_gphi_fine), fine_ratio);
+    amrex::average_down_faces(amrex::GetArrOfConstPtrs(grad_phi[level+1]),
+			       amrex::GetArrOfPtrs(crse_gphi_fine), fine_ratio);
 
     const Geometry& cgeom = parent->Geom(level);
 
@@ -1553,7 +1555,7 @@ Gravity::fill_ec_grow (int                     level,
     const BoxArray& fgrids = grids[level];
     const Geometry& fgeom  = parent->Geom(level);
 
-    BoxList bl = BoxLib::GetBndryCells(fgrids, 1);
+    BoxList bl = amrex::GetBndryCells(fgrids, 1);
 
     BoxArray f_bnd_ba(bl);
 
@@ -1702,7 +1704,7 @@ Gravity::make_mg_bc ()
             }
             else
             {
-                BoxLib::Abort("Unknown lo bc in make_mg_bc");
+                amrex::Abort("Unknown lo bc in make_mg_bc");
             }
 
             if (phys_bc->hi(dir) == Symmetry)
@@ -1719,7 +1721,7 @@ Gravity::make_mg_bc ()
             }
             else
             {
-                BoxLib::Abort("Unknown hi bc in make_mg_bc");
+                amrex::Abort("Unknown hi bc in make_mg_bc");
             }
         }
     }
@@ -1897,13 +1899,13 @@ Gravity::AddParticlesToRhs(int base_level, int finest_level, const Array<MultiFa
             if (PartMF[lev]->contains_nan())
             {
                 std::cout << "Testing particle density of type " << i << " at level " << base_level+lev << std::endl;
-                BoxLib::Abort("...PartMF has NaNs in Gravity::actual_multilevel_solve()");
+                amrex::Abort("...PartMF has NaNs in Gravity::actual_multilevel_solve()");
             }
         }
 
         for (int lev = finest_level - 1 - base_level; lev >= 0; lev--)
         {
-            BoxLib::average_down(*PartMF[lev+1], *PartMF[lev],
+            amrex::average_down(*PartMF[lev+1], *PartMF[lev],
                                  0, 1, parent->refRatio(lev+base_level));
         }
 
@@ -2210,7 +2212,7 @@ Gravity::AddProcsToComp(Amr *aptr, int level, AmrLevel *level_data_to_install,
      for(int i(0); i < 2*BL_SPACEDIM; ++i)    { allInts.push_back(mg_bc[i]); }
    }
 
-   BoxLib::BroadcastArray(allInts, scsMyId, ioProcNumSCS, scsComm);
+   amrex::BroadcastArray(allInts, scsMyId, ioProcNumSCS, scsComm);
 
    // ---- unpack the ints
    if(scsMyId != ioProcNumSCS) {
@@ -2244,8 +2246,8 @@ Gravity::AddProcsToComp(Amr *aptr, int level, AmrLevel *level_data_to_install,
      allReals.push_back(Ggravity);
    }
 
-   BoxLib::BroadcastArray(allReals, scsMyId, ioProcNumSCS, scsComm);
-   BoxLib::BroadcastArray(level_solver_resnorm, scsMyId, ioProcNumSCS, scsComm);
+   amrex::BroadcastArray(allReals, scsMyId, ioProcNumSCS, scsComm);
+   amrex::BroadcastArray(level_solver_resnorm, scsMyId, ioProcNumSCS, scsComm);
 
    // ---- unpack the Reals
    if(scsMyId != ioProcNumSCS) {
@@ -2265,15 +2267,15 @@ Gravity::AddProcsToComp(Amr *aptr, int level, AmrLevel *level_data_to_install,
    Array<char> serialStrings;
    if(scsMyId == ioProcNumSCS) {
      allStrings.push_back(gravity_type);
-     serialStrings = BoxLib::SerializeStringArray(allStrings);
+     serialStrings = amrex::SerializeStringArray(allStrings);
    }
 
-   BoxLib::BroadcastArray(serialStrings, scsMyId, ioProcNumSCS, scsComm);
+   amrex::BroadcastArray(serialStrings, scsMyId, ioProcNumSCS, scsComm);
 
    // ---- unpack the strings
    if(scsMyId != ioProcNumSCS) {
      int count(0);
-     allStrings = BoxLib::UnSerializeStringArray(serialStrings);
+     allStrings = amrex::UnSerializeStringArray(serialStrings);
      gravity_type = allStrings[count++];
    }
 
@@ -2315,7 +2317,7 @@ Gravity::AddProcsToComp(Amr *aptr, int level, AmrLevel *level_data_to_install,
 	   isDefined[i] = (grad_phi_curr[j][i] != nullptr);
        }
      }
-     BoxLib::BroadcastArray(isDefined, scsMyId, ioProcNumAll, scsComm);
+     amrex::BroadcastArray(isDefined, scsMyId, ioProcNumAll, scsComm);
      if(isDefined.size() > 0) {
        BL_ASSERT(isDefined.size() == BL_SPACEDIM);
        if(scsMyId != ioProcNumSCS) {
@@ -2357,7 +2359,7 @@ Gravity::AddProcsToComp(Amr *aptr, int level, AmrLevel *level_data_to_install,
 	   isDefined[i] = (grad_phi_prev[j][i] != nullptr);
        }
      }
-     BoxLib::BroadcastArray(isDefined, scsMyId, ioProcNumAll, scsComm);
+     amrex::BroadcastArray(isDefined, scsMyId, ioProcNumAll, scsComm);
      if(isDefined.size() > 0) {
        BL_ASSERT(isDefined.size() == BL_SPACEDIM);
        if(scsMyId != ioProcNumSCS) {
@@ -2395,7 +2397,7 @@ Gravity::AddProcsToComp(Amr *aptr, int level, AmrLevel *level_data_to_install,
 	 isDefined[i] = (phi_flux_reg[i] != nullptr);
      }
    }
-   BoxLib::BroadcastArray(isDefined, scsMyId, ioProcNumAll, scsComm);
+   amrex::BroadcastArray(isDefined, scsMyId, ioProcNumAll, scsComm);
    if(isDefined.size() > 0) {
      if(scsMyId != ioProcNumSCS) {
        phi_flux_reg.resize(isDefined.size());

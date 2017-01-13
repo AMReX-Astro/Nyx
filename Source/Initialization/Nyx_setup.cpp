@@ -6,6 +6,7 @@
 #include "Nyx_F.H"
 #include "Derive_F.H"
 
+using namespace amrex;
 using std::string;
 
 static Box the_same_box(const Box& b)
@@ -15,7 +16,7 @@ static Box the_same_box(const Box& b)
 
 static Box grow_box_by_one(const Box& b)
 {
-    return BoxLib::grow(b, 1);
+    return amrex::grow(b, 1);
 }
 
 typedef StateDescriptor::BndryFunc BndryFunc;
@@ -295,7 +296,7 @@ Nyx::hydro_setup()
         cnt++;
         set_scalar_bc(bc, phys_bc);
         bcs[cnt]  = bc;
-        name[cnt] = BoxLib::Concatenate("adv_", i, 1);
+        name[cnt] = amrex::Concatenate("adv_", i, 1);
     }
 
     // Get the species names from the network model.
@@ -562,7 +563,7 @@ Nyx::hydro_setup()
     // Here we exploit the fact that Xmom = Density + 1
     //   in order to use the correct interpolation.
     if (Xmom != Density+1)
-       BoxLib::Error("We are assuming Xmom = Density + 1 in Nyx_setup.cpp");
+       amrex::Error("We are assuming Xmom = Density + 1 in Nyx_setup.cpp");
     derive_lst.addComponent("magvort",desc_lst,State_Type,Density,BL_SPACEDIM+1);
 
     //

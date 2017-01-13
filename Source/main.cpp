@@ -41,6 +41,8 @@ std::string inputs_name = "";
 #include <MakeFFTWBoxes.H>
 #endif
 
+using namespace amrex;
+
 const int NyxHaloFinderSignal(42);
 const int resizeSignal(43);
 const int GimletSignal(55);
@@ -126,7 +128,7 @@ namespace
               std::cout << "Sidecars completed halo finding analysis." << std::endl;
             }
 #else
-            BoxLib::Abort("Nyx received halo finder signal but not compiled with Reeber");
+            amrex::Abort("Nyx received halo finder signal but not compiled with Reeber");
 #endif /* REEBER */
           }
           break;
@@ -215,7 +217,7 @@ namespace
             }
             ParallelDescriptor::Barrier();
 #else
-            BoxLib::Abort("Nyx received Gimlet signal but not compiled with Gimlet");
+            amrex::Abort("Nyx received Gimlet signal but not compiled with Gimlet");
 #endif /* GIMLET */
           }
           break;
@@ -280,7 +282,7 @@ namespace
 int
 main (int argc, char* argv[])
 {
-    BoxLib::Initialize(argc, argv);
+    amrex::Initialize(argc, argv);
 
 
     // save the inputs file name for later
@@ -339,7 +341,7 @@ main (int argc, char* argv[])
       prevSidecarProcs = Nyx::nSidecarProcs;
       if(nSidecarProcsFromParmParse >= 0) {
         if(nSidecarProcsFromParmParse >= ParallelDescriptor::NProcsAll()) {
-          BoxLib::Abort("**** Error:  nSidecarProcsFromParmParse >= nProcs");
+          amrex::Abort("**** Error:  nSidecarProcsFromParmParse >= nProcs");
         }
         Nyx::nSidecarProcs = nSidecarProcsFromParmParse;
       }
@@ -348,12 +350,12 @@ main (int argc, char* argv[])
 
     if (strt_time < 0.0)
     {
-        BoxLib::Abort("MUST SPECIFY a non-negative strt_time");
+        amrex::Abort("MUST SPECIFY a non-negative strt_time");
     }
 
     if (max_step < 0 && stop_time < 0.0)
     {
-        BoxLib::Abort("Exiting because neither max_step nor stop_time is non-negative.");
+        amrex::Abort("Exiting because neither max_step nor stop_time is non-negative.");
     }
 
     // Reeber has to do some initialization.
@@ -542,7 +544,7 @@ main (int argc, char* argv[])
     BL_PROFILE_REGION_STOP("main()");
     BL_PROFILE_SET_RUN_TIME(dRunTime2);
 
-    BoxLib::Finalize();
+    amrex::Finalize();
 
     return 0;
 }

@@ -27,6 +27,8 @@
 
 #include "MemInfo.H"
 
+using namespace amrex;
+
 MemInfo* MemInfo::classInstance = NULL;
 
 

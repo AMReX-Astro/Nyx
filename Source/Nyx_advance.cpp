@@ -8,6 +8,8 @@
 #include "Gravity.H"
 #endif
 
+using namespace amrex;
+
 using std::string;
 
 Real
@@ -45,7 +47,7 @@ Nyx::advance (Real time,
 #else
     else
     {
-        BoxLib::Abort("Nyx::advance -- do_hydro is false but no gravity -- dont know what to do");
+        amrex::Abort("Nyx::advance -- do_hydro is false but no gravity -- dont know what to do");
     }
 #endif
     return 0;
@@ -72,14 +74,14 @@ Nyx::advance_hydro_plus_particles (Real time,
     BL_PROFILE("Nyx::advance_hydro_plus_particles()");
     // Sanity checks
     if (!do_hydro)
-        BoxLib::Abort("In `advance_hydro_plus_particles` but `do_hydro` not true");
+        amrex::Abort("In `advance_hydro_plus_particles` but `do_hydro` not true");
 
    if (Nyx::theActiveParticles().size() <= 0)
-        BoxLib::Abort("In `advance_hydro_plus_particles` but no active particles");
+        amrex::Abort("In `advance_hydro_plus_particles` but no active particles");
 
 #ifdef GRAVITY
     if (!do_grav)
-        BoxLib::Abort("In `advance_hydro_plus_particles` but `do_grav` not true");
+        amrex::Abort("In `advance_hydro_plus_particles` but `do_grav` not true");
 #endif
 
     const int finest_level = parent->finestLevel();
@@ -471,11 +473,11 @@ Nyx::advance_hydro (Real time,
     BL_PROFILE("Nyx::advance_hydro()");
     // sanity checks
     if (!do_hydro)
-        BoxLib::Abort("In `advance_hydro` but `do_hydro` not true");
+        amrex::Abort("In `advance_hydro` but `do_hydro` not true");
 
 #ifdef GRAVITY
     if (!do_grav)
-        BoxLib::Abort("In `advance_hydro` with GRAVITY defined but `do_grav` is false");
+        amrex::Abort("In `advance_hydro` with GRAVITY defined but `do_grav` is false");
 #endif
 
     for (int k = 0; k < NUM_STATE_TYPE; k++)

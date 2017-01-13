@@ -8,6 +8,8 @@
 #include "Gravity.H"
 #endif
 
+using namespace amrex;
+
 #ifndef NO_HYDRO
 void
 Nyx::sum_integrated_quantities ()

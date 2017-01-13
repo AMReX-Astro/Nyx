@@ -2,6 +2,8 @@
 #include "AMReX_LevelBld.H"
 #include "Nyx.H"
 
+using namespace amrex;
+
 class NyxBld
     :
     public LevelBld

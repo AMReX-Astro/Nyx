@@ -40,6 +40,8 @@ using std::string;
 #include <postprocess_tau_fields.H>
 #endif
 
+using namespace amrex;
+
 extern "C" {
   int get_comp_urho();
   int get_comp_temp();
@@ -249,14 +251,14 @@ Nyx::read_params ()
                     std::cerr << "Nyx::read_params:periodic in direction "
                               << dir
                               << " but low BC is not Interior" << std::endl;
-                    BoxLib::Error();
+                    amrex::Error();
                 }
                 if (hi_bc[dir] != Interior)
                 {
                     std::cerr << "Nyx::read_params:periodic in direction "
                               << dir
                               << " but high BC is not Interior" << std::endl;
-                    BoxLib::Error();
+                    amrex::Error();
                 }
             }
         }
@@ -273,14 +275,14 @@ Nyx::read_params ()
                 std::cerr << "Nyx::read_params:interior bc in direction "
                           << dir
                           << " but not periodic" << std::endl;
-                BoxLib::Error();
+                amrex::Error();
             }
             if (hi_bc[dir] == Interior)
             {
                 std::cerr << "Nyx::read_params:interior bc in direction "
                           << dir
                           << " but not periodic" << std::endl;
-                BoxLib::Error();
+                amrex::Error();
             }
         }
     }
@@ -288,12 +290,12 @@ Nyx::read_params ()
     pp.get("do_hydro", do_hydro);
 #ifdef NO_HYDRO
     if (do_hydro == 1)
-        BoxLib::Error("Cant have do_hydro == 1 when NO_HYDRO is true");
+        amrex::Error("Cant have do_hydro == 1 when NO_HYDRO is true");
 #endif
 
 #ifdef NO_HYDRO
 #ifndef GRAVITY
-        BoxLib::Error("Dont know what to do with both hydro and gravity off");
+        amrex::Error("Dont know what to do with both hydro and gravity off");
 #endif
 #endif
 
@@ -306,14 +308,14 @@ Nyx::read_params ()
 
 #ifdef HEATCOOL
     if (heat_cool_type > 0 && add_ext_src == 0)
-       BoxLib::Error("Nyx::must set add_ext_src to 1 if heat_cool_type > 0");
+       amrex::Error("Nyx::must set add_ext_src to 1 if heat_cool_type > 0");
     if (heat_cool_type != 1 && heat_cool_type != 3)
-       BoxLib::Error("Nyx:: nonzero heat_cool_type must equal 1 or 3");
+       amrex::Error("Nyx:: nonzero heat_cool_type must equal 1 or 3");
     if (heat_cool_type == 0)
-       BoxLib::Error("Nyx::contradiction -- HEATCOOL is defined but heat_cool_type == 0");
+       amrex::Error("Nyx::contradiction -- HEATCOOL is defined but heat_cool_type == 0");
 #else
     if (heat_cool_type > 0)
-       BoxLib::Error("Nyx::you set heat_cool_type > 0 but forgot to set USE_HEATCOOL = TRUE");
+       amrex::Error("Nyx::you set heat_cool_type > 0 but forgot to set USE_HEATCOOL = TRUE");
 #endif
 
     pp.query("allow_untagging", allow_untagging);
@@ -348,26 +350,26 @@ Nyx::read_params ()
            if (ppm_type == 0 && ParallelDescriptor::IOProcessor())
                std::cout << "Nyx::setting use_colglaz = 1 with ppm_type = 0 \n";
            if (ppm_type != 0)
-               BoxLib::Error("Nyx::ppm_type must be 0 with use_colglaz = 1");
+               amrex::Error("Nyx::ppm_type must be 0 with use_colglaz = 1");
         }
 
         // ppm_flatten_before_integrals is only done for ppm_type != 0
         if (ppm_type == 0 && ppm_flatten_before_integrals > 0)
         {
             std::cerr << "ppm_flatten_before_integrals > 0 not implemented for ppm_type != 0 \n";
-            BoxLib::Error();
+            amrex::Error();
         }
 
         if (version_2 > 0 && ppm_type == 0)
-           BoxLib::Error("Nyx::version_2 only defined for ppm_type = 1");
+           amrex::Error("Nyx::version_2 only defined for ppm_type = 1");
 
         if (version_2 !=0 && version_2 != 1 && version_2 != 2 && version_2 != 3)
-           BoxLib::Error("Nyx:: don't know what to do with version_2 flag");
+           amrex::Error("Nyx:: don't know what to do with version_2 flag");
 
         // Make sure ppm_type is set correctly.
         if (ppm_type != 0 && ppm_type != 1 && ppm_type != 2)
         {
-           BoxLib::Error("Nyx::ppm_type must be 0, 1 or 2");
+           amrex::Error("Nyx::ppm_type must be 0, 1 or 2");
         }
     }
 
@@ -1003,7 +1005,7 @@ Nyx::writePlotNow ()
 {
     BL_PROFILE("Nyx::writePlotNow()");
     if (level > 0)
-        BoxLib::Error("Should only call writePlotNow at level 0!");
+        amrex::Error("Should only call writePlotNow at level 0!");
 
     bool found_one = false;
 
@@ -1137,7 +1139,7 @@ Nyx::post_timestep (int iteration)
             }
 
             gravity->gravity_sync(level,finest_level,iteration,ncycle,drho_and_drhoU,dphi,
-				  BoxLib::GetArrOfPtrs(grad_delta_phi_cc));
+				  amrex::GetArrOfPtrs(grad_delta_phi_cc));
             dphi.clear();
 
             for (int lev = level; lev <= finest_level; lev++)
@@ -1822,7 +1824,7 @@ Nyx::average_down (int state_index)
 
         for (int i = 0; i < S_fine.boxArray().size(); ++i)
         {
-            crse_S_fine_BA.set(i, BoxLib::coarsen(S_fine.boxArray()[i],
+            crse_S_fine_BA.set(i, amrex::coarsen(S_fine.boxArray()[i],
                                                   fine_ratio));
         }
         MultiFab crse_S_fine(crse_S_fine_BA, num_comps, 0);
@@ -1863,7 +1865,7 @@ Nyx::average_down (int state_index)
     {
       const Geometry& fine_geom = parent->Geom(level+1);
       const Geometry& crse_geom = parent->Geom(level  );
-      BoxLib::average_down(S_fine,S_crse,fine_geom,crse_geom,0,num_comps,fine_ratio);
+      amrex::average_down(S_fine,S_crse,fine_geom,crse_geom,0,num_comps,fine_ratio);
     }
 }
 
@@ -2234,7 +2236,7 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         allBools.push_back(FillPatchedOldState_ok);
       }
 
-      BoxLib::BroadcastArray(allBools, scsMyId, ioProcNumAll, scsComm);
+      amrex::BroadcastArray(allBools, scsMyId, ioProcNumAll, scsComm);
 
       // ---- unpack the bools
       if(scsMyId != ioProcNumSCS) {
@@ -2303,7 +2305,7 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         allInts.push_back(forceParticleRedist);
       }
 
-      BoxLib::BroadcastArray(allInts, scsMyId, ioProcNumAll, scsComm);
+      amrex::BroadcastArray(allInts, scsMyId, ioProcNumAll, scsComm);
 
       // ---- unpack the ints
       if(scsMyId != ioProcNumSCS) {
@@ -2398,8 +2400,8 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
 #endif
       }
 
-      BoxLib::BroadcastArray(allReals, scsMyId, ioProcNumAll, scsComm);
-      BoxLib::BroadcastArray(plot_z_values, scsMyId, ioProcNumAll, scsComm);
+      amrex::BroadcastArray(allReals, scsMyId, ioProcNumAll, scsComm);
+      amrex::BroadcastArray(plot_z_values, scsMyId, ioProcNumAll, scsComm);
 
       // ---- unpack the Reals
       if(scsMyId != ioProcNumSCS) {
@@ -2441,15 +2443,15 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         allStrings.push_back(particle_init_type);
         allStrings.push_back(particle_move_type);
 
-        serialStrings = BoxLib::SerializeStringArray(allStrings);
+        serialStrings = amrex::SerializeStringArray(allStrings);
       }
 
-      BoxLib::BroadcastArray(serialStrings, scsMyId, ioProcNumAll, scsComm);
+      amrex::BroadcastArray(serialStrings, scsMyId, ioProcNumAll, scsComm);
 
       // ---- unpack the strings
       if(scsMyId != ioProcNumSCS) {
         int count(0);
-        allStrings = BoxLib::UnSerializeStringArray(serialStrings);
+        allStrings = amrex::UnSerializeStringArray(serialStrings);
 
         particle_plotfile_format = allStrings[count++];
         particle_init_type = allStrings[count++];
@@ -2471,7 +2473,7 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         BL_ASSERT(allIntVects.size() == BL_SPACEDIM);
       }
 
-      BoxLib::BroadcastArray(allIntVects, scsMyId, ioProcNumAll, scsComm);
+      amrex::BroadcastArray(allIntVects, scsMyId, ioProcNumAll, scsComm);
 
       // ---- unpack the IntVects
       if(scsMyId != ioProcNumSCS) {
@@ -2598,7 +2600,7 @@ Nyx::InitDeriveList() {
 #if(NADV>0)
     int Tracer = counter++;
 #if(NADV>1)
-    BoxLib::Error("Prob::variableSetUp: Only one Advected quantity allowed");
+    amrex::Error("Prob::variableSetUp: Only one Advected quantity allowed");
 #endif
 #endif
 #ifdef BL_USE_CHEM

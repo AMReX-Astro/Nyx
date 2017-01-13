@@ -8,6 +8,8 @@
 #include "Gravity.H"
 #endif
 
+using namespace amrex;
+
 using std::string;
 
 #ifndef NO_HYDRO
@@ -34,7 +36,7 @@ Nyx::just_the_hydro (Real time,
             std::cout << "just_the_hydro:  prev_time = " << prev_time << std::endl;
             std::cout << "just_the_hydro:       time = " <<      time << std::endl;
         }
-        BoxLib::Abort("time should equal prev_time in just_the_hydro!");
+        amrex::Abort("time should equal prev_time in just_the_hydro!");
     }
 
 #ifndef NDEBUG
@@ -45,7 +47,7 @@ Nyx::just_the_hydro (Real time,
             if (ParallelDescriptor::IOProcessor())
                 std::cout << "just_the_hydro: testing component " << i << " for NaNs" << std::endl;
             if (S_old.contains_nan(Density+i,1,0))
-                BoxLib::Abort("S_old has NaNs in this component");
+                amrex::Abort("S_old has NaNs in this component");
         }
     }
 #endif
@@ -167,9 +169,9 @@ Nyx::just_the_hydro (Real time,
 
         // Allocate fabs for fluxes.
         for (int i = 0; i < BL_SPACEDIM ; i++) {
-            const Box &bxtmp = BoxLib::surroundingNodes(bx, i);
+            const Box &bxtmp = amrex::surroundingNodes(bx, i);
             flux[i].resize(bxtmp, NUM_STATE);
-            u_gdnv[i].resize(BoxLib::grow(bxtmp, 1), 1);
+            u_gdnv[i].resize(amrex::grow(bxtmp, 1), 1);
             u_gdnv[i].setVal(1.e200);
         }
 
@@ -273,7 +275,7 @@ Nyx::just_the_hydro (Real time,
             std::cout << "OOPS -- EFFECTIVE CFL AT THIS LEVEL " << level
                       << " IS " << courno << '\n';
 
-        BoxLib::Abort("CFL is too high at this level -- go back to a checkpoint and restart with lower cfl number");
+        amrex::Abort("CFL is too high at this level -- go back to a checkpoint and restart with lower cfl number");
     }
 
 #ifndef NDEBUG
@@ -286,7 +288,7 @@ Nyx::just_the_hydro (Real time,
                 if (ParallelDescriptor::IOProcessor())
                     std::cout << "BAD -- S_new component " << Density + i << 
                     " has NaNs after the hydro update" << std::endl;
-                BoxLib::Abort();
+                amrex::Abort();
             }
         }
     }
@@ -312,7 +314,7 @@ Nyx::just_the_hydro (Real time,
 
 #ifndef NDEBUG
     if (S_new.contains_nan(Density, S_new.nComp(), 0))
-        BoxLib::Abort("S_new has NaNs before the second strang call");
+        amrex::Abort("S_new has NaNs before the second strang call");
 #endif
 
     // This returns updated (rho e), (rho E), and Temperature
@@ -334,7 +336,7 @@ Nyx::just_the_hydro (Real time,
 
 #ifndef NDEBUG
     if (S_new.contains_nan(Density, S_new.nComp(), 0))
-        BoxLib::Abort("S_new has NaNs after the second strang call");
+        amrex::Abort("S_new has NaNs after the second strang call");
 #endif
 }
 #endif

@@ -1,6 +1,8 @@
 #include <Nyx.H>
 #include <Nyx_F.H>
 
+using namespace amrex;
+
 #ifndef NO_HYDRO
 
 #ifndef AGN
@@ -38,7 +40,7 @@ Nyx::get_old_source (Real      old_time,
         if (ext_src[mfi].norm(0,Density,1) != 0)
         {
             std::cout << "The source terms for density are non-zero" << std::endl;
-            BoxLib::Error();
+            amrex::Error();
         }
     }
 

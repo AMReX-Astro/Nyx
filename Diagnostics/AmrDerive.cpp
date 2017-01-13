@@ -26,6 +26,8 @@ using std::endl;
 #include "AMReX_Utility.H"
 #include "AMReX_FArrayBox.H"
 
+using namespace amrex;
+
 static
 void 
 print_usage (int,
@@ -44,7 +46,7 @@ int
 main (int   argc,
       char* argv[])
 {
-    BoxLib::Initialize(argc,argv);
+    amrex::Initialize(argc,argv);
 
     if (argc < 2)
         print_usage(argc,argv);
@@ -207,7 +209,7 @@ main (int   argc,
     }
 
     
-    BoxLib::Finalize();
+    amrex::Finalize();
     return 0;
 }
 

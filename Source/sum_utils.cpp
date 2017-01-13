@@ -4,6 +4,8 @@
 #include <Nyx.H>
 #include <Nyx_F.H>
 
+using namespace amrex;
+
 Real
 Nyx::vol_weight_sum (const std::string& name,
                      Real               time,

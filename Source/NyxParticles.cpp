@@ -9,6 +9,8 @@
 #include <Nyx_F.H>
 #include <AMReX_Particles_F.H>
 
+using namespace amrex;
+
 namespace
 {
     bool virtual_particles_set = false;
@@ -226,7 +228,7 @@ Nyx::read_particle_params ()
     {
         if (ParallelDescriptor::IOProcessor())
             std::cerr << "ERROR:: doesnt make sense to have do_grav=false but move_type = Gravitational" << std::endl;
-        BoxLib::Error();
+        amrex::Error();
     }
 #endif
 
@@ -242,7 +244,7 @@ Nyx::read_particle_params ()
     {
         if (ParallelDescriptor::IOProcessor())
             std::cerr << "ERROR::particle_init_type is not AsciiFile but you specified ascii_particle_file" << std::endl;;
-        BoxLib::Error();
+        amrex::Error();
     }
 
     pp.query("sph_particle_file", sph_particle_file);
@@ -252,7 +254,7 @@ Nyx::read_particle_params ()
     {
         if (ParallelDescriptor::IOProcessor())
             std::cerr << "ERROR::init_with_sph_particles is not 1 but you specified sph_particle_file" << std::endl;;
-        BoxLib::Error();
+        amrex::Error();
     }
 
     // Input error check
@@ -260,7 +262,7 @@ Nyx::read_particle_params ()
     {
         if (ParallelDescriptor::IOProcessor())
             std::cerr << "ERROR::init_with_sph_particles is 1 but you did not specify sph_particle_file" << std::endl;;
-        BoxLib::Error();
+        amrex::Error();
     }
 
     pp.query("binary_particle_file", binary_particle_file);
@@ -271,7 +273,7 @@ Nyx::read_particle_params ()
     {
         if (ParallelDescriptor::IOProcessor())
             std::cerr << "ERROR::particle_init_type is not BinaryFile or BinaryMetaFile but you specified binary_particle_file" << std::endl;
-        BoxLib::Error();
+        amrex::Error();
     }
 
 #ifdef AGN
@@ -280,7 +282,7 @@ Nyx::read_particle_params ()
     {
         if (ParallelDescriptor::IOProcessor())
             std::cerr << "ERROR::particle_init_type is not AsciiFile but you specified agn_particle_file" << std::endl;;
-        BoxLib::Error();
+        amrex::Error();
     }
 #endif
 
@@ -290,7 +292,7 @@ Nyx::read_particle_params ()
     {
         if (ParallelDescriptor::IOProcessor())
             std::cerr << "ERROR::particle_init_type is not AsciiFile but you specified neutrino_particle_file" << std::endl;;
-        BoxLib::Error();
+        amrex::Error();
     }
 #endif
 
@@ -345,7 +347,7 @@ Nyx::init_particles ()
         //
         // Make sure to call RemoveParticlesOnExit() on exit.
         //
-        BoxLib::ExecOnFinalize(RemoveParticlesOnExit);
+        amrex::ExecOnFinalize(RemoveParticlesOnExit);
         //
         // 2 gives more stuff than 1.
         //
@@ -355,11 +357,11 @@ Nyx::init_particles ()
         {
             if (particle_initrandom_count <= 0)
             {
-                BoxLib::Abort("Nyx::init_particles(): particle_initrandom_count must be > 0");
+                amrex::Abort("Nyx::init_particles(): particle_initrandom_count must be > 0");
             }
             if (particle_initrandom_iseed <= 0)
             {
-                BoxLib::Abort("Nyx::init_particles(): particle_initrandom_iseed must be > 0");
+                amrex::Abort("Nyx::init_particles(): particle_initrandom_iseed must be > 0");
             }
 
             if (verbose && ParallelDescriptor::IOProcessor())
@@ -434,7 +436,7 @@ Nyx::init_particles ()
         }
         else
         {
-            BoxLib::Error("not a valid input for nyx.particle_init_type");
+            amrex::Error("not a valid input for nyx.particle_init_type");
         }
 
         if (write_particle_density_at_init == 1)
@@ -471,7 +473,7 @@ Nyx::init_particles ()
         //   (if do_dm_particles then we have already called ExecOnFinalize)
         //
         if (!do_dm_particles)
-            BoxLib::ExecOnFinalize(RemoveParticlesOnExit);
+            amrex::ExecOnFinalize(RemoveParticlesOnExit);
         //
         // 2 gives more stuff than 1.
         //
@@ -490,7 +492,7 @@ Nyx::init_particles ()
         }
         else
         {
-            BoxLib::Error("for right now we only init AGN particles with ascii");
+            amrex::Error("for right now we only init AGN particles with ascii");
         }
     }
 #endif
@@ -529,7 +531,7 @@ Nyx::init_particles ()
         //   (if do_dm_particles then we have already called ExecOnFinalize)
         //
         if (!do_dm_particles)
-            BoxLib::ExecOnFinalize(RemoveParticlesOnExit);
+            amrex::ExecOnFinalize(RemoveParticlesOnExit);
         //
         // 2 gives more stuff than 1.
         //
@@ -563,7 +565,7 @@ Nyx::init_particles ()
 
         else
         {
-            BoxLib::Error("for right now we only init Neutrino particles with ascii or binary");
+            amrex::Error("for right now we only init Neutrino particles with ascii or binary");
         }
     }
 #endif
@@ -620,7 +622,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
 
         for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
         {
-            BoxLib::average_down(*particle_mf[lev+1], *particle_mf[lev],
+            amrex::average_down(*particle_mf[lev+1], *particle_mf[lev],
                                  parent->Geom(lev+1), parent->Geom(lev), 0, 1,
                                  parent->refRatio(lev));
         }
@@ -754,7 +756,7 @@ Nyx::particle_post_restart (const std::string& restart_file, bool is_checkpoint)
         //
         // Make sure to call RemoveParticlesOnExit() on exit.
         //
-        BoxLib::ExecOnFinalize(RemoveParticlesOnExit);
+        amrex::ExecOnFinalize(RemoveParticlesOnExit);
         //
         // 2 gives more stuff than 1.
         //

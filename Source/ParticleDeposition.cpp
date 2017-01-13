@@ -1,5 +1,7 @@
 #include "NyxParticleContainer.H"
 
+using namespace amrex;
+
 void
 DarkMatterParticleContainer::AssignDensityAndVels (Array<std::unique_ptr<MultiFab> >& mf, int lev_min) const
 {
@@ -149,7 +151,7 @@ NeutrinoParticleContainer::AssignRelativisticDensity (Array<std::unique_ptr<Mult
         {
             if (gm.isAnyPeriodic())
             {
-                const Box& dest = BoxLib::grow(grids[i],dgrow);
+                const Box& dest = amrex::grow(grids[i],dgrow);
 
                 if ( ! dm.contains(dest))
                 {
@@ -217,7 +219,7 @@ NeutrinoParticleContainer::AssignRelativisticDensity (Array<std::unique_ptr<Mult
             {
                 if (gm.isAnyPeriodic())
                 {
-                    const Box& dest = BoxLib::grow(cfba[i],mf[lev_index]->nGrow());
+                    const Box& dest = amrex::grow(cfba[i],mf[lev_index]->nGrow());
 
                     if ( ! dm.contains(dest))
                     {
@@ -254,7 +256,7 @@ NeutrinoParticleContainer::AssignRelativisticDensity (Array<std::unique_ptr<Mult
         // The "+1" is so we enclose the valid region together with any
         //  ghost cells that can be periodically shifted into valid.
         //
-        compfvalid = BoxLib::complementIn(BoxLib::grow(dm,dgrow+1), fvalid);
+        compfvalid = amrex::complementIn(amrex::grow(dm,dgrow+1), fvalid);
 
         compfvalid_grown = compfvalid;
         compfvalid_grown.grow(1);
@@ -262,7 +264,7 @@ NeutrinoParticleContainer::AssignRelativisticDensity (Array<std::unique_ptr<Mult
             
         if (gm.isAnyPeriodic() && ! gm.isAllPeriodic())
         {
-            BoxLib::Error("AssignDensity: problem must be periodic in no or all directions");
+            amrex::Error("AssignDensity: problem must be periodic in no or all directions");
         }
         //
         // If we're at a lev > 0, this is the coarsened BoxArray.
@@ -308,7 +310,7 @@ NeutrinoParticleContainer::AssignRelativisticDensity (Array<std::unique_ptr<Mult
                 //
                 if ( ! gm.isAllPeriodic() && ! allow_particles_near_boundary) {
                     if ( ! gm.Domain().contains(cells[0]) || ! gm.Domain().contains(cells[M-1])) {
-                        BoxLib::Error("AssignDensity: if not periodic, all particles must stay away from the domain boundary");
+                        amrex::Error("AssignDensity: if not periodic, all particles must stay away from the domain boundary");
 		    }
 		}
                 //
@@ -1029,7 +1031,7 @@ NeutrinoParticleContainer::AssignRelativisticDensitySingleLevel (MultiFab& mf_to
     //    adjacent grid by first putting the value into ghost cells of its own grid.  The mf->sumBoundary call then
     //    adds the value from one grid's ghost cell to another grid's valid region.
     if (mf_pointer->nGrow() < 1) 
-       BoxLib::Error("Must have at least one ghost cell when in AssignDensitySingleLevel");
+       amrex::Error("Must have at least one ghost cell when in AssignDensitySingleLevel");
 
     const Real      strttime    = ParallelDescriptor::second();
     const Geometry& gm          = m_gdb->Geom(lev);
@@ -1040,7 +1042,7 @@ NeutrinoParticleContainer::AssignRelativisticDensitySingleLevel (MultiFab& mf_to
     const int       ngrids      = pmap.size();
 
     if (gm.isAnyPeriodic() && ! gm.isAllPeriodic()) {
-        BoxLib::Error("AssignDensity: problem must be periodic in no or all directions");
+        amrex::Error("AssignDensity: problem must be periodic in no or all directions");
     }
 
     for (MFIter mfi(*mf_pointer); mfi.isValid(); ++mfi) {
@@ -1093,7 +1095,7 @@ NeutrinoParticleContainer::AssignRelativisticDensitySingleLevel (MultiFab& mf_to
             //
             if ( ! gm.isAllPeriodic() && ! allow_particles_near_boundary) {
                 if ( ! gm.Domain().contains(cells[0]) || ! gm.Domain().contains(cells[M-1])) {
-                    BoxLib::Error("AssignDensity: if not periodic, all particles must stay away from the domain boundary");
+                    amrex::Error("AssignDensity: if not periodic, all particles must stay away from the domain boundary");
 		}
 	    }
 

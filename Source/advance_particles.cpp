@@ -6,6 +6,8 @@
 #include "Gravity.H"
 #include <AMReX_Particles_F.H>
 #include <Gravity_F.H>
+
+using namespace amrex;
  
 using std::string;
 
@@ -17,10 +19,10 @@ Nyx::advance_particles_only (Real time,
 {
     // Sanity checks
     if (do_hydro)
-        BoxLib::Abort("In `advance_particles_only` but `do_hydro` is true");
+        amrex::Abort("In `advance_particles_only` but `do_hydro` is true");
 
     if (!do_grav)
-        BoxLib::Abort("In `advance_particles_only` but `do_grav` not true");
+        amrex::Abort("In `advance_particles_only` but `do_grav` not true");
     const int finest_level = parent->finestLevel();
     int finest_level_to_advance;
     bool nosub = !parent->subCycle();

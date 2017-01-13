@@ -3,6 +3,8 @@
 #include "Nyx.H"
 #include "Nyx_error_F.H"
 
+using namespace amrex;
+
 void
 Nyx::error_setup()
 {
