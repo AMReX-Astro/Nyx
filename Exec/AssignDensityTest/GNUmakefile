@@ -1,5 +1,5 @@
-# BOXLIB_HOME defines the directory in which we will find all the BoxLib code
-BOXLIB_HOME ?= /project/projectdirs/nyx/src/BoxLib
+# AMREX_HOME defines the directory in which we will find all the BoxLib code
+AMREX_HOME ?= /project/projectdirs/nyx/src/amrex
 
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ../..

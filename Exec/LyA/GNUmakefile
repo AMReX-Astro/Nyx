@@ -1,6 +1,6 @@
-# BOXLIB_HOME defines the directory in which we will find all the BoxLib code
-BOXLIB_HOME ?= /project/projectdirs/nyx/src/BoxLib
-#BOXLIB_HOME = /home/vince/Development/BLMaster/BoxLib
+# AMREX_HOME defines the directory in which we will find all the BoxLib code
+AMREX_HOME ?= /project/projectdirs/nyx/src/amrex
+#AMREX_HOME = /home/vince/Development/BLMaster/amrex
 
 HPGMG_DIR ?= /global/homes/f/friesen/hpgmg/finite-volume
 
