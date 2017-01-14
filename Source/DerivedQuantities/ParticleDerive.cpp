@@ -5,12 +5,12 @@
 
 using namespace amrex;
 
-MultiFab*
+std::unique_ptr<MultiFab>
 Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 {
     if (Nyx::theDMPC() && name == "particle_count")
     {
-        MultiFab* derive_dat = new MultiFab(grids, dmap, 1, 0);
+	std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids, dmap, 1, 0));
         MultiFab temp_dat(grids, dmap, 1, 0);
         temp_dat.setVal(0);
         Nyx::theDMPC()->Increment(temp_dat, level);
@@ -19,7 +19,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
     }
     else if (Nyx::theAPC() && name == "agn_particle_count")
     {
-        MultiFab* derive_dat = new MultiFab(grids, dmap, 1, 0);
+	std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids, dmap, 1, 0));
         MultiFab temp_dat(grids, dmap, 1, 0);
         temp_dat.setVal(0);
         Nyx::theAPC()->Increment(temp_dat, level);
@@ -28,7 +28,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
     }
     else if (Nyx::theNPC() && name == "neutrino_particle_count")
     {
-        MultiFab* derive_dat = new MultiFab(grids, dmap, 1, 0);
+	std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids, dmap, 1, 0));
         MultiFab temp_dat(grids, dmap, 1, 0);
         temp_dat.setVal(0);
         Nyx::theNPC()->Increment(temp_dat, level);
@@ -40,7 +40,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
         //
         // We want the total particle count at this level or higher.
         //
-        MultiFab* derive_dat = particle_derive("particle_count", time, ngrow);
+	std::unique_ptr<MultiFab> derive_dat = particle_derive("particle_count", time, ngrow);
         IntVect trr(D_DECL(1, 1, 1));
 
         // @todo: level vs. lev
@@ -90,7 +90,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 #ifdef GRAVITY
     else if (Nyx::theDMPC() && name == "particle_mass_density")
     {
-        MultiFab* derive_dat = new MultiFab(grids,dmap,1,0);
+	std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids,dmap,1,0));
 
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
@@ -111,7 +111,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
     }
     else if (Nyx::theAPC() && name == "agn_mass_density")
     {
-        MultiFab* derive_dat = new MultiFab(grids,dmap,1,0);
+	std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids,dmap,1,0));
 
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
@@ -132,7 +132,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
     }
     else if (Nyx::theNPC() && name == "neutrino_mass_density")
     {
-        MultiFab* derive_dat = new MultiFab(grids,dmap,1,0);
+	std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
 
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
@@ -157,7 +157,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 #ifdef GRAVITY
       if (Nyx::theDMPC())
       {
-	MultiFab* derive_dat = new MultiFab(grids,dmap,1,0);
+        std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids,dmap,1,0));
 
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
@@ -175,23 +175,20 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
         MultiFab::Copy(*derive_dat, *particle_mf[level], 0, 0, 1, 0);
 
 #ifndef NO_HYDRO
-        MultiFab* gas_density = derive("density",time,0);
+	std::unique_ptr<MultiFab> gas_density = derive("density",time,0);
         MultiFab::Add(*derive_dat,*gas_density, 0, 0, 1, 0);
-        delete gas_density;
 #endif
         return derive_dat; 
       }
 #ifndef NO_HYDRO
       else 
       {
-        MultiFab* derive_dat = derive("density",time,0);
-        return derive_dat;
+        return derive("density",time,0);
       }
 #endif
 
 #else
-        MultiFab* derive_dat = derive("density",time,0);
-        return derive_dat;
+        return derive("density",time,0);
 #endif
     }
     else

@@ -1356,7 +1356,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
    if (nStep() % halo_int == 0) {
      if (ParallelDescriptor::NProcsSidecar(0) <= 0) { // we have no sidecars, so do everything in situ
        const Real time1 = ParallelDescriptor::second();
-       const MultiFab *dm_density = particle_derive("particle_mass_density", cur_time, 0);
+       auto dm_density = particle_derive("particle_mass_density", cur_time, 0);
        runInSituAnalysis(*dm_density, Geom(), nStep());
        const Real time2 = ParallelDescriptor::second();
        if (ParallelDescriptor::IOProcessor())
@@ -1370,7 +1370,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
                                  ParallelDescriptor::CommunicatorInter(whichSidecar));
 
        Geometry geom(Geom());
-       MultiFab *dm_density = particle_derive("particle_mass_density", cur_time, 0);
+       auto dm_density = particle_derive("particle_mass_density", cur_time, 0);
        int time_step(nStep()), nComp(dm_density->nComp());;
 
        Real time1(ParallelDescriptor::second());
@@ -1422,10 +1422,10 @@ Nyx::postCoarseTimeStep (Real cumtime)
        MultiFab e_int(state_data.boxArray(), state_data.DistributionMap(), 1, 0);
        e_int.copy(state_data, get_comp_e_int()-1, 0, 1);
 
-       MultiFab *dm_density = particle_derive("particle_mass_density", cur_time, 0);
-       MultiFab *xmom = particle_derive("xmom", cur_time, 0);
-       MultiFab *ymom = particle_derive("ymom", cur_time, 0);
-       MultiFab *zmom = particle_derive("zmom", cur_time, 0);
+       auto dm_density = particle_derive("particle_mass_density", cur_time, 0);
+       auto xmom = particle_derive("xmom", cur_time, 0);
+       auto ymom = particle_derive("ymom", cur_time, 0);
+       auto zmom = particle_derive("zmom", cur_time, 0);
        Geometry geom(Geom());
        Real omega_m, omega_b, comoving_h;
        BL_FORT_PROC_CALL(GET_OMM, get_omm)(&omega_m);
@@ -1457,10 +1457,10 @@ Nyx::postCoarseTimeStep (Real cumtime)
        MultiFab e_int(state_data.boxArray(), state_data.DistributionMap(), 1, 0);
        e_int.copy(state_data, get_comp_e_int()-1, 0, 1);
 
-       MultiFab *dm_density = particle_derive("particle_mass_density", cur_time, 0);
-       MultiFab *xmom = particle_derive("xmom", cur_time, 0);
-       MultiFab *ymom = particle_derive("ymom", cur_time, 0);
-       MultiFab *zmom = particle_derive("zmom", cur_time, 0);
+       auto dm_density = particle_derive("particle_mass_density", cur_time, 0);
+       auto xmom = particle_derive("xmom", cur_time, 0);
+       auto ymom = particle_derive("ymom", cur_time, 0);
+       auto zmom = particle_derive("zmom", cur_time, 0);
        Geometry geom(Geom());
        int time_step = nStep();
        Real omega_m, omega_b, comoving_h;
@@ -1892,7 +1892,7 @@ Nyx::errorEst (TagBoxArray& tags,
 
     for (int j = 0; j < err_list.size(); j++)
     {
-        MultiFab* mf = derive(err_list[j].name(), time, err_list[j].nGrow());
+        auto mf = derive(err_list[j].name(), time, err_list[j].nGrow());
 
         BL_ASSERT(!(mf == 0));
 
@@ -2004,12 +2004,10 @@ Nyx::errorEst (TagBoxArray& tags,
                 }
             }
         }
-
-        delete mf;
     }
 }
 
-MultiFab*
+std::unique_ptr<MultiFab>
 Nyx::derive (const std::string& name,
              Real               time,
              int                ngrow)
@@ -2017,7 +2015,7 @@ Nyx::derive (const std::string& name,
     BL_PROFILE("Nyx::derive()");
     if (name == "Rank")
     {
-        MultiFab* derive_dat = new MultiFab(grids, dmap, 1, 0);
+	std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids, dmap, 1, 0));
         for (MFIter mfi(*derive_dat); mfi.isValid(); ++mfi)
         {
            (*derive_dat)[mfi].setVal(ParallelDescriptor::MyProc());

@@ -13,7 +13,7 @@ Nyx::vol_weight_sum (const std::string& name,
 {
     Real        sum = 0;
     const Real* dx  = geom.CellSize();
-    MultiFab*   mf  = derive(name, time, 0);
+    auto        mf  = derive(name, time, 0);
 
     BL_ASSERT(mf != 0);
 
@@ -47,8 +47,6 @@ Nyx::vol_weight_sum (const std::string& name,
             (BL_TO_FORTRAN(fab), lo, hi, dx, &s);
         sum += s;
     }
-
-    delete mf;
 
     ParallelDescriptor::ReduceRealSum(sum);
 
@@ -119,7 +117,7 @@ Nyx::vol_weight_squared_sum_level (const std::string& name,
 {
     Real        sum = 0;
     const Real* dx  = geom.CellSize();
-    MultiFab*   mf  = derive(name, time, 0);
+    auto        mf  = derive(name, time, 0);
 
     BL_ASSERT(mf != 0);
 
@@ -142,8 +140,6 @@ Nyx::vol_weight_squared_sum_level (const std::string& name,
         sum += s;
     }
 
-    delete mf;
-
     ParallelDescriptor::ReduceRealSum(sum);
 
     sum /= lev_vol;
@@ -157,7 +153,7 @@ Nyx::vol_weight_squared_sum (const std::string& name,
 {
     Real        sum = 0;
     const Real* dx  = geom.CellSize();
-    MultiFab*   mf  = derive(name, time, 0);
+    auto        mf  = derive(name, time, 0);
 
     BL_ASSERT(mf != 0);
 
@@ -199,8 +195,6 @@ Nyx::vol_weight_squared_sum (const std::string& name,
 
         sum += s;
     }
-
-    delete mf;
 
     ParallelDescriptor::ReduceRealSum(sum);
 

@@ -274,7 +274,7 @@ public:
     //
     // Derived quantities associated with particles
     //
-    amrex::MultiFab* particle_derive (const std::string& name, Real time, int ngrow);
+    std::unique_ptr<amrex::MultiFab> particle_derive (const std::string& name, Real time, int ngrow);
 
     //
     // Default verbosity of Particle class
@@ -423,7 +423,7 @@ public:
     // Returns a amrex::MultiFab containing the derived data for this level. The user
     // is responsible for deleting this pointer when done with it. If
     // `ngrow` > 0 the amrex::MultiFab is built on the appropriately grown amrex::BoxArray.
-    amrex::MultiFab* derive(const std::string& name, Real time, int ngrow);
+    std::unique_ptr<amrex::MultiFab> derive(const std::string& name, Real time, int ngrow);
 
     // This version of `derive()` fills the dcomp'th component of mf with the
     // derived quantity.
