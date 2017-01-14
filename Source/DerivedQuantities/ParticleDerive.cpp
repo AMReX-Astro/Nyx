@@ -10,8 +10,8 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 {
     if (Nyx::theDMPC() && name == "particle_count")
     {
-        MultiFab* derive_dat = new MultiFab(grids, 1, 0);
-        MultiFab temp_dat(grids, 1, 0);
+        MultiFab* derive_dat = new MultiFab(grids, dmap, 1, 0);
+        MultiFab temp_dat(grids, dmap, 1, 0);
         temp_dat.setVal(0);
         Nyx::theDMPC()->Increment(temp_dat, level);
         MultiFab::Copy(*derive_dat, temp_dat, 0, 0, 1, 0);
@@ -19,8 +19,8 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
     }
     else if (Nyx::theAPC() && name == "agn_particle_count")
     {
-        MultiFab* derive_dat = new MultiFab(grids, 1, 0);
-        MultiFab temp_dat(grids, 1, 0);
+        MultiFab* derive_dat = new MultiFab(grids, dmap, 1, 0);
+        MultiFab temp_dat(grids, dmap, 1, 0);
         temp_dat.setVal(0);
         Nyx::theAPC()->Increment(temp_dat, level);
         MultiFab::Copy(*derive_dat, temp_dat, 0, 0, 1, 0);
@@ -28,8 +28,8 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
     }
     else if (Nyx::theNPC() && name == "neutrino_particle_count")
     {
-        MultiFab* derive_dat = new MultiFab(grids, 1, 0);
-        MultiFab temp_dat(grids, 1, 0);
+        MultiFab* derive_dat = new MultiFab(grids, dmap, 1, 0);
+        MultiFab temp_dat(grids, dmap, 1, 0);
         temp_dat.setVal(0);
         Nyx::theNPC()->Increment(temp_dat, level);
         MultiFab::Copy(*derive_dat, temp_dat, 0, 0, 1, 0);
@@ -46,13 +46,14 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
         // @todo: level vs. lev
         for (int lev = level + 1; lev <= parent->finestLevel(); lev++)
         {
-            BoxArray ba = parent->boxArray(lev);
-            MultiFab temp_dat(ba, 1, 0);
+            auto ba = parent->boxArray(lev);
+            const auto& dm = parent->DistributionMap(lev);
+            MultiFab temp_dat(ba, dm, 1, 0);
 
             trr *= parent->refRatio(lev - 1);
 
             ba.coarsen(trr);
-            MultiFab ctemp_dat(ba, 1, 0);
+            MultiFab ctemp_dat(ba, dm, 1, 0);
 
             temp_dat.setVal(0);
             ctemp_dat.setVal(0);
@@ -77,7 +78,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 
             temp_dat.clear();
 
-            MultiFab dat(grids, 1, 0);
+            MultiFab dat(grids, dmap, 1, 0);
             dat.setVal(0);
             dat.copy(ctemp_dat);
 
@@ -89,7 +90,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 #ifdef GRAVITY
     else if (Nyx::theDMPC() && name == "particle_mass_density")
     {
-        MultiFab* derive_dat = new MultiFab(grids,1,0);
+        MultiFab* derive_dat = new MultiFab(grids,dmap,1,0);
 
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
@@ -110,7 +111,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
     }
     else if (Nyx::theAPC() && name == "agn_mass_density")
     {
-        MultiFab* derive_dat = new MultiFab(grids,1,0);
+        MultiFab* derive_dat = new MultiFab(grids,dmap,1,0);
 
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
@@ -131,7 +132,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
     }
     else if (Nyx::theNPC() && name == "neutrino_mass_density")
     {
-        MultiFab* derive_dat = new MultiFab(grids,1,0);
+        MultiFab* derive_dat = new MultiFab(grids,dmap,1,0);
 
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
@@ -156,7 +157,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 #ifdef GRAVITY
       if (Nyx::theDMPC())
       {
-        MultiFab* derive_dat = new MultiFab(grids,1,0);
+	MultiFab* derive_dat = new MultiFab(grids,dmap,1,0);
 
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the

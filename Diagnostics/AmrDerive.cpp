@@ -138,7 +138,8 @@ main (int   argc,
     for (int lev=finestLevel; lev>=0; --lev)
     {
         const BoxArray& ba = amrData.boxArray(lev);
-        MultiFab mf(ba,nComp,nGrow);
+	const DistributionMapping& dm = amrData.DistributionMap(lev);
+        MultiFab mf(ba,dm,nComp,nGrow);
         if (ParallelDescriptor::IOProcessor() && verbose>0)
             cerr << "...filling data at level " << lev << endl;
         amrData.FillVar(mf,lev,inVarNames,destFillComps);

@@ -415,7 +415,7 @@ Nyx::writePlotFile (const std::string& dir,
     // but a derived variable is allowed to have multiple components.
     int cnt = 0;
     const int nGrow = 0;
-    MultiFab plotMF(grids, n_data_items, nGrow);
+    MultiFab plotMF(grids, dmap, n_data_items, nGrow);
     MultiFab* this_dat = 0;
     //
     // Cull data from state variables -- use no ghost cells.

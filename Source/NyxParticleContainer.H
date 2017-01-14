@@ -278,8 +278,10 @@ NyxParticleContainer<NR,NI>::estTimestep (amrex::MultiFab&       acceleration,
     }
     else 
     {
-        ac_pointer = new amrex::MultiFab(this->m_gdb->ParticleBoxArray(lev), acceleration.nComp(), acceleration.nGrow(),
-				  this->m_gdb->ParticleDistributionMap(lev), amrex::Fab_allocate);
+        ac_pointer = new amrex::MultiFab(this->m_gdb->ParticleBoxArray(lev), 
+					 this->m_gdb->ParticleDistributionMap(lev),
+					 acceleration.nComp(), acceleration.nGrow());
+				  
         ac_pointer->copy(acceleration,0,0,BL_SPACEDIM);
         ac_pointer->FillBoundary(); // DO WE NEED GHOST CELLS FILLED ???
     }
@@ -430,8 +432,9 @@ NyxParticleContainer<NR,NI>::moveKickDrift (amrex::MultiFab&       acceleration,
     }
     else
     {
-        ac_pointer = new amrex::MultiFab(this->m_gdb->ParticleBoxArray(lev),acceleration.nComp(),acceleration.nGrow(),
-				  this->m_gdb->ParticleDistributionMap(lev),amrex::Fab_allocate);
+        ac_pointer = new amrex::MultiFab(this->m_gdb->ParticleBoxArray(lev),
+					 this->m_gdb->ParticleDistributionMap(lev),
+					 acceleration.nComp(),acceleration.nGrow());
         for (amrex::MFIter mfi(*ac_pointer); mfi.isValid(); ++mfi)
             ac_pointer->setVal(0.);
         ac_pointer->copy(acceleration,0,0,acceleration.nComp());

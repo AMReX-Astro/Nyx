@@ -218,7 +218,7 @@ Nyx::build_fine_mask()
     baf.coarsen(crse_ratio);
 
     const BoxArray& bac = parent->boxArray(level-1);
-    fine_mask = new MultiFab(bac,1,0);
+    fine_mask = new MultiFab(bac,parent->DistributionMap(level-1), 1,0);
     fine_mask->setVal(1.0);
 
 #ifdef _OPENMP

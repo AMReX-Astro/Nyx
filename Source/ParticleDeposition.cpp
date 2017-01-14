@@ -44,7 +44,9 @@ NeutrinoParticleContainer::AssignRelativisticDensity (Array<std::unique_ptr<Mult
     for (int lev = lev_min; lev <= finest_level; lev++)
     { 
         const int lev_index = lev - lev_min;
-        mf_to_be_filled[lev].reset(new MultiFab(m_gdb->boxArray(lev), ncomp, 1));
+        mf_to_be_filled[lev].reset(new MultiFab(m_gdb->boxArray(lev), 
+						m_gdb->DistributionMap(lev), 
+						ncomp, 1));
 	mf_to_be_filled[lev]->setVal(0.0);
     }
 
@@ -66,8 +68,9 @@ NeutrinoParticleContainer::AssignRelativisticDensity (Array<std::unique_ptr<Mult
         for (int lev = lev_min; lev <= finest_level; lev++)
         {
             const int lev_index = lev - lev_min;
-            mf_part[lev_index].reset(new MultiFab(m_gdb->ParticleBoxArray(lev), ncomp, 1,
-						  m_gdb->ParticleDistributionMap(lev)));
+            mf_part[lev_index].reset(new MultiFab(m_gdb->ParticleBoxArray(lev),
+						  m_gdb->ParticleDistributionMap(lev),
+						  ncomp, 1));
 	    mf_part[lev_index].setVal(0.0);
         }
     }
@@ -1023,8 +1026,9 @@ NeutrinoParticleContainer::AssignRelativisticDensitySingleLevel (MultiFab& mf_to
     {
         // If mf_to_be_filled is not defined on the particle_box_array, then we need 
         // to make a temporary here and copy into mf_to_be_filled at the end.
-        mf_pointer = new MultiFab(m_gdb->ParticleBoxArray(lev), ncomp, mf_to_be_filled.nGrow(),
-				  m_gdb->ParticleDistributionMap(lev), Fab_allocate);
+        mf_pointer = new MultiFab(m_gdb->ParticleBoxArray(lev), 
+				  m_gdb->ParticleDistributionMap(lev),
+				  ncomp, mf_to_be_filled.nGrow());
     }
 
     // We must have ghost cells for each FAB so that a particle in one grid can spread its effect to an

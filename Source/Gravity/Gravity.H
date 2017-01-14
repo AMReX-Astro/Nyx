@@ -130,7 +130,9 @@ protected:
     //
     // amrex::BoxArray at each level
     //
-    amrex::Array<amrex::BoxArray> grids;
+    const amrex::Array<amrex::BoxArray> grids;
+    //
+    const amrex::Array<amrex::DistributionMapping>& dmap;
     //
     // Resnorm at each level
     //

@@ -208,8 +208,9 @@ Nyx::advance_hydro_plus_particles (Real time,
             for (int lev = level; lev <= finest_level_to_advance; lev++)
             {
                 // We need grav_n_grow grow cells to track boundary particles
-                const BoxArray& ba = get_level(lev).get_new_data(State_Type).boxArray();
-                MultiFab grav_vec_old(ba, BL_SPACEDIM, grav_n_grow);
+                const auto& ba = get_level(lev).get_new_data(State_Type).boxArray();
+                const auto& dm = get_level(lev).get_new_data(State_Type).DistributionMap();
+                MultiFab grav_vec_old(ba, dm, BL_SPACEDIM, grav_n_grow);
                 get_level(lev).gravity->get_old_grav_vector(lev, grav_vec_old, time);
                 
                 for (int i = 0; i < Nyx::theActiveParticles().size(); i++)
@@ -329,12 +330,13 @@ Nyx::advance_hydro_plus_particles (Real time,
         MultiFab& S_old = get_level(lev).get_old_data(State_Type);
         MultiFab& S_new = get_level(lev).get_new_data(State_Type);
 
-        const BoxArray& ba = get_level(lev).get_new_data(State_Type).boxArray();
+        const auto& ba = get_level(lev).get_new_data(State_Type).boxArray();
+        const auto& dm = get_level(lev).get_new_data(State_Type).DistributionMap();
 
         // These vectors are only used for the call to correct_gsrc so they 
         //    don't need any ghost cells
-        MultiFab grav_vec_old(ba, BL_SPACEDIM, 0);
-        MultiFab grav_vec_new(ba, BL_SPACEDIM, 0);
+        MultiFab grav_vec_old(ba, dm, BL_SPACEDIM, 0);
+        MultiFab grav_vec_new(ba, dm, BL_SPACEDIM, 0);
 
         get_level(lev).gravity->get_old_grav_vector(lev, grav_vec_old, time);
         get_level(lev).gravity->get_new_grav_vector(lev, grav_vec_new, cur_time);
@@ -412,8 +414,9 @@ Nyx::advance_hydro_plus_particles (Real time,
 
             for (int lev = level; lev <= finest_level_to_advance; lev++)
             {
-                const BoxArray& ba = get_level(lev).get_new_data(State_Type).boxArray();
-                MultiFab grav_vec_new(ba, BL_SPACEDIM, grav_n_grow);
+                const auto& ba = get_level(lev).get_new_data(State_Type).boxArray();
+                const auto& dm = get_level(lev).get_new_data(State_Type).DistributionMap();
+                MultiFab grav_vec_new(ba, dm, BL_SPACEDIM, grav_n_grow);
                 get_level(lev).gravity->get_new_grav_vector(lev, grav_vec_new, cur_time);
 
                 for (int i = 0; i < Nyx::theActiveParticles().size(); i++)
@@ -527,10 +530,10 @@ Nyx::advance_hydro (Real time,
         gravity->add_to_fluxes(level,iteration,ncycle);
 
     // These are only used in correct_gsrc so don't need any ghost cells.
-    MultiFab grav_vec_old(grids,BL_SPACEDIM,0);
+    MultiFab grav_vec_old(grids,dmap,BL_SPACEDIM,0);
     gravity->get_old_grav_vector(level,grav_vec_old,time);
 
-    MultiFab grav_vec_new(grids,BL_SPACEDIM,0);
+    MultiFab grav_vec_new(grids,dmap,BL_SPACEDIM,0);
     gravity->get_new_grav_vector(level,grav_vec_new,cur_time);
 
     Real  e_added = 0;

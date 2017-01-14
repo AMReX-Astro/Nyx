@@ -78,7 +78,7 @@ Nyx::just_the_hydro (Real time,
     const Real* dx     = geom.CellSize();
     Real        courno = -1.0e+200;
 
-    MultiFab ext_src_old(grids, NUM_STATE, 3, Fab_allocate);
+    MultiFab ext_src_old(grids, dmap, NUM_STATE, 3);
     ext_src_old.setVal(0);
 
     if (add_ext_src && ParallelDescriptor::IOProcessor())
@@ -100,7 +100,7 @@ Nyx::just_the_hydro (Real time,
     }
 
     // Define the gravity vector so we can pass this to ca_umdrv.
-    MultiFab grav_vector(grids, BL_SPACEDIM, 3, Fab_allocate);
+    MultiFab grav_vector(grids, dmap, BL_SPACEDIM, 3);
     grav_vector.setVal(0.);
 
 #ifdef GRAVITY
@@ -111,7 +111,7 @@ Nyx::just_the_hydro (Real time,
     MultiFab fluxes[BL_SPACEDIM];
     for (int j = 0; j < BL_SPACEDIM; j++)
     {
-        fluxes[j].define(getEdgeBoxArray(j), NUM_STATE, 0, Fab_allocate);
+        fluxes[j].define(getEdgeBoxArray(j), dmap, NUM_STATE, 0);
         fluxes[j].setVal(0.0);
     }
 
@@ -121,9 +121,9 @@ Nyx::just_the_hydro (Real time,
     Real ke_added = 0;
 
     // Create FAB for extended grid values (including boundaries) and fill.
-    MultiFab S_old_tmp(S_old.boxArray(), NUM_STATE, NUM_GROW);
+    MultiFab S_old_tmp(S_old.boxArray(), S_old.DistributionMap(), NUM_STATE, NUM_GROW);
     FillPatch(*this, S_old_tmp, NUM_GROW, time, State_Type, 0, NUM_STATE);
-    MultiFab D_old_tmp(D_old.boxArray(), 2, NUM_GROW);
+    MultiFab D_old_tmp(D_old.boxArray(), D_old.DistributionMap(), 2, NUM_GROW);
     FillPatch(*this, D_old_tmp, NUM_GROW, time, DiagEOS_Type, 0, 2);
 
     if (add_ext_src && strang_split) {
@@ -302,7 +302,7 @@ Nyx::just_the_hydro (Real time,
         compute_new_temp();
 
         // Compute source at new time (no ghost cells needed)
-        MultiFab ext_src_new(grids, NUM_STATE, 0);
+        MultiFab ext_src_new(grids, dmap, NUM_STATE, 0);
         ext_src_new.setVal(0);
 
         get_new_source(prev_time, cur_time, dt, ext_src_new);

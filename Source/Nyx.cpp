@@ -415,9 +415,10 @@ Nyx::Nyx (Amr&            papa,
           int             lev,
           const Geometry& level_geom,
           const BoxArray& bl,
+          const DistributionMapping& dm,
           Real            time)
     :
-    AmrLevel(papa,lev,level_geom,bl,time)
+    AmrLevel(papa,lev,level_geom,bl,dm,time)
 {
     BL_PROFILE("Nyx::Nyx(Amr)");
     build_metrics();
@@ -428,7 +429,7 @@ Nyx::Nyx (Amr&            papa,
     {
         flux_reg = 0;
         if (level > 0 && do_reflux)
-            flux_reg = new FluxRegister(grids, crse_ratio, level, NUM_STATE);
+            flux_reg = new FluxRegister(grids, dmap, crse_ratio, level, NUM_STATE);
     }
 #endif
 
@@ -511,7 +512,7 @@ Nyx::restart (Amr&     papa,
     {
         BL_ASSERT(flux_reg == 0);
         if (level > 0 && do_reflux)
-            flux_reg = new FluxRegister(grids, crse_ratio, level, NUM_STATE);
+            flux_reg = new FluxRegister(grids, dmap, crse_ratio, level, NUM_STATE);
     }
 #endif
 
@@ -1092,7 +1093,7 @@ Nyx::post_timestep (int iteration)
 #endif
         {
             // Define the update to rho and rhoU due to refluxing.
-            drho_and_drhoU.define(grids, BL_SPACEDIM + 1, 0, Fab_allocate);
+            drho_and_drhoU.define(grids, dmap, BL_SPACEDIM + 1, 0);
             MultiFab::Copy(drho_and_drhoU, S_new_crse, Density, 0,
                            BL_SPACEDIM + 1, 0);
             drho_and_drhoU.mult(-1.0);
@@ -1124,7 +1125,7 @@ Nyx::post_timestep (int iteration)
         {
             MultiFab::Add(drho_and_drhoU, S_new_crse, Density, 0, BL_SPACEDIM+1, 0);
 
-            MultiFab dphi(grids, 1, 0);
+            MultiFab dphi(grids, dmap, 1, 0);
             dphi.setVal(0);
 
             gravity->reflux_phi(level, dphi);
@@ -1134,7 +1135,9 @@ Nyx::post_timestep (int iteration)
             for (int lev = level; lev <= finest_level; lev++)
             {
                 grad_delta_phi_cc[lev-level].reset(
-                                      new MultiFab(get_level(lev).boxArray(),BL_SPACEDIM, 0));
+                                      new MultiFab(get_level(lev).boxArray(),
+						   get_level(lev).DistributionMap(),
+						   BL_SPACEDIM, 0));
                 grad_delta_phi_cc[lev-level]->setVal(0);
             }
 
@@ -1149,8 +1152,9 @@ Nyx::post_timestep (int iteration)
                 Real cur_time = state[State_Type].curTime();
                 Real a_new = get_comoving_a(cur_time);
 
-                const BoxArray& ba = get_level(lev).boxArray();
-                MultiFab grad_phi_cc(ba, BL_SPACEDIM, 0);
+                const auto& ba = get_level(lev).boxArray();
+                const auto& dm = get_level(lev).DistributionMap();
+                MultiFab grad_phi_cc(ba, dm, BL_SPACEDIM, 0);
                 gravity->get_new_grav_vector(lev, grad_phi_cc, cur_time);
 
 #ifdef _OPENMP
@@ -1284,8 +1288,9 @@ Nyx::post_restart ()
                 {
                     for (int k = 0; k <= parent->finestLevel(); k++)
                     {
-                        const BoxArray& ba = get_level(k).boxArray();
-                        MultiFab grav_vec_new(ba, BL_SPACEDIM, 0);
+                        const auto& ba = get_level(k).boxArray();
+                        const auto& dm = get_level(k).DistributionMap();
+                        MultiFab grav_vec_new(ba, dm, BL_SPACEDIM, 0);
                         gravity->get_new_grav_vector(k, grav_vec_new, cur_time);
                     }
                 }
@@ -1411,11 +1416,11 @@ Nyx::postCoarseTimeStep (Real cumtime)
        const MultiFab &eos_data = get_data(DiagEOS_Type, cur_time);
 
        // Grab only components of state and EOS data that gimlet needs.
-       MultiFab density (state_data.boxArray(), 1, 0);
+       MultiFab density (state_data.boxArray(), state_data.DistributionMap(), 1, 0);
        density.copy(state_data, get_comp_urho()-1, 0, 1);
-       MultiFab temperature (state_data.boxArray(), 1, 0);
+       MultiFab temperature (state_data.boxArray(), state_data.DistributionMap(), 1, 0);
        temperature.copy(eos_data, get_comp_temp()-1, 0, 1);
-       MultiFab e_int(state_data.boxArray(), 1, 0);
+       MultiFab e_int(state_data.boxArray(), state_data.DistributionMap(), 1, 0);
        e_int.copy(state_data, get_comp_e_int()-1, 0, 1);
 
        MultiFab *dm_density = particle_derive("particle_mass_density", cur_time, 0);
@@ -1446,11 +1451,11 @@ Nyx::postCoarseTimeStep (Real cumtime)
        const MultiFab &eos_data = get_data(DiagEOS_Type, cur_time);
 
        // Grab only components of state and EOS data that gimlet needs.
-       MultiFab density (state_data.boxArray(), 1, 0);
+       MultiFab density (state_data.boxArray(), state_data.DistributionMap(), 1, 0);
        density.copy(state_data, get_comp_urho()-1, 0, 1);
-       MultiFab temperature (state_data.boxArray(), 1, 0);
+       MultiFab temperature (state_data.boxArray(), state_data.DistributionMap(), 1, 0);
        temperature.copy(eos_data, get_comp_temp()-1, 0, 1);
-       MultiFab e_int(state_data.boxArray(), 1, 0);
+       MultiFab e_int(state_data.boxArray(), state_data.DistributionMap(), 1, 0);
        e_int.copy(state_data, get_comp_e_int()-1, 0, 1);
 
        MultiFab *dm_density = particle_derive("particle_mass_density", cur_time, 0);
@@ -1628,8 +1633,9 @@ Nyx::post_init (Real stop_time)
         // Make this call just to fill the initial state data.
         for (int k = 0; k <= finest_level; k++)
         {
-            const BoxArray& ba = get_level(k).boxArray();
-            MultiFab grav_vec_new(ba, BL_SPACEDIM, 0);
+            const auto& ba = get_level(k).boxArray();
+            const auto& dm = get_level(k).DistributionMap();
+            MultiFab grav_vec_new(ba, dm, BL_SPACEDIM, 0);
             gravity->get_new_grav_vector(k, grav_vec_new, cur_time);
         }
     }
@@ -1827,12 +1833,12 @@ Nyx::average_down (int state_index)
             crse_S_fine_BA.set(i, amrex::coarsen(S_fine.boxArray()[i],
                                                   fine_ratio));
         }
-        MultiFab crse_S_fine(crse_S_fine_BA, num_comps, 0);
+        MultiFab crse_S_fine(crse_S_fine_BA, S_fine.DistributionMap(), num_comps, 0);
 
         MultiFab& D_crse =            get_new_data(DiagEOS_Type);
         MultiFab& D_fine = fine_level.get_new_data(DiagEOS_Type);
         const int num_D_comps = D_fine.nComp();
-        MultiFab crse_D_fine(crse_S_fine_BA, num_D_comps, 0);
+        MultiFab crse_D_fine(crse_S_fine_BA, S_fine.DistributionMap(), num_D_comps, 0);
 
 #ifdef _OPENMP
 #pragma omp parallel
@@ -2012,7 +2018,7 @@ Nyx::derive (const std::string& name,
     BL_PROFILE("Nyx::derive()");
     if (name == "Rank")
     {
-        MultiFab* derive_dat = new MultiFab(grids, 1, 0);
+        MultiFab* derive_dat = new MultiFab(grids, dmap, 1, 0);
         for (MFIter mfi(*derive_dat); mfi.isValid(); ++mfi)
         {
            (*derive_dat)[mfi].setVal(ParallelDescriptor::MyProc());

@@ -441,7 +441,7 @@ Nyx::init_particles ()
 
         if (write_particle_density_at_init == 1)
         {
-            MultiFab particle_mf(grids,1,1);
+            MultiFab particle_mf(grids,dmap,1,1);
             DMPC->AssignDensitySingleLevel(particle_mf,0,1,0);
 
             writeMultiFabAsPlotFile("ParticleDensity", particle_mf, "density");

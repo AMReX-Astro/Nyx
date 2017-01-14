@@ -477,8 +477,6 @@ main (int argc, char* argv[])
         if(Nyx::nSidecarProcs > prevSidecarProcs) {
           if(ParallelDescriptor::InCompGroup()) {
             amrptr->AddProcsToSidecar(Nyx::nSidecarProcs, prevSidecarProcs);
-          } else {
-            DistributionMapping::DeleteCache();
           }
         }
 

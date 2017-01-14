@@ -55,7 +55,8 @@ public:
     //
     //The basic constructor.
     //
-    Nyx(amrex::Amr& papa, int lev, const amrex::Geometry& level_geom, const amrex::BoxArray& bl,
+    Nyx(amrex::Amr& papa, int lev, const amrex::Geometry& level_geom,
+	const amrex::BoxArray& bl, const amrex::DistributionMapping& dm,
         Real time);
 
     //

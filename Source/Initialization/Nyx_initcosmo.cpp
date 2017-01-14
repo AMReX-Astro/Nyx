@@ -49,14 +49,15 @@ void Nyx::icReadAndPrepareFab(std::string mfDirName, int nghost, MultiFab &mf)
         }
     }
 
-    BoxArray ba      = parent->boxArray(level);
-    BoxArray ba_read = mf_read.boxArray();
+    const auto& ba      = parent->boxArray(level);
+    const auto& dm      = parent->DistributionMap(level);
+    const auto& ba_read = mf_read.boxArray();
     int      nc      = mf_read.nComp();
 
     //if we don't use a cic scheme for the initial conditions, 
     //we can safely set the number of ghost cells to 0
     //for multilevel ICs we can't use ghostcells
-    mf.define(ba, nc, nghost, Fab_allocate);
+    mf.define(ba, dm, nc, nghost);
 
     mf.copy(mf_read,0,0,nc);
 
