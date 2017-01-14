@@ -1,7 +1,6 @@
 //
 // This is the version that reads input from PlotFiles.
 //
-#include <AMReX_winstd.H>
 #include <iomanip>
 #include <iostream>
 #include <fstream>

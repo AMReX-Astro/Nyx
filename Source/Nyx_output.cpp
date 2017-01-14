@@ -4,7 +4,7 @@
 #include <Nyx_F.H>
 #include "Nyx_output.H"
 
-#include "buildInfo.H"
+#include "AMReX_buildInfo.H"
 
 using namespace amrex;
 
@@ -285,7 +285,7 @@ Nyx::writePlotFile (const std::string& dir,
 	jobInfoFile << "build date:    " << buildInfoGetBuildDate() << "\n";
 	jobInfoFile << "build machine: " << buildInfoGetBuildMachine() << "\n";
 	jobInfoFile << "build dir:     " << buildInfoGetBuildDir() << "\n";
-	jobInfoFile << "BoxLib dir:    " << buildInfoGetBoxlibDir() << "\n";
+	jobInfoFile << "BoxLib dir:    " << buildInfoGetAMReXDir() << "\n";
 
 	jobInfoFile << "\n";
 

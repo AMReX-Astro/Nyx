@@ -1,6 +1,5 @@
 // @todo: deprecate windows includes
 
-#include <AMReX_winstd.H>
 
 #include <iostream>
 #include <iomanip>

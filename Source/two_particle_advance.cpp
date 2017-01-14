@@ -1,5 +1,4 @@
 #ifdef  GRAVITY
-#include <AMReX_winstd.H>
 
 #include "Nyx.H"
 #include "Nyx_F.H"

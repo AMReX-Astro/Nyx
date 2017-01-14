@@ -1,5 +1,4 @@
 //BL_COPYRIGHT_NOTICE
-#include <AMReX_winstd.H>
 
 #include <new>
 #include <iostream>
