@@ -130,7 +130,7 @@ protected:
     //
     // amrex::BoxArray at each level
     //
-    const amrex::Array<amrex::BoxArray> grids;
+    const amrex::Array<amrex::BoxArray>& grids;
     //
     const amrex::Array<amrex::DistributionMapping>& dmap;
     //

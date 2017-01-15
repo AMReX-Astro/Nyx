@@ -209,7 +209,8 @@ Gravity::install_level (int       level,
     if (level > 0)
     {
         IntVect crse_ratio = parent->refRatio(level-1);
-        phi_flux_reg[level].reset(new FluxRegister(grids[level], dm, crse_ratio, level, 1));
+        phi_flux_reg[level].reset(new FluxRegister(level_data_to_install->boxArray(),
+						   dm, crse_ratio, level, 1));
     }
 
 #ifdef CGRAV
