@@ -34,9 +34,9 @@ f90EXE_sources += project_S.f90
 
 ifeq ($(REEBER), TRUE)
   CEXE_sources += format.cpp
-  CEXE_sources += InTransitAnalysis.cpp
+  CEXE_sources += ReeberAnalysis.cpp mt-lg-ghosts.cpp
   CEXE_headers += format.h
-  CEXE_headers += InTransitAnalysis.H
+  CEXE_headers += ReeberAnalysis.H mt-lg-ghosts.h
 endif
 
 ifeq ($(GIMLET), TRUE)
