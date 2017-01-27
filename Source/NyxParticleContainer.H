@@ -11,17 +11,17 @@ class NyxParticleContainerBase
 public:
     virtual ~NyxParticleContainerBase() {}
 
-    virtual void moveKickDrift (amrex::MultiFab& acceleration, int level, Real timestep, 
-				Real a_old = 1.0, Real a_half = 1.0) = 0;
-    virtual void moveKick      (amrex::MultiFab& acceleration, int level, Real timestep, 
-				Real a_new = 1.0, Real a_half = 1.0,
+    virtual void moveKickDrift (amrex::MultiFab& acceleration, int level, amrex::Real timestep, 
+				amrex::Real a_old = 1.0, amrex::Real a_half = 1.0) = 0;
+    virtual void moveKick      (amrex::MultiFab& acceleration, int level, amrex::Real timestep, 
+				amrex::Real a_new = 1.0, amrex::Real a_half = 1.0,
 				int start_comp_for_accel = -1) = 0;
     virtual void Redistribute (bool where_already_called = false,
 			       bool full_where           = false,
 			       int  lev_min              = 0, 
 			       int  nGrow                = 0) = 0;
     virtual void RemoveParticlesAtLevel (int level) = 0;
-    virtual Real sumParticleMass (int level) const = 0;
+    virtual amrex::Real sumParticleMass (int level) const = 0;
     virtual void AssignDensitySingleLevel (amrex::MultiFab& mf, int level, int ncomp=1,
 					   int particle_lvl_offset = 0) const = 0;
     virtual void AssignDensity (amrex::Array<std::unique_ptr<amrex::MultiFab> >& mf, int lev_min = 0, int ncomp = 1,
@@ -43,14 +43,14 @@ public:
 
     virtual ~NyxParticleContainer () {}
 
-    void GetParticleVelocities (amrex::Array<Real>& part_vels);
-    void SetParticleVelocities (amrex::Array<Real>& part_data);
+    void GetParticleVelocities (amrex::Array<amrex::Real>& part_vels);
+    void SetParticleVelocities (amrex::Array<amrex::Real>& part_data);
 
-    virtual Real sumParticleMass (int level) const override {
+    virtual amrex::Real sumParticleMass (int level) const override {
 	return amrex::AmrParticleContainer<NR,NI>::sumParticleMass(0,level);
     }
 
-    void sumParticleMomentum (int lev, Real* mom) const;
+    void sumParticleMomentum (int lev, amrex::Real* mom) const;
 
     virtual void AssignDensitySingleLevel (amrex::MultiFab& mf, int level, int ncomp=1, int particle_lvl_offset = 0) const override
     { 
@@ -61,10 +61,10 @@ public:
 	amrex::AmrParticleContainer<NR,NI>::AssignDensity(0, sub_cycle, mf, lev_min, ncomp, finest_level);
     }
 
-    void MultiplyParticleMass (int lev, Real mult);
+    void MultiplyParticleMass (int lev, amrex::Real mult);
 
-    Real estTimestep (amrex::MultiFab& acceleration,         int level, Real cfl) const;
-    Real estTimestep (amrex::MultiFab& acceleration, Real a, int level, Real cfl) const;
+    amrex::Real estTimestep (amrex::MultiFab& acceleration,                int level, amrex::Real cfl) const;
+    amrex::Real estTimestep (amrex::MultiFab& acceleration, amrex::Real a, int level, amrex::Real cfl) const;
 
     //
     // TODO: the methods should return a constraint on the timestep...
@@ -72,10 +72,10 @@ public:
     // The following two functions form a KICK DRIFT KICK scheme for integrating the motion of the particles in
     //   comoving coordinates -- these rely on CELL-BASED acceleration
     //
-    virtual void moveKickDrift (amrex::MultiFab& acceleration, int level, Real timestep, 
-				Real a_old = 1.0, Real a_half = 1.0) override;
-    virtual void moveKick      (amrex::MultiFab& acceleration, int level, Real timestep, 
-				Real a_new = 1.0, Real a_half = 1.0,
+    virtual void moveKickDrift (amrex::MultiFab& acceleration, int level, amrex::Real timestep, 
+				amrex::Real a_old = 1.0, amrex::Real a_half = 1.0) override;
+    virtual void moveKick      (amrex::MultiFab& acceleration, int level, amrex::Real timestep, 
+				amrex::Real a_new = 1.0, amrex::Real a_half = 1.0,
 				int start_comp_for_accel = -1) override
     { 
 	amrex::AmrParticleContainer<NR,NI>::moveKick(acceleration, level, timestep,
@@ -108,7 +108,7 @@ protected:
 
 template <int NR, int NI>
 void
-NyxParticleContainer<NR,NI>::GetParticleVelocities (amrex::Array<Real>& part_data)
+NyxParticleContainer<NR,NI>::GetParticleVelocities (amrex::Array<amrex::Real>& part_data)
 {
     BL_PROFILE("NyxParticleContainer<NR,NI>::GetParticleVelocities()");
     // This assumes that the mass/charge is stored in the first position 
@@ -120,7 +120,7 @@ NyxParticleContainer<NR,NI>::GetParticleVelocities (amrex::Array<Real>& part_dat
 
 template <int NR, int NI>
 void
-NyxParticleContainer<NR,NI>::SetParticleVelocities (amrex::Array<Real>& part_data)
+NyxParticleContainer<NR,NI>::SetParticleVelocities (amrex::Array<amrex::Real>& part_data)
 {
     BL_PROFILE("NyxParticleContainer<NR,NI>::SetParticleVelocities()");
    // This gives us the starting point into the part_data array
@@ -193,7 +193,7 @@ NyxParticleContainer<NR,NI>::SetParticleVelocities (amrex::Array<Real>& part_dat
 template <int NR, int NI>
 void
 NyxParticleContainer<NR,NI>::sumParticleMomentum (int   lev,
-					       Real* mom) const
+					       amrex::Real* mom) const
 {
     BL_PROFILE("NyxParticleContainer<NR,NI>::sumParticleMomentum()");
     BL_ASSERT(NR >= BL_SPACEDIM+1);
@@ -208,7 +208,7 @@ NyxParticleContainer<NR,NI>::sumParticleMomentum (int   lev,
         const PBox& pbox = pmap_it->second;
         const int   n    = pbox.size();
 
-        Real mom_0 = 0, mom_1 = 0, mom_2 = 0;
+        amrex::Real mom_0 = 0, mom_1 = 0, mom_2 = 0;
 
 #ifdef _OPENMP
 #pragma omp parallel for reduction(+:mom_0,mom_1,mom_2)
@@ -233,33 +233,33 @@ NyxParticleContainer<NR,NI>::sumParticleMomentum (int   lev,
 
 
 template <int NR, int NI>
-Real
+amrex::Real
 NyxParticleContainer<NR,NI>::estTimestep (amrex::MultiFab&       acceleration,
 				       int             lev,
-				       Real            cfl) const
+				       amrex::Real            cfl) const
 {
     return estTimestep(acceleration,1.0,lev,cfl);
 }
 
 template <int NR, int NI>
-Real
+amrex::Real
 NyxParticleContainer<NR,NI>::estTimestep (amrex::MultiFab&       acceleration,
-				       Real            a,
+				       amrex::Real            a,
 				       int             lev,
-				       Real            cfl) const
+				       amrex::Real            cfl) const
 {
     BL_PROFILE("NyxParticleContainer<NR,NI>::estTimestep(lev)");
-    Real            dt               = 1e50;
+    amrex::Real            dt               = 1e50;
     BL_ASSERT(NR >= BL_SPACEDIM+1);
     BL_ASSERT(lev >= 0);
 
     if (this->m_particles.size() == 0)
         return dt;
 
-    const Real      strttime         = amrex::ParallelDescriptor::second();
+    const amrex::Real      strttime         = amrex::ParallelDescriptor::second();
     const amrex::Geometry& geom             = this->m_gdb->Geom(lev);
-    const Real*     dx               = geom.CellSize();
-    const Real      adx[BL_SPACEDIM] = { D_DECL(a*dx[0],a*dx[1],a*dx[2]) };
+    const amrex::Real*     dx               = geom.CellSize();
+    const amrex::Real      adx[BL_SPACEDIM] = { D_DECL(a*dx[0],a*dx[1],a*dx[2]) };
     const PMap&     pmap             = this->m_particles[lev];
     int             tnum             = 1;
 
@@ -267,7 +267,7 @@ NyxParticleContainer<NR,NI>::estTimestep (amrex::MultiFab&       acceleration,
     tnum = omp_get_max_threads();
 #endif
 
-    amrex::Array<Real> ldt(tnum,1e50);
+    amrex::Array<amrex::Real> ldt(tnum,1e50);
 
     long num_particles_at_level = 0;
 
@@ -306,11 +306,11 @@ NyxParticleContainer<NR,NI>::estTimestep (amrex::MultiFab&       acceleration,
 
             BL_ASSERT(p.m_grid == grid);
 
-            const Real mag_vel_over_dx[BL_SPACEDIM] = { D_DECL(std::abs(p.m_data[1])/adx[0],
+            const amrex::Real mag_vel_over_dx[BL_SPACEDIM] = { D_DECL(std::abs(p.m_data[1])/adx[0],
                                                                std::abs(p.m_data[2])/adx[1],
                                                                std::abs(p.m_data[3])/adx[2]) };
 
-            Real max_mag_vel_over_dx = mag_vel_over_dx[0];
+            amrex::Real max_mag_vel_over_dx = mag_vel_over_dx[0];
 
 #if (BL_SPACEDIM > 1)
             max_mag_vel_over_dx = std::max(mag_vel_over_dx[1], max_mag_vel_over_dx);
@@ -318,13 +318,13 @@ NyxParticleContainer<NR,NI>::estTimestep (amrex::MultiFab&       acceleration,
 #if (BL_SPACEDIM > 2)
             max_mag_vel_over_dx = std::max(mag_vel_over_dx[2], max_mag_vel_over_dx);
 #endif
-            Real dt_part = (max_mag_vel_over_dx > 0) ? (cfl / max_mag_vel_over_dx) : 1e50;
+            amrex::Real dt_part = (max_mag_vel_over_dx > 0) ? (cfl / max_mag_vel_over_dx) : 1e50;
 
-            const Real aval[BL_SPACEDIM] = { D_DECL(gfab(p.m_cell,0),
+            const amrex::Real aval[BL_SPACEDIM] = { D_DECL(gfab(p.m_cell,0),
                                                     gfab(p.m_cell,1),
                                                     gfab(p.m_cell,2)) };
 
-            const Real mag_accel = sqrt(D_TERM(aval[0]*aval[0],
+            const amrex::Real mag_accel = sqrt(D_TERM(aval[0]*aval[0],
                                              + aval[1]*aval[1],
                                              + aval[2]*aval[2]));
             if (mag_accel > 0)
@@ -354,7 +354,7 @@ NyxParticleContainer<NR,NI>::estTimestep (amrex::MultiFab&       acceleration,
 
     if (this->m_verbose > 1)
     {
-        Real stoptime = amrex::ParallelDescriptor::second() - strttime;
+        amrex::Real stoptime = amrex::ParallelDescriptor::second() - strttime;
 
         amrex::ParallelDescriptor::ReduceRealMax(stoptime,amrex::ParallelDescriptor::IOProcessorNumber());
 
@@ -370,7 +370,7 @@ NyxParticleContainer<NR,NI>::estTimestep (amrex::MultiFab&       acceleration,
 
 template <int NR, int NI>
 void
-NyxParticleContainer<NR,NI>::MultiplyParticleMass (int lev, Real mult)
+NyxParticleContainer<NR,NI>::MultiplyParticleMass (int lev, amrex::Real mult)
 {
     BL_PROFILE("NyxParticleContainer<NR,NI>::MultiplyParticleMass()");
    BL_ASSERT(lev == 0);
@@ -406,9 +406,9 @@ template <int NR, int NI>
 void
 NyxParticleContainer<NR,NI>::moveKickDrift (amrex::MultiFab&       acceleration,
 					 int             lev,
-					 Real            dt,
-					 Real            a_old,
-					 Real            a_half) 
+					 amrex::Real            dt,
+					 amrex::Real            a_old,
+					 amrex::Real            a_half) 
 {
     BL_PROFILE("ParticleContainer::moveKickDrift()");
     BL_ASSERT(NR >= BL_SPACEDIM+1);
@@ -419,10 +419,10 @@ NyxParticleContainer<NR,NI>::moveKickDrift (amrex::MultiFab&       acceleration,
     if (lev >= this->m_particles.size())
         return;
 
-    const Real strttime      = amrex::ParallelDescriptor::second();
-    const Real half_dt       = Real(0.5) * dt;
-    const Real a_half_inv    = 1 / a_half;
-    const Real dt_a_half_inv = dt * a_half_inv;
+    const amrex::Real strttime      = amrex::ParallelDescriptor::second();
+    const amrex::Real half_dt       = amrex::Real(0.5) * dt;
+    const amrex::Real a_half_inv    = 1 / a_half;
+    const amrex::Real dt_a_half_inv = dt * a_half_inv;
     PMap&      pmap          = this->m_particles[lev];
 
     amrex::MultiFab* ac_pointer;
@@ -461,7 +461,7 @@ NyxParticleContainer<NR,NI>::moveKickDrift (amrex::MultiFab&       acceleration,
             //
             // note: m_data[0] is mass, 1 is v_x, ...
             //
-            Real grav[BL_SPACEDIM];
+            amrex::Real grav[BL_SPACEDIM];
 
             amrex::ParticleBase::GetGravity(gfab, this->m_gdb->Geom(p.m_lev), p, grav);
             //
@@ -531,7 +531,7 @@ NyxParticleContainer<NR,NI>::moveKickDrift (amrex::MultiFab&       acceleration,
 
     if (this->m_verbose > 1)
     {
-        Real stoptime = amrex::ParallelDescriptor::second() - strttime;
+        amrex::Real stoptime = amrex::ParallelDescriptor::second() - strttime;
 
         amrex::ParallelDescriptor::ReduceRealMax(stoptime,amrex::ParallelDescriptor::IOProcessorNumber());
 
@@ -555,12 +555,12 @@ public:
 
     virtual ~DarkMatterParticleContainer () {}
 
-    void InitCosmo  (amrex::MultiFab& mf, const Real vel_fac[], const amrex::Array<int> n_part, const Real particleMass);
-    void InitCosmo  (amrex::MultiFab& mf, const Real vel_fac[], const amrex::Array<int> n_part,
-                     const Real particleMass, const Real shift[]);
-    void InitCosmo1ppc (amrex::MultiFab& mf, const Real vel_fac[], const Real particleMass);
-    void InitCosmo1ppcMultiLevel(amrex::MultiFab& mf, const Real disp_fac[], const Real vel_fac[], 
-                                 const Real particleMass, int disp_idx, int vel_idx, 
+    void InitCosmo  (amrex::MultiFab& mf, const amrex::Real vel_fac[], const amrex::Array<int> n_part, const amrex::Real particleMass);
+    void InitCosmo  (amrex::MultiFab& mf, const amrex::Real vel_fac[], const amrex::Array<int> n_part,
+                     const amrex::Real particleMass, const amrex::Real shift[]);
+    void InitCosmo1ppc (amrex::MultiFab& mf, const amrex::Real vel_fac[], const amrex::Real particleMass);
+    void InitCosmo1ppcMultiLevel(amrex::MultiFab& mf, const amrex::Real disp_fac[], const amrex::Real vel_fac[], 
+                                 const amrex::Real particleMass, int disp_idx, int vel_idx, 
                                  amrex::BoxArray &baWhereNot, int lev, int nlevs);
 
     void AssignDensityAndVels (amrex::Array<std::unique_ptr<amrex::MultiFab> >& mf, int lev_min = 0) const;
@@ -574,7 +574,7 @@ class NeutrinoParticleContainer
 {
 
     int         m_relativistic; // if 1 then we weight the mass by gamma in AssignDensity*
-    Real        m_csq;          // the square of the speed of light -- used to compute relativistic effects
+    amrex::Real        m_csq;          // the square of the speed of light -- used to compute relativistic effects
 
 public:
     NeutrinoParticleContainer (amrex::Amr* amr)
@@ -585,7 +585,7 @@ public:
 
     void SetRelativistic (int relativistic) { m_relativistic = relativistic; }
 
-    void SetCSquared (Real csq) { m_csq = csq; }
+    void SetCSquared (amrex::Real csq) { m_csq = csq; }
 
     void AssignDensity (amrex::Array<std::unique_ptr<amrex::MultiFab> >& mf, int lev_min = 0, int ncomp = 1, int finest_level = -1) const;
 

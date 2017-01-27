@@ -9,8 +9,8 @@ BL_FORT_PROC_DECL(TAG_LAPLAC_ERROR, tag_laplac_error)
      const int lo[], const int hi[],
      const int* ncomp,
      const int domlo[], const int domhi[],
-     const Real dx[], const Real xlo[], const Real problo[],
-     const Real* time, const int* level);
+     const amrex::Real dx[], const amrex::Real xlo[], const amrex::Real problo[],
+     const amrex::Real* time, const int* level);
 
 BL_FORT_PROC_DECL(TAG_DENERROR, tag_denerror)
     (int* tag, ARLIM_P(tag_lo), ARLIM_P(tag_hi),
@@ -19,8 +19,8 @@ BL_FORT_PROC_DECL(TAG_DENERROR, tag_denerror)
      const int lo[], const int hi[],
      const int* ncomp,
      const int domlo[], const int domhi[],
-     const Real dx[], const Real xlo[], const Real problo[],
-     const Real* time, const int* level);
+     const amrex::Real dx[], const amrex::Real xlo[], const amrex::Real problo[],
+     const amrex::Real* time, const int* level);
 
 BL_FORT_PROC_DECL(TAG_VELERROR, tag_velerror)
     (int* tag, ARLIM_P(tag_lo), ARLIM_P(tag_hi),
@@ -29,8 +29,8 @@ BL_FORT_PROC_DECL(TAG_VELERROR, tag_velerror)
      const int lo[], const int hi[],
      const int* ncomp,
      const int domlo[], const int domhi[],
-     const Real dx[], const Real xlo[], const Real problo[],
-     const Real* time, const int* level);
+     const amrex::Real dx[], const amrex::Real xlo[], const amrex::Real problo[],
+     const amrex::Real* time, const int* level);
 
 BL_FORT_PROC_DECL(TAG_TEMPERROR, tag_temperror)
     (int* tag, ARLIM_P(tag_lo), ARLIM_P(tag_hi),
@@ -39,8 +39,8 @@ BL_FORT_PROC_DECL(TAG_TEMPERROR, tag_temperror)
      const int lo[], const int hi[],
      const int* ncomp,
      const int domlo[], const int domhi[],
-     const Real dx[], const Real xlo[], const Real problo[],
-     const Real* time, const int* level);
+     const amrex::Real dx[], const amrex::Real xlo[], const amrex::Real problo[],
+     const amrex::Real* time, const int* level);
 
 BL_FORT_PROC_DECL(TAG_PRESSERROR, tag_presserror)
     (int* tag, ARLIM_P(tag_lo), ARLIM_P(tag_hi),
@@ -49,8 +49,8 @@ BL_FORT_PROC_DECL(TAG_PRESSERROR, tag_presserror)
      const int lo[], const int hi[],
      const int* ncomp,
      const int domlo[], const int domhi[],
-     const Real dx[], const Real xlo[], const Real problo[],
-     const Real* time, const int* level);
+     const amrex::Real dx[], const amrex::Real xlo[], const amrex::Real problo[],
+     const amrex::Real* time, const int* level);
 
 BL_FORT_PROC_DECL(TAG_PART_CNT_ERR, tag_part_cnt_err)
     (int* tag, ARLIM_P(tag_lo), ARLIM_P(tag_hi),
@@ -59,8 +59,8 @@ BL_FORT_PROC_DECL(TAG_PART_CNT_ERR, tag_part_cnt_err)
      const int lo[], const int hi[],
      const int* ncomp,
      const int domlo[], const int domhi[],
-     const Real dx[], const Real xlo[], const Real problo[],
-     const Real* time, const int* level);
+     const amrex::Real dx[], const amrex::Real xlo[], const amrex::Real problo[],
+     const amrex::Real* time, const int* level);
 
 BL_FORT_PROC_DECL(TAG_MFRACERROR, tag_mfracerror)
     (int* tag, ARLIM_P(tag_lo), ARLIM_P(tag_hi),
@@ -69,8 +69,8 @@ BL_FORT_PROC_DECL(TAG_MFRACERROR, tag_mfracerror)
      const int lo[], const int hi[],
      const int* ncomp,
      const int domlo[], const int domhi[],
-     const Real dx[], const Real xlo[], const Real problo[],
-     const Real* time, const int* level);
+     const amrex::Real dx[], const amrex::Real xlo[], const amrex::Real problo[],
+     const amrex::Real* time, const int* level);
 
 BL_FORT_PROC_DECL(TAG_ENTERROR, tag_enterror)
     (int* tag, ARLIM_P(tag_lo), ARLIM_P(tag_hi),
@@ -79,8 +79,8 @@ BL_FORT_PROC_DECL(TAG_ENTERROR, tag_enterror)
      const int lo[], const int hi[],
      const int* ncomp,
      const int domlo[], const int domhi[],
-     const Real dx[], const Real xlo[], const Real problo[],
-     const Real* time, const int* level);
+     const amrex::Real dx[], const amrex::Real xlo[], const amrex::Real problo[],
+     const amrex::Real* time, const int* level);
 
 BL_FORT_PROC_DECL(TAG_STATE_ERROR, tag_state_error)
     (int* tag, ARLIM_P(tag_lo), ARLIM_P(tag_hi),
@@ -89,8 +89,8 @@ BL_FORT_PROC_DECL(TAG_STATE_ERROR, tag_state_error)
      const int lo[], const int hi[],
      const int* ncomp,
      const int domlo[], const int domhi[],
-     const Real dx[], const Real xlo[], const Real problo[],
-     const Real* time, const int* level);
+     const amrex::Real dx[], const amrex::Real xlo[], const amrex::Real problo[],
+     const amrex::Real* time, const int* level);
 
 BL_FORT_PROC_DECL(TAG_OVERDENSITY, tag_overdensity)
     (int* tag, ARLIM_P(tag_lo), ARLIM_P(tag_hi),
@@ -99,22 +99,22 @@ BL_FORT_PROC_DECL(TAG_OVERDENSITY, tag_overdensity)
      const int lo[], const int hi[],
      const int* ncomp,
      const int domlo[], const int domhi[],
-     const Real dx[], const int* level,
-     const Real* avg);
+     const amrex::Real dx[], const int* level,
+     const amrex::Real* avg);
 
 BL_FORT_PROC_DECL(TAG_REGION, tag_region)
     (int* tag, ARLIM_P(tag_lo), ARLIM_P(tag_hi),
      const int* tagval, 
      const int lo[], const int hi[],
      const int domlo[], const int domhi[],
-     const Real dx[], const Real xlo[], 
-     const Real problo[], const int* level);
+     const amrex::Real dx[], const amrex::Real xlo[], 
+     const amrex::Real problo[], const int* level);
 
 BL_FORT_PROC_DECL(SET_TRIGGER, set_trigger)
     (BL_FORT_FAB_ARG(state),
      const int    lo[], const int    hi[],
      const int domlo[], const int domhi[],
-     const Real dx[], const Real xlo[], const Real problo[],
-     const int* level, const Real* avg_den, const int* trigger);
+     const amrex::Real dx[], const amrex::Real xlo[], const amrex::Real problo[],
+     const int* level, const amrex::Real* avg_den, const int* trigger);
 
 #endif

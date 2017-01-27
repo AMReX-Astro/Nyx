@@ -2,7 +2,7 @@
 
 #ifdef GRAVITY
 #include <Gravity.H>
-BL_FORT_PROC_DECL(GET_GRAV_CONST, get_grav_const)(Real* Gconst);
+BL_FORT_PROC_DECL(GET_GRAV_CONST, get_grav_const)(amrex::Real* Gconst);
 #endif
 
 #include <Nyx.H>

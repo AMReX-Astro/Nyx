@@ -18,11 +18,11 @@ public:
     void install_level(int level, amrex::AmrLevel* level_data_to_install);
 
     std::string get_gravity_type();
-    Real get_const_grav ();
+    amrex::Real get_const_grav ();
     int get_no_sync();
     int get_no_composite();
 
-    void set_mass_offset(Real time);
+    void set_mass_offset(amrex::Real time);
 
     amrex::Array<amrex::MultiFab*> get_grad_phi_prev(int level);
     amrex::Array<amrex::MultiFab*> get_grad_phi_curr(int level);
@@ -38,33 +38,33 @@ public:
     // 
     // Use the F90 solver
     //
-    Real solve_with_fmg (int crse_level, int fine_level,
+    amrex::Real solve_with_fmg (int crse_level, int fine_level,
                          const amrex::Array<amrex::MultiFab*> & phi,
                          const amrex::Array<amrex::MultiFab*> & rhs,
                          const amrex::Array<amrex::Array<amrex::MultiFab*> >& grad_phi,
                          const amrex::Array<amrex::MultiFab*>& res,
-                         Real time);
+                         amrex::Real time);
 
     // 
     // Use the C++ solver in C_CellMG instead of the F90 solvers in F_MG.
     //
     void solve_with_Cpp(int level, amrex::MultiFab& phi, const amrex::Array<amrex::MultiFab*>& grad_phi,
-                        amrex::MultiFab& rhs, Real tol, Real abs_tol);
+                        amrex::MultiFab& rhs, amrex::Real tol, amrex::Real abs_tol);
     // 
     // Use the HPGMG solver
     //
 #ifdef USEHPGMG
     void solve_with_HPGMG(int level, amrex::MultiFab& phi, const amrex::Array<amrex::MultiFab*>& grad_phi,
-                        amrex::MultiFab& rhs, Real tol, Real abs_tol);
+                        amrex::MultiFab& rhs, amrex::Real tol, amrex::Real abs_tol);
 #endif
-    void set_boundary  (amrex::BndryData& bd, amrex::MultiFab&  rhs, const Real* dx);
+    void set_boundary  (amrex::BndryData& bd, amrex::MultiFab&  rhs, const amrex::Real* dx);
 
     void solve_for_old_phi(int level, amrex::MultiFab& phi, const amrex::Array<amrex::MultiFab*>& grad_phi,
                            int fill_interior);
     void solve_for_new_phi(int level, amrex::MultiFab& phi, const amrex::Array<amrex::MultiFab*>& grad_phi,
                            int fill_interior, int grav_n_grow = 1);
     void solve_for_phi(int level, amrex::MultiFab& Rhs, amrex::MultiFab& phi,
-                       const amrex::Array<amrex::MultiFab*>& grad_phi, Real time,
+                       const amrex::Array<amrex::MultiFab*>& grad_phi, amrex::Real time,
                        int fill_interior);
     void solve_for_delta_phi(int crse_level, int fine_level, amrex::MultiFab& CrseRhs,
                              const amrex::Array<amrex::MultiFab*>& delta_phi,
@@ -85,16 +85,16 @@ public:
                                  int use_previous_phi_as_guess=0);
 
     void get_crse_grad_phi(int level, amrex::Array<std::unique_ptr<amrex::MultiFab> >& grad_phi_crse,
-                           Real time);
-    void get_crse_phi(int level, amrex::MultiFab& phi_crse, Real time);
+                           amrex::Real time);
+    void get_crse_phi(int level, amrex::MultiFab& phi_crse, amrex::Real time);
 
     //
     // Sets phi_flux registers to 0
     //
     void zero_phi_flux_reg(int level);
 
-    void get_old_grav_vector(int level, amrex::MultiFab& grav_vector, Real time);
-    void get_new_grav_vector(int level, amrex::MultiFab& grav_vector, Real time);
+    void get_old_grav_vector(int level, amrex::MultiFab& grav_vector, amrex::Real time);
+    void get_new_grav_vector(int level, amrex::MultiFab& grav_vector, amrex::Real time);
 
     void average_fine_ec_onto_crse_ec(int level, int is_new);
 
@@ -107,7 +107,7 @@ public:
     void set_dirichlet_bcs(int level, amrex::MultiFab* phi);
 
 #ifdef CGRAV
-    void make_prescribed_grav(int level, Real time, amrex::MultiFab& grav, int addToExisting);
+    void make_prescribed_grav(int level, amrex::Real time, amrex::MultiFab& grav, int addToExisting);
 #endif
 
     // Routine to duplicate Gravity class data onto sidecars
@@ -136,7 +136,7 @@ protected:
     //
     // Resnorm at each level
     //
-    amrex::Array<Real> level_solver_resnorm;
+    amrex::Array<amrex::Real> level_solver_resnorm;
 
     int density;
     int finest_level;
@@ -154,10 +154,10 @@ protected:
     static int  monopole_bcs;
     static int  solve_with_cpp;
     static int solve_with_hpgmg;
-    static Real mass_offset;
-    static Real sl_tol;
-    static Real ml_tol;
-    static Real delta_tol;
+    static amrex::Real mass_offset;
+    static amrex::Real sl_tol;
+    static amrex::Real ml_tol;
+    static amrex::Real delta_tol;
     static std::string gravity_type;
     static int stencil_type;
 
