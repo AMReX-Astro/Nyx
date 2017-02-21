@@ -187,6 +187,11 @@ public:
     void plot_z_est_time_step(Real& est_dt, bool& dt_changed);
 
     //
+    // Time step control based on "z" not passing one of the specified analysis_z_values
+    //
+    void analysis_z_est_time_step(Real& est_dt, bool& dt_changed);
+
+    //
     // How to initialize "a" at restart (from checkpoint or plotfile)
     //
     void comoving_a_post_restart(const std::string& restart_file);
@@ -610,7 +615,8 @@ protected:
 
     static IntVect Nrep;  // how many times the initial conditions are replicated in each direction
 
-    static Array<Real> plot_z_values;  // These are the value of "z" at which to dump plotfiles.
+    static Array<Real> plot_z_values;      // These are the value of "z" at which to dump plotfiles.
+    static Array<Real> analysis_z_values;  // These are the value of "z" at which to perform analysis
 
     bool FillPatchedOldState_ok;
 

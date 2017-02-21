@@ -62,6 +62,7 @@ Real Nyx::old_a_time = -1.0;
 Real Nyx::new_a_time = -1.0;
 
 Array<Real> Nyx::plot_z_values;
+Array<Real> Nyx::analysis_z_values;
 
 bool Nyx::dump_old = false;
 int Nyx::verbose      = 0;
@@ -394,6 +395,13 @@ Nyx::read_params ()
       pp.queryarr("plot_z_values",plot_z_values,0,num_z_values);
     }
 
+    if (pp.contains("analysis_z_values"))
+    {
+      int num_z_values = pp.countval("analysis_z_values");
+      analysis_z_values.resize(num_z_values);
+      pp.queryarr("analysis_z_values",analysis_z_values,0,num_z_values);
+    }
+
     pp.query("gimlet_int", gimlet_int);
 }
 
@@ -654,6 +662,9 @@ Nyx::initial_time_step ()
     if (level == 0 && plot_z_values.size() > 0)
         plot_z_est_time_step(init_dt,dt_changed);
 
+    if (level == 0 && analysis_z_values.size() > 0)
+        analysis_z_est_time_step(init_dt,dt_changed);
+
     return init_dt;
 }
 
@@ -887,22 +898,28 @@ Nyx::computeNewDt (int                   finest_level,
     }
 
     // Shrink the time step if necessary in order to hit the next plot_z_value
-    if (level == 0 && plot_z_values.size() > 0)
+    if (level == 0 && ( plot_z_values.size() > 0 || analysis_z_values.size() > 0 ) )
     {
-        bool dt_changed = false;
-        plot_z_est_time_step(dt_0,dt_changed);
+        bool dt_changed_plot     = false;
+        bool dt_changed_analysis = false;
+   
+        if (plot_z_values.size() > 0)
+           plot_z_est_time_step(dt_0,dt_changed_plot);
 
-        // Update the value of a if we didn't change dt in the call to plot_z_est_time_step.
+        if (analysis_z_values.size() > 0)
+           analysis_z_est_time_step(dt_0,dt_changed_analysis);
+
+        // Update the value of a if we didn't change dt in the call to plot_z_est_time_step or analysis_z_est_time_step.
         // If we didn't change dt there, then we have already done the integration.
         // If we did    change dt there, then we need to re-integrate here.
-        if (dt_changed)
+        if (dt_changed_plot || dt_changed_analysis)
             integrate_comoving_a(cur_time,dt_0);
     }
-    else
+    else 
     {
         integrate_comoving_a(cur_time,dt_0);
     }
-
+     
     n_factor = 1;
     for (i = 0; i <= finest_level; i++)
     {
@@ -1005,7 +1022,8 @@ Nyx::writePlotNow ()
     if (level > 0)
         BoxLib::Error("Should only call writePlotNow at level 0!");
 
-    bool found_one = false;
+    bool found_one_plot = false;
+    bool found_one_analysis = false;
 
     if (plot_z_values.size() > 0)
     {
@@ -1026,11 +1044,34 @@ Nyx::writePlotNow ()
         for (int i = 0; i < plot_z_values.size(); i++)
         {
             if (std::abs(z_new - plot_z_values[i]) < (0.01 * (z_old - z_new)) )
-                found_one = true;
+                found_one_plot = true;
         }
     }
 
-    if (found_one) {
+    if (analysis_z_values.size() > 0)
+    {
+
+#ifdef NO_HYDRO
+        Real prev_time = state[PhiGrav_Type].prevTime();
+        Real  cur_time = state[PhiGrav_Type].curTime();
+#else
+        Real prev_time = state[State_Type].prevTime();
+        Real  cur_time = state[State_Type].curTime();
+#endif
+        Real a_old = get_comoving_a(prev_time);
+        Real z_old = (1. / a_old) - 1.;
+
+        Real a_new = get_comoving_a( cur_time);
+        Real z_new = (1. / a_new) - 1.;
+
+        for (int i = 0; i < analysis_z_values.size(); i++)
+        {
+            if (std::abs(z_new - analysis_z_values[i]) < (0.01 * (z_old - z_new)) )
+                found_one_analysis = true;
+        }
+    }
+
+    if (found_one_plot || found_one_analysis) {
         return true;
     } else {
         return false;
@@ -2400,6 +2441,7 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
 
       BoxLib::BroadcastArray(allReals, scsMyId, ioProcNumAll, scsComm);
       BoxLib::BroadcastArray(plot_z_values, scsMyId, ioProcNumAll, scsComm);
+      BoxLib::BroadcastArray(analysis_z_values, scsMyId, ioProcNumAll, scsComm);
 
       // ---- unpack the Reals
       if(scsMyId != ioProcNumSCS) {
