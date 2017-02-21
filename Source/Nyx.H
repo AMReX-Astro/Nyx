@@ -337,6 +337,11 @@ public:
     bool writePlotNow();
 
     //
+    // Tell Nyx to do analysis now
+    //
+    bool doAnalysisNow();
+
+    //
     // Advance grids at this level in time.
     //
     virtual Real advance(Real time, Real dt, int iteration, int ncycle);

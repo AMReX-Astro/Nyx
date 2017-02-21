@@ -1022,8 +1022,7 @@ Nyx::writePlotNow ()
     if (level > 0)
         BoxLib::Error("Should only call writePlotNow at level 0!");
 
-    bool found_one_plot = false;
-    bool found_one_analysis = false;
+    bool found_one = false;
 
     if (plot_z_values.size() > 0)
     {
@@ -1044,9 +1043,25 @@ Nyx::writePlotNow ()
         for (int i = 0; i < plot_z_values.size(); i++)
         {
             if (std::abs(z_new - plot_z_values[i]) < (0.01 * (z_old - z_new)) )
-                found_one_plot = true;
+                found_one = true;
         }
     }
+
+    if (found_one) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool
+Nyx::doAnalysisNow ()
+{
+    BL_PROFILE("Nyx::doAnalysisNow()");
+    if (level > 0)
+        BoxLib::Error("Should only call doAnalysisNow at level 0!");
+
+    bool found_one = false;
 
     if (analysis_z_values.size() > 0)
     {
@@ -1067,11 +1082,11 @@ Nyx::writePlotNow ()
         for (int i = 0; i < analysis_z_values.size(); i++)
         {
             if (std::abs(z_new - analysis_z_values[i]) < (0.01 * (z_old - z_new)) )
-                found_one_analysis = true;
+                found_one = true;
         }
     }
 
-    if (found_one_plot || found_one_analysis) {
+    if (found_one) {
         return true;
     } else {
         return false;
@@ -1442,7 +1457,8 @@ Nyx::postCoarseTimeStep (Real cumtime)
 #endif /* REEBER */
 
 #ifdef GIMLET
-   if (nStep() % gimlet_int == 0) {
+   if ( (nStep() % gimlet_int == 0) || doAnalysisNow() ) 
+   {
      if (ParallelDescriptor::NProcsSidecar(0) <= 0) { // we have no sidecars, so do everything in situ
        const Real time1 = ParallelDescriptor::second();
 
