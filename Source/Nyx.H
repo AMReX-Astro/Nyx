@@ -664,7 +664,7 @@ protected:
 };
 
 // time step interval for finding halos
-extern int halo_int;
+extern int reeber_int;
 // time step interval for doing Gimlet post-processing
 extern int gimlet_int;
 

@@ -27,7 +27,7 @@
 #include <Nyx.H>
 
 #ifdef REEBER
-#include <InTransitAnalysis.H> // This actually works both in situ and in-transit.
+#include <ReeberAnalysis.H> // This actually works both in situ and in-transit.
 #endif
 
 #include "Nyx_output.H"
@@ -91,18 +91,26 @@ namespace
             if(ParallelDescriptor::IOProcessor()) {
               std::cout << "Sidecars got the halo finder sidecarSignal!" << std::endl;
             }
-            BoxArray bac;
+
             Geometry geom;
+            Geometry::SendGeometryToSidecar(&geom, whichSidecar);
+
             int time_step, nComp(0), nGhost(0);
+            int do_analysis;
 
             // Receive the necessary data for doing analysis.
             ParallelDescriptor::Bcast(&nComp, 1, 0, ParallelDescriptor::CommunicatorInter(whichSidecar));
-            BoxArray::RecvBoxArray(bac, whichSidecar);
-            MultiFab mf(bac, nComp, nGhost);
+
+            // Get desired box array and distribution mapping from Reeber
+            BoxArray ba;
+            DistributionMapping dm;
+            getAnalysisDecomposition(geom, ParallelDescriptor::NProcsSidecar(whichSidecar), ba, dm);
+
+            MultiFab mf(ba, nComp + 1, nGhost, dm);
 
             MultiFab *mfSource = 0;
             MultiFab *mfDest = &mf;
-            int srcComp(0), destComp(0);
+            int srcComp(0), destComp(1);
             int srcNGhost(0), destNGhost(0);
             const MPI_Comm &commSrc = ParallelDescriptor::CommunicatorComp();
             const MPI_Comm &commDest = ParallelDescriptor::CommunicatorSidecar();
@@ -115,12 +123,17 @@ namespace
                                 commSrc, commDest, commInter, commBoth,
                                 isSrc);
 
-            Geometry::SendGeometryToSidecar(&geom, whichSidecar);
+            mf.setVal(0, 0, 1, 0);
+            for (int comp = 1; comp < mf.nComp(); ++comp)
+                MultiFab::Add(mf, mf, comp, 0, 1, 0);
+
+
             ParallelDescriptor::Bcast(&time_step, 1, 0, ParallelDescriptor::CommunicatorInter(whichSidecar));
+            ParallelDescriptor::Bcast(&do_analysis, 1, 0, ParallelDescriptor::CommunicatorInter(whichSidecar));
 
             // Here Reeber constructs the local-global merge trees and computes the
             // halo locations.
-            runInSituAnalysis(mf, geom, time_step);
+            runReeberAnalysis(mf, geom, time_step, bool(do_analysis));
 
             if(ParallelDescriptor::IOProcessor()) {
               std::cout << "Sidecars completed halo finding analysis." << std::endl;
@@ -260,18 +273,20 @@ namespace
   #endif /* BL_USE_MPI */
     }
 
-    static void SidecarInit() {
-#ifdef REEBER
-      if(ParallelDescriptor::InSidecarGroup() && ParallelDescriptor::IOProcessor()) {
-        std::cout << "Initializing Reeber on sidecars ... " << std::endl;
-      } else if (ParallelDescriptor::IOProcessor()) {
-        std::cout << "Initializing Reeber in situ ... " << std::endl;
-      }
-      // Reeber reads its ParmParse stuff here so we don't need to do any of it
-      // in Nyx proper.
-      initInSituAnalysis();
-#endif
-    }
+// The following function does not seem to be used
+//    static void SidecarInit() {
+//#ifdef REEBER
+//      if(ParallelDescriptor::InSidecarGroup() && ParallelDescriptor::IOProcessor()) {
+//        std::cout << "Initializing Reeber on sidecars ... " << std::endl;
+//      } else if (ParallelDescriptor::IOProcessor()) {
+//        std::cout << "Initializing Reeber in situ ... " << std::endl;
+//      }
+//      // Reeber reads its ParmParse stuff here so we don't need to do any of it
+//      // in Nyx proper.
+//      reeber_int = initReeberAnalysis();
+//      std::cout << "SidecarInit(): reeber_int = " << reeber_int << std::endl;
+//#endif
+//    }
 }
 
 
@@ -358,7 +373,7 @@ main (int argc, char* argv[])
 
     // Reeber has to do some initialization.
 #ifdef REEBER
-    initInSituAnalysis();
+    reeber_int = initReeberAnalysis();
 #endif
 
     if (Nyx::nSidecarProcs > 0)

@@ -32,7 +32,7 @@ using std::string;
 #endif
 
 #ifdef REEBER
-#include <InTransitAnalysis.H>
+#include <ReeberAnalysis.H>
 #endif
 
 #ifdef GIMLET
@@ -166,7 +166,7 @@ Real         Nyx::previousCPUTimeUsed = 0.0;
 
 Real         Nyx::startCPUTime = 0.0;
 
-int halo_int(0);
+int reeber_int(0);
 int gimlet_int(0);
 
 int Nyx::forceParticleRedist = false;
@@ -1403,11 +1403,39 @@ Nyx::postCoarseTimeStep (Real cumtime)
    const int whichSidecar(0);
 
 #ifdef REEBER
-   if (nStep() % halo_int == 0) {
+   const auto& reeber_density_var_list = getReeberHaloDensityVars();
+   bool do_analysis(doAnalysisNow());
+   if (do_analysis || (reeber_int > 0 && nStep() % reeber_int == 0)) {
      if (ParallelDescriptor::NProcsSidecar(0) <= 0) { // we have no sidecars, so do everything in situ
        const Real time1 = ParallelDescriptor::second();
-       const MultiFab *dm_density = particle_derive("particle_mass_density", cur_time, 0);
-       runInSituAnalysis(*dm_density, Geom(), nStep());
+
+       BoxArray ba;
+       DistributionMapping dm;
+       getAnalysisDecomposition(Geom(), ParallelDescriptor::NProcs(), ba, dm);
+       MultiFab reeberMF(ba, reeber_density_var_list.size() + 1, 0, dm);
+       int cnt = 1;
+       // Derive quantities and store in components 1... of MultiFAB
+       for (auto it = reeber_density_var_list.begin(); it != reeber_density_var_list.end(); ++it)
+       {
+           MultiFab *derive_dat = particle_derive(*it, cur_time, 0); // FIXME: Is this the right way? 
+           reeberMF.copy(*derive_dat, 0, cnt, 1, 0, 0);
+           delete derive_dat;
+           cnt++;
+       }
+
+       reeberMF.setVal(0, 0, 1, 0);
+       for (int comp = 1; comp < reeberMF.nComp(); ++comp)
+           MultiFab::Add(reeberMF, reeberMF, comp, 0, 1, 0);
+       runReeberAnalysis(reeberMF, Geom(), nStep(), do_analysis);
+
+       // std::vector<Halo> halos = findHalos(*this, cur_time, State_Type);
+       // if (ParallelDescriptor::IOProcessor())
+       // {
+       //  std::cout << "Found " << halos.size() << " halos." << std::endl;
+       //  for (std::vector<Halo>::iterator it = halos.begin(); it != halos.end(); ++it)
+       //    std::cout << it->pos << " " << it->mass << std::endl;
+       //}
+
        const Real time2 = ParallelDescriptor::second();
        if (ParallelDescriptor::IOProcessor())
        {
@@ -1420,17 +1448,28 @@ Nyx::postCoarseTimeStep (Real cumtime)
                                  ParallelDescriptor::CommunicatorInter(whichSidecar));
 
        Geometry geom(Geom());
-       MultiFab *dm_density = particle_derive("particle_mass_density", cur_time, 0);
-       int time_step(nStep()), nComp(dm_density->nComp());;
+       Geometry::SendGeometryToSidecar(&geom, whichSidecar);
+
+       MultiFab reeberMF(grids, reeber_density_var_list.size(), 0);
+       int cnt = 0;
+       // Derive quantities and store in components 1... of MultiFAB
+       for (auto it = reeber_density_var_list.begin(); it != reeber_density_var_list.end(); ++it)
+       {
+           MultiFab *derive_dat = particle_derive(*it, cur_time, 0); // FIXME: Is this the right way?
+           reeberMF.copy(*derive_dat, 0, cnt, 1, 0, 0);
+           delete derive_dat;
+           cnt++;
+       }
+
+       int time_step(nStep()), nComp(reeberMF.nComp());
 
        Real time1(ParallelDescriptor::second());
        ParallelDescriptor::Bcast(&nComp, 1, MPI_IntraGroup_Broadcast_Rank,
                                  ParallelDescriptor::CommunicatorInter(whichSidecar));
-       BoxArray::SendBoxArray(dm_density->boxArray(), whichSidecar);
 
-       MultiFab *mfSource = dm_density;
+       MultiFab *mfSource = &reeberMF;
        MultiFab *mfDest = 0;
-       int srcComp(0), destComp(0);
+       int srcComp(0), destComp(1);
        int srcNGhost(0), destNGhost(0);
        MPI_Comm commSrc(ParallelDescriptor::CommunicatorComp());
        MPI_Comm commDest(ParallelDescriptor::CommunicatorSidecar());
@@ -1443,9 +1482,12 @@ Nyx::postCoarseTimeStep (Real cumtime)
                            commSrc, commDest, commInter, commBoth,
                            isSrc);
 
-       Geometry::SendGeometryToSidecar(&geom, whichSidecar);
 
        ParallelDescriptor::Bcast(&time_step, 1, MPI_IntraGroup_Broadcast_Rank,
+                                 ParallelDescriptor::CommunicatorInter(whichSidecar));
+
+       int do_analysis_bcast(do_analysis);
+       ParallelDescriptor::Bcast(&do_analysis_bcast, 1, MPI_IntraGroup_Broadcast_Rank,
                                  ParallelDescriptor::CommunicatorInter(whichSidecar));
 
        Real time2(ParallelDescriptor::second());
@@ -2354,7 +2396,7 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         allInts.push_back(add_ext_src);
         allInts.push_back(heat_cool_type);
         allInts.push_back(strang_split);
-        allInts.push_back(halo_int);
+        allInts.push_back(reeber_int);
         allInts.push_back(gimlet_int);
         allInts.push_back(grav_n_grow);
         allInts.push_back(forceParticleRedist);
@@ -2412,7 +2454,7 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         add_ext_src = allInts[count++];
         heat_cool_type = allInts[count++];
         strang_split = allInts[count++];
-        halo_int = allInts[count++];
+        reeber_int = allInts[count++];
         gimlet_int = allInts[count++];
         grav_n_grow = allInts[count++];
         forceParticleRedist = allInts[count++];
