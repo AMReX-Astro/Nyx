@@ -933,9 +933,9 @@ Nyx::setup_virtual_particles()
         {
     	    get_level(level + 1).setup_virtual_particles();
 	    Nyx::theVirtPC()->CreateVirtualParticles(level+1, virts);
-	    Nyx::theVirtPC()->AddParticlesAtLevel(level, virts);
+	    Nyx::theVirtPC()->AddParticlesAtLevel(virts, level);
 	    Nyx::theDMPC()->CreateVirtualParticles(level+1, virts);
-	    Nyx::theVirtPC()->AddParticlesAtLevel(level, virts);
+	    Nyx::theVirtPC()->AddParticlesAtLevel(virts, level+1);
         }
         virtual_particles_set = true;
     }
@@ -958,26 +958,27 @@ Nyx::setup_ghost_particles()
 {
     BL_PROFILE("Nyx::setup_ghost_particles()");
     BL_ASSERT(level < parent->finestLevel());
+    int nGrow = Nyx::grav_n_grow - 1;
     if(Nyx::theDMPC() != 0)
     {
         DarkMatterParticleContainer::AoS ghosts;
-        Nyx::theDMPC()->CreateGhostParticles(level,Nyx::grav_n_grow-1, ghosts);
-        Nyx::theGhostPC()->AddParticlesAtLevel(level+1, ghosts);
+        Nyx::theDMPC()->CreateGhostParticles(level, nGrow, ghosts);
+        Nyx::theGhostPC()->AddParticlesAtLevel(ghosts, level+1, nGrow);
     }
 #ifdef AGN
     if(Nyx::theAPC() != 0)
     {
         AGNParticleContainer::AoS ghosts;
-        Nyx::theAPC()->CreateGhostParticles(level,Nyx::grav_n_grow-1, ghosts);
-        Nyx::theGhostAPC()->AddParticlesAtLevel(level+1, ghosts);
+        Nyx::theAPC()->CreateGhostParticles(level, nGrow, ghosts);
+        Nyx::theGhostAPC()->AddParticlesAtLevel(ghosts, level+1, nGrow);
     }
 #endif
 #ifdef NEUTRINO_PARTICLES
     if(Nyx::theNPC() != 0)
     {
         NeutrinoParticleContainer::AoS ghosts;
-        Nyx::theNPC()->CreateGhostParticles(level,Nyx::grav_n_grow-1, ghosts);
-        Nyx::theGhostNPC()->AddParticlesAtLevel(level+1, ghosts);
+        Nyx::theNPC()->CreateGhostParticles(level, nGrow, ghosts);
+        Nyx::theGhostNPC()->AddParticlesAtLevel(ghosts, level+1, nGrow);
     }
 #endif
 }

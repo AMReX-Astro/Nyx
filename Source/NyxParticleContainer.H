@@ -511,7 +511,7 @@ NyxParticleContainer<NR,NI,NA>::moveKickDrift (amrex::MultiFab&       accelerati
                 // Move the particle to the proper ghost cell. 
                 //      and remove any *ghost* particles that have gone too far
                 // Note that this should only negate ghost particles, not real particles.
-                if (!this->SingleLevelGrownWhere(p, pld, lev, acceleration.nGrow()-2))
+                if (!this->SingleLevelWhere(p, pld, lev, acceleration.nGrow()-2))
                 {
                     // Assert that the particle being removed is a ghost particle;
                     // the ghost particle is no longer in relevant ghost cells for this grid.
