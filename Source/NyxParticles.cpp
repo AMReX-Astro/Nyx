@@ -935,7 +935,7 @@ Nyx::setup_virtual_particles()
 	    Nyx::theVirtPC()->CreateVirtualParticles(level+1, virts);
 	    Nyx::theVirtPC()->AddParticlesAtLevel(virts, level);
 	    Nyx::theDMPC()->CreateVirtualParticles(level+1, virts);
-	    Nyx::theVirtPC()->AddParticlesAtLevel(virts, level+1);
+	    Nyx::theVirtPC()->AddParticlesAtLevel(virts, level);
         }
         virtual_particles_set = true;
     }
