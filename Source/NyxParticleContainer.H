@@ -490,11 +490,11 @@ NyxParticleContainer<NR,NI,NA>::moveKickDrift (amrex::MultiFab&       accelerati
         for (auto& kv : pmap) {
             AoS&  pbox       = kv.second.GetAoS();
             const int   n    = pbox.size();
- 
+
+            amrex::ParticleLocData pld; 
 #ifdef _OPENMP
 #pragma omp parallel for
 #endif
-            amrex::ParticleLocData pld;
             for (int i = 0; i < n; i++)
             {
                 ParticleType& p = pbox[i];

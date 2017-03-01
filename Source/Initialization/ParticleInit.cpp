@@ -391,10 +391,10 @@ DarkMatterParticleContainer::InitCosmo(
         const int        n       = pbox.size();
         const FArrayBox& dfab    = mf[grid];
 
+        ParticleLocData pld;
 #ifdef _OPENMP
 #pragma omp parallel for
 #endif
-        ParticleLocData pld;
         for (int i = 0; i < n; i++)
         {
             ParticleType& p = pbox[i];
