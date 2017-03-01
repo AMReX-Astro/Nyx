@@ -450,7 +450,6 @@ NyxParticleContainer<NR,NI,NA>::moveKickDrift (amrex::MultiFab&       accelerati
 
             if (p.id() <= 0) continue;
 
-            BL_ASSERT(p.m_grid == grid);
             //
             // note: m_data[0] is mass, 1 is v_x, ...
             //
