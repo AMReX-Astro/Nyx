@@ -21,9 +21,11 @@ DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
 
     if (calls[lev] > 1) return;
 
-    m_particles.reserve(15);  // So we don't ever have to do any copying on a resize.
+    Array<ParticleLevel>& particles = this->GetParticles();
 
-    m_particles.resize(nlevs);
+    particles.reserve(15);  // So we don't ever have to do any copying on a resize.
+
+    particles.resize(nlevs);
 
     ParticleType p;
     Real         disp[BL_SPACEDIM];
@@ -45,7 +47,7 @@ DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
 	const Box&  vbx    = mfi.validbox();
         const int  *fab_lo = vbx.loVect();
         const int  *fab_hi = vbx.hiVect();
-
+        ParticleLocData pld;
         for (int kx = fab_lo[2]; kx <= fab_hi[2]; kx++)
         {
             for (int jx = fab_lo[1]; jx <= fab_hi[1]; jx++)
@@ -65,8 +67,8 @@ DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
                         //
 			// Start with homogeneous distribution (for 1 p per cell in the center of the cell),
 			//
-	                p.m_pos[n] = geom.ProbLo(n) + 
-                                      (indices[n]+Real(0.5))*dx[n];
+	                p.pos(n) = geom.ProbLo(n) + 
+                            (indices[n]+Real(0.5))*dx[n];
 			if(disp[n]*disp_fac[n]>dx[n]/2.0)
 			  outcount[n]++;
 			if(disp[n]*disp_fac[n]<-dx[n]/2.0)
@@ -75,56 +77,56 @@ DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
 			//
                         // then add the displacement (input values weighted by domain length).
                         //
-	                p.m_pos[n] += disp[n] * disp_fac[n];
+	                p.pos(n) += disp[n] * disp_fac[n];
 
                         //
 			// Set the velocities.
                         //
                         vel[n] = myFab(indices,vel_idx+n);
-	                p.m_data[n+1] = vel[n] * vel_fac[n];
+	                p.rdata(n+1) = vel[n] * vel_fac[n];
 	            }
                     //
 		    // Set the mass of the particle from the input value.
                     //
-	            p.m_data[0] = particleMass;
-	            p.m_id      = ParticleBase::NextID();
-	            p.m_cpu     = MyProc;
+	            p.rdata(0)  = particleMass;
+	            p.id()      = ParticleType::NextID();
+	            p.cpu()     = MyProc;
 	
-	            if (!ParticleBase::Where(p,m_gdb))
+	            if (!this->Where(p, pld))
                     {
-      		        ParticleBase::PeriodicShift(p,m_gdb);
+      		        this->PeriodicShift(p);
 
-                        if (!ParticleBase::Where(p,m_gdb))
+                        if (!this->Where(p, pld))
                             amrex::Abort("ParticleContainer<N>::InitCosmo1ppcMultiLevel():invalid particle");
                     }
 
-		    BL_ASSERT(p.m_lev >= 0 && p.m_lev <= m_gdb->finestLevel());
+		    BL_ASSERT(pld.m_lev >= 0 && pld.m_lev <= m_gdb->finestLevel());
 		    //handle particles that ran out of this level into a finer one. 
-		    if (baWhereNot.contains(p.m_cell))
+		    if (baWhereNot.contains(pld.m_cell))
 		    {
 		      outside_counter++;
 		      ParticleType newp[8];
+                      ParticleLocData new_pld;
 		      for (int i=0;i<8;i++)
 		      {
-			newp[i].m_data[0] = particleMass/8.0;
-			newp[i].m_id = ParticleBase::NextID();
-			newp[i].m_cpu     = MyProc;
-			for (int dim=0;dim<BL_SPACEDIM;dim++)
-			{
-			  newp[i].m_pos[dim]=p.m_pos[dim]+(2*((i/(1 << dim)) % 2)-1)*dx[dim]/4.0;
-			  newp[i].m_data[dim+1]=p.m_data[dim+1];
-			  
-			  
-			}
-		      
-			if (!ParticleBase::Where(newp[i],m_gdb))
-			{
-			    ParticleBase::PeriodicShift(newp[i],m_gdb);
-    
-			    if (!ParticleBase::Where(newp[i],m_gdb))
-                                amrex::Abort("ParticleContainer<N>::InitCosmo1ppcMultiLevel():invalid particle");
-			}
-			m_particles[newp[i].m_lev][newp[i].m_grid].push_back(newp[i]);
+                          newp[i].rdata(0)   = particleMass/8.0;
+                          newp[i].id()       = ParticleType::NextID();
+                          newp[i].cpu()      = MyProc;
+                          for (int dim=0;dim<BL_SPACEDIM;dim++)
+                          {
+                              newp[i].pos(dim)=p.pos(dim)+(2*((i/(1 << dim)) % 2)-1)*dx[dim]/4.0;
+                              newp[i].rdata(dim+1)=p.rdata(dim+1);
+                          }
+                          
+                          if (!this->Where(newp[i], new_pld))
+                          {
+                              this->PeriodicShift(newp[i]);
+                              
+                              if (!this->Where(newp[i], new_pld))
+                                  amrex::Abort("ParticleContainer<N>::InitCosmo1ppcMultiLevel():invalid particle");
+                          }
+                          particles[new_pld.m_lev][std::make_pair(new_pld.m_grid, 
+                                                                  new_pld.m_tile)].push_back(newp[i]);
 		      }
 		      
 		    }
@@ -133,7 +135,7 @@ DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
 	            // Add it to the appropriate PBox at the appropriate level.
 	            //
 		    else
-		      m_particles[p.m_lev][p.m_grid].push_back(p);
+                        particles[pld.m_lev][std::make_pair(pld.m_grid, pld.m_tile)].push_back(p);
                 }
             }
         }
@@ -149,20 +151,23 @@ DarkMatterParticleContainer::InitCosmo1ppc(MultiFab& mf, const Real vel_fac[], c
     const Geometry& geom     = m_gdb->Geom(0);
     const Real*     dx       = geom.CellSize();
 
-    m_particles.reserve(15);  // So we don't ever have to do any copying on a resize.
+    Array<ParticleLevel>& particles = this->GetParticles();
 
-    m_particles.resize(m_gdb->finestLevel()+1);
+    particles.reserve(15);  // So we don't ever have to do any copying on a resize.
 
-    for (int lev = 0; lev < m_particles.size(); lev++)
+    particles.resize(m_gdb->finestLevel()+1);
+
+    for (int lev = 0; lev < particles.size(); lev++)
     {
-        BL_ASSERT(m_particles[lev].empty());
+        BL_ASSERT(particles[lev].empty());
     }
 
-    ParticleType p;
-    Real         disp[BL_SPACEDIM];
-    const Real   len[BL_SPACEDIM] = { D_DECL(geom.ProbLength(0),
-                                             geom.ProbLength(1),
-                                             geom.ProbLength(2)) };
+    ParticleType      p;
+    ParticleLocData   pld;
+    Real              disp[BL_SPACEDIM];
+    const Real        len[BL_SPACEDIM] = { D_DECL(geom.ProbLength(0),
+                                                  geom.ProbLength(1),
+                                                  geom.ProbLength(2)) };
     //
     // The grid should be initialized according to the ics...
     //
@@ -188,34 +193,34 @@ DarkMatterParticleContainer::InitCosmo1ppc(MultiFab& mf, const Real vel_fac[], c
 			// Start with homogeneous distribution (for 1 p per cell in the center of the cell),
                         // then add the displacement (input values weighted by domain length).
                         //
-	                p.m_pos[n] = geom.ProbLo(n) + 
-                                      (indices[n]+Real(0.5))*dx[n] +
-		                      disp[n] * len[n];
+	                p.pos(n) = geom.ProbLo(n) + 
+                            (indices[n]+Real(0.5))*dx[n] +
+                            disp[n] * len[n];
                         //
 			// Set the velocities.
                         //
-	                p.m_data[n+1] = disp[n] * vel_fac[n];
+	                p.rdata(n+1) = disp[n] * vel_fac[n];
 	            }
                     //
 		    // Set the mass of the particle from the input value.
                     //
-	            p.m_data[0] = particleMass;
-	            p.m_id      = ParticleBase::NextID();
-	            p.m_cpu     = MyProc;
+	            p.rdata(0)  = particleMass;
+	            p.id()      = ParticleType::NextID();
+	            p.cpu()     = MyProc;
 	
-	            if (!ParticleBase::Where(p,m_gdb))
+	            if (!this->Where(p, pld))
                     {
-      		        ParticleBase::PeriodicShift(p,m_gdb);
-
-                        if (!ParticleBase::Where(p,m_gdb))
+      		        this->PeriodicShift(p);
+                        
+                        if (!this->Where(p, pld))
                             amrex::Abort("ParticleContainer<N>::InitCosmo1ppc(): invalid particle");
 		    }
 
-	            BL_ASSERT(p.m_lev >= 0 && p.m_lev <= m_gdb->finestLevel());
+	            BL_ASSERT(pld.m_lev >= 0 && pld.m_lev <= this->finestLevel());
 	            //
 	            // Add it to the appropriate PBox at the appropriate level.
 	            //
-	            m_particles[p.m_lev][p.m_grid].push_back(p);
+	            particles[pld.m_lev][std::make_pair(pld.m_grid, pld.m_tile)].push_back(p);
                 }
             }
         }
@@ -240,13 +245,15 @@ DarkMatterParticleContainer::InitCosmo(
     const Real      strttime = ParallelDescriptor::second();
     const Geometry& geom     = m_gdb->Geom(0);
 
-    m_particles.reserve(15);  // So we don't ever have to do any copying on a resize.
+    Array<ParticleLevel>& particles = this->GetParticles();
 
-    m_particles.resize(m_gdb->finestLevel()+1);
+    particles.reserve(15);  // So we don't ever have to do any copying on a resize.
 
-    for (int lev = 0; lev < m_particles.size(); lev++)
+    particles.resize(m_gdb->finestLevel()+1);
+
+    for (int lev = 0; lev < particles.size(); lev++)
     {
-        BL_ASSERT(m_particles[lev].empty());
+        BL_ASSERT(particles[lev].empty());
     }
 
     const Real len[BL_SPACEDIM] = { D_DECL(geom.ProbLength(0),
@@ -300,6 +307,7 @@ DarkMatterParticleContainer::InitCosmo(
 	const Real* xlo     = gridloc.lo();
 	const Real* xhi     = gridloc.hi();
 
+        ParticleLocData pld;
         for (int k = 0; k < n_part[2]; k++)
         {
 	    for (int j = 0; j < n_part[1]; j++)
@@ -326,29 +334,29 @@ DarkMatterParticleContainer::InitCosmo(
 
 		    if (isInValidBox)
                     {
-                        D_TERM(p.m_pos[0] = pos[0];,
-                               p.m_pos[1] = pos[1];,
-                               p.m_pos[2] = pos[2];);
+                        D_TERM(p.pos(0) = pos[0];,
+                               p.pos(1) = pos[1];,
+                               p.pos(2) = pos[2];);
                         //
 		        // Set the mass of the particle.
                         //
-	                p.m_data[0] = particleMass;
-	                p.m_id      = ParticleBase::NextID();
-	                p.m_cpu     = MyProc;
+	                p.rdata(0)  = particleMass;
+	                p.id()      = ParticleType::NextID();
+	                p.cpu()     = MyProc;
 
-	                if (!ParticleBase::Where(p,m_gdb))
+	                if (!this->Where(p, pld))
                         {
-      		            ParticleBase::PeriodicShift(p,m_gdb);
+      		            this->PeriodicShift(p);
 
-                            if (!ParticleBase::Where(p,m_gdb))
+                            if (!this->Where(p, pld))
                                 amrex::Abort("ParticleContainer<N>::InitCosmo(): invalid particle");
 		        }
 
-	                BL_ASSERT(p.m_lev >= 0 && p.m_lev <= m_gdb->finestLevel());
+	                BL_ASSERT(pld.m_lev >= 0 && pld.m_lev <= m_gdb->finestLevel());
 	                //
 	                // Add it to the appropriate PBox at the appropriate level.
 	                //
-	                m_particles[p.m_lev][p.m_grid].push_back(p);
+	                particles[pld.m_lev][std::make_pair(pld.m_grid, pld.m_tile)].push_back(p);
 		    }
 	        }
 	    }
@@ -362,7 +370,7 @@ DarkMatterParticleContainer::InitCosmo(
     //
     // Let Redistribute() sort out where the particles belong.
     //
-    Redistribute(true);
+    Redistribute();
 
     if (ParallelDescriptor::IOProcessor() && m_verbose)
     {
@@ -373,60 +381,58 @@ DarkMatterParticleContainer::InitCosmo(
     //
     // FIXME: Will we ever need initial particles in grids deeper than 0?!
     //
-    PMap& pmap = m_particles[0];
+    ParticleLevel& pmap = this->GetParticles(0);
     //
     // Make sure, that mf and m_gdb.boxArray(0) are defined on the same boxarray.
     //
-    for (typename PMap::iterator pmap_it = pmap.begin(), pmapEnd = pmap.end(); pmap_it != pmapEnd; ++pmap_it)
-    {
-        const int        grid    = pmap_it->first;
-        PBox&            pbox    = pmap_it->second;
+     for (auto& kv : pmap) {
+        const int        grid    = kv.first.first;
+        AoS&             pbox    = kv.second.GetAoS();
         const int        n       = pbox.size();
         const FArrayBox& dfab    = mf[grid];
 
 #ifdef _OPENMP
 #pragma omp parallel for
 #endif
+        ParticleLocData pld;
         for (int i = 0; i < n; i++)
         {
             ParticleType& p = pbox[i];
 
-            if (p.m_id <= 0) continue;
-
-            BL_ASSERT(p.m_grid == grid);
+            if (p.id() <= 0) continue;
 
             Real disp[BL_SPACEDIM];
             //
 	    // Do CIC interpolation onto the particle positions.
 	    // For CIC we need one ghost cell!
             //
-            ParticleBase::GetGravity(dfab,m_gdb->Geom(p.m_lev),p,disp);
+            ParticleType::GetGravity(dfab, m_gdb->Geom(0), p, disp);
 
-            D_TERM(p.m_pos[0] += len[0]*disp[0];,
-                   p.m_pos[1] += len[1]*disp[1];,
-                   p.m_pos[2] += len[2]*disp[2];);
+            D_TERM(p.pos(0) += len[0]*disp[0];,
+                   p.pos(1) += len[1]*disp[1];,
+                   p.pos(2) += len[2]*disp[2];);
             //
             // Note: m_data[0] is mass, 1 is v_x, ...
             //
-            D_TERM(p.m_data[1] = vel_fac[0]*disp[0];,
-                   p.m_data[2] = vel_fac[1]*disp[1];,
-                   p.m_data[3] = vel_fac[2]*disp[2];);
+            D_TERM(p.rdata(1) = vel_fac[0]*disp[0];,
+                   p.rdata(2) = vel_fac[1]*disp[1];,
+                   p.rdata(3) = vel_fac[2]*disp[2];);
 
-            if (!ParticleBase::Where(p,m_gdb))
+            if (!this->Where(p, pld))
             {
-	        ParticleBase::PeriodicShift(p,m_gdb);
+	        this->PeriodicShift(p);
 
-                if (!ParticleBase::Where(p,m_gdb))
+                if (!this->Where(p, pld))
                     amrex::Abort("ParticleContainer<N>::InitCosmo(): invalid particle");
 	    }
 
-            ParticleBase::Reset(p,m_gdb,true);
+            this->Reset(p, true);
         }
     }
     //
     // Let Redistribute() sort out where the particles now belong.
     //
-    Redistribute(true);
+    Redistribute();
 
     if (ParallelDescriptor::IOProcessor() && m_verbose)
     {

@@ -1074,7 +1074,7 @@ Nyx::post_timestep (int iteration)
     {
          for (int i = 0; i < theActiveParticles().size(); i++)
          {
-             theActiveParticles()[i]->Redistribute(false, true, level, grav_n_grow);
+             theActiveParticles()[i]->Redistribute(level, grav_n_grow);
          }
     }
 

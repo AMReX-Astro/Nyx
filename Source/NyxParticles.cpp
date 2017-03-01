@@ -836,7 +836,7 @@ Nyx::particle_redistribute (int lbase, bool init)
         //  
         if (init)
         {
-            DMPC->Redistribute(false, false, lbase);
+            DMPC->Redistribute(lbase);
             return;
         }
 
@@ -892,7 +892,7 @@ Nyx::particle_redistribute (int lbase, bool init)
             if (verbose && ParallelDescriptor::IOProcessor())
                 std::cout << "Calling redistribute because changed " << '\n';
 
-            DMPC->Redistribute(false, false, lbase);
+            DMPC->Redistribute(lbase);
             //
             // Use the new BoxArray and DistMap to define ba and dm for next time.
             //
@@ -928,7 +928,7 @@ Nyx::setup_virtual_particles()
     BL_PROFILE("Nyx::setup_virtual_particles()");
     if(Nyx::theDMPC() != 0 && !virtual_particles_set)
     {
-        DarkMatterParticleContainer::PBox virts;
+        DarkMatterParticleContainer::AoS virts;
         if (level < parent->finestLevel())
         {
     	    get_level(level + 1).setup_virtual_particles();
@@ -960,24 +960,24 @@ Nyx::setup_ghost_particles()
     BL_ASSERT(level < parent->finestLevel());
     if(Nyx::theDMPC() != 0)
     {
-        DarkMatterParticleContainer::PBox ghosts;
+        DarkMatterParticleContainer::AoS ghosts;
         Nyx::theDMPC()->CreateGhostParticles(level,Nyx::grav_n_grow-1, ghosts);
-        Nyx::theGhostPC()->AddParticlesAtLevel(level+1, ghosts, true);
+        Nyx::theGhostPC()->AddParticlesAtLevel(level+1, ghosts);
     }
 #ifdef AGN
     if(Nyx::theAPC() != 0)
     {
-        AGNParticleContainer::PBox ghosts;
+        AGNParticleContainer::AoS ghosts;
         Nyx::theAPC()->CreateGhostParticles(level,Nyx::grav_n_grow-1, ghosts);
-        Nyx::theGhostAPC()->AddParticlesAtLevel(level+1, ghosts, true);
+        Nyx::theGhostAPC()->AddParticlesAtLevel(level+1, ghosts);
     }
 #endif
 #ifdef NEUTRINO_PARTICLES
     if(Nyx::theNPC() != 0)
     {
-        NeutrinoParticleContainer::PBox ghosts;
+        NeutrinoParticleContainer::AoS ghosts;
         Nyx::theNPC()->CreateGhostParticles(level,Nyx::grav_n_grow-1, ghosts);
-        Nyx::theGhostNPC()->AddParticlesAtLevel(level+1, ghosts, true);
+        Nyx::theGhostNPC()->AddParticlesAtLevel(level+1, ghosts);
     }
 #endif
 }
