@@ -157,7 +157,7 @@ NyxParticleContainer<NR,NI,NA>::SetParticleVelocities (amrex::Array<amrex::Real>
 
        for (typename ParticleLevel::iterator pmap_it = pmap.begin(), pmapEnd = pmap.end(); pmap_it != pmapEnd; ++pmap_it)
        {
-           AoS&     pbx = pmap_it->second.GetAoS();
+           AoS&     pbx = pmap_it->second.GetArrayOfStructs();
            const int n    = pbx.size();
     
            for (int i = 0; i < n; i++)
@@ -198,7 +198,7 @@ NyxParticleContainer<NR,NI,NA>::sumParticleMomentum (int   lev,
 
     for (typename ParticleLevel::const_iterator pmap_it = pmap.begin(), pmapEnd = pmap.end(); pmap_it != pmapEnd; ++pmap_it)
     {
-        const AoS& pbox = pmap_it->second.GetAoS();
+        const AoS& pbox = pmap_it->second.GetArrayOfStructs();
         const int   n    = pbox.size();
 
         amrex::Real mom_0 = 0, mom_1 = 0, mom_2 = 0;
@@ -282,7 +282,7 @@ NyxParticleContainer<NR,NI,NA>::estTimestep (amrex::MultiFab&       acceleration
     for (typename ParticleLevel::const_iterator pmap_it = pmap.begin(), pmapEnd = pmap.end(); pmap_it != pmapEnd; ++pmap_it)
     {
         const int        grid = pmap_it->first.first;
-        const AoS&       pbox = pmap_it->second.GetAoS();
+        const AoS&       pbox = pmap_it->second.GetArrayOfStructs();
         const int        n    = pbox.size();
         const amrex::FArrayBox& gfab = (ac_pointer) ? (*ac_pointer)[grid] : acceleration[grid];
 
@@ -373,7 +373,7 @@ NyxParticleContainer<NR,NI,NA>::MultiplyParticleMass (int lev, amrex::Real mult)
 
    for (typename ParticleLevel::iterator pmap_it = pmap.begin(), pmapEnd = pmap.end(); pmap_it != pmapEnd; ++pmap_it)
    {
-       AoS&       pbx = pmap_it->second.GetAoS();
+       AoS&       pbx = pmap_it->second.GetArrayOfStructs();
        const int n    = pbx.size();
 
 #ifdef _OPENMP
@@ -437,7 +437,7 @@ NyxParticleContainer<NR,NI,NA>::moveKickDrift (amrex::MultiFab&       accelerati
 
     for (auto& kv : pmap) {
         const int        grid = kv.first.first;
-        AoS&             pbox = kv.second.GetAoS();
+        AoS&             pbox = kv.second.GetArrayOfStructs();
         const int        n    = pbox.size();
         const amrex::FArrayBox& gfab = (*ac_pointer)[grid];
 
@@ -488,7 +488,7 @@ NyxParticleContainer<NR,NI,NA>::moveKickDrift (amrex::MultiFab&       accelerati
     if (lev > 0 && sub_cycle)
     {
         for (auto& kv : pmap) {
-            AoS&  pbox       = kv.second.GetAoS();
+            AoS&  pbox       = kv.second.GetArrayOfStructs();
             const int   n    = pbox.size();
 
             amrex::ParticleLocData pld; 

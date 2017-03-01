@@ -387,7 +387,7 @@ DarkMatterParticleContainer::InitCosmo(
     //
      for (auto& kv : pmap) {
         const int        grid    = kv.first.first;
-        AoS&             pbox    = kv.second.GetAoS();
+        AoS&             pbox    = kv.second.GetArrayOfStructs();
         const int        n       = pbox.size();
         const FArrayBox& dfab    = mf[grid];
 
