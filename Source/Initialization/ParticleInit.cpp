@@ -385,15 +385,15 @@ DarkMatterParticleContainer::InitCosmo(
     //
     // Make sure, that mf and m_gdb.boxArray(0) are defined on the same boxarray.
     //
+    ParticleLocData pld;
      for (auto& kv : pmap) {
         const int        grid    = kv.first.first;
         AoS&             pbox    = kv.second.GetArrayOfStructs();
         const int        n       = pbox.size();
         const FArrayBox& dfab    = mf[grid];
 
-        ParticleLocData pld;
 #ifdef _OPENMP
-#pragma omp parallel for
+#pragma omp parallel for private(pld)
 #endif
         for (int i = 0; i < n; i++)
         {

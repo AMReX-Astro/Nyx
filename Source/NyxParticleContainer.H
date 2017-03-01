@@ -495,13 +495,13 @@ NyxParticleContainer<NR,NI,NA>::moveKickDrift (amrex::MultiFab&       accelerati
     
     if (lev > 0 && sub_cycle)
     {
+        amrex::ParticleLocData pld; 
         for (auto& kv : pmap) {
             AoS&  pbox       = kv.second.GetArrayOfStructs();
             const int   n    = pbox.size();
 
-            amrex::ParticleLocData pld; 
 #ifdef _OPENMP
-#pragma omp parallel for
+#pragma omp parallel for private(pld)
 #endif
             for (int i = 0; i < n; i++)
             {
