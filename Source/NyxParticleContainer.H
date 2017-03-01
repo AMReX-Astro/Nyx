@@ -16,8 +16,10 @@ public:
     virtual void moveKick      (amrex::MultiFab& acceleration, int level, amrex::Real timestep, 
 				amrex::Real a_new = 1.0, amrex::Real a_half = 1.0,
 				int start_comp_for_accel = -1) = 0;
-    virtual void Redistribute (int  lev_min              = 0, 
-        		       int  nGrow                = 0) = 0;
+    virtual void Redistribute (int lev_min              = 0,
+                               int lev_max              =-1,
+                               int nGrow                = 0) = 0;
+    virtual int finestLevel() const = 0;
     virtual void RemoveParticlesAtLevel (int level) = 0;
     virtual amrex::Real sumParticleMass (int level) const = 0;
     virtual void AssignDensitySingleLevel (amrex::MultiFab& mf, int level, int ncomp=1,
@@ -80,10 +82,16 @@ public:
 					      a_new, a_half, start_comp_for_accel);
     }
 
-    virtual void Redistribute (int  lev_min              = 0, 
-        		       int  nGrow                = 0) override
+    virtual int finestLevel() const override
+        {
+            return amrex::AmrParticleContainer<NR, NI, NA>::finestLevel();
+        }
+
+    virtual void Redistribute (int lev_min              = 0,
+                               int lev_max              =-1,
+        		       int nGrow                = 0) override
     {
-        amrex::AmrParticleContainer<NR,NI,NA>::Redistribute(lev_min, nGrow);
+        amrex::AmrParticleContainer<NR,NI,NA>::Redistribute(lev_min, lev_max, nGrow);
     }
 
     virtual void RemoveParticlesAtLevel (int level) override
