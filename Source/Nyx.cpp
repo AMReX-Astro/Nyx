@@ -1426,15 +1426,64 @@ Nyx::postCoarseTimeStep (Real cumtime)
        reeberMF.setVal(0, 0, 1, 0);
        for (int comp = 1; comp < reeberMF.nComp(); ++comp)
            MultiFab::Add(reeberMF, reeberMF, comp, 0, 1, 0);
-       runReeberAnalysis(reeberMF, Geom(), nStep(), do_analysis);
 
-       // std::vector<Halo> halos = findHalos(*this, cur_time, State_Type);
-       // if (ParallelDescriptor::IOProcessor())
-       // {
-       //  std::cout << "Found " << halos.size() << " halos." << std::endl;
-       //  for (std::vector<Halo>::iterator it = halos.begin(); it != halos.end(); ++it)
-       //    std::cout << it->pos << " " << it->mass << std::endl;
-       //}
+       std::vector<Halo> reeber_halos;
+       runReeberAnalysis(reeberMF, Geom(), nStep(), do_analysis, &reeber_halos);
+
+       // Redistribute halos to "correct" processor for simulation
+       // FIXME: This is a hack that maps things to MultiFabs and back. This should be
+       // changed to use Nyx's particle redistribution infrastructure.
+       reeberMF.setVal(0, 0, reeber_density_var_list.size() + 1, 0);
+       // Deposit halo into MultiFab. This works because (i) There is only one box
+       // per processors and halos returned by Reeber will always be in that box;
+       // (ii) Halos have different positions; (iii) Halos have a mass that differs from
+       // zero.
+       BL_ASSERT(dm[ParallelDescriptor::MyProc()] == ParallelDescriptor::MyProc());
+       FArrayBox& my_fab = reeberMF[ParallelDescriptor::MyProc()];
+       for (const Halo& h : reeber_halos)
+       {
+           BL_ASSERT(reeberMF.fabbox(ParallelDescriptor::MyProc()).contains(h.position));
+           my_fab(h.position, 0) = h.totalMass;
+           for (int comp = 0; comp < reeber_density_var_list.size(); ++comp)
+           {
+               my_fab(h.position, comp + 1) = h.individualMasses[comp];
+           }
+       }
+       // Actual redistribution
+       //MultiFab redistributeFab(m_leveldata.boxArray(), reeber_density_var_list.size() + 1, 0, m_leveldata.DistributionMap());
+       const MultiFab& simMF = get_new_data(State_Type);
+       const BoxArray& simBA = simMF.boxArray();
+       const DistributionMapping& simDM = simMF.DistributionMap();
+
+       MultiFab redistributeFab(simBA, reeber_density_var_list.size() + 1, 0, simDM);
+       redistributeFab.copy(reeberMF);
+       // Re-extract halos
+       reeber_halos.clear();
+       for (MFIter mfi(redistributeFab); mfi.isValid(); ++mfi)
+       {
+           const Box& currBox = mfi.fabbox();
+           for (IntVect iv = currBox.smallEnd(); iv <= currBox.bigEnd(); currBox.next(iv))
+           {
+               Real totalMass = redistributeFab[mfi](iv, 0);
+               if (totalMass > 0)
+               {
+                   std::vector<Real> masses(reeber_density_var_list.size(), 0);
+                   for (int comp = 0; comp < reeber_density_var_list.size(); ++comp)
+                   {
+                       masses[comp] = redistributeFab[mfi](iv, comp + 1);
+                   }
+                   reeber_halos.emplace_back(iv, totalMass, masses);
+               }
+           }
+        }
+       // NOTE: ZARIJA, GET YOUR FRESH HALOS HERE!!!
+#if 0
+       std::ofstream os(BoxLib::Concatenate(BoxLib::Concatenate("debug-halos-", nStep(), 5), ParallelDescriptor::MyProc(), 2));
+       for (const Halo& h : reeber_halos)
+       {
+           os << h.position << " " << h.totalMass << std::endl;
+       }
+#endif
 
        const Real time2 = ParallelDescriptor::second();
        if (ParallelDescriptor::IOProcessor())
