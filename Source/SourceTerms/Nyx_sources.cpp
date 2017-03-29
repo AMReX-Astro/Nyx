@@ -17,9 +17,16 @@ Nyx::get_old_source (Real      old_time,
 
     MultiFab& S_old = get_old_data(State_Type);
     MultiFab& D_old = get_old_data(DiagEOS_Type);
-    const int num_comps = S_old.nComp();
-    FillPatch(*this, S_old, 4, old_time, State_Type, Density, num_comps);
-    FillPatch(*this, D_old, 4, old_time, DiagEOS_Type, 0, 2);
+
+    // We need to define these temporary multifabs because S_old and D_old only have one ghost cell.
+    MultiFab Sborder, Dborder;
+
+    Sborder.define(grids, S_old.nComp(), 4, Fab_allocate);
+    Dborder.define(grids, D_old.nComp(), 4, Fab_allocate);
+
+    FillPatch(*this, Sborder, 4, old_time, State_Type, Density, Sborder.nComp());
+    FillPatch(*this, Dborder, 4, old_time, DiagEOS_Type, 0, 2);
+
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
@@ -28,8 +35,8 @@ Nyx::get_old_source (Real      old_time,
         const Box& bx = mfi.tilebox();
         BL_FORT_PROC_CALL(CA_EXT_SRC, ca_ext_src)
             (bx.loVect(), bx.hiVect(), 
-             BL_TO_FORTRAN(S_old[mfi]), BL_TO_FORTRAN(S_old[mfi]),
-             BL_TO_FORTRAN(D_old[mfi]), BL_TO_FORTRAN(D_old[mfi]),
+             BL_TO_FORTRAN(Sborder[mfi]), BL_TO_FORTRAN(Sborder[mfi]),
+             BL_TO_FORTRAN(Dborder[mfi]), BL_TO_FORTRAN(Dborder[mfi]),
              BL_TO_FORTRAN(ext_src[mfi]),
              prob_lo, dx, &old_time, &z, &dt);
 
@@ -73,11 +80,21 @@ Nyx::get_new_source (Real      old_time,
     MultiFab& D_old = get_old_data(DiagEOS_Type);
     MultiFab& S_new = get_old_data(State_Type);
     MultiFab& D_new = get_old_data(DiagEOS_Type);
-    const int num_comps = S_old.nComp();
-    FillPatch(*this, S_old, 4, old_time, State_Type, Density, num_comps);
-    FillPatch(*this, S_new, 4, new_time, State_Type, Density, num_comps);
-    FillPatch(*this, D_old, 4, old_time, DiagEOS_Type, 0, 2);
-    FillPatch(*this, D_new, 4, new_time, DiagEOS_Type, 0, 2);
+
+    // We need to define these temporary multifabs because S_old and D_old only have one ghost cell.
+    MultiFab Sborder_old, Dborder_old;
+    MultiFab Sborder_new, Dborder_new;
+
+    Sborder_old.define(grids, S_old.nComp(), 4, Fab_allocate);
+    Dborder_old.define(grids, D_old.nComp(), 4, Fab_allocate);
+
+    Sborder_new.define(grids, S_new.nComp(), 4, Fab_allocate);
+    Dborder_new.define(grids, D_new.nComp(), 4, Fab_allocate);
+
+    FillPatch(*this, Sborder_old, 4, old_time, State_Type  , Density, Sborder_old.nComp());
+    FillPatch(*this, Sborder_new, 4, new_time, State_Type  , Density, Sborder_new.nComp());
+    FillPatch(*this, Dborder_old, 4, old_time, DiagEOS_Type, 0      , 2);
+    FillPatch(*this, Dborder_new, 4, new_time, DiagEOS_Type, 0      , 2);
 
 #ifdef _OPENMP
 #pragma omp parallel
@@ -87,8 +104,8 @@ Nyx::get_new_source (Real      old_time,
         const Box& bx = mfi.tilebox();
         BL_FORT_PROC_CALL(CA_EXT_SRC, ca_ext_src)
             (bx.loVect(), bx.hiVect(), 
-             BL_TO_FORTRAN(S_old[mfi]), BL_TO_FORTRAN(S_new[mfi]),
-             BL_TO_FORTRAN(D_old[mfi]), BL_TO_FORTRAN(D_new[mfi]),
+             BL_TO_FORTRAN(Sborder_old[mfi]), BL_TO_FORTRAN(Sborder_new[mfi]),
+             BL_TO_FORTRAN(Dborder_old[mfi]), BL_TO_FORTRAN(Dborder_new[mfi]),
              BL_TO_FORTRAN(ext_src[mfi]),
              prob_lo, dx, &new_time, &z, &dt);
     }
