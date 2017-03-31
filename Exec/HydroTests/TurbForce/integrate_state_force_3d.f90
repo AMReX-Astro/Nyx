@@ -29,8 +29,9 @@ subroutine integrate_state_force(lo, hi, &
 !   state : double array (dims) @todo
 !       The state vars
 !
+    use probdata_module, only: alpha, temp0
     use meth_params_module, only : NVAR, URHO, UEDEN, UEINT, &
-                                   TEMP_COMP, NE_COMP, small_pres, gamma_minus_1
+                                   TEMP_COMP, NE_COMP, small_pres, small_temp, gamma_minus_1
     use eos_params_module
     use network
     use eos_module, only: nyx_eos_T_given_Re, nyx_eos_given_RT
@@ -49,28 +50,16 @@ subroutine integrate_state_force(lo, hi, &
     integer, parameter :: NITERS = 20
     double precision, parameter :: xacc = 1.0d-3
 
-    integer :: i, j, k, n, iter, nsteps, cnt
-    double precision :: z, rho, T, ne
-    double precision :: T_orig, rho_e_orig, ne_orig, e_int_old, De_int
-    double precision :: T_first, ne_first, src_first
-    double precision :: src_old, src_new, delta_re, delta_t, rho_e, e_int, prev_soln
-    double precision :: b_fac
-    logical          :: do_diag, prnt_cell, done_iter
-    logical          :: went_negative, went_negative_at_first
+    integer :: i, j, k
+    double precision :: e_int, press, rho, T, ne
+    double precision :: T_orig, delta
+    double precision :: rho_e_orig, delta_re
 
-    z = 1.d0/a - 1.d0
-    do_diag   = .false.
-    prnt_cell = .false.
-
-    ! Interpolate from the table to this redshift
-    call interp_to_this_z(z)
-
-    b_fac = 0.0d0
- 
     ! Note that (lo,hi) define the region of the box containing the grow cells
     ! Do *not* assume this is just the valid region
     ! apply heating-cooling to UEDEN and UEINT
 
+    !$OMP parallel do private(k,j,i,e_int,press,rho,T,ne,T_orig,delta,rho_e_orig,delta_re)
     do k = lo(3),hi(3)
         do j = lo(2),hi(2)
             do i = lo(1),hi(1)
@@ -78,31 +67,31 @@ subroutine integrate_state_force(lo, hi, &
                 rho        = state(i,j,k,URHO)
                 rho_e_orig = state(i,j,k,UEINT)
                 T_orig     = diag_eos(i,j,k,TEMP_COMP)
-                ne_orig    = diag_eos(i,j,k,  NE_COMP)
+                ne         = diag_eos(i,j,k,  NE_COMP)
 
                 if (rho_e_orig .lt. 0.d0) then
                     print *,'(rho e) entering strang integration negative ',i,j,k, rho_e_orig
                     call bl_abort('bad rho e in strang')
                 end if
 
-		src_new = 0.0d0
+                ! Compute temperature increment and ensure that new temperature is positive
+		delta = half_dt * alpha * (T_orig - temp0) / a
+		T = max(T_orig + delta, small_temp)
+ 
+		!if ((i.eq.lo(1)).and.(j.eq.lo(2))) print *, "pre eos: ", k, T_orig, T, delta
 
-                e_int = rho_e_orig/rho
-                if ( (rho_e+delta_t*src_new/a) .gt. 0.0d0) then 
-                    src_new = delta_t * src_new / a
-                    e_int   = e_int + src_new
-                end if
-                rho_e     = e_int * rho
-                delta_re  = rho_e - rho_e_orig
+                ! Call EOS to get the internal energy for constant initial temperature
+                call nyx_eos_given_RT(e_int, press, rho, T, ne, a)
+		
+		! Energy difference
+                delta_re  = rho*e_int - rho_e_orig
 
-		T = T_orig
-		ne = ne_orig
+		!if ((i.eq.lo(1)).and.(j.eq.lo(2))) print *, "post eos: ", k, rho_e_orig, rho*e_int, delta_re
 
                 ! Update cell quantities
                 state(i,j,k,UEINT) = state(i,j,k,UEINT) + delta_re
                 state(i,j,k,UEDEN) = state(i,j,k,UEDEN) + delta_re
                 diag_eos(i,j,k,TEMP_COMP) = T
-                diag_eos(i,j,k,  NE_COMP) = ne
             end do ! i
         end do ! j
     end do ! k
