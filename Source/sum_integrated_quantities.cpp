@@ -75,7 +75,7 @@ Nyx::sum_integrated_quantities ()
         if (ParallelDescriptor::IOProcessor() && parent->NumDataLogs() >= num_global_data_logs + lev + 1) 
         {
 
-            std::cout << "Writing to data log #" << num_global_data_logs + lev << '\n';
+            std::cout << "Writing level " << lev << " statistics to data log #" << num_global_data_logs + lev << '\n';
             std::ostream& data_log_lev = parent->DataLog(num_global_data_logs + lev);
 
             if (time == 0)
@@ -134,16 +134,24 @@ Nyx::sum_integrated_quantities ()
         if (time == 0)
         {
             data_log1 << std::setw(14) << "      time    ";
+            data_log1 << std::setw(14) << "         xmom ";
+            data_log1 << std::setw(14) << "         ymom ";
+            data_log1 << std::setw(14) << "         zmom ";
             data_log1 << std::setw(14) << "        rho_E ";
             data_log1 << std::setw(14) << "        rho_e ";
+            data_log1 << std::setw(14) << "         Temp ";
             data_log1 << std::setw(14) << "     rms_mach " ;
             data_log1 << std::setw(14) << "      magvort " << '\n';
         }
 
         // Write the quantities at this time                                                                                            
         data_log1 << std::setw(14) << time;
+        data_log1 << std::setw(14) << std::setprecision(6) << xmom;
+        data_log1 << std::setw(14) << std::setprecision(6) << ymom;
+        data_log1 << std::setw(14) << std::setprecision(6) << zmom;
         data_log1 << std::setw(14) << std::setprecision(6) << rho_E;
         data_log1 << std::setw(14) << std::setprecision(6) << rho_e;
+        data_log1 << std::setw(14) << std::setprecision(6) << Temp;
         data_log1 << std::setw(14) << std::setprecision(6) << rms_mach;
         data_log1 << std::setw(14) << std::setprecision(6) << magvort
                   << '\n';
