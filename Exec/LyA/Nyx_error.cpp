@@ -11,6 +11,6 @@ Nyx::error_setup()
 
 void
 Nyx::manual_tags_placement (TagBoxArray&    tags,
-                            Array<IntVect>& bf_lev)
+                            const Array<IntVect>& bf_lev)
 {
 }

@@ -418,7 +418,7 @@ public:
     //   the list of tagged points
     //
     virtual void manual_tags_placement (amrex::TagBoxArray&    tags,
-                                        amrex::Array<amrex::IntVect>& bf_lev);
+                                        const amrex::Array<amrex::IntVect>& bf_lev) override;
 
     // Returns a amrex::MultiFab containing the derived data for this level. The user
     // is responsible for deleting this pointer when done with it. If
