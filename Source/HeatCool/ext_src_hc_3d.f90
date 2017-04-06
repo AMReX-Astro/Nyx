@@ -72,6 +72,7 @@ subroutine ext_src_hc(lo, hi, old_state, os_l1, os_l2, os_l3, os_h1, os_h2, os_h
 
     integer          :: i, j, k
     integer          :: src_lo(3),src_hi(3)
+    integer          :: max_iter, min_iter
     double precision :: a, half_dt
 
     ! Make a copy of the state so we can evolve it then throw it away
@@ -99,11 +100,11 @@ subroutine ext_src_hc(lo, hi, old_state, os_l1, os_l2, os_l3, os_h1, os_h2, os_h
     if (heat_cool_type .eq. 1) then
         call integrate_state_hc(src_lo,src_hi,tmp_state,ns_l1,ns_l2,ns_l3, ns_h1,ns_h2,ns_h3, &
                                               new_diag ,nd_l1,nd_l2,nd_l3, nd_h1,nd_h2,nd_h3, &
-                                a,half_dt)
+                                a,half_dt,min_iter,max_iter)
     else if (heat_cool_type .eq. 3) then
         call integrate_state_vode(src_lo,src_hi,tmp_state,ns_l1,ns_l2,ns_l3, ns_h1,ns_h2,ns_h3, &
                                                 new_diag ,nd_l1,nd_l2,nd_l3, nd_h1,nd_h2,nd_h3, &
-                                  a,half_dt)
+                                  a,half_dt,min_iter,max_iter)
     endif
     do k = src_l3, src_h3
         do j = src_l2, src_h2

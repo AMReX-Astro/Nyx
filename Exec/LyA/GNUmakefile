@@ -1,18 +1,16 @@
 # BOXLIB_HOME defines the directory in which we will find all the BoxLib code
-BOXLIB_HOME ?= /project/projectdirs/nyx/src/BoxLib
-#BOXLIB_HOME = /home/vince/Development/BLMaster/BoxLib
+BOXLIB_HOME = $(HOME)/BoxLib
 
-HPGMG_DIR ?= /global/homes/f/friesen/hpgmg/finite-volume
+HPGMG_DIR = $(HOME)/hpgmg/finite-volume
 
-# TOP defines the directory in which we will find Source, Exec, etc
+# TOP defines the directory in which we will find Source, Exec, etc                                                                                             
 TOP = ../..
-
 
 # compilation options
 COMP    = gcc
 FCOMP   = gfortran
 USE_MPI = TRUE
-USE_OMP = FALSE
+USE_OMP = TRUE
 
 PROFILE       = FALSE
 TRACE_PROFILE = FALSE

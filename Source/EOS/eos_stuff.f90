@@ -55,24 +55,24 @@ contains
   subroutine eos_init_small_pres(R, T, Ne, P, comoving_a)
 
      ! In/out variables
-     real(kind=dp_t), intent(  out) :: P
-     real(kind=dp_t), intent(in   ) :: R, T, Ne
-     real(kind=dp_t), intent(in   ) :: comoving_a
+     double precision, intent(  out) :: P
+     double precision, intent(in   ) :: R, T, Ne
+     double precision, intent(in   ) :: comoving_a
 
      ! Local variables
      logical :: do_diag
 
-     real(kind=dp_t) :: xn_eos(nspec)
-     real(kind=dp_t) :: temp_eos
-     real(kind=dp_t) :: den_eos
-     real(kind=dp_t) :: e_eos
-     real(kind=dp_t) :: p_eos
-     real(kind=dp_t) :: cv_eos
-     real(kind=dp_t) :: dpdt_eos
-     real(kind=dp_t) :: dpdr_eos
-     real(kind=dp_t) :: dedt_eos
-     real(kind=dp_t) ::    s_eos
-     real(kind=dp_t) :: comoving_a_cubed
+     double precision :: xn_eos(nspec)
+     double precision :: temp_eos
+     double precision :: den_eos
+     double precision :: e_eos
+     double precision :: p_eos
+     double precision :: cv_eos
+     double precision :: dpdt_eos
+     double precision :: dpdr_eos
+     double precision :: dedt_eos
+     double precision ::    s_eos
+     double precision :: comoving_a_cubed
 
      do_diag = .false.
 
@@ -103,11 +103,11 @@ contains
      use meth_params_module, only: gamma_const, gamma_minus_1
 
      ! In/out variables
-     real(kind=dp_t), intent(in   ) :: R, e
-     real(kind=dp_t), intent(  out) :: c
+     double precision, intent(in   ) :: R, e
+     double precision, intent(  out) :: c
 
      ! Pressure
-     real(kind=dp_t) :: P
+     double precision :: P
 
      P = R * e * gamma_minus_1
 
@@ -119,24 +119,24 @@ contains
   subroutine nyx_eos_T_given_Re(T, Ne, R, e, comoving_a)
 
      ! In/out variables
-     real(kind=dp_t),           intent(inout) :: T, Ne
-     real(kind=dp_t),           intent(in   ) :: R, e
-     real(kind=dp_t),           intent(in   ) :: comoving_a
+     double precision,           intent(inout) :: T, Ne
+     double precision,           intent(in   ) :: R, e
+     double precision,           intent(in   ) :: comoving_a
 
      ! Local variables
      logical :: do_diag
 
-     real(kind=dp_t) :: xn_eos(nspec)
-     real(kind=dp_t) :: temp_eos
-     real(kind=dp_t) :: den_eos
-     real(kind=dp_t) :: e_eos
-     real(kind=dp_t) :: p_eos
-     real(kind=dp_t) :: cv_eos
-     real(kind=dp_t) :: dpdt_eos
-     real(kind=dp_t) :: dpdr_eos
-     real(kind=dp_t) :: dedt_eos
-     real(kind=dp_t) ::    s_eos
-     real(kind=dp_t) :: comoving_a_cubed
+     double precision :: xn_eos(nspec)
+     double precision :: temp_eos
+     double precision :: den_eos
+     double precision :: e_eos
+     double precision :: p_eos
+     double precision :: cv_eos
+     double precision :: dpdt_eos
+     double precision :: dpdr_eos
+     double precision :: dedt_eos
+     double precision ::    s_eos
+     double precision :: comoving_a_cubed
 
      do_diag = .false.
 
@@ -169,23 +169,23 @@ contains
      implicit none
 
      ! In/out variables
-     real(kind=dp_t),           intent(  out) :: S
-     real(kind=dp_t),           intent(in   ) :: R, e, T, Ne
-     real(kind=dp_t),           intent(in   ) :: comoving_a
+     double precision,           intent(  out) :: S
+     double precision,           intent(in   ) :: R, e, T, Ne
+     double precision,           intent(in   ) :: comoving_a
 
      ! Local variables
      logical :: do_diag
 
-     real(kind=dp_t) :: xn_eos(nspec)
-     real(kind=dp_t) :: temp_eos
-     real(kind=dp_t) :: den_eos
-     real(kind=dp_t) :: e_eos
-     real(kind=dp_t) :: p_eos
-     real(kind=dp_t) :: cv_eos
-     real(kind=dp_t) :: dpdt_eos
-     real(kind=dp_t) :: dpdr_eos
-     real(kind=dp_t) :: dedt_eos
-     real(kind=dp_t) ::    s_eos
+     double precision :: xn_eos(nspec)
+     double precision :: temp_eos
+     double precision :: den_eos
+     double precision :: e_eos
+     double precision :: p_eos
+     double precision :: cv_eos
+     double precision :: dpdt_eos
+     double precision :: dpdr_eos
+     double precision :: dedt_eos
+     double precision ::    s_eos
 
      do_diag = .false.
 
@@ -213,25 +213,25 @@ contains
   subroutine nyx_eos_given_RT(e, P, R, T, Ne, comoving_a)
 
      ! In/out variables
-     real(kind=dp_t),           intent(  out) :: e, P
-     real(kind=dp_t),           intent(in   ) :: R, T, Ne
-     real(kind=dp_t),           intent(in   ) :: comoving_a
+     double precision,           intent(  out) :: e, P
+     double precision,           intent(in   ) :: R, T, Ne
+     double precision,           intent(in   ) :: comoving_a
 
 
      ! Local variables
      logical :: do_diag
      
-     real(kind=dp_t) :: xn_eos(nspec)
-     real(kind=dp_t) :: temp_eos
-     real(kind=dp_t) :: den_eos
-     real(kind=dp_t) :: e_eos
-     real(kind=dp_t) :: p_eos
-     real(kind=dp_t) :: cv_eos
-     real(kind=dp_t) :: dpdt_eos
-     real(kind=dp_t) :: dpdr_eos
-     real(kind=dp_t) :: dedt_eos
-     real(kind=dp_t) ::    s_eos
-     real(kind=dp_t) :: comoving_a_cubed
+     double precision :: xn_eos(nspec)
+     double precision :: temp_eos
+     double precision :: den_eos
+     double precision :: e_eos
+     double precision :: p_eos
+     double precision :: cv_eos
+     double precision :: dpdt_eos
+     double precision :: dpdr_eos
+     double precision :: dedt_eos
+     double precision ::    s_eos
+     double precision :: comoving_a_cubed
 
      do_diag = .false.
 
@@ -294,22 +294,22 @@ contains
     logical do_eos_diag
     integer, intent(in) :: input
 
-    real(kind=dp_t) :: dens, temp
-    real(kind=dp_t) :: xmass(nspec)
-    real(kind=dp_t) :: pres, eint
-    real(kind=dp_t) :: c_v
-    real(kind=dp_t) :: dPdT, dPdR, dedT
-    real(kind=dp_t) :: entropy
+    double precision :: dens, temp
+    double precision :: xmass(nspec)
+    double precision :: pres, eint
+    double precision :: c_v
+    double precision :: dPdT, dPdR, dedT
+    double precision :: entropy
 
     ! local variables
-    real(kind=dp_t) :: ymass(nspec)    
-    real(kind=dp_t) :: mu
-    real(kind=dp_t) :: sum_y
-    real(kind=dp_t) :: m_nucleon_over_kB
-    real(kind=dp_t) :: t1,t2,t3
+    double precision :: ymass(nspec)    
+    double precision :: mu
+    double precision :: sum_y
+    double precision :: m_nucleon_over_kB
+    double precision :: t1,t2,t3
 
     ! get the mass of a nucleon from Avogadro's number.
-    real(kind=dp_t), parameter :: m_nucleon = 1.d0/n_A
+    double precision, parameter :: m_nucleon = 1.d0/n_A
 
     integer :: n
 
@@ -351,6 +351,10 @@ contains
        ! e = k T / [(mu m_nucleon)*(gamma-1)]
        temp = eint * mu * m_nucleon_over_kB * gamma_minus_1
 
+    else
+	
+       eint = temp / (mu * m_nucleon_over_kB * gamma_minus_1)
+
     endif
 
     !-------------------------------------------------------------------------
@@ -358,12 +362,9 @@ contains
     ! mu), regardless of the inputs.
     !-------------------------------------------------------------------------
 
-    ! compute the pressure simply from the ideal gas law, and the
-    ! specific internal energy using the gamma-law EOS relation
-    
-    pres = dens * temp / mu / m_nucleon_over_kB
+    ! compute the pressure simply from the ideal gas law
 
-    eint = pres/gamma_minus_1/dens
+    pres = gamma_minus_1 * dens * eint
 
     ! entropy (per gram) of an ideal monoatomic gas (the Sactur-Tetrode equation)
     ! NOTE: this expression is only valid for gamma = 5/3.

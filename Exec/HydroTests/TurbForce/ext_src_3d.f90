@@ -44,6 +44,8 @@
       double precision,intent(  out) :: src(src_l1:src_h1,src_l2:src_h2,src_l3:src_h3,NVAR)
       double precision,intent(in   ) :: problo(3),dx(3),time,z,dt
 
+      src(:,:,:,:) = 0.d0
+
       if (force_scale > 0.0d0) then
           call ext_src_force(lo,hi,&
                             old_state,old_state_l1,old_state_l2,old_state_l3,old_state_h1,old_state_h2,old_state_h3,&
@@ -51,8 +53,6 @@
                             old_diag ,old_diag_l1,old_diag_l2,old_diag_l3,old_diag_h1,old_diag_h2,old_diag_h3,&
                             new_diag ,new_diag_l1,new_diag_l2,new_diag_l3,new_diag_h1,new_diag_h2,new_diag_h3,&
                             src,src_l1,src_l2,src_l3,src_h1,src_h2,src_h3,problo,dx,time,z,dt)
-      else
-          src = 0.d0
       end if
  
       end subroutine ca_ext_src

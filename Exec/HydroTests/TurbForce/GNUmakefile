@@ -13,7 +13,7 @@ USE_MPI = TRUE
 USE_OMP = TRUE
 
 PRECISION = DOUBLE
-DEBUG     = TRUE
+DEBUG     = FALSE
 
 # physics
 DIM      = 3

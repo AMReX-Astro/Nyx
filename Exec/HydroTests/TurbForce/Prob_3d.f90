@@ -43,10 +43,12 @@
       max_denerr_lev = 10
       max_dengrad_lev = 10
 
-      alpha = 0.d0
-
+      alpha = 0.d0        ! adiabatic
       rho0 = 1.d0
-      temp0 = 1.d2
+      temp0 = 10.d0
+
+      stop_forcing = 1.d9 ! never stops
+      force_scale = 0.0   ! force is zero
 
 !     Read namelists
 
@@ -110,10 +112,10 @@
 
       integer          :: i,j,k
       double precision :: fact,twicePi
-      double precision :: ne0,pres0,a
+      double precision :: eint0,rhoe0,ne0,pres0,a,r
 
       a=1.d0
-      ne0=0.d0
+      ne0=1.d0
       twicePi  = TWO*M_PI
 
       if (turb_scale.gt.ZERO) then
@@ -123,7 +125,9 @@
       end if
 
       ! Call EOS to get the internal energy for constant initial temperature
-      call nyx_eos_given_RT(rhoe0, pres0, rho0, temp0, ne0, a)
+      call nyx_eos_given_RT(eint0, pres0, rho0, temp0, ne0, a)
+
+      rhoe0 = rho0*eint0
 
       small_dens = 1.d-9*rhoe0
       small_temp = 1.d-3*temp0
@@ -138,7 +142,8 @@
 
                state(i,j,k,URHO) = rho0
                state(i,j,k,UMX:UMZ) = 0.0d0
-               state(i,j,k,UEINT) = state(i,j,k,URHO) * rhoe0
+               state(i,j,k,UEINT) = rhoe0
+
                state(i,j,k,UEDEN) = state(i,j,k,UEINT) + &
                   0.5d0 * (state(i,j,k,UMX)**2 + state(i,j,k,UMY)**2 + state(i,j,k,UMZ)**2) / state(i,j,k,URHO)
 

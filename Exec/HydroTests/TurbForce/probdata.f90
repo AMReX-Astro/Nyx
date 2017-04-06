@@ -6,7 +6,7 @@ module probdata_module
 
       integer         , save ::  radiative_cooling_type
 
-      double precision, save ::  alpha, rho0, rhoe0, temp0
+      double precision, save ::  alpha, rho0, temp0
 
 
 !     Use these in add_turb_forcing.

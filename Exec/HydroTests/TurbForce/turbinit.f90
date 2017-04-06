@@ -38,8 +38,6 @@ contains
        write (*,*) "Initialising random number generator..."
     endif
 
-    stop_forcing = 1.0
-
     twicePi = TWO*M_PI
 
 !   if (blrandseed.gt.0) then

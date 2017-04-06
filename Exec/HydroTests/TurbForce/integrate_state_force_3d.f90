@@ -1,7 +1,7 @@
 subroutine integrate_state_force(lo, hi, &
                                  state   , s_l1, s_l2, s_l3, s_h1, s_h2, s_h3, &
                                  diag_eos, d_l1, d_l2, d_l3, d_h1, d_h2, d_h3, &
-                                 a, half_dt)
+                                 dx, time, a, half_dt)
 !
 !   Calculates the sources to be added later on.
 !
@@ -29,14 +29,14 @@ subroutine integrate_state_force(lo, hi, &
 !   state : double array (dims) @todo
 !       The state vars
 !
-    use probdata_module, only: alpha, temp0
-    use meth_params_module, only : NVAR, URHO, UEDEN, UEINT, &
+    use turbforce_module
+    use probdata_module, only: prob_lo, prob_hi, alpha, rho0, temp0
+    use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, &
                                    TEMP_COMP, NE_COMP, small_pres, small_temp, gamma_minus_1
+    use bl_constants_module, only : TWO, HALF, ZERO, M_PI
     use eos_params_module
-    use network
-    use eos_module, only: nyx_eos_T_given_Re, nyx_eos_given_RT
+    use eos_module, only: nyx_eos_given_RT, nyx_eos_T_given_Re
     use fundamental_constants_module
-    use atomic_rates_module, only: tabulate_rates, interp_to_this_z
  
     implicit none
 
@@ -45,27 +45,35 @@ subroutine integrate_state_force(lo, hi, &
     integer         , intent(in) :: d_l1, d_l2, d_l3, d_h1, d_h2, d_h3
     double precision, intent(inout) ::    state(s_l1:s_h1, s_l2:s_h2,s_l3:s_h3, NVAR)
     double precision, intent(inout) :: diag_eos(d_l1:d_h1, d_l2:d_h2,d_l3:d_h3, 2)
-    double precision, intent(in)    :: a, half_dt
-
-    integer, parameter :: NITERS = 20
-    double precision, parameter :: xacc = 1.0d-3
+    double precision, intent(in)    :: dx(3), time, a, half_dt
 
     integer :: i, j, k
-    double precision :: e_int, press, rho, T, ne
-    double precision :: T_orig, delta
-    double precision :: rho_e_orig, delta_re
+    integer :: kx,ky,kz
+    integer :: xstep,ystep,zstep
+    double precision :: scaled_time
+    double precision :: xpos, ypos, zpos
+    double precision :: Lx, Ly, Lz, freqx, freqy, freqz
+    double precision :: cosx,cosy,cosz,sinx,siny,sinz
+    double precision :: HLx,HLy,HLz
+    double precision :: kxd,kyd,kzd
+    double precision :: kappa,kappaMax,Lmin,xT
+    double precision :: f1,f2,f3
+    double precision :: twicePi
+    double precision :: divf, totf
+    double precision :: rho, rho_e_orig, rho_K_res, T_orig, ne
+    double precision :: delta, delta_re, eint0, press, small_eint
 
     ! Note that (lo,hi) define the region of the box containing the grow cells
     ! Do *not* assume this is just the valid region
     ! apply heating-cooling to UEDEN and UEINT
 
-    !$OMP parallel do private(k,j,i,e_int,press,rho,T,ne,T_orig,delta,rho_e_orig,delta_re)
     do k = lo(3),hi(3)
         do j = lo(2),hi(2)
             do i = lo(1),hi(1)
                 ! Original values
                 rho        = state(i,j,k,URHO)
                 rho_e_orig = state(i,j,k,UEINT)
+		rho_K_res  = state(i,j,k,UEDEN) - state(i,j,k,UEINT)
                 T_orig     = diag_eos(i,j,k,TEMP_COMP)
                 ne         = diag_eos(i,j,k,  NE_COMP)
 
@@ -75,26 +83,136 @@ subroutine integrate_state_force(lo, hi, &
                 end if
 
                 ! Compute temperature increment and ensure that new temperature is positive
-		delta = half_dt * alpha * (T_orig - temp0) / a
-		T = max(T_orig + delta, small_temp)
- 
-		!if ((i.eq.lo(1)).and.(j.eq.lo(2))) print *, "pre eos: ", k, T_orig, T, delta
+		delta = half_dt * alpha * (temp0 - T_orig) / a
+		diag_eos(i,j,k,TEMP_COMP) = max(T_orig + delta, small_temp)
 
-                ! Call EOS to get the internal energy for constant initial temperature
-                call nyx_eos_given_RT(e_int, press, rho, T, ne, a)
+                ! Call EOS to get internal energy for constant equilibrium temperature
+                call nyx_eos_given_RT(eint0, press, rho, temp0, ne, a)
+		delta_re = half_dt * alpha * (rho*eint0 - rho_e_orig) / a
+
+                ! Call EOS to get the internal energy floor
+                call nyx_eos_given_RT(small_eint, press, rho, small_temp, ne, a)
 		
-		! Energy difference
-                delta_re  = rho*e_int - rho_e_orig
-
-		!if ((i.eq.lo(1)).and.(j.eq.lo(2))) print *, "post eos: ", k, rho_e_orig, rho*e_int, delta_re
-
                 ! Update cell quantities
-                state(i,j,k,UEINT) = state(i,j,k,UEINT) + delta_re
-                state(i,j,k,UEDEN) = state(i,j,k,UEDEN) + delta_re
-                diag_eos(i,j,k,TEMP_COMP) = T
+ 		state(i,j,k,UEINT) = max(rho_e_orig + delta_re, rho*small_eint)
+                state(i,j,k,UEDEN) = state(i,j,k,UEINT) + rho_K_res
+
+		!if ((i.eq.16).and.(j.eq.16)) then
+                !   print *, "temp: ", k, ne, temp0, T_orig, diag_eos(i,j,k,TEMP_COMP), delta
+                !   print *, "rhoe: ", k, rho, rho*eint0, rho_e_orig, state(i,j,k,UEINT), delta_re
+                !endif
             end do ! i
         end do ! j
     end do ! k
 
-end subroutine integrate_state_force
+    scaled_time =  time / a
+
+    if (scaled_time.ge.stop_forcing*forcing_time_scale_max) return
+
+    twicePi=two*M_PI
+
+    Lx = prob_hi(1)-prob_lo(1)
+    Ly = prob_hi(2)-prob_lo(2)
+    Lz = prob_hi(3)-prob_lo(3)
+
+    Lmin = min(Lx,Ly,Lz)
+    kappaMax = dble(nmodes)/Lmin + 1.0d-8
+    nxmodes = nmodes*int(HALF+Lx/Lmin)
+    nymodes = nmodes*int(HALF+Ly/Lmin)
+    nzmodes = nmodes*int(HALF+Lz/Lmin)
+
+    xstep = int(Lx/Lmin+HALF)
+    ystep = int(Ly/Lmin+HALF)
+    zstep = int(Lz/Lmin+HALF)
+
+    HLx = Lx
+    HLy = Ly
+    HLz = Lz
+
+!   write(6,*)"setup", Lx,Ly,Lz,kappaMax,nxmodes,nymodes,nzmodes
+!   write(6,*)dx(1),dx(2),dx(3)
+!   write (6,*) "In add_turb_forcing"
+    
+    do k = lo(3),hi(3)
+       zpos = (dble(k) + HALF) * dx(3)
+
+       do j = lo(2),hi(2)
+          ypos =  (dble(j) + HALF) * dx(2)
+
+          do i = lo(1),hi(1)
+             xpos = (dble(i) + HALF) * dx(1)
+
+             f1 = ZERO
+             f2 = ZERO
+             f3 = ZERO
+
+!            write(6,*)"i,j,k",i,j,k,state(i,j,k,URHO)
+!            write(6,*)"inital",f1,f2,f3
+
+             do kz = mode_start*zstep, nzmodes, zstep
+                kzd = dble(kz)
+                freqz = twicePi*kzd*HLz
+                do ky = mode_start*ystep, nymodes, ystep
+                   kyd = dble(ky)
+                   freqy=twicePi*kyd/HLy
+                   do kx = mode_start*xstep, nxmodes, xstep
+                      kxd = dble(kx)
+                      kappa = sqrt( (kxd*kxd)/(Lx*Lx) + (kyd*kyd)/(Ly*Ly) + (kzd*kzd)/(Lz*Lz) )
+                      freqx = twicePi*kxd/HLx
+                      if (kappa.le.kappaMax) then
+                         xT = cos(FTX(kx,ky,kz)*scaled_time+TAT(kx,ky,kz))
+
+                         f1 = f1 + xT * ( FAZ(kx,ky,kz)*freqy*sin(freqx*xpos+FPZX(kx,ky,kz)) * cos(freqy*ypos+FPZY(kx,ky,kz)) * &
+                                                              sin(freqz*zpos+FPZZ(kx,ky,kz)) &
+                              -           FAY(kx,ky,kz)*freqz*sin(freqx*xpos+FPYX(kx,ky,kz)) * sin(freqy*ypos+FPYY(kx,ky,kz)) * &
+                                                              cos(freqz*zpos+FPYZ(kx,ky,kz)) )
+                         f2 = f2 + xT * ( FAX(kx,ky,kz)*freqz*sin(freqx*xpos+FPXX(kx,ky,kz)) * sin(freqy*ypos+FPXY(kx,ky,kz)) * &
+                                                              cos(freqz*zpos+FPXZ(kx,ky,kz)) &
+                              -           FAZ(kx,ky,kz)*freqx*cos(freqx*xpos+FPZX(kx,ky,kz)) * sin(freqy*ypos+FPZY(kx,ky,kz)) * &
+                                                              sin(freqz*zpos+FPZZ(kx,ky,kz)) )
+                         f3 = f3 + xT * ( FAY(kx,ky,kz)*freqx*cos(freqx*xpos+FPYX(kx,ky,kz)) * sin(freqy*ypos+FPYY(kx,ky,kz)) * &
+                                                              sin(freqz*zpos+FPYZ(kx,ky,kz)) &
+                              -           FAX(kx,ky,kz)*freqy*sin(freqx*xpos+FPXX(kx,ky,kz)) * cos(freqy*ypos+FPXY(kx,ky,kz)) * &
+                                                              sin(freqz*zpos+FPXZ(kx,ky,kz)) ) 
+                      endif
+                   enddo
+                enddo
+             enddo
+
+             state(i,j,k,UMX) = state(i,j,k,UMX) + half_dt * state(i,j,k,URHO)*f1 / a
+             state(i,j,k,UMY) = state(i,j,k,UMY) + half_dt * state(i,j,k,URHO)*f2 / a
+             state(i,j,k,UMZ) = state(i,j,k,UMZ) + half_dt * state(i,j,k,URHO)*f3 / a
+!            write(6,*)i,j,k,f1,f2,f3
+
+             state(i,j,k,UEDEN) = state(i,j,k,UEINT) + 0.5d0*(state(i,j,k,UMX)*state(i,j,k,UMX) + &
+                                                              state(i,j,k,UMY)*state(i,j,k,UMY) + &
+                                                              state(i,j,k,UMZ)*state(i,j,k,UMZ))/state(i,j,k,URHO)
+          enddo
+       enddo
+    enddo
+
+    ! Note that (lo,hi) define the region of the box containing the grow cells
+    ! Do *not* assume this is just the valid region
+    ! apply heating-cooling to UEDEN and UEINT
+
+!    Quick check to see how divergence free we are
+!    divf = 0.d0
+!    totf = 0.d0
+!    do k = lo(3)+1,hi(3)-1
+!       do j = lo(2)+1,hi(2)-1
+!          do i = lo(1)+1,hi(1)-1
+!             totf = totf + sqrt( src(i,j,k,UMX)**2 + src(i,j,k,UMY)**2 + src(i,j,k,UMY)**2 )/state(i,j,k,URHO)
+!             divf = divf &
+!                  + abs( ( src(i+1,j,k,UMX)/state(i+1,j,k,URHO) - src(i-1,j,k,UMX)/state(i-1,j,k,URHO) )   &
+!                  +      ( src(i,j+1,k,UMY)/state(i,j+1,k,URHO) - src(i,j-1,k,UMY)/state(i,j-1,k,URHO) )   &
+!                  +      ( src(i,j,k+1,UMZ)/state(i,j,k+1,URHO) - src(i,j,k-1,UMZ)/state(i,j,k-1,URHO) ) ) &
+!                  / (dx(1)) / 2.0d0
+!          enddo
+!       enddo
+!    enddo
+!    
+!    write (6,1000) divf,totf,divf/totf
+!1000 format('divf, totf, divf/totf =', 3(e20.14,2x))
+
+  end subroutine integrate_state_force
 

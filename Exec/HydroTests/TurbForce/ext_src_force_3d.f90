@@ -35,7 +35,7 @@ subroutine ext_src_force(lo, hi, old_state, os_l1, os_l2, os_l3, os_h1, os_h2, o
 !   src : double array (dims) @todo
 !       @todo
 !
-    use meth_params_module, only : NVAR, UEDEN, UEINT
+    use meth_params_module, only : NVAR, UMX, UMY, UMZ, UEDEN, UEINT
     use fundamental_constants_module
  
     implicit none
@@ -96,13 +96,16 @@ subroutine ext_src_force(lo, hi, old_state, os_l1, os_l2, os_l3, os_h1, os_h2, o
 
     call integrate_state_force(src_lo,src_hi,tmp_state,ns_l1,ns_l2,ns_l3, ns_h1,ns_h2,ns_h3, &
                                              new_diag ,nd_l1,nd_l2,nd_l3, nd_h1,nd_h2,nd_h3, &
-                               a,half_dt)
+                               dx,time,a,half_dt)
 
     do k = src_l3, src_h3
         do j = src_l2, src_h2
             do i = src_l1, src_h1
+                  src(i,j,k,UMX)   = (tmp_state(i,j,k,UMX)   - new_state(i,j,k,UMX)) * a / half_dt
+                  src(i,j,k,UMY)   = (tmp_state(i,j,k,UMY)   - new_state(i,j,k,UMY)) * a / half_dt
+                  src(i,j,k,UMZ)   = (tmp_state(i,j,k,UMZ)   - new_state(i,j,k,UMZ)) * a / half_dt
                   src(i,j,k,UEINT) = (tmp_state(i,j,k,UEINT) - new_state(i,j,k,UEINT)) * a / half_dt
-                  src(i,j,k,UEDEN) = src(i,j,k,UEINT)
+                  src(i,j,k,UEDEN) = (tmp_state(i,j,k,UEDEN) - new_state(i,j,k,UEDEN)) * a / half_dt
             end do
         end do
     end do

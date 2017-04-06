@@ -58,9 +58,9 @@
                 0.5d0 * dt * a_half * (src_new(i,j,k,UEDEN) - src_old(i,j,k,UEDEN)) / a_newsq
 
             if (state(i,j,k,UEINT) .lt. 0.d0 .and. print_fortran_warnings .gt. 0) then
-               print *,'(rho e) going negative in time_center_sources: ',i,j,k
-               print *,' ... resetting to small_temp '
+               print *,'(rho e) going negative in time_center_sources: ',i,j,k,state(i,j,k,UEDEN)
                call bl_abort("time_center_sources")
+               ! print *,' ... resetting to small_temp '
                ! ke = state(i,j,k,UEDEN) - state(i,j,k,UEINT)
                ! call nyx_eos_given_RT(eint, dummy_pres, state(i,j,k,URHO), small_temp, &
                !                      d(i,j,k,NE_COMP),a_new)

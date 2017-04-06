@@ -86,7 +86,7 @@ Nyx::sum_integrated_quantities ()
                 data_log_lev << std::setw(14) << "         Temp ";
                 data_log_lev << std::setw(14) << "     rms_mach ";
                 data_log_lev << std::setw(14) << "      magvort "
-                             << '\n';
+                             << std::endl;
             }
 
             // Write the quantities at this time      
@@ -97,7 +97,7 @@ Nyx::sum_integrated_quantities ()
             data_log_lev << std::setw(14) << std::setprecision(6) << Temp_lev;
             data_log_lev << std::setw(14) << std::setprecision(6) << rms_mach_lev;
             data_log_lev << std::setw(14) << std::setprecision(6) << magvort_lev
-                         << '\n';
+                         << std::endl;
         }
     }
 
@@ -141,7 +141,7 @@ Nyx::sum_integrated_quantities ()
             data_log1 << std::setw(14) << "        rho_e ";
             data_log1 << std::setw(14) << "         Temp ";
             data_log1 << std::setw(14) << "     rms_mach " ;
-            data_log1 << std::setw(14) << "      magvort " << '\n';
+            data_log1 << std::setw(14) << "      magvort " << std::endl;
         }
 
         // Write the quantities at this time                                                                                            
@@ -154,9 +154,9 @@ Nyx::sum_integrated_quantities ()
         data_log1 << std::setw(14) << std::setprecision(6) << Temp;
         data_log1 << std::setw(14) << std::setprecision(6) << rms_mach;
         data_log1 << std::setw(14) << std::setprecision(6) << magvort
-                  << '\n';
+                  << std::endl;
       }
-      std::cout << '\n';
+      std::cout << std::endl;
     }
 }
 
