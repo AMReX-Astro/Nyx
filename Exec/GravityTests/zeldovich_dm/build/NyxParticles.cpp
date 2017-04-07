@@ -7,7 +7,9 @@
 #endif
 
 #include "Nyx_F.H"
-#include <Particles_F.H>
+#include <AMReX_Particles_F.H>
+
+using namespace amrex;
 
 static std::string ascii_particle_file;
 
@@ -52,7 +54,7 @@ Nyx::read_particle_params()
     {
         std::cerr << "ERROR:: doesnt make sense to have do_grav=false but move_type = Gravitational"
                   << std::endl;
-        BoxLib::Error();
+        amrex::Error();
     }
 #endif
 
@@ -67,7 +69,7 @@ Nyx::read_particle_params()
     {
         std::cerr << "ERROR::particle_init_type is not AsciiFile but you specified ascii_particle_file"
                   << std::endl;;
-        BoxLib::Error();
+        amrex::Error();
     }
 
     //
@@ -107,11 +109,11 @@ Nyx::init_particles()
         {
             if (particle_initrandom_count <= 0)
             {
-                BoxLib::Abort("Nyx::init_particles(): particle_initrandom_count must be > 0");
+                amrex::Abort("Nyx::init_particles(): particle_initrandom_count must be > 0");
             }
             if (particle_initrandom_iseed <= 0)
             {
-                BoxLib::Abort("Nyx::init_particles(): particle_initrandom_iseed must be > 0");
+                amrex::Abort("Nyx::init_particles(): particle_initrandom_iseed must be > 0");
             }
 
             if (verbose && ParallelDescriptor::IOProcessor())
@@ -156,7 +158,7 @@ Nyx::init_particles()
                     if (mf.contains_nan(Density + i, 1, 0))
                     {
                         std::cout << "Found NaNs in component " << i << ". " << std::endl;
-                        BoxLib::Abort("Nyx::init_particles: Your initial conditions contain NaNs!");
+                        amrex::Abort("Nyx::init_particles: Your initial conditions contain NaNs!");
                     }
                 }
             }
@@ -175,7 +177,7 @@ Nyx::init_particles()
 	    if ( std::abs(comoving_OmK) > 1e-3 ){
 		    std::cout << "You assume a non-flat universe - \\Omega_K = "
 			      << comoving_OmK << std::endl;
-		    BoxLib::Abort();
+		    amrex::Abort();
 	    }
 
 	    //compute \rho_{baryon}=3H_0^2\Omega_{baryon}/(8\pi G)
@@ -237,10 +239,10 @@ Nyx::init_particles()
 	     	S_new.mult(rhoB,  Density, 1, S_new.nGrow());
 
 //		//This block assigns "the same" density for the baryons as for the dm.
-//              PArray<MultiFab> particle_mf;
+//              Array<std::unique_ptr<MultiFab> > particle_mf;
 //              DMPC->AssignDensity(particle_mf);
-//              particle_mf[0].mult(realOmB / comoving_OmD);
-//              S_new.copy(particle_mf[0], 0, Density, 1);
+//              particle_mf[0]->mult(realOmB / comoving_OmD);
+//              S_new.copy(*particle_mf[0], 0, Density, 1);
 
 	     	//copy velocities...
 	     	S_new.copy(mf, 0, Xmom, 3);
@@ -289,7 +291,7 @@ Nyx::init_particles()
         }
         else
         {
-            BoxLib::Error("not a valid input for nyx.particle_init_type");
+            amrex::Error("not a valid input for nyx.particle_init_type");
         }
     }
 }
@@ -306,23 +308,23 @@ Nyx::init_santa_barbara()
     if (level == 0 && frac_for_hydro != 1.0)
         DMPC->MultiplyParticleMass(level, omfrac);
 
-    PArray<MultiFab> particle_mf;
+    Array<std::unique_ptr<MultiFab> > particle_mf;
     DMPC->AssignDensity(particle_mf);
     for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
     {
         const IntVect ratio = parent->refRatio(lev);
-        Gravity::average_down(particle_mf[lev], particle_mf[lev+1], ratio);
+        Gravity::average_down(*particle_mf[lev], *particle_mf[lev+1], ratio);
     }
 
     if (frac_for_hydro == 1.0)
     {
        for (int lev = 0; lev <= level; lev++)
-          particle_mf[lev].mult(0.0);
+          particle_mf[lev]->mult(0.0);
     }
     else
     {
        for (int lev = 0; lev <= level; lev++)
-          particle_mf[lev].mult(frac_for_hydro / omfrac);
+          particle_mf[lev]->mult(frac_for_hydro / omfrac);
     }
 
     int ns = NUM_STATE;
@@ -356,7 +358,7 @@ Nyx::init_santa_barbara()
                  gridloc.lo(), gridloc.hi());
         }
 
-        MultiFab::Add(S_new, particle_mf[lev], 0, Density, 1, S_new.nGrow());
+        MultiFab::Add(S_new, *particle_mf[lev], 0, Density, 1, S_new.nGrow());
 
         // Make sure we've finished initializing the density before calling this.
         for (MFIter mfi(S_new); mfi.isValid(); ++mfi)
@@ -387,7 +389,7 @@ Nyx::particle_check_point(const std::string& dir)
             std::ofstream File;
             File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
             if (!File.good())
-                BoxLib::FileOpenFailed(FileName);
+                amrex::FileOpenFailed(FileName);
             File.precision(15);
             if (cur_time == 0.0)
             {
@@ -416,7 +418,7 @@ Nyx::particle_plot_file(const std::string& dir)
             std::ofstream File;
             File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
             if (!File.good())
-                BoxLib::FileOpenFailed(FileName);
+                amrex::FileOpenFailed(FileName);
             File.precision(15);
             if (cur_time == 0.0)
             {
@@ -466,7 +468,7 @@ Nyx::particle_post_restart(const std::string& restart_file)
             std::ifstream File;
             File.open(FileName.c_str(),std::ios::in);
             if (!File.good())
-                BoxLib::FileOpenFailed(FileName);
+                amrex::FileOpenFailed(FileName);
             File >> old_a;
         }
         ParallelDescriptor::Bcast(&old_a, 1,
@@ -567,13 +569,13 @@ Nyx::particle_derive(const std::string& name, Real time, int ngrow)
                 FArrayBox& cfab = ctemp_dat[mfi];
                 const Box& fbx = ffab.box();
 
-                BL_ASSERT(cfab.box() == BoxLib::coarsen(fbx, trr));
+                BL_ASSERT(cfab.box() == amrex::coarsen(fbx, trr));
 
                 for (IntVect p = fbx.smallEnd(); p <= fbx.bigEnd(); fbx.next(p))
                 {
                     const Real val = ffab(p);
                     if (val > 0)
-                        cfab(BoxLib::coarsen(p, trr)) += val;
+                        cfab(amrex::coarsen(p, trr)) += val;
                 }
             }
 
@@ -596,16 +598,16 @@ Nyx::particle_derive(const std::string& name, Real time, int ngrow)
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
         // coarse-fine distribution of particles correct.
-        PArray<MultiFab> particle_mf;
+        Array<std::unique_ptr<MultiFab> > particle_mf;
         DMPC->AssignDensity(particle_mf);
 
         for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
         {
             const IntVect ratio = parent->refRatio(lev);
-            Gravity::average_down(particle_mf[lev], particle_mf[lev+1], ratio);
+            Gravity::average_down(*particle_mf[lev], *particle_mf[lev+1], ratio);
         }
 
-        MultiFab::Copy(*derive_dat, particle_mf[level], 0, 0, 1, 0);
+        MultiFab::Copy(*derive_dat, *particle_mf[level], 0, 0, 1, 0);
 
         return derive_dat;
     }
@@ -621,16 +623,16 @@ Nyx::particle_derive(const std::string& name, Real time, int ngrow)
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
         // coarse-fine distribution of particles correct.
-        PArray<MultiFab> particle_mf;
+        Array<std::unique_ptr<MultiFab> > particle_mf;
         DMPC->AssignDensity(particle_mf);
 
         for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
         {
             const IntVect ratio = parent->refRatio(lev);
-            Gravity::average_down(particle_mf[lev], particle_mf[lev+1], ratio);
+            Gravity::average_down(*particle_mf[lev], *particle_mf[lev+1], ratio);
         }
 
-        MultiFab::Copy(*derive_dat, particle_mf[level], 0, 0, 1, 0);
+        MultiFab::Copy(*derive_dat, *particle_mf[level], 0, 0, 1, 0);
 
         MultiFab* gas_density = derive("density",time,0);
 

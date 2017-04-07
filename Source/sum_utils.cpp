@@ -4,6 +4,8 @@
 #include <Nyx.H>
 #include <Nyx_F.H>
 
+using namespace amrex;
+
 Real
 Nyx::vol_weight_sum (const std::string& name,
                      Real               time,
@@ -11,14 +13,14 @@ Nyx::vol_weight_sum (const std::string& name,
 {
     Real        sum = 0;
     const Real* dx  = geom.CellSize();
-    MultiFab*   mf  = derive(name, time, 0);
+    auto        mf  = derive(name, time, 0);
 
     BL_ASSERT(mf != 0);
 
     if (masked)
     {
         int flev = parent->finestLevel();
-        while (!parent->getAmrLevels().defined(flev))
+        while (parent->getAmrLevels()[flev] == nullptr)
             flev--;
 
         if (level < flev)
@@ -46,8 +48,6 @@ Nyx::vol_weight_sum (const std::string& name,
         sum += s;
     }
 
-    delete mf;
-
     ParallelDescriptor::ReduceRealSum(sum);
 
     if (!masked) 
@@ -67,7 +67,7 @@ Nyx::vol_weight_sum (MultiFab& mf, bool masked)
     if (masked)
     {
         int flev = parent->finestLevel();
-        while (!parent->getAmrLevels().defined(flev)) flev--;
+        while (parent->getAmrLevels()[flev] == nullptr) flev--;
 
         if (level < flev)
         {
@@ -117,7 +117,7 @@ Nyx::vol_weight_squared_sum_level (const std::string& name,
 {
     Real        sum = 0;
     const Real* dx  = geom.CellSize();
-    MultiFab*   mf  = derive(name, time, 0);
+    auto        mf  = derive(name, time, 0);
 
     BL_ASSERT(mf != 0);
 
@@ -140,8 +140,6 @@ Nyx::vol_weight_squared_sum_level (const std::string& name,
         sum += s;
     }
 
-    delete mf;
-
     ParallelDescriptor::ReduceRealSum(sum);
 
     sum /= lev_vol;
@@ -155,12 +153,12 @@ Nyx::vol_weight_squared_sum (const std::string& name,
 {
     Real        sum = 0;
     const Real* dx  = geom.CellSize();
-    MultiFab*   mf  = derive(name, time, 0);
+    auto        mf  = derive(name, time, 0);
 
     BL_ASSERT(mf != 0);
 
     int flev = parent->finestLevel();
-    while (!parent->getAmrLevels().defined(flev)) flev--;
+    while (parent->getAmrLevels()[flev] == nullptr) flev--;
 
     MultiFab* mask = 0;
     if (level < flev)
@@ -198,8 +196,6 @@ Nyx::vol_weight_squared_sum (const std::string& name,
         sum += s;
     }
 
-    delete mf;
-
     ParallelDescriptor::ReduceRealSum(sum);
 
     return sum;
@@ -216,7 +212,7 @@ Nyx::build_fine_mask()
     baf.coarsen(crse_ratio);
 
     const BoxArray& bac = parent->boxArray(level-1);
-    fine_mask = new MultiFab(bac,1,0);
+    fine_mask = new MultiFab(bac,parent->DistributionMap(level-1), 1,0);
     fine_mask->setVal(1.0);
 
 #ifdef _OPENMP

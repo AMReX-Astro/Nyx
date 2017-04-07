@@ -23,9 +23,11 @@
 #include <cstdio>
 #include <string>
 
-#include <ParallelDescriptor.H>
+#include <AMReX_ParallelDescriptor.H>
 
 #include "MemInfo.H"
+
+using namespace amrex;
 
 MemInfo* MemInfo::classInstance = NULL;
 

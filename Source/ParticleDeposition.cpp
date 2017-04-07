@@ -1,21 +1,22 @@
 #include "NyxParticleContainer.H"
 
+using namespace amrex;
+
 void
-DarkMatterParticleContainer::AssignDensityAndVels (PArray<MultiFab>& mf,
-                                                   int               lev_min) const
+DarkMatterParticleContainer::AssignDensityAndVels (Array<std::unique_ptr<MultiFab> >& mf, int lev_min) const
 {
     AssignDensity(mf, lev_min, BL_SPACEDIM+1);
 }
 
 #ifdef NEUTRINO_PARTICLES
 void
-NeutrinoParticleContainer::AssignDensity (PArray<MultiFab>& mf, int lev_min, int ncomp, int finest_level) const 
+NeutrinoParticleContainer::AssignDensity (Array<std::unique_ptr<MultiFab> >& mf, int lev_min, int ncomp, int finest_level) const 
 {
     AssignRelativisticDensity (mf,lev_min,ncomp,finest_level);
 }
 
 void
-NeutrinoParticleContainer::AssignRelativisticDensity (PArray<MultiFab>& mf_to_be_filled, 
+NeutrinoParticleContainer::AssignRelativisticDensity (Array<std::unique_ptr<MultiFab> >& mf_to_be_filled, 
                                                       int               lev_min,
                                                       int               ncomp,
                                                       int               finest_level) const
@@ -37,64 +38,56 @@ NeutrinoParticleContainer::AssignRelativisticDensity (PArray<MultiFab>& mf_to_be
     // finest_level. In the following code, lev is the real level, 
     // lev_index is the corresponding index for mf. 
     //
-    PArray<MultiFab>* mf;
-    PArray<MultiFab>  mf_part;
 
     // Create the space for mf_to_be_filled, regardless of whether we'll need a temporary mf
-    mf_to_be_filled.resize(finest_level+1-lev_min, PArrayManage);
+    mf_to_be_filled.resize(finest_level+1-lev_min);
     for (int lev = lev_min; lev <= finest_level; lev++)
     { 
         const int lev_index = lev - lev_min;
-        mf_to_be_filled.set(lev_index, new MultiFab(m_gdb->boxArray(lev), ncomp, 1));
-
-        for (MFIter mfi(mf_to_be_filled[lev_index]); mfi.isValid(); ++mfi) {
-            mf_to_be_filled[lev_index][mfi].setVal(0);
-	}
+        mf_to_be_filled[lev].reset(new MultiFab(m_gdb->boxArray(lev), 
+						m_gdb->DistributionMap(lev), 
+						ncomp, 1));
+	mf_to_be_filled[lev]->setVal(0.0);
     }
 
     // Test whether the grid structure of the boxArray is the same
     //       as the ParticleBoxArray at all levels 
     bool all_grids_the_same = true; 
     for (int lev = lev_min; lev <= finest_level; lev++) {
-        if (!OnSameGrids(lev, mf_to_be_filled[lev-lev_min])) {
+        if (!OnSameGrids(lev, *mf_to_be_filled[lev-lev_min])) {
 	    all_grids_the_same = false;
 	    break;
 	}
     }
 
-    if (all_grids_the_same)
-    {
-        mf = &mf_to_be_filled;
-    } 
-    else     
+    Array<std::unique_ptr<MultiFab> > mf_part;
+    if (!all_grids_the_same)
     { 
         // Create the space for the temporary, mf_part
-        mf_part.resize(finest_level+1-lev_min, PArrayManage);
+        mf_part.resize(finest_level+1-lev_min);
         for (int lev = lev_min; lev <= finest_level; lev++)
         {
             const int lev_index = lev - lev_min;
-            mf_part.set(lev_index, new MultiFab(m_gdb->ParticleBoxArray(lev), ncomp, 1,
-						m_gdb->ParticleDistributionMap(lev)));
-    
-            for (MFIter mfi(mf_to_be_filled[lev_index]); mfi.isValid(); ++mfi) {
-                mf_part[lev_index][mfi].setVal(0);
-	    }
+            mf_part[lev_index].reset(new MultiFab(m_gdb->ParticleBoxArray(lev),
+						  m_gdb->ParticleDistributionMap(lev),
+						  ncomp, 1));
+	    mf_part[lev_index].setVal(0.0);
         }
-
-        mf = &mf_part;
     }
+
+    auto & mf = (all_grids_the_same) ? mf_to_be_filled : mf_part;
 
     if (finest_level == 0)
     {
         //
         // Just use the far simpler single-level version.
         //
-        AssignRelativisticDensitySingleLevel((*mf)[0],0,ncomp);
+        AssignRelativisticDensitySingleLevel(*mf[0],0,ncomp);
         //
         // I believe that we don't need any information in ghost cells so we don't copy those.
         //
         if ( ! all_grids_the_same) {
-            mf_to_be_filled[0].copy((*mf)[0],0,0,ncomp);
+            mf_to_be_filled[0]->copy(*mf[0],0,0,ncomp);
 	}
         return;
     }
@@ -147,10 +140,10 @@ NeutrinoParticleContainer::AssignRelativisticDensity (PArray<MultiFab>& mf_to_be
         const Real*     dx_fine   = (lev < finest_level) ? m_gdb->Geom(lev+1).CellSize() : dx;
         const Real*     dx_coarse = (lev > 0) ? m_gdb->Geom(lev-1).CellSize() : dx;
         const int       lev_index = lev - lev_min;
-        const BoxArray& grids     = (*mf)[lev_index].boxArray();
+        const BoxArray& grids     = mf[lev_index]->boxArray();
         const int       dgrow     = (lev == 0) ? 1 : m_gdb->MaxRefRatio(lev-1);
 
-        BoxArray compfvalid, compfvalid_grown, fvalid = (*mf)[lev_index].boxArray();
+        BoxArray compfvalid, compfvalid_grown, fvalid = mf[lev_index]->boxArray();
         //
         // Do we have Fine->Crse overlap on a periodic boundary?
         // We want to add all ghost cells that can be shifted into valid region.
@@ -161,7 +154,7 @@ NeutrinoParticleContainer::AssignRelativisticDensity (PArray<MultiFab>& mf_to_be
         {
             if (gm.isAnyPeriodic())
             {
-                const Box& dest = BoxLib::grow(grids[i],dgrow);
+                const Box& dest = amrex::grow(grids[i],dgrow);
 
                 if ( ! dm.contains(dest))
                 {
@@ -212,7 +205,7 @@ NeutrinoParticleContainer::AssignRelativisticDensity (PArray<MultiFab>& mf_to_be
             cfba = m_gdb->boxArray(lev+1);
             cfba.coarsen(m_gdb->refRatio(lev));
 
-            BL_ASSERT((*mf)[lev_index].boxArray().contains(cfba));
+            BL_ASSERT(mf[lev_index]->boxArray().contains(cfba));
         }
         //
         // This is cfba with any shifted ghost cells.
@@ -223,13 +216,13 @@ NeutrinoParticleContainer::AssignRelativisticDensity (PArray<MultiFab>& mf_to_be
         {
             BoxList cvalid;
 
-            const BoxArray& cgrids = (*mf)[lev_index].boxArray();
+            const BoxArray& cgrids = mf[lev_index]->boxArray();
 
             for (int i = 0; i < cfba.size(); i++)
             {
                 if (gm.isAnyPeriodic())
                 {
-                    const Box& dest = BoxLib::grow(cfba[i],(*mf)[lev_index].nGrow());
+                    const Box& dest = amrex::grow(cfba[i],mf[lev_index]->nGrow());
 
                     if ( ! dm.contains(dest))
                     {
@@ -266,7 +259,7 @@ NeutrinoParticleContainer::AssignRelativisticDensity (PArray<MultiFab>& mf_to_be
         // The "+1" is so we enclose the valid region together with any
         //  ghost cells that can be periodically shifted into valid.
         //
-        compfvalid = BoxLib::complementIn(BoxLib::grow(dm,dgrow+1), fvalid);
+        compfvalid = amrex::complementIn(amrex::grow(dm,dgrow+1), fvalid);
 
         compfvalid_grown = compfvalid;
         compfvalid_grown.grow(1);
@@ -274,7 +267,7 @@ NeutrinoParticleContainer::AssignRelativisticDensity (PArray<MultiFab>& mf_to_be
             
         if (gm.isAnyPeriodic() && ! gm.isAllPeriodic())
         {
-            BoxLib::Error("AssignDensity: problem must be periodic in no or all directions");
+            amrex::Error("AssignDensity: problem must be periodic in no or all directions");
         }
         //
         // If we're at a lev > 0, this is the coarsened BoxArray.
@@ -298,7 +291,7 @@ NeutrinoParticleContainer::AssignRelativisticDensity (PArray<MultiFab>& mf_to_be
              ++pmap_it)
         {
             const PBox& pbx = pmap_it->second;
-            FArrayBox&  fab = (*mf)[lev_index][pmap_it->first];
+            FArrayBox&  fab = (*mf[lev_index])[pmap_it->first];
 
             for (typename PBox::const_iterator it = pbx.begin(), End = pbx.end();
                  it != End;
@@ -320,7 +313,7 @@ NeutrinoParticleContainer::AssignRelativisticDensity (PArray<MultiFab>& mf_to_be
                 //
                 if ( ! gm.isAllPeriodic() && ! allow_particles_near_boundary) {
                     if ( ! gm.Domain().contains(cells[0]) || ! gm.Domain().contains(cells[M-1])) {
-                        BoxLib::Error("AssignDensity: if not periodic, all particles must stay away from the domain boundary");
+                        amrex::Error("AssignDensity: if not periodic, all particles must stay away from the domain boundary");
 		    }
 		}
                 //
@@ -418,12 +411,12 @@ NeutrinoParticleContainer::AssignRelativisticDensity (PArray<MultiFab>& mf_to_be
                                     BL_ASSERT(pshifts.size() == 1);
                                     fcells[j] = fcells[j] - pshifts[0];
                                 }
-                                (*mf)[lev_index + 1].boxArray().intersections(Box(fcells[j],fcells[j]),isects,true,0);
+                                mf[lev_index + 1]->boxArray().intersections(Box(fcells[j],fcells[j]),isects,true,0);
                                 if (isects.size() == 0) {
                                     continue;
 				}
                                 const int grid = isects[0].first; 
-                                const int who  = (*mf)[lev_index+1].DistributionMap()[grid];
+                                const int who  = mf[lev_index+1]->DistributionMap()[grid];
 
                                 if (who == ParallelDescriptor::MyProc())
                                 {
@@ -437,17 +430,17 @@ NeutrinoParticleContainer::AssignRelativisticDensity (PArray<MultiFab>& mf_to_be
                                            vsq += p.m_data[n] * p.m_data[n];
 					}
                                         Real gamma = 1.0 / sqrt(1.0 - vsq / m_csq);
-                                        (*mf)[lev_index+1][grid](fcells[j],0) += p.m_data[0] * ffracs[j] * gamma;
+                                        (*mf[lev_index+1])[grid](fcells[j],0) += p.m_data[0] * ffracs[j] * gamma;
                                     }
                                     else 
                                     {
-                                        (*mf)[lev_index+1][grid](fcells[j],0) += p.m_data[0] * ffracs[j];
+                                        (*mf[lev_index+1])[grid](fcells[j],0) += p.m_data[0] * ffracs[j];
                                     }
                                     //
                                     // Sum up momenta in next components.
                                     //
                                     for (int n = 1; n < ncomp; n++) {
-                                        (*mf)[lev_index+1][grid](fcells[j],n) += p.m_data[n] * p.m_data[0] * ffracs[j];
+                                        (*mf[lev_index+1])[grid](fcells[j],n) += p.m_data[n] * p.m_data[0] * ffracs[j];
 				    }
                                 }
                                 else
@@ -509,12 +502,12 @@ NeutrinoParticleContainer::AssignRelativisticDensity (PArray<MultiFab>& mf_to_be
                                 //
                                 // Find its resident grid.
                                 //
-                                (*mf)[lev_index - 1].boxArray().intersections(Box(ccells[j],ccells[j]),isects,true,0);
+                                mf[lev_index - 1]->boxArray().intersections(Box(ccells[j],ccells[j]),isects,true,0);
                                 if (isects.size() == 0) {
                                     continue;
 				}
                                 const int grid = isects[0].first;
-                                const int who  = (*mf)[lev_index-1].DistributionMap()[grid];
+                                const int who  = mf[lev_index-1]->DistributionMap()[grid];
                                 if (who == ParallelDescriptor::MyProc())
                                 {
                                     //
@@ -527,17 +520,17 @@ NeutrinoParticleContainer::AssignRelativisticDensity (PArray<MultiFab>& mf_to_be
                                            vsq += p.m_data[n] * p.m_data[n];
 					}
                                         Real gamma = 1.0 / sqrt(1.0 - vsq / m_csq);
-                                        (*mf)[lev_index-1][grid](ccells[j],0) += p.m_data[0] * cfracs[j] * gamma;
+                                        (*mf[lev_index-1])[grid](ccells[j],0) += p.m_data[0] * cfracs[j] * gamma;
                                     }
                                     else 
                                     {
-                                        (*mf)[lev_index-1][grid](ccells[j],0) += p.m_data[0] * cfracs[j];
+                                        (*mf[lev_index-1])[grid](ccells[j],0) += p.m_data[0] * cfracs[j];
                                     }
                                     //
                                     // Sum up momenta in next components.
                                     //
                                     for (int n = 1; n < ncomp; n++) {
-                                        (*mf)[lev_index-1][grid](ccells[j],n) += p.m_data[n] * p.m_data[0] * cfracs[j];
+                                        (*mf[lev_index-1])[grid](ccells[j],n) += p.m_data[n] * p.m_data[0] * cfracs[j];
 				    }
                                 }
                                 else
@@ -645,17 +638,17 @@ NeutrinoParticleContainer::AssignRelativisticDensity (PArray<MultiFab>& mf_to_be
                                 // We're at a Fine->Crse boundary.
                                 //
                                 BL_ASSERT(cgrid[i] >= 0);
-                                BL_ASSERT(cgrid[i] < (*mf)[lev_index-1].size());
+                                BL_ASSERT(cgrid[i] < mf[lev_index-1]->size());
                                 //
                                 // Here we need to update the crse region.  The coarse
                                 // region is always going to be updated if we have a
                                 // particle in a cell bordering a Fine->Crse boundary.
                                 //
-                                const int who = (*mf)[lev_index-1].DistributionMap()[cgrid[i]];
+                                const int who = mf[lev_index-1]->DistributionMap()[cgrid[i]];
 
                                 if (who == ParallelDescriptor::MyProc())
                                 {
-                                    if ( ! (*mf)[lev_index-1][cgrid[i]].box().contains(ccells[i])) {
+                                    if ( ! (*mf[lev_index-1])[cgrid[i]].box().contains(ccells[i])) {
 				      continue;
 				    }
 
@@ -678,17 +671,17 @@ NeutrinoParticleContainer::AssignRelativisticDensity (PArray<MultiFab>& mf_to_be
                                            vsq += p.m_data[n] * p.m_data[n];
 					}
                                         Real gamma = 1.0 / sqrt(1.0 - vsq / m_csq);
-                                        (*mf)[lev_index-1][cgrid[i]](ccells[i],0) += p.m_data[0] * cfracs[i] * gamma;
+                                        (*mf[lev_index-1])[cgrid[i]](ccells[i],0) += p.m_data[0] * cfracs[i] * gamma;
                                     }
                                     else 
                                     {
-                                        (*mf)[lev_index-1][cgrid[i]](ccells[i],0) += p.m_data[0] * cfracs[i];
+                                        (*mf[lev_index-1])[cgrid[i]](ccells[i],0) += p.m_data[0] * cfracs[i];
                                     }
                                     //
                                     // Sum up momenta in next components.
                                     //
                                     for (int n = 1; n < ncomp; n++) {
-                                        (*mf)[lev_index-1][cgrid[i]](ccells[i],n) += p.m_data[n] * p.m_data[0] * cfracs[i];
+                                        (*mf[lev_index-1])[cgrid[i]](ccells[i],n) += p.m_data[n] * p.m_data[0] * cfracs[i];
 				    }
                                 }
                                 else
@@ -881,7 +874,7 @@ NeutrinoParticleContainer::AssignRelativisticDensity (PArray<MultiFab>& mf_to_be
 
                                 for (int j = 0; j < fcells.size(); j++)
                                 {
-                                    const int who = (*mf)[lev_index+1].DistributionMap()[fgrid[j]];
+                                    const int who = mf[lev_index+1]->DistributionMap()[fgrid[j]];
 
                                     if (who == ParallelDescriptor::MyProc())
                                     {
@@ -895,17 +888,17 @@ NeutrinoParticleContainer::AssignRelativisticDensity (PArray<MultiFab>& mf_to_be
                                                vsq += p.m_data[n] * p.m_data[n];
 					    }
                                             Real gamma = 1.0 / sqrt(1.0 - vsq / m_csq);
-                                            (*mf)[lev_index+1][fgrid[j]](fcells[j],0) += p.m_data[0] * fracs[i] * ffracs[j] * gamma;
+                                            (*mf[lev_index+1])[fgrid[j]](fcells[j],0) += p.m_data[0] * fracs[i] * ffracs[j] * gamma;
                                         }
                                         else 
                                         {
-                                            (*mf)[lev_index+1][fgrid[j]](fcells[j],0) += p.m_data[0] * fracs[i] * ffracs[j];
+                                            (*mf[lev_index+1])[fgrid[j]](fcells[j],0) += p.m_data[0] * fracs[i] * ffracs[j];
                                         }
                                         //
                                         // Sum up momenta in next components.
                                         //
                                         for (int n = 1; n < ncomp; n++) {
-                                            (*mf)[lev_index+1][fgrid[j]](fcells[j],n) += p.m_data[n] * p.m_data[0] * fracs[i] * ffracs[j];
+                                            (*mf[lev_index+1])[fgrid[j]](fcells[j],n) += p.m_data[n] * p.m_data[0] * fracs[i] * ffracs[j];
 					}
                                     }
                                     else
@@ -955,7 +948,7 @@ NeutrinoParticleContainer::AssignRelativisticDensity (PArray<MultiFab>& mf_to_be
     // This "may" touch ghost cells so we want to do it before
     // the SumBoundary() stuff.
     //
-    AssignDensityDoit(mf,data,ncomp,lev_min);
+    AssignDensityDoit(0, mf,data,ncomp,lev_min);
 
     for (int lev = lev_min; lev <= finest_level; lev++)
     {
@@ -964,7 +957,7 @@ NeutrinoParticleContainer::AssignRelativisticDensity (PArray<MultiFab>& mf_to_be
         const Real*     dx        = gm.CellSize();
         const Real      vol       = D_TERM(dx[0], *dx[1], *dx[2]);
 
-        (*mf)[lev_index].SumBoundary(gm.periodicity());
+        mf[lev_index]->SumBoundary(gm.periodicity());
         //
         // If ncomp > 1, first divide the momenta (component n) 
         // by the mass (component 0) in order to get velocities.
@@ -972,9 +965,9 @@ NeutrinoParticleContainer::AssignRelativisticDensity (PArray<MultiFab>& mf_to_be
         //
         for (int n = 1; n < ncomp; n++)
         {
-            for (MFIter mfi((*mf)[lev_index]); mfi.isValid(); ++mfi)
+            for (MFIter mfi(*mf[lev_index]); mfi.isValid(); ++mfi)
             {
-                (*mf)[lev_index][mfi].protected_divide((*mf)[lev_index][mfi],0,n,1);
+                (*mf[lev_index])[mfi].protected_divide((*mf[lev_index])[mfi],0,n,1);
             }
         }
         //
@@ -982,7 +975,7 @@ NeutrinoParticleContainer::AssignRelativisticDensity (PArray<MultiFab>& mf_to_be
         // to density. If there are additional components (like velocity), we don't
         // want to divide those by volume.
         //
-        (*mf)[lev_index].mult(1/vol,0,1);
+        mf[lev_index]->mult(1/vol,0,1);
     }
 
     //
@@ -996,7 +989,7 @@ NeutrinoParticleContainer::AssignRelativisticDensity (PArray<MultiFab>& mf_to_be
         for (int lev = lev_min; lev <= finest_level; lev++)
         {
             const int lev_index = lev - lev_min;
-            mf_to_be_filled[lev_index].copy(mf_part[lev_index],0,0,1);
+            mf_to_be_filled[lev_index]->copy(*mf_part[lev_index],0,0,1);
         }
     
     if (m_verbose > 1)
@@ -1033,15 +1026,16 @@ NeutrinoParticleContainer::AssignRelativisticDensitySingleLevel (MultiFab& mf_to
     {
         // If mf_to_be_filled is not defined on the particle_box_array, then we need 
         // to make a temporary here and copy into mf_to_be_filled at the end.
-        mf_pointer = new MultiFab(m_gdb->ParticleBoxArray(lev), ncomp, mf_to_be_filled.nGrow(),
-				  m_gdb->ParticleDistributionMap(lev), Fab_allocate);
+        mf_pointer = new MultiFab(m_gdb->ParticleBoxArray(lev), 
+				  m_gdb->ParticleDistributionMap(lev),
+				  ncomp, mf_to_be_filled.nGrow());
     }
 
     // We must have ghost cells for each FAB so that a particle in one grid can spread its effect to an
     //    adjacent grid by first putting the value into ghost cells of its own grid.  The mf->sumBoundary call then
     //    adds the value from one grid's ghost cell to another grid's valid region.
     if (mf_pointer->nGrow() < 1) 
-       BoxLib::Error("Must have at least one ghost cell when in AssignDensitySingleLevel");
+       amrex::Error("Must have at least one ghost cell when in AssignDensitySingleLevel");
 
     const Real      strttime    = ParallelDescriptor::second();
     const Geometry& gm          = m_gdb->Geom(lev);
@@ -1052,7 +1046,7 @@ NeutrinoParticleContainer::AssignRelativisticDensitySingleLevel (MultiFab& mf_to
     const int       ngrids      = pmap.size();
 
     if (gm.isAnyPeriodic() && ! gm.isAllPeriodic()) {
-        BoxLib::Error("AssignDensity: problem must be periodic in no or all directions");
+        amrex::Error("AssignDensity: problem must be periodic in no or all directions");
     }
 
     for (MFIter mfi(*mf_pointer); mfi.isValid(); ++mfi) {
@@ -1105,7 +1099,7 @@ NeutrinoParticleContainer::AssignRelativisticDensitySingleLevel (MultiFab& mf_to
             //
             if ( ! gm.isAllPeriodic() && ! allow_particles_near_boundary) {
                 if ( ! gm.Domain().contains(cells[0]) || ! gm.Domain().contains(cells[M-1])) {
-                    BoxLib::Error("AssignDensity: if not periodic, all particles must stay away from the domain boundary");
+                    amrex::Error("AssignDensity: if not periodic, all particles must stay away from the domain boundary");
 		}
 	    }
 

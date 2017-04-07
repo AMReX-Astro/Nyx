@@ -1,7 +1,6 @@
 //
 // This is the version that reads input from PlotFiles.
 //
-#include <winstd.H>
 #include <iomanip>
 #include <iostream>
 #include <fstream>
@@ -18,8 +17,10 @@
 
 #include "Nyx.H"
 #include "Nyx_F.H"
-#include "DataServices.H"
-#include "Utility.H"
+#include "AMReX_DataServices.H"
+#include "AMReX_Utility.H"
+
+using namespace amrex;
 
 void
 Nyx::ReadPlotFile (bool               first,
@@ -47,13 +48,13 @@ Nyx::ReadPlotFile (bool               first,
         {
             std::cout << "AmrData.prob_lo(i) = " << amrData.ProbLo()[i] << std::endl;
             std::cout << "   geom.prob_lo(i) = " <<    geom.ProbLo()[i] << std::endl;
-            BoxLib::Error("prob_lo from plotfile doesn't match prob_lo from inputs file");
+            amrex::Error("prob_lo from plotfile doesn't match prob_lo from inputs file");
         }
         if (amrData.ProbHi()[i] != geom.ProbHi()[i])
         {
             std::cout << "AmrData.prob_hi(i) = " << amrData.ProbHi()[i] << std::endl;
             std::cout << "   geom.prob_hi(i) = " <<    geom.ProbHi()[i] << std::endl;
-            BoxLib::Error("prob_hi from plotfile doesn't match prob_hi from inputs file");
+            amrex::Error("prob_hi from plotfile doesn't match prob_hi from inputs file");
         }
     }
 
@@ -61,18 +62,18 @@ Nyx::ReadPlotFile (bool               first,
     {
         std::cout << "AmrData.domain = " << amrData.ProbDomain()[level] << std::endl;
         std::cout << "   geom.domain = " << parent->getLevel(level).Domain() << std::endl;
-        BoxLib::Error("prob_domain from plotfile doesn't match prob_domain from inputs file");
+        amrex::Error("prob_domain from plotfile doesn't match prob_domain from inputs file");
     }
 
     if (amrData.boxArray(level) != grids)
     {
         std::cout << "AmrData.boxArray = " << amrData.boxArray(level) << std::endl;
         std::cout << "   grids         = " << grids << std::endl;
-        BoxLib::Error("boxArray from plotfile doesn't match grids ");
+        amrex::Error("boxArray from plotfile doesn't match grids ");
     }
 
     if (amrData.FinestLevel() != parent->finestLevel())
-        BoxLib::Error("finest_level from plotfile doesn't match finest_level from inputs file");
+        amrex::Error("finest_level from plotfile doesn't match finest_level from inputs file");
 
     const int Nlev = parent->finestLevel() + 1;
 
@@ -90,17 +91,17 @@ Nyx::ReadPlotFile (bool               first,
         if (plotnames[i] == "Ne")                       iNE    = i;
     }
 
-    if ( iURHO < 0 ) BoxLib::Abort("\"density\" is not in the plotfile");
-    if ( iUMX  < 0 ) BoxLib::Abort("\"xmom\" is not in the plotfile");
-    if ( iUMY  < 0 ) BoxLib::Abort("\"ymom\" is not in the plotfile");
-    if ( iUMZ  < 0 ) BoxLib::Abort("\"zmom\" is not in the plotfile");
+    if ( iURHO < 0 ) amrex::Abort("\"density\" is not in the plotfile");
+    if ( iUMX  < 0 ) amrex::Abort("\"xmom\" is not in the plotfile");
+    if ( iUMY  < 0 ) amrex::Abort("\"ymom\" is not in the plotfile");
+    if ( iUMZ  < 0 ) amrex::Abort("\"zmom\" is not in the plotfile");
 
     if ( iURHOE < 0 )
     {
-        if ( iTEMP < 0 ) BoxLib::Abort("\"rho_e\" nor \"Temp\" is in the plotfile");
-        if ( iNE   < 0 ) BoxLib::Abort("\"rho_e\" nor \"Ne\" is in the plotfile");
+        if ( iTEMP < 0 ) amrex::Abort("\"rho_e\" nor \"Temp\" is in the plotfile");
+        if ( iNE   < 0 ) amrex::Abort("\"rho_e\" nor \"Ne\" is in the plotfile");
 
-        if (iNE != iTEMP + 1) BoxLib::Abort("We assume Ne = Temp +1");
+        if (iNE != iTEMP + 1) amrex::Abort("We assume Ne = Temp +1");
     }
     else {rhoe_infile = true;}
 

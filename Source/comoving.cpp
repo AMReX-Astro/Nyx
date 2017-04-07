@@ -2,6 +2,8 @@
 #include "Nyx.H"
 #include "Nyx_F.H"
 
+using namespace amrex;
+
 Real Nyx::initial_z             = -1.0;
 Real Nyx::final_a               = -1.0;
 Real Nyx::final_z               = -1.0;
@@ -21,7 +23,7 @@ Nyx::read_comoving_params ()
         if (final_a > 0)
         {
             std::cerr << "ERROR::dont specify both final_a and final_z\n";
-            BoxLib::Error();
+            amrex::Error();
         }
         else
         {
@@ -35,7 +37,7 @@ Nyx::read_comoving_params ()
     if (initial_z < 0)
     {
         std::cerr << "ERROR::Need to specify non-negative initial redshift \n";
-        BoxLib::Error();
+        amrex::Error();
     }
 }
 
@@ -132,7 +134,7 @@ Nyx::get_comoving_a (Real time)
             std::cout << "Old / new a_time  " << old_a_time << " " << new_a_time << std::endl;
             std::cout << "Old / new   a     " << old_a      << " " << new_a    << std::endl;
         }
-        BoxLib::Error("get_comoving_a: invalid time");
+        amrex::Error("get_comoving_a: invalid time");
         return 0;
     }
 }
@@ -195,7 +197,7 @@ Nyx::integrate_comoving_a (Real time,Real dt)
             std::cout << "Old / new A time                    " << old_a_time << " " << new_a_time << std::endl;
             std::cout << "Old / new A                         " << old_a      << " " << new_a      << std::endl;
             std::cerr << "ERROR::dont know what to do in integrate_comoving_a" << std::endl;
-            BoxLib::Error();
+            amrex::Error();
     }
 }
 
@@ -211,7 +213,7 @@ Nyx::comoving_a_post_restart (const std::string& restart_file)
         std::ifstream File;
         File.open(FileName.c_str(),std::ios::in);
         if (!File.good())
-            BoxLib::FileOpenFailed(FileName);
+            amrex::FileOpenFailed(FileName);
         File >> old_a;
     }
     ParallelDescriptor::Bcast(&old_a, 1, ParallelDescriptor::IOProcessorNumber());

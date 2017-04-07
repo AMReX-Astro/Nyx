@@ -1,11 +1,13 @@
 #include <iomanip>
 #include <Nyx.H>
 #include <Nyx_F.H>
-#include <Particles_F.H>
+#include <AMReX_Particles_F.H>
 
 #ifdef GRAVITY
 #include <Gravity.H>
 #endif
+
+using namespace amrex;
 
 namespace
 {
@@ -37,9 +39,9 @@ Nyx::read_init_params ()
     pp.query("init_sb_vels", init_sb_vels);
 
     if (do_hydro == 0 && do_santa_barbara == 1)
-           BoxLib::Error("Nyx::cant have do_hydro == 0 and do_santa_barbara == 1");
+           amrex::Error("Nyx::cant have do_hydro == 0 and do_santa_barbara == 1");
     if (do_santa_barbara == 0 && init_with_sph_particles == 1)
-           BoxLib::Error("Nyx::cant have do_santa_barbara == 0 and init_with_sph_particles == 1");
+           amrex::Error("Nyx::cant have do_santa_barbara == 0 and init_with_sph_particles == 1");
     if (do_santa_barbara == 0 && init_sb_vels == 1)
     {
        init_sb_vels = 0;
@@ -56,7 +58,7 @@ Nyx::read_init_params ()
     {
         if (ParallelDescriptor::IOProcessor())
             std::cerr << "ERROR::particle_init_type is not AsciiFile but you specified ascii_particle_file" << std::endl;;
-        BoxLib::Error();
+        amrex::Error();
     }
 
     pp.query("sph_particle_file", sph_particle_file);
@@ -66,7 +68,7 @@ Nyx::read_init_params ()
     {
         if (ParallelDescriptor::IOProcessor())
             std::cerr << "ERROR::init_with_sph_particles is not 1 but you specified sph_particle_file" << std::endl;;
-        BoxLib::Error();
+        amrex::Error();
     }
 
     // Input error check
@@ -74,7 +76,7 @@ Nyx::read_init_params ()
     {
         if (ParallelDescriptor::IOProcessor())
             std::cerr << "ERROR::init_with_sph_particles is 1 but you did not specify sph_particle_file" << std::endl;;
-        BoxLib::Error();
+        amrex::Error();
     }
 
     pp.query("binary_particle_file", binary_particle_file);
@@ -85,7 +87,7 @@ Nyx::read_init_params ()
     {
         if (ParallelDescriptor::IOProcessor())
             std::cerr << "ERROR::particle_init_type is not BinaryFile or BinaryMetaFile but you specified binary_particle_file" << std::endl;
-        BoxLib::Error();
+        amrex::Error();
     }
 
 #ifdef AGN
@@ -94,7 +96,7 @@ Nyx::read_init_params ()
     {
         if (ParallelDescriptor::IOProcessor())
             std::cerr << "ERROR::particle_init_type is not AsciiFile but you specified agn_particle_file" << std::endl;;
-        BoxLib::Error();
+        amrex::Error();
     }
 #endif
 
@@ -104,7 +106,7 @@ Nyx::read_init_params ()
     {
         if (ParallelDescriptor::IOProcessor())
             std::cerr << "ERROR::particle_init_type is not AsciiFile but you specified neutrino_particle_file" << std::endl;;
-        BoxLib::Error();
+        amrex::Error();
     }
 #endif
 }
@@ -137,7 +139,7 @@ Nyx::initData ()
     // Make sure dx = dy = dz -- that's all we guarantee to support
     const Real SMALL = 1.e-13;
     if ( (fabs(dx[0] - dx[1]) > SMALL) || (fabs(dx[0] - dx[2]) > SMALL) )
-        BoxLib::Abort("We don't support dx != dy != dz");
+        amrex::Abort("We don't support dx != dy != dz");
 
 #ifndef NO_HYDRO
     int         ns       = S_new.nComp();
@@ -301,7 +303,7 @@ Nyx::init_from_plotfile ()
     }
 
     if (parent->maxLevel() > 0)
-        BoxLib::Abort("We can only restart from single-level plotfiles");
+        amrex::Abort("We can only restart from single-level plotfiles");
 
     // Make sure to read in "a" before we call ReadPlotFile since we will use a 
     //      when we construct e from T.
@@ -322,7 +324,7 @@ Nyx::init_from_plotfile ()
 #ifndef NO_HYDRO
     // Sanity check
     //if (use_const_species == 0)
-    //    BoxLib::Error("init_from_plotfile assumes we are using constant species");
+    //    amrex::Error("init_from_plotfile assumes we are using constant species");
 
     // Construct internal energy given density, temperature and species
     for (int lev = 0; lev <= parent->finestLevel(); ++lev)
