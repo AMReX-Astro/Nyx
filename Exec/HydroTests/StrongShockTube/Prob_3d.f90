@@ -1,5 +1,5 @@
 
-      subroutine PROBINIT (init,name,namlen,problo,probhi)
+      subroutine amrex_probinit (init,name,namlen,problo,probhi) bind(c)
 
       use probdata_module
       use comoving_module
@@ -73,7 +73,7 @@
       rhoe_l = p_l/gamma_minus_1
       rhoe_r = p_r/gamma_minus_1
 
-      end subroutine PROBINIT
+      end subroutine amrex_probinit
 
 ! ::: -----------------------------------------------------------
 ! ::: This routine is called at problem setup time and is used

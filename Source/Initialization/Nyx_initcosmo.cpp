@@ -2,13 +2,15 @@
 
 #ifdef GRAVITY
 #include <Gravity.H>
-BL_FORT_PROC_DECL(GET_GRAV_CONST, get_grav_const)(Real* Gconst);
+BL_FORT_PROC_DECL(GET_GRAV_CONST, get_grav_const)(amrex::Real* Gconst);
 #endif
 
 #include <Nyx.H>
 #include <Nyx_F.H>
 #include <NyxParticleContainer.H>
-#include <Particles_F.H>
+#include <AMReX_Particles_F.H>
+
+using namespace amrex;
 
 #ifdef GRAVITY
 void Nyx::icReadAndPrepareFab(std::string mfDirName, int nghost, MultiFab &mf)
@@ -16,7 +18,7 @@ void Nyx::icReadAndPrepareFab(std::string mfDirName, int nghost, MultiFab &mf)
     if (level > 0 && nghost > 0)
     {
        std::cout << "Are sure you want to do what you are doing?" << std::endl;
-       BoxLib::Abort();
+       amrex::Abort();
     }
 
     //
@@ -26,7 +28,7 @@ void Nyx::icReadAndPrepareFab(std::string mfDirName, int nghost, MultiFab &mf)
 
     if (!mfDirName.empty() && mfDirName[mfDirName.length()-1] != '/')
        mfDirName += '/';
-    std::string Level = BoxLib::Concatenate("Level_", level, 1);
+    std::string Level = amrex::Concatenate("Level_", level, 1);
     mfDirName.append(Level);
     mfDirName.append("/Cell");
 
@@ -42,19 +44,20 @@ void Nyx::icReadAndPrepareFab(std::string mfDirName, int nghost, MultiFab &mf)
             if (mf_read.contains_nan(i, 1))
             {
                 std::cout << "Found NaNs in read_mf in component " << i << ". " << std::endl;
-                BoxLib::Abort("Nyx::init_particles: Your initial conditions contain NaNs!");
+                amrex::Abort("Nyx::init_particles: Your initial conditions contain NaNs!");
             }
         }
     }
 
-    BoxArray ba      = parent->boxArray(level);
-    BoxArray ba_read = mf_read.boxArray();
+    const auto& ba      = parent->boxArray(level);
+    const auto& dm      = parent->DistributionMap(level);
+    const auto& ba_read = mf_read.boxArray();
     int      nc      = mf_read.nComp();
 
     //if we don't use a cic scheme for the initial conditions, 
     //we can safely set the number of ghost cells to 0
     //for multilevel ICs we can't use ghostcells
-    mf.define(ba, nc, nghost, Fab_allocate);
+    mf.define(ba, dm, nc, nghost);
 
     mf.copy(mf_read,0,0,nc);
 
@@ -70,7 +73,7 @@ void Nyx::icReadAndPrepareFab(std::string mfDirName, int nghost, MultiFab &mf)
 	}
 	ParallelDescriptor::Barrier();
 	if (ParallelDescriptor::IOProcessor()){
-            BoxLib::Abort();
+            amrex::Abort();
 	}
     }
 
@@ -87,7 +90,7 @@ void Nyx::icReadAndPrepareFab(std::string mfDirName, int nghost, MultiFab &mf)
             if (mf.contains_nan(i, 1, nghost))
             {
                 std::cout << "Found NaNs in component " << i << ". " << std::endl;
-                BoxLib::Abort("Nyx::init_particles: Your initial conditions contain NaNs!");
+                amrex::Abort("Nyx::init_particles: Your initial conditions contain NaNs!");
             }
         }
     }
@@ -161,7 +164,7 @@ void Nyx::initcosmo()
         	    std::cout << "You assume a non-flat universe - \\Omega_K = "
         		      << comoving_OmK << std::endl;
             }
-            BoxLib::Abort();
+            amrex::Abort();
     }
 
     //compute \rho_{baryon}=3H_0^2\Omega_{baryon}/(8\pi G)
@@ -305,7 +308,7 @@ void Nyx::initcosmo()
     {
        std::cout << "No clue from which code the initial coniditions originate..." << std::endl
 	         << "Aborting...!" << std::endl;
-       BoxLib::Abort();
+       amrex::Abort();
     }
 
     
@@ -384,10 +387,10 @@ void Nyx::initcosmo()
      	S_new.mult(rhoB,  Density, 1, S_new.nGrow());
 
 //      //This block assigns "the same" density for the baryons as for the dm.
-//      PArray<MultiFab> particle_mf;
+//      Array<std::unique_ptr<MultiFab> > particle_mf;
 //      Nyx::theDMPC()->AssignDensity(particle_mf);
-//      particle_mf[0].mult(realOmB / comoving_OmD);
-//      S_new.copy(particle_mf[0], 0, Density, 1);
+//      particle_mf[0]->mult(realOmB / comoving_OmD);
+//      S_new.copy(*particle_mf[0], 0, Density, 1);
 
      	//copy velocities...
      	S_new.copy(mf, baryon_vx, Xmom, 3);

@@ -1,8 +1,8 @@
-#include <winstd.H>
 
 #include "Nyx.H"
 #include "Nyx_F.H"
 
+using namespace amrex;
 using std::string;
 
 void
@@ -32,7 +32,7 @@ Nyx::strang_first_step (Real time, Real dt, MultiFab& S_old, MultiFab& D_old)
 
 #ifndef NDEBUG
         if (S_old[mfi].contains_nan())
-            BoxLib::Abort("state has NaNs after the first strang call");
+            amrex::Abort("state has NaNs after the first strang call");
 #endif
 
     }

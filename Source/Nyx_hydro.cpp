@@ -1,12 +1,13 @@
-#include <winstd.H>
 
 #include "Nyx.H"
 #include "Nyx_F.H"
-#include <Particles_F.H>
+#include <AMReX_Particles_F.H>
 
 #ifdef GRAVITY
 #include "Gravity.H"
 #endif
+
+using namespace amrex;
 
 using std::string;
 
@@ -34,7 +35,7 @@ Nyx::just_the_hydro (Real time,
             std::cout << "just_the_hydro:  prev_time = " << prev_time << std::endl;
             std::cout << "just_the_hydro:       time = " <<      time << std::endl;
         }
-        BoxLib::Abort("time should equal prev_time in just_the_hydro!");
+        amrex::Abort("time should equal prev_time in just_the_hydro!");
     }
 
 #ifndef NDEBUG
@@ -45,7 +46,7 @@ Nyx::just_the_hydro (Real time,
             if (ParallelDescriptor::IOProcessor())
                 std::cout << "just_the_hydro: testing component " << i << " for NaNs" << std::endl;
             if (S_old.contains_nan(Density+i,1,0))
-                BoxLib::Abort("S_old has NaNs in this component");
+                amrex::Abort("S_old has NaNs in this component");
         }
     }
 #endif
@@ -76,7 +77,7 @@ Nyx::just_the_hydro (Real time,
     const Real* dx     = geom.CellSize();
     Real        courno = -1.0e+200;
 
-    MultiFab ext_src_old(grids, NUM_STATE, 3, Fab_allocate);
+    MultiFab ext_src_old(grids, dmap, NUM_STATE, 3);
     ext_src_old.setVal(0);
 
     if (add_ext_src && ParallelDescriptor::IOProcessor())
@@ -98,7 +99,7 @@ Nyx::just_the_hydro (Real time,
     }
 
     // Define the gravity vector so we can pass this to ca_umdrv.
-    MultiFab grav_vector(grids, BL_SPACEDIM, 3, Fab_allocate);
+    MultiFab grav_vector(grids, dmap, BL_SPACEDIM, 3);
     grav_vector.setVal(0.);
 
 #ifdef GRAVITY
@@ -109,7 +110,7 @@ Nyx::just_the_hydro (Real time,
     MultiFab fluxes[BL_SPACEDIM];
     for (int j = 0; j < BL_SPACEDIM; j++)
     {
-        fluxes[j].define(getEdgeBoxArray(j), NUM_STATE, 0, Fab_allocate);
+        fluxes[j].define(getEdgeBoxArray(j), dmap, NUM_STATE, 0);
         fluxes[j].setVal(0.0);
     }
 
@@ -119,9 +120,9 @@ Nyx::just_the_hydro (Real time,
     Real ke_added = 0;
 
     // Create FAB for extended grid values (including boundaries) and fill.
-    MultiFab S_old_tmp(S_old.boxArray(), NUM_STATE, NUM_GROW);
+    MultiFab S_old_tmp(S_old.boxArray(), S_old.DistributionMap(), NUM_STATE, NUM_GROW);
     FillPatch(*this, S_old_tmp, NUM_GROW, time, State_Type, 0, NUM_STATE);
-    MultiFab D_old_tmp(D_old.boxArray(), 2, NUM_GROW);
+    MultiFab D_old_tmp(D_old.boxArray(), D_old.DistributionMap(), 2, NUM_GROW);
     FillPatch(*this, D_old_tmp, NUM_GROW, time, DiagEOS_Type, 0, 2);
 
     if (add_ext_src && strang_split) {
@@ -167,9 +168,9 @@ Nyx::just_the_hydro (Real time,
 
         // Allocate fabs for fluxes.
         for (int i = 0; i < BL_SPACEDIM ; i++) {
-            const Box &bxtmp = BoxLib::surroundingNodes(bx, i);
+            const Box &bxtmp = amrex::surroundingNodes(bx, i);
             flux[i].resize(bxtmp, NUM_STATE);
-            u_gdnv[i].resize(BoxLib::grow(bxtmp, 1), 1);
+            u_gdnv[i].resize(amrex::grow(bxtmp, 1), 1);
             u_gdnv[i].setVal(1.e200);
         }
 
@@ -273,7 +274,7 @@ Nyx::just_the_hydro (Real time,
             std::cout << "OOPS -- EFFECTIVE CFL AT THIS LEVEL " << level
                       << " IS " << courno << '\n';
 
-        BoxLib::Abort("CFL is too high at this level -- go back to a checkpoint and restart with lower cfl number");
+        amrex::Abort("CFL is too high at this level -- go back to a checkpoint and restart with lower cfl number");
     }
 
 #ifndef NDEBUG
@@ -286,7 +287,7 @@ Nyx::just_the_hydro (Real time,
                 if (ParallelDescriptor::IOProcessor())
                     std::cout << "BAD -- S_new component " << Density + i << 
                     " has NaNs after the hydro update" << std::endl;
-                BoxLib::Abort();
+                amrex::Abort();
             }
         }
     }
@@ -300,7 +301,7 @@ Nyx::just_the_hydro (Real time,
         compute_new_temp();
 
         // Compute source at new time (no ghost cells needed)
-        MultiFab ext_src_new(grids, NUM_STATE, 0);
+        MultiFab ext_src_new(grids, dmap, NUM_STATE, 0);
         ext_src_new.setVal(0);
 
         get_new_source(prev_time, cur_time, dt, ext_src_new);
@@ -312,7 +313,7 @@ Nyx::just_the_hydro (Real time,
 
 #ifndef NDEBUG
     if (S_new.contains_nan(Density, S_new.nComp(), 0))
-        BoxLib::Abort("S_new has NaNs before the second strang call");
+        amrex::Abort("S_new has NaNs before the second strang call");
 #endif
 
     // This returns updated (rho e), (rho E), and Temperature
@@ -334,7 +335,7 @@ Nyx::just_the_hydro (Real time,
 
 #ifndef NDEBUG
     if (S_new.contains_nan(Density, S_new.nComp(), 0))
-        BoxLib::Abort("S_new has NaNs after the second strang call");
+        amrex::Abort("S_new has NaNs after the second strang call");
 #endif
 }
 #endif

@@ -1,6 +1,8 @@
 
-#include "LevelBld.H"
+#include "AMReX_LevelBld.H"
 #include "Nyx.H"
+
+using namespace amrex;
 
 class NyxBld
     :
@@ -18,7 +20,9 @@ class NyxBld
     virtual AmrLevel *operator() ();
     virtual AmrLevel *operator() (Amr& papa, int lev,
                                   const Geometry& level_geom,
-                                  const BoxArray& ba, Real time);
+                                  const BoxArray& ba, 
+                                  const DistributionMapping& dm, 
+				  Real time);
 };
 
 NyxBld Nyx_bld;
@@ -55,9 +59,9 @@ NyxBld::operator() ()
 
 AmrLevel*
 NyxBld::operator() (Amr& papa, int lev, const Geometry& level_geom,
-                    const BoxArray& ba, Real time)
+                    const BoxArray& ba, const DistributionMapping& dm, Real time)
 {
-    return new Nyx(papa, lev, level_geom, ba, time);
+    return new Nyx(papa, lev, level_geom, ba, dm, time);
 }
 
 // override hacks, copies of above

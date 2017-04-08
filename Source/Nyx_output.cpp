@@ -4,7 +4,9 @@
 #include <Nyx_F.H>
 #include "Nyx_output.H"
 
-#include "buildInfo.H"
+#include "AMReX_buildInfo.H"
+
+using namespace amrex;
 
 namespace
 {
@@ -165,7 +167,7 @@ Nyx::writePlotFile (const std::string& dir,
         os << thePlotFileType() << '\n';
 
         if (n_data_items == 0)
-            BoxLib::Error("Must specify at least one valid data item to plot");
+            amrex::Error("Must specify at least one valid data item to plot");
 
         os << n_data_items << '\n';
         //
@@ -283,7 +285,7 @@ Nyx::writePlotFile (const std::string& dir,
 	jobInfoFile << "build date:    " << buildInfoGetBuildDate() << "\n";
 	jobInfoFile << "build machine: " << buildInfoGetBuildMachine() << "\n";
 	jobInfoFile << "build dir:     " << buildInfoGetBuildDir() << "\n";
-	jobInfoFile << "BoxLib dir:    " << buildInfoGetBoxlibDir() << "\n";
+	jobInfoFile << "BoxLib dir:    " << buildInfoGetAMReXDir() << "\n";
 
 	jobInfoFile << "\n";
 
@@ -364,7 +366,7 @@ Nyx::writePlotFile (const std::string& dir,
     //
     static const std::string BaseName = "/Cell";
 
-    std::string Level = BoxLib::Concatenate("Level_", level, 1);
+    std::string Level = amrex::Concatenate("Level_", level, 1);
     //
     // Now for the full pathname of that directory.
     //
@@ -376,8 +378,8 @@ Nyx::writePlotFile (const std::string& dir,
     // Only the I/O processor makes the directory if it doesn't already exist.
     //
     if (ParallelDescriptor::IOProcessor())
-        if (!BoxLib::UtilCreateDirectory(FullPath, 0755))
-            BoxLib::CreateDirectoryFailed(FullPath);
+        if (!amrex::UtilCreateDirectory(FullPath, 0755))
+            amrex::CreateDirectoryFailed(FullPath);
     //
     // Force other processors to wait till directory is built.
     //
@@ -413,7 +415,7 @@ Nyx::writePlotFile (const std::string& dir,
     // but a derived variable is allowed to have multiple components.
     int cnt = 0;
     const int nGrow = 0;
-    MultiFab plotMF(grids, n_data_items, nGrow);
+    MultiFab plotMF(grids, dmap, n_data_items, nGrow);
     MultiFab* this_dat = 0;
     //
     // Cull data from state variables -- use no ghost cells.
@@ -434,9 +436,8 @@ Nyx::writePlotFile (const std::string& dir,
         for (std::list<std::string>::iterator it = derive_names.begin();
              it != derive_names.end(); ++it)
         {
-            MultiFab* derive_dat = derive(*it, cur_time, nGrow);
+            const auto& derive_dat = derive(*it, cur_time, nGrow);
             MultiFab::Copy(plotMF, *derive_dat, 0, cnt, 1, nGrow);
-            delete derive_dat;
             cnt++;
         }
     }
@@ -480,7 +481,7 @@ Nyx::particle_plot_file (const std::string& dir)
             std::ofstream File;
             File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
             if (!File.good())
-                BoxLib::FileOpenFailed(FileName);
+                amrex::FileOpenFailed(FileName);
             File.precision(15);
             if (cur_time == 0)
             {
@@ -498,7 +499,7 @@ Nyx::particle_plot_file (const std::string& dir)
             std::ofstream File;
             File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
             if (!File.good())
-                BoxLib::FileOpenFailed(FileName);
+                amrex::FileOpenFailed(FileName);
             File.precision(15);
             File << particle_plotfile_format << '\n';
             File.close();
@@ -526,7 +527,7 @@ Nyx::particle_check_point (const std::string& dir)
             std::ofstream File;
             File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
             if (!File.good())
-                BoxLib::FileOpenFailed(FileName);
+                amrex::FileOpenFailed(FileName);
             File.precision(15);
             if (cur_time == 0)
             {
@@ -549,7 +550,7 @@ Nyx::write_parameter_file (const std::string& dir)
             std::ofstream File;
             File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
             if (!File.good())
-                BoxLib::FileOpenFailed(FileName);
+                amrex::FileOpenFailed(FileName);
             File.precision(15);
             ParmParse::dumpTable(File,true);
             File.close();
@@ -565,8 +566,8 @@ Nyx::writeMultiFabAsPlotFile(const std::string& pltfile,
     std::ofstream os;
     if (ParallelDescriptor::IOProcessor())
     {
-        if (!BoxLib::UtilCreateDirectory(pltfile, 0755))
-                                  BoxLib::CreateDirectoryFailed(pltfile);
+        if (!amrex::UtilCreateDirectory(pltfile, 0755))
+                                  amrex::CreateDirectoryFailed(pltfile);
         std::string HeaderFileName = pltfile + "/Header";
         os.open(HeaderFileName.c_str(), std::ios::out|std::ios::trunc|std::ios::binary);
         // The first thing we write out is the plotfile type.
@@ -616,8 +617,8 @@ Nyx::writeMultiFabAsPlotFile(const std::string& pltfile,
     // Only the I/O processor makes the directory if it doesn't already exist.
     //
     if (ParallelDescriptor::IOProcessor())
-        if (!BoxLib::UtilCreateDirectory(FullPath, 0755))
-            BoxLib::CreateDirectoryFailed(FullPath);
+        if (!amrex::UtilCreateDirectory(FullPath, 0755))
+            amrex::CreateDirectoryFailed(FullPath);
     //
     // Force other processors to wait till directory is built.
     //

@@ -1,4 +1,3 @@
-#include <winstd.H>
 #include <iomanip>
 #include <algorithm>
 #include <vector>
@@ -14,14 +13,14 @@ using std::ostream;
 using std::pair;
 using std::string;
 
-#include <CONSTANTS.H>
+#include <AMReX_CONSTANTS.H>
 #include <Nyx.H>
 #include <Nyx_F.H>
 #include <Derive_F.H>
-#include <VisMF.H>
-#include <TagBox.H>
-#include <Particles_F.H>
-#include <Utility.H>
+#include <AMReX_VisMF.H>
+#include <AMReX_TagBox.H>
+#include <AMReX_Particles_F.H>
+#include <AMReX_Utility.H>
 
 #if BL_USE_MPI
 #include "MemInfo.H"
@@ -39,6 +38,8 @@ using std::string;
 #include <DoGimletAnalysis.H>
 #include <postprocess_tau_fields.H>
 #endif
+
+using namespace amrex;
 
 extern "C" {
   int get_comp_urho();
@@ -250,14 +251,14 @@ Nyx::read_params ()
                     std::cerr << "Nyx::read_params:periodic in direction "
                               << dir
                               << " but low BC is not Interior" << std::endl;
-                    BoxLib::Error();
+                    amrex::Error();
                 }
                 if (hi_bc[dir] != Interior)
                 {
                     std::cerr << "Nyx::read_params:periodic in direction "
                               << dir
                               << " but high BC is not Interior" << std::endl;
-                    BoxLib::Error();
+                    amrex::Error();
                 }
             }
         }
@@ -274,14 +275,14 @@ Nyx::read_params ()
                 std::cerr << "Nyx::read_params:interior bc in direction "
                           << dir
                           << " but not periodic" << std::endl;
-                BoxLib::Error();
+                amrex::Error();
             }
             if (hi_bc[dir] == Interior)
             {
                 std::cerr << "Nyx::read_params:interior bc in direction "
                           << dir
                           << " but not periodic" << std::endl;
-                BoxLib::Error();
+                amrex::Error();
             }
         }
     }
@@ -289,12 +290,12 @@ Nyx::read_params ()
     pp.get("do_hydro", do_hydro);
 #ifdef NO_HYDRO
     if (do_hydro == 1)
-        BoxLib::Error("Cant have do_hydro == 1 when NO_HYDRO is true");
+        amrex::Error("Cant have do_hydro == 1 when NO_HYDRO is true");
 #endif
 
 #ifdef NO_HYDRO
 #ifndef GRAVITY
-        BoxLib::Error("Dont know what to do with both hydro and gravity off");
+        amrex::Error("Dont know what to do with both hydro and gravity off");
 #endif
 #endif
 
@@ -307,14 +308,14 @@ Nyx::read_params ()
 
 #ifdef HEATCOOL
     if (heat_cool_type > 0 && add_ext_src == 0)
-       BoxLib::Error("Nyx::must set add_ext_src to 1 if heat_cool_type > 0");
+       amrex::Error("Nyx::must set add_ext_src to 1 if heat_cool_type > 0");
     if (heat_cool_type != 1 && heat_cool_type != 3)
-       BoxLib::Error("Nyx:: nonzero heat_cool_type must equal 1 or 3");
+       amrex::Error("Nyx:: nonzero heat_cool_type must equal 1 or 3");
     if (heat_cool_type == 0)
-       BoxLib::Error("Nyx::contradiction -- HEATCOOL is defined but heat_cool_type == 0");
+       amrex::Error("Nyx::contradiction -- HEATCOOL is defined but heat_cool_type == 0");
 #else
     if (heat_cool_type > 0)
-       BoxLib::Error("Nyx::you set heat_cool_type > 0 but forgot to set USE_HEATCOOL = TRUE");
+       amrex::Error("Nyx::you set heat_cool_type > 0 but forgot to set USE_HEATCOOL = TRUE");
 #endif
 
     pp.query("allow_untagging", allow_untagging);
@@ -349,26 +350,26 @@ Nyx::read_params ()
            if (ppm_type == 0 && ParallelDescriptor::IOProcessor())
                std::cout << "Nyx::setting use_colglaz = 1 with ppm_type = 0 \n";
            if (ppm_type != 0)
-               BoxLib::Error("Nyx::ppm_type must be 0 with use_colglaz = 1");
+               amrex::Error("Nyx::ppm_type must be 0 with use_colglaz = 1");
         }
 
         // ppm_flatten_before_integrals is only done for ppm_type != 0
         if (ppm_type == 0 && ppm_flatten_before_integrals > 0)
         {
             std::cerr << "ppm_flatten_before_integrals > 0 not implemented for ppm_type != 0 \n";
-            BoxLib::Error();
+            amrex::Error();
         }
 
         if (version_2 > 0 && ppm_type == 0)
-           BoxLib::Error("Nyx::version_2 only defined for ppm_type = 1");
+           amrex::Error("Nyx::version_2 only defined for ppm_type = 1");
 
         if (version_2 !=0 && version_2 != 1 && version_2 != 2 && version_2 != 3)
-           BoxLib::Error("Nyx:: don't know what to do with version_2 flag");
+           amrex::Error("Nyx:: don't know what to do with version_2 flag");
 
         // Make sure ppm_type is set correctly.
         if (ppm_type != 0 && ppm_type != 1 && ppm_type != 2)
         {
-           BoxLib::Error("Nyx::ppm_type must be 0, 1 or 2");
+           amrex::Error("Nyx::ppm_type must be 0, 1 or 2");
         }
     }
 
@@ -421,9 +422,10 @@ Nyx::Nyx (Amr&            papa,
           int             lev,
           const Geometry& level_geom,
           const BoxArray& bl,
+          const DistributionMapping& dm,
           Real            time)
     :
-    AmrLevel(papa,lev,level_geom,bl,time)
+    AmrLevel(papa,lev,level_geom,bl,dm,time)
 {
     BL_PROFILE("Nyx::Nyx(Amr)");
     build_metrics();
@@ -434,7 +436,7 @@ Nyx::Nyx (Amr&            papa,
     {
         flux_reg = 0;
         if (level > 0 && do_reflux)
-            flux_reg = new FluxRegister(grids, crse_ratio, level, NUM_STATE);
+            flux_reg = new FluxRegister(grids, dmap, crse_ratio, level, NUM_STATE);
     }
 #endif
 
@@ -517,7 +519,7 @@ Nyx::restart (Amr&     papa,
     {
         BL_ASSERT(flux_reg == 0);
         if (level > 0 && do_reflux)
-            flux_reg = new FluxRegister(grids, crse_ratio, level, NUM_STATE);
+            flux_reg = new FluxRegister(grids, dmap, crse_ratio, level, NUM_STATE);
     }
 #endif
 
@@ -1020,7 +1022,7 @@ Nyx::writePlotNow ()
 {
     BL_PROFILE("Nyx::writePlotNow()");
     if (level > 0)
-        BoxLib::Error("Should only call writePlotNow at level 0!");
+        amrex::Error("Should only call writePlotNow at level 0!");
 
     bool found_one = false;
 
@@ -1059,7 +1061,7 @@ Nyx::doAnalysisNow ()
 {
     BL_PROFILE("Nyx::doAnalysisNow()");
     if (level > 0)
-        BoxLib::Error("Should only call doAnalysisNow at level 0!");
+        amrex::Error("Should only call doAnalysisNow at level 0!");
 
     bool found_one = false;
 
@@ -1128,7 +1130,9 @@ Nyx::post_timestep (int iteration)
     {
          for (int i = 0; i < theActiveParticles().size(); i++)
          {
-             theActiveParticles()[i]->Redistribute(false, true, level, grav_n_grow);
+             theActiveParticles()[i]->Redistribute(level,
+                                                   theActiveParticles()[i]->finestLevel(),
+                                                   grav_n_grow);
          }
     }
 
@@ -1146,7 +1150,7 @@ Nyx::post_timestep (int iteration)
 #endif
         {
             // Define the update to rho and rhoU due to refluxing.
-            drho_and_drhoU.define(grids, BL_SPACEDIM + 1, 0, Fab_allocate);
+            drho_and_drhoU.define(grids, dmap, BL_SPACEDIM + 1, 0);
             MultiFab::Copy(drho_and_drhoU, S_new_crse, Density, 0,
                            BL_SPACEDIM + 1, 0);
             drho_and_drhoU.mult(-1.0);
@@ -1178,22 +1182,24 @@ Nyx::post_timestep (int iteration)
         {
             MultiFab::Add(drho_and_drhoU, S_new_crse, Density, 0, BL_SPACEDIM+1, 0);
 
-            MultiFab dphi(grids, 1, 0);
+            MultiFab dphi(grids, dmap, 1, 0);
             dphi.setVal(0);
 
             gravity->reflux_phi(level, dphi);
 
             // Compute (cross-level) gravity sync based on drho, dphi
-            PArray<MultiFab> grad_delta_phi_cc(finest_level - level + 1,
-                                               PArrayManage);
+            Array<std::unique_ptr<MultiFab> > grad_delta_phi_cc(finest_level - level + 1);
             for (int lev = level; lev <= finest_level; lev++)
             {
-                grad_delta_phi_cc.set(lev - level,
-                                      new MultiFab(get_level(lev).boxArray(),BL_SPACEDIM, 0));
-                grad_delta_phi_cc[lev-level].setVal(0);
+                grad_delta_phi_cc[lev-level].reset(
+                                      new MultiFab(get_level(lev).boxArray(),
+						   get_level(lev).DistributionMap(),
+						   BL_SPACEDIM, 0));
+                grad_delta_phi_cc[lev-level]->setVal(0);
             }
 
-            gravity->gravity_sync(level,finest_level,iteration,ncycle,drho_and_drhoU,dphi,grad_delta_phi_cc);
+            gravity->gravity_sync(level,finest_level,iteration,ncycle,drho_and_drhoU,dphi,
+				  amrex::GetArrOfPtrs(grad_delta_phi_cc));
             dphi.clear();
 
             for (int lev = level; lev <= finest_level; lev++)
@@ -1203,8 +1209,9 @@ Nyx::post_timestep (int iteration)
                 Real cur_time = state[State_Type].curTime();
                 Real a_new = get_comoving_a(cur_time);
 
-                const BoxArray& ba = get_level(lev).boxArray();
-                MultiFab grad_phi_cc(ba, BL_SPACEDIM, 0);
+                const auto& ba = get_level(lev).boxArray();
+                const auto& dm = get_level(lev).DistributionMap();
+                MultiFab grad_phi_cc(ba, dm, BL_SPACEDIM, 0);
                 gravity->get_new_grav_vector(lev, grad_phi_cc, cur_time);
 
 #ifdef _OPENMP
@@ -1232,7 +1239,7 @@ Nyx::post_timestep (int iteration)
                     int i = mfi.index();
                     BL_FORT_PROC_CALL(FORT_SYNCGSRC,fort_syncgsrc)
                         (bx.loVect(), bx.hiVect(), BL_TO_FORTRAN(grad_phi_cc[i]),
-                         BL_TO_FORTRAN(grad_delta_phi_cc[lev-level][i]),
+                         BL_TO_FORTRAN((*grad_delta_phi_cc[lev-level])[i]),
                          BL_TO_FORTRAN(S_new_lev[i]), BL_TO_FORTRAN(dstate),
                          BL_TO_FORTRAN(sync_src), &a_new, dt_lev);
 
@@ -1338,8 +1345,9 @@ Nyx::post_restart ()
                 {
                     for (int k = 0; k <= parent->finestLevel(); k++)
                     {
-                        const BoxArray& ba = get_level(k).boxArray();
-                        MultiFab grav_vec_new(ba, BL_SPACEDIM, 0);
+                        const auto& ba = get_level(k).boxArray();
+                        const auto& dm = get_level(k).DistributionMap();
+                        MultiFab grav_vec_new(ba, dm, BL_SPACEDIM, 0);
                         gravity->get_new_grav_vector(k, grav_vec_new, cur_time);
                     }
                 }
@@ -1403,275 +1411,12 @@ Nyx::postCoarseTimeStep (Real cumtime)
    const int whichSidecar(0);
 
 #ifdef REEBER
-   const auto& reeber_density_var_list = getReeberHaloDensityVars();
-   bool do_analysis(doAnalysisNow());
-   if (do_analysis || (reeber_int > 0 && nStep() % reeber_int == 0)) {
-     if (ParallelDescriptor::NProcsSidecar(0) <= 0) { // we have no sidecars, so do everything in situ
-       const Real time1 = ParallelDescriptor::second();
-
-       BoxArray ba;
-       DistributionMapping dm;
-       getAnalysisDecomposition(Geom(), ParallelDescriptor::NProcs(), ba, dm);
-       MultiFab reeberMF(ba, reeber_density_var_list.size() + 1, 0, dm);
-       int cnt = 1;
-       // Derive quantities and store in components 1... of MultiFAB
-       for (auto it = reeber_density_var_list.begin(); it != reeber_density_var_list.end(); ++it)
-       {
-           MultiFab *derive_dat = particle_derive(*it, cur_time, 0); // FIXME: Is this the right way? 
-           reeberMF.copy(*derive_dat, 0, cnt, 1, 0, 0);
-           delete derive_dat;
-           cnt++;
-       }
-
-       reeberMF.setVal(0, 0, 1, 0);
-       for (int comp = 1; comp < reeberMF.nComp(); ++comp)
-           MultiFab::Add(reeberMF, reeberMF, comp, 0, 1, 0);
-
-       std::vector<Halo> reeber_halos;
-       runReeberAnalysis(reeberMF, Geom(), nStep(), do_analysis, &reeber_halos);
-
-       // Redistribute halos to "correct" processor for simulation
-       // FIXME: This is a hack that maps things to MultiFabs and back. This should be
-       // changed to use Nyx's particle redistribution infrastructure.
-       reeberMF.setVal(0, 0, reeber_density_var_list.size() + 1, 0);
-       // Deposit halo into MultiFab. This works because (i) There is only one box
-       // per processors and halos returned by Reeber will always be in that box;
-       // (ii) Halos have different positions; (iii) Halos have a mass that differs from
-       // zero.
-       BL_ASSERT(dm[ParallelDescriptor::MyProc()] == ParallelDescriptor::MyProc());
-       FArrayBox& my_fab = reeberMF[ParallelDescriptor::MyProc()];
-       for (const Halo& h : reeber_halos)
-       {
-           BL_ASSERT(reeberMF.fabbox(ParallelDescriptor::MyProc()).contains(h.position));
-           my_fab(h.position, 0) = h.totalMass;
-           for (int comp = 0; comp < reeber_density_var_list.size(); ++comp)
-           {
-               my_fab(h.position, comp + 1) = h.individualMasses[comp];
-           }
-       }
-       // Actual redistribution
-       //MultiFab redistributeFab(m_leveldata.boxArray(), reeber_density_var_list.size() + 1, 0, m_leveldata.DistributionMap());
-       const MultiFab& simMF = get_new_data(State_Type);
-       const BoxArray& simBA = simMF.boxArray();
-       const DistributionMapping& simDM = simMF.DistributionMap();
-
-       MultiFab redistributeFab(simBA, reeber_density_var_list.size() + 1, 0, simDM);
-       redistributeFab.copy(reeberMF);
-       // Re-extract halos
-       reeber_halos.clear();
-       for (MFIter mfi(redistributeFab); mfi.isValid(); ++mfi)
-       {
-           const Box& currBox = mfi.fabbox();
-           for (IntVect iv = currBox.smallEnd(); iv <= currBox.bigEnd(); currBox.next(iv))
-           {
-               Real totalMass = redistributeFab[mfi](iv, 0);
-               if (totalMass > 0)
-               {
-                   std::vector<Real> masses(reeber_density_var_list.size(), 0);
-                   for (int comp = 0; comp < reeber_density_var_list.size(); ++comp)
-                   {
-                       masses[comp] = redistributeFab[mfi](iv, comp + 1);
-                   }
-                   reeber_halos.emplace_back(iv, totalMass, masses);
-               }
-           }
-        }
-       // NOTE: ZARIJA, GET YOUR FRESH HALOS HERE!!!
-#if 0
-       std::ofstream os(BoxLib::Concatenate(BoxLib::Concatenate("debug-halos-", nStep(), 5), ParallelDescriptor::MyProc(), 2));
-       for (const Halo& h : reeber_halos)
-       {
-           os << h.position << " " << h.totalMass << std::endl;
-       }
-#endif
-
-       const Real time2 = ParallelDescriptor::second();
-       if (ParallelDescriptor::IOProcessor())
-       {
-         std::cout << std::endl << "===== Time to post-process: " << time2 - time1 << " sec" << std::endl;
-       }
-     } else { // we have sidecars, so do everything in-transit
-       int sidecarSignal(NyxHaloFinderSignal);
-       const int MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
-       ParallelDescriptor::Bcast(&sidecarSignal, 1, MPI_IntraGroup_Broadcast_Rank,
-                                 ParallelDescriptor::CommunicatorInter(whichSidecar));
-
-       Geometry geom(Geom());
-       Geometry::SendGeometryToSidecar(&geom, whichSidecar);
-
-       MultiFab reeberMF(grids, reeber_density_var_list.size(), 0);
-       int cnt = 0;
-       // Derive quantities and store in components 1... of MultiFAB
-       for (auto it = reeber_density_var_list.begin(); it != reeber_density_var_list.end(); ++it)
-       {
-           MultiFab *derive_dat = particle_derive(*it, cur_time, 0); // FIXME: Is this the right way?
-           reeberMF.copy(*derive_dat, 0, cnt, 1, 0, 0);
-           delete derive_dat;
-           cnt++;
-       }
-
-       int time_step(nStep()), nComp(reeberMF.nComp());
-
-       Real time1(ParallelDescriptor::second());
-       ParallelDescriptor::Bcast(&nComp, 1, MPI_IntraGroup_Broadcast_Rank,
-                                 ParallelDescriptor::CommunicatorInter(whichSidecar));
-
-       MultiFab *mfSource = &reeberMF;
-       MultiFab *mfDest = 0;
-       int srcComp(0), destComp(1);
-       int srcNGhost(0), destNGhost(0);
-       MPI_Comm commSrc(ParallelDescriptor::CommunicatorComp());
-       MPI_Comm commDest(ParallelDescriptor::CommunicatorSidecar());
-       MPI_Comm commInter(ParallelDescriptor::CommunicatorInter(whichSidecar));
-       MPI_Comm commBoth(ParallelDescriptor::CommunicatorBoth(whichSidecar));
-       bool isSrc(true);
-
-       MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                           srcNGhost, destNGhost,
-                           commSrc, commDest, commInter, commBoth,
-                           isSrc);
-
-
-       ParallelDescriptor::Bcast(&time_step, 1, MPI_IntraGroup_Broadcast_Rank,
-                                 ParallelDescriptor::CommunicatorInter(whichSidecar));
-
-       int do_analysis_bcast(do_analysis);
-       ParallelDescriptor::Bcast(&do_analysis_bcast, 1, MPI_IntraGroup_Broadcast_Rank,
-                                 ParallelDescriptor::CommunicatorInter(whichSidecar));
-
-       Real time2(ParallelDescriptor::second());
-       if(ParallelDescriptor::IOProcessor()) {
-         std::cout << "COMPUTE PROCESSES: time spent sending data to sidecars: " << time2 - time1 << std::endl;
-       }
-     }
-   }
-#endif /* REEBER */
+   halo_find();
+#endif 
 
 #ifdef GIMLET
-   if ( (nStep() % gimlet_int == 0) || doAnalysisNow() ) 
-   {
-     if (ParallelDescriptor::NProcsSidecar(0) <= 0) { // we have no sidecars, so do everything in situ
-       const Real time1 = ParallelDescriptor::second();
-
-       const MultiFab &state_data = get_data(State_Type, cur_time);
-       const MultiFab &eos_data = get_data(DiagEOS_Type, cur_time);
-
-       // Grab only components of state and EOS data that gimlet needs.
-       MultiFab density (state_data.boxArray(), 1, 0);
-       density.copy(state_data, get_comp_urho()-1, 0, 1);
-       MultiFab temperature (state_data.boxArray(), 1, 0);
-       temperature.copy(eos_data, get_comp_temp()-1, 0, 1);
-       MultiFab e_int(state_data.boxArray(), 1, 0);
-       e_int.copy(state_data, get_comp_e_int()-1, 0, 1);
-
-       MultiFab *dm_density = particle_derive("particle_mass_density", cur_time, 0);
-       MultiFab *xmom = particle_derive("xmom", cur_time, 0);
-       MultiFab *ymom = particle_derive("ymom", cur_time, 0);
-       MultiFab *zmom = particle_derive("zmom", cur_time, 0);
-       Geometry geom(Geom());
-       Real omega_m, omega_b, comoving_h;
-       BL_FORT_PROC_CALL(GET_OMM, get_omm)(&omega_m);
-       BL_FORT_PROC_CALL(GET_OMB, get_omb)(&omega_b);
-       omega_b *= omega_m;
-       BL_FORT_PROC_CALL(GET_HUBBLE, get_hubble)(&comoving_h);
-       const double omega_l = 1.0 - omega_m;
-
-       do_analysis(omega_b, omega_m, omega_l, comoving_h, new_a, density,
-                   temperature, e_int, *dm_density, *xmom, *ymom, *zmom, geom, nStep());
-
-       const Real time_to_postprocess = ParallelDescriptor::second() - time1;
-       if (ParallelDescriptor::IOProcessor())
-         std::cout << std::endl << "===== Time to post-process: " << time_to_postprocess << " sec" << std::endl;
-     } else { // we have sidecars, so do everything in-transit
-       int signal = GimletSignal;
-       const int MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
-       ParallelDescriptor::Bcast(&signal, 1, MPI_IntraGroup_Broadcast_Rank,
-                                 ParallelDescriptor::CommunicatorInter(whichSidecar));
-
-       const MultiFab &state_data = get_data(State_Type, cur_time);
-       const MultiFab &eos_data = get_data(DiagEOS_Type, cur_time);
-
-       // Grab only components of state and EOS data that gimlet needs.
-       MultiFab density (state_data.boxArray(), 1, 0);
-       density.copy(state_data, get_comp_urho()-1, 0, 1);
-       MultiFab temperature (state_data.boxArray(), 1, 0);
-       temperature.copy(eos_data, get_comp_temp()-1, 0, 1);
-       MultiFab e_int(state_data.boxArray(), 1, 0);
-       e_int.copy(state_data, get_comp_e_int()-1, 0, 1);
-
-       MultiFab *dm_density = particle_derive("particle_mass_density", cur_time, 0);
-       MultiFab *xmom = particle_derive("xmom", cur_time, 0);
-       MultiFab *ymom = particle_derive("ymom", cur_time, 0);
-       MultiFab *zmom = particle_derive("zmom", cur_time, 0);
-       Geometry geom(Geom());
-       int time_step = nStep();
-       Real omega_m, omega_b, comoving_h;
-       BL_FORT_PROC_CALL(GET_OMM, get_omm)(&omega_m);
-       BL_FORT_PROC_CALL(GET_OMB, get_omb)(&omega_b);
-       BL_FORT_PROC_CALL(GET_HUBBLE, get_hubble)(&comoving_h);
-       const Real time1 = ParallelDescriptor::second();
-
-       MultiFab *mfSource = 0;
-       MultiFab *mfDest = 0;
-       int srcComp(0), destComp(0), nComp(1);
-       int srcNGhost(0), destNGhost(0);
-       const MPI_Comm &commSrc = ParallelDescriptor::CommunicatorComp();
-       const MPI_Comm &commDest = ParallelDescriptor::CommunicatorSidecar();
-       const MPI_Comm &commInter = ParallelDescriptor::CommunicatorInter(whichSidecar);
-       const MPI_Comm &commBoth = ParallelDescriptor::CommunicatorBoth(whichSidecar);
-       bool isSrc(true);
-
-       BL_ASSERT(density.boxArray() == dm_density->boxArray());  // ---- need to check them all
-       BoxArray::SendBoxArray(density.boxArray(), whichSidecar);
-
-       mfSource = &density;
-       MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                           srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
-
-       mfSource = &temperature;
-       MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                           srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
-
-       mfSource = &e_int;
-       MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                           srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
-
-       mfSource = dm_density;
-       MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                           srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
-
-       mfSource = xmom;
-       MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                           srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
-
-       mfSource = ymom;
-       MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                           srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
-
-       mfSource = zmom;
-       MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                           srcNGhost, destNGhost, commSrc, commDest, commInter, commBoth, isSrc);
-
-       Geometry::SendGeometryToSidecar(&geom, whichSidecar);
-
-       ParallelDescriptor::Bcast(&Nyx::new_a, 1, MPI_IntraGroup_Broadcast_Rank, commInter);
-       ParallelDescriptor::Bcast(&omega_m, 1, MPI_IntraGroup_Broadcast_Rank, commInter);
-       omega_b *= omega_m;
-       ParallelDescriptor::Bcast(&omega_b, 1, MPI_IntraGroup_Broadcast_Rank, commInter);
-       ParallelDescriptor::Bcast(&comoving_h, 1, MPI_IntraGroup_Broadcast_Rank, commInter);
-       ParallelDescriptor::Bcast(&time_step, 1, MPI_IntraGroup_Broadcast_Rank, commInter);
-       const Real time2 = ParallelDescriptor::second();
-       if (ParallelDescriptor::IOProcessor()) {
-         std::cout << "COMPUTE PROCESSES: time spent sending data to sidecars: " << time2 - time1 << std::endl;
-       }
-
-       delete dm_density;
-       delete xmom;
-       delete ymom;
-       delete zmom;
-     }
-   }
-#endif /* GIMLET */
+   LyA_statistics();
+#endif
 
     //
     // postCoarseTimeStep() is only called by level 0.
@@ -1774,8 +1519,9 @@ Nyx::post_init (Real stop_time)
         // Make this call just to fill the initial state data.
         for (int k = 0; k <= finest_level; k++)
         {
-            const BoxArray& ba = get_level(k).boxArray();
-            MultiFab grav_vec_new(ba, BL_SPACEDIM, 0);
+            const auto& ba = get_level(k).boxArray();
+            const auto& dm = get_level(k).DistributionMap();
+            MultiFab grav_vec_new(ba, dm, BL_SPACEDIM, 0);
             gravity->get_new_grav_vector(k, grav_vec_new, cur_time);
         }
     }
@@ -1970,15 +1716,15 @@ Nyx::average_down (int state_index)
 
         for (int i = 0; i < S_fine.boxArray().size(); ++i)
         {
-            crse_S_fine_BA.set(i, BoxLib::coarsen(S_fine.boxArray()[i],
+            crse_S_fine_BA.set(i, amrex::coarsen(S_fine.boxArray()[i],
                                                   fine_ratio));
         }
-        MultiFab crse_S_fine(crse_S_fine_BA, num_comps, 0);
+        MultiFab crse_S_fine(crse_S_fine_BA, S_fine.DistributionMap(), num_comps, 0);
 
         MultiFab& D_crse =            get_new_data(DiagEOS_Type);
         MultiFab& D_fine = fine_level.get_new_data(DiagEOS_Type);
         const int num_D_comps = D_fine.nComp();
-        MultiFab crse_D_fine(crse_S_fine_BA, num_D_comps, 0);
+        MultiFab crse_D_fine(crse_S_fine_BA, S_fine.DistributionMap(), num_D_comps, 0);
 
 #ifdef _OPENMP
 #pragma omp parallel
@@ -2011,7 +1757,7 @@ Nyx::average_down (int state_index)
     {
       const Geometry& fine_geom = parent->Geom(level+1);
       const Geometry& crse_geom = parent->Geom(level  );
-      BoxLib::average_down(S_fine,S_crse,fine_geom,crse_geom,0,num_comps,fine_ratio);
+      amrex::average_down(S_fine,S_crse,fine_geom,crse_geom,0,num_comps,fine_ratio);
     }
 }
 
@@ -2033,7 +1779,7 @@ Nyx::errorEst (TagBoxArray& tags,
 
     for (int j = 0; j < err_list.size(); j++)
     {
-        MultiFab* mf = derive(err_list[j].name(), time, err_list[j].nGrow());
+        auto mf = derive(err_list[j].name(), time, err_list[j].nGrow());
 
         BL_ASSERT(!(mf == 0));
 
@@ -2145,12 +1891,10 @@ Nyx::errorEst (TagBoxArray& tags,
                 }
             }
         }
-
-        delete mf;
     }
 }
 
-MultiFab*
+std::unique_ptr<MultiFab>
 Nyx::derive (const std::string& name,
              Real               time,
              int                ngrow)
@@ -2158,7 +1902,7 @@ Nyx::derive (const std::string& name,
     BL_PROFILE("Nyx::derive()");
     if (name == "Rank")
     {
-        MultiFab* derive_dat = new MultiFab(grids, 1, 0);
+	std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids, dmap, 1, 0));
         for (MFIter mfi(*derive_dat); mfi.isValid(); ++mfi)
         {
            (*derive_dat)[mfi].setVal(ParallelDescriptor::MyProc());
@@ -2382,7 +2126,7 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         allBools.push_back(FillPatchedOldState_ok);
       }
 
-      BoxLib::BroadcastArray(allBools, scsMyId, ioProcNumAll, scsComm);
+      amrex::BroadcastArray(allBools, scsMyId, ioProcNumAll, scsComm);
 
       // ---- unpack the bools
       if(scsMyId != ioProcNumSCS) {
@@ -2451,7 +2195,7 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         allInts.push_back(forceParticleRedist);
       }
 
-      BoxLib::BroadcastArray(allInts, scsMyId, ioProcNumAll, scsComm);
+      amrex::BroadcastArray(allInts, scsMyId, ioProcNumAll, scsComm);
 
       // ---- unpack the ints
       if(scsMyId != ioProcNumSCS) {
@@ -2546,9 +2290,9 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
 #endif
       }
 
-      BoxLib::BroadcastArray(allReals, scsMyId, ioProcNumAll, scsComm);
-      BoxLib::BroadcastArray(plot_z_values, scsMyId, ioProcNumAll, scsComm);
-      BoxLib::BroadcastArray(analysis_z_values, scsMyId, ioProcNumAll, scsComm);
+      amrex::BroadcastArray(allReals, scsMyId, ioProcNumAll, scsComm);
+      amrex::BroadcastArray(plot_z_values, scsMyId, ioProcNumAll, scsComm);
+      amrex::BroadcastArray(analysis_z_values, scsMyId, ioProcNumAll, scsComm);
 
       // ---- unpack the Reals
       if(scsMyId != ioProcNumSCS) {
@@ -2590,15 +2334,15 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         allStrings.push_back(particle_init_type);
         allStrings.push_back(particle_move_type);
 
-        serialStrings = BoxLib::SerializeStringArray(allStrings);
+        serialStrings = amrex::SerializeStringArray(allStrings);
       }
 
-      BoxLib::BroadcastArray(serialStrings, scsMyId, ioProcNumAll, scsComm);
+      amrex::BroadcastArray(serialStrings, scsMyId, ioProcNumAll, scsComm);
 
       // ---- unpack the strings
       if(scsMyId != ioProcNumSCS) {
         int count(0);
-        allStrings = BoxLib::UnSerializeStringArray(serialStrings);
+        allStrings = amrex::UnSerializeStringArray(serialStrings);
 
         particle_plotfile_format = allStrings[count++];
         particle_init_type = allStrings[count++];
@@ -2620,7 +2364,7 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         BL_ASSERT(allIntVects.size() == BL_SPACEDIM);
       }
 
-      BoxLib::BroadcastArray(allIntVects, scsMyId, ioProcNumAll, scsComm);
+      amrex::BroadcastArray(allIntVects, scsMyId, ioProcNumAll, scsComm);
 
       // ---- unpack the IntVects
       if(scsMyId != ioProcNumSCS) {
@@ -2747,7 +2491,7 @@ Nyx::InitDeriveList() {
 #if(NADV>0)
     int Tracer = counter++;
 #if(NADV>1)
-    BoxLib::Error("Prob::variableSetUp: Only one Advected quantity allowed");
+    amrex::Error("Prob::variableSetUp: Only one Advected quantity allowed");
 #endif
 #endif
 #ifdef BL_USE_CHEM

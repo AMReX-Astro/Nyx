@@ -3,7 +3,8 @@
 ! Paul Ricker (2/2013)
 
 module agn_geometry
-use fundamental_constants_module, only: pi
+
+use bl_constants_module, only: M_PI
 
 !==============================================================================
 
@@ -134,11 +135,11 @@ yproj = y - xdotn*ny
 zproj = z - xdotn*nz
 r2    = xproj**2 + yproj**2 + zproj**2
 
-vol_cylinder = pi * R**2 * height
+vol_cylinder = M_PI * R**2 * height
 
 if ((xdotn >= 0.) .and. (xdotn <= height) .and. (r2 <= R**2)) then
   weight_cattaneo = dexp(-r2/(2*rscale**2)) * &
-                    xdotn/height**2 / (2*pi*rscale**2) /(1.d0-dexp(-0.5*(R/rscale**2))) * &
+                    xdotn/height**2 / (2*M_PI*rscale**2) /(1.d0-dexp(-0.5*(R/rscale**2))) * &
                     vol_cylinder
 else
   weight_cattaneo = 0.

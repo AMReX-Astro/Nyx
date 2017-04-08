@@ -2,6 +2,7 @@ CEXE_sources += advance_particles.cpp
 
 CEXE_sources += Nyx.cpp
 CEXE_sources += Nyx_advance.cpp
+CEXE_sources += Nyx_halos.cpp
 CEXE_sources += Nyx_output.cpp
 CEXE_sources += NyxBld.cpp
 CEXE_sources += main.cpp

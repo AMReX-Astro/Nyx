@@ -1,6 +1,6 @@
 #ifndef _Gravity_F_H_
 #define _Gravity_F_H_
-#include <BLFort.H>
+#include <AMReX_BLFort.H>
 
 BL_FORT_PROC_DECL(FORT_AVGDOWN_PHI, fort_avgdown_phi)
     (BL_FORT_FAB_ARG(crse_fab),
@@ -24,27 +24,27 @@ BL_FORT_PROC_DECL(FORT_GET_FLUXES, fort_get_fluxes)
      const BL_FORT_FAB_ARG(xgrad),
      const BL_FORT_FAB_ARG(ygrad),
      const BL_FORT_FAB_ARG(zgrad),
-     const Real* dx);
+     const amrex::Real* dx);
 
 BL_FORT_PROC_DECL(FORT_SET_HOMOG_BCS, fort_set_homog_bcs)
     (const int* lo, const int* hi,
      const int* domain_lo, const int* domain_hi,
      BL_FORT_FAB_ARG(phi),
-     const Real* dx);
+     const amrex::Real* dx);
 
 BL_FORT_PROC_DECL(FORT_ADD_MONOPOLE_BCS, fort_add_monopole_bcs)
     (const int* lo, const int* hi,
      const int* domain_lo, const int* domain_hi,
      const int* nparticles,
-     const Real* part_locs, const Real* part_mass,
-     BL_FORT_FAB_ARG(phi), const Real* dx);
+     const amrex::Real* part_locs, const amrex::Real* part_mass,
+     BL_FORT_FAB_ARG(phi), const amrex::Real* dx);
 
 #ifdef CGRAV
 BL_FORT_PROC_DECL(FORT_PRESCRIBE_GRAV,fort_prescribe_grav)
     (const int lo[], const int hi[],
-     const Real* dx,
+     const amrex::Real* dx,
      const BL_FORT_FAB_ARG(S),
-     const Real* problo,
+     const amrex::Real* problo,
      const int* addToSelfGrav);
 #endif
 #endif
