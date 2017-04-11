@@ -13,6 +13,8 @@ need to download AMReX.  Please email ASAlmgren@lbl.gov to get
 access to AMReX (it will become public as soon as it makes
 it through the licensing process).
 
+For the month of April, be sure to use the `development` (not master) 
+branch of amrex.
 
 `Nyx` is an N-body hydro cosmological simulation code with 
 adaptive mesh refinement (AMR).  `Nyx` uses an unsplit PPM approach 
