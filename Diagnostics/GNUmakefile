@@ -1,5 +1,5 @@
-# BOXLIB_HOME defines the directory in which we will find all the BoxLib code
-BOXLIB_HOME ?= /project/projectdirs/nyx/src/BoxLib
+# AMREX_HOME defines the directory in which we will find all the BoxLib code
+AMREX_HOME ?= /project/projectdirs/nyx/src/amrex
 
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ..
@@ -8,7 +8,6 @@ EBASE     = AmrDerive
 
 # compilation options
 COMP    = gcc
-FCOMP   = gfortran
 
 USE_MPI = TRUE
 USE_OMP = FALSE
@@ -21,7 +20,7 @@ DIM      = 3
 
 DEFINES += -DBL_NOLINEVALUES
 
-include $(BOXLIB_HOME)/Tools/C_mk/Make.defs
+include $(AMREX_HOME)/Tools/GNUMake/Make.defs
 
 Bpack := ./Make.package
 Blocs := .
@@ -30,9 +29,9 @@ include $(Bpack)
 INCLUDE_LOCATIONS += $(Blocs)
 VPATH_LOCATIONS   += $(Blocs)
 
-Pdirs   := C_BaseLib Extern/amrdata
-Ppack   += $(foreach dir, $(Pdirs), $(BOXLIB_HOME)/Src/$(dir)/Make.package)
-Plocs   += $(foreach dir, $(Pdirs), $(BOXLIB_HOME)/Src/$(dir))
+Pdirs   := Base Extern/amrdata
+Ppack   += $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir)/Make.package)
+Plocs   += $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir))
 
 include $(Ppack)
 INCLUDE_LOCATIONS += $(Plocs)
@@ -50,4 +49,4 @@ vpath %.fi  . $(VPATH_LOCATIONS)
 all: $(executable) 
 	@echo SUCCESS
 
-include $(BOXLIB_HOME)/Tools/C_mk/Make.rules
+include $(AMREX_HOME)/Tools/GNUMake/Make.rules

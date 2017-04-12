@@ -2,7 +2,7 @@ EBASE     = Nyx
 
 USE_PARTICLES = TRUE
 
-include $(BOXLIB_HOME)/Tools/C_mk/Make.defs
+include $(AMREX_HOME)/Tools/GNUMake/Make.defs
 
 NYX           = TRUE
 
@@ -37,17 +37,12 @@ DEFINES += -DBL_NOLINEVALUES
 
 ifeq ($(REEBER), TRUE)
   DEFINES += -DREEBER
-  DEFINES += -DREEBER_USE_BOXLIB_READER
+  DEFINES += -DREEBER_USE_BOXLIB_READER -DREEBER_IN_SITU
   DEFINES += -DPARALLEL_MPI -DBOOST_DATE_TIME_NO_LOCALE
   INCLUDE_LOCATIONS += $(BOOST_INCLUDE_DIR)
-  INCLUDE_LOCATIONS += $(DIY2_INCLUDE_DIR)
+  INCLUDE_LOCATIONS += $(DIY_INCLUDE_DIR)
   INCLUDE_LOCATIONS += $(REEBER_HOME)/include $(REEBER_HOME)/examples/include $(REEBER_HOME)/examples/local-global
   VPATH_LOCATIONS += $(REEBER_HOME)/src $(REEBER_HOME)/examples/local-global
-  ifeq ($(wildcard $(BOOST_LIB_DIR)/libboost_serialization-mt.*),)
-    LIBRARIES += -L$(BOOST_LIB_DIR) -lboost_mpi -lboost_serialization
-  else
-    LIBRARIES += -L$(BOOST_LIB_DIR) -lboost_mpi-mt -lboost_serialization-mt
-  endif
   LIBRARIES += -lpthread
 endif
 ifeq ($(DEBUG), TRUE)
@@ -100,9 +95,9 @@ VPATH_LOCATIONS   += $(Blocs)
 
 #These are the directories in BoxLib
 
-Pdirs   := C_BaseLib C_AmrCoreLib C_AMRLib C_BoundaryLib C_ParticleLib Extern/amrdata
-Ppack	+= $(foreach dir, $(Pdirs), $(BOXLIB_HOME)/Src/$(dir)/Make.package)
-Plocs	+= $(foreach dir, $(Pdirs), $(BOXLIB_HOME)/Src/$(dir))
+Pdirs   := Base AmrCore Amr Boundary Particle Extern/amrdata
+Ppack	+= $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir)/Make.package)
+Plocs	+= $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir))
 
 include $(Ppack)
 INCLUDE_LOCATIONS += $(Plocs)
@@ -118,22 +113,22 @@ ifeq ($(USE_GRAV), TRUE)
 endif
    
 ifeq ($(USE_MG), TRUE)
-  include $(BOXLIB_HOME)/Src/LinearSolvers/C_to_F_MG/Make.package
-  INCLUDE_LOCATIONS += $(BOXLIB_HOME)/Src/LinearSolvers/C_to_F_MG
-  VPATH_LOCATIONS   += $(BOXLIB_HOME)/Src/LinearSolvers/C_to_F_MG
+  include $(AMREX_HOME)/Src/LinearSolvers/C_to_F_MG/Make.package
+  INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/LinearSolvers/C_to_F_MG
+  VPATH_LOCATIONS   += $(AMREX_HOME)/Src/LinearSolvers/C_to_F_MG
 
-  include $(BOXLIB_HOME)/Src/LinearSolvers/C_CellMG/Make.package
-  INCLUDE_LOCATIONS += $(BOXLIB_HOME)/Src/LinearSolvers/C_CellMG
-  VPATH_LOCATIONS   += $(BOXLIB_HOME)/Src/LinearSolvers/C_CellMG
+  include $(AMREX_HOME)/Src/LinearSolvers/C_CellMG/Make.package
+  INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/LinearSolvers/C_CellMG
+  VPATH_LOCATIONS   += $(AMREX_HOME)/Src/LinearSolvers/C_CellMG
 
-  include $(BOXLIB_HOME)/Src/LinearSolvers/F_MG/FParallelMG.mak
-  INCLUDE_LOCATIONS += $(BOXLIB_HOME)/Src/LinearSolvers/F_MG
-  VPATH_LOCATIONS   += $(BOXLIB_HOME)/Src/LinearSolvers/F_MG
+  include $(AMREX_HOME)/Src/LinearSolvers/F_MG/FParallelMG.mak
+  INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/LinearSolvers/F_MG
+  VPATH_LOCATIONS   += $(AMREX_HOME)/Src/LinearSolvers/F_MG
 endif
 
-include $(BOXLIB_HOME)/Src/F_BaseLib/FParallelMG.mak
-INCLUDE_LOCATIONS += $(BOXLIB_HOME)/Src/F_BaseLib
-VPATH_LOCATIONS   += $(BOXLIB_HOME)/Src/F_BaseLib
+include $(AMREX_HOME)/Src/F_BaseLib/FParallelMG.mak
+INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/F_BaseLib
+VPATH_LOCATIONS   += $(AMREX_HOME)/Src/F_BaseLib
 
 VODE_dir    := $(TOP)/Util/VODE
 include $(VODE_dir)/Make.package
@@ -148,19 +143,19 @@ VPATH_LOCATIONS   += $(VODE_dir)
 VPATH_LOCATIONS   += $(BLAS_dir)
 
 all: $(executable) 
-	$(SILENT) $(RM) buildInfo.cpp
+	$(SILENT) $(RM) AMReX_buildInfo.cpp
 	@echo SUCCESS
 
 # job_info support
-CEXE_sources += buildInfo.cpp
-CEXE_headers += $(BOXLIB_HOME)/Tools/C_scripts/buildInfo.H
-INCLUDE_LOCATIONS +=  $(BOXLIB_HOME)/Tools/C_scripts
+CEXE_sources += AMReX_buildInfo.cpp
+CEXE_headers += $(AMREX_HOME)/Tools/C_scripts/AMReX_buildInfo.H
+INCLUDE_LOCATIONS +=  $(AMREX_HOME)/Tools/C_scripts
 
-buildInfo.cpp: 
-	$(BOXLIB_HOME)/Tools/C_scripts/makebuildinfo_C.py \
-          --boxlib_home "$(BOXLIB_HOME)" \
+AMReX_buildInfo.cpp: 
+	$(AMREX_HOME)/Tools/C_scripts/makebuildinfo_C.py \
+          --amrex_home "$(AMREX_HOME)" \
           --COMP "$(COMP)" --COMP_VERSION "$(COMP_VERSION)" \
-          --GIT "$(TOP) $(BOXLIB_HOME)"
+          --GIT "$(TOP) $(AMREX_HOME)"
 
 vpath %.c   . $(VPATH_LOCATIONS)
 vpath %.cpp . $(VPATH_LOCATIONS)
@@ -171,8 +166,8 @@ vpath %.f90 . $(VPATH_LOCATIONS)
 vpath %.f   . $(VPATH_LOCATIONS)
 vpath %.fi  . $(VPATH_LOCATIONS)
 
-include $(BOXLIB_HOME)/Tools/C_mk/Make.rules
+include $(AMREX_HOME)/Tools/GNUMake/Make.rules
 
 clean::
-	$(SILENT) $(RM) buildInfo.cpp
+	$(SILENT) $(RM) AMReX_buildInfo.cpp
 

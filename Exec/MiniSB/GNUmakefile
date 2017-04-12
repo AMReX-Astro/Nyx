@@ -1,5 +1,5 @@
-# BOXLIB_HOME defines the directory in which we will find all the BoxLib code
-BOXLIB_HOME ?= /project/projectdirs/nyx/src/BoxLib
+# AMREX_HOME defines the directory in which we will find all the BoxLib code
+AMREX_HOME ?= /project/projectdirs/nyx/src/amrex
 
 HPGMG_DIR ?= $(HOME)/hpgmg/finite-volume
 
@@ -13,12 +13,12 @@ REEBER_HOME ?= /project/projectdirs/nyx/ghweber/reeber2
 
 # compilation options
 COMP    = gcc
-FCOMP   = gfortran
 
 USE_MPI = TRUE
 USE_OMP = FALSE
 
 # Analysis
+REEBER = FALSE
 #DEFINES += -DREEBER_PERSISTENT_INTEGRAL_TRACE_VTCS
 
 USE_HPGMG = FALSE

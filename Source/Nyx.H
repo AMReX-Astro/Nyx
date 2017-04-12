@@ -2,10 +2,10 @@
 #ifndef _Nyx_H_
 #define _Nyx_H_
 
-#include <BC_TYPES.H>
-#include <AmrLevel.H>
-#include <ErrorList.H>
-#include <FluxRegister.H>
+#include <AMReX_BC_TYPES.H>
+#include <AMReX_AmrLevel.H>
+#include <AMReX_ErrorList.H>
+#include <AMReX_FluxRegister.H>
 
 #include "NyxParticleContainer.H"
 
@@ -44,7 +44,7 @@ enum StateType {
 
 class Nyx
     :
-    public AmrLevel
+    public amrex::AmrLevel
 {
 public:
     //
@@ -55,8 +55,9 @@ public:
     //
     //The basic constructor.
     //
-    Nyx(Amr& papa, int lev, const Geometry& level_geom, const BoxArray& bl,
-        Real time);
+    Nyx(amrex::Amr& papa, int lev, const amrex::Geometry& level_geom,
+	const amrex::BoxArray& bl, const amrex::DistributionMapping& dm,
+        amrex::Real time);
 
     //
     //The destructor.
@@ -66,13 +67,13 @@ public:
     //
     //Restart from a checkpoint file.
     //
-    virtual void restart(Amr& papa, istream& is, bool b_read_special=false);
+    virtual void restart(amrex::Amr& papa, istream& is, bool b_read_special=false);
 
     //
-    //Call AmrLevel::checkPoint and then add radiation info
+    //Call amrex::AmrLevel::checkPoint and then add radiation info
     //
     virtual void checkPoint(const std::string& dir, std::ostream& os,
-                            VisMF::How how, bool dump_old);
+                            amrex::VisMF::How how, bool dump_old);
 
     // A string written as the first item in `write_plot_file()` at level zero.
     // It is so we can distinguish between different types of plot files. For
@@ -84,12 +85,12 @@ public:
     //
     //Write a plotfile to specified directory.
     //
-    virtual void writePlotFile(const std::string& dir, ostream& os, VisMF::How how);
+    virtual void writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how);
 
     //
-    //Write MultiFab as plot file
+    //Write amrex::MultiFab as plot file
     //
-    void writeMultiFabAsPlotFile(const std::string& pltfile, const MultiFab& mf, std::string componentName);
+    void writeMultiFabAsPlotFile(const std::string& pltfile, const amrex::MultiFab& mf, std::string componentName);
     //
     //Write all parameters into specified directory.
     //
@@ -141,50 +142,55 @@ public:
     //
     // Initial redshift (default = 0)
     //
-    static Real initial_z;
+    static amrex::Real initial_z;
 
     //
     // Final a -- used as stopping criterion if positive
     //
-    static Real final_a;
+    static amrex::Real final_a;
 
     //
     // Final z -- used as stopping criterion if positive
     //
-    static Real final_z;
+    static amrex::Real final_z;
 
     //
     // Relative change in a allowed in one timestep
     //
-    static Real relative_max_change_a;
+    static amrex::Real relative_max_change_a;
 
     //
     // Old and new times at which "old_a" and "new_a" are defined.
     //
-    static Real old_a_time;
-    static Real new_a_time;
+    static amrex::Real old_a_time;
+    static amrex::Real new_a_time;
 
     //
     // "a" at old_a_time and new_a_time
     //
-    static Real old_a;
-    static Real new_a;
+    static amrex::Real old_a;
+    static amrex::Real new_a;
 
     //
     // Get the comoving coordinate "a"
     //
-    Real get_comoving_a(Real time);
-    void integrate_comoving_a(Real time, Real dt);
+    amrex::Real get_comoving_a(amrex::Real time);
+    void integrate_comoving_a(amrex::Real time, amrex::Real dt);
 
     //
     // Time step control based on "a" not growing too fast
     //
-    void comoving_est_time_step(Real& cur_time, Real& est_dt);
+    void comoving_est_time_step(amrex::Real& cur_time, amrex::Real& est_dt);
 
     //
     // Time step control based on "z" not passing one of the specified plot_z_values
     //
-    void plot_z_est_time_step(Real& est_dt, bool& dt_changed);
+    void plot_z_est_time_step(amrex::Real& est_dt, bool& dt_changed);
+
+    //
+    // Time step control based on "z" not passing one of the specified analysis_z_values
+    //
+    void analysis_z_est_time_step(amrex::Real& est_dt, bool& dt_changed);
 
     //
     // How to initialize "a" at restart (from checkpoint or plotfile)
@@ -203,7 +209,7 @@ public:
     //
     void initcosmo();
 #ifdef GRAVITY
-    void icReadAndPrepareFab(std::string mfDirName, int nghost, MultiFab &mf);
+    void icReadAndPrepareFab(std::string mfDirName, int nghost, amrex::MultiFab &mf);
 #endif
 
     //
@@ -268,12 +274,12 @@ public:
     //
     // Time step control based on particles
     //
-    void particle_est_time_step(Real& est_dt);
+    void particle_est_time_step(amrex::Real& est_dt);
 
     //
     // Derived quantities associated with particles
     //
-    MultiFab* particle_derive (const std::string& name, Real time, int ngrow);
+    std::unique_ptr<amrex::MultiFab> particle_derive (const std::string& name, amrex::Real time, int ngrow);
 
     //
     // Default verbosity of Particle class
@@ -283,9 +289,9 @@ public:
     //
     // Default cfl of particles in Particle class
     //
-    static Real particle_cfl;
+    static amrex::Real particle_cfl;
 #ifdef NEUTRINO_PARTICLES
-    static Real neutrino_cfl;
+    static amrex::Real neutrino_cfl;
 #endif
 
     //
@@ -308,12 +314,12 @@ public:
     //
     //Set time levels of state data.
     //
-    virtual void setTimeLevel (Real time, Real dt_old, Real dt_new);
+    virtual void setTimeLevel (amrex::Real time, amrex::Real dt_old, amrex::Real dt_new);
 
     //
     //Initialize data on this level from another Nyx (during regrid).
     //
-    virtual void init(AmrLevel& old);
+    virtual void init(amrex::AmrLevel& old);
 
     //
     // Initialize data on this level after regridding if old level did not
@@ -327,54 +333,63 @@ public:
     virtual int okToContinue();
 
     //
-    // Tell Amr to write a plotfile now
+    // Tell amrex::Amr to write a plotfile now
     //
     bool writePlotNow();
 
     //
+    // Tell Nyx to do analysis now
+    //
+    bool doAnalysisNow();
+
+    //
     // Advance grids at this level in time.
     //
-    virtual Real advance(Real time, Real dt, int iteration, int ncycle);
+    virtual amrex::Real advance(amrex::Real time, amrex::Real dt, int iteration, int ncycle);
 
-    Real advance_hydro(Real time, Real dt, int iteration, int ncycle);
-    Real advance_no_hydro(Real time, Real dt, int iteration, int ncycle);
-    Real advance_hydro_plus_particles(Real time, Real dt, int iteration,
+    amrex::Real advance_hydro(amrex::Real time, amrex::Real dt, int iteration, int ncycle);
+    amrex::Real advance_no_hydro(amrex::Real time, amrex::Real dt, int iteration, int ncycle);
+    amrex::Real advance_hydro_plus_particles(amrex::Real time, amrex::Real dt, int iteration,
                                       int ncycle);
-    void just_the_hydro(Real time, Real dt, Real a_old, Real a_new);
-    void strang_first_step  (Real time, Real dt,  MultiFab& state, MultiFab&  dstate);
-    void strang_second_step (Real time, Real dt,  MultiFab& state, MultiFab&  dstate);
+    void just_the_hydro(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
+    void strang_first_step  (amrex::Real time, amrex::Real dt,  amrex::MultiFab& state, amrex::MultiFab&  dstate);
+    void strang_second_step (amrex::Real time, amrex::Real dt,  amrex::MultiFab& state, amrex::MultiFab&  dstate);
 
-    Real advance_particles_only (Real time, Real dt, int iteration, int ncycle);
+    amrex::Real advance_particles_only (amrex::Real time, amrex::Real dt, int iteration, int ncycle);
 
-    void moveKickDriftExact(Real dt);
-    void moveKickExact(Real dt);
-    void time_center_source_terms(MultiFab& S_new, MultiFab& ext_src_old,
-                                  MultiFab& ext_src_new, Real dt);
+    void moveKickDriftExact(amrex::Real dt);
+    void moveKickExact(amrex::Real dt);
+    void time_center_source_terms(amrex::MultiFab& S_new, amrex::MultiFab& ext_src_old,
+                                  amrex::MultiFab& ext_src_new, amrex::Real dt);
+
+    void halo_find();
+    void Lya_statistics();
+
     //
     // Estimate time step.
     //
-    Real est_time_step(Real dt_old);
+    amrex::Real est_time_step(amrex::Real dt_old);
 
     //
     // Compute initial time step.
     //
-    Real initial_time_step();
+    amrex::Real initial_time_step();
 
     //
     // Compute initial `dt'.
     //
     virtual void computeInitialDt(int finest_level, int sub_cycle,
-                                  Array<int>& n_cycle,
-                                  const Array<IntVect>& ref_ratio,
-                                  Array<Real>& dt_level, Real stop_time);
+                                  amrex::Array<int>& n_cycle,
+                                  const amrex::Array<amrex::IntVect>& ref_ratio,
+                                  amrex::Array<amrex::Real>& dt_level, amrex::Real stop_time);
     //
     // Compute new `dt'.
     //
     virtual void computeNewDt(int finest_level, int sub_cycle,
-                              Array<int>& n_cycle,
-                              const Array<IntVect>& ref_ratio,
-                              Array<Real>& dt_min, Array<Real>& dt_level,
-                              Real stop_time, int post_regrid_flag);
+                              amrex::Array<int>& n_cycle,
+                              const amrex::Array<amrex::IntVect>& ref_ratio,
+                              amrex::Array<amrex::Real>& dt_min, amrex::Array<amrex::Real>& dt_level,
+                              amrex::Real stop_time, int post_regrid_flag);
 
     //
     // Print information about energy budget.
@@ -389,7 +404,7 @@ public:
     //
     // Contains operations to be done only after a full coarse timestep.
     //
-    virtual void postCoarseTimeStep(Real cumtime);
+    virtual void postCoarseTimeStep(amrex::Real cumtime);
 
     //
     // Do work after `regrid()`.
@@ -404,59 +419,59 @@ public:
     //
     // Do work after `init()`.
     //
-    virtual void post_init(Real stop_time);
+    virtual void post_init(amrex::Real stop_time);
 
     //
     // Error estimation for regridding.
     //
-    virtual void errorEst(TagBoxArray& tb, int clearval, int tagval, Real time,
+    virtual void errorEst(amrex::TagBoxArray& tb, int clearval, int tagval, amrex::Real time,
                           int n_error_buf=0, int ngrow=0);
 
     //
     // Called in grid_places after other tagging routines to modify
     //   the list of tagged points
     //
-    virtual void manual_tags_placement (TagBoxArray&    tags,
-                                        Array<IntVect>& bf_lev);
+    virtual void manual_tags_placement (amrex::TagBoxArray&    tags,
+                                        const amrex::Array<amrex::IntVect>& bf_lev) override;
 
-    // Returns a MultiFab containing the derived data for this level. The user
+    // Returns a amrex::MultiFab containing the derived data for this level. The user
     // is responsible for deleting this pointer when done with it. If
-    // `ngrow` > 0 the MultiFab is built on the appropriately grown BoxArray.
-    MultiFab* derive(const std::string& name, Real time, int ngrow);
+    // `ngrow` > 0 the amrex::MultiFab is built on the appropriately grown amrex::BoxArray.
+    std::unique_ptr<amrex::MultiFab> derive(const std::string& name, amrex::Real time, int ngrow);
 
     // This version of `derive()` fills the dcomp'th component of mf with the
     // derived quantity.
-    void derive(const std::string& name, Real time, MultiFab& mf, int dcomp);
+    void derive(const std::string& name, amrex::Real time, amrex::MultiFab& mf, int dcomp);
 
     static int Do_Hydro();
     static int num_grow();
 
     // Synchronize (rho e) and (rho E) so they are consistent with each other
-    void reset_internal_energy(MultiFab& State, MultiFab& DiagEOS);
+    void reset_internal_energy(amrex::MultiFab& State, amrex::MultiFab& DiagEOS);
 
     void compute_new_temp();
 
-    void compute_rho_temp(Real& rho_T_avg, Real& T_avg, Real& T_meanrho);
+    void compute_rho_temp(amrex::Real& rho_T_avg, amrex::Real& T_avg, amrex::Real& T_meanrho);
 
-    void get_old_source(Real old_time, Real dt, MultiFab& Rhs);
-    void get_new_source(Real old_time, Real new_time, Real dt, MultiFab& Rhs);
+    void get_old_source(amrex::Real old_time, amrex::Real dt, amrex::MultiFab& Rhs);
+    void get_new_source(amrex::Real old_time, amrex::Real new_time, amrex::Real dt, amrex::MultiFab& Rhs);
 
-    Real vol_weight_sum(const std::string& name, Real time, bool masked);
-    Real vol_weight_sum(MultiFab& mf, bool masked);
+    amrex::Real vol_weight_sum(const std::string& name, amrex::Real time, bool masked);
+    amrex::Real vol_weight_sum(amrex::MultiFab& mf, bool masked);
 
 #ifdef DER_AMOM
-    void vol_weight_sum_angmom(Real* angsum1, Real* angsum2, Real* angsum3, const Real time);
+    void vol_weight_sum_angmom(amrex::Real* angsum1, amrex::Real* angsum2, amrex::Real* angsum3, const amrex::Real time);
 #endif
-    Real vol_weight_squared_sum(const std::string& name, Real time);
-    Real vol_weight_squared_sum_level(const std::string& name, Real time);
+    amrex::Real vol_weight_squared_sum(const std::string& name, amrex::Real time);
+    amrex::Real vol_weight_squared_sum_level(const std::string& name, amrex::Real time);
 
 #ifdef AUX_UPDATE
-    void advance_aux(Real time, Real dt);
+    void advance_aux(amrex::Real time, amrex::Real dt);
 #endif
 
-    static Array<NyxParticleContainerBase*>& theActiveParticles();
-    static Array<NyxParticleContainerBase*>& theVirtualParticles();
-    static Array<NyxParticleContainerBase*>& theGhostParticles();
+    static amrex::Array<NyxParticleContainerBase*>& theActiveParticles();
+    static amrex::Array<NyxParticleContainerBase*>& theVirtualParticles();
+    static amrex::Array<NyxParticleContainerBase*>& theGhostParticles();
 
     static DarkMatterParticleContainer* theDMPC();
     static DarkMatterParticleContainer* theVirtPC();
@@ -488,21 +503,21 @@ public:
     static std::string particle_plotfile_format;
 
     //
-    // This MultiFab is used for the level coarser than this level to mask out
+    // This amrex::MultiFab is used for the level coarser than this level to mask out
     // this level.  We only build this when it is needed.
-    // This MultiFab has to live on this level even though it is at the resolution
+    // This amrex::MultiFab has to live on this level even though it is at the resolution
     // of the next coarser level because it must be updated whenever this level changes.
     //
-    MultiFab* fine_mask;
-    MultiFab* build_fine_mask();
+    amrex::MultiFab* fine_mask;
+    amrex::MultiFab* build_fine_mask();
 
     static int forceParticleRedist;  // ---- for dynamic sidecars
     static int nSidecarProcs;
 
-    virtual void AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
+    virtual void AddProcsToComp(amrex::Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
                                 int ioProcNumSCS, int ioProcNumAll, int scsMyId,
 				MPI_Comm scsComm);
-    virtual void NyxParticlesAddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
+    virtual void NyxParticlesAddProcsToComp(amrex::Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
                                             int ioProcNumSCS, int ioProcNumAll, int scsMyId,
 				            MPI_Comm scsComm);
     static void InitErrorList();
@@ -525,13 +540,13 @@ protected:
     Nyx& get_level(int lev);
 
 #ifndef NO_HYDRO
-    FluxRegister& get_flux_reg();
-    FluxRegister& get_flux_reg(int lev);
+    amrex::FluxRegister& get_flux_reg();
+    amrex::FluxRegister& get_flux_reg(int lev);
 
     void reflux();
 
-    void enforce_nonnegative_species(MultiFab& S_new);
-    void enforce_consistent_e(MultiFab& S);
+    void enforce_nonnegative_species(amrex::MultiFab& S_new);
+    void enforce_consistent_e(amrex::MultiFab& S);
 #endif
 
     void average_down();
@@ -543,8 +558,8 @@ protected:
     virtual void sum_integrated_quantities();
 
     void compute_average_density();
-    void compute_average_temperature(Real& average_temperature);
-    void compute_average_species(int nspec, int naux, Array<Real>& average_species);
+    void compute_average_temperature(amrex::Real& average_temperature);
+    void compute_average_species(int nspec, int naux, amrex::Array<amrex::Real>& average_species);
 
     void set_small_values();
 #endif
@@ -552,7 +567,7 @@ protected:
     void write_info();
 
 #ifndef NO_HYDRO
-    FluxRegister* flux_reg;
+    amrex::FluxRegister* flux_reg;
 #endif
 
     //
@@ -561,12 +576,12 @@ protected:
     static bool dump_old;
     static int verbose;
     static int show_timings;
-    static Real cfl;
-    static Real init_shrink;
-    static Real change_max;
+    static amrex::Real cfl;
+    static amrex::Real init_shrink;
+    static amrex::Real change_max;
     static int do_reflux;
-    static ErrorList err_list;
-    static BCRec phys_bc;
+    static amrex::ErrorList err_list;
+    static amrex::BCRec phys_bc;
     static int NUM_GROW;
 
     static int nsteps_from_plotfile;
@@ -585,12 +600,12 @@ protected:
 
     static int use_exact_gravity;
 
-    static Real small_dens;
-    static Real small_temp;
-    static Real gamma;
+    static amrex::Real small_dens;
+    static amrex::Real small_temp;
+    static amrex::Real gamma;
 
-    static Real  h_species;
-    static Real he_species;
+    static amrex::Real  h_species;
+    static amrex::Real he_species;
 
     static bool do_dm_particles;
 
@@ -605,12 +620,13 @@ protected:
     // These control random initialization
     static bool particle_initrandom_serialize;
     static long particle_initrandom_count;
-    static Real particle_initrandom_mass;
+    static amrex::Real particle_initrandom_mass;
     static int particle_initrandom_iseed;
 
-    static IntVect Nrep;  // how many times the initial conditions are replicated in each direction
+    static amrex::IntVect Nrep;  // how many times the initial conditions are replicated in each direction
 
-    static Array<Real> plot_z_values;  // These are the value of "z" at which to dump plotfiles.
+    static amrex::Array<amrex::Real> plot_z_values;      // These are the value of "z" at which to dump plotfiles.
+    static amrex::Array<amrex::Real> analysis_z_values;  // These are the value of "z" at which to perform analysis
 
     bool FillPatchedOldState_ok;
 
@@ -636,24 +652,24 @@ protected:
 #endif
 
     // Average value of gas, dark matter, neutrino and total density, computed every coarse timestep
-    static Real average_gas_density;
-    static Real average_dm_density;
-    static Real average_neutr_density;
-    static Real average_total_density;
+    static amrex::Real average_gas_density;
+    static amrex::Real average_dm_density;
+    static amrex::Real average_neutr_density;
+    static amrex::Real average_total_density;
 
 
   // for keeping track of the amount of CPU time used -- this will persist
   // after restarts
-  static Real      previousCPUTimeUsed;
-  static Real      startCPUTime;
+  static amrex::Real      previousCPUTimeUsed;
+  static amrex::Real      startCPUTime;
 
-  static Real getCPUTime();
+  static amrex::Real getCPUTime();
 
 
 };
 
 // time step interval for finding halos
-extern int halo_int;
+extern int reeber_int;
 // time step interval for doing Gimlet post-processing
 extern int gimlet_int;
 
@@ -683,7 +699,7 @@ Nyx::get_level(int level)
 
 #ifndef NO_HYDRO
 inline
-FluxRegister&
+amrex::FluxRegister&
 Nyx::get_flux_reg()
 {
     BL_ASSERT(flux_reg);
@@ -691,7 +707,7 @@ Nyx::get_flux_reg()
 }
 
 inline
-FluxRegister&
+amrex::FluxRegister&
 Nyx::get_flux_reg(int level)
 {
     return get_level(level).get_flux_reg();

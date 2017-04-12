@@ -1,11 +1,12 @@
 #ifdef GRAVITY
-#include <winstd.H>
  
 #include "Nyx.H"
 #include "Nyx_F.H"
 #include "Gravity.H"
-#include <Particles_F.H>
+#include <AMReX_Particles_F.H>
 #include <Gravity_F.H>
+
+using namespace amrex;
  
 using std::string;
 
@@ -17,10 +18,10 @@ Nyx::advance_particles_only (Real time,
 {
     // Sanity checks
     if (do_hydro)
-        BoxLib::Abort("In `advance_particles_only` but `do_hydro` is true");
+        amrex::Abort("In `advance_particles_only` but `do_hydro` is true");
 
     if (!do_grav)
-        BoxLib::Abort("In `advance_particles_only` but `do_grav` not true");
+        amrex::Abort("In `advance_particles_only` but `do_grav` not true");
     const int finest_level = parent->finestLevel();
     int finest_level_to_advance;
     bool nosub = !parent->subCycle();
@@ -155,8 +156,9 @@ Nyx::advance_particles_only (Real time,
             for (int lev = level; lev <= finest_level_to_advance; lev++)
             {
                 // We need grav_n_grow grow cells to track boundary particles
-                const BoxArray& ba = get_level(lev).get_new_data(PhiGrav_Type).boxArray();
-                MultiFab grav_vec_old(ba, BL_SPACEDIM, grav_n_grow);
+                const auto& ba = get_level(lev).get_new_data(PhiGrav_Type).boxArray();
+                const auto& dm = get_level(lev).get_new_data(PhiGrav_Type).DistributionMap();
+                MultiFab grav_vec_old(ba, dm, BL_SPACEDIM, grav_n_grow);
                 get_level(lev).gravity->get_old_grav_vector(lev, grav_vec_old, time);
                 
                 for (int i = 0; i < Nyx::theActiveParticles().size(); i++)
@@ -232,8 +234,9 @@ Nyx::advance_particles_only (Real time,
 
             for (int lev = level; lev <= finest_level_to_advance; lev++)
             {
-                const BoxArray& ba = get_level(lev).get_new_data(PhiGrav_Type).boxArray();
-                MultiFab grav_vec_new(ba, BL_SPACEDIM, grav_n_grow);
+                const auto& ba = get_level(lev).get_new_data(PhiGrav_Type).boxArray();
+                const auto& dm = get_level(lev).get_new_data(PhiGrav_Type).DistributionMap();
+                MultiFab grav_vec_new(ba, dm, BL_SPACEDIM, grav_n_grow);
                 get_level(lev).gravity->get_new_grav_vector(lev, grav_vec_new, cur_time);
 
                 for (int i = 0; i < Nyx::theActiveParticles().size(); i++)

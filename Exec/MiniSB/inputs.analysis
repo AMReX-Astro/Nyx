@@ -128,17 +128,11 @@ amr.derive_plot_vars = particle_count particle_mass_density pressure magvel
 amr.probin_file = probin
 
 # IN SITU ANALYSIS
-in_situ.component = 0
-in_situ.negate = 1
-in_situ.merge_tree_file = merge-tree-density
-in_situ.merge_tree_int = 10
-#in_situ.compute_persistence_diagram = 1
-#in_situ.persistence_diagram_file = persistence-diagram-density
-#in_situ.persistence_diagram_int = 1
-#in_situ.persistence_diagram_eps = 1.0e9
-in_situ.compute_halos = 1
-in_situ.halo_int = 5
-#in_situ.halo_extrema_threshold = 7.0e9
-#in_situ.halo_component_threshold = 6.0e9
-in_situ.halo_extrema_threshold = 7.5e9
-in_situ.halo_component_threshold = 7.0e9
+reeber.negate = 1
+reeber.merge_tree_file = merge-tree-density+particle_mass_density_
+#reeber.write_merge_tree_int = 1
+reeber.halo_int = 10
+reeber.halo_extrema_threshold = 1.1
+reeber.halo_component_threshold = 1
+reeber.absolute_halo_thresholds = 0
+reeber.halo_density_vars = density particle_mass_density

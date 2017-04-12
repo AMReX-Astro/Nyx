@@ -1,6 +1,5 @@
 // @todo: deprecate windows includes
 
-#include <winstd.H>
 
 #include <iostream>
 #include <iomanip>
@@ -10,24 +9,24 @@
 #include <unistd.h>
 #endif
 
-#include <CArena.H>
-#include <REAL.H>
-#include <Utility.H>
-#include <IntVect.H>
-#include <Box.H>
-#include <Amr.H>
-#include <ParmParse.H>
-#include <ParallelDescriptor.H>
-#include <AmrLevel.H>
-#include <Geometry.H>
-#include <MultiFab.H>
+#include <AMReX_CArena.H>
+#include <AMReX_REAL.H>
+#include <AMReX_Utility.H>
+#include <AMReX_IntVect.H>
+#include <AMReX_Box.H>
+#include <AMReX_Amr.H>
+#include <AMReX_ParmParse.H>
+#include <AMReX_ParallelDescriptor.H>
+#include <AMReX_AmrLevel.H>
+#include <AMReX_Geometry.H>
+#include <AMReX_MultiFab.H>
 #ifdef BL_USE_MPI
 #include <MemInfo.H>
 #endif
 #include <Nyx.H>
 
 #ifdef REEBER
-#include <InTransitAnalysis.H> // This actually works both in situ and in-transit.
+#include <ReeberAnalysis.H> // This actually works both in situ and in-transit.
 #endif
 
 #include "Nyx_output.H"
@@ -40,6 +39,8 @@ std::string inputs_name = "";
 #include <fftw3-mpi.h>
 #include <MakeFFTWBoxes.H>
 #endif
+
+using namespace amrex;
 
 const int NyxHaloFinderSignal(42);
 const int resizeSignal(43);
@@ -91,18 +92,26 @@ namespace
             if(ParallelDescriptor::IOProcessor()) {
               std::cout << "Sidecars got the halo finder sidecarSignal!" << std::endl;
             }
-            BoxArray bac;
+
             Geometry geom;
+            Geometry::SendGeometryToSidecar(&geom, whichSidecar);
+
             int time_step, nComp(0), nGhost(0);
+            int do_analysis;
 
             // Receive the necessary data for doing analysis.
             ParallelDescriptor::Bcast(&nComp, 1, 0, ParallelDescriptor::CommunicatorInter(whichSidecar));
-            BoxArray::RecvBoxArray(bac, whichSidecar);
-            MultiFab mf(bac, nComp, nGhost);
+
+            // Get desired box array and distribution mapping from Reeber
+            BoxArray ba;
+            DistributionMapping dm;
+            getAnalysisDecomposition(geom, ParallelDescriptor::NProcsSidecar(whichSidecar), ba, dm);
+
+            MultiFab mf(ba, nComp + 1, nGhost, dm);
 
             MultiFab *mfSource = 0;
             MultiFab *mfDest = &mf;
-            int srcComp(0), destComp(0);
+            int srcComp(0), destComp(1);
             int srcNGhost(0), destNGhost(0);
             const MPI_Comm &commSrc = ParallelDescriptor::CommunicatorComp();
             const MPI_Comm &commDest = ParallelDescriptor::CommunicatorSidecar();
@@ -115,18 +124,23 @@ namespace
                                 commSrc, commDest, commInter, commBoth,
                                 isSrc);
 
-            Geometry::SendGeometryToSidecar(&geom, whichSidecar);
+            mf.setVal(0, 0, 1, 0);
+            for (int comp = 1; comp < mf.nComp(); ++comp)
+                MultiFab::Add(mf, mf, comp, 0, 1, 0);
+
+
             ParallelDescriptor::Bcast(&time_step, 1, 0, ParallelDescriptor::CommunicatorInter(whichSidecar));
+            ParallelDescriptor::Bcast(&do_analysis, 1, 0, ParallelDescriptor::CommunicatorInter(whichSidecar));
 
             // Here Reeber constructs the local-global merge trees and computes the
             // halo locations.
-            runInSituAnalysis(mf, geom, time_step);
+            runReeberAnalysis(mf, geom, time_step, bool(do_analysis));
 
             if(ParallelDescriptor::IOProcessor()) {
               std::cout << "Sidecars completed halo finding analysis." << std::endl;
             }
 #else
-            BoxLib::Abort("Nyx received halo finder signal but not compiled with Reeber");
+            amrex::Abort("Nyx received halo finder signal but not compiled with Reeber");
 #endif /* REEBER */
           }
           break;
@@ -215,7 +229,7 @@ namespace
             }
             ParallelDescriptor::Barrier();
 #else
-            BoxLib::Abort("Nyx received Gimlet signal but not compiled with Gimlet");
+            amrex::Abort("Nyx received Gimlet signal but not compiled with Gimlet");
 #endif /* GIMLET */
           }
           break;
@@ -260,18 +274,20 @@ namespace
   #endif /* BL_USE_MPI */
     }
 
-    static void SidecarInit() {
-#ifdef REEBER
-      if(ParallelDescriptor::InSidecarGroup() && ParallelDescriptor::IOProcessor()) {
-        std::cout << "Initializing Reeber on sidecars ... " << std::endl;
-      } else if (ParallelDescriptor::IOProcessor()) {
-        std::cout << "Initializing Reeber in situ ... " << std::endl;
-      }
-      // Reeber reads its ParmParse stuff here so we don't need to do any of it
-      // in Nyx proper.
-      initInSituAnalysis();
-#endif
-    }
+// The following function does not seem to be used
+//    static void SidecarInit() {
+//#ifdef REEBER
+//      if(ParallelDescriptor::InSidecarGroup() && ParallelDescriptor::IOProcessor()) {
+//        std::cout << "Initializing Reeber on sidecars ... " << std::endl;
+//      } else if (ParallelDescriptor::IOProcessor()) {
+//        std::cout << "Initializing Reeber in situ ... " << std::endl;
+//      }
+//      // Reeber reads its ParmParse stuff here so we don't need to do any of it
+//      // in Nyx proper.
+//      reeber_int = initReeberAnalysis();
+//      std::cout << "SidecarInit(): reeber_int = " << reeber_int << std::endl;
+//#endif
+//    }
 }
 
 
@@ -280,7 +296,7 @@ namespace
 int
 main (int argc, char* argv[])
 {
-    BoxLib::Initialize(argc, argv);
+    amrex::Initialize(argc, argv);
 
 
     // save the inputs file name for later
@@ -339,7 +355,7 @@ main (int argc, char* argv[])
       prevSidecarProcs = Nyx::nSidecarProcs;
       if(nSidecarProcsFromParmParse >= 0) {
         if(nSidecarProcsFromParmParse >= ParallelDescriptor::NProcsAll()) {
-          BoxLib::Abort("**** Error:  nSidecarProcsFromParmParse >= nProcs");
+          amrex::Abort("**** Error:  nSidecarProcsFromParmParse >= nProcs");
         }
         Nyx::nSidecarProcs = nSidecarProcsFromParmParse;
       }
@@ -348,17 +364,17 @@ main (int argc, char* argv[])
 
     if (strt_time < 0.0)
     {
-        BoxLib::Abort("MUST SPECIFY a non-negative strt_time");
+        amrex::Abort("MUST SPECIFY a non-negative strt_time");
     }
 
     if (max_step < 0 && stop_time < 0.0)
     {
-        BoxLib::Abort("Exiting because neither max_step nor stop_time is non-negative.");
+        amrex::Abort("Exiting because neither max_step nor stop_time is non-negative.");
     }
 
     // Reeber has to do some initialization.
 #ifdef REEBER
-    initInSituAnalysis();
+    reeber_int = initReeberAnalysis();
 #endif
 
     if (Nyx::nSidecarProcs > 0)
@@ -475,8 +491,6 @@ main (int argc, char* argv[])
         if(Nyx::nSidecarProcs > prevSidecarProcs) {
           if(ParallelDescriptor::InCompGroup()) {
             amrptr->AddProcsToSidecar(Nyx::nSidecarProcs, prevSidecarProcs);
-          } else {
-            DistributionMapping::DeleteCache();
           }
         }
 
@@ -542,7 +556,7 @@ main (int argc, char* argv[])
     BL_PROFILE_REGION_STOP("main()");
     BL_PROFILE_SET_RUN_TIME(dRunTime2);
 
-    BoxLib::Finalize();
+    amrex::Finalize();
 
     return 0;
 }

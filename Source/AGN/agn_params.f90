@@ -30,8 +30,8 @@ integer, parameter :: AGN_FB_BUBBLE = 1, AGN_FB_JET = 2, AGN_FB_FIXBUB = 3
 ! Physical/mathematical constants
 
 ! These are now defined in fundamental_constants_module
-! real, parameter :: G = 6.67428e-8, c = 2.99792458e10
-! real, parameter :: m_p = 1.672621637e-24
+double precision, parameter :: G = 6.67428e-8, c = 2.99792458e10
+double precision, parameter :: m_p = 1.672621637e-24
 
 double precision, parameter :: sigmaT = 6.6524e-25 ! for pure H
 

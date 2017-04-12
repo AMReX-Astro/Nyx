@@ -1,7 +1,8 @@
-#include <winstd.H>
 
 #include "Nyx.H"
 #include "Nyx_error_F.H"
+
+using namespace amrex;
 
 using std::string;
 
@@ -32,6 +33,6 @@ Nyx::error_setup()
 
 void
 Nyx::manual_tags_placement (TagBoxArray&    tags,
-                            Array<IntVect>& bf_lev)
+                            const Array<IntVect>& bf_lev)
 {
 }

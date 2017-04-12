@@ -1,6 +1,8 @@
 #include <Nyx.H>
 #include <Nyx_F.H>
 
+using namespace amrex;
+
 #ifdef AGN
 void
 Nyx::get_old_source (Real      old_time,
@@ -17,6 +19,9 @@ Nyx::get_old_source (Real      old_time,
     MultiFab& D_old = get_old_data(DiagEOS_Type);
     const int num_comps = S_old.nComp();
 
+    ext_src.setVal(0.);
+
+#if 0
     // Find the current particle locations
     Array<Real> part_locs_and_mass;
     Nyx::theAPC()->GetParticleLocationsAndMass(part_locs_and_mass);
@@ -44,11 +49,12 @@ Nyx::get_old_source (Real      old_time,
         if (ext_src[Old_fpi].norm(0,Density,1) != 0)
         {
             std::cout << "The source terms for density are non-zero" << std::endl;
-            BoxLib::Error();
+            amrex::Error();
         }
     }
 
     ext_src.EnforcePeriodicity(0, NUM_STATE, geom.periodicity());
+#endif
 
     if (show_timings)
     {
@@ -79,6 +85,9 @@ Nyx::get_new_source (Real      old_time,
     MultiFab& D_old = get_old_data(DiagEOS_Type);
     const int num_comps = S_old.nComp();
 
+    ext_src.setVal(0.);
+
+#if 0
     // Find the current particle locations
     Array<Real> part_locs_and_mass;
     Nyx::theAPC()->GetParticleLocationsAndMass(part_locs_and_mass);
@@ -108,6 +117,7 @@ Nyx::get_new_source (Real      old_time,
     }
 
     ext_src.EnforcePeriodicity(0, NUM_STATE, geom.periodicity());
+#endif
 
     if (show_timings)
     {

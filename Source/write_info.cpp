@@ -1,6 +1,8 @@
 #include <iomanip>
 #include "Nyx.H"
 
+using namespace amrex;
+
 void
 Nyx::write_info ()
 {

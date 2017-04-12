@@ -1,6 +1,19 @@
 # Nyx
 *an adaptive mesh, cosmological simulation code*
 
+*******************************************************
+
+PLEASE NOTE:  Nyx has been migrated from BoxLib to AMReX.
+
+If you prefer to run with the BoxLib-based version, then 
+you can use the "boxlib" branch (which will no longer be updated).
+
+If you would like to use the latest version of Nyx, you will
+need to download AMReX.  Please email ASAlmgren@lbl.gov to get
+access to AMReX (it will become public as soon as it makes
+it through the licensing process).
+
+
 `Nyx` is an N-body hydro cosmological simulation code with 
 adaptive mesh refinement (AMR).  `Nyx` uses an unsplit PPM approach 
 for the hydrodynamics, a particle representation of dark matter, 
@@ -12,6 +25,7 @@ More information on Nyx can be found here:
 
 http://boxlib-codes.github.io/Nyx/
 
+*******************************************************
 
 ## Getting Started
 

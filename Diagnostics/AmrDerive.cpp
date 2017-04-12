@@ -1,5 +1,4 @@
 //BL_COPYRIGHT_NOTICE
-#include <winstd.H>
 
 #include <new>
 #include <iostream>
@@ -20,11 +19,13 @@ using std::endl;
 #include <unistd.h>
 #endif
 
-#include "ParmParse.H"
-#include "ParallelDescriptor.H"
-#include "DataServices.H"
-#include "Utility.H"
-#include "FArrayBox.H"
+#include "AMReX_ParmParse.H"
+#include "AMReX_ParallelDescriptor.H"
+#include "AMReX_DataServices.H"
+#include "AMReX_Utility.H"
+#include "AMReX_FArrayBox.H"
+
+using namespace amrex;
 
 static
 void 
@@ -44,7 +45,7 @@ int
 main (int   argc,
       char* argv[])
 {
-    BoxLib::Initialize(argc,argv);
+    amrex::Initialize(argc,argv);
 
     if (argc < 2)
         print_usage(argc,argv);
@@ -136,7 +137,8 @@ main (int   argc,
     for (int lev=finestLevel; lev>=0; --lev)
     {
         const BoxArray& ba = amrData.boxArray(lev);
-        MultiFab mf(ba,nComp,nGrow);
+	const DistributionMapping& dm = amrData.DistributionMap(lev);
+        MultiFab mf(ba,dm,nComp,nGrow);
         if (ParallelDescriptor::IOProcessor() && verbose>0)
             cerr << "...filling data at level " << lev << endl;
         amrData.FillVar(mf,lev,inVarNames,destFillComps);
@@ -207,7 +209,7 @@ main (int   argc,
     }
 
     
-    BoxLib::Finalize();
+    amrex::Finalize();
     return 0;
 }
 

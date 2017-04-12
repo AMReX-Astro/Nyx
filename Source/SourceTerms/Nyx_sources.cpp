@@ -1,6 +1,8 @@
 #include <Nyx.H>
 #include <Nyx_F.H>
 
+using namespace amrex;
+
 #ifndef NO_HYDRO
 
 #ifndef AGN
@@ -21,8 +23,8 @@ Nyx::get_old_source (Real      old_time,
     // We need to define these temporary multifabs because S_old and D_old only have one ghost cell.
     MultiFab Sborder, Dborder;
 
-    Sborder.define(grids, S_old.nComp(), 4, Fab_allocate);
-    Dborder.define(grids, D_old.nComp(), 4, Fab_allocate);
+    Sborder.define(grids, S_old.DistributionMap(), S_old.nComp(), 4);
+    Dborder.define(grids, D_old.DistributionMap(), D_old.nComp(), 4);
 
     FillPatch(*this, Sborder, 4, old_time, State_Type, Density, Sborder.nComp());
     FillPatch(*this, Dborder, 4, old_time, DiagEOS_Type, 0, 2);
@@ -45,7 +47,7 @@ Nyx::get_old_source (Real      old_time,
         if (ext_src[mfi].norm(0,Density,1) != 0)
         {
             std::cout << "The source terms for density are non-zero" << std::endl;
-            BoxLib::Error();
+            amrex::Error();
         }
     }
 
@@ -85,11 +87,8 @@ Nyx::get_new_source (Real      old_time,
     MultiFab Sborder_old, Dborder_old;
     MultiFab Sborder_new, Dborder_new;
 
-    Sborder_old.define(grids, S_old.nComp(), 4, Fab_allocate);
-    Dborder_old.define(grids, D_old.nComp(), 4, Fab_allocate);
-
-    Sborder_new.define(grids, S_new.nComp(), 4, Fab_allocate);
-    Dborder_new.define(grids, D_new.nComp(), 4, Fab_allocate);
+    Sborder_new.define(grids, S_new.DistributionMap(), S_new.nComp(), 4);
+    Dborder_new.define(grids, D_new.DistributionMap(), D_new.nComp(), 4);
 
     FillPatch(*this, Sborder_old, 4, old_time, State_Type  , Density, Sborder_old.nComp());
     FillPatch(*this, Sborder_new, 4, new_time, State_Type  , Density, Sborder_new.nComp());
