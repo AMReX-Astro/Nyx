@@ -11,7 +11,7 @@ TOP = ../..
 # compilation options
 COMP    = gcc
 USE_MPI = TRUE
-USE_OMP = FALSE
+USE_OMP = TRUE
 
 PROFILE       = FALSE
 TRACE_PROFILE = FALSE

@@ -1,9 +1,9 @@
-subroutine ext_src_hc(lo, hi, old_state, os_l1, os_l2, os_l3, os_h1, os_h2, os_h3, &
-                              new_state, ns_l1, ns_l2, ns_l3, ns_h1, ns_h2, ns_h3, &
-                              old_diag , od_l1, od_l2, od_l3, od_h1, od_h2, od_h3, &
-                              new_diag , nd_l1, nd_l2, nd_l3, nd_h1, nd_h2, nd_h3, &
-                      src, src_l1, &
-                      src_l2, src_l3, src_h1, src_h2, src_h3, problo, dx, time, z, dt)
+subroutine ext_src_force(lo, hi, old_state, os_l1, os_l2, os_l3, os_h1, os_h2, os_h3, &
+                                 new_state, ns_l1, ns_l2, ns_l3, ns_h1, ns_h2, ns_h3, &
+                                 old_diag , od_l1, od_l2, od_l3, od_h1, od_h2, od_h3, &
+                                 new_diag , nd_l1, nd_l2, nd_l3, nd_h1, nd_h2, nd_h3, &
+                         src, src_l1, &
+                         src_l2, src_l3, src_h1, src_h2, src_h3, problo, dx, time, z, dt)
 !
 !   Calculates the sources to be added later on.
 !
@@ -35,10 +35,9 @@ subroutine ext_src_hc(lo, hi, old_state, os_l1, os_l2, os_l3, os_h1, os_h2, os_h
 !   src : double array (dims) @todo
 !       @todo
 !
-    use meth_params_module, only : NVAR, UEDEN, UEINT, heat_cool_type
+    use meth_params_module, only : NVAR, UMX, UMY, UMZ, UEDEN, UEINT
     use fundamental_constants_module
-    use atomic_rates_module, only: interp_to_this_z
-
+ 
     implicit none
 
     integer, intent(in) :: lo(3), hi(3)
@@ -72,7 +71,6 @@ subroutine ext_src_hc(lo, hi, old_state, os_l1, os_l2, os_l3, os_h1, os_h2, os_h
 
     integer          :: i, j, k
     integer          :: src_lo(3),src_hi(3)
-    integer          :: max_iter, min_iter
     double precision :: a, half_dt
 
     ! Make a copy of the state so we can evolve it then throw it away
@@ -94,25 +92,22 @@ subroutine ext_src_hc(lo, hi, old_state, os_l1, os_l2, os_l3, os_h1, os_h2, os_h
     src_hi(2) = src_h2
     src_hi(3) = src_h3
 
-    call interp_to_this_z(z)
-
     half_dt = 0.5d0 * dt
-    if (heat_cool_type .eq. 1) then
-        call integrate_state_hc(src_lo,src_hi,tmp_state,ns_l1,ns_l2,ns_l3, ns_h1,ns_h2,ns_h3, &
-                                              new_diag ,nd_l1,nd_l2,nd_l3, nd_h1,nd_h2,nd_h3, &
-                                a,half_dt,min_iter,max_iter)
-    else if (heat_cool_type .eq. 3) then
-        call integrate_state_vode(src_lo,src_hi,tmp_state,ns_l1,ns_l2,ns_l3, ns_h1,ns_h2,ns_h3, &
-                                                new_diag ,nd_l1,nd_l2,nd_l3, nd_h1,nd_h2,nd_h3, &
-                                  a,half_dt,min_iter,max_iter)
-    endif
+
+    call integrate_state_force(src_lo,src_hi,tmp_state,ns_l1,ns_l2,ns_l3, ns_h1,ns_h2,ns_h3, &
+                                             new_diag ,nd_l1,nd_l2,nd_l3, nd_h1,nd_h2,nd_h3, &
+                               dx,time,a,half_dt)
+
     do k = src_l3, src_h3
         do j = src_l2, src_h2
             do i = src_l1, src_h1
+                  src(i,j,k,UMX)   = (tmp_state(i,j,k,UMX)   - new_state(i,j,k,UMX)) * a / half_dt
+                  src(i,j,k,UMY)   = (tmp_state(i,j,k,UMY)   - new_state(i,j,k,UMY)) * a / half_dt
+                  src(i,j,k,UMZ)   = (tmp_state(i,j,k,UMZ)   - new_state(i,j,k,UMZ)) * a / half_dt
                   src(i,j,k,UEINT) = (tmp_state(i,j,k,UEINT) - new_state(i,j,k,UEINT)) * a / half_dt
-                  src(i,j,k,UEDEN) = src(i,j,k,UEINT)
+                  src(i,j,k,UEDEN) = (tmp_state(i,j,k,UEDEN) - new_state(i,j,k,UEDEN)) * a / half_dt
             end do
         end do
     end do
 
-end subroutine ext_src_hc
+end subroutine ext_src_force
