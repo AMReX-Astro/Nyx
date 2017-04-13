@@ -54,25 +54,27 @@ contains
 
   subroutine eos_init_small_pres(R, T, Ne, P, comoving_a)
 
+     use amrex_fort_module, only : rt => amrex_real
+
      ! In/out variables
-     double precision, intent(  out) :: P
-     double precision, intent(in   ) :: R, T, Ne
-     double precision, intent(in   ) :: comoving_a
+     real(rt), intent(  out) :: P
+     real(rt), intent(in   ) :: R, T, Ne
+     real(rt), intent(in   ) :: comoving_a
 
      ! Local variables
      logical :: do_diag
 
-     double precision :: xn_eos(nspec)
-     double precision :: temp_eos
-     double precision :: den_eos
-     double precision :: e_eos
-     double precision :: p_eos
-     double precision :: cv_eos
-     double precision :: dpdt_eos
-     double precision :: dpdr_eos
-     double precision :: dedt_eos
-     double precision ::    s_eos
-     double precision :: comoving_a_cubed
+     real(rt) :: xn_eos(nspec)
+     real(rt) :: temp_eos
+     real(rt) :: den_eos
+     real(rt) :: e_eos
+     real(rt) :: p_eos
+     real(rt) :: cv_eos
+     real(rt) :: dpdt_eos
+     real(rt) :: dpdr_eos
+     real(rt) :: dedt_eos
+     real(rt) ::    s_eos
+     real(rt) :: comoving_a_cubed
 
      do_diag = .false.
 
@@ -103,11 +105,11 @@ contains
      use meth_params_module, only: gamma_const, gamma_minus_1
 
      ! In/out variables
-     double precision, intent(in   ) :: R, e
-     double precision, intent(  out) :: c
+     real(rt), intent(in   ) :: R, e
+     real(rt), intent(  out) :: c
 
      ! Pressure
-     double precision :: P
+     real(rt) :: P
 
      P = R * e * gamma_minus_1
 
@@ -119,24 +121,24 @@ contains
   subroutine nyx_eos_T_given_Re(T, Ne, R, e, comoving_a)
 
      ! In/out variables
-     double precision,           intent(inout) :: T, Ne
-     double precision,           intent(in   ) :: R, e
-     double precision,           intent(in   ) :: comoving_a
+     real(rt),           intent(inout) :: T, Ne
+     real(rt),           intent(in   ) :: R, e
+     real(rt),           intent(in   ) :: comoving_a
 
      ! Local variables
      logical :: do_diag
 
-     double precision :: xn_eos(nspec)
-     double precision :: temp_eos
-     double precision :: den_eos
-     double precision :: e_eos
-     double precision :: p_eos
-     double precision :: cv_eos
-     double precision :: dpdt_eos
-     double precision :: dpdr_eos
-     double precision :: dedt_eos
-     double precision ::    s_eos
-     double precision :: comoving_a_cubed
+     real(rt) :: xn_eos(nspec)
+     real(rt) :: temp_eos
+     real(rt) :: den_eos
+     real(rt) :: e_eos
+     real(rt) :: p_eos
+     real(rt) :: cv_eos
+     real(rt) :: dpdt_eos
+     real(rt) :: dpdr_eos
+     real(rt) :: dedt_eos
+     real(rt) ::    s_eos
+     real(rt) :: comoving_a_cubed
 
      do_diag = .false.
 
@@ -169,23 +171,23 @@ contains
      implicit none
 
      ! In/out variables
-     double precision,           intent(  out) :: S
-     double precision,           intent(in   ) :: R, e, T, Ne
-     double precision,           intent(in   ) :: comoving_a
+     real(rt),           intent(  out) :: S
+     real(rt),           intent(in   ) :: R, e, T, Ne
+     real(rt),           intent(in   ) :: comoving_a
 
      ! Local variables
      logical :: do_diag
 
-     double precision :: xn_eos(nspec)
-     double precision :: temp_eos
-     double precision :: den_eos
-     double precision :: e_eos
-     double precision :: p_eos
-     double precision :: cv_eos
-     double precision :: dpdt_eos
-     double precision :: dpdr_eos
-     double precision :: dedt_eos
-     double precision ::    s_eos
+     real(rt) :: xn_eos(nspec)
+     real(rt) :: temp_eos
+     real(rt) :: den_eos
+     real(rt) :: e_eos
+     real(rt) :: p_eos
+     real(rt) :: cv_eos
+     real(rt) :: dpdt_eos
+     real(rt) :: dpdr_eos
+     real(rt) :: dedt_eos
+     real(rt) ::    s_eos
 
      do_diag = .false.
 
@@ -213,25 +215,25 @@ contains
   subroutine nyx_eos_given_RT(e, P, R, T, Ne, comoving_a)
 
      ! In/out variables
-     double precision,           intent(  out) :: e, P
-     double precision,           intent(in   ) :: R, T, Ne
-     double precision,           intent(in   ) :: comoving_a
+     real(rt),           intent(  out) :: e, P
+     real(rt),           intent(in   ) :: R, T, Ne
+     real(rt),           intent(in   ) :: comoving_a
 
 
      ! Local variables
      logical :: do_diag
      
-     double precision :: xn_eos(nspec)
-     double precision :: temp_eos
-     double precision :: den_eos
-     double precision :: e_eos
-     double precision :: p_eos
-     double precision :: cv_eos
-     double precision :: dpdt_eos
-     double precision :: dpdr_eos
-     double precision :: dedt_eos
-     double precision ::    s_eos
-     double precision :: comoving_a_cubed
+     real(rt) :: xn_eos(nspec)
+     real(rt) :: temp_eos
+     real(rt) :: den_eos
+     real(rt) :: e_eos
+     real(rt) :: p_eos
+     real(rt) :: cv_eos
+     real(rt) :: dpdt_eos
+     real(rt) :: dpdr_eos
+     real(rt) :: dedt_eos
+     real(rt) ::    s_eos
+     real(rt) :: comoving_a_cubed
 
      do_diag = .false.
 
@@ -294,22 +296,22 @@ contains
     logical do_eos_diag
     integer, intent(in) :: input
 
-    double precision :: dens, temp
-    double precision :: xmass(nspec)
-    double precision :: pres, eint
-    double precision :: c_v
-    double precision :: dPdT, dPdR, dedT
-    double precision :: entropy
+    real(rt) :: dens, temp
+    real(rt) :: xmass(nspec)
+    real(rt) :: pres, eint
+    real(rt) :: c_v
+    real(rt) :: dPdT, dPdR, dedT
+    real(rt) :: entropy
 
     ! local variables
-    double precision :: ymass(nspec)    
-    double precision :: mu
-    double precision :: sum_y
-    double precision :: m_nucleon_over_kB
-    double precision :: t1,t2,t3
+    real(rt) :: ymass(nspec)    
+    real(rt) :: mu
+    real(rt) :: sum_y
+    real(rt) :: m_nucleon_over_kB
+    real(rt) :: t1,t2,t3
 
     ! get the mass of a nucleon from Avogadro's number.
-    double precision, parameter :: m_nucleon = 1.d0/n_A
+    real(rt), parameter :: m_nucleon = 1.d0/n_A
 
     integer :: n
 

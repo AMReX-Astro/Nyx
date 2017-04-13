@@ -1,5 +1,7 @@
 module interpolate_module
 
+      use amrex_fort_module, only : rt => amrex_real
+
   contains
 
       function interpolate(r, npts_model, model_r, model_var)
@@ -8,14 +10,15 @@ module interpolate_module
 !     find the value of model_var at point r using linear interpolation.
 !     Eventually, we can do something fancier here.
       
-      double precision, intent(in   ) :: r
-      integer         , intent(in   ) :: npts_model
-      double precision, intent(in   ) :: model_r(npts_model), model_var(npts_model)
-      double precision                :: interpolate
+      real(rt), intent(in   ) :: r
+      integer , intent(in   ) :: npts_model
+      real(rt), intent(in   ) :: model_r(npts_model), model_var(npts_model)
+
 
       ! Local variables
-      integer                         :: i, id
-      double precision                :: slope,minvar,maxvar
+      integer  :: i, id
+      real(rt) :: slope,minvar,maxvar
+      real(rt) :: interpolate
       
 !     find the location in the coordinate array where we want to interpolate
       do i = 1, npts_model

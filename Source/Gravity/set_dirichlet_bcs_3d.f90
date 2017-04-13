@@ -2,12 +2,13 @@
      subroutine fort_set_homog_bcs(lo,hi,domlo,domhi, &
                                    phi,phi_l1,phi_l2,phi_l3,phi_h1,phi_h2,phi_h3,dx);
  
+     use amrex_fort_module, only : rt => amrex_real
      implicit none
 
      integer         ,intent(in   ) :: lo(3),hi(3),domlo(3),domhi(3)
      integer         ,intent(in   ) :: phi_l1,phi_l2,phi_l3,phi_h1,phi_h2,phi_h3
-     double precision,intent(  out) :: phi(phi_l1:phi_h1,phi_l2:phi_h2,phi_l3:phi_h3)
-     double precision,intent(in   ) :: dx(3)
+     real(rt),intent(  out) :: phi(phi_l1:phi_h1,phi_l2:phi_h2,phi_l3:phi_h3)
+     real(rt),intent(in   ) :: dx(3)
 
      phi = 0.d0
  
@@ -21,21 +22,22 @@
                                       np,part_locs,part_mass, &
                                       phi,phi_l1,phi_l2,phi_l3,phi_h1,phi_h2,phi_h3,dx);
 
+     use amrex_fort_module, only : rt => amrex_real
      use fundamental_constants_module, only : Gconst
  
      implicit none
 
      integer         ,intent(in   ) :: lo(3),hi(3),domlo(3),domhi(3),np
      integer         ,intent(in   ) :: phi_l1,phi_l2,phi_l3,phi_h1,phi_h2,phi_h3
-     double precision,intent(in   ) :: part_locs(0:3*np-1)
-     double precision,intent(in   ) :: part_mass(0:  np-1)
-     double precision,intent(  out) :: phi(phi_l1:phi_h1,phi_l2:phi_h2,phi_l3:phi_h3)
-     double precision,intent(in   ) :: dx(3)
+     real(rt),intent(in   ) :: part_locs(0:3*np-1)
+     real(rt),intent(in   ) :: part_mass(0:  np-1)
+     real(rt),intent(  out) :: phi(phi_l1:phi_h1,phi_l2:phi_h2,phi_l3:phi_h3)
+     real(rt),intent(in   ) :: dx(3)
 
      ! Local variables
      integer          :: i,j,k,n
-     double precision :: x,y,z,r
-     double precision :: x0,y0,z0
+     real(rt) :: x,y,z,r
+     real(rt) :: x0,y0,z0
 
      phi = 0.d0
 

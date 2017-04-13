@@ -1,5 +1,6 @@
      subroutine fort_estdt(u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,lo,hi,dx,dt,a_old)
 
+     use amrex_fort_module, only : rt => amrex_real
      use eos_module
      use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEINT
      use  eos_params_module
@@ -10,16 +11,16 @@
      ! 
      integer          :: u_l1,u_l2,u_l3,u_h1,u_h2,u_h3
      integer          :: lo(3), hi(3)
-     double precision :: u(u_l1:u_h1,u_l2:u_h2,u_l3:u_h3,NVAR)
-     double precision :: dx(3), dt
-     double precision :: a_old
+     real(rt) :: u(u_l1:u_h1,u_l2:u_h2,u_l3:u_h3,NVAR)
+     real(rt) :: dx(3), dt
+     real(rt) :: a_old
 
-     double precision :: e, c
-     double precision :: rhoInv,ux,uy,uz,dt1,dt2,dt3
-     double precision :: sqrtK,grid_scl,dt4
+     real(rt) :: e, c
+     real(rt) :: rhoInv,ux,uy,uz,dt1,dt2,dt3
+     real(rt) :: sqrtK,grid_scl,dt4
      integer          :: i,j,k
 
-     double precision, parameter :: onethird = 1.d0/3.d0
+     real(rt), parameter :: onethird = 1.d0/3.d0
 
      grid_scl = (dx(1)*dx(2)*dx(3))**onethird
      !

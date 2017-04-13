@@ -5,15 +5,16 @@
       use meth_params_module, only : NVAR, URHO, UFS
       use  eos_params_module
 
+      use amrex_fort_module, only : rt => amrex_real
       implicit none
 
-      integer          :: lo(3), hi(3)
-      integer          :: state_l1,state_l2,state_l3,state_h1,state_h2,state_h3
-      double precision :: state(state_l1:state_h1,state_l2:state_h2,state_l3:state_h3,NVAR)
+      integer  :: lo(3), hi(3)
+      integer  :: state_l1,state_l2,state_l3,state_h1,state_h2,state_h3
+      real(rt) :: state(state_l1:state_h1,state_l2:state_h2,state_l3:state_h3,NVAR)
 
       ! Local variables
-      integer          :: i,j,k,n
-      double precision :: sum
+      integer  :: i,j,k,n
+      real(rt) :: sum
 
       if (UFS .gt. 0) then
 

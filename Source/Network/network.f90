@@ -21,6 +21,7 @@
 
 module network
 
+  use amrex_fort_module, only : rt => amrex_real
   use bl_types
 
   implicit none
@@ -32,7 +33,7 @@ module network
   character (len= 5), save :: short_spec_names(nspec)
   character (len= 5), save :: short_aux_names(naux)
 
-  real(kind=dp_t), save :: aion(nspec), zion(nspec), ebin(nspec)
+  real(kind=rt), save :: aion(nspec), zion(nspec), ebin(nspec)
 
   logical, save :: network_initialized = .false.
 
@@ -46,11 +47,11 @@ contains
     short_spec_names(1) = "H"
     short_spec_names(2) = "He"
 
-    aion(1) = 1.0_dp_t
-    aion(2) = 4.0_dp_t
+    aion(1) = 1.0_rt
+    aion(2) = 4.0_rt
     
-    zion(1) = 1.0_dp_t
-    zion(2) = 2.0_dp_t
+    zion(1) = 1.0_rt
+    zion(2) = 2.0_rt
 
     network_initialized = .true.
 

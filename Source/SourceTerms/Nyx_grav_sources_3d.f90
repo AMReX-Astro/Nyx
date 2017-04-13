@@ -13,6 +13,7 @@
                               unew,unew_l1,unew_l2,unew_l3,unew_h1,unew_h2,unew_h3, &
                               a_old,a_new,dt,e_added,ke_added)
 
+      use amrex_fort_module, only : rt => amrex_real
       use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, grav_source_type
 
       implicit none
@@ -22,22 +23,22 @@
       integer gnew_l1,gnew_l2,gnew_l3,gnew_h1,gnew_h2,gnew_h3
       integer uold_l1,uold_l2,uold_l3,uold_h1,uold_h2,uold_h3
       integer unew_l1,unew_l2,unew_l3,unew_h1,unew_h2,unew_h3
-      double precision   gold(gold_l1:gold_h1,gold_l2:gold_h2,gold_l3:gold_h3,3)
-      double precision   gnew(gnew_l1:gnew_h1,gnew_l2:gnew_h2,gnew_l3:gnew_h3,3)
-      double precision  uold(uold_l1:uold_h1,uold_l2:uold_h2,uold_l3:uold_h3,NVAR)
-      double precision  unew(unew_l1:unew_h1,unew_l2:unew_h2,unew_l3:unew_h3,NVAR)
-      double precision  a_old,a_new,dt,e_added,ke_added
+      real(rt)   gold(gold_l1:gold_h1,gold_l2:gold_h2,gold_l3:gold_h3,3)
+      real(rt)   gnew(gnew_l1:gnew_h1,gnew_l2:gnew_h2,gnew_l3:gnew_h3,3)
+      real(rt)  uold(uold_l1:uold_h1,uold_l2:uold_h2,uold_l3:uold_h3,NVAR)
+      real(rt)  unew(unew_l1:unew_h1,unew_l2:unew_h2,unew_l3:unew_h3,NVAR)
+      real(rt)  a_old,a_new,dt,e_added,ke_added
 
       integer i,j,k
-      double precision SrU_old, SrV_old, SrW_old
-      double precision SrU_new, SrV_new, SrW_new
-      double precision SrUcorr, SrVcorr, SrWcorr, SrEcorr
-      double precision rhoo, Upo, Vpo, Wpo
-      double precision rhon, Upn, Vpn, Wpn
+      real(rt) SrU_old, SrV_old, SrW_old
+      real(rt) SrU_new, SrV_new, SrW_new
+      real(rt) SrUcorr, SrVcorr, SrWcorr, SrEcorr
+      real(rt) rhoo, Upo, Vpo, Wpo
+      real(rt) rhon, Upn, Vpn, Wpn
 
-      double precision a_half, a_newsq, rhooinv, rhoninv, a_new_inv
-      double precision old_ke, old_rhoeint
-      double precision new_ke, new_rhoeint
+      real(rt) a_half, a_newsq, rhooinv, rhoninv, a_new_inv
+      real(rt) old_ke, old_rhoeint
+      real(rt) new_ke, new_rhoeint
 
       a_half    = 0.5d0 * (a_old + a_new)
       a_newsq   = a_new*a_new
@@ -133,6 +134,7 @@
                               dstate_h1,dstate_h2,dstate_h3, &
                               sync_src,src_l1,src_l2,src_l3,src_h1,src_h2,src_h3,a_new,dt)
 
+      use amrex_fort_module, only : rt => amrex_real
       use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ
 
       implicit none
@@ -143,19 +145,19 @@
       integer state_l1,state_l2,state_l3,state_h1,state_h2,state_h3
       integer dstate_l1,dstate_l2,dstate_l3,dstate_h1,dstate_h2,dstate_h3
       integer src_l1,src_l2,src_l3,src_h1,src_h2,src_h3
-      double precision   gphi(gphi_l1:gphi_h1,gphi_l2:gphi_h2,gphi_l3:gphi_h3,3)
-      double precision  gdphi(gdphi_l1:gdphi_h1,gdphi_l2:gdphi_h2,gdphi_l3:gdphi_h3,3)
-      double precision  state(state_l1:state_h1,state_l2:state_h2,state_l3:state_h3,NVAR)
-      double precision dstate(dstate_l1:dstate_h1,dstate_l2:dstate_h2,dstate_l3:dstate_h3,3+1)
-      double precision sync_src(src_l1:src_h1,src_l2:src_h2,src_l3:src_h3,3+1)
-      double precision a_new,dt
+      real(rt)   gphi(gphi_l1:gphi_h1,gphi_l2:gphi_h2,gphi_l3:gphi_h3,3)
+      real(rt)  gdphi(gdphi_l1:gdphi_h1,gdphi_l2:gdphi_h2,gdphi_l3:gdphi_h3,3)
+      real(rt)  state(state_l1:state_h1,state_l2:state_h2,state_l3:state_h3,NVAR)
+      real(rt) dstate(dstate_l1:dstate_h1,dstate_l2:dstate_h2,dstate_l3:dstate_h3,3+1)
+      real(rt) sync_src(src_l1:src_h1,src_l2:src_h2,src_l3:src_h3,3+1)
+      real(rt) a_new,dt
  
       !    Note that dstate is drho and drhoU, state is the entire state, and src
       !    is S_rhoU and S_rhoE
  
       integer          :: i,j,k
-      double precision :: rho_pre, rhoU_pre, rhoV_pre, rhoW_pre
-      double precision :: gx, gy, gz, dgx, dgy, dgz, SrU, SrV, SrW, SrE, a_new_inv
+      real(rt) :: rho_pre, rhoU_pre, rhoV_pre, rhoW_pre
+      real(rt) :: gx, gy, gz, dgx, dgy, dgz, SrU, SrV, SrW, SrE, a_new_inv
  
       a_new_inv = 1.0d0 / a_new
 

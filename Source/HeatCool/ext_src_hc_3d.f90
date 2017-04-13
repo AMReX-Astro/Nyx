@@ -35,6 +35,7 @@ subroutine ext_src_hc(lo, hi, old_state, os_l1, os_l2, os_l3, os_h1, os_h2, os_h
 !   src : double array (dims) @todo
 !       @todo
 !
+    use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : NVAR, UEDEN, UEINT, heat_cool_type
     use fundamental_constants_module
     use atomic_rates_module, only: interp_to_this_z
@@ -51,29 +52,29 @@ subroutine ext_src_hc(lo, hi, old_state, os_l1, os_l2, os_l3, os_h1, os_h2, os_h
     integer, intent(in) :: nd_l1, nd_l2, nd_l3
     integer, intent(in) :: nd_h1, nd_h2, nd_h3
     integer, intent(in) :: src_l1, src_l2, src_l3, src_h1, src_h2, src_h3
-    double precision, intent(in) :: old_state(os_l1:os_h1, &
+    real(rt), intent(in) :: old_state(os_l1:os_h1, &
                                               os_l2:os_h2, &
                                               os_l3:os_h3, NVAR)
-    double precision, intent(in) :: new_state(ns_l1:ns_h1, &
+    real(rt), intent(in) :: new_state(ns_l1:ns_h1, &
                                               ns_l2:ns_h2, &
                                               ns_l3:ns_h3, NVAR)
-    double precision, intent(in) :: old_diag (od_l1:od_h1, &
+    real(rt), intent(in) :: old_diag (od_l1:od_h1, &
                                               od_l2:od_h2, &
                                               od_l3:od_h3, 2)
-    double precision, intent(in) :: new_diag (nd_l1:nd_h1, &
+    real(rt), intent(in) :: new_diag (nd_l1:nd_h1, &
                                               nd_l2:nd_h2, &
                                               nd_l3:nd_h3, 2)
-    double precision, intent(in) :: problo(3), dx(3), z, dt, time
+    real(rt), intent(in) :: problo(3), dx(3), z, dt, time
 
-    double precision, intent(out) :: src(src_l1:src_h1, src_l2:src_h2, &
+    real(rt), intent(out) :: src(src_l1:src_h1, src_l2:src_h2, &
                                          src_l3:src_h3, NVAR)
 
-    double precision, allocatable :: tmp_state(:,:,:,:)
+    real(rt), allocatable :: tmp_state(:,:,:,:)
 
     integer          :: i, j, k
     integer          :: src_lo(3),src_hi(3)
     integer          :: max_iter, min_iter
-    double precision :: a, half_dt
+    real(rt) :: a, half_dt
 
     ! Make a copy of the state so we can evolve it then throw it away
     allocate(tmp_state(ns_l1:ns_h1,ns_l2:ns_h2,ns_l3:ns_h3,NVAR))

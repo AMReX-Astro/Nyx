@@ -20,17 +20,18 @@
                               fine,f_l1,f_l2,f_l3,f_h1,f_h2,f_h3, &
                               lo,hi,lrat)
 
+      use amrex_fort_module, only : rt => amrex_real
       implicit none
       integer c_l1,c_l2,c_l3,c_h1,c_h2,c_h3
       integer f_l1,f_l2,f_l3,f_h1,f_h2,f_h3
       integer lo(3), hi(3)
       integer nvar, lrat(3)
-      double precision crse(c_l1:c_h1,c_l2:c_h2,c_l3:c_h3,nvar)
-      double precision fine(f_l1:f_h1,f_l2:f_h2,f_l3:f_h3,nvar)
+      real(rt) crse(c_l1:c_h1,c_l2:c_h2,c_l3:c_h3,nvar)
+      real(rt) fine(f_l1:f_h1,f_l2:f_h2,f_l3:f_h3,nvar)
 
       integer i, j, k, n, ic, jc, kc, ioff, joff, koff
       integer lratx, lraty, lratz
-      double precision   volfrac
+      real(rt)   volfrac
 
       lratx   = lrat(1)
       lraty   = lrat(2)

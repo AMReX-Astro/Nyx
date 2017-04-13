@@ -13,6 +13,7 @@ contains
   !===========================================================================
   subroutine uflaten(lo,hi,p,u,v,w,flatn,q_l1,q_l2,q_l3,q_h1,q_h2,q_h3)
 
+    use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : iorder, small_pres
     use bl_constants_module
 
@@ -21,22 +22,22 @@ contains
     integer lo(3),hi(3)
     integer q_l1,q_l2,q_l3,q_h1,q_h2,q_h3
     
-    double precision p(q_l1:q_h1,q_l2:q_h2,q_l3:q_h3)
-    double precision u(q_l1:q_h1,q_l2:q_h2,q_l3:q_h3)
-    double precision v(q_l1:q_h1,q_l2:q_h2,q_l3:q_h3)
-    double precision w(q_l1:q_h1,q_l2:q_h2,q_l3:q_h3)
-    double precision flatn(q_l1:q_h1,q_l2:q_h2,q_l3:q_h3)
+    real(rt) p(q_l1:q_h1,q_l2:q_h2,q_l3:q_h3)
+    real(rt) u(q_l1:q_h1,q_l2:q_h2,q_l3:q_h3)
+    real(rt) v(q_l1:q_h1,q_l2:q_h2,q_l3:q_h3)
+    real(rt) w(q_l1:q_h1,q_l2:q_h2,q_l3:q_h3)
+    real(rt) flatn(q_l1:q_h1,q_l2:q_h2,q_l3:q_h3)
 
     integer i, j, k, idx, ishft
     integer nx,ny,nz,nmax
 
-    double precision denom, zeta, tst, tmp, ftmp
+    real(rt) denom, zeta, tst, tmp, ftmp
 
     ! Local arrays
-    double precision, allocatable :: dp(:,:,:), z(:,:,:), chi(:,:,:)
+    real(rt), allocatable :: dp(:,:,:), z(:,:,:), chi(:,:,:)
     
     ! Knobs for detection of strong shock
-    double precision, parameter :: shktst = 0.33d0, zcut1 = 0.75d0, zcut2 = 0.85d0, dzcut = ONE/(zcut2-zcut1)
+    real(rt), parameter :: shktst = 0.33d0, zcut1 = 0.75d0, zcut2 = 0.85d0, dzcut = ONE/(zcut2-zcut1)
 
     nx = hi(1)-lo(1)+3
     ny = hi(2)-lo(2)+3

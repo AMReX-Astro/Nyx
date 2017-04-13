@@ -116,13 +116,15 @@
 
       subroutine set_xhydrogen(xhydrogen_in)
 
-          use atomic_rates_module
+        use amrex_fort_module, only : rt => amrex_real
+        use atomic_rates_module
 
-          double precision, intent(in) :: xhydrogen_in
-          if (xhydrogen_in .lt. 0.d0 .or. xhydrogen_in .gt. 1.d0) &
-              call bl_error("Bad value of xhydrogen_in")
-          XHYDROGEN = xhydrogen_in
-          YHELIUM   = (1.0d0-XHYDROGEN)/(4.0d0*XHYDROGEN)
+        real(rt), intent(in) :: xhydrogen_in
+        if (xhydrogen_in .lt. 0.d0 .or. xhydrogen_in .gt. 1.d0) &
+            call bl_error("Bad value of xhydrogen_in")
+
+        XHYDROGEN = xhydrogen_in
+        YHELIUM   = (1.0d0-XHYDROGEN)/(4.0d0*XHYDROGEN)
 
       end subroutine set_xhydrogen
 
@@ -133,20 +135,21 @@
       subroutine set_small_values(average_dens, average_temp, a, &
                                   small_dens_inout, small_temp_inout, small_pres_inout)
 
+        use amrex_fort_module, only : rt => amrex_real
         use meth_params_module
         use eos_module
         use network, only : nspec, naux
 
         implicit none
 
-        double precision, intent(in   ) :: average_dens, average_temp
-        double precision, intent(in   ) :: a
-        double precision, intent(inout) :: small_dens_inout, small_temp_inout, &
+        real(rt), intent(in   ) :: average_dens, average_temp
+        real(rt), intent(in   ) :: a
+        real(rt), intent(inout) :: small_dens_inout, small_temp_inout, &
                                            small_pres_inout
 
         ! Local variables
-        double precision :: frac = 1.d-6
-        double precision :: typical_Ne
+        real(rt) :: frac = 1.d-6
+        real(rt) :: typical_Ne
         
         if (small_dens_inout .le. 0.d0) then
            small_dens = frac * average_dens
@@ -183,6 +186,7 @@
 
         ! Passing data from C++ into f90
 
+        use amrex_fort_module, only : rt => amrex_real
         use meth_params_module
         use  eos_params_module
         use atomic_rates_module
@@ -193,21 +197,21 @@
 
         implicit none
 
-        integer, intent(in) :: dm
-        integer, intent(in) :: numadv
-        integer, intent(in) :: do_hydro
-        integer, intent(in) :: ppm_type_in
-        integer, intent(in) :: ppm_ref_in
-        integer, intent(in) :: ppm_flatten_before_integrals_in
-        integer, intent(in) :: use_colglaz_in
-        integer, intent(in) :: use_flattening_in
-        integer, intent(in) :: version_2_in
-        integer, intent(in) :: corner_coupling_in
-        double precision, intent(in) :: gamma_in
-        integer, intent(in) :: use_const_species_in
-        integer, intent(in) :: normalize_species_in
-        integer, intent(in) :: heat_cool_in
-        integer, intent(in), optional :: comm
+        integer,  intent(in) :: dm
+        integer,  intent(in) :: numadv
+        integer,  intent(in) :: do_hydro
+        integer,  intent(in) :: ppm_type_in
+        integer,  intent(in) :: ppm_ref_in
+        integer,  intent(in) :: ppm_flatten_before_integrals_in
+        integer,  intent(in) :: use_colglaz_in
+        integer,  intent(in) :: use_flattening_in
+        integer,  intent(in) :: version_2_in
+        integer,  intent(in) :: corner_coupling_in
+        real(rt), intent(in) :: gamma_in
+        integer,  intent(in) :: use_const_species_in
+        integer,  intent(in) :: normalize_species_in
+        integer,  intent(in) :: heat_cool_in
+        integer,  intent(in), optional :: comm
 
         integer             :: QNEXT
         integer             :: UNEXT
@@ -385,11 +389,12 @@
 
         ! Passing data from C++ into f90
 
+        use amrex_fort_module, only : rt => amrex_real
         use  eos_params_module
 
         implicit none
 
-        double precision, intent(in) :: h_species_in, he_species_in
+        real(rt), intent(in) :: h_species_in, he_species_in
 
          h_species =  h_species_in
         he_species = he_species_in

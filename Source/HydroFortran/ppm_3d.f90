@@ -19,6 +19,7 @@ contains
                  Ip,Im, &
                  ilo1,ilo2,ihi1,ihi2,dx,dy,dz,dt,k3d,kc,a_old)
 
+    use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : ppm_type
 
     implicit none
@@ -28,17 +29,17 @@ contains
     integer         , intent(in   ) ::   f_l1, f_l2, f_l3, f_h1, f_h2, f_h3
     integer         , intent(in   ) ::  ilo1,ilo2,ihi1,ihi2
  
-    double precision, intent(in   ) ::      s( s_l1: s_h1, s_l2: s_h2, s_l3: s_h3)
-    double precision, intent(in   ) ::      u(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,3)
-    double precision, intent(in   ) ::   cspd(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
-    double precision, intent(in   ) ::  flatn( f_l1: f_h1, f_l2: f_h2, f_l3: f_h3)
+    real(rt), intent(in   ) ::      s( s_l1: s_h1, s_l2: s_h2, s_l3: s_h3)
+    real(rt), intent(in   ) ::      u(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,3)
+    real(rt), intent(in   ) ::   cspd(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
+    real(rt), intent(in   ) ::  flatn( f_l1: f_h1, f_l2: f_h2, f_l3: f_h3)
 
-    double precision, intent(inout) :: Ip(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3)
-    double precision, intent(inout) :: Im(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3)
+    real(rt), intent(inout) :: Ip(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3)
+    real(rt), intent(inout) :: Im(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3)
 
-    double precision, intent(in   ) ::  dx,dy,dz,dt,a_old
+    real(rt), intent(in   ) ::  dx,dy,dz,dt,a_old
 
-    double precision :: dt_over_a
+    real(rt) :: dt_over_a
     integer          :: k3d,kc
 
     dt_over_a = dt / a_old
@@ -74,6 +75,7 @@ contains
                        Ip,Im,ilo1,ilo2,ihi1,ihi2,dx,dy,dz,dt_over_a,k3d,kc)
 
     use mempool_module, only: bl_allocate, bl_deallocate
+    use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : ppm_type, ppm_flatten_before_integrals
     use bl_constants_module
 
@@ -84,38 +86,38 @@ contains
     integer           f_l1, f_l2, f_l3, f_h1, f_h2, f_h3
     integer          ilo1,ilo2,ihi1,ihi2
 
-    double precision, intent(in) :: s( s_l1: s_h1, s_l2: s_h2, s_l3: s_h3)
-    double precision, intent(in) :: u(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,3)
-    double precision, intent(in) :: cspd(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
-    double precision, intent(in) :: flatn(f_l1: f_h1, f_l2: f_h2, f_l3: f_h3)
+    real(rt), intent(in) :: s( s_l1: s_h1, s_l2: s_h2, s_l3: s_h3)
+    real(rt), intent(in) :: u(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,3)
+    real(rt), intent(in) :: cspd(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
+    real(rt), intent(in) :: flatn(f_l1: f_h1, f_l2: f_h2, f_l3: f_h3)
 
-    double precision, intent(out) :: Ip(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3)
-    double precision, intent(out) :: Im(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3)
+    real(rt), intent(out) :: Ip(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3)
+    real(rt), intent(out) :: Im(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3)
 
     ! Note that dt_over_a = dt / a_old
-    double precision, intent(in) :: dx,dy,dz,dt_over_a
+    real(rt), intent(in) :: dx,dy,dz,dt_over_a
     integer, intent(in)          :: k3d,kc
 
     ! local
     integer i,j,k
 
-    double precision :: dxinv,dyinv,dzinv
+    real(rt) :: dxinv,dyinv,dzinv
 
-    double precision, pointer :: dsl(:), dsr(:), dsc(:)
-    double precision, pointer :: sigma(:), s6(:)
+    real(rt), pointer :: dsl(:), dsr(:), dsc(:)
+    real(rt), pointer :: sigma(:), s6(:)
 
     ! s_{\ib,+}, s_{\ib,-}
-    double precision, pointer :: sp(:)
-    double precision, pointer :: sm(:)
+    real(rt), pointer :: sp(:)
+    real(rt), pointer :: sm(:)
 
     ! \delta s_{\ib}^{vL}
-    double precision, pointer :: dsvl(:,:)
-    double precision, pointer :: dsvlm(:,:)
-    double precision, pointer :: dsvlp(:,:)
+    real(rt), pointer :: dsvl(:,:)
+    real(rt), pointer :: dsvlm(:,:)
+    real(rt), pointer :: dsvlp(:,:)
 
     ! s_{i+\half}^{H.O.}
-    double precision, pointer :: sedge(:,:)
-    double precision, pointer :: sedgez(:,:,:)
+    real(rt), pointer :: sedge(:,:)
+    real(rt), pointer :: sedgez(:,:,:)
 
     dxinv = 1.0d0/dx
     dyinv = 1.0d0/dy
@@ -626,6 +628,7 @@ contains
                        flatn,f_l1,f_l2,f_l3,f_h1,f_h2,f_h3, &
                        Ip,Im,ilo1,ilo2,ihi1,ihi2,dx,dy,dz,dt_over_a,k3d,kc)
 
+    use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : ppm_type, ppm_flatten_before_integrals
     use bl_constants_module
 
@@ -636,44 +639,44 @@ contains
     integer           f_l1, f_l2, f_l3, f_h1, f_h2, f_h3
     integer          ilo1,ilo2,ihi1,ihi2
 
-    double precision    s( s_l1: s_h1, s_l2: s_h2, s_l3: s_h3)
-    double precision    u(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,3)
-    double precision cspd(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
-    double precision flatn( f_l1: f_h1, f_l2: f_h2, f_l3: f_h3)
+    real(rt)    s( s_l1: s_h1, s_l2: s_h2, s_l3: s_h3)
+    real(rt)    u(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,3)
+    real(rt) cspd(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
+    real(rt) flatn( f_l1: f_h1, f_l2: f_h2, f_l3: f_h3)
 
-    double precision Ip(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3)
-    double precision Im(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3)
+    real(rt) Ip(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3)
+    real(rt) Im(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3)
 
     ! Note that dt_over_a = dt / a_old
-    double precision dx,dy,dz,dt_over_a
-    double precision dxinv,dyinv,dzinv
+    real(rt) dx,dy,dz,dt_over_a
+    real(rt) dxinv,dyinv,dzinv
     integer          k3d,kc
 
     ! local
     integer i,j,k
     logical extremum, bigp, bigm
 
-    double precision D2, D2C, D2L, D2R, D2LIM, alphap, alpham
-    double precision sgn, sigma, s6
-    double precision dafacem, dafacep, dabarm, dabarp, dafacemin, dabarmin
-    double precision dachkm, dachkp
-    double precision amax, delam, delap
+    real(rt) D2, D2C, D2L, D2R, D2LIM, alphap, alpham
+    real(rt) sgn, sigma, s6
+    real(rt) dafacem, dafacep, dabarm, dabarp, dafacemin, dabarmin
+    real(rt) dachkm, dachkp
+    real(rt) amax, delam, delap
 
     ! s_{\ib,+}, s_{\ib,-}
-    double precision, allocatable :: sp(:,:)
-    double precision, allocatable :: sm(:,:)
+    real(rt), allocatable :: sp(:,:)
+    real(rt), allocatable :: sm(:,:)
 
     ! \delta s_{\ib}^{vL}
-    double precision, allocatable :: dsvl(:,:)
-    double precision, allocatable :: dsvlm(:,:)
-    double precision, allocatable :: dsvlp(:,:)
+    real(rt), allocatable :: dsvl(:,:)
+    real(rt), allocatable :: dsvlm(:,:)
+    real(rt), allocatable :: dsvlp(:,:)
 
     ! s_{i+\half}^{H.O.}
-    double precision, allocatable :: sedge(:,:)
-    double precision, allocatable :: sedgez(:,:,:)
+    real(rt), allocatable :: sedge(:,:)
+    real(rt), allocatable :: sedgez(:,:,:)
 
     ! constant used in Colella 2008
-    double precision, parameter :: C = 1.25d0
+    real(rt), parameter :: C = 1.25d0
 
     dxinv = 1.0d0/dx
     dyinv = 1.0d0/dy

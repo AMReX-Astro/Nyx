@@ -5,24 +5,25 @@ module analriem_module
 
     subroutine analriem(ilo,ihi,gamma,pl,rl,ul,pr,rr,ur,smallp,pstar,ustar)
 
+      use amrex_fort_module, only : rt => amrex_real
       implicit none
 
       integer, intent(in) :: ilo, ihi
 
-      double precision, intent(in ), dimension(ilo:ihi) :: pl,rl,ul,pr,rr,ur
-      double precision, intent(in ) :: gamma, smallp
-      double precision, intent(out), dimension(ilo:ihi) :: pstar,ustar
+      real(rt), intent(in ), dimension(ilo:ihi) :: pl,rl,ul,pr,rr,ur
+      real(rt), intent(in ) :: gamma, smallp
+      real(rt), intent(out), dimension(ilo:ihi) :: pstar,ustar
 
       ! Local variables
-      double precision, dimension(ilo:ihi) :: pstnm1,ustarp,ustarm
-      double precision, dimension(ilo:ihi) :: wl,wr,wlsq,wrsq
-      double precision, dimension(ilo:ihi) :: cleft,cright
-      double precision, dimension(ilo:ihi) :: dpditer,zp,zm,denom
-      double precision, dimension(ilo:ihi) :: ustnm1,ustnp1
+      real(rt), dimension(ilo:ihi) :: pstnm1,ustarp,ustarm
+      real(rt), dimension(ilo:ihi) :: wl,wr,wlsq,wrsq
+      real(rt), dimension(ilo:ihi) :: cleft,cright
+      real(rt), dimension(ilo:ihi) :: dpditer,zp,zm,denom
+      real(rt), dimension(ilo:ihi) :: ustnm1,ustnp1
       integer          :: iter
 
-      double precision, parameter :: weakwv = 1.d-3
-      double precision, parameter :: small  = 1.d-6
+      real(rt), parameter :: weakwv = 1.d-3
+      real(rt), parameter :: small  = 1.d-6
 
       integer :: i
 

@@ -23,6 +23,7 @@
                                   lo,hi,nd,domlo,domhi, &
                                   delta,xlo,problo,time,level)
       use probdata_module
+      use amrex_fort_module, only : rt => amrex_real
       implicit none
 
       integer          :: set, clear, nd, level
@@ -30,18 +31,18 @@
       integer          :: varl1,varl2,varl3,varh1,varh2,varh3
       integer          :: lo(3), hi(3), domlo(3), domhi(3)
       integer          :: tag(tagl1:tagh1,tagl2:tagh2,tagl3:tagh3)
-      double precision :: var(varl1:varh1,varl2:varh2,varl3:varh3)
-      double precision :: delta(3), xlo(3), problo(3), time
+      real(rt) :: var(varl1:varh1,varl2:varh2,varl3:varh3)
+      real(rt) :: delta(3), xlo(3), problo(3), time
       integer          :: i,j,k
 
-      double precision ::  delu(lo(1)-1:hi(1)+1,lo(2)-1:hi(2)+1,lo(3)-1:hi(3)+1,3)
-      double precision :: delua(lo(1)-1:hi(1)+1,lo(2)-1:hi(2)+1,lo(3)-1:hi(3)+1,3)
-      double precision :: delu2(9), delu3(9), delu4(9)
-      double precision :: num, denom, error
+      real(rt) ::  delu(lo(1)-1:hi(1)+1,lo(2)-1:hi(2)+1,lo(3)-1:hi(3)+1,3)
+      real(rt) :: delua(lo(1)-1:hi(1)+1,lo(2)-1:hi(2)+1,lo(3)-1:hi(3)+1,3)
+      real(rt) :: delu2(9), delu3(9), delu4(9)
+      real(rt) :: num, denom, error
 
       ! This value is  taken from FLASH
-      double precision, parameter :: ctore=0.8
-      double precision, parameter:: epsil=0.02
+      real(rt), parameter :: ctore=0.8
+      real(rt), parameter:: epsil=0.02
 
       ! adapted from ref_marking.f90 in FLASH2.5
 
@@ -182,11 +183,11 @@
       integer          :: denl1,denl2,denl3,denh1,denh2,denh3
       integer          :: lo(3), hi(3), domlo(3), domhi(3)
       integer          :: tag(tagl1:tagh1,tagl2:tagh2,tagl3:tagh3)
-      double precision :: den(denl1:denh1,denl2:denh2,denl3:denh3,nd)
-      double precision :: delta(3), xlo(3), problo(3), time
+      real(rt) :: den(denl1:denh1,denl2:denh2,denl3:denh3,nd)
+      real(rt) :: delta(3), xlo(3), problo(3), time
 
       integer          :: i,j,k
-      double precision :: ax,ay,az
+      real(rt) :: ax,ay,az
 
 !     Tag on regions of high density
       if (level .lt. max_denerr_lev) then
@@ -257,12 +258,12 @@
       integer          :: templ1,templ2,templ3,temph1,temph2,temph3
       integer          :: lo(3), hi(3), domlo(3), domhi(3)
       integer          :: tag(tagl1:tagh1,tagl2:tagh2,tagl3:tagh3)
-      double precision :: temp(templ1:temph1,templ2:temph2, &
+      real(rt) :: temp(templ1:temph1,templ2:temph2, &
                             templ3:temph3,np)
-      double precision :: delta(3), xlo(3), problo(3), time
+      real(rt) :: delta(3), xlo(3), problo(3), time
 
       integer          :: i,j,k
-      double precision :: ax,ay,az
+      real(rt) :: ax,ay,az
 
 !     Tag on regions of high temperature
       if (level .lt. max_temperr_lev) then
@@ -332,12 +333,12 @@
       integer          :: pressl1,pressl2,pressl3,pressh1,pressh2,pressh3
       integer          :: lo(3), hi(3), domlo(3), domhi(3)
       integer          :: tag(tagl1:tagh1,tagl2:tagh2,tagl3:tagh3)
-      double precision :: press(pressl1:pressh1,pressl2:pressh2, &
+      real(rt) :: press(pressl1:pressh1,pressl2:pressh2, &
                                 pressl3:pressh3,np)
-      double precision :: delta(3), xlo(3), problo(3), time
+      real(rt) :: delta(3), xlo(3), problo(3), time
 
       integer          :: i,j,k
-      double precision :: ax,ay,az
+      real(rt) :: ax,ay,az
 
 !     Tag on regions of high pressure
       if (level .lt. max_presserr_lev) then
@@ -406,11 +407,11 @@
       integer          :: vell1,vell2,vell3,velh1,velh2,velh3
       integer          :: lo(3), hi(3), domlo(3), domhi(3)
       integer          :: tag(tagl1:tagh1,tagl2:tagh2,tagl3:tagh3)
-      double precision :: vel(vell1:velh1,vell2:velh2,vell3:velh3,nv)
-      double precision :: delta(3), xlo(3), problo(3), time
+      real(rt) :: vel(vell1:velh1,vell2:velh2,vell3:velh3,nv)
+      real(rt) :: delta(3), xlo(3), problo(3), time
 
       integer          :: i,j,k
-      double precision :: ax,ay,az
+      real(rt) :: ax,ay,az
 
 !     Tag on regions of high velocity gradient
       if (level .lt. max_velgrad_lev) then
@@ -465,11 +466,11 @@
       integer          :: denl1,denl2,denl3,denh1,denh2,denh3
       integer          :: lo(3), hi(3), domlo(3), domhi(3)
       integer          :: tag(tagl1:tagh1,tagl2:tagh2,tagl3:tagh3)
-      double precision :: den(denl1:denh1,denl2:denh2,denl3:denh3,nc)
-      double precision :: delta(3), avg_den
+      real(rt) :: den(denl1:denh1,denl2:denh2,denl3:denh3,nc)
+      real(rt) :: delta(3), avg_den
 
       integer          :: i,j,k
-      double precision :: over_den
+      real(rt) :: over_den
 
       over_den = 1.1d0 * avg_den
 
@@ -518,8 +519,8 @@
       integer          :: varl1,varl2,varl3,varh1,varh2,varh3
       integer          :: lo(3), hi(3), domlo(3), domhi(3)
       integer          :: tag(tagl1:tagh1,tagl2:tagh2,tagl3:tagh3)
-      double precision :: var(varl1:varh1,varl2:varh2,varl3:varh3,nd)
-      double precision :: delta(3), xlo(3), problo(3), time
+      real(rt) :: var(varl1:varh1,varl2:varh2,varl3:varh3,nd)
+      real(rt) :: delta(3), xlo(3), problo(3), time
 
       integer          :: ilo,jlo,klo,ihi,jhi,khi
       integer          :: i,j,k
@@ -566,7 +567,7 @@
       integer          :: tagl1,tagl2,tagl3,tagh1,tagh2,tagh3
       integer          :: lo(3), hi(3), domlo(3), domhi(3)
       integer          :: tag(tagl1:tagh1,tagl2:tagh2,tagl3:tagh3)
-      double precision :: delta(3), xlo(3), problo(3), time
+      real(rt) :: delta(3), xlo(3), problo(3), time
 
       integer          :: ilo,jlo,klo,ihi,jhi,khi
       integer          :: i,j,k

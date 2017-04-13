@@ -17,6 +17,7 @@
            flux3,flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3, &
            courno,a_old,a_new,e_added,ke_added,print_fortran_warnings,do_grav)
 
+      use amrex_fort_module, only : rt => amrex_real
       use mempool_module, only : bl_allocate, bl_deallocate
       use meth_params_module, only : QVAR, NVAR, NHYP, normalize_species
       use bl_constants_module
@@ -34,30 +35,30 @@
       integer flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3
       integer src_l1,src_l2,src_l3,src_h1,src_h2,src_h3
       integer gv_l1,gv_l2,gv_l3,gv_h1,gv_h2,gv_h3
-      double precision   uin(  uin_l1:uin_h1,    uin_l2:uin_h2,     uin_l3:uin_h3,  NVAR)
-      double precision  uout( uout_l1:uout_h1,  uout_l2:uout_h2,   uout_l3:uout_h3, NVAR)
-      double precision ugdnvx_out(ugdnvx_l1:ugdnvx_h1,ugdnvx_l2:ugdnvx_h2,ugdnvx_l3:ugdnvx_h3)
-      double precision ugdnvy_out(ugdnvy_l1:ugdnvy_h1,ugdnvy_l2:ugdnvy_h2,ugdnvy_l3:ugdnvy_h3)
-      double precision ugdnvz_out(ugdnvz_l1:ugdnvz_h1,ugdnvz_l2:ugdnvz_h2,ugdnvz_l3:ugdnvz_h3)
-      double precision   src(  src_l1:src_h1,    src_l2:src_h2,     src_l3:src_h3,  NVAR)
-      double precision  grav( gv_l1:gv_h1,  gv_l2:gv_h2,   gv_l3:gv_h3,    3)
-      double precision flux1(flux1_l1:flux1_h1,flux1_l2:flux1_h2, flux1_l3:flux1_h3,NVAR)
-      double precision flux2(flux2_l1:flux2_h1,flux2_l2:flux2_h2, flux2_l3:flux2_h3,NVAR)
-      double precision flux3(flux3_l1:flux3_h1,flux3_l2:flux3_h2, flux3_l3:flux3_h3,NVAR)
-      double precision delta(3),dt,time,courno
-      double precision a_old, a_new
-      double precision e_added,ke_added
+      real(rt)   uin(  uin_l1:uin_h1,    uin_l2:uin_h2,     uin_l3:uin_h3,  NVAR)
+      real(rt)  uout( uout_l1:uout_h1,  uout_l2:uout_h2,   uout_l3:uout_h3, NVAR)
+      real(rt) ugdnvx_out(ugdnvx_l1:ugdnvx_h1,ugdnvx_l2:ugdnvx_h2,ugdnvx_l3:ugdnvx_h3)
+      real(rt) ugdnvy_out(ugdnvy_l1:ugdnvy_h1,ugdnvy_l2:ugdnvy_h2,ugdnvy_l3:ugdnvy_h3)
+      real(rt) ugdnvz_out(ugdnvz_l1:ugdnvz_h1,ugdnvz_l2:ugdnvz_h2,ugdnvz_l3:ugdnvz_h3)
+      real(rt)   src(  src_l1:src_h1,    src_l2:src_h2,     src_l3:src_h3,  NVAR)
+      real(rt)  grav( gv_l1:gv_h1,  gv_l2:gv_h2,   gv_l3:gv_h3,    3)
+      real(rt) flux1(flux1_l1:flux1_h1,flux1_l2:flux1_h2, flux1_l3:flux1_h3,NVAR)
+      real(rt) flux2(flux2_l1:flux2_h1,flux2_l2:flux2_h2, flux2_l3:flux2_h3,NVAR)
+      real(rt) flux3(flux3_l1:flux3_h1,flux3_l2:flux3_h2, flux3_l3:flux3_h3,NVAR)
+      real(rt) delta(3),dt,time,courno
+      real(rt) a_old, a_new
+      real(rt) e_added,ke_added
 
       ! Automatic arrays for workspace
-      double precision, pointer :: q(:,:,:,:)
-      double precision, pointer :: flatn(:,:,:)
-      double precision, pointer :: c(:,:,:)
-      double precision, pointer :: csml(:,:,:)
-      double precision, pointer :: div(:,:,:)
-      double precision, pointer :: pdivu(:,:,:)
-      double precision, pointer :: srcQ(:,:,:,:)
+      real(rt), pointer :: q(:,:,:,:)
+      real(rt), pointer :: flatn(:,:,:)
+      real(rt), pointer :: c(:,:,:)
+      real(rt), pointer :: csml(:,:,:)
+      real(rt), pointer :: div(:,:,:)
+      real(rt), pointer :: pdivu(:,:,:)
+      real(rt), pointer :: srcQ(:,:,:,:)
 
-      double precision dx,dy,dz
+      real(rt) dx,dy,dz
       integer ngq,ngf
       integer q_l1, q_l2, q_l3, q_h1, q_h2, q_h3
       integer srcq_l1, srcq_l2, srcq_l3, srcq_h1, srcq_h2, srcq_h3
@@ -201,6 +202,7 @@
                          ugdnvz_h1,ugdnvz_h2,ugdnvz_h3, &
                          pdivu,a_old,a_new,print_fortran_warnings)
 
+      use amrex_fort_module, only : rt => amrex_real
       use mempool_module, only : bl_allocate, bl_deallocate
       use bl_constants_module
       use meth_params_module, only : QVAR, NVAR, QU, ppm_type, &
@@ -228,66 +230,66 @@
       integer print_fortran_warnings
       integer i,j
 
-      double precision     q(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision     c(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
-      double precision  csml(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
-      double precision flatn(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
-      double precision  srcQ(srcq_l1:srcq_h1,srcq_l2:srcq_h2,srcq_l3:srcq_h3,QVAR)
-      double precision flux1(fd1_l1:fd1_h1,fd1_l2:fd1_h2,fd1_l3:fd1_h3,NVAR)
-      double precision flux2(fd2_l1:fd2_h1,fd2_l2:fd2_h2,fd2_l3:fd2_h3,NVAR)
-      double precision flux3(fd3_l1:fd3_h1,fd3_l2:fd3_h2,fd3_l3:fd3_h3,NVAR)
-      double precision  grav( gv_l1:gv_h1,  gv_l2:gv_h2,   gv_l3:gv_h3,   3)
-      double precision ugdnvx_out(ugdnvx_l1:ugdnvx_h1,ugdnvx_l2:ugdnvx_h2,ugdnvx_l3:ugdnvx_h3)
-      double precision ugdnvy_out(ugdnvy_l1:ugdnvy_h1,ugdnvy_l2:ugdnvy_h2,ugdnvy_l3:ugdnvy_h3)
-      double precision ugdnvz_out(ugdnvz_l1:ugdnvz_h1,ugdnvz_l2:ugdnvz_h2,ugdnvz_l3:ugdnvz_h3)
-      double precision pdivu(ilo1:ihi1,ilo2:ihi2,ilo3:ihi3)
-      double precision dx, dy, dz, dt
-      double precision dtdx, dtdy, dtdz, hdt
-      double precision cdtdx, cdtdy, cdtdz
-      double precision hdtdx, hdtdy, hdtdz
-      double precision a_old,a_new,a_half
+      real(rt)     q(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt)     c(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
+      real(rt)  csml(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
+      real(rt) flatn(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
+      real(rt)  srcQ(srcq_l1:srcq_h1,srcq_l2:srcq_h2,srcq_l3:srcq_h3,QVAR)
+      real(rt) flux1(fd1_l1:fd1_h1,fd1_l2:fd1_h2,fd1_l3:fd1_h3,NVAR)
+      real(rt) flux2(fd2_l1:fd2_h1,fd2_l2:fd2_h2,fd2_l3:fd2_h3,NVAR)
+      real(rt) flux3(fd3_l1:fd3_h1,fd3_l2:fd3_h2,fd3_l3:fd3_h3,NVAR)
+      real(rt)  grav( gv_l1:gv_h1,  gv_l2:gv_h2,   gv_l3:gv_h3,   3)
+      real(rt) ugdnvx_out(ugdnvx_l1:ugdnvx_h1,ugdnvx_l2:ugdnvx_h2,ugdnvx_l3:ugdnvx_h3)
+      real(rt) ugdnvy_out(ugdnvy_l1:ugdnvy_h1,ugdnvy_l2:ugdnvy_h2,ugdnvy_l3:ugdnvy_h3)
+      real(rt) ugdnvz_out(ugdnvz_l1:ugdnvz_h1,ugdnvz_l2:ugdnvz_h2,ugdnvz_l3:ugdnvz_h3)
+      real(rt) pdivu(ilo1:ihi1,ilo2:ihi2,ilo3:ihi3)
+      real(rt) dx, dy, dz, dt
+      real(rt) dtdx, dtdy, dtdz, hdt
+      real(rt) cdtdx, cdtdy, cdtdz
+      real(rt) hdtdx, hdtdy, hdtdz
+      real(rt) a_old,a_new,a_half
 
       ! Left and right state arrays (edge centered, cell centered)
-      double precision, pointer:: dqx(:,:,:,:), dqy(:,:,:,:), dqz(:,:,:,:)
-      double precision, pointer::qxm(:,:,:,:),qym(:,:,:,:), qzm(:,:,:,:)
-      double precision, pointer::qxp(:,:,:,:),qyp(:,:,:,:), qzp(:,:,:,:)
+      real(rt), pointer:: dqx(:,:,:,:), dqy(:,:,:,:), dqz(:,:,:,:)
+      real(rt), pointer::qxm(:,:,:,:),qym(:,:,:,:), qzm(:,:,:,:)
+      real(rt), pointer::qxp(:,:,:,:),qyp(:,:,:,:), qzp(:,:,:,:)
 
-      double precision, pointer::qmxy(:,:,:,:),qpxy(:,:,:,:)
-      double precision, pointer::qmxz(:,:,:,:),qpxz(:,:,:,:)
+      real(rt), pointer::qmxy(:,:,:,:),qpxy(:,:,:,:)
+      real(rt), pointer::qmxz(:,:,:,:),qpxz(:,:,:,:)
 
-      double precision, pointer::qmyx(:,:,:,:),qpyx(:,:,:,:)
-      double precision, pointer::qmyz(:,:,:,:),qpyz(:,:,:,:)
+      real(rt), pointer::qmyx(:,:,:,:),qpyx(:,:,:,:)
+      real(rt), pointer::qmyz(:,:,:,:),qpyz(:,:,:,:)
 
-      double precision, pointer::qmzx(:,:,:,:),qpzx(:,:,:,:)
-      double precision, pointer::qmzy(:,:,:,:),qpzy(:,:,:,:)
+      real(rt), pointer::qmzx(:,:,:,:),qpzx(:,:,:,:)
+      real(rt), pointer::qmzy(:,:,:,:),qpzy(:,:,:,:)
 
-      double precision, pointer::qxl(:,:,:,:),qxr(:,:,:,:)
-      double precision, pointer::qyl(:,:,:,:),qyr(:,:,:,:)
-      double precision, pointer::qzl(:,:,:,:),qzr(:,:,:,:)
+      real(rt), pointer::qxl(:,:,:,:),qxr(:,:,:,:)
+      real(rt), pointer::qyl(:,:,:,:),qyr(:,:,:,:)
+      real(rt), pointer::qzl(:,:,:,:),qzr(:,:,:,:)
 
       ! Work arrays to hold 3 planes of riemann state and conservative fluxes
-      double precision, pointer::   fx(:,:,:,:),  fy(:,:,:,:), fz(:,:,:,:)
+      real(rt), pointer::   fx(:,:,:,:),  fy(:,:,:,:), fz(:,:,:,:)
 
-      double precision, pointer::fxy(:,:,:,:),fxz(:,:,:,:)
-      double precision, pointer::fyx(:,:,:,:),fyz(:,:,:,:)
-      double precision, pointer::fzx(:,:,:,:),fzy(:,:,:,:)
+      real(rt), pointer::fxy(:,:,:,:),fxz(:,:,:,:)
+      real(rt), pointer::fyx(:,:,:,:),fyz(:,:,:,:)
+      real(rt), pointer::fzx(:,:,:,:),fzy(:,:,:,:)
 
-      double precision, pointer:: pgdnvx(:,:,:), ugdnvx(:,:,:)
-      double precision, pointer:: pgdnvxf(:,:,:), ugdnvxf(:,:,:)
-      double precision, pointer:: pgdnvtmpx(:,:,:), ugdnvtmpx(:,:,:)
+      real(rt), pointer:: pgdnvx(:,:,:), ugdnvx(:,:,:)
+      real(rt), pointer:: pgdnvxf(:,:,:), ugdnvxf(:,:,:)
+      real(rt), pointer:: pgdnvtmpx(:,:,:), ugdnvtmpx(:,:,:)
 
-      double precision, pointer:: pgdnvy(:,:,:), ugdnvy(:,:,:)
-      double precision, pointer:: pgdnvyf(:,:,:), ugdnvyf(:,:,:)
-      double precision, pointer:: pgdnvtmpy(:,:,:), ugdnvtmpy(:,:,:)
+      real(rt), pointer:: pgdnvy(:,:,:), ugdnvy(:,:,:)
+      real(rt), pointer:: pgdnvyf(:,:,:), ugdnvyf(:,:,:)
+      real(rt), pointer:: pgdnvtmpy(:,:,:), ugdnvtmpy(:,:,:)
 
-      double precision, pointer:: pgdnvz(:,:,:), ugdnvz(:,:,:)
-      double precision, pointer:: pgdnvtmpz1(:,:,:), ugdnvtmpz1(:,:,:)
-      double precision, pointer:: pgdnvtmpz2(:,:,:), ugdnvtmpz2(:,:,:)
+      real(rt), pointer:: pgdnvz(:,:,:), ugdnvz(:,:,:)
+      real(rt), pointer:: pgdnvtmpz1(:,:,:), ugdnvtmpz1(:,:,:)
+      real(rt), pointer:: pgdnvtmpz2(:,:,:), ugdnvtmpz2(:,:,:)
 
-      double precision, pointer:: pgdnvzf(:,:,:), ugdnvzf(:,:,:)
+      real(rt), pointer:: pgdnvzf(:,:,:), ugdnvzf(:,:,:)
 
-      double precision, pointer:: Ip(:,:,:,:,:,:), Im(:,:,:,:,:,:)
-      double precision, pointer:: Ip_g(:,:,:,:,:,:), Im_g(:,:,:,:,:,:)
+      real(rt), pointer:: Ip(:,:,:,:,:,:), Im(:,:,:,:,:,:)
+      real(rt), pointer:: Ip_g(:,:,:,:,:,:), Im_g(:,:,:,:,:,:)
 
       integer :: dnv_lo(3), dnv_hi(3)
       integer :: q_lo(3), q_hi(3)
@@ -875,6 +877,7 @@
       !     Also, uflaten call assumes ngp>=ngf+3 (ie, primitve data is used by the
       !     routine that computes flatn).
       !
+      use amrex_fort_module, only : rt => amrex_real
       use network, only : nspec, naux
       use eos_params_module
       use eos_module
@@ -889,7 +892,7 @@
 
       implicit none
 
-      double precision, parameter:: small = 1.d-8
+      real(rt), parameter:: small = 1.d-8
 
       integer lo(3), hi(3)
       integer  uin_l1, uin_l2, uin_l3, uin_h1, uin_h2, uin_h3
@@ -898,24 +901,24 @@
       integer  src_l1, src_l2, src_l3, src_h1, src_h2, src_h3
       integer srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3
 
-      double precision :: uin(uin_l1:uin_h1,uin_l2:uin_h2,uin_l3:uin_h3,NVAR)
-      double precision ::     q(q_l1:q_h1,q_l2:q_h2,q_l3:q_h3,QVAR)
-      double precision ::     c(q_l1:q_h1,q_l2:q_h2,q_l3:q_h3)
-      double precision ::  csml(q_l1:q_h1,q_l2:q_h2,q_l3:q_h3)
-      double precision :: flatn(q_l1:q_h1,q_l2:q_h2,q_l3:q_h3)
-      double precision ::   src( src_l1: src_h1, src_l2: src_h2, src_l3: src_h3,NVAR)
-      double precision ::  srcQ(srcq_l1:srcq_h1,srcq_l2:srcq_h2,srcq_l3:srcq_h3,QVAR)
-      double precision :: grav( gv_l1: gv_h1, gv_l2: gv_h2, gv_l3: gv_h3,3)
-      double precision :: dx, dy, dz, dt, courno, a_old, a_new
-      double precision :: dpdr, dpde
+      real(rt) :: uin(uin_l1:uin_h1,uin_l2:uin_h2,uin_l3:uin_h3,NVAR)
+      real(rt) ::     q(q_l1:q_h1,q_l2:q_h2,q_l3:q_h3,QVAR)
+      real(rt) ::     c(q_l1:q_h1,q_l2:q_h2,q_l3:q_h3)
+      real(rt) ::  csml(q_l1:q_h1,q_l2:q_h2,q_l3:q_h3)
+      real(rt) :: flatn(q_l1:q_h1,q_l2:q_h2,q_l3:q_h3)
+      real(rt) ::   src( src_l1: src_h1, src_l2: src_h2, src_l3: src_h3,NVAR)
+      real(rt) ::  srcQ(srcq_l1:srcq_h1,srcq_l2:srcq_h2,srcq_l3:srcq_h3,QVAR)
+      real(rt) :: grav( gv_l1: gv_h1, gv_l2: gv_h2, gv_l3: gv_h3,3)
+      real(rt) :: dx, dy, dz, dt, courno, a_old, a_new
+      real(rt) :: dpdr, dpde
 
       integer          :: i, j, k
       integer          :: ngp, ngf, loq(3), hiq(3)
       integer          :: n, nq
       integer          :: iadv, ispec
-      double precision :: courx, coury, courz, courmx, courmy, courmz
-      double precision :: a_half, a_dot, rhoInv
-      double precision :: dtdxaold, dtdyaold, dtdzaold, small_pres_over_dens
+      real(rt) :: courx, coury, courz, courmx, courmy, courmz
+      real(rt) :: a_half, a_dot, rhoInv
+      real(rt) :: dtdxaold, dtdyaold, dtdzaold, small_pres_over_dens
 
       do i=1,3
          loq(i) = lo(i)-ngp
@@ -1162,6 +1165,7 @@
                       flux3,flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3, &
                       div,pdivu,lo,hi,dx,dy,dz,dt,a_old,a_new)
 
+      use amrex_fort_module, only : rt => amrex_real
       use bl_constants_module
       use meth_params_module, only : difmag, NVAR, URHO, UMX, UMZ, &
            UEDEN, UEINT, UFS, normalize_species, gamma_minus_1
@@ -1176,21 +1180,21 @@
       integer flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3
       integer flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3
 
-      double precision uin(uin_l1:uin_h1,uin_l2:uin_h2,uin_l3:uin_h3,NVAR)
-      double precision uout(uout_l1:uout_h1,uout_l2:uout_h2,uout_l3:uout_h3,NVAR)
-      double precision   src(src_l1:src_h1,src_l2:src_h2,src_l3:src_h3,NVAR)
-      double precision flux1(flux1_l1:flux1_h1,flux1_l2:flux1_h2,flux1_l3:flux1_h3,NVAR)
-      double precision flux2(flux2_l1:flux2_h1,flux2_l2:flux2_h2,flux2_l3:flux2_h3,NVAR)
-      double precision flux3(flux3_l1:flux3_h1,flux3_l2:flux3_h2,flux3_l3:flux3_h3,NVAR)
-      double precision div(lo(1):hi(1)+1,lo(2):hi(2)+1,lo(3):hi(3)+1)
-      double precision pdivu(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))
-      double precision dx, dy, dz, dt
-      double precision a_old, a_new
+      real(rt) uin(uin_l1:uin_h1,uin_l2:uin_h2,uin_l3:uin_h3,NVAR)
+      real(rt) uout(uout_l1:uout_h1,uout_l2:uout_h2,uout_l3:uout_h3,NVAR)
+      real(rt)   src(src_l1:src_h1,src_l2:src_h2,src_l3:src_h3,NVAR)
+      real(rt) flux1(flux1_l1:flux1_h1,flux1_l2:flux1_h2,flux1_l3:flux1_h3,NVAR)
+      real(rt) flux2(flux2_l1:flux2_h1,flux2_l2:flux2_h2,flux2_l3:flux2_h3,NVAR)
+      real(rt) flux3(flux3_l1:flux3_h1,flux3_l2:flux3_h2,flux3_l3:flux3_h3,NVAR)
+      real(rt) div(lo(1):hi(1)+1,lo(2):hi(2)+1,lo(3):hi(3)+1)
+      real(rt) pdivu(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))
+      real(rt) dx, dy, dz, dt
+      real(rt) a_old, a_new
 
-      double precision :: div1, a_half, a_oldsq, a_newsq
-      double precision :: area1, area2, area3
-      double precision :: vol, volinv, a_newsq_inv
-      double precision :: a_half_inv, a_new_inv, dt_a_new
+      real(rt) :: div1, a_half, a_oldsq, a_newsq
+      real(rt) :: area1, area2, area3
+      real(rt) :: vol, volinv, a_newsq_inv
+      real(rt) :: a_half_inv, a_new_inv, dt_a_new
       integer          :: i, j, k, n
 
       a_half  = HALF * (a_old + a_new)
@@ -1355,6 +1359,7 @@
                         csml,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                         idir,ilo,ihi,jlo,jhi,kc,kflux,k3d,print_fortran_warnings)
 
+      use amrex_fort_module, only : rt => amrex_real
       use mempool_module, only : bl_allocate, bl_deallocate
       use bl_constants_module
       use meth_params_module, only : QVAR, NVAR
@@ -1369,15 +1374,15 @@
       integer i,j,kc,kflux,k3d
       integer print_fortran_warnings
 
-      double precision qm(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
-      double precision qp(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
-      double precision flx(flx_l1:flx_h1,flx_l2:flx_h2,flx_l3:flx_h3,NVAR)
-      double precision ugdnv(pg_l1:pg_h1,pg_l2:pg_h2,pg_l3:pg_h3)
-      double precision pgdnv(pg_l1:pg_h1,pg_l2:pg_h2,pg_l3:pg_h3)
-      double precision csml(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
-      double precision    c(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
+      real(rt) qm(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
+      real(rt) qp(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
+      real(rt) flx(flx_l1:flx_h1,flx_l2:flx_h2,flx_l3:flx_h3,NVAR)
+      real(rt) ugdnv(pg_l1:pg_h1,pg_l2:pg_h2,pg_l3:pg_h3)
+      real(rt) pgdnv(pg_l1:pg_h1,pg_l2:pg_h2,pg_l3:pg_h3)
+      real(rt) csml(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
+      real(rt)    c(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
 
-      double precision, pointer :: smallc(:,:),cavg(:,:)
+      real(rt), pointer :: smallc(:,:),cavg(:,:)
 
       integer :: c_lo(2), c_hi(2)
 
@@ -1432,6 +1437,7 @@
                            ugdnv,pgdnv,pg_l1,pg_l2,pg_l3,pg_h1,pg_h2,pg_h3, &
                            idir,ilo,ihi,jlo,jhi,kc,kflux,k3d,print_fortran_warnings)
 
+      use amrex_fort_module, only : rt => amrex_real
       use network, only : nspec, naux
       use bl_constants_module
       use prob_params_module, only : physbc_lo, Symmetry
@@ -1441,7 +1447,7 @@
       use analriem_module
 
       implicit none
-      double precision, parameter:: small = 1.d-8
+      real(rt), parameter:: small = 1.d-8
       integer qpd_l1,qpd_l2,qpd_l3,qpd_h1,qpd_h2,qpd_h3
       integer gd_l1,gd_l2,gd_h1,gd_h2
       integer uflx_l1,uflx_l2,uflx_l3,uflx_h1,uflx_h2,uflx_h3
@@ -1450,26 +1456,26 @@
       integer i,j,kc,kflux,k3d
       integer print_fortran_warnings
 
-      double precision ql(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
-      double precision qr(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
-      double precision    cav(gd_l1:gd_h1,gd_l2:gd_h2)
-      double precision smallc(gd_l1:gd_h1,gd_l2:gd_h2)
-      double precision uflx(uflx_l1:uflx_h1,uflx_l2:uflx_h2,uflx_l3:uflx_h3,NVAR)
-      double precision ugdnv(pg_l1:pg_h1,pg_l2:pg_h2,pg_l3:pg_h3)
-      double precision pgdnv(pg_l1:pg_h1,pg_l2:pg_h2,pg_l3:pg_h3)
+      real(rt) ql(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
+      real(rt) qr(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
+      real(rt)    cav(gd_l1:gd_h1,gd_l2:gd_h2)
+      real(rt) smallc(gd_l1:gd_h1,gd_l2:gd_h2)
+      real(rt) uflx(uflx_l1:uflx_h1,uflx_l2:uflx_h2,uflx_l3:uflx_h3,NVAR)
+      real(rt) ugdnv(pg_l1:pg_h1,pg_l2:pg_h2,pg_l3:pg_h3)
+      real(rt) pgdnv(pg_l1:pg_h1,pg_l2:pg_h2,pg_l3:pg_h3)
 
       integer n, nq
       integer iadv, ispec
 
-      double precision, dimension(ilo:ihi) :: rgdnv,v1gdnv,v2gdnv,regdnv,ustar
-      double precision, dimension(ilo:ihi) :: rl, ul, v1l, v2l, pl, rel
-      double precision, dimension(ilo:ihi) :: rr, ur, v1r, v2r, pr, rer
-!     double precision, dimension(ilo:ihi) :: wl, wr
-      double precision, dimension(ilo:ihi) :: rhoetot, scr
-      double precision, dimension(ilo:ihi) :: rstar, cstar, estar, pstar
-      double precision, dimension(ilo:ihi) :: ro, uo, po, reo, co, entho
-      double precision, dimension(ilo:ihi) :: sgnm, spin, spout, ushock, frac
-      double precision, dimension(ilo:ihi) :: wsmall, csmall,qavg
+      real(rt), dimension(ilo:ihi) :: rgdnv,v1gdnv,v2gdnv,regdnv,ustar
+      real(rt), dimension(ilo:ihi) :: rl, ul, v1l, v2l, pl, rel
+      real(rt), dimension(ilo:ihi) :: rr, ur, v1r, v2r, pr, rer
+!     real(rt), dimension(ilo:ihi) :: wl, wr
+      real(rt), dimension(ilo:ihi) :: rhoetot, scr
+      real(rt), dimension(ilo:ihi) :: rstar, cstar, estar, pstar
+      real(rt), dimension(ilo:ihi) :: ro, uo, po, reo, co, entho
+      real(rt), dimension(ilo:ihi) :: sgnm, spin, spout, ushock, frac
+      real(rt), dimension(ilo:ihi) :: wsmall, csmall,qavg
 
       do j = jlo, jhi
 
@@ -1822,6 +1828,7 @@
       subroutine divu(lo,hi,q,q_l1,q_l2,q_l3,q_h1,q_h2,q_h3,dx,dy,dz, &
                       div,div_l1,div_l2,div_l3,div_h1,div_h2,div_h3)
 
+      use amrex_fort_module, only : rt => amrex_real
       use bl_constants_module
       use meth_params_module, only : QU, QV, QW
 
@@ -1830,12 +1837,12 @@
       integer          :: lo(3),hi(3)
       integer          :: q_l1,q_l2,q_l3,q_h1,q_h2,q_h3
       integer          :: div_l1,div_l2,div_l3,div_h1,div_h2,div_h3
-      double precision :: dx, dy, dz
-      double precision :: div(div_l1:div_h1,div_l2:div_h2,div_l3:div_h3)
-      double precision :: q(q_l1:q_h1,q_l2:q_h2,q_l3:q_h3,*)
+      real(rt) :: dx, dy, dz
+      real(rt) :: div(div_l1:div_h1,div_l2:div_h2,div_l3:div_h3)
+      real(rt) :: q(q_l1:q_h1,q_l2:q_h2,q_l3:q_h3,*)
 
       integer          :: i, j, k
-      double precision :: ux, vy, wz, dxinv, dyinv, dzinv
+      real(rt) :: ux, vy, wz, dxinv, dyinv, dzinv
 
       dxinv = ONE/dx
       dyinv = ONE/dy

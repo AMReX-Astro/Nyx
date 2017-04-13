@@ -6,7 +6,8 @@ module agn_random
 
 !==============================================================================
 
-implicit none
+    use amrex_fort_module, only : rt => amrex_real
+    implicit none
 
 contains
 
@@ -35,9 +36,9 @@ end subroutine init_random_seed
 
 ! random_unif: Return uniform random deviate in [0, 1).
 
-real function random_unif()
+real(rt) function random_unif()
 
-real :: x
+real(rt) :: x
 
 call random_number(x)
 

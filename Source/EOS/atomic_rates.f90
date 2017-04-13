@@ -15,43 +15,45 @@
 
 module atomic_rates_module
 
+  use amrex_fort_module, only : rt => amrex_real
+
   implicit none
 
   ! Routine which acts like a class constructor
   public  :: tabulate_rates, interp_to_this_z
 
   ! Photo- rates (from file)
-  integer         , parameter, private :: NCOOLFILE=301
-  double precision, dimension(NCOOLFILE), public :: lzr
-  double precision, dimension(NCOOLFILE), public :: rggh0, rgghe0, rgghep
-  double precision, dimension(NCOOLFILE), public :: reh0, rehe0, rehep
+  integer   , parameter          , private :: NCOOLFILE=301
+  real(rt), dimension(NCOOLFILE), public :: lzr
+  real(rt), dimension(NCOOLFILE), public :: rggh0, rgghe0, rgghep
+  real(rt), dimension(NCOOLFILE), public :: reh0, rehe0, rehep
 
   ! Other rates (from equations)
   integer, parameter, public :: NCOOLTAB=2000
-  double precision, dimension(NCOOLTAB+1), public :: AlphaHp, AlphaHep, AlphaHepp, Alphad
-  double precision, dimension(NCOOLTAB+1), public :: GammaeH0, GammaeHe0, GammaeHep
-  double precision, dimension(NCOOLTAB+1), public :: BetaH0, BetaHe0, BetaHep, Betaff1, Betaff4
-  double precision, dimension(NCOOLTAB+1), public :: RecHp, RecHep, RecHepp
+  real(rt), dimension(NCOOLTAB+1), public :: AlphaHp, AlphaHep, AlphaHepp, Alphad
+  real(rt), dimension(NCOOLTAB+1), public :: GammaeH0, GammaeHe0, GammaeHep
+  real(rt), dimension(NCOOLTAB+1), public :: BetaH0, BetaHe0, BetaHep, Betaff1, Betaff4
+  real(rt), dimension(NCOOLTAB+1), public :: RecHp, RecHep, RecHepp
 
-  double precision, public, save :: this_z, ggh0, gghe0, gghep, eh0, ehe0, ehep
+  real(rt), public, save :: this_z, ggh0, gghe0, gghep, eh0, ehe0, ehep
  
-  double precision, parameter, public :: TCOOLMIN = 0.0d0, TCOOLMAX = 9.0d0  ! in log10
-  double precision, parameter, public :: deltaT = (TCOOLMAX - TCOOLMIN)/NCOOLTAB
+  real(rt), parameter, public :: TCOOLMIN = 0.0d0, TCOOLMAX = 9.0d0  ! in log10
+  real(rt), parameter, public :: deltaT = (TCOOLMAX - TCOOLMIN)/NCOOLTAB
 
-  double precision, parameter, public :: MPROTON = 1.6726231d-24, BOLTZMANN = 1.3806e-16
+  real(rt), parameter, public :: MPROTON = 1.6726231d-24, BOLTZMANN = 1.3806e-16
 
   ! Note that XHYDROGEN can be set by a call to set_xhydrogen which now
   ! lives in set_method_params.
-  double precision, public :: XHYDROGEN = 0.76d0
-  double precision, public :: YHELIUM   = 7.8947368421d-2  ! (1.0d0-XHYDROGEN)/(4.0d0*XHYDROGEN)
+  real(rt), public :: XHYDROGEN = 0.76d0
+  real(rt), public :: YHELIUM   = 7.8947368421d-2  ! (1.0d0-XHYDROGEN)/(4.0d0*XHYDROGEN)
 
   contains
 
       subroutine tabulate_rates()
       integer :: i
       logical, parameter :: Katz96=.false.
-      double precision, parameter :: t3=1.0d3, t5=1.0d5, t6=1.0d6
-      double precision :: t, U, E, y, sqrt_t, corr_term
+      real(rt), parameter :: t3=1.0d3, t5=1.0d5, t6=1.0d6
+      real(rt) :: t, U, E, y, sqrt_t, corr_term
       logical, save :: first=.true.
 
       !$OMP CRITICAL(TREECOOL_READ)
@@ -183,8 +185,8 @@ module atomic_rates_module
 
       subroutine interp_to_this_z(z)
 
-      double precision, intent(in) :: z
-      double precision :: lopz, fact
+      real(rt), intent(in) :: z
+      real(rt) :: lopz, fact
       integer :: i, j
 
       this_z = z
@@ -233,8 +235,8 @@ subroutine init_this_z(comoving_a)
 
 use atomic_rates_module
 
-double precision, intent(in   ) :: comoving_a
-double precision                :: z
+    real(rt), intent(in   ) :: comoving_a
+    real(rt)                :: z
 
     z = 1.d0/comoving_a - 1.d0
     call interp_to_this_z(z)

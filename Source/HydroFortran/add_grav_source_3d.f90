@@ -10,6 +10,7 @@
                                grav, gv_l1, gv_l2, gv_l3, gv_h1, gv_h2, gv_h3, &
                                lo,hi,dx,dy,dz,dt,a_old,a_new,e_added,ke_added)
 
+      use amrex_fort_module, only : rt => amrex_real
       use eos_module
       use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, &
            UEDEN, grav_source_type
@@ -21,18 +22,18 @@
       integer  uout_l1, uout_l2, uout_l3, uout_h1, uout_h2, uout_h3
       integer  gv_l1, gv_l2, gv_l3, gv_h1, gv_h2, gv_h3
 
-      double precision  uin( uin_l1: uin_h1, uin_l2: uin_h2, uin_l3: uin_h3,NVAR)
-      double precision uout(uout_l1:uout_h1,uout_l2:uout_h2,uout_l3:uout_h3,NVAR)
-      double precision grav(  gv_l1:  gv_h1,  gv_l2:  gv_h2,  gv_l3:  gv_h3,3)
-      double precision dx, dy, dz, dt
-      double precision a_old, a_new
-      double precision e_added,ke_added
+      real(rt)  uin( uin_l1: uin_h1, uin_l2: uin_h2, uin_l3: uin_h3,NVAR)
+      real(rt) uout(uout_l1:uout_h1,uout_l2:uout_h2,uout_l3:uout_h3,NVAR)
+      real(rt) grav(  gv_l1:  gv_h1,  gv_l2:  gv_h2,  gv_l3:  gv_h3,3)
+      real(rt) dx, dy, dz, dt
+      real(rt) a_old, a_new
+      real(rt) e_added,ke_added
 
-      double precision :: a_half, a_oldsq, a_newsq, a_newsq_inv
-      double precision :: rho
-      double precision :: SrU, SrV, SrW, SrE
-      double precision :: rhoInv, dt_a_new
-      double precision :: old_rhoeint, new_rhoeint, old_ke, new_ke
+      real(rt) :: a_half, a_oldsq, a_newsq, a_newsq_inv
+      real(rt) :: rho
+      real(rt) :: SrU, SrV, SrW, SrE
+      real(rt) :: rhoInv, dt_a_new
+      real(rt) :: old_rhoeint, new_rhoeint, old_ke, new_ke
       integer          :: i, j, k
 
       a_half  = 0.5d0 * (a_old + a_new)

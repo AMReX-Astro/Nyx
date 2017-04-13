@@ -9,7 +9,8 @@ module agn_mesh
 use agn_geometry
 use agn_params
 
-implicit none
+    use amrex_fort_module, only : rt => amrex_real
+    implicit none
 
 public
 
@@ -17,9 +18,9 @@ public
 
 type agn_mesh_data
   integer                       :: Nx, Ny, Nz          ! # of zones in each coordinate
-  double precision, allocatable :: x(:), y(:), z(:)    ! zone center arrays
-  double precision, allocatable :: dx(:), dy(:), dz(:) ! zone spacing arrays
-  double precision              :: xmin, xmax, ymin, ymax, zmin, zmax
+  real(rt), allocatable :: x(:), y(:), z(:)    ! zone center arrays
+  real(rt), allocatable :: dx(:), dy(:), dz(:) ! zone spacing arrays
+  real(rt)              :: xmin, xmax, ymin, ymax, zmin, zmax
                                            ! min, max values for each coord.
 end type agn_mesh_data
 
@@ -36,16 +37,16 @@ contains
 !            x, y, z               Coordinates of sphere center
 !            R                     Radius of sphere
 
-double precision function average_over_sphere(A, A_l1, A_l2, A_l3, A_h1, A_h2, A_h3, &
+real(rt) function average_over_sphere(A, A_l1, A_l2, A_l3, A_h1, A_h2, A_h3, &
                                               x, y, z, R, dx)
 
 integer         , intent(in) :: A_l1, A_l2, A_l3, A_h1, A_h2, A_h3
-double precision, intent(in) :: A(A_l1:,A_l2:,A_l3:)
-double precision, intent(in) :: x, y, z, R
-double precision, intent(in) :: dx(:)
+real(rt), intent(in) :: A(A_l1:,A_l2:,A_l3:)
+real(rt), intent(in) :: x, y, z, R
+real(rt), intent(in) :: dx(:)
 
 integer             :: i, j, k, Nr, Nmu, Nphi, is, js, ks
-double precision    :: d_zone, rs, mus, phis, xs, ys, zs, Asum, dr, dmu, dphi, &
+real(rt)    :: d_zone, rs, mus, phis, xs, ys, zs, Asum, dr, dmu, dphi, &
                        sint, sinp, cosp
 
 Asum = 0.
@@ -117,18 +118,18 @@ subroutine map_sphere_onto_mesh(x, y, z, R, norm, &
                                 A, A_l1, A_l2, A_l3, A_h1, A_h2, A_h3, &
                                 dx)
 
-double precision, intent(in   ) :: x, y, z, R, norm
-double precision, intent(in   ) :: dx(:)
+real(rt), intent(in   ) :: x, y, z, R, norm
+real(rt), intent(in   ) :: dx(:)
 
 integer         , intent(in   ) :: A_l1, A_l2, A_l3, A_h1, A_h2, A_h3
-double precision, intent(inout) :: A(A_l1:,A_l2:,A_l3:) 
+real(rt), intent(inout) :: A(A_l1:,A_l2:,A_l3:) 
 
-double precision                :: vol_sphere
+real(rt)                :: vol_sphere
 
 integer, parameter  :: Nsub = 3
 integer             :: i, j, k, ii, jj, kk, region
-double precision    :: Aavg, f, xx, yy, zz, dxx, dyy, dzz
-double precision    :: xgl, ygl, zgl, xgr, ygr, zgr
+real(rt)    :: Aavg, f, xx, yy, zz, dxx, dyy, dzz
+real(rt)    :: xgl, ygl, zgl, xgr, ygr, zgr
 
 vol_sphere = 4.d0/3.d0*pi*R**3
 Aavg = norm / vol_sphere
@@ -194,19 +195,19 @@ subroutine map_cylinder_onto_mesh(x, y, z, R, height, nxc, nyc, nzc, norm, &
                                   A, A_l1, A_l2, A_l3, A_h1, A_h2, A_h3, &
                                   weight, wparams, dx)
 
-double precision   , intent(in   ) :: x, y, z, norm
-double precision   , intent(in   ) :: R, height, nxc, nyc, nzc
-double precision   , intent(in   ) :: wparams(:)
+real(rt)   , intent(in   ) :: x, y, z, norm
+real(rt)   , intent(in   ) :: R, height, nxc, nyc, nzc
+real(rt)   , intent(in   ) :: wparams(:)
 integer            , intent(in   ) :: A_l1, A_l2, A_l3, A_h1, A_h2, A_h3
-double precision   , intent(inout) :: A(A_l1:,A_l2:,A_l3:) 
+real(rt)   , intent(inout) :: A(A_l1:,A_l2:,A_l3:) 
 
-double precision                   :: weight, vol_cylinder
-double precision                   :: dx(:)
+real(rt)                   :: weight, vol_cylinder
+real(rt)                   :: dx(:)
 
 integer, parameter  :: Nsub = 3
 integer             :: i, j, k, ii, jj, kk, region
-double precision    :: Aavg, f, xx, yy, zz, dxx, dyy, dzz
-double precision    :: xgl, ygl, zgl, xgr, ygr, zgr
+real(rt)    :: Aavg, f, xx, yy, zz, dxx, dyy, dzz
+real(rt)    :: xgl, ygl, zgl, xgr, ygr, zgr
 
 vol_cylinder = pi * R**2 * height
 Aavg = norm / vol_cylinder

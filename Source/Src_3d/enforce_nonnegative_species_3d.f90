@@ -9,6 +9,7 @@
                                              uout_h1,uout_h2,uout_h3, &
                                              lo,hi,print_fortran_warnings)
 
+      use amrex_fort_module, only : rt => amrex_real
       use network, only : nspec
       use meth_params_module, only : NVAR, URHO, UFS
 
@@ -17,15 +18,15 @@
       integer          :: lo(3), hi(3)
       integer          :: uout_l1, uout_l2, uout_l3, uout_h1, uout_h2, uout_h3
       integer          :: print_fortran_warnings
-      double precision :: uout(uout_l1:uout_h1,uout_l2:uout_h2,uout_l3:uout_h3,NVAR)
+      real(rt) :: uout(uout_l1:uout_h1,uout_l2:uout_h2,uout_l3:uout_h3,NVAR)
 
       ! Local variables
       integer          :: i,j,k,n
       integer          :: int_dom_spec
       logical          :: any_negative
-      double precision :: dom_spec,x
+      real(rt) :: dom_spec,x
 
-      double precision, parameter :: eps = -1.0d-16
+      real(rt), parameter :: eps = -1.0d-16
 
       if (UFS .gt. 0) then
 

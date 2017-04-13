@@ -1,5 +1,6 @@
 module transverse_module
  
+  use amrex_fort_module, only : rt => amrex_real
   use bl_constants_module
  
   implicit none
@@ -32,36 +33,36 @@ contains
       integer pgdx_l1,pgdx_l2,pgdx_l3,pgdx_h1,pgdx_h2,pgdx_h3
       integer ilo,ihi,jlo,jhi,kc,k3d
 
-      double precision  qym(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision  qyp(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision qymo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision qypo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision fx(fx_l1:fx_h1,fx_l2:fx_h2,fx_l3:fx_h3,NVAR)
-      double precision ugdnvx(pgdx_l1:pgdx_h1,pgdx_l2:pgdx_h2,pgdx_l3:pgdx_h3)
-      double precision pgdnvx(pgdx_l1:pgdx_h1,pgdx_l2:pgdx_h2,pgdx_l3:pgdx_h3)
+      real(rt)  qym(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt)  qyp(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt) qymo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt) qypo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt) fx(fx_l1:fx_h1,fx_l2:fx_h2,fx_l3:fx_h3,NVAR)
+      real(rt) ugdnvx(pgdx_l1:pgdx_h1,pgdx_l2:pgdx_h2,pgdx_l3:pgdx_h3)
+      real(rt) pgdnvx(pgdx_l1:pgdx_h1,pgdx_l2:pgdx_h2,pgdx_l3:pgdx_h3)
 
       ! Note that cdtdx = dtdx/3.d0/a_half
-      double precision cdtdx
+      real(rt) cdtdx
 
       integer i, j
       integer n, nq
 
-      double precision rrnew, rr
-      double precision rrry, rrly
-      double precision rury, ruly
-      double precision rvry, rvly
-      double precision rwry, rwly
-      double precision ekenry, ekenly
-      double precision pnewry, pnewly
-      double precision rery, rely
-      double precision rrnewry, rrnewly
-      double precision runewry, runewly
-      double precision rvnewry, rvnewly
-      double precision rwnewry, rwnewly
-      double precision renewry, renewly
-      double precision rhoekenry, rhoekenly
-      double precision compn, compu
-      double precision pgp, pgm, ugp, ugm, dup, pav, du
+      real(rt) rrnew, rr
+      real(rt) rrry, rrly
+      real(rt) rury, ruly
+      real(rt) rvry, rvly
+      real(rt) rwry, rwly
+      real(rt) ekenry, ekenly
+      real(rt) pnewry, pnewly
+      real(rt) rery, rely
+      real(rt) rrnewry, rrnewly
+      real(rt) runewry, runewly
+      real(rt) rvnewry, rvnewly
+      real(rt) rwnewry, rwnewly
+      real(rt) renewry, renewly
+      real(rt) rhoekenry, rhoekenly
+      real(rt) compn, compu
+      real(rt) pgp, pgm, ugp, ugm, dup, pav, du
 
       integer          :: ipassive
 
@@ -219,36 +220,36 @@ contains
       integer pgdx_l1,pgdx_l2,pgdx_l3,pgdx_h1,pgdx_h2,pgdx_h3
       integer ilo,ihi,jlo,jhi,kc,km,k3d
 
-      double precision  qzm(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision  qzp(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision qzmo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision qzpo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision fx(fx_l1:fx_h1,fx_l2:fx_h2,fx_l3:fx_h3,NVAR)
-      double precision ugdnvx(pgdx_l1:pgdx_h1,pgdx_l2:pgdx_h2,pgdx_l3:pgdx_h3)
-      double precision pgdnvx(pgdx_l1:pgdx_h1,pgdx_l2:pgdx_h2,pgdx_l3:pgdx_h3)
+      real(rt)  qzm(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt)  qzp(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt) qzmo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt) qzpo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt) fx(fx_l1:fx_h1,fx_l2:fx_h2,fx_l3:fx_h3,NVAR)
+      real(rt) ugdnvx(pgdx_l1:pgdx_h1,pgdx_l2:pgdx_h2,pgdx_l3:pgdx_h3)
+      real(rt) pgdnvx(pgdx_l1:pgdx_h1,pgdx_l2:pgdx_h2,pgdx_l3:pgdx_h3)
 
       ! Note that cdtdx = dtdx/3.d0/a_half
-      double precision cdtdx
+      real(rt) cdtdx
 
       integer i, j
       integer n, nq
 
-      double precision rrnew, rr
-      double precision rrrz, rrlz
-      double precision rurz, rulz
-      double precision rvrz, rvlz
-      double precision rwrz, rwlz
-      double precision ekenrz, ekenlz
-      double precision rerz, relz
-      double precision pnewrz, pnewlz
-      double precision rrnewrz, rrnewlz
-      double precision runewrz, runewlz
-      double precision rvnewrz, rvnewlz
-      double precision rwnewrz, rwnewlz
-      double precision renewrz, renewlz
-      double precision rhoekenrz, rhoekenlz
-      double precision compn, compu
-      double precision pgp, pgm, ugp, ugm, dup, pav, du
+      real(rt) rrnew, rr
+      real(rt) rrrz, rrlz
+      real(rt) rurz, rulz
+      real(rt) rvrz, rvlz
+      real(rt) rwrz, rwlz
+      real(rt) ekenrz, ekenlz
+      real(rt) rerz, relz
+      real(rt) pnewrz, pnewlz
+      real(rt) rrnewrz, rrnewlz
+      real(rt) runewrz, runewlz
+      real(rt) rvnewrz, rvnewlz
+      real(rt) rwnewrz, rwnewlz
+      real(rt) renewrz, renewlz
+      real(rt) rhoekenrz, rhoekenlz
+      real(rt) compn, compu
+      real(rt) pgp, pgm, ugp, ugm, dup, pav, du
 
       integer          :: ipassive
       
@@ -403,37 +404,37 @@ contains
       integer pgdy_l1,pgdy_l2,pgdy_l3,pgdy_h1,pgdy_h2,pgdy_h3
       integer ilo,ihi,jlo,jhi,kc,k3d
 
-      double precision  qxm(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision  qxp(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision qxmo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision qxpo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision fy(fy_l1:fy_h1,fy_l2:fy_h2,fy_l3:fy_h3,NVAR)
-      double precision ugdnvy(pgdy_l1:pgdy_h1,pgdy_l2:pgdy_h2,pgdy_l3:pgdy_h3)
-      double precision pgdnvy(pgdy_l1:pgdy_h1,pgdy_l2:pgdy_h2,pgdy_l3:pgdy_h3)
+      real(rt)  qxm(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt)  qxp(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt) qxmo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt) qxpo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt) fy(fy_l1:fy_h1,fy_l2:fy_h2,fy_l3:fy_h3,NVAR)
+      real(rt) ugdnvy(pgdy_l1:pgdy_h1,pgdy_l2:pgdy_h2,pgdy_l3:pgdy_h3)
+      real(rt) pgdnvy(pgdy_l1:pgdy_h1,pgdy_l2:pgdy_h2,pgdy_l3:pgdy_h3)
 
       ! Note that cdtdx = dtdx/3.d0/a_half
-      double precision cdtdy
+      real(rt) cdtdy
 
       integer i, j
       integer n, nq
 
-      double precision rrnew, rr
-      double precision compn, compu
-      double precision rrrx, rrlx
-      double precision rurx, rulx
-      double precision rvrx, rvlx
-      double precision rwrx, rwlx
-      double precision ekenrx, ekenlx
-      double precision rerx, relx
-      double precision rrnewrx, rrnewlx
-      double precision runewrx, runewlx
-      double precision rvnewrx, rvnewlx
-      double precision rwnewrx, rwnewlx
-      double precision renewrx, renewlx
-      double precision pnewrx, pnewlx
-      double precision rhoekenrx, rhoekenlx
-      double precision pgp, pgm, ugp, ugm
-      double precision du,dup,pav
+      real(rt) rrnew, rr
+      real(rt) compn, compu
+      real(rt) rrrx, rrlx
+      real(rt) rurx, rulx
+      real(rt) rvrx, rvlx
+      real(rt) rwrx, rwlx
+      real(rt) ekenrx, ekenlx
+      real(rt) rerx, relx
+      real(rt) rrnewrx, rrnewlx
+      real(rt) runewrx, runewlx
+      real(rt) rvnewrx, rvnewlx
+      real(rt) rwnewrx, rwnewlx
+      real(rt) renewrx, renewlx
+      real(rt) pnewrx, pnewlx
+      real(rt) rhoekenrx, rhoekenlx
+      real(rt) pgp, pgm, ugp, ugm
+      real(rt) du,dup,pav
 
       integer          :: ipassive
       
@@ -594,36 +595,36 @@ contains
       integer pgdy_l1,pgdy_l2,pgdy_l3,pgdy_h1,pgdy_h2,pgdy_h3
       integer ilo,ihi,jlo,jhi,kc,km,k3d
 
-      double precision  qzm(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision  qzp(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision qzmo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision qzpo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision fy(fy_l1:fy_h1,fy_l2:fy_h2,fy_l3:fy_h3,NVAR)
-      double precision ugdnvy(pgdy_l1:pgdy_h1,pgdy_l2:pgdy_h2,pgdy_l3:pgdy_h3)
-      double precision pgdnvy(pgdy_l1:pgdy_h1,pgdy_l2:pgdy_h2,pgdy_l3:pgdy_h3)
+      real(rt)  qzm(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt)  qzp(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt) qzmo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt) qzpo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt) fy(fy_l1:fy_h1,fy_l2:fy_h2,fy_l3:fy_h3,NVAR)
+      real(rt) ugdnvy(pgdy_l1:pgdy_h1,pgdy_l2:pgdy_h2,pgdy_l3:pgdy_h3)
+      real(rt) pgdnvy(pgdy_l1:pgdy_h1,pgdy_l2:pgdy_h2,pgdy_l3:pgdy_h3)
 
       ! Note that cdtdy = dtdy/3.d0/a_half
-      double precision cdtdy
+      real(rt) cdtdy
 
       integer i, j
       integer n, nq
 
-      double precision rrnew, rr
-      double precision compn, compu
-      double precision rrrz, rrlz
-      double precision rurz, rulz
-      double precision rvrz, rvlz
-      double precision rwrz, rwlz
-      double precision ekenrz, ekenlz
-      double precision rerz, relz
-      double precision rrnewrz, rrnewlz
-      double precision runewrz, runewlz
-      double precision rvnewrz, rvnewlz
-      double precision rwnewrz, rwnewlz
-      double precision renewrz, renewlz
-      double precision pnewrz , pnewlz
-      double precision rhoekenrz, rhoekenlz
-      double precision pgp, pgm, ugp, ugm, dup, pav, du
+      real(rt) rrnew, rr
+      real(rt) compn, compu
+      real(rt) rrrz, rrlz
+      real(rt) rurz, rulz
+      real(rt) rvrz, rvlz
+      real(rt) rwrz, rwlz
+      real(rt) ekenrz, ekenlz
+      real(rt) rerz, relz
+      real(rt) rrnewrz, rrnewlz
+      real(rt) runewrz, runewlz
+      real(rt) rvnewrz, rvnewlz
+      real(rt) rwnewrz, rwnewlz
+      real(rt) renewrz, renewlz
+      real(rt) pnewrz , pnewlz
+      real(rt) rhoekenrz, rhoekenlz
+      real(rt) pgp, pgm, ugp, ugm, dup, pav, du
 
       integer          :: ipassive
 
@@ -782,40 +783,40 @@ contains
       integer pgdz_l1,pgdz_l2,pgdz_l3,pgdz_h1,pgdz_h2,pgdz_h3
       integer ilo,ihi,jlo,jhi,km,kc,k3d
 
-      double precision  qxm(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision  qxp(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision  qym(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision  qyp(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision qxmo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision qxpo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision qymo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision qypo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision fz(fz_l1:fz_h1,fz_l2:fz_h2,fz_l3:fz_h3,NVAR)
-      double precision ugdnvz(pgdz_l1:pgdz_h1,pgdz_l2:pgdz_h2,pgdz_l3:pgdz_h3)
-      double precision pgdnvz(pgdz_l1:pgdz_h1,pgdz_l2:pgdz_h2,pgdz_l3:pgdz_h3)
+      real(rt)  qxm(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt)  qxp(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt)  qym(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt)  qyp(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt) qxmo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt) qxpo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt) qymo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt) qypo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt) fz(fz_l1:fz_h1,fz_l2:fz_h2,fz_l3:fz_h3,NVAR)
+      real(rt) ugdnvz(pgdz_l1:pgdz_h1,pgdz_l2:pgdz_h2,pgdz_l3:pgdz_h3)
+      real(rt) pgdnvz(pgdz_l1:pgdz_h1,pgdz_l2:pgdz_h2,pgdz_l3:pgdz_h3)
 
       ! Note that cdtdz = dtdz/3.d0/a_half
-      double precision cdtdz
+      real(rt) cdtdz
 
       integer n, nq
       integer i, j
 
-      double precision rrnew, rr
-      double precision compn, compu
-      double precision, pointer :: rrrx(:,:), rrry(:,:), rrlx(:,:), rrly(:,:)
-      double precision, pointer :: rurx(:,:), rury(:,:), rulx(:,:), ruly(:,:)
-      double precision, pointer :: rvrx(:,:), rvry(:,:), rvlx(:,:), rvly(:,:)
-      double precision, pointer :: rwrx(:,:), rwry(:,:), rwlx(:,:), rwly(:,:)
-      double precision, pointer :: ekenrx(:,:), ekenry(:,:), ekenlx(:,:), ekenly(:,:)
-      double precision, pointer :: rerx(:,:), rery(:,:), relx(:,:), rely(:,:)
-      double precision, pointer :: rrnewrx(:,:), rrnewry(:,:), rrnewlx(:,:), rrnewly(:,:)
-      double precision, pointer :: runewrx(:,:), runewry(:,:), runewlx(:,:), runewly(:,:)
-      double precision, pointer :: rvnewrx(:,:), rvnewry(:,:), rvnewlx(:,:), rvnewly(:,:)
-      double precision, pointer :: rwnewrx(:,:), rwnewry(:,:), rwnewlx(:,:), rwnewly(:,:)
-      double precision, pointer :: renewrx(:,:), renewry(:,:), renewlx(:,:), renewly(:,:)
-      double precision, pointer :: pnewrx(:,:),  pnewry(:,:),  pnewlx(:,:),  pnewly(:,:)
-      double precision, pointer :: rhoekenrx(:,:), rhoekenry(:,:), rhoekenlx(:,:), rhoekenly(:,:)
-      double precision, pointer :: pgp(:,:), pgm(:,:), ugp(:,:), ugm(:,:), dup(:,:), pav(:,:), du(:,:)
+      real(rt) rrnew, rr
+      real(rt) compn, compu
+      real(rt), pointer :: rrrx(:,:), rrry(:,:), rrlx(:,:), rrly(:,:)
+      real(rt), pointer :: rurx(:,:), rury(:,:), rulx(:,:), ruly(:,:)
+      real(rt), pointer :: rvrx(:,:), rvry(:,:), rvlx(:,:), rvly(:,:)
+      real(rt), pointer :: rwrx(:,:), rwry(:,:), rwlx(:,:), rwly(:,:)
+      real(rt), pointer :: ekenrx(:,:), ekenry(:,:), ekenlx(:,:), ekenly(:,:)
+      real(rt), pointer :: rerx(:,:), rery(:,:), relx(:,:), rely(:,:)
+      real(rt), pointer :: rrnewrx(:,:), rrnewry(:,:), rrnewlx(:,:), rrnewly(:,:)
+      real(rt), pointer :: runewrx(:,:), runewry(:,:), runewlx(:,:), runewly(:,:)
+      real(rt), pointer :: rvnewrx(:,:), rvnewry(:,:), rvnewlx(:,:), rvnewly(:,:)
+      real(rt), pointer :: rwnewrx(:,:), rwnewry(:,:), rwnewlx(:,:), rwnewly(:,:)
+      real(rt), pointer :: renewrx(:,:), renewry(:,:), renewlx(:,:), renewly(:,:)
+      real(rt), pointer :: pnewrx(:,:),  pnewry(:,:),  pnewlx(:,:),  pnewly(:,:)
+      real(rt), pointer :: rhoekenrx(:,:), rhoekenry(:,:), rhoekenlx(:,:), rhoekenly(:,:)
+      real(rt), pointer :: pgp(:,:), pgm(:,:), ugp(:,:), ugm(:,:), dup(:,:), pav(:,:), du(:,:)
 
       integer          :: ipassive
 
@@ -1242,39 +1243,39 @@ contains
       integer src_l1,src_l2,src_l3,src_h1,src_h2,src_h3
       integer ilo,ihi,jlo,jhi,km,kc,k3d
 
-      double precision  qm(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision qmo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision  qp(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision qpo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision fxy(fx_l1:fx_h1,fx_l2:fx_h2,fx_l3:fx_h3,NVAR)
-      double precision fyx(fy_l1:fy_h1,fy_l2:fy_h2,fy_l3:fy_h3,NVAR)
-      double precision ugdnvx(pgdx_l1:pgdx_h1,pgdx_l2:pgdx_h2,pgdx_l3:pgdx_h3)
-      double precision pgdnvx(pgdx_l1:pgdx_h1,pgdx_l2:pgdx_h2,pgdx_l3:pgdx_h3)
-      double precision ugdnvy(pgdy_l1:pgdy_h1,pgdy_l2:pgdy_h2,pgdy_l3:pgdy_h3)
-      double precision pgdnvy(pgdy_l1:pgdy_h1,pgdy_l2:pgdy_h2,pgdy_l3:pgdy_h3)
-      double precision srcQ(src_l1:src_h1,src_l2:src_h2,src_l3:src_h3,QVAR)
-      double precision hdt,a_old,a_new
+      real(rt)  qm(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt) qmo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt)  qp(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt) qpo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt) fxy(fx_l1:fx_h1,fx_l2:fx_h2,fx_l3:fx_h3,NVAR)
+      real(rt) fyx(fy_l1:fy_h1,fy_l2:fy_h2,fy_l3:fy_h3,NVAR)
+      real(rt) ugdnvx(pgdx_l1:pgdx_h1,pgdx_l2:pgdx_h2,pgdx_l3:pgdx_h3)
+      real(rt) pgdnvx(pgdx_l1:pgdx_h1,pgdx_l2:pgdx_h2,pgdx_l3:pgdx_h3)
+      real(rt) ugdnvy(pgdy_l1:pgdy_h1,pgdy_l2:pgdy_h2,pgdy_l3:pgdy_h3)
+      real(rt) pgdnvy(pgdy_l1:pgdy_h1,pgdy_l2:pgdy_h2,pgdy_l3:pgdy_h3)
+      real(rt) srcQ(src_l1:src_h1,src_l2:src_h2,src_l3:src_h3,QVAR)
+      real(rt) hdt,a_old,a_new
 
       ! Note that hdtdx = dtdx/2.d0/a_half
       !       and hdtdy = dtdy/2.d0/a_half
-      double precision hdtdx,hdtdy
+      real(rt) hdtdx,hdtdy
 
       integer i, j
       integer n , nq
 
-      double precision rrr, rur, rvr, rwr, rer, ekenr, rhoekenr
-      double precision rrl, rul, rvl, rwl, rel, ekenl, rhoekenl
-      double precision rrnewr, runewr, rvnewr, rwnewr, renewr, pnewr
-      double precision rrnewl, runewl, rvnewl, rwnewl, renewl, pnewl
-      double precision pgxp, pgxm, ugxp, ugxm
-      double precision pgyp, pgym, ugyp, ugym
-      double precision pgxpm, pgxmm, ugxpm, ugxmm
-      double precision pgypm, pgymm, ugypm, ugymm
-      double precision compr, compl, compnr, compnl
-      double precision a_half
+      real(rt) rrr, rur, rvr, rwr, rer, ekenr, rhoekenr
+      real(rt) rrl, rul, rvl, rwl, rel, ekenl, rhoekenl
+      real(rt) rrnewr, runewr, rvnewr, rwnewr, renewr, pnewr
+      real(rt) rrnewl, runewl, rvnewl, rwnewl, renewl, pnewl
+      real(rt) pgxp, pgxm, ugxp, ugxm
+      real(rt) pgyp, pgym, ugyp, ugym
+      real(rt) pgxpm, pgxmm, ugxpm, ugxmm
+      real(rt) pgypm, pgymm, ugypm, ugymm
+      real(rt) compr, compl, compnr, compnl
+      real(rt) a_half
 
-      double precision :: dux,duxm,duxp,duxpm,duy,duym,duyp,duypm
-      double precision :: pxav,pxavm,pxnew,pxnewm,pyav,pyavm,pynew,pynewm
+      real(rt) :: dux,duxm,duxp,duxpm,duy,duym,duyp,duypm
+      real(rt) :: pxav,pxavm,pxnew,pxnewm,pyav,pyavm,pynew,pynewm
       integer          :: ipassive
 
       a_half = HALF * (a_old + a_new)
@@ -1496,37 +1497,37 @@ contains
       integer src_l1,src_l2,src_l3,src_h1,src_h2,src_h3
       integer ilo,ihi,jlo,jhi,km,kc,k3d
 
-      double precision  qm(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision  qp(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision qmo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision qpo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision fxz(fx_l1:fx_h1,fx_l2:fx_h2,fx_l3:fx_h3,NVAR)
-      double precision fzx(fz_l1:fz_h1,fz_l2:fz_h2,fz_l3:fz_h3,NVAR)
-      double precision ugdnvx(pgdx_l1:pgdx_h1,pgdx_l2:pgdx_h2,pgdx_l3:pgdx_h3)
-      double precision pgdnvx(pgdx_l1:pgdx_h1,pgdx_l2:pgdx_h2,pgdx_l3:pgdx_h3)
-      double precision ugdnvz(pgdz_l1:pgdz_h1,pgdz_l2:pgdz_h2,pgdz_l3:pgdz_h3)
-      double precision pgdnvz(pgdz_l1:pgdz_h1,pgdz_l2:pgdz_h2,pgdz_l3:pgdz_h3)
-      double precision srcQ(src_l1:src_h1,src_l2:src_h2,src_l3:src_h3,QVAR)
-      double precision hdt,a_old,a_new
+      real(rt)  qm(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt)  qp(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt) qmo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt) qpo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt) fxz(fx_l1:fx_h1,fx_l2:fx_h2,fx_l3:fx_h3,NVAR)
+      real(rt) fzx(fz_l1:fz_h1,fz_l2:fz_h2,fz_l3:fz_h3,NVAR)
+      real(rt) ugdnvx(pgdx_l1:pgdx_h1,pgdx_l2:pgdx_h2,pgdx_l3:pgdx_h3)
+      real(rt) pgdnvx(pgdx_l1:pgdx_h1,pgdx_l2:pgdx_h2,pgdx_l3:pgdx_h3)
+      real(rt) ugdnvz(pgdz_l1:pgdz_h1,pgdz_l2:pgdz_h2,pgdz_l3:pgdz_h3)
+      real(rt) pgdnvz(pgdz_l1:pgdz_h1,pgdz_l2:pgdz_h2,pgdz_l3:pgdz_h3)
+      real(rt) srcQ(src_l1:src_h1,src_l2:src_h2,src_l3:src_h3,QVAR)
+      real(rt) hdt,a_old,a_new
 
       ! Note that hdtdx = dtdx/2.d0/a_half
       !       and hdtdz = dtdz/2.d0/a_half
-      double precision hdtdx,hdtdz
+      real(rt) hdtdx,hdtdz
 
       integer i, j
       integer n, nq
 
-      double precision rrr, rur, rvr, rwr, rer, ekenr, rhoekenr
-      double precision rrl, rul, rvl, rwl, rel, ekenl, rhoekenl
-      double precision rrnewr, runewr, rvnewr, rwnewr, renewr, pnewr
-      double precision rrnewl, runewl, rvnewl, rwnewl, renewl, pnewl
-      double precision pgxp, pgxm, ugxp, ugxm
-      double precision pgzp, pgzm, ugzp, ugzm
-      double precision compr, compl, compnr, compnl
-      double precision a_half
+      real(rt) rrr, rur, rvr, rwr, rer, ekenr, rhoekenr
+      real(rt) rrl, rul, rvl, rwl, rel, ekenl, rhoekenl
+      real(rt) rrnewr, runewr, rvnewr, rwnewr, renewr, pnewr
+      real(rt) rrnewl, runewl, rvnewl, rwnewl, renewl, pnewl
+      real(rt) pgxp, pgxm, ugxp, ugxm
+      real(rt) pgzp, pgzm, ugzp, ugzm
+      real(rt) compr, compl, compnr, compnl
+      real(rt) a_half
 
-      double precision :: drr, dcompn
-      double precision :: dux, duxp, duz, duzp, pxav, pxnew, pzav, pznew
+      real(rt) :: drr, dcompn
+      real(rt) :: dux, duxp, duz, duzp, pxav, pxnew, pzav, pznew
       integer          :: ipassive
 
       a_half = HALF * (a_old + a_new)
@@ -1743,45 +1744,45 @@ contains
                                      version_2
       implicit none
 
-      integer qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3
-      integer fy_l1,fy_l2,fy_l3,fy_h1,fy_h2,fy_h3
-      integer fz_l1,fz_l2,fz_l3,fz_h1,fz_h2,fz_h3
-      integer pgdy_l1,pgdy_l2,pgdy_l3,pgdy_h1,pgdy_h2,pgdy_h3
-      integer pgdz_l1,pgdz_l2,pgdz_l3,pgdz_h1,pgdz_h2,pgdz_h3
-      integer src_l1,src_l2,src_l3,src_h1,src_h2,src_h3
-      integer ilo,ihi,jlo,jhi,km,kc,k3d
+      integer :: qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3
+      integer :: fy_l1,fy_l2,fy_l3,fy_h1,fy_h2,fy_h3
+      integer :: fz_l1,fz_l2,fz_l3,fz_h1,fz_h2,fz_h3
+      integer :: pgdy_l1,pgdy_l2,pgdy_l3,pgdy_h1,pgdy_h2,pgdy_h3
+      integer :: pgdz_l1,pgdz_l2,pgdz_l3,pgdz_h1,pgdz_h2,pgdz_h3
+      integer :: src_l1,src_l2,src_l3,src_h1,src_h2,src_h3
+      integer :: ilo,ihi,jlo,jhi,km,kc,k3d
 
-      double precision qm(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision qp(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision qmo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision qpo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision fyz(fy_l1:fy_h1,fy_l2:fy_h2,fy_l3:fy_h3,NVAR)
-      double precision fzy(fz_l1:fz_h1,fz_l2:fz_h2,fz_l3:fz_h3,NVAR)
-      double precision ugdnvy(pgdy_l1:pgdy_h1,pgdy_l2:pgdy_h2,pgdy_l3:pgdy_h3)
-      double precision pgdnvy(pgdy_l1:pgdy_h1,pgdy_l2:pgdy_h2,pgdy_l3:pgdy_h3)
-      double precision ugdnvz(pgdz_l1:pgdz_h1,pgdz_l2:pgdz_h2,pgdz_l3:pgdz_h3)
-      double precision pgdnvz(pgdz_l1:pgdz_h1,pgdz_l2:pgdz_h2,pgdz_l3:pgdz_h3)
-      double precision srcQ(src_l1:src_h1,src_l2:src_h2,src_l3:src_h3,QVAR)
-      double precision hdt,a_old,a_new
+      real(rt) :: qm(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt) :: qp(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt) :: qmo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt) :: qpo(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt) :: fyz(fy_l1:fy_h1,fy_l2:fy_h2,fy_l3:fy_h3,NVAR)
+      real(rt) :: fzy(fz_l1:fz_h1,fz_l2:fz_h2,fz_l3:fz_h3,NVAR)
+      real(rt) :: ugdnvy(pgdy_l1:pgdy_h1,pgdy_l2:pgdy_h2,pgdy_l3:pgdy_h3)
+      real(rt) :: pgdnvy(pgdy_l1:pgdy_h1,pgdy_l2:pgdy_h2,pgdy_l3:pgdy_h3)
+      real(rt) :: ugdnvz(pgdz_l1:pgdz_h1,pgdz_l2:pgdz_h2,pgdz_l3:pgdz_h3)
+      real(rt) :: pgdnvz(pgdz_l1:pgdz_h1,pgdz_l2:pgdz_h2,pgdz_l3:pgdz_h3)
+      real(rt) :: srcQ(src_l1:src_h1,src_l2:src_h2,src_l3:src_h3,QVAR)
+      real(rt) :: hdt,a_old,a_new
 
       ! Note that hdtdy = dtdy/2.d0/a_half
       !       and hdtdz = dtdz/2.d0/a_half
-      double precision hdtdy,hdtdz
+      real(rt) :: hdtdy,hdtdz
 
-      integer i, j
-      integer n, nq
+      integer :: i, j
+      integer :: n, nq
 
-      double precision rrr, rur, rvr, rwr, rer, ekenr, rhoekenr
-      double precision rrl, rul, rvl, rwl, rel, ekenl, rhoekenl
-      double precision rrnewr, runewr, rvnewr, rwnewr, renewr, pnewr
-      double precision rrnewl, runewl, rvnewl, rwnewl, renewl, pnewl
-      double precision pgyp, pgym, ugyp, ugym
-      double precision pgzp, pgzm, ugzp, ugzm
-      double precision compr, compl, compnr, compnl
-      double precision a_half
+      real(rt) :: rrr, rur, rvr, rwr, rer, ekenr, rhoekenr
+      real(rt) :: rrl, rul, rvl, rwl, rel, ekenl, rhoekenl
+      real(rt) :: rrnewr, runewr, rvnewr, rwnewr, renewr, pnewr
+      real(rt) :: rrnewl, runewl, rvnewl, rwnewl, renewl, pnewl
+      real(rt) :: pgyp, pgym, ugyp, ugym
+      real(rt) :: pgzp, pgzm, ugzp, ugzm
+      real(rt) :: compr, compl, compnr, compnl
+      real(rt) :: a_half
 
-      double precision :: drr, dcompn
-      double precision :: duy,duyp,duz,duzp,pyav,pynew,pzav,pznew
+      real(rt) :: drr, dcompn
+      real(rt) :: duy,duyp,duz,duzp,pyav,pynew,pzav,pznew
       integer          :: ipassive
 
       a_half = HALF * (a_old + a_new)

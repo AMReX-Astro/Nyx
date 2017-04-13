@@ -3,6 +3,7 @@
                                   print_fortran_warnings,&
                                   comoving_a,sum_energy_added,sum_energy_total)
 
+      use amrex_fort_module, only : rt => amrex_real
       use eos_module
       use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, small_temp, &
                                      NE_COMP
@@ -14,17 +15,17 @@
       integer          :: print_fortran_warnings
       integer          :: u_l1,u_l2,u_l3,u_h1,u_h2,u_h3
       integer          :: d_l1,d_l2,d_l3,d_h1,d_h2,d_h3
-      double precision :: u(u_l1:u_h1,u_l2:u_h2,u_l3:u_h3,NVAR)
-      double precision :: d(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,2)
+      real(rt) :: u(u_l1:u_h1,u_l2:u_h2,u_l3:u_h3,NVAR)
+      real(rt) :: d(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,2)
 
-      double precision, intent(in   ) :: comoving_a
-      double precision, intent(inout) :: sum_energy_added
-      double precision, intent(inout) :: sum_energy_total
+      real(rt), intent(in   ) :: comoving_a
+      real(rt), intent(inout) :: sum_energy_added
+      real(rt), intent(inout) :: sum_energy_total
 
       ! Local variables
       integer          :: i,j,k
-      double precision :: Up, Vp, Wp, ke, rho_eint, eint_new
-      double precision :: dummy_pres, rhoInv
+      real(rt) :: Up, Vp, Wp, ke, rho_eint, eint_new
+      real(rt) :: dummy_pres, rhoInv
 
       ! Reset internal energy if necessary
       do k = lo(3),hi(3)

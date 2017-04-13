@@ -7,19 +7,21 @@ program agnug
 
 !==============================================================================
 
-use agn_models
+    use amrex_fort_module, only : rt => amrex_real
 
-implicit none
+    use agn_models
+
+    implicit none
 
 integer                             :: N, i, j, k, m, mmax, accmodel, fbmodel
 integer                             :: fnum
 logical                             :: just_wrote
-real                                :: gamma, t, dt, tmax, rhoinit, Pinit, tout
+real(rt)                            :: gamma, t, dt, tmax, rhoinit, Pinit, tout
 type(agn_particle)                  :: agn
 type(agn_mesh_data)                 :: mesh
-real                                :: h, L, Mdot, Eint, tnext
-real, allocatable, dimension(:,:,:) :: rho, P, vx, vy, vz, E, cs, rhoold
-real, allocatable, dimension(:,:,:) :: rhodot, rhoEdot, pxdot, pydot, pzdot
+real(rt)                            :: h, L, Mdot, Eint, tnext
+real(rt), allocatable, dimension(:,:,:) :: rho, P, vx, vy, vz, E, cs, rhoold
+real(rt), allocatable, dimension(:,:,:) :: rhodot, rhoEdot, pxdot, pydot, pzdot
 
 !==============================================================================
 
@@ -212,7 +214,7 @@ implicit none
 
 integer, intent(in)             :: n
 type(agn_mesh_data), intent(in) :: m
-real, dimension(:,:,:)          :: rho, P, vx, vy, vz, E
+real(rt), dimension(:,:,:)          :: rho, P, vx, vy, vz, E
 
 character(len=8)                :: fname
 integer                         :: nbytes

@@ -5,17 +5,18 @@
                                               fab_l1,fab_l2,fab_l3, &
                                               fab_h1,fab_h2,fab_h3, &
                                               dir,amom)
+        use amrex_fort_module, only : rt => amrex_real
         use probdata_module, only: center
         implicit none
         integer, intent(in) :: lo(3),hi(3),fab_l1,fab_h1,fab_l2, &
                                fab_h2,fab_l3,fab_h3,dir
-        double precision, intent(in) :: problo(3),dx(3)
-        double precision, intent(in) :: fab(fab_l1:fab_h1, &
+        real(rt), intent(in) :: problo(3),dx(3)
+        real(rt), intent(in) :: fab(fab_l1:fab_h1, &
                                             fab_l2:fab_h2, &
                                             fab_l3:fab_h3)
         integer :: i,j,k
-        double precision :: pos(3)
-        double precision, intent(out) :: amom(3)
+        real(rt) :: pos(3)
+        real(rt), intent(out) :: amom(3)
         do i= 1,3
           amom(i) = 0.0d0
         enddo
