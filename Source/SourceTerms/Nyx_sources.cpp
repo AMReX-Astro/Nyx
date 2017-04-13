@@ -89,7 +89,7 @@ Nyx::get_new_source (Real      old_time,
 
     Sborder_old.define(grids, S_old.DistributionMap(), S_old.nComp(), 4);
     Dborder_old.define(grids, D_old.DistributionMap(), D_old.nComp(), 4);
-    
+
     Sborder_new.define(grids, S_new.DistributionMap(), S_new.nComp(), 4);
     Dborder_new.define(grids, D_new.DistributionMap(), D_new.nComp(), 4);
 
