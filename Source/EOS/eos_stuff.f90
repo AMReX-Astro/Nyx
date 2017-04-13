@@ -343,27 +343,25 @@ contains
     ! These are both very large numbers so we pre-divide
     m_nucleon_over_kB = m_nucleon / k_B
 
-    if (input .NE. eos_input_rt) then
+    if (input .eq. eos_input_rt) then
 
-       ! dens, energy, and xmass are inputs
-       
-       ! Solve for the temperature
-       ! e = k T / [(mu m_nucleon)*(gamma-1)]
-       temp = eint * mu * m_nucleon_over_kB * gamma_minus_1
+       ! Compute e = k T / [(mu m_nucleon)*(gamma-1)] from T
+       eint = temp / (mu * m_nucleon_over_kB * gamma_minus_1)
+
+    else ! We are given eint instead of temp
+
+       ! Solve e = k T / [(mu m_nucleon)*(gamma-1)] for T
+       temp = eint * (mu * m_nucleon_over_kB * gamma_minus_1)
 
     endif
 
     !-------------------------------------------------------------------------
-    ! now we have the density and temperature (and mass fractions /
-    ! mu), regardless of the inputs.
+    ! now we have the density and temperature (and mass fractions / mu)
+    ! regardless of the inputs.
     !-------------------------------------------------------------------------
 
-    ! compute the pressure simply from the ideal gas law, and the
-    ! specific internal energy using the gamma-law EOS relation
-    
-    pres = dens * temp / mu / m_nucleon_over_kB
-
-    eint = pres/gamma_minus_1/dens
+    ! compute the pressure simply from the ideal gas law
+    pres = gamma_minus_1 * dens * eint
 
     ! entropy (per gram) of an ideal monoatomic gas (the Sactur-Tetrode equation)
     ! NOTE: this expression is only valid for gamma = 5/3.
