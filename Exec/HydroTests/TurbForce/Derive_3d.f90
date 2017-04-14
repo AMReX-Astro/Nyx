@@ -1,13 +1,14 @@
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_derstate(state,state_l1,state_l2,state_l3,state_h1,state_h2,state_h3,nv, &
-                             dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
-                             domhi,delta,xlo,time,dt,bc,level,grid_no)
+      subroutine derstate(state,state_l1,state_l2,state_l3,state_h1,state_h2,state_h3,nv, &
+                          dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
+                          domhi,delta,xlo,time,dt,bc,level,grid_no)
       !
       ! The incoming   "dat" vector contains (rho,T,(rho X)_1)
       ! The outgoing "state" vector contains (rho,T,X_1)
       !
+      use amrex_fort_module, only : rt => amrex_real
       implicit none 
 
       integer          lo(3), hi(3)
@@ -15,16 +16,16 @@
       integer          dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc
       integer          domlo(3), domhi(3)
       integer          bc(3,2,nc)
-      double precision delta(3), xlo(3), time, dt
-      double precision state(state_l1:state_h1,state_l2:state_h2,state_l3:state_h3,nv)
-      double precision dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
+      real(rt) delta(3), xlo(3), time, dt
+      real(rt) state(state_l1:state_h1,state_l2:state_h2,state_l3:state_h3,nv)
+      real(rt) dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
       integer    level, grid_no
  
       integer i,j,k
 
       if (nv .ne. 3) then
           print *,'... confusion in derstate ... nv should be 3 but is ',nv
-          call bl_error('Error:: Derive_3d.f90 :: ca_derstate')
+          call bl_error('Error:: Derive_3d.f90 :: derstate')
       end if
       !
       ! Density
@@ -57,16 +58,17 @@
          end do
       end do
  
-      end subroutine ca_derstate
+      end subroutine derstate
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_dervel(vel,vel_l1,vel_l2,vel_l3,vel_h1,vel_h2,vel_h3,nv, &
-                           dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
-                           domhi,delta,xlo,time,dt,bc,level,grid_no)
+      subroutine dervel(vel,vel_l1,vel_l2,vel_l3,vel_h1,vel_h2,vel_h3,nv, &
+                        dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
+                        domhi,delta,xlo,time,dt,bc,level,grid_no)
       !
       ! Derive velocity from momentum.
       !
+      use amrex_fort_module, only : rt => amrex_real
       implicit none
 
       integer          lo(3), hi(3)
@@ -74,9 +76,9 @@
       integer          dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc
       integer          domlo(3), domhi(3)
       integer          bc(3,2,nc)
-      double precision delta(3), xlo(3), time, dt
-      double precision vel(vel_l1:vel_h1,vel_l2:vel_h2,vel_l3:vel_h3,nv)
-      double precision dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
+      real(rt) delta(3), xlo(3), time, dt
+      real(rt) vel(vel_l1:vel_h1,vel_l2:vel_h2,vel_l3:vel_h3,nv)
+      real(rt) dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
       integer    level, grid_no
  
       integer i,j,k
@@ -91,16 +93,17 @@
          end do
       end do
  
-      end subroutine ca_dervel
+      end subroutine dervel
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_dermagvel(magvel,vel_l1,vel_l2,vel_l3,vel_h1,vel_h2,vel_h3,nv, &
-                              dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
-                              domhi,delta,xlo,time,dt,bc,level,grid_no)
+      subroutine dermagvel(magvel,vel_l1,vel_l2,vel_l3,vel_h1,vel_h2,vel_h3,nv, &
+                           dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
+                           domhi,delta,xlo,time,dt,bc,level,grid_no)
       !
       ! Derive magnitude of velocity.
       !
+      use amrex_fort_module, only : rt => amrex_real
       implicit none
 
       integer          lo(3), hi(3)
@@ -108,9 +111,9 @@
       integer          dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc
       integer          domlo(3), domhi(3)
       integer          bc(3,2,nc)
-      double precision delta(3), xlo(3), time, dt
-      double precision magvel(vel_l1:vel_h1,vel_l2:vel_h2,vel_l3:vel_h3,nv)
-      double precision    dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
+      real(rt) delta(3), xlo(3), time, dt
+      real(rt) magvel(vel_l1:vel_h1,vel_l2:vel_h2,vel_l3:vel_h3,nv)
+      real(rt)    dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
       integer    level, grid_no
 
       integer i,j,k
@@ -127,16 +130,17 @@
          end do
       end do
 
-      end subroutine ca_dermagvel
+      end subroutine dermagvel
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_dermaggrav(maggrav,grav_l1,grav_l2,grav_l3,grav_h1,grav_h2,grav_h3,ng, &
-                               dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
-                               domhi,delta,xlo,time,dt,bc,level,grid_no)
+      subroutine dermaggrav(maggrav,grav_l1,grav_l2,grav_l3,grav_h1,grav_h2,grav_h3,ng, &
+                            dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
+                            domhi,delta,xlo,time,dt,bc,level,grid_no)
       !
       ! Derive magnitude of the gravity vector.
       !
+      use amrex_fort_module, only : rt => amrex_real
       implicit none 
 
       integer          lo(3), hi(3)
@@ -144,9 +148,9 @@
       integer          dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc
       integer          domlo(3), domhi(3)
       integer          bc(3,2,nc)
-      double precision delta(3), xlo(3), time, dt
-      double precision maggrav(grav_l1:grav_h1,grav_l2:grav_h2,grav_l3:grav_h3,ng)
-      double precision     dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
+      real(rt) delta(3), xlo(3), time, dt
+      real(rt) maggrav(grav_l1:grav_h1,grav_l2:grav_h2,grav_l3:grav_h3,ng)
+      real(rt)     dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
       integer    level, grid_no
 
       integer i,j,k
@@ -163,16 +167,17 @@
          end do
       end do
 
-      end subroutine ca_dermaggrav
+      end subroutine dermaggrav
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_dermagmom(magmom,mom_l1,mom_l2,mom_l3,mom_h1,mom_h2,mom_h3,nv, &
-                              dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
-                              domhi,delta,xlo,time,dt,bc,level,grid_no)
+      subroutine dermagmom(magmom,mom_l1,mom_l2,mom_l3,mom_h1,mom_h2,mom_h3,nv, &
+                           dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
+                           domhi,delta,xlo,time,dt,bc,level,grid_no)
       !
       ! This routine will derive magnitude of momentum.
       !
+      use amrex_fort_module, only : rt => amrex_real
       implicit none
 
       integer          lo(3), hi(3)
@@ -180,9 +185,9 @@
       integer          dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc
       integer          domlo(3), domhi(3)
       integer          bc(3,2,nc)
-      double precision delta(3), xlo(3), time, dt
-      double precision magmom(mom_l1:mom_h1,mom_l2:mom_h2,mom_l3:mom_h3,nv)
-      double precision    dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
+      real(rt) delta(3), xlo(3), time, dt
+      real(rt) magmom(mom_l1:mom_h1,mom_l2:mom_h2,mom_l3:mom_h3,nv)
+      real(rt)    dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
       integer    level, grid_no
 
       integer i,j,k
@@ -197,27 +202,28 @@
          end do
       end do
 
-      end subroutine ca_dermagmom
+      end subroutine dermagmom
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_derpres(p,p_l1,p_l2,p_l3,p_h1,p_h2,p_h3,ncomp_p, &
-           u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,ncomp_u,lo,hi,domlo, &
-           domhi,dx,xlo,time,dt,bc,level,grid_no)
+      subroutine derpres(p,p_l1,p_l2,p_l3,p_h1,p_h2,p_h3,ncomp_p, &
+                         u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,ncomp_u,lo,hi,domlo, &
+                         domhi,dx,xlo,time,dt,bc,level,grid_no)
       !
       ! Compute pressure from (rho e)
       !
       use meth_params_module, only : UEINT, gamma_minus_1
       use  eos_params_module
 
+      use amrex_fort_module, only : rt => amrex_real
       implicit none
 
       integer p_l1,p_l2,p_l3,p_h1,p_h2,p_h3,ncomp_p
       integer u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,ncomp_u
       integer lo(3), hi(3), domlo(3), domhi(3)
-      double precision p(p_l1:p_h1,p_l2:p_h2,p_l3:p_h3,ncomp_p)
-      double precision u(u_l1:u_h1,u_l2:u_h2,u_l3:u_h3,ncomp_u)
-      double precision dx(3), xlo(3), time, dt
+      real(rt) p(p_l1:p_h1,p_l2:p_h2,p_l3:p_h3,ncomp_p)
+      real(rt) u(u_l1:u_h1,u_l2:u_h2,u_l3:u_h3,ncomp_u)
+      real(rt) dx(3), xlo(3), time, dt
       integer bc(3,2,ncomp_u), level, grid_no
 
       integer          :: i,j,k
@@ -245,16 +251,17 @@
          enddo
       enddo
 
-      end subroutine ca_derpres
+      end subroutine derpres
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_dereint1(e,e_l1,e_l2,e_l3,e_h1,e_h2,e_h3,ncomp_e, &
-           u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,ncomp_u,lo,hi,domlo, &
-           domhi,dx,xlo,time,dt,bc,level,grid_no)
+      subroutine dereint1(e,e_l1,e_l2,e_l3,e_h1,e_h2,e_h3,ncomp_e, &
+                          u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,ncomp_u,lo,hi,domlo, &
+                          domhi,dx,xlo,time,dt,bc,level,grid_no)
       !
       ! Compute internal energy from (rho E).
       !
+      use amrex_fort_module, only : rt => amrex_real
       use meth_params_module, only : URHO, UMX, UMY, UMZ, UEDEN 
 
       implicit none
@@ -262,12 +269,12 @@
       integer e_l1,e_l2,e_l3,e_h1,e_h2,e_h3,ncomp_e
       integer u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,ncomp_u
       integer lo(3), hi(3), domlo(3), domhi(3)
-      double precision e(e_l1:e_h1,e_l2:e_h2,e_l3:e_h3,ncomp_e)
-      double precision u(u_l1:u_h1,u_l2:u_h2,u_l3:u_h3,ncomp_u)
-      double precision dx(3), xlo(3), time, dt
+      real(rt) e(e_l1:e_h1,e_l2:e_h2,e_l3:e_h3,ncomp_e)
+      real(rt) u(u_l1:u_h1,u_l2:u_h2,u_l3:u_h3,ncomp_u)
+      real(rt) dx(3), xlo(3), time, dt
       integer bc(3,2,ncomp_u), level, grid_no
 
-      double precision :: rhoInv,ux,uy,uz
+      real(rt) :: rhoInv,ux,uy,uz
       integer          :: i,j,k
       ! 
       ! Here dat contains (Density, Xmom, Ymom, Zmom, (rho E), (rho e))
@@ -284,14 +291,15 @@
          enddo
       enddo
 
-      end subroutine ca_dereint1
+      end subroutine dereint1
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_dereint2(e,e_l1,e_l2,e_l3,e_h1,e_h2,e_h3,ncomp_e, &
-           u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,ncomp_u,lo,hi,domlo, &
-           domhi,dx,xlo,time,dt,bc,level,grid_no)
+      subroutine dereint2(e,e_l1,e_l2,e_l3,e_h1,e_h2,e_h3,ncomp_e, &
+                          u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,ncomp_u,lo,hi,domlo, &
+                          domhi,dx,xlo,time,dt,bc,level,grid_no)
 
+      use amrex_fort_module, only : rt => amrex_real
       use meth_params_module, only : URHO, UEINT
 
       implicit none
@@ -299,9 +307,9 @@
       integer e_l1,e_l2,e_l3,e_h1,e_h2,e_h3,ncomp_e
       integer u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,ncomp_u
       integer lo(3), hi(3), domlo(3), domhi(3)
-      double precision e(e_l1:e_h1,e_l2:e_h2,e_l3:e_h3,ncomp_e)
-      double precision u(u_l1:u_h1,u_l2:u_h2,u_l3:u_h3,ncomp_u)
-      double precision dx(3), xlo(3), time, dt
+      real(rt) e(e_l1:e_h1,e_l2:e_h2,e_l3:e_h3,ncomp_e)
+      real(rt) u(u_l1:u_h1,u_l2:u_h2,u_l3:u_h3,ncomp_u)
+      real(rt) dx(3), xlo(3), time, dt
       integer bc(3,2,ncomp_u), level, grid_no
 
       integer :: i,j,k
@@ -316,14 +324,15 @@
          enddo
       enddo
 
-      end subroutine ca_dereint2
+      end subroutine dereint2
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_dersoundspeed(c,c_l1,c_l2,c_l3,c_h1,c_h2,c_h3,ncomp_c, &
-           u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,ncomp_u,lo,hi,domlo, &
-           domhi,dx,xlo,time,dt,bc,level,grid_no)
+      subroutine dersoundspeed(c,c_l1,c_l2,c_l3,c_h1,c_h2,c_h3,ncomp_c, &
+                          u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,ncomp_u,lo,hi,domlo, &
+                          domhi,dx,xlo,time,dt,bc,level,grid_no)
 
+      use amrex_fort_module, only : rt => amrex_real
       use eos_module
       use meth_params_module, only : URHO, UEINT
       use  eos_params_module
@@ -332,12 +341,12 @@
       integer c_l1,c_l2,c_l3,c_h1,c_h2,c_h3,ncomp_c
       integer u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,ncomp_u
       integer lo(3), hi(3), domlo(3), domhi(3)
-      double precision c(c_l1:c_h1,c_l2:c_h2,c_l3:c_h3,ncomp_c)
-      double precision u(u_l1:u_h1,u_l2:u_h2,u_l3:u_h3,ncomp_u)
-      double precision dx(3), xlo(3), time, dt
+      real(rt) c(c_l1:c_h1,c_l2:c_h2,c_l3:c_h3,ncomp_c)
+      real(rt) u(u_l1:u_h1,u_l2:u_h2,u_l3:u_h3,ncomp_u)
+      real(rt) dx(3), xlo(3), time, dt
       integer bc(3,2,ncomp_u), level, grid_no
 
-      double precision :: e
+      real(rt) :: e
       integer          :: i,j,k
       ! 
       ! Here dat contains (Density, Xmom, Ymom, Zmom, (rho E), (rho e))
@@ -362,14 +371,15 @@
          enddo
       enddo
 
-      end subroutine ca_dersoundspeed
+      end subroutine dersoundspeed
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_dermachnumber(mach,mach_l1,mach_l2,mach_l3,mach_h1,mach_h2,mach_h3,ncomp_mach, &
-           u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,ncomp_u,lo,hi,domlo, &
-           domhi,dx,xlo,time,dt,bc,level,grid_no)
+      subroutine dermachnumber(mach,mach_l1,mach_l2,mach_l3,mach_h1,mach_h2,mach_h3,ncomp_mach, &
+                               u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,ncomp_u,lo,hi,domlo, &
+                               domhi,dx,xlo,time,dt,bc,level,grid_no)
 
+      use amrex_fort_module, only : rt => amrex_real
       use eos_module
       use meth_params_module, only : URHO, UMX, UMY, UMZ, UEINT
       use  eos_params_module
@@ -378,12 +388,12 @@
       integer          :: mach_l1,mach_l2,mach_l3,mach_h1,mach_h2,mach_h3,ncomp_mach
       integer          :: u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,ncomp_u
       integer          :: lo(3), hi(3), domlo(3), domhi(3)
-      double precision :: mach(mach_l1:mach_h1,mach_l2:mach_h2,mach_l3:mach_h3,ncomp_mach)
-      double precision :: u(u_l1:u_h1,u_l2:u_h2,u_l3:u_h3,ncomp_u)
-      double precision :: dx(3), xlo(3), time, dt
+      real(rt) :: mach(mach_l1:mach_h1,mach_l2:mach_h2,mach_l3:mach_h3,ncomp_mach)
+      real(rt) :: u(u_l1:u_h1,u_l2:u_h2,u_l3:u_h3,ncomp_u)
+      real(rt) :: dx(3), xlo(3), time, dt
       integer          :: bc(3,2,ncomp_u), level, grid_no
 
-      double precision :: rhoInv,ux,uy,uz,e,c
+      real(rt) :: rhoInv,ux,uy,uz,e,c
       integer          :: i,j,k
       ! 
       ! Here dat contains (Density, Xmom, Ymom, Zmom, (rho E), (rho e))
@@ -413,16 +423,17 @@
          enddo
       enddo
 
-      end subroutine ca_dermachnumber
+      end subroutine dermachnumber
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_derentropy(s,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3,ncomp_s, &
-                               u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,ncomp_u,lo,hi, &
-                               domlo,domhi,dx,xlo,time,dt,bc,level,grid_no)
+      subroutine derentropy(s,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3,ncomp_s, &
+                            u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,ncomp_u,lo,hi, &
+                            domlo,domhi,dx,xlo,time,dt,bc,level,grid_no)
       !
       ! Compute entropy from the EOS.
       !
+      use amrex_fort_module, only : rt => amrex_real
       use eos_module
       use meth_params_module, only : URHO, UEINT
       use  eos_params_module
@@ -431,12 +442,12 @@
       integer s_l1,s_l2,s_l3,s_h1,s_h2,s_h3,ncomp_s
       integer u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,ncomp_u
       integer lo(3), hi(3), domlo(3), domhi(3)
-      double precision s(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3,ncomp_s)
-      double precision u(u_l1:u_h1,u_l2:u_h2,u_l3:u_h3,ncomp_u)
-      double precision dx(3), xlo(3), time, dt
+      real(rt) s(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3,ncomp_s)
+      real(rt) u(u_l1:u_h1,u_l2:u_h2,u_l3:u_h3,ncomp_u)
+      real(rt) dx(3), xlo(3), time, dt
       integer bc(3,2,ncomp_u), level, grid_no
 
-      double precision :: e, rhoInv
+      real(rt) :: e, rhoInv
       integer i,j,k
 
       ! 
@@ -459,16 +470,17 @@
          enddo
       enddo
 
-      end subroutine ca_derentropy
+      end subroutine derentropy
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_derspec(spec,spec_l1,spec_l2,spec_l3,spec_h1,spec_h2,spec_h3,nv, &
-                            dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
-                            domhi,delta,xlo,time,dt,bc,level,grid_no)
+      subroutine derspec(spec,spec_l1,spec_l2,spec_l3,spec_h1,spec_h2,spec_h3,nv, &
+                         dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
+                         domhi,delta,xlo,time,dt,bc,level,grid_no)
       !
       ! This routine will derive X_i from (rho X)_i
       !
+      use amrex_fort_module, only : rt => amrex_real
       implicit none
 
       integer          lo(3), hi(3)
@@ -476,9 +488,9 @@
       integer          dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc
       integer          domlo(3), domhi(3)
       integer          bc(3,2,nc)
-      double precision delta(3), xlo(3), time, dt
-      double precision spec(spec_l1:spec_h1,spec_l2:spec_h2,spec_l3:spec_h3,nv)
-      double precision dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
+      real(rt) delta(3), xlo(3), time, dt
+      real(rt) spec(spec_l1:spec_h1,spec_l2:spec_h2,spec_l3:spec_h3,nv)
+      real(rt) dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
       integer    level, grid_no
  
       integer i,j,k
@@ -493,13 +505,14 @@
          end do
       end do
  
-      end subroutine ca_derspec
+      end subroutine derspec
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_derlogden(logden,ld_l1,ld_l2,ld_l3,ld_h1,ld_h2,ld_h3,nd, &
-                              dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc, &
-                              lo,hi,domlo,domhi,delta,xlo,time,dt,bc,level,grid_no)
+      subroutine derlogden(logden,ld_l1,ld_l2,ld_l3,ld_h1,ld_h2,ld_h3,nd, &
+                           dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc, &
+                           lo,hi,domlo,domhi,delta,xlo,time,dt,bc,level,grid_no)
+      use amrex_fort_module, only : rt => amrex_real
       implicit none
 
       integer          lo(3), hi(3)
@@ -507,9 +520,9 @@
       integer          dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc
       integer          domlo(3), domhi(3), level, grid_no
       integer          bc(3,2,nc)
-      double precision delta(3), xlo(3), time, dt
-      double precision logden( ld_l1: ld_h1, ld_l2: ld_h2, ld_l3: ld_h3,nd)
-      double precision    dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
+      real(rt) delta(3), xlo(3), time, dt
+      real(rt) logden( ld_l1: ld_h1, ld_l2: ld_h2, ld_l3: ld_h3,nd)
+      real(rt)    dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
  
       integer    i,j,k
       ! 
@@ -523,16 +536,17 @@
          end do
       end do
  
-      end subroutine ca_derlogden
+      end subroutine derlogden
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_dermagvort(vort,v_l1,v_l2,v_l3,v_h1,v_h2,v_h3,nv, & 
-                               dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
-                               domhi,delta,xlo,time,dt,bc,level,grid_no)
+      subroutine dermagvort(vort,v_l1,v_l2,v_l3,v_h1,v_h2,v_h3,nv, & 
+                            dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
+                            domhi,delta,xlo,time,dt,bc,level,grid_no)
       !
       ! This routine will calculate vorticity
       !     
+      use amrex_fort_module, only : rt => amrex_real
       implicit none
 
       integer          lo(3), hi(3)
@@ -540,13 +554,13 @@
       integer          dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc
       integer          domlo(3), domhi(3), level, grid_no
       integer          bc(3,2,nc)
-      double precision delta(3), xlo(3), time, dt
-      double precision vort(  v_l1:  v_h1,  v_l2:  v_h2,  v_l3:  v_h3,nv)
-      double precision  dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
+      real(rt) delta(3), xlo(3), time, dt
+      real(rt) vort(  v_l1:  v_h1,  v_l2:  v_h2,  v_l3:  v_h3,nv)
+      real(rt)  dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
 
       integer          :: i,j,k
-      double precision :: uy,uz,vx,vz,wx,wy,v1,v2,v3
-      double precision :: ldat(lo(1)-1:hi(1)+1,lo(2)-1:hi(2)+1,lo(3)-1:hi(3)+1,2:4)
+      real(rt) :: uy,uz,vx,vz,wx,wy,v1,v2,v3
+      real(rt) :: ldat(lo(1)-1:hi(1)+1,lo(2)-1:hi(2)+1,lo(3)-1:hi(3)+1,2:4)
 
       ! 
       ! Here dat contains (Density, Xmom, Ymom, Zmom)
@@ -584,16 +598,17 @@
          end do
       end do
 
-      end subroutine ca_dermagvort
+      end subroutine dermagvort
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_derdivu(divu,div_l1,div_l2,div_l3,div_h1,div_h2,div_h3,nd, &
-                            dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc, &
-                            lo,hi,domlo,domhi,delta,xlo,time,dt,bc,level,grid_no)
+      subroutine derdivu(divu,div_l1,div_l2,div_l3,div_h1,div_h2,div_h3,nd, &
+                         dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc, &
+                         lo,hi,domlo,domhi,delta,xlo,time,dt,bc,level,grid_no)
       !
       ! This routine will divergence of velocity.
       !
+      use amrex_fort_module, only : rt => amrex_real
       implicit none
 
       integer          lo(3), hi(3)
@@ -601,13 +616,13 @@
       integer          dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc
       integer          domlo(3), domhi(3)
       integer          bc(3,2,nc)
-      double precision delta(3), xlo(3), time, dt
-      double precision divu(div_l1:div_h1,div_l2:div_h2,div_l3:div_h3,nd)
-      double precision  dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
+      real(rt) delta(3), xlo(3), time, dt
+      real(rt) divu(div_l1:div_h1,div_l2:div_h2,div_l3:div_h3,nd)
+      real(rt)  dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
       integer    level, grid_no
 
       integer          :: i,j,k
-      double precision :: ulo,uhi,vlo,vhi,wlo,whi
+      real(rt) :: ulo,uhi,vlo,vhi,wlo,whi
       ! 
       ! Here dat contains (Density, Xmom, Ymom, Zmom)
       ! 
@@ -627,16 +642,17 @@
          end do
       end do
 
-      end subroutine ca_derdivu
+      end subroutine derdivu
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_derkineng(kineng,ken_l1,ken_l2,ken_l3,ken_h1,ken_h2,ken_h3,nk, &
-                              dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc, &
-                              lo,hi,domlo,domhi,delta,xlo,time,dt,bc,level,grid_no)
+      subroutine derkineng(kineng,ken_l1,ken_l2,ken_l3,ken_h1,ken_h2,ken_h3,nk, &
+                           dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc, &
+                           lo,hi,domlo,domhi,delta,xlo,time,dt,bc,level,grid_no)
       !
       ! This routine will derive kinetic energy = 1/2 rho (u^2 + v^2)
       !
+      use amrex_fort_module, only : rt => amrex_real
       implicit none
 
       integer          lo(3), hi(3)
@@ -644,9 +660,9 @@
       integer          dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc
       integer          domlo(3), domhi(3)
       integer          bc(3,2,nc)
-      double precision delta(3), xlo(3), time, dt
-      double precision kineng(ken_l1:ken_h1,ken_l2:ken_h2,ken_l3:ken_h3,nk)
-      double precision    dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
+      real(rt) delta(3), xlo(3), time, dt
+      real(rt) kineng(ken_l1:ken_h1,ken_l2:ken_h2,ken_l3:ken_h3,nk)
+      real(rt)    dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
       integer    level, grid_no
 
       integer i,j,k
@@ -663,16 +679,17 @@
          end do
       end do
 
-      end subroutine ca_derkineng
+      end subroutine derkineng
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_dernull(kineng,ken_l1,ken_l2,ken_l3,ken_h1,ken_h2,ken_h3,nk, &
-                            dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc, &
-                             lo,hi,domlo,domhi,delta,xlo,time,dt,bc,level,grid_no)
+      subroutine dernull(kineng,ken_l1,ken_l2,ken_l3,ken_h1,ken_h2,ken_h3,nk, &
+                         dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc, &
+                          lo,hi,domlo,domhi,delta,xlo,time,dt,bc,level,grid_no)
       !
       ! This routine is used by particle_count.  Yes it does nothing.
       !
+      use amrex_fort_module, only : rt => amrex_real
       implicit none
 
       integer          lo(3), hi(3)
@@ -680,21 +697,22 @@
       integer          dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc
       integer          domlo(3), domhi(3)
       integer          bc(3,2,nc)
-      double precision delta(3), xlo(3), time, dt
-      double precision kineng(ken_l1:ken_h1,ken_l2:ken_h2,ken_l3:ken_h3,nk)
-      double precision    dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
+      real(rt) delta(3), xlo(3), time, dt
+      real(rt) kineng(ken_l1:ken_h1,ken_l2:ken_h2,ken_l3:ken_h3,nk)
+      real(rt)    dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
       integer    level, grid_no
 
-      end subroutine ca_dernull
+      end subroutine dernull
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_dermomt(vel,vel_l1,vel_l2,vel_l3,vel_h1,vel_h2,vel_h3,nv, &
-                            dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
-                            domhi,delta,xlo,time,dt,bc,level,grid_no)
+      subroutine dermomt(vel,vel_l1,vel_l2,vel_l3,vel_h1,vel_h2,vel_h3,nv, &
+                         dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
+                         domhi,delta,xlo,time,dt,bc,level,grid_no)
       !
       ! This routine computes Mom + Mom*Sdens/Density
       !
+      use amrex_fort_module, only : rt => amrex_real
       implicit none
 
       integer          lo(3), hi(3)
@@ -702,9 +720,9 @@
       integer          dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc
       integer          domlo(3), domhi(3)
       integer          bc(3,2,nc)
-      double precision delta(3), xlo(3), time, dt
-      double precision vel(vel_l1:vel_h1,vel_l2:vel_h2,vel_l3:vel_h3,nv)
-      double precision dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
+      real(rt) delta(3), xlo(3), time, dt
+      real(rt) vel(vel_l1:vel_h1,vel_l2:vel_h2,vel_l3:vel_h3,nv)
+      real(rt) dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
       integer    level, grid_no
 
       integer i,j,k
@@ -721,16 +739,17 @@
          end do
       end do
 
-      end subroutine ca_dermomt
+      end subroutine dermomt
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_derforcex(force,force_l1,force_l2,force_l3,force_h1,force_h2,force_h3,nv, &
-                              dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
-                              domhi,delta,xlo,time,dt,bc,level,grid_no)
+      subroutine derforcex(force,force_l1,force_l2,force_l3,force_h1,force_h2,force_h3,nv, &
+                           dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
+                           domhi,delta,xlo,time,dt,bc,level,grid_no)
 !
 !     This routine computes the x-component of the forcing term
 !
+      use amrex_fort_module, only : rt => amrex_real
       use turbforce_module
       use bl_constants_module, only : TWO, HALF, ZERO, M_PI
       use probdata_module    , only : prob_lo, prob_hi
@@ -742,21 +761,21 @@
       integer          dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc
       integer          domlo(3), domhi(3)
       integer          bc(3,2,nc)
-      double precision delta(3), xlo(3), time, dt
-      double precision force(force_l1:force_h1,force_l2:force_h2,force_l3:force_h3,nv)
-      double precision dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
+      real(rt) delta(3), xlo(3), time, dt
+      real(rt) force(force_l1:force_h1,force_l2:force_h2,force_l3:force_h3,nv)
+      real(rt) dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
       integer    level, grid_no
 
       integer :: i,j,k
       integer :: kx,ky,kz
       integer :: xstep,ystep,zstep
-      double precision :: x,  y,  z
-      double precision :: Lx, Ly, Lz, freqx, freqy, freqz
-      double precision :: cosx,cosy,cosz,sinx,siny,sinz
-      double precision :: HLx,HLy,HLz
-      double precision :: kxd,kyd,kzd
-      double precision :: kappa,kappaMax,Lmin,xT
-      double precision :: f1,twicePi
+      real(rt) :: x,  y,  z
+      real(rt) :: Lx, Ly, Lz, freqx, freqy, freqz
+      real(rt) :: cosx,cosy,cosz,sinx,siny,sinz
+      real(rt) :: HLx,HLy,HLz
+      real(rt) :: kxd,kyd,kzd
+      real(rt) :: kappa,kappaMax,Lmin,xT
+      real(rt) :: f1,twicePi
       
       twicePi = TWO*M_PI
 
@@ -817,16 +836,17 @@
          enddo
       enddo
       
-      end subroutine ca_derforcex
+      end subroutine derforcex
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_derforcey(force,force_l1,force_l2,force_l3,force_h1,force_h2,force_h3,nv, &
-                              dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
-                              domhi,delta,xlo,time,dt,bc,level,grid_no)
+      subroutine derforcey(force,force_l1,force_l2,force_l3,force_h1,force_h2,force_h3,nv, &
+                           dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
+                           domhi,delta,xlo,time,dt,bc,level,grid_no)
 !
 !     This routine computes the y-component of the forcing term
 !
+      use amrex_fort_module, only : rt => amrex_real
       use turbforce_module
       use bl_constants_module, only : TWO, HALF, ZERO, M_PI
       use probdata_module    , only : prob_lo, prob_hi
@@ -838,21 +858,21 @@
       integer          dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc
       integer          domlo(3), domhi(3)
       integer          bc(3,2,nc)
-      double precision delta(3), xlo(3), time, dt
-      double precision force(force_l1:force_h1,force_l2:force_h2,force_l3:force_h3,nv)
-      double precision dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
+      real(rt) delta(3), xlo(3), time, dt
+      real(rt) force(force_l1:force_h1,force_l2:force_h2,force_l3:force_h3,nv)
+      real(rt) dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
       integer    level, grid_no
  
       integer :: i,j,k
       integer :: kx,ky,kz
       integer :: xstep,ystep,zstep
-      double precision :: x,  y,  z
-      double precision :: Lx, Ly, Lz, freqx, freqy, freqz
-      double precision :: cosx,cosy,cosz,sinx,siny,sinz
-      double precision :: HLx,HLy,HLz
-      double precision :: kxd,kyd,kzd
-      double precision :: kappa,kappaMax,Lmin,xT
-      double precision :: f2,twicePi
+      real(rt) :: x,  y,  z
+      real(rt) :: Lx, Ly, Lz, freqx, freqy, freqz
+      real(rt) :: cosx,cosy,cosz,sinx,siny,sinz
+      real(rt) :: HLx,HLy,HLz
+      real(rt) :: kxd,kyd,kzd
+      real(rt) :: kappa,kappaMax,Lmin,xT
+      real(rt) :: f2,twicePi
       
       twicePi = TWO*M_PI
 
@@ -913,17 +933,18 @@
          enddo
       enddo
       
-      end subroutine ca_derforcey
+      end subroutine derforcey
 
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_derforcez(force,force_l1,force_l2,force_l3,force_h1,force_h2,force_h3,nv, &
-                              dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
-                              domhi,delta,xlo,time,dt,bc,level,grid_no)
+      subroutine derforcez(force,force_l1,force_l2,force_l3,force_h1,force_h2,force_h3,nv, &
+                           dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
+                           domhi,delta,xlo,time,dt,bc,level,grid_no)
 !
 !     This routine computes the z-component of the forcing term
 !
+      use amrex_fort_module, only : rt => amrex_real
       use turbforce_module
       use bl_constants_module, only : TWO, HALF, ZERO, M_PI
       use probdata_module    , only : prob_lo, prob_hi
@@ -935,21 +956,21 @@
       integer          dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc
       integer          domlo(3), domhi(3)
       integer          bc(3,2,nc)
-      double precision delta(3), xlo(3), time, dt
-      double precision force(force_l1:force_h1,force_l2:force_h2,force_l3:force_h3,nv)
-      double precision dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
+      real(rt) delta(3), xlo(3), time, dt
+      real(rt) force(force_l1:force_h1,force_l2:force_h2,force_l3:force_h3,nv)
+      real(rt) dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
       integer    level, grid_no
  
       integer :: i,j,k
       integer :: kx,ky,kz
       integer :: xstep,ystep,zstep
-      double precision :: x,  y,  z
-      double precision :: Lx, Ly, Lz, freqx, freqy, freqz
-      double precision :: cosx,cosy,cosz,sinx,siny,sinz
-      double precision :: HLx,HLy,HLz
-      double precision :: kxd,kyd,kzd
-      double precision :: kappa,kappaMax,Lmin,xT
-      double precision :: f3,twicePi
+      real(rt) :: x,  y,  z
+      real(rt) :: Lx, Ly, Lz, freqx, freqy, freqz
+      real(rt) :: cosx,cosy,cosz,sinx,siny,sinz
+      real(rt) :: HLx,HLy,HLz
+      real(rt) :: kxd,kyd,kzd
+      real(rt) :: kappa,kappaMax,Lmin,xT
+      real(rt) :: f3,twicePi
       
       twicePi = TWO*M_PI
 
@@ -1010,5 +1031,5 @@
          enddo
       enddo
       
-      end subroutine ca_derforcez
+      end subroutine derforcez
 

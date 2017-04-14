@@ -36,7 +36,7 @@ Nyx::get_old_source (Real      old_time,
          ++Old_fpi)
     {
         const Box& bx = grids[Old_fpi.index()];
-        BL_FORT_PROC_CALL(CA_EXT_SRC, ca_ext_src)
+        BL_FORT_PROC_CALL(EXT_SRC, ext_src)
             (bx.loVect(), bx.hiVect(), 
              BL_TO_FORTRAN(Old_fpi()), BL_TO_FORTRAN(Old_fpi()), 
              BL_TO_FORTRAN(Old_dfpi()), BL_TO_FORTRAN(Old_dfpi()),
@@ -107,7 +107,7 @@ Nyx::get_new_source (Real      old_time,
          ++Old_fpi, ++New_fpi, ++Old_dfpi, ++New_dfpi)
     {
         const Box& bx = grids[Old_fpi.index()];
-        BL_FORT_PROC_CALL(CA_EXT_SRC, ca_ext_src)
+        BL_FORT_PROC_CALL(EXT_SRC, ext_src)
             (bx.loVect(), bx.hiVect(), 
              BL_TO_FORTRAN(Old_fpi()), BL_TO_FORTRAN(New_fpi()), 
              BL_TO_FORTRAN(Old_dfpi()), BL_TO_FORTRAN(New_dfpi()), 

@@ -23,6 +23,7 @@
                                  den,denl1,denl2,denl3,denh1,denh2,denh3, &
                                  lo,hi,nc,delta,level,avg_den)
 
+      use amrex_fort_module, only : rt => amrex_real
       use probdata_module
       implicit none
 
@@ -31,10 +32,10 @@
       integer denl1,denl2,denl3,denh1,denh2,denh3
       integer lo(3), hi(3)
       integer tag(tagl1:tagh1,tagl2:tagh2,tagl3:tagh3)
-      double precision den(denl1:denh1,denl2:denh2,denl3:denh3,nc)
-      double precision delta(3), avg_den
+      real(rt) den(denl1:denh1,denl2:denh2,denl3:denh3,nc)
+      real(rt) delta(3), avg_den
 
-      double precision :: over_den
+      real(rt) :: over_den
 
       integer i, j, k
 
@@ -77,6 +78,7 @@
                             var,varl1,varl2,varl3,varh1,varh2,varh3, &
                             lo,hi,nd,domlo,domhi, &
                             delta,xlo,problo,time,level)
+      use amrex_fort_module, only : rt => amrex_real
       use probdata_module
       implicit none
 
@@ -85,8 +87,8 @@
       integer          :: varl1,varl2,varl3,varh1,varh2,varh3
       integer          :: lo(3), hi(3), domlo(3), domhi(3)
       integer          :: tag(tagl1:tagh1,tagl2:tagh2,tagl3:tagh3)
-      double precision :: var(varl1:varh1,varl2:varh2,varl3:varh3,nd)
-      double precision :: delta(3), xlo(3), problo(3), time
+      real(rt) :: var(varl1:varh1,varl2:varh2,varl3:varh3,nd)
+      real(rt) :: delta(3), xlo(3), problo(3), time
 
       integer          :: ilo,jlo,klo,ihi,jhi,khi
       integer          :: i,j,k

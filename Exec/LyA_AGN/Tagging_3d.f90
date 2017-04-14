@@ -22,19 +22,20 @@
                                  den,denl1,denl2,denl3,denh1,denh2,denh3, &
                                  lo,hi,nc,domlo,domhi,delta,level,avg_den)
 
+      use amrex_fort_module, only : rt => amrex_real
       use probdata_module
       implicit none
 
-      integer          :: set, clear, nc, level
-      integer          :: tagl1,tagl2,tagl3,tagh1,tagh2,tagh3
-      integer          :: denl1,denl2,denl3,denh1,denh2,denh3
-      integer          :: lo(3), hi(3), domlo(3), domhi(3)
-      integer          :: tag(tagl1:tagh1,tagl2:tagh2,tagl3:tagh3)
-      double precision :: den(denl1:denh1,denl2:denh2,denl3:denh3,nc)
-      double precision :: delta(3), avg_den
+      integer  :: set, clear, nc, level
+      integer  :: tagl1,tagl2,tagl3,tagh1,tagh2,tagh3
+      integer  :: denl1,denl2,denl3,denh1,denh2,denh3
+      integer  :: lo(3), hi(3), domlo(3), domhi(3)
+      integer  :: tag(tagl1:tagh1,tagl2:tagh2,tagl3:tagh3)
+      real(rt) :: den(denl1:denh1,denl2:denh2,denl3:denh3,nc)
+      real(rt) :: delta(3), avg_den
 
-      integer          :: i,j,k
-      double precision :: m_cell, V_cell 
+      integer  :: i,j,k
+      real(rt) :: m_cell, V_cell 
 
       V_cell = delta(1)*delta(2)*delta(3)
       do k = lo(3), hi(3)

@@ -160,7 +160,7 @@ Nyx::initData ()
                 const Box& bx = mfi.tilebox();
                 RealBox gridloc = RealBox(bx, geom.CellSize(), geom.ProbLo());
 
-                BL_FORT_PROC_CALL(CA_INITDATA, ca_initdata)
+                BL_FORT_PROC_CALL(INITDATA, initdata)
                     (level, cur_time, bx.loVect(), bx.hiVect(), 
                      ns, BL_TO_FORTRAN(S_new[mfi]), 
                      nd, BL_TO_FORTRAN(D_new[mfi]), 
@@ -177,7 +177,7 @@ Nyx::initData ()
                 const Box& bx = mfi.tilebox();
                 RealBox gridloc = RealBox(bx, geom.CellSize(), geom.ProbLo());
     
-                BL_FORT_PROC_CALL(CA_INITDATA, ca_initdata)
+                BL_FORT_PROC_CALL(INITDATA, initdata)
                     (level, cur_time, bx.loVect(), bx.hiVect(), 
                      ns, BL_TO_FORTRAN(S_new[mfi]), 
                      ns, BL_TO_FORTRAN(S_new[mfi]), 

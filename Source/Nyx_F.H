@@ -64,7 +64,7 @@ BL_FORT_PROC_DECL(SET_PROBLEM_PARAMS, set_problem_params)
      const int& Outflow_value, const int& Symmetry_value,
      const int& coord_type);
 
-BL_FORT_PROC_DECL(CA_INITDATA, ca_initdata)
+BL_FORT_PROC_DECL(INITDATA, initdata)
     (const int& level, const amrex::Real& time, const int* lo, const int* hi,
      const int& num_state, BL_FORT_FAB_ARG(state),
      const int& num_diag,  BL_FORT_FAB_ARG(diag_eos), const amrex::Real dx[],
@@ -90,12 +90,6 @@ BL_FORT_PROC_DECL(ENFORCE_CONSISTENT_E, enforce_consistent_e)
     (const int* lo, const int* hi, BL_FORT_FAB_ARG(state));
 
 BL_FORT_PROC_DECL(HYPFILL, hypfill)
-    (BL_FORT_FAB_ARG(state),
-     const int dlo[], const int dhi[],
-     const amrex::Real dx[], const amrex::Real glo[],
-     const amrex::Real* time, const int bc[]);
-
-BL_FORT_PROC_DECL(DENFILL, denfill)
     (BL_FORT_FAB_ARG(state),
      const int dlo[], const int dhi[],
      const amrex::Real dx[], const amrex::Real glo[],
@@ -195,7 +189,7 @@ BL_FORT_PROC_DECL(FORT_AVGDOWN, fort_avgdown)
      const int ovlo[], const int ovhi[], const int rat[]);
 
 #ifdef AGN
-BL_FORT_PROC_DECL(CA_EXT_SRC, ca_ext_src)
+BL_FORT_PROC_DECL(EXT_SRC, ext_src)
     (const int* lo, const int* hi,
      BL_FORT_FAB_ARG(old_state),
      BL_FORT_FAB_ARG(new_state),
@@ -208,7 +202,7 @@ BL_FORT_PROC_DECL(CA_EXT_SRC, ca_ext_src)
      const amrex::Real* time, const amrex::Real* z,
      const amrex::Real* dt);
 #else
-BL_FORT_PROC_DECL(CA_EXT_SRC, ca_ext_src)
+BL_FORT_PROC_DECL(EXT_SRC, ext_src)
     (const int* lo, const int* hi,
      BL_FORT_FAB_ARG(old_state),
      BL_FORT_FAB_ARG(new_state),
@@ -260,7 +254,7 @@ BL_FORT_PROC_DECL(AUXUPDATE, auxupdate)
      const amrex::Real * dt);
 #endif
 
-BL_FORT_PROC_DECL(GET_RHOE, ca_get_rhoe)
+BL_FORT_PROC_DECL(GET_RHOE, get_rhoe)
   (const int lo[], const int hi[],
    const BL_FORT_FAB_ARG(rhoe),
    const BL_FORT_FAB_ARG(temp),

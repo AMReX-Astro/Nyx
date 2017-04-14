@@ -1,7 +1,7 @@
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_derstate(state,state_l1,state_l2,state_l3,state_h1,state_h2,state_h3,nv, &
+      subroutine derstate(state,state_l1,state_l2,state_l3,state_h1,state_h2,state_h3,nv, &
                              dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
                              domhi,delta,xlo,time,dt,bc,level,grid_no)
       !
@@ -25,7 +25,7 @@
 
       if (nv .ne. 3) then
           print *,'... confusion in derstate ... nv should be 3 but is ',nv
-          call bl_error('Error:: Derive_3d.f90 :: ca_derstate')
+          call bl_error('Error:: Derive_3d.f90 :: derstate')
       end if
       !
       ! Density
@@ -58,11 +58,11 @@
          end do
       end do
  
-      end subroutine ca_derstate
+      end subroutine derstate
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_dervel(vel,vel_l1,vel_l2,vel_l3,vel_h1,vel_h2,vel_h3,nv, &
+      subroutine dervel(vel,vel_l1,vel_l2,vel_l3,vel_h1,vel_h2,vel_h3,nv, &
                            dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
                            domhi,delta,xlo,time,dt,bc,level,grid_no)
       !
@@ -93,11 +93,11 @@
          end do
       end do
  
-      end subroutine ca_dervel
+      end subroutine dervel
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_dermagvel(magvel,vel_l1,vel_l2,vel_l3,vel_h1,vel_h2,vel_h3,nv, &
+      subroutine dermagvel(magvel,vel_l1,vel_l2,vel_l3,vel_h1,vel_h2,vel_h3,nv, &
                               dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
                               domhi,delta,xlo,time,dt,bc,level,grid_no)
       !
@@ -130,11 +130,11 @@
          end do
       end do
 
-      end subroutine ca_dermagvel
+      end subroutine dermagvel
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_dermaggrav(maggrav,grav_l1,grav_l2,grav_l3,grav_h1,grav_h2,grav_h3,ng, &
+      subroutine dermaggrav(maggrav,grav_l1,grav_l2,grav_l3,grav_h1,grav_h2,grav_h3,ng, &
                                dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
                                domhi,delta,xlo,time,dt,bc,level,grid_no)
       !
@@ -167,11 +167,11 @@
          end do
       end do
 
-      end subroutine ca_dermaggrav
+      end subroutine dermaggrav
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_dermagmom(magmom,mom_l1,mom_l2,mom_l3,mom_h1,mom_h2,mom_h3,nv, &
+      subroutine dermagmom(magmom,mom_l1,mom_l2,mom_l3,mom_h1,mom_h2,mom_h3,nv, &
                               dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
                               domhi,delta,xlo,time,dt,bc,level,grid_no)
       !
@@ -202,11 +202,11 @@
          end do
       end do
 
-      end subroutine ca_dermagmom
+      end subroutine dermagmom
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_derpres(p,p_l1,p_l2,p_l3,p_h1,p_h2,p_h3,ncomp_p, &
+      subroutine derpres(p,p_l1,p_l2,p_l3,p_h1,p_h2,p_h3,ncomp_p, &
            u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,ncomp_u,lo,hi,domlo, &
            domhi,dx,xlo,time,dt,bc,level,grid_no)
       !
@@ -251,11 +251,11 @@
          enddo
       enddo
 
-      end subroutine ca_derpres
+      end subroutine derpres
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_dereint1(e,e_l1,e_l2,e_l3,e_h1,e_h2,e_h3,ncomp_e, &
+      subroutine dereint1(e,e_l1,e_l2,e_l3,e_h1,e_h2,e_h3,ncomp_e, &
            u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,ncomp_u,lo,hi,domlo, &
            domhi,dx,xlo,time,dt,bc,level,grid_no)
       !
@@ -291,11 +291,11 @@
          enddo
       enddo
 
-      end subroutine ca_dereint1
+      end subroutine dereint1
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_dereint2(e,e_l1,e_l2,e_l3,e_h1,e_h2,e_h3,ncomp_e, &
+      subroutine dereint2(e,e_l1,e_l2,e_l3,e_h1,e_h2,e_h3,ncomp_e, &
            u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,ncomp_u,lo,hi,domlo, &
            domhi,dx,xlo,time,dt,bc,level,grid_no)
 
@@ -324,11 +324,11 @@
          enddo
       enddo
 
-      end subroutine ca_dereint2
+      end subroutine dereint2
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_dersoundspeed(c,c_l1,c_l2,c_l3,c_h1,c_h2,c_h3,ncomp_c, &
+      subroutine dersoundspeed(c,c_l1,c_l2,c_l3,c_h1,c_h2,c_h3,ncomp_c, &
            u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,ncomp_u,lo,hi,domlo, &
            domhi,dx,xlo,time,dt,bc,level,grid_no)
 
@@ -371,11 +371,11 @@
          enddo
       enddo
 
-      end subroutine ca_dersoundspeed
+      end subroutine dersoundspeed
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_dermachnumber(mach,mach_l1,mach_l2,mach_l3,mach_h1,mach_h2,mach_h3,ncomp_mach, &
+      subroutine dermachnumber(mach,mach_l1,mach_l2,mach_l3,mach_h1,mach_h2,mach_h3,ncomp_mach, &
            u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,ncomp_u,lo,hi,domlo, &
            domhi,dx,xlo,time,dt,bc,level,grid_no)
 
@@ -423,11 +423,11 @@
          enddo
       enddo
 
-      end subroutine ca_dermachnumber
+      end subroutine dermachnumber
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_derentropy(s,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3,ncomp_s, &
+      subroutine derentropy(s,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3,ncomp_s, &
                                u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,ncomp_u,lo,hi, &
                                domlo,domhi,dx,xlo,time,dt,bc,level,grid_no)
       !
@@ -470,11 +470,11 @@
          enddo
       enddo
 
-      end subroutine ca_derentropy
+      end subroutine derentropy
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_derspec(spec,spec_l1,spec_l2,spec_l3,spec_h1,spec_h2,spec_h3,nv, &
+      subroutine derspec(spec,spec_l1,spec_l2,spec_l3,spec_h1,spec_h2,spec_h3,nv, &
                             dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
                             domhi,delta,xlo,time,dt,bc,level,grid_no)
       !
@@ -505,11 +505,11 @@
          end do
       end do
  
-      end subroutine ca_derspec
+      end subroutine derspec
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_derlogden(logden,ld_l1,ld_l2,ld_l3,ld_h1,ld_h2,ld_h3,nd, &
+      subroutine derlogden(logden,ld_l1,ld_l2,ld_l3,ld_h1,ld_h2,ld_h3,nd, &
                               dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc, &
                               lo,hi,domlo,domhi,delta,xlo,time,dt,bc,level,grid_no)
       use amrex_fort_module, only : rt => amrex_real
@@ -536,11 +536,11 @@
          end do
       end do
  
-      end subroutine ca_derlogden
+      end subroutine derlogden
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_dermagvort(vort,v_l1,v_l2,v_l3,v_h1,v_h2,v_h3,nv, & 
+      subroutine dermagvort(vort,v_l1,v_l2,v_l3,v_h1,v_h2,v_h3,nv, & 
                                dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
                                domhi,delta,xlo,time,dt,bc,level,grid_no)
       !
@@ -598,11 +598,11 @@
          end do
       end do
 
-      end subroutine ca_dermagvort
+      end subroutine dermagvort
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_derdivu(divu,div_l1,div_l2,div_l3,div_h1,div_h2,div_h3,nd, &
+      subroutine derdivu(divu,div_l1,div_l2,div_l3,div_h1,div_h2,div_h3,nd, &
                             dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc, &
                             lo,hi,domlo,domhi,delta,xlo,time,dt,bc,level,grid_no)
       !
@@ -642,11 +642,11 @@
          end do
       end do
 
-      end subroutine ca_derdivu
+      end subroutine derdivu
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_derkineng(kineng,ken_l1,ken_l2,ken_l3,ken_h1,ken_h2,ken_h3,nk, &
+      subroutine derkineng(kineng,ken_l1,ken_l2,ken_l3,ken_h1,ken_h2,ken_h3,nk, &
                               dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc, &
                               lo,hi,domlo,domhi,delta,xlo,time,dt,bc,level,grid_no)
       !
@@ -679,11 +679,11 @@
          end do
       end do
 
-      end subroutine ca_derkineng
+      end subroutine derkineng
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_dernull(kineng,ken_l1,ken_l2,ken_l3,ken_h1,ken_h2,ken_h3,nk, &
+      subroutine dernull(kineng,ken_l1,ken_l2,ken_l3,ken_h1,ken_h2,ken_h3,nk, &
                             dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc, &
                              lo,hi,domlo,domhi,delta,xlo,time,dt,bc,level,grid_no)
       !
@@ -702,11 +702,11 @@
       real(rt)    dat(dat_l1:dat_h1,dat_l2:dat_h2,dat_l3:dat_h3,nc)
       integer    level, grid_no
 
-      end subroutine ca_dernull
+      end subroutine dernull
 
 !-----------------------------------------------------------------------
 
-      subroutine ca_dermomt(vel,vel_l1,vel_l2,vel_l3,vel_h1,vel_h2,vel_h3,nv, &
+      subroutine dermomt(vel,vel_l1,vel_l2,vel_l3,vel_h1,vel_h2,vel_h3,nv, &
                            dat,dat_l1,dat_l2,dat_l3,dat_h1,dat_h2,dat_h3,nc,lo,hi,domlo, &
                            domhi,delta,xlo,time,dt,bc,level,grid_no)
       !
@@ -739,4 +739,4 @@
          end do
       end do
 
-      end subroutine ca_dermomt
+      end subroutine dermomt

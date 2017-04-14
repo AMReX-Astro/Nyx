@@ -2,6 +2,7 @@
 
 subroutine amrex_probinit (init, name, namlen, problo, probhi) bind(c)
 
+    use amrex_fort_module, only : rt => amrex_real
     use probdata_module
     use comoving_module
     use eos_module, only : gamma_const
@@ -10,7 +11,7 @@ subroutine amrex_probinit (init, name, namlen, problo, probhi) bind(c)
 
     integer init, namlen
     integer name(namlen)
-    double precision problo(3), probhi(3)
+    real(rt) problo(3), probhi(3)
 
     integer untin, i
 
@@ -71,6 +72,8 @@ end
 ! ::: -----------------------------------------------------------
 subroutine ca_initdata(level, time, lo, hi, nscal, state, state_l1, state_l2, &
                        state_l3, state_h1, state_h2, state_h3, delta, xlo, xhi)
+
+    use amrex_fort_module, only : rt => amrex_real
     use probdata_module
     use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, &
                                    UFS, UTEMP
@@ -80,8 +83,8 @@ subroutine ca_initdata(level, time, lo, hi, nscal, state, state_l1, state_l2, &
     integer level, nscal
     integer lo(3), hi(3)
     integer state_l1, state_l2, state_l3, state_h1, state_h2, state_h3
-    double precision xlo(3), xhi(3), time, delta(3)
-    double precision state(state_l1:state_h1, state_l2:state_h2, &
+    real(rt) xlo(3), xhi(3), time, delta(3)
+    real(rt) state(state_l1:state_h1, state_l2:state_h2, &
                            state_l3:state_h3, NVAR)
 
     integer i, j, k
@@ -115,6 +118,7 @@ end subroutine ca_initdata
 subroutine ca_hypfill(adv, adv_l1, adv_l2, adv_l3, adv_h1, adv_h2, adv_h3, &
                       domlo, domhi, delta, xlo, time, bc)
 
+    use amrex_fort_module, only : rt => amrex_real
     use meth_params_module
 
     implicit none
@@ -122,8 +126,8 @@ subroutine ca_hypfill(adv, adv_l1, adv_l2, adv_l3, adv_h1, adv_h2, adv_h3, &
     integer adv_l1, adv_l2, adv_l3, adv_h1, adv_h2, adv_h3
     integer bc(3,2,*)
     integer domlo(3), domhi(3)
-    double precision delta(3), xlo(3), time
-    double precision adv(adv_l1:adv_h1, adv_l2:adv_h2, adv_l3:adv_h3, NVAR)
+    real(rt) delta(3), xlo(3), time
+    real(rt) adv(adv_l1:adv_h1, adv_l2:adv_h2, adv_l3:adv_h3, NVAR)
 
     integer n
 
@@ -140,13 +144,14 @@ end subroutine ca_hypfill
 subroutine ca_denfill(adv, adv_l1, adv_l2, adv_l3, adv_h1, adv_h2, adv_h3, &
                       domlo, domhi, delta, xlo, time, bc)
 
+    use amrex_fort_module, only : rt => amrex_real
     implicit none
     include 'AMReX_bc_types.fi'
     integer adv_l1, adv_l2, adv_l3, adv_h1, adv_h2, adv_h3
     integer bc(3,2,*)
     integer domlo(3), domhi(3)
-    double precision delta(3), xlo(3), time
-    double precision adv(adv_l1:adv_h1, adv_l2:adv_h2, adv_l3:adv_h3)
+    real(rt) delta(3), xlo(3), time
+    real(rt) adv(adv_l1:adv_h1, adv_l2:adv_h2, adv_l3:adv_h3)
 
     call filcc(adv, adv_l1, adv_l2, adv_l3, adv_h1, adv_h2, adv_h3, domlo, &
                domhi, delta, xlo, bc)
@@ -158,13 +163,14 @@ end subroutine ca_denfill
 subroutine ca_xmomfill(adv, adv_l1, adv_l2, adv_l3, adv_h1, adv_h2, adv_h3, &
                        domlo, domhi, delta, xlo, time, bc)
 
+    use amrex_fort_module, only : rt => amrex_real
     implicit none
     include 'AMReX_bc_types.fi'
     integer adv_l1, adv_l2, adv_l3, adv_h1, adv_h2, adv_h3
     integer bc(3,2,*)
     integer domlo(3), domhi(3)
-    double precision delta(3), xlo(3), time
-    double precision adv(adv_l1:adv_h1, adv_l2:adv_h2, adv_l3:adv_h3)
+    real(rt) delta(3), xlo(3), time
+    real(rt) adv(adv_l1:adv_h1, adv_l2:adv_h2, adv_l3:adv_h3)
 
     call filcc(adv, adv_l1, adv_l2, adv_l3, adv_h1, adv_h2, adv_h3, domlo, &
                domhi, delta, xlo, bc)
@@ -176,13 +182,14 @@ end subroutine ca_xmomfill
 subroutine ca_ymomfill(adv, adv_l1, adv_l2, adv_l3, adv_h1, adv_h2, adv_h3, &
                        domlo, domhi, delta, xlo, time, bc)
 
+    use amrex_fort_module, only : rt => amrex_real
     implicit none
     include 'AMReX_bc_types.fi'
     integer adv_l1, adv_l2, adv_l3, adv_h1, adv_h2, adv_h3
     integer bc(3,2,*)
     integer domlo(3), domhi(3)
-    double precision delta(3), xlo(3), time
-    double precision adv(adv_l1:adv_h1, adv_l2:adv_h2, adv_l3:adv_h3)
+    real(rt) delta(3), xlo(3), time
+    real(rt) adv(adv_l1:adv_h1, adv_l2:adv_h2, adv_l3:adv_h3)
 
     call filcc(adv, adv_l1, adv_l2, adv_l3, adv_h1, adv_h2, adv_h3, domlo, &
                domhi, delta, xlo, bc)
@@ -194,13 +201,14 @@ end subroutine ca_ymomfill
 subroutine ca_zmomfill(adv, adv_l1, adv_l2, adv_l3, adv_h1, adv_h2, adv_h3, &
                        domlo, domhi, delta, xlo, time, bc)
 
+    use amrex_fort_module, only : rt => amrex_real
     implicit none
     include 'AMReX_bc_types.fi'
     integer adv_l1, adv_l2, adv_l3, adv_h1, adv_h2, adv_h3
     integer bc(3,2,*)
     integer domlo(3), domhi(3)
-    double precision delta(3), xlo(3), time
-    double precision adv(adv_l1:adv_h1, adv_l2:adv_h2, adv_l3:adv_h3)
+    real(rt) delta(3), xlo(3), time
+    real(rt) adv(adv_l1:adv_h1, adv_l2:adv_h2, adv_l3:adv_h3)
 
     call filcc(adv, adv_l1, adv_l2, adv_l3, adv_h1, adv_h2, adv_h3, domlo, &
                domhi, delta, xlo, bc)
@@ -212,6 +220,7 @@ end subroutine ca_zmomfill
 subroutine ca_gravxfill(grav, grav_l1, grav_l2, grav_l3, grav_h1, grav_h2, &
                         grav_h3, domlo, domhi, delta, xlo, time, bc)
 
+    use amrex_fort_module, only : rt => amrex_real
     use probdata_module
     implicit none
     include 'AMReX_bc_types.fi'
@@ -219,8 +228,8 @@ subroutine ca_gravxfill(grav, grav_l1, grav_l2, grav_l3, grav_h1, grav_h2, &
     integer :: grav_l1, grav_l2, grav_l3, grav_h1, grav_h2, grav_h3
     integer :: bc(3,2,*)
     integer :: domlo(3), domhi(3)
-    double precision delta(3), xlo(3), time
-    double precision grav(grav_l1:grav_h1, grav_l2:grav_h2, grav_l3:grav_h3)
+    real(rt) delta(3), xlo(3), time
+    real(rt) grav(grav_l1:grav_h1, grav_l2:grav_h2, grav_l3:grav_h3)
 
     call filcc(grav, grav_l1, grav_l2, grav_l3, grav_h1, grav_h2, grav_h3, &
                domlo, domhi, delta, xlo, bc)
@@ -233,6 +242,7 @@ end subroutine ca_gravxfill
 subroutine ca_gravyfill(grav, grav_l1, grav_l2, grav_l3, grav_h1, grav_h2, &
                         grav_h3, domlo, domhi, delta, xlo, time, bc)
 
+    use amrex_fort_module, only : rt => amrex_real
     use probdata_module
     implicit none
     include 'AMReX_bc_types.fi'
@@ -240,8 +250,8 @@ subroutine ca_gravyfill(grav, grav_l1, grav_l2, grav_l3, grav_h1, grav_h2, &
     integer :: grav_l1, grav_l2, grav_l3, grav_h1, grav_h2, grav_h3
     integer :: bc(3,2,*)
     integer :: domlo(3), domhi(3)
-    double precision delta(3), xlo(3), time
-    double precision grav(grav_l1:grav_h1, grav_l2:grav_h2, grav_l3:grav_h3)
+    real(rt) delta(3), xlo(3), time
+    real(rt) grav(grav_l1:grav_h1, grav_l2:grav_h2, grav_l3:grav_h3)
 
     call filcc(grav, grav_l1, grav_l2, grav_l3, grav_h1, grav_h2, grav_h3, &
                domlo, domhi, delta, xlo, bc)
@@ -253,6 +263,7 @@ end subroutine ca_gravyfill
 subroutine ca_gravzfill(grav, grav_l1, grav_l2, grav_l3, grav_h1, grav_h2, &
                         grav_h3, domlo, domhi, delta, xlo, time, bc)
 
+    use amrex_fort_module, only : rt => amrex_real
     use probdata_module
     implicit none
     include 'AMReX_bc_types.fi'
@@ -260,8 +271,8 @@ subroutine ca_gravzfill(grav, grav_l1, grav_l2, grav_l3, grav_h1, grav_h2, &
     integer :: grav_l1, grav_l2, grav_l3, grav_h1, grav_h2, grav_h3
     integer :: bc(3,2,*)
     integer :: domlo(3), domhi(3)
-    double precision delta(3), xlo(3), time
-    double precision grav(grav_l1:grav_h1, grav_l2:grav_h2, grav_l3:grav_h3)
+    real(rt) delta(3), xlo(3), time
+    real(rt) grav(grav_l1:grav_h1, grav_l2:grav_h2, grav_l3:grav_h3)
 
     call filcc(grav, grav_l1, grav_l2, grav_l3, grav_h1, grav_h2, grav_h3, &
                domlo, domhi, delta, xlo, bc)

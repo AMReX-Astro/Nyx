@@ -22,17 +22,19 @@
                                   var,varl1,varl2,varl3,varh1,varh2,varh3, &
                                   lo,hi,nd,domlo,domhi, &
                                   delta,xlo,problo,time,level)
+      use amrex_fort_module, only : rt => amrex_real
       use probdata_module
       implicit none
 
-      integer          :: set, clear, nd, level
-      integer          :: tagl1,tagl2,tagl3,tagh1,tagh2,tagh3
-      integer          :: varl1,varl2,varl3,varh1,varh2,varh3
-      integer          :: lo(3), hi(3), domlo(3), domhi(3)
-      integer          :: tag(tagl1:tagh1,tagl2:tagh2,tagl3:tagh3)
-      double precision :: var(varl1:varh1,varl2:varh2,varl3:varh3,nd)
-      double precision :: delta(3), xlo(3), problo(3), time
-      integer          :: i,j,k
+      integer  :: set, clear, nd, level
+      integer  :: tagl1,tagl2,tagl3,tagh1,tagh2,tagh3
+      integer  :: varl1,varl2,varl3,varh1,varh2,varh3
+      integer  :: lo(3), hi(3), domlo(3), domhi(3)
+      integer  :: tag(tagl1:tagh1,tagl2:tagh2,tagl3:tagh3)
+      real(rt) :: var(varl1:varh1,varl2:varh2,varl3:varh3,nd)
+      real(rt) :: delta(3), xlo(3), problo(3), time
+
+      integer  :: i,j,k
 
       do k = lo(3),hi(3)
       do j = lo(2),hi(2)

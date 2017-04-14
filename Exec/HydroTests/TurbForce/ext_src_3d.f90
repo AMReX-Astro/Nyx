@@ -15,34 +15,35 @@
       ! second call.
       !
 
-      subroutine ca_ext_src(lo,hi,&
-                           old_state,old_state_l1,old_state_l2,old_state_l3,old_state_h1,old_state_h2,old_state_h3,&
-                           new_state,new_state_l1,new_state_l2,new_state_l3,new_state_h1,new_state_h2,new_state_h3,&
-                           old_diag ,old_diag_l1,old_diag_l2,old_diag_l3,old_diag_h1,old_diag_h2,old_diag_h3,&
-                           new_diag ,new_diag_l1,new_diag_l2,new_diag_l3,new_diag_h1,new_diag_h2,new_diag_h3,&
-                           src,src_l1,src_l2,src_l3,src_h1,src_h2,src_h3,problo,dx,time,z,dt)
+      subroutine ext_src(lo,hi,&
+                         old_state,old_state_l1,old_state_l2,old_state_l3,old_state_h1,old_state_h2,old_state_h3,&
+                         new_state,new_state_l1,new_state_l2,new_state_l3,new_state_h1,new_state_h2,new_state_h3,&
+                         old_diag ,old_diag_l1,old_diag_l2,old_diag_l3,old_diag_h1,old_diag_h2,old_diag_h3,&
+                         new_diag ,new_diag_l1,new_diag_l2,new_diag_l3,new_diag_h1,new_diag_h2,new_diag_h3,&
+                         src,src_l1,src_l2,src_l3,src_h1,src_h2,src_h3,problo,dx,time,z,dt)
 
+      use amrex_fort_module, only : rt => amrex_real
       use meth_params_module, only : NVAR
       use turbforce_module  , only : force_scale
 
       implicit none
 
-      integer         ,intent(in   ) :: lo(3),hi(3)
-      integer         ,intent(in   ) :: old_state_l1,old_state_l2,old_state_l3,old_state_h1,old_state_h2,old_state_h3
-      integer         ,intent(in   ) :: new_state_l1,new_state_l2,new_state_l3,new_state_h1,new_state_h2,new_state_h3
-      integer         ,intent(in   ) :: old_diag_l1,old_diag_l2,old_diag_l3,old_diag_h1,old_diag_h2,old_diag_h3
-      integer         ,intent(in   ) :: new_diag_l1,new_diag_l2,new_diag_l3,new_diag_h1,new_diag_h2,new_diag_h3
-      integer         ,intent(in   ) :: src_l1,src_l2,src_l3,src_h1,src_h2,src_h3
-      double precision,intent(in   ) :: old_state(old_state_l1:old_state_h1,old_state_l2:old_state_h2, &
+      integer ,intent(in   ) :: lo(3),hi(3)
+      integer ,intent(in   ) :: old_state_l1,old_state_l2,old_state_l3,old_state_h1,old_state_h2,old_state_h3
+      integer ,intent(in   ) :: new_state_l1,new_state_l2,new_state_l3,new_state_h1,new_state_h2,new_state_h3
+      integer ,intent(in   ) :: old_diag_l1,old_diag_l2,old_diag_l3,old_diag_h1,old_diag_h2,old_diag_h3
+      integer ,intent(in   ) :: new_diag_l1,new_diag_l2,new_diag_l3,new_diag_h1,new_diag_h2,new_diag_h3
+      integer ,intent(in   ) :: src_l1,src_l2,src_l3,src_h1,src_h2,src_h3
+      real(rt),intent(in   ) :: old_state(old_state_l1:old_state_h1,old_state_l2:old_state_h2, &
                                                  old_state_l3:old_state_h3,NVAR)
-      double precision,intent(in   ) :: new_state(new_state_l1:new_state_h1,new_state_l2:new_state_h2, &
+      real(rt),intent(in   ) :: new_state(new_state_l1:new_state_h1,new_state_l2:new_state_h2, &
                                                  new_state_l3:new_state_h3,NVAR)
-      double precision,intent(in   ) :: old_diag(old_diag_l1:old_diag_h1,old_diag_l2:old_diag_h2, &
+      real(rt),intent(in   ) :: old_diag(old_diag_l1:old_diag_h1,old_diag_l2:old_diag_h2, &
                                                  old_diag_l3:old_diag_h3,NVAR)
-      double precision,intent(in   ) :: new_diag(new_diag_l1:new_diag_h1,new_diag_l2:new_diag_h2, &
+      real(rt),intent(in   ) :: new_diag(new_diag_l1:new_diag_h1,new_diag_l2:new_diag_h2, &
                                                  new_diag_l3:new_diag_h3,NVAR)
-      double precision,intent(  out) :: src(src_l1:src_h1,src_l2:src_h2,src_l3:src_h3,NVAR)
-      double precision,intent(in   ) :: problo(3),dx(3),time,z,dt
+      real(rt),intent(  out) :: src(src_l1:src_h1,src_l2:src_h2,src_l3:src_h3,NVAR)
+      real(rt),intent(in   ) :: problo(3),dx(3),time,z,dt
 
       src(:,:,:,:) = 0.d0
 
@@ -55,5 +56,5 @@
                             src,src_l1,src_l2,src_l3,src_h1,src_h2,src_h3,problo,dx,time,z,dt)
       end if
  
-      end subroutine ca_ext_src
+      end subroutine ext_src
 

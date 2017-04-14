@@ -2,10 +2,10 @@
 #ifndef _Nyx_H_
 #define _Nyx_H_
 
-#include <BC_TYPES.H>
-#include <AmrLevel.H>
-#include <ErrorList.H>
-#include <FluxRegister.H>
+#include <AMReX_BC_TYPES.H>
+#include <AMReX_AmrLevel.H>
+#include <AMReX_ErrorList.H>
+#include <AMReX_FluxRegister.H>
 
 #include "NyxParticleContainer.H"
 

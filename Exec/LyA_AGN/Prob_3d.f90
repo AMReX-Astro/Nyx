@@ -1,13 +1,14 @@
 
       subroutine amrex_probinit (init,name,namlen,problo,probhi) bind(c)
-
+        
+      use amrex_fort_module, only : rt => amrex_real
       use probdata_module
       use comoving_module
       implicit none
 
       integer init, namlen
       integer name(namlen)
-      double precision problo(3), probhi(3)
+      real(rt) problo(3), probhi(3)
 
       integer untin,i
 
@@ -58,10 +59,11 @@
 ! :::              right hand corner of grid.  (does not include
 ! :::		   ghost region).
 ! ::: -----------------------------------------------------------
-      subroutine ca_initdata(level,time,lo,hi, &
-                             ns, state   ,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3, &
-                             nd, diag_eos,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3, &
-                             delta,xlo,xhi)
+      subroutine initdata(level,time,lo,hi, &
+                          ns, state   ,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3, &
+                          nd, diag_eos,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3, &
+                          delta,xlo,xhi)
+      use amrex_fort_module, only : rt => amrex_real
       use probdata_module
       use atomic_rates_module, only : XHYDROGEN
       use meth_params_module, only : URHO, UMX, UMZ, UEDEN, UEINT, UFS, &
@@ -73,9 +75,9 @@
       integer lo(3), hi(3)
       integer s_l1,s_l2,s_l3,s_h1,s_h2,s_h3
       integer d_l1,d_l2,d_l3,d_h1,d_h2,d_h3
-      double precision xlo(3), xhi(3), time, delta(3)
-      double precision    state(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3,ns)
-      double precision diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,nd)
+      real(rt) xlo(3), xhi(3), time, delta(3)
+      real(rt)    state(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3,ns)
+      real(rt) diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,nd)
 
       integer i,j,k
 
@@ -113,4 +115,4 @@
 
       end if
 
-      end subroutine ca_initdata
+      end subroutine initdata

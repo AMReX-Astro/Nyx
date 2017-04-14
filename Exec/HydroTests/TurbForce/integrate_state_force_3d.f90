@@ -29,6 +29,8 @@ subroutine integrate_state_force(lo, hi, &
 !   state : double array (dims) @todo
 !       The state vars
 !
+    use amrex_fort_module, only : rt => amrex_real
+
     use turbforce_module
     use probdata_module, only: prob_lo, prob_hi, alpha, rho0, temp0
     use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, &
@@ -43,25 +45,25 @@ subroutine integrate_state_force(lo, hi, &
     integer         , intent(in) :: lo(3), hi(3)
     integer         , intent(in) :: s_l1, s_l2, s_l3, s_h1, s_h2, s_h3
     integer         , intent(in) :: d_l1, d_l2, d_l3, d_h1, d_h2, d_h3
-    double precision, intent(inout) ::    state(s_l1:s_h1, s_l2:s_h2,s_l3:s_h3, NVAR)
-    double precision, intent(inout) :: diag_eos(d_l1:d_h1, d_l2:d_h2,d_l3:d_h3, 2)
-    double precision, intent(in)    :: dx(3), time, a, half_dt
+    real(rt), intent(inout) ::    state(s_l1:s_h1, s_l2:s_h2,s_l3:s_h3, NVAR)
+    real(rt), intent(inout) :: diag_eos(d_l1:d_h1, d_l2:d_h2,d_l3:d_h3, 2)
+    real(rt), intent(in)    :: dx(3), time, a, half_dt
 
     integer :: i, j, k
     integer :: kx,ky,kz
     integer :: xstep,ystep,zstep
-    double precision :: scaled_time
-    double precision :: xpos, ypos, zpos
-    double precision :: Lx, Ly, Lz, freqx, freqy, freqz
-    double precision :: cosx,cosy,cosz,sinx,siny,sinz
-    double precision :: HLx,HLy,HLz
-    double precision :: kxd,kyd,kzd
-    double precision :: kappa,kappaMax,Lmin,xT
-    double precision :: f1,f2,f3
-    double precision :: twicePi
-    double precision :: divf, totf
-    double precision :: rho, rho_e_orig, rho_K_res, T_orig, ne
-    double precision :: delta, delta_re, eint0, press, small_eint
+    real(rt) :: scaled_time
+    real(rt) :: xpos, ypos, zpos
+    real(rt) :: Lx, Ly, Lz, freqx, freqy, freqz
+    real(rt) :: cosx,cosy,cosz,sinx,siny,sinz
+    real(rt) :: HLx,HLy,HLz
+    real(rt) :: kxd,kyd,kzd
+    real(rt) :: kappa,kappaMax,Lmin,xT
+    real(rt) :: f1,f2,f3
+    real(rt) :: twicePi
+    real(rt) :: divf, totf
+    real(rt) :: rho, rho_e_orig, rho_K_res, T_orig, ne
+    real(rt) :: delta, delta_re, eint0, press, small_eint
 
     ! Note that (lo,hi) define the region of the box containing the grow cells
     ! Do *not* assume this is just the valid region

@@ -2,6 +2,7 @@
      subroutine fort_set_dirichlet_bcs(lo,hi,domlo,domhi, &
                            phi,phi_l1,phi_l2,phi_l3,phi_h1,phi_h2,phi_h3,dx);
 
+     use amrex_fort_module, only : rt => amrex_real
      use bl_constants_module         , only : M_PI
      use probdata_module             , only : a1,a3,center
      use meth_params_module          , only : NVAR
@@ -11,13 +12,13 @@
 
      integer         ,intent(in   ) :: lo(3),hi(3),domlo(3),domhi(3)
      integer         ,intent(in   ) :: phi_l1,phi_l2,phi_l3,phi_h1,phi_h2,phi_h3
-     double precision,intent(  out) :: phi(phi_l1:phi_h1,phi_l2:phi_h2,phi_l3:phi_h3)
-     double precision,intent(in   ) :: dx(3)
+     real(rt),intent(  out) :: phi(phi_l1:phi_h1,phi_l2:phi_h2,phi_l3:phi_h3)
+     real(rt),intent(in   ) :: dx(3)
 
      integer          :: i,j,k
-     double precision :: x,y,z,rsq,zsq
-     double precision :: a1sq,a3sq
-     double precision :: e,esq,b,lambda,h,ah
+     real(rt) :: x,y,z,rsq,zsq
+     real(rt) :: a1sq,a3sq
+     real(rt) :: e,esq,b,lambda,h,ah
 
      a1sq = a1**2
      a3sq = a3**2

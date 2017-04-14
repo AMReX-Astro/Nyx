@@ -23,6 +23,7 @@
                               den,denl1,denl2,denl3,denh1,denh2,denh3, &
                               lo,hi,nd,domlo,domhi, &
                               delta,xlo,problo,time,level)
+      use amrex_fort_module, only : rt => amrex_real
       use probdata_module
       implicit none
 
@@ -31,10 +32,10 @@
       integer denl1,denl2,denl3,denh1,denh2,denh3
       integer lo(3), hi(3), domlo(3), domhi(3)
       integer tag(tagl1:tagh1,tagl2:tagh2,tagl3:tagh3)
-      double precision den(denl1:denh1,denl2:denh2,denl3:denh3,nd)
-      double precision delta(3), xlo(3), problo(3), time
+      real(rt) den(denl1:denh1,denl2:denh2,denl3:denh3,nd)
+      real(rt) delta(3), xlo(3), problo(3), time
 
-      double precision ax,ay,az
+      real(rt) ax,ay,az
       integer i, j, k
 
 !     Tag on regions of high density
@@ -97,6 +98,7 @@
                                 lo,hi,np,domlo,domhi, &
                                 delta,xlo,problo,time,level)
 
+      use amrex_fort_module, only : rt => amrex_real
       use probdata_module
       implicit none
 
@@ -105,11 +107,11 @@
       integer pressl1,pressl2,pressl3,pressh1,pressh2,pressh3
       integer lo(3), hi(3), domlo(3), domhi(3)
       integer tag(tagl1:tagh1,tagl2:tagh2,tagl3:tagh3)
-      double precision press(pressl1:pressh1,pressl2:pressh2, &
+      real(rt) press(pressl1:pressh1,pressl2:pressh2, &
                              pressl3:pressh3,np)
-      double precision delta(3), xlo(3), problo(3), time
+      real(rt) delta(3), xlo(3), problo(3), time
 
-      double precision ax,ay,az
+      real(rt) ax,ay,az
       integer i, j, k
 
 !     Tag on regions of high pressure

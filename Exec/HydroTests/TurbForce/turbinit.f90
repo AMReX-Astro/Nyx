@@ -2,6 +2,7 @@
 
 module turbinit_module
 
+  use amrex_fort_module, only : rt => amrex_real
   use bl_types
   use bl_space
 
@@ -18,21 +19,21 @@ contains
     use box_module
     use mt19937_module
 
-    double precision, intent(in) :: prob_lo(:), prob_hi(:)
+    real(rt), intent(in) :: prob_lo(:), prob_hi(:)
     
     integer :: kx,ky,kz
     integer :: xstep,ystep,zstep
     integer :: mode_count
 
-    double precision :: Lx, Ly, Lz
-    double precision :: kxd,kyd,kzd
-    double precision :: kappa,kappaMax,Lmin
-    double precision :: twicePi
-    double precision :: thetaTmp,cosThetaTmp,sinThetaTmp
-    double precision :: phiTmp,cosPhiTmp,sinPhiTmp
-    double precision :: px,py,pz,mp2,Ekh
-    double precision :: freqMin,freqMax,freqDiff
-    double precision :: rn
+    real(rt) :: Lx, Ly, Lz
+    real(rt) :: kxd,kyd,kzd
+    real(rt) :: kappa,kappaMax,Lmin
+    real(rt) :: twicePi
+    real(rt) :: thetaTmp,cosThetaTmp,sinThetaTmp
+    real(rt) :: phiTmp,cosPhiTmp,sinPhiTmp
+    real(rt) :: px,py,pz,mp2,Ekh
+    real(rt) :: freqMin,freqMax,freqDiff
+    real(rt) :: rn
 
     if (parallel_IOProcessor()) then
        write (*,*) "Initialising random number generator..."

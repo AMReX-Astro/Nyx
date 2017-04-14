@@ -102,6 +102,7 @@ contains
 
   subroutine nyx_eos_soundspeed(c, R, e)
 
+     use amrex_fort_module, only : rt => amrex_real
      use meth_params_module, only: gamma_const, gamma_minus_1
 
      ! In/out variables
@@ -119,6 +120,8 @@ contains
   end subroutine nyx_eos_soundspeed
 
   subroutine nyx_eos_T_given_Re(T, Ne, R, e, comoving_a)
+
+     use amrex_fort_module, only : rt => amrex_real
 
      ! In/out variables
      real(rt),           intent(inout) :: T, Ne
@@ -168,6 +171,7 @@ contains
 
   subroutine nyx_eos_S_given_Re(S, R, e, T, Ne, comoving_a)
 
+     use amrex_fort_module, only : rt => amrex_real
      implicit none
 
      ! In/out variables
@@ -213,6 +217,8 @@ contains
   end subroutine nyx_eos_S_given_Re
 
   subroutine nyx_eos_given_RT(e, P, R, T, Ne, comoving_a)
+
+     use amrex_fort_module, only : rt => amrex_real
 
      ! In/out variables
      real(rt),           intent(  out) :: e, P
@@ -271,9 +277,10 @@ contains
                  entropy, &
                  do_eos_diag)
 
-    use bl_error_module
-    use fundamental_constants_module, only: k_B, n_A, hbar
-    use meth_params_module, only: gamma_minus_1
+     use amrex_fort_module, only : rt => amrex_real
+     use bl_error_module
+     use fundamental_constants_module, only: k_B, n_A, hbar
+     use meth_params_module, only: gamma_minus_1
 
 ! dens     -- mass density (g/cc)
 ! temp     -- temperature (K)
@@ -354,10 +361,6 @@ contains
 
        ! Solve e = k T / [(mu m_nucleon)*(gamma-1)] for T
        temp = eint * (mu * m_nucleon_over_kB * gamma_minus_1)
-
-    else
-	
-       eint = temp / (mu * m_nucleon_over_kB * gamma_minus_1)
 
     endif
 

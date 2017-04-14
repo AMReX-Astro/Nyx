@@ -660,7 +660,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
             D_new[mfi].setVal(0, Temp_comp);
             D_new[mfi].setVal(0,   Ne_comp);
 
-            BL_FORT_PROC_CALL(CA_INITDATA, ca_initdata)
+            BL_FORT_PROC_CALL(INITDATA, initdata)
                 (level, cur_time, lo, hi, 
                  ns,BL_TO_FORTRAN(S_new[mfi]), 
                  nd,BL_TO_FORTRAN(D_new[mfi]), dx,
