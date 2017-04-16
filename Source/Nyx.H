@@ -620,6 +620,7 @@ protected:
     // These control random initialization
     static bool particle_initrandom_serialize;
     static long particle_initrandom_count;
+    static long particle_initrandom_count_per_box;
     static amrex::Real particle_initrandom_mass;
     static int particle_initrandom_iseed;
 
