@@ -109,6 +109,7 @@ std::string Nyx::particle_move_type = "";
 bool Nyx::particle_initrandom_serialize = false;
 Real Nyx::particle_initrandom_mass;
 long Nyx::particle_initrandom_count;
+long Nyx::particle_initrandom_count_per_box;
 int  Nyx::particle_initrandom_iseed;
 
 int Nyx::particle_verbose               = 1;
@@ -234,6 +235,7 @@ Nyx::read_particle_params ()
 
     pp.query("particle_initrandom_serialize", particle_initrandom_serialize);
     pp.query("particle_initrandom_count", particle_initrandom_count);
+    pp.query("particle_initrandom_count_per_box", particle_initrandom_count_per_box);
     pp.query("particle_initrandom_mass", particle_initrandom_mass);
     pp.query("particle_initrandom_iseed", particle_initrandom_iseed);
 
@@ -376,6 +378,33 @@ Nyx::init_particles ()
                              particle_initrandom_iseed,
                              particle_initrandom_mass,
                              particle_initrandom_serialize);
+        }
+        else if (particle_init_type == "RandomPerBox")
+        {
+            if (particle_initrandom_count_per_box <= 0)
+            {
+                amrex::Abort("Nyx::init_particles(): particle_initrandom_count_per_box must be > 0");
+            }
+            if (particle_initrandom_iseed <= 0)
+            {
+                amrex::Abort("Nyx::init_particles(): particle_initrandom_iseed must be > 0");
+            }
+
+            if (verbose && ParallelDescriptor::IOProcessor())
+            {
+                std::cout << "\nInitializing DM with of " << particle_initrandom_count_per_box
+                          << " random particles per box with initial seed: "
+                          << particle_initrandom_iseed << "\n\n";
+            }
+
+            // We just make this MultiFab in order to iterate over it ...
+            MultiFab particle_mf(grids,dmap,1,1);
+
+            DMPC->InitRandomPerBox(particle_initrandom_count_per_box,
+                                   particle_initrandom_iseed,
+                                   particle_initrandom_mass,
+                                   particle_mf);
+
         }
         else if (particle_init_type == "AsciiFile")
         {
