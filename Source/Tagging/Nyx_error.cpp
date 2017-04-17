@@ -54,3 +54,10 @@ Nyx::error_setup()
                  BL_FORT_PROC_CALL(TAG_OVERDENSITY, tag_overdensity));
 
 }
+
+void
+Nyx::manual_tags_placement (TagBoxArray&    tags,
+                            const Array<IntVect>& bf_lev)
+{
+}
+
