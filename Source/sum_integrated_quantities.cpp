@@ -309,13 +309,11 @@ Nyx::compute_average_species (int          nspec,
 
             if (i < nspec)
             {
-               BL_FORT_PROC_CALL(GET_SPEC_NAMES, get_spec_names)
-                   (int_names.dataPtr(), &i, &len);
+               fort_get_spec_names(int_names.dataPtr(), &i, &len);
             }
             else
             {
-               BL_FORT_PROC_CALL(GET_AUX_NAMES, get_aux_names)
-                   (int_names.dataPtr(), &i, &len);
+               fort_get_aux_names(int_names.dataPtr(), &i, &len);
             }
     
             for (int j = 0; j < len; j++)

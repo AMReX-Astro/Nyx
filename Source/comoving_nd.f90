@@ -1,10 +1,16 @@
+module comoving_nd_module
+
+  use amrex_fort_module, only : rt => amrex_real
+
+  contains
+
 ! :::
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine fort_integrate_comoving_a(old_a,new_a,dt)
+      subroutine fort_integrate_comoving_a(old_a,new_a,dt) &
+         bind(C, name="fort_integrate_comoving_a")
 
-        use amrex_fort_module, only : rt => amrex_real
         use fundamental_constants_module, only: Hubble_const
         use comoving_module             , only: comoving_h, comoving_OmM, comoving_type
 
@@ -71,9 +77,9 @@
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine fort_integrate_comoving_a_to_z(old_a,z_value,dt)
+      subroutine fort_integrate_comoving_a_to_z(old_a,z_value,dt) &
+         bind(C, name="fort_integrate_comoving_a_to_z")
 
-        use amrex_fort_module, only : rt => amrex_real
         use fundamental_constants_module, only: Hubble_const
         use comoving_module             , only: comoving_h, comoving_OmM, comoving_type
 
@@ -144,7 +150,6 @@
 
       subroutine fort_est_maxdt_comoving_a(old_a,dt)
 
-        use amrex_fort_module, only : rt => amrex_real
         use fundamental_constants_module, only: Hubble_const
         use comoving_module             , only: comoving_h, comoving_OmM, comoving_type
 
@@ -184,9 +189,9 @@
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine fort_estdt_comoving_a(old_a,new_a,dt,change_allowed,final_a,dt_modified)
+      subroutine fort_estdt_comoving_a(old_a,new_a,dt,change_allowed,final_a,dt_modified) &
+         bind(C, name="fort_estdt_comoving_a")
 
-        use amrex_fort_module, only : rt => amrex_real
         use comoving_module             , only: comoving_h
 
         implicit none
@@ -228,8 +233,6 @@
 ! :::
 
       subroutine enforce_percent_change(old_a,new_a,dt,change_allowed)
-
-        use amrex_fort_module, only : rt => amrex_real
 
         implicit none
 
@@ -275,8 +278,6 @@
 
       subroutine enforce_final_a(old_a,new_a,dt,final_a)
 
-        use amrex_fort_module, only : rt => amrex_real
-
         implicit none
 
         real(rt), intent(in   ) :: old_a, final_a
@@ -318,45 +319,46 @@
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine get_omb(frac)
+      subroutine fort_get_omb(frac) &
+         bind(C, name="fort_get_omb")
 
-        use amrex_fort_module, only : rt => amrex_real
         use comoving_module, only: comoving_OmB, comoving_OmM
 
         real(rt) :: frac
 
         frac = comoving_OmB / comoving_OmM
 
-      end subroutine get_omb
+      end subroutine fort_get_omb
 
 
 ! :::
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine get_omm(omm)
+      subroutine fort_get_omm(omm) &
+         bind(C, name="fort_get_omm")
 
-        use amrex_fort_module, only : rt => amrex_real
         use comoving_module, only: comoving_OmM
 
         real(rt) :: omm
 
         omm = comoving_OmM
 
-      end subroutine get_omm
+      end subroutine fort_get_omm
 
 ! :::
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine get_hubble(hubble)
+      subroutine fort_get_hubble(hubble) &
+         bind(C, name="fort_get_hubble")
 
-        use amrex_fort_module, only : rt => amrex_real
         use comoving_module, only: comoving_h
 
         real(rt) :: hubble
 
         hubble = comoving_h
 
-      end subroutine get_hubble
+      end subroutine fort_get_hubble
 
+end module comoving_nd_module

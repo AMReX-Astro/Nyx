@@ -354,7 +354,7 @@ Nyx::advance_hydro_plus_particles (Real time,
             Real se  = 0;
             Real ske = 0;
 
-            BL_FORT_PROC_CALL(CORRECT_GSRC, correct_gsrc)
+            fort_correct_gsrc
                 (bx.loVect(), bx.hiVect(), BL_TO_FORTRAN(grav_vec_old[mfi]),
                  BL_TO_FORTRAN(grav_vec_new[mfi]), BL_TO_FORTRAN(S_old[mfi]),
                  BL_TO_FORTRAN(S_new[mfi]), &a_old, &a_new, &dt, &se, &ske);
@@ -550,7 +550,7 @@ Nyx::advance_hydro (Real time,
         Real se  = 0;
         Real ske = 0;
 
-        BL_FORT_PROC_CALL(CORRECT_GSRC, correct_gsrc)
+        fort_correct_gsrc
             (bx.loVect(), bx.hiVect(), BL_TO_FORTRAN(grav_vec_old[mfi]),
              BL_TO_FORTRAN(grav_vec_new[mfi]), BL_TO_FORTRAN(S_old[mfi]),
              BL_TO_FORTRAN(S_new[mfi]), &a_old, &a_new, &dt, &se, &ske);

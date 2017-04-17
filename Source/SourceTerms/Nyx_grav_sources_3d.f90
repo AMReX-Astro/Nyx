@@ -6,12 +6,13 @@
       !===========================================================================
       ! This is called from the C++ so the threading happens here...
       !===========================================================================
-      subroutine correct_gsrc(lo,hi, &
+      subroutine fort_correct_gsrc(lo,hi, &
                               gold,gold_l1,gold_l2,gold_l3,gold_h1,gold_h2,gold_h3, &
                               gnew,gnew_l1,gnew_l2,gnew_l3,gnew_h1,gnew_h2,gnew_h3, &
                               uold,uold_l1,uold_l2,uold_l3,uold_h1,uold_h2,uold_h3, &
                               unew,unew_l1,unew_l2,unew_l3,unew_h1,unew_h2,unew_h3, &
-                              a_old,a_new,dt,e_added,ke_added)
+                              a_old,a_new,dt,e_added,ke_added) &
+                              bind(C, name="fort_correct_gsrc")
 
       use amrex_fort_module, only : rt => amrex_real
       use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, grav_source_type
@@ -122,7 +123,7 @@
          enddo
       enddo
 
-      end subroutine correct_gsrc
+      end subroutine fort_correct_gsrc
 ! :::
 ! ::: ------------------------------------------------------------------
 ! :::
@@ -132,7 +133,8 @@
                               state,state_l1,state_l2,state_l3,state_h1,state_h2,state_h3, &
                               dstate,dstate_l1,dstate_l2,dstate_l3, &
                               dstate_h1,dstate_h2,dstate_h3, &
-                              sync_src,src_l1,src_l2,src_l3,src_h1,src_h2,src_h3,a_new,dt)
+                              sync_src,src_l1,src_l2,src_l3,src_h1,src_h2,src_h3,a_new,dt) &
+                              bind(C, name="fort_syncgsrc")
 
       use amrex_fort_module, only : rt => amrex_real
       use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ

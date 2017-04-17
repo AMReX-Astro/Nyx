@@ -1,5 +1,6 @@
       subroutine fort_check_initial_species(lo,hi,&
-                             state,state_l1,state_l2,state_l3,state_h1,state_h2,state_h3)
+                             state,state_l1,state_l2,state_l3,state_h1,state_h2,state_h3) &
+      bind(C, name="fort_check_initial_species")
 
       use network           , only : nspec
       use meth_params_module, only : NVAR, URHO, UFS

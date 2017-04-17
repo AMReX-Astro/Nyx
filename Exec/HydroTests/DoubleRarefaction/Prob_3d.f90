@@ -103,10 +103,11 @@
 ! :::		   ghost region).
 ! ::: -----------------------------------------------------------
 
-      subroutine initdata(level,time,lo,hi, &
-                          ns, state,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3, &
-                          nd, diag_eos,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3, &
-                          delta,xlo,xhi)
+      subroutine fort_initdata(level,time,lo,hi, &
+                               ns, state   ,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3, &
+                               nd, diag_eos,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3, &
+                               delta,xlo,xhi)  &
+                               bind(C, name="fort_initdata")
 
      use amrex_fort_module, only : rt => amrex_real
      use probdata_module
@@ -198,5 +199,4 @@
          enddo
       enddo
 
-      end subroutine initdata
-
+      end subroutine fort_initdata

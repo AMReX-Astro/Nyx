@@ -617,8 +617,8 @@ Nyx::init_santa_barbara (int init_sb_vels)
     if (level == 0)
     {
         Real frac_for_hydro, omb, omm;
-        BL_FORT_PROC_CALL(GET_OMB, get_omb)(&omb);
-        BL_FORT_PROC_CALL(GET_OMM, get_omm)(&omm);
+        fort_get_omb(&omb);
+        fort_get_omm(&omm);
         frac_for_hydro = omb;
         Real omfrac = 1.0 - frac_for_hydro;
  
@@ -689,7 +689,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
             D_new[mfi].setVal(0, Temp_comp);
             D_new[mfi].setVal(0,   Ne_comp);
 
-            BL_FORT_PROC_CALL(INITDATA, initdata)
+            fort_initdata
                 (level, cur_time, lo, hi, 
                  ns,BL_TO_FORTRAN(S_new[mfi]), 
                  nd,BL_TO_FORTRAN(D_new[mfi]), dx,
@@ -744,7 +744,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
         const int* lo = box.loVect();
         const int* hi = box.hiVect();
 
-        BL_FORT_PROC_CALL(INIT_E_FROM_T, init_e_from_t)
+        fort_init_e_from_t
             (BL_TO_FORTRAN(S_new[mfi]), &ns, 
              BL_TO_FORTRAN(D_new[mfi]), &nd, lo, hi, &a);
     }

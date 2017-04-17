@@ -2,7 +2,7 @@
 ! ::: -----------------------------------------------------------
 
       subroutine hypfill(adv,adv_l1,adv_l2,adv_l3,adv_h1,adv_h2,adv_h3, &
-                         domlo,domhi,delta,xlo,time,bc)
+                         domlo,domhi,delta,xlo,time,bc) bind(C, name="hypfill")
  
       use amrex_fort_module, only : rt => amrex_real
       use meth_params_module
@@ -28,7 +28,7 @@
 ! ::: -----------------------------------------------------------
 
       subroutine denfill(den,den_l1,den_l2,den_l3,den_h1,den_h2,den_h3, &
-                         domlo,domhi,delta,xlo,time,bc)
+                         domlo,domhi,delta,xlo,time,bc) bind(C, name="denfill")
 
       use amrex_fort_module, only : rt => amrex_real
       implicit none
@@ -46,7 +46,7 @@
 ! ::: -----------------------------------------------------------
 
       subroutine generic_fill(var,var_l1,var_l2,var_l3,var_h1,var_h2,var_h3, &
-                              domlo,domhi,delta,xlo,time,bc)
+                              domlo,domhi,delta,xlo,time,bc) bind(C, name="generic_fill")
 
       use amrex_fort_module, only : rt => amrex_real
       implicit none

@@ -1,4 +1,5 @@
-     subroutine fort_estdt(u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,lo,hi,dx,dt,a_old)
+     subroutine fort_estdt(u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,lo,hi,dx,dt,a_old) &
+        bind(C, name = "fort_estdt")
 
      use amrex_fort_module, only : rt => amrex_real
      use eos_module

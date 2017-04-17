@@ -1,10 +1,11 @@
 
       ! *************************************************************************************
 
-      subroutine compute_temp(lo,hi, &
-                              state   ,s_l1,s_l2,s_l3, s_h1,s_h2,s_h3, &
-                              diag_eos,d_l1,d_l2,d_l3, d_h1,d_h2,d_h3, &
-                              comoving_a, print_fortran_warnings)
+      subroutine fort_compute_temp(lo,hi, &
+                                   state   ,s_l1,s_l2,s_l3, s_h1,s_h2,s_h3, &
+                                   diag_eos,d_l1,d_l2,d_l3, d_h1,d_h2,d_h3, &
+                                   comoving_a, print_fortran_warnings) &
+      bind(C, name = "fort_compute_temp")
 
       use amrex_fort_module, only : rt => amrex_real
       use eos_module
@@ -82,13 +83,14 @@
          enddo
       enddo
 
-      end subroutine compute_temp
+      end subroutine fort_compute_temp
 
-      subroutine compute_rho_temp(lo,hi,dx, &
+      subroutine fort_compute_rho_temp(lo,hi,dx, &
                                      state,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3, &
                                   diag_eos,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3, &
                                   rho_ave,rho_T_sum, &
-                                  T_sum,T_meanrho_sum,rho_sum,vol_sum,vol_mn_sum)
+                                  T_sum,T_meanrho_sum,rho_sum,vol_sum,vol_mn_sum) &
+      bind(C, name = "fort_compute_rho_temp")
 
       use meth_params_module, only : NVAR, URHO, TEMP_COMP
 
@@ -127,12 +129,13 @@
          enddo
       enddo
 
-      end subroutine compute_rho_temp
+      end subroutine fort_compute_rho_temp
 
-      subroutine compute_max_temp_loc(lo,hi, &
-                                      state   ,s_l1,s_l2,s_l3, s_h1,s_h2,s_h3, &
-                                      diag_eos,d_l1,d_l2,d_l3, d_h1,d_h2,d_h3, &
-                                      max_temp, den_maxt, imax, jmax, kmax)
+      subroutine fort_compute_max_temp_loc(lo,hi, &
+                                           state   ,s_l1,s_l2,s_l3, s_h1,s_h2,s_h3, &
+                                           diag_eos,d_l1,d_l2,d_l3, d_h1,d_h2,d_h3, &
+                                           max_temp, den_maxt, imax, jmax, kmax) &
+      bind(C, name = "fort_compute_max_temp_loc")
 
       use meth_params_module, only : TEMP_COMP, NVAR, URHO
 
@@ -165,4 +168,4 @@
          enddo
       enddo
 
-      end subroutine compute_max_temp_loc
+      end subroutine fort_compute_max_temp_loc

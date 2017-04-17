@@ -10,7 +10,9 @@
 ! :: ----------------------------------------------------------
 ! ::
 
-      subroutine sum_over_level(dat,r_l1,r_l2,r_l3,r_h1,r_h2,r_h3,lo,hi,dx,s)
+      subroutine sum_over_level(dat,r_l1,r_l2,r_l3,r_h1,r_h2,r_h3,lo,hi,dx,s) &
+        bind(C, name="sum_over_level")
+
         use amrex_fort_module, only : rt => amrex_real
         implicit none
         integer          :: r_l1,r_l2,r_l3,r_h1,r_h2,r_h3
@@ -48,7 +50,9 @@
 ! ::
 
       subroutine sum_product(dat1,r_l1,r_l2,r_l3,r_h1,r_h2,r_h3,&
-                             dat2,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3,lo,hi,dx,s)
+                             dat2,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3,lo,hi,dx,s) &
+        bind(C, name="sum_product")
+
         use amrex_fort_module, only : rt => amrex_real
         implicit none
         integer          :: r_l1,r_l2,r_l3,r_h1,r_h2,r_h3
@@ -89,10 +93,12 @@
 
       subroutine sum_prod_prod(dat1,r_l1,r_l2,r_l3,r_h1,r_h2,r_h3,&
                                dat2,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3,&
-                               dat3,t_l1,t_l2,t_l3,t_h1,t_h2,t_h3,lo,hi,dx,s)
+                               dat3,t_l1,t_l2,t_l3,t_h1,t_h2,t_h3,lo,hi,dx,s) &
+        bind(C, name="sum_prod_prod")
 
         use amrex_fort_module, only : rt => amrex_real
         implicit none
+
         integer          :: r_l1,r_l2,r_l3,r_h1,r_h2,r_h3
         integer          :: s_l1,s_l2,s_l3,s_h1,s_h2,s_h3
         integer          :: t_l1,t_l2,t_l3,t_h1,t_h2,t_h3

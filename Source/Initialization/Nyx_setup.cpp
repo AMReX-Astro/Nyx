@@ -200,7 +200,7 @@ Nyx::hydro_setup()
     int dm = BL_SPACEDIM;
 
     // Get the number of species from the network model.
-    BL_FORT_PROC_CALL(GET_NUM_SPEC, get_num_spec)(&NumSpec);
+    fort_get_num_spec(&NumSpec);
 
     if (use_const_species == 0)
     {
@@ -211,7 +211,7 @@ Nyx::hydro_setup()
         }
 
         // Get the number of auxiliary quantities from the network model.
-        BL_FORT_PROC_CALL(GET_NUM_AUX, get_num_aux)(&NumAux);
+        fort_get_num_aux(&NumAux);
 
         if (NumAux > 0)
         {
@@ -223,9 +223,9 @@ Nyx::hydro_setup()
     NUM_STATE = cnt;
 
     // Define NUM_GROW from the f90 module.
-    BL_FORT_PROC_CALL(GET_METHOD_PARAMS, get_method_params)(&NUM_GROW);
+    fort_get_method_params(&NUM_GROW);
 
-    BL_FORT_PROC_CALL(SET_METHOD_PARAMS, set_method_params)
+    fort_set_method_params
         (dm, NumAdv, do_hydro, ppm_type, ppm_reference,
          ppm_flatten_before_integrals,
          use_colglaz, use_flattening, corner_coupling, version_2,
@@ -233,11 +233,10 @@ Nyx::hydro_setup()
          heat_cool_type, ParallelDescriptor::Communicator());
 
     if (use_const_species == 1)
-        BL_FORT_PROC_CALL(SET_EOS_PARAMS, set_eos_params)
-            (h_species, he_species);
+        fort_set_eos_params(h_species, he_species);
 
     int coord_type = Geometry::Coord();
-    BL_FORT_PROC_CALL(SET_PROBLEM_PARAMS, set_problem_params)
+    fort_set_problem_params
          (dm, phys_bc.lo(), phys_bc.hi(), Outflow, Symmetry, coord_type);
 
     Interpolater* interp = &cell_cons_interp;
@@ -307,7 +306,7 @@ Nyx::hydro_setup()
         Array<int> int_spec_names(len);
 
         // This call return the actual length of each string in "len"
-        BL_FORT_PROC_CALL(GET_SPEC_NAMES, get_spec_names)
+        fort_get_spec_names
             (int_spec_names.dataPtr(), &i, &len);
 
         for (int j = 0; j < len; j++)
@@ -342,7 +341,7 @@ Nyx::hydro_setup()
         Array<int> int_aux_names(len);
 
         // This call return the actual length of each string in "len"
-        BL_FORT_PROC_CALL(GET_AUX_NAMES, get_aux_names)
+        fort_get_aux_names
             (int_aux_names.dataPtr(), &i, &len);
 
         for (int j = 0; j < len; j++)
@@ -369,33 +368,28 @@ Nyx::hydro_setup()
     }
 
     desc_lst.setComponent(State_Type, Density, name, bcs,
-                          BndryFunc(BL_FORT_PROC_CALL(DENFILL, denfill),
-                                    BL_FORT_PROC_CALL(HYPFILL, hypfill)));
+                          BndryFunc(denfill,hypfill));
 
     set_scalar_bc(bc, phys_bc);
     desc_lst.setComponent(DiagEOS_Type, 0, "Temp", bc,
-                          BndryFunc(BL_FORT_PROC_CALL(GENERIC_FILL, generic_fill)));
+                          BndryFunc(generic_fill));
     desc_lst.setComponent(DiagEOS_Type, 1, "Ne", bc,
-                          BndryFunc(BL_FORT_PROC_CALL(GENERIC_FILL, generic_fill)));
+                          BndryFunc(generic_fill));
 #ifdef GRAVITY
     if (do_grav)
     {
         set_scalar_bc(bc, phys_bc);
         desc_lst.setComponent(PhiGrav_Type, 0, "phi_grav", bc,
-                              BndryFunc(BL_FORT_PROC_CALL(GENERIC_FILL,
-                                                          generic_fill)));
+                              BndryFunc(generic_fill));
         set_x_vel_bc(bc, phys_bc);
         desc_lst.setComponent(Gravity_Type, 0, "grav_x", bc,
-                              BndryFunc(BL_FORT_PROC_CALL(GENERIC_FILL,
-                                                          generic_fill)));
+                              BndryFunc(generic_fill));
        set_y_vel_bc(bc, phys_bc);
        desc_lst.setComponent(Gravity_Type, 1, "grav_y", bc,
-                             BndryFunc(BL_FORT_PROC_CALL(GENERIC_FILL,
-                                                         generic_fill)));
+                             BndryFunc(generic_fill));
        set_z_vel_bc(bc, phys_bc);
        desc_lst.setComponent(Gravity_Type, 2, "grav_z", bc,
-                             BndryFunc(BL_FORT_PROC_CALL(GENERIC_FILL,
-                                                         generic_fill)));
+                             BndryFunc(generic_fill));
     }
 #endif
 
@@ -663,9 +657,9 @@ Nyx::no_hydro_setup()
     NUM_STATE = 1;
 
     // Define NUM_GROW from the f90 module.
-    BL_FORT_PROC_CALL(GET_METHOD_PARAMS, get_method_params)(&NUM_GROW);
+    fort_get_method_params(&NUM_GROW);
 
-    BL_FORT_PROC_CALL(SET_METHOD_PARAMS, set_method_params)
+    fort_set_method_params
         (dm, NumAdv, do_hydro, ppm_type, ppm_reference,
          ppm_flatten_before_integrals,
          use_colglaz, use_flattening, corner_coupling, version_2,
@@ -673,8 +667,7 @@ Nyx::no_hydro_setup()
          heat_cool_type, ParallelDescriptor::Communicator());
 
     int coord_type = Geometry::Coord();
-    BL_FORT_PROC_CALL(SET_PROBLEM_PARAMS, set_problem_params)
-         (dm, phys_bc.lo(), phys_bc.hi(), Outflow, Symmetry, coord_type);
+    fort_set_problem_params(dm, phys_bc.lo(), phys_bc.hi(), Outflow, Symmetry, coord_type);
 
     // Note that the default is state_data_extrap = false,
     // store_in_checkpoint = true.  We only need to put these in
@@ -696,8 +689,7 @@ Nyx::no_hydro_setup()
 
     set_scalar_bc(bc, phys_bc);
     desc_lst.setComponent(State_Type, 0, "density", bc,
-                          BndryFunc(BL_FORT_PROC_CALL(GENERIC_FILL,
-                                                      generic_fill)));
+                          BndryFunc(generic_fill));
 
     // This has only one dummy components
     store_in_checkpoint = false;
@@ -707,8 +699,7 @@ Nyx::no_hydro_setup()
 
     set_scalar_bc(bc, phys_bc);
     desc_lst.setComponent(DiagEOS_Type, 0, "Temp", bc,
-                          BndryFunc(BL_FORT_PROC_CALL(GENERIC_FILL,
-                                                      generic_fill)));
+                          BndryFunc(generic_fill));
 #endif
 
     store_in_checkpoint = true;
@@ -727,20 +718,16 @@ Nyx::no_hydro_setup()
     {
        set_scalar_bc(bc, phys_bc);
        desc_lst.setComponent(PhiGrav_Type, 0, "phi_grav", bc,
-                             BndryFunc(BL_FORT_PROC_CALL(GENERIC_FILL,
-                                                         generic_fill)));
+                             BndryFunc(generic_fill));
        set_x_vel_bc(bc, phys_bc);
        desc_lst.setComponent(Gravity_Type, 0, "grav_x", bc,
-                             BndryFunc(BL_FORT_PROC_CALL(GENERIC_FILL,
-                                                          generic_fill)));
+                             BndryFunc(generic_fill));
        set_y_vel_bc(bc, phys_bc);
        desc_lst.setComponent(Gravity_Type, 1, "grav_y", bc,
-                             BndryFunc(BL_FORT_PROC_CALL(GENERIC_FILL,
-                                                         generic_fill)));
+                             BndryFunc(generic_fill));
        set_z_vel_bc(bc, phys_bc);
        desc_lst.setComponent(Gravity_Type, 2, "grav_z", bc,
-                             BndryFunc(BL_FORT_PROC_CALL(GENERIC_FILL,
-                                                         generic_fill)));
+                             BndryFunc(generic_fill));
 
        derive_lst.add("maggrav", IndexType::TheCellType(), 1,
                       BL_FORT_PROC_CALL(DERMAGGRAV, dermaggrav),

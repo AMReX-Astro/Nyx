@@ -5,7 +5,8 @@
       subroutine time_center_sources(lo,hi,state,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3, &
                                      src_old, so_l1,so_l2,so_l3,so_h1,so_h2,so_h3, &
                                      src_new, sn_l1,sn_l2,sn_l3,sn_h1,sn_h2,sn_h3, &
-                                     a_old, a_new, dt, print_fortran_warnings)
+                                     a_old, a_new, dt, print_fortran_warnings) &
+                                     bind(C, name="time_center_sources")
 
       use amrex_fort_module, only : rt => amrex_real
       use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT

@@ -2,7 +2,8 @@
 
 #ifdef GRAVITY
 #include <Gravity.H>
-BL_FORT_PROC_DECL(GET_GRAV_CONST, get_grav_const)(amrex::Real* Gconst);
+extern "C"
+{ void fort_get_grav_const(amrex::Real* Gconst); }
 #endif
 
 #include <Nyx.H>
@@ -142,12 +143,12 @@ void Nyx::initcosmo()
     
 #ifdef NUFLUID
     Real comoving_OmNu;
-    BL_FORT_PROC_CALL(GET_OMNU,get_omnu)(&comoving_OmNu);
+    fort_get_omnu(&comoving_OmNu);
 #endif
-    BL_FORT_PROC_CALL(GET_OMM, get_omm )(&comoving_OmM );
-    BL_FORT_PROC_CALL(GET_OMB, get_omb )(&comoving_OmB );
-    BL_FORT_PROC_CALL(GET_HUBBLE, get_hubble)(&comoving_h);
-    BL_FORT_PROC_CALL(GET_GRAV_CONST, get_grav_const)(&Gconst);
+    fort_get_omm(&comoving_OmM );
+    fort_get_omb(&comoving_OmB );
+    fort_get_hubble(&comoving_h);
+    fort_get_grav_const(&Gconst);
 
     // We now define this here instead of reading it.
     comoving_OmL = 1. - comoving_OmM;
@@ -429,7 +430,7 @@ void Nyx::initcosmo()
      	    const int* lo = box.loVect();
      	    const int* hi = box.hiVect();
 
-     	    BL_FORT_PROC_CALL(INIT_E_FROM_T, init_e_from_t)
+     	    fort_init_e_from_t
       	       (BL_TO_FORTRAN(S_new[mfi]), &ns, 
       	        BL_TO_FORTRAN(D_new[mfi]), &nd, lo, hi, &old_a);
      	}     	

@@ -160,7 +160,7 @@ Nyx::initData ()
                 const Box& bx = mfi.tilebox();
                 RealBox gridloc = RealBox(bx, geom.CellSize(), geom.ProbLo());
 
-                BL_FORT_PROC_CALL(INITDATA, initdata)
+                fort_initdata
                     (level, cur_time, bx.loVect(), bx.hiVect(), 
                      ns, BL_TO_FORTRAN(S_new[mfi]), 
                      nd, BL_TO_FORTRAN(D_new[mfi]), 
@@ -177,7 +177,7 @@ Nyx::initData ()
                 const Box& bx = mfi.tilebox();
                 RealBox gridloc = RealBox(bx, geom.CellSize(), geom.ProbLo());
     
-                BL_FORT_PROC_CALL(INITDATA, initdata)
+                fort_initdata
                     (level, cur_time, bx.loVect(), bx.hiVect(), 
                      ns, BL_TO_FORTRAN(S_new[mfi]), 
                      ns, BL_TO_FORTRAN(S_new[mfi]), 
@@ -273,7 +273,7 @@ Nyx::initData ()
         {
             const Box& bx = mfi.tilebox();
 
-            BL_FORT_PROC_CALL(FORT_CHECK_INITIAL_SPECIES, fort_check_initial_species)
+            fort_check_initial_species
                 (bx.loVect(), bx.hiVect(), BL_TO_FORTRAN(S_new[mfi]));
         }
     }
@@ -344,12 +344,12 @@ Nyx::init_from_plotfile ()
 
             if (rhoe_infile)
             {
-                BL_FORT_PROC_CALL(INIT_E_FROM_RHOE, init_e_from_rhoe)
+                fort_init_e_from_rhoe
                     (BL_TO_FORTRAN(S_new[mfi]), &ns, bx.loVect(), bx.hiVect(), &old_a);
             }
             else 
             {
-                BL_FORT_PROC_CALL(INIT_E_FROM_T, init_e_from_t)
+                fort_init_e_from_t
                     (BL_TO_FORTRAN(S_new[mfi]), &ns,
                     BL_TO_FORTRAN(D_new[mfi]), &nd, bx.loVect(), bx.hiVect(), &old_a);
             }

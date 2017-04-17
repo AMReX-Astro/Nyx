@@ -7,7 +7,8 @@
 
 using namespace amrex;
 
-BL_FORT_PROC_DECL(GET_GRAV_CONST, get_grav_const)(Real* Gconst);
+extern "C"
+{void fort_get_grav_const(Real* Gconst);}
 
 using std::string;
 
@@ -56,7 +57,7 @@ Nyx::moveKickDriftExact (Real dt)
 
     // Gravitation acceleration = G m / r^2
     Real Gconst;
-    BL_FORT_PROC_CALL(GET_GRAV_CONST, get_grav_const)(&Gconst);
+    fort_get_grav_const(&Gconst);
 
     // First particle 
     part_vels[0] += 0.5 * dt * Gconst * part_mass[1] * (x/std::pow(r,3));
@@ -119,7 +120,7 @@ Nyx::moveKickExact (Real dt)
 
     // Gravitation acceleration = G m / r^2 (mass included below)
     Real Gconst;
-    BL_FORT_PROC_CALL(GET_GRAV_CONST, get_grav_const)(&Gconst);
+    fort_get_grav_const(&Gconst);
 
     // These define the vector from the first to the second particle
     Real x = (part_locs[3]-part_locs[0]);

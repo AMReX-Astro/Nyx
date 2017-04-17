@@ -49,7 +49,7 @@ Nyx::setPlotVariables ()
             //
             // Get the number of species from the network model.
             //
-            BL_FORT_PROC_CALL(GET_NUM_SPEC, get_num_spec)(&NumSpec);
+            fort_get_num_spec(&NumSpec);
             //
             // Get the species names from the network model.
             //
@@ -60,8 +60,7 @@ Nyx::setPlotVariables ()
                 //
                 // This call return the actual length of each string in "len"
                 //
-                BL_FORT_PROC_CALL(GET_SPEC_NAMES, get_spec_names)
-                    (int_spec_names.dataPtr(), &i, &len);
+                fort_get_spec_names(int_spec_names.dataPtr(), &i, &len);
                 char* spec_name = new char[len+1];
 
                 for (int j = 0; j < len; j++)
@@ -265,11 +264,11 @@ Nyx::writePlotFile (const std::string& dir,
 	jobInfoFile << PrettyLine;
 
 	Real comoving_OmM, comoving_OmL, comoving_h;
-	BL_FORT_PROC_CALL(GET_OMM, get_omm )(&comoving_OmM );
+	fort_get_omm(&comoving_OmM);
 	// Omega lambda is defined algebraically
 	comoving_OmL = 1. - comoving_OmM;
 
-	BL_FORT_PROC_CALL(GET_HUBBLE, get_hubble)(&comoving_h);
+	fort_get_hubble(&comoving_h);
 
 	jobInfoFile << "Omega_m (comoving):      " << comoving_OmM << "\n";
 	jobInfoFile << "Omega_lambda (comoving): " << comoving_OmL << "\n";

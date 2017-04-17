@@ -1,7 +1,8 @@
       subroutine reset_internal_e(u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3, &
                                   d,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3,lo,hi, &
                                   print_fortran_warnings,&
-                                  comoving_a,sum_energy_added,sum_energy_total)
+                                  comoving_a,sum_energy_added,sum_energy_total) &
+                                  bind(C, name="reset_internal_e")
 
       use amrex_fort_module, only : rt => amrex_real
       use eos_module

@@ -1,7 +1,8 @@
 subroutine integrate_state(lo, hi, &
                            state   , s_l1, s_l2, s_l3, s_h1, s_h2, s_h3, &
                            diag_eos, d_l1, d_l2, d_l3, d_h1, d_h2, d_h3, &
-                           a, half_dt, min_iter, max_iter)
+                           a, half_dt, min_iter, max_iter) &
+                           bind(C, name="integrate_state")
 
 !
 !   Calculates the sources to be added later on.

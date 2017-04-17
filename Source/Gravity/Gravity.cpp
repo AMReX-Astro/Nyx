@@ -39,7 +39,8 @@ Real Gravity::delta_tol     = 1.e-12;
 Real Gravity::mass_offset   = 0;
 int  Gravity::stencil_type  = CC_CROSS_STENCIL;
 
-BL_FORT_PROC_DECL(GET_GRAV_CONST, get_grav_const)(Real* Gconst);
+extern "C"
+{void fort_get_grav_const(Real* Gconst);}
 
 // ************************************************************************** //
 
@@ -144,7 +145,7 @@ Gravity::read_params ()
         pp.query("delta_tol", delta_tol);
 
         Real Gconst;
-        BL_FORT_PROC_CALL(GET_GRAV_CONST, get_grav_const)(&Gconst);
+        fort_get_grav_const(&Gconst);
         Ggravity = -4.0 * M_PI * Gconst;
         if (verbose > 0 && ParallelDescriptor::IOProcessor())
         {
@@ -1458,7 +1459,7 @@ Gravity::add_to_fluxes(int level, int iteration, int ncycle)
 #endif
 
     int ngrow;
-    BL_FORT_PROC_CALL(GET_METHOD_PARAMS, get_method_params)(&ngrow);
+    fort_get_method_params(&ngrow);
 
     if (phi_fine)
     {

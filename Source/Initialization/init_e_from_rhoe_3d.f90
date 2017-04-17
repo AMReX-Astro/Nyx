@@ -1,5 +1,5 @@
-      subroutine init_e_from_rhoe(state,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3,ns, &
-                                  lo,hi,a_old)
+      subroutine fort_init_e_from_rhoe(state,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3,ns, &
+                                       lo,hi,a_old) bind(C, name="fort_init_e_from_rhoe")
 
       use amrex_fort_module, only : rt => amrex_real
       use eos_module
@@ -29,4 +29,4 @@
          enddo
       enddo
 
-      end subroutine init_e_from_rhoe
+      end subroutine fort_init_e_from_rhoe

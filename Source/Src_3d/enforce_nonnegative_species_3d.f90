@@ -1,15 +1,19 @@
-! ::
-! :: ----------------------------------------------------------
-! ::
+module enforce_module
+
+   use amrex_fort_module, only : rt => amrex_real
+
+   implicit none
+
+   contains 
 
       !===========================================================================
       ! This version is called from within threaded loops so *no* OMP here ...
       !===========================================================================
       subroutine enforce_nonnegative_species(uout,uout_l1,uout_l2,uout_l3, &
                                              uout_h1,uout_h2,uout_h3, &
-                                             lo,hi,print_fortran_warnings)
+                                             lo,hi,print_fortran_warnings) &
+      bind(C, name="fort_enforce_nonnegative_species")
 
-      use amrex_fort_module, only : rt => amrex_real
       use network, only : nspec
       use meth_params_module, only : NVAR, URHO, UFS
 
@@ -116,3 +120,5 @@
       end if ! UFS > 0
 
       end subroutine enforce_nonnegative_species
+
+end module enforce_module

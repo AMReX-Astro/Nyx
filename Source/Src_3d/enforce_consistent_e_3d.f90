@@ -1,5 +1,6 @@
-   subroutine enforce_consistent_e(lo,hi,state, &
-                                   state_l1,state_l2,state_l3,state_h1,state_h2,state_h3)
+   subroutine fort_enforce_consistent_e(lo,hi,state, &
+                                        state_l1,state_l2,state_l3,state_h1,state_h2,state_h3) & 
+     bind(C,name="fort_enforce_consistent_e")
 
      use amrex_fort_module, only : rt => amrex_real
      use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT
@@ -34,4 +35,4 @@
         end do
      end do
 
-   end subroutine enforce_consistent_e
+   end subroutine fort_enforce_consistent_e

@@ -1,5 +1,5 @@
 
-      subroutine get_grav_const(Gconst_out)
+      subroutine fort_get_grav_const(Gconst_out) bind(C,name="fort_get_grav_const")
 
          use amrex_fort_module, only : rt => amrex_real
          use fundamental_constants_module, only: Gconst
@@ -8,5 +8,5 @@
 
          Gconst_out = Gconst
 
-      end subroutine get_grav_const
+      end subroutine fort_get_grav_const
 
