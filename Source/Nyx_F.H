@@ -190,7 +190,7 @@ extern "C"
      const int ovlo[], const int ovhi[], const int rat[]);
 
 #ifdef AGN
-  void ext_src
+  void fort_ext_src
     (const int* lo, const int* hi,
      BL_FORT_FAB_ARG(old_state),
      BL_FORT_FAB_ARG(new_state),
@@ -203,7 +203,7 @@ extern "C"
      const amrex::Real* time, const amrex::Real* z,
      const amrex::Real* dt);
 #else
-  void ext_src
+  void fort_ext_src
     (const int* lo, const int* hi,
      BL_FORT_FAB_ARG(old_state),
      BL_FORT_FAB_ARG(new_state),

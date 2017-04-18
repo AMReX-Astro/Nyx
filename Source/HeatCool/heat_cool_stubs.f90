@@ -63,7 +63,7 @@ end subroutine ext_src_jf
 
 subroutine integrate_state(lo, hi, state, state_l1, state_l2, &
                            state_l3, state_h1, state_h2, state_h3, &
-                           dx, a, half_dt)
+                           dx, a, half_dt) bind(C, name="integrate_state")
 
     use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : NVAR

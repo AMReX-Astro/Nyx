@@ -1,5 +1,5 @@
 
-      subroutine fort_ext_src_add(lo,hi,&
+      subroutine ext_src_add(lo,hi,&
                            old_state,old_state_l1,old_state_l2,old_state_l3,old_state_h1,old_state_h2,old_state_h3,&
                            new_state,new_state_l1,new_state_l2,new_state_l3,new_state_h1,new_state_h2,new_state_h3,&
                            src,src_l1,src_l2,src_l3,src_h1,src_h2,src_h3, &
@@ -31,6 +31,4 @@
       src = 0.0d0
       add = 0.0d0
 
-      end subroutine fort_ext_src_add
-
-
+      end subroutine ext_src_add
