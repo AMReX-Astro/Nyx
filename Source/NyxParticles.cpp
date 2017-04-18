@@ -485,6 +485,7 @@ Nyx::init_particles ()
     }
 #ifdef AGN
     {
+        // Note that we don't initialize any actual AGN particles here, we just create the container.
         BL_ASSERT (APC == 0);
         APC = new AGNParticleContainer(parent);
         ActiveParticles.push_back(APC); 
@@ -498,31 +499,9 @@ Nyx::init_particles ()
             GhostParticles.push_back(GhostAPC); 
 	}
         //
-        // Make sure to call RemoveParticlesOnExit() on exit.
-        //   (if do_dm_particles then we have already called ExecOnFinalize)
-        //
-        if (!do_dm_particles)
-            amrex::ExecOnFinalize(RemoveParticlesOnExit);
-        //
         // 2 gives more stuff than 1.
         //
         APC->SetVerbose(particle_verbose);
-        if (particle_init_type == "AsciiFile")
-        {
-            if (verbose && ParallelDescriptor::IOProcessor())
-                std::cout << "\nInitializing AGN particles from \""
-                          << agn_particle_file << "\" ...\n\n";
-            //
-            // The second argument is how many Reals we read into `m_data[]`
-            // after reading in `m_pos[]`. Here we're reading in the particle
-            // mass, velocity and angles.
-            //
-            APC->InitFromAsciiFile(agn_particle_file, 2*BL_SPACEDIM + 1, &Nrep);
-        }
-        else
-        {
-            amrex::Error("for right now we only init AGN particles with ascii");
-        }
     }
 #endif
 #ifdef NEUTRINO_PARTICLES

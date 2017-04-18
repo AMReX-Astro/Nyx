@@ -43,12 +43,14 @@ Nyx::halo_find ()
 
    const int whichSidecar(0);
 
+   const amrex::Real time1 = ParallelDescriptor::second();
+
 #ifdef REEBER
    const auto& reeber_density_var_list = getReeberHaloDensityVars();
    bool do_analysis(doAnalysisNow());
+
    if (do_analysis || (reeber_int > 0 && nStep() % reeber_int == 0)) {
      if (ParallelDescriptor::NProcsSidecar(0) <= 0) { // we have no sidecars, so do everything in situ
-       const amrex::Real time1 = ParallelDescriptor::second();
 
        BoxArray ba;
        DistributionMapping dm;
@@ -81,6 +83,7 @@ Nyx::halo_find ()
        // zero.
        BL_ASSERT(dm[ParallelDescriptor::MyProc()] == ParallelDescriptor::MyProc());
        FArrayBox& my_fab = reeberMF[ParallelDescriptor::MyProc()];
+
        for (const Halo& h : reeber_halos)
        {
            BL_ASSERT(reeberMF.fabbox(ParallelDescriptor::MyProc()).contains(h.position));
@@ -90,6 +93,7 @@ Nyx::halo_find ()
                my_fab(h.position, comp + 1) = h.individualMasses[comp];
            }
        }
+
        // Actual redistribution
        //amrex::MultiFab redistributeFab(m_leveldata.boxArray(), reeber_density_var_list.size() + 1, 0, m_leveldata.DistributionMap());
        const amrex::MultiFab& simMF = get_new_data(State_Type);
@@ -118,11 +122,16 @@ Nyx::halo_find ()
         }
        // NOTE: ZARIJA, GET YOUR FRESH HALOS HERE!!!
        bool created_file = false;
-       std::ofstream os;
+
+#endif // ifdef REEBER
+
+       const amrex::MultiFab& simMF = get_new_data(State_Type);
+       const BoxArray& simBA = simMF.boxArray();
+       const DistributionMapping& simDM = simMF.DistributionMap();
 
        // agn_density = density associated with *existing* AGN particles
        //               as deposited on the grid 
-       amrex::MultiFab agn_density(simBA, 1, 1);
+       amrex::MultiFab agn_density(simBA, simDM, 1, 1);
        agn_density.setVal(0.0);
 
        Nyx::theAPC()->AssignDensitySingleLevel(agn_density, 0);
@@ -137,7 +146,7 @@ Nyx::halo_find ()
 
        // sub_density = density/momentum that we will subtract from the grid and put into
        //        the AGN particle
-       amrex::MultiFab sub_state(simBA, 1+BL_SPACEDIM, 1);
+       amrex::MultiFab sub_state(simBA, simDM, 1+BL_SPACEDIM, 1);
        sub_state.setVal(0.0);
 
        const amrex::Real* dx  = Geom().CellSize();
@@ -147,32 +156,46 @@ Nyx::halo_find ()
        amrex::Real my_val, mass;
        amrex::Real gas_sum[4];
        u = 0.; v = 0.; w = 0.;
+
+       amrex::Real    halo_mass;
+       amrex::IntVect halo_pos ;
+
+       std::ofstream os;
+
+#ifdef REEBER
        for (const Halo& h : reeber_halos)
        {
            if (!created_file)
               os.open(BoxLib::Concatenate(BoxLib::Concatenate("debug-halos-", nStep(), 5), ParallelDescriptor::MyProc(), 2));
            created_file = true;
-           amrex::Real halo_mass = h.totalMass;
-           os << h.position << " " << halo_mass << std::endl;
-           std::cout << "HALO HERE !!! " << h.position << " " << h.totalMass << std::endl;
+           halo_mass = h.totalMass;
+           halo_pos  = h.position;
+#else
+       {
+           halo_mass = 1.1e11;
+           halo_pos = IntVect(3,3,3);
+#endif
+           os << halo_pos << " " << halo_mass << std::endl;
+           std::cout << "HALO HERE !!! " << halo_pos << " " << halo_mass << std::endl;
 
            bool new_particle_created = false; 
+
            if (halo_mass > 1.e10)
            {
               for (MFIter mfi(agn_density); mfi.isValid(); ++mfi)
               {
                   const Box& currBox = mfi.fabbox();
-                  if (currBox.contains(h.position)) 
+                  if (currBox.contains(halo_pos)) 
                   {
                      int index = mfi.index();
 
-                     std::cout << " CELL / INDEX " << h.position << " " << index << std::endl;
+                     std::cout << " CELL / INDEX " << halo_pos << " " << index << std::endl;
 
                      // Figure out if there are already any nearby AGN particles 
                      amrex::Real agn_mass = 0.0;
-                     for (int k  = h.position[2] - 1; k <= h.position[2] + 1; k++)
-                      for (int j  = h.position[1] - 1; j <= h.position[1] + 1; j++)
-                       for (int i  = h.position[0] - 1; i <= h.position[0] + 1; i++)
+                     for (int k  = halo_pos[2] - 1; k <= halo_pos[2] + 1; k++)
+                      for (int j  = halo_pos[1] - 1; j <= halo_pos[1] + 1; j++)
+                       for (int i  = halo_pos[0] - 1; i <= halo_pos[0] + 1; i++)
                        {
                          IntVect iv(i,j,k);
                          std::cout << "WHICH CELL " << iv << " " << agn_density[index](iv,0) << std::endl;  
@@ -183,9 +206,9 @@ Nyx::halo_find ()
 
                      if (!(agn_mass > 0.0))
                      {
-                        x = (h.position[0]+0.5) * dx[0];
-                        y = (h.position[1]+0.5) * dx[1];
-                        z = (h.position[2]+0.5) * dx[2];
+                        x = (halo_pos[0]+0.5) * dx[0];
+                        y = (halo_pos[1]+0.5) * dx[1];
+                        z = (halo_pos[2]+0.5) * dx[2];
    
                         amrex::Real scaled_halo_mass = halo_mass/1.e13;
     
@@ -195,9 +218,9 @@ Nyx::halo_find ()
                         gas_sum[1] = 0.0;
                         gas_sum[2] = 0.0;
                         gas_sum[3] = 0.0;
-                        for (int k  = h.position[2] - 1; k <= h.position[2] + 1; k++)
-                         for (int j  = h.position[1] - 1; j <= h.position[1] + 1; j++)
-                          for (int i  = h.position[0] - 1; i <= h.position[0] + 1; i++)
+                        for (int k  = halo_pos[2] - 1; k <= halo_pos[2] + 1; k++)
+                         for (int j  = halo_pos[1] - 1; j <= halo_pos[1] + 1; j++)
+                          for (int i  = halo_pos[0] - 1; i <= halo_pos[0] + 1; i++)
                           {
                             IntVect iv(i,j,k);
                             gas_sum[0] += gas_state[index](iv,Density);
@@ -219,13 +242,16 @@ Nyx::halo_find ()
                         w = gas_sum[3] / mass;
    
                         std::cout << "ADDING A PARTICLE AT " << x << " " << y << " " << z << " WITH MASS " << mass << std::endl;
-                        Nyx::theAPC()->AddOneParticle(x,y,z,mass,u,v,w,index);
+                        int lev = 0;
+                        int grid = 0;
+                        int tile = 0;
+                        Nyx::theAPC()->AddOneParticle(lev,grid,tile,halo_mass,x,y,z); // ,u,v,w);
 
                         new_particle_created = true; 
 
-                        for (int k  = h.position[2] - 1; k <= h.position[2] + 1; k++)
-                         for (int j  = h.position[1] - 1; j <= h.position[1] + 1; j++)
-                          for (int i  = h.position[0] - 1; i <= h.position[0] + 1; i++)
+                        for (int k  = halo_pos[2] - 1; k <= halo_pos[2] + 1; k++)
+                         for (int j  = halo_pos[1] - 1; j <= halo_pos[1] + 1; j++)
+                          for (int i  = halo_pos[0] - 1; i <= halo_pos[0] + 1; i++)
                           {
                             IntVect iv(i,j,k);
                             sub_state[index](iv,0) -= frac * gas_state[index](iv,Density);
@@ -250,14 +276,17 @@ Nyx::halo_find ()
        agn_density.setVal(0.0);
        Nyx::theAPC()->AssignDensitySingleLevel(agn_density, 0);
        amrex::Real agn_mass_new = agn_density.norm0();
+
        if (ParallelDescriptor::IOProcessor())
           std::cout << "MAX NORM OF AGN_DENSITY AFTER HALO STUFF " << agn_mass_new << std::endl;
 
        const amrex::Real time2 = ParallelDescriptor::second();
        if (ParallelDescriptor::IOProcessor())
          std::cout << std::endl << "===== Time to post-process: " << time2 - time1 << " sec" << std::endl;
+     } 
 
-     } else { // we have sidecars, so do everything in-transit
+#ifdef REEBER
+     else { // we have sidecars, so do everything in-transit
 
        int sidecarSignal(NyxHaloFinderSignal);
        const int MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
@@ -280,7 +309,6 @@ Nyx::halo_find ()
 
        int time_step(nStep()), nComp(reeberMF.nComp());
 
-       amrex::Real time1(ParallelDescriptor::second());
        ParallelDescriptor::Bcast(&nComp, 1, MPI_IntraGroup_Broadcast_Rank,
                                  ParallelDescriptor::CommunicatorInter(whichSidecar));
 
@@ -308,11 +336,11 @@ Nyx::halo_find ()
                                  ParallelDescriptor::CommunicatorInter(whichSidecar));
 
        amrex::Real time2(ParallelDescriptor::second());
-       if(ParallelDescriptor::IOProcessor()) {
+       if(ParallelDescriptor::IOProcessor()) 
          std::cout << "COMPUTE PROCESSES: time spent sending data to sidecars: " << time2 - time1 << std::endl;
-       }
+
      }
+#endif // ifdef REEBER
    }
-#endif // REEBER
 }
 #endif // AGN
