@@ -120,10 +120,24 @@ Nyx::halo_find ()
                    { masses[comp] = redistributeFab[mfi](iv, comp + 1);
                    }
                    reeber_halos.emplace_back(iv, totalMass, masses);
-               }
-           }
+               } }
         }
-       // NOTE: ZARIJA, GET YOUR FRESH HALOS HERE!!!
+
+#else
+       // Here we just create place-holders for the halos which should come from REEBER
+       int num_halos = 10;
+       std::vector<IntVect> reeber_halos_pos(num_halos);
+       std::vector<Real>    reeber_halos_mass(num_halos);
+
+       int i = 0;
+       for (IntVect& iv : reeber_halos_pos)
+       {
+            i++;
+            iv = IntVect(i+1,2*i+1,i+16);
+       }
+
+       for (Real& m : reeber_halos_mass)
+            m = 1.1e11;
 
 #endif // ifdef REEBER
 
@@ -143,13 +157,15 @@ Nyx::halo_find ()
            halo_mass = h.totalMass;
            halo_pos  = h.position;
 #else
-       {
-           halo_mass = 1.1e11;
-           halo_pos = IntVect(3,3,3);
-#endif
-           std::cout << "HALO HERE !!! " << halo_pos << " " << halo_mass << std::endl;
 
-           bool new_particle_created = false; 
+       // Now loop over the halos
+       for (int i = 0; i < reeber_halos_pos.size(); i++)
+       {
+           halo_mass = reeber_halos_mass[i];
+           halo_pos  = reeber_halos_pos[i];
+#endif
+
+//         std::cout << "HALO HERE !!! " << halo_mass << " " << halo_pos << std::endl;
 
            if (halo_mass > 1.e10)
            {
@@ -157,9 +173,8 @@ Nyx::halo_find ()
                 y = (halo_pos[1]+0.5) * dx[1];
                 z = (halo_pos[2]+0.5) * dx[2];
    
-                amrex::Real scaled_halo_mass = halo_mass/1.e13;
-    
-                mass = std::pow(10.0,8.18) * pow(scaled_halo_mass,1.55);
+                // amrex::Real scaled_halo_mass = halo_mass/1.e13;
+                // mass = std::pow(10.0,8.18) * pow(scaled_halo_mass,1.55);
 
                 int lev = 0;
                 int grid = 0;
@@ -168,6 +183,7 @@ Nyx::halo_find ()
                 // Note that we are going to add the particle into grid 0 and tile 0 at level 0 -- 
                 //      this is not actually where the particle belongs, but we will let the Redistribute call
                 //      put it in the right place
+
                 Nyx::theAPC()->AddOneParticle(lev,grid,tile,halo_mass,x,y,z); // ,u,v,w);
 
                 std::cout << "  " << std::endl;
@@ -175,8 +191,18 @@ Nyx::halo_find ()
                 std::cout << "ADDED A PARTICLE AT " << x << " " << y << " " << z << " WITH MASS " << mass << std::endl;
                 std::cout << " *************************************** " << std::endl;
                 std::cout << "  " << std::endl;
+           }
+       } // end of loop over creating new particles from halos
+       // At this point the particles have all been created on the same process as the halo they came from,
+       // but they are not on the "right" process for going forward
 
-                new_particle_created = true; 
+       // Call Redistribute so that the new particles get their cell, grid and process defined
+       Nyx::theAPC()->Redistribute(false,true,0);
+
+       // PM 
+       // LOOK AT amrex/Tutorials/ShortRangeParticles -- computeForces -- if we mimic that here we can loop over the 
+       // old and new particles within each tile
+
 #if 0
               for (MFIter mfi(agn_density); mfi.isValid(); ++mfi)
               {
@@ -243,8 +269,9 @@ Nyx::halo_find ()
                   } // End of test on whether particle is in this box
               } // End of MFIter
 #endif
-           } // End of test on halo mass
-       } // End of loop over halos
+//         } // End of test on halo mass
+
+//     } // End of loop over halos
 
        // Call Redistribute so that the new particles get their cell, grid and process defined
        Nyx::theAPC()->Redistribute(false,true,0);
