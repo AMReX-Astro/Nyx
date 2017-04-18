@@ -283,10 +283,9 @@ Nyx::halo_find ()
        const amrex::Real time2 = ParallelDescriptor::second();
        if (ParallelDescriptor::IOProcessor())
          std::cout << std::endl << "===== Time to post-process: " << time2 - time1 << " sec" << std::endl;
-     } 
 
 #ifdef REEBER
-     else { // we have sidecars, so do everything in-transit
+     } else { // we have sidecars, so do everything in-transit
 
        int sidecarSignal(NyxHaloFinderSignal);
        const int MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
@@ -341,6 +340,5 @@ Nyx::halo_find ()
 
      }
 #endif // ifdef REEBER
-   }
 }
 #endif // AGN
