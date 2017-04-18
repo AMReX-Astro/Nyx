@@ -1410,7 +1410,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
    const Real cur_time = state[State_Type].curTime();
    const int whichSidecar(0);
 
-#ifdef REEBER
+#ifdef AGN
    halo_find();
 #endif 
 

@@ -45,6 +45,12 @@ Nyx::halo_find ()
 
    const amrex::Real time1 = ParallelDescriptor::second();
 
+   const Real * dx = geom.CellSize();
+
+   const amrex::MultiFab& simMF = get_new_data(State_Type);
+   const BoxArray& simBA = simMF.boxArray();
+   const DistributionMapping& simDM = simMF.DistributionMap();
+
 #ifdef REEBER
    const auto& reeber_density_var_list = getReeberHaloDensityVars();
    bool do_analysis(doAnalysisNow());
@@ -96,9 +102,6 @@ Nyx::halo_find ()
 
        // Actual redistribution
        //amrex::MultiFab redistributeFab(m_leveldata.boxArray(), reeber_density_var_list.size() + 1, 0, m_leveldata.DistributionMap());
-       const amrex::MultiFab& simMF = get_new_data(State_Type);
-       const BoxArray& simBA = simMF.boxArray();
-       const DistributionMapping& simDM = simMF.DistributionMap();
 
        amrex::MultiFab redistributeFab(simBA, reeber_density_var_list.size() + 1, 0, simDM);
        redistributeFab.copy(reeberMF);
@@ -121,44 +124,13 @@ Nyx::halo_find ()
            }
         }
        // NOTE: ZARIJA, GET YOUR FRESH HALOS HERE!!!
-       bool created_file = false;
 
 #endif // ifdef REEBER
 
-       const amrex::MultiFab& simMF = get_new_data(State_Type);
-       const BoxArray& simBA = simMF.boxArray();
-       const DistributionMapping& simDM = simMF.DistributionMap();
-
-       // agn_density = density associated with *existing* AGN particles
-       //               as deposited on the grid 
-       amrex::MultiFab agn_density(simBA, simDM, 1, 1);
-       agn_density.setVal(0.0);
-
-       Nyx::theAPC()->AssignDensitySingleLevel(agn_density, 0);
-       amrex::Real agn_mass_old = agn_density.norm0();
-       if (ParallelDescriptor::IOProcessor())
-          std::cout << "MAX NORM OF AGN_DENSITY BEFORE HALO STUFF " << agn_mass_old << std::endl;
-
-       agn_density.FillBoundary(Geom().periodicity());
-
-       // gas_state = gas (rho, rho*u, rho*v, rho*w) already on the grid
-       amrex::MultiFab& gas_state = get_new_data(State_Type);
-
-       // sub_density = density/momentum that we will subtract from the grid and put into
-       //        the AGN particle
-       amrex::MultiFab sub_state(simBA, simDM, 1+BL_SPACEDIM, 1);
-       sub_state.setVal(0.0);
-
-       const amrex::Real* dx  = Geom().CellSize();
-       amrex::Real cellVol = dx[0] * dx[1] * dx[2];
-
-       amrex::Real x,y,z,u,v,w;
-       amrex::Real my_val, mass;
-       amrex::Real gas_sum[4];
-       u = 0.; v = 0.; w = 0.;
-
        amrex::Real    halo_mass;
        amrex::IntVect halo_pos ;
+
+       amrex::Real mass, x, y, z;
 
        std::ofstream os;
 
@@ -175,13 +147,37 @@ Nyx::halo_find ()
            halo_mass = 1.1e11;
            halo_pos = IntVect(3,3,3);
 #endif
-           os << halo_pos << " " << halo_mass << std::endl;
            std::cout << "HALO HERE !!! " << halo_pos << " " << halo_mass << std::endl;
 
            bool new_particle_created = false; 
 
            if (halo_mass > 1.e10)
            {
+                x = (halo_pos[0]+0.5) * dx[0];
+                y = (halo_pos[1]+0.5) * dx[1];
+                z = (halo_pos[2]+0.5) * dx[2];
+   
+                amrex::Real scaled_halo_mass = halo_mass/1.e13;
+    
+                mass = std::pow(10.0,8.18) * pow(scaled_halo_mass,1.55);
+
+                int lev = 0;
+                int grid = 0;
+                int tile = 0;
+
+                // Note that we are going to add the particle into grid 0 and tile 0 at level 0 -- 
+                //      this is not actually where the particle belongs, but we will let the Redistribute call
+                //      put it in the right place
+                Nyx::theAPC()->AddOneParticle(lev,grid,tile,halo_mass,x,y,z); // ,u,v,w);
+
+                std::cout << "  " << std::endl;
+                std::cout << " *************************************** " << std::endl;
+                std::cout << "ADDED A PARTICLE AT " << x << " " << y << " " << z << " WITH MASS " << mass << std::endl;
+                std::cout << " *************************************** " << std::endl;
+                std::cout << "  " << std::endl;
+
+                new_particle_created = true; 
+#if 0
               for (MFIter mfi(agn_density); mfi.isValid(); ++mfi)
               {
                   const Box& currBox = mfi.fabbox();
@@ -206,14 +202,6 @@ Nyx::halo_find ()
 
                      if (!(agn_mass > 0.0))
                      {
-                        x = (halo_pos[0]+0.5) * dx[0];
-                        y = (halo_pos[1]+0.5) * dx[1];
-                        z = (halo_pos[2]+0.5) * dx[2];
-   
-                        amrex::Real scaled_halo_mass = halo_mass/1.e13;
-    
-                        mass = std::pow(10.0,8.18) * pow(scaled_halo_mass,1.55);
-
                         gas_sum[0] = 0.0;
                         gas_sum[1] = 0.0;
                         gas_sum[2] = 0.0;
@@ -240,14 +228,6 @@ Nyx::halo_find ()
                         u = gas_sum[1] / mass;
                         v = gas_sum[2] / mass;
                         w = gas_sum[3] / mass;
-   
-                        std::cout << "ADDING A PARTICLE AT " << x << " " << y << " " << z << " WITH MASS " << mass << std::endl;
-                        int lev = 0;
-                        int grid = 0;
-                        int tile = 0;
-                        Nyx::theAPC()->AddOneParticle(lev,grid,tile,halo_mass,x,y,z); // ,u,v,w);
-
-                        new_particle_created = true; 
 
                         for (int k  = halo_pos[2] - 1; k <= halo_pos[2] + 1; k++)
                          for (int j  = halo_pos[1] - 1; j <= halo_pos[1] + 1; j++)
@@ -262,23 +242,27 @@ Nyx::halo_find ()
                      }
                   } // End of test on whether particle is in this box
               } // End of MFIter
+#endif
            } // End of test on halo mass
        } // End of loop over halos
 
        // Call Redistribute so that the new particles get their cell, grid and process defined
        Nyx::theAPC()->Redistribute(false,true,0);
 
+#if 0
        // Take away the density/momentum from the gas that was added to the AGN particle.
        sub_state.SumBoundary();
        amrex::MultiFab::Add(gas_state,sub_state,0,Density,1+BL_SPACEDIM,0);
 
        // This is just a test to make sure the particle deposits mass
+       MultiFab agn_density(simBA, simDM, 1, 1);
        agn_density.setVal(0.0);
        Nyx::theAPC()->AssignDensitySingleLevel(agn_density, 0);
        amrex::Real agn_mass_new = agn_density.norm0();
 
        if (ParallelDescriptor::IOProcessor())
           std::cout << "MAX NORM OF AGN_DENSITY AFTER HALO STUFF " << agn_mass_new << std::endl;
+#endif
 
        const amrex::Real time2 = ParallelDescriptor::second();
        if (ParallelDescriptor::IOProcessor())
