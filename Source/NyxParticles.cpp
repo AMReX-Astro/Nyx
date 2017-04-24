@@ -51,7 +51,9 @@ namespace
     //
     DarkMatterParticleContainer* DMPC = 0;
     StellarParticleContainer*     SPC = 0;
+#ifdef AGN
     AGNParticleContainer*         APC = 0;
+#endif
 #ifdef NEUTRINO_PARTICLES
     NeutrinoParticleContainer*    NPC = 0;
 #endif
@@ -68,7 +70,9 @@ namespace
     //
     DarkMatterParticleContainer* VirtPC  = 0;
     StellarParticleContainer*    VirtSPC = 0;
+#ifdef AGN
     AGNParticleContainer*        VirtAPC = 0;
+#endif
 #ifdef NEUTRINO_PARTICLES
     NeutrinoParticleContainer*   VirtNPC = 0;
 #endif
@@ -77,7 +81,9 @@ namespace
     //
     DarkMatterParticleContainer* GhostPC  = 0;
     StellarParticleContainer*    GhostSPC = 0;
+#ifdef AGN
     AGNParticleContainer*        GhostAPC = 0;
+#endif
 #ifdef NEUTRINO_PARTICLES
     NeutrinoParticleContainer*   GhostNPC = 0;
 #endif
@@ -180,6 +186,7 @@ Nyx::theGhostSPC ()
       return GhostSPC;
 }
 
+#ifdef AGN
 AGNParticleContainer* 
 Nyx::theAPC ()
 {
@@ -195,6 +202,7 @@ Nyx::theGhostAPC ()
 {
       return GhostAPC;
 }
+#endif
 
 #ifdef NEUTRINO_PARTICLES
 NeutrinoParticleContainer* 
