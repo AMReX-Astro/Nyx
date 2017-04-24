@@ -8,6 +8,9 @@
 #include <AMReX_FluxRegister.H>
 
 #include "NyxParticleContainer.H"
+#ifdef NEUTRINO_PARTICLES
+#include "NeutrinoParticleContainer.H"
+#endif
 
 #include <iostream>
 
@@ -481,13 +484,17 @@ public:
     static StellarParticleContainer* theVirtSPC();
     static StellarParticleContainer* theGhostSPC();
 
+#ifdef AGN
     static AGNParticleContainer* theAPC();
     static AGNParticleContainer* theVirtAPC();
     static AGNParticleContainer* theGhostAPC();
+#endif
 
+#ifdef NEUTRINO_PARTICLES
     static NeutrinoParticleContainer* theNPC();
     static NeutrinoParticleContainer* theVirtNPC();
     static NeutrinoParticleContainer* theGhostNPC();
+#endif
 
     static int NUM_STATE;
     static int Density, Xmom, Ymom, Zmom, Eden, Eint;

@@ -52,7 +52,9 @@ namespace
     DarkMatterParticleContainer* DMPC = 0;
     StellarParticleContainer*     SPC = 0;
     AGNParticleContainer*         APC = 0;
+#ifdef NEUTRINO_PARTICLES
     NeutrinoParticleContainer*    NPC = 0;
+#endif
 
     //
     // This is only used as a temporary container for
@@ -67,14 +69,18 @@ namespace
     DarkMatterParticleContainer* VirtPC  = 0;
     StellarParticleContainer*    VirtSPC = 0;
     AGNParticleContainer*        VirtAPC = 0;
+#ifdef NEUTRINO_PARTICLES
     NeutrinoParticleContainer*   VirtNPC = 0;
+#endif
     //
     // Container for temporary, ghost Particles
     //
     DarkMatterParticleContainer* GhostPC  = 0;
     StellarParticleContainer*    GhostSPC = 0;
     AGNParticleContainer*        GhostAPC = 0;
+#ifdef NEUTRINO_PARTICLES
     NeutrinoParticleContainer*   GhostNPC = 0;
+#endif
 
     void RemoveParticlesOnExit ()
     {
@@ -190,6 +196,7 @@ Nyx::theGhostAPC ()
       return GhostAPC;
 }
 
+#ifdef NEUTRINO_PARTICLES
 NeutrinoParticleContainer* 
 Nyx::theNPC ()
 {
@@ -205,6 +212,7 @@ Nyx::theGhostNPC ()
 {
       return GhostNPC;
 }
+#endif
 
 void
 Nyx::read_particle_params ()
@@ -1009,10 +1017,12 @@ Nyx::NyxParticlesAddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarPro
                     int ioProcNumSCS, int ioProcNumAll, int scsMyId,
 		                        MPI_Comm scsComm)
 {
+#if 0
+// What is this doing here???
 if(ParallelDescriptor::IOProcessor()) {
   std::cout << "PPPPPPPP:  DMPC SPC APC NPC = " << DMPC << "  " << SPC << "  " << APC << "  " << NPC << std::endl;
 }
-
+#endif
 }
 
 //NyxParticleContainerBase::~NyxParticleContainerBase() {}

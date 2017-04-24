@@ -26,6 +26,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
         MultiFab::Copy(*derive_dat, temp_dat, 0, 0, 1, 0);
         return derive_dat;
     }
+#ifdef NEUTRINO_PARTICLES
     else if (Nyx::theNPC() && name == "neutrino_particle_count")
     {
 	std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids, dmap, 1, 0));
@@ -35,6 +36,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
         MultiFab::Copy(*derive_dat, temp_dat, 0, 0, 1, 0);
         return derive_dat;
     }
+#endif
     else if (Nyx::theDMPC() && name == "total_particle_count")
     {
         //
@@ -130,6 +132,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 
         return derive_dat;
     }
+#ifdef NEUTRINO_PARTICLES
     else if (Nyx::theNPC() && name == "neutrino_mass_density")
     {
 	std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
@@ -151,6 +154,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 
         return derive_dat;
     }
+#endif
 #endif
     else if (name == "total_density")
     {
