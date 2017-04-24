@@ -31,9 +31,9 @@ http://boxlib-codes.github.io/Nyx/
 
 ## Getting Started
 
-To build `Nyx`, you need a copy of the `BoxLib` library:
-
-https://github.com/BoxLib-Codes/BoxLib.git
+To build `Nyx`, you need a copy of the `AMReX` library  --
+please email ASAlmgren@lbl.gov to get access to AMReX 
+(it will become public as soon as it makes it through the licensing process).
 
 There is a User's Guide in `Nyx/UsersGuide/` (type `make` to build
 from LaTeX source) that will guide you through running your first
@@ -47,7 +47,7 @@ they do, that the changes were expected).  No changes should ever
 be pushed directly into `master`.
 
 On the first workday of each month, we perform a merge of
-`development` into `master`, in coordination with `BoxLib`. 
+`development` into `master`, in coordination with `amrex`. 
 For this merge to take place, we need to be passing the regression tests.  
 To accommodate this need, we close the
 merge window into `development` a few days before the merge day.
