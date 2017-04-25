@@ -1,7 +1,7 @@
 
 \section{Downloading the Code}
 
-\nyx\ is built on top of the \boxlib\ framework.  In order to run
+\nyx\ is built on top of the \amrex\ framework.  In order to run
 \nyx\, you must download two separate git modules.
 
 \vspace{.1in}
@@ -12,49 +12,31 @@
 
 \begin{enumerate}
 
-\item Clone/fork the \boxlib\ repository from the \boxlib\ Codes {\sf
-  github} page (\url{https://github.com/BoxLib-Codes}).  To
-  clone via the command line, simply type:
-\begin{verbatim}
-git clone https://github.com/BoxLib-Codes/BoxLib.git
-\end{verbatim}
-Alternately, if you have a {\sf github} account with your
-machine's SSH-keys registered, you can do:
-\begin{verbatim}
-git clone ssh://git@github.com/BoxLib-Codes/BoxLib.git
-\end{verbatim}
+\item Clone/fork the \amrex\ repository -- you will need to 
+get this from the private LBL bitbucket repository by emailing
+ASAlmgren@lbl.gov until the public licensing is complete.
 
-This will create a directory called {\tt BoxLib/} on your machine.
-
-You will want to periodically update \boxlib\ by typing
+You will want to periodically update \amrex\ by typing
 \begin{verbatim}
 git pull
 \end{verbatim}
-in the {\tt BoxLib/} directory.
+in the {\tt amrex/} directory.
 
 Note: active development is done on the {\tt development} branch
 in each repo, and merged into the {\tt master} branch periodically.
 If you wish to use the \nyx\ {\tt development} branch, then you
-should also switch to the {\tt development} branch for \boxlib.
+should also switch to the {\tt development} branch for \amrex.
 
-If you prefer not to use {\sf git}, you can navigate to the
-\href{https://github.com/BoxLib-Codes}{\boxlib\ Codes} page in
-your browser, click on \boxlib, and press the ``Download ZIP''
-button to get an archive of the software. However, if you do this
-then you will need to re-download the software each time you want to
-update, so this is not recommended.
-
-\item Set the environment variable, {\tt BOXLIB\_HOME}, on your
-  machine to point to the path name where you have put \boxlib.
+\item Set the environment variable, {\tt AMREX\_HOME}, on your
+  machine to point to the path name where you have put \amrex.
   You can add this to your {\tt .bashrc} as:
 \begin{Verbatim}[commandchars=\\\{\}]
-export BOXLIB_HOME={\em /path/to/BoxLib/}
+export AMREX_HOME={\em /path/to/amrex/}
 \end{Verbatim}
-where you replace \texttt{\em /path/to/BoxLib/} will the full path to the
-{\tt BoxLib/} directory.
+where you replace \texttt{\em /path/to/amrex/} will the full path to the
+{\tt amrex/} directory.
 
-\item Clone/fork the \nyx\ repository from the same {\sf
-  github} organization as above, using either HTTP access:
+\item Clone/fork the \nyx\ repository using either HTTP access:
 \begin{verbatim}
 git clone https://github.com/BoxLib-Codes/Nyx.git
 \end{verbatim}
@@ -62,11 +44,8 @@ or SSH access if you have it enabled:
 \begin{verbatim}
 git clone ssh://git@github.com:/BoxLib-Codes/Nyx.git
 \end{verbatim}
-Or, as above, you can download a ZIP file of the code from
-\href{https://github.com/BoxLib-Codes}{our main {\sf github} page},
-by clicking on the \nyx\ link.
 
-As with \boxlib, development on \nyx\ is done in the
+As with \amrex, development on \nyx\ is done in the
 {\tt development} branch, so you should work there if you want
 the latest source.
 
@@ -85,17 +64,15 @@ version of the Santa Barbara test problem.
 
 \item In {\tt Nyx/Exec/LyA}, edit the GNUmakefile, and set
 
-COMP = your favorite C++ compiler
-
-FCOMP = your favorite Fortran compiler (which must compile F90)
+COMP = your favorite compiler (e.g, gnu, Intel)
 
 DEBUG = FALSE
 
-We like COMP = gcc and FCOMP = gfortran. 
+We like COMP = gnu.
 
 \item Now type "make". The resulting executable will look something like 
-"Nyx3d.Linux.gcc.gfortran.ex", which means this is a 3-d version of the code, 
-made on a Linux machine, with COMP = gcc and FCOMP = gfortran.
+"Nyx3d.Linux.gnu.ex", which means this is a 3-d version of the code, 
+made on a Linux machine, with COMP = gnu.
 
 \end{enumerate}
 
@@ -103,7 +80,7 @@ made on a Linux machine, with COMP = gcc and FCOMP = gfortran.
 
 \begin{enumerate}
 
-\item Type ``Nyx3d.Linux.gcc.gfortran.ex inputs.32''
+\item Type ``Nyx3d.Linux.gnu.ex inputs.32''
 
 \item You will notice that running the code generates directories that look like 
 plt00000, plt00020, etc, and chk00000, chk00020, etc. These are "plotfiles" and 
@@ -115,7 +92,7 @@ used for restarting the code.
 \section{Visualization of the Results}
 
 There are several options for visualizing the data.  The popular
-\visit\ package supports the \boxlib\ file format natively, as does
+\visit\ package supports the \amrex\ file format natively, as does
 the \yt\ python package.  The standard tool used within the
 \boxlib-community is \amrvis, which we demonstrate here.
 

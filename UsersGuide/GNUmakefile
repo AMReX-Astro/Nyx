@@ -13,9 +13,7 @@ section_sources = Introduction/NyxIntroduction.tex \
 	          ComovingHydro/Equations.tex \
 	          Gravity/NyxGravity.tex \
                   Particles/Particles.tex \
-                  Visualization/NyxVisualization.tex \
-	          NyxVerification/Verification.tex \
-                  Software/NyxSoftware.tex 
+                  Visualization/NyxVisualization.tex 
 
 NyxUserGuide.dvi: NyxUserGuide.tex $(eps_source) $(section_sources) $(eps_source)
 	latex NyxUserGuide.tex < /dev/null
