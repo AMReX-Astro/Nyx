@@ -9,6 +9,9 @@
 
 #include "NyxParticleContainer.H"
 #include "DarkMatterParticleContainer.H"
+#ifdef AGN
+#include "AGNParticleContainer.H"
+#endif
 #ifdef NEUTRINO_PARTICLES
 #include "NeutrinoParticleContainer.H"
 #endif
@@ -19,7 +22,6 @@ using std::istream;
 using std::ostream;
 
 typedef NyxParticleContainer<1+BL_SPACEDIM+3> StellarParticleContainer;
-typedef NyxParticleContainer<1+BL_SPACEDIM+3> AGNParticleContainer;
 
 #ifdef NO_HYDRO
 enum StateType {
