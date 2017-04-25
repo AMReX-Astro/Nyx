@@ -566,28 +566,4 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::moveKickDrift (amrex::MultiFab&       acc
 }
 
 
-// We make DarkMatterParticleContainer a class instead of a typedef so that
-//    we can have Nyx-specific functions here instead of in BoxLib
-class DarkMatterParticleContainer
-    : public NyxParticleContainer<1+BL_SPACEDIM>
-{
-public:
-    DarkMatterParticleContainer (amrex::Amr* amr)
-        : NyxParticleContainer<1+BL_SPACEDIM>(amr)
-    { }
-
-    virtual ~DarkMatterParticleContainer () {}
-
-    void InitCosmo  (amrex::MultiFab& mf, const amrex::Real vel_fac[], const amrex::Array<int> n_part, const amrex::Real particleMass);
-    void InitCosmo  (amrex::MultiFab& mf, const amrex::Real vel_fac[], const amrex::Array<int> n_part,
-                     const amrex::Real particleMass, const amrex::Real shift[]);
-    void InitCosmo1ppc (amrex::MultiFab& mf, const amrex::Real vel_fac[], const amrex::Real particleMass);
-    void InitCosmo1ppcMultiLevel(amrex::MultiFab& mf, const amrex::Real disp_fac[], const amrex::Real vel_fac[], 
-                                 const amrex::Real particleMass, int disp_idx, int vel_idx, 
-                                 amrex::BoxArray &baWhereNot, int lev, int nlevs);
-
-    void AssignDensityAndVels (amrex::Array<std::unique_ptr<amrex::MultiFab> >& mf, int lev_min = 0) const;
-
-};
-
 #endif /*_NyxParticleContainer_H_*/

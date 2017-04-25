@@ -8,6 +8,7 @@
 #include <AMReX_FluxRegister.H>
 
 #include "NyxParticleContainer.H"
+#include "DarkMatterParticleContainer.H"
 #ifdef NEUTRINO_PARTICLES
 #include "NeutrinoParticleContainer.H"
 #endif
