@@ -3,7 +3,7 @@
 
 using namespace amrex;
 
-void AGNParticleContainer::ComputeOverlap(int lev) 
+void AGNParticleContainer::ComputeOverlap(int lev)
 {
     Array<int> my_id;
 
@@ -23,8 +23,12 @@ void AGNParticleContainer::ComputeOverlap(int lev)
         PairIndex index(pti.index(), pti.LocalTileIndex());
         int Ng = ghosts[index].size() / pdata_size;
 
+//      const Box& dbox = density_to_subtract[pti].box();
+
         nyx_compute_overlap(particles.data(), nstride, Np, my_id.dataPtr(),
                            (RealType*) ghosts[index].dataPtr(), Ng, dx);
+//                         density_to_subtract[pti].dataPtr(), 
+//                         dbox.loVect(), dbox.hiVect());
 
         for (int i = 0; i < Np; ++i ) {
           particles[i].id() = my_id[i];
