@@ -25,8 +25,12 @@ CEXE_headers += Nyx.H
 CEXE_headers += Nyx_output.H
 CEXE_headers += NyxParticleContainer.H
 CEXE_headers += DarkMatterParticleContainer.H
-CEXE_headers += AGNParticleContainer.H
 FEXE_headers += Nyx_F.H
+
+CEXE_headers += AGNParticleContainer.H
+CEXE_sources += AGNParticleContainer.cpp
+FEXE_headers += agn_F.H
+f90EXE_sources += agn_overlap_3d.f90
 
 f90EXE_sources += Nyx_nd.f90
 f90EXE_sources +=  eos_params.f90

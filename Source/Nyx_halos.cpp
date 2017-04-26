@@ -20,7 +20,7 @@ using std::string;
 #include <Nyx_F.H>
 #include <Derive_F.H>
 
-#include "NyxParticleContainer.H"
+#include "AGNParticleContainer.H"
 
 #if BL_USE_MPI
 #include "MemInfo.H"
@@ -203,6 +203,10 @@ Nyx::halo_find ()
 
        // Call Redistribute so that the new particles get their cell, grid and process defined
        Nyx::theAPC()->Redistribute(lev_min,lev_max,ngrow);
+
+       Nyx::theAPC()->fillGhosts(level);
+       Nyx::theAPC()->ComputeOverlap(level);
+       Nyx::theAPC()->clearGhosts(level);
 
        // PM 
        // LOOK AT amrex/Tutorials/ShortRangeParticles -- computeForces -- if we mimic that here we can loop over the 
