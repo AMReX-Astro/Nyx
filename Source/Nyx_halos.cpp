@@ -51,6 +51,11 @@ Nyx::halo_find ()
    const BoxArray& simBA = simMF.boxArray();
    const DistributionMapping& simDM = simMF.DistributionMap();
 
+   // These are passed into the AGN particles' Redistribute
+   int lev_min = 0;
+   int lev_max = 0;
+   int ngrow   = 0;
+
 #ifdef REEBER
    const auto& reeber_density_var_list = getReeberHaloDensityVars();
    bool do_analysis(doAnalysisNow());
@@ -197,7 +202,7 @@ Nyx::halo_find ()
        // but they are not on the "right" process for going forward
 
        // Call Redistribute so that the new particles get their cell, grid and process defined
-       Nyx::theAPC()->Redistribute(false,true,0);
+       Nyx::theAPC()->Redistribute(lev_min,lev_max,ngrow);
 
        // PM 
        // LOOK AT amrex/Tutorials/ShortRangeParticles -- computeForces -- if we mimic that here we can loop over the 
@@ -274,7 +279,7 @@ Nyx::halo_find ()
 //     } // End of loop over halos
 
        // Call Redistribute so that the new particles get their cell, grid and process defined
-       Nyx::theAPC()->Redistribute(false,true,0);
+       Nyx::theAPC()->Redistribute(lev_min,lev_max,ngrow);
 
 #if 0
        // Take away the density/momentum from the gas that was added to the AGN particle.
