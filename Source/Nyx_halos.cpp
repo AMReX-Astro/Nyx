@@ -34,6 +34,8 @@ const int NyxHaloFinderSignal = 42;
 
 using namespace amrex;
 
+using MyParIter = amrex::ParIter<1+BL_SPACEDIM+3>;
+
 void
 Nyx::halo_find ()
 {
@@ -211,6 +213,16 @@ Nyx::halo_find ()
        // PM 
        // LOOK AT amrex/Tutorials/ShortRangeParticles -- computeForces -- if we mimic that here we can loop over the 
        // old and new particles within each tile
+
+       for (MyParIter pti(*(Nyx::theAPC()), level); pti.isValid(); ++pti) {
+
+         auto& particles = pti.GetArrayOfStructs();
+         size_t Np = particles.size();
+         cout << "Level " << level << ": " << Np << " AGN particles" << endl;
+         for (int i = 0; i < Np; ++i ) {
+           cout << "[" << i << "]: id " << particles[i].id() << endl;
+         }
+       }
 
 #if 0
               for (MFIter mfi(agn_density); mfi.isValid(); ++mfi)
