@@ -84,50 +84,6 @@ Nyx::halo_find ()
        std::vector<Halo> reeber_halos;
        runReeberAnalysis(reeberMF, Geom(), nStep(), do_analysis, &reeber_halos);
 
-       // Redistribute halos to "correct" processor for simulation
-       // FIXME: This is a hack that maps things to amrex::MultiFabs and back. This should be
-       // changed to use Nyx's particle redistribution infrastructure.
-       reeberMF.setVal(0, 0, reeber_density_var_list.size() + 1, 0);
-       // Deposit halo into amrex::MultiFab. This works because (i) There is only one box
-       // per processors and halos returned by Reeber will always be in that box;
-       // (ii) Halos have different positions; (iii) Halos have a mass that differs from
-       // zero.
-       BL_ASSERT(dm[ParallelDescriptor::MyProc()] == ParallelDescriptor::MyProc());
-       FArrayBox& my_fab = reeberMF[ParallelDescriptor::MyProc()];
-
-       for (const Halo& h : reeber_halos)
-       {
-           BL_ASSERT(reeberMF.fabbox(ParallelDescriptor::MyProc()).contains(h.position));
-           my_fab(h.position, 0) = h.totalMass;
-           for (int comp = 0; comp < reeber_density_var_list.size(); ++comp)
-           {
-               my_fab(h.position, comp + 1) = h.individualMasses[comp];
-           }
-       }
-
-       // Actual redistribution
-       //amrex::MultiFab redistributeFab(m_leveldata.boxArray(), reeber_density_var_list.size() + 1, 0, m_leveldata.DistributionMap());
-
-       amrex::MultiFab redistributeFab(simBA, reeber_density_var_list.size() + 1, 0, simDM);
-       redistributeFab.copy(reeberMF);
-       // Re-extract halos
-       reeber_halos.clear();
-       for (MFIter mfi(redistributeFab); mfi.isValid(); ++mfi)
-       {
-           const Box& currBox = mfi.fabbox();
-           for (IntVect iv = currBox.smallEnd(); iv <= currBox.bigEnd(); currBox.next(iv))
-           {
-               amrex::Real totalMass = redistributeFab[mfi](iv, 0);
-               if (totalMass > 0)
-               {
-                   std::vector<amrex::Real> masses(reeber_density_var_list.size(), 0);
-                   for (int comp = 0; comp < reeber_density_var_list.size(); ++comp)
-                   { masses[comp] = redistributeFab[mfi](iv, comp + 1);
-                   }
-                   reeber_halos.emplace_back(iv, totalMass, masses);
-               } }
-        }
-
 #else
        // Here we just create place-holders for the halos which should come from REEBER
        int num_halos = 10;
