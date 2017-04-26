@@ -47,6 +47,7 @@ public:
     ///
     /// Invalidate particles in cells that are already occupied
     ///
+    // void ComputeOverlap(int lev, amrex::MultiFab& density_to_subtract);
     void ComputeOverlap(int lev);
 
     ///
