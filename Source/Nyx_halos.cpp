@@ -173,8 +173,8 @@ Nyx::halo_find ()
                 y = (halo_pos[1]+0.5) * dx[1];
                 z = (halo_pos[2]+0.5) * dx[2];
    
-                // amrex::Real scaled_halo_mass = halo_mass/1.e13;
-                // mass = std::pow(10.0,8.18) * pow(scaled_halo_mass,1.55);
+                amrex::Real scaled_halo_mass = halo_mass/1.e13;
+                mass = std::pow(10.0,8.18) * pow(scaled_halo_mass,1.55);
 
                 int lev = 0;
                 int grid = 0;
