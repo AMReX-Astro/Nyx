@@ -137,7 +137,7 @@ In the following we will look at each step a bit closer.
 	We calculate the initial displacements with a stand-alone program called
 	\texttt{nyx-ic}. This takes a transfer function and some cosmological parameters
 	as an argument and outputs an "init" directory which basically contains initial
-	displacements for every grid point in a BoxLib MultiFAB. Furthermore the mf 
+	displacements for every grid point in an AMReX MultiFAB. Furthermore the mf 
 	contains a fourth field containing the density contrast as initial condition
 	for the baryonic matter. \\
 	\texttt{nyx-ic} is started with an ``inputs``
@@ -195,7 +195,7 @@ cosmo.init_sigma8_init = 2.0463364E-02
 		\item {\bf nyx.nyx.particle\_init\_type = Cosmological} \\ 
 			set the \emph{right} init type
 		\item {\bf cosmo.initDirName = init} \\
-			set the name of the displacements directory (boxlib format)
+			set the name of the displacements directory (amrex format)
 		\item {\bf cosmo.particle\_mass = 0.19178304E+10} \\
 			sets the mass [$M_\odot$] of each particle
 		\item {\bf cosmo.omegam = 0.272} \\

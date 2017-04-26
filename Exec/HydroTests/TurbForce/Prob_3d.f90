@@ -97,7 +97,7 @@
       use turbforce_module
       use bl_constants_module, only : TWO, ONE, HALF, ZERO, M_PI
       use atomic_rates_module, only: XHYDROGEN
-      use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, TEMP_COMP, NE_COMP, &
+      use meth_params_module, only : URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, TEMP_COMP, NE_COMP, &
 	                             small_dens, small_temp, small_pres
       use eos_module, only: nyx_eos_given_RT
       use eos_params_module
@@ -108,13 +108,13 @@
       integer lo(3), hi(3)
       integer s_l1,s_l2,s_l3,s_h1,s_h2,s_h3
       integer d_l1,d_l2,d_l3,d_h1,d_h2,d_h3
-      real(rt) xlo(3), xhi(3), time, dx(3)
+      real(rt) xlo(3), xhi(3), time, delta(3)
       real(rt)    state(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3,ns)
       real(rt) diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,nd)
 
       integer          :: i,j,k
       real(rt) :: fact,twicePi
-      real(rt) :: eint0,rhoe0,ne0,pres0,a,r
+      real(rt) :: eint0,rhoe0,ne0,pres0,a
 
       a=1.d0
       ne0=1.d0
