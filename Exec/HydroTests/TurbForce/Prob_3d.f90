@@ -108,7 +108,7 @@
       integer lo(3), hi(3)
       integer s_l1,s_l2,s_l3,s_h1,s_h2,s_h3
       integer d_l1,d_l2,d_l3,d_h1,d_h2,d_h3
-      real(rt) xlo(3), xhi(3), time, dx(3)
+      real(rt) xlo(3), xhi(3), time, delta(3)
       real(rt)    state(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3,ns)
       real(rt) diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,nd)
 
