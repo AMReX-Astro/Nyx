@@ -34,8 +34,6 @@ const int NyxHaloFinderSignal = 42;
 
 using namespace amrex;
 
-using MyParIter = amrex::ParIter<1+BL_SPACEDIM+3>;
-
 void
 Nyx::halo_find ()
 {
@@ -167,15 +165,13 @@ Nyx::halo_find ()
        Nyx::theAPC()->ComputeOverlap(level);
        Nyx::theAPC()->clearGhosts(level);
 
-       for (MyParIter pti(*(Nyx::theAPC()), level); pti.isValid(); ++pti) {
+       cout << "Before Redistribute:" << endl;
+       Nyx::theAPC()->writeAllAtLevel(level);
 
-         auto& particles = pti.GetArrayOfStructs();
-         size_t Np = particles.size();
-         cout << "Level " << level << ": " << Np << " AGN particles" << endl;
-         for (int i = 0; i < Np; ++i ) {
-           cout << "[" << i << "]: id " << particles[i].id() << endl;
-         }
-       }
+       Nyx::theAPC()->Redistribute(lev_min,lev_max,ngrow);
+
+       cout << "After Redistribute:" << endl;
+       Nyx::theAPC()->writeAllAtLevel(level);
 
 #if 0
        // Create a MultiFab to hold the density we're going to remove from the grid
