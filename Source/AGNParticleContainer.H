@@ -60,6 +60,11 @@ public:
     ///
     void clearGhosts(int lev);
 
+    ///
+    /// Write out all particles at a level
+    ///
+    void writeAllAtLevel(int lev);
+
 private:
 
     ///

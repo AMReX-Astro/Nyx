@@ -1,7 +1,11 @@
 #include "AGNParticleContainer.H"
+#include "AMReX_RealVect.H"
 #include "agn_F.H"
 
 using namespace amrex;
+
+using std::cout;
+using std::endl;
 
 void AGNParticleContainer::ComputeOverlap(int lev)
 {
@@ -278,3 +282,25 @@ void AGNParticleContainer::fillGhostsMPI(GhostCommMap& ghosts_to_comm) {
 #endif
 }
 
+
+void AGNParticleContainer::writeAllAtLevel(int lev)
+{
+  for (MyParIter pti(*this, lev); pti.isValid(); ++pti)
+    {
+      auto& particles = pti.GetArrayOfStructs();
+      size_t Np = pti.numParticles();
+      cout << "AGN particles: " << Np << " << at level " << lev << endl;
+      for (unsigned i = 0; i < Np; ++i)
+        {
+          const ParticleType& p = particles[i];
+          const IntVect& iv = Index(p, lev);
+
+          RealVect xyz(p.pos(0), p.pos(1), p.pos(2));
+
+          cout << "[" << i << "]: id " << p.id()
+               << " mass " << p.rdata(0)
+               << " index " << iv
+               << " position " << xyz << endl;
+        }
+    }
+}
