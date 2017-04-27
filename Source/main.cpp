@@ -271,7 +271,9 @@ namespace
       }
     }
     return sidecarSignal;
-  #endif /* BL_USE_MPI */
+#else
+    return 0;
+#endif /* BL_USE_MPI */
     }
 
 // The following function does not seem to be used
