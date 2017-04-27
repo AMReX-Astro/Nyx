@@ -32,6 +32,7 @@
              cycle
           else
              ! set particle id of particle j to -1
+             my_id(j) = -1
           end if
 
        end do
