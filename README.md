@@ -5,9 +5,6 @@
 
 PLEASE NOTE:  Nyx has been migrated from BoxLib to AMReX.
 
-If you prefer to run with the BoxLib-based version, then 
-you can use the "boxlib" branch (which will no longer be updated).
-
 If you would like to use the latest version of Nyx, you will
 need to download AMReX from
 
@@ -22,13 +19,14 @@ and multigrid to solve the Poisson equation for self-gravity.
 
 More information on Nyx can be found here:
 
-http://boxlib-codes.github.io/Nyx/
+http://amrex-codes.github.io/Nyx/
+
+If you prefer to run with the BoxLib-based version, then 
+you can use the "boxlib" branch (which will no longer be updated).
 
 *******************************************************
 
 ## Getting Started
-
-To build `Nyx`, you need a copy of the `AMReX` library.
 
 There is a User's Guide in `Nyx/UsersGuide/` (type `make` to build
 from LaTeX source) that will guide you through running your first
