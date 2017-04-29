@@ -26,7 +26,7 @@
     
     <!-- Header -->
     <header id="header">
-      <h1><a href="https://github.com/BoxLib-Codes">BoxLib Codes</a></h1>
+      <h1><a href="https://github.com/AMReX-Codes">AMReX Codes</a></h1>
       <nav id="nav">
 	<ul>
 	  <li><a href="about.html">About</a></li>
@@ -44,7 +44,7 @@
       <p>an adaptive mesh, compressible cosmological hydrodynamics simulation code</p>
       <ul class="actions">
 	<li>
-	  <a href="https://github.com/BoxLib-Codes/Nyx" class="button big">Get Nyx</a>
+	  <a href="https://github.com/AMReX-Codes/Nyx" class="button big">Get Nyx</a>
 	</li>
       </ul>
     </section>
@@ -54,7 +54,7 @@
       <div class="container">
 	<header class="major">
 	  <h2>Enable your science with Nyx</h2>
-	  <p>Nyx is one of a suite of BoxLib-based codes that
+	  <p>Nyx is one of a suite of AMReX-based codes that
              share common computational patterns and features. 
              Nyx specializes in cosmological flows, where dark matter and
              gas interact gravitationally.</p>
@@ -75,7 +75,7 @@
 	    <section class="box">
 	      <i class="icon big rounded color9 fa-tachometer"></i>
 	      <h3>Performance</h3>
-	      <p>Nyx is built on the BoxLib adaptive mesh
+	      <p>Nyx is built on the AMReX adaptive mesh
   	         refinement library, and uses an advanced MPI + tiled
 	         OpenMP approach to parallelism to get great performance
 		 on modern architectures.  It scales from 1 to 100,000 cores,
@@ -108,13 +108,13 @@
 	  <ul class="alt">
 	    <li><h3><span class="icon fa-download"></span> Clone</h3>
 	      <pre>
-git clone https://github.com/BoxLib-Codes/BoxLib.git
-git clone https://github.com/BoxLib-Codes/Nyx.git
+git clone https://github.com/AMReX-Codes/amrex.git
+git clone https://github.com/AMReX-Codes/Nyx.git
 	    </li>
 
 	    <li><h3><span class="icon fa-cogs"></span> Setup your environment</h3>
 	      <pre>
-export BOXLIB_HOME=/path/to/BoxLib
+export AMREX_HOME=/path/to/AMReX
 	    </li>
 
 	    <li><h3><span class="icon fa-magic"></span> Compile</h3>
@@ -125,11 +125,11 @@ export BOXLIB_HOME=/path/to/BoxLib
 	    <li><h3><span class="icon fa-laptop"></span> Run</h3>
 	      The executable name will start with <var>Nyx3d</var>, and an input file
 	      is always required:
-	      <pre> ./Nyx3d.Linux.gcc.gfortran.MPI.ex inputs.32</pre>
+	      <pre> ./Nyx3d.Linux.gnu.MPI.ex inputs.32</pre>
 	    </li>
 
 	    <li><h3><span class="icon fa-image"></span> Visualize</h3>
-	      Nyx output (BoxLib format) is supported natively by yt, VisIt, and amrvis
+	      Nyx output (AMReX format) is supported natively by yt, VisIt, and amrvis
 	    </li>
 
 	  </ul>
@@ -155,7 +155,7 @@ export BOXLIB_HOME=/path/to/BoxLib
 	</header>
 	Nyx is written in a mix of C++ and Fortran.  The main driver, memory
 	management, and parallelization are implemented in C++ (using
-	the BoxLib framework) and the physics kernels are written in
+	the AMReX framework) and the physics kernels are written in
 	Fortran.  New code features are done either on the "<tt>development</tt>" branch
 	or in a separate feature branch and periodically merged into "<tt>master</tt>".  If
 	you want to contribute to Nyx, clone the Nyx git repo, make your changes
