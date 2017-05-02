@@ -97,7 +97,7 @@
       use turbforce_module
       use bl_constants_module, only : TWO, ONE, HALF, ZERO, M_PI
       use atomic_rates_module, only: XHYDROGEN
-      use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, TEMP_COMP, NE_COMP, &
+      use meth_params_module, only : URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, TEMP_COMP, NE_COMP, &
 	                             small_dens, small_temp, small_pres
       use eos_module, only: nyx_eos_given_RT
       use eos_params_module
@@ -114,7 +114,7 @@
 
       integer          :: i,j,k
       real(rt) :: fact,twicePi
-      real(rt) :: eint0,rhoe0,ne0,pres0,a,r
+      real(rt) :: eint0,rhoe0,ne0,pres0,a
 
       a=1.d0
       ne0=1.d0

@@ -5,5 +5,4 @@ f90EXE_sources += interpolate.f90
 CEXE_sources   += Nyx_setup.cpp
 CEXE_sources   += Nyx_initdata.cpp
 CEXE_sources   += Nyx_initcosmo.cpp
-CEXE_sources   += ParticleInit.cpp
 CEXE_sources   += read_plotfile.cpp

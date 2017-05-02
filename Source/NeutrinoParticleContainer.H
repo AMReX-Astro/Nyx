@@ -1,6 +1,6 @@
 #ifdef NEUTRINO_PARTICLES
 #ifndef _NeutrinoParticleContainer_H_
-#define _NeutrinoyxParticleContainer_H_
+#define _NeutrinoParticleContainer_H_
 
 #include "AMReX_Amr.H"
 #include "AMReX_AmrLevel.H"

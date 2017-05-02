@@ -20,7 +20,7 @@ using std::string;
 #include <Nyx_F.H>
 #include <Derive_F.H>
 
-#include "NyxParticleContainer.H"
+#include "AGNParticleContainer.H"
 
 #if BL_USE_MPI
 #include "MemInfo.H"
@@ -47,9 +47,14 @@ Nyx::halo_find ()
 
    const Real * dx = geom.CellSize();
 
-   const amrex::MultiFab& simMF = get_new_data(State_Type);
+   amrex::MultiFab& simMF = get_new_data(State_Type);
    const BoxArray& simBA = simMF.boxArray();
    const DistributionMapping& simDM = simMF.DistributionMap();
+
+   // These are passed into the AGN particles' Redistribute
+   int lev_min = 0;
+   int lev_max = 0;
+   int ngrow   = 0;
 
 #ifdef REEBER
    const auto& reeber_density_var_list = getReeberHaloDensityVars();
@@ -78,50 +83,6 @@ Nyx::halo_find ()
 
        std::vector<Halo> reeber_halos;
        runReeberAnalysis(reeberMF, Geom(), nStep(), do_analysis, &reeber_halos);
-
-       // Redistribute halos to "correct" processor for simulation
-       // FIXME: This is a hack that maps things to amrex::MultiFabs and back. This should be
-       // changed to use Nyx's particle redistribution infrastructure.
-       reeberMF.setVal(0, 0, reeber_density_var_list.size() + 1, 0);
-       // Deposit halo into amrex::MultiFab. This works because (i) There is only one box
-       // per processors and halos returned by Reeber will always be in that box;
-       // (ii) Halos have different positions; (iii) Halos have a mass that differs from
-       // zero.
-       BL_ASSERT(dm[ParallelDescriptor::MyProc()] == ParallelDescriptor::MyProc());
-       FArrayBox& my_fab = reeberMF[ParallelDescriptor::MyProc()];
-
-       for (const Halo& h : reeber_halos)
-       {
-           BL_ASSERT(reeberMF.fabbox(ParallelDescriptor::MyProc()).contains(h.position));
-           my_fab(h.position, 0) = h.totalMass;
-           for (int comp = 0; comp < reeber_density_var_list.size(); ++comp)
-           {
-               my_fab(h.position, comp + 1) = h.individualMasses[comp];
-           }
-       }
-
-       // Actual redistribution
-       //amrex::MultiFab redistributeFab(m_leveldata.boxArray(), reeber_density_var_list.size() + 1, 0, m_leveldata.DistributionMap());
-
-       amrex::MultiFab redistributeFab(simBA, reeber_density_var_list.size() + 1, 0, simDM);
-       redistributeFab.copy(reeberMF);
-       // Re-extract halos
-       reeber_halos.clear();
-       for (MFIter mfi(redistributeFab); mfi.isValid(); ++mfi)
-       {
-           const Box& currBox = mfi.fabbox();
-           for (IntVect iv = currBox.smallEnd(); iv <= currBox.bigEnd(); currBox.next(iv))
-           {
-               amrex::Real totalMass = redistributeFab[mfi](iv, 0);
-               if (totalMass > 0)
-               {
-                   std::vector<amrex::Real> masses(reeber_density_var_list.size(), 0);
-                   for (int comp = 0; comp < reeber_density_var_list.size(); ++comp)
-                   { masses[comp] = redistributeFab[mfi](iv, comp + 1);
-                   }
-                   reeber_halos.emplace_back(iv, totalMass, masses);
-               } }
-        }
 
 #else
        // Here we just create place-holders for the halos which should come from REEBER
@@ -173,8 +134,8 @@ Nyx::halo_find ()
                 y = (halo_pos[1]+0.5) * dx[1];
                 z = (halo_pos[2]+0.5) * dx[2];
    
-                // amrex::Real scaled_halo_mass = halo_mass/1.e13;
-                // mass = std::pow(10.0,8.18) * pow(scaled_halo_mass,1.55);
+                amrex::Real scaled_halo_mass = halo_mass/1.e13;
+                mass = std::pow(10.0,8.18) * pow(scaled_halo_mass,1.55);
 
                 int lev = 0;
                 int grid = 0;
@@ -193,102 +154,38 @@ Nyx::halo_find ()
                 std::cout << "  " << std::endl;
            }
        } // end of loop over creating new particles from halos
+
        // At this point the particles have all been created on the same process as the halo they came from,
        // but they are not on the "right" process for going forward
 
        // Call Redistribute so that the new particles get their cell, grid and process defined
-       Nyx::theAPC()->Redistribute(false,true,0);
+       Nyx::theAPC()->Redistribute(lev_min,lev_max,ngrow);
 
-       // PM 
-       // LOOK AT amrex/Tutorials/ShortRangeParticles -- computeForces -- if we mimic that here we can loop over the 
-       // old and new particles within each tile
+       Nyx::theAPC()->fillGhosts(level);
+       Nyx::theAPC()->ComputeOverlap(level);
+       Nyx::theAPC()->clearGhosts(level);
 
-#if 0
-              for (MFIter mfi(agn_density); mfi.isValid(); ++mfi)
-              {
-                  const Box& currBox = mfi.fabbox();
-                  if (currBox.contains(halo_pos)) 
-                  {
-                     int index = mfi.index();
+       cout << "Before Redistribute:" << endl;
+       Nyx::theAPC()->writeAllAtLevel(level);
 
-                     std::cout << " CELL / INDEX " << halo_pos << " " << index << std::endl;
+       Nyx::theAPC()->Redistribute(lev_min,lev_max,ngrow);
 
-                     // Figure out if there are already any nearby AGN particles 
-                     amrex::Real agn_mass = 0.0;
-                     for (int k  = halo_pos[2] - 1; k <= halo_pos[2] + 1; k++)
-                      for (int j  = halo_pos[1] - 1; j <= halo_pos[1] + 1; j++)
-                       for (int i  = halo_pos[0] - 1; i <= halo_pos[0] + 1; i++)
-                       {
-                         IntVect iv(i,j,k);
-                         std::cout << "WHICH CELL " << iv << " " << agn_density[index](iv,0) << std::endl;  
-                         agn_mass += agn_density[index](iv,0);
-                       }
-
-                     std::cout << "NEARBY AGN_MASS " << agn_mass   << std::endl;
-
-                     if (!(agn_mass > 0.0))
-                     {
-                        gas_sum[0] = 0.0;
-                        gas_sum[1] = 0.0;
-                        gas_sum[2] = 0.0;
-                        gas_sum[3] = 0.0;
-                        for (int k  = halo_pos[2] - 1; k <= halo_pos[2] + 1; k++)
-                         for (int j  = halo_pos[1] - 1; j <= halo_pos[1] + 1; j++)
-                          for (int i  = halo_pos[0] - 1; i <= halo_pos[0] + 1; i++)
-                          {
-                            IntVect iv(i,j,k);
-                            gas_sum[0] += gas_state[index](iv,Density);
-                            gas_sum[1] += gas_state[index](iv,Xmom);
-                            gas_sum[2] += gas_state[index](iv,Ymom);
-                            gas_sum[3] += gas_state[index](iv,Zmom);
-                          }
-                        gas_sum[0] *= cellVol;
-                        gas_sum[1] *= cellVol;
-                        gas_sum[2] *= cellVol;
-                        gas_sum[3] *= cellVol;
-
-                        amrex::Real frac = mass / gas_sum[0];
-                        std::cout << "FRAC OF GAS MASS " << frac << std::endl;
-
-                        // Define the velocity of the new particle based on the momentum of the surrounding gas
-                        u = gas_sum[1] / mass;
-                        v = gas_sum[2] / mass;
-                        w = gas_sum[3] / mass;
-
-                        for (int k  = halo_pos[2] - 1; k <= halo_pos[2] + 1; k++)
-                         for (int j  = halo_pos[1] - 1; j <= halo_pos[1] + 1; j++)
-                          for (int i  = halo_pos[0] - 1; i <= halo_pos[0] + 1; i++)
-                          {
-                            IntVect iv(i,j,k);
-                            sub_state[index](iv,0) -= frac * gas_state[index](iv,Density);
-                            sub_state[index](iv,1) -= frac * gas_state[index](iv,Xmom);
-                            sub_state[index](iv,2) -= frac * gas_state[index](iv,Ymom);
-                            sub_state[index](iv,3) -= frac * gas_state[index](iv,Zmom);
-                          }
-                     }
-                  } // End of test on whether particle is in this box
-              } // End of MFIter
-#endif
-//         } // End of test on halo mass
-
-//     } // End of loop over halos
-
-       // Call Redistribute so that the new particles get their cell, grid and process defined
-       Nyx::theAPC()->Redistribute(false,true,0);
+       cout << "After Redistribute:" << endl;
+       Nyx::theAPC()->writeAllAtLevel(level);
 
 #if 0
-       // Take away the density/momentum from the gas that was added to the AGN particle.
-       sub_state.SumBoundary();
-       amrex::MultiFab::Add(gas_state,sub_state,0,Density,1+BL_SPACEDIM,0);
-
-       // This is just a test to make sure the particle deposits mass
+       // Create a MultiFab to hold the density we're going to remove from the grid
        MultiFab agn_density(simBA, simDM, 1, 1);
        agn_density.setVal(0.0);
-       Nyx::theAPC()->AssignDensitySingleLevel(agn_density, 0);
-       amrex::Real agn_mass_new = agn_density.norm0();
 
-       if (ParallelDescriptor::IOProcessor())
-          std::cout << "MAX NORM OF AGN_DENSITY AFTER HALO STUFF " << agn_mass_new << std::endl;
+       // Deposit the mass now in the particles onto the grid (this doesn't change the mass of the particles)
+       Nyx::theAPC()->AssignDensitySingleLevel(agn_density, 0);
+
+       // Make sure the density put into ghost cells is added to valid regions
+       agn_density.SumBoundary();
+
+       // Take away the density from the gas that was added to the AGN particle.
+       amrex::MultiFab::Subtract(simMF,agn_density,0,Density,1,0);
 #endif
 
        const amrex::Real time2 = ParallelDescriptor::second();

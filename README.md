@@ -5,14 +5,10 @@
 
 PLEASE NOTE:  Nyx has been migrated from BoxLib to AMReX.
 
-If you prefer to run with the BoxLib-based version, then 
-you can use the "boxlib" branch (which will no longer be updated).
-
 If you would like to use the latest version of Nyx, you will
-need to download AMReX.  Please email ASAlmgren@lbl.gov to get
-access to AMReX (it will become public as soon as it makes
-it through the licensing process).
+need to download AMReX from
 
+https://github.com/AMReX-codes/amrex
 
 `Nyx` is an N-body hydro cosmological simulation code with 
 adaptive mesh refinement (AMR).  `Nyx` uses an unsplit PPM approach 
@@ -23,15 +19,14 @@ and multigrid to solve the Poisson equation for self-gravity.
 
 More information on Nyx can be found here:
 
-http://boxlib-codes.github.io/Nyx/
+http://amrex-codes.github.io/Nyx/
+
+If you prefer to run with the BoxLib-based version, then 
+you can use the "boxlib" branch (which will no longer be updated).
 
 *******************************************************
 
 ## Getting Started
-
-To build `Nyx`, you need a copy of the `AMReX` library  --
-please email ASAlmgren@lbl.gov to get access to AMReX 
-(it will become public as soon as it makes it through the licensing process).
 
 There is a User's Guide in `Nyx/UsersGuide/` (type `make` to build
 from LaTeX source) that will guide you through running your first
