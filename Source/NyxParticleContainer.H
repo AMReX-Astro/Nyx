@@ -62,6 +62,11 @@ public:
         p.pos(2) = z;
 
         p.rdata(0) = mass;
+       
+        // Velocity components
+        p.rdata(1) = 0.;
+        p.rdata(2) = 0.;
+        p.rdata(3) = 0.;
 
         particle_tile.push_back(p);
     }

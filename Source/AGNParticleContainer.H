@@ -47,8 +47,12 @@ public:
     ///
     /// Invalidate particles in cells that are already occupied
     ///
-    // void ComputeOverlap(int lev, amrex::MultiFab& density_to_subtract);
     void ComputeOverlap(int lev);
+
+    ///
+    /// Compute the momentum that has been removed from the gas in order to define the particle velocity
+    ///
+    void ComputeParticleVelocity(int lev, amrex::MultiFab& state_old, amrex::MultiFab& state_new, int start_comp);
 
     ///
     /// This fills the ghost buffers for each tile with the proper data

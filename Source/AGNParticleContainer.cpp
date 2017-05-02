@@ -27,16 +27,39 @@ void AGNParticleContainer::ComputeOverlap(int lev)
         PairIndex index(pti.index(), pti.LocalTileIndex());
         int Ng = ghosts[index].size() / pdata_size;
 
-//      const Box& dbox = density_to_subtract[pti].box();
-
         nyx_compute_overlap(particles.data(), nstride, Np, my_id.dataPtr(),
                            (RealType*) ghosts[index].dataPtr(), Ng, dx);
-//                         density_to_subtract[pti].dataPtr(), 
-//                         dbox.loVect(), dbox.hiVect());
 
         for (int i = 0; i < Np; ++i ) {
           particles[i].id() = my_id[i];
         }
+    }
+}
+
+void AGNParticleContainer::ComputeParticleVelocity(int lev, amrex::MultiFab& state_old, 
+                                                   amrex::MultiFab& state_new, int start_comp)
+{
+    const Real* dx = Geom(lev).CellSize();
+
+    state_old.FillBoundary();
+    state_new.FillBoundary();
+
+    for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
+
+        AoS& particles = pti.GetArrayOfStructs();
+        size_t Np = particles.size();
+
+        int nstride = particles.dataShape().first;
+
+        const Box& soldbox = state_old[pti].box();
+        const Box& snewbox = state_new[pti].box();
+
+        agn_particle_velocity( particles.data(), nstride, Np, 
+                              state_old[pti].dataPtr(), 
+                              soldbox.loVect(), soldbox.hiVect(),
+                              state_new[pti].dataPtr(), 
+                              snewbox.loVect(), snewbox.hiVect(),
+                              start_comp, dx);
     }
 }
 

@@ -109,6 +109,27 @@ Nyx::halo_find ()
 
        std::ofstream os;
 
+#if 1
+       MultiFab new_state(simBA, simDM, simMF.nComp(), 1);
+       MultiFab::Copy(new_state,simMF,0,0,simMF.nComp(),1);
+
+       // Create a MultiFab to hold the density we're going to remove from the grid
+       MultiFab agn_density(simBA, simDM, 1, 1);
+       agn_density.setVal(0.0);
+
+       // Deposit the mass now in the particles onto the grid (this doesn't change the mass of the particles)
+       Nyx::theAPC()->AssignDensitySingleLevel(agn_density, 0);
+
+       // Make sure the density put into ghost cells is added to valid regions
+       agn_density.SumBoundary();
+
+       // Add the density from the gas that is currently in the AGN particles.
+       amrex::MultiFab::Add(new_state,agn_density,0,Density,1,0);
+#endif
+
+       std::cout << "  " << std::endl;
+       std::cout << " *************************************** " << std::endl;
+
 #ifdef REEBER
        for (const Halo& h : reeber_halos)
        {
@@ -145,15 +166,14 @@ Nyx::halo_find ()
                 //      this is not actually where the particle belongs, but we will let the Redistribute call
                 //      put it in the right place
 
-                Nyx::theAPC()->AddOneParticle(lev,grid,tile,halo_mass,x,y,z); // ,u,v,w);
+                Nyx::theAPC()->AddOneParticle(lev,grid,tile,mass,x,y,z); // ,u,v,w);
 
-                std::cout << "  " << std::endl;
-                std::cout << " *************************************** " << std::endl;
                 std::cout << "ADDED A PARTICLE AT " << x << " " << y << " " << z << " WITH MASS " << mass << std::endl;
-                std::cout << " *************************************** " << std::endl;
-                std::cout << "  " << std::endl;
            }
        } // end of loop over creating new particles from halos
+
+       std::cout << " *************************************** " << std::endl;
+       std::cout << "  " << std::endl;
 
        // At this point the particles have all been created on the same process as the halo they came from,
        // but they are not on the "right" process for going forward
@@ -173,9 +193,8 @@ Nyx::halo_find ()
        cout << "After Redistribute:" << endl;
        Nyx::theAPC()->writeAllAtLevel(level);
 
-#if 0
-       // Create a MultiFab to hold the density we're going to remove from the grid
-       MultiFab agn_density(simBA, simDM, 1, 1);
+#if 1
+       // Zero this out again
        agn_density.setVal(0.0);
 
        // Deposit the mass now in the particles onto the grid (this doesn't change the mass of the particles)
@@ -185,8 +204,10 @@ Nyx::halo_find ()
        agn_density.SumBoundary();
 
        // Take away the density from the gas that was added to the AGN particle.
-       amrex::MultiFab::Subtract(simMF,agn_density,0,Density,1,0);
+       amrex::MultiFab::Subtract(new_state,agn_density,0,Density,1,0);
 #endif
+       
+       Nyx::theAPC()->ComputeParticleVelocity(level,simMF,new_state,Xmom);
 
        const amrex::Real time2 = ParallelDescriptor::second();
        if (ParallelDescriptor::IOProcessor())
