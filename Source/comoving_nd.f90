@@ -1,22 +1,29 @@
+module comoving_nd_module
+
+  use amrex_fort_module, only : rt => amrex_real
+
+  contains
+
 ! :::
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine fort_integrate_comoving_a(old_a,new_a,dt)
+      subroutine fort_integrate_comoving_a(old_a,new_a,dt) &
+         bind(C, name="fort_integrate_comoving_a")
 
         use fundamental_constants_module, only: Hubble_const
         use comoving_module             , only: comoving_h, comoving_OmM, comoving_type
 
         implicit none
 
-        double precision, intent(in   ) :: old_a, dt
-        double precision, intent(  out) :: new_a
+        real(rt), intent(in   ) :: old_a, dt
+        real(rt), intent(  out) :: new_a
 
-        double precision, parameter :: xacc = 1.0d-8
-        double precision :: H_0, OmL
-        double precision :: Delta_t, prev_soln
-        double precision :: start_a, end_a, start_slope, end_slope
-        integer :: iter, j, nsteps
+        real(rt), parameter :: xacc = 1.0d-8
+        real(rt) :: H_0, OmL
+        real(rt) :: Delta_t, prev_soln
+        real(rt) :: start_a, end_a, start_slope, end_slope
+        integer  :: iter, j, nsteps
 
         if (comoving_h .eq. 0.0d0) then
           new_a = old_a
@@ -70,22 +77,23 @@
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine fort_integrate_comoving_a_to_z(old_a,z_value,dt)
+      subroutine fort_integrate_comoving_a_to_z(old_a,z_value,dt) &
+         bind(C, name="fort_integrate_comoving_a_to_z")
 
         use fundamental_constants_module, only: Hubble_const
         use comoving_module             , only: comoving_h, comoving_OmM, comoving_type
 
         implicit none
 
-        double precision, intent(in   ) :: old_a, z_value
-        double precision, intent(inout) :: dt
+        real(rt), intent(in   ) :: old_a, z_value
+        real(rt), intent(inout) :: dt
 
-        double precision, parameter :: xacc = 1.0d-8
-        double precision :: H_0, OmL
-        double precision :: Delta_t
-        double precision :: start_a, end_a, start_slope, end_slope
-        double precision :: a_value
-        integer :: j, nsteps
+        real(rt), parameter :: xacc = 1.0d-8
+        real(rt) :: H_0, OmL
+        real(rt) :: Delta_t
+        real(rt) :: start_a, end_a, start_slope, end_slope
+        real(rt) :: a_value
+        integer  :: j, nsteps
 
         if (comoving_h .eq. 0.0d0) &
           call bl_error("fort_integrate_comoving_a_to_z: Shouldn't be setting plot_z_values if not evolving a")
@@ -147,11 +155,11 @@
 
         implicit none
 
-        double precision, intent(in   ) :: old_a
-        double precision, intent(inout) :: dt
+        real(rt), intent(in   ) :: old_a
+        real(rt), intent(inout) :: dt
 
-        double precision :: H_0, OmL
-        double precision :: max_dt
+        real(rt) :: H_0, OmL
+        real(rt) :: max_dt
 
         OmL = 1.d0 - comoving_OmM 
 
@@ -181,16 +189,17 @@
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine fort_estdt_comoving_a(old_a,new_a,dt,change_allowed,final_a,dt_modified)
+      subroutine fort_estdt_comoving_a(old_a,new_a,dt,change_allowed,final_a,dt_modified) &
+         bind(C, name="fort_estdt_comoving_a")
 
         use comoving_module             , only: comoving_h
 
         implicit none
 
-        double precision, intent(in   ) :: old_a, change_allowed, final_a
-        double precision, intent(inout) :: dt
-        double precision, intent(  out) :: new_a
-        integer         , intent(  out) :: dt_modified
+        real(rt), intent(in   ) :: old_a, change_allowed, final_a
+        real(rt), intent(inout) :: dt
+        real(rt), intent(  out) :: new_a
+        integer , intent(  out) :: dt_modified
 
         if (comoving_h .ne. 0.0d0) then
 
@@ -227,12 +236,12 @@
 
         implicit none
 
-        double precision, intent(in   ) :: old_a, change_allowed
-        double precision, intent(inout) :: dt
-        double precision, intent(inout) :: new_a
+        real(rt), intent(in   ) :: old_a, change_allowed
+        real(rt), intent(inout) :: dt
+        real(rt), intent(inout) :: new_a
 
         integer          :: i
-        double precision :: factor
+        real(rt) :: factor
 
         factor = ( (new_a - old_a) / old_a ) / change_allowed
 
@@ -271,13 +280,13 @@
 
         implicit none
 
-        double precision, intent(in   ) :: old_a, final_a
-        double precision, intent(inout) :: dt
-        double precision, intent(inout) :: new_a
+        real(rt), intent(in   ) :: old_a, final_a
+        real(rt), intent(inout) :: dt
+        real(rt), intent(inout) :: new_a
 
-        integer          :: i
-        double precision :: factor
-        double precision, parameter :: eps = 1.d-10
+        integer  :: i
+        real(rt) :: factor
+        real(rt), parameter :: eps = 1.d-10
 
         if (old_a > final_a) then
            call bl_error("Oops -- old_a > final_a")
@@ -310,42 +319,46 @@
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine get_omb(frac)
+      subroutine fort_get_omb(frac) &
+         bind(C, name="fort_get_omb")
 
-         use comoving_module, only: comoving_OmB, comoving_OmM
+        use comoving_module, only: comoving_OmB, comoving_OmM
 
-         double precision :: frac
+        real(rt) :: frac
 
-         frac = comoving_OmB / comoving_OmM
+        frac = comoving_OmB / comoving_OmM
 
-      end subroutine get_omb
+      end subroutine fort_get_omb
 
-
-! :::
-! ::: ----------------------------------------------------------------
-! :::
-
-      subroutine get_omm(omm)
-
-         use comoving_module, only: comoving_OmM
-
-         double precision :: omm
-
-         omm = comoving_OmM
-
-      end subroutine get_omm
 
 ! :::
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine get_hubble(hubble)
+      subroutine fort_get_omm(omm) &
+         bind(C, name="fort_get_omm")
 
-         use comoving_module, only: comoving_h
+        use comoving_module, only: comoving_OmM
 
-         double precision :: hubble
+        real(rt) :: omm
 
-         hubble = comoving_h
+        omm = comoving_OmM
 
-      end subroutine get_hubble
+      end subroutine fort_get_omm
 
+! :::
+! ::: ----------------------------------------------------------------
+! :::
+
+      subroutine fort_get_hubble(hubble) &
+         bind(C, name="fort_get_hubble")
+
+        use comoving_module, only: comoving_h
+
+        real(rt) :: hubble
+
+        hubble = comoving_h
+
+      end subroutine fort_get_hubble
+
+end module comoving_nd_module

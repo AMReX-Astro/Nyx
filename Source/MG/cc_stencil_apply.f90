@@ -1,5 +1,6 @@
 module cc_stencil_apply_module
 
+  use amrex_fort_module, only : rt => amrex_real
   use bl_types
   use bc_module
   use bc_functions_module
@@ -8,8 +9,8 @@ module cc_stencil_apply_module
 
   implicit none
 
-  real(kind=dp_t), parameter, private :: ZERO = 0.0_dp_t
-  real(kind=dp_t), parameter, private :: ONE  = 1.0_dp_t
+  real(rt), parameter, private :: ZERO = 0.0_rt
+  real(rt), parameter, private :: ONE  = 1.0_rt
 
   public  :: stencil_apply_1d, stencil_apply_2d, stencil_apply_3d
   private :: stencil_dense_apply_1d, stencil_dense_apply_2d, stencil_dense_apply_3d
@@ -20,9 +21,9 @@ contains
   subroutine stencil_apply_1d(ss, dd, ng_d, uu, ng_u, mm, lo, hi, stencil_type, skwd)
 
     integer, intent(in) :: ng_d, ng_u, lo(:), hi(:)
-    real (kind = dp_t), intent(in)  :: ss(0:,lo(1) :)
-    real (kind = dp_t), intent(out) :: dd(lo(1)-ng_d:)
-    real (kind = dp_t), intent(in)  :: uu(lo(1)-ng_u:)
+    real (rt), intent(in)  :: ss(0:,lo(1) :)
+    real (rt), intent(out) :: dd(lo(1)-ng_d:)
+    real (rt), intent(in)  :: uu(lo(1)-ng_u:)
     integer           , intent(in)  :: mm(lo(1):)
     integer           , intent(in)  :: stencil_type
     logical, intent(in), optional   :: skwd
@@ -56,9 +57,9 @@ contains
   subroutine stencil_flux_1d(ss, flux, uu, mm, ng, ratio, face, dim, skwd)
 
     integer, intent(in) :: ng
-    real (kind = dp_t), intent(in)  :: ss(0:,:)
-    real (kind = dp_t), intent(out) :: flux(:)
-    real (kind = dp_t), intent(in)  :: uu(1-ng:)
+    real (rt), intent(in)  :: ss(0:,:)
+    real (rt), intent(out) :: flux(:)
+    real (rt), intent(in)  :: uu(1-ng:)
     integer           , intent(in)  :: mm(:)
     logical, intent(in), optional :: skwd
     integer, intent(in) :: ratio, face, dim
@@ -66,7 +67,7 @@ contains
     integer i
     integer, parameter :: XBC = 3
 
-    real (kind = dp_t) :: fac
+    real (rt) :: fac
 
     logical :: lskwd
 
@@ -75,7 +76,7 @@ contains
     nx = size(ss,dim=2)
 
     !   This factor is dx^fine / dx^crse
-    fac = ONE / real(ratio, kind=dp_t)
+    fac = ONE / real(ratio,rt)
 
     if ( dim == 1 ) then
        if ( face == -1 ) then
@@ -110,9 +111,9 @@ contains
   subroutine stencil_apply_2d(ss, dd, ng_d, uu, ng_u, mm, lo, hi, stencil_type, skwd)
 
     integer           , intent(in   ) :: ng_d, ng_u, lo(:), hi(:)
-    real (kind = dp_t), intent(in   ) :: ss(0:,lo(1):,lo(2):)
-    real (kind = dp_t), intent(  out) :: dd(lo(1)-ng_d:,lo(2)-ng_d:)
-    real (kind = dp_t), intent(inout) :: uu(lo(1)-ng_u:,lo(2)-ng_u:)
+    real (rt), intent(in   ) :: ss(0:,lo(1):,lo(2):)
+    real (rt), intent(  out) :: dd(lo(1)-ng_d:,lo(2)-ng_d:)
+    real (rt), intent(inout) :: uu(lo(1)-ng_u:,lo(2)-ng_u:)
     integer           , intent(in   ) :: mm(lo(1):,lo(2):)
     integer           , intent(in   ) :: stencil_type
     logical           , intent(in   ), optional :: skwd
@@ -213,9 +214,9 @@ contains
   subroutine stencil_apply_n_2d(ss, dd, ng_d, uu, ng_u, mm, lo, hi, stencil_type, skwd)
 
     integer           , intent(in   ) :: ng_d, ng_u, lo(:), hi(:)
-    real (kind = dp_t), intent(in   ) :: ss(0:,lo(1):,lo(2):)
-    real (kind = dp_t), intent(  out) :: dd(lo(1)-ng_d:,lo(2)-ng_d:)
-    real (kind = dp_t), intent(inout) :: uu(lo(1)-ng_u:,lo(2)-ng_u:)
+    real (rt), intent(in   ) :: ss(0:,lo(1):,lo(2):)
+    real (rt), intent(  out) :: dd(lo(1)-ng_d:,lo(2)-ng_d:)
+    real (rt), intent(inout) :: uu(lo(1)-ng_u:,lo(2)-ng_u:)
     integer           , intent(in   ) :: mm(lo(1):,lo(2):)
     integer           , intent(in   ) :: stencil_type
     logical           , intent(in   ), optional :: skwd
@@ -289,15 +290,15 @@ contains
 
   subroutine stencil_flux_2d(ss, flux, uu, mm, ng, ratio, face, dim, skwd)
     integer, intent(in) :: ng
-    real (kind = dp_t), intent(in ) :: uu(1-ng:,1-ng:)
-    real (kind = dp_t), intent(out) :: flux(:,:)
-    real (kind = dp_t), intent(in ) :: ss(0:,:,:)
+    real (rt), intent(in ) :: uu(1-ng:,1-ng:)
+    real (rt), intent(out) :: flux(:,:)
+    real (rt), intent(in ) :: ss(0:,:,:)
     integer           , intent(in)  :: mm(:,:)
     logical, intent(in), optional :: skwd
     integer, intent(in) :: ratio, face, dim
     integer nx,ny
     integer i,j,ic,jc
-    real (kind = dp_t) :: fac
+    real (rt) :: fac
     integer, parameter :: XBC = 5, YBC = 6
     logical :: lskwd
 
@@ -308,7 +309,7 @@ contains
 
     !   Note that one factor of ratio is the tangential averaging, while the
     !     other is the normal factor
-    fac = ONE/real(ratio*ratio, kind=dp_t)
+    fac = ONE/real(ratio*ratio,rt)
 
 !   Lo i face
     if ( dim == 1 ) then
@@ -399,15 +400,15 @@ contains
 
   subroutine stencil_flux_n_2d(ss, flux, uu, mm, ng, ratio, face, dim, skwd)
     integer, intent(in) :: ng
-    real (kind = dp_t), intent(in ) :: uu(1-ng:,1-ng:)
-    real (kind = dp_t), intent(out) :: flux(:,:,1:)
-    real (kind = dp_t), intent(in ) :: ss(0:,:,:)
+    real (rt), intent(in ) :: uu(1-ng:,1-ng:)
+    real (rt), intent(out) :: flux(:,:,1:)
+    real (rt), intent(in ) :: ss(0:,:,:)
     integer           , intent(in)  :: mm(:,:)
     logical, intent(in), optional :: skwd
     integer, intent(in) :: ratio, face, dim
     integer nx,ny,dm,nc,nedge,nm1,nset
     integer i,j,ic,jc,n
-    real (kind = dp_t) :: fac
+    real (rt) :: fac
     integer, parameter :: XBC = 6, YBC = 7
     logical :: lskwd
 
@@ -423,7 +424,7 @@ contains
 
     !   Note that one factor of ratio is the tangential averaging, while the
     !     other is the normal factor
-    fac = ONE/real(ratio*ratio, kind=dp_t)
+    fac = ONE/real(ratio*ratio,rt)
 
 !   Lo i face
     if ( dim == 1 ) then
@@ -526,9 +527,9 @@ contains
   subroutine stencil_apply_3d(ss, dd, ng_d, uu, ng_u, mm, stencil_type, skwd)
 
     integer           , intent(in ) :: ng_d,ng_u
-    real (kind = dp_t), intent(in ) :: ss(0:,:,:,:)
-    real (kind = dp_t), intent(out) :: dd(1-ng_d:,1-ng_d:,1-ng_d:)
-    real (kind = dp_t), intent(in ) :: uu(1-ng_u:,1-ng_u:,1-ng_u:)
+    real (rt), intent(in ) :: ss(0:,:,:,:)
+    real (rt), intent(out) :: dd(1-ng_d:,1-ng_d:,1-ng_d:)
+    real (rt), intent(in ) :: uu(1-ng_u:,1-ng_u:,1-ng_u:)
     integer           , intent(in ) :: mm(:,:,:)
     integer           , intent(in ) :: stencil_type
     logical           , intent(in ), optional :: skwd
@@ -536,7 +537,7 @@ contains
     integer nx,ny,nz,i,j,k
     integer, parameter :: XBC = 7, YBC = 8, ZBC = 9
     logical :: lskwd
-    real (kind = dp_t) :: coeff
+    real (rt) :: coeff
 
     lskwd = .true.; if ( present(skwd) ) lskwd = skwd
 
@@ -708,16 +709,16 @@ contains
 
   subroutine stencil_flux_3d(ss, flux, uu, mm, ng, ratio, face, dim, skwd)
     integer, intent(in) :: ng
-    real (kind = dp_t), intent(in ) :: uu(1-ng:,1-ng:,1-ng:)
-    real (kind = dp_t), intent(out) :: flux(:,:,:)
-    real (kind = dp_t), intent(in ) :: ss(0:,:,:,:)
+    real (rt), intent(in ) :: uu(1-ng:,1-ng:,1-ng:)
+    real (rt), intent(out) :: flux(:,:,:)
+    real (rt), intent(in ) :: ss(0:,:,:,:)
     integer           , intent(in)  :: mm(:,:,:)
     logical, intent(in), optional :: skwd
     integer, intent(in) :: ratio, face, dim
     integer nx, ny, nz
     integer i,j,k,ic,jc,kc
     integer, parameter :: XBC = 7, YBC = 8, ZBC = 9
-    real (kind = dp_t) :: fac
+    real (rt) :: fac
     logical :: lskwd
 
     lskwd = .true. ; if ( present(skwd) ) lskwd = skwd
@@ -728,7 +729,7 @@ contains
 
     ! Note that two factors of ratio is from the tangential averaging, while the
     ! other is the normal factor
-    fac = ONE/real(ratio*ratio*ratio, kind=dp_t)
+    fac = ONE/real(ratio*ratio*ratio,rt)
 
     ! Note: Do not try to add OMP calls to this subroutine.  For example,
     !       in the first k loop below, kc may end up having the same value 
@@ -886,9 +887,9 @@ contains
 
   subroutine stencil_dense_apply_1d(ss, dd, ng_d, uu, ng_u)
     integer, intent(in) :: ng_d, ng_u
-    real (kind = dp_t), intent(in   ) :: ss(0:,:)
-    real (kind = dp_t), intent(  out) :: dd(1-ng_d:)
-    real (kind = dp_t), intent(in   ) :: uu(1-ng_u:)
+    real (rt), intent(in   ) :: ss(0:,:)
+    real (rt), intent(  out) :: dd(1-ng_d:)
+    real (rt), intent(in   ) :: uu(1-ng_u:)
     integer i, nx
    
     nx = size(ss,dim=2)
@@ -900,9 +901,9 @@ contains
 
   subroutine stencil_dense_apply_2d(ss, dd, ng_d, uu, ng_u)
     integer, intent(in) :: ng_d, ng_u
-    real (kind = dp_t), intent(in   ) :: ss(0:,:,:)
-    real (kind = dp_t), intent(  out) :: dd(1-ng_d:,1-ng_d:)
-    real (kind = dp_t), intent(in   ) :: uu(1-ng_u:,1-ng_u:)
+    real (rt), intent(in   ) :: ss(0:,:,:)
+    real (rt), intent(  out) :: dd(1-ng_d:,1-ng_d:)
+    real (rt), intent(in   ) :: uu(1-ng_u:,1-ng_u:)
     integer i, j, nx, ny
 
     nx = size(ss,dim=2)
@@ -921,9 +922,9 @@ contains
 
   subroutine stencil_dense_apply_3d(ss, dd, ng_d, uu, ng_u)
     integer, intent(in) :: ng_d, ng_u
-    real (kind = dp_t), intent(in   ) :: ss(0:,:,:,:)
-    real (kind = dp_t), intent(in   ) :: uu(1-ng_u:,1-ng_u:,1-ng_u:)
-    real (kind = dp_t), intent(  out) :: dd(1-ng_d:,1-ng_d:,1-ng_d:)
+    real (rt), intent(in   ) :: ss(0:,:,:,:)
+    real (rt), intent(in   ) :: uu(1-ng_u:,1-ng_u:,1-ng_u:)
+    real (rt), intent(  out) :: dd(1-ng_d:,1-ng_d:,1-ng_d:)
     integer i, j, k, nx, ny, nz
 
     nx = size(ss,dim=2)
@@ -973,9 +974,9 @@ contains
 
   subroutine stencil_fine_flux_1d(ss, flux, uu, mm, ng, face, dim, skwd)
     integer, intent(in) :: ng
-    real (kind = dp_t), intent(in)  :: ss(0:,:)
-    real (kind = dp_t), intent(out) :: flux(:)
-    real (kind = dp_t), intent(in)  :: uu(1-ng:)
+    real (rt), intent(in)  :: ss(0:,:)
+    real (rt), intent(out) :: flux(:)
+    real (rt), intent(in)  :: uu(1-ng:)
     integer           , intent(in)  :: mm(:)
     logical, intent(in), optional :: skwd
     integer, intent(in) :: face, dim
@@ -1031,9 +1032,9 @@ contains
 
     integer :: dim, i, ngu, ngf
 
-    real(kind=dp_t), pointer :: fp(:,:,:,:)
-    real(kind=dp_t), pointer :: up(:,:,:,:)
-    real(kind=dp_t), pointer :: sp(:,:,:,:)
+    real(rt), pointer :: fp(:,:,:,:)
+    real(rt), pointer :: up(:,:,:,:)
+    real(rt), pointer :: sp(:,:,:,:)
     integer        , pointer :: mp(:,:,:,:)
 
     type(bl_prof_timer), save :: bpt
@@ -1074,9 +1075,9 @@ contains
 
   subroutine stencil_all_flux_1d(ss, flux, uu, mm, ngu, ngf, skwd)
     integer, intent(in) :: ngu, ngf
-    real (kind = dp_t), intent(in ) ::   uu(-ngu:)
-    real (kind = dp_t), intent(out) :: flux(-ngf:)
-    real (kind = dp_t), intent(in ) :: ss(0:,0:)
+    real (rt), intent(in ) ::   uu(-ngu:)
+    real (rt), intent(out) :: flux(-ngf:)
+    real (rt), intent(in ) :: ss(0:,0:)
     integer           , intent(in)  :: mm(0:)
     logical, intent(in), optional :: skwd
     integer nx
@@ -1129,9 +1130,9 @@ contains
 
   subroutine stencil_fine_flux_2d(ss, flux, uu, mm, ng, face, dim, skwd)
     integer, intent(in) :: ng
-    real (kind = dp_t), intent(in ) :: uu(1-ng:,1-ng:)
-    real (kind = dp_t), intent(out) :: flux(:,:)
-    real (kind = dp_t), intent(in ) :: ss(0:,:,:)
+    real (rt), intent(in ) :: uu(1-ng:,1-ng:)
+    real (rt), intent(out) :: flux(:,:)
+    real (rt), intent(in ) :: ss(0:,:,:)
     integer           , intent(in)  :: mm(:,:)
     logical, intent(in), optional :: skwd
     integer, intent(in) :: face, dim
@@ -1233,9 +1234,9 @@ contains
 
   subroutine stencil_all_flux_2d(ss, flux, uu, mm, ngu, ngf, dim, skwd)
     integer, intent(in) :: ngu, ngf
-    real (kind = dp_t), intent(in ) ::   uu(-ngu:,-ngu:)
-    real (kind = dp_t), intent(out) :: flux(-ngf:,-ngf:)
-    real (kind = dp_t), intent(in ) :: ss(0:,0:,0:)
+    real (rt), intent(in ) ::   uu(-ngu:,-ngu:)
+    real (rt), intent(out) :: flux(-ngf:,-ngf:)
+    real (rt), intent(in ) :: ss(0:,0:,0:)
     integer           , intent(in)  :: mm(0:,0:)
     logical, intent(in), optional :: skwd
     integer, intent(in) :: dim
@@ -1347,9 +1348,9 @@ contains
 
   subroutine stencil_fine_flux_3d(ss, flux, uu, mm, ng, face, dim, skwd)
     integer, intent(in) :: ng
-    real (kind = dp_t), intent(in ) :: ss(0:,:,:,:)
-    real (kind = dp_t), intent(out) :: flux(:,:,:)
-    real (kind = dp_t), intent(in ) :: uu(1-ng:,1-ng:,1-ng:)
+    real (rt), intent(in ) :: ss(0:,:,:,:)
+    real (rt), intent(out) :: flux(:,:,:)
+    real (rt), intent(in ) :: uu(1-ng:,1-ng:,1-ng:)
     integer           , intent(in)  :: mm(:,:,:)
     logical, intent(in), optional :: skwd
     integer, intent(in) :: face, dim
@@ -1510,9 +1511,9 @@ contains
 
   subroutine stencil_all_flux_3d(ss, flux, uu, mm, ngu, ngf, dim, skwd)
     integer, intent(in) :: ngu,ngf
-    real (kind = dp_t), intent(in ) ::   uu(-ngu:,-ngu:,-ngu:)
-    real (kind = dp_t), intent(out) :: flux(-ngf:,-ngf:,-ngf:)
-    real (kind = dp_t), intent(in ) :: ss(0:,0:,0:,0:)
+    real(rt), intent(in ) ::   uu(-ngu:,-ngu:,-ngu:)
+    real(rt), intent(out) :: flux(-ngf:,-ngf:,-ngf:)
+    real(rt), intent(in ) :: ss(0:,0:,0:,0:)
     integer           , intent(in)  :: mm(0:,0:,0:)
     logical, intent(in), optional :: skwd
     integer, intent(in) :: dim

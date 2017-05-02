@@ -2,8 +2,10 @@
 ! ::: -----------------------------------------------------------
 
       subroutine hypfill(adv,adv_l1,adv_l2,adv_l3,adv_h1,adv_h2, &
-                         adv_h3,domlo,domhi,delta,xlo,time,bc)
+                         adv_h3,domlo,domhi,delta,xlo,time,bc) &
+                         bind(C, name="hypfill")
 
+      use amrex_fort_module, only : rt => amrex_real
       use meth_params_module, only : NVAR
 
       implicit none
@@ -12,14 +14,14 @@
       integer adv_l1,adv_l2,adv_l3,adv_h1,adv_h2,adv_h3
       integer bc(3,2,*)
       integer domlo(3), domhi(3)
-      double precision delta(3), xlo(3), time
-      double precision adv(adv_l1:adv_h1,adv_l2:adv_h2,adv_l3:adv_h3,NVAR)
+      real(rt) delta(3), xlo(3), time
+      real(rt) adv(adv_l1:adv_h1,adv_l2:adv_h2,adv_l3:adv_h3,NVAR)
 
-      double precision state(NVAR)
-      double precision staten(NVAR)
+      real(rt) state(NVAR)
+      real(rt) staten(NVAR)
 
       integer i, j, k, n, lo(3), hi(3)
-      double precision x, y, z
+      real(rt) x, y, z
       logical rho_only
 
       lo(1) = adv_l1
@@ -152,15 +154,17 @@
 ! ::: -----------------------------------------------------------
 
       subroutine denfill(adv,adv_l1,adv_l2,adv_l3,adv_h1,adv_h2, &
-                         adv_h3,domlo,domhi,delta,xlo,time,bc)
+                         adv_h3,domlo,domhi,delta,xlo,time,bc) &
+                         bind(C, name="denfill")
 
+      use amrex_fort_module, only : rt => amrex_real
       implicit none
       include 'AMReX_bc_types.fi'
       integer adv_l1,adv_l2,adv_l3,adv_h1,adv_h2,adv_h3
       integer bc(3,2,*)
       integer domlo(3), domhi(3)
-      double precision delta(3), xlo(3), time
-      double precision adv(adv_l1:adv_h1,adv_l2:adv_h2,adv_l3:adv_h3)
+      real(rt) delta(3), xlo(3), time
+      real(rt) adv(adv_l1:adv_h1,adv_l2:adv_h2,adv_l3:adv_h3)
       logical rho_only
       integer i,j,k
 
@@ -246,14 +250,15 @@
 
       subroutine bcnormal(u_int,u_ext,dir,sgn,rho_only)
 
+      use amrex_fort_module, only : rt => amrex_real
       use probdata_module
       use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, gamma_minus_1
       implicit none
 
-      double precision u_int(*),u_ext(*)
+      real(rt) u_int(*),u_ext(*)
       logical rho_only
       integer dir,sgn
-      double precision rho, rhou(3), eden, T, Y
+      real(rt) rho, rhou(3), eden, T, Y
       integer n,t1,t2,i
 
 !     for the Sedov problem, we will always set the state to the ambient conditions
@@ -285,15 +290,17 @@
 ! ::: -----------------------------------------------------------
 
       subroutine generic_fill(var,var_l1,var_l2,var_l3,var_h1,var_h2,var_h3, &
-                              domlo,domhi,delta,xlo,time,bc)
+                              domlo,domhi,delta,xlo,time,bc) &
+                              bind(C, name="generic_fill")
 
+      use amrex_fort_module, only : rt => amrex_real
       implicit none
       include 'AMReX_bc_types.fi'
       integer var_l1,var_l2,var_l3,var_h1,var_h2,var_h3
       integer bc(3,2,*)
       integer domlo(3), domhi(3)
-      double precision delta(3), xlo(3), time
-      double precision var(var_l1:var_h1,var_l2:var_h2,var_l3:var_h3)
+      real(rt) delta(3), xlo(3), time
+      real(rt) var(var_l1:var_h1,var_l2:var_h2,var_l3:var_h3)
 
       call filcc(var,var_l1,var_l2,var_l3,var_h1,var_h2,var_h3,domlo,domhi,delta,xlo,bc)
 

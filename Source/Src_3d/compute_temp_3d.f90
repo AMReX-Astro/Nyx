@@ -1,11 +1,13 @@
 
       ! *************************************************************************************
 
-      subroutine compute_temp(lo,hi, &
-                              state   ,s_l1,s_l2,s_l3, s_h1,s_h2,s_h3, &
-                              diag_eos,d_l1,d_l2,d_l3, d_h1,d_h2,d_h3, &
-                              comoving_a, print_fortran_warnings)
+      subroutine fort_compute_temp(lo,hi, &
+                                   state   ,s_l1,s_l2,s_l3, s_h1,s_h2,s_h3, &
+                                   diag_eos,d_l1,d_l2,d_l3, d_h1,d_h2,d_h3, &
+                                   comoving_a, print_fortran_warnings) &
+      bind(C, name = "fort_compute_temp")
 
+      use amrex_fort_module, only : rt => amrex_real
       use eos_module
       use atomic_rates_module, only: this_z, interp_to_this_z
       use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEINT, UEDEN, &
@@ -17,14 +19,14 @@
       integer         , intent(in   ) :: s_l1,s_l2,s_l3,s_h1,s_h2,s_h3
       integer         , intent(in   ) :: d_l1,d_l2,d_l3,d_h1,d_h2,d_h3
       integer         , intent(in   ) :: print_fortran_warnings
-      double precision, intent(inout) ::    state(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3,NVAR)
-      double precision, intent(inout) :: diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,2)
-      double precision, intent(in   ) :: comoving_a
+      real(rt), intent(inout) ::    state(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3,NVAR)
+      real(rt), intent(inout) :: diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,2)
+      real(rt), intent(in   ) :: comoving_a
 
       integer          :: i,j,k
-      double precision :: rhoInv,eint
-      double precision :: ke,dummy_pres
-      double precision :: z
+      real(rt) :: rhoInv,eint
+      real(rt) :: ke,dummy_pres
+      real(rt) :: z
 
       z = 1.d0/comoving_a - 1.d0
 
@@ -81,29 +83,31 @@
          enddo
       enddo
 
-      end subroutine compute_temp
+      end subroutine fort_compute_temp
 
-      subroutine compute_rho_temp(lo,hi,dx, &
+      subroutine fort_compute_rho_temp(lo,hi,dx, &
                                      state,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3, &
                                   diag_eos,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3, &
                                   rho_ave,rho_T_sum, &
-                                  T_sum,T_meanrho_sum,rho_sum,vol_sum,vol_mn_sum)
+                                  T_sum,T_meanrho_sum,rho_sum,vol_sum,vol_mn_sum) &
+      bind(C, name = "fort_compute_rho_temp")
 
       use meth_params_module, only : NVAR, URHO, TEMP_COMP
 
+      use amrex_fort_module, only : rt => amrex_real
       implicit none
       integer         , intent(in   ) :: lo(3),hi(3)
       integer         , intent(in   ) :: s_l1,s_l2,s_l3,s_h1,s_h2,s_h3
       integer         , intent(in   ) :: d_l1,d_l2,d_l3,d_h1,d_h2,d_h3
-      double precision, intent(in   ) :: dx(3)
-      double precision, intent(in   ) :: rho_ave
-      double precision, intent(in   ) ::    state(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3,NVAR)
-      double precision, intent(in   ) :: diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,2)
-      double precision, intent(inout) :: rho_T_sum, rho_sum, T_sum, T_meanrho_sum
-      double precision, intent(inout) :: vol_sum, vol_mn_sum
+      real(rt), intent(in   ) :: dx(3)
+      real(rt), intent(in   ) :: rho_ave
+      real(rt), intent(in   ) ::    state(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3,NVAR)
+      real(rt), intent(in   ) :: diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,2)
+      real(rt), intent(inout) :: rho_T_sum, rho_sum, T_sum, T_meanrho_sum
+      real(rt), intent(inout) :: vol_sum, vol_mn_sum
 
       integer          :: i,j,k
-      double precision :: rho_hi, rho_lo, vol
+      real(rt) :: rho_hi, rho_lo, vol
 
       vol = dx(1)*dx(2)*dx(3)
       rho_hi = 1.1d0*rho_ave
@@ -125,27 +129,29 @@
          enddo
       enddo
 
-      end subroutine compute_rho_temp
+      end subroutine fort_compute_rho_temp
 
-      subroutine compute_max_temp_loc(lo,hi, &
-                                      state   ,s_l1,s_l2,s_l3, s_h1,s_h2,s_h3, &
-                                      diag_eos,d_l1,d_l2,d_l3, d_h1,d_h2,d_h3, &
-                                      max_temp, den_maxt, imax, jmax, kmax)
+      subroutine fort_compute_max_temp_loc(lo,hi, &
+                                           state   ,s_l1,s_l2,s_l3, s_h1,s_h2,s_h3, &
+                                           diag_eos,d_l1,d_l2,d_l3, d_h1,d_h2,d_h3, &
+                                           max_temp, den_maxt, imax, jmax, kmax) &
+      bind(C, name = "fort_compute_max_temp_loc")
 
       use meth_params_module, only : TEMP_COMP, NVAR, URHO
 
+      use amrex_fort_module, only : rt => amrex_real
       implicit none
       integer         , intent(in   ) :: lo(3),hi(3)
       integer         , intent(in   ) :: s_l1,s_l2,s_l3,s_h1,s_h2,s_h3
       integer         , intent(in   ) :: d_l1,d_l2,d_l3,d_h1,d_h2,d_h3
-      double precision, intent(inout) ::    state(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3,NVAR)
-      double precision, intent(inout) :: diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,2)
-      double precision, intent(in   ) :: max_temp
-      double precision, intent(  out) :: den_maxt
+      real(rt), intent(inout) ::    state(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3,NVAR)
+      real(rt), intent(inout) :: diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,2)
+      real(rt), intent(in   ) :: max_temp
+      real(rt), intent(  out) :: den_maxt
       integer         , intent(inout) :: imax,jmax,kmax
 
       integer                         :: i,j,k
-      double precision                :: one_minus_eps
+      real(rt)                :: one_minus_eps
 
       one_minus_eps = 1.d0 - 1.d-12
 
@@ -162,4 +168,4 @@
          enddo
       enddo
 
-      end subroutine compute_max_temp_loc
+      end subroutine fort_compute_max_temp_loc

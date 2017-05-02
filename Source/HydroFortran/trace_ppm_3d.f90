@@ -17,6 +17,7 @@ contains
                            srcQ,src_l1,src_l2,src_l3,src_h1,src_h2,src_h3, &
                            ilo1,ilo2,ihi1,ihi2,dt,a_old,kc,k3d)
 
+    use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : QVAR, QRHO, QU, QV, QW, &
                                    QREINT, QPRES, version_2, &
                                    npassive, qpass_map, ppm_type, ppm_reference, &
@@ -32,40 +33,40 @@ contains
     integer ilo1,ilo2,ihi1,ihi2
     integer kc,k3d
 
-    double precision     q(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-    double precision     c(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
-    double precision flatn(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
+    real(rt)     q(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+    real(rt)     c(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
+    real(rt) flatn(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
 
-    double precision   Ip(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3,QVAR)
-    double precision   Im(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3,QVAR)
+    real(rt)   Ip(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3,QVAR)
+    real(rt)   Im(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3,QVAR)
 
-    double precision Ip_g(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3,3)
-    double precision Im_g(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3,3)
+    real(rt) Ip_g(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3,3)
+    real(rt) Im_g(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3,3)
 
-    double precision qxm (qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
-    double precision qxp (qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
-    double precision qym (qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
-    double precision qyp (qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
-    double precision srcQ(src_l1:src_h1,src_l2:src_h2,src_l3:src_h3,QVAR)
+    real(rt) qxm (qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
+    real(rt) qxp (qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
+    real(rt) qym (qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
+    real(rt) qyp (qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
+    real(rt) srcQ(src_l1:src_h1,src_l2:src_h2,src_l3:src_h3,QVAR)
 
-    double precision dt, a_old
+    real(rt) dt, a_old
 
     ! Local variables
     integer i, j
     integer n, ipassive
 
-    double precision cc, csq, rho, u, v, w, p, rhoe
-    double precision rho_ref, u_ref, v_ref, w_ref, p_ref, rhoe_ref
+    real(rt) cc, csq, rho, u, v, w, p, rhoe
+    real(rt) rho_ref, u_ref, v_ref, w_ref, p_ref, rhoe_ref
 
-    double precision drho, du, dv, dw, dp, drhoe
-    double precision dup, dvp, dpp
-    double precision dum, dvm, dpm
+    real(rt) drho, du, dv, dw, dp, drhoe
+    real(rt) dup, dvp, dpp
+    real(rt) dum, dvm, dpm
 
-    double precision enth, alpham, alphap, alpha0r, alpha0e
-    double precision apright, amright, azrright, azeright
-    double precision apleft, amleft, azrleft, azeleft
-    double precision xi, xi1
-    double precision halfdt
+    real(rt) enth, alpham, alphap, alpha0r, alpha0e
+    real(rt) apright, amright, azrright, azeright
+    real(rt) apleft, amleft, azrleft, azeleft
+    real(rt) xi, xi1
+    real(rt) halfdt
 
     integer, parameter :: igx = 1
     integer, parameter :: igy = 2
@@ -839,6 +840,7 @@ contains
                           srcQ,src_l1,src_l2,src_l3,src_h1,src_h2,src_h3, &
                           ilo1,ilo2,ihi1,ihi2,dt,a_old,km,kc,k3d)
 
+    use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : QVAR, QRHO, QU, QV, QW, &
                                    QREINT, QPRES, version_2, &
                                    npassive, qpass_map, ppm_type, &
@@ -855,37 +857,37 @@ contains
     integer ilo1,ilo2,ihi1,ihi2
     integer km,kc,k3d
 
-    double precision     q(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-    double precision     c(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
-    double precision flatn(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
+    real(rt)     q(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+    real(rt)     c(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
+    real(rt) flatn(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
 
-    double precision   Ip(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3,QVAR)
-    double precision   Im(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3,QVAR)
+    real(rt)   Ip(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3,QVAR)
+    real(rt)   Im(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3,QVAR)
 
-    double precision Ip_g(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3,3)
-    double precision Im_g(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3,3)
+    real(rt) Ip_g(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3,3)
+    real(rt) Im_g(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3,3)
 
-    double precision qzm (qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
-    double precision qzp (qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
-    double precision srcQ(src_l1:src_h1,src_l2:src_h2,src_l3:src_h3,QVAR)
-    double precision dt, a_old
+    real(rt) qzm (qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
+    real(rt) qzp (qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
+    real(rt) srcQ(src_l1:src_h1,src_l2:src_h2,src_l3:src_h3,QVAR)
+    real(rt) dt, a_old
 
     !     Local variables
     integer i, j
     integer n, ipassive
 
-    double precision cc, csq
-    double precision rho, u, v, w, p, rhoe
-    double precision rho_ref, u_ref, v_ref, w_ref, p_ref, rhoe_ref
-    double precision dwp, dpp
-    double precision dwm, dpm
+    real(rt) cc, csq
+    real(rt) rho, u, v, w, p, rhoe
+    real(rt) rho_ref, u_ref, v_ref, w_ref, p_ref, rhoe_ref
+    real(rt) dwp, dpp
+    real(rt) dwm, dpm
 
-    double precision drho, du, dv, dp, drhoe
-    double precision enth, alpham, alphap, alpha0r, alpha0e
-    double precision apright, amright, azrright, azeright
-    double precision apleft, amleft, azrleft, azeleft
-    double precision halfdt
-    double precision xi, xi1
+    real(rt) drho, du, dv, dp, drhoe
+    real(rt) enth, alpham, alphap, alpha0r, alpha0e
+    real(rt) apright, amright, azrright, azeright
+    real(rt) apleft, amleft, azrleft, azeleft
+    real(rt) halfdt
+    real(rt) xi, xi1
 
     integer, parameter :: igx = 1
     integer, parameter :: igy = 2

@@ -15,6 +15,7 @@ contains
                         dqx,dqy,dqz,qpd_l1,qpd_l2,qpd_l3,qpd_h1,qpd_h2,qpd_h3, &
                         ilo1,ilo2,ihi1,ihi2,kc,k3d,nv)
 
+      use amrex_fort_module, only : rt => amrex_real
       use meth_params_module
       use bl_constants_module
 
@@ -25,18 +26,18 @@ contains
       integer qpd_l1,qpd_l2,qpd_l3,qpd_h1,qpd_h2,qpd_h3
       integer ilo1,ilo2,ihi1,ihi2,kc,k3d,nv
 
-      double precision q(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,nv)
-      double precision flatn(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
-      double precision dqx(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,nv)
-      double precision dqy(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,nv)
-      double precision dqz(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,nv)
+      real(rt) q(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,nv)
+      real(rt) flatn(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
+      real(rt) dqx(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,nv)
+      real(rt) dqy(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,nv)
+      real(rt) dqz(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,nv)
 
       integer i, j, k, n
 
-      double precision dlft, drgt, slop, dq1
-      double precision dm, dp, dc, ds, sl, dl, dfm, dfp
+      real(rt) dlft, drgt, slop, dq1
+      real(rt) dm, dp, dc, ds, sl, dl, dfm, dfp
 
-      double precision, allocatable::dsgn(:,:),dlim(:,:),df(:,:),dcen(:,:)
+      real(rt), allocatable::dsgn(:,:),dlim(:,:),df(:,:),dcen(:,:)
 
       ilo = MIN(ilo1,ilo2)
       ihi = MAX(ihi1,ihi2)

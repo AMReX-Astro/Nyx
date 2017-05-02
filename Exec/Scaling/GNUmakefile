@@ -1,20 +1,17 @@
-# BOXLIB_HOME defines the directory in which we will find all the BoxLib code
-BOXLIB_HOME ?= ../../../BoxLib
-#BOXLIB_HOME = /home/vince/Development/BLMaster/BoxLib
+# AMREX_HOME defines the directory in which we will find all the AMReX code
+AMREX_HOME ?= /project/projectdirs/nyx/src/amrex
 
 HPGMG_DIR ?= ../../../hpgmg/finite-volume
 
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ../..
 
-
 # compilation options
 COMP    = gcc
-FCOMP   = gfortran
 USE_MPI = TRUE
 USE_OMP = TRUE
 
-PROFILE       = TRUE
+PROFILE       = FALSE
 TRACE_PROFILE = FALSE
 COMM_PROFILE  = FALSE
 
@@ -35,7 +32,7 @@ BOOST_INCLUDE_DIR ?= /usr/local/include
 BOOST_LIB_DIR ?= /usr/local/lib
 DIY2_INCLUDE_DIR ?= /usr/local/include
 
-USE_HPGMG = TRUE
+#USE_HPGMG = TRUE
 HPGMG_FCYCLES = FALSE
 HPGMG_POST_F_CYCLE_TYPE = V
 HPGMG_HELMHOLTZ = FALSE

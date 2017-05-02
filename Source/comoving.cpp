@@ -55,7 +55,7 @@ Nyx::comoving_est_time_step (Real& cur_time, Real& estdt)
         // Initial guess -- note that we send in "new_a" because we haven't yet swapped
         // "old_a" and "new_a" -- we can't do that until after we compute dt and then
         // integrate a forward.
-        BL_FORT_PROC_CALL(FORT_ESTDT_COMOVING_A, fort_estdt_comoving_a)
+        fort_estdt_comoving_a
             (&new_a, &new_dummy_a, &dt, &change_allowed, &final_a, &dt_modified);
 
         if (verbose && (dt_modified == 1) && ParallelDescriptor::IOProcessor())
@@ -75,7 +75,7 @@ Nyx::comoving_est_time_step (Real& cur_time, Real& estdt)
         // Initial guess -- note that we send in "new_a" because we haven't yet swapped
         // "old_a" and "new_a" -- we can't do that until after we compute dt and then
         // integrate a forward.
-        BL_FORT_PROC_CALL(FORT_ESTDT_COMOVING_A, fort_estdt_comoving_a)
+        fort_estdt_comoving_a
             (&old_a, &new_dummy_a, &dt, &change_allowed, &final_a, &dt_modified);
 
         if (verbose && (dt_modified == 1) && ParallelDescriptor::IOProcessor())
@@ -159,8 +159,7 @@ Nyx::integrate_comoving_a (Real time,Real dt)
 
         // Update a
         old_a      = new_a;
-        BL_FORT_PROC_CALL(FORT_INTEGRATE_COMOVING_A, fort_integrate_comoving_a)
-            (&old_a, &new_a, &dt);
+        fort_integrate_comoving_a(&old_a, &new_a, &dt);
 
         // Update the times
         old_a_time = new_a_time;
@@ -177,7 +176,7 @@ Nyx::integrate_comoving_a (Real time,Real dt)
     else if (std::abs(time-old_a_time) <= 1.e-10 * time) 
     {
         // Leave old_a and old_a_time alone -- we have already swapped them
-        BL_FORT_PROC_CALL(FORT_INTEGRATE_COMOVING_A, fort_integrate_comoving_a)
+        fort_integrate_comoving_a(&old_a, &new_a, &dt);
             (&old_a, &new_a, &dt);
 
         // Update the new time only
@@ -233,7 +232,7 @@ Nyx::comoving_a_post_restart (const std::string& restart_file)
 
      // Initialize "this_z" in the atomic_rates_module
      if (heat_cool_type == 1 || heat_cool_type == 3)
-         BL_FORT_PROC_CALL(INIT_THIS_Z, init_this_z)(&old_a);
+         fort_init_this_z(&old_a);
 }
 
 void
@@ -278,8 +277,8 @@ Nyx::plot_z_est_time_step (Real& dt_0, bool& dt_changed)
     // we must figure out what value of dt < dt_0 makes us exactly reach z_value
     if (found_one)
     {
-        BL_FORT_PROC_CALL(FORT_INTEGRATE_COMOVING_A_TO_Z, fort_integrate_comoving_a_to_z)
-                (&old_a, &z_value, &dt);
+        fort_integrate_comoving_a_to_z(&old_a, &z_value, &dt);
+                
 
         if (verbose && ParallelDescriptor::IOProcessor())
         {
@@ -303,8 +302,7 @@ Nyx::plot_z_est_time_step (Real& dt_0, bool& dt_changed)
     // This is where we would be if we advance by twice the current dt_0
     Real two_dt = 2.0*dt_0;
 
-    BL_FORT_PROC_CALL(FORT_INTEGRATE_COMOVING_A, fort_integrate_comoving_a)
-       (&a_old, &a_new, &two_dt);
+    fort_integrate_comoving_a(&a_old, &a_new, &two_dt);
 
     z_new = (1. / a_new) - 1.;
 
@@ -326,8 +324,8 @@ Nyx::plot_z_est_time_step (Real& dt_0, bool& dt_changed)
     if (found_one)
     {
         Real two_dt = 2.0*dt_0;
-        BL_FORT_PROC_CALL(FORT_INTEGRATE_COMOVING_A_TO_Z, fort_integrate_comoving_a_to_z)
-                (&old_a, &z_value, &two_dt);
+        fort_integrate_comoving_a_to_z(&old_a, &z_value, &two_dt);
+                
 
         if (verbose && ParallelDescriptor::IOProcessor())
         {
@@ -388,8 +386,7 @@ Nyx::analysis_z_est_time_step (Real& dt_0, bool& dt_changed)
     // we must figure out what value of dt < dt_0 makes us exactly reach z_value
     if (found_one)
     {
-        BL_FORT_PROC_CALL(FORT_INTEGRATE_COMOVING_A_TO_Z, fort_integrate_comoving_a_to_z)
-                (&old_a, &z_value, &dt);
+        fort_integrate_comoving_a_to_z(&old_a, &z_value, &dt);
 
         if (verbose && ParallelDescriptor::IOProcessor())
         {
@@ -413,8 +410,7 @@ Nyx::analysis_z_est_time_step (Real& dt_0, bool& dt_changed)
     // This is where we would be if we advance by twice the current dt_0
     Real two_dt = 2.0*dt_0;
 
-    BL_FORT_PROC_CALL(FORT_INTEGRATE_COMOVING_A, fort_integrate_comoving_a)
-       (&a_old, &a_new, &two_dt); 
+    fort_integrate_comoving_a(&a_old, &a_new, &two_dt); 
     z_new = (1. / a_new) - 1.;
 
     // Find the relevant entry of the analysis_z_values array
@@ -435,8 +431,7 @@ Nyx::analysis_z_est_time_step (Real& dt_0, bool& dt_changed)
     if (found_one)
     {
         Real two_dt = 2.0*dt_0;
-        BL_FORT_PROC_CALL(FORT_INTEGRATE_COMOVING_A_TO_Z, fort_integrate_comoving_a_to_z)
-                (&old_a, &z_value, &two_dt);
+        fort_integrate_comoving_a_to_z(&old_a, &z_value, &two_dt);
 
         if (verbose && ParallelDescriptor::IOProcessor())
         {

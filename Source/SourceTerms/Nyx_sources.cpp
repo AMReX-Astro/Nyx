@@ -35,7 +35,7 @@ Nyx::get_old_source (Real      old_time,
     for (MFIter mfi(S_old,true); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
-        BL_FORT_PROC_CALL(CA_EXT_SRC, ca_ext_src)
+        fort_ext_src
             (bx.loVect(), bx.hiVect(), 
              BL_TO_FORTRAN(Sborder[mfi]), BL_TO_FORTRAN(Sborder[mfi]),
              BL_TO_FORTRAN(Dborder[mfi]), BL_TO_FORTRAN(Dborder[mfi]),
@@ -104,7 +104,7 @@ Nyx::get_new_source (Real      old_time,
     for (MFIter mfi(S_old,true); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
-        BL_FORT_PROC_CALL(CA_EXT_SRC, ca_ext_src)
+        fort_ext_src
             (bx.loVect(), bx.hiVect(), 
              BL_TO_FORTRAN(Sborder_old[mfi]), BL_TO_FORTRAN(Sborder_new[mfi]),
              BL_TO_FORTRAN(Dborder_old[mfi]), BL_TO_FORTRAN(Dborder_new[mfi]),
@@ -145,7 +145,7 @@ Nyx::time_center_source_terms (MultiFab& S_new,
     for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
-        BL_FORT_PROC_CALL(TIME_CENTER_SOURCES, time_center_sources)
+        time_center_sources
             (bx.loVect(), bx.hiVect(), BL_TO_FORTRAN(S_new[mfi]),
              BL_TO_FORTRAN(ext_src_old[mfi]), BL_TO_FORTRAN(ext_src_new[mfi]),
              &a_old, &a_new, &dt, &print_fortran_warnings);
@@ -158,7 +158,7 @@ Nyx::time_center_source_terms (MultiFab& S_new,
         for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
         {
             const Box& bx = mfi.tilebox();
-            BL_FORT_PROC_CALL(ADJUST_HEAT_COOL, adjust_heat_cool)
+            adjust_heat_cool
                 (bx.loVect(), bx.hiVect(), 
                  BL_TO_FORTRAN(S_old[mfi]), BL_TO_FORTRAN(S_new[mfi]),
                  BL_TO_FORTRAN(ext_src_old[mfi]), BL_TO_FORTRAN(ext_src_new[mfi]),

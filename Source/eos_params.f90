@@ -4,9 +4,11 @@
 
 module eos_params_module
 
+  use amrex_fort_module, only : rt => amrex_real
+
   implicit none
 
-  double precision, save ::  h_species
-  double precision, save :: he_species
+  real(rt), save ::  h_species
+  real(rt), save :: he_species
 
 end module eos_params_module

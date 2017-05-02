@@ -29,6 +29,7 @@ subroutine integrate_state_vode(lo, hi, &
 !   state : double array (dims) @todo
 !       The state vars
 !
+    use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : NVAR, URHO, UEDEN, UEINT, &
                                    TEMP_COMP, NE_COMP, gamma_minus_1
     use eos_params_module
@@ -43,15 +44,15 @@ subroutine integrate_state_vode(lo, hi, &
     integer         , intent(in) :: lo(3), hi(3)
     integer         , intent(in) :: s_l1, s_l2, s_l3, s_h1, s_h2, s_h3
     integer         , intent(in) :: d_l1, d_l2, d_l3, d_h1, d_h2, d_h3
-    double precision, intent(inout) ::    state(s_l1:s_h1, s_l2:s_h2,s_l3:s_h3, NVAR)
-    double precision, intent(inout) :: diag_eos(d_l1:d_h1, d_l2:d_h2,d_l3:d_h3, 2)
-    double precision, intent(in)    :: a, half_dt
+    real(rt), intent(inout) ::    state(s_l1:s_h1, s_l2:s_h2,s_l3:s_h3, NVAR)
+    real(rt), intent(inout) :: diag_eos(d_l1:d_h1, d_l2:d_h2,d_l3:d_h3, 2)
+    real(rt), intent(in)    :: a, half_dt
     integer         , intent(inout) :: max_iter, min_iter
 
     integer :: i, j, k
-    double precision :: z, rho
-    double precision :: T_orig, ne_orig, e_orig
-    double precision :: T_out , ne_out , e_out
+    real(rt) :: z, rho
+    real(rt) :: T_orig, ne_orig, e_orig
+    real(rt) :: T_out , ne_out , e_out
 
     z = 1.d0/a - 1.d0
 
@@ -113,15 +114,15 @@ subroutine vode_wrapper(dt, rho_in, T_in, ne_in, e_in, T_out, ne_out, e_out)
 
     implicit none
 
-    double precision, intent(in   ) :: dt
-    double precision, intent(in   ) :: rho_in, T_in, ne_in, e_in
-    double precision, intent(  out) ::         T_out,ne_out,e_out
+    real(rt), intent(in   ) :: dt
+    real(rt), intent(in   ) :: rho_in, T_in, ne_in, e_in
+    real(rt), intent(  out) ::         T_out,ne_out,e_out
 
     ! Set the number of independent variables -- this should be just "e"
     integer, parameter :: NEQ = 1
   
     ! Allocate storage for the input state
-    double precision :: y(NEQ)
+    real(rt) :: y(NEQ)
 
     ! Our problem is stiff, tell ODEPACK that. 21 means stiff, jacobian 
     ! function is supplied, 22 means stiff, figure out my jacobian through 
@@ -142,7 +143,7 @@ subroutine vode_wrapper(dt, rho_in, T_in, ne_in, e_in, T_out, ne_out, e_out)
     ! since we want to be easier on the temperature than the species
 
     integer, parameter :: ITOL = 1
-    double precision :: atol(NEQ), rtol(NEQ)
+    real(rt) :: atol(NEQ), rtol(NEQ)
     
     ! We want to do a normal computation, and get the output values of y(t)
     ! after stepping though dt
@@ -162,14 +163,14 @@ subroutine vode_wrapper(dt, rho_in, T_in, ne_in, e_in, T_out, ne_out, e_out)
     ! integer work array of since 30 + NEQ
 
     integer, parameter :: LRW = 22 + 9*NEQ + 2*NEQ**2
-    double precision   :: rwork(LRW)
-    double precision   :: time
-    ! double precision   :: dt4
+    real(rt)   :: rwork(LRW)
+    real(rt)   :: time
+    ! real(rt)   :: dt4
     
     integer, parameter :: LIW = 30 + NEQ
     integer, dimension(LIW) :: iwork
     
-    double precision :: rpar
+    real(rt) :: rpar
     integer          :: ipar
 
     EXTERNAL jac, f_rhs

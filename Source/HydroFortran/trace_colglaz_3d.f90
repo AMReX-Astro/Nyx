@@ -9,6 +9,7 @@
                          qxm,qxp,qym,qyp,qpd_l1,qpd_l2,qpd_l3,qpd_h1,qpd_h2,qpd_h3, &
                          ilo1,ilo2,ihi1,ihi2,dx,dy,dt,kc,k3d,a_old)
 
+      use amrex_fort_module, only : rt => amrex_real
       use meth_params_module, only : QVAR, QRHO, QU, QV, QW, &
                                      QREINT, QPRES, &
                                      npassive, qpass_map, &
@@ -21,31 +22,31 @@
       integer ilo1,ilo2,ihi1,ihi2
       integer kc,k3d
 
-      double precision    q(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision    c(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
-      double precision  dqx(dq_l1:dq_h1,dq_l2:dq_h2,dq_l3:dq_h3,QVAR)
-      double precision  dqy(dq_l1:dq_h1,dq_l2:dq_h2,dq_l3:dq_h3,QVAR)
+      real(rt)    q(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt)    c(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
+      real(rt)  dqx(dq_l1:dq_h1,dq_l2:dq_h2,dq_l3:dq_h3,QVAR)
+      real(rt)  dqy(dq_l1:dq_h1,dq_l2:dq_h2,dq_l3:dq_h3,QVAR)
 
-      double precision qxm(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
-      double precision qxp(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
-      double precision qym(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
-      double precision qyp(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
-      double precision a_old
-      double precision dx, dy, dt
-      double precision, parameter :: eps = 1.d-3
+      real(rt) qxm(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
+      real(rt) qxp(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
+      real(rt) qym(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
+      real(rt) qyp(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
+      real(rt) a_old
+      real(rt) dx, dy, dt
+      real(rt), parameter :: eps = 1.d-3
 
       ! Local variables
       integer i, j, n
 
-      double precision :: dtdx, dtdy
-      double precision :: cc, csq, rho, u, v, w, p
-      double precision :: drho, du, dv, dw, dp
-      double precision :: spzero
+      real(rt) :: dtdx, dtdy
+      real(rt) :: cc, csq, rho, u, v, w, p
+      real(rt) :: drho, du, dv, dw, dp
+      real(rt) :: spzero
 
-      double precision :: t1,t2,t3
-      double precision :: beta0l,beta0r,betaml,betapr
-      double precision :: clag,dd,dd0,dleft,dleft0,drght,drght0
-      double precision :: ptr0l,ptr0r,rtilde,rtr0l,rtr0r
+      real(rt) :: t1,t2,t3
+      real(rt) :: beta0l,beta0r,betaml,betapr
+      real(rt) :: clag,dd,dd0,dleft,dleft0,drght,drght0
+      real(rt) :: ptr0l,ptr0r,rtilde,rtr0l,rtr0r
       integer          :: ipassive
 
       dtdx = dt/(dx*a_old)
@@ -363,6 +364,7 @@
          ilo1,ilo2,ihi1,ihi2,dz,dt,km,kc,k3d,a_old)
 
       use eos_module
+      use amrex_fort_module, only : rt => amrex_real
       use meth_params_module, only : QVAR, QRHO, QU, QV, QW, &
                                      QREINT, QPRES, &
                                      npassive, qpass_map, &
@@ -376,30 +378,30 @@
       integer ilo1,ilo2,ihi1,ihi2
       integer km,kc,k3d
 
-      double precision    q(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-      double precision    c(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
+      real(rt)    q(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+      real(rt)    c(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
 
-      double precision  dqz(dq_l1:dq_h1,dq_l2:dq_h2,dq_l3:dq_h3,QVAR)
-      double precision qzm(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
-      double precision qzp(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
-      double precision a_old
-      double precision dz, dt
+      real(rt)  dqz(dq_l1:dq_h1,dq_l2:dq_h2,dq_l3:dq_h3,QVAR)
+      real(rt) qzm(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
+      real(rt) qzp(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
+      real(rt) a_old
+      real(rt) dz, dt
 
       ! Local variables
       integer :: i, j, n
 
-      double precision :: dtdz
-      double precision :: cc, csq, rho, u, v, w, p
-      double precision :: drho, du, dv, dw, dp
-      double precision :: spzero
+      real(rt) :: dtdz
+      real(rt) :: cc, csq, rho, u, v, w, p
+      real(rt) :: drho, du, dv, dw, dp
+      real(rt) :: spzero
 
-      double precision :: t1,t2,t3
-      double precision :: beta0l,beta0r,betaml,betapr
-      double precision :: clag,dd,dd0,dleft,dleft0,drght,drght0
-      double precision :: ptr0l,ptr0r,rtilde,rtr0l,rtr0r
+      real(rt) :: t1,t2,t3
+      real(rt) :: beta0l,beta0r,betaml,betapr
+      real(rt) :: clag,dd,dd0,dleft,dleft0,drght,drght0
+      real(rt) :: ptr0l,ptr0r,rtilde,rtr0l,rtr0r
       integer          :: ipassive
 
-      double precision, parameter :: eps = 1.d-3
+      real(rt), parameter :: eps = 1.d-3
 
       dtdz = dt/(dz*a_old)
 

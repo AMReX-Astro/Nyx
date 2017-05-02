@@ -8,6 +8,13 @@
 #include <AMReX_FluxRegister.H>
 
 #include "NyxParticleContainer.H"
+#include "DarkMatterParticleContainer.H"
+#ifdef AGN
+#include "AGNParticleContainer.H"
+#endif
+#ifdef NEUTRINO_PARTICLES
+#include "NeutrinoParticleContainer.H"
+#endif
 
 #include <iostream>
 
@@ -15,7 +22,6 @@ using std::istream;
 using std::ostream;
 
 typedef NyxParticleContainer<1+BL_SPACEDIM+3> StellarParticleContainer;
-typedef NyxParticleContainer<1+BL_SPACEDIM+3> AGNParticleContainer;
 
 #ifdef NO_HYDRO
 enum StateType {
@@ -481,13 +487,17 @@ public:
     static StellarParticleContainer* theVirtSPC();
     static StellarParticleContainer* theGhostSPC();
 
+#ifdef AGN
     static AGNParticleContainer* theAPC();
     static AGNParticleContainer* theVirtAPC();
     static AGNParticleContainer* theGhostAPC();
+#endif
 
+#ifdef NEUTRINO_PARTICLES
     static NeutrinoParticleContainer* theNPC();
     static NeutrinoParticleContainer* theVirtNPC();
     static NeutrinoParticleContainer* theGhostNPC();
+#endif
 
     static int NUM_STATE;
     static int Density, Xmom, Ymom, Zmom, Eden, Eint;
@@ -620,6 +630,7 @@ protected:
     // These control random initialization
     static bool particle_initrandom_serialize;
     static long particle_initrandom_count;
+    static long particle_initrandom_count_per_box;
     static amrex::Real particle_initrandom_mass;
     static int particle_initrandom_iseed;
 

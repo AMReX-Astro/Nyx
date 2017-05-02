@@ -1,24 +1,25 @@
-      subroutine init_e_from_t(state,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3,ns, &
-                                diag,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3,nd, &
-                               lo,hi,a_old)
+      subroutine fort_init_e_from_t(state,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3,ns, &
+                                    diag,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3,nd, &
+                                   lo,hi,a_old) bind(C, name="fort_init_e_from_t")
 
+
+      use amrex_fort_module, only : rt => amrex_real
       use eos_module
       use meth_params_module, only : URHO, UMX, UMY, UMZ, UEINT, UEDEN, TEMP_COMP, NE_COMP
       use  eos_params_module
 
       implicit none
 
-      integer          :: s_l1,s_l2,s_l3,s_h1,s_h2,s_h3,ns
-      integer          :: d_l1,d_l2,d_l3,d_h1,d_h2,d_h3,nd
-      double precision :: state(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3,ns)
-      double precision ::  diag(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,nd)
-      integer          :: lo(3), hi(3)
-
-      double precision, intent(in) :: a_old
+      integer , intent(in   ) :: s_l1,s_l2,s_l3,s_h1,s_h2,s_h3,ns
+      integer , intent(in   ) :: d_l1,d_l2,d_l3,d_h1,d_h2,d_h3,nd
+      real(rt), intent(inout) :: state(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3,ns)
+      real(rt), intent(in   ) ::  diag(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,nd)
+      integer , intent(in   ) :: lo(3), hi(3)
+      real(rt), intent(in   ) :: a_old
 
       ! Local variables
-      double precision :: e, pres, T
-      integer          :: i,j,k
+      real(rt) :: e, pres, T
+      integer  :: i,j,k
       !
       ! Compute energy from the EOS
       !
@@ -41,4 +42,4 @@
          enddo
       enddo
 
-      end subroutine init_e_from_t
+      end subroutine fort_init_e_from_t

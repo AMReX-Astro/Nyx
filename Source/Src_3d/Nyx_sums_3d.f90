@@ -10,12 +10,15 @@
 ! :: ----------------------------------------------------------
 ! ::
 
-      subroutine sum_over_level(dat,r_l1,r_l2,r_l3,r_h1,r_h2,r_h3,lo,hi,dx,s)
+      subroutine sum_over_level(dat,r_l1,r_l2,r_l3,r_h1,r_h2,r_h3,lo,hi,dx,s) &
+        bind(C, name="sum_over_level")
+
+        use amrex_fort_module, only : rt => amrex_real
         implicit none
         integer          :: r_l1,r_l2,r_l3,r_h1,r_h2,r_h3
         integer          :: lo(3), hi(3)
-        double precision :: s, dx(3)
-        double precision :: dat(r_l1:r_h1,r_l2:r_h2,r_l3:r_h3)
+        real(rt) :: s, dx(3)
+        real(rt) :: dat(r_l1:r_h1,r_l2:r_h2,r_l3:r_h3)
         
         integer          :: i, j, k
 
@@ -47,14 +50,17 @@
 ! ::
 
       subroutine sum_product(dat1,r_l1,r_l2,r_l3,r_h1,r_h2,r_h3,&
-                             dat2,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3,lo,hi,dx,s)
+                             dat2,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3,lo,hi,dx,s) &
+        bind(C, name="sum_product")
+
+        use amrex_fort_module, only : rt => amrex_real
         implicit none
         integer          :: r_l1,r_l2,r_l3,r_h1,r_h2,r_h3
         integer          :: s_l1,s_l2,s_l3,s_h1,s_h2,s_h3
         integer          :: lo(3), hi(3)
-        double precision :: s, dx(3)
-        double precision :: dat1(r_l1:r_h1,r_l2:r_h2,r_l3:r_h3)
-        double precision :: dat2(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3)
+        real(rt) :: s, dx(3)
+        real(rt) :: dat1(r_l1:r_h1,r_l2:r_h2,r_l3:r_h3)
+        real(rt) :: dat2(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3)
 
         integer          :: i, j, k
 
@@ -87,16 +93,20 @@
 
       subroutine sum_prod_prod(dat1,r_l1,r_l2,r_l3,r_h1,r_h2,r_h3,&
                                dat2,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3,&
-                               dat3,t_l1,t_l2,t_l3,t_h1,t_h2,t_h3,lo,hi,dx,s)
+                               dat3,t_l1,t_l2,t_l3,t_h1,t_h2,t_h3,lo,hi,dx,s) &
+        bind(C, name="sum_prod_prod")
+
+        use amrex_fort_module, only : rt => amrex_real
         implicit none
+
         integer          :: r_l1,r_l2,r_l3,r_h1,r_h2,r_h3
         integer          :: s_l1,s_l2,s_l3,s_h1,s_h2,s_h3
         integer          :: t_l1,t_l2,t_l3,t_h1,t_h2,t_h3
         integer          :: lo(3), hi(3)
-        double precision :: s, dx(3)
-        double precision :: dat1(r_l1:r_h1,r_l2:r_h2,r_l3:r_h3)
-        double precision :: dat2(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3)
-        double precision :: dat3(t_l1:t_h1,t_l2:t_h2,t_l3:t_h3)
+        real(rt) :: s, dx(3)
+        real(rt) :: dat1(r_l1:r_h1,r_l2:r_h2,r_l3:r_h3)
+        real(rt) :: dat2(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3)
+        real(rt) :: dat3(t_l1:t_h1,t_l2:t_h2,t_l3:t_h3)
 
         integer          :: i, j, k
 

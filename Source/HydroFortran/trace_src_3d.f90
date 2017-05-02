@@ -16,6 +16,7 @@ contains
                           srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                           ilo1,ilo2,ihi1,ihi2,dt,a_old,kc,k3d)
 
+    use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : QVAR, QRHO, QU, QV, QW, &
                                    QREINT, QPRES, gamma_minus_1
 
@@ -27,31 +28,31 @@ contains
     integer ilo1,ilo2,ihi1,ihi2
     integer kc,k3d
 
-    double precision     q(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-    double precision     c(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
+    real(rt)     q(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+    real(rt)     c(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
 
-    double precision qxm ( qpd_l1: qpd_h1, qpd_l2: qpd_h2, qpd_l3: qpd_h3,QVAR)
-    double precision qxp ( qpd_l1: qpd_h1, qpd_l2: qpd_h2, qpd_l3: qpd_h3,QVAR)
-    double precision srcQ(srcq_l1:srcq_h1,srcq_l2:srcq_h2,srcq_l3:srcq_h3,QVAR)
+    real(rt) qxm ( qpd_l1: qpd_h1, qpd_l2: qpd_h2, qpd_l3: qpd_h3,QVAR)
+    real(rt) qxp ( qpd_l1: qpd_h1, qpd_l2: qpd_h2, qpd_l3: qpd_h3,QVAR)
+    real(rt) srcQ(srcq_l1:srcq_h1,srcq_l2:srcq_h2,srcq_l3:srcq_h3,QVAR)
 
-    double precision dt, a_old
+    real(rt) dt, a_old
 
     ! Local variables
     integer i, j
 
-    double precision cc, csq, rho, u, v, w, p, rhoe
+    real(rt) cc, csq, rho, u, v, w, p, rhoe
 
-    double precision drho, dv, dw, dp, drhoe
-    double precision dup, dpp
-    double precision dum, dpm
+    real(rt) drho, dv, dw, dp, drhoe
+    real(rt) dup, dpp
+    real(rt) dum, dpm
 
-    double precision enth, alpham, alphap, alpha0r, alpha0e
-    double precision alpha0v, alpha0w
-    double precision apright, amright, azrright, azeright
-    double precision azv1rght, azw1rght
-    double precision apleft, amleft, azrleft, azeleft
-    double precision azv1left, azw1left
-    double precision halfdt
+    real(rt) enth, alpham, alphap, alpha0r, alpha0e
+    real(rt) alpha0v, alpha0w
+    real(rt) apright, amright, azrright, azeright
+    real(rt) azv1rght, azw1rght
+    real(rt) apleft, amleft, azrleft, azeleft
+    real(rt) azv1left, azw1left
+    real(rt) halfdt
 
     halfdt = 0.5d0 * dt
 
@@ -235,6 +236,7 @@ contains
                           srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                           ilo1,ilo2,ihi1,ihi2,dt,a_old,kc,k3d)
 
+    use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : QVAR, QRHO, QU, QV, QW, &
                                    QREINT, QPRES, gamma_minus_1
 
@@ -246,31 +248,31 @@ contains
     integer ilo1,ilo2,ihi1,ihi2
     integer kc,k3d
 
-    double precision     q(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-    double precision     c(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
+    real(rt)     q(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+    real(rt)     c(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
 
-    double precision qym ( qpd_l1: qpd_h1, qpd_l2: qpd_h2, qpd_l3: qpd_h3,QVAR)
-    double precision qyp ( qpd_l1: qpd_h1, qpd_l2: qpd_h2, qpd_l3: qpd_h3,QVAR)
-    double precision srcQ(srcq_l1:srcq_h1,srcq_l2:srcq_h2,srcq_l3:srcq_h3,QVAR)
+    real(rt) qym ( qpd_l1: qpd_h1, qpd_l2: qpd_h2, qpd_l3: qpd_h3,QVAR)
+    real(rt) qyp ( qpd_l1: qpd_h1, qpd_l2: qpd_h2, qpd_l3: qpd_h3,QVAR)
+    real(rt) srcQ(srcq_l1:srcq_h1,srcq_l2:srcq_h2,srcq_l3:srcq_h3,QVAR)
 
-    double precision dt, a_old
+    real(rt) dt, a_old
 
     ! Local variables
     integer i, j
 
-    double precision cc, csq, rho, u, v, w, p, rhoe
+    real(rt) cc, csq, rho, u, v, w, p, rhoe
 
-    double precision drho, du, dw, dp, drhoe
-    double precision dvp, dpp
-    double precision dvm, dpm
+    real(rt) drho, du, dw, dp, drhoe
+    real(rt) dvp, dpp
+    real(rt) dvm, dpm
 
-    double precision enth, alpham, alphap, alpha0r, alpha0e
-    double precision alpha0w, alpha0u
-    double precision apright, amright, azrright, azeright
-    double precision azu1rght, azw1rght
-    double precision apleft, amleft, azrleft, azeleft
-    double precision azu1left, azw1left
-    double precision halfdt
+    real(rt) enth, alpham, alphap, alpha0r, alpha0e
+    real(rt) alpha0w, alpha0u
+    real(rt) apright, amright, azrright, azeright
+    real(rt) azu1rght, azw1rght
+    real(rt) apleft, amleft, azrleft, azeleft
+    real(rt) azu1left, azw1left
+    real(rt) halfdt
 
     halfdt = 0.5d0 * dt
 
@@ -457,6 +459,7 @@ contains
                           srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                           ilo1,ilo2,ihi1,ihi2,dt,a_old,km,kc,k3d)
 
+    use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : QVAR, QRHO, QU, QV, QW, &
                                    QREINT, QPRES, gamma_minus_1
 
@@ -468,31 +471,31 @@ contains
     integer ilo1,ilo2,ihi1,ihi2
     integer km,kc,k3d
 
-    double precision     q(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
-    double precision     c(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
+    real(rt)     q(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3,QVAR)
+    real(rt)     c(qd_l1:qd_h1,qd_l2:qd_h2,qd_l3:qd_h3)
 
-    double precision qzm ( qpd_l1: qpd_h1, qpd_l2: qpd_h2, qpd_l3: qpd_h3,QVAR)
-    double precision qzp ( qpd_l1: qpd_h1, qpd_l2: qpd_h2, qpd_l3: qpd_h3,QVAR)
-    double precision srcQ(srcq_l1:srcq_h1,srcq_l2:srcq_h2,srcq_l3:srcq_h3,QVAR)
+    real(rt) qzm ( qpd_l1: qpd_h1, qpd_l2: qpd_h2, qpd_l3: qpd_h3,QVAR)
+    real(rt) qzp ( qpd_l1: qpd_h1, qpd_l2: qpd_h2, qpd_l3: qpd_h3,QVAR)
+    real(rt) srcQ(srcq_l1:srcq_h1,srcq_l2:srcq_h2,srcq_l3:srcq_h3,QVAR)
 
-    double precision dt, a_old
+    real(rt) dt, a_old
 
     !     Local variables
     integer i, j
 
-    double precision cc, csq
-    double precision rho, u, v, w, p, rhoe
-    double precision dwp, dpp
-    double precision dwm, dpm
+    real(rt) cc, csq
+    real(rt) rho, u, v, w, p, rhoe
+    real(rt) dwp, dpp
+    real(rt) dwm, dpm
 
-    double precision drho, du, dv, dp, drhoe
-    double precision enth, alpham, alphap, alpha0r, alpha0e
-    double precision alpha0u, alpha0v
-    double precision apright, amright, azrright, azeright
-    double precision azu1rght, azv1rght
-    double precision apleft, amleft, azrleft, azeleft
-    double precision azu1left, azv1left
-    double precision halfdt
+    real(rt) drho, du, dv, dp, drhoe
+    real(rt) enth, alpham, alphap, alpha0r, alpha0e
+    real(rt) alpha0u, alpha0v
+    real(rt) apright, amright, azrright, azeright
+    real(rt) azu1rght, azv1rght
+    real(rt) apleft, amleft, azrleft, azeleft
+    real(rt) azu1left, azv1left
+    real(rt) halfdt
 
     halfdt = 0.5d0 * dt
 

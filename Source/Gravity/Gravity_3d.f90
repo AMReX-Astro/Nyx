@@ -19,17 +19,18 @@
       subroutine fort_avgdown_phi (crse,c_l1,c_l2,c_l3,c_h1,c_h2,c_h3, &
                                    fine,f_l1,f_l2,f_l3,f_h1,f_h2,f_h3, &
                                    lo,hi,lrat)
+      use amrex_fort_module, only : rt => amrex_real
       implicit none
       integer c_l1,c_l2,c_l3,c_h1,c_h2,c_h3
       integer f_l1,f_l2,f_l3,f_h1,f_h2,f_h3
       integer lo(3), hi(3)
       integer lrat(3)
-      double precision crse(c_l1:c_h1,c_l2:c_h2,c_l3:c_h3)
-      double precision fine(f_l1:f_h1,f_l2:f_h2,f_l3:f_h3)
+      real(rt) crse(c_l1:c_h1,c_l2:c_h2,c_l3:c_h3)
+      real(rt) fine(f_l1:f_h1,f_l2:f_h2,f_l3:f_h3)
 
       integer i, j, k, ic, jc, kc, ioff, joff, koff
       integer lratx, lraty, lratz
-      double precision volfrac
+      real(rt) volfrac
 
       lratx   = lrat(1)
       lraty   = lrat(2)
@@ -82,13 +83,14 @@
       subroutine fort_edge_interp(flo, fhi, nc, ratio, dir, &
            fine, fine_l0, fine_l1, fine_l2, fine_h0, fine_h1, fine_h2)
 
+      use amrex_fort_module, only : rt => amrex_real
       implicit none
       integer flo(0:3-1), fhi(0:3-1), nc, ratio(0:3-1), dir
       integer fine_l0, fine_l1, fine_l2, fine_h0, fine_h1, fine_h2
-      double precision &
+      real(rt) &
            fine(fine_l0:fine_h0,fine_l1:fine_h1,fine_l2:fine_h2,nc)
       integer i,j,k,n,P,M,L
-      double precision val, df
+      real(rt) val, df
       !
       ! Do linear in dir, pc transverse to dir, leave alone the fine values
       ! lining up with coarse edges--assume these have been set to hold the 
@@ -162,13 +164,16 @@
       subroutine fort_pc_edge_interp(lo, hi, nc, ratio, dir, &
            crse, crse_l0, crse_l1, crse_l2, crse_h0, crse_h1, crse_h2, &
            fine, fine_l0, fine_l1, fine_l2, fine_h0, fine_h1, fine_h2)
+
+      use amrex_fort_module, only : rt => amrex_real
       implicit none
+
       integer lo(3),hi(3), nc, ratio(0:3-1), dir
       integer crse_l0, crse_l1, crse_l2, crse_h0, crse_h1, crse_h2
       integer fine_l0, fine_l1, fine_l2, fine_h0, fine_h1, fine_h2
-      double precision &
+      real(rt) &
            crse(crse_l0:crse_h0,crse_l1:crse_h1,crse_l2:crse_h2,nc)
-      double precision &
+      real(rt) &
            fine(fine_l0:fine_h0,fine_l1:fine_h1,fine_l2:fine_h2,nc)
       integer i,j,k,ii,jj,kk,n,L, P
       !

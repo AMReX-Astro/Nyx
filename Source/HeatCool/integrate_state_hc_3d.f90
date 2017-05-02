@@ -29,6 +29,7 @@ subroutine integrate_state_hc(lo, hi, &
 !   state : double array (dims) @todo
 !       The state vars
 !
+    use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : NVAR, URHO, UEDEN, UEINT, &
                                    TEMP_COMP, NE_COMP, small_pres, gamma_minus_1
     use eos_params_module
@@ -43,20 +44,20 @@ subroutine integrate_state_hc(lo, hi, &
     integer         , intent(in) :: lo(3), hi(3)
     integer         , intent(in) :: s_l1, s_l2, s_l3, s_h1, s_h2, s_h3
     integer         , intent(in) :: d_l1, d_l2, d_l3, d_h1, d_h2, d_h3
-    double precision, intent(inout) ::    state(s_l1:s_h1, s_l2:s_h2,s_l3:s_h3, NVAR)
-    double precision, intent(inout) :: diag_eos(d_l1:d_h1, d_l2:d_h2,d_l3:d_h3, 2)
-    double precision, intent(in)    :: a, half_dt
+    real(rt), intent(inout) ::    state(s_l1:s_h1, s_l2:s_h2,s_l3:s_h3, NVAR)
+    real(rt), intent(inout) :: diag_eos(d_l1:d_h1, d_l2:d_h2,d_l3:d_h3, 2)
+    real(rt), intent(in)    :: a, half_dt
     integer         , intent(inout) :: max_iter, min_iter
 
     integer, parameter :: NITERS = 20
-    double precision, parameter :: xacc = 1.0d-3
+    real(rt), parameter :: xacc = 1.0d-3
 
     integer :: i, j, k, n, iter, nsteps, cnt
-    double precision :: z, rho, T, ne
-    double precision :: T_orig, rho_e_orig, ne_orig, e_int_old, De_int
-    double precision :: T_first, ne_first, src_first
-    double precision :: src_old, src_new, delta_re, delta_t, rho_e, e_int, prev_soln
-    double precision :: b_fac
+    real(rt) :: z, rho, T, ne
+    real(rt) :: T_orig, rho_e_orig, ne_orig, e_int_old, De_int
+    real(rt) :: T_first, ne_first, src_first
+    real(rt) :: src_old, src_new, delta_re, delta_t, rho_e, e_int, prev_soln
+    real(rt) :: b_fac
     logical          :: do_diag, prnt_cell, done_iter
     logical          :: went_negative, went_negative_at_first
 

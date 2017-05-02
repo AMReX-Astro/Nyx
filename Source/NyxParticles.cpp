@@ -51,8 +51,12 @@ namespace
     //
     DarkMatterParticleContainer* DMPC = 0;
     StellarParticleContainer*     SPC = 0;
+#ifdef AGN
     AGNParticleContainer*         APC = 0;
+#endif
+#ifdef NEUTRINO_PARTICLES
     NeutrinoParticleContainer*    NPC = 0;
+#endif
 
     //
     // This is only used as a temporary container for
@@ -66,15 +70,23 @@ namespace
     //
     DarkMatterParticleContainer* VirtPC  = 0;
     StellarParticleContainer*    VirtSPC = 0;
+#ifdef AGN
     AGNParticleContainer*        VirtAPC = 0;
+#endif
+#ifdef NEUTRINO_PARTICLES
     NeutrinoParticleContainer*   VirtNPC = 0;
+#endif
     //
     // Container for temporary, ghost Particles
     //
     DarkMatterParticleContainer* GhostPC  = 0;
     StellarParticleContainer*    GhostSPC = 0;
+#ifdef AGN
     AGNParticleContainer*        GhostAPC = 0;
+#endif
+#ifdef NEUTRINO_PARTICLES
     NeutrinoParticleContainer*   GhostNPC = 0;
+#endif
 
     void RemoveParticlesOnExit ()
     {
@@ -109,6 +121,7 @@ std::string Nyx::particle_move_type = "";
 bool Nyx::particle_initrandom_serialize = false;
 Real Nyx::particle_initrandom_mass;
 long Nyx::particle_initrandom_count;
+long Nyx::particle_initrandom_count_per_box;
 int  Nyx::particle_initrandom_iseed;
 
 int Nyx::particle_verbose               = 1;
@@ -173,6 +186,7 @@ Nyx::theGhostSPC ()
       return GhostSPC;
 }
 
+#ifdef AGN
 AGNParticleContainer* 
 Nyx::theAPC ()
 {
@@ -188,7 +202,9 @@ Nyx::theGhostAPC ()
 {
       return GhostAPC;
 }
+#endif
 
+#ifdef NEUTRINO_PARTICLES
 NeutrinoParticleContainer* 
 Nyx::theNPC ()
 {
@@ -204,6 +220,7 @@ Nyx::theGhostNPC ()
 {
       return GhostNPC;
 }
+#endif
 
 void
 Nyx::read_particle_params ()
@@ -234,6 +251,7 @@ Nyx::read_particle_params ()
 
     pp.query("particle_initrandom_serialize", particle_initrandom_serialize);
     pp.query("particle_initrandom_count", particle_initrandom_count);
+    pp.query("particle_initrandom_count_per_box", particle_initrandom_count_per_box);
     pp.query("particle_initrandom_mass", particle_initrandom_mass);
     pp.query("particle_initrandom_iseed", particle_initrandom_iseed);
 
@@ -377,6 +395,33 @@ Nyx::init_particles ()
                              particle_initrandom_mass,
                              particle_initrandom_serialize);
         }
+        else if (particle_init_type == "RandomPerBox")
+        {
+            if (particle_initrandom_count_per_box <= 0)
+            {
+                amrex::Abort("Nyx::init_particles(): particle_initrandom_count_per_box must be > 0");
+            }
+            if (particle_initrandom_iseed <= 0)
+            {
+                amrex::Abort("Nyx::init_particles(): particle_initrandom_iseed must be > 0");
+            }
+
+            if (verbose && ParallelDescriptor::IOProcessor())
+            {
+                std::cout << "\nInitializing DM with of " << particle_initrandom_count_per_box
+                          << " random particles per box with initial seed: "
+                          << particle_initrandom_iseed << "\n\n";
+            }
+
+            // We just make this MultiFab in order to iterate over it ...
+            MultiFab particle_mf(grids,dmap,1,1);
+
+            DMPC->InitRandomPerBox(particle_initrandom_count_per_box,
+                                   particle_initrandom_iseed,
+                                   particle_initrandom_mass,
+                                   particle_mf);
+
+        }
         else if (particle_init_type == "AsciiFile")
         {
             if (verbose && ParallelDescriptor::IOProcessor())
@@ -456,6 +501,7 @@ Nyx::init_particles ()
     }
 #ifdef AGN
     {
+        // Note that we don't initialize any actual AGN particles here, we just create the container.
         BL_ASSERT (APC == 0);
         APC = new AGNParticleContainer(parent);
         ActiveParticles.push_back(APC); 
@@ -469,31 +515,9 @@ Nyx::init_particles ()
             GhostParticles.push_back(GhostAPC); 
 	}
         //
-        // Make sure to call RemoveParticlesOnExit() on exit.
-        //   (if do_dm_particles then we have already called ExecOnFinalize)
-        //
-        if (!do_dm_particles)
-            amrex::ExecOnFinalize(RemoveParticlesOnExit);
-        //
         // 2 gives more stuff than 1.
         //
         APC->SetVerbose(particle_verbose);
-        if (particle_init_type == "AsciiFile")
-        {
-            if (verbose && ParallelDescriptor::IOProcessor())
-                std::cout << "\nInitializing AGN particles from \""
-                          << agn_particle_file << "\" ...\n\n";
-            //
-            // The second argument is how many Reals we read into `m_data[]`
-            // after reading in `m_pos[]`. Here we're reading in the particle
-            // mass, velocity and angles.
-            //
-            APC->InitFromAsciiFile(agn_particle_file, 2*BL_SPACEDIM + 1, &Nrep);
-        }
-        else
-        {
-            amrex::Error("for right now we only init AGN particles with ascii");
-        }
     }
 #endif
 #ifdef NEUTRINO_PARTICLES
@@ -588,8 +612,8 @@ Nyx::init_santa_barbara (int init_sb_vels)
     if (level == 0)
     {
         Real frac_for_hydro, omb, omm;
-        BL_FORT_PROC_CALL(GET_OMB, get_omb)(&omb);
-        BL_FORT_PROC_CALL(GET_OMM, get_omm)(&omm);
+        fort_get_omb(&omb);
+        fort_get_omm(&omm);
         frac_for_hydro = omb;
         Real omfrac = 1.0 - frac_for_hydro;
  
@@ -660,7 +684,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
             D_new[mfi].setVal(0, Temp_comp);
             D_new[mfi].setVal(0,   Ne_comp);
 
-            BL_FORT_PROC_CALL(CA_INITDATA, ca_initdata)
+            fort_initdata
                 (level, cur_time, lo, hi, 
                  ns,BL_TO_FORTRAN(S_new[mfi]), 
                  nd,BL_TO_FORTRAN(D_new[mfi]), dx,
@@ -715,7 +739,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
         const int* lo = box.loVect();
         const int* hi = box.hiVect();
 
-        BL_FORT_PROC_CALL(INIT_E_FROM_T, init_e_from_t)
+        fort_init_e_from_t
             (BL_TO_FORTRAN(S_new[mfi]), &ns, 
              BL_TO_FORTRAN(D_new[mfi]), &nd, lo, hi, &a);
     }
@@ -1001,10 +1025,12 @@ Nyx::NyxParticlesAddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarPro
                     int ioProcNumSCS, int ioProcNumAll, int scsMyId,
 		                        MPI_Comm scsComm)
 {
+#if 0
+// What is this doing here???
 if(ParallelDescriptor::IOProcessor()) {
   std::cout << "PPPPPPPP:  DMPC SPC APC NPC = " << DMPC << "  " << SPC << "  " << APC << "  " << NPC << std::endl;
 }
-
+#endif
 }
 
 //NyxParticleContainerBase::~NyxParticleContainerBase() {}

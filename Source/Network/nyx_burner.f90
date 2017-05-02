@@ -1,5 +1,6 @@
 module nyx_burner_module
 
+  use amrex_fort_module, only : rt => amrex_real
   use bl_types
   use bl_constants_module
   use bl_error_module
@@ -12,15 +13,15 @@ contains
 
     implicit none
     
-    real(kind=dp_t), intent(in) :: dens, temp, Xin(nspec), ein, dt, time
-    real(kind=dp_t), intent(out) :: Xout(nspec), eout
+    real(rt), intent(in) :: dens, temp, Xin(nspec), ein, dt, time
+    real(rt), intent(out) :: Xout(nspec), eout
     
-    integer :: n
-    real(kind=dp_t) :: enuc, dX
+    integer  :: n
+    real(rt) :: enuc, dX
     
     Xout(:) = Xin(:)
     
-    enuc = 0.0_dp_t
+    enuc = 0.0_rt
     do n = 1, nspec
        dX = Xout(n)-Xin(n) 
        enuc = enuc - ebin(n) * dX

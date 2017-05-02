@@ -2,12 +2,6 @@
 
 using namespace amrex;
 
-void
-DarkMatterParticleContainer::AssignDensityAndVels (Array<std::unique_ptr<MultiFab> >& mf, int lev_min) const
-{
-    AssignDensity(mf, lev_min, BL_SPACEDIM+1);
-}
-
 #ifdef NEUTRINO_PARTICLES
 void
 NeutrinoParticleContainer::AssignDensity (Array<std::unique_ptr<MultiFab> >& mf, int lev_min, int ncomp, int finest_level) const 

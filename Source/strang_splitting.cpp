@@ -24,7 +24,7 @@ Nyx::strang_first_step (Real time, Real dt, MultiFab& S_old, MultiFab& D_old)
         int  min_iter = 100000;
         int  max_iter =      0;
 
-        BL_FORT_PROC_CALL(INTEGRATE_STATE, integrate_state)
+        integrate_state
                 (bx.loVect(), bx.hiVect(), 
                  BL_TO_FORTRAN(S_old[mfi]),
                  BL_TO_FORTRAN(D_old[mfi]),
@@ -64,7 +64,7 @@ Nyx::strang_second_step (Real time, Real dt, MultiFab& S_new, MultiFab& D_new)
         min_iter_grid = 100000;
         max_iter_grid =      0;
 
-        BL_FORT_PROC_CALL(INTEGRATE_STATE, integrate_state)
+        integrate_state
             (bx.loVect(), bx.hiVect(), 
              BL_TO_FORTRAN(S_new[mfi]),
              BL_TO_FORTRAN(D_new[mfi]),

@@ -4,7 +4,8 @@
 
 module agn_geometry
 
-use bl_constants_module, only: M_PI
+    use amrex_fort_module, only : rt => amrex_real
+    use bl_constants_module, only: M_PI
 
 !==============================================================================
 
@@ -32,9 +33,9 @@ contains
 
 integer function loc_sphere(xl, xr, yl, yr, zl, zr, R)
 
-double precision, intent(in) :: xl, xr, yl, yr, zl, zr, R
+real(rt), intent(in) :: xl, xr, yl, yr, zl, zr, R
 
-double precision             :: rl2, rr2, R2
+real(rt)             :: rl2, rr2, R2
 
 R2  = R**2
 rl2 = xl**2 + yl**2 + zl**2
@@ -67,11 +68,11 @@ end function loc_sphere
 
 integer function loc_cylinder(xl, xr, yl, yr, zl, zr, R, h, nxc, nyc, nzc)
 
-double precision, intent(in) :: xl, xr, yl, yr, zl, zr
-double precision, intent(in) :: R, h, nxc, nyc, nzc
+real(rt), intent(in) :: xl, xr, yl, yr, zl, zr
+real(rt), intent(in) :: R, h, nxc, nyc, nzc
 
-double precision             :: R2, xldotn, xrdotn, rl2, rr2
-double precision             :: xlproj, xrproj, ylproj, yrproj, zlproj, zrproj
+real(rt)             :: R2, xldotn, xrdotn, rl2, rr2
+real(rt)             :: xlproj, xrproj, ylproj, yrproj, zlproj, zrproj
 
 R2  = R**2
 
@@ -106,9 +107,9 @@ end function loc_cylinder
 ! arguments: x, y, z            Coordinates of sample point (ignored)
 !            params(:)          Weighting function parameters (ignored)
 
-double precision function weight_uniform(x, y, z, params)
+real(rt) function weight_uniform(x, y, z, params)
 
-double precision, intent(in) :: x, y, z, params(:)
+real(rt), intent(in) :: x, y, z, params(:)
 
 weight_uniform = 1.
 
@@ -122,12 +123,12 @@ end function weight_uniform
 ! arguments: x, y, z            Coordinates of sample point
 !            params(:)          Weighting function parameters: R, h, nx, ny, nz, rscale
 
-double precision function weight_cattaneo(x, y, z, R, height, nx, ny, nz, rscale)
+real(rt) function weight_cattaneo(x, y, z, R, height, nx, ny, nz, rscale)
 
-double precision, intent(in) :: x, y, z, R, height, nx, ny, nz, rscale
+real(rt), intent(in) :: x, y, z, R, height, nx, ny, nz, rscale
 
-double precision             :: xdotn, xproj, yproj, zproj, r2
-double precision             :: vol_cylinder
+real(rt)             :: xdotn, xproj, yproj, zproj, r2
+real(rt)             :: vol_cylinder
 
 xdotn = x*nx + y*ny + z*nz
 xproj = x - xdotn*nx

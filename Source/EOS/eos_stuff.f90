@@ -54,25 +54,27 @@ contains
 
   subroutine eos_init_small_pres(R, T, Ne, P, comoving_a)
 
+     use amrex_fort_module, only : rt => amrex_real
+
      ! In/out variables
-     real(kind=dp_t), intent(  out) :: P
-     real(kind=dp_t), intent(in   ) :: R, T, Ne
-     real(kind=dp_t), intent(in   ) :: comoving_a
+     real(rt), intent(  out) :: P
+     real(rt), intent(in   ) :: R, T, Ne
+     real(rt), intent(in   ) :: comoving_a
 
      ! Local variables
      logical :: do_diag
 
-     real(kind=dp_t) :: xn_eos(nspec)
-     real(kind=dp_t) :: temp_eos
-     real(kind=dp_t) :: den_eos
-     real(kind=dp_t) :: e_eos
-     real(kind=dp_t) :: p_eos
-     real(kind=dp_t) :: cv_eos
-     real(kind=dp_t) :: dpdt_eos
-     real(kind=dp_t) :: dpdr_eos
-     real(kind=dp_t) :: dedt_eos
-     real(kind=dp_t) ::    s_eos
-     real(kind=dp_t) :: comoving_a_cubed
+     real(rt) :: xn_eos(nspec)
+     real(rt) :: temp_eos
+     real(rt) :: den_eos
+     real(rt) :: e_eos
+     real(rt) :: p_eos
+     real(rt) :: cv_eos
+     real(rt) :: dpdt_eos
+     real(rt) :: dpdr_eos
+     real(rt) :: dedt_eos
+     real(rt) ::    s_eos
+     real(rt) :: comoving_a_cubed
 
      do_diag = .false.
 
@@ -100,14 +102,15 @@ contains
 
   subroutine nyx_eos_soundspeed(c, R, e)
 
+     use amrex_fort_module, only : rt => amrex_real
      use meth_params_module, only: gamma_const, gamma_minus_1
 
      ! In/out variables
-     real(kind=dp_t), intent(in   ) :: R, e
-     real(kind=dp_t), intent(  out) :: c
+     real(rt), intent(in   ) :: R, e
+     real(rt), intent(  out) :: c
 
      ! Pressure
-     real(kind=dp_t) :: P
+     real(rt) :: P
 
      P = R * e * gamma_minus_1
 
@@ -118,25 +121,27 @@ contains
 
   subroutine nyx_eos_T_given_Re(T, Ne, R, e, comoving_a)
 
+     use amrex_fort_module, only : rt => amrex_real
+
      ! In/out variables
-     real(kind=dp_t),           intent(inout) :: T, Ne
-     real(kind=dp_t),           intent(in   ) :: R, e
-     real(kind=dp_t),           intent(in   ) :: comoving_a
+     real(rt),           intent(inout) :: T, Ne
+     real(rt),           intent(in   ) :: R, e
+     real(rt),           intent(in   ) :: comoving_a
 
      ! Local variables
      logical :: do_diag
 
-     real(kind=dp_t) :: xn_eos(nspec)
-     real(kind=dp_t) :: temp_eos
-     real(kind=dp_t) :: den_eos
-     real(kind=dp_t) :: e_eos
-     real(kind=dp_t) :: p_eos
-     real(kind=dp_t) :: cv_eos
-     real(kind=dp_t) :: dpdt_eos
-     real(kind=dp_t) :: dpdr_eos
-     real(kind=dp_t) :: dedt_eos
-     real(kind=dp_t) ::    s_eos
-     real(kind=dp_t) :: comoving_a_cubed
+     real(rt) :: xn_eos(nspec)
+     real(rt) :: temp_eos
+     real(rt) :: den_eos
+     real(rt) :: e_eos
+     real(rt) :: p_eos
+     real(rt) :: cv_eos
+     real(rt) :: dpdt_eos
+     real(rt) :: dpdr_eos
+     real(rt) :: dedt_eos
+     real(rt) ::    s_eos
+     real(rt) :: comoving_a_cubed
 
      do_diag = .false.
 
@@ -166,26 +171,27 @@ contains
 
   subroutine nyx_eos_S_given_Re(S, R, e, T, Ne, comoving_a)
 
+     use amrex_fort_module, only : rt => amrex_real
      implicit none
 
      ! In/out variables
-     real(kind=dp_t),           intent(  out) :: S
-     real(kind=dp_t),           intent(in   ) :: R, e, T, Ne
-     real(kind=dp_t),           intent(in   ) :: comoving_a
+     real(rt),           intent(  out) :: S
+     real(rt),           intent(in   ) :: R, e, T, Ne
+     real(rt),           intent(in   ) :: comoving_a
 
      ! Local variables
      logical :: do_diag
 
-     real(kind=dp_t) :: xn_eos(nspec)
-     real(kind=dp_t) :: temp_eos
-     real(kind=dp_t) :: den_eos
-     real(kind=dp_t) :: e_eos
-     real(kind=dp_t) :: p_eos
-     real(kind=dp_t) :: cv_eos
-     real(kind=dp_t) :: dpdt_eos
-     real(kind=dp_t) :: dpdr_eos
-     real(kind=dp_t) :: dedt_eos
-     real(kind=dp_t) ::    s_eos
+     real(rt) :: xn_eos(nspec)
+     real(rt) :: temp_eos
+     real(rt) :: den_eos
+     real(rt) :: e_eos
+     real(rt) :: p_eos
+     real(rt) :: cv_eos
+     real(rt) :: dpdt_eos
+     real(rt) :: dpdr_eos
+     real(rt) :: dedt_eos
+     real(rt) ::    s_eos
 
      do_diag = .false.
 
@@ -212,26 +218,28 @@ contains
 
   subroutine nyx_eos_given_RT(e, P, R, T, Ne, comoving_a)
 
+     use amrex_fort_module, only : rt => amrex_real
+
      ! In/out variables
-     real(kind=dp_t),           intent(  out) :: e, P
-     real(kind=dp_t),           intent(in   ) :: R, T, Ne
-     real(kind=dp_t),           intent(in   ) :: comoving_a
+     real(rt),           intent(  out) :: e, P
+     real(rt),           intent(in   ) :: R, T, Ne
+     real(rt),           intent(in   ) :: comoving_a
 
 
      ! Local variables
      logical :: do_diag
      
-     real(kind=dp_t) :: xn_eos(nspec)
-     real(kind=dp_t) :: temp_eos
-     real(kind=dp_t) :: den_eos
-     real(kind=dp_t) :: e_eos
-     real(kind=dp_t) :: p_eos
-     real(kind=dp_t) :: cv_eos
-     real(kind=dp_t) :: dpdt_eos
-     real(kind=dp_t) :: dpdr_eos
-     real(kind=dp_t) :: dedt_eos
-     real(kind=dp_t) ::    s_eos
-     real(kind=dp_t) :: comoving_a_cubed
+     real(rt) :: xn_eos(nspec)
+     real(rt) :: temp_eos
+     real(rt) :: den_eos
+     real(rt) :: e_eos
+     real(rt) :: p_eos
+     real(rt) :: cv_eos
+     real(rt) :: dpdt_eos
+     real(rt) :: dpdr_eos
+     real(rt) :: dedt_eos
+     real(rt) ::    s_eos
+     real(rt) :: comoving_a_cubed
 
      do_diag = .false.
 
@@ -269,9 +277,10 @@ contains
                  entropy, &
                  do_eos_diag)
 
-    use bl_error_module
-    use fundamental_constants_module, only: k_B, n_A, hbar
-    use meth_params_module, only: gamma_minus_1
+     use amrex_fort_module, only : rt => amrex_real
+     use bl_error_module
+     use fundamental_constants_module, only: k_B, n_A, hbar
+     use meth_params_module, only: gamma_minus_1
 
 ! dens     -- mass density (g/cc)
 ! temp     -- temperature (K)
@@ -294,22 +303,22 @@ contains
     logical do_eos_diag
     integer, intent(in) :: input
 
-    real(kind=dp_t) :: dens, temp
-    real(kind=dp_t) :: xmass(nspec)
-    real(kind=dp_t) :: pres, eint
-    real(kind=dp_t) :: c_v
-    real(kind=dp_t) :: dPdT, dPdR, dedT
-    real(kind=dp_t) :: entropy
+    real(rt) :: dens, temp
+    real(rt) :: xmass(nspec)
+    real(rt) :: pres, eint
+    real(rt) :: c_v
+    real(rt) :: dPdT, dPdR, dedT
+    real(rt) :: entropy
 
     ! local variables
-    real(kind=dp_t) :: ymass(nspec)    
-    real(kind=dp_t) :: mu
-    real(kind=dp_t) :: sum_y
-    real(kind=dp_t) :: m_nucleon_over_kB
-    real(kind=dp_t) :: t1,t2,t3
+    real(rt) :: ymass(nspec)    
+    real(rt) :: mu
+    real(rt) :: sum_y
+    real(rt) :: m_nucleon_over_kB
+    real(rt) :: t1,t2,t3
 
     ! get the mass of a nucleon from Avogadro's number.
-    real(kind=dp_t), parameter :: m_nucleon = 1.d0/n_A
+    real(rt), parameter :: m_nucleon = 1.d0/n_A
 
     integer :: n
 

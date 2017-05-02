@@ -2,19 +2,21 @@
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine nyx_network_init()
+      subroutine fort_network_init() &
+        bind(C, name="fort_network_init")
 
         use network
 
         call network_init()
 
-      end subroutine nyx_network_init
+      end subroutine fort_network_init
 
 ! :::
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine get_num_spec(nspec_out)
+      subroutine fort_get_num_spec(nspec_out) &
+        bind(C, name="fort_get_num_spec")
 
         use network, only : nspec
 
@@ -24,13 +26,14 @@
 
         nspec_out = nspec
 
-      end subroutine get_num_spec
+      end subroutine fort_get_num_spec
 
 ! :::
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine get_num_aux(naux_out)
+      subroutine fort_get_num_aux(naux_out) &
+        bind(C, name="fort_get_num_aux")
 
         use network, only : naux
 
@@ -40,13 +43,14 @@
 
         naux_out = naux
 
-      end subroutine get_num_aux
+      end subroutine fort_get_num_aux
 
 ! :::
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine get_spec_names(spec_names,ispec,len)
+      subroutine fort_get_spec_names(spec_names,ispec,len) &
+        bind(C, name="fort_get_spec_names")
 
         use network, only : nspec, short_spec_names
 
@@ -65,13 +69,14 @@
            spec_names(i) = ichar(short_spec_names(ispec+1)(i:i))
         end do
 
-      end subroutine get_spec_names
+      end subroutine fort_get_spec_names
 
 ! :::
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine get_aux_names(aux_names,iaux,len)
+      subroutine fort_get_aux_names(aux_names,iaux,len) &
+        bind(C, name="fort_get_aux_names")
 
         use network, only : naux, short_aux_names
 
@@ -90,13 +95,14 @@
            aux_names(i) = ichar(short_aux_names(iaux+1)(i:i))
         end do
 
-      end subroutine get_aux_names
+      end subroutine fort_get_aux_names
 
 ! :::
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine get_method_params(nGrowHyp)
+      subroutine fort_get_method_params(nGrowHyp) &
+        bind(C, name = "fort_get_method_params")
 
         ! Passing data from f90 back to C++
 
@@ -108,45 +114,50 @@
 
         nGrowHyp = NHYP
 
-      end subroutine get_method_params
+      end subroutine fort_get_method_params
 
 ! :::
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine set_xhydrogen(xhydrogen_in)
+      subroutine fort_set_xhydrogen(xhydrogen_in) &
+        bind(C, name="fort_set_xhydrogen")
 
-          use atomic_rates_module
+        use amrex_fort_module, only : rt => amrex_real
+        use atomic_rates_module
 
-          double precision, intent(in) :: xhydrogen_in
-          if (xhydrogen_in .lt. 0.d0 .or. xhydrogen_in .gt. 1.d0) &
-              call bl_error("Bad value of xhydrogen_in")
-          XHYDROGEN = xhydrogen_in
-          YHELIUM   = (1.0d0-XHYDROGEN)/(4.0d0*XHYDROGEN)
+        real(rt), intent(in) :: xhydrogen_in
+        if (xhydrogen_in .lt. 0.d0 .or. xhydrogen_in .gt. 1.d0) &
+            call bl_error("Bad value of xhydrogen_in")
 
-      end subroutine set_xhydrogen
+        XHYDROGEN = xhydrogen_in
+        YHELIUM   = (1.0d0-XHYDROGEN)/(4.0d0*XHYDROGEN)
+
+      end subroutine fort_set_xhydrogen
 
 ! :::
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine set_small_values(average_dens, average_temp, a, &
-                                  small_dens_inout, small_temp_inout, small_pres_inout)
+      subroutine fort_set_small_values(average_dens, average_temp, a, &
+                                       small_dens_inout, small_temp_inout, small_pres_inout) &
+        bind(C, name="fort_set_small_values")
 
+        use amrex_fort_module, only : rt => amrex_real
         use meth_params_module
         use eos_module
         use network, only : nspec, naux
 
         implicit none
 
-        double precision, intent(in   ) :: average_dens, average_temp
-        double precision, intent(in   ) :: a
-        double precision, intent(inout) :: small_dens_inout, small_temp_inout, &
+        real(rt), intent(in   ) :: average_dens, average_temp
+        real(rt), intent(in   ) :: a
+        real(rt), intent(inout) :: small_dens_inout, small_temp_inout, &
                                            small_pres_inout
 
         ! Local variables
-        double precision :: frac = 1.d-6
-        double precision :: typical_Ne
+        real(rt) :: frac = 1.d-6
+        real(rt) :: typical_Ne
         
         if (small_dens_inout .le. 0.d0) then
            small_dens = frac * average_dens
@@ -168,21 +179,23 @@
         small_temp_inout = small_temp
         small_pres_inout = small_pres
 
-      end subroutine set_small_values
+      end subroutine fort_set_small_values
 
 ! :::
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine set_method_params(dm, numadv, do_hydro, ppm_type_in, ppm_ref_in, &
-                                   ppm_flatten_before_integrals_in, &
-                                   use_colglaz_in, use_flattening_in, &
-                                   corner_coupling_in, version_2_in, &
-                                   use_const_species_in, gamma_in, normalize_species_in, heat_cool_in, &
-                                   comm)
+      subroutine fort_set_method_params( &
+                 dm, numadv, do_hydro, ppm_type_in, ppm_ref_in, &
+                 ppm_flatten_before_integrals_in, &
+                 use_colglaz_in, use_flattening_in, &
+                 corner_coupling_in, version_2_in, &
+                 use_const_species_in, gamma_in, normalize_species_in, heat_cool_in, comm) &
+                 bind(C, name = "fort_set_method_params")
 
         ! Passing data from C++ into f90
 
+        use amrex_fort_module, only : rt => amrex_real
         use meth_params_module
         use  eos_params_module
         use atomic_rates_module
@@ -193,21 +206,21 @@
 
         implicit none
 
-        integer, intent(in) :: dm
-        integer, intent(in) :: numadv
-        integer, intent(in) :: do_hydro
-        integer, intent(in) :: ppm_type_in
-        integer, intent(in) :: ppm_ref_in
-        integer, intent(in) :: ppm_flatten_before_integrals_in
-        integer, intent(in) :: use_colglaz_in
-        integer, intent(in) :: use_flattening_in
-        integer, intent(in) :: version_2_in
-        integer, intent(in) :: corner_coupling_in
-        double precision, intent(in) :: gamma_in
-        integer, intent(in) :: use_const_species_in
-        integer, intent(in) :: normalize_species_in
-        integer, intent(in) :: heat_cool_in
-        integer, intent(in), optional :: comm
+        integer,  intent(in) :: dm
+        integer,  intent(in) :: numadv
+        integer,  intent(in) :: do_hydro
+        integer,  intent(in) :: ppm_type_in
+        integer,  intent(in) :: ppm_ref_in
+        integer,  intent(in) :: ppm_flatten_before_integrals_in
+        integer,  intent(in) :: use_colglaz_in
+        integer,  intent(in) :: use_flattening_in
+        integer,  intent(in) :: version_2_in
+        integer,  intent(in) :: corner_coupling_in
+        real(rt), intent(in) :: gamma_in
+        integer,  intent(in) :: use_const_species_in
+        integer,  intent(in) :: normalize_species_in
+        integer,  intent(in) :: heat_cool_in
+        integer,  intent(in), optional :: comm
 
         integer             :: QNEXT
         integer             :: UNEXT
@@ -375,32 +388,36 @@
            npassive = npassive + nspec + naux
         endif
 
-      end subroutine set_method_params
+      end subroutine fort_set_method_params
 
 ! :::
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine set_eos_params(h_species_in, he_species_in)
+      subroutine fort_set_eos_params(h_species_in, he_species_in) &
+        bind(C, name="fort_set_eos_params")
 
         ! Passing data from C++ into f90
 
+        use amrex_fort_module, only : rt => amrex_real
         use  eos_params_module
 
         implicit none
 
-        double precision, intent(in) :: h_species_in, he_species_in
+        real(rt), intent(in) :: h_species_in, he_species_in
 
          h_species =  h_species_in
         he_species = he_species_in
 
-      end subroutine set_eos_params
+      end subroutine fort_set_eos_params
 
 ! :::
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine set_problem_params(dm,physbc_lo_in,physbc_hi_in,Outflow_in,Symmetry_in,coord_type_in)
+      subroutine fort_set_problem_params( &
+        dm,physbc_lo_in,physbc_hi_in,Outflow_in,Symmetry_in,coord_type_in) &
+        bind(C, name="fort_set_problem_params")
 
         ! Passing data from C++ into f90
 
@@ -422,7 +439,7 @@
 
         coord_type = coord_type_in
 
-      end subroutine set_problem_params
+      end subroutine fort_set_problem_params
 
 ! :::
 ! ::: ----------------------------------------------------------------

@@ -335,7 +335,7 @@ Nyx::read_params ()
         {
            pp.get("h_species" ,  h_species);
            pp.get("he_species", he_species);
-           BL_FORT_PROC_CALL(SET_XHYDROGEN,set_xhydrogen)(h_species);
+           fort_set_xhydrogen(h_species);
            if (ParallelDescriptor::IOProcessor())
            {
                std::cout << "Nyx::setting species concentrations to "
@@ -473,7 +473,7 @@ Nyx::Nyx (Amr&            papa,
 
      // Initialize "this_z" in the atomic_rates_module
      if (heat_cool_type == 1 || heat_cool_type == 3)
-         BL_FORT_PROC_CALL(INIT_THIS_Z, init_this_z)(&old_a);
+         fort_init_this_z(&old_a);
 
     // Set grav_n_grow to 3 on init. It'll be reset in advance.
     grav_n_grow = 3;
@@ -706,7 +706,7 @@ Nyx::est_time_step (Real dt_old)
 	    {
 	      const Box& box = mfi.tilebox();
 
-	      BL_FORT_PROC_CALL(FORT_ESTDT, fort_estdt)
+	      fort_estdt
                 (BL_TO_FORTRAN(stateMF[mfi]), box.loVect(), box.hiVect(), dx,
                  &dt, &a);
 	    }
@@ -1237,7 +1237,7 @@ Nyx::post_timestep (int iteration)
                     // Compute sync source
                     sync_src.resize(bx, BL_SPACEDIM+1);
                     int i = mfi.index();
-                    BL_FORT_PROC_CALL(FORT_SYNCGSRC,fort_syncgsrc)
+                    fort_syncgsrc
                         (bx.loVect(), bx.hiVect(), BL_TO_FORTRAN(grad_phi_cc[i]),
                          BL_TO_FORTRAN((*grad_delta_phi_cc[lev-level])[i]),
                          BL_TO_FORTRAN(S_new_lev[i]), BL_TO_FORTRAN(dstate),
@@ -1309,7 +1309,7 @@ Nyx::post_restart ()
 
 #ifdef TISF
      int blub = parent->finestLevel();
-     BL_FORT_PROC_CALL(FORT_SET_FINEST_LEVEL, fort_set_finest_level)(&blub);
+     fort_set_finest_level(&blub);
 #endif
 
 #ifdef GRAVITY
@@ -1384,10 +1384,10 @@ Nyx::set_small_values ()
        //
        // Get the number of species from the network model.
        //
-       BL_FORT_PROC_CALL(GET_NUM_SPEC, get_num_spec)(&NumSpec);
-       BL_FORT_PROC_CALL(GET_NUM_AUX , get_num_aux )(&NumAux);
+       fort_get_num_spec(&NumSpec);
+       fort_get_num_aux (&NumAux);
 
-       BL_FORT_PROC_CALL(SET_SMALL_VALUES, set_small_values)
+       fort_set_small_values
             (&average_gas_density, &average_temperature,
              &a,  &small_dens, &small_temp, &small_pres);
 
@@ -1410,7 +1410,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
    const Real cur_time = state[State_Type].curTime();
    const int whichSidecar(0);
 
-#ifdef REEBER
+#ifdef AGN
    halo_find();
 #endif 
 
@@ -1432,7 +1432,7 @@ Nyx::post_regrid (int lbase,
     BL_PROFILE("Nyx::post_regrid()");
 #ifndef NO_HYDRO
 #ifdef TISF
-     BL_FORT_PROC_CALL(FORT_SET_FINEST_LEVEL, fort_set_finest_level)(&new_finest);
+     fort_set_finest_level(&new_finest);
 #endif
 #endif
 
@@ -1601,7 +1601,7 @@ Nyx::advance_aux (Real time,
         const Box& box = mfi.tilebox();
         FArrayBox& old_fab = S_old[mfi];
         FArrayBox& new_fab = S_new[mfi];
-        BL_FORT_PROC_CALL(FORT_AUXUPDATE, fort_auxupdate)
+        fort_auxupdate
             (BL_TO_FORTRAN(old_fab), BL_TO_FORTRAN(new_fab), box.loVect(),
              box.hiVect(), &dt);
     }
@@ -1663,8 +1663,7 @@ Nyx::enforce_nonnegative_species (MultiFab& S_new)
     for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
-        BL_FORT_PROC_CALL(ENFORCE_NONNEGATIVE_SPECIES,
-			  enforce_nonnegative_species)
+        fort_enforce_nonnegative_species
 	  (BL_TO_FORTRAN(S_new[mfi]), bx.loVect(), bx.hiVect(),
 	   &print_fortran_warnings);
     }
@@ -1682,8 +1681,7 @@ Nyx::enforce_consistent_e (MultiFab& S)
         const Box& box = mfi.tilebox();
         const int* lo = box.loVect();
         const int* hi = box.hiVect();
-        BL_FORT_PROC_CALL(ENFORCE_CONSISTENT_E,
-			  enforce_consistent_e)
+        fort_enforce_consistent_e
 	  (lo, hi, BL_TO_FORTRAN(S[mfi]));
     }
 }
@@ -1700,64 +1698,37 @@ Nyx::average_down (int state_index)
 
     if (level == parent->finestLevel()) return;
 
-    Nyx& fine_level = get_level(level + 1);
+    Nyx& fine_lev = get_level(level+1);
 
-    MultiFab& S_crse = get_new_data(state_index);
-    MultiFab& S_fine = fine_level.get_new_data(state_index);
-    const int num_comps = S_fine.nComp();
+    const Geometry& fgeom = fine_lev.geom;
+    const Geometry& cgeom =          geom;
 
 #ifndef NO_HYDRO
     if (state_index == State_Type)
     {
-        //
-        // Coarsen() the fine stuff on processors owning the fine data.
-        //
-        BoxArray crse_S_fine_BA(S_fine.boxArray().size());
+        MultiFab& S_crse =          get_new_data(State_Type);
+        MultiFab& S_fine = fine_lev.get_new_data(State_Type);
 
-        for (int i = 0; i < S_fine.boxArray().size(); ++i)
-        {
-            crse_S_fine_BA.set(i, amrex::coarsen(S_fine.boxArray()[i],
-                                                  fine_ratio));
-        }
-        MultiFab crse_S_fine(crse_S_fine_BA, S_fine.DistributionMap(), num_comps, 0);
+        amrex::average_down(S_fine, S_crse,
+                            fgeom, cgeom,
+                            0, S_fine.nComp(), fine_ratio);
 
-        MultiFab& D_crse =            get_new_data(DiagEOS_Type);
-        MultiFab& D_fine = fine_level.get_new_data(DiagEOS_Type);
-        const int num_D_comps = D_fine.nComp();
-        MultiFab crse_D_fine(crse_S_fine_BA, S_fine.DistributionMap(), num_D_comps, 0);
+        MultiFab& D_crse =          get_new_data(DiagEOS_Type);
+        MultiFab& D_fine = fine_lev.get_new_data(DiagEOS_Type);
 
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
-        for (MFIter mfi(crse_S_fine,true); mfi.isValid(); ++mfi)
-        {
- 	    const Box&       overlap  = mfi.tilebox();
-
-            const FArrayBox& fine_S_fab = S_fine[mfi];
-            FArrayBox&       crse_S_fab = crse_S_fine[mfi];
-
-            const FArrayBox& fine_D_fab = D_fine[mfi];
-            FArrayBox&       crse_D_fab = crse_D_fine[mfi];
-
-            BL_FORT_PROC_CALL(FORT_AVGDOWN, fort_avgdown)
-                (BL_TO_FORTRAN(crse_S_fab), num_comps,
-		 BL_TO_FORTRAN(fine_S_fab),
-                 overlap.loVect(), overlap.hiVect(), fine_ratio.getVect());
-
-            BL_FORT_PROC_CALL(FORT_AVGDOWN, fort_avgdown)
-                (BL_TO_FORTRAN(crse_D_fab), num_D_comps,
-		 BL_TO_FORTRAN(fine_D_fab),
-                 overlap.loVect(), overlap.hiVect(), fine_ratio.getVect());
-        }
-        D_crse.copy(crse_D_fine);
-        S_crse.copy(crse_S_fine);
+        amrex::average_down(D_fine, D_crse,
+                            fgeom, cgeom,
+                            0, D_fine.nComp(), fine_ratio);
     }
     else
 #endif
     {
-      const Geometry& fine_geom = parent->Geom(level+1);
-      const Geometry& crse_geom = parent->Geom(level  );
-      amrex::average_down(S_fine,S_crse,fine_geom,crse_geom,0,num_comps,fine_ratio);
+      MultiFab& S_crse = get_new_data(state_index);
+      MultiFab& S_fine = fine_lev.get_new_data(state_index);
+
+      const int num_comps = S_fine.nComp();
+
+      amrex::average_down(S_fine,S_crse,fgeom,cgeom,0,num_comps,fine_ratio);
     }
 }
 
@@ -1926,7 +1897,7 @@ Nyx::derive (const std::string& name,
 void
 Nyx::network_init ()
 {
-    BL_FORT_PROC_CALL(NYX_NETWORK_INIT, nyx_network_init)();
+    fort_network_init();
 }
 
 #ifndef NO_HYDRO
@@ -1953,7 +1924,7 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new)
 
         Real s  = 0;
         Real se = 0;
-        BL_FORT_PROC_CALL(RESET_INTERNAL_E, reset_internal_e)
+        reset_internal_e
             (BL_TO_FORTRAN(S_new[mfi]), BL_TO_FORTRAN(D_new[mfi]),
              bx.loVect(), bx.hiVect(),
              &print_fortran_warnings, &a, &s, &se);
@@ -2007,7 +1978,7 @@ Nyx::compute_new_temp ()
     {
         const Box& bx = mfi.tilebox();
 
-        BL_FORT_PROC_CALL(COMPUTE_TEMP, compute_temp)
+        fort_compute_temp
             (bx.loVect(), bx.hiVect(),
             BL_TO_FORTRAN(S_new[mfi]),
             BL_TO_FORTRAN(D_new[mfi]), &a,
@@ -2033,7 +2004,7 @@ Nyx::compute_new_temp ()
         {
             const Box& bx = mfi.validbox();
 
-            BL_FORT_PROC_CALL(COMPUTE_MAX_TEMP_LOC, compute_max_temp_loc)
+            fort_compute_max_temp_loc
                 (bx.loVect(), bx.hiVect(),
                 BL_TO_FORTRAN(S_new[mfi]),
                 BL_TO_FORTRAN(D_new[mfi]),
@@ -2069,7 +2040,7 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& T_meanrho)
     {
         const Box& bx = mfi.tilebox();
 
-        BL_FORT_PROC_CALL(COMPUTE_RHO_TEMP, compute_rho_temp)
+        fort_compute_rho_temp
             (bx.loVect(), bx.hiVect(), geom.CellSize(),
              BL_TO_FORTRAN(S_new[mfi]),
              BL_TO_FORTRAN(D_new[mfi]), &average_gas_density,

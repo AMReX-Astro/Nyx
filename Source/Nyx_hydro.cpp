@@ -174,7 +174,7 @@ Nyx::just_the_hydro (Real time,
             u_gdnv[i].setVal(1.e200);
         }
 
-        BL_FORT_PROC_CALL(FORT_ADVANCE_GAS, fort_advance_gas)
+        fort_advance_gas
             (&time, bx.loVect(), bx.hiVect(), 
              BL_TO_FORTRAN(state),
              BL_TO_FORTRAN(stateout),

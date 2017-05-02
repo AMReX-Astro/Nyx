@@ -6,6 +6,8 @@ module agn_models
 
 !==============================================================================
 
+    use amrex_fort_module, only : rt => amrex_real
+
 use agn_geometry
 use agn_mesh
 use agn_random
@@ -39,17 +41,17 @@ subroutine agn_compute_acc_rate(agn, Mdot, time, &
 use meth_params_module, only: gamma_const, gamma_minus_1, NVAR, URHO, UEINT
 
 type(agn_particle), intent(in)   :: agn
-double precision, intent(in   )  :: time, dx(:)
+real(rt), intent(in   )  :: time, dx(:)
 integer         , intent(in   )  :: accmodel
-double precision, intent(  out)  :: Mdot
+real(rt), intent(  out)  :: Mdot
 
 integer         ,intent(in   ) :: lo(:),hi(:)
 integer         ,intent(in   ) :: s_l1,s_l2,s_l3,s_h1,s_h2,s_h3
-double precision,intent(in   ) :: state(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3,NVAR)
+real(rt),intent(in   ) :: state(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3,NVAR)
 
-double precision              :: rho, P_over_rho
-double precision              :: rhoinf, csinf, nh
-double precision, allocatable :: cs(:,:,:)
+real(rt)              :: rho, P_over_rho
+real(rt)              :: rhoinf, csinf, nh
+real(rt), allocatable :: cs(:,:,:)
 
 integer                       :: i,j,k
 
@@ -133,23 +135,23 @@ subroutine agn_compute_feedback(agn, Mdot, t, dt, &
 use meth_params_module, only: URHO, UMX, UMY, UMZ, UEDEN
 
 type(agn_particle), intent(inout) :: agn
-double precision, intent(in   )  :: Mdot, t, dt
+real(rt), intent(in   )  :: Mdot, t, dt
 integer, intent(in)              :: fbmodel
-double precision, intent(in   )  :: dx(:)
+real(rt), intent(in   )  :: dx(:)
 
 integer         , intent(in   )  :: s_l1,s_l2,s_l3,s_h1,s_h2,s_h3
-double precision, intent(in   )  :: state(s_l1:,s_l2:,s_l3:,:)
+real(rt), intent(in   )  :: state(s_l1:,s_l2:,s_l3:,:)
 
 integer, intent(in)              :: src_l1,src_l2,src_l3,src_h1,src_h2,src_h3
-double precision, intent(inout)  :: src(src_l1:,src_l2:,src_l3:,:)
+real(rt), intent(inout)  :: src(src_l1:,src_l2:,src_l3:,:)
 
-double precision                 :: rholocal, Rdep, empty(1) = 0.
-double precision                 :: rdisp, xbub, ybub, zbub, mudisp, &
+real(rt)                 :: rholocal, Rdep, empty(1) = 0.
+real(rt)                 :: rdisp, xbub, ybub, zbub, mudisp, &
                                     sintdisp, phidisp
-double precision                 :: Rbub, Ebub, Mjet, Pjet, Ejet
+real(rt)                 :: Rbub, Ebub, Mjet, Pjet, Ejet
 integer                          :: ibh, jbh, kbh
-double precision                 :: wparams(6), rjet, hjet
-double precision                 :: d_zone
+real(rt)                 :: wparams(6), rjet, hjet
+real(rt)                 :: d_zone
 
 ! Determine size of depletion region
 d_zone = (dx(1)+dx(2)+dx(3))/3.d0

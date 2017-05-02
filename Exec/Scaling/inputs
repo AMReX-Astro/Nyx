@@ -47,7 +47,7 @@ gravity.no_composite = 1
 mg.bottom_solver = 4
 
 gravity.solve_with_cpp = 0
-gravity.solve_with_hpgmg = 1
+gravity.solve_with_hpgmg = 0
 
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic =  1     1     1
@@ -59,7 +59,8 @@ geometry.prob_lo     =  0     0     0
 geometry.prob_hi     =  28.49002849  28.49002849  28.49002849
 
 amr.n_cell           = 2048 2048 2048
-amr.max_grid_size    = 128
+amr.n_cell           = 32 32 32
+amr.max_grid_size    = 32
 nyx.particle_initrandom_count_per_box = 128
 
 nyx.particle_initrandom_iseed = 5371177

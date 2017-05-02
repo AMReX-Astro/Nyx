@@ -4,12 +4,14 @@
 
 module meth_params_module
 
+  use amrex_fort_module, only : rt => amrex_real
+
   implicit none
 
-  double precision, save :: difmag        ! used only in consup to weight the divu contributin
-  integer         , save :: iorder        ! used only in uslope and uflaten
+  real(rt), save :: difmag        ! used only in consup to weight the divu contributin
+  integer , save :: iorder        ! used only in uslope and uflaten
 
-  double precision, save, public  :: gamma_const, gamma_minus_1
+  real(rt), save, public  :: gamma_const, gamma_minus_1
 
   integer, parameter     :: NHYP    = 4
   integer, parameter     :: MAXADV  = 5
@@ -25,7 +27,7 @@ module meth_params_module
   
   integer         , save :: nadv
 
-  double precision, save :: small_dens, small_temp, small_pres  
+  real(rt)        , save :: small_dens, small_temp, small_pres  
 
   integer         , save :: ppm_type
   integer         , save :: ppm_reference

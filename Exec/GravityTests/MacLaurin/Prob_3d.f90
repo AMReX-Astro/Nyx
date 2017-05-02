@@ -1,6 +1,7 @@
 
       subroutine amrex_probinit (init,name,namlen,problo,probhi) bind(c)
 
+      use amrex_fort_module, only : rt => amrex_real
       use probdata_module
       use comoving_module
       use network   , only : network_init
@@ -8,12 +9,11 @@
 
       integer init, namlen
       integer name(namlen)
-      double precision problo(3), probhi(3)
+      real(rt) problo(3), probhi(3)
 
       integer untin,i
 
-      namelist /fortin/ comoving_OmM, comoving_OmL, comoving_OmB, comoving_h, max_num_part, &
-                        a1, a3
+      namelist /fortin/ comoving_OmM, comoving_OmB, comoving_h, max_num_part, a1, a3
 
 !
 !     Build "probin" filename -- the name of file containing fortin namelist.
@@ -64,35 +64,38 @@
 ! :::              right hand corner of grid.  (does not include
 ! :::		   ghost region).
 ! ::: -----------------------------------------------------------
-      subroutine ca_initdata(level,time,lo,hi, &
-                             ns, state,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3, &
-                             nd, diag_eos,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3, &
-                             delta,xlo,xhi)
+      subroutine fort_initdata(level,time,lo,hi, &
+                               ns, state   ,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3, &
+                               nd, diag_eos,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3, &
+                               delta,xlo,xhi)  &
+                               bind(C, name="fort_initdata")
 
+      use amrex_fort_module, only : rt => amrex_real
       use bl_constants_module         , only : M_PI
       use probdata_module             , only : a1,a3,center
       use fundamental_constants_module, only : Gconst
-      use meth_params_module          , only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, UFA
+      use meth_params_module          , only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, UFA, &
+                                               TEMP_COMP
 
       implicit none
       integer level, ns, nd
       integer lo(3), hi(3)
       integer s_l1,s_l2,s_l3,s_h1,s_h2,s_h3
       integer d_l1,d_l2,d_l3,d_h1,d_h2,d_h3
-      double precision xlo(3), xhi(3), time, delta(3)
-      double precision    state(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3,ns)
-      double precision diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,nd)
+      real(rt) xlo(3), xhi(3), time, delta(3)
+      real(rt)    state(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3,ns)
+      real(rt) diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,nd)
 
       ! Local variables
       integer          :: i,j,k
       integer          :: ii,jj,kk
-      double precision :: x,y,z,dist,rsq,zsq
-      double precision :: xlo,ylo,zlo
-      double precision :: b,lambda,h,ah,e,esq
-      double precision :: a1sq,a3sq
-      double precision :: capA1, capA3
-      double precision :: dx_fine
-      double precision :: contrib_rho, contrib_ufa
+      real(rt) :: x,y,z,dist,rsq,zsq
+      real(rt) :: xxlo,yylo,zzlo
+      real(rt) :: b,lambda,h,ah,e,esq
+      real(rt) :: a1sq,a3sq
+      real(rt) :: capA1, capA3
+      real(rt) :: dx_fine
+      real(rt) :: contrib_rho, contrib_ufa
 
       dx_fine = 0.5d0 * delta(1)
 
@@ -106,14 +109,14 @@
       capA3 = 2.d0/esq  - (2.d0/e**3) * dsqrt(1.d0-esq) * dasin(e)
 
       do k = lo(3), hi(3)
-         zlo = (dble(k))*delta(3) - center(3)
+         zzlo = (dble(k))*delta(3) - center(3)
 
          do j = lo(2), hi(2)
-            ylo = (dble(j))*delta(2) - center(2)
+            yylo = (dble(j))*delta(2) - center(2)
 
             do i = lo(1), hi(1)
 
-               xlo = (dble(i))*delta(1) - center(1)
+               xxlo = (dble(i))*delta(1) - center(1)
 
                contrib_rho = 0.d0
                contrib_ufa = 0.d0
@@ -122,9 +125,9 @@
                do jj = 0,1
                do ii = 0,1
 
-                  x = xlo + (dble(ii)+0.5d0) * dx_fine
-                  y = ylo + (dble(jj)+0.5d0) * dx_fine
-                  z = zlo + (dble(kk)+0.5d0) * dx_fine
+                  x = xxlo + (dble(ii)+0.5d0) * dx_fine
+                  y = yylo + (dble(jj)+0.5d0) * dx_fine
+                  z = zzlo + (dble(kk)+0.5d0) * dx_fine
 
                   rsq = x**2 + y**2
                   zsq = z**2
@@ -173,4 +176,4 @@
          enddo
       enddo
 
-      end subroutine ca_initdata
+      end subroutine fort_initdata

@@ -1,6 +1,10 @@
 module ps_grav
+
+  use amrex_fort_module, only : rt => amrex_real
+
   implicit none
-  double precision, private, save :: dm_const,dm_const2
+
+  real(rt), private, save :: dm_const,dm_const2
   logical, private, save :: isnt_init = .true.
   public :: ps_grav_init,ps_grav_accel,ps_grav_phi
   contains
@@ -22,8 +26,8 @@ module ps_grav
 !     Note that r_c and rho_c must be specified in probdata_module
       pure function ps_grav_accel(r) result(g)
         implicit none
-        double precision, intent(in) :: r!,smbh_const
-        double precision             :: g
+        real(rt), intent(in) :: r!,smbh_const
+        real(rt)             :: g
 !         ! put function for g(r) in here
         g = dm_const*(dlog(1.0d0+dm_const2*r)/(r*r)-dm_const2 &
                /(r*(1.0d0+r*dm_const2)))
@@ -31,8 +35,8 @@ module ps_grav
 
       pure function ps_grav_phi(r) result(g)
         implicit none
-        double precision, intent(in) :: r
-        double precision             :: g
+        real(rt), intent(in) :: r
+        real(rt)             :: g
 !         ! put function for g(r) in here
         g = -dm_const*dlog(1.0d0+r*dm_const2)/r
       end function ps_grav_phi
@@ -48,15 +52,15 @@ subroutine fort_prescribe_grav (lo,hi,dx, &
   implicit none
   integer          :: g_l1,g_l2,g_l3,g_h1,g_h2,g_h3,add
   integer          :: lo(3),hi(3)
-  double precision :: grav(g_l1:g_h1,g_l2:g_h2,g_l3:g_h3,3)
-  double precision :: dx(3)
-  double precision :: problo(3)
+  real(rt) :: grav(g_l1:g_h1,g_l2:g_h2,g_l3:g_h3,3)
+  real(rt) :: dx(3)
+  real(rt) :: problo(3)
 
   integer          :: i,j,k
-  double precision :: fort_prescribe_grav_gravityprofile
-  double precision :: x,y,z,y2,z2
-  double precision :: r,maggrav
-  double precision :: dxm,r1
+  real(rt) :: fort_prescribe_grav_gravityprofile
+  real(rt) :: x,y,z,y2,z2
+  real(rt) :: r,maggrav
+  real(rt) :: dxm,r1
   dxm = min(dx(1),dx(2),dx(3))
 !
 ! This is an example of how to use the radial profile above.

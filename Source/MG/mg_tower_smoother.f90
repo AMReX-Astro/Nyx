@@ -1,5 +1,6 @@
 module mg_smoother_module
  
+  use amrex_fort_module, only : rt => amrex_real
   use multifab_module
   use cc_stencil_module
   use mg_tower_module
@@ -21,15 +22,15 @@ contains
     type( multifab), intent(in   ) :: ss
     type(imultifab), intent(in   ) :: mm
 
-    real(kind=dp_t), pointer :: fp(:,:,:,:)
-    real(kind=dp_t), pointer :: up(:,:,:,:)
-    real(kind=dp_t), pointer :: sp(:,:,:,:)
+    real(rt), pointer :: fp(:,:,:,:)
+    real(rt), pointer :: up(:,:,:,:)
+    real(rt), pointer :: sp(:,:,:,:)
     integer        , pointer :: mp(:,:,:,:)
     integer :: i, k, n, ng, nn, stat, npts
     integer :: lo(mgt%dim)
     type(bl_prof_timer), save :: bpt
     logical :: pmask(mgt%dim), singular_test
-    real(kind=dp_t) :: local_eps
+    real(rt) :: local_eps
 
     if (.not.nodal_q(ff)) then
        singular_test =  mgt%bottom_singular .and. mgt%coeffs_sum_to_zero

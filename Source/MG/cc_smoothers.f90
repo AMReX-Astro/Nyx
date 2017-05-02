@@ -1,5 +1,6 @@
 module cc_smoothers_module
 
+  use amrex_fort_module, only : rt => amrex_real
   use bl_constants_module
   use cc_stencil_module
 
@@ -12,17 +13,17 @@ contains
     integer, intent(in) :: ng
     integer, intent(in) :: lo(:)
     integer, intent(in) :: n
-    real (kind = dp_t), intent(in) :: omega
-    real (kind = dp_t), intent(in) :: ff(lo(1):,lo(2):,lo(3):)
-    real (kind = dp_t), intent(inout) :: uu(lo(1)-ng:,lo(2)-ng:,lo(3)-ng:)
-    real (kind = dp_t), intent(in) :: ss(0:,lo(1):, lo(2):, lo(3):)
+    real (rt), intent(in) :: omega
+    real (rt), intent(in) :: ff(lo(1):,lo(2):,lo(3):)
+    real (rt), intent(inout) :: uu(lo(1)-ng:,lo(2)-ng:,lo(3)-ng:)
+    real (rt), intent(in) :: ss(0:,lo(1):, lo(2):, lo(3):)
     integer            ,intent(in) :: mm(lo(1):,lo(2):,lo(3):)
     logical, intent(in), optional :: skwd
     integer :: i, j, k, ioff
     integer :: hi(size(lo))
     integer, parameter ::  XBC = 7, YBC = 8, ZBC = 9
     logical :: lskwd
-    real(dp_t) :: dd, dhsq_inv, ss0, ss0_inv
+    real(rt) :: dd, dhsq_inv, ss0, ss0_inv
 
     type(bl_prof_timer), save :: bpt
 

@@ -43,7 +43,7 @@ Nyx::vol_weight_sum (const std::string& name,
         const int* lo  = box.loVect();
         const int* hi  = box.hiVect();
 
-        BL_FORT_PROC_CALL(SUM_OVER_LEVEL, sum_over_level)
+         sum_over_level
             (BL_TO_FORTRAN(fab), lo, hi, dx, &s);
         sum += s;
     }
@@ -90,13 +90,13 @@ Nyx::vol_weight_sum (MultiFab& mf, bool masked)
 
         if ( !masked || (mask == 0) )
         {
-            BL_FORT_PROC_CALL(SUM_OVER_LEVEL, sum_over_level)
+            sum_over_level
                 (BL_TO_FORTRAN(fab), lo, hi, dx, &s);
         }
         else
         {
             FArrayBox& fab2 = (*mask)[mfi];
-            BL_FORT_PROC_CALL(SUM_PRODUCT, sum_product)
+            sum_product
                 (BL_TO_FORTRAN(fab), BL_TO_FORTRAN(fab2), lo, hi, dx, &s);
         }
 
@@ -135,7 +135,7 @@ Nyx::vol_weight_squared_sum_level (const std::string& name,
         const int* lo  = box.loVect();
         const int* hi  = box.hiVect();
 
-        BL_FORT_PROC_CALL(SUM_PRODUCT, sum_product)
+        sum_product
             (BL_TO_FORTRAN(fab), BL_TO_FORTRAN(fab), lo, hi, dx, &s);
         sum += s;
     }
@@ -181,14 +181,14 @@ Nyx::vol_weight_squared_sum (const std::string& name,
 
         if (mask == 0)
         {
-            BL_FORT_PROC_CALL(SUM_PRODUCT, sum_product)
+            sum_product
                 (BL_TO_FORTRAN(fab), BL_TO_FORTRAN(fab), 
                  lo, hi, dx, &s);
         }
         else
         {
             FArrayBox& fab2 = (*mask)[mfi];
-            BL_FORT_PROC_CALL(SUM_PROD_PROD, sum_prod_prod)
+            sum_prod_prod
                 (BL_TO_FORTRAN(fab), BL_TO_FORTRAN(fab), BL_TO_FORTRAN(fab2), 
                  lo, hi, dx, &s);
         }

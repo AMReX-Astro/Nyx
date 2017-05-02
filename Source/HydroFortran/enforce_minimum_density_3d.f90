@@ -10,6 +10,7 @@
                                        uout_h1,uout_h2,uout_h3, &
                                        lo,hi,print_fortran_warnings)
 
+      use amrex_fort_module, only : rt => amrex_real
       use network, only : nspec, naux
       use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, &
                                      UFS, UFA, small_dens, nadv
@@ -19,8 +20,8 @@
       integer          :: lo(3), hi(3), print_fortran_warnings
       integer          ::  uin_l1,  uin_l2,  uin_l3,  uin_h1,  uin_h2,  uin_h3
       integer          :: uout_l1, uout_l2, uout_l3, uout_h1, uout_h2, uout_h3
-      double precision ::  uin( uin_l1: uin_h1, uin_l2: uin_h2, uin_l3: uin_h3,NVAR)
-      double precision :: uout(uout_l1:uout_h1,uout_l2:uout_h2,uout_l3:uout_h3,NVAR)
+      real(rt) ::  uin( uin_l1: uin_h1, uin_l2: uin_h2, uin_l3: uin_h3,NVAR)
+      real(rt) :: uout(uout_l1:uout_h1,uout_l2:uout_h2,uout_l3:uout_h3,NVAR)
 
       ! Local variables
       integer          :: i,ii,ilo,ihi
@@ -28,17 +29,17 @@
       integer          :: k,kk,klo,khi
       integer          :: n,nmax
       logical          :: do_diag
-      double precision :: min_dens
-      double precision :: sum_state (NVAR)
-      double precision :: sum_before(NVAR)
-      double precision :: sum_after (NVAR)
-      double precision :: min_vel(3), max_vel(3)
-      double precision :: min_e     , max_e
-      double precision :: delta_mass,frac,omfrac
-      double precision :: delta_xmom, delta_ymom, delta_zmom
-      double precision :: delta_rhoe
-      double precision :: new_xvel, new_yvel, new_zvel, new_e
-      double precision :: temp_sum, temp_num
+      real(rt) :: min_dens
+      real(rt) :: sum_state (NVAR)
+      real(rt) :: sum_before(NVAR)
+      real(rt) :: sum_after (NVAR)
+      real(rt) :: min_vel(3), max_vel(3)
+      real(rt) :: min_e     , max_e
+      real(rt) :: delta_mass,frac,omfrac
+      real(rt) :: delta_xmom, delta_ymom, delta_zmom
+      real(rt) :: delta_rhoe
+      real(rt) :: new_xvel, new_yvel, new_zvel, new_e
+      real(rt) :: temp_sum, temp_num
 
       if (UFS .gt. 0) then
           nmax = UFS+nspec+naux-1

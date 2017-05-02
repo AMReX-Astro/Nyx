@@ -1,6 +1,10 @@
-#include "NyxParticleContainer.H"
+#include "DarkMatterParticleContainer.H"
 
 using namespace amrex;
+
+/*
+  Particle init
+*/
 
 void
 DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
@@ -450,4 +454,15 @@ DarkMatterParticleContainer::InitCosmo(
             std::cout << "InitCosmo() done time: " << runtime << '\n';
         }
     }
+}
+
+
+/*
+  Particle deposition
+*/
+
+void
+DarkMatterParticleContainer::AssignDensityAndVels (Array<std::unique_ptr<MultiFab> >& mf, int lev_min) const
+{
+    AssignDensity(mf, lev_min, BL_SPACEDIM+1);
 }
