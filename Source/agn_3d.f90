@@ -202,8 +202,10 @@
 
     integer          :: i, j, k, n
     integer          :: ii, jj, kk
-    real(amrex_real) :: sum_ux, sum_uy, sum_uz
+    real(amrex_real) :: sum_ux, sum_uy, sum_uz, dv
     
+    dv = dx(1) * dx(2) * dx(3)
+
     do n = 1, np
  
           ! Components 1,2,3 are (x,y,z)
@@ -226,6 +228,13 @@
           end do
           end do
           end do
+
+          ! sum_ux, sum_uy, sum_uz contain components of momentum density
+          ! added up over cells.
+          ! Multiply them by cell volume to get momentum.
+          sum_ux = sum_ux * dv
+          sum_uy = sum_uy * dv
+          sum_uz = sum_uz * dv
 
           ! Components 4 is mass; components 5,6,7 are (u,v,w)
           particles(5,n) = particles(5,n) - sum_ux / particles(4,n)
