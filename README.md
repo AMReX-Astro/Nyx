@@ -19,7 +19,7 @@ and multigrid to solve the Poisson equation for self-gravity.
 
 More information on Nyx can be found here:
 
-http://amrex-codes.github.io/Nyx/
+http://amrex-astro.github.io/Nyx/
 
 If you prefer to run with the BoxLib-based version, then 
 you can use the "boxlib" branch (which will no longer be updated).
