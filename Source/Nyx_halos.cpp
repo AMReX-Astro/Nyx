@@ -127,6 +127,15 @@ Nyx::halo_find (Real dt)
        MultiFab new_state(simBA, simDM, simMF.nComp(), 1);
        MultiFab::Copy(new_state,simMF,0,0,simMF.nComp(),1);
 
+       // Divide all components of new_state, other than Density, by density.
+       for (int comp = 0; comp < new_state.nComp(); comp++)
+         {
+           if (comp != Density)
+             {
+               MultiFab::Divide(new_state, new_state, Density, comp, 1, 1);
+             }
+         }
+
        // Create a MultiFab to hold the density we're going to remove from the grid
        MultiFab agn_density(simBA, simDM, 1, 1);
        agn_density.setVal(0.0);
@@ -219,6 +228,19 @@ Nyx::halo_find (Real dt)
 #endif
        
        Nyx::theAPC()->ComputeParticleVelocity(level,simMF,new_state,Xmom);
+
+       // In new_state, everything but Density was divided by Density
+       // at the beginning, and then Density was changed.
+       // Now multiply everything but Density by Density.
+       for (int comp = 0; comp < new_state.nComp(); comp++)
+         {
+           if (comp != Density)
+             {
+               MultiFab::Multiply(new_state, new_state, Density, comp, 1, 1);
+             }
+         }
+
+       MultiFab::Copy(simMF, new_state, 0, 0, simMF.nComp(), 0);
 
        const amrex::Real time2 = ParallelDescriptor::second();
        if (ParallelDescriptor::IOProcessor())
