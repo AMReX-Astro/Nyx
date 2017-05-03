@@ -308,6 +308,8 @@
 
           mdot = alpha * fourpi * Gconst * Gconst * avg_rho * mass * mass * avg_rho / denom
 
+          ! TODO:  We still need to compute the Eddington limit and take the min of mdot and that
+
           ! Increase the mass of the particle by Mdot * dt
           particles(4,n) = particles(4,n) + mdot * dt * ( 1.d0 - eps_rad)
 
