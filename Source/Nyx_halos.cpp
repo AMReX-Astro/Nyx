@@ -35,7 +35,7 @@ const int NyxHaloFinderSignal = 42;
 using namespace amrex;
 
 void
-Nyx::halo_find ()
+Nyx::halo_find (Real dt)
 {
    BL_PROFILE("Nyx::halo_find()");
 
@@ -66,6 +66,9 @@ Nyx::halo_find ()
      // Before creating new AGN particles, check if any of the existing AGN particles should be merged
      halo_merge();
 
+     // Before creating new AGN particles, accrete mass onto existing particles 
+     halo_accrete(dt);
+
      if (ParallelDescriptor::NProcsSidecar(0) <= 0) 
      { // we have no sidecars, so do everything in situ
 
@@ -94,6 +97,9 @@ Nyx::halo_find ()
 
        // Before creating new AGN particles, check if any of the existing AGN particles should be merged
        halo_merge();
+
+       // Before creating new AGN particles, accrete mass and momentum onto existing particles 
+       halo_accrete(dt);
 
        // Here we just create place-holders for the halos which should come from REEBER
        int num_halos = 10;
@@ -279,12 +285,59 @@ Nyx::halo_find ()
 void
 Nyx::halo_merge ()
 {
-
    Nyx::theAPC()->fillGhosts(level);
    Nyx::theAPC()->Merge(level);
    Nyx::theAPC()->clearGhosts(level);
 
    // Call Redistribute to remove any particles with id = -1 (as set inside the Merge call)
    Nyx::theAPC()->Redistribute(0,0,0);
+}
+
+void
+Nyx::halo_accrete (Real dt)
+{
+   amrex::MultiFab& orig_state = get_new_data(State_Type);
+   const BoxArray& origBA = orig_state.boxArray();
+   const DistributionMapping& origDM = orig_state.DistributionMap();
+
+   // First copy the existing state into new_state
+   MultiFab new_state(origBA,origDM,orig_state.nComp(),1);
+   MultiFab::Copy(new_state,orig_state,0,0,orig_state.nComp(),1);
+
+   // Create a MultiFab to hold the density we're going to remove from the grid
+   MultiFab agn_density(origBA,origDM,1,1);
+   agn_density.setVal(0.0);
+
+   // Deposit the mass now in the particles onto the grid (this doesn't change the mass of the particles)
+   Nyx::theAPC()->AssignDensitySingleLevel(agn_density, 0);
+
+   // Make sure the density put into ghost cells is added to valid regions
+   agn_density.SumBoundary();
+
+   // Add the density from the gas that is currently in the AGN particles.
+   amrex::MultiFab::Add(new_state,agn_density,0,Density,1,0);
+
+   // Increase the mass of existing particles
+   Real eps_rad = 0.1;
+   Nyx::theAPC()->AccreteMass(level,orig_state,eps_rad,dt);
+
+   // Zero this out again
+   agn_density.setVal(0.0);
+
+   // Deposit the mass now in the particles onto the grid (this doesn't change the mass of the particles)
+   Nyx::theAPC()->AssignDensitySingleLevel(agn_density, 0);
+
+   // Multiply this by 1/(1-eps) since we remove Mdot*dt from the gas but we only added Mdot*dt*(1-eps) to the particle 
+   Real fac = 1. / (1. - eps_rad);
+   agn_density.mult(fac,0,1,1);
+
+   // Make sure the density put into ghost cells is added to valid regions
+   agn_density.SumBoundary();
+
+   // Take away the density from the gas that was added to the AGN particle (recall the (1-eps) weighting).
+   amrex::MultiFab::Subtract(new_state,agn_density,0,Density,1,0);
+
+   // Re-set the particle velocity after accretion
+   Nyx::theAPC()->ComputeParticleVelocity(level,orig_state,new_state,Xmom);
 }
 #endif // AGN

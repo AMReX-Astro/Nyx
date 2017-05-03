@@ -60,6 +60,11 @@ public:
     void ComputeParticleVelocity(int lev, amrex::MultiFab& state_old, amrex::MultiFab& state_new, int start_comp);
 
     ///
+    /// Accrete mass from the grid onto the existing AGN particles
+    ///
+    void AccreteMass(int lev, amrex::MultiFab& state, amrex::Real eps_rad, amrex::Real dt);
+
+    ///
     /// This fills the ghost buffers for each tile with the proper data
     ///
     void fillGhosts(int lev);

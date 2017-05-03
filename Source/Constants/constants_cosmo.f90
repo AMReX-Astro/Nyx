@@ -15,6 +15,9 @@ module fundamental_constants_module
   use amrex_fort_module, only : rt => amrex_real
   implicit none
 
+  ! Pi
+  real(rt), parameter :: pi = 3.141592653589793238d0
+
   ! Relation of our code units & CGS: 
   real(rt), parameter :: M_unit = 1.9884d33     ! M_sun
   real(rt), parameter :: L_unit = 3.0856776d24  ! Mpc

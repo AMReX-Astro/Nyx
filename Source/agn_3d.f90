@@ -237,3 +237,80 @@
     end do
 
   end subroutine agn_particle_velocity
+
+  subroutine agn_accrete_mass(particles, ns, np, state, slo, shi, eps_rad, dt, dx) &
+       bind(c,name='agn_accrete_mass')
+
+    use iso_c_binding
+    use amrex_fort_module, only : amrex_real
+    use fundamental_constants_module, only: Gconst, pi
+    use eos_module
+    use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEINT
+
+    integer,          intent(in   ), value :: ns, np
+    integer,          intent(in   )        :: slo(3), shi(3)
+    real(amrex_real), intent(inout)        :: particles(ns, np)
+    real(amrex_real), intent(in   )        :: state &
+         (slo(1):shi(1),slo(2):shi(2),slo(3):shi(3),0:NVAR-1)
+    real(amrex_real), intent(in   )        :: eps_rad, dt, dx(3)
+
+    integer          :: i, j, k, n
+    integer          :: ii, jj, kk
+    real(amrex_real) :: avg_rho, avg_usq, avg_vsq, avg_wsq, avg_csq
+    real(amrex_real) :: c, e, denom, mass, mdot
+
+    real(amrex_real) :: fourpi, alpha
+
+    fourpi = 4.d0 * pi
+
+    alpha = 10.d0
+    
+    do n = 1, np
+
+          mass = particles(4,n)
+ 
+          ! Components 1,2,3 are (x,y,z)
+          i = particles(1,n) / dx(1)
+          j = particles(2,n) / dx(2)
+          k = particles(3,n) / dx(3)
+
+          ! Set to zero for each (i,j,k)
+          avg_rho = 0.d0
+          avg_usq = 0.d0
+          avg_vsq = 0.d0
+          avg_wsq = 0.d0
+          avg_csq = 0.d0
+
+          ! Sum over 3^3 cube of cells with (i,j,k) at the center
+          do kk = k-1,k+1
+          do jj = j-1,j+1
+          do ii = i-1,i+1
+             avg_rho = avg_rho + state(ii,jj,kk,URHO)
+             avg_usq = avg_usq + (state(ii,jj,kk,UMX) / state(ii,jj,kk,URHO))**2
+             avg_vsq = avg_vsq + (state(ii,jj,kk,UMY) / state(ii,jj,kk,URHO))**2
+             avg_wsq = avg_wsq + (state(ii,jj,kk,UMZ) / state(ii,jj,kk,URHO))**2
+
+             e = state(ii,jj,kk,UEINT) / state(ii,jj,kk,URHO)
+             call nyx_eos_soundspeed(c,state(ii,jj,kk,URHO),e)
+             avg_csq  = avg_csq + c*c
+
+          end do
+          end do
+          end do
+
+          avg_rho = avg_rho / 27.d0
+          avg_usq = avg_usq / 27.d0
+          avg_vsq = avg_vsq / 27.d0
+          avg_wsq = avg_wsq / 27.d0
+          avg_csq = avg_csq / 27.d0
+
+          denom = (avg_usq + avg_vsq + avg_wsq + avg_csq)**1.5
+
+          mdot = alpha * fourpi * Gconst * Gconst * avg_rho * mass * mass * avg_rho / denom
+
+          ! Increase the mass of the particle by Mdot * dt
+          particles(4,n) = particles(4,n) + mdot * dt * ( 1.d0 - eps_rad)
+
+    end do
+
+  end subroutine agn_accrete_mass

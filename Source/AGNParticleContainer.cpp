@@ -92,6 +92,28 @@ void AGNParticleContainer::ComputeParticleVelocity(int lev, amrex::MultiFab& sta
     }
 }
 
+void AGNParticleContainer::AccreteMass(int lev, amrex::MultiFab& state, amrex::Real eps_rad, amrex::Real dt)
+{
+    const Real* dx = Geom(lev).CellSize();
+
+    state.FillBoundary();
+
+    for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
+
+        AoS& particles = pti.GetArrayOfStructs();
+        size_t Np = particles.size();
+
+        int nstride = particles.dataShape().first;
+
+        const Box& sbox = state[pti].box();
+
+        agn_accrete_mass(particles.data(), nstride, Np, 
+                         state[pti].dataPtr(), 
+                         sbox.loVect(), sbox.hiVect(),
+                         eps_rad, dt, dx);
+    }
+}
+
 void AGNParticleContainer::fillGhosts(int lev) {
     GhostCommMap ghosts_to_comm;
     for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
