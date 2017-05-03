@@ -50,6 +50,11 @@ public:
     void ComputeOverlap(int lev);
 
     ///
+    /// Invalidate particles that have been merged with other particles
+    ///
+    void Merge(int lev);
+
+    ///
     /// Compute the momentum that has been removed from the gas in order to define the particle velocity
     ///
     void ComputeParticleVelocity(int lev, amrex::MultiFab& state_old, amrex::MultiFab& state_new, int start_comp);

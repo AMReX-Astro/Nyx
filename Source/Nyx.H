@@ -369,6 +369,7 @@ public:
                                   amrex::MultiFab& ext_src_new, amrex::Real dt);
 
     void halo_find();
+    void halo_merge();
     void Lya_statistics();
 
     //

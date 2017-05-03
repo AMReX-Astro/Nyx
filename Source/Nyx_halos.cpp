@@ -60,8 +60,14 @@ Nyx::halo_find ()
    const auto& reeber_density_var_list = getReeberHaloDensityVars();
    bool do_analysis(doAnalysisNow());
 
-   if (do_analysis || (reeber_int > 0 && nStep() % reeber_int == 0)) {
-     if (ParallelDescriptor::NProcsSidecar(0) <= 0) { // we have no sidecars, so do everything in situ
+   if (do_analysis || (reeber_int > 0 && nStep() % reeber_int == 0)) 
+   {
+
+     // Before creating new AGN particles, check if any of the existing AGN particles should be merged
+     halo_merge();
+
+     if (ParallelDescriptor::NProcsSidecar(0) <= 0) 
+     { // we have no sidecars, so do everything in situ
 
        BoxArray ba;
        DistributionMapping dm;
@@ -85,6 +91,10 @@ Nyx::halo_find ()
        runReeberAnalysis(reeberMF, Geom(), nStep(), do_analysis, &reeber_halos);
 
 #else
+
+       // Before creating new AGN particles, check if any of the existing AGN particles should be merged
+       halo_merge();
+
        // Here we just create place-holders for the halos which should come from REEBER
        int num_halos = 10;
        std::vector<IntVect> reeber_halos_pos(num_halos);
@@ -104,8 +114,6 @@ Nyx::halo_find ()
 
        amrex::Real    halo_mass;
        amrex::IntVect halo_pos ;
-
-       amrex::Real mass, x, y, z;
 
        std::ofstream os;
 
@@ -147,16 +155,13 @@ Nyx::halo_find ()
            halo_pos  = reeber_halos_pos[i];
 #endif
 
-//         std::cout << "HALO HERE !!! " << halo_mass << " " << halo_pos << std::endl;
-
            if (halo_mass > 1.e10)
            {
-                x = (halo_pos[0]+0.5) * dx[0];
-                y = (halo_pos[1]+0.5) * dx[1];
-                z = (halo_pos[2]+0.5) * dx[2];
+                amrex::Real x = (halo_pos[0]+0.5) * dx[0];
+                amrex::Real y = (halo_pos[1]+0.5) * dx[1];
+                amrex::Real z = (halo_pos[2]+0.5) * dx[2];
    
-                amrex::Real scaled_halo_mass = halo_mass/1.e13;
-                mass = std::pow(10.0,8.18) * pow(scaled_halo_mass,1.55);
+                amrex::Real mass = 1.e5;
 
                 int lev = 0;
                 int grid = 0;
@@ -269,5 +274,17 @@ Nyx::halo_find ()
 
      }
 #endif // ifdef REEBER
+}
+
+void
+Nyx::halo_merge ()
+{
+
+   Nyx::theAPC()->fillGhosts(level);
+   Nyx::theAPC()->Merge(level);
+   Nyx::theAPC()->clearGhosts(level);
+
+   // Call Redistribute to remove any particles with id = -1 (as set inside the Merge call)
+   Nyx::theAPC()->Redistribute(0,0,0);
 }
 #endif // AGN

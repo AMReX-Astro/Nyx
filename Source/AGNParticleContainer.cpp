@@ -36,6 +36,35 @@ void AGNParticleContainer::ComputeOverlap(int lev)
     }
 }
 
+void AGNParticleContainer::Merge(int lev)
+{
+    Array<int> my_id;
+
+    const Real* dx = Geom(lev).CellSize();
+
+    for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
+
+        AoS& particles = pti.GetArrayOfStructs();
+        size_t Np = particles.size();
+
+        my_id.resize(Np);
+        for (int i = 0; i < Np; ++i ) {
+          my_id[i] = particles[i].id();
+        }
+
+        int nstride = particles.dataShape().first;
+        PairIndex index(pti.index(), pti.LocalTileIndex());
+        int Ng = ghosts[index].size() / pdata_size;
+
+        agn_merge_particles(particles.data(), nstride, Np, my_id.dataPtr(),
+                            (RealType*) ghosts[index].dataPtr(), Ng, dx);
+
+        for (int i = 0; i < Np; ++i ) {
+          particles[i].id() = my_id[i];
+        }
+    }
+}
+
 void AGNParticleContainer::ComputeParticleVelocity(int lev, amrex::MultiFab& state_old, 
                                                    amrex::MultiFab& state_new, int start_comp)
 {
