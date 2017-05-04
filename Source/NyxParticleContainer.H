@@ -44,37 +44,6 @@ public:
 
     virtual ~NyxParticleContainer () {}
 
-    void AddOneParticle (int lev, int grid, int tile, amrex::Real mass, 
-                         amrex::Real x, amrex::Real y, amrex::Real z)
-    {
-        auto& particle_tile = this->GetParticles(lev)[std::make_pair(grid,tile)];
-        AddOneParticle(particle_tile, mass, x, y, z);
-    }
-
-    void AddOneParticle (ParticleTileType& particle_tile, amrex::Real mass, 
-                         amrex::Real x, amrex::Real y, amrex::Real z)
-    {
-        ParticleType p;
-        p.id()  = ParticleType::NextID();
-        p.cpu() = amrex::ParallelDescriptor::MyProc();
-        p.pos(0) = x;
-        p.pos(1) = y;
-        p.pos(2) = z;
-
-        // Set mass 
-        p.rdata(0) = mass;
-
-        // Zero all other compoents (eg velocity and energy)
-        p.rdata(1) = 0.;
-        p.rdata(2) = 0.;
-        p.rdata(3) = 0.;
-       
-        // Zero any other additional component (eg energy of an AGN particle)
-        p.rdata(NSR) = 0.;
-
-        particle_tile.push_back(p);
-    }
-
     void GetParticleVelocities (amrex::Array<amrex::Real>& part_vels);
     void SetParticleVelocities (amrex::Array<amrex::Real>& part_data);
 

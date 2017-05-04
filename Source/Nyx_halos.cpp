@@ -121,7 +121,6 @@ Nyx::halo_find (Real dt)
 
        std::ofstream os;
 
-#if 1
        MultiFab new_state(simBA, simDM, simMF.nComp(), 1);
        MultiFab::Copy(new_state,simMF,0,0,simMF.nComp(),1);
 
@@ -146,7 +145,6 @@ Nyx::halo_find (Real dt)
 
        // Add the density from the gas that is currently in the AGN particles.
        amrex::MultiFab::Add(new_state,agn_density,0,Density,1,0);
-#endif
 
        std::cout << "  " << std::endl;
        std::cout << " *************************************** " << std::endl;
@@ -202,15 +200,14 @@ Nyx::halo_find (Real dt)
        Nyx::theAPC()->ComputeOverlap(level);
        Nyx::theAPC()->clearGhosts(level);
 
-       cout << "Before Redistribute:" << endl;
-       Nyx::theAPC()->writeAllAtLevel(level);
+       // cout << "Before Redistribute:" << endl;
+       // Nyx::theAPC()->writeAllAtLevel(level);
 
        Nyx::theAPC()->Redistribute(lev_min,lev_max,ngrow);
 
        cout << "After Redistribute:" << endl;
        Nyx::theAPC()->writeAllAtLevel(level);
 
-#if 1
        // Zero this out again
        agn_density.setVal(0.0);
 
@@ -222,7 +219,6 @@ Nyx::halo_find (Real dt)
 
        // Take away the density from the gas that was added to the AGN particle.
        amrex::MultiFab::Subtract(new_state,agn_density,0,Density,1,0);
-#endif
 
        // In new_state, everything but Density was divided by Density
        // at the beginning, and then Density was changed.
@@ -235,7 +231,8 @@ Nyx::halo_find (Real dt)
              }
          }
        
-       Nyx::theAPC()->ComputeParticleVelocity(level,simMF,new_state);
+       int add_energy = 0;
+       Nyx::theAPC()->ComputeParticleVelocity(level,simMF,new_state,add_energy);
 
        MultiFab::Copy(simMF, new_state, 0, 0, simMF.nComp(), 0);
 
@@ -377,6 +374,7 @@ Nyx::halo_accrete (Real dt)
      }
 
    // Re-set the particle velocity after accretion
-   Nyx::theAPC()->ComputeParticleVelocity(level,orig_state,new_state);
+   int add_energy = 1;
+   Nyx::theAPC()->ComputeParticleVelocity(level,orig_state,new_state, add_energy);
 }
 #endif // AGN

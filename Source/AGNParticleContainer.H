@@ -44,6 +44,36 @@ public:
 
     virtual ~AGNParticleContainer () {}
 
+    void AddOneParticle (int lev, int grid, int tile, amrex::Real mass, 
+                         amrex::Real x, amrex::Real y, amrex::Real z)
+    {
+        auto& particle_tile = this->GetParticles(lev)[std::make_pair(grid,tile)];
+        AddOneParticle(particle_tile, mass, x, y, z);
+    }
+
+    void AddOneParticle (ParticleTileType& particle_tile, amrex::Real mass, 
+                         amrex::Real x, amrex::Real y, amrex::Real z)
+    {
+        ParticleType p;
+        p.id()  = ParticleType::NextID();
+        p.cpu() = amrex::ParallelDescriptor::MyProc();
+        p.pos(0) = x;
+        p.pos(1) = y;
+        p.pos(2) = z;
+
+        // Set mass 
+        p.rdata(0) = mass;
+
+        // Zero initial velocity
+        p.rdata(1) = 0.;
+        p.rdata(2) = 0.;
+        p.rdata(3) = 0.;
+
+        // Zero initial energy
+        p.rdata(4) = 0.;
+
+        particle_tile.push_back(p);
+    }
     ///
     /// Invalidate particles in cells that are already occupied
     ///
@@ -57,7 +87,7 @@ public:
     ///
     /// Compute the momentum that has been removed from the gas in order to define the particle velocity
     ///
-    void ComputeParticleVelocity(int lev, amrex::MultiFab& state_old, amrex::MultiFab& state_new);
+    void ComputeParticleVelocity(int lev, amrex::MultiFab& state_old, amrex::MultiFab& state_new, int add_energy);
 
     ///
     /// Accrete mass from the grid onto the existing AGN particles

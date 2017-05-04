@@ -187,7 +187,8 @@
 
   end subroutine agn_merge_particles
 
-  subroutine agn_particle_velocity(particles, ns, np, state_old, sold_lo, sold_hi, state_new, snew_lo, snew_hi, dx) &
+  subroutine agn_particle_velocity(particles, ns, np, state_old, sold_lo, sold_hi, state_new, snew_lo, snew_hi, &
+                                   dx, add_energy) &
        bind(c,name='agn_particle_velocity')
 
     use iso_c_binding
@@ -197,6 +198,7 @@
     integer,          intent(in   ), value :: ns, np
     integer,          intent(in   )        :: sold_lo(3), sold_hi(3)
     integer,          intent(in   )        :: snew_lo(3), snew_hi(3)
+    integer,          intent(in   )        :: add_energy
     real(amrex_real), intent(inout)        :: particles(ns, np)
     real(amrex_real), intent(in   )        :: state_old &
          (sold_lo(1):sold_hi(1),sold_lo(2):sold_hi(2),sold_lo(3):sold_hi(3),NVAR)
@@ -248,7 +250,8 @@
           particles(7,n) = particles(7,n) - sum_uz / particles(4,n)
 
           ! Component 8 is energy
-          particles(8,n) = particles(8,n) - sum_rE / particles(4,n)
+          if (add_energy .gt. 0) &
+             particles(8,n) = particles(8,n) - sum_rE / particles(4,n)
 
     end do
 

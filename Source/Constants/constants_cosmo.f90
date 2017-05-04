@@ -40,6 +40,9 @@ module fundamental_constants_module
 
   real(rt), parameter :: m_proton = 1.6726231e-24_rt / M_unit ! Proton mass [g]
 
+  real(rt), parameter :: sigma_T = 6.986844803e-74 * L_unit**2 ! Mpc^2
+                                                               ! = 6.652458716e-29 m^2
+
   real(rt), parameter :: c_light = 2.99792458e10_rt / V_unit  ! Speed of light [cm/s] 
 
   real(rt), parameter :: Hubble_const = 100._rt              ! Hubble constant / h
