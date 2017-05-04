@@ -323,6 +323,15 @@ Nyx::halo_accrete (Real dt)
    MultiFab new_state(origBA,origDM,orig_state.nComp(),1);
    MultiFab::Copy(new_state,orig_state,0,0,orig_state.nComp(),1);
 
+   // Divide all components of new_state, other than Density, by density.
+   for (int comp = 0; comp < new_state.nComp(); comp++)
+     {
+       if (comp != Density)
+         {
+           MultiFab::Divide(new_state, new_state, Density, comp, 1, 1);
+         }
+     }
+
    // Create a MultiFab to hold the density we're going to remove from the grid
    MultiFab agn_density(origBA,origDM,1,1);
    agn_density.setVal(0.0);
@@ -355,6 +364,17 @@ Nyx::halo_accrete (Real dt)
 
    // Take away the density from the gas that was added to the AGN particle (recall the (1-eps) weighting).
    amrex::MultiFab::Subtract(new_state,agn_density,0,Density,1,0);
+
+   // In new_state, everything but Density was divided by Density
+   // at the beginning, and then Density was changed.
+   // Now multiply everything but Density by Density.
+   for (int comp = 0; comp < new_state.nComp(); comp++)
+     {
+       if (comp != Density)
+         {
+           MultiFab::Multiply(new_state, new_state, Density, comp, 1, 1);
+         }
+     }
 
    // Re-set the particle velocity after accretion
    Nyx::theAPC()->ComputeParticleVelocity(level,orig_state,new_state);

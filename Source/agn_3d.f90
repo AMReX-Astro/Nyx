@@ -192,7 +192,7 @@
 
     use iso_c_binding
     use amrex_fort_module, only : amrex_real
-    use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ
+    use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN
 
     integer,          intent(in   ), value :: ns, np
     integer,          intent(in   )        :: sold_lo(3), sold_hi(3)
@@ -206,7 +206,7 @@
 
     integer          :: i, j, k, n
     integer          :: ii, jj, kk
-    real(amrex_real) :: sum_ux, sum_uy, sum_uz, dv
+    real(amrex_real) :: sum_ux, sum_uy, sum_uz, sum_rE, dv
     
     dv = dx(1) * dx(2) * dx(3)
 
@@ -221,6 +221,7 @@
           sum_ux = 0.d0
           sum_uy = 0.d0
           sum_uz = 0.d0
+          sum_rE = 0.d0
 
           ! Sum over 3^3 cube of cells with (i,j,k) at the center
           do kk = k-1,k+1
@@ -229,21 +230,25 @@
              sum_ux = sum_ux + (state_new(ii,jj,kk,UMX) - state_old(ii,jj,kk,UMX))
              sum_uy = sum_uy + (state_new(ii,jj,kk,UMY) - state_old(ii,jj,kk,UMY))
              sum_uz = sum_uz + (state_new(ii,jj,kk,UMZ) - state_old(ii,jj,kk,UMZ))
+             sum_rE = sum_rE + (state_new(ii,jj,kk,UEDEN) - state_old(ii,jj,kk,UEDEN))
           end do
           end do
           end do
 
-          ! sum_ux, sum_uy, sum_uz contain components of momentum density
-          ! added up over cells.
-          ! Multiply them by cell volume to get momentum.
+          ! sum_ux, sum_uy, sum_uz contain components of momentum density (rho u) and total energy density (rho E)
+          ! added up over cells.  Multiply them by cell volume to get momentum (m u) and total energy (m E).
           sum_ux = sum_ux * dv
           sum_uy = sum_uy * dv
           sum_uz = sum_uz * dv
+          sum_rE = sum_rE * dv
 
           ! Components 4 is mass; components 5,6,7 are (u,v,w)
           particles(5,n) = particles(5,n) - sum_ux / particles(4,n)
           particles(6,n) = particles(6,n) - sum_uy / particles(4,n)
           particles(7,n) = particles(7,n) - sum_uz / particles(4,n)
+
+          ! Component 8 is energy
+          particles(8,n) = particles(8,n) - sum_rE / particles(4,n)
 
     end do
 
@@ -254,7 +259,7 @@
 
     use iso_c_binding
     use amrex_fort_module, only : amrex_real
-    use fundamental_constants_module, only: Gconst, pi
+    use fundamental_constants_module, only: Gconst, pi, m_proton, c_light
     use eos_module
     use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEINT
 
@@ -268,13 +273,16 @@
     integer          :: i, j, k, n
     integer          :: ii, jj, kk
     real(amrex_real) :: avg_rho, avg_usq, avg_vsq, avg_wsq, avg_csq
-    real(amrex_real) :: c, e, denom, mass, mdot
+    real(amrex_real) :: c, e, denom, mass, mdot, m_edd
 
-    real(amrex_real) :: fourpi, alpha
+    real(amrex_real) :: fourpi, alpha, sigma
 
     fourpi = 4.d0 * pi
 
     alpha = 10.d0
+
+    ! Thomson cross-section -- this is totally made up here
+    sigma = 1.d0
     
     do n = 1, np
 
@@ -307,8 +315,7 @@
 
           end do
           end do
-          end do
-
+          end do 
           avg_rho = avg_rho / 27.d0
           avg_usq = avg_usq / 27.d0
           avg_vsq = avg_vsq / 27.d0
@@ -317,9 +324,13 @@
 
           denom = (avg_usq + avg_vsq + avg_wsq + avg_csq)**1.5
 
+          ! Bondi accretion 
           mdot = alpha * fourpi * Gconst * Gconst * avg_rho * mass * mass * avg_rho / denom
 
-          ! TODO:  We still need to compute the Eddington limit and take the min of mdot and that
+          ! Eddington limit
+          m_edd = fourpi * Gconst * mass * m_proton / (eps_rad * sigma * c_light)
+
+          mdot = min(mdot, m_edd)
 
           ! Increase the mass of the particle by Mdot * dt
           particles(4,n) = particles(4,n) + mdot * dt * ( 1.d0 - eps_rad)

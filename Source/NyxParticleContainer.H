@@ -61,12 +61,16 @@ public:
         p.pos(1) = y;
         p.pos(2) = z;
 
+        // Set mass 
         p.rdata(0) = mass;
-       
-        // Velocity components
+
+        // Zero all other compoents (eg velocity and energy)
         p.rdata(1) = 0.;
         p.rdata(2) = 0.;
         p.rdata(3) = 0.;
+       
+        // Zero any other additional component (eg energy of an AGN particle)
+        p.rdata(NSR) = 0.;
 
         particle_tile.push_back(p);
     }
