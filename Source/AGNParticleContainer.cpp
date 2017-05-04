@@ -23,12 +23,11 @@ void AGNParticleContainer::ComputeOverlap(int lev)
           my_id[i] = particles[i].id();
         }
 
-        int nstride = particles.dataShape().first;
         PairIndex index(pti.index(), pti.LocalTileIndex());
         int Ng = ghosts[index].size() / pdata_size;
 
         nyx_compute_overlap(&Np, particles.data(), my_id.dataPtr(),
-                           (RealType*) ghosts[index].dataPtr(), Ng, dx);
+                           (RealType*) ghosts[index].dataPtr(), &Ng, dx);
 
         for (int i = 0; i < Np; ++i ) {
           particles[i].id() = my_id[i];
@@ -52,12 +51,11 @@ void AGNParticleContainer::Merge(int lev)
           my_id[i] = particles[i].id();
         }
 
-        int nstride = particles.dataShape().first;
         PairIndex index(pti.index(), pti.LocalTileIndex());
         int Ng = ghosts[index].size() / pdata_size;
 
-        agn_merge_particles(particles.data(), nstride, Np, my_id.dataPtr(),
-                            (RealType*) ghosts[index].dataPtr(), Ng, dx);
+        agn_merge_particles(&Np, particles.data(), my_id.dataPtr(),
+                            (RealType*) ghosts[index].dataPtr(), &Ng, dx);
 
         for (int i = 0; i < Np; ++i ) {
           particles[i].id() = my_id[i];
@@ -77,8 +75,6 @@ void AGNParticleContainer::ComputeParticleVelocity(int lev, amrex::MultiFab& sta
 
         AoS& particles = pti.GetArrayOfStructs();
         size_t Np = particles.size();
-
-        int nstride = particles.dataShape().first;
 
         const Box& soldbox = state_old[pti].box();
         const Box& snewbox = state_new[pti].box();
@@ -102,8 +98,6 @@ void AGNParticleContainer::AccreteMass(int lev, amrex::MultiFab& state, amrex::R
 
         AoS& particles = pti.GetArrayOfStructs();
         size_t Np = particles.size();
-
-        int nstride = particles.dataShape().first;
 
         const Box& sbox = state[pti].box();
 

@@ -8,7 +8,7 @@
     integer,          intent(in   )        :: np, ng
     integer,          intent(inout)        :: my_id(np)
     type(particle_t), intent(inout)        :: particles(np)
-    real(amrex_real), intent(in   )        :: ghosts(4, ng)
+    real(amrex_real), intent(in   )        :: ghosts(8,ng)
     real(amrex_real), intent(in   )        :: delta_x(3)
 
     real(amrex_real) dx, dy, dz, r2
@@ -72,10 +72,10 @@
     integer,          intent(in   ), value :: np, ng
     integer,          intent(inout)        :: my_id(np)
     type(particle_t), intent(inout)        :: particles(np)
-    real(amrex_real), intent(in   )        :: ghosts(7, ng)
+    real(amrex_real), intent(in   )        :: ghosts(8, ng)
     real(amrex_real), intent(in   )        :: delta_x(3)
 
-    real(amrex_real) dx, dy, dz, r2, r, coef
+    real(amrex_real) dx, dy, dz, r2
     real(amrex_real) du, dv, dw, vrelsq
     real(amrex_real) xmom, ymom, zmom
     real(amrex_real) cutoff, larger_mass
