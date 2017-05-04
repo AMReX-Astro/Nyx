@@ -27,7 +27,7 @@ void AGNParticleContainer::ComputeOverlap(int lev)
         PairIndex index(pti.index(), pti.LocalTileIndex());
         int Ng = ghosts[index].size() / pdata_size;
 
-        nyx_compute_overlap(particles.data(), nstride, Np, my_id.dataPtr(),
+        nyx_compute_overlap(&Np, particles.data(), my_id.dataPtr(),
                            (RealType*) ghosts[index].dataPtr(), Ng, dx);
 
         for (int i = 0; i < Np; ++i ) {
@@ -168,7 +168,6 @@ void AGNParticleContainer::fillGhosts(int lev) {
                 }
             }
             
-#if (BL_SPACEDIM == 3)
             // Finally, add the particle for the "vertex" neighbors (only relevant in 3D)
             if (shift[0] != 0 and shift[1] != 0 and shift[2] != 0) {
                 IntVect neighbor_cell = iv;
@@ -176,7 +175,6 @@ void AGNParticleContainer::fillGhosts(int lev) {
                 BL_ASSERT(mask[pti].box().contains(neighbor_cell));
                 packGhostParticle(lev, neighbor_cell, mask[pti], p, ghosts_to_comm);
             }
-#endif
         }
     }
     

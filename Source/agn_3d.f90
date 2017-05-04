@@ -1,12 +1,14 @@
-  subroutine nyx_compute_overlap(particles, ns, np, my_id, ghosts, ng, delta_x) &
+  subroutine nyx_compute_overlap(np, particles, my_id, ghosts, ng, delta_x) &
        bind(c,name='nyx_compute_overlap')
 
     use iso_c_binding
     use amrex_fort_module, only : amrex_real
-    integer,          intent(in   ), value :: ns, np, ng
+    use particle_mod      , only: particle_t
+
+    integer,          intent(in   )        :: np, ng
     integer,          intent(inout)        :: my_id(np)
-    real(amrex_real), intent(inout)        :: particles(ns, np)
-    real(amrex_real), intent(in   )        :: ghosts(3, ng)
+    type(particle_t), intent(inout)        :: particles(np)
+    real(amrex_real), intent(in   )        :: ghosts(4, ng)
     real(amrex_real), intent(in   )        :: delta_x(3)
 
     real(amrex_real) dx, dy, dz, r2
@@ -18,9 +20,9 @@
     do i = 1, np
        do j = i+1, np
 
-          dx = particles(1, i) - particles(1, j)
-          dy = particles(2, i) - particles(2, j)
-          dz = particles(3, i) - particles(3, j)
+          dx = particles(i)%pos(1) - particles(j)%pos(1)
+          dy = particles(i)%pos(2) - particles(j)%pos(2)
+          dz = particles(i)%pos(3) - particles(j)%pos(3)
 
           r2 = dx * dx + dy * dy + dz * dz
 
@@ -37,9 +39,9 @@
     do i = 1, np
        do j = 1, ng
 
-          dx = particles(1, i) - ghosts(1, j)
-          dy = particles(2, i) - ghosts(2, j)
-          dz = particles(3, i) - ghosts(3, j)
+          dx = particles(i)%pos(1) - ghosts(1, j)
+          dy = particles(i)%pos(1) - ghosts(2, j)
+          dz = particles(i)%pos(1) - ghosts(3, j)
 
           r2 = dx * dx + dy * dy + dz * dz
 
@@ -48,7 +50,7 @@
           else
 
              ! We only remove a particle if it is both 1) valid 2) newer (aka of lower mass)
-             if (particles(4,i) .lt. particles(4,j))  &
+             if (particles(i)%mass .lt. ghosts(4,j))  &
                 my_id(i) = -1
              
           end if
@@ -58,18 +60,19 @@
 
   end subroutine nyx_compute_overlap
 
-  subroutine agn_merge_particles(particles, ns, np, my_id, ghosts, ng, delta_x) &
+  subroutine agn_merge_particles(np, particles, my_id, ghosts, ng, delta_x) &
        bind(c,name='agn_merge_particles')
 
     use iso_c_binding
 
     use amrex_fort_module, only : amrex_real
     use fundamental_constants_module, only: Gconst
+    use particle_mod      , only: particle_t
 
-    integer,          intent(in   ), value :: ns, np, ng
+    integer,          intent(in   ), value :: np, ng
     integer,          intent(inout)        :: my_id(np)
-    real(amrex_real), intent(inout)        :: particles(ns, np)
-    real(amrex_real), intent(in   )        :: ghosts(3, ng)
+    type(particle_t), intent(inout)        :: particles(np)
+    real(amrex_real), intent(in   )        :: ghosts(7, ng)
     real(amrex_real), intent(in   )        :: delta_x(3)
 
     real(amrex_real) dx, dy, dz, r2, r, coef
@@ -84,9 +87,9 @@
        do j = i+1, np
 
           ! Distance between particles
-          dx = particles(1, i) - particles(1, j)
-          dy = particles(2, i) - particles(2, j)
-          dz = particles(3, i) - particles(3, j)
+          dx = particles(i)%pos(1) - particles(j)%pos(1)
+          dy = particles(i)%pos(2) - particles(j)%pos(2)
+          dz = particles(i)%pos(3) - particles(j)%pos(3)
 
           r2 = dx * dx + dy * dy + dz * dz
 
@@ -95,27 +98,28 @@
           else
 
              ! Relative velocity
-             du = particles(5, i) - particles(5, j)
-             dv = particles(6, i) - particles(6, j)
-             dw = particles(7, i) - particles(7, j)
+             du = particles(i)%vel(1) - particles(j)%vel(1)
+             dv = particles(i)%vel(2) - particles(j)%vel(2)
+             dw = particles(i)%vel(3) - particles(j)%vel(3)
+
              vrelsq = du * du + dv * dv + dw * dw
 
-             larger_mass = max(particles(4,i), particles(4,j))
+             larger_mass = max(particles(i)%mass, particles(j)%mass)
 
              if ( (vrelsq * r2) .lt. (Gconst * larger_mass)**2 ) then
 
                 ! Total momentum of both particles before merging
-                xmom = particles(5,i) * particles(4,i) + particles(5,j) * particles(4,j)
-                ymom = particles(6,i) * particles(6,i) + particles(6,j) * particles(6,j)
-                zmom = particles(7,i) * particles(7,i) + particles(7,j) * particles(7,j)
+                xmom = particles(i)%vel(1) * particles(i)%mass + particles(j)%vel(1) * particles(j)%mass
+                ymom = particles(i)%vel(2) * particles(i)%mass + particles(j)%vel(2) * particles(j)%mass
+                zmom = particles(i)%vel(3) * particles(i)%mass + particles(j)%vel(3) * particles(j)%mass
  
                 ! Combine masses and put onto particle "i"
-                particles(4,i) = particles(4,i) + particles(4,j)
+                particles(i)%mass = particles(i)%mass + particles(j)%mass
 
                 ! Put total momentum onto the one particle 
-                particles(5,i) = xmom / particles(4,i)
-                particles(6,i) = ymom / particles(4,i)
-                particles(7,i) = zmom / particles(4,i)
+                particles(i)%vel(1) = xmom / particles(i)%mass
+                particles(i)%vel(2) = ymom / particles(i)%mass
+                particles(i)%vel(3) = zmom / particles(i)%mass
 
                 ! Set particle ID of particle j to -1
                 my_id(j) = -1
@@ -129,9 +133,9 @@
     do i = 1, np
        do j = 1, ng
 
-          dx = particles(1, i) - ghosts(1, j)
-          dy = particles(2, i) - ghosts(2, j)
-          dz = particles(3, i) - ghosts(3, j)
+          dx = particles(i)%pos(1) - ghosts(1, j)
+          dy = particles(i)%pos(1) - ghosts(2, j)
+          dz = particles(i)%pos(1) - ghosts(3, j)
 
           r2 = dx * dx + dy * dy + dz * dz
 
@@ -141,33 +145,30 @@
           else
 
              ! Relative velocity
-             du = particles(5, i) - particles(5, j)
-             dv = particles(6, i) - particles(6, j)
-             dw = particles(7, i) - particles(7, j)
+             du = particles(i)%vel(1) - ghosts(5, j)
+             dv = particles(i)%vel(2) - ghosts(6, j)
+             dw = particles(i)%vel(3) - ghosts(7, j)
              vrelsq = du * du + dv * dv + dw * dw
 
-             larger_mass = max(particles(4,i), particles(4,j))
+             larger_mass = max(particles(i)%mass, ghosts(4,j))
 
              if ( (vrelsq * r2) .lt. (Gconst * larger_mass)**2) then
 
                 ! The bigger particle is in the valid region so we put all the mass onto it
-                if ( particles(i,4) .gt. particles(j,4) ) then
+                if ( particles(i)%mass .gt. ghosts(j,4) ) then
 
                    ! Total momentum of both particles before merging
-                   xmom = particles(5,i) * particles(4,i) + particles(5,j) * particles(4,j)
-                   ymom = particles(6,i) * particles(6,i) + particles(6,j) * particles(6,j)
-                   zmom = particles(7,i) * particles(7,i) + particles(7,j) * particles(7,j)
+                   xmom = particles(i)%vel(1) * particles(i)%mass + ghosts(5,j) * ghosts(4,j)
+                   ymom = particles(i)%vel(2) * particles(i)%mass + ghosts(6,j) * ghosts(4,j)
+                   zmom = particles(i)%vel(3) * particles(i)%mass + ghosts(7,j) * ghosts(4,j)
    
                    ! Combine masses and put onto particle "i"
-                   particles(4,i) = particles(4,i) + particles(4,j)
+                   particles(i)%mass = particles(i)%mass + ghosts(4,j)
    
                    ! Put total momentum onto the one particle
-                   particles(5,i) = xmom / particles(4,i)
-                   particles(6,i) = ymom / particles(4,i)
-                   particles(7,i) = zmom / particles(4,i)
-   
-                   ! Set particle ID of particle j to -1 (we don't really need to since this is a ghost particle we will throw away)
-                   my_id(j) = -1
+                   particles(i)%vel(1) = xmom / particles(i)%mass
+                   particles(i)%vel(2) = ymom / particles(i)%mass
+                   particles(i)%vel(3) = zmom / particles(i)%mass
    
                 ! The bigger particle "j" is in the ghost region  -- we will let its grid update that particle
                 !  so here we just invalidate particle "i"
