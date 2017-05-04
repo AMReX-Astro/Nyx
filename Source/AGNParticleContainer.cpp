@@ -18,20 +18,12 @@ void AGNParticleContainer::ComputeOverlap(int lev)
         AoS& particles = pti.GetArrayOfStructs();
         size_t Np = particles.size();
 
-        my_id.resize(Np);
-        for (int i = 0; i < Np; ++i ) {
-          my_id[i] = particles[i].id();
-        }
-
         PairIndex index(pti.index(), pti.LocalTileIndex());
-        int Ng = ghosts[index].size() / pdata_size;
+        size_t Ng = ghosts[index].size() / pdata_size;
 
-        nyx_compute_overlap(&Np, particles.data(), my_id.dataPtr(),
-                           (RealType*) ghosts[index].dataPtr(), &Ng, dx);
+        nyx_compute_overlap(&Np, particles.data(), 
+                            &Ng, ghosts[index].dataPtr(), dx);
 
-        for (int i = 0; i < Np; ++i ) {
-          particles[i].id() = my_id[i];
-        }
     }
 }
 
@@ -46,20 +38,11 @@ void AGNParticleContainer::Merge(int lev)
         AoS& particles = pti.GetArrayOfStructs();
         size_t Np = particles.size();
 
-        my_id.resize(Np);
-        for (int i = 0; i < Np; ++i ) {
-          my_id[i] = particles[i].id();
-        }
-
         PairIndex index(pti.index(), pti.LocalTileIndex());
-        int Ng = ghosts[index].size() / pdata_size;
+        size_t Ng = ghosts[index].size() / pdata_size;
 
-        agn_merge_particles(&Np, particles.data(), my_id.dataPtr(),
-                            (RealType*) ghosts[index].dataPtr(), &Ng, dx);
-
-        for (int i = 0; i < Np; ++i ) {
-          particles[i].id() = my_id[i];
-        }
+        agn_merge_particles(&Np, particles.data(), 
+                            &Ng, ghosts[index].dataPtr(), dx);
     }
 }
 

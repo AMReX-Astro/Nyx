@@ -2,11 +2,11 @@
 
 extern "C"
 {
-    void nyx_compute_overlap(const size_t* np, void* particles, int* my_id, 
-                             const amrex::Real* ghosts, const int* ng, const amrex::Real* dx);
+    void nyx_compute_overlap(const size_t* np, void* particles, 
+                             const size_t* ng, void*    ghosts, const amrex::Real* dx);
 
-    void agn_merge_particles(const size_t* np, void* particles, int* my_id, 
-                             const amrex::Real* ghosts, const int* ng, const amrex::Real* dx);
+    void agn_merge_particles(const size_t* np, void* particles, 
+                             const size_t* ng, void*    ghosts, const amrex::Real* dx);
 
     void agn_particle_velocity(const size_t* np, void* particles,
                                const amrex::Real* state_old, const int* sold_lo, const int* sold_hi,
