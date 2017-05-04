@@ -217,10 +217,12 @@ Nyx::writePlotFile (const std::string& dir,
         // job_info file with details about the run
 	std::ofstream jobInfoFile;
 	std::string FullPathJobInfoFile = dir;
-	std::string PrettyLine = "===============================================================================\n";
-
 	FullPathJobInfoFile += "/job_info";
 	jobInfoFile.open(FullPathJobInfoFile.c_str(), std::ios::out);
+
+	std::string PrettyLine = std::string(78, '=') + "\n";
+	std::string OtherLine = std::string(78, '-') + "\n";
+	std::string SkipSpace = std::string(8, ' ') + "\n";
 
 	// job information
 	jobInfoFile << PrettyLine;
@@ -284,12 +286,27 @@ Nyx::writePlotFile (const std::string& dir,
 	jobInfoFile << "build date:    " << buildInfoGetBuildDate() << "\n";
 	jobInfoFile << "build machine: " << buildInfoGetBuildMachine() << "\n";
 	jobInfoFile << "build dir:     " << buildInfoGetBuildDir() << "\n";
-	jobInfoFile << "BoxLib dir:    " << buildInfoGetAMReXDir() << "\n";
+	jobInfoFile << "AMReX dir:     " << buildInfoGetAMReXDir() << "\n";
 
 	jobInfoFile << "\n";
 
 	jobInfoFile << "COMP:          " << buildInfoGetComp() << "\n";
 	jobInfoFile << "COMP version:  " << buildInfoGetCompVersion() << "\n";
+
+	jobInfoFile << "\n";
+
+	jobInfoFile << "C++ compiler:  " << buildInfoGetCXXName() << "\n";
+	jobInfoFile << "C++ flags:     " << buildInfoGetCXXFlags() << "\n";
+
+	jobInfoFile << "\n";
+
+	jobInfoFile << "Fortran comp:  " << buildInfoGetFName() << "\n";
+	jobInfoFile << "Fortran flags: " << buildInfoGetFFlags() << "\n";
+
+	jobInfoFile << "\n";
+
+	jobInfoFile << "Link flags:    " << buildInfoGetLinkFlags() << "\n";
+	jobInfoFile << "Libraries:     " << buildInfoGetLibraries() << "\n";
 
 	jobInfoFile << "\n";
 
@@ -299,7 +316,7 @@ Nyx::writePlotFile (const std::string& dir,
 	  jobInfoFile << "Nyx    git hash: " << githash1 << "\n";
 	}
 	if (strlen(githash2) > 0) {
-	  jobInfoFile << "BoxLib git hash: " << githash2 << "\n";
+	  jobInfoFile << "AMReX git hash:  " << githash2 << "\n";
 	}
 
 	jobInfoFile << "\n\n";
