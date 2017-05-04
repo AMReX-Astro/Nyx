@@ -83,12 +83,12 @@ void AGNParticleContainer::ComputeParticleVelocity(int lev, amrex::MultiFab& sta
         const Box& soldbox = state_old[pti].box();
         const Box& snewbox = state_new[pti].box();
 
-        agn_particle_velocity( particles.data(), nstride, Np, 
+        agn_particle_velocity(&Np, particles.data(), 
                               state_old[pti].dataPtr(), 
                               soldbox.loVect(), soldbox.hiVect(),
                               state_new[pti].dataPtr(), 
                               snewbox.loVect(), snewbox.hiVect(),
-                              dx, add_energy);
+                              dx, &add_energy);
     }
 }
 
@@ -107,10 +107,10 @@ void AGNParticleContainer::AccreteMass(int lev, amrex::MultiFab& state, amrex::R
 
         const Box& sbox = state[pti].box();
 
-        agn_accrete_mass(particles.data(), nstride, Np, 
+        agn_accrete_mass(&Np, particles.data(),
                          state[pti].dataPtr(), 
                          sbox.loVect(), sbox.hiVect(),
-                         eps_rad, dt, dx);
+                         &eps_rad, &dt, dx);
     }
 }
 
@@ -370,11 +370,13 @@ void AGNParticleContainer::writeAllAtLevel(int lev)
           const IntVect& iv = Index(p, lev);
 
           RealVect xyz(p.pos(0), p.pos(1), p.pos(2));
+          RealVect uvw(p.rdata(1), p.rdata(2), p.rdata(3));
 
           cout << "[" << i << "]: id " << p.id()
                << " mass " << p.rdata(0)
                << " index " << iv
-               << " position " << xyz << endl;
+               << " position " << xyz 
+               << " velocity " << uvw << endl;
         }
     }
 }

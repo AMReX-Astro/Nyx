@@ -96,8 +96,14 @@ Nyx::halo_find (Real dt)
        // Before creating new AGN particles, check if any of the existing AGN particles should be merged
        halo_merge();
 
+       cout << "Before accrete :" << endl;
+       Nyx::theAPC()->writeAllAtLevel(level);
+
        // Before creating new AGN particles, accrete mass and momentum onto existing particles 
        halo_accrete(dt);
+
+       cout << "After accrete :" << endl;
+       Nyx::theAPC()->writeAllAtLevel(level);
 
        // Here we just create place-holders for the halos which should come from REEBER
        int num_halos = 10;
@@ -200,13 +206,7 @@ Nyx::halo_find (Real dt)
        Nyx::theAPC()->ComputeOverlap(level);
        Nyx::theAPC()->clearGhosts(level);
 
-       // cout << "Before Redistribute:" << endl;
-       // Nyx::theAPC()->writeAllAtLevel(level);
-
        Nyx::theAPC()->Redistribute(lev_min,lev_max,ngrow);
-
-       cout << "After Redistribute:" << endl;
-       Nyx::theAPC()->writeAllAtLevel(level);
 
        // Zero this out again
        agn_density.setVal(0.0);
@@ -235,6 +235,9 @@ Nyx::halo_find (Real dt)
        Nyx::theAPC()->ComputeParticleVelocity(level,simMF,new_state,add_energy);
 
        MultiFab::Copy(simMF, new_state, 0, 0, simMF.nComp(), 0);
+
+       cout << "At End of Nyx_halos:" << endl;
+       Nyx::theAPC()->writeAllAtLevel(level);
 
        const amrex::Real time2 = ParallelDescriptor::second();
        if (ParallelDescriptor::IOProcessor())

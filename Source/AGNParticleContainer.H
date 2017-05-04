@@ -30,19 +30,21 @@ bool operator<(const GhostCommTag& l, const GhostCommTag& r) {
 }
 
 class AGNParticleContainer
-    : public NyxParticleContainer<1+BL_SPACEDIM+3>
+    : public NyxParticleContainer<5>
 {
 public:
 
-    using MyParIter = amrex::ParIter<1+BL_SPACEDIM+3>;
+    using MyParIter = amrex::ParIter<5>;
     using PairIndex = std::pair<int, int>;
     using GhostCommMap = std::map<GhostCommTag, amrex::Array<char> >;
 
     AGNParticleContainer (amrex::Amr* amr)
-        : NyxParticleContainer<1+BL_SPACEDIM+3>(amr)
+        : NyxParticleContainer<5>(amr)
     { }
 
     virtual ~AGNParticleContainer () {}
+
+    const int NumberOfParticles(MyParIter& pti) { return pti.GetArrayOfStructs().size(); }
 
     void AddOneParticle (int lev, int grid, int tile, amrex::Real mass, 
                          amrex::Real x, amrex::Real y, amrex::Real z)

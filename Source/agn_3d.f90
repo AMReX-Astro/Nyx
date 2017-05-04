@@ -187,19 +187,20 @@
 
   end subroutine agn_merge_particles
 
-  subroutine agn_particle_velocity(particles, ns, np, state_old, sold_lo, sold_hi, state_new, snew_lo, snew_hi, &
+  subroutine agn_particle_velocity(np, particles, state_old, sold_lo, sold_hi, state_new, snew_lo, snew_hi, &
                                    dx, add_energy) &
        bind(c,name='agn_particle_velocity')
 
     use iso_c_binding
     use amrex_fort_module, only : amrex_real
     use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN
+    use particle_mod      , only: particle_t
 
-    integer,          intent(in   ), value :: ns, np
+    integer,          intent(in   )        :: np
     integer,          intent(in   )        :: sold_lo(3), sold_hi(3)
     integer,          intent(in   )        :: snew_lo(3), snew_hi(3)
     integer,          intent(in   )        :: add_energy
-    real(amrex_real), intent(inout)        :: particles(ns, np)
+    type(particle_t), intent(inout)        :: particles(np)
     real(amrex_real), intent(in   )        :: state_old &
          (sold_lo(1):sold_hi(1),sold_lo(2):sold_hi(2),sold_lo(3):sold_hi(3),NVAR)
     real(amrex_real), intent(in   )        :: state_new &
@@ -215,9 +216,9 @@
     do n = 1, np
  
           ! Components 1,2,3 are (x,y,z)
-          i = particles(1,n) / dx(1)
-          j = particles(2,n) / dx(2)
-          k = particles(3,n) / dx(3)
+          i = particles(n)%pos(1) / dx(1)
+          j = particles(n)%pos(2) / dx(2)
+          k = particles(n)%pos(3) / dx(3)
 
           ! Set to zero
           sum_ux = 0.d0
@@ -244,31 +245,31 @@
           sum_uz = sum_uz * dv
           sum_rE = sum_rE * dv
 
-          ! Components 4 is mass; components 5,6,7 are (u,v,w)
-          particles(5,n) = particles(5,n) - sum_ux / particles(4,n)
-          particles(6,n) = particles(6,n) - sum_uy / particles(4,n)
-          particles(7,n) = particles(7,n) - sum_uz / particles(4,n)
+          ! Update velocity
+          particles(n)%vel(1) = particles(n)%vel(1) - sum_ux / particles(n)%mass
+          particles(n)%vel(2) = particles(n)%vel(2) - sum_uy / particles(n)%mass
+          particles(n)%vel(3) = particles(n)%vel(3) - sum_uz / particles(n)%mass
 
-          ! Component 8 is energy
+          ! Update energy if particle isn't brandnew
           if (add_energy .gt. 0) &
-             particles(8,n) = particles(8,n) - sum_rE / particles(4,n)
+             particles(n)%energy = particles(n)%energy - sum_rE / particles(n)%mass
 
     end do
 
   end subroutine agn_particle_velocity
 
-  subroutine agn_accrete_mass(particles, ns, np, state, slo, shi, eps_rad, dt, dx) &
+  subroutine agn_accrete_mass(np, particles, state, slo, shi, eps_rad, dt, dx) &
        bind(c,name='agn_accrete_mass')
 
     use iso_c_binding
     use amrex_fort_module, only : amrex_real
-    use fundamental_constants_module, only: Gconst, pi, m_proton, c_light
+    use fundamental_constants_module, only: Gconst, pi, m_proton, c_light, sigma_T
     use eos_module
     use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEINT
+    use particle_mod      , only: particle_t
 
-    integer,          intent(in   ), value :: ns, np
-    integer,          intent(in   )        :: slo(3), shi(3)
-    real(amrex_real), intent(inout)        :: particles(ns, np)
+    integer,          intent(in   )        :: np, slo(3), shi(3)
+    type(particle_t), intent(inout)        :: particles(np)
     real(amrex_real), intent(in   )        :: state &
          (slo(1):shi(1),slo(2):shi(2),slo(3):shi(3),NVAR)
     real(amrex_real), intent(in   )        :: eps_rad, dt, dx(3)
@@ -278,23 +279,20 @@
     real(amrex_real) :: avg_rho, avg_usq, avg_vsq, avg_wsq, avg_csq
     real(amrex_real) :: c, e, denom, mass, mdot, m_edd
 
-    real(amrex_real) :: fourpi, alpha, sigma
+    real(amrex_real) :: fourpi, alpha
 
     fourpi = 4.d0 * pi
 
     alpha = 10.d0
-
-    ! Thomson cross-section -- this is totally made up here
-    sigma = 1.d0
     
     do n = 1, np
 
-          mass = particles(4,n)
+          mass = particles(n)%mass
  
           ! Components 1,2,3 are (x,y,z)
-          i = particles(1,n) / dx(1)
-          j = particles(2,n) / dx(2)
-          k = particles(3,n) / dx(3)
+          i = particles(n)%pos(1) / dx(1)
+          j = particles(n)%pos(2) / dx(2)
+          k = particles(n)%pos(3) / dx(3)
 
           ! Set to zero for each (i,j,k)
           avg_rho = 0.d0
@@ -331,12 +329,11 @@
           mdot = alpha * fourpi * Gconst * Gconst * avg_rho * mass * mass * avg_rho / denom
 
           ! Eddington limit
-          m_edd = fourpi * Gconst * mass * m_proton / (eps_rad * sigma * c_light)
-
-          mdot = min(mdot, m_edd)
+          m_edd = fourpi * Gconst * mass * m_proton / (eps_rad * sigma_T * c_light)
+          ! mdot = min(mdot, m_edd)
 
           ! Increase the mass of the particle by Mdot * dt
-          particles(4,n) = particles(4,n) + mdot * dt * ( 1.d0 - eps_rad)
+          particles(n)%mass = particles(n)%mass + mdot * dt * ( 1.d0 - eps_rad)
 
     end do
 

@@ -32,6 +32,7 @@ CEXE_headers += AGNParticleContainer.H
 CEXE_sources += AGNParticleContainer.cpp
 FEXE_headers += agn_F.H
 f90EXE_sources += agn_3d.f90
+f90EXE_sources += agn_particle_mod.f90
 endif
 
 f90EXE_sources += Nyx_nd.f90
