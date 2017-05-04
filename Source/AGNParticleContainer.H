@@ -57,7 +57,7 @@ public:
     ///
     /// Compute the momentum that has been removed from the gas in order to define the particle velocity
     ///
-    void ComputeParticleVelocity(int lev, amrex::MultiFab& state_old, amrex::MultiFab& state_new, int start_comp);
+    void ComputeParticleVelocity(int lev, amrex::MultiFab& state_old, amrex::MultiFab& state_new);
 
     ///
     /// Accrete mass from the grid onto the existing AGN particles

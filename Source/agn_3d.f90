@@ -9,7 +9,7 @@
     real(amrex_real), intent(in   )        :: ghosts(3, ng)
     real(amrex_real), intent(in   )        :: delta_x(3)
 
-    real(amrex_real) dx, dy, dz, r2, r, coef
+    real(amrex_real) dx, dy, dz, r2
     real(amrex_real) cutoff
     integer i, j
 
@@ -34,24 +34,27 @@
        end do
     end do
 
-!   TODO: We still need to deal with this!  But how do we know whether a ghost particle is older or newer than a valid particle???
-!   do i = 1, np
-!      do j = 1, ng
+    do i = 1, np
+       do j = 1, ng
 
-!         dx = particles(1, i) - ghosts(1, j)
-!         dy = particles(2, i) - ghosts(2, j)
-!         dz = particles(3, i) - ghosts(3, j)
+          dx = particles(1, i) - ghosts(1, j)
+          dy = particles(2, i) - ghosts(2, j)
+          dz = particles(3, i) - ghosts(3, j)
 
-!         r2 = dx * dx + dy * dy + dz * dz
+          r2 = dx * dx + dy * dy + dz * dz
 
-!         if (r2 .gt. cutoff*cutoff) then
-!            cycle
-!         else
-!            ! set particle id of particle j to -1
-!         end if
+          if (r2 .gt. cutoff*cutoff) then
+             cycle
+          else
 
-!     end do
-!   end do
+             ! We only remove a particle if it is both 1) valid 2) newer (aka of lower mass)
+             if (particles(4,i) .lt. particles(4,j))  &
+                my_id(i) = -1
+             
+          end if
+
+      end do
+    end do
 
   end subroutine nyx_compute_overlap
 
@@ -184,20 +187,21 @@
 
   end subroutine agn_merge_particles
 
-  subroutine agn_particle_velocity(particles, ns, np, state_old, sold_lo, sold_hi, state_new, snew_lo, snew_hi, start_comp, dx) &
+  subroutine agn_particle_velocity(particles, ns, np, state_old, sold_lo, sold_hi, state_new, snew_lo, snew_hi, dx) &
        bind(c,name='agn_particle_velocity')
 
     use iso_c_binding
     use amrex_fort_module, only : amrex_real
+    use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ
+
     integer,          intent(in   ), value :: ns, np
     integer,          intent(in   )        :: sold_lo(3), sold_hi(3)
     integer,          intent(in   )        :: snew_lo(3), snew_hi(3)
-    integer,          intent(in   )        :: start_comp
     real(amrex_real), intent(inout)        :: particles(ns, np)
     real(amrex_real), intent(in   )        :: state_old &
-         (sold_lo(1):sold_hi(1),sold_lo(2):sold_hi(2),sold_lo(3):sold_hi(3),0:3)
+         (sold_lo(1):sold_hi(1),sold_lo(2):sold_hi(2),sold_lo(3):sold_hi(3),NVAR)
     real(amrex_real), intent(in   )        :: state_new &
-         (snew_lo(1):snew_hi(1),snew_lo(2):snew_hi(2),snew_lo(3):snew_hi(3),0:3)
+         (snew_lo(1):snew_hi(1),snew_lo(2):snew_hi(2),snew_lo(3):snew_hi(3),NVAR)
     real(amrex_real), intent(in   )        :: dx(3)
 
     integer          :: i, j, k, n
@@ -222,9 +226,9 @@
           do kk = k-1,k+1
           do jj = j-1,j+1
           do ii = i-1,i+1
-             sum_ux = sum_ux + (state_new(ii,jj,kk,start_comp  ) - state_old(ii,jj,kk,start_comp  ))
-             sum_uy = sum_uy + (state_new(ii,jj,kk,start_comp+1) - state_old(ii,jj,kk,start_comp+1))
-             sum_uz = sum_uz + (state_new(ii,jj,kk,start_comp+2) - state_old(ii,jj,kk,start_comp+2))
+             sum_ux = sum_ux + (state_new(ii,jj,kk,UMX) - state_old(ii,jj,kk,UMX))
+             sum_uy = sum_uy + (state_new(ii,jj,kk,UMY) - state_old(ii,jj,kk,UMY))
+             sum_uz = sum_uz + (state_new(ii,jj,kk,UMZ) - state_old(ii,jj,kk,UMZ))
           end do
           end do
           end do
@@ -240,8 +244,6 @@
           particles(5,n) = particles(5,n) - sum_ux / particles(4,n)
           particles(6,n) = particles(6,n) - sum_uy / particles(4,n)
           particles(7,n) = particles(7,n) - sum_uz / particles(4,n)
-
-          print *,'PARTICLE XVEL ', particles(5,n), state_new(i,j,k,start_comp), state_old(i,j,k,start_comp)
 
     end do
 
@@ -260,7 +262,7 @@
     integer,          intent(in   )        :: slo(3), shi(3)
     real(amrex_real), intent(inout)        :: particles(ns, np)
     real(amrex_real), intent(in   )        :: state &
-         (slo(1):shi(1),slo(2):shi(2),slo(3):shi(3),0:NVAR-1)
+         (slo(1):shi(1),slo(2):shi(2),slo(3):shi(3),NVAR)
     real(amrex_real), intent(in   )        :: eps_rad, dt, dx(3)
 
     integer          :: i, j, k, n

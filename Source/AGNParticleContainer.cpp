@@ -66,7 +66,7 @@ void AGNParticleContainer::Merge(int lev)
 }
 
 void AGNParticleContainer::ComputeParticleVelocity(int lev, amrex::MultiFab& state_old, 
-                                                   amrex::MultiFab& state_new, int start_comp)
+                                                   amrex::MultiFab& state_new)
 {
     const Real* dx = Geom(lev).CellSize();
 
@@ -88,7 +88,7 @@ void AGNParticleContainer::ComputeParticleVelocity(int lev, amrex::MultiFab& sta
                               soldbox.loVect(), soldbox.hiVect(),
                               state_new[pti].dataPtr(), 
                               snewbox.loVect(), snewbox.hiVect(),
-                              start_comp, dx);
+                              dx);
     }
 }
 

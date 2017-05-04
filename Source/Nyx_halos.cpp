@@ -39,8 +39,6 @@ Nyx::halo_find (Real dt)
 {
    BL_PROFILE("Nyx::halo_find()");
 
-   const amrex::Real cur_time = state[State_Type].curTime();
-
    const int whichSidecar(0);
 
    const amrex::Real time1 = ParallelDescriptor::second();
@@ -187,7 +185,6 @@ Nyx::halo_find (Real dt)
                 //      put it in the right place
 
                 Nyx::theAPC()->AddOneParticle(lev,grid,tile,mass,x,y,z); // ,u,v,w);
-
                 std::cout << "ADDED A PARTICLE AT " << x << " " << y << " " << z << " WITH MASS " << mass << std::endl;
            }
        } // end of loop over creating new particles from halos
@@ -226,8 +223,6 @@ Nyx::halo_find (Real dt)
        // Take away the density from the gas that was added to the AGN particle.
        amrex::MultiFab::Subtract(new_state,agn_density,0,Density,1,0);
 #endif
-       
-       Nyx::theAPC()->ComputeParticleVelocity(level,simMF,new_state,Xmom);
 
        // In new_state, everything but Density was divided by Density
        // at the beginning, and then Density was changed.
@@ -239,6 +234,8 @@ Nyx::halo_find (Real dt)
                MultiFab::Multiply(new_state, new_state, Density, comp, 1, 1);
              }
          }
+       
+       Nyx::theAPC()->ComputeParticleVelocity(level,simMF,new_state);
 
        MultiFab::Copy(simMF, new_state, 0, 0, simMF.nComp(), 0);
 
@@ -360,6 +357,6 @@ Nyx::halo_accrete (Real dt)
    amrex::MultiFab::Subtract(new_state,agn_density,0,Density,1,0);
 
    // Re-set the particle velocity after accretion
-   Nyx::theAPC()->ComputeParticleVelocity(level,orig_state,new_state,Xmom);
+   Nyx::theAPC()->ComputeParticleVelocity(level,orig_state,new_state);
 }
 #endif // AGN
