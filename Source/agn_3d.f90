@@ -346,6 +346,7 @@
 
           ! Eddington limit
           m_edd = fourpi * Gconst * mass * m_proton / (eps_rad * sigma_T * c_light)
+          print *,'MDOT MEDD ',mdot, m_edd
           ! mdot = min(mdot, m_edd)
 
           ! Increase the mass of the particle by Mdot * dt
