@@ -279,7 +279,7 @@
 
     use iso_c_binding
     use amrex_fort_module, only : amrex_real
-    use fundamental_constants_module, only: Gconst, pi, m_proton, c_light, sigma_T
+    use fundamental_constants_module, only: Gconst, pi, eddington_const
     use eos_module
     use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEINT
     use particle_mod      , only: particle_t
@@ -295,11 +295,11 @@
     real(amrex_real) :: avg_rho, avg_usq, avg_vsq, avg_wsq, avg_csq
     real(amrex_real) :: c, e, denom, mass, mdot, m_edd
 
-    real(amrex_real) :: fourpi, alpha
+    real(amrex_real) :: alpha, bondi_const
 
-    fourpi = 4.d0 * pi
 
     alpha = 10.d0
+    bondi_const = alpha * 4.0d0*pi * Gconst*Gconst
     
     do n = 1, np
 
@@ -342,12 +342,12 @@
           denom = (avg_usq + avg_vsq + avg_wsq + avg_csq)**1.5
 
           ! Bondi accretion 
-          mdot = alpha * fourpi * Gconst * Gconst * avg_rho * mass * mass * avg_rho / denom
+          mdot = bondi_const * mass * mass * avg_rho / denom
 
           ! Eddington limit
-          m_edd = fourpi * Gconst * mass * m_proton / (eps_rad * sigma_T * c_light)
-          print *,'MDOT MEDD ',mdot, m_edd
-          ! mdot = min(mdot, m_edd)
+          m_edd = eddington_const * mass / eps_rad
+          print *,'MDOT, MEDD: ', mdot, m_edd
+          mdot = min(mdot, m_edd)
 
           ! Increase the mass of the particle by Mdot * dt
           particles(n)%mass = particles(n)%mass + mdot * dt * ( 1.d0 - eps_rad)
