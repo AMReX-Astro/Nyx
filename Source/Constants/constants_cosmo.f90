@@ -41,7 +41,7 @@ module fundamental_constants_module
   real(rt), parameter :: m_proton = 1.672621e-24_rt   &       ! Proton mass [g]
                                     / M_unit
 
-  real(rt), parameter :: sigma_T =  6.6524587158e-25  &       ! Thomson cross section [cm^2]
+  real(rt), parameter :: sigma_T =  6.6524587158e-25_rt  &    ! Thomson cross section [cm^2]
                                     / L_unit**2
 
   real(rt), parameter :: c_light = 2.99792458e10_rt   &       ! Speed of light [cm/s] 
