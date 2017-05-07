@@ -16,10 +16,10 @@ void AGNParticleContainer::ComputeOverlap(int lev)
     for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
 
         AoS& particles = pti.GetArrayOfStructs();
-        size_t Np = particles.size();
+        int Np = particles.size();
 
         PairIndex index(pti.index(), pti.LocalTileIndex());
-        size_t Ng = ghosts[index].size() / pdata_size;
+        int Ng = ghosts[index].size() / pdata_size;
 
         nyx_compute_overlap(&Np, particles.data(), 
                             &Ng, ghosts[index].dataPtr(), dx);
@@ -36,10 +36,10 @@ void AGNParticleContainer::Merge(int lev)
     for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
 
         AoS& particles = pti.GetArrayOfStructs();
-        size_t Np = particles.size();
+        int Np = particles.size();
 
         PairIndex index(pti.index(), pti.LocalTileIndex());
-        size_t Ng = ghosts[index].size() / pdata_size;
+        int Ng = ghosts[index].size() / pdata_size;
 
         agn_merge_particles(&Np, particles.data(), 
                             &Ng, ghosts[index].dataPtr(), dx);
@@ -57,7 +57,7 @@ void AGNParticleContainer::ComputeParticleVelocity(int lev, amrex::MultiFab& sta
     for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
 
         AoS& particles = pti.GetArrayOfStructs();
-        size_t Np = particles.size();
+        int Np = particles.size();
 
         const Box& soldbox = state_old[pti].box();
         const Box& snewbox = state_new[pti].box();
@@ -80,7 +80,7 @@ void AGNParticleContainer::AccreteMass(int lev, amrex::MultiFab& state, amrex::R
     for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
 
         AoS& particles = pti.GetArrayOfStructs();
-        size_t Np = particles.size();
+        int Np = particles.size();
 
         const Box& sbox = state[pti].box();
 
