@@ -3,11 +3,11 @@
 
     use iso_c_binding
     use amrex_fort_module, only : amrex_real
-    use particle_mod      , only: particle_t, ghost_t
+    use particle_mod      , only: particle_t
 
     integer,          intent(in   )   :: np, ng
     type(particle_t), intent(inout)   :: particles(np)
-    type(   ghost_t), intent(in   )   :: ghosts(ng)
+    type(particle_t), intent(in   )   :: ghosts(ng)
     real(amrex_real), intent(in   )   :: delta_x(3)
 
     real(amrex_real) dx, dy, dz, r2
@@ -70,11 +70,11 @@
 
     use amrex_fort_module, only : amrex_real
     use fundamental_constants_module, only: Gconst
-    use particle_mod      , only: particle_t, ghost_t
+    use particle_mod      , only: particle_t
 
     integer,          intent(in   )  :: np, ng
     type(particle_t), intent(inout)  :: particles(np)
-    type(   ghost_t), intent(in   )  :: ghosts(ng)
+    type(particle_t), intent(in   )   :: ghosts(ng)
     real(amrex_real), intent(in   )  :: delta_x(3)
 
     real(amrex_real) dx, dy, dz, r2

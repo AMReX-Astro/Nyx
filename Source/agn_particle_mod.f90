@@ -6,7 +6,7 @@ module particle_mod
   implicit none
   private
 
-  public  particle_t, ghost_t
+  public  particle_t
   
   type, bind(C)  :: particle_t
      real(c_real)    :: pos(3)     !< Position
@@ -17,12 +17,4 @@ module particle_mod
      integer(c_int)  :: cpu
   end type particle_t
   
-  type, bind(C)  :: ghost_t
-     real(c_real)    :: pos(3)     !< Position
-     real(c_real)    :: mass       !< Particle mass
-     real(c_real)    :: vel(3)     !< Particle velocity
-     real(c_real)    :: energy     !< Particle energy
-  end type ghost_t
-
-
 end module

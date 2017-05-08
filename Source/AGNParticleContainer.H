@@ -128,7 +128,7 @@ private:
     ///
     void fillGhostsMPI(GhostCommMap& ghosts_to_comm);
 
-    const size_t pdata_size = 8*sizeof(RealType); // we communicate the position for position(3), mass, velocity(3) and energy
+    const size_t pdata_size = sizeof(ParticleType);
     amrex::FabArray<amrex::BaseFab<int> > mask;
     std::map<PairIndex, amrex::Array<char> > ghosts;
 };
