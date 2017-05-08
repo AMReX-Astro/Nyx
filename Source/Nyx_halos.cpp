@@ -78,9 +78,8 @@ Nyx::halo_find (Real dt)
        // Derive quantities and store in components 1... of MultiFAB
        for (auto it = reeber_density_var_list.begin(); it != reeber_density_var_list.end(); ++it)
        {
-           amrex::MultiFab *derive_dat = particle_derive(*it, cur_time, 0); // FIXME: Is this the right way? 
+           std::unique_ptr<MultiFab> derive_dat = particle_derive(*it, cur_time, 0);
            reeberMF.copy(*derive_dat, 0, cnt, 1, 0, 0);
-           delete derive_dat;
            cnt++;
        }
 
@@ -259,9 +258,8 @@ Nyx::halo_find (Real dt)
        // Derive quantities and store in components 1... of MultiFAB
        for (auto it = reeber_density_var_list.begin(); it != reeber_density_var_list.end(); ++it)
        {
-           amrex::MultiFab *derive_dat = particle_derive(*it, cur_time, 0); // FIXME: Is this the right way?
+           std::unique_ptr<MultiFab> derive_dat = particle_derive(*it, cur_time, 0);
            reeberMF.copy(*derive_dat, 0, cnt, 1, 0, 0);
-           delete derive_dat;
            cnt++;
        }
 
