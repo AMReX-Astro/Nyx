@@ -30,6 +30,10 @@ using std::string;
 #include "Gravity.H"
 #endif
 
+#ifdef FORCING
+#include "Forcing.H"
+#endif
+
 #ifdef REEBER
 #include <ReeberAnalysis.H>
 #endif
@@ -124,6 +128,13 @@ int Nyx::do_grav       = -1;
 int Nyx::do_grav       =  0;
 #endif
 
+#ifdef FORCING
+StochasticForcing* Nyx::forcing = 0;
+int Nyx::do_forcing = -1;
+#else
+int Nyx::do_forcing =  0;
+#endif
+
 int Nyx::allow_untagging    = 0;
 int Nyx::use_const_species  = 0;
 int Nyx::normalize_species  = 0;
@@ -184,6 +195,15 @@ Nyx::variable_cleanup ()
             std::cout << "Deleting gravity in variable_cleanup...\n";
         delete gravity;
         gravity = 0;
+    }
+#endif
+#ifdef FORCING
+    if (forcing != 0)
+    {
+        if (verbose > 1 && ParallelDescriptor::IOProcessor())
+            std::cout << "Deleting forcing in variable_cleanup...\n";
+        delete forcing;
+        forcing = 0;
     }
 #endif
 
@@ -301,6 +321,19 @@ Nyx::read_params ()
 
     pp.query("add_ext_src", add_ext_src);
     pp.query("strang_split", strang_split);
+
+#ifdef FORCING
+    pp.get("do_forcing", do_forcing);
+#ifdef NO_HYDRO
+    if (do_forcing == 1)
+        amrex::Error("Cant have do_forcing == 1 when NO_HYDRO is true ");
+#endif
+    if (do_forcing == 1 && add_ext_src == 0)
+       amrex::Error("Nyx::must set add_ext_src to 1 if do_forcing = 1 ");
+#else
+    if (do_forcing == 1)
+       amrex::Error("Nyx::you set do_forcing = 1 but forgot to set USE_FORCING = TRUE ");
+#endif
 
     pp.query("heat_cool_type", heat_cool_type);
 
@@ -458,6 +491,21 @@ Nyx::Nyx (Amr&            papa,
             std::cout << "Setting the gravity type to "
                       << gravity->get_gravity_type() << '\n';
 	}
+   }
+#endif
+
+#ifdef FORCING
+    const Real* prob_lo = geom.ProbLo();
+    const Real* prob_hi = geom.ProbHi();
+
+    if (do_forcing)
+    {
+        // forcing is a static object, only alloc if not already there
+        if (forcing == 0) {
+          forcing = new StochasticForcing();
+	}
+
+        forcing->init(3, prob_lo, prob_hi);
    }
 #endif
 

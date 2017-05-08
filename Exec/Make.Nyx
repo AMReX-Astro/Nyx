@@ -33,6 +33,10 @@ ifeq ($(USE_HEATCOOL), TRUE)
   DEFINES += -DHEATCOOL
 endif
 
+ifeq ($(USE_FORCING), TRUE)
+  DEFINES += -DFORCING
+endif
+
 DEFINES += -DBL_NOLINEVALUES
 
 ifeq ($(REEBER), TRUE)
@@ -78,6 +82,9 @@ endif
 
 ifeq ($(USE_GRAV), TRUE)
    Bdirs 	+= Source/Gravity
+endif
+ifeq ($(USE_FORCING), TRUE)
+   Bdirs 	+= Source/Forcing
 endif
 ifeq ($(USE_AGN), TRUE)
    Bdirs 	+= Source/AGN

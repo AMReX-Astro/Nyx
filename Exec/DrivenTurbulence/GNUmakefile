@@ -2,7 +2,7 @@
 AMREX_HOME ?= /project/projectdirs/nyx/src/amrex
 
 # TOP defines the directory in which we will find Source, Exec, etc
-TOP = ../../..
+TOP = ../..
 
 # compilation options
 COMP    = gcc
@@ -16,6 +16,7 @@ DEBUG     = FALSE
 DIM      = 3
 USE_GRAV = FALSE
 USE_HEATCOOL = FALSE
+USE_FORCING = TRUE
 
 #USE_CGS = TRUE
 

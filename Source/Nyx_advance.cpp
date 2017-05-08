@@ -7,6 +7,10 @@
 #include "Gravity.H"
 #endif
 
+#ifdef FORCING
+#include "Forcing.H"
+#endif
+
 using namespace amrex;
 
 using std::string;
@@ -81,6 +85,10 @@ Nyx::advance_hydro_plus_particles (Real time,
 #ifdef GRAVITY
     if (!do_grav)
         amrex::Abort("In `advance_hydro_plus_particles` but `do_grav` not true");
+#endif
+#ifdef FORCING
+    if (do_forcing)
+        amrex::Abort("Forcing in `advance_hydro_plus_particles` not admissible");
 #endif
 
     const int finest_level = parent->finestLevel();
@@ -481,6 +489,10 @@ Nyx::advance_hydro (Real time,
     if (!do_grav)
         amrex::Abort("In `advance_hydro` with GRAVITY defined but `do_grav` is false");
 #endif
+#ifdef FORCING
+    if (!do_forcing)
+        amrex::Abort("In `advance_hydro` with FORCING defined but `do_forcing` is false");
+#endif
 
     for (int k = 0; k < NUM_STATE_TYPE; k++)
     {
@@ -503,6 +515,10 @@ Nyx::advance_hydro (Real time,
 
     gravity->swap_time_levels(level);
 
+#endif
+
+#ifdef FORCING
+    forcing->evolve(dt);
 #endif
 
     // Call the hydro advance itself

@@ -4,6 +4,9 @@
 #include "Nyx.H"
 #include "Nyx_F.H"
 #include "Derive_F.H"
+#ifdef FORCING
+#include "Forcing.H"
+#endif
 
 using namespace amrex;
 using std::string;
