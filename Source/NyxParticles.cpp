@@ -371,6 +371,8 @@ Nyx::init_particles ()
         //
         DMPC->SetVerbose(particle_verbose);
 
+        DarkMatterParticleContainer::ParticleInitData pdata = {particle_initrandom_mass};
+
         if (particle_init_type == "Random")
         {
             if (particle_initrandom_count <= 0)
@@ -391,8 +393,7 @@ Nyx::init_particles ()
             }
 
             DMPC->InitRandom(particle_initrandom_count,
-                             particle_initrandom_iseed,
-                             particle_initrandom_mass,
+                             particle_initrandom_iseed, pdata,
                              particle_initrandom_serialize);
         }
         else if (particle_init_type == "RandomPerBox")
@@ -413,13 +414,8 @@ Nyx::init_particles ()
                           << particle_initrandom_iseed << "\n\n";
             }
 
-            // We just make this MultiFab in order to iterate over it ...
-            MultiFab particle_mf(grids,dmap,1,1);
-
             DMPC->InitRandomPerBox(particle_initrandom_count_per_box,
-                                   particle_initrandom_iseed,
-                                   particle_initrandom_mass,
-                                   particle_mf);
+                                   particle_initrandom_iseed, pdata);
 
         }
         else if (particle_init_type == "AsciiFile")
