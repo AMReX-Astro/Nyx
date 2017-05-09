@@ -30,25 +30,71 @@ bool operator<(const GhostCommTag& l, const GhostCommTag& r) {
 }
 
 class AGNParticleContainer
-    : public NyxParticleContainer<1+BL_SPACEDIM+3>
+    : public NyxParticleContainer<5>
 {
 public:
 
-    using MyParIter = amrex::ParIter<1+BL_SPACEDIM+3>;
+    using MyParIter = amrex::ParIter<5>;
     using PairIndex = std::pair<int, int>;
     using GhostCommMap = std::map<GhostCommTag, amrex::Array<char> >;
 
     AGNParticleContainer (amrex::Amr* amr)
-        : NyxParticleContainer<1+BL_SPACEDIM+3>(amr)
+        : NyxParticleContainer<5>(amr)
     { }
 
     virtual ~AGNParticleContainer () {}
 
+    const int NumberOfParticles(MyParIter& pti) { return pti.GetArrayOfStructs().size(); }
+
+    void AddOneParticle (int lev, int grid, int tile, amrex::Real mass, 
+                         amrex::Real x, amrex::Real y, amrex::Real z)
+    {
+        auto& particle_tile = this->GetParticles(lev)[std::make_pair(grid,tile)];
+        AddOneParticle(particle_tile, mass, x, y, z);
+    }
+
+    void AddOneParticle (ParticleTileType& particle_tile, amrex::Real mass, 
+                         amrex::Real x, amrex::Real y, amrex::Real z)
+    {
+        ParticleType p;
+        p.id()  = ParticleType::NextID();
+        p.cpu() = amrex::ParallelDescriptor::MyProc();
+        p.pos(0) = x;
+        p.pos(1) = y;
+        p.pos(2) = z;
+
+        // Set mass 
+        p.rdata(0) = mass;
+
+        // Zero initial velocity
+        p.rdata(1) = 0.;
+        p.rdata(2) = 0.;
+        p.rdata(3) = 0.;
+
+        // Zero initial energy
+        p.rdata(4) = 0.;
+
+        particle_tile.push_back(p);
+    }
     ///
     /// Invalidate particles in cells that are already occupied
     ///
-    // void ComputeOverlap(int lev, amrex::MultiFab& density_to_subtract);
     void ComputeOverlap(int lev);
+
+    ///
+    /// Invalidate particles that have been merged with other particles
+    ///
+    void Merge(int lev);
+
+    ///
+    /// Compute the momentum that has been removed from the gas in order to define the particle velocity
+    ///
+    void ComputeParticleVelocity(int lev, amrex::MultiFab& state_old, amrex::MultiFab& state_new, int add_energy);
+
+    ///
+    /// Accrete mass from the grid onto the existing AGN particles
+    ///
+    void AccreteMass(int lev, amrex::MultiFab& state, amrex::Real eps_rad, amrex::Real dt);
 
     ///
     /// This fills the ghost buffers for each tile with the proper data
@@ -82,7 +128,7 @@ private:
     ///
     void fillGhostsMPI(GhostCommMap& ghosts_to_comm);
 
-    const size_t pdata_size = BL_SPACEDIM*sizeof(RealType); // we communicate the position only for ghosts
+    const size_t pdata_size = sizeof(ParticleType);
     amrex::FabArray<amrex::BaseFab<int> > mask;
     std::map<PairIndex, amrex::Array<char> > ghosts;
 };

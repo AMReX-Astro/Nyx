@@ -16,27 +16,78 @@ void AGNParticleContainer::ComputeOverlap(int lev)
     for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
 
         AoS& particles = pti.GetArrayOfStructs();
-        size_t Np = particles.size();
+        int Np = particles.size();
 
-        my_id.resize(Np);
-        for (int i = 0; i < Np; ++i ) {
-          my_id[i] = particles[i].id();
-        }
-
-        int nstride = particles.dataShape().first;
         PairIndex index(pti.index(), pti.LocalTileIndex());
         int Ng = ghosts[index].size() / pdata_size;
 
-//      const Box& dbox = density_to_subtract[pti].box();
+        nyx_compute_overlap(&Np, particles.data(), 
+                            &Ng, ghosts[index].dataPtr(), dx);
 
-        nyx_compute_overlap(particles.data(), nstride, Np, my_id.dataPtr(),
-                           (RealType*) ghosts[index].dataPtr(), Ng, dx);
-//                         density_to_subtract[pti].dataPtr(), 
-//                         dbox.loVect(), dbox.hiVect());
+    }
+}
 
-        for (int i = 0; i < Np; ++i ) {
-          particles[i].id() = my_id[i];
-        }
+void AGNParticleContainer::Merge(int lev)
+{
+    Array<int> my_id;
+
+    const Real* dx = Geom(lev).CellSize();
+
+    for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
+
+        AoS& particles = pti.GetArrayOfStructs();
+        int Np = particles.size();
+
+        PairIndex index(pti.index(), pti.LocalTileIndex());
+        int Ng = ghosts[index].size() / pdata_size;
+
+        agn_merge_particles(&Np, particles.data(), 
+                            &Ng, ghosts[index].dataPtr(), dx);
+    }
+}
+
+void AGNParticleContainer::ComputeParticleVelocity(int lev, amrex::MultiFab& state_old, 
+                                                   amrex::MultiFab& state_new, int add_energy)
+{
+    const Real* dx = Geom(lev).CellSize();
+
+    state_old.FillBoundary();
+    state_new.FillBoundary();
+
+    for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
+
+        AoS& particles = pti.GetArrayOfStructs();
+        int Np = particles.size();
+
+        const Box& soldbox = state_old[pti].box();
+        const Box& snewbox = state_new[pti].box();
+
+        agn_particle_velocity(&Np, particles.data(), 
+                              state_old[pti].dataPtr(), 
+                              soldbox.loVect(), soldbox.hiVect(),
+                              state_new[pti].dataPtr(), 
+                              snewbox.loVect(), snewbox.hiVect(),
+                              dx, &add_energy);
+    }
+}
+
+void AGNParticleContainer::AccreteMass(int lev, amrex::MultiFab& state, amrex::Real eps_rad, amrex::Real dt)
+{
+    const Real* dx = Geom(lev).CellSize();
+
+    state.FillBoundary();
+
+    for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
+
+        AoS& particles = pti.GetArrayOfStructs();
+        int Np = particles.size();
+
+        const Box& sbox = state[pti].box();
+
+        agn_accrete_mass(&Np, particles.data(),
+                         state[pti].dataPtr(), 
+                         sbox.loVect(), sbox.hiVect(),
+                         &eps_rad, &dt, dx);
     }
 }
 
@@ -94,7 +145,6 @@ void AGNParticleContainer::fillGhosts(int lev) {
                 }
             }
             
-#if (BL_SPACEDIM == 3)
             // Finally, add the particle for the "vertex" neighbors (only relevant in 3D)
             if (shift[0] != 0 and shift[1] != 0 and shift[2] != 0) {
                 IntVect neighbor_cell = iv;
@@ -102,7 +152,6 @@ void AGNParticleContainer::fillGhosts(int lev) {
                 BL_ASSERT(mask[pti].box().contains(neighbor_cell));
                 packGhostParticle(lev, neighbor_cell, mask[pti], p, ghosts_to_comm);
             }
-#endif
         }
     }
     
@@ -296,11 +345,13 @@ void AGNParticleContainer::writeAllAtLevel(int lev)
           const IntVect& iv = Index(p, lev);
 
           RealVect xyz(p.pos(0), p.pos(1), p.pos(2));
+          RealVect uvw(p.rdata(1), p.rdata(2), p.rdata(3));
 
           cout << "[" << i << "]: id " << p.id()
                << " mass " << p.rdata(0)
                << " index " << iv
-               << " position " << xyz << endl;
+               << " position " << xyz 
+               << " velocity " << uvw << endl;
         }
     }
 }

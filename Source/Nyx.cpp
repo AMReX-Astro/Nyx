@@ -1459,7 +1459,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
    const int whichSidecar(0);
 
 #ifdef AGN
-   halo_find();
+   halo_find(parent->dtLevel(level));
 #endif 
 
 #ifdef GIMLET

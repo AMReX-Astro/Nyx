@@ -4,10 +4,10 @@
 #include <AMReX_BLFort.H>
 #include <AMReX_REAL.H>
 
-using namespace amrex;
-
+#ifdef __cplusplus
 extern "C"
 {
+#endif
   void fort_integrate_comoving_a 
     (amrex::Real* old_a, amrex::Real* new_a, amrex::Real* dt);
 
@@ -261,5 +261,7 @@ extern "C"
    const BL_FORT_FAB_ARG(temp),
    const BL_FORT_FAB_ARG(ye),
    const BL_FORT_FAB_ARG(state));
+#ifdef __cplusplus
 }
+#endif
 #endif
