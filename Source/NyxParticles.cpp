@@ -1006,7 +1006,7 @@ Nyx::setup_ghost_particles()
 void
 Nyx::remove_ghost_particles()
 {
-    BL_PROFILE("Nyx::setup_ghost_particles()");
+    BL_PROFILE("Nyx::remove_ghost_particles()");
     for (int i = 0; i < GhostParticles.size(); i++)
     {
         if (GhostParticles[i] != 0)
