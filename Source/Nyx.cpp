@@ -474,9 +474,6 @@ Nyx::Nyx (Amr&            papa,
      // Initialize "this_z" in the atomic_rates_module
      if (heat_cool_type == 1 || heat_cool_type == 3)
          fort_init_this_z(&old_a);
-
-    // Set grav_n_grow to 3 on init. It'll be reset in advance.
-    grav_n_grow = 3;
 }
 
 Nyx::~Nyx ()
@@ -1124,15 +1121,15 @@ Nyx::post_timestep (int iteration)
         remove_ghost_particles();
 
     //
-    // Redistribute if it is not the last subiteration
+    // We now redistribute with no ghost cells and 
+    //    not after iterations which do not line up with the coarser timestep.
     //
-    if (iteration < ncycle || level == 0)
+    if (level == 0)
     {
          for (int i = 0; i < theActiveParticles().size(); i++)
          {
              theActiveParticles()[i]->Redistribute(level,
-                                                   theActiveParticles()[i]->finestLevel(),
-                                                   grav_n_grow);
+                                                   theActiveParticles()[i]->finestLevel(),0);
          }
     }
 
@@ -2162,7 +2159,6 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         allInts.push_back(strang_split);
         allInts.push_back(reeber_int);
         allInts.push_back(gimlet_int);
-        allInts.push_back(grav_n_grow);
         allInts.push_back(forceParticleRedist);
       }
 
@@ -2220,7 +2216,6 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         strang_split = allInts[count++];
         reeber_int = allInts[count++];
         gimlet_int = allInts[count++];
-        grav_n_grow = allInts[count++];
         forceParticleRedist = allInts[count++];
 
         BL_ASSERT(count == allInts.size());

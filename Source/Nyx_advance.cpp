@@ -16,9 +16,18 @@ Nyx::advance (Real time,
               Real dt,
               int  iteration,
               int  ncycle)
+
+  // Arguments:
+  //    time      : the current simulation time
+  //    dt        : the timestep to advance (e.g., go from time to
+  //                time + dt)
+  //    iteration : where we are in the current AMR subcycle.  Each
+  //                level will take a number of steps to reach the
+  //                final time of the coarser level below it.  This
+  //                counter starts at 1
+  //    ncycle    : the number of subcycles at this level
+
 {
-    // Need ncycle + 1 to catch all relevant ghost particles and 1 more to move them.
-    grav_n_grow = ncycle + 2;
 #ifndef NO_HYDRO
     if (do_hydro)
     {
@@ -69,6 +78,35 @@ Nyx::advance_hydro_plus_particles (Real time,
                                    int  iteration,
                                    int  ncycle)
 {
+
+    // A particle in cell (i) can affect cell values in (i-1) to (i+1)
+    int stencil_deposition_width = 1;
+ 
+    // A particle in cell (i) may need information from cell values in (i-1) to (i+1)
+    //   to update its position (typically via interpolation of the acceleration from the grid)
+    int stencil_interpolation_width = 1;
+ 
+    // A particle that starts in cell (i + ncycle) can reach
+    //   cell (i) in ncycle number of steps .. after "iteration" steps
+    //   the particle has to be within (i + ncycle+1-iteration) to reach cell (i)
+    //   in the remaining (ncycle-iteration) steps
+ 
+    // *** ghost_width ***  is used
+    //   *) to set how many cells are used to hold ghost particles i.e copies of particles
+    //      that live on (level-1) can affect the grid over all of the ncycle steps.
+    //      We define ghost cells at the coarser level to cover all iterations so
+    //      we can't reduce this number as iteration increases.
+ 
+    int ghost_width = ncycle + stencil_deposition_width;
+ 
+    // *** grav_n_grow *** is used
+    //   *) to determine how many ghost cells we need to fill in the MultiFab from
+    //      which the particle interpolates its acceleration
+    //   *) to set how many cells the Where call in moveKickDrift tests = (grav.nGrow()-2).
+ 
+    int grav_n_grow = ghost_width + (1-iteration) +
+                      stencil_interpolation_width ;
+
     BL_PROFILE_REGION_START("R::Nyx::advance_hydro_plus_particles");
     BL_PROFILE("Nyx::advance_hydro_plus_particles()");
     // Sanity checks
@@ -112,6 +150,7 @@ Nyx::advance_hydro_plus_particles (Real time,
                 lev++;
             finest_level_to_advance = lev;
         }
+
         // We must setup virtual and Ghost Particles
         //
         // Setup the virtual particles that represent finer level particles
@@ -124,7 +163,7 @@ Nyx::advance_hydro_plus_particles (Real time,
         //
         for(int lev = level; lev <= finest_level_to_advance && lev < finest_level; lev++)
         {
-           get_level(lev).setup_ghost_particles();
+           get_level(lev).setup_ghost_particles(ghost_width);
         }
     }
 

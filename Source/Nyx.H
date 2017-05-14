@@ -270,7 +270,7 @@ public:
     //
     // Setup ghost particles (for finer levels) if necessary
     //
-    void setup_ghost_particles();
+    void setup_ghost_particles(int ngrow);
 
     //
     // Remove ghost particles (for this level) if necessary
@@ -536,11 +536,6 @@ public:
     static void InitDeriveList();
 
 protected:
-
-    //
-    // Number of grow cells required for particle motion.
-    //
-    int grav_n_grow;
 
     //
     // Initialize the network.
