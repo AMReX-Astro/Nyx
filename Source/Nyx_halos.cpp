@@ -58,6 +58,8 @@ Nyx::halo_find (Real dt)
    const auto& reeber_density_var_list = getReeberHaloDensityVars();
    bool do_analysis(doAnalysisNow());
 
+   bool created_file = false;
+
    if (do_analysis || (reeber_int > 0 && nStep() % reeber_int == 0)) 
    {
 
@@ -73,8 +75,11 @@ Nyx::halo_find (Real dt)
        BoxArray ba;
        DistributionMapping dm;
        getAnalysisDecomposition(Geom(), ParallelDescriptor::NProcs(), ba, dm);
-       amrex::MultiFab reeberMF(ba, reeber_density_var_list.size() + 1, 0, dm);
+       amrex::MultiFab reeberMF(ba, dm, reeber_density_var_list.size() + 1, 0);
        int cnt = 1;
+
+       Real cur_time = state[State_Type].curTime();
+
        // Derive quantities and store in components 1... of MultiFAB
        for (auto it = reeber_density_var_list.begin(); it != reeber_density_var_list.end(); ++it)
        {
@@ -158,7 +163,7 @@ Nyx::halo_find (Real dt)
        for (const Halo& h : reeber_halos)
        {
            if (!created_file)
-              os.open(BoxLib::Concatenate(BoxLib::Concatenate("debug-halos-", nStep(), 5), ParallelDescriptor::MyProc(), 2));
+              os.open(amrex::Concatenate(amrex::Concatenate("debug-halos-", nStep(), 5), ParallelDescriptor::MyProc(), 2));
            created_file = true;
            halo_mass = h.totalMass;
            halo_pos  = h.position;
