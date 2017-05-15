@@ -248,7 +248,9 @@ Nyx::halo_find (Real dt)
          std::cout << std::endl << "===== Time to post-process: " << time2 - time1 << " sec" << std::endl;
 
 #ifdef REEBER
-     } else { // we have sidecars, so do everything in-transit
+     } 
+#if 0
+     else { // we have sidecars, so do everything in-transit
 
        int sidecarSignal(NyxHaloFinderSignal);
        const int MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
@@ -300,6 +302,7 @@ Nyx::halo_find (Real dt)
        if(ParallelDescriptor::IOProcessor()) 
          std::cout << "COMPUTE PROCESSES: time spent sending data to sidecars: " << time2 - time1 << std::endl;
 
+#endif // if 0
      }
 #endif // ifdef REEBER
 }
