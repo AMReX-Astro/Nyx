@@ -1124,7 +1124,7 @@ Nyx::post_timestep (int iteration)
     // We now redistribute with no ghost cells and 
     //    not after iterations which do not line up with the coarser timestep.
     //
-    if (level == 0)
+    if (iteration < ncycle || level == 0)
     {
          for (int i = 0; i < theActiveParticles().size(); i++)
          {
