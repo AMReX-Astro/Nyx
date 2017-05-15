@@ -72,7 +72,6 @@ subroutine ext_src_hc(lo, hi, old_state, os_l1, os_l2, os_l3, os_h1, os_h2, os_h
     real(rt), allocatable :: tmp_state(:,:,:,:)
 
     integer          :: i, j, k
-    integer          :: src_lo(3),src_hi(3)
     integer          :: max_iter, min_iter
     real(rt) :: a, half_dt
 
@@ -88,28 +87,25 @@ subroutine ext_src_hc(lo, hi, old_state, os_l1, os_l2, os_l3, os_h1, os_h2, os_h
     !      both "old_state" is in fact the "old" state and
     !           "new_state" is in fact the "new" state
 
-    src_lo(1) = src_l1
-    src_lo(2) = src_l2
-    src_lo(3) = src_l3
-    src_hi(1) = src_h1
-    src_hi(2) = src_h2
-    src_hi(3) = src_h3
-
     call interp_to_this_z(z)
 
     half_dt = 0.5d0 * dt
     if (heat_cool_type .eq. 1) then
-        call integrate_state_hc(src_lo,src_hi,tmp_state,ns_l1,ns_l2,ns_l3, ns_h1,ns_h2,ns_h3, &
-                                              new_diag ,nd_l1,nd_l2,nd_l3, nd_h1,nd_h2,nd_h3, &
+        call integrate_state_hc(lo_hi,tmp_state,ns_l1,ns_l2,ns_l3,ns_h1,ns_h2,ns_h3, &
+                                      new_diag ,nd_l1,nd_l2,nd_l3,nd_h1,nd_h2,nd_h3, &
                                 a,half_dt,min_iter,max_iter)
     else if (heat_cool_type .eq. 3) then
-        call integrate_state_vode(src_lo,src_hi,tmp_state,ns_l1,ns_l2,ns_l3, ns_h1,ns_h2,ns_h3, &
-                                                new_diag ,nd_l1,nd_l2,nd_l3, nd_h1,nd_h2,nd_h3, &
+        call integrate_state_vode(lo,hi,tmp_state,ns_l1,ns_l2,ns_l3,ns_h1,ns_h2,ns_h3, &
+                                        new_diag ,nd_l1,nd_l2,nd_l3,nd_h1,nd_h2,nd_h3, &
                                   a,half_dt,min_iter,max_iter)
     endif
-    do k = src_l3, src_h3
-        do j = src_l2, src_h2
-            do i = src_l1, src_h1
+ 
+    ! Recall that this routine is called from a tiled MFIter 
+    !   For old source: lo(:), hi(:) are the bounds of the growntilebox(src.nGrow9))
+    !   For new source: lo(:), hi(:) are the bounds of the      tilebox, e.g. valid region only
+    do k = lo(3),hi(3)
+        do j = lo(2),hi(2)
+            do i = lo(1),hi(1)
                   src(i,j,k,UEINT) = (tmp_state(i,j,k,UEINT) - new_state(i,j,k,UEINT)) * a / half_dt
                   src(i,j,k,UEDEN) = src(i,j,k,UEINT)
             end do
