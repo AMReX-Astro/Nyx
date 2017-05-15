@@ -158,7 +158,7 @@ Nyx::halo_find (Real dt)
        for (const Halo& h : reeber_halos)
        {
            if (!created_file)
-              os.open(BoxLib::Concatenate(BoxLib::Concatenate("debug-halos-", nStep(), 5), ParallelDescriptor::MyProc(), 2));
+              os.open(amrex::Concatenate(amrex::Concatenate("debug-halos-", nStep(), 5), ParallelDescriptor::MyProc(), 2));
            created_file = true;
            halo_mass = h.totalMass;
            halo_pos  = h.position;
