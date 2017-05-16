@@ -34,17 +34,22 @@ class AGNParticleContainer
 {
 public:
 
-    using MyParIter = amrex::ParIter<5>;
+    using MyParIter = amrex::ParIter<2+BL_SPACEDIM>;
     using PairIndex = std::pair<int, int>;
     using GhostCommMap = std::map<GhostCommTag, amrex::Array<char> >;
 
     AGNParticleContainer (amrex::Amr* amr)
-        : NyxParticleContainer<5>(amr)
+        : NyxParticleContainer<2+BL_SPACEDIM>(amr)
     { }
 
     virtual ~AGNParticleContainer () {}
 
     const int NumberOfParticles(MyParIter& pti) { return pti.GetArrayOfStructs().size(); }
+
+    virtual void moveKickDrift (amrex::MultiFab& acceleration, int level, amrex::Real timestep,
+                                amrex::Real a_old = 1.0, amrex::Real a_half = 1.0, int where_width = 0);
+    virtual void moveKick      (amrex::MultiFab& acceleration, int level, amrex::Real timestep,
+                                amrex::Real a_new = 1.0, amrex::Real a_half = 1.0);
 
     void AddOneParticle (int lev, int grid, int tile, amrex::Real mass, 
                          amrex::Real x, amrex::Real y, amrex::Real z)

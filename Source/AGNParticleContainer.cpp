@@ -7,6 +7,171 @@ using namespace amrex;
 using std::cout;
 using std::endl;
 
+void
+AGNParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
+		                     int                    lev,
+                    		     amrex::Real            dt,
+		                     amrex::Real            a_old,
+				     amrex::Real            a_half,
+				     int                    where_width)
+{
+    BL_PROFILE("AGNParticleContainer::moveKickDrift()");
+
+    //If there are no particles at this level
+    if (lev >= this->GetParticles().size())
+        return;
+
+    const Real* dx = Geom(lev).CellSize();
+
+    const amrex::Real strttime      = amrex::ParallelDescriptor::second();
+
+    amrex::MultiFab* ac_ptr;
+    if (this->OnSameGrids(lev, acceleration))
+    {
+        ac_ptr = &acceleration;
+    }
+    else
+    {
+        ac_ptr = new amrex::MultiFab(this->m_gdb->ParticleBoxArray(lev),
+					 this->m_gdb->ParticleDistributionMap(lev),
+					 acceleration.nComp(),acceleration.nGrow());
+        for (amrex::MFIter mfi(*ac_ptr); mfi.isValid(); ++mfi)
+            ac_ptr->setVal(0.);
+        ac_ptr->copy(acceleration,0,0,acceleration.nComp());
+        ac_ptr->FillBoundary();
+    }
+
+    const Real* plo = Geom(lev).ProbLo();
+
+    int do_move = 1;
+
+    for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
+
+        AoS& particles = pti.GetArrayOfStructs();
+        int Np = particles.size();
+
+        if (Np > 0)
+        {
+           const Box& ac_box = (*ac_ptr)[pti].box();
+
+           update_agn_particles(&Np, particles.data(),
+                                (*ac_ptr)[pti].dataPtr(),
+                                ac_box.loVect(), ac_box.hiVect(),
+                                plo,dx,dt,a_old,a_half,&do_move);
+        }
+    }
+
+    if (ac_ptr != &acceleration) delete ac_ptr;
+    
+    ParticleLevel&    pmap          = this->GetParticles(lev);
+    if (lev > 0 && sub_cycle)
+    {
+        amrex::ParticleLocData pld; 
+        for (auto& kv : pmap) {
+            AoS&  pbox       = kv.second.GetArrayOfStructs();
+            const int   n    = pbox.size();
+
+#ifdef _OPENMP
+#pragma omp parallel for private(pld)
+#endif
+            for (int i = 0; i < n; i++)
+            {
+                ParticleType& p = pbox[i];
+                if (p.id() <= 0) continue;
+
+                // Move the particle to the proper ghost cell. 
+                //      and remove any *ghost* particles that have gone too far
+                // Note that this should only negate ghost particles, not real particles.
+                if (!this->Where(p, pld, lev, lev, where_width))
+                {
+                    // Assert that the particle being removed is a ghost particle;
+                    // the ghost particle is no longer in relevant ghost cells for this grid.
+                    if (p.id() == amrex::GhostParticleID)
+                    {
+                        p.id() = -1;
+                    }
+                    else
+                    {
+                        std::cout << "Oops -- removing particle " << p.id() << std::endl;
+                        amrex::Error("Trying to get rid of a non-ghost particle in moveKickDrift");
+                    }
+                }
+            }
+        }
+    }
+
+    if (this->m_verbose > 1)
+    {
+        amrex::Real stoptime = amrex::ParallelDescriptor::second() - strttime;
+
+        amrex::ParallelDescriptor::ReduceRealMax(stoptime,amrex::ParallelDescriptor::IOProcessorNumber());
+
+        if (amrex::ParallelDescriptor::IOProcessor())
+        {
+            std::cout << "AGNParticleContainer::moveKickDrift() time: " << stoptime << '\n';
+        }
+    }
+}
+
+void
+AGNParticleContainer::moveKick (MultiFab&       acceleration,
+                                int             lev,
+                                Real            dt,
+                                Real            a_new,
+                                Real            a_half) 
+{
+    BL_PROFILE("AGNParticleContainer::moveKick()");
+
+    const Real strttime  = ParallelDescriptor::second();
+
+    const Real* dx = Geom(lev).CellSize();
+
+    MultiFab* ac_ptr;
+    if (OnSameGrids(lev,acceleration))
+    {
+        ac_ptr = &acceleration;
+    }
+    else 
+    {
+        ac_ptr = new MultiFab(ParticleBoxArray(lev),
+				  ParticleDistributionMap(lev),
+				  acceleration.nComp(),acceleration.nGrow());
+        for (MFIter mfi(*ac_ptr); mfi.isValid(); ++mfi)
+            ac_ptr->setVal(0.);
+        ac_ptr->copy(acceleration,0,0,acceleration.nComp());
+        ac_ptr->FillBoundary();
+    }
+
+    const Real* plo = Geom(lev).ProbLo();
+
+    int do_move = 0;
+
+    for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
+
+        AoS& particles = pti.GetArrayOfStructs();
+        int Np = particles.size();
+
+        if (Np > 0)
+        {
+           const Box& ac_box = (*ac_ptr)[pti].box();
+
+           update_agn_particles(&Np, particles.data(),
+                                (*ac_ptr)[pti].dataPtr(),
+                                ac_box.loVect(), ac_box.hiVect(),
+                                plo,dx,dt,a_half,a_new,&do_move);
+        }
+    }
+    
+    if (ac_ptr != &acceleration) delete ac_ptr;
+
+    if (m_verbose > 1)
+    {
+        Real stoptime = ParallelDescriptor::second() - strttime;
+        ParallelDescriptor::ReduceRealMax(stoptime,ParallelDescriptor::IOProcessorNumber());
+        amrex::Print() << "AGNParticleContainer::moveKick() time: " << stoptime << '\n';
+    }
+}
+
 void AGNParticleContainer::ComputeOverlap(int lev)
 {
     Array<int> my_id;

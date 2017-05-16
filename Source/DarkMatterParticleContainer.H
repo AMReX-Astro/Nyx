@@ -14,6 +14,8 @@ public:
         : NyxParticleContainer<1+BL_SPACEDIM>(amr)
     { }
 
+    using MyParIter = amrex::ParIter<1+BL_SPACEDIM>;
+
     virtual ~DarkMatterParticleContainer () {}
 
     void InitCosmo  (amrex::MultiFab& mf, const amrex::Real vel_fac[], const amrex::Array<int> n_part, const amrex::Real particleMass);
@@ -25,6 +27,11 @@ public:
                                  amrex::BoxArray &baWhereNot, int lev, int nlevs);
 
     void AssignDensityAndVels (amrex::Array<std::unique_ptr<amrex::MultiFab> >& mf, int lev_min = 0) const;
+
+    virtual void moveKickDrift (amrex::MultiFab& acceleration, int level, amrex::Real timestep,
+                                amrex::Real a_old = 1.0, amrex::Real a_half = 1.0, int where_width = 0);
+    virtual void moveKick      (amrex::MultiFab& acceleration, int level, amrex::Real timestep,
+                                amrex::Real a_new = 1.0, amrex::Real a_half = 1.0);
 
 };
 

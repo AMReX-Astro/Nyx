@@ -3,12 +3,12 @@
 
     use iso_c_binding
     use amrex_fort_module, only : amrex_real
-    use particle_mod      , only: particle_t
+    use particle_mod      , only: agn_particle_t
 
-    integer,          intent(in   )   :: np, ng
-    type(particle_t), intent(inout)   :: particles(np)
-    type(particle_t), intent(in   )   :: ghosts(ng)
-    real(amrex_real), intent(in   )   :: delta_x(3)
+    integer             , intent(in   ) :: np, ng
+    type(agn_particle_t), intent(inout) :: particles(np)
+    type(agn_particle_t), intent(in   ) :: ghosts(ng)
+    real(amrex_real)    , intent(in   ) :: delta_x(3)
 
     real(amrex_real) dx, dy, dz, r2
     real(amrex_real) cutoff
@@ -70,12 +70,12 @@
 
     use amrex_fort_module, only : amrex_real
     use fundamental_constants_module, only: Gconst
-    use particle_mod      , only: particle_t
+    use particle_mod      , only: agn_particle_t
 
-    integer,          intent(in   )  :: np, ng
-    type(particle_t), intent(inout)  :: particles(np)
-    type(particle_t), intent(in   )   :: ghosts(ng)
-    real(amrex_real), intent(in   )  :: delta_x(3)
+    integer             , intent(in   ) :: np, ng
+    type(agn_particle_t), intent(inout) :: particles(np)
+    type(agn_particle_t), intent(in   ) :: ghosts(ng)
+    real(amrex_real)    , intent(in   ) :: delta_x(3)
 
     real(amrex_real) dx, dy, dz, r2
     real(amrex_real) du, dv, dw, vrelsq
@@ -210,18 +210,18 @@
     use iso_c_binding
     use amrex_fort_module, only : amrex_real
     use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN
-    use particle_mod      , only: particle_t
+    use particle_mod      , only: agn_particle_t
 
-    integer,          intent(in   )        :: np
-    integer,          intent(in   )        :: sold_lo(3), sold_hi(3)
-    integer,          intent(in   )        :: snew_lo(3), snew_hi(3)
-    integer,          intent(in   )        :: add_energy
-    type(particle_t), intent(inout)        :: particles(np)
-    real(amrex_real), intent(in   )        :: state_old &
+    integer,              intent(in   )        :: np
+    integer,              intent(in   )        :: sold_lo(3), sold_hi(3)
+    integer,              intent(in   )        :: snew_lo(3), snew_hi(3)
+    integer,              intent(in   )        :: add_energy
+    type(agn_particle_t), intent(inout)    :: particles(np)
+    real(amrex_real),     intent(in   )        :: state_old &
          (sold_lo(1):sold_hi(1),sold_lo(2):sold_hi(2),sold_lo(3):sold_hi(3),NVAR)
-    real(amrex_real), intent(in   )        :: state_new &
+    real(amrex_real),     intent(in   )        :: state_new &
          (snew_lo(1):snew_hi(1),snew_lo(2):snew_hi(2),snew_lo(3):snew_hi(3),NVAR)
-    real(amrex_real), intent(in   )        :: dx(3)
+    real(amrex_real),     intent(in   )        :: dx(3)
 
     integer          :: i, j, k, n
     integer          :: ii, jj, kk
@@ -282,13 +282,13 @@
     use fundamental_constants_module, only: Gconst, pi, eddington_const
     use eos_module
     use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEINT
-    use particle_mod      , only: particle_t
+    use particle_mod      , only: agn_particle_t
 
-    integer,          intent(in   )        :: np, slo(3), shi(3)
-    type(particle_t), intent(inout)        :: particles(np)
-    real(amrex_real), intent(in   )        :: state &
+    integer,              intent(in   )        :: np, slo(3), shi(3)
+    type(agn_particle_t), intent(inout)        :: particles(np)
+    real(amrex_real),     intent(in   )        :: state &
          (slo(1):shi(1),slo(2):shi(2),slo(3):shi(3),NVAR)
-    real(amrex_real), intent(in   )        :: eps_rad, dt, dx(3)
+    real(amrex_real),     intent(in   )        :: eps_rad, dt, dx(3)
 
     integer          :: i, j, k, n
     integer          :: ii, jj, kk
