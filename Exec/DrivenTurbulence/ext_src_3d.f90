@@ -45,8 +45,6 @@
       real(rt),intent(  out) :: src(src_l1:src_h1,src_l2:src_h2,src_l3:src_h3,NVAR)
       real(rt),intent(in   ) :: problo(3),dx(3),time,z,dt
 
-      src = 0.d0
-
       call ext_src_force(lo,hi,&
                          old_state,old_state_l1,old_state_l2,old_state_l3,old_state_h1,old_state_h2,old_state_h3,&
                          new_state,new_state_l1,new_state_l2,new_state_l3,new_state_h1,new_state_h2,new_state_h3,&

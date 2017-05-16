@@ -47,7 +47,7 @@ contains
     end if
 
     wavevectors(:,m+1) = kvect(:) ! index conversion from C to Fortran
-    print *, m+1, "k = ", wavevectors(1,m+1), wavevectors(2,m+1), wavevectors(3,m+1)
+    !print *, m+1, "k = ", wavevectors(1,m+1), wavevectors(2,m+1), wavevectors(3,m+1)
   end subroutine fort_set_wavevector
 
   ! set modes
@@ -66,9 +66,9 @@ contains
     modes_even(:,comp+1) = even(:)
     modes_odd(:,comp+1) = odd(:)
 
-    do m = 1, num_modes
-        print *, comp, m, modes_even(m,comp+1), modes_odd(m,comp+1)
-    end do
+    !do m = 1, num_modes
+    !    print *, comp, m, modes_even(m,comp+1), modes_odd(m,comp+1)
+    !end do
 
   end subroutine fort_set_modes
 

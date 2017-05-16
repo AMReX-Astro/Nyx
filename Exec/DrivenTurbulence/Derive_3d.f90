@@ -864,7 +864,7 @@
          end do
       end do
 
-      ! compute force-component in physical space
+      ! compute acceleration-componentin physical space
       do k = lo(3),hi(3)
          do j = lo(2),hi(2)
             do i = lo(1),hi(1)
@@ -894,7 +894,7 @@
                   mk = mk + 1
                end do
 
-               force(i,j,k,1) = M_SQRT_2 * accel
+               force(i,j,k,1) = M_SQRT_2 * dat(i,j,k,1) * accel
 
             end do
          end do
@@ -1028,7 +1028,7 @@
          end do
       end do
 
-      ! compute force-component in physical space
+      ! compute acceleration-componentin physical space
       do k = lo(3),hi(3)
          do j = lo(2),hi(2)
             do i = lo(1),hi(1)
@@ -1058,7 +1058,7 @@
                   mk = mk + 1
                end do
 
-               force(i,j,k,1) = M_SQRT_2 * accel
+               force(i,j,k,1) = M_SQRT_2 * dat(i,j,k,1)* accel
 
             end do
          end do
@@ -1192,7 +1192,7 @@
          end do
       end do
 
-      ! compute force-component in physical space
+      ! compute acceleration-componentin physical space
       do k = lo(3),hi(3)
          do j = lo(2),hi(2)
             do i = lo(1),hi(1)
@@ -1222,7 +1222,7 @@
                   mk = mk + 1
                end do
 
-               force(i,j,k,1) = M_SQRT_2 * accel
+               force(i,j,k,1) = M_SQRT_2 * dat(i,j,k,1)* accel
 
             end do
          end do

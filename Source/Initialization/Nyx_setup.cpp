@@ -618,9 +618,6 @@ Nyx::hydro_setup()
                    BL_FORT_PROC_CALL(DERNULL, dernull), grow_box_by_one);
     derive_lst.addComponent("total_density", desc_lst, State_Type,
                             Density, 1);
-    //
-    // Forcing
-    //
     derive_lst.add("Rank", IndexType::TheCellType(), 1,
                    BL_FORT_PROC_CALL(DERNULL, dernull), grow_box_by_one);
 

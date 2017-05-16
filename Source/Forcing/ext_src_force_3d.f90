@@ -38,7 +38,8 @@ subroutine ext_src_force(lo, hi, old_state, os_l1, os_l2, os_l3, os_h1, os_h2, o
     use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : NVAR, UMX, UMY, UMZ, UEDEN, UEINT
     use fundamental_constants_module
- 
+    use atomic_rates_module, only: interp_to_this_z
+
     implicit none
 
     integer, intent(in) :: lo(3), hi(3)
@@ -70,15 +71,14 @@ subroutine ext_src_force(lo, hi, old_state, os_l1, os_l2, os_l3, os_h1, os_h2, o
 
     real(rt), allocatable :: tmp_state(:,:,:,:)
 
-    integer          :: i, j, k
-    integer          :: src_lo(3),src_hi(3)
+    integer  :: i, j, k
     real(rt) :: a, half_dt
 
     ! Make a copy of the state so we can evolve it then throw it away
     allocate(tmp_state(ns_l1:ns_h1,ns_l2:ns_h2,ns_l3:ns_h3,NVAR))
     tmp_state(:,:,:,:) = new_state(:,:,:,:)
 
-     a = 1.d0 / (1.d0+z)
+    a = 1.d0 / (1.d0+z)
 
     ! Note that when we call this routine to compute the "old" source,
     !      both "old_state" and "new_state" are acutally the "old" state.
@@ -86,34 +86,24 @@ subroutine ext_src_force(lo, hi, old_state, os_l1, os_l2, os_l3, os_h1, os_h2, o
     !      both "old_state" is in fact the "old" state and
     !           "new_state" is in fact the "new" state
 
-    print *, "ext_src_force lo = ", lo
-    print *, "ext_src_force hi = ", hi
-
-    src_lo(1) = src_l1
-    src_lo(2) = src_l2
-    src_lo(3) = src_l3
-    src_hi(1) = src_h1
-    src_hi(2) = src_h2
-    src_hi(3) = src_h3
-
-    print *, "ext_src_force src_lo = ", src_lo
-    print *, "ext_src_force src_hi = ", src_hi
-
     half_dt = 0.5d0 * dt
 
-    call integrate_state_force(src_lo,src_hi,tmp_state,ns_l1,ns_l2,ns_l3, ns_h1,ns_h2,ns_h3, &
-                                             new_diag ,nd_l1,nd_l2,nd_l3, nd_h1,nd_h2,nd_h3, &
+    call integrate_state_force(lo,hi,tmp_state,ns_l1,ns_l2,ns_l3,ns_h1,ns_h2,ns_h3, &
+                                     new_diag ,nd_l1,nd_l2,nd_l3,nd_h1,nd_h2,nd_h3, &
                                dx,time,a,half_dt)
 
-    do k = src_l3, src_h3
-        do j = src_l2, src_h2
-            do i = src_l1, src_h1
-                  src(i,j,k,UMX)   = (tmp_state(i,j,k,UMX)   - new_state(i,j,k,UMX)) * a / half_dt
-                  src(i,j,k,UMY)   = (tmp_state(i,j,k,UMY)   - new_state(i,j,k,UMY)) * a / half_dt
-                  src(i,j,k,UMZ)   = (tmp_state(i,j,k,UMZ)   - new_state(i,j,k,UMZ)) * a / half_dt
-                  src(i,j,k,UEINT) = (tmp_state(i,j,k,UEINT) - new_state(i,j,k,UEINT)) * a / half_dt
-                  src(i,j,k,UEDEN) = (tmp_state(i,j,k,UEDEN) - new_state(i,j,k,UEDEN)) * a / half_dt
-            end do
+    ! Recall that this routine is called from a tiled MFIter 
+    !   For old source: lo(:), hi(:) are the bounds of the growntilebox(src.nGrow9))
+    !   For new source: lo(:), hi(:) are the bounds of the      tilebox, e.g. valid region only
+    do k = lo(3),hi(3)
+        do j = lo(2),hi(2)
+            do i = lo(1),hi(1)
+               src(i,j,k,UMX)   = (tmp_state(i,j,k,UMX)   - new_state(i,j,k,UMX)) * a / half_dt
+               src(i,j,k,UMY)   = (tmp_state(i,j,k,UMY)   - new_state(i,j,k,UMY)) * a / half_dt
+               src(i,j,k,UMZ)   = (tmp_state(i,j,k,UMZ)   - new_state(i,j,k,UMZ)) * a / half_dt
+               src(i,j,k,UEINT) = (tmp_state(i,j,k,UEINT) - new_state(i,j,k,UEINT)) * a / half_dt
+               src(i,j,k,UEDEN) = (tmp_state(i,j,k,UEDEN) - new_state(i,j,k,UEDEN)) * a / half_dt
+           end do
         end do
     end do
 
