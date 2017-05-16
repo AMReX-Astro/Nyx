@@ -30,6 +30,10 @@
 
     do n = 1, np
 
+       if (particles(n)%id .le. 0) then
+          cycle
+       end if
+
        lx = (particles(n)%pos(1) - plo(1))*inv_dx(1) + 0.5d0
        ly = (particles(n)%pos(2) - plo(2))*inv_dx(2) + 0.5d0
        lz = (particles(n)%pos(3) - plo(3))*inv_dx(3) + 0.5d0
@@ -113,6 +117,10 @@
     dt_a_cur_inv = dt * a_cur_inv;
 
     do n = 1, np
+
+       if (particles(n)%id .le. 0) then
+          cycle
+       end if
 
        lx = (particles(n)%pos(1) - plo(1))*inv_dx(1) + 0.5d0
        ly = (particles(n)%pos(2) - plo(2))*inv_dx(2) + 0.5d0
