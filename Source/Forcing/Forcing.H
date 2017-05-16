@@ -102,6 +102,7 @@ class StochasticForcing {
 //
 // Get boundary indices and range of spectral domain
 //
+    int get_SpectralRank(void);
     int get_LeftBoundary(int dim);
     int get_RightBoundary(int dim);
     int get_Range(int dim);
@@ -167,6 +168,11 @@ inline void StochasticForcing::set_SolenoidalWeight(int my_soln_weight)
     if (my_soln_weight >= 1.0) SolenoidalWeight = 1.0;
     if (my_soln_weight  < 1.0) SolenoidalWeight = my_soln_weight;
     if (my_soln_weight <= 0.0) SolenoidalWeight = 0.0;
+}
+
+inline int StochasticForcing::get_SpectralRank(void)
+{
+    return SpectralRank;
 }
 
 inline int StochasticForcing::get_LeftBoundary(int dim)

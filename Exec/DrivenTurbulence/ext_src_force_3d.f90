@@ -86,12 +86,18 @@ subroutine ext_src_force(lo, hi, old_state, os_l1, os_l2, os_l3, os_h1, os_h2, o
     !      both "old_state" is in fact the "old" state and
     !           "new_state" is in fact the "new" state
 
+    print *, "ext_src_force lo = ", lo
+    print *, "ext_src_force hi = ", hi
+
     src_lo(1) = src_l1
     src_lo(2) = src_l2
     src_lo(3) = src_l3
     src_hi(1) = src_h1
     src_hi(2) = src_h2
     src_hi(3) = src_h3
+
+    print *, "ext_src_force src_lo = ", src_lo
+    print *, "ext_src_force src_hi = ", src_hi
 
     half_dt = 0.5d0 * dt
 

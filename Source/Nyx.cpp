@@ -498,15 +498,15 @@ Nyx::Nyx (Amr&            papa,
     const Real* prob_lo = geom.ProbLo();
     const Real* prob_hi = geom.ProbHi();
 
+
     if (do_forcing)
     {
         // forcing is a static object, only alloc if not already there
-        if (forcing == 0) {
-          forcing = new StochasticForcing();
-	}
+        if (forcing == 0)
+           forcing = new StochasticForcing();
 
-        forcing->init(3, prob_lo, prob_hi);
-   }
+        forcing->init(BL_SPACEDIM, prob_lo, prob_hi);
+    }
 #endif
 
     // Initialize the "a" variable

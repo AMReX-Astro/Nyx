@@ -518,7 +518,10 @@ Nyx::advance_hydro (Real time,
 #endif
 
 #ifdef FORCING
-    forcing->evolve(dt);
+    if (do_forcing) 
+    {
+        forcing->evolve(dt);
+    }
 #endif
 
     // Call the hydro advance itself

@@ -8,6 +8,8 @@
 
 #include "Forcing.H"
 
+using namespace amrex;
+
 void mt_init(unsigned int seed);
 
 /***********************************************************************
@@ -55,6 +57,8 @@ void mt_init(unsigned int seed);
 
 void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
 {
+    int i, j, k, m, n;
+
     /* set parameters */
 
     Real domain_length[SpectralRank];
@@ -118,19 +122,52 @@ void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
 
 	if (SpectProfile == Peak) {
 
-	    for (int n = 0; n < NumModes; n++)
+            if (verbose > 1)
+	       std::cout << "\ni1 = " << i1 << ", i2 = " << i2 
+	                 << "\nj1 = " << j1 << ", j2 = " << j2 
+	                 << "\nk1 = " << k1 << ", k2 = " << k2 << std::endl;
+
+	    for (n = 0; n < NumModes; n++)
 		Amplitude[0][n] = 0.0;
 
-	    Amplitude[0][(i2-1)/2] = 1.0;
-	    Amplitude[0][(i2-1)/2+2] = 1.0;
-	    if (SpectralRank > 1) 
-		Amplitude[0][(j2+1)*(i2-i1+1)/2-1] = 1.0;
-	    if (SpectralRank > 2) 
-	    Amplitude[0][(k2+1)*(j2-j1+1)*(i2-i1+1)/2-1] = 1.0;
+	    for (i = 1; i <= i2; i++) {
+            	if (i == alpha[0])
+	           Amplitude[0][i-1] = 1.0;
+		if (verbose > 1) 
+ 	           std::cout <<   "i = " << i 
+	                     << ", n = " << i-1 << ", Amplitude = " << Amplitude[0][i-1] << std::endl;
+	    }
+
+	    if (SpectralRank > 1) {
+
+		n = i2;
+		for (j = 1; j <= j2; j++)
+		    for (i = i1; i <= i2; i++) {
+	                if (i == 0 && j == alpha[1])
+                           Amplitude[0][n] = 1.0; 
+	                if (verbose > 1)
+	                   std::cout <<   "i = " << i <<  ", j = " << j 
+	                             << ", n = " << n << ", Amplitude = " << Amplitude[0][n] << std::endl;
+			++n;
+	            }
+
+		if (SpectralRank > 2) {
+
+	            for (k = 1; k <= k2; k++)
+	                for (j = j1; j <= j2; j++)
+	                    for (i = i1; i <= i2; i++) {
+	                        if (i == 0 && j == 0 && k == alpha[2])
+                                   Amplitude[0][n] = 1.0;
+	                        if (verbose > 1)
+	                           std::cout <<   "i = " << i <<  ", j = " << j << ", k = " << k 
+	                                     << ", n = " << n << ", Amplitude = " << Amplitude[0][n] << std::endl;	                       
+	                        ++n;
+	                    }
+	        }
+	    }
 
 	} else {
 	    
-	    int i, j, k, n;
 	    Real x1, x2;
 	    Real a, a1 = 1.0, a2 = 1.0;
  
@@ -154,10 +191,10 @@ void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
 		    if ((x1 >= 0.0) && (x2 >= 0.0)) Amplitude[0][i-1] = 1.0;
 		}
 
-		if (verbose > 1) 
+ 		if (verbose > 1) 
 		    std::cout << "i = " << i << ", a = " << a 
 		              << ", x1 = " << x1 << ", x2 = " << x2
-		              << ", n = " << n << ", Amplitude = " << Amplitude[0][n] << std::endl;
+		              << ", n = " << i-1 << ", Amplitude = " << Amplitude[0][i-1] << std::endl;
 	    }
 
 	    if (SpectralRank > 1) {
@@ -267,11 +304,11 @@ void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
            set flags for modes with amplitude larger than the threshold */
 
 	Real norm = 0.0;
-	for (int n = 0; n < NumModes; n++) norm += 2*Amplitude[0][n]*Amplitude[0][n];
+	for (n = 0; n < NumModes; n++) norm += 2*Amplitude[0][n]*Amplitude[0][n];
 	norm = 1/sqrt(norm);
 
 	NumNonZeroModes = 0;
-	for (int n = 0; n < NumModes; n++) {
+	for (n = 0; n < NumModes; n++) {
 	    Amplitude[0][n] *= norm;
 	    if (Amplitude[0][n] > AmpltThresh) {
 		mask[n] = 1;
@@ -293,13 +330,14 @@ void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
 	    InjectionEven[dim] = new Real[NumModes];
 	    InjectionOdd[dim]  = new Real[NumModes];
 
-	    norm = 3.0 * IntgrVelocity[dim] * IntgrVelocity[dim] / 
-		 (sqrt(1.0 - 2.0*SolenoidalWeight + 3.0*SolenoidalWeight*SolenoidalWeight) * IntgrLength[dim]);
+            // normalization such that RMS acceleration is V/T for isotropic characteristic scales 
+	    norm = (IntgrVelocity[dim]/IntgrTime[dim]) /
+	           sqrt(1.0 - 2.0*SolenoidalWeight + 3.0*SolenoidalWeight*SolenoidalWeight);
 
 	    if (verbose) 
 	        std::cout << "Normalization factor[" << dim << "] = " << norm << std::endl;
 
-	    for (int n = 0; n < NumModes; n++) {
+	    for (n = 0; n < NumModes; n++) {
 		Amplitude[dim][n] *= norm;
 		InjectionEven[dim][n] = 0.0;
 		InjectionOdd [dim][n] = 0.0;
@@ -320,16 +358,6 @@ void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
     ParallelDescriptor::Bcast(&NumNonZeroModes, 1, ParallelDescriptor::IOProcessorNumber());
     ParallelDescriptor::Bcast(mask, NumModes, ParallelDescriptor::IOProcessorNumber());
 
-    /* determine number of non-zero modes if receiver */
-
-    if (!ParallelDescriptor::IOProcessorNumber()) {
-	NumNonZeroModes = 0;
-	for (int n = 0; n < NumModes; n++)
-	    if (mask[n]) ++NumNonZeroModes;
-	if (verbose < 1) 
-	    std::cout << "Number of non-zero stochastic forcing modes = " << NumNonZeroModes << std::endl;
-    }
-
     /* allocate memory for the forcing spectrum and set inital random deviates */
 
     for (int dim = 0; dim < SpectralRank; dim++) {
@@ -338,13 +366,17 @@ void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
 	SpectrumOdd[dim]  = new Real[NumNonZeroModes];
 	
 	if (ParallelDescriptor::IOProcessor()) {  
-	    for (int n = 0, m = 0; n < NumModes; n++) {
+	    std::cout << "Master #" << ParallelDescriptor::MyProc() << " spectrum:\n";
+	    for (n = 0, m = 0; n < NumModes; n++) {
 		if (mask[n]) { // set only non-zero modes
 		    SpectrumEven[dim][m] = InjectionEven[dim][n];
 		    SpectrumOdd [dim][m] = InjectionOdd [dim][n];
+		    std::cout << "   " << dim << ", mode " << n << " = (" 
+	                     << SpectrumEven[dim][m] << "," << SpectrumOdd [dim][m] << ")\n";
 		    ++m;
 		}
 	    }
+            std::cout << std::endl;
 	}
     }
 
@@ -354,6 +386,55 @@ void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
 	ParallelDescriptor::Bcast(SpectrumEven[dim], NumNonZeroModes, ParallelDescriptor::IOProcessorNumber());
 	ParallelDescriptor::Bcast(SpectrumOdd[dim],  NumNonZeroModes, ParallelDescriptor::IOProcessorNumber());
     }
+/*
+    if (verbose > 1) {
+	for (int dim = 0; dim < SpectralRank; dim++)
+	    for (int m = 0; m < NumNonZeroModes; m++)
+		std::cout << "   #" << ParallelDescriptor::MyProc() << ", "<< dim << ", mode " << m << " = (" 
+	                  << SpectrumEven[dim][m] << "," << SpectrumOdd [dim][m] << ")\n";
+
+	std::cout << std::endl;
+    }
+*/
+    /* copy sepctrum to forcing_spect_module */
+
+    fort_alloc_spect(&NumNonZeroModes);
+
+    int kvect[SpectralRank];
+ 
+    m = 0;
+    for (i = 1; i <= i2; i++)
+        if (mask[i-1]) {
+	   kvect[0] = i; kvect[1] = 0; kvect[2] = 0;
+           fort_set_wavevector(kvect, &m);
+           ++m;
+    }
+    if (SpectralRank > 1) {
+        
+       n = i2;
+       for (j = 1; j <= j2; j++) 
+           for (i = i1; i <= i2; i++)
+               if (mask[n++]) {
+                  kvect[0] = i; kvect[1] = j; kvect[2] = 0;
+                  fort_set_wavevector(kvect, &m);
+                  ++m;
+               }
+
+       if (SpectralRank > 2) {
+       
+          for (k = 1; k <= k2; k++)
+              for (j = j1; j <= j2; j++)
+                  for (i = i1; i <= i2; i++)
+                      if (mask[n++]) {
+                         kvect[0] = i; kvect[1] = j; kvect[2] = k;
+                         fort_set_wavevector(kvect, &m);
+                         ++m;
+                      }
+       }
+    }
+
+    for (int dim = 0; dim < SpectralRank; dim++)
+        fort_set_modes(SpectrumEven[dim], SpectrumOdd[dim], &NumNonZeroModes, &dim);
 
     return;
 }
@@ -373,8 +454,6 @@ void StochasticForcing::read_params()
 
         pp.query("seed", seed);
 
-	std::cout << "seed " << seed << std::endl;
-
 	int profile = 3;
 	pp.query("profile", profile);
         switch(profile) {
@@ -387,8 +466,6 @@ void StochasticForcing::read_params()
                     amrex::Abort("StochasticForcing::invalid parameter");
         }
 
-	std::cout << "profile " << profile << std::endl;
-
         pp.query("soln_weight", SolenoidalWeight);
         if (SolenoidalWeight > 1.0 || SolenoidalWeight < 0.0) {
            if (ParallelDescriptor::IOProcessorNumber())
@@ -396,8 +473,6 @@ void StochasticForcing::read_params()
            amrex::Abort("StochasticForcing::invalid parameter");
         }
         if (SpectralRank == 1) SolenoidalWeight = 0.0;
-
-	std::cout << "SolenoidalWeight " << SolenoidalWeight << std::endl;
 
         Array<int> input_int(SpectralRank);
 
@@ -412,8 +487,6 @@ void StochasticForcing::read_params()
                amrex::Abort("StochasticForcing::invalid parameter");
             }
         }
-
-	std::cout << "alpha " << alpha[0] << std::endl;
 
         Array<Real> input_real(SpectralRank);
 

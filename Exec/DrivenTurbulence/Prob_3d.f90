@@ -2,9 +2,9 @@
      subroutine amrex_probinit (init,name,namlen,problo,probhi) bind(c)
 
       use amrex_fort_module, only : rt => amrex_real
+
       use probdata_module
       use comoving_module
-      use turbinit_module
       use network, only : network_init
 
       implicit none
@@ -17,9 +17,6 @@
       namelist /fortin/ &
            denerr, dengrad,  max_denerr_lev,max_dengrad_lev, &
            alpha, rho0, temp0, &
-           turb_scale, force_scale, forcing_type, spectrum_type, &
-           mode_start, nmodes, forcing_time_scale_min, forcing_time_scale_max, &
-           stop_forcing, do_mode_division, &
            comoving_OmM, comoving_OmB, comoving_h
 !
 !     Build "probin" filename -- the name of file containing fortin namelist.
@@ -48,9 +45,6 @@
       rho0 = 1.d0
       temp0 = 10.d0
 
-      stop_forcing = 1.d9 ! never stops
-      force_scale = 0.0   ! force is zero
-
 !     Read namelists
 
       untin = 9 
@@ -61,8 +55,6 @@
       ! These are stored in probdata_module
       prob_lo(:) = problo(:)
       prob_hi(:) = probhi(:)
-
-      call turbforce_init(problo,probhi)
 
     end subroutine amrex_probinit
 
@@ -94,7 +86,6 @@
                                bind(C, name="fort_initdata")
 
       use probdata_module
-      use turbforce_module
       use bl_constants_module, only : TWO, ONE, HALF, ZERO, M_PI
       use atomic_rates_module, only: XHYDROGEN
       use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, TEMP_COMP, NE_COMP, &
@@ -112,19 +103,11 @@
       real(rt)    state(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3,ns)
       real(rt) diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,nd)
 
-      integer          :: i,j,k
-      real(rt) :: fact,twicePi
+      integer  :: i,j,k
       real(rt) :: eint0,rhoe0,ne0,pres0,a,r
 
       a=1.d0
       ne0=1.d0
-      twicePi  = TWO*M_PI
-
-      if (turb_scale.gt.ZERO) then
-         fact=turb_scale
-      else
-         fact=ONE
-      end if
 
       ! Call EOS to get the internal energy for constant initial temperature
       call nyx_eos_given_RT(eint0, pres0, rho0, temp0, ne0, a)

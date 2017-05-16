@@ -5,7 +5,6 @@
                               delta,xlo,problo,time,level)
       use amrex_fort_module, only : rt => amrex_real
       use probdata_module
-      use turbforce_module, only : forcing_time_scale_max, stop_forcing
       implicit none
 
       integer set, clear, nd, level
@@ -26,9 +25,10 @@
       ! use this to start at t = 0.25
       !if (time .ge. 0.125*(1 + 0.5*level)*stop_forcing*forcing_time_scale_max) then
       ! use this to test with a = 1.0
-      if (time .ge. (1 + 0.5*level)*stop_forcing*forcing_time_scale_max) then
+      !if (time .ge. (1 + 0.5*level)*stop_forcing*forcing_time_scale_max) then
       ! use this to test with a = 0.5
       !if (time .ge. 0.5*(1 + 0.5*level)*stop_forcing*forcing_time_scale_max) then
+      if (.true.) then
          !$OMP parallel do private(k,j,i)
          do k = lo(3), hi(3)
             do j = lo(2), hi(2)

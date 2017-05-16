@@ -3,11 +3,16 @@
 
 #include "Forcing.H"
 
+using namespace amrex;
+
 unsigned long int mt_random();
 
 int StochasticForcing::verbose      = 0;
 int StochasticForcing::show_timings = 0;
 int StochasticForcing::SpectralRank = 3;
+
+extern "C"
+{void fort_get_grav_const(Real* Gconst);}
 
 //
 //  Default constructor
@@ -129,6 +134,11 @@ void StochasticForcing::evolve(Real dt)
 	ParallelDescriptor::Bcast(SpectrumEven[dim], NumNonZeroModes, ParallelDescriptor::IOProcessorNumber());
 	ParallelDescriptor::Bcast(SpectrumOdd[dim],  NumNonZeroModes, ParallelDescriptor::IOProcessorNumber());
     }
+
+    /* copy sepctrum to forcing_spect_module */
+
+    for (int dim = 0; dim < SpectralRank; dim++)
+        fort_set_modes(SpectrumEven[dim], SpectrumOdd[dim], &NumNonZeroModes, &dim);
 }
 
 //
