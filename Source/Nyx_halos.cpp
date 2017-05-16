@@ -75,6 +75,8 @@ Nyx::halo_find (Real dt)
        BoxArray ba;
        DistributionMapping dm;
        getAnalysisDecomposition(Geom(), ParallelDescriptor::NProcs(), ba, dm);
+       cout << "getAnalysisDecomposition returns BoxArray size " << ba.size() << endl;
+       cout << "getAnalysisDecomposition returns DistributionMapping ProcessorMap size " << dm.ProcessorMap().size() << endl;
        amrex::MultiFab reeberMF(ba, dm, reeber_density_var_list.size() + 1, 0);
        int cnt = 1;
 
