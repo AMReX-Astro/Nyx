@@ -1121,15 +1121,18 @@ Nyx::post_timestep (int iteration)
         remove_ghost_particles();
 
     //
-    // We now redistribute with no ghost cells and 
-    //    not after iterations which do not line up with the coarser timestep.
+    // Sync up if we're level 0 or if we have particles that may have moved
+    // off the next finest level and need to be added to our own level.
     //
-    if (iteration < ncycle || level == 0)
+    if ((iteration < ncycle and level < finest_level) || level == 0)
     {
-         for (int i = 0; i < theActiveParticles().size(); i++)
-         {
-             theActiveParticles()[i]->Redistribute(level,
-                                                   theActiveParticles()[i]->finestLevel(),0);
+        for (int i = 0; i < theActiveParticles().size(); i++)
+        {
+            int ngrow = (level == 0) ? 0 : iteration;
+
+            theActiveParticles()[i]->Redistribute(level,
+                                                  theActiveParticles()[i]->finestLevel(),
+                                                  iteration);
          }
     }
 
