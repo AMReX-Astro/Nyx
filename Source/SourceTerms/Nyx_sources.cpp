@@ -34,7 +34,8 @@ Nyx::get_old_source (Real      old_time,
 #endif
     for (MFIter mfi(S_old,true); mfi.isValid(); ++mfi)
     {
-        const Box& bx = mfi.tilebox();
+        // We explicitly want to fill the ghost regions of the ext_src array
+        const Box& bx = mfi.growntilebox(ext_src.nGrow());
         fort_ext_src
             (bx.loVect(), bx.hiVect(), 
              BL_TO_FORTRAN(Sborder[mfi]), BL_TO_FORTRAN(Sborder[mfi]),
@@ -103,6 +104,7 @@ Nyx::get_new_source (Real      old_time,
 #endif
     for (MFIter mfi(S_old,true); mfi.isValid(); ++mfi)
     {
+        // We explicitly only want to fill the valid region
         const Box& bx = mfi.tilebox();
         fort_ext_src
             (bx.loVect(), bx.hiVect(), 

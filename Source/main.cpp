@@ -107,7 +107,7 @@ namespace
             DistributionMapping dm;
             getAnalysisDecomposition(geom, ParallelDescriptor::NProcsSidecar(whichSidecar), ba, dm);
 
-            MultiFab mf(ba, nComp + 1, nGhost, dm);
+            MultiFab mf(ba, dm, nComp + 1, nGhost);
 
             MultiFab *mfSource = 0;
             MultiFab *mfDest = &mf;

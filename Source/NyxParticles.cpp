@@ -371,6 +371,8 @@ Nyx::init_particles ()
         //
         DMPC->SetVerbose(particle_verbose);
 
+        DarkMatterParticleContainer::ParticleInitData pdata = {particle_initrandom_mass};
+
         if (particle_init_type == "Random")
         {
             if (particle_initrandom_count <= 0)
@@ -391,8 +393,7 @@ Nyx::init_particles ()
             }
 
             DMPC->InitRandom(particle_initrandom_count,
-                             particle_initrandom_iseed,
-                             particle_initrandom_mass,
+                             particle_initrandom_iseed, pdata,
                              particle_initrandom_serialize);
         }
         else if (particle_init_type == "RandomPerBox")
@@ -413,13 +414,8 @@ Nyx::init_particles ()
                           << particle_initrandom_iseed << "\n\n";
             }
 
-            // We just make this MultiFab in order to iterate over it ...
-            MultiFab particle_mf(grids,dmap,1,1);
-
             DMPC->InitRandomPerBox(particle_initrandom_count_per_box,
-                                   particle_initrandom_iseed,
-                                   particle_initrandom_mass,
-                                   particle_mf);
+                                   particle_initrandom_iseed, pdata);
 
         }
         else if (particle_init_type == "AsciiFile")
@@ -978,31 +974,30 @@ Nyx::remove_virtual_particles()
 }
 
 void
-Nyx::setup_ghost_particles()
+Nyx::setup_ghost_particles(int ngrow)
 {
     BL_PROFILE("Nyx::setup_ghost_particles()");
     BL_ASSERT(level < parent->finestLevel());
-    int nGrow = Nyx::grav_n_grow - 1;
     if(Nyx::theDMPC() != 0)
     {
         DarkMatterParticleContainer::AoS ghosts;
-        Nyx::theDMPC()->CreateGhostParticles(level, nGrow, ghosts);
-        Nyx::theGhostPC()->AddParticlesAtLevel(ghosts, level+1, nGrow);
+        Nyx::theDMPC()->CreateGhostParticles(level, ngrow, ghosts);
+        Nyx::theGhostPC()->AddParticlesAtLevel(ghosts, level+1, ngrow);
     }
 #ifdef AGN
     if(Nyx::theAPC() != 0)
     {
         AGNParticleContainer::AoS ghosts;
-        Nyx::theAPC()->CreateGhostParticles(level, nGrow, ghosts);
-        Nyx::theGhostAPC()->AddParticlesAtLevel(ghosts, level+1, nGrow);
+        Nyx::theAPC()->CreateGhostParticles(level, ngrow, ghosts);
+        Nyx::theGhostAPC()->AddParticlesAtLevel(ghosts, level+1, ngrow);
     }
 #endif
 #ifdef NEUTRINO_PARTICLES
     if(Nyx::theNPC() != 0)
     {
         NeutrinoParticleContainer::AoS ghosts;
-        Nyx::theNPC()->CreateGhostParticles(level, nGrow, ghosts);
-        Nyx::theGhostNPC()->AddParticlesAtLevel(ghosts, level+1, nGrow);
+        Nyx::theNPC()->CreateGhostParticles(level, ngrow, ghosts);
+        Nyx::theGhostNPC()->AddParticlesAtLevel(ghosts, level+1, ngrow);
     }
 #endif
 }
@@ -1010,7 +1005,7 @@ Nyx::setup_ghost_particles()
 void
 Nyx::remove_ghost_particles()
 {
-    BL_PROFILE("Nyx::setup_ghost_particles()");
+    BL_PROFILE("Nyx::remove_ghost_particles()");
     for (int i = 0; i < GhostParticles.size(); i++)
     {
         if (GhostParticles[i] != 0)
