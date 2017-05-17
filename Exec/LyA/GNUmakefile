@@ -45,6 +45,12 @@ DIM      = 3
 USE_GRAV = TRUE
 USE_HEATCOOL = TRUE
 
+USE_CVODE = FALSE
+
+ifeq ($(USE_CVODE), TRUE)
+  CPPFLAGS += -DUSE_CVODE
+endif
+
 Bpack := ./Make.package
 Blocs := .
 
