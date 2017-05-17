@@ -218,6 +218,18 @@ public:
     void icReadAndPrepareFab(std::string mfDirName, int nghost, amrex::MultiFab &mf);
 #endif
 
+#ifdef FORCING
+    //
+    // Write forcing spectrum in checkpoint directories
+    //
+    void forcing_check_point (const std::string& dir);
+
+    //
+    // Restore spectrum at restart
+    //
+    void forcing_post_restart(const std::string& restart_file);
+#endif 
+
     //
     // Read particle-related inputs
     //

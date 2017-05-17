@@ -1,6 +1,8 @@
 #ifndef _Forcing_H_
 #define _Forcing_H_
 
+#include <fstream>
+
 #include <AMReX_AmrLevel.H>
 
 #define MAX_DIMENSION 3
@@ -83,6 +85,10 @@ class StochasticForcing {
 //
     void evolve(amrex::Real dt);
 //
+// Distribute spectrum
+//
+    void distribute(void);
+//
 // Calculate the instantaneous RMS force
 //
     amrex::Real rms(void);
@@ -140,6 +146,14 @@ class StochasticForcing {
 // Copy complete forcing spectrum into a single array for subsequent processing
 //
     void copy_ExpandedSpectrum(int dim, amrex::Real* target);
+//
+// Read spectrum from file handle
+//
+    void read_Spectrum(std::ifstream& input);
+//
+// Write spectrum to file handle
+//
+    void write_Spectrum(std::ofstream& output);
 
   private:
 
@@ -260,6 +274,26 @@ inline void StochasticForcing::copy_ExpandedSpectrum(int dim, amrex::Real* targe
 
     for (int n = NumModes+1, m = 0; n <= 2*NumModes; n++) 
 	target[n] = mask[n-NumModes-1] ? SpectrumEven[dim][m++] : 0.0;
+}
+
+inline void StochasticForcing::read_Spectrum(std::ifstream& input)
+{
+    for (int dim = 0; dim < SpectralRank; dim++) {
+	for (int m = 0; m < NumNonZeroModes; m++) 
+            input >> SpectrumEven[dim][m];
+	for (int m = 0; m < NumNonZeroModes; m++) 
+            input >> SpectrumOdd[dim][m];
+    }
+}
+
+inline void StochasticForcing::write_Spectrum(std::ofstream& output)
+{
+    for (int dim = 0; dim < SpectralRank; dim++) {
+	for (int m = 0; m < NumNonZeroModes; m++) 
+            output << SpectrumEven[dim][m] << '\n';
+	for (int m = 0; m < NumNonZeroModes; m++) 
+            output << SpectrumOdd[dim][m] << '\n';
+    }
 }
 #endif
 

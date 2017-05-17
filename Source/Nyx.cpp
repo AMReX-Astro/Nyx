@@ -498,7 +498,6 @@ Nyx::Nyx (Amr&            papa,
     const Real* prob_lo = geom.ProbLo();
     const Real* prob_hi = geom.ProbHi();
 
-
     if (do_forcing)
     {
         // forcing is a static object, only alloc if not already there
@@ -573,6 +572,20 @@ Nyx::restart (Amr&     papa,
     {
         BL_ASSERT(gravity == 0);
         gravity = new Gravity(parent, parent->finestLevel(), &phys_bc, Density);
+    }
+#endif
+
+#ifdef FORCING
+    const Real* prob_lo = geom.ProbLo();
+    const Real* prob_hi = geom.ProbHi();
+
+    if (do_forcing)
+    {
+        // forcing is a static object, only alloc if not already there
+        if (forcing == 0)
+           forcing = new StochasticForcing();
+
+        forcing->init(BL_SPACEDIM, prob_lo, prob_hi);
     }
 #endif
 }
@@ -1401,6 +1414,14 @@ Nyx::post_restart ()
                 }
             }
         }
+    }
+#endif
+
+#ifdef FORCING
+    if (do_forcing)
+    {
+        if (level == 0)
+           forcing_post_restart(parent->theRestartFile());
     }
 #endif
 

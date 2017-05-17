@@ -12,6 +12,8 @@ using namespace amrex;
 
 void mt_init(unsigned int seed);
 
+void mt_read(std::ifstream& input);
+
 /***********************************************************************
 /
 /  STOCHASTIC FORCING CLASS METHOD: init
@@ -52,6 +54,7 @@ void mt_init(unsigned int seed);
 /           forcing.soln_weight -- determines weight of solenoidal relative
 /                                  to dilatational modes (1 = purely 
 /                                  solenoidal, 0 = purely dilatational)
+/           read_Spectrum()
 /
 ************************************************************************/
 
@@ -396,7 +399,7 @@ void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
 	std::cout << std::endl;
     }
 */
-    /* copy sepctrum to forcing_spect_module */
+    /* set wave vectors and copy sepctrum to forcing_spect_module */
 
     fort_alloc_spect(&NumNonZeroModes);
 
@@ -439,6 +442,9 @@ void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
     return;
 }
 
+//
+// Read forcing parameters from inputs
+//
 void StochasticForcing::read_params()
 {
     static bool done = false;
@@ -522,5 +528,34 @@ void StochasticForcing::read_params()
 #endif
         }
     }
+}
+
+//
+// Read the spectrum from checkpoint file
+//
+void
+Nyx::forcing_post_restart (const std::string& restart_file)
+{
+    if (level > 0)
+        return;
+
+    if (ParallelDescriptor::IOProcessor())
+    {
+        std::string FileName = restart_file + "/forcing";
+        std::ifstream File;
+        File.open(FileName.c_str(), std::ios::in);
+        if (!File.good())
+            amrex::FileOpenFailed(FileName);
+        forcing->read_Spectrum(File);
+        File.close();
+
+        FileName = restart_file + "/mt";
+        File.open(FileName.c_str(), std::ios::in);
+        if (!File.good())
+            amrex::FileOpenFailed(FileName);
+        mt_read(File);
+    }
+
+    forcing->distribute();
 }
 

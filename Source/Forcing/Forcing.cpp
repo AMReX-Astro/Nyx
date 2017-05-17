@@ -81,7 +81,7 @@ StochasticForcing::~StochasticForcing()
  *           Parameters:
  *           dt -- time step (small compared to AutoCorrlTime)
  *
- *  AUXILIARIES: inject, gauss_deviate, rms
+ *  AUXILIARIES: inject, gauss_deviate, distribute, rms
  *
  ***********************************************************************/
 
@@ -128,17 +128,20 @@ void StochasticForcing::evolve(Real dt)
 	}
     }
 
-    /* communicate spectrum among processors */
+    /* communicate spectrum among processors 
 
     for (int dim = 0; dim < SpectralRank; dim++) {
 	ParallelDescriptor::Bcast(SpectrumEven[dim], NumNonZeroModes, ParallelDescriptor::IOProcessorNumber());
 	ParallelDescriptor::Bcast(SpectrumOdd[dim],  NumNonZeroModes, ParallelDescriptor::IOProcessorNumber());
     }
 
-    /* copy sepctrum to forcing_spect_module */
+    /* copy sepctrum to forcing_spect_module 
 
     for (int dim = 0; dim < SpectralRank; dim++)
         fort_set_modes(SpectrumEven[dim], SpectrumOdd[dim], &NumNonZeroModes, &dim);
+    */
+
+    distribute();
 }
 
 //
@@ -249,6 +252,24 @@ void StochasticForcing::gauss_deviate(Real amplt, Real *x, Real *y)
 	norm = amplt * sqrt(-2.0*log(v_sqr)/v_sqr);
 
 	*x = norm * v1; *y = norm * v2;
+}
+
+//
+// Distribute the spectrum
+//
+void StochasticForcing::distribute(void)
+{
+    /* communicate spectrum among processors */
+
+    for (int dim = 0; dim < SpectralRank; dim++) {
+	ParallelDescriptor::Bcast(SpectrumEven[dim], NumNonZeroModes, ParallelDescriptor::IOProcessorNumber());
+	ParallelDescriptor::Bcast(SpectrumOdd[dim],  NumNonZeroModes, ParallelDescriptor::IOProcessorNumber());
+    }
+
+    /* copy sepctrum to forcing_spect_module */
+
+    for (int dim = 0; dim < SpectralRank; dim++)
+        fort_set_modes(SpectrumEven[dim], SpectrumOdd[dim], &NumNonZeroModes, &dim);
 }
 
 //

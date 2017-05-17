@@ -67,8 +67,8 @@ subroutine integrate_state_force(lo, hi, &
     ! Do *not* assume this is just the valid region
     ! apply heating-cooling to UEDEN and UEINT
 
-    print *, "integrate_state_force lo = ", lo
-    print *, "integrate_state_force hi = ", hi
+    !print *, "integrate_state_force lo = ", lo
+    !print *, "integrate_state_force hi = ", hi
 
     do k = lo(3),hi(3)
         do j = lo(2),hi(2)
@@ -153,7 +153,7 @@ subroutine integrate_state_force(lo, hi, &
     end do
 
     num_phases(:) = (hi(:)-lo(:)+1)*num_modes
-    print *, "integrate_state_force num_phases = ", num_phases
+    ! print *, "integrate_state_force num_phases = ", num_phases
 
     allocate(phasefct_even_x(num_phases(1)), phasefct_even_y(num_phases(2)), phasefct_even_z(num_phases(3)), &
              phasefct_odd_x(num_phases(1)),  phasefct_odd_y(num_phases(2)),  phasefct_odd_z(num_phases(3)), &

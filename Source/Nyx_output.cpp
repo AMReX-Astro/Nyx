@@ -6,6 +6,12 @@
 
 #include "AMReX_buildInfo.H"
 
+#ifdef FORCING
+#include "Forcing.H"
+
+void mt_write(std::ofstream& output);
+#endif
+
 using namespace amrex;
 
 namespace
@@ -683,6 +689,9 @@ Nyx::checkPoint (const std::string& dir,
 {
   AmrLevel::checkPoint(dir, os, how, dump_old);
   particle_check_point(dir);
+#ifdef FORCING
+  forcing_check_point(dir);
+#endif
 
   if (level == 0 && ParallelDescriptor::IOProcessor())
     {
@@ -698,3 +707,31 @@ Nyx::checkPoint (const std::string& dir,
       }
     }
 }
+
+#ifdef FORCING
+void
+Nyx::forcing_check_point (const std::string& dir)
+{
+    if (level == 0)
+    {
+        if (ParallelDescriptor::IOProcessor())
+        {
+            std::string FileName = dir + "/forcing";
+            std::ofstream File;
+            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
+            if (!File.good())
+                amrex::FileOpenFailed(FileName);
+            File.setf(std::ios::scientific, std::ios::floatfield);
+            File.precision(16);
+            forcing->write_Spectrum(File);
+            File.close();
+
+            FileName = dir + "/mt";
+            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
+            if (!File.good())
+                amrex::FileOpenFailed(FileName);
+            mt_write(File);
+        }
+    }
+}
+#endif

@@ -17,6 +17,9 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include <iostream>
+#include <fstream>
+
 #define MT_LEN          624
 #define MT_IA           397
 #define MT_IB           (MT_LEN - MT_IA)
@@ -30,16 +33,31 @@ int mt_index;
 unsigned long int mt_buffer[MT_LEN];
 
 void mt_init(unsigned int seed) {
-  int i;
 
   srand(seed);
 
-  for (i = 0; i < MT_LEN; i++)
+  for (int i = 0; i < MT_LEN; i++)
     mt_buffer[i] = ((unsigned long int) rand() );
+
   mt_index = 0;
 }
-    
 
+void mt_read(std::ifstream& input)
+{
+  input >> mt_index;
+
+  for (int i = 0; i < MT_LEN; i++)
+    input >> mt_buffer[i];
+}    
+
+void mt_write(std::ofstream& output)
+{
+  output << mt_index << '\n';
+
+  for (int i = 0; i < MT_LEN; i++)
+    output << mt_buffer[i] << '\n';
+}
+ 
 unsigned long int mt_random() {
   unsigned long int * b = mt_buffer;
   int idx = mt_index;
