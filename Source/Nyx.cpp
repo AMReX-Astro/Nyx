@@ -314,6 +314,22 @@ Nyx::read_params ()
     if (heat_cool_type == 0)
        amrex::Error("Nyx::contradiction -- HEATCOOL is defined but heat_cool_type == 0");
 
+    if (ParallelDescriptor::IOProcessor()) {
+      std::cout << "Integrating heating/cooling method with the following method: ";
+      switch (heat_cool_type) {
+        case 1:
+          std::cout << "HC";
+          break;
+        case 3:
+          std::cout << "VODE";
+          break;
+        case 5:
+          std::cout << "CVODE";
+          break;
+      }
+      std::cout << std::endl;
+    }
+
 #ifndef USE_CVODE
     if (heat_cool_type == 5)
         amrex::Error("Nyx:: cannot set heat_cool_type = 5 unless USE_CVODE=TRUE");
