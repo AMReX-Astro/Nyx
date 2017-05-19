@@ -38,8 +38,10 @@ public:
     using PairIndex = std::pair<int, int>;
     using GhostCommMap = std::map<GhostCommTag, amrex::Array<char> >;
 
-    AGNParticleContainer (amrex::Amr* amr)
-        : NyxParticleContainer<2+BL_SPACEDIM>(amr)
+    AGNParticleContainer (amrex::Amr* amr, int nghost)
+        : NyxParticleContainer<2+BL_SPACEDIM>(amr),
+          mask_defined(false),
+          ng(nghost)
     { }
 
     virtual ~AGNParticleContainer () {}
@@ -133,8 +135,12 @@ private:
     ///
     void fillGhostsMPI(GhostCommMap& ghosts_to_comm);
 
+    void defineMask();
+
     const size_t pdata_size = sizeof(ParticleType);
+    int ng;
     amrex::FabArray<amrex::BaseFab<int> > mask;
+    bool mask_defined;
     std::map<PairIndex, amrex::Array<char> > ghosts;
 };
 

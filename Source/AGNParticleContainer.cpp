@@ -256,7 +256,33 @@ void AGNParticleContainer::AccreteMass(int lev, amrex::MultiFab& state, amrex::R
     }
 }
 
+void AGNParticleContainer::defineMask() {
+
+    const int lev = 0;
+    const BoxArray& ba = m_gdb->ParticleBoxArray(lev);
+    const DistributionMapping& dm = m_gdb->ParticleDistributionMap(lev);
+    const Geometry& gm = m_gdb->Geom(lev);
+
+    mask.define(ba, dm, 2, ng);
+    mask.setVal(-1, ng);
+
+    for (MFIter mfi = MakeMFIter(lev); mfi.isValid(); ++mfi) {
+        const Box& box = mfi.tilebox();
+        const int grid_id = mfi.index();
+        const int tile_id = mfi.LocalTileIndex();
+        mask.setVal(grid_id, box, 0, 1);
+        mask.setVal(tile_id, box, 1, 1);
+    }
+
+    mask.FillBoundary(gm.periodicity());
+    mask_defined = true;
+}
+
 void AGNParticleContainer::fillGhosts(int lev) {
+
+    BL_ASSERT(lev == 0);
+    if (!mask_defined) defineMask();
+
     GhostCommMap ghosts_to_comm;
     for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
         const Box& tile_box = pti.tilebox();
@@ -264,7 +290,7 @@ void AGNParticleContainer::fillGhosts(int lev) {
         const IntVect& hi = tile_box.bigEnd();
         
         Box shrink_box = pti.tilebox();
-        shrink_box.grow(-1);
+        shrink_box.grow(-ng);
         
         auto& particles = pti.GetArrayOfStructs();
         for (unsigned i = 0; i < pti.numParticles(); ++i) {
@@ -280,9 +306,9 @@ void AGNParticleContainer::fillGhosts(int lev) {
             IntVect shift = IntVect::TheZeroVector();
             for (int idim = 0; idim < BL_SPACEDIM; ++idim) {
                 if (iv[idim] == lo[idim])
-                    shift[idim] = -1;
+                    shift[idim] = -ng;
                 else if (iv[idim] == hi[idim])
-                    shift[idim] = 1;
+                    shift[idim] = ng;
             }
             
             // Based on the value of shift, we add the particle to a map to be sent
@@ -338,6 +364,7 @@ void AGNParticleContainer::packGhostParticle(int lev,
                                              const ParticleType& p,
                                              GhostCommMap& ghosts_to_comm) {
     const int neighbor_grid = mask(neighbor_cell, 0);
+    std::cout << "Sending ghosts to " << neighbor_grid << std::endl;
     if (neighbor_grid >= 0) {
         const int who = ParticleDistributionMap(lev)[neighbor_grid];
         const int MyProc = ParallelDescriptor::MyProc();

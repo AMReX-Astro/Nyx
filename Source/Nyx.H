@@ -607,6 +607,8 @@ protected:
 
     static int use_exact_gravity;
 
+    static int num_particle_ghosts;
+
     static amrex::Real small_dens;
     static amrex::Real small_temp;
     static amrex::Real gamma;
