@@ -369,13 +369,13 @@ void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
 	SpectrumOdd[dim]  = new Real[NumNonZeroModes];
 	
 	if (ParallelDescriptor::IOProcessor()) {  
-	    std::cout << "Master #" << ParallelDescriptor::MyProc() << " spectrum:\n";
+	    //std::cout << "Master #" << ParallelDescriptor::MyProc() << " spectrum:\n";
 	    for (n = 0, m = 0; n < NumModes; n++) {
 		if (mask[n]) { // set only non-zero modes
 		    SpectrumEven[dim][m] = InjectionEven[dim][n];
 		    SpectrumOdd [dim][m] = InjectionOdd [dim][n];
-		    std::cout << "   " << dim << ", mode " << n << " = (" 
-	                     << SpectrumEven[dim][m] << "," << SpectrumOdd [dim][m] << ")\n";
+		    //std::cout << "   " << dim << ", mode " << n << " = (" 
+	            //         << SpectrumEven[dim][m] << "," << SpectrumOdd [dim][m] << ")\n";
 		    ++m;
 		}
 	    }

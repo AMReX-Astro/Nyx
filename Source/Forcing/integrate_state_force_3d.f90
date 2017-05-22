@@ -32,8 +32,9 @@ subroutine integrate_state_force(lo, hi, &
     use amrex_fort_module, only : rt => amrex_real
 
     use forcing_spect_module
-    use eos_params_module
-    use eos_module, only: nyx_eos_given_RT, nyx_eos_T_given_Re
+    use eos_module, only: eos_assume_neutral
+    use network, only: nspec, aion, zion
+    use atomic_rates_module, only: XHYDROGEN
     use probdata_module, only: prob_lo, prob_hi, alpha, rho0, temp0
     use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, &
                                    TEMP_COMP, NE_COMP, small_pres, small_temp, gamma_minus_1
@@ -41,6 +42,9 @@ subroutine integrate_state_force(lo, hi, &
     use fundamental_constants_module
  
     implicit none
+
+    ! get the mass of a nucleon from Avogadro's number.
+    real(rt), parameter :: m_nucleon = 1.d0/n_A
 
     integer         , intent(in) :: lo(3), hi(3)
     integer         , intent(in) :: s_l1, s_l2, s_l3, s_h1, s_h2, s_h3
@@ -51,25 +55,55 @@ subroutine integrate_state_force(lo, hi, &
 
     integer :: i, j, k
     integer :: m, mi, mj, mk, n
-    integer :: alloc
+    integer :: alloc, neg_e_count
+    real(rt) :: m_nucleon_over_kB, mu, sum_y
+
     real(rt) :: rho, rho_e_orig, rho_K_res, T_orig, ne
     real(rt) :: delta, delta_re, eint0, press, small_eint
 
     integer :: num_phases(3)
+    real(rt) :: xn_eos(nspec), ymass(nspec) 
     real(rt) :: delta_phase(3), phase_lo(3)
-    real(rt) :: accel(3), buf(num_modes) 
-    real(rt) :: phasefct_init_even(num_modes), phasefct_init_odd(num_modes)
-    real(rt) :: phasefct_mult_even(num_modes,3), phasefct_mult_odd(num_modes,3)
+    real(rt) :: accel(3), buf(num_modes_ext) 
+    real(rt) :: phasefct_init_even(num_modes_ext), phasefct_init_odd(num_modes_ext)
+    real(rt) :: phasefct_mult_even(num_modes_ext,3), phasefct_mult_odd(num_modes_ext,3)
+    real(rt) :: phasefct_yz(num_modes_ext,2)
     real(rt), allocatable :: phasefct_even_x(:), phasefct_even_y(:), phasefct_even_z(:)
     real(rt), allocatable :: phasefct_odd_x(:), phasefct_odd_y(:), phasefct_odd_z(:)
+
+    ! Compute mu and small_eint to avoid EOS calls, which prevent loop vectorization
+    m_nucleon_over_kB = m_nucleon / k_B
+
+    xn_eos(1) = XHYDROGEN
+    xn_eos(2) = (1.d0 - XHYDROGEN)
+
+    sum_y  = 0.d0
+
+    if (eos_assume_neutral) then
+       ! assume completely neutral atoms
+       do n = 1, nspec
+          ymass(n) = xn_eos(n)/aion(n)
+          sum_y = sum_y + ymass(n)
+       enddo
+    else
+       ! assume completely ionized species
+       do n = 1, nspec
+          ymass(n) = xn_eos(n)*(1.d0 + zion(n))/aion(n)
+          sum_y = sum_y + ymass(n)
+       enddo
+    endif
+
+    mu = 1.d0/sum_y
+
+    small_eint = small_temp / (mu * m_nucleon_over_kB * gamma_minus_1)
+
+    neg_e_count = 0
 
     ! Note that (lo,hi) define the region of the box containing the grow cells
     ! Do *not* assume this is just the valid region
     ! apply heating-cooling to UEDEN and UEINT
-
     !print *, "integrate_state_force lo = ", lo
     !print *, "integrate_state_force hi = ", hi
-
     do k = lo(3),hi(3)
         do j = lo(2),hi(2)
             do i = lo(1),hi(1)
@@ -78,24 +112,22 @@ subroutine integrate_state_force(lo, hi, &
                 rho_e_orig = state(i,j,k,UEINT)
 		rho_K_res  = state(i,j,k,UEDEN) - state(i,j,k,UEINT)
                 T_orig     = diag_eos(i,j,k,TEMP_COMP)
-                ne         = diag_eos(i,j,k,  NE_COMP)
+                !ne         = diag_eos(i,j,k,  NE_COMP)
 
-                if (rho_e_orig .lt. 0.d0) then
-                    print *,'(rho e) entering strang integration negative ',i,j,k, rho_e_orig
-                    call bl_abort('bad rho e in strang')
-                end if
+                if (rho_e_orig .lt. 0.d0) neg_e_count = neg_e_count + 1
 
                 ! Compute temperature increment and ensure that new temperature is positive
 		delta = half_dt * alpha * (temp0 - T_orig) / a
 		diag_eos(i,j,k,TEMP_COMP) = max(T_orig + delta, small_temp)
 
                 ! Call EOS to get internal energy for constant equilibrium temperature
-                call nyx_eos_given_RT(eint0, press, rho, temp0, ne, a)
+                !call nyx_eos_given_RT(eint0, press, rho, temp0, ne, a)
+                eint0 = temp0 / (mu * m_nucleon_over_kB * gamma_minus_1)
 		delta_re = half_dt * alpha * (rho*eint0 - rho_e_orig) / a
 
                 ! Call EOS to get the internal energy floor
-                call nyx_eos_given_RT(small_eint, press, rho, small_temp, ne, a)
-		
+                !call nyx_eos_given_RT(small_eint, press, rho, small_temp, ne, a)
+
                 ! Update cell quantities
  		state(i,j,k,UEINT) = max(rho_e_orig + delta_re, rho*small_eint)
                 state(i,j,k,UEDEN) = state(i,j,k,UEINT) + rho_K_res
@@ -107,6 +139,8 @@ subroutine integrate_state_force(lo, hi, &
             end do ! i
         end do ! j
     end do ! k
+
+    if (neg_e_count > 0) call bl_abort('bad rho e in integrate_state_force_3d')
 
     !print *, " --- integrate_state_force --- "
     delta_phase(:) = TWO*M_PI * dx(:) / (prob_hi(:) - prob_lo(:)) ! phase increment per cell
@@ -120,7 +154,8 @@ subroutine integrate_state_force(lo, hi, &
     !print *, "phase_lo = ", phase_lo
 
     ! compute initial phase factors and multiplying factors
-    do m = 1, num_modes
+    ! (sin and cos are expensive, so we do that only for low corner and cell width)
+    do m = 1, num_modes_ext
        i = wavevectors(1,m)
        j = wavevectors(2,m)
        k = wavevectors(3,m)
@@ -152,7 +187,7 @@ subroutine integrate_state_force(lo, hi, &
        !print *, m, k*delta_phase(3), phasefct_mult_even(m,3), phasefct_mult_even(m,3)
     end do
 
-    num_phases(:) = (hi(:)-lo(:)+1)*num_modes
+    num_phases(:) = (hi(:)-lo(:)+1)*num_modes_ext
     ! print *, "integrate_state_force num_phases = ", num_phases
 
     allocate(phasefct_even_x(num_phases(1)), phasefct_even_y(num_phases(2)), phasefct_even_z(num_phases(3)), &
@@ -161,47 +196,53 @@ subroutine integrate_state_force(lo, hi, &
 
     if (alloc > 0) call bl_abort('failed to allocate arrays for phase factors')      
  
-    ! initialize phase factors for each coordinate axis
-    do m = 1, num_modes
+    ! initialize phase factors for each coordinate axis: 
+    ! since phase factors for inverse FT are given by 
+    ! exp(i*(k1*x + k2*y + k3*z)) = exp(i*k1*x) * exp(i*k2*y)*...,
+    ! we iteratively multiply with exp(i*k1*delta_x), etc.
+    do m = 1, num_modes_ext
        phasefct_even_x(m) = ONE 
        phasefct_odd_x(m)  = ZERO
-       phasefct_even_y(m) = ONE 
-       phasefct_odd_y(m)  = ZERO 
-       phasefct_even_z(m) = phasefct_init_even(m)  
-       phasefct_odd_z(m)  = phasefct_init_odd(m)
     end do
-
     do i = lo(1)+1,hi(1)
-       mi = (i-lo(1))*num_modes + 1
-       do m = 1, num_modes
-            buf(m) = phasefct_even_x(mi-num_modes);
-            phasefct_even_x(mi) = phasefct_mult_even(m,1) * phasefct_even_x(mi-num_modes) - &
-                                  phasefct_mult_odd (m,1) * phasefct_odd_x(mi-num_modes)
-            phasefct_odd_x(mi)  = phasefct_mult_even(m,1) * phasefct_odd_x(mi-num_modes) + &
+       mi = (i-lo(1))*num_modes_ext + 1
+       do m = 1, num_modes_ext
+            buf(m) = phasefct_even_x(mi-num_modes_ext);
+            phasefct_even_x(mi) = phasefct_mult_even(m,1) * phasefct_even_x(mi-num_modes_ext) - &
+                                  phasefct_mult_odd (m,1) * phasefct_odd_x(mi-num_modes_ext)
+            phasefct_odd_x(mi)  = phasefct_mult_even(m,1) * phasefct_odd_x(mi-num_modes_ext) + &
                                   phasefct_mult_odd (m,1) * buf(m)
             mi = mi + 1
        end do
     end do         
 
+    do m = 1, num_modes_ext
+       phasefct_even_y(m) = ONE 
+       phasefct_odd_y(m)  = ZERO 
+    end do
     do j = lo(2)+1,hi(2)
-       mj = (j-lo(2))*num_modes + 1
-       do m = 1, num_modes
-            buf(m) = phasefct_even_y(mj-num_modes);
-            phasefct_even_y(mj) = phasefct_mult_even(m,2) * phasefct_even_y(mj-num_modes) - &
-                                  phasefct_mult_odd (m,2) * phasefct_odd_y(mj-num_modes)
-            phasefct_odd_y(mj)  = phasefct_mult_even(m,2) * phasefct_odd_y(mj-num_modes) + &
+       mj = (j-lo(2))*num_modes_ext + 1
+       do m = 1, num_modes_ext
+            buf(m) = phasefct_even_y(mj-num_modes_ext);
+            phasefct_even_y(mj) = phasefct_mult_even(m,2) * phasefct_even_y(mj-num_modes_ext) - &
+                                  phasefct_mult_odd (m,2) * phasefct_odd_y(mj-num_modes_ext)
+            phasefct_odd_y(mj)  = phasefct_mult_even(m,2) * phasefct_odd_y(mj-num_modes_ext) + &
                                   phasefct_mult_odd (m,2) * buf(m)
             mj = mj + 1
        end do
     end do         
 
+    do m = 1, num_modes_ext
+       phasefct_even_z(m) = phasefct_init_even(m)  
+       phasefct_odd_z(m)  = phasefct_init_odd(m)
+    end do
     do k = lo(3)+1, hi(3)
-       mk = (k-lo(3))*num_modes + 1
-       do m = 1, num_modes
-            buf(m) = phasefct_even_z(mk-num_modes);
-            phasefct_even_z(mk) = phasefct_mult_even(m,3) * phasefct_even_z(mk-num_modes) - &
-                                  phasefct_mult_odd (m,3) * phasefct_odd_z(mk-num_modes)
-            phasefct_odd_z(mk)  = phasefct_mult_even(m,3) * phasefct_odd_z(mk-num_modes) + &
+       mk = (k-lo(3))*num_modes_ext + 1
+       do m = 1, num_modes_ext
+            buf(m) = phasefct_even_z(mk-num_modes_ext);
+            phasefct_even_z(mk) = phasefct_mult_even(m,3) * phasefct_even_z(mk-num_modes_ext) - &
+                                  phasefct_mult_odd (m,3) * phasefct_odd_z(mk-num_modes_ext)
+            phasefct_odd_z(mk)  = phasefct_mult_even(m,3) * phasefct_odd_z(mk-num_modes_ext) + &
                                   phasefct_mult_odd (m,3) * buf(m)
             mk = mk + 1
        end do
@@ -210,33 +251,35 @@ subroutine integrate_state_force(lo, hi, &
     ! apply forcing in physical space
     do k = lo(3),hi(3)
        do j = lo(2),hi(2)
+          mj = (j-lo(2))*num_modes_ext + 1 ! offset in y-direction
+          mk = (k-lo(3))*num_modes_ext + 1 ! offset in z-direction
+
+          ! pre-compute products of phase factors depending on y- and z-coordinates 
+          do m = 1, num_modes_ext
+             phasefct_yz(m,1) = phasefct_even_y(mj) * phasefct_even_z(mk) - phasefct_odd_y(mj)  * phasefct_odd_z(mk)
+             phasefct_yz(m,2) = phasefct_odd_y(mj)  * phasefct_even_z(mk) + phasefct_even_y(mj) * phasefct_odd_z(mk)
+             mj = mj + 1
+             mk = mk + 1
+          end do
+
           do i = lo(1),hi(1)
 
              accel(:) = (/ ZERO, ZERO, ZERO /)
 
-             ! compute components of acceleration via inverse FT
+             ! compute components of acceleration via inverse FT 
              do n = 1, 3
-                mi = (i-lo(1))*num_modes + 1 ! offset in x-direction
-                mj = (j-lo(2))*num_modes + 1 ! offset in y-direction
-                mk = (k-lo(3))*num_modes + 1 ! offset in z-direction
+                mi = (i-lo(1))*num_modes_ext + 1 ! offset in x-direction
   
-                do m = 1, num_modes
+                !dir$ vector
+                do m = 1, num_modes_ext
                    ! sum up even modes
-                   accel(n) = accel(n) + &
-                              ((phasefct_even_x(mi) * phasefct_even_y(mj) - &
-                                phasefct_odd_x(mi)  * phasefct_odd_y(mj))  * phasefct_even_z(mk) - &
-                               (phasefct_even_x(mi) * phasefct_odd_y(mj)  + &
-                                phasefct_odd_x(mi)  * phasefct_even_y(mj)) * phasefct_odd_z(mk))  * modes_even(m,n)
+                   accel(n) = accel(n) + (phasefct_even_x(mi) * phasefct_yz(m,1) - &
+                                          phasefct_odd_x(mi)  * phasefct_yz(m,2)) * modes_even(m,n)
                    ! sum up odd modes
-                   accel(n) = accel(n) - &
-                              ((phasefct_even_x(mi) * phasefct_even_y(mj) - &
-                                phasefct_odd_x(mi)  * phasefct_odd_y(mj))  * phasefct_odd_z(mk)  + &
-                               (phasefct_even_x(mi) * phasefct_odd_y(mj)  + &
-                                phasefct_odd_x(mi)  * phasefct_even_y(mj)) * phasefct_even_z(mk)) * modes_odd(m,n)
+                   accel(n) = accel(n) - (phasefct_even_x(mi) * phasefct_yz(m,2) + &
+                                          phasefct_odd_x(mi)  * phasefct_yz(m,1)) * modes_odd(m,n)
                    mi = mi + 1
-                   mj = mj + 1
-                   mk = mk + 1
-                end do
+                 end do
              end do
 
              accel(:) = M_SQRT_2 * accel(:)
