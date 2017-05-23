@@ -370,13 +370,9 @@ void AGNParticleContainer::fillGhosts(int lev) {
     fillGhostsMPI(ghosts_to_comm);
 }
 
-void AGNParticleContainer::clearGhosts(int lev) {
-    for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
-        const int grid_id = pti.index();
-        const int tile_id = pti.LocalTileIndex();
-        auto& ghost_particles = ghosts[std::make_pair(grid_id, tile_id)];
-        Array<char>().swap(ghost_particles);
-    }
+void AGNParticleContainer::clearGhosts(int lev) 
+{
+    ghosts.clear();
 }
 
 void AGNParticleContainer::packGhostParticle(int lev,
