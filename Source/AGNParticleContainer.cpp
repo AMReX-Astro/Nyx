@@ -351,7 +351,7 @@ void AGNParticleContainer::fillGhosts(int lev) {
 
 void AGNParticleContainer::clearGhosts(int lev) 
 {
-    for (auto& kv : ghosts) kv.second.clear();
+    ghosts.clear();
 }
 
 void AGNParticleContainer::packGhostParticle(int lev,
