@@ -63,6 +63,10 @@
 
   end subroutine nyx_compute_overlap
 
+  ! :::
+  ! ::: ----------------------------------------------------------------
+  ! :::
+
   subroutine agn_merge_particles(np, particles, ng, ghosts, delta_x) &
        bind(c,name='agn_merge_particles')
 
@@ -203,20 +207,24 @@
 
   end subroutine agn_merge_particles
 
+  ! :::
+  ! ::: ----------------------------------------------------------------
+  ! :::
+
   subroutine agn_particle_velocity(np, particles, state_old, sold_lo, sold_hi, state_new, snew_lo, snew_hi, &
                                    dx, add_energy) &
        bind(c,name='agn_particle_velocity')
 
     use iso_c_binding
     use amrex_fort_module, only : amrex_real
-    use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN
+    use meth_params_module, only : NVAR, UMX, UMY, UMZ, UEDEN
     use particle_mod      , only: agn_particle_t
 
     integer,              intent(in   )        :: np
     integer,              intent(in   )        :: sold_lo(3), sold_hi(3)
     integer,              intent(in   )        :: snew_lo(3), snew_hi(3)
     integer,              intent(in   )        :: add_energy
-    type(agn_particle_t), intent(inout)    :: particles(np)
+    type(agn_particle_t), intent(inout)        :: particles(np)
     real(amrex_real),     intent(in   )        :: state_old &
          (sold_lo(1):sold_hi(1),sold_lo(2):sold_hi(2),sold_lo(3):sold_hi(3),NVAR)
     real(amrex_real),     intent(in   )        :: state_new &
@@ -224,62 +232,60 @@
     real(amrex_real),     intent(in   )        :: dx(3)
 
     integer          :: i, j, k, n
-    integer          :: ii, jj, kk
-    real(amrex_real) :: sum_ux, sum_uy, sum_uz, sum_rE, dv
+    real(amrex_real) :: vol, weight(-1:1, -1:1, -1:1)
+    real(amrex_real) :: mass, momx, momy, momz, E
     
-    dv = dx(1) * dx(2) * dx(3)
+    vol = dx(1) * dx(2) * dx(3)
 
     do n = 1, np
- 
-          ! Components 1,2,3 are (x,y,z)
-          i = particles(n)%pos(1) / dx(1)
-          j = particles(n)%pos(2) / dx(2)
-          k = particles(n)%pos(3) / dx(3)
 
-          ! Set to zero
-          sum_ux = 0.d0
-          sum_uy = 0.d0
-          sum_uz = 0.d0
-          sum_rE = 0.d0
+       call get_weights(weight, particles(n)%pos, dx)
 
-          ! Sum over 3^3 cube of cells with (i,j,k) at the center
-          do kk = k-1,k+1
-          do jj = j-1,j+1
-          do ii = i-1,i+1
-             sum_ux = sum_ux + (state_new(ii,jj,kk,UMX) - state_old(ii,jj,kk,UMX))
-             sum_uy = sum_uy + (state_new(ii,jj,kk,UMY) - state_old(ii,jj,kk,UMY))
-             sum_uz = sum_uz + (state_new(ii,jj,kk,UMZ) - state_old(ii,jj,kk,UMZ))
-             sum_rE = sum_rE + (state_new(ii,jj,kk,UEDEN) - state_old(ii,jj,kk,UEDEN))
-          end do
-          end do
-          end do
+       i = particles(n)%pos(1) / dx(1)
+       j = particles(n)%pos(2) / dx(2)
+       k = particles(n)%pos(3) / dx(3)
 
-          ! sum_ux, sum_uy, sum_uz contain components of momentum density (rho u) and total energy density (rho E)
-          ! added up over cells.  Multiply them by cell volume to get momentum (m u) and total energy (m E).
-          sum_ux = sum_ux * dv
-          sum_uy = sum_uy * dv
-          sum_uz = sum_uz * dv
-          sum_rE = sum_rE * dv
+       ! momx, momy, momz, E: momentum and total energy.
 
-          ! Update velocity
-          particles(n)%vel(1) = particles(n)%vel(1) - sum_ux / particles(n)%mass
-          particles(n)%vel(2) = particles(n)%vel(2) - sum_uy / particles(n)%mass
-          particles(n)%vel(3) = particles(n)%vel(3) - sum_uz / particles(n)%mass
+       momx = sum((state_new(i-1:i+1, j-1:j+1, k-1:k+1, UMX) - &
+                   state_old(i-1:i+1, j-1:j+1, k-1:k+1, UMX)) * weight) * vol
 
-          ! Update energy if particle isn't brandnew
-          if (add_energy .gt. 0) &
-             particles(n)%energy = particles(n)%energy - sum_rE / particles(n)%mass
+       momy = sum((state_new(i-1:i+1, j-1:j+1, k-1:k+1, UMY) - &
+                   state_old(i-1:i+1, j-1:j+1, k-1:k+1, UMY)) * weight) * vol
+
+       momz = sum((state_new(i-1:i+1, j-1:j+1, k-1:k+1, UMZ) - &
+                   state_old(i-1:i+1, j-1:j+1, k-1:k+1, UMZ)) * weight) * vol
+
+       E = sum((state_new(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN) - &
+                state_old(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN)) * weight) * vol
+
+       mass = particles(n)%mass
+
+       ! Update velocity of particle so as to reduce momentum in the amount
+       ! of the difference between old and new state.
+       particles(n)%vel(1) = particles(n)%vel(1) - momx / mass
+       particles(n)%vel(2) = particles(n)%vel(2) - momy / mass
+       particles(n)%vel(3) = particles(n)%vel(3) - momz / mass
+       
+       ! Update energy if particle isn't brand new
+       if (add_energy .gt. 0) then
+          particles(n)%energy = particles(n)%energy - E / mass
+       endif
 
     end do
 
   end subroutine agn_particle_velocity
 
-  subroutine agn_accrete_mass(np, particles, state, slo, shi, eps_rad, dt, dx) &
+  ! :::
+  ! ::: ----------------------------------------------------------------
+  ! :::
+
+  subroutine agn_accrete_mass(np, particles, state, density_lost, slo, shi, eps_rad, eps_coupling, dt, dx) &
        bind(c,name='agn_accrete_mass')
 
     use iso_c_binding
     use amrex_fort_module, only : amrex_real
-    use fundamental_constants_module, only: Gconst, pi, eddington_const
+    use fundamental_constants_module, only: Gconst, pi, eddington_const, c_light
     use eos_module
     use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEINT
     use particle_mod      , only: agn_particle_t
@@ -288,70 +294,221 @@
     type(agn_particle_t), intent(inout)        :: particles(np)
     real(amrex_real),     intent(in   )        :: state &
          (slo(1):shi(1),slo(2):shi(2),slo(3):shi(3),NVAR)
-    real(amrex_real),     intent(in   )        :: eps_rad, dt, dx(3)
+    real(amrex_real),     intent(inout)        :: density_lost &
+         (slo(1):shi(1),slo(2):shi(2),slo(3):shi(3))
+    real(amrex_real),     intent(in   )        :: eps_rad, eps_coupling, dt, dx(3)
 
     integer          :: i, j, k, n
-    integer          :: ii, jj, kk
-    real(amrex_real) :: avg_rho, avg_usq, avg_vsq, avg_wsq, avg_csq
-    real(amrex_real) :: c, e, denom, mass, mdot, m_edd
+    real(amrex_real) :: avg_rho, avg_csq, avg_speedsq
+    real(amrex_real) :: c, denom, mass, mdot, m_edd
 
-    real(amrex_real) :: alpha, bondi_const
+    real(amrex_real), parameter :: alpha = 10.d0
+    real(amrex_real), parameter :: bondi_const = alpha * 4.0d0*pi * Gconst*Gconst
+    real(amrex_real), parameter :: max_frac_removed = 0.5
+    real(amrex_real) :: speedsq &
+         (slo(1):shi(1),slo(2):shi(2),slo(3):shi(3))
+    real(amrex_real) :: csq &
+         (slo(1):shi(1),slo(2):shi(2),slo(3):shi(3))
 
+    real(amrex_real) :: vol, weight(-1:1, -1:1, -1:1)
+    real(amrex_real) :: mass_change
 
-    alpha = 10.d0
-    bondi_const = alpha * 4.0d0*pi * Gconst*Gconst
-    
+    ! Remember state holds primitive variables:
+    ! velocity, not momentum.
+    speedsq = state(:,:,:,UMX)**2 + state(:,:,:,UMY)**2 + state(:,:,:,UMZ)**2
+
+    do i = slo(1), shi(1)
+       do j = slo(2), shi(2)
+          do k = slo(3), shi(3)
+             ! state(i,j,k,UEINT) is internal energy divided by density
+             if (state(i,j,k,URHO) .lt. 0.) then
+                print *, 'density = ', state(i,j,k,URHO)
+                continue
+             endif
+             if (state(i,j,k,UEINT) .lt. 0.) then
+                print *, 'energy = ', state(i,j,k,UEINT)
+                continue
+             endif
+             call nyx_eos_soundspeed(c, state(i,j,k,URHO), state(i,j,k,UEINT))
+             csq(i, j, k) = c*c
+          end do
+       end do
+    end do
+
+    vol = dx(1) * dx(2) * dx(3)
+
     do n = 1, np
 
-          mass = particles(n)%mass
+       call get_weights(weight, particles(n)%pos, dx)
+
+       i = particles(n)%pos(1) / dx(1)
+       j = particles(n)%pos(2) / dx(2)
+       k = particles(n)%pos(3) / dx(3)
+
+       avg_rho =     sum(  state(i-1:i+1, j-1:j+1, k-1:k+1, URHO) * weight)
+       avg_speedsq = sum(speedsq(i-1:i+1, j-1:j+1, k-1:k+1) * weight)
+       avg_csq =     sum(    csq(i-1:i+1, j-1:j+1, k-1:k+1) * weight)
+
+       denom = (avg_speedsq + avg_csq)**1.5
+
+       mass = particles(n)%mass
  
-          ! Components 1,2,3 are (x,y,z)
-          i = particles(n)%pos(1) / dx(1)
-          j = particles(n)%pos(2) / dx(2)
-          k = particles(n)%pos(3) / dx(3)
+       ! Bondi accretion 
+       mdot = bondi_const * mass * mass * avg_rho / denom
 
-          ! Set to zero for each (i,j,k)
-          avg_rho = 0.d0
-          avg_usq = 0.d0
-          avg_vsq = 0.d0
-          avg_wsq = 0.d0
-          avg_csq = 0.d0
+       ! Eddington limit
+       m_edd = eddington_const * mass / eps_rad
+       print *,'MDOT, MEDD: ', mdot, m_edd
+       mdot = min(mdot, m_edd)
 
-          ! Sum over 3^3 cube of cells with (i,j,k) at the center
-          do kk = k-1,k+1
-          do jj = j-1,j+1
-          do ii = i-1,i+1
-             avg_rho = avg_rho + state(ii,jj,kk,URHO)
-             avg_usq = avg_usq + (state(ii,jj,kk,UMX) / state(ii,jj,kk,URHO))**2
-             avg_vsq = avg_vsq + (state(ii,jj,kk,UMY) / state(ii,jj,kk,URHO))**2
-             avg_wsq = avg_wsq + (state(ii,jj,kk,UMZ) / state(ii,jj,kk,URHO))**2
+       mass_change = mdot * dt
 
-             e = state(ii,jj,kk,UEINT) / state(ii,jj,kk,URHO)
-             call nyx_eos_soundspeed(c,state(ii,jj,kk,URHO),e)
-             avg_csq  = avg_csq + c*c
+       ! From each stencil cell, we'll reduce density by
+       ! mass_change * weight[cell] / vol.
+       ! But the most density that will be removed from cell is
+       ! max_frac_removed * density[cell].
+       ! This corresponds to maximum mass removal of
+       ! Hence the most mass that will be removed from cell is
+       ! max_frac_removed * density[cell] * vol.
+       ! That is the maximum allowable mass_change * weight[cell].
+       mass_change = MIN(mass_change, &
+            max_frac_removed * &
+            MAXVAL(state(i-1:i+1, j-1:j+1, k-1:k+1, URHO) * vol / weight))
+       
+       ! Increase the mass of the particle by mass_change
+       particles(n)%mass = particles(n)%mass + mass_change * ( 1.d0 - eps_rad)
 
-          end do
-          end do
-          end do 
-          avg_rho = avg_rho / 27.d0
-          avg_usq = avg_usq / 27.d0
-          avg_vsq = avg_vsq / 27.d0
-          avg_wsq = avg_wsq / 27.d0
-          avg_csq = avg_csq / 27.d0
+       density_lost(i-1:i+1, j-1:j+1, k-1:k+1) = &
+            density_lost(i-1:i+1, j-1:j+1, k-1:k+1) + &
+            mass_change * weight / vol
 
-          denom = (avg_usq + avg_vsq + avg_wsq + avg_csq)**1.5
-
-          ! Bondi accretion 
-          mdot = bondi_const * mass * mass * avg_rho / denom
-
-          ! Eddington limit
-          m_edd = eddington_const * mass / eps_rad
-          print *,'MDOT, MEDD: ', mdot, m_edd
-          mdot = min(mdot, m_edd)
-
-          ! Increase the mass of the particle by Mdot * dt
-          particles(n)%mass = particles(n)%mass + mdot * dt * ( 1.d0 - eps_rad)
-
+       particles(n)%energy = particles(n)%energy + mass_change * &
+            c_light**2 * eps_coupling * eps_rad
     end do
 
   end subroutine agn_accrete_mass
+
+  ! :::
+  ! ::: ----------------------------------------------------------------
+  ! :::
+
+  subroutine agn_release_energy(np, particles, state, slo, shi, T_min, dx) &
+       bind(c,name='agn_release_energy')
+
+    use iso_c_binding
+    use amrex_fort_module, only : amrex_real
+    use fundamental_constants_module, only: k_B, m_proton
+    use eos_module
+    use meth_params_module, only : NVAR, URHO, UEDEN, UEINT
+    use particle_mod      , only: agn_particle_t
+
+    integer,              intent(in   )        :: np, slo(3), shi(3)
+    type(agn_particle_t), intent(inout)        :: particles(np)
+    real(amrex_real),     intent(inout)        :: state &
+         (slo(1):shi(1),slo(2):shi(2),slo(3):shi(3),NVAR)
+    real(amrex_real),     intent(in   )        :: T_min
+    real(amrex_real),     intent(in   )        :: dx(3)
+
+    integer          :: i, j, k, n
+
+    real(amrex_real) :: vol, weight(-1:1, -1:1, -1:1)
+    real(amrex_real) :: E_crit_over_rho, avg_rho
+
+    vol = dx(1) * dx(2) * dx(3)
+
+    E_crit_over_rho = 1.5 * k_B * T_min * vol / m_proton
+
+    do n = 1, np
+
+       call get_weights(weight, particles(n)%pos, dx)
+
+       i = particles(n)%pos(1) / dx(1)
+       j = particles(n)%pos(2) / dx(2)
+       k = particles(n)%pos(3) / dx(3)
+
+       avg_rho = sum(state(i-1:i+1, j-1:j+1, k-1:k+1, URHO) * weight)
+
+       if (particles(n)%energy > E_crit_over_rho * avg_rho) then
+
+          print *, 'RELEASING ENERGY of particle at ', particles(n)%pos
+          print *, 'particle energy: ', particles(n)%energy
+          print *, 'threshold: ', E_crit_over_rho * avg_rho
+          print *, 'avg_rho = ', avg_rho
+          print *, 'k_B = ', k_B
+          print *, 'T_min = ', T_min
+
+          state(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN) = &
+          state(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN) + &
+          particles(n)%energy * weight
+
+          state(i-1:i+1, j-1:j+1, k-1:k+1, UEINT) = &
+          state(i-1:i+1, j-1:j+1, k-1:k+1, UEINT) + &
+          particles(n)%energy * weight
+
+          particles(n)%energy = 0.
+               
+       endif
+
+    end do
+
+  end subroutine agn_release_energy
+
+  ! :::
+  ! ::: ----------------------------------------------------------------
+  ! :::
+
+  subroutine get_length_frac(frac, x, dx)
+
+    use amrex_fort_module, only : amrex_real
+    use bl_constants_module, only : ZERO, ONE, HALF
+
+    real(amrex_real), intent(out  )  :: frac(-1:1)
+    real(amrex_real), intent(in   )  :: x
+    real(amrex_real), intent(in   )  :: dx
+
+    integer :: i
+    real(amrex_real) :: offset
+
+    i = x / dx
+    offset = x / dx - i
+    if (offset < HALF) then ! offset in range 0 : 0.5
+       frac(-1) = HALF - offset
+       frac(0) = HALF + offset
+       frac(1) = ZERO
+    else ! offset in range 0.5 : 1
+       frac(-1) = ZERO
+       frac(0) = ONE + HALF - offset
+       frac(1) = offset - HALF
+    endif
+    
+  end subroutine get_length_frac
+
+  ! :::
+  ! ::: ----------------------------------------------------------------
+  ! :::
+
+  subroutine get_weights(weight, pos, dx)
+
+    use amrex_fort_module, only : amrex_real
+    use bl_constants_module, only : ZERO, ONE, HALF
+
+    real(amrex_real), intent(out  )  :: weight(-1:1, -1:1, -1:1)
+    real(amrex_real), intent(in   )  :: pos(3)
+    real(amrex_real), intent(in   )  :: dx(3)
+
+    integer :: d, i, j, k
+    real(amrex_real) :: frac(-1:1, 3)
+
+    do d = 1, 3
+       call get_length_frac(frac(:, d), pos(d), dx(d))
+    end do
+
+    do k = -1, 1
+       do j = -1, 1
+          do i = -1, 1
+             weight(i, j, k) = frac(i, 1) * frac(j, 2) * frac(k, 3)
+          end do
+       end do
+    end do
+
+  end subroutine get_weights

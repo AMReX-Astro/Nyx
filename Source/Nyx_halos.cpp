@@ -32,6 +32,12 @@ using std::string;
 
 const int NyxHaloFinderSignal = 42;
 
+// For debugging.
+const int nghost0 = 0;
+const int nghost1 = 1;
+const int ncomp1 = 1;
+const int comp0 = 0;
+
 using namespace amrex;
 
 void
@@ -77,7 +83,7 @@ Nyx::halo_find (Real dt)
        getAnalysisDecomposition(Geom(), ParallelDescriptor::NProcs(), ba, dm);
        cout << "getAnalysisDecomposition returns BoxArray size " << ba.size() << endl;
        cout << "getAnalysisDecomposition returns DistributionMapping ProcessorMap size " << dm.ProcessorMap().size() << endl;
-       amrex::MultiFab reeberMF(ba, dm, reeber_density_var_list.size() + 1, 0);
+       amrex::MultiFab reeberMF(ba, dm, reeber_density_var_list.size() + 1, nghost0);
        int cnt = 1;
 
        Real cur_time = state[State_Type].curTime();
@@ -86,13 +92,16 @@ Nyx::halo_find (Real dt)
        for (auto it = reeber_density_var_list.begin(); it != reeber_density_var_list.end(); ++it)
        {
            std::unique_ptr<MultiFab> derive_dat = particle_derive(*it, cur_time, 0);
-           reeberMF.copy(*derive_dat, 0, cnt, 1, 0, 0);
+           reeberMF.copy(*derive_dat, comp0, cnt, ncomp1, nghost0, nghost0);
            cnt++;
        }
 
-       reeberMF.setVal(0, 0, 1, 0);
+       reeberMF.setVal(0.0, comp0, ncomp1, nghost0);
        for (int comp = 1; comp < reeberMF.nComp(); ++comp)
-           amrex::MultiFab::Add(reeberMF, reeberMF, comp, 0, 1, 0);
+         {
+           amrex::MultiFab::Add(reeberMF, reeberMF,
+                                comp, comp0, ncomp1, nghost0);
+         }
 
        std::vector<Halo> reeber_halos;
        runReeberAnalysis(reeberMF, Geom(), nStep(), do_analysis, &reeber_halos);
@@ -103,7 +112,7 @@ Nyx::halo_find (Real dt)
        halo_merge();
 
        cout << "Before accrete :" << endl;
-       Nyx::theAPC()->writeAllAtLevel(level);
+       Nyx::theAPC()->writeAllAtLevel(level); // FIXME: int level defined where?
 
        // Before creating new AGN particles, accrete mass and momentum onto existing particles 
        halo_accrete(dt);
@@ -133,30 +142,9 @@ Nyx::halo_find (Real dt)
 
        std::ofstream os;
 
-       MultiFab new_state(simBA, simDM, simMF.nComp(), 1);
-       MultiFab::Copy(new_state,simMF,0,0,simMF.nComp(),1);
-
-       // Divide all components of new_state, other than Density, by density.
-       for (int comp = 0; comp < new_state.nComp(); comp++)
-         {
-           if (comp != Density)
-             {
-               MultiFab::Divide(new_state, new_state, Density, comp, 1, 1);
-             }
-         }
-
-       // Create a MultiFab to hold the density we're going to remove from the grid
-       MultiFab agn_density(simBA, simDM, 1, 1);
-       agn_density.setVal(0.0);
-
-       // Deposit the mass now in the particles onto the grid (this doesn't change the mass of the particles)
-       Nyx::theAPC()->AssignDensitySingleLevel(agn_density, 0);
-
-       // Make sure the density put into ghost cells is added to valid regions
-       agn_density.SumBoundary();
-
-       // Add the density from the gas that is currently in the AGN particles.
-       amrex::MultiFab::Add(new_state,agn_density,0,Density,1,0);
+       MultiFab new_state(simBA, simDM, simMF.nComp(), nghost1);
+       MultiFab::Copy(new_state, simMF,
+                      comp0, comp0, simMF.nComp(), nghost1);
 
        std::cout << "  " << std::endl;
        std::cout << " *************************************** " << std::endl;
@@ -206,41 +194,19 @@ Nyx::halo_find (Real dt)
        // but they are not on the "right" process for going forward
 
        // Call Redistribute so that the new particles get their cell, grid and process defined
-       Nyx::theAPC()->Redistribute(lev_min,lev_max,ngrow);
+       Nyx::theAPC()->Redistribute(lev_min, lev_max, ngrow);
 
        Nyx::theAPC()->fillGhosts(level);
        Nyx::theAPC()->ComputeOverlap(level);
        Nyx::theAPC()->clearGhosts(level);
 
-       Nyx::theAPC()->Redistribute(lev_min,lev_max,ngrow);
+       Nyx::theAPC()->Redistribute(lev_min, lev_max, ngrow);
 
-       // Zero this out again
-       agn_density.setVal(0.0);
-
-       // Deposit the mass now in the particles onto the grid (this doesn't change the mass of the particles)
-       Nyx::theAPC()->AssignDensitySingleLevel(agn_density, 0);
-
-       // Make sure the density put into ghost cells is added to valid regions
-       agn_density.SumBoundary();
-
-       // Take away the density from the gas that was added to the AGN particle.
-       amrex::MultiFab::Subtract(new_state,agn_density,0,Density,1,0);
-
-       // In new_state, everything but Density was divided by Density
-       // at the beginning, and then Density was changed.
-       // Now multiply everything but Density by Density.
-       for (int comp = 0; comp < new_state.nComp(); comp++)
-         {
-           if (comp != Density)
-             {
-               MultiFab::Multiply(new_state, new_state, Density, comp, 1, 1);
-             }
-         }
-       
        int add_energy = 0;
        Nyx::theAPC()->ComputeParticleVelocity(level,simMF,new_state,add_energy);
 
-       MultiFab::Copy(simMF, new_state, 0, 0, simMF.nComp(), 0);
+       MultiFab::Copy(simMF, new_state,
+                      comp0, comp0, simMF.nComp(), nghost0);
 
        cout << "At End of Nyx_halos:" << endl;
        Nyx::theAPC()->writeAllAtLevel(level);
@@ -262,13 +228,14 @@ Nyx::halo_find (Real dt)
        Geometry geom(Geom());
        Geometry::SendGeometryToSidecar(&geom, whichSidecar);
 
+       // FIXME: What is distribution mapping?
        amrex::MultiFab reeberMF(grids, reeber_density_var_list.size(), 0);
        int cnt = 0;
        // Derive quantities and store in components 1... of MultiFAB
        for (auto it = reeber_density_var_list.begin(); it != reeber_density_var_list.end(); ++it)
        {
            std::unique_ptr<MultiFab> derive_dat = particle_derive(*it, cur_time, 0);
-           reeberMF.copy(*derive_dat, 0, cnt, 1, 0, 0);
+           reeberMF.copy(*derive_dat, comp0, cnt, ncomp1, nghost0, nghost0);
            cnt++;
        }
 
@@ -317,7 +284,7 @@ Nyx::halo_merge ()
    Nyx::theAPC()->clearGhosts(level);
 
    // Call Redistribute to remove any particles with id = -1 (as set inside the Merge call)
-   Nyx::theAPC()->Redistribute(0,0,0);
+   Nyx::theAPC()->Redistribute(level, level, nghost0);
 }
 
 void
@@ -328,50 +295,35 @@ Nyx::halo_accrete (Real dt)
    const DistributionMapping& origDM = orig_state.DistributionMap();
 
    // First copy the existing state into new_state
-   MultiFab new_state(origBA,origDM,orig_state.nComp(),1);
-   MultiFab::Copy(new_state,orig_state,0,0,orig_state.nComp(),1);
+   MultiFab new_state(origBA, origDM, orig_state.nComp(), nghost1);
+   MultiFab::Copy(new_state, orig_state,
+                  comp0, comp0, orig_state.nComp(), nghost1);
 
    // Divide all components of new_state, other than Density, by density.
    for (int comp = 0; comp < new_state.nComp(); comp++)
      {
        if (comp != Density)
          {
-           MultiFab::Divide(new_state, new_state, Density, comp, 1, 1);
+           MultiFab::Divide(new_state, new_state,
+                            Density, comp, ncomp1, nghost1);
          }
      }
 
    // Create a MultiFab to hold the density we're going to remove from the grid
-   MultiFab agn_density(origBA,origDM,1,1);
-   agn_density.setVal(0.0);
+   MultiFab agn_density_lost(origBA, origDM, ncomp1, nghost1);
+   agn_density_lost.setVal(0.0);
 
-   // Deposit the mass now in the particles onto the grid (this doesn't change the mass of the particles)
-   Nyx::theAPC()->AssignDensitySingleLevel(agn_density, 0);
-
-   // Make sure the density put into ghost cells is added to valid regions
-   agn_density.SumBoundary();
-
-   // Add the density from the gas that is currently in the AGN particles.
-   amrex::MultiFab::Add(new_state,agn_density,0,Density,1,0);
-
-   // Increase the mass of existing particles
    Real eps_rad = 0.1;
-   Nyx::theAPC()->AccreteMass(level,orig_state,eps_rad,dt);
-
-   // Zero this out again
-   agn_density.setVal(0.0);
-
-   // Deposit the mass now in the particles onto the grid (this doesn't change the mass of the particles)
-   Nyx::theAPC()->AssignDensitySingleLevel(agn_density, 0);
-
-   // Multiply this by 1/(1-eps) since we remove Mdot*dt from the gas but we only added Mdot*dt*(1-eps) to the particle 
-   Real fac = 1. / (1. - eps_rad);
-   agn_density.mult(fac,0,1,1);
+   Real eps_coupling = 0.15;
+   Nyx::theAPC()->AccreteMass(level, new_state, agn_density_lost,
+                              eps_rad, eps_coupling, dt);
 
    // Make sure the density put into ghost cells is added to valid regions
-   agn_density.SumBoundary();
+   agn_density_lost.SumBoundary();
 
-   // Take away the density from the gas that was added to the AGN particle (recall the (1-eps) weighting).
-   amrex::MultiFab::Subtract(new_state,agn_density,0,Density,1,0);
+   // Take away the density from the gas that was added to the AGN particle.
+   amrex::MultiFab::Subtract(new_state, agn_density_lost,
+                             comp0, Density, ncomp1, nghost0);
 
    // In new_state, everything but Density was divided by Density
    // at the beginning, and then Density was changed.
@@ -380,12 +332,16 @@ Nyx::halo_accrete (Real dt)
      {
        if (comp != Density)
          {
-           MultiFab::Multiply(new_state, new_state, Density, comp, 1, 1);
+           MultiFab::Multiply(new_state, new_state,
+                              Density, comp, ncomp1, nghost1);
          }
      }
 
    // Re-set the particle velocity after accretion
    int add_energy = 1;
-   Nyx::theAPC()->ComputeParticleVelocity(level,orig_state,new_state, add_energy);
+   Nyx::theAPC()->ComputeParticleVelocity(level, orig_state, new_state, add_energy);
+
+   Real T_min = 1.0e+7;
+   Nyx::theAPC()->ReleaseEnergy(level, new_state, T_min);
 }
 #endif // AGN

@@ -236,7 +236,7 @@ void AGNParticleContainer::ComputeParticleVelocity(int lev, amrex::MultiFab& sta
     }
 }
 
-void AGNParticleContainer::AccreteMass(int lev, amrex::MultiFab& state, amrex::Real eps_rad, amrex::Real dt)
+void AGNParticleContainer::AccreteMass(int lev, amrex::MultiFab& state, amrex::MultiFab& density_lost, amrex::Real eps_rad, amrex::Real eps_coupling, amrex::Real dt)
 {
     const Real* dx = Geom(lev).CellSize();
 
@@ -250,9 +250,30 @@ void AGNParticleContainer::AccreteMass(int lev, amrex::MultiFab& state, amrex::R
         const Box& sbox = state[pti].box();
 
         agn_accrete_mass(&Np, particles.data(),
-                         state[pti].dataPtr(), 
+                         state[pti].dataPtr(),
+                         density_lost[pti].dataPtr(),
                          sbox.loVect(), sbox.hiVect(),
-                         &eps_rad, &dt, dx);
+                         &eps_rad, &eps_coupling, &dt, dx);
+    }
+}
+
+void AGNParticleContainer::ReleaseEnergy(int lev, amrex::MultiFab& state, amrex::Real T_min)
+{
+    const Real* dx = Geom(lev).CellSize();
+
+    state.FillBoundary();
+
+    for (MyParIter pti(*this, lev); pti.isValid(); ++pti)
+      {
+        AoS& particles = pti.GetArrayOfStructs();
+        int Np = particles.size();
+
+        const Box& sbox = state[pti].box();
+
+        agn_release_energy(&Np, particles.data(), 
+                           state[pti].dataPtr(), 
+                           sbox.loVect(), sbox.hiVect(),
+                           &T_min, dx); 
     }
 }
 
