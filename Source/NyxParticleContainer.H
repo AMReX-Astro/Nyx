@@ -268,7 +268,7 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
 					 acceleration.nComp(), acceleration.nGrow());
 				  
         ac_pointer->copy(acceleration,0,0,BL_SPACEDIM);
-        ac_pointer->FillBoundary(); // DO WE NEED GHOST CELLS FILLED ???
+        ac_pointer->FillBoundary(geom.periodicity()); // DO WE NEED GHOST CELLS FILLED ???
     }
 
     for (typename ParticleLevel::const_iterator pmap_it = pmap.begin(), pmapEnd = pmap.end(); pmap_it != pmapEnd; ++pmap_it)
