@@ -41,6 +41,32 @@ const int comp0 = 0;
 using namespace amrex;
 
 void
+Nyx::conserved_to_primitive(amrex::MultiFab& state)
+{ // divide every component but Density by Density
+  int nghost = state.nGrow();
+  for (int comp = 0; comp < state.nComp(); comp++)
+    {
+      if (comp != Density)
+        {
+          MultiFab::Divide(state, state, Density, comp, ncomp1, nghost);
+        }
+    }
+}
+
+void
+Nyx::primitive_to_conserved(amrex::MultiFab& state)
+{ // multiply every component but Density by Density
+  int nghost = state.nGrow();
+  for (int comp = 0; comp < state.nComp(); comp++)
+    {
+      if (comp != Density)
+        {
+          MultiFab::Multiply(state, state, Density, comp, ncomp1, nghost);
+        }
+    }
+}
+
+void
 Nyx::halo_find (Real dt)
 {
    BL_PROFILE("Nyx::halo_find()");
@@ -112,28 +138,31 @@ Nyx::halo_find (Real dt)
        halo_merge();
 
        cout << "Before accrete :" << endl;
-       Nyx::theAPC()->writeAllAtLevel(level); // FIXME: int level defined where?
+       Nyx::theAPC()->writeAllAtLevel(level);
 
-       // Before creating new AGN particles, accrete mass and momentum onto existing particles 
+       // Before creating new AGN particles,
+       // accrete mass and momentum onto existing particles.
+       // No change to state.
        halo_accrete(dt);
 
        cout << "After accrete :" << endl;
        Nyx::theAPC()->writeAllAtLevel(level);
 
        // Here we just create place-holders for the halos which should come from REEBER
-       int num_halos = 10;
-       std::vector<IntVect> reeber_halos_pos(num_halos);
-       std::vector<Real>    reeber_halos_mass(num_halos);
+       std::vector<IntVect> reeber_halos_pos;
+       std::vector<Real>    reeber_halos_mass;
 
-       int i = 0;
-       for (IntVect& iv : reeber_halos_pos)
-       {
-            i++;
-            iv = IntVect(i+1,2*i+1,i+16);
-       }
-
-       for (Real& m : reeber_halos_mass)
-            m = 1.1e11;
+       Real haloMass = 1.1e11;
+       const Box& domainBox = grids.minimalBox();
+       const IntVect& lo = domainBox.smallEnd();
+       const IntVect& hi = domainBox.bigEnd();
+       Box cornerBox(IntVect::Zero, IntVect::Unit);
+       for (BoxIterator bit(cornerBox); bit.ok(); ++bit)
+         {
+           IntVect iv = lo + (hi - lo) * bit();
+           reeber_halos_pos.push_back(iv);
+           reeber_halos_mass.push_back(haloMass);
+         }
 
 #endif // ifdef REEBER
 
@@ -145,6 +174,8 @@ Nyx::halo_find (Real dt)
        MultiFab new_state(simBA, simDM, simMF.nComp(), nghost1);
        MultiFab::Copy(new_state, simMF,
                       comp0, comp0, simMF.nComp(), nghost1);
+       // Convert new_state to primitive variables: rho, velocity, energy/rho.
+       conserved_to_primitive(new_state);
 
        std::cout << "  " << std::endl;
        std::cout << " *************************************** " << std::endl;
@@ -202,8 +233,36 @@ Nyx::halo_find (Real dt)
 
        Nyx::theAPC()->Redistribute(lev_min, lev_max, ngrow);
 
+       // agn_density will hold the density we're going to remove from the grid.
+       MultiFab agn_density(simBA, simDM, ncomp1, nghost1);
+       agn_density.setVal(0.0);
+
+       // Deposit the mass now in the particles onto the grid.
+       // (No change to mass of particles.)
+       Nyx::theAPC()->AssignDensitySingleLevel(agn_density, level);
+
+       // Make sure the density put into ghost cells is added to valid regions
+       agn_density.SumBoundary(geom.periodicity());
+
+       // Take away the density from the gas that was added to the AGN particle.
+       amrex::MultiFab::Subtract(new_state, agn_density,
+                                 comp0, Density, ncomp1, nghost0);
+
+       // Convert new_state to conserved variables: rho, momentum, energy.
+       // Since the density has changed, the other variables change accordingly.
+       primitive_to_conserved(new_state);
+
+       cout << "Going into ComputeParticleVelocity (no energy), number of AGN particles on this proc is "
+            << Nyx::theAPC()->TotalNumberOfParticles(true, true) << endl;
        int add_energy = 0;
-       Nyx::theAPC()->ComputeParticleVelocity(level,simMF,new_state,add_energy);
+       Nyx::theAPC()->ComputeParticleVelocity(level, simMF, new_state, add_energy);
+
+       Real T_min = 1.0e+7;
+       cout << "Going into ReleaseEnergy, number of AGN particles on this proc is "
+            << Nyx::theAPC()->TotalNumberOfParticles(true, true) << endl;
+       // AGN particles: may zero out energy.
+       // new_state: may increase internal and total energy.
+       Nyx::theAPC()->ReleaseEnergy(level, new_state, T_min);
 
        MultiFab::Copy(simMF, new_state,
                       comp0, comp0, simMF.nComp(), nghost0);
@@ -299,15 +358,8 @@ Nyx::halo_accrete (Real dt)
    MultiFab::Copy(new_state, orig_state,
                   comp0, comp0, orig_state.nComp(), nghost1);
 
-   // Divide all components of new_state, other than Density, by density.
-   for (int comp = 0; comp < new_state.nComp(); comp++)
-     {
-       if (comp != Density)
-         {
-           MultiFab::Divide(new_state, new_state,
-                            Density, comp, ncomp1, nghost1);
-         }
-     }
+   // Convert new_state to primitive variables: rho, velocity, energy/rho.
+   conserved_to_primitive(new_state);
 
    // Create a MultiFab to hold the density we're going to remove from the grid
    MultiFab agn_density_lost(origBA, origDM, ncomp1, nghost1);
@@ -315,33 +367,28 @@ Nyx::halo_accrete (Real dt)
 
    Real eps_rad = 0.1;
    Real eps_coupling = 0.15;
+   cout << "Going into AccreteMass, number of AGN particles on this proc is "
+        << Nyx::theAPC()->TotalNumberOfParticles(true, true) << endl;
+   // AGN particles: increase mass and energy.
+   // new_state: no change, other than filling in ghost cells.
+   // agn_density_lost: gets filled in.
    Nyx::theAPC()->AccreteMass(level, new_state, agn_density_lost,
                               eps_rad, eps_coupling, dt);
 
    // Make sure the density put into ghost cells is added to valid regions
-   agn_density_lost.SumBoundary();
+   agn_density_lost.SumBoundary(geom.periodicity());
 
    // Take away the density from the gas that was added to the AGN particle.
    amrex::MultiFab::Subtract(new_state, agn_density_lost,
                              comp0, Density, ncomp1, nghost0);
 
-   // In new_state, everything but Density was divided by Density
-   // at the beginning, and then Density was changed.
-   // Now multiply everything but Density by Density.
-   for (int comp = 0; comp < new_state.nComp(); comp++)
-     {
-       if (comp != Density)
-         {
-           MultiFab::Multiply(new_state, new_state,
-                              Density, comp, ncomp1, nghost1);
-         }
-     }
+   // Convert new_state to conserved variables: rho, momentum, energy.
+   primitive_to_conserved(new_state);
 
    // Re-set the particle velocity after accretion
    int add_energy = 1;
+   cout << "Going into ComputeParticleVelocity (and energy), number of AGN particles on this proc is "
+        << Nyx::theAPC()->TotalNumberOfParticles(true, true) << endl;
    Nyx::theAPC()->ComputeParticleVelocity(level, orig_state, new_state, add_energy);
-
-   Real T_min = 1.0e+7;
-   Nyx::theAPC()->ReleaseEnergy(level, new_state, T_min);
 }
 #endif // AGN
