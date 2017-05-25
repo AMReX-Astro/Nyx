@@ -392,31 +392,33 @@
   ! ::: ----------------------------------------------------------------
   ! :::
 
-  subroutine agn_release_energy(np, particles, state, slo, shi, T_min, dx) &
+  subroutine agn_release_energy(np, particles, state, diag_eos, slo, shi, a, T_min, dx) &
        bind(c,name='agn_release_energy')
 
     use iso_c_binding
     use amrex_fort_module, only : amrex_real
     use fundamental_constants_module, only: k_B, m_proton
     use eos_module
-    use meth_params_module, only : NVAR, URHO, UEDEN, UEINT
+    use meth_params_module, only : NVAR, URHO, UEDEN, UEINT, NE_COMP
     use particle_mod      , only: agn_particle_t
+    use eos_module, only : nyx_eos_given_RT
 
     integer,              intent(in   )        :: np, slo(3), shi(3)
     type(agn_particle_t), intent(inout)        :: particles(np)
     real(amrex_real),     intent(inout)        :: state &
          (slo(1):shi(1),slo(2):shi(2),slo(3):shi(3),NVAR)
-    real(amrex_real),     intent(in   )        :: T_min
+    ! FIXME: Is this correct?  How many ghost cells?
+    real(amrex_real),     intent(inout)        :: diag_eos &
+         (slo(1):shi(1),slo(2):shi(2),slo(3):shi(3),2)
+    real(amrex_real),     intent(in   )        :: a, T_min
     real(amrex_real),     intent(in   )        :: dx(3)
 
     integer          :: i, j, k, n
 
     real(amrex_real) :: vol, weight(-1:1, -1:1, -1:1)
-    real(amrex_real) :: E_crit_over_rho, avg_rho
+    real(amrex_real) :: avg_rho, avg_Ne, pressure, e, m_g
 
     vol = dx(1) * dx(2) * dx(3)
-
-    E_crit_over_rho = 1.5 * k_B * T_min * vol / m_proton
 
     do n = 1, np
 
@@ -427,13 +429,23 @@
        k = particles(n)%pos(3) / dx(3)
 
        avg_rho = sum(state(i-1:i+1, j-1:j+1, k-1:k+1, URHO) * weight)
+       m_g = avg_rho * vol
 
-       if (particles(n)%energy > E_crit_over_rho * avg_rho) then
+       avg_Ne = sum(diag_eos(i-1:i+1, j-1:j+1, k-1:k+1, NE_COMP) * weight)
+
+       call nyx_eos_given_RT(e, pressure, avg_rho, T_min, avg_Ne, a)
+
+          print *, 'neighborhood mass: ', m_g
+          print *, 'e = ', e
+          print *, 'particle energy: ', particles(n)%energy
+          print *, 'm_g * e = ', (m_g * e)
+
+       if (particles(n)%energy > m_g * e) then
 
           print *, 'RELEASING ENERGY of particle at ', particles(n)%pos
           print *, 'particle energy: ', particles(n)%energy
-          print *, 'threshold: ', E_crit_over_rho * avg_rho
-          print *, 'avg_rho = ', avg_rho
+          print *, 'neighborhood weight: ', m_g
+          print *, 'e = ', e
 
           state(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN) = &
           state(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN) + &

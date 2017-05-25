@@ -261,12 +261,13 @@ void AGNParticleContainer::AccreteMass(int lev, amrex::MultiFab& state, amrex::M
     }
 }
 
-void AGNParticleContainer::ReleaseEnergy(int lev, amrex::MultiFab& state, amrex::Real T_min)
+void AGNParticleContainer::ReleaseEnergy(int lev, amrex::MultiFab& state, amrex::MultiFab& D_new, amrex::Real a, amrex::Real T_min)
 {
     const Real* dx = Geom(lev).CellSize();
     const Periodicity& periodic = Geom(lev).periodicity();
 
     state.FillBoundary(periodic);
+    D_new.FillBoundary(periodic);
 
     for (MyParIter pti(*this, lev); pti.isValid(); ++pti)
       {
@@ -274,11 +275,12 @@ void AGNParticleContainer::ReleaseEnergy(int lev, amrex::MultiFab& state, amrex:
         int Np = particles.size();
 
         const Box& sbox = state[pti].box();
-
+        BL_ASSERT(D_new[pti].box() == sbox);
         agn_release_energy(&Np, particles.data(), 
                            state[pti].dataPtr(), 
+                           D_new[pti].dataPtr(),
                            sbox.loVect(), sbox.hiVect(),
-                           &T_min, dx); 
+                           &a, &T_min, dx); 
     }
 }
 

@@ -106,7 +106,7 @@ public:
     ///
     ///  Release energy if it exceeds thermal feedback threshold.
     ///
-    void ReleaseEnergy(int lev, amrex::MultiFab& state, amrex::Real T_min);
+  void ReleaseEnergy(int lev, amrex::MultiFab& state, amrex::MultiFab& D_new, amrex::Real a, amrex::Real T_min);
 
     ///
     /// This fills the ghost buffers for each tile with the proper data

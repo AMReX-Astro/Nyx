@@ -262,7 +262,9 @@ Nyx::halo_find (Real dt)
             << Nyx::theAPC()->TotalNumberOfParticles(true, true) << endl;
        // AGN particles: may zero out energy.
        // new_state: may increase internal and total energy.
-       Nyx::theAPC()->ReleaseEnergy(level, new_state, T_min);
+       MultiFab& D_new = get_new_data(DiagEOS_Type);
+       Real a = get_comoving_a(new_a_time);
+       Nyx::theAPC()->ReleaseEnergy(level, new_state, D_new, a, T_min);
 
        MultiFab::Copy(simMF, new_state,
                       comp0, comp0, simMF.nComp(), nghost0);
