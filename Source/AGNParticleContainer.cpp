@@ -22,6 +22,7 @@ AGNParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
         return;
 
     const Real* dx = Geom(lev).CellSize();
+    const Periodicity& periodic = Geom(lev).periodicity();
 
     const amrex::Real strttime      = amrex::ParallelDescriptor::second();
 
@@ -38,7 +39,7 @@ AGNParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
         for (amrex::MFIter mfi(*ac_ptr); mfi.isValid(); ++mfi)
             ac_ptr->setVal(0.);
         ac_ptr->copy(acceleration,0,0,acceleration.nComp());
-        ac_ptr->FillBoundary();
+        ac_ptr->FillBoundary(periodic);
     }
 
     const Real* plo = Geom(lev).ProbLo();
@@ -121,10 +122,11 @@ AGNParticleContainer::moveKick (MultiFab&       acceleration,
                                 Real            a_half) 
 {
     BL_PROFILE("AGNParticleContainer::moveKick()");
-
+    writeAllAtLevel(lev);
     const Real strttime  = ParallelDescriptor::second();
 
     const Real* dx = Geom(lev).CellSize();
+    const Periodicity& periodic = Geom(lev).periodicity();
 
     MultiFab* ac_ptr;
     if (OnSameGrids(lev,acceleration))
@@ -139,7 +141,7 @@ AGNParticleContainer::moveKick (MultiFab&       acceleration,
         for (MFIter mfi(*ac_ptr); mfi.isValid(); ++mfi)
             ac_ptr->setVal(0.);
         ac_ptr->copy(acceleration,0,0,acceleration.nComp());
-        ac_ptr->FillBoundary();
+        ac_ptr->FillBoundary(periodic);
     }
 
     const Real* plo = Geom(lev).ProbLo();
@@ -215,9 +217,10 @@ void AGNParticleContainer::ComputeParticleVelocity(int lev, amrex::MultiFab& sta
                                                    amrex::MultiFab& state_new, int add_energy)
 {
     const Real* dx = Geom(lev).CellSize();
+    const Periodicity& periodic = Geom(lev).periodicity();
 
-    state_old.FillBoundary();
-    state_new.FillBoundary();
+    state_old.FillBoundary(periodic);
+    state_new.FillBoundary(periodic);
 
     for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
 
@@ -239,8 +242,9 @@ void AGNParticleContainer::ComputeParticleVelocity(int lev, amrex::MultiFab& sta
 void AGNParticleContainer::AccreteMass(int lev, amrex::MultiFab& state, amrex::MultiFab& density_lost, amrex::Real eps_rad, amrex::Real eps_coupling, amrex::Real dt)
 {
     const Real* dx = Geom(lev).CellSize();
+    const Periodicity& periodic = Geom(lev).periodicity();
 
-    state.FillBoundary();
+    state.FillBoundary(periodic);
 
     for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
 
@@ -260,8 +264,9 @@ void AGNParticleContainer::AccreteMass(int lev, amrex::MultiFab& state, amrex::M
 void AGNParticleContainer::ReleaseEnergy(int lev, amrex::MultiFab& state, amrex::Real T_min)
 {
     const Real* dx = Geom(lev).CellSize();
+    const Periodicity& periodic = Geom(lev).periodicity();
 
-    state.FillBoundary();
+    state.FillBoundary(periodic);
 
     for (MyParIter pti(*this, lev); pti.isValid(); ++pti)
       {
