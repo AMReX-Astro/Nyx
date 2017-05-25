@@ -256,9 +256,6 @@
        momz = sum((state_new(i-1:i+1, j-1:j+1, k-1:k+1, UMZ) - &
                    state_old(i-1:i+1, j-1:j+1, k-1:k+1, UMZ)) * weight) * vol
 
-       E = sum((state_new(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN) - &
-                state_old(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN)) * weight) * vol
-
        mass = particles(n)%mass
 
        ! Update velocity of particle so as to reduce momentum in the amount
@@ -266,9 +263,12 @@
        particles(n)%vel(1) = particles(n)%vel(1) - momx / mass
        particles(n)%vel(2) = particles(n)%vel(2) - momy / mass
        particles(n)%vel(3) = particles(n)%vel(3) - momz / mass
-       
-       ! Update energy if particle isn't brand new
+
+       ! Update particle energy if particle isn't brand new
        if (add_energy .gt. 0) then
+          E = sum((state_new(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN) - &
+                   state_old(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN)) * weight) * vol
+          print *, 'updating E = ', E
           particles(n)%energy = particles(n)%energy - E / mass
        endif
 
@@ -434,8 +434,6 @@
           print *, 'particle energy: ', particles(n)%energy
           print *, 'threshold: ', E_crit_over_rho * avg_rho
           print *, 'avg_rho = ', avg_rho
-          print *, 'k_B = ', k_B
-          print *, 'T_min = ', T_min
 
           state(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN) = &
           state(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN) + &
