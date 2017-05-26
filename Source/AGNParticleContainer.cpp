@@ -584,8 +584,8 @@ void AGNParticleContainer::writeAllAtLevel(int lev)
     {
       auto& particles = pti.GetArrayOfStructs();
       size_t Np = pti.numParticles();
-      cout << "There are " << Np  << " AGN particles in this grid at level " << lev << " with boxes " 
-              pti.index() << std::endl;
+      cout << "There are " << Np  << " AGN particles in this grid at level " 
+           << lev << " with boxes " << pti.index() << std::endl;
       for (unsigned i = 0; i < Np; ++i)
         {
           const ParticleType& p = particles[i];
