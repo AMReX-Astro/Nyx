@@ -230,9 +230,9 @@ Nyx::halo_find (Real dt)
        // Call Redistribute so that the new particles get their cell, grid and process defined
        Nyx::theAPC()->Redistribute(lev_min, lev_max, ngrow);
 
-       Nyx::theAPC()->fillGhosts(level);
+       Nyx::theAPC()->fillNeighbors(level);
        Nyx::theAPC()->ComputeOverlap(level);
-       Nyx::theAPC()->clearGhosts(level);
+       Nyx::theAPC()->clearNeighbors(level);
 
        Nyx::theAPC()->Redistribute(lev_min, lev_max, ngrow);
 
@@ -344,9 +344,9 @@ Nyx::halo_find (Real dt)
 void
 Nyx::halo_merge ()
 {
-   Nyx::theAPC()->fillGhosts(level);
+   Nyx::theAPC()->fillNeighbors(level);
    Nyx::theAPC()->Merge(level);
-   Nyx::theAPC()->clearGhosts(level);
+   Nyx::theAPC()->clearNeighbors(level);
 
    // Call Redistribute to remove any particles with id = -1 (as set inside the Merge call)
    Nyx::theAPC()->Redistribute(level, level, nghost0);

@@ -10,9 +10,9 @@
 
 namespace {
 
-struct GhostCommTag {
+struct NeighborCommTag {
 
-    GhostCommTag(int pid, int gid, int tid)
+    NeighborCommTag(int pid, int gid, int tid)
         : proc_id(pid), grid_id(gid), tile_id(tid)
     {}
 
@@ -21,7 +21,7 @@ struct GhostCommTag {
     int tile_id;
 };
 
-bool operator<(const GhostCommTag& l, const GhostCommTag& r) {
+bool operator<(const NeighborCommTag& l, const NeighborCommTag& r) {
     return (l.proc_id < r.proc_id ||
            (l.proc_id == r.proc_id && l.grid_id < r.grid_id) ||
            (l.proc_id == r.proc_id && l.grid_id == r.grid_id && l.tile_id < r.tile_id ));
@@ -36,7 +36,7 @@ public:
 
     using MyParIter = amrex::ParIter<2+BL_SPACEDIM>;
     using PairIndex = std::pair<int, int>;
-    using GhostCommMap = std::map<GhostCommTag, amrex::Array<char> >;
+    using NeighborCommMap = std::map<NeighborCommTag, amrex::Array<char> >;
 
     AGNParticleContainer (amrex::Amr* amr, int nghost)
         : NyxParticleContainer<2+BL_SPACEDIM>(amr),
@@ -139,12 +139,12 @@ public:
     ///
     /// This fills the ghost buffers for each tile with the proper data
     ///
-    void fillGhosts(int lev);
+    void fillNeighbors(int lev);
 
     ///
     /// Each tile clears its ghosts, freeing the memory
     ///
-    void clearGhosts(int lev);
+    void clearNeighbors(int lev);
 
     ///
     /// Write out all particles at a level
@@ -154,19 +154,25 @@ public:
 private:
 
     ///
+    /// Apply periodic shift to particle position, so naive distance calculation
+    /// between neighbors and regular particles will be correct.
+    ///
+    void applyPeriodicShift(int lev, ParticleType& p, const amrex::IntVect& neighbor_cell);
+
+    ///
     /// Pack a particle's data into the proper neighbor buffer, or put it into
     /// the structure to be sent to the other processes
     ///
-    void packGhostParticle(int lev,
+    void packNeighborParticle(int lev,
                            const amrex::IntVect& neighbor_cell,
                            const amrex::BaseFab<int>& mask,
                            const ParticleType& p,
-                           GhostCommMap& ghosts_to_comm);
+                           NeighborCommMap& ghosts_to_comm);
 
     ///
     /// Perform the MPI communication neccesary to fill ghost buffers
     ///
-    void fillGhostsMPI(GhostCommMap& ghosts_to_comm);
+    void fillNeighborsMPI(NeighborCommMap& ghosts_to_comm);
 
     void defineMask();
 

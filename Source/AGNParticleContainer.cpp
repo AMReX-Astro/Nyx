@@ -313,12 +313,12 @@ void AGNParticleContainer::defineMask() {
     mask_defined = true;
 }
 
-void AGNParticleContainer::fillGhosts(int lev) {
+void AGNParticleContainer::fillNeighbors(int lev) {
 
     BL_ASSERT(lev == 0);
     if (!mask_defined) defineMask();
 
-    GhostCommMap ghosts_to_comm;
+    NeighborCommMap ghosts_to_comm;
     for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
         const Box& tile_box = pti.tilebox();
         const IntVect& lo = tile_box.smallEnd();
@@ -355,7 +355,7 @@ void AGNParticleContainer::fillGhosts(int lev) {
                 IntVect neighbor_cell = iv;
                 neighbor_cell.shift(idim, shift[idim]);
                 BL_ASSERT(mask[pti].box().contains(neighbor_cell));
-                packGhostParticle(lev, neighbor_cell, mask[pti], p, ghosts_to_comm);
+                packNeighborParticle(lev, neighbor_cell, mask[pti], p, ghosts_to_comm);
             }
             
             // Now add the particle to the "edge" neighbors
@@ -366,7 +366,7 @@ void AGNParticleContainer::fillGhosts(int lev) {
                         neighbor_cell.shift(idim, shift[idim]);
                         neighbor_cell.shift(jdim, shift[jdim]);
                         BL_ASSERT(mask[pti].box().contains(neighbor_cell));
-                        packGhostParticle(lev, neighbor_cell, mask[pti], p, ghosts_to_comm);
+                        packNeighborParticle(lev, neighbor_cell, mask[pti], p, ghosts_to_comm);
                     }
                 }
             }
@@ -376,48 +376,71 @@ void AGNParticleContainer::fillGhosts(int lev) {
                 IntVect neighbor_cell = iv;
                 neighbor_cell.shift(shift);
                 BL_ASSERT(mask[pti].box().contains(neighbor_cell));
-                packGhostParticle(lev, neighbor_cell, mask[pti], p, ghosts_to_comm);
+                packNeighborParticle(lev, neighbor_cell, mask[pti], p, ghosts_to_comm);
             }
         }
     }
     
-    fillGhostsMPI(ghosts_to_comm);
+    fillNeighborsMPI(ghosts_to_comm);
 }
 
-void AGNParticleContainer::clearGhosts(int lev) 
+void AGNParticleContainer::clearNeighbors(int lev) 
 {
     ghosts.clear();
 }
 
-void AGNParticleContainer::packGhostParticle(int lev,
+void AGNParticleContainer::applyPeriodicShift(int lev, ParticleType& p,
+                                              const IntVect& neighbor_cell) {
+
+    const Periodicity& periodicity = Geom(lev).periodicity();
+    if (not periodicity.isAnyPeriodic()) return;
+
+    const Box& domain = Geom(lev).Domain();
+    const IntVect& lo = domain.smallEnd();
+    const IntVect& hi = domain.bigEnd();
+    const RealBox& prob_domain = Geom(lev).ProbDomain();
+
+    for (int dir = 0; dir < BL_SPACEDIM; ++dir) {
+        if (not periodicity.isPeriodic(dir)) continue;
+        if (neighbor_cell[dir] < lo[dir]) {
+            p.pos(dir) += prob_domain.length(dir);
+        }
+        else if (neighbor_cell[dir] > hi[dir]) {
+            p.pos(dir) -= prob_domain.length(dir);
+        }
+    }
+}
+
+void AGNParticleContainer::packNeighborParticle(int lev,
                                              const IntVect& neighbor_cell,
                                              const BaseFab<int>& mask,
                                              const ParticleType& p,
-                                             GhostCommMap& ghosts_to_comm) {
+                                             NeighborCommMap& ghosts_to_comm) {
     const int neighbor_grid = mask(neighbor_cell, 0);
-    std::cout << "Sending ghosts to " << neighbor_grid << std::endl;
     if (neighbor_grid >= 0) {
         const int who = ParticleDistributionMap(lev)[neighbor_grid];
         const int MyProc = ParallelDescriptor::MyProc();
         const int neighbor_tile = mask(neighbor_cell, 1);
         PairIndex dst_index(neighbor_grid, neighbor_tile);
+        ParticleType particle = p;
+        applyPeriodicShift(lev, particle, neighbor_cell);
         if (who == MyProc) {
             size_t old_size = ghosts[dst_index].size();
             size_t new_size = ghosts[dst_index].size() + pdata_size;
             ghosts[dst_index].resize(new_size);
-            std::memcpy(&ghosts[dst_index][old_size], &p, pdata_size);
+            std::memcpy(&ghosts[dst_index][old_size], &particle, pdata_size);
         } else {
-            GhostCommTag tag(who, neighbor_grid, neighbor_tile);
+            NeighborCommTag tag(who, neighbor_grid, neighbor_tile);
             Array<char>& buffer = ghosts_to_comm[tag];
             size_t old_size = buffer.size();
             size_t new_size = buffer.size() + pdata_size;
             buffer.resize(new_size);
-            std::memcpy(&buffer[old_size], &p, pdata_size);
+            std::memcpy(&buffer[old_size], &particle, pdata_size);
         }
     }
 }
 
-void AGNParticleContainer::fillGhostsMPI(GhostCommMap& ghosts_to_comm) {
+void AGNParticleContainer::fillNeighborsMPI(NeighborCommMap& ghosts_to_comm) {
 
 #ifdef BL_USE_MPI
     const int MyProc = ParallelDescriptor::MyProc();
@@ -561,7 +584,8 @@ void AGNParticleContainer::writeAllAtLevel(int lev)
     {
       auto& particles = pti.GetArrayOfStructs();
       size_t Np = pti.numParticles();
-      cout << "AGN particles: " << Np << " << at level " << lev << endl;
+      cout << "There are " << Np  << " AGN particles in this grid at level " << lev << " with boxes " 
+              pti.index() << std::endl;
       for (unsigned i = 0; i < Np; ++i)
         {
           const ParticleType& p = particles[i];
