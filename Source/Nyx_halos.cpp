@@ -77,9 +77,18 @@ Nyx::halo_find (Real dt)
 
    const Real * dx = geom.CellSize();
 
-   amrex::MultiFab& simMF = get_new_data(State_Type);
-   const BoxArray& simBA = simMF.boxArray();
-   const DistributionMapping& simDM = simMF.DistributionMap();
+   amrex::MultiFab& new_state = get_new_data(State_Type);
+   const BoxArray& simBA = new_state.boxArray();
+   const DistributionMapping& simDM = new_state.DistributionMap();
+   int simComp = new_state.nComp();
+
+   // First copy the existing state into orig_state.
+   MultiFab orig_state(simBA, simDM, simComp, nghost1);
+   MultiFab::Copy(orig_state, new_state,
+                  comp0, comp0, simComp, nghost1);
+
+   // Convert new_state to primitive variables: rho, velocity, energy/rho.
+   conserved_to_primitive(new_state);
 
    // These are passed into the AGN particles' Redistribute
    int lev_min = 0;
@@ -104,12 +113,12 @@ Nyx::halo_find (Real dt)
      if (ParallelDescriptor::NProcsSidecar(0) <= 0) 
      { // we have no sidecars, so do everything in situ
 
-       BoxArray ba;
-       DistributionMapping dm;
-       getAnalysisDecomposition(Geom(), ParallelDescriptor::NProcs(), ba, dm);
-       cout << "getAnalysisDecomposition returns BoxArray size " << ba.size() << endl;
-       cout << "getAnalysisDecomposition returns DistributionMapping ProcessorMap size " << dm.ProcessorMap().size() << endl;
-       amrex::MultiFab reeberMF(ba, dm, reeber_density_var_list.size() + 1, nghost0);
+       BoxArray reeberBA;
+       DistributionMapping reeberDM;
+       getAnalysisDecomposition(Geom(), ParallelDescriptor::NProcs(), reeberBA, reeberDM);
+       cout << "getAnalysisDecomposition returns BoxArray size " << reeberBA.size() << endl;
+       cout << "getAnalysisDecomposition returns DistributionMapping ProcessorMap size " << reeberDM.ProcessorMap().size() << endl;
+       amrex::MultiFab reeberMF(reeberBA, reeberDM, reeber_density_var_list.size() + 1, nghost0);
        int cnt = 1;
 
        Real cur_time = state[State_Type].curTime();
@@ -170,12 +179,6 @@ Nyx::halo_find (Real dt)
        amrex::IntVect halo_pos ;
 
        std::ofstream os;
-
-       MultiFab new_state(simBA, simDM, simMF.nComp(), nghost1);
-       MultiFab::Copy(new_state, simMF,
-                      comp0, comp0, simMF.nComp(), nghost1);
-       // Convert new_state to primitive variables: rho, velocity, energy/rho.
-       conserved_to_primitive(new_state);
 
        std::cout << "  " << std::endl;
        std::cout << " *************************************** " << std::endl;
@@ -254,8 +257,11 @@ Nyx::halo_find (Real dt)
 
        cout << "Going into ComputeParticleVelocity (no energy), number of AGN particles on this proc is "
             << Nyx::theAPC()->TotalNumberOfParticles(true, true) << endl;
+       // Re-set the particle velocity (but not energy) after accretion,
+       // using change of momentum density in state.
+       // No change to state, other than filling ghost cells.
        int add_energy = 0;
-       Nyx::theAPC()->ComputeParticleVelocity(level, simMF, new_state, add_energy);
+       Nyx::theAPC()->ComputeParticleVelocity(level, orig_state, new_state, add_energy);
 
        Real T_min = 1.0e+7;
        cout << "Going into ReleaseEnergy, number of AGN particles on this proc is "
@@ -265,9 +271,7 @@ Nyx::halo_find (Real dt)
        MultiFab& D_new = get_new_data(DiagEOS_Type);
        Real a = get_comoving_a(new_a_time);
        Nyx::theAPC()->ReleaseEnergy(level, new_state, D_new, a, T_min);
-
-       MultiFab::Copy(simMF, new_state,
-                      comp0, comp0, simMF.nComp(), nghost0);
+       // Now new_state = get_new_data(State_Type) has been updated.
 
        cout << "At End of Nyx_halos:" << endl;
        Nyx::theAPC()->writeAllAtLevel(level);
@@ -351,20 +355,21 @@ Nyx::halo_merge ()
 void
 Nyx::halo_accrete (Real dt)
 {
-   amrex::MultiFab& orig_state = get_new_data(State_Type);
-   const BoxArray& origBA = orig_state.boxArray();
-   const DistributionMapping& origDM = orig_state.DistributionMap();
+   amrex::MultiFab& new_state = get_new_data(State_Type);
+   const BoxArray& simBA = new_state.boxArray();
+   const DistributionMapping& simDM = new_state.DistributionMap();
+   int ncomp = new_state.nComp();
 
-   // First copy the existing state into new_state
-   MultiFab new_state(origBA, origDM, orig_state.nComp(), nghost1);
-   MultiFab::Copy(new_state, orig_state,
-                  comp0, comp0, orig_state.nComp(), nghost1);
+   // First copy the existing state into orig_state.
+   MultiFab orig_state(simBA, simDM, ncomp, nghost1);
+   MultiFab::Copy(orig_state, new_state,
+                  comp0, comp0, ncomp, nghost1);
 
    // Convert new_state to primitive variables: rho, velocity, energy/rho.
    conserved_to_primitive(new_state);
 
    // Create a MultiFab to hold the density we're going to remove from the grid
-   MultiFab agn_density_lost(origBA, origDM, ncomp1, nghost1);
+   MultiFab agn_density_lost(simBA, simDM, ncomp1, nghost1);
    agn_density_lost.setVal(0.0);
 
    Real eps_rad = 0.1;
@@ -387,10 +392,13 @@ Nyx::halo_accrete (Real dt)
    // Convert new_state to conserved variables: rho, momentum, energy.
    primitive_to_conserved(new_state);
 
-   // Re-set the particle velocity after accretion
+   // Re-set the particle velocity and energy after accretion,
+   // using change of momentum density in state.
+   // No change to state, other than filling ghost cells.
    int add_energy = 1;
    cout << "Going into ComputeParticleVelocity (and energy), number of AGN particles on this proc is "
         << Nyx::theAPC()->TotalNumberOfParticles(true, true) << endl;
    Nyx::theAPC()->ComputeParticleVelocity(level, orig_state, new_state, add_energy);
+   // Now new_state = get_new_data(State_Type) has been updated.
 }
 #endif // AGN
