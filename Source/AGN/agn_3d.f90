@@ -10,8 +10,7 @@
     type(agn_particle_t), intent(in   ) :: ghosts(ng)
     real(amrex_real)    , intent(in   ) :: delta_x(3)
 
-    real(amrex_real) dx, dy, dz, r2
-    real(amrex_real) cutoff
+    real(amrex_real) r2, cutoff
     integer i, j
 
     cutoff = delta_x(1)
@@ -19,15 +18,9 @@
     do i = 1, np
        do j = i+1, np
 
-          dx = particles(i)%pos(1) - particles(j)%pos(1)
-          dy = particles(i)%pos(2) - particles(j)%pos(2)
-          dz = particles(i)%pos(3) - particles(j)%pos(3)
+          r2 = sum((particles(i)%pos - particles(j)%pos)**2)
 
-          r2 = dx * dx + dy * dy + dz * dz
-
-          if (r2 .gt. cutoff*cutoff) then
-             cycle
-          else
+          if (r2 <= cutoff*cutoff) then
              ! We only remove the newer (aka of lower mass) particle
              if (particles(i)%mass .lt. particles(j)%mass)  then
                 particles(i)%id = -1
@@ -42,19 +35,14 @@
     do i = 1, np
        do j = 1, ng
 
-          dx = particles(i)%pos(1) - ghosts(j)%pos(1)
-          dy = particles(i)%pos(2) - ghosts(j)%pos(2)
-          dz = particles(i)%pos(3) - ghosts(j)%pos(3)
+          r2 = sum((particles(i)%pos - ghosts(j)%pos)**2)
 
-          r2 = dx * dx + dy * dy + dz * dz
-
-          if (r2 .gt. cutoff*cutoff) then
-             cycle
-          else
+          if (r2 <= cutoff*cutoff) then
 
              ! We only remove a particle if it is both 1) valid 2) newer (aka of lower mass)
-             if (particles(i)%mass .lt. ghosts(j)%mass)  &
+             if (particles(i)%mass .lt. ghosts(j)%mass) then
                 particles(i)%id = -1
+             end if
              
           end if
 
@@ -81,9 +69,7 @@
     type(agn_particle_t), intent(in   ) :: ghosts(ng)
     real(amrex_real)    , intent(in   ) :: delta_x(3)
 
-    real(amrex_real) dx, dy, dz, r2
-    real(amrex_real) du, dv, dw, vrelsq
-    real(amrex_real) xmom, ymom, zmom
+    real(amrex_real) r2, vrelsq
     real(amrex_real) cutoff, larger_mass
     integer i, j
 
@@ -93,53 +79,24 @@
        do j = i+1, np
 
           ! Distance between particles
-          dx = particles(i)%pos(1) - particles(j)%pos(1)
-          dy = particles(i)%pos(2) - particles(j)%pos(2)
-          dz = particles(i)%pos(3) - particles(j)%pos(3)
+          r2 = sum((particles(i)%pos - particles(j)%pos)**2)
 
-          r2 = dx * dx + dy * dy + dz * dz
-
-          if (r2 .gt. cutoff*cutoff) then
-             cycle
-          else
+          if (r2 <= cutoff*cutoff) then
 
              ! Relative velocity
-             du = particles(i)%vel(1) - particles(j)%vel(1)
-             dv = particles(i)%vel(2) - particles(j)%vel(2)
-             dw = particles(i)%vel(3) - particles(j)%vel(3)
-
-             vrelsq = du * du + dv * dv + dw * dw
+             vrelsq = sum((particles(i)%vel - particles(j)%vel)**2)
 
              larger_mass = max(particles(i)%mass, particles(j)%mass)
 
-             if ( (vrelsq * r2) .lt. (Gconst * larger_mass)**2 ) then
+             if ( (vrelsq * r2) < (Gconst * larger_mass)**2 ) then
 
-                ! Total momentum of both particles before merging
-                xmom = particles(i)%vel(1) * particles(i)%mass + particles(j)%vel(1) * particles(j)%mass
-                ymom = particles(i)%vel(2) * particles(i)%mass + particles(j)%vel(2) * particles(j)%mass
-                zmom = particles(i)%vel(3) * particles(i)%mass + particles(j)%vel(3) * particles(j)%mass
- 
-                ! Combine masses and put onto particle "i" if that is the heavier particle
-                if (particles(i)%mass .ge. particles(j)%mass)  then
-                   particles(i)%mass = particles(i)%mass + particles(j)%mass
-
-                   ! Put total momentum onto the one particle 
-                   particles(i)%vel(1) = xmom / particles(i)%mass
-                   particles(i)%vel(2) = ymom / particles(i)%mass
-                   particles(i)%vel(3) = zmom / particles(i)%mass
-   
-                   ! Set particle ID of particle j to -1
+                ! Merge lighter particle into heavier one.
+                ! Set particle ID of lighter particle to -1
+                if (particles(i)%mass >= particles(j)%mass) then
+                   call agn_merge_pair(particles(i), particles(j))
                    particles(j)%id = -1
-
                 else
-                   particles(j)%mass = particles(i)%mass + particles(j)%mass
-
-                   ! Put total momentum onto the one particle 
-                   particles(j)%vel(1) = xmom / particles(j)%mass
-                   particles(j)%vel(2) = ymom / particles(j)%mass
-                   particles(j)%vel(3) = zmom / particles(j)%mass
-   
-                   ! Set particle ID of particle i to -1
+                   call agn_merge_pair(particles(j), particles(i))
                    particles(i)%id = -1
                 end if
 
@@ -152,60 +109,60 @@
     do i = 1, np
        do j = 1, ng
 
-          dx = particles(i)%pos(1) - ghosts(j)%pos(1)
-          dy = particles(i)%pos(2) - ghosts(j)%pos(2)
-          dz = particles(i)%pos(3) - ghosts(j)%pos(3)
+          r2 = sum((particles(i)%pos - ghosts(j)%pos)**2)
 
-          r2 = dx * dx + dy * dy + dz * dz
-
-          if (r2 .gt. cutoff*cutoff) then
-             cycle
-
-          else
-
+          if (r2 <= cutoff*cutoff) then
              ! Relative velocity
-             du = particles(i)%vel(1) - ghosts(j)%vel(1)
-             dv = particles(i)%vel(2) - ghosts(j)%vel(2)
-             dw = particles(i)%vel(3) - ghosts(j)%vel(3)
-             vrelsq = du * du + dv * dv + dw * dw
+             vrelsq = sum((particles(i)%vel - ghosts(j)%vel)**2)
 
              larger_mass = max(particles(i)%mass, ghosts(j)%mass)
 
-             if ( (vrelsq * r2) .lt. (Gconst * larger_mass)**2) then
+             if ( (vrelsq * r2) < (Gconst * larger_mass)**2) then
 
-                ! The bigger particle is in the valid region so we put all the mass onto it
-                if ( particles(i)%mass .gt. ghosts(j)%mass ) then
-
-                   ! Total momentum of both particles before merging
-                   xmom = particles(i)%vel(1) * particles(i)%mass + ghosts(j)%vel(1) * ghosts(j)%mass
-                   ymom = particles(i)%vel(2) * particles(i)%mass + ghosts(j)%vel(2) * ghosts(j)%mass
-                   zmom = particles(i)%vel(3) * particles(i)%mass + ghosts(j)%vel(3) * ghosts(j)%mass
-   
-                   ! Combine masses and put onto particle "i"
-                   particles(i)%mass = particles(i)%mass + ghosts(j)%mass
-   
-                   ! Put total momentum onto the one particle
-                   particles(i)%vel(1) = xmom / particles(i)%mass
-                   particles(i)%vel(2) = ymom / particles(i)%mass
-                   particles(i)%vel(3) = zmom / particles(i)%mass
-   
-                ! The bigger particle "j" is in the ghost region  -- we will let its grid update that particle
-                !  so here we just invalidate particle "i"
+                if (particles(i)%mass > ghosts(j)%mass) then
+                   ! The bigger particle "i" is in the valid region,
+                   ! so we put all the mass onto it.
+                   call agn_merge_pair(particles(i), ghosts(j))
                 else
-
-                   ! Set particle ID of particle i to -1
+                   ! The bigger particle "j" is in the ghost region --
+                   ! we will let its grid update that particle,
+                   ! so here we just invalidate particle "i".
                    particles(i)%id = -1
-
                 end if
 
              end if
           end if
 
-
       end do
     end do
 
   end subroutine agn_merge_particles
+
+  ! :::
+  ! ::: ----------------------------------------------------------------
+  ! :::
+
+  subroutine agn_merge_pair(particle_stay, particle_remove)
+
+    use amrex_fort_module, only : amrex_real
+    use particle_mod      , only: agn_particle_t
+
+    type(agn_particle_t), intent(inout) :: particle_stay
+    type(agn_particle_t), intent(in   ) :: particle_remove
+
+    real(amrex_real) :: mom(3)
+
+    ! Calculate total momentum of both particles before merging.
+    mom = particle_stay%vel * particle_stay%mass + &
+         particle_remove%vel * particle_remove%mass
+
+    ! Combine masses.
+    particle_stay%mass = particle_stay%mass + particle_remove%mass
+
+    ! Put total momentum onto the one particle, and save new velocity.
+    particle_stay%vel = mom / particle_stay%mass
+   
+  end subroutine agn_merge_pair
 
   ! :::
   ! ::: ----------------------------------------------------------------
@@ -251,10 +208,8 @@
 
        momx = sum((state_new(i-1:i+1, j-1:j+1, k-1:k+1, UMX) - &
                    state_old(i-1:i+1, j-1:j+1, k-1:k+1, UMX)) * weight) * vol
-
        momy = sum((state_new(i-1:i+1, j-1:j+1, k-1:k+1, UMY) - &
                    state_old(i-1:i+1, j-1:j+1, k-1:k+1, UMY)) * weight) * vol
-
        momz = sum((state_new(i-1:i+1, j-1:j+1, k-1:k+1, UMZ) - &
                    state_old(i-1:i+1, j-1:j+1, k-1:k+1, UMZ)) * weight) * vol
 
@@ -272,7 +227,7 @@
                    state_old(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN)) * weight) * vol
           print *, 'updating E = ', E
           particles(n)%energy = particles(n)%energy - E / mass
-       endif
+       end if
 
     end do
 
@@ -329,11 +284,11 @@
              if (state(i,j,k,URHO) .lt. 0.) then
                 print *, 'density = ', state(i,j,k,URHO)
                 continue
-             endif
+             end if
              if (state(i,j,k,UEINT) .lt. 0.) then
                 print *, 'energy = ', state(i,j,k,UEINT)
                 continue
-             endif
+             end if
              call nyx_eos_soundspeed(c, state(i,j,k,URHO), state(i,j,k,UEINT))
              csq(i, j, k) = c*c
           end do
@@ -462,7 +417,7 @@
 
           particles(n)%energy = 0.
                
-       endif
+       end if
 
     end do
 
@@ -494,7 +449,7 @@
        frac(-1) = ZERO
        frac(0) = ONE + HALF - offset
        frac(1) = offset - HALF
-    endif
+    end if
     
   end subroutine get_length_frac
 
