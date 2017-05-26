@@ -48,20 +48,36 @@ public:
 
     const int NumberOfParticles(MyParIter& pti) { return pti.GetArrayOfStructs().size(); }
 
-    virtual void moveKickDrift (amrex::MultiFab& acceleration, int level, amrex::Real timestep,
-                                amrex::Real a_old = 1.0, amrex::Real a_half = 1.0, int where_width = 0);
-    virtual void moveKick      (amrex::MultiFab& acceleration, int level, amrex::Real timestep,
-                                amrex::Real a_new = 1.0, amrex::Real a_half = 1.0);
+    virtual void moveKickDrift (amrex::MultiFab& acceleration,
+                                int level,
+                                amrex::Real timestep,
+                                amrex::Real a_old = 1.0,
+                                amrex::Real a_half = 1.0,
+                                int where_width = 0);
 
-    void AddOneParticle (int lev, int grid, int tile, amrex::Real mass, 
-                         amrex::Real x, amrex::Real y, amrex::Real z)
+    virtual void moveKick      (amrex::MultiFab& acceleration,
+                                int level,
+                                amrex::Real timestep,
+                                amrex::Real a_new = 1.0,
+                                amrex::Real a_half = 1.0);
+
+  void AddOneParticle (int lev,
+                       int grid,
+                       int tile,
+                       amrex::Real mass, 
+                       amrex::Real x,
+                       amrex::Real y,
+                       amrex::Real z)
     {
         auto& particle_tile = this->GetParticles(lev)[std::make_pair(grid,tile)];
         AddOneParticle(particle_tile, mass, x, y, z);
     }
 
-    void AddOneParticle (ParticleTileType& particle_tile, amrex::Real mass, 
-                         amrex::Real x, amrex::Real y, amrex::Real z)
+    void AddOneParticle (ParticleTileType& particle_tile,
+                         amrex::Real mass, 
+                         amrex::Real x,
+                         amrex::Real y,
+                         amrex::Real z)
     {
         ParticleType p;
         p.id()  = ParticleType::NextID();
@@ -96,17 +112,29 @@ public:
     ///
     /// Compute the momentum that has been removed from the gas in order to define the particle velocity
     ///
-    void ComputeParticleVelocity(int lev, amrex::MultiFab& state_old, amrex::MultiFab& state_new, int add_energy);
+    void ComputeParticleVelocity(int lev,
+                                 amrex::MultiFab& state_old,
+                                 amrex::MultiFab& state_new,
+                                 int add_energy);
 
     ///
     /// Accrete mass from the grid onto the existing AGN particles
     ///
-    void AccreteMass(int lev, amrex::MultiFab& state, amrex::MultiFab& density_lost, amrex::Real eps_rad, amrex::Real eps_coupling, amrex::Real dt);
+    void AccreteMass(int lev,
+                     amrex::MultiFab& state,
+                     amrex::MultiFab& density_lost,
+                     amrex::Real eps_rad,
+                     amrex::Real eps_coupling,
+                     amrex::Real dt);
 
     ///
     ///  Release energy if it exceeds thermal feedback threshold.
     ///
-  void ReleaseEnergy(int lev, amrex::MultiFab& state, amrex::MultiFab& D_new, amrex::Real a, amrex::Real T_min);
+  void ReleaseEnergy(int lev,
+                     amrex::MultiFab& state,
+                     amrex::MultiFab& D_new,
+                     amrex::Real a,
+                     amrex::Real T_min);
 
     ///
     /// This fills the ghost buffers for each tile with the proper data
