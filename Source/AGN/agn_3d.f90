@@ -211,8 +211,10 @@
   ! ::: ----------------------------------------------------------------
   ! :::
 
-  subroutine agn_particle_velocity(np, particles, state_old, sold_lo, sold_hi, state_new, snew_lo, snew_hi, &
-                                   dx, add_energy) &
+  subroutine agn_particle_velocity(np, particles, &
+       state_old, sold_lo, sold_hi, &
+       state_new, snew_lo, snew_hi, &
+       dx, add_energy) &
        bind(c,name='agn_particle_velocity')
 
     use iso_c_binding
@@ -280,7 +282,9 @@
   ! ::: ----------------------------------------------------------------
   ! :::
 
-  subroutine agn_accrete_mass(np, particles, state, density_lost, slo, shi, eps_rad, eps_coupling, dt, dx) &
+  subroutine agn_accrete_mass(np, particles, &
+       state, density_lost, slo, shi, &
+       eps_rad, eps_coupling, dt, dx) &
        bind(c,name='agn_accrete_mass')
 
     use iso_c_binding
@@ -296,7 +300,8 @@
          (slo(1):shi(1),slo(2):shi(2),slo(3):shi(3),NVAR)
     real(amrex_real),     intent(inout)        :: density_lost &
          (slo(1):shi(1),slo(2):shi(2),slo(3):shi(3))
-    real(amrex_real),     intent(in   )        :: eps_rad, eps_coupling, dt, dx(3)
+    real(amrex_real),     intent(in   )        :: eps_rad, eps_coupling
+    real(amrex_real),     intent(in   )        :: dt, dx(3)
 
     integer          :: i, j, k, n
     real(amrex_real) :: avg_rho, avg_csq, avg_speedsq
@@ -392,7 +397,10 @@
   ! ::: ----------------------------------------------------------------
   ! :::
 
-  subroutine agn_release_energy(np, particles, state, diag_eos, slo, shi, a, T_min, dx) &
+  subroutine agn_release_energy(np, particles, &
+       state, slo, shi, &
+       diag_eos, dlo, dhi, &
+       a, T_min, dx) &
        bind(c,name='agn_release_energy')
 
     use iso_c_binding
@@ -404,12 +412,12 @@
     use eos_module, only : nyx_eos_given_RT
 
     integer,              intent(in   )        :: np, slo(3), shi(3)
+    integer,              intent(in   )        :: dlo(3), dhi(3)
     type(agn_particle_t), intent(inout)        :: particles(np)
     real(amrex_real),     intent(inout)        :: state &
          (slo(1):shi(1),slo(2):shi(2),slo(3):shi(3),NVAR)
-    ! FIXME: Is this correct?  How many ghost cells?
     real(amrex_real),     intent(inout)        :: diag_eos &
-         (slo(1):shi(1),slo(2):shi(2),slo(3):shi(3),2)
+         (dlo(1):dhi(1),dlo(2):dhi(2),dlo(3):dhi(3),2)
     real(amrex_real),     intent(in   )        :: a, T_min
     real(amrex_real),     intent(in   )        :: dx(3)
 
@@ -443,9 +451,6 @@
        if (particles(n)%energy > m_g * e) then
 
           print *, 'RELEASING ENERGY of particle at ', particles(n)%pos
-          print *, 'particle energy: ', particles(n)%energy
-          print *, 'neighborhood weight: ', m_g
-          print *, 'e = ', e
 
           state(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN) = &
           state(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN) + &

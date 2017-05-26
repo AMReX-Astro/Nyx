@@ -213,8 +213,10 @@ void AGNParticleContainer::Merge(int lev)
     }
 }
 
-void AGNParticleContainer::ComputeParticleVelocity(int lev, amrex::MultiFab& state_old, 
-                                                   amrex::MultiFab& state_new, int add_energy)
+void AGNParticleContainer::ComputeParticleVelocity(int lev,
+                                                   amrex::MultiFab& state_old, 
+                                                   amrex::MultiFab& state_new,
+                                                   int add_energy)
 {
     const Real* dx = Geom(lev).CellSize();
     const Periodicity& periodic = Geom(lev).periodicity();
@@ -239,7 +241,11 @@ void AGNParticleContainer::ComputeParticleVelocity(int lev, amrex::MultiFab& sta
     }
 }
 
-void AGNParticleContainer::AccreteMass(int lev, amrex::MultiFab& state, amrex::MultiFab& density_lost, amrex::Real eps_rad, amrex::Real eps_coupling, amrex::Real dt)
+void AGNParticleContainer::AccreteMass(int lev,
+                                       amrex::MultiFab& state,
+                                       amrex::MultiFab& density_lost,
+                                       amrex::Real eps_rad,
+                                       amrex::Real eps_coupling, amrex::Real dt)
 {
     const Real* dx = Geom(lev).CellSize();
     const Periodicity& periodic = Geom(lev).periodicity();
@@ -275,11 +281,12 @@ void AGNParticleContainer::ReleaseEnergy(int lev, amrex::MultiFab& state, amrex:
         int Np = particles.size();
 
         const Box& sbox = state[pti].box();
-        BL_ASSERT(D_new[pti].box() == sbox);
+        const Box& Dbox = D_new[pti].box();
         agn_release_energy(&Np, particles.data(), 
                            state[pti].dataPtr(), 
-                           D_new[pti].dataPtr(),
                            sbox.loVect(), sbox.hiVect(),
+                           D_new[pti].dataPtr(),
+                           Dbox.loVect(), Dbox.hiVect(),
                            &a, &T_min, dx); 
     }
 }
@@ -560,14 +567,19 @@ void AGNParticleContainer::writeAllAtLevel(int lev)
           const ParticleType& p = particles[i];
           const IntVect& iv = Index(p, lev);
 
+          int id = p.id();
           RealVect xyz(p.pos(0), p.pos(1), p.pos(2));
+          Real mass = p.rdata(0);
           RealVect uvw(p.rdata(1), p.rdata(2), p.rdata(3));
+          Real energy = p.rdata(4);
 
-          cout << "[" << i << "]: id " << p.id()
-               << " mass " << p.rdata(0)
+          cout << "[" << i << "]: id " << id
+               << " mass " << mass
                << " index " << iv
-               << " position " << xyz 
-               << " velocity " << uvw << endl;
+               << " position " << xyz
+               << " velocity " << uvw
+               << " energy " << energy
+               << endl;
         }
     }
 }

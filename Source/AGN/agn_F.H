@@ -27,8 +27,10 @@ extern "C"
                           const amrex::Real* eps_rad, const amrex::Real* eps_coupling, const amrex::Real* dt, const amrex::Real* dx);
 
   void agn_release_energy(const int* np, void* particles,
-                          const amrex::Real* state, const amrex::Real* diag_eos,
+                          const amrex::Real* state,
                           const int* s_lo, const int* s_hi,
+                          const amrex::Real* diag_eos,
+                          const int* d_lo, const int* d_hi,
                           const amrex::Real* a, const amrex::Real* T_min,
                           const amrex::Real* dx);
 
