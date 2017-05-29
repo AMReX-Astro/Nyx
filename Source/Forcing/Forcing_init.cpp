@@ -38,8 +38,7 @@ void mt_read(std::ifstream& input);
 /           reads from inputs:
 /           forcing.seed -- random seed
 /           forcing.profile -- shape of forcing power spectrum
-/                              (1: delta peak, 2: band, 
-/                              3: parabolic window) 
+/                              (1: plane waves, 2: band, 3: parabolic) 
 /           forcing.alpha -- ratio of domain length to integral length
 /                            for each dimension (L = X/alpha)
 /           forcing.band_width -- determines band width of the forcing 
@@ -123,7 +122,7 @@ void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
 	    Amplitude[dim] = new Real[NumModes];
 	}
 
-	if (SpectProfile == Peak) {
+	if (SpectProfile == Plane) {
 
             if (verbose > 1)
 	       std::cout << "\ni1 = " << i1 << ", i2 = " << i2 
@@ -369,13 +368,15 @@ void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
 	SpectrumOdd[dim]  = new Real[NumNonZeroModes];
 	
 	if (ParallelDescriptor::IOProcessor()) {  
-	    //std::cout << "Master #" << ParallelDescriptor::MyProc() << " spectrum:\n";
+	    if (verbose > 1)
+	       std::cout << "Master #" << ParallelDescriptor::MyProc() << " spectrum:\n";
 	    for (n = 0, m = 0; n < NumModes; n++) {
 		if (mask[n]) { // set only non-zero modes
 		    SpectrumEven[dim][m] = InjectionEven[dim][n];
 		    SpectrumOdd [dim][m] = InjectionOdd [dim][n];
-		    //std::cout << "   " << dim << ", mode " << n << " = (" 
-	            //         << SpectrumEven[dim][m] << "," << SpectrumOdd [dim][m] << ")\n";
+	            if (verbose > 1)
+		       std::cout << "   " << dim << ", mode " << n << " = (" 
+	                         << SpectrumEven[dim][m] << "," << SpectrumOdd [dim][m] << ")\n";
 		    ++m;
 		}
 	    }
@@ -389,16 +390,7 @@ void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
 	ParallelDescriptor::Bcast(SpectrumEven[dim], NumNonZeroModes, ParallelDescriptor::IOProcessorNumber());
 	ParallelDescriptor::Bcast(SpectrumOdd[dim],  NumNonZeroModes, ParallelDescriptor::IOProcessorNumber());
     }
-/*
-    if (verbose > 1) {
-	for (int dim = 0; dim < SpectralRank; dim++)
-	    for (int m = 0; m < NumNonZeroModes; m++)
-		std::cout << "   #" << ParallelDescriptor::MyProc() << ", "<< dim << ", mode " << m << " = (" 
-	                  << SpectrumEven[dim][m] << "," << SpectrumOdd [dim][m] << ")\n";
 
-	std::cout << std::endl;
-    }
-*/
     /* set wave vectors and copy sepctrum to forcing_spect_module */
 
     fort_alloc_spect(&NumNonZeroModes);
@@ -464,7 +456,7 @@ void StochasticForcing::read_params()
 	pp.query("profile", profile);
         switch(profile) {
            case 0: SpectProfile = None; break;
-           case 1: SpectProfile = Peak; break;
+           case 1: SpectProfile = Plane; break;
            case 2: SpectProfile = Band; break;
            case 3: SpectProfile = Parabolic; break;
            default: if (ParallelDescriptor::IOProcessorNumber())

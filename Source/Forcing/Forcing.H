@@ -11,7 +11,7 @@
 typedef int spect_profile_type;
 const spect_profile_type
   None       = 0,
-  Peak       = 1,
+  Plane      = 1,
   Band       = 2,
   Parabolic  = 3;
 

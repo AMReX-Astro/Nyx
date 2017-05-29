@@ -71,7 +71,7 @@ subroutine integrate_state_force(lo, hi, &
     real(rt), allocatable :: phasefct_even_x(:), phasefct_even_y(:), phasefct_even_z(:)
     real(rt), allocatable :: phasefct_odd_x(:), phasefct_odd_y(:), phasefct_odd_z(:)
 
-    ! Compute mu and small_eint to avoid EOS calls, which prevent loop vectorization
+    ! Compute mu and small_eint to avoid EOS calls that prevent loop vectorization
     m_nucleon_over_kB = m_nucleon / k_B
 
     xn_eos(1) = XHYDROGEN
@@ -102,8 +102,6 @@ subroutine integrate_state_force(lo, hi, &
     ! Note that (lo,hi) define the region of the box containing the grow cells
     ! Do *not* assume this is just the valid region
     ! apply heating-cooling to UEDEN and UEINT
-    !print *, "integrate_state_force lo = ", lo
-    !print *, "integrate_state_force hi = ", hi
     do k = lo(3),hi(3)
         do j = lo(2),hi(2)
             do i = lo(1),hi(1)
@@ -121,37 +119,22 @@ subroutine integrate_state_force(lo, hi, &
 		diag_eos(i,j,k,TEMP_COMP) = max(T_orig + delta, small_temp)
 
                 ! Call EOS to get internal energy for constant equilibrium temperature
-                !call nyx_eos_given_RT(eint0, press, rho, temp0, ne, a)
                 eint0 = temp0 / (mu * m_nucleon_over_kB * gamma_minus_1)
 		delta_re = half_dt * alpha * (rho*eint0 - rho_e_orig) / a
 
                 ! Call EOS to get the internal energy floor
-                !call nyx_eos_given_RT(small_eint, press, rho, small_temp, ne, a)
 
                 ! Update cell quantities
  		state(i,j,k,UEINT) = max(rho_e_orig + delta_re, rho*small_eint)
                 state(i,j,k,UEDEN) = state(i,j,k,UEINT) + rho_K_res
-
-		!if ((i.eq.16).and.(j.eq.16)) then
-                !   print *, "temp: ", k, ne, temp0, T_orig, diag_eos(i,j,k,TEMP_COMP), delta
-                !   print *, "rhoe: ", k, rho, rho*eint0, rho_e_orig, state(i,j,k,UEINT), delta_re
-                !endif
-            end do ! i
-        end do ! j
-    end do ! k
+            end do
+        end do
+    end do
 
     if (neg_e_count > 0) call bl_abort('bad rho e in integrate_state_force_3d')
 
-    !print *, " --- integrate_state_force --- "
     delta_phase(:) = TWO*M_PI * dx(:) / (prob_hi(:) - prob_lo(:)) ! phase increment per cell
-    !print *, "dx = ", dx
-    !print *, "prob_hi = ", prob_hi
-    !print *, "prob_lo = ", prob_lo
-    !print *, "delta_phase = ", delta_phase
-    phase_lo(:) = (dble(lo(:)) + HALF) * delta_phase(:)              ! phase of low corner
-    !print *, "lo = ", lo
-    !print *, "hi = ", hi
-    !print *, "phase_lo = ", phase_lo
+    phase_lo(:) = (dble(lo(:)) + HALF) * delta_phase(:)           ! phase of low corner
 
     ! compute initial phase factors and multiplying factors
     ! (sin and cos are expensive, so we do that only for low corner and cell width)
@@ -172,8 +155,6 @@ subroutine integrate_state_force(lo, hi, &
           (cos(i*phase_lo(1)) * sin(j*phase_lo(2)) + &
            sin(i*phase_lo(1)) * cos(j*phase_lo(2))) * cos(k*phase_lo(3))
 
-       !print *, m, i*phase_lo(1), j*phase_lo(2), k*phase_lo(3), phasefct_init_even(m), phasefct_init_odd(m)
-
        phasefct_mult_even(m,1) = cos(i*delta_phase(1));
        phasefct_mult_odd (m,1) = sin(i*delta_phase(1));
 
@@ -182,13 +163,9 @@ subroutine integrate_state_force(lo, hi, &
 
        phasefct_mult_even(m,3) = cos(k*delta_phase(3));
        phasefct_mult_odd (m,3) = sin(k*delta_phase(3));
-       !print *, m, i*delta_phase(1), phasefct_mult_even(m,1), phasefct_mult_even(m,1)
-       !print *, m, j*delta_phase(2), phasefct_mult_even(m,2), phasefct_mult_even(m,2)
-       !print *, m, k*delta_phase(3), phasefct_mult_even(m,3), phasefct_mult_even(m,3)
     end do
 
     num_phases(:) = (hi(:)-lo(:)+1)*num_modes_ext
-    ! print *, "integrate_state_force num_phases = ", num_phases
 
     allocate(phasefct_even_x(num_phases(1)), phasefct_even_y(num_phases(2)), phasefct_even_z(num_phases(3)), &
              phasefct_odd_x(num_phases(1)),  phasefct_odd_y(num_phases(2)),  phasefct_odd_z(num_phases(3)), &
@@ -302,9 +279,6 @@ subroutine integrate_state_force(lo, hi, &
           end do
        end do
     end do
-
-    deallocate(phasefct_even_x, phasefct_even_y, phasefct_even_z, &
-               phasefct_odd_x,  phasefct_odd_y,  phasefct_odd_z)
 
 end subroutine integrate_state_force
 
