@@ -10,9 +10,9 @@
 
 namespace {
 
-struct GhostCommTag {
+struct NeighborCommTag {
 
-    GhostCommTag(int pid, int gid, int tid)
+    NeighborCommTag(int pid, int gid, int tid)
         : proc_id(pid), grid_id(gid), tile_id(tid)
     {}
 
@@ -21,7 +21,7 @@ struct GhostCommTag {
     int tile_id;
 };
 
-bool operator<(const GhostCommTag& l, const GhostCommTag& r) {
+bool operator<(const NeighborCommTag& l, const NeighborCommTag& r) {
     return (l.proc_id < r.proc_id ||
            (l.proc_id == r.proc_id && l.grid_id < r.grid_id) ||
            (l.proc_id == r.proc_id && l.grid_id == r.grid_id && l.tile_id < r.tile_id ));
@@ -34,27 +34,50 @@ class AGNParticleContainer
 {
 public:
 
-    using MyParIter = amrex::ParIter<5>;
+    using MyParIter = amrex::ParIter<2+BL_SPACEDIM>;
     using PairIndex = std::pair<int, int>;
-    using GhostCommMap = std::map<GhostCommTag, amrex::Array<char> >;
+    using NeighborCommMap = std::map<NeighborCommTag, amrex::Array<char> >;
 
-    AGNParticleContainer (amrex::Amr* amr)
-        : NyxParticleContainer<5>(amr)
+    AGNParticleContainer (amrex::Amr* amr, int nghost)
+        : NyxParticleContainer<2+BL_SPACEDIM>(amr),
+          mask_defined(false),
+          ng(nghost)
     { }
 
     virtual ~AGNParticleContainer () {}
 
     const int NumberOfParticles(MyParIter& pti) { return pti.GetArrayOfStructs().size(); }
 
-    void AddOneParticle (int lev, int grid, int tile, amrex::Real mass, 
-                         amrex::Real x, amrex::Real y, amrex::Real z)
+    virtual void moveKickDrift (amrex::MultiFab& acceleration,
+                                int level,
+                                amrex::Real timestep,
+                                amrex::Real a_old = 1.0,
+                                amrex::Real a_half = 1.0,
+                                int where_width = 0);
+
+    virtual void moveKick      (amrex::MultiFab& acceleration,
+                                int level,
+                                amrex::Real timestep,
+                                amrex::Real a_new = 1.0,
+                                amrex::Real a_half = 1.0);
+
+  void AddOneParticle (int lev,
+                       int grid,
+                       int tile,
+                       amrex::Real mass, 
+                       amrex::Real x,
+                       amrex::Real y,
+                       amrex::Real z)
     {
         auto& particle_tile = this->GetParticles(lev)[std::make_pair(grid,tile)];
         AddOneParticle(particle_tile, mass, x, y, z);
     }
 
-    void AddOneParticle (ParticleTileType& particle_tile, amrex::Real mass, 
-                         amrex::Real x, amrex::Real y, amrex::Real z)
+    void AddOneParticle (ParticleTileType& particle_tile,
+                         amrex::Real mass, 
+                         amrex::Real x,
+                         amrex::Real y,
+                         amrex::Real z)
     {
         ParticleType p;
         p.id()  = ParticleType::NextID();
@@ -89,22 +112,39 @@ public:
     ///
     /// Compute the momentum that has been removed from the gas in order to define the particle velocity
     ///
-    void ComputeParticleVelocity(int lev, amrex::MultiFab& state_old, amrex::MultiFab& state_new, int add_energy);
+    void ComputeParticleVelocity(int lev,
+                                 amrex::MultiFab& state_old,
+                                 amrex::MultiFab& state_new,
+                                 int add_energy);
 
     ///
     /// Accrete mass from the grid onto the existing AGN particles
     ///
-    void AccreteMass(int lev, amrex::MultiFab& state, amrex::Real eps_rad, amrex::Real dt);
+    void AccreteMass(int lev,
+                     amrex::MultiFab& state,
+                     amrex::MultiFab& density_lost,
+                     amrex::Real eps_rad,
+                     amrex::Real eps_coupling,
+                     amrex::Real dt);
+
+    ///
+    ///  Release energy if it exceeds thermal feedback threshold.
+    ///
+  void ReleaseEnergy(int lev,
+                     amrex::MultiFab& state,
+                     amrex::MultiFab& D_new,
+                     amrex::Real a,
+                     amrex::Real T_min);
 
     ///
     /// This fills the ghost buffers for each tile with the proper data
     ///
-    void fillGhosts(int lev);
+    void fillNeighbors(int lev);
 
     ///
     /// Each tile clears its ghosts, freeing the memory
     ///
-    void clearGhosts(int lev);
+    void clearNeighbors(int lev);
 
     ///
     /// Write out all particles at a level
@@ -114,22 +154,32 @@ public:
 private:
 
     ///
+    /// Apply periodic shift to particle position, so naive distance calculation
+    /// between neighbors and regular particles will be correct.
+    ///
+    void applyPeriodicShift(int lev, ParticleType& p, const amrex::IntVect& neighbor_cell);
+
+    ///
     /// Pack a particle's data into the proper neighbor buffer, or put it into
     /// the structure to be sent to the other processes
     ///
-    void packGhostParticle(int lev,
+    void packNeighborParticle(int lev,
                            const amrex::IntVect& neighbor_cell,
                            const amrex::BaseFab<int>& mask,
                            const ParticleType& p,
-                           GhostCommMap& ghosts_to_comm);
+                           NeighborCommMap& ghosts_to_comm);
 
     ///
     /// Perform the MPI communication neccesary to fill ghost buffers
     ///
-    void fillGhostsMPI(GhostCommMap& ghosts_to_comm);
+    void fillNeighborsMPI(NeighborCommMap& ghosts_to_comm);
+
+    void defineMask();
 
     const size_t pdata_size = sizeof(ParticleType);
+    int ng;
     amrex::FabArray<amrex::BaseFab<int> > mask;
+    bool mask_defined;
     std::map<PairIndex, amrex::Array<char> > ghosts;
 };
 

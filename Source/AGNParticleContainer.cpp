@@ -7,6 +7,173 @@ using namespace amrex;
 using std::cout;
 using std::endl;
 
+void
+AGNParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
+		                     int                    lev,
+                    		     amrex::Real            dt,
+		                     amrex::Real            a_old,
+				     amrex::Real            a_half,
+				     int                    where_width)
+{
+    BL_PROFILE("AGNParticleContainer::moveKickDrift()");
+
+    //If there are no particles at this level
+    if (lev >= this->GetParticles().size())
+        return;
+
+    const Real* dx = Geom(lev).CellSize();
+    const Periodicity& periodic = Geom(lev).periodicity();
+
+    const amrex::Real strttime      = amrex::ParallelDescriptor::second();
+
+    amrex::MultiFab* ac_ptr;
+    if (this->OnSameGrids(lev, acceleration))
+    {
+        ac_ptr = &acceleration;
+    }
+    else
+    {
+        ac_ptr = new amrex::MultiFab(this->m_gdb->ParticleBoxArray(lev),
+					 this->m_gdb->ParticleDistributionMap(lev),
+					 acceleration.nComp(),acceleration.nGrow());
+        for (amrex::MFIter mfi(*ac_ptr); mfi.isValid(); ++mfi)
+            ac_ptr->setVal(0.);
+        ac_ptr->copy(acceleration,0,0,acceleration.nComp());
+        ac_ptr->FillBoundary(periodic);
+    }
+
+    const Real* plo = Geom(lev).ProbLo();
+
+    int do_move = 1;
+
+    for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
+
+        AoS& particles = pti.GetArrayOfStructs();
+        int Np = particles.size();
+
+        if (Np > 0)
+        {
+           const Box& ac_box = (*ac_ptr)[pti].box();
+
+           update_agn_particles(&Np, particles.data(),
+                                (*ac_ptr)[pti].dataPtr(),
+                                ac_box.loVect(), ac_box.hiVect(),
+                                plo,dx,dt,a_old,a_half,&do_move);
+        }
+    }
+
+    if (ac_ptr != &acceleration) delete ac_ptr;
+    
+    ParticleLevel&    pmap          = this->GetParticles(lev);
+    if (lev > 0 && sub_cycle)
+    {
+        amrex::ParticleLocData pld; 
+        for (auto& kv : pmap) {
+            AoS&  pbox       = kv.second.GetArrayOfStructs();
+            const int   n    = pbox.size();
+
+#ifdef _OPENMP
+#pragma omp parallel for private(pld)
+#endif
+            for (int i = 0; i < n; i++)
+            {
+                ParticleType& p = pbox[i];
+                if (p.id() <= 0) continue;
+
+                // Move the particle to the proper ghost cell. 
+                //      and remove any *ghost* particles that have gone too far
+                // Note that this should only negate ghost particles, not real particles.
+                if (!this->Where(p, pld, lev, lev, where_width))
+                {
+                    // Assert that the particle being removed is a ghost particle;
+                    // the ghost particle is no longer in relevant ghost cells for this grid.
+                    if (p.id() == amrex::GhostParticleID)
+                    {
+                        p.id() = -1;
+                    }
+                    else
+                    {
+                        std::cout << "Oops -- removing particle " << p.id() << std::endl;
+                        amrex::Error("Trying to get rid of a non-ghost particle in moveKickDrift");
+                    }
+                }
+            }
+        }
+    }
+
+    if (this->m_verbose > 1)
+    {
+        amrex::Real stoptime = amrex::ParallelDescriptor::second() - strttime;
+
+        amrex::ParallelDescriptor::ReduceRealMax(stoptime,amrex::ParallelDescriptor::IOProcessorNumber());
+
+        if (amrex::ParallelDescriptor::IOProcessor())
+        {
+            std::cout << "AGNParticleContainer::moveKickDrift() time: " << stoptime << '\n';
+        }
+    }
+}
+
+void
+AGNParticleContainer::moveKick (MultiFab&       acceleration,
+                                int             lev,
+                                Real            dt,
+                                Real            a_new,
+                                Real            a_half) 
+{
+    BL_PROFILE("AGNParticleContainer::moveKick()");
+    writeAllAtLevel(lev);
+    const Real strttime  = ParallelDescriptor::second();
+
+    const Real* dx = Geom(lev).CellSize();
+    const Periodicity& periodic = Geom(lev).periodicity();
+
+    MultiFab* ac_ptr;
+    if (OnSameGrids(lev,acceleration))
+    {
+        ac_ptr = &acceleration;
+    }
+    else 
+    {
+        ac_ptr = new MultiFab(ParticleBoxArray(lev),
+				  ParticleDistributionMap(lev),
+				  acceleration.nComp(),acceleration.nGrow());
+        for (MFIter mfi(*ac_ptr); mfi.isValid(); ++mfi)
+            ac_ptr->setVal(0.);
+        ac_ptr->copy(acceleration,0,0,acceleration.nComp());
+        ac_ptr->FillBoundary(periodic);
+    }
+
+    const Real* plo = Geom(lev).ProbLo();
+
+    int do_move = 0;
+
+    for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
+
+        AoS& particles = pti.GetArrayOfStructs();
+        int Np = particles.size();
+
+        if (Np > 0)
+        {
+           const Box& ac_box = (*ac_ptr)[pti].box();
+
+           update_agn_particles(&Np, particles.data(),
+                                (*ac_ptr)[pti].dataPtr(),
+                                ac_box.loVect(), ac_box.hiVect(),
+                                plo,dx,dt,a_half,a_new,&do_move);
+        }
+    }
+    
+    if (ac_ptr != &acceleration) delete ac_ptr;
+
+    if (m_verbose > 1)
+    {
+        Real stoptime = ParallelDescriptor::second() - strttime;
+        ParallelDescriptor::ReduceRealMax(stoptime,ParallelDescriptor::IOProcessorNumber());
+        amrex::Print() << "AGNParticleContainer::moveKick() time: " << stoptime << '\n';
+    }
+}
+
 void AGNParticleContainer::ComputeOverlap(int lev)
 {
     Array<int> my_id;
@@ -46,13 +213,16 @@ void AGNParticleContainer::Merge(int lev)
     }
 }
 
-void AGNParticleContainer::ComputeParticleVelocity(int lev, amrex::MultiFab& state_old, 
-                                                   amrex::MultiFab& state_new, int add_energy)
+void AGNParticleContainer::ComputeParticleVelocity(int lev,
+                                                   amrex::MultiFab& state_old, 
+                                                   amrex::MultiFab& state_new,
+                                                   int add_energy)
 {
     const Real* dx = Geom(lev).CellSize();
+    const Periodicity& periodic = Geom(lev).periodicity();
 
-    state_old.FillBoundary();
-    state_new.FillBoundary();
+    state_old.FillBoundary(periodic);
+    state_new.FillBoundary(periodic);
 
     for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
 
@@ -71,11 +241,16 @@ void AGNParticleContainer::ComputeParticleVelocity(int lev, amrex::MultiFab& sta
     }
 }
 
-void AGNParticleContainer::AccreteMass(int lev, amrex::MultiFab& state, amrex::Real eps_rad, amrex::Real dt)
+void AGNParticleContainer::AccreteMass(int lev,
+                                       amrex::MultiFab& state,
+                                       amrex::MultiFab& density_lost,
+                                       amrex::Real eps_rad,
+                                       amrex::Real eps_coupling, amrex::Real dt)
 {
     const Real* dx = Geom(lev).CellSize();
+    const Periodicity& periodic = Geom(lev).periodicity();
 
-    state.FillBoundary();
+    state.FillBoundary(periodic);
 
     for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
 
@@ -85,21 +260,72 @@ void AGNParticleContainer::AccreteMass(int lev, amrex::MultiFab& state, amrex::R
         const Box& sbox = state[pti].box();
 
         agn_accrete_mass(&Np, particles.data(),
-                         state[pti].dataPtr(), 
+                         state[pti].dataPtr(),
+                         density_lost[pti].dataPtr(),
                          sbox.loVect(), sbox.hiVect(),
-                         &eps_rad, &dt, dx);
+                         &eps_rad, &eps_coupling, &dt, dx);
     }
 }
 
-void AGNParticleContainer::fillGhosts(int lev) {
-    GhostCommMap ghosts_to_comm;
+void AGNParticleContainer::ReleaseEnergy(int lev, amrex::MultiFab& state, amrex::MultiFab& D_new, amrex::Real a, amrex::Real T_min)
+{
+    const Real* dx = Geom(lev).CellSize();
+    const Periodicity& periodic = Geom(lev).periodicity();
+
+    state.FillBoundary(periodic);
+    D_new.FillBoundary(periodic);
+
+    for (MyParIter pti(*this, lev); pti.isValid(); ++pti)
+      {
+        AoS& particles = pti.GetArrayOfStructs();
+        int Np = particles.size();
+
+        const Box& sbox = state[pti].box();
+        const Box& Dbox = D_new[pti].box();
+        agn_release_energy(&Np, particles.data(), 
+                           state[pti].dataPtr(), 
+                           sbox.loVect(), sbox.hiVect(),
+                           D_new[pti].dataPtr(),
+                           Dbox.loVect(), Dbox.hiVect(),
+                           &a, &T_min, dx); 
+    }
+}
+
+void AGNParticleContainer::defineMask() {
+
+    const int lev = 0;
+    const BoxArray& ba = m_gdb->ParticleBoxArray(lev);
+    const DistributionMapping& dm = m_gdb->ParticleDistributionMap(lev);
+    const Geometry& gm = m_gdb->Geom(lev);
+
+    mask.define(ba, dm, 2, ng);
+    mask.setVal(-1, ng);
+
+    for (MFIter mfi = MakeMFIter(lev); mfi.isValid(); ++mfi) {
+        const Box& box = mfi.tilebox();
+        const int grid_id = mfi.index();
+        const int tile_id = mfi.LocalTileIndex();
+        mask.setVal(grid_id, box, 0, 1);
+        mask.setVal(tile_id, box, 1, 1);
+    }
+
+    mask.FillBoundary(gm.periodicity());
+    mask_defined = true;
+}
+
+void AGNParticleContainer::fillNeighbors(int lev) {
+
+    BL_ASSERT(lev == 0);
+    if (!mask_defined) defineMask();
+
+    NeighborCommMap ghosts_to_comm;
     for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
         const Box& tile_box = pti.tilebox();
         const IntVect& lo = tile_box.smallEnd();
         const IntVect& hi = tile_box.bigEnd();
         
         Box shrink_box = pti.tilebox();
-        shrink_box.grow(-1);
+        shrink_box.grow(-ng);
         
         auto& particles = pti.GetArrayOfStructs();
         for (unsigned i = 0; i < pti.numParticles(); ++i) {
@@ -115,9 +341,9 @@ void AGNParticleContainer::fillGhosts(int lev) {
             IntVect shift = IntVect::TheZeroVector();
             for (int idim = 0; idim < BL_SPACEDIM; ++idim) {
                 if (iv[idim] == lo[idim])
-                    shift[idim] = -1;
+                    shift[idim] = -ng;
                 else if (iv[idim] == hi[idim])
-                    shift[idim] = 1;
+                    shift[idim] = ng;
             }
             
             // Based on the value of shift, we add the particle to a map to be sent
@@ -129,7 +355,7 @@ void AGNParticleContainer::fillGhosts(int lev) {
                 IntVect neighbor_cell = iv;
                 neighbor_cell.shift(idim, shift[idim]);
                 BL_ASSERT(mask[pti].box().contains(neighbor_cell));
-                packGhostParticle(lev, neighbor_cell, mask[pti], p, ghosts_to_comm);
+                packNeighborParticle(lev, neighbor_cell, mask[pti], p, ghosts_to_comm);
             }
             
             // Now add the particle to the "edge" neighbors
@@ -140,7 +366,7 @@ void AGNParticleContainer::fillGhosts(int lev) {
                         neighbor_cell.shift(idim, shift[idim]);
                         neighbor_cell.shift(jdim, shift[jdim]);
                         BL_ASSERT(mask[pti].box().contains(neighbor_cell));
-                        packGhostParticle(lev, neighbor_cell, mask[pti], p, ghosts_to_comm);
+                        packNeighborParticle(lev, neighbor_cell, mask[pti], p, ghosts_to_comm);
                     }
                 }
             }
@@ -150,51 +376,71 @@ void AGNParticleContainer::fillGhosts(int lev) {
                 IntVect neighbor_cell = iv;
                 neighbor_cell.shift(shift);
                 BL_ASSERT(mask[pti].box().contains(neighbor_cell));
-                packGhostParticle(lev, neighbor_cell, mask[pti], p, ghosts_to_comm);
+                packNeighborParticle(lev, neighbor_cell, mask[pti], p, ghosts_to_comm);
             }
         }
     }
     
-    fillGhostsMPI(ghosts_to_comm);
+    fillNeighborsMPI(ghosts_to_comm);
 }
 
-void AGNParticleContainer::clearGhosts(int lev) {
-    for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
-        const int grid_id = pti.index();
-        const int tile_id = pti.LocalTileIndex();
-        auto& ghost_particles = ghosts[std::make_pair(grid_id, tile_id)];
-        Array<char>().swap(ghost_particles);
+void AGNParticleContainer::clearNeighbors(int lev) 
+{
+    ghosts.clear();
+}
+
+void AGNParticleContainer::applyPeriodicShift(int lev, ParticleType& p,
+                                              const IntVect& neighbor_cell) {
+
+    const Periodicity& periodicity = Geom(lev).periodicity();
+    if (not periodicity.isAnyPeriodic()) return;
+
+    const Box& domain = Geom(lev).Domain();
+    const IntVect& lo = domain.smallEnd();
+    const IntVect& hi = domain.bigEnd();
+    const RealBox& prob_domain = Geom(lev).ProbDomain();
+
+    for (int dir = 0; dir < BL_SPACEDIM; ++dir) {
+        if (not periodicity.isPeriodic(dir)) continue;
+        if (neighbor_cell[dir] < lo[dir]) {
+            p.pos(dir) += prob_domain.length(dir);
+        }
+        else if (neighbor_cell[dir] > hi[dir]) {
+            p.pos(dir) -= prob_domain.length(dir);
+        }
     }
 }
 
-void AGNParticleContainer::packGhostParticle(int lev,
+void AGNParticleContainer::packNeighborParticle(int lev,
                                              const IntVect& neighbor_cell,
                                              const BaseFab<int>& mask,
                                              const ParticleType& p,
-                                             GhostCommMap& ghosts_to_comm) {
+                                             NeighborCommMap& ghosts_to_comm) {
     const int neighbor_grid = mask(neighbor_cell, 0);
     if (neighbor_grid >= 0) {
         const int who = ParticleDistributionMap(lev)[neighbor_grid];
         const int MyProc = ParallelDescriptor::MyProc();
         const int neighbor_tile = mask(neighbor_cell, 1);
         PairIndex dst_index(neighbor_grid, neighbor_tile);
+        ParticleType particle = p;
+        applyPeriodicShift(lev, particle, neighbor_cell);
         if (who == MyProc) {
             size_t old_size = ghosts[dst_index].size();
             size_t new_size = ghosts[dst_index].size() + pdata_size;
             ghosts[dst_index].resize(new_size);
-            std::memcpy(&ghosts[dst_index][old_size], &p, pdata_size);
+            std::memcpy(&ghosts[dst_index][old_size], &particle, pdata_size);
         } else {
-            GhostCommTag tag(who, neighbor_grid, neighbor_tile);
+            NeighborCommTag tag(who, neighbor_grid, neighbor_tile);
             Array<char>& buffer = ghosts_to_comm[tag];
             size_t old_size = buffer.size();
             size_t new_size = buffer.size() + pdata_size;
             buffer.resize(new_size);
-            std::memcpy(&buffer[old_size], &p, pdata_size);
+            std::memcpy(&buffer[old_size], &particle, pdata_size);
         }
     }
 }
 
-void AGNParticleContainer::fillGhostsMPI(GhostCommMap& ghosts_to_comm) {
+void AGNParticleContainer::fillNeighborsMPI(NeighborCommMap& ghosts_to_comm) {
 
 #ifdef BL_USE_MPI
     const int MyProc = ParallelDescriptor::MyProc();
@@ -338,20 +584,26 @@ void AGNParticleContainer::writeAllAtLevel(int lev)
     {
       auto& particles = pti.GetArrayOfStructs();
       size_t Np = pti.numParticles();
-      cout << "AGN particles: " << Np << " << at level " << lev << endl;
+      cout << "There are " << Np  << " AGN particles in this grid at level " 
+           << lev << " with boxes " << pti.index() << std::endl;
       for (unsigned i = 0; i < Np; ++i)
         {
           const ParticleType& p = particles[i];
           const IntVect& iv = Index(p, lev);
 
+          int id = p.id();
           RealVect xyz(p.pos(0), p.pos(1), p.pos(2));
+          Real mass = p.rdata(0);
           RealVect uvw(p.rdata(1), p.rdata(2), p.rdata(3));
+          Real energy = p.rdata(4);
 
-          cout << "[" << i << "]: id " << p.id()
-               << " mass " << p.rdata(0)
+          cout << "[" << i << "]: id " << id
+               << " mass " << mass
                << " index " << iv
-               << " position " << xyz 
-               << " velocity " << uvw << endl;
+               << " position " << xyz
+               << " velocity " << uvw
+               << " energy " << energy
+               << endl;
         }
     }
 }

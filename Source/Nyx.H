@@ -380,6 +380,9 @@ public:
     void time_center_source_terms(amrex::MultiFab& S_new, amrex::MultiFab& ext_src_old,
                                   amrex::MultiFab& ext_src_new, amrex::Real dt);
 
+    void conserved_to_primitive(amrex::MultiFab& state);
+    void primitive_to_conserved(amrex::MultiFab& state);
+
     void halo_find(amrex::Real dt);
     void halo_merge();
     void halo_accrete(amrex::Real dt);
@@ -618,6 +621,8 @@ protected:
     static int version_2;
 
     static int use_exact_gravity;
+
+    static int num_particle_ghosts;
 
     static amrex::Real small_dens;
     static amrex::Real small_temp;

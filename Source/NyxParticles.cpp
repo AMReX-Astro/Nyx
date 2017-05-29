@@ -109,6 +109,7 @@ namespace
 }
 
 bool Nyx::do_dm_particles = false;
+int Nyx::num_particle_ghosts = 1;
 
 std::string Nyx::particle_init_type = "";
 std::string Nyx::particle_move_type = "";
@@ -499,15 +500,15 @@ Nyx::init_particles ()
     {
         // Note that we don't initialize any actual AGN particles here, we just create the container.
         BL_ASSERT (APC == 0);
-        APC = new AGNParticleContainer(parent);
+        APC = new AGNParticleContainer(parent, num_particle_ghosts);
         ActiveParticles.push_back(APC); 
 
 	if (parent->subCycle())
 	{
-	    VirtAPC = new AGNParticleContainer(parent);
+	    VirtAPC = new AGNParticleContainer(parent, num_particle_ghosts);
             VirtualParticles.push_back(VirtAPC); 
 
-	    GhostAPC = new AGNParticleContainer(parent);
+	    GhostAPC = new AGNParticleContainer(parent, num_particle_ghosts);
             GhostParticles.push_back(GhostAPC); 
 	}
         //
