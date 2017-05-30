@@ -26,44 +26,12 @@ subroutine ext_src_hc(lo, hi, old_state, old_state_l1, old_state_l2, &
     real(rt), intent(out) :: src(src_l1:src_h1, src_l2:src_h2, &
                                          src_l3:src_h3, NVAR)
 
-
     src = 0.d0
 end subroutine ext_src_hc
 
-subroutine ext_src_jf(lo, hi, old_state, old_state_l1, old_state_l2, &
-                      old_state_l3, old_state_h1, old_state_h2, old_state_h3, &
-                      new_state, new_state_l1, new_state_l2, new_state_l3, &
-                      new_state_h1, new_state_h2, new_state_h3, src, src_l1, &
-                      src_l2, src_l3, src_h1, src_h2, src_h3, problo, dx, time, z, dt)
-
-    use amrex_fort_module, only : rt => amrex_real
-    use meth_params_module, only : NVAR
-
-    implicit none
-
-    integer, intent(in) :: lo(3), hi(3)
-    integer, intent(in) :: old_state_l1, old_state_l2, old_state_l3
-    integer, intent(in) :: old_state_h1, old_state_h2, old_state_h3
-    integer, intent(in) :: new_state_l1, new_state_l2, new_state_l3
-    integer, intent(in) :: new_state_h1, new_state_h2, new_state_h3
-    integer, intent(in) :: src_l1, src_l2, src_l3, src_h1, src_h2, src_h3
-    real(rt), intent(in) :: old_state(old_state_l1:old_state_h1, &
-                                              old_state_l2:old_state_h2, &
-                                              old_state_l3:old_state_h3, NVAR)
-    real(rt), intent(in) :: new_state(new_state_l1:new_state_h1, &
-                                              new_state_l2:new_state_h2, &
-                                              new_state_l3:new_state_h3, NVAR)
-    real(rt), intent(in) :: problo(3), dx(3), z, dt, time
-
-    real(rt), intent(out) :: src(src_l1:src_h1, src_l2:src_h2, &
-                                         src_l3:src_h3, NVAR)
-
-    src = 0.d0
-end subroutine ext_src_jf
-
 subroutine integrate_state(lo, hi, state, state_l1, state_l2, &
                            state_l3, state_h1, state_h2, state_h3, &
-                           dx, a, half_dt) bind(C, name="integrate_state")
+                           dx, time, a, half_dt, min_iter, max_iter) bind(C, name="integrate_state")
 
     use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : NVAR
@@ -75,12 +43,11 @@ subroutine integrate_state(lo, hi, state, state_l1, state_l2, &
     integer, intent(in) :: state_h1, state_h2, state_h3
     real(rt), intent(inout) :: state(state_l1:state_h1, state_l2:state_h2, &
                                              state_l3:state_h3, NVAR)
-    real(rt), intent(in) :: dx(3), a, half_dt
+    real(rt), intent(in   ) :: dx(3), time, a, half_dt
+    integer,  intent(inout) :: min_iter, max_iter
 
 end subroutine integrate_state
  
-
-
 module adjust_heat_cool_module
 
   implicit none

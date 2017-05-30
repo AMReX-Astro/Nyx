@@ -218,6 +218,18 @@ public:
     void icReadAndPrepareFab(std::string mfDirName, int nghost, amrex::MultiFab &mf);
 #endif
 
+#ifdef FORCING
+    //
+    // Write forcing spectrum in checkpoint directories
+    //
+    void forcing_check_point (const std::string& dir);
+
+    //
+    // Restore spectrum at restart
+    //
+    void forcing_post_restart(const std::string& restart_file);
+#endif 
+
     //
     // Read particle-related inputs
     //
@@ -655,6 +667,9 @@ protected:
     // specifies the heating/cooling source term
     static int heat_cool_type;
 
+    // permits forcing to be switched on and off
+    static int do_forcing;
+
     // if true , incorporate the source term through Strang-splitting
     // if false, incorporate the source term through predictor-corrector methodology
     static int strang_split;
@@ -662,6 +677,11 @@ protected:
 #ifdef GRAVITY
     // There can be only one Gravity object, it covers all levels:
     static class Gravity *gravity;
+#endif
+
+#ifdef FORCING
+    // There can be only one forcing object (Fourier space):
+    static class StochasticForcing *forcing;
 #endif
 
     // Average value of gas, dark matter, neutrino and total density, computed every coarse timestep
