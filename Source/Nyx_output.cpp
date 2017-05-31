@@ -16,8 +16,11 @@ using namespace amrex;
 
 namespace
 {
-    const std::string chk_particle_file("DM");
-    const std::string plt_particle_file("DM");
+    const std::string dm_chk_particle_file("DM");
+    const std::string dm_plt_particle_file("DM");
+
+    const std::string agn_chk_particle_file("AGN");
+    const std::string agn_plt_particle_file("AGN");
 }
 
 std::string
@@ -488,7 +491,12 @@ Nyx::particle_plot_file (const std::string& dir)
     if (level == 0)
     {
         if (Nyx::theDMPC() && write_particles_in_plotfile)
-            Nyx::theDMPC()->WritePlotFile(dir, plt_particle_file);
+            Nyx::theDMPC()->WritePlotFile(dir, dm_plt_particle_file);
+
+#ifdef AGN
+        if (Nyx::theAPC() && write_particles_in_plotfile)
+            Nyx::theAPC()->WritePlotFile(dir, agn_plt_particle_file);
+#endif
 
 #ifdef NO_HYDRO
         Real cur_time = state[PhiGrav_Type].curTime();
@@ -517,7 +525,7 @@ Nyx::particle_plot_file (const std::string& dir)
         // Write particle_plotfile_format into its own file in the particle directory
         if (Nyx::theDMPC() && write_particles_in_plotfile && ParallelDescriptor::IOProcessor())
         {
-            std::string FileName = dir + "/" + plt_particle_file + "/precision";
+            std::string FileName = dir + "/" + dm_plt_particle_file + "/precision";
             std::ofstream File;
             File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
             if (!File.good())
@@ -526,6 +534,21 @@ Nyx::particle_plot_file (const std::string& dir)
             File << particle_plotfile_format << '\n';
             File.close();
         }
+
+#ifdef AGN
+        // Write particle_plotfile_format into its own file in the particle directory
+        if (Nyx::theAPC() && write_particles_in_plotfile && ParallelDescriptor::IOProcessor())
+        {
+            std::string FileName = dir + "/" + agn_plt_particle_file + "/precision";
+            std::ofstream File;
+            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
+            if (!File.good())
+                amrex::FileOpenFailed(FileName);
+            File.precision(15);
+            File << particle_plotfile_format << '\n';
+            File.close();
+        }
+#endif
     }
 }
 
@@ -535,7 +558,12 @@ Nyx::particle_check_point (const std::string& dir)
     if (level == 0)
     {
         if (Nyx::theDMPC())
-            Nyx::theDMPC()->Checkpoint(dir, chk_particle_file);
+            Nyx::theDMPC()->Checkpoint(dir, dm_chk_particle_file);
+
+#ifdef AGN
+        if (Nyx::theAPC())
+            Nyx::theAPC()->Checkpoint(dir, agn_chk_particle_file);
+#endif
 
 #ifdef NO_HYDRO
         Real cur_time = state[PhiGrav_Type].curTime();
