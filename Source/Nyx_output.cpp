@@ -557,12 +557,33 @@ Nyx::particle_check_point (const std::string& dir)
 {
     if (level == 0)
     {
+        {
+        Array<std::string> real_comp_names;
+        real_comp_names.push_back("mass");
+        real_comp_names.push_back("xvel");
+        real_comp_names.push_back("yvel");
+        real_comp_names.push_back("zvel");
+
+        bool is_checkpoint = true;
+
         if (Nyx::theDMPC())
-            Nyx::theDMPC()->Checkpoint(dir, dm_chk_particle_file);
+            Nyx::theDMPC()->Checkpoint(dir, dm_chk_particle_file, is_checkpoint, real_comp_names);
+        }
 
 #ifdef AGN
+        {
+        Array<std::string> real_comp_names;
+        real_comp_names.push_back("mass");
+        real_comp_names.push_back("xvel");
+        real_comp_names.push_back("yvel");
+        real_comp_names.push_back("zvel");
+        real_comp_names.push_back("energy");
+
+        bool is_checkpoint = true;
+
         if (Nyx::theAPC())
-            Nyx::theAPC()->Checkpoint(dir, agn_chk_particle_file);
+            Nyx::theAPC()->Checkpoint(dir, agn_chk_particle_file, is_checkpoint, real_comp_names);
+        }
 #endif
 
 #ifdef NO_HYDRO
