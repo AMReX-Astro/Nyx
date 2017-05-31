@@ -27,7 +27,9 @@ namespace
     std::string neutrino_particle_file;
 #endif
 
-    const std::string chk_particle_file("DM");
+  // const std::string chk_particle_file("DM");
+    const std::string dm_chk_particle_file("DM");
+    const std::string agn_chk_particle_file("AGN");
 
     //
     // We want to call this routine when on exit to clean up particles.
@@ -782,20 +784,58 @@ Nyx::particle_post_restart (const std::string& restart_file, bool is_checkpoint)
         // 2 gives more stuff than 1.
         //
         DMPC->SetVerbose(particle_verbose);
-        DMPC->Restart(restart_file, chk_particle_file, is_checkpoint);
+        DMPC->Restart(restart_file, dm_chk_particle_file, is_checkpoint);
         //
         // We want the ability to write the particles out to an ascii file.
         //
         ParmParse pp("particles");
 
-        std::string particle_output_file;
-        pp.query("particle_output_file", particle_output_file);
+        std::string dm_particle_output_file;
+        pp.query("dm_particle_output_file", dm_particle_output_file);
 
-        if (!particle_output_file.empty())
+        if (!dm_particle_output_file.empty())
         {
-            DMPC->WriteAsciiFile(particle_output_file);
+            DMPC->WriteAsciiFile(dm_particle_output_file);
         }
     }
+#ifdef AGN
+    {
+        BL_ASSERT(APC == 0);
+        APC = new AGNParticleContainer(parent, num_particle_ghosts);
+        ActiveParticles.push_back(APC);
+ 
+        if (parent->subCycle())
+        {
+          VirtAPC = new AGNParticleContainer(parent, num_particle_ghosts);
+          VirtualParticles.push_back(VirtAPC);
+ 
+          GhostAPC = new AGNParticleContainer(parent, num_particle_ghosts);
+          GhostParticles.push_back(GhostAPC);
+        }
+
+        //
+        // Make sure to call RemoveParticlesOnExit() on exit.
+        //
+        amrex::ExecOnFinalize(RemoveParticlesOnExit);
+        //
+        // 2 gives more stuff than 1.
+        //
+        APC->SetVerbose(particle_verbose);
+        APC->Restart(restart_file, agn_chk_particle_file, is_checkpoint);
+        //
+        // We want the ability to write the particles out to an ascii file.
+        //
+        ParmParse pp("particles");
+
+        std::string agn_particle_output_file;
+        pp.query("agn_particle_output_file", agn_particle_output_file);
+
+        if (!agn_particle_output_file.empty())
+        {
+            APC->WriteAsciiFile(agn_particle_output_file);
+        }
+    }
+#endif
 }
 
 #ifdef GRAVITY
