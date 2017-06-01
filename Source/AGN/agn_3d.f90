@@ -192,7 +192,7 @@
 
     integer          :: i, j, k, n
     real(amrex_real) :: vol, weight(-1:1, -1:1, -1:1)
-    real(amrex_real) :: mass, momx, momy, momz, E
+    real(amrex_real) :: mass, momx, momy, momz, E, deltaEnergy, frac
     
     vol = dx(1) * dx(2) * dx(3)
 
@@ -225,8 +225,10 @@
        if (add_energy .gt. 0) then
           E = sum((state_new(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN) - &
                    state_old(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN)) * weight) * vol
-          print *, 'updating E = ', E
-          particles(n)%energy = particles(n)%energy - E / mass
+          deltaEnergy = - E / mass
+          frac = deltaEnergy / (particles(n)%energy)
+          print *, 'deltaEnergy =', deltaEnergy, 'fraction', frac
+          particles(n)%energy = particles(n)%energy + deltaEnergy
        end if
 
     end do
