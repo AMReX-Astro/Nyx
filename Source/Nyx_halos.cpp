@@ -165,10 +165,25 @@ Nyx::halo_find (Real dt)
        const Box& domainBox = grids.minimalBox();
        const IntVect& lo = domainBox.smallEnd();
        const IntVect& hi = domainBox.bigEnd();
-       Box cornerBox(IntVect::Zero, IntVect::Unit);
-       for (BoxIterator bit(cornerBox); bit.ok(); ++bit)
+       // With box 0:31, will have 0 and 31/2 = 15 and 31.
+       int numSplits = 2;
+       IntVect stepVect = (hi - lo) / numSplits;
+       std::vector<IntVect> vertices(numSplits+1);
+       for (int i = 0; i < numSplits; i++)
          {
-           IntVect iv = lo + (hi - lo) * bit();
+           vertices[i] = lo + i * stepVect;
+         }
+       vertices[numSplits] = hi;
+       Box vertBox(IntVect::Zero, numSplits*IntVect::Unit);
+       for (BoxIterator bit(vertBox); bit.ok(); ++bit)
+         {
+           IntVect vert = bit();
+           int i = vert[0];
+           int j = vert[1];
+           int k = vert[2];
+           IntVect iv(D_DECL(vertices[vert[0]][0],
+                             vertices[vert[1]][1],
+                             vertices[vert[2]][2]));
            reeber_halos_pos.push_back(iv);
            reeber_halos_mass.push_back(haloMass);
          }
