@@ -123,8 +123,6 @@ public:
     void AccreteMass(int lev,
                      amrex::MultiFab& state,
                      amrex::MultiFab& density_lost,
-                     amrex::Real eps_rad,
-                     amrex::Real eps_coupling,
                      amrex::Real dt);
 
     ///
@@ -133,8 +131,7 @@ public:
   void ReleaseEnergy(int lev,
                      amrex::MultiFab& state,
                      amrex::MultiFab& D_new,
-                     amrex::Real a,
-                     amrex::Real T_min);
+                     amrex::Real a);
 
     ///
     /// This fills the ghost buffers for each tile with the proper data

@@ -244,8 +244,7 @@ void AGNParticleContainer::ComputeParticleVelocity(int lev,
 void AGNParticleContainer::AccreteMass(int lev,
                                        amrex::MultiFab& state,
                                        amrex::MultiFab& density_lost,
-                                       amrex::Real eps_rad,
-                                       amrex::Real eps_coupling, amrex::Real dt)
+                                       amrex::Real dt)
 {
     const Real* dx = Geom(lev).CellSize();
     const Periodicity& periodic = Geom(lev).periodicity();
@@ -263,11 +262,11 @@ void AGNParticleContainer::AccreteMass(int lev,
                          state[pti].dataPtr(),
                          density_lost[pti].dataPtr(),
                          sbox.loVect(), sbox.hiVect(),
-                         &eps_rad, &eps_coupling, &dt, dx);
+                         &dt, dx);
     }
 }
 
-void AGNParticleContainer::ReleaseEnergy(int lev, amrex::MultiFab& state, amrex::MultiFab& D_new, amrex::Real a, amrex::Real T_min)
+void AGNParticleContainer::ReleaseEnergy(int lev, amrex::MultiFab& state, amrex::MultiFab& D_new, amrex::Real a)
 {
     const Real* dx = Geom(lev).CellSize();
     const Periodicity& periodic = Geom(lev).periodicity();
@@ -287,7 +286,7 @@ void AGNParticleContainer::ReleaseEnergy(int lev, amrex::MultiFab& state, amrex:
                            sbox.loVect(), sbox.hiVect(),
                            D_new[pti].dataPtr(),
                            Dbox.loVect(), Dbox.hiVect(),
-                           &a, &T_min, dx); 
+                           &a, dx); 
     }
 }
 

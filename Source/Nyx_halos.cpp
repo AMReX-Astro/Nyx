@@ -278,14 +278,13 @@ Nyx::halo_find (Real dt)
        int add_energy = 0;
        Nyx::theAPC()->ComputeParticleVelocity(level, orig_state, new_state, add_energy);
 
-       Real T_min = 1.0e+7;
        cout << "Going into ReleaseEnergy, number of AGN particles on this proc is "
             << Nyx::theAPC()->TotalNumberOfParticles(true, true) << endl;
        // AGN particles: may zero out energy.
        // new_state: may increase internal and total energy.
        MultiFab& D_new = get_new_data(DiagEOS_Type);
        Real a = get_comoving_a(new_a_time);
-       Nyx::theAPC()->ReleaseEnergy(level, new_state, D_new, a, T_min);
+       Nyx::theAPC()->ReleaseEnergy(level, new_state, D_new, a);
        // Now new_state = get_new_data(State_Type) has been updated.
 
        cout << "At End of Nyx_halos:" << endl;
@@ -387,15 +386,12 @@ Nyx::halo_accrete (Real dt)
    MultiFab agn_density_lost(simBA, simDM, ncomp1, nghost1);
    agn_density_lost.setVal(0.0);
 
-   Real eps_rad = 0.1;
-   Real eps_coupling = 0.15;
    cout << "Going into AccreteMass, number of AGN particles on this proc is "
         << Nyx::theAPC()->TotalNumberOfParticles(true, true) << endl;
    // AGN particles: increase mass and energy.
    // new_state: no change, other than filling in ghost cells.
    // agn_density_lost: gets filled in.
-   Nyx::theAPC()->AccreteMass(level, new_state, agn_density_lost,
-                              eps_rad, eps_coupling, dt);
+   Nyx::theAPC()->AccreteMass(level, new_state, agn_density_lost, dt);
 
    // Make sure the density put into ghost cells is added to valid regions
    agn_density_lost.SumBoundary(geom.periodicity());

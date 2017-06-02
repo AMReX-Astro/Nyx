@@ -241,7 +241,7 @@
 
   subroutine agn_accrete_mass(np, particles, &
        state, density_lost, slo, shi, &
-       eps_rad, eps_coupling, dt, dx) &
+       dt, dx) &
        bind(c,name='agn_accrete_mass')
 
     use iso_c_binding
@@ -249,7 +249,8 @@
     use fundamental_constants_module, only: Gconst, pi, eddington_const, c_light
     use eos_module
     use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEINT
-    use particle_mod      , only: agn_particle_t
+    use particle_mod      , only : agn_particle_t
+    use agn_params_module , only : eps_rad, eps_coupling, bondi_boost, max_frac_removed
 
     integer,              intent(in   )        :: np, slo(3), shi(3)
     type(agn_particle_t), intent(inout)        :: particles(np)
@@ -257,16 +258,14 @@
          (slo(1):shi(1),slo(2):shi(2),slo(3):shi(3),NVAR)
     real(amrex_real),     intent(inout)        :: density_lost &
          (slo(1):shi(1),slo(2):shi(2),slo(3):shi(3))
-    real(amrex_real),     intent(in   )        :: eps_rad, eps_coupling
     real(amrex_real),     intent(in   )        :: dt, dx(3)
 
     integer          :: i, j, k, n
     real(amrex_real) :: avg_rho, avg_csq, avg_speedsq
     real(amrex_real) :: c, denom, mass, mdot, m_edd
 
-    real(amrex_real), parameter :: alpha = 10.d0
-    real(amrex_real), parameter :: bondi_const = alpha * 4.0d0*pi * Gconst*Gconst
-    real(amrex_real), parameter :: max_frac_removed = 0.5
+    !    real(amrex_real), parameter :: bondi_const = bondi_boost * 4.0d0*pi * Gconst*Gconst
+    real(amrex_real) :: bondi_const
     real(amrex_real) :: speedsq &
          (slo(1):shi(1),slo(2):shi(2),slo(3):shi(3))
     real(amrex_real) :: csq &
@@ -274,6 +273,8 @@
 
     real(amrex_real) :: vol, weight(-1:1, -1:1, -1:1)
     real(amrex_real) :: mass_change
+
+    bondi_const = bondi_boost * 4.0d0*pi * Gconst*Gconst
 
     ! Remember state holds primitive variables:
     ! velocity, not momentum.
@@ -357,7 +358,7 @@
   subroutine agn_release_energy(np, particles, &
        state, slo, shi, &
        diag_eos, dlo, dhi, &
-       a, T_min, dx) &
+       a, dx) &
        bind(c,name='agn_release_energy')
 
     use iso_c_binding
@@ -367,6 +368,7 @@
     use meth_params_module, only : NVAR, URHO, UEDEN, UEINT, NE_COMP
     use particle_mod      , only: agn_particle_t
     use eos_module, only : nyx_eos_given_RT
+    use agn_params_module, only : T_min
 
     integer,              intent(in   )        :: np, slo(3), shi(3)
     integer,              intent(in   )        :: dlo(3), dhi(3)
@@ -375,7 +377,7 @@
          (slo(1):shi(1),slo(2):shi(2),slo(3):shi(3),NVAR)
     real(amrex_real),     intent(inout)        :: diag_eos &
          (dlo(1):dhi(1),dlo(2):dhi(2),dlo(3):dhi(3),2)
-    real(amrex_real),     intent(in   )        :: a, T_min
+    real(amrex_real),     intent(in   )        :: a
     real(amrex_real),     intent(in   )        :: dx(3)
 
     integer          :: i, j, k, n

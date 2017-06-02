@@ -21,17 +21,17 @@ extern "C"
                                const amrex::Real* state_new, const int* snew_lo, const int* snew_hi,
                                const amrex::Real* dx, const int* add_energy);
 
-    void agn_accrete_mass(const int* np, void* particles,
-                          const amrex::Real* state, const amrex::Real* density_lost,
-                          const int* s_lo, const int* s_hi,
-                          const amrex::Real* eps_rad, const amrex::Real* eps_coupling, const amrex::Real* dt, const amrex::Real* dx);
+  void agn_accrete_mass(const int* np, void* particles,
+                        const amrex::Real* state, const amrex::Real* density_lost,
+                        const int* s_lo, const int* s_hi,
+                        const amrex::Real* dt, const amrex::Real* dx);
 
   void agn_release_energy(const int* np, void* particles,
                           const amrex::Real* state,
                           const int* s_lo, const int* s_hi,
                           const amrex::Real* diag_eos,
                           const int* d_lo, const int* d_hi,
-                          const amrex::Real* a, const amrex::Real* T_min,
+                          const amrex::Real* a,
                           const amrex::Real* dx);
 
 #ifdef __cplusplus
