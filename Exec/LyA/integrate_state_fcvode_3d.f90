@@ -40,6 +40,11 @@ subroutine integrate_state_fcvode(lo, hi, &
     use comoving_module, only: comoving_h, comoving_OmB
     use atomic_rates_module, only: tabulate_rates, interp_to_this_z, YHELIUM
     use vode_aux_module    , only: z_vode, i_vode, j_vode, k_vode
+    use cvode_interface
+    use rhs
+    use fnvector_serial
+    use fcvode_wrapper_mod
+    use, intrinsic :: iso_c_binding
 
     implicit none
 
@@ -51,17 +56,17 @@ subroutine integrate_state_fcvode(lo, hi, &
     real(rt), intent(in)    :: a, half_dt
     integer         , intent(inout) :: max_iter, min_iter
 
-    double precision :: rout(10), rpar
     integer :: i, j, k
     real(rt) :: z, rho
     real(rt) :: T_orig, ne_orig, e_orig
     real(rt) :: T_out , ne_out , e_out, mu, mean_rhob
-    integer*8 :: NEQ = 1, ipar, iout(25)
-    integer :: meth, itmeth, iatol
-    integer :: ier
-    double precision   :: time
-    double precision :: y(1)
-    double precision :: atol(1), rtol(1)
+    integer(c_long), parameter :: neq = 1
+    integer(c_int) :: ierr       ! error flag from C functions
+    real(c_double) :: tstart     ! initial time
+    real(c_double) :: yvec(1)
+    real(c_double) :: atol, rtol
+    type(c_ptr) :: sunvec_y      ! sundials vector
+    type(c_ptr) :: CVmem         ! CVODE memory
 
     z = 1.d0/a - 1.d0
 
@@ -75,20 +80,42 @@ subroutine integrate_state_fcvode(lo, hi, &
     ! Do *not* assume this is just the valid region
     ! apply heating-cooling to UEDEN and UEINT
 
-    call fnvinits(1, NEQ, ier)
+    sunvec_y = N_VMake_Serial(NEQ, yvec)
+    if (.not. c_associated(sunvec_y)) then
+        print *,'ERROR: sunvec = NULL'
+        stop
+    end if
 
-    ! fcvmalloc calls CVodeMalloc to allocate variables and initialize the solver. We can initialize the solver with junk because
-    ! once we enter the (i,j,k) loop we will immediately call fcvreinit which reuses the same memory allocated from fcvmalloc but
-     ! sets up new initial conditions.
-    meth = 1   ! 1 = Adams (non-stiff); 2 = BDF (stiff)
-    itmeth = 1 ! 1 = functional iteration; 2 = Newton iteration
-    iatol = 1
-    rpar = 42.0d0
-    ipar = 42
-    time = 0.0
+    CVmem = FCVodeCreate(CV_BDF, CV_NEWTON)
+    if (.not. c_associated(CVmem)) then
+        print *,'ERROR: CVmem = NULL'
+        stop
+    end if
 
-    call fcvmalloc(time, y, meth, itmeth, iatol, rtol, atol, iout, rout, ipar, rpar, ier)
-    call fcvdense(NEQ, ier)
+    tstart = 0.0
+    ! CVodeMalloc allocates variables and initialize the solver. We can initialize the solver with junk because once we enter the
+    ! (i,j,k) loop we will immediately call fcvreinit which reuses the same memory allocated from CVodeMalloc but sets up new
+    ! initial conditions.
+    ierr = FCVodeInit(CVmem, c_funloc(RhsFn), tstart, sunvec_y)
+    if (ierr /= 0) then
+       print *, 'Error in FCVodeInit, ierr = ', ierr, '; halting'
+       stop
+    end if
+
+    ! Set dummy tolerances. These will be overwritten as soon as we enter the loop and reinitialize the solver.
+    rtol = 1.0d-5
+    atol = 1.0d-10
+    ierr = FCVodeSStolerances(CVmem, rtol, atol)
+    if (ierr /= 0) then
+       write(*,*) 'Error in FCVodeSStolerances, ierr = ', ierr, '; halting'
+       stop
+    end if
+
+    ierr = FCVDense(CVmem, neq)
+    if (ierr /= 0) then
+       write(*,*) 'Error in FCVDense, ierr = ', ierr, '; halting'
+       stop
+    end if
 
     do k = lo(3),hi(3)
         do j = lo(2),hi(2)
@@ -109,7 +136,7 @@ subroutine integrate_state_fcvode(lo, hi, &
                 j_vode = j
                 k_vode = k
 
-                call fcvode_wrapper(half_dt,rho,T_orig,ne_orig,e_orig, &
+                call fcvode_wrapper(half_dt,rho,T_orig,ne_orig,e_orig,CVmem,sunvec_y, &
                                               T_out ,ne_out ,e_out)
 
                 if (e_out .lt. 0.d0) then
@@ -135,59 +162,7 @@ subroutine integrate_state_fcvode(lo, hi, &
         end do ! j
     end do ! k
 
-    call fcvfree
+    call N_VDestroy_Serial(sunvec_y)
+    call FCVodeFree(cvmem)
 
 end subroutine integrate_state_fcvode
-
-subroutine fcvode_wrapper(dt, rho_in, T_in, ne_in, e_in, T_out, ne_out, e_out)
-
-    use amrex_fort_module, only : rt => amrex_real
-    use vode_aux_module, only: rho_vode, T_vode, ne_vode
-
-    implicit none
-
-    real(rt), intent(in   ) :: dt
-    real(rt), intent(in   ) :: rho_in, T_in, ne_in, e_in
-    real(rt), intent(  out) ::         T_out,ne_out,e_out
-
-    ! Set the number of independent variables -- this should be just "e"
-    integer*8 :: NEQ = 1, ipar, iout(25)
-  
-    ! Allocate storage for the input state
-    double precision :: y(1)
-
-    double precision :: atol(1), rtol(1)
-    double precision   :: time
-    
-    integer :: ier
-
-    EXTERNAL jac, f_rhs
-
-    double precision :: t_soln
-
-    double precision :: rout(10), rpar
-    integer :: meth, itmeth, iatol
-
-    T_vode   = T_in
-    ne_vode  = ne_in
-    rho_vode = rho_in
-
-    ! Initialize the integration time
-    time = 0.d0
-    
-    ! We will integrate "e" in time. 
-    y(1) = e_in
-
-    ! Set the tolerances.  
-    atol(1) = 1.d-4 * e_in
-    rtol(1) = 1.d-4
-
-    call fcvreinit(time, y, 1, rtol(1), atol(1), ier)
-
-    call fcvode(dt, t_soln, y, 1, ier)
-
-    e_out  = y(1)
-    T_out  = T_vode
-    ne_out = ne_vode
-
-end subroutine fcvode_wrapper

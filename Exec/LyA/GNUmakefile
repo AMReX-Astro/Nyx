@@ -47,10 +47,6 @@ USE_HEATCOOL = TRUE
 
 USE_CVODE = FALSE
 
-ifeq ($(USE_CVODE), TRUE)
-  CPPFLAGS += -DUSE_CVODE
-endif
-
 Bpack := ./Make.package
 Blocs := .
 
