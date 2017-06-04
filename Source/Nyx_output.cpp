@@ -745,7 +745,7 @@ Nyx::checkPoint (const std::string& dir,
   if (level == 0 && ParallelDescriptor::IOProcessor())
     {
       {
-	// store ellapsed CPU time
+	// store elapsed CPU time
 	std::ofstream CPUFile;
 	std::string FullPathCPUFile = dir;
 	FullPathCPUFile += "/CPUtime";
