@@ -342,10 +342,32 @@ Nyx::read_params ()
 #ifdef HEATCOOL
     if (heat_cool_type > 0 && add_ext_src == 0)
        amrex::Error("Nyx::must set add_ext_src to 1 if heat_cool_type > 0");
-    if (heat_cool_type != 1 && heat_cool_type != 3)
-       amrex::Error("Nyx:: nonzero heat_cool_type must equal 1 or 3");
+    if (heat_cool_type != 1 && heat_cool_type != 3 && heat_cool_type != 5)
+       amrex::Error("Nyx:: nonzero heat_cool_type must equal 1 or 3 or 5");
     if (heat_cool_type == 0)
        amrex::Error("Nyx::contradiction -- HEATCOOL is defined but heat_cool_type == 0");
+
+    if (ParallelDescriptor::IOProcessor()) {
+      std::cout << "Integrating heating/cooling method with the following method: ";
+      switch (heat_cool_type) {
+        case 1:
+          std::cout << "HC";
+          break;
+        case 3:
+          std::cout << "VODE";
+          break;
+        case 5:
+          std::cout << "CVODE";
+          break;
+      }
+      std::cout << std::endl;
+    }
+
+#ifndef USE_CVODE
+    if (heat_cool_type == 5)
+        amrex::Error("Nyx:: cannot set heat_cool_type = 5 unless USE_CVODE=TRUE");
+#endif
+
 #else
     if (heat_cool_type > 0)
        amrex::Error("Nyx::you set heat_cool_type > 0 but forgot to set USE_HEATCOOL = TRUE");
@@ -519,7 +541,7 @@ Nyx::Nyx (Amr&            papa,
     }
 
      // Initialize "this_z" in the atomic_rates_module
-     if (heat_cool_type == 1 || heat_cool_type == 3)
+     if (heat_cool_type == 1 || heat_cool_type == 3 || heat_cool_type == 5)
          fort_init_this_z(&old_a);
 }
 
