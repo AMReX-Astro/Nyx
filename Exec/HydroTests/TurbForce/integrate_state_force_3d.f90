@@ -193,28 +193,5 @@ subroutine integrate_state_force(lo, hi, &
        enddo
     enddo
 
-    ! Note that (lo,hi) define the region of the box containing the grow cells
-    ! Do *not* assume this is just the valid region
-    ! apply heating-cooling to UEDEN and UEINT
-
-!    Quick check to see how divergence free we are
-!    divf = 0.d0
-!    totf = 0.d0
-!    do k = lo(3)+1,hi(3)-1
-!       do j = lo(2)+1,hi(2)-1
-!          do i = lo(1)+1,hi(1)-1
-!             totf = totf + sqrt( src(i,j,k,UMX)**2 + src(i,j,k,UMY)**2 + src(i,j,k,UMY)**2 )/state(i,j,k,URHO)
-!             divf = divf &
-!                  + abs( ( src(i+1,j,k,UMX)/state(i+1,j,k,URHO) - src(i-1,j,k,UMX)/state(i-1,j,k,URHO) )   &
-!                  +      ( src(i,j+1,k,UMY)/state(i,j+1,k,URHO) - src(i,j-1,k,UMY)/state(i,j-1,k,URHO) )   &
-!                  +      ( src(i,j,k+1,UMZ)/state(i,j,k+1,URHO) - src(i,j,k-1,UMZ)/state(i,j,k-1,URHO) ) ) &
-!                  / (dx(1)) / 2.0d0
-!          enddo
-!       enddo
-!    enddo
-!    
-!    write (6,1000) divf,totf,divf/totf
-!1000 format('divf, totf, divf/totf =', 3(e20.14,2x))
-
-  end subroutine integrate_state_force
+end subroutine integrate_state_force
 

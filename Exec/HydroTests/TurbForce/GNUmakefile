@@ -10,12 +10,14 @@ USE_MPI = TRUE
 USE_OMP = TRUE
 
 PRECISION = DOUBLE
-DEBUG     = TRUE
+DEBUG     = FALSE
 
 # physics
 DIM      = 3
 USE_GRAV = FALSE
 USE_HEATCOOL = FALSE
+
+#USE_CGS = TRUE
 
 Bpack := ./Make.package
 Blocs := .

@@ -30,6 +30,10 @@ using std::string;
 #include "Gravity.H"
 #endif
 
+#ifdef FORCING
+#include "Forcing.H"
+#endif
+
 #ifdef REEBER
 #include <ReeberAnalysis.H>
 #endif
@@ -124,6 +128,13 @@ int Nyx::do_grav       = -1;
 int Nyx::do_grav       =  0;
 #endif
 
+#ifdef FORCING
+StochasticForcing* Nyx::forcing = 0;
+int Nyx::do_forcing = -1;
+#else
+int Nyx::do_forcing =  0;
+#endif
+
 int Nyx::allow_untagging    = 0;
 int Nyx::use_const_species  = 0;
 int Nyx::normalize_species  = 0;
@@ -184,6 +195,15 @@ Nyx::variable_cleanup ()
             std::cout << "Deleting gravity in variable_cleanup...\n";
         delete gravity;
         gravity = 0;
+    }
+#endif
+#ifdef FORCING
+    if (forcing != 0)
+    {
+        if (verbose > 1 && ParallelDescriptor::IOProcessor())
+            std::cout << "Deleting forcing in variable_cleanup...\n";
+        delete forcing;
+        forcing = 0;
     }
 #endif
 
@@ -302,6 +322,19 @@ Nyx::read_params ()
     pp.query("add_ext_src", add_ext_src);
     pp.query("strang_split", strang_split);
 
+#ifdef FORCING
+    pp.get("do_forcing", do_forcing);
+#ifdef NO_HYDRO
+    if (do_forcing == 1)
+        amrex::Error("Cant have do_forcing == 1 when NO_HYDRO is true ");
+#endif
+    if (do_forcing == 1 && add_ext_src == 0)
+       amrex::Error("Nyx::must set add_ext_src to 1 if do_forcing = 1 ");
+#else
+    if (do_forcing == 1)
+       amrex::Error("Nyx::you set do_forcing = 1 but forgot to set USE_FORCING = TRUE ");
+#endif
+
     pp.query("heat_cool_type", heat_cool_type);
 
     pp.query("use_exact_gravity", use_exact_gravity);
@@ -309,10 +342,32 @@ Nyx::read_params ()
 #ifdef HEATCOOL
     if (heat_cool_type > 0 && add_ext_src == 0)
        amrex::Error("Nyx::must set add_ext_src to 1 if heat_cool_type > 0");
-    if (heat_cool_type != 1 && heat_cool_type != 3)
-       amrex::Error("Nyx:: nonzero heat_cool_type must equal 1 or 3");
+    if (heat_cool_type != 1 && heat_cool_type != 3 && heat_cool_type != 5)
+       amrex::Error("Nyx:: nonzero heat_cool_type must equal 1 or 3 or 5");
     if (heat_cool_type == 0)
        amrex::Error("Nyx::contradiction -- HEATCOOL is defined but heat_cool_type == 0");
+
+    if (ParallelDescriptor::IOProcessor()) {
+      std::cout << "Integrating heating/cooling method with the following method: ";
+      switch (heat_cool_type) {
+        case 1:
+          std::cout << "HC";
+          break;
+        case 3:
+          std::cout << "VODE";
+          break;
+        case 5:
+          std::cout << "CVODE";
+          break;
+      }
+      std::cout << std::endl;
+    }
+
+#ifndef USE_CVODE
+    if (heat_cool_type == 5)
+        amrex::Error("Nyx:: cannot set heat_cool_type = 5 unless USE_CVODE=TRUE");
+#endif
+
 #else
     if (heat_cool_type > 0)
        amrex::Error("Nyx::you set heat_cool_type > 0 but forgot to set USE_HEATCOOL = TRUE");
@@ -461,6 +516,20 @@ Nyx::Nyx (Amr&            papa,
    }
 #endif
 
+#ifdef FORCING
+    const Real* prob_lo = geom.ProbLo();
+    const Real* prob_hi = geom.ProbHi();
+
+    if (do_forcing)
+    {
+        // forcing is a static object, only alloc if not already there
+        if (forcing == 0)
+           forcing = new StochasticForcing();
+
+        forcing->init(BL_SPACEDIM, prob_lo, prob_hi);
+    }
+#endif
+
     // Initialize the "a" variable
     if (level == 0 && time == 0.0 && old_a_time < 0.)
     {
@@ -472,11 +541,8 @@ Nyx::Nyx (Amr&            papa,
     }
 
      // Initialize "this_z" in the atomic_rates_module
-     if (heat_cool_type == 1 || heat_cool_type == 3)
+     if (heat_cool_type == 1 || heat_cool_type == 3 || heat_cool_type == 5)
          fort_init_this_z(&old_a);
-
-    // Set grav_n_grow to 3 on init. It'll be reset in advance.
-    grav_n_grow = 3;
 }
 
 Nyx::~Nyx ()
@@ -502,7 +568,7 @@ Nyx::restart (Amr&     papa,
     // get the elapsed CPU time to now;
     if (level == 0 && ParallelDescriptor::IOProcessor())
     {
-      // get ellapsed CPU time
+      // get elapsed CPU time
       std::ifstream CPUFile;
       std::string FullPathCPUFile = parent->theRestartFile();
       FullPathCPUFile += "/CPUtime";
@@ -528,6 +594,20 @@ Nyx::restart (Amr&     papa,
     {
         BL_ASSERT(gravity == 0);
         gravity = new Gravity(parent, parent->finestLevel(), &phys_bc, Density);
+    }
+#endif
+
+#ifdef FORCING
+    const Real* prob_lo = geom.ProbLo();
+    const Real* prob_hi = geom.ProbHi();
+
+    if (do_forcing)
+    {
+        // forcing is a static object, only alloc if not already there
+        if (forcing == 0)
+           forcing = new StochasticForcing();
+
+        forcing->init(BL_SPACEDIM, prob_lo, prob_hi);
     }
 #endif
 }
@@ -1124,15 +1204,18 @@ Nyx::post_timestep (int iteration)
         remove_ghost_particles();
 
     //
-    // Redistribute if it is not the last subiteration
+    // Sync up if we're level 0 or if we have particles that may have moved
+    // off the next finest level and need to be added to our own level.
     //
-    if (iteration < ncycle || level == 0)
+    if ((iteration < ncycle and level < finest_level) || level == 0)
     {
-         for (int i = 0; i < theActiveParticles().size(); i++)
-         {
-             theActiveParticles()[i]->Redistribute(level,
-                                                   theActiveParticles()[i]->finestLevel(),
-                                                   grav_n_grow);
+        for (int i = 0; i < theActiveParticles().size(); i++)
+        {
+            int ngrow = (level == 0) ? 0 : iteration;
+
+            theActiveParticles()[i]->Redistribute(level,
+                                                  theActiveParticles()[i]->finestLevel(),
+                                                  iteration);
          }
     }
 
@@ -1356,6 +1439,14 @@ Nyx::post_restart ()
     }
 #endif
 
+#ifdef FORCING
+    if (do_forcing)
+    {
+        if (level == 0)
+           forcing_post_restart(parent->theRestartFile());
+    }
+#endif
+
 #ifndef NO_HYDRO
     if (level == 0)
     {
@@ -1411,7 +1502,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
    const int whichSidecar(0);
 
 #ifdef AGN
-   halo_find();
+   halo_find(parent->dtLevel(level));
 #endif 
 
 #ifdef GIMLET
@@ -2162,7 +2253,6 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         allInts.push_back(strang_split);
         allInts.push_back(reeber_int);
         allInts.push_back(gimlet_int);
-        allInts.push_back(grav_n_grow);
         allInts.push_back(forceParticleRedist);
       }
 
@@ -2220,7 +2310,6 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         strang_split = allInts[count++];
         reeber_int = allInts[count++];
         gimlet_int = allInts[count++];
-        grav_n_grow = allInts[count++];
         forceParticleRedist = allInts[count++];
 
         BL_ASSERT(count == allInts.size());

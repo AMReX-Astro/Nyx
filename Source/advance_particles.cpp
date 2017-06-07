@@ -15,7 +15,46 @@ Nyx::advance_particles_only (Real time,
                              Real dt,
                              int  iteration,
                              int  ncycle)
+
+  // Arguments:
+  //    time      : the current simulation time
+  //    dt        : the timestep to advance (e.g., go from time to
+  //                time + dt)
+  //    iteration : where we are in the current AMR subcycle.  Each
+  //                level will take a number of steps to reach the
+  //                final time of the coarser level below it.  This
+  //                counter starts at 1
+  //    ncycle    : the number of subcycles at this level
+
 {
+    // A particle in cell (i) can affect cell values in (i-1) to (i+1)
+    int stencil_deposition_width = 1;
+ 
+    // A particle in cell (i) may need information from cell values in (i-1) to (i+1)
+    //   to update its position (typically via interpolation of the acceleration from the grid)
+    int stencil_interpolation_width = 1;
+ 
+    // A particle that starts in cell (i + ncycle) can reach
+    //   cell (i) in ncycle number of steps .. after "iteration" steps
+    //   the particle has to be within (i + ncycle+1-iteration) to reach cell (i)
+    //   in the remaining (ncycle-iteration) steps
+ 
+    // *** ghost_width ***  is used
+    //   *) to set how many cells are used to hold ghost particles i.e copies of particles
+    //      that live on (level-1) can affect the grid over all of the ncycle steps.
+    //      We define ghost cells at the coarser level to cover all iterations so
+    //      we can't reduce this number as iteration increases.
+ 
+    int ghost_width = ncycle + stencil_deposition_width;
+ 
+    // *** grav_n_grow *** is used
+    //   *) to determine how many ghost cells we need to fill in the MultiFab from
+    //      which the particle interpolates its acceleration
+    //   *) to set how many cells the Where call in moveKickDrift tests = (grav.nGrow()-2).
+ 
+    int grav_n_grow = ghost_width + (1-iteration) +
+                      stencil_interpolation_width ;
+
     // Sanity checks
     if (do_hydro)
         amrex::Abort("In `advance_particles_only` but `do_hydro` is true");
@@ -64,7 +103,7 @@ Nyx::advance_particles_only (Real time,
         //
         for(int lev = level; lev <= finest_level_to_advance && lev < finest_level; lev++)
         {
-           get_level(lev).setup_ghost_particles();
+           get_level(lev).setup_ghost_particles(ghost_width);
         }
     }
 

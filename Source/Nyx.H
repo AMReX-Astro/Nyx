@@ -218,6 +218,18 @@ public:
     void icReadAndPrepareFab(std::string mfDirName, int nghost, amrex::MultiFab &mf);
 #endif
 
+#ifdef FORCING
+    //
+    // Write forcing spectrum in checkpoint directories
+    //
+    void forcing_check_point (const std::string& dir);
+
+    //
+    // Restore spectrum at restart
+    //
+    void forcing_post_restart(const std::string& restart_file);
+#endif 
+
     //
     // Read particle-related inputs
     //
@@ -270,7 +282,7 @@ public:
     //
     // Setup ghost particles (for finer levels) if necessary
     //
-    void setup_ghost_particles();
+    void setup_ghost_particles(int ngrow);
 
     //
     // Remove ghost particles (for this level) if necessary
@@ -368,7 +380,12 @@ public:
     void time_center_source_terms(amrex::MultiFab& S_new, amrex::MultiFab& ext_src_old,
                                   amrex::MultiFab& ext_src_new, amrex::Real dt);
 
-    void halo_find();
+    void conserved_to_primitive(amrex::MultiFab& state);
+    void primitive_to_conserved(amrex::MultiFab& state);
+
+    void halo_find(amrex::Real dt);
+    void halo_merge();
+    void halo_accrete(amrex::Real dt);
     void Lya_statistics();
 
     //
@@ -536,11 +553,6 @@ public:
 protected:
 
     //
-    // Number of grow cells required for particle motion.
-    //
-    int grav_n_grow;
-
-    //
     // Initialize the network.
     //
     static void network_init();
@@ -610,6 +622,8 @@ protected:
 
     static int use_exact_gravity;
 
+    static int num_particle_ghosts;
+
     static amrex::Real small_dens;
     static amrex::Real small_temp;
     static amrex::Real gamma;
@@ -653,6 +667,9 @@ protected:
     // specifies the heating/cooling source term
     static int heat_cool_type;
 
+    // permits forcing to be switched on and off
+    static int do_forcing;
+
     // if true , incorporate the source term through Strang-splitting
     // if false, incorporate the source term through predictor-corrector methodology
     static int strang_split;
@@ -660,6 +677,11 @@ protected:
 #ifdef GRAVITY
     // There can be only one Gravity object, it covers all levels:
     static class Gravity *gravity;
+#endif
+
+#ifdef FORCING
+    // There can be only one forcing object (Fourier space):
+    static class StochasticForcing *forcing;
 #endif
 
     // Average value of gas, dark matter, neutrino and total density, computed every coarse timestep

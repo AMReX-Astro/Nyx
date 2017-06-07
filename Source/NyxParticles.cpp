@@ -27,7 +27,9 @@ namespace
     std::string neutrino_particle_file;
 #endif
 
-    const std::string chk_particle_file("DM");
+  // const std::string chk_particle_file("DM");
+    const std::string dm_chk_particle_file("DM");
+    const std::string agn_chk_particle_file("AGN");
 
     //
     // We want to call this routine when on exit to clean up particles.
@@ -109,6 +111,7 @@ namespace
 }
 
 bool Nyx::do_dm_particles = false;
+int Nyx::num_particle_ghosts = 1;
 
 std::string Nyx::particle_init_type = "";
 std::string Nyx::particle_move_type = "";
@@ -371,6 +374,8 @@ Nyx::init_particles ()
         //
         DMPC->SetVerbose(particle_verbose);
 
+        DarkMatterParticleContainer::ParticleInitData pdata = {particle_initrandom_mass};
+
         if (particle_init_type == "Random")
         {
             if (particle_initrandom_count <= 0)
@@ -391,8 +396,7 @@ Nyx::init_particles ()
             }
 
             DMPC->InitRandom(particle_initrandom_count,
-                             particle_initrandom_iseed,
-                             particle_initrandom_mass,
+                             particle_initrandom_iseed, pdata,
                              particle_initrandom_serialize);
         }
         else if (particle_init_type == "RandomPerBox")
@@ -413,13 +417,8 @@ Nyx::init_particles ()
                           << particle_initrandom_iseed << "\n\n";
             }
 
-            // We just make this MultiFab in order to iterate over it ...
-            MultiFab particle_mf(grids,dmap,1,1);
-
             DMPC->InitRandomPerBox(particle_initrandom_count_per_box,
-                                   particle_initrandom_iseed,
-                                   particle_initrandom_mass,
-                                   particle_mf);
+                                   particle_initrandom_iseed, pdata);
 
         }
         else if (particle_init_type == "AsciiFile")
@@ -503,15 +502,15 @@ Nyx::init_particles ()
     {
         // Note that we don't initialize any actual AGN particles here, we just create the container.
         BL_ASSERT (APC == 0);
-        APC = new AGNParticleContainer(parent);
+        APC = new AGNParticleContainer(parent, num_particle_ghosts);
         ActiveParticles.push_back(APC); 
 
 	if (parent->subCycle())
 	{
-	    VirtAPC = new AGNParticleContainer(parent);
+	    VirtAPC = new AGNParticleContainer(parent, num_particle_ghosts);
             VirtualParticles.push_back(VirtAPC); 
 
-	    GhostAPC = new AGNParticleContainer(parent);
+	    GhostAPC = new AGNParticleContainer(parent, num_particle_ghosts);
             GhostParticles.push_back(GhostAPC); 
 	}
         //
@@ -785,20 +784,58 @@ Nyx::particle_post_restart (const std::string& restart_file, bool is_checkpoint)
         // 2 gives more stuff than 1.
         //
         DMPC->SetVerbose(particle_verbose);
-        DMPC->Restart(restart_file, chk_particle_file, is_checkpoint);
+        DMPC->Restart(restart_file, dm_chk_particle_file, is_checkpoint);
         //
         // We want the ability to write the particles out to an ascii file.
         //
         ParmParse pp("particles");
 
-        std::string particle_output_file;
-        pp.query("particle_output_file", particle_output_file);
+        std::string dm_particle_output_file;
+        pp.query("dm_particle_output_file", dm_particle_output_file);
 
-        if (!particle_output_file.empty())
+        if (!dm_particle_output_file.empty())
         {
-            DMPC->WriteAsciiFile(particle_output_file);
+            DMPC->WriteAsciiFile(dm_particle_output_file);
         }
     }
+#ifdef AGN
+    {
+        BL_ASSERT(APC == 0);
+        APC = new AGNParticleContainer(parent, num_particle_ghosts);
+        ActiveParticles.push_back(APC);
+ 
+        if (parent->subCycle())
+        {
+          VirtAPC = new AGNParticleContainer(parent, num_particle_ghosts);
+          VirtualParticles.push_back(VirtAPC);
+ 
+          GhostAPC = new AGNParticleContainer(parent, num_particle_ghosts);
+          GhostParticles.push_back(GhostAPC);
+        }
+
+        //
+        // Make sure to call RemoveParticlesOnExit() on exit.
+        //
+        amrex::ExecOnFinalize(RemoveParticlesOnExit);
+        //
+        // 2 gives more stuff than 1.
+        //
+        APC->SetVerbose(particle_verbose);
+        APC->Restart(restart_file, agn_chk_particle_file, is_checkpoint);
+        //
+        // We want the ability to write the particles out to an ascii file.
+        //
+        ParmParse pp("particles");
+
+        std::string agn_particle_output_file;
+        pp.query("agn_particle_output_file", agn_particle_output_file);
+
+        if (!agn_particle_output_file.empty())
+        {
+            APC->WriteAsciiFile(agn_particle_output_file);
+        }
+    }
+#endif
 }
 
 #ifdef GRAVITY
@@ -978,31 +1015,30 @@ Nyx::remove_virtual_particles()
 }
 
 void
-Nyx::setup_ghost_particles()
+Nyx::setup_ghost_particles(int ngrow)
 {
     BL_PROFILE("Nyx::setup_ghost_particles()");
     BL_ASSERT(level < parent->finestLevel());
-    int nGrow = Nyx::grav_n_grow - 1;
     if(Nyx::theDMPC() != 0)
     {
         DarkMatterParticleContainer::AoS ghosts;
-        Nyx::theDMPC()->CreateGhostParticles(level, nGrow, ghosts);
-        Nyx::theGhostPC()->AddParticlesAtLevel(ghosts, level+1, nGrow);
+        Nyx::theDMPC()->CreateGhostParticles(level, ngrow, ghosts);
+        Nyx::theGhostPC()->AddParticlesAtLevel(ghosts, level+1, ngrow);
     }
 #ifdef AGN
     if(Nyx::theAPC() != 0)
     {
         AGNParticleContainer::AoS ghosts;
-        Nyx::theAPC()->CreateGhostParticles(level, nGrow, ghosts);
-        Nyx::theGhostAPC()->AddParticlesAtLevel(ghosts, level+1, nGrow);
+        Nyx::theAPC()->CreateGhostParticles(level, ngrow, ghosts);
+        Nyx::theGhostAPC()->AddParticlesAtLevel(ghosts, level+1, ngrow);
     }
 #endif
 #ifdef NEUTRINO_PARTICLES
     if(Nyx::theNPC() != 0)
     {
         NeutrinoParticleContainer::AoS ghosts;
-        Nyx::theNPC()->CreateGhostParticles(level, nGrow, ghosts);
-        Nyx::theGhostNPC()->AddParticlesAtLevel(ghosts, level+1, nGrow);
+        Nyx::theNPC()->CreateGhostParticles(level, ngrow, ghosts);
+        Nyx::theGhostNPC()->AddParticlesAtLevel(ghosts, level+1, ngrow);
     }
 #endif
 }
@@ -1010,7 +1046,7 @@ Nyx::setup_ghost_particles()
 void
 Nyx::remove_ghost_particles()
 {
-    BL_PROFILE("Nyx::setup_ghost_particles()");
+    BL_PROFILE("Nyx::remove_ghost_particles()");
     for (int i = 0; i < GhostParticles.size(); i++)
     {
         if (GhostParticles[i] != 0)

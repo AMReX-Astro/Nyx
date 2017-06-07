@@ -39,7 +39,7 @@ module eos_module
   integer, parameter, private :: eos_input_rt = 1   ! density, temperature are inputs
   integer, parameter, private :: eos_input_re = 5   ! density, internal energy are inputs
 
-  logical, parameter, private :: eos_assume_neutral = .false.
+  logical, parameter, public :: eos_assume_neutral = .false.
 
   private nspec, aion, zion
 

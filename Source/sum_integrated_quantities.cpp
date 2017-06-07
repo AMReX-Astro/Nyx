@@ -8,6 +8,11 @@
 #include "Gravity.H"
 #endif
 
+#ifdef FORCING
+#include "Forcing.H"
+#endif
+
+
 using namespace amrex;
 
 #ifndef NO_HYDRO
@@ -136,18 +141,24 @@ Nyx::sum_integrated_quantities ()
         if (time == 0)
         {
             data_log1 << std::setw(14) << "      time    ";
+#ifdef FORCING
+            data_log1 << std::setw(14) << "    rms_force ";
+#endif
             data_log1 << std::setw(14) << "         xmom ";
             data_log1 << std::setw(14) << "         ymom ";
             data_log1 << std::setw(14) << "         zmom ";
             data_log1 << std::setw(14) << "        rho_E ";
             data_log1 << std::setw(14) << "        rho_e ";
             data_log1 << std::setw(14) << "         Temp ";
-            data_log1 << std::setw(14) << "     rms_mach " ;
+            data_log1 << std::setw(14) << "     rms_mach ";
             data_log1 << std::setw(14) << "      magvort " << std::endl;
         }
 
         // Write the quantities at this time                                                                                            
         data_log1 << std::setw(14) << time;
+#ifdef FORCING
+        data_log1 << std::setw(14) << std::setprecision(6) << forcing->rms();
+#endif
         data_log1 << std::setw(14) << std::setprecision(6) << xmom;
         data_log1 << std::setw(14) << std::setprecision(6) << ymom;
         data_log1 << std::setw(14) << std::setprecision(6) << zmom;
