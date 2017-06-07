@@ -46,10 +46,10 @@ DIM      = 3
 USE_GRAV = TRUE
 USE_HEATCOOL = TRUE
 
-USE_AGN = TRUE
+USE_AGN = FALSE
 
 # units
-USE_CGS = TRUE
+#USE_CGS = TRUE
 
 Bpack := ./Make.package
 Blocs := .
