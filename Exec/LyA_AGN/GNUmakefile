@@ -8,7 +8,7 @@ HPGMG_DIR ?= ../../../hpgmg/finite-volume
 TOP = ../..
 
 # compilation options
-COMP    = gcc
+COMP    = gnu
 USE_MPI = TRUE
 USE_OMP = FALSE
 
@@ -20,7 +20,7 @@ PRECISION = DOUBLE
 DEBUG     = FALSE
 
 GIMLET = FALSE
-REEBER = TRUE
+REEBER = FALSE
 
 GIMLET_DIR ?= /home/vince/Development/gimlet
 # Gimlet needs FFTW MPI.
@@ -47,6 +47,9 @@ USE_GRAV = TRUE
 USE_HEATCOOL = TRUE
 
 USE_AGN = TRUE
+
+# units
+#USE_CGS = TRUE
 
 Bpack := ./Make.package
 Blocs := .
