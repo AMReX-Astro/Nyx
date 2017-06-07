@@ -32,5 +32,6 @@ module rhs
 
       fvec(1) = energy
 
+      ierr = 0
     end function RhsFn
 end module rhs

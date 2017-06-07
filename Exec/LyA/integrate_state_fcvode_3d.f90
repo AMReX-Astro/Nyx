@@ -60,10 +60,8 @@ subroutine integrate_state_fcvode(lo, hi, &
     real(rt) :: z, rho
     real(rt) :: T_orig, ne_orig, e_orig
     real(rt) :: T_out , ne_out , e_out, mu, mean_rhob
-    integer(c_long), parameter :: neq = 1
     integer(c_int) :: ierr       ! error flag from C functions
     real(c_double) :: tstart     ! initial time
-    real(c_double) :: yvec(1)
     real(c_double) :: atol, rtol
     type(c_ptr) :: sunvec_y      ! sundials vector
     type(c_ptr) :: CVmem         ! CVODE memory
