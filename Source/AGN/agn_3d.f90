@@ -312,7 +312,7 @@
        avg_speedsq = sum(speedsq(i-1:i+1, j-1:j+1, k-1:k+1) * weight)
        avg_csq =     sum(    csq(i-1:i+1, j-1:j+1, k-1:k+1) * weight)
        
-       print *, 'rho, speed, cs', avg_rho, sqrt(avg_speedsq), sqrt(avg_csq)
+       !print *, 'rho, speed, cs', avg_rho, sqrt(avg_speedsq), sqrt(avg_csq)
 
        denom = (avg_speedsq + avg_csq)**1.5
 
