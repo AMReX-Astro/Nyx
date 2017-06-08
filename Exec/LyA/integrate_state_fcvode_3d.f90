@@ -41,9 +41,8 @@ subroutine integrate_state_fcvode(lo, hi, &
     use atomic_rates_module, only: tabulate_rates, interp_to_this_z, YHELIUM
     use vode_aux_module    , only: z_vode, i_vode, j_vode, k_vode
     use cvode_interface
-    use rhs
     use fnvector_serial
-    use fcvode_wrapper_mod
+    use fcvode_extras
     use, intrinsic :: iso_c_binding
 
     implicit none
