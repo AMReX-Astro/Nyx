@@ -30,6 +30,7 @@ subroutine integrate_state_fcvode(lo, hi, &
 !       The state vars
 !
     use amrex_fort_module, only : rt => amrex_real
+    use amrex_error_module, only : amrex_abort
     use meth_params_module, only : NVAR, URHO, UEDEN, UEINT, &
                                    TEMP_COMP, NE_COMP, gamma_minus_1
     use bl_constants_module, only: M_PI
@@ -83,14 +84,12 @@ subroutine integrate_state_fcvode(lo, hi, &
 
     sunvec_y = N_VMake_Serial(NEQ, yvec)
     if (.not. c_associated(sunvec_y)) then
-        print *,'ERROR: sunvec = NULL'
-        stop
+        call amrex_abort('integrate_state_fcvode: sunvec = NULL')
     end if
 
     CVmem = FCVodeCreate(CV_BDF, CV_NEWTON)
     if (.not. c_associated(CVmem)) then
-        print *,'ERROR: CVmem = NULL'
-        stop
+        call amrex_abort('integrate_state_fcvode: CVmem = NULL')
     end if
 
     tstart = 0.0
@@ -99,8 +98,7 @@ subroutine integrate_state_fcvode(lo, hi, &
     ! initial conditions.
     ierr = FCVodeInit(CVmem, c_funloc(RhsFn), tstart, sunvec_y)
     if (ierr /= 0) then
-       print *, 'Error in FCVodeInit, ierr = ', ierr, '; halting'
-       stop
+       call amrex_abort('integrate_state_fcvode: FCVodeInit() failed')
     end if
 
     ! Set dummy tolerances. These will be overwritten as soon as we enter the loop and reinitialize the solver.
@@ -108,14 +106,12 @@ subroutine integrate_state_fcvode(lo, hi, &
     atol = 1.0d-10
     ierr = FCVodeSStolerances(CVmem, rtol, atol)
     if (ierr /= 0) then
-       write(*,*) 'Error in FCVodeSStolerances, ierr = ', ierr, '; halting'
-       stop
+      call amrex_abort('integrate_state_fcvode: FCVodeSStolerances() failed')
     end if
 
     ierr = FCVDense(CVmem, neq)
     if (ierr /= 0) then
-       write(*,*) 'Error in FCVDense, ierr = ', ierr, '; halting'
-       stop
+       call amrex_abort('integrate_state_fcvode: FCVDense() failed')
     end if
 
     do k = lo(3),hi(3)
