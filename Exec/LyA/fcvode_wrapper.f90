@@ -1,16 +1,11 @@
 module fcvode_wrapper_mod
 
-  use, intrinsic :: iso_c_binding
   implicit none
-
-  ! Set the number of independent variables -- this should be just "e"
-  integer(c_long), parameter :: neq = 1
-
-  real(c_double) :: yvec(neq)
 
   contains
 
-    subroutine fcvode_wrapper(dt, rho_in, T_in, ne_in, e_in, cvmem, sunvec_y, T_out, ne_out, e_out)
+    subroutine fcvode_wrapper(dt, rho_in, T_in, ne_in, e_in, neq, cvmem, &
+                              sunvec_y, yvec, T_out, ne_out, e_out)
 
         use amrex_fort_module, only : rt => amrex_real
         use vode_aux_module, only: rho_vode, T_vode, ne_vode
@@ -28,6 +23,8 @@ module fcvode_wrapper_mod
 
         real(c_double) :: atol, rtol
         real(c_double) :: time, tout
+        integer(c_long), intent(in) :: neq
+        real(c_double), pointer, intent(in) :: yvec(:)
 
         integer(c_int) :: ierr
 

@@ -65,6 +65,10 @@ subroutine integrate_state_fcvode(lo, hi, &
     real(c_double) :: atol, rtol
     type(c_ptr) :: sunvec_y      ! sundials vector
     type(c_ptr) :: CVmem         ! CVODE memory
+    integer(c_long), parameter :: neq = 1
+    real(c_double), pointer :: yvec(:)
+
+    allocate(yvec(neq))
 
     z = 1.d0/a - 1.d0
 
@@ -134,7 +138,7 @@ subroutine integrate_state_fcvode(lo, hi, &
                 j_vode = j
                 k_vode = k
 
-                call fcvode_wrapper(half_dt,rho,T_orig,ne_orig,e_orig,CVmem,sunvec_y, &
+                call fcvode_wrapper(half_dt,rho,T_orig,ne_orig,e_orig,neq,CVmem,sunvec_y,yvec, &
                                               T_out ,ne_out ,e_out)
 
                 if (e_out .lt. 0.d0) then
@@ -162,5 +166,7 @@ subroutine integrate_state_fcvode(lo, hi, &
 
     call N_VDestroy_Serial(sunvec_y)
     call FCVodeFree(cvmem)
+
+    deallocate(yvec)
 
 end subroutine integrate_state_fcvode
