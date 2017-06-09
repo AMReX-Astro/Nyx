@@ -87,9 +87,6 @@ Nyx::halo_find (Real dt)
    MultiFab::Copy(orig_state, new_state,
                   comp0, comp0, simComp, nghost1);
 
-   // Convert new_state to primitive variables: rho, velocity, energy/rho.
-   conserved_to_primitive(new_state);
-
    // These are passed into the AGN particles' Redistribute
    int lev_min = 0;
    int lev_max = 0;
@@ -146,16 +143,10 @@ Nyx::halo_find (Real dt)
        // Before creating new AGN particles, check if any of the existing AGN particles should be merged
        halo_merge();
 
-       cout << "Before accrete :" << endl;
-       Nyx::theAPC()->writeAllAtLevel(level);
-
        // Before creating new AGN particles,
        // accrete mass and momentum onto existing particles.
        // No change to state.
        halo_accrete(dt);
-
-       cout << "After accrete :" << endl;
-       Nyx::theAPC()->writeAllAtLevel(level);
 
        // Here we just create place-holders for the halos which should come from REEBER
        std::vector<IntVect> reeber_halos_pos;
@@ -201,9 +192,15 @@ Nyx::halo_find (Real dt)
 #ifdef REEBER
        for (const Halo& h : reeber_halos)
        {
-           if (!created_file)
-              os.open(amrex::Concatenate(amrex::Concatenate("debug-halos-", nStep(), 5), ParallelDescriptor::MyProc(), 2));
-           created_file = true;
+#if 0
+           // We aren't actually writing to this file so don't create it
+           if (reeber_halos_pos.size() > 0)
+           {
+              if (!created_file)
+                 os.open(amrex::Concatenate(amrex::Concatenate("debug-halos-", nStep(), 5), ParallelDescriptor::MyProc(), 2));
+              created_file = true;
+           }
+#endif
            halo_mass = h.totalMass;
            halo_pos  = h.position;
 #else
@@ -266,12 +263,9 @@ Nyx::halo_find (Real dt)
        amrex::MultiFab::Subtract(new_state, agn_density,
                                  comp0, Density, ncomp1, nghost0);
 
-       // Convert new_state to conserved variables: rho, momentum, energy.
-       // Since the density has changed, the other variables change accordingly.
-       primitive_to_conserved(new_state);
-
        cout << "Going into ComputeParticleVelocity (no energy), number of AGN particles on this proc is "
             << Nyx::theAPC()->TotalNumberOfParticles(true, true) << endl;
+
        // Re-set the particle velocity (but not energy) after accretion,
        // using change of momentum density in state.
        // No change to state, other than filling ghost cells.
