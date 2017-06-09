@@ -2464,8 +2464,6 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         InitDeriveList();
       }
 
-
-
       int isAllocated(0);
 #ifndef NO_HYDRO
       // ---- FluxRegister
@@ -2532,106 +2530,6 @@ Nyx::InitErrorList() {
 
 //static Box the_same_box (const Box& b) { return b; }
 
-
 void
 Nyx::InitDeriveList() {
-
-/*
-    derive_lst.clear();
-    //
-    // Set number of state variables
-    //
-    int counter = (int)Density + 1;
-    int Xmom = counter++;
-    int Ymom = counter++;
-#if(BL_SPACEDIM==3)
-    int Zmom = counter++;
-#endif
-    int Eden = counter++;
-#if(NADV>0)
-    int Tracer = counter++;
-#if(NADV>1)
-    amrex::Error("Prob::variableSetUp: Only one Advected quantity allowed");
-#endif
-#endif
-#ifdef BL_USE_CHEM
-    NumSpec = getChemDriver().numSpecies();
-    if (NumSpec > 0)
-    {
-        FirstSpec = counter++;
-        counter += NumSpec - 2;
-        LastSpec = counter++;
-    }
-
-    const int tmp = (int)Density;
-    FORT_SETCOMPS (&tmp, &Xmom,&Ymom,&Zmom,&Eden, &FirstSpec,&Tracer);
-
-    const Array<std::string>& names = getChemDriver().speciesNames();
-    if (ParallelDescriptor::IOProcessor())
-    {
-        std::cout << NumSpec << " Chemical species interpreted:\n { ";
-        for (int i = 0; i < names.size(); i++)
-            std::cout << names[i] << ' ' << ' ';
-        std::cout << '}' << '\n' << '\n';
-    }
-#endif
-
-    NUM_STATE = counter;
-
-    //
-    // DEFINE DERIVED QUANTITIES
-    //
-    // log of Density
-    //
-    derive_lst.add("log_den",IndexType::TheCellType(),1,FORT_DERLOGS,the_same_box);
-    derive_lst.addComponent("log_den",desc_lst,State_Type,Density,1);
-    //
-    // Pressure
-    //
-#ifdef BL_USE_CHEM
-    const int nWorkPres = 4 + NumSpec;
-#else
-    const int nWorkPres = 4;
-#endif
-    derive_lst.add("pressure",IndexType::TheCellType(),nWorkPres,
-                   FORT_DERPRES,the_same_box);
-    derive_lst.addComponent("pressure",desc_lst,State_Type,Density,NUM_STATE);
-
-#ifdef  PRISCILLA
-    // mach
-    derive_lst.add("mach",IndexType::TheCellType(),4, FORT_DERMACH,the_same_box);
-    derive_lst.addComponent("mach",desc_lst,State_Type,Density,NUM_STATE);
-#endif
-
-    //
-    // Xvel
-    //
-    derive_lst.add("xvel",IndexType::TheCellType(),1,FORT_DERVEL,the_same_box);
-    derive_lst.addComponent("xvel",desc_lst,State_Type,Density,2);
-    //
-    // Yvel
-    //
-    derive_lst.add("yvel",IndexType::TheCellType(),1,FORT_DERVEL,the_same_box);
-    derive_lst.addComponent("yvel",desc_lst,State_Type,Density,1);
-    derive_lst.addComponent("yvel",desc_lst,State_Type,Ymom,1);
-
-#if(BL_SPACEDIM==3)
-    //
-    // Zvel
-    //
-    derive_lst.add("zvel",IndexType::TheCellType(),1,FORT_DERVEL,the_same_box);
-    derive_lst.addComponent("zvel",desc_lst,State_Type,Density,1);
-    derive_lst.addComponent("zvel",desc_lst,State_Type,Zmom,1);
-#endif
-    //
-    // log of Eden
-    //
-    derive_lst.add("log_eden",IndexType::TheCellType(),1,FORT_DERLOGS,the_same_box);
-    derive_lst.addComponent("log_eden",desc_lst,State_Type,Eden,1);
-    //
-    // A derived quantity equal to all the state variables.
-    //
-    derive_lst.add("FULLSTATE",IndexType::TheCellType(),NUM_STATE,FORT_DERCOPY,the_same_box);
-    derive_lst.addComponent("FULLSTATE",desc_lst,State_Type,Density,NUM_STATE);
-*/
 }
