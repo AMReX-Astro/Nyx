@@ -122,6 +122,7 @@ AGNParticleContainer::moveKick (MultiFab&       acceleration,
                                 Real            a_half) 
 {
     BL_PROFILE("AGNParticleContainer::moveKick()");
+    pout() << "At AGNParticleContainer::moveKick:" << endl;
     writeAllAtLevel(lev);
     const Real strttime  = ParallelDescriptor::second();
 
@@ -583,8 +584,8 @@ void AGNParticleContainer::writeAllAtLevel(int lev)
     {
       auto& particles = pti.GetArrayOfStructs();
       size_t Np = pti.numParticles();
-      cout << "There are " << Np  << " AGN particles in this grid at level " 
-           << lev << " with boxes " << pti.index() << std::endl;
+      pout() << "There are " << Np  << " AGN particles at level " << lev
+             << " in grid " << pti.index() << std::endl;
       for (unsigned i = 0; i < Np; ++i)
         {
           const ParticleType& p = particles[i];
@@ -596,13 +597,13 @@ void AGNParticleContainer::writeAllAtLevel(int lev)
           RealVect uvw(p.rdata(1), p.rdata(2), p.rdata(3));
           Real energy = p.rdata(4);
 
-          cout << "[" << i << "]: id " << id
-               << " mass " << mass
-               << " index " << iv
-               << " position " << xyz
-               << " velocity " << uvw
-               << " energy " << energy
-               << endl;
+          pout() << "[" << i << "]: id " << id
+                 << " mass " << mass
+                 << " index " << iv
+                 << " position " << xyz
+                 << " velocity " << uvw
+                 << " energy " << energy
+                 << endl;
         }
     }
 }
