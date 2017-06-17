@@ -281,8 +281,8 @@ Nyx::halo_find (Real dt)
        Nyx::theAPC()->ReleaseEnergy(level, new_state, D_new, a);
        // Now new_state = get_new_data(State_Type) has been updated.
 
-       pout() << "Step " << nStep() << " at end of Nyx_halos:" << endl;
-       Nyx::theAPC()->writeAllAtLevel(level);
+       //       pout() << "Step " << nStep() << " at end of Nyx_halos:" << endl;
+       //       Nyx::theAPC()->writeAllAtLevel(level);
 
        const amrex::Real time2 = ParallelDescriptor::second();
        if (ParallelDescriptor::IOProcessor())
