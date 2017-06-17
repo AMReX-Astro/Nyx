@@ -339,7 +339,9 @@
        mass_change = MIN(mass_change, &
             max_frac_removed * &
             MAXVAL(state(i-1:i+1, j-1:j+1, k-1:k+1, URHO) * vol / weight))
-       
+
+       particles(n)%mdot = mass_change / dt
+
        ! Increase the mass of the particle by mass_change
        particles(n)%mass = particles(n)%mass + mass_change * ( 1.d0 - eps_rad)
 
