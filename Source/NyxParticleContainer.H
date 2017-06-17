@@ -83,12 +83,19 @@ public:
 	amrex::AmrParticleContainer<NSR,NSI,NAR,NAI>::RemoveParticlesAtLevel(level);
     }
 		     
+  virtual void WriteNyxPlotFile (const std::string& dir,
+                                 const std::string& name) const;
+
+  virtual void NyxCheckpoint (const std::string& dir,
+                              const std::string& name) const;
+
     typedef amrex::Particle<NSR,NSI> ParticleType;
     using AoS = typename amrex::ParticleContainer<NSR,NSI,NAR,NAI>::AoS;
     using ParticleLevel = typename amrex::ParticleContainer<NSR,NSI,NAR,NAI>::ParticleLevel;
 
 protected:
     bool sub_cycle;
+  amrex::Array<std::string> real_comp_names;
 };
 
 template <int NSR,int NSI,int NAR,int NAI>
@@ -358,7 +365,7 @@ template <int NSR,int NSI,int NAR,int NAI>
 void
 NyxParticleContainer<NSR,NSI,NAR,NAI>::MultiplyParticleMass (int lev, amrex::Real mult)
 {
-    BL_PROFILE("NyxParticleContainer<NSR,NSI,NAR,NAI>::MultiplyParticleMass()");
+  BL_PROFILE("NyxParticleContainer<NSR,NSI,NAR,NAI>::MultiplyParticleMass()");
    BL_ASSERT(lev == 0);
 
    ParticleLevel& pmap = this->GetParticles(lev);
@@ -383,6 +390,28 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::MultiplyParticleMass (int lev, amrex::Rea
           }
        }
    }
+}
+
+template <int NSR,int NSI,int NAR,int NAI>
+void
+NyxParticleContainer<NSR,NSI,NAR,NAI>::WriteNyxPlotFile (const std::string& dir,
+                                                         const std::string& name) const
+{
+  BL_PROFILE("NyxParticleContainer<NSR,NSI,NAR,NAI>::WriteNyxPlotFile()");
+
+  amrex::AmrParticleContainer<NSR,NSI,NAR,NAI>::WritePlotFile(dir, name, real_comp_names);
+}
+
+
+template <int NSR,int NSI,int NAR,int NAI>
+void
+NyxParticleContainer<NSR,NSI,NAR,NAI>::NyxCheckpoint (const std::string& dir,
+                                                      const std::string& name) const
+{
+  BL_PROFILE("NyxParticleContainer<NSR,NSI,NAR,NAI>::NyxCheckpoint()");
+
+  bool is_checkpoint = true;
+  amrex::AmrParticleContainer<NSR,NSI,NAR,NAI>::Checkpoint(dir, name, is_checkpoint, real_comp_names);
 }
 
 #endif /*_NyxParticleContainer_H_*/

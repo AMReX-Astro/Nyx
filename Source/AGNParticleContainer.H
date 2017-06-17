@@ -30,19 +30,27 @@ bool operator<(const NeighborCommTag& l, const NeighborCommTag& r) {
 }
 
 class AGNParticleContainer
-    : public NyxParticleContainer<5>
+    : public NyxParticleContainer<3+BL_SPACEDIM>
 {
 public:
 
-    using MyParIter = amrex::ParIter<2+BL_SPACEDIM>;
+    using MyParIter = amrex::ParIter<3+BL_SPACEDIM>;
     using PairIndex = std::pair<int, int>;
     using NeighborCommMap = std::map<NeighborCommTag, amrex::Array<char> >;
 
     AGNParticleContainer (amrex::Amr* amr, int nghost)
-        : NyxParticleContainer<2+BL_SPACEDIM>(amr),
-          mask_defined(false),
-          ng(nghost)
-    { }
+      : NyxParticleContainer<3+BL_SPACEDIM>(amr),
+      mask_defined(false),
+      ng(nghost)
+    {
+      real_comp_names.clear();
+      real_comp_names.push_back("mass");
+      real_comp_names.push_back("xvel");
+      real_comp_names.push_back("yvel");
+      real_comp_names.push_back("zvel");
+      real_comp_names.push_back("energy");
+      real_comp_names.push_back("mdot");
+    }
 
     virtual ~AGNParticleContainer () {}
 
@@ -96,6 +104,9 @@ public:
 
         // Zero initial energy
         p.rdata(4) = 0.;
+
+        // Zero initial mdot
+        p.rdata(5) = 0.;
 
         particle_tile.push_back(p);
     }

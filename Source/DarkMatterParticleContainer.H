@@ -12,7 +12,13 @@ class DarkMatterParticleContainer
 public:
     DarkMatterParticleContainer (amrex::Amr* amr)
         : NyxParticleContainer<1+BL_SPACEDIM>(amr)
-    { }
+    {
+      real_comp_names.clear();
+      real_comp_names.push_back("mass");
+      real_comp_names.push_back("xvel");
+      real_comp_names.push_back("yvel");
+      real_comp_names.push_back("zvel");
+    }
 
     using MyParIter = amrex::ParIter<1+BL_SPACEDIM>;
 

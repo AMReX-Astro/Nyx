@@ -491,11 +491,15 @@ Nyx::particle_plot_file (const std::string& dir)
     if (level == 0)
     {
         if (Nyx::theDMPC() && write_particles_in_plotfile)
-            Nyx::theDMPC()->WritePlotFile(dir, dm_plt_particle_file);
+          {
+            Nyx::theDMPC()->WriteNyxPlotFile(dir, dm_plt_particle_file);
+          }
 
 #ifdef AGN
         if (Nyx::theAPC() && write_particles_in_plotfile)
-            Nyx::theAPC()->WritePlotFile(dir, agn_plt_particle_file);
+          {
+            Nyx::theAPC()->WriteNyxPlotFile(dir, agn_plt_particle_file);
+          }
 #endif
 
 #ifdef NO_HYDRO
@@ -555,34 +559,16 @@ Nyx::particle_plot_file (const std::string& dir)
 void
 Nyx::particle_check_point (const std::string& dir)
 {
-    if (level == 0)
+  if (level == 0)
     {
+      if (Nyx::theDMPC())
         {
-        Array<std::string> real_comp_names;
-        real_comp_names.push_back("mass");
-        real_comp_names.push_back("xvel");
-        real_comp_names.push_back("yvel");
-        real_comp_names.push_back("zvel");
-
-        bool is_checkpoint = true;
-
-        if (Nyx::theDMPC())
-            Nyx::theDMPC()->Checkpoint(dir, dm_chk_particle_file, is_checkpoint, real_comp_names);
+          Nyx::theDMPC()->NyxCheckpoint(dir, dm_chk_particle_file);
         }
-
 #ifdef AGN
+      if (Nyx::theAPC())
         {
-        Array<std::string> real_comp_names;
-        real_comp_names.push_back("mass");
-        real_comp_names.push_back("xvel");
-        real_comp_names.push_back("yvel");
-        real_comp_names.push_back("zvel");
-        real_comp_names.push_back("energy");
-
-        bool is_checkpoint = true;
-
-        if (Nyx::theAPC())
-            Nyx::theAPC()->Checkpoint(dir, agn_chk_particle_file, is_checkpoint, real_comp_names);
+          Nyx::theAPC()->NyxCheckpoint(dir, agn_chk_particle_file);
         }
 #endif
 
