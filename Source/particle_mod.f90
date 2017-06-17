@@ -23,6 +23,7 @@ module particle_mod
      real(c_real)    :: mass       !< Particle mass
      real(c_real)    :: vel(3)     !< Particle velocity
      real(c_real)    :: energy     !< Particle energy
+     real(c_real)    :: mdot       !< Particle mass change
      integer(c_int)  :: id
      integer(c_int)  :: cpu
   end type agn_particle_t

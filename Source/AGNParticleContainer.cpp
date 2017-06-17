@@ -122,8 +122,8 @@ AGNParticleContainer::moveKick (MultiFab&       acceleration,
                                 Real            a_half) 
 {
     BL_PROFILE("AGNParticleContainer::moveKick()");
-    pout() << "At AGNParticleContainer::moveKick:" << endl;
-    writeAllAtLevel(lev);
+    //    pout() << "At AGNParticleContainer::moveKick:" << endl;
+    //    writeAllAtLevel(lev);
     const Real strttime  = ParallelDescriptor::second();
 
     const Real* dx = Geom(lev).CellSize();
@@ -592,17 +592,20 @@ void AGNParticleContainer::writeAllAtLevel(int lev)
           const IntVect& iv = Index(p, lev);
 
           int id = p.id();
+          int cpu = p.cpu();
           RealVect xyz(p.pos(0), p.pos(1), p.pos(2));
           Real mass = p.rdata(0);
           RealVect uvw(p.rdata(1), p.rdata(2), p.rdata(3));
           Real energy = p.rdata(4);
+          Real mdot = p.rdata(5);
 
-          pout() << "[" << i << "]: id " << id
+          pout() << "[" << i << "]: id " << id << " cpu " << cpu
                  << " mass " << mass
                  << " index " << iv
                  << " position " << xyz
                  << " velocity " << uvw
                  << " energy " << energy
+                 << " mdot " << mdot
                  << endl;
         }
     }
