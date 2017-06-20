@@ -30,6 +30,7 @@ subroutine integrate_state_fcvode(lo, hi, &
 !       The state vars
 !
     use amrex_fort_module, only : rt => amrex_real
+    use amrex_error_module, only : amrex_abort
     use meth_params_module, only : NVAR, URHO, UEDEN, UEINT, &
                                    TEMP_COMP, NE_COMP, gamma_minus_1
     use bl_constants_module, only: M_PI
@@ -41,9 +42,8 @@ subroutine integrate_state_fcvode(lo, hi, &
     use atomic_rates_module, only: tabulate_rates, interp_to_this_z, YHELIUM
     use vode_aux_module    , only: z_vode, i_vode, j_vode, k_vode
     use cvode_interface
-    use rhs
     use fnvector_serial
-    use fcvode_wrapper_mod
+    use fcvode_extras
     use, intrinsic :: iso_c_binding
 
     implicit none
@@ -65,6 +65,10 @@ subroutine integrate_state_fcvode(lo, hi, &
     real(c_double) :: atol, rtol
     type(c_ptr) :: sunvec_y      ! sundials vector
     type(c_ptr) :: CVmem         ! CVODE memory
+    integer(c_long), parameter :: neq = 1
+    real(c_double), pointer :: yvec(:)
+
+    allocate(yvec(neq))
 
     z = 1.d0/a - 1.d0
 
@@ -80,14 +84,12 @@ subroutine integrate_state_fcvode(lo, hi, &
 
     sunvec_y = N_VMake_Serial(NEQ, yvec)
     if (.not. c_associated(sunvec_y)) then
-        print *,'ERROR: sunvec = NULL'
-        stop
+        call amrex_abort('integrate_state_fcvode: sunvec = NULL')
     end if
 
     CVmem = FCVodeCreate(CV_BDF, CV_NEWTON)
     if (.not. c_associated(CVmem)) then
-        print *,'ERROR: CVmem = NULL'
-        stop
+        call amrex_abort('integrate_state_fcvode: CVmem = NULL')
     end if
 
     tstart = 0.0
@@ -96,8 +98,7 @@ subroutine integrate_state_fcvode(lo, hi, &
     ! initial conditions.
     ierr = FCVodeInit(CVmem, c_funloc(RhsFn), tstart, sunvec_y)
     if (ierr /= 0) then
-       print *, 'Error in FCVodeInit, ierr = ', ierr, '; halting'
-       stop
+       call amrex_abort('integrate_state_fcvode: FCVodeInit() failed')
     end if
 
     ! Set dummy tolerances. These will be overwritten as soon as we enter the loop and reinitialize the solver.
@@ -105,14 +106,12 @@ subroutine integrate_state_fcvode(lo, hi, &
     atol = 1.0d-10
     ierr = FCVodeSStolerances(CVmem, rtol, atol)
     if (ierr /= 0) then
-       write(*,*) 'Error in FCVodeSStolerances, ierr = ', ierr, '; halting'
-       stop
+      call amrex_abort('integrate_state_fcvode: FCVodeSStolerances() failed')
     end if
 
     ierr = FCVDense(CVmem, neq)
     if (ierr /= 0) then
-       write(*,*) 'Error in FCVDense, ierr = ', ierr, '; halting'
-       stop
+       call amrex_abort('integrate_state_fcvode: FCVDense() failed')
     end if
 
     do k = lo(3),hi(3)
@@ -134,7 +133,7 @@ subroutine integrate_state_fcvode(lo, hi, &
                 j_vode = j
                 k_vode = k
 
-                call fcvode_wrapper(half_dt,rho,T_orig,ne_orig,e_orig,CVmem,sunvec_y, &
+                call fcvode_wrapper(half_dt,rho,T_orig,ne_orig,e_orig,neq,CVmem,sunvec_y,yvec, &
                                               T_out ,ne_out ,e_out)
 
                 if (e_out .lt. 0.d0) then
@@ -162,5 +161,7 @@ subroutine integrate_state_fcvode(lo, hi, &
 
     call N_VDestroy_Serial(sunvec_y)
     call FCVodeFree(cvmem)
+
+    deallocate(yvec)
 
 end subroutine integrate_state_fcvode
