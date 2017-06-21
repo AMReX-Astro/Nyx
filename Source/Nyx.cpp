@@ -43,6 +43,10 @@ using std::string;
 #include <postprocess_tau_fields.H>
 #endif
 
+#ifdef AGN
+#include "agn_F.H"
+#endif
+
 using namespace amrex;
 
 extern "C" {
@@ -543,6 +547,11 @@ Nyx::Nyx (Amr&            papa,
      // Initialize "this_z" in the atomic_rates_module
      if (heat_cool_type == 1 || heat_cool_type == 3 || heat_cool_type == 5)
          fort_init_this_z(&old_a);
+
+#ifdef AGN
+     // Initialize the uniform(0,1) random number generator.
+     init_uniform01_rng();
+#endif
 }
 
 Nyx::~Nyx ()

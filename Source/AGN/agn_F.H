@@ -34,6 +34,8 @@ extern "C"
                           const amrex::Real* a,
                           const amrex::Real* dx);
 
+  void init_uniform01_rng();
+
 #ifdef __cplusplus
 }
 #endif

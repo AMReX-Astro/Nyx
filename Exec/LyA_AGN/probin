@@ -10,4 +10,6 @@
   T_min = 1.0d+7
   bondi_boost = 10.d0  ! this was called alpha
   max_frac_removed = 0.5d0
+  frac_kinetic = 0.
+  eps_kinetic = 0.1d0
 /

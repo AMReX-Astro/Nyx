@@ -248,19 +248,20 @@
     use amrex_fort_module, only : amrex_real
     use fundamental_constants_module, only: Gconst, pi, eddington_const, c_light
     use eos_module
-    use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEINT
+    use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEINT, UEDEN
     use particle_mod      , only : agn_particle_t
-    use agn_params_module , only : eps_rad, eps_coupling, bondi_boost, max_frac_removed
+    use agn_params_module , only : eps_rad, eps_coupling, bondi_boost, max_frac_removed, frac_kinetic, eps_kinetic
 
     integer,              intent(in   )        :: np, slo(3), shi(3)
     type(agn_particle_t), intent(inout)        :: particles(np)
-    real(amrex_real),     intent(in   )        :: state &
+    ! FIXME: Should state be in only?
+    real(amrex_real),     intent(inout)        :: state &
          (slo(1):shi(1),slo(2):shi(2),slo(3):shi(3),NVAR)
     real(amrex_real),     intent(inout)        :: density_lost &
          (slo(1):shi(1),slo(2):shi(2),slo(3):shi(3))
     real(amrex_real),     intent(in   )        :: dt, dx(3)
 
-    integer          :: i, j, k, n
+    integer          :: i, j, k, n, d, d_mom
     real(amrex_real) :: avg_rho, avg_csq, avg_speedsq
     real(amrex_real) :: c, denom, mass, mdot, m_edd
 
@@ -272,7 +273,7 @@
          (slo(1):shi(1),slo(2):shi(2),slo(3):shi(3))
 
     real(amrex_real) :: vol, weight(-1:1, -1:1, -1:1)
-    real(amrex_real) :: mass_change
+    real(amrex_real) :: mass_change, speed_jet, E_kinetic, rvec(3)
 
     bondi_const = bondi_boost * 4.0d0*pi * Gconst*Gconst
 
@@ -349,8 +350,37 @@
             density_lost(i-1:i+1, j-1:j+1, k-1:k+1) + &
             mass_change * weight / vol
 
-       particles(n)%energy = particles(n)%energy + mass_change * &
-            c_light**2 * eps_coupling * eps_rad
+       ! Thermal feedback energy.
+       particles(n)%energy = particles(n)%energy + (1. - frac_kinetic) * &
+            (mass_change * c_light**2) * eps_coupling * eps_rad
+
+       ! Kinetic feedback: energy as well as momentum (hence velocity).
+       if (frac_kinetic > 0.) then
+          ! Kinetic energy added to the particle.
+          E_kinetic = frac_kinetic * (mass_change * c_light**2)
+          particles(n)%energy = particles(n)%energy + E_kinetic * eps_kinetic
+
+          ! Change momentum of gas.
+          speed_jet = sqrt(2. * E_kinetic / (avg_rho * vol))
+          call get_random_direction(rvec)
+          do d = 1, 3
+             d_mom = UMX + d-1
+             ! Update energy density by adding momentum density * velocity.
+             state(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN) = &
+               state(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN) + &
+               speed_jet * &
+               sqrt(weight) * state(i-1:i+1, j-1:j+1, k-1:k+1, d_mom) * rvec(d)
+          end do
+          do d = 1, 3
+             d_mom = UMX + d-1
+             ! Update momentum density by adding density * velocity.
+             state(i-1:i+1, j-1:j+1, k-1:k+1, d_mom) = &
+               state(i-1:i+1, j-1:j+1, k-1:k+1, d_mom) + &
+               speed_jet * &
+               sqrt(weight) * state(i-1:i+1, j-1:j+1, k-1:k+1, URHO) * rvec(d)
+          end do
+       end if
+
     end do
 
   end subroutine agn_accrete_mass
@@ -490,3 +520,28 @@
     end do
 
   end subroutine get_weights
+
+  ! :::
+  ! ::: ----------------------------------------------------------------
+  ! :::
+
+  subroutine get_random_direction(vec)
+
+    use amrex_fort_module, only : amrex_real
+    use fundamental_constants_module, only : pi
+    use uniform01_module, only : get_uniform01
+
+    real(amrex_real), intent(out)  :: vec(3)
+    real(amrex_real) :: u, v, theta, horiz
+
+    u = get_uniform01()
+    v = get_uniform01()
+
+    theta = 2. * pi * u
+    horiz = 2. * sqrt(v * (1. - v))
+
+    vec(1) = cos(theta) * horiz
+    vec(2) = sin(theta) * horiz
+    vec(3) = 2. * v - 1.
+
+  end subroutine get_random_direction
