@@ -620,7 +620,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
             DMPC->MultiplyParticleMass(level, omfrac);
 	}
 
-        Array<std::unique_ptr<MultiFab> > particle_mf;
+        Array<std::unique_ptr<MultiFab> > particle_mf(1);
         if (init_sb_vels == 1)
         {
             if (init_with_sph_particles == 1) {
