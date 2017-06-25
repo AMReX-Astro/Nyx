@@ -24,8 +24,6 @@ AGNParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     const Real* dx = Geom(lev).CellSize();
     const Periodicity& periodic = Geom(lev).periodicity();
 
-    const amrex::Real strttime      = amrex::ParallelDescriptor::second();
-
     amrex::MultiFab* ac_ptr;
     if (this->OnSameGrids(lev, acceleration))
     {
@@ -100,18 +98,6 @@ AGNParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
             }
         }
     }
-
-    if (this->m_verbose > 1)
-    {
-        amrex::Real stoptime = amrex::ParallelDescriptor::second() - strttime;
-
-        amrex::ParallelDescriptor::ReduceRealMax(stoptime,amrex::ParallelDescriptor::IOProcessorNumber());
-
-        if (amrex::ParallelDescriptor::IOProcessor())
-        {
-            std::cout << "AGNParticleContainer::moveKickDrift() time: " << stoptime << '\n';
-        }
-    }
 }
 
 void
@@ -122,9 +108,6 @@ AGNParticleContainer::moveKick (MultiFab&       acceleration,
                                 Real            a_half) 
 {
     BL_PROFILE("AGNParticleContainer::moveKick()");
-    //    pout() << "At AGNParticleContainer::moveKick:" << endl;
-    //    writeAllAtLevel(lev);
-    const Real strttime  = ParallelDescriptor::second();
 
     const Real* dx = Geom(lev).CellSize();
     const Periodicity& periodic = Geom(lev).periodicity();
@@ -166,17 +149,11 @@ AGNParticleContainer::moveKick (MultiFab&       acceleration,
     }
     
     if (ac_ptr != &acceleration) delete ac_ptr;
-
-    if (m_verbose > 1)
-    {
-        Real stoptime = ParallelDescriptor::second() - strttime;
-        ParallelDescriptor::ReduceRealMax(stoptime,ParallelDescriptor::IOProcessorNumber());
-        amrex::Print() << "AGNParticleContainer::moveKick() time: " << stoptime << '\n';
-    }
 }
 
 void AGNParticleContainer::ComputeOverlap(int lev)
 {
+    BL_PROFILE("AGNParticleContainer::ComputeOverlap()");
     Array<int> my_id;
 
     const Real* dx = Geom(lev).CellSize();
@@ -197,6 +174,7 @@ void AGNParticleContainer::ComputeOverlap(int lev)
 
 void AGNParticleContainer::Merge(int lev)
 {
+    BL_PROFILE("AGNParticleContainer::Merge()");
     Array<int> my_id;
 
     const Real* dx = Geom(lev).CellSize();
@@ -219,6 +197,7 @@ void AGNParticleContainer::ComputeParticleVelocity(int lev,
                                                    amrex::MultiFab& state_new,
                                                    int add_energy)
 {
+    BL_PROFILE("AGNParticleContainer::ComputeParticleVelocity()");
     const Real* dx = Geom(lev).CellSize();
     const Periodicity& periodic = Geom(lev).periodicity();
 
@@ -247,6 +226,7 @@ void AGNParticleContainer::AccreteMass(int lev,
                                        amrex::MultiFab& density_lost,
                                        amrex::Real dt)
 {
+    BL_PROFILE("AGNParticleContainer::AccreteMass()");
     const Real* dx = Geom(lev).CellSize();
     const Periodicity& periodic = Geom(lev).periodicity();
 
@@ -269,6 +249,7 @@ void AGNParticleContainer::AccreteMass(int lev,
 
 void AGNParticleContainer::ReleaseEnergy(int lev, amrex::MultiFab& state, amrex::MultiFab& D_new, amrex::Real a)
 {
+    BL_PROFILE("AGNParticleContainer::ReleaseEnergy()");
     const Real* dx = Geom(lev).CellSize();
     const Periodicity& periodic = Geom(lev).periodicity();
 
@@ -291,8 +272,9 @@ void AGNParticleContainer::ReleaseEnergy(int lev, amrex::MultiFab& state, amrex:
     }
 }
 
-void AGNParticleContainer::defineMask() {
-
+void AGNParticleContainer::defineMask() 
+{
+    BL_PROFILE("AGNParticleContainer::defineMask()");
     const int lev = 0;
     const BoxArray& ba = m_gdb->ParticleBoxArray(lev);
     const DistributionMapping& dm = m_gdb->ParticleDistributionMap(lev);
@@ -313,8 +295,9 @@ void AGNParticleContainer::defineMask() {
     mask_defined = true;
 }
 
-void AGNParticleContainer::fillNeighbors(int lev) {
-
+void AGNParticleContainer::fillNeighbors(int lev) 
+{
+    BL_PROFILE("AGNParticleContainer::fillNeighbors()");
     BL_ASSERT(lev == 0);
     if (!mask_defined) defineMask();
 
@@ -386,12 +369,14 @@ void AGNParticleContainer::fillNeighbors(int lev) {
 
 void AGNParticleContainer::clearNeighbors(int lev) 
 {
+    BL_PROFILE("AGNParticleContainer::clearNeighbors()");
     ghosts.clear();
 }
 
 void AGNParticleContainer::applyPeriodicShift(int lev, ParticleType& p,
-                                              const IntVect& neighbor_cell) {
-
+                                              const IntVect& neighbor_cell) 
+{
+    BL_PROFILE("AGNParticleContainer::applyPeriodicShift()");
     const Periodicity& periodicity = Geom(lev).periodicity();
     if (not periodicity.isAnyPeriodic()) return;
 
@@ -415,7 +400,9 @@ void AGNParticleContainer::packNeighborParticle(int lev,
                                              const IntVect& neighbor_cell,
                                              const BaseFab<int>& mask,
                                              const ParticleType& p,
-                                             NeighborCommMap& ghosts_to_comm) {
+                                             NeighborCommMap& ghosts_to_comm) 
+{
+    BL_PROFILE("AGNParticleContainer::packNeighborParticle()");
     const int neighbor_grid = mask(neighbor_cell, 0);
     if (neighbor_grid >= 0) {
         const int who = ParticleDistributionMap(lev)[neighbor_grid];
@@ -440,8 +427,9 @@ void AGNParticleContainer::packNeighborParticle(int lev,
     }
 }
 
-void AGNParticleContainer::fillNeighborsMPI(NeighborCommMap& ghosts_to_comm) {
-
+void AGNParticleContainer::fillNeighborsMPI(NeighborCommMap& ghosts_to_comm) 
+{
+    BL_PROFILE("AGNParticleContainer::fillNeighborsMPI()");
 #ifdef BL_USE_MPI
     const int MyProc = ParallelDescriptor::MyProc();
     const int NProcs = ParallelDescriptor::NProcs();
@@ -577,9 +565,9 @@ void AGNParticleContainer::fillNeighborsMPI(NeighborCommMap& ghosts_to_comm) {
 #endif
 }
 
-
 void AGNParticleContainer::writeAllAtLevel(int lev)
 {
+  BL_PROFILE("AGNParticleContainer::writeAllAtLevel()");
   for (MyParIter pti(*this, lev); pti.isValid(); ++pti)
     {
       auto& particles = pti.GetArrayOfStructs();

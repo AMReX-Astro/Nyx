@@ -59,6 +59,7 @@ void mt_read(std::ifstream& input);
 
 void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
 {
+    BL_PROFILE("StochasticForcing::init()");
     int i, j, k, m, n;
 
     /* set parameters */
@@ -439,6 +440,7 @@ void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
 //
 void StochasticForcing::read_params()
 {
+    BL_PROFILE("StochasticForcing::read_params()");
     static bool done = false;
 
     if (!done)
@@ -448,7 +450,6 @@ void StochasticForcing::read_params()
         ParmParse pp("forcing");
  
         pp.query("v", verbose);
-        pp.query("show_timings", show_timings);
 
         pp.query("seed", seed);
 
@@ -503,22 +504,6 @@ void StochasticForcing::read_params()
             AutoCorrlTime[i] = input_real[i]*IntgrTime[i];
 
         done = true;
-
-        if (show_timings)
-        {
-            const int IOProc = ParallelDescriptor::IOProcessorNumber();
-            Real end = ParallelDescriptor::second() - strt;
-
-#ifdef BL_LAZY
-            Lazy::QueueReduction( [=] () mutable {
-#endif
-            ParallelDescriptor::ReduceRealMax(end,IOProc);
-            if (ParallelDescriptor::IOProcessor())
-                std::cout << "StochasticForcing::read_params() time = " << end << '\n';
-#ifdef BL_LAZY
-        });
-#endif
-        }
     }
 }
 
@@ -528,6 +513,7 @@ void StochasticForcing::read_params()
 void
 Nyx::forcing_post_restart (const std::string& restart_file)
 {
+    BL_PROFILE("StochasticForcing::forcing_post_restart()");
     if (level > 0)
         return;
 

@@ -32,7 +32,6 @@ class StochasticForcing {
   private:
 
     static int verbose;
-    static int show_timings;
     static int SpectralRank;            // rank of the spectrum
     int NumModes;                       // number of Fourier modes in the spectral domain
     int NumNonZeroModes;                // number of non-zero Fourier modes

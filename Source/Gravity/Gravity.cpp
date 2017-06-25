@@ -295,6 +295,7 @@ Gravity::solve_for_old_phi (int               level,
                             const Array<MultiFab*>& grad_phi,
                             int               fill_interior)
 {
+    BL_PROFILE("Gravity::solve_for_old_phi()");
 #ifdef CGRAV
     if (gravity_type == "StaticGrav")
         return;
@@ -329,6 +330,7 @@ Gravity::solve_for_new_phi (int               level,
                             int               fill_interior,
                             int               grav_n_grow)
 {
+    BL_PROFILE("Gravity::solve_for_new_phi()");
 #ifdef CGRAV
     if (gravity_type == "StaticGrav")
         return;
@@ -366,6 +368,7 @@ Gravity::solve_for_phi (int               level,
                         int               fill_interior)
 
 {
+    BL_PROFILE("Gravity::solve_for_phi()");
     if (verbose && ParallelDescriptor::IOProcessor())
         std::cout << " ... solve for phi at level " << level << '\n';
 
@@ -531,6 +534,7 @@ Gravity::solve_for_delta_phi (int                        crse_level,
                               const Array<MultiFab*>&         delta_phi,
                               const Array<Array<MultiFab*> >& grad_delta_phi)
 {
+    BL_PROFILE("Gravity::solve_for_delta_phi()");
     const int num_levels = fine_level - crse_level + 1;
     const Box& crse_domain = (parent->Geom(crse_level)).Domain();
 
@@ -662,6 +666,7 @@ Gravity::gravity_sync (int crse_level, int fine_level, int iteration, int ncycle
                        const MultiFab& drho_and_drhoU, const MultiFab& dphi,
                        const Array<MultiFab*>& grad_delta_phi_cc)
 {
+    BL_PROFILE("Gravity::gravity_sync()");
     BL_ASSERT(parent->finestLevel()>crse_level);
 
     if (verbose && ParallelDescriptor::IOProcessor())
@@ -787,6 +792,7 @@ Gravity::get_crse_phi (int       level,
                        MultiFab& phi_crse,
                        Real      time)
 {
+    BL_PROFILE("Gravity::get_crse_phi()");
     BL_ASSERT(level != 0);
 
     const Real t_old = LevelData[level-1]->get_state_data(PhiGrav_Type).prevTime();
@@ -837,6 +843,7 @@ Gravity::get_crse_grad_phi (int               level,
                             Array<std::unique_ptr<MultiFab> >& grad_phi_crse,
                             Real              time)
 {
+    BL_PROFILE("Gravity::get_crse_grad_phi()");
     BL_ASSERT(level!=0);
 
     const Real t_old = LevelData[level-1]->get_state_data(PhiGrav_Type).prevTime();
@@ -881,6 +888,7 @@ Gravity::multilevel_solve_for_new_phi (int level,
                                        int finest_level,
                                        int use_previous_phi_as_guess)
 {
+    BL_PROFILE("Gravity::multilevel_solve_for_new_phi()");
     if (verbose && ParallelDescriptor::IOProcessor())
         std::cout << "Gravity ... multilevel solve for new phi at base level " << level
                   << " to finest level " << finest_level << '\n';
@@ -906,6 +914,7 @@ Gravity::multilevel_solve_for_old_phi (int level,
                                        int finest_level,
                                        int use_previous_phi_as_guess)
 {
+    BL_PROFILE("Gravity::multilevel_solve_for_old_phi()");
     if (verbose && ParallelDescriptor::IOProcessor())
         std::cout << "Gravity ... multilevel solve for old phi at base level " << level
                   << " to finest level " << finest_level << '\n';
@@ -940,6 +949,7 @@ Gravity::actual_multilevel_solve (int                       level,
                                   int                       is_new,
                                   int                       use_previous_phi_as_guess)
 {
+    BL_PROFILE("Gravity::actual_multilevel_solve()");
     const int IOProc = ParallelDescriptor::IOProcessorNumber();
     const Real      strt = ParallelDescriptor::second();
 
@@ -1313,6 +1323,7 @@ Gravity::get_old_grav_vector (int       level,
                               MultiFab& grav_vector,
                               Real      time)
 {
+    BL_PROFILE("Gravity::get_old_grav_vector()");
     // Set to zero to fill ghost cells.
     grav_vector.setVal(0);
 
@@ -1379,7 +1390,7 @@ Gravity::get_new_grav_vector (int       level,
                               MultiFab& grav_vector,
                               Real      time)
 {
-
+    BL_PROFILE("Gravity::get_new_grav_vector()");
 #ifdef CGRAV
     if (gravity_type == "PoissonGrav" || gravity_type == "CompositeGrav")
 #else
@@ -1446,6 +1457,7 @@ Gravity::get_new_grav_vector (int       level,
 void
 Gravity::add_to_fluxes(int level, int iteration, int ncycle)
 {
+    BL_PROFILE("Gravity::add_to_fluxes()");
     const int       finest_level      = parent->finestLevel();
     FluxRegister*   phi_fine          = (level<finest_level ? phi_flux_reg[level+1].get() : nullptr);
     FluxRegister*   phi_current       = (level>0 ? phi_flux_reg[level].get() : nullptr);
@@ -1497,6 +1509,7 @@ Gravity::add_to_fluxes(int level, int iteration, int ncycle)
 void
 Gravity::average_fine_ec_onto_crse_ec(int level, int is_new)
 {
+    BL_PROFILE("Gravity::average_fine_ec_to_crse_ec()");
     //
     // NOTE: this is called with level == the coarser of the two levels involved.
     //
@@ -1536,6 +1549,7 @@ void
 Gravity::reflux_phi (int       level,
                      MultiFab& dphi)
 {
+    BL_PROFILE("Gravity::reflux()");
     const Geometry& geom = parent->Geom(level);
     dphi.setVal(0);
     phi_flux_reg[level+1]->Reflux(dphi, 1.0, 0, 0, 1, geom);
@@ -1546,6 +1560,7 @@ Gravity::fill_ec_grow (int                     level,
                        const Array<MultiFab*>& ecF,
                        const Array<MultiFab*>& ecC) const
 {
+    BL_PROFILE("Gravity::fill_ec_grow()");
     //
     // Fill grow cells of the edge-centered mfs.  Assume
     // ecF built on edges of grids at this amr level, and ecC
@@ -1688,6 +1703,7 @@ Gravity::fill_ec_grow (int                     level,
 void
 Gravity::make_mg_bc ()
 {
+    BL_PROFILE("Gravity::make_mg_bc()");
     const Geometry& geom = parent->Geom(0);
     for (int dir = 0; dir < BL_SPACEDIM; ++dir)
     {
@@ -1738,6 +1754,7 @@ Gravity::make_mg_bc ()
 void
 Gravity::set_mass_offset (Real time)
 {
+    BL_PROFILE("Gravity::set_mass_offset()");
     Real old_mass_offset = 0;
 
     int flev = parent->finestLevel();
@@ -1797,6 +1814,7 @@ void
 Gravity::set_dirichlet_bcs (int       level,
                             MultiFab* phi)
 {
+    BL_PROFILE("Gravity::set_dirichlet_bcs()");
     const Real* dx        = parent->Geom(level).CellSize();
     const int*  domain_lo = parent->Geom(level).Domain().loVect();
     const int*  domain_hi = parent->Geom(level).Domain().hiVect();
@@ -1843,6 +1861,7 @@ Gravity::make_prescribed_grav (int       level,
                                MultiFab& grav_vector,
                                int       addToExisting)
 {
+    BL_PROFILE("Gravity::make_prescribed_grav()");
     const Real      strt = ParallelDescriptor::second();
     const Geometry& geom = parent->Geom(level);
     const Real*     dx   = geom.CellSize();
@@ -1883,6 +1902,7 @@ Gravity::AddParticlesToRhs (int               level,
                             MultiFab&         Rhs,
                             int               ngrow)
 {
+    BL_PROFILE("Gravity::AddParticlesToRhs()");
     // Use the same multifab for all particle types
     MultiFab particle_mf(grids[level], dmap[level], 1, ngrow);
 
@@ -1897,6 +1917,7 @@ Gravity::AddParticlesToRhs (int               level,
 void
 Gravity::AddParticlesToRhs(int base_level, int finest_level, const Array<MultiFab*>& Rhs_particles)
 {
+    BL_PROFILE("Gravity::AddParticlesToRhsML()");
     const int num_levels = finest_level - base_level + 1;
     for (int i = 0; i < Nyx::theActiveParticles().size(); i++)
     {
@@ -1930,6 +1951,7 @@ Gravity::AddVirtualParticlesToRhs (int               level,
                                    MultiFab&         Rhs,
                                    int               ngrow)
 {
+    BL_PROFILE("Gravity::AddVirtualParticlesToRhs()");
     if (level <  parent->finestLevel())
     {
         // If we have virtual particles, add their density to the single level solve
@@ -1947,6 +1969,7 @@ Gravity::AddVirtualParticlesToRhs (int               level,
 void
 Gravity::AddVirtualParticlesToRhs(int finest_level, const Array<MultiFab*>& Rhs_particles)
 {
+    BL_PROFILE("Gravity::AddVirtualParticlesToRhsML()");
     if (finest_level < parent->finestLevel())
     {
         // Should only need ghost cells for virtual particles if they're near
@@ -1966,6 +1989,7 @@ void
 Gravity::AddGhostParticlesToRhs (int               level,
                                  MultiFab&         Rhs)
 {
+    BL_PROFILE("Gravity::AddGhostParticlesToRhs()");
     if (level > 0)
     {
         // If we have ghost particles, add their density to the single level solve
@@ -1983,6 +2007,7 @@ Gravity::AddGhostParticlesToRhs (int               level,
 void
 Gravity::AddGhostParticlesToRhs(int level, const Array<MultiFab*>& Rhs_particles)
 {
+    BL_PROFILE("Gravity::AddGhostParticlesToRhsML()");
     if (level > 0)
     {
         // We require one ghost cell in GhostPartMF because that's how we handle
@@ -2006,7 +2031,7 @@ Gravity::AddGhostParticlesToRhs(int level, const Array<MultiFab*>& Rhs_particles
 void
 Gravity::CorrectRhsUsingOffset(int level, MultiFab& Rhs)
 {
-
+    BL_PROFILE("Gravity::CorrectRhsUsingOffset()");
     if (verbose && ParallelDescriptor::IOProcessor())
         std::cout << " ... subtracting average density from RHS in solve ... "
                   << mass_offset << '\n';
@@ -2043,6 +2068,7 @@ void
 Gravity::solve_with_Cpp(int level, MultiFab& soln, const Array<MultiFab*>& grad_phi,
                         MultiFab& rhs, Real tol, Real abs_tol)
 {
+  BL_PROFILE("Gravity::solve_with_Cpp()");
   const Geometry& geom = parent->Geom(level);
   const Real* dx = parent->Geom(level).CellSize();
 
@@ -2074,6 +2100,7 @@ Gravity::solve_with_HPGMG(int level,
                           Real tol,
                           Real abs_tol)
 {
+  BL_PROFILE("Gravity::solve_with_HPGMG()");
   const Geometry& geom = parent->Geom(level);
   const Real* dx = parent->Geom(level).CellSize();
   const Box& domain = geom.Domain();
@@ -2173,6 +2200,7 @@ Gravity::solve_with_HPGMG(int level,
 void
 Gravity::set_boundary(BndryData& bd, MultiFab& rhs, const Real* dx)
 {
+  BL_PROFILE("Gravity::set_boundary()");
   for (int n=0; n<BL_SPACEDIM; ++n) {
     for (MFIter mfi(rhs); mfi.isValid(); ++mfi ) {
       int i = mfi.index();

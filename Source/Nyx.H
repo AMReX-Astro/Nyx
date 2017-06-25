@@ -597,7 +597,6 @@ protected:
     //
     static bool dump_old;
     static int verbose;
-    static int show_timings;
     static amrex::Real cfl;
     static amrex::Real init_shrink;
     static amrex::Real change_max;

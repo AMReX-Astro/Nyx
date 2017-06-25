@@ -8,7 +8,6 @@ using namespace amrex;
 unsigned long int mt_random();
 
 int StochasticForcing::verbose      = 0;
-int StochasticForcing::show_timings = 0;
 int StochasticForcing::SpectralRank = 3;
 
 extern "C"

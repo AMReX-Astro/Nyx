@@ -75,7 +75,6 @@ Array<Real> Nyx::analysis_z_values;
 
 bool Nyx::dump_old = false;
 int Nyx::verbose      = 0;
-int Nyx::show_timings = 0;
 
 Real Nyx::cfl = 0.8;
 Real Nyx::init_shrink = 1.0;
@@ -227,8 +226,6 @@ Nyx::read_params ()
     ParmParse pp("nyx");
 
     pp.query("v", verbose);
-    pp.query("show_timings", show_timings);
-    //verbose = (verbose ? 1 : 0);
     pp.get("init_shrink", init_shrink);
     pp.get("cfl", cfl);
     pp.query("change_max", change_max);
@@ -1713,25 +1710,11 @@ void
 Nyx::reflux ()
 {
     BL_PROFILE("Nyx::reflux()");
-    BL_ASSERT(level<parent->finestLevel());
 
-    const Real strt = ParallelDescriptor::second();
+    BL_ASSERT(level<parent->finestLevel());
 
     get_flux_reg(level+1).Reflux(get_new_data(State_Type), 1.0, 0, 0, NUM_STATE,
                                  geom);
-
-    if (show_timings)
-    {
-        const int IOProc = ParallelDescriptor::IOProcessorNumber();
-        Real end = ParallelDescriptor::second() - strt;
-        ParallelDescriptor::ReduceRealMax(end, IOProc);
-
-        if (ParallelDescriptor::IOProcessor())
-            std::cout << "Nyx::reflux() at level "
-                      << level
-                      << " : time = "
-                      << end << '\n';
-    }
 }
 #endif // NO_HYDRO
 
@@ -2238,7 +2221,6 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         allInts.push_back(strict_subcycling);
         allInts.push_back(init_with_sph_particles);
         allInts.push_back(verbose);
-        allInts.push_back(show_timings);
         allInts.push_back(do_reflux);
         allInts.push_back(NUM_GROW);
         allInts.push_back(nsteps_from_plotfile);
@@ -2295,7 +2277,6 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         strict_subcycling = allInts[count++];
         init_with_sph_particles = allInts[count++];
         verbose = allInts[count++];
-        show_timings = allInts[count++];
         do_reflux = allInts[count++];
         NUM_GROW = allInts[count++];
         nsteps_from_plotfile = allInts[count++];

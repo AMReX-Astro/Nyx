@@ -55,15 +55,18 @@ Nyx::conserved_to_primitive(amrex::MultiFab& state)
 
 void
 Nyx::primitive_to_conserved(amrex::MultiFab& state)
-{ // multiply every component but Density by Density
-  int nghost = state.nGrow();
-  for (int comp = 0; comp < state.nComp(); comp++)
-    {
+{
+   BL_PROFILE("Nyx::primitive_to_conserved()");
+   int nghost = state.nGrow();
+
+   // Multiply every component but Density by Density
+   for (int comp = 0; comp < state.nComp(); comp++)
+   {
       if (comp != Density)
         {
           MultiFab::Multiply(state, state, Density, comp, ncomp1, nghost);
         }
-    }
+   }
 }
 
 void
@@ -72,8 +75,6 @@ Nyx::halo_find (Real dt)
    BL_PROFILE("Nyx::halo_find()");
 
    const int whichSidecar(0);
-
-   const amrex::Real time1 = ParallelDescriptor::second();
 
    const Real * dx = geom.CellSize();
 
@@ -284,10 +285,6 @@ Nyx::halo_find (Real dt)
        //       pout() << "Step " << nStep() << " at end of Nyx_halos:" << endl;
        //       Nyx::theAPC()->writeAllAtLevel(level);
 
-       const amrex::Real time2 = ParallelDescriptor::second();
-       if (ParallelDescriptor::IOProcessor())
-         std::cout << std::endl << "===== Time to post-process: " << time2 - time1 << " sec" << std::endl;
-
 #ifdef REEBER
      } 
 #if 0
@@ -339,10 +336,6 @@ Nyx::halo_find (Real dt)
        int do_analysis_bcast(do_analysis);
        ParallelDescriptor::Bcast(&do_analysis_bcast, 1, MPI_IntraGroup_Broadcast_Rank,
                                  ParallelDescriptor::CommunicatorInter(whichSidecar));
-
-       amrex::Real time2(ParallelDescriptor::second());
-       if(ParallelDescriptor::IOProcessor()) 
-         std::cout << "COMPUTE PROCESSES: time spent sending data to sidecars: " << time2 - time1 << std::endl;
 
 #endif // if 0
      }

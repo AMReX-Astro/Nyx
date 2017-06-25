@@ -183,7 +183,6 @@ Nyx::advance_hydro_plus_particles (Real time,
     }
 
     Real dt_lev;
-    const Real strt = ParallelDescriptor::second();
 
     //
     // Move current data to previous, clear current.
@@ -213,6 +212,7 @@ Nyx::advance_hydro_plus_particles (Real time,
     // finest level regardless of subcycling behavior. Consequentially,
     // If we are subcycling we skip this step on the first iteration of
     // finer levels.
+    BL_PROFILE_VAR("solve_for_old_phi", solve_for_old_phi);
     if (level == 0 || iteration > 1)
     {
         // fix fluxes on finer grids
@@ -228,15 +228,6 @@ Nyx::advance_hydro_plus_particles (Real time,
         for (int lev = level; lev <= finest_level; lev++)
             get_level(lev).gravity->swap_time_levels(lev);
 
-        if (show_timings)
-        {
-            const int IOProc = ParallelDescriptor::IOProcessorNumber();
-            Real end = ParallelDescriptor::second() - strt;
-            ParallelDescriptor::ReduceRealMax(end,IOProc);
-            if (ParallelDescriptor::IOProcessor())
-               std::cout << "Time before solve for old phi " << end << '\n';
-        }
-            
         //
         // Solve for phi using the previous phi as a guess.
         //
@@ -244,6 +235,7 @@ Nyx::advance_hydro_plus_particles (Real time,
         gravity->multilevel_solve_for_old_phi(level, finest_level,
                                               use_previous_phi_as_guess);
     }
+    BL_PROFILE_VAR_STOP(solve_for_old_phi);
     //
     // Advance Particles
     //
@@ -283,24 +275,15 @@ Nyx::advance_hydro_plus_particles (Real time,
 
 #endif
 
-    const Real strt_hydro = ParallelDescriptor::second();
-
     //
     // Call the hydro advance at each level to be advanced
     //
+    BL_PROFILE_VAR("just_the_hydro", just_the_hydro);
     for (int lev = level; lev <= finest_level_to_advance; lev++)
     {
         get_level(lev).just_the_hydro(time, dt, a_old, a_new);
     }
-
-    if (show_timings)
-    {
-        const int IOProc = ParallelDescriptor::IOProcessorNumber();
-        Real end = ParallelDescriptor::second() - strt_hydro;
-        ParallelDescriptor::ReduceRealMax(end,IOProc);
-        if (ParallelDescriptor::IOProcessor())
-           std::cout << "Time in just_the_hydro " << end << '\n';
-    }
+    BL_PROFILE_VAR_STOP(just_the_hydro);
 
     //
     // We must reflux before doing the next gravity solve
@@ -333,16 +316,8 @@ Nyx::advance_hydro_plus_particles (Real time,
                        0, 0, 1, 0);
     }
 
-    if (show_timings)
-    {
-        const int IOProc = ParallelDescriptor::IOProcessorNumber();
-        Real end = ParallelDescriptor::second() - strt;
-        ParallelDescriptor::ReduceRealMax(end,IOProc);
-        if (ParallelDescriptor::IOProcessor())
-           std::cout << "Time before solve for new phi " << end << '\n';
-    }
-
     // Solve for new Gravity
+    BL_PROFILE_VAR("solve_for_new_phi", solve_for_new_phi);
     int use_previous_phi_as_guess = 1;
     if (finest_level_to_advance > level)
     {
@@ -356,15 +331,7 @@ Nyx::advance_hydro_plus_particles (Real time,
                                gravity->get_grad_phi_curr(level),
                                fill_interior, grav_n_grow);
     }
-
-    if (show_timings)
-    {
-        const int IOProc = ParallelDescriptor::IOProcessorNumber();
-        Real end = ParallelDescriptor::second() - strt;
-        ParallelDescriptor::ReduceRealMax(end,IOProc);
-        if (ParallelDescriptor::IOProcessor())
-           std::cout << "Time  after solve for new phi " << end << '\n';
-    }
+    BL_PROFILE_VAR_STOP(solve_for_new_phi);
 
     // Reflux
     if (do_reflux)
@@ -486,15 +453,6 @@ Nyx::advance_hydro_plus_particles (Real time,
     }
 #endif
 
-    if (show_timings)
-    {
-        const int IOProc = ParallelDescriptor::IOProcessorNumber();
-        Real end = ParallelDescriptor::second() - strt;
-        ParallelDescriptor::ReduceRealMax(end,IOProc);
-        if (ParallelDescriptor::IOProcessor())
-           std::cout << "Time  after moveKick " << end << '\n';
-    }
-
     //
     // Synchronize Energies
     //
@@ -503,15 +461,6 @@ Nyx::advance_hydro_plus_particles (Real time,
         MultiFab& S_new = get_level(lev).get_new_data(State_Type);
         MultiFab& D_new = get_level(lev).get_new_data(DiagEOS_Type);
         get_level(lev).reset_internal_energy(S_new,D_new);
-    }
-
-    if (show_timings)
-    {
-        const int IOProc = ParallelDescriptor::IOProcessorNumber();
-        Real end = ParallelDescriptor::second() - strt;
-        ParallelDescriptor::ReduceRealMax(end,IOProc);
-        if (ParallelDescriptor::IOProcessor())
-           std::cout << "Time  at end of routine " << end << '\n';
     }
 
     BL_PROFILE_REGION_STOP("R::Nyx::advance_hydro_plus_particles");
