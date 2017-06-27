@@ -2200,7 +2200,6 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         allInts.push_back(write_parameters_in_plotfile);
         allInts.push_back(print_fortran_warnings);
         allInts.push_back(particle_verbose);
-        allInts.push_back(write_particles_in_plotfile);
         allInts.push_back(write_particle_density_at_init);
         allInts.push_back(write_coarsened_particles);
         allInts.push_back(NUM_STATE);
@@ -2256,7 +2255,6 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         write_parameters_in_plotfile = allInts[count++];
         print_fortran_warnings = allInts[count++];
         particle_verbose = allInts[count++];
-        write_particles_in_plotfile = allInts[count++];
         write_particle_density_at_init = allInts[count++];
         write_coarsened_particles = allInts[count++];
         NUM_STATE = allInts[count++];

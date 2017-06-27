@@ -313,11 +313,6 @@ public:
 #endif
 
     //
-    // Should we write particles into plotfiles?
-    //
-    static int write_particles_in_plotfile;
-
-    //
     // Shall we write the initial single-level particle density into a multifab
     //   called "ParticleDensity"?
     //

@@ -475,8 +475,7 @@ Nyx::writePlotFile (const std::string& dir,
     VisMF::Write(plotMF, TheFullPath, how, true);
 
     //
-    // Write the particles and `comoving_a` in a plotfile directory. Particles
-    // are only written if "particles.write_in_plotfile = 1" in inputs file.
+    // Write the particles and `comoving_a` in a plotfile directory. 
     //
     particle_plot_file(dir);
 
@@ -490,13 +489,13 @@ Nyx::particle_plot_file (const std::string& dir)
 {
     if (level == 0)
     {
-        if (Nyx::theDMPC() && write_particles_in_plotfile)
+        if (Nyx::theDMPC())
           {
             Nyx::theDMPC()->WriteNyxPlotFile(dir, dm_plt_particle_file);
           }
 
 #ifdef AGN
-        if (Nyx::theAPC() && write_particles_in_plotfile)
+        if (Nyx::theAPC())
           {
             Nyx::theAPC()->WriteNyxPlotFile(dir, agn_plt_particle_file);
           }
@@ -527,7 +526,7 @@ Nyx::particle_plot_file (const std::string& dir)
         }
 
         // Write particle_plotfile_format into its own file in the particle directory
-        if (Nyx::theDMPC() && write_particles_in_plotfile && ParallelDescriptor::IOProcessor())
+        if (Nyx::theDMPC() && ParallelDescriptor::IOProcessor())
         {
             std::string FileName = dir + "/" + dm_plt_particle_file + "/precision";
             std::ofstream File;
@@ -541,7 +540,7 @@ Nyx::particle_plot_file (const std::string& dir)
 
 #ifdef AGN
         // Write particle_plotfile_format into its own file in the particle directory
-        if (Nyx::theAPC() && write_particles_in_plotfile && ParallelDescriptor::IOProcessor())
+        if (Nyx::theAPC() && ParallelDescriptor::IOProcessor())
         {
             std::string FileName = dir + "/" + agn_plt_particle_file + "/precision";
             std::ofstream File;

@@ -128,7 +128,6 @@ long Nyx::particle_initrandom_count_per_box;
 int  Nyx::particle_initrandom_iseed;
 
 int Nyx::particle_verbose               = 1;
-int Nyx::write_particles_in_plotfile    = 1;
 int Nyx::write_particle_density_at_init = 0;
 int Nyx::write_coarsened_particles      = 0;
 Real Nyx::particle_cfl = 0.5;
@@ -324,7 +323,6 @@ Nyx::read_particle_params ()
     //
     ParmParse ppp("particles");
     ppp.query("v", particle_verbose);
-    ppp.query("write_in_plotfile", write_particles_in_plotfile);
 
     for (int i = 0; i < BL_SPACEDIM; i++) Nrep[i] = 1; // Initialize to one (no replication)
     ppp.query("replicate",Nrep);
