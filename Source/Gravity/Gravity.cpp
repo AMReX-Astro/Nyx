@@ -2131,7 +2131,7 @@ Gravity::solve_with_HPGMG(int level,
   const Real b = -1.0; // coefficient in front of beta in the Helmholtz operator
 
   const auto& ba = rhs.boxArray();
-  const auto& dm = rhs.DistributionMap()
+  const auto& dm = rhs.DistributionMap();
   MultiFab alpha(ba, dm, 1, 0);
   MultiFab beta_cc(ba, dm, 1, 1);
   alpha.setVal(0.0);
