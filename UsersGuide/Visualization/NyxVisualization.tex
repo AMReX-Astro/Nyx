@@ -1,70 +1,31 @@
-The BoxLib format in which NYX output is written can be read by {\bf amrvis}, {\bf VisIt}, and {\bf yt}.
+There are several visualization tools that can be used for Nyx
+plotfiles.  The standard tool used within the
+\amrex-community is \amrvis, a package developed and supported
+by CCSE that is designed specifically for highly efficient visualization
+of block-structured hierarchical AMR data.
+Plotfiles can also be viewed using the \visit, \paraview, and \yt\ packages.
+Particle data can be viewed using \paraview.
 
-\section{amrvis}
-We have a homegrown visualization tool called amrvis. We encourage you to build the amrvis3d executable, 
-and to try using it to visualize your data. A very useful feature is View/Dataset, which allows you to actually 
-view the numbers -- this can be handy for debugging. 
-You can modify how many levels of data you want to see, whether you want to see the grid boxes or not, what palette you use, etc.
+Please see Chapter 9 of the AMReX User's Guide (available in amrex/Docs)
+for more detail about using all of these visualization packages. \\
 
-If you like to have amrvis display a certain variable, at a certain scale, when you first bring up each plotfile 
-(you can always change it once the amrvis window is open), you can modify the amrvis.defaults file in your directory 
-to have amrvis default to these settings every time you run it. 
+\noindent To control which variables appear in the plotfile, the user can set \\
 
-\section{VisIt}
-{\bf VisIt} is also a great visualization tool, and it directly handles our plotfile format (which it calls amrex).   \\
+\noindent {\tt amr.plot\_vars} = \\
+\noindent {\tt amr.derive\_plot\_vars} = \\
 
-\noindent See {\bf http://visit.llnl.gov} \\
-
-\noindent To use the Boxlib3D plugin, select it from File $\rightarrow$ Open file $\rightarrow$ Open file as type Boxlib, 
-and then the key is to read the Header file, plt00000/Header, for example, rather than telling to to read plt00000.
-
-
-\section{yt}
-
-{\bf yt} also handles BoxLib format and is a great visualization tool for Nyx output.   \\
-
-\noindent Here are quick instructions from Matthew Turk: \\
-
-\noindent The directories require that the inputs file be one level up, so that the hierarchy of files looks something like:
-
-\noindent data/  \\
-\noindent data/inputs \\
-\noindent data/plt00001 \\
-\noindent data/plt00002 \\
-
-\noindent To load the data in {\bf yt}, you would then do:
-
-\noindent from yt.mods import * \\
-\noindent pf = load("data/plt00001") \\
-
-\noindent You can also be in the data/ directory and just load plt00001. \\
-
-\noindent See {\bf http://yt.enzotools.org} to download {\bf yt} and for more information.
-
-\section{Controlling What's in the PlotFile}
-
-{\bf amr.plot\_vars} = \\
-
-\noindent and  \\
-
-\noindent {\bf amr.derive\_plot\_vars} = \\
-
-\noindent are used to control which variables are included in the plotfiles.  The default for {\bf amr.plot\_vars}
-is all of the state variables.  The default for {\bf amr.derive\_plot\_vars} is none of
+\noindent The default for {\tt amr.plot\_vars}
+is all of the state variables.  The default for {\tt amr.derive\_plot\_vars} is none of
 the derived variables.  So if you include neither of these lines then the plotfile
 will contain all of the state variables and none of the derived variables. \\
 
 \noindent If you want all of the state variables plus entropy and pressure (both derived quantities), for example, then set \\
 
-\noindent {\bf amr.derive\_plot\_vars} = entropy pressure \\
+\noindent {\tt amr.derive\_plot\_vars} = entropy pressure \\
 
 \noindent If you just want density (state variable) and pressure (derived quantity), for example, then set \\
 
-\noindent {\bf amr.plot\_vars} =  density \\
+\noindent {\tt amr.plot\_vars} =  density \\
 
-\noindent {\bf amr.derive\_plot\_vars} = pressure \\
-
-Recall that we can also control whether the particles are written into a separate file in the plotfile directory by setting  \\
-
-\noindent {\bf particles.write\_in\_plotfile} = 1
+\noindent {\tt amr.derive\_plot\_vars} = pressure \\
 
