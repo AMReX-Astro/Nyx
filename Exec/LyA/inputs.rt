@@ -69,6 +69,7 @@ nyx.do_grav  = 1
 
 # PARTICLES
 nyx.do_dm_particles = 1
+nyx.do_tiling = 1
 
 # >>>>>>>>>>>>>  PARTICLE INIT OPTIONS <<<<<<<<<<<<<<<<
 #  "AsciiFile"        "Random"	    "Cosmological"
