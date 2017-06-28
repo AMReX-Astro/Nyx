@@ -89,7 +89,7 @@ Nyx::comoving_est_time_step (Real& cur_time, Real& estdt)
         }
 
     } 
-    else if ( abs(cur_time - old_a_time) <= 1.e-12 * cur_time)
+    else if ( std::abs(cur_time - old_a_time) <= 1.e-12 * cur_time)
     {
        std::cout << "comoving_est_time_step: DONT KNOW WHAT TIME IT IS " << cur_time << std::endl;
        exit(0);
