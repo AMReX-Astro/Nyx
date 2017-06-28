@@ -58,12 +58,9 @@ geometry.prob_lo     =  0     0     0
 #Domain size in Mpc
 geometry.prob_hi     =  28.49002849  28.49002849  28.49002849
 
-amr.n_cell           = 2048 2048 2048
-amr.n_cell           = 32 32 32
+amr.n_cell           =  64 64 64
 amr.max_grid_size    = 32
-nyx.particle_initrandom_count_per_box = 128
 
-nyx.particle_initrandom_iseed = 5371177
 nyx.particle_initrandom_mass  = 1.01241529887243E5
 
 
@@ -81,11 +78,13 @@ nyx.do_grav  = 1
 
 # PARTICLES
 nyx.do_dm_particles = 1
+particles.do_tiling = 1
+particles.tile_size = 2048 4 4
 
 # >>>>>>>>>>>>>  PARTICLE INIT OPTIONS <<<<<<<<<<<<<<<<
 #  "AsciiFile"        "Random"	    "Cosmological"
 # >>>>>>>>>>>>>  PARTICLE INIT OPTIONS <<<<<<<<<<<<<<<<
-nyx.particle_init_type = RandomPerBox
+nyx.particle_init_type = RandomPerCell
 
 # >>>>>>>>>>>>>  PARTICLE MOVE OPTIONS <<<<<<<<<<<<<<<<
 #  "Gravitational"    "Random"
