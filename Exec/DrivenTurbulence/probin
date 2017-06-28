@@ -1,0 +1,16 @@
+&fortin
+  max_dengrad_lev    = -1
+  max_denerr_lev     = -1
+  dengrad            = 1.e18
+  denerr             = 2.e8
+
+  alpha                  = 100.0
+  rho0                   = 1.0
+  temp0                  = 10.0
+
+  comoving_OmM = 1.0
+  comoving_OmB = 1.0
+
+  comoving_h   = 0.0d0
+/
+

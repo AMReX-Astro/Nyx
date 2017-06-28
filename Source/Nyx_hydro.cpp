@@ -125,23 +125,8 @@ Nyx::just_the_hydro (Real time,
     MultiFab D_old_tmp(D_old.boxArray(), D_old.DistributionMap(), 2, NUM_GROW);
     FillPatch(*this, D_old_tmp, NUM_GROW, time, DiagEOS_Type, 0, 2);
 
-    if (add_ext_src && strang_split) {
-        Real strt_strang = ParallelDescriptor::second();
-        if (ParallelDescriptor::IOProcessor())
-           std::cout << "Calling strang for the first time " << std::endl;
+    if (add_ext_src && strang_split) 
         strang_first_step(time,dt,S_old_tmp,D_old_tmp);
-        ParallelDescriptor::Barrier();
-        if (ParallelDescriptor::IOProcessor())
-           std::cout << "Out of strang for the first time " << std::endl;
-        Real end = ParallelDescriptor::second() - strt_strang;
-        int IOProc = ParallelDescriptor::IOProcessorNumber();
-        ParallelDescriptor::ReduceRealMax(end,IOProc);
-        if (ParallelDescriptor::IOProcessor() && show_timings)
-           std::cout << "Time in first strang call " << end << '\n';
-    }
-
-
-    const Real strt_fpi = ParallelDescriptor::second();
 
 #ifdef _OPENMP
 #pragma omp parallel
@@ -255,15 +240,6 @@ Nyx::just_the_hydro (Real time,
     }
 #endif /*GRAVITY*/
 
-    if (show_timings)
-    {
-        const int IOProc = ParallelDescriptor::IOProcessorNumber();
-        Real end = ParallelDescriptor::second() - strt_fpi;
-        ParallelDescriptor::ReduceRealMax(end,IOProc);
-        if (ParallelDescriptor::IOProcessor())
-           std::cout << "Time in fpi hydro loop " << end << '\n';
-    }
-
     grav_vector.clear();
 
     ParallelDescriptor::ReduceRealMax(courno);
@@ -318,20 +294,7 @@ Nyx::just_the_hydro (Real time,
 
     // This returns updated (rho e), (rho E), and Temperature
     if (add_ext_src && strang_split)
-    {
-        const Real strt_strang = ParallelDescriptor::second();
-        if (ParallelDescriptor::IOProcessor())
-           std::cout << "Calling strang for the second time " << std::endl;
         strang_second_step(cur_time,dt,S_new,D_new);
-        ParallelDescriptor::Barrier();
-        if (ParallelDescriptor::IOProcessor())
-           std::cout << "Out of strang for the second time " << std::endl;
-        Real end = ParallelDescriptor::second() - strt_strang;
-        const int IOProc = ParallelDescriptor::IOProcessorNumber();
-        ParallelDescriptor::ReduceRealMax(end,IOProc);
-        if (ParallelDescriptor::IOProcessor() && show_timings)
-           std::cout << "Time in second strang call " << end << '\n';
-    }
 
 #ifndef NDEBUG
     if (S_new.contains_nan(Density, S_new.nComp(), 0))

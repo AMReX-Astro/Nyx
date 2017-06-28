@@ -27,6 +27,8 @@ Nyx::advance_particles_only (Real time,
   //    ncycle    : the number of subcycles at this level
 
 {
+     BL_PROFILE("Nyx::advance_particles_only()");
+
     // A particle in cell (i) can affect cell values in (i-1) to (i+1)
     int stencil_deposition_width = 1;
  
@@ -108,7 +110,6 @@ Nyx::advance_particles_only (Real time,
     }
 
     Real dt_lev;
-    const Real strt = ParallelDescriptor::second();
 
     //
     // Move current data to previous, clear current.
@@ -158,18 +159,6 @@ Nyx::advance_particles_only (Real time,
         for (int lev = level; lev <= finest_level; lev++)
             get_level(lev).gravity->swap_time_levels(lev);
 
-        if (show_timings)
-        {
-            const int IOProc = ParallelDescriptor::IOProcessorNumber();
-            Real end = ParallelDescriptor::second() - strt;
-            ParallelDescriptor::ReduceRealMax(end,IOProc);
-            if (ParallelDescriptor::IOProcessor())
-               std::cout << "Time before solve for old phi " << end << '\n';
-        }
-
-        if (verbose && ParallelDescriptor::IOProcessor())
-            std::cout << "\n... old-time level solve at level " << level << '\n';
-            
         //
         // Solve for phi
         // If a single-level calculation we can still use the previous phi as a guess.
@@ -226,15 +215,6 @@ Nyx::advance_particles_only (Real time,
                        0, 0, 1, 0);
     }
 
-    if (show_timings)
-    {
-        const int IOProc = ParallelDescriptor::IOProcessorNumber();
-        Real end = ParallelDescriptor::second() - strt;
-        ParallelDescriptor::ReduceRealMax(end,IOProc);
-        if (ParallelDescriptor::IOProcessor())
-           std::cout << "Time before solve for new phi " << end << '\n';
-    }
-
     // Solve for new Gravity
     int use_previous_phi_as_guess = 1;
     if (finest_level_to_advance > level)
@@ -248,15 +228,6 @@ Nyx::advance_particles_only (Real time,
         gravity->solve_for_new_phi(level,get_new_data(PhiGrav_Type),
                                gravity->get_grad_phi_curr(level),
                                fill_interior, grav_n_grow);
-    }
-
-    if (show_timings)
-    {
-        const int IOProc = ParallelDescriptor::IOProcessorNumber();
-        Real end = ParallelDescriptor::second() - strt;
-        ParallelDescriptor::ReduceRealMax(end,IOProc);
-        if (ParallelDescriptor::IOProcessor())
-           std::cout << "Time  after solve for new phi " << end << '\n';
     }
 
     if (Nyx::theActiveParticles().size() > 0)
@@ -289,24 +260,6 @@ Nyx::advance_particles_only (Real time,
                         Nyx::theGhostParticles()[i]->moveKick(grav_vec_new, lev, dt, a_new, a_half);
             }
         }
-    }
-
-    if (show_timings)
-    {
-        const int IOProc = ParallelDescriptor::IOProcessorNumber();
-        Real end = ParallelDescriptor::second() - strt;
-        ParallelDescriptor::ReduceRealMax(end,IOProc);
-        if (ParallelDescriptor::IOProcessor())
-           std::cout << "Time  after moveKick " << end << '\n';
-    }
-
-    if (show_timings)
-    {
-        const int IOProc = ParallelDescriptor::IOProcessorNumber();
-        Real end = ParallelDescriptor::second() - strt;
-        ParallelDescriptor::ReduceRealMax(end,IOProc);
-        if (ParallelDescriptor::IOProcessor())
-           std::cout << "Time  at end of routine " << end << '\n';
     }
 
     // Redistribution happens in post_timestep

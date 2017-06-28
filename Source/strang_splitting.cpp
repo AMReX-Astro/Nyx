@@ -12,6 +12,7 @@ Nyx::strang_first_step (Real time, Real dt, MultiFab& S_old, MultiFab& D_old)
     Real half_dt = 0.5*dt;
 
     const Real a = get_comoving_a(time);
+    const Real* dx = geom.CellSize();
 
 #ifdef _OPENMP
 #pragma omp parallel
@@ -28,7 +29,7 @@ Nyx::strang_first_step (Real time, Real dt, MultiFab& S_old, MultiFab& D_old)
                 (bx.loVect(), bx.hiVect(), 
                  BL_TO_FORTRAN(S_old[mfi]),
                  BL_TO_FORTRAN(D_old[mfi]),
-                 &a, &half_dt, &min_iter, &max_iter);
+                 dx, &time, &a, &half_dt, &min_iter, &max_iter);
 
 #ifndef NDEBUG
         if (S_old[mfi].contains_nan())
@@ -50,6 +51,7 @@ Nyx::strang_second_step (Real time, Real dt, MultiFab& S_new, MultiFab& D_new)
     int max_iter_grid;
 
     const Real a = get_comoving_a(time);
+    const Real* dx = geom.CellSize();
 
     compute_new_temp();
 
@@ -68,7 +70,7 @@ Nyx::strang_second_step (Real time, Real dt, MultiFab& S_new, MultiFab& D_new)
             (bx.loVect(), bx.hiVect(), 
              BL_TO_FORTRAN(S_new[mfi]),
              BL_TO_FORTRAN(D_new[mfi]),
-             &a, &half_dt, &min_iter_grid, &max_iter_grid);
+             dx, &time, &a, &half_dt, &min_iter_grid, &max_iter_grid);
 
         if (S_new[mfi].contains_nan(bx,0,S_new.nComp()))
         {

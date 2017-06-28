@@ -1,7 +1,15 @@
 &fortin
   max_num_part = 0
 
-  comoving_OmM = 0.27
-  comoving_OmB = 0.045
-  comoving_h   = 0.71d0
+  comoving_OmM = 0.275
+  comoving_OmB = 0.046
+  comoving_h   = 0.702d0
+
+  eps_rad = 0.1
+  eps_coupling = 0.15
+  T_min = 1.0d+7
+  bondi_boost = 10.d0  ! this was called alpha
+  max_frac_removed = 0.5d0
+  frac_kinetic = 0.
+  eps_kinetic = 0.1d0
 /

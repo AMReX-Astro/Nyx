@@ -4,15 +4,20 @@
 
 % for \begin{center}, etc.
 \usepackage{geometry}
+
 % all kinds of math macros
 \usepackage{amsmath}
 \usepackage{amssymb}
+
 % eps figures
 \usepackage{epsfig}
+
 % Margins
 \usepackage{fullpage}
+
 % for the red MarginPars
 \usepackage{color}
+
 % make the MarginPars look pretty
 \setlength{\marginparwidth}{0.75in}
 \newcommand{\MarginPar}[1]{\marginpar{\vskip-\baselineskip\raggedright\tiny\sffamily
@@ -23,6 +28,25 @@
 \renewcommand{\topfraction}{1.0}
 \renewcommand{\bottomfraction}{1.0}
 \renewcommand{\textfraction}{0.0}
+
+% chapter title styles
+\usepackage[Sonny]{fncychap}
+\ChNameVar{\LARGE}
+\ChTitleVar{\LARGE\sl}
+
+% index
+\usepackage{makeidx}
+\makeindex
+
+% part page style see
+% http://tex.stackexchange.com/questions/6609/problems-with-part-labels-using-titlesec
+\usepackage{titlesec}
+
+\titleformat{\part}[display]
+   {\Huge\filcenter}
+   {{\partname{}} \thepart}
+   {0em}
+   {\hrule}
 
 % Get in-document links, toc, pdf index, \href and \url
 \usepackage{hyperref}
@@ -76,11 +100,12 @@
 
 % codes
 \newcommand{\nyx}{{\sf Nyx}}
-\newcommand{\yt}{{\sf yt}}
+\newcommand{\amrex}{{\sf amrex}}
 \newcommand{\amrvis}{{\sf Amrvis}}
 \newcommand{\visit}{{\sf VisIt}}
-\newcommand{\boxlib}{{\sf BoxLib}}
-\newcommand{\amrex}{{\sf amrex}}
+\newcommand{\paraview}{{\sf ParaView}}
+\newcommand{\yt}{{\sf yt}}
+
 
 % Level Set Macros
 \def\ADDNODE       {{\tt{\bf ADDNODE}}}

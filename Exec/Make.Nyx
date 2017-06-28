@@ -33,6 +33,10 @@ ifeq ($(USE_HEATCOOL), TRUE)
   DEFINES += -DHEATCOOL
 endif
 
+ifeq ($(USE_FORCING), TRUE)
+  DEFINES += -DFORCING
+endif
+
 DEFINES += -DBL_NOLINEVALUES
 
 ifeq ($(REEBER), TRUE)
@@ -79,6 +83,9 @@ endif
 ifeq ($(USE_GRAV), TRUE)
    Bdirs 	+= Source/Gravity
 endif
+ifeq ($(USE_FORCING), TRUE)
+   Bdirs 	+= Source/Forcing
+endif
 ifeq ($(USE_AGN), TRUE)
    Bdirs 	+= Source/AGN
 endif
@@ -93,7 +100,7 @@ VPATH_LOCATIONS   += $(Blocs)
 #INCLUDE_LOCATIONS += $(TOP)/Source/MG
 #VPATH_LOCATIONS   += $(TOP)/Source/MG
 
-#These are the directories in BoxLib
+#These are the directories in AMReX
 
 Pdirs   := Base AmrCore Amr Boundary Particle Extern/amrdata
 Ppack	+= $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir)/Make.package)

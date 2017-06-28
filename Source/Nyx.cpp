@@ -30,6 +30,10 @@ using std::string;
 #include "Gravity.H"
 #endif
 
+#ifdef FORCING
+#include "Forcing.H"
+#endif
+
 #ifdef REEBER
 #include <ReeberAnalysis.H>
 #endif
@@ -37,6 +41,10 @@ using std::string;
 #ifdef GIMLET
 #include <DoGimletAnalysis.H>
 #include <postprocess_tau_fields.H>
+#endif
+
+#ifdef AGN
+#include "agn_F.H"
 #endif
 
 using namespace amrex;
@@ -67,7 +75,6 @@ Array<Real> Nyx::analysis_z_values;
 
 bool Nyx::dump_old = false;
 int Nyx::verbose      = 0;
-int Nyx::show_timings = 0;
 
 Real Nyx::cfl = 0.8;
 Real Nyx::init_shrink = 1.0;
@@ -122,6 +129,13 @@ Gravity* Nyx::gravity  =  0;
 int Nyx::do_grav       = -1;
 #else
 int Nyx::do_grav       =  0;
+#endif
+
+#ifdef FORCING
+StochasticForcing* Nyx::forcing = 0;
+int Nyx::do_forcing = -1;
+#else
+int Nyx::do_forcing =  0;
 #endif
 
 int Nyx::allow_untagging    = 0;
@@ -186,6 +200,15 @@ Nyx::variable_cleanup ()
         gravity = 0;
     }
 #endif
+#ifdef FORCING
+    if (forcing != 0)
+    {
+        if (verbose > 1 && ParallelDescriptor::IOProcessor())
+            std::cout << "Deleting forcing in variable_cleanup...\n";
+        delete forcing;
+        forcing = 0;
+    }
+#endif
 
     desc_lst.clear();
 }
@@ -203,8 +226,6 @@ Nyx::read_params ()
     ParmParse pp("nyx");
 
     pp.query("v", verbose);
-    pp.query("show_timings", show_timings);
-    //verbose = (verbose ? 1 : 0);
     pp.get("init_shrink", init_shrink);
     pp.get("cfl", cfl);
     pp.query("change_max", change_max);
@@ -302,6 +323,19 @@ Nyx::read_params ()
     pp.query("add_ext_src", add_ext_src);
     pp.query("strang_split", strang_split);
 
+#ifdef FORCING
+    pp.get("do_forcing", do_forcing);
+#ifdef NO_HYDRO
+    if (do_forcing == 1)
+        amrex::Error("Cant have do_forcing == 1 when NO_HYDRO is true ");
+#endif
+    if (do_forcing == 1 && add_ext_src == 0)
+       amrex::Error("Nyx::must set add_ext_src to 1 if do_forcing = 1 ");
+#else
+    if (do_forcing == 1)
+       amrex::Error("Nyx::you set do_forcing = 1 but forgot to set USE_FORCING = TRUE ");
+#endif
+
     pp.query("heat_cool_type", heat_cool_type);
 
     pp.query("use_exact_gravity", use_exact_gravity);
@@ -309,10 +343,32 @@ Nyx::read_params ()
 #ifdef HEATCOOL
     if (heat_cool_type > 0 && add_ext_src == 0)
        amrex::Error("Nyx::must set add_ext_src to 1 if heat_cool_type > 0");
-    if (heat_cool_type != 1 && heat_cool_type != 3)
-       amrex::Error("Nyx:: nonzero heat_cool_type must equal 1 or 3");
+    if (heat_cool_type != 1 && heat_cool_type != 3 && heat_cool_type != 5)
+       amrex::Error("Nyx:: nonzero heat_cool_type must equal 1 or 3 or 5");
     if (heat_cool_type == 0)
        amrex::Error("Nyx::contradiction -- HEATCOOL is defined but heat_cool_type == 0");
+
+    if (ParallelDescriptor::IOProcessor()) {
+      std::cout << "Integrating heating/cooling method with the following method: ";
+      switch (heat_cool_type) {
+        case 1:
+          std::cout << "HC";
+          break;
+        case 3:
+          std::cout << "VODE";
+          break;
+        case 5:
+          std::cout << "CVODE";
+          break;
+      }
+      std::cout << std::endl;
+    }
+
+#ifndef USE_CVODE
+    if (heat_cool_type == 5)
+        amrex::Error("Nyx:: cannot set heat_cool_type = 5 unless USE_CVODE=TRUE");
+#endif
+
 #else
     if (heat_cool_type > 0)
        amrex::Error("Nyx::you set heat_cool_type > 0 but forgot to set USE_HEATCOOL = TRUE");
@@ -461,6 +517,20 @@ Nyx::Nyx (Amr&            papa,
    }
 #endif
 
+#ifdef FORCING
+    const Real* prob_lo = geom.ProbLo();
+    const Real* prob_hi = geom.ProbHi();
+
+    if (do_forcing)
+    {
+        // forcing is a static object, only alloc if not already there
+        if (forcing == 0)
+           forcing = new StochasticForcing();
+
+        forcing->init(BL_SPACEDIM, prob_lo, prob_hi);
+    }
+#endif
+
     // Initialize the "a" variable
     if (level == 0 && time == 0.0 && old_a_time < 0.)
     {
@@ -472,8 +542,13 @@ Nyx::Nyx (Amr&            papa,
     }
 
      // Initialize "this_z" in the atomic_rates_module
-     if (heat_cool_type == 1 || heat_cool_type == 3)
+     if (heat_cool_type == 1 || heat_cool_type == 3 || heat_cool_type == 5)
          fort_init_this_z(&old_a);
+
+#ifdef AGN
+     // Initialize the uniform(0,1) random number generator.
+     init_uniform01_rng();
+#endif
 }
 
 Nyx::~Nyx ()
@@ -499,7 +574,7 @@ Nyx::restart (Amr&     papa,
     // get the elapsed CPU time to now;
     if (level == 0 && ParallelDescriptor::IOProcessor())
     {
-      // get ellapsed CPU time
+      // get elapsed CPU time
       std::ifstream CPUFile;
       std::string FullPathCPUFile = parent->theRestartFile();
       FullPathCPUFile += "/CPUtime";
@@ -525,6 +600,20 @@ Nyx::restart (Amr&     papa,
     {
         BL_ASSERT(gravity == 0);
         gravity = new Gravity(parent, parent->finestLevel(), &phys_bc, Density);
+    }
+#endif
+
+#ifdef FORCING
+    const Real* prob_lo = geom.ProbLo();
+    const Real* prob_hi = geom.ProbHi();
+
+    if (do_forcing)
+    {
+        // forcing is a static object, only alloc if not already there
+        if (forcing == 0)
+           forcing = new StochasticForcing();
+
+        forcing->init(BL_SPACEDIM, prob_lo, prob_hi);
     }
 #endif
 }
@@ -1121,15 +1210,18 @@ Nyx::post_timestep (int iteration)
         remove_ghost_particles();
 
     //
-    // We now redistribute with no ghost cells and 
-    //    not after iterations which do not line up with the coarser timestep.
+    // Sync up if we're level 0 or if we have particles that may have moved
+    // off the next finest level and need to be added to our own level.
     //
-    if (iteration < ncycle || level == 0)
+    if ((iteration < ncycle and level < finest_level) || level == 0)
     {
-         for (int i = 0; i < theActiveParticles().size(); i++)
-         {
-             theActiveParticles()[i]->Redistribute(level,
-                                                   theActiveParticles()[i]->finestLevel(),0);
+        for (int i = 0; i < theActiveParticles().size(); i++)
+        {
+            int ngrow = (level == 0) ? 0 : iteration;
+
+            theActiveParticles()[i]->Redistribute(level,
+                                                  theActiveParticles()[i]->finestLevel(),
+                                                  iteration);
          }
     }
 
@@ -1350,6 +1442,14 @@ Nyx::post_restart ()
                 }
             }
         }
+    }
+#endif
+
+#ifdef FORCING
+    if (do_forcing)
+    {
+        if (level == 0)
+           forcing_post_restart(parent->theRestartFile());
     }
 #endif
 
@@ -1610,25 +1710,11 @@ void
 Nyx::reflux ()
 {
     BL_PROFILE("Nyx::reflux()");
-    BL_ASSERT(level<parent->finestLevel());
 
-    const Real strt = ParallelDescriptor::second();
+    BL_ASSERT(level<parent->finestLevel());
 
     get_flux_reg(level+1).Reflux(get_new_data(State_Type), 1.0, 0, 0, NUM_STATE,
                                  geom);
-
-    if (show_timings)
-    {
-        const int IOProc = ParallelDescriptor::IOProcessorNumber();
-        Real end = ParallelDescriptor::second() - strt;
-        ParallelDescriptor::ReduceRealMax(end, IOProc);
-
-        if (ParallelDescriptor::IOProcessor())
-            std::cout << "Nyx::reflux() at level "
-                      << level
-                      << " : time = "
-                      << end << '\n';
-    }
 }
 #endif // NO_HYDRO
 
@@ -2114,7 +2200,6 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         allInts.push_back(write_parameters_in_plotfile);
         allInts.push_back(print_fortran_warnings);
         allInts.push_back(particle_verbose);
-        allInts.push_back(write_particles_in_plotfile);
         allInts.push_back(write_particle_density_at_init);
         allInts.push_back(write_coarsened_particles);
         allInts.push_back(NUM_STATE);
@@ -2135,7 +2220,6 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         allInts.push_back(strict_subcycling);
         allInts.push_back(init_with_sph_particles);
         allInts.push_back(verbose);
-        allInts.push_back(show_timings);
         allInts.push_back(do_reflux);
         allInts.push_back(NUM_GROW);
         allInts.push_back(nsteps_from_plotfile);
@@ -2171,7 +2255,6 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         write_parameters_in_plotfile = allInts[count++];
         print_fortran_warnings = allInts[count++];
         particle_verbose = allInts[count++];
-        write_particles_in_plotfile = allInts[count++];
         write_particle_density_at_init = allInts[count++];
         write_coarsened_particles = allInts[count++];
         NUM_STATE = allInts[count++];
@@ -2192,7 +2275,6 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         strict_subcycling = allInts[count++];
         init_with_sph_particles = allInts[count++];
         verbose = allInts[count++];
-        show_timings = allInts[count++];
         do_reflux = allInts[count++];
         NUM_GROW = allInts[count++];
         nsteps_from_plotfile = allInts[count++];
@@ -2370,8 +2452,6 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         InitDeriveList();
       }
 
-
-
       int isAllocated(0);
 #ifndef NO_HYDRO
       // ---- FluxRegister
@@ -2438,106 +2518,6 @@ Nyx::InitErrorList() {
 
 //static Box the_same_box (const Box& b) { return b; }
 
-
 void
 Nyx::InitDeriveList() {
-
-/*
-    derive_lst.clear();
-    //
-    // Set number of state variables
-    //
-    int counter = (int)Density + 1;
-    int Xmom = counter++;
-    int Ymom = counter++;
-#if(BL_SPACEDIM==3)
-    int Zmom = counter++;
-#endif
-    int Eden = counter++;
-#if(NADV>0)
-    int Tracer = counter++;
-#if(NADV>1)
-    amrex::Error("Prob::variableSetUp: Only one Advected quantity allowed");
-#endif
-#endif
-#ifdef BL_USE_CHEM
-    NumSpec = getChemDriver().numSpecies();
-    if (NumSpec > 0)
-    {
-        FirstSpec = counter++;
-        counter += NumSpec - 2;
-        LastSpec = counter++;
-    }
-
-    const int tmp = (int)Density;
-    FORT_SETCOMPS (&tmp, &Xmom,&Ymom,&Zmom,&Eden, &FirstSpec,&Tracer);
-
-    const Array<std::string>& names = getChemDriver().speciesNames();
-    if (ParallelDescriptor::IOProcessor())
-    {
-        std::cout << NumSpec << " Chemical species interpreted:\n { ";
-        for (int i = 0; i < names.size(); i++)
-            std::cout << names[i] << ' ' << ' ';
-        std::cout << '}' << '\n' << '\n';
-    }
-#endif
-
-    NUM_STATE = counter;
-
-    //
-    // DEFINE DERIVED QUANTITIES
-    //
-    // log of Density
-    //
-    derive_lst.add("log_den",IndexType::TheCellType(),1,FORT_DERLOGS,the_same_box);
-    derive_lst.addComponent("log_den",desc_lst,State_Type,Density,1);
-    //
-    // Pressure
-    //
-#ifdef BL_USE_CHEM
-    const int nWorkPres = 4 + NumSpec;
-#else
-    const int nWorkPres = 4;
-#endif
-    derive_lst.add("pressure",IndexType::TheCellType(),nWorkPres,
-                   FORT_DERPRES,the_same_box);
-    derive_lst.addComponent("pressure",desc_lst,State_Type,Density,NUM_STATE);
-
-#ifdef  PRISCILLA
-    // mach
-    derive_lst.add("mach",IndexType::TheCellType(),4, FORT_DERMACH,the_same_box);
-    derive_lst.addComponent("mach",desc_lst,State_Type,Density,NUM_STATE);
-#endif
-
-    //
-    // Xvel
-    //
-    derive_lst.add("xvel",IndexType::TheCellType(),1,FORT_DERVEL,the_same_box);
-    derive_lst.addComponent("xvel",desc_lst,State_Type,Density,2);
-    //
-    // Yvel
-    //
-    derive_lst.add("yvel",IndexType::TheCellType(),1,FORT_DERVEL,the_same_box);
-    derive_lst.addComponent("yvel",desc_lst,State_Type,Density,1);
-    derive_lst.addComponent("yvel",desc_lst,State_Type,Ymom,1);
-
-#if(BL_SPACEDIM==3)
-    //
-    // Zvel
-    //
-    derive_lst.add("zvel",IndexType::TheCellType(),1,FORT_DERVEL,the_same_box);
-    derive_lst.addComponent("zvel",desc_lst,State_Type,Density,1);
-    derive_lst.addComponent("zvel",desc_lst,State_Type,Zmom,1);
-#endif
-    //
-    // log of Eden
-    //
-    derive_lst.add("log_eden",IndexType::TheCellType(),1,FORT_DERLOGS,the_same_box);
-    derive_lst.addComponent("log_eden",desc_lst,State_Type,Eden,1);
-    //
-    // A derived quantity equal to all the state variables.
-    //
-    derive_lst.add("FULLSTATE",IndexType::TheCellType(),NUM_STATE,FORT_DERCOPY,the_same_box);
-    derive_lst.addComponent("FULLSTATE",desc_lst,State_Type,Density,NUM_STATE);
-*/
 }
