@@ -1,5 +1,5 @@
 # AMREX_HOME defines the directory in which we will find all the AMReX code
-AMREX_HOME = /global/homes/a/almgren/GitCode/amrex
+AMREX_HOME ?= /global/homes/a/almgren/GitCode/amrex
 
 HPGMG_DIR ?= ../../../hpgmg/finite-volume
 
