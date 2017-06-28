@@ -4,8 +4,8 @@
 #SBATCH -C knl,quad,cache
 #SBATCH -p debug
 #SBATCH -A cosmosim
-#SBATCH -J Nyx
-#SBATCH -t 00:30:00
+#SBATCH -J Scaling
+#SBATCH -t 00:10:00
 #SBATCH --mail-user=asalmgren@lbl.gov
 #SBATCH --export=ALL
 
@@ -17,6 +17,6 @@ export OMP_PROC_BIND=spread
 cd $SLURM_SUBMIT_DIR
 
 date
-srun -n 8 -c 68 --cpu_bind=cores ./Nyx3d.intel.DEBUG.MPI.OMP.ex inputs >& out
+srun -n 8 -c 32 --cpu_bind=cores ./Nyx3d.intel.DEBUG.MPI.OMP.ex inputs >& out
 date
 
