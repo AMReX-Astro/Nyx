@@ -419,6 +419,14 @@ Nyx::init_particles ()
                                    particle_initrandom_iseed, pdata);
 
         }
+        else if (particle_init_type == "RandomPerCell")
+        {
+            if (verbose && ParallelDescriptor::IOProcessor())
+                std::cout << "\nInitializing DM with 1 random particle per cell " << "\n";
+
+            int n_per_cell = 1;
+            DMPC->InitNRandomPerCell(n_per_cell, pdata);
+        }
         else if (particle_init_type == "AsciiFile")
         {
             if (verbose && ParallelDescriptor::IOProcessor())
