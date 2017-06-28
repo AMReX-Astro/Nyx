@@ -17,6 +17,6 @@ export OMP_PROC_BIND=spread
 cd $SLURM_SUBMIT_DIR
 
 date
-srun -n 8 -c 32 --cpu_bind=cores ./Nyx3d.intel.DEBUG.MPI.OMP.ex inputs >& out
+srun -n 8 -c 32 --cpu_bind=cores ./Nyx3d.intel.MPI.OMP.ex inputs >& out
 date
 
