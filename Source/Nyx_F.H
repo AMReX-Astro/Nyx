@@ -4,10 +4,10 @@
 #include <AMReX_BLFort.H>
 #include <AMReX_REAL.H>
 
-using namespace amrex;
-
+#ifdef __cplusplus
 extern "C"
 {
+#endif
   void fort_integrate_comoving_a 
     (amrex::Real* old_a, amrex::Real* new_a, amrex::Real* dt);
 
@@ -189,6 +189,18 @@ extern "C"
      const BL_FORT_FAB_ARG(fine_fab),
      const int ovlo[], const int ovhi[], const int rat[]);
 
+#ifdef FORCING
+  void fort_alloc_spect
+    (const int* length);
+
+  void fort_set_wavevector
+    (const int k[], const int* indx);
+
+  void fort_set_modes
+    (const amrex::Real even[], const amrex::Real odd[],
+     const int* length, const int* comp);
+#endif
+
 #ifdef AGN
   void fort_ext_src
     (const int* lo, const int* hi,
@@ -219,6 +231,7 @@ extern "C"
     (const int* lo, const int* hi,
      BL_FORT_FAB_ARG(state),
      BL_FORT_FAB_ARG(diag_eos),
+     const amrex::Real* dx, const amrex::Real* time, 
      const amrex::Real* z, const amrex::Real* dt,
      const int* min_iter, const int* max_iter);
 
@@ -261,5 +274,7 @@ extern "C"
    const BL_FORT_FAB_ARG(temp),
    const BL_FORT_FAB_ARG(ye),
    const BL_FORT_FAB_ARG(state));
+#ifdef __cplusplus
 }
+#endif
 #endif

@@ -27,6 +27,9 @@ module fundamental_constants_module
   ! avogradro's Number
   real(rt), parameter :: n_A = 6.02214129e23_rt   ! mol^-1
 
+  ! Thomson cross section [cm^2]
+  real(rt), parameter :: sigma_T =  6.6524587158e-25_rt
+
   ! convert eV to erg
   real(rt), parameter :: ev2erg = 1.602176487e-12_rt
 
@@ -34,7 +37,7 @@ module fundamental_constants_module
   real(rt), parameter :: MeV2eV = 1.0e6_rt
 
   ! mass of proton
-  real(rt), parameter :: m_p = 1.672621777e-24_rt ! g
+  real(rt), parameter :: m_proton = 1.672621777e-24_rt ! g
 
   ! mass of neutron
   real(rt), parameter :: m_n = 1.674927351e-24_rt ! g
@@ -44,6 +47,8 @@ module fundamental_constants_module
 
   ! speed of light in vacuum
   real(rt), parameter :: c_light = 2.99792458e10_rt   ! cm/s
+
+  real(rt), parameter :: mp_over_kb = m_proton/k_B
 
   ! electron charge
   ! NIST: q_e = 1.602176565e-19 C
@@ -70,5 +75,11 @@ module fundamental_constants_module
 
   ! converstion factor for "heat" from cgs to cosmo units.
   real(rt), parameter :: heat_from_cgs = 1
+
+  ! conversion factor for energy from cosmo to cgs units.
+  real(rt), parameter :: e_to_cgs = 1
+
+  ! For AGN accretion rate
+  real(rt), parameter :: eddington_const = 4.0d0*pi * Gconst * m_proton / (sigma_T * c_light)
 
 end module fundamental_constants_module

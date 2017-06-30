@@ -6,12 +6,21 @@
 
 #include "AMReX_buildInfo.H"
 
+#ifdef FORCING
+#include "Forcing.H"
+
+void mt_write(std::ofstream& output);
+#endif
+
 using namespace amrex;
 
 namespace
 {
-    const std::string chk_particle_file("DM");
-    const std::string plt_particle_file("DM");
+    const std::string dm_chk_particle_file("DM");
+    const std::string dm_plt_particle_file("DM");
+
+    const std::string agn_chk_particle_file("AGN");
+    const std::string agn_plt_particle_file("AGN");
 }
 
 std::string
@@ -217,10 +226,12 @@ Nyx::writePlotFile (const std::string& dir,
         // job_info file with details about the run
 	std::ofstream jobInfoFile;
 	std::string FullPathJobInfoFile = dir;
-	std::string PrettyLine = "===============================================================================\n";
-
 	FullPathJobInfoFile += "/job_info";
 	jobInfoFile.open(FullPathJobInfoFile.c_str(), std::ios::out);
+
+	std::string PrettyLine = std::string(78, '=') + "\n";
+	std::string OtherLine = std::string(78, '-') + "\n";
+	std::string SkipSpace = std::string(8, ' ') + "\n";
 
 	// job information
 	jobInfoFile << PrettyLine;
@@ -284,12 +295,27 @@ Nyx::writePlotFile (const std::string& dir,
 	jobInfoFile << "build date:    " << buildInfoGetBuildDate() << "\n";
 	jobInfoFile << "build machine: " << buildInfoGetBuildMachine() << "\n";
 	jobInfoFile << "build dir:     " << buildInfoGetBuildDir() << "\n";
-	jobInfoFile << "BoxLib dir:    " << buildInfoGetAMReXDir() << "\n";
+	jobInfoFile << "AMReX dir:     " << buildInfoGetAMReXDir() << "\n";
 
 	jobInfoFile << "\n";
 
 	jobInfoFile << "COMP:          " << buildInfoGetComp() << "\n";
 	jobInfoFile << "COMP version:  " << buildInfoGetCompVersion() << "\n";
+
+	jobInfoFile << "\n";
+
+	jobInfoFile << "C++ compiler:  " << buildInfoGetCXXName() << "\n";
+	jobInfoFile << "C++ flags:     " << buildInfoGetCXXFlags() << "\n";
+
+	jobInfoFile << "\n";
+
+	jobInfoFile << "Fortran comp:  " << buildInfoGetFName() << "\n";
+	jobInfoFile << "Fortran flags: " << buildInfoGetFFlags() << "\n";
+
+	jobInfoFile << "\n";
+
+	jobInfoFile << "Link flags:    " << buildInfoGetLinkFlags() << "\n";
+	jobInfoFile << "Libraries:     " << buildInfoGetLibraries() << "\n";
 
 	jobInfoFile << "\n";
 
@@ -299,7 +325,7 @@ Nyx::writePlotFile (const std::string& dir,
 	  jobInfoFile << "Nyx    git hash: " << githash1 << "\n";
 	}
 	if (strlen(githash2) > 0) {
-	  jobInfoFile << "BoxLib git hash: " << githash2 << "\n";
+	  jobInfoFile << "AMReX git hash:  " << githash2 << "\n";
 	}
 
 	jobInfoFile << "\n\n";
@@ -449,8 +475,7 @@ Nyx::writePlotFile (const std::string& dir,
     VisMF::Write(plotMF, TheFullPath, how, true);
 
     //
-    // Write the particles and `comoving_a` in a plotfile directory. Particles
-    // are only written if "particles.write_in_plotfile = 1" in inputs file.
+    // Write the particles and `comoving_a` in a plotfile directory. 
     //
     particle_plot_file(dir);
 
@@ -464,8 +489,17 @@ Nyx::particle_plot_file (const std::string& dir)
 {
     if (level == 0)
     {
-        if (Nyx::theDMPC() && write_particles_in_plotfile)
-            Nyx::theDMPC()->WritePlotFile(dir, plt_particle_file);
+        if (Nyx::theDMPC())
+          {
+            Nyx::theDMPC()->WriteNyxPlotFile(dir, dm_plt_particle_file);
+          }
+
+#ifdef AGN
+        if (Nyx::theAPC())
+          {
+            Nyx::theAPC()->WriteNyxPlotFile(dir, agn_plt_particle_file);
+          }
+#endif
 
 #ifdef NO_HYDRO
         Real cur_time = state[PhiGrav_Type].curTime();
@@ -492,9 +526,9 @@ Nyx::particle_plot_file (const std::string& dir)
         }
 
         // Write particle_plotfile_format into its own file in the particle directory
-        if (Nyx::theDMPC() && write_particles_in_plotfile && ParallelDescriptor::IOProcessor())
+        if (Nyx::theDMPC() && ParallelDescriptor::IOProcessor())
         {
-            std::string FileName = dir + "/" + plt_particle_file + "/precision";
+            std::string FileName = dir + "/" + dm_plt_particle_file + "/precision";
             std::ofstream File;
             File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
             if (!File.good())
@@ -503,16 +537,39 @@ Nyx::particle_plot_file (const std::string& dir)
             File << particle_plotfile_format << '\n';
             File.close();
         }
+
+#ifdef AGN
+        // Write particle_plotfile_format into its own file in the particle directory
+        if (Nyx::theAPC() && ParallelDescriptor::IOProcessor())
+        {
+            std::string FileName = dir + "/" + agn_plt_particle_file + "/precision";
+            std::ofstream File;
+            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
+            if (!File.good())
+                amrex::FileOpenFailed(FileName);
+            File.precision(15);
+            File << particle_plotfile_format << '\n';
+            File.close();
+        }
+#endif
     }
 }
 
 void
 Nyx::particle_check_point (const std::string& dir)
 {
-    if (level == 0)
+  if (level == 0)
     {
-        if (Nyx::theDMPC())
-            Nyx::theDMPC()->Checkpoint(dir, chk_particle_file);
+      if (Nyx::theDMPC())
+        {
+          Nyx::theDMPC()->NyxCheckpoint(dir, dm_chk_particle_file);
+        }
+#ifdef AGN
+      if (Nyx::theAPC())
+        {
+          Nyx::theAPC()->NyxCheckpoint(dir, agn_chk_particle_file);
+        }
+#endif
 
 #ifdef NO_HYDRO
         Real cur_time = state[PhiGrav_Type].curTime();
@@ -666,11 +723,14 @@ Nyx::checkPoint (const std::string& dir,
 {
   AmrLevel::checkPoint(dir, os, how, dump_old);
   particle_check_point(dir);
+#ifdef FORCING
+  forcing_check_point(dir);
+#endif
 
   if (level == 0 && ParallelDescriptor::IOProcessor())
     {
       {
-	// store ellapsed CPU time
+	// store elapsed CPU time
 	std::ofstream CPUFile;
 	std::string FullPathCPUFile = dir;
 	FullPathCPUFile += "/CPUtime";
@@ -681,3 +741,31 @@ Nyx::checkPoint (const std::string& dir,
       }
     }
 }
+
+#ifdef FORCING
+void
+Nyx::forcing_check_point (const std::string& dir)
+{
+    if (level == 0)
+    {
+        if (ParallelDescriptor::IOProcessor())
+        {
+            std::string FileName = dir + "/forcing";
+            std::ofstream File;
+            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
+            if (!File.good())
+                amrex::FileOpenFailed(FileName);
+            File.setf(std::ios::scientific, std::ios::floatfield);
+            File.precision(16);
+            forcing->write_Spectrum(File);
+            File.close();
+
+            FileName = dir + "/mt";
+            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
+            if (!File.good())
+                amrex::FileOpenFailed(FileName);
+            mt_write(File);
+        }
+    }
+}
+#endif

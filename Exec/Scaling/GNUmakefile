@@ -1,5 +1,5 @@
 # AMREX_HOME defines the directory in which we will find all the AMReX code
-AMREX_HOME ?= /project/projectdirs/nyx/src/amrex
+AMREX_HOME ?= /global/homes/a/almgren/GitCode/amrex
 
 HPGMG_DIR ?= ../../../hpgmg/finite-volume
 
@@ -7,7 +7,7 @@ HPGMG_DIR ?= ../../../hpgmg/finite-volume
 TOP = ../..
 
 # compilation options
-COMP    = gcc
+COMP    = intel
 USE_MPI = TRUE
 USE_OMP = TRUE
 

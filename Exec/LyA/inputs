@@ -51,7 +51,7 @@ geometry.prob_lo     =  0     0     0
 geometry.prob_hi     =  8.0  8.0  8.0
 
 amr.n_cell           = 32 32 32
-amr.max_grid_size    = 32
+amr.max_grid_size    = 16
 
 
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
@@ -68,6 +68,7 @@ nyx.do_grav  = 1
 
 # PARTICLES
 nyx.do_dm_particles = 1
+nyx.do_tiling = 1
 
 # >>>>>>>>>>>>>  PARTICLE INIT OPTIONS <<<<<<<<<<<<<<<<
 #  "AsciiFile"        "Random"	    "Cosmological"

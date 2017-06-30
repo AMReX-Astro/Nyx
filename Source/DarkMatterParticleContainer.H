@@ -12,7 +12,15 @@ class DarkMatterParticleContainer
 public:
     DarkMatterParticleContainer (amrex::Amr* amr)
         : NyxParticleContainer<1+BL_SPACEDIM>(amr)
-    { }
+    {
+      real_comp_names.clear();
+      real_comp_names.push_back("mass");
+      real_comp_names.push_back("xvel");
+      real_comp_names.push_back("yvel");
+      real_comp_names.push_back("zvel");
+    }
+
+    using MyParIter = amrex::ParIter<1+BL_SPACEDIM>;
 
     virtual ~DarkMatterParticleContainer () {}
 
@@ -25,6 +33,11 @@ public:
                                  amrex::BoxArray &baWhereNot, int lev, int nlevs);
 
     void AssignDensityAndVels (amrex::Array<std::unique_ptr<amrex::MultiFab> >& mf, int lev_min = 0) const;
+
+    virtual void moveKickDrift (amrex::MultiFab& acceleration, int level, amrex::Real timestep,
+                                amrex::Real a_old = 1.0, amrex::Real a_half = 1.0, int where_width = 0);
+    virtual void moveKick      (amrex::MultiFab& acceleration, int level, amrex::Real timestep,
+                                amrex::Real a_new = 1.0, amrex::Real a_half = 1.0);
 
 };
 

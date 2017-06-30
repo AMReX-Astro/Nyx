@@ -11,7 +11,7 @@ Nyx::get_old_source (Real      old_time,
                      Real      dt,
                      MultiFab& ext_src)
 {
-    const Real strt     = ParallelDescriptor::second();
+    BL_PROFILE("Nyx::get_old_source()");
     const Real* dx      = geom.CellSize();
     const Real* prob_lo = geom.ProbLo();
     const Real a        = get_comoving_a(old_time);
@@ -34,7 +34,8 @@ Nyx::get_old_source (Real      old_time,
 #endif
     for (MFIter mfi(S_old,true); mfi.isValid(); ++mfi)
     {
-        const Box& bx = mfi.tilebox();
+        // We explicitly want to fill the ghost regions of the ext_src array
+        const Box& bx = mfi.growntilebox(ext_src.nGrow());
         fort_ext_src
             (bx.loVect(), bx.hiVect(), 
              BL_TO_FORTRAN(Sborder[mfi]), BL_TO_FORTRAN(Sborder[mfi]),
@@ -52,18 +53,6 @@ Nyx::get_old_source (Real      old_time,
     }
 
     ext_src.EnforcePeriodicity(0, NUM_STATE, geom.periodicity());
-
-    if (show_timings)
-    {
-        const int IOProc = ParallelDescriptor::IOProcessorNumber();
-        Real      end    = ParallelDescriptor::second() - strt;
-
-        ParallelDescriptor::ReduceRealMax(end,IOProc);
-
-        if (ParallelDescriptor::IOProcessor())
-            std::cout << "Nyx::get_old_source() time = " << end << '\n';
-    }
-
 }
 
 void
@@ -72,7 +61,7 @@ Nyx::get_new_source (Real      old_time,
                      Real      dt,
                      MultiFab& ext_src)
 {
-    const Real strt     = ParallelDescriptor::second();
+    BL_PROFILE("Nyx::get_new_source()");
     const Real* dx      = geom.CellSize();
     const Real* prob_lo = geom.ProbLo();
     const Real a        = get_comoving_a(new_time);
@@ -103,6 +92,7 @@ Nyx::get_new_source (Real      old_time,
 #endif
     for (MFIter mfi(S_old,true); mfi.isValid(); ++mfi)
     {
+        // We explicitly only want to fill the valid region
         const Box& bx = mfi.tilebox();
         fort_ext_src
             (bx.loVect(), bx.hiVect(), 
@@ -113,18 +103,6 @@ Nyx::get_new_source (Real      old_time,
     }
 
     ext_src.EnforcePeriodicity(0, NUM_STATE, geom.periodicity());
-
-    if (show_timings)
-    {
-        const int IOProc = ParallelDescriptor::IOProcessorNumber();
-        Real      end    = ParallelDescriptor::second() - strt;
-
-        ParallelDescriptor::ReduceRealMax(end,IOProc);
-
-        if (ParallelDescriptor::IOProcessor())
-            std::cout << "Nyx::get_new_source() time = " << end << '\n';
-    }
-
 }
 
 void
@@ -133,7 +111,7 @@ Nyx::time_center_source_terms (MultiFab& S_new,
                                MultiFab& ext_src_new,
                                Real      dt)
 {
-    const Real strt     = ParallelDescriptor::second();
+    BL_PROFILE("Nyx::time_center_source_terms()");
 
     // Subtract off half of the old source term, and add half of the new.
     const Real prev_time = state[State_Type].prevTime();
@@ -166,17 +144,6 @@ Nyx::time_center_source_terms (MultiFab& S_new,
         }
     }
 #endif
-
-    if (show_timings)
-    {
-        const int IOProc = ParallelDescriptor::IOProcessorNumber();
-        Real      end    = ParallelDescriptor::second() - strt;
-
-        ParallelDescriptor::ReduceRealMax(end,IOProc);
-
-        if (ParallelDescriptor::IOProcessor())
-            std::cout << "Nyx::time_center_sources() time = " << end << '\n';
-    }
 }
 #endif
 #endif

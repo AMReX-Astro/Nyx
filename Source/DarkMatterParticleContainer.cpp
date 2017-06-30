@@ -1,10 +1,149 @@
 #include "DarkMatterParticleContainer.H"
+#include "dm_F.H"
 
 using namespace amrex;
 
-/*
-  Particle init
-*/
+void
+DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
+		                            int                    lev,
+                    			    amrex::Real            dt,
+		                	    amrex::Real            a_old,
+					    amrex::Real            a_half,
+					    int                    where_width)
+{
+    BL_PROFILE("DarkMatterParticleContainer::moveKickDrift()");
+
+    //If there are no particles at this level
+    if (lev >= this->GetParticles().size())
+        return;
+
+    const Real* dx = Geom(lev).CellSize();
+
+    amrex::MultiFab* ac_ptr;
+    if (this->OnSameGrids(lev, acceleration))
+    {
+        ac_ptr = &acceleration;
+    }
+    else
+    {
+        ac_ptr = new amrex::MultiFab(this->m_gdb->ParticleBoxArray(lev),
+			             this->m_gdb->ParticleDistributionMap(lev),
+				     acceleration.nComp(),acceleration.nGrow());
+        for (amrex::MFIter mfi(*ac_ptr); mfi.isValid(); ++mfi)
+            ac_ptr->setVal(0.);
+        ac_ptr->copy(acceleration,0,0,acceleration.nComp());
+        ac_ptr->FillBoundary();
+    }
+
+    const Real* plo = Geom(lev).ProbLo();
+
+    int do_move = 1;
+
+    for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
+
+        AoS& particles = pti.GetArrayOfStructs();
+        int Np = particles.size();
+
+        if (Np > 0)
+        {
+           const Box& ac_box = (*ac_ptr)[pti].box();
+
+           update_dm_particles(&Np, particles.data(),
+                               (*ac_ptr)[pti].dataPtr(),
+                               ac_box.loVect(), ac_box.hiVect(),
+                               plo,dx,dt,a_old,a_half,&do_move);
+        }
+    }
+
+    if (ac_ptr != &acceleration) delete ac_ptr;
+    
+    ParticleLevel&    pmap          = this->GetParticles(lev);
+    if (lev > 0 && sub_cycle)
+    {
+        amrex::ParticleLocData pld; 
+        for (auto& kv : pmap) {
+            AoS&  pbox       = kv.second.GetArrayOfStructs();
+            const int   n    = pbox.size();
+
+#ifdef _OPENMP
+#pragma omp parallel for private(pld)
+#endif
+            for (int i = 0; i < n; i++)
+            {
+                ParticleType& p = pbox[i];
+                if (p.id() <= 0) continue;
+
+                // Move the particle to the proper ghost cell. 
+                //      and remove any *ghost* particles that have gone too far
+                // Note that this should only negate ghost particles, not real particles.
+                if (!this->Where(p, pld, lev, lev, where_width))
+                {
+                    // Assert that the particle being removed is a ghost particle;
+                    // the ghost particle is no longer in relevant ghost cells for this grid.
+                    if (p.id() == amrex::GhostParticleID)
+                    {
+                        p.id() = -1;
+                    }
+                    else
+                    {
+                        std::cout << "Oops -- removing particle " << p.id() << std::endl;
+                        amrex::Error("Trying to get rid of a non-ghost particle in moveKickDrift");
+                    }
+                }
+            }
+        }
+    }
+}
+
+void
+DarkMatterParticleContainer::moveKick (MultiFab&       acceleration,
+                                       int             lev,
+                                       Real            dt,
+                                       Real            a_new,
+                                       Real            a_half) 
+{
+    BL_PROFILE("DarkMatterParticleContainer::moveKick()");
+
+    const Real* dx = Geom(lev).CellSize();
+
+    MultiFab* ac_ptr;
+    if (OnSameGrids(lev,acceleration))
+    {
+        ac_ptr = &acceleration;
+    }
+    else 
+    {
+        ac_ptr = new MultiFab(ParticleBoxArray(lev),
+				  ParticleDistributionMap(lev),
+				  acceleration.nComp(),acceleration.nGrow());
+        for (MFIter mfi(*ac_ptr); mfi.isValid(); ++mfi)
+            ac_ptr->setVal(0.);
+        ac_ptr->copy(acceleration,0,0,acceleration.nComp());
+        ac_ptr->FillBoundary();
+    }
+
+    const Real* plo = Geom(lev).ProbLo();
+
+    int do_move = 0;
+
+    for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
+
+        AoS& particles = pti.GetArrayOfStructs();
+        int Np = particles.size();
+
+        if (Np > 0)
+        {
+           const Box& ac_box = (*ac_ptr)[pti].box();
+
+           update_dm_particles(&Np, particles.data(),
+                               (*ac_ptr)[pti].dataPtr(),
+                               ac_box.loVect(), ac_box.hiVect(),
+                               plo,dx,dt,a_half,a_new,&do_move);
+        }
+    }
+    
+    if (ac_ptr != &acceleration) delete ac_ptr;
+}
 
 void
 DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
@@ -12,7 +151,7 @@ DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
                         const Real particleMass, int disp_idx, int vel_idx, 
                         BoxArray &baWhereNot, int lev, int nlevs)
 {
-    BL_PROFILE("ParticleContainer<N>::InitCosmo1ppcMultiLevel()");
+    BL_PROFILE("DarkMatterParticleContainer::InitCosmo1ppcMultiLevel()");
     const int       MyProc   = ParallelDescriptor::MyProc();
     const Geometry& geom     = m_gdb->Geom(lev);
     const Real*     dx       = geom.CellSize();
@@ -101,7 +240,7 @@ DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
       		        this->PeriodicShift(p);
 
                         if (!this->Where(p, pld))
-                            amrex::Abort("ParticleContainer<N>::InitCosmo1ppcMultiLevel():invalid particle");
+                            amrex::Abort("DarkMatterParticleContainer::InitCosmo1ppcMultiLevel():invalid particle");
                     }
 
 		    BL_ASSERT(pld.m_lev >= 0 && pld.m_lev <= m_gdb->finestLevel());
@@ -127,7 +266,7 @@ DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
                               this->PeriodicShift(newp[i]);
                               
                               if (!this->Where(newp[i], new_pld))
-                                  amrex::Abort("ParticleContainer<N>::InitCosmo1ppcMultiLevel():invalid particle");
+                                  amrex::Abort("DarkMatterParticleContainer::InitCosmo1ppcMultiLevel():invalid particle");
                           }
                           particles[new_pld.m_lev][std::make_pair(new_pld.m_grid, 
                                                                   new_pld.m_tile)].push_back(newp[i]);
@@ -150,7 +289,7 @@ DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
 void
 DarkMatterParticleContainer::InitCosmo1ppc(MultiFab& mf, const Real vel_fac[], const Real particleMass)
 {
-    BL_PROFILE("ParticleContainer<N>::InitCosmo1ppc()");
+    BL_PROFILE("DarkMatterParticleContainer::InitCosmo1ppc()");
     const int       MyProc   = ParallelDescriptor::MyProc();
     const Geometry& geom     = m_gdb->Geom(0);
     const Real*     dx       = geom.CellSize();
@@ -217,7 +356,7 @@ DarkMatterParticleContainer::InitCosmo1ppc(MultiFab& mf, const Real vel_fac[], c
       		        this->PeriodicShift(p);
                         
                         if (!this->Where(p, pld))
-                            amrex::Abort("ParticleContainer<N>::InitCosmo1ppc(): invalid particle");
+                            amrex::Abort("DarkMatterParticleContainer::InitCosmo1ppc(): invalid particle");
 		    }
 
 	            BL_ASSERT(pld.m_lev >= 0 && pld.m_lev <= this->finestLevel());
@@ -243,7 +382,7 @@ void
 DarkMatterParticleContainer::InitCosmo(
             MultiFab& mf, const Real vel_fac[], const Array<int> n_part, const Real particleMass, const Real shift[])
 {
-    BL_PROFILE("ParticleContainer<N>::InitCosmo()");
+    BL_PROFILE("DarkMatterParticleContainer::InitCosmo()");
     const int       MyProc   = ParallelDescriptor::MyProc();
     const int       IOProc   = ParallelDescriptor::IOProcessorNumber();
     const Real      strttime = ParallelDescriptor::second();
@@ -288,7 +427,7 @@ DarkMatterParticleContainer::InitCosmo(
     // We will need one ghost cell, so check wether we have one.
     //
     if (mf.nGrow() < 1)
-        amrex::Abort("ParticleContainer<N>::InitCosmo: mf needs at least one correctly filled ghost zone!");
+        amrex::Abort("DarkMatterParticleContainer::InitCosmo: mf needs at least one correctly filled ghost zone!");
 
     if ( !(n_part[0] == n_part[1] && n_part[1] == n_part[2]) )
     {
@@ -353,7 +492,7 @@ DarkMatterParticleContainer::InitCosmo(
       		            this->PeriodicShift(p);
 
                             if (!this->Where(p, pld))
-                                amrex::Abort("ParticleContainer<N>::InitCosmo(): invalid particle");
+                                amrex::Abort("DarkMatterParticleContainer::InitCosmo(): invalid particle");
 		        }
 
 	                BL_ASSERT(pld.m_lev >= 0 && pld.m_lev <= m_gdb->finestLevel());
@@ -427,7 +566,7 @@ DarkMatterParticleContainer::InitCosmo(
 	        this->PeriodicShift(p);
 
                 if (!this->Where(p, pld))
-                    amrex::Abort("ParticleContainer<N>::InitCosmo(): invalid particle");
+                    amrex::Abort("DarkMatterParticleContainer::InitCosmo(): invalid particle");
 	    }
 
             this->Reset(p, true);
@@ -456,7 +595,6 @@ DarkMatterParticleContainer::InitCosmo(
     }
 }
 
-
 /*
   Particle deposition
 */
@@ -464,5 +602,5 @@ DarkMatterParticleContainer::InitCosmo(
 void
 DarkMatterParticleContainer::AssignDensityAndVels (Array<std::unique_ptr<MultiFab> >& mf, int lev_min) const
 {
-    AssignDensity(mf, lev_min, BL_SPACEDIM+1);
+     AssignDensity(mf, lev_min, BL_SPACEDIM+1);
 }

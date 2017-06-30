@@ -15,7 +15,48 @@ Nyx::advance_particles_only (Real time,
                              Real dt,
                              int  iteration,
                              int  ncycle)
+
+  // Arguments:
+  //    time      : the current simulation time
+  //    dt        : the timestep to advance (e.g., go from time to
+  //                time + dt)
+  //    iteration : where we are in the current AMR subcycle.  Each
+  //                level will take a number of steps to reach the
+  //                final time of the coarser level below it.  This
+  //                counter starts at 1
+  //    ncycle    : the number of subcycles at this level
+
 {
+     BL_PROFILE("Nyx::advance_particles_only()");
+
+    // A particle in cell (i) can affect cell values in (i-1) to (i+1)
+    int stencil_deposition_width = 1;
+ 
+    // A particle in cell (i) may need information from cell values in (i-1) to (i+1)
+    //   to update its position (typically via interpolation of the acceleration from the grid)
+    int stencil_interpolation_width = 1;
+ 
+    // A particle that starts in cell (i + ncycle) can reach
+    //   cell (i) in ncycle number of steps .. after "iteration" steps
+    //   the particle has to be within (i + ncycle+1-iteration) to reach cell (i)
+    //   in the remaining (ncycle-iteration) steps
+ 
+    // *** ghost_width ***  is used
+    //   *) to set how many cells are used to hold ghost particles i.e copies of particles
+    //      that live on (level-1) can affect the grid over all of the ncycle steps.
+    //      We define ghost cells at the coarser level to cover all iterations so
+    //      we can't reduce this number as iteration increases.
+ 
+    int ghost_width = ncycle + stencil_deposition_width;
+ 
+    // *** grav_n_grow *** is used
+    //   *) to determine how many ghost cells we need to fill in the MultiFab from
+    //      which the particle interpolates its acceleration
+    //   *) to set how many cells the Where call in moveKickDrift tests = (grav.nGrow()-2).
+ 
+    int grav_n_grow = ghost_width + (1-iteration) +
+                      stencil_interpolation_width ;
+
     // Sanity checks
     if (do_hydro)
         amrex::Abort("In `advance_particles_only` but `do_hydro` is true");
@@ -64,12 +105,11 @@ Nyx::advance_particles_only (Real time,
         //
         for(int lev = level; lev <= finest_level_to_advance && lev < finest_level; lev++)
         {
-           get_level(lev).setup_ghost_particles();
+           get_level(lev).setup_ghost_particles(ghost_width);
         }
     }
 
     Real dt_lev;
-    const Real strt = ParallelDescriptor::second();
 
     //
     // Move current data to previous, clear current.
@@ -119,18 +159,6 @@ Nyx::advance_particles_only (Real time,
         for (int lev = level; lev <= finest_level; lev++)
             get_level(lev).gravity->swap_time_levels(lev);
 
-        if (show_timings)
-        {
-            const int IOProc = ParallelDescriptor::IOProcessorNumber();
-            Real end = ParallelDescriptor::second() - strt;
-            ParallelDescriptor::ReduceRealMax(end,IOProc);
-            if (ParallelDescriptor::IOProcessor())
-               std::cout << "Time before solve for old phi " << end << '\n';
-        }
-
-        if (verbose && ParallelDescriptor::IOProcessor())
-            std::cout << "\n... old-time level solve at level " << level << '\n';
-            
         //
         // Solve for phi
         // If a single-level calculation we can still use the previous phi as a guess.
@@ -187,15 +215,6 @@ Nyx::advance_particles_only (Real time,
                        0, 0, 1, 0);
     }
 
-    if (show_timings)
-    {
-        const int IOProc = ParallelDescriptor::IOProcessorNumber();
-        Real end = ParallelDescriptor::second() - strt;
-        ParallelDescriptor::ReduceRealMax(end,IOProc);
-        if (ParallelDescriptor::IOProcessor())
-           std::cout << "Time before solve for new phi " << end << '\n';
-    }
-
     // Solve for new Gravity
     int use_previous_phi_as_guess = 1;
     if (finest_level_to_advance > level)
@@ -209,15 +228,6 @@ Nyx::advance_particles_only (Real time,
         gravity->solve_for_new_phi(level,get_new_data(PhiGrav_Type),
                                gravity->get_grad_phi_curr(level),
                                fill_interior, grav_n_grow);
-    }
-
-    if (show_timings)
-    {
-        const int IOProc = ParallelDescriptor::IOProcessorNumber();
-        Real end = ParallelDescriptor::second() - strt;
-        ParallelDescriptor::ReduceRealMax(end,IOProc);
-        if (ParallelDescriptor::IOProcessor())
-           std::cout << "Time  after solve for new phi " << end << '\n';
     }
 
     if (Nyx::theActiveParticles().size() > 0)
@@ -250,24 +260,6 @@ Nyx::advance_particles_only (Real time,
                         Nyx::theGhostParticles()[i]->moveKick(grav_vec_new, lev, dt, a_new, a_half);
             }
         }
-    }
-
-    if (show_timings)
-    {
-        const int IOProc = ParallelDescriptor::IOProcessorNumber();
-        Real end = ParallelDescriptor::second() - strt;
-        ParallelDescriptor::ReduceRealMax(end,IOProc);
-        if (ParallelDescriptor::IOProcessor())
-           std::cout << "Time  after moveKick " << end << '\n';
-    }
-
-    if (show_timings)
-    {
-        const int IOProc = ParallelDescriptor::IOProcessorNumber();
-        Real end = ParallelDescriptor::second() - strt;
-        ParallelDescriptor::ReduceRealMax(end,IOProc);
-        if (ParallelDescriptor::IOProcessor())
-           std::cout << "Time  at end of routine " << end << '\n';
     }
 
     // Redistribution happens in post_timestep

@@ -1,14 +1,14 @@
 # AMREX_HOME defines the directory in which we will find all the BoxLib code
-AMREX_HOME ?= /project/projectdirs/nyx/src/amrex
+AMREX_HOME ?= ../../../amrex
 #AMREX_HOME = /home/vince/Development/BLMaster/amrex
 
-HPGMG_DIR ?= /global/homes/f/friesen/hpgmg/finite-volume
+HPGMG_DIR ?= ../../../hpgmg/finite-volume
 
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ../..
 
 # compilation options
-COMP    = gcc
+COMP    = gnu
 USE_MPI = TRUE
 USE_OMP = FALSE
 
@@ -47,6 +47,9 @@ USE_GRAV = TRUE
 USE_HEATCOOL = TRUE
 
 USE_AGN = TRUE
+
+# units
+#USE_CGS = TRUE
 
 Bpack := ./Make.package
 Blocs := .

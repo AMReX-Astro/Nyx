@@ -45,6 +45,8 @@ DIM      = 3
 USE_GRAV = TRUE
 USE_HEATCOOL = TRUE
 
+USE_CVODE = FALSE
+
 Bpack := ./Make.package
 Blocs := .
 

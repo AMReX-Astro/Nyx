@@ -797,8 +797,6 @@
       HLy = Ly
       HLz = Lz
       
-      !$OMP parallel do private(k,j,i,z,y,x,f1,kz,ky,kx) &
-      !$OMP private(kzd,kyd,kxd,freqz,freqy,freqx,kappa,xt)
       do k = lo(3),hi(3)
          z = (dble(k) + HALF) * delta(3)
          
@@ -894,8 +892,6 @@
       HLy = Ly
       HLz = Lz
       
-      !$OMP parallel do private(k,j,i,z,y,x,f2,kz,ky,kx) &
-      !$OMP private(kzd,kyd,kxd,freqz,freqy,freqx,kappa,xt)
       do k = lo(3),hi(3)
          z = (dble(k) + HALF) * delta(3)
          
@@ -992,8 +988,6 @@
       HLy = Ly
       HLz = Lz
 
-      !$OMP parallel do private(k,j,i,z,y,x,f3,kz,ky,kx) &
-      !$OMP private(kzd,kyd,kxd,freqz,freqy,freqx,kappa,xt)
       do k = lo(3),hi(3)
          z = (dble(k) + HALF) * delta(3)
          

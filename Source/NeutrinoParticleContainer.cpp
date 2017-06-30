@@ -1182,7 +1182,7 @@ NeutrinoParticleContainer::AssignRelativisticDensitySingleLevel (MultiFab& mf_to
 
         if (ParallelDescriptor::IOProcessor())
         {
-            std::cout << "NeutrinoParticleContainer<N>::AssignRelativisticDensitySingleLevel time: " << stoptime << '\n';
+            std::cout << "NeutrinoParticleContainer::AssignRelativisticDensitySingleLevel time: " << stoptime << '\n';
         }
     }
 }
