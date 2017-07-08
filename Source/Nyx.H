@@ -678,6 +678,18 @@ protected:
     static class StochasticForcing *forcing;
 #endif
 
+#ifdef AGN
+  //
+  // Threshold for halo to create SMBH
+  //
+  static amrex::Real mass_halo_min;
+
+  //
+  // Seed mass of SMBH
+  //
+  static amrex::Real mass_seed;
+#endif
+
     // Average value of gas, dark matter, neutrino and total density, computed every coarse timestep
     static amrex::Real average_gas_density;
     static amrex::Real average_dm_density;

@@ -213,13 +213,13 @@ Nyx::halo_find (Real dt)
            halo_pos  = reeber_halos_pos[i];
 #endif
 
-           if (halo_mass > 1.e10)
+           if (halo_mass > mass_halo_min)
            {
                 amrex::Real x = (halo_pos[0]+0.5) * dx[0];
                 amrex::Real y = (halo_pos[1]+0.5) * dx[1];
                 amrex::Real z = (halo_pos[2]+0.5) * dx[2];
    
-                amrex::Real mass = 1.e5;
+                amrex::Real mass = mass_seed;
 
                 int lev = 0;
                 int grid = 0;
