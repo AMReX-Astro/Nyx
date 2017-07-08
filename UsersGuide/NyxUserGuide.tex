@@ -18,6 +18,12 @@
 % for the red MarginPars
 \usepackage{color}
 
+% for multirow in tabular environment
+\usepackage{multirow}
+
+% for tabular environment: toprule, midrule, bottomrule
+\usepackage{booktabs}
+
 % make the MarginPars look pretty
 \setlength{\marginparwidth}{0.75in}
 \newcommand{\MarginPar}[1]{\marginpar{\vskip-\baselineskip\raggedright\tiny\sffamily
@@ -186,6 +192,9 @@
 
 \chapter{Dark Matter Particles}
 \input Particles/Particles.tex
+
+\chapter{Active Galactic Nuclei}
+\input AGN/AGN.tex
 
 \chapter{Visualization}
 \input Visualization/NyxVisualization.tex
