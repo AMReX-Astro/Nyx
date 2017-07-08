@@ -1,9 +1,10 @@
-The Nyx executable reads run-time information from an "inputs" file (which you put on the command line) 
-and from a "probin" file, the name of which is usually defined in the inputs file, but which defaults to "probin".  
-To set the "probin" file name in the inputs file:\\
+The \nyx\ executable reads run-time information from an ``inputs'' file (which you put on the command line) 
+and from a ``probin'' file, the name of which is usually defined in the
+inputs file, but which defaults to ``{\tt probin}''.
+To set the ``probin'' file name in the inputs file:\\
 
-{\bf amr.probin\_file} = my\_special\_probin\\ \\
-for example, has the Fortran code read a file called ``my\_special\_probin''
+{\bf amr.probin\_file} = {\em my\_special\_probin} \\ \\
+for example, has the Fortran code read a file called {\em my\_special\_probin}.
 
 \section{Problem Geometry}
 
@@ -142,8 +143,8 @@ Note that you must have at least {\bf amr.max\_level} values of {\bf amr.ref\_ra
 (Additional values may appear in that line and they will be ignored).
 
 \item {\bf amr.regrid\_int} = 2 2 \\
-tells the code to regrid every 2 steps.  Thus in this example, new level 1 grids will be created every 2 level 0 time steps, and
-new level 2 grids will be created every 2 level 1 time steps.
+tells the code to regrid every 2 steps.  Thus in this example, new level-1 grids will be created every 2 level-0 time steps, and
+new level-2 grids will be created every 2 level-1 time steps.
 
 \end{itemize}
 
@@ -157,7 +158,7 @@ new level 2 grids will be created every 2 level 1 time steps.
 \begin{tabular}{|l|l|l|l|} \hline
 Parameter & Definition & Acceptable Values &Default\\
 \hline
-{\bf nyx.allow\_untagging} & are cells allowed to be "untagged" & 0 or 1 & 0 \\
+{\bf nyx.allow\_untagging} & are cells allowed to be ``untagged'' & 0 or 1 & 0 \\
 \hline
 \end{tabular}
 \label{Table:Tagging}
@@ -169,20 +170,21 @@ Parameter & Definition & Acceptable Values &Default\\
 
 \begin{itemize}
 \item Typically cells at a given level can be tagged as needing refinement by any of a number
-of criteria, but cannot be "untagged", i.e. once tagged no other criteria can untag them.   If
-we set {\bf nyx.allow\_untagging} = 1 then the user is allowed to "untag" cells in the
-Fortran tagging routines
+of criteria, but cannot be ``untagged''. That is, once tagged, no other criteria can untag them.   If
+we set {\bf nyx.allow\_untagging} = 1 then the user is allowed to ``untag'' cells in the
+Fortran tagging routines.
 \end{itemize}
 
 \section{Regridding}
 \subsection{Overview}
 
-The details of the regridding strategy are described in a later section; here we 
+The details of the regridding strategy are described in Section
+\ref{subsec:grid-generation}, but first we 
 cover how the input parameters can control the gridding.
 
 As described later, the user defines Fortran subroutines which tag individual
 cells at a given level if they need refinement.  This list of tagged cells is
-sent to a grid generation routine, which uses the Berger-Rigoutsis algorithm
+sent to a grid generation routine, which uses the Berger--Rigoutsos algorithm
 to create rectangular grids that contain the tagged cells.   
 
 \subsection{List of Parameters}
@@ -214,7 +216,8 @@ can be read in as a single value which is assigned to every level,
 or as multiple values, one for each level
 \item {\bf amr.max\_grid\_size} at every level must be even 
 \item {\bf amr.blocking\_factor} at every level must be a power of 2
-\item the domain size must be a multiple of  {\bf amr.blocking\_factor} at level 0
+\item the domain size {\bf amr.n\_cell} 
+must be a multiple of  {\bf amr.blocking\_factor} at level 0
 \item {\bf amr.max\_grid\_size} must be a multiple of {\bf amr.blocking\_factor} at every level
 \end{itemize}
 
@@ -222,8 +225,8 @@ or as multiple values, one for each level
 
 \begin{itemize} 
 
-\item {\bf amr.regrid\_file} = fixed\_grids \\ 
-In this case the list of grids at each fine level are contained in the file, {\em fixed\_grids},
+\item {\bf amr.regrid\_file} = {\em fixed\_grids} \\ 
+In this case the list of grids at each fine level are contained in the file {\em fixed\_grids},
 which will be read during the gridding procedure.  These grids must not violate the
 {\bf amr.max\_grid\_size} criterion.   The rest of the gridding procedure described below
 will not occur if {\bf amr.regrid\_file} is set.
@@ -246,7 +249,7 @@ The dimensions of all the final grids will be multiples of 32 at all levels.
 
 \item {\bf amr.blocking\_factor} = 32 16 8\\
 The dimensions of all the final grids will be multiples of 32
-at level 0, multiples of 16 at level 1, and multiples of 8 at level 2..  
+at level 0, multiples of 16 at level 1, and multiples of 8 at level 2.
 
 Having grids that are large enough to coarsen multiple levels in a V-cycle is essential
 for good multigrid performance in simulations that use self-gravity.
@@ -254,24 +257,25 @@ for good multigrid performance in simulations that use self-gravity.
 \end{itemize}
 
 \subsection{How Grids are Created}
+\label{subsec:grid-generation}
 
 \noindent The gridding algorithm proceeds in this order:
 
 \begin{enumerate}
 \item If at level 0, the domain is initially defined by {\bf n\_cell}
 as specified in the inputs file.  If at level greater than 0,
-grids are created using the Berger-Rigoutsis clustering algorithm applied to the
-taggd cells, modified to ensure that
+grids are created using the Berger--Rigoutsis clustering algorithm applied to the
+tagged cells, modified to ensure that the lengths of
 all new fine grids are divisible by {\bf blocking\_factor}.
 
-\item Next, the grid list is chopped up if any grids are larger than {\bf max\_grid\_size}.
+\item Next, the grid list is chopped up if any grids have length longer than {\bf max\_grid\_size}.
 Note that because {\bf max\_grid\_size} is a multiple of {\bf blocking\_factor}
 (as long as {\bf max\_grid\_size} is greater than {\bf blocking\_factor}),
 the {\bf blocking\_factor} criterion is still satisfied.
 
 \item Next, if {\bf refine\_grid\_layout} = 1 and there are more processors than grids
 at this level, then the grids at this level are further divided in order to ensure that
-no processors has less than one grid (at each level).
+no processor has fewer than one grid (at each level).
 
 \begin{itemize}
 \item if {\bf max\_grid\_size} / 2 in the {\bf BL\_SPACEDIM} direction is a multiple of
@@ -294,7 +298,7 @@ there are still fewer grids than processes, repeat the steps above with  {\bf ma
 \begin{tabular}{|l|l|l|l|} \hline
 Parameter & Definition & Acceptable Values &Default \\
 \hline
-{\bf max\_step}  & maximum number of level 0 time steps & Integer $\geq 0$ & -1 \\
+{\bf max\_step}  & maximum number of level-0 time steps & Integer $\geq 0$ & -1 \\
 {\bf stop\_time} & final simulation time & Real $\geq 0$ & -1.0 \\
 {\bf nyx.final\_a}   & if {\bf nyx.use\_comoving = t} and positive value then this is final value of $a$  & Real $> 0$ & -1.0 \\
 {\bf nyx.final\_z}   & if {\bf nyx.use\_comoving = t} and positive value then this is final value of $z$  & Real $> 0$ & -1.0 \\
@@ -307,7 +311,7 @@ Parameter & Definition & Acceptable Values &Default \\
 
 \subsection{Notes}
 To control the number of time steps, you can limit by the maximum number of 
-level 0 time steps ({\bf max\_step}), or the final simulation time ({\bf stop\_time}), 
+level-0 time steps ({\bf max\_step}), or the final simulation time ({\bf stop\_time}), 
 or both. The code will stop at whichever criterion comes first. 
 Note that if the code reaches {\bf stop\_time} then the final time step will be shortened so as to end 
 exactly at {\bf stop\_time}, not pass it.
@@ -328,7 +332,7 @@ rather it stops once $a$ is greater than (or $z$ is less than) this value.)
 \item {\bf stop\_time}  = 1.0
 \end{itemize}
 will end the calculation when either the simulation time reaches 1.0 or 
-the number of level 0 steps taken equals 1000, whichever comes first.
+the number of level-0 steps taken equals 1000, whichever comes first.
 
 \section{Time Step}
 \begin{itemize}
@@ -336,7 +340,7 @@ the number of level 0 steps taken equals 1000, whichever comes first.
 the code chooses a time step based on the CFL number (dt = cfl * dx / max(u+c) ).
 
 \item If {\bf nyx.do\_hydro}$ = 0$ and we are running with dark matter particles, then we use a time step
-based on the velocity of the particles, i.e. we set $\Delta t$ so that the particle goes no further than
+based on the velocity of the particles, i.e., we set $\Delta t$ so that the particle goes no further than
 $f \Delta t$ in a coordinate direction where $0 \leq f \leq 1.$   The value for $f$ is currently hard-wired
 in Particles.H, but it will become an inputs parameter.
 \end{itemize}
@@ -353,8 +357,8 @@ Parameter & Definition & Acceptable Values &Default\\
 {\bf particles.cfl} & CFL number for particles& Real $> 0$ and $\leq 1$ & 0.5 \\ 
 {\bf nyx.init\_shrink} & factor by which to shrink the initial time step & Real $> 0$ and $\leq 1$ & 1.0 \\ 
 {\bf nyx.change\_max} & factor by which the time step can grow in subsequent steps & Real $\geq 1$ & 1.1 \\ 
-{\bf nyx.fixed\_dt} &  level 0 time step regardless of cfl or other settings & Real $> 0$ & unused if not set \\
-{\bf nyx.initial\_dt} &  initial level 0 time step regardless of other settings & Real $> 0$ & unused if not set \\
+{\bf nyx.fixed\_dt} &  level-0 time step regardless of cfl or other settings & Real $> 0$ & unused if not set \\
+{\bf nyx.initial\_dt} &  initial level-0 time step regardless of other settings & Real $> 0$ & unused if not set \\
 {\bf nyx.dt\_cutoff} & time step below which calculation will abort & Real $> 0$ & 0.0 \\
 \hline
 \end{tabular}
@@ -382,12 +386,12 @@ allows the time step to increase by no more than 10\% in this case.    Note that
 can shrink by any factor; this only controls the extent to which it can grow.
 
 \item {\bf nyx.fixed\_dt} = 1.e-4\\
-sets the level 0 time step to be 1.e-4 for the entire simulation, 
+sets the level-0 time step to be 1.e-4 for the entire simulation, 
 ignoring the other timestep controls.   Note that if {\bf nyx.init\_shrink} $\neq 1$
 then the first time step will in fact be {\bf nyx.init\_shrink} * {\bf nyx.fixed\_dt}.
 
 \item {\bf nyx.initial\_dt} = 1.e-4\\
-sets the {\it initial} level 0 time step to be 1.e-4 regardless of 
+sets the {\it initial} level-0 time step to be 1.e-4 regardless of 
 {\bf nyx.cfl} or {\bf nyx.fixed\_dt}.  The time step can
 grow in subsequent steps by a factor of {\bf nyx.change\_max} each step.
 
@@ -399,7 +403,7 @@ entire computer allocation because you don't realize the code is misbehaving.
 \end{itemize}
 
 \section{Subcycling}
-Nyx supports a number of different modes for subcycling in time.
+\nyx\ supports a number of different modes for subcycling in time.
 
 \begin{itemize}
 \item If {\bf amr.subcycling\_mode}$ = $Auto (default), then the code 
@@ -443,8 +447,8 @@ or {\tt ref\_ratio} & must be set in Manual mode \\
 Subcycle in manual mode with largest allowable timestep.
 
 \item {\bf amr.subcycling\_iterations} = 1 2 1 2\\
-Take 1 level 0 timestep at a time (required). Take 2 level 1 timesteps for each level 0 step, 1 timestep at level 2 
-for each level 1 step, and take 2 timesteps at level 3 for each level 
+Take 1 level-0 timestep at a time (required). Take 2 level-1 timesteps for each level-0 step, 1 timestep at level 2 
+for each level-1 step, and take 2 timesteps at level 3 for each level 
 2 step.
 
 \item {\bf amr.subcycling\_iterations} = 2\\
@@ -454,7 +458,7 @@ Alternative form. Subcycle twice at every level (except level 0).
 
 \section{Restart Capability}
 
-Nyx has a standard sort of checkpointing and restarting capability. 
+\nyx\ has a standard sort of checkpointing and restarting capability. 
 In the inputs file, the following options control the generation of checkpoint files (which are really
 directories):\\
 
@@ -466,8 +470,8 @@ directories):\\
 \begin{tabular}{|l|l|l|l|} \hline
 Parameter & Definition & Acceptable Values &Default\\
 \hline
-{\bf amr.check\_file} & prefix for restart files & Text & "chk" \\
-{\bf amr.check\_int}  & how often (by level 0 time steps) to write restart files & Integer $> 0$ & -1  \\
+{\bf amr.check\_file} & prefix for restart files & Text & ``{\em chk}'' \\
+{\bf amr.check\_int}  & how often (by level-0 time steps) to write restart files & Integer $> 0$ & -1  \\
 {\bf amr.check\_per}  & how often (by simulation time) to write restart files & Real $> 0$ & -1.0 \\
 {\bf amr.restart}  & name of the file (directory) from which to restart & Text & not used if not set \\
 {\bf amr.checkpoint\_files\_output} & should we write checkpoint files & 0 or 1 & 1 \\
@@ -505,12 +509,13 @@ so you can test scaling of the algorithm without I/O.
 
 \begin{itemize}
 
-\item {\bf amr.check\_file} = chk\_run
+\item {\bf amr.check\_file} = {\em chk\_run}
 \item {\bf amr.check\_int} = 10
 
-means that restart files (really directories) starting with the prefix "chk\_run" will be
-generated every 10 level 0 time steps.  The directory names will be {\it chk\_run00000}, 
-{\it chk\_run00010}, {\it chk\_run00020}, etc.
+means that restart files (really directories) starting with the prefix
+``{\em chk\_run}'' will be
+generated every 10 level-0 time steps.  The directory names will be {\em chk\_run00000}, 
+{\em chk\_run00010}, {\em chk\_run00020}, etc.
 
 \end{itemize}
 
@@ -518,25 +523,26 @@ If instead you specify
 
 \begin{itemize}
 
-\item {\bf amr.check\_file} = chk\_run
+\item {\bf amr.check\_file} = {\em chk\_run}
 \item {\bf amr.check\_per} = 0.5
 
-then restart files (really directories) starting with the prefix "chk\_run" will be
-generated every 0.1 units of simulation time.  The directory names will be {\it chk\_run00000}, 
-{\it chk\_run00043}, {\it chk\_run00061}, etc, where $t = 0.1$ after 43 level 0 steps, 
-$t = 0.2$ after 61 level 0 steps, etc.
+then restart files (really directories) starting with the prefix
+``{\em chk\_run}'' will be
+generated every 0.1 units of simulation time.  The directory names will be {\em chk\_run00000}, 
+{\em chk\_run00043}, {\em chk\_run00061}, etc, where $t = 0.1$ after 43 level-0 steps, 
+$t = 0.2$ after 61 level-0 steps, etc.
 
 \end{itemize}
 
-To restart from {\it chk\_run00061},for example, then set 
+To restart from {\em chk\_run00061},for example, then set 
 
 \begin{itemize}
-\item {\bf amr.restart} = chk\_run00061
+\item {\bf amr.restart} = {\em chk\_run00061}
 \end{itemize}
 
 \section{Controlling PlotFile Generation}
 \label{sec:PlotFiles}
-The main output from Nyx is in the form of plotfiles (which are really directories).
+The main output from \nyx\ is in the form of plotfiles (which are really directories).
 The following options in the inputs file control the generation of plotfiles 
 
 \subsection{List of Parameters}
@@ -547,8 +553,8 @@ The following options in the inputs file control the generation of plotfiles
 \begin{tabular}{|l|l|l|l|} \hline
 Parameter & Definition & Acceptable Values &Default\\
 \hline
-{\bf amr.plot\_file} & prefix for plotfiles & Text & "plt" \\
-{\bf amr.plot\_int}  & how often (by level 0 time steps) to write plot files & Integer $> 0$ & -1  \\
+{\bf amr.plot\_file} & prefix for plotfiles & Text & ``{\em plt}'' \\
+{\bf amr.plot\_int}  & how often (by level-0 time steps) to write plot files & Integer $> 0$ & -1  \\
 {\bf amr.plot\_per}  & how often (by simulation time) to write plot files & Real $> 0$ & -1.0 \\
 {\bf amr.plot\_vars}  & name of state variables to include in plotfiles 
  & ALL, NONE or list & ALL \\
@@ -568,7 +574,8 @@ Parameter & Definition & Acceptable Values &Default\\
 \end{scriptsize}
 \end{table*}
 
-All the options for {\bf amr.derive\_plot\_vars} are kept in \texttt{derive\_lst} in Nyx\_setup.cpp.  Feel free to look at it and see what's there. 
+All the options for {\bf amr.derive\_plot\_vars} are kept in
+\texttt{derive\_lst} in {\tt Nyx\_setup.cpp}.  Feel free to look at it and see what's there. 
 
 
 \subsection{Notes}
@@ -599,12 +606,13 @@ save space by writing them in single precision, set the fab.format flag to IEEE3
 
 \begin{itemize}
 
-\item {\bf amr.plot\_file} = plt\_run
+\item {\bf amr.plot\_file} = {\em plt\_run}
 \item {\bf amr.plot\_int} = 10
 
-means that plot files (really directories) starting with the prefix "plt\_run" will be
-generated every 10 level 0 time steps.  The directory names will be {\it plt\_run00000}, 
-{\it plt\_run00010}, {\it plt\_run00020}, etc.
+means that plot files (really directories) starting with the prefix
+``{\em plt\_run}'' will be
+generated every 10 level-0 time steps.  The directory names will be {\em plt\_run00000}, 
+{\em plt\_run00010}, {\em plt\_run00020}, etc.
 
 \end{itemize}
 
@@ -612,13 +620,13 @@ If instead you specify
 
 \begin{itemize}
 
-\item {\bf amr.plot\_file} = plt\_run
+\item {\bf amr.plot\_file} = {\em plt\_run}
 \item {\bf amr.plot\_per} = 0.5
 
-then restart files (really directories) starting with the prefix "plt\_run" will be
-generated every 0.1 units of simulation time.  The directory names will be {\it plt\_run00000}, 
-{\it plt\_run00043}, {\it plt\_run00061}, etc, where $t = 0.1$ after 43 level 0 steps, 
-$t = 0.2$ after 61 level 0 steps, etc.
+then restart files (really directories) starting with the prefix ``plt\_run'' will be
+generated every 0.1 units of simulation time.  The directory names will be {\em plt\_run00000}, 
+{\em plt\_run00043}, {\em plt\_run00061}, etc, where $t = 0.1$ after 43 level-0 steps, 
+$t = 0.2$ after 61 level-0 steps, etc.
 
 \end{itemize}
 
@@ -640,7 +648,7 @@ Parameter & Definition & Acceptable Values &Default\\
 {\bf amr.grid\_log}       & name of the file to which the grids are written & Text & not used if not set \\
 {\bf amr.run\_log}        & name of the file to which certain output is written & Text & not used if not set \\
 {\bf amr.run\_log\_terse} & name of the file to which certain (terser) output is written & Text & not used if not set \\
-{\bf amr.sum\_interval}   & if $> 0,$ how often (in level 0 time steps) & &  \\  
+{\bf amr.sum\_interval}   & if $> 0,$ how often (in level-0 time steps) & &  \\  
                           & to compute and print integral quantities & Integer & -1 \\  
 {\bf nyx.do\_special\_tagging} & & 0 or 1 & 1 \\
 \hline
@@ -665,26 +673,26 @@ a special file as a useful diagnostic.
 
 \begin{itemize}
 
-\item {\bf amr.grid\_log} = grdlog \\
+\item {\bf amr.grid\_log} = {\em grdlog} \\
 Every time the code regrids it prints a list of grids at all relevant levels.  
 Here the code will write these grids lists into the file {\em grdlog}.
 
-\item {\bf amr.run\_log} = runlog \\ 
+\item {\bf amr.run\_log} = {\em runlog} \\ 
 Every time step the code prints certain statements to the screen (if {\bf amr.v} = 1), such as \\
 STEP = 1 TIME = 1.91717746 DT = 1.91717746 \\
 PLOTFILE: file = plt00001 \\
 Here these statements will be written into {\em runlog} as well.
 
-\item {\bf amr.run\_log\_terse} = runlogterse \\ 
-This file, {\em runlogterse} differs from {\em runlog}, in that it only contains lines
+\item {\bf amr.run\_log\_terse} = {\em runlogterse} \\ 
+This file, {\em runlogterse}, differs from {\em runlog} in that it only contains lines
 of the form \\ 
 10  0.2  0.005 \\
-in which "10" is the number of steps taken, "0.2" is the simulation time, and "0.005" is the 
-level 0 time step.  This file can be plotted very easily to monitor the time step.
+in which ``10'' is the number of steps taken, ``0.2'' is the simulation time, and ``0.005'' is the 
+level-0 time step.  This file can be plotted very easily to monitor the time step.
 
 \item {\bf nyx.sum\_interval} = 2 \\
 if {\bf nyx.sum\_interval} $> 0$ then the code computes and prints certain integral quantities, 
-such as total mass, momentum and energy in the domain every {\bf nyx.sum\_interval} level 0 steps. 
+such as total mass, momentum and energy in the domain every {\bf nyx.sum\_interval} level-0 steps. 
 In this example the code will print these quantities every two coarse time steps.  The print 
 statements have the form \\
 TIME= 1.91717746 MASS= 1.792410279e+34 \\
@@ -704,10 +712,18 @@ If this line is commented out then it will not compute and print these quanititi
 Parameter & Definition & Acceptable Values &Default\\
 \hline
 {\bf nyx.do\_grav}  & Include gravity as a forcing term & 0 if false, 1 if true & must be set if USE\_GRAV = TRUE  \\
-{\bf gravity.gravity\_type} & if {\bf nyx.do\_grav} = 1, how shall gravity be calculated & CompositeGrav, & \\
-& & PoissonGrav & must be set \\
-{\bf gravity.no\_sync} & if {\bf gravity.gravity\_type} = PoissonGrav, whether to perform the "sync solve" &  0 or 1 & 0 \\
-{\bf gravity.no\_composite} & if {\bf gravity.gravity\_type} = PoissonGrav, whether to perform a composite solve & 0 or 1 & 0 \\
+\multirow{2}{*}{\bf gravity.gravity\_type} &
+if {\bf nyx.do\_grav} = 1, & CompositeGrav, &
+\multirow{2}{*}{must be set}{} \\
+& how shall gravity be calculated & PoissonGrav & \\
+\multirow{2}{*}{\bf gravity.no\_sync} &
+if {\bf gravity.gravity\_type} = PoissonGrav, &
+\multirow{2}{*}{0 or 1} & \multirow{2}{*}{0} \\
+& whether to perform the ``sync solve'' & & \\
+\multirow{2}{*}{\bf gravity.no\_composite} &
+if {\bf gravity.gravity\_type} = PoissonGrav, &
+\multirow{2}{*}{0 or 1} & \multirow{2}{*}{0} \\
+& whether to perform a composite solve & & \\
 \hline
 \end{tabular}
 \label{Table:Gravity}
@@ -715,9 +731,11 @@ Parameter & Definition & Acceptable Values &Default\\
 \end{scriptsize}
 \end{table*}
 
+
 \subsection{Notes}
 
-Gravity types are CompositeGrav or PoissonGrav.  See the Gravity section for more detail.
+Gravity types are CompositeGrav or PoissonGrav.
+See Chapter \ref{chap:Gravity} on Gravity for more detail.
 
 \begin{itemize}
 \item To include gravity you must set 
@@ -727,7 +745,7 @@ Gravity types are CompositeGrav or PoissonGrav.  See the Gravity section for mor
 \end{itemize}
 \item {\bf gravity.gravity\_type} is  only relevant if {\bf nyx.do\_grav} = 1 
 \item {\bf gravity.no\_sync} and {\bf gravity.no\_composite} are only relevant if {\bf gravity.gravity\_type} = PoissonGrav,
-i.e. the code does a full Poisson solve for self-gravity.
+i.e., the code does a full Poisson solve for self-gravity.
 \end{itemize}
 
 \section{Physics}
