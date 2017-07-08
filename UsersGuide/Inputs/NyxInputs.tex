@@ -258,30 +258,30 @@ for good multigrid performance in simulations that use self-gravity.
 \noindent The gridding algorithm proceeds in this order:
 
 \begin{enumerate}
-\item Grids are created using the Berger-Rigoutsis clustering algorithm 
-modified to ensure that all new fine grids are divisible by {\bf amr.blocking\_factor}.
+\item If at level 0, the domain is initially defined by {\bf n\_cell}
+as specified in the inputs file.  If at level greater than 0,
+grids are created using the Berger-Rigoutsis clustering algorithm applied to the
+taggd cells, modified to ensure that
+all new fine grids are divisible by {\bf blocking\_factor}.
 
 \item Next, the grid list is chopped up if any grids are larger than {\bf max\_grid\_size}.
-Note that because {\bf amr.max\_grid\_size} is a multiple of {\bf amr.blocking\_factor}
-the {\bf amr.blocking\_factor} criterion is still satisfied. 
+Note that because {\bf max\_grid\_size} is a multiple of {\bf blocking\_factor}
+(as long as {\bf max\_grid\_size} is greater than {\bf blocking\_factor}),
+the {\bf blocking\_factor} criterion is still satisfied.
 
-\item Next, if {\bf amr.refine\_grid\_layout} = 1 and there are more processors than grids, and
+\item Next, if {\bf refine\_grid\_layout} = 1 and there are more processors than grids
+at this level, then the grids at this level are further divided in order to ensure that
+no processors has less than one grid (at each level).
+
 \begin{itemize}
-\item if {\bf amr.max\_grid\_size} / 2 is a multiple of {\bf amr.blocking\_factor}
+\item if {\bf max\_grid\_size} / 2 in the {\bf BL\_SPACEDIM} direction is a multiple of
+{\bf blocking\_factor}, then chop the grids in the {\bf BL\_SPACEDIM} direction
+so that none of the grids are longer in that direction than {\bf max\_grid\_size / 2}
+\item If there are still fewer grids than processes, repeat the procedure in the
+{\bf BL\_SPACEDIM-1} direction, and again in the {\bf BL\_SPACEDIM-2} direction if necessary
+\item If after completing a sweep in all coordinate directions with  {\bf max\_grid\_size / 2},
+there are still fewer grids than processes, repeat the steps above with  {\bf max\_grid\_size / 4}.
 \end{itemize}
-then the grids will be redefined, at each level independently, so that the 
-maximum length of a grid at level $\ell$, in any dimension, 
-is {\bf amr.max\_grid\_size}[$\ell$] / 2.  
-
-\item Finally, if {\bf amr.refine\_grid\_layout} = 1,  and there are still more processors
-than grids, and 
-\begin{itemize}
-\item if {\bf amr.max\_grid\_size} / 4 is a multiple of {\bf amr.blocking\_factor}
-\end{itemize}
-then the grids will be redefined, at each level independently, so that the 
-maximum length of a grid at level $\ell$, in any dimension, 
-is {\bf amr.max\_grid\_size}[$\ell$] / 4.
-
 
 \end{enumerate}
 

@@ -70,6 +70,7 @@
 \def\Ab {{\bf A}}
 \def\eb {{\bf e}}
 \def\Fb {{\bf F}}
+\def\fb {{\bf f}}
 \def\gb {{\bf g}}
 \def\Hb {{\bf H}}
 \def\ib {{\bf i}}
@@ -177,6 +178,9 @@
 \chapter{Equations in Comoving Coordinates}
 \input ComovingHydro/Equations.tex
 
+\chapter{Forcing}
+\input Forcing/NyxForcing.tex
+
 \chapter{Gravity}
 \input Gravity/NyxGravity.tex
 
@@ -192,6 +196,6 @@
 \renewcommand\bibname{References}
 \addcontentsline{toc}{chapter}{References}
 \bibliographystyle{plain}
-\bibliography{Gravity/gr,ComovingHydro/sgs}
+\bibliography{Gravity/gr,ComovingHydro/sgs,Forcing/force}
 
 \end{document}
