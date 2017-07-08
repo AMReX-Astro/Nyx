@@ -1,16 +1,16 @@
 
 \section{Introduction}
 
-Welcome to the Nyx User's Guide!  In this document is an overview of Nyx, an adaptive mesh
+Welcome to the \nyx\ User's Guide!  In this document is an overview of \nyx, an adaptive mesh
 compressible cosmological hydrodynamics simulation code.
-Another place to look for information about what is being done with Nyx is
+Another place to look for information about what is being done with \nyx\ is
 {\url{https://amrex-astro.github.io/Nyx}} -- definitely check that out for
-the latest science being done with Nyx and papers published.
+the latest science being done with \nyx\ and papers published.
 
 \section{Downloading the Code}
 
 \nyx\ is built on top of the \amrex\ framework.  In order to run
-\nyx\, you must download two separate git modules.
+\nyx, you must download two separate {\tt git} modules.
 
 \vspace{.1in}
 
@@ -31,9 +31,9 @@ git pull
 \end{verbatim}
 in the {\tt amrex/} directory.
 
-Note: when you check out amrex (and Nyx), you will get the {\tt master}
-branch.   The Nyx master branch is guaranteed to be compatible
-with the amrex master branch.
+Note: when you check out \amrex\ (and \nyx), you will get the {\tt master}
+branch.   The \nyx\ master branch is guaranteed to be compatible
+with the \amrex\ master branch.
 Active development is done on the {\tt development} branch
 in each repo, and merged into the {\tt master} branch monthly.
 If you wish to use the \nyx\ {\tt development} branch, then you
@@ -57,7 +57,7 @@ where you replace \texttt{\em /path/to/amrex/} will the full path to the
 git clone https://github.com/AMReX-Astro/Nyx
 \end{verbatim}
 
-As with \amrex, development on \nyx\ is done in the
+As with \amrex\, development on \nyx\ is done in the
 {\tt development} branch, so you should work there if you want
 the latest source.
 
@@ -67,14 +67,14 @@ the latest source.
 
 \begin{enumerate}
 
-\item From the directory in which you checked out Nyx, type
-
-cd {\tt Nyx/Exec/LyA}
-
+\item From the directory in which you checked out \nyx, type
+\begin{verbatim}
+cd Nyx/Exec/LyA
+\end{verbatim}
 This will put you into a directory in which you can run a small
 version of the Santa Barbara test problem.
 
-\item In {\tt Nyx/Exec/LyA}, edit the GNUmakefile, and set
+\item In {\tt Nyx/Exec/LyA}, edit the {\tt GNUmakefile}, and set
 
 COMP = your favorite compiler (e.g, gnu, Intel)
 
@@ -82,8 +82,8 @@ DEBUG = FALSE
 
 We like COMP = gnu.
 
-\item Now type "make". The resulting executable will look something like 
-"Nyx3d.Linux.gnu.ex", which means this is a 3-d version of the code, 
+\item Now type ``{\tt make}''. The resulting executable will look something like 
+``{\tt Nyx3d.Linux.gnu.ex}'', which means this is a 3-d version of the code, 
 made on a Linux machine, with COMP = gnu.
 
 \end{enumerate}
@@ -92,20 +92,24 @@ made on a Linux machine, with COMP = gnu.
 
 \begin{enumerate}
 
-\item Type ``Nyx3d.Linux.gnu.ex inputs.32''
+\item Type:
+\begin{verbatim}
+Nyx3d.Linux.gnu.ex inputs
+\end{verbatim}
 
 \item You will notice that running the code generates directories that look like 
-plt00000, plt00020, etc, and chk00000, chk00020, etc. These are "plotfiles" and 
-"checkpoint" files. The plotfiles are used for visualization, the checkpoint files are 
-used for restarting the code.
+{\tt plt00000}, {\tt plt00020}, etc.,
+and {\tt chk00000}, {\tt chk00020}, etc. These are ``plotfiles'' and  
+``checkpoint'' files. The plotfiles are used for visualization,
+and the checkpoint files for restarting the code.
 
 \end{enumerate}
 
 \section{Visualization}
 
-There are several visualization tools that can be used for Nyx
+There are several visualization tools that can be used for \nyx\
 plotfiles.  The standard tool used within the
-\amrex-community is \amrvis, a package developed and supported
+\amrex\ community is \amrvis, a package developed and supported
 by CCSE that is designed specifically for highly efficient visualization
 of block-structured hierarchical AMR data.
 Plotfiles can also be viewed using the \visit, \paraview, and \yt\ packages.
