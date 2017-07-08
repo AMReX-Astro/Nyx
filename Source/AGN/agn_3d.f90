@@ -69,7 +69,7 @@
     type(agn_particle_t), intent(in   ) :: ghosts(ng)
     real(amrex_real)    , intent(in   ) :: delta_x(3)
 
-    real(amrex_real) r2, vrelsq
+    real(amrex_real) r2, vrelsq, r
     real(amrex_real) cutoff, larger_mass
     integer i, j
 
@@ -88,7 +88,8 @@
 
              larger_mass = max(particles(i)%mass, particles(j)%mass)
 
-             if ( (vrelsq * r2) < (Gconst * larger_mass)**2 ) then
+             r = sqrt(r2)
+             if ( (vrelsq * r) < Gconst * larger_mass) then
 
                 ! Merge lighter particle into heavier one.
                 ! Set particle ID of lighter particle to -1
@@ -366,6 +367,9 @@
           do d = 1, 3
              d_mom = UMX + d-1
              ! Update energy density by adding momentum density * velocity.
+             ! Momentum density is M*L^-2*T^-1.
+             ! Velocity is L*T^-1.
+             ! Energy density is M*L^-1*T^-2, product of the two above.
              state(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN) = &
                state(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN) + &
                speed_jet * &
@@ -374,6 +378,9 @@
           do d = 1, 3
              d_mom = UMX + d-1
              ! Update momentum density by adding density * velocity.
+             ! Density is M*L^-3.
+             ! Velocity is L*T^-1.
+             ! Momentum density is M*L^-2*T^-1, product of the two above.
              state(i-1:i+1, j-1:j+1, k-1:k+1, d_mom) = &
                state(i-1:i+1, j-1:j+1, k-1:k+1, d_mom) + &
                speed_jet * &
