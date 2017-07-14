@@ -440,7 +440,8 @@ Gravity::solve_for_phi (int               level,
 
     if ( Geometry::isAllPeriodic() )
     {
-        if (grids[level].contains(parent->Geom(level).Domain()))
+//      if (grids[level].contains(parent->Geom(level).Domain()))
+        if ( parent->Geom(level).Domain().numPts() == grids[level].numPts() )
         {
             Nyx* nyx_level = dynamic_cast<Nyx*>(&(parent->getLevel(level)));
 
@@ -1055,7 +1056,8 @@ Gravity::actual_multilevel_solve (int                       level,
                 (*Rhs_p[lev])[mfi].plus(-mass_offset);
 
        // This is used to enforce solvability if appropriate.
-       if ( grids[level].contains(parent->Geom(level).Domain()) )
+//     if ( grids[level].contains(parent->Geom(level).Domain()) )
+       if ( parent->Geom(level).Domain().numPts() == grids[level].numPts() )
        {
            Real sum = 0;
            for (int lev = 0; lev < num_levels; lev++)
