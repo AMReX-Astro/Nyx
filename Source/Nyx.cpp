@@ -111,6 +111,10 @@ Real Nyx::small_dens = -1.e200;
 Real Nyx::small_temp = -1.e200;
 Real Nyx::gamma      =  0;
 
+Real Nyx::comoving_OmB;
+Real Nyx::comoving_OmM;
+Real Nyx::comoving_h;
+
 int Nyx::do_hydro = -1;
 int Nyx::add_ext_src = 0;
 int Nyx::heat_cool_type = 0;
@@ -312,6 +316,14 @@ Nyx::read_params ()
             }
         }
     }
+
+    pp.get("comoving_OmB", comoving_OmB);
+    pp.get("comoving_OmM", comoving_OmM);
+    pp.get("comoving_h", comoving_h);
+
+    fort_set_omb(comoving_OmB);
+    fort_set_omm(comoving_OmM);
+    fort_set_hubble(comoving_h);
 
     pp.get("do_hydro", do_hydro);
 #ifdef NO_HYDRO
@@ -2343,6 +2355,9 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         allReals.push_back(average_dm_density);
         allReals.push_back(average_neutr_density);
         allReals.push_back(average_total_density);
+        allReals.push_back(comoving_OmB);
+        allReals.push_back(comoving_OmM);
+        allReals.push_back(comoving_h);
 #ifdef NEUTRINO_PARTICLES
         allReals.push_back(neutrino_cfl);
 #endif
@@ -2381,6 +2396,9 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         average_dm_density = allReals[count++];
         average_neutr_density = allReals[count++];
         average_total_density = allReals[count++];
+        comoving_OmB = allReals[count++];
+        comoving_OmM = allReals[count++];
+        comoving_h = allReals[count++];
 #ifdef NEUTRINO_PARTICLES
         neutrino_cfl = allReals[count++];
 #endif

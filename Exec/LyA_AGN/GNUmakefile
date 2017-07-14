@@ -1,8 +1,8 @@
 # AMREX_HOME defines the directory in which we will find all the BoxLib code
-AMREX_HOME ?= ../../../amrex
+AMREX_HOME ?= /project/projectdirs/nyx/src/amrex
 #AMREX_HOME = /home/vince/Development/BLMaster/amrex
 
-HPGMG_DIR ?= ../../../hpgmg/finite-volume
+HPGMG_DIR ?= /global/homes/f/friesen/hpgmg/finite-volume
 
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ../..
@@ -17,7 +17,7 @@ TRACE_PROFILE = FALSE
 COMM_PROFILE  = FALSE
 
 PRECISION = DOUBLE
-DEBUG     = FALSE
+DEBUG     = TRUE
 
 GIMLET = FALSE
 REEBER = FALSE
@@ -27,10 +27,14 @@ GIMLET_DIR ?= /home/vince/Development/gimlet
 FFTW_INC ?= /usr/include
 FFTW_DIR ?= /usr/lib/x86_64-linux-gnu
 
-REEBER_HOME ?= /project/projectdirs/nyx/ghweber/reeber2
+# REEBER_HOME ?= /project/projectdirs/nyx/ghweber/reeber2
+REEBER_HOME ?= $(TOP)/../reeber2
 # Reeber needs Boost (both headers and libraries) and diy2.
-BOOST_INCLUDE_DIR ?= /project/projectdirs/nyx/ghweber/boost-1.61.0-noarch/include
-DIY_INCLUDE_DIR ?= /project/projectdirs/nyx/ghweber/diy/include
+# BOOST_INCLUDE_DIR ?= /project/projectdirs/nyx/ghweber/boost-1.61.0-noarch/include
+# BOOST_INCLUDE_DIR ?= $(TOP)/../boost
+BOOST_INCLUDE_DIR ?= /usr/include
+# DIY_INCLUDE_DIR ?= /project/projectdirs/nyx/ghweber/diy/include
+DIY_INCLUDE_DIR ?= $(TOP)/../diy
 
 USE_HPGMG = FALSE
 HPGMG_FCYCLES = FALSE
@@ -47,9 +51,6 @@ USE_GRAV = TRUE
 USE_HEATCOOL = TRUE
 
 USE_AGN = TRUE
-
-# units
-#USE_CGS = TRUE
 
 Bpack := ./Make.package
 Blocs := .

@@ -616,10 +616,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
 
     if (level == 0)
     {
-        Real frac_for_hydro, omb, omm;
-        fort_get_omb(&omb);
-        fort_get_omm(&omm);
-        frac_for_hydro = omb;
+        Real frac_for_hydro = comoving_OmB / comoving_OmM;
         Real omfrac = 1.0 - frac_for_hydro;
  
         if ( (init_with_sph_particles == 0) && (frac_for_hydro != 1.0) ) {
@@ -1065,7 +1062,7 @@ Nyx::remove_ghost_particles()
 void
 Nyx::NyxParticlesAddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
                     int ioProcNumSCS, int ioProcNumAll, int scsMyId,
-		                        MPI_Comm scsComm)
+		                        MPI_Comm scsCommn)
 {
 #if 0
 // What is this doing here???

@@ -3,7 +3,6 @@
 
       use amrex_fort_module, only : rt => amrex_real
       use probdata_module
-      use comoving_module
       implicit none
       integer init, namlen
       integer name(namlen)
@@ -14,8 +13,7 @@
       namelist /fortin/ probtype, p_ambient, dens_ambient, exp_energy, &
                         r_init, nsub,  &
                         denerr,dengrad,max_denerr_lev,max_dengrad_lev, &
-                        presserr,pressgrad,max_presserr_lev,max_pressgrad_lev, &
-                        comoving_OmM, comoving_OmB, comoving_h
+                        presserr,pressgrad,max_presserr_lev,max_pressgrad_lev
 
 !
 !     Build "probin" filename -- the name of file containing fortin namelist.

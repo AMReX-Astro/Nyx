@@ -19,9 +19,5 @@
   pressgrad = 0.01
   max_presserr_lev = -1
   max_pressgrad_lev = 3
- 
-  comoving_OmM = 1.0d0
-  comoving_OmB = 0.0d0
-  comoving_h   = 0.0d0
 /
 
