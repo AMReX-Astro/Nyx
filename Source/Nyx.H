@@ -178,6 +178,13 @@ public:
     static amrex::Real new_a;
 
     //
+    // comoving parameters
+    //
+    static amrex::Real comoving_OmB;
+    static amrex::Real comoving_OmM;
+    static amrex::Real comoving_h;
+
+    //
     // Get the comoving coordinate "a"
     //
     amrex::Real get_comoving_a(amrex::Real time);

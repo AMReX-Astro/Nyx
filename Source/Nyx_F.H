@@ -14,9 +14,13 @@ extern "C"
   void fort_integrate_comoving_a_to_z 
     (amrex::Real* old_a, amrex::Real* z_value, amrex::Real* dt);
 
-  void fort_get_omm    (amrex::Real* omm);
-  void fort_get_omb    (amrex::Real* frac);
-  void fort_get_hubble (amrex::Real* hubble);
+  //  void fort_get_omm    (amrex::Real* omm);
+  //  void fort_get_omb    (amrex::Real* frac);
+  //  void fort_get_hubble (amrex::Real* hubble);
+
+  void fort_set_omm    (const amrex::Real& omm);
+  void fort_set_omb    (const amrex::Real& frac);
+  void fort_set_hubble (const amrex::Real& hubble);
 
   void fort_estdt
     (const BL_FORT_FAB_ARG(state),

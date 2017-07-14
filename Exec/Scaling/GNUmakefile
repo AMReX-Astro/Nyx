@@ -7,7 +7,7 @@ HPGMG_DIR ?= ../../../hpgmg/finite-volume
 TOP = ../..
 
 # compilation options
-COMP    = intel
+COMP    = gcc
 USE_MPI = TRUE
 USE_OMP = TRUE
 
