@@ -3,7 +3,6 @@
 
       use amrex_fort_module, only : rt => amrex_real
       use probdata_module
-      use comoving_module
       use turbinit_module
       use network, only : network_init
 
@@ -19,8 +18,7 @@
            alpha, rho0, temp0, &
            turb_scale, force_scale, forcing_type, spectrum_type, &
            mode_start, nmodes, forcing_time_scale_min, forcing_time_scale_max, &
-           stop_forcing, do_mode_division, &
-           comoving_OmM, comoving_OmB, comoving_h
+           stop_forcing, do_mode_division
 !
 !     Build "probin" filename -- the name of file containing fortin namelist.
 !     

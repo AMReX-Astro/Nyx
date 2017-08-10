@@ -46,7 +46,7 @@ To enable this option, set \\
 \noindent {\bf nyx.particle\_init\_type = BinaryFile} \\
 \noindent {\bf nyx.binary\_particle\_file =}{\em particle\_file} \\
 
-As with the ASCII read, the first line in this file is
+As with the ASCII read, the first line in {\em particle\_file} is
 assumed to contain the number of particles.  Each line after that contains  \\
 
 x y z mass xdot ydot zdot \\
@@ -328,13 +328,13 @@ in a separate ASCII file called {\em comoving\_a}, containing only the single va
 
 To generate an ASCII file containing the particle positions and velocities, 
 one needs to restart from a checkpoint
-file but doesn't need to run any steps.  For example, if chk00350 exists, then one can set: \\
+file but doesn't need to run any steps.  For example, if {\em chk00350} exists, then one can set: \\
 
-\noindent {\bf amr.restart = chk00350} \\
-\noindent {\bf max\_step = 350} \\
-\noindent {\bf particles.particle\_output\_file =} {\em particle\_output} \\
+\noindent {\bf amr.restart} = {\em chk00350} \\
+\noindent {\bf max\_step} = 350 \\
+\noindent {\bf particles.particle\_output\_file} = {\em particle\_output} \\
 
-\noindent which would tell the code to restart from chk00350, not to take any further time steps, and to write an ASCII-format 
+\noindent which would tell the code to restart from {\em chk00350}, not to take any further time steps, and to write an ASCII-format 
 file called {\em particle\_output}. \\
 
 \noindent This file has the same format as the ASCII input file: \\
@@ -348,11 +348,15 @@ If you set \\
 
 \noindent {\bf amr.data\_log = }{\em log\_file}  \\
 
-\noindent in the inputs file, then at run-time the code will write a log file with entries every coarse
+\noindent in the inputs file, then at run-time the code will write out file
+{\em log\_file} with entries every coarse
 grid time step, containing \\
 
 \noindent nstep  time   dt   redshift   a
 
+and if {\bf nyx.do\_hydro} then also
+
+\noindent max temp, rho-wgted temp, V-wgted temp, T @ $\langle$ rho $\rangle$
 
 \subsection{Run-time Screen Output}
 

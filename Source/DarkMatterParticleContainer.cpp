@@ -39,6 +39,9 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
 
     int do_move = 1;
 
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
     for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
 
         AoS& particles = pti.GetArrayOfStructs();
@@ -126,6 +129,9 @@ DarkMatterParticleContainer::moveKick (MultiFab&       acceleration,
 
     int do_move = 0;
 
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
     for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
 
         AoS& particles = pti.GetArrayOfStructs();

@@ -274,12 +274,12 @@ Nyx::writePlotFile (const std::string& dir,
 	jobInfoFile << " Cosmology Information\n";
 	jobInfoFile << PrettyLine;
 
-	Real comoving_OmM, comoving_OmL, comoving_h;
-	fort_get_omm(&comoving_OmM);
+        //	Real comoving_OmM, comoving_OmL, comoving_h;
+        //	fort_get_omm(&comoving_OmM);
 	// Omega lambda is defined algebraically
-	comoving_OmL = 1. - comoving_OmM;
+	Real comoving_OmL = 1. - comoving_OmM;
 
-	fort_get_hubble(&comoving_h);
+	// fort_get_hubble(&comoving_h);
 
 	jobInfoFile << "Omega_m (comoving):      " << comoving_OmM << "\n";
 	jobInfoFile << "Omega_lambda (comoving): " << comoving_OmL << "\n";

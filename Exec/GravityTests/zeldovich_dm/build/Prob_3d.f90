@@ -4,8 +4,7 @@ subroutine amrex_probinit (init, name, namlen, problo, probhi) bind(c)
 
     use amrex_fort_module, only : rt => amrex_real
     use probdata_module
-    use comoving_module
-    use eos_module, only : gamma_const
+    use meth_params_module, only : gamma_const
     use network   , only : network_init
     implicit none
 
@@ -15,8 +14,7 @@ subroutine amrex_probinit (init, name, namlen, problo, probhi) bind(c)
 
     integer untin, i
 
-    namelist /fortin/ r_c, rho_c, comoving_OmB, comoving_OmM, comoving_OmL, &
-                      comoving_h, max_num_part
+    namelist /fortin/ r_c, rho_c, max_num_part
 
 !
 !   Build "probin" filename -- the name of file containing fortin namelist.
@@ -79,16 +77,17 @@ end
       use amrex_fort_module, only : rt => amrex_real
       use probdata_module
       use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, &
-                                   UFS, UTEMP
+                                   UFS, TEMP_COMP
 
       implicit none
 
-      integer level, nscal
+      integer level, ns, nd
       integer lo(3), hi(3)
-      integer state_l1, state_l2, state_l3, state_h1, state_h2, state_h3
+      integer s_l1,s_l2,s_l3,s_h1,s_h2,s_h3
+      integer d_l1,d_l2,d_l3,d_h1,d_h2,d_h3
       real(rt) xlo(3), xhi(3), time, delta(3)
-      real(rt) state(state_l1:state_h1, state_l2:state_h2, &
-                           state_l3:state_h3, NVAR)
+      real(rt)    state(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3,NVAR)
+      real(rt) diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,nd)
 
       integer i, j, k
 
@@ -109,7 +108,7 @@ end
                                          + state(i,j,k,UMZ)**2 )
                 state(i,j,k,UFS) = 1.d0 * state(i,j,k,URHO)
                 state(i,j,k,UFS+1) = 0.d0 * state(i,j,k,URHO)
-                state(i,j,k,UTEMP) = 0.d0
+                state(i,j,k,TEMP_COMP) = 0.d0
             enddo
         enddo
       enddo

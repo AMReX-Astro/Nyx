@@ -3,6 +3,7 @@ max_step = 2
 
 #amr.restart = chk00001
 
+#Number of time steps between calls to halo finder
 reeber.halo_int = 1
 
 nyx.ppm_type         = 1
@@ -75,6 +76,11 @@ nyx.hi_bc       =  0   0   0
 # WHICH PHYSICS
 nyx.do_hydro = 1
 nyx.do_grav  = 1
+
+# COMOVING
+nyx.comoving_OmM = 0.275
+nyx.comoving_OmB = 0.046
+nyx.comoving_h   = 0.702d0
 
 # PARTICLES
 nyx.do_dm_particles = 1

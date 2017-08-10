@@ -41,40 +41,34 @@ Nyx::write_info ()
                 data_loga << std::setw(14) <<  "       time    ";
                 data_loga << std::setw(14) <<  "        dt     ";
                 data_loga << std::setw(14) <<  "      redshift ";
+                data_loga << std::setw(14) <<  "       a       ";
 #ifndef NO_HYDRO
                 if (do_hydro == 1)
                 {
-                   data_loga << std::setw(14) <<  "       a       ";
                    data_loga << std::setw(14) <<  "  max temp     ";
                    data_loga << std::setw(14) <<  "rho-wgted temp ";
                    data_loga << std::setw(14) <<  " V-wgted temp  ";
-                   data_loga << std::setw(14) <<  " T @ <rho>     " << '\n';
+                   data_loga << std::setw(14) <<  " T @ <rho>     ";
                 }
-                else
 #endif
-                {
-                   data_loga << std::setw(14) <<  "       a       " << '\n';
-                }
+                data_loga << '\n';
 
                 Real old_z = (1. / old_a) - 1.;
                 data_loga << std::setw( 8) <<  nstep;
                 data_loga << std::setw(14) <<  std::setprecision(6) <<  time;
                 data_loga << std::setw(14) <<  std::setprecision(6) <<    dt;
                 data_loga << std::setw(14) <<  std::setprecision(6) << old_z;
+                data_loga << std::setw(14) <<  std::setprecision(6) << old_a;
 #ifndef NO_HYDRO
                 if (do_hydro == 1)
                 {
-                   data_loga << std::setw(14) <<  std::setprecision(6) << old_a;
                    data_loga << std::setw(14) <<  std::setprecision(6) << max_t;
                    data_loga << std::setw(14) <<  std::setprecision(6) << rho_T_avg;
                    data_loga << std::setw(14) <<  std::setprecision(6) << T_avg;
-                   data_loga << std::setw(14) <<  std::setprecision(6) << T_meanrho << '\n';
+                   data_loga << std::setw(14) <<  std::setprecision(6) << T_meanrho;
                 }
-                else
 #endif
-                {
-                   data_loga << std::setw(14) <<  std::setprecision(6) << old_a << std::endl;
-                }
+                data_loga << '\n';
             }
             else
             {
@@ -83,20 +77,17 @@ Nyx::write_info ()
                 data_loga << std::setw(14) <<  std::setprecision(6) <<  time;
                 data_loga << std::setw(14) <<  std::setprecision(6) <<    dt;
                 data_loga << std::setw(14) <<  std::setprecision(6) << new_z;
+                data_loga << std::setw(14) <<  std::setprecision(6) << new_a;
 #ifndef NO_HYDRO
                 if (do_hydro == 1)
                 {
-                   data_loga << std::setw(14) <<  std::setprecision(6) << new_a;
                    data_loga << std::setw(14) <<  std::setprecision(6) << max_t;
                    data_loga << std::setw(14) <<  std::setprecision(6) << rho_T_avg;
                    data_loga << std::setw(14) <<  std::setprecision(6) << T_avg;
-                   data_loga << std::setw(14) <<  std::setprecision(6) << T_meanrho << std::endl;
+                   data_loga << std::setw(14) <<  std::setprecision(6) << T_meanrho;
                 }
-                else
 #endif
-                {
-                   data_loga << std::setw(14) <<  std::setprecision(6) << new_a << std::endl;
-                }
+                data_loga << std::endl;
             }
         }
     }

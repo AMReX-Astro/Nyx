@@ -111,6 +111,10 @@ Real Nyx::small_dens = -1.e200;
 Real Nyx::small_temp = -1.e200;
 Real Nyx::gamma      =  0;
 
+Real Nyx::comoving_OmB;
+Real Nyx::comoving_OmM;
+Real Nyx::comoving_h;
+
 int Nyx::do_hydro = -1;
 int Nyx::add_ext_src = 0;
 int Nyx::heat_cool_type = 0;
@@ -156,6 +160,11 @@ Real Nyx:: h_species        = 0.0;
 Real Nyx::he_species        = 0.0;
 
 int Nyx::use_exact_gravity  = 0;
+
+#ifdef AGN
+Real Nyx::mass_halo_min     = 1.e10;
+Real Nyx::mass_seed         = 1.e5;
+#endif
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -307,6 +316,14 @@ Nyx::read_params ()
             }
         }
     }
+
+    pp.get("comoving_OmB", comoving_OmB);
+    pp.get("comoving_OmM", comoving_OmM);
+    pp.get("comoving_h", comoving_h);
+
+    fort_set_omb(comoving_OmB);
+    fort_set_omm(comoving_OmM);
+    fort_set_hubble(comoving_h);
 
     pp.get("do_hydro", do_hydro);
 #ifdef NO_HYDRO
@@ -460,6 +477,11 @@ Nyx::read_params ()
     }
 
     pp.query("gimlet_int", gimlet_int);
+
+#ifdef AGN
+    pp.query("mass_halo_min", mass_halo_min);
+    pp.query("mass_seed", mass_seed);
+#endif
 }
 
 Nyx::Nyx ()
@@ -2333,9 +2355,16 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         allReals.push_back(average_dm_density);
         allReals.push_back(average_neutr_density);
         allReals.push_back(average_total_density);
+        allReals.push_back(comoving_OmB);
+        allReals.push_back(comoving_OmM);
+        allReals.push_back(comoving_h);
 #ifdef NEUTRINO_PARTICLES
         allReals.push_back(neutrino_cfl);
 #endif
+#ifdef AGN
+        allReals.push_back(mass_halo_min);
+        allReals.push_back(mass_seed);
+#endif        
       }
 
       amrex::BroadcastArray(allReals, scsMyId, ioProcNumAll, scsComm);
@@ -2367,9 +2396,16 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         average_dm_density = allReals[count++];
         average_neutr_density = allReals[count++];
         average_total_density = allReals[count++];
+        comoving_OmB = allReals[count++];
+        comoving_OmM = allReals[count++];
+        comoving_h = allReals[count++];
 #ifdef NEUTRINO_PARTICLES
         neutrino_cfl = allReals[count++];
 #endif
+#ifdef AGN
+        mass_halo_min = allReals[count++];
+        mass_seed = allReals[count++];
+#endif        
         BL_ASSERT(count == allReals.size());
       }
 

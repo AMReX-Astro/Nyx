@@ -178,6 +178,13 @@ public:
     static amrex::Real new_a;
 
     //
+    // comoving parameters
+    //
+    static amrex::Real comoving_OmB;
+    static amrex::Real comoving_OmM;
+    static amrex::Real comoving_h;
+
+    //
     // Get the comoving coordinate "a"
     //
     amrex::Real get_comoving_a(amrex::Real time);
@@ -676,6 +683,18 @@ protected:
 #ifdef FORCING
     // There can be only one forcing object (Fourier space):
     static class StochasticForcing *forcing;
+#endif
+
+#ifdef AGN
+  //
+  // Threshold for halo to create SMBH
+  //
+  static amrex::Real mass_halo_min;
+
+  //
+  // Seed mass of SMBH
+  //
+  static amrex::Real mass_seed;
 #endif
 
     // Average value of gas, dark matter, neutrino and total density, computed every coarse timestep
