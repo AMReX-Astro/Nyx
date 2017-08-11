@@ -14,7 +14,7 @@ module eos_module
   implicit none
 
   ! Routines:
-  public  :: nyx_eos_given_RT, nyx_eos_given_RT_vec, nyx_eos_T_given_Re, eos_init_small_pres
+  public  :: nyx_eos_given_RT, nyx_eos_given_RT_vec, nyx_eos_T_given_Re, nyx_eos_T_given_Re_vec, eos_init_small_pres
   public  :: nyx_eos_nh0_and_nhep, iterate_ne, iterate_ne_vec
   private :: ion_n
 
@@ -111,18 +111,19 @@ module eos_module
 
       ! ****************************************************************************
 
-      subroutine nyx_eos_T_given_Re(T, Ne, R_in, e_in, a)
+      subroutine nyx_eos_T_given_Re_vec(T, Ne, R_in, e_in, a, veclen)
 
       use atomic_rates_module, ONLY: XHYDROGEN, MPROTON
       use fundamental_constants_module, only: density_to_cgs, e_to_cgs
 
       ! In/out variables
-      real(rt),           intent(inout) :: T, Ne
-      real(rt),           intent(in   ) :: R_in, e_in
-      real(rt),           intent(in   ) :: a
+      integer, intent(in) :: veclen
+      real(rt), dimension(veclen), intent(inout) :: T, Ne
+      real(rt), dimension(veclen), intent(in   ) :: R_in, e_in
+      real(rt),                    intent(in   ) :: a
 
-      real(rt) :: nh, nh0, nhep, nhp, nhe0, nhepp
-      real(rt) :: z, rho, U
+      real(rt), dimension(veclen) :: nh, nh0, nhep, nhp, nhe0, nhepp, rho, U
+      real(rt) :: z
 
       ! This converts from code units to CGS
       rho = R_in * density_to_cgs / a**3
@@ -131,9 +132,9 @@ module eos_module
 
       z   = 1.d0/a - 1.d0
 
-      call iterate_ne(z, U, T, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
+      call iterate_ne_vec(z, U, T, nh, ne, nh0, nhp, nhe0, nhep, nhepp, veclen)
 
-      end subroutine nyx_eos_T_given_Re
+      end subroutine nyx_eos_T_given_Re_vec
 
       ! ****************************************************************************
 
@@ -415,6 +416,30 @@ module eos_module
       end do
 
       end subroutine ion_n_vec
+
+      subroutine nyx_eos_T_given_Re(T, Ne, R_in, e_in, a)
+
+      use atomic_rates_module, ONLY: XHYDROGEN, MPROTON
+      use fundamental_constants_module, only: density_to_cgs, e_to_cgs
+
+      ! In/out variables
+      double precision,           intent(inout) :: T, Ne
+      double precision,           intent(in   ) :: R_in, e_in
+      double precision,           intent(in   ) :: a
+
+      double precision :: nh, nh0, nhep, nhp, nhe0, nhepp
+      double precision :: z, rho, U
+
+      ! This converts from code units to CGS
+      rho = R_in * density_to_cgs / a**3
+        U = e_in * e_to_cgs
+      nh  = rho*XHYDROGEN/MPROTON
+
+      z   = 1.d0/a - 1.d0
+
+      call iterate_ne(z, U, T, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
+
+      end subroutine nyx_eos_T_given_Re
 
       subroutine iterate_ne(z, U, t, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
 
