@@ -15,7 +15,7 @@ module eos_module
 
   ! Routines:
   public  :: nyx_eos_given_RT, nyx_eos_given_RT_vec, nyx_eos_T_given_Re, eos_init_small_pres
-  public  :: nyx_eos_nh0_and_nhep, iterate_ne
+  public  :: nyx_eos_nh0_and_nhep, iterate_ne, iterate_ne_vec
   private :: ion_n
 
   contains
@@ -160,6 +160,175 @@ module eos_module
 
       ! ****************************************************************************
 
+      subroutine iterate_ne_vec(z, U, t, nh, ne, nh0, nhp, nhe0, nhep, nhepp, veclen)
+
+      use atomic_rates_module, ONLY: this_z, YHELIUM, BOLTZMANN, MPROTON, TCOOLMAX_R
+      use meth_params_module, only: gamma_minus_1
+
+      integer :: i
+
+      integer, intent(in) :: veclen
+      real(rt), intent (in   ) :: z
+      real(rt), dimension(veclen), intent(in) :: U, nh
+      real(rt), dimension(veclen), intent (inout) :: ne
+      real(rt), dimension(veclen), intent (  out) :: t, nh0, nhp, nhe0, nhep, nhepp
+
+      real(rt), parameter :: xacc = 1.0d-6
+
+      real(rt), dimension(veclen) :: f, df, eps, mu
+      real(rt), dimension(veclen) :: nhp_plus, nhep_plus, nhepp_plus
+      real(rt), dimension(veclen) :: dnhp_dne, dnhep_dne, dnhepp_dne, dne
+      real(rt), dimension(veclen):: U_in, t_in, nh_in, ne_in
+      real(rt), dimension(veclen) :: nhp_out, nhep_out, nhepp_out
+      integer :: vec_count = 0, orig_idx(veclen)
+      integer :: ii
+
+      ! Check if we have interpolated to this z
+      if (abs(z-this_z) .gt. xacc*z) &
+          STOP 'iterate_ne(): Wrong redshift!'
+
+      ii = 0
+      ne(1:veclen) = 1.0d0 ! 0 is a bad guess
+
+      do  ! Newton-Raphson solver
+         ii = ii + 1
+
+         ! Ion number densities
+         do i = 1, veclen
+           mu(i) = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+ne(i))
+           t(i)  = gamma_minus_1*MPROTON/BOLTZMANN * U(i) * mu(i)
+         end do
+         vec_count = 0
+         do i = 1, veclen
+           if (t(i) .ge. TCOOLMAX_R) then ! Fully ionized plasma
+             nhp(i)   = 1.0d0
+             nhep(i)  = 0.0d0
+             nhepp(i) = YHELIUM
+           else
+             vec_count = vec_count + 1
+             U_in(vec_count) = U(i)
+             t_in(vec_count) = t(i)
+             nh_in(vec_count) = nh(i)
+             ne_in(vec_count) = ne(i)
+             orig_idx(vec_count) = i
+           endif
+         end do
+
+         call ion_n_vec(U_in(1:vec_count), &
+                    t_in(1:vec_count), &
+                    nh_in(1:vec_count), &
+                    ne_in(1:vec_count), &
+                    nhp_out(1:vec_count), &
+                    nhep_out(1:vec_count), &
+                    nhepp_out(1:vec_count), &
+                    vec_count)
+         nhp(orig_idx(1:vec_count)) = nhp_out(1:vec_count)
+         nhep(orig_idx(1:vec_count)) = nhep_out(1:vec_count)
+         nhepp(orig_idx(1:vec_count)) = nhepp_out(1:vec_count)
+
+         ! Forward difference derivatives
+         do i = 1, veclen
+           if (ne(i) .gt. 0.0d0) then
+              eps(i) = xacc*ne(i)
+           else
+              eps(i) = 1.0d-24
+           endif
+         end do
+         do i = 1, veclen
+           mu(i) = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+ne(i)+eps(i))
+           t(i)  = gamma_minus_1*MPROTON/BOLTZMANN * U(i) * mu(i)
+         end do
+         vec_count = 0
+         do i = 1, veclen
+           if (t(i) .ge. TCOOLMAX_R) then ! Fully ionized plasma
+             nhp_plus(i)   = 1.0d0
+             nhep_plus(i)  = 0.0d0
+             nhepp_plus(i) = YHELIUM
+           else
+             vec_count = vec_count + 1
+             U_in(vec_count) = U(i)
+             t_in(vec_count) = t(i)
+             nh_in(vec_count) = nh(i)
+             ne_in(vec_count) = ne(i)+eps(i)
+             orig_idx(vec_count) = i
+           endif
+         end do
+
+         call ion_n_vec(U_in(1:vec_count), &
+                    t_in(1:vec_count), &
+                    nh_in(1:vec_count), &
+                    ne_in(1:vec_count), &
+                    nhp_out(1:vec_count), &
+                    nhep_out(1:vec_count), &
+                    nhepp_out(1:vec_count), &
+                    vec_count)
+         nhp_plus(orig_idx(1:vec_count)) = nhp_out(1:vec_count)
+         nhep_plus(orig_idx(1:vec_count)) = nhep_out(1:vec_count)
+         nhepp_plus(orig_idx(1:vec_count)) = nhepp_out(1:vec_count)
+
+         do i = 1, veclen
+           dnhp_dne(i)   = (nhp_plus(i)   - nhp(i))   / eps(i)
+           dnhep_dne(i)  = (nhep_plus(i)  - nhep(i))  / eps(i)
+           dnhepp_dne(i) = (nhepp_plus(i) - nhepp(i)) / eps(i)
+         end do
+
+         do i = 1, veclen
+           f(i)   = ne(i) - nhp(i) - nhep(i) - 2.0d0*nhepp(i)
+           df(i)  = 1.0d0 - dnhp_dne(i) - dnhep_dne(i) - 2.0d0*dnhepp_dne(i)
+           dne(i) = f(i)/df(i)
+         end do
+
+         do i = 1, veclen
+           ne(i) = max((ne(i)-dne(i)), 0.0d0)
+         end do
+
+         if (maxval(abs(dne(1:veclen))) < xacc) exit
+
+!         if (i .gt. 13) &
+!            print*, "ITERATION: ", i, " NUMBERS: ", z, t, ne, nhp, nhep, nhepp, df
+         if (ii .gt. 15) &
+            STOP 'iterate_ne(): No convergence in Newton-Raphson!'
+
+      enddo
+
+      ! Get rates for the final ne
+      do i = 1, veclen
+        mu(i) = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+ne(i))
+        t(i)  = gamma_minus_1*MPROTON/BOLTZMANN * U(i) * mu(i)
+      end do
+      vec_count = 0
+      do i = 1, veclen
+        if (t(i) .ge. TCOOLMAX_R) then ! Fully ionized plasma
+          nhp(i)   = 1.0d0
+          nhep(i)  = 0.0d0
+          nhepp(i) = YHELIUM
+        else
+          vec_count = vec_count + 1
+          U_in(vec_count) = U(i)
+          t_in(vec_count) = t(i)
+          nh_in(vec_count) = nh(i)
+          ne_in(vec_count) = ne(i)
+          orig_idx(vec_count) = i
+        endif
+      end do
+      call ion_n_vec(U_in(1:vec_count), &
+                 t_in(1:vec_count), &
+                 nh_in(1:vec_count), &
+                 ne_in(1:vec_count), &
+                 nhp_out(1:vec_count), &
+                 nhep_out(1:vec_count), &
+                 nhepp_out(1:vec_count), &
+                 vec_count)
+      nhp(orig_idx(1:vec_count)) = nhp_out(1:vec_count)
+      nhep(orig_idx(1:vec_count)) = nhep_out(1:vec_count)
+      nhepp(orig_idx(1:vec_count)) = nhepp_out(1:vec_count)
+
+      ! Neutral fractions:
+      do i = 1, veclen
+        nh0(i)   = 1.0d0 - nhp(i)
+        nhe0(i)  = YHELIUM - (nhep(i) + nhepp(i))
+      end do
+      end subroutine iterate_ne_vec
 
       ! ****************************************************************************
 
