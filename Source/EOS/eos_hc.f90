@@ -14,7 +14,7 @@ module eos_module
   implicit none
 
   ! Routines:
-  public  :: nyx_eos_given_RT, nyx_eos_T_given_Re, eos_init_small_pres
+  public  :: nyx_eos_given_RT, nyx_eos_given_RT_vec, nyx_eos_T_given_Re, eos_init_small_pres
   public  :: nyx_eos_nh0_and_nhep, iterate_ne
   private :: ion_n
 
@@ -85,25 +85,29 @@ module eos_module
 
      ! ****************************************************************************
 
-      subroutine nyx_eos_given_RT(e, P, R, T, Ne, a)
+      subroutine nyx_eos_given_RT_vec(e, P, R, T, Ne, a, veclen)
 
         use atomic_rates_module, ONLY: YHELIUM
         use fundamental_constants_module, only: mp_over_kb
         use meth_params_module, only: gamma_minus_1
         implicit none
 
-        real(rt),          intent(  out) :: e, P
-        real(rt),          intent(in   ) :: R, T, Ne
+        integer, intent(in) :: veclen
+        real(rt), dimension(veclen), intent(  out) :: e, P
+        real(rt), dimension(veclen), intent(in   ) :: R, T, Ne
         real(rt),          intent(in   ) :: a
 
-        real(rt) :: mu
+        real(rt), dimension(veclen) :: mu
+        integer :: i
 
-        mu = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+Ne)
-        e  = T / (gamma_minus_1 * mp_over_kB * mu)
+        do i = 1, veclen
+          mu(i) = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+Ne(i))
+          e(i)  = T(i) / (gamma_minus_1 * mp_over_kB * mu(i))
+  
+          P(i)  = gamma_minus_1 * R(i) * e(i)
+        end do
 
-        P  = gamma_minus_1 * R * e
-
-      end subroutine nyx_eos_given_RT
+      end subroutine nyx_eos_given_RT_vec
 
       ! ****************************************************************************
 
@@ -298,5 +302,28 @@ module eos_module
       endif
 
       end subroutine ion_n
+
+
+      subroutine nyx_eos_given_RT(e, P, R, T, Ne, a)
+
+        use atomic_rates_module, ONLY: YHELIUM
+        use fundamental_constants_module, only: mp_over_kb
+        use meth_params_module, only: gamma_minus_1
+        implicit none
+
+        double precision,          intent(  out) :: e, P
+        double precision,          intent(in   ) :: R, T, Ne
+        double precision,          intent(in   ) :: a
+
+        double precision :: mu
+
+        mu = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+Ne)
+        e  = T / (gamma_minus_1 * mp_over_kB * mu)
+
+        P  = gamma_minus_1 * R * e
+
+      end subroutine nyx_eos_given_RT
+
+
 
 end module eos_module
