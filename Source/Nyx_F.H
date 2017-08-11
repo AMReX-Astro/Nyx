@@ -246,6 +246,13 @@ extern "C"
      amrex::Real* comoving_a,
      const int* print_fortran_warnings);
 
+  void fort_compute_temp_vec
+    (const int lo[], const int hi[],
+     const BL_FORT_FAB_ARG(state),
+     const BL_FORT_FAB_ARG(diag_eos),
+     amrex::Real* comoving_a,
+     const int* print_fortran_warnings);
+
   void fort_init_this_z
     (amrex::Real* comoving_a);
 
