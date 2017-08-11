@@ -160,6 +160,93 @@ module eos_module
 
       ! ****************************************************************************
 
+
+      ! ****************************************************************************
+
+      subroutine ion_n_vec(U, t, nh, ne, nhp, nhep, nhepp, vec_count)
+
+      use amrex_fort_module, only : rt => amrex_real
+      use atomic_rates_module, ONLY: YHELIUM, MPROTON, BOLTZMANN, &
+                                     TCOOLMIN, TCOOLMAX, NCOOLTAB, deltaT, &
+                                     AlphaHp, AlphaHep, AlphaHepp, Alphad, &
+                                     GammaeH0, GammaeHe0, GammaeHep, &
+                                     ggh0, gghe0, gghep
+
+      integer, intent(in) :: vec_count
+      real(rt), intent(in   ) :: U(vec_count), t(vec_count), nh(vec_count), ne(vec_count)
+      real(rt), intent(  out) :: nhp(vec_count), nhep(vec_count), nhepp(vec_count)
+      real(rt) :: ahp(vec_count), ahep(vec_count), ahepp(vec_count), ad(vec_count), geh0(vec_count), gehe0(vec_count), gehep(vec_count)
+      real(rt) :: ggh0ne(vec_count), gghe0ne(vec_count), gghepne(vec_count)
+      real(rt) :: tmp(vec_count), logT(vec_count), flo(vec_count), fhi(vec_count)
+      real(rt) :: smallest_val
+      integer :: j(vec_count), i
+
+      logT(1:vec_count) = dlog10(t(1:vec_count))
+
+      ! Temperature floor
+      do i = 1, vec_count
+        if (logT(i) .le. TCOOLMIN) logT(i) = TCOOLMIN + 0.5d0*deltaT
+      end do
+
+      ! Interpolate rates
+      do i = 1, vec_count
+        tmp(i) = (logT(i)-TCOOLMIN)/deltaT
+        j(i) = int(tmp(i))
+        fhi(i) = tmp(i) - j(i)
+        flo(i) = 1.0d0 - fhi(i)
+        j(i) = j(i) + 1 ! F90 arrays start with 1
+      end do
+
+      do i = 1, vec_count
+        ahp(i)   = flo(i)*AlphaHp  (j(i)) + fhi(i)*AlphaHp  (j(i)+1)
+        ahep(i)  = flo(i)*AlphaHep (j(i)) + fhi(i)*AlphaHep (j(i)+1)
+        ahepp(i) = flo(i)*AlphaHepp(j(i)) + fhi(i)*AlphaHepp(j(i)+1)
+        ad(i)    = flo(i)*Alphad   (j(i)) + fhi(i)*Alphad   (j(i)+1)
+        geh0(i)  = flo(i)*GammaeH0 (j(i)) + fhi(i)*GammaeH0 (j(i)+1)
+        gehe0(i) = flo(i)*GammaeHe0(j(i)) + fhi(i)*GammaeHe0(j(i)+1)
+        gehep(i) = flo(i)*GammaeHep(j(i)) + fhi(i)*GammaeHep(j(i)+1)
+      end do
+
+      do i = 1, vec_count
+        if (ne(i) .gt. 0.0d0) then
+           ggh0ne(i)   = ggh0 /(ne(i)*nh(i))
+           gghe0ne(i)  = gghe0/(ne(i)*nh(i))
+           gghepne(i)  = gghep/(ne(i)*nh(i))
+        else
+           ggh0ne(i)   = 0.0d0
+           gghe0ne(i)  = 0.0d0
+           gghepne(i)  = 0.0d0
+        endif
+      end do
+
+      ! H+
+      do i = 1, vec_count
+        nhp(i) = 1.0d0 - ahp(i)/(ahp(i) + geh0(i) + ggh0ne(i))
+      end do
+
+      ! He+
+      smallest_val = Tiny(1.0d0)
+      do i = 1, vec_count
+        if ((gehe0(i) + gghe0ne(i)) .gt. smallest_val) then
+  
+           nhep(i)  = YHELIUM/(1.0d0 + (ahep(i)  + ad(i)     )/(gehe0(i) + gghe0ne(i)) &
+                                  + (gehep(i) + gghepne(i))/ahepp(i))
+        else
+           nhep(i)  = 0.0d0
+        endif
+      end do
+
+      ! He++
+      do i = 1, vec_count
+        if (nhep(i) .gt. 0.0d0) then
+           nhepp(i) = nhep(i)*(gehep(i) + gghepne(i))/ahepp(i)
+        else
+           nhepp(i) = 0.0d0
+        endif
+      end do
+
+      end subroutine ion_n_vec
+
       subroutine iterate_ne(z, U, t, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
 
       use atomic_rates_module, ONLY: this_z, YHELIUM
