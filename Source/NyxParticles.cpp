@@ -910,7 +910,9 @@ Nyx::particle_redistribute (int lbase, bool init)
         static Array<BoxArray>            ba;
         static Array<DistributionMapping> dm;
 
-        bool changed = false;
+        bool    changed = false;
+        bool dm_changed = false;
+        bool ba_changed = false;
 
         int flev = parent->finestLevel();
 	
@@ -923,24 +925,31 @@ Nyx::particle_redistribute (int lbase, bool init)
             ba.resize(flev+1);
             dm.resize(flev+1);
             changed = true;
+            ba_changed = true;
         }
         else
         {
             for (int i = 0; i <= flev && !changed; i++)
             {
                 if (ba[i] != parent->boxArray(i))
+                {
                     //
                     // The BoxArrays have changed in the regridding.
                     //
                     changed = true;
+                    ba_changed = true;
+                }
 
                 if ( ! changed)
                 {
                     if (dm[i] != parent->getLevel(i).get_new_data(0).DistributionMap())
+                    {
                         //
                         // The DistributionMaps have changed in the regridding.
                         //
                         changed = true;
+                        dm_changed = true;
+                    }
                 }
             }
         }
@@ -953,8 +962,10 @@ Nyx::particle_redistribute (int lbase, bool init)
 	    // because of we called redistribute during a subcycle, there may be particles not in
 	    // the proper position on coarser levels.
             //
-            if (verbose && ParallelDescriptor::IOProcessor())
-                std::cout << "Calling redistribute because changed " << '\n';
+            if (verbose && ParallelDescriptor::IOProcessor() && ba_changed)
+                std::cout << "Calling redistribute because BoxArray changed " << '\n';
+            if (verbose && ParallelDescriptor::IOProcessor() && dm_changed)
+                std::cout << "Calling redistribute because DistMap changed " << '\n';
 
             DMPC->Redistribute(lbase);
             //
