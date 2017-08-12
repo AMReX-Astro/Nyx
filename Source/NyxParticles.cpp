@@ -910,9 +910,10 @@ Nyx::particle_redistribute (int lbase, bool init)
         static Array<BoxArray>            ba;
         static Array<DistributionMapping> dm;
 
-        bool    changed = false;
-        bool dm_changed = false;
-        bool ba_changed = false;
+        bool    changed      = false;
+        bool dm_changed      = false;
+        bool ba_changed      = false;
+        bool ba_size_changed = false;
 
         int flev = parent->finestLevel();
 	
@@ -922,10 +923,12 @@ Nyx::particle_redistribute (int lbase, bool init)
  
         if (ba.size() != flev+1)
         {
+            amrex::Print() << "BA SIZE " << ba.size() << std::endl;
+            amrex::Print() << "FLEV    " << flev << std::endl;
             ba.resize(flev+1);
             dm.resize(flev+1);
             changed = true;
-            ba_changed = true;
+            ba_size_changed = true;
         }
         else
         {
@@ -962,10 +965,15 @@ Nyx::particle_redistribute (int lbase, bool init)
 	    // because of we called redistribute during a subcycle, there may be particles not in
 	    // the proper position on coarser levels.
             //
-            if (verbose && ParallelDescriptor::IOProcessor() && ba_changed)
-                std::cout << "Calling redistribute because BoxArray changed " << '\n';
-            if (verbose && ParallelDescriptor::IOProcessor() && dm_changed)
-                std::cout << "Calling redistribute because DistMap changed " << '\n';
+            if (verbose)
+            {
+                if (ba_size_changed)
+                   amrex::Print() << "Calling redistribute because the size of BoxArray changed " << '\n';
+                else if (ba_changed)
+                   amrex::Print() << "Calling redistribute because BoxArray changed " << '\n';
+                else if (dm_changed)
+                   amrex::Print() << "Calling redistribute because DistMap changed " << '\n';
+            }
 
             DMPC->Redistribute(lbase);
             //
@@ -979,8 +987,8 @@ Nyx::particle_redistribute (int lbase, bool init)
         }
         else
         {
-            if (verbose && ParallelDescriptor::IOProcessor())
-                std::cout << "NOT calling redistribute because NOT changed " << '\n';
+            if (verbose)
+                amrex::Print() << "NOT calling redistribute because NOT changed " << '\n';
         }
     }
 }
