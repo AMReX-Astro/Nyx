@@ -849,7 +849,7 @@ Gravity::multilevel_solve_for_new_phi (int level,
     BL_PROFILE("Gravity::multilevel_solve_for_new_phi()");
     if (verbose)
         amrex::Print() << "Gravity ... multilevel solve for new phi at base level " << level
-                  << " to finest level " << finest_level << '\n';
+                       << " to finest level " << finest_level << '\n';
 
     for (int lev = level; lev <= finest_level; lev++)
     {
@@ -1051,7 +1051,6 @@ Gravity::actual_multilevel_solve (int                       level,
                 (*Rhs_p[lev])[mfi].plus(-mass_offset);
 
        // This is used to enforce solvability if appropriate.
-//     if ( grids[level].contains(parent->Geom(level).Domain()) )
        if ( parent->Geom(level).Domain().numPts() == grids[level].numPts() )
        {
            Real sum = 0;
