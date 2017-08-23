@@ -766,3 +766,8 @@ Nyx::no_hydro_setup()
 }
 #endif
 
+void
+Nyx::set_simd_width(const int simd_width)
+{
+    set_simd(&simd_width);
+}

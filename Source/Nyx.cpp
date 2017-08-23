@@ -21,6 +21,7 @@ using std::string;
 #include <AMReX_TagBox.H>
 #include <AMReX_Particles_F.H>
 #include <AMReX_Utility.H>
+#include <AMReX_Print.H>
 
 #if BL_USE_MPI
 #include "MemInfo.H"
@@ -62,6 +63,8 @@ static int sum_interval = -1;
 static Real fixed_dt    = -1.0;
 static Real initial_dt  = -1.0;
 static Real dt_cutoff   =  0;
+
+int simd_width = 1;
 
 int Nyx::strict_subcycling = 0;
 
@@ -252,6 +255,13 @@ Nyx::read_params ()
     pp.query("gamma", gamma);
 
     pp.query("strict_subcycling",strict_subcycling);
+
+    pp.query("simd_width", simd_width);
+    set_simd_width(simd_width);
+
+    if (verbose > 1) amrex::Print()
+        << "SIMD width (# zones) for heating/cooling integration: "
+        << simd_width << std::endl;
 
     // Get boundary conditions
     Array<int> lo_bc(BL_SPACEDIM), hi_bc(BL_SPACEDIM);

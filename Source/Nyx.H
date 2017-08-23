@@ -711,6 +711,7 @@ protected:
 
   static amrex::Real getCPUTime();
 
+  static void set_simd_width(const int simd_width);
 
 };
 

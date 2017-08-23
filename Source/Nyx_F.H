@@ -14,6 +14,8 @@ extern "C"
   void fort_integrate_comoving_a_to_z 
     (amrex::Real* old_a, amrex::Real* z_value, amrex::Real* dt);
 
+  void set_simd(const int *simd_width);
+
   //  void fort_get_omm    (amrex::Real* omm);
   //  void fort_get_omb    (amrex::Real* frac);
   //  void fort_get_hubble (amrex::Real* hubble);
@@ -281,4 +283,5 @@ extern "C"
 #ifdef __cplusplus
 }
 #endif
+
 #endif
