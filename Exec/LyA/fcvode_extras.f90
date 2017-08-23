@@ -87,4 +87,39 @@ module fcvode_extras
       ierr = 0
     end function RhsFn
 
+
+    integer(c_int) function RhsFn_vec(tn, sunvec_y, sunvec_f, user_data) &
+           result(ierr) bind(C,name='RhsFn_vec')
+
+      use, intrinsic :: iso_c_binding
+      use fnvector_serial
+      use cvode_interface
+      use misc_params, only: simd_width
+      implicit none
+
+      real(c_double), value :: tn
+      type(c_ptr), value    :: sunvec_y
+      type(c_ptr), value    :: sunvec_f
+      type(c_ptr), value    :: user_data
+
+      ! pointers to data in SUNDAILS vectors
+      real(c_double), pointer :: yvec(:)
+      real(c_double), pointer :: fvec(:)
+
+      integer(c_long) :: neq
+      real(c_double) :: energy(simd_width)
+
+      neq = int(simd_width, c_long)
+
+      ! get data arrays from SUNDIALS vectors
+      call N_VGetData_Serial(sunvec_y, neq, yvec)
+      call N_VGetData_Serial(sunvec_f, neq, fvec)
+
+      call f_rhs_vec(tn, yvec, energy)
+
+      fvec = energy
+
+      ierr = 0
+    end function RhsFn_vec
+
 end module fcvode_extras
