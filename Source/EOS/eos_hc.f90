@@ -156,6 +156,81 @@ module eos_module
 
       ! ****************************************************************************
 
+      subroutine iterate_ne_vec(z, U, t, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
+
+      use atomic_rates_module, ONLY: this_z, YHELIUM
+      use misc_params, only: simd_width
+
+      integer :: i, j
+
+      real(rt), intent(in) :: z
+      real(rt), dimension(simd_width), intent (in   ) :: U, nh
+      real(rt), dimension(simd_width), intent (inout) :: ne
+      real(rt), dimension(simd_width), intent (  out) :: t, nh0, nhp, nhe0, nhep, nhepp
+
+      real(rt), parameter :: xacc = 1.0d-6
+
+      real(rt), dimension(simd_width) :: f, df, eps
+      real(rt), dimension(simd_width) :: nhp_plus, nhep_plus, nhepp_plus
+      real(rt), dimension(simd_width) :: dnhp_dne, dnhep_dne, dnhepp_dne, dne
+      real(rt) :: maxerr
+
+      ! Check if we have interpolated to this z
+      if (abs(z-this_z) .gt. xacc*z) &
+          STOP 'iterate_ne(): Wrong redshift!'
+
+      i = 0
+      ne = 1.0d0 ! 0 is a bad guess
+      do  ! Newton-Raphson solver
+         i = i + 1
+
+         ! Ion number densities. This does not vectorize easily.
+         do j = 1, simd_width
+           call ion_n(U(j), nh(j), ne(j), nhp(j), nhep(j), nhepp(j), t(j))
+         end do
+
+         ! Forward difference derivatives
+         do j = 1, simd_width
+            if (ne(j) .gt. 0.0d0) then
+               eps(j) = xacc*ne(j)
+            else
+               eps(j) = 1.0d-24
+            endif
+         end do
+         do j = 1, simd_width
+           call ion_n(U(j), nh(j), (ne(j)+eps(j)), nhp_plus(j), nhep_plus(j), nhepp_plus(j), t(j))
+         end do
+
+         dnhp_dne   = (nhp_plus   - nhp)   / eps
+         dnhep_dne  = (nhep_plus  - nhep)  / eps
+         dnhepp_dne = (nhepp_plus - nhepp) / eps
+
+         f   = ne - nhp - nhep - 2.0d0*nhepp
+         df  = 1.0d0 - dnhp_dne - dnhep_dne - 2.0d0*dnhepp_dne
+         dne = f/df
+
+         ne = max((ne-dne), 0.0d0)
+
+         maxerr = abs(maxval(dne))
+         if (maxerr < xacc) exit
+
+         if (i .gt. 15) &
+            STOP 'iterate_ne_vec(): No convergence in Newton-Raphson!'
+
+      enddo
+
+      ! Get rates for the final ne
+      do j = 1, simd_width
+         call ion_n(U(j), nh(j), ne(j), nhp(j), nhep(j), nhepp(j), t(j))
+      end do
+
+      ! Neutral fractions:
+      nh0   = 1.0d0 - nhp
+      nhe0  = YHELIUM - (nhep + nhepp)
+      end subroutine iterate_ne_vec
+
+
+
       subroutine iterate_ne(z, U, t, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
 
       use atomic_rates_module, ONLY: this_z, YHELIUM
