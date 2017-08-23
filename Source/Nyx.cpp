@@ -2096,11 +2096,19 @@ Nyx::compute_new_temp ()
     {
         const Box& bx = mfi.tilebox();
 
-        fort_compute_temp
-            (bx.loVect(), bx.hiVect(),
-            BL_TO_FORTRAN(S_new[mfi]),
-            BL_TO_FORTRAN(D_new[mfi]), &a,
-             &print_fortran_warnings);
+        if (heat_cool_type == 7) {
+          fort_compute_temp_vec
+              (bx.loVect(), bx.hiVect(),
+              BL_TO_FORTRAN(S_new[mfi]),
+              BL_TO_FORTRAN(D_new[mfi]), &a,
+               &print_fortran_warnings);
+        } else {
+            fort_compute_temp
+              (bx.loVect(), bx.hiVect(),
+              BL_TO_FORTRAN(S_new[mfi]),
+              BL_TO_FORTRAN(D_new[mfi]), &a,
+               &print_fortran_warnings);
+        }
     }
 
     // Compute the maximum temperature
