@@ -131,6 +131,35 @@ module eos_module
 
       end subroutine nyx_eos_T_given_Re
 
+
+
+      subroutine nyx_eos_T_given_Re_vec(T, Ne, R_in, e_in, a)
+
+      use amrex_fort_module, only : rt => amrex_real
+      use atomic_rates_module, ONLY: XHYDROGEN, MPROTON
+      use fundamental_constants_module, only: density_to_cgs, e_to_cgs
+      use misc_params, only: simd_width
+
+      ! In/out variables
+      real(rt), dimension(simd_width), intent(inout) :: T, Ne
+      real(rt), dimension(simd_width), intent(in   ) :: R_in, e_in
+      real(rt),               intent(in   ) :: a
+
+      real(rt), dimension(simd_width) :: nh, nh0, nhep, nhp, nhe0, nhepp
+      real(rt), dimension(simd_width) :: rho, U
+      real(rt) :: z
+
+      ! This converts from code units to CGS
+      rho = R_in * density_to_cgs / a**3
+        U = e_in * e_to_cgs
+      nh  = rho*XHYDROGEN/MPROTON
+
+      z   = 1.d0/a - 1.d0
+
+      call iterate_ne_vec(z, U, T, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
+
+      end subroutine nyx_eos_T_given_Re_vec
+
       ! ****************************************************************************
 
       subroutine nyx_eos_nh0_and_nhep(z, rho, e, nh0, nhep)
