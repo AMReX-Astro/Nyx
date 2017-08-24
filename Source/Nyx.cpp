@@ -370,7 +370,7 @@ Nyx::read_params ()
 #ifdef HEATCOOL
     if (heat_cool_type > 0 && add_ext_src == 0)
        amrex::Error("Nyx::must set add_ext_src to 1 if heat_cool_type > 0");
-    if (heat_cool_type != 1 && heat_cool_type != 3 && heat_cool_type != 5)
+    if (heat_cool_type != 1 && heat_cool_type != 3 && heat_cool_type != 5 && heat_cool_type != 7)
        amrex::Error("Nyx:: nonzero heat_cool_type must equal 1 or 3 or 5");
     if (heat_cool_type == 0)
        amrex::Error("Nyx::contradiction -- HEATCOOL is defined but heat_cool_type == 0");
@@ -392,8 +392,8 @@ Nyx::read_params ()
     }
 
 #ifndef USE_CVODE
-    if (heat_cool_type == 5)
-        amrex::Error("Nyx:: cannot set heat_cool_type = 5 unless USE_CVODE=TRUE");
+    if (heat_cool_type == 5 || heat_cool_type == 7)
+        amrex::Error("Nyx:: cannot set heat_cool_type = 5 or 7 unless USE_CVODE=TRUE");
 #endif
 
 #else
@@ -574,7 +574,7 @@ Nyx::Nyx (Amr&            papa,
     }
 
      // Initialize "this_z" in the atomic_rates_module
-     if (heat_cool_type == 1 || heat_cool_type == 3 || heat_cool_type == 5)
+    if (heat_cool_type == 1 || heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7)
          fort_init_this_z(&old_a);
 
     alloc_simd_vec();
