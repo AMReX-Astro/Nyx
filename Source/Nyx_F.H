@@ -8,7 +8,11 @@
 extern "C"
 {
 #endif
-  void fort_integrate_comoving_a 
+
+  void fort_alloc_simd_vec();
+  void fort_dealloc_simd_vec();
+
+  void fort_integrate_comoving_a
     (amrex::Real* old_a, amrex::Real* new_a, amrex::Real* dt);
 
   void fort_integrate_comoving_a_to_z 

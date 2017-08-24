@@ -771,3 +771,15 @@ Nyx::set_simd_width(const int simd_width)
 {
     set_simd(&simd_width);
 }
+
+void
+Nyx::alloc_simd_vec()
+{
+    fort_alloc_simd_vec();
+}
+
+void
+Nyx::dealloc_simd_vec()
+{
+    fort_dealloc_simd_vec();
+}
