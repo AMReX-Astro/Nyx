@@ -804,12 +804,11 @@ Nyx::est_time_step (Real dt_old)
         Real a = get_comoving_a(cur_time);
         const Real* dx = geom.CellSize();
 
-	Real dt = est_dt;
-
 #ifdef _OPENMP
-#pragma omp parallel firstprivate(dt)
+#pragma omp parallel reduction(min:est_dt)
 #endif
 	{
+          Real dt = 1.e200;
 	  for (MFIter mfi(stateMF,true); mfi.isValid(); ++mfi)
 	    {
 	      const Box& box = mfi.tilebox();
@@ -818,12 +817,7 @@ Nyx::est_time_step (Real dt_old)
                 (BL_TO_FORTRAN(stateMF[mfi]), box.loVect(), box.hiVect(), dx,
                  &dt, &a);
 	    }
-#ifdef _OPENMP
-#pragma omp critical (nyx_estdt)
-#endif
-	  {
-	    est_dt = std::min(est_dt, dt);
-	  }
+          est_dt = std::min(est_dt, dt);
 	}
 
         // If in comoving coordinates, then scale dt (based on u and c) by a
