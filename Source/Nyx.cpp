@@ -807,30 +807,21 @@ Nyx::est_time_step (Real dt_old)
 	Real dt = est_dt;
 
 #ifdef _OPENMP
-#pragma omp parallel firstprivate(dt)
+#pragma omp parallel reduction(min:est_dt)
 #endif
-	{
-	  for (MFIter mfi(stateMF,true); mfi.isValid(); ++mfi)
-	    {
-	      const Box& box = mfi.tilebox();
-
-	      fort_estdt
-                (BL_TO_FORTRAN(stateMF[mfi]), box.loVect(), box.hiVect(), dx,
-                 &dt, &a);
-	    }
-#ifdef _OPENMP
-#pragma omp critical (nyx_estdt)
-#endif
-	  {
-	    est_dt = std::min(est_dt, dt);
-	  }
-	}
+        for (MFIter mfi(stateMF,true); mfi.isValid(); ++mfi)
+        {
+	    const Box& box = mfi.tilebox();
+	    fort_estdt
+             (BL_TO_FORTRAN(stateMF[mfi]), box.loVect(), box.hiVect(), dx, &dt, &a);
+            est_dt = std::min(est_dt, dt);
+        }
+        ParallelDescriptor::ReduceRealMin(est_dt);
 
         // If in comoving coordinates, then scale dt (based on u and c) by a
         est_dt *= a;
-
-        ParallelDescriptor::ReduceRealMin(est_dt);
         est_dt *= cfl;
+
         if (verbose && ParallelDescriptor::IOProcessor())
             std::cout << "...estdt from hydro at level "
                       << level << ": "
