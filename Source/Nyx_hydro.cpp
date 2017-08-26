@@ -128,13 +128,12 @@ Nyx::just_the_hydro (Real time,
     if (add_ext_src && strang_split) 
         strang_first_step(time,dt,S_old_tmp,D_old_tmp);
 
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
-       {
-       FArrayBox flux[BL_SPACEDIM], u_gdnv[BL_SPACEDIM];
-       Real cflLoc = -1.e+200;
+    FArrayBox flux[BL_SPACEDIM], u_gdnv[BL_SPACEDIM];
+    Real cflLoc = -1.e+200;
 
+#ifdef _OPENMP
+#pragma omp parallel reduction(max:courno)
+#endif
        for (MFIter mfi(S_old_tmp,true); mfi.isValid(); ++mfi)
        {
 
@@ -174,6 +173,8 @@ Nyx::just_the_hydro (Real time,
              BL_TO_FORTRAN(flux[2]),
              &cflLoc, &a_old, &a_new, &se, &ske, &print_fortran_warnings, &do_grav);
 
+        courno = std::max(courno, cflLoc);
+
         for (int i = 0; i < BL_SPACEDIM; ++i) {
           fluxes[i][mfi].copy(flux[i], mfi.nodaltilebox(i));
         }
@@ -181,15 +182,6 @@ Nyx::just_the_hydro (Real time,
          e_added += se;
         ke_added += ske;
        } // end of MFIter loop
-
-#ifdef _OPENMP
-#pragma omp critical (hydro_courno)
-#endif
-       {
-        courno = std::max(courno, cflLoc);
-       }
-
-       } // end of omp parallel region
 
        // We copy old Temp and Ne to new Temp and Ne so that they can be used
        //    as guesses when we next need them.
