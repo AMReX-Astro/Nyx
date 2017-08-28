@@ -257,6 +257,7 @@ Nyx::read_params ()
     pp.query("strict_subcycling",strict_subcycling);
 
     pp.query("simd_width", simd_width);
+    if (simd_width < 1) amrex::Abort("simd_width must be a positive integer");
     set_simd_width(simd_width);
 
     if (verbose > 1) amrex::Print()
@@ -364,6 +365,16 @@ Nyx::read_params ()
 #endif
 
     pp.query("heat_cool_type", heat_cool_type);
+    if (heat_cool_type == 7)
+    {
+      Array<int> n_cell(BL_SPACEDIM);
+      ParmParse pp("amr");
+      pp.getarr("n_cell", n_cell, 0, BL_SPACEDIM);
+      if (n_cell[0] % simd_width) {
+        const std::string errmsg = "Currently the SIMD CVODE solver requires that n_cell[0] \% simd_width = 0";
+        amrex::Abort(errmsg);
+      }
+    }
 
     pp.query("use_exact_gravity", use_exact_gravity);
 
