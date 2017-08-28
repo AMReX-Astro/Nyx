@@ -8,11 +8,17 @@
 extern "C"
 {
 #endif
-  void fort_integrate_comoving_a 
+
+  void fort_alloc_simd_vec();
+  void fort_dealloc_simd_vec();
+
+  void fort_integrate_comoving_a
     (amrex::Real* old_a, amrex::Real* new_a, amrex::Real* dt);
 
   void fort_integrate_comoving_a_to_z 
     (amrex::Real* old_a, amrex::Real* z_value, amrex::Real* dt);
+
+  void set_simd(const int *simd_width);
 
   //  void fort_get_omm    (amrex::Real* omm);
   //  void fort_get_omb    (amrex::Real* frac);
@@ -288,4 +294,5 @@ extern "C"
 #ifdef __cplusplus
 }
 #endif
+
 #endif

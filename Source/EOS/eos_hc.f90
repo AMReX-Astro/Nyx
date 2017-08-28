@@ -111,18 +111,22 @@ module eos_module
 
       ! ****************************************************************************
 
-      subroutine nyx_eos_T_given_Re_vec(T, Ne, R_in, e_in, a, veclen)
 
+
+      subroutine nyx_eos_T_given_Re_vec(T, Ne, R_in, e_in, a)
+
+      use amrex_fort_module, only : rt => amrex_real
       use atomic_rates_module, ONLY: XHYDROGEN, MPROTON
       use fundamental_constants_module, only: density_to_cgs, e_to_cgs
+      use misc_params, only: simd_width
 
       ! In/out variables
-      integer, intent(in) :: veclen
-      real(rt), dimension(veclen), intent(inout) :: T, Ne
-      real(rt), dimension(veclen), intent(in   ) :: R_in, e_in
-      real(rt),                    intent(in   ) :: a
+      real(rt), dimension(simd_width), intent(inout) :: T, Ne
+      real(rt), dimension(simd_width), intent(in   ) :: R_in, e_in
+      real(rt),               intent(in   ) :: a
 
-      real(rt), dimension(veclen) :: nh, nh0, nhep, nhp, nhe0, nhepp, rho, U
+      real(rt), dimension(simd_width) :: nh, nh0, nhep, nhp, nhe0, nhepp
+      real(rt), dimension(simd_width) :: rho, U
       real(rt) :: z
 
       ! This converts from code units to CGS
@@ -132,7 +136,7 @@ module eos_module
 
       z   = 1.d0/a - 1.d0
 
-      call iterate_ne_vec(z, U, T, nh, ne, nh0, nhp, nhe0, nhep, nhepp, veclen)
+      call iterate_ne_vec(z, U, T, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
 
       end subroutine nyx_eos_T_given_Re_vec
 
@@ -161,27 +165,27 @@ module eos_module
 
       ! ****************************************************************************
 
-      subroutine iterate_ne_vec(z, U, t, nh, ne, nh0, nhp, nhe0, nhep, nhepp, veclen)
+      subroutine iterate_ne_vec(z, U, t, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
 
       use atomic_rates_module, ONLY: this_z, YHELIUM, BOLTZMANN, MPROTON, TCOOLMAX_R
       use meth_params_module, only: gamma_minus_1
+      use misc_params, only: simd_width
 
       integer :: i
 
-      integer, intent(in) :: veclen
       real(rt), intent (in   ) :: z
-      real(rt), dimension(veclen), intent(in) :: U, nh
-      real(rt), dimension(veclen), intent (inout) :: ne
-      real(rt), dimension(veclen), intent (  out) :: t, nh0, nhp, nhe0, nhep, nhepp
+      real(rt), dimension(simd_width), intent (in) :: U, nh
+      real(rt), dimension(simd_width), intent (inout) :: ne
+      real(rt), dimension(simd_width), intent (  out) :: t, nh0, nhp, nhe0, nhep, nhepp
 
       real(rt), parameter :: xacc = 1.0d-6
 
-      real(rt), dimension(veclen) :: f, df, eps, mu
-      real(rt), dimension(veclen) :: nhp_plus, nhep_plus, nhepp_plus
-      real(rt), dimension(veclen) :: dnhp_dne, dnhep_dne, dnhepp_dne, dne
-      real(rt), dimension(veclen):: U_in, t_in, nh_in, ne_in
-      real(rt), dimension(veclen) :: nhp_out, nhep_out, nhepp_out
-      integer :: vec_count = 0, orig_idx(veclen)
+      real(rt), dimension(simd_width) :: f, df, eps, mu
+      real(rt), dimension(simd_width) :: nhp_plus, nhep_plus, nhepp_plus
+      real(rt), dimension(simd_width) :: dnhp_dne, dnhep_dne, dnhepp_dne, dne
+      real(rt), dimension(simd_width):: U_in, t_in, nh_in, ne_in
+      real(rt), dimension(simd_width) :: nhp_out, nhep_out, nhepp_out
+      integer :: vec_count = 0, orig_idx(simd_width)
       integer :: ii
 
       ! Check if we have interpolated to this z
@@ -189,18 +193,18 @@ module eos_module
           STOP 'iterate_ne(): Wrong redshift!'
 
       ii = 0
-      ne(1:veclen) = 1.0d0 ! 0 is a bad guess
+      ne(1:simd_width) = 1.0d0 ! 0 is a bad guess
 
       do  ! Newton-Raphson solver
          ii = ii + 1
 
          ! Ion number densities
-         do i = 1, veclen
+         do i = 1, simd_width
            mu(i) = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+ne(i))
            t(i)  = gamma_minus_1*MPROTON/BOLTZMANN * U(i) * mu(i)
          end do
          vec_count = 0
-         do i = 1, veclen
+         do i = 1, simd_width
            if (t(i) .ge. TCOOLMAX_R) then ! Fully ionized plasma
              nhp(i)   = 1.0d0
              nhep(i)  = 0.0d0
@@ -228,19 +232,19 @@ module eos_module
          nhepp(orig_idx(1:vec_count)) = nhepp_out(1:vec_count)
 
          ! Forward difference derivatives
-         do i = 1, veclen
+         do i = 1, simd_width
            if (ne(i) .gt. 0.0d0) then
               eps(i) = xacc*ne(i)
            else
               eps(i) = 1.0d-24
            endif
          end do
-         do i = 1, veclen
+         do i = 1, simd_width
            mu(i) = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+ne(i)+eps(i))
            t(i)  = gamma_minus_1*MPROTON/BOLTZMANN * U(i) * mu(i)
          end do
          vec_count = 0
-         do i = 1, veclen
+         do i = 1, simd_width
            if (t(i) .ge. TCOOLMAX_R) then ! Fully ionized plasma
              nhp_plus(i)   = 1.0d0
              nhep_plus(i)  = 0.0d0
@@ -267,23 +271,23 @@ module eos_module
          nhep_plus(orig_idx(1:vec_count)) = nhep_out(1:vec_count)
          nhepp_plus(orig_idx(1:vec_count)) = nhepp_out(1:vec_count)
 
-         do i = 1, veclen
+         do i = 1, simd_width
            dnhp_dne(i)   = (nhp_plus(i)   - nhp(i))   / eps(i)
            dnhep_dne(i)  = (nhep_plus(i)  - nhep(i))  / eps(i)
            dnhepp_dne(i) = (nhepp_plus(i) - nhepp(i)) / eps(i)
          end do
 
-         do i = 1, veclen
+         do i = 1, simd_width
            f(i)   = ne(i) - nhp(i) - nhep(i) - 2.0d0*nhepp(i)
            df(i)  = 1.0d0 - dnhp_dne(i) - dnhep_dne(i) - 2.0d0*dnhepp_dne(i)
            dne(i) = f(i)/df(i)
          end do
 
-         do i = 1, veclen
+         do i = 1, simd_width
            ne(i) = max((ne(i)-dne(i)), 0.0d0)
          end do
 
-         if (maxval(abs(dne(1:veclen))) < xacc) exit
+         if (maxval(abs(dne(1:simd_width))) < xacc) exit
 
 !         if (i .gt. 13) &
 !            print*, "ITERATION: ", i, " NUMBERS: ", z, t, ne, nhp, nhep, nhepp, df
@@ -293,12 +297,12 @@ module eos_module
       enddo
 
       ! Get rates for the final ne
-      do i = 1, veclen
+      do i = 1, simd_width
         mu(i) = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+ne(i))
         t(i)  = gamma_minus_1*MPROTON/BOLTZMANN * U(i) * mu(i)
       end do
       vec_count = 0
-      do i = 1, veclen
+      do i = 1, simd_width
         if (t(i) .ge. TCOOLMAX_R) then ! Fully ionized plasma
           nhp(i)   = 1.0d0
           nhep(i)  = 0.0d0
@@ -325,7 +329,7 @@ module eos_module
       nhepp(orig_idx(1:vec_count)) = nhepp_out(1:vec_count)
 
       ! Neutral fractions:
-      do i = 1, veclen
+      do i = 1, simd_width
         nh0(i)   = 1.0d0 - nhp(i)
         nhe0(i)  = YHELIUM - (nhep(i) + nhepp(i))
       end do
@@ -343,13 +347,14 @@ module eos_module
                                      ggh0, gghe0, gghep
 
       integer, intent(in) :: vec_count
-      real(rt), intent(in   ) :: U(vec_count), t(vec_count), nh(vec_count), ne(vec_count)
-      real(rt), intent(  out) :: nhp(vec_count), nhep(vec_count), nhepp(vec_count)
-      real(rt) :: ahp(vec_count), ahep(vec_count), ahepp(vec_count), ad(vec_count), geh0(vec_count), gehe0(vec_count), gehep(vec_count)
-      real(rt) :: ggh0ne(vec_count), gghe0ne(vec_count), gghepne(vec_count)
-      real(rt) :: tmp(vec_count), logT(vec_count), flo(vec_count), fhi(vec_count)
+      real(rt), dimension(vec_count), intent(in   ) :: U, t, nh, ne
+      real(rt), dimension(vec_count), intent(  out) :: nhp, nhep, nhepp
+      real(rt), dimension(vec_count) :: ahp, ahep, ahepp, ad, geh0, gehe0, gehep
+      real(rt), dimension(vec_count) :: ggh0ne, gghe0ne, gghepne
+      real(rt), dimension(vec_count) :: tmp, logT, flo, fhi
       real(rt) :: smallest_val
-      integer :: j(vec_count), i
+      integer, dimension(vec_count) :: j
+      integer :: i
 
       logT(1:vec_count) = dlog10(t(1:vec_count))
 
@@ -440,6 +445,7 @@ module eos_module
       call iterate_ne(z, U, T, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
 
       end subroutine nyx_eos_T_given_Re
+
 
       subroutine iterate_ne(z, U, t, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
 

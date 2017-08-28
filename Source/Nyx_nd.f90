@@ -365,7 +365,7 @@
 
         end if
 
-        if (heat_cool_type .eq. 1 .or. heat_cool_type .eq. 3 .or. heat_cool_type .eq. 5) then
+        if (heat_cool_type .eq. 1 .or. heat_cool_type .eq. 3 .or. heat_cool_type .eq. 5 .or. heat_cool_type .eq. 7) then
            call tabulate_rates()
         end if
 

@@ -21,6 +21,7 @@ using std::string;
 #include <AMReX_TagBox.H>
 #include <AMReX_Particles_F.H>
 #include <AMReX_Utility.H>
+#include <AMReX_Print.H>
 
 #if BL_USE_MPI
 #include "MemInfo.H"
@@ -62,6 +63,8 @@ static int sum_interval = -1;
 static Real fixed_dt    = -1.0;
 static Real initial_dt  = -1.0;
 static Real dt_cutoff   =  0;
+
+int simd_width = 1;
 
 int Nyx::strict_subcycling = 0;
 
@@ -253,6 +256,14 @@ Nyx::read_params ()
 
     pp.query("strict_subcycling",strict_subcycling);
 
+    pp.query("simd_width", simd_width);
+    if (simd_width < 1) amrex::Abort("simd_width must be a positive integer");
+    set_simd_width(simd_width);
+
+    if (verbose > 1) amrex::Print()
+        << "SIMD width (# zones) for heating/cooling integration: "
+        << simd_width << std::endl;
+
     // Get boundary conditions
     Array<int> lo_bc(BL_SPACEDIM), hi_bc(BL_SPACEDIM);
     pp.getarr("lo_bc", lo_bc, 0, BL_SPACEDIM);
@@ -354,13 +365,23 @@ Nyx::read_params ()
 #endif
 
     pp.query("heat_cool_type", heat_cool_type);
+    if (heat_cool_type == 7)
+    {
+      Array<int> n_cell(BL_SPACEDIM);
+      ParmParse pp("amr");
+      pp.getarr("n_cell", n_cell, 0, BL_SPACEDIM);
+      if (n_cell[0] % simd_width) {
+        const std::string errmsg = "Currently the SIMD CVODE solver requires that n_cell[0] \% simd_width = 0";
+        amrex::Abort(errmsg);
+      }
+    }
 
     pp.query("use_exact_gravity", use_exact_gravity);
 
 #ifdef HEATCOOL
     if (heat_cool_type > 0 && add_ext_src == 0)
        amrex::Error("Nyx::must set add_ext_src to 1 if heat_cool_type > 0");
-    if (heat_cool_type != 1 && heat_cool_type != 3 && heat_cool_type != 5)
+    if (heat_cool_type != 1 && heat_cool_type != 3 && heat_cool_type != 5 && heat_cool_type != 7)
        amrex::Error("Nyx:: nonzero heat_cool_type must equal 1 or 3 or 5");
     if (heat_cool_type == 0)
        amrex::Error("Nyx::contradiction -- HEATCOOL is defined but heat_cool_type == 0");
@@ -382,8 +403,8 @@ Nyx::read_params ()
     }
 
 #ifndef USE_CVODE
-    if (heat_cool_type == 5)
-        amrex::Error("Nyx:: cannot set heat_cool_type = 5 unless USE_CVODE=TRUE");
+    if (heat_cool_type == 5 || heat_cool_type == 7)
+        amrex::Error("Nyx:: cannot set heat_cool_type = 5 or 7 unless USE_CVODE=TRUE");
 #endif
 
 #else
@@ -564,8 +585,10 @@ Nyx::Nyx (Amr&            papa,
     }
 
      // Initialize "this_z" in the atomic_rates_module
-     if (heat_cool_type == 1 || heat_cool_type == 3 || heat_cool_type == 5)
+    if (heat_cool_type == 1 || heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7)
          fort_init_this_z(&old_a);
+
+    alloc_simd_vec();
 
 #ifdef AGN
      // Initialize the uniform(0,1) random number generator.
@@ -580,6 +603,7 @@ Nyx::~Nyx ()
         delete flux_reg;
 #endif
     delete fine_mask;
+    dealloc_simd_vec();
 }
 
 void
@@ -2083,11 +2107,19 @@ Nyx::compute_new_temp ()
     {
         const Box& bx = mfi.tilebox();
 
-        fort_compute_temp
-            (bx.loVect(), bx.hiVect(),
-            BL_TO_FORTRAN(S_new[mfi]),
-            BL_TO_FORTRAN(D_new[mfi]), &a,
-             &print_fortran_warnings);
+        if (heat_cool_type == 7) {
+          fort_compute_temp_vec
+              (bx.loVect(), bx.hiVect(),
+              BL_TO_FORTRAN(S_new[mfi]),
+              BL_TO_FORTRAN(D_new[mfi]), &a,
+               &print_fortran_warnings);
+        } else {
+            fort_compute_temp
+              (bx.loVect(), bx.hiVect(),
+              BL_TO_FORTRAN(S_new[mfi]),
+              BL_TO_FORTRAN(D_new[mfi]), &a,
+               &print_fortran_warnings);
+        }
     }
 
     // Compute the maximum temperature
