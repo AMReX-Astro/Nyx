@@ -38,6 +38,7 @@ module atomic_rates_module
   real(rt), public, save :: this_z, ggh0, gghe0, gghep, eh0, ehe0, ehep
  
   real(rt), parameter, public :: TCOOLMIN = 0.0d0, TCOOLMAX = 9.0d0  ! in log10
+  real(rt), parameter, public :: TCOOLMIN_R = 10.0d0**TCOOLMIN, TCOOLMAX_R = 10.0d0**TCOOLMAX
   real(rt), parameter, public :: deltaT = (TCOOLMAX - TCOOLMIN)/NCOOLTAB
 
   real(rt), parameter, public :: MPROTON = 1.6726231d-24, BOLTZMANN = 1.3806e-16
