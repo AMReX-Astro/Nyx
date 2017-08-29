@@ -398,6 +398,9 @@ Nyx::read_params ()
         case 5:
           std::cout << "CVODE";
           break;
+        case 7:
+          std::cout << "SIMD CVODE";
+          break;
       }
       std::cout << std::endl;
     }
