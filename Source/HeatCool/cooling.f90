@@ -152,7 +152,7 @@ module heating_cooling_module
       nh  = rho*XHYDROGEN/MPROTON
 
       ! Get gas temperature and individual ionization species
-      call iterate_ne_vec(z, U, t, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
+      call iterate_ne_vec(z, U, t, nh, ne, nh0, nhp, nhe0, nhep, nhepp, simd_width)
 
       ! Convert species to CGS units: 
       ne    = nh * ne

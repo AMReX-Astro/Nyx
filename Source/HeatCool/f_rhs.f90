@@ -136,8 +136,8 @@ subroutine f_rhs_vec(time, e_in, energy)
 
       implicit none
 
-      real(rt), dimension(simd_width), intent(inout) :: e_in
-      real(rt), intent(in   ) :: time
+      real(rt),                        intent(in   ) :: time
+      real(rt), dimension(simd_width), intent(in   ) :: e_in
       real(rt), dimension(simd_width), intent(  out) :: energy
 
       real(rt), parameter :: compt_c = 1.01765467d-37, T_cmb = 2.725d0
@@ -173,7 +173,7 @@ subroutine f_rhs_vec(time, e_in, energy)
       end if
 
       ! Get gas temperature and individual ionization species
-      call iterate_ne_vec(z_vode, U, T_vode_vec, nh, ne_vode_vec, nh0, nhp, nhe0, nhep, nhepp)
+      call iterate_ne_vec(z_vode, U, T_vode_vec, nh, ne_vode_vec, nh0, nhp, nhe0, nhep, nhepp, simd_width)
 
       ! Convert species to CGS units: 
       ne_vode_vec = nh * ne_vode_vec

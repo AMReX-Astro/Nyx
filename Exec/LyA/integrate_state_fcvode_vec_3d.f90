@@ -166,7 +166,7 @@ subroutine integrate_state_fcvode_vec(lo, hi, &
                 state(i:i+simd_width-1,j,k,UEDEN) = state(i:i+simd_width-1,j,k,UEDEN) + rho(1:simd_width) * (e_out(1:simd_width)-e_orig(1:simd_width))
 
                 ! Update T and ne (do not use stuff computed in f_rhs, per vode manual)
-                call nyx_eos_T_given_Re_vec(T_out(1:simd_width), ne_out(1:simd_width), rho(1:simd_width), e_out(1:simd_width), a)
+                call nyx_eos_T_given_Re_vec(T_out(1:simd_width), ne_out(1:simd_width), rho(1:simd_width), e_out(1:simd_width), a, simd_width)
                 diag_eos(i:i+simd_width-1,j,k,TEMP_COMP) = T_out(1:simd_width)
                 diag_eos(i:i+simd_width-1,j,k,  NE_COMP) = ne_out(1:simd_width)
 

@@ -109,47 +109,11 @@
 
       integer          :: i,j,k
       real(rt) :: rhoInv,eint
-      real(rt) :: ke,dummy_pres
+      real(rt), dimension(hi(1)-lo(1)+1) :: ke,dummy_pres,small_temp_vec
       real(rt) :: z
-
-      ! Data structures holding temporary state data so we can call the EOS and
-      ! HeatCool routines using SIMD. One data structure holds all cells with positive
-      ! energies (which call nyx_eos_T_given_Re()), and another holds cells with
-      ! negative energies, which call nyx_eos_given_RT()).
-      type eint_neg_type
-        integer, allocatable :: i(:), j(:), k(:)
-        double precision, allocatable :: temp(:), ne(:), urho(:), eint(:)
-      end type eint_neg_type
-      type eint_pos_type
-        integer, allocatable :: i(:), j(:), k(:)
-        double precision, allocatable :: temp(:), ne(:), urho(:), eint(:)
-      end type eint_pos_type
-
-      type (eint_neg_type) :: eint_neg_list
-      type (eint_pos_type) :: eint_pos_list
-
-      integer :: loop_size, eint_neg_counter, eint_pos_counter
-
-      loop_size = (hi(1)-lo(1)+1) * (hi(2)-lo(2)+1) * (hi(3)-lo(3)+1)
-
-      eint_neg_counter = 1
-      eint_pos_counter = 1
-
-      allocate(eint_neg_list%i(loop_size))
-      allocate(eint_neg_list%j(loop_size))
-      allocate(eint_neg_list%k(loop_size))
-      allocate(eint_neg_list%temp(loop_size))
-      allocate(eint_neg_list%ne(loop_size))
-      allocate(eint_neg_list%urho(loop_size))
-      allocate(eint_neg_list%eint(loop_size))
-
-      allocate(eint_pos_list%i(loop_size))
-      allocate(eint_pos_list%j(loop_size))
-      allocate(eint_pos_list%k(loop_size))
-      allocate(eint_pos_list%temp(loop_size))
-      allocate(eint_pos_list%ne(loop_size))
-      allocate(eint_pos_list%urho(loop_size))
-      allocate(eint_pos_list%eint(loop_size))
+      real(rt), dimension(hi(1)-lo(1)+1,4) :: eos_inputs_pos_ueint, eos_inputs_neg_ueint
+      integer :: orig_indices(hi(1)-lo(1)+1,3)
+      integer :: pos_eos_count, neg_eos_count
 
       z = 1.d0/comoving_a - 1.d0
 
@@ -172,89 +136,73 @@
          enddo
       enddo
 
-      ! Cells which call nyx_eos_given_RT() and nyx_eos_T_given_Re to get equation of
-      ! state data now need to call it with vector arguments, since both the integrator
-      ! (RKF45) and the RHS functions (in particular, iterate_ne() and ion_n()) are now
-      ! vectorized. So we do this in 2 steps:
-      ! 
-      ! 1.) Build 2 lists of cells, one which contains cells with
-      ! positive internal energy, and another with cells with negative energy.
-      ! 
-      ! 2.) Loop through each list separately and call the two EOS functions with
-      ! vector arguments.
-
       do k = lo(3),hi(3)
          do j = lo(2),hi(2)
-            do i = lo(1),hi(1)
-               rhoInv = 1.d0 / state(i,j,k,URHO)
-               if (state(i,j,k,UEINT) > 0.d0) then
-                 eint = state(i,j,k,UEINT) * rhoInv
-                 eint_pos_list%i(eint_pos_counter) = i
-                 eint_pos_list%j(eint_pos_counter) = j
-                 eint_pos_list%k(eint_pos_counter) = k
-                 eint_pos_list%temp(eint_pos_counter) = diag_eos(i,j,k,TEMP_COMP)
-                 eint_pos_list%ne(eint_pos_counter) = diag_eos(i,j,k,NE_COMP)
-                 eint_pos_list%urho(eint_pos_counter) = state(i,j,k,URHO)
-                 eint_pos_list%eint(eint_pos_counter) = eint
-                 eint_pos_counter = eint_pos_counter + 1
-               else
-                 eint_neg_list%i(eint_neg_counter) = i
-                 eint_neg_list%j(eint_neg_counter) = j
-                 eint_neg_list%k(eint_neg_counter) = k
-                 eint_neg_list%temp(eint_neg_counter) = diag_eos(i,j,k,TEMP_COMP)
-                 eint_neg_list%ne(eint_neg_counter) = diag_eos(i,j,k,NE_COMP)
-                 eint_neg_list%urho(eint_neg_counter) = state(i,j,k,URHO)
-                 eint_neg_list%eint(eint_neg_counter) = eint
-                 eint_neg_counter = eint_neg_counter + 1
-               end if
-            end do
-         end do
-      end do
 
-      do k = lo(3),hi(3)
-         do j = lo(2),hi(2)
-            do i = lo(1),hi(1)
+            pos_eos_count = 0
+            neg_eos_count = 0
 
+            do i = lo(1),hi(1)
                rhoInv = 1.d0 / state(i,j,k,URHO)
 
                if (state(i,j,k,UEINT) > 0.d0) then
 
-                   eint = state(i,j,k,UEINT) * rhoInv
+                   pos_eos_count = pos_eos_count + 1
+
+                   eos_inputs_pos_ueint(pos_eos_count,1) = diag_eos(i,j,k,TEMP_COMP)
+                   eos_inputs_pos_ueint(pos_eos_count,2) = diag_eos(i,j,k,NE_COMP)
+                   eos_inputs_pos_ueint(pos_eos_count,3) = state(i,j,k,URHO)
+                   eos_inputs_pos_ueint(pos_eos_count,4) = state(i,j,k,UEINT)*rhoInv
+
+                   orig_indices(pos_eos_count,1) = i
+                   orig_indices(pos_eos_count,2) = j
+                   orig_indices(pos_eos_count,3) = k
 
                else
-                  if (print_fortran_warnings .gt. 0) then
-                     print *,'   '
-                     print *,'>>> Warning: (rho e) is negative in compute_temp: ',i,j,k
-                  end if
-                   ! Set temp to small_temp and compute corresponding internal energy
 
-                   ke = 0.5d0 * (state(i,j,k,UMX)**2 + state(i,j,k,UMY)**2 + state(i,j,k,UMZ)**2) * rhoInv
+                   neg_eos_count = neg_eos_count + 1
 
-                   diag_eos(i,j,k,TEMP_COMP) = small_temp
-                   state(i,j,k,UEINT) = state(i,j,k,URHO) * eint
-                   state(i,j,k,UEDEN) = state(i,j,k,UEINT) + ke
+                   eos_inputs_neg_ueint(neg_eos_count,1) = diag_eos(i,j,k,TEMP_COMP) ! DON'T NEED THIS; GET RID OF IT
+                   eos_inputs_neg_ueint(neg_eos_count,2) = diag_eos(i,j,k,NE_COMP)
+                   eos_inputs_neg_ueint(neg_eos_count,3) = state(i,j,k,URHO)
+                   eos_inputs_neg_ueint(neg_eos_count,4) = state(i,j,k,UEINT)
+
+                   orig_indices(neg_eos_count,1) = i
+                   orig_indices(neg_eos_count,2) = j
+                   orig_indices(neg_eos_count,3) = k
 
                end if
+             end do
 
-            enddo
+             ! For cells with positive E_int
+             call nyx_eos_T_given_Re_vec(eos_inputs_pos_ueint(1:pos_eos_count,1), &
+                                         eos_inputs_pos_ueint(1:pos_eos_count,2), &
+                                         eos_inputs_pos_ueint(1:pos_eos_count,3), &
+                                         eos_inputs_pos_ueint(1:pos_eos_count,4), &
+                                         comoving_a, &
+                                         pos_eos_count)
+             diag_eos(orig_indices(1:pos_eos_count,1),j,k,TEMP_COMP) = eos_inputs_pos_ueint(1:pos_eos_count,1)
+             diag_eos(orig_indices(1:pos_eos_count,1),j,k,NE_COMP)   = eos_inputs_pos_ueint(1:pos_eos_count,2)
+
+             ! For cells with negative E_int
+             call nyx_eos_given_RT_vec(eos_inputs_neg_ueint(1:neg_eos_count,4), &
+                                   dummy_pres(1:neg_eos_count), &
+                                   eos_inputs_neg_ueint(1:neg_eos_count,3), &
+                                   small_temp_vec(1:neg_eos_count), &
+                                   eos_inputs_neg_ueint(1:neg_eos_count,2), &
+                                   comoving_a, &
+                                   neg_eos_count)
+
+             ke(1:neg_eos_count) = 0.5d0 * (state(orig_indices(1:neg_eos_count,1),j,k,UMX)*state(orig_indices(1:neg_eos_count,1),j,k,UMX) + &
+                                   state(orig_indices(1:neg_eos_count,1),j,k,UMY)*state(orig_indices(1:neg_eos_count,1),j,k,UMY) + &
+                                   state(orig_indices(1:neg_eos_count,1),j,k,UMZ)*state(orig_indices(1:neg_eos_count,1),j,k,UMZ)) * rhoInv
+
+             diag_eos(orig_indices(1:neg_eos_count,1),j,k,TEMP_COMP) = small_temp_vec(1:neg_eos_count)
+             state(orig_indices(1:neg_eos_count,1),j,k,UEINT) = eos_inputs_neg_ueint(1:neg_eos_count,3) * eos_inputs_neg_ueint(1:neg_eos_count,4)
+             state(orig_indices(1:neg_eos_count,1),j,k,UEDEN) = eos_inputs_neg_ueint(1:neg_eos_count,4) + ke(1:neg_eos_count)
+
          enddo
       enddo
-
-      deallocate(eint_neg_list%i)
-      deallocate(eint_neg_list%j)
-      deallocate(eint_neg_list%k)
-      deallocate(eint_neg_list%temp)
-      deallocate(eint_neg_list%ne)
-      deallocate(eint_neg_list%urho)
-      deallocate(eint_neg_list%eint)
-
-      deallocate(eint_pos_list%i)
-      deallocate(eint_pos_list%j)
-      deallocate(eint_pos_list%k)
-      deallocate(eint_pos_list%temp)
-      deallocate(eint_pos_list%ne)
-      deallocate(eint_pos_list%urho)
-      deallocate(eint_pos_list%eint)
 
       end subroutine fort_compute_temp_vec
 
