@@ -286,8 +286,6 @@ module eos_module
 
          if (maxval(abs(dne(1:veclen))) < xacc) exit
 
-!         if (i .gt. 13) &
-!            print*, "ITERATION: ", i, " NUMBERS: ", z, t, ne, nhp, nhep, nhepp, df
          if (ii .gt. 15) &
             STOP 'iterate_ne_vec(): No convergence in Newton-Raphson!'
 
