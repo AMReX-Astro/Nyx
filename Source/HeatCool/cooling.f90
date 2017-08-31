@@ -128,9 +128,9 @@ module heating_cooling_module
       use misc_params, only: simd_width
 
       real(rt), intent(in) :: z
-      real(rt), dimension(:), intent(in   ) :: R_in, e_in
-      real(rt), dimension(:), intent(inout) :: t, ne
-      real(rt), dimension(:), intent(  out) :: energy
+      real(rt), dimension(simd_width), intent(in   ) :: R_in, e_in
+      real(rt), dimension(simd_width), intent(inout) :: t, ne
+      real(rt), dimension(simd_width), intent(  out) :: energy
       logical, intent(in)             :: prnt_d ! for diagnostics print
 
       real(rt), parameter :: compt_c = 1.01765467d-37, T_cmb = 2.725d0
