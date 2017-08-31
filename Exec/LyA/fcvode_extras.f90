@@ -159,13 +159,10 @@ module fcvode_extras
       implicit none
 
       real(c_double), value :: tn
-      type(c_ptr), value    :: sunvec_y
-      type(c_ptr), value    :: sunvec_f
-      type(c_ptr), value    :: user_data
+      type(c_ptr), value    :: sunvec_y, sunvec_f, user_data
 
       ! pointers to data in SUNDAILS vectors
-      real(c_double), pointer :: yvec(:)
-      real(c_double), pointer :: fvec(:)
+      real(c_double), dimension(:), pointer :: yvec, fvec
 
       integer(c_long) :: neq
       real(c_double) :: energy(simd_width)
