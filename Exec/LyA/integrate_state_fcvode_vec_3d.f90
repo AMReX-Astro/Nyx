@@ -70,8 +70,10 @@ subroutine integrate_state_fcvode_vec(lo, hi, &
     type(c_ptr) :: sunvec_y      ! sundials vector
     type(c_ptr) :: CVmem         ! CVODE memory
     type(c_ptr) :: sunvec_atol
-    integer(c_long), parameter :: neq = 8
+    integer(c_long) :: neq
     real(c_double), pointer :: yvec(:)
+
+    neq = int(simd_width, c_long)
 
     allocate(yvec(neq))
     allocate(atol(neq))
