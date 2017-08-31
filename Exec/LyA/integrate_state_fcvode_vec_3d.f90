@@ -174,6 +174,7 @@ subroutine integrate_state_fcvode_vec(lo, hi, &
         end do ! j
     end do ! k
 
+    call N_VDestroy_Serial(sunvec_atol)
     call N_VDestroy_Serial(sunvec_y)
     call FCVodeFree(cvmem)
 

@@ -111,6 +111,7 @@ module fcvode_extras
         T_out(1:simd_width)  = T_vode_vec(1:simd_width)
         ne_out(1:simd_width) = ne_vode_vec(1:simd_width)
 
+        call N_VDestroy_Serial(sunvec_atol)
         deallocate(atol)
 
     end subroutine fcvode_wrapper_vec
