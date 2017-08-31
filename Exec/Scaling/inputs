@@ -83,8 +83,6 @@ nyx.comoving_h   = 0.702d0
 
 # PARTICLES
 nyx.do_dm_particles = 1
-particles.do_tiling = 1
-particles.tile_size = 2048 4 4
 
 # >>>>>>>>>>>>>  PARTICLE INIT OPTIONS <<<<<<<<<<<<<<<<
 #  "AsciiFile"        "Random"	    "Cosmological"
