@@ -2,8 +2,5 @@
   max_num_part = 0
 
   comoving_type = 0
-  comoving_OmB  = 0.0
-  comoving_OmM  = 0.0
-  comoving_h    = 0.0
 /
 

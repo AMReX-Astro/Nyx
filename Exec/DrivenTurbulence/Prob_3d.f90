@@ -4,7 +4,6 @@
       use amrex_fort_module, only : rt => amrex_real
 
       use probdata_module
-      use comoving_module
       use network, only : network_init
 
       implicit none
@@ -16,8 +15,7 @@
 
       namelist /fortin/ &
            denerr, dengrad,  max_denerr_lev,max_dengrad_lev, &
-           alpha, rho0, temp0, &
-           comoving_OmM, comoving_OmB, comoving_h
+           alpha, rho0, temp0
 !
 !     Build "probin" filename -- the name of file containing fortin namelist.
 !     

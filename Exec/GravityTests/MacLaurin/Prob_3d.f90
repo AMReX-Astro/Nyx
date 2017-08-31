@@ -3,7 +3,6 @@
 
       use amrex_fort_module, only : rt => amrex_real
       use probdata_module
-      use comoving_module
       use network   , only : network_init
       implicit none
 
@@ -13,7 +12,7 @@
 
       integer untin,i
 
-      namelist /fortin/ comoving_OmM, comoving_OmB, comoving_h, max_num_part, a1, a3
+      namelist /fortin/ max_num_part, a1, a3
 
 !
 !     Build "probin" filename -- the name of file containing fortin namelist.
