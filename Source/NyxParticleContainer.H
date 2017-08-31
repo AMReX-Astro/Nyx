@@ -9,6 +9,10 @@
 class NyxParticleContainerBase
 {
 public:
+
+    using MyParIter = amrex::ParIter<1+BL_SPACEDIM>;
+    using MyConstParIter = amrex::ParConstIter<1+BL_SPACEDIM>;
+
     virtual ~NyxParticleContainerBase() {}
 
     virtual void moveKickDrift (amrex::MultiFab& acceleration, int level, amrex::Real timestep, 
@@ -71,9 +75,9 @@ public:
     amrex::Real estTimestep (amrex::MultiFab& acceleration, amrex::Real a, int level, amrex::Real cfl) const;
 
     virtual int finestLevel() const override
-        {
-            return amrex::AmrParticleContainer<NSR,NSI,NAR,NAI>::finestLevel();
-        }
+    {
+        return amrex::AmrParticleContainer<NSR,NSI,NAR,NAI>::finestLevel();
+    }
 
     virtual void Redistribute (int lev_min              = 0,
                                int lev_max              =-1,
@@ -188,8 +192,8 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::SetParticleVelocities (amrex::Array<amrex
 
 template <int NSR,int NSI,int NAR,int NAI>
 void
-NyxParticleContainer<NSR,NSI,NAR,NAI>::sumParticleMomentum (int   lev,
-					       amrex::Real* mom) const
+NyxParticleContainer<NSR,NSI,NAR,NAI>::sumParticleMomentum (int          lev,
+							    amrex::Real* mom) const
 {
     BL_PROFILE("NyxParticleContainer<NSR,NSI,NAR,NAI>::sumParticleMomentum()");
     BL_ASSERT(NSR >= BL_SPACEDIM+1);
@@ -231,8 +235,8 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::sumParticleMomentum (int   lev,
 template <int NSR,int NSI,int NAR,int NAI>
 amrex::Real
 NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       acceleration,
-				       int             lev,
-				       amrex::Real            cfl) const
+						    int             lev,
+						    amrex::Real            cfl) const
 {
     return estTimestep(acceleration,1.0,lev,cfl);
 }
@@ -240,9 +244,9 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
 template <int NSR,int NSI,int NAR,int NAI>
 amrex::Real
 NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       acceleration,
-				       amrex::Real            a,
-				       int             lev,
-				       amrex::Real            cfl) const
+						    amrex::Real            a,
+						    int                    lev,
+						    amrex::Real            cfl) const
 {
     BL_PROFILE("NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep(lev)");
     amrex::Real            dt               = 1e50;
@@ -282,21 +286,17 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
         ac_pointer->FillBoundary(geom.periodicity()); // DO WE NEED GHOST CELLS FILLED ???
     }
 
-    for (typename ParticleLevel::const_iterator pmap_it = pmap.begin(), pmapEnd = pmap.end(); pmap_it != pmapEnd; ++pmap_it)
-    {
-        const int        grid = pmap_it->first.first;
-        const AoS&       pbox = pmap_it->second.GetArrayOfStructs();
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
+    for (MyConstParIter pti(*this, lev); pti.isValid(); ++pti) {
+        const int grid = pti.index();
+        const AoS&       pbox = pti.GetArrayOfStructs();
         const int        n    = pbox.size();
         const amrex::FArrayBox& gfab = (ac_pointer) ? (*ac_pointer)[grid] : acceleration[grid];
 
         num_particles_at_level += n;
-
-#ifdef _OPENMP
-#pragma omp parallel for
-#endif
-
-        for (int i = 0; i < n; i++)
-        {
+        for (int i = 0; i < n; i++) {
             const ParticleType& p = pbox[i];
 
             if (p.id() <= 0) continue;
