@@ -591,8 +591,6 @@ Nyx::Nyx (Amr&            papa,
     if (heat_cool_type == 1 || heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7)
          fort_init_this_z(&old_a);
 
-    alloc_simd_vec();
-
 #ifdef AGN
      // Initialize the uniform(0,1) random number generator.
      init_uniform01_rng();
@@ -606,7 +604,6 @@ Nyx::~Nyx ()
         delete flux_reg;
 #endif
     delete fine_mask;
-    dealloc_simd_vec();
 }
 
 void

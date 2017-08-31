@@ -411,6 +411,8 @@ main (int argc, char* argv[])
 #endif
     const Real time_before_main_loop = ParallelDescriptor::second();
 
+    Nyx::alloc_simd_vec();
+
     bool finished(false);
 
     while ( ! finished) {
@@ -511,6 +513,8 @@ main (int argc, char* argv[])
       }
 #endif
     }  // ---- end while( ! finished)
+
+    Nyx::dealloc_simd_vec();
 
     const Real time_without_init = ParallelDescriptor::second() - time_before_main_loop;
     if (ParallelDescriptor::IOProcessor()) std::cout << "Time w/o init: " << time_without_init << std::endl;
