@@ -187,7 +187,7 @@ module eos_module
 
       ! Check if we have interpolated to this z
       if (abs(z-this_z) .gt. xacc*z) &
-          STOP 'iterate_ne(): Wrong redshift!'
+          STOP 'iterate_ne_vec(): Wrong redshift!'
 
       ii = 0
       ne(1:veclen) = 1.0d0 ! 0 is a bad guess
@@ -289,7 +289,7 @@ module eos_module
 !         if (i .gt. 13) &
 !            print*, "ITERATION: ", i, " NUMBERS: ", z, t, ne, nhp, nhep, nhepp, df
          if (ii .gt. 15) &
-            STOP 'iterate_ne(): No convergence in Newton-Raphson!'
+            STOP 'iterate_ne_vec(): No convergence in Newton-Raphson!'
 
       enddo
 
