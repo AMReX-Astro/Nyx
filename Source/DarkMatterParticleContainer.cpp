@@ -1,5 +1,41 @@
+#include <stdint.h>
+
 #include "DarkMatterParticleContainer.H"
 #include "dm_F.H"
+
+/// These are helper functions used when initializing from a morton-ordered
+/// binary particle file.
+namespace {
+
+  inline uint64_t split(unsigned int a) {
+    uint64_t x = a & 0x1fffff;
+    x = (x | x << 32) & 0x1f00000000ffff;
+    x = (x | x << 16) & 0x1f0000ff0000ff;
+    x = (x | x << 8)  & 0x100f00f00f00f00f;
+    x = (x | x << 4)  & 0x10c30c30c30c30c3;
+    x = (x | x << 2)  & 0x1249249249249249;
+    return x;
+  }
+  
+  inline uint64_t get_morton_index(unsigned int x,
+				   unsigned int y,
+				   unsigned int z) {
+    uint64_t morton_index = 0;
+    morton_index |= split(x) | ( split(y) << 1) | (split(z) << 2);
+    return morton_index;
+  }  
+
+  struct BoxMortonKey {
+    uint64_t morton_id;
+    int box_id;
+  };
+
+  struct by_morton_id { 
+    bool operator()(const BoxMortonKey &a, const BoxMortonKey &b) { 
+      return a.morton_id < b.morton_id;
+    }
+  };
+}
 
 using namespace amrex;
 
@@ -610,3 +646,75 @@ DarkMatterParticleContainer::AssignDensityAndVels (Array<std::unique_ptr<MultiFa
 {
      AssignDensity(mf, lev_min, BL_SPACEDIM+1);
 }
+
+void 
+DarkMatterParticleContainer::InitFromBinaryMortonFile(std::string file_name, int nextra) {
+  BL_PROFILE("DarkMatterParticleContainer::InitFromBinaryMortonFile");
+  
+  uint64_t num_parts = 549755813888;
+  int DM = 3;
+  int NX = 4;
+  size_t psize = (DM + NX) * 4;
+  
+  const int lev = 0;
+  const BoxArray& ba = ParticleBoxArray(lev);
+  int num_boxes = ba.size();
+  uint64_t num_parts_per_box = num_parts / num_boxes;
+  
+  std::vector<BoxMortonKey> box_morton_keys(num_boxes);
+  for (int i = 0; i < num_boxes; ++i) {
+    const Box& box = ba[i];
+    unsigned int x = box.smallEnd(0);
+    unsigned int y = box.smallEnd(1);
+    unsigned int z = box.smallEnd(2);
+    box_morton_keys[i].morton_id = get_morton_index(x, y, z);
+    box_morton_keys[i].box_id = i;
+  }
+  
+  std::sort(box_morton_keys.begin(), box_morton_keys.end(), by_morton_id());
+  
+  std::vector<int> file_indices(num_boxes);
+  for (int i = 0; i < num_boxes; ++i) {
+    file_indices[box_morton_keys[i].box_id] = i;
+  }
+  
+  ParticleType p;
+  for (MFIter mfi = MakeMFIter(lev); mfi.isValid(); ++mfi) {
+    Box tile_box = mfi.tilebox();
+    
+    const int grid = mfi.index();
+    const int tile = mfi.LocalTileIndex();
+    
+    auto& particles = GetParticles(lev);
+    
+    std::ifstream ifs;
+    ifs.open(file_name.c_str(), std::ios::in|std::ios::binary);
+    uint64_t seek_pos = 16 + file_indices[grid]*num_parts_per_box*psize;
+    ifs.seekg(seek_pos, std::ios::beg);
+    
+    std::vector<char> buffer(num_parts_per_box*psize);
+    ifs.read((char*)&buffer[0], num_parts_per_box*psize);
+
+    float fpos[DM];
+    float fextra[NX];    
+    for (uint64_t i = 0; i < num_parts_per_box; ++i) {
+
+      std::memcpy((char*)&fpos[0],   (char*)&buffer[i*psize], DM*sizeof(float));
+      std::memcpy((char*)&fextra[0], (char*)&buffer[i*psize + DM*sizeof(float)], NX*sizeof(float));
+      
+      AMREX_D_TERM(p.m_rdata.pos[0] = fpos[0];,
+		   p.m_rdata.pos[1] = fpos[1];,
+		   p.m_rdata.pos[2] = fpos[2];);
+      
+      for (int comp = 0; comp < NX; comp++)
+	p.m_rdata.arr[BL_SPACEDIM+comp] = fextra[comp];
+      
+      p.m_idata.id  = ParticleType::NextID();
+      p.m_idata.cpu = ParallelDescriptor::MyProc();
+      particles[std::make_pair(grid, tile)].push_back(p);
+    }    
+  }
+ 
+  Redistribute();
+}
+
