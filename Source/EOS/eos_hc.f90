@@ -182,7 +182,7 @@ module eos_module
       real(rt), dimension(veclen) :: dnhp_dne, dnhep_dne, dnhepp_dne, dne
       real(rt), dimension(veclen):: U_in, t_in, nh_in, ne_in
       real(rt), dimension(veclen) :: nhp_out, nhep_out, nhepp_out
-      integer :: vec_count = 0, orig_idx(veclen)
+      integer :: vec_count, orig_idx(veclen)
       integer :: ii
 
       ! Check if we have interpolated to this z
