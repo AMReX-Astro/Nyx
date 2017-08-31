@@ -137,7 +137,7 @@ subroutine f_rhs_vec(time, e_in, energy)
       implicit none
 
       real(rt),                        intent(in   ) :: time
-      real(rt), dimension(simd_width), intent(in   ) :: e_in
+      real(rt), dimension(simd_width), intent(inout) :: e_in
       real(rt), dimension(simd_width), intent(  out) :: energy
 
       real(rt), parameter :: compt_c = 1.01765467d-37, T_cmb = 2.725d0
@@ -149,16 +149,13 @@ subroutine f_rhs_vec(time, e_in, energy)
       real(rt), dimension(simd_width) :: rho, U
       real(rt) :: a
       real(rt), dimension(simd_width) :: nh, nh0, nhp, nhe0, nhep, nhepp
-      real(rt), dimension(simd_width) :: e
       integer, dimension(simd_width) :: j
       integer :: m
       logical, dimension(simd_width) :: hot
 
       do m = 1, simd_width
         if (e_in(m) .lt. 0.d0) then
-           e(m) = tiny(e_in(m))
-        else
-           e(m) = e_in(m)
+           e_in(m) = tiny(e_in(m))
         endif
       end do
 
