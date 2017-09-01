@@ -83,10 +83,11 @@ Nyx::read_init_params ()
 
     // Input error check
     if (!binary_particle_file.empty() && (particle_init_type != "BinaryFile" &&
-                                          particle_init_type != "BinaryMetaFile"))
+                                          particle_init_type != "BinaryMetaFile" && 
+					  particle_init_type != "BinaryMortonFile"))
     {
         if (ParallelDescriptor::IOProcessor())
-            std::cerr << "ERROR::particle_init_type is not BinaryFile or BinaryMetaFile but you specified binary_particle_file" << std::endl;
+            std::cerr << "ERROR::particle_init_type is not BinaryFile, BinaryMetaFile, or BinaryMortonFile but you specified binary_particle_file" << std::endl;
         amrex::Error();
     }
 
