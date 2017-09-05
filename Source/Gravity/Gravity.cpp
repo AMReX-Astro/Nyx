@@ -143,11 +143,11 @@ Gravity::read_params ()
         Real Gconst;
         fort_get_grav_const(&Gconst);
         Ggravity = -4.0 * M_PI * Gconst;
-        if (verbose > 0 && ParallelDescriptor::IOProcessor())
+        if (verbose > 0)
         {
-            std::cout << "Getting Gconst from nyx_constants: " << Gconst
+            amrex::Print() << "Getting Gconst from nyx_constants: " << Gconst
                       << '\n';
-            std::cout << "Using " << Ggravity << " for 4 pi G in Gravity.cpp "
+            amrex::Print() << "Using " << Ggravity << " for 4 pi G in Gravity.cpp "
                       << '\n';
         }
         done = true;
@@ -158,8 +158,8 @@ void
 Gravity::install_level (int       level,
                         AmrLevel* level_data_to_install)
 {
-    if (verbose > 1 && ParallelDescriptor::IOProcessor())
-        std::cout << "Installing Gravity level " << level << '\n';
+    if (verbose > 1)
+        amrex::Print() << "Installing Gravity level " << level << '\n';
 
     LevelData[level] = level_data_to_install;
 
@@ -280,8 +280,8 @@ Gravity::solve_for_old_phi (int               level,
         return;
 #endif
 
-    if (verbose && ParallelDescriptor::IOProcessor())
-        std::cout << "Gravity ... single level solve for old phi at level "
+    if (verbose)
+        amrex::Print() << "Gravity ... single level solve for old phi at level "
                   << level << std::endl;
     MultiFab Rhs(grids[level], dmap[level], 1, 0);
     Rhs.setVal(0.0);
@@ -315,8 +315,8 @@ Gravity::solve_for_new_phi (int               level,
         return;
 #endif
 
-    if (verbose && ParallelDescriptor::IOProcessor())
-        std::cout << "Gravity ... single level solve for new phi at level "
+    if (verbose)
+        amrex::Print() << "Gravity ... single level solve for new phi at level "
                   << level << std::endl;
 
     MultiFab Rhs(grids[level], dmap[level], 1, 0);
@@ -348,8 +348,8 @@ Gravity::solve_for_phi (int               level,
 
 {
     BL_PROFILE("Gravity::solve_for_phi()");
-    if (verbose && ParallelDescriptor::IOProcessor())
-        std::cout << " ... solve for phi at level " << level << '\n';
+    if (verbose)
+        amrex::Print() << " ... solve for phi at level " << level << '\n';
 
     // This is a correction for fully periodic domains only
     if (Geometry::isAllPeriodic())
@@ -449,11 +449,9 @@ Gravity::solve_for_phi (int               level,
 
             Rhs.plus(-sum, 0, 1, 0);
 
-            if (verbose && ParallelDescriptor::IOProcessor())
-                std::cout << " ... subtracting "
-                          << sum
-                          << " to ensure solvability "
-                          << '\n';
+            if (verbose)
+                amrex::Print() << " ... subtracting " << sum
+                               << " to ensure solvability " << '\n';
         }
     }
 
@@ -503,12 +501,10 @@ Gravity::solve_for_delta_phi (int                        crse_level,
     BL_ASSERT(grad_delta_phi.size() == num_levels);
     BL_ASSERT(delta_phi.size() == num_levels);
 
-    if (verbose && ParallelDescriptor::IOProcessor())
+    if (verbose)
     {
-        std::cout << "... solving for delta_phi at crse_level = " << crse_level
-                  << '\n';
-        std::cout << "...                    up to fine_level = " << fine_level
-                  << '\n';
+        amrex::Print() << "... solving for delta_phi at crse_level = " << crse_level << '\n';
+        amrex::Print() << "...                    up to fine_level = " << fine_level << '\n';
     }
 
     const Geometry& geom = parent->Geom(crse_level);
@@ -595,8 +591,8 @@ Gravity::solve_for_delta_phi (int                        crse_level,
 
        local_correction = local_correction / grids[crse_level].numPts();
 
-       if (verbose && ParallelDescriptor::IOProcessor())
-          std::cout << "WARNING: Adjusting RHS in solve_for_delta_phi by " << local_correction << std::endl;
+       if (verbose)
+          amrex::Print() << "WARNING: Adjusting RHS in solve_for_delta_phi by " << local_correction << std::endl;
 
        for (int lev = crse_level; lev <= fine_level; lev++) {
          Rhs_p[lev-crse_level]->plus(-local_correction,0,1,0);
@@ -631,10 +627,10 @@ Gravity::gravity_sync (int crse_level, int fine_level, int iteration, int ncycle
     BL_PROFILE("Gravity::gravity_sync()");
     BL_ASSERT(parent->finestLevel()>crse_level);
 
-    if (verbose && ParallelDescriptor::IOProcessor())
+    if (verbose)
     {
-        std::cout << " ... gravity_sync at crse_level " << crse_level << '\n';
-        std::cout << " ...     up to finest_level     " << fine_level << '\n';
+        amrex::Print() << " ... gravity_sync at crse_level " << crse_level << '\n';
+        amrex::Print() << " ...     up to finest_level     " << fine_level << '\n';
     }
 
     // Build Rhs for solve for delta_phi
@@ -659,8 +655,8 @@ Gravity::gravity_sync (int crse_level, int fine_level, int iteration, int ncycle
 
         local_correction /= grids[crse_level].numPts();
 
-        if (verbose && ParallelDescriptor::IOProcessor())
-            std::cout << "WARNING: Adjusting RHS in gravity_sync solve by " << local_correction << '\n';
+        if (verbose)
+            amrex::Print() << "WARNING: Adjusting RHS in gravity_sync solve by " << local_correction << '\n';
 
         crse_rhs.plus(-local_correction,0,1,0);
     }
@@ -851,9 +847,9 @@ Gravity::multilevel_solve_for_new_phi (int level,
                                        int use_previous_phi_as_guess)
 {
     BL_PROFILE("Gravity::multilevel_solve_for_new_phi()");
-    if (verbose && ParallelDescriptor::IOProcessor())
-        std::cout << "Gravity ... multilevel solve for new phi at base level " << level
-                  << " to finest level " << finest_level << '\n';
+    if (verbose)
+        amrex::Print() << "Gravity ... multilevel solve for new phi at base level " << level
+                       << " to finest level " << finest_level << '\n';
 
     for (int lev = level; lev <= finest_level; lev++)
     {
@@ -877,9 +873,9 @@ Gravity::multilevel_solve_for_old_phi (int level,
                                        int use_previous_phi_as_guess)
 {
     BL_PROFILE("Gravity::multilevel_solve_for_old_phi()");
-    if (verbose && ParallelDescriptor::IOProcessor())
-        std::cout << "Gravity ... multilevel solve for old phi at base level " << level
-                  << " to finest level " << finest_level << '\n';
+    if (verbose)
+        amrex::Print() << "Gravity ... multilevel solve for old phi at base level " << level
+                       << " to finest level " << finest_level << '\n';
 
     for (int lev = level; lev <= finest_level; lev++)
     {
@@ -912,7 +908,6 @@ Gravity::actual_multilevel_solve (int                       level,
                                   int                       use_previous_phi_as_guess)
 {
     BL_PROFILE("Gravity::actual_multilevel_solve()");
-    const int IOProc = ParallelDescriptor::IOProcessorNumber();
 
     const int num_levels = finest_level - level + 1;
 
@@ -1047,16 +1042,15 @@ Gravity::actual_multilevel_solve (int                       level,
     // This correction is for fully periodic domains only.
     if (Geometry::isAllPeriodic())
     {
-        if (verbose && ParallelDescriptor::IOProcessor())
-            std::cout << " ... subtracting average density " << mass_offset
-                      << " from RHS at each level " << '\n';
+        if (verbose)
+            amrex::Print() << " ... subtracting average density " << mass_offset
+                           << " from RHS at each level " << '\n';
 
         for (int lev = 0; lev < num_levels; lev++)
             for (MFIter mfi(*Rhs_p[lev]); mfi.isValid(); ++mfi)
                 (*Rhs_p[lev])[mfi].plus(-mass_offset);
 
        // This is used to enforce solvability if appropriate.
-//     if ( grids[level].contains(parent->Geom(level).Domain()) )
        if ( parent->Geom(level).Domain().numPts() == grids[level].numPts() )
        {
            Real sum = 0;
@@ -1071,17 +1065,12 @@ Gravity::actual_multilevel_solve (int                       level,
             const Real eps = 1.e-10 * std::abs(mass_offset);
             if (std::abs(sum) > eps)
             {
-                 if (ParallelDescriptor::IOProcessor())
-                 {
-                     std::cout << " ... current avg differs from mass_offset by " << sum << " " << '\n';
-                     std::cout << " ... Gravity::actual_multilevel_solve -- total mass has changed!"
-                               << '\n';;
-                 }
+               amrex::Print() << " ... current avg differs from mass_offset by " << sum << " " << '\n';
+               amrex::Print() << " ... Gravity::actual_multilevel_solve -- total mass has changed!" << '\n';;
             }
 
-            if (verbose && ParallelDescriptor::IOProcessor())
-                std::cout << " ... subtracting " << sum << " to ensure solvability "
-                          << '\n';
+            if (verbose)
+                amrex::Print() << " ... subtracting " << sum << " to ensure solvability " << '\n';
 
             for (int lev = 0; lev < num_levels; lev++)
                 (*Rhs_p[lev]).plus(-sum, 0, 1, 0);
@@ -1671,23 +1660,19 @@ Gravity::set_mass_offset (Real time)
 
         mass_offset /= geom.ProbSize();
 
-        if (verbose && ParallelDescriptor::IOProcessor())
-            std::cout << "Gravity ... defining average density in Gravity::set_mass_offset to be " << mass_offset
-                      << '\n';
+        if (verbose)
+            amrex::Print() << "Gravity ... defining average density in Gravity::set_mass_offset to be " 
+                           << mass_offset << '\n';
     }
 
     const Real diff = std::abs(mass_offset - old_mass_offset);
     const Real eps  = 1.e-10 * std::abs(old_mass_offset);
     if (diff > eps && old_mass_offset > 0)
     {
-        if (ParallelDescriptor::IOProcessor())
-        {
-            std::cout << " ... new vs old mass_offset " << mass_offset << " "
-                      << old_mass_offset
-                      << " ... diff is " << diff <<  '\n';
-            std::cout << " ... Gravity::set_mass_offset -- total mass has changed!"
-                      << '\n';;
-        }
+        amrex::Print() << " ... new vs old mass_offset " << mass_offset << " "
+                       << old_mass_offset << " ... diff is " << diff <<  '\n';
+        amrex::Print() << " ... Gravity::set_mass_offset -- total mass has changed!"
+                       << '\n';;
     }
 }
 
@@ -1896,9 +1881,9 @@ void
 Gravity::CorrectRhsUsingOffset(int level, MultiFab& Rhs)
 {
     BL_PROFILE("Gravity::CorrectRhsUsingOffset()");
-    if (verbose && ParallelDescriptor::IOProcessor())
-        std::cout << " ... subtracting average density from RHS in solve ... "
-                  << mass_offset << '\n';
+    if (verbose)
+        amrex::Print() << " ... subtracting average density from RHS in solve ... "
+                       << mass_offset << '\n';
 
     for (MFIter mfi(Rhs); mfi.isValid(); ++mfi)
         Rhs[mfi].plus(-mass_offset);
@@ -1912,17 +1897,13 @@ Gravity::CorrectRhsUsingOffset(int level, MultiFab& Rhs)
         const Real eps = 1.e-10 * std::abs(mass_offset);
         if (std::abs(sum) > eps)
         {
-            if (ParallelDescriptor::IOProcessor())
-            {
-                std::cout << " ... current avg differs from mass_offset by " << sum << " " << '\n';
-                std::cout << " ... Gravity : single_level solve for phi -- total mass has changed!"
+            amrex::Print() << " ... current avg differs from mass_offset by " << sum << " " << '\n';
+            amrex::Print() << " ... Gravity : single_level solve for phi -- total mass has changed!"
                           << '\n';;
-            }
         }
 
-        if (verbose && ParallelDescriptor::IOProcessor())
-            std::cout << " ... subtracting " << sum << " to ensure solvability "
-                      << '\n';
+        if (verbose)
+            amrex::Print() << " ... subtracting " << sum << " to ensure solvability " << '\n';
 
         Rhs.plus(-sum, 0, 1, 0);
     }
@@ -2021,7 +2002,8 @@ Gravity::solve_with_HPGMG(int level,
     {
       if (ParallelDescriptor::IOProcessor())
       {
-        std::cerr << "WARNING: Periodic boundary conditions, but f does not sum to zero... mean(f)=" << average_value_of_f << std::endl;
+        std::cerr << "WARNING: Periodic boundary conditions, but f does not sum to zero... mean(f)=" 
+                << average_value_of_f << std::endl;
         std::cerr << "Subtracting mean(f) from RHS ..." << std::endl;
       }
       shift_vector(&level_h,VECTOR_F,VECTOR_F,-average_value_of_f);
@@ -2031,8 +2013,7 @@ Gravity::solve_with_HPGMG(int level,
   rebuild_operator(&level_h,NULL,a,b);    // i.e. calculate Dinv and lambda_max
   MGBuild(&MG_h,&level_h,a,b,minCoarseDim,ParallelDescriptor::Communicator()); // build the Multigrid Hierarchy
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  if (ParallelDescriptor::IOProcessor())
-    std::cout << std::endl << std::endl << "===== STARTING SOLVE =====" << std::endl << std::flush;
+  amrex::Print() << std::endl << std::endl << "===== STARTING SOLVE =====" << std::endl << std::flush;
 
   MGResetTimers (&MG_h);
   zero_vector (MG_h.levels[0], VECTOR_U);

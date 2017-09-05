@@ -385,12 +385,12 @@ Nyx::init_particles ()
                 amrex::Abort("Nyx::init_particles(): particle_initrandom_iseed must be > 0");
             }
 
-            if (verbose && ParallelDescriptor::IOProcessor())
+            if (verbose)
             {
-                std::cout << "\nInitializing DM with cloud of "
-                          << particle_initrandom_count
-                          << " random particles with initial seed: "
-                          << particle_initrandom_iseed << "\n\n";
+                amrex::Print() << "\nInitializing DM with cloud of "
+                               << particle_initrandom_count
+                               << " random particles with initial seed: "
+                               << particle_initrandom_iseed << "\n\n";
             }
 
             DMPC->InitRandom(particle_initrandom_count,
@@ -408,12 +408,10 @@ Nyx::init_particles ()
                 amrex::Abort("Nyx::init_particles(): particle_initrandom_iseed must be > 0");
             }
 
-            if (verbose && ParallelDescriptor::IOProcessor())
-            {
-                std::cout << "\nInitializing DM with of " << particle_initrandom_count_per_box
-                          << " random particles per box with initial seed: "
-                          << particle_initrandom_iseed << "\n\n";
-            }
+            if (verbose)
+                amrex::Print() << "\nInitializing DM with of " << particle_initrandom_count_per_box
+                               << " random particles per box with initial seed: "
+                               << particle_initrandom_iseed << "\n\n";
 
             DMPC->InitRandomPerBox(particle_initrandom_count_per_box,
                                    particle_initrandom_iseed, pdata);
@@ -421,21 +419,21 @@ Nyx::init_particles ()
         }
         else if (particle_init_type == "RandomPerCell")
         {
-            if (verbose && ParallelDescriptor::IOProcessor())
-                std::cout << "\nInitializing DM with 1 random particle per cell " << "\n";
+            if (verbose)
+                amrex::Print() << "\nInitializing DM with 1 random particle per cell " << "\n";
 
             int n_per_cell = 1;
             DMPC->InitNRandomPerCell(n_per_cell, pdata);
         }
         else if (particle_init_type == "AsciiFile")
         {
-            if (verbose && ParallelDescriptor::IOProcessor())
+            if (verbose)
             {
-                std::cout << "\nInitializing DM particles from \""
-                          << ascii_particle_file << "\" ...\n\n";
+                amrex::Print() << "\nInitializing DM particles from \""
+                               << ascii_particle_file << "\" ...\n\n";
                 if (init_with_sph_particles == 1)
-                    std::cout << "\nInitializing SPH particles from ascii \""
-                              << sph_particle_file << "\" ...\n\n";
+                    amrex::Print() << "\nInitializing SPH particles from ascii \""
+                                   << sph_particle_file << "\" ...\n\n";
             }
             //
             // The second argument is how many Reals we read into `m_data[]`
@@ -448,13 +446,13 @@ Nyx::init_particles ()
         }
         else if (particle_init_type == "BinaryFile")
         {
-            if (verbose && ParallelDescriptor::IOProcessor())
+            if (verbose)
             {
-                std::cout << "\nInitializing DM particles from \""
-                          << binary_particle_file << "\" ...\n\n";
+                amrex::Print() << "\nInitializing DM particles from \""
+                               << binary_particle_file << "\" ...\n\n";
                 if (init_with_sph_particles == 1)
-                    std::cout << "\nInitializing SPH particles from binary \""
-                              << sph_particle_file << "\" ...\n\n";
+                    amrex::Print() << "\nInitializing SPH particles from binary \""
+                                   << sph_particle_file << "\" ...\n\n";
             }
             //
             // The second argument is how many Reals we read into `m_data[]`
@@ -467,13 +465,13 @@ Nyx::init_particles ()
         }
         else if (particle_init_type == "BinaryMetaFile")
         {
-            if (verbose && ParallelDescriptor::IOProcessor())
+            if (verbose)
             {
-                std::cout << "\nInitializing DM particles from meta file\""
-                          << binary_particle_file << "\" ...\n\n";
+                amrex::Print() << "\nInitializing DM particles from meta file\""
+                               << binary_particle_file << "\" ...\n\n";
                 if (init_with_sph_particles == 1)
-                    std::cout << "\nInitializing SPH particles from meta file\""
-                              << sph_particle_file << "\" ...\n\n";
+                    amrex::Print() << "\nInitializing SPH particles from meta file\""
+                                   << sph_particle_file << "\" ...\n\n";
             }
             //
             // The second argument is how many Reals we read into `m_data[]`
@@ -567,9 +565,9 @@ Nyx::init_particles ()
         NPC->SetVerbose(particle_verbose);
         if (particle_init_type == "AsciiFile")
         {
-            if (verbose && ParallelDescriptor::IOProcessor())
-                std::cout << "\nInitializing Neutrino particles from \""
-                          << neutrino_particle_file << "\" ...\n\n";
+            if (verbose)
+                amrex::Print() << "\nInitializing Neutrino particles from \""
+                               << neutrino_particle_file << "\" ...\n\n";
             //
             // The second argument is how many Reals we read into `m_data[]`
             // after reading in `m_pos[]`. Here we're reading in the particle
@@ -579,10 +577,10 @@ Nyx::init_particles ()
         }
         else if (particle_init_type == "BinaryFile")
         {
-            if (verbose && ParallelDescriptor::IOProcessor())
+            if (verbose)
             {
-                std::cout << "\nInitializing Neutrino particles from \""
-                          << neutrino_particle_file << "\" ...\n\n";
+                amrex::Print() << "\nInitializing Neutrino particles from \""
+                               << neutrino_particle_file << "\" ...\n\n";
             }
             //
             // The second argument is how many Reals we read into `m_data[]`
@@ -609,10 +607,8 @@ Nyx::init_santa_barbara (int init_sb_vels)
     Real cur_time = state[State_Type].curTime();
     Real a = old_a;
 
-    if (ParallelDescriptor::IOProcessor()) {
-        std::cout << "... time and comoving a when data is initialized at level " 
-                  << level << " " << cur_time << " " << a << '\n';
-    }
+    amrex::Print() << "... time and comoving a when data is initialized at level " 
+                   << level << " " << cur_time << " " << a << '\n';
 
     if (level == 0)
     {
@@ -864,22 +860,22 @@ Nyx::particle_est_time_step (Real& est_dt)
 	}
 #endif
 
-        if (verbose && ParallelDescriptor::IOProcessor())
+        if (verbose)
         {
             if (est_dt_particle > 0)
             {
-                std::cout << "...estdt from particles at level "
+                amrex::Print() << "...estdt from particles at level "
                           << level << ": " << est_dt_particle << '\n';
             }
             else
             {
-                std::cout << "...there are no particles at level "
+                amrex::Print() << "...there are no particles at level "
                           << level << '\n';
             }
 #ifdef NEUTRINO_PARTICLES
             if (est_dt_neutrino > 0)
             {
-                std::cout << "...estdt from neutrinos at level "
+                amrex::Print() << "...estdt from neutrinos at level "
                           << level << ": " << est_dt_neutrino << '\n';
             }
 #endif
@@ -910,7 +906,10 @@ Nyx::particle_redistribute (int lbase, bool init)
         static Array<BoxArray>            ba;
         static Array<DistributionMapping> dm;
 
-        bool changed = false;
+        bool    changed      = false;
+        bool dm_changed      = false;
+        bool ba_changed      = false;
+        bool ba_size_changed = false;
 
         int flev = parent->finestLevel();
 	
@@ -920,27 +919,36 @@ Nyx::particle_redistribute (int lbase, bool init)
  
         if (ba.size() != flev+1)
         {
+            amrex::Print() << "BA SIZE " << ba.size() << std::endl;
+            amrex::Print() << "FLEV    " << flev << std::endl;
             ba.resize(flev+1);
             dm.resize(flev+1);
             changed = true;
+            ba_size_changed = true;
         }
         else
         {
             for (int i = 0; i <= flev && !changed; i++)
             {
                 if (ba[i] != parent->boxArray(i))
+                {
                     //
                     // The BoxArrays have changed in the regridding.
                     //
                     changed = true;
+                    ba_changed = true;
+                }
 
                 if ( ! changed)
                 {
                     if (dm[i] != parent->getLevel(i).get_new_data(0).DistributionMap())
+                    {
                         //
                         // The DistributionMaps have changed in the regridding.
                         //
                         changed = true;
+                        dm_changed = true;
+                    }
                 }
             }
         }
@@ -953,8 +961,15 @@ Nyx::particle_redistribute (int lbase, bool init)
 	    // because of we called redistribute during a subcycle, there may be particles not in
 	    // the proper position on coarser levels.
             //
-            if (verbose && ParallelDescriptor::IOProcessor())
-                std::cout << "Calling redistribute because changed " << '\n';
+            if (verbose)
+            {
+                if (ba_size_changed)
+                   amrex::Print() << "Calling redistribute because the size of BoxArray changed " << '\n';
+                else if (ba_changed)
+                   amrex::Print() << "Calling redistribute because BoxArray changed " << '\n';
+                else if (dm_changed)
+                   amrex::Print() << "Calling redistribute because DistMap changed " << '\n';
+            }
 
             DMPC->Redistribute(lbase);
             //
@@ -968,8 +983,8 @@ Nyx::particle_redistribute (int lbase, bool init)
         }
         else
         {
-            if (verbose && ParallelDescriptor::IOProcessor())
-                std::cout << "NOT calling redistribute because NOT changed " << '\n';
+            if (verbose)
+                amrex::Print() << "NOT calling redistribute because NOT changed " << '\n';
         }
     }
 }
@@ -1064,12 +1079,6 @@ Nyx::NyxParticlesAddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarPro
                     int ioProcNumSCS, int ioProcNumAll, int scsMyId,
 		                        MPI_Comm scsCommn)
 {
-#if 0
-// What is this doing here???
-if(ParallelDescriptor::IOProcessor()) {
-  std::cout << "PPPPPPPP:  DMPC SPC APC NPC = " << DMPC << "  " << SPC << "  " << APC << "  " << NPC << std::endl;
-}
-#endif
 }
 
 //NyxParticleContainerBase::~NyxParticleContainerBase() {}
