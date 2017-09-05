@@ -183,7 +183,7 @@ module atomic_rates_module
 
       ! ****************************************************************************
 
-      subroutine interp_to_this_z(z)
+      subroutine interp_to_this_z(z) bind(C, name='interp_to_this_z')
 
       real(rt), intent(in) :: z
       real(rt) :: lopz, fact

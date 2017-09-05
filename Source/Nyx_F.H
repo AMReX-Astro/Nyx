@@ -249,6 +249,9 @@ extern "C"
   void fort_init_this_z
     (amrex::Real* comoving_a);
 
+  void fort_interp_to_this_z
+    (amrex::Real* z);
+
   void fort_compute_max_temp_loc
     (const int lo[], const int hi[],
      const BL_FORT_FAB_ARG(state),
