@@ -443,17 +443,6 @@ Nyx::hydro_setup()
 #endif
 
     //
-    // Entropy (S)
-    //
-    derive_lst.add("entropy", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERENTROPY, derentropy),
-                   the_same_box);
-    // We add exactly (Density,Xmom,Ymom,Zmom,Eden,Eint) from State and
-    //                (Temp   ,Ne) from Diag_EOS
-    derive_lst.addComponent("entropy", desc_lst, State_Type, Density, 6);
-    derive_lst.addComponent("entropy", desc_lst, DiagEOS_Type,     0, 2);
-
-    //
     // Div(u)
     //
     derive_lst.add("divu", IndexType::TheCellType(), 1,
