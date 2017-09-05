@@ -103,9 +103,6 @@ VPATH_LOCATIONS   += $(Blocs)
 #These are the directories in AMReX
 
 Pdirs   := Base AmrCore Amr Boundary Particle Extern/amrdata 
-ifeq ($(PROFILE), TRUE)
-  Pdirs   += Extern/ProfParser
-endif
 Ppack	+= $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir)/Make.package)
 Plocs	+= $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir))
 
@@ -155,19 +152,6 @@ VPATH_LOCATIONS   += $(BLAS_dir)
 all: $(executable) 
 	$(SILENT) $(RM) AMReX_buildInfo.cpp
 	@echo SUCCESS
-
-ifeq ($(PROFILE), TRUE)
-$(executable): 
- 
-BLProfParser.tab.H BLProfParser.tab.cpp: $(AMREX_HOME)/Src/Extern/ProfParser/BLProfParser.y 
-	cat $(AMREX_HOME)/Src/Extern/ProfParser/BLProfParser.y $(SED0) $(SED1) > BLProfParserNC.y 
-	bison --defines=BLProfParser.tab.H --output=BLProfParser.tab.cpp \ 
-		BLProfParserNC.y 
-	rm BLProfParserNC.y 
- 
-BLProfParser.lex.yy.cpp: BLProfParser.tab.H $(AMREX_HOME)/Src/Extern/ProfParser/BLProfParser.l 
-	flex --outfile=BLProfParser.lex.yy.cpp $(AMREX_HOME)/Src/Extern/ProfParser/BLProfParser.l 
-endif
 
 # job_info support
 CEXE_sources += AMReX_buildInfo.cpp
