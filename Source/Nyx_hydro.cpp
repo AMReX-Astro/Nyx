@@ -116,8 +116,8 @@ Nyx::just_the_hydro (Real time,
 
     BL_ASSERT(NUM_GROW == 4);
 
-    Real  e_added = 0;
-    Real ke_added = 0;
+    Real  e_added;
+    Real ke_added;
 
     // Create FAB for extended grid values (including boundaries) and fill.
     MultiFab S_old_tmp(S_old.boxArray(), S_old.DistributionMap(), NUM_STATE, NUM_GROW);
@@ -129,11 +129,13 @@ Nyx::just_the_hydro (Real time,
         strang_first_step(time,dt,S_old_tmp,D_old_tmp);
 
 #ifdef _OPENMP
-#pragma omp parallel reduction(max:courno)
+#pragma omp parallel reduction(max:courno) reduction(+:e_added,ke_added)
 #endif
        {
        FArrayBox flux[BL_SPACEDIM], u_gdnv[BL_SPACEDIM];
        Real cflLoc = -1.e+200;
+       e_added = 0.0;
+       ke_added = 0.0;
 
        for (MFIter mfi(S_old_tmp,true); mfi.isValid(); ++mfi)
        {
