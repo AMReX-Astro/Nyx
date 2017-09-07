@@ -36,7 +36,7 @@ subroutine integrate_state_vode(lo, hi, &
     use network
     use eos_module, only: nyx_eos_T_given_Re, nyx_eos_given_RT
     use fundamental_constants_module
-    use atomic_rates_module, only: tabulate_rates, interp_to_this_z
+    use atomic_rates_module, only: tabulate_rates
     use vode_aux_module    , only: z_vode, i_vode, j_vode, k_vode, T_vode
 
     implicit none
@@ -57,9 +57,6 @@ subroutine integrate_state_vode(lo, hi, &
     z = 1.d0/a - 1.d0
 
     z_vode = z
-
-    ! Interpolate from the table to this redshift
-    call interp_to_this_z(z)
 
     ! Note that (lo,hi) define the region of the box containing the grow cells
     ! Do *not* assume this is just the valid region

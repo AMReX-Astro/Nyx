@@ -225,23 +225,3 @@ module atomic_rates_module
       end subroutine interp_to_this_z
 
 end module atomic_rates_module
-
-! *************************************************************************************
-! This must live outside of atomic_rates module so it can be called by the C++
-! *************************************************************************************
-
-subroutine fort_init_this_z(comoving_a) &
-    bind(C, name="fort_init_this_z")
-
-    use amrex_fort_module, only : rt => amrex_real
-    use atomic_rates_module
-
-    implicit none
-
-    real(rt), intent(in   ) :: comoving_a
-    real(rt)                :: z
-
-    z = 1.d0/comoving_a - 1.d0
-    call interp_to_this_z(z)
-
-end subroutine fort_init_this_z

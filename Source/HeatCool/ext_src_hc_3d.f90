@@ -87,8 +87,6 @@ subroutine ext_src_hc(lo, hi, old_state, os_l1, os_l2, os_l3, os_h1, os_h2, os_h
     !      both "old_state" is in fact the "old" state and
     !           "new_state" is in fact the "new" state
 
-    call interp_to_this_z(z)
-
     half_dt = 0.5d0 * dt
     if (heat_cool_type .eq. 1) then
         call integrate_state_hc(lo,hi,tmp_state,ns_l1,ns_l2,ns_l3,ns_h1,ns_h2,ns_h3, &

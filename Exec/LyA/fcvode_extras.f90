@@ -8,7 +8,8 @@ module fcvode_extras
                               sunvec_y, yvec, T_out, ne_out, e_out)
 
         use amrex_fort_module, only : rt => amrex_real
-        use vode_aux_module, only: rho_vode, T_vode, ne_vode
+        use vode_aux_module, only: rho_vode, T_vode, ne_vode, z_vode
+        use atomic_rates_module, only: this_z
         use cvode_interface
         use fnvector_serial
         use, intrinsic :: iso_c_binding
@@ -33,6 +34,7 @@ module fcvode_extras
         T_vode   = T_in
         ne_vode  = ne_in
         rho_vode = rho_in
+        z_vode = this_z
 
         ! Initialize the integration time
         time = 0.d0

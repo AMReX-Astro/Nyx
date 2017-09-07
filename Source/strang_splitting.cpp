@@ -14,6 +14,11 @@ Nyx::strang_first_step (Real time, Real dt, MultiFab& S_old, MultiFab& D_old)
     const Real a = get_comoving_a(time);
     const Real* dx = geom.CellSize();
 
+    {
+      const Real z = 1.0/a - 1.0;
+      interp_to_this_z(&z);
+    }
+
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
@@ -54,6 +59,11 @@ Nyx::strang_second_step (Real time, Real dt, MultiFab& S_new, MultiFab& D_new)
     const Real* dx = geom.CellSize();
 
     compute_new_temp();
+
+    {
+      const Real z = 1.0/a - 1.0;
+      interp_to_this_z(&z);
+    }
 
 #ifdef _OPENMP
 #pragma omp parallel
