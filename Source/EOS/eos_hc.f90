@@ -166,6 +166,7 @@ module eos_module
 
       use atomic_rates_module, ONLY: this_z, YHELIUM, BOLTZMANN, MPROTON, TCOOLMAX_R
       use meth_params_module, only: gamma_minus_1
+      use amrex_error_module, only: amrex_abort
 
       integer :: i
 
@@ -184,10 +185,13 @@ module eos_module
       real(rt), dimension(veclen) :: nhp_out, nhep_out, nhepp_out
       integer :: vec_count, orig_idx(veclen)
       integer :: ii
+      character(len=128) :: errmsg
 
       ! Check if we have interpolated to this z
-      if (abs(z-this_z) .gt. xacc*z) &
-          STOP 'iterate_ne_vec(): Wrong redshift!'
+      if (abs(z-this_z) .gt. xacc*z) then
+          write(errmsg, *) "iterate_ne_vec(): Wrong redshift! z = ", z, " but this_z = ", this_z
+          call amrex_abort(errmsg)
+      end if
 
       ii = 0
       ne(1:veclen) = 1.0d0 ! 0 is a bad guess
@@ -442,6 +446,7 @@ module eos_module
 
       subroutine iterate_ne(z, U, t, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
 
+      use amrex_error_module, only: amrex_abort
       use atomic_rates_module, ONLY: this_z, YHELIUM
 
       integer :: i
@@ -455,10 +460,13 @@ module eos_module
       real(rt) :: f, df, eps
       real(rt) :: nhp_plus, nhep_plus, nhepp_plus
       real(rt) :: dnhp_dne, dnhep_dne, dnhepp_dne, dne
+      character(len=128) :: errmsg
 
       ! Check if we have interpolated to this z
-      if (abs(z-this_z) .gt. xacc*z) &
-          STOP 'iterate_ne(): Wrong redshift!'
+      if (abs(z-this_z) .gt. xacc*z) then
+          write(errmsg, *) "iterate_ne(): Wrong redshift! z = ", z, " but this_z = ", this_z
+          call amrex_abort(errmsg)
+      end if
 
       i = 0
       ne = 1.0d0 ! 0 is a bad guess
