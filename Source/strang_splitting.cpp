@@ -66,7 +66,7 @@ Nyx::strang_second_step (Real time, Real dt, MultiFab& S_new, MultiFab& D_new)
     }
 
 #ifdef _OPENMP
-#pragma omp parallel
+#pragma omp parallel private(min_iter_grid,max_iter_grid) reduction(min:min_iter) reduction(max:max_iter)
 #endif
     for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
     {
