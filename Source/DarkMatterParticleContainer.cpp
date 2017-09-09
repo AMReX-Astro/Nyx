@@ -683,7 +683,7 @@ DarkMatterParticleContainer::AssignDensityAndVels (Array<std::unique_ptr<MultiFa
 
 void 
 DarkMatterParticleContainer::InitFromBinaryMortonFile(const std::string& particle_directory,
-						      int nextra) {
+						      int nextra, int skip_factor) {
   BL_PROFILE("DarkMatterParticleContainer::InitFromBinaryMortonFile");
   
   ParticleMortonFileHeader hdr;
@@ -743,7 +743,7 @@ DarkMatterParticleContainer::InitFromBinaryMortonFile(const std::string& particl
     std::vector<char> buffer(num_parts_per_box*psize);
     ifs.read((char*)&buffer[0], num_parts_per_box*psize);
     
-    for (uint64_t i = 0; i < num_parts_per_box; ++i) {
+    for (uint64_t i = 0; i < num_parts_per_box; i += skip_factor) {
       float fpos[DM];
       float fextra[NX];
       std::memcpy((char*)&fpos[0],   (char*)&buffer[i*psize], DM*sizeof(float));
@@ -755,6 +755,8 @@ DarkMatterParticleContainer::InitFromBinaryMortonFile(const std::string& particl
       
       for (int comp = 0; comp < NX; comp++)
 	p.m_rdata.arr[BL_SPACEDIM+comp] = fextra[comp];
+
+      p.m_rdata.arr[BL_SPACEDIM] *= skip_factor;
       
       p.m_idata.id  = ParticleType::NextID();
       p.m_idata.cpu = ParallelDescriptor::MyProc();

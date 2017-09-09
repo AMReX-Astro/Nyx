@@ -112,6 +112,7 @@ namespace
 
 bool Nyx::do_dm_particles = false;
 int Nyx::num_particle_ghosts = 1;
+int Nyx::particle_skip_factor = 1;
 
 std::string Nyx::particle_init_type = "";
 std::string Nyx::particle_move_type = "";
@@ -256,7 +257,7 @@ Nyx::read_particle_params ()
     pp.query("particle_initrandom_count_per_box", particle_initrandom_count_per_box);
     pp.query("particle_initrandom_mass", particle_initrandom_mass);
     pp.query("particle_initrandom_iseed", particle_initrandom_iseed);
-
+    pp.query("particle_skip_factor", particle_skip_factor);
     pp.query("ascii_particle_file", ascii_particle_file);
 
     // Input error check
@@ -497,7 +498,9 @@ Nyx::init_particles ()
             // after reading in `m_pos[]` in each of the binary particle files.
             // Here we're reading in the particle mass and velocity.
             //
-	  DMPC->InitFromBinaryMortonFile(binary_particle_file, BL_SPACEDIM + 1);
+	  DMPC->InitFromBinaryMortonFile(binary_particle_file,
+					 BL_SPACEDIM + 1,
+					 particle_skip_factor);
         }
         else
         {
