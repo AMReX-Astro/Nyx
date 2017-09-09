@@ -235,6 +235,8 @@ Nyx::hydro_setup()
          use_const_species, gamma, normalize_species,
          heat_cool_type);
 
+    fort_tabulate_rates();
+
     if (use_const_species == 1)
         fort_set_eos_params(h_species, he_species);
 
@@ -650,6 +652,8 @@ Nyx::no_hydro_setup()
          use_colglaz, use_flattening, corner_coupling, version_2,
          use_const_species, gamma, normalize_species,
          heat_cool_type);
+
+    fort_tabulate_rates();
 
     int coord_type = Geometry::Coord();
     fort_set_problem_params(dm, phys_bc.lo(), phys_bc.hi(), Outflow, Symmetry, coord_type);

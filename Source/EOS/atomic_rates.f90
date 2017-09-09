@@ -19,9 +19,6 @@ module atomic_rates_module
 
   implicit none
 
-  ! Routine which acts like a class constructor
-  public  :: tabulate_rates, fort_interp_to_this_z
-
   ! Photo- rates (from file)
   integer   , parameter          , private :: NCOOLFILE=301
   real(rt), dimension(NCOOLFILE), public :: lzr
@@ -50,14 +47,13 @@ module atomic_rates_module
 
   contains
 
-      subroutine tabulate_rates()
+      subroutine fort_tabulate_rates() bind(C, name='fort_tabulate_rates')
       integer :: i
       logical, parameter :: Katz96=.false.
       real(rt), parameter :: t3=1.0d3, t5=1.0d5, t6=1.0d6
       real(rt) :: t, U, E, y, sqrt_t, corr_term
       logical, save :: first=.true.
 
-      !$OMP CRITICAL(TREECOOL_READ)
       if (first) then
 
          first = .false.
@@ -178,9 +174,8 @@ module atomic_rates_module
          endif  ! Katz rates
 
       end if  ! first_call
-      !$OMP END CRITICAL(TREECOOL_READ)
 
-      end subroutine tabulate_rates
+      end subroutine fort_tabulate_rates
 
       ! ****************************************************************************
 
