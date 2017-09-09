@@ -3,6 +3,8 @@
 #include "DarkMatterParticleContainer.H"
 #include "dm_F.H"
 
+using namespace amrex;
+
 /// These are helper functions used when initializing from a morton-ordered
 /// binary particle file.
 namespace {
@@ -35,9 +37,41 @@ namespace {
       return a.morton_id < b.morton_id;
     }
   };
-}
 
-using namespace amrex;
+  std::string get_file_name(const std::string& base, int file_num) {
+    std::stringstream ss;
+    ss << base << file_num;
+    return ss.str();
+  }
+
+  struct ParticleMortonFileHeader {
+    long NP;
+    int  DM;
+    int  NX;
+    int  SZ;
+    int  NF;
+  };
+  
+  void ReadHeader(const std::string& dir,
+		  const std::string& file,
+		  ParticleMortonFileHeader& hdr) {
+    std::string header_filename = dir;
+    header_filename += "/";
+    header_filename += file;
+    
+    Array<char> fileCharPtr;
+    ParallelDescriptor::ReadAndBcastFile(header_filename, fileCharPtr);
+    std::string fileCharPtrString(fileCharPtr.dataPtr());
+    std::istringstream HdrFile(fileCharPtrString, std::istringstream::in);
+
+    HdrFile >> hdr.NP;
+    HdrFile >> hdr.DM;
+    HdrFile >> hdr.NX;
+    HdrFile >> hdr.SZ;
+    HdrFile >> hdr.NF;    
+  }
+
+}
 
 void
 DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
@@ -648,18 +682,31 @@ DarkMatterParticleContainer::AssignDensityAndVels (Array<std::unique_ptr<MultiFa
 }
 
 void 
-DarkMatterParticleContainer::InitFromBinaryMortonFile(std::string file_name, int nextra) {
+DarkMatterParticleContainer::InitFromBinaryMortonFile(const std::string& particle_directory,
+						      int nextra) {
   BL_PROFILE("DarkMatterParticleContainer::InitFromBinaryMortonFile");
   
-  uint64_t num_parts = 549755813888;
-  int DM = 3;
-  int NX = 4;
-  size_t psize = (DM + NX) * 4;
+  ParticleMortonFileHeader hdr;
+  ReadHeader(particle_directory, "Header", hdr);    
+  
+  uint64_t num_parts = hdr.NP;
+  int DM             = hdr.DM;
+  int NX             = hdr.NX;
+  int float_size     = hdr.SZ;
+  int num_files      = hdr.NF;
+  size_t psize       = (DM + NX) * float_size;
+  
+  std::string particle_file_base = particle_directory + "/particles.";
+  std::vector<std::string> file_names;
+  for (int i = 0; i < num_files; ++i)
+    file_names.push_back(get_file_name(particle_file_base, i));
   
   const int lev = 0;
   const BoxArray& ba = ParticleBoxArray(lev);
   int num_boxes = ba.size();
-  uint64_t num_parts_per_box = num_parts / num_boxes;
+  uint64_t num_parts_per_box  = num_parts / num_boxes;
+  uint64_t num_parts_per_file = num_parts / num_files;
+  uint64_t num_bytes_per_file = num_parts_per_file * psize;
   
   std::vector<BoxMortonKey> box_morton_keys(num_boxes);
   for (int i = 0; i < num_boxes; ++i) {
@@ -674,31 +721,31 @@ DarkMatterParticleContainer::InitFromBinaryMortonFile(std::string file_name, int
   std::sort(box_morton_keys.begin(), box_morton_keys.end(), by_morton_id());
   
   std::vector<int> file_indices(num_boxes);
-  for (int i = 0; i < num_boxes; ++i) {
+  for (int i = 0; i < num_boxes; ++i)
     file_indices[box_morton_keys[i].box_id] = i;
-  }
   
   ParticleType p;
   for (MFIter mfi = MakeMFIter(lev); mfi.isValid(); ++mfi) {
-    Box tile_box = mfi.tilebox();
-    
+    Box tile_box = mfi.tilebox();      
     const int grid = mfi.index();
-    const int tile = mfi.LocalTileIndex();
-    
+    const int tile = mfi.LocalTileIndex();      
     auto& particles = GetParticles(lev);
+    
+    uint64_t offset   = file_indices[grid]*num_parts_per_box*psize;
+    int file_num      = offset / num_bytes_per_file;
+    uint64_t seek_pos = offset % num_bytes_per_file;
+    const std::string& file_name = file_names[file_num];
     
     std::ifstream ifs;
     ifs.open(file_name.c_str(), std::ios::in|std::ios::binary);
-    uint64_t seek_pos = 16 + file_indices[grid]*num_parts_per_box*psize;
     ifs.seekg(seek_pos, std::ios::beg);
     
     std::vector<char> buffer(num_parts_per_box*psize);
     ifs.read((char*)&buffer[0], num_parts_per_box*psize);
-
-    float fpos[DM];
-    float fextra[NX];    
+    
     for (uint64_t i = 0; i < num_parts_per_box; ++i) {
-
+      float fpos[DM];
+      float fextra[NX];
       std::memcpy((char*)&fpos[0],   (char*)&buffer[i*psize], DM*sizeof(float));
       std::memcpy((char*)&fextra[0], (char*)&buffer[i*psize + DM*sizeof(float)], NX*sizeof(float));
       
@@ -714,7 +761,7 @@ DarkMatterParticleContainer::InitFromBinaryMortonFile(std::string file_name, int
       particles[std::make_pair(grid, tile)].push_back(p);
     }    
   }
- 
+  
   Redistribute();
 }
 
