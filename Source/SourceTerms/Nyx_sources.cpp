@@ -29,7 +29,7 @@ Nyx::get_old_source (Real      old_time,
     FillPatch(*this, Sborder, 4, old_time, State_Type, Density, Sborder.nComp());
     FillPatch(*this, Dborder, 4, old_time, DiagEOS_Type, 0, 2);
 
-    interp_to_this_z(&z);
+    fort_interp_to_this_z(&z);
 
 #ifdef _OPENMP
 #pragma omp parallel
@@ -89,7 +89,7 @@ Nyx::get_new_source (Real      old_time,
     FillPatch(*this, Dborder_old, 4, old_time, DiagEOS_Type, 0      , 2);
     FillPatch(*this, Dborder_new, 4, new_time, DiagEOS_Type, 0      , 2);
 
-    interp_to_this_z(&z);
+    fort_interp_to_this_z(&z);
 
 #ifdef _OPENMP
 #pragma omp parallel

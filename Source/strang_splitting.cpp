@@ -16,7 +16,7 @@ Nyx::strang_first_step (Real time, Real dt, MultiFab& S_old, MultiFab& D_old)
 
     {
       const Real z = 1.0/a - 1.0;
-      interp_to_this_z(&z);
+      fort_interp_to_this_z(&z);
     }
 
 #ifdef _OPENMP
@@ -62,7 +62,7 @@ Nyx::strang_second_step (Real time, Real dt, MultiFab& S_new, MultiFab& D_new)
 
     {
       const Real z = 1.0/a - 1.0;
-      interp_to_this_z(&z);
+      fort_interp_to_this_z(&z);
     }
 
 #ifdef _OPENMP

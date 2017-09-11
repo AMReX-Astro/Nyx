@@ -246,7 +246,7 @@ extern "C"
      amrex::Real* comoving_a,
      const int* print_fortran_warnings);
 
-  void interp_to_this_z
+  void fort_interp_to_this_z
     (const amrex::Real* z);
 
   void fort_compute_max_temp_loc

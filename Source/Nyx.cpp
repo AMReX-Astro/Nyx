@@ -565,7 +565,7 @@ Nyx::Nyx (Amr&            papa,
 
      // Initialize "this_z" in the atomic_rates_module
      if (heat_cool_type == 1 || heat_cool_type == 3 || heat_cool_type == 5)
-         interp_to_this_z(&initial_z);
+         fort_interp_to_this_z(&initial_z);
 
 #ifdef AGN
      // Initialize the uniform(0,1) random number generator.
@@ -2072,7 +2072,7 @@ Nyx::compute_new_temp ()
 
     {
       const Real z = 1.0/a - 1.0;
-      interp_to_this_z(&z);
+      fort_interp_to_this_z(&z);
     }
 
 #ifdef _OPENMP

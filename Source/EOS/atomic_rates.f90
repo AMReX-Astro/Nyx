@@ -20,7 +20,7 @@ module atomic_rates_module
   implicit none
 
   ! Routine which acts like a class constructor
-  public  :: tabulate_rates, interp_to_this_z
+  public  :: tabulate_rates, fort_interp_to_this_z
 
   ! Photo- rates (from file)
   integer   , parameter          , private :: NCOOLFILE=301
@@ -183,7 +183,7 @@ module atomic_rates_module
 
       ! ****************************************************************************
 
-      subroutine interp_to_this_z(z) bind(C, name='interp_to_this_z')
+      subroutine fort_interp_to_this_z(z) bind(C, name='fort_interp_to_this_z')
 
       real(rt), intent(in) :: z
       real(rt) :: lopz, fact
@@ -222,6 +222,6 @@ module atomic_rates_module
       ehe0  = rehe0(j)  + (rehe0(j+1)-rehe0(j))*fact
       ehep  = rehep(j)  + (rehep(j+1)-rehep(j))*fact
 
-      end subroutine interp_to_this_z
+      end subroutine fort_interp_to_this_z
 
 end module atomic_rates_module
