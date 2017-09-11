@@ -58,7 +58,6 @@ subroutine integrate_state_vode(lo, hi, &
 
     z = 1.d0/a - 1.d0
 
-    z_vode = z
     mean_rhob = comoving_OmB * 3.d0*(comoving_h*100.d0)**2 / (8.d0*M_PI*Gconst)
 
     ! Note that (lo,hi) define the region of the box containing the grow cells

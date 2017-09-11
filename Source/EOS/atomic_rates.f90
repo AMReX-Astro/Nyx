@@ -185,11 +185,14 @@ module atomic_rates_module
 
       subroutine fort_interp_to_this_z(z) bind(C, name='fort_interp_to_this_z')
 
+      use vode_aux_module, only: z_vode
+
       real(rt), intent(in) :: z
       real(rt) :: lopz, fact
       integer :: i, j
 
       this_z = z
+      z_vode = z
       lopz   = dlog10(1.0d0 + z)
 
       if (lopz .ge. lzr(NCOOLFILE)) then

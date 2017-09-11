@@ -34,7 +34,6 @@ module fcvode_extras
         T_vode   = T_in
         ne_vode  = ne_in
         rho_vode = rho_in
-        z_vode = this_z
 
         ! Initialize the integration time
         time = 0.d0

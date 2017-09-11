@@ -56,8 +56,6 @@ subroutine integrate_state_vode(lo, hi, &
 
     z = 1.d0/a - 1.d0
 
-    z_vode = z
-
     ! Note that (lo,hi) define the region of the box containing the grow cells
     ! Do *not* assume this is just the valid region
     ! apply heating-cooling to UEDEN and UEINT
