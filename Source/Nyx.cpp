@@ -371,7 +371,7 @@ Nyx::read_params ()
       ParmParse pp("amr");
       pp.getarr("n_cell", n_cell, 0, BL_SPACEDIM);
       if (n_cell[0] % simd_width) {
-        const std::string errmsg = "Currently the SIMD CVODE solver requires that n_cell[0] \% simd_width = 0";
+        const std::string errmsg = "Currently the SIMD CVODE solver requires that n_cell[0] % simd_width = 0";
         amrex::Abort(errmsg);
       }
     }
