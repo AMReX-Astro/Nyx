@@ -193,6 +193,8 @@ subroutine f_rhs_vec(time, e_in, energy)
             energy(m)  = energy(m) / rho_vode_vec(m) * (1.0d0+z_vode)
             ne_vode_vec(m) = ne_vode_vec(m) / nh(m)
             hot(m) = .true.
+         else
+            hot(m) = .false.
          endif
       end do
 
