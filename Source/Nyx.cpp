@@ -367,6 +367,12 @@ Nyx::read_params ()
     pp.query("heat_cool_type", heat_cool_type);
     if (heat_cool_type == 7)
     {
+      amrex::Print() << "----- WARNING WARNING WARNING WARNING WARNING -----" << std::endl;
+      amrex::Print() << "                                                   " << std::endl;
+      amrex::Print() << "      SIMD CVODE is currently EXPERIMENTAL.        " << std::endl;
+      amrex::Print() << "      Use at your own risk.                        " << std::endl;
+      amrex::Print() << "                                                   " << std::endl;
+      amrex::Print() << "----- WARNING WARNING WARNING WARNING WARNING -----" << std::endl;
       Array<int> n_cell(BL_SPACEDIM);
       ParmParse pp("amr");
       pp.getarr("n_cell", n_cell, 0, BL_SPACEDIM);
