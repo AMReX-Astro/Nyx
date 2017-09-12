@@ -134,8 +134,6 @@ Nyx::just_the_hydro (Real time,
        {
        FArrayBox flux[BL_SPACEDIM], u_gdnv[BL_SPACEDIM];
        Real cflLoc = -1.e+200;
-       e_added = 0.0;
-       ke_added = 0.0;
 
        for (MFIter mfi(S_old_tmp,true); mfi.isValid(); ++mfi)
        {
