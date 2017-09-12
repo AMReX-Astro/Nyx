@@ -36,7 +36,7 @@ subroutine integrate_state_hc(lo, hi, &
     use network
     use eos_module, only: nyx_eos_T_given_Re, nyx_eos_given_RT
     use fundamental_constants_module
-    use atomic_rates_module, only: tabulate_rates, interp_to_this_z
+    use atomic_rates_module, only: tabulate_rates
     use heating_cooling_module, only: hc_rates
 
     implicit none
@@ -64,9 +64,6 @@ subroutine integrate_state_hc(lo, hi, &
     z = 1.d0/a - 1.d0
     do_diag   = .false.
     prnt_cell = .false.
-
-    ! Interpolate from the table to this redshift
-    call interp_to_this_z(z)
 
     b_fac = 0.0d0
     max_iter = 0

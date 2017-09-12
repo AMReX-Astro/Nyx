@@ -20,7 +20,7 @@ module atomic_rates_module
   implicit none
 
   ! Routine which acts like a class constructor
-  public  :: tabulate_rates, interp_to_this_z
+  public  :: tabulate_rates, fort_interp_to_this_z
 
   ! Photo- rates (from file)
   integer   , parameter          , private :: NCOOLFILE=301
@@ -183,13 +183,16 @@ module atomic_rates_module
 
       ! ****************************************************************************
 
-      subroutine interp_to_this_z(z)
+      subroutine fort_interp_to_this_z(z) bind(C, name='fort_interp_to_this_z')
+
+      use vode_aux_module, only: z_vode
 
       real(rt), intent(in) :: z
       real(rt) :: lopz, fact
       integer :: i, j
 
       this_z = z
+      z_vode = z
       lopz   = dlog10(1.0d0 + z)
 
       if (lopz .ge. lzr(NCOOLFILE)) then
@@ -222,26 +225,6 @@ module atomic_rates_module
       ehe0  = rehe0(j)  + (rehe0(j+1)-rehe0(j))*fact
       ehep  = rehep(j)  + (rehep(j+1)-rehep(j))*fact
 
-      end subroutine interp_to_this_z
+      end subroutine fort_interp_to_this_z
 
 end module atomic_rates_module
-
-! *************************************************************************************
-! This must live outside of atomic_rates module so it can be called by the C++
-! *************************************************************************************
-
-subroutine fort_init_this_z(comoving_a) &
-    bind(C, name="fort_init_this_z")
-
-    use amrex_fort_module, only : rt => amrex_real
-    use atomic_rates_module
-
-    implicit none
-
-    real(rt), intent(in   ) :: comoving_a
-    real(rt)                :: z
-
-    z = 1.d0/comoving_a - 1.d0
-    call interp_to_this_z(z)
-
-end subroutine fort_init_this_z

@@ -38,7 +38,6 @@ subroutine ext_src_force(lo, hi, old_state, os_l1, os_l2, os_l3, os_h1, os_h2, o
     use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : NVAR, UMX, UMY, UMZ, UEDEN, UEINT
     use fundamental_constants_module
-    use atomic_rates_module, only: interp_to_this_z
 
     implicit none
 
