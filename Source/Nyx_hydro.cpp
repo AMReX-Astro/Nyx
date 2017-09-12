@@ -116,8 +116,8 @@ Nyx::just_the_hydro (Real time,
 
     BL_ASSERT(NUM_GROW == 4);
 
-    Real  e_added;
-    Real ke_added;
+    Real  e_added = 0;
+    Real ke_added = 0;
 
     // Create FAB for extended grid values (including boundaries) and fill.
     MultiFab S_old_tmp(S_old.boxArray(), S_old.DistributionMap(), NUM_STATE, NUM_GROW);
