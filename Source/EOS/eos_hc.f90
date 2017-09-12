@@ -10,6 +10,7 @@
 module eos_module
 
   use amrex_fort_module, only : rt => amrex_real
+  use iso_c_binding, only: c_double
 
   implicit none
 
@@ -17,6 +18,9 @@ module eos_module
   public  :: nyx_eos_given_RT, nyx_eos_given_RT_vec, nyx_eos_T_given_Re, nyx_eos_T_given_Re_vec, eos_init_small_pres
   public  :: nyx_eos_nh0_and_nhep, iterate_ne, iterate_ne_vec
   private :: ion_n
+
+  real(rt), public :: xacc ! EOS Newton-Raphson convergence tolerance
+  real(c_double), public :: vode_rtol, vode_atol_scaled ! VODE integration tolerances
 
   contains
 
@@ -455,8 +459,6 @@ module eos_module
       real(rt), intent (inout) :: ne
       real(rt), intent (  out) :: t, nh0, nhp, nhe0, nhep, nhepp
 
-      real(rt), parameter :: xacc = 1.0d-6
-
       real(rt) :: f, df, eps
       real(rt) :: nhp_plus, nhep_plus, nhepp_plus
       real(rt) :: dnhp_dne, dnhep_dne, dnhepp_dne, dne
@@ -612,6 +614,18 @@ module eos_module
 
       end subroutine nyx_eos_given_RT
 
+
+      subroutine fort_setup_eos_params (xacc_in, vode_rtol_in, vode_atol_scaled_in) &
+                                       bind(C, name='fort_setup_eos_params')
+        use amrex_fort_module, only : rt => amrex_real
+        implicit none
+        real(rt), intent(in) :: xacc_in, vode_rtol_in, vode_atol_scaled_in
+
+        xacc = xacc_in
+        vode_rtol = vode_rtol_in
+        vode_atol_scaled = vode_atol_scaled_in
+
+      end subroutine fort_setup_eos_params
 
 
 end module eos_module

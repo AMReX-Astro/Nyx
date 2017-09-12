@@ -262,6 +262,11 @@ extern "C"
   void fort_init_this_z
     (amrex::Real* comoving_a);
 
+  void fort_setup_eos_params
+    (amrex::Real* eos_nr_eps,
+     amrex::Real* vode_rtol,
+     amrex::Real* vode_atol_scaled);
+
   void fort_compute_max_temp_loc
     (const int lo[], const int hi[],
      const BL_FORT_FAB_ARG(state),

@@ -11,6 +11,7 @@ module fcvode_extras
         use vode_aux_module, only: rho_vode, T_vode, ne_vode
         use cvode_interface
         use fnvector_serial
+        use eos_module, only: vode_rtol, vode_atol_scaled
         use, intrinsic :: iso_c_binding
 
         implicit none
@@ -41,8 +42,8 @@ module fcvode_extras
         yvec(1) = e_in
 
         ! Set the tolerances.  
-        atol = 1.d-4 * e_in
-        rtol = 1.d-4
+        atol = vode_atol_scaled * e_in
+        rtol = vode_rtol
 
         ierr = FCVodeReInit(cvmem, time, sunvec_y)
         ierr = FCVodeSStolerances(CVmem, rtol, atol)
@@ -63,6 +64,7 @@ module fcvode_extras
         use cvode_interface
         use fnvector_serial
         use misc_params, only: simd_width
+        use eos_module, only: vode_rtol, vode_atol_scaled
         use, intrinsic :: iso_c_binding
 
         implicit none
@@ -99,8 +101,8 @@ module fcvode_extras
         yvec(1:simd_width) = e_in(1:simd_width)
 
         ! Set the tolerances.  
-        atol(1:simd_width) = 1.d-4 * e_in(1:simd_width)
-        rtol = 1.d-4
+        atol(1:simd_width) = vode_atol_scaled * e_in(1:simd_width)
+        rtol = vode_rtol
 
         ierr = FCVodeReInit(cvmem, time, sunvec_y)
         ierr = FCVodeSVtolerances(CVmem, rtol, sunvec_atol)
