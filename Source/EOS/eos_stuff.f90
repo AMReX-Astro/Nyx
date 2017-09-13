@@ -43,8 +43,8 @@ module eos_module
 
   private nspec, aion, zion
 
-  public eos_init_small_pres, nyx_eos_T_given_Re, nyx_eos_S_given_Re, &
-         nyx_eos_soundspeed, nyx_eos_given_RT, eos
+  public eos_init_small_pres, nyx_eos_T_given_Re, nyx_eos_T_given_Re_vec, nyx_eos_S_given_Re, &
+         nyx_eos_soundspeed, nyx_eos_given_RT, nyx_eos_given_RT_vec, eos
 
 contains
 
@@ -389,5 +389,37 @@ contains
     c_v = dedT
 
   end subroutine eos
+
+
+  subroutine nyx_eos_T_given_Re_vec(T, Ne, R_in, e_in, a, veclen)
+
+    use amrex_fort_module, only : rt => amrex_real
+    use amrex_error_module, only: amrex_abort
+  
+    ! In/out variables
+    integer, intent(in) :: veclen
+    real(rt), dimension(veclen), intent(inout) :: T, Ne
+    real(rt), dimension(veclen), intent(in   ) :: R_in, e_in
+    real(rt),                    intent(in   ) :: a
+  
+    call amrex_abort("nyx_eos_T_given_Re_vec supported only with USE_HEATCOOL=TRUE and USE_CVODE=TRUE")
+
+  end subroutine nyx_eos_T_given_Re_vec
+
+
+  subroutine nyx_eos_given_RT_vec(e, P, R, T, Ne, a, veclen)
+
+    use amrex_fort_module, only : rt => amrex_real
+    use amrex_error_module, only: amrex_abort
+    implicit none
+  
+    integer, intent(in) :: veclen
+    real(rt), dimension(veclen), intent(  out) :: e, P
+    real(rt), dimension(veclen), intent(in   ) :: R, T, Ne
+    real(rt),          intent(in   ) :: a
+  
+    call amrex_abort("nyx_eos_given_RT_vec supported only with USE_HEATCOOL=TRUE and USE_CVODE=TRUE")
+
+  end subroutine nyx_eos_given_RT_vec
 
 end module eos_module
