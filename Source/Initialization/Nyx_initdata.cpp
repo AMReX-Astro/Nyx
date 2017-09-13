@@ -121,7 +121,9 @@ Nyx::read_init_params ()
     // Absolute tolerance of VODE integration (scaled by initial value of ODE)
     pp.query("vode_atol_scaled", vode_atol_scaled);
 
+#ifdef USE_CVODE
     fort_setup_eos_params(&eos_nr_eps, &vode_rtol, &vode_atol_scaled);
+#endif
 }
 
 void

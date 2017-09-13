@@ -256,6 +256,7 @@ Nyx::read_params ()
 
     pp.query("strict_subcycling",strict_subcycling);
 
+#ifdef USE_CVODE
     pp.query("simd_width", simd_width);
     if (simd_width < 1) amrex::Abort("simd_width must be a positive integer");
     set_simd_width(simd_width);
@@ -263,6 +264,7 @@ Nyx::read_params ()
     if (verbose > 1) amrex::Print()
         << "SIMD width (# zones) for heating/cooling integration: "
         << simd_width << std::endl;
+#endif
 
     // Get boundary conditions
     Array<int> lo_bc(BL_SPACEDIM), hi_bc(BL_SPACEDIM);

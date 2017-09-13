@@ -766,6 +766,7 @@ Nyx::no_hydro_setup()
 }
 #endif
 
+#ifdef USE_CVODE
 void
 Nyx::set_simd_width(const int simd_width)
 {
@@ -783,3 +784,4 @@ Nyx::dealloc_simd_vec()
 {
     fort_dealloc_simd_vec();
 }
+#endif
