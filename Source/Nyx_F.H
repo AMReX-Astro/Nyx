@@ -47,7 +47,7 @@ extern "C"
      const int& corner_coupling,
      const int& version_2, const int& use_const_species,
      const amrex::Real& gamma_in, const int& normalize_species,
-     const int& heat_cool_type, const MPI_Comm& comm);
+     const int& heat_cool_type);
 
   void filcc
     (const amrex::Real * q, ARLIM_P(q_lo), ARLIM_P(q_hi),
@@ -259,8 +259,8 @@ extern "C"
      amrex::Real* comoving_a,
      const int* print_fortran_warnings);
 
-  void fort_init_this_z
-    (amrex::Real* comoving_a);
+  void fort_interp_to_this_z
+    (const amrex::Real* z);
 
   void fort_setup_eos_params
     (amrex::Real* eos_nr_eps,

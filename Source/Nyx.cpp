@@ -597,7 +597,7 @@ Nyx::Nyx (Amr&            papa,
 
      // Initialize "this_z" in the atomic_rates_module
     if (heat_cool_type == 1 || heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7)
-         fort_init_this_z(&old_a);
+         fort_interp_to_this_z(&initial_z);
 
 #ifdef AGN
      // Initialize the uniform(0,1) random number generator.
@@ -836,12 +836,11 @@ Nyx::est_time_step (Real dt_old)
         Real a = get_comoving_a(cur_time);
         const Real* dx = geom.CellSize();
 
-	Real dt = est_dt;
-
 #ifdef _OPENMP
-#pragma omp parallel firstprivate(dt)
+#pragma omp parallel reduction(min:est_dt)
 #endif
 	{
+          Real dt = 1.e200;
 	  for (MFIter mfi(stateMF,true); mfi.isValid(); ++mfi)
 	    {
 	      const Box& box = mfi.tilebox();
@@ -850,12 +849,7 @@ Nyx::est_time_step (Real dt_old)
                 (BL_TO_FORTRAN(stateMF[mfi]), box.loVect(), box.hiVect(), dx,
                  &dt, &a);
 	    }
-#ifdef _OPENMP
-#pragma omp critical (nyx_estdt)
-#endif
-	  {
-	    est_dt = std::min(est_dt, dt);
-	  }
+          est_dt = std::min(est_dt, dt);
 	}
 
         // If in comoving coordinates, then scale dt (based on u and c) by a
@@ -2107,6 +2101,11 @@ Nyx::compute_new_temp ()
     reset_internal_energy(S_new,D_new);
 
     Real a = get_comoving_a(cur_time);
+
+    {
+      const Real z = 1.0/a - 1.0;
+      fort_interp_to_this_z(&z);
+    }
 
 #ifdef _OPENMP
 #pragma omp parallel

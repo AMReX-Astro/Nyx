@@ -652,6 +652,7 @@ protected:
     static long particle_initrandom_count_per_box;
     static amrex::Real particle_initrandom_mass;
     static int particle_initrandom_iseed;
+    static int particle_skip_factor;
 
     static amrex::IntVect Nrep;  // how many times the initial conditions are replicated in each direction
 

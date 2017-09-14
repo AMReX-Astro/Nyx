@@ -129,7 +129,7 @@ Nyx::just_the_hydro (Real time,
         strang_first_step(time,dt,S_old_tmp,D_old_tmp);
 
 #ifdef _OPENMP
-#pragma omp parallel
+#pragma omp parallel reduction(max:courno) reduction(+:e_added,ke_added)
 #endif
        {
        FArrayBox flux[BL_SPACEDIM], u_gdnv[BL_SPACEDIM];
@@ -182,12 +182,7 @@ Nyx::just_the_hydro (Real time,
         ke_added += ske;
        } // end of MFIter loop
 
-#ifdef _OPENMP
-#pragma omp critical (hydro_courno)
-#endif
-       {
         courno = std::max(courno, cflLoc);
-       }
 
        } // end of omp parallel region
 

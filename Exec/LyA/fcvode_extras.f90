@@ -8,7 +8,8 @@ module fcvode_extras
                               sunvec_y, yvec, T_out, ne_out, e_out)
 
         use amrex_fort_module, only : rt => amrex_real
-        use vode_aux_module, only: rho_vode, T_vode, ne_vode
+        use vode_aux_module, only: rho_vode, T_vode, ne_vode, z_vode
+        use atomic_rates_module, only: this_z
         use cvode_interface
         use fnvector_serial
         use eos_module, only: vode_rtol, vode_atol_scaled

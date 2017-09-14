@@ -233,7 +233,7 @@ Nyx::hydro_setup()
          ppm_flatten_before_integrals,
          use_colglaz, use_flattening, corner_coupling, version_2,
          use_const_species, gamma, normalize_species,
-         heat_cool_type, ParallelDescriptor::Communicator());
+         heat_cool_type);
 
     if (use_const_species == 1)
         fort_set_eos_params(h_species, he_species);
@@ -443,17 +443,6 @@ Nyx::hydro_setup()
 #endif
 
     //
-    // Entropy (S)
-    //
-    derive_lst.add("entropy", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERENTROPY, derentropy),
-                   the_same_box);
-    // We add exactly (Density,Xmom,Ymom,Zmom,Eden,Eint) from State and
-    //                (Temp   ,Ne) from Diag_EOS
-    derive_lst.addComponent("entropy", desc_lst, State_Type, Density, 6);
-    derive_lst.addComponent("entropy", desc_lst, DiagEOS_Type,     0, 2);
-
-    //
     // Div(u)
     //
     derive_lst.add("divu", IndexType::TheCellType(), 1,
@@ -660,7 +649,7 @@ Nyx::no_hydro_setup()
          ppm_flatten_before_integrals,
          use_colglaz, use_flattening, corner_coupling, version_2,
          use_const_species, gamma, normalize_species,
-         heat_cool_type, ParallelDescriptor::Communicator());
+         heat_cool_type);
 
     int coord_type = Geometry::Coord();
     fort_set_problem_params(dm, phys_bc.lo(), phys_bc.hi(), Outflow, Symmetry, coord_type);

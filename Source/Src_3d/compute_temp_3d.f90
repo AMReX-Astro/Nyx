@@ -9,7 +9,7 @@
 
       use amrex_fort_module, only : rt => amrex_real
       use eos_module
-      use atomic_rates_module, only: this_z, interp_to_this_z
+      use atomic_rates_module, only: this_z
       use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEINT, UEDEN, &
                                      TEMP_COMP, NE_COMP, small_temp, heat_cool_type
       use  eos_params_module
@@ -29,11 +29,6 @@
       real(rt) :: z
 
       z = 1.d0/comoving_a - 1.d0
-
-      if (heat_cool_type.gt.0) then
-          if (z .ne. this_z) &
-             call interp_to_this_z(z)
-      end if
 
       do k = lo(3),hi(3)
          do j = lo(2),hi(2)
@@ -93,7 +88,7 @@
 
       use amrex_fort_module, only : rt => amrex_real
       use eos_module
-      use atomic_rates_module, only: this_z, interp_to_this_z
+      use atomic_rates_module, only: this_z
       use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEINT, UEDEN, &
                                      TEMP_COMP, NE_COMP, small_temp, heat_cool_type
       use  eos_params_module
@@ -116,11 +111,6 @@
       integer :: pos_eos_count, neg_eos_count
 
       z = 1.d0/comoving_a - 1.d0
-
-      if (heat_cool_type.gt.0) then
-          if (z .ne. this_z) &
-             call interp_to_this_z(z)
-      end if
 
       do k = lo(3),hi(3)
          do j = lo(2),hi(2)
