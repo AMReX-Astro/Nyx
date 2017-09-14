@@ -49,6 +49,8 @@ extern "C"
      const amrex::Real& gamma_in, const int& normalize_species,
      const int& heat_cool_type);
 
+  void fort_tabulate_rates();
+
   void filcc
     (const amrex::Real * q, ARLIM_P(q_lo), ARLIM_P(q_hi),
      const int * domlo, const int * domhi,

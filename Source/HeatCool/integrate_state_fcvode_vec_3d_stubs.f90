@@ -13,7 +13,7 @@ subroutine integrate_state_fcvode_vec(lo, hi, &
     use eos_module, only: nyx_eos_T_given_Re, nyx_eos_given_RT
     use fundamental_constants_module
     use comoving_module, only: comoving_h, comoving_OmB
-    use atomic_rates_module, only: tabulate_rates, YHELIUM
+    use atomic_rates_module, only: YHELIUM
     use vode_aux_module    , only: z_vode, i_vode, j_vode, k_vode, firstcall
 
     implicit none

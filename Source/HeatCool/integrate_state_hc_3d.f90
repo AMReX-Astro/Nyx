@@ -36,7 +36,6 @@ subroutine integrate_state_hc(lo, hi, &
     use network
     use eos_module, only: nyx_eos_T_given_Re, nyx_eos_given_RT
     use fundamental_constants_module
-    use atomic_rates_module, only: tabulate_rates
     use heating_cooling_module, only: hc_rates
 
     implicit none
