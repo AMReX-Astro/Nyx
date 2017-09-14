@@ -111,6 +111,7 @@ Nyx::read_init_params ()
     }
 #endif
 
+#ifdef HEATCOOL
     Real eos_nr_eps = 1.0e-6;
     Real vode_rtol = 1.0e-4;
     Real vode_atol_scaled = 1.0e-4;
@@ -122,7 +123,6 @@ Nyx::read_init_params ()
     // Absolute tolerance of VODE integration (scaled by initial value of ODE)
     pp.query("vode_atol_scaled", vode_atol_scaled);
 
-#ifdef USE_CVODE
     fort_setup_eos_params(&eos_nr_eps, &vode_rtol, &vode_atol_scaled);
 #endif
 }
