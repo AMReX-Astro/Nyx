@@ -33,4 +33,4 @@ subroutine integrate_state_fcvode_vec(lo, hi, &
 
     call amrex_abort("Cannot call fcvode without compiling with USE_CVODE=TRUE")
 
-end subroutine integrate_state_fcvode
+end subroutine integrate_state_fcvode_vec
