@@ -552,6 +552,10 @@ public:
     static void InitErrorList();
     static void InitDeriveList();
 
+    static void set_simd_width(const int simd_width);
+    static void alloc_simd_vec();
+    static void dealloc_simd_vec();
+
 protected:
 
     //
@@ -711,7 +715,6 @@ protected:
   static amrex::Real      startCPUTime;
 
   static amrex::Real getCPUTime();
-
 
 };
 
