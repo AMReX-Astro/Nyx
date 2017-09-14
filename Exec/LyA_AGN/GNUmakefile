@@ -1,6 +1,5 @@
-# AMREX_HOME defines the directory in which we will find all the BoxLib code
+# AMREX_HOME defines the directory in which we will find all the AMReX code
 AMREX_HOME ?= ../../../amrex
-#AMREX_HOME = /home/vince/Development/BLMaster/amrex
 
 HPGMG_DIR ?= ../../../hpgmg/finite-volume
 
@@ -8,15 +7,16 @@ HPGMG_DIR ?= ../../../hpgmg/finite-volume
 TOP = ../..
 
 # compilation options
-COMP    = gnu
+COMP    = intel  # gnu
 USE_MPI = TRUE
-USE_OMP = FALSE
+USE_OMP = TRUE
 
-PROFILE       = FALSE
+PROFILE       = TRUE
 TRACE_PROFILE = FALSE
 COMM_PROFILE  = FALSE
 
 PRECISION = DOUBLE
+USE_SINGLE_PRECISION_PARTICLES = TRUE
 DEBUG     = FALSE
 
 GIMLET = FALSE
@@ -32,24 +32,21 @@ REEBER_HOME ?= /project/projectdirs/nyx/ghweber/reeber2
 BOOST_INCLUDE_DIR ?= /project/projectdirs/nyx/ghweber/boost-1.61.0-noarch/include
 DIY_INCLUDE_DIR ?= /project/projectdirs/nyx/ghweber/diy/include
 
-USE_HPGMG = FALSE
-HPGMG_FCYCLES = FALSE
+USE_HPGMG = TRUE
+HPGMG_FCYCLES = TRUE
 HPGMG_POST_F_CYCLE_TYPE = V
 HPGMG_HELMHOLTZ = FALSE
 HPGMG_STENCIL_VARIABLE_COEFFICIENT = FALSE
 HPGMG_USE_SUBCOMM = TRUE
-HPGMG_BOTTOM_SOLVER= BICGSTAB
+HPGMG_BOTTOM_SOLVER= CG
 HPGMG_SMOOTHER = GSRB
 
 # physics
 DIM      = 3
 USE_GRAV = TRUE
 USE_HEATCOOL = TRUE
-
 USE_AGN = TRUE
-
-# units
-#USE_CGS = TRUE
+USE_CVODE = FALSE
 
 Bpack := ./Make.package
 Blocs := .
