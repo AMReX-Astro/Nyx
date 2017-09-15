@@ -32,12 +32,14 @@ subroutine integrate_state_vode(lo, hi, &
     use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : NVAR, URHO, UEDEN, UEINT, &
                                    TEMP_COMP, NE_COMP, gamma_minus_1
+    use bl_constants_module, only: M_PI
     use eos_params_module
     use network
     use eos_module, only: nyx_eos_T_given_Re, nyx_eos_given_RT
     use fundamental_constants_module
-    use atomic_rates_module, only: tabulate_rates
-    use vode_aux_module    , only: z_vode, i_vode, j_vode, k_vode, T_vode
+    use comoving_module, only: comoving_h, comoving_OmB
+    use atomic_rates_module, only: tabulate_rates, YHELIUM
+    use vode_aux_module    , only: z_vode, i_vode, j_vode, k_vode
 
     implicit none
 
@@ -52,9 +54,11 @@ subroutine integrate_state_vode(lo, hi, &
     integer :: i, j, k
     real(rt) :: z, rho
     real(rt) :: T_orig, ne_orig, e_orig
-    real(rt) :: T_out , ne_out , e_out
+    real(rt) :: T_out , ne_out , e_out, mu, mean_rhob
 
     z = 1.d0/a - 1.d0
+
+    mean_rhob = comoving_OmB * 3.d0*(comoving_h*100.d0)**2 / (8.d0*M_PI*Gconst)
 
     ! Note that (lo,hi) define the region of the box containing the grow cells
     ! Do *not* assume this is just the valid region
@@ -71,7 +75,7 @@ subroutine integrate_state_vode(lo, hi, &
                 ne_orig = diag_eos(i,j,k,  NE_COMP)
 
                 if (e_orig .lt. 0.d0) then
-                    print *,'negative e entering strang integration ',i,j,k, e_orig
+                    print *,'negative e entering strang integration ', z, i,j,k, rho/mean_rhob, e_orig
                     call bl_abort('bad e in strang')
                 end if
 
@@ -83,8 +87,13 @@ subroutine integrate_state_vode(lo, hi, &
                                               T_out ,ne_out ,e_out)
 
                 if (e_out .lt. 0.d0) then
-                    print *,'negative e entering strang integration ',i,j,k, e_out
-                    call bl_abort('bad e out of strang')
+                    print *,'negative e entering strang integration ', z, i,j,k, e_out
+                    T_out  = 10.0
+                    ne_out = 0.0
+                    mu     = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+ne_out)
+                    e_out  = T_out / (gamma_minus_1 * mp_over_kB * mu)
+                    call flush(6)
+                    !call bl_abort('bad e out of strang')
                 end if
 
                 ! Update (rho e) and (rho E)
@@ -184,7 +193,7 @@ subroutine vode_wrapper(dt, rho_in, T_in, ne_in, e_in, T_out, ne_out, e_out)
     iwork(:) = 0
     
     ! Set the maximum number of steps allowed (the VODE default is 500)
-    iwork(6) = 1000
+    iwork(6) = 2000
     
     ! Initialize the integration time
     time = 0.d0
