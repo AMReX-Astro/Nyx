@@ -14,9 +14,6 @@ nyx.add_ext_src      = 1
 nyx.heat_cool_type   = 3
 nyx.strang_split     = 1
 
-gravity.show_timings = 1
-nyx.show_timings     = 1
-
 #This is 1e-8 times the lowest density in plt00000
 nyx.small_dens = 5.162470e1
 

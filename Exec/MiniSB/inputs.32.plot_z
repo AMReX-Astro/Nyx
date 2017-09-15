@@ -17,10 +17,6 @@ amr.plot_files_output = 1
 
 nyx.print_fortran_warnings = 0
 
-// Show timings in different routines
-nyx.show_timings = 0
-gravity.show_timings = 0
-
 nyx.ppm_type = 0
 nyx.use_colglaz = 1
 
