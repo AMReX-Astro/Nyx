@@ -19,9 +19,6 @@ nyx.small_dens = 1.e-2
 #This is 1e-5 times the constant temparature in plt00000
 nyx.small_temp = 1.e-2
 
-#This is 1e-8 times the lowest pressure in plt00000
-nyx.small_pres = 1.0e-4
-
 nyx.do_santa_barbara = 1
 nyx.init_sb_vels     = 1
 gravity.ml_tol = 1.e-10
