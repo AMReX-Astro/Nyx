@@ -68,6 +68,7 @@
                                delta,xlo,xhi)  &
                                bind(C, name="fort_initdata")
       use amrex_fort_module, only : rt => amrex_real
+      use amrex_parmparse_module
       use probdata_module
       use atomic_rates_module, only : XHYDROGEN
       use meth_params_module, only : URHO, UMX, UMZ, UEDEN, UEINT, UFS, &
@@ -84,6 +85,13 @@
       real(rt) diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,nd)
 
       integer i,j,k
+      real(rt) z_in
+
+      type(amrex_parmparse) :: pp
+
+      call amrex_parmparse_build(pp, "nyx")
+      call pp%query("initial_z", z_in)
+      call amrex_parmparse_destroy(pp)
 
       ! This is the case where we have compiled with states defined 
       !  but they have only one component each so we fill them this way.
@@ -111,8 +119,8 @@
                state(i,j,k,UFS+1) = (1.d0 - XHYDROGEN)
             end if
 
-            diag_eos(i,j,k,TEMP_COMP) = 1000.d0
-            diag_eos(i,j,k,  NE_COMP) =    0.d0
+            diag_eos(i,j,k,TEMP_COMP) = 0.021d0*(1.0d0 + z_in)**2
+            diag_eos(i,j,k,  NE_COMP) = 0.d0
          enddo
          enddo
          enddo
