@@ -6,10 +6,6 @@ HPGMG_DIR ?= /global/homes/f/friesen/hpgmg/finite-volume
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ../..
 
-# Reeber
-BOOST_DIR ?= /opt/local
-REEBER_HOME ?= $(HOME)/devel/Reeber/dev
-
 # compilation options
 COMP    = gcc
 USE_OMP = FALSE
@@ -20,13 +16,6 @@ DEBUG     = FALSE
 DEBUG     = TRUE
 
 USE_HPGMG = FALSE
-HPGMG_FCYCLES = TRUE
-HPGMG_POST_F_CYCLE_TYPE = V
-HPGMG_HELMHOLTZ = FALSE
-HPGMG_STENCIL_VARIABLE_COEFFICIENT = FALSE
-HPGMG_USE_SUBCOMM = TRUE
-HPGMG_BOTTOM_SOLVER= BICGSTAB
-HPGMG_SMOOTHER = GSRB
 
 # Use single precision for particles?
 #

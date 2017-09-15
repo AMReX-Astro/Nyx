@@ -22,25 +22,7 @@ DEBUG     = FALSE
 GIMLET = FALSE
 REEBER = FALSE
 
-GIMLET_DIR ?= /home/vince/Development/gimlet
-# Gimlet needs FFTW MPI.
-FFTW_INC ?= /usr/include
-FFTW_DIR ?= /usr/lib/x86_64-linux-gnu
-
-REEBER_HOME ?= $(HOME)/devel/Reeber/dev
-# Reeber needs Boost (both headers and libraries) and diy2.
-BOOST_INCLUDE_DIR ?= /usr/local/include
-BOOST_LIB_DIR ?= /usr/local/lib
-DIY2_INCLUDE_DIR ?= /usr/local/include
-
 USE_HPGMG = TRUE
-HPGMG_FCYCLES = TRUE
-HPGMG_POST_F_CYCLE_TYPE = V
-HPGMG_HELMHOLTZ = FALSE
-HPGMG_STENCIL_VARIABLE_COEFFICIENT = FALSE
-HPGMG_USE_SUBCOMM = TRUE
-HPGMG_BOTTOM_SOLVER= CG
-HPGMG_SMOOTHER = GSRB
 
 # physics
 DIM      = 3
@@ -53,3 +35,4 @@ Bpack := ./Make.package
 Blocs := .
 
 include $(TOP)/Exec/Make.Nyx
+

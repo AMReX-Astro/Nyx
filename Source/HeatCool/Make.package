@@ -5,6 +5,7 @@ f90EXE_sources += integrate_state_3d.f90
 f90EXE_sources += integrate_state_hc_3d.f90
 f90EXE_sources += integrate_state_vode_3d.f90
 ifeq ($(USE_CVODE), TRUE)
+  f90EXE_sources += fcvode_extras.f90
   f90EXE_sources += integrate_state_fcvode_3d.f90
   f90EXE_sources += integrate_state_fcvode_vec_3d.f90
 else
