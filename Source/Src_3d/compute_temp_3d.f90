@@ -200,7 +200,7 @@
                                      state,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3, &
                                   diag_eos,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3, &
                                   rho_ave,rho_T_sum, &
-                                  T_sum,T_meanrho_sum,rho_sum,vol_sum,vol_mn_sum) &
+                                  T_sum,Tinv_sum,T_meanrho_sum,rho_sum,vol_sum,vol_mn_sum) &
       bind(C, name = "fort_compute_rho_temp")
 
       use meth_params_module, only : NVAR, URHO, TEMP_COMP
@@ -214,7 +214,7 @@
       real(rt), intent(in   ) :: rho_ave
       real(rt), intent(in   ) ::    state(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3,NVAR)
       real(rt), intent(in   ) :: diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,2)
-      real(rt), intent(inout) :: rho_T_sum, rho_sum, T_sum, T_meanrho_sum
+      real(rt), intent(inout) :: rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum
       real(rt), intent(inout) :: vol_sum, vol_mn_sum
 
       integer          :: i,j,k
@@ -227,6 +227,7 @@
          do j = lo(2),hi(2)
             do i = lo(1),hi(1)
                    T_sum =     T_sum + vol*diag_eos(i,j,k,TEMP_COMP)
+                Tinv_sum =  Tinv_sum + state(i,j,k,URHO)/diag_eos(i,j,k,TEMP_COMP)
                rho_T_sum = rho_T_sum + state(i,j,k,URHO)*diag_eos(i,j,k,TEMP_COMP)
                  rho_sum =   rho_sum + state(i,j,k,URHO)
                  if ( (state(i,j,k,URHO) .lt. rho_hi) .and. &

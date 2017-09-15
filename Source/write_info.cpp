@@ -14,12 +14,12 @@ Nyx::write_info ()
         MultiFab& D_new = get_new_data(DiagEOS_Type);
 	Real      max_t = 0;
 
-        Real rho_T_avg=0.0, T_avg=0.0, T_meanrho=0.0;
+        Real rho_T_avg=0.0, T_avg=0.0, Tinv_avg=0.0, T_meanrho=0.0;
 	if (do_hydro)
         {
             compute_new_temp();
             max_t = D_new.norm0(Temp_comp);
-            compute_rho_temp(rho_T_avg, T_avg, T_meanrho);
+            compute_rho_temp(rho_T_avg, T_avg, Tinv_avg, T_meanrho);
 	}
 #endif
 
@@ -37,18 +37,20 @@ Nyx::write_info ()
 
             if (time == 0.0)
             {
-                data_loga << std::setw( 8) <<  "   nstep";
+                data_loga << std::setw( 8) <<  "#  nstep";
                 data_loga << std::setw(14) <<  "       time    ";
-                data_loga << std::setw(14) <<  "        dt     ";
-                data_loga << std::setw(14) <<  "      redshift ";
-                data_loga << std::setw(14) <<  "       a       ";
+                data_loga << std::setw(14) <<  "       dt      ";
+                data_loga << std::setw(14) <<  "         z     ";
+                data_loga << std::setw(14) <<  "      a        ";
 #ifndef NO_HYDRO
                 if (do_hydro == 1)
                 {
-                   data_loga << std::setw(14) <<  "  max temp     ";
-                   data_loga << std::setw(14) <<  "rho-wgted temp ";
-                   data_loga << std::setw(14) <<  " V-wgted temp  ";
-                   data_loga << std::setw(14) <<  " T @ <rho>     ";
+                   data_loga << std::setw(14) <<  "    T_max      ";
+                   data_loga << std::setw(14) <<  "  <T>_rho      ";
+                   data_loga << std::setw(14) <<  "  <T>_V        ";
+                   data_loga << std::setw(14) <<  "T @ <rho>      ";
+                   data_loga << std::setw(14) <<  "T(21cm)        ";
+                   data_loga << std::setw(14) <<  "adiab.         ";
                 }
 #endif
                 data_loga << '\n';
@@ -66,6 +68,8 @@ Nyx::write_info ()
                    data_loga << std::setw(14) <<  std::setprecision(6) << rho_T_avg;
                    data_loga << std::setw(14) <<  std::setprecision(6) << T_avg;
                    data_loga << std::setw(14) <<  std::setprecision(6) << T_meanrho;
+                   data_loga << std::setw(14) <<  std::setprecision(6) << 1.0/Tinv_avg;
+                   data_loga << std::setw(14) <<  std::setprecision(6) << 0.021*(1.0+old_z)*(1.0+old_z);
                 }
 #endif
                 data_loga << '\n';
@@ -85,6 +89,8 @@ Nyx::write_info ()
                    data_loga << std::setw(14) <<  std::setprecision(6) << rho_T_avg;
                    data_loga << std::setw(14) <<  std::setprecision(6) << T_avg;
                    data_loga << std::setw(14) <<  std::setprecision(6) << T_meanrho;
+                   data_loga << std::setw(14) <<  std::setprecision(6) << 1.0/Tinv_avg;
+                   data_loga << std::setw(14) <<  std::setprecision(6) << 0.021*(1.0+new_z)*(1.0+new_z);
                 }
 #endif
                 data_loga << std::endl;

@@ -2168,17 +2168,17 @@ Nyx::compute_new_temp ()
 
 #ifndef NO_HYDRO
 void
-Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& T_meanrho)
+Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_meanrho)
 {
     BL_PROFILE("Nyx::compute_rho_temp()");
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
 
-    Real rho_T_sum=0.0,   T_sum=0.0, T_meanrho_sum=0.0;
+    Real rho_T_sum=0.0,   T_sum=0.0, Tinv_sum=0.0, T_meanrho_sum=0.0;
     Real   rho_sum=0.0, vol_sum=0.0,    vol_mn_sum=0.0;
 
 #ifdef _OPENMP
-#pragma omp parallel reduction(+:rho_T_sum, rho_sum, T_sum, T_meanrho_sum, vol_sum, vol_mn_sum)
+#pragma omp parallel reduction(+:rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum)
 #endif
     for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
     {
@@ -2188,15 +2188,16 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& T_meanrho)
             (bx.loVect(), bx.hiVect(), geom.CellSize(),
              BL_TO_FORTRAN(S_new[mfi]),
              BL_TO_FORTRAN(D_new[mfi]), &average_gas_density,
-             &rho_T_sum, &T_sum, &T_meanrho_sum, &rho_sum, &vol_sum, &vol_mn_sum);
+             &rho_T_sum, &T_sum, &Tinv_sum, &T_meanrho_sum, &rho_sum, &vol_sum, &vol_mn_sum);
     }
-    Real sums[6] = {rho_T_sum, rho_sum, T_sum, T_meanrho_sum, vol_sum, vol_mn_sum};
-    ParallelDescriptor::ReduceRealSum(sums,6);
+    Real sums[7] = {rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum};
+    ParallelDescriptor::ReduceRealSum(sums,7);
 
     rho_T_avg = sums[0] / sums[1];  // density weighted T
-        T_avg = sums[2] / sums[4];  // volume weighted T
-    if (sums[5] > 0) {
-       T_meanrho = sums[3] / sums[5];  // T at mean density
+        T_avg = sums[2] / sums[5];  // volume weighted T
+     Tinv_avg = sums[3] / sums[1];  // 21cm T
+    if (sums[6] > 0) {
+       T_meanrho = sums[4] / sums[6];  // T at mean density
        T_meanrho = pow(10.0, T_meanrho);
     }
 }

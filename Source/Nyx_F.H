@@ -279,7 +279,7 @@ extern "C"
      const BL_FORT_FAB_ARG(state),
      const BL_FORT_FAB_ARG(diag_eos),
      amrex::Real* rho_ave, amrex::Real* rho_T_sum, amrex::Real* T_sum,
-     amrex::Real* T_meanrho_sum, amrex::Real* rho_sum,
+     amrex::Real* Tinv_sum, amrex::Real* T_meanrho_sum, amrex::Real* rho_sum,
      amrex::Real* vol_sum, amrex::Real* vol_mn_sum);
 
 #ifdef AUX_UPDATE
