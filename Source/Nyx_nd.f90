@@ -190,7 +190,8 @@
                  ppm_flatten_before_integrals_in, &
                  use_colglaz_in, use_flattening_in, &
                  corner_coupling_in, version_2_in, &
-                 use_const_species_in, gamma_in, normalize_species_in, heat_cool_in) &
+                 use_const_species_in, gamma_in, normalize_species_in, &
+                 heat_cool_in, inhomo_reion_in) &
                  bind(C, name = "fort_set_method_params")
 
         ! Passing data from C++ into f90
@@ -220,6 +221,7 @@
         integer,  intent(in) :: use_const_species_in
         integer,  intent(in) :: normalize_species_in
         integer,  intent(in) :: heat_cool_in
+        integer,  intent(in) :: inhomo_reion_in
 
         integer             :: QNEXT
         integer             :: UNEXT
@@ -251,11 +253,17 @@
 
            TEMP_COMP = -1
              NE_COMP = -1
+            ZHI_COMP = -1
 
         else
 
            TEMP_COMP = 1
              NE_COMP = 2
+            if (inhomo_reion_in .gt. 0) then
+               ZHI_COMP = 3
+            else
+               ZHI_COMP = -1
+            endif
 
            !---------------------------------------------------------------------
            ! conserved state components
@@ -357,6 +365,7 @@
            normalize_species            = normalize_species_in
 
            heat_cool_type               = heat_cool_in
+           inhomo_reion                 = inhomo_reion_in
 
         end if
 

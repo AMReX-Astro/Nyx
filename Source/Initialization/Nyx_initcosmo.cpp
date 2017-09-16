@@ -421,6 +421,8 @@ void Nyx::initcosmo()
 
         D_new.setVal(tempInit, Temp_comp);
         D_new.setVal(0.0, Ne_comp);
+        if (inhomo_reion > 0)
+            D_new.setVal(0.0, Zhi_comp);
 
 #ifdef _OPENMP
 #pragma omp parallel

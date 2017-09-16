@@ -521,7 +521,7 @@ public:
     static int NUM_STATE;
     static int Density, Xmom, Ymom, Zmom, Eden, Eint;
 
-    static int Temp_comp, Ne_comp;
+    static int Temp_comp, Ne_comp, Zhi_comp;
 
     static int FirstSpec, FirstAux, FirstAdv;
     static int NumSpec, NumAux, NumAdv;
@@ -673,6 +673,9 @@ protected:
 
     // specifies the heating/cooling source term
     static int heat_cool_type;
+
+    // specifies inhomogeneous reionization type
+    static int inhomo_reion;
 
     // permits forcing to be switched on and off
     static int do_forcing;

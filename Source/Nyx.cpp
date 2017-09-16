@@ -101,6 +101,7 @@ int Nyx::Zmom = -1;
 
 int Nyx::Temp_comp = -1;
 int Nyx::  Ne_comp = -1;
+int Nyx:: Zhi_comp = -1;
 
 int Nyx::NumSpec  = 0;
 int Nyx::NumAux   = 0;
@@ -121,6 +122,7 @@ Real Nyx::comoving_h;
 int Nyx::do_hydro = -1;
 int Nyx::add_ext_src = 0;
 int Nyx::heat_cool_type = 0;
+int Nyx::inhomo_reion = 0;
 int Nyx::strang_split = 0;
 
 Real Nyx::average_gas_density = 0;
@@ -386,6 +388,8 @@ Nyx::read_params ()
 
     pp.query("use_exact_gravity", use_exact_gravity);
 
+    pp.query("inhomo_reion", inhomo_reion);
+
 #ifdef HEATCOOL
     if (heat_cool_type > 0 && add_ext_src == 0)
        amrex::Error("Nyx::must set add_ext_src to 1 if heat_cool_type > 0");
@@ -421,6 +425,8 @@ Nyx::read_params ()
 #else
     if (heat_cool_type > 0)
        amrex::Error("Nyx::you set heat_cool_type > 0 but forgot to set USE_HEATCOOL = TRUE");
+    if (inhomo_reion > 0)
+       amrex::Error("Nyx::you set inhomo_reion > 0 but forgot to set USE_HEATCOOL = TRUE");
 #endif
 
     pp.query("allow_untagging", allow_untagging);
@@ -2273,6 +2279,7 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         allInts.push_back(Eint);
         allInts.push_back(Temp_comp);
         allInts.push_back(Ne_comp);
+        allInts.push_back(Zhi_comp);
         allInts.push_back(FirstSpec);
         allInts.push_back(FirstAux);
         allInts.push_back(FirstAdv);
@@ -2302,6 +2309,7 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         allInts.push_back(do_grav);
         allInts.push_back(add_ext_src);
         allInts.push_back(heat_cool_type);
+        allInts.push_back(inhomo_reion);
         allInts.push_back(strang_split);
         allInts.push_back(reeber_int);
         allInts.push_back(gimlet_int);
@@ -2328,6 +2336,7 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         Eint = allInts[count++];
         Temp_comp = allInts[count++];
         Ne_comp = allInts[count++];
+        Zhi_comp = allInts[count++];
         FirstSpec = allInts[count++];
         FirstAux = allInts[count++];
         FirstAdv = allInts[count++];
@@ -2357,6 +2366,7 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         do_grav = allInts[count++];
         add_ext_src = allInts[count++];
         heat_cool_type = allInts[count++];
+        inhomo_reion = allInts[count++];
         strang_split = allInts[count++];
         reeber_int = allInts[count++];
         gimlet_int = allInts[count++];

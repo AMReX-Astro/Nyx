@@ -197,9 +197,16 @@ Nyx::hydro_setup()
         cnt += NumAdv;
     }
 
-    int NDIAG_C = 2;
+    int NDIAG_C;
     Temp_comp = 0;
       Ne_comp = 1;
+    if (inhomo_reion > 0)
+    {
+        NDIAG_C  = 3;
+        Zhi_comp = 2;
+    } else {
+        NDIAG_C  = 2;
+    }
 
     int dm = BL_SPACEDIM;
 
@@ -236,7 +243,7 @@ Nyx::hydro_setup()
          ppm_flatten_before_integrals,
          use_colglaz, use_flattening, corner_coupling, version_2,
          use_const_species, gamma, normalize_species,
-         heat_cool_type);
+         heat_cool_type, inhomo_reion);
 
     if (use_const_species == 1)
         fort_set_eos_params(h_species, he_species);
@@ -654,7 +661,7 @@ Nyx::no_hydro_setup()
          ppm_flatten_before_integrals,
          use_colglaz, use_flattening, corner_coupling, version_2,
          use_const_species, gamma, normalize_species,
-         heat_cool_type);
+         heat_cool_type, inhomo_reion);
 
     int coord_type = Geometry::Coord();
     fort_set_problem_params(dm, phys_bc.lo(), phys_bc.hi(), Outflow, Symmetry, coord_type);
