@@ -406,7 +406,7 @@
     use amrex_fort_module, only : amrex_real
     use fundamental_constants_module, only: k_B, m_proton
     use eos_module
-    use meth_params_module, only : NVAR, URHO, UEDEN, UEINT, NE_COMP
+    use meth_params_module, only : NVAR, URHO, UEDEN, UEINT, NDIAG, NE_COMP
     use particle_mod      , only: agn_particle_t
     use eos_module, only : nyx_eos_given_RT
     use agn_params_module, only : T_min
@@ -417,7 +417,7 @@
     real(amrex_real),     intent(inout)        :: state &
          (slo(1):shi(1),slo(2):shi(2),slo(3):shi(3),NVAR)
     real(amrex_real),     intent(inout)        :: diag_eos &
-         (dlo(1):dhi(1),dlo(2):dhi(2),dlo(3):dhi(3),2)
+         (dlo(1):dhi(1),dlo(2):dhi(2),dlo(3):dhi(3),NDIAG)
     real(amrex_real),     intent(in   )        :: a
     real(amrex_real),     intent(in   )        :: dx(3)
 

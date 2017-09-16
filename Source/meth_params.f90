@@ -17,7 +17,7 @@ module meth_params_module
   integer, parameter     :: MAXADV  = 5
 
   ! NTHERM: number of thermodynamic variables
-  integer         , save :: NTHERM, NVAR
+  integer         , save :: NTHERM, NVAR, NDIAG
   integer         , save :: URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX
   integer         , save :: TEMP_COMP, NE_COMP
 

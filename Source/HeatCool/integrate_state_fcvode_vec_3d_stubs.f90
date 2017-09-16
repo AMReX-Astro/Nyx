@@ -6,7 +6,7 @@ subroutine integrate_state_fcvode_vec(lo, hi, &
     use amrex_error_module, only : amrex_abort
     use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : NVAR, URHO, UEDEN, UEINT, &
-                                   TEMP_COMP, NE_COMP, gamma_minus_1
+                                   NDIAG, TEMP_COMP, NE_COMP, gamma_minus_1
     use bl_constants_module, only: M_PI
     use eos_params_module
     use network
@@ -22,7 +22,7 @@ subroutine integrate_state_fcvode_vec(lo, hi, &
     integer         , intent(in) :: s_l1, s_l2, s_l3, s_h1, s_h2, s_h3
     integer         , intent(in) :: d_l1, d_l2, d_l3, d_h1, d_h2, d_h3
     real(rt), intent(inout) ::    state(s_l1:s_h1, s_l2:s_h2,s_l3:s_h3, NVAR)
-    real(rt), intent(inout) :: diag_eos(d_l1:d_h1, d_l2:d_h2,d_l3:d_h3, 2)
+    real(rt), intent(inout) :: diag_eos(d_l1:d_h1, d_l2:d_h2,d_l3:d_h3, NDIAG)
     real(rt), intent(in)    :: a, half_dt
     integer         , intent(inout) :: max_iter, min_iter
 

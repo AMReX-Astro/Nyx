@@ -246,11 +246,13 @@
            UFA   = -1
            UFS   = -1
 
+           NDIAG = 2
            TEMP_COMP = -1
              NE_COMP = -1
 
         else
 
+           NDIAG = 2
            TEMP_COMP = 1
              NE_COMP = 2
 

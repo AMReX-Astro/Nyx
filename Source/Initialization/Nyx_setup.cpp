@@ -197,6 +197,7 @@ Nyx::hydro_setup()
         cnt += NumAdv;
     }
 
+    NDIAG = 2;
     Temp_comp = 0;
       Ne_comp = 1;
 
@@ -258,7 +259,7 @@ Nyx::hydro_setup()
 
     // This has two components: Temperature and Ne
     desc_lst.addDescriptor(DiagEOS_Type, IndexType::TheCellType(),
-                           StateDescriptor::Point, 1, 2, interp,
+                           StateDescriptor::Point, 1, NDIAG, interp,
                            state_data_extrap, store_in_checkpoint);
 
 #ifdef GRAVITY

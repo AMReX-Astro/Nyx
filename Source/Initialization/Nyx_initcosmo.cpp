@@ -124,8 +124,8 @@ void Nyx::initcosmo()
     	MultiFab& S_new = get_level(level).get_new_data(State_Type);
     	MultiFab& D_new = get_level(level).get_new_data(DiagEOS_Type);
 
-        FillCoarsePatch(S_new, 0, 0,   State_Type, 0, NUM_STATE);
-        FillCoarsePatch(D_new, 0, 0, DiagEOS_Type, 0, 2);
+        FillCoarsePatch(S_new, 0, 0,   State_Type, 0, S_new.nComp());
+        FillCoarsePatch(D_new, 0, 0, DiagEOS_Type, 0, D_new.nComp());
 	return;
     }
 
@@ -378,8 +378,8 @@ void Nyx::initcosmo()
 	//seems to have no effect...
 	if (level > 0)
 	{
-           FillCoarsePatch(S_new, 0, 0,   State_Type, 0, NUM_STATE);
-	   FillCoarsePatch(D_new, 0, 0, DiagEOS_Type, 0, 2);
+           FillCoarsePatch(S_new, 0, 0,   State_Type, 0, S_new.nComp());
+	   FillCoarsePatch(D_new, 0, 0, DiagEOS_Type, 0, D_new.nComp());
 	}
 
      	//copy density 

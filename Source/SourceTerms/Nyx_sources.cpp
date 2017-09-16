@@ -27,7 +27,7 @@ Nyx::get_old_source (Real      old_time,
     Dborder.define(grids, D_old.DistributionMap(), D_old.nComp(), 4);
 
     FillPatch(*this, Sborder, 4, old_time, State_Type, Density, Sborder.nComp());
-    FillPatch(*this, Dborder, 4, old_time, DiagEOS_Type, 0, 2);
+    FillPatch(*this, Dborder, 4, old_time, DiagEOS_Type, 0, D_old.nComp());
 
     fort_interp_to_this_z(&z);
 
@@ -86,8 +86,8 @@ Nyx::get_new_source (Real      old_time,
 
     FillPatch(*this, Sborder_old, 4, old_time, State_Type  , Density, Sborder_old.nComp());
     FillPatch(*this, Sborder_new, 4, new_time, State_Type  , Density, Sborder_new.nComp());
-    FillPatch(*this, Dborder_old, 4, old_time, DiagEOS_Type, 0      , 2);
-    FillPatch(*this, Dborder_new, 4, new_time, DiagEOS_Type, 0      , 2);
+    FillPatch(*this, Dborder_old, 4, old_time, DiagEOS_Type, 0      , Dborder_old.nComp());
+    FillPatch(*this, Dborder_new, 4, new_time, DiagEOS_Type, 0      , Dborder_new.nComp());
 
     fort_interp_to_this_z(&z);
 

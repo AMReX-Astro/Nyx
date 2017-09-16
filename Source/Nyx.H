@@ -520,6 +520,8 @@ public:
 
     static int NUM_STATE;
     static int Density, Xmom, Ymom, Zmom, Eden, Eint;
+
+    static int NDIAG;
     static int Temp_comp, Ne_comp;
 
     static int FirstSpec, FirstAux, FirstAdv;

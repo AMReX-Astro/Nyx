@@ -86,7 +86,8 @@ Real Nyx::change_max  = 1.1;
 BCRec Nyx::phys_bc;
 int Nyx::do_reflux = 1;
 int Nyx::NUM_STATE = -1;
-int Nyx::NUM_GROW = -1;
+int Nyx::NDIAG     = -1;
+int Nyx::NUM_GROW  = -1;
 
 int Nyx::nsteps_from_plotfile = -1;
 
@@ -717,7 +718,7 @@ Nyx::init (AmrLevel& old)
 
         for (FillPatchIterator
                  fpi(old, S_new, 0, cur_time,   State_Type, 0, NUM_STATE),
-                dfpi(old, D_new, 0, cur_time, DiagEOS_Type, 0, 2);
+                dfpi(old, D_new, 0, cur_time, DiagEOS_Type, 0, D_new.nComp());
                 fpi.isValid() && dfpi.isValid();
                 ++fpi,++dfpi)
         {

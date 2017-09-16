@@ -11,7 +11,7 @@
       use eos_module
       use atomic_rates_module, only: this_z
       use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEINT, UEDEN, &
-                                     TEMP_COMP, NE_COMP, small_temp, heat_cool_type
+                                     NDIAG, TEMP_COMP, NE_COMP, small_temp, heat_cool_type
       use  eos_params_module
 
       implicit none
@@ -20,7 +20,7 @@
       integer         , intent(in   ) :: d_l1,d_l2,d_l3,d_h1,d_h2,d_h3
       integer         , intent(in   ) :: print_fortran_warnings
       real(rt), intent(inout) ::    state(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3,NVAR)
-      real(rt), intent(inout) :: diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,2)
+      real(rt), intent(inout) :: diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,NDIAG)
       real(rt), intent(in   ) :: comoving_a
 
       integer          :: i,j,k
@@ -90,7 +90,7 @@
       use eos_module
       use atomic_rates_module, only: this_z
       use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEINT, UEDEN, &
-                                     TEMP_COMP, NE_COMP, small_temp, heat_cool_type
+                                     NDIAG, TEMP_COMP, NE_COMP, small_temp, heat_cool_type
       use  eos_params_module
 
       implicit none
@@ -99,7 +99,7 @@
       integer         , intent(in   ) :: d_l1,d_l2,d_l3,d_h1,d_h2,d_h3
       integer         , intent(in   ) :: print_fortran_warnings
       real(rt), intent(inout) ::    state(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3,NVAR)
-      real(rt), intent(inout) :: diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,2)
+      real(rt), intent(inout) :: diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,NDIAG)
       real(rt), intent(in   ) :: comoving_a
 
       integer          :: i,j,k
@@ -203,7 +203,7 @@
                                   T_sum,Tinv_sum,T_meanrho_sum,rho_sum,vol_sum,vol_mn_sum) &
       bind(C, name = "fort_compute_rho_temp")
 
-      use meth_params_module, only : NVAR, URHO, TEMP_COMP
+      use meth_params_module, only : NVAR, URHO, NDIAG, TEMP_COMP
 
       use amrex_fort_module, only : rt => amrex_real
       implicit none
@@ -213,7 +213,7 @@
       real(rt), intent(in   ) :: dx(3)
       real(rt), intent(in   ) :: rho_ave
       real(rt), intent(in   ) ::    state(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3,NVAR)
-      real(rt), intent(in   ) :: diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,2)
+      real(rt), intent(inout) :: diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,NDIAG)
       real(rt), intent(inout) :: rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum
       real(rt), intent(inout) :: vol_sum, vol_mn_sum
 
@@ -249,7 +249,7 @@
                                            max_temp, den_maxt, imax, jmax, kmax) &
       bind(C, name = "fort_compute_max_temp_loc")
 
-      use meth_params_module, only : TEMP_COMP, NVAR, URHO
+      use meth_params_module, only : TEMP_COMP, NVAR, URHO, NDIAG
 
       use amrex_fort_module, only : rt => amrex_real
       implicit none
@@ -257,7 +257,7 @@
       integer         , intent(in   ) :: s_l1,s_l2,s_l3,s_h1,s_h2,s_h3
       integer         , intent(in   ) :: d_l1,d_l2,d_l3,d_h1,d_h2,d_h3
       real(rt), intent(inout) ::    state(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3,NVAR)
-      real(rt), intent(inout) :: diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,2)
+      real(rt), intent(inout) :: diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,NDIAG)
       real(rt), intent(in   ) :: max_temp
       real(rt), intent(  out) :: den_maxt
       integer         , intent(inout) :: imax,jmax,kmax
