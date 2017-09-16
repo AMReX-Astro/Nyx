@@ -40,7 +40,7 @@ extern "C"
   void fort_get_method_params(int* HYP_GROW);
 
   void fort_set_method_params
-    (const int& dm, const int& NumAdv, const int& do_hydro,
+    (const int& dm, const int& NumAdv, const int& Ndiag, const int& do_hydro,
      const int& ppm_type, const int& ppm_ref,
      const int& ppm_flatten_before_integrals,
      const int& use_colglaz, const int& use_flattening,

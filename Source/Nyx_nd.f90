@@ -186,7 +186,7 @@
 ! :::
 
       subroutine fort_set_method_params( &
-                 dm, numadv, do_hydro, ppm_type_in, ppm_ref_in, &
+                 dm, numadv, ndiag_in, do_hydro, ppm_type_in, ppm_ref_in, &
                  ppm_flatten_before_integrals_in, &
                  use_colglaz_in, use_flattening_in, &
                  corner_coupling_in, version_2_in, &
@@ -207,6 +207,7 @@
 
         integer,  intent(in) :: dm
         integer,  intent(in) :: numadv
+        integer,  intent(in) :: ndiag_in
         integer,  intent(in) :: do_hydro
         integer,  intent(in) :: ppm_type_in
         integer,  intent(in) :: ppm_ref_in
@@ -234,6 +235,8 @@
 
         comoving_type = 1
 
+        NDIAG = ndiag_in
+
         if (do_hydro .eq. 0) then
 
            NVAR = 1
@@ -246,13 +249,11 @@
            UFA   = -1
            UFS   = -1
 
-           NDIAG = 2
            TEMP_COMP = -1
              NE_COMP = -1
 
         else
 
-           NDIAG = 2
            TEMP_COMP = 1
              NE_COMP = 2
 
