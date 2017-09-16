@@ -101,7 +101,7 @@
          diag_eos(:,:,:,1)    = 0.0d0
 
       ! This is the regular case with NO_HYDRO = FALSE
-      else if (ns.gt.1 .and. nd.eq.2) then
+      else if (ns.gt.1 .and. nd.ge.2) then
 
          do k = lo(3), hi(3)
          do j = lo(2), hi(2)
