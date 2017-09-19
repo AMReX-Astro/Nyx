@@ -197,8 +197,16 @@ Nyx::hydro_setup()
         cnt += NumAdv;
     }
 
+    int NDIAG_C;
     Temp_comp = 0;
       Ne_comp = 1;
+    if (inhomo_reion > 0)
+    {
+        NDIAG_C  = 3;
+        Zhi_comp = 2;
+    } else {
+        NDIAG_C  = 2;
+    }
 
     int dm = BL_SPACEDIM;
 
@@ -228,12 +236,14 @@ Nyx::hydro_setup()
     // Define NUM_GROW from the f90 module.
     fort_get_method_params(&NUM_GROW);
 
+    // Note that we must set NDIAG_C before we call set_method_params because
+    // we use the C++ value to set the Fortran value
     fort_set_method_params
-        (dm, NumAdv, do_hydro, ppm_type, ppm_reference,
+        (dm, NumAdv, NDIAG_C, do_hydro, ppm_type, ppm_reference,
          ppm_flatten_before_integrals,
          use_colglaz, use_flattening, corner_coupling, version_2,
          use_const_species, gamma, normalize_species,
-         heat_cool_type);
+         heat_cool_type, inhomo_reion);
 
     if (use_const_species == 1)
         fort_set_eos_params(h_species, he_species);
@@ -258,7 +268,7 @@ Nyx::hydro_setup()
 
     // This has two components: Temperature and Ne
     desc_lst.addDescriptor(DiagEOS_Type, IndexType::TheCellType(),
-                           StateDescriptor::Point, 1, 2, interp,
+                           StateDescriptor::Point, 1, NDIAG_C, interp,
                            state_data_extrap, store_in_checkpoint);
 
 #ifdef GRAVITY
@@ -641,15 +651,17 @@ Nyx::no_hydro_setup()
     Density = 0;
     NUM_STATE = 1;
 
+    int NDIAG_C = -1;
+
     // Define NUM_GROW from the f90 module.
     fort_get_method_params(&NUM_GROW);
 
     fort_set_method_params
-        (dm, NumAdv, do_hydro, ppm_type, ppm_reference,
+        (dm, NumAdv, NDIAG_C, do_hydro, ppm_type, ppm_reference,
          ppm_flatten_before_integrals,
          use_colglaz, use_flattening, corner_coupling, version_2,
          use_const_species, gamma, normalize_species,
-         heat_cool_type);
+         heat_cool_type, inhomo_reion);
 
     int coord_type = Geometry::Coord();
     fort_set_problem_params(dm, phys_bc.lo(), phys_bc.hi(), Outflow, Symmetry, coord_type);
@@ -755,3 +767,22 @@ Nyx::no_hydro_setup()
 }
 #endif
 
+#ifdef USE_CVODE
+void
+Nyx::set_simd_width(const int simd_width)
+{
+    set_simd(&simd_width);
+}
+
+void
+Nyx::alloc_simd_vec()
+{
+    fort_alloc_simd_vec();
+}
+
+void
+Nyx::dealloc_simd_vec()
+{
+    fort_dealloc_simd_vec();
+}
+#endif

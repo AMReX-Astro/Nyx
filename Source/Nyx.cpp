@@ -21,6 +21,7 @@ using std::string;
 #include <AMReX_TagBox.H>
 #include <AMReX_Particles_F.H>
 #include <AMReX_Utility.H>
+#include <AMReX_Print.H>
 
 #if BL_USE_MPI
 #include "MemInfo.H"
@@ -63,6 +64,8 @@ static Real fixed_dt    = -1.0;
 static Real initial_dt  = -1.0;
 static Real dt_cutoff   =  0;
 
+int simd_width = 1;
+
 int Nyx::strict_subcycling = 0;
 
 Real Nyx::old_a      = -1.0;
@@ -83,7 +86,7 @@ Real Nyx::change_max  = 1.1;
 BCRec Nyx::phys_bc;
 int Nyx::do_reflux = 1;
 int Nyx::NUM_STATE = -1;
-int Nyx::NUM_GROW = -1;
+int Nyx::NUM_GROW  = -1;
 
 int Nyx::nsteps_from_plotfile = -1;
 
@@ -98,6 +101,7 @@ int Nyx::Zmom = -1;
 
 int Nyx::Temp_comp = -1;
 int Nyx::  Ne_comp = -1;
+int Nyx:: Zhi_comp = -1;
 
 int Nyx::NumSpec  = 0;
 int Nyx::NumAux   = 0;
@@ -118,6 +122,7 @@ Real Nyx::comoving_h;
 int Nyx::do_hydro = -1;
 int Nyx::add_ext_src = 0;
 int Nyx::heat_cool_type = 0;
+int Nyx::inhomo_reion = 0;
 int Nyx::strang_split = 0;
 
 Real Nyx::average_gas_density = 0;
@@ -253,6 +258,16 @@ Nyx::read_params ()
 
     pp.query("strict_subcycling",strict_subcycling);
 
+#ifdef USE_CVODE
+    pp.query("simd_width", simd_width);
+    if (simd_width < 1) amrex::Abort("simd_width must be a positive integer");
+    set_simd_width(simd_width);
+
+    if (verbose > 1) amrex::Print()
+        << "SIMD width (# zones) for heating/cooling integration: "
+        << simd_width << std::endl;
+#endif
+
     // Get boundary conditions
     Array<int> lo_bc(BL_SPACEDIM), hi_bc(BL_SPACEDIM);
     pp.getarr("lo_bc", lo_bc, 0, BL_SPACEDIM);
@@ -354,14 +369,32 @@ Nyx::read_params ()
 #endif
 
     pp.query("heat_cool_type", heat_cool_type);
+    if (heat_cool_type == 7)
+    {
+      amrex::Print() << "----- WARNING WARNING WARNING WARNING WARNING -----" << std::endl;
+      amrex::Print() << "                                                   " << std::endl;
+      amrex::Print() << "      SIMD CVODE is currently EXPERIMENTAL.        " << std::endl;
+      amrex::Print() << "      Use at your own risk.                        " << std::endl;
+      amrex::Print() << "                                                   " << std::endl;
+      amrex::Print() << "----- WARNING WARNING WARNING WARNING WARNING -----" << std::endl;
+      Array<int> n_cell(BL_SPACEDIM);
+      ParmParse pp("amr");
+      pp.getarr("n_cell", n_cell, 0, BL_SPACEDIM);
+      if (n_cell[0] % simd_width) {
+        const std::string errmsg = "Currently the SIMD CVODE solver requires that n_cell[0] % simd_width = 0";
+        amrex::Abort(errmsg);
+      }
+    }
 
     pp.query("use_exact_gravity", use_exact_gravity);
+
+    pp.query("inhomo_reion", inhomo_reion);
 
 #ifdef HEATCOOL
     if (heat_cool_type > 0 && add_ext_src == 0)
        amrex::Error("Nyx::must set add_ext_src to 1 if heat_cool_type > 0");
-    if (heat_cool_type != 1 && heat_cool_type != 3 && heat_cool_type != 5)
-       amrex::Error("Nyx:: nonzero heat_cool_type must equal 1 or 3 or 5");
+    if (heat_cool_type != 1 && heat_cool_type != 3 && heat_cool_type != 5 && heat_cool_type != 7)
+       amrex::Error("Nyx:: nonzero heat_cool_type must equal 1 or 3 or 5 or 7");
     if (heat_cool_type == 0)
        amrex::Error("Nyx::contradiction -- HEATCOOL is defined but heat_cool_type == 0");
 
@@ -377,18 +410,23 @@ Nyx::read_params ()
         case 5:
           std::cout << "CVODE";
           break;
+        case 7:
+          std::cout << "SIMD CVODE";
+          break;
       }
       std::cout << std::endl;
     }
 
 #ifndef USE_CVODE
-    if (heat_cool_type == 5)
-        amrex::Error("Nyx:: cannot set heat_cool_type = 5 unless USE_CVODE=TRUE");
+    if (heat_cool_type == 5 || heat_cool_type == 7)
+        amrex::Error("Nyx:: cannot set heat_cool_type = 5 or 7 unless USE_CVODE=TRUE");
 #endif
 
 #else
     if (heat_cool_type > 0)
        amrex::Error("Nyx::you set heat_cool_type > 0 but forgot to set USE_HEATCOOL = TRUE");
+    if (inhomo_reion > 0)
+       amrex::Error("Nyx::you set inhomo_reion > 0 but forgot to set USE_HEATCOOL = TRUE");
 #endif
 
     pp.query("allow_untagging", allow_untagging);
@@ -564,7 +602,7 @@ Nyx::Nyx (Amr&            papa,
     }
 
      // Initialize "this_z" in the atomic_rates_module
-     if (heat_cool_type == 1 || heat_cool_type == 3 || heat_cool_type == 5)
+    if (heat_cool_type == 1 || heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7)
          fort_interp_to_this_z(&initial_z);
 
 #ifdef AGN
@@ -685,7 +723,7 @@ Nyx::init (AmrLevel& old)
 
         for (FillPatchIterator
                  fpi(old, S_new, 0, cur_time,   State_Type, 0, NUM_STATE),
-                dfpi(old, D_new, 0, cur_time, DiagEOS_Type, 0, 2);
+                dfpi(old, D_new, 0, cur_time, DiagEOS_Type, 0, D_new.nComp());
                 fpi.isValid() && dfpi.isValid();
                 ++fpi,++dfpi)
         {
@@ -2082,11 +2120,19 @@ Nyx::compute_new_temp ()
     {
         const Box& bx = mfi.tilebox();
 
-        fort_compute_temp
-            (bx.loVect(), bx.hiVect(),
-            BL_TO_FORTRAN(S_new[mfi]),
-            BL_TO_FORTRAN(D_new[mfi]), &a,
-             &print_fortran_warnings);
+        if (heat_cool_type == 7) {
+          fort_compute_temp_vec
+              (bx.loVect(), bx.hiVect(),
+              BL_TO_FORTRAN(S_new[mfi]),
+              BL_TO_FORTRAN(D_new[mfi]), &a,
+               &print_fortran_warnings);
+        } else {
+            fort_compute_temp
+              (bx.loVect(), bx.hiVect(),
+              BL_TO_FORTRAN(S_new[mfi]),
+              BL_TO_FORTRAN(D_new[mfi]), &a,
+               &print_fortran_warnings);
+        }
     }
 
     // Compute the maximum temperature
@@ -2128,17 +2174,17 @@ Nyx::compute_new_temp ()
 
 #ifndef NO_HYDRO
 void
-Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& T_meanrho)
+Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_meanrho)
 {
     BL_PROFILE("Nyx::compute_rho_temp()");
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
 
-    Real rho_T_sum=0.0,   T_sum=0.0, T_meanrho_sum=0.0;
+    Real rho_T_sum=0.0,   T_sum=0.0, Tinv_sum=0.0, T_meanrho_sum=0.0;
     Real   rho_sum=0.0, vol_sum=0.0,    vol_mn_sum=0.0;
 
 #ifdef _OPENMP
-#pragma omp parallel reduction(+:rho_T_sum, rho_sum, T_sum, T_meanrho_sum, vol_sum, vol_mn_sum)
+#pragma omp parallel reduction(+:rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum)
 #endif
     for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
     {
@@ -2148,15 +2194,16 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& T_meanrho)
             (bx.loVect(), bx.hiVect(), geom.CellSize(),
              BL_TO_FORTRAN(S_new[mfi]),
              BL_TO_FORTRAN(D_new[mfi]), &average_gas_density,
-             &rho_T_sum, &T_sum, &T_meanrho_sum, &rho_sum, &vol_sum, &vol_mn_sum);
+             &rho_T_sum, &T_sum, &Tinv_sum, &T_meanrho_sum, &rho_sum, &vol_sum, &vol_mn_sum);
     }
-    Real sums[6] = {rho_T_sum, rho_sum, T_sum, T_meanrho_sum, vol_sum, vol_mn_sum};
-    ParallelDescriptor::ReduceRealSum(sums,6);
+    Real sums[7] = {rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum};
+    ParallelDescriptor::ReduceRealSum(sums,7);
 
     rho_T_avg = sums[0] / sums[1];  // density weighted T
-        T_avg = sums[2] / sums[4];  // volume weighted T
-    if (sums[5] > 0) {
-       T_meanrho = sums[3] / sums[5];  // T at mean density
+        T_avg = sums[2] / sums[5];  // volume weighted T
+     Tinv_avg = sums[3] / sums[1];  // 21cm T
+    if (sums[6] > 0) {
+       T_meanrho = sums[4] / sums[6];  // T at mean density
        T_meanrho = pow(10.0, T_meanrho);
     }
 }
@@ -2232,6 +2279,7 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         allInts.push_back(Eint);
         allInts.push_back(Temp_comp);
         allInts.push_back(Ne_comp);
+        allInts.push_back(Zhi_comp);
         allInts.push_back(FirstSpec);
         allInts.push_back(FirstAux);
         allInts.push_back(FirstAdv);
@@ -2261,6 +2309,7 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         allInts.push_back(do_grav);
         allInts.push_back(add_ext_src);
         allInts.push_back(heat_cool_type);
+        allInts.push_back(inhomo_reion);
         allInts.push_back(strang_split);
         allInts.push_back(reeber_int);
         allInts.push_back(gimlet_int);
@@ -2287,6 +2336,7 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         Eint = allInts[count++];
         Temp_comp = allInts[count++];
         Ne_comp = allInts[count++];
+        Zhi_comp = allInts[count++];
         FirstSpec = allInts[count++];
         FirstAux = allInts[count++];
         FirstAdv = allInts[count++];
@@ -2316,6 +2366,7 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
         do_grav = allInts[count++];
         add_ext_src = allInts[count++];
         heat_cool_type = allInts[count++];
+        inhomo_reion = allInts[count++];
         strang_split = allInts[count++];
         reeber_int = allInts[count++];
         gimlet_int = allInts[count++];

@@ -99,6 +99,10 @@ subroutine ext_src_hc(lo, hi, old_state, os_l1, os_l2, os_l3, os_h1, os_h2, os_h
         call integrate_state_fcvode(lo,hi,tmp_state,ns_l1,ns_l2,ns_l3, ns_h1,ns_h2,ns_h3, &
                                                 new_diag ,nd_l1,nd_l2,nd_l3, nd_h1,nd_h2,nd_h3, &
                                   a,half_dt,min_iter,max_iter)
+    else if (heat_cool_type .eq. 7) then
+        call integrate_state_fcvode_vec(lo,hi,tmp_state,ns_l1,ns_l2,ns_l3, ns_h1,ns_h2,ns_h3, &
+                                                new_diag ,nd_l1,nd_l2,nd_l3, nd_h1,nd_h2,nd_h3, &
+                                  a,half_dt,min_iter,max_iter)
     endif
  
     ! Recall that this routine is called from a tiled MFIter 
