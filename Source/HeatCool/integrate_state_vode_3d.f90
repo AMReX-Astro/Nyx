@@ -72,6 +72,8 @@ subroutine integrate_state_vode(lo, hi, &
 
                 if (e_orig .lt. 0.d0) then
                     print *,'negative e entering strang integration ',i,j,k, e_orig
+                    print *, 'state(i,j,k,UEINT) = ', state(i,j,k,UEINT)
+                    print *, 'rho = ', rho
                     call bl_abort('bad e in strang')
                 end if
 
