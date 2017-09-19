@@ -195,11 +195,14 @@ Nyx::halo_find (Real dt)
        MultiFab agn_density_old(simBA, simDM, ncomp1, nghost1);
        agn_density_old.setVal(0.0);
 
-       // Deposit the mass now in the particles onto the grid.
+       // Deposit the mass now in the particles onto agn_density_old, on grid.
        // (No change to mass of particles.)
        Nyx::theAPC()->AssignDensitySingleLevel(agn_density_old, level);
 
-       // Add agn_density_old to new_state.
+       // Convert new_state to primitive variables: rho, velocity, energy/rho.
+       conserved_to_primitive(new_state);
+
+       // Add agn_density_old to new_state, which holds primitive variables.
        // This is from depositing mass of existing particles.
        // Later, we'll subtract the deposited mass of all particles, old & new.
        amrex::MultiFab::Add(new_state, agn_density_old,
@@ -275,15 +278,20 @@ Nyx::halo_find (Real dt)
        // Make sure the density put into ghost cells is added to valid regions
        agn_density.SumBoundary(geom.periodicity());
 
-       // Take away the density from the gas that was added to the AGN particle.
+       // Take away the density from the gas that was added to the AGN particle:
+       // density is in new_state, which holds primitive variables.
        amrex::MultiFab::Subtract(new_state, agn_density,
                                  comp0, Density, ncomp1, nghost0);
+
+       // Convert new_state to conserved variables: rho, momentum, energy.
+       primitive_to_conserved(new_state);
 
        pout() << "Going into ComputeParticleVelocity (no energy), number of AGN particles on this proc is "
               << Nyx::theAPC()->TotalNumberOfParticles(true, true) << endl;
 
        // Re-set the particle velocity (but not energy) after accretion,
-       // using change of momentum density in state.
+       // using change of momentum density from orig_state to new_state,
+       // which hold conserved variables.
        // No change to state, other than filling ghost cells.
        int add_energy = 0;
        Nyx::theAPC()->ComputeParticleVelocity(level, orig_state, new_state, add_energy);
@@ -376,7 +384,7 @@ Nyx::halo_accrete (Real dt)
    const DistributionMapping& simDM = new_state.DistributionMap();
    int ncomp = new_state.nComp();
 
-   // First copy the existing state into orig_state.
+   // First copy the existing state (new_state) into orig_state.
    MultiFab orig_state(simBA, simDM, ncomp, nghost1);
    MultiFab::Copy(orig_state, new_state,
                   comp0, comp0, ncomp, nghost1);
