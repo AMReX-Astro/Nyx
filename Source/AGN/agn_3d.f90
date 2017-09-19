@@ -443,14 +443,18 @@
 
        call nyx_eos_given_RT(e, pressure, avg_rho, T_min, avg_Ne, a)
 
-          print *, 'neighborhood mass: ', m_g
-          print *, 'e = ', e
-          print *, 'particle energy: ', particles(n)%energy
-          print *, 'm_g * e = ', (m_g * e)
+!       print *, 'AGN particle at ', particles(n)%pos, ':', i, j, k
+       print 50, particles(n)%pos, i, j, k, particles(n)%mass, &
+            particles(n)%energy
+50     format (1x, 'AGN particle at ', 3F8.3, 3I4, ' m=', E12.5, ' e=', E12.5)
 
        if (particles(n)%energy > m_g * e) then
 
           print *, 'RELEASING ENERGY of particle at ', particles(n)%pos
+          print *, 'neighborhood mass: ', m_g
+          print *, 'e = ', e
+          print *, 'particle energy: ', particles(n)%energy
+          print *, 'm_g * e = ', (m_g * e)
 
           state(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN) = &
           state(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN) + &
