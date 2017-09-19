@@ -205,8 +205,7 @@
        j = particles(n)%pos(2) / dx(2)
        k = particles(n)%pos(3) / dx(3)
 
-       ! momx, momy, momz, E: momentum and total energy.
-
+       ! momx, momy, momz: momentum = volume x change in momentum density.
        momx = sum((state_new(i-1:i+1, j-1:j+1, k-1:k+1, UMX) - &
                    state_old(i-1:i+1, j-1:j+1, k-1:k+1, UMX)) * weight) * vol
        momy = sum((state_new(i-1:i+1, j-1:j+1, k-1:k+1, UMY) - &
@@ -224,6 +223,7 @@
 
        ! Update particle energy if particle isn't brand new
        if (add_energy .gt. 0) then
+          ! E: total energy = volume x change in total energy density.
           E = sum((state_new(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN) - &
                    state_old(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN)) * weight) * vol
           deltaEnergy = - E / mass
