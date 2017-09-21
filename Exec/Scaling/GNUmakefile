@@ -1,7 +1,7 @@
 # AMREX_HOME defines the directory in which we will find all the AMReX code
 AMREX_HOME ?= ../../../amrex
 
-HPGMG_DIR ?= ../../../hpgmg/finite-volume
+HPGMG_DIR ?= ../../Util/hpgmg/finite-volume
 
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ../..
