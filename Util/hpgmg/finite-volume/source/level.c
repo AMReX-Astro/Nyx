@@ -1266,6 +1266,8 @@ void create_level(level_type *level, int boxes_in_i, int box_dim, int box_ghosts
 
   // duplicate MPI_COMM_WORLD to be the communicator for each level
   #ifdef USE_MPI
+  level->MPI_COMM_ALLREDUCE = comm;
+  /*
   if(my_rank==0){fprintf(stdout,"  Duplicating MPI_COMM_WORLD... ");fflush(stdout);}
   double time_start = MPI_Wtime();
   MPI_Comm_dup(comm,&level->MPI_COMM_ALLREDUCE);
@@ -1274,6 +1276,7 @@ void create_level(level_type *level, int boxes_in_i, int box_dim, int box_ghosts
   double time_in_comm_dup_send = time_end-time_start;
   MPI_Allreduce(&time_in_comm_dup_send,&time_in_comm_dup,1,MPI_DOUBLE,MPI_MAX,level->MPI_COMM_ALLREDUCE);
   if(my_rank==0){fprintf(stdout,"done (%0.6f seconds)\n",time_in_comm_dup);fflush(stdout);}
+  */
   #endif
 
   // report on potential load imbalance
@@ -1380,12 +1383,14 @@ void destroy_level(level_type *level){
     #endif
   }
 
+  /*
   // MPI subcommunicator
   #ifdef USE_MPI
   #ifdef USE_SUBCOMM
   MPI_Comm_free(&level->MPI_COMM_ALLREDUCE);
   #endif
   #endif
+  */
 
   if(level->my_rank==0){fprintf(stdout,"done\n");}
 }

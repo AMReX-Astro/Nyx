@@ -544,10 +544,10 @@ void build_restriction(mg_type *all_grids, int restrictionType){
     }
     elementSize = restrict_dim_i*restrict_dim_j*restrict_dim_k;
    
-    double * all_send_buffers = (double*)malloc(numCoarseBoxes*elementSize*sizeof(double));
-          if(numCoarseBoxes*elementSize>0)
+    double * all_send_buffers = (double*)malloc(numCoarseBoxesRemote*elementSize*sizeof(double));
+          if(numCoarseBoxesRemote*elementSize>0)
           if(all_send_buffers==NULL){fprintf(stderr,"malloc failed - restriction/all_send_buffers\n");exit(0);}
-                      memset(all_send_buffers,0,numCoarseBoxes*elementSize*sizeof(double)); // DO NOT DELETE... you must initialize to 0 to avoid getting something like 0.0*NaN and corrupting the solve
+                      memset(all_send_buffers,0,numCoarseBoxesRemote*elementSize*sizeof(double)); // DO NOT DELETE... you must initialize to 0 to avoid getting something like 0.0*NaN and corrupting the solve
 
     // for each neighbor, construct the pack list and allocate the MPI send buffer... 
     for(neighbor=0;neighbor<numCoarseRanks;neighbor++){
@@ -938,7 +938,7 @@ void MGBuild(mg_type *all_grids, level_type *fine_grid, double a, double b, int 
     if(all_grids->my_rank==0){fprintf(stdout,"  Building MPI subcommunicator for level %d... ",level);fflush(stdout);}
     all_grids->levels[level]->active=0;
     int ll;for(ll=level;ll<all_grids->num_levels;ll++)if(all_grids->levels[ll]->num_my_boxes>0)all_grids->levels[level]->active=1;
-    MPI_Comm_split(all_grids->levels[level]->MPI_COMM_ALLREDUCE,all_grids->levels[level]->active,all_grids->levels[level]->my_rank,&all_grids->levels[level]->MPI_COMM_ALLREDUCE);
+    MPI_Comm_split(comm, all_grids->levels[level]->active, all_grids->levels[level]->my_rank, &all_grids->levels[level]->MPI_COMM_ALLREDUCE);
     double comm_split_end = MPI_Wtime();
     double comm_split_time_send = comm_split_end-comm_split_start;
     double comm_split_time = 0;
@@ -976,6 +976,17 @@ void MGBuild(mg_type *all_grids, level_type *fine_grid, double a, double b, int 
 void MGDestroy(mg_type *all_grids){
   int level;
   int i;
+
+  #ifdef USE_MPI
+  #ifdef USE_SUBCOMM
+  // only MGBuild creates subcommunicators (level_create assigns)
+  for(level=all_grids->num_levels-1;level>0;level--){
+    if(all_grids->levels[level]->MPI_COMM_ALLREDUCE != MPI_COMM_WORLD)
+    MPI_Comm_free(&all_grids->levels[level]->MPI_COMM_ALLREDUCE);
+  }
+  #endif
+  #endif
+
   if(all_grids->my_rank==0){fprintf(stdout,"attempting to free the restriction and interpolation lists... ");fflush(stdout);}
   for(level=all_grids->num_levels-1;level>=0;level--){
     // destroy restriction mini program created by MGBuild...
@@ -1174,7 +1185,7 @@ void MGSolve(mg_type *all_grids, int onLevel, int u_id, int F_id, double a, doub
 //------------------------------------------------------------------------------------------------------------------------------
 void FMGSolve(mg_type *all_grids, int onLevel, int u_id, int F_id, double a, double b, double dtol, double rtol){
 
-  #ifdef UNLIMIT_F_CYCLES
+  #ifdef UNLIMIT_FMG_FCYCLES
 
   all_grids->MGSolves_performed++;
   if(!all_grids->levels[onLevel]->active)return;
@@ -1364,7 +1375,7 @@ void FMGSolve(mg_type *all_grids, int onLevel, int u_id, int F_id, double a, dou
     if(norm_of_residual           < dtol)break;
   }
 
-  #endif /* UNLIMIT_F_CYCLES */
+  #endif /* UNLIMIT_FMG_FCYCLES */
 
   //- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
   all_grids->timers.MGSolve += (double)(getTime()-_timeStartMGSolve);
