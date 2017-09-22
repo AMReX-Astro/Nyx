@@ -25,3 +25,13 @@ SIMD parallelism comprises a large fraction of compute performance on modern HPC
 The number of ODEs (cells) which are computed simultaneously is chosen through the input parameter \texttt{nyx.simd\_width}.
 On Intel Xeon Phi, with 512 bit-wide SIMD instructions, an appropriate value for this parameter might be 8 or 16, or perhaps larger; the value which yields the highest performance will vary by architecture.
 However, users are cautioned that this mode remains \emph{\textbf{experimental}} and its results have not been subjected to the same level of verification as the other solver methods.
+In particular, the are three numerical tolerances, available as input parameters, which affect the convergence of the scalar vs SIMD ODE integration:
+
+\begin{itemize}
+  \item \texttt{nyx.eos\_nr\_eps}: this is the convergence criterion for the Newton-Raphson iteration which is used to evaluate the ODE RHS
+  \item \texttt{nyx.vode\_rtol}: this is the relative tolerance required for the ODE integration in VODE or CVODE
+  \item \texttt{nyx.vode\_atol\_scaled}: this is the absolute tolerance required for the ODE integration in VODE or CVODE, scaled by the initial value of the independent variable in the ODE
+\end{itemize}
+
+These variables, in particular \texttt{nyx.vode\_rtol}, have different effects depending on whether one is integrating a single ODE at a time, or a system of ODEs simultaneously.
+One should be mindful of the numerical differences which arise from these, which can be observed with the \texttt{fcompare} tool in \amrex.
