@@ -170,9 +170,6 @@ Nyx::halo_find (Real dt)
        for (BoxIterator bit(vertBox); bit.ok(); ++bit)
          {
            IntVect vert = bit();
-           int i = vert[0];
-           int j = vert[1];
-           int k = vert[2];
            IntVect iv(D_DECL(vertices[vert[0]][0],
                              vertices[vert[1]][1],
                              vertices[vert[2]][2]));
@@ -200,7 +197,7 @@ Nyx::halo_find (Real dt)
        Nyx::theAPC()->AssignDensitySingleLevel(agn_density_old, level);
 
        // Make sure the density put into ghost cells is added to valid regions
-       agn_density.SumBoundary(geom.periodicity());
+       agn_density_old.SumBoundary(geom.periodicity());
 
        // Convert new_state to primitive variables: rho, velocity, energy/rho.
        conserved_to_primitive(new_state);
