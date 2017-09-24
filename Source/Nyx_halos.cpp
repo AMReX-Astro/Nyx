@@ -170,9 +170,6 @@ Nyx::halo_find (Real dt)
        for (BoxIterator bit(vertBox); bit.ok(); ++bit)
          {
            IntVect vert = bit();
-           int i = vert[0];
-           int j = vert[1];
-           int k = vert[2];
            IntVect iv(D_DECL(vertices[vert[0]][0],
                              vertices[vert[1]][1],
                              vertices[vert[2]][2]));
@@ -198,6 +195,9 @@ Nyx::halo_find (Real dt)
        // Deposit the mass now in the particles onto agn_density_old, on grid.
        // (No change to mass of particles.)
        Nyx::theAPC()->AssignDensitySingleLevel(agn_density_old, level);
+
+       // Make sure the density put into ghost cells is added to valid regions
+       agn_density_old.SumBoundary(geom.periodicity());
 
        // Convert new_state to primitive variables: rho, velocity, energy/rho.
        conserved_to_primitive(new_state);
@@ -261,10 +261,17 @@ Nyx::halo_find (Real dt)
        // Call Redistribute so that the new particles get their cell, grid and process defined
        Nyx::theAPC()->Redistribute(lev_min, lev_max, ngrow);
 
+       // Fill the "ghosts" vector with particles in ghost cells of each grid
        Nyx::theAPC()->fillNeighbors(level);
+
+       // ComputeOverlap sets the ID of a particle to -1 if it is less than "cutoff" away from another
+       //   particle and if it is newer than that particle
        Nyx::theAPC()->ComputeOverlap(level);
+
+       // Clear the Neighbor Particle data structure
        Nyx::theAPC()->clearNeighbors(level);
 
+       // This Redistribute is used to remove particles whose ID's have been set to -1 in ComputeOverlap
        Nyx::theAPC()->Redistribute(lev_min, lev_max, ngrow);
 
        // agn_density will hold the density we're going to remove from the grid.

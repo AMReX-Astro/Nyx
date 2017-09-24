@@ -15,7 +15,7 @@
 
     cutoff = delta_x(1)
     
-    do i = 1, np
+    do i = 1, np-1
        do j = i+1, np
 
           r2 = sum((particles(i)%pos - particles(j)%pos)**2)
