@@ -731,36 +731,54 @@ DarkMatterParticleContainer::InitFromBinaryMortonFile(const std::string& particl
     const int tile = mfi.LocalTileIndex();      
     auto& particles = GetParticles(lev);
     
-    uint64_t offset   = file_indices[grid]*num_parts_per_box*psize;
-    int file_num      = offset / num_bytes_per_file;
-    uint64_t seek_pos = offset % num_bytes_per_file;
-    const std::string& file_name = file_names[file_num];
+    uint64_t start    = file_indices[grid]*num_parts_per_box;
+    uint64_t stop     = start + num_parts_per_box;
+
+    int file_num      = start / num_parts_per_file;
+    uint64_t seek_pos = (start * psize ) % num_bytes_per_file;
+    std::string file_name = file_names[file_num];
     
     std::ifstream ifs;
     ifs.open(file_name.c_str(), std::ios::in|std::ios::binary);
+    if ( not ifs ) {
+      amrex::Print() << "Failed to open file " << file_name << " for reading. \n";
+      amrex::Abort();
+    } 
+
     ifs.seekg(seek_pos, std::ios::beg);
     
-    std::vector<char> buffer(num_parts_per_box*psize);
-    ifs.read((char*)&buffer[0], num_parts_per_box*psize);
-    
-    for (uint64_t i = 0; i < num_parts_per_box; i += skip_factor) {
+    for (uint64_t i = start; i < stop; ++i) {
+      int next_file = i / num_parts_per_file;
+      if (next_file != file_num) {
+	file_num = next_file;
+	file_name = file_names[file_num];
+	ifs.close();
+	ifs.open(file_name.c_str(), std::ios::in|std::ios::binary);
+	if ( not ifs ) {
+	  amrex::Print() << "Failed to open file " << file_name << " for reading. \n";
+	  amrex::Abort();
+	}
+      }
+
       float fpos[DM];
       float fextra[NX];
-      std::memcpy((char*)&fpos[0],   (char*)&buffer[i*psize], DM*sizeof(float));
-      std::memcpy((char*)&fextra[0], (char*)&buffer[i*psize + DM*sizeof(float)], NX*sizeof(float));
+      ifs.read((char*)&fpos[0],   DM*sizeof(float));
+      ifs.read((char*)&fextra[0], NX*sizeof(float));
       
-      AMREX_D_TERM(p.m_rdata.pos[0] = fpos[0];,
-		   p.m_rdata.pos[1] = fpos[1];,
-		   p.m_rdata.pos[2] = fpos[2];);
-      
-      for (int comp = 0; comp < NX; comp++)
-	p.m_rdata.arr[BL_SPACEDIM+comp] = fextra[comp];
-
-      p.m_rdata.arr[BL_SPACEDIM] *= skip_factor;
-      
-      p.m_idata.id  = ParticleType::NextID();
-      p.m_idata.cpu = ParallelDescriptor::MyProc();
-      particles[std::make_pair(grid, tile)].push_back(p);
+      if ( (i - start) % skip_factor == 0 ) {
+	AMREX_D_TERM(p.m_rdata.pos[0] = fpos[0];,
+		     p.m_rdata.pos[1] = fpos[1];,
+		     p.m_rdata.pos[2] = fpos[2];);
+	
+	for (int comp = 0; comp < NX; comp++)
+	  p.m_rdata.arr[BL_SPACEDIM+comp] = fextra[comp];
+	
+	p.m_rdata.arr[BL_SPACEDIM] *= skip_factor;
+	
+	p.m_idata.id  = ParticleType::NextID();
+	p.m_idata.cpu = ParallelDescriptor::MyProc();
+	particles[std::make_pair(grid, tile)].push_back(p);
+      }
     }    
   }
   
