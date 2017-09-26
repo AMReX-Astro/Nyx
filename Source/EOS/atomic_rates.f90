@@ -23,10 +23,10 @@ module atomic_rates_module
   public  :: tabulate_rates, fort_interp_to_this_z
 
   ! Photo- rates (from file)
-  integer   , parameter          , private :: NCOOLFILE=301
-  real(rt), dimension(NCOOLFILE), public :: lzr
-  real(rt), dimension(NCOOLFILE), public :: rggh0, rgghe0, rgghep
-  real(rt), dimension(NCOOLFILE), public :: reh0, rehe0, rehep
+  integer, private :: NCOOLFILE
+  real(rt), dimension(:), allocatable, private :: lzr
+  real(rt), dimension(:), allocatable, private :: rggh0, rgghe0, rgghep
+  real(rt), dimension(:), allocatable, private :: reh0, rehe0, rehep
 
   ! Other rates (from equations)
   integer, parameter, public :: NCOOLTAB=2000
@@ -51,11 +51,18 @@ module atomic_rates_module
   contains
 
       subroutine tabulate_rates()
+      use amrex_parmparse_module
+      use amrex_parallel_module, only: amrex_parallel_ioprocessor, amrex_parallel_init
+
       integer :: i
       logical, parameter :: Katz96=.false.
       real(rt), parameter :: t3=1.0d3, t5=1.0d5, t6=1.0d6
-      real(rt) :: t, U, E, y, sqrt_t, corr_term
+      real(rt) :: t, U, E, y, sqrt_t, corr_term, tmp
       logical, save :: first=.true.
+
+      character(len=:), allocatable :: file_in
+      type(amrex_parmparse) :: pp
+
 
       !$OMP CRITICAL(TREECOOL_READ)
       if (first) then
@@ -63,7 +70,33 @@ module atomic_rates_module
          first = .false.
 
          ! Read in photoionization rates and heating from a file
-         open(unit=11,file='TREECOOL_middle',status='old')
+         call amrex_parmparse_build(pp, "nyx")
+         call pp%query("uvb_rates_file", file_in)
+         call amrex_parmparse_destroy(pp)
+
+         call amrex_parallel_init()
+         if (len(file_in) .gt. 0) then
+            open(unit=11, file=file_in, status='old')
+            if (amrex_parallel_ioprocessor()) then
+               print*, 'NOTE: UVB file is set in inputs ('//file_in//').'
+            endif
+         else
+            open(unit=11, file='TREECOOL', status='old')
+            if (amrex_parallel_ioprocessor()) then
+               print*, 'NOTE: UVB file is defaulted to "TREECOOL".'
+            endif
+         endif
+
+         NCOOLFILE = 0
+         do
+            read(11,*,end=10) tmp, tmp, tmp, tmp, tmp,  tmp, tmp
+            NCOOLFILE = NCOOLFILE + 1
+         end do
+         10 rewind(11)
+
+         allocate( lzr(NCOOLFILE), rggh0(NCOOLFILE), rgghe0(NCOOlFILE), rgghep(NCOOLFILE) )
+         allocate( reh0(NCOOLFILE), rehe0(NCOOLFILE), rehep(NCOOLFILE) )
+
          do i = 1, NCOOLFILE
             read(11,*) lzr(i), rggh0(i), rgghe0(i), rgghep(i), &
                                 reh0(i),  rehe0(i),  rehep(i)
