@@ -52,7 +52,7 @@ module atomic_rates_module
 
       subroutine tabulate_rates()
       use amrex_parmparse_module
-      use amrex_parallel_module, only: amrex_parallel_ioprocessor, amrex_parallel_init
+      use parallel, only: parallel_ioprocessor
 
       integer :: i
       logical, parameter :: Katz96=.false.
@@ -74,15 +74,14 @@ module atomic_rates_module
          call pp%query("uvb_rates_file", file_in)
          call amrex_parmparse_destroy(pp)
 
-         call amrex_parallel_init()
          if (len(file_in) .gt. 0) then
             open(unit=11, file=file_in, status='old')
-            if (amrex_parallel_ioprocessor()) then
+            if (parallel_ioprocessor()) then
                print*, 'NOTE: UVB file is set in inputs ('//file_in//').'
             endif
          else
             open(unit=11, file='TREECOOL', status='old')
-            if (amrex_parallel_ioprocessor()) then
+            if (parallel_ioprocessor()) then
                print*, 'NOTE: UVB file is defaulted to "TREECOOL".'
             endif
          endif
