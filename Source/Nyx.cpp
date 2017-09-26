@@ -601,9 +601,11 @@ Nyx::Nyx (Amr&            papa,
        new_a = old_a;
     }
 
+#ifdef USE_HEATCOOL
      // Initialize "this_z" in the atomic_rates_module
     if (heat_cool_type == 1 || heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7)
          fort_interp_to_this_z(&initial_z);
+#endif
 
 #ifdef AGN
      // Initialize the uniform(0,1) random number generator.
@@ -2108,10 +2110,12 @@ Nyx::compute_new_temp ()
 
     Real a = get_comoving_a(cur_time);
 
-    {
-      const Real z = 1.0/a - 1.0;
-      fort_interp_to_this_z(&z);
+#ifdef USE_HEATCOOL
+    if (heat_cool_type == 1 || heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7) {
+       const Real z = 1.0/a - 1.0;
+       fort_interp_to_this_z(&z);
     }
+#endif
 
 #ifdef _OPENMP
 #pragma omp parallel
