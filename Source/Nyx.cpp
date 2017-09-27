@@ -601,7 +601,7 @@ Nyx::Nyx (Amr&            papa,
        new_a = old_a;
     }
 
-#ifdef USE_HEATCOOL
+#ifdef HEATCOOL
      // Initialize "this_z" in the atomic_rates_module
     if (heat_cool_type == 1 || heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7)
          fort_interp_to_this_z(&initial_z);
@@ -2110,7 +2110,7 @@ Nyx::compute_new_temp ()
 
     Real a = get_comoving_a(cur_time);
 
-#ifdef USE_HEATCOOL
+#ifdef HEATCOOL
     if (heat_cool_type == 1 || heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7) {
        const Real z = 1.0/a - 1.0;
        fort_interp_to_this_z(&z);
