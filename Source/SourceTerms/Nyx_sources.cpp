@@ -34,7 +34,7 @@ Nyx::get_old_source (Real      old_time,
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-    for (MFIter mfi(S_old,true); mfi.isValid(); ++mfi)
+    for (MFIter mfi(S_old, MFItInfo().SetDynamic(true).EnableTiling()); mfi.isValid(); ++mfi)
     {
         // We explicitly want to fill the ghost regions of the ext_src array
         const Box& bx = mfi.growntilebox(ext_src.nGrow());
@@ -94,7 +94,7 @@ Nyx::get_new_source (Real      old_time,
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-    for (MFIter mfi(S_old,true); mfi.isValid(); ++mfi)
+    for (MFIter mfi(S_old, MFItInfo().SetDynamic(true).EnableTiling()); mfi.isValid(); ++mfi)
     {
         // We explicitly only want to fill the valid region
         const Box& bx = mfi.tilebox();
