@@ -150,7 +150,7 @@ subroutine integrate_state_fcvode_vec(lo, hi, &
 
                 do ii = 1, simd_width
                   if (e_orig(ii) .lt. 0.d0) then
-                      print *,'negative e entering strang integration ',z, i,j,k, rho/mean_rhob, e_orig(ii)
+                      print *,'negative e entering strang integration ',z, i+ii-1,j,k, rho(ii)/mean_rhob, e_orig(ii)
                       call bl_abort('bad e in strang')
                   end if
                 end do
