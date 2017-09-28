@@ -115,15 +115,17 @@ subroutine integrate_state_fcvode_vec(lo, hi, &
     end if
 
     tstart = 0.0
-    ! CVodeMalloc allocates variables and initialize the solver. We can initialize the solver with junk because once we enter the
-    ! (i,j,k) loop we will immediately call fcvreinit which reuses the same memory allocated from CVodeMalloc but sets up new
-    ! initial conditions.
+    ! CVodeMalloc allocates variables and initialize the solver. We can
+    ! initialize the solver with junk because once we enter the (i,j,k) loop we will
+    ! immediately call fcvreinit which reuses the same memory allocated from
+    ! CVodeMalloc but sets up new initial conditions.
     ierr = FCVodeInit(CVmem, c_funloc(RhsFn_vec), tstart, sunvec_y)
     if (ierr /= 0) then
        call amrex_abort('integrate_state_fcvode_vec: FCVodeInit() failed')
     end if
 
-    ! Set dummy tolerances. These will be overwritten as soon as we enter the loop and reinitialize the solver.
+    ! Set dummy tolerances. These will be overwritten as soon as we enter the
+    ! loop and reinitialize the solver.
     rtol = 1.0d-5
     atol(:) = 1.0d-10
     ierr = FCVodeSVtolerances(CVmem, rtol, sunvec_atol)
