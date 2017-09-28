@@ -160,7 +160,7 @@ subroutine f_rhs_vec(time, e_in, energy)
       end do
 
      ! Converts from code units to CGS
-      rho = rho_vode_vec * density_to_cgs * (1.0d0+z_vode)**3
+      rho = rho_vode_vec(1:simd_width) * density_to_cgs * (1.0d0+z_vode)**3
         U = e_in * e_to_cgs
       nh  = rho*XHYDROGEN/MPROTON
 
@@ -173,14 +173,14 @@ subroutine f_rhs_vec(time, e_in, energy)
       call iterate_ne_vec(z_vode, U, T_vode_vec, nh, ne_vode_vec, nh0, nhp, nhe0, nhep, nhepp, simd_width)
 
       ! Convert species to CGS units: 
-      ne_vode_vec = nh * ne_vode_vec
+      ne_vode_vec(1:simd_width) = nh * ne_vode_vec(1:simd_width)
       nh0   = nh * nh0
       nhp   = nh * nhp
       nhe0  = nh * nhe0
       nhep  = nh * nhep
       nhepp = nh * nhepp
 
-      logT = dlog10(T_vode_vec)
+      logT = dlog10(T_vode_vec(1:simd_width))
       do m = 1, simd_width
          if (logT(m) .ge. TCOOLMAX) then ! Only free-free and Compton cooling are relevant
             lambda_ff(m) = 1.42d-27 * dsqrt(T_vode_vec(m)) * (1.1d0 + 0.34d0*dexp(-(5.5d0 - logT(m))**2 / 3.0d0)) &
