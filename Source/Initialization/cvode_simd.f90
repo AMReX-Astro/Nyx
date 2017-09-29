@@ -28,7 +28,6 @@ end subroutine fort_alloc_simd_vec
 
 
 subroutine fort_dealloc_simd_vec() bind(C, name='fort_dealloc_simd_vec')
-  use misc_params, only: simd_width
   use vode_aux_module, only: T_vode_vec, ne_vode_vec, rho_vode_vec
   use amrex_error_module, only: amrex_abort
   implicit none
