@@ -225,12 +225,12 @@ module eos_module
          end do
 
          call ion_n_vec(U_in(1:vec_count), &
-                    t_in(1:vec_count), &
                     nh_in(1:vec_count), &
                     ne_in(1:vec_count), &
                     nhp_out(1:vec_count), &
                     nhep_out(1:vec_count), &
                     nhepp_out(1:vec_count), &
+                    t_in(1:vec_count), &
                     vec_count)
          nhp(orig_idx(1:vec_count)) = nhp_out(1:vec_count)
          nhep(orig_idx(1:vec_count)) = nhep_out(1:vec_count)
@@ -265,12 +265,12 @@ module eos_module
          end do
 
          call ion_n_vec(U_in(1:vec_count), &
-                    t_in(1:vec_count), &
                     nh_in(1:vec_count), &
                     ne_in(1:vec_count), &
                     nhp_out(1:vec_count), &
                     nhep_out(1:vec_count), &
                     nhepp_out(1:vec_count), &
+                    t_in(1:vec_count), &
                     vec_count)
          nhp_plus(orig_idx(1:vec_count)) = nhp_out(1:vec_count)
          nhep_plus(orig_idx(1:vec_count)) = nhep_out(1:vec_count)
@@ -320,12 +320,12 @@ module eos_module
         endif
       end do
       call ion_n_vec(U_in(1:vec_count), &
-                 t_in(1:vec_count), &
                  nh_in(1:vec_count), &
                  ne_in(1:vec_count), &
                  nhp_out(1:vec_count), &
                  nhep_out(1:vec_count), &
                  nhepp_out(1:vec_count), &
+                 t_in(1:vec_count), &
                  vec_count)
       nhp(orig_idx(1:vec_count)) = nhp_out(1:vec_count)
       nhep(orig_idx(1:vec_count)) = nhep_out(1:vec_count)
@@ -340,9 +340,10 @@ module eos_module
 
       ! ****************************************************************************
 
-      subroutine ion_n_vec(U, t, nh, ne, nhp, nhep, nhepp, vec_count)
+      subroutine ion_n_vec(U, nh, ne, nhp, nhep, nhepp, t, vec_count)
 
       use amrex_fort_module, only : rt => amrex_real
+      use meth_params_module, only: gamma_minus_1
       use atomic_rates_module, ONLY: YHELIUM, MPROTON, BOLTZMANN, &
                                      TCOOLMIN, TCOOLMAX, NCOOLTAB, deltaT, &
                                      AlphaHp, AlphaHep, AlphaHepp, Alphad, &
@@ -350,13 +351,16 @@ module eos_module
                                      ggh0, gghe0, gghep
 
       integer, intent(in) :: vec_count
-      real(rt), intent(in   ) :: U(vec_count), t(vec_count), nh(vec_count), ne(vec_count)
-      real(rt), intent(  out) :: nhp(vec_count), nhep(vec_count), nhepp(vec_count)
+      real(rt), intent(in   ) :: U(vec_count), nh(vec_count), ne(vec_count)
+      real(rt), intent(  out) :: nhp(vec_count), nhep(vec_count), nhepp(vec_count), t(vec_count)
       real(rt) :: ahp(vec_count), ahep(vec_count), ahepp(vec_count), ad(vec_count), geh0(vec_count), gehe0(vec_count), gehep(vec_count)
       real(rt) :: ggh0ne(vec_count), gghe0ne(vec_count), gghepne(vec_count)
-      real(rt) :: tmp(vec_count), logT(vec_count), flo(vec_count), fhi(vec_count)
+      real(rt) :: mu(vec_count), tmp(vec_count), logT(vec_count), flo(vec_count), fhi(vec_count)
       real(rt) :: smallest_val
       integer :: j(vec_count), i
+
+      mu(:) = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+ne(:))
+      t(:)  = gamma_minus_1*MPROTON/BOLTZMANN * U(:) * mu(:)
 
       logT(1:vec_count) = dlog10(t(1:vec_count))
 
