@@ -7,8 +7,6 @@ subroutine f_rhs(num_eq, time, e_in, energy, rpar, ipar)
       use eos_module, only: iterate_ne
       use atomic_rates_module, ONLY: TCOOLMIN, TCOOLMAX, NCOOLTAB, deltaT, &
                                      MPROTON, XHYDROGEN, &
-                                     AlphaHp, AlphaHep, AlphaHepp, Alphad, &
-                                     GammaeH0, GammaeHe0, GammaeHep, &
                                      BetaH0, BetaHe0, BetaHep, Betaff1, Betaff4, &
                                      RecHp, RecHep, RecHepp, &
                                      eh0, ehe0, ehep
@@ -80,13 +78,6 @@ subroutine f_rhs(num_eq, time, e_in, energy, rpar, ipar)
       flo = 1.0d0 - fhi
       j = j + 1 ! F90 arrays start with 1
 
-      ahp   = flo*AlphaHp  (j) + fhi*AlphaHp  (j+1)
-      ahep  = flo*AlphaHep (j) + fhi*AlphaHep (j+1)
-      ahepp = flo*AlphaHepp(j) + fhi*AlphaHepp(j+1)
-      ad    = flo*Alphad   (j) + fhi*Alphad   (j+1)
-      geh0  = flo*GammaeH0 (j) + fhi*GammaeH0 (j+1)
-      gehe0 = flo*GammaeHe0(j) + fhi*GammaeHe0(j+1)
-      gehep = flo*GammaeHep(j) + fhi*GammaeHep(j+1)
       bh0   = flo*BetaH0   (j) + fhi*BetaH0   (j+1)
       bhe0  = flo*BetaHe0  (j) + fhi*BetaHe0  (j+1)
       bhep  = flo*BetaHep  (j) + fhi*BetaHep  (j+1)
@@ -125,8 +116,6 @@ subroutine f_rhs_vec(time, e_in, energy)
       use eos_module, only: iterate_ne_vec
       use atomic_rates_module, ONLY: TCOOLMIN, TCOOLMAX, NCOOLTAB, deltaT, &
                                      MPROTON, XHYDROGEN, &
-                                     AlphaHp, AlphaHep, AlphaHepp, Alphad, &
-                                     GammaeH0, GammaeHe0, GammaeHep, &
                                      BetaH0, BetaHe0, BetaHep, Betaff1, Betaff4, &
                                      RecHp, RecHep, RecHepp, &
                                      eh0, ehe0, ehep
@@ -210,13 +199,6 @@ subroutine f_rhs_vec(time, e_in, energy)
             flo(m) = 1.0d0 - fhi(m)
             j(m) = j(m) + 1 ! F90 arrays start with 1
       
-            ahp(m)   = flo(m)*AlphaHp  (j(m)) + fhi(m)*AlphaHp  (j(m)+1)
-            ahep(m)  = flo(m)*AlphaHep (j(m)) + fhi(m)*AlphaHep (j(m)+1)
-            ahepp(m) = flo(m)*AlphaHepp(j(m)) + fhi(m)*AlphaHepp(j(m)+1)
-            ad(m)    = flo(m)*Alphad   (j(m)) + fhi(m)*Alphad   (j(m)+1)
-            geh0(m)  = flo(m)*GammaeH0 (j(m)) + fhi(m)*GammaeH0 (j(m)+1)
-            gehe0(m) = flo(m)*GammaeHe0(j(m)) + fhi(m)*GammaeHe0(j(m)+1)
-            gehep(m) = flo(m)*GammaeHep(j(m)) + fhi(m)*GammaeHep(j(m)+1)
             bh0(m)   = flo(m)*BetaH0   (j(m)) + fhi(m)*BetaH0   (j(m)+1)
             bhe0(m)  = flo(m)*BetaHe0  (j(m)) + fhi(m)*BetaHe0  (j(m)+1)
             bhep(m)  = flo(m)*BetaHep  (j(m)) + fhi(m)*BetaHep  (j(m)+1)
