@@ -51,10 +51,12 @@ module atomic_rates_module
   contains
 
       subroutine tabulate_rates()
-      use amrex_parmparse_module
       use parallel, only: parallel_ioprocessor
+      use amrex_parmparse_module
+      use reion_aux_module, only: zhi_flash, zheii_flash, T_zhi, T_zheii, &
+                                  flash_h, flash_he, inhomogeneous_on
 
-      integer :: i
+      integer :: i, inhomo_reion
       logical, parameter :: Katz96=.false.
       real(rt), parameter :: t3=1.0d3, t5=1.0d5, t6=1.0d6
       real(rt) :: t, U, E, y, sqrt_t, corr_term, tmp
@@ -69,20 +71,69 @@ module atomic_rates_module
 
          first = .false.
 
-         ! Read in photoionization rates and heating from a file
+         ! Get info from inputs
          call amrex_parmparse_build(pp, "nyx")
-         call pp%query("uvb_rates_file", file_in)
+         call pp%query("inhomo_reion"             , inhomo_reion)
+         call pp%query("uvb_rates_file"           , file_in)
+         call pp%query("reionization_zHI_flash"   , zhi_flash)
+         call pp%query("reionization_zHeII_flash" , zheii_flash)
+         call pp%query("reionization_T_zHI"       , T_zhi)
+         call pp%query("reionization_T_zHeII"     , T_zheii)
          call amrex_parmparse_destroy(pp)
 
+         if (parallel_ioprocessor()) then
+            print*, 'TABULATE_RATES: reionization parameters are:'
+            print*, '    reionization_zHI_flash     = ', zhi_flash
+            print*, '    reionization_zHeII_flash   = ', zheii_flash
+            print*, '    reionization_T_zHI         = ', T_zhi
+            print*, '    reionization_T_zHeII       = ', T_zheii
+         endif
+
+         ! Set options in reion_aux_module
+         !   Hydrogen reionization
+         if (zhi_flash .gt. 0.0) then
+            if (inhomo_reion .gt. 0) then
+               if (parallel_ioprocessor()) print*, 'TABULATE_RATES: ignoring reionization_zHI, as nyx.inhomo_reion > 0'
+               flash_h = .false.
+               inhomogeneous_on = .true.
+            else
+               flash_h = .true.
+               inhomogeneous_on = .false.
+            endif
+         else
+            flash_h = .false.
+            if (inhomo_reion .gt. 0) then
+               inhomogeneous_on = .true.
+            else
+               inhomogeneous_on = .false.
+            endif
+         endif
+
+         !   Helium reionization
+         if (zheii_flash .gt. 0.0) then
+            flash_he = .true.
+         else
+            flash_he = .false.
+         endif
+
+         if (parallel_ioprocessor()) then
+            print*, 'TABULATE_RATES: reionization flags are set to:'
+            print*, '    Hydrogen flash            = ', flash_h
+            print*, '    Helium   flash            = ', flash_he
+            print*, '    inhomogeneous_on (H only) = ', inhomogeneous_on
+         endif
+
+
+         ! Read in UVB rates from a file
          if (len(file_in) .gt. 0) then
             open(unit=11, file=file_in, status='old')
             if (parallel_ioprocessor()) then
-               print*, 'NOTE: UVB file is set in inputs ('//file_in//').'
+               print*, 'TABULATE_RATES: UVB file is set in inputs ('//file_in//').'
             endif
          else
             open(unit=11, file='TREECOOL', status='old')
             if (parallel_ioprocessor()) then
-               print*, 'NOTE: UVB file is defaulted to "TREECOOL".'
+               print*, 'TABULATE_RATES: UVB file is defaulted to "TREECOOL".'
             endif
          endif
 
