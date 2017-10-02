@@ -1,8 +1,6 @@
 ifeq ($(USE_HEATCOOL), TRUE)
-f90EXE_sources += cooling.f90
 f90EXE_sources += ext_src_hc_3d.f90
 f90EXE_sources += integrate_state_3d.f90
-f90EXE_sources += integrate_state_hc_3d.f90
 f90EXE_sources += integrate_state_vode_3d.f90
 ifeq ($(USE_CVODE), TRUE)
   f90EXE_sources += fcvode_extras.f90
