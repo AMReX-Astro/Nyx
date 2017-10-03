@@ -34,12 +34,12 @@
       z = 1.d0/comoving_a - 1.d0
 
       ! Flash reionization?
-      if ((flash_h .eq. .true.) .and. (z .gt. zhi_flash)) then
+      if ((flash_h .eqv. .true.) .and. (z .gt. zhi_flash)) then
          JH = 0
       else
          JH = 1
       endif
-      if ((flash_he .eq. .true.) .and. (z .gt. zheii_flash)) then
+      if ((flash_he .eqv. .true.) .and. (z .gt. zheii_flash)) then
          JHe = 0
       else
          JHe = 1
