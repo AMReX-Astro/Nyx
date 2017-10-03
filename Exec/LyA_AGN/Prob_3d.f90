@@ -72,7 +72,7 @@
       use probdata_module
       use atomic_rates_module, only : XHYDROGEN
       use meth_params_module, only : URHO, UMX, UMZ, UEDEN, UEINT, UFS, &
-                                     small_dens, TEMP_COMP, NE_COMP
+                                     small_dens, TEMP_COMP, NE_COMP, ZHI_COMP
  
       implicit none
  
@@ -121,6 +121,11 @@
 
             diag_eos(i,j,k,TEMP_COMP) = 0.021d0*(1.0d0 + z_in)**2
             diag_eos(i,j,k,  NE_COMP) = 0.d0
+
+            if (ZHI_COMP .gt. -1) then
+               diag_eos(i,j,k, ZHI_COMP) = 7.5d0
+            endif
+
          enddo
          enddo
          enddo
