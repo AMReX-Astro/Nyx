@@ -63,12 +63,12 @@ subroutine integrate_state_vode(lo, hi, &
     mean_rhob = comoving_OmB * 3.d0*(comoving_h*100.d0)**2 / (8.d0*M_PI*Gconst)
 
     ! Flash reionization?
-    if ((flash_h .eq. .true.) .and. (z .gt. zhi_flash)) then
+    if ((flash_h .eqv. .true.) .and. (z .gt. zhi_flash)) then
        JH_vode = 0
     else
        JH_vode = 1
     endif
-    if ((flash_he .eq. .true.) .and. (z .gt. zheii_flash)) then
+    if ((flash_he .eqv. .true.) .and. (z .gt. zheii_flash)) then
        JHe_vode = 0
     else
        JHe_vode = 1
