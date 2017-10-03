@@ -11,7 +11,10 @@
       use eos_module
       use atomic_rates_module, only: this_z
       use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEINT, UEDEN, &
-                                     NDIAG, TEMP_COMP, NE_COMP, small_temp, heat_cool_type
+                                     NDIAG, TEMP_COMP, NE_COMP, ZHI_COMP, &
+                                     small_temp, heat_cool_type
+      use reion_aux_module,    only: zhi_flash, zheii_flash, flash_h, flash_he, &
+                                     inhomogeneous_on
       use  eos_params_module
 
       implicit none
@@ -23,12 +26,24 @@
       real(rt), intent(inout) :: diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,NDIAG)
       real(rt), intent(in   ) :: comoving_a
 
-      integer          :: i,j,k
+      integer          :: i,j,k, JH, JHe
       real(rt) :: rhoInv,eint
       real(rt) :: ke,dummy_pres
       real(rt) :: z
 
       z = 1.d0/comoving_a - 1.d0
+
+      ! Flash reionization?
+      if ((flash_h .eq. .true.) .and. (z .gt. zhi_flash)) then
+         JH = 0
+      else
+         JH = 1
+      endif
+      if ((flash_he .eq. .true.) .and. (z .gt. zheii_flash)) then
+         JHe = 0
+      else
+         JHe = 1
+      endif
 
       do k = lo(3),hi(3)
          do j = lo(2),hi(2)
@@ -54,7 +69,13 @@
 
                    eint = state(i,j,k,UEINT) * rhoInv
 
-                   call nyx_eos_T_given_Re(diag_eos(i,j,k,TEMP_COMP), diag_eos(i,j,k,NE_COMP), &
+                   if ((inhomogeneous_on) .and. (z .gt. diag_eos(i,j,k,ZHI_COMP))) then
+                       JH = 0
+                   else
+                       JH = 1
+                   endif
+
+                   call nyx_eos_T_given_Re(JH, JHe, diag_eos(i,j,k,TEMP_COMP), diag_eos(i,j,k,NE_COMP), &
                                            state(i,j,k,URHO), eint, comoving_a)
 
                else

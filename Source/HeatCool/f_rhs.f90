@@ -11,7 +11,8 @@ subroutine f_rhs(num_eq, time, e_in, energy, rpar, ipar)
                                      RecHp, RecHep, RecHepp, &
                                      eh0, ehe0, ehep
 
-      use vode_aux_module       , only: z_vode, rho_vode, T_vode, ne_vode, i_vode, j_vode, k_vode
+      use vode_aux_module       , only: z_vode, rho_vode, T_vode, ne_vode, &
+                                        JH_vode, JHe_vode, i_vode, j_vode, k_vode
 
       integer, intent(in)             :: num_eq, ipar
       real(rt), intent(inout) :: e_in(num_eq)
@@ -44,7 +45,7 @@ subroutine f_rhs(num_eq, time, e_in, energy, rpar, ipar)
       end if
 
       ! Get gas temperature and individual ionization species
-      call iterate_ne(z_vode, U, T_vode, nh, ne_vode, nh0, nhp, nhe0, nhep, nhepp)
+      call iterate_ne(JH_vode, JHe_vode, z_vode, U, T_vode, nh, ne_vode, nh0, nhp, nhe0, nhep, nhepp)
 
       ! Convert species to CGS units: 
       ne_vode = nh * ne_vode
@@ -96,7 +97,7 @@ subroutine f_rhs(num_eq, time, e_in, energy, rpar, ipar)
       lambda = lambda + lambda_c
 
       ! Heating terms
-      heat = nh0*eh0 + nhe0*ehe0 + nhep*ehep
+      heat = JH_vode*nh0*eh0 + JH_vode*nhe0*ehe0 + JHe_vode*nhep*ehep
 
       ! Convert back to code units
       ne_vode     = ne_vode / nh
@@ -107,6 +108,7 @@ subroutine f_rhs(num_eq, time, e_in, energy, rpar, ipar)
       energy = energy / rho_vode / a
 
 end subroutine f_rhs
+
 
 subroutine f_rhs_vec(time, e_in, energy)
 
@@ -230,6 +232,7 @@ subroutine f_rhs_vec(time, e_in, energy)
       end do
 
 end subroutine f_rhs_vec
+
 
 subroutine jac(neq, t, y, ml, mu, pd, nrpd, rpar, ipar)
 

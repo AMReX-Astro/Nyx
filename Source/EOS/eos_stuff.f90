@@ -119,11 +119,12 @@ contains
 
   end subroutine nyx_eos_soundspeed
 
-  subroutine nyx_eos_T_given_Re(T, Ne, R, e, comoving_a)
+  subroutine nyx_eos_T_given_Re(JH, JHe, T, Ne, R, e, comoving_a)
 
      use amrex_fort_module, only : rt => amrex_real
 
      ! In/out variables
+     integer, intent(in) :: JH, JHe ! stubs here
      real(rt),           intent(inout) :: T, Ne
      real(rt),           intent(in   ) :: R, e
      real(rt),           intent(in   ) :: comoving_a

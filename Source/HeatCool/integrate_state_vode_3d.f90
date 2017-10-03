@@ -31,7 +31,7 @@ subroutine integrate_state_vode(lo, hi, &
 !
     use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : NVAR, URHO, UEDEN, UEINT, &
-                                   NDIAG, TEMP_COMP, NE_COMP, gamma_minus_1
+                                   NDIAG, TEMP_COMP, NE_COMP, ZHI_COMP, gamma_minus_1
     use bl_constants_module, only: M_PI
     use eos_params_module
     use network
@@ -39,7 +39,9 @@ subroutine integrate_state_vode(lo, hi, &
     use fundamental_constants_module
     use comoving_module, only: comoving_h, comoving_OmB
     use atomic_rates_module, only: tabulate_rates, YHELIUM
-    use vode_aux_module    , only: z_vode, i_vode, j_vode, k_vode
+    use vode_aux_module    , only: JH_vode, JHe_vode, z_vode, i_vode, j_vode, k_vode
+    use reion_aux_module   , only: zhi_flash, zheii_flash, flash_h, flash_he, &
+                                   inhomogeneous_on
 
     implicit none
 
@@ -60,6 +62,18 @@ subroutine integrate_state_vode(lo, hi, &
 
     mean_rhob = comoving_OmB * 3.d0*(comoving_h*100.d0)**2 / (8.d0*M_PI*Gconst)
 
+    ! Flash reionization?
+    if ((flash_h .eq. .true.) .and. (z .gt. zhi_flash)) then
+       JH_vode = 0
+    else
+       JH_vode = 1
+    endif
+    if ((flash_he .eq. .true.) .and. (z .gt. zheii_flash)) then
+       JHe_vode = 0
+    else
+       JHe_vode = 1
+    endif
+
     ! Note that (lo,hi) define the region of the box containing the grow cells
     ! Do *not* assume this is just the valid region
     ! apply heating-cooling to UEDEN and UEINT
@@ -74,10 +88,16 @@ subroutine integrate_state_vode(lo, hi, &
                 T_orig  = diag_eos(i,j,k,TEMP_COMP)
                 ne_orig = diag_eos(i,j,k,  NE_COMP)
 
+                if ((inhomogeneous_on) .and. (z .gt. diag_eos(i,j,k,ZHI_COMP))) then
+                    JH_vode = 0
+                else
+                    JH_vode = 1
+                endif
+
                 if (e_orig .lt. 0.d0) then
-                    print *,'negative e entering strang integration ',i,j,k, e_orig
+                    print *,'negative e entering strang integration ', z, i,j,k, e_orig
                     print *, 'state(i,j,k,UEINT) = ', state(i,j,k,UEINT)
-                    print *, 'rho = ', rho
+                    print *, 'rho / mean_rhob = ', rho / mean_rhob
                     call bl_abort('bad e in strang')
                 end if
 
@@ -89,7 +109,7 @@ subroutine integrate_state_vode(lo, hi, &
                                               T_out ,ne_out ,e_out)
 
                 if (e_out .lt. 0.d0) then
-                    print *,'negative e entering strang integration ', z, i,j,k, e_out
+                    print *,'negative e exiting strang integration ', z, i,j,k, e_out
                     T_out  = 10.0
                     ne_out = 0.0
                     mu     = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+ne_out)
@@ -103,7 +123,7 @@ subroutine integrate_state_vode(lo, hi, &
                 state(i,j,k,UEDEN) = state(i,j,k,UEDEN) + rho * (e_out-e_orig)
 
                 ! Update T and ne (do not use stuff computed in f_rhs, per vode manual)
-                call nyx_eos_T_given_Re(T_out, ne_out, rho, e_out, a)
+                call nyx_eos_T_given_Re(JH_vode, JHe_vode, T_out, ne_out, rho, e_out, a)
                 diag_eos(i,j,k,TEMP_COMP) = T_out
                 diag_eos(i,j,k,  NE_COMP) = ne_out
 
@@ -112,6 +132,7 @@ subroutine integrate_state_vode(lo, hi, &
     end do ! k
 
 end subroutine integrate_state_vode
+
 
 subroutine vode_wrapper(dt, rho_in, T_in, ne_in, e_in, T_out, ne_out, e_out)
 

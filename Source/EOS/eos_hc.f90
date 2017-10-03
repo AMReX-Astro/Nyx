@@ -143,12 +143,13 @@ module eos_module
 
       ! ****************************************************************************
 
-      subroutine nyx_eos_nh0_and_nhep(z, rho, e, nh0, nhep)
+      subroutine nyx_eos_nh0_and_nhep(JH, JHe, z, rho, e, nh0, nhep)
       ! This is for skewers analysis code, input is in CGS
 
-      use atomic_rates_module, ONLY: XHYDROGEN, MPROTON
+      use atomic_rates_module, only: XHYDROGEN, MPROTON
 
       ! In/out variables
+      integer, intent(in) :: JH, Jhe
       real(rt),           intent(in   ) :: z, rho, e
       real(rt),           intent(  out) :: nh0, nhep
 
@@ -157,7 +158,7 @@ module eos_module
       nh  = rho*XHYDROGEN/MPROTON
       ne  = 1.0d0 ! Guess
 
-      call iterate_ne(z, e, T, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
+      call iterate_ne(JH, JHe, z, e, T, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
 
       nh0  = nh*nh0
       nhep = nh*nhep
@@ -182,6 +183,7 @@ module eos_module
 
       real(rt), parameter :: xacc = 1.0d-6
 
+      integer, dimension(veclen)  :: JH, JHe
       real(rt), dimension(veclen) :: f, df, eps, mu
       real(rt), dimension(veclen) :: nhp_plus, nhep_plus, nhepp_plus
       real(rt), dimension(veclen) :: dnhp_dne, dnhep_dne, dnhepp_dne, dne
@@ -224,7 +226,9 @@ module eos_module
            endif
          end do
 
-         call ion_n_vec(U_in(1:vec_count), &
+         call ion_n_vec(JH(1:vec_count), &
+                    JHe(1:vec_count), &
+                    U_in(1:vec_count), &
                     nh_in(1:vec_count), &
                     ne_in(1:vec_count), &
                     nhp_out(1:vec_count), &
@@ -264,7 +268,9 @@ module eos_module
            endif
          end do
 
-         call ion_n_vec(U_in(1:vec_count), &
+         call ion_n_vec(JH(1:vec_count), &
+                    JHe(1:vec_count), &
+                    U_in(1:vec_count), &
                     nh_in(1:vec_count), &
                     ne_in(1:vec_count), &
                     nhp_out(1:vec_count), &
@@ -319,7 +325,9 @@ module eos_module
           orig_idx(vec_count) = i
         endif
       end do
-      call ion_n_vec(U_in(1:vec_count), &
+      call ion_n_vec(JH(1:vec_count), &
+                 JHe(1:vec_count), &
+                 U_in(1:vec_count), &
                  nh_in(1:vec_count), &
                  ne_in(1:vec_count), &
                  nhp_out(1:vec_count), &
@@ -340,7 +348,7 @@ module eos_module
 
       ! ****************************************************************************
 
-      subroutine ion_n_vec(U, nh, ne, nhp, nhep, nhepp, t, vec_count)
+      subroutine ion_n_vec(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t, vec_count)
 
       use amrex_fort_module, only : rt => amrex_real
       use meth_params_module, only: gamma_minus_1
@@ -351,12 +359,13 @@ module eos_module
                                      ggh0, gghe0, gghep
 
       integer, intent(in) :: vec_count
+      integer, dimension(vec_count), intent(in) :: JH, JHe
       real(rt), intent(in   ) :: U(vec_count), nh(vec_count), ne(vec_count)
       real(rt), intent(  out) :: nhp(vec_count), nhep(vec_count), nhepp(vec_count), t(vec_count)
       real(rt) :: ahp(vec_count), ahep(vec_count), ahepp(vec_count), ad(vec_count), geh0(vec_count), gehe0(vec_count), gehep(vec_count)
       real(rt) :: ggh0ne(vec_count), gghe0ne(vec_count), gghepne(vec_count)
       real(rt) :: mu(vec_count), tmp(vec_count), logT(vec_count), flo(vec_count), fhi(vec_count)
-      real(rt) :: smallest_val
+      real(rt), parameter :: smallest_val=tiny(1.0d0)
       integer :: j(vec_count), i
 
       mu(:) = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+ne(:))
@@ -390,9 +399,9 @@ module eos_module
 
       do i = 1, vec_count
         if (ne(i) .gt. 0.0d0) then
-           ggh0ne(i)   = ggh0 /(ne(i)*nh(i))
-           gghe0ne(i)  = gghe0/(ne(i)*nh(i))
-           gghepne(i)  = gghep/(ne(i)*nh(i))
+           ggh0ne(i)   = JH(i)  * ggh0  / (ne(i)*nh(i))
+           gghe0ne(i)  = JH(i)  * gghe0 / (ne(i)*nh(i))
+           gghepne(i)  = JHe(i) * gghep / (ne(i)*nh(i))
         else
            ggh0ne(i)   = 0.0d0
            gghe0ne(i)  = 0.0d0
@@ -406,7 +415,6 @@ module eos_module
       end do
 
       ! He+
-      smallest_val = Tiny(1.0d0)
       do i = 1, vec_count
         if ((gehe0(i) + gghe0ne(i)) .gt. smallest_val) then
   
@@ -428,12 +436,14 @@ module eos_module
 
       end subroutine ion_n_vec
 
-      subroutine nyx_eos_T_given_Re(T, Ne, R_in, e_in, a)
+
+      subroutine nyx_eos_T_given_Re(JH, JHe, T, Ne, R_in, e_in, a)
 
       use atomic_rates_module, ONLY: XHYDROGEN, MPROTON
       use fundamental_constants_module, only: density_to_cgs, e_to_cgs
 
       ! In/out variables
+      integer, intent(in) :: JH, JHe
       double precision,           intent(inout) :: T, Ne
       double precision,           intent(in   ) :: R_in, e_in
       double precision,           intent(in   ) :: a
@@ -448,17 +458,19 @@ module eos_module
 
       z   = 1.d0/a - 1.d0
 
-      call iterate_ne(z, U, T, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
+      call iterate_ne(JH, Jhe, z, U, T, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
 
       end subroutine nyx_eos_T_given_Re
 
-      subroutine iterate_ne(z, U, t, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
+
+      subroutine iterate_ne(JH, JHe, z, U, t, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
 
       use amrex_error_module, only: amrex_abort
-      use atomic_rates_module, ONLY: this_z, YHELIUM
+      use atomic_rates_module, only: this_z, YHELIUM
 
       integer :: i
 
+      integer, intent(in) :: JH, JHe
       real(rt), intent (in   ) :: z, U, nh
       real(rt), intent (inout) :: ne
       real(rt), intent (  out) :: t, nh0, nhp, nhe0, nhep, nhepp
@@ -480,7 +492,7 @@ module eos_module
          i = i + 1
 
          ! Ion number densities
-         call ion_n(U, nh, ne, nhp, nhep, nhepp, t)
+         call ion_n(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t)
 
          ! Forward difference derivatives
          if (ne .gt. 0.0d0) then
@@ -488,7 +500,7 @@ module eos_module
          else
             eps = 1.0d-24
          endif
-         call ion_n(U, nh, (ne+eps), nhp_plus, nhep_plus, nhepp_plus, t)
+         call ion_n(JH, JHe, U, nh, (ne+eps), nhp_plus, nhep_plus, nhepp_plus, t)
 
          dnhp_dne   = (nhp_plus   - nhp)   / eps
          dnhep_dne  = (nhep_plus  - nhep)  / eps
@@ -510,7 +522,7 @@ module eos_module
       enddo
 
       ! Get rates for the final ne
-      call ion_n(U, nh, ne, nhp, nhep, nhepp, t)
+      call ion_n(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t)
 
       ! Neutral fractions:
       nh0   = 1.0d0 - nhp
@@ -519,22 +531,24 @@ module eos_module
 
       ! ****************************************************************************
 
-      subroutine ion_n(U, nh, ne, nhp, nhep, nhepp, t)
+      subroutine ion_n(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t)
 
-      use meth_params_module, only: gamma_minus_1
-      use atomic_rates_module, ONLY: YHELIUM, MPROTON, BOLTZMANN, &
+      use meth_params_module,  only: gamma_minus_1
+      use atomic_rates_module, only: YHELIUM, MPROTON, BOLTZMANN, &
                                      TCOOLMIN, TCOOLMAX, NCOOLTAB, deltaT, &
                                      AlphaHp, AlphaHep, AlphaHepp, Alphad, &
                                      GammaeH0, GammaeHe0, GammaeHep, &
                                      ggh0, gghe0, gghep
 
+      integer, intent(in) :: JH, JHe
       real(rt), intent(in   ) :: U, nh, ne
       real(rt), intent(  out) :: nhp, nhep, nhepp, t
       real(rt) :: ahp, ahep, ahepp, ad, geh0, gehe0, gehep
       real(rt) :: ggh0ne, gghe0ne, gghepne
       real(rt) :: mu, tmp, logT, flo, fhi
-      real(rt) :: smallest_val
+      real(rt), parameter :: smallest_val=tiny(1.0d0)
       integer :: j
+
 
       mu = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+ne)
       t  = gamma_minus_1*MPROTON/BOLTZMANN * U * mu
@@ -566,9 +580,9 @@ module eos_module
       gehep = flo*GammaeHep(j) + fhi*GammaeHep(j+1)
 
       if (ne .gt. 0.0d0) then
-         ggh0ne   = ggh0 /(ne*nh)
-         gghe0ne  = gghe0/(ne*nh)
-         gghepne  = gghep/(ne*nh)
+         ggh0ne   = JH  * ggh0  / (ne*nh)
+         gghe0ne  = JH  * gghe0 / (ne*nh)
+         gghepne  = JHe * gghep / (ne*nh)
       else
          ggh0ne   = 0.0d0
          gghe0ne  = 0.0d0
@@ -579,7 +593,6 @@ module eos_module
       nhp = 1.0d0 - ahp/(ahp + geh0 + ggh0ne)
 
       ! He+
-      smallest_val = Tiny(1.0d0)
       if ((gehe0 + gghe0ne) .gt. smallest_val) then
 
          nhep  = YHELIUM/(1.0d0 + (ahep  + ad     )/(gehe0 + gghe0ne) &
