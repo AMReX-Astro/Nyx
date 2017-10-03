@@ -1,20 +1,19 @@
 # AMREX_HOME defines the directory in which we will find all the BoxLib code
-AMREX_HOME ?= /project/projectdirs/nyx/src/amrex
+AMREX_HOME ?= ../../../amrex
 
-HPGMG_DIR ?= $(HOME)/hpgmg/finite-volume
+HPGMG_DIR ?= ../../Util/hpgmg/finite-volume
 
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ../..
 
 # compilation options
-COMP    = gcc
+COMP    = intel  # gnu
 
 USE_MPI = TRUE
 USE_OMP = FALSE
 
 # Analysis
 REEBER = FALSE
-#DEFINES += -DREEBER_PERSISTENT_INTEGRAL_TRACE_VTCS
 
 USE_HPGMG = FALSE
 

@@ -2,6 +2,7 @@
 AMREX_HOME ?= ../../../amrex
 
 HPGMG_DIR ?= ../../Util/hpgmg/finite-volume
+CVODE_LIB_DIR ?= ../../../sundials/sundials-intel/lib
 
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ../..
