@@ -245,7 +245,9 @@ Nyx::hydro_setup()
          use_const_species, gamma, normalize_species,
          heat_cool_type, inhomo_reion);
 
+#ifdef HEATCOOL
     fort_tabulate_rates();
+#endif
 
     if (use_const_species == 1)
         fort_set_eos_params(h_species, he_species);
