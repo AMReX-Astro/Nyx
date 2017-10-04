@@ -7,6 +7,7 @@
       use  eos_params_module
 
       use amrex_fort_module, only : rt => amrex_real
+      use amrex_error_module, only : amrex_abort
       implicit none
 
       integer  :: lo(3), hi(3)
@@ -16,6 +17,7 @@
       ! Local variables
       integer  :: i,j,k,n
       real(rt) :: sum
+      character(len=256) :: errmsg_pt1, errmsg_pt2
 
       if (UFS .gt. 0) then
 
@@ -30,13 +32,11 @@
                    end do
 
                    if (abs(state(i,j,k,URHO)-sum).gt. 1.d-8 * state(i,j,k,URHO)) then
-                      !
-                      ! A critical region since we usually can't write from threads.
-                      !
-                      !$OMP CRITICAL
-                      print *,'Sum of (rho X)_i vs rho at (i,j,k): ',i,j,k,sum,state(i,j,k,URHO)
-                      call bl_error("Error:: Failed check of initial species summing to 1")
-                      !$OMP END CRITICAL
+                      write(errmsg_pt1, *) 'Sum of (rho X)_i vs rho at (i,j,k): ', &
+                        i,j,k,sum,state(i,j,k,URHO)
+                      write(errmsg_pt2, *) trim(errmsg_pt1) // new_line('a') // &
+                        'Failed check of initial species summing to 1'
+                      call amrex_abort(errmsg_pt2)
                    end if
     
                 enddo

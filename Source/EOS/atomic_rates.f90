@@ -19,9 +19,6 @@ module atomic_rates_module
 
   implicit none
 
-  ! Routine which acts like a class constructor
-  public  :: tabulate_rates, fort_interp_to_this_z
-
   ! Photo- rates (from file)
   integer, private :: NCOOLFILE
   real(rt), dimension(:), allocatable, private :: lzr
@@ -50,7 +47,7 @@ module atomic_rates_module
 
   contains
 
-      subroutine tabulate_rates()
+      subroutine fort_tabulate_rates() bind(C, name='fort_tabulate_rates')
       use parallel, only: parallel_ioprocessor
       use amrex_parmparse_module
       use reion_aux_module, only: zhi_flash, zheii_flash, T_zhi, T_zheii, &
@@ -65,8 +62,6 @@ module atomic_rates_module
       character(len=:), allocatable :: file_in
       type(amrex_parmparse) :: pp
 
-
-      !$OMP CRITICAL(TREECOOL_READ)
       if (first) then
 
          first = .false.
@@ -261,9 +256,8 @@ module atomic_rates_module
          endif  ! Katz rates
 
       end if  ! first_call
-      !$OMP END CRITICAL(TREECOOL_READ)
 
-      end subroutine tabulate_rates
+      end subroutine fort_tabulate_rates
 
       ! ****************************************************************************
 
