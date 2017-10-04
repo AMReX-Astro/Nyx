@@ -24,6 +24,20 @@ module eos_module
 
   contains
 
+      subroutine fort_setup_eos_params (xacc_in, vode_rtol_in, vode_atol_scaled_in) &
+                                       bind(C, name='fort_setup_eos_params')
+        use amrex_fort_module, only : rt => amrex_real
+        implicit none
+        real(rt), intent(in) :: xacc_in, vode_rtol_in, vode_atol_scaled_in
+
+        xacc = xacc_in
+        vode_rtol = vode_rtol_in
+        vode_atol_scaled = vode_atol_scaled_in
+
+      end subroutine fort_setup_eos_params
+
+     ! ****************************************************************************
+
       subroutine eos_init_small_pres(R, T, Ne, P, a)
 
         use amrex_fort_module, only : rt => amrex_real
@@ -89,6 +103,28 @@ module eos_module
 
      ! ****************************************************************************
 
+      subroutine nyx_eos_given_RT(e, P, R, T, Ne, a)
+
+        use atomic_rates_module, ONLY: YHELIUM
+        use fundamental_constants_module, only: mp_over_kb
+        use meth_params_module, only: gamma_minus_1
+        implicit none
+
+        double precision,          intent(  out) :: e, P
+        double precision,          intent(in   ) :: R, T, Ne
+        double precision,          intent(in   ) :: a
+
+        double precision :: mu
+
+        mu = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+Ne)
+        e  = T / (gamma_minus_1 * mp_over_kB * mu)
+
+        P  = gamma_minus_1 * R * e
+
+      end subroutine nyx_eos_given_RT
+
+     ! ****************************************************************************
+
       subroutine nyx_eos_given_RT_vec(e, P, R, T, Ne, a, veclen)
 
         use atomic_rates_module, ONLY: YHELIUM
@@ -113,7 +149,43 @@ module eos_module
 
       end subroutine nyx_eos_given_RT_vec
 
-      ! ****************************************************************************
+     ! ****************************************************************************
+
+      subroutine nyx_eos_T_given_Re(JH, JHe, T, Ne, R_in, e_in, a, species)
+
+      use atomic_rates_module, ONLY: XHYDROGEN, MPROTON
+      use fundamental_constants_module, only: density_to_cgs, e_to_cgs
+
+      ! In/out variables
+      integer,    intent(in)    :: JH, JHe
+      real(rt),   intent(inout) :: T, Ne
+      real(rt),   intent(in   ) :: R_in, e_in
+      real(rt),   intent(in   ) :: a
+      real(rt), optional, intent(out) :: species(5)
+
+      double precision :: nh, nh0, nhep, nhp, nhe0, nhepp
+      double precision :: z, rho, U
+
+      ! This converts from code units to CGS
+      rho = R_in * density_to_cgs / a**3
+        U = e_in * e_to_cgs
+      nh  = rho*XHYDROGEN/MPROTON
+
+      z   = 1.d0/a - 1.d0
+
+      call iterate_ne(JH, Jhe, z, U, T, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
+
+      if (present(species)) then
+         species(1) = nh0
+         species(2) = nhp
+         species(3) = nhe0
+         species(4) = nhep
+         species(5) = nhepp
+      endif
+
+      end subroutine nyx_eos_T_given_Re
+
+     ! ****************************************************************************
 
       subroutine nyx_eos_T_given_Re_vec(T, Ne, R_in, e_in, a, veclen)
 
@@ -141,7 +213,7 @@ module eos_module
 
       end subroutine nyx_eos_T_given_Re_vec
 
-      ! ****************************************************************************
+     ! ****************************************************************************
 
       subroutine nyx_eos_nh0_and_nhep(JH, JHe, z, rho, e, nh0, nhep)
       ! This is for skewers analysis code, input is in CGS
@@ -165,7 +237,7 @@ module eos_module
 
       end subroutine nyx_eos_nh0_and_nhep
 
-      ! ****************************************************************************
+     ! ****************************************************************************
 
       subroutine iterate_ne_vec(z, U, t, nh, ne, nh0, nhp, nhe0, nhep, nhepp, veclen)
 
@@ -346,7 +418,7 @@ module eos_module
       end do
       end subroutine iterate_ne_vec
 
-      ! ****************************************************************************
+     ! ****************************************************************************
 
       subroutine ion_n_vec(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t, vec_count)
 
@@ -436,32 +508,7 @@ module eos_module
 
       end subroutine ion_n_vec
 
-
-      subroutine nyx_eos_T_given_Re(JH, JHe, T, Ne, R_in, e_in, a)
-
-      use atomic_rates_module, ONLY: XHYDROGEN, MPROTON
-      use fundamental_constants_module, only: density_to_cgs, e_to_cgs
-
-      ! In/out variables
-      integer, intent(in) :: JH, JHe
-      double precision,           intent(inout) :: T, Ne
-      double precision,           intent(in   ) :: R_in, e_in
-      double precision,           intent(in   ) :: a
-
-      double precision :: nh, nh0, nhep, nhp, nhe0, nhepp
-      double precision :: z, rho, U
-
-      ! This converts from code units to CGS
-      rho = R_in * density_to_cgs / a**3
-        U = e_in * e_to_cgs
-      nh  = rho*XHYDROGEN/MPROTON
-
-      z   = 1.d0/a - 1.d0
-
-      call iterate_ne(JH, Jhe, z, U, T, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
-
-      end subroutine nyx_eos_T_given_Re
-
+     ! ****************************************************************************
 
       subroutine iterate_ne(JH, JHe, z, U, t, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
 
@@ -529,7 +576,7 @@ module eos_module
       nhe0  = YHELIUM - (nhep + nhepp)
       end subroutine iterate_ne
 
-      ! ****************************************************************************
+     ! ****************************************************************************
 
       subroutine ion_n(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t)
 
@@ -609,40 +656,6 @@ module eos_module
       endif
 
       end subroutine ion_n
-
-
-      subroutine nyx_eos_given_RT(e, P, R, T, Ne, a)
-
-        use atomic_rates_module, ONLY: YHELIUM
-        use fundamental_constants_module, only: mp_over_kb
-        use meth_params_module, only: gamma_minus_1
-        implicit none
-
-        double precision,          intent(  out) :: e, P
-        double precision,          intent(in   ) :: R, T, Ne
-        double precision,          intent(in   ) :: a
-
-        double precision :: mu
-
-        mu = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+Ne)
-        e  = T / (gamma_minus_1 * mp_over_kB * mu)
-
-        P  = gamma_minus_1 * R * e
-
-      end subroutine nyx_eos_given_RT
-
-
-      subroutine fort_setup_eos_params (xacc_in, vode_rtol_in, vode_atol_scaled_in) &
-                                       bind(C, name='fort_setup_eos_params')
-        use amrex_fort_module, only : rt => amrex_real
-        implicit none
-        real(rt), intent(in) :: xacc_in, vode_rtol_in, vode_atol_scaled_in
-
-        xacc = xacc_in
-        vode_rtol = vode_rtol_in
-        vode_atol_scaled = vode_atol_scaled_in
-
-      end subroutine fort_setup_eos_params
 
 
 end module eos_module
