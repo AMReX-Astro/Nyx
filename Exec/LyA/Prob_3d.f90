@@ -65,10 +65,11 @@
                                bind(C, name="fort_initdata")
 
       use amrex_fort_module, only : rt => amrex_real
+      use amrex_parmparse_module
       use probdata_module
       use atomic_rates_module, only : XHYDROGEN
       use meth_params_module, only : URHO, UMX, UMZ, UEDEN, UEINT, UFS, &
-                                     small_dens, TEMP_COMP, NE_COMP
+                                     small_dens, TEMP_COMP, NE_COMP, ZHI_COMP
  
       implicit none
  
@@ -81,6 +82,13 @@
       real(rt) diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,nd)
 
       integer i,j,k
+      real(rt) z_in
+
+      type(amrex_parmparse) :: pp
+
+      call amrex_parmparse_build(pp, "nyx")
+      call pp%query("initial_z", z_in)
+      call amrex_parmparse_destroy(pp)
 
       ! This is the case where we have compiled with states defined 
       !  but they have only one component each so we fill them this way.
@@ -90,7 +98,7 @@
          diag_eos(:,:,:,1)    = 0.0d0
 
       ! This is the regular case with NO_HYDRO = FALSE
-      else if (ns.gt.1 .and. nd.eq.2) then
+      else if (ns.gt.1 .and. nd.ge.2) then
 
          do k = lo(3), hi(3)
          do j = lo(2), hi(2)
@@ -108,8 +116,13 @@
                state(i,j,k,UFS+1) = (1.d0 - XHYDROGEN)
             end if
 
-            diag_eos(i,j,k,TEMP_COMP) = 1000.d0
-            diag_eos(i,j,k,  NE_COMP) =    0.d0
+            diag_eos(i,j,k,TEMP_COMP) = 0.021d0*(1.0d0 + z_in)**2
+            diag_eos(i,j,k,  NE_COMP) = 0.d0
+
+            if (ZHI_COMP .gt. -1) then
+               diag_eos(i,j,k, ZHI_COMP) = 7.5d0
+            endif
+
          enddo
          enddo
          enddo

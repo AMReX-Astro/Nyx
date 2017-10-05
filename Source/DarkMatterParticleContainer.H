@@ -21,6 +21,7 @@ public:
     }
 
     using MyParIter = amrex::ParIter<1+BL_SPACEDIM>;
+    using MyConstParIter = amrex::ParConstIter<1+BL_SPACEDIM>;
 
     virtual ~DarkMatterParticleContainer () {}
 
@@ -38,6 +39,8 @@ public:
                                 amrex::Real a_old = 1.0, amrex::Real a_half = 1.0, int where_width = 0);
     virtual void moveKick      (amrex::MultiFab& acceleration, int level, amrex::Real timestep,
                                 amrex::Real a_new = 1.0, amrex::Real a_half = 1.0);
+
+    void InitFromBinaryMortonFile(const std::string& particle_directory, int nextra, int skip_factor);
 
 };
 

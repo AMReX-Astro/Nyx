@@ -112,6 +112,7 @@ namespace
 
 bool Nyx::do_dm_particles = false;
 int Nyx::num_particle_ghosts = 1;
+int Nyx::particle_skip_factor = 1;
 
 std::string Nyx::particle_init_type = "";
 std::string Nyx::particle_move_type = "";
@@ -256,7 +257,7 @@ Nyx::read_particle_params ()
     pp.query("particle_initrandom_count_per_box", particle_initrandom_count_per_box);
     pp.query("particle_initrandom_mass", particle_initrandom_mass);
     pp.query("particle_initrandom_iseed", particle_initrandom_iseed);
-
+    pp.query("particle_skip_factor", particle_skip_factor);
     pp.query("ascii_particle_file", ascii_particle_file);
 
     // Input error check
@@ -289,10 +290,11 @@ Nyx::read_particle_params ()
 
     // Input error check
     if (!binary_particle_file.empty() && (particle_init_type != "BinaryFile" &&
-                                          particle_init_type != "BinaryMetaFile"))
+                                          particle_init_type != "BinaryMetaFile" && 
+					  particle_init_type != "BinaryMortonFile"))
     {
         if (ParallelDescriptor::IOProcessor())
-            std::cerr << "ERROR::particle_init_type is not BinaryFile or BinaryMetaFile but you specified binary_particle_file" << std::endl;
+            std::cerr << "ERROR::particle_init_type is not BinaryFile, BinaryMetaFile, or BinaryMortonFile but you specified binary_particle_file" << std::endl;
         amrex::Error();
     }
 
@@ -481,6 +483,24 @@ Nyx::init_particles ()
             DMPC->InitFromBinaryMetaFile(binary_particle_file, BL_SPACEDIM + 1);
             if (init_with_sph_particles == 1)
                 SPHPC->InitFromBinaryMetaFile(sph_particle_file, BL_SPACEDIM + 1);
+        }
+        else if (particle_init_type == "BinaryMortonFile")
+        {
+	  if (verbose)
+            {
+	      amrex::Print() << "\nInitializing DM particles from morton-ordered binary file\""
+			     << binary_particle_file << "\" ...\n\n";
+	      if (init_with_sph_particles == 1)
+		amrex::Error("Morton-ordered input is not supported for sph particles.");
+            }
+            //
+            // The second argument is how many Reals we read into `m_data[]`
+            // after reading in `m_pos[]` in each of the binary particle files.
+            // Here we're reading in the particle mass and velocity.
+            //
+	  DMPC->InitFromBinaryMortonFile(binary_particle_file,
+					 BL_SPACEDIM + 1,
+					 particle_skip_factor);
         }
         else
         {
