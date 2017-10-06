@@ -7,6 +7,7 @@ subroutine f_rhs(num_eq, time, e_in, energy, rpar, ipar)
       use eos_module, only: iterate_ne
       use atomic_rates_module, ONLY: TCOOLMIN, TCOOLMAX, NCOOLTAB, deltaT, &
                                      MPROTON, XHYDROGEN, &
+                                     uvb_density_A, uvb_density_B, mean_rhob, &
                                      BetaH0, BetaHe0, BetaHep, Betaff1, Betaff4, &
                                      RecHp, RecHep, RecHepp, &
                                      eh0, ehe0, ehep
@@ -26,7 +27,7 @@ subroutine f_rhs(num_eq, time, e_in, energy, rpar, ipar)
       real(rt) :: ahp, ahep, ahepp, ad, geh0, gehe0, gehep
       real(rt) :: bh0, bhe0, bhep, bff1, bff4, rhp, rhep, rhepp
       real(rt) :: lambda_c, lambda_ff, lambda, heat
-      real(rt) :: rho, U, a
+      real(rt) :: rho, U, a, rho_heat
       real(rt) :: nh, nh0, nhp, nhe0, nhep, nhepp
       integer :: j
 
@@ -98,6 +99,8 @@ subroutine f_rhs(num_eq, time, e_in, energy, rpar, ipar)
 
       ! Heating terms
       heat = JH_vode*nh0*eh0 + JH_vode*nhe0*ehe0 + JHe_vode*nhep*ehep
+      rho_heat = uvb_density_A * (rho_vode/mean_rhob)**uvb_density_B
+      heat = rho_heat*heat
 
       ! Convert back to code units
       ne_vode     = ne_vode / nh

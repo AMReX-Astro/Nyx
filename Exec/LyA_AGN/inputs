@@ -38,8 +38,8 @@ amr.data_log = runlog
 gravity.gravity_type = PoissonGrav
 gravity.no_sync      = 1
 gravity.no_composite = 1
-gravity.solve_with_cpp = 1
-gravity.solve_with_hpgmg = 0
+gravity.solve_with_cpp = 0
+gravity.solve_with_hpgmg = 1
 
 mg.bottom_solver = 4
 
@@ -74,9 +74,13 @@ nyx.comoving_OmM = 0.275
 nyx.comoving_OmB = 0.046
 nyx.comoving_h   = 0.702d0
 
-# Reionization
+# UVB and reionization
 nyx.inhomo_reion     = 0
+nyx.inhomo_zhi_file  = "zhi.bin"
+nyx.inhomo_grid      = 512
 nyx.uvb_rates_file   = "TREECOOL_middle"
+nyx.uvb_density_A    = 1.0
+nyx.uvb_density_B    = 0.0
 nyx.reionization_zHI_flash   = -1.0
 nyx.reionization_zHeII_flash = -1.0
 nyx.reionization_T_zHI       = 2.0e4
