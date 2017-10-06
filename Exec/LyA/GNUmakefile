@@ -1,50 +1,35 @@
-# AMREX_HOME defines the directory in which we will find all the BoxLib code
-AMREX_HOME ?= /project/projectdirs/nyx/src/amrex
+# AMREX_HOME defines the directory in which we will find all the AMReX code
+AMREX_HOME ?= ../../../amrex
 
-HPGMG_DIR ?= /global/homes/f/friesen/hpgmg/finite-volume
+HPGMG_DIR ?= ../../Util/hpgmg/finite-volume
+CVODE_LIB_DIR ?= ../../../sundials/sundials-intel/lib
 
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ../..
 
 # compilation options
-COMP    = gcc
+COMP    = intel  # gnu
 USE_MPI = TRUE
 USE_OMP = TRUE
 
-PROFILE       = FALSE
+PROFILE       = TRUE
 TRACE_PROFILE = FALSE
 COMM_PROFILE  = FALSE
 
 PRECISION = DOUBLE
+USE_SINGLE_PRECISION_PARTICLES = TRUE
 DEBUG     = FALSE
 
 GIMLET = FALSE
 REEBER = FALSE
 
-GIMLET_DIR ?= /home/vince/Development/gimlet
-# Gimlet needs FFTW MPI.
-FFTW_INC ?= /usr/include
-FFTW_DIR ?= /usr/lib/x86_64-linux-gnu
-
-REEBER_HOME ?= /project/projectdirs/nyx/ghweber/reeber2
-# Reeber needs Boost (both headers and libraries) and diy2.
-BOOST_INCLUDE_DIR ?= /project/projectdirs/nyx/ghweber/boost-1.61.0-noarch/include
-DIY_INCLUDE_DIR ?= /project/projectdirs/nyx/ghweber/diy/include
-
-USE_HPGMG = FALSE
-HPGMG_FCYCLES = FALSE
-HPGMG_POST_F_CYCLE_TYPE = V
-HPGMG_HELMHOLTZ = FALSE
-HPGMG_STENCIL_VARIABLE_COEFFICIENT = FALSE
-HPGMG_USE_SUBCOMM = TRUE
-HPGMG_BOTTOM_SOLVER= BICGSTAB
-HPGMG_SMOOTHER = GSRB
+USE_HPGMG = TRUE
 
 # physics
 DIM      = 3
 USE_GRAV = TRUE
 USE_HEATCOOL = TRUE
-
+USE_AGN = FALSE
 USE_CVODE = FALSE
 
 Bpack := ./Make.package

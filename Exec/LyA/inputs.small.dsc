@@ -13,17 +13,12 @@ nyx.use_colglaz      = 1
 nyx.add_ext_src      = 1
 nyx.heat_cool_type   = 1
 nyx.strang_split     = 1
-gravity.show_timings = 1
-nyx.show_timings     = 1
 
 #This is 1e-8 times the lowest density in plt00000
 nyx.small_dens = 5.162470e1
 
 #This is 1e-5 times the constant temparature in plt00000
 nyx.small_temp = 1.e-2
-
-#This is 1e-8 times the lowest pressure in plt00000
-nyx.small_pres = 3.487507e2
 
 nyx.do_santa_barbara = 1
 nyx.init_sb_vels     = 1

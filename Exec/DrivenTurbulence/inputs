@@ -84,7 +84,6 @@ amr.derive_plot_vars = magvort divu MachNumber
 amr.probin_file    = probin
 
 # DIAGNOSTICS & VERBOSITY
-nyx.show_timings   = 0       # show timings
 nyx.sum_interval   = 1       # timesteps between computing mass
 nyx.v              = 2       # verbosity in Castro.cpp
 amr.v              = 2       # verbosity in Amr.cpp

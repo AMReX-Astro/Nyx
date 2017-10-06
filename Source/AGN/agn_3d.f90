@@ -15,7 +15,7 @@
 
     cutoff = delta_x(1)
     
-    do i = 1, np
+    do i = 1, np-1
        do j = i+1, np
 
           r2 = sum((particles(i)%pos - particles(j)%pos)**2)
@@ -205,8 +205,7 @@
        j = particles(n)%pos(2) / dx(2)
        k = particles(n)%pos(3) / dx(3)
 
-       ! momx, momy, momz, E: momentum and total energy.
-
+       ! momx, momy, momz: momentum = volume x change in momentum density.
        momx = sum((state_new(i-1:i+1, j-1:j+1, k-1:k+1, UMX) - &
                    state_old(i-1:i+1, j-1:j+1, k-1:k+1, UMX)) * weight) * vol
        momy = sum((state_new(i-1:i+1, j-1:j+1, k-1:k+1, UMY) - &
@@ -224,6 +223,7 @@
 
        ! Update particle energy if particle isn't brand new
        if (add_energy .gt. 0) then
+          ! E: total energy = volume x change in total energy density.
           E = sum((state_new(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN) - &
                    state_old(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN)) * weight) * vol
           deltaEnergy = - E / mass
@@ -406,7 +406,7 @@
     use amrex_fort_module, only : amrex_real
     use fundamental_constants_module, only: k_B, m_proton
     use eos_module
-    use meth_params_module, only : NVAR, URHO, UEDEN, UEINT, NE_COMP
+    use meth_params_module, only : NVAR, URHO, UEDEN, UEINT, NDIAG, NE_COMP
     use particle_mod      , only: agn_particle_t
     use eos_module, only : nyx_eos_given_RT
     use agn_params_module, only : T_min
@@ -417,7 +417,7 @@
     real(amrex_real),     intent(inout)        :: state &
          (slo(1):shi(1),slo(2):shi(2),slo(3):shi(3),NVAR)
     real(amrex_real),     intent(inout)        :: diag_eos &
-         (dlo(1):dhi(1),dlo(2):dhi(2),dlo(3):dhi(3),2)
+         (dlo(1):dhi(1),dlo(2):dhi(2),dlo(3):dhi(3),NDIAG)
     real(amrex_real),     intent(in   )        :: a
     real(amrex_real),     intent(in   )        :: dx(3)
 
@@ -443,14 +443,18 @@
 
        call nyx_eos_given_RT(e, pressure, avg_rho, T_min, avg_Ne, a)
 
-          print *, 'neighborhood mass: ', m_g
-          print *, 'e = ', e
-          print *, 'particle energy: ', particles(n)%energy
-          print *, 'm_g * e = ', (m_g * e)
+!       print *, 'AGN particle at ', particles(n)%pos, ':', i, j, k
+       print 50, particles(n)%pos, i, j, k, particles(n)%mass, &
+            particles(n)%energy
+50     format (1x, 'AGN particle at ', 3F8.3, 3I4, ' m=', E12.5, ' e=', E12.5)
 
        if (particles(n)%energy > m_g * e) then
 
           print *, 'RELEASING ENERGY of particle at ', particles(n)%pos
+          print *, 'neighborhood mass: ', m_g
+          print *, 'e = ', e
+          print *, 'particle energy: ', particles(n)%energy
+          print *, 'm_g * e = ', (m_g * e)
 
           state(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN) = &
           state(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN) + &

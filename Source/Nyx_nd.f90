@@ -186,11 +186,12 @@
 ! :::
 
       subroutine fort_set_method_params( &
-                 dm, numadv, do_hydro, ppm_type_in, ppm_ref_in, &
+                 dm, numadv, ndiag_in, do_hydro, ppm_type_in, ppm_ref_in, &
                  ppm_flatten_before_integrals_in, &
                  use_colglaz_in, use_flattening_in, &
                  corner_coupling_in, version_2_in, &
-                 use_const_species_in, gamma_in, normalize_species_in, heat_cool_in, comm) &
+                 use_const_species_in, gamma_in, normalize_species_in, &
+                 heat_cool_in, inhomo_reion_in) &
                  bind(C, name = "fort_set_method_params")
 
         ! Passing data from C++ into f90
@@ -202,12 +203,12 @@
         use comoving_module, only : comoving_type
         use network, only : nspec, naux
         use eos_module
-        use parallel
 
         implicit none
 
         integer,  intent(in) :: dm
         integer,  intent(in) :: numadv
+        integer,  intent(in) :: ndiag_in
         integer,  intent(in) :: do_hydro
         integer,  intent(in) :: ppm_type_in
         integer,  intent(in) :: ppm_ref_in
@@ -220,18 +221,12 @@
         integer,  intent(in) :: use_const_species_in
         integer,  intent(in) :: normalize_species_in
         integer,  intent(in) :: heat_cool_in
-        integer,  intent(in), optional :: comm
+        integer,  intent(in) :: inhomo_reion_in
 
         integer             :: QNEXT
         integer             :: UNEXT
 
         integer             :: iadv, ispec
-
-        if (present(comm)) then
-          call parallel_initialize(comm=comm)
-        else
-          call parallel_initialize()
-        end if
 
         use_const_species = use_const_species_in
 
@@ -241,6 +236,8 @@
         grav_source_type = 1
 
         comoving_type = 1
+
+        NDIAG = ndiag_in
 
         if (do_hydro .eq. 0) then
 
@@ -256,11 +253,17 @@
 
            TEMP_COMP = -1
              NE_COMP = -1
+            ZHI_COMP = -1
 
         else
 
            TEMP_COMP = 1
              NE_COMP = 2
+            if (inhomo_reion_in .gt. 0) then
+               ZHI_COMP = 3
+            else
+               ZHI_COMP = -1
+            endif
 
            !---------------------------------------------------------------------
            ! conserved state components
@@ -362,11 +365,8 @@
            normalize_species            = normalize_species_in
 
            heat_cool_type               = heat_cool_in
+           inhomo_reion                 = inhomo_reion_in
 
-        end if
-
-        if (heat_cool_type .eq. 1 .or. heat_cool_type .eq. 3 .or. heat_cool_type .eq. 5) then
-           call tabulate_rates()
         end if
 
         ! Easy indexing for the passively advected quantities.  

@@ -147,7 +147,6 @@ protected:
     amrex::BCRec* phys_bc;
 
     static int verbose;
-    static int show_timings;
     static int no_sync;
     static int no_composite;
     static int dirichlet_bcs;

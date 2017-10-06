@@ -1,7 +1,5 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
-max_step = 2
-
-#amr.restart = chk00001
+max_step = 10000000
 
 #Number of time steps between calls to halo finder
 reeber.halo_int = 1
@@ -11,21 +9,13 @@ nyx.ppm_reference    = 1
 nyx.use_colglaz      = 0
 nyx.corner_coupling  = 1
 
+nyx.strang_split     = 1
 nyx.add_ext_src      = 1
 nyx.heat_cool_type   = 3
-nyx.strang_split     = 1
+#nyx.simd_width       = 8
 
-gravity.show_timings = 1
-nyx.show_timings     = 1
-
-#This is 1e-8 times the lowest density in plt00000
 nyx.small_dens = 1.e-2
-
-#This is 1e-5 times the constant temparature in plt00000
 nyx.small_temp = 1.e-2
-
-#This is 1e-8 times the lowest pressure in plt00000
-nyx.small_pres = 1.0e-4
 
 nyx.do_santa_barbara = 1
 nyx.init_sb_vels     = 1
@@ -48,7 +38,8 @@ amr.data_log = runlog
 gravity.gravity_type = PoissonGrav
 gravity.no_sync      = 1
 gravity.no_composite = 1
-gravity.solve_with_cpp = 1
+gravity.solve_with_cpp = 0
+gravity.solve_with_hpgmg = 1
 
 mg.bottom_solver = 4
 
@@ -61,10 +52,11 @@ geometry.prob_lo     =  0     0     0
 #Domain size in Mpc
 geometry.prob_hi     =  28.49002849  28.49002849  28.49002849
 
-amr.n_cell           = 256 256 256
 amr.n_cell           =  64  64  64
 amr.max_grid_size    = 32
 #fabarray.mfiter_tile_size = 128 8 8
+fabarray.mfiter_tile_size = 1024000 8 8
+
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
 # 0 = Interior           3 = Symmetry
 # 1 = Inflow             4 = SlipWall
@@ -77,10 +69,22 @@ nyx.hi_bc       =  0   0   0
 nyx.do_hydro = 1
 nyx.do_grav  = 1
 
-# COMOVING
+# COSMOLOGY
 nyx.comoving_OmM = 0.275
 nyx.comoving_OmB = 0.046
 nyx.comoving_h   = 0.702d0
+
+# UVB and reionization
+nyx.inhomo_reion     = 0
+nyx.inhomo_zhi_file  = "zhi.bin"
+nyx.inhomo_grid      = 512
+nyx.uvb_rates_file   = "TREECOOL_middle"
+nyx.uvb_density_A    = 1.0
+nyx.uvb_density_B    = 0.0
+nyx.reionization_zHI_flash   = -1.0
+nyx.reionization_zHeII_flash = -1.0
+nyx.reionization_T_zHI       = 2.0e4
+nyx.reionization_T_zHeII     = 1.5e4
 
 # PARTICLES
 nyx.do_dm_particles = 1
@@ -98,7 +102,7 @@ particles.nparts_per_read = 2097152
 nyx.particle_move_type = Gravitational
 
 # TIME STEP CONTROL
-nyx.relative_max_change_a = 0.02    # max change in scale factor
+nyx.relative_max_change_a = 0.01    # max change in scale factor
 particles.cfl             = 0.5     # 'cfl' for particles 
 nyx.cfl                   = 0.5     # cfl number for hyperbolic system
 nyx.init_shrink           = 1.0     # scale back initial timestep
@@ -125,19 +129,18 @@ amr.regrid_on_restart  = 1
 #amr.nosub              = 1
 
 # CHECKPOINT FILES
-amr.checkpoint_files_output = 1 # no output
+amr.checkpoint_files_output = 1
 amr.check_file        = chk
 amr.check_int         = 100
 amr.checkpoint_nfiles = 64
 
 # PLOTFILES
-#fab.format          = IEEE32
 fab.format          = NATIVE_32
-#amr.plot_files_output = 0
+amr.plot_files_output = 1
 amr.plot_file       = plt
 amr.plot_int        = -1
 amr.plot_nfiles     = 64
-nyx.plot_z_values   = 5.4 5.0 4.6 4.2
+nyx.plot_z_values   = 7.0 6.0 5.0 4.0 3.0 2.0
 particles.write_in_plotfile = 1
 
 amr.plot_vars        = density xmom ymom zmom rho_e Temp phi_grav

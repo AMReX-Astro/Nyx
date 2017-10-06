@@ -476,7 +476,7 @@ public:
 
     void compute_new_temp();
 
-    void compute_rho_temp(amrex::Real& rho_T_avg, amrex::Real& T_avg, amrex::Real& T_meanrho);
+    void compute_rho_temp(amrex::Real& rho_T_avg, amrex::Real& T_avg, amrex::Real& Tinv_avg, amrex::Real& T_meanrho);
 
     void get_old_source(amrex::Real old_time, amrex::Real dt, amrex::MultiFab& Rhs);
     void get_new_source(amrex::Real old_time, amrex::Real new_time, amrex::Real dt, amrex::MultiFab& Rhs);
@@ -520,7 +520,8 @@ public:
 
     static int NUM_STATE;
     static int Density, Xmom, Ymom, Zmom, Eden, Eint;
-    static int Temp_comp, Ne_comp;
+
+    static int Temp_comp, Ne_comp, Zhi_comp;
 
     static int FirstSpec, FirstAux, FirstAdv;
     static int NumSpec, NumAux, NumAdv;
@@ -551,6 +552,10 @@ public:
 				            MPI_Comm scsComm);
     static void InitErrorList();
     static void InitDeriveList();
+
+    static void set_simd_width(const int simd_width);
+    static void alloc_simd_vec();
+    static void dealloc_simd_vec();
 
 protected:
 
@@ -648,6 +653,7 @@ protected:
     static long particle_initrandom_count_per_box;
     static amrex::Real particle_initrandom_mass;
     static int particle_initrandom_iseed;
+    static int particle_skip_factor;
 
     static amrex::IntVect Nrep;  // how many times the initial conditions are replicated in each direction
 
@@ -667,6 +673,9 @@ protected:
 
     // specifies the heating/cooling source term
     static int heat_cool_type;
+
+    // specifies inhomogeneous reionization type
+    static int inhomo_reion;
 
     // permits forcing to be switched on and off
     static int do_forcing;
@@ -710,7 +719,6 @@ protected:
   static amrex::Real      startCPUTime;
 
   static amrex::Real getCPUTime();
-
 
 };
 

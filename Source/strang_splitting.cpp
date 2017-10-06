@@ -14,6 +14,11 @@ Nyx::strang_first_step (Real time, Real dt, MultiFab& S_old, MultiFab& D_old)
     const Real a = get_comoving_a(time);
     const Real* dx = geom.CellSize();
 
+    {
+      const Real z = 1.0/a - 1.0;
+      fort_interp_to_this_z(&z);
+    }
+
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
@@ -50,13 +55,19 @@ Nyx::strang_second_step (Real time, Real dt, MultiFab& S_new, MultiFab& D_new)
     int min_iter_grid;
     int max_iter_grid;
 
-    const Real a = get_comoving_a(time);
+    // Set a at the half of the time step in the second strang
+    const Real a = get_comoving_a(time-half_dt);
     const Real* dx = geom.CellSize();
 
     compute_new_temp();
 
+    {
+      const Real z = 1.0/a - 1.0;
+      fort_interp_to_this_z(&z);
+    }
+
 #ifdef _OPENMP
-#pragma omp parallel
+#pragma omp parallel private(min_iter_grid,max_iter_grid) reduction(min:min_iter) reduction(max:max_iter)
 #endif
     for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
     {

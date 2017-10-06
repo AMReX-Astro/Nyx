@@ -17,7 +17,6 @@ Nyx::get_old_source (Real      old_time,
 
     MultiFab& S_old = get_old_data(State_Type);
     MultiFab& D_old = get_old_data(DiagEOS_Type);
-    const int num_comps = S_old.nComp();
 
     ext_src.setVal(0.);
 
@@ -30,8 +29,8 @@ Nyx::get_old_source (Real      old_time,
     Nyx::theAPC()->GetParticleData(part_data);
 
     for (FillPatchIterator 
-         Old_fpi (*this, S_old, 4, old_time, State_Type, Density, num_comps),
-         Old_dfpi(*this, D_old, 4, old_time, DiagEOS_Type, 0, 2);
+         Old_fpi (*this, S_old, 4, old_time, State_Type  , Density, S_old.nComp()),
+         Old_dfpi(*this, D_old, 4, old_time, DiagEOS_Type, 0      , D_old.nComp());
          Old_fpi.isValid();
          ++Old_fpi)
     {
@@ -71,7 +70,6 @@ Nyx::get_new_source (Real      old_time,
 
     MultiFab& S_old = get_old_data(State_Type);
     MultiFab& D_old = get_old_data(DiagEOS_Type);
-    const int num_comps = S_old.nComp();
 
     ext_src.setVal(0.);
 
@@ -87,10 +85,10 @@ Nyx::get_new_source (Real      old_time,
     std::cout << "AGN DATA(V) " << part_data[0] << " " << part_data[1] << " " << part_data[2] << std::endl;
     std::cout << "AGN DATA(A) " << part_data[3] << " " << part_data[4] << " " << part_data[5] << std::endl;
 
-    for (FillPatchIterator Old_fpi(*this, S_old, 4, old_time, State_Type, Density, num_comps),
-                           New_fpi(*this, S_old, 4, new_time, State_Type, Density, num_comps),
-                           Old_dfpi(*this, D_old, 4, old_time, DiagEOS_Type, 0, 2),
-                           New_dfpi(*this, D_old, 4, new_time, DiagEOS_Type, 0, 2);
+    for (FillPatchIterator Old_fpi( *this, S_old, 4, old_time, State_Type  , Density, S_old.nComp()),
+                           New_fpi( *this, S_old, 4, new_time, State_Type  , Density, S_old.nComp()),
+                           Old_dfpi(*this, D_old, 4, old_time, DiagEOS_Type, 0      , D_old.nComp()),
+                           New_dfpi(*this, D_old, 4, new_time, DiagEOS_Type, 0      , D_old.nComp());
          Old_fpi.isValid() && New_fpi.isValid() && Old_dfpi.isValid() && New_dfpi.isValid();
          ++Old_fpi, ++New_fpi, ++Old_dfpi, ++New_dfpi)
     {

@@ -230,9 +230,13 @@ Nyx::comoving_a_post_restart (const std::string& restart_file)
         std::cout << "...setting old_a_time to " << old_a_time << std::endl;
     }
 
+#ifdef HEATCOOL
      // Initialize "this_z" in the atomic_rates_module
-     if (heat_cool_type == 1 || heat_cool_type == 3 || heat_cool_type == 5)
-         fort_init_this_z(&old_a);
+     if (heat_cool_type == 1 || heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7) {
+         Real old_z = 1.0/old_a - 1.0;
+         fort_interp_to_this_z(&old_z);
+     }
+#endif
 }
 
 void

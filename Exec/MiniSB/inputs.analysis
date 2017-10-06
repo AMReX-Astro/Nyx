@@ -7,10 +7,6 @@ amr.refine_grid_layout = 0
 amr.checkpoint_files_output = 1
 amr.plot_files_output = 1
 
-// Show timings in different routines
-nyx.show_timings = 1
-gravity.show_timings = 1
-
 nyx.ppm_type = 0
 nyx.use_colglaz = 1
 

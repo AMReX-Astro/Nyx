@@ -36,9 +36,9 @@ subroutine ext_src_hc(lo, hi, old_state, os_l1, os_l2, os_l3, os_h1, os_h2, os_h
 !       @todo
 !
     use amrex_fort_module, only : rt => amrex_real
+    use amrex_error_module, only: amrex_abort
     use meth_params_module, only : NVAR, UEDEN, UEINT, heat_cool_type
     use fundamental_constants_module
-    use atomic_rates_module, only: interp_to_this_z
 
     implicit none
 
@@ -87,19 +87,19 @@ subroutine ext_src_hc(lo, hi, old_state, os_l1, os_l2, os_l3, os_h1, os_h2, os_h
     !      both "old_state" is in fact the "old" state and
     !           "new_state" is in fact the "new" state
 
-    call interp_to_this_z(z)
-
     half_dt = 0.5d0 * dt
     if (heat_cool_type .eq. 1) then
-        call integrate_state_hc(lo,hi,tmp_state,ns_l1,ns_l2,ns_l3,ns_h1,ns_h2,ns_h3, &
-                                      new_diag ,nd_l1,nd_l2,nd_l3,nd_h1,nd_h2,nd_h3, &
-                                a,half_dt,min_iter,max_iter)
+        call amrex_abort("ERROR: heat_cool_type = 1 is not in function anymore.")
     else if (heat_cool_type .eq. 3) then
         call integrate_state_vode(lo,hi,tmp_state,ns_l1,ns_l2,ns_l3,ns_h1,ns_h2,ns_h3, &
                                         new_diag ,nd_l1,nd_l2,nd_l3,nd_h1,nd_h2,nd_h3, &
                                   a,half_dt,min_iter,max_iter)
     else if (heat_cool_type .eq. 5) then
         call integrate_state_fcvode(lo,hi,tmp_state,ns_l1,ns_l2,ns_l3, ns_h1,ns_h2,ns_h3, &
+                                                new_diag ,nd_l1,nd_l2,nd_l3, nd_h1,nd_h2,nd_h3, &
+                                  a,half_dt,min_iter,max_iter)
+    else if (heat_cool_type .eq. 7) then
+        call integrate_state_fcvode_vec(lo,hi,tmp_state,ns_l1,ns_l2,ns_l3, ns_h1,ns_h2,ns_h3, &
                                                 new_diag ,nd_l1,nd_l2,nd_l3, nd_h1,nd_h2,nd_h3, &
                                   a,half_dt,min_iter,max_iter)
     endif

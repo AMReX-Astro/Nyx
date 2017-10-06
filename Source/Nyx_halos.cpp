@@ -170,9 +170,6 @@ Nyx::halo_find (Real dt)
        for (BoxIterator bit(vertBox); bit.ok(); ++bit)
          {
            IntVect vert = bit();
-           int i = vert[0];
-           int j = vert[1];
-           int k = vert[2];
            IntVect iv(D_DECL(vertices[vert[0]][0],
                              vertices[vert[1]][1],
                              vertices[vert[2]][2]));
@@ -189,6 +186,27 @@ Nyx::halo_find (Real dt)
 
        std::cout << "  " << std::endl;
        std::cout << " *************************************** " << std::endl;
+
+       // agn_density_old will hold the density from depositing the
+       // mass of existing particles.
+       MultiFab agn_density_old(simBA, simDM, ncomp1, nghost1);
+       agn_density_old.setVal(0.0);
+
+       // Deposit the mass now in the particles onto agn_density_old, on grid.
+       // (No change to mass of particles.)
+       Nyx::theAPC()->AssignDensitySingleLevel(agn_density_old, level);
+
+       // Make sure the density put into ghost cells is added to valid regions
+       agn_density_old.SumBoundary(geom.periodicity());
+
+       // Convert new_state to primitive variables: rho, velocity, energy/rho.
+       conserved_to_primitive(new_state);
+
+       // Add agn_density_old to new_state, which holds primitive variables.
+       // This is from depositing mass of existing particles.
+       // Later, we'll subtract the deposited mass of all particles, old & new.
+       amrex::MultiFab::Add(new_state, agn_density_old,
+                            comp0, Density, ncomp1, nghost0);
 
 #ifdef REEBER
        for (const Halo& h : reeber_halos)
@@ -243,10 +261,17 @@ Nyx::halo_find (Real dt)
        // Call Redistribute so that the new particles get their cell, grid and process defined
        Nyx::theAPC()->Redistribute(lev_min, lev_max, ngrow);
 
+       // Fill the "ghosts" vector with particles in ghost cells of each grid
        Nyx::theAPC()->fillNeighbors(level);
+
+       // ComputeOverlap sets the ID of a particle to -1 if it is less than "cutoff" away from another
+       //   particle and if it is newer than that particle
        Nyx::theAPC()->ComputeOverlap(level);
+
+       // Clear the Neighbor Particle data structure
        Nyx::theAPC()->clearNeighbors(level);
 
+       // This Redistribute is used to remove particles whose ID's have been set to -1 in ComputeOverlap
        Nyx::theAPC()->Redistribute(lev_min, lev_max, ngrow);
 
        // agn_density will hold the density we're going to remove from the grid.
@@ -260,21 +285,26 @@ Nyx::halo_find (Real dt)
        // Make sure the density put into ghost cells is added to valid regions
        agn_density.SumBoundary(geom.periodicity());
 
-       // Take away the density from the gas that was added to the AGN particle.
+       // Take away the density from the gas that was added to the AGN particle:
+       // density is in new_state, which holds primitive variables.
        amrex::MultiFab::Subtract(new_state, agn_density,
                                  comp0, Density, ncomp1, nghost0);
 
-       cout << "Going into ComputeParticleVelocity (no energy), number of AGN particles on this proc is "
-            << Nyx::theAPC()->TotalNumberOfParticles(true, true) << endl;
+       // Convert new_state to conserved variables: rho, momentum, energy.
+       primitive_to_conserved(new_state);
+
+       pout() << "Going into ComputeParticleVelocity (no energy), number of AGN particles on this proc is "
+              << Nyx::theAPC()->TotalNumberOfParticles(true, true) << endl;
 
        // Re-set the particle velocity (but not energy) after accretion,
-       // using change of momentum density in state.
+       // using change of momentum density from orig_state to new_state,
+       // which hold conserved variables.
        // No change to state, other than filling ghost cells.
        int add_energy = 0;
        Nyx::theAPC()->ComputeParticleVelocity(level, orig_state, new_state, add_energy);
 
-       cout << "Going into ReleaseEnergy, number of AGN particles on this proc is "
-            << Nyx::theAPC()->TotalNumberOfParticles(true, true) << endl;
+       pout() << "Going into ReleaseEnergy, number of AGN particles on this proc is "
+              << Nyx::theAPC()->TotalNumberOfParticles(true, true) << endl;
        // AGN particles: may zero out energy.
        // new_state: may increase internal and total energy.
        MultiFab& D_new = get_new_data(DiagEOS_Type);
@@ -361,7 +391,7 @@ Nyx::halo_accrete (Real dt)
    const DistributionMapping& simDM = new_state.DistributionMap();
    int ncomp = new_state.nComp();
 
-   // First copy the existing state into orig_state.
+   // First copy the existing state (new_state) into orig_state.
    MultiFab orig_state(simBA, simDM, ncomp, nghost1);
    MultiFab::Copy(orig_state, new_state,
                   comp0, comp0, ncomp, nghost1);
@@ -373,8 +403,8 @@ Nyx::halo_accrete (Real dt)
    MultiFab agn_density_lost(simBA, simDM, ncomp1, nghost1);
    agn_density_lost.setVal(0.0);
 
-   cout << "Going into AccreteMass, number of AGN particles on this proc is "
-        << Nyx::theAPC()->TotalNumberOfParticles(true, true) << endl;
+   pout() << "Going into AccreteMass, number of AGN particles on this proc is "
+          << Nyx::theAPC()->TotalNumberOfParticles(true, true) << endl;
    // AGN particles: increase mass and energy.
    // new_state: no change, other than filling in ghost cells.
    // agn_density_lost: gets filled in.
@@ -394,8 +424,8 @@ Nyx::halo_accrete (Real dt)
    // using change of momentum density in state.
    // No change to state, other than filling ghost cells.
    int add_energy = 1;
-   cout << "Going into ComputeParticleVelocity (and energy), number of AGN particles on this proc is "
-        << Nyx::theAPC()->TotalNumberOfParticles(true, true) << endl;
+   pout() << "Going into ComputeParticleVelocity (and energy), number of AGN particles on this proc is "
+          << Nyx::theAPC()->TotalNumberOfParticles(true, true) << endl;
    Nyx::theAPC()->ComputeParticleVelocity(level, orig_state, new_state, add_energy);
    // Now new_state = get_new_data(State_Type) has been updated.
 }
