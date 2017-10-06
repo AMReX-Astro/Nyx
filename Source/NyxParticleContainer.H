@@ -114,7 +114,7 @@ template <int NSR,int NSI,int NAR,int NAI>
 void
 NyxParticleContainer<NSR,NSI,NAR,NAI>::SetParticleVelocities (amrex::Array<amrex::Real>& part_data)
 {
-    BL_PROFILE("NyxParticleContainer<NSR,NSI,NAR,NSI>::SetParticleVelocities()");
+   BL_PROFILE("NyxParticleContainer<NSR,NSI,NAR,NSI>::SetParticleVelocities()");
    // This gives us the starting point into the part_data array
    // If only one processor (or no MPI), then that's all we need
    int cnt = 0;

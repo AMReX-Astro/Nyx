@@ -1,5 +1,24 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 max_step = 10000000
+max_step = 0
+max_step = 4
+
+amr.mffile_nstreams      = 4
+amr.precreateDirectories = 1
+amr.prereadFAHeaders     = 1
+#amr.plot_headerversion = 1
+amr.checkpoint_headerversion = 2
+
+#### vismf.headerversion        = 2
+vismf.groupsets            = 0
+vismf.setbuf               = 1
+vismf.usesingleread        = 1
+vismf.usesinglewrite       = 1
+vismf.checkfilepositions   = 1
+vismf.usepersistentifstreams = 1
+vismf.usesynchronousreads    = 0
+vismf.usedynamicsetselection = 1
+
 
 nyx.ppm_type         = 0
 nyx.use_colglaz      = 1
