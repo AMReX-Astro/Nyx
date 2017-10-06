@@ -40,6 +40,8 @@ module atomic_rates_module
 
   real(rt), parameter, public :: MPROTON = 1.6726231d-24, BOLTZMANN = 1.3806e-16
 
+  real(rt), public, save :: uvb_density_A = 1.0d0, uvb_density_B = 0.0d0, mean_rhob
+
   ! Note that XHYDROGEN can be set by a call to set_xhydrogen which now
   ! lives in set_method_params.
   real(rt), public :: XHYDROGEN = 0.76d0
@@ -50,6 +52,9 @@ module atomic_rates_module
       subroutine fort_tabulate_rates() bind(C, name='fort_tabulate_rates')
       use parallel, only: parallel_ioprocessor
       use amrex_parmparse_module
+      use bl_constants_module, only: M_PI
+      use fundamental_constants_module, only: Gconst
+      use comoving_module, only: comoving_h,comoving_OmB
       use reion_aux_module, only: zhi_flash, zheii_flash, T_zhi, T_zheii, &
                                   flash_h, flash_he, inhomogeneous_on
 
@@ -70,6 +75,8 @@ module atomic_rates_module
          call amrex_parmparse_build(pp, "nyx")
          call pp%query("inhomo_reion"             , inhomo_reion)
          call pp%query("uvb_rates_file"           , file_in)
+         call pp%query("uvb_density_A"            , uvb_density_A)
+         call pp%query("uvb_density_B"            , uvb_density_B)
          call pp%query("reionization_zHI_flash"   , zhi_flash)
          call pp%query("reionization_zHeII_flash" , zheii_flash)
          call pp%query("reionization_T_zHI"       , T_zhi)
@@ -82,7 +89,15 @@ module atomic_rates_module
             print*, '    reionization_zHeII_flash   = ', zheii_flash
             print*, '    reionization_T_zHI         = ', T_zhi
             print*, '    reionization_T_zHeII       = ', T_zheii
-         endif
+
+            print*, 'TABULATE_RATES: rho-dependent heating parameters are:'
+            print*, '    A       = ', uvb_density_A
+            print*, '    B       = ', uvb_density_B
+            print*, '    UVB heating rates will be multiplied by A*(rho/rho_mean)**B'
+        endif
+
+        ! Save mean density (in code units) for density-dependent heating
+        mean_rhob = comoving_OmB * 3.d0*(comoving_h*100.d0)**2 / (8.d0*M_PI*Gconst)
 
          ! Set options in reion_aux_module
          !   Hydrogen reionization

@@ -38,6 +38,7 @@ subroutine integrate_state_vode(lo, hi, &
     use eos_module, only: nyx_eos_T_given_Re, nyx_eos_given_RT, iterate_ne
     use fundamental_constants_module
     use comoving_module, only: comoving_h, comoving_OmB
+    use comoving_nd_module, only: fort_integrate_comoving_a
     use atomic_rates_module, only: YHELIUM
     use vode_aux_module    , only: JH_vode, JHe_vode, z_vode, i_vode, j_vode, k_vode
     use reion_aux_module   , only: zhi_flash, zheii_flash, flash_h, flash_he, &
@@ -54,12 +55,14 @@ subroutine integrate_state_vode(lo, hi, &
     integer         , intent(inout) :: max_iter, min_iter
 
     integer :: i, j, k
-    real(rt) :: z, rho, H_reion_z, He_reion_z
+    real(rt) :: z, z_end, a_end, rho, H_reion_z, He_reion_z
     real(rt) :: T_orig, ne_orig, e_orig
     real(rt) :: T_out , ne_out , e_out, mu, mean_rhob, T_H, T_He
     real(rt) :: species(5)
 
     z = 1.d0/a - 1.d0
+    call fort_integrate_comoving_a(a, a_end, half_dt)
+    z_end = 1.0d0/a_end - 1.0d0
 
     mean_rhob = comoving_OmB * 3.d0*(comoving_h*100.d0)**2 / (8.d0*M_PI*Gconst)
 
@@ -77,8 +80,6 @@ subroutine integrate_state_vode(lo, hi, &
 
     if (flash_h ) H_reion_z  = zhi_flash
     if (flash_he) He_reion_z = zheii_flash
-
-!print*, "z = ", z, ";  half_dt = ", half_dt
 
     ! Note that (lo,hi) define the region of the box containing the grow cells
     ! Do *not* assume this is just the valid region
@@ -127,19 +128,18 @@ subroutine integrate_state_vode(lo, hi, &
                     !call bl_abort('bad e out of strang')
                 end if
 
+                ! Update T and ne (do not use stuff computed in f_rhs, per vode manual)
                 call nyx_eos_T_given_Re(JH_vode, JHe_vode, T_out, ne_out, rho, e_out, a, species)
 
-                !  NOTE: flash case only
+                !  Flash heating in reionization:
                 T_H = 0.0d0
-                if (flash_h .and. (z_vode .lt. H_reion_z)) then
-                   T_H = (1.0d0 - species(2))*T_zhi
-                   flash_h = .false.
+                if (inhomogeneous_on .or. flash_h) then
+                   if ((H_reion_z  .lt. z) .and. (H_reion_z  .ge. z_end)) T_H  = (1.0d0 - species(2))*T_zhi
                 endif
 
                 T_He = 0.0d0
-                if (flash_he .and. (z_vode .lt. He_reion_z)) then
-                   T_He = (1.0d0 - species(5))*T_zheii
-                   flash_he = .false.
+                if (flash_he) then
+                   if ((He_reion_z .lt. z) .and. (He_reion_z .ge. z_end)) T_He = (1.0d0 - species(5))*T_zheii
                 endif
 
                 if ((T_H .gt. 0.0d0) .or. (T_He .gt. 0.0d0)) then
@@ -155,7 +155,7 @@ subroutine integrate_state_vode(lo, hi, &
                 state(i,j,k,UEINT) = state(i,j,k,UEINT) + rho * (e_out-e_orig)
                 state(i,j,k,UEDEN) = state(i,j,k,UEDEN) + rho * (e_out-e_orig)
 
-                ! Update T and ne (do not use stuff computed in f_rhs, per vode manual)
+                ! Update T and ne
                 diag_eos(i,j,k,TEMP_COMP) = T_out
                 diag_eos(i,j,k,  NE_COMP) = ne_out
 
