@@ -58,7 +58,7 @@ the work of (Graboske 1973) for weak screening and the work of
 \end{itemize}
 
 There are two primary files within each network directory. The first,
-castro\_burner.f90, contains the burner routine, 
+{\tt castro\_burner.f90}, contains the burner routine, 
 which takes $\rho^\inp, e^\inp, X_k^\inp$, and $\Delta t$ as inputs.
 It is possible for the internal energy, $e$, which is computed from $\Ub$, to be
 negative due to roundoff error.  CASTRO has an option to protect against using a 
@@ -92,7 +92,7 @@ as inputs to the equation of state.  Note that the density remains unchanged dur
 the burning.  At the end of the routine, we compute 
 $T^\outp = T(\rho^\outp,e^{\outp},X_k^\outp)$.
 
-The second file, ``network.f90'', supply the
+The second file, ``{\tt network.f90}'', supply the
 number of species and auxiliary variables, names of each species and 
 auxiliary variable, as well as other initializing data, such as
 aion, zion and the binding energy.

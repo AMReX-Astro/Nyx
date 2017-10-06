@@ -83,10 +83,11 @@ Nyx::read_init_params ()
 
     // Input error check
     if (!binary_particle_file.empty() && (particle_init_type != "BinaryFile" &&
-                                          particle_init_type != "BinaryMetaFile"))
+                                          particle_init_type != "BinaryMetaFile" && 
+					  particle_init_type != "BinaryMortonFile"))
     {
         if (ParallelDescriptor::IOProcessor())
-            std::cerr << "ERROR::particle_init_type is not BinaryFile or BinaryMetaFile but you specified binary_particle_file" << std::endl;
+            std::cerr << "ERROR::particle_init_type is not BinaryFile, BinaryMetaFile, or BinaryMortonFile but you specified binary_particle_file" << std::endl;
         amrex::Error();
     }
 
@@ -108,6 +109,21 @@ Nyx::read_init_params ()
             std::cerr << "ERROR::particle_init_type is not AsciiFile but you specified neutrino_particle_file" << std::endl;;
         amrex::Error();
     }
+#endif
+
+#ifdef HEATCOOL
+    Real eos_nr_eps = 1.0e-6;
+    Real vode_rtol = 1.0e-4;
+    Real vode_atol_scaled = 1.0e-4;
+
+    // Tolerance for Newton-Raphson iteration of iterate_ne() in the EOS
+    pp.query("eos_nr_eps", eos_nr_eps);
+    // Relative tolerance of VODE integration
+    pp.query("vode_rtol", vode_rtol);
+    // Absolute tolerance of VODE integration (scaled by initial value of ODE)
+    pp.query("vode_atol_scaled", vode_atol_scaled);
+
+    fort_setup_eos_params(&eos_nr_eps, &vode_rtol, &vode_atol_scaled);
 #endif
 }
 

@@ -3,10 +3,4 @@
   r_c   = 0.1
 
   max_num_part = 0
-
-  ! the SCDM Cosmology
-  comoving_OmL = 0.0
-  comoving_OmM = 1.0
-  comoving_OmB = 0.0
-  comoving_h   = 0.5
 /

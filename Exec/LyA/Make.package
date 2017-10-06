@@ -1,5 +1,2 @@
 f90EXE_sources += Prob_${DIM}d.f90
 f90EXE_sources += probdata.f90	
-ifeq ($(USE_CVODE), TRUE)
-  f90EXE_sources += fcvode_extras.f90
-endif

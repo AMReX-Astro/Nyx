@@ -7,17 +7,11 @@ nyx.add_ext_src      = 1
 nyx.heat_cool_type   = 3
 nyx.strang_split     = 1
 
-gravity.show_timings = 0
-nyx.show_timings     = 0
-
 #This is 1e-8 times the lowest density in plt00000
 nyx.small_dens = 5.162470e1
 
 #This is 1e-5 times the constant temparature in plt00000
 nyx.small_temp = 1.e-2
-
-#This is 1e-8 times the lowest pressure in plt00000
-nyx.small_pres = 3.487507e2
 
 nyx.do_santa_barbara = 1
 nyx.init_sb_vels     = 1
@@ -66,6 +60,11 @@ nyx.hi_bc       =  0   0   0
 # WHICH PHYSICS
 nyx.do_hydro = 1
 nyx.do_grav  = 1
+
+# COMOVING
+nyx.comoving_OmM = 0.275
+nyx.comoving_OmB = 0.046
+nyx.comoving_h   = 0.702d0
 
 # PARTICLES
 nyx.do_dm_particles = 1

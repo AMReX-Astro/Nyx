@@ -1,11 +1,6 @@
 &fortin
   max_num_part = 0
 
-  comoving_OmL = 0.0
-  comoving_OmM = 1.0
-  comoving_OmB = 0.1
-  comoving_h   = 0.0d0
-
   a1 = 0.4
   a3 = 0.2
 /

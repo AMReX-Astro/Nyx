@@ -19,14 +19,11 @@ module atomic_rates_module
 
   implicit none
 
-  ! Routine which acts like a class constructor
-  public  :: tabulate_rates, interp_to_this_z
-
   ! Photo- rates (from file)
-  integer   , parameter          , private :: NCOOLFILE=301
-  real(rt), dimension(NCOOLFILE), public :: lzr
-  real(rt), dimension(NCOOLFILE), public :: rggh0, rgghe0, rgghep
-  real(rt), dimension(NCOOLFILE), public :: reh0, rehe0, rehep
+  integer, private :: NCOOLFILE
+  real(rt), dimension(:), allocatable, private :: lzr
+  real(rt), dimension(:), allocatable, private :: rggh0, rgghe0, rgghep
+  real(rt), dimension(:), allocatable, private :: reh0, rehe0, rehep
 
   ! Other rates (from equations)
   integer, parameter, public :: NCOOLTAB=2000
@@ -38,9 +35,12 @@ module atomic_rates_module
   real(rt), public, save :: this_z, ggh0, gghe0, gghep, eh0, ehe0, ehep
  
   real(rt), parameter, public :: TCOOLMIN = 0.0d0, TCOOLMAX = 9.0d0  ! in log10
+  real(rt), parameter, public :: TCOOLMIN_R = 10.0d0**TCOOLMIN, TCOOLMAX_R = 10.0d0**TCOOLMAX
   real(rt), parameter, public :: deltaT = (TCOOLMAX - TCOOLMIN)/NCOOLTAB
 
   real(rt), parameter, public :: MPROTON = 1.6726231d-24, BOLTZMANN = 1.3806e-16
+
+  real(rt), public, save :: uvb_density_A = 1.0d0, uvb_density_B = 0.0d0, mean_rhob
 
   ! Note that XHYDROGEN can be set by a call to set_xhydrogen which now
   ! lives in set_method_params.
@@ -49,20 +49,114 @@ module atomic_rates_module
 
   contains
 
-      subroutine tabulate_rates()
-      integer :: i
+      subroutine fort_tabulate_rates() bind(C, name='fort_tabulate_rates')
+      use parallel, only: parallel_ioprocessor
+      use amrex_parmparse_module
+      use bl_constants_module, only: M_PI
+      use fundamental_constants_module, only: Gconst
+      use comoving_module, only: comoving_h,comoving_OmB
+      use reion_aux_module, only: zhi_flash, zheii_flash, T_zhi, T_zheii, &
+                                  flash_h, flash_he, inhomogeneous_on
+
+      integer :: i, inhomo_reion
       logical, parameter :: Katz96=.false.
       real(rt), parameter :: t3=1.0d3, t5=1.0d5, t6=1.0d6
-      real(rt) :: t, U, E, y, sqrt_t, corr_term
+      real(rt) :: t, U, E, y, sqrt_t, corr_term, tmp
       logical, save :: first=.true.
 
-      !$OMP CRITICAL(TREECOOL_READ)
+      character(len=:), allocatable :: file_in
+      type(amrex_parmparse) :: pp
+
       if (first) then
 
          first = .false.
 
-         ! Read in photoionization rates and heating from a file
-         open(unit=11,file='TREECOOL_middle',status='old')
+         ! Get info from inputs
+         call amrex_parmparse_build(pp, "nyx")
+         call pp%query("inhomo_reion"             , inhomo_reion)
+         call pp%query("uvb_rates_file"           , file_in)
+         call pp%query("uvb_density_A"            , uvb_density_A)
+         call pp%query("uvb_density_B"            , uvb_density_B)
+         call pp%query("reionization_zHI_flash"   , zhi_flash)
+         call pp%query("reionization_zHeII_flash" , zheii_flash)
+         call pp%query("reionization_T_zHI"       , T_zhi)
+         call pp%query("reionization_T_zHeII"     , T_zheii)
+         call amrex_parmparse_destroy(pp)
+
+         if (parallel_ioprocessor()) then
+            print*, 'TABULATE_RATES: reionization parameters are:'
+            print*, '    reionization_zHI_flash     = ', zhi_flash
+            print*, '    reionization_zHeII_flash   = ', zheii_flash
+            print*, '    reionization_T_zHI         = ', T_zhi
+            print*, '    reionization_T_zHeII       = ', T_zheii
+
+            print*, 'TABULATE_RATES: rho-dependent heating parameters are:'
+            print*, '    A       = ', uvb_density_A
+            print*, '    B       = ', uvb_density_B
+            print*, '    UVB heating rates will be multiplied by A*(rho/rho_mean)**B'
+        endif
+
+        ! Save mean density (in code units) for density-dependent heating
+        mean_rhob = comoving_OmB * 3.d0*(comoving_h*100.d0)**2 / (8.d0*M_PI*Gconst)
+
+         ! Set options in reion_aux_module
+         !   Hydrogen reionization
+         if (zhi_flash .gt. 0.0) then
+            if (inhomo_reion .gt. 0) then
+               if (parallel_ioprocessor()) print*, 'TABULATE_RATES: ignoring reionization_zHI, as nyx.inhomo_reion > 0'
+               flash_h = .false.
+               inhomogeneous_on = .true.
+            else
+               flash_h = .true.
+               inhomogeneous_on = .false.
+            endif
+         else
+            flash_h = .false.
+            if (inhomo_reion .gt. 0) then
+               inhomogeneous_on = .true.
+            else
+               inhomogeneous_on = .false.
+            endif
+         endif
+
+         !   Helium reionization
+         if (zheii_flash .gt. 0.0) then
+            flash_he = .true.
+         else
+            flash_he = .false.
+         endif
+
+         if (parallel_ioprocessor()) then
+            print*, 'TABULATE_RATES: reionization flags are set to:'
+            print*, '    Hydrogen flash            = ', flash_h
+            print*, '    Helium   flash            = ', flash_he
+            print*, '    inhomogeneous_on (H only) = ', inhomogeneous_on
+         endif
+
+
+         ! Read in UVB rates from a file
+         if (len(file_in) .gt. 0) then
+            open(unit=11, file=file_in, status='old')
+            if (parallel_ioprocessor()) then
+               print*, 'TABULATE_RATES: UVB file is set in inputs ('//file_in//').'
+            endif
+         else
+            open(unit=11, file='TREECOOL', status='old')
+            if (parallel_ioprocessor()) then
+               print*, 'TABULATE_RATES: UVB file is defaulted to "TREECOOL".'
+            endif
+         endif
+
+         NCOOLFILE = 0
+         do
+            read(11,*,end=10) tmp, tmp, tmp, tmp, tmp,  tmp, tmp
+            NCOOLFILE = NCOOLFILE + 1
+         end do
+         10 rewind(11)
+
+         allocate( lzr(NCOOLFILE), rggh0(NCOOLFILE), rgghe0(NCOOlFILE), rgghep(NCOOLFILE) )
+         allocate( reh0(NCOOLFILE), rehe0(NCOOLFILE), rehep(NCOOLFILE) )
+
          do i = 1, NCOOLFILE
             read(11,*) lzr(i), rggh0(i), rgghe0(i), rgghep(i), &
                                 reh0(i),  rehe0(i),  rehep(i)
@@ -177,19 +271,21 @@ module atomic_rates_module
          endif  ! Katz rates
 
       end if  ! first_call
-      !$OMP END CRITICAL(TREECOOL_READ)
 
-      end subroutine tabulate_rates
+      end subroutine fort_tabulate_rates
 
       ! ****************************************************************************
 
-      subroutine interp_to_this_z(z)
+      subroutine fort_interp_to_this_z(z) bind(C, name='fort_interp_to_this_z')
+
+      use vode_aux_module, only: z_vode
 
       real(rt), intent(in) :: z
       real(rt) :: lopz, fact
       integer :: i, j
 
       this_z = z
+      z_vode = z
       lopz   = dlog10(1.0d0 + z)
 
       if (lopz .ge. lzr(NCOOLFILE)) then
@@ -222,26 +318,6 @@ module atomic_rates_module
       ehe0  = rehe0(j)  + (rehe0(j+1)-rehe0(j))*fact
       ehep  = rehep(j)  + (rehep(j+1)-rehep(j))*fact
 
-      end subroutine interp_to_this_z
+      end subroutine fort_interp_to_this_z
 
 end module atomic_rates_module
-
-! *************************************************************************************
-! This must live outside of atomic_rates module so it can be called by the C++
-! *************************************************************************************
-
-subroutine fort_init_this_z(comoving_a) &
-    bind(C, name="fort_init_this_z")
-
-    use amrex_fort_module, only : rt => amrex_real
-    use atomic_rates_module
-
-    implicit none
-
-    real(rt), intent(in   ) :: comoving_a
-    real(rt)                :: z
-
-    z = 1.d0/comoving_a - 1.d0
-    call interp_to_this_z(z)
-
-end subroutine fort_init_this_z

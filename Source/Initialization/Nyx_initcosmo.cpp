@@ -107,7 +107,8 @@ void Nyx::initcosmo()
        std::cout << "Calling InitCosmo for level " << level << std::endl;
 
 #ifdef GRAVITY
-    Real comoving_OmM, comoving_OmL, comoving_h; Real comoving_OmB, Gconst;
+    Real comoving_OmL;
+    Real Gconst;
     const Real len[BL_SPACEDIM] = {geom.ProbLength(0),geom.ProbLength(1),geom.ProbLength(2)};
 
     Real particleMass;
@@ -123,8 +124,8 @@ void Nyx::initcosmo()
     	MultiFab& S_new = get_level(level).get_new_data(State_Type);
     	MultiFab& D_new = get_level(level).get_new_data(DiagEOS_Type);
 
-        FillCoarsePatch(S_new, 0, 0,   State_Type, 0, NUM_STATE);
-        FillCoarsePatch(D_new, 0, 0, DiagEOS_Type, 0, 2);
+        FillCoarsePatch(S_new, 0, 0,   State_Type, 0, S_new.nComp());
+        FillCoarsePatch(D_new, 0, 0, DiagEOS_Type, 0, D_new.nComp());
 	return;
     }
 
@@ -145,16 +146,16 @@ void Nyx::initcosmo()
     Real comoving_OmNu;
     fort_get_omnu(&comoving_OmNu);
 #endif
-    fort_get_omm(&comoving_OmM );
-    fort_get_omb(&comoving_OmB );
-    fort_get_hubble(&comoving_h);
+    // fort_get_omm(&comoving_OmM );
+    // fort_get_omb(&comoving_OmB );
+    // fort_get_hubble(&comoving_h);
     fort_get_grav_const(&Gconst);
 
     // We now define this here instead of reading it.
     comoving_OmL = 1. - comoving_OmM;
 
-    //For whatever reason OmB is divided by OmM, which I need to undo here...
-    Real realOmB = comoving_OmB*comoving_OmM;
+    // //For whatever reason OmB is divided by OmM, which I need to undo here...
+    // Real realOmB = comoving_OmB*comoving_OmM;
 
     //compute \Omega_K - just for checking flatness...
     Real comoving_OmK = 1 - comoving_OmM - comoving_OmL;
@@ -169,7 +170,7 @@ void Nyx::initcosmo()
     }
 
     //compute \rho_{baryon}=3H_0^2\Omega_{baryon}/(8\pi G)
-    Real rhoB = 3*comoving_h*100*comoving_h*100*realOmB 
+    Real rhoB = 3*comoving_h*100*comoving_h*100*comoving_OmB 
                 / (8*M_PI*Gconst);
     if (ParallelDescriptor::IOProcessor())
     {
@@ -189,9 +190,9 @@ void Nyx::initcosmo()
 
     //compute \rho_{dark matter}=3H_0^2\Omega_{dark matter}/(8\pi G)
 #ifdef NUFLUID
-    Real comoving_OmD = comoving_OmM - realOmB - comoving_OmNu;
+    Real comoving_OmD = comoving_OmM - comoving_OmB - comoving_OmNu;
 #else
-    Real comoving_OmD = comoving_OmM - realOmB;
+    Real comoving_OmD = comoving_OmM - comoving_OmB;
 #endif
     Real rhoD = 3*comoving_h*100*comoving_h*100*comoving_OmD 
                 / (8*M_PI*Gconst);
@@ -201,7 +202,7 @@ void Nyx::initcosmo()
                   << " M_sun/Mpc^3." << '\n';
     }
 
-    if (!do_hydro && realOmB>0){
+    if (!do_hydro && comoving_OmB>0){
        if (ParallelDescriptor::IOProcessor()){
           std::cout << std::endl;
           std::cout << std::endl;
@@ -377,8 +378,8 @@ void Nyx::initcosmo()
 	//seems to have no effect...
 	if (level > 0)
 	{
-           FillCoarsePatch(S_new, 0, 0,   State_Type, 0, NUM_STATE);
-	   FillCoarsePatch(D_new, 0, 0, DiagEOS_Type, 0, 2);
+           FillCoarsePatch(S_new, 0, 0,   State_Type, 0, S_new.nComp());
+	   FillCoarsePatch(D_new, 0, 0, DiagEOS_Type, 0, D_new.nComp());
 	}
 
      	//copy density 
@@ -390,7 +391,7 @@ void Nyx::initcosmo()
 //      //This block assigns "the same" density for the baryons as for the dm.
 //      Array<std::unique_ptr<MultiFab> > particle_mf;
 //      Nyx::theDMPC()->AssignDensity(particle_mf);
-//      particle_mf[0]->mult(realOmB / comoving_OmD);
+//      particle_mf[0]->mult(comoving_OmB / comoving_OmD);
 //      S_new.copy(*particle_mf[0], 0, Density, 1);
 
      	//copy velocities...
@@ -420,6 +421,8 @@ void Nyx::initcosmo()
 
         D_new.setVal(tempInit, Temp_comp);
         D_new.setVal(0.0, Ne_comp);
+        if (inhomo_reion > 0)
+            D_new.setVal(0.0, Zhi_comp);
 
 #ifdef _OPENMP
 #pragma omp parallel

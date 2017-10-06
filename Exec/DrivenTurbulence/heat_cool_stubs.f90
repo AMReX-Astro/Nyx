@@ -53,3 +53,12 @@ subroutine integrate_state(lo, hi, &
                                dx, time, a, half_dt)
 
 end subroutine integrate_state
+
+
+! unused VODE stubs if we are not doing heating/cooling
+module vode_aux_module
+  use amrex_fort_module, only : rt => amrex_real
+  implicit none
+
+  real(rt) :: z_vode
+end module vode_aux_module

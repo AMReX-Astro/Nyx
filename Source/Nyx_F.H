@@ -8,15 +8,25 @@
 extern "C"
 {
 #endif
-  void fort_integrate_comoving_a 
+
+  void fort_alloc_simd_vec();
+  void fort_dealloc_simd_vec();
+
+  void fort_integrate_comoving_a
     (amrex::Real* old_a, amrex::Real* new_a, amrex::Real* dt);
 
   void fort_integrate_comoving_a_to_z 
     (amrex::Real* old_a, amrex::Real* z_value, amrex::Real* dt);
 
-  void fort_get_omm    (amrex::Real* omm);
-  void fort_get_omb    (amrex::Real* frac);
-  void fort_get_hubble (amrex::Real* hubble);
+  void set_simd(const int *simd_width);
+
+  //  void fort_get_omm    (amrex::Real* omm);
+  //  void fort_get_omb    (amrex::Real* frac);
+  //  void fort_get_hubble (amrex::Real* hubble);
+
+  void fort_set_omm    (const amrex::Real& omm);
+  void fort_set_omb    (const amrex::Real& frac);
+  void fort_set_hubble (const amrex::Real& hubble);
 
   void fort_estdt
     (const BL_FORT_FAB_ARG(state),
@@ -30,14 +40,16 @@ extern "C"
   void fort_get_method_params(int* HYP_GROW);
 
   void fort_set_method_params
-    (const int& dm, const int& NumAdv, const int& do_hydro,
+    (const int& dm, const int& NumAdv, const int& Ndiag, const int& do_hydro,
      const int& ppm_type, const int& ppm_ref,
      const int& ppm_flatten_before_integrals,
      const int& use_colglaz, const int& use_flattening,
      const int& corner_coupling,
      const int& version_2, const int& use_const_species,
      const amrex::Real& gamma_in, const int& normalize_species,
-     const int& heat_cool_type, const MPI_Comm& comm);
+     const int& heat_cool_type, const int& inhomo_reion);
+
+  void fort_tabulate_rates();
 
   void filcc
     (const amrex::Real * q, ARLIM_P(q_lo), ARLIM_P(q_hi),
@@ -242,8 +254,20 @@ extern "C"
      amrex::Real* comoving_a,
      const int* print_fortran_warnings);
 
-  void fort_init_this_z
-    (amrex::Real* comoving_a);
+  void fort_compute_temp_vec
+    (const int lo[], const int hi[],
+     const BL_FORT_FAB_ARG(state),
+     const BL_FORT_FAB_ARG(diag_eos),
+     amrex::Real* comoving_a,
+     const int* print_fortran_warnings);
+
+  void fort_interp_to_this_z
+    (const amrex::Real* z);
+
+  void fort_setup_eos_params
+    (amrex::Real* eos_nr_eps,
+     amrex::Real* vode_rtol,
+     amrex::Real* vode_atol_scaled);
 
   void fort_compute_max_temp_loc
     (const int lo[], const int hi[],
@@ -257,7 +281,7 @@ extern "C"
      const BL_FORT_FAB_ARG(state),
      const BL_FORT_FAB_ARG(diag_eos),
      amrex::Real* rho_ave, amrex::Real* rho_T_sum, amrex::Real* T_sum,
-     amrex::Real* T_meanrho_sum, amrex::Real* rho_sum,
+     amrex::Real* Tinv_sum, amrex::Real* T_meanrho_sum, amrex::Real* rho_sum,
      amrex::Real* vol_sum, amrex::Real* vol_mn_sum);
 
 #ifdef AUX_UPDATE
@@ -277,4 +301,5 @@ extern "C"
 #ifdef __cplusplus
 }
 #endif
+
 #endif

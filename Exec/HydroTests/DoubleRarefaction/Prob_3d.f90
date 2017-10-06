@@ -3,7 +3,6 @@
 
       use amrex_fort_module, only : rt => amrex_real
       use probdata_module
-      use comoving_module
       use meth_params_module, only : gamma_minus_1
       use network   , only : network_init
       implicit none
@@ -15,7 +14,7 @@
       real(rt) vctr
       integer untin,i
 
-      namelist /fortin/ comoving_OmM, comoving_OmB, comoving_h, &
+      namelist /fortin/ &
            p_l, u_l, rho_l, p_r, u_r, rho_r, frac, idir, &
            denerr,  dengrad,  max_denerr_lev,  max_dengrad_lev, &
            velgrad,  max_velgrad_lev, &

@@ -315,50 +315,97 @@ module comoving_nd_module
 
       end subroutine enforce_final_a
 
+! ! :::
+! ! ::: ----------------------------------------------------------------
+! ! :::
+
+!       subroutine fort_get_omb(frac) &
+!          bind(C, name="fort_get_omb")
+
+!         use comoving_module, only: comoving_OmB, comoving_OmM
+
+!         real(rt) :: frac
+
+!         frac = comoving_OmB / comoving_OmM
+
+!       end subroutine fort_get_omb
+
+
+! ! :::
+! ! ::: ----------------------------------------------------------------
+! ! :::
+
+!       subroutine fort_get_omm(omm) &
+!          bind(C, name="fort_get_omm")
+
+!         use comoving_module, only: comoving_OmM
+
+!         real(rt) :: omm
+
+!         omm = comoving_OmM
+
+!       end subroutine fort_get_omm
+
+! ! :::
+! ! ::: ----------------------------------------------------------------
+! ! :::
+
+!       subroutine fort_get_hubble(hubble) &
+!          bind(C, name="fort_get_hubble")
+
+!         use comoving_module, only: comoving_h
+
+!         real(rt) :: hubble
+
+!         hubble = comoving_h
+
+!       end subroutine fort_get_hubble
+
+
 ! :::
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine fort_get_omb(frac) &
-         bind(C, name="fort_get_omb")
+      subroutine fort_set_omb(omb) &
+         bind(C, name="fort_set_omb")
 
-        use comoving_module, only: comoving_OmB, comoving_OmM
+        use comoving_module, only: comoving_OmB
 
-        real(rt) :: frac
+        real(rt), intent(in) :: omb
 
-        frac = comoving_OmB / comoving_OmM
+        comoving_OmB = omb
 
-      end subroutine fort_get_omb
+      end subroutine fort_set_omb
 
 
 ! :::
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine fort_get_omm(omm) &
-         bind(C, name="fort_get_omm")
+      subroutine fort_set_omm(omm) &
+         bind(C, name="fort_set_omm")
 
         use comoving_module, only: comoving_OmM
 
-        real(rt) :: omm
+        real(rt), intent(in) :: omm
 
-        omm = comoving_OmM
+        comoving_OmM = omm
 
-      end subroutine fort_get_omm
+      end subroutine fort_set_omm
 
 ! :::
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine fort_get_hubble(hubble) &
-         bind(C, name="fort_get_hubble")
+      subroutine fort_set_hubble(hubble) &
+         bind(C, name="fort_set_hubble")
 
         use comoving_module, only: comoving_h
 
-        real(rt) :: hubble
+        real(rt), intent(in) :: hubble
 
-        hubble = comoving_h
+        comoving_h = hubble
 
-      end subroutine fort_get_hubble
+      end subroutine fort_set_hubble
 
 end module comoving_nd_module
