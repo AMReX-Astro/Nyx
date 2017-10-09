@@ -445,6 +445,47 @@
 ! ::: ----------------------------------------------------------------
 ! :::
 
+      subroutine fort_init_zhi(lo, hi, &
+           nd, diag_eos,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3, &
+           ratio, zhi, z_l1, z_l2, z_l3, z_h1, z_h2, z_h3) &
+           bind(C, name="fort_init_zhi")
+
+        use amrex_fort_module,  only : rt => amrex_real
+        use meth_params_module, only : ZHI_COMP
+
+        implicit none
+
+        integer ratio, nd
+        integer lo(3), hi(3)
+        integer d_l1,d_l2,d_l3,d_h1,d_h2,d_h3
+        integer z_l1,z_l2,z_l3,z_h1,z_h2,z_h3
+        real(rt) diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,nd)
+        real(rt)      zhi(z_l1:z_h1,z_l2:z_h2,z_l3:z_h3)
+
+        integer i, j, k, ic, jc, kc
+
+        if (ZHI_COMP .gt. -1) then
+
+           do k = lo(3), hi(3)
+              kc = k / ratio
+              do j = lo(2), hi(2)
+                 jc = j / ratio
+                 do i = lo(1), hi(1)
+                    ic = i / ratio
+                    diag_eos(i,j,k, ZHI_COMP) = zhi(ic, jc, kc)
+                 end do
+              end do
+           end do
+
+        end if
+
+   end subroutine fort_init_zhi
+
+
+! :::
+! ::: ----------------------------------------------------------------
+! :::
+
       ! Get density component number from state data MultiFab. Useful
       ! for accessing MultiFabs in C++.
 

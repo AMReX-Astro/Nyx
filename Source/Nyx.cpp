@@ -122,13 +122,16 @@ Real Nyx::comoving_h;
 int Nyx::do_hydro = -1;
 int Nyx::add_ext_src = 0;
 int Nyx::heat_cool_type = 0;
-int Nyx::inhomo_reion = 0;
 int Nyx::strang_split = 0;
 
 Real Nyx::average_gas_density = 0;
 Real Nyx::average_dm_density = 0;
 Real Nyx::average_neutr_density = 0;
 Real Nyx::average_total_density = 0;
+
+int         Nyx::inhomo_reion = 0;
+std::string Nyx::inhomo_zhi_file = "";
+int         Nyx::inhomo_grid = -1;
 
 // Real Nyx::ave_lev_vorticity[10];
 // Real Nyx::std_lev_vorticity[10];
@@ -389,6 +392,11 @@ Nyx::read_params ()
     pp.query("use_exact_gravity", use_exact_gravity);
 
     pp.query("inhomo_reion", inhomo_reion);
+
+    if (inhomo_reion) {
+        pp.get("inhomo_zhi_file", inhomo_zhi_file);
+        pp.get("inhomo_grid", inhomo_grid);
+    }
 
 #ifdef HEATCOOL
     if (heat_cool_type > 0 && add_ext_src == 0)

@@ -709,6 +709,8 @@ Nyx::init_santa_barbara (int init_sb_vels)
                  gridloc.lo(), gridloc.hi());
         }
 
+        if (inhomo_reion) init_zhi();
+
         // Add the particle density to the gas density 
         MultiFab::Add(S_new, *particle_mf[level], 0, Density, 1, S_new.nGrow());
 

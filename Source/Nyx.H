@@ -210,6 +210,11 @@ public:
     //
     void comoving_a_post_restart(const std::string& restart_file);
 
+    //
+    // Initialize the zhi component of the EOS from a binary input file
+    //
+    void init_zhi ();
+
 #ifdef GRAVITY
     //
     // Initialize the Santa Barbara problem
@@ -676,6 +681,8 @@ protected:
 
     // specifies inhomogeneous reionization type
     static int inhomo_reion;
+    static std::string inhomo_zhi_file;
+    static int inhomo_grid;
 
     // permits forcing to be switched on and off
     static int do_forcing;
