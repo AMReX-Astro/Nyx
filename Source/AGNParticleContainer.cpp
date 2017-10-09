@@ -154,7 +154,7 @@ AGNParticleContainer::moveKick (MultiFab&       acceleration,
 void AGNParticleContainer::ComputeOverlap(int lev)
 {
     BL_PROFILE("AGNParticleContainer::ComputeOverlap()");
-    Array<int> my_id;
+    Vector<int> my_id;
 
     const Real* dx = Geom(lev).CellSize();
 
@@ -175,7 +175,7 @@ void AGNParticleContainer::ComputeOverlap(int lev)
 void AGNParticleContainer::Merge(int lev)
 {
     BL_PROFILE("AGNParticleContainer::Merge()");
-    Array<int> my_id;
+    Vector<int> my_id;
 
     const Real* dx = Geom(lev).CellSize();
 
@@ -418,7 +418,7 @@ void AGNParticleContainer::packNeighborParticle(int lev,
             std::memcpy(&ghosts[dst_index][old_size], &particle, pdata_size);
         } else {
             NeighborCommTag tag(who, neighbor_grid, neighbor_tile);
-            Array<char>& buffer = ghosts_to_comm[tag];
+            Vector<char>& buffer = ghosts_to_comm[tag];
             size_t old_size = buffer.size();
             size_t new_size = buffer.size() + pdata_size;
             buffer.resize(new_size);
@@ -441,19 +441,19 @@ void AGNParticleContainer::fillNeighborsMPI(NeighborCommMap& ghosts_to_comm)
     }
     
     // flatten all the data for each proc into a single buffer
-    // once this is done, each dst proc will have an Array<char>
+    // once this is done, each dst proc will have an Vector<char>
     // the buffer will be packed like:
     // ntiles, gid1, tid1, size1, data1....  gid2, tid2, size2, data2... etc. 
-    std::map<int, Array<char> > send_data;
+    std::map<int, Vector<char> > send_data;
     for (const auto& kv: ghosts_to_comm) {
-        Array<char>& buffer = send_data[kv.first.proc_id];
+        Vector<char>& buffer = send_data[kv.first.proc_id];
         buffer.resize(sizeof(int));
         std::memcpy(&buffer[0], &tile_counts[kv.first.proc_id], sizeof(int));
     }
     
     for (auto& kv : ghosts_to_comm) {
         int data_size = kv.second.size();
-        Array<char>& buffer = send_data[kv.first.proc_id];
+        Vector<char>& buffer = send_data[kv.first.proc_id];
         size_t old_size = buffer.size();
         size_t new_size = buffer.size() + 2*sizeof(int) + sizeof(int) + data_size;
         buffer.resize(new_size);
@@ -463,12 +463,12 @@ void AGNParticleContainer::fillNeighborsMPI(NeighborCommMap& ghosts_to_comm)
         std::memcpy(dst, &data_size,          sizeof(int)); dst += sizeof(int);
         if (data_size == 0) continue;
         std::memcpy(dst, &kv.second[0], data_size);
-        Array<char>().swap(kv.second);
+        Vector<char>().swap(kv.second);
     }
     
     // each proc figures out how many bytes it will send, and how
     // many it will receive
-    Array<long> snds(NProcs, 0), rcvs(NProcs, 0);
+    Vector<long> snds(NProcs, 0), rcvs(NProcs, 0);
     long num_snds = 0;
     for (const auto& kv : send_data) {
         num_snds      += kv.second.size();
@@ -493,8 +493,8 @@ void AGNParticleContainer::fillNeighborsMPI(NeighborCommMap& ghosts_to_comm)
     BL_COMM_PROFILE(BLProfiler::Alltoall, sizeof(long),
                     ParallelDescriptor::MyProc(), BLProfiler::AfterCall());
     
-    Array<int> RcvProc;
-    Array<std::size_t> rOffset; // Offset (in bytes) in the receive buffer
+    Vector<int> RcvProc;
+    Vector<std::size_t> rOffset; // Offset (in bytes) in the receive buffer
     
     std::size_t TotRcvBytes = 0;
     for (int i = 0; i < NProcs; ++i) {
@@ -506,13 +506,13 @@ void AGNParticleContainer::fillNeighborsMPI(NeighborCommMap& ghosts_to_comm)
     }
     
     const int nrcvs = RcvProc.size();
-    Array<MPI_Status>  stats(nrcvs);
-    Array<MPI_Request> rreqs(nrcvs);
+    Vector<MPI_Status>  stats(nrcvs);
+    Vector<MPI_Request> rreqs(nrcvs);
     
     const int SeqNum = ParallelDescriptor::SeqNum();
     
     // Allocate data for rcvs as one big chunk.
-    Array<char> recvdata(TotRcvBytes);
+    Vector<char> recvdata(TotRcvBytes);
     
     // Post receives.
     for (int i = 0; i < nrcvs; ++i) {

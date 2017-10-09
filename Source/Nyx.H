@@ -409,16 +409,16 @@ public:
     // Compute initial `dt'.
     //
     virtual void computeInitialDt(int finest_level, int sub_cycle,
-                                  amrex::Array<int>& n_cycle,
-                                  const amrex::Array<amrex::IntVect>& ref_ratio,
-                                  amrex::Array<amrex::Real>& dt_level, amrex::Real stop_time);
+                                  amrex::Vector<int>& n_cycle,
+                                  const amrex::Vector<amrex::IntVect>& ref_ratio,
+                                  amrex::Vector<amrex::Real>& dt_level, amrex::Real stop_time);
     //
     // Compute new `dt'.
     //
     virtual void computeNewDt(int finest_level, int sub_cycle,
-                              amrex::Array<int>& n_cycle,
-                              const amrex::Array<amrex::IntVect>& ref_ratio,
-                              amrex::Array<amrex::Real>& dt_min, amrex::Array<amrex::Real>& dt_level,
+                              amrex::Vector<int>& n_cycle,
+                              const amrex::Vector<amrex::IntVect>& ref_ratio,
+                              amrex::Vector<amrex::Real>& dt_min, amrex::Vector<amrex::Real>& dt_level,
                               amrex::Real stop_time, int post_regrid_flag);
 
     //
@@ -462,7 +462,7 @@ public:
     //   the list of tagged points
     //
     virtual void manual_tags_placement (amrex::TagBoxArray&    tags,
-                                        const amrex::Array<amrex::IntVect>& bf_lev) override;
+                                        const amrex::Vector<amrex::IntVect>& bf_lev) override;
 
     // Returns a amrex::MultiFab containing the derived data for this level. The user
     // is responsible for deleting this pointer when done with it. If
@@ -499,9 +499,9 @@ public:
     void advance_aux(amrex::Real time, amrex::Real dt);
 #endif
 
-    static amrex::Array<NyxParticleContainerBase*>& theActiveParticles();
-    static amrex::Array<NyxParticleContainerBase*>& theVirtualParticles();
-    static amrex::Array<NyxParticleContainerBase*>& theGhostParticles();
+    static amrex::Vector<NyxParticleContainerBase*>& theActiveParticles();
+    static amrex::Vector<NyxParticleContainerBase*>& theVirtualParticles();
+    static amrex::Vector<NyxParticleContainerBase*>& theGhostParticles();
 
     static DarkMatterParticleContainer* theDMPC();
     static DarkMatterParticleContainer* theVirtPC();
@@ -593,7 +593,7 @@ protected:
 
     void compute_average_density();
     void compute_average_temperature(amrex::Real& average_temperature);
-    void compute_average_species(int nspec, int naux, amrex::Array<amrex::Real>& average_species);
+    void compute_average_species(int nspec, int naux, amrex::Vector<amrex::Real>& average_species);
 
     void set_small_values();
 #endif
@@ -662,8 +662,8 @@ protected:
 
     static amrex::IntVect Nrep;  // how many times the initial conditions are replicated in each direction
 
-    static amrex::Array<amrex::Real> plot_z_values;      // These are the value of "z" at which to dump plotfiles.
-    static amrex::Array<amrex::Real> analysis_z_values;  // These are the value of "z" at which to perform analysis
+    static amrex::Vector<amrex::Real> plot_z_values;      // These are the value of "z" at which to dump plotfiles.
+    static amrex::Vector<amrex::Real> analysis_z_values;  // These are the value of "z" at which to perform analysis
 
     bool FillPatchedOldState_ok;
 

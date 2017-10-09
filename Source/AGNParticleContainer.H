@@ -36,7 +36,7 @@ public:
 
     using MyParIter = amrex::ParIter<3+BL_SPACEDIM>;
     using PairIndex = std::pair<int, int>;
-    using NeighborCommMap = std::map<NeighborCommTag, amrex::Array<char> >;
+    using NeighborCommMap = std::map<NeighborCommTag, amrex::Vector<char> >;
 
     AGNParticleContainer (amrex::Amr* amr, int nghost)
       : NyxParticleContainer<3+BL_SPACEDIM>(amr),
@@ -188,7 +188,7 @@ private:
     int ng;
     amrex::FabArray<amrex::BaseFab<int> > mask;
     bool mask_defined;
-    std::map<PairIndex, amrex::Array<char> > ghosts;
+    std::map<PairIndex, amrex::Vector<char> > ghosts;
 };
 
 #endif /* _AGNParticleContainer_H_ */

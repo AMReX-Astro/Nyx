@@ -99,7 +99,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
         // coarse-fine distribution of particles correct.
-        Array<std::unique_ptr<MultiFab> > particle_mf;
+        Vector<std::unique_ptr<MultiFab> > particle_mf;
         Nyx::theDMPC()->AssignDensity(particle_mf);
 
         for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
@@ -121,7 +121,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
         // coarse-fine distribution of particles correct.
-        Array<std::unique_ptr<MultiFab> > particle_mf;
+        Vector<std::unique_ptr<MultiFab> > particle_mf;
         Nyx::theAPC()->AssignDensity(particle_mf);
 
         for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
@@ -144,7 +144,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
         // coarse-fine distribution of particles correct.
-        Array<std::unique_ptr<MultiFab> > particle_mf;
+        Vector<std::unique_ptr<MultiFab> > particle_mf;
         Nyx::theNPC()->AssignDensity(particle_mf);
 
         for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
@@ -170,7 +170,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
         // coarse-fine distribution of particles correct.
-        Array<std::unique_ptr<MultiFab> > particle_mf;
+        Vector<std::unique_ptr<MultiFab> > particle_mf;
         Nyx::theDMPC()->AssignDensity(particle_mf);
        
         for (int lev = parent->finestLevel()-1; lev >= 0; lev--)

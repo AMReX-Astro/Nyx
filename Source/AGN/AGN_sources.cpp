@@ -22,10 +22,10 @@ Nyx::get_old_source (Real      old_time,
 
 #if 0
     // Find the current particle locations
-    Array<Real> part_locs_and_mass;
+    Vector<Real> part_locs_and_mass;
     Nyx::theAPC()->GetParticleLocationsAndMass(part_locs_and_mass);
  
-    Array<Real> part_data;
+    Vector<Real> part_data;
     Nyx::theAPC()->GetParticleData(part_data);
 
     for (FillPatchIterator 
@@ -75,12 +75,12 @@ Nyx::get_new_source (Real      old_time,
 
 #if 0
     // Find the current particle locations
-    Array<Real> part_locs_and_mass;
+    Vector<Real> part_locs_and_mass;
     Nyx::theAPC()->GetParticleLocationsAndMass(part_locs_and_mass);
     std::cout << "AGN LOCS " << part_locs_and_mass[0] << " " << part_locs_and_mass[1] << " " 
                              << part_locs_and_mass[2] << " " << part_locs_and_mass[3] << std::endl;
  
-    Array<Real> part_data;
+    Vector<Real> part_data;
     Nyx::theAPC()->GetParticleData(part_data);
     std::cout << "AGN DATA(V) " << part_data[0] << " " << part_data[1] << " " << part_data[2] << std::endl;
     std::cout << "AGN DATA(A) " << part_data[3] << " " << part_data[4] << " " << part_data[5] << std::endl;

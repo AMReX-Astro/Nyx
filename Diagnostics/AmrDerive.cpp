@@ -86,7 +86,7 @@ main (int   argc,
     if (ParallelDescriptor::IOProcessor())
         std::cout << "... finest level " << finestLevel << std::endl;
 
-    Array<int> comps;
+    Vector<int> comps;
     if (int nc = pp.countval("comps"))
     {
         comps.resize(nc);
@@ -106,9 +106,9 @@ main (int   argc,
     }
 
     int nComp = comps.size();
-    const Array<string>& plotVarNames=amrData.PlotVarNames();
-    Array<string> inVarNames(nComp);
-    Array<int> destFillComps(nComp);
+    const Vector<string>& plotVarNames=amrData.PlotVarNames();
+    Vector<string> inVarNames(nComp);
+    Vector<int> destFillComps(nComp);
     for (int i=0; i<nComp; ++i)
     {
         inVarNames[i] = plotVarNames[comps[i]];
@@ -174,7 +174,7 @@ main (int   argc,
                 ivhi[dir] = plane;
 
                 Box subbox(ivlo,ivhi);
-                Array<Real> thisSum(nComp);
+                Vector<Real> thisSum(nComp);
                 for (int n=0; n<nComp; ++n)
                     thisSum[n] = fab.sum(subbox,n,1);
 
