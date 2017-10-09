@@ -134,6 +134,8 @@ Nyx::init_zhi ()
     const int prob_res = geom.Domain().longside();
     const int ratio = prob_res / file_res;
 
+    BL_ASSERT(ratio >= 1);
+
     MultiFab& D_new = get_new_data(DiagEOS_Type);
     int nd = D_new.nComp();
 
