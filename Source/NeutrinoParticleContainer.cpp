@@ -4,13 +4,13 @@ using namespace amrex;
 
 #ifdef NEUTRINO_PARTICLES
 void
-NeutrinoParticleContainer::AssignDensity (Array<std::unique_ptr<MultiFab> >& mf, int lev_min, int ncomp, int finest_level) const 
+NeutrinoParticleContainer::AssignDensity (Vector<std::unique_ptr<MultiFab> >& mf, int lev_min, int ncomp, int finest_level) const 
 {
     AssignRelativisticDensity (mf,lev_min,ncomp,finest_level);
 }
 
 void
-NeutrinoParticleContainer::AssignRelativisticDensity (Array<std::unique_ptr<MultiFab> >& mf_to_be_filled, 
+NeutrinoParticleContainer::AssignRelativisticDensity (Vector<std::unique_ptr<MultiFab> >& mf_to_be_filled, 
                                                       int               lev_min,
                                                       int               ncomp,
                                                       int               finest_level) const
@@ -54,7 +54,7 @@ NeutrinoParticleContainer::AssignRelativisticDensity (Array<std::unique_ptr<Mult
 	}
     }
 
-    Array<std::unique_ptr<MultiFab> > mf_part;
+    Vector<std::unique_ptr<MultiFab> > mf_part;
     if (!all_grids_the_same)
     { 
         // Create the space for the temporary, mf_part
@@ -101,21 +101,21 @@ NeutrinoParticleContainer::AssignRelativisticDensity (Array<std::unique_ptr<Mult
     //
     const int M = D_TERM(2,+2,+4);
 
-    Array<int>     cgrid(M);
-    Array<int>    cwhich(M),  fwhich(M);
-    Array<Real>    fracs(M),  cfracs(M);
-    Array<IntVect> cells(M),  ccells(M), cfshifts(M);
+    Vector<int>     cgrid(M);
+    Vector<int>    cwhich(M),  fwhich(M);
+    Vector<Real>    fracs(M),  cfracs(M);
+    Vector<IntVect> cells(M),  ccells(M), cfshifts(M);
 
     ParticleType pb;
     //
     // I'm going to allocate these badboys here & pass'm into routines that use'm.
     // This should greatly cut down on memory allocation/deallocation.
     //
-    Array<IntVect>                    pshifts(27);
+    Vector<IntVect>                    pshifts(27);
     std::vector< std::pair<int,Box> > isects;
-    Array<int>                        fgrid(M);
-    Array<Real>                       ffracs(M);
-    Array<IntVect>                    fcells;
+    Vector<int>                        fgrid(M);
+    Vector<Real>                       ffracs(M);
+    Vector<IntVect>                    fcells;
     //
     // "fvalid" contains all the valid region of the MultiFab at this level, together
     // with any ghost cells lying outside the domain, that can be periodically shifted into the
@@ -1053,8 +1053,8 @@ NeutrinoParticleContainer::AssignRelativisticDensitySingleLevel (MultiFab& mf_to
     // then oh well ....
     //
     // TODO: implement tiling with OpenMP in this grid loop.
-    Array<int>         pgrd(ngrids);
-    Array<const PBox*> pbxs(ngrids);
+    Vector<int>         pgrd(ngrids);
+    Vector<const PBox*> pbxs(ngrids);
 
     int j = 0;
     for (typename PMap::const_iterator pmap_it = pmap.begin(), pmapEnd = pmap.end();
@@ -1070,8 +1070,8 @@ NeutrinoParticleContainer::AssignRelativisticDensitySingleLevel (MultiFab& mf_to
         const PBox& pbx = *pbxs[j];
         FArrayBox&  fab = (*mf_pointer)[pgrd[j]];
 
-        Array<Real>    fracs;
-        Array<IntVect> cells;
+        Vector<Real>    fracs;
+        Vector<IntVect> cells;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) private(fracs,cells) shared(plo,dx,dx_particle,gm,fab,ncomp,pbx)

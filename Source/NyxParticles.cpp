@@ -38,15 +38,15 @@ namespace
     //
     // Array of containers for all active particles
     //
-    Array<NyxParticleContainerBase*> ActiveParticles;
+    Vector<NyxParticleContainerBase*> ActiveParticles;
     //
     // Array of containers for all virtual particles
     //
-    Array<NyxParticleContainerBase*> VirtualParticles;
+    Vector<NyxParticleContainerBase*> VirtualParticles;
     //
     // Array of containers for all ghost particles
     //
-    Array<NyxParticleContainerBase*> GhostParticles;
+    Vector<NyxParticleContainerBase*> GhostParticles;
 
     //
     // Containers for the real "active" Particles
@@ -138,19 +138,19 @@ Real Nyx::neutrino_cfl = 0.5;
 
 IntVect Nyx::Nrep;
 
-Array<NyxParticleContainerBase*>&
+Vector<NyxParticleContainerBase*>&
 Nyx::theActiveParticles ()
 {
     return ActiveParticles;
 }
 
-Array<NyxParticleContainerBase*>&
+Vector<NyxParticleContainerBase*>&
 Nyx::theGhostParticles ()
 {
     return GhostParticles;
 }
 
-Array<NyxParticleContainerBase*>&
+Vector<NyxParticleContainerBase*>&
 Nyx::theVirtualParticles ()
 {
     return VirtualParticles;
@@ -639,7 +639,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
             DMPC->MultiplyParticleMass(level, omfrac);
 	}
 
-        Array<std::unique_ptr<MultiFab> > particle_mf(1);
+        Vector<std::unique_ptr<MultiFab> > particle_mf(1);
         if (init_sb_vels == 1)
         {
             if (init_with_sph_particles == 1) {
@@ -923,8 +923,8 @@ Nyx::particle_redistribute (int lbase, bool init)
         //
         // These are usually the BoxArray and DMap from the last regridding.
         //
-        static Array<BoxArray>            ba;
-        static Array<DistributionMapping> dm;
+        static Vector<BoxArray>            ba;
+        static Vector<DistributionMapping> dm;
 
         bool    changed      = false;
         bool dm_changed      = false;

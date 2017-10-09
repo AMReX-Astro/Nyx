@@ -39,7 +39,7 @@ Nyx::ReadPlotFile (bool               first,
         DataServices::Dispatch(DataServices::ExitRequest, NULL);
     
     AmrData&                 amrData    = dataServices.AmrDataRef();
-    const Array<std::string> plotnames  = amrData.PlotVarNames();
+    const Vector<std::string> plotnames  = amrData.PlotVarNames();
 
     // Sanity checks
     for (int i = 0; i < BL_SPACEDIM; i++)

@@ -18,17 +18,17 @@ Nyx::moveKickDriftExact (Real dt)
     std::cout  << "Doing exact moveKickDrift " << std::endl;
 
     // Find the current particle locations
-    Array<Real> part_locs;
+    Vector<Real> part_locs;
     Nyx::theDMPC()->GetParticleLocations(part_locs);
 
     // Find the current particle masses
-    Array<Real> part_mass;
+    Vector<Real> part_mass;
     int start_comp = 0;
     int   num_comp = 1;
     Nyx::theDMPC()->GetParticleData(part_mass,start_comp,num_comp);
  
     // Find the current particle velocity components 
-    Array<Real> part_vels;
+    Vector<Real> part_vels;
     start_comp = 1;
       num_comp = BL_SPACEDIM;
     Nyx::theDMPC()->GetParticleData(part_vels,start_comp,num_comp);
@@ -89,17 +89,17 @@ Nyx::moveKickExact (Real dt)
     std::cout  << "Doing exact moveKick " << std::endl;
 
     // Find the current particle locations
-    Array<Real> part_locs;
+    Vector<Real> part_locs;
     Nyx::theDMPC()->GetParticleLocations(part_locs);
 
     // Find the current particle masses
-    Array<Real> part_mass;
+    Vector<Real> part_mass;
     int start_comp = 0;
     int   num_comp = 1;
     Nyx::theDMPC()->GetParticleData(part_mass,start_comp,num_comp);
 
     // Find the current velocity components
-    Array<Real> part_vels;
+    Vector<Real> part_vels;
     start_comp = 1;
       num_comp = BL_SPACEDIM;
     Nyx::theDMPC()->GetParticleData(part_vels,start_comp,num_comp);

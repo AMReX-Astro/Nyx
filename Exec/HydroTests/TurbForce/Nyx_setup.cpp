@@ -275,8 +275,8 @@ Nyx::hydro_setup()
                            store_in_checkpoint);
 #endif
 
-    Array<BCRec> bcs(NUM_STATE);
-    Array<std::string> name(NUM_STATE);
+    Vector<BCRec> bcs(NUM_STATE);
+    Vector<std::string> name(NUM_STATE);
 
     BCRec bc;
     cnt = 0;
@@ -301,12 +301,12 @@ Nyx::hydro_setup()
     }
 
     // Get the species names from the network model.
-    Array<std::string> spec_names(NumSpec);
+    Vector<std::string> spec_names(NumSpec);
 
     for (int i = 0; i < NumSpec; i++)
     {
         int len = 20;
-        Array<int> int_spec_names(len);
+        Vector<int> int_spec_names(len);
 
         // This call return the actual length of each string in "len"
         fort_get_spec_names
@@ -336,12 +336,12 @@ Nyx::hydro_setup()
     }
 
     // Get the auxiliary names from the network model.
-    Array<std::string> aux_names(NumAux);
+    Vector<std::string> aux_names(NumAux);
 
     for (int i = 0; i < NumAux; i++)
     {
         int len = 20;
-        Array<int> int_aux_names(len);
+        Vector<int> int_aux_names(len);
 
         // This call return the actual length of each string in "len"
         fort_get_aux_names
