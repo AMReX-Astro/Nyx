@@ -73,8 +73,8 @@ Real Nyx::new_a      = -1.0;
 Real Nyx::old_a_time = -1.0;
 Real Nyx::new_a_time = -1.0;
 
-Array<Real> Nyx::plot_z_values;
-Array<Real> Nyx::analysis_z_values;
+Vector<Real> Nyx::plot_z_values;
+Vector<Real> Nyx::analysis_z_values;
 
 bool Nyx::dump_old = false;
 int Nyx::verbose      = 0;
@@ -122,13 +122,16 @@ Real Nyx::comoving_h;
 int Nyx::do_hydro = -1;
 int Nyx::add_ext_src = 0;
 int Nyx::heat_cool_type = 0;
-int Nyx::inhomo_reion = 0;
 int Nyx::strang_split = 0;
 
 Real Nyx::average_gas_density = 0;
 Real Nyx::average_dm_density = 0;
 Real Nyx::average_neutr_density = 0;
 Real Nyx::average_total_density = 0;
+
+int         Nyx::inhomo_reion = 0;
+std::string Nyx::inhomo_zhi_file = "";
+int         Nyx::inhomo_grid = -1;
 
 // Real Nyx::ave_lev_vorticity[10];
 // Real Nyx::std_lev_vorticity[10];
@@ -269,7 +272,7 @@ Nyx::read_params ()
 #endif
 
     // Get boundary conditions
-    Array<int> lo_bc(BL_SPACEDIM), hi_bc(BL_SPACEDIM);
+    Vector<int> lo_bc(BL_SPACEDIM), hi_bc(BL_SPACEDIM);
     pp.getarr("lo_bc", lo_bc, 0, BL_SPACEDIM);
     pp.getarr("hi_bc", hi_bc, 0, BL_SPACEDIM);
     for (int i = 0; i < BL_SPACEDIM; i++)
@@ -377,7 +380,7 @@ Nyx::read_params ()
       amrex::Print() << "      Use at your own risk.                        " << std::endl;
       amrex::Print() << "                                                   " << std::endl;
       amrex::Print() << "----- WARNING WARNING WARNING WARNING WARNING -----" << std::endl;
-      Array<int> n_cell(BL_SPACEDIM);
+      Vector<int> n_cell(BL_SPACEDIM);
       ParmParse pp("amr");
       pp.getarr("n_cell", n_cell, 0, BL_SPACEDIM);
       if (n_cell[0] % simd_width) {
@@ -389,6 +392,11 @@ Nyx::read_params ()
     pp.query("use_exact_gravity", use_exact_gravity);
 
     pp.query("inhomo_reion", inhomo_reion);
+
+    if (inhomo_reion) {
+        pp.get("inhomo_zhi_file", inhomo_zhi_file);
+        pp.get("inhomo_grid", inhomo_grid);
+    }
 
 #ifdef HEATCOOL
     if (heat_cool_type > 0 && add_ext_src == 0)
@@ -891,10 +899,10 @@ Nyx::est_time_step (Real dt_old)
 void
 Nyx::computeNewDt (int                   finest_level,
                    int                   sub_cycle,
-                   Array<int>&           n_cycle,
-                   const Array<IntVect>& ref_ratio,
-                   Array<Real>&          dt_min,
-                   Array<Real>&          dt_level,
+                   Vector<int>&           n_cycle,
+                   const Vector<IntVect>& ref_ratio,
+                   Vector<Real>&          dt_min,
+                   Vector<Real>&          dt_level,
                    Real                  stop_time,
                    int                   post_regrid_flag)
 {
@@ -1075,9 +1083,9 @@ Nyx::computeNewDt (int                   finest_level,
 void
 Nyx::computeInitialDt (int                   finest_level,
                        int                   sub_cycle,
-                       Array<int>&           n_cycle,
-                       const Array<IntVect>& ref_ratio,
-                       Array<Real>&          dt_level,
+                       Vector<int>&           n_cycle,
+                       const Vector<IntVect>& ref_ratio,
+                       Vector<Real>&          dt_level,
                        Real                  stop_time)
 {
     BL_PROFILE("Nyx::computeInitialDt()");
@@ -1333,7 +1341,7 @@ Nyx::post_timestep (int iteration)
             gravity->reflux_phi(level, dphi);
 
             // Compute (cross-level) gravity sync based on drho, dphi
-            Array<std::unique_ptr<MultiFab> > grad_delta_phi_cc(finest_level - level + 1);
+            Vector<std::unique_ptr<MultiFab> > grad_delta_phi_cc(finest_level - level + 1);
             for (int lev = level; lev <= finest_level; lev++)
             {
                 grad_delta_phi_cc[lev-level].reset(
@@ -1344,7 +1352,7 @@ Nyx::post_timestep (int iteration)
             }
 
             gravity->gravity_sync(level,finest_level,iteration,ncycle,drho_and_drhoU,dphi,
-				  amrex::GetArrOfPtrs(grad_delta_phi_cc));
+				  amrex::GetVecOfPtrs(grad_delta_phi_cc));
             dphi.clear();
 
             for (int lev = level; lev <= finest_level; lev++)
@@ -1936,7 +1944,7 @@ Nyx::errorEst (TagBoxArray& tags,
 #pragma omp parallel
 #endif
         {
-            Array<int> itags;
+            Vector<int> itags;
 
             for (MFIter mfi(*mf,true); mfi.isValid(); ++mfi)
             {
@@ -2244,7 +2252,7 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
 
 
       // ---- pack up the bools
-      Array<int> allBools;  // ---- just use ints here
+      Vector<int> allBools;  // ---- just use ints here
       if(scsMyId == ioProcNumSCS) {
         allBools.push_back(dump_old);
         allBools.push_back(do_dm_particles);
@@ -2266,7 +2274,7 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
 
 
       // ---- pack up the ints
-      Array<int> allInts;
+      Vector<int> allInts;
 
       if(scsMyId == ioProcNumSCS) {
         allInts.push_back(write_parameters_in_plotfile);
@@ -2385,7 +2393,7 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
 
 
       // ---- pack up the Reals
-      Array<Real> allReals;
+      Vector<Real> allReals;
       if(scsMyId == ioProcNumSCS) {
         allReals.push_back(initial_z);
         allReals.push_back(final_a);
@@ -2465,8 +2473,8 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
 
 
       // ---- pack up the strings
-      Array<std::string> allStrings;
-      Array<char> serialStrings;
+      Vector<std::string> allStrings;
+      Vector<char> serialStrings;
       if(scsMyId == ioProcNumSCS) {
         allStrings.push_back(particle_plotfile_format);
         allStrings.push_back(particle_init_type);
@@ -2491,11 +2499,11 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
       // ---- maps
       std::cout << "_in AddProcsToComp:  fix maps." << std::endl;
       //std::map<std::string,MultiFab*> auxDiag;
-      //static std::map<std::string,Array<std::string> > auxDiag_names;
+      //static std::map<std::string,Vector<std::string> > auxDiag_names;
 
 
       // ---- pack up the IntVects
-      Array<int> allIntVects;
+      Vector<int> allIntVects;
       if(scsMyId == ioProcNumSCS) {
         for(int i(0); i < BL_SPACEDIM; ++i)    { allIntVects.push_back(Nrep[i]); }
 
@@ -2517,7 +2525,7 @@ Nyx::AddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
 
 
       // ---- BCRec
-      Array<int> bcrLo(BL_SPACEDIM), bcrHi(BL_SPACEDIM);
+      Vector<int> bcrLo(BL_SPACEDIM), bcrHi(BL_SPACEDIM);
       if(scsMyId == ioProcNumSCS) {
         for(int i(0); i < bcrLo.size(); ++i) { bcrLo[i] = phys_bc.lo(i); }
         for(int i(0); i < bcrHi.size(); ++i) { bcrHi[i] = phys_bc.hi(i); }

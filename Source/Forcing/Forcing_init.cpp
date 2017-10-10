@@ -473,7 +473,7 @@ void StochasticForcing::read_params()
         }
         if (SpectralRank == 1) SolenoidalWeight = 0.0;
 
-        Array<int> input_int(SpectralRank);
+        Vector<int> input_int(SpectralRank);
 
         pp.getarr("alpha", input_int, 0, SpectralRank);
         for (int i = 0; i < SpectralRank; i++) {
@@ -487,7 +487,7 @@ void StochasticForcing::read_params()
             }
         }
 
-        Array<Real> input_real(SpectralRank);
+        Vector<Real> input_real(SpectralRank);
 
         pp.getarr("band_width", input_real, 0, SpectralRank);
         for (int i = 0; i < SpectralRank; i++)

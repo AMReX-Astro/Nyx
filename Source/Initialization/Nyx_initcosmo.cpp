@@ -115,7 +115,7 @@ void Nyx::initcosmo()
     std::string mfDirName;
 
     Real redshift=-1;
-    Array<int> n_part(BL_SPACEDIM);
+    Vector<int> n_part(BL_SPACEDIM);
 
     if (level > parent->useFixedUpToLevel())
     {
@@ -389,7 +389,7 @@ void Nyx::initcosmo()
      	S_new.mult(rhoB,  Density, 1, S_new.nGrow());
 
 //      //This block assigns "the same" density for the baryons as for the dm.
-//      Array<std::unique_ptr<MultiFab> > particle_mf;
+//      Vector<std::unique_ptr<MultiFab> > particle_mf;
 //      Nyx::theDMPC()->AssignDensity(particle_mf);
 //      particle_mf[0]->mult(comoving_OmB / comoving_OmD);
 //      S_new.copy(*particle_mf[0], 0, Density, 1);

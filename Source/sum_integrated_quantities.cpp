@@ -200,7 +200,7 @@ Nyx::compute_average_density ()
     // Define the dark matter density on all levels.
     if (Nyx::theDMPC())
     {
-        Array<std::unique_ptr<MultiFab> > particle_mf;
+        Vector<std::unique_ptr<MultiFab> > particle_mf;
         Nyx::theDMPC()->AssignDensity(particle_mf);
 
         // Note that we don't need to call the average_down routine because the 
@@ -217,7 +217,7 @@ Nyx::compute_average_density ()
 #ifdef NEUTRINO_PARTICLES
     if (Nyx::theNPC())
     {
-        Array<std::unique_ptr<MultiFab> > particle_mf;
+        Vector<std::unique_ptr<MultiFab> > particle_mf;
         Nyx::theNPC()->AssignDensity(particle_mf);
 
         // Note that we don't need to call the average_down routine because the 
@@ -290,7 +290,7 @@ Nyx::compute_average_temperature (Real& average_temperature)
 void
 Nyx::compute_average_species (int          nspec,
                               int          naux,
-                              Array<Real>& average_species)
+                              Vector<Real>& average_species)
 {
     if (use_const_species == 1)
     {
@@ -312,7 +312,7 @@ Nyx::compute_average_species (int          nspec,
         for (int i = 0; i < nspec+naux; i++)
         {
             int len = 20;
-            Array<int> int_names(len);
+            Vector<int> int_names(len);
             //
             // This call return the actual length of each string in "len"
             //

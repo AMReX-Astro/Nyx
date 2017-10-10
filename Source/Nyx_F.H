@@ -88,6 +88,11 @@ extern "C"
      const int& num_diag,  BL_FORT_FAB_ARG(diag_eos), const amrex::Real dx[],
      const amrex::Real xlo[], const amrex::Real xhi[]);
 
+  void fort_init_zhi
+    (const int* lo, const int* hi, 
+     const int& num_diag, BL_FORT_FAB_ARG(diag_eos),
+     const int& ratio, BL_FORT_FAB_ARG(zhi));
+
   void fort_check_initial_species
     (const int* lo, const int* hi, BL_FORT_FAB_ARG(state));
 

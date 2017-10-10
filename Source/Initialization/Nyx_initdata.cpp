@@ -128,6 +128,41 @@ Nyx::read_init_params ()
 }
 
 void
+Nyx::init_zhi ()
+{
+    const int file_res = inhomo_grid;
+    const int prob_res = geom.Domain().longside();
+    const int ratio = prob_res / file_res;
+
+    BL_ASSERT(ratio >= 1);
+
+    MultiFab& D_new = get_new_data(DiagEOS_Type);
+    int nd = D_new.nComp();
+
+    const BoxArray& ba = D_new.boxArray();
+    const DistributionMapping& dmap = D_new.DistributionMap();
+
+    BL_ASSERT(ba.coarsenable(ratio));
+    BoxArray coarse_ba = ba;
+    coarse_ba.coarsen(ratio);
+    MultiFab zhi(coarse_ba, dmap, 1, 0);
+
+    MultiFab zhi_from_file;
+    VisMF::Read(zhi, inhomo_zhi_file);
+    zhi.copy(zhi_from_file, geom.periodicity());
+
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
+    for (MFIter mfi(D_new); mfi.isValid(); ++mfi) {
+        const Box& tbx = mfi.tilebox();
+        fort_init_zhi(tbx.loVect(), tbx.hiVect(),
+                      nd, BL_TO_FORTRAN(D_new[mfi]),
+                      ratio, BL_TO_FORTRAN(zhi[mfi]));
+    }
+}
+
+void
 Nyx::initData ()
 {
     BL_PROFILE("Nyx::initData()");
@@ -183,8 +218,10 @@ Nyx::initData ()
                      dx, gridloc.lo(), gridloc.hi());
             }
 
-           compute_new_temp();
-           enforce_consistent_e(S_new);
+            if (inhomo_reion) init_zhi();
+
+            compute_new_temp();
+            enforce_consistent_e(S_new);
         }
         else
         {

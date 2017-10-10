@@ -65,7 +65,7 @@ Nyx::setPlotVariables ()
             for (int i = 0; i < NumSpec; i++)
             {
                 int len = 20;
-                Array<int> int_spec_names(len);
+                Vector<int> int_spec_names(len);
                 //
                 // This call return the actual length of each string in "len"
                 //
@@ -349,7 +349,7 @@ Nyx::writePlotFile (const std::string& dir,
           }
 
         jobInfoFile << " Boundary conditions\n";
-        Array<int> lo_bc_out(BL_SPACEDIM), hi_bc_out(BL_SPACEDIM);
+        Vector<int> lo_bc_out(BL_SPACEDIM), hi_bc_out(BL_SPACEDIM);
         ParmParse pp("nyx");
         pp.getarr("lo_bc",lo_bc_out,0,BL_SPACEDIM);
         pp.getarr("hi_bc",hi_bc_out,0,BL_SPACEDIM);

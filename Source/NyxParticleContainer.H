@@ -27,7 +27,7 @@ public:
     virtual amrex::Real sumParticleMass (int level) const = 0;
     virtual void AssignDensitySingleLevel (amrex::MultiFab& mf, int level, int ncomp=1,
 					   int particle_lvl_offset = 0) const = 0;
-    virtual void AssignDensity (amrex::Array<std::unique_ptr<amrex::MultiFab> >& mf, int lev_min = 0, int ncomp = 1,
+    virtual void AssignDensity (amrex::Vector<std::unique_ptr<amrex::MultiFab> >& mf, int lev_min = 0, int ncomp = 1,
 				int finest_level = -1) const = 0;
 };
 
@@ -47,8 +47,8 @@ public:
 
     virtual ~NyxParticleContainer () {}
 
-    void GetParticleVelocities (amrex::Array<amrex::Real>& part_vels);
-    void SetParticleVelocities (amrex::Array<amrex::Real>& part_data);
+    void GetParticleVelocities (amrex::Vector<amrex::Real>& part_vels);
+    void SetParticleVelocities (amrex::Vector<amrex::Real>& part_data);
 
     virtual amrex::Real sumParticleMass (int level) const override {
 	return amrex::AmrParticleContainer<NSR,NSI,NAR,NAI>::sumParticleMass(0,level);
@@ -60,7 +60,7 @@ public:
     { 
         amrex::AmrParticleContainer<NSR,NSI,NAR,NAI>::AssignCellDensitySingleLevelFort(0, mf, level, ncomp, particle_lvl_offset);
     }
-    virtual void AssignDensity (amrex::Array<std::unique_ptr<amrex::MultiFab> >& mf, int lev_min = 0, int ncomp = 1, int finest_level = -1) const override
+    virtual void AssignDensity (amrex::Vector<std::unique_ptr<amrex::MultiFab> >& mf, int lev_min = 0, int ncomp = 1, int finest_level = -1) const override
     {
         if (finestLevel() == 0) {
            amrex::AmrParticleContainer<NSR,NSI,NAR,NAI>::AssignDensityFort(0, mf, lev_min, ncomp, finest_level);
@@ -103,12 +103,12 @@ public:
 
 protected:
     bool sub_cycle;
-  amrex::Array<std::string> real_comp_names;
+  amrex::Vector<std::string> real_comp_names;
 };
 
 template <int NSR,int NSI,int NAR,int NAI>
 void
-NyxParticleContainer<NSR,NSI,NAR,NAI>::GetParticleVelocities (amrex::Array<amrex::Real>& part_data)
+NyxParticleContainer<NSR,NSI,NAR,NAI>::GetParticleVelocities (amrex::Vector<amrex::Real>& part_data)
 {
     BL_PROFILE("NyxParticleContainer<NSR,NSI,NAR,NAI>::GetParticleVelocities()");
     // This assumes that the mass/charge is stored in the first position 
@@ -120,7 +120,7 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::GetParticleVelocities (amrex::Array<amrex
 
 template <int NSR,int NSI,int NAR,int NAI>
 void
-NyxParticleContainer<NSR,NSI,NAR,NAI>::SetParticleVelocities (amrex::Array<amrex::Real>& part_data)
+NyxParticleContainer<NSR,NSI,NAR,NAI>::SetParticleVelocities (amrex::Vector<amrex::Real>& part_data)
 {
    BL_PROFILE("NyxParticleContainer<NSR,NSI,NAR,NSI>::SetParticleVelocities()");
    // This gives us the starting point into the part_data array
@@ -128,7 +128,7 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::SetParticleVelocities (amrex::Array<amrex
    int cnt = 0;
 
 #if BL_USE_MPI
-   amrex::Array<long> cnts(amrex::ParallelDescriptor::NProcs());
+   amrex::Vector<long> cnts(amrex::ParallelDescriptor::NProcs());
 
    // This returns the number of particles on this processor
    long lcnt = this->TotalNumberOfParticles(true,true);
@@ -267,7 +267,7 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
     tnum = omp_get_max_threads();
 #endif
 
-    amrex::Array<amrex::Real> ldt(tnum,1e50);
+    amrex::Vector<amrex::Real> ldt(tnum,1e50);
 
     long num_particles_at_level = 0;
 
