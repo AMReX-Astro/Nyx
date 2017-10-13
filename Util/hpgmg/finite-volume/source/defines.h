@@ -10,7 +10,7 @@
 //------------------------------------------------------------------------------------------------------------------------------
 #define  VECTOR_TEMP         0 // 
 #define  VECTOR_E            1 // error used in residual correction FMG
-#define  VECTOR_F_MINUS_AV   2 // cell centered residual (f-Av)
+#define  VECTOR_R            2 // cell centered residual (f-Av)
 //------------------------------------------------------------------------------------------------------------------------------
 #define  VECTOR_F            3 // original right-hand side (Au=f), cell centered
 #define  VECTOR_U            4 // numerical solution
