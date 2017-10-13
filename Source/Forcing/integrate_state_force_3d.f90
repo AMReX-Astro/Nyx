@@ -37,7 +37,7 @@ subroutine integrate_state_force(lo, hi, &
     use atomic_rates_module, only: XHYDROGEN
     use probdata_module, only: prob_lo, prob_hi, alpha, rho0, temp0
     use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, &
-                                   TEMP_COMP, NE_COMP, small_pres, small_temp, gamma_minus_1
+                                   NDIAG, TEMP_COMP, NE_COMP, small_pres, small_temp, gamma_minus_1
     use bl_constants_module, only : TWO, ONE, HALF, ZERO, M_PI, M_SQRT_2
     use fundamental_constants_module
  
@@ -50,7 +50,7 @@ subroutine integrate_state_force(lo, hi, &
     integer         , intent(in) :: s_l1, s_l2, s_l3, s_h1, s_h2, s_h3
     integer         , intent(in) :: d_l1, d_l2, d_l3, d_h1, d_h2, d_h3
     real(rt), intent(inout) ::    state(s_l1:s_h1, s_l2:s_h2,s_l3:s_h3, NVAR)
-    real(rt), intent(inout) :: diag_eos(d_l1:d_h1, d_l2:d_h2,d_l3:d_h3, 2)
+    real(rt), intent(inout) :: diag_eos(d_l1:d_h1, d_l2:d_h2,d_l3:d_h3, NDIAG)
     real(rt), intent(in)    :: dx(3), time, a, half_dt
 
     integer :: i, j, k

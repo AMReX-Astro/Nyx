@@ -38,15 +38,15 @@ namespace
     //
     // Array of containers for all active particles
     //
-    Array<NyxParticleContainerBase*> ActiveParticles;
+    Vector<NyxParticleContainerBase*> ActiveParticles;
     //
     // Array of containers for all virtual particles
     //
-    Array<NyxParticleContainerBase*> VirtualParticles;
+    Vector<NyxParticleContainerBase*> VirtualParticles;
     //
     // Array of containers for all ghost particles
     //
-    Array<NyxParticleContainerBase*> GhostParticles;
+    Vector<NyxParticleContainerBase*> GhostParticles;
 
     //
     // Containers for the real "active" Particles
@@ -112,6 +112,7 @@ namespace
 
 bool Nyx::do_dm_particles = false;
 int Nyx::num_particle_ghosts = 1;
+int Nyx::particle_skip_factor = 1;
 
 std::string Nyx::particle_init_type = "";
 std::string Nyx::particle_move_type = "";
@@ -137,19 +138,19 @@ Real Nyx::neutrino_cfl = 0.5;
 
 IntVect Nyx::Nrep;
 
-Array<NyxParticleContainerBase*>&
+Vector<NyxParticleContainerBase*>&
 Nyx::theActiveParticles ()
 {
     return ActiveParticles;
 }
 
-Array<NyxParticleContainerBase*>&
+Vector<NyxParticleContainerBase*>&
 Nyx::theGhostParticles ()
 {
     return GhostParticles;
 }
 
-Array<NyxParticleContainerBase*>&
+Vector<NyxParticleContainerBase*>&
 Nyx::theVirtualParticles ()
 {
     return VirtualParticles;
@@ -256,7 +257,7 @@ Nyx::read_particle_params ()
     pp.query("particle_initrandom_count_per_box", particle_initrandom_count_per_box);
     pp.query("particle_initrandom_mass", particle_initrandom_mass);
     pp.query("particle_initrandom_iseed", particle_initrandom_iseed);
-
+    pp.query("particle_skip_factor", particle_skip_factor);
     pp.query("ascii_particle_file", ascii_particle_file);
 
     // Input error check
@@ -289,10 +290,11 @@ Nyx::read_particle_params ()
 
     // Input error check
     if (!binary_particle_file.empty() && (particle_init_type != "BinaryFile" &&
-                                          particle_init_type != "BinaryMetaFile"))
+                                          particle_init_type != "BinaryMetaFile" && 
+					  particle_init_type != "BinaryMortonFile"))
     {
         if (ParallelDescriptor::IOProcessor())
-            std::cerr << "ERROR::particle_init_type is not BinaryFile or BinaryMetaFile but you specified binary_particle_file" << std::endl;
+            std::cerr << "ERROR::particle_init_type is not BinaryFile, BinaryMetaFile, or BinaryMortonFile but you specified binary_particle_file" << std::endl;
         amrex::Error();
     }
 
@@ -482,6 +484,24 @@ Nyx::init_particles ()
             if (init_with_sph_particles == 1)
                 SPHPC->InitFromBinaryMetaFile(sph_particle_file, BL_SPACEDIM + 1);
         }
+        else if (particle_init_type == "BinaryMortonFile")
+        {
+	  if (verbose)
+            {
+	      amrex::Print() << "\nInitializing DM particles from morton-ordered binary file\""
+			     << binary_particle_file << "\" ...\n\n";
+	      if (init_with_sph_particles == 1)
+		amrex::Error("Morton-ordered input is not supported for sph particles.");
+            }
+            //
+            // The second argument is how many Reals we read into `m_data[]`
+            // after reading in `m_pos[]` in each of the binary particle files.
+            // Here we're reading in the particle mass and velocity.
+            //
+	  DMPC->InitFromBinaryMortonFile(binary_particle_file,
+					 BL_SPACEDIM + 1,
+					 particle_skip_factor);
+        }
         else
         {
             amrex::Error("not a valid input for nyx.particle_init_type");
@@ -619,7 +639,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
             DMPC->MultiplyParticleMass(level, omfrac);
 	}
 
-        Array<std::unique_ptr<MultiFab> > particle_mf(1);
+        Vector<std::unique_ptr<MultiFab> > particle_mf(1);
         if (init_sb_vels == 1)
         {
             if (init_with_sph_particles == 1) {
@@ -688,6 +708,8 @@ Nyx::init_santa_barbara (int init_sb_vels)
                  nd,BL_TO_FORTRAN(D_new[mfi]), dx,
                  gridloc.lo(), gridloc.hi());
         }
+
+        if (inhomo_reion) init_zhi();
 
         // Add the particle density to the gas density 
         MultiFab::Add(S_new, *particle_mf[level], 0, Density, 1, S_new.nGrow());
@@ -903,8 +925,8 @@ Nyx::particle_redistribute (int lbase, bool init)
         //
         // These are usually the BoxArray and DMap from the last regridding.
         //
-        static Array<BoxArray>            ba;
-        static Array<DistributionMapping> dm;
+        static Vector<BoxArray>            ba;
+        static Vector<DistributionMapping> dm;
 
         bool    changed      = false;
         bool dm_changed      = false;

@@ -115,7 +115,7 @@ void Nyx::initcosmo()
     std::string mfDirName;
 
     Real redshift=-1;
-    Array<int> n_part(BL_SPACEDIM);
+    Vector<int> n_part(BL_SPACEDIM);
 
     if (level > parent->useFixedUpToLevel())
     {
@@ -124,8 +124,8 @@ void Nyx::initcosmo()
     	MultiFab& S_new = get_level(level).get_new_data(State_Type);
     	MultiFab& D_new = get_level(level).get_new_data(DiagEOS_Type);
 
-        FillCoarsePatch(S_new, 0, 0,   State_Type, 0, NUM_STATE);
-        FillCoarsePatch(D_new, 0, 0, DiagEOS_Type, 0, 2);
+        FillCoarsePatch(S_new, 0, 0,   State_Type, 0, S_new.nComp());
+        FillCoarsePatch(D_new, 0, 0, DiagEOS_Type, 0, D_new.nComp());
 	return;
     }
 
@@ -378,8 +378,8 @@ void Nyx::initcosmo()
 	//seems to have no effect...
 	if (level > 0)
 	{
-           FillCoarsePatch(S_new, 0, 0,   State_Type, 0, NUM_STATE);
-	   FillCoarsePatch(D_new, 0, 0, DiagEOS_Type, 0, 2);
+           FillCoarsePatch(S_new, 0, 0,   State_Type, 0, S_new.nComp());
+	   FillCoarsePatch(D_new, 0, 0, DiagEOS_Type, 0, D_new.nComp());
 	}
 
      	//copy density 
@@ -389,7 +389,7 @@ void Nyx::initcosmo()
      	S_new.mult(rhoB,  Density, 1, S_new.nGrow());
 
 //      //This block assigns "the same" density for the baryons as for the dm.
-//      Array<std::unique_ptr<MultiFab> > particle_mf;
+//      Vector<std::unique_ptr<MultiFab> > particle_mf;
 //      Nyx::theDMPC()->AssignDensity(particle_mf);
 //      particle_mf[0]->mult(comoving_OmB / comoving_OmD);
 //      S_new.copy(*particle_mf[0], 0, Density, 1);
@@ -421,6 +421,8 @@ void Nyx::initcosmo()
 
         D_new.setVal(tempInit, Temp_comp);
         D_new.setVal(0.0, Ne_comp);
+        if (inhomo_reion > 0)
+            D_new.setVal(0.0, Zhi_comp);
 
 #ifdef _OPENMP
 #pragma omp parallel

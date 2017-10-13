@@ -83,10 +83,11 @@ Nyx::read_init_params ()
 
     // Input error check
     if (!binary_particle_file.empty() && (particle_init_type != "BinaryFile" &&
-                                          particle_init_type != "BinaryMetaFile"))
+                                          particle_init_type != "BinaryMetaFile" && 
+					  particle_init_type != "BinaryMortonFile"))
     {
         if (ParallelDescriptor::IOProcessor())
-            std::cerr << "ERROR::particle_init_type is not BinaryFile or BinaryMetaFile but you specified binary_particle_file" << std::endl;
+            std::cerr << "ERROR::particle_init_type is not BinaryFile, BinaryMetaFile, or BinaryMortonFile but you specified binary_particle_file" << std::endl;
         amrex::Error();
     }
 
@@ -109,6 +110,56 @@ Nyx::read_init_params ()
         amrex::Error();
     }
 #endif
+
+#ifdef HEATCOOL
+    Real eos_nr_eps = 1.0e-6;
+    Real vode_rtol = 1.0e-4;
+    Real vode_atol_scaled = 1.0e-4;
+
+    // Tolerance for Newton-Raphson iteration of iterate_ne() in the EOS
+    pp.query("eos_nr_eps", eos_nr_eps);
+    // Relative tolerance of VODE integration
+    pp.query("vode_rtol", vode_rtol);
+    // Absolute tolerance of VODE integration (scaled by initial value of ODE)
+    pp.query("vode_atol_scaled", vode_atol_scaled);
+
+    fort_setup_eos_params(&eos_nr_eps, &vode_rtol, &vode_atol_scaled);
+#endif
+}
+
+void
+Nyx::init_zhi ()
+{
+    const int file_res = inhomo_grid;
+    const int prob_res = geom.Domain().longside();
+    const int ratio = prob_res / file_res;
+
+    BL_ASSERT(ratio >= 1);
+
+    MultiFab& D_new = get_new_data(DiagEOS_Type);
+    int nd = D_new.nComp();
+
+    const BoxArray& ba = D_new.boxArray();
+    const DistributionMapping& dmap = D_new.DistributionMap();
+
+    BL_ASSERT(ba.coarsenable(ratio));
+    BoxArray coarse_ba = ba;
+    coarse_ba.coarsen(ratio);
+    MultiFab zhi(coarse_ba, dmap, 1, 0);
+
+    MultiFab zhi_from_file;
+    VisMF::Read(zhi, inhomo_zhi_file);
+    zhi.copy(zhi_from_file, geom.periodicity());
+
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
+    for (MFIter mfi(D_new); mfi.isValid(); ++mfi) {
+        const Box& tbx = mfi.tilebox();
+        fort_init_zhi(tbx.loVect(), tbx.hiVect(),
+                      nd, BL_TO_FORTRAN(D_new[mfi]),
+                      ratio, BL_TO_FORTRAN(zhi[mfi]));
+    }
 }
 
 void
@@ -167,8 +218,10 @@ Nyx::initData ()
                      dx, gridloc.lo(), gridloc.hi());
             }
 
-           compute_new_temp();
-           enforce_consistent_e(S_new);
+            if (inhomo_reion) init_zhi();
+
+            compute_new_temp();
+            enforce_consistent_e(S_new);
         }
         else
         {

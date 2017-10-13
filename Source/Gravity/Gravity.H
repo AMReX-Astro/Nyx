@@ -24,11 +24,11 @@ public:
 
     void set_mass_offset(amrex::Real time);
 
-    amrex::Array<amrex::MultiFab*> get_grad_phi_prev(int level);
-    amrex::Array<amrex::MultiFab*> get_grad_phi_curr(int level);
+    amrex::Vector<amrex::MultiFab*> get_grad_phi_prev(int level);
+    amrex::Vector<amrex::MultiFab*> get_grad_phi_curr(int level);
 
     void plus_phi_curr(int level, amrex::MultiFab& addend);
-    void plus_grad_phi_curr(int level, const amrex::Array<amrex::MultiFab*>& addend);
+    void plus_grad_phi_curr(int level, const amrex::Vector<amrex::MultiFab*>& addend);
 
     // 
     // Moves curr phi data to prev and resets curr to 1.e50
@@ -39,40 +39,40 @@ public:
     // Use the F90 solver
     //
     amrex::Real solve_with_fmg (int crse_level, int fine_level,
-                         const amrex::Array<amrex::MultiFab*> & phi,
-                         const amrex::Array<amrex::MultiFab*> & rhs,
-                         const amrex::Array<amrex::Array<amrex::MultiFab*> >& grad_phi,
-                         const amrex::Array<amrex::MultiFab*>& res,
+                         const amrex::Vector<amrex::MultiFab*> & phi,
+                         const amrex::Vector<amrex::MultiFab*> & rhs,
+                         const amrex::Vector<amrex::Vector<amrex::MultiFab*> >& grad_phi,
+                         const amrex::Vector<amrex::MultiFab*>& res,
                          amrex::Real time);
 
     // 
     // Use the C++ solver in C_CellMG instead of the F90 solvers in F_MG.
     //
-    void solve_with_Cpp(int level, amrex::MultiFab& phi, const amrex::Array<amrex::MultiFab*>& grad_phi,
+    void solve_with_Cpp(int level, amrex::MultiFab& phi, const amrex::Vector<amrex::MultiFab*>& grad_phi,
                         amrex::MultiFab& rhs, amrex::Real tol, amrex::Real abs_tol);
     // 
     // Use the HPGMG solver
     //
 #ifdef USEHPGMG
-    void solve_with_HPGMG(int level, amrex::MultiFab& phi, const amrex::Array<amrex::MultiFab*>& grad_phi,
+    void solve_with_HPGMG(int level, amrex::MultiFab& phi, const amrex::Vector<amrex::MultiFab*>& grad_phi,
                         amrex::MultiFab& rhs, amrex::Real tol, amrex::Real abs_tol);
 #endif
     void set_boundary  (amrex::BndryData& bd, amrex::MultiFab&  rhs, const amrex::Real* dx);
 
-    void solve_for_old_phi(int level, amrex::MultiFab& phi, const amrex::Array<amrex::MultiFab*>& grad_phi,
+    void solve_for_old_phi(int level, amrex::MultiFab& phi, const amrex::Vector<amrex::MultiFab*>& grad_phi,
                            int fill_interior);
-    void solve_for_new_phi(int level, amrex::MultiFab& phi, const amrex::Array<amrex::MultiFab*>& grad_phi,
+    void solve_for_new_phi(int level, amrex::MultiFab& phi, const amrex::Vector<amrex::MultiFab*>& grad_phi,
                            int fill_interior, int grav_n_grow = 1);
     void solve_for_phi(int level, amrex::MultiFab& Rhs, amrex::MultiFab& phi,
-                       const amrex::Array<amrex::MultiFab*>& grad_phi, amrex::Real time,
+                       const amrex::Vector<amrex::MultiFab*>& grad_phi, amrex::Real time,
                        int fill_interior);
     void solve_for_delta_phi(int crse_level, int fine_level, amrex::MultiFab& CrseRhs,
-                             const amrex::Array<amrex::MultiFab*>& delta_phi,
-                             const amrex::Array<amrex::Array<amrex::MultiFab*> >& grad_delta_phi);
+                             const amrex::Vector<amrex::MultiFab*>& delta_phi,
+                             const amrex::Vector<amrex::Vector<amrex::MultiFab*> >& grad_delta_phi);
 
     void gravity_sync(int crse_level, int fine_level, int iteration, int ncycle, 
                       const amrex::MultiFab& drho_and_drhoU, const amrex::MultiFab& dphi,
-                      const amrex::Array<amrex::MultiFab*>& grad_delta_phi_cc);
+                      const amrex::Vector<amrex::MultiFab*>& grad_delta_phi_cc);
 
     void multilevel_solve_for_old_phi(int level, int finest_level,
                                       int use_previous_phi_as_guess=0);
@@ -81,10 +81,10 @@ public:
     void multilevel_solve_for_phi(int level, int finest_level,
                                   int use_previous_phi_as_guess=0);
     void actual_multilevel_solve(int level, int finest_level,
-                                 const amrex::Array<amrex::Array<amrex::MultiFab*> >& grad_phi, int is_new,
+                                 const amrex::Vector<amrex::Vector<amrex::MultiFab*> >& grad_phi, int is_new,
                                  int use_previous_phi_as_guess=0);
 
-    void get_crse_grad_phi(int level, amrex::Array<std::unique_ptr<amrex::MultiFab> >& grad_phi_crse,
+    void get_crse_grad_phi(int level, amrex::Vector<std::unique_ptr<amrex::MultiFab> >& grad_phi_crse,
                            amrex::Real time);
     void get_crse_phi(int level, amrex::MultiFab& phi_crse, amrex::Real time);
 
@@ -119,24 +119,24 @@ protected:
     // Pointers to amr,amrlevel.
     //
     amrex::Amr*             parent;
-    amrex::Array<amrex::AmrLevel*> LevelData;
+    amrex::Vector<amrex::AmrLevel*> LevelData;
     //
     // Pointers to grad_phi at previous and current time
     //
-    amrex::Array< amrex::Array<std::unique_ptr<amrex::MultiFab> > > grad_phi_curr;
-    amrex::Array< amrex::Array<std::unique_ptr<amrex::MultiFab> > > grad_phi_prev;
+    amrex::Vector< amrex::Vector<std::unique_ptr<amrex::MultiFab> > > grad_phi_curr;
+    amrex::Vector< amrex::Vector<std::unique_ptr<amrex::MultiFab> > > grad_phi_prev;
 
-    amrex::Array<std::unique_ptr<amrex::FluxRegister> > phi_flux_reg;
+    amrex::Vector<std::unique_ptr<amrex::FluxRegister> > phi_flux_reg;
     //
     // amrex::BoxArray at each level
     //
-    const amrex::Array<amrex::BoxArray>& grids;
+    const amrex::Vector<amrex::BoxArray>& grids;
     //
-    const amrex::Array<amrex::DistributionMapping>& dmap;
+    const amrex::Vector<amrex::DistributionMapping>& dmap;
     //
     // Resnorm at each level
     //
-    amrex::Array<amrex::Real> level_solver_resnorm;
+    amrex::Vector<amrex::Real> level_solver_resnorm;
 
     int density;
     int finest_level;
@@ -147,7 +147,6 @@ protected:
     amrex::BCRec* phys_bc;
 
     static int verbose;
-    static int show_timings;
     static int no_sync;
     static int no_composite;
     static int dirichlet_bcs;
@@ -161,16 +160,16 @@ protected:
     static std::string gravity_type;
     static int stencil_type;
 
-    void fill_ec_grow(int level, const amrex::Array<amrex::MultiFab*>& ecF,
-                      const amrex::Array<amrex::MultiFab*>& ecC) const;
+    void fill_ec_grow(int level, const amrex::Vector<amrex::MultiFab*>& ecF,
+                      const amrex::Vector<amrex::MultiFab*>& ecC) const;
 
     void AddParticlesToRhs(int level, amrex::MultiFab& Rhs, int ngrow);
     void AddGhostParticlesToRhs(int level, amrex::MultiFab& Rhs);
     void AddVirtualParticlesToRhs(int level, amrex::MultiFab& Rhs, int ngrow);
 
-    void AddParticlesToRhs(int base_level, int finest_level, const amrex::Array<amrex::MultiFab*>& Rhs_particles);
-    void AddGhostParticlesToRhs(int level, const amrex::Array<amrex::MultiFab*>& Rhs_particles);
-    void AddVirtualParticlesToRhs(int finest_level, const amrex::Array<amrex::MultiFab*>& Rhs_particles);
+    void AddParticlesToRhs(int base_level, int finest_level, const amrex::Vector<amrex::MultiFab*>& Rhs_particles);
+    void AddGhostParticlesToRhs(int level, const amrex::Vector<amrex::MultiFab*>& Rhs_particles);
+    void AddVirtualParticlesToRhs(int finest_level, const amrex::Vector<amrex::MultiFab*>& Rhs_particles);
 
     void CorrectRhsUsingOffset(int level, amrex::MultiFab& Rhs);
 };

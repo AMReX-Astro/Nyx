@@ -1,7 +1,77 @@
+#include <stdint.h>
+
 #include "DarkMatterParticleContainer.H"
 #include "dm_F.H"
 
 using namespace amrex;
+
+/// These are helper functions used when initializing from a morton-ordered
+/// binary particle file.
+namespace {
+
+  inline uint64_t split(unsigned int a) {
+    uint64_t x = a & 0x1fffff;
+    x = (x | x << 32) & 0x1f00000000ffff;
+    x = (x | x << 16) & 0x1f0000ff0000ff;
+    x = (x | x << 8)  & 0x100f00f00f00f00f;
+    x = (x | x << 4)  & 0x10c30c30c30c30c3;
+    x = (x | x << 2)  & 0x1249249249249249;
+    return x;
+  }
+  
+  inline uint64_t get_morton_index(unsigned int x,
+				   unsigned int y,
+				   unsigned int z) {
+    uint64_t morton_index = 0;
+    morton_index |= split(x) | ( split(y) << 1) | (split(z) << 2);
+    return morton_index;
+  }  
+
+  struct BoxMortonKey {
+    uint64_t morton_id;
+    int box_id;
+  };
+
+  struct by_morton_id { 
+    bool operator()(const BoxMortonKey &a, const BoxMortonKey &b) { 
+      return a.morton_id < b.morton_id;
+    }
+  };
+
+  std::string get_file_name(const std::string& base, int file_num) {
+    std::stringstream ss;
+    ss << base << file_num;
+    return ss.str();
+  }
+
+  struct ParticleMortonFileHeader {
+    long NP;
+    int  DM;
+    int  NX;
+    int  SZ;
+    int  NF;
+  };
+  
+  void ReadHeader(const std::string& dir,
+		  const std::string& file,
+		  ParticleMortonFileHeader& hdr) {
+    std::string header_filename = dir;
+    header_filename += "/";
+    header_filename += file;
+    
+    Vector<char> fileCharPtr;
+    ParallelDescriptor::ReadAndBcastFile(header_filename, fileCharPtr);
+    std::string fileCharPtrString(fileCharPtr.dataPtr());
+    std::istringstream HdrFile(fileCharPtrString, std::istringstream::in);
+
+    HdrFile >> hdr.NP;
+    HdrFile >> hdr.DM;
+    HdrFile >> hdr.NX;
+    HdrFile >> hdr.SZ;
+    HdrFile >> hdr.NF;    
+  }
+
+}
 
 void
 DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
@@ -162,7 +232,7 @@ DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
     const Geometry& geom     = m_gdb->Geom(lev);
     const Real*     dx       = geom.CellSize();
 
-    static Array<int> calls;
+    static Vector<int> calls;
 
     calls.resize(nlevs);
 
@@ -170,7 +240,7 @@ DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
 
     if (calls[lev] > 1) return;
 
-    Array<ParticleLevel>& particles = this->GetParticles();
+    Vector<ParticleLevel>& particles = this->GetParticles();
 
     particles.reserve(15);  // So we don't ever have to do any copying on a resize.
 
@@ -300,7 +370,7 @@ DarkMatterParticleContainer::InitCosmo1ppc(MultiFab& mf, const Real vel_fac[], c
     const Geometry& geom     = m_gdb->Geom(0);
     const Real*     dx       = geom.CellSize();
 
-    Array<ParticleLevel>& particles = this->GetParticles();
+    Vector<ParticleLevel>& particles = this->GetParticles();
 
     particles.reserve(15);  // So we don't ever have to do any copying on a resize.
 
@@ -378,7 +448,7 @@ DarkMatterParticleContainer::InitCosmo1ppc(MultiFab& mf, const Real vel_fac[], c
 
 void
 DarkMatterParticleContainer::InitCosmo(
-            MultiFab& mf, const Real vel_fac[], const Array<int> n_part, const Real particleMass)
+            MultiFab& mf, const Real vel_fac[], const Vector<int> n_part, const Real particleMass)
 {
     Real shift[] = {0,0,0};
     InitCosmo(mf, vel_fac, n_part, particleMass, shift);
@@ -386,7 +456,7 @@ DarkMatterParticleContainer::InitCosmo(
 
 void
 DarkMatterParticleContainer::InitCosmo(
-            MultiFab& mf, const Real vel_fac[], const Array<int> n_part, const Real particleMass, const Real shift[])
+            MultiFab& mf, const Real vel_fac[], const Vector<int> n_part, const Real particleMass, const Real shift[])
 {
     BL_PROFILE("DarkMatterParticleContainer::InitCosmo()");
     const int       MyProc   = ParallelDescriptor::MyProc();
@@ -394,7 +464,7 @@ DarkMatterParticleContainer::InitCosmo(
     const Real      strttime = ParallelDescriptor::second();
     const Geometry& geom     = m_gdb->Geom(0);
 
-    Array<ParticleLevel>& particles = this->GetParticles();
+    Vector<ParticleLevel>& particles = this->GetParticles();
 
     particles.reserve(15);  // So we don't ever have to do any copying on a resize.
 
@@ -606,7 +676,112 @@ DarkMatterParticleContainer::InitCosmo(
 */
 
 void
-DarkMatterParticleContainer::AssignDensityAndVels (Array<std::unique_ptr<MultiFab> >& mf, int lev_min) const
+DarkMatterParticleContainer::AssignDensityAndVels (Vector<std::unique_ptr<MultiFab> >& mf, int lev_min) const
 {
      AssignDensity(mf, lev_min, BL_SPACEDIM+1);
 }
+
+void 
+DarkMatterParticleContainer::InitFromBinaryMortonFile(const std::string& particle_directory,
+						      int nextra, int skip_factor) {
+  BL_PROFILE("DarkMatterParticleContainer::InitFromBinaryMortonFile");
+  
+  ParticleMortonFileHeader hdr;
+  ReadHeader(particle_directory, "Header", hdr);    
+  
+  uint64_t num_parts = hdr.NP;
+  int DM             = hdr.DM;
+  int NX             = hdr.NX;
+  int float_size     = hdr.SZ;
+  int num_files      = hdr.NF;
+  size_t psize       = (DM + NX) * float_size;
+  
+  std::string particle_file_base = particle_directory + "/particles.";
+  std::vector<std::string> file_names;
+  for (int i = 0; i < num_files; ++i)
+    file_names.push_back(get_file_name(particle_file_base, i));
+  
+  const int lev = 0;
+  const BoxArray& ba = ParticleBoxArray(lev);
+  int num_boxes = ba.size();
+  uint64_t num_parts_per_box  = num_parts / num_boxes;
+  uint64_t num_parts_per_file = num_parts / num_files;
+  uint64_t num_bytes_per_file = num_parts_per_file * psize;
+  
+  std::vector<BoxMortonKey> box_morton_keys(num_boxes);
+  for (int i = 0; i < num_boxes; ++i) {
+    const Box& box = ba[i];
+    unsigned int x = box.smallEnd(0);
+    unsigned int y = box.smallEnd(1);
+    unsigned int z = box.smallEnd(2);
+    box_morton_keys[i].morton_id = get_morton_index(x, y, z);
+    box_morton_keys[i].box_id = i;
+  }
+  
+  std::sort(box_morton_keys.begin(), box_morton_keys.end(), by_morton_id());
+  
+  std::vector<int> file_indices(num_boxes);
+  for (int i = 0; i < num_boxes; ++i)
+    file_indices[box_morton_keys[i].box_id] = i;
+  
+  ParticleType p;
+  for (MFIter mfi = MakeMFIter(lev); mfi.isValid(); ++mfi) {
+    Box tile_box = mfi.tilebox();      
+    const int grid = mfi.index();
+    const int tile = mfi.LocalTileIndex();      
+    auto& particles = GetParticles(lev);
+    
+    uint64_t start    = file_indices[grid]*num_parts_per_box;
+    uint64_t stop     = start + num_parts_per_box;
+
+    int file_num      = start / num_parts_per_file;
+    uint64_t seek_pos = (start * psize ) % num_bytes_per_file;
+    std::string file_name = file_names[file_num];
+    
+    std::ifstream ifs;
+    ifs.open(file_name.c_str(), std::ios::in|std::ios::binary);
+    if ( not ifs ) {
+      amrex::Print() << "Failed to open file " << file_name << " for reading. \n";
+      amrex::Abort();
+    } 
+
+    ifs.seekg(seek_pos, std::ios::beg);
+    
+    for (uint64_t i = start; i < stop; ++i) {
+      int next_file = i / num_parts_per_file;
+      if (next_file != file_num) {
+	file_num = next_file;
+	file_name = file_names[file_num];
+	ifs.close();
+	ifs.open(file_name.c_str(), std::ios::in|std::ios::binary);
+	if ( not ifs ) {
+	  amrex::Print() << "Failed to open file " << file_name << " for reading. \n";
+	  amrex::Abort();
+	}
+      }
+
+      float fpos[DM];
+      float fextra[NX];
+      ifs.read((char*)&fpos[0],   DM*sizeof(float));
+      ifs.read((char*)&fextra[0], NX*sizeof(float));
+      
+      if ( (i - start) % skip_factor == 0 ) {
+	AMREX_D_TERM(p.m_rdata.pos[0] = fpos[0];,
+		     p.m_rdata.pos[1] = fpos[1];,
+		     p.m_rdata.pos[2] = fpos[2];);
+	
+	for (int comp = 0; comp < NX; comp++)
+	  p.m_rdata.arr[BL_SPACEDIM+comp] = fextra[comp];
+	
+	p.m_rdata.arr[BL_SPACEDIM] *= skip_factor;
+	
+	p.m_idata.id  = ParticleType::NextID();
+	p.m_idata.cpu = ParallelDescriptor::MyProc();
+	particles[std::make_pair(grid, tile)].push_back(p);
+      }
+    }    
+  }
+  
+  Redistribute();
+}
+

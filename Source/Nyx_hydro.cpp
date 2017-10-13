@@ -122,14 +122,15 @@ Nyx::just_the_hydro (Real time,
     // Create FAB for extended grid values (including boundaries) and fill.
     MultiFab S_old_tmp(S_old.boxArray(), S_old.DistributionMap(), NUM_STATE, NUM_GROW);
     FillPatch(*this, S_old_tmp, NUM_GROW, time, State_Type, 0, NUM_STATE);
-    MultiFab D_old_tmp(D_old.boxArray(), D_old.DistributionMap(), 2, NUM_GROW);
-    FillPatch(*this, D_old_tmp, NUM_GROW, time, DiagEOS_Type, 0, 2);
+
+    MultiFab D_old_tmp(D_old.boxArray(), D_old.DistributionMap(), D_old.nComp(), NUM_GROW);
+    FillPatch(*this, D_old_tmp, NUM_GROW, time, DiagEOS_Type, 0, D_old.nComp());
 
     if (add_ext_src && strang_split) 
         strang_first_step(time,dt,S_old_tmp,D_old_tmp);
 
 #ifdef _OPENMP
-#pragma omp parallel reduction(max:courno)
+#pragma omp parallel reduction(max:courno) reduction(+:e_added,ke_added)
 #endif
        {
        FArrayBox flux[BL_SPACEDIM], u_gdnv[BL_SPACEDIM];

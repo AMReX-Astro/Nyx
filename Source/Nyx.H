@@ -210,6 +210,11 @@ public:
     //
     void comoving_a_post_restart(const std::string& restart_file);
 
+    //
+    // Initialize the zhi component of the EOS from a binary input file
+    //
+    void init_zhi ();
+
 #ifdef GRAVITY
     //
     // Initialize the Santa Barbara problem
@@ -404,16 +409,16 @@ public:
     // Compute initial `dt'.
     //
     virtual void computeInitialDt(int finest_level, int sub_cycle,
-                                  amrex::Array<int>& n_cycle,
-                                  const amrex::Array<amrex::IntVect>& ref_ratio,
-                                  amrex::Array<amrex::Real>& dt_level, amrex::Real stop_time);
+                                  amrex::Vector<int>& n_cycle,
+                                  const amrex::Vector<amrex::IntVect>& ref_ratio,
+                                  amrex::Vector<amrex::Real>& dt_level, amrex::Real stop_time);
     //
     // Compute new `dt'.
     //
     virtual void computeNewDt(int finest_level, int sub_cycle,
-                              amrex::Array<int>& n_cycle,
-                              const amrex::Array<amrex::IntVect>& ref_ratio,
-                              amrex::Array<amrex::Real>& dt_min, amrex::Array<amrex::Real>& dt_level,
+                              amrex::Vector<int>& n_cycle,
+                              const amrex::Vector<amrex::IntVect>& ref_ratio,
+                              amrex::Vector<amrex::Real>& dt_min, amrex::Vector<amrex::Real>& dt_level,
                               amrex::Real stop_time, int post_regrid_flag);
 
     //
@@ -457,7 +462,7 @@ public:
     //   the list of tagged points
     //
     virtual void manual_tags_placement (amrex::TagBoxArray&    tags,
-                                        const amrex::Array<amrex::IntVect>& bf_lev) override;
+                                        const amrex::Vector<amrex::IntVect>& bf_lev) override;
 
     // Returns a amrex::MultiFab containing the derived data for this level. The user
     // is responsible for deleting this pointer when done with it. If
@@ -476,7 +481,7 @@ public:
 
     void compute_new_temp();
 
-    void compute_rho_temp(amrex::Real& rho_T_avg, amrex::Real& T_avg, amrex::Real& T_meanrho);
+    void compute_rho_temp(amrex::Real& rho_T_avg, amrex::Real& T_avg, amrex::Real& Tinv_avg, amrex::Real& T_meanrho);
 
     void get_old_source(amrex::Real old_time, amrex::Real dt, amrex::MultiFab& Rhs);
     void get_new_source(amrex::Real old_time, amrex::Real new_time, amrex::Real dt, amrex::MultiFab& Rhs);
@@ -494,9 +499,9 @@ public:
     void advance_aux(amrex::Real time, amrex::Real dt);
 #endif
 
-    static amrex::Array<NyxParticleContainerBase*>& theActiveParticles();
-    static amrex::Array<NyxParticleContainerBase*>& theVirtualParticles();
-    static amrex::Array<NyxParticleContainerBase*>& theGhostParticles();
+    static amrex::Vector<NyxParticleContainerBase*>& theActiveParticles();
+    static amrex::Vector<NyxParticleContainerBase*>& theVirtualParticles();
+    static amrex::Vector<NyxParticleContainerBase*>& theGhostParticles();
 
     static DarkMatterParticleContainer* theDMPC();
     static DarkMatterParticleContainer* theVirtPC();
@@ -520,7 +525,8 @@ public:
 
     static int NUM_STATE;
     static int Density, Xmom, Ymom, Zmom, Eden, Eint;
-    static int Temp_comp, Ne_comp;
+
+    static int Temp_comp, Ne_comp, Zhi_comp;
 
     static int FirstSpec, FirstAux, FirstAdv;
     static int NumSpec, NumAux, NumAdv;
@@ -551,6 +557,10 @@ public:
 				            MPI_Comm scsComm);
     static void InitErrorList();
     static void InitDeriveList();
+
+    static void set_simd_width(const int simd_width);
+    static void alloc_simd_vec();
+    static void dealloc_simd_vec();
 
 protected:
 
@@ -583,7 +593,7 @@ protected:
 
     void compute_average_density();
     void compute_average_temperature(amrex::Real& average_temperature);
-    void compute_average_species(int nspec, int naux, amrex::Array<amrex::Real>& average_species);
+    void compute_average_species(int nspec, int naux, amrex::Vector<amrex::Real>& average_species);
 
     void set_small_values();
 #endif
@@ -648,11 +658,12 @@ protected:
     static long particle_initrandom_count_per_box;
     static amrex::Real particle_initrandom_mass;
     static int particle_initrandom_iseed;
+    static int particle_skip_factor;
 
     static amrex::IntVect Nrep;  // how many times the initial conditions are replicated in each direction
 
-    static amrex::Array<amrex::Real> plot_z_values;      // These are the value of "z" at which to dump plotfiles.
-    static amrex::Array<amrex::Real> analysis_z_values;  // These are the value of "z" at which to perform analysis
+    static amrex::Vector<amrex::Real> plot_z_values;      // These are the value of "z" at which to dump plotfiles.
+    static amrex::Vector<amrex::Real> analysis_z_values;  // These are the value of "z" at which to perform analysis
 
     bool FillPatchedOldState_ok;
 
@@ -667,6 +678,11 @@ protected:
 
     // specifies the heating/cooling source term
     static int heat_cool_type;
+
+    // specifies inhomogeneous reionization type
+    static int inhomo_reion;
+    static std::string inhomo_zhi_file;
+    static int inhomo_grid;
 
     // permits forcing to be switched on and off
     static int do_forcing;
@@ -710,7 +726,6 @@ protected:
   static amrex::Real      startCPUTime;
 
   static amrex::Real getCPUTime();
-
 
 };
 

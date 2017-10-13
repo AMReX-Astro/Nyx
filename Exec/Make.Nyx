@@ -39,6 +39,16 @@ endif
 
 DEFINES += -DBL_NOLINEVALUES
 
+GIMLET_DIR ?= /home/vince/Development/gimlet
+# Gimlet needs FFTW MPI.
+FFTW_INC ?= /usr/include
+FFTW_DIR ?= /usr/lib/x86_64-linux-gnu
+
+REEBER_HOME ?= /project/projectdirs/nyx/ghweber/reeber2
+# Reeber needs Boost (both headers and libraries) and diy2.
+BOOST_INCLUDE_DIR ?= /project/projectdirs/nyx/ghweber/boost-1.61.0-noarch/include
+DIY_INCLUDE_DIR ?= /project/projectdirs/nyx/ghweber/diy/include
+
 ifeq ($(REEBER), TRUE)
   DEFINES += -DREEBER
   DEFINES += -DREEBER_USE_BOXLIB_READER -DREEBER_IN_SITU
@@ -131,6 +141,16 @@ ifeq ($(USE_MG), TRUE)
   include $(AMREX_HOME)/Src/LinearSolvers/F_MG/FParallelMG.mak
   INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/LinearSolvers/F_MG
   VPATH_LOCATIONS   += $(AMREX_HOME)/Src/LinearSolvers/F_MG
+endif
+
+ifeq ($(USE_HPGMG), TRUE)
+   HPGMG_F_CYCLES = 20
+   HPGMG_V_CYCLES = 0
+   HPGMG_HELMHOLTZ = FALSE
+   HPGMG_STENCIL_VARIABLE_COEFFICIENT = FALSE
+   HPGMG_USE_SUBCOMM = TRUE
+   HPGMG_BOTTOM_SOLVER= CG
+   HPGMG_SMOOTHER = GSRB
 endif
 
 include $(AMREX_HOME)/Src/F_BaseLib/FParallelMG.mak
