@@ -1449,6 +1449,8 @@ Nyx::post_restart ()
     if (level == 0)
         comoving_a_post_restart(parent->theRestartFile());
 
+    if (inhomo_reion) init_zhi();
+
 #ifdef NO_HYDRO
     Real cur_time = state[PhiGrav_Type].curTime();
 #else

@@ -130,6 +130,7 @@ Nyx::read_init_params ()
 void
 Nyx::init_zhi ()
 {
+
     const int file_res = inhomo_grid;
     const int prob_res = geom.Domain().longside();
     const int ratio = prob_res / file_res;
@@ -171,7 +172,6 @@ Nyx::initData ()
     if (!parent->theRestartPlotFile().empty())
     {
         init_from_plotfile();
-        if (inhomo_reion) init_zhi();
         return;
     }
 
