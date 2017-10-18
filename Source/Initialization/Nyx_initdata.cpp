@@ -171,6 +171,7 @@ Nyx::initData ()
     if (!parent->theRestartPlotFile().empty())
     {
         init_from_plotfile();
+        if (inhomo_reion) init_zhi();
         return;
     }
 
