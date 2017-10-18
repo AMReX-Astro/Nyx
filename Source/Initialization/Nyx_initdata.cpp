@@ -148,7 +148,7 @@ Nyx::init_zhi ()
     MultiFab zhi(coarse_ba, dmap, 1, 0);
 
     MultiFab zhi_from_file;
-    VisMF::Read(zhi, inhomo_zhi_file);
+    VisMF::Read(zhi_from_file, inhomo_zhi_file);
     zhi.copy(zhi_from_file, geom.periodicity());
 
 #ifdef _OPENMP
