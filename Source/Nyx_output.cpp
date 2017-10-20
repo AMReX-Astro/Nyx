@@ -409,9 +409,8 @@ Nyx::writePlotFile (const std::string& dir,
     //
     // Only the I/O processor makes the directory if it doesn't already exist.
     //
-amrex::Print() << "IOIOIOIO: Nyx::writePlotFile:  FullPath = " << FullPath << std::endl;
-    if(levelDirectoryCreated) {
-amrex::Print() << "IOIOIOIO:CD   Nyx::writePlotFile:  FullPath = " << FullPath << std::endl;
+    if( ! levelDirectoryCreated) {
+      amrex::Print() << "IOIOIOIO:CD  Nyx::writePlotFile:  creating directory:  " << FullPath << std::endl;
       if (ParallelDescriptor::IOProcessor()) {
         if ( ! amrex::UtilCreateDirectory(FullPath, 0755)) {
             amrex::CreateDirectoryFailed(FullPath);
@@ -496,6 +495,16 @@ amrex::Print() << "IOIOIOIO:CD   Nyx::writePlotFile:  FullPath = " << FullPath <
     if (write_parameters_in_plotfile) {
 	write_parameter_file(dir);
     }
+
+    if(Nyx::theDMPC()) {
+      Nyx::theDMPC()->SetLevelDirectoriesCreated(false);
+    }
+#ifdef AGN
+    if(Nyx::theAPC()) {
+      Nyx::theAPC()->SetLevelDirectoriesCreated(false);
+    }
+#endif
+
 }
 
 void
@@ -763,6 +772,16 @@ Nyx::checkPoint (const std::string& dir,
 	CPUFile.close();
       }
     }
+
+    if(Nyx::theDMPC()) {
+      Nyx::theDMPC()->SetLevelDirectoriesCreated(false);
+    }
+#ifdef AGN
+    if(Nyx::theAPC()) {
+      Nyx::theAPC()->SetLevelDirectoriesCreated(false);
+    }
+#endif
+
 }
 
 #ifdef FORCING
