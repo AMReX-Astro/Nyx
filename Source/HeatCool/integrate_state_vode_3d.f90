@@ -131,7 +131,7 @@ subroutine integrate_state_vode(lo, hi, &
                 ! Update T and ne (do not use stuff computed in f_rhs, per vode manual)
                 call nyx_eos_T_given_Re(JH_vode, JHe_vode, T_out, ne_out, rho, e_out, a, species)
 
-                !  Flash heating in reionization:
+                ! Instanteneous heating from reionization:
                 T_H = 0.0d0
                 if (inhomogeneous_on .or. flash_h) then
                    if ((H_reion_z  .lt. z) .and. (H_reion_z  .ge. z_end)) T_H  = (1.0d0 - species(2))*T_zhi
@@ -143,10 +143,10 @@ subroutine integrate_state_vode(lo, hi, &
                 endif
 
                 if ((T_H .gt. 0.0d0) .or. (T_He .gt. 0.0d0)) then
-                   T_out = T_orig + T_H + T_He
-                   ne_out = 1.0d0 + YHELIUM
-                   if (T_He .gt. 0.0d0) ne_out = ne_out + YHELIUM
-                   mu = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+ne_out)
+                   T_out = T_out + T_H + T_He                            ! For simplicity, we assume
+                   ne_out = 1.0d0 + YHELIUM                              !    completely ionized medium at
+                   if (T_He .gt. 0.0d0) ne_out = ne_out + YHELIUM        !    this point.  It's a very minor
+                   mu = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+ne_out)   !    detail compared to the overall approximation.
                    e_out  = T_out / (gamma_minus_1 * mp_over_kB * mu)
                    call nyx_eos_T_given_Re(JH_vode, JHe_vode, T_out, ne_out, rho, e_out, a, species)
                 endif
