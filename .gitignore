@@ -20,9 +20,8 @@ Docs/*/*.pdf
 \#*
 
 
-# Castro & Nyx executables
-Nyx*.ex
-Castro*.ex
+# executables
+*.ex
 *.exe
 
 # plt and chk files
