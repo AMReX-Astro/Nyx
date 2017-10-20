@@ -15,7 +15,6 @@ using std::string;
 
 #include <AMReX_CONSTANTS.H>
 #include <Nyx.H>
-#include <Nyx_slice.H>
 #include <Nyx_F.H>
 #include <Derive_F.H>
 #include <AMReX_VisMF.H>

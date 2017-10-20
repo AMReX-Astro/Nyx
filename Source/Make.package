@@ -4,7 +4,6 @@ CEXE_sources += Nyx.cpp
 CEXE_sources += Nyx_advance.cpp
 CEXE_sources += Nyx_halos.cpp
 CEXE_sources += Nyx_output.cpp
-CEXE_sources += Nyx_slice.cpp
 CEXE_sources += NyxBld.cpp
 CEXE_sources += main.cpp
 CEXE_sources += NyxParticles.cpp
@@ -24,7 +23,6 @@ CEXE_sources += strang_splitting.cpp
 endif
 
 CEXE_headers += Nyx.H
-CEXE_headers += Nyx_slice.H
 CEXE_headers += Nyx_output.H
 CEXE_headers += NyxParticleContainer.H
 CEXE_headers += DarkMatterParticleContainer.H
