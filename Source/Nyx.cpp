@@ -1615,9 +1615,9 @@ Nyx::postCoarseTimeStep (Real cumtime)
       amrex::VisMF::SetNOutFiles(128);
 
       // Slice state data
-      std::unique_ptr<MultiFab> x_slice = slice_util::getSliceData(0, S_new,0,S_new.nComp()-2, geom, x_coord);
-      std::unique_ptr<MultiFab> y_slice = slice_util::getSliceData(1, S_new,0,S_new.nComp()-2, geom, y_coord);
-      std::unique_ptr<MultiFab> z_slice = slice_util::getSliceData(2, S_new,0,S_new.nComp()-2, geom, z_coord);
+      std::unique_ptr<MultiFab> x_slice = amrex::get_slice_data(0, x_coord, S_new, geom, 0, S_new.nComp()-2);
+      std::unique_ptr<MultiFab> y_slice = amrex::get_slice_data(1, y_coord, S_new, geom, 0, S_new.nComp()-2);
+      std::unique_ptr<MultiFab> z_slice = amrex::get_slice_data(2, z_coord, S_new, geom, 0, S_new.nComp()-2);
 
       std::string xs = slicefilename + "/State_x";
       std::string ys = slicefilename + "/State_y";
@@ -1628,9 +1628,9 @@ Nyx::postCoarseTimeStep (Real cumtime)
       amrex::VisMF::Write(*z_slice, zs);
 
       // Slice diag_eos
-      x_slice = slice_util::getSliceData(0, D_new,0,D_new.nComp(), geom, x_coord);
-      y_slice = slice_util::getSliceData(1, D_new,0,D_new.nComp(), geom, y_coord);
-      z_slice = slice_util::getSliceData(2, D_new,0,D_new.nComp(), geom, z_coord);
+      x_slice = amrex::get_slice_data(0, x_coord, D_new, geom, 0, D_new.nComp());
+      y_slice = amrex::get_slice_data(1, y_coord, D_new, geom, 0, D_new.nComp());
+      z_slice = amrex::get_slice_data(2, z_coord, D_new, geom, 0, D_new.nComp());
 
       xs = slicefilename + "/Diag_x";
       ys = slicefilename + "/Diag_y";
