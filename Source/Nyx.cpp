@@ -1609,7 +1609,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
          std::cout << "Outputting slices at x = " << x_coord << "; y = " << y_coord << "; z = " << z_coord << std::endl;
 
       const std::string& slicefilename = amrex::Concatenate("slice_",nstep);
-      UtilCreateCleanDirectory(slicefilename,false);
+      UtilCreateCleanDirectory(slicefilename, true);
 
       int nfiles_current = amrex::VisMF::GetNOutFiles();
       amrex::VisMF::SetNOutFiles(128);
