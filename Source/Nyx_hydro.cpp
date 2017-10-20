@@ -189,7 +189,7 @@ Nyx::just_the_hydro (Real time,
 
        // We copy old Temp and Ne to new Temp and Ne so that they can be used
        //    as guesses when we next need them.
-       MultiFab::Copy(D_new,D_old,0,0,2,0);
+       MultiFab::Copy(D_new,D_old,0,0,D_old.nComp(),0);
 
        if (do_reflux) {
          if (current) {
