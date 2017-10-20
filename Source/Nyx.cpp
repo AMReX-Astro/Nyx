@@ -2680,3 +2680,64 @@ Nyx::InitErrorList() {
 void
 Nyx::InitDeriveList() {
 }
+
+
+void
+Nyx::LevelDirectoryNames(const std::string &dir,
+                              std::string &LevelDir,
+                              std::string &FullPath)
+{
+    LevelDir = amrex::Concatenate("Level_", level, 1);
+    //
+    // Now for the full pathname of that directory.
+    //
+    FullPath = dir;
+    if( ! FullPath.empty() && FullPath.back() != '/') {
+        FullPath += '/';
+    }
+    FullPath += Nyx::retrieveDM();
+    FullPath += "/";
+    FullPath += LevelDir;
+}
+
+
+void
+Nyx::CreateLevelDirectory (const std::string &dir)
+{
+    amrex::Print() << "_in Nyx::CreateLevelDirectory:  " << dir << std::endl;
+
+    AmrLevel::CreateLevelDirectory(dir);  // ---- this sets levelDirectoryCreated = true
+
+    std::string dm(dir + "/" + Nyx::retrieveDM());
+    if(ParallelDescriptor::IOProcessor()) {
+      amrex::Print() << "IOIOIOIO:CD  Nyx::CreateLevelDirectory:  " << dm << "\n";
+      if( ! amrex::UtilCreateDirectory(dm, 0755)) {
+        amrex::CreateDirectoryFailed(dm);
+      }
+    }
+
+    std::string LevelDir, FullPath;
+    LevelDirectoryNames(dir, LevelDir, FullPath);
+    amrex::Print() << "IOIOIOIO:  Nyx::CreateLevelDirectory:  dir LevelDir FullPath = " 
+                   << dir << "  " << LevelDir << "  " << FullPath << '\n';
+
+
+    if(ParallelDescriptor::IOProcessor()) {
+      amrex::Print() << "IOIOIOIO:CD  Nyx::CreateLevelDirectory:  " << FullPath << "\n";
+      if( ! amrex::UtilCreateDirectory(FullPath, 0755)) {
+        amrex::CreateDirectoryFailed(FullPath);
+      }
+    }
+
+    if(Nyx::theDMPC()) {
+      Nyx::theDMPC()->SetLevelDirectoriesCreated(true);
+    }
+#ifdef AGN
+    if(Nyx::theAPC()) {
+      Nyx::theAPC()->SetLevelDirectoriesCreated(true);
+    }
+#endif
+
+}
+
+
