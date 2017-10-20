@@ -392,6 +392,12 @@ Nyx::hydro_setup()
                           BndryFunc(generic_fill));
     desc_lst.setComponent(DiagEOS_Type, 1, "Ne", bc,
                           BndryFunc(generic_fill));
+
+    if (inhomo_reion > 0) {
+       desc_lst.setComponent(DiagEOS_Type, 2, "Z_HI", bc,
+                             BndryFunc(generic_fill));
+    }
+
 #ifdef GRAVITY
     if (do_grav)
     {

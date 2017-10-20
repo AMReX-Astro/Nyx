@@ -1994,6 +1994,7 @@ Gravity::solve_with_HPGMG(int level,
   CreateHPGMGLevel(&level_h, rhs, n_cell, max_grid_size, my_rank, num_ranks, domain_boundary_condition, numVectors, *dx);
   SetupHPGMGCoefficients(a, b, alpha, beta_cc, &level_h);
   ConvertToHPGMGLevel(rhs, n_cell, max_grid_size, &level_h, VECTOR_F);
+  ConvertToHPGMGLevel(soln, n_cell, max_grid_size, &level_h, VECTOR_U);
 
   if (level_h.boundary_condition.type == BC_PERIODIC)
   {
@@ -2016,12 +2017,8 @@ Gravity::solve_with_HPGMG(int level,
   amrex::Print() << std::endl << std::endl << "===== STARTING SOLVE =====" << std::endl << std::flush;
 
   MGResetTimers (&MG_h);
-  zero_vector (MG_h.levels[0], VECTOR_U);
-  #ifdef USE_FCYCLES
-  FMGSolve (&MG_h, 0, VECTOR_U, VECTOR_F, a, b, abs_tol, tol);
-  #else
-  MGSolve (&MG_h, 0, VECTOR_U, VECTOR_F, a, b, abs_tol, tol);
-  #endif /* USE_FCYCLES */
+  //zero_vector (MG_h.levels[0], VECTOR_U);
+  FMGSolve (&MG_h, 0, VECTOR_U, VECTOR_F, a, b, tol);
 
   // Now convert solution from HPGMG back to rhs MultiFab.
   ConvertFromHPGMGLevel(soln, &level_h, VECTOR_U);

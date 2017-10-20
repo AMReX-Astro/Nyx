@@ -130,6 +130,7 @@ Nyx::read_init_params ()
 void
 Nyx::init_zhi ()
 {
+
     const int file_res = inhomo_grid;
     const int prob_res = geom.Domain().longside();
     const int ratio = prob_res / file_res;
@@ -148,7 +149,7 @@ Nyx::init_zhi ()
     MultiFab zhi(coarse_ba, dmap, 1, 0);
 
     MultiFab zhi_from_file;
-    VisMF::Read(zhi, inhomo_zhi_file);
+    VisMF::Read(zhi_from_file, inhomo_zhi_file);
     zhi.copy(zhi_from_file, geom.periodicity());
 
 #ifdef _OPENMP

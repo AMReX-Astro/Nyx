@@ -36,7 +36,7 @@ typedef struct {
 //------------------------------------------------------------------------------------------------------------------------------
 void          MGBuild(mg_type *all_grids, level_type *fine_grid, double a, double b, int minCoarseGridDim, const MPI_Comm comm);
 void          MGSolve(mg_type *all_grids, int onLevel, int u_id, int F_id, double a, double b, double dtol, double rtol);
-void         FMGSolve(mg_type *all_grids, int onLevel, int u_id, int F_id, double a, double b, double dtol, double rtol);
+void         FMGSolve(mg_type *all_grids, int onLevel, int u_id, int F_id, double a, double b, double rtol);
 void            MGPCG(mg_type *all_grids, int onLevel, int x_id, int F_id, double a, double b, double dtol, double rtol);
 void        MGDestroy(mg_type *all_grids);
 void    MGPrintTiming(mg_type *all_grids, int fromLevel);
