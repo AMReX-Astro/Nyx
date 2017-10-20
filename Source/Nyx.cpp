@@ -1599,35 +1599,51 @@ Nyx::postCoarseTimeStep (Real cumtime)
       const Real* dx        = geom.CellSize();
 
       MultiFab& S_new = get_new_data(State_Type);
+      MultiFab& D_new = get_new_data(DiagEOS_Type);
 
       Real x_coord = (geom.ProbLo()[0] + geom.ProbHi()[0]) / 2 + dx[0]/2;
       Real y_coord = (geom.ProbLo()[1] + geom.ProbHi()[1]) / 2 + dx[1]/2;
       Real z_coord = (geom.ProbLo()[2] + geom.ProbHi()[2]) / 2 + dx[2]/2;
 
-      std::unique_ptr<MultiFab> x_slice =  slice_util::getSliceData(0,S_new,0,S_new.nComp(),geom,x_coord);
-      std::unique_ptr<MultiFab> y_slice =  slice_util::getSliceData(1,S_new,0,S_new.nComp(),geom,y_coord);
-      std::unique_ptr<MultiFab> z_slice =  slice_util::getSliceData(2,S_new,0,S_new.nComp(),geom,z_coord);
+      if (ParallelDescriptor::IOProcessor())
+         std::cout << "Outputting slices at x = " << x_coord << "; y = " << y_coord << "; z = " << z_coord << std::endl;
 
       const std::string& slicefilename = amrex::Concatenate("slice_",nstep);
       UtilCreateCleanDirectory(slicefilename,false);
 
-      std::string xs(slicefilename);
-      xs += "/x";
-
-      std::string ys(slicefilename);
-      ys += "/y";
-
-      std::string zs(slicefilename);
-      zs += "/z";
-
       int nfiles_current = amrex::VisMF::GetNOutFiles();
       amrex::VisMF::SetNOutFiles(128);
 
-      amrex::VisMF::Write(*x_slice,xs);
-      amrex::VisMF::Write(*y_slice,ys);
-      amrex::VisMF::Write(*z_slice,zs);
+      // Slice state data
+      std::unique_ptr<MultiFab> x_slice = slice_util::getSliceData(0, S_new,0,S_new.nComp()-2, geom, x_coord);
+      std::unique_ptr<MultiFab> y_slice = slice_util::getSliceData(1, S_new,0,S_new.nComp()-2, geom, y_coord);
+      std::unique_ptr<MultiFab> z_slice = slice_util::getSliceData(2, S_new,0,S_new.nComp()-2, geom, z_coord);
+
+      std::string xs = slicefilename + "/State_x";
+      std::string ys = slicefilename + "/State_y";
+      std::string zs = slicefilename + "/State_z";
+
+      amrex::VisMF::Write(*x_slice, xs);
+      amrex::VisMF::Write(*y_slice, ys);
+      amrex::VisMF::Write(*z_slice, zs);
+
+      // Slice diag_eos
+      x_slice = slice_util::getSliceData(0, D_new,0,D_new.nComp(), geom, x_coord);
+      y_slice = slice_util::getSliceData(1, D_new,0,D_new.nComp(), geom, y_coord);
+      z_slice = slice_util::getSliceData(2, D_new,0,D_new.nComp(), geom, z_coord);
+
+      xs = slicefilename + "/Diag_x";
+      ys = slicefilename + "/Diag_y";
+      zs = slicefilename + "/Diag_z";
+
+      amrex::VisMF::Write(*x_slice, xs);
+      amrex::VisMF::Write(*y_slice, ys);
+      amrex::VisMF::Write(*z_slice, zs);
 
       amrex::VisMF::SetNOutFiles(nfiles_current);
+
+      if (ParallelDescriptor::IOProcessor())
+         std::cout << "Done with slices." << std::endl;
    }
 }
 
