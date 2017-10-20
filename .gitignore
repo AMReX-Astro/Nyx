@@ -20,7 +20,8 @@ Docs/*/*.pdf
 \#*
 
 
-# Castro executables
+# Castro & Nyx executables
+Nyx*.ex
 Castro*.ex
 *.exe
 
