@@ -1,5 +1,5 @@
 #ifndef _slice_util_H_
-#define _slice_util_H
+#define _slice_util_H_
 
 #include <AMReX_MultiFab.H>
 
