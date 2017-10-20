@@ -545,6 +545,10 @@ main (int argc, char* argv[])
     ParallelDescriptor::SetNProcsSidecars(0);
 #endif
 
+#ifdef AMREX_USE_CATALYST
+    amrptr->computeInSitu();
+#endif
+
     delete amrptr;
 
 
