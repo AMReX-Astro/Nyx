@@ -35,7 +35,7 @@ subroutine integrate_state_vode(lo, hi, &
     use bl_constants_module, only: M_PI
     use eos_params_module
     use network
-    use eos_module, only: nyx_eos_T_given_Re, nyx_eos_given_RT, iterate_ne
+    use eos_module, only: nyx_eos_T_given_Re, nyx_eos_given_RT
     use fundamental_constants_module
     use comoving_module, only: comoving_h, comoving_OmB
     use comoving_nd_module, only: fort_integrate_comoving_a
