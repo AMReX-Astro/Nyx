@@ -1679,8 +1679,8 @@ Nyx::postCoarseTimeStep (Real cumtime)
         Box sliceBox(geom.Domain());
         int dir_coord = geom.ProbLo()[dir] + (geom.Domain().length(dir) / 2);
         amrex::Print() << "Outputting slices at dir_coord[" << dir << "] = " << dir_coord << '\n';
-        sliceBox.setSmall(0, dir_coord);
-        sliceBox.setBig(0, dir_coord);
+        sliceBox.setSmall(dir, dir_coord);
+        sliceBox.setBig(dir, dir_coord);
         BoxArray sliceBA(sliceBox);
         sliceBA.maxSize(maxBoxSize);
         DistributionMapping sliceDM(sliceBA);
