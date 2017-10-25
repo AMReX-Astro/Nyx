@@ -725,7 +725,7 @@ DarkMatterParticleContainer::InitFromBinaryMortonFile(const std::string& particl
     file_indices[box_morton_keys[i].box_id] = i;
   
   ParticleType p;
-  for (MFIter mfi = MakeMFIter(lev); mfi.isValid(); ++mfi) {
+  for (MFIter mfi = MakeMFIter(lev, false); mfi.isValid(); ++mfi) {  // no tiling
     Box tile_box = mfi.tilebox();      
     const int grid = mfi.index();
     const int tile = mfi.LocalTileIndex();      
