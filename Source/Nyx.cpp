@@ -1601,6 +1601,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
 
    if (slice_int > -1 && nstep%slice_int == 0)
    {
+      BL_PROFILE("Nyx::postCoarseTimeStep: get_all_slice_data");
       const Real* dx        = geom.CellSize();
 
       MultiFab& S_new = get_new_data(State_Type);
@@ -1628,9 +1629,38 @@ Nyx::postCoarseTimeStep (Real cumtime)
       std::string ys = slicefilename + "/State_y";
       std::string zs = slicefilename + "/State_z";
 
-      amrex::VisMF::Write(*x_slice, xs);
-      amrex::VisMF::Write(*y_slice, ys);
-      amrex::VisMF::Write(*z_slice, zs);
+      {
+        BL_PROFILE("Nyx::postCoarseTimeStep: writeXSlice");
+        amrex::VisMF::Write(*x_slice, xs);
+      }
+      {
+        BL_PROFILE("Nyx::postCoarseTimeStep: writeYSlice");
+        amrex::VisMF::Write(*y_slice, ys);
+      }
+      {
+        BL_PROFILE("Nyx::postCoarseTimeStep: writeZSlice");
+        amrex::VisMF::Write(*z_slice, zs);
+      }
+      {
+        BL_PROFILE("Nyx::postCoarseTimeStep: writeZSliceFAB");
+	int ZDIR(2);
+	int middle(geom.Domain().smallEnd(ZDIR) + (geom.Domain().length(ZDIR) / 2));
+	Box bZFAB(geom.Domain());
+	bZFAB.setSmall(ZDIR, middle);
+	bZFAB.setBig(ZDIR, middle);
+	BoxArray baZFAB(bZFAB);
+	amrex::Vector<int> pmapZFAB(1, ParallelDescriptor::IOProcessorNumber());  // ---- one fab on the ioproc
+	DistributionMapping dmZFAB(pmapZFAB);
+	MultiFab mfZFAB(baZFAB, dmZFAB, z_slice->nComp(), z_slice->nGrow());
+	mfZFAB.copy(*z_slice);
+	if(ParallelDescriptor::IOProcessor()) {
+          std::string zsFAB = zs + "_FAB.fab";
+	  std::ofstream osZFAB(zsFAB);
+	  const FArrayBox &fZFAB = mfZFAB[0];
+	  fZFAB.writeOn(osZFAB);
+	  osZFAB.close();
+	}
+      }
 
       // Slice diag_eos
       x_slice = slice_util::getSliceData(0, D_new,0,D_new.nComp(), geom, x_coord);
@@ -1641,14 +1671,18 @@ Nyx::postCoarseTimeStep (Real cumtime)
       ys = slicefilename + "/Diag_y";
       zs = slicefilename + "/Diag_z";
 
-      amrex::VisMF::Write(*x_slice, xs);
-      amrex::VisMF::Write(*y_slice, ys);
-      amrex::VisMF::Write(*z_slice, zs);
+      {
+        BL_PROFILE("Nyx::postCoarseTimeStep: writeDiagSlices");
+        amrex::VisMF::Write(*x_slice, xs);
+        amrex::VisMF::Write(*y_slice, ys);
+        amrex::VisMF::Write(*z_slice, zs);
+      }
 
       amrex::VisMF::SetNOutFiles(nfiles_current);
 
-      if (ParallelDescriptor::IOProcessor())
+      if (ParallelDescriptor::IOProcessor()) {
          std::cout << "Done with slices." << std::endl;
+      }
    }
 }
 
