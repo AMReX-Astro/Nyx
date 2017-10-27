@@ -4,7 +4,6 @@
       use amrex_fort_module, only : rt => amrex_real
       use probdata_module
       use turbinit_module
-      use network, only : network_init
 
       implicit none
       integer init, namlen
