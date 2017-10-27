@@ -61,7 +61,6 @@ const int NyxHaloFinderSignal = 42;
 const int GimletSignal = 55;
 
 static int sum_interval = -1;
-static int slice_int    = -1;
 static Real fixed_dt    = -1.0;
 static Real initial_dt  = -1.0;
 static Real dt_cutoff   =  0;
@@ -134,6 +133,10 @@ Real Nyx::average_total_density = 0;
 int         Nyx::inhomo_reion = 0;
 std::string Nyx::inhomo_zhi_file = "";
 int         Nyx::inhomo_grid = -1;
+
+static int  slice_int    = -1;
+std::string slice_file   = "slice_";
+static int  slice_nfiles = 128;
 
 // Real Nyx::ave_lev_vorticity[10];
 // Real Nyx::std_lev_vorticity[10];
@@ -525,7 +528,9 @@ Nyx::read_params ()
     }
 
     // How often do we want to write x,y,z 2-d slices of S_new
-    pp.query("slice_int", slice_int);
+    pp.query("slice_int",    slice_int);
+    pp.query("slice_file",   slice_file);
+    pp.query("slice_nfiles", slice_nfiles);
 
     pp.query("gimlet_int", gimlet_int);
 
@@ -1596,6 +1601,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
 
    if (slice_int > -1 && nstep%slice_int == 0)
    {
+      BL_PROFILE("Nyx::postCoarseTimeStep: get_all_slice_data");
       const Real* dx        = geom.CellSize();
 
       MultiFab& S_new = get_new_data(State_Type);
@@ -1608,11 +1614,11 @@ Nyx::postCoarseTimeStep (Real cumtime)
       if (ParallelDescriptor::IOProcessor())
          std::cout << "Outputting slices at x = " << x_coord << "; y = " << y_coord << "; z = " << z_coord << std::endl;
 
-      const std::string& slicefilename = amrex::Concatenate("slice_",nstep);
-      UtilCreateCleanDirectory(slicefilename,false);
+      const std::string& slicefilename = amrex::Concatenate(slice_file, nstep);
+      UtilCreateCleanDirectory(slicefilename, true);
 
       int nfiles_current = amrex::VisMF::GetNOutFiles();
-      amrex::VisMF::SetNOutFiles(128);
+      amrex::VisMF::SetNOutFiles(slice_nfiles);
 
       // Slice state data
       std::unique_ptr<MultiFab> x_slice = slice_util::getSliceData(0, S_new,0,S_new.nComp()-2, geom, x_coord);
@@ -1623,9 +1629,38 @@ Nyx::postCoarseTimeStep (Real cumtime)
       std::string ys = slicefilename + "/State_y";
       std::string zs = slicefilename + "/State_z";
 
-      amrex::VisMF::Write(*x_slice, xs);
-      amrex::VisMF::Write(*y_slice, ys);
-      amrex::VisMF::Write(*z_slice, zs);
+      {
+        BL_PROFILE("Nyx::postCoarseTimeStep: writeXSlice");
+        amrex::VisMF::Write(*x_slice, xs);
+      }
+      {
+        BL_PROFILE("Nyx::postCoarseTimeStep: writeYSlice");
+        amrex::VisMF::Write(*y_slice, ys);
+      }
+      {
+        BL_PROFILE("Nyx::postCoarseTimeStep: writeZSlice");
+        amrex::VisMF::Write(*z_slice, zs);
+      }
+      {
+        BL_PROFILE("Nyx::postCoarseTimeStep: writeZSliceFAB");
+	int ZDIR(2);
+	int middle(geom.Domain().smallEnd(ZDIR) + (geom.Domain().length(ZDIR) / 2));
+	Box bZFAB(geom.Domain());
+	bZFAB.setSmall(ZDIR, middle);
+	bZFAB.setBig(ZDIR, middle);
+	BoxArray baZFAB(bZFAB);
+	amrex::Vector<int> pmapZFAB(1, ParallelDescriptor::IOProcessorNumber());  // ---- one fab on the ioproc
+	DistributionMapping dmZFAB(pmapZFAB);
+	MultiFab mfZFAB(baZFAB, dmZFAB, z_slice->nComp(), z_slice->nGrow());
+	mfZFAB.copy(*z_slice);
+	if(ParallelDescriptor::IOProcessor()) {
+          std::string zsFAB = zs + "_FAB.fab";
+	  std::ofstream osZFAB(zsFAB);
+	  const FArrayBox &fZFAB = mfZFAB[0];
+	  fZFAB.writeOn(osZFAB);
+	  osZFAB.close();
+	}
+      }
 
       // Slice diag_eos
       x_slice = slice_util::getSliceData(0, D_new,0,D_new.nComp(), geom, x_coord);
@@ -1636,14 +1671,18 @@ Nyx::postCoarseTimeStep (Real cumtime)
       ys = slicefilename + "/Diag_y";
       zs = slicefilename + "/Diag_z";
 
-      amrex::VisMF::Write(*x_slice, xs);
-      amrex::VisMF::Write(*y_slice, ys);
-      amrex::VisMF::Write(*z_slice, zs);
+      {
+        BL_PROFILE("Nyx::postCoarseTimeStep: writeDiagSlices");
+        amrex::VisMF::Write(*x_slice, xs);
+        amrex::VisMF::Write(*y_slice, ys);
+        amrex::VisMF::Write(*z_slice, zs);
+      }
 
       amrex::VisMF::SetNOutFiles(nfiles_current);
 
-      if (ParallelDescriptor::IOProcessor())
+      if (ParallelDescriptor::IOProcessor()) {
          std::cout << "Done with slices." << std::endl;
+      }
    }
 }
 
