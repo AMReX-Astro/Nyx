@@ -1,5 +1,6 @@
 #ifdef GRAVITY
  
+#include <AMReX_BLProfiler.H>
 #include "Nyx.H"
 #include "Nyx_F.H"
 #include "Gravity.H"
