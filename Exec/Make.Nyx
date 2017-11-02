@@ -128,7 +128,7 @@ USE_MG = FALSE
 ifeq ($(USE_GRAV), TRUE)
   USE_MG = TRUE
 endif
-   
+
 ifeq ($(USE_MG), TRUE)
   include $(AMREX_HOME)/Src/LinearSolvers/C_to_F_MG/Make.package
   INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/LinearSolvers/C_to_F_MG
@@ -141,6 +141,13 @@ ifeq ($(USE_MG), TRUE)
   include $(AMREX_HOME)/Src/LinearSolvers/F_MG/FParallelMG.mak
   INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/LinearSolvers/F_MG
   VPATH_LOCATIONS   += $(AMREX_HOME)/Src/LinearSolvers/F_MG
+
+  ifeq ($(DIM),3)
+    include $(AMREX_HOME)/Src/LinearSolvers/MLMG/Make.package
+    INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/LinearSolvers/MLMG
+    VPATH_LOCATIONS   += $(AMREX_HOME)/Src/LinearSolvers/MLMG
+    DEFINES += -DNYX_MLMG
+  endif
 endif
 
 ifeq ($(USE_HPGMG), TRUE)
