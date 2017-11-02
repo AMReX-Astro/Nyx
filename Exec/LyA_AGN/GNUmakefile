@@ -8,7 +8,7 @@ CVODE_LIB_DIR ?= ../../../sundials/sundials-intel/lib
 TOP = ../..
 
 # compilation options
-COMP    = intel  # gnu
+COMP    = gnu  # gnu
 USE_MPI = TRUE
 USE_OMP = TRUE
 
@@ -21,7 +21,7 @@ USE_SINGLE_PRECISION_PARTICLES = TRUE
 DEBUG     = FALSE
 
 GIMLET = FALSE
-REEBER = FALSE
+REEBER = TRUE
 
 USE_HPGMG = TRUE
 
