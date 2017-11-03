@@ -1096,8 +1096,14 @@ Gravity::actual_multilevel_solve (int                       level,
         }
         Real rel_eps = ml_tol;
         Real abs_eps = 0.;
+        Array<std::array<MultiFab*,AMREX_SPACEDIM> > grad_phi_aa;
+        for (int amrlev = level; amrlev <= finest_level; ++amrlev) {
+            grad_phi_aa.push_back({AMREX_D_DECL(grad_phi[amrlev][0],
+                                                grad_phi[amrlev][1],
+                                                grad_phi[amrlev][2])});
+        }
         solve_with_MLMG(level, finest_level, phi_p, amrex::GetVecOfConstPtrs(Rhs_p),
-                        grad_phi, crse_bcdata, rel_eps, abs_eps);
+                        grad_phi_aa, crse_bcdata, rel_eps, abs_eps);
     }
     else
 #endif
@@ -2133,8 +2139,10 @@ Gravity::solve_for_phi_with_mlmg (int level, MultiFab& Rhs, MultiFab& phi,
     }
     Real rel_eps = sl_tol;
     Real abs_eps = 0.;
+    Vector<std::array<MultiFab*,AMREX_SPACEDIM> > grad_phi_aa;
+    grad_phi_aa.push_back({AMREX_D_DECL(grad_phi[0], grad_phi[1], grad_phi[2])});
     level_solver_resnorm[level] =
-        solve_with_MLMG(level, level, {&phi}, {&Rhs}, {grad_phi}, crse_bcdata, rel_eps, abs_eps);
+        solve_with_MLMG(level, level, {&phi}, {&Rhs}, grad_phi_aa, crse_bcdata, rel_eps, abs_eps);
 }
 
 void
@@ -2151,6 +2159,9 @@ Gravity::solve_for_delta_phi_with_mlmg (int crse_level, int fine_level, MultiFab
     }
     
     const int num_levels = fine_level - crse_level + 1;
+
+    BL_ASSERT(grad_delta_phi.size() == num_levels);
+    BL_ASSERT(delta_phi.size() == num_levels);
 
     Vector<MultiFab> rhs(num_levels);
     Vector<const MultiFab*> rhsp(num_levels);
@@ -2170,14 +2181,18 @@ Gravity::solve_for_delta_phi_with_mlmg (int crse_level, int fine_level, MultiFab
     // fine_level is not included.
     Real abs_eps = *(std::max_element(level_solver_resnorm.begin() + crse_level,
                                       level_solver_resnorm.begin() + fine_level));
-    solve_with_MLMG(crse_level, fine_level, delta_phi, rhsp, grad_delta_phi, nullptr, rel_eps, abs_eps);
+    Array<std::array<MultiFab*,AMREX_SPACEDIM> > grad;
+    for (const auto& x : grad_delta_phi) {
+        grad.push_back({AMREX_D_DECL(x[0],x[1],x[2])});
+    }
+    solve_with_MLMG(crse_level, fine_level, delta_phi, rhsp, grad, nullptr, rel_eps, abs_eps);
 }
 
 Real
 Gravity::solve_with_MLMG (int crse_level, int fine_level,
                           const Vector<MultiFab*>& phi,
                           const Vector<const MultiFab*>& rhs,
-                          const Vector<Vector<MultiFab*> >& grad_phi,
+                          const Vector<std::array<MultiFab*,AMREX_SPACEDIM> >& grad_phi,
                           const MultiFab* const crse_bcdata,
                           Real rel_eps, Real abs_eps)
 {

@@ -68,7 +68,7 @@ public:
     amrex::Real solve_with_MLMG (int crse_level, int fine_level,
                                  const amrex::Vector<amrex::MultiFab*>& phi,
                                  const amrex::Vector<const amrex::MultiFab*>& rhs,
-                                 const amrex::Vector<amrex::Vector<amrex::MultiFab*> >& grad_phi,
+                                 const amrex::Vector<std::array<amrex::MultiFab*,AMREX_SPACEDIM> >& grad_phi,
                                  const amrex::MultiFab* const crse_bcdata,
                                  amrex::Real rel_eps, amrex::Real abs_eps);
 #endif
