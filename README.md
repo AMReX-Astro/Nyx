@@ -15,7 +15,7 @@ deposition/interpolation scheme. Both baryonic and dark matter contribute to
 the gravitational field. In addition, Nyx currently includes physics needed to
 accurately model the intergalactic medium: in optically thin limit and assuming
 ionization equilibrium, the code calculates heating and cooling processes of the
-primordial-composition gas in an ionizing ultra-violet background radiation field.
+primordial-composition gas in an ionizing ultraviolet background radiation field.
 Additional physics capabilities are under development.
 
 Nyx is parallelized with MPI + OpenMP, and has been run at parallel concurrency
@@ -68,8 +68,8 @@ http://adsabs.harvard.edu/abs/2015MNRAS.446.3697L
 
 For considerations regarding the synthesis model of the UV background, 
 which provides the photo-ionization and photo-heating rates, see Onorbe,
-Hennawi & Lukic (2017), ApJ, 847, 63:
-http://adsabs.harvard.edu/abs/2017ApJ...847...63O
+Hennawi & Lukic (2017), ApJ, 837, 106:
+http://adsabs.harvard.edu/abs/2017ApJ...837..106O
 
 
 ## Output
@@ -95,4 +95,4 @@ See the [license.txt](license.txt) file for details.
 ## Contact
 
 For questions, comments, suggestions, contact Ann Almgren at ASAlmgren@lbl.gov
-or Zarija Lukic at zarija@lbl.gov
+or Zarija Lukic at zarija@lbl.gov .
