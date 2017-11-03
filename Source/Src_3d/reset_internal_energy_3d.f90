@@ -7,7 +7,7 @@
       use amrex_fort_module, only : rt => amrex_real
       use eos_module
       use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, small_temp, &
-                                     NE_COMP
+                                     NDIAG, NE_COMP
       use  eos_params_module
 
       implicit none
@@ -17,7 +17,7 @@
       integer          :: u_l1,u_l2,u_l3,u_h1,u_h2,u_h3
       integer          :: d_l1,d_l2,d_l3,d_h1,d_h2,d_h3
       real(rt) :: u(u_l1:u_h1,u_l2:u_h2,u_l3:u_h3,NVAR)
-      real(rt) :: d(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,2)
+      real(rt) :: d(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,NDIAG)
 
       real(rt), intent(in   ) :: comoving_a
       real(rt), intent(inout) :: sum_energy_added

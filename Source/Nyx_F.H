@@ -33,6 +33,10 @@ extern "C"
      const int lo[], const int hi[],
      const amrex::Real dx[], amrex::Real* dt, amrex::Real* comoving_a);
 
+  void fill_slice(const amrex::Real* fdata, const int* flo, const int* fhi, int* fstart, int* nfull, 
+                        amrex::Real* sdata, const int* slo, const int* shi,
+                        const int* tlo, const int* thi, int* ncomp);
+
   void fort_estdt_comoving_a
     (amrex::Real* old_a, amrex::Real* new_dummy_a, amrex::Real* dt, amrex::Real* change_allowed,
      amrex::Real* final_a, int* dt_modified);
@@ -87,6 +91,11 @@ extern "C"
      const int& num_state, BL_FORT_FAB_ARG(state),
      const int& num_diag,  BL_FORT_FAB_ARG(diag_eos), const amrex::Real dx[],
      const amrex::Real xlo[], const amrex::Real xhi[]);
+
+  void fort_init_zhi
+    (const int* lo, const int* hi, 
+     const int& num_diag, BL_FORT_FAB_ARG(diag_eos),
+     const int& ratio, BL_FORT_FAB_ARG(zhi));
 
   void fort_check_initial_species
     (const int* lo, const int* hi, BL_FORT_FAB_ARG(state));

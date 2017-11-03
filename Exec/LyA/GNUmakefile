@@ -2,7 +2,7 @@
 AMREX_HOME ?= ../../../amrex
 
 HPGMG_DIR ?= ../../Util/hpgmg/finite-volume
-CVODE_LIB_DIR ?= ../../../sundials/sundials-intel/lib
+CVODE_LIB_DIR ?= $(CVODE_LIB)
 
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ../..
@@ -15,6 +15,7 @@ USE_OMP = TRUE
 PROFILE       = TRUE
 TRACE_PROFILE = FALSE
 COMM_PROFILE  = FALSE
+TINY_PROFILE  = FALSE
 
 PRECISION = DOUBLE
 USE_SINGLE_PRECISION_PARTICLES = TRUE

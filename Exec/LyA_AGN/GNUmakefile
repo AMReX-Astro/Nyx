@@ -2,7 +2,7 @@
 AMREX_HOME ?= ../../../amrex
 
 HPGMG_DIR ?= ../../Util/hpgmg/finite-volume
-CVODE_LIB_DIR ?= ../../../sundials/sundials-intel/lib
+CVODE_LIB_DIR ?= $(CVODE_LIB)
 
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ../..
@@ -10,18 +10,19 @@ TOP = ../..
 # compilation options
 COMP    = intel  # gnu
 USE_MPI = TRUE
-USE_OMP = TRUE
+USE_OMP = FALSE
 
 PROFILE       = TRUE
 TRACE_PROFILE = FALSE
 COMM_PROFILE  = FALSE
+TINY_PROFILE  = FALSE
 
 PRECISION = DOUBLE
 USE_SINGLE_PRECISION_PARTICLES = TRUE
 DEBUG     = FALSE
 
 GIMLET = FALSE
-REEBER = FALSE
+REEBER = TRUE
 
 USE_HPGMG = TRUE
 

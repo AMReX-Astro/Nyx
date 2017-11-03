@@ -59,7 +59,7 @@ namespace {
     header_filename += "/";
     header_filename += file;
     
-    Array<char> fileCharPtr;
+    Vector<char> fileCharPtr;
     ParallelDescriptor::ReadAndBcastFile(header_filename, fileCharPtr);
     std::string fileCharPtrString(fileCharPtr.dataPtr());
     std::istringstream HdrFile(fileCharPtrString, std::istringstream::in);
@@ -232,7 +232,7 @@ DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
     const Geometry& geom     = m_gdb->Geom(lev);
     const Real*     dx       = geom.CellSize();
 
-    static Array<int> calls;
+    static Vector<int> calls;
 
     calls.resize(nlevs);
 
@@ -240,7 +240,7 @@ DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
 
     if (calls[lev] > 1) return;
 
-    Array<ParticleLevel>& particles = this->GetParticles();
+    Vector<ParticleLevel>& particles = this->GetParticles();
 
     particles.reserve(15);  // So we don't ever have to do any copying on a resize.
 
@@ -370,7 +370,7 @@ DarkMatterParticleContainer::InitCosmo1ppc(MultiFab& mf, const Real vel_fac[], c
     const Geometry& geom     = m_gdb->Geom(0);
     const Real*     dx       = geom.CellSize();
 
-    Array<ParticleLevel>& particles = this->GetParticles();
+    Vector<ParticleLevel>& particles = this->GetParticles();
 
     particles.reserve(15);  // So we don't ever have to do any copying on a resize.
 
@@ -448,7 +448,7 @@ DarkMatterParticleContainer::InitCosmo1ppc(MultiFab& mf, const Real vel_fac[], c
 
 void
 DarkMatterParticleContainer::InitCosmo(
-            MultiFab& mf, const Real vel_fac[], const Array<int> n_part, const Real particleMass)
+            MultiFab& mf, const Real vel_fac[], const Vector<int> n_part, const Real particleMass)
 {
     Real shift[] = {0,0,0};
     InitCosmo(mf, vel_fac, n_part, particleMass, shift);
@@ -456,7 +456,7 @@ DarkMatterParticleContainer::InitCosmo(
 
 void
 DarkMatterParticleContainer::InitCosmo(
-            MultiFab& mf, const Real vel_fac[], const Array<int> n_part, const Real particleMass, const Real shift[])
+            MultiFab& mf, const Real vel_fac[], const Vector<int> n_part, const Real particleMass, const Real shift[])
 {
     BL_PROFILE("DarkMatterParticleContainer::InitCosmo()");
     const int       MyProc   = ParallelDescriptor::MyProc();
@@ -464,7 +464,7 @@ DarkMatterParticleContainer::InitCosmo(
     const Real      strttime = ParallelDescriptor::second();
     const Geometry& geom     = m_gdb->Geom(0);
 
-    Array<ParticleLevel>& particles = this->GetParticles();
+    Vector<ParticleLevel>& particles = this->GetParticles();
 
     particles.reserve(15);  // So we don't ever have to do any copying on a resize.
 
@@ -676,7 +676,7 @@ DarkMatterParticleContainer::InitCosmo(
 */
 
 void
-DarkMatterParticleContainer::AssignDensityAndVels (Array<std::unique_ptr<MultiFab> >& mf, int lev_min) const
+DarkMatterParticleContainer::AssignDensityAndVels (Vector<std::unique_ptr<MultiFab> >& mf, int lev_min) const
 {
      AssignDensity(mf, lev_min, BL_SPACEDIM+1);
 }
@@ -725,7 +725,7 @@ DarkMatterParticleContainer::InitFromBinaryMortonFile(const std::string& particl
     file_indices[box_morton_keys[i].box_id] = i;
   
   ParticleType p;
-  for (MFIter mfi = MakeMFIter(lev); mfi.isValid(); ++mfi) {
+  for (MFIter mfi = MakeMFIter(lev, false); mfi.isValid(); ++mfi) {  // no tiling
     Box tile_box = mfi.tilebox();      
     const int grid = mfi.index();
     const int tile = mfi.LocalTileIndex();      
