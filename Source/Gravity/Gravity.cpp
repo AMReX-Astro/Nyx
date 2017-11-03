@@ -18,6 +18,11 @@
 #include <BL_HPGMG.H>
 #endif
 
+#ifdef NYX_MLMG
+#include <AMReX_MLMG.H>
+#include <AMReX_MLPoisson.H>
+#endif
+
 using namespace amrex;
 
 // MAX_LEV defines the maximum number of AMR levels allowed by the parent "Amr" object
@@ -32,6 +37,10 @@ int  Gravity::dirichlet_bcs = 0;
 int  Gravity::monopole_bcs  = 0;
 int  Gravity::solve_with_cpp= 0;
 int  Gravity::solve_with_hpgmg = 0;
+int  Gravity::solve_with_mlmg = 0;
+int  Gravity::mlmg_max_fmg_iter = 0;
+int  Gravity::mlmg_agglomeration = 0;
+int  Gravity::mlmg_consolidation = 0;
 Real Gravity::sl_tol        = 1.e-12;
 Real Gravity::ml_tol        = 1.e-12;
 Real Gravity::delta_tol     = 1.e-12;
@@ -126,9 +135,17 @@ Gravity::read_params ()
 
         pp.query("solve_with_cpp", solve_with_cpp);
         pp.query("solve_with_hpgmg", solve_with_hpgmg);
+        pp.query("solve_with_mlmg", solve_with_mlmg);
+        pp.query("mlmg_max_fmg_iter", mlmg_max_fmg_iter);
+        pp.query("mlmg_agglomeration", mlmg_agglomeration);
+        pp.query("mlmg_consolidation", mlmg_consolidation);
 
-        if (solve_with_cpp && solve_with_hpgmg)
+        const int nflags = static_cast<int>(solve_with_cpp)
+            +              static_cast<int>(solve_with_hpgmg)
+            +              static_cast<int>(solve_with_mlmg);
+        if (nflags >= 2) {
           amrex::Error("Multiple gravity solvers selected.");
+        }
 
 #ifndef USEHPGMG
         if (solve_with_hpgmg)
@@ -364,6 +381,25 @@ Gravity::solve_for_phi (int               level,
     // Here we divide by a for the Poisson solve.
     Rhs.mult(1 / cs->get_comoving_a(time));
 
+#ifndef NDEBUG
+    if (Rhs.contains_nan(0,1,0))
+    {
+        std::cout << "Rhs in solve_for_phi at level " << level << " has NaNs" << std::endl;
+        amrex::Abort("");
+    }
+#endif
+
+    // Need to set the boundary values here so they can get copied into "bndry"
+    if (dirichlet_bcs) set_dirichlet_bcs(level,&phi);
+
+#ifdef NYX_MLMG
+    if (solve_with_mlmg)
+    {
+        solve_with_MLMG(level, level, {&phi}, {&Rhs}, {grad_phi}, time);
+        return;
+    }
+#endif    
+
     const Geometry& geom = parent->Geom(level);
     MacBndry bndry(grids[level], dmap[level], 1, geom);
 
@@ -376,17 +412,6 @@ Gravity::solve_for_phi (int               level,
     const int src_comp  = 0;
     const int dest_comp = 0;
     const int num_comp  = 1;
-
-#ifndef NDEBUG
-    if (Rhs.contains_nan(0,1,0))
-    {
-        std::cout << "Rhs in solve_for_phi at level " << level << " has NaNs" << std::endl;
-        amrex::Abort("");
-    }
-#endif
-
-    // Need to set the boundary values here so they can get copied into "bndry"
-    if (dirichlet_bcs) set_dirichlet_bcs(level,&phi);
 
     if (level == 0)
     {
@@ -528,6 +553,8 @@ Gravity::solve_for_delta_phi (int                        crse_level,
     Vector<Geometry> fgeom(num_levels);
     for (int lev = crse_level; lev <= fine_level; lev++)
         fgeom[lev-crse_level] = parent->Geom(lev);
+
+    // xxxxx
 
     MGT_Solver mgt_solver(fgeom, mg_bc, bav, dmv, false, stencil_type);
 
@@ -1165,6 +1192,8 @@ Gravity::actual_multilevel_solve (int                       level,
         }
     }
 
+    // xxxxx
+
     // Average phi from fine to coarse level
     for (int lev = finest_level; lev > level; lev--)
     {
@@ -1619,6 +1648,26 @@ Gravity::make_mg_bc ()
             }
         }
     }
+
+#ifdef NYX_MLMG
+    for (int idim = 0; idim < AMREX_SPACEDIM; ++idim) {
+        if (geom.isPeriodic(idim)) {
+            mlmg_lobc[idim] = MLLinOp::BCType::Periodic;
+            mlmg_hibc[idim] = MLLinOp::BCType::Periodic;
+        } else {
+            if (phys_bc->lo(idim) == Symmetry) {
+                mlmg_lobc[idim] = MLLinOp::BCType::Neumann;
+            } else {
+                mlmg_lobc[idim] = MLLinOp::BCType::Dirichlet;
+            }
+            if (phys_bc->hi(idim) == Symmetry) {
+                mlmg_hibc[idim] = MLLinOp::BCType::Neumann;
+            } else {
+                mlmg_hibc[idim] = MLLinOp::BCType::Dirichlet;
+            }
+        }
+    }
+#endif
 }
 
 void
@@ -2033,6 +2082,74 @@ Gravity::solve_with_HPGMG(int level,
   grad_phi[0]->mult(-1.0);
   grad_phi[1]->mult(-1.0);
   grad_phi[2]->mult(-1.0);
+}
+#endif
+
+#ifdef NYX_MLMG
+void
+Gravity::solve_with_MLMG (int crse_level, int fine_level,
+                          const Vector<MultiFab*>& phi,
+                          const Vector<const MultiFab*>& rhs,
+                          const Vector<Vector<MultiFab*> >& grad_phi,
+                          Real time)
+{
+    BL_PROFILE("Gravity::solve_with_MLMG");
+
+    const int nlevs = fine_level - crse_level + 1;
+
+    Vector<Geometry> gmv;
+    Vector<BoxArray> bav;
+    Vector<DistributionMapping> dmv;
+    for (int ilev = 0; ilev < nlevs; ++ilev)
+    {
+        gmv.push_back(parent->Geom(ilev+crse_level));
+        bav.push_back(rhs[ilev]->boxArray());
+        dmv.push_back(rhs[ilev]->DistributionMap());
+    }
+
+    MLPoisson mlpoisson(gmv, bav, dmv);
+    mlpoisson.setAgglomeration(mlmg_agglomeration);
+    mlpoisson.setConsolidation(mlmg_consolidation);
+
+    // BC
+    {
+        mlpoisson.setDomainBC(mlmg_lobc, mlmg_hibc);
+
+        MultiFab CPhi;  // This has to exist when setLevelBC is called.
+        if (mlpoisson.needsCoarseDataForBC())
+        {
+            get_crse_phi(crse_level, CPhi, time);
+            mlpoisson.setBCWithCoarseData(&CPhi, parent->refRatio(crse_level-1)[0]);
+        }
+        
+        for (int ilev = 0; ilev < nlevs; ++ilev)
+        {
+            mlpoisson.setLevelBC(ilev, phi[ilev]);
+        }
+    }
+
+#if (AMREX_SPACEDIM != 3)
+    amrex::Abort("solve_with_MLMG: 1d and 2d not supported yet");
+#endif
+
+    MLMG mlmg(mlpoisson);
+    mlmg.setVerbose(verbose);
+    if (crse_level == 0) {
+	mlmg.setMaxFmgIter(mlmg_max_fmg_iter);
+    } else {
+	mlmg.setMaxFmgIter(0); // Vcycle
+    }
+
+    Real rel_eps = (nlevs == 1) ? sl_tol : ml_tol;
+    Real abs_eps = 0.;
+
+    Real final_resnorm = mlmg.solve(phi, rhs, rel_eps, abs_eps);
+
+    Vector<std::array<MultiFab*,AMREX_SPACEDIM> > grad_phi_tmp;
+    for (const auto& x: grad_phi) {
+        grad_phi_tmp.push_back({AMREX_D_DECL(x[0],x[1],x[2])});
+    }
+    mlmg.getFluxes(grad_phi_tmp);
 }
 #endif
 

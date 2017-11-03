@@ -6,6 +6,10 @@
 #include <AMReX_FluxRegister.H>
 #include <AMReX_Particles.H>
 
+#ifdef NYX_MLMG
+#include <AMReX_MLLinOp.H>
+#endif
+
 class Gravity {
 
 public:
@@ -57,6 +61,16 @@ public:
     void solve_with_HPGMG(int level, amrex::MultiFab& phi, const amrex::Vector<amrex::MultiFab*>& grad_phi,
                         amrex::MultiFab& rhs, amrex::Real tol, amrex::Real abs_tol);
 #endif
+
+#ifdef NYX_MLMG
+    void solve_with_MLMG (int crse_level, int fine_level,
+                          const amrex::Vector<amrex::MultiFab*>& phi,
+                          const amrex::Vector<const amrex::MultiFab*>& rhs,
+                          const amrex::Vector<amrex::Vector<amrex::MultiFab*> >& grad_phi,
+                          amrex::Real time);
+
+#endif
+
     void set_boundary  (amrex::BndryData& bd, amrex::MultiFab&  rhs, const amrex::Real* dx);
 
     void solve_for_old_phi(int level, amrex::MultiFab& phi, const amrex::Vector<amrex::MultiFab*>& grad_phi,
@@ -103,6 +117,11 @@ public:
     void reflux_phi(int level, amrex::MultiFab& dphi);
 
     void make_mg_bc();
+
+#ifdef NYX_MLMG
+    std::array<amrex::MLLinOp::BCType,AMREX_SPACEDIM> mlmg_lobc;
+    std::array<amrex::MLLinOp::BCType,AMREX_SPACEDIM> mlmg_hibc;
+#endif
 
     void set_dirichlet_bcs(int level, amrex::MultiFab* phi);
 
@@ -153,6 +172,10 @@ protected:
     static int  monopole_bcs;
     static int  solve_with_cpp;
     static int solve_with_hpgmg;
+    static int solve_with_mlmg;
+    static int mlmg_max_fmg_iter;
+    static int mlmg_agglomeration;
+    static int mlmg_consolidation;
     static amrex::Real mass_offset;
     static amrex::Real sl_tol;
     static amrex::Real ml_tol;
