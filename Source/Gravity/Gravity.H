@@ -63,12 +63,14 @@ public:
 #endif
 
 #ifdef NYX_MLMG
-    void solve_with_MLMG (int crse_level, int fine_level,
-                          const amrex::Vector<amrex::MultiFab*>& phi,
-                          const amrex::Vector<const amrex::MultiFab*>& rhs,
-                          const amrex::Vector<amrex::Vector<amrex::MultiFab*> >& grad_phi,
-                          amrex::Real time);
-
+    void solve_for_phi_with_mlmg (int level, amrex::MultiFab& Rhs, amrex::MultiFab& phi,
+                                  const amrex::Vector<amrex::MultiFab*>& grad_phi, amrex::Real time);
+    amrex::Real solve_with_MLMG (int crse_level, int fine_level,
+                                 const amrex::Vector<amrex::MultiFab*>& phi,
+                                 const amrex::Vector<const amrex::MultiFab*>& rhs,
+                                 const amrex::Vector<amrex::Vector<amrex::MultiFab*> >& grad_phi,
+                                 const amrex::MultiFab* const crse_bcdata,
+                                 amrex::Real rel_eps, amrex::Real abs_eps);
 #endif
 
     void set_boundary  (amrex::BndryData& bd, amrex::MultiFab&  rhs, const amrex::Real* dx);
@@ -83,6 +85,14 @@ public:
     void solve_for_delta_phi(int crse_level, int fine_level, amrex::MultiFab& CrseRhs,
                              const amrex::Vector<amrex::MultiFab*>& delta_phi,
                              const amrex::Vector<amrex::Vector<amrex::MultiFab*> >& grad_delta_phi);
+    void solve_for_delta_phi_with_mgt(int crse_level, int fine_level, amrex::MultiFab& CrseRhs,
+                                      const amrex::Vector<amrex::MultiFab*>& delta_phi,
+                                      const amrex::Vector<amrex::Vector<amrex::MultiFab*> >& grad_delta_phi);
+#ifdef NYX_MLMG
+    void solve_for_delta_phi_with_mlmg(int crse_level, int fine_level, amrex::MultiFab& CrseRhs,
+                                       const amrex::Vector<amrex::MultiFab*>& delta_phi,
+                                       const amrex::Vector<amrex::Vector<amrex::MultiFab*> >& grad_delta_phi);
+#endif
 
     void gravity_sync(int crse_level, int fine_level, int iteration, int ncycle, 
                       const amrex::MultiFab& drho_and_drhoU, const amrex::MultiFab& dphi,

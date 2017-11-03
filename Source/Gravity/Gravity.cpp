@@ -395,7 +395,7 @@ Gravity::solve_for_phi (int               level,
 #ifdef NYX_MLMG
     if (solve_with_mlmg)
     {
-        solve_with_MLMG(level, level, {&phi}, {&Rhs}, {grad_phi}, time);
+        solve_for_phi_with_mlmg(level, Rhs, phi, grad_phi, time);
         return;
     }
 #endif    
@@ -520,6 +520,25 @@ Gravity::solve_for_delta_phi (int                        crse_level,
                               const Vector<Vector<MultiFab*> >& grad_delta_phi)
 {
     BL_PROFILE("Gravity::solve_for_delta_phi()");
+#ifdef NYX_MLMG
+    if (solve_with_mlmg)
+    {
+        solve_for_delta_phi_with_mlmg(crse_level,fine_level,crse_rhs,delta_phi,grad_delta_phi);
+    }
+    else
+#endif
+    {
+        solve_for_delta_phi_with_mgt(crse_level,fine_level,crse_rhs,delta_phi,grad_delta_phi);
+    }
+}
+
+void
+Gravity::solve_for_delta_phi_with_mgt (int                        crse_level,
+                                       int                        fine_level,
+                                       MultiFab&                  crse_rhs,
+                                       const Vector<MultiFab*>&         delta_phi,
+                                       const Vector<Vector<MultiFab*> >& grad_delta_phi)
+{
     const int num_levels = fine_level - crse_level + 1;
     const Box& crse_domain = (parent->Geom(crse_level)).Domain();
 
@@ -553,8 +572,6 @@ Gravity::solve_for_delta_phi (int                        crse_level,
     Vector<Geometry> fgeom(num_levels);
     for (int lev = crse_level; lev <= fine_level; lev++)
         fgeom[lev-crse_level] = parent->Geom(lev);
-
-    // xxxxx
 
     MGT_Solver mgt_solver(fgeom, mg_bc, bav, dmv, false, stencil_type);
 
@@ -1191,8 +1208,6 @@ Gravity::actual_multilevel_solve (int                       level,
             mgt_solver.get_fluxes(lev, grad_phi[level+lev], dx);
         }
     }
-
-    // xxxxx
 
     // Average phi from fine to coarse level
     for (int lev = finest_level; lev > level; lev--)
@@ -2086,12 +2101,67 @@ Gravity::solve_with_HPGMG(int level,
 #endif
 
 #ifdef NYX_MLMG
+
 void
+Gravity::solve_for_phi_with_mlmg (int level, MultiFab& Rhs, MultiFab& phi,
+                                  const Vector<MultiFab*>& grad_phi, Real time)
+{
+    BL_PROFILE("Gravity::solve_for_phi_with_mlmg");
+    const MultiFab* crse_bcdata = nullptr;
+    MultiFab CPhi;
+    if (level > 0) {
+        get_crse_phi(level, CPhi, time);
+        crse_bcdata = &CPhi;
+    }
+    Real rel_eps = sl_tol;
+    Real abs_eps = 0.;
+    level_solver_resnorm[level] =
+        solve_with_MLMG(level, level, {&phi}, {&Rhs}, {grad_phi}, crse_bcdata, rel_eps, abs_eps);
+}
+
+void
+Gravity::solve_for_delta_phi_with_mlmg (int crse_level, int fine_level, MultiFab& CrseRhs,
+                                        const Vector<MultiFab*>& delta_phi,
+                                        const Vector<Vector<MultiFab*> >& grad_delta_phi)
+{
+    BL_PROFILE("Gravity::solve_for_delta_phi_with_mlmg");
+
+    if (verbose)
+    {
+        amrex::Print() << "... solving for delta_phi at crse_level = " << crse_level << '\n';
+        amrex::Print() << "...                    up to fine_level = " << fine_level << '\n';
+    }
+    
+    const int num_levels = fine_level - crse_level + 1;
+
+    Vector<MultiFab> rhs(num_levels);
+    Vector<const MultiFab*> rhsp(num_levels);
+
+    for (int lev = 0; lev < num_levels; ++lev) {
+        delta_phi[lev]->setVal(0.0);
+        if (lev == 0) {
+            rhsp[lev] = &CrseRhs;
+        } else {
+            rhs[lev].define(grids[lev+crse_level], dmap[lev+crse_level], 1, 0);
+            rhs[lev].setVal(0.0);
+            rhsp[lev] = &rhs[lev];
+        }
+    }
+
+    Real rel_eps = delta_tol;
+    // fine_level is not included.
+    Real abs_eps = *(std::max_element(level_solver_resnorm.begin() + crse_level,
+                                      level_solver_resnorm.begin() + fine_level));
+    solve_with_MLMG(crse_level, fine_level, delta_phi, rhsp, grad_delta_phi, nullptr, rel_eps, abs_eps);
+}
+
+Real
 Gravity::solve_with_MLMG (int crse_level, int fine_level,
                           const Vector<MultiFab*>& phi,
                           const Vector<const MultiFab*>& rhs,
                           const Vector<Vector<MultiFab*> >& grad_phi,
-                          Real time)
+                          const MultiFab* const crse_bcdata,
+                          Real rel_eps, Real abs_eps)
 {
     BL_PROFILE("Gravity::solve_with_MLMG");
 
@@ -2112,20 +2182,16 @@ Gravity::solve_with_MLMG (int crse_level, int fine_level,
     mlpoisson.setConsolidation(mlmg_consolidation);
 
     // BC
-    {
-        mlpoisson.setDomainBC(mlmg_lobc, mlmg_hibc);
+    mlpoisson.setDomainBC(mlmg_lobc, mlmg_hibc);
 
-        MultiFab CPhi;  // This has to exist when setLevelBC is called.
-        if (mlpoisson.needsCoarseDataForBC())
-        {
-            get_crse_phi(crse_level, CPhi, time);
-            mlpoisson.setBCWithCoarseData(&CPhi, parent->refRatio(crse_level-1)[0]);
-        }
-        
-        for (int ilev = 0; ilev < nlevs; ++ilev)
-        {
-            mlpoisson.setLevelBC(ilev, phi[ilev]);
-        }
+    if (mlpoisson.needsCoarseDataForBC())
+    {
+        mlpoisson.setBCWithCoarseData(crse_bcdata, parent->refRatio(crse_level-1)[0]);
+    }
+    
+    for (int ilev = 0; ilev < nlevs; ++ilev)
+    {
+        mlpoisson.setLevelBC(ilev, phi[ilev]);
     }
 
 #if (AMREX_SPACEDIM != 3)
@@ -2140,9 +2206,6 @@ Gravity::solve_with_MLMG (int crse_level, int fine_level,
 	mlmg.setMaxFmgIter(0); // Vcycle
     }
 
-    Real rel_eps = (nlevs == 1) ? sl_tol : ml_tol;
-    Real abs_eps = 0.;
-
     Real final_resnorm = mlmg.solve(phi, rhs, rel_eps, abs_eps);
 
     Vector<std::array<MultiFab*,AMREX_SPACEDIM> > grad_phi_tmp;
@@ -2150,7 +2213,10 @@ Gravity::solve_with_MLMG (int crse_level, int fine_level,
         grad_phi_tmp.push_back({AMREX_D_DECL(x[0],x[1],x[2])});
     }
     mlmg.getFluxes(grad_phi_tmp);
+
+    return final_resnorm;
 }
+
 #endif
 
 void
