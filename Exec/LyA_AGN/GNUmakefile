@@ -8,7 +8,7 @@ CVODE_LIB_DIR ?= ../../../sundials/sundials-intel/lib
 TOP = ../..
 
 # compilation options
-COMP    = gnu  # gnu
+COMP    = intel  # gnu
 USE_MPI = TRUE
 USE_OMP = TRUE
 

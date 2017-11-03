@@ -478,11 +478,11 @@
 
   subroutine get_length_frac(frac, x, dx)
 
-    use amrex_fort_module, only : amrex_real, c_real => amrex_particle_real
+    use amrex_fort_module, only : amrex_real, amrex_particle_real
     use bl_constants_module, only : ZERO, ONE, HALF
 
     real(amrex_real), intent(out  )  :: frac(-1:1)
-    real(c_real), intent(in   )  :: x
+    real(amrex_particle_real), intent(in   )  :: x
     real(amrex_real), intent(in   )  :: dx
 
     integer :: i
@@ -508,11 +508,11 @@
 
   subroutine get_weights(weight, pos, dx)
 
-    use amrex_fort_module, only : amrex_real, c_real => amrex_particle_real 
+    use amrex_fort_module, only : amrex_real, amrex_particle_real 
     use bl_constants_module, only : ZERO, ONE, HALF
 
     real(amrex_real), intent(out  )  :: weight(-1:1, -1:1, -1:1)
-    real(c_real), intent(in   )  :: pos(3)
+    real(amrex_particle_real), intent(in   )  :: pos(3)
     real(amrex_real), intent(in   )  :: dx(3)
 
     integer :: d, i, j, k
