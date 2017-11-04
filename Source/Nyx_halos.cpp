@@ -184,8 +184,8 @@ Nyx::halo_find (Real dt)
 
        std::ofstream os;
 
-       std::cout << "  " << std::endl;
-       std::cout << " *************************************** " << std::endl;
+       //std::cout << "  " << std::endl;
+       //std::cout << " *************************************** " << std::endl;
 
        // agn_density_old will hold the density from depositing the
        // mass of existing particles.
@@ -252,8 +252,8 @@ Nyx::halo_find (Real dt)
            }
        } // end of loop over creating new particles from halos
 
-       std::cout << " *************************************** " << std::endl;
-       std::cout << "  " << std::endl;
+       //std::cout << " *************************************** " << std::endl;
+       //std::cout << "  " << std::endl;
 
        // At this point the particles have all been created on the same process as the halo they came from,
        // but they are not on the "right" process for going forward
