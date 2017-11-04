@@ -1096,7 +1096,7 @@ Gravity::actual_multilevel_solve (int                       level,
         }
         Real rel_eps = ml_tol;
         Real abs_eps = 0.;
-        Array<std::array<MultiFab*,AMREX_SPACEDIM> > grad_phi_aa;
+        Vector<std::array<MultiFab*,AMREX_SPACEDIM> > grad_phi_aa;
         for (int amrlev = level; amrlev <= finest_level; ++amrlev) {
             grad_phi_aa.push_back({AMREX_D_DECL(grad_phi[amrlev][0],
                                                 grad_phi[amrlev][1],
@@ -2181,7 +2181,7 @@ Gravity::solve_for_delta_phi_with_mlmg (int crse_level, int fine_level, MultiFab
     // fine_level is not included.
     Real abs_eps = *(std::max_element(level_solver_resnorm.begin() + crse_level,
                                       level_solver_resnorm.begin() + fine_level));
-    Array<std::array<MultiFab*,AMREX_SPACEDIM> > grad;
+    Vector<std::array<MultiFab*,AMREX_SPACEDIM> > grad;
     for (const auto& x : grad_delta_phi) {
         grad.push_back({AMREX_D_DECL(x[0],x[1],x[2])});
     }
