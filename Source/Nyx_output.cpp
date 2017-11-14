@@ -584,6 +584,7 @@ Nyx::particle_plot_file (const std::string& dir)
 void
 Nyx::particle_check_point (const std::string& dir)
 {
+  BL_PROFILE("Nyx::particle_check_point");
   if (level == 0)
     {
       if (Nyx::theDMPC())
@@ -783,6 +784,43 @@ Nyx::checkPoint (const std::string& dir,
 #endif
 
 }
+
+void
+Nyx::checkPointPre (const std::string& dir,
+                    std::ostream&      os)
+{
+  amrex::Print() << "NCNCNCNC:  _in Nyx::checkPointPre:  dir = " << dir << std::endl;
+  if(Nyx::theDMPC()) {
+    Nyx::theDMPC()->CheckpointPre();
+    Nyx::theDMPC()->SetUsePrePost(true);
+  }
+#ifdef AGN
+  if(Nyx::theAPC()) {
+    Nyx::theDMPC()->CheckpointPre();
+    Nyx::theAPC()->SetUsePrePost(true);
+  }
+#endif
+
+}
+
+
+void
+Nyx::checkPointPost (const std::string& dir,
+                 std::ostream&      os)
+{
+  amrex::Print() << "NCNCNCNC:  _in Nyx::checkPointPost:  dir = " << dir << std::endl;
+  if(Nyx::theDMPC()) {
+    Nyx::theDMPC()->CheckpointPost();
+    Nyx::theDMPC()->SetUsePrePost(false);
+  }
+#ifdef AGN
+  if(Nyx::theAPC()) {
+    Nyx::theDMPC()->CheckpointPost();
+    Nyx::theAPC()->SetUsePrePost(false);
+  }
+#endif
+}
+
 
 #ifdef FORCING
 void
