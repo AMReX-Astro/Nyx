@@ -1,10 +1,10 @@
 If you use Nyx, we appreciate you citing the main code paper:
 
-@ARTICLE{2013ApJ...765...39A,
+@ARTICLE{Nyx,
    author = {{Almgren}, A.~S. and {Bell}, J.~B. and {Lijewski}, M.~J. and 
 	{Luki{\'c}}, Z. and {Van Andel}, E.},
     title = "{Nyx: A Massively Parallel AMR Code for Computational Cosmology}",
-  journal = {\apj},
+  journal = {The Astrophysical Journal},
 archivePrefix = "arXiv",
    eprint = {1301.4498},
  primaryClass = "astro-ph.IM",
@@ -18,4 +18,3 @@ archivePrefix = "arXiv",
    adsurl = {http://adsabs.harvard.edu/abs/2013ApJ...765...39A},
   adsnote = {Provided by the SAO/NASA Astrophysics Data System}
 }
-
