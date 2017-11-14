@@ -80,6 +80,8 @@ public:
     //
     virtual void checkPoint(const std::string& dir, std::ostream& os,
                             amrex::VisMF::How how, bool dump_old);
+    virtual void checkPointPre(const std::string& dir, std::ostream& os);
+    virtual void checkPointPost(const std::string& dir, std::ostream& os);
 
     // A string written as the first item in `write_plot_file()` at level zero.
     // It is so we can distinguish between different types of plot files. For
