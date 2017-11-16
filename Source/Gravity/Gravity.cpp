@@ -2221,7 +2221,7 @@ Gravity::solve_with_MLMG (int crse_level, int fine_level,
 
     if (mlpoisson.needsCoarseDataForBC())
     {
-        mlpoisson.setBCWithCoarseData(crse_bcdata, parent->refRatio(crse_level-1)[0]);
+        mlpoisson.setCoarseFineBC(crse_bcdata, parent->refRatio(crse_level-1)[0]);
     }
     
     for (int ilev = 0; ilev < nlevs; ++ilev)
