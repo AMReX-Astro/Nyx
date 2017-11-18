@@ -1644,26 +1644,6 @@ Nyx::postCoarseTimeStep (Real cumtime)
         BL_PROFILE("Nyx::postCoarseTimeStep: writeZSlice");
         amrex::VisMF::Write(*z_slice, zs);
       }
-      {
-        BL_PROFILE("Nyx::postCoarseTimeStep: writeZSliceFAB");
-	int ZDIR(2);
-	int middle(geom.Domain().smallEnd(ZDIR) + (geom.Domain().length(ZDIR) / 2));
-	Box bZFAB(geom.Domain());
-	bZFAB.setSmall(ZDIR, middle);
-	bZFAB.setBig(ZDIR, middle);
-	BoxArray baZFAB(bZFAB);
-	amrex::Vector<int> pmapZFAB(1, ParallelDescriptor::IOProcessorNumber());  // ---- one fab on the ioproc
-	DistributionMapping dmZFAB(pmapZFAB);
-	MultiFab mfZFAB(baZFAB, dmZFAB, z_slice->nComp(), z_slice->nGrow());
-	mfZFAB.copy(*z_slice);
-	if(ParallelDescriptor::IOProcessor()) {
-          std::string zsFAB = zs + "_FAB.fab";
-	  std::ofstream osZFAB(zsFAB);
-	  const FArrayBox &fZFAB = mfZFAB[0];
-	  fZFAB.writeOn(osZFAB);
-	  osZFAB.close();
-	}
-      }
 
       // Slice diag_eos
       x_slice = slice_util::getSliceData(0, D_new,0,D_new.nComp(), geom, x_coord);
