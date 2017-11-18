@@ -2210,16 +2210,18 @@ Gravity::solve_with_MLMG (int crse_level, int fine_level,
         dmv.push_back(rhs[ilev]->DistributionMap());
     }
 
-    MLPoisson mlpoisson(gmv, bav, dmv);
-    mlpoisson.setAgglomeration(mlmg_agglomeration);
-    mlpoisson.setConsolidation(mlmg_consolidation);
+    LPInfo info;
+    info.setAgglomeration(mlmg_agglomeration);
+    info.setConsolidation(mlmg_consolidation);
+
+    MLPoisson mlpoisson(gmv, bav, dmv, info);
 
     // BC
     mlpoisson.setDomainBC(mlmg_lobc, mlmg_hibc);
 
     if (mlpoisson.needsCoarseDataForBC())
     {
-        mlpoisson.setBCWithCoarseData(crse_bcdata, parent->refRatio(crse_level-1)[0]);
+        mlpoisson.setCoarseFineBC(crse_bcdata, parent->refRatio(crse_level-1)[0]);
     }
     
     for (int ilev = 0; ilev < nlevs; ++ilev)
