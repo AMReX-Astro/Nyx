@@ -293,6 +293,16 @@ extern "C"
      amrex::Real* Tinv_sum, amrex::Real* T_meanrho_sum, amrex::Real* rho_sum,
      amrex::Real* vol_sum, amrex::Real* vol_mn_sum);
 
+  void fort_compute_gas_frac
+    (const int lo[], const int hi[], const amrex::Real dx[],
+     const BL_FORT_FAB_ARG(state),
+     const BL_FORT_FAB_ARG(diag_eos),
+     amrex::Real* rho_ave, amrex::Real* T_cut, amrex::Real* rho_cut,
+     amrex::Real* whim_mass, amrex::Real* whim_vol,
+     amrex::Real* hh_mass, amrex::Real* hh_vol,
+     amrex::Real* igm_mass, amrex::Real* igm_vol,
+     amrex::Real* mass_sum, amrex::Real* vol_sum);
+
 #ifdef AUX_UPDATE
   void auxupdate
     (BL_FORT_FAB_ARG(state_old),
