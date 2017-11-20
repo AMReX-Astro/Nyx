@@ -150,8 +150,10 @@ subroutine integrate_state_fcvode_vec(lo, hi, &
 
                 do ii = 1, simd_width
                   if (e_orig(ii) .lt. 0.d0) then
+                      !$OMP CRITICAL
                       print *,'negative e entering strang integration ',z, i+ii-1,j,k, rho(ii)/mean_rhob, e_orig(ii)
                       call bl_abort('bad e in strang')
+                      !$OMP END CRITICAL
                   end if
                 end do
 
@@ -164,12 +166,14 @@ subroutine integrate_state_fcvode_vec(lo, hi, &
 
                 do ii = 1, simd_width
                   if (e_out(ii) .lt. 0.d0) then
+                      !$OMP CRITICAL
                       print *,'negative e exiting strang integration ',z, i,j,k, rho(ii)/mean_rhob, e_out(ii)
+                      call flush(6)
+                      !$OMP END CRITICAL
                       T_out(ii)  = 10.0
                       ne_out(ii) = 0.0
                       mu(ii)     = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+ne_out(ii))
                       e_out(ii)  = T_out(ii) / (gamma_minus_1 * mp_over_kB * mu(ii))
-                      call flush(6)
   !                    call bl_abort('bad e out of strang')
                   end if
                 end do

@@ -105,10 +105,10 @@ subroutine integrate_state_vode(lo, hi, &
                 endif
 
                 if (e_orig .lt. 0.d0) then
-                    print *,'negative e entering strang integration ', z, i,j,k, e_orig
-                    print *, 'state(i,j,k,UEINT) = ', state(i,j,k,UEINT)
-                    print *, 'rho / mean_rhob = ', rho / mean_rhob
+                    !$OMP CRITICAL
+                    print *,'negative e entering strang integration ', z, i,j,k, rho/mean_rhob, e_orig
                     call bl_abort('bad e in strang')
+                    !$OMP END CRITICAL
                 end if
 
                 i_vode = i
@@ -119,12 +119,14 @@ subroutine integrate_state_vode(lo, hi, &
                                               T_out ,ne_out ,e_out)
 
                 if (e_out .lt. 0.d0) then
-                    print *,'negative e exiting strang integration ', z, i,j,k, e_out
+                    !$OMP CRITICAL
+                    print *,'negative e exiting strang integration ', z, i,j,k, rho/mean_rhob, e_out
+                    call flush(6)
+                    !$OMP END CRITICAL
                     T_out  = 10.0
                     ne_out = 0.0
                     mu     = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+ne_out)
                     e_out  = T_out / (gamma_minus_1 * mp_over_kB * mu)
-                    call flush(6)
                     !call bl_abort('bad e out of strang')
                 end if
 
