@@ -2354,6 +2354,44 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
 }
 #endif
 
+#ifndef NO_HYDRO
+void
+Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
+                            Real& whim_mass_frac, Real& whim_vol_frac,
+                            Real& hh_mass_frac,   Real& hh_vol_frac,
+                            Real& igm_mass_frac,  Real& igm_vol_frac)
+{
+    BL_PROFILE("Nyx::compute_gas_fractions()");
+    MultiFab& S_new = get_new_data(State_Type);
+    MultiFab& D_new = get_new_data(DiagEOS_Type);
+
+    Real whim_mass=0.0, whim_vol=0.0, hh_mass=0.0, hh_vol=0.0, igm_mass=0.0, igm_vol=0.0;
+    Real mass_sum=0.0, vol_sum=0.0;
+
+#ifdef _OPENMP
+#pragma omp parallel reduction(+:whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum)
+#endif
+    for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
+    {
+        const Box& bx = mfi.tilebox();
+
+        fort_compute_gas_frac
+            (bx.loVect(), bx.hiVect(), geom.CellSize(),
+             BL_TO_FORTRAN(S_new[mfi]),
+             BL_TO_FORTRAN(D_new[mfi]), &average_gas_density, &T_cut, &rho_cut,
+             &whim_mass, &whim_vol, &hh_mass, &hh_vol, &igm_mass, &igm_vol, &mass_sum, &vol_sum);
+    }
+    Real sums[8] = {whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum};
+    ParallelDescriptor::ReduceRealSum(sums,8);
+
+    whim_mass_frac = sums[0] / sums[6];
+    whim_vol_frac  = sums[1] / sums[7];
+    hh_mass_frac   = sums[2] / sums[6];
+    hh_vol_frac    = sums[3] / sums[7];
+    igm_mass_frac  = sums[4] / sums[6];
+    igm_vol_frac   = sums[5] / sums[7];
+}
+#endif
 
 Real
 Nyx::getCPUTime()
