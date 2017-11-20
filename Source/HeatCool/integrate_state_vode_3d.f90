@@ -136,12 +136,12 @@ subroutine integrate_state_vode(lo, hi, &
                 ! Instanteneous heating from reionization:
                 T_H = 0.0d0
                 if (inhomogeneous_on .or. flash_h) then
-                   if ((H_reion_z  .lt. z) .and. (H_reion_z  .ge. z_end)) T_H  = (1.0d0 - species(2))*T_zhi
+                   if ((H_reion_z  .lt. z) .and. (H_reion_z  .ge. z_end)) T_H  = (1.0d0 - species(2))*max((T_zhi-T_out), 0.0d0)
                 endif
 
                 T_He = 0.0d0
                 if (flash_he) then
-                   if ((He_reion_z .lt. z) .and. (He_reion_z .ge. z_end)) T_He = (1.0d0 - species(5))*T_zheii
+                   if ((He_reion_z .lt. z) .and. (He_reion_z .ge. z_end)) T_He = (1.0d0 - species(5))*max((T_zheii-T_out), 0.0d0)
                 endif
 
                 if ((T_H .gt. 0.0d0) .or. (T_He .gt. 0.0d0)) then
