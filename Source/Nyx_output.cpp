@@ -508,6 +508,37 @@ Nyx::writePlotFile (const std::string& dir,
 }
 
 void
+Nyx::writePlotFilePre (const std::string& dir, ostream& os)
+{
+  amrex::Print() << "NCNCNCNC:  _in Nyx::writePlotFilePre:  dir = " << dir << std::endl;
+  if(Nyx::theDMPC()) {
+    Nyx::theDMPC()->WritePlotFilePre();
+  }
+#ifdef AGN
+  if(Nyx::theAPC()) {
+    Nyx::theDMPC()->WritePlotFilePre();
+  }
+#endif
+
+}
+
+
+void
+Nyx::writePlotFilePost (const std::string& dir, ostream& os)
+{
+  amrex::Print() << "NCNCNCNC:  _in Nyx::writePlotFilePost:  dir = " << dir << std::endl;
+  if(Nyx::theDMPC()) {
+    Nyx::theDMPC()->WritePlotFilePost();
+  }
+#ifdef AGN
+  if(Nyx::theAPC()) {
+    Nyx::theDMPC()->WritePlotFilePost();
+  }
+#endif
+}
+
+
+void
 Nyx::particle_plot_file (const std::string& dir)
 {
     if (level == 0)
@@ -792,12 +823,10 @@ Nyx::checkPointPre (const std::string& dir,
   amrex::Print() << "NCNCNCNC:  _in Nyx::checkPointPre:  dir = " << dir << std::endl;
   if(Nyx::theDMPC()) {
     Nyx::theDMPC()->CheckpointPre();
-    Nyx::theDMPC()->SetUsePrePost(true);
   }
 #ifdef AGN
   if(Nyx::theAPC()) {
     Nyx::theDMPC()->CheckpointPre();
-    Nyx::theAPC()->SetUsePrePost(true);
   }
 #endif
 
@@ -811,12 +840,10 @@ Nyx::checkPointPost (const std::string& dir,
   amrex::Print() << "NCNCNCNC:  _in Nyx::checkPointPost:  dir = " << dir << std::endl;
   if(Nyx::theDMPC()) {
     Nyx::theDMPC()->CheckpointPost();
-    Nyx::theDMPC()->SetUsePrePost(false);
   }
 #ifdef AGN
   if(Nyx::theAPC()) {
     Nyx::theDMPC()->CheckpointPost();
-    Nyx::theAPC()->SetUsePrePost(false);
   }
 #endif
 }

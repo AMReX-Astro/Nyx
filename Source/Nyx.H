@@ -94,6 +94,8 @@ public:
     //Write a plotfile to specified directory.
     //
     virtual void writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how);
+    virtual void writePlotFilePre(const std::string& dir, ostream& os);
+    virtual void writePlotFilePost(const std::string& dir, ostream& os);
 
     //
     //Write amrex::MultiFab as plot file
