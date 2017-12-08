@@ -2839,14 +2839,16 @@ Nyx::CreateLevelDirectory (const std::string &dir)
       }
     }
 
-    if(Nyx::theDMPC()) {
-      Nyx::theDMPC()->SetLevelDirectoriesCreated(true);
-    }
+    if(parent->UsingPrecreateDirectories()) {
+      if(Nyx::theDMPC()) {
+        Nyx::theDMPC()->SetLevelDirectoriesCreated(true);
+      }
 #ifdef AGN
-    if(Nyx::theAPC()) {
-      Nyx::theAPC()->SetLevelDirectoriesCreated(true);
-    }
+      if(Nyx::theAPC()) {
+        Nyx::theAPC()->SetLevelDirectoriesCreated(true);
+      }
 #endif
+    }
 
 }
 
