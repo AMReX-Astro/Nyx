@@ -264,6 +264,55 @@
 
       end subroutine fort_compute_rho_temp
 
+      subroutine fort_compute_gas_frac(lo,hi,dx, &
+                                       state,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3, &
+                                       diag_eos,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3, &
+                                       rho_ave, T_cut, rho_cut, &
+                                       whim_mass, whim_vol, hh_mass, &
+                                       hh_vol, igm_mass, igm_vol, mass_sum, vol_sum) &
+      bind(C, name = "fort_compute_gas_frac")
+
+      use meth_params_module, only : NVAR, URHO, NDIAG, TEMP_COMP
+
+      use amrex_fort_module, only : rt => amrex_real
+      implicit none
+      integer         , intent(in   ) :: lo(3),hi(3)
+      integer         , intent(in   ) :: s_l1,s_l2,s_l3,s_h1,s_h2,s_h3
+      integer         , intent(in   ) :: d_l1,d_l2,d_l3,d_h1,d_h2,d_h3
+      real(rt), intent(in   ) :: dx(3)
+      real(rt), intent(in   ) :: rho_ave, T_cut, rho_cut
+      real(rt), intent(in   ) ::    state(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3,NVAR)
+      real(rt), intent(inout) :: diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,NDIAG)
+      real(rt), intent(inout) :: whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol
+      real(rt), intent(inout) :: mass_sum, vol_sum
+
+      integer :: i,j,k
+      real(rt) :: vol, T, R
+
+      vol = dx(1)*dx(2)*dx(3)
+      do k = lo(3),hi(3)
+         do j = lo(2),hi(2)
+            do i = lo(1),hi(1)
+                 T = diag_eos(i,j,k,TEMP_COMP)
+                 R = state(i,j,k,URHO) / rho_ave
+                 if ( (T .gt. T_cut) .and. (R .le. rho_cut) ) then
+                     whim_mass = whim_mass + state(i,j,k,URHO)*vol
+                     whim_vol  = whim_vol  + vol
+                 else if ( (T .gt. T_cut) .and. (R .gt. rho_cut) ) then
+                     hh_mass = hh_mass + state(i,j,k,URHO)*vol
+                     hh_vol  = hh_vol  + vol
+                 else if ( (T .le. T_cut) .and. (R .le. rho_cut) ) then
+                     igm_mass = igm_mass + state(i,j,k,URHO)*vol
+                     igm_vol  = igm_vol  + vol
+                 endif
+                 mass_sum = mass_sum + state(i,j,k,URHO)*vol
+                 vol_sum  = vol_sum + vol
+            enddo
+         enddo
+      enddo
+
+      end subroutine fort_compute_gas_frac
+
       subroutine fort_compute_max_temp_loc(lo,hi, &
                                            state   ,s_l1,s_l2,s_l3, s_h1,s_h2,s_h3, &
                                            diag_eos,d_l1,d_l2,d_l3, d_h1,d_h2,d_h3, &

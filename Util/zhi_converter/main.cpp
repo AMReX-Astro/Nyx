@@ -11,8 +11,8 @@ int main(int argc, char* argv[])
 {
     amrex::Initialize(argc, argv);
     
-    int num_cells = 512;
-    int max_grid_size = 64;
+    uint64_t num_cells = 512;
+    int max_grid_size = 128;
     
     IntVect domain_lo(AMREX_D_DECL(0, 0, 0));
     IntVect domain_hi(AMREX_D_DECL(num_cells - 1,

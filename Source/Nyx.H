@@ -486,6 +486,10 @@ public:
     void compute_new_temp();
 
     void compute_rho_temp(amrex::Real& rho_T_avg, amrex::Real& T_avg, amrex::Real& Tinv_avg, amrex::Real& T_meanrho);
+    void compute_gas_fractions(amrex::Real T_cut, amrex::Real rho_cut,
+                               amrex::Real& whim_mass_frac, amrex::Real& whim_vol_frac,
+                               amrex::Real& hh_mass_frac, amrex::Real& hh_vol_frac,
+                               amrex::Real& igm_mass_frac, amrex::Real& igm_vol_frac);
 
     void get_old_source(amrex::Real old_time, amrex::Real dt, amrex::MultiFab& Rhs);
     void get_new_source(amrex::Real old_time, amrex::Real new_time, amrex::Real dt, amrex::MultiFab& Rhs);

@@ -410,12 +410,8 @@ void Nyx::initcosmo()
 //          for (int i = 0; i < NumSpec; i++) 
 //              MultiFab::Divide(S_new, S_new, Density, FirstSpec+i, 1, 0);
 
-        //compute temp at z_init from radiation temp at decoupling from radiation and matter
-        // Real tempInit = 600*(redshift+1)*(redshift+1)/200/200;
-        Real tempInit = 1e3;
-#if 0 
-        Real tempInit = 2.7*(redshift+1);
-#endif
+        Real tempInit = 0.021*(1.0+redshift)*(1.0+redshift);
+
         int ns = S_new.nComp();
         int nd = D_new.nComp();
 
