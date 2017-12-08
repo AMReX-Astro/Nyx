@@ -510,7 +510,6 @@ Nyx::writePlotFile (const std::string& dir,
 void
 Nyx::writePlotFilePre (const std::string& dir, ostream& os)
 {
-  amrex::Print() << "NCNCNCNC:  _in Nyx::writePlotFilePre:  dir = " << dir << std::endl;
   if(Nyx::theDMPC()) {
     Nyx::theDMPC()->WritePlotFilePre();
   }
@@ -526,7 +525,6 @@ Nyx::writePlotFilePre (const std::string& dir, ostream& os)
 void
 Nyx::writePlotFilePost (const std::string& dir, ostream& os)
 {
-  amrex::Print() << "NCNCNCNC:  _in Nyx::writePlotFilePost:  dir = " << dir << std::endl;
   if(Nyx::theDMPC()) {
     Nyx::theDMPC()->WritePlotFilePost();
   }
@@ -820,7 +818,6 @@ void
 Nyx::checkPointPre (const std::string& dir,
                     std::ostream&      os)
 {
-  amrex::Print() << "NCNCNCNC:  _in Nyx::checkPointPre:  dir = " << dir << std::endl;
   if(Nyx::theDMPC()) {
     Nyx::theDMPC()->CheckpointPre();
   }
@@ -837,7 +834,6 @@ void
 Nyx::checkPointPost (const std::string& dir,
                  std::ostream&      os)
 {
-  amrex::Print() << "NCNCNCNC:  _in Nyx::checkPointPost:  dir = " << dir << std::endl;
   if(Nyx::theDMPC()) {
     Nyx::theDMPC()->CheckpointPost();
   }
