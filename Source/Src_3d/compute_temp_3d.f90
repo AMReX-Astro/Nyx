@@ -70,8 +70,9 @@
                    eint = state(i,j,k,UEINT) * rhoInv
 
                    JH = 1
-                   if (inhomogeneous_on) &
+                   if (inhomogeneous_on) then
                        if (z .gt. diag_eos(i,j,k,ZHI_COMP)) JH = 0
+                   end if
 
                    call nyx_eos_T_given_Re(JH, JHe, diag_eos(i,j,k,TEMP_COMP), diag_eos(i,j,k,NE_COMP), &
                                            state(i,j,k,URHO), eint, comoving_a)
