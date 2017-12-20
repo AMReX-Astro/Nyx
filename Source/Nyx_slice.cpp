@@ -62,7 +62,6 @@ namespace slice_util
             boxes.push_back(isects[i].second);
             slice_to_full_ba_map.push_back(isects[i].first);
         }
-        procs.push_back(ParallelDescriptor::MyProc());
         BoxArray slice_ba(&boxes[0], boxes.size());
         DistributionMapping slice_dmap(procs);
         std::unique_ptr<MultiFab> slice(new MultiFab(slice_ba, slice_dmap, ncomp, 0));

@@ -33,6 +33,11 @@ Nyx::thePlotFileType () const
     return the_plot_file_type;
 }
 
+std::string
+Nyx::retrieveDM () {
+    return dm_chk_particle_file;
+}
+
 void
 Nyx::setPlotVariables ()
 {
@@ -174,8 +179,9 @@ Nyx::writePlotFile (const std::string& dir,
         //
         os << thePlotFileType() << '\n';
 
-        if (n_data_items == 0)
+        if (n_data_items == 0) {
             amrex::Error("Must specify at least one valid data item to plot");
+	}
 
         os << n_data_items << '\n';
         //
@@ -396,19 +402,25 @@ Nyx::writePlotFile (const std::string& dir,
     // Now for the full pathname of that directory.
     //
     std::string FullPath = dir;
-    if (!FullPath.empty() && FullPath[FullPath.size()-1] != '/')
+    if ( ! FullPath.empty() && FullPath[FullPath.size()-1] != '/') {
         FullPath += '/';
+    }
     FullPath += Level;
     //
     // Only the I/O processor makes the directory if it doesn't already exist.
     //
-    if (ParallelDescriptor::IOProcessor())
-        if (!amrex::UtilCreateDirectory(FullPath, 0755))
+    if( ! levelDirectoryCreated) {
+      amrex::Print() << "IOIOIOIO:CD  Nyx::writePlotFile:  creating directory:  " << FullPath << std::endl;
+      if (ParallelDescriptor::IOProcessor()) {
+        if ( ! amrex::UtilCreateDirectory(FullPath, 0755)) {
             amrex::CreateDirectoryFailed(FullPath);
-    //
-    // Force other processors to wait till directory is built.
-    //
-    ParallelDescriptor::Barrier();
+	}
+      }
+      //
+      // Force other processors to wait until directory is built.
+      //
+      ParallelDescriptor::Barrier();
+    }
 
     if (ParallelDescriptor::IOProcessor())
     {
@@ -480,9 +492,49 @@ Nyx::writePlotFile (const std::string& dir,
     particle_plot_file(dir);
 
     // Write out all parameters into the plotfile
-    if (write_parameters_in_plotfile)
+    if (write_parameters_in_plotfile) {
 	write_parameter_file(dir);
+    }
+
+    if(Nyx::theDMPC()) {
+      Nyx::theDMPC()->SetLevelDirectoriesCreated(false);
+    }
+#ifdef AGN
+    if(Nyx::theAPC()) {
+      Nyx::theAPC()->SetLevelDirectoriesCreated(false);
+    }
+#endif
+
 }
+
+void
+Nyx::writePlotFilePre (const std::string& dir, ostream& os)
+{
+  if(Nyx::theDMPC()) {
+    Nyx::theDMPC()->WritePlotFilePre();
+  }
+#ifdef AGN
+  if(Nyx::theAPC()) {
+    Nyx::theDMPC()->WritePlotFilePre();
+  }
+#endif
+
+}
+
+
+void
+Nyx::writePlotFilePost (const std::string& dir, ostream& os)
+{
+  if(Nyx::theDMPC()) {
+    Nyx::theDMPC()->WritePlotFilePost();
+  }
+#ifdef AGN
+  if(Nyx::theAPC()) {
+    Nyx::theDMPC()->WritePlotFilePost();
+  }
+#endif
+}
+
 
 void
 Nyx::particle_plot_file (const std::string& dir)
@@ -513,8 +565,9 @@ Nyx::particle_plot_file (const std::string& dir)
             std::string FileName = dir + "/comoving_a";
             std::ofstream File;
             File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
-            if (!File.good())
+            if ( ! File.good()) {
                 amrex::FileOpenFailed(FileName);
+	    }
             File.precision(15);
             if (cur_time == 0)
             {
@@ -531,8 +584,9 @@ Nyx::particle_plot_file (const std::string& dir)
             std::string FileName = dir + "/" + dm_plt_particle_file + "/precision";
             std::ofstream File;
             File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
-            if (!File.good())
+            if ( ! File.good()) {
                 amrex::FileOpenFailed(FileName);
+	    }
             File.precision(15);
             File << particle_plotfile_format << '\n';
             File.close();
@@ -545,8 +599,9 @@ Nyx::particle_plot_file (const std::string& dir)
             std::string FileName = dir + "/" + agn_plt_particle_file + "/precision";
             std::ofstream File;
             File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
-            if (!File.good())
+            if ( ! File.good()) {
                 amrex::FileOpenFailed(FileName);
+	    }
             File.precision(15);
             File << particle_plotfile_format << '\n';
             File.close();
@@ -558,6 +613,7 @@ Nyx::particle_plot_file (const std::string& dir)
 void
 Nyx::particle_check_point (const std::string& dir)
 {
+  BL_PROFILE("Nyx::particle_check_point");
   if (level == 0)
     {
       if (Nyx::theDMPC())
@@ -582,8 +638,9 @@ Nyx::particle_check_point (const std::string& dir)
             std::string FileName = dir + "/comoving_a";
             std::ofstream File;
             File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
-            if (!File.good())
+            if ( ! File.good()) {
                 amrex::FileOpenFailed(FileName);
+	    }
             File.precision(15);
             if (cur_time == 0)
             {
@@ -605,8 +662,9 @@ Nyx::write_parameter_file (const std::string& dir)
             std::string FileName = dir + "/the_parameters";
             std::ofstream File;
             File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
-            if (!File.good())
+            if ( ! File.good()) {
                 amrex::FileOpenFailed(FileName);
+	    }
             File.precision(15);
             ParmParse::dumpTable(File,true);
             File.close();
@@ -622,8 +680,9 @@ Nyx::writeMultiFabAsPlotFile(const std::string& pltfile,
     std::ofstream os;
     if (ParallelDescriptor::IOProcessor())
     {
-        if (!amrex::UtilCreateDirectory(pltfile, 0755))
-                                  amrex::CreateDirectoryFailed(pltfile);
+        if( ! amrex::UtilCreateDirectory(pltfile, 0755)) {
+          amrex::CreateDirectoryFailed(pltfile);
+	}
         std::string HeaderFileName = pltfile + "/Header";
         os.open(HeaderFileName.c_str(), std::ios::out|std::ios::trunc|std::ios::binary);
         // The first thing we write out is the plotfile type.
@@ -666,17 +725,20 @@ Nyx::writeMultiFabAsPlotFile(const std::string& pltfile,
     // Now for the full pathname of that directory.
     //
     std::string FullPath = pltfile;
-    if (!FullPath.empty() && FullPath[FullPath.size()-1] != '/')
+    if ( ! FullPath.empty() && FullPath[FullPath.size()-1] != '/') {
         FullPath += '/';
+    }
     FullPath += Level;
     //
     // Only the I/O processor makes the directory if it doesn't already exist.
     //
-    if (ParallelDescriptor::IOProcessor())
-        if (!amrex::UtilCreateDirectory(FullPath, 0755))
+    if (ParallelDescriptor::IOProcessor()) {
+        if ( ! amrex::UtilCreateDirectory(FullPath, 0755)) {
             amrex::CreateDirectoryFailed(FullPath);
+	}
+    }
     //
-    // Force other processors to wait till directory is built.
+    // Force other processors to wait until directory is built.
     //
     ParallelDescriptor::Barrier();
 
@@ -740,7 +802,48 @@ Nyx::checkPoint (const std::string& dir,
 	CPUFile.close();
       }
     }
+
+    if(Nyx::theDMPC()) {
+      Nyx::theDMPC()->SetLevelDirectoriesCreated(false);
+    }
+#ifdef AGN
+    if(Nyx::theAPC()) {
+      Nyx::theAPC()->SetLevelDirectoriesCreated(false);
+    }
+#endif
+
 }
+
+void
+Nyx::checkPointPre (const std::string& dir,
+                    std::ostream&      os)
+{
+  if(Nyx::theDMPC()) {
+    Nyx::theDMPC()->CheckpointPre();
+  }
+#ifdef AGN
+  if(Nyx::theAPC()) {
+    Nyx::theDMPC()->CheckpointPre();
+  }
+#endif
+
+}
+
+
+void
+Nyx::checkPointPost (const std::string& dir,
+                 std::ostream&      os)
+{
+  if(Nyx::theDMPC()) {
+    Nyx::theDMPC()->CheckpointPost();
+  }
+#ifdef AGN
+  if(Nyx::theAPC()) {
+    Nyx::theDMPC()->CheckpointPost();
+  }
+#endif
+}
+
 
 #ifdef FORCING
 void
@@ -753,8 +856,9 @@ Nyx::forcing_check_point (const std::string& dir)
             std::string FileName = dir + "/forcing";
             std::ofstream File;
             File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
-            if (!File.good())
+            if ( ! File.good()) {
                 amrex::FileOpenFailed(FileName);
+	    }
             File.setf(std::ios::scientific, std::ios::floatfield);
             File.precision(16);
             forcing->write_Spectrum(File);
@@ -762,8 +866,9 @@ Nyx::forcing_check_point (const std::string& dir)
 
             FileName = dir + "/mt";
             File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
-            if (!File.good())
+            if ( ! File.good()) {
                 amrex::FileOpenFailed(FileName);
+	    }
             mt_write(File);
         }
     }

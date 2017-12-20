@@ -2059,7 +2059,7 @@ Gravity::solve_with_HPGMG(int level,
   const Real a = 0.0; // coefficient in front of alpha in the Helmholtz operator
   // The canonical Helmholtz operator is a alpha u - b div (beta grad(u)) = f.
   // The self-gravity equation that we solve in Nyx is Lap(u) = f. So we need
-  // either the betas or b to be -1. The other GMG solvers in BoxLib set the
+  // either the betas or b to be -1. The other GMG solvers in amrex set the
   // b*beta to -1.
   const Real b = -1.0; // coefficient in front of beta in the Helmholtz operator
 
