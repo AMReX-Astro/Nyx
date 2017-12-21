@@ -2794,8 +2794,9 @@ Nyx::InitDeriveList() {
 
 void
 Nyx::LevelDirectoryNames(const std::string &dir,
-                              std::string &LevelDir,
-                              std::string &FullPath)
+                         const std::string &secondDir,
+                         std::string &LevelDir,
+                         std::string &FullPath)
 {
     LevelDir = amrex::Concatenate("Level_", level, 1);
     //
@@ -2805,7 +2806,7 @@ Nyx::LevelDirectoryNames(const std::string &dir,
     if( ! FullPath.empty() && FullPath.back() != '/') {
         FullPath += '/';
     }
-    FullPath += Nyx::retrieveDM();
+    FullPath += secondDir;
     FullPath += "/";
     FullPath += LevelDir;
 }
@@ -2814,30 +2815,42 @@ Nyx::LevelDirectoryNames(const std::string &dir,
 void
 Nyx::CreateLevelDirectory (const std::string &dir)
 {
-    amrex::Print() << "_in Nyx::CreateLevelDirectory:  " << dir << std::endl;
-
     AmrLevel::CreateLevelDirectory(dir);  // ---- this sets levelDirectoryCreated = true
 
     std::string dm(dir + "/" + Nyx::retrieveDM());
     if(ParallelDescriptor::IOProcessor()) {
-      amrex::Print() << "IOIOIOIO:CD  Nyx::CreateLevelDirectory:  " << dm << "\n";
+      amrex::Print() << "IOIOIOIO:CD  Nyx::CreateLevelDirectory:0:  DM_dir = " << dm << "\n";
       if( ! amrex::UtilCreateDirectory(dm, 0755)) {
         amrex::CreateDirectoryFailed(dm);
       }
     }
 
     std::string LevelDir, FullPath;
-    LevelDirectoryNames(dir, LevelDir, FullPath);
-    amrex::Print() << "IOIOIOIO:  Nyx::CreateLevelDirectory:  dir LevelDir FullPath = " 
-                   << dir << "  " << LevelDir << "  " << FullPath << '\n';
-
-
+    LevelDirectoryNames(dir, Nyx::retrieveDM(), LevelDir, FullPath);
     if(ParallelDescriptor::IOProcessor()) {
-      amrex::Print() << "IOIOIOIO:CD  Nyx::CreateLevelDirectory:  " << FullPath << "\n";
+      amrex::Print() << "IOIOIOIO:CD  Nyx::CreateLevelDirectory:1:  DM_dir = " << FullPath << "\n";
       if( ! amrex::UtilCreateDirectory(FullPath, 0755)) {
         amrex::CreateDirectoryFailed(FullPath);
       }
     }
+
+#ifdef AGN
+    std::string agn(dir + "/" + Nyx::retrieveAGN());
+    if(ParallelDescriptor::IOProcessor()) {
+      amrex::Print() << "IOIOIOIO:CD  Nyx::CreateLevelDirectory:0:  AGN_dir = " << agn << "\n";
+      if( ! amrex::UtilCreateDirectory(agn, 0755)) {
+        amrex::CreateDirectoryFailed(agn);
+      }
+    }
+
+    LevelDirectoryNames(dir, Nyx::retrieveAGN(), LevelDir, FullPath);
+    if(ParallelDescriptor::IOProcessor()) {
+      amrex::Print() << "IOIOIOIO:CD  Nyx::CreateLevelDirectory:1:  AGN_dir = " << FullPath << "\n";
+      if( ! amrex::UtilCreateDirectory(FullPath, 0755)) {
+        amrex::CreateDirectoryFailed(FullPath);
+      }
+    }
+#endif
 
     if(parent->UsingPrecreateDirectories()) {
       if(Nyx::theDMPC()) {

@@ -38,6 +38,13 @@ Nyx::retrieveDM () {
     return dm_chk_particle_file;
 }
 
+#ifdef AGN
+std::string
+Nyx::retrieveAGN () {
+    return agn_chk_particle_file;
+}
+#endif
+
 void
 Nyx::setPlotVariables ()
 {
@@ -410,7 +417,8 @@ Nyx::writePlotFile (const std::string& dir,
     // Only the I/O processor makes the directory if it doesn't already exist.
     //
     if( ! levelDirectoryCreated) {
-      amrex::Print() << "IOIOIOIO:CD  Nyx::writePlotFile:  creating directory:  " << FullPath << std::endl;
+      amrex::Print() << "IOIOIOIO:CD  Nyx::writePlotFile:  ! ldc:  creating directory:  "
+                     << FullPath << '\n';
       if (ParallelDescriptor::IOProcessor()) {
         if ( ! amrex::UtilCreateDirectory(FullPath, 0755)) {
             amrex::CreateDirectoryFailed(FullPath);
@@ -515,7 +523,7 @@ Nyx::writePlotFilePre (const std::string& dir, ostream& os)
   }
 #ifdef AGN
   if(Nyx::theAPC()) {
-    Nyx::theDMPC()->WritePlotFilePre();
+    Nyx::theAPC()->WritePlotFilePre();
   }
 #endif
 
@@ -530,7 +538,7 @@ Nyx::writePlotFilePost (const std::string& dir, ostream& os)
   }
 #ifdef AGN
   if(Nyx::theAPC()) {
-    Nyx::theDMPC()->WritePlotFilePost();
+    Nyx::theAPC()->WritePlotFilePost();
   }
 #endif
 }
@@ -823,7 +831,7 @@ Nyx::checkPointPre (const std::string& dir,
   }
 #ifdef AGN
   if(Nyx::theAPC()) {
-    Nyx::theDMPC()->CheckpointPre();
+    Nyx::theAPC()->CheckpointPre();
   }
 #endif
 
@@ -839,7 +847,7 @@ Nyx::checkPointPost (const std::string& dir,
   }
 #ifdef AGN
   if(Nyx::theAPC()) {
-    Nyx::theDMPC()->CheckpointPost();
+    Nyx::theAPC()->CheckpointPost();
   }
 #endif
 }
