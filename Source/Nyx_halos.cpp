@@ -211,26 +211,6 @@ Nyx::halo_find (Real dt)
 #ifdef REEBER
        for (const Halo& h : reeber_halos)
        {
-
-	  // TEST !!! This is to check if the AGN merging routine is functioning
-/*	  amrex::Real x = 0.;
-          amrex::Real y = 0.;
-          amrex::Real z = 0.;
-          amrex::Real mass = mass_seed;
-          int lev = 0;
-          int grid = 0;
-          int tile = 0;
-
-          for(int i=0; i < 1000; i++)
-          {
-                x = 0.2*i*dx[0];
-                y = 0.2*i*dx[1];
-                z = 0.2*i*dx[2];
-
-                Nyx::theAPC()->AddOneParticle(lev,grid,tile,mass,x,y,z);
-                std::cout << "ADDED A PARTICLE AT " << x << " " << y << " " << z << " WITH MASS " << mass << std::endl;
-          }
-*/
 #if 0
            // We aren't actually writing to this file so don't create it
            if (reeber_halos_pos.size() > 0)
@@ -244,7 +224,7 @@ Nyx::halo_find (Real dt)
            halo_pos  = h.position;
 #else
 
-       // Now loop over the halos
+       
        for (int i = 0; i < reeber_halos_pos.size(); i++)
        {
            halo_mass = reeber_halos_mass[i];
