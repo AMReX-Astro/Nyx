@@ -42,7 +42,7 @@ namespace slice_util
     static 
     std::unique_ptr<MultiFab> allocateSlice(int dir, const MultiFab& cell_centered_data, 
                                             int ncomp, const Geometry& geom, Real dir_coord,
-                                            Array<int>& slice_to_full_ba_map) {
+                                            Vector<int>& slice_to_full_ba_map) {
  
         // Get our slice and convert to index space
         RealBox real_slice = geom.ProbDomain();
@@ -55,8 +55,8 @@ namespace slice_util
         const DistributionMapping& dm = cell_centered_data.DistributionMap();
         std::vector< std::pair<int, Box> > isects;
         ba.intersections(slice_box, isects, false, 0);
-        Array<Box> boxes;
-        Array<int> procs;
+        Vector<Box> boxes;
+        Vector<int> procs;
         for (int i = 0; i < isects.size(); ++i) {
             procs.push_back(dm[isects[i].first]);
             boxes.push_back(isects[i].second);
@@ -71,7 +71,7 @@ namespace slice_util
     std::unique_ptr<MultiFab> getSliceData(int dir, const MultiFab& cell_centered_data, 
                                            int fstart, int ncomp, const Geometry& geom, Real dir_coord) {
         
-        Array<int> slice_to_full_ba_map;
+        Vector<int> slice_to_full_ba_map;
         std::unique_ptr<MultiFab> slice = allocateSlice(dir, cell_centered_data, ncomp, geom, dir_coord,
                                                         slice_to_full_ba_map);
 
