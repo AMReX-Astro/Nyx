@@ -80,6 +80,8 @@ public:
     //
     virtual void checkPoint(const std::string& dir, std::ostream& os,
                             amrex::VisMF::How how, bool dump_old);
+    virtual void checkPointPre(const std::string& dir, std::ostream& os);
+    virtual void checkPointPost(const std::string& dir, std::ostream& os);
 
     // A string written as the first item in `write_plot_file()` at level zero.
     // It is so we can distinguish between different types of plot files. For
@@ -92,6 +94,8 @@ public:
     //Write a plotfile to specified directory.
     //
     virtual void writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how);
+    virtual void writePlotFilePre(const std::string& dir, ostream& os);
+    virtual void writePlotFilePost(const std::string& dir, ostream& os);
 
     //
     //Write amrex::MultiFab as plot file
@@ -482,6 +486,10 @@ public:
     void compute_new_temp();
 
     void compute_rho_temp(amrex::Real& rho_T_avg, amrex::Real& T_avg, amrex::Real& Tinv_avg, amrex::Real& T_meanrho);
+    void compute_gas_fractions(amrex::Real T_cut, amrex::Real rho_cut,
+                               amrex::Real& whim_mass_frac, amrex::Real& whim_vol_frac,
+                               amrex::Real& hh_mass_frac, amrex::Real& hh_vol_frac,
+                               amrex::Real& igm_mass_frac, amrex::Real& igm_vol_frac);
 
     void get_old_source(amrex::Real old_time, amrex::Real dt, amrex::MultiFab& Rhs);
     void get_new_source(amrex::Real old_time, amrex::Real new_time, amrex::Real dt, amrex::MultiFab& Rhs);
@@ -562,6 +570,15 @@ public:
     static void alloc_simd_vec();
     static void dealloc_simd_vec();
 
+    //! Get the level directory names
+    void LevelDirectoryNames (const std::string &dir,
+                              const std::string &secondDir,  // ---- probably DM or AGN
+                              std::string &LevelDir,
+                              std::string &FullPath);
+    //! Create the Level_ and other directories in checkpoint and plot files
+    virtual void CreateLevelDirectory (const std::string &dir);
+
+
 protected:
 
     //
@@ -572,6 +589,11 @@ protected:
     static void read_params();
 
     Nyx& get_level(int lev);
+
+    std::string retrieveDM();
+#ifdef AGN
+    std::string retrieveAGN();
+#endif
 
 #ifndef NO_HYDRO
     amrex::FluxRegister& get_flux_reg();

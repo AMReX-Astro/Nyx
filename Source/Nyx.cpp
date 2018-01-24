@@ -60,7 +60,6 @@ const int NyxHaloFinderSignal = 42;
 const int GimletSignal = 55;
 
 static int sum_interval = -1;
-static int slice_int    = -1;
 static Real fixed_dt    = -1.0;
 static Real initial_dt  = -1.0;
 static Real dt_cutoff   =  0;
@@ -133,6 +132,10 @@ Real Nyx::average_total_density = 0;
 int         Nyx::inhomo_reion = 0;
 std::string Nyx::inhomo_zhi_file = "";
 int         Nyx::inhomo_grid = -1;
+
+static int  slice_int    = -1;
+std::string slice_file   = "slice_";
+static int  slice_nfiles = 128;
 
 // Real Nyx::ave_lev_vorticity[10];
 // Real Nyx::std_lev_vorticity[10];
@@ -524,7 +527,9 @@ Nyx::read_params ()
     }
 
     // How often do we want to write x,y,z 2-d slices of S_new
-    pp.query("slice_int", slice_int);
+    pp.query("slice_int",    slice_int);
+    pp.query("slice_file",   slice_file);
+    pp.query("slice_nfiles", slice_nfiles);
 
     pp.query("gimlet_int", gimlet_int);
 
@@ -1595,6 +1600,9 @@ Nyx::postCoarseTimeStep (Real cumtime)
 
    if (slice_int > -1 && nstep%slice_int == 0)
    {
+      BL_PROFILE("Nyx::postCoarseTimeStep: get_all_slice_data");
+
+    if(slice_int != 2) {
       const Real* dx        = geom.CellSize();
 
       MultiFab& S_new = get_new_data(State_Type);
@@ -1604,14 +1612,15 @@ Nyx::postCoarseTimeStep (Real cumtime)
       Real y_coord = (geom.ProbLo()[1] + geom.ProbHi()[1]) / 2 + dx[1]/2;
       Real z_coord = (geom.ProbLo()[2] + geom.ProbHi()[2]) / 2 + dx[2]/2;
 
-      if (ParallelDescriptor::IOProcessor())
+      if (ParallelDescriptor::IOProcessor()) {
          std::cout << "Outputting slices at x = " << x_coord << "; y = " << y_coord << "; z = " << z_coord << std::endl;
+      }
 
-      const std::string& slicefilename = amrex::Concatenate("slice_",nstep);
+      const std::string& slicefilename = amrex::Concatenate(slice_file, nstep);
       UtilCreateCleanDirectory(slicefilename, true);
 
       int nfiles_current = amrex::VisMF::GetNOutFiles();
-      amrex::VisMF::SetNOutFiles(128);
+      amrex::VisMF::SetNOutFiles(slice_nfiles);
 
       // Slice state data
       std::unique_ptr<MultiFab> x_slice = amrex::get_slice_data(0, x_coord, S_new, geom, 0, S_new.nComp()-2);
@@ -1622,9 +1631,18 @@ Nyx::postCoarseTimeStep (Real cumtime)
       std::string ys = slicefilename + "/State_y";
       std::string zs = slicefilename + "/State_z";
 
-      amrex::VisMF::Write(*x_slice, xs);
-      amrex::VisMF::Write(*y_slice, ys);
-      amrex::VisMF::Write(*z_slice, zs);
+      {
+        BL_PROFILE("Nyx::postCoarseTimeStep: writeXSlice");
+        amrex::VisMF::Write(*x_slice, xs);
+      }
+      {
+        BL_PROFILE("Nyx::postCoarseTimeStep: writeYSlice");
+        amrex::VisMF::Write(*y_slice, ys);
+      }
+      {
+        BL_PROFILE("Nyx::postCoarseTimeStep: writeZSlice");
+        amrex::VisMF::Write(*z_slice, zs);
+      }
 
       // Slice diag_eos
       x_slice = amrex::get_slice_data(0, x_coord, D_new, geom, 0, D_new.nComp());
@@ -1635,14 +1653,68 @@ Nyx::postCoarseTimeStep (Real cumtime)
       ys = slicefilename + "/Diag_y";
       zs = slicefilename + "/Diag_z";
 
-      amrex::VisMF::Write(*x_slice, xs);
-      amrex::VisMF::Write(*y_slice, ys);
-      amrex::VisMF::Write(*z_slice, zs);
+      {
+        BL_PROFILE("Nyx::postCoarseTimeStep: writeDiagSlices");
+        amrex::VisMF::Write(*x_slice, xs);
+        amrex::VisMF::Write(*y_slice, ys);
+        amrex::VisMF::Write(*z_slice, zs);
+      }
 
       amrex::VisMF::SetNOutFiles(nfiles_current);
 
-      if (ParallelDescriptor::IOProcessor())
+      if (ParallelDescriptor::IOProcessor()) {
          std::cout << "Done with slices." << std::endl;
+      }
+
+
+    } else {
+
+      MultiFab& S_new = get_new_data(State_Type);
+      MultiFab& D_new = get_new_data(DiagEOS_Type);
+
+      const std::string& slicefilename = amrex::Concatenate(slice_file, nstep);
+      UtilCreateCleanDirectory(slicefilename, true);
+
+      int nfiles_current = amrex::VisMF::GetNOutFiles();
+      amrex::VisMF::SetNOutFiles(slice_nfiles);
+
+      int maxBoxSize(64);
+      amrex::Vector<std::string> SMFNames(3);
+      SMFNames[0] = slicefilename + "/State_x";
+      SMFNames[1] = slicefilename + "/State_y";
+      SMFNames[2] = slicefilename + "/State_z";
+      amrex::Vector<std::string> DMFNames(3);
+      DMFNames[0] = slicefilename + "/Diag_x";
+      DMFNames[1] = slicefilename + "/Diag_y";
+      DMFNames[2] = slicefilename + "/Diag_z";
+
+      for(int dir(0); dir < 3; ++dir) {
+        Box sliceBox(geom.Domain());
+        int dir_coord = geom.ProbLo()[dir] + (geom.Domain().length(dir) / 2);
+        amrex::Print() << "Outputting slices at dir_coord[" << dir << "] = " << dir_coord << '\n';
+        sliceBox.setSmall(dir, dir_coord);
+        sliceBox.setBig(dir, dir_coord);
+        BoxArray sliceBA(sliceBox);
+        sliceBA.maxSize(maxBoxSize);
+        DistributionMapping sliceDM(sliceBA);
+
+        MultiFab SSliceMF(sliceBA, sliceDM, S_new.nComp()-2, 0);
+        SSliceMF.copy(S_new, 0, 0, SSliceMF.nComp());
+        amrex::VisMF::Write(SSliceMF, SMFNames[dir]);
+
+        MultiFab DSliceMF(sliceBA, sliceDM, D_new.nComp(), 0);
+        DSliceMF.copy(D_new, 0, 0, DSliceMF.nComp());
+        amrex::VisMF::Write(DSliceMF, DMFNames[dir]);
+      }
+
+      amrex::VisMF::SetNOutFiles(nfiles_current);
+
+      if (ParallelDescriptor::IOProcessor()) {
+         std::cout << "Done with slices." << std::endl;
+      }
+
+    }
+
    }
 }
 
@@ -2281,6 +2353,44 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
 }
 #endif
 
+#ifndef NO_HYDRO
+void
+Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
+                            Real& whim_mass_frac, Real& whim_vol_frac,
+                            Real& hh_mass_frac,   Real& hh_vol_frac,
+                            Real& igm_mass_frac,  Real& igm_vol_frac)
+{
+    BL_PROFILE("Nyx::compute_gas_fractions()");
+    MultiFab& S_new = get_new_data(State_Type);
+    MultiFab& D_new = get_new_data(DiagEOS_Type);
+
+    Real whim_mass=0.0, whim_vol=0.0, hh_mass=0.0, hh_vol=0.0, igm_mass=0.0, igm_vol=0.0;
+    Real mass_sum=0.0, vol_sum=0.0;
+
+#ifdef _OPENMP
+#pragma omp parallel reduction(+:whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum)
+#endif
+    for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
+    {
+        const Box& bx = mfi.tilebox();
+
+        fort_compute_gas_frac
+            (bx.loVect(), bx.hiVect(), geom.CellSize(),
+             BL_TO_FORTRAN(S_new[mfi]),
+             BL_TO_FORTRAN(D_new[mfi]), &average_gas_density, &T_cut, &rho_cut,
+             &whim_mass, &whim_vol, &hh_mass, &hh_vol, &igm_mass, &igm_vol, &mass_sum, &vol_sum);
+    }
+    Real sums[8] = {whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum};
+    ParallelDescriptor::ReduceRealSum(sums,8);
+
+    whim_mass_frac = sums[0] / sums[6];
+    whim_vol_frac  = sums[1] / sums[7];
+    hh_mass_frac   = sums[2] / sums[6];
+    hh_vol_frac    = sums[3] / sums[7];
+    igm_mass_frac  = sums[4] / sums[6];
+    igm_vol_frac   = sums[5] / sums[7];
+}
+#endif
 
 Real
 Nyx::getCPUTime()
@@ -2679,3 +2789,79 @@ Nyx::InitErrorList() {
 void
 Nyx::InitDeriveList() {
 }
+
+
+void
+Nyx::LevelDirectoryNames(const std::string &dir,
+                         const std::string &secondDir,
+                         std::string &LevelDir,
+                         std::string &FullPath)
+{
+    LevelDir = amrex::Concatenate("Level_", level, 1);
+    //
+    // Now for the full pathname of that directory.
+    //
+    FullPath = dir;
+    if( ! FullPath.empty() && FullPath.back() != '/') {
+        FullPath += '/';
+    }
+    FullPath += secondDir;
+    FullPath += "/";
+    FullPath += LevelDir;
+}
+
+
+void
+Nyx::CreateLevelDirectory (const std::string &dir)
+{
+    AmrLevel::CreateLevelDirectory(dir);  // ---- this sets levelDirectoryCreated = true
+
+    std::string dm(dir + "/" + Nyx::retrieveDM());
+    if(ParallelDescriptor::IOProcessor()) {
+      amrex::Print() << "IOIOIOIO:CD  Nyx::CreateLevelDirectory:0:  DM_dir = " << dm << "\n";
+      if( ! amrex::UtilCreateDirectory(dm, 0755)) {
+        amrex::CreateDirectoryFailed(dm);
+      }
+    }
+
+    std::string LevelDir, FullPath;
+    LevelDirectoryNames(dir, Nyx::retrieveDM(), LevelDir, FullPath);
+    if(ParallelDescriptor::IOProcessor()) {
+      amrex::Print() << "IOIOIOIO:CD  Nyx::CreateLevelDirectory:1:  DM_dir = " << FullPath << "\n";
+      if( ! amrex::UtilCreateDirectory(FullPath, 0755)) {
+        amrex::CreateDirectoryFailed(FullPath);
+      }
+    }
+
+#ifdef AGN
+    std::string agn(dir + "/" + Nyx::retrieveAGN());
+    if(ParallelDescriptor::IOProcessor()) {
+      amrex::Print() << "IOIOIOIO:CD  Nyx::CreateLevelDirectory:0:  AGN_dir = " << agn << "\n";
+      if( ! amrex::UtilCreateDirectory(agn, 0755)) {
+        amrex::CreateDirectoryFailed(agn);
+      }
+    }
+
+    LevelDirectoryNames(dir, Nyx::retrieveAGN(), LevelDir, FullPath);
+    if(ParallelDescriptor::IOProcessor()) {
+      amrex::Print() << "IOIOIOIO:CD  Nyx::CreateLevelDirectory:1:  AGN_dir = " << FullPath << "\n";
+      if( ! amrex::UtilCreateDirectory(FullPath, 0755)) {
+        amrex::CreateDirectoryFailed(FullPath);
+      }
+    }
+#endif
+
+    if(parent->UsingPrecreateDirectories()) {
+      if(Nyx::theDMPC()) {
+        Nyx::theDMPC()->SetLevelDirectoriesCreated(true);
+      }
+#ifdef AGN
+      if(Nyx::theAPC()) {
+        Nyx::theAPC()->SetLevelDirectoriesCreated(true);
+      }
+#endif
+    }
+
+}
+
+

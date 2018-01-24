@@ -12,7 +12,7 @@ class NyxBld
     virtual void variable_setup_for_new_comp_procs();
     virtual void variable_cleanup();
 
-    // hack copies for BoxLib overriding
+    // hack copies for amrex overriding
     virtual void variableSetUp();
     virtual void variableSetUpForNewCompProcs();
     virtual void variableCleanUp();

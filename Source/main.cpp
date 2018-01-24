@@ -371,7 +371,7 @@ main (int argc, char* argv[])
 
     if (max_step < 0 && stop_time < 0.0)
     {
-        amrex::Abort("Exiting because neither max_step nor stop_time is non-negative.");
+        amrex::Abort("**** Error: either max_step or stop_time has to be positive!");
     }
 
     // Reeber has to do some initialization.

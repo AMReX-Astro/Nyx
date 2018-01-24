@@ -21,6 +21,9 @@
           r2 = sum((particles(i)%pos - particles(j)%pos)**2)
 
           if (r2 <= cutoff*cutoff) then
+	  !   print *, "found overlap particles", particles(i)%id, particles(j)%id
+	     ! If one of the particles is already invalidated, don't do anything
+	     if (particles(i)%id .eq. -1 .or. particles(j)%id .eq. -1) cycle
              ! We only remove the newer (aka of lower mass) particle
              if (particles(i)%mass .lt. particles(j)%mass)  then
                 particles(i)%id = -1
@@ -38,7 +41,7 @@
           r2 = sum((particles(i)%pos - ghosts(j)%pos)**2)
 
           if (r2 <= cutoff*cutoff) then
-
+          !   print *, "found overlap ghost particles", particles(i)%id, ghosts(j)%id
              ! We only remove a particle if it is both 1) valid 2) newer (aka of lower mass)
              if (particles(i)%mass .lt. ghosts(j)%mass) then
                 particles(i)%id = -1
@@ -69,12 +72,13 @@
     type(agn_particle_t), intent(in   ) :: ghosts(ng)
     real(amrex_real)    , intent(in   ) :: delta_x(3)
 
-    real(amrex_real) r2, vrelsq, r
+    real(amrex_real) r2, vrelsq, r, mergetime
     real(amrex_real) cutoff, larger_mass
     integer i, j
 
-    cutoff = delta_x(1)
-    
+    cutoff = 2. * delta_x(1)
+    mergetime = 10. *3.154*1e13 /3.086e19   
+
     do i = 1, np
        do j = i+1, np
 
@@ -89,8 +93,11 @@
              larger_mass = max(particles(i)%mass, particles(j)%mass)
 
              r = sqrt(r2)
-             if ( (vrelsq * r) < Gconst * larger_mass) then
-
+             !if ( (vrelsq * r) < Gconst * larger_mass) then
+	     if ( sqrt(vrelsq) * mergetime < r) then
+		!print *, "found merging particles", particles(i)%id, particles(j)%id
+		! If one of the particles is already invalidated, don't do anything
+                if (particles(i)%id .eq. -1 .or. particles(j)%id .eq. -1) cycle
                 ! Merge lighter particle into heavier one.
                 ! Set particle ID of lighter particle to -1
                 if (particles(i)%mass >= particles(j)%mass) then
@@ -107,6 +114,7 @@
        end do
     end do
 
+    !this is merging ghost particles
     do i = 1, np
        do j = 1, ng
 
@@ -118,8 +126,9 @@
 
              larger_mass = max(particles(i)%mass, ghosts(j)%mass)
 
-             if ( (vrelsq * r2) < (Gconst * larger_mass)**2) then
-
+             !if ( (vrelsq * sqrt(r2)) < Gconst * larger_mass) then
+	     if ( sqrt(vrelsq) * mergetime <  sqrt(r2) ) then
+		!print *, "found merging ghost particles", particles(i)%id, ghosts(j)%id
                 if (particles(i)%mass > ghosts(j)%mass) then
                    ! The bigger particle "i" is in the valid region,
                    ! so we put all the mass onto it.
@@ -213,6 +222,7 @@
        momz = sum((state_new(i-1:i+1, j-1:j+1, k-1:k+1, UMZ) - &
                    state_old(i-1:i+1, j-1:j+1, k-1:k+1, UMZ)) * weight) * vol
 
+       !print *, "momentums", n, momx, momy, momz
        mass = particles(n)%mass
 
        ! Update velocity of particle so as to reduce momentum in the amount
@@ -478,11 +488,11 @@
 
   subroutine get_length_frac(frac, x, dx)
 
-    use amrex_fort_module, only : amrex_real
+    use amrex_fort_module, only : amrex_real, amrex_particle_real
     use bl_constants_module, only : ZERO, ONE, HALF
 
     real(amrex_real), intent(out  )  :: frac(-1:1)
-    real(amrex_real), intent(in   )  :: x
+    real(amrex_particle_real), intent(in   )  :: x
     real(amrex_real), intent(in   )  :: dx
 
     integer :: i
@@ -508,11 +518,11 @@
 
   subroutine get_weights(weight, pos, dx)
 
-    use amrex_fort_module, only : amrex_real
+    use amrex_fort_module, only : amrex_real, amrex_particle_real 
     use bl_constants_module, only : ZERO, ONE, HALF
 
     real(amrex_real), intent(out  )  :: weight(-1:1, -1:1, -1:1)
-    real(amrex_real), intent(in   )  :: pos(3)
+    real(amrex_particle_real), intent(in   )  :: pos(3)
     real(amrex_real), intent(in   )  :: dx(3)
 
     integer :: d, i, j, k

@@ -5,7 +5,7 @@
 #include "NyxParticleContainer.H"
 
 // We make DarkMatterParticleContainer a class instead of a typedef so that
-//    we can have Nyx-specific functions here instead of in BoxLib
+//    we can have Nyx-specific functions here instead of in amrex
 class DarkMatterParticleContainer
     : public NyxParticleContainer<1+BL_SPACEDIM>
 {
