@@ -572,6 +572,7 @@ public:
 
     //! Get the level directory names
     void LevelDirectoryNames (const std::string &dir,
+                              const std::string &secondDir,  // ---- probably DM or AGN
                               std::string &LevelDir,
                               std::string &FullPath);
     //! Create the Level_ and other directories in checkpoint and plot files
@@ -590,6 +591,9 @@ protected:
     Nyx& get_level(int lev);
 
     std::string retrieveDM();
+#ifdef AGN
+    std::string retrieveAGN();
+#endif
 
 #ifndef NO_HYDRO
     amrex::FluxRegister& get_flux_reg();

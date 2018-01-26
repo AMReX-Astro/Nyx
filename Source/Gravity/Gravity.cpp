@@ -2247,7 +2247,7 @@ Gravity::solve_with_MLMG (int crse_level, int fine_level,
     for (const auto& x: grad_phi) {
         grad_phi_tmp.push_back({AMREX_D_DECL(x[0],x[1],x[2])});
     }
-    mlmg.getFluxes(grad_phi_tmp);
+    mlmg.getGradSolution(grad_phi_tmp);
 
     return final_resnorm;
 }
