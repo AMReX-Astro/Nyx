@@ -91,11 +91,11 @@ public:
 	amrex::AmrParticleContainer<NSR,NSI,NAR,NAI>::RemoveParticlesAtLevel(level);
     }
 		     
-  virtual void WriteNyxPlotFile (const std::string& dir,
-                                 const std::string& name) const;
-
-  virtual void NyxCheckpoint (const std::string& dir,
-                              const std::string& name) const;
+    virtual void WriteNyxPlotFile (const std::string& dir,
+                                   const std::string& name) const;
+    
+    virtual void NyxCheckpoint (const std::string& dir,
+                                const std::string& name) const;
 
     typedef amrex::Particle<NSR,NSI> ParticleType;
     using AoS = typename amrex::ParticleContainer<NSR,NSI,NAR,NAI>::AoS;
