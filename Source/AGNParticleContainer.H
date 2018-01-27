@@ -10,7 +10,7 @@
 #include "NyxParticleContainer.H"
 
 class AGNParticleContainer
-    :  public amrex::NeighborParticleContainer<3+BL_SPACEDIM, 0, 3 + BL_SPACEDIM + 2>,
+    :  public amrex::NeighborParticleContainer<3+BL_SPACEDIM, 0>,
        public NyxParticleContainerBase
 {
 public:
@@ -37,20 +37,20 @@ public:
                                 amrex::Real a_half = 1.0);
 
     virtual amrex::Real sumParticleMass (int level) const override {
-	return amrex::NeighborParticleContainer<3+BL_SPACEDIM, 0, 3 + BL_SPACEDIM + 2>::sumParticleMass(0,level);
+	return amrex::NeighborParticleContainer<3+BL_SPACEDIM,0>::sumParticleMass(0,level);
     }
 
     virtual int finestLevel() const override
     {
-        return amrex::NeighborParticleContainer<3+BL_SPACEDIM, 0, 5+BL_SPACEDIM>::finestLevel();
+        return amrex::NeighborParticleContainer<3+BL_SPACEDIM,0>::finestLevel();
     }
 
     virtual void AssignDensity (amrex::Vector<std::unique_ptr<amrex::MultiFab> >& mf, int lev_min = 0, int ncomp = 1, int finest_level = -1) const override
     {
         if (finestLevel() == 0) {
-           amrex::NeighborParticleContainer<3+BL_SPACEDIM, 0, 5+BL_SPACEDIM>::AssignDensityFort(0, mf, lev_min, ncomp, finest_level);
+            amrex::NeighborParticleContainer<3+BL_SPACEDIM,0>::AssignDensityFort(0, mf, lev_min, ncomp, finest_level);
         } else {
-           amrex::NeighborParticleContainer<3+BL_SPACEDIM, 0, 5+BL_SPACEDIM>::AssignDensity(0, sub_cycle, mf, lev_min, ncomp, finest_level);
+            amrex::NeighborParticleContainer<3+BL_SPACEDIM,0>::AssignDensity(0, sub_cycle, mf, lev_min, ncomp, finest_level);
         }
     }
 
@@ -58,17 +58,17 @@ public:
                                int lev_max              =-1,
         		       int nGrow                = 0) override
     {
-        amrex::NeighborParticleContainer<3+BL_SPACEDIM, 0, 3 + BL_SPACEDIM + 2>::Redistribute(lev_min, lev_max, nGrow);
+        amrex::NeighborParticleContainer<3+BL_SPACEDIM,0>::Redistribute(lev_min, lev_max, nGrow);
     }
 
     virtual void RemoveParticlesAtLevel (int level) override
     {
-	amrex::NeighborParticleContainer<3+BL_SPACEDIM, 0, 3 + BL_SPACEDIM + 2>::RemoveParticlesAtLevel(level);
+	amrex::NeighborParticleContainer<3+BL_SPACEDIM,0>::RemoveParticlesAtLevel(level);
     }
 
     virtual void AssignDensitySingleLevel (amrex::MultiFab& mf, int level, int ncomp=1, int particle_lvl_offset = 0) const
     { 
-        amrex::NeighborParticleContainer<3+BL_SPACEDIM, 0, 3 + BL_SPACEDIM + 2>::AssignCellDensitySingleLevelFort(0, mf, level, ncomp, particle_lvl_offset);
+        amrex::NeighborParticleContainer<3+BL_SPACEDIM,0>::AssignCellDensitySingleLevelFort(0, mf, level, ncomp, particle_lvl_offset);
     }
     
     virtual void WriteNyxPlotFile (const std::string& dir,
@@ -76,7 +76,7 @@ public:
     {
         BL_PROFILE("NyxParticleContainer<NSR,NSI,NAR,NAI>::WriteNyxPlotFile()");
         
-        amrex::NeighborParticleContainer<3+BL_SPACEDIM, 0, 3 + BL_SPACEDIM + 2>::WritePlotFile(dir, name, real_comp_names);
+        amrex::NeighborParticleContainer<3+BL_SPACEDIM,0>::WritePlotFile(dir, name, real_comp_names);
     }
     
     virtual void NyxCheckpoint (const std::string& dir,
@@ -85,7 +85,7 @@ public:
         BL_PROFILE("NyxParticleContainer<NSR,NSI,NAR,NAI>::NyxCheckpoint()");
         
         bool is_checkpoint = true;
-        amrex::NeighborParticleContainer<3+BL_SPACEDIM, 0, 3 + BL_SPACEDIM + 2>::Checkpoint(dir, name, is_checkpoint, real_comp_names);
+        amrex::NeighborParticleContainer<3+BL_SPACEDIM,0>::Checkpoint(dir, name, is_checkpoint, real_comp_names);
     }
     
     void AddOneParticle (int lev,

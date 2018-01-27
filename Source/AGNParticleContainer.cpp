@@ -8,7 +8,7 @@ using std::cout;
 using std::endl;
 
 AGNParticleContainer::AGNParticleContainer (amrex::Amr* amr, int nghost)
-    : NeighborParticleContainer<3+BL_SPACEDIM, 0, 3 + BL_SPACEDIM + 2>
+    : NeighborParticleContainer<3+BL_SPACEDIM,0>
       (amr->GetParGDB(), nghost),
       sub_cycle(amr->subCycle())
 {
