@@ -7,20 +7,6 @@ using namespace amrex;
 using std::cout;
 using std::endl;
 
-AGNParticleContainer::AGNParticleContainer (amrex::Amr* amr, int nghost)
-    : NeighborParticleContainer<3+BL_SPACEDIM,0>
-      (amr->GetParGDB(), nghost),
-      sub_cycle(amr->subCycle())
-{
-    real_comp_names.clear();
-    real_comp_names.push_back("mass");
-    real_comp_names.push_back("xvel");
-    real_comp_names.push_back("yvel");
-    real_comp_names.push_back("zvel");
-    real_comp_names.push_back("energy");
-    real_comp_names.push_back("mdot");
-}
-
 void
 AGNParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
 		                     int                    lev,

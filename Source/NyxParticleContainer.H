@@ -4,7 +4,7 @@
 
 #include "AMReX_Amr.H"
 #include "AMReX_AmrLevel.H"
-#include "AMReX_AmrParticles.H"
+#include "AMReX_NeighborParticles.H"
 
 class NyxParticleContainerBase
 {
@@ -33,39 +33,39 @@ public:
 
 template <int NSR, int NSI=0, int NAR=0, int NAI=0>
 class NyxParticleContainer
-    : public amrex::AmrParticleContainer<NSR,NSI,NAR,NAI>,
+    : public amrex::NeighborParticleContainer<NSR,NSI>,
       public NyxParticleContainerBase
 {
 public:
 
     using ParticleTileType = amrex::ParticleTile<NSR,NSI,NAR,NAI>;
 
-    NyxParticleContainer (amrex::Amr* amr)
-	: amrex::AmrParticleContainer<NSR,NSI,NAR,NAI>(amr),
+    NyxParticleContainer (amrex::Amr* amr, int nghost=0)
+	: amrex::NeighborParticleContainer<NSR,NSI>((amrex::ParGDBBase*) amr->GetParGDB(), nghost),
 	  sub_cycle(amr->subCycle())
     {}
-
+    
     virtual ~NyxParticleContainer () {}
-
+    
     void GetParticleVelocities (amrex::Vector<amrex::Real>& part_vels);
     void SetParticleVelocities (amrex::Vector<amrex::Real>& part_data);
-
+    
     virtual amrex::Real sumParticleMass (int level) const override {
-	return amrex::AmrParticleContainer<NSR,NSI,NAR,NAI>::sumParticleMass(0,level);
+	return amrex::NeighborParticleContainer<NSR,NSI>::sumParticleMass(0,level);
     }
-
+    
     void sumParticleMomentum (int lev, amrex::Real* mom) const;
 
     virtual void AssignDensitySingleLevel (amrex::MultiFab& mf, int level, int ncomp=1, int particle_lvl_offset = 0) const override
     { 
-        amrex::AmrParticleContainer<NSR,NSI,NAR,NAI>::AssignCellDensitySingleLevelFort(0, mf, level, ncomp, particle_lvl_offset);
+        amrex::NeighborParticleContainer<NSR,NSI>::AssignCellDensitySingleLevelFort(0, mf, level, ncomp, particle_lvl_offset);
     }
     virtual void AssignDensity (amrex::Vector<std::unique_ptr<amrex::MultiFab> >& mf, int lev_min = 0, int ncomp = 1, int finest_level = -1) const override
     {
         if (finestLevel() == 0) {
-           amrex::AmrParticleContainer<NSR,NSI,NAR,NAI>::AssignDensityFort(0, mf, lev_min, ncomp, finest_level);
+           amrex::NeighborParticleContainer<NSR,NSI>::AssignDensityFort(0, mf, lev_min, ncomp, finest_level);
         } else {
-           amrex::AmrParticleContainer<NSR,NSI,NAR,NAI>::AssignDensity(0, sub_cycle, mf, lev_min, ncomp, finest_level);
+           amrex::NeighborParticleContainer<NSR,NSI>::AssignDensity(0, sub_cycle, mf, lev_min, ncomp, finest_level);
         }
     }
 
@@ -76,19 +76,19 @@ public:
 
     virtual int finestLevel() const override
     {
-        return amrex::AmrParticleContainer<NSR,NSI,NAR,NAI>::finestLevel();
+        return amrex::NeighborParticleContainer<NSR,NSI>::finestLevel();
     }
 
     virtual void Redistribute (int lev_min              = 0,
                                int lev_max              =-1,
         		       int nGrow                = 0) override
     {
-        amrex::AmrParticleContainer<NSR,NSI,NAR,NAI>::Redistribute(lev_min, lev_max, nGrow);
+        amrex::NeighborParticleContainer<NSR,NSI>::Redistribute(lev_min, lev_max, nGrow);
     }
 
     virtual void RemoveParticlesAtLevel (int level) override
     {
-	amrex::AmrParticleContainer<NSR,NSI,NAR,NAI>::RemoveParticlesAtLevel(level);
+	amrex::NeighborParticleContainer<NSR,NSI>::RemoveParticlesAtLevel(level);
     }
 		     
     virtual void WriteNyxPlotFile (const std::string& dir,
@@ -184,7 +184,6 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::SetParticleVelocities (amrex::Vector<amre
     }
 }
 
-
 //
 // Assumes mass is in rdata(0), vx in rdata(1), ...!
 // dim defines the cartesian direction in which the momentum is summed, x is 0, y is 1, ...
@@ -230,7 +229,6 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::sumParticleMomentum (int          lev,
 
     amrex::ParallelDescriptor::ReduceRealSum(mom,BL_SPACEDIM);
 }
-
 
 template <int NSR,int NSI,int NAR,int NAI>
 amrex::Real
@@ -364,7 +362,6 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
     return dt;
 }
 
-
 template <int NSR,int NSI,int NAR,int NAI>
 void
 NyxParticleContainer<NSR,NSI,NAR,NAI>::MultiplyParticleMass (int lev, amrex::Real mult)
@@ -403,9 +400,8 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::WriteNyxPlotFile (const std::string& dir,
 {
   BL_PROFILE("NyxParticleContainer<NSR,NSI,NAR,NAI>::WriteNyxPlotFile()");
 
-  amrex::AmrParticleContainer<NSR,NSI,NAR,NAI>::WritePlotFile(dir, name, real_comp_names);
+  amrex::NeighborParticleContainer<NSR,NSI>::WritePlotFile(dir, name, real_comp_names);
 }
-
 
 template <int NSR,int NSI,int NAR,int NAI>
 void
@@ -415,7 +411,7 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::NyxCheckpoint (const std::string& dir,
   BL_PROFILE("NyxParticleContainer<NSR,NSI,NAR,NAI>::NyxCheckpoint()");
 
   bool is_checkpoint = true;
-  amrex::AmrParticleContainer<NSR,NSI,NAR,NAI>::Checkpoint(dir, name, is_checkpoint, real_comp_names);
+  amrex::NeighborParticleContainer<NSR,NSI>::Checkpoint(dir, name, is_checkpoint, real_comp_names);
 }
 
 #endif /*_NyxParticleContainer_H_*/
