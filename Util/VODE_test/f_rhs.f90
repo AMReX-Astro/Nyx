@@ -124,9 +124,9 @@ subroutine f_rhs(num_eq, time, e_in, energy, rpar, ipar)
       a = 1.d0 / (1.d0 + z_vode)
       energy = energy / rho_vode / a
 
-       print *, 'energy = ', energy, 'at (i,j,k) ',i_vode,j_vode,k_vode
+!       print *, 'energy = ', energy, 'at (i,j,k) ',i_vode,j_vode,k_vode
 !       print *, 'rho_heat = ', rho_heat, 'at (i,j,k) ',i_vode,j_vode,k_vode
-       print *, 'rho_vd = ', rho_vode, 'at (i,j,k) ',i_vode,j_vode,k_vode
+!       print *, 'rho_vd = ', rho_vode, 'at (i,j,k) ',i_vode,j_vode,k_vode
 
 end subroutine f_rhs
 

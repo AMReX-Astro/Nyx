@@ -16,7 +16,7 @@ F90_LIBS    =  -lm /usr/lib/x86_64-linux-gnu/librt.so
 
 LINKFLAGS = -Wl,-rpath,${SUNDIALS_INSTALL}/lib
 
-EXAMPLES = atomic_rates comoving_nd comoving_params constants_cosmo cvode_interface eos_hc eos_params fcvode_extras fnvector_serial f_rhs meth_params misc_params reion_aux_module vode_aux integrate_state_vode_3d ../BLAS/daxpy ../BLAS/ddot  ../BLAS/dscal  ../BLAS/idamax  ../BLAS/dcopy ../VODE/dewset ../VODE/dgesl ../VODE/dvhin  ../VODE/dvjac   ../VODE/dvnlsd ../VODE/dvode ../VODE/dvsol ../VODE/dvstep ../VODE/ixsav ../VODE/xsetf ../VODE/dacopy ../VODE/dgbfa ../VODE/dgefa ../VODE/dumach ../VODE/dvindy ../VODE/dvjust ../VODE/dvnorm ../VODE/dvset ../VODE/dvsrco ../VODE/iumach ../VODE/xerrwd ../VODE/xsetun ../VODE/dgbsl
+EXAMPLES = constants_mod constants_cosmo comoving_params reion_aux_module comoving_nd cvode_interface meth_params misc_params vode_aux atomic_rates eos_hc eos_params fnvector_serial fcvode_extras f_rhs integrate_state_vode_3d ../BLAS/daxpy ../BLAS/ddot  ../BLAS/dscal  ../BLAS/idamax  ../BLAS/dcopy ../VODE/dewset ../VODE/dgesl ../VODE/dvhin  ../VODE/dvjac   ../VODE/dvnlsd ../VODE/dvode ../VODE/dvsol ../VODE/dvstep ../VODE/ixsav ../VODE/xsetf ../VODE/dacopy ../VODE/dgbfa ../VODE/dgefa ../VODE/dumach ../VODE/dvindy ../VODE/dvjust ../VODE/dvnorm ../VODE/dvset ../VODE/dvsrco ../VODE/iumach ../VODE/xerrwd ../VODE/xsetun ../VODE/dgbsl
 
 OBJECTS  = ${EXAMPLES:=.o}
 
@@ -45,5 +45,9 @@ fmain.exe: ${OBJECTS} fmain.o
 	echo "${F90} ${F90_LDFLAGS} -o fmain_vode.exe -I${includedir} ${OBJECTS} fmain_vode.o ${F90_LIBS} -L${libdir} -lsundials_fcvode -lsundials_cvode -lsundials_fcvode -lsundials_fnvecserial -lsundials_nvecserial" 
 
 clean:
-	rm -f ${OBJECTS}
+	rm -f ${OBJECTS} ${EXAMPLES:=.mod}
+
+realclean:
+	rm -f ${OBJECTS} ${EXAMPLES:=.mod}
+	rm -f *.mod *.o *.exe
 
