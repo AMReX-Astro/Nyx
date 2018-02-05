@@ -45,6 +45,14 @@ subroutine f_rhs(num_eq, time, e_in, energy, rpar, ipar)
       rho = rho_vode * density_to_cgs * (1.0d0+z_vode)**3
         U = e_in(1) * e_to_cgs
       nh  = rho*XHYDROGEN/MPROTON
+!      print*, "rho = ", rho
+      print*, "nh = ", nh
+!      nh = 1.85e-2
+!      print*, "Replacing with nh = ",nh
+!      print*, "XHYDROGEN = ", XHYDROGEN 
+!      print*, "MPROTON = ", MPROTON
+!      print*, "density_to_cgs = ", density_to_cgs
+!      print*, "e_to_cgs = ", e_to_cgs
 
       if (time .gt. 1) then
          print *,'TIME INTO F_RHS ',time

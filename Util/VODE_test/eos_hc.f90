@@ -563,6 +563,8 @@ module eos_module
 
       FMT = "(A6, I4, ES15.5, ES15.5E3, ES15.5, ES15.5)"
       print(FMT), 'ine:',i,U,ne,dne,eps
+      print(FMT), 'fdine:',i,f,nhp,nhep,nhepp
+      print(FMT), 'dfine:',i,df,dnhp_dne,dnhep_dne,dnhepp_dne
 
          ne = max((ne-dne), 0.0d0)
 
@@ -612,7 +614,10 @@ module eos_module
 
       mu = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+ne)
       t  = gamma_minus_1*MPROTON/BOLTZMANN * U * mu
-
+!      print*, "MPROTON/BOLTZMANN = ", MPROTON/BOLTZMANN
+!      print*, "YHELIUM = ", YHELIUM
+!      print*, "gamma_minus_1 = ", gamma_minus_1
+     
       logT = dlog10(t)
       if (logT .ge. TCOOLMAX) then ! Fully ionized plasma
          nhp   = 1.0d0

@@ -40,7 +40,7 @@ program main
  
   real(c_double), pointer :: yvec(:)
   real(c_double) :: vode_atol_scaled_in, vode_rtol_in, xacc_in
-
+  CHARACTER(LEN=80) :: FMT
 
     print*,"Created data"
 
@@ -54,7 +54,7 @@ program main
     vode_atol_scaled_in = 1e-4
     vode_rtol_in = 1e-4
     xacc_in = 1e-6
-    gamma_minus_1 = 2/3
+    gamma_minus_1 = 2.d0/3.d0
     call fort_setup_eos_params(xacc_in, vode_rtol_in, vode_atol_scaled_in)
 
     print*,"Finished reading table"
@@ -69,12 +69,35 @@ program main
     T_orig  = 3.25556e4!diag_eos(i,j,k,TEMP_COMP)
     ne_orig = 1.0767!diag_eos(i,j,k,  NE_COMP)
     yvec(1) = e_orig
-    
+
+    !328
+    a       = .162148460745811
+    half_dt = 8.71143674885388e-6
+    rho     = 2857937141760.0
+    e_orig  = 997014045196288.0 / rho
+    T_orig  = 17275.599609375
+    ne_orig = 1.06710743904114
+    yvec(1) = e_orig
+
+    !a=.1621
+    a       = 1.613475886587611E-01
+    half_dt = 8.711436447162485E-06
+    rho     = 2.633475757818412E+12
+    T_orig  = 1.573699834263454E+04
+    ne_orig = 1.066245326059183E+00
+    e_orig  = 3.176602345919082E+02
+    yvec(1) = e_orig
+   
+
+!    FMT = "(A6,I4,/, ES21.15,/, ES21.15E2, /,ES21.15,/, ES21.15,/, ES21.15,/, ES21.15,/, ES21.15)"
+ FMT="(A6,I1,/,ES21.15,/,ES21.15E2,/,ES21.15,/,ES21.15,/,ES21.15,/,ES21.15,/,ES21.15)"
+      print(FMT), "IntSta",simd_width, a, half_dt, rho, T_orig, ne_orig, e_orig
+
     z = 1.d0/a - 1.d0
     call fort_integrate_comoving_a(a, a_end, half_dt)
     z_end = 1.0d0/a_end - 1.0d0
     !Added z_vode arbitrarily to be z, since it was set to 0
-    z_vode = z
+    z_vode = z_end
 
     mean_rhob = comoving_OmB * 3.d0*(comoving_h*100.d0)**2 / (8.d0*M_PI*Gconst)
 
@@ -135,10 +158,10 @@ program main
     
     !-----------------cut out do ijk loops        
                ! Original values
-                rho     = 1*rho !state(i,j,k,URHO)
-                e_orig  = rho*e_orig / rho !state(i,j,k,UEINT) / rho
-                T_orig  = 1*T_orig!diag_eos(i,j,k,TEMP_COMP)
-                ne_orig = 1*ne_orig!diag_eos(i,j,k,  NE_COMP)
+                rho     = rho !state(i,j,k,URHO)
+                e_orig  = e_orig  !state(i,j,k,UEINT) / rho
+                T_orig  = T_orig!diag_eos(i,j,k,TEMP_COMP)
+                ne_orig = ne_orig!diag_eos(i,j,k,  NE_COMP)
                 
                 if (inhomogeneous_on) then
                    H_reion_z = 1*H_reion_z!diag_eos(i,j,k,ZHI_COMP)

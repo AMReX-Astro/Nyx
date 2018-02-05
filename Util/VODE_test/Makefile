@@ -10,8 +10,8 @@ includedir   = ${SUNDIALS_INSTALL}/include
 libdir       = ${SUNDIALS_INSTALL}/lib
 
 F90         = /usr/bin/gfortran
-F90FLAGS    = -O3
-F90_LDFLAGS = -O3
+F90FLAGS    = -O0 -g
+F90_LDFLAGS = -O0 -g
 F90_LIBS    =  -lm /usr/lib/x86_64-linux-gnu/librt.so
 
 LINKFLAGS = -Wl,-rpath,${SUNDIALS_INSTALL}/lib

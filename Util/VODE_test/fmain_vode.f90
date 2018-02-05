@@ -12,7 +12,7 @@ program main
     use comoving_module, only: comoving_h, comoving_OmB
     use comoving_nd_module, only: fort_integrate_comoving_a
     use atomic_rates_module, only: YHELIUM, fort_tabulate_rates
-    use vode_aux_module    , only: JH_vode, JHe_vode, z_vode, i_vode, j_vode, k_vode, z_vode
+    use vode_aux_module    , only: JH_vode, JHe_vode, z_vode, i_vode, j_vode, k_vode, z_vode, fn_vode, NR_vode
     use reion_aux_module   , only: zhi_flash, zheii_flash, flash_h, flash_he, &
                                    T_zhi, T_zheii, inhomogeneous_on
     use cvode_interface
@@ -49,7 +49,7 @@ program main
     vode_atol_scaled_in = 1e-4
     vode_rtol_in = 1e-4
     xacc_in = 1e-6
-    gamma_minus_1 = 2/3
+    gamma_minus_1 = 2.d0/3.d0
     call fort_setup_eos_params(xacc_in, vode_rtol_in, vode_atol_scaled_in)
     
     print*,"Finished reading table"
@@ -64,10 +64,18 @@ program main
     T_orig  = 2.8e4!diag_eos(i,j,k,TEMP_COMP)
     ne_orig = 1.07!diag_eos(i,j,k,  NE_COMP)
 
+    a       = 1.613475886587611E-01
+    half_dt = 8.711436447162485E-06
+    rho     = 2.633475757818412E+12
+    T_orig  = 1.573699834263454E+04
+    ne_orig = 1.066245326059183E+00
+    e_orig  = 3.176602345919082E+02
+    yvec(1) = e_orig
+
     z = 1.d0/a - 1.d0
     call fort_integrate_comoving_a(a, a_end, half_dt)
     z_end = 1.0d0/a_end - 1.0d0
-    z_vode = z
+    z_vode = z_end
 
     mean_rhob = comoving_OmB * 3.d0*(comoving_h*100.d0)**2 / (8.d0*M_PI*Gconst)
 
@@ -187,7 +195,8 @@ program main
                    call nyx_eos_T_given_Re(JH_vode, JHe_vode, T_out, ne_out, rho, e_out, a, species)
                 endif
     !-----------------cut out end do ijk loops        
-
+    print*, "fn_vode = ", fn_vode
+    print*, "NR_vode = ", NR_vode
 !    call N_VDestroy_Serial(sunvec_y)
 !    call FCVodeFree(cvmem)
 
