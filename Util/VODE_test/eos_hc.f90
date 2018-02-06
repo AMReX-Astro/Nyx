@@ -649,6 +649,9 @@ module eos_module
       gehe0 = flo*GammaeHe0(j) + fhi*GammaeHe0(j+1)
       gehep = flo*GammaeHep(j) + fhi*GammaeHep(j+1)
 
+!      print(FMT), 'a ion:',j,ahp,ahep,ahepp,ad
+!      print(FMT), 'b ion:',j,geh0,gehe0,gehep,ad
+!      print*, "ne = ", ne
       if (ne .gt. 0.0d0) then
          ggh0ne   = JH  * ggh0  / (ne*nh)
          gghe0ne  = JH  * gghe0 / (ne*nh)
@@ -658,6 +661,8 @@ module eos_module
          gghe0ne  = 0.0d0
          gghepne  = 0.0d0
       endif
+
+!      print(FMT), 'c ion:',j,ggh0ne,gghe0ne,gghepne,ad
 
       ! H+
       nhp = 1.0d0 - ahp/(ahp + geh0 + ggh0ne)

@@ -11,7 +11,7 @@ program main
     use fundamental_constants_module
     use comoving_module, only: comoving_h, comoving_OmB
     use comoving_nd_module, only: fort_integrate_comoving_a
-    use atomic_rates_module, only: YHELIUM, fort_tabulate_rates
+    use atomic_rates_module, only: YHELIUM, fort_tabulate_rates, fort_interp_to_this_z
     use vode_aux_module    , only: JH_vode, JHe_vode, z_vode, i_vode, j_vode, k_vode, z_vode, fn_vode, NR_vode
     use reion_aux_module   , only: zhi_flash, zheii_flash, flash_h, flash_he, &
                                    T_zhi, T_zheii, inhomogeneous_on
@@ -75,7 +75,8 @@ program main
     z = 1.d0/a - 1.d0
     call fort_integrate_comoving_a(a, a_end, half_dt)
     z_end = 1.0d0/a_end - 1.0d0
-    z_vode = z_end
+    call fort_interp_to_this_z(z)
+    z_vode = z
 
     mean_rhob = comoving_OmB * 3.d0*(comoving_h*100.d0)**2 / (8.d0*M_PI*Gconst)
 
