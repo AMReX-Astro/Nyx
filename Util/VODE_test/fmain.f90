@@ -69,72 +69,18 @@ program main
 
     allocate(yvec(neq))
     
-    !Make up arbitrary values to test compiling
-!    do i_loop=10,15
-!       do j_loop=12,17
-!          print*, "i_loop = ",i_loop,"j_loop = ",j_loop
-          fn_vode = 0
-          NR_vode = 0
-!    a = .1635780
-!    half_dt = 8.83903e-6
-!    rho     = 2.12*10.0**i_loop  !state(i,j,k,URHO)
-!    e_orig  = 1.32*10.0**(j_loop) / rho !state(i,j,k,UEINT) / rho
-!    T_orig  = 3.25556e4!diag_eos(i,j,k,TEMP_COMP)
-!    ne_orig = 1.0767!diag_eos(i,j,k,  NE_COMP)
-!    yvec(1) = e_orig
+    fn_vode = 0
+    NR_vode = 0
 
-    !328
-!    a       = .162148460745811
-!    half_dt = 8.71143674885388e-6
-!    rho     = 2857937141760.0
-!    e_orig  = 997014045196288.0 / rho
-!    T_orig  = 17275.599609375
-!    ne_orig = 1.06710743904114
-!    yvec(1) = e_orig
-
-    !a=.1621
-    a       = 1.613475886587611E-01
-    half_dt = 8.711436447162485E-06
-    rho     = 2.633475757818412E+12
-!    rho     = 2.633475757818412E+10
-    T_orig  = 1.573699834263454E+04
-    ne_orig = 1.066245326059183E+00
-    e_orig  = 3.176602345919082E+02
-    yvec(1) = e_orig
-   
-!    a = .1635780
-!    half_dt = 8.83903e-6
-!    rho     = 2.12e12 !state(i,j,k,URHO)
-!    e_orig  = 1.32e15 / rho !state(i,j,k,UEINT) / rho
-!    T_orig  = 3.25556e4!diag_eos(i,j,k,TEMP_COMP)
-!    ne_orig = 1.0767!diag_eos(i,j,k,  NE_COMP)
-!    yvec(1) = e_orig
-
-    a = 1.635780036449432E-01
-    half_dt = 8.839029760565609E-06
-    rho     = 2.119999946752000E+12
-!    rho     = rho * 1e-2
-    T_orig  = 3.255559960937500E+04
-!    T_orig  = T_orig*1e1
-    ne_orig = 1.076699972152710E+00
-    e_orig  = 6.226415005122936E+02
-!    e_orig  = e_orig*1e2
-    yvec(1) = e_orig
-
-!    FMT = "(A6,I4,/, ES21.15,/, ES21.15E2, /,ES21.15,/, ES21.15,/, ES21.15,/, ES21.15,/, ES21.15)"
  FMT="(A6,I1,/,ES21.15,/,ES21.15E2,/,ES21.15,/,ES21.15,/,ES21.15,/,ES21.15,/,ES21.15)"
-      print(FMT), "IntSta",simd_width, a, half_dt, rho, T_orig, ne_orig, e_orig
 
     open(1,FILE=arg)
-
     read(1,FMT) string, STRANG_COMP, a, half_dt, rho, T_orig, ne_orig, e_orig
-
     close(1)
 
-    print(FMT), string, STRANG_COMP, a, half_dt, rho, T_orig, ne_orig, e_orig
+    yvec(1) = e_orig
 
- FMT="(A6,I1,/,ES21.15,/,ES21.15E2,/,ES21.15,/,ES21.15,/,ES21.15,/,ES21.15,/,ES21.15)"
-      print(FMT), string,STRANG_COMP, a, half_dt, rho, T_orig, ne_orig, e_orig
+    print(FMT), string,STRANG_COMP, a, half_dt, rho, T_orig, ne_orig, e_orig
 
     z = 1.d0/a - 1.d0
     call fort_integrate_comoving_a(a, a_end, half_dt)

@@ -41,6 +41,15 @@ program main
   real(c_double), pointer :: yvec(:)
   
     real(c_double) :: vode_atol_scaled_in, vode_rtol_in, xacc_in
+  CHARACTER(LEN=80) :: FMT, arg
+  CHARACTER(LEN=6)  :: string
+  integer :: STRANG_COMP
+!  integer :: i_loop, j_loop
+
+    DO i = 1, iargc()
+       CALL getarg(i, arg)
+       WRITE (*,*) arg
+    END DO
 
     print*,"Created data"
     
@@ -56,21 +65,20 @@ program main
 
     allocate(yvec(neq))
     
-    !Make up arbitrary values to test compiling
-    a = .165
-    half_dt = 8.97e-6
-    rho     = 3.3e12 !state(i,j,k,URHO)
-    e_orig  = 1.88e15 / rho !state(i,j,k,UEINT) / rho
-    T_orig  = 2.8e4!diag_eos(i,j,k,TEMP_COMP)
-    ne_orig = 1.07!diag_eos(i,j,k,  NE_COMP)
+    fn_vode = 0
+    NR_vode = 0
+    print*,"Read parameters"
 
-    a       = 1.613475886587611E-01
-    half_dt = 8.711436447162485E-06
-    rho     = 2.633475757818412E+12
-    T_orig  = 1.573699834263454E+04
-    ne_orig = 1.066245326059183E+00
-    e_orig  = 3.176602345919082E+02
+ FMT="(A6,I1,/,ES21.15,/,ES21.15E2,/,ES21.15,/,ES21.15,/,ES21.15,/,ES21.15,/,ES21.15)"
+
+    open(1,FILE=arg)
+    read(1,FMT) string, STRANG_COMP, a, half_dt, rho, T_orig, ne_orig, e_orig
+    close(1)
+
     yvec(1) = e_orig
+
+    print*,"Finished reading parameters:"
+    print(FMT), string,STRANG_COMP, a, half_dt, rho, T_orig, ne_orig, e_orig
 
     z = 1.d0/a - 1.d0
     call fort_integrate_comoving_a(a, a_end, half_dt)
