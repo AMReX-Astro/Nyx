@@ -67,7 +67,10 @@ module atomic_rates_module
       logical, save :: first=.true.
 !      logical, save :: parallel_ioprocessor=.true.
 
-      character(len=:), allocatable :: file_in
+      character(len=80) :: file_in
+      character(len=14) :: var_name
+      character(len=2)  :: eq_name
+      character(len=80) :: FMT
 !      type(amrex_parmparse) :: pp
 
       if (first) then
@@ -86,15 +89,19 @@ module atomic_rates_module
 !         call pp%query("reionization_T_zHeII"     , T_zheii)
 !         call amrex_parmparse_destroy(pp)
 !nyx.inhomo_reion     = 0
-        inhomo_reion = 0
-        file_in  = "TREECOOL_middle"
-        uvb_density_A    = 1.0
-        uvb_density_B    = 0.0
-        zHI_flash   = -1.0
-        zHeII_flash = -1.0
-        T_zHI       = 2.0e4
-        T_zHeII     = 1.5e4
 
+         open(2, FILE="inputs_atomic")
+
+         read(2,*) var_name, eq_name, inhomo_reion
+         read(2,*)  var_name, eq_name, file_in
+         read(2,*) var_name,eq_name, uvb_density_A != 1.0
+         read(2,*) var_name,eq_name, uvb_density_B != 0.0
+         read(2,*) var_name,eq_name,zHI_flash!=-1
+         read(2,*) var_name,eq_name,zHeII_flash!=-1
+         read(2,*) var_name,eq_name,T_zHI!=2.00E+004
+         read(2,*) var_name,eq_name,T_zHeII!=1.50E+004
+
+         close(2)
          if (.true.) then !parallel_ioprocessor()) then
             print*, 'TABULATE_RATES: reionization parameters are:'
             print*, '    reionization_zHI_flash     = ', zhi_flash
