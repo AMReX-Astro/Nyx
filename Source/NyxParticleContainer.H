@@ -28,7 +28,7 @@ public:
     virtual void AssignDensitySingleLevel (amrex::MultiFab& mf, int level, int ncomp=1,
 					   int particle_lvl_offset = 0) const = 0;
     virtual void AssignDensity (amrex::Vector<std::unique_ptr<amrex::MultiFab> >& mf, int lev_min = 0, int ncomp = 1,
-				int finest_level = -1) const = 0;
+				int finest_level = -1, int ngrow = 1) const = 0;
 };
 
 template <int NSR, int NSI=0, int NAR=0, int NAI=0>
@@ -60,12 +60,13 @@ public:
     { 
         amrex::AmrParticleContainer<NSR,NSI,NAR,NAI>::AssignCellDensitySingleLevelFort(0, mf, level, ncomp, particle_lvl_offset);
     }
-    virtual void AssignDensity (amrex::Vector<std::unique_ptr<amrex::MultiFab> >& mf, int lev_min = 0, int ncomp = 1, int finest_level = -1) const override
+    virtual void AssignDensity (amrex::Vector<std::unique_ptr<amrex::MultiFab> >& mf, int lev_min = 0, int ncomp = 1, int finest_level = -1,
+                                int ngrow = 1) const override
     {
         if (finestLevel() == 0) {
            amrex::AmrParticleContainer<NSR,NSI,NAR,NAI>::AssignDensityFort(0, mf, lev_min, ncomp, finest_level);
         } else {
-           amrex::AmrParticleContainer<NSR,NSI,NAR,NAI>::AssignDensity(0, sub_cycle, mf, lev_min, ncomp, finest_level);
+           amrex::AmrParticleContainer<NSR,NSI,NAR,NAI>::AssignDensity(0, sub_cycle, mf, lev_min, ncomp, finest_level, ngrow);
         }
     }
 

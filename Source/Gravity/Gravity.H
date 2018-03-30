@@ -76,7 +76,7 @@ public:
     void set_boundary  (amrex::BndryData& bd, amrex::MultiFab&  rhs, const amrex::Real* dx);
 
     void solve_for_old_phi(int level, amrex::MultiFab& phi, const amrex::Vector<amrex::MultiFab*>& grad_phi,
-                           int fill_interior);
+                           int fill_interior, int grav_n_grow = 1);
     void solve_for_new_phi(int level, amrex::MultiFab& phi, const amrex::Vector<amrex::MultiFab*>& grad_phi,
                            int fill_interior, int grav_n_grow = 1);
     void solve_for_phi(int level, amrex::MultiFab& Rhs, amrex::MultiFab& phi,
@@ -99,13 +99,14 @@ public:
                       const amrex::Vector<amrex::MultiFab*>& grad_delta_phi_cc);
 
     void multilevel_solve_for_old_phi(int level, int finest_level,
+                                      int ngrow_for_solve,
                                       int use_previous_phi_as_guess=0);
     void multilevel_solve_for_new_phi(int level, int finest_level,
+                                      int ngrow_for_solve,
                                       int use_previous_phi_as_guess=0);
-    void multilevel_solve_for_phi(int level, int finest_level,
-                                  int use_previous_phi_as_guess=0);
     void actual_multilevel_solve(int level, int finest_level,
                                  const amrex::Vector<amrex::Vector<amrex::MultiFab*> >& grad_phi, int is_new,
+                                 int ngrow_for_solve,
                                  int use_previous_phi_as_guess=0);
 
     void get_crse_grad_phi(int level, amrex::Vector<std::unique_ptr<amrex::MultiFab> >& grad_phi_crse,
@@ -200,7 +201,7 @@ protected:
     void AddGhostParticlesToRhs(int level, amrex::MultiFab& Rhs);
     void AddVirtualParticlesToRhs(int level, amrex::MultiFab& Rhs, int ngrow);
 
-    void AddParticlesToRhs(int base_level, int finest_level, const amrex::Vector<amrex::MultiFab*>& Rhs_particles);
+    void AddParticlesToRhs(int base_level, int finest_level, int ngrow, const amrex::Vector<amrex::MultiFab*>& Rhs_particles);
     void AddGhostParticlesToRhs(int level, const amrex::Vector<amrex::MultiFab*>& Rhs_particles);
     void AddVirtualParticlesToRhs(int finest_level, const amrex::Vector<amrex::MultiFab*>& Rhs_particles);
 

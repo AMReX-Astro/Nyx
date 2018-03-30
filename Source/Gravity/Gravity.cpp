@@ -289,6 +289,7 @@ void
 Gravity::solve_for_old_phi (int               level,
                             MultiFab&         phi,
                             const Vector<MultiFab*>& grad_phi,
+                            int               ngrow_for_solve,
                             int               fill_interior)
 {
     BL_PROFILE("Gravity::solve_for_old_phi()");
@@ -311,7 +312,7 @@ Gravity::solve_for_old_phi (int               level,
     }
 #endif
 
-    AddParticlesToRhs(level,Rhs,1);
+    AddParticlesToRhs(level,Rhs,ngrow_for_solve);
 
     // We shouldn't need to use virtual or ghost particles for old phi solves.
 
@@ -324,7 +325,7 @@ Gravity::solve_for_new_phi (int               level,
                             MultiFab&         phi,
                             const Vector<MultiFab*>& grad_phi,
                             int               fill_interior,
-                            int               grav_n_grow)
+                            int               ngrow_for_solve)
 {
     BL_PROFILE("Gravity::solve_for_new_phi()");
 #ifdef CGRAV
@@ -347,8 +348,8 @@ Gravity::solve_for_new_phi (int               level,
     }
 #endif
 
-    AddParticlesToRhs(level,Rhs,grav_n_grow);
-    AddVirtualParticlesToRhs(level,Rhs,grav_n_grow);
+    AddParticlesToRhs(level,Rhs,ngrow_for_solve);
+    AddVirtualParticlesToRhs(level,Rhs,ngrow_for_solve);
     AddGhostParticlesToRhs(level,Rhs);
 
     const Real time = LevelData[level]->get_state_data(PhiGrav_Type).curTime();
@@ -888,6 +889,7 @@ Gravity::get_crse_grad_phi (int               level,
 void
 Gravity::multilevel_solve_for_new_phi (int level,
                                        int finest_level,
+                                       int ngrow_for_solve,
                                        int use_previous_phi_as_guess)
 {
     BL_PROFILE("Gravity::multilevel_solve_for_new_phi()");
@@ -908,12 +910,13 @@ Gravity::multilevel_solve_for_new_phi (int level,
     int is_new = 1;
     actual_multilevel_solve(level, finest_level, 
 			    amrex::GetVecOfVecOfPtrs(grad_phi_curr),
-                            is_new, use_previous_phi_as_guess);
+                            is_new, ngrow_for_solve, use_previous_phi_as_guess);
 }
 
 void
 Gravity::multilevel_solve_for_old_phi (int level,
                                        int finest_level,
+                                       int ngrow,
                                        int use_previous_phi_as_guess)
 {
     BL_PROFILE("Gravity::multilevel_solve_for_old_phi()");
@@ -931,17 +934,10 @@ Gravity::multilevel_solve_for_old_phi (int level,
         }
     }
 
-    int is_new = 0;
+    int is_new  = 0;
     actual_multilevel_solve(level, finest_level,
 			    amrex::GetVecOfVecOfPtrs(grad_phi_prev),
-                            is_new, use_previous_phi_as_guess);
-}
-
-void
-Gravity::multilevel_solve_for_phi(int level, int finest_level,
-                                  int use_previous_phi_as_guess)
-{
-    multilevel_solve_for_new_phi(level, finest_level, use_previous_phi_as_guess);
+                            is_new, ngrow, use_previous_phi_as_guess);
 }
 
 void
@@ -949,6 +945,7 @@ Gravity::actual_multilevel_solve (int                       level,
                                   int                       finest_level,
                                   const Vector<Vector<MultiFab*> >& grad_phi,
                                   int                       is_new,
+                                  int                       ngrow_for_solve,
                                   int                       use_previous_phi_as_guess)
 {
     BL_PROFILE("Gravity::actual_multilevel_solve()");
@@ -962,11 +959,11 @@ Gravity::actual_multilevel_solve (int                       level,
     for (int lev = 0; lev < num_levels; lev++)
     {
 	Rhs_particles[lev].reset(new MultiFab(grids[level+lev], dmap[level+lev], 1, 0));
-       Rhs_particles[lev]->setVal(0.);
+        Rhs_particles[lev]->setVal(0.);
     }
 
     const auto& rpp = amrex::GetVecOfPtrs(Rhs_particles);
-    AddParticlesToRhs(level,finest_level,rpp);
+    AddParticlesToRhs(level,finest_level,ngrow_for_solve,rpp);
     AddGhostParticlesToRhs(level,rpp);
     AddVirtualParticlesToRhs(finest_level,rpp);
 
@@ -1852,14 +1849,14 @@ Gravity::AddParticlesToRhs (int               level,
 }
 
 void
-Gravity::AddParticlesToRhs(int base_level, int finest_level, const Vector<MultiFab*>& Rhs_particles)
+Gravity::AddParticlesToRhs(int base_level, int finest_level, int ngrow, const Vector<MultiFab*>& Rhs_particles)
 {
     BL_PROFILE("Gravity::AddParticlesToRhsML()");
     const int num_levels = finest_level - base_level + 1;
     for (int i = 0; i < Nyx::theActiveParticles().size(); i++)
     {
         Vector<std::unique_ptr<MultiFab> > PartMF;
-        Nyx::theActiveParticles()[i]->AssignDensity(PartMF, base_level, 1, finest_level);
+        Nyx::theActiveParticles()[i]->AssignDensity(PartMF, base_level, 1, finest_level, ngrow);
         for (int lev = 0; lev < num_levels; lev++)
         {
             if (PartMF[lev]->contains_nan())

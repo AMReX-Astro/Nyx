@@ -1501,8 +1501,9 @@ Nyx::post_restart ()
             {
                 // Do multilevel solve here.  We now store phi in the checkpoint file so we can use it
                 //  at restart.
+                int ngrow_for_solve = 1;
                 int use_previous_phi_as_guess = 1;
-                gravity->multilevel_solve_for_phi(0,parent->finestLevel(),use_previous_phi_as_guess);
+                gravity->multilevel_solve_for_new_phi(0,parent->finestLevel(),ngrow_for_solve,use_previous_phi_as_guess);
 
 #ifndef AGN
                 if (do_dm_particles)
@@ -1756,8 +1757,9 @@ Nyx::post_regrid (int lbase,
         if (gravity->get_gravity_type() == "PoissonGrav")
 #endif
         {
+            int ngrow_for_solve = 1;
             int use_previous_phi_as_guess = 1;
-            gravity->multilevel_solve_for_phi(level, new_finest, use_previous_phi_as_guess);
+            gravity->multilevel_solve_for_new_phi(level, new_finest, ngrow_for_solve, use_previous_phi_as_guess);
         }
     }
 #endif
@@ -1807,7 +1809,8 @@ Nyx::post_init (Real stop_time)
             //
             // Solve on full multilevel hierarchy
             //
-            gravity->multilevel_solve_for_phi(0, finest_level);
+            int ngrow_for_solve = 1;
+            gravity->multilevel_solve_for_new_phi(0, finest_level, ngrow_for_solve);
         }
 
         // Make this call just to fill the initial state data.
