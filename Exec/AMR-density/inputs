@@ -52,7 +52,7 @@ amr.data_log = runlog
 gravity.gravity_type = PoissonGrav
 gravity.no_sync      = 1
 gravity.no_composite = 1
-gravity.solve_with_cpp = 0
+gravity.solve_with_mlmg  = 1
 gravity.solve_with_hpgmg = 0
 
 mg.bottom_solver = 4
@@ -67,8 +67,7 @@ geometry.prob_lo     =  0     0     0
 geometry.prob_hi     =  28.49002849  28.49002849  28.49002849
 
 amr.n_cell           =  64  64  64
-amr.max_grid_size    = 32
-#fabarray.mfiter_tile_size = 128 8 8
+amr.max_grid_size    =  32
 fabarray.mfiter_tile_size = 1024000 8 8
 
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
@@ -133,14 +132,15 @@ mg.v                  = 1       # verbosity in Amr.cpp
 particles.v           = 2       # verbosity in Particle class
 
 # REFINEMENT / REGRIDDING
-amr.max_level          = 2        # maximum level number allowed
-amr.ref_ratio          = 2 2 2 2
-amr.regrid_int         = 4 4 4 4
-amr.n_error_buf        = 0 0 0 8
+amr.max_level          = 2        # maximum level number allowed, base grid = 0
+amr.ref_ratio          = 2 2 2 2  # refinement ratio at different levels: 2 or 4
+amr.blocking_factor    = 16       # min grid size
+amr.subcycling_mode    = Auto     # Auto or None
+
+amr.regrid_int         = 2 2 2 2
+amr.n_error_buf        = 2 2 2 2
 amr.refine_grid_layout = 1
 amr.regrid_on_restart  = 1
-amr.blocking_factor    = 16
-#amr.nosub              = 1
 
 # CHECKPOINT FILES
 amr.checkpoint_files_output = 1
