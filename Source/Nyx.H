@@ -116,7 +116,6 @@ public:
     //Define data descriptors.
     //
     static void variable_setup();
-    static void variable_setup_for_new_comp_procs();
     static void hydro_setup();
     static void no_hydro_setup();
 
@@ -554,15 +553,6 @@ public:
     amrex::MultiFab* fine_mask;
     amrex::MultiFab* build_fine_mask();
 
-    static int forceParticleRedist;  // ---- for dynamic sidecars
-    static int nSidecarProcs;
-
-    virtual void AddProcsToComp(amrex::Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
-                                int ioProcNumSCS, int ioProcNumAll, int scsMyId,
-				MPI_Comm scsComm);
-    virtual void NyxParticlesAddProcsToComp(amrex::Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
-                                            int ioProcNumSCS, int ioProcNumAll, int scsMyId,
-				            MPI_Comm scsComm);
     static void InitErrorList();
     static void InitDeriveList();
 
