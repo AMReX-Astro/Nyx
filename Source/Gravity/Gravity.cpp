@@ -10,18 +10,13 @@
 #include <AMReX_Laplacian.H>
 #include <AMReX_MacBndry.H>
 #include <AMReX_LO_BCTYPES.H>
-#include <AMReX_MGT_Solver.H>
-#include <AMReX_stencil_types.H>
-#include <mg_cpp_f.h>
 
 #ifdef USEHPGMG
 #include <BL_HPGMG.H>
 #endif
 
-#ifdef NYX_MLMG
 #include <AMReX_MLMG.H>
 #include <AMReX_MLPoisson.H>
-#endif
 
 using namespace amrex;
 
@@ -35,9 +30,8 @@ int  Gravity::no_sync       = 0;
 int  Gravity::no_composite  = 0;
 int  Gravity::dirichlet_bcs = 0;
 int  Gravity::monopole_bcs  = 0;
-int  Gravity::solve_with_cpp= 0;
 int  Gravity::solve_with_hpgmg = 0;
-int  Gravity::solve_with_mlmg = 0;
+int  Gravity::solve_with_mlmg = 1;
 int  Gravity::mlmg_max_fmg_iter = 0;
 int  Gravity::mlmg_agglomeration = 0;
 int  Gravity::mlmg_consolidation = 0;
@@ -133,15 +127,13 @@ Gravity::read_params ()
         pp.query("dirichlet_bcs", dirichlet_bcs);
         pp.query("monopole_bcs"  , monopole_bcs);
 
-        pp.query("solve_with_cpp", solve_with_cpp);
         pp.query("solve_with_hpgmg", solve_with_hpgmg);
         pp.query("solve_with_mlmg", solve_with_mlmg);
         pp.query("mlmg_max_fmg_iter", mlmg_max_fmg_iter);
         pp.query("mlmg_agglomeration", mlmg_agglomeration);
         pp.query("mlmg_consolidation", mlmg_consolidation);
 
-        const int nflags = static_cast<int>(solve_with_cpp)
-            +              static_cast<int>(solve_with_hpgmg)
+        const int nflags = static_cast<int>(solve_with_hpgmg)
             +              static_cast<int>(solve_with_mlmg);
         if (nflags >= 2) {
           amrex::Error("Multiple gravity solvers selected.");
@@ -393,13 +385,11 @@ Gravity::solve_for_phi (int               level,
     // Need to set the boundary values here so they can get copied into "bndry"
     if (dirichlet_bcs) set_dirichlet_bcs(level,&phi);
 
-#ifdef NYX_MLMG
     if (solve_with_mlmg)
     {
         solve_for_phi_with_mlmg(level, Rhs, phi, grad_phi, time);
         return;
     }
-#endif    
 
     const Geometry& geom = parent->Geom(level);
     MacBndry bndry(grids[level], dmap[level], 1, geom);
@@ -466,7 +456,6 @@ Gravity::solve_for_phi (int               level,
 
     if ( Geometry::isAllPeriodic() )
     {
-//      if (grids[level].contains(parent->Geom(level).Domain()))
         if ( parent->Geom(level).Domain().numPts() == grids[level].numPts() )
         {
             Nyx* nyx_level = dynamic_cast<Nyx*>(&(parent->getLevel(level)));
@@ -487,30 +476,12 @@ Gravity::solve_for_phi (int               level,
     const Real  tol     = sl_tol;
     const Real  abs_tol = 0.;
 
-    if (solve_with_cpp)
-    {
-        solve_with_Cpp(level, phi, grad_phi, Rhs, tol, abs_tol);
-    }
-    else if (solve_with_hpgmg)
-    {
 #ifdef USEHPGMG
-        solve_with_HPGMG(level, phi, grad_phi, Rhs, tol, abs_tol);
-#endif
-    }
-    else
+    if (solve_with_hpgmg)
     {
-        MGT_Solver mgt_solver(fgeom, mg_bc, bav, dmv, false, stencil_type);
-        mgt_solver.set_const_gravity_coeffs(xa, xb);
-        const int   mglev   = 0;
-        const Real* dx      = geom.CellSize();
-
-	int always_use_bnorm = 0;
-	int need_grad_phi = 1;
-        mgt_solver.solve(phi_p, Rhs_p, bndry, tol, abs_tol, always_use_bnorm,
-			 level_solver_resnorm[level], need_grad_phi);
-
-        mgt_solver.get_fluxes(mglev, grad_phi, dx);
+        solve_with_HPGMG(level, phi, grad_phi, Rhs, tol, abs_tol);
     }
+#endif
 }
 
 void
@@ -521,147 +492,7 @@ Gravity::solve_for_delta_phi (int                        crse_level,
                               const Vector<Vector<MultiFab*> >& grad_delta_phi)
 {
     BL_PROFILE("Gravity::solve_for_delta_phi()");
-#ifdef NYX_MLMG
-    if (solve_with_mlmg)
-    {
-        solve_for_delta_phi_with_mlmg(crse_level,fine_level,crse_rhs,delta_phi,grad_delta_phi);
-    }
-    else
-#endif
-    {
-        solve_for_delta_phi_with_mgt(crse_level,fine_level,crse_rhs,delta_phi,grad_delta_phi);
-    }
-}
-
-void
-Gravity::solve_for_delta_phi_with_mgt (int                        crse_level,
-                                       int                        fine_level,
-                                       MultiFab&                  crse_rhs,
-                                       const Vector<MultiFab*>&         delta_phi,
-                                       const Vector<Vector<MultiFab*> >& grad_delta_phi)
-{
-    const int num_levels = fine_level - crse_level + 1;
-    const Box& crse_domain = (parent->Geom(crse_level)).Domain();
-
-    BL_ASSERT(grad_delta_phi.size() == num_levels);
-    BL_ASSERT(delta_phi.size() == num_levels);
-
-    if (verbose)
-    {
-        amrex::Print() << "... solving for delta_phi at crse_level = " << crse_level << '\n';
-        amrex::Print() << "...                    up to fine_level = " << fine_level << '\n';
-    }
-
-    const Geometry& geom = parent->Geom(crse_level);
-    MacBndry bndry(grids[crse_level], dmap[crse_level], 1, geom);
-
-    IntVect crse_ratio = crse_level > 0 ? parent->refRatio(crse_level-1)
-                                          : IntVect::TheZeroVector();
-
-    // Set homogeneous Dirichlet values for the solve.
-    bndry.setHomogValues(*phys_bc, crse_ratio);
-
-    Vector<BoxArray>            bav(num_levels);
-    Vector<DistributionMapping> dmv(num_levels);
-
-    for (int lev = crse_level; lev <= fine_level; lev++)
-    {
-        bav[lev-crse_level] = grids[lev];
-        MultiFab& phi_new = LevelData[lev]->get_new_data(PhiGrav_Type);
-        dmv[lev-crse_level] = phi_new.DistributionMap();
-    }
-    Vector<Geometry> fgeom(num_levels);
-    for (int lev = crse_level; lev <= fine_level; lev++)
-        fgeom[lev-crse_level] = parent->Geom(lev);
-
-    MGT_Solver mgt_solver(fgeom, mg_bc, bav, dmv, false, stencil_type);
-
-    Vector< Vector<Real> > xa(num_levels);
-    Vector< Vector<Real> > xb(num_levels);
-
-    for (int lev = crse_level; lev <= fine_level; lev++)
-    {
-        xa[lev-crse_level].resize(BL_SPACEDIM);
-        xb[lev-crse_level].resize(BL_SPACEDIM);
-        if (lev == 0)
-        {
-            for (int i = 0; i < BL_SPACEDIM; ++i)
-            {
-                xa[lev-crse_level][i] = 0;
-                xb[lev-crse_level][i] = 0;
-            }
-        }
-        else
-        {
-            const Real* dx_crse = parent->Geom(lev-1).CellSize();
-            for (int i = 0; i < BL_SPACEDIM; ++i)
-            {
-                xa[lev-crse_level][i] = 0.5 * dx_crse[i];
-                xb[lev-crse_level][i] = 0.5 * dx_crse[i];
-            }
-        }
-    }
-
-    Vector<std::unique_ptr<MultiFab> > raii;
-    Vector<MultiFab*> Rhs_p(num_levels);
-
-    for (int lev = crse_level; lev <= fine_level; lev++)
-    {
-        delta_phi[lev-crse_level]->setVal(0);
-
-        if (lev == crse_level)
-        {
-            Rhs_p[0] = &crse_rhs;
-        }
-        else
-        {
-	    raii.push_back(std::unique_ptr<MultiFab>(new MultiFab(grids[lev], dmap[lev], 1, 0)));
-	    Rhs_p[lev-crse_level] = raii.back().get();
-            Rhs_p[lev-crse_level]->setVal(0);
-        }
-
-    }
-
-    // If at coarsest level, subtract off average of RHS from all levels to ensure solvability
-    if (Geometry::isAllPeriodic() &&
-           (grids[crse_level].numPts() == crse_domain.numPts())) {
-       Real local_correction = 0.0;
-#ifdef _OPENMP
-#pragma omp parallel reduction(+:local_correction)
-#endif
-       for (MFIter mfi(crse_rhs,true); mfi.isValid(); ++mfi) {
-           local_correction += crse_rhs[mfi].sum(mfi.tilebox(),0,1);
-       }
-       ParallelDescriptor::ReduceRealSum(local_correction);
-
-       local_correction = local_correction / grids[crse_level].numPts();
-
-       if (verbose)
-          amrex::Print() << "WARNING: Adjusting RHS in solve_for_delta_phi by " << local_correction << std::endl;
-
-       for (int lev = crse_level; lev <= fine_level; lev++) {
-         Rhs_p[lev-crse_level]->plus(-local_correction,0,1,0);
-       }
-    }
-
-    mgt_solver.set_const_gravity_coeffs(xa, xb);
-
-    const Real tol     = delta_tol;
-    Real       abs_tol = level_solver_resnorm[crse_level];
-    for (int lev = crse_level + 1; lev < fine_level; lev++)
-        abs_tol = std::max(abs_tol,level_solver_resnorm[lev]);
-
-    Real final_resnorm;
-    int always_use_bnorm = 0;
-    int need_grad_phi = 1;
-    mgt_solver.solve(delta_phi, Rhs_p, bndry, tol, abs_tol, always_use_bnorm, final_resnorm, need_grad_phi);
-
-    for (int lev = crse_level; lev <= fine_level; lev++)
-    {
-        auto& gdphi = grad_delta_phi[lev-crse_level];
-        const Real* dx = parent->Geom(lev).CellSize();
-        mgt_solver.get_fluxes(lev-crse_level, gdphi, dx);
-    }
+    solve_for_delta_phi_with_mlmg(crse_level,fine_level,crse_rhs,delta_phi,grad_delta_phi);
 }
 
 void
@@ -1082,7 +913,6 @@ Gravity::actual_multilevel_solve (int                       level,
 
 // *****************************************************************************
 
-#ifdef NYX_MLMG
     if (solve_with_mlmg)
     {
         const MultiFab* crse_bcdata = nullptr;
@@ -1101,151 +931,6 @@ Gravity::actual_multilevel_solve (int                       level,
         }
         solve_with_MLMG(level, finest_level, phi_p, amrex::GetVecOfConstPtrs(Rhs_p),
                         grad_phi_aa, crse_bcdata, rel_eps, abs_eps);
-    }
-    else
-#endif
-    {
-        Vector<BoxArray> bav(num_levels);
-        Vector<DistributionMapping> dmv(num_levels);
-        
-        // Ok to use phi_new here because phi_new and phi_old have the same DistributionMap
-        for (int lev = 0; lev < num_levels; lev++)
-        {
-            bav[lev]          = grids[level+lev];
-            if (is_new == 1)
-            {
-                MultiFab& phi_new = LevelData[level+lev]->get_new_data(PhiGrav_Type);
-                dmv[lev]          = phi_new.DistributionMap();
-            } else {
-                MultiFab& phi_old = LevelData[level+lev]->get_old_data(PhiGrav_Type);
-                dmv[lev]          = phi_old.DistributionMap();
-            }
-        }
-        Vector<Geometry> fgeom(num_levels);
-        for (int i = 0; i < num_levels; i++)
-            fgeom[i] = parent->Geom(level+i);
-        
-        Vector< Vector<Real> > xa(num_levels);
-        Vector< Vector<Real> > xb(num_levels);
-        
-        for (int lev = 0; lev < num_levels; lev++)
-        {
-            xa[lev].resize(BL_SPACEDIM);
-            xb[lev].resize(BL_SPACEDIM);
-            if (level + lev == 0)
-            {
-                for (int i = 0; i < BL_SPACEDIM; ++i)
-            {
-                xa[lev][i] = 0;
-                xb[lev][i] = 0;
-            }
-            }
-            else
-            {
-                const Real* dx_crse = parent->Geom(level + lev - 1).CellSize();
-                for (int i = 0; i < BL_SPACEDIM; ++i)
-                {
-                xa[lev][i] = 0.5 * dx_crse[i];
-                xb[lev][i] = 0.5 * dx_crse[i];
-                }
-            }
-        }
-
-        IntVect crse_ratio = level > 0 ? parent->refRatio(level-1)
-                                     : IntVect::TheZeroVector();
-
-        //
-        // Store the Dirichlet boundary condition for phi in bndry.
-        //
-        const Geometry& geom = parent->Geom(level);
-        MacBndry bndry(grids[level], dmap[level], 1, geom);
-        const int src_comp  = 0;
-        const int dest_comp = 0;
-        const int num_comp  = 1;
-        //
-        // Build the homogeneous boundary conditions.  One could setVal
-        // the bndry fabsets directly, but we instead do things as if
-        // we had a fill-patched mf with grows--in that case the bndry
-        // object knows how to grab grow data from the mf on physical
-        // boundaries.  Here we create an mf, setVal, and pass that to
-        // the bndry object.
-        //
-        if (level == 0)
-        {
-            bndry.setBndryValues(*phi_p[0], src_comp, dest_comp, num_comp,*phys_bc);
-        }
-        else
-        {
-            MultiFab CPhi;
-            get_crse_phi(level, CPhi, time);
-            BoxArray  crse_boxes = BoxArray(grids[level]).coarsen(crse_ratio);
-            const int in_rad     = 0;
-            const int out_rad    = 1;
-            const int extent_rad = 2;
-            BndryRegister crse_br(crse_boxes, dmap[level],
-                                  in_rad, out_rad, extent_rad, num_comp);
-            crse_br.copyFrom(CPhi, CPhi.nGrow(), src_comp, dest_comp, num_comp);
-            bndry.setBndryValues(crse_br, src_comp, LevelData[level]->get_new_data(PhiGrav_Type),
-                                 src_comp, dest_comp, num_comp, crse_ratio, *phys_bc);
-        }
-        
-        Real tol           = ml_tol;
-        Real abs_tol       = 0;
-        
-        //
-        // Can only use the C++ solvers if single-level
-        //
-        if (solve_with_cpp && (level == finest_level))
-        {
-            // We can only use the C++ solvers for a single level solve, but it's ok if level > 0
-            solve_with_Cpp(level, *(phi_p[0]), grad_phi[0], *(Rhs_p[0]), tol, abs_tol);
-        }
-        else if ( solve_with_hpgmg && (level == finest_level) && (level == 0) )
-        {
-#ifdef USEHPGMG
-            // Right now we can only use HPGMG for a single level = 0 solve
-            solve_with_HPGMG(level, *(phi_p[0]), grad_phi[0], *(Rhs_p[0]), tol, abs_tol);
-#endif
-        }
-        else
-        {
-            MGT_Solver mgt_solver(fgeom, mg_bc, bav, dmv, false, stencil_type);
-            mgt_solver.set_const_gravity_coeffs(xa, xb);
-            
-            Real final_resnorm;
-            int always_use_bnorm = 0;
-            int need_grad_phi = 1;
-            
-            //
-            // Call the solver
-            //
-            mgt_solver.solve(phi_p, amrex::GetVecOfPtrs(Rhs_p),
-                             bndry, tol, abs_tol, always_use_bnorm, final_resnorm, need_grad_phi);
-
-            for (int lev = 0; lev < num_levels; lev++)
-            {
-                const Real* dx = parent->Geom(level+lev).CellSize();
-                mgt_solver.get_fluxes(lev, grad_phi[level+lev], dx);
-            }
-        }
-
-        // Average phi from fine to coarse level
-        for (int lev = finest_level; lev > level; lev--)
-        {
-            if (is_new == 1)
-            {
-                amrex::average_down(LevelData[lev  ]->get_new_data(PhiGrav_Type),
-                                    LevelData[lev-1]->get_new_data(PhiGrav_Type),
-                                    0, 1, parent->refRatio(lev-1));
-                
-            }
-            else if (is_new == 0)
-            {
-                amrex::average_down(LevelData[lev  ]->get_old_data(PhiGrav_Type),
-                                    LevelData[lev-1]->get_old_data(PhiGrav_Type),
-                                    0, 1, parent->refRatio(lev-1));
-            }
-        }
     }
 
     // Average grad_phi from fine to coarse level
@@ -1685,7 +1370,6 @@ Gravity::make_mg_bc ()
         }
     }
 
-#ifdef NYX_MLMG
     for (int idim = 0; idim < AMREX_SPACEDIM; ++idim) {
         if (geom.isPeriodic(idim)) {
             mlmg_lobc[idim] = MLLinOp::BCType::Periodic;
@@ -1703,7 +1387,6 @@ Gravity::make_mg_bc ()
             }
         }
     }
-#endif
 }
 
 void
@@ -2005,7 +1688,7 @@ Gravity::solve_with_Cpp(int level, MultiFab& soln, const Vector<MultiFab*>& grad
   BndryData bd(grids[level], dmap[level], 1, geom);
   set_boundary(bd, rhs, dx);
 
-  // Note that this actually solves Lap(phi) = RHS, not -Lap(phi) as in the F90 solve
+  // Note that this actually solves Lap(phi) = RHS
   Laplacian lap_operator(bd, dx[0]);
 
   MultiGrid mg(lap_operator);
@@ -2014,8 +1697,7 @@ Gravity::solve_with_Cpp(int level, MultiFab& soln, const Vector<MultiFab*>& grad
 
   lap_operator.compFlux(*grad_phi[0],*grad_phi[1],*grad_phi[2],soln);
 
-  // We have to multiply by -1 here because the compFlux routine returns
-  // grad(phi), not -grad(phi) as in the F90 solver.
+  // We have to multiply by -1 here because the compFlux routine returns grad(phi)
   grad_phi[0]->mult(-1.0);
   grad_phi[1]->mult(-1.0);
   grad_phi[2]->mult(-1.0);
@@ -2113,15 +1795,12 @@ Gravity::solve_with_HPGMG(int level,
 
   lap_operator.compFlux(*grad_phi[0],*grad_phi[1],*grad_phi[2],soln);
 
-  // We have to multiply by -1 here because the compFlux routine returns
-  // grad(phi), not -grad(phi) as in the F90 solver.
+  // We have to multiply by -1 here because the compFlux routine returns grad(phi)
   grad_phi[0]->mult(-1.0);
   grad_phi[1]->mult(-1.0);
   grad_phi[2]->mult(-1.0);
 }
 #endif
-
-#ifdef NYX_MLMG
 
 void
 Gravity::solve_for_phi_with_mlmg (int level, MultiFab& Rhs, MultiFab& phi,
@@ -2226,10 +1905,6 @@ Gravity::solve_with_MLMG (int crse_level, int fine_level,
         mlpoisson.setLevelBC(ilev, phi[ilev]);
     }
 
-#if (AMREX_SPACEDIM != 3)
-    amrex::Abort("solve_with_MLMG: 1d and 2d not supported yet");
-#endif
-
     MLMG mlmg(mlpoisson);
     mlmg.setVerbose(verbose);
     if (crse_level == 0) {
@@ -2248,8 +1923,6 @@ Gravity::solve_with_MLMG (int crse_level, int fine_level,
 
     return final_resnorm;
 }
-
-#endif
 
 void
 Gravity::set_boundary(BndryData& bd, MultiFab& rhs, const Real* dx)

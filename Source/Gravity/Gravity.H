@@ -6,9 +6,7 @@
 #include <AMReX_FluxRegister.H>
 #include <AMReX_Particles.H>
 
-#ifdef NYX_MLMG
 #include <AMReX_MLLinOp.H>
-#endif
 
 class Gravity {
 
@@ -40,21 +38,6 @@ public:
     void swap_time_levels(int level);
 
     // 
-    // Use the F90 solver
-    //
-    amrex::Real solve_with_fmg (int crse_level, int fine_level,
-                         const amrex::Vector<amrex::MultiFab*> & phi,
-                         const amrex::Vector<amrex::MultiFab*> & rhs,
-                         const amrex::Vector<amrex::Vector<amrex::MultiFab*> >& grad_phi,
-                         const amrex::Vector<amrex::MultiFab*>& res,
-                         amrex::Real time);
-
-    // 
-    // Use the C++ solver in C_CellMG instead of the F90 solvers in F_MG.
-    //
-    void solve_with_Cpp(int level, amrex::MultiFab& phi, const amrex::Vector<amrex::MultiFab*>& grad_phi,
-                        amrex::MultiFab& rhs, amrex::Real tol, amrex::Real abs_tol);
-    // 
     // Use the HPGMG solver
     //
 #ifdef USEHPGMG
@@ -62,7 +45,6 @@ public:
                         amrex::MultiFab& rhs, amrex::Real tol, amrex::Real abs_tol);
 #endif
 
-#ifdef NYX_MLMG
     void solve_for_phi_with_mlmg (int level, amrex::MultiFab& Rhs, amrex::MultiFab& phi,
                                   const amrex::Vector<amrex::MultiFab*>& grad_phi, amrex::Real time);
     amrex::Real solve_with_MLMG (int crse_level, int fine_level,
@@ -71,7 +53,6 @@ public:
                                  const amrex::Vector<std::array<amrex::MultiFab*,AMREX_SPACEDIM> >& grad_phi,
                                  const amrex::MultiFab* const crse_bcdata,
                                  amrex::Real rel_eps, amrex::Real abs_eps);
-#endif
 
     void set_boundary  (amrex::BndryData& bd, amrex::MultiFab&  rhs, const amrex::Real* dx);
 
@@ -88,11 +69,9 @@ public:
     void solve_for_delta_phi_with_mgt(int crse_level, int fine_level, amrex::MultiFab& CrseRhs,
                                       const amrex::Vector<amrex::MultiFab*>& delta_phi,
                                       const amrex::Vector<amrex::Vector<amrex::MultiFab*> >& grad_delta_phi);
-#ifdef NYX_MLMG
     void solve_for_delta_phi_with_mlmg(int crse_level, int fine_level, amrex::MultiFab& CrseRhs,
                                        const amrex::Vector<amrex::MultiFab*>& delta_phi,
                                        const amrex::Vector<amrex::Vector<amrex::MultiFab*> >& grad_delta_phi);
-#endif
 
     void gravity_sync(int crse_level, int fine_level, int iteration, int ncycle, 
                       const amrex::MultiFab& drho_and_drhoU, const amrex::MultiFab& dphi,
@@ -129,10 +108,8 @@ public:
 
     void make_mg_bc();
 
-#ifdef NYX_MLMG
     std::array<amrex::MLLinOp::BCType,AMREX_SPACEDIM> mlmg_lobc;
     std::array<amrex::MLLinOp::BCType,AMREX_SPACEDIM> mlmg_hibc;
-#endif
 
     void set_dirichlet_bcs(int level, amrex::MultiFab* phi);
 
@@ -177,7 +154,6 @@ protected:
     static int no_composite;
     static int dirichlet_bcs;
     static int  monopole_bcs;
-    static int  solve_with_cpp;
     static int solve_with_hpgmg;
     static int solve_with_mlmg;
     static int mlmg_max_fmg_iter;
