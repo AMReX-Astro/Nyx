@@ -74,8 +74,6 @@ Nyx::halo_find (Real dt)
 {
    BL_PROFILE("Nyx::halo_find()");
 
-   const int whichSidecar(0);
-
    const Real * dx = geom.CellSize();
 
    amrex::MultiFab& new_state = get_new_data(State_Type);
@@ -108,7 +106,6 @@ Nyx::halo_find (Real dt)
      // Before creating new AGN particles, accrete mass onto existing particles 
      halo_accrete(dt);
 
-     if (ParallelDescriptor::NProcsSidecar(0) <= 0) 
      { // we have no sidecars, so do everything in situ
 
        BoxArray reeberBA;
@@ -317,57 +314,7 @@ Nyx::halo_find (Real dt)
 
 #ifdef REEBER
      } 
-#if 0
-     else { // we have sidecars, so do everything in-transit
 
-       int sidecarSignal(NyxHaloFinderSignal);
-       const int MPI_IntraGroup_Broadcast_Rank = ParallelDescriptor::IOProcessor() ? MPI_ROOT : MPI_PROC_NULL;
-       ParallelDescriptor::Bcast(&sidecarSignal, 1, MPI_IntraGroup_Broadcast_Rank,
-                                 ParallelDescriptor::CommunicatorInter(whichSidecar));
-
-       Geometry geom(Geom());
-       Geometry::SendGeometryToSidecar(&geom, whichSidecar);
-
-       // FIXME: What is distribution mapping?
-       amrex::MultiFab reeberMF(grids, reeber_density_var_list.size(), 0);
-       int cnt = 0;
-       // Derive quantities and store in components 1... of MultiFAB
-       for (auto it = reeber_density_var_list.begin(); it != reeber_density_var_list.end(); ++it)
-       {
-           std::unique_ptr<MultiFab> derive_dat = particle_derive(*it, cur_time, 0);
-           reeberMF.copy(*derive_dat, comp0, cnt, ncomp1, nghost0, nghost0);
-           cnt++;
-       }
-
-       int time_step(nStep()), nComp(reeberMF.nComp());
-
-       ParallelDescriptor::Bcast(&nComp, 1, MPI_IntraGroup_Broadcast_Rank,
-                                 ParallelDescriptor::CommunicatorInter(whichSidecar));
-
-       amrex::MultiFab *mfSource = &reeberMF;
-       amrex::MultiFab *mfDest = 0;
-       int srcComp(0), destComp(1);
-       int srcNGhost(0), destNGhost(0);
-       MPI_Comm commSrc(ParallelDescriptor::CommunicatorComp());
-       MPI_Comm commDest(ParallelDescriptor::CommunicatorSidecar());
-       MPI_Comm commInter(ParallelDescriptor::CommunicatorInter(whichSidecar));
-       MPI_Comm commBoth(ParallelDescriptor::CommunicatorBoth(whichSidecar));
-       bool isSrc(true);
-
-       amrex::MultiFab::copyInter(mfSource, mfDest, srcComp, destComp, nComp,
-                           srcNGhost, destNGhost,
-                           commSrc, commDest, commInter, commBoth,
-                           isSrc);
-
-
-       ParallelDescriptor::Bcast(&time_step, 1, MPI_IntraGroup_Broadcast_Rank,
-                                 ParallelDescriptor::CommunicatorInter(whichSidecar));
-
-       int do_analysis_bcast(do_analysis);
-       ParallelDescriptor::Bcast(&do_analysis_bcast, 1, MPI_IntraGroup_Broadcast_Rank,
-                                 ParallelDescriptor::CommunicatorInter(whichSidecar));
-
-#endif // if 0
      }
 #endif // ifdef REEBER
 }

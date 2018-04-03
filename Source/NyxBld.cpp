@@ -9,12 +9,10 @@ class NyxBld
     public LevelBld
 {
     virtual void variable_setup();
-    virtual void variable_setup_for_new_comp_procs();
     virtual void variable_cleanup();
 
     // hack copies for amrex overriding
     virtual void variableSetUp();
-    virtual void variableSetUpForNewCompProcs();
     virtual void variableCleanUp();
 
     virtual AmrLevel *operator() ();
@@ -37,12 +35,6 @@ void
 NyxBld::variable_setup()
 {
     Nyx::variable_setup();
-}
-
-void
-NyxBld::variable_setup_for_new_comp_procs()
-{
-    Nyx::variable_setup_for_new_comp_procs();
 }
 
 void
@@ -74,10 +66,6 @@ getLevelBld()
 void NyxBld::variableSetUp()
 {
     Nyx::variable_setup();
-}
-void NyxBld::variableSetUpForNewCompProcs()
-{
-    Nyx::variable_setup_for_new_comp_procs();
 }
 void NyxBld::variableCleanUp()
 {
