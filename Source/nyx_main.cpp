@@ -40,6 +40,11 @@ std::string inputs_name = "";
 
 using namespace amrex;
 
+const int NyxHaloFinderSignal(42);
+const int resizeSignal(43);
+const int GimletSignal(55);
+const int quitSignal(-44);
+
 void
 nyx_main (int argc, char* argv[])
 {
@@ -78,6 +83,9 @@ nyx_main (int argc, char* argv[])
     pp.query("strt_time", strt_time);
     pp.query("stop_time", stop_time);
 
+    int how(-1);
+    pp.query("how",how);
+
     if (strt_time < 0.0)
     {
         amrex::Abort("MUST SPECIFY a non-negative strt_time");
@@ -108,25 +116,34 @@ nyx_main (int argc, char* argv[])
     Nyx::alloc_simd_vec();
 #endif
 
-    // If we set the regrid_on_restart flag and if we are *not* going to take
-    // a time step then we want to go ahead and regrid here.
-    //
-    if (amrptr->RegridOnRestart()) {
-        if (    (amrptr->levelSteps(0) >= max_step ) ||
-                ( (stop_time >= 0.0) &&
-                  (amrptr->cumTime() >= stop_time)  )    )
-        {
-            // Regrid only!
-            amrptr->RegridOnly(amrptr->cumTime());
-        }
-    }
+    bool finished(false);
 
-    if (amrptr->okToContinue()
-        && (amrptr->levelSteps(0) < max_step || max_step < 0)
-        && (amrptr->cumTime() < stop_time || stop_time < 0.0))
+    while ( ! finished) 
     {
-        amrptr->coarseTimeStep(stop_time);          // ---- Do a timestep.
-    }
+     // If we set the regrid_on_restart flag and if we are *not* going to take
+     // a time step then we want to go ahead and regrid here.
+     //
+     if (amrptr->RegridOnRestart()) {
+       if (    (amrptr->levelSteps(0) >= max_step ) ||
+               ( (stop_time >= 0.0) &&
+                 (amrptr->cumTime() >= stop_time)  )    )
+       {
+           // Regrid only!
+           amrptr->RegridOnly(amrptr->cumTime());
+       }
+     }
+
+     if (amrptr->okToContinue()
+          && (amrptr->levelSteps(0) < max_step || max_step < 0)
+          && (amrptr->cumTime() < stop_time || stop_time < 0.0))
+
+     {
+       amrptr->coarseTimeStep(stop_time);          // ---- Do a timestep.
+     } else {
+       finished = true;
+     }
+
+    }  // ---- end while( ! finished)
 
 #ifdef USE_CVODE
     Nyx::dealloc_simd_vec();
@@ -134,7 +151,6 @@ nyx_main (int argc, char* argv[])
 
     const Real time_without_init = ParallelDescriptor::second() - time_before_main_loop;
     if (ParallelDescriptor::IOProcessor()) std::cout << "Time w/o init: " << time_without_init << std::endl;
-
 
     // Write final checkpoint and plotfile
     if (amrptr->stepOfLastCheckPoint() < amrptr->levelSteps(0)) {
@@ -145,7 +161,6 @@ nyx_main (int argc, char* argv[])
     }
 
     delete amrptr;
-
 
     //
     // This MUST follow the above delete as ~Amr() may dump files to disk.
