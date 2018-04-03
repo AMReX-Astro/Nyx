@@ -39,7 +39,6 @@ Real Gravity::sl_tol        = 1.e-12;
 Real Gravity::ml_tol        = 1.e-12;
 Real Gravity::delta_tol     = 1.e-12;
 Real Gravity::mass_offset   = 0;
-int  Gravity::stencil_type  = CC_CROSS_STENCIL;
 
 extern "C"
 {void fort_get_grav_const(Real* Gconst);}
@@ -1325,50 +1324,6 @@ Gravity::make_mg_bc ()
 {
     BL_PROFILE("Gravity::make_mg_bc()");
     const Geometry& geom = parent->Geom(0);
-    for (int dir = 0; dir < BL_SPACEDIM; ++dir)
-    {
-        if (geom.isPeriodic(dir))
-        {
-            mg_bc[2*dir + 0] = 0;
-            mg_bc[2*dir + 1] = 0;
-        }
-        else
-        {
-            if (phys_bc->lo(dir) == Symmetry)
-            {
-                mg_bc[2*dir + 0] = MGT_BC_NEU;
-            }
-            else if (phys_bc->lo(dir) == Outflow)
-            {
-                mg_bc[2*dir + 0] = MGT_BC_DIR;
-            }
-            else if (phys_bc->lo(dir) == Inflow)
-            {
-                mg_bc[2*dir + 0] = MGT_BC_DIR;
-            }
-            else
-            {
-                amrex::Abort("Unknown lo bc in make_mg_bc");
-            }
-
-            if (phys_bc->hi(dir) == Symmetry)
-            {
-                mg_bc[2*dir + 1] = MGT_BC_NEU;
-            }
-            else if (phys_bc->hi(dir) == Outflow)
-            {
-                mg_bc[2*dir + 1] = MGT_BC_DIR;
-            }
-            else if (phys_bc->hi(dir) == Inflow)
-            {
-                mg_bc[2*dir + 1] = MGT_BC_DIR;
-            }
-            else
-            {
-                amrex::Abort("Unknown hi bc in make_mg_bc");
-            }
-        }
-    }
 
     for (int idim = 0; idim < AMREX_SPACEDIM; ++idim) {
         if (geom.isPeriodic(idim)) {
@@ -1675,32 +1630,6 @@ Gravity::CorrectRhsUsingOffset(int level, MultiFab& Rhs)
 
         Rhs.plus(-sum, 0, 1, 0);
     }
-}
-
-void
-Gravity::solve_with_Cpp(int level, MultiFab& soln, const Vector<MultiFab*>& grad_phi,
-                        MultiFab& rhs, Real tol, Real abs_tol)
-{
-  BL_PROFILE("Gravity::solve_with_Cpp()");
-  const Geometry& geom = parent->Geom(level);
-  const Real* dx = parent->Geom(level).CellSize();
-
-  BndryData bd(grids[level], dmap[level], 1, geom);
-  set_boundary(bd, rhs, dx);
-
-  // Note that this actually solves Lap(phi) = RHS
-  Laplacian lap_operator(bd, dx[0]);
-
-  MultiGrid mg(lap_operator);
-  mg.setVerbose(1);
-  mg.solve(soln, rhs, tol, abs_tol);
-
-  lap_operator.compFlux(*grad_phi[0],*grad_phi[1],*grad_phi[2],soln);
-
-  // We have to multiply by -1 here because the compFlux routine returns grad(phi)
-  grad_phi[0]->mult(-1.0);
-  grad_phi[1]->mult(-1.0);
-  grad_phi[2]->mult(-1.0);
 }
 
 #ifdef USEHPGMG

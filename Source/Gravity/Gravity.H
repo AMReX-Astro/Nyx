@@ -164,7 +164,6 @@ protected:
     static amrex::Real ml_tol;
     static amrex::Real delta_tol;
     static std::string gravity_type;
-    static int stencil_type;
 
     void fill_ec_grow(int level, const amrex::Vector<amrex::MultiFab*>& ecF,
                       const amrex::Vector<amrex::MultiFab*>& ecC) const;
