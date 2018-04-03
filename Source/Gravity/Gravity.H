@@ -145,8 +145,6 @@ protected:
     int finest_level;
     int finest_level_allocated;
 
-    int mg_bc[2*BL_SPACEDIM];
-
     amrex::BCRec* phys_bc;
 
     static int verbose;
