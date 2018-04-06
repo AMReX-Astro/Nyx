@@ -66,7 +66,7 @@ public:
         if (finestLevel() == 0) {
            amrex::NeighborParticleContainer<NSR,NSI>::AssignDensityFort(0, mf, lev_min, ncomp, finest_level);
         } else {
-            amrex::NeighborParticleContainer<NSR,NSI>::AssignDensity(0, sub_cycle, mf, lev_min, ncomp, finest_level, grow);
+            amrex::NeighborParticleContainer<NSR,NSI>::AssignDensity(0, sub_cycle, mf, lev_min, ncomp, finest_level, ngrow);
         }
     }
 
