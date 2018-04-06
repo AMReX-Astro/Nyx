@@ -1,6 +1,3 @@
-# This is an example script that shows how to run a larger Nyx problem with
-# sidecars doing post-processing. The sidecar-specific parameters are at the
-# end of the inputs file.
 
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 max_step = 400
@@ -138,11 +135,3 @@ amr.plot_vars        = density
 #PROBIN FILENAME
 amr.probin_file = probin
 
-# >>>>>>>>>>>>>>>>>>>> SIDECARS <<<<<<<<<<<<<<<<<<<<
-# how many MPI procs to use for sidecars?
-nSidecars = 256
-# how to distribute grids on sidecar procs? "2" means random
-how = 2
-# time step interval for doing Gimlet analysis
-nyx.gimlet_int = 5
-# >>>>>>>>>>>>>>>>>>>> SIDECARS <<<<<<<<<<<<<<<<<<<<

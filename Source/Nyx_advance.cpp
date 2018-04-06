@@ -232,7 +232,9 @@ Nyx::advance_hydro_plus_particles (Real time,
         // Solve for phi using the previous phi as a guess.
         //
         int use_previous_phi_as_guess = 1;
+        int ngrow_for_solve = iteration + stencil_deposition_width;
         gravity->multilevel_solve_for_old_phi(level, finest_level,
+                                              ngrow_for_solve,
                                               use_previous_phi_as_guess);
     }
     BL_PROFILE_VAR_STOP(solve_for_old_phi);
@@ -321,7 +323,10 @@ Nyx::advance_hydro_plus_particles (Real time,
     int use_previous_phi_as_guess = 1;
     if (finest_level_to_advance > level)
     {
+        // The particle may be as many as "iteration" ghost cells out
+        int ngrow_for_solve = iteration + stencil_deposition_width;
         gravity->multilevel_solve_for_new_phi(level, finest_level_to_advance, 
+                                              ngrow_for_solve,
                                               use_previous_phi_as_guess);
     }
     else

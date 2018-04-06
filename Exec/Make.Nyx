@@ -23,6 +23,10 @@ ifeq ($(USE_SINGLE_PRECISION_PARTICLES), TRUE)
   DEFINES += -DBL_SINGLE_PRECISION_PARTICLES
 endif
 
+ifeq ($(USE_HENSON), TRUE)
+  DEFINES += -DHENSON
+endif
+
 ifeq ($(USE_GRAV), TRUE)
   DEFINES += -DGRAVITY
 endif
@@ -140,24 +144,13 @@ ifeq ($(USE_GRAV), TRUE)
 endif
 
 ifeq ($(USE_MG), TRUE)
-  include $(AMREX_HOME)/Src/LinearSolvers/C_to_F_MG/Make.package
-  INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/LinearSolvers/C_to_F_MG
-  VPATH_LOCATIONS   += $(AMREX_HOME)/Src/LinearSolvers/C_to_F_MG
-
   include $(AMREX_HOME)/Src/LinearSolvers/C_CellMG/Make.package
   INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/LinearSolvers/C_CellMG
   VPATH_LOCATIONS   += $(AMREX_HOME)/Src/LinearSolvers/C_CellMG
 
-  include $(AMREX_HOME)/Src/LinearSolvers/F_MG/FParallelMG.mak
-  INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/LinearSolvers/F_MG
-  VPATH_LOCATIONS   += $(AMREX_HOME)/Src/LinearSolvers/F_MG
-
-  ifeq ($(DIM),3)
-    include $(AMREX_HOME)/Src/LinearSolvers/MLMG/Make.package
-    INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/LinearSolvers/MLMG
-    VPATH_LOCATIONS   += $(AMREX_HOME)/Src/LinearSolvers/MLMG
-    DEFINES += -DNYX_MLMG
-  endif
+  include $(AMREX_HOME)/Src/LinearSolvers/MLMG/Make.package
+  INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/LinearSolvers/MLMG
+  VPATH_LOCATIONS   += $(AMREX_HOME)/Src/LinearSolvers/MLMG
 endif
 
 include $(AMREX_HOME)/Src/F_BaseLib/FParallelMG.mak
