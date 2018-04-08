@@ -33,10 +33,6 @@ extern "C"
      const int lo[], const int hi[],
      const amrex::Real dx[], amrex::Real* dt, amrex::Real* comoving_a);
 
-  void fill_slice(const amrex::Real* fdata, const int* flo, const int* fhi, int* fstart, int* nfull, 
-                        amrex::Real* sdata, const int* slo, const int* shi,
-                        const int* tlo, const int* thi, int* ncomp);
-
   void fort_estdt_comoving_a
     (amrex::Real* old_a, amrex::Real* new_dummy_a, amrex::Real* dt, amrex::Real* change_allowed,
      amrex::Real* final_a, int* dt_modified);
@@ -292,6 +288,16 @@ extern "C"
      amrex::Real* rho_ave, amrex::Real* rho_T_sum, amrex::Real* T_sum,
      amrex::Real* Tinv_sum, amrex::Real* T_meanrho_sum, amrex::Real* rho_sum,
      amrex::Real* vol_sum, amrex::Real* vol_mn_sum);
+
+  void fort_compute_gas_frac
+    (const int lo[], const int hi[], const amrex::Real dx[],
+     const BL_FORT_FAB_ARG(state),
+     const BL_FORT_FAB_ARG(diag_eos),
+     amrex::Real* rho_ave, amrex::Real* T_cut, amrex::Real* rho_cut,
+     amrex::Real* whim_mass, amrex::Real* whim_vol,
+     amrex::Real* hh_mass, amrex::Real* hh_vol,
+     amrex::Real* igm_mass, amrex::Real* igm_vol,
+     amrex::Real* mass_sum, amrex::Real* vol_sum);
 
 #ifdef AUX_UPDATE
   void auxupdate

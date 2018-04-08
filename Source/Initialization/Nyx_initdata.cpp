@@ -57,7 +57,7 @@ Nyx::read_init_params ()
     if (do_dm_particles && !ascii_particle_file.empty() && particle_init_type != "AsciiFile")
     {
         if (ParallelDescriptor::IOProcessor())
-            std::cerr << "ERROR::particle_init_type is not AsciiFile but you specified ascii_particle_file" << std::endl;;
+            std::cerr << "ERROR::particle_init_type is not AsciiFile but you specified ascii_particle_file" << std::endl;
         amrex::Error();
     }
 
@@ -67,7 +67,7 @@ Nyx::read_init_params ()
     if (init_with_sph_particles != 1 && !sph_particle_file.empty())
     {
         if (ParallelDescriptor::IOProcessor())
-            std::cerr << "ERROR::init_with_sph_particles is not 1 but you specified sph_particle_file" << std::endl;;
+            std::cerr << "ERROR::init_with_sph_particles is not 1 but you specified sph_particle_file" << std::endl;
         amrex::Error();
     }
 
@@ -75,7 +75,7 @@ Nyx::read_init_params ()
     if (init_with_sph_particles == 1 && sph_particle_file.empty())
     {
         if (ParallelDescriptor::IOProcessor())
-            std::cerr << "ERROR::init_with_sph_particles is 1 but you did not specify sph_particle_file" << std::endl;;
+            std::cerr << "ERROR::init_with_sph_particles is 1 but you did not specify sph_particle_file" << std::endl;
         amrex::Error();
     }
 
@@ -96,7 +96,7 @@ Nyx::read_init_params ()
     if (!agn_particle_file.empty() && particle_init_type != "AsciiFile")
     {
         if (ParallelDescriptor::IOProcessor())
-            std::cerr << "ERROR::particle_init_type is not AsciiFile but you specified agn_particle_file" << std::endl;;
+            std::cerr << "ERROR::particle_init_type is not AsciiFile but you specified agn_particle_file" << std::endl;
         amrex::Error();
     }
 #endif
@@ -106,7 +106,7 @@ Nyx::read_init_params ()
     if (!neutrino_particle_file.empty() && particle_init_type != "AsciiFile")
     {
         if (ParallelDescriptor::IOProcessor())
-            std::cerr << "ERROR::particle_init_type is not AsciiFile but you specified neutrino_particle_file" << std::endl;;
+            std::cerr << "ERROR::particle_init_type is not AsciiFile but you specified neutrino_particle_file" << std::endl;
         amrex::Error();
     }
 #endif
@@ -130,6 +130,9 @@ Nyx::read_init_params ()
 void
 Nyx::init_zhi ()
 {
+    BL_PROFILE("Nyx::init_zhi()");
+
+    if (ParallelDescriptor::IOProcessor()) std::cout << "Reading z_HI from file...";
 
     const int file_res = inhomo_grid;
     const int prob_res = geom.Domain().longside();
@@ -161,6 +164,8 @@ Nyx::init_zhi ()
                       nd, BL_TO_FORTRAN(D_new[mfi]),
                       ratio, BL_TO_FORTRAN(zhi[mfi]));
     }
+
+    if (ParallelDescriptor::IOProcessor()) std::cout << "done.\n";
 }
 
 void

@@ -26,13 +26,13 @@ void
 Nyx::ReadPlotFile (bool               first,
                    const std::string& file, bool& rhoe_infile)
 {
-    std::cout << "Reading data from plotfile: " << file << std::endl;
+    amrex::Print() << "Reading data from plotfile: " << file << std::endl;
 
     DataServices::SetBatchMode();
     Amrvis::FileType fileType(Amrvis::NEWPLT);
     DataServices dataServices(file, fileType);
 
-    if (!dataServices.AmrDataOk())
+    if ( ! dataServices.AmrDataOk())
         //
         // This calls ParallelDescriptor::EndParallel() and exit()
         //
@@ -72,8 +72,9 @@ Nyx::ReadPlotFile (bool               first,
         amrex::Error("boxArray from plotfile doesn't match grids ");
     }
 
-    if (amrData.FinestLevel() != parent->finestLevel())
+    if (amrData.FinestLevel() != parent->finestLevel()) {
         amrex::Error("finest_level from plotfile doesn't match finest_level from inputs file");
+    }
 
     const int Nlev = parent->finestLevel() + 1;
 
@@ -139,13 +140,12 @@ Nyx::ReadPlotFile (bool               first,
         }
     }
 
-    if (ParallelDescriptor::IOProcessor())
-        std::cout << "Successfully read state data" << std::endl;
+    amrex::Print() << "Successfully read state data" << std::endl;
 
     //
     // Read temperature and Ne if there is no rho_e in the file
     //
-    if (!rhoe_infile)
+    if ( ! rhoe_infile)
     {
         for (int lev = 0; lev < Nlev; ++lev)
         {
@@ -158,11 +158,10 @@ Nyx::ReadPlotFile (bool               first,
             D_new.copy(amrData.GetGrids(lev,iNE,bx),0,Ne_comp,1);
             amrData.FlushGrids(iNE);
 
-            std::cout << "D_new.max " << D_new.norm0() << std::endl;;
+            amrex::Print() << "D_new.max " << D_new.norm0() << std::endl;;
         }
 
-        if (ParallelDescriptor::IOProcessor())
-            std::cout << "Successfully read temperature and Ne" << std::endl;
+        amrex::Print() << "Successfully read temperature and Ne" << std::endl;
     }
 #endif
 }
