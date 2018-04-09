@@ -131,46 +131,6 @@ Nyx::variable_setup()
     error_setup();
 }
 
-void
-Nyx::variable_setup_for_new_comp_procs()
-{
-std::cout << "***** fix Nyx::variable_setup_for_new_comp_procs()" << std::endl;
-/*
-    BL_ASSERT(desc_lst.size() == 0);
-//    desc_lst.clear();
-//    derive_lst.clear();
-
-    // Initialize the network
-    network_init();
-
-
-
-
-    // Get options, set phys_bc
-    read_params();
-
-#ifdef NO_HYDRO
-    no_hydro_setup();
-
-#else
-    if (do_hydro == 1) 
-    {
-       hydro_setup();
-    }
-#ifdef GRAVITY
-    else
-    {
-       no_hydro_setup();
-    }
-#endif
-#endif
-
-    //
-    // DEFINE ERROR ESTIMATION QUANTITIES
-    //
-    error_setup();
-*/
-}
 
 #ifndef NO_HYDRO
 void

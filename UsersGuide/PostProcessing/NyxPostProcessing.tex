@@ -27,19 +27,7 @@ simultaneously. To compile with Gimlet, add \texttt{GIMLET = TRUE} to the
 that these codes are in separate repositories and are not included with Nyx.
 
 Nyx and AMReX provide the capability for the user to execute an arbitrary
-post-processing workflow either \textit{in situ} or in-transit. An \textit{in
+post-processing workflow \textit{in situ}. An \textit{in
 situ} workflow is one in which all MPI processes evolving the simulation stop
 at specified time steps and perform the post-processing before continuing with
-the simulation. In-transit means that AMReX creates a disjoint group of MPI
-processes (``sidecars'') from the global pool and reserves them exclusively for
-post-processing. At specified time steps the group of processes evolving the
-simulation will send the necessary data to the sidecar group, and then will
-continue with the simulation. The two groups then work independently of one
-another on their particular tasks.
-
-To run the post-processing workflow \textit{in situ}, one sets the
-\texttt{nSidecars} parameter in the inputs file to \texttt{0}. To run the
-workflow in-transit, one sets \texttt{nSidecars > 0}. Note that the sum of all
-MPI processes is constant for the duration of the simulation, so whatever
-number the user dedicates to post-processing will be subtracted from the number
-doing the simulation itself.
+the simulation.

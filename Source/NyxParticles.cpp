@@ -1094,13 +1094,4 @@ Nyx::remove_ghost_particles()
     }
 }
 
-
-
-void
-Nyx::NyxParticlesAddProcsToComp(Amr *aptr, int nSidecarProcs, int prevSidecarProcs,
-                    int ioProcNumSCS, int ioProcNumAll, int scsMyId,
-		                        MPI_Comm scsCommn)
-{
-}
-
 //NyxParticleContainerBase::~NyxParticleContainerBase() {}
