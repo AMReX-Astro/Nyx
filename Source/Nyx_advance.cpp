@@ -108,14 +108,16 @@ Nyx::advance_hydro_plus_particles (Real time,
     //      ghost_width + (1-iteration) - 1:
     //      the minus 1 arises because this occurs *after* the move
 
-    int where_width =  ghost_width + (1-iteration) - 1;
+    int where_width =  ghost_width + (1-iteration)  - 1;
  
     // *** grav_n_grow *** is used
     //   *) to determine how many ghost cells we need to fill in the MultiFab from
     //      which the particle interpolates its acceleration
     //   *) to set how many cells the Where call in moveKickDrift tests = (grav.nGrow()-2).
+    //   *) the (1-iteration) arises because the ghost particles are created on the coarser
+    //      level which means in iteration 2 the ghost particles may have moved 1 additional cell along
  
-    int grav_n_grow = ghost_width + (1-iteration) +
+    int grav_n_grow = ghost_width + (1-iteration) + (iteration-1) +
                       stencil_interpolation_width ;
 
     BL_PROFILE_REGION_START("R::Nyx::advance_hydro_plus_particles");
@@ -250,7 +252,7 @@ Nyx::advance_hydro_plus_particles (Real time,
             const Real a_half = 0.5 * (a_old + a_new);
 
             if (particle_verbose && ParallelDescriptor::IOProcessor())
-                std::cout << "moveKickDrift ... updating particle positions and velocity\n";
+                std::cout << "moveKickDrift ... updating particle positions and velocity\n"; 
 
             for (int lev = level; lev <= finest_level_to_advance; lev++)
             {
