@@ -262,7 +262,7 @@ Nyx::read_params ()
 
     pp.query("strict_subcycling",strict_subcycling);
 
-#ifdef USE_CVODE
+#ifdef AMREX_USE_CVODE
     pp.query("simd_width", simd_width);
     if (simd_width < 1) amrex::Abort("simd_width must be a positive integer");
     set_simd_width(simd_width);
@@ -426,7 +426,7 @@ Nyx::read_params ()
       std::cout << std::endl;
     }
 
-#ifndef USE_CVODE
+#ifndef AMREX_USE_CVODE
     if (heat_cool_type == 5 || heat_cool_type == 7)
         amrex::Error("Nyx:: cannot set heat_cool_type = 5 or 7 unless USE_CVODE=TRUE");
 #endif
