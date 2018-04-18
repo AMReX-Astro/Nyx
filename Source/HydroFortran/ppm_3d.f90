@@ -74,7 +74,7 @@ contains
                        flatn,f_l1,f_l2,f_l3,f_h1,f_h2,f_h3, &
                        Ip,Im,ilo1,ilo2,ihi1,ihi2,dx,dy,dz,dt_over_a,k3d,kc)
 
-    use mempool_module, only: bl_allocate, bl_deallocate
+    use amrex_mempool_module, only: bl_allocate, bl_deallocate
     use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : ppm_type, ppm_flatten_before_integrals
     use bl_constants_module

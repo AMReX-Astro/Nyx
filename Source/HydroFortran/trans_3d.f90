@@ -770,7 +770,7 @@ contains
                         ugdnvz,pgdnvz,pgdz_l1,pgdz_l2,pgdz_l3,pgdz_h1,pgdz_h2,pgdz_h3, &
                         cdtdz,ilo,ihi,jlo,jhi,km,kc,k3d)
 
-      use mempool_module, only: bl_allocate, bl_deallocate
+      use amrex_mempool_module, only: bl_allocate, bl_deallocate
       use meth_params_module, only : QVAR, NVAR, QRHO, QU, QV, QW, &
                                      QPRES, QREINT, &
                                      URHO, UMX, UMY, UMZ, UEDEN, &
