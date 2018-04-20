@@ -1,9 +1,6 @@
 module nyx_burner_module
 
   use amrex_fort_module, only : rt => amrex_real
-  use bl_types
-  use bl_constants_module
-  use bl_error_module
   use eos_module
   use network
 

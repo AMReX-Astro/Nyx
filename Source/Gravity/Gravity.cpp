@@ -958,13 +958,11 @@ Gravity::get_old_grav_vector (int       level,
 
     // Fill grow cells in grad_phi, will need to compute grad_phi_cc in 1 grow cell
     const Geometry& geom = parent->Geom(level);
+#if 0
     if (level == 0)
     {
         for (int i = 0; i < BL_SPACEDIM ; i++)
-        {
-            grad_phi_prev[level][i]->setBndry(0);
-            grad_phi_prev[level][i]->FillBoundary(geom.periodicity());
-        }
+           grad_phi_prev[level][i]->setBndry(0.);
     }
     else
     {
@@ -973,11 +971,16 @@ Gravity::get_old_grav_vector (int       level,
         fill_ec_grow(level, amrex::GetVecOfPtrs(grad_phi_prev[level]),
 	                    amrex::GetVecOfPtrs(crse_grad_phi));
     }
+#endif
+
+    // Fill boundary values at the current level
+    for (int i = 0; i < BL_SPACEDIM ; i++)
+       grad_phi_prev[level][i]->FillBoundary(geom.periodicity());
 
     // Average edge-centered gradients to cell centers.
     amrex::average_face_to_cellcenter(grav_vector, 
-				       amrex::GetVecOfConstPtrs(grad_phi_prev[level]),
-				       geom);
+				      amrex::GetVecOfConstPtrs(grad_phi_prev[level]),
+				      geom);
 
 #ifdef CGRAV
     if (gravity_type == "CompositeGrav")
@@ -999,6 +1002,8 @@ Gravity::get_old_grav_vector (int       level,
 
     // This is a hack-y way to fill the ghost cell values of grav_vector
     //   before returning it
+    // Note that this fills ghost cells over the coarse grid from interpolation, 
+    //  not from the ghost cell values previously filled after the fill_ec_grow stuff.
     AmrLevel* amrlev = &parent->getLevel(level);
     int ng = grav_vector.nGrow();
     AmrLevel::FillPatch(*amrlev,grav_vector,ng,time,Gravity_Type,0,BL_SPACEDIM);
@@ -1022,6 +1027,7 @@ Gravity::get_new_grav_vector (int       level,
         // Fill grow cells in `grad_phi`, will need to compute `grad_phi_cc` in
         // 1 grow cell
         const Geometry& geom = parent->Geom(level);
+#if 0
         if (level == 0)
         {
             for (int i = 0; i < BL_SPACEDIM ; i++)
@@ -1037,6 +1043,10 @@ Gravity::get_new_grav_vector (int       level,
             fill_ec_grow(level, amrex::GetVecOfPtrs(grad_phi_curr[level]),
                                 amrex::GetVecOfPtrs(crse_grad_phi));
         }
+#endif
+
+        for (int i = 0; i < BL_SPACEDIM ; i++)
+            grad_phi_curr[level][i]->FillBoundary(geom.periodicity());
 
         // Average edge-centered gradients to cell centers, excluding grow cells
         amrex::average_face_to_cellcenter(grav_vector,
@@ -1068,6 +1078,8 @@ Gravity::get_new_grav_vector (int       level,
 
     // This is a hack-y way to fill the ghost cell values of grav_vector
     //   before returning it
+    // Note that this fills ghost cells over the coarse grid from interpolation, 
+    //  not from the ghost cell values previously filled after the fill_ec_grow stuff.
     AmrLevel* amrlev = &parent->getLevel(level) ;
     int ng = grav_vector.nGrow();
     AmrLevel::FillPatch(*amrlev,grav_vector,ng,time,Gravity_Type,0,BL_SPACEDIM);
