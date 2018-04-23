@@ -731,7 +731,7 @@ Nyx::no_hydro_setup()
 }
 #endif
 
-#ifdef USE_CVODE
+#ifdef AMREX_USE_CVODE
 void
 Nyx::set_simd_width(const int simd_width)
 {
