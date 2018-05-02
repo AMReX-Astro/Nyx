@@ -285,7 +285,16 @@ Nyx::advance_hydro_plus_particles (Real time,
     BL_PROFILE_VAR("just_the_hydro", just_the_hydro);
     for (int lev = level; lev <= finest_level_to_advance; lev++)
     {
-        get_level(lev).just_the_hydro(time, dt, a_old, a_new);
+#ifdef SDC
+        if (sdc_split > 0)
+        {
+           get_level(lev).sdc_hydro(time, dt, a_old, a_new);
+        } else {
+           get_level(lev).strang_hydro(time, dt, a_old, a_new);
+        }
+#else
+           get_level(lev).strang_hydro(time, dt, a_old, a_new);
+#endif
     }
     BL_PROFILE_VAR_STOP(just_the_hydro);
 
@@ -527,7 +536,18 @@ Nyx::advance_hydro (Real time,
 #endif
 
     // Call the hydro advance itself
-    just_the_hydro(time, dt, a_old, a_new);
+    BL_PROFILE_VAR("just_the_hydro", just_the_hydro);
+#ifdef SDC
+    if (sdc_split > 0)
+    {
+       sdc_hydro(time, dt, a_old, a_new);
+    } else {
+       strang_hydro(time, dt, a_old, a_new);
+    }
+#else
+       strang_hydro(time, dt, a_old, a_new);
+#endif
+    BL_PROFILE_VAR_STOP(just_the_hydro);
 
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);

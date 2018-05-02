@@ -138,6 +138,47 @@ extern "C"
      const amrex::Real dx[], const amrex::Real glo[],
      const amrex::Real* time, const int bc[]);
 
+  void fort_make_hydro_sources
+    (const amrex::Real* time,
+     const int lo[], const int hi[],
+     const BL_FORT_FAB_ARG(state),
+     const BL_FORT_FAB_ARG(ugdnvx),
+     const BL_FORT_FAB_ARG(ugdnvy),
+     const BL_FORT_FAB_ARG(ugdnvz),
+     const BL_FORT_FAB_ARG(src),
+           BL_FORT_FAB_ARG(hydro_src),
+           BL_FORT_FAB_ARG(divu_cc),
+     const BL_FORT_FAB_ARG(grav),
+     const amrex::Real dx[], const amrex::Real* dt,
+     D_DECL(const BL_FORT_FAB_ARG(xflux),
+            const BL_FORT_FAB_ARG(yflux),
+            const BL_FORT_FAB_ARG(zflux)),
+     const amrex::Real* cflLoc,
+     const amrex::Real* a_old, const amrex::Real* a_new,
+     const int* print_fortran_warnings,
+     const int* do_grav);
+
+  void fort_update_state
+    ( const int lo[], const int hi[],
+      const BL_FORT_FAB_ARG(u_in),
+            BL_FORT_FAB_ARG(u_out),
+      const BL_FORT_FAB_ARG(src),
+      const BL_FORT_FAB_ARG(hydro_src),
+      const BL_FORT_FAB_ARG(divu_cc),
+      const amrex::Real* dt,
+      const amrex::Real* a_old,
+      const amrex::Real* a_new,
+      const int* print_fortran_warnings);
+
+  void fort_add_grav_source
+    ( const int lo[], const int hi[],
+      const BL_FORT_FAB_ARG(u_in),
+            BL_FORT_FAB_ARG(u_out),
+      const BL_FORT_FAB_ARG(grav),
+      const amrex::Real* dt,
+      const amrex::Real* a_old,
+      const amrex::Real* a_new);
+
   void fort_advance_gas
     (const amrex::Real* time,
      const int lo[], const int hi[],
@@ -248,7 +289,6 @@ extern "C"
     (const int* lo, const int* hi,
      BL_FORT_FAB_ARG(state),
      BL_FORT_FAB_ARG(diag_eos),
-     const amrex::Real* dx, const amrex::Real* time, 
      const amrex::Real* z, const amrex::Real* dt,
      const int* min_iter, const int* max_iter);
 

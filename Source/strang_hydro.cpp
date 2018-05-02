@@ -13,12 +13,12 @@ using std::string;
 
 #ifndef NO_HYDRO
 void
-Nyx::just_the_hydro (Real time,
-                     Real dt,
-                     Real a_old,
-                     Real a_new)
+Nyx::strang_hydro (Real time,
+                   Real dt,
+                   Real a_old,
+                   Real a_new)
 {
-    BL_PROFILE("Nyx::just_the_hydro()");
+    BL_PROFILE("Nyx::strang_hydro()");
 
     const Real prev_time    = state[State_Type].prevTime();
     const Real cur_time     = state[State_Type].curTime();
@@ -32,10 +32,10 @@ Nyx::just_the_hydro (Real time,
     {
         if (ParallelDescriptor::IOProcessor())
         {
-            std::cout << "just_the_hydro:  prev_time = " << prev_time << std::endl;
-            std::cout << "just_the_hydro:       time = " <<      time << std::endl;
+            std::cout << "strang_hydro:  prev_time = " << prev_time << std::endl;
+            std::cout << "strang_hydro:       time = " <<      time << std::endl;
         }
-        amrex::Abort("time should equal prev_time in just_the_hydro!");
+        amrex::Abort("time should equal prev_time in strang_hydro!");
     }
 
 #ifndef NDEBUG
@@ -44,7 +44,7 @@ Nyx::just_the_hydro (Real time,
         for (int i = 0; i < S_old.nComp(); i++)
         {
             if (ParallelDescriptor::IOProcessor())
-                std::cout << "just_the_hydro: testing component " << i << " for NaNs" << std::endl;
+                std::cout << "strang_hydro: testing component " << i << " for NaNs" << std::endl;
             if (S_old.contains_nan(Density+i,1,0))
                 amrex::Abort("S_old has NaNs in this component");
         }
