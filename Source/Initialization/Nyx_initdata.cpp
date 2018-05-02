@@ -180,9 +180,10 @@ Nyx::initData ()
         return;
     }
 
+    MultiFab&   S_new    = get_new_data(State_Type);
+
 #ifndef NO_HYDRO
     // We need this because otherwise we might operate on uninitialized data.
-    MultiFab&   S_new    = get_new_data(State_Type);
     S_new.setVal(0.0);
 #endif
 
@@ -226,7 +227,12 @@ Nyx::initData ()
 
             if (inhomo_reion) init_zhi();
 
-            compute_new_temp();
+            // First reset internal energy before call to compute_temp
+	    MultiFab reset_e_src(grids, dmap, 1, NUM_GROW);
+	    reset_e_src.setVal(0.0);
+
+            reset_internal_energy(S_new,D_new,reset_e_src);
+            compute_new_temp     (S_new,D_new);
             enforce_consistent_e(S_new);
         }
         else
@@ -268,6 +274,14 @@ Nyx::initData ()
 
 #endif
 
+#ifdef SDC
+    //
+    // Initialize this to zero before we use it in advance
+    //
+    MultiFab& IR_new = get_new_data(SDC_IR_Type);
+    IR_new.setVal(0.0);
+#endif
+
 #ifndef NO_HYDRO
     //
     // Read in initial conditions from a file.
@@ -283,10 +297,10 @@ Nyx::initData ()
 
 	VisMF::Read(mf, mfDirName.c_str());
 
-        MultiFab& S_new = get_level(0).get_new_data(State_Type);
+        MultiFab& S_new_crse = get_level(0).get_new_data(State_Type);
 	
-	S_new.copy(mf, 0, 0, 6);
-	S_new.copy(mf, 0, FirstSpec, 1);
+	S_new_crse.copy(mf, 0, 0, 6);
+	S_new_crse.copy(mf, 0, FirstSpec, 1);
 
         if (do_hydro == 1) 
         {
@@ -430,4 +444,5 @@ Nyx::init_from_plotfile ()
         std::cout << "Done initializing the particles from the plotfile " << std::endl;
         std::cout << " " << std::endl; 
     }
+
 }

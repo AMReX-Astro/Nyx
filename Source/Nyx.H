@@ -389,12 +389,12 @@ public:
 #endif
 
     void compute_hydro_sources(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
-                               amrex::MultiFab& S_border, amrex::MultiFab& D_border,
-                               amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src,
+                               amrex::MultiFab& S_border, amrex::MultiFab& D_border, 
+                               amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src, 
                                amrex::MultiFab& grav, amrex::MultiFab& divu_cc,
                                bool init_flux_register, bool add_to_flux_register);
 
-    void update_state_with_sources( amrex::MultiFab& S_old      , amrex::MultiFab& S_new,
+    void update_state_with_sources( amrex::MultiFab& S_old      , amrex::MultiFab& S_new, 
                                     amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src,
                                     amrex::MultiFab& grav       , amrex::MultiFab& divu_cc,
                                     amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
@@ -404,8 +404,8 @@ public:
 
 #ifdef SDC
     void sdc_reactions ( amrex::MultiFab& state_old, amrex::MultiFab& state_new, amrex::MultiFab&  dstate,
-                         amrex::MultiFab& hydro_src, amrex::MultiFab& IR,
-                         amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
+                         amrex::MultiFab& hydro_src, amrex::MultiFab& IR, 
+                         amrex::Real dt, amrex::Real a_old, amrex::Real a_new, 
                          int sdc_iter);
 #endif
 
@@ -506,9 +506,10 @@ public:
     static int num_grow();
 
     // Synchronize (rho e) and (rho E) so they are consistent with each other
-    void reset_internal_energy(amrex::MultiFab& State, amrex::MultiFab& DiagEOS);
+    void reset_internal_energy(amrex::MultiFab& State, amrex::MultiFab& DiagEOS, amrex::MultiFab& reset_e_src);
 
-    void compute_new_temp();
+    // Note: this no longer includes the call to reset_internal_energy
+    void compute_new_temp(amrex::MultiFab& S_new, amrex::MultiFab& D_new);
 
     void compute_rho_temp(amrex::Real& rho_T_avg, amrex::Real& T_avg, amrex::Real& Tinv_avg, amrex::Real& T_meanrho);
     void compute_gas_fractions(amrex::Real T_cut, amrex::Real rho_cut,

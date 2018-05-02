@@ -115,6 +115,7 @@ extern "C"
   void reset_internal_e
     (BL_FORT_FAB_ARG(S_new),
      BL_FORT_FAB_ARG(D_new),
+     BL_FORT_FAB_ARG(reset_e_src),
      const int lo[], const int hi[],
      const int* print_fortran_warnings,
      amrex::Real* comoving_a, amrex::Real* sum_energy_added,
@@ -194,7 +195,6 @@ extern "C"
             const BL_FORT_FAB_ARG(zflux)),
      const amrex::Real* cflLoc,
      const amrex::Real* a_old, const amrex::Real* a_new,
-     const amrex::Real* e_added, const amrex::Real* ke_added,
      const int* print_fortran_warnings,
      const int* do_gas);
 
@@ -217,7 +217,7 @@ extern "C"
      const BL_FORT_FAB_ARG(grad_phi_cc),
      const BL_FORT_FAB_ARG(S_old), BL_FORT_FAB_ARG(S_new),
      const amrex::Real* a_old, const amrex::Real* a_new,
-     const amrex::Real* dt, const amrex::Real* e_added, const amrex::Real* ke_added);
+     const amrex::Real* dt);
 
   void fort_syncgsrc
     (const int lo[], const int hi[],

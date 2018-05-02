@@ -80,24 +80,6 @@ Nyx::strang_hydro (Real time,
     MultiFab ext_src_old(grids, dmap, NUM_STATE, 3);
     ext_src_old.setVal(0);
 
-    if (add_ext_src && ParallelDescriptor::IOProcessor())
-    {
-       if (strang_split)
-       {
-          std::cout << "Source terms are handled with strang splitting" << std::endl; 
-       } else {
-          std::cout << "Source terms are handled with predictor/corrector" << std::endl; 
-       }
-    }
-
-    if (add_ext_src && !strang_split)
-    {
-#ifndef NO_OLD_SRC
-        get_old_source(prev_time, dt, ext_src_old);
-#endif //#ifndef NO_OLD_SRC
-        ext_src_old.FillBoundary();
-    }
-
     // Define the gravity vector so we can pass this to ca_umdrv.
     MultiFab grav_vector(grids, dmap, BL_SPACEDIM, 3);
     grav_vector.setVal(0.);
@@ -116,9 +98,6 @@ Nyx::strang_hydro (Real time,
 
     BL_ASSERT(NUM_GROW == 4);
 
-    Real  e_added = 0;
-    Real ke_added = 0;
-
     // Create FAB for extended grid values (including boundaries) and fill.
     MultiFab S_old_tmp(S_old.boxArray(), S_old.DistributionMap(), NUM_STATE, NUM_GROW);
     FillPatch(*this, S_old_tmp, NUM_GROW, time, State_Type, 0, NUM_STATE);
@@ -126,11 +105,10 @@ Nyx::strang_hydro (Real time,
     MultiFab D_old_tmp(D_old.boxArray(), D_old.DistributionMap(), D_old.nComp(), NUM_GROW);
     FillPatch(*this, D_old_tmp, NUM_GROW, time, DiagEOS_Type, 0, D_old.nComp());
 
-    if (add_ext_src && strang_split) 
-        strang_first_step(time,dt,S_old_tmp,D_old_tmp);
+    strang_first_step(time,dt,S_old_tmp,D_old_tmp);
 
 #ifdef _OPENMP
-#pragma omp parallel reduction(max:courno) reduction(+:e_added,ke_added)
+#pragma omp parallel reduction(max:courno)
 #endif
        {
        FArrayBox flux[BL_SPACEDIM], u_gdnv[BL_SPACEDIM];
@@ -173,14 +151,12 @@ Nyx::strang_hydro (Real time,
              BL_TO_FORTRAN(flux[0]),
              BL_TO_FORTRAN(flux[1]),
              BL_TO_FORTRAN(flux[2]),
-             &cflLoc, &a_old, &a_new, &se, &ske, &print_fortran_warnings, &do_grav);
+             &cflLoc, &a_old, &a_new, &print_fortran_warnings, &do_grav);
 
         for (int i = 0; i < BL_SPACEDIM; ++i) {
           fluxes[i][mfi].copy(flux[i], mfi.nodaltilebox(i));
         }
 
-         e_added += se;
-        ke_added += ske;
        } // end of MFIter loop
 
         courno = std::max(courno, cflLoc);
@@ -203,38 +179,6 @@ Nyx::strang_hydro (Real time,
            }
          }
        }
-
-#ifdef GRAVITY
-    if (verbose > 1)
-    {
-        Real added[2] = {e_added,ke_added};
-
-        const int IOProc = ParallelDescriptor::IOProcessorNumber();
-
-        ParallelDescriptor::ReduceRealSum(added, 2, IOProc);
-
-        if (ParallelDescriptor::IOProcessor())
-        {
-            const Real vol = D_TERM(dx[0],*dx[1],*dx[2]);
-
-            e_added  = vol*added[0];
-            ke_added = vol*added[1];
-
-            const Real sum_added = std::abs(e_added) + std::abs(ke_added);
-
-            if (sum_added > 0)
-            {
-                std::cout << "Gravitational work at level "
-                          << level
-                          << " is "
-                          << std::abs( e_added)/sum_added*100
-                          << " % into (rho e) and "
-                          << std::abs(ke_added)/sum_added*100
-                          << " % into (KE) " << '\n';
-            }
-        }
-    }
-#endif /*GRAVITY*/
 
     grav_vector.clear();
 
@@ -265,32 +209,13 @@ Nyx::strang_hydro (Real time,
     }
 #endif
 
-    if (add_ext_src && !strang_split)
-    {
-        get_old_source(prev_time, dt, ext_src_old);
-        // Must compute new temperature in case it is needed in the source term
-        // evaluation
-        compute_new_temp();
-
-        // Compute source at new time (no ghost cells needed)
-        MultiFab ext_src_new(grids, dmap, NUM_STATE, 0);
-        ext_src_new.setVal(0);
-
-        get_new_source(prev_time, cur_time, dt, ext_src_new);
-
-        time_center_source_terms(S_new, ext_src_old, ext_src_new, dt);
-
-        compute_new_temp();
-    } // end if (add_ext_src && !strang_split)
-
 #ifndef NDEBUG
     if (S_new.contains_nan(Density, S_new.nComp(), 0))
         amrex::Abort("S_new has NaNs before the second strang call");
 #endif
 
     // This returns updated (rho e), (rho E), and Temperature
-    if (add_ext_src && strang_split)
-        strang_second_step(cur_time,dt,S_new,D_new);
+    strang_second_step(cur_time,dt,S_new,D_new);
 
 #ifndef NDEBUG
     if (S_new.contains_nan(Density, S_new.nComp(), 0))

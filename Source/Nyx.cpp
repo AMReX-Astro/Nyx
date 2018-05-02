@@ -123,6 +123,9 @@ int Nyx::do_hydro = -1;
 int Nyx::add_ext_src = 0;
 int Nyx::heat_cool_type = 0;
 int Nyx::strang_split = 0;
+#ifdef SDC
+int Nyx::sdc_split    = 0;
+#endif
 
 Real Nyx::average_gas_density = 0;
 Real Nyx::average_dm_density = 0;
@@ -358,6 +361,18 @@ Nyx::read_params ()
 
     pp.query("add_ext_src", add_ext_src);
     pp.query("strang_split", strang_split);
+#ifdef SDC
+    pp.query("sdc_split", sdc_split);
+    if (sdc_split == 1 && strang_split == 1)
+        amrex::Error("Cant have strang_split == 1 and sdc_split == 1");
+    if (sdc_split == 0 && strang_split == 0)
+        amrex::Error("Cant have strang_split == 0 and sdc_split == 0");
+    if (sdc_split != 1 && strang_split != 1)
+        amrex::Error("Cant have strang_split != 1 and sdc_split != 1");
+#else
+    if (strang_split != 1)
+        amrex::Error("Cant have strang_split != 1 with USE_SDC != TRUE");
+#endif
 
 #ifdef FORCING
     pp.get("do_forcing", do_forcing);
@@ -402,17 +417,14 @@ Nyx::read_params ()
 #ifdef HEATCOOL
     if (heat_cool_type > 0 && add_ext_src == 0)
        amrex::Error("Nyx::must set add_ext_src to 1 if heat_cool_type > 0");
-    if (heat_cool_type != 1 && heat_cool_type != 3 && heat_cool_type != 5 && heat_cool_type != 7)
-       amrex::Error("Nyx:: nonzero heat_cool_type must equal 1 or 3 or 5 or 7");
+    if (heat_cool_type != 3 && heat_cool_type != 5 && heat_cool_type != 7)
+       amrex::Error("Nyx:: nonzero heat_cool_type must equal 3 or 5 or 7");
     if (heat_cool_type == 0)
        amrex::Error("Nyx::contradiction -- HEATCOOL is defined but heat_cool_type == 0");
 
     if (ParallelDescriptor::IOProcessor()) {
       std::cout << "Integrating heating/cooling method with the following method: ";
       switch (heat_cool_type) {
-        case 1:
-          std::cout << "HC";
-          break;
         case 3:
           std::cout << "VODE";
           break;
@@ -429,6 +441,9 @@ Nyx::read_params ()
 #ifndef AMREX_USE_CVODE
     if (heat_cool_type == 5 || heat_cool_type == 7)
         amrex::Error("Nyx:: cannot set heat_cool_type = 5 or 7 unless USE_CVODE=TRUE");
+#else
+    if (heat_cool_type == 7 && sdc_split == 1)
+        amrex::Error("Nyx:: cannot set heat_cool_type = 7 with sdc_split = 1");
 #endif
 
 #else
@@ -617,7 +632,7 @@ Nyx::Nyx (Amr&            papa,
 
 #ifdef HEATCOOL
      // Initialize "this_z" in the atomic_rates_module
-    if (heat_cool_type == 1 || heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7)
+    if (heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7)
          fort_interp_to_this_z(&initial_z);
 #endif
 
@@ -760,9 +775,14 @@ Nyx::init (AmrLevel& old)
     }
 #endif
 
-    // Set E in terms of e + kinetic energy
-    // if (do_hydro)
-    // enforce_consistent_e(S_new);
+#ifdef SDC
+    MultiFab& IR_new = get_new_data(SDC_IR_Type);
+    for (FillPatchIterator fpi(old, IR_new, 0, cur_time, SDC_IR_Type, 0, 1);
+         fpi.isValid(); ++fpi)
+    {
+        IR_new[fpi].copy(fpi());
+    }
+#endif
 }
 
 //
@@ -800,10 +820,6 @@ Nyx::init ()
     // We set dt to be large for this new level to avoid screwing up
     // computeNewDt.
     parent->setDtLevel(1.e100, level);
-
-    // Set E in terms of e + kinetic energy
-    // if (do_hydro)
-    // enforce_consistent_e(S_new);
 }
 
 Real
@@ -1439,8 +1455,16 @@ Nyx::post_timestep (int iteration)
 #ifndef NO_HYDRO
     if (do_hydro)
     {
+       MultiFab& S_new = get_new_data(State_Type);
+       MultiFab& D_new = get_new_data(DiagEOS_Type);
+
+       // First reset internal energy before call to compute_temp
+       MultiFab reset_e_src(grids, dmap, 1, NUM_GROW);
+       reset_e_src.setVal(0.0);
+       reset_internal_energy(S_new,D_new,reset_e_src);
+
        // Re-compute temperature after all the other updates.
-       compute_new_temp();
+       compute_new_temp(S_new,D_new);
     }
 #endif
 }
@@ -2180,7 +2204,7 @@ Nyx::network_init ()
 
 #ifndef NO_HYDRO
 void
-Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new)
+Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new, MultiFab& reset_e_src)
 {
     BL_PROFILE("Nyx::reset_internal_energy()");
     // Synchronize (rho e) and (rho E) so they are consistent with each other
@@ -2204,6 +2228,7 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new)
         Real se = 0;
         reset_internal_e
             (BL_TO_FORTRAN(S_new[mfi]), BL_TO_FORTRAN(D_new[mfi]),
+	     BL_TO_FORTRAN(reset_e_src[mfi]),
              bx.loVect(), bx.hiVect(),
              &print_fortran_warnings, &a, &s, &se);
         sum_energy_added += s;
@@ -2237,20 +2262,15 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new)
 
 #ifndef NO_HYDRO
 void
-Nyx::compute_new_temp ()
+Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 {
     BL_PROFILE("Nyx::compute_new_temp()");
-    MultiFab& S_new = get_new_data(State_Type);
-    MultiFab& D_new = get_new_data(DiagEOS_Type);
 
-    Real cur_time   = state[State_Type].curTime();
-
-    reset_internal_energy(S_new,D_new);
-
-    Real a = get_comoving_a(cur_time);
+    Real cur_time  = state[State_Type].curTime();
+    Real a        = get_comoving_a(cur_time);
 
 #ifdef HEATCOOL
-    if (heat_cool_type == 1 || heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7) {
+    if (heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7) {
        const Real z = 1.0/a - 1.0;
        fort_interp_to_this_z(&z);
     }
