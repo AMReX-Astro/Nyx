@@ -513,7 +513,7 @@ Nyx::read_params ()
     if (do_hydro == 0) do_reflux = 0;
 
 #ifdef GRAVITY
-    pp.get("do_grav", do_grav);
+    pp_nyx.get("do_grav", do_grav);
 #endif
 
     read_particle_params();
