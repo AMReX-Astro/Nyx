@@ -21,7 +21,7 @@ Nyx::write_info ()
 	if (do_hydro)
         {
             // First reset internal energy before call to compute_temp
-	    MultiFab reset_e_src(grids, dmap, 1, NUM_GROW);
+	    MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
    	    reset_e_src.setVal(0.0);
     	    reset_internal_energy(S_new,D_new,reset_e_src);
     	    compute_new_temp     (S_new,D_new);

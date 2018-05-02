@@ -143,13 +143,13 @@ Nyx::init_zhi ()
     MultiFab& D_new = get_new_data(DiagEOS_Type);
     int nd = D_new.nComp();
 
-    const BoxArray& ba = D_new.boxArray();
-    const DistributionMapping& dmap = D_new.DistributionMap();
+    const BoxArray& my_ba = D_new.boxArray();
+    const DistributionMapping& my_dmap = D_new.DistributionMap();
 
-    BL_ASSERT(ba.coarsenable(ratio));
-    BoxArray coarse_ba = ba;
+    BL_ASSERT(my_ba.coarsenable(ratio));
+    BoxArray coarse_ba = my_ba;
     coarse_ba.coarsen(ratio);
-    MultiFab zhi(coarse_ba, dmap, 1, 0);
+    MultiFab zhi(coarse_ba, my_dmap, 1, 0);
 
     MultiFab zhi_from_file;
     VisMF::Read(zhi_from_file, inhomo_zhi_file);
@@ -228,7 +228,7 @@ Nyx::initData ()
             if (inhomo_reion) init_zhi();
 
             // First reset internal energy before call to compute_temp
-	    MultiFab reset_e_src(grids, dmap, 1, NUM_GROW);
+	    MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
 	    reset_e_src.setVal(0.0);
 
             reset_internal_energy(S_new,D_new,reset_e_src);
@@ -355,10 +355,7 @@ Nyx::initData ()
     // Need to compute this in case we want to use overdensity for regridding.
     //
     if (level == 0) 
-    {
         compute_average_density();
-//      compute_level_averages();
-    }
 #endif
 
     if (verbose && ParallelDescriptor::IOProcessor())

@@ -113,13 +113,12 @@ extern "C"
      const int* print_fortran_warnings);
 
   void reset_internal_e
-    (BL_FORT_FAB_ARG(S_new),
+    (const int lo[], const int hi[],
+     BL_FORT_FAB_ARG(S_new),
      BL_FORT_FAB_ARG(D_new),
      BL_FORT_FAB_ARG(reset_e_src),
-     const int lo[], const int hi[],
      const int* print_fortran_warnings,
-     amrex::Real* comoving_a, amrex::Real* sum_energy_added,
-     amrex::Real* sum_energy_total);
+     amrex::Real* comoving_a);
 
   void hypfill
     (BL_FORT_FAB_ARG(state),

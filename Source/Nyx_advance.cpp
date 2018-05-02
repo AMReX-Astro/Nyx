@@ -366,7 +366,7 @@ Nyx::advance_hydro_plus_particles (Real time,
         MultiFab& S_old = get_level(lev).get_old_data(State_Type);
         MultiFab& S_new = get_level(lev).get_new_data(State_Type);
         MultiFab& D_new = get_level(lev).get_new_data(DiagEOS_Type);
-        MultiFab reset_e_src(grids, dmap, 1, NUM_GROW);
+        MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
         reset_e_src.setVal(0.0);
 
         const auto& ba = get_level(lev).get_new_data(State_Type).boxArray();
@@ -449,7 +449,7 @@ Nyx::advance_hydro_plus_particles (Real time,
     {
         MultiFab& S_new = get_level(lev).get_new_data(State_Type);
         MultiFab& D_new = get_level(lev).get_new_data(DiagEOS_Type);
-	MultiFab reset_e_src(grids, dmap, 1, NUM_GROW);
+        MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
 	reset_e_src.setVal(0.0);
 
 	get_level(lev).reset_internal_energy(S_new,D_new,reset_e_src);
@@ -528,7 +528,7 @@ Nyx::advance_hydro (Real time,
 
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
-    MultiFab reset_e_src(grids, dmap, 1, NUM_GROW);
+    MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
     reset_e_src.setVal(0.0);
 
 #ifdef GRAVITY

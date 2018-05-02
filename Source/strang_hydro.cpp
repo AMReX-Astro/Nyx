@@ -105,7 +105,9 @@ Nyx::strang_hydro (Real time,
     MultiFab D_old_tmp(D_old.boxArray(), D_old.DistributionMap(), D_old.nComp(), NUM_GROW);
     FillPatch(*this, D_old_tmp, NUM_GROW, time, DiagEOS_Type, 0, D_old.nComp());
 
+#ifdef HEATCOOL
     strang_first_step(time,dt,S_old_tmp,D_old_tmp);
+#endif
 
 #ifdef _OPENMP
 #pragma omp parallel reduction(max:courno)
@@ -214,8 +216,10 @@ Nyx::strang_hydro (Real time,
         amrex::Abort("S_new has NaNs before the second strang call");
 #endif
 
+#ifdef HEATCOOL
     // This returns updated (rho e), (rho E), and Temperature
     strang_second_step(cur_time,dt,S_new,D_new);
+#endif
 
 #ifndef NDEBUG
     if (S_new.contains_nan(Density, S_new.nComp(), 0))
