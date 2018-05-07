@@ -1,6 +1,6 @@
-ifneq ($(USE_HENSON), TRUE)
+#ifneq ($(USE_HENSON), TRUE)
 CEXE_sources += main.cpp
-endif
+#endif
 
 CEXE_sources += nyx_main.cpp
 
