@@ -18,6 +18,11 @@
 
 #include <iostream>
 
+#ifdef BL_HDF5
+#include <hdf5.h>
+#endif
+
+
 using std::istream;
 using std::ostream;
 
@@ -97,6 +102,9 @@ public:
     //Write a plotfile to specified directory.
     //
     virtual void writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how);
+#ifdef BL_HDF5
+    virtual void writePlotFileHDF5(const std::string& dir, ostream& os, amrex::VisMF::How how);
+#endif
     virtual void writePlotFilePre(const std::string& dir, ostream& os);
     virtual void writePlotFilePost(const std::string& dir, ostream& os);
 

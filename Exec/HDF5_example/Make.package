@@ -1,0 +1,4 @@
+f90EXE_sources += Prob_${DIM}d.f90
+f90EXE_sources += probdata.f90
+
+CEXE_sources += Nyx_output.cpp
