@@ -9,8 +9,8 @@ TOP = ../..
 
 # compilation options
 COMP    = intel  # gnu
-USE_MPI = FALSE
-USE_OMP = FALSE
+USE_MPI = TRUE
+USE_OMP = TRUE
 
 PROFILE       = TRUE
 TRACE_PROFILE = FALSE

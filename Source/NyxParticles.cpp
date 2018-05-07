@@ -907,16 +907,16 @@ Nyx::particle_est_time_step (Real& est_dt)
 #endif
 
 void
-Nyx::particle_redistribute (int lbase, bool init)
+Nyx::particle_redistribute (int lbase, bool my_init)
 {
     BL_PROFILE("Nyx::particle_redistribute()");
     if (DMPC)
     {
         //  
-        // If we are calling with init = true, then we want to force the redistribute
+        // If we are calling with my_init = true, then we want to force the redistribute
         //    without checking whether the grids have changed.
         //  
-        if (init)
+        if (my_init)
         {
             DMPC->Redistribute(lbase);
             return;

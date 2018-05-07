@@ -253,7 +253,9 @@ NeutrinoParticleContainer::AssignRelativisticDensity (Vector<std::unique_ptr<Mul
         // The "+1" is so we enclose the valid region together with any
         //  ghost cells that can be periodically shifted into valid.
         //
-        compfvalid = amrex::complementIn(amrex::grow(dm,dgrow+1), fvalid);
+        BoxList bl_compfvalid(dm.ixType());
+        bl_compfvalid.complementIn(amrex::grow(dm,dgrow+1), fvalid);
+        compfvalid = BoxArray(std::move(bl_compfvalid));
 
         compfvalid_grown = compfvalid;
         compfvalid_grown.grow(1);

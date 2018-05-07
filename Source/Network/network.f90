@@ -22,7 +22,6 @@
 module network
 
   use amrex_fort_module, only : rt => amrex_real
-  use bl_types
 
   implicit none
 

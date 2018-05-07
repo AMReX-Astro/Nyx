@@ -1,7 +1,7 @@
-      subroutine reset_internal_e(u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3, &
-                                  d,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3,lo,hi, &
-                                  print_fortran_warnings,&
-                                  comoving_a,sum_energy_added,sum_energy_total) &
+      subroutine reset_internal_e(lo,hi,&
+                                  u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3, &
+                                  d,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3,&
+                                  print_fortran_warnings, comoving_a) &
                                   bind(C, name="reset_internal_e")
 
       use amrex_fort_module, only : rt => amrex_real
@@ -20,8 +20,6 @@
       real(rt) :: d(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,NDIAG)
 
       real(rt), intent(in   ) :: comoving_a
-      real(rt), intent(inout) :: sum_energy_added
-      real(rt), intent(inout) :: sum_energy_total
 
       ! Local variables
       integer          :: i,j,k
@@ -49,9 +47,6 @@
            ! If (e from E) < 0 or (e from E) < .0001*E but (e from e) > 0.
            else if (u(i,j,k,UEINT) .gt. 0.d0) then
 
-              ! Keep track of how much energy we are adding to (rho E)
-              sum_energy_added = sum_energy_added + (u(i,j,k,UEINT) + ke - u(i,j,k,UEDEN))
-
               u(i,j,k,UEDEN) = u(i,j,k,UEINT) + ke
 
            ! If not resetting and little e is negative ...
@@ -70,14 +65,9 @@
 
               u(i,j,k,UEINT) = u(i,j,k,URHO) *  eint_new
 
-              ! Keep track of how much energy we are adding to (rho E)
-              sum_energy_added = sum_energy_added + (u(i,j,k,UEINT) + ke - u(i,j,k,UEDEN))
-
               u(i,j,k,UEDEN) = u(i,j,k,UEINT) + ke
 
            end if
-
-           sum_energy_total = sum_energy_total + u(i,j,k,UEDEN)
 
       enddo
       enddo

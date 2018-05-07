@@ -89,7 +89,7 @@ be run either "in situ" or "in-transit", or with a combination of both.
 
 
 ## License
-See the [license.txt](license.txt) file for details.
+Nyx is released under the LBL's modified BSD license, see the [license.txt](license.txt) file for details.
 
 
 ## Contact

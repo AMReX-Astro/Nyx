@@ -63,11 +63,7 @@ public:
     virtual void AssignDensity (amrex::Vector<std::unique_ptr<amrex::MultiFab> >& mf, int lev_min = 0, int ncomp = 1, int finest_level = -1,
                                 int ngrow = 1) const override
     {
-        if (finestLevel() == 0) {
-           amrex::NeighborParticleContainer<NSR,NSI>::AssignDensityFort(0, mf, lev_min, ncomp, finest_level);
-        } else {
-            amrex::NeighborParticleContainer<NSR,NSI>::AssignDensity(0, sub_cycle, mf, lev_min, ncomp, finest_level, ngrow);
-        }
+       amrex::NeighborParticleContainer<NSR,NSI>::AssignDensityFort(0, mf, lev_min, ncomp, finest_level);
     }
 
     void MultiplyParticleMass (int lev, amrex::Real mult);

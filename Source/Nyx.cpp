@@ -122,7 +122,10 @@ Real Nyx::comoving_h;
 int Nyx::do_hydro = -1;
 int Nyx::add_ext_src = 0;
 int Nyx::heat_cool_type = 0;
-int Nyx::strang_split = 0;
+int Nyx::strang_split = 1;
+#ifdef SDC
+int Nyx::sdc_split    = 0;
+#endif
 
 Real Nyx::average_gas_density = 0;
 Real Nyx::average_dm_density = 0;
@@ -241,29 +244,29 @@ Nyx::read_params ()
 
     done = true;  // ?
 
-    ParmParse pp("nyx");
+    ParmParse pp_nyx("nyx");
 
-    pp.query("v", verbose);
-    pp.get("init_shrink", init_shrink);
-    pp.get("cfl", cfl);
-    pp.query("change_max", change_max);
-    pp.query("fixed_dt", fixed_dt);
-    pp.query("initial_dt", initial_dt);
-    pp.query("sum_interval", sum_interval);
-    pp.query("do_reflux", do_reflux);
+    pp_nyx.query("v", verbose);
+    pp_nyx.get("init_shrink", init_shrink);
+    pp_nyx.get("cfl", cfl);
+    pp_nyx.query("change_max", change_max);
+    pp_nyx.query("fixed_dt", fixed_dt);
+    pp_nyx.query("initial_dt", initial_dt);
+    pp_nyx.query("sum_interval", sum_interval);
+    pp_nyx.query("do_reflux", do_reflux);
     do_reflux = (do_reflux ? 1 : 0);
-    pp.get("dt_cutoff", dt_cutoff);
+    pp_nyx.get("dt_cutoff", dt_cutoff);
 
-    pp.query("dump_old", dump_old);
+    pp_nyx.query("dump_old", dump_old);
 
-    pp.query("small_dens", small_dens);
-    pp.query("small_temp", small_temp);
-    pp.query("gamma", gamma);
+    pp_nyx.query("small_dens", small_dens);
+    pp_nyx.query("small_temp", small_temp);
+    pp_nyx.query("gamma", gamma);
 
-    pp.query("strict_subcycling",strict_subcycling);
+    pp_nyx.query("strict_subcycling",strict_subcycling);
 
-#ifdef USE_CVODE
-    pp.query("simd_width", simd_width);
+#ifdef AMREX_USE_CVODE
+    pp_nyx.query("simd_width", simd_width);
     if (simd_width < 1) amrex::Abort("simd_width must be a positive integer");
     set_simd_width(simd_width);
 
@@ -274,8 +277,8 @@ Nyx::read_params ()
 
     // Get boundary conditions
     Vector<int> lo_bc(BL_SPACEDIM), hi_bc(BL_SPACEDIM);
-    pp.getarr("lo_bc", lo_bc, 0, BL_SPACEDIM);
-    pp.getarr("hi_bc", hi_bc, 0, BL_SPACEDIM);
+    pp_nyx.getarr("lo_bc", lo_bc, 0, BL_SPACEDIM);
+    pp_nyx.getarr("hi_bc", hi_bc, 0, BL_SPACEDIM);
     for (int i = 0; i < BL_SPACEDIM; i++)
     {
         phys_bc.setLo(i, lo_bc[i]);
@@ -336,15 +339,15 @@ Nyx::read_params ()
         }
     }
 
-    pp.get("comoving_OmB", comoving_OmB);
-    pp.get("comoving_OmM", comoving_OmM);
-    pp.get("comoving_h", comoving_h);
+    pp_nyx.get("comoving_OmB", comoving_OmB);
+    pp_nyx.get("comoving_OmM", comoving_OmM);
+    pp_nyx.get("comoving_h", comoving_h);
 
     fort_set_omb(comoving_OmB);
     fort_set_omm(comoving_OmM);
     fort_set_hubble(comoving_h);
 
-    pp.get("do_hydro", do_hydro);
+    pp_nyx.get("do_hydro", do_hydro);
 #ifdef NO_HYDRO
     if (do_hydro == 1)
         amrex::Error("Cant have do_hydro == 1 when NO_HYDRO is true");
@@ -356,11 +359,23 @@ Nyx::read_params ()
 #endif
 #endif
 
-    pp.query("add_ext_src", add_ext_src);
-    pp.query("strang_split", strang_split);
+    pp_nyx.query("add_ext_src", add_ext_src);
+    pp_nyx.query("strang_split", strang_split);
+#ifdef SDC
+    pp_nyx.query("sdc_split", sdc_split);
+    if (sdc_split == 1 && strang_split == 1)
+        amrex::Error("Cant have strang_split == 1 and sdc_split == 1");
+    if (sdc_split == 0 && strang_split == 0)
+        amrex::Error("Cant have strang_split == 0 and sdc_split == 0");
+    if (sdc_split != 1 && strang_split != 1)
+        amrex::Error("Cant have strang_split != 1 and sdc_split != 1");
+#else
+    if (strang_split != 1)
+        amrex::Error("Cant have strang_split != 1 with USE_SDC != TRUE");
+#endif
 
 #ifdef FORCING
-    pp.get("do_forcing", do_forcing);
+    pp_nyx.get("do_forcing", do_forcing);
 #ifdef NO_HYDRO
     if (do_forcing == 1)
         amrex::Error("Cant have do_forcing == 1 when NO_HYDRO is true ");
@@ -372,7 +387,7 @@ Nyx::read_params ()
        amrex::Error("Nyx::you set do_forcing = 1 but forgot to set USE_FORCING = TRUE ");
 #endif
 
-    pp.query("heat_cool_type", heat_cool_type);
+    pp_nyx.query("heat_cool_type", heat_cool_type);
     if (heat_cool_type == 7)
     {
       amrex::Print() << "----- WARNING WARNING WARNING WARNING WARNING -----" << std::endl;
@@ -382,37 +397,35 @@ Nyx::read_params ()
       amrex::Print() << "                                                   " << std::endl;
       amrex::Print() << "----- WARNING WARNING WARNING WARNING WARNING -----" << std::endl;
       Vector<int> n_cell(BL_SPACEDIM);
-      ParmParse pp("amr");
-      pp.getarr("n_cell", n_cell, 0, BL_SPACEDIM);
+
+      ParmParse pp_amr("amr");
+      pp_amr.getarr("n_cell", n_cell, 0, BL_SPACEDIM);
       if (n_cell[0] % simd_width) {
         const std::string errmsg = "Currently the SIMD CVODE solver requires that n_cell[0] % simd_width = 0";
         amrex::Abort(errmsg);
       }
     }
 
-    pp.query("use_exact_gravity", use_exact_gravity);
+    pp_nyx.query("use_exact_gravity", use_exact_gravity);
 
-    pp.query("inhomo_reion", inhomo_reion);
+    pp_nyx.query("inhomo_reion", inhomo_reion);
 
     if (inhomo_reion) {
-        pp.get("inhomo_zhi_file", inhomo_zhi_file);
-        pp.get("inhomo_grid", inhomo_grid);
+        pp_nyx.get("inhomo_zhi_file", inhomo_zhi_file);
+        pp_nyx.get("inhomo_grid", inhomo_grid);
     }
 
 #ifdef HEATCOOL
     if (heat_cool_type > 0 && add_ext_src == 0)
        amrex::Error("Nyx::must set add_ext_src to 1 if heat_cool_type > 0");
-    if (heat_cool_type != 1 && heat_cool_type != 3 && heat_cool_type != 5 && heat_cool_type != 7)
-       amrex::Error("Nyx:: nonzero heat_cool_type must equal 1 or 3 or 5 or 7");
+    if (heat_cool_type != 3 && heat_cool_type != 5 && heat_cool_type != 7)
+       amrex::Error("Nyx:: nonzero heat_cool_type must equal 3 or 5 or 7");
     if (heat_cool_type == 0)
        amrex::Error("Nyx::contradiction -- HEATCOOL is defined but heat_cool_type == 0");
 
     if (ParallelDescriptor::IOProcessor()) {
       std::cout << "Integrating heating/cooling method with the following method: ";
       switch (heat_cool_type) {
-        case 1:
-          std::cout << "HC";
-          break;
         case 3:
           std::cout << "VODE";
           break;
@@ -426,9 +439,12 @@ Nyx::read_params ()
       std::cout << std::endl;
     }
 
-#ifndef USE_CVODE
+#ifndef AMREX_USE_CVODE
     if (heat_cool_type == 5 || heat_cool_type == 7)
         amrex::Error("Nyx:: cannot set heat_cool_type = 5 or 7 unless USE_CVODE=TRUE");
+#else
+    if (heat_cool_type == 7 && sdc_split == 1)
+        amrex::Error("Nyx:: cannot set heat_cool_type = 7 with sdc_split = 1");
 #endif
 
 #else
@@ -438,23 +454,23 @@ Nyx::read_params ()
        amrex::Error("Nyx::you set inhomo_reion > 0 but forgot to set USE_HEATCOOL = TRUE");
 #endif
 
-    pp.query("allow_untagging", allow_untagging);
-    pp.query("use_const_species", use_const_species);
-    pp.query("normalize_species", normalize_species);
-    pp.query("ppm_type", ppm_type);
-    pp.query("ppm_reference", ppm_reference);
-    pp.query("ppm_flatten_before_integrals", ppm_flatten_before_integrals);
-    pp.query("use_flattening", use_flattening);
-    pp.query("use_colglaz", use_colglaz);
-    pp.query("version_2", version_2);
-    pp.query("corner_coupling", corner_coupling);
+    pp_nyx.query("allow_untagging", allow_untagging);
+    pp_nyx.query("use_const_species", use_const_species);
+    pp_nyx.query("normalize_species", normalize_species);
+    pp_nyx.query("ppm_type", ppm_type);
+    pp_nyx.query("ppm_reference", ppm_reference);
+    pp_nyx.query("ppm_flatten_before_integrals", ppm_flatten_before_integrals);
+    pp_nyx.query("use_flattening", use_flattening);
+    pp_nyx.query("use_colglaz", use_colglaz);
+    pp_nyx.query("version_2", version_2);
+    pp_nyx.query("corner_coupling", corner_coupling);
 
     if (do_hydro == 1)
     {
         if (do_hydro == 1 && use_const_species == 1)
         {
-           pp.get("h_species" ,  h_species);
-           pp.get("he_species", he_species);
+           pp_nyx.get("h_species" ,  h_species);
+           pp_nyx.get("he_species", he_species);
            fort_set_xhydrogen(h_species);
            if (ParallelDescriptor::IOProcessor())
            {
@@ -497,42 +513,42 @@ Nyx::read_params ()
     if (do_hydro == 0) do_reflux = 0;
 
 #ifdef GRAVITY
-    pp.get("do_grav", do_grav);
+    pp_nyx.get("do_grav", do_grav);
 #endif
 
     read_particle_params();
 
     read_init_params();
 
-    pp.query("write_parameter_file",write_parameters_in_plotfile);
-    pp.query("print_fortran_warnings",print_fortran_warnings);
+    pp_nyx.query("write_parameter_file",write_parameters_in_plotfile);
+    pp_nyx.query("print_fortran_warnings",print_fortran_warnings);
 
     read_comoving_params();
 
-    if (pp.contains("plot_z_values"))
+    if (pp_nyx.contains("plot_z_values"))
     {
-      int num_z_values = pp.countval("plot_z_values");
+      int num_z_values = pp_nyx.countval("plot_z_values");
       plot_z_values.resize(num_z_values);
-      pp.queryarr("plot_z_values",plot_z_values,0,num_z_values);
+      pp_nyx.queryarr("plot_z_values",plot_z_values,0,num_z_values);
     }
 
-    if (pp.contains("analysis_z_values"))
+    if (pp_nyx.contains("analysis_z_values"))
     {
-      int num_z_values = pp.countval("analysis_z_values");
+      int num_z_values = pp_nyx.countval("analysis_z_values");
       analysis_z_values.resize(num_z_values);
-      pp.queryarr("analysis_z_values",analysis_z_values,0,num_z_values);
+      pp_nyx.queryarr("analysis_z_values",analysis_z_values,0,num_z_values);
     }
 
     // How often do we want to write x,y,z 2-d slices of S_new
-    pp.query("slice_int",    slice_int);
-    pp.query("slice_file",   slice_file);
-    pp.query("slice_nfiles", slice_nfiles);
+    pp_nyx.query("slice_int",    slice_int);
+    pp_nyx.query("slice_file",   slice_file);
+    pp_nyx.query("slice_nfiles", slice_nfiles);
 
-    pp.query("gimlet_int", gimlet_int);
+    pp_nyx.query("gimlet_int", gimlet_int);
 
 #ifdef AGN
-    pp.query("mass_halo_min", mass_halo_min);
-    pp.query("mass_seed", mass_seed);
+    pp_nyx.query("mass_halo_min", mass_halo_min);
+    pp_nyx.query("mass_seed", mass_seed);
 #endif
 }
 
@@ -617,7 +633,7 @@ Nyx::Nyx (Amr&            papa,
 
 #ifdef HEATCOOL
      // Initialize "this_z" in the atomic_rates_module
-    if (heat_cool_type == 1 || heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7)
+    if (heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7)
          fort_interp_to_this_z(&initial_z);
 #endif
 
@@ -760,9 +776,14 @@ Nyx::init (AmrLevel& old)
     }
 #endif
 
-    // Set E in terms of e + kinetic energy
-    // if (do_hydro)
-    // enforce_consistent_e(S_new);
+#ifdef SDC
+    MultiFab& IR_new = get_new_data(SDC_IR_Type);
+    for (FillPatchIterator fpi(old, IR_new, 0, cur_time, SDC_IR_Type, 0, 1);
+         fpi.isValid(); ++fpi)
+    {
+        IR_new[fpi].copy(fpi());
+    }
+#endif
 }
 
 //
@@ -800,10 +821,6 @@ Nyx::init ()
     // We set dt to be large for this new level to avoid screwing up
     // computeNewDt.
     parent->setDtLevel(1.e100, level);
-
-    // Set E in terms of e + kinetic energy
-    // if (do_hydro)
-    // enforce_consistent_e(S_new);
 }
 
 Real
@@ -1286,13 +1303,9 @@ Nyx::post_timestep (int iteration)
     if ((iteration < ncycle and level < finest_level) || level == 0)
     {
         for (int i = 0; i < theActiveParticles().size(); i++)
-        {
-            int ngrow = (level == 0) ? 0 : iteration;
-
             theActiveParticles()[i]->Redistribute(level,
                                                   theActiveParticles()[i]->finestLevel(),
                                                   iteration);
-         }
     }
 
 #ifndef NO_HYDRO
@@ -1439,8 +1452,16 @@ Nyx::post_timestep (int iteration)
 #ifndef NO_HYDRO
     if (do_hydro)
     {
+       MultiFab& S_new = get_new_data(State_Type);
+       MultiFab& D_new = get_new_data(DiagEOS_Type);
+
+       // First reset internal energy before call to compute_temp
+       MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
+       reset_e_src.setVal(0.0);
+       reset_internal_energy(S_new,D_new,reset_e_src);
+
        // Re-compute temperature after all the other updates.
-       compute_new_temp();
+       compute_new_temp(S_new,D_new);
     }
 #endif
 }
@@ -1576,8 +1597,6 @@ Nyx::postCoarseTimeStep (Real cumtime)
    BL_PROFILE("Nyx::postCoarseTimeStep()");
 
    AmrLevel::postCoarseTimeStep(cumtime);
-
-   const Real cur_time = state[State_Type].curTime();
 
 #ifdef AGN
    halo_find(parent->dtLevel(level));
@@ -1730,10 +1749,12 @@ Nyx::post_regrid (int lbase,
         particle_redistribute(lbase, false);
     }
 
+#ifdef GRAVITY
+
     int which_level_being_advanced = parent->level_being_advanced();
 
-#ifdef GRAVITY
     bool do_grav_solve_here;
+
     if (which_level_being_advanced >= 0)
     {
         do_grav_solve_here = (level == which_level_being_advanced) && (lbase == which_level_being_advanced);
@@ -2180,77 +2201,42 @@ Nyx::network_init ()
 
 #ifndef NO_HYDRO
 void
-Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new)
+Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new, MultiFab& reset_e_src)
 {
     BL_PROFILE("Nyx::reset_internal_energy()");
     // Synchronize (rho e) and (rho E) so they are consistent with each other
 
     const Real  cur_time = state[State_Type].curTime();
     Real        a        = get_comoving_a(cur_time);
-    const Real* dx       = geom.CellSize();
-    const Real  vol      = D_TERM(dx[0],*dx[1],*dx[2]);
-
-    Real sum_energy_added = 0;
-    Real sum_energy_total = 0;
 
 #ifdef _OPENMP
-#pragma omp parallel reduction(+:sum_energy_added,sum_energy_total)
+#pragma omp parallel
 #endif
     for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
 
-        Real s  = 0;
-        Real se = 0;
         reset_internal_e
-            (BL_TO_FORTRAN(S_new[mfi]), BL_TO_FORTRAN(D_new[mfi]),
-             bx.loVect(), bx.hiVect(),
-             &print_fortran_warnings, &a, &s, &se);
-        sum_energy_added += s;
-        sum_energy_total += se;
-    }
-
-    if (verbose > 1)
-    {
-        Real sums[2] = {sum_energy_added,sum_energy_total};
-
-        const int IOProc = ParallelDescriptor::IOProcessorNumber();
-
-        ParallelDescriptor::ReduceRealSum(sums,2,IOProc);
-
-        if (ParallelDescriptor::IOProcessor())
-        {
-            sum_energy_added = vol*sums[0];
-            sum_energy_total = vol*sums[1];
-
-            if (sum_energy_added > (1.e-12)*sum_energy_total)
-            {
-                std::cout << "Adding to (rho E) "
-                          << sum_energy_added
-                          << " out of total (rho E) "
-                          << sum_energy_total << '\n';
-            }
-        }
+            (bx.loVect(), bx.hiVect(),
+             BL_TO_FORTRAN(S_new[mfi]), BL_TO_FORTRAN(D_new[mfi]),
+	     BL_TO_FORTRAN(reset_e_src[mfi]),
+             &print_fortran_warnings, &a);
     }
 }
 #endif
 
 #ifndef NO_HYDRO
 void
-Nyx::compute_new_temp ()
+Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 {
     BL_PROFILE("Nyx::compute_new_temp()");
-    MultiFab& S_new = get_new_data(State_Type);
-    MultiFab& D_new = get_new_data(DiagEOS_Type);
 
-    Real cur_time   = state[State_Type].curTime();
+    Real cur_time  = state[State_Type].curTime();
+    Real a        = get_comoving_a(cur_time);
 
-    reset_internal_energy(S_new,D_new);
-
-    Real a = get_comoving_a(cur_time);
-
-#ifdef HEATCOOL
-    if (heat_cool_type == 1 || heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7) {
+#ifdef HEATCOOL 
+    if (heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7) 
+    {
        const Real z = 1.0/a - 1.0;
        fort_interp_to_this_z(&z);
     }

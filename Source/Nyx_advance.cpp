@@ -108,14 +108,16 @@ Nyx::advance_hydro_plus_particles (Real time,
     //      ghost_width + (1-iteration) - 1:
     //      the minus 1 arises because this occurs *after* the move
 
-    int where_width =  ghost_width + (1-iteration) - 1;
+    int where_width =  ghost_width + (1-iteration)  - 1;
  
     // *** grav_n_grow *** is used
     //   *) to determine how many ghost cells we need to fill in the MultiFab from
     //      which the particle interpolates its acceleration
     //   *) to set how many cells the Where call in moveKickDrift tests = (grav.nGrow()-2).
+    //   *) the (1-iteration) arises because the ghost particles are created on the coarser
+    //      level which means in iteration 2 the ghost particles may have moved 1 additional cell along
  
-    int grav_n_grow = ghost_width + (1-iteration) +
+    int grav_n_grow = ghost_width + (1-iteration) + (iteration-1) +
                       stencil_interpolation_width ;
 
     BL_PROFILE_REGION_START("R::Nyx::advance_hydro_plus_particles");
@@ -250,7 +252,7 @@ Nyx::advance_hydro_plus_particles (Real time,
             const Real a_half = 0.5 * (a_old + a_new);
 
             if (particle_verbose && ParallelDescriptor::IOProcessor())
-                std::cout << "moveKickDrift ... updating particle positions and velocity\n";
+                std::cout << "moveKickDrift ... updating particle positions and velocity\n"; 
 
             for (int lev = level; lev <= finest_level_to_advance; lev++)
             {
@@ -283,7 +285,16 @@ Nyx::advance_hydro_plus_particles (Real time,
     BL_PROFILE_VAR("just_the_hydro", just_the_hydro);
     for (int lev = level; lev <= finest_level_to_advance; lev++)
     {
-        get_level(lev).just_the_hydro(time, dt, a_old, a_new);
+#ifdef SDC
+        if (sdc_split > 0) 
+        { 
+           get_level(lev).sdc_hydro(time, dt, a_old, a_new);
+        } else { 
+           get_level(lev).strang_hydro(time, dt, a_old, a_new);
+        } 
+#else
+           get_level(lev).strang_hydro(time, dt, a_old, a_new);
+#endif
     }
     BL_PROFILE_VAR_STOP(just_the_hydro);
 
@@ -354,6 +365,9 @@ Nyx::advance_hydro_plus_particles (Real time,
     {
         MultiFab& S_old = get_level(lev).get_old_data(State_Type);
         MultiFab& S_new = get_level(lev).get_new_data(State_Type);
+        MultiFab& D_new = get_level(lev).get_new_data(DiagEOS_Type);
+        MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
+        reset_e_src.setVal(0.0);
 
         const auto& ba = get_level(lev).get_new_data(State_Type).boxArray();
         const auto& dm = get_level(lev).get_new_data(State_Type).DistributionMap();
@@ -366,12 +380,10 @@ Nyx::advance_hydro_plus_particles (Real time,
         get_level(lev).gravity->get_old_grav_vector(lev, grav_vec_old, time);
         get_level(lev).gravity->get_new_grav_vector(lev, grav_vec_new, cur_time);
 
-        Real  e_added = 0;
-        Real ke_added = 0;
         const Real* dx = get_level(lev).Geom().CellSize();
 
 #ifdef _OPENMP
-#pragma omp parallel reduction(+:e_added,ke_added)
+#pragma omp parallel
 #endif
         for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
         {
@@ -383,40 +395,12 @@ Nyx::advance_hydro_plus_particles (Real time,
             fort_correct_gsrc
                 (bx.loVect(), bx.hiVect(), BL_TO_FORTRAN(grav_vec_old[mfi]),
                  BL_TO_FORTRAN(grav_vec_new[mfi]), BL_TO_FORTRAN(S_old[mfi]),
-                 BL_TO_FORTRAN(S_new[mfi]), &a_old, &a_new, &dt, &se, &ske);
-
-            e_added  += se;
-            ke_added += ske;
+                 BL_TO_FORTRAN(S_new[mfi]), &a_old, &a_new, &dt);
         }
 
-        if (verbose > 2)
-        {
-            Real added[2] = {e_added,ke_added};
-
-            const int IOProc = ParallelDescriptor::IOProcessorNumber();
-
-            ParallelDescriptor::ReduceRealSum(added, 2, IOProc);
-
-            if (ParallelDescriptor::IOProcessor())
-            {
-                const Real vol = D_TERM(dx[0],*dx[1],*dx[2]);
-
-                e_added  = vol*added[0];
-                ke_added = vol*added[1];
-
-                const Real sum_added = e_added + ke_added;
-
-                std::cout << "Grav. correct work at level "
-                          << lev
-                          << " is "
-                          <<  e_added/sum_added*100
-                          << " % into (rho e) and " 
-                          << ke_added/sum_added*100
-                          << " % into (KE) " << '\n';
-            }
-        }
-
-        get_level(lev).compute_new_temp();
+        // First reset internal energy before call to compute_temp
+        get_level(lev).reset_internal_energy(S_new,D_new,reset_e_src);
+        get_level(lev).compute_new_temp(S_new,D_new);
     }
 
     // Must average down again after doing the gravity correction;
@@ -465,7 +449,11 @@ Nyx::advance_hydro_plus_particles (Real time,
     {
         MultiFab& S_new = get_level(lev).get_new_data(State_Type);
         MultiFab& D_new = get_level(lev).get_new_data(DiagEOS_Type);
-        get_level(lev).reset_internal_energy(S_new,D_new);
+        MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
+	reset_e_src.setVal(0.0);
+
+	get_level(lev).reset_internal_energy(S_new,D_new,reset_e_src);
+	
     }
 
     BL_PROFILE_REGION_STOP("R::Nyx::advance_hydro_plus_particles");
@@ -525,10 +513,23 @@ Nyx::advance_hydro (Real time,
 #endif
 
     // Call the hydro advance itself
-    just_the_hydro(time, dt, a_old, a_new);
+    BL_PROFILE_VAR("just_the_hydro", just_the_hydro);
+#ifdef SDC
+    if (sdc_split > 0) 
+    { 
+       sdc_hydro(time, dt, a_old, a_new);
+    } else { 
+       strang_hydro(time, dt, a_old, a_new);
+    } 
+#else
+       strang_hydro(time, dt, a_old, a_new);
+#endif
+    BL_PROFILE_VAR_STOP(just_the_hydro);
 
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
+    MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
+    reset_e_src.setVal(0.0);
 
 #ifdef GRAVITY
     if (verbose && ParallelDescriptor::IOProcessor()) 
@@ -554,61 +555,25 @@ Nyx::advance_hydro (Real time,
     MultiFab grav_vec_new(grids,dmap,BL_SPACEDIM,0);
     gravity->get_new_grav_vector(level,grav_vec_new,cur_time);
 
-    Real  e_added = 0;
-    Real ke_added = 0;
-    const Real* dx = geom.CellSize();
-
     // Now do corrector part of source term update
 #ifdef _OPENMP
-#pragma omp parallel reduction(+:e_added,ke_added)
+#pragma omp parallel
 #endif
     for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
 
-        Real se  = 0;
-        Real ske = 0;
-
         fort_correct_gsrc
             (bx.loVect(), bx.hiVect(), BL_TO_FORTRAN(grav_vec_old[mfi]),
              BL_TO_FORTRAN(grav_vec_new[mfi]), BL_TO_FORTRAN(S_old[mfi]),
-             BL_TO_FORTRAN(S_new[mfi]), &a_old, &a_new, &dt, &se, &ske);
-
-        e_added  += se;
-        ke_added += ske;
+             BL_TO_FORTRAN(S_new[mfi]), &a_old, &a_new, &dt);
     }
 
-    if (verbose > 2)
-    {
-        Real added[2] = {e_added,ke_added};
-
-        const int IOProc = ParallelDescriptor::IOProcessorNumber();
-
-        ParallelDescriptor::ReduceRealSum(added, 2, IOProc);
-
-        if (ParallelDescriptor::IOProcessor())
-        {
-            const Real vol = D_TERM(dx[0],*dx[1],*dx[2]);
-
-            e_added  = vol*added[0];
-            ke_added = vol*added[1];
-
-            const Real sum_added = e_added + ke_added;
-
-            std::cout << "Grav. correct work at level "
-                      << level
-                      << " is "
-                      << e_added/sum_added*100
-                      << " % into (rho e) and " 
-                      << ke_added/sum_added*100
-                      << " % into (KE) " << '\n'; 
-        }
-    }
-
-    compute_new_temp();
 #endif /*GRAVITY*/
 
-    reset_internal_energy(S_new,D_new);
+    // First reset internal energy before call to compute_temp
+    reset_internal_energy(S_new,D_new,reset_e_src);
+    compute_new_temp(S_new,D_new);
 
     return dt;
 }

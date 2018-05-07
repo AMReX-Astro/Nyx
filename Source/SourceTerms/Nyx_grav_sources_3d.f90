@@ -11,7 +11,7 @@
                               gnew,gnew_l1,gnew_l2,gnew_l3,gnew_h1,gnew_h2,gnew_h3, &
                               uold,uold_l1,uold_l2,uold_l3,uold_h1,uold_h2,uold_h3, &
                               unew,unew_l1,unew_l2,unew_l3,unew_h1,unew_h2,unew_h3, &
-                              a_old,a_new,dt,e_added,ke_added) &
+                              a_old,a_new,dt) &
                               bind(C, name="fort_correct_gsrc")
 
       use amrex_fort_module, only : rt => amrex_real
@@ -28,7 +28,7 @@
       real(rt)   gnew(gnew_l1:gnew_h1,gnew_l2:gnew_h2,gnew_l3:gnew_h3,3)
       real(rt)  uold(uold_l1:uold_h1,uold_l2:uold_h2,uold_l3:uold_h3,NVAR)
       real(rt)  unew(unew_l1:unew_h1,unew_l2:unew_h2,unew_l3:unew_h3,NVAR)
-      real(rt)  a_old,a_new,dt,e_added,ke_added
+      real(rt)  a_old,a_new,dt
 
       integer i,j,k
       real(rt) SrU_old, SrV_old, SrW_old
@@ -108,16 +108,6 @@
                else 
                   call bl_error("Error:: Nyx_advection_3d.f90 :: bogus grav_source_type")
                end if
-
-               ! **** Start Diagnostics ****
-               ! This is the new (rho e) as stored in (rho E) after the gravitational work is added
-               new_ke = 0.5d0 * (unew(i,j,k,UMX)**2 + unew(i,j,k,UMY)**2 + unew(i,j,k,UMZ)**2) / &
-                                 unew(i,j,k,URHO) 
-               new_rhoeint = unew(i,j,k,UEDEN) - new_ke
- 
-                e_added =  e_added + (new_rhoeint - old_rhoeint)
-               ke_added = ke_added + (new_ke      - old_ke     )
-               ! ****   End Diagnostics ****
 
             enddo
          enddo

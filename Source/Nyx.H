@@ -39,6 +39,9 @@ enum StateType {
     PhiGrav_Type,
     Gravity_Type,
 #endif
+#ifdef SDC
+    SDC_IR_Type,
+#endif
     NUM_STATE_TYPE
 };
 #endif
@@ -379,9 +382,32 @@ public:
     amrex::Real advance_no_hydro(amrex::Real time, amrex::Real dt, int iteration, int ncycle);
     amrex::Real advance_hydro_plus_particles(amrex::Real time, amrex::Real dt, int iteration,
                                       int ncycle);
-    void just_the_hydro(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
+
+    void strang_hydro(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
+#ifdef SDC
+    void    sdc_hydro(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
+#endif
+
+    void compute_hydro_sources(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
+                               amrex::MultiFab& S_border, amrex::MultiFab& D_border, 
+                               amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src, 
+                               amrex::MultiFab& grav, amrex::MultiFab& divu_cc,
+                               bool init_flux_register, bool add_to_flux_register);
+
+    void update_state_with_sources( amrex::MultiFab& S_old      , amrex::MultiFab& S_new, 
+                                    amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src,
+                                    amrex::MultiFab& grav       , amrex::MultiFab& divu_cc,
+                                    amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
+
     void strang_first_step  (amrex::Real time, amrex::Real dt,  amrex::MultiFab& state, amrex::MultiFab&  dstate);
     void strang_second_step (amrex::Real time, amrex::Real dt,  amrex::MultiFab& state, amrex::MultiFab&  dstate);
+
+#ifdef SDC
+    void sdc_reactions ( amrex::MultiFab& state_old, amrex::MultiFab& state_new, amrex::MultiFab&  dstate,
+                         amrex::MultiFab& hydro_src, amrex::MultiFab& IR, 
+                         amrex::Real dt, amrex::Real a_old, amrex::Real a_new, 
+                         int sdc_iter);
+#endif
 
     amrex::Real advance_particles_only (amrex::Real time, amrex::Real dt, int iteration, int ncycle);
 
@@ -480,9 +506,10 @@ public:
     static int num_grow();
 
     // Synchronize (rho e) and (rho E) so they are consistent with each other
-    void reset_internal_energy(amrex::MultiFab& State, amrex::MultiFab& DiagEOS);
+    void reset_internal_energy(amrex::MultiFab& State, amrex::MultiFab& DiagEOS, amrex::MultiFab& reset_e_src);
 
-    void compute_new_temp();
+    // Note: this no longer includes the call to reset_internal_energy
+    void compute_new_temp(amrex::MultiFab& S_new, amrex::MultiFab& D_new);
 
     void compute_rho_temp(amrex::Real& rho_T_avg, amrex::Real& T_avg, amrex::Real& Tinv_avg, amrex::Real& T_meanrho);
     void compute_gas_fractions(amrex::Real T_cut, amrex::Real rho_cut,
@@ -700,8 +727,12 @@ protected:
     static int do_forcing;
 
     // if true , incorporate the source term through Strang-splitting
-    // if false, incorporate the source term through predictor-corrector methodology
     static int strang_split;
+
+#ifdef SDC
+    // if true , use SDC to couple hydro and reactions
+    static int sdc_split;
+#endif
 
 #ifdef GRAVITY
     // There can be only one Gravity object, it covers all levels:
@@ -765,9 +796,9 @@ Nyx::num_grow()
 
 inline
 Nyx&
-Nyx::get_level(int level)
+Nyx::get_level(int my_level)
 {
-    return *(Nyx *) &parent->getLevel(level);
+    return *(Nyx *) &parent->getLevel(my_level);
 }
 
 #ifndef NO_HYDRO
@@ -781,9 +812,9 @@ Nyx::get_flux_reg()
 
 inline
 amrex::FluxRegister&
-Nyx::get_flux_reg(int level)
+Nyx::get_flux_reg(int my_level)
 {
-    return get_level(level).get_flux_reg();
+    return get_level(my_level).get_flux_reg();
 }
 #endif // NO_HYDRO
 

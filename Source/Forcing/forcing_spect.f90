@@ -3,8 +3,6 @@
 module forcing_spect_module
 
   use amrex_fort_module, only : bl_spacedim, rt => amrex_real
-  use bl_types
-  use bl_constants_module, only : ZERO
 
   implicit none
 
@@ -46,9 +44,9 @@ contains
        call bl_abort('number of forcing modes must be positive')
     end if
 
-    modes_even(:,:) = ZERO
-    modes_even(:,:) = ZERO
-    wavevectors(:,:) = ZERO
+    modes_even(:,:) = 0.d0
+    modes_even(:,:) = 0.d0
+    wavevectors(:,:) = 0.d0
 
   end subroutine fort_alloc_spect
 

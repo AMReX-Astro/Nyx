@@ -112,7 +112,7 @@ nyx_main (int argc, char* argv[])
 
     const Real time_before_main_loop = ParallelDescriptor::second();
 
-#ifdef USE_CVODE
+#ifdef AMREX_USE_CVODE
     Nyx::alloc_simd_vec();
 #endif
 
@@ -145,7 +145,7 @@ nyx_main (int argc, char* argv[])
 
     }  // ---- end while( ! finished)
 
-#ifdef USE_CVODE
+#ifdef AMREX_USE_CVODE
     Nyx::dealloc_simd_vec();
 #endif
 

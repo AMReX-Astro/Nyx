@@ -15,11 +15,11 @@
            flux1,flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3, &
            flux2,flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3, &
            flux3,flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3, &
-           courno,a_old,a_new,e_added,ke_added,print_fortran_warnings,do_grav) &
+           courno,a_old,a_new,print_fortran_warnings,do_grav) &
            bind(C, name="fort_advance_gas")
 
       use amrex_fort_module, only : rt => amrex_real
-      use mempool_module, only : bl_allocate, bl_deallocate
+      use amrex_mempool_module, only : bl_allocate, bl_deallocate
       use meth_params_module, only : QVAR, NVAR, NHYP, normalize_species
       use enforce_module, only : enforce_nonnegative_species
       use bl_constants_module
@@ -49,15 +49,14 @@
       real(rt) flux3(flux3_l1:flux3_h1,flux3_l2:flux3_h2, flux3_l3:flux3_h3,NVAR)
       real(rt) delta(3),dt,time,courno
       real(rt) a_old, a_new
-      real(rt) e_added,ke_added
 
       ! Automatic arrays for workspace
       real(rt), pointer :: q(:,:,:,:)
       real(rt), pointer :: flatn(:,:,:)
       real(rt), pointer :: c(:,:,:)
       real(rt), pointer :: csml(:,:,:)
-      real(rt), pointer :: div(:,:,:)
-      real(rt), pointer :: pdivu(:,:,:)
+      real(rt), pointer :: divu_nd(:,:,:)
+      real(rt), pointer :: divu_cc(:,:,:)
       real(rt), pointer :: srcQ(:,:,:,:)
 
       real(rt) dx,dy,dz
@@ -89,8 +88,8 @@
 
       call bl_allocate(  srcQ, lo-1, hi+1, QVAR)
 
-      call bl_allocate(   div, lo, hi+1)
-      call bl_allocate( pdivu, lo, hi)
+      call bl_allocate(divu_nd, lo, hi+1)
+      call bl_allocate(divu_cc, lo, hi)
 
       dx = delta(1)
       dy = delta(2)
@@ -119,11 +118,11 @@
                    ugdnvx_out,ugdnvx_l1,ugdnvx_l2,ugdnvx_l3,ugdnvx_h1,ugdnvx_h2,ugdnvx_h3, &
                    ugdnvy_out,ugdnvy_l1,ugdnvy_l2,ugdnvy_l3,ugdnvy_h1,ugdnvy_h2,ugdnvy_h3, &
                    ugdnvz_out,ugdnvz_l1,ugdnvz_l2,ugdnvz_l3,ugdnvz_h1,ugdnvz_h2,ugdnvz_h3, &
-                   pdivu,a_old,a_new,print_fortran_warnings)
+                   divu_cc,a_old,a_new,print_fortran_warnings)
 
       ! Compute divergence of velocity field (on surroundingNodes(lo,hi))
-      call divu(lo,hi,q,q_l1,q_l2,q_l3,q_h1,q_h2,q_h3, &
-                dx,dy,dz,div,lo(1),lo(2),lo(3),hi(1)+1,hi(2)+1,hi(3)+1)
+      call make_divu_nd(lo,hi,q,q_l1,q_l2,q_l3,q_h1,q_h2,q_h3, &
+                        dx,dy,dz,divu_nd,lo(1),lo(2),lo(3),hi(1)+1,hi(2)+1,hi(3)+1)
 
       ! Conservative update
       call consup(uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
@@ -132,16 +131,16 @@
                   flux1,flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3, &
                   flux2,flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3, &
                   flux3,flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3, &
-                  div,pdivu,lo,hi,dx,dy,dz,dt,a_old,a_new)
+                  divu_nd,divu_cc,lo,hi,dx,dy,dz,dt,a_old,a_new)
 
       ! We are done with these here so can go ahead and free up the space.
       call bl_deallocate(q)
       call bl_deallocate(flatn)
       call bl_deallocate(c)
       call bl_deallocate(csml)
-      call bl_deallocate(div)
+      call bl_deallocate(divu_nd)
       call bl_deallocate(srcQ)
-      call bl_deallocate(pdivu)
+      call bl_deallocate(divu_cc)
 
       ! Enforce the density >= small_dens.  Make sure we do this immediately after consup.
       call enforce_minimum_density(uin, uin_l1, uin_l2, uin_l3, uin_h1, uin_h2, uin_h3, &
@@ -152,7 +151,7 @@
           call add_grav_source(uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
                                uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
                                grav, gv_l1, gv_l2, gv_l3, gv_h1, gv_h2, gv_h3, &
-                               lo,hi,dx,dy,dz,dt,a_old,a_new,e_added,ke_added)
+                               lo,hi,dx,dy,dz,dt,a_old,a_new)
 
       ! Enforce species >= 0
       call enforce_nonnegative_species(uout,uout_l1,uout_l2,uout_l3, &
@@ -202,10 +201,10 @@
                          ugdnvy_h1,ugdnvy_h2,ugdnvy_h3, &
                          ugdnvz_out,ugdnvz_l1,ugdnvz_l2,ugdnvz_l3, &
                          ugdnvz_h1,ugdnvz_h2,ugdnvz_h3, &
-                         pdivu,a_old,a_new,print_fortran_warnings)
+                         divu_cc,a_old,a_new,print_fortran_warnings)
 
       use amrex_fort_module, only : rt => amrex_real
-      use mempool_module, only : bl_allocate, bl_deallocate
+      use amrex_mempool_module, only : bl_allocate, bl_deallocate
       use bl_constants_module
       use meth_params_module, only : QVAR, NVAR, QU, ppm_type, &
                                      use_colglaz, corner_coupling, &
@@ -244,7 +243,7 @@
       real(rt) ugdnvx_out(ugdnvx_l1:ugdnvx_h1,ugdnvx_l2:ugdnvx_h2,ugdnvx_l3:ugdnvx_h3)
       real(rt) ugdnvy_out(ugdnvy_l1:ugdnvy_h1,ugdnvy_l2:ugdnvy_h2,ugdnvy_l3:ugdnvy_h3)
       real(rt) ugdnvz_out(ugdnvz_l1:ugdnvz_h1,ugdnvz_l2:ugdnvz_h2,ugdnvz_l3:ugdnvz_h3)
-      real(rt) pdivu(ilo1:ihi1,ilo2:ihi2,ilo3:ihi3)
+      real(rt) divu_cc(ilo1:ihi1,ilo2:ihi2,ilo3:ihi3)
       real(rt) dx, dy, dz, dt
       real(rt) dtdx, dtdy, dtdz, hdt
       real(rt) cdtdx, cdtdy, cdtdz
@@ -415,8 +414,8 @@
       cdtdy = THIRD*dtdy/a_half
       cdtdz = THIRD*dtdz/a_half
 
-      ! Initialize pdivu to zero
-      pdivu(:,:,:) = ZERO
+      ! Initialize divu_cc to zero
+      divu_cc(:,:,:) = ZERO
 
       ! Initialize kc (current k-level) and km (previous k-level)
       kc = 1
@@ -646,11 +645,7 @@
             if (k3d .ge. ilo3+1 .and. k3d .le. ihi3+1) then
                do j = ilo2,ihi2
                   do i = ilo1,ihi1
-!                    pdivu(i,j,k3d-1) = pdivu(i,j,k3d-1) +  &
-!                         HALF*(pgdnvzf(i,j,kc)+pgdnvzf(i,j,km)) * &
-!                               (ugdnvzf(i,j,kc)-ugdnvzf(i,j,km))/dz
-                     pdivu(i,j,k3d-1) = pdivu(i,j,k3d-1) +  &
-                                (ugdnvzf(i,j,kc)-ugdnvzf(i,j,km))/dz
+                     divu_cc(i,j,k3d-1) = divu_cc(i,j,k3d-1) + (ugdnvzf(i,j,kc)-ugdnvzf(i,j,km))/dz
                   end do
                end do
             end if
@@ -772,12 +767,7 @@
 
                do j = ilo2,ihi2
                   do i = ilo1,ihi1
-!                    pdivu(i,j,k3d-1) = pdivu(i,j,k3d-1) +  &
-!                         HALF*(pgdnvxf(i+1,j,km) + pgdnvxf(i,j,km)) *  &
-!                         (ugdnvxf(i+1,j,km)-ugdnvxf(i,j,km))/dx + &
-!                         HALF*(pgdnvyf(i,j+1,km) + pgdnvyf(i,j,km)) *  &
-!                         (ugdnvyf(i,j+1,km)-ugdnvyf(i,j,km))/dy
-                     pdivu(i,j,k3d-1) = pdivu(i,j,k3d-1) +  &
+                     divu_cc(i,j,k3d-1) = divu_cc(i,j,k3d-1) +  &
                           (ugdnvxf(i+1,j,km)-ugdnvxf(i,j,km))/dx + &
                           (ugdnvyf(i,j+1,km)-ugdnvyf(i,j,km))/dy
                   end do
@@ -1165,7 +1155,7 @@
                       flux1,flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3, &
                       flux2,flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3, &
                       flux3,flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3, &
-                      div,pdivu,lo,hi,dx,dy,dz,dt,a_old,a_new)
+                      divu_nd,divu_cc,lo,hi,dx,dy,dz,dt,a_old,a_new)
 
       use amrex_fort_module, only : rt => amrex_real
       use bl_constants_module
@@ -1188,8 +1178,8 @@
       real(rt) flux1(flux1_l1:flux1_h1,flux1_l2:flux1_h2,flux1_l3:flux1_h3,NVAR)
       real(rt) flux2(flux2_l1:flux2_h1,flux2_l2:flux2_h2,flux2_l3:flux2_h3,NVAR)
       real(rt) flux3(flux3_l1:flux3_h1,flux3_l2:flux3_h2,flux3_l3:flux3_h3,NVAR)
-      real(rt) div(lo(1):hi(1)+1,lo(2):hi(2)+1,lo(3):hi(3)+1)
-      real(rt) pdivu(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))
+      real(rt) divu_nd(lo(1):hi(1)+1,lo(2):hi(2)+1,lo(3):hi(3)+1)
+      real(rt) divu_cc(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))
       real(rt) dx, dy, dz, dt
       real(rt) a_old, a_new
 
@@ -1214,7 +1204,7 @@
             do k = lo(3),hi(3)
                do j = lo(2),hi(2)
                   do i = lo(1),hi(1)+1
-                     div1 = FOURTH*(div(i,j,k) + div(i,j+1,k) + div(i,j,k+1) + div(i,j+1,k+1))
+                     div1 = FOURTH*(divu_nd(i,j,k) + divu_nd(i,j+1,k) + divu_nd(i,j,k+1) + divu_nd(i,j+1,k+1))
                      div1 = difmag*min(ZERO,div1)
                      flux1(i,j,k,n) = flux1(i,j,k,n) + dx*div1*(uin(i,j,k,n)-uin(i-1,j,k,n))
                      flux1(i,j,k,n) = flux1(i,j,k,n) * area1 * dt
@@ -1224,7 +1214,7 @@
             do k = lo(3),hi(3)
                do j = lo(2),hi(2)+1
                   do i = lo(1),hi(1)
-                     div1 = FOURTH*(div(i,j,k) + div(i+1,j,k) + div(i,j,k+1) + div(i+1,j,k+1))
+                     div1 = FOURTH*(divu_nd(i,j,k) + divu_nd(i+1,j,k) + divu_nd(i,j,k+1) + divu_nd(i+1,j,k+1))
                      div1 = difmag*min(ZERO,div1)
                      flux2(i,j,k,n) = flux2(i,j,k,n) + dy*div1*(uin(i,j,k,n)-uin(i,j-1,k,n))
                      flux2(i,j,k,n) = flux2(i,j,k,n) * area2 * dt
@@ -1234,7 +1224,7 @@
             do k = lo(3),hi(3)+1
                do j = lo(2),hi(2)
                   do i = lo(1),hi(1)
-                     div1 = FOURTH*(div(i,j,k) + div(i+1,j,k) + div(i,j+1,k) + div(i+1,j+1,k))
+                     div1 = FOURTH*(divu_nd(i,j,k) + divu_nd(i+1,j,k) + divu_nd(i,j+1,k) + divu_nd(i+1,j+1,k))
                      div1 = difmag*min(ZERO,div1)
                      flux3(i,j,k,n) = flux3(i,j,k,n) + dz*div1*(uin(i,j,k,n)-uin(i,j,k-1,n))
                      flux3(i,j,k,n) = flux3(i,j,k,n) * area3 * dt
@@ -1301,16 +1291,15 @@
                           +   a_half * dt * src(i,j,k,n)
 
                      ! *********************************************************************************
-                     ! This is the version where "pdivu" is actually just divu
                      uout(i,j,k,n) = uout(i,j,k,n) &
-                          -   a_half * dt * (HALF * gamma_minus_1 * uin(i,j,k,n)) * pdivu(i,j,k)
+                          -   a_half * dt * (HALF * gamma_minus_1 * uin(i,j,k,n)) * divu_cc(i,j,k)
 
                      uout(i,j,k,n) = uout(i,j,k,n) / &
-                         ( ONE + a_half * dt * (HALF * gamma_minus_1 * pdivu(i,j,k)) * a_newsq_inv )
+                         ( ONE + a_half * dt * (HALF * gamma_minus_1 * divu_cc(i,j,k)) * a_newsq_inv )
 
                      ! *********************************************************************************
                      ! This is the original version
-                     ! uout(i,j,k,n) = uout(i,j,k,n) -  a_half * dt * pdivu(i,j,k)
+                     ! uout(i,j,k,n) = uout(i,j,k,n) -  a_half * dt * divu_cc(i,j,k)
                      ! *********************************************************************************
 
                      uout(i,j,k,n) = uout(i,j,k,n) * a_newsq_inv
@@ -1355,6 +1344,119 @@
 ! ::: ------------------------------------------------------------------
 ! :::
 
+     subroutine update_state(lo,hi, &
+                             uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
+                             uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
+                             src ,src_l1,src_l2,src_l3,src_h1,src_h2,src_h3, &
+                             hydro_src ,hsrc_l1,hsrc_l2,hsrc_l3,hsrc_h1,hsrc_h2,hsrc_h3, &
+                             divu_cc,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3, &
+                             dt,a_old,a_new,print_fortran_warnings) &
+                             bind(C, name="fort_update_state")
+ 
+      use amrex_fort_module, only : rt => amrex_real
+      use bl_constants_module
+      use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UFS, &
+                                     gamma_minus_1, normalize_species
+      use enforce_module, only : enforce_nonnegative_species
+
+      implicit none
+
+      integer, intent(in) :: lo(3), hi(3)
+      integer, intent(in) ::print_fortran_warnings
+      integer, intent(in) ::  uin_l1,   uin_l2,  uin_l3,  uin_h1,  uin_h2,  uin_h3
+      integer, intent(in) ::  uout_l1, uout_l2, uout_l3, uout_h1, uout_h2, uout_h3
+      integer, intent(in) ::   src_l1,  src_l2,  src_l3,  src_h1,  src_h2,  src_h3
+      integer, intent(in) ::  hsrc_l1, hsrc_l2, hsrc_l3, hsrc_h1, hsrc_h2, hsrc_h3
+      integer, intent(in) ::  d_l1,d_l2,d_l3,d_h1,d_h2,d_h3
+
+      real(rt), intent(in)  ::       uin( uin_l1: uin_h1, uin_l2: uin_h2, uin_l3: uin_h3,NVAR)
+      real(rt), intent(out) ::      uout(uout_l1:uout_h1,uout_l2:uout_h2,uout_l3:uout_h3,NVAR)
+      real(rt), intent(in)  ::       src( src_l1: src_h1, src_l2: src_h2, src_l3: src_h3,NVAR)
+      real(rt), intent(in)  :: hydro_src(hsrc_l1:hsrc_h1,hsrc_l2:hsrc_h2,hsrc_l3:hsrc_h3,NVAR)
+      real(rt), intent(in)  ::   divu_cc(   d_l1:   d_h1,   d_l2:   d_h2,   d_l3:   d_h3)
+      real(rt), intent(in)  ::  dt, a_old, a_new
+
+      real(rt) :: a_half, a_oldsq, a_newsq
+      real(rt) :: a_new_inv, a_newsq_inv, a_half_inv, dt_a_new
+      integer  :: i, j, k, n
+
+      a_half     = HALF * (a_old + a_new)
+      a_oldsq = a_old * a_old
+      a_newsq = a_new * a_new
+
+      a_half_inv  = ONE / a_half
+      a_new_inv   = ONE / a_new
+      a_newsq_inv = ONE / a_newsq
+
+      do n = 1, NVAR
+
+         ! Actually do the update here
+         do k = lo(3),hi(3)
+            do j = lo(2),hi(2)
+               do i = lo(1),hi(1)
+
+                  ! Density
+                  if (n .eq. URHO) then
+                     uout(i,j,k,n) = uin(i,j,k,n) + dt * hydro_src(i,j,k,n) &
+                                    + dt *  src(i,j,k,n) * a_half_inv
+
+                  ! Momentum
+                  else if (n .ge. UMX .and. n .le. UMZ) then
+                     uout(i,j,k,n) = a_old * uin(i,j,k,n) + dt * hydro_src(i,j,k,n) &
+                                    + dt   * src(i,j,k,n)
+                     uout(i,j,k,n) = uout(i,j,k,n) * a_new_inv
+
+                  ! (rho E)
+                  else if (n .eq. UEDEN) then
+                     uout(i,j,k,n) =  a_oldsq * uin(i,j,k,n) + dt * hydro_src(i,j,k,n) &
+                                    + a_half  * dt * src(i,j,k,n)  
+                     uout(i,j,k,n) = uout(i,j,k,n) * a_newsq_inv
+
+                  ! (rho e)
+                  else if (n .eq. UEINT) then
+
+                     uout(i,j,k,n) =  a_oldsq*uin(i,j,k,n) + dt * hydro_src(i,j,k,n) &
+                                    + a_half * dt * src(i,j,k,n) 
+
+                     uout(i,j,k,n) = uout(i,j,k,n) * a_newsq_inv 
+
+!                    We don't do this here because we are adding all of this term explicitly in hydro_src
+!                    uout(i,j,k,n) = uout(i,j,k,n) * a_newsq_inv / &
+!                        ( ONE + a_half * dt * (HALF * gamma_minus_1 * divu_cc(i,j,k)) * a_newsq_inv )
+
+                  ! (rho X_i) and (rho adv_i) and (rho aux_i)
+                  else
+                     uout(i,j,k,n) = uin(i,j,k,n) +  dt * hydro_src(i,j,k,n) &
+                                    + dt * src(i,j,k,n) * a_half_inv
+
+                  endif
+
+               enddo
+            enddo
+         enddo
+      enddo
+
+      ! Enforce the density >= small_dens.  Make sure we do this immediately after consup.
+      call enforce_minimum_density(uin, uin_l1, uin_l2, uin_l3, uin_h1, uin_h2, uin_h3, &
+                                   uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
+                                   lo,hi,print_fortran_warnings)
+      
+      ! Enforce species >= 0
+      call enforce_nonnegative_species(uout,uout_l1,uout_l2,uout_l3, &
+                                       uout_h1,uout_h2,uout_h3,lo,hi,0)
+
+      ! Re-normalize the species
+      if (normalize_species .eq. 1) then
+         call normalize_new_species(uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
+                                    lo,hi)
+      end if
+
+      end subroutine update_state
+
+! :::
+! ::: ------------------------------------------------------------------
+! :::
+
       subroutine cmpflx(qm,qp,qpd_l1,qpd_l2,qpd_l3,qpd_h1,qpd_h2,qpd_h3, &
                         flx,flx_l1,flx_l2,flx_l3,flx_h1,flx_h2,flx_h3, &
                         ugdnv,pgdnv,pg_l1,pg_l2,pg_l3,pg_h1,pg_h2,pg_h3, &
@@ -1362,7 +1464,7 @@
                         idir,ilo,ihi,jlo,jhi,kc,kflux,k3d,print_fortran_warnings)
 
       use amrex_fort_module, only : rt => amrex_real
-      use mempool_module, only : bl_allocate, bl_deallocate
+      use amrex_mempool_module, only : bl_allocate, bl_deallocate
       use bl_constants_module
       use meth_params_module, only : QVAR, NVAR
 
@@ -1827,8 +1929,8 @@
 ! ::: ------------------------------------------------------------------
 ! :::
 
-      subroutine divu(lo,hi,q,q_l1,q_l2,q_l3,q_h1,q_h2,q_h3,dx,dy,dz, &
-                      div,div_l1,div_l2,div_l3,div_h1,div_h2,div_h3)
+      subroutine make_divu_nd(lo,hi,q,q_l1,q_l2,q_l3,q_h1,q_h2,q_h3,dx,dy,dz, &
+                              divu_nd,div_l1,div_l2,div_l3,div_h1,div_h2,div_h3)
 
       use amrex_fort_module, only : rt => amrex_real
       use bl_constants_module
@@ -1840,7 +1942,7 @@
       integer          :: q_l1,q_l2,q_l3,q_h1,q_h2,q_h3
       integer          :: div_l1,div_l2,div_l3,div_h1,div_h2,div_h3
       real(rt) :: dx, dy, dz
-      real(rt) :: div(div_l1:div_h1,div_l2:div_h2,div_l3:div_h3)
+      real(rt) :: divu_nd(div_l1:div_h1,div_l2:div_h2,div_l3:div_h3)
       real(rt) :: q(q_l1:q_h1,q_l2:q_h2,q_l3:q_h3,*)
 
       integer          :: i, j, k
@@ -1869,11 +1971,104 @@
                     + q(i-1,j  ,k  ,QW) - q(i-1,j  ,k-1,QW) &
                     + q(i-1,j-1,k  ,QW) - q(i-1,j-1,k-1,QW) ) * dzinv
 
-               div(i,j,k) = FOURTH*(ux + vy + wz)
+               divu_nd(i,j,k) = FOURTH*(ux + vy + wz)
 
             enddo
          enddo
       enddo
 
-      end subroutine divu
+      end subroutine make_divu_nd
 
+! :::
+! ::: ------------------------------------------------------------------
+! :::
+
+    subroutine add_grav_source(uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
+                               uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
+                               grav, gv_l1, gv_l2, gv_l3, gv_h1, gv_h2, gv_h3, &
+                               lo,hi,dx,dy,dz,dt,a_old,a_new)
+
+      use amrex_fort_module, only : rt => amrex_real
+      use eos_module
+      use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, &
+           UEDEN, grav_source_type
+
+      implicit none
+
+      integer lo(3), hi(3)
+      integer uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3
+      integer  uout_l1, uout_l2, uout_l3, uout_h1, uout_h2, uout_h3
+      integer  gv_l1, gv_l2, gv_l3, gv_h1, gv_h2, gv_h3
+
+      real(rt)  uin( uin_l1: uin_h1, uin_l2: uin_h2, uin_l3: uin_h3,NVAR)
+      real(rt) uout(uout_l1:uout_h1,uout_l2:uout_h2,uout_l3:uout_h3,NVAR)
+      real(rt) grav(  gv_l1:  gv_h1,  gv_l2:  gv_h2,  gv_l3:  gv_h3,3)
+      real(rt) dx, dy, dz, dt
+      real(rt) a_old, a_new
+
+      real(rt) :: a_half, a_oldsq, a_newsq, a_newsq_inv
+      real(rt) :: rho
+      real(rt) :: SrU, SrV, SrW, SrE
+      real(rt) :: rhoInv, dt_a_new
+      real(rt) :: old_rhoeint, new_rhoeint, old_ke, new_ke
+      integer          :: i, j, k
+
+      a_half  = 0.5d0 * (a_old + a_new)
+      a_oldsq = a_old * a_old
+      a_newsq = a_new * a_new
+      a_newsq_inv = 1.d0 / a_newsq
+
+      dt_a_new    = dt / a_new
+
+      ! Gravitational source options for how to add the work to (rho E):
+      ! grav_source_type = 
+      ! 1: Original version ("does work")
+      ! 3: Puts all gravitational work into KE, not (rho e)
+
+      ! Add gravitational source terms
+      do k = lo(3),hi(3)
+         do j = lo(2),hi(2)
+            do i = lo(1),hi(1)
+
+               ! **** Start Diagnostics ****
+               old_ke = 0.5d0 * (uout(i,j,k,UMX)**2 + uout(i,j,k,UMY)**2 + uout(i,j,k,UMZ)**2) / &
+                                 uout(i,j,k,URHO) 
+               old_rhoeint = uout(i,j,k,UEDEN) - old_ke
+               ! ****   End Diagnostics ****
+
+               rho    = uin(i,j,k,URHO)
+               rhoInv = 1.0d0 / rho
+
+               SrU = rho * grav(i,j,k,1)
+               SrV = rho * grav(i,j,k,2)
+               SrW = rho * grav(i,j,k,3)
+
+               ! We use a_new here because we think of d/dt(a rho u) = ... + (rho g)
+               uout(i,j,k,UMX)   = uout(i,j,k,UMX) + SrU * dt_a_new
+               uout(i,j,k,UMY)   = uout(i,j,k,UMY) + SrV * dt_a_new
+               uout(i,j,k,UMZ)   = uout(i,j,k,UMZ) + SrW * dt_a_new
+
+               if (grav_source_type .eq. 1) then
+
+                   ! This does work (in 1-d)
+                   ! Src = rho u dot g, evaluated with all quantities at t^n
+                   SrE = uin(i,j,k,UMX) * grav(i,j,k,1) + &
+                         uin(i,j,k,UMY) * grav(i,j,k,2) + &
+                         uin(i,j,k,UMZ) * grav(i,j,k,3)
+                   uout(i,j,k,UEDEN) = (a_newsq*uout(i,j,k,UEDEN) + SrE * (dt*a_half)) * a_newsq_inv
+
+               else if (grav_source_type .eq. 3) then
+
+                   new_ke = 0.5d0 * (uout(i,j,k,UMX)**2 + uout(i,j,k,UMY)**2 + uout(i,j,k,UMZ)**2) / &
+                                     uout(i,j,k,URHO) 
+                   uout(i,j,k,UEDEN) = old_rhoeint + new_ke
+
+               else 
+                  call bl_error("Error:: Nyx_advection_3d.f90 :: bogus grav_source_type")
+               end if
+
+            enddo
+         enddo
+      enddo
+
+      end subroutine add_grav_source
