@@ -1,0 +1,16 @@
+var procmap = ProcMap()
+var nm      = NameMap()
+
+if(procmap.group() == "world")
+{
+    var nyx   = load("./Nyx3d.llvm.PROF.MPI.ex inputs", procmap)
+    var info  = load("../Henson/amr-info/amr-info3d.llvm.PROF.MPI.ex", procmap)
+
+    puts("Puppets loaded\n")
+
+    while(nyx.proceed())
+    {
+        puts("Time step\n")
+        info.proceed()
+    }
+}

@@ -1,18 +1,18 @@
 # AMREX_HOME defines the directory in which we will find all the AMReX code
-AMREX_HOME ?= ../../../amrex
+AMREX_HOME ?= ../../../../amrex
 
-HPGMG_DIR ?= ../../Util/hpgmg/finite-volume
+HPGMG_DIR ?= ../../../Util/hpgmg/finite-volume
 CVODE_LIB_DIR ?= $(CVODE_LIB)
 
 # TOP defines the directory in which we will find Source, Exec, etc
-TOP = ../..
+TOP = ../../..
 
 # compilation options
 COMP    = intel  # gnu
 USE_MPI = TRUE
 USE_OMP = TRUE
 
-USE_HENSON = FALSE
+USE_HENSON = TRUE
 
 PROFILE       = TRUE
 TRACE_PROFILE = FALSE
@@ -38,5 +38,5 @@ USE_CVODE = FALSE
 Bpack := ./Make.package
 Blocs := .
 
+EBASE = sample-analysis
 include $(TOP)/Exec/Make.Nyx
-

@@ -38,6 +38,11 @@ std::string inputs_name = "";
 #include <MakeFFTWBoxes.H>
 #endif
 
+#ifdef HENSON
+#include <henson/context.h>
+#include <henson/data.h>
+#endif
+
 using namespace amrex;
 
 const int NyxHaloFinderSignal(42);
@@ -139,6 +144,11 @@ nyx_main (int argc, char* argv[])
 
      {
        amrptr->coarseTimeStep(stop_time);          // ---- Do a timestep.
+#ifdef HENSON
+       henson_save_pointer("amr",  amrptr);        // redundant to do every timesetp, but negligible overhead
+       henson_save_pointer("dmpc", Nyx::theDMPC());
+       henson_yield();
+#endif
      } else {
        finished = true;
      }
