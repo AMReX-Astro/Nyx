@@ -15,7 +15,7 @@
            flux1,flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3, &
            flux2,flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3, &
            flux3,flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3, &
-           courno,a_old,a_new,print_fortran_warnings,do_grav) &
+           a_old,a_new,print_fortran_warnings,do_grav) &
            bind(C, name="fort_advance_gas")
 
       use amrex_fort_module, only : rt => amrex_real
@@ -47,7 +47,7 @@
       real(rt) flux1(flux1_l1:flux1_h1,flux1_l2:flux1_h2, flux1_l3:flux1_h3,NVAR)
       real(rt) flux2(flux2_l1:flux2_h1,flux2_l2:flux2_h2, flux2_l3:flux2_h3,NVAR)
       real(rt) flux3(flux3_l1:flux3_h1,flux3_l2:flux3_h2, flux3_l3:flux3_h3,NVAR)
-      real(rt) delta(3),dt,time,courno
+      real(rt) delta(3),dt,time
       real(rt) a_old, a_new
 
       ! Automatic arrays for workspace
@@ -105,7 +105,7 @@
                    src , src_l1, src_l2, src_l3, src_h1, src_h2, src_h3, &
                    srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                    grav,gv_l1,gv_l2,gv_l3,gv_h1,gv_h2,gv_h3, &
-                   courno,dx,dy,dz,dt,ngq,ngf,a_old,a_new)
+                   dx,dy,dz,dt,ngq,ngf,a_old,a_new)
 
       ! Compute hyperbolic fluxes using unsplit Godunov
       call umeth3d(q,c,csml,flatn,q_l1,q_l2,q_l3,q_h1,q_h2,q_h3, &
@@ -861,7 +861,7 @@
                          src,  src_l1, src_l2, src_l3, src_h1, src_h2, src_h3, &
                          srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                          grav,gv_l1, gv_l2, gv_l3, gv_h1, gv_h2, gv_h3, &
-                         courno,dx,dy,dz,dt,ngp,ngf,a_old,a_new)
+                         dx,dy,dz,dt,ngp,ngf,a_old,a_new)
       !
       !     Will give primitive variables on lo-ngp:hi+ngp, and flatn on lo-ngf:hi+ngf
       !     if use_flattening=1.  Declared dimensions of q,c,csml,flatn are given
@@ -901,7 +901,7 @@
       real(rt) ::   src( src_l1: src_h1, src_l2: src_h2, src_l3: src_h3,NVAR)
       real(rt) ::  srcQ(srcq_l1:srcq_h1,srcq_l2:srcq_h2,srcq_l3:srcq_h3,QVAR)
       real(rt) :: grav( gv_l1: gv_h1, gv_l2: gv_h2, gv_l3: gv_h3,3)
-      real(rt) :: dx, dy, dz, dt, courno, a_old, a_new
+      real(rt) :: dx, dy, dz, dt, a_old, a_new
       real(rt) :: dpdr, dpde
 
       integer          :: i, j, k
@@ -1065,10 +1065,9 @@
          enddo
       enddo
 
-      ! Compute running max of Courant number over grids
-      courmx = courno
-      courmy = courno
-      courmz = courno
+      courmx = 0.d0
+      courmy = 0.d0
+      courmz = 0.d0
 
       dtdxaold = dt / dx / a_old
       dtdyaold = dt / dy / a_old
@@ -1125,8 +1124,6 @@
             enddo
          enddo
       enddo
-
-      courno = max( courmx, courmy, courmz )
 
       ! Compute flattening coef for slope calculations
       if (use_flattening == 1) then

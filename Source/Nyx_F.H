@@ -192,7 +192,6 @@ extern "C"
      D_DECL(const BL_FORT_FAB_ARG(xflux),
             const BL_FORT_FAB_ARG(yflux),
             const BL_FORT_FAB_ARG(zflux)),
-     const amrex::Real* cflLoc,
      const amrex::Real* a_old, const amrex::Real* a_new,
      const int* print_fortran_warnings,
      const int* do_gas);

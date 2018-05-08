@@ -20,14 +20,19 @@ Nyx::strang_hydro (Real time,
 {
     BL_PROFILE("Nyx::strang_hydro()");
 
+    BL_ASSERT(NUM_GROW == 4);
+
     const Real prev_time    = state[State_Type].prevTime();
     const Real cur_time     = state[State_Type].curTime();
     const int  finest_level = parent->finestLevel();
+
     MultiFab&  S_old        = get_old_data(State_Type);
-    MultiFab&  D_old        = get_old_data(DiagEOS_Type);
     MultiFab&  S_new        = get_new_data(State_Type);
+
+    MultiFab&  D_old        = get_old_data(DiagEOS_Type);
     MultiFab&  D_new        = get_new_data(DiagEOS_Type);
 
+#ifndef NDEBUG
     if (std::abs(time-prev_time) > (1.e-10*cur_time) )
     {
         if (ParallelDescriptor::IOProcessor())
@@ -38,7 +43,6 @@ Nyx::strang_hydro (Real time,
         amrex::Abort("time should equal prev_time in strang_hydro!");
     }
 
-#ifndef NDEBUG
     if (S_old.contains_nan(Density, S_old.nComp(), 0))
     {
         for (int i = 0; i < S_old.nComp(); i++)
@@ -75,12 +79,11 @@ Nyx::strang_hydro (Real time,
         current = &get_flux_reg(level);
 
     const Real* dx     = geom.CellSize();
-    Real        courno = -1.0e+200;
 
     MultiFab ext_src_old(grids, dmap, NUM_STATE, 3);
-    ext_src_old.setVal(0);
+    ext_src_old.setVal(0.);
 
-    // Define the gravity vector so we can pass this to ca_umdrv.
+    // Define the gravity vector
     MultiFab grav_vector(grids, dmap, BL_SPACEDIM, 3);
     grav_vector.setVal(0.);
 
@@ -96,8 +99,6 @@ Nyx::strang_hydro (Real time,
         fluxes[j].setVal(0.0);
     }
 
-    BL_ASSERT(NUM_GROW == 4);
-
     // Create FAB for extended grid values (including boundaries) and fill.
     MultiFab S_old_tmp(S_old.boxArray(), S_old.DistributionMap(), NUM_STATE, NUM_GROW);
     FillPatch(*this, S_old_tmp, NUM_GROW, time, State_Type, 0, NUM_STATE);
@@ -105,12 +106,18 @@ Nyx::strang_hydro (Real time,
     MultiFab D_old_tmp(D_old.boxArray(), D_old.DistributionMap(), D_old.nComp(), NUM_GROW);
     FillPatch(*this, D_old_tmp, NUM_GROW, time, DiagEOS_Type, 0, D_old.nComp());
 
+    MultiFab hydro_src(grids, dmap, NUM_STATE, 0);
+    hydro_src.setVal(0.);
+
+    MultiFab divu_cc(grids, dmap, 1, 0);
+    divu_cc.setVal(0.);
+
 #ifdef HEATCOOL
     strang_first_step(time,dt,S_old_tmp,D_old_tmp);
 #endif
 
 #ifdef _OPENMP
-#pragma omp parallel reduction(max:courno)
+#pragma omp parallel 
 #endif
        {
        FArrayBox flux[BL_SPACEDIM], u_gdnv[BL_SPACEDIM];
@@ -153,15 +160,13 @@ Nyx::strang_hydro (Real time,
              BL_TO_FORTRAN(flux[0]),
              BL_TO_FORTRAN(flux[1]),
              BL_TO_FORTRAN(flux[2]),
-             &cflLoc, &a_old, &a_new, &print_fortran_warnings, &do_grav);
+             &a_old, &a_new, &print_fortran_warnings, &do_grav);
 
         for (int i = 0; i < BL_SPACEDIM; ++i) {
           fluxes[i][mfi].copy(flux[i], mfi.nodaltilebox(i));
         }
 
        } // end of MFIter loop
-
-        courno = std::max(courno, cflLoc);
 
        } // end of omp parallel region
 
@@ -183,33 +188,6 @@ Nyx::strang_hydro (Real time,
        }
 
     grav_vector.clear();
-
-    ParallelDescriptor::ReduceRealMax(courno);
-
-    if (courno > 1.0)
-    {
-        if (ParallelDescriptor::IOProcessor())
-            std::cout << "OOPS -- EFFECTIVE CFL AT THIS LEVEL " << level
-                      << " IS " << courno << '\n';
-
-        amrex::Abort("CFL is too high at this level -- go back to a checkpoint and restart with lower cfl number");
-    }
-
-#ifndef NDEBUG
-    if (S_new.contains_nan(Density, S_new.nComp(), 0))
-    {
-        for (int i = 0; i < S_new.nComp(); i++)
-        {
-            if (S_new.contains_nan(Density + i, 1, 0))
-            {
-                if (ParallelDescriptor::IOProcessor())
-                    std::cout << "BAD -- S_new component " << Density + i << 
-                    " has NaNs after the hydro update" << std::endl;
-                amrex::Abort();
-            }
-        }
-    }
-#endif
 
 #ifndef NDEBUG
     if (S_new.contains_nan(Density, S_new.nComp(), 0))
