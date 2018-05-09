@@ -10,9 +10,6 @@ contains
   !
   ! characteristics based on u
   !
-  !===========================================================================
-  ! This is called from within threaded loops in advance_gas_tile so *no* OMP here ...
-  !===========================================================================
   subroutine ppm(s,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3, &
                  u,cspd,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                  flatn,f_l1,f_l2,f_l3,f_h1,f_h2,f_h3, &
@@ -66,9 +63,6 @@ contains
   ! ::: ----------------------------------------------------------------
   ! :::
     
-  !===========================================================================
-  ! This is called from within threaded loops in advance_gas_tile so *no* OMP here ...
-  !===========================================================================
   subroutine ppm_type1(s,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3, &
                        u,cspd,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                        flatn,f_l1,f_l2,f_l3,f_h1,f_h2,f_h3, &
@@ -620,9 +614,6 @@ contains
   ! ::: ----------------------------------------------------------------
   ! :::
 
-  !===========================================================================
-  ! This is called from within threaded loops in advance_gas_tile so *no* OMP here ...
-  !===========================================================================
   subroutine ppm_type2(s,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3, &
                        u,cspd,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                        flatn,f_l1,f_l2,f_l3,f_h1,f_h2,f_h3, &

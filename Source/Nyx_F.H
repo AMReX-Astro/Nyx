@@ -193,8 +193,7 @@ extern "C"
             const BL_FORT_FAB_ARG(yflux),
             const BL_FORT_FAB_ARG(zflux)),
      const amrex::Real* a_old, const amrex::Real* a_new,
-     const int* print_fortran_warnings,
-     const int* do_gas);
+     const int* print_fortran_warnings);
 
   void time_center_sources
     (const int lo[], const int hi[], BL_FORT_FAB_ARG(S_new),

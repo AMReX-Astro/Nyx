@@ -8,9 +8,6 @@ contains
 ! ::: ------------------------------------------------------------------
 ! ::: 
 
-  !===========================================================================
-  ! This is called from within threaded loops in advance_gas_tile so *no* OMP here ...
-  !===========================================================================
   subroutine uflaten(lo,hi,p,u,v,w,flatn,q_l1,q_l2,q_l3,q_h1,q_h2,q_h3)
 
     use amrex_fort_module, only : rt => amrex_real

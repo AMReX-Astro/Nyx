@@ -8,9 +8,6 @@ module trace_ppm_module
 
 contains
 
-    !===========================================================================
-    ! This is called from within threaded loops in advance_gas_tile so *no* OMP here ...
-    !===========================================================================
     subroutine tracexy_ppm(q,c,flatn,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                            Ip,Im,Ip_g,Im_g, &
                            qxm,qxp,qym,qyp,qpd_l1,qpd_l2,qpd_l3,qpd_h1,qpd_h2,qpd_h3, &
@@ -823,17 +820,11 @@ contains
     enddo
 
     end subroutine tracexy_ppm
-    !===========================================================================
-    ! This is called from within threaded loops in advance_gas_tile so *no* OMP here ...
-    !===========================================================================
 
   ! ::: 
   ! ::: ------------------------------------------------------------------
   ! ::: 
 
-    !===========================================================================
-    ! This is called from within threaded loops in advance_gas_tile so *no* OMP here ...
-    !===========================================================================
     subroutine tracez_ppm(q,c,flatn,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                           Ip,Im,Ip_g,Im_g, &
                           qzm,qzp,qpd_l1,qpd_l2,qpd_l3,qpd_h1,qpd_h2,qpd_h3, &

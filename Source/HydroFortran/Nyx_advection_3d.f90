@@ -15,7 +15,7 @@
            flux1,flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3, &
            flux2,flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3, &
            flux3,flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3, &
-           a_old,a_new,print_fortran_warnings,do_grav) &
+           a_old,a_new,print_fortran_warnings) &
            bind(C, name="fort_advance_gas")
 
       use amrex_fort_module, only : rt => amrex_real
@@ -26,7 +26,7 @@
 
       implicit none
 
-      integer lo(3),hi(3),print_fortran_warnings,do_grav
+      integer lo(3),hi(3),print_fortran_warnings
       integer uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3
       integer uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3
       integer ugdnvx_l1,ugdnvx_l2,ugdnvx_l3,ugdnvx_h1,ugdnvx_h2,ugdnvx_h3
@@ -147,12 +147,6 @@
                                         uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
                                         lo,hi,print_fortran_warnings)
       
-      if (do_grav .gt. 0) &
-          call add_grav_source(uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
-                               uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
-                               grav, gv_l1, gv_l2, gv_l3, gv_h1, gv_h2, gv_h3, &
-                               lo,hi,dx,dy,dz,dt,a_old,a_new)
-
       ! Enforce species >= 0
       call enforce_nonnegative_species(uout,uout_l1,uout_l2,uout_l3, &
                                        uout_h1,uout_h2,uout_h3,lo,hi,0)

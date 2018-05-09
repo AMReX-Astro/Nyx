@@ -1,9 +1,6 @@
 ! :::
 ! ::: ------------------------------------------------------------------
 ! :::
-    !===========================================================================
-    ! This is called from within threaded loops in advance_gas_tile so *no* OMP here ...
-    !===========================================================================
     subroutine tracexy_cg(q,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                          dqx,dqy,dq_l1,dq_l2,dq_l3,dq_h1,dq_h2,dq_h3, &
                          qxm,qxp,qym,qyp,qpd_l1,qpd_l2,qpd_l3,qpd_h1,qpd_h2,qpd_h3, &
@@ -355,9 +352,6 @@
 ! ::: ------------------------------------------------------------------
 ! :::
 
-    !===========================================================================
-    ! This is called from within threaded loops in advance_gas_tile so *no* OMP here ...
-    !===========================================================================
     subroutine tracez_cg(q,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
          dqz,dq_l1,dq_l2,dq_l3,dq_h1,dq_h2,dq_h3, &
          qzm,qzp,qpd_l1,qpd_l2,qpd_l3,qpd_h1,qpd_h2,qpd_h3, &

@@ -8,9 +8,6 @@ module slope_module
 
 contains
 
-      !===========================================================================
-      ! uslope -- called from within threaded loops in advance_gas_tile so *no* OMP here ...
-      !===========================================================================
       subroutine uslope(q,flatn,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                         dqx,dqy,dqz,qpd_l1,qpd_l2,qpd_l3,qpd_h1,qpd_h2,qpd_h3, &
                         ilo1,ilo2,ihi1,ihi2,kc,k3d,nv)

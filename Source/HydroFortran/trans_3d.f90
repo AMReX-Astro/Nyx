@@ -7,9 +7,6 @@ module transverse_module
  
 contains
 
-      !===========================================================================
-      ! transx1 -- called from within threaded loops in advance_gas_tile so *no* OMP here ...
-      !===========================================================================
       subroutine transx1(qym,qymo,qyp,qypo,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                          fx,fx_l1,fx_l2,fx_l3,fx_h1,fx_h2,fx_h3, &
                          ugdnvx,pgdnvx,pgdx_l1,pgdx_l2,pgdx_l3,pgdx_h1,pgdx_h2,pgdx_h3, &
@@ -199,9 +196,6 @@ contains
 
       end subroutine transx1
 
-      !===========================================================================
-      ! transx2 -- called from within threaded loops in advance_gas_tile so *no* OMP here ...
-      !===========================================================================
       subroutine transx2(qzm,qzmo,qzp,qzpo,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                          fx,fx_l1,fx_l2,fx_l3,fx_h1,fx_h2,fx_h3, &
                          ugdnvx,pgdnvx,pgdx_l1,pgdx_l2,pgdx_l3,pgdx_h1,pgdx_h2,pgdx_h3, &
@@ -384,9 +378,6 @@ contains
 
       end subroutine transx2
 
-      !===========================================================================
-      ! transy1 -- called from within threaded loops in advance_gas_tile so *no* OMP here ...
-      !===========================================================================
       subroutine transy1(qxm,qxmo,qxp,qxpo,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                          fy,fy_l1,fy_l2,fy_l3,fy_h1,fy_h2,fy_h3, &
                          ugdnvy,pgdnvy,pgdy_l1,pgdy_l2,pgdy_l3,pgdy_h1,pgdy_h2,pgdy_h3, &
@@ -575,9 +566,6 @@ contains
 
       end subroutine transy1
 
-      !===========================================================================
-      ! transy2 -- called from within threaded loops in advance_gas_tile so *no* OMP here ...
-      !===========================================================================
       subroutine transy2(qzm,qzmo,qzp,qzpo,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                          fy,fy_l1,fy_l2,fy_l3,fy_h1,fy_h2,fy_h3, &
                          ugdnvy,pgdnvy,pgdy_l1,pgdy_l2,pgdy_l3,pgdy_h1,pgdy_h2,pgdy_h3, &
@@ -761,9 +749,6 @@ contains
 
       end subroutine transy2
 
-      !===========================================================================
-      ! transz -- called from within threaded loops in advance_gas_tile so *no* OMP here ...
-      !===========================================================================
       subroutine transz(qxm,qxmo,qxp,qxpo, &
                         qym,qymo,qyp,qypo,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                         fz,fz_l1,fz_l2,fz_l3,fz_h1,fz_h2,fz_h3, &
@@ -1216,9 +1201,6 @@ contains
 
       end subroutine transz
 
-      !===========================================================================
-      ! transxy-- called from within threaded loops in advance_gas_tile so *no* OMP here ...
-      !===========================================================================
       subroutine transxy(qm,qmo,qp,qpo,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                          fxy,fx_l1,fx_l2,fx_l3,fx_h1,fx_h2,fx_h3, &
                          fyx,fy_l1,fy_l2,fy_l3,fy_h1,fy_h2,fy_h3, &
@@ -1470,9 +1452,6 @@ contains
 
       end subroutine transxy
 
-      !===========================================================================
-      ! transz-- called from within threaded loops in advance_gas_tile so *no* OMP here ...
-      !===========================================================================
       subroutine transxz(qm,qmo,qp,qpo,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                          fxz,fx_l1,fx_l2,fx_l3,fx_h1,fx_h2,fx_h3, &
                          fzx,fz_l1,fz_l2,fz_l3,fz_h1,fz_h2,fz_h3, &
@@ -1725,9 +1704,6 @@ contains
 
       end subroutine transxz
 
-      !===========================================================================
-      ! transyz-- called from within threaded loops in advance_gas_tile so *no* OMP here ...
-      !===========================================================================
       subroutine transyz(qm,qmo,qp,qpo,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                          fyz,fy_l1,fy_l2,fy_l3,fy_h1,fy_h2,fy_h3, &
                          fzy,fz_l1,fz_l2,fz_l3,fz_h1,fz_h2,fz_h3, &

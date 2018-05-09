@@ -160,7 +160,7 @@ Nyx::strang_hydro (Real time,
              BL_TO_FORTRAN(flux[0]),
              BL_TO_FORTRAN(flux[1]),
              BL_TO_FORTRAN(flux[2]),
-             &a_old, &a_new, &print_fortran_warnings, &do_grav);
+             &a_old, &a_new, &print_fortran_warnings);
 
         for (int i = 0; i < BL_SPACEDIM; ++i) {
           fluxes[i][mfi].copy(flux[i], mfi.nodaltilebox(i));
@@ -169,6 +169,26 @@ Nyx::strang_hydro (Real time,
        } // end of MFIter loop
 
        } // end of omp parallel region
+
+       if (do_grav)
+       {
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
+           for (MFIter mfi(S_old,true); mfi.isValid(); ++mfi)
+           {
+               const Box& bx = mfi.tilebox();
+
+               // Note this increments S_new, it doesn't add source to S_old
+               // However we create the source term using rho_old
+                  fort_add_grav_source (
+                       bx.loVect(), bx.hiVect(),
+                       BL_TO_FORTRAN(S_old[mfi]),
+                       BL_TO_FORTRAN(S_new[mfi]),
+                       BL_TO_FORTRAN(grav_vector[mfi]),
+                       &dt, &a_old, &a_new);
+           }
+       }
 
        // We copy old Temp and Ne to new Temp and Ne so that they can be used
        //    as guesses when we next need them.
