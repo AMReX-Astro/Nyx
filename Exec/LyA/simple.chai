@@ -2,8 +2,8 @@ var procmap = ProcMap()
 
 if(procmap.group() == "world")
 {
-    var nyx      = load("./Nyx3d.llvm.PROF.MPI.ex inputs", procmap)
-    var analysis = load("../Henson/sample-analysis/sample-analysis3d.llvm.PROF.MPI.ex", procmap)
+    var nyx      = load("./Nyx3d.${compiler}.ex inputs", procmap)
+    var analysis = load("../Henson/sample-analysis/sample-analysis3d.${compiler}.ex", procmap)
 
     puts("Nyx loaded\n")
 

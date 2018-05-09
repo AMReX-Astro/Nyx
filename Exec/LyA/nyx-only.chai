@@ -1,0 +1,12 @@
+var procmap = ProcMap()
+var nm      = NameMap()
+
+if(procmap.group() == "world")
+{
+    var nyx       = load("./Nyx3d.${compiler}.ex inputs", procmap)
+
+    puts("Puppets loaded\n")
+
+    while(nyx.proceed())
+    { }
+}
