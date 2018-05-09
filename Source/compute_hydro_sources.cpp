@@ -15,7 +15,6 @@ Nyx::compute_hydro_sources(amrex::Real time, amrex::Real dt, amrex::Real a_old, 
     amrex::Print() << "Computing the hydro sources ... " << std::endl;
     const int finest_level = parent->finestLevel();
     const Real* dx = geom.CellSize();
-    Real courno = -1.0e+200;
 
     MultiFab fluxes[BL_SPACEDIM];
     for (int j = 0; j < BL_SPACEDIM; j++)
@@ -44,7 +43,7 @@ Nyx::compute_hydro_sources(amrex::Real time, amrex::Real dt, amrex::Real a_old, 
     }
 
 #ifdef _OPENMP
-#pragma omp parallel reduction(max:courno)
+#pragma omp parallel
 #endif
     {
     FArrayBox flux[BL_SPACEDIM], u_gdnv[BL_SPACEDIM];
@@ -79,14 +78,12 @@ Nyx::compute_hydro_sources(amrex::Real time, amrex::Real dt, amrex::Real a_old, 
              BL_TO_FORTRAN(flux[1]),
              BL_TO_FORTRAN(flux[2]),
              &cflLoc, &a_old, &a_new, 
-             &print_fortran_warnings, &do_grav);
+             &print_fortran_warnings);
 
         for (int i = 0; i < BL_SPACEDIM; ++i) 
           fluxes[i][mfi].copy(flux[i], mfi.nodaltilebox(i));
         
     } // end of MFIter loop
-
-    courno = std::max(courno, cflLoc);
 
     } // end of parallel
 
@@ -104,13 +101,5 @@ Nyx::compute_hydro_sources(amrex::Real time, amrex::Real dt, amrex::Real a_old, 
            }
          }
        }
-    }
-
-    if (courno > 1.0)
-    {
-     if (ParallelDescriptor::IOProcessor())
-         std::cout << "OOPS -- EFFECTIVE CFL AT THIS LEVEL " << level
-                   << " IS " << courno << '\n';
-         amrex::Abort("CFL is too high at this level -- go back and restart with lower cfl number");
     }
 }

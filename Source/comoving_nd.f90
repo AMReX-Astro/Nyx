@@ -1,5 +1,6 @@
 module comoving_nd_module
 
+  use amrex_error_module
   use amrex_fort_module, only : rt => amrex_real
 
   contains
@@ -96,7 +97,7 @@ module comoving_nd_module
         integer  :: j, nsteps
 
         if (comoving_h .eq. 0.0d0) &
-          call bl_error("fort_integrate_comoving_a_to_z: Shouldn't be setting plot_z_values if not evolving a")
+          call amrex_error("fort_integrate_comoving_a_to_z: Shouldn't be setting plot_z_values if not evolving a")
 
         H_0 = comoving_h * Hubble_const
         OmL = 1.d0 - comoving_OmM 
@@ -261,7 +262,7 @@ module comoving_nd_module
                  ! We're done
                  return 
               else
-                 call bl_error("Too many iterations in enforce_percent_change")
+                 call amrex_error("Too many iterations in enforce_percent_change")
               end if
            end do
 
@@ -289,7 +290,7 @@ module comoving_nd_module
         real(rt), parameter :: eps = 1.d-10
 
         if (old_a > final_a) then
-           call bl_error("Oops -- old_a > final_a")
+           call amrex_error("Oops -- old_a > final_a")
         end if
 
         ! Only go into this process if new_a is past final_a
@@ -304,7 +305,7 @@ module comoving_nd_module
                  ! We're done
                  return 
               else
-                 call bl_error("Too many iterations in enforce_final_a")
+                 call amrex_error("Too many iterations in enforce_final_a")
               end if
            end do
 

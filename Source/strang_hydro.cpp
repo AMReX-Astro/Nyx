@@ -78,12 +78,10 @@ Nyx::strang_hydro (Real time,
     if (do_reflux && level > 0)
         current = &get_flux_reg(level);
 
-    const Real* dx     = geom.CellSize();
-
     MultiFab ext_src_old(grids, dmap, NUM_STATE, 3);
     ext_src_old.setVal(0.);
 
-    // Define the gravity vector
+    // Define the gravity vector 
     MultiFab grav_vector(grids, dmap, BL_SPACEDIM, 3);
     grav_vector.setVal(0.);
 
@@ -116,96 +114,32 @@ Nyx::strang_hydro (Real time,
     strang_first_step(time,dt,S_old_tmp,D_old_tmp);
 #endif
 
-#ifdef _OPENMP
-#pragma omp parallel 
-#endif
-       {
-       FArrayBox flux[BL_SPACEDIM], u_gdnv[BL_SPACEDIM];
-       Real cflLoc = -1.e+200;
+    bool   init_flux_register = true;
+    bool add_to_flux_register = true;
+    compute_hydro_sources(time,dt,a_old,a_new,S_old_tmp,D_old_tmp,
+                          ext_src_old,hydro_src,grav_vector,divu_cc,
+                          init_flux_register, add_to_flux_register);
 
-       for (MFIter mfi(S_old_tmp,true); mfi.isValid(); ++mfi)
-       {
+    update_state_with_sources(S_old_tmp,S_new,
+                              ext_src_old,hydro_src,grav_vector,divu_cc,
+                              dt,a_old,a_new);
 
-        const Box& bx        = mfi.tilebox();
+    // We copy old Temp and Ne to new Temp and Ne so that they can be used
+    //    as guesses when we next need them.
+    MultiFab::Copy(D_new,D_old,0,0,D_old.nComp(),0);
 
-        FArrayBox& state     = S_old_tmp[mfi];
-        FArrayBox& dstate    = D_old_tmp[mfi];
-        FArrayBox& stateout  = S_new[mfi];
-
-#ifdef SHEAR_IMPROVED
-        FArrayBox& am_tmp = AveMom_tmp[mfi];
-#endif
-
-        Real se  = 0;
-        Real ske = 0;
-
-        // Allocate fabs for fluxes.
+    if (do_reflux) {
+      if (current) {
         for (int i = 0; i < BL_SPACEDIM ; i++) {
-            const Box &bxtmp = amrex::surroundingNodes(bx, i);
-            flux[i].resize(bxtmp, NUM_STATE);
-            u_gdnv[i].resize(amrex::grow(bxtmp, 1), 1);
-            u_gdnv[i].setVal(1.e200);
+          current->FineAdd(fluxes[i], i, 0, 0, NUM_STATE, 1);
         }
-
-        fort_advance_gas
-            (&time, bx.loVect(), bx.hiVect(), 
-             BL_TO_FORTRAN(state),
-             BL_TO_FORTRAN(stateout),
-             BL_TO_FORTRAN(u_gdnv[0]),
-             BL_TO_FORTRAN(u_gdnv[1]),
-             BL_TO_FORTRAN(u_gdnv[2]),
-             BL_TO_FORTRAN(ext_src_old[mfi]),
-             BL_TO_FORTRAN(grav_vector[mfi]),
-             dx, &dt,
-             BL_TO_FORTRAN(flux[0]),
-             BL_TO_FORTRAN(flux[1]),
-             BL_TO_FORTRAN(flux[2]),
-             &a_old, &a_new, &print_fortran_warnings);
-
-        for (int i = 0; i < BL_SPACEDIM; ++i) {
-          fluxes[i][mfi].copy(flux[i], mfi.nodaltilebox(i));
+      }
+      if (fine) {
+        for (int i = 0; i < BL_SPACEDIM ; i++) {
+              fine->CrseInit(fluxes[i],i,0,0,NUM_STATE,-1.,FluxRegister::ADD);
         }
-
-       } // end of MFIter loop
-
-       } // end of omp parallel region
-
-       if (do_grav)
-       {
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
-           for (MFIter mfi(S_old,true); mfi.isValid(); ++mfi)
-           {
-               const Box& bx = mfi.tilebox();
-
-               // Note this increments S_new, it doesn't add source to S_old
-               // However we create the source term using rho_old
-                  fort_add_grav_source (
-                       bx.loVect(), bx.hiVect(),
-                       BL_TO_FORTRAN(S_old[mfi]),
-                       BL_TO_FORTRAN(S_new[mfi]),
-                       BL_TO_FORTRAN(grav_vector[mfi]),
-                       &dt, &a_old, &a_new);
-           }
-       }
-
-       // We copy old Temp and Ne to new Temp and Ne so that they can be used
-       //    as guesses when we next need them.
-       MultiFab::Copy(D_new,D_old,0,0,D_old.nComp(),0);
-
-       if (do_reflux) {
-         if (current) {
-           for (int i = 0; i < BL_SPACEDIM ; i++) {
-             current->FineAdd(fluxes[i], i, 0, 0, NUM_STATE, 1);
-           }
-         }
-         if (fine) {
-           for (int i = 0; i < BL_SPACEDIM ; i++) {
-	         fine->CrseInit(fluxes[i],i,0,0,NUM_STATE,-1.,FluxRegister::ADD);
-           }
-         }
-       }
+      }
+    }
 
     grav_vector.clear();
 
@@ -223,5 +157,7 @@ Nyx::strang_hydro (Real time,
     if (S_new.contains_nan(Density, S_new.nComp(), 0))
         amrex::Abort("S_new has NaNs after the second strang call");
 #endif
+
+
 }
 #endif

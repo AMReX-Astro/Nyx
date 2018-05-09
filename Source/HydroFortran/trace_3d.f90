@@ -6,12 +6,13 @@
                          qxm,qxp,qym,qyp,qpd_l1,qpd_l2,qpd_l3,qpd_h1,qpd_h2,qpd_h3, &
                          ilo1,ilo2,ihi1,ihi2,dx,dy,dt,kc,k3d,a_old)
 
+      use amrex_error_module
       use amrex_fort_module, only : rt => amrex_real
       use meth_params_module, only : QVAR, QRHO, QU, QV, QW, &
                                      QREINT, QPRES, &
                                      ppm_type, small_dens, small_pres, &
                                      npassive, qpass_map, gamma_minus_1
-      use bl_constants_module
+      use amrex_constants_module
       implicit none
 
       integer qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3
@@ -54,7 +55,7 @@
 
       if (ppm_type .ne. 0) then
         print *,'Oops -- shouldnt be in tracexy with ppm_type != 0'
-        call bl_error("Error:: Nyx_advection_3d.f90 :: tracexy")
+        call amrex_error("Error:: Nyx_advection_3d.f90 :: tracexy")
       end if
 
       !!!!!!!!!!!!!!!
@@ -365,7 +366,8 @@
            qzm,qzp,qpd_l1,qpd_l2,qpd_l3,qpd_h1,qpd_h2,qpd_h3, &
            ilo1,ilo2,ihi1,ihi2,dz,dt,km,kc,k3d,a_old)
 
-      use bl_constants_module
+      use amrex_constants_module
+      use amrex_error_module
       use amrex_fort_module, only : rt => amrex_real
       use meth_params_module, only : QVAR, QRHO, QU, QV, QW, &
                                      QREINT, QPRES, &
@@ -409,7 +411,7 @@
 
       if (ppm_type .ne. 0) then
         print *,'Oops -- shouldnt be in tracez with ppm_type != 0'
-        call bl_error("Error:: Nyx_advection_3d.f90 :: tracez")
+        call amrex_error("Error:: Nyx_advection_3d.f90 :: tracez")
       end if
 
       dtdz = dt/(dz*a_old)

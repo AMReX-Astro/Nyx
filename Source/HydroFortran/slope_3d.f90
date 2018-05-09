@@ -14,7 +14,7 @@ contains
 
       use amrex_fort_module, only : rt => amrex_real
       use meth_params_module
-      use bl_constants_module
+      use amrex_constants_module
 
       implicit none
 
