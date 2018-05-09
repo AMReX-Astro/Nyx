@@ -35,9 +35,10 @@ Nyx::compute_hydro_sources(amrex::Real time, amrex::Real dt, amrex::Real a_old, 
       {
          fine = &get_flux_reg(level+1);
          if (init_flux_register)
-           fine->setVal(0);
+             fine->setVal(0);
 
-       } else if (level > 0) {
+       } 
+       if (level > 0) {
          current = &get_flux_reg(level);
        }
     }
