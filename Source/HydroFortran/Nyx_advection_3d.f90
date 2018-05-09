@@ -1283,15 +1283,13 @@
 
                      ! *********************************************************************************
                      uout(i,j,k,n) = uout(i,j,k,n) &
-                          -   a_half * dt * (HALF * gamma_minus_1 * uin(i,j,k,n)) * divu_cc(i,j,k)
+                          -   a_half * dt * (gamma_minus_1 * uin(i,j,k,n)) * divu_cc(i,j,k)
 
-                     uout(i,j,k,n) = uout(i,j,k,n) / &
-                         ( ONE + a_half * dt * (HALF * gamma_minus_1 * divu_cc(i,j,k)) * a_newsq_inv )
-
-                     ! *********************************************************************************
-                     ! This is the original version
-                     ! uout(i,j,k,n) = uout(i,j,k,n) -  a_half * dt * divu_cc(i,j,k)
-                     ! *********************************************************************************
+!                    This was the time-centered version
+!                    uout(i,j,k,n) = uout(i,j,k,n) &
+!                         -   a_half * dt * (HALF * gamma_minus_1 * uin(i,j,k,n)) * divu_cc(i,j,k)
+!                    uout(i,j,k,n) = uout(i,j,k,n) / &
+!                        ( ONE + a_half * dt * (HALF * gamma_minus_1 * divu_cc(i,j,k)) * a_newsq_inv )
 
                      uout(i,j,k,n) = uout(i,j,k,n) * a_newsq_inv
 
