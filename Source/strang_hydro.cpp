@@ -60,24 +60,6 @@ Nyx::strang_hydro (Real time,
     // point
     enforce_nonnegative_species(S_old);
 
-    if (do_reflux && level < finest_level)
-    {
-        //
-        // Set reflux registers to zero.
-        //
-        get_flux_reg(level+1).setVal(0);
-    }
-    //
-    // Get pointers to Flux registers, or set pointer to zero if not there.
-    //
-    FluxRegister* fine    = 0;
-    FluxRegister* current = 0;
-
-    if (do_reflux && level < finest_level)
-        fine = &get_flux_reg(level+1);
-    if (do_reflux && level > 0)
-        current = &get_flux_reg(level);
-
     MultiFab ext_src_old(grids, dmap, NUM_STATE, 3);
     ext_src_old.setVal(0.);
 
@@ -89,13 +71,6 @@ Nyx::strang_hydro (Real time,
     gravity->get_old_grav_vector(level, grav_vector, time);
     grav_vector.FillBoundary(geom.periodicity());
 #endif
-
-    MultiFab fluxes[BL_SPACEDIM];
-    for (int j = 0; j < BL_SPACEDIM; j++)
-    {
-        fluxes[j].define(getEdgeBoxArray(j), dmap, NUM_STATE, 0);
-        fluxes[j].setVal(0.0);
-    }
 
     // Create FAB for extended grid values (including boundaries) and fill.
     MultiFab S_old_tmp(S_old.boxArray(), S_old.DistributionMap(), NUM_STATE, NUM_GROW);
@@ -127,19 +102,6 @@ Nyx::strang_hydro (Real time,
     // We copy old Temp and Ne to new Temp and Ne so that they can be used
     //    as guesses when we next need them.
     MultiFab::Copy(D_new,D_old,0,0,D_old.nComp(),0);
-
-    if (do_reflux) {
-      if (current) {
-        for (int i = 0; i < BL_SPACEDIM ; i++) {
-          current->FineAdd(fluxes[i], i, 0, 0, NUM_STATE, 1);
-        }
-      }
-      if (fine) {
-        for (int i = 0; i < BL_SPACEDIM ; i++) {
-              fine->CrseInit(fluxes[i],i,0,0,NUM_STATE,-1.,FluxRegister::ADD);
-        }
-      }
-    }
 
     grav_vector.clear();
 
