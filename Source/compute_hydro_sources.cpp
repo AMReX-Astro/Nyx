@@ -47,7 +47,6 @@ Nyx::compute_hydro_sources(amrex::Real time, amrex::Real dt, amrex::Real a_old, 
 #endif
     {
     FArrayBox flux[BL_SPACEDIM], u_gdnv[BL_SPACEDIM];
-    Real cflLoc = -1.e+200;
 
     for (MFIter mfi(S_border,true); mfi.isValid(); ++mfi)
     {
@@ -77,7 +76,7 @@ Nyx::compute_hydro_sources(amrex::Real time, amrex::Real dt, amrex::Real a_old, 
              BL_TO_FORTRAN(flux[0]),
              BL_TO_FORTRAN(flux[1]),
              BL_TO_FORTRAN(flux[2]),
-             &cflLoc, &a_old, &a_new, 
+             &a_old, &a_new, 
              &print_fortran_warnings);
 
         for (int i = 0; i < BL_SPACEDIM; ++i) 
