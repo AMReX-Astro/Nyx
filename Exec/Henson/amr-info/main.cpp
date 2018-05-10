@@ -18,7 +18,11 @@ int main()
     auto finest_level = amr->finestLevel();
     for (int lev = 0; lev <= finest_level; lev++)
     {
-        const MultiFab& mf = amr->getLevel(lev).get_old_data(PhiGrav_Type);       // TODO: might want a different way to specify the data type we want
+        const MultiFab&                 mf = amr->getLevel(lev).get_old_data(PhiGrav_Type);       // TODO: might want a different way to specify the data type we want
+        const BoxArray&                 ba = mf.boxArray();
+        std::vector<std::pair<int,Box>> isects;
+        const std::vector<IntVect>&     pshifts = amr->Geom(lev).periodicity().shiftIntVect();
+        int                             ng = mf.nGrow();
 
         for (MFIter mfi(mf); mfi.isValid(); ++mfi) // Loop over grids
         {
@@ -45,7 +49,29 @@ int main()
             // void f1(const int*, const int*, Real*, const int*, const int*);
             //f1(box.loVect(), box.hiVect(), a, abox.loVect(), abox.hiVect());
 
-            std::cout << "amr-info: " << box << " " << abox << std::endl;
+            std::cout << mfi.index() << ": " << box << " / " << abox << std::endl;
+
+            // TODO: this only compute neighbors at the current level
+            std::cout << "Neighbors:" << std::endl;
+            Box gbx = grow(box,1);
+            for (const auto& piv : pshifts)
+            {
+                ba.intersections(gbx + piv, isects);
+
+                for (const auto& is : isects)
+                {
+                    // is.first is the index of neighbor box
+                    // ba[is.first] is the neighbor box
+                    const Box&  nbr_box         = ba[is.first];
+                    Box         nbr_ghost_box   = grow(nbr_box,ng);
+                    std::cout << "  " << is.first << ": " << nbr_box << " / " << nbr_ghost_box << std::endl;
+                    //const Box& bx = is.second; // intersection of ungrown unshifted neighbor and
+                    //                           // current box grown by 1 and shifted by piv
+                    //const Box& bx2 = bx - piv;  // "unshift" intersection
+                }
+            }
         }
     }
 }
+
+
