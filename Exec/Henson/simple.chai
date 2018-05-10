@@ -2,6 +2,7 @@ var procmap = ProcMap()
 
 if(procmap.group() == "world")
 {
+    chdir("../LyA")
     var nyx      = load("./Nyx3d.${compiler}.ex inputs", procmap)
     var analysis = load("../Henson/sample-analysis/sample-analysis3d.${compiler}.ex", procmap)
 
