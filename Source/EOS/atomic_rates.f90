@@ -245,7 +245,7 @@ module atomic_rates_module
                endif
                BetaHe0(i) = 9.38d-22 * sqrt_t * dexp(-285335.4d0/t) * corr_term
                BetaHep(i) = (5.54d-17 * t**(-0.397d0) * dexp(-473638.0d0/t) + & 
-                             4.85d-22 * sqrt_t * dexp(-631515.0d0/t) )*corr_term
+                             4.95d-22 * sqrt_t * dexp(-631515.0d0/t) )*corr_term
 
                ! Recombination cooling rates
                RecHp(i)   = 2.851d-27 * sqrt_t * (5.914d0-0.5d0*dlog(t)+1.184d-2*t**(1.0d0/3.0d0))
@@ -261,9 +261,9 @@ module atomic_rates_module
                endif
 
                if (t/4.0d0 .le. 3.2d5) then
-                  Betaff4(i) = 1.426d-27 * sqrt_t * 4.0d0*(0.79464d0 + 0.1243d0*dlog10(t))
+                  Betaff4(i) = 1.426d-27 * sqrt_t * 4.0d0*(0.79464d0 + 0.1243d0*dlog10(t/4.0d0))
                else
-                  Betaff4(i) = 1.426d-27 * sqrt_t * 4.0d0*(2.13164d0 - 0.1240d0*dlog10(t))
+                  Betaff4(i) = 1.426d-27 * sqrt_t * 4.0d0*(2.13164d0 - 0.1240d0*dlog10(t/4.0d0))
                endif
                
                t = t*10.0d0**deltaT
