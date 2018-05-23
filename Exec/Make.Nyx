@@ -58,6 +58,10 @@ ifeq ($(USE_HEATCOOL), TRUE)
   DEFINES += -DHEATCOOL
 endif
 
+ifeq ($(USE_SDC), TRUE)
+  DEFINES += -DSDC
+endif
+
 ifeq ($(USE_FORCING), TRUE)
   DEFINES += -DFORCING
 endif
