@@ -73,7 +73,7 @@ subroutine integrate_state_with_source(lo, hi, &
     real(rt) :: asq,aendsq,ahalf,ahalf_inv,delta_rho,delta_e,delta_rhoe
     real(rt) :: z, z_end, a_end, rho, H_reion_z, He_reion_z
     real(rt) :: rho_orig, T_orig, ne_orig, e_orig
-    real(rt) :: rho_out, T_out, ne_out, e_out, e_out_from_I_R
+    real(rt) :: rho_out, T_out, ne_out, e_out
     real(rt) :: rho_src, rhoe_src, e_src
     real(rt) :: mu, mean_rhob, T_H, T_He
     real(rt) :: species(5)
@@ -185,7 +185,7 @@ subroutine integrate_state_with_source(lo, hi, &
 
 
                 ! Update T and ne (do not use stuff computed in f_rhs, per vode manual)
-                call nyx_eos_T_given_Re(JH_vode, JHe_vode, T_out, ne_out, rho_out, e_out_from_I_R, a, species)
+                call nyx_eos_T_given_Re(JH_vode, JHe_vode, T_out, ne_out, rho_out, e_out, a, species)
 
                 ! Instanteneous heating from reionization:
                 T_H = 0.0d0
