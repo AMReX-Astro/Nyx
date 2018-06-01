@@ -2,9 +2,6 @@
 ! :: ----------------------------------------------------------
 ! ::
 
-      !===========================================================================
-      ! This is called from within threaded loops in advance_gas_tile so *no* OMP here ...
-      !===========================================================================
       subroutine normalize_species_fluxes(flux1,flux1_l1,flux1_l2,flux1_l3, &
                                           flux1_h1,flux1_h2,flux1_h3, &
                                           flux2,flux2_l1,flux2_l2,flux2_l3, &
@@ -98,9 +95,6 @@
 ! ::: ------------------------------------------------------------------
 ! :::
 
-      !===========================================================================
-      ! This is called from within threaded loops in advance_gas_tile so *no* OMP here ...
-      !===========================================================================
       subroutine normalize_new_species(u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,lo,hi)
 
       use amrex_fort_module, only : rt => amrex_real

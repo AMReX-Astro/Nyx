@@ -3,6 +3,8 @@ max_step = 10000000
 
 #Number of time steps between calls to halo finder
 reeber.halo_int = 1
+#nyx.mass_halo_min = 1.e11
+#nyx.mass_seed = 1.e6
 
 nyx.ppm_type         = 1
 nyx.ppm_reference    = 1
@@ -127,6 +129,7 @@ amr.max_level          = 0        # maximum level number allowed
 amr.regrid_on_restart  = 1
 #amr.blocking_factor    = 32
 #amr.nosub              = 1
+amr.precreateDirectories = 0
 
 # CHECKPOINT FILES
 amr.checkpoint_files_output = 1
@@ -156,4 +159,3 @@ reeber.halo_component_threshold = 10
 
 #PROBIN FILENAME
 amr.probin_file = probin
-

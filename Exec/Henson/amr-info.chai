@@ -1,0 +1,17 @@
+var procmap = ProcMap()
+var nm      = NameMap()
+
+if(procmap.group() == "world")
+{
+    chdir("../LyA")
+    var nyx   = load("./Nyx3d.${compiler}.ex inputs", procmap)
+    var info  = load("../Henson/amr-info/amr-info3d.${compiler}.ex", procmap)
+
+    puts("Puppets loaded\n")
+
+    while(nyx.proceed())
+    {
+        puts("Time step\n")
+        info.proceed()
+    }
+}

@@ -1,4 +1,4 @@
-EBASE     = Nyx
+EBASE     ?= Nyx
 
 USE_PARTICLES = TRUE
 
@@ -23,8 +23,19 @@ ifeq ($(USE_SINGLE_PRECISION_PARTICLES), TRUE)
   DEFINES += -DBL_SINGLE_PRECISION_PARTICLES
 endif
 
+HENSON_INCLUDE_DIR ?= $(HOME)/Research/Sensei/henson-chai/include
+HENSON_LIBRARY_DIR ?= $(HOME)/Build/Sensei/henson-chai
+HENSON_LIBRARY ?= -L$(HENSON_LIBRARY_DIR) -lhenson
+HENSON_LIBPMPI ?= -L$(HENSON_LIBRARY_DIR) -lhenson-pmpi -Wl,-rpath $(HENSON_LIBRARY_DIR)
 ifeq ($(USE_HENSON), TRUE)
   DEFINES += -DHENSON
+  FFLAGS += -fPIC
+  F90FLAGS += -fPIC
+  CXXFLAGS += -fPIC
+  CFLAGS += -fPIC
+  LDFLAGS += -shared -Wl,--export-dynamic -Wl,-u,henson_set_contexts,-u,henson_set_namemap
+  INCLUDE_LOCATIONS += $(HENSON_INCLUDE_DIR)
+  LIBRARIES += $(HENSON_LIBRARY) $(HENSON_LIBPMPI)
 endif
 
 ifeq ($(USE_GRAV), TRUE)
@@ -45,6 +56,10 @@ endif
 
 ifeq ($(USE_HEATCOOL), TRUE)
   DEFINES += -DHEATCOOL
+endif
+
+ifeq ($(USE_SDC), TRUE)
+  DEFINES += -DSDC
 endif
 
 ifeq ($(USE_FORCING), TRUE)

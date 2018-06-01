@@ -178,7 +178,7 @@ Nyx::compute_average_density ()
 {
     int             finest_level = parent->finestLevel();
     Real            time         = state[State_Type].curTime();
-    const Geometry& geom         = parent->Geom(0);
+    const Geometry& crse_geom    = parent->Geom(0);
 
     // This is a static in the Nyx class
     average_gas_density      = 0;
@@ -235,9 +235,9 @@ Nyx::compute_average_density ()
 
     // Divide by physical volume of domain.
     if (do_hydro == 1)
-        average_gas_density  /= geom.ProbSize();
-    average_dm_density       /= geom.ProbSize();
-    average_neutr_density    /= geom.ProbSize();
+        average_gas_density  /= crse_geom.ProbSize();
+    average_dm_density       /= crse_geom.ProbSize();
+    average_neutr_density    /= crse_geom.ProbSize();
 
     // Define the total density = gas density + dark matter density
     if (do_hydro == 1)
@@ -268,19 +268,27 @@ Nyx::compute_average_temperature (Real& average_temperature)
 {
     int             finest_level = parent->finestLevel();
     Real            time         = state[State_Type].curTime();
-    const Geometry& geom         = parent->Geom(0);
+    const Geometry& crse_geom    = parent->Geom(0);
 
     // Add up the temperature -- this is just volume-weighted, not mass-weighted
     average_temperature = 0;
     for (int lev = 0; lev <= finest_level; lev++)
     {
         Nyx& nyx_lev = get_level(lev);
-        nyx_lev.compute_new_temp();
+        MultiFab& S_new = nyx_lev.get_new_data(State_Type);
+        MultiFab& D_new = nyx_lev.get_new_data(DiagEOS_Type);
+
+	MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
+	reset_e_src.setVal(0.0);
+
+        nyx_lev.reset_internal_energy(S_new,D_new,reset_e_src);
+        nyx_lev.compute_new_temp     (S_new,D_new);
+
         average_temperature += nyx_lev.vol_weight_sum("Temp",time,true);
     }
  
     // Divide by physical volume of domain.
-    average_temperature = average_temperature / geom.ProbSize();
+    average_temperature = average_temperature / crse_geom.ProbSize();
 
     if (verbose > 0 && ParallelDescriptor::IOProcessor()) {
         std::cout << "Average temperature " << average_temperature << '\n';
@@ -304,8 +312,8 @@ Nyx::compute_average_species (int          nspec,
     }
     else
     {
-        Real            time = state[State_Type].curTime();
-        const Geometry& geom = parent->Geom(0);
+        Real                 time = state[State_Type].curTime();
+        const Geometry& crse_geom = parent->Geom(0);
         //
         // Get the species names from the network model.
         //
@@ -353,7 +361,7 @@ Nyx::compute_average_species (int          nspec,
             delete [] name;
  
            // Divide by physical volume of domain.
-           average_species[i] = average_species[i] / geom.ProbSize();
+           average_species[i] = average_species[i] / crse_geom.ProbSize();
 
            if (verbose > 0 && ParallelDescriptor::IOProcessor())
                std::cout << "Average species " << i << ": " << average_species[i] << '\n';

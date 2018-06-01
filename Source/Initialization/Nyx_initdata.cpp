@@ -143,13 +143,13 @@ Nyx::init_zhi ()
     MultiFab& D_new = get_new_data(DiagEOS_Type);
     int nd = D_new.nComp();
 
-    const BoxArray& ba = D_new.boxArray();
-    const DistributionMapping& dmap = D_new.DistributionMap();
+    const BoxArray& my_ba = D_new.boxArray();
+    const DistributionMapping& my_dmap = D_new.DistributionMap();
 
-    BL_ASSERT(ba.coarsenable(ratio));
-    BoxArray coarse_ba = ba;
+    BL_ASSERT(my_ba.coarsenable(ratio));
+    BoxArray coarse_ba = my_ba;
     coarse_ba.coarsen(ratio);
-    MultiFab zhi(coarse_ba, dmap, 1, 0);
+    MultiFab zhi(coarse_ba, my_dmap, 1, 0);
 
     MultiFab zhi_from_file;
     VisMF::Read(zhi_from_file, inhomo_zhi_file);
@@ -180,9 +180,10 @@ Nyx::initData ()
         return;
     }
 
+    MultiFab&   S_new    = get_new_data(State_Type);
+
 #ifndef NO_HYDRO
     // We need this because otherwise we might operate on uninitialized data.
-    MultiFab&   S_new    = get_new_data(State_Type);
     S_new.setVal(0.0);
 #endif
 
@@ -226,7 +227,12 @@ Nyx::initData ()
 
             if (inhomo_reion) init_zhi();
 
-            compute_new_temp();
+            // First reset internal energy before call to compute_temp
+	    MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
+	    reset_e_src.setVal(0.0);
+
+            reset_internal_energy(S_new,D_new,reset_e_src);
+            compute_new_temp     (S_new,D_new);
             enforce_consistent_e(S_new);
         }
         else
@@ -268,6 +274,14 @@ Nyx::initData ()
 
 #endif
 
+#ifdef SDC
+    //
+    // Initialize this to zero before we use it in advance
+    //
+    MultiFab& IR_new = get_new_data(SDC_IR_Type);
+    IR_new.setVal(0.0);
+#endif
+
 #ifndef NO_HYDRO
     //
     // Read in initial conditions from a file.
@@ -283,10 +297,10 @@ Nyx::initData ()
 
 	VisMF::Read(mf, mfDirName.c_str());
 
-        MultiFab& S_new = get_level(0).get_new_data(State_Type);
+        MultiFab& S_new_crse = get_level(0).get_new_data(State_Type);
 	
-	S_new.copy(mf, 0, 0, 6);
-	S_new.copy(mf, 0, FirstSpec, 1);
+	S_new_crse.copy(mf, 0, 0, 6);
+	S_new_crse.copy(mf, 0, FirstSpec, 1);
 
         if (do_hydro == 1) 
         {
@@ -341,10 +355,7 @@ Nyx::initData ()
     // Need to compute this in case we want to use overdensity for regridding.
     //
     if (level == 0) 
-    {
         compute_average_density();
-//      compute_level_averages();
-    }
 #endif
 
     if (verbose && ParallelDescriptor::IOProcessor())
@@ -430,4 +441,5 @@ Nyx::init_from_plotfile ()
         std::cout << "Done initializing the particles from the plotfile " << std::endl;
         std::cout << " " << std::endl; 
     }
+
 }

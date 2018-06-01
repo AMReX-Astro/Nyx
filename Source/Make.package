@@ -1,6 +1,6 @@
-ifneq ($(USE_HENSON), TRUE)
+#ifneq ($(USE_HENSON), TRUE)
 CEXE_sources += main.cpp
-endif
+#endif
 
 CEXE_sources += nyx_main.cpp
 
@@ -20,10 +20,17 @@ CEXE_sources += write_info.cpp
 CEXE_sources += bl_random_c.cpp
 
 ifneq ($(NO_HYDRO), TRUE)
-CEXE_sources += Nyx_hydro.cpp
+CEXE_sources += compute_hydro_sources.cpp
+CEXE_sources += update_state_with_sources.cpp
+CEXE_sources += strang_hydro.cpp
+CEXE_sources += strang_reactions.cpp
 CEXE_sources += sum_integrated_quantities.cpp
 CEXE_sources += sum_utils.cpp
-CEXE_sources += strang_splitting.cpp
+endif
+
+ifeq ($(USE_SDC), TRUE)
+CEXE_sources += sdc_hydro.cpp
+CEXE_sources += sdc_reactions.cpp
 endif
 
 CEXE_headers += Nyx.H

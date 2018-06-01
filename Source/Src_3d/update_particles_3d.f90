@@ -4,6 +4,7 @@
        bind(c,name='update_dm_particles')
 
     use iso_c_binding
+    use amrex_error_module
     use amrex_fort_module, only : amrex_real
     use particle_mod      , only: dm_particle_t
 
@@ -46,7 +47,7 @@
            j-1 .lt. accel_lo(2) .or. j .gt. accel_hi(2) .or. &
            k-1 .lt. accel_lo(3) .or. k .gt. accel_hi(3)) then
           print *,'PARTICLE ID ', particles(n)%id,' REACHING OUT OF BOUNDS AT (I,J,K) = ',i,j,k
-          call bl_error('Aborting in move_kick_drift')
+          call amrex_error('Aborting in move_kick_drift')
        end if
 
        wx_hi = lx - i
@@ -92,6 +93,7 @@
        bind(c,name='update_agn_particles')
 
     use iso_c_binding
+    use amrex_error_module
     use amrex_fort_module, only : amrex_real
     use particle_mod      , only: agn_particle_t
 
@@ -134,7 +136,7 @@
            j-1 .lt. accel_lo(2) .or. j .gt. accel_hi(2) .or. &
            k-1 .lt. accel_lo(3) .or. k .gt. accel_hi(3)) then
           print *,'PARTICLE ID ', particles(n)%id,' REACHING OUT OF BOUNDS AT (I,J,K) = ',i,j,k
-          call bl_error('Aborting in move_kick_drift')
+          call amrex_error('Aborting in move_kick_drift')
        end if
 
        wx_hi = lx - i

@@ -12,7 +12,6 @@ Nyx::strang_first_step (Real time, Real dt, MultiFab& S_old, MultiFab& D_old)
     Real half_dt = 0.5*dt;
 
     const Real a = get_comoving_a(time);
-    const Real* dx = geom.CellSize();
 
 #ifndef FORCING
     {
@@ -36,7 +35,7 @@ Nyx::strang_first_step (Real time, Real dt, MultiFab& S_old, MultiFab& D_old)
                 (bx.loVect(), bx.hiVect(), 
                  BL_TO_FORTRAN(S_old[mfi]),
                  BL_TO_FORTRAN(D_old[mfi]),
-                 dx, &time, &a, &half_dt, &min_iter, &max_iter);
+                 &a, &half_dt, &min_iter, &max_iter);
 
 #ifndef NDEBUG
         if (S_old[mfi].contains_nan())
@@ -59,9 +58,11 @@ Nyx::strang_second_step (Real time, Real dt, MultiFab& S_new, MultiFab& D_new)
 
     // Set a at the half of the time step in the second strang
     const Real a = get_comoving_a(time-half_dt);
-    const Real* dx = geom.CellSize();
 
-    compute_new_temp();
+    MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
+    reset_e_src.setVal(0.0);
+    reset_internal_energy(S_new,D_new,reset_e_src);
+    compute_new_temp     (S_new,D_new);
 
 #ifndef FORCING
     {
@@ -85,7 +86,7 @@ Nyx::strang_second_step (Real time, Real dt, MultiFab& S_new, MultiFab& D_new)
             (bx.loVect(), bx.hiVect(), 
              BL_TO_FORTRAN(S_new[mfi]),
              BL_TO_FORTRAN(D_new[mfi]),
-             dx, &time, &a, &half_dt, &min_iter_grid, &max_iter_grid);
+             &a, &half_dt, &min_iter_grid, &max_iter_grid);
 
         if (S_new[mfi].contains_nan(bx,0,S_new.nComp()))
         {

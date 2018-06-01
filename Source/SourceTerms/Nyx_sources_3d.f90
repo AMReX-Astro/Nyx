@@ -8,6 +8,7 @@
                                      a_old, a_new, dt, print_fortran_warnings) &
                                      bind(C, name="time_center_sources")
 
+      use amrex_error_module, only : amrex_abort
       use amrex_fort_module, only : rt => amrex_real
       use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT
       use  eos_params_module
@@ -61,7 +62,7 @@
 
             if (state(i,j,k,UEINT) .lt. 0.d0 .and. print_fortran_warnings .gt. 0) then
                print *,'(rho e) going negative in time_center_sources: ',i,j,k,state(i,j,k,UEDEN)
-               call bl_abort("time_center_sources")
+               call amrex_abort("time_center_sources")
                ! print *,' ... resetting to small_temp '
                ! ke = state(i,j,k,UEDEN) - state(i,j,k,UEINT)
                ! call nyx_eos_given_RT(eint, dummy_pres, state(i,j,k,URHO), small_temp, &

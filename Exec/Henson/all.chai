@@ -1,0 +1,27 @@
+var procmap = ProcMap()
+var nm      = NameMap()
+
+if(procmap.group() == "world")
+{
+    chdir("../LyA")
+    var nyx       = load("./Nyx3d.${compiler}.ex inputs", procmap)
+    var particles = load("../Henson/extract-particles/extract-particles3d.${compiler}.ex", procmap)
+    var info      = load("../Henson/amr-info/amr-info3d.${compiler}.ex", procmap)
+    var analysis  = load("../Henson/sample-analysis/sample-analysis3d.${compiler}.ex", procmap)
+
+    puts("Puppets loaded\n")
+
+    while(nyx.proceed())
+    {
+        analysis.proceed()
+        info.proceed()
+
+        puts("Time step\n")
+        particles.proceed()
+
+        var count = nm.get("count")
+        puts("Found ${count} particles\n")
+
+        particles.proceed()     // exit particles and free up memory
+    }
+}
