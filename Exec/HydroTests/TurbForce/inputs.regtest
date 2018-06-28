@@ -33,7 +33,6 @@ nyx.initial_z = 1.0
 
 nyx.add_ext_src = 1
 nyx.heat_cool_type = 0
-nyx.strang_split = 0
 
 nyx.use_const_species = 1
 nyx.h_species = 1.0
