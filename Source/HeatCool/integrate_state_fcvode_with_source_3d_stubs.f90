@@ -1,4 +1,4 @@
-subroutine integrate_state_with_source_fcvode(lo, hi, &
+subroutine integrate_state_fcvode_with_source(lo, hi, &
                                 state   , s_l1, s_l2, s_l3, s_h1, s_h2, s_h3, &
                                 state_n ,sn_l1,sn_l2,sn_l3,sn_h1,sn_h2,sn_h3, &
                                 diag_eos, d_l1, d_l2, d_l3, d_h1, d_h2, d_h3, &
@@ -73,4 +73,4 @@ subroutine integrate_state_with_source_fcvode(lo, hi, &
 
     call amrex_abort("Cannot call fcvode without compiling with USE_CVODE=TRUE")
 
-end subroutine integrate_state_with_source_fcvode
+end subroutine integrate_state_fcvode_with_source
