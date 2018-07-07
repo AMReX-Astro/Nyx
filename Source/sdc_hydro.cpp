@@ -48,6 +48,9 @@ Nyx::sdc_hydro (Real time,
     MultiFab ext_src_old(grids, dmap, NUM_STATE, 3);
     ext_src_old.setVal(0.);
 
+    if (add_ext_src)
+       get_old_source(prev_time, dt, ext_src_old);
+
     // Define the gravity vector
     MultiFab grav_vector(grids, dmap, BL_SPACEDIM, 3);
     grav_vector.setVal(0.);
@@ -71,7 +74,7 @@ Nyx::sdc_hydro (Real time,
     divu_cc.setVal(0.);
 
     //Begin loop over SDC iterations
-    int sdc_iter_max = 2;
+    int sdc_iter_max = 1;
 
     for (sdc_iter = 0; sdc_iter < sdc_iter_max; sdc_iter++)
     {
@@ -129,6 +132,24 @@ Nyx::sdc_hydro (Real time,
     // Copy IR_old (the current IR) into IR_new here so that when the pointer swap occurs
     //     we can use IR in the next timestep
     MultiFab::Copy(IR_new,IR_old,0,0,1,0);
+
+    if (add_ext_src)
+    {
+        get_old_source(prev_time, dt, ext_src_old);
+        // Must compute new temperature in case it is needed in the source term evaluation
+        compute_new_temp(S_new,D_new);
+
+        // Compute source at new time (no ghost cells needed)
+        MultiFab ext_src_new(grids, dmap, NUM_STATE, 0);
+        ext_src_new.setVal(0);
+
+        get_new_source(prev_time, cur_time, dt, ext_src_new);
+
+        time_center_source_terms(S_new, ext_src_old, ext_src_new, dt);
+
+        compute_new_temp(S_new,D_new);
+    } // end if (add_ext_src)
+
 
     grav_vector.clear();
 }
