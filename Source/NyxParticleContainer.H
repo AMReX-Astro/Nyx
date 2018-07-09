@@ -5,6 +5,7 @@
 #include "AMReX_Amr.H"
 #include "AMReX_AmrLevel.H"
 #include "AMReX_NeighborParticles.H"
+#include "AMReX_AmrParticles.H"
 
 class NyxParticleContainerBase
 {

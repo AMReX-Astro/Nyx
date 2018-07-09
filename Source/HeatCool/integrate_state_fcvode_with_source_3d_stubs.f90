@@ -1,4 +1,4 @@
-subroutine integrate_state_with_source_fcvode(lo, hi, &
+subroutine integrate_state_fcvode_with_source(lo, hi, &
                                 state   , s_l1, s_l2, s_l3, s_h1, s_h2, s_h3, &
                                 state_n ,sn_l1,sn_l2,sn_l3,sn_h1,sn_h2,sn_h3, &
                                 diag_eos, d_l1, d_l2, d_l3, d_h1, d_h2, d_h3, &
@@ -38,20 +38,7 @@ subroutine integrate_state_with_source_fcvode(lo, hi, &
 !
     use amrex_fort_module, only : rt => amrex_real
     use amrex_error_module, only : amrex_abort
-    use meth_params_module, only : NVAR, URHO, UEDEN, UEINT, &
-                                   NDIAG, TEMP_COMP, NE_COMP, ZHI_COMP, gamma_minus_1
-    use bl_constants_module, only: M_PI, ONE, HALF
-    use eos_params_module
-    use network
-    use eos_module, only: nyx_eos_T_given_Re, nyx_eos_given_RT
-    use fundamental_constants_module
-    use comoving_module, only: comoving_h, comoving_OmB
-    use comoving_nd_module, only: fort_integrate_comoving_a
-    use atomic_rates_module, only: YHELIUM
-    use vode_aux_module    , only: JH_vode, JHe_vode, z_vode, i_vode, j_vode, k_vode
-    use reion_aux_module   , only: zhi_flash, zheii_flash, flash_h, flash_he, &
-                                   T_zhi, T_zheii, inhomogeneous_on
-    use, intrinsic :: iso_c_binding
+    use meth_params_module, only : NVAR, NDIAG
 
     implicit none
 
@@ -73,4 +60,4 @@ subroutine integrate_state_with_source_fcvode(lo, hi, &
 
     call amrex_abort("Cannot call fcvode without compiling with USE_CVODE=TRUE")
 
-end subroutine integrate_state_with_source_fcvode
+end subroutine integrate_state_fcvode_with_source
