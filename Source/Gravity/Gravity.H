@@ -151,7 +151,6 @@ protected:
     static int no_sync;
     static int no_composite;
     static int dirichlet_bcs;
-    static int  monopole_bcs;
     static int solve_with_hpgmg;
     static int solve_with_mlmg;
     static int mlmg_max_fmg_iter;
