@@ -33,7 +33,8 @@
                          ugdnvy_h1,ugdnvy_h2,ugdnvy_h3, &
                          ugdnvz_out,ugdnvz_l1,ugdnvz_l2,ugdnvz_l3, &
                          ugdnvz_h1,ugdnvz_h2,ugdnvz_h3, &
-                         divu_cc,a_old,a_new,print_fortran_warnings)
+                         divu_cc, d_l1, d_l2, d_l3, d_h1, d_h2, d_h3, &
+                         a_old,a_new,print_fortran_warnings)
 
       use amrex_error_module
       use amrex_fort_module, only : rt => amrex_real
@@ -53,6 +54,7 @@
       integer qd_l1, qd_l2, qd_l3, qd_h1, qd_h2, qd_h3
       integer srcq_l1, srcq_l2, srcq_l3, srcq_h1, srcq_h2, srcq_h3
       integer ilo1, ilo2, ilo3, ihi1, ihi2, ihi3
+      integer   d_l1,   d_l2,   d_l3,   d_h1,   d_h2,   d_h3
       integer fd1_l1, fd1_l2, fd1_l3, fd1_h1, fd1_h2, fd1_h3
       integer fd2_l1, fd2_l2, fd2_l3, fd2_h1, fd2_h2, fd2_h3
       integer fd3_l1, fd3_l2, fd3_l3, fd3_h1, fd3_h2, fd3_h3
@@ -76,7 +78,7 @@
       real(rt) ugdnvx_out(ugdnvx_l1:ugdnvx_h1,ugdnvx_l2:ugdnvx_h2,ugdnvx_l3:ugdnvx_h3)
       real(rt) ugdnvy_out(ugdnvy_l1:ugdnvy_h1,ugdnvy_l2:ugdnvy_h2,ugdnvy_l3:ugdnvy_h3)
       real(rt) ugdnvz_out(ugdnvz_l1:ugdnvz_h1,ugdnvz_l2:ugdnvz_h2,ugdnvz_l3:ugdnvz_h3)
-      real(rt) divu_cc(ilo1:ihi1,ilo2:ihi2,ilo3:ihi3)
+      real(rt) divu_cc(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3)
       real(rt) dx, dy, dz, dt
       real(rt) dtdx, dtdy, dtdz, hdt
       real(rt) cdtdx, cdtdy, cdtdz
@@ -246,9 +248,6 @@
       cdtdx = THIRD*dtdx/a_half
       cdtdy = THIRD*dtdy/a_half
       cdtdz = THIRD*dtdz/a_half
-
-      ! Initialize divu_cc to zero
-      divu_cc(:,:,:) = ZERO
 
       ! Initialize kc (current k-level) and km (previous k-level)
       kc = 1
@@ -475,7 +474,7 @@
                end do
             end do
 
-            if (k3d .ge. ilo3+1 .and. k3d .le. ihi3+1) then
+            if (k3d .ge. ilo3+1) then
                do j = ilo2,ihi2
                   do i = ilo1,ihi1
                      divu_cc(i,j,k3d-1) = divu_cc(i,j,k3d-1) +  &
@@ -978,7 +977,8 @@
                       flux1,flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3, &
                       flux2,flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3, &
                       flux3,flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3, &
-                      divu_nd,divu_cc,lo,hi,dx,dy,dz,dt,a_old,a_new)
+                      divu_nd,divu_cc,d_l1, d_l2, d_l3, d_h1, d_h2, d_h3, &
+                      lo,hi,dx,dy,dz,dt,a_old,a_new)
 
       use amrex_fort_module, only : rt => amrex_real
       use amrex_constants_module
@@ -990,6 +990,7 @@
       integer lo(3), hi(3)
       integer   uin_l1,  uin_l2,  uin_l3,  uin_h1,  uin_h2,  uin_h3
       integer   hsrc_l1,  hsrc_l2,  hsrc_l3,  hsrc_h1,  hsrc_h2,  hsrc_h3
+      integer d_l1,   d_l2,   d_l3,   d_h1,   d_h2,   d_h3
       integer flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3
       integer flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3
       integer flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3
@@ -1000,7 +1001,7 @@
       real(rt)  :: flux2(flux2_l1:flux2_h1,flux2_l2:flux2_h2,flux2_l3:flux2_h3,NVAR)
       real(rt)  :: flux3(flux3_l1:flux3_h1,flux3_l2:flux3_h2,flux3_l3:flux3_h3,NVAR)
       real(rt)  :: divu_nd(lo(1):hi(1)+1,lo(2):hi(2)+1,lo(3):hi(3)+1)
-      real(rt)  :: divu_cc(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))
+      real(rt)  :: divu_cc(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3)
       real(rt)  :: dx, dy, dz, dt, a_old, a_new
 
       real(rt) :: div1, a_half, a_oldsq, a_newsq
