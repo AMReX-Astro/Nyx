@@ -117,7 +117,8 @@
                    ugdnvx_out,ugdnvx_l1,ugdnvx_l2,ugdnvx_l3,ugdnvx_h1,ugdnvx_h2,ugdnvx_h3, &
                    ugdnvy_out,ugdnvy_l1,ugdnvy_l2,ugdnvy_l3,ugdnvy_h1,ugdnvy_h2,ugdnvy_h3, &
                    ugdnvz_out,ugdnvz_l1,ugdnvz_l2,ugdnvz_l3,ugdnvz_h1,ugdnvz_h2,ugdnvz_h3, &
-                   divu_cc,a_old,a_new,print_fortran_warnings)
+                   divu_cc,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3, &
+                   a_old,a_new,print_fortran_warnings)
 
       ! Compute divergence of velocity field (on surroundingNodes(lo,hi))
       call make_divu_nd(lo,hi,q,q_l1,q_l2,q_l3,q_h1,q_h2,q_h3, &
@@ -129,7 +130,8 @@
                   flux1,flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3, &
                   flux2,flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3, &
                   flux3,flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3, &
-                  divu_nd,divu_cc,lo,hi,dx,dy,dz,dt,a_old,a_new)
+                  divu_nd,divu_cc,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3, &
+                  lo,hi,dx,dy,dz,dt,a_old,a_new)
 
       ! We are done with these here so can go ahead and free up the space.
       call amrex_deallocate(q)
