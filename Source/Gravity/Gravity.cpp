@@ -520,7 +520,7 @@ Gravity::gravity_sync (int crse_level, int fine_level, int iteration, int ncycle
     {
         Real local_correction = 0;
 #ifdef _OPENMP
-#pragma omp parallel reduction(+:local_correction)
+#pragma omp parallel if (!system::regtest_reduction) reduction(+:local_correction)
 #endif
         for (MFIter mfi(crse_rhs,true); mfi.isValid(); ++mfi)
             local_correction += crse_rhs[mfi].sum(mfi.tilebox(), 0, 1);
@@ -563,7 +563,7 @@ Gravity::gravity_sync (int crse_level, int fine_level, int iteration, int ncycle
     if (crse_geom.isAllPeriodic() && (grids[crse_level].numPts() == crse_domain.numPts()) ) {
        Real local_correction = 0.0;
 #ifdef _OPENMP
-#pragma omp parallel reduction(+:local_correction)
+#pragma omp parallel if (!system::regtest_reduction) reduction(+:local_correction)
 #endif
        for (MFIter mfi(*delta_phi[0],true); mfi.isValid(); ++mfi) {
            local_correction += (*delta_phi[0])[mfi].sum(mfi.tilebox(),0,1);
