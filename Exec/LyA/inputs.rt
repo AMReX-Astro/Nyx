@@ -2,7 +2,7 @@
 max_step = 10000000
 
 # We set this to 1 so that we eliminate the OpenMP-induced variability
-# in the MultiFab sum that was making the solution to the gravity solve
+# in the MultiFab and Nyx sums that was making the solution to the gravity solve
 # have sufficient variability that this failed the regression test using OpenMP.
 amrex.regtest_reduction = 1
 
