@@ -45,7 +45,7 @@
       real(rt),intent(  out) :: src(src_l1:src_h1,src_l2:src_h2,src_l3:src_h3,NVAR)
       real(rt),intent(in   ) :: problo(3),dx(3),time,z,dt
 
-      src = 0.d0
+      src(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3)) = 0.d0
  
       end subroutine ext_src
 
