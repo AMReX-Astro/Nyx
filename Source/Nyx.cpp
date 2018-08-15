@@ -416,8 +416,6 @@ Nyx::read_params ()
     }
 
 #ifdef HEATCOOL
-    if (heat_cool_type > 0 && add_ext_src == 0)
-       amrex::Error("Nyx::must set add_ext_src to 1 if heat_cool_type > 0");
     if (heat_cool_type != 3 && heat_cool_type != 5 && heat_cool_type != 7)
        amrex::Error("Nyx:: nonzero heat_cool_type must equal 3 or 5 or 7");
     if (heat_cool_type == 0)
