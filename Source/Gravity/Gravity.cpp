@@ -29,7 +29,6 @@ int  Gravity::verbose       = 0;
 int  Gravity::no_sync       = 0;
 int  Gravity::no_composite  = 0;
 int  Gravity::dirichlet_bcs = 0;
-int  Gravity::monopole_bcs  = 0;
 int  Gravity::solve_with_hpgmg = 0;
 int  Gravity::solve_with_mlmg = 1;
 int  Gravity::mlmg_max_fmg_iter = 0;
@@ -124,7 +123,6 @@ Gravity::read_params ()
         pp.query("no_composite", no_composite);
 
         pp.query("dirichlet_bcs", dirichlet_bcs);
-        pp.query("monopole_bcs"  , monopole_bcs);
 
         pp.query("solve_with_hpgmg", solve_with_hpgmg);
         pp.query("solve_with_mlmg", solve_with_mlmg);
@@ -522,7 +520,7 @@ Gravity::gravity_sync (int crse_level, int fine_level, int iteration, int ncycle
     {
         Real local_correction = 0;
 #ifdef _OPENMP
-#pragma omp parallel reduction(+:local_correction)
+#pragma omp parallel if (!system::regtest_reduction) reduction(+:local_correction)
 #endif
         for (MFIter mfi(crse_rhs,true); mfi.isValid(); ++mfi)
             local_correction += crse_rhs[mfi].sum(mfi.tilebox(), 0, 1);
@@ -565,7 +563,7 @@ Gravity::gravity_sync (int crse_level, int fine_level, int iteration, int ncycle
     if (crse_geom.isAllPeriodic() && (grids[crse_level].numPts() == crse_domain.numPts()) ) {
        Real local_correction = 0.0;
 #ifdef _OPENMP
-#pragma omp parallel reduction(+:local_correction)
+#pragma omp parallel if (!system::regtest_reduction) reduction(+:local_correction)
 #endif
        for (MFIter mfi(*delta_phi[0],true); mfi.isValid(); ++mfi) {
            local_correction += (*delta_phi[0])[mfi].sum(mfi.tilebox(),0,1);
@@ -1421,7 +1419,7 @@ Gravity::set_dirichlet_bcs (int       level,
     const int*  domain_hi = parent->Geom(level).Domain().hiVect();
 
     // Set phi to zero on all the ghost cells outside the domain.
-    // If homogeneous bc's then we stop here; if not we add monopole bc's from each particle
+    // If homogeneous bc's then we stop here
     for (MFIter mfi(*phi); mfi.isValid(); ++mfi)
     {
         const Box& box = mfi.validbox();
@@ -1430,28 +1428,6 @@ Gravity::set_dirichlet_bcs (int       level,
 
         BL_FORT_PROC_CALL(FORT_SET_HOMOG_BCS, fort_set_homog_bcs)
             (lo, hi, domain_lo, domain_hi, BL_TO_FORTRAN((*phi)[mfi]), dx);
-    }
-
-    if (monopole_bcs && Nyx::theDMPC())
-    {
-        Vector<Real> part_locs;
-        Nyx::theDMPC()->GetParticleLocations(part_locs);
-
-        Vector<Real> part_mass;
-        int start_comp = 0;
-        int   num_comp = 1;
-        Nyx::theDMPC()->GetParticleData(part_mass,start_comp,num_comp);
-
-        // (x,y,z)
-        int npart = part_locs.size()/3;
-
-        for (MFIter mfi(*phi); mfi.isValid(); ++mfi)
-        {
-            const Box& box = mfi.validbox(); const int* lo  = box.loVect(); const int* hi  = box.hiVect();
-            BL_FORT_PROC_CALL(FORT_ADD_MONOPOLE_BCS, fort_add_monopole_bcs)
-                (lo, hi, domain_lo, domain_hi, &npart,
-                 part_locs.dataPtr(), part_mass.dataPtr(), BL_TO_FORTRAN((*phi)[mfi]), dx);
-        }
     }
 }
 

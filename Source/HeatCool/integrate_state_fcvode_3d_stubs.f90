@@ -5,16 +5,7 @@ subroutine integrate_state_fcvode(lo, hi, &
 !
     use amrex_error_module, only : amrex_abort
     use amrex_fort_module, only : rt => amrex_real
-    use meth_params_module, only : NVAR, URHO, UEDEN, UEINT, &
-                                   NDIAG, TEMP_COMP, NE_COMP, gamma_minus_1
-    use bl_constants_module, only: M_PI
-    use eos_params_module
-    use network
-    use eos_module, only: nyx_eos_T_given_Re, nyx_eos_given_RT
-    use fundamental_constants_module
-    use comoving_module, only: comoving_h, comoving_OmB
-    use atomic_rates_module, only: YHELIUM
-    use vode_aux_module    , only: z_vode, i_vode, j_vode, k_vode, firstcall
+    use meth_params_module, only : NVAR, NDIAG
 
     implicit none
 
@@ -26,10 +17,12 @@ subroutine integrate_state_fcvode(lo, hi, &
     real(rt), intent(in)    :: a, half_dt
     integer         , intent(inout) :: max_iter, min_iter
 
-    integer :: i, j, k
-    real(rt) :: z, rho
-    real(rt) :: T_orig, ne_orig, e_orig
-    real(rt) :: T_out , ne_out , e_out, mu, mean_rhob
+!   integer :: i, j, k
+!   real(rt) :: z, rho
+!   real(rt) :: T_orig, ne_orig, e_orig
+!   real(rt) :: T_out , ne_out , e_out, mu, mean_rhob
+
+!   logical  :: firstcall
 
     call amrex_abort("Cannot call fcvode without compiling with USE_CVODE=TRUE")
 

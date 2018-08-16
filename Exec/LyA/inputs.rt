@@ -1,10 +1,15 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 max_step = 10000000
 
-nyx.ppm_type         = 1
+# We set this to 1 so that we eliminate the OpenMP-induced variability
+# in the MultiFab and Nyx sums that was making the solution to the gravity solve
+# have sufficient variability that this failed the regression test using OpenMP.
+amrex.regtest_reduction = 1
 
-nyx.add_ext_src      = 1
+nyx.ppm_type         = 1
+nyx.add_ext_src      = 0
 nyx.heat_cool_type   = 3
+
 nyx.strang_split     = 1
 
 nyx.inhomo_reion     = 0
@@ -112,6 +117,7 @@ amr.max_level          = 0        # maximum level number allowed
 #amr.blocking_factor    = 32
 
 # CHECKPOINT FILES
+amr.checkpoint_files_output = 0
 amr.check_file      = chk
 amr.check_int       = 10000
 

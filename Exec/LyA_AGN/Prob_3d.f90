@@ -14,6 +14,7 @@
       integer untin,i
 
       namelist /fortin/ max_num_part, &
+	   l_merge, cutoff_vel, &
            eps_rad, eps_coupling, T_min, bondi_boost, &
            max_frac_removed, frac_kinetic, eps_kinetic
 

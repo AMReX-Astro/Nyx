@@ -28,7 +28,8 @@
       integer ,intent(in   ) :: smbh_switch,spc_switch
 
       bh_mass_acc = 0.0d0
-      src = 0.0d0
-      add = 0.0d0
+
+      src(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),:) = 0.0d0
+      add(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),:) = 0.0d0
 
       end subroutine ext_src_add

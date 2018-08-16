@@ -153,10 +153,8 @@ extern "C"
      D_DECL(const BL_FORT_FAB_ARG(xflux),
             const BL_FORT_FAB_ARG(yflux),
             const BL_FORT_FAB_ARG(zflux)),
-     const amrex::Real* cflLoc,
      const amrex::Real* a_old, const amrex::Real* a_new,
-     const int* print_fortran_warnings,
-     const int* do_grav);
+     const int* print_fortran_warnings);
 
   void fort_update_state
     ( const int lo[], const int hi[],
@@ -178,24 +176,6 @@ extern "C"
       const amrex::Real* dt,
       const amrex::Real* a_old,
       const amrex::Real* a_new);
-
-  void fort_advance_gas
-    (const amrex::Real* time,
-     const int lo[], const int hi[],
-     const BL_FORT_FAB_ARG(state), BL_FORT_FAB_ARG(stateout),
-     const BL_FORT_FAB_ARG(ugdnvx),
-     const BL_FORT_FAB_ARG(ugdnvy),
-     const BL_FORT_FAB_ARG(ugdnvz),
-     const BL_FORT_FAB_ARG(src),
-     const BL_FORT_FAB_ARG(grav),
-     const amrex::Real dx[], const amrex::Real* dt,
-     D_DECL(const BL_FORT_FAB_ARG(xflux),
-            const BL_FORT_FAB_ARG(yflux),
-            const BL_FORT_FAB_ARG(zflux)),
-     const amrex::Real* cflLoc,
-     const amrex::Real* a_old, const amrex::Real* a_new,
-     const int* print_fortran_warnings,
-     const int* do_gas);
 
   void time_center_sources
     (const int lo[], const int hi[], BL_FORT_FAB_ARG(S_new),
@@ -288,7 +268,29 @@ extern "C"
     (const int* lo, const int* hi,
      BL_FORT_FAB_ARG(state),
      BL_FORT_FAB_ARG(diag_eos),
-     const amrex::Real* z, const amrex::Real* dt,
+     const amrex::Real* a, const amrex::Real* delta_time,
+     const int* min_iter, const int* max_iter);
+
+  void integrate_state_with_source
+    (const int* lo, const int* hi,
+     BL_FORT_FAB_ARG(state_old),
+     BL_FORT_FAB_ARG(state_new),
+     BL_FORT_FAB_ARG(diag_eos),
+     BL_FORT_FAB_ARG(hydro_src),
+     BL_FORT_FAB_ARG(reset_src),
+     BL_FORT_FAB_ARG(IR),
+     const amrex::Real* a, const amrex::Real* delta_time,
+     const int* min_iter, const int* max_iter);
+
+  void integrate_state_fcvode_with_source
+    (const int* lo, const int* hi,
+     BL_FORT_FAB_ARG(state_old),
+     BL_FORT_FAB_ARG(state_new),
+     BL_FORT_FAB_ARG(diag_eos),
+     BL_FORT_FAB_ARG(hydro_src),
+     BL_FORT_FAB_ARG(reset_src),
+     BL_FORT_FAB_ARG(IR),
+     const amrex::Real* a, const amrex::Real* delta_time,
      const int* min_iter, const int* max_iter);
 
   void fort_compute_temp

@@ -1,6 +1,7 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
-
 max_step = 50
+
+amrex.v = 2
 
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic =  1    1    1
@@ -20,6 +21,7 @@ nyx.hi_bc       =  0 0 0
 nyx.do_hydro = 1
 nyx.do_react = 0
 nyx.do_grav  = 0
+
 nyx.do_forcing = 1
 
 # COMOVING

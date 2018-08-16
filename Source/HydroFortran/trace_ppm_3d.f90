@@ -8,22 +8,20 @@ module trace_ppm_module
 
 contains
 
-    !===========================================================================
-    ! This is called from within threaded loops in advance_gas_tile so *no* OMP here ...
-    !===========================================================================
     subroutine tracexy_ppm(q,c,flatn,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                            Ip,Im,Ip_g,Im_g, &
                            qxm,qxp,qym,qyp,qpd_l1,qpd_l2,qpd_l3,qpd_h1,qpd_h2,qpd_h3, &
                            srcQ,src_l1,src_l2,src_l3,src_h1,src_h2,src_h3, &
                            ilo1,ilo2,ihi1,ihi2,dt,a_old,kc,k3d)
 
+    use amrex_error_module
     use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : QVAR, QRHO, QU, QV, QW, &
                                    QREINT, QPRES, version_2, &
                                    npassive, qpass_map, ppm_type, ppm_reference, &
                                    ppm_flatten_before_integrals, &
                                    small_dens, small_pres, gamma_minus_1
-    use bl_constants_module
+    use amrex_constants_module
 
     implicit none
 
@@ -74,7 +72,7 @@ contains
 
     if (ppm_type .eq. 0) then
        print *,'Oops -- shouldnt be in tracexy_ppm with ppm_type = 0'
-       call bl_error("Error:: trace_ppm_3d.f90 :: tracexy_ppm")
+       call amrex_error("Error:: trace_ppm_3d.f90 :: tracexy_ppm")
     end if
 
     halfdt = HALF * dt
@@ -823,23 +821,18 @@ contains
     enddo
 
     end subroutine tracexy_ppm
-    !===========================================================================
-    ! This is called from within threaded loops in advance_gas_tile so *no* OMP here ...
-    !===========================================================================
 
   ! ::: 
   ! ::: ------------------------------------------------------------------
   ! ::: 
 
-    !===========================================================================
-    ! This is called from within threaded loops in advance_gas_tile so *no* OMP here ...
-    !===========================================================================
     subroutine tracez_ppm(q,c,flatn,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                           Ip,Im,Ip_g,Im_g, &
                           qzm,qzp,qpd_l1,qpd_l2,qpd_l3,qpd_h1,qpd_h2,qpd_h3, &
                           srcQ,src_l1,src_l2,src_l3,src_h1,src_h2,src_h3, &
                           ilo1,ilo2,ihi1,ihi2,dt,a_old,km,kc,k3d)
 
+    use amrex_error_module
     use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : QVAR, QRHO, QU, QV, QW, &
                                    QREINT, QPRES, version_2, &
@@ -847,7 +840,7 @@ contains
                                    npassive, qpass_map, ppm_type, ppm_reference, &
                                    ppm_flatten_before_integrals, &
                                    small_dens, small_pres, gamma_minus_1
-    use bl_constants_module
+    use amrex_constants_module
 
     implicit none
 
@@ -895,7 +888,7 @@ contains
 
     if (ppm_type .eq. 0) then
        print *,'Oops -- shouldnt be in tracez_ppm with ppm_type = 0'
-       call bl_error("Error:: trace_ppm_3d.f90 :: tracez_ppm")
+       call amrex_error("Error:: trace_ppm_3d.f90 :: tracez_ppm")
     end if
 
     halfdt = HALF * dt

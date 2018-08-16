@@ -14,6 +14,7 @@
                               a_old,a_new,dt) &
                               bind(C, name="fort_correct_gsrc")
 
+      use amrex_error_module
       use amrex_fort_module, only : rt => amrex_real
       use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, grav_source_type
 
@@ -106,7 +107,7 @@
                                      unew(i,j,k,URHO) 
                    unew(i,j,k,UEDEN) = old_rhoeint + new_ke
                else 
-                  call bl_error("Error:: Nyx_advection_3d.f90 :: bogus grav_source_type")
+                  call amrex_error("Error:: Nyx_advection_3d.f90 :: bogus grav_source_type")
                end if
 
             enddo

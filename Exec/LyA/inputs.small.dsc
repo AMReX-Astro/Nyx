@@ -7,7 +7,7 @@ particles.nreaders=1
 
 nyx.ppm_type         = 0
 nyx.use_colglaz      = 1
-nyx.add_ext_src      = 1
+nyx.add_ext_src      = 0
 nyx.heat_cool_type   = 1
 nyx.strang_split     = 1
 

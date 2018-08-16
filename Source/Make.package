@@ -1,6 +1,6 @@
-ifneq ($(USE_HENSON), TRUE)
+#ifneq ($(USE_HENSON), TRUE)
 CEXE_sources += main.cpp
-endif
+#endif
 
 CEXE_sources += nyx_main.cpp
 
@@ -14,7 +14,6 @@ CEXE_sources += NyxParticles.cpp
 CEXE_sources += ParticleDerive.cpp
 CEXE_sources += NeutrinoParticleContainer.cpp
 CEXE_sources += DarkMatterParticleContainer.cpp
-CEXE_sources += two_particle_advance.cpp
 CEXE_sources += comoving.cpp
 CEXE_sources += write_info.cpp
 CEXE_sources += bl_random_c.cpp

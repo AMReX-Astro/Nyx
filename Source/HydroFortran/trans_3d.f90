@@ -1,15 +1,12 @@
 module transverse_module
  
   use amrex_fort_module, only : rt => amrex_real
-  use bl_constants_module
+  use amrex_constants_module
  
   implicit none
  
 contains
 
-      !===========================================================================
-      ! transx1 -- called from within threaded loops in advance_gas_tile so *no* OMP here ...
-      !===========================================================================
       subroutine transx1(qym,qymo,qyp,qypo,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                          fx,fx_l1,fx_l2,fx_l3,fx_h1,fx_h2,fx_h3, &
                          ugdnvx,pgdnvx,pgdx_l1,pgdx_l2,pgdx_l3,pgdx_h1,pgdx_h2,pgdx_h3, &
@@ -199,9 +196,6 @@ contains
 
       end subroutine transx1
 
-      !===========================================================================
-      ! transx2 -- called from within threaded loops in advance_gas_tile so *no* OMP here ...
-      !===========================================================================
       subroutine transx2(qzm,qzmo,qzp,qzpo,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                          fx,fx_l1,fx_l2,fx_l3,fx_h1,fx_h2,fx_h3, &
                          ugdnvx,pgdnvx,pgdx_l1,pgdx_l2,pgdx_l3,pgdx_h1,pgdx_h2,pgdx_h3, &
@@ -384,9 +378,6 @@ contains
 
       end subroutine transx2
 
-      !===========================================================================
-      ! transy1 -- called from within threaded loops in advance_gas_tile so *no* OMP here ...
-      !===========================================================================
       subroutine transy1(qxm,qxmo,qxp,qxpo,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                          fy,fy_l1,fy_l2,fy_l3,fy_h1,fy_h2,fy_h3, &
                          ugdnvy,pgdnvy,pgdy_l1,pgdy_l2,pgdy_l3,pgdy_h1,pgdy_h2,pgdy_h3, &
@@ -575,9 +566,6 @@ contains
 
       end subroutine transy1
 
-      !===========================================================================
-      ! transy2 -- called from within threaded loops in advance_gas_tile so *no* OMP here ...
-      !===========================================================================
       subroutine transy2(qzm,qzmo,qzp,qzpo,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                          fy,fy_l1,fy_l2,fy_l3,fy_h1,fy_h2,fy_h3, &
                          ugdnvy,pgdnvy,pgdy_l1,pgdy_l2,pgdy_l3,pgdy_h1,pgdy_h2,pgdy_h3, &
@@ -761,16 +749,13 @@ contains
 
       end subroutine transy2
 
-      !===========================================================================
-      ! transz -- called from within threaded loops in advance_gas_tile so *no* OMP here ...
-      !===========================================================================
       subroutine transz(qxm,qxmo,qxp,qxpo, &
                         qym,qymo,qyp,qypo,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                         fz,fz_l1,fz_l2,fz_l3,fz_h1,fz_h2,fz_h3, &
                         ugdnvz,pgdnvz,pgdz_l1,pgdz_l2,pgdz_l3,pgdz_h1,pgdz_h2,pgdz_h3, &
                         cdtdz,ilo,ihi,jlo,jhi,km,kc,k3d)
 
-      use amrex_mempool_module, only: bl_allocate, bl_deallocate
+      use amrex_mempool_module, only: amrex_allocate, amrex_deallocate
       use meth_params_module, only : QVAR, NVAR, QRHO, QU, QV, QW, &
                                      QPRES, QREINT, &
                                      URHO, UMX, UMY, UMZ, UEDEN, &
@@ -820,65 +805,65 @@ contains
 
       integer          :: ipassive
 
-      call bl_allocate(rrrx, ilo, ihi, jlo, jhi)
-      call bl_allocate(rrry, ilo, ihi, jlo, jhi)
-      call bl_allocate(rrlx, ilo, ihi, jlo, jhi)
-      call bl_allocate(rrly, ilo, ihi, jlo, jhi)
-      call bl_allocate(rurx, ilo, ihi, jlo, jhi)
-      call bl_allocate(rury, ilo, ihi, jlo, jhi)
-      call bl_allocate(rulx, ilo, ihi, jlo, jhi)
-      call bl_allocate(ruly, ilo, ihi, jlo, jhi)
-      call bl_allocate(rvrx, ilo, ihi, jlo, jhi)
-      call bl_allocate(rvry, ilo, ihi, jlo, jhi)
-      call bl_allocate(rvlx, ilo, ihi, jlo, jhi)
-      call bl_allocate(rvly, ilo, ihi, jlo, jhi)
-      call bl_allocate(rwrx, ilo, ihi, jlo, jhi)
-      call bl_allocate(rwry, ilo, ihi, jlo, jhi)
-      call bl_allocate(rwlx, ilo, ihi, jlo, jhi)
-      call bl_allocate(rwly, ilo, ihi, jlo, jhi)
-      call bl_allocate(ekenrx, ilo, ihi, jlo, jhi)
-      call bl_allocate(ekenry, ilo, ihi, jlo, jhi)
-      call bl_allocate(ekenlx, ilo, ihi, jlo, jhi)
-      call bl_allocate(ekenly, ilo, ihi, jlo, jhi)
-      call bl_allocate(rerx, ilo, ihi, jlo, jhi)
-      call bl_allocate(rery, ilo, ihi, jlo, jhi)
-      call bl_allocate(relx, ilo, ihi, jlo, jhi)
-      call bl_allocate(rely, ilo, ihi, jlo, jhi)
-      call bl_allocate(rrnewrx, ilo, ihi, jlo, jhi)
-      call bl_allocate(rrnewry, ilo, ihi, jlo, jhi)
-      call bl_allocate(rrnewlx, ilo, ihi, jlo, jhi)
-      call bl_allocate(rrnewly, ilo, ihi, jlo, jhi)
-      call bl_allocate(runewrx, ilo, ihi, jlo, jhi)
-      call bl_allocate(runewry, ilo, ihi, jlo, jhi)
-      call bl_allocate(runewlx, ilo, ihi, jlo, jhi)
-      call bl_allocate(runewly, ilo, ihi, jlo, jhi)
-      call bl_allocate(rvnewrx, ilo, ihi, jlo, jhi)
-      call bl_allocate(rvnewry, ilo, ihi, jlo, jhi)
-      call bl_allocate(rvnewlx, ilo, ihi, jlo, jhi)
-      call bl_allocate(rvnewly, ilo, ihi, jlo, jhi)
-      call bl_allocate(rwnewrx, ilo, ihi, jlo, jhi)
-      call bl_allocate(rwnewry, ilo, ihi, jlo, jhi)
-      call bl_allocate(rwnewlx, ilo, ihi, jlo, jhi)
-      call bl_allocate(rwnewly, ilo, ihi, jlo, jhi)
-      call bl_allocate(renewrx, ilo, ihi, jlo, jhi)
-      call bl_allocate(renewry, ilo, ihi, jlo, jhi)
-      call bl_allocate(renewlx, ilo, ihi, jlo, jhi)
-      call bl_allocate(renewly, ilo, ihi, jlo, jhi)
-      call bl_allocate(pnewrx, ilo, ihi, jlo, jhi)
-      call bl_allocate(pnewry, ilo, ihi, jlo, jhi)
-      call bl_allocate(pnewlx, ilo, ihi, jlo, jhi)
-      call bl_allocate(pnewly, ilo, ihi, jlo, jhi)
-      call bl_allocate(rhoekenrx, ilo, ihi, jlo, jhi)
-      call bl_allocate(rhoekenry, ilo, ihi, jlo, jhi)
-      call bl_allocate(rhoekenlx, ilo, ihi, jlo, jhi)
-      call bl_allocate(rhoekenly, ilo, ihi, jlo, jhi)
-      call bl_allocate(pgp, ilo, ihi, jlo, jhi)
-      call bl_allocate(pgm, ilo, ihi, jlo, jhi)
-      call bl_allocate(ugp, ilo, ihi, jlo, jhi)
-      call bl_allocate(ugm, ilo, ihi, jlo, jhi)
-      call bl_allocate(dup, ilo, ihi, jlo, jhi)
-      call bl_allocate(pav, ilo, ihi, jlo, jhi)
-      call bl_allocate(du, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rrrx, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rrry, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rrlx, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rrly, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rurx, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rury, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rulx, ilo, ihi, jlo, jhi)
+      call amrex_allocate(ruly, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rvrx, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rvry, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rvlx, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rvly, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rwrx, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rwry, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rwlx, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rwly, ilo, ihi, jlo, jhi)
+      call amrex_allocate(ekenrx, ilo, ihi, jlo, jhi)
+      call amrex_allocate(ekenry, ilo, ihi, jlo, jhi)
+      call amrex_allocate(ekenlx, ilo, ihi, jlo, jhi)
+      call amrex_allocate(ekenly, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rerx, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rery, ilo, ihi, jlo, jhi)
+      call amrex_allocate(relx, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rely, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rrnewrx, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rrnewry, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rrnewlx, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rrnewly, ilo, ihi, jlo, jhi)
+      call amrex_allocate(runewrx, ilo, ihi, jlo, jhi)
+      call amrex_allocate(runewry, ilo, ihi, jlo, jhi)
+      call amrex_allocate(runewlx, ilo, ihi, jlo, jhi)
+      call amrex_allocate(runewly, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rvnewrx, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rvnewry, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rvnewlx, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rvnewly, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rwnewrx, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rwnewry, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rwnewlx, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rwnewly, ilo, ihi, jlo, jhi)
+      call amrex_allocate(renewrx, ilo, ihi, jlo, jhi)
+      call amrex_allocate(renewry, ilo, ihi, jlo, jhi)
+      call amrex_allocate(renewlx, ilo, ihi, jlo, jhi)
+      call amrex_allocate(renewly, ilo, ihi, jlo, jhi)
+      call amrex_allocate(pnewrx, ilo, ihi, jlo, jhi)
+      call amrex_allocate(pnewry, ilo, ihi, jlo, jhi)
+      call amrex_allocate(pnewlx, ilo, ihi, jlo, jhi)
+      call amrex_allocate(pnewly, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rhoekenrx, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rhoekenry, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rhoekenlx, ilo, ihi, jlo, jhi)
+      call amrex_allocate(rhoekenly, ilo, ihi, jlo, jhi)
+      call amrex_allocate(pgp, ilo, ihi, jlo, jhi)
+      call amrex_allocate(pgm, ilo, ihi, jlo, jhi)
+      call amrex_allocate(ugp, ilo, ihi, jlo, jhi)
+      call amrex_allocate(ugm, ilo, ihi, jlo, jhi)
+      call amrex_allocate(dup, ilo, ihi, jlo, jhi)
+      call amrex_allocate(pav, ilo, ihi, jlo, jhi)
+      call amrex_allocate(du, ilo, ihi, jlo, jhi)
 
       do ipassive = 1,npassive
          n  = upass_map(ipassive)
@@ -1154,71 +1139,68 @@ contains
           enddo
       enddo
 
-      call bl_deallocate(rrrx)
-      call bl_deallocate(rrry)
-      call bl_deallocate(rrlx)
-      call bl_deallocate(rrly)
-      call bl_deallocate(rurx)
-      call bl_deallocate(rury)
-      call bl_deallocate(rulx)
-      call bl_deallocate(ruly)
-      call bl_deallocate(rvrx)
-      call bl_deallocate(rvry)
-      call bl_deallocate(rvlx)
-      call bl_deallocate(rvly)
-      call bl_deallocate(rwrx)
-      call bl_deallocate(rwry)
-      call bl_deallocate(rwlx)
-      call bl_deallocate(rwly)
-      call bl_deallocate(ekenrx)
-      call bl_deallocate(ekenry)
-      call bl_deallocate(ekenlx)
-      call bl_deallocate(ekenly)
-      call bl_deallocate(rerx)
-      call bl_deallocate(rery)
-      call bl_deallocate(relx)
-      call bl_deallocate(rely)
-      call bl_deallocate(rrnewrx)
-      call bl_deallocate(rrnewry)
-      call bl_deallocate(rrnewlx)
-      call bl_deallocate(rrnewly)
-      call bl_deallocate(runewrx)
-      call bl_deallocate(runewry)
-      call bl_deallocate(runewlx)
-      call bl_deallocate(runewly)
-      call bl_deallocate(rvnewrx)
-      call bl_deallocate(rvnewry)
-      call bl_deallocate(rvnewlx)
-      call bl_deallocate(rvnewly)
-      call bl_deallocate(rwnewrx)
-      call bl_deallocate(rwnewry)
-      call bl_deallocate(rwnewlx)
-      call bl_deallocate(rwnewly)
-      call bl_deallocate(renewrx)
-      call bl_deallocate(renewry)
-      call bl_deallocate(renewlx)
-      call bl_deallocate(renewly)
-      call bl_deallocate(pnewrx)
-      call bl_deallocate(pnewry)
-      call bl_deallocate(pnewlx)
-      call bl_deallocate(pnewly)
-      call bl_deallocate(rhoekenrx)
-      call bl_deallocate(rhoekenry)
-      call bl_deallocate(rhoekenlx)
-      call bl_deallocate(rhoekenly)
-      call bl_deallocate(pgp)
-      call bl_deallocate(pgm)
-      call bl_deallocate(ugp)
-      call bl_deallocate(ugm)
-      call bl_deallocate(dup)
-      call bl_deallocate(pav)
-      call bl_deallocate(du)
+      call amrex_deallocate(rrrx)
+      call amrex_deallocate(rrry)
+      call amrex_deallocate(rrlx)
+      call amrex_deallocate(rrly)
+      call amrex_deallocate(rurx)
+      call amrex_deallocate(rury)
+      call amrex_deallocate(rulx)
+      call amrex_deallocate(ruly)
+      call amrex_deallocate(rvrx)
+      call amrex_deallocate(rvry)
+      call amrex_deallocate(rvlx)
+      call amrex_deallocate(rvly)
+      call amrex_deallocate(rwrx)
+      call amrex_deallocate(rwry)
+      call amrex_deallocate(rwlx)
+      call amrex_deallocate(rwly)
+      call amrex_deallocate(ekenrx)
+      call amrex_deallocate(ekenry)
+      call amrex_deallocate(ekenlx)
+      call amrex_deallocate(ekenly)
+      call amrex_deallocate(rerx)
+      call amrex_deallocate(rery)
+      call amrex_deallocate(relx)
+      call amrex_deallocate(rely)
+      call amrex_deallocate(rrnewrx)
+      call amrex_deallocate(rrnewry)
+      call amrex_deallocate(rrnewlx)
+      call amrex_deallocate(rrnewly)
+      call amrex_deallocate(runewrx)
+      call amrex_deallocate(runewry)
+      call amrex_deallocate(runewlx)
+      call amrex_deallocate(runewly)
+      call amrex_deallocate(rvnewrx)
+      call amrex_deallocate(rvnewry)
+      call amrex_deallocate(rvnewlx)
+      call amrex_deallocate(rvnewly)
+      call amrex_deallocate(rwnewrx)
+      call amrex_deallocate(rwnewry)
+      call amrex_deallocate(rwnewlx)
+      call amrex_deallocate(rwnewly)
+      call amrex_deallocate(renewrx)
+      call amrex_deallocate(renewry)
+      call amrex_deallocate(renewlx)
+      call amrex_deallocate(renewly)
+      call amrex_deallocate(pnewrx)
+      call amrex_deallocate(pnewry)
+      call amrex_deallocate(pnewlx)
+      call amrex_deallocate(pnewly)
+      call amrex_deallocate(rhoekenrx)
+      call amrex_deallocate(rhoekenry)
+      call amrex_deallocate(rhoekenlx)
+      call amrex_deallocate(rhoekenly)
+      call amrex_deallocate(pgp)
+      call amrex_deallocate(pgm)
+      call amrex_deallocate(ugp)
+      call amrex_deallocate(ugm)
+      call amrex_deallocate(dup)
+      call amrex_deallocate(pav)
+      call amrex_deallocate(du)
 
       end subroutine transz
 
-      !===========================================================================
-      ! transxy-- called from within threaded loops in advance_gas_tile so *no* OMP here ...
-      !===========================================================================
       subroutine transxy(qm,qmo,qp,qpo,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                          fxy,fx_l1,fx_l2,fx_l3,fx_h1,fx_h2,fx_h3, &
                          fyx,fy_l1,fy_l2,fy_l3,fy_h1,fy_h2,fy_h3, &
@@ -1470,9 +1452,6 @@ contains
 
       end subroutine transxy
 
-      !===========================================================================
-      ! transz-- called from within threaded loops in advance_gas_tile so *no* OMP here ...
-      !===========================================================================
       subroutine transxz(qm,qmo,qp,qpo,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                          fxz,fx_l1,fx_l2,fx_l3,fx_h1,fx_h2,fx_h3, &
                          fzx,fz_l1,fz_l2,fz_l3,fz_h1,fz_h2,fz_h3, &
@@ -1725,9 +1704,6 @@ contains
 
       end subroutine transxz
 
-      !===========================================================================
-      ! transyz-- called from within threaded loops in advance_gas_tile so *no* OMP here ...
-      !===========================================================================
       subroutine transyz(qm,qmo,qp,qpo,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                          fyz,fy_l1,fy_l2,fy_l3,fy_h1,fy_h2,fy_h3, &
                          fzy,fz_l1,fz_l2,fz_l3,fz_h1,fz_h2,fz_h3, &

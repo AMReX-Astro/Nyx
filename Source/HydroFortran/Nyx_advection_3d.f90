@@ -1,171 +1,3 @@
-
-! :::
-! ::: ----------------------------------------------------------------
-! :::
-
-      subroutine fort_advance_gas(time,lo,hi,&
-           uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
-           uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
-           ugdnvx_out,ugdnvx_l1,ugdnvx_l2,ugdnvx_l3,ugdnvx_h1,ugdnvx_h2,ugdnvx_h3, &
-           ugdnvy_out,ugdnvy_l1,ugdnvy_l2,ugdnvy_l3,ugdnvy_h1,ugdnvy_h2,ugdnvy_h3, &
-           ugdnvz_out,ugdnvz_l1,ugdnvz_l2,ugdnvz_l3,ugdnvz_h1,ugdnvz_h2,ugdnvz_h3, &
-           src ,src_l1,src_l2,src_l3,src_h1,src_h2,src_h3, &
-           grav,gv_l1,gv_l2,gv_l3,gv_h1,gv_h2,gv_h3, &
-           delta,dt, &
-           flux1,flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3, &
-           flux2,flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3, &
-           flux3,flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3, &
-           courno,a_old,a_new,print_fortran_warnings,do_grav) &
-           bind(C, name="fort_advance_gas")
-
-      use amrex_fort_module, only : rt => amrex_real
-      use amrex_mempool_module, only : bl_allocate, bl_deallocate
-      use meth_params_module, only : QVAR, NVAR, NHYP, normalize_species
-      use enforce_module, only : enforce_nonnegative_species
-      use bl_constants_module
-
-      implicit none
-
-      integer lo(3),hi(3),print_fortran_warnings,do_grav
-      integer uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3
-      integer uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3
-      integer ugdnvx_l1,ugdnvx_l2,ugdnvx_l3,ugdnvx_h1,ugdnvx_h2,ugdnvx_h3
-      integer ugdnvy_l1,ugdnvy_l2,ugdnvy_l3,ugdnvy_h1,ugdnvy_h2,ugdnvy_h3
-      integer ugdnvz_l1,ugdnvz_l2,ugdnvz_l3,ugdnvz_h1,ugdnvz_h2,ugdnvz_h3
-      integer flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3
-      integer flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3
-      integer flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3
-      integer src_l1,src_l2,src_l3,src_h1,src_h2,src_h3
-      integer gv_l1,gv_l2,gv_l3,gv_h1,gv_h2,gv_h3
-      real(rt)   uin(  uin_l1:uin_h1,    uin_l2:uin_h2,     uin_l3:uin_h3,  NVAR)
-      real(rt)  uout( uout_l1:uout_h1,  uout_l2:uout_h2,   uout_l3:uout_h3, NVAR)
-      real(rt) ugdnvx_out(ugdnvx_l1:ugdnvx_h1,ugdnvx_l2:ugdnvx_h2,ugdnvx_l3:ugdnvx_h3)
-      real(rt) ugdnvy_out(ugdnvy_l1:ugdnvy_h1,ugdnvy_l2:ugdnvy_h2,ugdnvy_l3:ugdnvy_h3)
-      real(rt) ugdnvz_out(ugdnvz_l1:ugdnvz_h1,ugdnvz_l2:ugdnvz_h2,ugdnvz_l3:ugdnvz_h3)
-      real(rt)   src(  src_l1:src_h1,    src_l2:src_h2,     src_l3:src_h3,  NVAR)
-      real(rt)  grav( gv_l1:gv_h1,  gv_l2:gv_h2,   gv_l3:gv_h3,    3)
-      real(rt) flux1(flux1_l1:flux1_h1,flux1_l2:flux1_h2, flux1_l3:flux1_h3,NVAR)
-      real(rt) flux2(flux2_l1:flux2_h1,flux2_l2:flux2_h2, flux2_l3:flux2_h3,NVAR)
-      real(rt) flux3(flux3_l1:flux3_h1,flux3_l2:flux3_h2, flux3_l3:flux3_h3,NVAR)
-      real(rt) delta(3),dt,time,courno
-      real(rt) a_old, a_new
-
-      ! Automatic arrays for workspace
-      real(rt), pointer :: q(:,:,:,:)
-      real(rt), pointer :: flatn(:,:,:)
-      real(rt), pointer :: c(:,:,:)
-      real(rt), pointer :: csml(:,:,:)
-      real(rt), pointer :: divu_nd(:,:,:)
-      real(rt), pointer :: divu_cc(:,:,:)
-      real(rt), pointer :: srcQ(:,:,:,:)
-
-      real(rt) dx,dy,dz
-      integer ngq,ngf
-      integer q_l1, q_l2, q_l3, q_h1, q_h2, q_h3
-      integer srcq_l1, srcq_l2, srcq_l3, srcq_h1, srcq_h2, srcq_h3
-
-      ngq = NHYP
-      ngf = 1
-
-      q_l1 = lo(1)-NHYP
-      q_l2 = lo(2)-NHYP
-      q_l3 = lo(3)-NHYP
-      q_h1 = hi(1)+NHYP
-      q_h2 = hi(2)+NHYP
-      q_h3 = hi(3)+NHYP
-
-      srcq_l1 = lo(1)-1
-      srcq_l2 = lo(2)-1
-      srcq_l3 = lo(3)-1
-      srcq_h1 = hi(1)+1
-      srcq_h2 = hi(2)+1
-      srcq_h3 = hi(3)+1
-
-      call bl_allocate(     q, lo-NHYP, hi+NHYP, QVAR)
-      call bl_allocate( flatn, lo-NHYP, hi+NHYP      )
-      call bl_allocate(     c, lo-NHYP, hi+NHYP      )
-      call bl_allocate(  csml, lo-NHYP, hi+NHYP      )
-
-      call bl_allocate(  srcQ, lo-1, hi+1, QVAR)
-
-      call bl_allocate(divu_nd, lo, hi+1)
-      call bl_allocate(divu_cc, lo, hi)
-
-      dx = delta(1)
-      dy = delta(2)
-      dz = delta(3)
-
-      ! 1) Translate conserved variables (u) to primitive variables (q).
-      ! 2) Compute sound speeds (c) 
-      !    Note that (q,c,csml,flatn) are all dimensioned the same
-      !    and set to correspond to coordinates of (lo:hi)
-      ! 3) Translate source terms
-      call ctoprim(lo,hi,uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
-                   q,c,csml,flatn,q_l1,q_l2,q_l3,q_h1,q_h2,q_h3, &
-                   src , src_l1, src_l2, src_l3, src_h1, src_h2, src_h3, &
-                   srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
-                   grav,gv_l1,gv_l2,gv_l3,gv_h1,gv_h2,gv_h3, &
-                   courno,dx,dy,dz,dt,ngq,ngf,a_old,a_new)
-
-      ! Compute hyperbolic fluxes using unsplit Godunov
-      call umeth3d(q,c,csml,flatn,q_l1,q_l2,q_l3,q_h1,q_h2,q_h3, &
-                   srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
-                   lo(1),lo(2),lo(3),hi(1),hi(2),hi(3),dx,dy,dz,dt, &
-                   flux1,flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3, &
-                   flux2,flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3, &
-                   flux3,flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3, &
-                   grav,gv_l1,gv_l2,gv_l3,gv_h1,gv_h2,gv_h3, &
-                   ugdnvx_out,ugdnvx_l1,ugdnvx_l2,ugdnvx_l3,ugdnvx_h1,ugdnvx_h2,ugdnvx_h3, &
-                   ugdnvy_out,ugdnvy_l1,ugdnvy_l2,ugdnvy_l3,ugdnvy_h1,ugdnvy_h2,ugdnvy_h3, &
-                   ugdnvz_out,ugdnvz_l1,ugdnvz_l2,ugdnvz_l3,ugdnvz_h1,ugdnvz_h2,ugdnvz_h3, &
-                   divu_cc,a_old,a_new,print_fortran_warnings)
-
-      ! Compute divergence of velocity field (on surroundingNodes(lo,hi))
-      call make_divu_nd(lo,hi,q,q_l1,q_l2,q_l3,q_h1,q_h2,q_h3, &
-                        dx,dy,dz,divu_nd,lo(1),lo(2),lo(3),hi(1)+1,hi(2)+1,hi(3)+1)
-
-      ! Conservative update
-      call consup(uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
-                  uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
-                  src ,  src_l1,  src_l2,  src_l3,  src_h1,  src_h2,  src_h3, &
-                  flux1,flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3, &
-                  flux2,flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3, &
-                  flux3,flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3, &
-                  divu_nd,divu_cc,lo,hi,dx,dy,dz,dt,a_old,a_new)
-
-      ! We are done with these here so can go ahead and free up the space.
-      call bl_deallocate(q)
-      call bl_deallocate(flatn)
-      call bl_deallocate(c)
-      call bl_deallocate(csml)
-      call bl_deallocate(divu_nd)
-      call bl_deallocate(srcQ)
-      call bl_deallocate(divu_cc)
-
-      ! Enforce the density >= small_dens.  Make sure we do this immediately after consup.
-      call enforce_minimum_density(uin, uin_l1, uin_l2, uin_l3, uin_h1, uin_h2, uin_h3, &
-                                        uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
-                                        lo,hi,print_fortran_warnings)
-      
-      if (do_grav .gt. 0) &
-          call add_grav_source(uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
-                               uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
-                               grav, gv_l1, gv_l2, gv_l3, gv_h1, gv_h2, gv_h3, &
-                               lo,hi,dx,dy,dz,dt,a_old,a_new)
-
-      ! Enforce species >= 0
-      call enforce_nonnegative_species(uout,uout_l1,uout_l2,uout_l3, &
-                                       uout_h1,uout_h2,uout_h3,lo,hi,0)
-
-      ! Re-normalize the species
-      if (normalize_species .eq. 1) then
-         call normalize_new_species(uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
-                                    lo,hi)
-      end if
-
-      end subroutine fort_advance_gas
-
-
 ! ::: ---------------------------------------------------------------
 ! ::: :: UMETH3D     Compute hyperbolic fluxes using unsplit second
 ! ::: ::               order Godunov integrator.
@@ -201,11 +33,13 @@
                          ugdnvy_h1,ugdnvy_h2,ugdnvy_h3, &
                          ugdnvz_out,ugdnvz_l1,ugdnvz_l2,ugdnvz_l3, &
                          ugdnvz_h1,ugdnvz_h2,ugdnvz_h3, &
-                         divu_cc,a_old,a_new,print_fortran_warnings)
+                         divu_cc, d_l1, d_l2, d_l3, d_h1, d_h2, d_h3, &
+                         a_old,a_new,print_fortran_warnings)
 
+      use amrex_error_module
       use amrex_fort_module, only : rt => amrex_real
-      use amrex_mempool_module, only : bl_allocate, bl_deallocate
-      use bl_constants_module
+      use amrex_mempool_module, only : amrex_allocate, amrex_deallocate
+      use amrex_constants_module
       use meth_params_module, only : QVAR, NVAR, QU, ppm_type, &
                                      use_colglaz, corner_coupling, &
                                      version_2
@@ -220,6 +54,7 @@
       integer qd_l1, qd_l2, qd_l3, qd_h1, qd_h2, qd_h3
       integer srcq_l1, srcq_l2, srcq_l3, srcq_h1, srcq_h2, srcq_h3
       integer ilo1, ilo2, ilo3, ihi1, ihi2, ihi3
+      integer   d_l1,   d_l2,   d_l3,   d_h1,   d_h2,   d_h3
       integer fd1_l1, fd1_l2, fd1_l3, fd1_h1, fd1_h2, fd1_h3
       integer fd2_l1, fd2_l2, fd2_l3, fd2_h1, fd2_h2, fd2_h3
       integer fd3_l1, fd3_l2, fd3_l3, fd3_h1, fd3_h2, fd3_h3
@@ -243,7 +78,7 @@
       real(rt) ugdnvx_out(ugdnvx_l1:ugdnvx_h1,ugdnvx_l2:ugdnvx_h2,ugdnvx_l3:ugdnvx_h3)
       real(rt) ugdnvy_out(ugdnvy_l1:ugdnvy_h1,ugdnvy_l2:ugdnvy_h2,ugdnvy_l3:ugdnvy_h3)
       real(rt) ugdnvz_out(ugdnvz_l1:ugdnvz_h1,ugdnvz_l2:ugdnvz_h2,ugdnvz_l3:ugdnvz_h3)
-      real(rt) divu_cc(ilo1:ihi1,ilo2:ihi2,ilo3:ihi3)
+      real(rt) divu_cc(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3)
       real(rt) dx, dy, dz, dt
       real(rt) dtdx, dtdy, dtdz, hdt
       real(rt) cdtdx, cdtdy, cdtdz
@@ -311,90 +146,90 @@
       fy_hi = [ihi1+1, ihi2+1, 2]
 
 
-      call bl_allocate ( pgdnvx   ,dnv_lo, dnv_hi)
-      call bl_allocate ( ugdnvx   ,dnv_lo, dnv_hi)
-      call bl_allocate ( pgdnvxf  ,dnv_lo, dnv_hi)
-      call bl_allocate ( ugdnvxf  ,dnv_lo, dnv_hi)
-      call bl_allocate ( pgdnvtmpx,dnv_lo, dnv_hi)
-      call bl_allocate ( ugdnvtmpx,dnv_lo, dnv_hi)
+      call amrex_allocate ( pgdnvx   ,dnv_lo, dnv_hi)
+      call amrex_allocate ( ugdnvx   ,dnv_lo, dnv_hi)
+      call amrex_allocate ( pgdnvxf  ,dnv_lo, dnv_hi)
+      call amrex_allocate ( ugdnvxf  ,dnv_lo, dnv_hi)
+      call amrex_allocate ( pgdnvtmpx,dnv_lo, dnv_hi)
+      call amrex_allocate ( ugdnvtmpx,dnv_lo, dnv_hi)
 
-      call bl_allocate ( pgdnvy   ,dnv_lo, dnv_hi)
-      call bl_allocate ( ugdnvy   ,dnv_lo, dnv_hi)
-      call bl_allocate ( pgdnvyf  ,dnv_lo, dnv_hi)
-      call bl_allocate ( ugdnvyf  ,dnv_lo, dnv_hi)
-      call bl_allocate ( pgdnvtmpy,dnv_lo, dnv_hi)
-      call bl_allocate ( ugdnvtmpy,dnv_lo, dnv_hi)
+      call amrex_allocate ( pgdnvy   ,dnv_lo, dnv_hi)
+      call amrex_allocate ( ugdnvy   ,dnv_lo, dnv_hi)
+      call amrex_allocate ( pgdnvyf  ,dnv_lo, dnv_hi)
+      call amrex_allocate ( ugdnvyf  ,dnv_lo, dnv_hi)
+      call amrex_allocate ( pgdnvtmpy,dnv_lo, dnv_hi)
+      call amrex_allocate ( ugdnvtmpy,dnv_lo, dnv_hi)
 
-      call bl_allocate ( pgdnvz    ,dnv_lo, dnv_hi)
-      call bl_allocate ( ugdnvz    ,dnv_lo, dnv_hi)
-      call bl_allocate ( pgdnvtmpz1,dnv_lo, dnv_hi)
-      call bl_allocate ( ugdnvtmpz1,dnv_lo, dnv_hi)
-      call bl_allocate ( pgdnvtmpz2,dnv_lo, dnv_hi)
-      call bl_allocate ( ugdnvtmpz2,dnv_lo, dnv_hi)
-      call bl_allocate ( pgdnvzf   ,dnv_lo, dnv_hi)
-      call bl_allocate ( ugdnvzf   ,dnv_lo, dnv_hi)
+      call amrex_allocate ( pgdnvz    ,dnv_lo, dnv_hi)
+      call amrex_allocate ( ugdnvz    ,dnv_lo, dnv_hi)
+      call amrex_allocate ( pgdnvtmpz1,dnv_lo, dnv_hi)
+      call amrex_allocate ( ugdnvtmpz1,dnv_lo, dnv_hi)
+      call amrex_allocate ( pgdnvtmpz2,dnv_lo, dnv_hi)
+      call amrex_allocate ( ugdnvtmpz2,dnv_lo, dnv_hi)
+      call amrex_allocate ( pgdnvzf   ,dnv_lo, dnv_hi)
+      call amrex_allocate ( ugdnvzf   ,dnv_lo, dnv_hi)
 
-      call bl_allocate ( dqx, q_lo, q_hi, QVAR)
-      call bl_allocate ( dqy, q_lo, q_hi, QVAR)
-      call bl_allocate ( dqz, q_lo, q_hi, QVAR)
+      call amrex_allocate ( dqx, q_lo, q_hi, QVAR)
+      call amrex_allocate ( dqy, q_lo, q_hi, QVAR)
+      call amrex_allocate ( dqz, q_lo, q_hi, QVAR)
 
       ! One-sided states on x-edges
-      call bl_allocate ( qxm , q_lo, q_hi, QVAR)
-      call bl_allocate ( qxp , q_lo, q_hi, QVAR)
-      call bl_allocate ( qmxy, q_lo, q_hi, QVAR)
-      call bl_allocate ( qpxy, q_lo, q_hi, QVAR)
-      call bl_allocate ( qmxz, q_lo, q_hi, QVAR)
-      call bl_allocate ( qpxz, q_lo, q_hi, QVAR)
-      call bl_allocate ( qxl , q_lo, q_hi, QVAR)
-      call bl_allocate ( qxr , q_lo, q_hi, QVAR)
+      call amrex_allocate ( qxm , q_lo, q_hi, QVAR)
+      call amrex_allocate ( qxp , q_lo, q_hi, QVAR)
+      call amrex_allocate ( qmxy, q_lo, q_hi, QVAR)
+      call amrex_allocate ( qpxy, q_lo, q_hi, QVAR)
+      call amrex_allocate ( qmxz, q_lo, q_hi, QVAR)
+      call amrex_allocate ( qpxz, q_lo, q_hi, QVAR)
+      call amrex_allocate ( qxl , q_lo, q_hi, QVAR)
+      call amrex_allocate ( qxr , q_lo, q_hi, QVAR)
 
       ! One-sided states on y-edges
-      call bl_allocate ( qym , q_lo, q_hi, QVAR)
-      call bl_allocate ( qyp , q_lo, q_hi, QVAR)
-      call bl_allocate ( qmyx, q_lo, q_hi, QVAR)
-      call bl_allocate ( qpyx, q_lo, q_hi, QVAR)
-      call bl_allocate ( qmyz, q_lo, q_hi, QVAR)
-      call bl_allocate ( qpyz, q_lo, q_hi, QVAR)
-      call bl_allocate ( qyl , q_lo, q_hi, QVAR)
-      call bl_allocate ( qyr , q_lo, q_hi, QVAR)
+      call amrex_allocate ( qym , q_lo, q_hi, QVAR)
+      call amrex_allocate ( qyp , q_lo, q_hi, QVAR)
+      call amrex_allocate ( qmyx, q_lo, q_hi, QVAR)
+      call amrex_allocate ( qpyx, q_lo, q_hi, QVAR)
+      call amrex_allocate ( qmyz, q_lo, q_hi, QVAR)
+      call amrex_allocate ( qpyz, q_lo, q_hi, QVAR)
+      call amrex_allocate ( qyl , q_lo, q_hi, QVAR)
+      call amrex_allocate ( qyr , q_lo, q_hi, QVAR)
 
       ! One-sided states on z-edges
-      call bl_allocate ( qzm , q_lo, q_hi, QVAR)
-      call bl_allocate ( qzp , q_lo, q_hi, QVAR)
-      call bl_allocate ( qmzx, q_lo, q_hi, QVAR)
-      call bl_allocate ( qpzx, q_lo, q_hi, QVAR)
-      call bl_allocate ( qmzy, q_lo, q_hi, QVAR)
-      call bl_allocate ( qpzy, q_lo, q_hi, QVAR)
-      call bl_allocate ( qzl , q_lo, q_hi, QVAR)
-      call bl_allocate ( qzr , q_lo, q_hi, QVAR)
+      call amrex_allocate ( qzm , q_lo, q_hi, QVAR)
+      call amrex_allocate ( qzp , q_lo, q_hi, QVAR)
+      call amrex_allocate ( qmzx, q_lo, q_hi, QVAR)
+      call amrex_allocate ( qpzx, q_lo, q_hi, QVAR)
+      call amrex_allocate ( qmzy, q_lo, q_hi, QVAR)
+      call amrex_allocate ( qpzy, q_lo, q_hi, QVAR)
+      call amrex_allocate ( qzl , q_lo, q_hi, QVAR)
+      call amrex_allocate ( qzr , q_lo, q_hi, QVAR)
 
       ! Output of cmpflx on x-edges
-      call bl_allocate ( fx , fx_lo, fx_hi, NVAR)
-      call bl_allocate ( fxy, fx_lo, fx_hi, NVAR)
-      call bl_allocate ( fxz, fx_lo, fx_hi, NVAR)
+      call amrex_allocate ( fx , fx_lo, fx_hi, NVAR)
+      call amrex_allocate ( fxy, fx_lo, fx_hi, NVAR)
+      call amrex_allocate ( fxz, fx_lo, fx_hi, NVAR)
 
       ! Output of cmpflx on y-edges
-      call bl_allocate ( fy , fy_lo, fy_hi, NVAR)
-      call bl_allocate ( fyx, fy_lo, fy_hi, NVAR)
-      call bl_allocate ( fyz, fy_lo, fy_hi, NVAR)
+      call amrex_allocate ( fy , fy_lo, fy_hi, NVAR)
+      call amrex_allocate ( fyx, fy_lo, fy_hi, NVAR)
+      call amrex_allocate ( fyz, fy_lo, fy_hi, NVAR)
 
       ! Output of cmpflx on z-edges
       fz_lo = [ilo1-1, ilo2-1, 1]
       fz_hi = [ihi1+1, ihi2+1, 2]
-      call bl_allocate ( fz , fz_lo, fz_hi, NVAR)
+      call amrex_allocate ( fz , fz_lo, fz_hi, NVAR)
       fz_lo = [ilo1, ilo2-1, 1]
       fz_hi = [ihi1, ihi2+1, 2]
-      call bl_allocate ( fzx, fz_lo, fz_hi, NVAR)
+      call amrex_allocate ( fzx, fz_lo, fz_hi, NVAR)
       fz_lo = [ilo1-1, ilo2, 1]
       fz_hi = [ihi1+1, ihi2, 2]
-      call bl_allocate ( fzy, fz_lo, fz_hi, NVAR)
+      call amrex_allocate ( fzy, fz_lo, fz_hi, NVAR)
 
       ! x-index, y-index, z-index, dim, characteristics, variables
-      call bl_allocate ( Ip,ilo1-1,ihi1+1,ilo2-1,ihi2+1,1,2,1,3,1,3,1,QVAR)
-      call bl_allocate ( Im,ilo1-1,ihi1+1,ilo2-1,ihi2+1,1,2,1,3,1,3,1,QVAR)
+      call amrex_allocate ( Ip,ilo1-1,ihi1+1,ilo2-1,ihi2+1,1,2,1,3,1,3,1,QVAR)
+      call amrex_allocate ( Im,ilo1-1,ihi1+1,ilo2-1,ihi2+1,1,2,1,3,1,3,1,QVAR)
 
-      call bl_allocate (Ip_g,ilo1-1,ihi1+1,ilo2-1,ihi2+1,1,2,1,3,1,3,1,3)
-      call bl_allocate (Im_g,ilo1-1,ihi1+1,ilo2-1,ihi2+1,1,2,1,3,1,3,1,3)
+      call amrex_allocate (Ip_g,ilo1-1,ihi1+1,ilo2-1,ihi2+1,1,2,1,3,1,3,1,3)
+      call amrex_allocate (Im_g,ilo1-1,ihi1+1,ilo2-1,ihi2+1,1,2,1,3,1,3,1,3)
 
       a_half = HALF * (a_old + a_new)
 
@@ -413,9 +248,6 @@
       cdtdx = THIRD*dtdx/a_half
       cdtdy = THIRD*dtdy/a_half
       cdtdz = THIRD*dtdz/a_half
-
-      ! Initialize divu_cc to zero
-      divu_cc(:,:,:) = ZERO
 
       ! Initialize kc (current k-level) and km (previous k-level)
       kc = 1
@@ -480,7 +312,7 @@
 
          else 
             print *,'>>> ... we only support ppm_type >= 0, not: ',ppm_type 
-            call bl_error("Error:: Nyx_advection_3d.f90 :: umeth3d")
+            call amrex_error("Error:: Nyx_advection_3d.f90 :: umeth3d")
          end if
 
          ! On x-edges -- choose state fx based on qxm, qxp
@@ -555,7 +387,7 @@
                end if
             else 
                print *,'>>> ... we only support ppm_type >= 0, not: ',ppm_type 
-               call bl_error("Error:: Nyx_advection_3d.f90 :: umeth3d")
+               call amrex_error("Error:: Nyx_advection_3d.f90 :: umeth3d")
             end if
 
             ! Compute \tilde{F}^z at kc (k3d)
@@ -642,10 +474,11 @@
                end do
             end do
 
-            if (k3d .ge. ilo3+1 .and. k3d .le. ihi3+1) then
+            if (k3d .ge. ilo3+1) then
                do j = ilo2,ihi2
                   do i = ilo1,ihi1
-                     divu_cc(i,j,k3d-1) = divu_cc(i,j,k3d-1) + (ugdnvzf(i,j,kc)-ugdnvzf(i,j,km))/dz
+                     divu_cc(i,j,k3d-1) = divu_cc(i,j,k3d-1) +  &
+                                (ugdnvzf(i,j,kc)-ugdnvzf(i,j,km))/dz
                   end do
                end do
             end if
@@ -777,77 +610,77 @@
          end if
       enddo
 
-      call bl_deallocate(pgdnvx)
-      call bl_deallocate(pgdnvxf)
-      call bl_deallocate(pgdnvtmpx)
-      call bl_deallocate(ugdnvx)
-      call bl_deallocate(ugdnvxf)
-      call bl_deallocate(ugdnvtmpx)
+      call amrex_deallocate(pgdnvx)
+      call amrex_deallocate(pgdnvxf)
+      call amrex_deallocate(pgdnvtmpx)
+      call amrex_deallocate(ugdnvx)
+      call amrex_deallocate(ugdnvxf)
+      call amrex_deallocate(ugdnvtmpx)
 
-      call bl_deallocate(pgdnvy)
-      call bl_deallocate(pgdnvyf)
-      call bl_deallocate(pgdnvtmpy)
-      call bl_deallocate(ugdnvy)
-      call bl_deallocate(ugdnvyf)
-      call bl_deallocate(ugdnvtmpy)
+      call amrex_deallocate(pgdnvy)
+      call amrex_deallocate(pgdnvyf)
+      call amrex_deallocate(pgdnvtmpy)
+      call amrex_deallocate(ugdnvy)
+      call amrex_deallocate(ugdnvyf)
+      call amrex_deallocate(ugdnvtmpy)
 
-      call bl_deallocate ( pgdnvz    )
-      call bl_deallocate ( ugdnvz    )
-      call bl_deallocate ( pgdnvtmpz1)
-      call bl_deallocate ( ugdnvtmpz1)
-      call bl_deallocate ( pgdnvtmpz2)
-      call bl_deallocate ( ugdnvtmpz2)
-      call bl_deallocate ( pgdnvzf   )
-      call bl_deallocate ( ugdnvzf   )
+      call amrex_deallocate ( pgdnvz    )
+      call amrex_deallocate ( ugdnvz    )
+      call amrex_deallocate ( pgdnvtmpz1)
+      call amrex_deallocate ( ugdnvtmpz1)
+      call amrex_deallocate ( pgdnvtmpz2)
+      call amrex_deallocate ( ugdnvtmpz2)
+      call amrex_deallocate ( pgdnvzf   )
+      call amrex_deallocate ( ugdnvzf   )
 
-      call bl_deallocate ( dqx)
-      call bl_deallocate ( dqy)
-      call bl_deallocate ( dqz)
+      call amrex_deallocate ( dqx)
+      call amrex_deallocate ( dqy)
+      call amrex_deallocate ( dqz)
 
-      call bl_deallocate ( qxm )
-      call bl_deallocate ( qxp )
-      call bl_deallocate ( qmxy)
-      call bl_deallocate ( qpxy)
-      call bl_deallocate ( qmxz)
-      call bl_deallocate ( qpxz)
-      call bl_deallocate ( qxl )
-      call bl_deallocate ( qxr )
+      call amrex_deallocate ( qxm )
+      call amrex_deallocate ( qxp )
+      call amrex_deallocate ( qmxy)
+      call amrex_deallocate ( qpxy)
+      call amrex_deallocate ( qmxz)
+      call amrex_deallocate ( qpxz)
+      call amrex_deallocate ( qxl )
+      call amrex_deallocate ( qxr )
 
-      call bl_deallocate ( qym )
-      call bl_deallocate ( qyp )
-      call bl_deallocate ( qmyx)
-      call bl_deallocate ( qpyx)
-      call bl_deallocate ( qmyz)
-      call bl_deallocate ( qpyz)
-      call bl_deallocate ( qyl )
-      call bl_deallocate ( qyr )
+      call amrex_deallocate ( qym )
+      call amrex_deallocate ( qyp )
+      call amrex_deallocate ( qmyx)
+      call amrex_deallocate ( qpyx)
+      call amrex_deallocate ( qmyz)
+      call amrex_deallocate ( qpyz)
+      call amrex_deallocate ( qyl )
+      call amrex_deallocate ( qyr )
 
-      call bl_deallocate ( qzm )
-      call bl_deallocate ( qzp )
-      call bl_deallocate ( qmzx)
-      call bl_deallocate ( qpzx)
-      call bl_deallocate ( qmzy)
-      call bl_deallocate ( qpzy)
-      call bl_deallocate ( qzl )
-      call bl_deallocate ( qzr )
+      call amrex_deallocate ( qzm )
+      call amrex_deallocate ( qzp )
+      call amrex_deallocate ( qmzx)
+      call amrex_deallocate ( qpzx)
+      call amrex_deallocate ( qmzy)
+      call amrex_deallocate ( qpzy)
+      call amrex_deallocate ( qzl )
+      call amrex_deallocate ( qzr )
 
-      call bl_deallocate ( fx )
-      call bl_deallocate ( fxy)
-      call bl_deallocate ( fxz)
+      call amrex_deallocate ( fx )
+      call amrex_deallocate ( fxy)
+      call amrex_deallocate ( fxz)
 
-      call bl_deallocate ( fy )
-      call bl_deallocate ( fyx)
-      call bl_deallocate ( fyz)
+      call amrex_deallocate ( fy )
+      call amrex_deallocate ( fyx)
+      call amrex_deallocate ( fyz)
 
-      call bl_deallocate ( fz )
-      call bl_deallocate ( fzx)
-      call bl_deallocate ( fzy)
+      call amrex_deallocate ( fz )
+      call amrex_deallocate ( fzx)
+      call amrex_deallocate ( fzy)
 
-      call bl_deallocate ( Ip)
-      call bl_deallocate ( Im)
+      call amrex_deallocate ( Ip)
+      call amrex_deallocate ( Im)
 
-      call bl_deallocate (Ip_g)
-      call bl_deallocate (Im_g)
+      call amrex_deallocate (Ip_g)
+      call amrex_deallocate (Im_g)
 
 
       end subroutine umeth3d
@@ -861,7 +694,7 @@
                          src,  src_l1, src_l2, src_l3, src_h1, src_h2, src_h3, &
                          srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                          grav,gv_l1, gv_l2, gv_l3, gv_h1, gv_h2, gv_h3, &
-                         courno,dx,dy,dz,dt,ngp,ngf,a_old,a_new)
+                         dx,dy,dz,dt,ngp,ngf,a_old,a_new)
       !
       !     Will give primitive variables on lo-ngp:hi+ngp, and flatn on lo-ngf:hi+ngf
       !     if use_flattening=1.  Declared dimensions of q,c,csml,flatn are given
@@ -869,12 +702,13 @@
       !     Also, uflaten call assumes ngp>=ngf+3 (ie, primitve data is used by the
       !     routine that computes flatn).
       !
+      use amrex_error_module
       use amrex_fort_module, only : rt => amrex_real
       use network, only : nspec, naux
       use eos_params_module
       use eos_module
       use flatten_module
-      use bl_constants_module
+      use amrex_constants_module
       use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, &
                                      UEDEN, UEINT, UFA, UFS, &
                                      QVAR, QRHO, QU, QV, QW, &
@@ -901,14 +735,14 @@
       real(rt) ::   src( src_l1: src_h1, src_l2: src_h2, src_l3: src_h3,NVAR)
       real(rt) ::  srcQ(srcq_l1:srcq_h1,srcq_l2:srcq_h2,srcq_l3:srcq_h3,QVAR)
       real(rt) :: grav( gv_l1: gv_h1, gv_l2: gv_h2, gv_l3: gv_h3,3)
-      real(rt) :: dx, dy, dz, dt, courno, a_old, a_new
+      real(rt) :: dx, dy, dz, dt, a_old, a_new
       real(rt) :: dpdr, dpde
 
       integer          :: i, j, k
       integer          :: ngp, ngf, loq(3), hiq(3)
       integer          :: n, nq
       integer          :: iadv, ispec
-      real(rt) :: courx, coury, courz, courmx, courmy, courmz
+      real(rt) :: courx, coury, courz
       real(rt) :: a_half, a_dot, rhoInv
       real(rt) :: dtdxaold, dtdyaold, dtdzaold, small_pres_over_dens
 
@@ -931,7 +765,7 @@
                   print *,'   '
                   print *,'>>> Error: Nyx_advection_3d::ctoprim ',i,j,k
                   print *,'>>> ... negative density ',uin(i,j,k,URHO)
-                  call bl_error("Error:: Nyx_advection_3d.f90 :: ctoprim")
+                  call amrex_error("Error:: Nyx_advection_3d.f90 :: ctoprim")
                end if
 
                rhoInv = ONE/uin(i,j,k,URHO)
@@ -998,7 +832,7 @@
                      print *,'>>> Error: Nyx_advection_3d::ctoprim ',i,j,k
                      print *,'>>> ... new e from eos_given_RT call is negative ',q(i,j,k,QREINT)
                      print *,'    '
-                     call bl_error("Error:: Nyx_advection_3d.f90 :: ctoprim")
+                     call amrex_error("Error:: Nyx_advection_3d.f90 :: ctoprim")
                   end if
                end if
 
@@ -1065,11 +899,6 @@
          enddo
       enddo
 
-      ! Compute running max of Courant number over grids
-      courmx = courno
-      courmy = courno
-      courmz = courno
-
       dtdxaold = dt / dx / a_old
       dtdyaold = dt / dy / a_old
       dtdzaold = dt / dz / a_old
@@ -1082,10 +911,6 @@
                coury = ( c(i,j,k)+abs(q(i,j,k,QV)) ) * dtdyaold
                courz = ( c(i,j,k)+abs(q(i,j,k,QW)) ) * dtdzaold
 
-               courmx = max( courmx, courx )
-               courmy = max( courmy, coury )
-               courmz = max( courmz, courz )
-
                if (courx .gt. ONE) then
                   !
                   ! A critical region since we usually can't write from threads.
@@ -1095,7 +920,7 @@
                   print *,'>>> ... at cell (i,j,k)   : ',i,j,k
                   print *,'>>> ... u, c                ',q(i,j,k,QU), c(i,j,k)
                   print *,'>>> ... density             ',q(i,j,k,QRHO)
-                  call bl_error("Error:: Nyx_advection_3d.f90 :: CFL violation in x-dir in ctoprim")
+                  call amrex_error("Error:: Nyx_advection_3d.f90 :: CFL violation in x-dir in ctoprim")
                end if
 
                if (coury .gt. ONE) then
@@ -1107,7 +932,7 @@
                   print *,'>>> ... at cell (i,j,k)   : ',i,j,k
                   print *,'>>> ... v, c                ',q(i,j,k,QV), c(i,j,k)
                   print *,'>>> ... density             ',q(i,j,k,QRHO)
-                  call bl_error("Error:: Nyx_advection_3d.f90 :: CFL violation in y-dir in ctoprim")
+                  call amrex_error("Error:: Nyx_advection_3d.f90 :: CFL violation in y-dir in ctoprim")
                end if
 
                if (courz .gt. ONE) then
@@ -1119,14 +944,12 @@
                   print *,'>>> ... at cell (i,j,k)   : ',i,j,k
                   print *,'>>> ... w, c                ',q(i,j,k,QW), c(i,j,k)
                   print *,'>>> ... density             ',q(i,j,k,QRHO)
-                  call bl_error("Error:: Nyx_advection_3d.f90 :: CFL violation in z-dir in ctoprim")
+                  call amrex_error("Error:: Nyx_advection_3d.f90 :: CFL violation in z-dir in ctoprim")
                end if
 
             enddo
          enddo
       enddo
-
-      courno = max( courmx, courmy, courmz )
 
       ! Compute flattening coef for slope calculations
       if (use_flattening == 1) then
@@ -1150,15 +973,15 @@
 ! :::
 
     subroutine consup(uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
-                      uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
-                      src ,src_l1,src_l2,src_l3,src_h1,src_h2,src_h3, &
+                      hydro_src ,hsrc_l1,hsrc_l2,hsrc_l3,hsrc_h1,hsrc_h2,hsrc_h3, &
                       flux1,flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3, &
                       flux2,flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3, &
                       flux3,flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3, &
-                      divu_nd,divu_cc,lo,hi,dx,dy,dz,dt,a_old,a_new)
+                      divu_nd,divu_cc,d_l1, d_l2, d_l3, d_h1, d_h2, d_h3, &
+                      lo,hi,dx,dy,dz,dt,a_old,a_new)
 
       use amrex_fort_module, only : rt => amrex_real
-      use bl_constants_module
+      use amrex_constants_module
       use meth_params_module, only : difmag, NVAR, URHO, UMX, UMZ, &
            UEDEN, UEINT, UFS, normalize_species, gamma_minus_1
 
@@ -1166,28 +989,26 @@
 
       integer lo(3), hi(3)
       integer   uin_l1,  uin_l2,  uin_l3,  uin_h1,  uin_h2,  uin_h3
-      integer  uout_l1, uout_l2, uout_l3, uout_h1, uout_h2, uout_h3
-      integer   src_l1,  src_l2,  src_l3,  src_h1,  src_h2,  src_h3
+      integer   hsrc_l1,  hsrc_l2,  hsrc_l3,  hsrc_h1,  hsrc_h2,  hsrc_h3
+      integer d_l1,   d_l2,   d_l3,   d_h1,   d_h2,   d_h3
       integer flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3
       integer flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3
       integer flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3
 
-      real(rt) uin(uin_l1:uin_h1,uin_l2:uin_h2,uin_l3:uin_h3,NVAR)
-      real(rt) uout(uout_l1:uout_h1,uout_l2:uout_h2,uout_l3:uout_h3,NVAR)
-      real(rt)   src(src_l1:src_h1,src_l2:src_h2,src_l3:src_h3,NVAR)
-      real(rt) flux1(flux1_l1:flux1_h1,flux1_l2:flux1_h2,flux1_l3:flux1_h3,NVAR)
-      real(rt) flux2(flux2_l1:flux2_h1,flux2_l2:flux2_h2,flux2_l3:flux2_h3,NVAR)
-      real(rt) flux3(flux3_l1:flux3_h1,flux3_l2:flux3_h2,flux3_l3:flux3_h3,NVAR)
-      real(rt) divu_nd(lo(1):hi(1)+1,lo(2):hi(2)+1,lo(3):hi(3)+1)
-      real(rt) divu_cc(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3))
-      real(rt) dx, dy, dz, dt
-      real(rt) a_old, a_new
+      real(rt)  :: uin(uin_l1:uin_h1,uin_l2:uin_h2,uin_l3:uin_h3,NVAR)
+      real(rt)  :: hydro_src(hsrc_l1:hsrc_h1,hsrc_l2:hsrc_h2,hsrc_l3:hsrc_h3,NVAR)
+      real(rt)  :: flux1(flux1_l1:flux1_h1,flux1_l2:flux1_h2,flux1_l3:flux1_h3,NVAR)
+      real(rt)  :: flux2(flux2_l1:flux2_h1,flux2_l2:flux2_h2,flux2_l3:flux2_h3,NVAR)
+      real(rt)  :: flux3(flux3_l1:flux3_h1,flux3_l2:flux3_h2,flux3_l3:flux3_h3,NVAR)
+      real(rt)  :: divu_nd(lo(1):hi(1)+1,lo(2):hi(2)+1,lo(3):hi(3)+1)
+      real(rt)  :: divu_cc(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3)
+      real(rt)  :: dx, dy, dz, dt, a_old, a_new
 
       real(rt) :: div1, a_half, a_oldsq, a_newsq
       real(rt) :: area1, area2, area3
       real(rt) :: vol, volinv, a_newsq_inv
       real(rt) :: a_half_inv, a_new_inv, dt_a_new
-      integer          :: i, j, k, n
+      integer  :: i, j, k, n
 
       a_half  = HALF * (a_old + a_new)
       a_oldsq = a_old * a_old
@@ -1247,71 +1068,51 @@
       a_newsq_inv = ONE / a_newsq
 
       do n = 1, NVAR
-
-         ! update everything else with fluxes and source terms
          do k = lo(3),hi(3)
             do j = lo(2),hi(2)
                do i = lo(1),hi(1)
 
                   ! Density
                   if (n .eq. URHO) then
-                     uout(i,j,k,n) = uin(i,j,k,n) + &
+                      hydro_src(i,j,k,n) = &
                           ( ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
                           +   flux2(i,j,k,n) - flux2(i,j+1,k,n) &
-                          +   flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * volinv &
-                          +   dt * src(i,j,k,n) ) * a_half_inv
+                          +   flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * volinv  ) * a_half_inv
 
                   ! Momentum
                   else if (n .ge. UMX .and. n .le. UMZ) then
-                     uout(i,j,k,n) = a_old*uin(i,j,k,n) &
-                          + ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
+                     hydro_src(i,j,k,n) =  &
+                            ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
                           +   flux2(i,j,k,n) - flux2(i,j+1,k,n) &
-                          +   flux3(i,j,k,n) - flux3(i,j,k+1,n)) * volinv &
-                          +   dt * src(i,j,k,n)
-                     uout(i,j,k,n) = uout(i,j,k,n) * a_new_inv
+                          +   flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * volinv
 
                   ! (rho E)
                   else if (n .eq. UEDEN) then
-                     uout(i,j,k,n) = a_oldsq*uin(i,j,k,n) &
-                          + ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
+                     hydro_src(i,j,k,n) =  &
+                            ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
                           +   flux2(i,j,k,n) - flux2(i,j+1,k,n) &
                           +   flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * a_half * volinv &
-                          +   a_half * dt * src(i,j,k,n)  &
                           +   a_half * (a_new - a_old) * ( TWO - THREE * gamma_minus_1) * uin(i,j,k,UEINT)
-                     uout(i,j,k,n) = uout(i,j,k,n) * a_newsq_inv
 
                   ! (rho e)
                   else if (n .eq. UEINT) then
 
-                     uout(i,j,k,n) = a_oldsq*uin(i,j,k,n) &
-                          + ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
-                          +   flux2(i,j,k,n) - flux2(i,j+1,k,n) &
-                          +   flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * a_half * volinv &
-                          +   a_half * (a_new - a_old) * ( TWO - THREE * gamma_minus_1) * uin(i,j,k,UEINT) & 
-                          +   a_half * dt * src(i,j,k,n)
-
-                     ! *********************************************************************************
-                     uout(i,j,k,n) = uout(i,j,k,n) &
-                          -   a_half * dt * (HALF * gamma_minus_1 * uin(i,j,k,n)) * divu_cc(i,j,k)
-
-                     uout(i,j,k,n) = uout(i,j,k,n) / &
-                         ( ONE + a_half * dt * (HALF * gamma_minus_1 * divu_cc(i,j,k)) * a_newsq_inv )
-
-                     ! *********************************************************************************
-                     ! This is the original version
-                     ! uout(i,j,k,n) = uout(i,j,k,n) -  a_half * dt * divu_cc(i,j,k)
-                     ! *********************************************************************************
-
-                     uout(i,j,k,n) = uout(i,j,k,n) * a_newsq_inv
+                     hydro_src(i,j,k,n) =  &
+                          ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
+                           +flux2(i,j,k,n) - flux2(i,j+1,k,n) &
+                           +flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * a_half * volinv &
+                           +a_half*(a_new - a_old) * ( TWO - THREE * gamma_minus_1) * uin(i,j,k,UEINT) &
+                           -a_half*dt*(gamma_minus_1 * uin(i,j,k,n)) * divu_cc(i,j,k)
 
                   ! (rho X_i) and (rho adv_i) and (rho aux_i)
                   else
-                     uout(i,j,k,n) = uin(i,j,k,n) + &
-                          ( ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
+                     hydro_src(i,j,k,n) = &
+                            ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
                           +   flux2(i,j,k,n) - flux2(i,j+1,k,n) &
-                          +   flux3(i,j,k,n) - flux3(i,j,k+1,n)) * volinv &
-                          +   dt * src(i,j,k,n) ) * a_half_inv
+                          +   flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * volinv 
                   endif
+
+                  hydro_src(i,j,k,n) = hydro_src(i,j,k,n) / dt
 
                enddo
             enddo
@@ -1354,7 +1155,7 @@
                              bind(C, name="fort_update_state")
  
       use amrex_fort_module, only : rt => amrex_real
-      use bl_constants_module
+      use amrex_constants_module
       use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UFS, &
                                      gamma_minus_1, normalize_species
       use enforce_module, only : enforce_nonnegative_species
@@ -1464,8 +1265,8 @@
                         idir,ilo,ihi,jlo,jhi,kc,kflux,k3d,print_fortran_warnings)
 
       use amrex_fort_module, only : rt => amrex_real
-      use amrex_mempool_module, only : bl_allocate, bl_deallocate
-      use bl_constants_module
+      use amrex_mempool_module, only : amrex_allocate, amrex_deallocate
+      use amrex_constants_module
       use meth_params_module, only : QVAR, NVAR
 
       implicit none
@@ -1493,8 +1294,8 @@
       c_lo = [ilo-1, jlo-1]
       c_hi = [ihi+1, jhi+1]
 
-      call bl_allocate ( smallc, c_lo, c_hi )
-      call bl_allocate (   cavg, c_lo, c_hi )
+      call amrex_allocate ( smallc, c_lo, c_hi )
+      call amrex_allocate (   cavg, c_lo, c_hi )
 
       if(idir.eq.1) then
          do j = jlo, jhi
@@ -1526,8 +1327,8 @@
                      ugdnv,pgdnv,pg_l1,pg_l2,pg_l3,pg_h1,pg_h2,pg_h3, &
                      idir,ilo,ihi,jlo,jhi,kc,kflux,k3d,print_fortran_warnings)
 
-      call bl_deallocate(smallc)
-      call bl_deallocate(cavg)
+      call amrex_deallocate(smallc)
+      call amrex_deallocate(cavg)
 
       end subroutine cmpflx
 
@@ -1541,9 +1342,10 @@
                            ugdnv,pgdnv,pg_l1,pg_l2,pg_l3,pg_h1,pg_h2,pg_h3, &
                            idir,ilo,ihi,jlo,jhi,kc,kflux,k3d,print_fortran_warnings)
 
+      use amrex_error_module
       use amrex_fort_module, only : rt => amrex_real
       use network, only : nspec, naux
-      use bl_constants_module
+      use amrex_constants_module
       use prob_params_module, only : physbc_lo, Symmetry
       use meth_params_module, only : QVAR, NVAR, QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS, &
                                      URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, &
@@ -1813,7 +1615,7 @@
                print *,'SMALL RGDNV IN RIEMANN ',idir,i,j,k3d,rgdnv(i)
                print *,'LEFT ',ul(i),rl(i),pl(i)
                print *,'RGHT ',ur(i),rr(i),pr(i)
-               call bl_error("Error:: Nyx_advection_3d.f90 :: riemannus")
+               call amrex_error("Error:: Nyx_advection_3d.f90 :: riemannus")
             end if
          end do
 
@@ -1849,7 +1651,7 @@
                print *,'FRAC ',frac
                print *,'LEFT ',ul(i),rl(i),pl(i)
                print *,'RGHT ',ur(i),rr(i),pr(i)
-               call bl_error("Error:: Nyx_advection_3d.f90 :: riemannus")
+               call amrex_error("Error:: Nyx_advection_3d.f90 :: riemannus")
             end if
          end do
 
@@ -1933,7 +1735,7 @@
                               divu_nd,div_l1,div_l2,div_l3,div_h1,div_h2,div_h3)
 
       use amrex_fort_module, only : rt => amrex_real
-      use bl_constants_module
+      use amrex_constants_module
       use meth_params_module, only : QU, QV, QW
 
       implicit none
@@ -1979,96 +1781,3 @@
 
       end subroutine make_divu_nd
 
-! :::
-! ::: ------------------------------------------------------------------
-! :::
-
-    subroutine add_grav_source(uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
-                               uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
-                               grav, gv_l1, gv_l2, gv_l3, gv_h1, gv_h2, gv_h3, &
-                               lo,hi,dx,dy,dz,dt,a_old,a_new)
-
-      use amrex_fort_module, only : rt => amrex_real
-      use eos_module
-      use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, &
-           UEDEN, grav_source_type
-
-      implicit none
-
-      integer lo(3), hi(3)
-      integer uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3
-      integer  uout_l1, uout_l2, uout_l3, uout_h1, uout_h2, uout_h3
-      integer  gv_l1, gv_l2, gv_l3, gv_h1, gv_h2, gv_h3
-
-      real(rt)  uin( uin_l1: uin_h1, uin_l2: uin_h2, uin_l3: uin_h3,NVAR)
-      real(rt) uout(uout_l1:uout_h1,uout_l2:uout_h2,uout_l3:uout_h3,NVAR)
-      real(rt) grav(  gv_l1:  gv_h1,  gv_l2:  gv_h2,  gv_l3:  gv_h3,3)
-      real(rt) dx, dy, dz, dt
-      real(rt) a_old, a_new
-
-      real(rt) :: a_half, a_oldsq, a_newsq, a_newsq_inv
-      real(rt) :: rho
-      real(rt) :: SrU, SrV, SrW, SrE
-      real(rt) :: rhoInv, dt_a_new
-      real(rt) :: old_rhoeint, new_rhoeint, old_ke, new_ke
-      integer          :: i, j, k
-
-      a_half  = 0.5d0 * (a_old + a_new)
-      a_oldsq = a_old * a_old
-      a_newsq = a_new * a_new
-      a_newsq_inv = 1.d0 / a_newsq
-
-      dt_a_new    = dt / a_new
-
-      ! Gravitational source options for how to add the work to (rho E):
-      ! grav_source_type = 
-      ! 1: Original version ("does work")
-      ! 3: Puts all gravitational work into KE, not (rho e)
-
-      ! Add gravitational source terms
-      do k = lo(3),hi(3)
-         do j = lo(2),hi(2)
-            do i = lo(1),hi(1)
-
-               ! **** Start Diagnostics ****
-               old_ke = 0.5d0 * (uout(i,j,k,UMX)**2 + uout(i,j,k,UMY)**2 + uout(i,j,k,UMZ)**2) / &
-                                 uout(i,j,k,URHO) 
-               old_rhoeint = uout(i,j,k,UEDEN) - old_ke
-               ! ****   End Diagnostics ****
-
-               rho    = uin(i,j,k,URHO)
-               rhoInv = 1.0d0 / rho
-
-               SrU = rho * grav(i,j,k,1)
-               SrV = rho * grav(i,j,k,2)
-               SrW = rho * grav(i,j,k,3)
-
-               ! We use a_new here because we think of d/dt(a rho u) = ... + (rho g)
-               uout(i,j,k,UMX)   = uout(i,j,k,UMX) + SrU * dt_a_new
-               uout(i,j,k,UMY)   = uout(i,j,k,UMY) + SrV * dt_a_new
-               uout(i,j,k,UMZ)   = uout(i,j,k,UMZ) + SrW * dt_a_new
-
-               if (grav_source_type .eq. 1) then
-
-                   ! This does work (in 1-d)
-                   ! Src = rho u dot g, evaluated with all quantities at t^n
-                   SrE = uin(i,j,k,UMX) * grav(i,j,k,1) + &
-                         uin(i,j,k,UMY) * grav(i,j,k,2) + &
-                         uin(i,j,k,UMZ) * grav(i,j,k,3)
-                   uout(i,j,k,UEDEN) = (a_newsq*uout(i,j,k,UEDEN) + SrE * (dt*a_half)) * a_newsq_inv
-
-               else if (grav_source_type .eq. 3) then
-
-                   new_ke = 0.5d0 * (uout(i,j,k,UMX)**2 + uout(i,j,k,UMY)**2 + uout(i,j,k,UMZ)**2) / &
-                                     uout(i,j,k,URHO) 
-                   uout(i,j,k,UEDEN) = old_rhoeint + new_ke
-
-               else 
-                  call bl_error("Error:: Nyx_advection_3d.f90 :: bogus grav_source_type")
-               end if
-
-            enddo
-         enddo
-      enddo
-
-      end subroutine add_grav_source

@@ -131,7 +131,6 @@ Nyx::variable_setup()
     error_setup();
 }
 
-
 #ifndef NO_HYDRO
 void
 Nyx::hydro_setup()
@@ -231,6 +230,14 @@ Nyx::hydro_setup()
     desc_lst.addDescriptor(DiagEOS_Type, IndexType::TheCellType(),
                            StateDescriptor::Point, 1, NDIAG_C, interp,
                            state_data_extrap, store_in_checkpoint);
+
+#ifdef SDC
+    // This only has one component -- the update to rho_e from reactions
+    store_in_checkpoint = true;
+    desc_lst.addDescriptor(SDC_IR_Type, IndexType::TheCellType(),
+                           StateDescriptor::Point, 1, 1, interp,
+                           state_data_extrap, store_in_checkpoint);
+#endif
 
 #ifdef GRAVITY
     store_in_checkpoint = true;
@@ -349,6 +356,18 @@ Nyx::hydro_setup()
                           BndryFunc(generic_fill));
     desc_lst.setComponent(DiagEOS_Type, 1, "Ne", bc,
                           BndryFunc(generic_fill));
+
+    if (inhomo_reion > 0) {
+       desc_lst.setComponent(DiagEOS_Type, 2, "Z_HI", bc,
+                             BndryFunc(generic_fill));
+    }
+
+#ifdef SDC
+    set_scalar_bc(bc, phys_bc);
+    desc_lst.setComponent(SDC_IR_Type, 0, "I_R", bc,
+                          BndryFunc(generic_fill));
+#endif
+
 #ifdef GRAVITY
     if (do_grav)
     {

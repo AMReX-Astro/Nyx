@@ -1,5 +1,6 @@
 module enforce_module
 
+   use amrex_error_module
    use amrex_fort_module, only : rt => amrex_real
 
    implicit none
@@ -102,7 +103,7 @@ module enforce_module
                     print *,' Just made nth dominant species negative ',int_dom_spec-UFS+1,' at ',i,j,k
                     print *,'We were fixing species ',n-UFS+1,' which had value ',x
                     print *,'Dominant species became ',uout(i,j,k,int_dom_spec) / uout(i,j,k,URHO)
-                    call bl_error("Error:: Nyx_3d.f90 :: fort_enforce_nonnegative_species")
+                    call amrex_error("Error:: Nyx_3d.f90 :: fort_enforce_nonnegative_species")
                  end if
                  !
                  ! Now set the negative species to zero.

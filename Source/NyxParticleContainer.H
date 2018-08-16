@@ -5,6 +5,7 @@
 #include "AMReX_Amr.H"
 #include "AMReX_AmrLevel.H"
 #include "AMReX_NeighborParticles.H"
+#include "AMReX_AmrParticles.H"
 
 class NyxParticleContainerBase
 {
@@ -58,12 +59,12 @@ public:
 
     virtual void AssignDensitySingleLevel (amrex::MultiFab& mf, int level, int ncomp=1, int particle_lvl_offset = 0) const override
     { 
-        amrex::NeighborParticleContainer<NSR,NSI>::AssignCellDensitySingleLevelFort(0, mf, level, ncomp, particle_lvl_offset);
+        amrex::NeighborParticleContainer<NSR,NSI>::AssignCellDensitySingleLevel(0, mf, level, ncomp, particle_lvl_offset);
     }
     virtual void AssignDensity (amrex::Vector<std::unique_ptr<amrex::MultiFab> >& mf, int lev_min = 0, int ncomp = 1, int finest_level = -1,
                                 int ngrow = 1) const override
     {
-       amrex::NeighborParticleContainer<NSR,NSI>::AssignDensityFort(0, mf, lev_min, ncomp, finest_level);
+       amrex::NeighborParticleContainer<NSR,NSI>::AssignDensity(0, mf, lev_min, ncomp, finest_level);
     }
 
     void MultiplyParticleMass (int lev, amrex::Real mult);

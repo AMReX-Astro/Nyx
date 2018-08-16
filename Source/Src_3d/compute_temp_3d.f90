@@ -7,6 +7,7 @@
                                    comoving_a, print_fortran_warnings) &
       bind(C, name = "fort_compute_temp")
 
+      use amrex_error_module
       use amrex_fort_module, only : rt => amrex_real
       use eos_module
       use atomic_rates_module, only: this_z
@@ -53,7 +54,7 @@
                   print *,'>>> Error: compute_temp ',i,j,k
                   print *,'>>> ... negative density ',state(i,j,k,URHO)
                   print *,'    '
-                  call bl_error("Error:: compute_temp_3d.f90 :: compute_temp")
+                  call amrex_error("Error:: compute_temp_3d.f90 :: compute_temp")
                end if
             enddo
          enddo
@@ -106,6 +107,7 @@
                                    comoving_a, print_fortran_warnings) &
       bind(C, name = "fort_compute_temp_vec")
 
+      use amrex_error_module
       use amrex_fort_module, only : rt => amrex_real
       use eos_module
       use atomic_rates_module, only: this_z
@@ -140,7 +142,7 @@
                   print *,'>>> Error: compute_temp ',i,j,k
                   print *,'>>> ... negative density ',state(i,j,k,URHO)
                   print *,'    '
-                  call bl_error("Error:: compute_temp_3d.f90 :: compute_temp")
+                  call amrex_error("Error:: compute_temp_3d.f90 :: compute_temp")
                end if
             enddo
          enddo

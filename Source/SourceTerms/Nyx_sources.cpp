@@ -29,10 +29,6 @@ Nyx::get_old_source (Real      old_time,
     FillPatch(*this, Sborder, 4, old_time, State_Type, Density, Sborder.nComp());
     FillPatch(*this, Dborder, 4, old_time, DiagEOS_Type, 0, D_old.nComp());
 
-#ifndef FORCING
-    fort_interp_to_this_z(&z);
-#endif
-
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
@@ -91,10 +87,6 @@ Nyx::get_new_source (Real      old_time,
     FillPatch(*this, Dborder_old, 4, old_time, DiagEOS_Type, 0      , Dborder_old.nComp());
     FillPatch(*this, Dborder_new, 4, new_time, DiagEOS_Type, 0      , Dborder_new.nComp());
 
-#ifndef FORCING
-    fort_interp_to_this_z(&z);
-#endif
-
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
@@ -136,22 +128,6 @@ Nyx::time_center_source_terms (MultiFab& S_new,
              BL_TO_FORTRAN(ext_src_old[mfi]), BL_TO_FORTRAN(ext_src_new[mfi]),
              &a_old, &a_new, &dt, &print_fortran_warnings);
     }
-
-#if 0
-    if (heat_cool_type == 1)  
-    {
-        MultiFab& S_old = get_old_data(State_Type);
-        for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
-        {
-            const Box& bx = mfi.tilebox();
-            adjust_heat_cool
-                (bx.loVect(), bx.hiVect(), 
-                 BL_TO_FORTRAN(S_old[mfi]), BL_TO_FORTRAN(S_new[mfi]),
-                 BL_TO_FORTRAN(ext_src_old[mfi]), BL_TO_FORTRAN(ext_src_new[mfi]),
-                 &a_old, &a_new, &dt);
-        }
-    }
-#endif
 }
 #endif
 #endif

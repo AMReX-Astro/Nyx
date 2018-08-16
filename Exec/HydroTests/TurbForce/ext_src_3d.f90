@@ -54,7 +54,7 @@
                              new_diag ,new_diag_l1,new_diag_l2,new_diag_l3,new_diag_h1,new_diag_h2,new_diag_h3,&
                              src,src_l1,src_l2,src_l3,src_h1,src_h2,src_h3,problo,dx,time,z,dt)
       else
-          src = 0.d0
+          src(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),:) = 0.d0
       end if
  
       end subroutine ext_src

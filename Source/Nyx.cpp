@@ -416,8 +416,6 @@ Nyx::read_params ()
     }
 
 #ifdef HEATCOOL
-    if (heat_cool_type > 0 && add_ext_src == 0)
-       amrex::Error("Nyx::must set add_ext_src to 1 if heat_cool_type > 0");
     if (heat_cool_type != 3 && heat_cool_type != 5 && heat_cool_type != 7)
        amrex::Error("Nyx:: nonzero heat_cool_type must equal 3 or 5 or 7");
     if (heat_cool_type == 0)
@@ -2433,7 +2431,6 @@ Nyx::CreateLevelDirectory (const std::string &dir)
 
     std::string dm(dir + "/" + Nyx::retrieveDM());
     if(ParallelDescriptor::IOProcessor()) {
-      amrex::Print() << "IOIOIOIO:CD  Nyx::CreateLevelDirectory:0:  DM_dir = " << dm << "\n";
       if( ! amrex::UtilCreateDirectory(dm, 0755)) {
         amrex::CreateDirectoryFailed(dm);
       }
@@ -2442,7 +2439,6 @@ Nyx::CreateLevelDirectory (const std::string &dir)
     std::string LevelDir, FullPath;
     LevelDirectoryNames(dir, Nyx::retrieveDM(), LevelDir, FullPath);
     if(ParallelDescriptor::IOProcessor()) {
-      amrex::Print() << "IOIOIOIO:CD  Nyx::CreateLevelDirectory:1:  DM_dir = " << FullPath << "\n";
       if( ! amrex::UtilCreateDirectory(FullPath, 0755)) {
         amrex::CreateDirectoryFailed(FullPath);
       }
@@ -2451,7 +2447,6 @@ Nyx::CreateLevelDirectory (const std::string &dir)
 #ifdef AGN
     std::string agn(dir + "/" + Nyx::retrieveAGN());
     if(ParallelDescriptor::IOProcessor()) {
-      amrex::Print() << "IOIOIOIO:CD  Nyx::CreateLevelDirectory:0:  AGN_dir = " << agn << "\n";
       if( ! amrex::UtilCreateDirectory(agn, 0755)) {
         amrex::CreateDirectoryFailed(agn);
       }
@@ -2459,7 +2454,6 @@ Nyx::CreateLevelDirectory (const std::string &dir)
 
     LevelDirectoryNames(dir, Nyx::retrieveAGN(), LevelDir, FullPath);
     if(ParallelDescriptor::IOProcessor()) {
-      amrex::Print() << "IOIOIOIO:CD  Nyx::CreateLevelDirectory:1:  AGN_dir = " << FullPath << "\n";
       if( ! amrex::UtilCreateDirectory(FullPath, 0755)) {
         amrex::CreateDirectoryFailed(FullPath);
       }

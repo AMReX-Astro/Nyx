@@ -1,6 +1,8 @@
 &fortin
   max_num_part = 0
 
+  l_merge = 2.0
+  cutoff_vel = .false.
   eps_rad = 0.1
   eps_coupling = 0.15
   T_min = 1.0d+7

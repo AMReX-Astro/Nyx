@@ -10,15 +10,13 @@ contains
   !
   ! characteristics based on u
   !
-  !===========================================================================
-  ! This is called from within threaded loops in advance_gas_tile so *no* OMP here ...
-  !===========================================================================
   subroutine ppm(s,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3, &
                  u,cspd,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                  flatn,f_l1,f_l2,f_l3,f_h1,f_h2,f_h3, &
                  Ip,Im, &
                  ilo1,ilo2,ihi1,ihi2,dx,dy,dz,dt,k3d,kc,a_old)
 
+    use amrex_error_module
     use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : ppm_type
 
@@ -66,18 +64,16 @@ contains
   ! ::: ----------------------------------------------------------------
   ! :::
     
-  !===========================================================================
-  ! This is called from within threaded loops in advance_gas_tile so *no* OMP here ...
-  !===========================================================================
   subroutine ppm_type1(s,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3, &
                        u,cspd,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                        flatn,f_l1,f_l2,f_l3,f_h1,f_h2,f_h3, &
                        Ip,Im,ilo1,ilo2,ihi1,ihi2,dx,dy,dz,dt_over_a,k3d,kc)
 
-    use amrex_mempool_module, only: bl_allocate, bl_deallocate
+    use amrex_error_module
+    use amrex_mempool_module, only: amrex_allocate, amrex_deallocate
     use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : ppm_type, ppm_flatten_before_integrals
-    use bl_constants_module
+    use amrex_constants_module
 
     implicit none
 
@@ -124,25 +120,25 @@ contains
     dzinv = 1.0d0/dz
 
     ! cell-centered indexing
-    call bl_allocate(sp,ilo1-1,ihi1+1)
-    call bl_allocate(sm,ilo1-1,ihi1+1)
+    call amrex_allocate(sp,ilo1-1,ihi1+1)
+    call amrex_allocate(sm,ilo1-1,ihi1+1)
 
-    call bl_allocate(sigma,ilo1-1,ihi1+1)
-    call bl_allocate(s6,ilo1-1,ihi1+1)
+    call amrex_allocate(sigma,ilo1-1,ihi1+1)
+    call amrex_allocate(s6,ilo1-1,ihi1+1)
 
     if (ppm_type .ne. 1) &
-         call bl_error("Should have ppm_type = 1 in ppm_type1")
+         call amrex_error("Should have ppm_type = 1 in ppm_type1")
 
     if (s_l1 .gt. ilo1-3 .or. s_l2 .gt. ilo2-3) then
          print *,'Low bounds of array: ',s_l1, s_l2
          print *,'Low bounds of  loop: ',ilo1 , ilo2
-         call bl_error("Need more ghost cells on array in ppm_type1")
+         call amrex_error("Need more ghost cells on array in ppm_type1")
     end if
 
     if (s_h1 .lt. ihi1+3 .or. s_h2 .lt. ihi2+3) then
          print *,'Hi  bounds of array: ',s_h1, s_h2
          print *,'Hi  bounds of  loop: ',ihi1 , ihi2
-         call bl_error("Need more ghost cells on array in ppm_type1")
+         call amrex_error("Need more ghost cells on array in ppm_type1")
     end if
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -150,15 +146,15 @@ contains
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     ! cell-centered indexing w/extra x-ghost cell
-    call bl_allocate(dsvl,ilo1-2,ihi1+2,ilo2-1,ihi2+1)
+    call amrex_allocate(dsvl,ilo1-2,ihi1+2,ilo2-1,ihi2+1)
 
     ! edge-centered indexing for x-faces -- ppm_type = 1 only
-    call bl_allocate(sedge,ilo1-1,ihi1+2,ilo2-1,ihi2+1)
+    call amrex_allocate(sedge,ilo1-1,ihi1+2,ilo2-1,ihi2+1)
 
     ! cell-centered indexing
-    call bl_allocate(dsc,ilo1-2,ihi1+2)
-    call bl_allocate(dsl,ilo1-2,ihi1+2)
-    call bl_allocate(dsr,ilo1-2,ihi1+2)
+    call amrex_allocate(dsc,ilo1-2,ihi1+2)
+    call amrex_allocate(dsl,ilo1-2,ihi1+2)
+    call amrex_allocate(dsr,ilo1-2,ihi1+2)
 
     ! compute s at x-edges
 
@@ -287,26 +283,26 @@ contains
 
     end do
 
-    call bl_deallocate(dsc)
-    call bl_deallocate(dsl)
-    call bl_deallocate(dsr)
-    call bl_deallocate(sedge)
-    call bl_deallocate(dsvl)
+    call amrex_deallocate(dsc)
+    call amrex_deallocate(dsl)
+    call amrex_deallocate(dsr)
+    call amrex_deallocate(sedge)
+    call amrex_deallocate(dsvl)
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! y-direction
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     ! cell-centered indexing w/extra y-ghost cell
-    call bl_allocate( dsvl,ilo1-1,ihi1+1,ilo2-2,ihi2+2)
+    call amrex_allocate( dsvl,ilo1-1,ihi1+1,ilo2-2,ihi2+2)
 
     ! edge-centered indexing for y-faces
-    call bl_allocate(sedge,ilo1-1,ihi1+1,ilo2-1,ihi2+2)
+    call amrex_allocate(sedge,ilo1-1,ihi1+1,ilo2-1,ihi2+2)
 
     ! cell-centered indexing
-    call bl_allocate(dsc,ilo1-1,ihi1+1)
-    call bl_allocate(dsl,ilo1-1,ihi1+1)
-    call bl_allocate(dsr,ilo1-1,ihi1+1)
+    call amrex_allocate(dsc,ilo1-1,ihi1+1)
+    call amrex_allocate(dsl,ilo1-1,ihi1+1)
+    call amrex_allocate(dsr,ilo1-1,ihi1+1)
 
     ! compute s at y-edges
 
@@ -433,27 +429,27 @@ contains
 
     end do
 
-    call bl_deallocate(dsc)
-    call bl_deallocate(dsl)
-    call bl_deallocate(dsr)
-    call bl_deallocate(dsvl)
-    call bl_deallocate(sedge)
+    call amrex_deallocate(dsc)
+    call amrex_deallocate(dsl)
+    call amrex_deallocate(dsr)
+    call amrex_deallocate(dsvl)
+    call amrex_deallocate(sedge)
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! z-direction
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     ! cell-centered indexing
-    call bl_allocate( dsvl,ilo1-1,ihi1+1,ilo2-1,ihi2+1)
-    call bl_allocate(dsvlm,ilo1-1,ihi1+1,ilo2-1,ihi2+1)
-    call bl_allocate(dsvlp,ilo1-1,ihi1+1,ilo2-1,ihi2+1)
+    call amrex_allocate( dsvl,ilo1-1,ihi1+1,ilo2-1,ihi2+1)
+    call amrex_allocate(dsvlm,ilo1-1,ihi1+1,ilo2-1,ihi2+1)
+    call amrex_allocate(dsvlp,ilo1-1,ihi1+1,ilo2-1,ihi2+1)
 
     ! cell-centered indexing
-    call bl_allocate(dsc,ilo1-1,ihi1+1)
-    call bl_allocate(dsl,ilo1-1,ihi1+1)
-    call bl_allocate(dsr,ilo1-1,ihi1+1)
+    call amrex_allocate(dsc,ilo1-1,ihi1+1)
+    call amrex_allocate(dsl,ilo1-1,ihi1+1)
+    call amrex_allocate(dsr,ilo1-1,ihi1+1)
 
-    call bl_allocate(sedgez,ilo1-1,ihi1+1,ilo2-2,ihi2+3,k3d-1,k3d+2)
+    call amrex_allocate(sedgez,ilo1-1,ihi1+1,ilo2-2,ihi2+3,k3d-1,k3d+2)
 
     ! compute s at z-edges
 
@@ -602,17 +598,17 @@ contains
 
     end do
 
-    call bl_deallocate(dsc)
-    call bl_deallocate(dsl)
-    call bl_deallocate(dsr)
-    call bl_deallocate(dsvl)
-    call bl_deallocate(dsvlm)
-    call bl_deallocate(dsvlp)
-    call bl_deallocate(sp)
-    call bl_deallocate(sm)
-    call bl_deallocate(sedgez)
-    call bl_deallocate(sigma)
-    call bl_deallocate(s6)
+    call amrex_deallocate(dsc)
+    call amrex_deallocate(dsl)
+    call amrex_deallocate(dsr)
+    call amrex_deallocate(dsvl)
+    call amrex_deallocate(dsvlm)
+    call amrex_deallocate(dsvlp)
+    call amrex_deallocate(sp)
+    call amrex_deallocate(sm)
+    call amrex_deallocate(sedgez)
+    call amrex_deallocate(sigma)
+    call amrex_deallocate(s6)
 
   end subroutine ppm_type1
 
@@ -620,17 +616,15 @@ contains
   ! ::: ----------------------------------------------------------------
   ! :::
 
-  !===========================================================================
-  ! This is called from within threaded loops in advance_gas_tile so *no* OMP here ...
-  !===========================================================================
   subroutine ppm_type2(s,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3, &
                        u,cspd,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                        flatn,f_l1,f_l2,f_l3,f_h1,f_h2,f_h3, &
                        Ip,Im,ilo1,ilo2,ihi1,ihi2,dx,dy,dz,dt_over_a,k3d,kc)
 
+    use amrex_error_module
     use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : ppm_type, ppm_flatten_before_integrals
-    use bl_constants_module
+    use amrex_constants_module
 
     implicit none
 
@@ -687,18 +681,18 @@ contains
     allocate(sm(ilo1-1:ihi1+1,ilo2-1:ihi2+1))
 
     if (ppm_type .ne. 2) &
-         call bl_error("Should have ppm_type = 2 in ppm_type2")
+         call amrex_error("Should have ppm_type = 2 in ppm_type2")
 
     if (s_l1 .gt. ilo1-3 .or. s_l2 .gt. ilo2-3) then
          print *,'Low bounds of array: ',s_l1, s_l2
          print *,'Low bounds of  loop: ',ilo1 , ilo2
-         call bl_error("Need more ghost cells on array in ppm_type2")
+         call amrex_error("Need more ghost cells on array in ppm_type2")
     end if
 
     if (s_h1 .lt. ihi1+3 .or. s_h2 .lt. ihi2+3) then
          print *,'Hi  bounds of array: ',s_h1, s_h2
          print *,'Hi  bounds of  loop: ',ihi1 , ihi2
-         call bl_error("Need more ghost cells on array in ppm_type2")
+         call amrex_error("Need more ghost cells on array in ppm_type2")
     end if
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

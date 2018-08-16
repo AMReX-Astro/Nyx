@@ -6,6 +6,8 @@ TOP = ../..
 
 # compilation options
 COMP    = gcc
+
+# NOTE THAT THIS CODE IS NOT THREAD-SAFE RIGHT NOW -- DO NOT RUN WITH USE_OMP
 USE_MPI = TRUE
 USE_OMP = TRUE
 
@@ -15,8 +17,12 @@ DEBUG     = FALSE
 # physics
 DIM      = 3
 USE_GRAV = FALSE
+
 USE_HEATCOOL = FALSE
+
 USE_FORCING = TRUE
+
+USE_SDC = FALSE
 
 #USE_CGS = TRUE
 
