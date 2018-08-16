@@ -7,7 +7,7 @@ max_step = 10000000
 amrex.regtest_reduction = 1
 
 nyx.ppm_type         = 1
-nyx.add_ext_src      = 1
+nyx.add_ext_src      = 0
 nyx.heat_cool_type   = 3
 
 nyx.strang_split     = 1
