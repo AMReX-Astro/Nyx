@@ -35,7 +35,7 @@ extern "C"
 
   void fort_estdt_comoving_a
     (amrex::Real* old_a, amrex::Real* new_dummy_a, amrex::Real* dt, amrex::Real* change_allowed,
-     amrex::Real* final_a, int* dt_modified);
+     amrex::Real* fixed_da_interval, amrex::Real* final_a, int* dt_modified);
 
   void fort_get_method_params(int* HYP_GROW);
 
