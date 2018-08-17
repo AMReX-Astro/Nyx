@@ -32,7 +32,7 @@ Nyx::vol_weight_sum (const std::string& name,
     }
 
 #ifdef _OPENMP
-#pragma omp  if (!system::regtest_reduction) parallel reduction(+:sum)
+#pragma omp parallel if (!system::regtest_reduction) reduction(+:sum)
 #endif
     for (MFIter mfi(*mf,true); mfi.isValid(); ++mfi)
     {
@@ -77,7 +77,7 @@ Nyx::vol_weight_sum (MultiFab& mf, bool masked)
     }
 
 #ifdef _OPENMP
-#pragma omp  if (!system::regtest_reduction) parallel reduction(+:sum)
+#pragma omp parallel reduction(+:sum)
 #endif
     for (MFIter mfi(mf,true); mfi.isValid(); ++mfi)
     {
@@ -124,7 +124,7 @@ Nyx::vol_weight_squared_sum_level (const std::string& name,
     Real lev_vol = parent->boxArray(level).d_numPts() * dx[0] * dx[1] * dx[2];
 
 #ifdef _OPENMP
-#pragma omp  if (!system::regtest_reduction) parallel reduction(+:sum)
+#pragma omp parallel if (!system::regtest_reduction) reduction(+:sum)
 #endif
     for (MFIter mfi(*mf,true); mfi.isValid(); ++mfi)
     {
@@ -168,7 +168,7 @@ Nyx::vol_weight_squared_sum (const std::string& name,
     }
 
 #ifdef _OPENMP
-#pragma omp  if (!system::regtest_reduction) parallel reduction(+:sum)
+#pragma omp parallel if (!system::regtest_reduction) reduction(+:sum)
 #endif
     for (MFIter mfi(*mf,true); mfi.isValid(); ++mfi)
     {
