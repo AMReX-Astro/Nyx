@@ -69,8 +69,6 @@ nyx.particle_init_type = AsciiFile
 nyx.ascii_particle_file = particle_file.mass
 particles.particle_output_file = final_particles
 
-particles.write_in_plotfile = 1
-
 # >>>>>>>>>>>>>  PARTICLE AGGREGATION OPTIONS <<<<<<<<<<<<<<<<
 #  "None"    "Cell"     "Flow"
 # >>>>>>>>>>>>>  PARTICLE AGGREGATION OPTIONS <<<<<<<<<<<<<<<<
