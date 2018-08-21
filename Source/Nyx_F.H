@@ -18,6 +18,9 @@ extern "C"
   void fort_integrate_comoving_a_to_z 
     (amrex::Real* old_a, amrex::Real* z_value, amrex::Real* dt);
 
+  void fort_integrate_comoving_a_to_a 
+    (amrex::Real* old_a, amrex::Real* a_value, amrex::Real* dt);
+
   void set_simd(const int *simd_width);
 
   //  void fort_get_omm    (amrex::Real* omm);

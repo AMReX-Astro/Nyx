@@ -153,7 +153,8 @@ module comoving_nd_module
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine fort_integrate_comoving_a_to_a(old_a,a_value,dt) 
+      subroutine fort_integrate_comoving_a_to_a(old_a,a_value,dt) &
+         bind(C, name="fort_integrate_comoving_a_to_a")
 
         use fundamental_constants_module, only: Hubble_const
         use comoving_module             , only: comoving_h, comoving_OmM, comoving_type
@@ -169,6 +170,8 @@ module comoving_nd_module
         real(rt) :: start_a, end_a, start_slope, end_slope
         integer  :: j, nsteps
 
+        real(rt) :: max_dt
+
         if (comoving_h .eq. 0.0d0) &
           call amrex_error("fort_integrate_comoving_a_to_z: Shouldn't be setting plot_z_values if not evolving a")
 
@@ -177,7 +180,10 @@ module comoving_nd_module
       
 
         ! Use lots of steps if we want to nail the z_value
-        nsteps = 1024
+!        nsteps = 1024
+
+        ! Use enough steps if we want to be close to the a_value
+        nsteps = 2048
 
         ! We integrate a, but stop when a = a_value (or close enough)
         Delta_t = dt/nsteps
@@ -261,35 +267,83 @@ module comoving_nd_module
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine fort_estdt_comoving_a(old_a,new_a,dt,change_allowed,fixed_da_interval,final_a,dt_modified) &
+      ! This might only work for t=0=> a=.00625, although constant canceled
+      subroutine fort_est_lindt_comoving_a(old_a,new_a,dt)
+
+        use fundamental_constants_module, only: Hubble_const
+        use comoving_module             , only: comoving_h, comoving_OmM, comoving_type
+
+        implicit none
+
+        real(rt), intent(in   ) :: old_a,new_a
+        real(rt), intent(inout) :: dt
+
+        real(rt) :: H_0, OmL
+        real(rt) :: lin_dt
+
+        OmL = 1.d0 - comoving_OmM 
+
+        ! This subroutine computes dt based on not changing a by more than 5% 
+        ! if we use forward Euler integration
+        !   d(ln(a)) / dt = H_0 * sqrt(OmM/a^3 + OmL)
+
+        H_0 = comoving_h * Hubble_const
+
+        ! Could definately be optimized better
+        if (H_0 .ne. 0.0d0) then
+
+           lin_dt= ((new_a/(.75**(2/3)*(OmL+ comoving_OmM)**(1/3)))**(.75)  - &
+                ((old_a/(.75**(2/3)*(OmL+ comoving_OmM)**(1/3)))**(.75) ) ) /H_0
+           dt=lin_dt
+           
+        else 
+
+           ! dt is unchanged
+
+        end if
+
+      end subroutine fort_est_lindt_comoving_a
+
+! :::
+! ::: ----------------------------------------------------------------
+! :::
+
+      subroutine fort_estdt_comoving_a(old_a,new_a,dt,change_allowed,fixed_da,final_a,dt_modified) &
          bind(C, name="fort_estdt_comoving_a")
 
         use comoving_module             , only: comoving_h
 
         implicit none
 
-        real(rt), intent(in   ) :: old_a, change_allowed, fixed_da_interval, final_a
+        real(rt), intent(in   ) :: old_a, change_allowed, fixed_da, final_a
         real(rt), intent(inout) :: dt
         real(rt), intent(  out) :: new_a
         integer , intent(  out) :: dt_modified
         real(rt) a_value
+        real(rt) max_dt
+        max_dt = dt
 
         if (comoving_h .ne. 0.0d0) then
 
-           ! First call this to make sure dt that we send to integration routine isnt outrageous
-           call fort_est_maxdt_comoving_a(old_a,dt)
-
-           ! Initial call to see if existing dt will work
-           call fort_integrate_comoving_a(old_a,new_a,dt)
-
-           ! Make sure a isn't growing too fast
-           if( fixed_da_interval .gt. 0.0d0) then
-              a_value = (old_a +  fixed_da_interval);
-              call fort_integrate_comoving_a_to_a(old_a,a_value,dt)
-           else
+           if( fixed_da .le. 0.0d0) then
+              ! First call this to make sure dt that we send to integration routine isnt outrageous
+              call fort_est_maxdt_comoving_a(old_a,dt)
+              
+              ! Initial call to see if existing dt will work
+              call fort_integrate_comoving_a(old_a,new_a,dt)
+              
+              ! Make sure a isn't growing too fast
               call enforce_percent_change(old_a,new_a,dt,change_allowed)
-           endif
-           
+           else
+              ! First call this to make sure dt that we send to integration routine isnt outrageous
+              a_value = (old_a +  fixed_da);
+              call fort_est_lindt_comoving_a(old_a,a_value,dt)
+              call fort_est_maxdt_comoving_a(old_a,dt)
+              print*,"old a: ",old_a
+              print*,"a_dt:  ",dt
+              print*,"a value: ",a_value
+              call fort_integrate_comoving_a_to_a(old_a,a_value,dt)
+           endif           
 
            ! Make sure we don't go past final_a (if final_a is set)
            if (final_a > 0.0d0) &
