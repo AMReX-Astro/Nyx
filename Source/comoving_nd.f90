@@ -337,11 +337,11 @@ module comoving_nd_module
            else
               ! First call this to make sure dt that we send to integration routine isnt outrageous
               a_value = (old_a +  fixed_da);
-              call fort_est_lindt_comoving_a(old_a,a_value,dt)
+              call fort_est_lindt_comoving_a(old_a,a_value,dt)             
               call fort_est_maxdt_comoving_a(old_a,dt)
-              print*,"old a: ",old_a
-              print*,"a_dt:  ",dt
-              print*,"a value: ",a_value
+
+              ! Then integrate old_a to a_value using dt as a guess for the maximum dt
+              ! Output dt is based on a fraction of the input dt
               call fort_integrate_comoving_a_to_a(old_a,a_value,dt)
            endif           
 

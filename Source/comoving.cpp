@@ -108,40 +108,34 @@ Nyx::comoving_est_time_step (Real& cur_time, Real& estdt)
 	else if(estdt>.5*dt)
 	  {
 	    estdt=.5*dt;
-	    std::cout << "Lavel = 1" <<std::endl;
+	    //	    std::cout << "Lavel = 1" <<std::endl;
 	  }
 	else if(estdt>.25*dt)
 	  {
 	    estdt=.25*dt;
-	    std::cout << "Lavel = 2" <<std::endl;
+	    //	    std::cout << "Lavel = 2" <<std::endl;
 	  }
 	else if(estdt>.125*dt)
 	  {
 	    estdt=.125*dt;
-	    std::cout << "Lavel = 3" <<std::endl;
+	    //	    std::cout << "Lavel = 3" <<std::endl;
 	  }
 	else if(estdt>.0625*dt)
 	  {
 	    estdt=.0625*dt;
-	    std::cout << "Lavel = 4" <<std::endl;
+	    //	    std::cout << "Lavel = 4" <<std::endl;
 	  }
 	else
 	  {
 	    //dta*(2**(-1*np.ceil( np.log2(dta/dth))))
 	    estdt = dt*(pow(2,(-std::ceil( std::log2(dt/estdt)))));
-	    std::cout << "Lavel > 4" <<std::endl;
+	    //	    std::cout << "Lavel > 4" <<std::endl;
 	  }
 	fort_integrate_comoving_a(&old_a,&new_dummy_a,&estdt);
       }
     else
       {
-	if (verbose && (dt_modified == 1) && ParallelDescriptor::IOProcessor())
-        {
-	  std::cout<<"estdt is "<<estdt<<std::endl;}
 	estdt=std::min(estdt,dt);
-	if (verbose && (dt_modified == 1) && ParallelDescriptor::IOProcessor())
-        {
-	  std::cout<<"dt is "<<dt<<std::endl;}
       }
           
     return;
