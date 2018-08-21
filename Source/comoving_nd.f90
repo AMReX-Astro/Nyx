@@ -336,13 +336,13 @@ module comoving_nd_module
               call enforce_percent_change(old_a,new_a,dt,change_allowed)
            else
               ! First call this to make sure dt that we send to integration routine isnt outrageous
-              a_value = (old_a +  fixed_da);
-              call fort_est_lindt_comoving_a(old_a,a_value,dt)             
+              new_a = (old_a +  fixed_da);
+              call fort_est_lindt_comoving_a(old_a,new_a,dt)             
               call fort_est_maxdt_comoving_a(old_a,dt)
 
               ! Then integrate old_a to a_value using dt as a guess for the maximum dt
               ! Output dt is based on a fraction of the input dt
-              call fort_integrate_comoving_a_to_a(old_a,a_value,dt)
+              call fort_integrate_comoving_a_to_a(old_a,new_a,dt)
            endif           
 
            ! Make sure we don't go past final_a (if final_a is set)

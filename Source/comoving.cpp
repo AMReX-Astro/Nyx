@@ -64,6 +64,44 @@ Nyx::comoving_est_time_step (Real& cur_time, Real& estdt)
         fort_estdt_comoving_a
 	  (&new_a, &new_dummy_a, &dt, &change_allowed, &fixed_da, &final_a, &dt_modified);
 
+    if(dt_binpow >= 0)
+      {
+	if(estdt>=dt)
+	  estdt=dt;
+	else if(estdt>.5*dt)
+	  {
+	    estdt=.5*dt;
+	    //	    std::cout << "Lavel = 1" <<std::endl;
+	  }
+	else if(estdt>.25*dt)
+	  {
+	    estdt=.25*dt;
+	    //	    std::cout << "Lavel = 2" <<std::endl;
+	  }
+	else if(estdt>.125*dt)
+	  {
+	    estdt=.125*dt;
+	    //	    std::cout << "Lavel = 3" <<std::endl;
+	  }
+	else if(estdt>.0625*dt)
+	  {
+	    estdt=.0625*dt;
+	    //	    std::cout << "Lavel = 4" <<std::endl;
+	  }
+	else
+	  {
+	    //dta*(2**(-1*np.ceil( np.log2(dta/dth))))
+	    estdt = dt*(pow(2,(-std::ceil( std::log2(dt/estdt)))));
+	    //	    std::cout << "Lavel > 4" <<std::endl;
+	  }
+	fort_integrate_comoving_a(&new_a,&new_dummy_a,&estdt);
+      }
+    else
+      {
+	estdt=std::min(estdt,dt);
+      }
+          
+
         if (verbose && (dt_modified == 1) && ParallelDescriptor::IOProcessor())
         {
             std::cout << "...estdt after call to comoving   : "
@@ -83,24 +121,6 @@ Nyx::comoving_est_time_step (Real& cur_time, Real& estdt)
         // integrate a forward.
         fort_estdt_comoving_a
 	  (&old_a, &new_dummy_a, &dt, &change_allowed, &fixed_da, &final_a, &dt_modified);
-
-        if (verbose && (dt_modified == 1) && ParallelDescriptor::IOProcessor())
-        {
-            std::cout << "...advancing from old_a_time rather than new_a_time! " << std::endl;
-            std::cout << "...estdt after call to comoving   : "
-                      << dt
-                      << "\n...change in a is "
-                      << (new_dummy_a - old_a) / old_a * 100.0
-                      << " percent\n";
-        }
-
-    } 
-    else if ( std::abs(cur_time - old_a_time) <= 1.e-12 * cur_time)
-    {
-       std::cout << "comoving_est_time_step: DONT KNOW WHAT TIME IT IS " << cur_time << std::endl;
-       exit(0);
-    } 
-
     if(dt_binpow >= 0)
       {
 	if(estdt>=dt)
@@ -137,7 +157,24 @@ Nyx::comoving_est_time_step (Real& cur_time, Real& estdt)
       {
 	estdt=std::min(estdt,dt);
       }
-          
+
+        if (verbose && (dt_modified == 1) && ParallelDescriptor::IOProcessor())
+        {
+            std::cout << "...advancing from old_a_time rather than new_a_time! " << std::endl;
+            std::cout << "...estdt after call to comoving   : "
+                      << dt
+                      << "\n...change in a is "
+                      << (new_dummy_a - old_a) / old_a * 100.0
+                      << " percent\n";
+        }
+
+    } 
+    else if ( std::abs(cur_time - old_a_time) <= 1.e-12 * cur_time)
+    {
+       std::cout << "comoving_est_time_step: DONT KNOW WHAT TIME IT IS " << cur_time << std::endl;
+       exit(0);
+    } 
+
     return;
 }
 
