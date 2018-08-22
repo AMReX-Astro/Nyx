@@ -77,7 +77,7 @@ Nyx::vol_weight_sum (MultiFab& mf, bool masked)
     }
 
 #ifdef _OPENMP
-#pragma omp parallel reduction(+:sum)
+#pragma omp parallel if (!system::regtest_reduction) reduction(+:sum)
 #endif
     for (MFIter mfi(mf,true); mfi.isValid(); ++mfi)
     {
