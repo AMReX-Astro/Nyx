@@ -147,7 +147,6 @@
         use amrex_fort_module, only : rt => amrex_real
         use meth_params_module
         use eos_module
-        use network, only : nspec, naux
 
         implicit none
 
@@ -372,26 +371,27 @@
            heat_cool_type               = heat_cool_in
            inhomo_reion                 = inhomo_reion_in
 
-        end if
-
-        ! Easy indexing for the passively advected quantities.  
-        ! This lets us loop over all four groups (advected, species, aux)
-        ! in a single loop.
-        allocate(qpass_map(QVAR))
-        allocate(upass_map(NVAR))
-        npassive = 0
-        do iadv = 1, nadv
-           upass_map(npassive + iadv) = UFA + iadv - 1
-           qpass_map(npassive + iadv) = QFA + iadv - 1
-        enddo
-        npassive = npassive + nadv
-        if(QFS > -1) then
-           do ispec = 1, nspec+naux
-              upass_map(npassive + ispec) = UFS + ispec - 1
-              qpass_map(npassive + ispec) = QFS + ispec - 1
+           ! Easy indexing for the passively advected quantities.  
+           ! This lets us loop over all four groups (advected, species, aux)
+           ! in a single loop.
+           allocate(qpass_map(QVAR))
+           allocate(upass_map(NVAR))
+           npassive = 0
+           do iadv = 1, nadv
+              upass_map(npassive + iadv) = UFA + iadv - 1
+              qpass_map(npassive + iadv) = QFA + iadv - 1
            enddo
-           npassive = npassive + nspec + naux
-        endif
+           npassive = npassive + nadv
+           if(QFS > -1) then
+              print *,'NSPEC NAUX ',nspec, naux
+              do ispec = 1, nspec+naux
+                 upass_map(npassive + ispec) = UFS + ispec - 1
+                 qpass_map(npassive + ispec) = QFS + ispec - 1
+              enddo
+              npassive = npassive + nspec + naux
+           endif
+
+        end if
 
       end subroutine fort_set_method_params
 
