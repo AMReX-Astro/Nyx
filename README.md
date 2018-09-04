@@ -66,11 +66,13 @@ For the reaction and thermal rates of the primordial chemical composition gas
 Lukic, Stark, Nugent, White, Meiksin & Almgren (2015), MNRAS, 446, 3697:
 http://adsabs.harvard.edu/abs/2015MNRAS.446.3697L
 
-For considerations regarding the synthesis model of the UV background, 
+For considerations regarding the spatially uniform synthesis model of the UV background, 
 which provides the photo-ionization and photo-heating rates, see Onorbe,
 Hennawi & Lukic (2017), ApJ, 837, 106:
 http://adsabs.harvard.edu/abs/2017ApJ...837..106O
 
+We have also implemented non-radiative transfer methods to model inhomogeneous reionization,
+the paper is in preparation.
 
 ## Output
 
