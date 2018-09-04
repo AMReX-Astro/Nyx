@@ -1,7 +1,6 @@
 # AMREX_HOME defines the directory in which we will find all the AMReX code
 AMREX_HOME ?= ../../../amrex
 
-HPGMG_DIR ?= ../../Util/hpgmg/finite-volume
 CVODE_LIB_DIR ?= $(CVODE_LIB)
 
 # TOP defines the directory in which we will find Source, Exec, etc
@@ -23,8 +22,6 @@ DEBUG     = FALSE
 
 GIMLET = FALSE
 REEBER = FALSE
-
-USE_HPGMG = FALSE
 
 # physics
 DIM      = 3
