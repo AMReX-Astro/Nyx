@@ -136,7 +136,6 @@ amr.plot_files_output = 1
 amr.plot_file       = plt
 amr.plot_int        = 10
 amr.plot_nfiles     = 64
-particles.write_in_plotfile = 1
 
 amr.plot_vars        = density xmom ymom zmom rho_e Temp phi_grav
 amr.derive_plot_vars = particle_mass_density

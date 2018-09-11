@@ -18,6 +18,9 @@ extern "C"
   void fort_integrate_comoving_a_to_z 
     (amrex::Real* old_a, amrex::Real* z_value, amrex::Real* dt);
 
+  void fort_integrate_comoving_a_to_a 
+    (amrex::Real* old_a, amrex::Real* a_value, amrex::Real* dt);
+
   void set_simd(const int *simd_width);
 
   //  void fort_get_omm    (amrex::Real* omm);
@@ -35,7 +38,7 @@ extern "C"
 
   void fort_estdt_comoving_a
     (amrex::Real* old_a, amrex::Real* new_dummy_a, amrex::Real* dt, amrex::Real* change_allowed,
-     amrex::Real* final_a, int* dt_modified);
+     amrex::Real* fixed_da_interval, amrex::Real* final_a, int* dt_modified);
 
   void fort_get_method_params(int* HYP_GROW);
 

@@ -12,6 +12,7 @@ USE_OMP = FALSE
 
 PRECISION = DOUBLE
 DEBUG     = FALSE
+DEBUG     = TRUE
 
 # physics
 DIM      = 3

@@ -18,10 +18,11 @@
 ! ::: time      => problem evolution time
 ! ::: level     => refinement level of this array
 ! ::: -----------------------------------------------------------
+
       subroutine tag_overdensity(tag,tagl1,tagl2,tagl3,tagh1,tagh2,tagh3, &
                                  set,clear, &
                                  den,denl1,denl2,denl3,denh1,denh2,denh3, &
-                                 lo,hi,nc,delta,level,avg_den)
+                                 lo,hi,nc,domlo,domhi,delta,level,avg_den)
 
       use amrex_fort_module, only : rt => amrex_real
       use probdata_module
@@ -30,7 +31,7 @@
       integer set, clear, nc, level
       integer tagl1,tagl2,tagl3,tagh1,tagh2,tagh3
       integer denl1,denl2,denl3,denh1,denh2,denh3
-      integer lo(3), hi(3)
+      integer lo(3), hi(3), domlo(3), domhi(3)
       integer tag(tagl1:tagh1,tagl2:tagh2,tagl3:tagh3)
       real(rt) den(denl1:denh1,denl2:denh2,denl3:denh3,nc)
       real(rt) delta(3), avg_den
@@ -74,21 +75,17 @@
 ! ::: level     => refinement level of this array
 ! ::: -----------------------------------------------------------
       subroutine tag_region(tag,tagl1,tagl2,tagl3,tagh1,tagh2,tagh3, &
-                            set,clear, &
-                            var,varl1,varl2,varl3,varh1,varh2,varh3, &
-                            lo,hi,nd,domlo,domhi, &
-                            delta,xlo,problo,time,level)
+                            set,lo,hi,domlo,domhi, &
+                            delta,xlo,problo,level)
       use amrex_fort_module, only : rt => amrex_real
       use probdata_module
       implicit none
 
-      integer          :: set, clear, nd, level
+      integer          :: set,level
       integer          :: tagl1,tagl2,tagl3,tagh1,tagh2,tagh3
-      integer          :: varl1,varl2,varl3,varh1,varh2,varh3
       integer          :: lo(3), hi(3), domlo(3), domhi(3)
       integer          :: tag(tagl1:tagh1,tagl2:tagh2,tagl3:tagh3)
-      real(rt) :: var(varl1:varh1,varl2:varh2,varl3:varh3,nd)
-      real(rt) :: delta(3), xlo(3), problo(3), time
+      real(rt) :: delta(3), xlo(3), problo(3)
 
       integer          :: ilo,jlo,klo,ihi,jhi,khi
       integer          :: i,j,k

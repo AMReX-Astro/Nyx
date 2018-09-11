@@ -180,6 +180,16 @@ public:
     static amrex::Real relative_max_change_a;
 
     //
+    // Absolute change in a allowed in one timestep for fixed delta_a
+    //
+    static amrex::Real absolute_max_change_a;
+
+    //
+    // Positive number means use powers of 2 binning for relative dt
+    //
+    static amrex::Real dt_binpow;
+
+    //
     // Old and new times at which "old_a" and "new_a" are defined.
     //
     static amrex::Real old_a_time;

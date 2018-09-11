@@ -81,24 +81,33 @@
 
       integer i,j,k
 
-      do k = lo(3), hi(3)
-      do j = lo(2), hi(2)
-      do i = lo(1), hi(1)
-         state(i,j,k,URHO)    = 1.d0
-         state(i,j,k,UMX:UMZ) = 0.0d0
+      if (ns.gt.1) then
 
-         state(i,j,k,UEINT) = 10.d0
-         state(i,j,k,UEDEN) = state(i,j,k,UEINT) + 0.5d0 / state(i,j,k,URHO) *  &
-            (state(i,j,k,UMX)**2 + state(i,j,k,UMY)**2 + state(i,j,k,UMZ)**2) 
+         do k = lo(3), hi(3)
+         do j = lo(2), hi(2)
+         do i = lo(1), hi(1)
+            state(i,j,k,URHO)    = 1.d0
+            state(i,j,k,UMX:UMZ) = 0.0d0
 
-         if (UFS .gt. -1) then
-             state(i,j,k,UFS  ) = XHYDROGEN
-             state(i,j,k,UFS+1) = (1.d0 - XHYDROGEN)
-         end if
+            state(i,j,k,UEINT) = 10.d0
+            state(i,j,k,UEDEN) = state(i,j,k,UEINT) + 0.5d0 / state(i,j,k,URHO) *  &
+               (state(i,j,k,UMX)**2 + state(i,j,k,UMY)**2 + state(i,j,k,UMZ)**2) 
+   
+            if (UFS .gt. -1) then
+                state(i,j,k,UFS  ) = XHYDROGEN
+                state(i,j,k,UFS+1) = (1.d0 - XHYDROGEN)
+            end if
+   
+            diag_eos(i,j,k,TEMP_COMP) = 1000.d0
+         enddo
+         enddo
+         enddo
 
-         diag_eos(i,j,k,TEMP_COMP) = 1000.d0
-      enddo
-      enddo
-      enddo
+      else
+
+         state(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),URHO)    = 1.d0
+
+      endif
+
 
       end subroutine fort_initdata
