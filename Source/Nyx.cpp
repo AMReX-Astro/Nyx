@@ -438,11 +438,15 @@ Nyx::read_params ()
     }
 
 #ifndef AMREX_USE_CVODE
+    #ifndef AMREX_USE_SUNDIALS3
     if (heat_cool_type == 5 || heat_cool_type == 7)
-        amrex::Error("Nyx:: cannot set heat_cool_type = 5 or 7 unless USE_CVODE=TRUE");
+        amrex::Error("Nyx:: cannot set heat_cool_type = 5 or 7 unless USE_CVODE=TRUE or USE_SUNDIALS3=TRUE");
+    #endif
 #else
+    #ifdef SDC
     if (heat_cool_type == 7 && sdc_split == 1)
         amrex::Error("Nyx:: cannot set heat_cool_type = 7 with sdc_split = 1");
+    #endif
 #endif
 
 #else

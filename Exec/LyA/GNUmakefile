@@ -31,6 +31,7 @@ USE_GRAV = TRUE
 USE_HEATCOOL = TRUE
 USE_AGN = FALSE
 USE_CVODE = FALSE
+USE_SUNDIALS3 = FALSE
 
 Bpack := ./Make.package
 Blocs := .
