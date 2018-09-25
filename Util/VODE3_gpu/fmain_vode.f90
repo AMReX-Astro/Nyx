@@ -15,9 +15,6 @@ program main
     use vode_aux_module    , only: JH_vode, JHe_vode, z_vode, i_vode, j_vode, k_vode, z_vode, fn_vode, NR_vode
     use reion_aux_module   , only: zhi_flash, zheii_flash, flash_h, flash_he, &
                                    T_zhi, T_zheii, inhomogeneous_on
-    use cvode_interface
-    use fnvector_serial
-    use fcvode_extras
     use, intrinsic :: iso_c_binding
 
   implicit none
@@ -46,7 +43,7 @@ program main
   integer :: STRANG_COMP
 !  integer :: i_loop, j_loop
 
-    DO i = 1, iargc()
+    DO i = 1, command_argument_count()
        CALL getarg(i, arg)
        WRITE (*,*) arg
     END DO
