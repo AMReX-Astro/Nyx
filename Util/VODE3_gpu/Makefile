@@ -1,4 +1,5 @@
-all: fmain.exe fmain_vode.exe fmain_gpu.exe
+all: fmain_gpu_atomic.exe
+#all: fmain.exe fmain_vode.exe fmain_gpu.exe
 
 
 # Set SUNDIALS_INSTALL as an environment variable for a sundials installation 
@@ -31,8 +32,11 @@ EXAMPLES = constants_mod constants_cosmo comoving_params reion_aux_module comovi
 
 EXAMPLES_VODE = constants_mod constants_cosmo comoving_params reion_aux_module comoving_nd meth_params misc_params vode_aux atomic_rates eos_hc eos_params f_rhs integrate_state_vode_3d ../BLAS/daxpy ../BLAS/ddot  ../BLAS/dscal  ../BLAS/idamax  ../BLAS/dcopy ../VODE/dewset ../VODE/dgesl ../VODE/dvhin  ../VODE/dvjac   ../VODE/dvnlsd ../VODE/dvode ../VODE/dvsol ../VODE/dvstep ../VODE/ixsav ../VODE/xsetf ../VODE/dacopy ../VODE/dgbfa ../VODE/dgefa ../VODE/dumach ../VODE/dvindy ../VODE/dvjust ../VODE/dvnorm ../VODE/dvset ../VODE/dvsrco ../VODE/iumach ../VODE/xerrwd ../VODE/xsetun ../VODE/dgbsl
 
+EXAMPLES_F77 = ../BLAS/daxpy ../BLAS/ddot  ../BLAS/dscal  ../BLAS/idamax  ../BLAS/dcopy ../VODE/dewset ../VODE/dgesl ../VODE/dvhin  ../VODE/dvjac   ../VODE/dvnlsd ../VODE/dvode ../VODE/dvsol ../VODE/dvstep ../VODE/ixsav ../VODE/xsetf ../VODE/dacopy ../VODE/dgbfa ../VODE/dgefa ../VODE/dumach ../VODE/dvindy ../VODE/dvjust ../VODE/dvnorm ../VODE/dvset ../VODE/dvsrco ../VODE/iumach ../VODE/xerrwd ../VODE/xsetun ../VODE/dgbsl
+
 OBJECTS_VODE  = ${EXAMPLES_VODE:=.o}
 OBJECTS  = ${EXAMPLES:=.o}
+OBJECTS_F77  = ${EXAMPLES_F77:=.o}
 
 # -----------------------------------------------------------------------------------------
 
@@ -64,8 +68,9 @@ fmain.exe: ${OBJECTS} fmain.o
 fmain_gpu.exe: fmain_gpu.cuf constants_mod.f90 reion_aux_module.f90 comoving_nd.f90 comoving_params.f90 constants_cosmo.f90
 	pgfortran -o fmain_gpu.exe fmain_gpu.cuf constants_mod.f90  reion_aux_module.f90 comoving_nd.f90 comoving_params.f90  constants_cosmo.f90
 
-fmain_gpu_atomic.exe: fmain_gpu_atomic.cuf atomic_rates.cuf constants_mod.f90 reion_aux_module.f90 comoving_nd.f90 comoving_params.f90 constants_cosmo.f90 vode_aux.f90
-	pgfortran -o fmain_gpu_atomic.exe constants_mod.f90  reion_aux_module.f90 comoving_nd.f90 comoving_params.f90  constants_cosmo.f90 vode_aux.f90 atomic_rates.cuf fmain_gpu_atomic.cuf
+fmain_gpu_atomic.exe: fmain_gpu_atomic.cuf atomic_rates.cuf constants_mod.f90 reion_aux_module.f90 comoving_nd.f90 comoving_params.f90 constants_cosmo.f90 vode_aux.f90 meth_params.f90 eos_hc.f90 eos_params.f90 f_rhs.f90 misc_params.f90 integrate_state_vode_3d.f90 ${OBJECTS_F77} fmain_gpu_atomic.cuf
+	pgfortran -o fmain_gpu_atomic.exe constants_cosmo.f90 constants_mod.f90  reion_aux_module.f90 comoving_nd.f90 comoving_params.f90  vode_aux.f90 atomic_rates.cuf meth_params.f90 eos_hc.f90 eos_params.f90 f_rhs.f90 misc_params.f90 integrate_state_vode_3d.f90  ${OBJECTS_F77} fmain_gpu_atomic.cuf
+
 #fmain_gpu.exe: fmain_gpu.o reion_aux_module.o constants_mod.o
 #	${F90} ${F90FLAGS} -o fmain_gpu.exe fmain_gpu.o reion_aux_module.o constants_mod.o /sw/summitdev/cuda/9.0.69/lib64/libcu*.so
 
