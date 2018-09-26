@@ -63,6 +63,9 @@ fmain.exe: ${OBJECTS} fmain.o
 
 fmain_gpu.exe: fmain_gpu.cuf constants_mod.f90 reion_aux_module.f90 comoving_nd.f90 comoving_params.f90 constants_cosmo.f90
 	pgfortran -o fmain_gpu.exe fmain_gpu.cuf constants_mod.f90  reion_aux_module.f90 comoving_nd.f90 comoving_params.f90  constants_cosmo.f90
+
+fmain_gpu_atomic.exe: fmain_gpu_atomic.cuf atomic_rates.cuf constants_mod.f90 reion_aux_module.f90 comoving_nd.f90 comoving_params.f90 constants_cosmo.f90 vode_aux.f90
+	pgfortran -o fmain_gpu_atomic.exe constants_mod.f90  reion_aux_module.f90 comoving_nd.f90 comoving_params.f90  constants_cosmo.f90 vode_aux.f90 atomic_rates.cuf fmain_gpu_atomic.cuf
 #fmain_gpu.exe: fmain_gpu.o reion_aux_module.o constants_mod.o
 #	${F90} ${F90FLAGS} -o fmain_gpu.exe fmain_gpu.o reion_aux_module.o constants_mod.o /sw/summitdev/cuda/9.0.69/lib64/libcu*.so
 
