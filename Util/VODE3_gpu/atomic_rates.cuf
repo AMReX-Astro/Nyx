@@ -22,7 +22,7 @@ module atomic_rates_module
   implicit none
 
   ! Photo- rates (from file)
-  integer, public :: NCOOLFILE
+  integer, allocatable, public :: NCOOLFILE
   real(rt), dimension(:), allocatable, public :: lzr
   real(rt), dimension(:), allocatable, public :: rggh0, rgghe0, rgghep
   real(rt), dimension(:), allocatable, public :: reh0, rehe0, rehep
@@ -34,7 +34,7 @@ module atomic_rates_module
   real(rt), dimension(NCOOLTAB+1), public :: BetaH0, BetaHe0, BetaHep, Betaff1, Betaff4
   real(rt), dimension(NCOOLTAB+1), public :: RecHp, RecHep, RecHepp
 
-  real(rt), public, save :: this_z, ggh0, gghe0, gghep, eh0, ehe0, ehep
+  real(rt), allocatable, public:: this_z, ggh0, gghe0, gghep, eh0, ehe0, ehep
  
   real(rt), parameter, public :: TCOOLMIN = 0.0d0, TCOOLMAX = 9.0d0  ! in log10
   real(rt), parameter, public :: TCOOLMIN_R = 10.0d0**TCOOLMIN, TCOOLMAX_R = 10.0d0**TCOOLMAX
@@ -48,7 +48,13 @@ module atomic_rates_module
   ! lives in set_method_params.
   real(rt), public :: XHYDROGEN = 0.76d0
   real(rt), public :: YHELIUM   = 7.8947368421d-2  ! (1.0d0-XHYDROGEN)/(4.0d0*XHYDROGEN)
-  attributes(managed) :: lzr, rggh0, rgghe0, rgghep, reh0, rehe0, rehep
+  attributes(managed) :: NCOOLFILE, lzr, rggh0, rgghe0, rgghep, reh0, rehe0, rehep
+  attributes(managed) :: AlphaHp, AlphaHep, AlphaHepp, Alphad
+  attributes(managed) :: GammaeH0, GammaeHe0, GammaeHep
+  attributes(managed) :: BetaH0, BetaHe0, BetaHep, Betaff1, Betaff4
+  attributes(managed) :: RecHp, RecHep, RecHepp
+  attributes(managed) :: this_z, ggh0, gghe0, gghep, eh0, ehe0, ehep
+  attributes(constant) :: YHELIUM
 
   contains
 
@@ -168,6 +174,8 @@ module atomic_rates_module
             endif
          endif
 
+	 allocate(NCOOLFILE)
+	 allocate(this_z, ggh0, gghe0, gghep, eh0, ehe0, ehep)
          NCOOLFILE = 0
          do
             read(11,*,end=10) tmp, tmp, tmp, tmp, tmp,  tmp, tmp
@@ -301,7 +309,7 @@ module atomic_rates_module
 
       use vode_aux_module, only: z_vode
 
-      real(rt), intent(in) :: z
+      real(rt), value, intent(in) :: z
       real(rt) :: lopz, fact
       integer :: i, j
 

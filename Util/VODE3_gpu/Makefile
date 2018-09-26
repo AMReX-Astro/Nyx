@@ -69,7 +69,7 @@ fmain_gpu.exe: fmain_gpu.cuf constants_mod.f90 reion_aux_module.f90 comoving_nd.
 	pgfortran -o fmain_gpu.exe fmain_gpu.cuf constants_mod.f90  reion_aux_module.f90 comoving_nd.f90 comoving_params.f90  constants_cosmo.f90
 
 fmain_gpu_atomic.exe: fmain_gpu_atomic.cuf atomic_rates.cuf constants_mod.f90 reion_aux_module.f90 comoving_nd.f90 comoving_params.f90 constants_cosmo.f90 vode_aux.f90 meth_params.f90 eos_hc.f90 eos_params.f90 f_rhs.f90 misc_params.f90 integrate_state_vode_3d.f90 ${OBJECTS_F77} fmain_gpu_atomic.cuf
-	pgfortran -o fmain_gpu_atomic.exe constants_cosmo.f90 constants_mod.f90  reion_aux_module.f90 comoving_nd.f90 comoving_params.f90  vode_aux.f90 atomic_rates.cuf meth_params.f90 eos_hc.f90 eos_params.f90 f_rhs.f90 misc_params.f90 integrate_state_vode_3d.f90  ${OBJECTS_F77} fmain_gpu_atomic.cuf
+	pgfortran -o fmain_gpu_atomic.exe constants_cosmo.f90 constants_mod.f90  reion_aux_module.f90 comoving_nd.f90 comoving_params.f90  vode_aux.f90 atomic_rates.cuf meth_params.f90 eos_hc.cuf eos_params.f90 f_rhs.f90 misc_params.f90 integrate_state_vode_3d.f90  ${OBJECTS_F77} fmain_gpu_atomic.cuf
 
 #fmain_gpu.exe: fmain_gpu.o reion_aux_module.o constants_mod.o
 #	${F90} ${F90FLAGS} -o fmain_gpu.exe fmain_gpu.o reion_aux_module.o constants_mod.o /sw/summitdev/cuda/9.0.69/lib64/libcu*.so
