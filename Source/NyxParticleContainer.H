@@ -61,10 +61,9 @@ public:
     { 
         amrex::NeighborParticleContainer<NSR,NSI>::AssignCellDensitySingleLevel(0, mf, level, ncomp, particle_lvl_offset);
     }
-    virtual void AssignDensity (amrex::Vector<std::unique_ptr<amrex::MultiFab> >& mf, int lev_min = 0, int ncomp = 1, int finest_level = -1,
-                                int ngrow = 1) const override
+    virtual void AssignDensity (amrex::Vector<std::unique_ptr<amrex::MultiFab> >& mf, int lev_min = 0, int ncomp = 1, int finest_level = -1, int ngrow = 1) const override
     {
-       amrex::NeighborParticleContainer<NSR,NSI>::AssignDensity(0, mf, lev_min, ncomp, finest_level);
+        amrex::NeighborParticleContainer<NSR,NSI>::AssignDensity(0, mf, lev_min, ncomp, finest_level, ngrow);
     }
 
     void MultiplyParticleMass (int lev, amrex::Real mult);

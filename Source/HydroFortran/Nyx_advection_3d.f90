@@ -694,12 +694,12 @@
                          src,  src_l1, src_l2, src_l3, src_h1, src_h2, src_h3, &
                          srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                          grav,gv_l1, gv_l2, gv_l3, gv_h1, gv_h2, gv_h3, &
-                         dx,dy,dz,dt,ngp,ngf,a_old,a_new)
+                         dx,dy,dz,dt,ngq,ngf,a_old,a_new)
       !
-      !     Will give primitive variables on lo-ngp:hi+ngp, and flatn on lo-ngf:hi+ngf
+      !     Will give primitive variables on lo-ngq:hi+ngq, and flatn on lo-ngf:hi+ngf
       !     if use_flattening=1.  Declared dimensions of q,c,csml,flatn are given
-      !     by DIMS(q).  This declared region is assumed to encompass lo-ngp:hi+ngp.
-      !     Also, uflaten call assumes ngp>=ngf+3 (ie, primitve data is used by the
+      !     by DIMS(q).  This declared region is assumed to encompass lo-ngq:hi+ngq.
+      !     Also, uflaten call assumes ngq>=ngf+3 (ie, primitve data is used by the
       !     routine that computes flatn).
       !
       use amrex_error_module
@@ -739,7 +739,7 @@
       real(rt) :: dpdr, dpde
 
       integer          :: i, j, k
-      integer          :: ngp, ngf, loq(3), hiq(3)
+      integer          :: ngq, ngf, loq(3), hiq(3)
       integer          :: n, nq
       integer          :: iadv, ispec
       real(rt) :: courx, coury, courz
@@ -747,8 +747,8 @@
       real(rt) :: dtdxaold, dtdyaold, dtdzaold, small_pres_over_dens
 
       do i=1,3
-         loq(i) = lo(i)-ngp
-         hiq(i) = hi(i)+ngp
+         loq(i) = lo(i)-ngq
+         hiq(i) = hi(i)+ngq
       enddo
       !
       ! Make q (all but p), except put e in slot for rho.e, fix after eos call.
@@ -862,9 +862,9 @@
       !        IF NOT THEN THE FORMULAE BELOW ARE INCOMPLETE.
 
       ! compute srcQ terms
-      do k = lo(3)-1, hi(3)+1
-         do j = lo(2)-1, hi(2)+1
-            do i = lo(1)-1, hi(1)+1
+      do k = loq(3), hiq(3)
+         do j = loq(2), hiq(2)
+            do i = loq(1), hiq(1)
 
                rhoInv = ONE/q(i,j,k,QRHO)
 

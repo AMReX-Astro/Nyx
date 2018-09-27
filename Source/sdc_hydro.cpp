@@ -45,14 +45,14 @@ Nyx::sdc_hydro (Real time,
     // point
     enforce_nonnegative_species(S_old);
 
-    MultiFab ext_src_old(grids, dmap, NUM_STATE, 3);
+    MultiFab ext_src_old(grids, dmap, NUM_STATE, NUM_GROW);
     ext_src_old.setVal(0.);
 
     if (add_ext_src)
        get_old_source(prev_time, dt, ext_src_old);
 
     // Define the gravity vector
-    MultiFab grav_vector(grids, dmap, BL_SPACEDIM, 3);
+    MultiFab grav_vector(grids, dmap, BL_SPACEDIM, NUM_GROW);
     grav_vector.setVal(0.);
 
 #ifdef GRAVITY

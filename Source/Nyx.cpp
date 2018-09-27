@@ -438,11 +438,15 @@ Nyx::read_params ()
     }
 
 #ifndef AMREX_USE_CVODE
+    #ifndef AMREX_USE_SUNDIALS3
     if (heat_cool_type == 5 || heat_cool_type == 7)
-        amrex::Error("Nyx:: cannot set heat_cool_type = 5 or 7 unless USE_CVODE=TRUE");
+        amrex::Error("Nyx:: cannot set heat_cool_type = 5 or 7 unless USE_CVODE=TRUE or USE_SUNDIALS3=TRUE");
+    #endif
 #else
+    #ifdef SDC
     if (heat_cool_type == 7 && sdc_split == 1)
         amrex::Error("Nyx:: cannot set heat_cool_type = 7 with sdc_split = 1");
+    #endif
 #endif
 
 #else
@@ -1771,7 +1775,7 @@ Nyx::post_regrid (int lbase,
         if (gravity->get_gravity_type() == "PoissonGrav")
 #endif
         {
-            int ngrow_for_solve = 1;
+            int ngrow_for_solve = parent->levelCount(level) + 1;
             int use_previous_phi_as_guess = 1;
             gravity->multilevel_solve_for_new_phi(level, new_finest, ngrow_for_solve, use_previous_phi_as_guess);
         }

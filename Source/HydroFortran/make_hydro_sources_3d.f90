@@ -75,19 +75,19 @@
       q_h2 = hi(2)+NHYP
       q_h3 = hi(3)+NHYP
 
-      srcq_l1 = lo(1)-1
-      srcq_l2 = lo(2)-1
-      srcq_l3 = lo(3)-1
-      srcq_h1 = hi(1)+1
-      srcq_h2 = hi(2)+1
-      srcq_h3 = hi(3)+1
+      srcq_l1 = lo(1)-NHYP
+      srcq_l2 = lo(2)-NHYP
+      srcq_l3 = lo(3)-NHYP
+      srcq_h1 = hi(1)+NHYP
+      srcq_h2 = hi(2)+NHYP
+      srcq_h3 = hi(3)+NHYP
 
       call amrex_allocate(     q, lo-NHYP, hi+NHYP, QVAR)
       call amrex_allocate( flatn, lo-NHYP, hi+NHYP      )
       call amrex_allocate(     c, lo-NHYP, hi+NHYP      )
       call amrex_allocate(  csml, lo-NHYP, hi+NHYP      )
 
-      call amrex_allocate(   srcQ, lo-1, hi+1, QVAR)
+      call amrex_allocate(   srcQ, lo-NHYP, hi+NHYP, QVAR)
       call amrex_allocate(divu_nd, lo  , hi+1)
 
       dx = delta(1)
