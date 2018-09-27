@@ -29,10 +29,10 @@ module atomic_rates_module
 
   ! Other rates (from equations)
   integer, parameter, public :: NCOOLTAB=2000
-  real(rt), dimension(NCOOLTAB+1), public :: AlphaHp, AlphaHep, AlphaHepp, Alphad
-  real(rt), dimension(NCOOLTAB+1), public :: GammaeH0, GammaeHe0, GammaeHep
-  real(rt), dimension(NCOOLTAB+1), public :: BetaH0, BetaHe0, BetaHep, Betaff1, Betaff4
-  real(rt), dimension(NCOOLTAB+1), public :: RecHp, RecHep, RecHepp
+  real(rt), dimension(:), allocatable, public :: AlphaHp, AlphaHep, AlphaHepp, Alphad
+  real(rt), dimension(:), allocatable, public :: GammaeH0, GammaeHe0, GammaeHep
+  real(rt), dimension(:), allocatable, public :: BetaH0, BetaHe0, BetaHep, Betaff1, Betaff4
+  real(rt), dimension(:), allocatable, public :: RecHp, RecHep, RecHepp
 
   real(rt), allocatable, public:: this_z, ggh0, gghe0, gghep, eh0, ehe0, ehep
  
@@ -46,12 +46,12 @@ module atomic_rates_module
 
   real(rt), parameter, public :: MPROTON = 1.6726231d-24, BOLTZMANN = 1.3806e-16
 
-  real(rt), public, save :: uvb_density_A = 1.0d0, uvb_density_B = 0.0d0, mean_rhob
+  real(rt), allocatable, public :: uvb_density_A,  uvb_density_B, mean_rhob
 
   ! Note that XHYDROGEN can be set by a call to set_xhydrogen which now
   ! lives in set_method_params.
-  real(rt), public :: XHYDROGEN = 0.76d0
-  real(rt), public :: YHELIUM   = 7.8947368421d-2  ! (1.0d0-XHYDROGEN)/(4.0d0*XHYDROGEN)
+  real(rt), parameter, public :: XHYDROGEN = 0.76d0
+  real(rt), parameter, public :: YHELIUM   = 7.8947368421d-2  ! (1.0d0-XHYDROGEN)/(4.0d0*XHYDROGEN)
   attributes(managed) :: NCOOLFILE, lzr, rggh0, rgghe0, rgghep, reh0, rehe0, rehep
   attributes(managed) :: AlphaHp, AlphaHep, AlphaHepp, Alphad
   attributes(managed) :: GammaeH0, GammaeHe0, GammaeHep
@@ -60,6 +60,7 @@ module atomic_rates_module
   attributes(managed) :: this_z, ggh0, gghe0, gghep, eh0, ehe0, ehep
   attributes(constant) :: YHELIUM
   attributes(managed) :: TCOOLMIN, TCOOLMAX, TCOOLMAX_R, TCOOLMIN_R, deltaT
+  attributes(managed) :: uvb_denisty_A, uvb_density_B, mean_rhob
 
   contains
 
@@ -190,6 +191,10 @@ module atomic_rates_module
 
          allocate( lzr(NCOOLFILE), rggh0(NCOOLFILE), rgghe0(NCOOlFILE), rgghep(NCOOLFILE) )
          allocate( reh0(NCOOLFILE), rehe0(NCOOLFILE), rehep(NCOOLFILE) )
+	 allocate( AlphaHp(NCOOLTAB+1), AlphaHep(NCOOLTAB+1), AlphaHepp(NCOOLTAB+1), Alphad(NCOOLTAB+1))
+	 allocate( GammaeH0(NCOOLTAB+1), GammaeHe0(NCOOLTAB+1), GammaeHep(NCOOLTAB+1))
+	 allocate( BetaH0(NCOOLTAB+1), BetaHe0(NCOOLTAB+1), BetaHep(NCOOLTAB+1), Betaff1(NCOOLTAB+1), Betaff4(NCOOLTAB+1))
+	 allocate( RecHp(NCOOLTAB+1), RecHep(NCOOLTAB+1), RecHepp(NCOOLTAB+1))
 
          do i = 1, NCOOLFILE
             read(11,*) lzr(i), rggh0(i), rgghe0(i), rgghep(i), &

@@ -74,6 +74,9 @@ fmain_gpu_atomic.exe: fmain_gpu_atomic.cuf atomic_rates.cuf constants_mod.f90 re
 #fmain_gpu.exe: fmain_gpu.o reion_aux_module.o constants_mod.o
 #	${F90} ${F90FLAGS} -o fmain_gpu.exe fmain_gpu.o reion_aux_module.o constants_mod.o /sw/summitdev/cuda/9.0.69/lib64/libcu*.so
 
+run:    fmain_gpu_atomic.exe
+	./fmain_gpu_atomic.exe inputs_hc
+
 clean:
 	rm -f ${OBJECTS} ${EXAMPLES:=.mod} ${OBJECTS_VODE} ${EXAMPLES_VODE:=.mod}
 

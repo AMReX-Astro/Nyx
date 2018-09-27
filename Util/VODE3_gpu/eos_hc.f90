@@ -561,10 +561,11 @@ module eos_module
          df  = 1.0d0 - dnhp_dne - dnhep_dne - 2.0d0*dnhepp_dne
          dne = f/df
 
-!      FMT = "(A6, I4, ES15.5, ES15.5E3, ES15.5, ES15.5)"
-!      print(FMT), 'ine:',i,U,ne,dne,eps
-!      print(FMT), 'fdine:',i,f,nhp,nhep,nhepp
-!      print(FMT), 'dfine:',i,df,dnhp_dne,dnhep_dne,dnhepp_dne
+      FMT = "(A6, I4, ES15.5, ES15.5E3, ES15.5, ES15.5)"
+      print(FMT), 'ine:',i,U,ne,dne,eps
+      print(FMT), 'fdine:',i,f,nhp,nhep,nhepp
+      print(FMT), 'dfine:',i,df,dnhp_dne,dnhep_dne,dnhepp_dne
+      print(FMT), 'tplus:',i,t, nhp_plus,nhep_plus,nhepp_plus
 
          ne = max((ne-dne), 0.0d0)
 
