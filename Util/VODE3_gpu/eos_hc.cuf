@@ -16,8 +16,8 @@ module eos_module
   implicit none
 
   ! Routines:
-  public  :: nyx_eos_given_RT, nyx_eos_given_RT_vec, nyx_eos_T_given_Re, nyx_eos_T_given_Re_vec, eos_init_small_pres
-  public  :: nyx_eos_nh0_and_nhep, iterate_ne, iterate_ne_vec
+  public  :: nyx_eos_given_RT, nyx_eos_given_RT_vec, nyx_eos_T_given_Re_vec, eos_init_small_pres
+  public  :: iterate_ne, iterate_ne_vec
   private :: ion_n
 
   real(rt), allocatable, public :: xacc ! EOS Newton-Raphson convergence tolerance
@@ -160,6 +160,7 @@ module eos_module
 
       use atomic_rates_module, ONLY: XHYDROGEN, MPROTON
       use fundamental_constants_module, only: density_to_cgs, e_to_cgs
+      use cudafor
 
       ! In/out variables
       integer,    intent(in)    :: JH, JHe
@@ -170,6 +171,10 @@ module eos_module
 
       double precision :: nh, nh0, nhep, nhp, nhe0, nhepp
       double precision :: z, rho, U
+      type(dim3) :: blockSize,gridSize
+      integer :: n = 100000
+      attributes(managed) :: T,Ne,nh0, nhp, nhe0, nhep, nhepp
+      
 
       ! This converts from code units to CGS
       rho = R_in * density_to_cgs / a**3
@@ -177,8 +182,14 @@ module eos_module
       nh  = rho*XHYDROGEN/MPROTON
 
       z   = 1.d0/a - 1.d0
-
-      call iterate_ne(JH, Jhe, z, U, T, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
+    ! Number of threads in each thread block
+    blockSize = dim3(1024,1,1)
+ 
+    ! Number of thread blocks in grid
+    gridSize = dim3(ceiling(real(n)/real(blockSize%x)) ,1,1)
+ 
+    ! Execute the kernel
+    call iterate_ne<<<gridSize, blockSize>>>(JH, Jhe, z, U, T, nh, Ne, nh0, nhp, nhe0, nhep, nhepp)
 
       if (present(species)) then
          species(1) = nh0
@@ -231,11 +242,21 @@ module eos_module
       real(rt),           intent(  out) :: nh0, nhep
 
       real(rt) :: nh, nhp, nhe0, nhepp, T, ne
+      type(dim3) :: blockSize,gridSize
+      integer :: n = 100000
+      attributes(managed) :: T,Ne,nh0, nhp, nhe0, nhep, nhepp
 
       nh  = rho*XHYDROGEN/MPROTON
       ne  = 1.0d0 ! Guess
 
-      call iterate_ne(JH, JHe, z, e, T, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
+      ! Number of threads in each thread block
+      blockSize = dim3(1024,1,1)
+ 
+      ! Number of thread blocks in grid
+      gridSize = dim3(ceiling(real(n)/real(blockSize%x)) ,1,1)
+ 
+      ! Execute the kernel
+      call iterate_ne<<<gridSize, blockSize>>>(JH, JHe, z, e, T, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
 
       nh0  = nh*nh0
       nhep = nh*nhep
@@ -515,7 +536,7 @@ module eos_module
 
      ! ****************************************************************************
 
-      attributes(host) subroutine iterate_ne(JH, JHe, z, U, t, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
+      attributes(global) subroutine iterate_ne(JH, JHe, z, U, t, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
 
       use atomic_rates_module, only: this_z, YHELIUM
       use vode_aux_module, only: i_vode,j_vode,k_vode, NR_vode
@@ -523,12 +544,12 @@ module eos_module
 
       integer :: i
 
-      integer, intent(in) :: JH, JHe
-      real(rt), intent (in   ) :: z, U, nh
+      integer, value, intent(in) :: JH, JHe
+      real(rt), value, intent (in   ) :: z, U, nh
       real(rt), intent (inout) :: ne
       real(rt), intent (  out) :: t,  nhp, nhep, nhepp
       real(rt), intent (  out) :: nh0, nhe0
-
+ 
       real(rt) :: f, df, eps
       real(rt) :: nhp_plus, nhep_plus, nhepp_plus
       real(rt) :: dnhp_dne, dnhep_dne, dnhepp_dne, dne
@@ -537,30 +558,19 @@ module eos_module
       CHARACTER(LEN=80) :: FMT
       type(dim3) :: blockSize, gridSize
       real(rt) :: t2,  nhp2, nhep2, nhepp2, nh02, nhe02, ne2,ne_tmp2
-      attributes(managed) :: t2,  nhp2, nhep2, nhepp2, nh02, nhe02,ne2,ne_tmp2
+      attributes(managed) :: ne, t,  nhp, nhep, nhepp, nh0, nhe0
       attributes(managed) ::  nhp_plus, nhep_plus, nhepp_plus
     real(8) :: total
  
-    ! Size of vectors
-    integer :: n = 100000
+      integer :: id
  
-    ! Number of threads in each thread block
-    blockSize = dim3(1024,1,1)
+      ! Get our global thread ID
+      id = (blockidx%x-1)*blockdim%x + threadidx%x
  
-    ! Number of thread blocks in grid
-    gridSize = dim3(ceiling(real(n)/real(blockSize%x)) ,1,1)
-
-      t2=t
-      nhp2=nhp
-      nhep2=nhep
-      nhepp2=nhepp
-      nh02=nh0
-      nhe02=nhe0
-      ne2=ne
-
+      if(id .eq. 1) then
       ! Check if we have interpolated to this z
       if (abs(z-this_z) .gt. xacc*z) then
-          write(errmsg, *) "iterate_ne(): Wrong redshift! z = ", z, " but this_z = ", this_z
+!          write(errmsg, *) "iterate_ne(): Wrong redshift! z = ", z, " but this_z = ", this_z
 !          call amrex_abort(errmsg)
       end if
 
@@ -570,7 +580,7 @@ module eos_module
          i = i + 1
 
          ! Ion number densities
-         call ion_n<<<gridSize, blockSize>>>(JH, JHe, U, nh, ne2, nhp2, nhep2, nhepp2, t2)
+         call ion_n(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t)
 
          ! Forward difference derivatives
          if (ne .gt. 0.0d0) then
@@ -578,16 +588,15 @@ module eos_module
          else
             eps = 1.0d-24
          endif
-	 ne_tmp2=ne2+eps
-         call ion_n<<<gridSize, blockSize>>>(JH, JHe, U, nh, ne_tmp2, nhp_plus, nhep_plus, nhepp_plus, t2)
+         call ion_n(JH, JHe, U, nh, (ne+eps), nhp_plus, nhep_plus, nhepp_plus, t)
 
          NR_vode  = NR_vode + 2
 
-         dnhp_dne   = (nhp_plus   - nhp2)   / eps
-         dnhep_dne  = (nhep_plus  - nhep2)  / eps
-         dnhepp_dne = (nhepp_plus - nhepp2) / eps
+         dnhp_dne   = (nhp_plus   - nhp)   / eps
+         dnhep_dne  = (nhep_plus  - nhep)  / eps
+         dnhepp_dne = (nhepp_plus - nhepp) / eps
 
-         f   = ne2 - nhp2 - nhep2 - 2.0d0*nhepp2
+         f   = ne - nhp - nhep - 2.0d0*nhepp
          df  = 1.0d0 - dnhp_dne - dnhep_dne - 2.0d0*dnhepp_dne
          dne = f/df
 
@@ -596,39 +605,25 @@ module eos_module
 !      print(FMT), 'fdine:',i,f,nhp,nhep,nhepp
 !      print(FMT), 'dfine:',i,df,dnhp_dne,dnhep_dne,dnhepp_dne
 
-         ne2 = max((ne2-dne), 0.0d0)
+         ne = max((ne-dne), 0.0d0)
 
          if (abs(dne) < xacc) exit
-
-         if (i .gt. 10) then
-            !$OMP CRITICAL
-            print*, "ITERATION: ", i, " NUMBERS: ", z, t2, ne2, nhp2, nhep2, nhepp2, df
-            if (i .gt. 12) &
-               STOP 'iterate_ne(): No convergence in Newton-Raphson!'
-            !$OMP END CRITICAL
-         endif
 
       enddo
 
       ! Get rates for the final ne
-      call ion_n<<<gridSize, blockSize>>>(JH, JHe, U, nh, ne2, nhp2, nhep2, nhepp2, t2)
+      call ion_n(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t)
       NR_vode  = NR_vode + 1
 
       ! Neutral fractions:
-      nh0   = 1.0d0 - nhp2
-      nhe0  = YHELIUM - (nhep2 + nhepp2)
-
-      t=t2
-      nhp=nhp2
-      nhep=nhep2
-      nhepp=nhepp2
-      ne=ne2
-
+      nh0   = 1.0d0 - nhp
+      nhe0  = YHELIUM - (nhep + nhepp)
+      endif
       end subroutine iterate_ne
 
      ! ****************************************************************************
 
-      attributes(global) subroutine ion_n(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t)
+      attributes(device) subroutine ion_n(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t)
 
       use meth_params_module,  only: gamma_minus_1
       use atomic_rates_module, only: YHELIUM, MPROTON, BOLTZMANN, &
@@ -641,8 +636,8 @@ module eos_module
 
       integer, value :: JH, JHe
       real(rt), value  :: U, nh, ne
-      real(rt)  :: nhp, nhep, nhepp, t
-!      attributes(shared) :: nhp
+      real(rt), intent(out):: nhp, nhep, nhepp, t
+      attributes(managed) :: nhp
       real(rt) :: ahp, ahep, ahepp, ad, geh0, gehe0, gehep
       real(rt) :: ggh0ne, gghe0ne, gghepne
       real(rt) :: mu, tmp, logT, flo, fhi

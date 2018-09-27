@@ -25,9 +25,27 @@ module kernel
      end subroutine fort_tabulate_rates_kernel
 end module kernel
 
+module init_alloc
+
+contains
+
+attributes(host) subroutine init_allocations()
+use vode_aux_module
+use atomic_rates_module
+allocate(z_vode, rho_vode, T_vode, ne_vode, JH_vode, JHe_vode, i_vode, j_vode, k_vode, fn_vode, NR_vode, firstcall)
+    allocate(TCOOLMIN, TCOOLMAX, TCOOLMAX_R, TCOOLMIN_R, deltaT)
+  TCOOLMIN = 0.0d0
+  TCOOLMAX = 9.0d0
+  TCOOLMIN_R = 10.0d0**TCOOLMIN 
+  TCOOLMAX_R = 10.0d0**TCOOLMAX
+  deltaT = (TCOOLMAX - TCOOLMIN)/NCOOLTAB
+end subroutine init_allocations
+end module init_alloc
+
 program main
     use cudafor
     use kernel
+    use init_alloc
     use atomic_rates_module
 !    use, intrinsic :: iso_c_binding
       use constants_module, only : rt => type_real, M_PI
@@ -83,6 +101,7 @@ program main
 !!!!!!!!!!!!!!!!!!!!!!!!!!!
 type(dim3) :: blockSize, gridSize
     real(8) :: total
+    attributes(managed) :: T_out, ne_out
  
     ! Size of vectors
     integer :: n = 100000
@@ -98,6 +117,7 @@ type(dim3) :: blockSize, gridSize
        WRITE (*,*) arg
     END DO
 
+    call init_allocations()
     print*,"Created data"
 
     allocate(yvec(neq))

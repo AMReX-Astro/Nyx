@@ -20,9 +20,13 @@ module kernel
 
   real(rt), public, save :: this_z, ggh0, gghe0, gghep, eh0, ehe0, ehep
 
-  real(rt), parameter, public :: TCOOLMIN = 0.0d0, TCOOLMAX = 9.0d0  ! in log10
-  real(rt), parameter, public :: TCOOLMIN_R = 10.0d0**TCOOLMIN, TCOOLMAX_R = 10.0d0**TCOOLMAX
-  real(rt), parameter, public :: deltaT = (TCOOLMAX - TCOOLMIN)/NCOOLTAB
+  real(rt), allocatable, public :: TCOOLMIN, TCOOLMAX
+  real(rt), allocatable, public :: TCOOLMIN_R, TCOOLMAX_R
+  real(rt), allocatable, public :: deltaT
+
+!  real(rt), parameter, public :: TCOOLMIN = 0.0d0, TCOOLMAX = 9.0d0  ! in log10
+!  real(rt), parameter, public :: TCOOLMIN_R = 10.0d0**TCOOLMIN, TCOOLMAX_R = 10.0d0**TCOOLMAX
+!  real(rt), parameter, public :: deltaT = (TCOOLMAX - TCOOLMIN)/NCOOLTAB
 
   real(rt), parameter, public :: MPROTON = 1.6726231d-24, BOLTZMANN = 1.3806e-16
 
@@ -34,19 +38,35 @@ module kernel
   real(rt), public :: YHELIUM   = 7.8947368421d-2  ! (1.0d0-XHYDROGEN)/(4.0d0*XHYDROGEN)
 
   attributes(managed) :: lzr, rggh0, rgghe0, rgghep, reh0, rehe0, rehep
-!  attributes(managed) :: NCOOLFILE
+  attributes(managed) :: TCOOLMIN, TCOOLMAX, TCOOLMIN_R, TCOOLMAX_R,deltaT
 
   contains
      attributes(global) subroutine fort_tabulate_rates_kernel()
 
-       integer :: i
+       integer :: i,j,fhi,flo
         integer :: id
+	real(8) :: tmp, logT
+	
  
         ! Get our global thread ID
         id = (blockidx%x-1)*blockdim%x + threadidx%x
+      logT=4.5
+      tmp = (logT-TCOOLMIN)/deltaT
+      j = int(tmp)
+      fhi = tmp - j
+      flo = 1.0d0 - fhi
+      j = j + 1 ! F90 arrays start with 1
          do i = 1, 301
 	 if(id .eq.1) then
-            lzr(i) = lzr(i)+1.d0
+            lzr(i) = deltaT
+lzr(301)=TCOOLMIN
+rggh0(301)=TCOOLMAX
+rgghe0(301)=TCOOLMIN_R
+rgghe0(301)=TCOOLMAX_R
+rgghep(301)=deltaT
+reh0(301)=tmp
+rehe0(301)=j
+rehep(301)=flo
          endif
 	    !, rggh0(i), rgghe0(i), rgghep(i), &
             !                    reh0(i),  rehe0(i),  rehep(i)
@@ -105,12 +125,29 @@ program main
 !      character(len=80) :: FMT
 !      type(amrex_parmparse) :: pp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!
-type(dim3) :: blockSize, gridSize
+       integer :: fhi,flo
+        integer :: id
+	real(8) :: tmp2, logT
     real(8) :: total
- 
+    	
     ! Size of vectors
     integer :: n = 100000
+type(dim3) :: blockSize, gridSize
  
+
+    allocate(TCOOLMIN, TCOOLMAX, TCOOLMAX_R, TCOOLMIN_R, deltaT)
+  TCOOLMIN = 0.0d0
+  TCOOLMAX = 9.0d0
+  TCOOLMIN_R = 10.0d0**TCOOLMIN 
+  TCOOLMAX_R = 10.0d0**TCOOLMAX
+  deltaT = (TCOOLMAX - TCOOLMIN)/NCOOLTAB
+      logT=4.5
+      tmp2 = (logT-TCOOLMIN)/deltaT
+      j = int(tmp2)
+      fhi = tmp2 - j
+      flo = 1.0d0 - fhi
+      j = j + 1 ! F90 arrays start with 1
+      print*, j, fhi, flo, tmp2
     ! Number of threads in each thread block
     blockSize = dim3(1024,1,1)
  
@@ -242,19 +279,28 @@ type(dim3) :: blockSize, gridSize
     
     ! Execute the kernel
     call fort_tabulate_rates_kernel<<<gridSize, blockSize>>>()
-         do i = 1, 301
+
+    print*, TCOOLMIN, TCOOLMAX, TCOOLMAX_R, TCOOLMIN_R, deltaT
+         do i = 1, 300
             print*, lzr(i), rggh0(i), rgghe0(i), rgghep(i), &
                         reh0(i),  rehe0(i),  rehep(i)
          end do
-         do i = 1, 301
-            lzr(i) = lzr(i)-1.d0
-!            print*, lzr(i), rggh0(i), rgghe0(i), rgghep(i), &
-!                                reh0(i),  rehe0(i),  rehep(i)
-            read(11,*) tmp_lzr, tmp_rggh0, tmp_rgghe0, tmp_rgghep, &
-                                tmp_reh0,  tmp_rehe0,  tmp_rehep
-    print*, lzr(i)-tmp_lzr, rggh0(i)-tmp_rggh0, rgghe0(i)-tmp_rgghe0, rgghep(i)-tmp_rgghep, &
-                                reh0(i)-tmp_reh0,  rehe0(i)-tmp_rehe0,  rehep(i)-tmp_rehe0
+print*, "888888888888888888888888888888888888888888888888"
+         do i = 301, 301
+            print*, lzr(i), rggh0(i), rgghe0(i), rgghep(i), &
+                        reh0(i),  rehe0(i),  rehep(i)
          end do
+!         do i = 1, 301
+!            lzr(i) = lzr(i)-1.d0
+!!            print*, lzr(i), rggh0(i), rgghe0(i), rgghep(i), &
+!!                                reh0(i),  rehe0(i),  rehep(i)
+!            read(11,*) tmp_lzr, tmp_rggh0, tmp_rgghe0, tmp_rgghep, &
+!                                tmp_reh0,  tmp_rehe0,  tmp_rehep
+!!!!    print*, lzr(i)-tmp_lzr, rggh0(i)-tmp_rggh0, rgghe0(i)-tmp_rgghe0, rgghep(i)-tmp_rgghep, &
+!!!!                                reh0(i)-tmp_reh0,  rehe0(i)-tmp_rehe0,  rehep(i)-tmp_rehe0
+!         end do
+
+
 !    simd_width = 1    
 !    vode_atol_scaled_in = 1e-4
 !    vode_rtol_in = 1e-4
