@@ -201,6 +201,8 @@ program main
                    call nyx_eos_T_given_Re(JH_vode, JHe_vode, T_out, ne_out, rho, e_out, a, species)
                 endif
     !-----------------cut out end do ijk loops        
+    print*, "e_out   = ",e_out
+    print*, "T_out   = ",T_out
     print*, "fn_vode = ", fn_vode
     print*, "NR_vode = ", NR_vode
 !    call N_VDestroy_Serial(sunvec_y)

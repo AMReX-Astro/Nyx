@@ -162,6 +162,7 @@ module eos_module
       use fundamental_constants_module, only: density_to_cgs, e_to_cgs
       use cudafor
 
+      implicit none
       ! In/out variables
       integer,    intent(in)    :: JH, JHe
       real(rt),   intent(inout) :: T, Ne
@@ -174,7 +175,6 @@ module eos_module
       type(dim3) :: blockSize,gridSize
       integer :: n = 100000
       attributes(managed) :: T,Ne,nh0, nhp, nhe0, nhep, nhepp
-      
 
       ! This converts from code units to CGS
       rho = R_in * density_to_cgs / a**3
@@ -542,6 +542,8 @@ module eos_module
       use vode_aux_module, only: i_vode,j_vode,k_vode, NR_vode
       use cudafor
 
+      implicit none
+
       integer :: i
 
       integer, value, intent(in) :: JH, JHe
@@ -557,7 +559,8 @@ module eos_module
       integer :: print_radius
       CHARACTER(LEN=80) :: FMT
       type(dim3) :: blockSize, gridSize
-      real(rt) :: t2,  nhp2, nhep2, nhepp2, nh02, nhe02, ne2,ne_tmp2
+      real(rt) :: t2,  nhp2, nhep2, nhepp2, nh02, nhe02, ne_tmp2
+      real(rt), allocatable :: ne2
       attributes(managed) :: ne, t,  nhp, nhep, nhepp, nh0, nhe0, ne2
       attributes(managed) ::  nhp_plus, nhep_plus, nhepp_plus
     real(8) :: total
@@ -568,10 +571,11 @@ module eos_module
  
     ! Number of thread blocks in grid
     gridSize = dim3(ceiling(real(n)/real(blockSize%x)) ,1,1)
- 
+     allocate(ne2)
+
       ! Get our global thread ID
 !      id = (blockidx%x-1)*blockdim%x + threadidx%x
- id=1
+! id=1
 !      if(id .eq. 1) then
       ! Check if we have interpolated to this z
       if (abs(z-this_z) .gt. xacc*z) then
@@ -625,6 +629,7 @@ module eos_module
       nh0   = 1.0d0 - nhp
       nhe0  = YHELIUM - (nhep + nhepp)
 !      endif
+       deallocate(ne2)
       end subroutine iterate_ne
 
      ! ****************************************************************************

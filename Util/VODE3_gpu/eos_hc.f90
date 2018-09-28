@@ -583,6 +583,10 @@ module eos_module
 
       ! Get rates for the final ne
       call ion_n(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t)
+      print(FMT), '2ine:',i,U,ne,dne,eps
+      print(FMT), '2fdine:',i,f,nhp,nhep,nhepp
+      print(FMT), '2dfine:',i,df,dnhp_dne,dnhep_dne,dnhepp_dne
+      print(FMT), '2tplus:',i,t, nhp_plus,nhep_plus,nhepp_plus
       NR_vode  = NR_vode + 1
 
       ! Neutral fractions:
