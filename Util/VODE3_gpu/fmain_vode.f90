@@ -165,7 +165,10 @@ program main
 
                 call vode_wrapper(half_dt,rho,T_orig,ne_orig,e_orig, &
                                               T_out ,ne_out ,e_out, fn_out)
-                
+                print*, "vw:e_out   = ",e_out
+                print*, "vw:T_out   = ",T_out
+                print*, "vw:fn_vode = ", fn_vode
+                print*, "vw:NR_vode = ", NR_vode
                 if (e_out .lt. 0.d0) then
                     !$OMP CRITICAL
                     print *,'negative e exiting strang integration ',z, i,j,k, rho/mean_rhob, e_out

@@ -245,6 +245,10 @@ type(dim3) :: blockSize, gridSize
 
                 call vode_wrapper(half_dt,rho,T_orig,ne_orig,e_orig, &
                                               T_out ,ne_out ,e_out, fn_out)
+                print*, "e_out   = ",e_out
+		print*, "T_out   = ",T_out
+    		print*, "fn_vode = ", fn_vode
+    		print*, "NR_vode = ", NR_vode
                 
                 if (e_out .lt. 0.d0) then
                     !$OMP CRITICAL

@@ -172,8 +172,9 @@ module eos_module
       nh  = rho*XHYDROGEN/MPROTON
 
       z   = 1.d0/a - 1.d0
-
+      print*, "before iterate_ne", JH, Jhe, z, U, T, nh, Ne, nh0, nhp, nhe0, nhep, nhepp
       call iterate_ne(JH, Jhe, z, U, T, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
+      print*, "after iterate_ne", JH, Jhe, z, U, T, nh, Ne, nh0, nhp, nhe0, nhep, nhepp
 
       if (present(species)) then
          species(1) = nh0
