@@ -1,4 +1,4 @@
-module kernel
+module kernel_tmp
   use constants_module, only : rt => type_real, M_PI
   use cudafor
   use iso_c_binding, only : c_float, c_double, c_size_t
@@ -23,7 +23,7 @@ module kernel
          end do
 
      end subroutine fort_tabulate_rates_kernel
-end module kernel
+end module kernel_tmp
 
 module init_alloc
 

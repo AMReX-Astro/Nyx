@@ -273,7 +273,7 @@ subroutine vode_wrapper(dt, rho_in, T_in, ne_in, e_in, T_out, ne_out, e_out, fn_
     integer          :: print_radius
     CHARACTER(LEN=80) :: FMT
 
-    EXTERNAL jac, f_rhs
+    EXTERNAL jac, f_rhs, f_rhs_host
     
     logical, save :: firstCall = .true.
 
@@ -307,7 +307,7 @@ subroutine vode_wrapper(dt, rho_in, T_in, ne_in, e_in, T_out, ne_out, e_out, fn_
 
     !calling dvode
     ! call the integration routine
-    call dvode(f_rhs, NEQ, y, time, dt, ITOL, rtol, atol, ITASK, &
+    call dvode(f_rhs_host, NEQ, y, time, dt, ITOL, rtol, atol, ITASK, &
                istate, IOPT, rwork, LRW, iwork, LIW, jac, MF_NUMERICAL_JAC, &
                rpar, ipar)
 

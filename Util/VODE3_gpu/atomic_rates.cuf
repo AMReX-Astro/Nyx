@@ -60,7 +60,7 @@ module atomic_rates_module
   attributes(managed) :: this_z, ggh0, gghe0, gghep, eh0, ehe0, ehep
   attributes(constant) :: YHELIUM
   attributes(managed) :: TCOOLMIN, TCOOLMAX, TCOOLMAX_R, TCOOLMIN_R, deltaT
-  attributes(managed) :: uvb_denisty_A, uvb_density_B, mean_rhob
+  attributes(managed) :: uvb_density_A, uvb_density_B, mean_rhob
 
   contains
 
