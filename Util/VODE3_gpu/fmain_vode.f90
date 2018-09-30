@@ -64,7 +64,7 @@ program main
     allocate(yvec(neq))
     
     open(1,FILE=arg)
-    do l=1,5
+    do
     fn_vode = 0
     NR_vode = 0
     print*,"Read parameters"
@@ -72,8 +72,8 @@ program main
  FMT="(A6,I1,/,ES21.15,/,ES21.15E2,/,ES21.15,/,ES21.15,/,ES21.15,/,ES21.15,/,ES21.15)"
 
 
-    read(1,FMT) string, STRANG_COMP, a, half_dt, rho, T_orig, ne_orig, e_orig
-!    close(1)
+    read(1,FMT,iostat=l) string, STRANG_COMP, a, half_dt, rho, T_orig, ne_orig, e_orig
+    if(l.eq.-1) exit
 
     yvec(1) = e_orig
 
@@ -216,7 +216,7 @@ program main
 !    call N_VDestroy_Serial(sunvec_y)
 !    call FCVodeFree(cvmem)
     enddo
-    close(1)
+    30 close(1)
     deallocate(yvec)
 
 !  call amrex_finalize()
