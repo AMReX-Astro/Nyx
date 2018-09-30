@@ -35,8 +35,8 @@ subroutine f_rhs(num_eq, time, e_in, energy, rpar, ipar)
 
       fn_vode=fn_vode+1;
     
-      FMT = "(A6, I4, ES15.5, ES15.5E3, ES15.5, ES15.5)"
-      print(FMT), 'frh:',fn_vode,e_in,rho_vode,T_vode,time
+!      FMT = "(A6, I4, ES15.5, ES15.5E3, ES15.5, ES15.5)"
+!      print(FMT), 'frh:',fn_vode,e_in,rho_vode,T_vode,time
 
       if (e_in(1) .lt. 0.d0) &
          e_in(1) = tiny(e_in(1))
@@ -132,7 +132,7 @@ subroutine f_rhs(num_eq, time, e_in, energy, rpar, ipar)
       a = 1.d0 / (1.d0 + z_vode)
       energy = energy / rho_vode / a
 
-       print *, 'energy = ', energy, 'at (i,j,k) ',i_vode,j_vode,k_vode
+!!       print *, 'energy = ', energy, 'at (i,j,k) ',i_vode,j_vode,k_vode
 !       print *, 'rho_heat = ', rho_heat, 'at (i,j,k) ',i_vode,j_vode,k_vode
 !       print *, 'rho_vd = ', rho_vode, 'at (i,j,k) ',i_vode,j_vode,k_vode
 
