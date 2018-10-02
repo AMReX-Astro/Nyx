@@ -383,7 +383,6 @@
            enddo
            npassive = npassive + nadv
            if(QFS > -1) then
-              print *,'NSPEC NAUX ',nspec, naux
               do ispec = 1, nspec+naux
                  upass_map(npassive + ispec) = UFS + ispec - 1
                  qpass_map(npassive + ispec) = QFS + ispec - 1
