@@ -279,8 +279,8 @@ void AGNParticleContainer::writeAllAtLevel(int lev)
     {
       auto& particles = pti.GetArrayOfStructs();
       size_t Np = pti.numParticles();
-      pout() << "There are " << Np  << " AGN particles at level " << lev
-             << " in grid " << pti.index() << std::endl;
+      Print() << "There are " << Np  << " AGN particles at level " << lev
+              << " in grid " << pti.index() << std::endl;
       for (unsigned i = 0; i < Np; ++i)
         {
           const ParticleType& p = particles[i];
@@ -294,14 +294,14 @@ void AGNParticleContainer::writeAllAtLevel(int lev)
           Real energy = p.rdata(4);
           Real mdot = p.rdata(5);
 
-          pout() << "[" << i << "]: id " << id << " cpu " << cpu
-                 << " mass " << mass
-                 << " index " << iv
-                 << " position " << xyz
-                 << " velocity " << uvw
-                 << " energy " << energy
-                 << " mdot " << mdot
-                 << endl;
+          Print() << "[" << i << "]: id " << id << " cpu " << cpu
+                  << " mass " << mass
+                  << " index " << iv
+                  << " position " << xyz
+                  << " velocity " << uvw
+                  << " energy " << energy
+                  << " mdot " << mdot
+                  << endl;
         }
     }
 }
