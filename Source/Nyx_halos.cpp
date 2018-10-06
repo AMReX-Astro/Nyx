@@ -290,7 +290,7 @@ Nyx::halo_find (Real dt)
        // Convert new_state to conserved variables: rho, momentum, energy.
        primitive_to_conserved(new_state);
 
-       //pout() << "Going into ComputeParticleVelocity (no energy), number of AGN particles on this proc is "
+       //Print() << "Going into ComputeParticleVelocity (no energy), number of AGN particles on this proc is "
        //       << Nyx::theAPC()->TotalNumberOfParticles(true, true) << endl;
 
        // Re-set the particle velocity (but not energy) after accretion,
@@ -300,7 +300,7 @@ Nyx::halo_find (Real dt)
        int add_energy = 0;
        Nyx::theAPC()->ComputeParticleVelocity(level, orig_state, new_state, add_energy);
 
-       //pout() << "Going into ReleaseEnergy, number of AGN particles on this proc is "
+       //Print() << "Going into ReleaseEnergy, number of AGN particles on this proc is "
        //       << Nyx::theAPC()->TotalNumberOfParticles(true, true) << endl;
 
        // AGN particles: may zero out energy.
@@ -310,7 +310,7 @@ Nyx::halo_find (Real dt)
        Nyx::theAPC()->ReleaseEnergy(level, new_state, D_new, a);
        // Now new_state = get_new_data(State_Type) has been updated.
 
-       //       pout() << "Step " << nStep() << " at end of Nyx_halos:" << endl;
+       //       Print() << "Step " << nStep() << " at end of Nyx_halos:" << endl;
        //       Nyx::theAPC()->writeAllAtLevel(level);
 
 #ifdef REEBER
@@ -332,7 +332,7 @@ Nyx::halo_merge ()
    Nyx::theAPC()->Redistribute(level, level, nghost0);
 
    int nmerge = npart -Nyx::theAPC()->TotalNumberOfParticles(true, true);
-   pout() << nStep() << '\t' << nmerge << endl;
+   Print() << nStep() << '\t' << nmerge << endl;
 
 }
 
@@ -356,7 +356,7 @@ Nyx::halo_accrete (Real dt)
    MultiFab agn_density_lost(simBA, simDM, ncomp1, nghost1);
    agn_density_lost.setVal(0.0);
 
-   //pout() << "Going into AccreteMass, number of AGN particles on this proc is "
+   //Print() << "Going into AccreteMass, number of AGN particles on this proc is "
    //       << Nyx::theAPC()->TotalNumberOfParticles(true, true) << endl;
 
    // AGN particles: increase mass and energy.
@@ -378,7 +378,7 @@ Nyx::halo_accrete (Real dt)
    // using change of momentum density in state.
    // No change to state, other than filling ghost cells.
    int add_energy = 1;
-   //pout() << "Going into ComputeParticleVelocity (and energy), number of AGN particles on this proc is "
+   //Print() << "Going into ComputeParticleVelocity (and energy), number of AGN particles on this proc is "
    //       << Nyx::theAPC()->TotalNumberOfParticles(true, true) << endl;
    Nyx::theAPC()->ComputeParticleVelocity(level, orig_state, new_state, add_energy);
    // Now new_state = get_new_data(State_Type) has been updated.
