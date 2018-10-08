@@ -165,7 +165,7 @@ module eos_module
 
       implicit none
       ! In/out variables
-      integer,    intent(in)    :: JH, JHe
+      integer,  value,  intent(in)    :: JH, JHe
       real(rt),   intent(inout) :: T, Ne
       real(rt),   intent(in   ) :: R_in, e_in
       real(rt),   intent(in   ) :: a
@@ -179,10 +179,10 @@ module eos_module
       real(rt) :: dnhp_dne, dnhep_dne, dnhepp_dne, dne
       double precision :: z, rho, U
       type(dim3) :: blockSize,gridSize
-      integer :: n
+      integer :: n = 100000
       attributes(managed) :: T,Ne,nh0, nhp, nhe0, nhep, nhepp, ne2
       attributes(managed) ::  nhp_plus, nhep_plus, nhepp_plus, JH, JHe, z 
-      n = 100000
+
       ! This converts from code units to CGS
       rho = R_in * density_to_cgs / a**3
         U = e_in * e_to_cgs
@@ -308,15 +308,14 @@ module eos_module
       use atomic_rates_module, only: XHYDROGEN, MPROTON
 
       ! In/out variables
-      integer,  intent(in):: JH, Jhe
+      integer, intent(in) :: JH, Jhe
       real(rt),           intent(in   ) :: z, rho, e
       real(rt),           intent(  out) :: nh0, nhep
 
       real(rt) :: nh, nhp, nhe0, nhepp, T, ne
       type(dim3) :: blockSize,gridSize
-      integer :: n
+      integer :: n = 100000
       attributes(managed) :: T,Ne,nh0, nhp, nhe0, nhep, nhepp
-      n = 100000
 
       nh  = rho*XHYDROGEN/MPROTON
       ne  = 1.0d0 ! Guess
@@ -328,8 +327,7 @@ module eos_module
       gridSize = dim3(ceiling(real(n)/real(blockSize%x)) ,1,1)
  
       ! Execute the kernel
-      ! No global version of iterate_ne, only device version
-      call iterate_ne(JH, JHe, z, e, T, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
+      call iterate_ne<<<gridSize, blockSize>>>(JH, JHe, z, e, T, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
 
       nh0  = nh*nh0
       nhep = nh*nhep
@@ -639,8 +637,7 @@ module eos_module
     real(8) :: total
  
       integer :: id
-      integer ::n
-      n = 100000
+      integer ::n = 1000000
     blockSize = dim3(1024,1,1)
  
     ! Number of thread blocks in grid

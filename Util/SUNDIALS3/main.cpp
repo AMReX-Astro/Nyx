@@ -242,7 +242,7 @@ int main (int argc, char* argv[])
 	  rparh[4*i+0]= 3.255559960937500E+04;   //rpar(1)=T_vode
 	  rparh[4*i+1]= 1.076699972152710E+00;//    rpar(2)=ne_vode
 	  rparh[4*i+2]=  2.119999946752000E+12; //    rpar(3)=rho_vode
-	  rparh[4*i+3]=1/(1+1.635780036449432E-01);    //    rpar(4)=z_vode
+	  rparh[4*i+3]=1/(1.635780036449432E-01)-1;    //    rpar(4)=z_vode
 
 	}
       N_VCopyToDevice_Cuda(Data);
@@ -311,10 +311,10 @@ __global__ void f_rhs_test(Real t,double* u_ptr,Real* udot_ptr, Real* rpar, int 
 1.076699972152710E+00 ne
 6.226414794921875E+02 e */
   double rpar2[4];
-  rpar2[0]= 3.255559960937500E+04;   //rpar(1)=T_vode
+  /*  rpar2[0]= 3.255559960937500E+04;   //rpar(1)=T_vode
   rpar2[1]= 1.076699972152710E+00;//    rpar(2)=ne_vode
   rpar2[2]=  2.119999946752000E+12; //    rpar(3)=rho_vode
-  rpar2[3]=1/(1+1.635780036449432E-01);    //    rpar(4)=z_vode
+  rpar2[3]=1/(1+1.635780036449432E-01);    //    rpar(4)=z_vode*/
   for(int i=0;i<neq;i++)
     ////udot_ptr[i]=2*t;
     //    RhsFn(t,u_ptr+i,udot_ptr+i,neq);
@@ -329,10 +329,20 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
   Real* u_ptr=N_VGetDeviceArrayPointer_Cuda(u);
   int neq=N_VGetLength_Cuda(udot);
   double*  rpar=N_VGetDeviceArrayPointer_Cuda(*(static_cast<N_Vector*>(user_data)));
+
+  N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));  
+  double*  rparh=N_VGetHostArrayPointer_Cuda(*(static_cast<N_Vector*>(user_data)));
  
-  //  fprintf(stdout,"\nrpar[0]=%g \n\n",rpar[0]);
+  fprintf(stdout,"\nrparh[0]=%g \n\n",rparh[0]);
+  fprintf(stdout,"\nrparh[1]=%g \n\n",rparh[1]);
+  fprintf(stdout,"\nrparh[2]=%g \n\n",rparh[2]);
+  fprintf(stdout,"\nrparh[3]=%g \n\n",rparh[3]);
   f_rhs_test<<<1,1>>>(t,u_ptr,udot_ptr, rpar, neq);
-  //  fprintf(stdout,"\nafter rpar[0]=%g \n\n",rpar[0]);
+  N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));
+  fprintf(stdout,"\nafter rparh[0]=%g \n\n",rparh[0]);
+  fprintf(stdout,"\nafter rparh[1]=%g \n\n",rparh[1]);
+  fprintf(stdout,"\nafter rparh[2]=%g \n\n",rparh[2]);
+  fprintf(stdout,"\nafter rparh[3]=%g \n\n",rparh[3]);
 
   return 0;
 }

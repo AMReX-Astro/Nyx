@@ -8,7 +8,7 @@ module rhs_mod
            bind(C,name='RhsFn')
 
       use, intrinsic :: iso_c_binding
-      use f_rhs_kernel_rpar
+      use f_rhs_kernel
 
       implicit none
 
