@@ -167,7 +167,7 @@ int main (int argc, char* argv[])
     //////////////////////////////////////////////////////////////////////
     
     fort_init_allocations();
-    fort_init_tables_eos_params();
+    //    fort_init_tables_eos_params();
 
 #ifdef _OPENMP
 #pragma omp parallel
@@ -176,8 +176,8 @@ int main (int argc, char* argv[])
     {
       t=0;
       tout=2;
+      tout=8.839029760565609E-06;
       Real* dptr;
-      Real* dptr_compare;
 
       const Box& tbx = mfi.tilebox();
       amrex::IntVect tile_size = tbx.size();
@@ -227,26 +227,29 @@ int main (int argc, char* argv[])
       if(check_flag(&flag, "CVSpilsSetLinearSolver", 1)) return(1);
 
       /*Use N_Vector to create userdata, in order to allocate data on device*/
-      /*      N_Vector Data = N_VNew_Cuda(neq);  // Allocate u vector 
+      N_Vector Data = N_VNew_Cuda(4);  // Allocate u vector 
       N_VConst(0.0,Data);
-      CVodeSetUserData(cvode_mem, N_VGetHostArrayPointer_Cuda(Data));*/
-      double* dptr_data=new double[4];
+      N_VCopyFromDevice_Cuda(Data);
+      /////      CVodeSetUserData(cvode_mem, N_VGetHostArrayPointer_Cuda(Data));
+      CVodeSetUserData(cvode_mem, &Data);
+      //      CVodeSetUserData(cvode_mem, N_VGetDeviceArrayPointer_Cuda(Data));
+      /*      double* dptr_data=new double[4];
       for(int i=0;i<4;i++)
-	dptr_data[i]=0.0;
-      //      CVodeSetUserData(cvode_mem, dptr_data);
+      dptr_data[i]=0.0;
+      CVodeSetUserData(cvode_mem, dptr_data);*/
 
       /* Call CVode */
       flag = CVode(cvode_mem, tout, u, &t, CV_NORMAL);
       if(check_flag(&flag, "CVode", 1)) break;
 
       N_VCopyFromDevice_Cuda(u);
-
+      /////
       mf[mfi].copyFromMem(tbx,0,1,dptr);
-
+      /////      CVodeSetUserData(cvode_mem, NULL);
       N_VDestroy(u);          /* Free the u vector */
-      delete(dptr_data);
-	dptr_data=NULL;
-      //      N_VDestroy(Data);          /* Free the userdata vector */
+      /*      delete(dptr_data);
+      dptr_data=NULL;*/
+      N_VDestroy(Data);          /* Free the userdata vector */
       CVodeFree(&cvode_mem);  /* Free the integrator memory */
     
     }
@@ -297,9 +300,11 @@ __global__ void f_rhs_test(Real t,double* u_ptr,Real* udot_ptr, Real* rpar, int 
   rpar2[2]=  2.119999946752000E+12; //    rpar(3)=rho_vode
   rpar2[3]=1/(1+1.635780036449432E-01);    //    rpar(4)=z_vode
   for(int i=0;i<neq;i++)
-    udot_ptr[i]=2*t;
+    ////udot_ptr[i]=2*t;
     //    RhsFn(t,u_ptr+i,udot_ptr+i,neq);
-    //    RhsFn(t,u_ptr+i,udot_ptr+i,rpar2,1);
+    RhsFn(t,u_ptr+i,udot_ptr+i,rpar,1);
+  /* Either way to setup IC seems to work
+    RhsFn(t,u_ptr+i,udot_ptr+i,rpar2,1);*/
 }
 
 static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
@@ -307,7 +312,17 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
   Real* udot_ptr=N_VGetDeviceArrayPointer_Cuda(udot);
   Real* u_ptr=N_VGetDeviceArrayPointer_Cuda(u);
   int neq=N_VGetLength_Cuda(udot);
-  f_rhs_test<<<1,1>>>(t,u_ptr,udot_ptr, static_cast<double*>(user_data), neq);
+  double* rparh=N_VGetHostArrayPointer_Cuda(*(static_cast<N_Vector*>(user_data)));
+  rparh[0]= 3.255559960937500E+04;   //rpar(1)=T_vode
+  rparh[1]= 1.076699972152710E+00;//    rpar(2)=ne_vode
+  rparh[2]=  2.119999946752000E+12; //    rpar(3)=rho_vode
+  rparh[3]=1/(1+1.635780036449432E-01);    //    rpar(4)=z_vode
+  N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));
+  double*  rpar=N_VGetDeviceArrayPointer_Cuda(*(static_cast<N_Vector*>(user_data)));
+ 
+  //  fprintf(stdout,"\nrpar[0]=%g \n\n",rpar[0]);
+  f_rhs_test<<<1,1>>>(t,u_ptr,udot_ptr, rpar, neq);
+  //  fprintf(stdout,"\nafter rpar[0]=%g \n\n",rpar[0]);
 
   return 0;
 }
