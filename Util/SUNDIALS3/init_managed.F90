@@ -62,6 +62,7 @@ implicit none
 
 !    print*,"Finished reading parameters:"
 !    print(FMT), string,STRANG_COMP, a, half_dt, rho, T_orig, ne_orig, e_orig
+    a=1.635780036449432E-01
 
     z = 1.d0/a - 1.d0
     call fort_integrate_comoving_a(a, a_end, half_dt)
@@ -87,12 +88,14 @@ implicit none
     if (flash_h ) H_reion_z  = zhi_flash
     if (flash_he) He_reion_z = zheii_flash
 
+    call SetCellInit()
 end subroutine init_tables_eos_params
 
 !!!!!!!!!!!!!!!!!!!! ASSUME inhomogeneous_on .eq. .false.
 attributes(host) subroutine SetCellInit()
 
-
+  use vode_aux_module, only: fn_vode, NR_vode, z_vode, JH_vode, JHe_vode
+print*,   fn_vode, NR_vode, z_vode, JH_vode, JHe_vode
 !                if (inhomogeneous_on) then
 !                   H_reion_z = 1*H_reion_z!diag_eos(i,j,k,ZHI_COMP)
 !                   if (z .gt. H_reion_z) then

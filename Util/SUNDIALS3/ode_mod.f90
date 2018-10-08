@@ -24,9 +24,8 @@ module rhs_mod
       real(c_double) :: rpar(neq*4)
       real(c_double) :: rtmp
 
-      rtmp=rpar(1)
-      fvec(1)=2.0*tn
-!!!      call f_rhs_device(tn,yvec,fvec,rpar)
+!!!      fvec(1)=2.0*tn
+      call f_rhs_device(tn,yvec,fvec,rpar)
       ! get data arrays from SUNDIALS vectors
 !      call N_VGetData_Serial(sunvec_f, neq, fvec)
 !      call FN_VConst_Cuda(2.0*tn, sunvec_f)
