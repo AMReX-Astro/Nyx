@@ -113,6 +113,28 @@ print*,   fn_vode, NR_vode, z_vode, JH_vode, JHe_vode
 !                end if
 end subroutine SetCellInit
 
+!!!!!!!!!!!!!!!!!!!! ASSUME inhomogeneous_on .eq. .false.
+attributes(host) subroutine SetCellFin()
+
+  use vode_aux_module, only: fn_vode, NR_vode, z_vode, JH_vode, JHe_vode
+print*,   fn_vode, NR_vode, z_vode, JH_vode, JHe_vode
+!                if (inhomogeneous_on) then
+!                   H_reion_z = 1*H_reion_z!diag_eos(i,j,k,ZHI_COMP)
+!                   if (z .gt. H_reion_z) then
+!                      JH_vode = 0
+!                   else
+!                      JH_vode = 1
+!                   endif
+!                endif
+
+!                if (e_orig .lt. 0.d0) then
+!!!                    !$OMP CRITICAL
+!                    print *,'negative e entering strang integration ',z, i,j,k, rho/mean_rhob, e_orig
+!                    call bl_abort('bad e in strang')
+!!!                    !$OMP END CRITICAL
+!                end if
+end subroutine SetCellFin
+
 attributes(host) subroutine fin_allocations() &
      bind(C,name="fort_fin_allocations")
 use vode_aux_module

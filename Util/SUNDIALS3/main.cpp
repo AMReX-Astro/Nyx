@@ -241,7 +241,7 @@ int main (int argc, char* argv[])
 	{
 	  rparh[4*i+0]= 3.255559960937500E+04;   //rpar(1)=T_vode
 	  rparh[4*i+1]= 1.076699972152710E+00;//    rpar(2)=ne_vode
-	  rparh[4*i+2]=  2.119999946752000E+12; //    rpar(3)=rho_vode
+	  rparh[4*i+2]=  2.119999946752000E+10; //    rpar(3)=rho_vode
 	  rparh[4*i+3]=1/(1.635780036449432E-01)-1;    //    rpar(4)=z_vode
 
 	}
@@ -259,6 +259,8 @@ int main (int argc, char* argv[])
       if(check_flag(&flag, "CVode", 1)) break;
 
       N_VCopyFromDevice_Cuda(u);
+      N_VCopyFromDevice_Cuda(Data);
+      fprintf(stdout,"\nFinal rparh[0]=%g \n\n",rparh[0]);
       /////
       mf[mfi].copyFromMem(tbx,0,1,dptr);
       /////      CVodeSetUserData(cvode_mem, NULL);
@@ -315,10 +317,15 @@ __global__ void f_rhs_test(Real t,double* u_ptr,Real* udot_ptr, Real* rpar, int 
   rpar2[1]= 1.076699972152710E+00;//    rpar(2)=ne_vode
   rpar2[2]=  2.119999946752000E+12; //    rpar(3)=rho_vode
   rpar2[3]=1/(1+1.635780036449432E-01);    //    rpar(4)=z_vode*/
-  for(int i=0;i<neq;i++)
+  int tid = blockIdx.x * blockDim.x + threadIdx.x;
+  /*  for(int i=0;i<neq;i++)
     ////udot_ptr[i]=2*t;
     //    RhsFn(t,u_ptr+i,udot_ptr+i,neq);
     RhsFn(t,u_ptr+i,udot_ptr+i,rpar+4*i,1);
+
+  */
+    RhsFn(t,u_ptr+tid,udot_ptr+tid,rpar+4*tid,1);
+
   /* Either way to setup IC seems to work
     RhsFn(t,u_ptr+i,udot_ptr+i,rpar2,1);*/
 }
@@ -330,19 +337,21 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
   int neq=N_VGetLength_Cuda(udot);
   double*  rpar=N_VGetDeviceArrayPointer_Cuda(*(static_cast<N_Vector*>(user_data)));
 
-  N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));  
+  /*  N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));  
   double*  rparh=N_VGetHostArrayPointer_Cuda(*(static_cast<N_Vector*>(user_data)));
  
   fprintf(stdout,"\nrparh[0]=%g \n\n",rparh[0]);
   fprintf(stdout,"\nrparh[1]=%g \n\n",rparh[1]);
   fprintf(stdout,"\nrparh[2]=%g \n\n",rparh[2]);
-  fprintf(stdout,"\nrparh[3]=%g \n\n",rparh[3]);
-  f_rhs_test<<<1,1>>>(t,u_ptr,udot_ptr, rpar, neq);
-  N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));
+  fprintf(stdout,"\nrparh[3]=%g \n\n",rparh[3]);*/
+  int numThreads = std::min(32, neq);
+  int numBlocks = static_cast<int>(ceil(((double) neq)/((double) numThreads)));
+  f_rhs_test<<<numThreads,numBlocks>>>(t,u_ptr,udot_ptr, rpar, neq);
+  /*  N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));
   fprintf(stdout,"\nafter rparh[0]=%g \n\n",rparh[0]);
   fprintf(stdout,"\nafter rparh[1]=%g \n\n",rparh[1]);
   fprintf(stdout,"\nafter rparh[2]=%g \n\n",rparh[2]);
-  fprintf(stdout,"\nafter rparh[3]=%g \n\n",rparh[3]);
+  fprintf(stdout,"\nafter rparh[3]=%g \n\n",rparh[3]);*/
 
   return 0;
 }

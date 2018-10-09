@@ -9,6 +9,7 @@ module rhs_mod
 
       use, intrinsic :: iso_c_binding
       use f_rhs_kernel
+      use f_rhs_kernel_dev
 
       implicit none
 
@@ -25,7 +26,8 @@ module rhs_mod
       real(c_double) :: rtmp
 
 !!!      fvec(1)=2.0*tn
-      call f_rhs_device(tn,yvec,fvec,rpar)
+!!!!      call f_rhs_device(tn,yvec,fvec,rpar)
+      call f_rhs_rpar(tn,yvec,fvec,rpar)
       ! get data arrays from SUNDIALS vectors
 !      call N_VGetData_Serial(sunvec_f, neq, fvec)
 !      call FN_VConst_Cuda(2.0*tn, sunvec_f)
