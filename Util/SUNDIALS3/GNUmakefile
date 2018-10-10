@@ -2,7 +2,7 @@
 # If you set AMREX_HOME as an environment variable, this line will be ignored
 AMREX_HOME ?= ../../../
 
-DEBUG            = TRUE
+DEBUG            = FALSE
 USE_MPI          = TRUE #True should also work here
 USE_OMP          = FALSE
 USE_CUDA         = TRUE
