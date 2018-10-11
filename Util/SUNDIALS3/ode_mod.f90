@@ -8,7 +8,6 @@ module rhs_mod
            bind(C,name='RhsFn')
 
       use, intrinsic :: iso_c_binding
-      use f_rhs_kernel
       use f_rhs_kernel_dev
 
       implicit none

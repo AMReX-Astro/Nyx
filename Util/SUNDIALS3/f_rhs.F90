@@ -14,7 +14,7 @@ attributes(device) subroutine f_rhs_rpar(time, e_in, energy, rpar)
                                      RecHp, RecHep, RecHepp, &
                                      eh0, ehe0, ehep
 
-      use vode_aux_module       , only: z_vode, rho_vode, T_vode, ne_vode, &
+      use vode_aux_module       , only: &!z_vode, rho_vode, T_vode, ne_vode, &
                                         JH_vode, JHe_vode, i_vode, j_vode, k_vode, fn_vode, NR_vode
 
       real(rt), intent(inout) :: e_in(1)
@@ -31,6 +31,7 @@ attributes(device) subroutine f_rhs_rpar(time, e_in, energy, rpar)
       real(rt) :: rho, U, a, rho_heat
       real(rt) :: nh, nh0, nhp, nhe0, nhep, nhepp
       integer :: j
+      real(rt) :: z_vode, rho_vode, T_vode, ne_vode
 
       T_vode=rpar(1)
       ne_vode=rpar(2)

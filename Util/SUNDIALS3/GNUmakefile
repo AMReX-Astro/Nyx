@@ -2,7 +2,7 @@
 # If you set AMREX_HOME as an environment variable, this line will be ignored
 AMREX_HOME ?= ../../../
 
-DEBUG            = FALSE
+DEBUG            = TRUE
 USE_MPI          = TRUE #True should also work here
 USE_OMP          = FALSE
 USE_CUDA         = TRUE
@@ -14,6 +14,7 @@ EBASE            = main
 CVODE_LIB_DIR ?= ${CVODE_LIB}
 SUNDIALS3_LIBS = -lsundials_nveccuda
 USE_SUNDIALS3 = TRUE
+USE_SUNDIALS4 = TRUE
 USE_SUNDIALS3_INTERFACE = FALSE
 
 include $(AMREX_HOME)/Tools/GNUMake/Make.defs

@@ -15,6 +15,7 @@
 #include <cvode/cvode.h>               /* prototypes for CVODE fcts., consts. */
 #include <sunlinsol/sunlinsol_spgmr.h> /* access to SPGMR SUNLinearSolver     */
 #include <cvode/cvode_spils.h>         /* access to CVSpils interface */
+#include <cvode/cvode_diag.h>          /* access to CVDiag interface */
 #include <sundials/sundials_types.h>   /* definition of type realtype */
 #include <sundials/sundials_math.h>    /* definition of ABS and EXP   */
 
@@ -208,9 +209,26 @@ int main (int argc, char* argv[])
       mf[mfi].copyToMem(tbx,0,1,dptr);
       N_VCopyToDevice_Cuda(u);
 
+
       /* Call CVodeCreate to create the solver memory and specify the 
        * Backward Differentiation Formula and the use of a Newton iteration */
-      cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
+#ifdef AMREX_USE_SUNDIALS4
+      #if AMREX_USE_SUNDIALS4==TRUE
+      cvode_mem = CVodeCreate(CV_BDF);
+      #endif
+      #else
+           #ifdef AMREX_USE_SUNDIALS3
+           #if AMREX_USE_SUNDIALS3==TRUE
+               cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
+           #endif
+           #else
+                #ifdef AMREX_USE_CVODE
+                #if AMREX_USE_CVODE==TRUE
+                    cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
+                #endif
+                #endif
+      #endif
+#endif
       if(check_flag((void *)cvode_mem, "CVodeCreate", 0)) return(1);
 
       /* Call CVodeInit to initialize the integrator memory and specify the
@@ -226,12 +244,14 @@ int main (int argc, char* argv[])
 
       /* Create SPGMR solver structure without preconditioning
        * and the maximum Krylov dimension maxl */
-      LS = SUNSPGMR(u, PREC_NONE, 0);
-      if(check_flag(&flag, "SUNSPGMR", 1)) return(1);
+      //      LS = SUNSPGMR(u, PREC_NONE, 0);
+      //      if(check_flag(&flag, "SUNSPGMR", 1)) return(1);
 
       /* Set CVSpils linear solver to LS */
-      flag = CVSpilsSetLinearSolver(cvode_mem, LS);
-      if(check_flag(&flag, "CVSpilsSetLinearSolver", 1)) return(1);
+      //      flag = CVSpilsSetLinearSolver(cvode_mem, LS);
+      //      if(check_flag(&flag, "CVSpilsSetLinearSolver", 1)) return(1);
+
+      flag = CVDiag(cvode_mem);
 
       /*Use N_Vector to create userdata, in order to allocate data on device*/
       N_Vector Data = N_VNew_Cuda(4*neq);  // Allocate u vector 
@@ -371,8 +391,13 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
  gridSize = (int)ceil((float)neq/blockSize);
  ////////////////////////////fprintf(stdout,"\n olcf <<<%d,%d>>> \n\n",gridSize, blockSize);
   ///////f_rhs_test<<<numBlocks,numThreads>>>(t,u_ptr,udot_ptr, rpar, neq);
- //////f_rhs_test<<<numBlocks,numThreads>>>(t,u_ptr,udot_ptr, rpar, neq);
- f_rhs_test<<<36,36>>>(t,u_ptr,udot_ptr, rpar, neq);
+ f_rhs_test<<<numBlocks,numThreads>>>(t,u_ptr,udot_ptr, rpar, neq);
+ // f_rhs_test<<<36,36>>>(t,u_ptr,udot_ptr, rpar, neq);
+
+ amrex::Device::synchronize();
+ CudaErrorCheck();
+
+ /// f_rhs_test<<<36,36>>>(t,u_ptr,udot_ptr, rpar, neq);
 
 //////  f_rhs_test<<<numBlocks,numThreads>>>(t,u_ptr,udot_ptr, rpar, neq);
   /*    N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));
