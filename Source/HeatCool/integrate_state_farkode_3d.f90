@@ -1,4 +1,4 @@
-subroutine integrate_state_fcvode(lo, hi, &
+subroutine integrate_state_farkode(lo, hi, &
                                   state   , s_l1, s_l2, s_l3, s_h1, s_h2, s_h3, &
                                   diag_eos, d_l1, d_l2, d_l3, d_h1, d_h2, d_h3, &
                                   a, half_dt, min_iter, max_iter)
@@ -45,9 +45,9 @@ subroutine integrate_state_fcvode(lo, hi, &
     use vode_aux_module    , only: JH_vode, JHe_vode, z_vode, i_vode, j_vode, k_vode
     use reion_aux_module   , only: zhi_flash, zheii_flash, flash_h, flash_he, &
                                    T_zhi, T_zheii, inhomogeneous_on
-    use cvode_interface
+    use arkode_interface
     use fnvector_serial
-    use fcvode_extras
+    use farkode_extras
     use, intrinsic :: iso_c_binding
 
     implicit none
@@ -70,7 +70,7 @@ subroutine integrate_state_fcvode(lo, hi, &
     real(c_double) :: tstart     ! initial time
     real(c_double) :: atol, rtol
     type(c_ptr) :: sunvec_y      ! sundials vector
-    type(c_ptr) :: CVmem         ! CVODE memory
+    type(c_ptr) :: ARKmem         ! ARKODE memory
     integer(c_long), parameter :: neq = 1
     real(c_double), pointer :: yvec(:)
 
@@ -106,16 +106,16 @@ subroutine integrate_state_fcvode(lo, hi, &
         call amrex_abort('integrate_state_fcvode: sunvec = NULL')
     end if
 
-    CVmem = FCVodeCreate(CV_BDF, CV_NEWTON)
-    if (.not. c_associated(CVmem)) then
-        call amrex_abort('integrate_state_fcvode: CVmem = NULL')
+    ARKmem = FARKodeCreate()
+    if (.not. c_associated(ARKmem)) then
+        call amrex_abort('integrate_state_fcvode: ARKmem = NULL')
     end if
 
     tstart = 0.0
     ! CVodeMalloc allocates variables and initialize the solver. We can initialize the solver with junk because once we enter the
     ! (i,j,k) loop we will immediately call fcvreinit which reuses the same memory allocated from CVodeMalloc but sets up new
     ! initial conditions.
-    ierr = FCVodeInit(CVmem, c_funloc(RhsFn), tstart, sunvec_y)
+    ierr = FARKodeInit(arkmem, c_null_ptr, c_funloc(RhsFnArk), tstart, sunvec_y)
     if (ierr /= 0) then
        call amrex_abort('integrate_state_fcvode: FCVodeInit() failed')
     end if
@@ -123,12 +123,12 @@ subroutine integrate_state_fcvode(lo, hi, &
     ! Set dummy tolerances. These will be overwritten as soon as we enter the loop and reinitialize the solver.
     rtol = 1.0d-5
     atol = 1.0d-10
-    ierr = FCVodeSStolerances(CVmem, rtol, atol)
+    ierr = FARKodeSStolerances(ARKmem, rtol, atol)
     if (ierr /= 0) then
       call amrex_abort('integrate_state_fcvode: FCVodeSStolerances() failed')
     end if
 
-    ierr = FCVDiag(CVmem)
+    ierr = FARKDense(ARKmem, neq)
     if (ierr /= 0) then
        call amrex_abort('integrate_state_fcvode: FCVDense() failed')
     end if
@@ -163,7 +163,7 @@ subroutine integrate_state_fcvode(lo, hi, &
                 j_vode = j
                 k_vode = k
 
-                call fcvode_wrapper(half_dt,rho,T_orig,ne_orig,e_orig,neq,CVmem,sunvec_y,yvec, &
+                call farkode_wrapper(half_dt,rho,T_orig,ne_orig,e_orig,neq,ARKmem,sunvec_y,yvec, &
                                               T_out ,ne_out ,e_out)
 
                 if (e_out .lt. 0.d0) then
@@ -214,8 +214,8 @@ subroutine integrate_state_fcvode(lo, hi, &
     end do ! k
 
     call N_VDestroy_Serial(sunvec_y)
-    call FCVodeFree(cvmem)
+    call FARKodeFree(ARKmem)
 
     deallocate(yvec)
 
-end subroutine integrate_state_fcvode
+end subroutine integrate_state_farkode
