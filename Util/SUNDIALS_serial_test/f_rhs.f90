@@ -1,12 +1,10 @@
-module f_rhs_kernel
-contains
 
-attributes(device) subroutine f_rhs_device(time,e_in,energy,rpar)
+subroutine f_rhs(num_eq, time, e_in, energy, rpar, ipar)
 
       use constants_module, only : rt => type_real, M_PI
       use fundamental_constants_module, only: e_to_cgs, density_to_cgs, & 
                                               heat_from_cgs
-      use eos_module, only: iterate_ne_device
+      use eos_module, only: iterate_ne
       use atomic_rates_module, ONLY: TCOOLMIN, TCOOLMAX, NCOOLTAB, deltaT, &
                                      MPROTON, XHYDROGEN, &
                                      uvb_density_A, uvb_density_B, mean_rhob, &
@@ -14,13 +12,14 @@ attributes(device) subroutine f_rhs_device(time,e_in,energy,rpar)
                                      RecHp, RecHep, RecHepp, &
                                      eh0, ehe0, ehep
 
-      use vode_aux_module       , only: z_vode, rho_vode, T_vode, ne_vode, &
+      use vode_aux_module       , only: &!z_vode, rho_vode, T_vode, ne_vode, &
                                         JH_vode, JHe_vode, i_vode, j_vode, k_vode, fn_vode, NR_vode
 
-      real(rt), intent(inout) :: e_in(1)
+      integer, intent(in)             :: num_eq, ipar
+      real(rt), intent(inout) :: e_in(num_eq)
       real(rt), intent(in   ) :: time
-      real(rt), intent(in   ) :: rpar
-      real(rt), intent(  out) :: energy(1)
+      real(rt), intent(inout) :: rpar(4*num_eq)
+      real(rt), intent(  out) :: energy(num_eq)
 
       real(rt), parameter :: compt_c = 1.01765467d-37, T_cmb = 2.725d0
 
@@ -33,208 +32,17 @@ attributes(device) subroutine f_rhs_device(time,e_in,energy,rpar)
       integer :: j
       integer :: print_radius
       CHARACTER(LEN=80) :: FMT
+      real(rt) :: z_vode, rho_vode, T_vode, ne_vode
+
+      T_vode=rpar(1)
+      ne_vode=rpar(2)
+      rho_vode=rpar(3)
+      z_vode=rpar(4)
 
       fn_vode=fn_vode+1;
     
-      if (e_in(1) .lt. 0.d0) &
-         e_in(1) = tiny(e_in(1))
-
-     ! Converts from code units to CGS
-      rho = rho_vode * density_to_cgs * (1.0d0+z_vode)**3
-        U = e_in(1) * e_to_cgs
-      nh  = rho*XHYDROGEN/MPROTON
-
-      ! Took out check for time .gt. 1
-
-      ! Get gas temperature and individual ionization species
-      ! testing different memory structures
-      call iterate_ne_device(JH_vode, JHe_vode, z_vode, U, T_vode, nh, ne_vode, nh0, nhp, nhe0, nhep, nhepp)
-
-      ! Convert species to CGS units: 
-      ne_vode = nh * ne_vode
-      nh0   = nh * nh0
-      nhp   = nh * nhp
-      nhe0  = nh * nhe0
-      nhep  = nh * nhep
-      nhepp = nh * nhepp
-
-      logT = dlog10(T_vode)
-      if (logT .ge. TCOOLMAX) then ! Only free-free and Compton cooling are relevant
-         lambda_ff = 1.42d-27 * dsqrt(T_vode) * (1.1d0 + 0.34d0*dexp(-(5.5d0 - logT)**2 / 3.0d0)) &
-                              * (nhp + 4.0d0*nhepp)*ne_vode
-         lambda_c  = compt_c*T_cmb**4 * ne_vode * (T_vode - T_cmb*(1.0d0+z_vode))*(1.0d0 + z_vode)**4
-
-         energy  = (-lambda_ff -lambda_c) * heat_from_cgs/(1.0d0+z_vode)**4
-
-         ! Convert to the actual term to be used in e_out = e_in + dt*energy
-         energy  = energy / rho_vode * (1.0d0+z_vode)
-         ne_vode = ne_vode / nh
-
-         return
-      end if
-
-      ! Temperature floor
-      if (logT .le. TCOOLMIN)  logT = TCOOLMIN + 0.5d0*deltaT
-
-      ! Interpolate rates
-      tmp = (logT-TCOOLMIN)/deltaT
-      j = int(tmp)
-      fhi = tmp - j
-      flo = 1.0d0 - fhi
-      j = j + 1 ! F90 arrays start with 1
-
-      bh0   = flo*BetaH0   (j) + fhi*BetaH0   (j+1)
-      bhe0  = flo*BetaHe0  (j) + fhi*BetaHe0  (j+1)
-      bhep  = flo*BetaHep  (j) + fhi*BetaHep  (j+1)
-      bff1  = flo*Betaff1  (j) + fhi*Betaff1  (j+1)
-      bff4  = flo*Betaff4  (j) + fhi*Betaff4  (j+1)
-      rhp   = flo*RecHp    (j) + fhi*RecHp    (j+1)
-      rhep  = flo*RecHep   (j) + fhi*RecHep   (j+1)
-      rhepp = flo*RecHepp  (j) + fhi*RecHepp  (j+1)
-
-      ! Cooling: 
-      lambda = ( bh0*nh0 + bhe0*nhe0 + bhep*nhep + &
-                 rhp*nhp + rhep*nhep + rhepp*nhepp + &
-                 bff1*(nhp+nhep) + bff4*nhepp ) * ne_vode
-
-      lambda_c = compt_c*T_cmb**4*ne_vode*(T_vode - T_cmb*(1.0d0+z_vode))*(1.0d0 + z_vode)**4   ! Compton cooling
-      lambda = lambda + lambda_c
-
-      ! Heating terms
-      heat = JH_vode*nh0*eh0 + JH_vode*nhe0*ehe0 + JHe_vode*nhep*ehep
-      rho_heat = uvb_density_A * (rho_vode/mean_rhob)**uvb_density_B
-      heat = rho_heat*heat
-
-      ! Convert back to code units
-      ne_vode     = ne_vode / nh
-      energy = (heat - lambda)*heat_from_cgs/(1.0d0+z_vode)**4
-
-      ! Convert to the actual term to be used in e_out = e_in + dt*energy
-      a = 1.d0 / (1.d0 + z_vode)
-      energy = energy / rho_vode / a
-
-end subroutine f_rhs_device
-
-attributes(global) subroutine f_rhs_global(tn, y, dy, user_data)
-      use constants_module, only : rt => type_real, M_PI
-
-      implicit none
-
-      real(rt) :: y(1)
-      real(rt) :: tn
-      real(rt) :: user_data
-      real(rt) :: dy(1)
-
-     call f_rhs_device(tn,y,dy,user_data)
-
-end subroutine f_rhs_global
-
-end module f_rhs_kernel
-
-subroutine f_rhs_host(NEQ, tn, y, dy, user_data, ipar)
-      use constants_module, only : rt => type_real, M_PI
-      use f_rhs_kernel
-
-      implicit none
-
-      integer, intent(in   ) :: NEQ, ipar
-      real(rt), intent(inout) :: y(1)
-      real(rt), intent(in   ) :: tn
-      real(rt), intent(in   ) :: user_data
-      real(rt), intent(  out) :: dy(1)
-      real(rt), allocatable :: y2(:)
-      real(rt), allocatable :: tn2, user_data2
-      real(rt), allocatable :: dy2(:)
-      attributes(managed) :: y2,dy2,tn2, user_data2
-      allocate(y2(1),tn2,user_data2,dy2(1))
-
-       y2=y
-       dy2=dy
-!       tn2=tn
-!       user_data2=user_data
-
-      call f_rhs_global<<<1,1>>>(tn2,y2,dy2,user_data2)
-
-       y=y2
-       dy=dy2
-!       tn=tn2
-!       user_data=user_data2
-
-end subroutine f_rhs_host
-
-attributes(host) subroutine f_rhs(num_eq, time, e_in, energy, rpar, ipar)
-
-      use constants_module, only : rt => type_real, M_PI
-      use fundamental_constants_module, only: e_to_cgs, density_to_cgs, & 
-                                              heat_from_cgs
-      use eos_module, only: iterate_ne, ion_n, xacc
-      use atomic_rates_module, ONLY: TCOOLMIN, TCOOLMAX, NCOOLTAB, deltaT, &
-                                     MPROTON, XHYDROGEN, &
-                                     uvb_density_A, uvb_density_B, mean_rhob, &
-                                     BetaH0, BetaHe0, BetaHep, Betaff1, Betaff4, &
-                                     RecHp, RecHep, RecHepp, &
-                                     eh0, ehe0, ehep, &
-				     this_z, YHELIUM
-
-      use vode_aux_module       , only: z_vode, rho_vode, T_vode, ne_vode, &
-                                        JH_vode, JHe_vode, i_vode, j_vode, k_vode, fn_vode, NR_vode
-      use cudafor
-      
-      implicit none
-
-      integer, intent(in)             :: num_eq, ipar
-      real(rt), intent(inout) :: e_in(num_eq)
-      real(rt), intent(in   ) :: time
-      real(rt), intent(in   ) :: rpar
-      real(rt), intent(  out) :: energy
-
-      real(rt), parameter :: compt_c = 1.01765467d-37, T_cmb = 2.725d0
-
-      real(rt) :: logT, tmp, fhi, flo
-      real(rt) :: ahp, ahep, ahepp, ad, geh0, gehe0, gehep
-      real(rt) :: bh0, bhe0, bhep, bff1, bff4, rhp, rhep, rhepp
-      real(rt) :: lambda_c, lambda_ff, lambda, heat
-      real(rt) :: rho, U, a, rho_heat
-      real(rt),allocatable :: nh, nh0, nhp, nhe0, nhep, nhepp
-      attributes(managed) :: nh, nh0, nhp, nhe0, nhep, nhepp
-      integer :: i,j
-      integer :: print_radius
-      type(dim3) :: blockSize,gridSize
-      CHARACTER(LEN=80) :: FMT
-
-
-      real(rt) :: f, df, eps
-      real(rt) :: nhp_plus, nhep_plus, nhepp_plus
-      real(rt) :: dnhp_dne, dnhep_dne, dnhepp_dne, dne
-      character(len=128) :: errmsg
-      real(rt) :: ne, t, z, t2,  nhp2, nhep2, nhepp2, nh02, nhe02, ne2,ne_tmp2
-      integer :: JH, JHe
-      attributes(managed) :: ne, t,  nhp, nhep, nhepp, nh0, nhe0
-      attributes(managed) ::  nhp_plus, nhep_plus, nhepp_plus, JH, JHe, z 
-    real(8) :: total
- 
-      integer :: id
-      ! Size of vectors
-    integer :: n = 100000
-
-      JH=JH_vode
-      JHe = JHe_vode
-      z=z_vode
-      ne=ne_vode 
-      t=T_vode
- 
-    ! Number of threads in each thread block
-    blockSize = dim3(1024,1,1)
- 
-    ! Number of thread blocks in grid
-    gridSize = dim3(ceiling(real(n)/real(blockSize%x)) ,1,1)
-
-      allocate(nh, nh0, nhp, nhe0, nhep, nhepp)
-
-      fn_vode=fn_vode+1;
-    
-      FMT = "(A6, I4, ES15.5, ES15.5E3, ES15.5, ES15.5)"
-      print(FMT), 'frh:',fn_vode,e_in,rho_vode,T_vode,time
+!      FMT = "(A6, I4, ES15.5, ES15.5E3, ES15.5, ES15.5)"
+!      print(FMT), 'frh:',fn_vode,e_in,rho_vode,T_vode,rpar(1)
 
       if (e_in(1) .lt. 0.d0) &
          e_in(1) = tiny(e_in(1))
@@ -244,7 +52,7 @@ attributes(host) subroutine f_rhs(num_eq, time, e_in, energy, rpar, ipar)
         U = e_in(1) * e_to_cgs
       nh  = rho*XHYDROGEN/MPROTON
 !      print*, "rho = ", rho
-!!      print*, "nh = ", nh
+!      print*, "nh = ", nh
 !      nh = 1.85e-2
 !      print*, "Replacing with nh = ",nh
 !      print*, "XHYDROGEN = ", XHYDROGEN 
@@ -257,80 +65,12 @@ attributes(host) subroutine f_rhs(num_eq, time, e_in, energy, rpar, ipar)
          print *,'AT              ',i_vode,j_vode,k_vode
 !         call bl_pd_abort("TOO BIG TIME IN F_RHS")
       end if
-
+!      print(FMT), 'afrh:',fn_vode,e_in,rho_vode,T_vode,rpar(1)
       ! Get gas temperature and individual ionization species
       ! testing different memory structures
 !      NR_vode=0
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!      call iterate_ne<<<gridSize,blockSize>>>(JH_vode, JHe_vode, z_vode, U, T_vode, nh, ne_vode, nh0, nhp, nhe0, nhep, nhepp)
-
-  !    integer :: i
-
-      ! Get our global thread ID
-   !   id = (blockidx%x-1)*blockdim%x + threadidx%x
- 
-      if(.true.) then
-      ! Check if we have interpolated to this z
-      if (abs(z-this_z) .gt. xacc*z) then
-!          write(errmsg, *) "iterate_ne(): Wrong redshift! z = ", z, " but this_z = ", this_z
-!          call amrex_abort(errmsg)
-      end if
-
-      i = 0
-      ne = 1.0d0 ! 0 is a bad guess
-      do  ! Newton-Raphson solver
-         i = i + 1
-
-         ! Ion number densities
-         call ion_n<<<gridSize,blockSize>>>(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t)
-
-         ! Forward difference derivatives
-         if (ne .gt. 0.0d0) then
-            eps = xacc*ne
-         else
-            eps = 1.0d-24
-         endif
-	 ne2=ne+eps
-         call ion_n<<<gridSize,blockSize>>>(JH, JHe, U, nh, ne2, nhp_plus, nhep_plus, nhepp_plus, t)
-
-         NR_vode  = NR_vode + 2
-
-         dnhp_dne   = (nhp_plus   - nhp)   / eps
-         dnhep_dne  = (nhep_plus  - nhep)  / eps
-         dnhepp_dne = (nhepp_plus - nhepp) / eps
-
-         f   = ne - nhp - nhep - 2.0d0*nhepp
-         df  = 1.0d0 - dnhp_dne - dnhep_dne - 2.0d0*dnhepp_dne
-         dne = f/df
-
-      FMT = "(A6, I4, ES15.5, ES15.5E3, ES15.5, ES15.5)"
-      print(FMT), 'ine:',i,U,ne,dne,eps
-      print(FMT), 'fdine:',i,f,nhp,nhep,nhepp
-      print(FMT), 'dfine:',i,df,dnhp_dne,dnhep_dne,dnhepp_dne
-      print(FMT), 'tplus:',i,t, nhp_plus,nhep_plus,nhepp_plus
-
-         ne = max((ne-dne), 0.0d0)
-
-        if (abs(dne) < xacc) exit
-
-      enddo
-
-      ! Get rates for the final ne
-      call ion_n<<<gridSize,blockSize>>>(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t)
-      print(FMT), '2ine:',i,U,ne,dne,eps
-      print(FMT), '2fdine:',i,f,nhp,nhep,nhepp
-      print(FMT), '2dfine:',i,df,dnhp_dne,dnhep_dne,dnhepp_dne
-      print(FMT), '2tplus:',i,t, nhp_plus,nhep_plus,nhepp_plus
-      NR_vode  = NR_vode + 1
-
-      ! Neutral fractions:
-      nh0   = 1.0d0 - nhp
-      nhe0  = YHELIUM - (nhep + nhepp)
-      endif
-T_vode=t
-ne_vode=ne
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+      call iterate_ne(JH_vode, JHe_vode, z_vode, U, T_vode, nh, ne_vode, nh0, nhp, nhe0, nhep, nhepp)
+!      print(FMT), 'bfrh:',fn_vode,e_in,rho_vode,T_vode,time
       ! Convert species to CGS units: 
       ne_vode = nh * ne_vode
       nh0   = nh * nh0
@@ -353,8 +93,12 @@ ne_vode=ne
 
 !       print *, 'enr = ', energy, 'at (i,j,k) ',i_vode,j_vode,k_vode
 !       print *, 'rho_heat = ', rho_heat, 'at (i,j,k) ',i_vode,j_vode,k_vode
+!      print(FMT), 'cfrh:',fn_vode,e_in,rho_vode,T_vode,rpar(1)
 !       print *, 'rho = ', rho_vode, 'at (i,j,k) ',i_vode,j_vode,k_vode
-
+         rpar(1)=T_vode
+         rpar(2)=ne_vode
+         rpar(3)=rho_vode
+         rpar(4)=z_vode
          return
       end if
 
@@ -397,15 +141,20 @@ ne_vode=ne
       ! Convert to the actual term to be used in e_out = e_in + dt*energy
       a = 1.d0 / (1.d0 + z_vode)
       energy = energy / rho_vode / a
-
-       print *, 'energy = ', energy, 'at (i,j,k) ',i_vode,j_vode,k_vode
+!      print(FMT), 'dfrh:',fn_vode,e_in,rho_vode,T_vode,rpar(1)
+      rpar(1)=T_vode
+      rpar(2)=ne_vode
+      rpar(3)=rho_vode
+      rpar(4)=z_vode
+!      print(FMT), 'efrh:',fn_vode,e_in,rho_vode,T_vode,rpar(1)
+!       print *, 'energy = ', energy, 'at (i,j,k) ',i_vode,j_vode,k_vode
 !       print *, 'rho_heat = ', rho_heat, 'at (i,j,k) ',i_vode,j_vode,k_vode
 !       print *, 'rho_vd = ', rho_vode, 'at (i,j,k) ',i_vode,j_vode,k_vode
 
 end subroutine f_rhs
 
 
-attributes(host) subroutine f_rhs_vec(time, e_in, energy)
+subroutine f_rhs_vec(time, e_in, energy)
 
       use constants_module, only : rt => type_real, M_PI
       use fundamental_constants_module, only: e_to_cgs, density_to_cgs, & 
@@ -529,7 +278,7 @@ attributes(host) subroutine f_rhs_vec(time, e_in, energy)
 end subroutine f_rhs_vec
 
 
-attributes(host) subroutine jac(neq, t, y, ml, mu, pd, nrpd, rpar, ipar)
+subroutine jac(neq, t, y, ml, mu, pd, nrpd, rpar, ipar)
 
   use constants_module, only : rt => type_real, M_PI
   implicit none

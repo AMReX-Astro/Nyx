@@ -26,6 +26,10 @@ ifeq ($(USE_SUNDIALS3), TRUE)
   f90EXE_sources += fcvode_extras.f90
   f90EXE_sources += integrate_state_fcvode_3d.f90
   f90EXE_sources += integrate_state_fcvode_vec_3d.f90
+  ifeq ($(USE_ARKODE), TRUE)
+  f90EXE_sources += farkode_extras.f90
+  f90EXE_sources += integrate_state_farkode_3d.f90
+  endif
 else
   f90EXE_sources += integrate_state_fcvode_3d_stubs.f90
   f90EXE_sources += integrate_state_fcvode_vec_3d_stubs.f90

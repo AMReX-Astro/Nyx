@@ -128,7 +128,7 @@ subroutine integrate_state_fcvode(lo, hi, &
       call amrex_abort('integrate_state_fcvode: FCVodeSStolerances() failed')
     end if
 
-    ierr = FCVDense(CVmem, neq)
+    ierr = FCVDiag(CVmem)
     if (ierr /= 0) then
        call amrex_abort('integrate_state_fcvode: FCVDense() failed')
     end if

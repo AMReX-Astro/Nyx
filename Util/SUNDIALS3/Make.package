@@ -1,0 +1,29 @@
+CEXE_sources += main.cpp
+
+FEXE_headers += myfunc_F.H
+
+f90EXE_sources += SetIC.f90
+f90EXE_sources += ode_mod.f90
+
+
+#constants_cosmo.f90 constants_mod.f90  reion_aux_module.f90 comoving_nd.f90 comoving_params.f90  vode_aux.cuf atomic_rates.cuf meth_params.cuf eos_hc.cuf eos_params.f90 f_rhs.cuf misc_params.f90 integrate_state_vode_3d.cuf
+
+f90EXE_sources += constants_cosmo.f90
+f90EXE_sources += constants_mod.f90
+f90EXE_sources += reion_aux_module.f90
+f90EXE_sources += comoving_nd.f90
+f90EXE_sources += comoving_params.f90
+
+F90EXE_sources += vode_aux.F90
+F90EXE_sources += atomic_rates.F90
+F90EXE_sources += meth_params.F90
+F90EXE_sources += init_managed.F90
+
+F90EXE_sources +=  eos_hc.F90
+f90EXE_sources +=  eos_params.f90
+F90EXE_sources +=  f_rhs.F90
+f90EXE_sources += misc_params.f90
+
+
+
+

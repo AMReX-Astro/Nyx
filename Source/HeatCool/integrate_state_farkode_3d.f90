@@ -1,29 +1,65 @@
-
-program main
-
-    use constants_module, only : rt => type_real, M_PI
+subroutine integrate_state_farkode(lo, hi, &
+                                  state   , s_l1, s_l2, s_l3, s_h1, s_h2, s_h3, &
+                                  diag_eos, d_l1, d_l2, d_l3, d_h1, d_h2, d_h3, &
+                                  a, half_dt, min_iter, max_iter)
+!
+!   Calculates the sources to be added later on.
+!
+!   Parameters
+!   ----------
+!   lo : double array (3)
+!       The low corner of the current box.
+!   hi : double array (3)
+!       The high corner of the current box.
+!   state_* : double arrays
+!       The state vars
+!   diag_eos_* : double arrays
+!       Temp and Ne
+!   src_* : doubles arrays
+!       The source terms to be added to state (iterative approx.)
+!   double array (3)
+!       The low corner of the entire domain
+!   a : double
+!       The current a
+!   half_dt : double
+!       time step size, in Mpc km^-1 s ~ 10^12 yr.
+!
+!   Returns
+!   -------
+!   state : double array (dims) @todo
+!       The state vars
+!
+    use amrex_fort_module, only : rt => amrex_real
+    use amrex_error_module, only : amrex_abort
     use meth_params_module, only : NVAR, URHO, UEDEN, UEINT, &
                                    NDIAG, TEMP_COMP, NE_COMP, ZHI_COMP, &
                                    gamma_minus_1
+    use bl_constants_module, only: M_PI
     use eos_params_module
-    use eos_module, only: nyx_eos_T_given_Re, nyx_eos_given_RT, fort_setup_eos_params
+    use network
+    use eos_module, only: nyx_eos_T_given_Re, nyx_eos_given_RT
     use fundamental_constants_module
     use comoving_module, only: comoving_h, comoving_OmB
     use comoving_nd_module, only: fort_integrate_comoving_a
-    use atomic_rates_module, only: YHELIUM, fort_tabulate_rates,  fort_interp_to_this_z
-    use vode_aux_module    , only: JH_vode, JHe_vode, z_vode, i_vode, j_vode, k_vode, &
-                                    NR_vode, fn_vode
+    use atomic_rates_module, only: YHELIUM
+    use vode_aux_module    , only: JH_vode, JHe_vode, z_vode, i_vode, j_vode, k_vode
     use reion_aux_module   , only: zhi_flash, zheii_flash, flash_h, flash_he, &
                                    T_zhi, T_zheii, inhomogeneous_on
-    use cvode_interface
+    use arkode_interface
     use fnvector_serial
-    use fcvode_extras
-    use misc_params, only: simd_width
+    use farkode_extras
     use, intrinsic :: iso_c_binding
 
-  implicit none
+    implicit none
 
-    real(rt) :: a, half_dt
+    integer         , intent(in) :: lo(3), hi(3)
+    integer         , intent(in) :: s_l1, s_l2, s_l3, s_h1, s_h2, s_h3
+    integer         , intent(in) :: d_l1, d_l2, d_l3, d_h1, d_h2, d_h3
+    real(rt), intent(inout) ::    state(s_l1:s_h1, s_l2:s_h2,s_l3:s_h3, NVAR)
+    real(rt), intent(inout) :: diag_eos(d_l1:d_h1, d_l2:d_h2,d_l3:d_h3, NDIAG)
+    real(rt), intent(in)    :: a, half_dt
+    integer         , intent(inout) :: max_iter, min_iter
+
     integer :: i, j, k
     real(rt) :: z, z_end, a_end, rho, H_reion_z, He_reion_z
     real(rt) :: T_orig, ne_orig, e_orig
@@ -34,63 +70,15 @@ program main
     real(c_double) :: tstart     ! initial time
     real(c_double) :: atol, rtol
     type(c_ptr) :: sunvec_y      ! sundials vector
-    type(c_ptr) :: CVmem         ! CVODE memory
+    type(c_ptr) :: ARKmem         ! ARKODE memory
     integer(c_long), parameter :: neq = 1
-!  call amrex_init()
- 
-  real(c_double), pointer :: yvec(:)
-  real(c_double) :: vode_atol_scaled_in, vode_rtol_in, xacc_in
-  CHARACTER(LEN=80) :: FMT, arg
-  CHARACTER(LEN=6)  :: string
-  integer :: STRANG_COMP
-  integer :: l
-!  integer :: i_loop, j_loop
-
-    DO i = 1, command_argument_count()
-       CALL getarg(i, arg)
-       WRITE (*,*) arg
-    END DO
-
-    print*,"Created data"
+    real(c_double), pointer :: yvec(:)
 
     allocate(yvec(neq))
-
-    print*,"Created data"
-    
-    print*,"Read table"
-    call fort_tabulate_rates()
-    simd_width = 1    
-    vode_atol_scaled_in = 1e-4
-    vode_rtol_in = 1e-4
-    xacc_in = 1e-6
-    gamma_minus_1 = 2.d0/3.d0
-    call fort_setup_eos_params(xacc_in, vode_rtol_in, vode_atol_scaled_in)
-
-    print*,"Finished reading table"
-
-    allocate(yvec(neq))
-    
-    open(1,FILE=arg)
-    do
-    fn_vode = 0
-    NR_vode = 0
-    print*,"Read parameters"
-
- FMT="(A6,I1,/,ES21.15,/,ES21.15E2,/,ES21.15,/,ES21.15,/,ES21.15,/,ES21.15,/,ES21.15)"
-    read(1,FMT,iostat=l) string, STRANG_COMP, a, half_dt, rho, T_orig, ne_orig, e_orig
-
-    if(l.eq.-1) exit
-    yvec(1) = e_orig
-
-    print*,"Finished reading parameters:"
-    print(FMT), string,STRANG_COMP, a, half_dt, rho, T_orig, ne_orig, e_orig
 
     z = 1.d0/a - 1.d0
     call fort_integrate_comoving_a(a, a_end, half_dt)
     z_end = 1.0d0/a_end - 1.0d0
-    !Added z_vode arbitrarily to be z, since it was set to 0
-    call fort_interp_to_this_z(z)
-    z_vode = z
 
     mean_rhob = comoving_OmB * 3.d0*(comoving_h*100.d0)**2 / (8.d0*M_PI*Gconst)
 
@@ -114,48 +102,49 @@ program main
     ! apply heating-cooling to UEDEN and UEINT
 
     sunvec_y = N_VMake_Serial(NEQ, yvec)
-!    if (.not. c_associated(sunvec_y)) then
-!        call amrex_abort('integrate_state_fcvode: sunvec = NULL')
-!    end if
+    if (.not. c_associated(sunvec_y)) then
+        call amrex_abort('integrate_state_fcvode: sunvec = NULL')
+    end if
 
-    CVmem = FCVodeCreate(CV_BDF, CV_NEWTON)
-!    if (.not. c_associated(CVmem)) then
-!        call amrex_abort('integrate_state_fcvode: CVmem = NULL')
-!    end if
+    ARKmem = FARKodeCreate()
+    if (.not. c_associated(ARKmem)) then
+        call amrex_abort('integrate_state_fcvode: ARKmem = NULL')
+    end if
 
     tstart = 0.0
     ! CVodeMalloc allocates variables and initialize the solver. We can initialize the solver with junk because once we enter the
     ! (i,j,k) loop we will immediately call fcvreinit which reuses the same memory allocated from CVodeMalloc but sets up new
     ! initial conditions.
-    ierr = FCVodeInit(CVmem, c_funloc(RhsFn), tstart, sunvec_y)
+    ierr = FARKodeInit(arkmem, c_null_ptr, c_funloc(RhsFnArk), tstart, sunvec_y)
     if (ierr /= 0) then
-        print*, 'integrate_state_fcvode: FCVodeInit() failed'
-!       call amrex_abort('integrate_state_fcvode: FCVodeInit() failed')
+       call amrex_abort('integrate_state_fcvode: FCVodeInit() failed')
     end if
 
     ! Set dummy tolerances. These will be overwritten as soon as we enter the loop and reinitialize the solver.
-    rtol = 1.0d-4
-    atol = 1.0d-4*e_orig
-    ierr = FCVodeSStolerances(CVmem, rtol, atol)
+    rtol = 1.0d-5
+    atol = 1.0d-10
+    ierr = FARKodeSStolerances(ARKmem, rtol, atol)
+    if (ierr /= 0) then
+      call amrex_abort('integrate_state_fcvode: FCVodeSStolerances() failed')
+    end if
 
-!    if (ierr /= 0) then
-!      call amrex_abort('integrate_state_fcvode: FCVodeSStolerances() failed')
-!    end if
+    ierr = FARKDense(ARKmem, neq)
+    if (ierr /= 0) then
+       call amrex_abort('integrate_state_fcvode: FCVDense() failed')
+    end if
 
-    ierr = FCVDense(CVmem, neq)
-!    if (ierr /= 0) then
-!       call amrex_abort('integrate_state_fcvode: FCVDense() failed')
-!    end if
-    
-    !-----------------cut out do ijk loops        
-               ! Original values
-                rho     = rho !state(i,j,k,URHO)
-                e_orig  = e_orig  !state(i,j,k,UEINT) / rho
-                T_orig  = T_orig!diag_eos(i,j,k,TEMP_COMP)
-                ne_orig = ne_orig!diag_eos(i,j,k,  NE_COMP)
-                
+    do k = lo(3),hi(3)
+        do j = lo(2),hi(2)
+            do i = lo(1),hi(1)
+
+                ! Original values
+                rho     = state(i,j,k,URHO)
+                e_orig  = state(i,j,k,UEINT) / rho
+                T_orig  = diag_eos(i,j,k,TEMP_COMP)
+                ne_orig = diag_eos(i,j,k,  NE_COMP)
+
                 if (inhomogeneous_on) then
-                   H_reion_z = 1*H_reion_z!diag_eos(i,j,k,ZHI_COMP)
+                   H_reion_z = diag_eos(i,j,k,ZHI_COMP)
                    if (z .gt. H_reion_z) then
                       JH_vode = 0
                    else
@@ -166,7 +155,7 @@ program main
                 if (e_orig .lt. 0.d0) then
                     !$OMP CRITICAL
                     print *,'negative e entering strang integration ',z, i,j,k, rho/mean_rhob, e_orig
-!                    call bl_abort('bad e in strang')
+                    call bl_abort('bad e in strang')
                     !$OMP END CRITICAL
                 end if
 
@@ -174,13 +163,13 @@ program main
                 j_vode = j
                 k_vode = k
 
-                call fcvode_wrapper(half_dt,rho,T_orig,ne_orig,e_orig,neq,CVmem,sunvec_y,yvec, &
+                call farkode_wrapper(half_dt,rho,T_orig,ne_orig,e_orig,neq,ARKmem,sunvec_y,yvec, &
                                               T_out ,ne_out ,e_out)
 
                 if (e_out .lt. 0.d0) then
                     !$OMP CRITICAL
                     print *,'negative e exiting strang integration ',z, i,j,k, rho/mean_rhob, e_out
-!                    call flush(6)
+                    call flush(6)
                     !$OMP END CRITICAL
                     T_out  = 10.0
                     ne_out = 0.0
@@ -191,11 +180,6 @@ program main
 
                 ! Update T and ne (do not use stuff computed in f_rhs, per vode manual)
                 call nyx_eos_T_given_Re(JH_vode, JHe_vode, T_out, ne_out, rho, e_out, a, species)
-                print*, "Answer out of vode_wrapper:"
-                print*, "e_out   = ",e_out
-                print*, "T_out   = ",T_out
-                print*, "fn_vode = ", fn_vode
-                print*, "NR_vode = ", NR_vode
 
                 ! Instanteneous heating from reionization:
                 T_H = 0.0d0
@@ -216,22 +200,22 @@ program main
                    e_out  = T_out / (gamma_minus_1 * mp_over_kB * mu)
                    call nyx_eos_T_given_Re(JH_vode, JHe_vode, T_out, ne_out, rho, e_out, a, species)
                 endif
-    !-----------------cut out end do ijk loops        
-    print*, "Answer at the end of main:"
-    print*, "e_out   = ",e_out
-    print*, "T_out   = ",T_out
-    print*, "fn_vode = ", fn_vode
-    print*, "NR_vode = ", NR_vode
-!    end do
-!    end do
-    enddo
-    close(1)
+
+                ! Update (rho e) and (rho E)
+                state(i,j,k,UEINT) = state(i,j,k,UEINT) + rho * (e_out-e_orig)
+                state(i,j,k,UEDEN) = state(i,j,k,UEDEN) + rho * (e_out-e_orig)
+
+                ! Update T and ne
+                diag_eos(i,j,k,TEMP_COMP) = T_out
+                diag_eos(i,j,k,  NE_COMP) = ne_out
+
+            end do ! i
+        end do ! j
+    end do ! k
+
     call N_VDestroy_Serial(sunvec_y)
-    call FCVodeFree(cvmem)
+    call FARKodeFree(ARKmem)
 
     deallocate(yvec)
 
-!  call amrex_finalize()
-
-end program main
-
+end subroutine integrate_state_farkode

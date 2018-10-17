@@ -1,30 +1,3 @@
-module kernel_tmp
-  use constants_module, only : rt => type_real, M_PI
-  use cudafor
-  use iso_c_binding, only : c_float, c_double, c_size_t
-  
-  implicit none
-
-  contains
-     attributes(global) subroutine fort_tabulate_rates_kernel()
-     use atomic_rates_module
-
-       integer :: i
-        integer :: id
- 
-        ! Get our global thread ID
-        id = (blockidx%x-1)*blockdim%x + threadidx%x
-         do i = 1, 301
-	 if(id .eq.1) then
-            lzr(i) = lzr(i)+1.d0
-         endif
-	    !, rggh0(i), rgghe0(i), rgghep(i), &
-            !                    reh0(i),  rehe0(i),  rehep(i)
-         end do
-
-     end subroutine fort_tabulate_rates_kernel
-end module kernel_tmp
-
 module init_alloc
 
 contains
@@ -53,7 +26,6 @@ end module init_alloc
 
 program main
     use cudafor
-    use kernel
     use init_alloc
     use atomic_rates_module
 !    use, intrinsic :: iso_c_binding
@@ -89,6 +61,7 @@ program main
   CHARACTER(LEN=80) :: FMT, arg
   CHARACTER(LEN=6)  :: string
   integer :: STRANG_COMP
+  integer :: l
 !  integer :: i_loop, j_loop
    integer :: simd_width
 
@@ -130,7 +103,7 @@ type(dim3) :: blockSize, gridSize
     print*,"Created data"
 
     allocate(yvec(neq))
-
+    print*,"Read table"
     call fort_tabulate_rates()
 
     simd_width = 1    
@@ -144,17 +117,19 @@ type(dim3) :: blockSize, gridSize
 
     allocate(yvec(neq))
     
+    open(1,FILE=arg)
+    do
     fn_vode = 0
     NR_vode = 0
+    print*,"Read parameters"
 
  FMT="(A6,I1,/,ES21.15,/,ES21.15E2,/,ES21.15,/,ES21.15,/,ES21.15,/,ES21.15,/,ES21.15)"
+    read(1,FMT,iostat=l) string, STRANG_COMP, a, half_dt, rho, T_orig, ne_orig, e_orig
 
-    open(1,FILE=arg)
-    read(1,FMT) string, STRANG_COMP, a, half_dt, rho, T_orig, ne_orig, e_orig
-    close(1)
-
+    if(l.eq.-1) exit
     yvec(1) = e_orig
 
+    print*,"Finished reading parameters:"
     print(FMT), string,STRANG_COMP, a, half_dt, rho, T_orig, ne_orig, e_orig
 
     z = 1.d0/a - 1.d0
@@ -245,6 +220,7 @@ type(dim3) :: blockSize, gridSize
 
                 call vode_wrapper(half_dt,rho,T_orig,ne_orig,e_orig, &
                                               T_out ,ne_out ,e_out, fn_out)
+                print*, "Answer out of vode_wrapper:"
                 print*, "e_out   = ",e_out
 		print*, "T_out   = ",T_out
     		print*, "fn_vode = ", fn_vode
@@ -285,13 +261,15 @@ type(dim3) :: blockSize, gridSize
                    call nyx_eos_T_given_Re(JH_vode, JHe_vode, T_out, ne_out, rho, e_out, a, species)
                 endif
     !-----------------cut out end do ijk loops        
+    print*, "Answer at the end of main:"
     print*, "e_out   = ",e_out
     print*, "T_out   = ",T_out
     print*, "fn_vode = ", fn_vode
     print*, "NR_vode = ", NR_vode
 !    call N_VDestroy_Serial(sunvec_y)
 !    call FCVodeFree(cvmem)
-
+ enddo
+  30 close(1)
     deallocate(yvec)
 
 !  call amrex_finalize()
