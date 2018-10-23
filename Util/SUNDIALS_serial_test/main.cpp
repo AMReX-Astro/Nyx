@@ -28,6 +28,8 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data);
 
 static void PrintFinalStats(void *cvode_mem);
 
+static void PrintOutput(realtype t, realtype umax, long int nst);
+
 /* Private function to check function return values */
 static int check_flag(void *flagvalue, const char *funcname, int opt);
 
@@ -210,7 +212,11 @@ int main (int argc, char* argv[])
 
       /* Call CVodeCreate to create the solver memory and specify the 
        * Backward Differentiation Formula and the use of a Newton iteration */
+      #ifdef CV_NEWTON
       cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
+      #else
+      cvode_mem = CVodeCreate(CV_BDF);
+      #endif
       if(check_flag((void *)cvode_mem, "CVodeCreate", 0)) return(1);
 
       /* Call CVodeInit to initialize the integrator memory and specify the
@@ -254,8 +260,16 @@ int main (int argc, char* argv[])
       amrex::Print()<<"Max found: "<<N_VMaxNorm(udot)<<std::endl;
       break;*/
       /* Call CVode */
-      flag = CVode(cvode_mem, tout, u, &t, CV_NORMAL);
+      /*      flag = CVode(cvode_mem, tout, u, &t, CV_NORMAL);
       if(check_flag(&flag, "CVode", 1)) break;
+      */
+      for(iout=1, tout=8.839029760565609E-06/10  ; iout <= 10; iout++, tout += 8.839029760565609E-06/10) {
+      flag = CVode(cvode_mem, tout, u, &t, CV_NORMAL);
+      umax = N_VMaxNorm(u);
+      flag = CVodeGetNumSteps(cvode_mem, &nst);
+      check_flag(&flag, "CVodeGetNumSteps", 1);
+      PrintOutput(tout, umax, nst);
+      }
 
       mf[mfi].copyFromMem(tbx,0,1,dptr);
 
@@ -302,7 +316,7 @@ static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
 
   Real* udot_ptr=N_VGetArrayPointer_Serial(udot);
   Real* u_ptr=N_VGetArrayPointer_Serial(u);
-  int neq=N_VGetLength_Cuda(udot);
+  int neq=N_VGetLength_Serial(udot);
   double*  rpar=N_VGetArrayPointer_Serial(*(static_cast<N_Vector*>(user_data)));
   for(int tid=0;tid<neq;tid++)
     {
@@ -311,6 +325,19 @@ static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
     //    fprintf(stdout,"\nafter rpar[4*tid+0]=%g\n",rpar[4*tid]);
     }
   return 0;
+}
+
+static void PrintOutput(realtype t, realtype umax, long int nst)
+{
+#if defined(SUNDIALS_EXTENDED_PRECISION)
+  printf("At t = %4.2Lf   max.norm(u) =%14.6Le   nst = %4ld\n", t, umax, nst);
+#elif defined(SUNDIALS_DOUBLE_PRECISION)
+  printf("At t = %4.2f   max.norm(u) =%14.6e   nst = %4ld\n", t, umax, nst);
+#else
+  printf("At t = %4.2f   max.norm(u) =%14.6e   nst = %4ld\n", t, umax, nst);
+#endif
+
+  return;
 }
 
 static int check_flag(void *flagvalue, const char *funcname, int opt)
