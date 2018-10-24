@@ -208,6 +208,8 @@ int main (int argc, char* argv[])
 	    tbx.hiVect());  /* Initialize u vector */
 
       dptr=N_VGetHostArrayPointer_Cuda(u);
+      amrex::Device::synchronize();
+      CudaErrorCheck();
       mf[mfi].copyToMem(tbx,0,1,dptr);
       N_VCopyToDevice_Cuda(u);
 
@@ -221,6 +223,8 @@ int main (int argc, char* argv[])
       #endif
       if(check_flag((void *)cvode_mem, "CVodeCreate", 0)) return(1);
 
+      amrex::Device::synchronize();
+      CudaErrorCheck();
       /* Call CVodeInit to initialize the integrator memory and specify the
        * user's right hand side function in u'=f(t,u), the initial time T0, and
        * the initial dependent variable vector u. */
@@ -246,16 +250,20 @@ int main (int argc, char* argv[])
       /*Use N_Vector to create userdata, in order to allocate data on device*/
       N_Vector Data = N_VNew_Cuda(4*neq);  // Allocate u vector 
       N_VConst(0.0,Data);
+      amrex::Device::synchronize();
+      CudaErrorCheck();
       double* rparh=N_VGetHostArrayPointer_Cuda(Data);
       for(int i=0;i<neq;i++)
 	{
 	  rparh[4*i+0]= 3.255559960937500E+04;   //rpar(1)=T_vode
 	  rparh[4*i+1]= 1.076699972152710E+00;//    rpar(2)=ne_vode
-	  rparh[4*i+2]=  2.119999946752000E+12; //    rpar(3)=rho_vode
+	  rparh[4*i+2]=  2.119999946752000E+10; //    rpar(3)=rho_vode
 	  rparh[4*i+3]=1/(1.635780036449432E-01)-1;    //    rpar(4)=z_vode
 
 	}
       N_VCopyToDevice_Cuda(Data);
+      //      amrex::Device::synchronize();
+      //      CudaErrorCheck();
       /////      CVodeSetUserData(cvode_mem, N_VGetHostArrayPointer_Cuda(Data));
       CVodeSetUserData(cvode_mem, &Data);
       //      CVodeSetUserData(cvode_mem, N_VGetDeviceArrayPointer_Cuda(Data));
@@ -267,9 +275,18 @@ int main (int argc, char* argv[])
       /* Call CVode */
       /*      flag = CVode(cvode_mem, tout, u, &t, CV_NORMAL);
 	      if(check_flag(&flag, "CVode", 1)) break;*/
-      for(iout=1, tout=8.839029760565609E-06/10  ; iout <= 10; iout++, tout += 8.839029760565609E-06/10) {
+      for(iout=1, tout=8.839029760565609E-06  ; iout <= 1; iout++, tout += 8.839029760565609E-06) {
       flag = CVode(cvode_mem, tout, u, &t, CV_NORMAL);
       umax = N_VMaxNorm(u);
+      double min_ne=10;
+      double max_ne=-1;
+      N_VCopyFromDevice_Cuda(Data);
+      for(int i=0;i<neq;i++)
+	{
+	min_ne=min(min_ne,rparh[4*i+1]);
+	max_ne=max(max_ne,rparh[4*i+1]);
+      }
+      amrex::Print() << "min is" << min_ne<< "\tmax is "<< max_ne << std::endl;
       flag = CVodeGetNumSteps(cvode_mem, &nst);
       check_flag(&flag, "CVodeGetNumSteps", 1);
       PrintOutput(tout, umax, nst);
@@ -361,15 +378,15 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
   Real* u_ptr=N_VGetDeviceArrayPointer_Cuda(u);
   int neq=N_VGetLength_Cuda(udot);
   double*  rpar=N_VGetDeviceArrayPointer_Cuda(*(static_cast<N_Vector*>(user_data)));
-
-  /*
-    N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));  
+  
+  N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));  
   double*  rparh=N_VGetHostArrayPointer_Cuda(*(static_cast<N_Vector*>(user_data)));
-  */ 
-  /*  fprintf(stdout,"\nrparh[0]=%g \n\n",rparh[0]);
+   
+   fprintf(stdout,"\nt=%g \n\n",t);
+   fprintf(stdout,"\nrparh[0]=%g \n\n",rparh[0]);
   fprintf(stdout,"\nrparh[1]=%g \n\n",rparh[1]);
   fprintf(stdout,"\nrparh[2]=%g \n\n",rparh[2]);
-  fprintf(stdout,"\nrparh[3]=%g \n\n",rparh[3]);*/
+  fprintf(stdout,"\nrparh[3]=%g \n\n",rparh[3]);
   int numThreads = std::min(32, neq);
   int numBlocks = static_cast<int>(ceil(((double) neq)/((double) numThreads)));
 
@@ -397,13 +414,12 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
  /// f_rhs_test<<<36,36>>>(t,u_ptr,udot_ptr, rpar, neq);
 
 //////  f_rhs_test<<<numBlocks,numThreads>>>(t,u_ptr,udot_ptr, rpar, neq);
-  /*    N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));
-    /*  fprintf(stdout,"\nafter rparh[0]=%g \n\n",rparh[0]);
+      N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));
+      fprintf(stdout,"\nafter rparh[0]=%g \n\n",rparh[0]);
   fprintf(stdout,"\nafter rparh[1]=%g \n\n",rparh[1]);
   fprintf(stdout,"\nafter rparh[2]=%g \n\n",rparh[2]);
   fprintf(stdout,"\nafter rparh[3]=%g \n\n",rparh[3]);
-  fprintf(stdout,"\nafter last rparh[4*(neq-1)+1]=%g \n\n",rparh[4*(neq-1)+1]);*/
-
+  fprintf(stdout,"\nafter last rparh[4*(neq-1)+1]=%g \n\n",rparh[4*(neq-1)+1]);
   return 0;
 }
 

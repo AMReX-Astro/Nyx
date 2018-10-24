@@ -249,7 +249,7 @@ int main (int argc, char* argv[])
 	{
 	  rparh[4*i+0]= 3.255559960937500E+04;   //rpar(1)=T_vode
 	  rparh[4*i+1]= 1.076699972152710E+00;//    rpar(2)=ne_vode
-	  rparh[4*i+2]=  2.119999946752000E+12; //    rpar(3)=rho_vode
+	  rparh[4*i+2]=  2.119999946752000E+10; //    rpar(3)=rho_vode
 	  rparh[4*i+3]=1/(1.635780036449432E-01)-1;    //    rpar(4)=z_vode
 
 	}
@@ -263,7 +263,7 @@ int main (int argc, char* argv[])
       /*      flag = CVode(cvode_mem, tout, u, &t, CV_NORMAL);
       if(check_flag(&flag, "CVode", 1)) break;
       */
-      for(iout=1, tout=8.839029760565609E-06/10  ; iout <= 10; iout++, tout += 8.839029760565609E-06/10) {
+      for(iout=1, tout=8.839029760565609E-06  ; iout <= 1; iout++, tout += 8.839029760565609E-06) {
       flag = CVode(cvode_mem, tout, u, &t, CV_NORMAL);
       umax = N_VMaxNorm(u);
       flag = CVodeGetNumSteps(cvode_mem, &nst);
@@ -318,12 +318,22 @@ static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
   Real* u_ptr=N_VGetArrayPointer_Serial(u);
   int neq=N_VGetLength_Serial(udot);
   double*  rpar=N_VGetArrayPointer_Serial(*(static_cast<N_Vector*>(user_data)));
+   fprintf(stdout,"\nt=%g \n\n",t);
+   fprintf(stdout,"\nrparh[0]=%g \n\n",rpar[0]);
+  fprintf(stdout,"\nrparh[1]=%g \n\n",rpar[1]);
+  fprintf(stdout,"\nrparh[2]=%g \n\n",rpar[2]);
+  fprintf(stdout,"\nrparh[3]=%g \n\n",rpar[3]);
   for(int tid=0;tid<neq;tid++)
     {
       //    fprintf(stdout,"\nrpar[4*tid+0]=%g\n",rpar[4*tid]);
     RhsFnReal(t,&(u_ptr[tid]),&(udot_ptr[tid]),&(rpar[4*tid]),1);
     //    fprintf(stdout,"\nafter rpar[4*tid+0]=%g\n",rpar[4*tid]);
     }
+      fprintf(stdout,"\nafter rparh[0]=%g \n\n",rpar[0]);
+  fprintf(stdout,"\nafter rparh[1]=%g \n\n",rpar[1]);
+  fprintf(stdout,"\nafter rparh[2]=%g \n\n",rpar[2]);
+  fprintf(stdout,"\nafter rparh[3]=%g \n\n",rpar[3]);
+  fprintf(stdout,"\nafter last rparh[4*(neq-1)+1]=%g \n\n",rpar[4*(neq-1)+1]);
   return 0;
 }
 
