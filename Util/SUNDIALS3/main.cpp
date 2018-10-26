@@ -28,8 +28,10 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data);
 
 static void PrintFinalStats(void *cvode_mem);
 
+static void PrintOutput(realtype t, realtype umax, long int nst);
+
 /* Private function to check function return values */
-static int check_flag(void *flagvalue, const char *funcname, int opt);
+static int check_retval(void *flagvalue, const char *funcname, int opt);
 
 using namespace amrex;
 
@@ -48,21 +50,19 @@ int main (int argc, char* argv[])
 
     std::cout << std::setprecision(15);
 
-    bool test_ic;
     int n_cell, max_grid_size;
     int cvode_meth, cvode_itmeth, write_plotfile;
     bool do_tiling;
 
   realtype reltol, abstol, t, tout, umax;
   N_Vector u;
-  SUNLinearSolver LS;
+  //  SUNLinearSolver LS;
   void *cvode_mem;
   int iout, flag;
   long int nst;
 
-  test_ic=false;
   u = NULL;
-  LS = NULL;
+  //  LS = NULL;
   cvode_mem = NULL;
 
   reltol = 1e-6;  /* Set the tolerances */
@@ -191,7 +191,6 @@ int main (int argc, char* argv[])
       amrex::IntVect tile_size = tbx.size();
       const int* hi = tbx.hiVect();
       const int* lo = tbx.loVect();
-      int long neq1=(hi[0]-lo[0]+1)*(hi[1]-lo[1]+1)*(hi[2]-lo[2]+1);
       int long neq=(tile_size[0])*(tile_size[1])*(tile_size[2]);
 
       if(neq>1)
@@ -199,33 +198,40 @@ int main (int argc, char* argv[])
 
       /* Create a CUDA vector with initial values */
       u = N_VNew_Cuda(neq);  /* Allocate u vector */
-      if(check_flag((void*)u, "N_VNew_Cuda", 0)) return(1);
+      if(check_retval((void*)u, "N_VNew_Cuda", 0)) return(1);
 
       FSetInternalEnergy_mfab(mf[mfi].dataPtr(),
         tbx.loVect(),
 	    tbx.hiVect());  /* Initialize u vector */
 
       dptr=N_VGetHostArrayPointer_Cuda(u);
+      amrex::Device::synchronize();
+      CudaErrorCheck();
       mf[mfi].copyToMem(tbx,0,1,dptr);
       N_VCopyToDevice_Cuda(u);
 
 
       /* Call CVodeCreate to create the solver memory and specify the 
        * Backward Differentiation Formula and the use of a Newton iteration */
+      #ifdef CV_NEWTON
       cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
-      
-      if(check_flag((void *)cvode_mem, "CVodeCreate", 0)) return(1);
+      #else
+      cvode_mem = CVodeCreate(CV_BDF);
+      #endif
+      if(check_retval((void *)cvode_mem, "CVodeCreate", 0)) return(1);
 
+      amrex::Device::synchronize();
+      CudaErrorCheck();
       /* Call CVodeInit to initialize the integrator memory and specify the
        * user's right hand side function in u'=f(t,u), the initial time T0, and
        * the initial dependent variable vector u. */
       flag = CVodeInit(cvode_mem, f, t, u);
-      if(check_flag(&flag, "CVodeInit", 1)) return(1);
+      if(check_retval(&flag, "CVodeInit", 1)) return(1);
 
       /* Call CVodeSStolerances to specify the scalar relative tolerance
        * and scalar absolute tolerance */
       flag = CVodeSStolerances(cvode_mem, reltol, abstol);
-      if (check_flag(&flag, "CVodeSStolerances", 1)) return(1);
+      if (check_retval(&flag, "CVodeSStolerances", 1)) return(1);
 
       /* Create SPGMR solver structure without preconditioning
        * and the maximum Krylov dimension maxl */
@@ -241,6 +247,8 @@ int main (int argc, char* argv[])
       /*Use N_Vector to create userdata, in order to allocate data on device*/
       N_Vector Data = N_VNew_Cuda(4*neq);  // Allocate u vector 
       N_VConst(0.0,Data);
+      amrex::Device::synchronize();
+      CudaErrorCheck();
       double* rparh=N_VGetHostArrayPointer_Cuda(Data);
       for(int i=0;i<neq;i++)
 	{
@@ -251,6 +259,8 @@ int main (int argc, char* argv[])
 
 	}
       N_VCopyToDevice_Cuda(Data);
+      //      amrex::Device::synchronize();
+      //      CudaErrorCheck();
       /////      CVodeSetUserData(cvode_mem, N_VGetHostArrayPointer_Cuda(Data));
       CVodeSetUserData(cvode_mem, &Data);
       //      CVodeSetUserData(cvode_mem, N_VGetDeviceArrayPointer_Cuda(Data));
@@ -260,8 +270,24 @@ int main (int argc, char* argv[])
       CVodeSetUserData(cvode_mem, dptr_data);*/
 
       /* Call CVode */
+      /*      flag = CVode(cvode_mem, tout, u, &t, CV_NORMAL);
+	      if(check_flag(&flag, "CVode", 1)) break;*/
+      for(iout=1, tout=8.839029760565609E-06  ; iout <= 1; iout++, tout += 8.839029760565609E-06) {
       flag = CVode(cvode_mem, tout, u, &t, CV_NORMAL);
-      if(check_flag(&flag, "CVode", 1)) break;
+      umax = N_VMaxNorm(u);
+      double min_ne=10;
+      double max_ne=-1;
+      N_VCopyFromDevice_Cuda(Data);
+      for(int i=0;i<neq;i++)
+	{
+	min_ne=min(min_ne,rparh[4*i+1]);
+	max_ne=max(max_ne,rparh[4*i+1]);
+      }
+      amrex::Print() << "min is" << min_ne<< "\tmax is "<< max_ne << std::endl;
+      flag = CVodeGetNumSteps(cvode_mem, &nst);
+      check_retval(&flag, "CVodeGetNumSteps", 1);
+      PrintOutput(tout, umax, nst);
+      }
 
       amrex::Device::synchronize();
       CudaErrorCheck();
@@ -272,6 +298,11 @@ int main (int argc, char* argv[])
       /////
       mf[mfi].copyFromMem(tbx,0,1,dptr);
       /////      CVodeSetUserData(cvode_mem, NULL);
+      PrintFinalStats(cvode_mem);
+
+      amrex::Device::synchronize();
+      CudaErrorCheck();
+
       N_VDestroy(u);          /* Free the u vector */
       /*      delete(dptr_data);
       dptr_data=NULL;*/
@@ -320,8 +351,8 @@ __global__ void f_rhs_test(Real t,double* u_ptr,Real* udot_ptr, Real* rpar, int 
 3.255559960937500E+04 T
 1.076699972152710E+00 ne
 6.226414794921875E+02 e */
-  double rpar2[4];
-  /*  rpar2[0]= 3.255559960937500E+04;   //rpar(1)=T_vode
+  /*  double rpar2[4];
+    rpar2[0]= 3.255559960937500E+04;   //rpar(1)=T_vode
   rpar2[1]= 1.076699972152710E+00;//    rpar(2)=ne_vode
   rpar2[2]=  2.119999946752000E+12; //    rpar(3)=rho_vode
   rpar2[3]=1/(1+1.635780036449432E-01);    //    rpar(4)=z_vode*/
@@ -349,18 +380,18 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
   Real* u_ptr=N_VGetDeviceArrayPointer_Cuda(u);
   int neq=N_VGetLength_Cuda(udot);
   double*  rpar=N_VGetDeviceArrayPointer_Cuda(*(static_cast<N_Vector*>(user_data)));
-
-  /*
-    N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));  
+  
+  /*  N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));  
   double*  rparh=N_VGetHostArrayPointer_Cuda(*(static_cast<N_Vector*>(user_data)));
-  */ 
-  /*  fprintf(stdout,"\nrparh[0]=%g \n\n",rparh[0]);
+   
+   fprintf(stdout,"\nt=%g \n\n",t);
+   fprintf(stdout,"\nrparh[0]=%g \n\n",rparh[0]);
   fprintf(stdout,"\nrparh[1]=%g \n\n",rparh[1]);
   fprintf(stdout,"\nrparh[2]=%g \n\n",rparh[2]);
   fprintf(stdout,"\nrparh[3]=%g \n\n",rparh[3]);*/
   int numThreads = std::min(32, neq);
   int numBlocks = static_cast<int>(ceil(((double) neq)/((double) numThreads)));
-
+  /*
  ////////////////////////////  fprintf(stdout,"\n castro <<<%d,%d>>> \n\n",numBlocks, numThreads);
 
     unsigned block = 256;
@@ -375,27 +406,66 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
  // Number of thread blocks in grid
  gridSize = (int)ceil((float)neq/blockSize);
  ////////////////////////////fprintf(stdout,"\n olcf <<<%d,%d>>> \n\n",gridSize, blockSize);
-  ///////f_rhs_test<<<numBlocks,numThreads>>>(t,u_ptr,udot_ptr, rpar, neq);
+ */
  f_rhs_test<<<numBlocks,numThreads>>>(t,u_ptr,udot_ptr, rpar, neq);
- // f_rhs_test<<<36,36>>>(t,u_ptr,udot_ptr, rpar, neq);
 
  amrex::Device::synchronize();
  CudaErrorCheck();
 
- /// f_rhs_test<<<36,36>>>(t,u_ptr,udot_ptr, rpar, neq);
-
-//////  f_rhs_test<<<numBlocks,numThreads>>>(t,u_ptr,udot_ptr, rpar, neq);
-  /*    N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));
-    /*  fprintf(stdout,"\nafter rparh[0]=%g \n\n",rparh[0]);
+/*      N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));
+      fprintf(stdout,"\nafter rparh[0]=%g \n\n",rparh[0]);
   fprintf(stdout,"\nafter rparh[1]=%g \n\n",rparh[1]);
   fprintf(stdout,"\nafter rparh[2]=%g \n\n",rparh[2]);
   fprintf(stdout,"\nafter rparh[3]=%g \n\n",rparh[3]);
   fprintf(stdout,"\nafter last rparh[4*(neq-1)+1]=%g \n\n",rparh[4*(neq-1)+1]);*/
-
   return 0;
 }
 
-static int check_flag(void *flagvalue, const char *funcname, int opt)
+static void PrintOutput(realtype t, realtype umax, long int nst)
+{
+#if defined(SUNDIALS_EXTENDED_PRECISION)
+  printf("At t = %4.2Lf   max.norm(u) =%14.6Le   nst = %4ld\n", t, umax, nst);
+#elif defined(SUNDIALS_DOUBLE_PRECISION)
+  printf("At t = %4.2f   max.norm(u) =%14.6e   nst = %4ld\n", t, umax, nst);
+#else
+  printf("At t = %4.2f   max.norm(u) =%14.6e   nst = %4ld\n", t, umax, nst);
+#endif
+
+  return;
+}
+
+/* Get and print some final statistics */
+
+static void PrintFinalStats(void *cvode_mem)
+{
+  long lenrw, leniw ;
+  long lenrwLS, leniwLS;
+  long int nst, nfe, nsetups, nni, ncfn, netf;
+  long int nli, npe, nps, ncfl, nfeLS;
+  int retval;
+
+  retval = CVodeGetWorkSpace(cvode_mem, &lenrw, &leniw);
+  check_retval(&retval, "CVodeGetWorkSpace", 1);
+  retval = CVodeGetNumSteps(cvode_mem, &nst);
+  check_retval(&retval, "CVodeGetNumSteps", 1);
+  retval = CVodeGetNumRhsEvals(cvode_mem, &nfe);
+  check_retval(&retval, "CVodeGetNumRhsEvals", 1);
+  retval = CVodeGetNumLinSolvSetups(cvode_mem, &nsetups);
+  check_retval(&retval, "CVodeGetNumLinSolvSetups", 1);
+  retval = CVodeGetNumErrTestFails(cvode_mem, &netf);
+  check_retval(&retval, "CVodeGetNumErrTestFails", 1);
+  retval = CVDiagGetNumRhsEvals(cvode_mem, &nfeLS);
+
+  printf("\nFinal Statistics.. \n\n");
+  printf("lenrw   = %5ld     leniw   = %5ld\n"  , lenrw, leniw);
+  printf("nst     = %5ld\n"                     , nst);
+  printf("nfe     = %5ld     nfeLS   = %5ld\n"  , nfe, nfeLS);
+  printf("nsetups = %5ld     netf    = %5ld\n"  , nsetups, netf);
+
+  return;
+}
+
+static int check_retval(void *flagvalue, const char *funcname, int opt)
 {
   int *errflag;
 
