@@ -312,8 +312,8 @@ static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
   Real* u_ptr=N_VGetArrayPointer_Serial(u);
   int neq=N_VGetLength_Serial(udot);
   double*  rpar=N_VGetArrayPointer_Serial(*(static_cast<N_Vector*>(user_data)));
-      /*   fprintf(stdout,"\nt=%g \n\n",t);
-   fprintf(stdout,"\nrparh[0]=%g \n\n",rpar[0]);
+  /*   fprintf(stdout,"\nt=%g \n\n",t);
+  fprintf(stdout,"\nrparh[0]=%g \n\n",rpar[0]);
   fprintf(stdout,"\nrparh[1]=%g \n\n",rpar[1]);
   fprintf(stdout,"\nrparh[2]=%g \n\n",rpar[2]);
   fprintf(stdout,"\nrparh[3]=%g \n\n",rpar[3]);*/
@@ -334,11 +334,11 @@ static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
 static void PrintOutput(realtype t, realtype umax, long int nst)
 {
 #if defined(SUNDIALS_EXTENDED_PRECISION)
-  printf("At t = %4.2Lf   max.norm(u) =%14.6Le   nst = %4ld\n", t, umax, nst);
+  printf("At t = %4.2Lf   max.norm(u) =%14.16Le   nst = %4ld\n", t, umax, nst);
 #elif defined(SUNDIALS_DOUBLE_PRECISION)
-  printf("At t = %4.2f   max.norm(u) =%14.6e   nst = %4ld\n", t, umax, nst);
+  printf("At t = %4.2f   max.norm(u) =%14.16e   nst = %4ld\n", t, umax, nst);
 #else
-  printf("At t = %4.2f   max.norm(u) =%14.6e   nst = %4ld\n", t, umax, nst);
+  printf("At t = %4.2f   max.norm(u) =%14.16e   nst = %4ld\n", t, umax, nst);
 #endif
 
   return;

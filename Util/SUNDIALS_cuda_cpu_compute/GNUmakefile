@@ -5,7 +5,7 @@ AMREX_HOME ?= ../../../
 DEBUG            = FALSE
 USE_MPI          = TRUE #True should also work here
 USE_OMP          = FALSE
-USE_CUDA         = TRUE
+#USE_CUDA         = FALSE
 COMP             = pgi # gnu should also work here
 DIM              = 3
 PRECISION        = DOUBLE
@@ -13,6 +13,7 @@ EBASE            = main
 
 CVODE_LIB_DIR ?= ${CVODE_LIB}
 USE_SUNDIALS_3x4x = TRUE
+LIBRARIES += -L${CVODE_LIB_DIR} -lsundials_nveccuda
 
 include $(AMREX_HOME)/Tools/GNUMake/Make.defs
 
