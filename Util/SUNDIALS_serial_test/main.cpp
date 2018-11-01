@@ -6,9 +6,6 @@
 #include <AMReX_MultiFab.H>
 #include <AMReX_Print.H>
 #include <AMReX_PlotFileUtil.H>
-#if !defined(BL_NO_FORT)
-#include <AMReX_BaseFab_f.H>
-#endif
 
 #include <AMReX_BLFort.H>
 
@@ -161,8 +158,23 @@ int main (int argc, char* argv[])
     // Create MultiFab with no ghost cells.
     MultiFab mf(ba, dm, Ncomp, 0);
 
+    // Create MultiFab with no ghost cells.
+    MultiFab S_old(ba, dm, 8, 0);
+
+    // Create MultiFab with no ghost cells.
+    MultiFab D_old(ba, dm, 4, 0);
+
     
-    mf.setVal(0.0);
+    mf.setVal(6.226414794921875E+02);
+    /*
+	  rparh[4*i+0]= 3.255559960937500E+04;   //rpar(1)=T_vode
+	  rparh[4*i+1]= 1.076699972152710E+00;//    rpar(2)=ne_vode
+	  rparh[4*i+2]=  2.119999946752000E+12; //    rpar(3)=rho_vode
+	  rparh[4*i+3]=1/(1.635780036449432E-01)-1;    //    rpar(4)=z_vode
+    */
+    S_old.setVal(2.119999946752000E+12,0); //    rpar(3)=rho_vode
+    D_old.setVal(3.255559960937500E+04 ,0); //    rpar(1)=T_vode
+    D_old.setVal(1.076699972152710E+00 ,0); //    rpar(1)=ne_vode
 
     //    MultiFab vode_aux_vars(ba, dm, 4*Ncomp, 0);
       /*      vode_aux_vars.setVal(3.255559960937500E+04,0);
@@ -200,7 +212,7 @@ int main (int argc, char* argv[])
       u = N_VNew_Serial(neq);  /* Allocate u vector */
       if(check_retval((void*)u, "N_VNew_Cuda", 0)) return(1);
 
-      FSetInternalEnergy_mfab(mf[mfi].dataPtr(),
+      /*      FSetInternalEnergy_mfab(mf[mfi].dataPtr(),
         tbx.loVect(),
 	    tbx.hiVect());  /* Initialize u vector */
 
@@ -242,6 +254,7 @@ int main (int argc, char* argv[])
       N_Vector Data = N_VNew_Serial(4*neq);  // Allocate u vector 
       N_VConst(0.0,Data);
       double* rparh=N_VGetArrayPointer_Serial(Data);
+      
       for(int i=0;i<neq;i++)
 	{
 	  rparh[4*i+0]= 3.255559960937500E+04;   //rpar(1)=T_vode

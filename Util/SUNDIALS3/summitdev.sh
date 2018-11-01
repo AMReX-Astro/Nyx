@@ -17,7 +17,7 @@ set -x
 
 omp=1
 export OMP_NUM_THREADS=${omp}
-EXE="main3d.pgi.DEBUG.MPI.CUDA.ex"
+EXE="main3d.pgi.CUDA.ex"
 JSRUN="jsrun -n 1 -a 1 -g 1 -c 1 --bind=packed:${omp} "
 #JSRUN="jsrun -n 4 -a 1 -c 1 -r 4 -d cyclic -b packed :${omp} js_task_info | sort"
 

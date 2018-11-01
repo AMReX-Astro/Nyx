@@ -3,7 +3,7 @@
 AMREX_HOME ?= ../../../
 
 DEBUG            = FALSE
-USE_MPI          = TRUE #True should also work here
+USE_MPI          = FALSE #True should also work here
 USE_OMP          = FALSE
 USE_CUDA         = TRUE
 COMP             = pgi # gnu should also work here

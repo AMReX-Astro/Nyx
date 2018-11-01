@@ -2,9 +2,9 @@
 #BSUB -P CSC308
 #BSUB -W 8
 #BSUB -nnodes 1
-#BSUB -J Testlow
-#BSUB -o Testlowo.%J
-#BSUB -e Testlowe.%J
+#BSUB -J Test
+#BSUB -o Testo.%J
+#BSUB -e Teste.%J
 
 module load pgi/18.4
 #module load cuda/9.1.85
@@ -17,7 +17,7 @@ set -x
 
 omp=1
 export OMP_NUM_THREADS=${omp}
-EXE="main3d.pgi.DEBUG.MPI.ex"
+EXE="main3d.pgi.ex"
 JSRUN="jsrun -n 1 -a 1 -g 1 -c 1 --bind=packed:${omp} "
 #JSRUN="jsrun -n 4 -a 1 -c 1 -r 4 -d cyclic -b packed :${omp} js_task_info | sort"
 
