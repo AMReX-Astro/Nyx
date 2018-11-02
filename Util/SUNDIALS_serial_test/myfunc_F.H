@@ -31,7 +31,7 @@ extern "C"
 
   void fort_init_allocations();
 
-  void fort_init_tables_eos_params();
+  void fort_init_tables_eos_params(amrex_real a);
 
   void fort_fin_allocations();
 

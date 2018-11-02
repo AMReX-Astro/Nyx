@@ -163,8 +163,25 @@ int main (int argc, char* argv[])
     // Create MultiFab with no ghost cells.
     MultiFab mf(ba, dm, Ncomp, 0);
 
+    // Create MultiFab with no ghost cells.
+    MultiFab S_old(ba, dm, 7, 0);
+
+    // Create MultiFab with no ghost cells.
+    MultiFab D_old(ba, dm, 2, 0);
+
     
     mf.setVal(0.0);
+    mf.setVal(6.226414794921875E+02);
+    /*
+	  rparh[4*i+0]= 3.255559960937500E+04;   //rpar(1)=T_vode
+	  rparh[4*i+1]= 1.076699972152710E+00;//    rpar(2)=ne_vode
+	  rparh[4*i+2]=  2.119999946752000E+12; //    rpar(3)=rho_vode
+	  rparh[4*i+3]=1/(1.635780036449432E-01)-1;    //    rpar(4)=z_vode
+    */
+    S_old.setVal(2.119999946752000E+12,0); //    rpar(3)=rho_vode
+    D_old.setVal(3.255559960937500E+04 ,0,1); //    rpar(1)=T_vode
+    D_old.setVal(1.076699972152710E+00 ,1,1); //    rpar(2)=ne_vode
+
 
     //    MultiFab vode_aux_vars(ba, dm, 4*Ncomp, 0);
       /*      vode_aux_vars.setVal(3.255559960937500E+04,0);
@@ -203,7 +220,7 @@ int main (int argc, char* argv[])
       u = N_VNew_Cuda(neq);  /* Allocate u vector */
       if(check_retval((void*)u, "N_VNew_Cuda", 0)) return(1);
 
-      FSetInternalEnergy_mfab(mf[mfi].dataPtr(),
+      /*      FSetInternalEnergy_mfab(mf[mfi].dataPtr(),
         tbx.loVect(),
 	    tbx.hiVect());  /* Initialize u vector */
 
@@ -246,11 +263,19 @@ int main (int argc, char* argv[])
       N_Vector Data = N_VNew_Cuda(4*neq);  // Allocate u vector 
       N_VConst(0.0,Data);
       double* rparh=N_VGetHostArrayPointer_Cuda(Data);
+      N_Vector rho_tmp = N_VNew_Serial(neq);  // Allocate u vector 
+      N_VConst(0.0,rho_tmp);
+      double* rho_tmp_ptr=N_VGetArrayPointer_Serial(rho_tmp);
+      S_old[mfi].copyToMem(tbx,0,1,rho_tmp_ptr);
+      N_Vector T_tmp = N_VNew_Serial(2*neq);  // Allocate u vector 
+      N_VConst(0.0,T_tmp);
+      double* Tne_tmp_ptr=N_VGetArrayPointer_Serial(T_tmp);
+      D_old[mfi].copyToMem(tbx,0,2,Tne_tmp_ptr);
       for(int i=0;i<neq;i++)
 	{
-	  rparh[4*i+0]= 3.255559960937500E+04;   //rpar(1)=T_vode
-	  rparh[4*i+1]= 1.076699972152710E+00;//    rpar(2)=ne_vode
-	  rparh[4*i+2]=  2.119999946752000E+12; //    rpar(3)=rho_vode
+	  rparh[4*i+0]= Tne_tmp_ptr[i];   //rpar(1)=T_vode
+	  rparh[4*i+1]= Tne_tmp_ptr[neq+i];//    rpar(2)=ne_vode
+	  rparh[4*i+2]= rho_tmp_ptr[i]; //    rpar(3)=rho_vode
 	  rparh[4*i+3]=1/(1.635780036449432E-01)-1;    //    rpar(4)=z_vode
 
 	}
@@ -273,6 +298,20 @@ int main (int argc, char* argv[])
       }
 
       N_VCopyFromDevice_Cuda(u);
+      //      N_VCopyFromDevice_Cuda(Data);
+
+      for(int i=0;i<neq;i++)
+	{
+	  Tne_tmp_ptr[i]=rparh[4*i+0];   //rpar(1)=T_vode
+	  Tne_tmp_ptr[neq+i]=rparh[4*i+1];//    rpar(2)=ne_vode
+	  /*	  amrex::Print()<<"Temp"<<rparh[4*i]<<std::endl;
+	  amrex::Print()<<"ne"<<rparh[4*i+1]<<std::endl;
+	  amrex::Print()<<"rho"<<rparh[4*i+2]<<std::endl;
+	  amrex::Print()<<"z"<<rparh[4*i+3]<<std::endl;*/
+	  // rho should not change  rho_tmp_ptr[i]=rparh[4*i+2]; //    rpar(3)=rho_vode
+	}
+      D_old[mfi].copyFromMem(tbx,0,2,Tne_tmp_ptr);
+
       mf[mfi].copyFromMem(tbx,0,1,dptr);
       PrintFinalStats(cvode_mem);
 
@@ -298,6 +337,12 @@ int main (int argc, char* argv[])
                                       geom,
                                       time,
                                       0);
+      amrex::WriteSingleLevelPlotfile("PLT_DIAG_OUTPUT",
+                                      D_old,
+                                      {"Temp","Ne"},
+                                      geom,
+                                      time,
+                                      0);
     }
 
     // Call the timer again and compute the maximum difference between the start time and stop time
@@ -317,7 +362,7 @@ int main (int argc, char* argv[])
 static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
 {
   N_VCopyFromDevice_Cuda(u);
-  N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));
+  //  N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));
   Real* udot_ptr=N_VGetHostArrayPointer_Cuda(udot);
   Real* u_ptr=N_VGetHostArrayPointer_Cuda(u);
   int neq=N_VGetLength_Cuda(udot);
@@ -329,6 +374,7 @@ static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
     //    fprintf(stdout,"\nafter rpar[4*tid+0]=%g\n",rpar[4*tid]);
     }
   N_VCopyToDevice_Cuda(udot);
+  //  N_VCopyToDevice_Cuda(*(static_cast<N_Vector*>(user_data)));
   return 0;
 }
 

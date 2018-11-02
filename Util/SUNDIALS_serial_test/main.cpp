@@ -30,6 +30,13 @@ static void PrintOutput(realtype t, realtype umax, long int nst);
 /* Private function to check function return values */
 static int check_retval(void *flagvalue, const char *funcname, int opt);
 
+int integrate_state_box
+  (   amrex::MultiFab &mf,
+   amrex::MultiFab &state,
+   amrex::MultiFab &diag_eos,
+   const amrex::Real& a, const amrex::Real& delta_time);
+
+
 using namespace amrex;
 
 /*
@@ -50,20 +57,7 @@ int main (int argc, char* argv[])
     int n_cell, max_grid_size;
     int cvode_meth, cvode_itmeth, write_plotfile;
     bool do_tiling;
-
-  realtype reltol, abstol, t, tout, umax;
-  N_Vector u;
-  //  SUNLinearSolver LS;
-  void *cvode_mem;
-  int iout, flag;
-  long int nst;
-
-  u = NULL;
-  //  LS = NULL;
-  cvode_mem = NULL;
-
-  reltol = 1e-6;  /* Set the tolerances */
-  abstol = 1e-10;
+    int ierr=0;
 
     // inputs parameters
     {
@@ -89,7 +83,11 @@ int main (int argc, char* argv[])
 
       pp.get("write_plotfile",write_plotfile);
       pp.get("do_tiling",do_tiling);
+
     }
+    
+    if(do_tiling)
+      amrex::Abort("Add function argument for tiling bool");
 
     if (cvode_meth < 1)
       amrex::Abort("Unknown cvode_meth");
@@ -159,10 +157,10 @@ int main (int argc, char* argv[])
     MultiFab mf(ba, dm, Ncomp, 0);
 
     // Create MultiFab with no ghost cells.
-    MultiFab S_old(ba, dm, 8, 0);
+    MultiFab S_old(ba, dm, 7, 0);
 
     // Create MultiFab with no ghost cells.
-    MultiFab D_old(ba, dm, 4, 0);
+    MultiFab D_old(ba, dm, 2, 0);
 
     
     mf.setVal(6.226414794921875E+02);
@@ -174,7 +172,7 @@ int main (int argc, char* argv[])
     */
     S_old.setVal(2.119999946752000E+12,0); //    rpar(3)=rho_vode
     D_old.setVal(3.255559960937500E+04 ,0); //    rpar(1)=T_vode
-    D_old.setVal(1.076699972152710E+00 ,0); //    rpar(1)=ne_vode
+    D_old.setVal(1.076699972152710E+00 ,0); //    rpar(2)=ne_vode
 
     //    MultiFab vode_aux_vars(ba, dm, 4*Ncomp, 0);
       /*      vode_aux_vars.setVal(3.255559960937500E+04,0);
@@ -184,19 +182,82 @@ int main (int argc, char* argv[])
     //////////////////////////////////////////////////////////////////////
     // Allocate data
     //////////////////////////////////////////////////////////////////////
-    
-    fort_init_allocations();
-    fort_init_tables_eos_params();
 
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
+    double delta_time= 8.839029760565609E-06;
+    amrex::Real a=1.035780036449432E-01;
+
+    fort_init_allocations();
+    fort_init_tables_eos_params(a);
+
+    ierr=integrate_state_box(mf,       S_old,       D_old,       a, delta_time);
+    if(ierr)
+      {
+	amrex::Print()<<"returned nonzero error code"<<std::endl;
+	return ierr;
+      }
+
+    // Deallocate data
+    //////////////////////////////////////////////////////////////////////
+    
+    fort_fin_allocations();
+
+    amrex::Print()<<"Maximum of repacked final solution: "<<mf.max(0,0,0)<<std::endl;
+    
+    if (write_plotfile)
+    {
+      amrex::WriteSingleLevelPlotfile("PLT_OUTPUT",
+                                      mf,
+                                      {"y1"},
+                                      geom,
+                                      time,
+                                      0);
+      amrex::WriteSingleLevelPlotfile("PLT_DIAG_OUTPUT",
+                                      D_old,
+                                      {"Temp","Ne"},
+                                      geom,
+                                      time,
+                                      0);
+    }
+
+    // Call the timer again and compute the maximum difference between the start time and stop time
+    //   over all processors
+    Real stop_time = ParallelDescriptor::second() - strt_time;
+    const int IOProc = ParallelDescriptor::IOProcessorNumber();
+    ParallelDescriptor::ReduceRealMax(stop_time,IOProc);
+
+    // Tell the I/O Processor to write out the "run time"
+    amrex::Print() << "Run time = " << stop_time << std::endl;
+    
+    amrex::Finalize();
+    return 0;
+}
+
+int integrate_state_box
+  (amrex::MultiFab &mf,
+   amrex::MultiFab &S_old,
+   amrex::MultiFab &D_old,
+   const amrex::Real& a, const amrex::Real& delta_time)
+{
+    // time = starting time in the simulation
+  realtype reltol, abstol, t, tout, umax;
+  N_Vector u;
+  //  SUNLinearSolver LS;
+  void *cvode_mem;
+  int iout, flag;
+  long int nst;
+  bool do_tiling=false;    
+
+  u = NULL;
+  //  LS = NULL;
+  cvode_mem = NULL;
+
+  reltol = 1e-6;  /* Set the tolerances */
+  abstol = 1e-10;
+
+
+
     for ( MFIter mfi(mf, do_tiling); mfi.isValid(); ++mfi )
     {
-      t=0;
-      tout=2;
-      tout=8.839029760565609E-06;
-
       Real* dptr;
 
       const Box& tbx = mfi.tilebox();
@@ -254,13 +315,21 @@ int main (int argc, char* argv[])
       N_Vector Data = N_VNew_Serial(4*neq);  // Allocate u vector 
       N_VConst(0.0,Data);
       double* rparh=N_VGetArrayPointer_Serial(Data);
+      N_Vector rho_tmp = N_VNew_Serial(neq);  // Allocate u vector 
+      N_VConst(0.0,rho_tmp);
+      double* rho_tmp_ptr=N_VGetArrayPointer_Serial(rho_tmp);
+      S_old[mfi].copyToMem(tbx,0,1,rho_tmp_ptr);
+      N_Vector T_tmp = N_VNew_Serial(2*neq);  // Allocate u vector 
+      N_VConst(0.0,T_tmp);
+      double* Tne_tmp_ptr=N_VGetArrayPointer_Serial(T_tmp);
+      D_old[mfi].copyToMem(tbx,0,2,Tne_tmp_ptr);
       
       for(int i=0;i<neq;i++)
 	{
-	  rparh[4*i+0]= 3.255559960937500E+04;   //rpar(1)=T_vode
-	  rparh[4*i+1]= 1.076699972152710E+00;//    rpar(2)=ne_vode
-	  rparh[4*i+2]=  2.119999946752000E+12; //    rpar(3)=rho_vode
-	  rparh[4*i+3]=1/(1.635780036449432E-01)-1;    //    rpar(4)=z_vode
+	  rparh[4*i+0]= Tne_tmp_ptr[i];   //rpar(1)=T_vode
+	  rparh[4*i+1]= Tne_tmp_ptr[neq+i];//    rpar(2)=ne_vode
+	  rparh[4*i+2]= rho_tmp_ptr[i]; //    rpar(3)=rho_vode
+	  rparh[4*i+3]=1/a-1;    //    rpar(4)=z_vode
 
 	}
       CVodeSetUserData(cvode_mem, &Data);
@@ -269,7 +338,9 @@ int main (int argc, char* argv[])
       /*      flag = CVode(cvode_mem, tout, u, &t, CV_NORMAL);
       if(check_flag(&flag, "CVode", 1)) break;
       */
-      for(iout=1, tout=8.839029760565609E-06  ; iout <= 1; iout++, tout += 8.839029760565609E-06) {
+      int n_substeps=1;
+      t=0.0;
+      for(iout=1, tout= delta_time/n_substeps ; iout <= n_substeps; iout++, tout += delta_time/n_substeps) {
       flag = CVode(cvode_mem, tout, u, &t, CV_NORMAL);
       umax = N_VMaxNorm(u);
       flag = CVodeGetNumSteps(cvode_mem, &nst);
@@ -277,46 +348,26 @@ int main (int argc, char* argv[])
       PrintOutput(tout, umax, nst);
       }
 
+      for(int i=0;i<neq;i++)
+	{
+	  Tne_tmp_ptr[i]=rparh[4*i+0];   //rpar(1)=T_vode
+	  Tne_tmp_ptr[neq+i]=rparh[4*i+1];//    rpar(2)=ne_vode
+	  //	  amrex::Print()<<"Temp"<<Tne_tmp_ptr[i]<<std::endl;
+	  // rho should not change  rho_tmp_ptr[i]=rparh[4*i+2]; //    rpar(3)=rho_vode
+	}
+      D_old[mfi].copyFromMem(tbx,0,2,Tne_tmp_ptr);
+      
       mf[mfi].copyFromMem(tbx,0,1,dptr);
       PrintFinalStats(cvode_mem);
 
       N_VDestroy(u);          /* Free the u vector */
       N_VDestroy(Data);          /* Free the userdata vector */
+      N_VDestroy(T_tmp);
+      N_VDestroy(rho_tmp);
       CVodeFree(&cvode_mem);  /* Free the integrator memory */
-    
     }
 
-    //////////////////////////////////////////////////////////////////////
-    // Deallocate data
-    //////////////////////////////////////////////////////////////////////
-    
-    fort_fin_allocations();
-
-    amrex::Print()<<"Maximum of repacked final solution: "<<mf.max(0,0,0)<<std::endl;
-    
-    if (write_plotfile)
-    {
-      amrex::WriteSingleLevelPlotfile("PLT_OUTPUT",
-                                      mf,
-                                      {"y1"},
-                                      geom,
-                                      time,
-                                      0);
-    }
-
-    // Call the timer again and compute the maximum difference between the start time and stop time
-    //   over all processors
-    Real stop_time = ParallelDescriptor::second() - strt_time;
-    const int IOProc = ParallelDescriptor::IOProcessorNumber();
-    ParallelDescriptor::ReduceRealMax(stop_time,IOProc);
-
-    // Tell the I/O Processor to write out the "run time"
-    amrex::Print() << "Run time = " << stop_time << std::endl;
-    
-    amrex::Finalize();
-    return 0;
 }
-
 
 static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
 {

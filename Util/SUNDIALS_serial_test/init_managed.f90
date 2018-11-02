@@ -22,7 +22,7 @@ use atomic_rates_module
 
 end subroutine init_allocations
 
-subroutine init_tables_eos_params() &
+subroutine init_tables_eos_params(a) &
      bind(C,name="fort_init_tables_eos_params")
   use constants_module, only : rt => type_real, M_PI
   use atomic_rates_module
@@ -63,7 +63,7 @@ implicit none
 
 !    print*,"Finished reading parameters:"
 !    print(FMT), string,STRANG_COMP, a, half_dt, rho, T_orig, ne_orig, e_orig
-    a=1.635780036449432E-01
+!    a=1.635780036449432E-01
 
     z = 1.d0/a - 1.d0
     call fort_integrate_comoving_a(a, a_end, half_dt)

@@ -447,12 +447,12 @@ Nyx::read_params ()
     }
 
 #ifndef AMREX_USE_CVODE
-    #ifndef AMREX_USE_SUNDIALS3
+    #ifndef AMREX_USE_SUNDIALS_3x4x
     if (heat_cool_type == 5 || heat_cool_type == 7)
-        amrex::Error("Nyx:: cannot set heat_cool_type = 5 or 7 unless USE_CVODE=TRUE or USE_SUNDIALS3=TRUE");
-    #ifndef AMREX_USE_ARKODE
+        amrex::Error("Nyx:: cannot set heat_cool_type = 5 or 7 unless USE_CVODE=TRUE or USE_SUNDIALS_3x4x=TRUE");
+    #ifndef AMREX_USE_ARKODE_LIBS
     if (heat_cool_type == 9)
-        amrex::Error("Nyx:: cannot set heat_cool_type = 9 unless USE_SUNDIALS3=TRUE, and USE_ARKODE=TRUE");
+        amrex::Error("Nyx:: cannot set heat_cool_type = 9 unless USE_SUNDIALS_3x4x=TRUE, and USE_ARKODE_LIBS=TRUE");
     #endif
     #endif
 #else
