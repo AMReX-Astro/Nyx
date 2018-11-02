@@ -37,7 +37,8 @@ subroutine init_tables_eos_params(a) &
 implicit none
   real(c_double) :: vode_atol_scaled_in, vode_rtol_in, xacc_in
   integer :: simd_width
-  real(rt) :: a, half_dt
+  real(rt), intent(inout) :: a
+  real(rt) :: half_dt
   integer :: i, j, k
   real(rt) :: z, z_end, a_end, rho, H_reion_z, He_reion_z
 

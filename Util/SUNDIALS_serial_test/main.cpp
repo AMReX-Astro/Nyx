@@ -31,8 +31,7 @@ static void PrintOutput(realtype t, realtype umax, long int nst);
 static int check_retval(void *flagvalue, const char *funcname, int opt);
 
 int integrate_state_box
-  (   amrex::MultiFab &mf,
-   amrex::MultiFab &state,
+  (amrex::MultiFab &state,
    amrex::MultiFab &diag_eos,
    const amrex::Real& a, const amrex::Real& delta_time);
 
@@ -55,9 +54,10 @@ int main (int argc, char* argv[])
     std::cout << std::setprecision(15);
 
     int n_cell, max_grid_size;
-    int cvode_meth, cvode_itmeth, write_plotfile;
+    int cvode_meth, cvode_itmeth, write_plotfile, nGrow;
     bool do_tiling;
     int ierr=0;
+    nGrow=0;
 
     // inputs parameters
     {
@@ -83,6 +83,7 @@ int main (int argc, char* argv[])
 
       pp.get("write_plotfile",write_plotfile);
       pp.get("do_tiling",do_tiling);
+      pp.get("nGrow",nGrow);
 
     }
     
@@ -154,25 +155,25 @@ int main (int argc, char* argv[])
     DistributionMapping dm(ba);
 
     // Create MultiFab with no ghost cells.
-    MultiFab mf(ba, dm, Ncomp, 0);
+    MultiFab mf(ba, dm, Ncomp, nGrow);
 
     // Create MultiFab with no ghost cells.
-    MultiFab S_old(ba, dm, 7, 0);
+    MultiFab S_old(ba, dm, 6, nGrow);
 
     // Create MultiFab with no ghost cells.
-    MultiFab D_old(ba, dm, 2, 0);
+    MultiFab D_old(ba, dm, 2, nGrow);
 
     
-    mf.setVal(6.226414794921875E+02);
     /*
 	  rparh[4*i+0]= 3.255559960937500E+04;   //rpar(1)=T_vode
 	  rparh[4*i+1]= 1.076699972152710E+00;//    rpar(2)=ne_vode
 	  rparh[4*i+2]=  2.119999946752000E+12; //    rpar(3)=rho_vode
 	  rparh[4*i+3]=1/(1.635780036449432E-01)-1;    //    rpar(4)=z_vode
     */
-    S_old.setVal(2.119999946752000E+12,0); //    rpar(3)=rho_vode
-    D_old.setVal(3.255559960937500E+04 ,0); //    rpar(1)=T_vode
-    D_old.setVal(1.076699972152710E+00 ,0); //    rpar(2)=ne_vode
+    S_old.setVal(2.119999946752000E+12,0,1,nGrow); //    rpar(3)=rho_vode
+    S_old.setVal(6.226414794921875E+02,5,1,nGrow); //    rpar(3)=rho_vode
+    D_old.setVal(3.255559960937500E+04 ,0,1,nGrow); //    rpar(1)=T_vode
+    D_old.setVal(1.076699972152710E+00 ,1,1,nGrow); //    rpar(2)=ne_vode
 
     //    MultiFab vode_aux_vars(ba, dm, 4*Ncomp, 0);
       /*      vode_aux_vars.setVal(3.255559960937500E+04,0);
@@ -184,12 +185,12 @@ int main (int argc, char* argv[])
     //////////////////////////////////////////////////////////////////////
 
     double delta_time= 8.839029760565609E-06;
-    amrex::Real a=1.035780036449432E-01;
+    amrex::Real a=1.635780036449432E-01;
 
     fort_init_allocations();
     fort_init_tables_eos_params(a);
 
-    ierr=integrate_state_box(mf,       S_old,       D_old,       a, delta_time);
+    ierr=integrate_state_box(S_old,       D_old,       a, delta_time);
     if(ierr)
       {
 	amrex::Print()<<"returned nonzero error code"<<std::endl;
@@ -201,13 +202,13 @@ int main (int argc, char* argv[])
     
     fort_fin_allocations();
 
-    amrex::Print()<<"Maximum of repacked final solution: "<<mf.max(0,0,0)<<std::endl;
+    amrex::Print()<<"Maximum of repacked final solution: "<<S_old.max(0,0,0)<<std::endl;
     
     if (write_plotfile)
     {
       amrex::WriteSingleLevelPlotfile("PLT_OUTPUT",
-                                      mf,
-                                      {"y1"},
+                                      S_old,
+                                      {"rho","U","V","W","Eden","Eint"},
                                       geom,
                                       time,
                                       0);
@@ -233,8 +234,7 @@ int main (int argc, char* argv[])
 }
 
 int integrate_state_box
-  (amrex::MultiFab &mf,
-   amrex::MultiFab &S_old,
+  (amrex::MultiFab &S_old,
    amrex::MultiFab &D_old,
    const amrex::Real& a, const amrex::Real& delta_time)
 {
@@ -256,29 +256,36 @@ int integrate_state_box
 
 
 
-    for ( MFIter mfi(mf, do_tiling); mfi.isValid(); ++mfi )
+    for ( MFIter mfi(S_old, do_tiling); mfi.isValid(); ++mfi )
     {
       Real* dptr;
+      t=0.0;
 
-      const Box& tbx = mfi.tilebox();
+      const Box& tbx = mfi.growntilebox(S_old.nGrow());
       amrex::IntVect tile_size = tbx.size();
       const int* hi = tbx.hiVect();
       const int* lo = tbx.loVect();
+      int long neq1=(hi[0]-lo[0]+1)*(hi[1]-lo[1]+1)*(hi[2]-lo[2]+1);
+      int long neq2=(hi[0]-lo[0]+1-S_old.nGrow())*(hi[1]-lo[1]+1-S_old.nGrow())*(hi[2]-lo[2]+1-S_old.nGrow());
       int long neq=(tile_size[0])*(tile_size[1])*(tile_size[2]);
 
       if(neq>1)
-	amrex::Print()<<"Integrating a box with "<<neq<<" cels"<<std::endl;
+	{
+	amrex::Print()<<"Integrating a box with "<<neq<<" cells"<<std::endl;
+	amrex::Print()<<"Integrating a box with "<<neq1<<" cells"<<std::endl;
+	amrex::Print()<<"Integrating a box with "<<neq2<<"real cells"<<std::endl;
+	}
 
       /* Create a CUDA vector with initial values */
       u = N_VNew_Serial(neq);  /* Allocate u vector */
       if(check_retval((void*)u, "N_VNew_Cuda", 0)) return(1);
 
-      /*      FSetInternalEnergy_mfab(mf[mfi].dataPtr(),
+      /*      FSetInternalEnergy_mfab(S_old[mfi].dataPtr(),
         tbx.loVect(),
 	    tbx.hiVect());  /* Initialize u vector */
 
       dptr=N_VGetArrayPointer_Serial(u);
-      mf[mfi].copyToMem(tbx,0,1,dptr);
+      S_old[mfi].copyToMem(tbx,5,1,dptr);
 
       /* Call CVodeCreate to create the solver memory and specify the 
        * Backward Differentiation Formula and the use of a Newton iteration */
@@ -339,7 +346,6 @@ int integrate_state_box
       if(check_flag(&flag, "CVode", 1)) break;
       */
       int n_substeps=1;
-      t=0.0;
       for(iout=1, tout= delta_time/n_substeps ; iout <= n_substeps; iout++, tout += delta_time/n_substeps) {
       flag = CVode(cvode_mem, tout, u, &t, CV_NORMAL);
       umax = N_VMaxNorm(u);
@@ -357,7 +363,7 @@ int integrate_state_box
 	}
       D_old[mfi].copyFromMem(tbx,0,2,Tne_tmp_ptr);
       
-      mf[mfi].copyFromMem(tbx,0,1,dptr);
+      S_old[mfi].copyFromMem(tbx,5,1,dptr);
       PrintFinalStats(cvode_mem);
 
       N_VDestroy(u);          /* Free the u vector */
