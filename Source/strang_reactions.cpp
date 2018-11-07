@@ -1,7 +1,6 @@
 
 #include "Nyx.H"
 #include "Nyx_F.H"
-#include "HeatCool.H"
 
 using namespace amrex;
 using std::string;
