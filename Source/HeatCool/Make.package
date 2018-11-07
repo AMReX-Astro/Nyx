@@ -4,41 +4,43 @@ f90EXE_sources += integrate_state_vode_3d.f90
 
 ifeq ($(USE_SDC), TRUE)
 f90EXE_sources += integrate_state_with_source_3d.f90
-  ifeq ($(USE_CVODE), TRUE)
+  ifeq ($(USE_ODE_FORT), TRUE)
       f90EXE_sources += fcvode_extras_src.f90
       f90EXE_sources += integrate_state_fcvode_with_source_3d.f90
   else
-	ifeq ($(USE_SUNDIALS3), TRUE)
-	     f90EXE_sources += fcvode_extras_src.f90
-	     f90EXE_sources += integrate_state_fcvode_with_source_3d.f90
-	 else
-	     f90EXE_sources += integrate_state_fcvode_with_source_3d_stubs.f90
-	 endif
+	f90EXE_sources += integrate_state_fcvode_with_source_3d_stubs.f90
   endif
 endif
 
-ifeq ($(USE_CVODE), TRUE)
+#ifeq ($(USE_ODE_FORT), TRUE)
+# Test if this needs to be the following
+ifeq ($(USE_FORT_ODE), TRUE)
   f90EXE_sources += fcvode_extras.f90
   f90EXE_sources += integrate_state_fcvode_3d.f90
   f90EXE_sources += integrate_state_fcvode_vec_3d.f90
-else
-ifeq ($(USE_SUNDIALS3), TRUE)
-  f90EXE_sources += fcvode_extras.f90
-  f90EXE_sources += integrate_state_fcvode_3d.f90
-  f90EXE_sources += integrate_state_fcvode_vec_3d.f90
-  ifeq ($(USE_ARKODE), TRUE)
+  ifeq ($(USE_ARKODE_LIBS), TRUE)
   f90EXE_sources += farkode_extras.f90
   f90EXE_sources += integrate_state_farkode_3d.f90
+  else
+  f90EXE_sources += integrate_state_farkode_3d_stubs.f90
   endif
 else
-  f90EXE_sources += integrate_state_fcvode_3d_stubs.f90
-  f90EXE_sources += integrate_state_fcvode_vec_3d_stubs.f90
-endif
+f90EXE_sources += integrate_state_fcvode_3d_stubs.f90
+f90EXE_sources += integrate_state_farkode_3d_stubs.f90
+f90EXE_sources += integrate_state_fcvode_vec_3d_stubs.f90
+f90EXE_sources += integrate_state_fcvode_with_source_3d_stubs.f90
 endif
 f90EXE_sources += vode_aux.f90
 f90EXE_sources += f_rhs.f90
+ifeq ($(USE_CVODE_LIBS), TRUE)
+  f90EXE_sources += cvode_extras.f90
+  CEXE_sources += integrate_state_box_3d.cpp
+else
+CEXE_sources += integrate_state_box_3d_stubs.cpp
+endif
 else
 f90EXE_sources += heat_cool_stubs.f90
+CEXE_sources += integrate_state_box_3d_stubs.cpp
 f90EXE_sources += integrate_state_fcvode_3d_stubs.f90
 f90EXE_sources += integrate_state_fcvode_vec_3d_stubs.f90
 f90EXE_sources += integrate_state_fcvode_with_source_3d_stubs.f90

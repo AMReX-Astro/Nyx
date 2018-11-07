@@ -426,6 +426,9 @@ public:
                          amrex::Real dt, amrex::Real a_old, amrex::Real a_new, 
                          int sdc_iter);
 #endif
+  
+   int integrate_state_box(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
+   int integrate_state_grownbox(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
 
     amrex::Real advance_particles_only (amrex::Real time, amrex::Real dt, int iteration, int ncycle);
 
