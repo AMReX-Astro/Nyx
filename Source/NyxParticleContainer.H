@@ -11,9 +11,6 @@ class NyxParticleContainerBase
 {
 public:
 
-    using MyParIter = amrex::ParIter<1+BL_SPACEDIM>;
-    using MyConstParIter = amrex::ParConstIter<1+BL_SPACEDIM>;
-
     virtual ~NyxParticleContainerBase() {}
 
     virtual void moveKickDrift (amrex::MultiFab& acceleration, int level, amrex::Real timestep, 
@@ -40,7 +37,9 @@ class NyxParticleContainer
 public:
 
     using ParticleTileType = amrex::ParticleTile<NSR,NSI,NAR,NAI>;
-
+    using MyParIter = amrex::ParIter<NSR,NSI,NAR,NAI>;
+    using MyConstParIter = amrex::ParConstIter<NSR,NSI,NAR,NAI>;
+    
     NyxParticleContainer (amrex::Amr* amr, int nghost=0)
 	: amrex::NeighborParticleContainer<NSR,NSI>((amrex::ParGDBBase*) amr->GetParGDB(), nghost),
 	  sub_cycle(amr->subCycle())
