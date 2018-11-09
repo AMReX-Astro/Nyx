@@ -12,7 +12,6 @@ CEXE_sources += Nyx_output.cpp
 CEXE_sources += NyxBld.cpp
 CEXE_sources += NyxParticles.cpp
 CEXE_sources += ParticleDerive.cpp
-CEXE_sources += NeutrinoParticleContainer.cpp
 CEXE_sources += DarkMatterParticleContainer.cpp
 CEXE_sources += comoving.cpp
 CEXE_sources += write_info.cpp
@@ -53,8 +52,11 @@ f90EXE_sources += agn_params.f90
 f90EXE_sources += uniform01.f90
 f90EXE_sources += bl_random_f.f90
 
-ifeq (NEUTRINO_PARTICLES, TRUE)
-CEXE_headers += NeutrinoParticleContainer.H
+ifeq ($(NEUTRINO_PARTICLES), TRUE)
+CEXE_sources += NeutrinoParticleContainer.cpp
+CEXE_headers   += NeutrinoParticleContainer.H
+FEXE_headers   += NeutrinoParticles_F.H
+F90EXE_sources += Neutrino_Particle_mod_3d.F90
 endif
 
 ifeq ($(REEBER), TRUE)
