@@ -108,6 +108,8 @@ public:
     virtual void writePlotFilePre(const std::string& dir, ostream& os);
     virtual void writePlotFilePost(const std::string& dir, ostream& os);
 
+    void writeJobInfo (const std::string& dir);
+
     //
     //Write amrex::MultiFab as plot file
     //
