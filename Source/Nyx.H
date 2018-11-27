@@ -162,9 +162,19 @@ public:
     static void read_comoving_params();
 
     //
-    // Initial redshift (default = 0)
+    // Initial redshift
     //
     static amrex::Real initial_z;
+
+    //
+    // Initial time in code units
+    //
+    static amrex::Real initial_time;
+
+    //
+    // End time in code units
+    //
+    static amrex::Real final_time;
 
     //
     // Final a -- used as stopping criterion if positive

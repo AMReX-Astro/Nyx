@@ -12,6 +12,9 @@ extern "C"
   void fort_alloc_simd_vec();
   void fort_dealloc_simd_vec();
 
+  void fort_integrate_time_given_a
+    (amrex::Real* a0, amrex::Real* a1, amrex::Real* dt);
+
   void fort_integrate_comoving_a
     (amrex::Real* old_a, amrex::Real* new_a, amrex::Real* dt);
 
