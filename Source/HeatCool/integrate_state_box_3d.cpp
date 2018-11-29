@@ -41,7 +41,6 @@ int Nyx::integrate_state_box
   void *cvode_mem;
   int iout, flag;
   long int nst;
-  bool do_tiling=false;    
 
   u = NULL;
   //  LS = NULL;
@@ -51,11 +50,16 @@ int Nyx::integrate_state_box
   abstol = 1e-4;
 
   fort_ode_eos_setup(a,delta_time);
+  //  amrex::Cuda::setLaunchRegion(true);
   if(S_old.nGrow()>1)
   S_old.Subtract(S_old,S_old,Eint,Eden,1,S_old.nGrow());
   else
   S_old.Subtract(S_old,S_old,Eint,Eden,1,0);
-    for ( MFIter mfi(S_old, do_tiling); mfi.isValid(); ++mfi )
+  //  amrex::Cuda::setLaunchRegion(false);
+#ifdef _OPENMP
+#pragma omp parallel if (Gpu::notInLaunchRegion())
+#endif
+  for ( MFIter mfi(S_old, TilingIfNotGPU()); mfi.isValid(); ++mfi )
     {
       double* dptr;
       t=0.0;
@@ -234,7 +238,10 @@ int Nyx::integrate_state_grownbox
   S_old.Subtract(S_old,S_old,Eint,Eden,1,S_old.nGrow());
   else
   S_old.Subtract(S_old,S_old,Eint,Eden,1,0);
-    for ( MFIter mfi(S_old, do_tiling); mfi.isValid(); ++mfi )
+#ifdef _OPENMP
+#pragma omp parallel if (Gpu::notInLaunchRegion())
+#endif
+  for ( MFIter mfi(S_old, TilingIfNotGPU()); mfi.isValid(); ++mfi )
     {
       double* dptr;
       t=0.0;
