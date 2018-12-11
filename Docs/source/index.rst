@@ -13,6 +13,9 @@ Welcome to Nyx's documentation!
    NyxPreface
    NyxIntroduction
    NyxGettingStarted
+   NyxGravity
+   Particles
+   NyxHeatCool
 
 .. toctree::
    :maxdepth: 1
