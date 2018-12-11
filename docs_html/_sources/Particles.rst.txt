@@ -258,13 +258,13 @@ In each time step:
 
 -  Solve for :math:`{\mathbf g}^n` (only if multilevel, otherwise use :math:`{\mathbf g}^{n+1}` from previous step)
 
--  :math:`{\mathbf u}_i^{\nph} = \frac{1}{a^{\nph}} ( (a^n {\mathbf u}^n_i) + \frac{\dt}{2} \; {\mathbf g}^n_i )`
+-  :math:`{\mathbf u}_i^{{n+\frac{1}{2}}} = \frac{1}{a^{{n+\frac{1}{2}}}} ( (a^n {\mathbf u}^n_i) + \frac{{\Delta t}}{2} \; {\mathbf g}^n_i )`
 
--  :math:`{\mathbf x}_i^{n+1 } = {\mathbf x}^n_i +  \frac{\dt}{a^{\nph}}  {\mathbf u}_i^{\nph}`
+-  :math:`{\mathbf x}_i^{n+1 } = {\mathbf x}^n_i +  \frac{{\Delta t}}{a^{{n+\frac{1}{2}}}}  {\mathbf u}_i^{{n+\frac{1}{2}}}`
 
 -  Solve for :math:`{\mathbf g}^{n+1}` using :math:`{\mathbf x}_i^{n+1}`
 
--  :math:`{\mathbf u}_i^{n+1} = \frac{1}{a^{n+1}} ( (a^{\nph} {\mathbf u}^{\nph}_i) + \frac{\dt}{2} \; {\mathbf g}^{n+1}_i )`
+-  :math:`{\mathbf u}_i^{n+1} = \frac{1}{a^{n+1}} ( (a^{{n+\frac{1}{2}}} {\mathbf u}^{{n+\frac{1}{2}}}_i) + \frac{{\Delta t}}{2} \; {\mathbf g}^{n+1}_i )`
 
 Note that at the end of the timestep :math:`{\bf x}_i^{n+1}` is consistent with :math:`{\bf g}^{n+1}` becasue
 we have not advanced the positions after computing the new-time gravity. This has the benefit that
@@ -289,8 +289,8 @@ We solve for the gravitational vector as follows:
    and use multigrid with Gauss-Seidel red-black relaxation to solve the equation for :math:`\phi` at cell centers.
 
 -  Compute the normal component of :math:`{\bf g} = -\nabla \phi` at cell faces by differencing the adjacent values of :math:`\phi,`
-   e.g. if :math:`\gb = (g_x, g_y, g_z),` then we define :math:`g_x` on cell faces with a normal in the x-direction by computing
-   :math:`g_{x,i-\myhalf,j,k} = -(\phi_{i,j,k} - \phi_{i-1,j,k}) / \Delta x.`
+   e.g. if :math:`{\bf g} = (g_x, g_y, g_z),` then we define :math:`g_x` on cell faces with a normal in the x-direction by computing
+   :math:`g_{x,i-{\frac{1}{2}},j,k} = -(\phi_{i,j,k} - \phi_{i-1,j,k}) / \Delta x.`
 
 -  Interpolate each component of :math:`{\bf g}` from normal cell faces onto each particle position using
    linear interpolation in the normal direction.

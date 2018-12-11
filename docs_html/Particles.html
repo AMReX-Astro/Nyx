@@ -467,10 +467,10 @@ random number between 0 and 1 multiplied by 0.25 dx.</div>
 <p>In each time step:</p>
 <ul class="simple">
 <li>Solve for <span class="math notranslate nohighlight">\({\mathbf g}^n\)</span> (only if multilevel, otherwise use <span class="math notranslate nohighlight">\({\mathbf g}^{n+1}\)</span> from previous step)</li>
-<li><span class="math notranslate nohighlight">\({\mathbf u}_i^{\nph} = \frac{1}{a^{\nph}} ( (a^n {\mathbf u}^n_i) + \frac{\dt}{2} \; {\mathbf g}^n_i )\)</span></li>
-<li><span class="math notranslate nohighlight">\({\mathbf x}_i^{n+1 } = {\mathbf x}^n_i +  \frac{\dt}{a^{\nph}}  {\mathbf u}_i^{\nph}\)</span></li>
+<li><span class="math notranslate nohighlight">\({\mathbf u}_i^{{n+\frac{1}{2}}} = \frac{1}{a^{{n+\frac{1}{2}}}} ( (a^n {\mathbf u}^n_i) + \frac{{\Delta t}}{2} \; {\mathbf g}^n_i )\)</span></li>
+<li><span class="math notranslate nohighlight">\({\mathbf x}_i^{n+1 } = {\mathbf x}^n_i +  \frac{{\Delta t}}{a^{{n+\frac{1}{2}}}}  {\mathbf u}_i^{{n+\frac{1}{2}}}\)</span></li>
 <li>Solve for <span class="math notranslate nohighlight">\({\mathbf g}^{n+1}\)</span> using <span class="math notranslate nohighlight">\({\mathbf x}_i^{n+1}\)</span></li>
-<li><span class="math notranslate nohighlight">\({\mathbf u}_i^{n+1} = \frac{1}{a^{n+1}} ( (a^{\nph} {\mathbf u}^{\nph}_i) + \frac{\dt}{2} \; {\mathbf g}^{n+1}_i )\)</span></li>
+<li><span class="math notranslate nohighlight">\({\mathbf u}_i^{n+1} = \frac{1}{a^{n+1}} ( (a^{{n+\frac{1}{2}}} {\mathbf u}^{{n+\frac{1}{2}}}_i) + \frac{{\Delta t}}{2} \; {\mathbf g}^{n+1}_i )\)</span></li>
 </ul>
 <p>Note that at the end of the timestep <span class="math notranslate nohighlight">\({\bf x}_i^{n+1}\)</span> is consistent with <span class="math notranslate nohighlight">\({\bf g}^{n+1}\)</span> becasue
 we have not advanced the positions after computing the new-time gravity. This has the benefit that
@@ -492,8 +492,8 @@ Note that this is the <em>comoving</em> density.</li>
 We discretize with the standard 7-point Laplacian (5-point in 2D)
 and use multigrid with Gauss-Seidel red-black relaxation to solve the equation for <span class="math notranslate nohighlight">\(\phi\)</span> at cell centers.</li>
 <li>Compute the normal component of <span class="math notranslate nohighlight">\({\bf g} = -\nabla \phi\)</span> at cell faces by differencing the adjacent values of <span class="math notranslate nohighlight">\(\phi,\)</span>
-e.g. if <span class="math notranslate nohighlight">\(\gb = (g_x, g_y, g_z),\)</span> then we define <span class="math notranslate nohighlight">\(g_x\)</span> on cell faces with a normal in the x-direction by computing
-<span class="math notranslate nohighlight">\(g_{x,i-\myhalf,j,k} = -(\phi_{i,j,k} - \phi_{i-1,j,k}) / \Delta x.\)</span></li>
+e.g. if <span class="math notranslate nohighlight">\({\bf g} = (g_x, g_y, g_z),\)</span> then we define <span class="math notranslate nohighlight">\(g_x\)</span> on cell faces with a normal in the x-direction by computing
+<span class="math notranslate nohighlight">\(g_{x,i-{\frac{1}{2}},j,k} = -(\phi_{i,j,k} - \phi_{i-1,j,k}) / \Delta x.\)</span></li>
 <li>Interpolate each component of <span class="math notranslate nohighlight">\({\bf g}\)</span> from normal cell faces onto each particle position using
 linear interpolation in the normal direction.</li>
 </ul>
@@ -599,7 +599,7 @@ These control printing about the state of the calculation (time, value of :math:
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, Nyx development tem.
+        &copy; Copyright 2018, Nyx development team.
 
     </p>
   </div>

@@ -1,4 +1,0 @@
-Class MemInfo
-=============
-
-.. doxygenclass:: MemInfo

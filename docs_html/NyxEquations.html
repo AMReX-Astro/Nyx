@@ -194,110 +194,108 @@
 <h1>Hydrodynamic Equations in Comoving Coordinates<a class="headerlink" href="#hydrodynamic-equations-in-comoving-coordinates" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="conservative-form">
 <h2>Conservative Form<a class="headerlink" href="#conservative-form" title="Permalink to this headline">¶</a></h2>
-<p>We begin with the fully compressible equations for the conserved state vector,
-<span class="math notranslate nohighlight">\(\Ub = (\rho, \rho \ub, \rho E, \rho A_k, \rho X_k, \rho Y_k):\)</span>
-We solve the equations of gas dynamics in a coordinate system that is comoving
+<p>We solve the equations of gas dynamics in a coordinate system that is comoving
 with the expanding universe, with expansion factor, <span class="math notranslate nohighlight">\(a,\)</span> related to the redshift, <span class="math notranslate nohighlight">\(z\)</span>, by <span class="math notranslate nohighlight">\(a = 1 / (1 + z).\)</span>
 The continuity equation is written,</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\label{eq:dens}
-\frac{\partial \rho_b}{\partial t} = - \frac{1}{a} \nabla \cdot (\rho_b \Ub) \enskip , \\\end{split}\]</div>
+\frac{\partial \rho_b}{\partial t} = - \frac{1}{a} \nabla \cdot (\rho_b {\bf U})  , \\\end{split}\]</div>
 <p>where <span class="math notranslate nohighlight">\(\rho_b\)</span> is the comoving baryonic density, related to the proper density by <span class="math notranslate nohighlight">\(\rho_b = a^3 \rho_{proper},\)</span>
-and <span class="math notranslate nohighlight">\(\Ub\)</span> is the proper peculiar baryonic velocity.</p>
+and <span class="math notranslate nohighlight">\({\bf U}\)</span> is the proper peculiar baryonic velocity.</p>
 <p>The momentum evolution equation can be expressed as</p>
 <div class="math notranslate nohighlight">
 \[\begin{aligned}
-\frac{\partial (\rho_b \Ub)}{\partial t} &amp;=&amp;  \frac{1}{a} \left(
-- \nabla \cdot (\rho_b \Ub \Ub)
+\frac{\partial (\rho_b {\bf U})}{\partial t} &amp;=&amp;  \frac{1}{a} \left(
+- \nabla \cdot (\rho_b {\bf U} {\bf U})
 - \nabla p
-+ \rho_b \gb
-+ {\bf S}_{\rho \Ub}
-- \dot{a} \rho_b \Ub \right) \enskip , \end{aligned}\]</div>
++ \rho_b {\bf g}
++ {\bf S}_{\rho {\bf U}}
+- \dot{a} \rho_b {\bf U} \right)  , \end{aligned}\]</div>
 <p>or equivalently,</p>
 <div class="math notranslate nohighlight">
 \[\begin{aligned}
 \label{eq:momt}
-\frac{\partial (a \rho_b \Ub)}{\partial t} &amp;=&amp;
--             \nabla \cdot (\rho_b \Ub \Ub)
+\frac{\partial (a \rho_b {\bf U})}{\partial t} &amp;=&amp;
+-             \nabla \cdot (\rho_b {\bf U} {\bf U})
 -             \nabla p
-+             \rho_b \gb
-+             {\bf S}_{\rho \Ub} \enskip , \end{aligned}\]</div>
++             \rho_b {\bf g}
++             {\bf S}_{\rho {\bf U}}  , \end{aligned}\]</div>
 <p>where the pressure, <span class="math notranslate nohighlight">\(p\)</span>, that appears in the
 evolution equations is related to the proper pressure, <span class="math notranslate nohighlight">\(p_{proper},\)</span> by <span class="math notranslate nohighlight">\(p = a^3 p_{proper}.\)</span>
-Here <span class="math notranslate nohighlight">\(\gb = - \nabla \phi\)</span> is the gravitational acceleration vector, and
-<span class="math notranslate nohighlight">\({\bf S}_{\rho \Ub}\)</span> represents any external forcing terms.</p>
+Here <span class="math notranslate nohighlight">\({\bf g} = - \nabla \phi\)</span> is the gravitational acceleration vector, and
+<span class="math notranslate nohighlight">\({\bf S}_{\rho {\bf U}}\)</span> represents any external forcing terms.</p>
 <p>The energy equation can be written,</p>
 <div class="math notranslate nohighlight">
 \[\begin{aligned}
 \frac{\partial (\rho_b E)}{\partial t} &amp;=&amp; \frac{1}{a} \left[
-- \nabla \cdot (\rho_b \Ub E + p \Ub)
-+ ( \rho_b \Ub \cdot \gb +  S_{\rho E} )
-- \dot{a} ( 3 (\gamma - 1) \rho_b e + \rho_b ( \Ub \cdot \Ub) ) \right] \enskip . \end{aligned}\]</div>
+- \nabla \cdot (\rho_b {\bf U} E + p {\bf U})
++ ( \rho_b {\bf U} \cdot {\bf g} +  S_{\rho E} )
+- \dot{a} ( 3 (\gamma - 1) \rho_b e + \rho_b ( {\bf U} \cdot {\bf U}) ) \right]  . \end{aligned}\]</div>
 <p>or equivalently,</p>
 <div class="math notranslate nohighlight">
 \[\begin{aligned}
 \label{eq:energy}
 \frac{\partial (a^2 \rho_b E)}{\partial t} &amp;=&amp; a \left[
-- \nabla \cdot (\rho_b \Ub E + p \Ub)
-+  \rho_b \Ub \cdot \gb
+- \nabla \cdot (\rho_b {\bf U} E + p {\bf U})
++  \rho_b {\bf U} \cdot {\bf g}
 +  S_{\rho E}
-+  \dot{a} ( \; ( 2 - 3 (\gamma - 1) ) \; \rho_b e ) \right] \enskip . \end{aligned}\]</div>
-<p>Here <span class="math notranslate nohighlight">\(E = e + \Ub \cdot \Ub / 2\)</span> is the total energy per unit mass,
++  \dot{a} ( \; ( 2 - 3 (\gamma - 1) ) \; \rho_b e ) \right]  . \end{aligned}\]</div>
+<p>Here <span class="math notranslate nohighlight">\(E = e + {\bf U} \cdot {\bf U} / 2\)</span> is the total energy per unit mass,
 where <span class="math notranslate nohighlight">\(e\)</span> is the specific internal energy.
-<span class="math notranslate nohighlight">\(S_{\rho E} = S_{\rho e} + \Ub \cdot {\bf S}_{\rho \Ub}\)</span>
+<span class="math notranslate nohighlight">\(S_{\rho E} = S_{\rho e} + {\bf U} \cdot {\bf S}_{\rho {\bf U}}\)</span>
 where <span class="math notranslate nohighlight">\(S_{\rho e} = \Lambda^H - \Lambda^C\)</span> represents the heating and cooling terms, respectively.
 We can write the evolution equation for internal energy as</p>
 <div class="math notranslate nohighlight">
 \[\begin{aligned}
 \frac{\partial (\rho_b e)}{\partial t} &amp;=&amp; \frac{1}{a} \left[
-- \nabla \cdot (\rho_b \Ub e)
-- p \nabla \cdot \Ub
+- \nabla \cdot (\rho_b {\bf U} e)
+- p \nabla \cdot {\bf U}
 - \dot{a} ( 3 (\gamma - 1) \rho_b e )
-+ S_{\rho e}  \right] \enskip . \end{aligned}\]</div>
++ S_{\rho e}  \right]  . \end{aligned}\]</div>
 <p>or equivalently,</p>
 <div class="math notranslate nohighlight">
 \[\begin{aligned}
 \frac{\partial (a^2 \rho_b e)}{\partial t} &amp;=&amp;  a \left[
-- \nabla \cdot (\rho_b \Ub e)
-- p \nabla \cdot \Ub
+- \nabla \cdot (\rho_b {\bf U} e)
+- p \nabla \cdot {\bf U}
 + S_{\rho e}
-+ \dot{a} ( \; ( 2 - 3 (\gamma - 1) ) \; \rho_b e ) \right] \enskip . \end{aligned}\]</div>
++ \dot{a} ( \; ( 2 - 3 (\gamma - 1) ) \; \rho_b e ) \right]  . \end{aligned}\]</div>
 <p>Note that for a gamma-law gas with <span class="math notranslate nohighlight">\(\gamma = 5/3,\)</span> we can write</p>
 <div class="math notranslate nohighlight">
 \[\begin{aligned}
 \frac{\partial (a^2 \rho_b E)}{\partial t} &amp;=&amp;  a \left[
- -\nabla \cdot (\rho_b \Ub E + p \Ub)
-+  \rho_b \Ub \cdot \gb
-+  S_{\rho e}  \right]  \enskip . \end{aligned}\]</div>
+ -\nabla \cdot (\rho_b {\bf U} E + p {\bf U})
++  \rho_b {\bf U} \cdot {\bf g}
++  S_{\rho e}  \right]   . \end{aligned}\]</div>
 <p>and</p>
 <div class="math notranslate nohighlight">
 \[\begin{aligned}
 \frac{\partial (a^2 \rho_b e)}{\partial t} &amp;=&amp; a \left[
-- \nabla \cdot (\rho_b \Ub e)
--  p \nabla \cdot \Ub
-+  S_{\rho e}  \right]  \enskip . \end{aligned}\]</div>
+- \nabla \cdot (\rho_b {\bf U} e)
+-  p \nabla \cdot {\bf U}
++  S_{\rho e}  \right]   . \end{aligned}\]</div>
 </div>
 <div class="section" id="tracing">
 <h2>Tracing<a class="headerlink" href="#tracing" title="Permalink to this headline">¶</a></h2>
-<p>In order to compute the fluxes on faces, we trace <span class="math notranslate nohighlight">\(\rho, \Ub, \rho e\)</span> and <span class="math notranslate nohighlight">\(p\)</span> to the faces.</p>
+<p>In order to compute the fluxes on faces, we trace <span class="math notranslate nohighlight">\(\rho, {\bf U}, \rho e\)</span> and <span class="math notranslate nohighlight">\(p\)</span> to the faces.</p>
 <p>Thus we must convert the momentum evolution equation into a velocity evolution equation:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{aligned}
-\frac{\partial\Ub}{\partial t} &amp;=&amp;  \frac{1}{\rho_b} \left(
-\frac{\partial (\rho_b \Ub)}{\partial t}  - \Ub \frac{\partial \rho_b}{\partial t}  \right) \\
+\frac{\partial{\bf U}}{\partial t} &amp;=&amp;  \frac{1}{\rho_b} \left(
+\frac{\partial (\rho_b {\bf U})}{\partial t}  - {\bf U} \frac{\partial \rho_b}{\partial t}  \right) \\
 &amp;=&amp;  \frac{1}{a \rho_b} \left(
-- \nabla \cdot (\rho_b \Ub \Ub)
+- \nabla \cdot (\rho_b {\bf U} {\bf U})
 - \nabla p
-+ \rho_b \gb
-+ S_{\rho \Ub}
-- \dot{a} \rho_b \Ub \right)
-+ \frac{1}{a}  \Ub \; \nabla \cdot (\rho_b \Ub) \\
++ \rho_b {\bf g}
++ S_{\rho {\bf U}}
+- \dot{a} \rho_b {\bf U} \right)
++ \frac{1}{a}  {\bf U} \; \nabla \cdot (\rho_b {\bf U}) \\
 &amp;=&amp;  \frac{1}{a} \left(
-- \Ub \cdot \nabla \Ub
+- {\bf U} \cdot \nabla {\bf U}
 - \frac{1}{\rho_b} \nabla p
-+ \gb
-+ \frac{1}{\rho_b} {\bf S}_{\rho \Ub}
-- \dot{a} \Ub \right) \enskip .\end{aligned}\end{split}\]</div>
++ {\bf g}
++ \frac{1}{\rho_b} {\bf S}_{\rho {\bf U}}
+- \dot{a} {\bf U} \right)  .\end{aligned}\end{split}\]</div>
 <div class="section" id="subgrid-scale-model-in-comoving-coordinates">
 <h3>Subgrid Scale Model in Comoving Coordinates<a class="headerlink" href="#subgrid-scale-model-in-comoving-coordinates" title="Permalink to this headline">¶</a></h3>
 <p>The fundamental modification to the standard compressible equations is the addition
@@ -307,25 +305,25 @@ The set of conservation equations in comoving coordinates&nbsp;(<a class="refere
 <a href="#id3"><span class="problematic" id="id4">:raw-latex:`\cite{maier:2009}`</span></a>:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{aligned}
-\frac{\partial \rho_b}{\partial t} =&amp; - \frac{1}{a} \nabla \cdot (\rho_b \Ub) \enskip , \\
+\frac{\partial \rho_b}{\partial t} =&amp; - \frac{1}{a} \nabla \cdot (\rho_b {\bf U})  , \\
 \label{eq:momt_les}
-\frac{\partial (a \rho_b \Ub)}{\partial t} =&amp;
--             \nabla \cdot (\rho_b \Ub \Ub)
+\frac{\partial (a \rho_b {\bf U})}{\partial t} =&amp;
+-             \nabla \cdot (\rho_b {\bf U} {\bf U})
 -             \nabla p
 +             \nabla \cdot \boldsymbol{\tau}
-+             \rho_b \gb  \enskip , \\
++             \rho_b {\bf g}   , \\
 \label{eq:energy_les}
-\frac{\partial (a^2 \rho_b E)}{\partial t} =&amp; - a \nabla \cdot (\rho_b \Ub E + p \Ub)
-+  a \rho_b \Ub \cdot \gb
-+ a \nabla \cdot (\Ub\cdot\boldsymbol{\tau}) - a^2(\Sigma - \rho_b \varepsilon) \enskip \\
+\frac{\partial (a^2 \rho_b E)}{\partial t} =&amp; - a \nabla \cdot (\rho_b {\bf U} E + p {\bf U})
++  a \rho_b {\bf U} \cdot {\bf g}
++ a \nabla \cdot ({\bf U}\cdot\boldsymbol{\tau}) - a^2(\Sigma - \rho_b \varepsilon)  \\
 \nonumber
 &amp;+ a \dot{a} \left( ( 2 - 3 (\gamma - 1) ) \rho_b e \right)
-+ a^2 ( \Lambda^H  - \Lambda^C )  \enskip , \\
++ a^2 ( \Lambda^H  - \Lambda^C )   , \\
 \label{eq:k_les}
 \frac{\partial (a^2\rho_b K)}{\partial t} =&amp;
-- a\nabla \cdot \left(\rho_b \Ub K\right)
+- a\nabla \cdot \left(\rho_b {\bf U} K\right)
 + a\nabla \cdot \left(\rho_b \kappa_{\rm sgs}\nabla K\right)
-+ a^2(\Sigma - \rho_b \varepsilon)\enskip .\end{aligned}\end{split}\]</div>
++ a^2(\Sigma - \rho_b \varepsilon) .\end{aligned}\end{split}\]</div>
 <p>The interaction between resolved and unresolved turbulent eddies is described by
 the SGS turbulence stress tensor <span class="math notranslate nohighlight">\(\boldsymbol{\tau}\)</span>. Since inertial-range dynamics of
 turbulence is scale-invariant, we conjecture that <span class="math notranslate nohighlight">\(\boldsymbol{\tau}\)</span> in comoving coordinates
@@ -334,9 +332,9 @@ the following closure is proposed in <a href="#id5"><span class="problematic" id
 <div class="math notranslate nohighlight">
 \[\label{eq:tau_nonlin}
   \tau_{ij}= 2C_{1}\Delta\rho_b(2 K_{\mathrm{sgs}})^{1/2}S_{\! ij}^{\ast}
-  -4C_{2}\rho_bK\frac{U_{i,k}U_{j,k}}{|\nabla\Ub|^{2}}
+  -4C_{2}\rho_bK\frac{U_{i,k}U_{j,k}}{|\nabla{\bf U}|^{2}}
   -\frac{2}{3}(1-C_{2})\rho_bK\delta_{ij}.\]</div>
-<p>where <span class="math notranslate nohighlight">\(|\nabla\Ub|:=(2U_{i,k}U_{i,k})^{1/2}\)</span> is the norm of the resolved velocity derivative,</p>
+<p>where <span class="math notranslate nohighlight">\(|\nabla{\bf U}|:=(2U_{i,k}U_{i,k})^{1/2}\)</span> is the norm of the resolved velocity derivative,</p>
 <div class="math notranslate nohighlight">
 \[S_{ij}^{\ast} = S_{ij} - \frac{1}{3}\delta_{ij}d =
 \frac{1}{2} (U_{i,j} + U_{j,i}) - \frac{1}{3}\delta_{ij}U_{k,k}\]</div>
@@ -375,7 +373,7 @@ however, part of the numerically resolved kinetic energy will be dissipated dire
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, Nyx development tem.
+        &copy; Copyright 2018, Nyx development team.
 
     </p>
   </div>

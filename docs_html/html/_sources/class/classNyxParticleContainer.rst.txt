@@ -1,4 +1,0 @@
-Class NyxParticleContainer
-==========================
-
-.. doxygenclass:: NyxParticleContainer

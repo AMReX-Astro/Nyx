@@ -1,4 +1,0 @@
-Class StochasticForcing
-=======================
-
-.. doxygenclass:: StochasticForcing
