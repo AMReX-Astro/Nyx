@@ -10,7 +10,9 @@ Welcome to Nyx's documentation!
    :maxdepth: 1
    :caption: Nyx basics
 
-   GettingStarted
+   NyxPreface
+   NyxIntroduction
+   NyxGettingStarted
 
 .. toctree::
    :maxdepth: 1
