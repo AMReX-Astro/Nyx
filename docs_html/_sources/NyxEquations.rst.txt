@@ -5,6 +5,8 @@ Hydrodynamic Equations in Comoving Coordinates
 Conservative Form
 -----------------
 
+We begin with the fully compressible equations for the conserved state vector,
+:math:`\Ub = (\rho, \rho \ub, \rho E, \rho A_k, \rho X_k, \rho Y_k):`
 We solve the equations of gas dynamics in a coordinate system that is comoving
 with the expanding universe, with expansion factor, :math:`a,` related to the redshift, :math:`z`, by :math:`a = 1 / (1 + z).`
 The continuity equation is written,

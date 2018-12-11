@@ -8,7 +8,8 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Getting Started &mdash; Nyx  documentation</title>
+  <title>Getting Started &mdash; Nyx 18.05
+ documentation</title>
   
 
   
@@ -26,6 +27,7 @@
 
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Gravity" href="NyxGravity.html" />
@@ -56,6 +58,11 @@
 
           
             
+            
+              <div class="version">
+                18.05
+
+              </div>
             
           
 
@@ -163,7 +170,26 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="getting-started">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="getting-started">
 <h1>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="downloading-the-code">
 <h2>Downloading the Code<a class="headerlink" href="#downloading-the-code" title="Permalink to this headline">¶</a></h2>
@@ -172,41 +198,41 @@ Nyx, you must download two separate git modules.</p>
 <p>First, make sure that git is installed on your machine—we recommend version 1.7.x or higher.</p>
 <ol class="arabic">
 <li><p class="first">Clone/fork the &nbsp;repository:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">AMReX</span><span class="o">-</span><span class="n">Codes</span><span class="o">/</span><span class="n">amrex</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">AMReX</span><span class="o">-</span><span class="n">Codes</span><span class="o">/</span><span class="n">amrex</span>
 </pre></div>
 </div>
 <p>You will want to periodically update AMReX by typing</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">pull</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">pull</span>
 </pre></div>
 </div>
-<p>in the <code class="docutils literal"><span class="pre">amrex/</span></code> directory.</p>
+<p>in the <code class="docutils literal notranslate"><span class="pre">amrex/</span></code> directory.</p>
 <p>Note: when you check out AMReX (and Nyx), you will get the master
-branch. The <code class="docutils literal"><span class="pre">master</span></code> branch is guaranteed to be compatible
-with the <code class="docutils literal"><span class="pre">master</span></code> branch.
-Active development is done on the <code class="docutils literal"><span class="pre">development</span></code> branch
+branch. The <code class="docutils literal notranslate"><span class="pre">master</span></code> branch is guaranteed to be compatible
+with the <code class="docutils literal notranslate"><span class="pre">master</span></code> branch.
+Active development is done on the <code class="docutils literal notranslate"><span class="pre">development</span></code> branch
 in each repo, and merged into the master branch monthly.
-If you wish to use the Nyx <code class="docutils literal"><span class="pre">development</span></code> branch, then you
-should also switch to the <code class="docutils literal"><span class="pre">development</span></code> branch for AMReX.</p>
+If you wish to use the Nyx <code class="docutils literal notranslate"><span class="pre">development</span></code> branch, then you
+should also switch to the <code class="docutils literal notranslate"><span class="pre">development</span></code> branch for AMReX.</p>
 </li>
-<li><p class="first">Set the environment variable, <code class="docutils literal"><span class="pre">AMREX_HOME</span></code>, on your
+<li><p class="first">Set the environment variable, <code class="docutils literal notranslate"><span class="pre">AMREX_HOME</span></code>, on your
 machine to point to the path name where you have put .
-You can add this to your <code class="docutils literal"><span class="pre">.bashrc</span></code> as:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">AMREX_HOME</span><span class="o">=</span><span class="p">{</span>\<span class="n">em</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">amrex</span><span class="o">/</span><span class="p">}</span>
+You can add this to your <code class="docutils literal notranslate"><span class="pre">.bashrc</span></code> as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">AMREX_HOME</span><span class="o">=</span><span class="p">{</span>\<span class="n">em</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">amrex</span><span class="o">/</span><span class="p">}</span>
 </pre></div>
 </div>
-<p>or to your <code class="docutils literal"><span class="pre">.cshrc</span></code> as:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">setenv</span> <span class="n">AMREX_HOME</span> <span class="p">{</span>\<span class="n">em</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">amrex</span><span class="o">/</span><span class="p">}</span>
+<p>or to your <code class="docutils literal notranslate"><span class="pre">.cshrc</span></code> as:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">setenv</span> <span class="n">AMREX_HOME</span> <span class="p">{</span>\<span class="n">em</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">amrex</span><span class="o">/</span><span class="p">}</span>
 </pre></div>
 </div>
-<p>where you replace <code class="docutils literal"><span class="pre">/path/to/amrex/</span></code> will the full path to the
+<p>where you replace <code class="docutils literal notranslate"><span class="pre">/path/to/amrex/</span></code> will the full path to the
 amrex/ directory.</p>
 </li>
 <li><p class="first">Clone/fork the Nyx repository:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">AMReX</span><span class="o">-</span><span class="n">Astro</span><span class="o">/</span><span class="n">Nyx</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">AMReX</span><span class="o">-</span><span class="n">Astro</span><span class="o">/</span><span class="n">Nyx</span>
 </pre></div>
 </div>
 <p>As with AMReX development on Nyx is done in the
-<code class="docutils literal"><span class="pre">development</span></code> branch, so you should work there if you want
+<code class="docutils literal notranslate"><span class="pre">development</span></code> branch, so you should work there if you want
 the latest source.</p>
 </li>
 </ol>
@@ -215,7 +241,7 @@ the latest source.</p>
 <h2>Building the Code<a class="headerlink" href="#building-the-code" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic">
 <li><p class="first">From the directory in which you checked out Nyx, type</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">Nyx</span><span class="o">/</span><span class="n">Exec</span><span class="o">/</span><span class="n">LyA</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">Nyx</span><span class="o">/</span><span class="n">Exec</span><span class="o">/</span><span class="n">LyA</span>
 </pre></div>
 </div>
 <p>This will put you into a directory in which you can run a small
@@ -236,7 +262,7 @@ made on a Linux machine, with COMP = gnu.</p>
 <h2>Running the Code<a class="headerlink" href="#running-the-code" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic">
 <li><p class="first">Type:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Nyx3d</span><span class="o">.</span><span class="n">Linux</span><span class="o">.</span><span class="n">gnu</span><span class="o">.</span><span class="n">ex</span> <span class="n">inputs</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Nyx3d</span><span class="o">.</span><span class="n">Linux</span><span class="o">.</span><span class="n">gnu</span><span class="o">.</span><span class="n">ex</span> <span class="n">inputs</span>
 </pre></div>
 </div>
 </li>
@@ -280,7 +306,7 @@ for more detail about using all of these visualization packages. The webpage det
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, Placeholder_Author.
+        &copy; Copyright 2018, Nyx development tem.
 
     </p>
   </div>
@@ -302,7 +328,7 @@ for more detail about using all of these visualization packages. The webpage det
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'',
+            VERSION:'18.05',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
@@ -314,6 +340,7 @@ for more detail about using all of these visualization packages. The webpage det
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
       <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="None"></script>
 
   
 

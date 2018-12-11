@@ -8,7 +8,8 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Radiative Heating and Cooling &mdash; Nyx  documentation</title>
+  <title>Radiative Heating and Cooling &mdash; Nyx 18.05
+ documentation</title>
   
 
   
@@ -26,6 +27,7 @@
 
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="File list" href="filelist.html" />
@@ -56,6 +58,11 @@
 
           
             
+            
+              <div class="version">
+                18.05
+
+              </div>
             
           
 
@@ -157,38 +164,57 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="radiative-heating-and-cooling">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="radiative-heating-and-cooling">
 <h1>Radiative Heating and Cooling<a class="headerlink" href="#radiative-heating-and-cooling" title="Permalink to this headline">¶</a></h1>
 <p>Nyx provides the capability to compute local heating and cooling effects due to radiation.
-The motivation and algorithm for the heating and cooling components is documented in <a href="#id1"><span class="problematic" id="id2">:raw-latex:`\cite{lukic15}`</span></a>, and the relevant code is located in the <code class="docutils literal"><span class="pre">Source/HeatCool</span></code> subdirectory.
-The code is activated through the <code class="docutils literal"><span class="pre">USE_HEATCOOL=TRUE</span></code> option in the <code class="docutils literal"><span class="pre">GNUmakefile</span></code>.
-Mathematically, the heating and cooling can be described by a single ODE in each cell, to be integrated per time step <span class="math">\(\Delta t\)</span>.
+The motivation and algorithm for the heating and cooling components is documented in <a href="#id1"><span class="problematic" id="id2">:raw-latex:`\cite{lukic15}`</span></a>, and the relevant code is located in the <code class="docutils literal notranslate"><span class="pre">Source/HeatCool</span></code> subdirectory.
+The code is activated through the <code class="docutils literal notranslate"><span class="pre">USE_HEATCOOL=TRUE</span></code> option in the <code class="docutils literal notranslate"><span class="pre">GNUmakefile</span></code>.
+Mathematically, the heating and cooling can be described by a single ODE in each cell, to be integrated per time step <span class="math notranslate nohighlight">\(\Delta t\)</span>.
 This ODE exhibits a sensitive relationship to quantities such as temperature and free electron density, and consequently it often requires sophisticated integration techniques to compute correctly.</p>
-<p>Nyx provides a few different techniques for solving this ODE, which are selected via the <code class="docutils literal"><span class="pre">nyx.heat_cool_type</span></code> input parameter.
-One method is to use the VODE ODE solver (selected with <code class="docutils literal"><span class="pre">nyx.heat_cool_type=3</span></code>).
-The source code for VODE is included in the <code class="docutils literal"><span class="pre">Util/VODE</span></code> subdirectory and is compiled automatically with the rest of .
+<p>Nyx provides a few different techniques for solving this ODE, which are selected via the <code class="docutils literal notranslate"><span class="pre">nyx.heat_cool_type</span></code> input parameter.
+One method is to use the VODE ODE solver (selected with <code class="docutils literal notranslate"><span class="pre">nyx.heat_cool_type=3</span></code>).
+The source code for VODE is included in the <code class="docutils literal notranslate"><span class="pre">Util/VODE</span></code> subdirectory and is compiled automatically with the rest of .
 However, while VODE is sufficient for computing this ODE correctly, it is an old Fortran code which is no longer maintained, and consequently will not easily be adapted to future high-performance computing architectures.</p>
 <p>VODE’s successor is CVODE, which is a translation of the original VODE solver from Fortran to C.
 CVODE is actively developed and maintained, and is more likely to be adapted to future architectures.
-To use CVODE in , one may use the <code class="docutils literal"><span class="pre">nyx.heat_cool_type=5</span></code> input parameter.
+To use CVODE in , one may use the <code class="docutils literal notranslate"><span class="pre">nyx.heat_cool_type=5</span></code> input parameter.
 Currently the performance of VODE is slightly better because CVODE evaluates the ODE RHS one more time than VODE per coarse time step integration.
 Users should note that, while the VODE solver is compiled automatically in , CVODE must be compiled as a separate library; instructions for compiling CVODE are provided in the &nbsp;User Guide.
-To link the external CVODE solver into , one must set <code class="docutils literal"><span class="pre">USE_HEATCOOL=TRUE</span></code> as well as <code class="docutils literal"><span class="pre">USE_CVODE=TRUE</span></code> in the <code class="docutils literal"><span class="pre">GNUmakefile</span></code>.</p>
+To link the external CVODE solver into , one must set <code class="docutils literal notranslate"><span class="pre">USE_HEATCOOL=TRUE</span></code> as well as <code class="docutils literal notranslate"><span class="pre">USE_CVODE=TRUE</span></code> in the <code class="docutils literal notranslate"><span class="pre">GNUmakefile</span></code>.</p>
 <p>Finally, a third ODE integration option (which is new and <strong>*highly experimental*</strong>) consists of using CVODE while treating groups of ODEs in different cells as a single system of coupled ODEs.
-This option can be selected with the <code class="docutils literal"><span class="pre">nyx.heat_cool_type=7</span></code> option.
+This option can be selected with the <code class="docutils literal notranslate"><span class="pre">nyx.heat_cool_type=7</span></code> option.
 The purpose of this approach is to enable the evaluation of multiple RHSs simultaneously, using SIMD instructions.
 SIMD parallelism comprises a large fraction of compute performance on modern HPC architectures, and consequently, this approach can lead to a significant performance gain in the ODE integration (which is the most expensive computational kernel in ).
-The number of ODEs (cells) which are computed simultaneously is chosen through the input parameter <code class="docutils literal"><span class="pre">nyx.simd_width</span></code>.
+The number of ODEs (cells) which are computed simultaneously is chosen through the input parameter <code class="docutils literal notranslate"><span class="pre">nyx.simd_width</span></code>.
 On Intel Xeon Phi, with 512 bit-wide SIMD instructions, an appropriate value for this parameter might be 8 or 16, or perhaps larger; the value which yields the highest performance will vary by architecture.
 However, users are cautioned that this mode remains <strong>*experimental*</strong> and its results have not been subjected to the same level of verification as the other solver methods.
 In particular, the are three numerical tolerances, available as input parameters, which affect the convergence of the scalar vs SIMD ODE integration:</p>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">nyx.eos_nr_eps</span></code>: this is the convergence criterion for the Newton-Raphson iteration which is used to evaluate the ODE RHS</li>
-<li><code class="docutils literal"><span class="pre">nyx.vode_rtol</span></code>: this is the relative tolerance required for the ODE integration in VODE or CVODE</li>
-<li><code class="docutils literal"><span class="pre">nyx.vode_atol_scaled</span></code>: this is the absolute tolerance required for the ODE integration in VODE or CVODE, scaled by the initial value of the independent variable in the ODE</li>
+<li><code class="docutils literal notranslate"><span class="pre">nyx.eos_nr_eps</span></code>: this is the convergence criterion for the Newton-Raphson iteration which is used to evaluate the ODE RHS</li>
+<li><code class="docutils literal notranslate"><span class="pre">nyx.vode_rtol</span></code>: this is the relative tolerance required for the ODE integration in VODE or CVODE</li>
+<li><code class="docutils literal notranslate"><span class="pre">nyx.vode_atol_scaled</span></code>: this is the absolute tolerance required for the ODE integration in VODE or CVODE, scaled by the initial value of the independent variable in the ODE</li>
 </ul>
-<p>These variables, in particular <code class="docutils literal"><span class="pre">nyx.vode_rtol</span></code>, have different effects depending on whether one is integrating a single ODE at a time, or a system of ODEs simultaneously.
-One should be mindful of the numerical differences which arise from these, which can be observed with the <code class="docutils literal"><span class="pre">fcompare</span></code> tool in AMReX.</p>
+<p>These variables, in particular <code class="docutils literal notranslate"><span class="pre">nyx.vode_rtol</span></code>, have different effects depending on whether one is integrating a single ODE at a time, or a system of ODEs simultaneously.
+One should be mindful of the numerical differences which arise from these, which can be observed with the <code class="docutils literal notranslate"><span class="pre">fcompare</span></code> tool in AMReX.</p>
 </div>
 
 
@@ -211,7 +237,7 @@ One should be mindful of the numerical differences which arise from these, which
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, Placeholder_Author.
+        &copy; Copyright 2018, Nyx development tem.
 
     </p>
   </div>
@@ -233,7 +259,7 @@ One should be mindful of the numerical differences which arise from these, which
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'',
+            VERSION:'18.05',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
@@ -245,6 +271,7 @@ One should be mindful of the numerical differences which arise from these, which
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
       <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="None"></script>
 
   
 

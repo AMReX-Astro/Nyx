@@ -8,7 +8,8 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Gravity &mdash; Nyx  documentation</title>
+  <title>Gravity &mdash; Nyx 18.05
+ documentation</title>
   
 
   
@@ -26,6 +27,7 @@
 
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Hydrodynamic Equations in Comoving Coordinates" href="NyxEquations.html" />
@@ -56,6 +58,11 @@
 
           
             
+            
+              <div class="version">
+                18.05
+
+              </div>
             
           
 
@@ -166,7 +173,26 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="gravity">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="gravity">
 <h1>Gravity<a class="headerlink" href="#gravity" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
@@ -190,7 +216,7 @@ boundary conditions for the current-level-solve.</li>
 <p>Briefly:</p>
 <ul>
 <li><p class="first">At the beginning of a simulation, we do a multilevel composite
-solve (if <code class="docutils literal"><span class="pre">gravity.no_composite</span></code> = 0).</p>
+solve (if <code class="docutils literal notranslate"><span class="pre">gravity.no_composite</span></code> = 0).</p>
 <p>We also do a multilevel composite solve after each regrid.</p>
 </li>
 <li><p class="first">The old-time gravity on the coarse level is defined based on
@@ -209,17 +235,17 @@ strategy</p>
 </li>
 <li><p class="first">At an AMR synchronization step across levels, if we’re
 choosing to synchronize the gravitational field across levels
-(<code class="docutils literal"><span class="pre">gravity.no_sync</span></code> = 0) we then do a solve starting from the coarse
+(<code class="docutils literal notranslate"><span class="pre">gravity.no_sync</span></code> = 0) we then do a solve starting from the coarse
 grid that adjusts for the mismatch between the fine-grid phi and
 the coarse-grid phi, as well as the mismatch between the fine-grid
 density fluxes and the coarse-grid density fluxes, and add the
 resulting sync solve phi to both the coarse and the fine level</p>
 <p>Thus, to within the gravity error tolerance, you get the same final
 result as if you had done a full composite solve at the end of the
-timestep (assuming <code class="docutils literal"><span class="pre">gravity.no_sync</span></code> = 0).</p>
+timestep (assuming <code class="docutils literal notranslate"><span class="pre">gravity.no_sync</span></code> = 0).</p>
 </li>
 </ul>
-<p>If you do <code class="docutils literal"><span class="pre">gravity.no_composite</span></code> = 1, then you never do a full
+<p>If you do <code class="docutils literal notranslate"><span class="pre">gravity.no_composite</span></code> = 1, then you never do a full
 multilevel solve, and the gravity on any level is defined only by the
 solve on that level. The only time this would be appropriate is if
 the fine level(s) cover essentially all of the mass on the grid for
@@ -228,11 +254,11 @@ all time.</p>
 <div class="section" id="controls">
 <h3>Controls<a class="headerlink" href="#controls" title="Permalink to this headline">¶</a></h3>
 <p>In order to use gravity, we must always set:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">USE_GRAV</span><span class="o">=</span><span class="n">TRUE</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">USE_GRAV</span><span class="o">=</span><span class="n">TRUE</span>
 </pre></div>
 </div>
 <p>in the GNUmakefile and</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">do_grav</span><span class="o">=</span> <span class="mi">1</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">do_grav</span><span class="o">=</span> <span class="mi">1</span>
 </pre></div>
 </div>
 <p>in the inputs file.</p>
@@ -243,37 +269,37 @@ all time.</p>
 <p>In Nyx we always compute gravity by solving a Poisson equation on the mesh hierarchy.
 To define the gravitational vector we set</p>
 <blockquote>
-<div><div class="math">
+<div><div class="math notranslate nohighlight">
 \[\mathbf{g}(\mathbf{x},t) = -\nabla \phi\]</div>
 <p>where</p>
-<div class="math">
+<div class="math notranslate nohighlight">
 \[\mathbf{\Delta} \phi = \frac{4 \pi G}{a} (\rho - \overline{\rho}) \label{eq:Self Gravity}\]</div>
 </div></blockquote>
-<p>where <span class="math">\(\overline{\rho}\)</span> is the average of <span class="math">\(\rho\)</span> over the entire domain if we assume triply periodic boundary conditions,
-and <span class="math">\(a(t)\)</span> is the scale of the universe as a function of time.</p>
+<p>where <span class="math notranslate nohighlight">\(\overline{\rho}\)</span> is the average of <span class="math notranslate nohighlight">\(\rho\)</span> over the entire domain if we assume triply periodic boundary conditions,
+and <span class="math notranslate nohighlight">\(a(t)\)</span> is the scale of the universe as a function of time.</p>
 </div>
 <div class="section" id="hydrodynamics-source-terms">
 <h2>Hydrodynamics Source Terms<a class="headerlink" href="#hydrodynamics-source-terms" title="Permalink to this headline">¶</a></h2>
 <p>There are several options to incorporate the effects of gravity into
 the hydrodynamics system. The main parameter here is
-<code class="docutils literal"><span class="pre">Nyx.grav_source_type</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">Nyx.grav_source_type</span></code>.</p>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">Nyx.grav_source_type</span></code> = 1 : we use a standard
+<li><code class="docutils literal notranslate"><span class="pre">Nyx.grav_source_type</span></code> = 1 : we use a standard
 predictor-corrector formalism for updating the momentum and
-energy. Specifically, our first update is equal to <span class="math">\(\Delta t
-\times \mathbf{S}^n\)</span> , where <span class="math">\(\mathbf{S}^n\)</span> is the value of
+energy. Specifically, our first update is equal to <span class="math notranslate nohighlight">\(\Delta t
+\times \mathbf{S}^n\)</span> , where <span class="math notranslate nohighlight">\(\mathbf{S}^n\)</span> is the value of
 the source terms at the old-time (which is usually called time-level
-<span class="math">\(n\)</span>). At the end of the timestep, we do a corrector step where
-we subtract off <span class="math">\(\Delta t / 2 \times \mathbf{S}^n\)</span> and add on
-<span class="math">\(\Delta t / 2 \times \mathbf{S}^{n+1}\)</span>, so that at the end of
+<span class="math notranslate nohighlight">\(n\)</span>). At the end of the timestep, we do a corrector step where
+we subtract off <span class="math notranslate nohighlight">\(\Delta t / 2 \times \mathbf{S}^n\)</span> and add on
+<span class="math notranslate nohighlight">\(\Delta t / 2 \times \mathbf{S}^{n+1}\)</span>, so that at the end of
 the timestep the source term is properly time centered.</li>
 </ul>
 <ul class="simple">
-<li><code class="docutils literal"><span class="pre">Nyx.grav_source_type</span></code> = 3 : we do the same momentum update as
+<li><code class="docutils literal notranslate"><span class="pre">Nyx.grav_source_type</span></code> = 3 : we do the same momentum update as
 the previous, but for the energy update, we put all of the work
 into updating the kinetic energy alone. In particular, we explicitly
-ensure that <span class="math">\((rho e)\)</span> maintains the same, and update
-<span class="math">\((rho K)\)</span> with the work due to gravity, adding the new kinetic
+ensure that <span class="math notranslate nohighlight">\((rho e)\)</span> maintains the same, and update
+<span class="math notranslate nohighlight">\((rho K)\)</span> with the work due to gravity, adding the new kinetic
 energy to the old internal energy to determine the final total gas
 energy. The physical motivation is that work should be done on the
 velocity, and should not directly update the temperature—only
@@ -302,7 +328,7 @@ indirectly through things like shocks.</li>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, Placeholder_Author.
+        &copy; Copyright 2018, Nyx development tem.
 
     </p>
   </div>
@@ -324,7 +350,7 @@ indirectly through things like shocks.</li>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'',
+            VERSION:'18.05',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
@@ -336,6 +362,7 @@ indirectly through things like shocks.</li>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
       <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="None"></script>
 
   
 

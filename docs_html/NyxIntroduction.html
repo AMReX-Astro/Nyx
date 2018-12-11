@@ -8,7 +8,8 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Introduction to Nyx &mdash; Nyx  documentation</title>
+  <title>Introduction to Nyx &mdash; Nyx 18.05
+ documentation</title>
   
 
   
@@ -26,6 +27,7 @@
 
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Getting Started" href="NyxGettingStarted.html" />
@@ -56,6 +58,11 @@
 
           
             
+            
+              <div class="version">
+                18.05
+
+              </div>
             
           
 
@@ -161,7 +168,26 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="introduction-to-nyx">
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="introduction-to-nyx">
 <h1>Introduction to Nyx<a class="headerlink" href="#introduction-to-nyx" title="Permalink to this headline">¶</a></h1>
 <p>Nyx is a adaptive mesh, hydrodynamics code that is
 designed to model astrophysical reacting flows on massively parallel
@@ -195,46 +221,46 @@ throughout the code documentation and papers.</p>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><span class="math">\(t\)</span></td>
+<tr class="row-even"><td><span class="math notranslate nohighlight">\(t\)</span></td>
 <td>s</td>
 <td>time</td>
 </tr>
-<tr class="row-odd"><td><span class="math">\(\rho\)</span></td>
-<td><span class="math">\(\gcc\)</span></td>
+<tr class="row-odd"><td><span class="math notranslate nohighlight">\(\rho\)</span></td>
+<td><span class="math notranslate nohighlight">\(\gcc\)</span></td>
 <td>mass density</td>
 </tr>
-<tr class="row-even"><td><span class="math">\(\ub\)</span></td>
-<td><span class="math">\(\cms\)</span></td>
+<tr class="row-even"><td><span class="math notranslate nohighlight">\(\ub\)</span></td>
+<td><span class="math notranslate nohighlight">\(\cms\)</span></td>
 <td>velocity vector</td>
 </tr>
-<tr class="row-odd"><td><span class="math">\(p\)</span></td>
-<td><span class="math">\(\presunit\)</span></td>
+<tr class="row-odd"><td><span class="math notranslate nohighlight">\(p\)</span></td>
+<td><span class="math notranslate nohighlight">\(\presunit\)</span></td>
 <td>pressure</td>
 </tr>
-<tr class="row-even"><td><span class="math">\(\gb\)</span></td>
-<td><span class="math">\(\accelunit\)</span></td>
+<tr class="row-even"><td><span class="math notranslate nohighlight">\(\gb\)</span></td>
+<td><span class="math notranslate nohighlight">\(\accelunit\)</span></td>
 <td>gravitational
 acceleration</td>
 </tr>
-<tr class="row-odd"><td><span class="math">\(\Sb\)</span></td>
+<tr class="row-odd"><td><span class="math notranslate nohighlight">\(\Sb\)</span></td>
 <td>varies</td>
 <td>source term</td>
 </tr>
-<tr class="row-even"><td><span class="math">\(S_{\Lambda}\)</span></td>
+<tr class="row-even"><td><span class="math notranslate nohighlight">\(S_{\Lambda}\)</span></td>
 <td>varies</td>
 <td>source term</td>
 </tr>
-<tr class="row-odd"><td><span class="math">\(E\)</span></td>
-<td><span class="math">\(\ergg\)</span></td>
+<tr class="row-odd"><td><span class="math notranslate nohighlight">\(E\)</span></td>
+<td><span class="math notranslate nohighlight">\(\ergg\)</span></td>
 <td>specific total energy</td>
 </tr>
-<tr class="row-even"><td><span class="math">\(e\)</span></td>
-<td><span class="math">\(\ergg\)</span></td>
+<tr class="row-even"><td><span class="math notranslate nohighlight">\(e\)</span></td>
+<td><span class="math notranslate nohighlight">\(\ergg\)</span></td>
 <td>specific internal
 energy</td>
 </tr>
-<tr class="row-odd"><td><span class="math">\(T\)</span></td>
-<td><span class="math">\(K\)</span></td>
+<tr class="row-odd"><td><span class="math notranslate nohighlight">\(T\)</span></td>
+<td><span class="math notranslate nohighlight">\(K\)</span></td>
 <td>temperature</td>
 </tr>
 </tbody>
@@ -328,7 +354,7 @@ ion</td>
 <td>g /
 cm:math:`
 ^3`</td>
-<td>M<span class="math">\(_
+<td>M<span class="math notranslate nohighlight">\(_
 \odot\)</span>
 /
 Mpc:math:
@@ -442,9 +468,9 @@ Initializat
 ion</td>
 <td>specific
 energy
-(<span class="math">\(e\)</span>
+(<span class="math notranslate nohighlight">\(e\)</span>
 or
-<span class="math">\(E\)</span>)</td>
+<span class="math notranslate nohighlight">\(E\)</span>)</td>
 <td>erg/g=
 (cm/s):math
 :<cite>^2</cite></td>
@@ -473,7 +499,7 @@ or
 Initializat
 ion</td>
 <td><p class="first">energy
-(<span class="math">\(\rh
+(<span class="math notranslate nohighlight">\(\rh
 o e\)</span>
 or
 :math:<a href="#id1"><span class="problematic" id="id2">`</span></a>rho</p>
@@ -530,10 +556,10 @@ ion</td>
 <td>particle
 mass</td>
 <td>g</td>
-<td>M<span class="math">\(_
+<td>M<span class="math notranslate nohighlight">\(_
 \odot\)</span></td>
 <td>1
-M<span class="math">\(_
+M<span class="math notranslate nohighlight">\(_
 \odot\)</span>
 =
 1.98892e33
@@ -605,7 +631,7 @@ cm</td>
 /
 cm:math:`
 ^3`</td>
-<td>M<span class="math">\(_
+<td>M<span class="math notranslate nohighlight">\(_
 \odot\)</span>
 (km/s):math
 :<cite>^2</cite>
@@ -613,7 +639,7 @@ cm:math:`
 Mpc:math:
 <cite>^3</cite></td>
 <td>1
-M<span class="math">\(_
+M<span class="math notranslate nohighlight">\(_
 \odot\)</span>
 (km/s):math
 :<cite>^2</cite>
@@ -654,7 +680,7 @@ cm:math:`
 :<cite>^2</cite>
 / Mpc</td>
 <td>1
-M<span class="math">\(_
+M<span class="math notranslate nohighlight">\(_
 \odot\)</span>
 (km/s):math
 :<cite>^2</cite>
@@ -706,8 +732,8 @@ Each of these can be specified in the inputs file.</p>
 <li><p class="first"><strong>small_dens</strong></p>
 <ul>
 <li><div class="first line-block">
-<div class="line"><strong>subroutine enforce_minimum_density</strong> (called after subroutine consup) – if <span class="math">\(\rho &lt;\)</span> small_dens then <span class="math">\(\rho\)</span> is set to the
-minimum value of the 26 neighbors. This also modifies momenta, <span class="math">\(\rho E\)</span> and <span class="math">\(\rho e\)</span> so that velocties, <span class="math">\(E\)</span> and <span class="math">\(e\)</span> remain unchanged.</div>
+<div class="line"><strong>subroutine enforce_minimum_density</strong> (called after subroutine consup) – if <span class="math notranslate nohighlight">\(\rho &lt;\)</span> small_dens then <span class="math notranslate nohighlight">\(\rho\)</span> is set to the
+minimum value of the 26 neighbors. This also modifies momenta, <span class="math notranslate nohighlight">\(\rho E\)</span> and <span class="math notranslate nohighlight">\(\rho e\)</span> so that velocties, <span class="math notranslate nohighlight">\(E\)</span> and <span class="math notranslate nohighlight">\(e\)</span> remain unchanged.</div>
 </div>
 </li>
 <li><div class="first line-block">
@@ -730,30 +756,30 @@ minimum value of the 26 neighbors. This also modifies momenta, <span class="math
 <p>rstar = max(small_dens,rstar)</p>
 <p>where rstar = ro + (pstar-po)/co:math:<cite>^2</cite></p>
 </li>
-<li><p class="first"><strong>subroutine react_state</strong> – only compute reaction if <span class="math">\(\rho &gt;\)</span> small_dens</p>
+<li><p class="first"><strong>subroutine react_state</strong> – only compute reaction if <span class="math notranslate nohighlight">\(\rho &gt;\)</span> small_dens</p>
 </li>
 </ul>
 </li>
 <li><p class="first"><strong>small_temp</strong>:</p>
 <ul>
 <li><div class="first line-block">
-<div class="line"><strong>subroutine ctoprim</strong>: if <span class="math">\(\rho e &lt; 0\)</span>, then</div>
-<div class="line">call subroutine nyx_eos_given_RTX (e,…,small_temp,…) in order to compute a new energy, <span class="math">\(e\)</span>.</div>
+<div class="line"><strong>subroutine ctoprim</strong>: if <span class="math notranslate nohighlight">\(\rho e &lt; 0\)</span>, then</div>
+<div class="line">call subroutine nyx_eos_given_RTX (e,…,small_temp,…) in order to compute a new energy, <span class="math notranslate nohighlight">\(e\)</span>.</div>
 <div class="line">This energy is then used to</div>
-<div class="line">call subroutine nyx_eos_given_ReX in order to compute the sound speed, <span class="math">\(c.\)</span></div>
-<div class="line">Coming out of this the temperature is equal to small_temp and the energy <span class="math">\(e\)</span> has been reset.</div>
+<div class="line">call subroutine nyx_eos_given_ReX in order to compute the sound speed, <span class="math notranslate nohighlight">\(c.\)</span></div>
+<div class="line">Coming out of this the temperature is equal to small_temp and the energy <span class="math notranslate nohighlight">\(e\)</span> has been reset.</div>
 </div>
 </li>
 <li><div class="first line-block">
-<div class="line"><strong>subroutine react_state</strong>: if <span class="math">\(\rho e &lt; 0\)</span>, then</div>
-<div class="line">call subroutine nyx_eos_given_RTX (e,…,small_temp,…) in order to compute a new energy, <span class="math">\(e\)</span>.</div>
+<div class="line"><strong>subroutine react_state</strong>: if <span class="math notranslate nohighlight">\(\rho e &lt; 0\)</span>, then</div>
+<div class="line">call subroutine nyx_eos_given_RTX (e,…,small_temp,…) in order to compute a new energy, <span class="math notranslate nohighlight">\(e\)</span>.</div>
 <div class="line">This energy is then used to proceed with the burner routine.</div>
 </div>
 </li>
 <li><div class="first line-block">
-<div class="line"><strong>subroutine reset_internal_energy</strong>: if <span class="math">\(e &lt; 0\)</span> and <span class="math">\(E - ke &lt; 0\)</span> then</div>
-<div class="line">call subroutine nyx_eos_given_RTX (e,…,small_temp,…) in order to compute a new energy, <span class="math">\(e\)</span>. This energy is also used to</div>
-<div class="line">define a new <span class="math">\(E = e + ke\)</span></div>
+<div class="line"><strong>subroutine reset_internal_energy</strong>: if <span class="math notranslate nohighlight">\(e &lt; 0\)</span> and <span class="math notranslate nohighlight">\(E - ke &lt; 0\)</span> then</div>
+<div class="line">call subroutine nyx_eos_given_RTX (e,…,small_temp,…) in order to compute a new energy, <span class="math notranslate nohighlight">\(e\)</span>. This energy is also used to</div>
+<div class="line">define a new <span class="math notranslate nohighlight">\(E = e + ke\)</span></div>
 </div>
 </li>
 </ul>
@@ -796,7 +822,7 @@ minimum value of the 26 neighbors. This also modifies momenta, <span class="math
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, Placeholder_Author.
+        &copy; Copyright 2018, Nyx development tem.
 
     </p>
   </div>
@@ -818,7 +844,7 @@ minimum value of the 26 neighbors. This also modifies momenta, <span class="math
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'',
+            VERSION:'18.05',
             LANGUAGE:'None',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
@@ -830,6 +856,7 @@ minimum value of the 26 neighbors. This also modifies momenta, <span class="math
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
       <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="None"></script>
 
   
 
