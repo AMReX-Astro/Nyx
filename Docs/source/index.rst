@@ -14,6 +14,7 @@ Welcome to Nyx's documentation!
    NyxIntroduction
    NyxGettingStarted
    NyxGravity
+   NyxEquations
    Particles
    NyxHeatCool
 
