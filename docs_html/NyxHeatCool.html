@@ -1,0 +1,260 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Radiative Heating and Cooling &mdash; Nyx  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="File list" href="filelist.html" />
+    <link rel="prev" title="Dark matter particles" href="Particles.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Nyx
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Nyx basics</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="NyxPreface.html">Preface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxIntroduction.html">Introduction to Nyx</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxGettingStarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxGravity.html">Gravity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxEquations.html">Hydrodynamic Equations in Comoving Coordinates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Particles.html">Dark matter particles</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Radiative Heating and Cooling</a></li>
+</ul>
+<p class="caption"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="filelist.html">File list</a></li>
+<li class="toctree-l1"><a class="reference internal" href="classlist.html">Class list</a></li>
+<li class="toctree-l1"><a class="reference internal" href="namespacelist.html">Namespace list</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Nyx</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Radiative Heating and Cooling</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/NyxHeatCool.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="radiative-heating-and-cooling">
+<h1>Radiative Heating and Cooling<a class="headerlink" href="#radiative-heating-and-cooling" title="Permalink to this headline">¶</a></h1>
+<p>Nyx provides the capability to compute local heating and cooling effects due to radiation.
+The motivation and algorithm for the heating and cooling components is documented in <a href="#id1"><span class="problematic" id="id2">:raw-latex:`\cite{lukic15}`</span></a>, and the relevant code is located in the <code class="docutils literal"><span class="pre">Source/HeatCool</span></code> subdirectory.
+The code is activated through the <code class="docutils literal"><span class="pre">USE_HEATCOOL=TRUE</span></code> option in the <code class="docutils literal"><span class="pre">GNUmakefile</span></code>.
+Mathematically, the heating and cooling can be described by a single ODE in each cell, to be integrated per time step <span class="math">\(\Delta t\)</span>.
+This ODE exhibits a sensitive relationship to quantities such as temperature and free electron density, and consequently it often requires sophisticated integration techniques to compute correctly.</p>
+<p>Nyx provides a few different techniques for solving this ODE, which are selected via the <code class="docutils literal"><span class="pre">nyx.heat_cool_type</span></code> input parameter.
+One method is to use the VODE ODE solver (selected with <code class="docutils literal"><span class="pre">nyx.heat_cool_type=3</span></code>).
+The source code for VODE is included in the <code class="docutils literal"><span class="pre">Util/VODE</span></code> subdirectory and is compiled automatically with the rest of .
+However, while VODE is sufficient for computing this ODE correctly, it is an old Fortran code which is no longer maintained, and consequently will not easily be adapted to future high-performance computing architectures.</p>
+<p>VODE’s successor is CVODE, which is a translation of the original VODE solver from Fortran to C.
+CVODE is actively developed and maintained, and is more likely to be adapted to future architectures.
+To use CVODE in , one may use the <code class="docutils literal"><span class="pre">nyx.heat_cool_type=5</span></code> input parameter.
+Currently the performance of VODE is slightly better because CVODE evaluates the ODE RHS one more time than VODE per coarse time step integration.
+Users should note that, while the VODE solver is compiled automatically in , CVODE must be compiled as a separate library; instructions for compiling CVODE are provided in the &nbsp;User Guide.
+To link the external CVODE solver into , one must set <code class="docutils literal"><span class="pre">USE_HEATCOOL=TRUE</span></code> as well as <code class="docutils literal"><span class="pre">USE_CVODE=TRUE</span></code> in the <code class="docutils literal"><span class="pre">GNUmakefile</span></code>.</p>
+<p>Finally, a third ODE integration option (which is new and <strong>*highly experimental*</strong>) consists of using CVODE while treating groups of ODEs in different cells as a single system of coupled ODEs.
+This option can be selected with the <code class="docutils literal"><span class="pre">nyx.heat_cool_type=7</span></code> option.
+The purpose of this approach is to enable the evaluation of multiple RHSs simultaneously, using SIMD instructions.
+SIMD parallelism comprises a large fraction of compute performance on modern HPC architectures, and consequently, this approach can lead to a significant performance gain in the ODE integration (which is the most expensive computational kernel in ).
+The number of ODEs (cells) which are computed simultaneously is chosen through the input parameter <code class="docutils literal"><span class="pre">nyx.simd_width</span></code>.
+On Intel Xeon Phi, with 512 bit-wide SIMD instructions, an appropriate value for this parameter might be 8 or 16, or perhaps larger; the value which yields the highest performance will vary by architecture.
+However, users are cautioned that this mode remains <strong>*experimental*</strong> and its results have not been subjected to the same level of verification as the other solver methods.
+In particular, the are three numerical tolerances, available as input parameters, which affect the convergence of the scalar vs SIMD ODE integration:</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">nyx.eos_nr_eps</span></code>: this is the convergence criterion for the Newton-Raphson iteration which is used to evaluate the ODE RHS</li>
+<li><code class="docutils literal"><span class="pre">nyx.vode_rtol</span></code>: this is the relative tolerance required for the ODE integration in VODE or CVODE</li>
+<li><code class="docutils literal"><span class="pre">nyx.vode_atol_scaled</span></code>: this is the absolute tolerance required for the ODE integration in VODE or CVODE, scaled by the initial value of the independent variable in the ODE</li>
+</ul>
+<p>These variables, in particular <code class="docutils literal"><span class="pre">nyx.vode_rtol</span></code>, have different effects depending on whether one is integrating a single ODE at a time, or a system of ODEs simultaneously.
+One should be mindful of the numerical differences which arise from these, which can be observed with the <code class="docutils literal"><span class="pre">fcompare</span></code> tool in AMReX.</p>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="filelist.html" class="btn btn-neutral float-right" title="File list" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Particles.html" class="btn btn-neutral" title="Dark matter particles" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2018, Placeholder_Author.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            LANGUAGE:'None',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

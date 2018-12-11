@@ -1,0 +1,4 @@
+Class Nyx
+=========
+
+.. doxygenclass:: Nyx

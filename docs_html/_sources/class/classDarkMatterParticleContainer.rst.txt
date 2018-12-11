@@ -1,0 +1,4 @@
+Class DarkMatterParticleContainer
+=================================
+
+.. doxygenclass:: DarkMatterParticleContainer
