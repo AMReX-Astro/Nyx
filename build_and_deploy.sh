@@ -76,11 +76,7 @@ git add --all
 git commit -m "Deploy to GitHub Pages: ${SHA}" || true
 
 #openssl aes-256-cbc -K $encrypted_add_key -iv $encrypted_add_iv -in ../id_rsa_travis.enc -out ../id_rsa_travis -d
-if $TEST_STRING; then
-   gpg --output ../id_rsa_travis --batch --passphrase '$DECRYPT_GITHUB_AUTH2' --decrypt id_rsa_travis.enc
-else
-    gpg --output ../id_rsa_travis --batch --passphrase $DECRYPT_GITHUB_AUTH2 --decrypt id_rsa_travis.enc
-fi
+gpg --output ../id_rsa_travis --batch --passphrase $DECRYPT_GITHUB_AUTH2 --decrypt id_rsa_travis.enc
 chmod 600 ../id_rsa_travis
 eval `ssh-agent -s`
 ssh-add ../id_rsa_travis
