@@ -22,6 +22,12 @@ REPO=`git config remote.origin.url`
 SSH_REPO=${REPO/https:\/\/github.com\//git@github.com:}
 SHA=`git rev-parse --verify HEAD`
 
+#openssl aes-256-cbc -K $encrypted_add_key -iv $encrypted_add_iv -in ../id_rsa_travis.enc -out ../id_rsa_travis -d
+gpg --output ../id_rsa_travis --batch --passphrase $DECRYPT_GITHUB_AUTH2 --decrypt id_rsa_travis.enc
+chmod 600 ../id_rsa_travis
+eval `ssh-agent -s`
+ssh-add ../id_rsa_travis
+
 # Clone the existing gh-pages for this repo into out/
 # Create a new empty branch if gh-pages doesn't exist yet (should only happen on first deploy)
 git clone $REPO out
@@ -74,12 +80,6 @@ fi
 # The delta will show diffs between new and old versions.
 git add --all
 git commit -m "Deploy to GitHub Pages: ${SHA}" || true
-
-#openssl aes-256-cbc -K $encrypted_add_key -iv $encrypted_add_iv -in ../id_rsa_travis.enc -out ../id_rsa_travis -d
-gpg --output ../id_rsa_travis --batch --passphrase $DECRYPT_GITHUB_AUTH2 --decrypt id_rsa_travis.enc
-chmod 600 ../id_rsa_travis
-eval `ssh-agent -s`
-ssh-add ../id_rsa_travis
 
 git push $SSH_REPO $TARGET_BRANCH || true
 ssh-agent -k
