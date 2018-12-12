@@ -47,8 +47,8 @@ mkdir -p out/docs_html
 
 # now do sphinx
 cd Docs/sphinx_documentation
-make SPHINX_BUILD="python3.6 -msphinx" latexpdf
-mv build/latex/amrex.pdf source/
+###make SPHINX_BUILD="python3.6 -msphinx" latexpdf
+###mv build/latex/Nyx.pdf source/
 make SPHINX_BUILD="python3.6 -msphinx" html
 
 #cd ../sphinx_tutorials
