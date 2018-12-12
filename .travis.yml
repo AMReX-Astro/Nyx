@@ -16,7 +16,7 @@ script: bash ./build_and_deploy.sh
 
 env:
   global:
-  - COMMIT_AUTHOR_EMAIL: "atmyers@lbl.gov"
+  - COMMIT_AUTHOR_EMAIL: "jmsexton@lbl.gov"
 
 addons:
   apt:

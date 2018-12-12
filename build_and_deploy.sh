@@ -34,16 +34,16 @@ rm -rf out/docs_html/**/* || exit 0
 rm -rf out/tutorials_html/**/* || exit 0
 
 # build the Doxygen documentation
-cd Docs/Doxygen
-doxygen doxygen.conf
-cd ../..
+##cd Docs/Doxygen
+##doxygen doxygen.conf
+##cd ../..
 
 mkdir -p out/docs_html
 #mkdir -p out/tutorials_html
 
 # move it to the right place
-mkdir -p out/docs_html/doxygen
-mv Docs/Doxygen/html/* out/docs_html/doxygen/
+##mkdir -p out/docs_html/doxygen
+##mv Docs/Doxygen/html/* out/docs_html/doxygen/
 
 # now do sphinx
 cd Docs/sphinx_documentation
@@ -51,10 +51,10 @@ make SPHINX_BUILD="python3.6 -msphinx" latexpdf
 mv build/latex/amrex.pdf source/
 make SPHINX_BUILD="python3.6 -msphinx" html
 
-cd ../sphinx_tutorials
-make SPHINX_BUILD="python3.6 -msphinx" latexpdf
-mv build/latex/amrex.pdf source/
-make SPHINX_BUILD="python3.6 -msphinx" html
+#cd ../sphinx_tutorials
+#make SPHINX_BUILD="python3.6 -msphinx" latexpdf
+#mv build/latex/amrex.pdf source/
+#make SPHINX_BUILD="python3.6 -msphinx" html
 cd ../../
 
 mv Docs/sphinx_documentation/build/html/* out/docs_html/
@@ -75,7 +75,8 @@ fi
 git add --all
 git commit -m "Deploy to GitHub Pages: ${SHA}" || true
 
-openssl aes-256-cbc -K $encrypted_add_key -iv $encrypted_add_iv -in ../id_rsa_travis.enc -out ../id_rsa_travis -d
+#openssl aes-256-cbc -K $encrypted_add_key -iv $encrypted_add_iv -in ../id_rsa_travis.enc -out ../id_rsa_travis -d
+gpg --output ../id_rsa_travis --batch --passphrase $DECRYPT_GITHUB_AUTH --decrypt id_rsa_travis.enc
 chmod 600 ../id_rsa_travis
 eval `ssh-agent -s`
 ssh-add ../id_rsa_travis
