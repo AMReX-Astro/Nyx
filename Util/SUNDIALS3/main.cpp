@@ -204,7 +204,7 @@ int main (int argc, char* argv[])
 
       dptr=N_VGetHostArrayPointer_Cuda(u);
       amrex::Cuda::Device::synchronize();
-      CudaErrorCheck();
+      AMREX_GPU_ERROR_CHECK();
       mf[mfi].copyToMem(tbx,0,1,dptr);
       N_VCopyToDevice_Cuda(u);
 
@@ -219,7 +219,7 @@ int main (int argc, char* argv[])
       if(check_retval((void *)cvode_mem, "CVodeCreate", 0)) return(1);
 
       amrex::Cuda::Device::synchronize();
-      CudaErrorCheck();
+      AMREX_GPU_ERROR_CHECK();
       /* Call CVodeInit to initialize the integrator memory and specify the
        * user's right hand side function in u'=f(t,u), the initial time T0, and
        * the initial dependent variable vector u. */
@@ -249,7 +249,7 @@ int main (int argc, char* argv[])
       N_Vector Data = N_VNew_Cuda(4*neq);  // Allocate u vector 
       N_VConst(0.0,Data);
       amrex::Cuda::Device::synchronize();
-      CudaErrorCheck();
+      AMREX_GPU_ERROR_CHECK();
       double* rparh=N_VGetHostArrayPointer_Cuda(Data);
       for(int i=0;i<neq;i++)
 	{
@@ -292,7 +292,7 @@ int main (int argc, char* argv[])
       }
 
       amrex::Cuda::Device::synchronize();
-      CudaErrorCheck();
+      AMREX_GPU_ERROR_CHECK();
 
       N_VCopyFromDevice_Cuda(u);
       /*      N_VCopyFromDevice_Cuda(Data);
@@ -303,7 +303,7 @@ int main (int argc, char* argv[])
       PrintFinalStats(cvode_mem);
 
       amrex::Cuda::Device::synchronize();
-      CudaErrorCheck();
+      AMREX_GPU_ERROR_CHECK();
 
       N_VDestroy(u);          /* Free the u vector */
       /*      delete(dptr_data);
@@ -412,7 +412,7 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
  f_rhs_test<<<numBlocks,numThreads>>>(t,u_ptr,udot_ptr, rpar, neq);
 
  amrex::Cuda::Device::synchronize();
- CudaErrorCheck();
+ AMREX_GPU_ERROR_CHECK();
 
 /*      N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));
       fprintf(stdout,"\nafter rparh[0]=%g \n\n",rparh[0]);

@@ -8,7 +8,7 @@
 
 module load pgi/18.4
 #module load cuda/9.1.85
-module load cuda
+module load cuda/9.0.69
 module list
 set -x
 

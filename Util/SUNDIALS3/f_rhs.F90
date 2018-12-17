@@ -310,7 +310,8 @@ attributes(host) subroutine f_rhs(num_eq, time, e_in, energy, rpar, ipar)
  
       integer :: id
       ! Size of vectors
-    integer :: n = 100000
+    integer :: n
+    n= 100000
 
       JH=JH_vode
       JHe = JHe_vode
