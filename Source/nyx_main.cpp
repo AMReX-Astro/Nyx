@@ -54,6 +54,8 @@ void
 nyx_main (int argc, char* argv[])
 {
     amrex::Initialize(argc, argv);
+    {
+      ////    amrex::Cuda::setLaunchRegion(false);
 
     // save the inputs file name for later
     if (argc > 1) {
@@ -189,6 +191,6 @@ nyx_main (int argc, char* argv[])
     BL_PROFILE_VAR_STOP(pmain);
     BL_PROFILE_REGION_STOP("main()");
     BL_PROFILE_SET_RUN_TIME(dRunTime2);
-
+    }
     amrex::Finalize();
 }
