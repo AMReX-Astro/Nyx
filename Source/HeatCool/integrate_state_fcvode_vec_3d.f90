@@ -33,7 +33,7 @@ subroutine integrate_state_fcvode_vec(lo, hi, &
     use amrex_error_module, only : amrex_abort
     use meth_params_module, only : NVAR, URHO, UEDEN, UEINT, &
                                    NDIAG, TEMP_COMP, NE_COMP, gamma_minus_1
-    use bl_constants_module, only: M_PI
+    use amrex_constants_module, only: M_PI
     use eos_params_module
     use network
     use eos_module, only: nyx_eos_T_given_Re, nyx_eos_T_given_Re_vec, nyx_eos_given_RT

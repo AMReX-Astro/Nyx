@@ -165,9 +165,13 @@ ifeq ($(USE_MG), TRUE)
   VPATH_LOCATIONS   += $(AMREX_HOME)/Src/LinearSolvers/MLMG
 endif
 
-include $(AMREX_HOME)/Src/F_BaseLib/FParallelMG.mak
-INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/F_BaseLib
-VPATH_LOCATIONS   += $(AMREX_HOME)/Src/F_BaseLib
+#include $(AMREX_HOME)/Src/F_BaseLib/FParallelMG.mak
+#INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/F_BaseLib
+#VPATH_LOCATIONS   += $(AMREX_HOME)/Src/F_BaseLib
+
+include $(AMREX_HOME)/Src/F_Interfaces/Base/Make.package
+INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/F_Interfaces
+VPATH_LOCATIONS   += $(AMREX_HOME)/Src/F_Interfaces
 
 VODE_dir    := $(TOP)/Util/VODE
 include $(VODE_dir)/Make.package

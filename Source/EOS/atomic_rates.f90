@@ -50,9 +50,9 @@ module atomic_rates_module
   contains
 
       subroutine fort_tabulate_rates() bind(C, name='fort_tabulate_rates')
-      use parallel, only: parallel_ioprocessor
+      use amrex_parallel_module, only: amrex_parallel_ioprocessor
       use amrex_parmparse_module
-      use bl_constants_module, only: M_PI
+      use amrex_constants_module, only: M_PI
       use fundamental_constants_module, only: Gconst
       use comoving_module, only: comoving_h,comoving_OmB
       use reion_aux_module, only: zhi_flash, zheii_flash, T_zhi, T_zheii, &
@@ -83,7 +83,7 @@ module atomic_rates_module
          call pp%query("reionization_T_zHeII"     , T_zheii)
          call amrex_parmparse_destroy(pp)
 
-         if (parallel_ioprocessor()) then
+         if (amrex_parallel_ioprocessor()) then
             print*, 'TABULATE_RATES: reionization parameters are:'
             print*, '    reionization_zHI_flash     = ', zhi_flash
             print*, '    reionization_zHeII_flash   = ', zheii_flash
@@ -103,7 +103,7 @@ module atomic_rates_module
          !   Hydrogen reionization
          if (zhi_flash .gt. 0.0) then
             if (inhomo_reion .gt. 0) then
-               if (parallel_ioprocessor()) print*, 'TABULATE_RATES: ignoring reionization_zHI, as nyx.inhomo_reion > 0'
+               if (amrex_parallel_ioprocessor()) print*, 'TABULATE_RATES: ignoring reionization_zHI, as nyx.inhomo_reion > 0'
                flash_h = .false.
                inhomogeneous_on = .true.
             else
@@ -126,7 +126,7 @@ module atomic_rates_module
             flash_he = .false.
          endif
 
-         if (parallel_ioprocessor()) then
+         if (amrex_parallel_ioprocessor()) then
             print*, 'TABULATE_RATES: reionization flags are set to:'
             print*, '    Hydrogen flash            = ', flash_h
             print*, '    Helium   flash            = ', flash_he
@@ -137,12 +137,12 @@ module atomic_rates_module
          ! Read in UVB rates from a file
          if (len(file_in) .gt. 0) then
             open(unit=11, file=file_in, status='old')
-            if (parallel_ioprocessor()) then
+            if (amrex_parallel_ioprocessor()) then
                print*, 'TABULATE_RATES: UVB file is set in inputs ('//file_in//').'
             endif
          else
             open(unit=11, file='TREECOOL', status='old')
-            if (parallel_ioprocessor()) then
+            if (amrex_parallel_ioprocessor()) then
                print*, 'TABULATE_RATES: UVB file is defaulted to "TREECOOL".'
             endif
          endif

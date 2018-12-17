@@ -26,7 +26,7 @@
 
 module eos_module
 
-  use bl_constants_module, only: M_PI, ONE
+  use amrex_constants_module, only: M_PI, ONE
   use network, only: nspec, aion, zion
   use atomic_rates_module, only: XHYDROGEN
 
