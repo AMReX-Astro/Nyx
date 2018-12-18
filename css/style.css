@@ -1148,6 +1148,7 @@ body.landing #header nav a {
 .wrapper.style3 {
     background-color: #3cadd4;
     color: #ffffff;
+    padding: 1em 0em 0.5em;
 }
 
 .wrapper.style3 h2, .wrapper.style3 h3, .wrapper.style3 p {
@@ -1167,7 +1168,7 @@ body.landing #header nav a {
 
 #footer {
     background: #383b43;
-    padding: 3em 0em 4em;
+    padding: 1em 0em 1em;
 }
 
 #footer h2, #footer h3, #footer h4 {
@@ -1176,6 +1177,8 @@ body.landing #header nav a {
 
 #footer p, #footer a, #footer li {
     color: #cdced0;
+    text-align: center;
+    margin-bottom: 0em;
 }
 
 #footer .links {
@@ -1189,11 +1192,13 @@ body.landing #header nav a {
     margin-bottom: 1em;
     padding-bottom: 1em;
     color: #dddddd;
+    text-align: center;
 }
 
 #footer .copyright {
-    margin-top: 0.65em;
+    margin-top: 0em;
     padding: 0;
+    margin-bottom: 0em;
 }
 
 #footer .copyright li {
@@ -1202,6 +1207,7 @@ body.landing #header nav a {
     list-style: none;
     margin-left: 0.5em;
     padding-left: 0.5em;
+
 }
 
 #footer .copyright li:first-child {
