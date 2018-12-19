@@ -7,7 +7,7 @@
       use  eos_params_module
 
       use amrex_fort_module, only : rt => amrex_real
-      use amrex_error_module, only : amrex_abort
+      use amrex_error_module, only : amrex_abort, amrex_error
       implicit none
 
       integer  :: lo(3), hi(3)
@@ -47,7 +47,7 @@
       else
           sum = h_species + he_species
           if (abs(sum-1.d0).gt. 1.d-8) &
-              call bl_error("Error:: Failed check of initial species summing to 1")
+              call amrex_error("Error:: Failed check of initial species summing to 1")
       end if
 
       end subroutine fort_check_initial_species

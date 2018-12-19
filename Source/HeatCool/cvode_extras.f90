@@ -103,7 +103,7 @@ module cvode_extras
          ne_vode = 0.0
          mu     = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+ne_vode)
          e_out  = T_vode / (gamma_minus_1 * mp_over_kB * mu)
-         !                    call bl_abort('bad e out of strang')
+         !                    call amrex_abort('bad e out of strang')
       end if
       
       ! Update T and ne (do not use stuff computed in f_rhs, per vode manual)

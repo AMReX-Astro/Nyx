@@ -9,6 +9,7 @@
       ! The outgoing "state" vector contains (rho,T,X_1)
       !
       use amrex_fort_module, only : rt => amrex_real
+      use amrex_error_module, only : amrex_error
       implicit none 
 
       integer          lo(3), hi(3)
@@ -25,7 +26,7 @@
 
       if (nv .ne. 3) then
           print *,'... confusion in derstate ... nv should be 3 but is ',nv
-          call bl_error('Error:: Derive_3d.f90 :: derstate')
+          call amrex_error('Error:: Derive_3d.f90 :: derstate')
       end if
       !
       ! Density
@@ -69,6 +70,7 @@
       ! Derive velocity from momentum.
       !
       use amrex_fort_module, only : rt => amrex_real
+      use amrex_error_module, only : amrex_error
       implicit none
 
       integer          lo(3), hi(3)
@@ -103,7 +105,8 @@
       !
       ! Derive magnitude of velocity.
       !
-      use amrex_fort_module, only : rt => amrex_real
+        use amrex_fort_module, only : rt => amrex_real
+        use amrex_error_module, only : amrex_error
       implicit none
 
       integer          lo(3), hi(3)
@@ -141,6 +144,7 @@
       ! Derive magnitude of the gravity vector.
       !
       use amrex_fort_module, only : rt => amrex_real
+      use amrex_error_module, only : amrex_error
       implicit none 
 
       integer          lo(3), hi(3)
@@ -178,6 +182,7 @@
       ! This routine will derive magnitude of momentum.
       !
       use amrex_fort_module, only : rt => amrex_real
+      use amrex_error_module, only : amrex_error
       implicit none
 
       integer          lo(3), hi(3)
@@ -216,6 +221,7 @@
       use  eos_params_module
 
       use amrex_fort_module, only : rt => amrex_real
+      use amrex_error_module, only : amrex_error
       implicit none
 
       integer p_l1,p_l2,p_l3,p_h1,p_h2,p_h3,ncomp_p
@@ -242,7 +248,7 @@
                   print *,'>>> Error: deriving pressure at ',i,j,k
                   print *,'>>> but rho*eint is negative: ', u(i,j,k,UEINT)
                   print *,'    '
-                  call bl_error("Error:: Derive_3d.f90 :: derpres")
+                  call amrex_error("Error:: Derive_3d.f90 :: derpres")
                else
                   p(i,j,k,1) = gamma_minus_1 * u(i,j,k,UEINT)
                end if

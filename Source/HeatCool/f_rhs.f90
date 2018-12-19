@@ -63,7 +63,7 @@ subroutine f_rhs_rpar(num_eq, time, e_in, energy, rpar, ipar)
       if (time .gt. 1) then
          print *,'TIME INTO F_RHS ',time
          print *,'AT              ',i_vode,j_vode,k_vode
-!         call bl_pd_abort("TOO BIG TIME IN F_RHS")                                                                                                                                                                 
+!         call amrex_pd_abort("TOO BIG TIME IN F_RHS")                                                                                                                                                                 
       end if
 !      print(FMT), 'afrh:',fn_vode,e_in,rho_vode,T_vode,rpar(1)                                                                                                                                                     
       ! Get gas temperature and individual ionization species                                                                                                                                                       
@@ -204,7 +204,7 @@ subroutine f_rhs_split(num_eq, time, y_in, yp_out, rpar, ipar)
       if (time .gt. 1) then
          print *,'TIME INTO F_RHS ',time
          print *,'AT              ',i_vode,j_vode,k_vode
-         call bl_pd_abort("TOO BIG TIME IN F_RHS")
+         call amrex_pd_abort("TOO BIG TIME IN F_RHS")
       end if
 
       ! Get gas temperature and individual ionization species
@@ -328,7 +328,7 @@ subroutine f_rhs(num_eq, time, e_in, energy, rpar, ipar)
       if (time .gt. 1) then
          print *,'TIME INTO F_RHS ',time
          print *,'AT              ',i_vode,j_vode,k_vode
-         call bl_pd_abort("TOO BIG TIME IN F_RHS")
+         call amrex_pd_abort("TOO BIG TIME IN F_RHS")
       end if
 
       ! Get gas temperature and individual ionization species
@@ -448,7 +448,7 @@ subroutine f_rhs_vec(time, e_in, energy)
 
       if (time .gt. 1) then
          print *,'TIME INTO F_RHS ',time
-         call bl_pd_abort("TOO BIG TIME IN F_RHS")
+         call amrex_pd_abort("TOO BIG TIME IN F_RHS")
       end if
 
       ! Get gas temperature and individual ionization species

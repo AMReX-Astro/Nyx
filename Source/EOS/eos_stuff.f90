@@ -277,7 +277,7 @@ contains
                  do_eos_diag)
 
      use amrex_fort_module, only : rt => amrex_real
-     use bl_error_module
+     use amrex_error_module
      use fundamental_constants_module, only: k_B, n_A, hbar
      use meth_params_module, only: gamma_minus_1
 

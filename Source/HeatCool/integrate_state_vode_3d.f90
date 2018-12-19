@@ -107,7 +107,7 @@ subroutine integrate_state_vode(lo, hi, &
                 if (e_orig .lt. 0.d0) then
                     !$OMP CRITICAL
                     print *,'negative e entering strang integration ', z, i,j,k, rho/mean_rhob, e_orig
-                    call bl_abort('bad e in strang')
+                    call amrex_abort('bad e in strang')
                     !$OMP END CRITICAL
                 end if
 
@@ -127,7 +127,7 @@ subroutine integrate_state_vode(lo, hi, &
                     ne_out = 0.0
                     mu     = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+ne_out)
                     e_out  = T_out / (gamma_minus_1 * mp_over_kB * mu)
-                    !call bl_abort('bad e out of strang')
+                    !call amrex_abort('bad e out of strang')
                 end if
 
                 ! Update T and ne (do not use stuff computed in f_rhs, per vode manual)
@@ -273,7 +273,7 @@ subroutine vode_wrapper(dt, rho_in, T_in, ne_in, e_in, T_out, ne_out, e_out)
 
     if (istate < 0) then
        print *, 'istate = ', istate, 'at (i,j,k) ',i_vode,j_vode,k_vode
-       call bl_error("ERROR in vode_wrapper: integration failed")
+       call amrex_error("ERROR in vode_wrapper: integration failed")
     endif
 
 !      print *,'Calling vode with 1/4 the time step'
@@ -287,7 +287,7 @@ subroutine vode_wrapper(dt, rho_in, T_in, ne_in, e_in, T_out, ne_out, e_out)
 !         if (istate < 0) then
 !            print *, 'doing subiteration ',n
 !            print *, 'istate = ', istate, 'at (i,j,k) ',i,j,k
-!            call bl_error("ERROR in vode_wrapper: sub-integration failed")
+!            call amrex_error("ERROR in vode_wrapper: sub-integration failed")
 !         end if
 
 !      end do

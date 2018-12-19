@@ -79,7 +79,7 @@ subroutine fcvode_wrapper_with_source(dt, rho_in, T_in, ne_in, e_in, neq, cvmem,
 
     if (ierr .ne. 0) then
        print *, 'istate = ', ierr, 'at (i,j,k) ',i_vode,j_vode,k_vode
-       call bl_error("ERROR in fcvode_wrapper_with_src: integration failed")
+       call amrex_error("ERROR in fcvode_wrapper_with_src: integration failed")
     endif
 
     call N_VDestroy_Serial(sunvec_atol)
@@ -169,7 +169,7 @@ subroutine fcvode_wrapper_with_source_single(dt, rho_in, T_in, ne_in, e_in, neq,
 
     if (ierr .ne. 0) then
        print *, 'istate = ', ierr, 'at (i,j,k) ',i_vode,j_vode,k_vode
-       call bl_error("ERROR in fcvode_wrapper_with_src: integration failed")
+       call amrex_error("ERROR in fcvode_wrapper_with_src: integration failed")
     endif
 
     call N_VDestroy_Serial(sunvec_atol)

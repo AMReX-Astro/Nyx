@@ -47,7 +47,7 @@ subroutine fort_prescribe_grav (lo,hi,dx, &
      problo,add)
 
   use probdata_module, only : dcenx,dceny,dcenz
-  use bl_constants_module, only : HALF
+  use amrex_constants_module, only : HALF
   use ps_grav, only : ps_grav_accel
   implicit none
   integer          :: g_l1,g_l2,g_l3,g_h1,g_h2,g_h3,add
