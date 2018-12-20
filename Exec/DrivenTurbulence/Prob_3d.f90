@@ -83,7 +83,7 @@
                                bind(C, name="fort_initdata")
 
       use probdata_module
-      use bl_constants_module, only : TWO, ONE, HALF, ZERO, M_PI
+      use amrex_constants_module, only : TWO, ONE, HALF, ZERO, M_PI
       use atomic_rates_module, only: XHYDROGEN
       use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, TEMP_COMP, NE_COMP, &
 	                             small_dens, small_temp, small_pres
