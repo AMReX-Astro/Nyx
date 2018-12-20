@@ -578,15 +578,17 @@
 
   subroutine get_random_direction(vec)
 
-    use amrex_fort_module, only : amrex_real
+    use amrex_fort_module, only : amrex_real, amrex_random
     use fundamental_constants_module, only : pi
-    use uniform01_module, only : get_uniform01
+!   use uniform01_module, only : get_uniform01
 
     real(amrex_real), intent(out)  :: vec(3)
     real(amrex_real) :: u, v, theta, horiz
 
-    u = get_uniform01()
-    v = get_uniform01()
+!   u = get_uniform01()
+!   v = get_uniform01()
+    u = amrex_random()
+    v = amrex_random()
 
     theta = 2. * pi * u
     horiz = 2. * sqrt(v * (1. - v))

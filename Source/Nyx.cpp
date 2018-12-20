@@ -651,11 +651,6 @@ Nyx::Nyx (Amr&            papa,
     if (heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 9 || heat_cool_type == 10)
          fort_interp_to_this_z(&initial_z);
 #endif
-
-#ifdef AGN
-     // Initialize the uniform(0,1) random number generator.
-     init_uniform01_rng();
-#endif
 }
 
 Nyx::~Nyx ()

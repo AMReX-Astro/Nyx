@@ -259,14 +259,14 @@ Nyx::halo_find (Real dt)
        Nyx::theAPC()->Redistribute(lev_min, lev_max, ngrow);
 
        // Fill the "ghosts" vector with particles in ghost cells of each grid
-       Nyx::theAPC()->fillNeighbors(level);
+       Nyx::theAPC()->fillNeighbors();
 
        // ComputeOverlap sets the ID of a particle to -1 if it is less than "cutoff" away from another
        //   particle and if it is newer than that particle
        Nyx::theAPC()->ComputeOverlap(level);
 
        // Clear the Neighbor Particle data structure
-       Nyx::theAPC()->clearNeighbors(level);
+       Nyx::theAPC()->clearNeighbors();
 
        // This Redistribute is used to remove particles whose ID's have been set to -1 in ComputeOverlap
        Nyx::theAPC()->Redistribute(lev_min, lev_max, ngrow);
@@ -324,9 +324,9 @@ void
 Nyx::halo_merge ()
 {
    int npart = Nyx::theAPC()->TotalNumberOfParticles(true, true);
-   Nyx::theAPC()->fillNeighbors(level);
+   Nyx::theAPC()->fillNeighbors();
    Nyx::theAPC()->Merge(level);
-   Nyx::theAPC()->clearNeighbors(level);
+   Nyx::theAPC()->clearNeighbors();
 
    // Call Redistribute to remove any particles with id = -1 (as set inside the Merge call)
    Nyx::theAPC()->Redistribute(level, level, nghost0);
