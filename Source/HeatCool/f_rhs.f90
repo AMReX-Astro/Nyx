@@ -1,6 +1,7 @@
 subroutine f_rhs_rpar(num_eq, time, e_in, energy, rpar, ipar)
 
-      use amrex_fort_module, only : rt => amrex_real
+      use amrex_error_module, only : amrex_abort
+      use amrex_fort_module , only : rt => amrex_real
       use fundamental_constants_module, only: e_to_cgs, density_to_cgs, &
                                               heat_from_cgs
       use eos_module, only: iterate_ne
@@ -63,7 +64,7 @@ subroutine f_rhs_rpar(num_eq, time, e_in, energy, rpar, ipar)
       if (time .gt. 1) then
          print *,'TIME INTO F_RHS ',time
          print *,'AT              ',i_vode,j_vode,k_vode
-!         call amrex_pd_abort("TOO BIG TIME IN F_RHS")                                                                                                                                                                 
+         call amrex_abort("TOO BIG TIME IN F_RHS") 
       end if
 !      print(FMT), 'afrh:',fn_vode,e_in,rho_vode,T_vode,rpar(1)                                                                                                                                                     
       ! Get gas temperature and individual ionization species                                                                                                                                                       
@@ -152,6 +153,7 @@ end subroutine f_rhs_rpar
 
 subroutine f_rhs_split(num_eq, time, y_in, yp_out, rpar, ipar)
 
+      use amrex_error_module, only : amrex_abort
       use amrex_fort_module, only : rt => amrex_real
       use fundamental_constants_module, only: e_to_cgs, density_to_cgs, & 
                                               heat_from_cgs
@@ -204,7 +206,7 @@ subroutine f_rhs_split(num_eq, time, y_in, yp_out, rpar, ipar)
       if (time .gt. 1) then
          print *,'TIME INTO F_RHS ',time
          print *,'AT              ',i_vode,j_vode,k_vode
-         call amrex_pd_abort("TOO BIG TIME IN F_RHS")
+         call amrex_abort("TOO BIG TIME IN F_RHS")
       end if
 
       ! Get gas temperature and individual ionization species
@@ -285,6 +287,7 @@ end subroutine f_rhs_split
 
 subroutine f_rhs(num_eq, time, e_in, energy, rpar, ipar)
 
+      use amrex_error_module, only : amrex_abort
       use amrex_fort_module, only : rt => amrex_real
       use fundamental_constants_module, only: e_to_cgs, density_to_cgs, & 
                                               heat_from_cgs
@@ -328,7 +331,7 @@ subroutine f_rhs(num_eq, time, e_in, energy, rpar, ipar)
       if (time .gt. 1) then
          print *,'TIME INTO F_RHS ',time
          print *,'AT              ',i_vode,j_vode,k_vode
-         call amrex_pd_abort("TOO BIG TIME IN F_RHS")
+         call amrex_abort("TOO BIG TIME IN F_RHS")
       end if
 
       ! Get gas temperature and individual ionization species
@@ -400,7 +403,6 @@ subroutine f_rhs(num_eq, time, e_in, energy, rpar, ipar)
 
 end subroutine f_rhs
 
-
 subroutine f_rhs_vec(time, e_in, energy)
 
       use amrex_fort_module, only : rt => amrex_real
@@ -413,6 +415,7 @@ subroutine f_rhs_vec(time, e_in, energy)
                                      RecHp, RecHep, RecHepp, &
                                      eh0, ehe0, ehep
 
+      use amrex_error_module, only : amrex_abort
       use vode_aux_module       , only: T_vode_vec, ne_vode_vec, rho_vode_vec, z_vode
       use misc_params, only: simd_width
 
@@ -448,7 +451,7 @@ subroutine f_rhs_vec(time, e_in, energy)
 
       if (time .gt. 1) then
          print *,'TIME INTO F_RHS ',time
-         call amrex_pd_abort("TOO BIG TIME IN F_RHS")
+         call amrex_abort("TOO BIG TIME IN F_RHS")
       end if
 
       ! Get gas temperature and individual ionization species

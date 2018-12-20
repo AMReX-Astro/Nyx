@@ -29,7 +29,8 @@ subroutine integrate_state_vode(lo, hi, &
 !   state : double array (dims) @todo
 !       The state vars
 !
-    use amrex_fort_module, only : rt => amrex_real
+    use amrex_error_module, only : amrex_abort
+    use amrex_fort_module , only : rt => amrex_real
     use meth_params_module, only : NVAR, URHO, UEDEN, UEINT, &
                                    NDIAG, TEMP_COMP, NE_COMP, ZHI_COMP, gamma_minus_1
     use amrex_constants_module, only: M_PI
@@ -170,6 +171,7 @@ end subroutine integrate_state_vode
 
 subroutine vode_wrapper(dt, rho_in, T_in, ne_in, e_in, T_out, ne_out, e_out)
 
+    use amrex_error_module, only : amrex_error
     use amrex_fort_module, only : rt => amrex_real
     use vode_aux_module, only: rho_vode, T_vode, ne_vode, &
                                i_vode, j_vode, k_vode
