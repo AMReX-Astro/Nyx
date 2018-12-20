@@ -2,7 +2,8 @@
 
 module forcing_spect_module
 
-  use amrex_fort_module, only : amrex_spacedim, rt => amrex_real
+  use amrex_error_module, only : amrex_abort
+  use amrex_fort_module , only : amrex_spacedim, rt => amrex_real
 
   implicit none
 
