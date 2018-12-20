@@ -92,7 +92,7 @@
 
       use amrex_fort_module, only : rt => amrex_real
       use probdata_module
-      use bl_constants_module, only: M_PI, FOUR3RD
+      use amrex_constants_module, only: M_PI, FOUR3RD
       use atomic_rates_module, only: XHYDROGEN
       use meth_params_module , only: NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, &
                                      gamma_minus_1
