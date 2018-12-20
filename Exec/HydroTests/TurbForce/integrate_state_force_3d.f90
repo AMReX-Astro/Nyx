@@ -29,13 +29,14 @@ subroutine integrate_state_force(lo, hi, &
 !   state : double array (dims) @todo
 !       The state vars
 !
-    use amrex_fort_module, only : rt => amrex_real
+    use amrex_error_module, only : amrex_abort
+    use amrex_fort_module , only : rt => amrex_real
 
     use turbforce_module
     use probdata_module, only: prob_lo, prob_hi, alpha, rho0, temp0
     use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, &
                                    TEMP_COMP, NE_COMP, small_pres, small_temp, gamma_minus_1
-    use bl_constants_module, only : TWO, HALF, ZERO, M_PI
+    use amrex_constants_module, only : TWO, HALF, ZERO, M_PI
     use eos_params_module
     use eos_module, only: nyx_eos_given_RT, nyx_eos_T_given_Re
     use fundamental_constants_module
@@ -81,7 +82,7 @@ subroutine integrate_state_force(lo, hi, &
 
                 if (rho_e_orig .lt. 0.d0) then
                     print *,'(rho e) entering strang integration negative ',i,j,k, rho_e_orig
-                    call bl_abort('bad rho e in strang')
+                    call amrex_abort('bad rho e in strang')
                 end if
 
                 ! Compute temperature increment and ensure that new temperature is positive

@@ -2,9 +2,6 @@
 
 module turbforce_module
 
-  use bl_types
-! use bl_space
-
   use amrex_fort_module, only : rt => amrex_real
 
   implicit none

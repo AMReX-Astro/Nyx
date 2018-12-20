@@ -751,7 +751,7 @@
 !
       use amrex_fort_module, only : rt => amrex_real
       use turbforce_module
-      use bl_constants_module, only : TWO, HALF, ZERO, M_PI
+      use amrex_constants_module, only : TWO, HALF, ZERO, M_PI
       use probdata_module    , only : prob_lo, prob_hi
 
       implicit none
@@ -846,7 +846,7 @@
 !
       use amrex_fort_module, only : rt => amrex_real
       use turbforce_module
-      use bl_constants_module, only : TWO, HALF, ZERO, M_PI
+      use amrex_constants_module, only : TWO, HALF, ZERO, M_PI
       use probdata_module    , only : prob_lo, prob_hi
 
       implicit none
@@ -942,7 +942,7 @@
 !
       use amrex_fort_module, only : rt => amrex_real
       use turbforce_module
-      use bl_constants_module, only : TWO, HALF, ZERO, M_PI
+      use amrex_constants_module, only : TWO, HALF, ZERO, M_PI
       use probdata_module    , only : prob_lo, prob_hi
 
       implicit none
