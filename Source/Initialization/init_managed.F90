@@ -6,11 +6,13 @@ subroutine init_allocations() &
      bind(C,name="fort_alloc_cuda_managed")
 use vode_aux_module
 use atomic_rates_module
+use eos_module, only: xacc, vode_rtol, vode_atol_scaled
 use meth_params_module, only: gamma_minus_1
 
 allocate(this_z)
 allocate(gamma_minus_1)
 allocate(XHYDROGEN, YHELIUM)
+allocate(xacc,vode_rtol,vode_atol_scaled)
 allocate(z_vode, rho_vode, T_vode, ne_vode, JH_vode, JHe_vode, i_vode, j_vode, k_vode, fn_vode, NR_vode, firstcall)
 allocate(TCOOLMIN, TCOOLMAX, TCOOLMAX_R, TCOOLMIN_R, deltaT)
 allocate(uvb_density_A, uvb_density_B, mean_rhob)
@@ -141,6 +143,7 @@ subroutine fin_allocations() &
      bind(C,name="fort_dealloc_cuda_managed")
 use vode_aux_module
 use atomic_rates_module
+use eos_module, only: xacc, vode_rtol, vode_atol_scaled
 use meth_params_module, only: gamma_minus_1
 deallocate(z_vode, rho_vode, T_vode, ne_vode, JH_vode, JHe_vode, i_vode, j_vode, k_vode, fn_vode, NR_vode, firstcall)
 deallocate(this_z)
@@ -151,13 +154,17 @@ deallocate(uvb_density_A, uvb_density_B, mean_rhob)
 
 ! Initially allocated when the table is read
 deallocate(ggh0, gghe0, gghep, eh0, ehe0, ehep)
-deallocate( lzr(NCOOLFILE), rggh0(NCOOLFILE), rgghe0(NCOOlFILE), rgghep(NCOOLFILE) )
+if(allocated(lzr)) deallocate( lzr)
+if(allocated(rggh0)) deallocate(rggh0)
+if(allocated(rgghe0)) deallocate( rgghe0)
+if(allocated(rgghep)) deallocate( rgghep)
 deallocate( reh0(NCOOLFILE), rehe0(NCOOLFILE), rehep(NCOOLFILE) )
 deallocate(NCOOLFILE)
 deallocate( AlphaHp(NCOOLTAB+1), AlphaHep(NCOOLTAB+1), AlphaHepp(NCOOLTAB+1), Alphad(NCOOLTAB+1))
 deallocate( GammaeH0(NCOOLTAB+1), GammaeHe0(NCOOLTAB+1), GammaeHep(NCOOLTAB+1))
 deallocate( BetaH0(NCOOLTAB+1), BetaHe0(NCOOLTAB+1), BetaHep(NCOOLTAB+1), Betaff1(NCOOLTAB+1), Betaff4(NCOOLTAB+1))
 deallocate( RecHp(NCOOLTAB+1), RecHep(NCOOLTAB+1), RecHepp(NCOOLTAB+1))
+deallocate(xacc,vode_rtol,vode_atol_scaled)
 end subroutine fin_allocations
 
 !!! subroutine dummy()

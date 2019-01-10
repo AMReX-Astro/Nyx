@@ -156,12 +156,13 @@ module cvode_extras
 
 !      print*, "r1", rpar(1)                                                                                                                                                                                        
 !      print*, "r2", rpar(2)                                                                                                                                                                                        
-!      print*, rpar(3)                                                                                                                                                                                              
-!      print*, rpar(4)                                                                                                                                                                                              
+ !     print*, rpar(3)                                                                                                                                                                                              
+  !    print*, rpar(4)                                                                                                                                                                                              
       call f_rhs_rpar(neq, tn, yvec, fvec, rpar, 0)
-!      print*, "after r1", rpar(1)                                                                                                                                                                                  
-!      print*, "after r2", rpar(2)                                                                                                                                                                                  
-!      print*, "after r3", rpar(3)                                                                                                                                                                                  
+!      print*, fvec
+   !   print*, "after r1", rpar(1)                                                                                                                                                                                  
+    !  print*, "after r2", rpar(2)                                                                                                                                                                                 
+     ! print*, "after r3", rpar(3)                                                                                                                                                                                  
 !      print*, "after r4", rpar(4)                                                                                                                                                                                  
 
       ierr = 0

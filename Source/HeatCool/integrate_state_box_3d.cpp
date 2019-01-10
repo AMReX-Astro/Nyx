@@ -52,6 +52,7 @@ int Nyx::integrate_state_box
   reltol = 1e-4;  /* Set the tolerances */
   abstol = 1e-4;
 
+  int count =0;
   fort_ode_eos_setup(a,delta_time);
   //  amrex::Cuda::setLaunchRegion(true);
   if(S_old.nGrow()>1)
@@ -80,7 +81,7 @@ int Nyx::integrate_state_box
       
       if(neq>1)
 	{
-	  if(amrex::Verbose()>2)
+	  if(amrex::Verbose()>2||true)
 	    {
 	      amrex::Print()<<"Integrating a box with "<<neq<<" cells"<<std::endl;
 	      amrex::Print()<<"Integrating a box with "<<neq2<<"real cells"<<std::endl;
@@ -92,16 +93,21 @@ int Nyx::integrate_state_box
 	    }
 	//	neq=neq2;
 	}
-
+      //      amrex::Print()<<"place "<<++count<<std::endl;
       /* Create a CUDA vector with initial values */
       #ifdef AMREX_USE_CUDA
       u = N_VNew_Cuda(neq);  /* Allocate u vector */
       if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
       dptr=N_VGetHostArrayPointer_Cuda(u);
-      mf[mfi].copyToMem(tbx,0,1,dptr);
+      S_old[mfi].copyToMem(tbx,Eint,1,dptr);
       N_VCopyToDevice_Cuda(u);
       /*Use N_Vector to create userdata, in order to allocate data on device*/
       N_Vector Data = N_VNew_Cuda(4*neq);  // Allocate u vector 
+      double* rparh=N_VGetHostArrayPointer_Cuda(Data);
+      N_Vector rho_tmp = N_VNew_Cuda(neq);  // Allocate u vector 
+      double* rho_tmp_ptr=N_VGetHostArrayPointer_Cuda(rho_tmp);
+      N_VConst(0.0,rho_tmp);
+
       #else
       u = N_VNew_Serial(neq);  /* Allocate u vector */
       if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
@@ -115,13 +121,20 @@ int Nyx::integrate_state_box
 
       /*Use N_Vector to create userdata, in order to allocate data on device*/
       N_Vector Data = N_VNew_Serial(4*neq);  // Allocate u vector 
-      #endif
-      N_VConst(0.0,Data);
       double* rparh=N_VGetArrayPointer_Serial(Data);
       N_Vector rho_tmp = N_VNew_Serial(neq);  // Allocate u vector 
-      N_VConst(0.0,rho_tmp);
       double* rho_tmp_ptr=N_VGetArrayPointer_Serial(rho_tmp);
+
+      N_VConst(0.0,rho_tmp);
+
+      #endif
+      //      amrex::Print()<<"place "<<++count<<std::endl;
+      N_VConst(0.0,Data);
+
       S_old[mfi].copyToMem(tbx,Nyx::Density,1,rho_tmp_ptr);
+      #ifdef AMREX_USE_CUDA
+      N_VCopyToDevice_Cuda(rho_tmp);
+      #endif
       N_Vector T_tmp = N_VNew_Serial(2*neq);  // Allocate u vector 
       N_VConst(0.0,T_tmp);
       double* Tne_tmp_ptr=N_VGetArrayPointer_Serial(T_tmp);
@@ -154,9 +167,13 @@ int Nyx::integrate_state_box
 
       /* Call CVodeSStolerances to specify the scalar relative tolerance
        * and scalar absolute tolerance */
+#ifdef AMREX_USE_CUDA
+      flag = CVodeSStolerances(cvode_mem, reltol, abstol);
+#else
       N_Vector abstol_vec = N_VNew_Serial(neq);                                                                                                                                                 
       N_VScale(abstol,u,abstol_vec);                                                                                                                                                                    
       flag = CVodeSVtolerances(cvode_mem, reltol, abstol_vec);
+#endif
       //      flag = CVodeSStolerances(cvode_mem, reltol, abstol);
       if (check_retval(&flag, "CVodeSVtolerances", 1)) return(1);
 
@@ -197,15 +214,12 @@ int Nyx::integrate_state_box
       umax = N_VMaxNorm(u);
       flag = CVodeGetNumSteps(cvode_mem, &nst);
       check_retval(&flag, "CVodeGetNumSteps", 1);
-	  if(amrex::Verbose()>2)
+	  if(amrex::Verbose()>2||true)
 	    {
 	      PrintOutput(tout, umax, nst);
 	    }
       }
 
-#ifdef AMREX_USE_CUDA
-      N_VCopyFromDevice_Cuda(u);
-#endif      
       int one_in=1;
       for(int i=0;i<neq;i++)
 	{
@@ -217,10 +231,14 @@ int Nyx::integrate_state_box
       D_old[mfi].copyFromMem(tbx,Nyx::Temp_comp,2,Tne_tmp_ptr);
 
       N_VProd(u,rho_tmp,u);                
+
+#ifdef AMREX_USE_CUDA
+      N_VCopyFromDevice_Cuda(u);
+#endif      
     
       S_old[mfi].copyFromMem(tbx,Nyx::Eint,1,dptr);
       S_old[mfi].addFromMem(tbx,Nyx::Eden,1,dptr);
-      if(amrex::Verbose()>2)
+      if(amrex::Verbose()>2||true)
 	{
 	  amrex::Print()<<S_old[mfi].min(Eint)<<"at index"<<S_old[mfi].minIndex(Eint)<<std::endl;
 	  amrex::Print()<<S_old[mfi].min(Eden)<<"at index"<<S_old[mfi].minIndex(Eden)<<std::endl;
@@ -253,11 +271,11 @@ int Nyx::integrate_state_grownbox
   int iout, flag;
   long int nst;
   bool do_tiling=false;    
-
+  int count =0;
   u = NULL;
   //  LS = NULL;
   cvode_mem = NULL;
-
+  
   reltol = 1e-4;  /* Set the tolerances */
   abstol = 1e-4;
 
@@ -284,10 +302,9 @@ int Nyx::integrate_state_grownbox
       int long neq2=(hi[0]-lo[0]+1-2*S_old.nGrow())*(hi[1]-lo[1]+1-2*S_old.nGrow())*(hi[2]-lo[2]+1-2*S_old.nGrow());
       //neq2=(hi[0]-lo[0]+1)*(hi[1]-lo[1]+1)*(hi[2]-lo[2]+1);
       int long neq=(tile_size[0])*(tile_size[1])*(tile_size[2]);
-      
       if(neq>1)
 	{
-	  if(amrex::Verbose()>1)
+	  if(amrex::Verbose()>1||true)
 	    {
 	      amrex::Print()<<"Integrating a box with "<<neq<<" cells"<<std::endl;
 	      amrex::Print()<<"Integrating a box with "<<neq2<<"real cells"<<std::endl;
@@ -301,6 +318,19 @@ int Nyx::integrate_state_grownbox
 	}
 
       /* Create a CUDA vector with initial values */
+      #ifdef AMREX_USE_CUDA
+      u = N_VNew_Cuda(neq);  /* Allocate u vector */
+      if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
+      dptr=N_VGetHostArrayPointer_Cuda(u);
+      S_old[mfi].copyToMem(tbx,Eint,1,dptr);
+      N_VCopyToDevice_Cuda(u);
+      /*Use N_Vector to create userdata, in order to allocate data on device*/
+      N_Vector Data = N_VNew_Cuda(4*neq);  // Allocate u vector 
+      double* rparh=N_VGetHostArrayPointer_Cuda(Data);
+      N_Vector rho_tmp = N_VNew_Cuda(neq);  // Allocate u vector 
+      N_VConst(0.0,rho_tmp);
+      double* rho_tmp_ptr=N_VGetHostArrayPointer_Cuda(rho_tmp);
+      #else
       u = N_VNew_Serial(neq);  /* Allocate u vector */
       if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
 
@@ -313,12 +343,16 @@ int Nyx::integrate_state_grownbox
 
       /*Use N_Vector to create userdata, in order to allocate data on device*/
       N_Vector Data = N_VNew_Serial(4*neq);  // Allocate u vector 
-      N_VConst(0.0,Data);
       double* rparh=N_VGetArrayPointer_Serial(Data);
       N_Vector rho_tmp = N_VNew_Serial(neq);  // Allocate u vector 
       N_VConst(0.0,rho_tmp);
       double* rho_tmp_ptr=N_VGetArrayPointer_Serial(rho_tmp);
+      #endif
+      N_VConst(0.0,Data);
       S_old[mfi].copyToMem(tbx,Nyx::Density,1,rho_tmp_ptr);
+      #ifdef AMREX_USE_CUDA
+      N_VCopyToDevice_Cuda(rho_tmp);
+      #endif
       N_Vector T_tmp = N_VNew_Serial(2*neq);  // Allocate u vector 
       N_VConst(0.0,T_tmp);
       double* Tne_tmp_ptr=N_VGetArrayPointer_Serial(T_tmp);
@@ -333,6 +367,9 @@ int Nyx::integrate_state_grownbox
 
 	}
       N_VDiv(u,rho_tmp,u);
+#ifdef AMREX_USE_CUDA
+      N_VCopyToDevice_Cuda(Data);
+#endif      
 
       /* Call CVodeCreate to create the solver memory and specify the 
        * Backward Differentiation Formula and the use of a Newton iteration */
@@ -351,9 +388,13 @@ int Nyx::integrate_state_grownbox
 
       /* Call CVodeSStolerances to specify the scalar relative tolerance
        * and scalar absolute tolerance */
+#ifdef AMREX_USE_CUDA
+      flag = CVodeSStolerances(cvode_mem, reltol, abstol);
+#else
       N_Vector abstol_vec = N_VNew_Serial(neq);                                                                                                                                                 
       N_VScale(abstol,u,abstol_vec);                                                                                                                                                                    
       flag = CVodeSVtolerances(cvode_mem, reltol, abstol_vec);
+#endif
       //      flag = CVodeSStolerances(cvode_mem, reltol, abstol);
       if (check_retval(&flag, "CVodeSVtolerances", 1)) return(1);
 
@@ -379,6 +420,10 @@ int Nyx::integrate_state_grownbox
 
       flag = CVDiag(cvode_mem);
 
+#ifdef AMREX_USE_CUDA
+      N_VCopyToDevice_Cuda(Data);
+#endif      
+
       CVodeSetUserData(cvode_mem, &Data);
 
       /* Call CVode using 1 substep */
@@ -391,12 +436,15 @@ int Nyx::integrate_state_grownbox
       umax = N_VMaxNorm(u);
       flag = CVodeGetNumSteps(cvode_mem, &nst);
       check_retval(&flag, "CVodeGetNumSteps", 1);
-      if(amrex::Verbose()>2)
+      if(amrex::Verbose()>2||true)
 	{
 	  PrintOutput(tout, umax, nst);
 	}
       }
-      
+#ifdef AMREX_USE_CUDA
+      amrex::Gpu::Device::synchronize();
+      N_VCopyFromDevice_Cuda(u);
+#endif            
       int one_in=1;
       for(int i=0;i<neq;i++)
 	{
@@ -406,12 +454,16 @@ int Nyx::integrate_state_grownbox
 	  fort_ode_eos_finalize(&(dptr[i]), &(rparh[4*i]), one_in);
 	}
       D_old[mfi].copyFromMem(tbx,Nyx::Temp_comp,2,Tne_tmp_ptr);
-
+      amrex::Gpu::Device::synchronize();
       N_VProd(u,rho_tmp,u);                
-    
+#ifdef AMREX_USE_CUDA
+      N_VCopyFromDevice_Cuda(u);
+#endif      
+      amrex::Gpu::Device::synchronize();
       S_old[mfi].copyFromMem(tbx,Nyx::Eint,1,dptr);
       S_old[mfi].addFromMem(tbx,Nyx::Eden,1,dptr);
-      if(amrex::Verbose()>2)
+      amrex::Gpu::Device::synchronize();
+      if(amrex::Verbose()>2||true)
 	{
 	  amrex::Print()<<S_old[mfi].min(Eint)<<"at index"<<S_old[mfi].minIndex(Eint)<<std::endl;
 	  amrex::Print()<<S_old[mfi].min(Eden)<<"at index"<<S_old[mfi].minIndex(Eden)<<std::endl;
@@ -433,6 +485,7 @@ int Nyx::integrate_state_grownbox
 #ifdef AMREX_USE_CUDA
 static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
 {
+  amrex::Gpu::Device::synchronize();
   N_VCopyFromDevice_Cuda(u);
   //  N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));
   Real* udot_ptr=N_VGetHostArrayPointer_Cuda(udot);
@@ -441,9 +494,10 @@ static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
   double*  rpar=N_VGetHostArrayPointer_Cuda(*(static_cast<N_Vector*>(user_data)));
   for(int tid=0;tid<neq;tid++)
     {
-      //    fprintf(stdout,"\nrpar[4*tid+0]=%g\n",rpar[4*tid]);
+      //           fprintf(stdout,"\nrpar[4*tid+0]=%g\n",rpar[4*tid]);
     RhsFnReal(t,&(u_ptr[tid]),&(udot_ptr[tid]),&(rpar[4*tid]),1);
-    //    fprintf(stdout,"\nafter rpar[4*tid+0]=%g\n",rpar[4*tid]);
+    //        fprintf(stdout,"\nafter rpar[4*tid+0]=%g\n",rpar[4*tid]);
+    //	fprintf(stdout,"\nafter udot[4*tid+0]=%g\n",udot_ptr[tid]);
     }
   N_VCopyToDevice_Cuda(udot);
   //  N_VCopyToDevice_Cuda(*(static_cast<N_Vector*>(user_data)));

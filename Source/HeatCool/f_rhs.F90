@@ -38,8 +38,9 @@ subroutine f_rhs_rpar(num_eq, time, e_in, energy, rpar, ipar)
       T_vode=rpar(1)
       ne_vode=rpar(2)
       rho_vode=rpar(3)
-!      z_vode=rpar(4)                                                                                                                                                                                               
-
+!      z_vode=rpar(4)                                                                                                                                                                                        
+!      print*, T_vode
+!      print*, "e in",e_in(1)
       fn_vode=fn_vode+1;
 
 !      FMT = "(A6, I4, ES15.5, ES15.5E3, ES15.5, ES15.5)"                                                                                                                                                           
@@ -56,10 +57,10 @@ subroutine f_rhs_rpar(num_eq, time, e_in, energy, rpar, ipar)
 !      print*, "nh = ", nh                                                                                                                                                                                          
 !      nh = 1.85e-2                                                                                                                                                                                                 
 !      print*, "Replacing with nh = ",nh                                                                                                                                                                            
-!      print*, "XHYDROGEN = ", XHYDROGEN                                                                                                                                                                            
-!      print*, "MPROTON = ", MPROTON                                                                                                                                                                                
-!      print*, "density_to_cgs = ", density_to_cgs                                                                                                                                                                  
-!      print*, "e_to_cgs = ", e_to_cgs                                                                                                                                                                              
+ !     print*, "XHYDROGEN = ", XHYDROGEN   
+  !    print*, "MPROTON = ", MPROTON                                                                                                                                                                                
+   !   print*, "density_to_cgs = ", density_to_cgs                                                                                                                                                                  
+    !  print*, "e_to_cgs = ", e_to_cgs                                                                                                                                                                              
 
       if (time .gt. 1) then
          print *,'TIME INTO F_RHS ',time

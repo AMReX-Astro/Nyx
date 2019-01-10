@@ -5,6 +5,7 @@
 module meth_params_module
 
   use amrex_fort_module, only : rt => amrex_real
+!  use cudafor
 
   implicit none
 
