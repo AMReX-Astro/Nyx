@@ -16,6 +16,9 @@
 #include <sundials/sundials_types.h>   /* definition of type realtype */
 #include <sundials/sundials_math.h>    /* definition of ABS and EXP   */
 
+#ifdef AMREX_USE_CUDA
+#include <nvector/nvector_cuda.h>
+#endif
 #include <nvector/nvector_serial.h>
 using namespace amrex;
 
@@ -91,6 +94,15 @@ int Nyx::integrate_state_box
 	}
 
       /* Create a CUDA vector with initial values */
+      #ifdef AMREX_USE_CUDA
+      u = N_VNew_Cuda(neq);  /* Allocate u vector */
+      if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
+      dptr=N_VGetHostArrayPointer_Cuda(u);
+      mf[mfi].copyToMem(tbx,0,1,dptr);
+      N_VCopyToDevice_Cuda(u);
+      /*Use N_Vector to create userdata, in order to allocate data on device*/
+      N_Vector Data = N_VNew_Cuda(4*neq);  // Allocate u vector 
+      #else
       u = N_VNew_Serial(neq);  /* Allocate u vector */
       if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
 
@@ -103,6 +115,7 @@ int Nyx::integrate_state_box
 
       /*Use N_Vector to create userdata, in order to allocate data on device*/
       N_Vector Data = N_VNew_Serial(4*neq);  // Allocate u vector 
+      #endif
       N_VConst(0.0,Data);
       double* rparh=N_VGetArrayPointer_Serial(Data);
       N_Vector rho_tmp = N_VNew_Serial(neq);  // Allocate u vector 
@@ -113,7 +126,6 @@ int Nyx::integrate_state_box
       N_VConst(0.0,T_tmp);
       double* Tne_tmp_ptr=N_VGetArrayPointer_Serial(T_tmp);
       D_old[mfi].copyToMem(tbx,Nyx::Temp_comp,2,Tne_tmp_ptr);
-      
       for(int i=0;i<neq;i++)
 	{
 	  rparh[4*i+0]= Tne_tmp_ptr[i];   //rpar(1)=T_vode
@@ -122,6 +134,7 @@ int Nyx::integrate_state_box
 	  rparh[4*i+3]=1/a-1;    //    rpar(4)=z_vode
 
 	}
+
       N_VDiv(u,rho_tmp,u);
 
       /* Call CVodeCreate to create the solver memory and specify the 
@@ -169,6 +182,9 @@ int Nyx::integrate_state_box
 
       flag = CVDiag(cvode_mem);
 
+#ifdef AMREX_USE_CUDA
+      N_VCopyToDevice_Cuda(Data);
+#endif      
       CVodeSetUserData(cvode_mem, &Data);
 
       /* Call CVode using 1 substep */
@@ -186,7 +202,10 @@ int Nyx::integrate_state_box
 	      PrintOutput(tout, umax, nst);
 	    }
       }
-      
+
+#ifdef AMREX_USE_CUDA
+      N_VCopyFromDevice_Cuda(u);
+#endif      
       int one_in=1;
       for(int i=0;i<neq;i++)
 	{
@@ -411,7 +430,26 @@ int Nyx::integrate_state_grownbox
     }
     return 0;
 }
-
+#ifdef AMREX_USE_CUDA
+static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
+{
+  N_VCopyFromDevice_Cuda(u);
+  //  N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));
+  Real* udot_ptr=N_VGetHostArrayPointer_Cuda(udot);
+  Real* u_ptr=N_VGetHostArrayPointer_Cuda(u);
+  int neq=N_VGetLength_Cuda(udot);
+  double*  rpar=N_VGetHostArrayPointer_Cuda(*(static_cast<N_Vector*>(user_data)));
+  for(int tid=0;tid<neq;tid++)
+    {
+      //    fprintf(stdout,"\nrpar[4*tid+0]=%g\n",rpar[4*tid]);
+    RhsFnReal(t,&(u_ptr[tid]),&(udot_ptr[tid]),&(rpar[4*tid]),1);
+    //    fprintf(stdout,"\nafter rpar[4*tid+0]=%g\n",rpar[4*tid]);
+    }
+  N_VCopyToDevice_Cuda(udot);
+  //  N_VCopyToDevice_Cuda(*(static_cast<N_Vector*>(user_data)));
+  return 0;
+}
+#else
 static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
 {
 
@@ -437,6 +475,7 @@ static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
   fprintf(stdout,"\nafter last rparh[4*(neq-1)+1]=%g \n\n",rpar[4*(neq-1)+1]);*/
   return 0;
 }
+#endif
 
 static void PrintOutput(realtype t, realtype umax, long int nst)
 {
