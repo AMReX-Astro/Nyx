@@ -11,7 +11,15 @@ use meth_params_module, only: gamma_minus_1
 allocate(this_z)
 allocate(gamma_minus_1)
 allocate(XHYDROGEN, YHELIUM)
-
+allocate(TCOOLMIN, TCOOLMAX, TCOOLMAX_R, TCOOLMIN_R, deltaT)
+allocate(uvb_density_A, uvb_density_B, mean_rhob)
+TCOOLMIN = 0.0d0
+TCOOLMAX = 9.0d0
+TCOOLMIN_R = 10.0d0**TCOOLMIN 
+TCOOLMAX_R = 10.0d0**TCOOLMAX
+deltaT = (TCOOLMAX - TCOOLMIN)/NCOOLTAB
+uvb_density_A = 1.0d0
+uvb_density_B = 0.0d0
 XHYDROGEN = 0.76d0
 YHELIUM   = 7.8947368421d-2
 
@@ -135,6 +143,9 @@ use atomic_rates_module
 use meth_params_module, only: gamma_minus_1
 deallocate(this_z)
 deallocate(gamma_minus_1)
+deallocate(XHYDROGEN,YHELIUM)
+deallocate(TCOOLMIN, TCOOLMAX, TCOOLMAX_R, TCOOLMIN_R, deltaT)
+deallocate(uvb_density_A, uvb_density_B, mean_rhob)
 end subroutine fin_allocations
 
 !!! subroutine dummy()

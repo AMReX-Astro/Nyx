@@ -35,13 +35,17 @@ module atomic_rates_module
   real(rt), public, save :: ggh0, gghe0, gghep, eh0, ehe0, ehep
   real(rt), allocatable, public :: this_z
  
-  real(rt), parameter, public :: TCOOLMIN = 0.0d0, TCOOLMAX = 9.0d0  ! in log10
-  real(rt), parameter, public :: TCOOLMIN_R = 10.0d0**TCOOLMIN, TCOOLMAX_R = 10.0d0**TCOOLMAX
-  real(rt), parameter, public :: deltaT = (TCOOLMAX - TCOOLMIN)/NCOOLTAB
+  real(rt), allocatable, public :: TCOOLMIN, TCOOLMAX
+  real(rt), allocatable, public :: TCOOLMIN_R, TCOOLMAX_R
+  real(rt), allocatable, public :: deltaT
+
+!  real(rt), parameter, public :: TCOOLMIN = 0.0d0, TCOOLMAX = 9.0d0  ! in log10
+!  real(rt), parameter, public :: TCOOLMIN_R = 10.0d0**TCOOLMIN, TCOOLMAX_R = 10.0d0**TCOOLMAX
+!  real(rt), parameter, public :: deltaT = (TCOOLMAX - TCOOLMIN)/NCOOLTAB
 
   real(rt), parameter, public :: MPROTON = 1.6726231d-24, BOLTZMANN = 1.3806e-16
 
-  real(rt), public, save :: uvb_density_A = 1.0d0, uvb_density_B = 0.0d0, mean_rhob
+  real(rt), allocatable, public :: uvb_density_A,  uvb_density_B, mean_rhob
 
   ! Note that XHYDROGEN can be set by a call to set_xhydrogen which now
   ! lives in set_method_params.
@@ -58,6 +62,8 @@ module atomic_rates_module
       use comoving_module, only: comoving_h,comoving_OmB
       use reion_aux_module, only: zhi_flash, zheii_flash, T_zhi, T_zheii, &
                                   flash_h, flash_he, inhomogeneous_on
+
+      implicit none
 
       integer :: i, inhomo_reion
       logical, parameter :: Katz96=.false.
