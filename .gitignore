@@ -40,9 +40,8 @@ chk*
 *.xmgr
 ic_sb_32.ascii
 fixed_grids
-*Test*-*
-*Test*o*
-*Test*e*
+*est*-*
+*est.??????
 
 # build directories
 o/
