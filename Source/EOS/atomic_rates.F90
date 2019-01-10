@@ -20,19 +20,19 @@ module atomic_rates_module
   implicit none
 
   ! Photo- rates (from file)
-  integer, private :: NCOOLFILE
-  real(rt), dimension(:), allocatable, private :: lzr
-  real(rt), dimension(:), allocatable, private :: rggh0, rgghe0, rgghep
-  real(rt), dimension(:), allocatable, private :: reh0, rehe0, rehep
+  integer, allocatable, public :: NCOOLFILE
+  real(rt), dimension(:), allocatable, public :: lzr
+  real(rt), dimension(:), allocatable, public :: rggh0, rgghe0, rgghep
+  real(rt), dimension(:), allocatable, public :: reh0, rehe0, rehep
 
   ! Other rates (from equations)
   integer, parameter, public :: NCOOLTAB=2000
-  real(rt), dimension(NCOOLTAB+1), public :: AlphaHp, AlphaHep, AlphaHepp, Alphad
-  real(rt), dimension(NCOOLTAB+1), public :: GammaeH0, GammaeHe0, GammaeHep
-  real(rt), dimension(NCOOLTAB+1), public :: BetaH0, BetaHe0, BetaHep, Betaff1, Betaff4
-  real(rt), dimension(NCOOLTAB+1), public :: RecHp, RecHep, RecHepp
+  real(rt), dimension(:), allocatable, public :: AlphaHp, AlphaHep, AlphaHepp, Alphad
+  real(rt), dimension(:), allocatable, public :: GammaeH0, GammaeHe0, GammaeHep
+  real(rt), dimension(:), allocatable, public :: BetaH0, BetaHe0, BetaHep, Betaff1, Betaff4
+  real(rt), dimension(:), allocatable, public :: RecHp, RecHep, RecHepp
 
-  real(rt), public, save :: ggh0, gghe0, gghep, eh0, ehe0, ehep
+  real(rt), allocatable, public :: ggh0, gghe0, gghep, eh0, ehe0, ehep
   real(rt), allocatable, public :: this_z
  
   real(rt), allocatable, public :: TCOOLMIN, TCOOLMAX
@@ -52,6 +52,18 @@ module atomic_rates_module
   real(rt), allocatable, public :: XHYDROGEN 
   real(rt), allocatable, public :: YHELIUM     ! (1.0d0-XHYDROGEN)/(4.0d0*XHYDROGEN)
 
+#ifdef AMREX_USE_CUDA
+  attributes(managed) :: NCOOLFILE, lzr, rggh0, rgghe0, rgghep, reh0, rehe0, rehep
+  attributes(managed) :: AlphaHp, AlphaHep, AlphaHepp, Alphad
+  attributes(managed) :: GammaeH0, GammaeHe0, GammaeHep
+  attributes(managed) :: BetaH0, BetaHe0, BetaHep, Betaff1, Betaff4
+  attributes(managed) :: RecHp, RecHep, RecHepp
+  attributes(managed) :: ggh0, gghe0, gghep, eh0, ehe0, ehep
+  attributes(managed) :: XHYDROGEN, YHELIUM
+  attributes(managed) :: TCOOLMIN, TCOOLMAX, TCOOLMAX_R, TCOOLMIN_R, deltaT
+  attributes(managed) :: uvb_density_A, uvb_density_B, mean_rhob
+#endif
+  
   contains
 
       subroutine fort_tabulate_rates() bind(C, name='fort_tabulate_rates')
@@ -154,6 +166,8 @@ module atomic_rates_module
             endif
          endif
 
+	 allocate(NCOOLFILE)
+	 allocate(ggh0, gghe0, gghep, eh0, ehe0, ehep)
          NCOOLFILE = 0
          do
             read(11,*,end=10) tmp, tmp, tmp, tmp, tmp,  tmp, tmp
@@ -163,6 +177,10 @@ module atomic_rates_module
 
          allocate( lzr(NCOOLFILE), rggh0(NCOOLFILE), rgghe0(NCOOlFILE), rgghep(NCOOLFILE) )
          allocate( reh0(NCOOLFILE), rehe0(NCOOLFILE), rehep(NCOOLFILE) )
+	 allocate( AlphaHp(NCOOLTAB+1), AlphaHep(NCOOLTAB+1), AlphaHepp(NCOOLTAB+1), Alphad(NCOOLTAB+1))
+	 allocate( GammaeH0(NCOOLTAB+1), GammaeHe0(NCOOLTAB+1), GammaeHep(NCOOLTAB+1))
+	 allocate( BetaH0(NCOOLTAB+1), BetaHe0(NCOOLTAB+1), BetaHep(NCOOLTAB+1), Betaff1(NCOOLTAB+1), Betaff4(NCOOLTAB+1))
+	 allocate( RecHp(NCOOLTAB+1), RecHep(NCOOLTAB+1), RecHepp(NCOOLTAB+1))
 
          do i = 1, NCOOLFILE
             read(11,*) lzr(i), rggh0(i), rgghe0(i), rgghep(i), &

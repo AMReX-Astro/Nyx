@@ -146,6 +146,16 @@ deallocate(gamma_minus_1)
 deallocate(XHYDROGEN,YHELIUM)
 deallocate(TCOOLMIN, TCOOLMAX, TCOOLMAX_R, TCOOLMIN_R, deltaT)
 deallocate(uvb_density_A, uvb_density_B, mean_rhob)
+
+! Initially allocated when the table is read
+deallocate(NCOOLFILE)
+deallocate(ggh0, gghe0, gghep, eh0, ehe0, ehep)
+deallocate( lzr(NCOOLFILE), rggh0(NCOOLFILE), rgghe0(NCOOlFILE), rgghep(NCOOLFILE) )
+deallocate( reh0(NCOOLFILE), rehe0(NCOOLFILE), rehep(NCOOLFILE) )
+deallocate( AlphaHp(NCOOLTAB+1), AlphaHep(NCOOLTAB+1), AlphaHepp(NCOOLTAB+1), Alphad(NCOOLTAB+1))
+deallocate( GammaeH0(NCOOLTAB+1), GammaeHe0(NCOOLTAB+1), GammaeHep(NCOOLTAB+1))
+deallocate( BetaH0(NCOOLTAB+1), BetaHe0(NCOOLTAB+1), BetaHep(NCOOLTAB+1), Betaff1(NCOOLTAB+1), Betaff4(NCOOLTAB+1))
+deallocate( RecHp(NCOOLTAB+1), RecHep(NCOOLTAB+1), RecHepp(NCOOLTAB+1))
 end subroutine fin_allocations
 
 !!! subroutine dummy()

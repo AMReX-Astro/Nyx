@@ -45,5 +45,8 @@ module meth_params_module
 
   integer, save :: npassive
   integer, save, allocatable :: qpass_map(:), upass_map(:)
+#ifdef AMREX_USE_CUDA
+  attributes(managed) :: gamma_minus_1
+#endif
 
 end module meth_params_module
