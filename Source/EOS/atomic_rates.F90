@@ -45,8 +45,8 @@ module atomic_rates_module
 
   ! Note that XHYDROGEN can be set by a call to set_xhydrogen which now
   ! lives in set_method_params.
-  real(rt), public :: XHYDROGEN = 0.76d0
-  real(rt), public :: YHELIUM   = 7.8947368421d-2  ! (1.0d0-XHYDROGEN)/(4.0d0*XHYDROGEN)
+  real(rt), allocatable, public :: XHYDROGEN 
+  real(rt), allocatable, public :: YHELIUM     ! (1.0d0-XHYDROGEN)/(4.0d0*XHYDROGEN)
 
   contains
 

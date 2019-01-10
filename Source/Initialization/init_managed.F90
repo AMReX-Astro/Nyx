@@ -9,6 +9,11 @@ use atomic_rates_module
 use meth_params_module, only: gamma_minus_1
 
 allocate(this_z)
+allocate(gamma_minus_1)
+allocate(XHYDROGEN, YHELIUM)
+
+XHYDROGEN = 0.76d0
+YHELIUM   = 7.8947368421d-2
 
 end subroutine init_allocations
 
@@ -129,7 +134,7 @@ use vode_aux_module
 use atomic_rates_module
 use meth_params_module, only: gamma_minus_1
 deallocate(this_z)
-
+deallocate(gamma_minus_1)
 end subroutine fin_allocations
 
 !!! subroutine dummy()

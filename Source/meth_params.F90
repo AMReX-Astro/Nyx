@@ -11,7 +11,8 @@ module meth_params_module
   real(rt), save :: difmag        ! used only in consup to weight the divu contributin
   integer , save :: iorder        ! used only in uslope and uflaten
 
-  real(rt), save, public  :: gamma_const, gamma_minus_1
+  real(rt), save, public  :: gamma_const
+  real(rt), allocatable, public  :: gamma_minus_1
 
   integer, parameter     :: NHYP    = 4
   integer, parameter     :: MAXADV  = 5
