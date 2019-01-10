@@ -77,13 +77,16 @@ int Nyx::integrate_state_box
       
       if(neq>1)
 	{
-	amrex::Print()<<"Integrating a box with "<<neq<<" cells"<<std::endl;
-	amrex::Print()<<"Integrating a box with "<<neq2<<"real cells"<<std::endl;
-	amrex::Print()<<"Integrating a box with "<<S_old.nGrow()<<"grow cells"<<std::endl;
-	amrex::Print()<<"Integrating a box with tile_size"<<tile_size<<std::endl;
-	amrex::Print()<<"Integrating a box with lo tile_size"<<lo[0]<<lo[1]<<lo[2]<<std::endl;
-	amrex::Print()<<"Integrating a box with hi tile_size"<<hi[0]<<hi[1]<<hi[2]<<std::endl;
-	amrex::Print()<<S_old[mfi].min(Eint)<<"at index"<<S_old[mfi].minIndex(Eint)<<std::endl;
+	  if(amrex::Verbose()>2)
+	    {
+	      amrex::Print()<<"Integrating a box with "<<neq<<" cells"<<std::endl;
+	      amrex::Print()<<"Integrating a box with "<<neq2<<"real cells"<<std::endl;
+	      amrex::Print()<<"Integrating a box with "<<S_old.nGrow()<<"grow cells"<<std::endl;
+	      amrex::Print()<<"Integrating a box with tile_size"<<tile_size<<std::endl;
+	      amrex::Print()<<"Integrating a box with lo tile_size"<<lo[0]<<lo[1]<<lo[2]<<std::endl;
+	      amrex::Print()<<"Integrating a box with hi tile_size"<<hi[0]<<hi[1]<<hi[2]<<std::endl;
+	      amrex::Print()<<S_old[mfi].min(Eint)<<"at index"<<S_old[mfi].minIndex(Eint)<<std::endl;
+	    }
 	//	neq=neq2;
 	}
 
@@ -178,7 +181,10 @@ int Nyx::integrate_state_box
       umax = N_VMaxNorm(u);
       flag = CVodeGetNumSteps(cvode_mem, &nst);
       check_retval(&flag, "CVodeGetNumSteps", 1);
-      PrintOutput(tout, umax, nst);
+	  if(amrex::Verbose()>2)
+	    {
+	      PrintOutput(tout, umax, nst);
+	    }
       }
       
       int one_in=1;
@@ -195,10 +201,13 @@ int Nyx::integrate_state_box
     
       S_old[mfi].copyFromMem(tbx,Nyx::Eint,1,dptr);
       S_old[mfi].addFromMem(tbx,Nyx::Eden,1,dptr);
-      amrex::Print()<<S_old[mfi].min(Eint)<<"at index"<<S_old[mfi].minIndex(Eint)<<std::endl;
-      amrex::Print()<<S_old[mfi].min(Eden)<<"at index"<<S_old[mfi].minIndex(Eden)<<std::endl;
-      PrintFinalStats(cvode_mem);
-      
+      if(amrex::Verbose()>2)
+	{
+	  amrex::Print()<<S_old[mfi].min(Eint)<<"at index"<<S_old[mfi].minIndex(Eint)<<std::endl;
+	  amrex::Print()<<S_old[mfi].min(Eden)<<"at index"<<S_old[mfi].minIndex(Eden)<<std::endl;
+	  PrintFinalStats(cvode_mem);
+	}
+
       N_VDestroy(u);          /* Free the u vector */
       N_VDestroy(Data);          /* Free the userdata vector */
       N_VDestroy(T_tmp);
@@ -259,14 +268,17 @@ int Nyx::integrate_state_grownbox
       
       if(neq>1)
 	{
-	amrex::Print()<<"Integrating a box with "<<neq<<" cells"<<std::endl;
-	amrex::Print()<<"Integrating a box with "<<neq2<<"real cells"<<std::endl;
-	amrex::Print()<<"Integrating a box with "<<S_old.nGrow()<<"grow cells"<<std::endl;
-	amrex::Print()<<"Integrating a box with tile_size"<<tile_size<<std::endl;
-	amrex::Print()<<"Integrating a box with lo tile_size"<<lo[0]<<lo[1]<<lo[2]<<std::endl;
-	amrex::Print()<<"Integrating a box with hi tile_size"<<hi[0]<<hi[1]<<hi[2]<<std::endl;
-	amrex::Print()<<S_old[mfi].min(Eint)<<"at index"<<S_old[mfi].minIndex(Eint)<<std::endl;
-	//	neq=neq2;
+	  if(amrex::Verbose()>1)
+	    {
+	      amrex::Print()<<"Integrating a box with "<<neq<<" cells"<<std::endl;
+	      amrex::Print()<<"Integrating a box with "<<neq2<<"real cells"<<std::endl;
+	      amrex::Print()<<"Integrating a box with "<<S_old.nGrow()<<"grow cells"<<std::endl;
+	      amrex::Print()<<"Integrating a box with tile_size"<<tile_size<<std::endl;
+	      amrex::Print()<<"Integrating a box with lo tile_size"<<lo[0]<<lo[1]<<lo[2]<<std::endl;
+	      amrex::Print()<<"Integrating a box with hi tile_size"<<hi[0]<<hi[1]<<hi[2]<<std::endl;
+	      amrex::Print()<<S_old[mfi].min(Eint)<<"at index"<<S_old[mfi].minIndex(Eint)<<std::endl;
+	      //	neq=neq2;
+	    }
 	}
 
       /* Create a CUDA vector with initial values */
@@ -360,7 +372,10 @@ int Nyx::integrate_state_grownbox
       umax = N_VMaxNorm(u);
       flag = CVodeGetNumSteps(cvode_mem, &nst);
       check_retval(&flag, "CVodeGetNumSteps", 1);
-      PrintOutput(tout, umax, nst);
+      if(amrex::Verbose()>2)
+	{
+	  PrintOutput(tout, umax, nst);
+	}
       }
       
       int one_in=1;
@@ -377,10 +392,13 @@ int Nyx::integrate_state_grownbox
     
       S_old[mfi].copyFromMem(tbx,Nyx::Eint,1,dptr);
       S_old[mfi].addFromMem(tbx,Nyx::Eden,1,dptr);
-      amrex::Print()<<S_old[mfi].min(Eint)<<"at index"<<S_old[mfi].minIndex(Eint)<<std::endl;
-      amrex::Print()<<S_old[mfi].min(Eden)<<"at index"<<S_old[mfi].minIndex(Eden)<<std::endl;
-      PrintFinalStats(cvode_mem);
-      
+      if(amrex::Verbose()>2)
+	{
+	  amrex::Print()<<S_old[mfi].min(Eint)<<"at index"<<S_old[mfi].minIndex(Eint)<<std::endl;
+	  amrex::Print()<<S_old[mfi].min(Eden)<<"at index"<<S_old[mfi].minIndex(Eden)<<std::endl;
+	  PrintFinalStats(cvode_mem);
+	}
+
       N_VDestroy(u);          /* Free the u vector */
       N_VDestroy(Data);          /* Free the userdata vector */
       N_VDestroy(T_tmp);

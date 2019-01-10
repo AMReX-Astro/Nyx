@@ -616,6 +616,9 @@ public:
     static void InitErrorList();
     static void InitDeriveList();
 
+    static void alloc_cuda_managed();
+    static void dealloc_cuda_managed();
+
     static void set_simd_width(const int simd_width);
     static void alloc_simd_vec();
     static void dealloc_simd_vec();

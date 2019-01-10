@@ -9,6 +9,9 @@ extern "C"
 {
 #endif
 
+  void fort_alloc_cuda_managed();
+  void fort_dealloc_cuda_managed();
+
   void fort_alloc_simd_vec();
   void fort_dealloc_simd_vec();
 

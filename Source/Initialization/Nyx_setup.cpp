@@ -754,6 +754,18 @@ Nyx::no_hydro_setup()
 }
 #endif
 
+void
+Nyx::alloc_cuda_managed()
+{
+    fort_alloc_cuda_managed();
+}
+
+void
+Nyx::dealloc_cuda_managed()
+{
+    fort_dealloc_cuda_managed();
+}
+
 #ifdef AMREX_USE_CVODE
 void
 Nyx::set_simd_width(const int simd_width)

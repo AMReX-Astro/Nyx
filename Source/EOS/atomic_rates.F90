@@ -32,7 +32,8 @@ module atomic_rates_module
   real(rt), dimension(NCOOLTAB+1), public :: BetaH0, BetaHe0, BetaHep, Betaff1, Betaff4
   real(rt), dimension(NCOOLTAB+1), public :: RecHp, RecHep, RecHepp
 
-  real(rt), public, save :: this_z, ggh0, gghe0, gghep, eh0, ehe0, ehep
+  real(rt), public, save :: ggh0, gghe0, gghep, eh0, ehe0, ehep
+  real(rt), allocatable, public :: this_z
  
   real(rt), parameter, public :: TCOOLMIN = 0.0d0, TCOOLMAX = 9.0d0  ! in log10
   real(rt), parameter, public :: TCOOLMIN_R = 10.0d0**TCOOLMIN, TCOOLMAX_R = 10.0d0**TCOOLMAX
