@@ -33,7 +33,7 @@ endif
 F90EXE_sources += vode_aux.F90
 F90EXE_sources += f_rhs.F90
 ifeq ($(USE_CVODE_LIBS), TRUE)
-  f90EXE_sources += cvode_extras.f90
+  F90EXE_sources += cvode_extras.F90
   CEXE_sources += integrate_state_box_3d.cpp
 else
 CEXE_sources += integrate_state_box_3d_stubs.cpp

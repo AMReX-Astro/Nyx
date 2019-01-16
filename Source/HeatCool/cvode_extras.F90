@@ -87,6 +87,7 @@ module cvode_extras
     real(rt) :: species(5)
     real(rt) :: rho_vode, T_vode, ne_vode
     real(rt) :: a
+     attributes(managed) :: T_vode,Ne_vode
 
       T_vode=rpar(1)
       ne_vode=rpar(2)
@@ -135,30 +136,33 @@ module cvode_extras
 
     end subroutine ode_eos_finalize
 
-    integer(c_int) function RhsFnReal(tn, yvec, fvec, rpar, neq) &
+    
+    attributes(device) integer(c_int) function RhsFnReal(tn, yvec, fvec, rpar, neq) &
            result(ierr) bind(C,name='RhsFnReal')
 
       use, intrinsic :: iso_c_binding
+      use f_kernel_rhs_dev
+
       implicit none
 
 
-      real(c_double), value :: tn
+      real(rt), value :: tn
       integer(c_int), value :: neq
 !      type(c_ptr), value    :: sunvec_y                                                                                                                                                                            
 !      type(c_ptr), value    :: sunvec_f                                                                                                                                                                            
 !      type(c_ptr), value    :: user_data                                                                                                                                                                           
 
       ! pointers to data in SUNDAILS vectors                                                                                                                                                                        
-      real(c_double) :: yvec(neq)
-      real(c_double) :: fvec(neq)
-      real(c_double), intent(inout) :: rpar(neq*4)
-      real(c_double) :: energy(neq)
+      real(rt) :: yvec(neq)
+      real(rt) :: fvec(neq)
+      real(rt), intent(inout) :: rpar(neq*4)
+      real(rt) :: energy(neq)
 
 !      print*, "r1", rpar(1)                                                                                                                                                                                        
 !      print*, "r2", rpar(2)                                                                                                                                                                                        
  !     print*, rpar(3)                                                                                                                                                                                              
   !    print*, rpar(4)                                                                                                                                                                                              
-      call f_rhs_rpar(neq, tn, yvec, fvec, rpar, 0)
+      call f_rhs_rpar(tn, yvec, fvec, rpar)
 !      print*, fvec
    !   print*, "after r1", rpar(1)                                                                                                                                                                                  
     !  print*, "after r2", rpar(2)                                                                                                                                                                                 

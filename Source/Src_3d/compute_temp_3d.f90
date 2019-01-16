@@ -28,9 +28,10 @@
       real(rt), intent(in   ) :: comoving_a
 
       integer          :: i,j,k, JH, JHe
-      real(rt) :: rhoInv,eint
+      real(rt) :: rhoInv,eint,T_out, e_out
       real(rt) :: ke,dummy_pres
       real(rt) :: z
+      attributes(managed) :: T_out, e_out
 
       z = 1.d0/comoving_a - 1.d0
 
@@ -74,9 +75,12 @@
                    if (inhomogeneous_on) then
                        if (z .gt. diag_eos(i,j,k,ZHI_COMP)) JH = 0
                    end if
-
-                   call nyx_eos_T_given_Re(JH, JHe, diag_eos(i,j,k,TEMP_COMP), diag_eos(i,j,k,NE_COMP), &
+                   T_out = diag_eos(i,j,k, TEMP_COMP)
+                   e_out = diag_eos(i,j,k,NE_COMP)
+                   call nyx_eos_T_given_Re(JH, JHe, T_out, e_out, &
                                            state(i,j,k,URHO), eint, comoving_a)
+                   diag_eos(i,j,k, TEMP_COMP) = T_out
+                   diag_eos(i,j,k, NE_COMP) = e_out
 
                else
                   if (print_fortran_warnings .gt. 0) then

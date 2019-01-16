@@ -483,26 +483,85 @@ int Nyx::integrate_state_grownbox
     return 0;
 }
 #ifdef AMREX_USE_CUDA
-static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
+__global__ void f_rhs_test(Real t,double* u_ptr,Real* udot_ptr, Real* rpar, int neq)
 {
-  amrex::Gpu::Device::synchronize();
-  N_VCopyFromDevice_Cuda(u);
-  //  N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));
-  Real* udot_ptr=N_VGetHostArrayPointer_Cuda(udot);
-  Real* u_ptr=N_VGetHostArrayPointer_Cuda(u);
+  /*
+1.635780036449432E-01 a
+8.839029760565609E-06 dt
+2.119999946752000E+12 rho
+3.255559960937500E+04 T
+1.076699972152710E+00 ne
+6.226414794921875E+02 e */
+  /*  double rpar2[4];
+    rpar2[0]= 3.255559960937500E+04;   //rpar(1)=T_vode
+  rpar2[1]= 1.076699972152710E+00;//    rpar(2)=ne_vode
+  rpar2[2]=  2.119999946752000E+12; //    rpar(3)=rho_vode
+  rpar2[3]=1/(1+1.635780036449432E-01);    //    rpar(4)=z_vode*/
+    int tid = blockIdx.x * blockDim.x + threadIdx.x;
+  //  if(tid==0)
+    if(tid<neq)
+      RhsFnReal(t,u_ptr+tid,udot_ptr+tid,rpar+4*tid,1);
+    //    udot_ptr[tid]=(neq-tid)*t
+  
+    //*********************************
+    /*    if(tid<neq)
+	  RhsFn(t,u_ptr+tid,udot_ptr+tid,rpar+4*tid,1);*/
+    //rpar[4*tid+1]=tid;
+    /**********************************
+    if(tid<neq)
+      udot_ptr[tid]=2.0*t;*/
+
+  /* Either way to setup IC seems to work
+    RhsFn(t,u_ptr+i,udot_ptr+i,rpar2,1);*/
+}
+
+static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
+{
+  Real* udot_ptr=N_VGetDeviceArrayPointer_Cuda(udot);
+  Real* u_ptr=N_VGetDeviceArrayPointer_Cuda(u);
   int neq=N_VGetLength_Cuda(udot);
-  double*  rpar=N_VGetHostArrayPointer_Cuda(*(static_cast<N_Vector*>(user_data)));
-  for(int tid=0;tid<neq;tid++)
-    {
-      //           fprintf(stdout,"\nrpar[4*tid+0]=%g\n",rpar[4*tid]);
-    RhsFnReal(t,&(u_ptr[tid]),&(udot_ptr[tid]),&(rpar[4*tid]),1);
-    //        fprintf(stdout,"\nafter rpar[4*tid+0]=%g\n",rpar[4*tid]);
-    //	fprintf(stdout,"\nafter udot[4*tid+0]=%g\n",udot_ptr[tid]);
-    }
-  N_VCopyToDevice_Cuda(udot);
-  //  N_VCopyToDevice_Cuda(*(static_cast<N_Vector*>(user_data)));
+  double*  rpar=N_VGetDeviceArrayPointer_Cuda(*(static_cast<N_Vector*>(user_data)));
+  
+  /*  N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));  
+  double*  rparh=N_VGetHostArrayPointer_Cuda(*(static_cast<N_Vector*>(user_data)));
+   
+   fprintf(stdout,"\nt=%g \n\n",t);
+   fprintf(stdout,"\nrparh[0]=%g \n\n",rparh[0]);
+  fprintf(stdout,"\nrparh[1]=%g \n\n",rparh[1]);
+  fprintf(stdout,"\nrparh[2]=%g \n\n",rparh[2]);
+  fprintf(stdout,"\nrparh[3]=%g \n\n",rparh[3]);*/
+  int numThreads = std::min(32, neq);
+  int numBlocks = static_cast<int>(ceil(((double) neq)/((double) numThreads)));
+  /*
+ ////////////////////////////  fprintf(stdout,"\n castro <<<%d,%d>>> \n\n",numBlocks, numThreads);
+
+    unsigned block = 256;
+    unsigned grid = (int) ceil((float)neq / block);
+ ////////////////////////////fprintf(stdout,"\n cvode <<<%d,%d>>> \n\n",grid, block);
+
+ int blockSize, gridSize;
+ 
+ // Number of threads in each thread block
+ blockSize = 1024;
+ 
+ // Number of thread blocks in grid
+ gridSize = (int)ceil((float)neq/blockSize);
+ ////////////////////////////fprintf(stdout,"\n olcf <<<%d,%d>>> \n\n",gridSize, blockSize);
+ */
+ f_rhs_test<<<numBlocks,numThreads>>>(t,u_ptr,udot_ptr, rpar, neq);
+
+ amrex::Cuda::Device::synchronize();
+ AMREX_GPU_ERROR_CHECK();
+
+/*      N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));
+      fprintf(stdout,"\nafter rparh[0]=%g \n\n",rparh[0]);
+  fprintf(stdout,"\nafter rparh[1]=%g \n\n",rparh[1]);
+  fprintf(stdout,"\nafter rparh[2]=%g \n\n",rparh[2]);
+  fprintf(stdout,"\nafter rparh[3]=%g \n\n",rparh[3]);
+  fprintf(stdout,"\nafter last rparh[4*(neq-1)+1]=%g \n\n",rparh[4*(neq-1)+1]);*/
   return 0;
 }
+
 #else
 static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
 {
