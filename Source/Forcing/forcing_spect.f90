@@ -2,7 +2,8 @@
 
 module forcing_spect_module
 
-  use amrex_fort_module, only : bl_spacedim, rt => amrex_real
+  use amrex_error_module, only : amrex_abort
+  use amrex_fort_module , only : amrex_spacedim, rt => amrex_real
 
   implicit none
 
@@ -37,11 +38,11 @@ contains
           num_modes_ext = num_modes
        end if
 
-       allocate (modes_even(num_modes_ext,bl_spacedim), modes_odd(num_modes_ext,bl_spacedim), &
-                 wavevectors(bl_spacedim,num_modes_ext), STAT=alloc)
-       if (alloc > 0) call bl_abort('failed to allocate arrays for forcing modes')
+       allocate (modes_even(num_modes_ext,amrex_spacedim), modes_odd(num_modes_ext,amrex_spacedim), &
+                 wavevectors(amrex_spacedim,num_modes_ext), STAT=alloc)
+       if (alloc > 0) call amrex_abort('failed to allocate arrays for forcing modes')
     else
-       call bl_abort('number of forcing modes must be positive')
+       call amrex_abort('number of forcing modes must be positive')
     end if
 
     modes_even(:,:) = 0.d0
@@ -55,10 +56,10 @@ contains
              bind(C, name="fort_set_wavevector")
 
     integer, intent(in) :: m
-    integer, intent(in) :: kvect(bl_spacedim)
+    integer, intent(in) :: kvect(amrex_spacedim)
 
     if ((m.lt.0).or.(m.ge.num_modes)) then
-	call bl_abort('invalid index of wavevector')
+	call amrex_abort('invalid index of wavevector')
     end if
 
     wavevectors(:,m+1) = kvect(:) ! index conversion from C to Fortran
@@ -74,8 +75,8 @@ contains
 
     integer m
 
-    if ((length.ne.num_modes).or.(comp.ge.bl_spacedim)) then
-	call bl_abort('dimensions of input arrays do not match')
+    if ((length.ne.num_modes).or.(comp.ge.amrex_spacedim)) then
+	call amrex_abort('dimensions of input arrays do not match')
     end if
 
     modes_even(1:num_modes,comp+1) = even(:)

@@ -405,6 +405,15 @@ Nyx::read_params ()
         amrex::Abort(errmsg);
       }
     }
+    if (heat_cool_type == 9)
+    {
+      amrex::Print() << "----- WARNING WARNING WARNING WARNING WARNING -----" << std::endl;
+      amrex::Print() << "                                                   " << std::endl;
+      amrex::Print() << "      ARKODE interface is currently EXPERIMENTAL.  " << std::endl;
+      amrex::Print() << "      Use at your own risk.                        " << std::endl;
+      amrex::Print() << "                                                   " << std::endl;
+      amrex::Print() << "----- WARNING WARNING WARNING WARNING WARNING -----" << std::endl;
+    }
 
     pp_nyx.query("use_exact_gravity", use_exact_gravity);
 
@@ -416,8 +425,8 @@ Nyx::read_params ()
     }
 
 #ifdef HEATCOOL
-    if (heat_cool_type != 3 && heat_cool_type != 5 && heat_cool_type != 7)
-       amrex::Error("Nyx:: nonzero heat_cool_type must equal 3 or 5 or 7");
+    if (heat_cool_type != 3 && heat_cool_type != 5 && heat_cool_type != 7 && heat_cool_type != 9 && heat_cool_type != 10)
+       amrex::Error("Nyx:: nonzero heat_cool_type must equal 3 or 5 or 7 or 9 or 10");
     if (heat_cool_type == 0)
        amrex::Error("Nyx::contradiction -- HEATCOOL is defined but heat_cool_type == 0");
 
@@ -438,9 +447,13 @@ Nyx::read_params ()
     }
 
 #ifndef AMREX_USE_CVODE
-    #ifndef AMREX_USE_SUNDIALS3
-    if (heat_cool_type == 5 || heat_cool_type == 7)
-        amrex::Error("Nyx:: cannot set heat_cool_type = 5 or 7 unless USE_CVODE=TRUE or USE_SUNDIALS3=TRUE");
+    #ifndef AMREX_USE_SUNDIALS_3x4x
+    if (heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 10)
+        amrex::Error("Nyx:: cannot set heat_cool_type = 5 or 7 unless USE_CVODE=TRUE or USE_SUNDIALS_3x4x=TRUE");
+    #ifndef AMREX_USE_ARKODE_LIBS
+    if (heat_cool_type == 9)
+        amrex::Error("Nyx:: cannot set heat_cool_type = 9 unless USE_SUNDIALS_3x4x=TRUE, and USE_ARKODE_LIBS=TRUE");
+    #endif
     #endif
 #else
     #ifdef SDC
@@ -635,13 +648,8 @@ Nyx::Nyx (Amr&            papa,
 
 #ifdef HEATCOOL
      // Initialize "this_z" in the atomic_rates_module
-    if (heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7)
+    if (heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 9 || heat_cool_type == 10)
          fort_interp_to_this_z(&initial_z);
-#endif
-
-#ifdef AGN
-     // Initialize the uniform(0,1) random number generator.
-     init_uniform01_rng();
 #endif
 }
 
@@ -2237,7 +2245,7 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
     Real a        = get_comoving_a(cur_time);
 
 #ifdef HEATCOOL 
-    if (heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7) 
+    if (heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 9 || heat_cool_type == 10)
     {
        const Real z = 1.0/a - 1.0;
        fort_interp_to_this_z(&z);

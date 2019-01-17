@@ -41,6 +41,7 @@ program main
   CHARACTER(LEN=80) :: FMT, arg
   CHARACTER(LEN=6)  :: string
   integer :: STRANG_COMP
+  integer :: l
 !  integer :: i_loop, j_loop
 
     DO i = 1, command_argument_count()
@@ -57,20 +58,22 @@ program main
     xacc_in = 1e-6
     gamma_minus_1 = 2.d0/3.d0
     call fort_setup_eos_params(xacc_in, vode_rtol_in, vode_atol_scaled_in)
-    
+
     print*,"Finished reading table"
 
     allocate(yvec(neq))
     
+    open(1,FILE=arg)
+    do
     fn_vode = 0
     NR_vode = 0
     print*,"Read parameters"
 
  FMT="(A6,I1,/,ES21.15,/,ES21.15E2,/,ES21.15,/,ES21.15,/,ES21.15,/,ES21.15,/,ES21.15)"
 
-    open(1,FILE=arg)
-    read(1,FMT) string, STRANG_COMP, a, half_dt, rho, T_orig, ne_orig, e_orig
-    close(1)
+
+    read(1,FMT,iostat=l) string, STRANG_COMP, a, half_dt, rho, T_orig, ne_orig, e_orig
+    if(l.eq.-1) exit
 
     yvec(1) = e_orig
 
@@ -165,10 +168,11 @@ program main
 
                 call vode_wrapper(half_dt,rho,T_orig,ne_orig,e_orig, &
                                               T_out ,ne_out ,e_out, fn_out)
-                print*, "vw:e_out   = ",e_out
-                print*, "vw:T_out   = ",T_out
-                print*, "vw:fn_vode = ", fn_vode
-                print*, "vw:NR_vode = ", NR_vode
+                print*, "Answer out of vode_wrapper:"
+                print*, "e_out   = ",e_out
+                print*, "T_out   = ",T_out
+                print*, "fn_vode = ", fn_vode
+                print*, "NR_vode = ", NR_vode
                 if (e_out .lt. 0.d0) then
                     !$OMP CRITICAL
                     print *,'negative e exiting strang integration ',z, i,j,k, rho/mean_rhob, e_out
@@ -204,13 +208,15 @@ program main
                    call nyx_eos_T_given_Re(JH_vode, JHe_vode, T_out, ne_out, rho, e_out, a, species)
                 endif
     !-----------------cut out end do ijk loops        
+    print*, "Answer at the end of main:"
     print*, "e_out   = ",e_out
     print*, "T_out   = ",T_out
     print*, "fn_vode = ", fn_vode
     print*, "NR_vode = ", NR_vode
 !    call N_VDestroy_Serial(sunvec_y)
 !    call FCVodeFree(cvmem)
-
+    enddo
+    30 close(1)
     deallocate(yvec)
 
 !  call amrex_finalize()

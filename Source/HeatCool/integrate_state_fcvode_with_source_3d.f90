@@ -40,7 +40,7 @@ subroutine integrate_state_with_source_fcvode(lo, hi, &
     use amrex_error_module, only : amrex_abort
     use meth_params_module, only : NVAR, URHO, UEDEN, UEINT, &
                                    NDIAG, TEMP_COMP, NE_COMP, ZHI_COMP, gamma_minus_1
-    use bl_constants_module, only: M_PI, ONE, HALF
+    use amrex_constants_module, only: M_PI, ONE, HALF
     use eos_params_module
     use network
     use eos_module, only: nyx_eos_T_given_Re, nyx_eos_given_RT
@@ -156,7 +156,7 @@ subroutine integrate_state_with_source_fcvode(lo, hi, &
       call amrex_abort('integrate_state_fcvode: FCVodeSStolerances() failed')
     end if
 
-    ierr = FCVDense(CVmem, neq)
+    ierr = FCVDiag(CVmem)
     if (ierr /= 0) then
        call amrex_abort('integrate_state_fcvode: FCVDense() failed')
     end if
@@ -183,7 +183,7 @@ subroutine integrate_state_with_source_fcvode(lo, hi, &
                 if (e_orig .lt. 0.d0) then
                     !$OMP CRITICAL
                     print *,'negative e entering strang integration ', z, i,j,k, rho_orig/mean_rhob, e_orig
-                    call bl_abort('bad e in strang')
+                    call amrex_abort('bad e in strang')
                     !$OMP END CRITICAL
                 end if
 
@@ -221,7 +221,7 @@ subroutine integrate_state_with_source_fcvode(lo, hi, &
                     ne_out = 0.0
                     mu     = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+ne_out)
                     e_out  = T_out / (gamma_minus_1 * mp_over_kB * mu)
-                    !call bl_abort('bad e out of strang')
+                    !call amrex_abort('bad e out of strang')
                 end if
 
                 ! Update T and ne (do not use stuff computed in f_rhs, per vode manual)

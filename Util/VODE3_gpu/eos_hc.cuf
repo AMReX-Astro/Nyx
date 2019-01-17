@@ -236,11 +236,11 @@ module eos_module
          df  = 1.0d0 - dnhp_dne - dnhep_dne - 2.0d0*dnhepp_dne
          dne = f/df
 
-      FMT = "(A6, I4, ES15.5, ES15.5E3, ES15.5, ES15.5)"
-      print(FMT), 'ine:',i,U,ne,dne,eps
-      print(FMT), 'fdine:',i,f,nhp,nhep,nhepp
-      print(FMT), 'dfine:',i,df,dnhp_dne,dnhep_dne,dnhepp_dne
-      print(FMT), 'tplus:',i,t, nhp_plus,nhep_plus,nhepp_plus
+!      FMT = "(A6, I4, ES15.5, ES15.5E3, ES15.5, ES15.5)"
+!      print(FMT), 'ine:',i,U,ne,dne,eps
+!      print(FMT), 'fdine:',i,f,nhp,nhep,nhepp
+!      print(FMT), 'dfine:',i,df,dnhp_dne,dnhep_dne,dnhepp_dne
+!      print(FMT), 'tplus:',i,t, nhp_plus,nhep_plus,nhepp_plus
 
          ne = max((ne-dne), 0.0d0)
 
@@ -250,10 +250,10 @@ module eos_module
 
       ! Get rates for the final ne
       call ion_n<<<gridSize,blockSize>>>(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t)
-      print(FMT), '2ine:',i,U,ne,dne,eps
-      print(FMT), '2fdine:',i,f,nhp,nhep,nhepp
-      print(FMT), '2dfine:',i,df,dnhp_dne,dnhep_dne,dnhepp_dne
-      print(FMT), '2tplus:',i,t, nhp_plus,nhep_plus,nhepp_plus
+!      print(FMT), '2ine:',i,U,ne,dne,eps
+!      print(FMT), '2fdine:',i,f,nhp,nhep,nhepp
+!      print(FMT), '2dfine:',i,df,dnhp_dne,dnhep_dne,dnhepp_dne
+!      print(FMT), '2tplus:',i,t, nhp_plus,nhep_plus,nhepp_plus
       NR_vode  = NR_vode + 1
 
       ! Neutral fractions:

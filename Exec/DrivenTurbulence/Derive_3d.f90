@@ -8,7 +8,8 @@
       ! The incoming   "dat" vector contains (rho,T,(rho X)_1)
       ! The outgoing "state" vector contains (rho,T,X_1)
       !
-      use amrex_fort_module, only : rt => amrex_real
+      use amrex_error_module, only : amrex_error
+      use amrex_fort_module , only : rt => amrex_real
       implicit none 
 
       integer          lo(3), hi(3)
@@ -25,7 +26,7 @@
 
       if (nv .ne. 3) then
           print *,'... confusion in derstate ... nv should be 3 but is ',nv
-          call bl_error('Error:: Derive_3d.f90 :: derstate')
+          call amrex_error('Error:: Derive_3d.f90 :: derstate')
       end if
       !
       ! Density
@@ -215,6 +216,7 @@
       use meth_params_module, only : UEINT, gamma_minus_1
       use  eos_params_module
 
+      use amrex_error_module, only : amrex_error
       use amrex_fort_module, only : rt => amrex_real
       implicit none
 
@@ -242,7 +244,7 @@
                   print *,'>>> Error: deriving pressure at ',i,j,k
                   print *,'>>> but rho*eint is negative: ', u(i,j,k,UEINT)
                   print *,'    '
-                  call bl_error("Error:: Derive_3d.f90 :: derpres")
+                  call amrex_error("Error:: Derive_3d.f90 :: derpres")
                else
                   p(i,j,k,1) = gamma_minus_1 * u(i,j,k,UEINT)
                end if
@@ -751,7 +753,7 @@
 !
       use amrex_fort_module, only : rt => amrex_real
       use forcing_spect_module
-      use bl_constants_module, only : TWO, ONE, HALF, ZERO, M_PI, M_SQRT_2
+      use amrex_constants_module, only : TWO, ONE, HALF, ZERO, M_PI, M_SQRT_2
       use probdata_module    , only : prob_lo, prob_hi
 
       implicit none
@@ -912,7 +914,7 @@
 !
       use amrex_fort_module, only : rt => amrex_real
       use forcing_spect_module
-      use bl_constants_module, only : TWO, ONE, HALF, ZERO, M_PI, M_SQRT_2
+      use amrex_constants_module, only : TWO, ONE, HALF, ZERO, M_PI, M_SQRT_2
       use probdata_module    , only : prob_lo, prob_hi
 
       implicit none
@@ -1073,7 +1075,7 @@
 !
       use amrex_fort_module, only : rt => amrex_real
       use forcing_spect_module
-      use bl_constants_module, only : TWO, ONE, HALF, ZERO, M_PI, M_SQRT_2
+      use amrex_constants_module, only : TWO, ONE, HALF, ZERO, M_PI, M_SQRT_2
       use probdata_module    , only : prob_lo, prob_hi
 
       implicit none

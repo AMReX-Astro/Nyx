@@ -7,6 +7,7 @@ void
 Nyx::write_info ()
 {
     int ndatalogs = parent->NumDataLogs();
+    Real time_unit = 3.0856776e19 / 31557600.0; // conversion to Julian years
 
     if (ndatalogs > 0)
     {
@@ -69,8 +70,8 @@ Nyx::write_info ()
 
                 Real old_z = (1. / old_a) - 1.;
                 data_loga << std::setw( 8) <<  nstep;
-                data_loga << std::setw(14) <<  std::setprecision(6) <<  time;
-                data_loga << std::setw(14) <<  std::setprecision(6) <<    dt;
+                data_loga << std::setw(14) <<  std::setprecision(6) <<  (initial_time+time) * time_unit;
+                data_loga << std::setw(14) <<  std::setprecision(6) <<    dt * time_unit;
                 data_loga << std::setw(14) <<  std::setprecision(6) << old_z;
                 data_loga << std::setw(14) <<  std::setprecision(6) << old_a;
 #ifndef NO_HYDRO
@@ -96,8 +97,8 @@ Nyx::write_info ()
             {
                 const Real new_z = (1. / new_a) - 1.;
                 data_loga << std::setw( 8) <<  nstep;
-                data_loga << std::setw(14) <<  std::setprecision(6) <<  time;
-                data_loga << std::setw(14) <<  std::setprecision(6) <<    dt;
+                data_loga << std::setw(14) <<  std::setprecision(6) <<  (initial_time+time) * time_unit;
+                data_loga << std::setw(14) <<  std::setprecision(6) <<    dt * time_unit;
                 data_loga << std::setw(14) <<  std::setprecision(6) << new_z;
                 data_loga << std::setw(14) <<  std::setprecision(6) << new_a;
 #ifndef NO_HYDRO

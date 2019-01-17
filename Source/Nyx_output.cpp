@@ -236,169 +236,9 @@ Nyx::writePlotFile (const std::string& dir,
         os << (int) Geometry::Coord() << '\n';
         os << "0\n"; // Write bndry data.
 
-        // job_info file with details about the run
-	std::ofstream jobInfoFile;
-	std::string FullPathJobInfoFile = dir;
-	FullPathJobInfoFile += "/job_info";
-	jobInfoFile.open(FullPathJobInfoFile.c_str(), std::ios::out);
-
-	std::string PrettyLine = std::string(78, '=') + "\n";
-	std::string OtherLine = std::string(78, '-') + "\n";
-	std::string SkipSpace = std::string(8, ' ') + "\n";
-
-	// job information
-	jobInfoFile << PrettyLine;
-	jobInfoFile << " Nyx Job Information\n";
-	jobInfoFile << PrettyLine;
-
-	jobInfoFile << "inputs file: " << inputs_name << "\n\n";
-
-	jobInfoFile << "number of MPI processes: " << ParallelDescriptor::NProcs() << "\n";
-#ifdef _OPENMP
-	jobInfoFile << "number of threads:       " << omp_get_max_threads() << "\n";
-#endif
-	jobInfoFile << "\n";
-	jobInfoFile << "CPU time used since start of simulation (CPU-hours): " <<
-	  getCPUTime()/3600.0;
-
-	jobInfoFile << "\n\n";
-
-        // plotfile information
-	jobInfoFile << PrettyLine;
-	jobInfoFile << " Plotfile Information\n";
-	jobInfoFile << PrettyLine;
-
-	time_t now = time(0);
-
-	// Convert now to tm struct for local timezone
-	tm* localtm = localtime(&now);
-	jobInfoFile   << "output data / time: " << asctime(localtm);
-
-	char currentDir[FILENAME_MAX];
-	if (getcwd(currentDir, FILENAME_MAX)) {
-	  jobInfoFile << "output dir:         " << currentDir << "\n";
-	}
-
-	jobInfoFile << "\n\n";
-
-
-	// cosmology information
-	jobInfoFile << PrettyLine;
-	jobInfoFile << " Cosmology Information\n";
-	jobInfoFile << PrettyLine;
-
-        //	Real comoving_OmM, comoving_OmL, comoving_h;
-        //	fort_get_omm(&comoving_OmM);
-	// Omega lambda is defined algebraically
-	Real comoving_OmL = 1. - comoving_OmM;
-
-	// fort_get_hubble(&comoving_h);
-
-	jobInfoFile << "Omega_m (comoving):      " << comoving_OmM << "\n";
-	jobInfoFile << "Omega_lambda (comoving): " << comoving_OmL << "\n";
-	jobInfoFile << "h (comoving):            " << comoving_h << "\n";
-
-	jobInfoFile << "\n\n";
-
-        // build information
-	jobInfoFile << PrettyLine;
-	jobInfoFile << " Build Information\n";
-	jobInfoFile << PrettyLine;
-
-	jobInfoFile << "build date:    " << buildInfoGetBuildDate() << "\n";
-	jobInfoFile << "build machine: " << buildInfoGetBuildMachine() << "\n";
-	jobInfoFile << "build dir:     " << buildInfoGetBuildDir() << "\n";
-	jobInfoFile << "AMReX dir:     " << buildInfoGetAMReXDir() << "\n";
-
-	jobInfoFile << "\n";
-
-	jobInfoFile << "COMP:          " << buildInfoGetComp() << "\n";
-	jobInfoFile << "COMP version:  " << buildInfoGetCompVersion() << "\n";
-
-	jobInfoFile << "\n";
-
-	jobInfoFile << "C++ compiler:  " << buildInfoGetCXXName() << "\n";
-	jobInfoFile << "C++ flags:     " << buildInfoGetCXXFlags() << "\n";
-
-	jobInfoFile << "\n";
-
-	jobInfoFile << "Fortran comp:  " << buildInfoGetFName() << "\n";
-	jobInfoFile << "Fortran flags: " << buildInfoGetFFlags() << "\n";
-
-	jobInfoFile << "\n";
-
-	jobInfoFile << "Link flags:    " << buildInfoGetLinkFlags() << "\n";
-	jobInfoFile << "Libraries:     " << buildInfoGetLibraries() << "\n";
-
-	jobInfoFile << "\n";
-
-	const char* githash1 = buildInfoGetGitHash(1);
-	const char* githash2 = buildInfoGetGitHash(2);
-	if (strlen(githash1) > 0) {
-	  jobInfoFile << "Nyx    git hash: " << githash1 << "\n";
-	}
-	if (strlen(githash2) > 0) {
-	  jobInfoFile << "AMReX git hash:  " << githash2 << "\n";
-	}
-
-	jobInfoFile << "\n\n";
-
-	// grid information
-        jobInfoFile << PrettyLine;
-        jobInfoFile << " Grid Information\n";
-        jobInfoFile << PrettyLine;
-
-        for (i = 0; i <= f_lev; i++)
-          {
-            jobInfoFile << " level: " << i << "\n";
-            jobInfoFile << "   number of boxes = " << parent->numGrids(i) << "\n";
-            jobInfoFile << "   maximum zones   = ";
-            for (n = 0; n < BL_SPACEDIM; n++)
-              {
-                jobInfoFile << parent->Geom(i).Domain().length(n) << " ";
-                //jobInfoFile << parent->Geom(i).ProbHi(n) << " ";
-              }
-            jobInfoFile << "\n\n";
-          }
-
-        jobInfoFile << " Boundary conditions\n";
-        Vector<int> lo_bc_out(BL_SPACEDIM), hi_bc_out(BL_SPACEDIM);
-        ParmParse pp("nyx");
-        pp.getarr("lo_bc",lo_bc_out,0,BL_SPACEDIM);
-        pp.getarr("hi_bc",hi_bc_out,0,BL_SPACEDIM);
-
-
-        // these names correspond to the integer flags setup in the
-        // Castro_setup.cpp
-        const char* names_bc[] =
-          { "interior", "inflow", "outflow",
-            "symmetry", "slipwall", "noslipwall" };
-
-
-        jobInfoFile << "   -x: " << names_bc[lo_bc_out[0]] << "\n";
-        jobInfoFile << "   +x: " << names_bc[hi_bc_out[0]] << "\n";
-        if (BL_SPACEDIM >= 2) {
-          jobInfoFile << "   -y: " << names_bc[lo_bc_out[1]] << "\n";
-          jobInfoFile << "   +y: " << names_bc[hi_bc_out[1]] << "\n";
-        }
-        if (BL_SPACEDIM == 3) {
-          jobInfoFile << "   -z: " << names_bc[lo_bc_out[2]] << "\n";
-          jobInfoFile << "   +z: " << names_bc[hi_bc_out[2]] << "\n";
-        }
-
-        jobInfoFile << "\n\n";
-
-
-	// runtime parameters
-	jobInfoFile << PrettyLine;
-	jobInfoFile << " Inputs File Parameters\n";
-	jobInfoFile << PrettyLine;
-
-	ParmParse::dumpTable(jobInfoFile, true);
-
-	jobInfoFile.close();
-
+        writeJobInfo(dir);
     }
+
     // Build the directory to hold the MultiFab at this level.
     // The name is relative to the directory containing the Header file.
     //
@@ -543,6 +383,173 @@ Nyx::writePlotFilePost (const std::string& dir, ostream& os)
 #endif
 }
 
+void
+Nyx::writeJobInfo (const std::string& dir)
+{
+        // job_info file with details about the run
+	std::ofstream jobInfoFile;
+	std::string FullPathJobInfoFile = dir;
+	FullPathJobInfoFile += "/job_info";
+	jobInfoFile.open(FullPathJobInfoFile.c_str(), std::ios::out);
+
+	std::string PrettyLine = std::string(78, '=') + "\n";
+	std::string OtherLine = std::string(78, '-') + "\n";
+	std::string SkipSpace = std::string(8, ' ');
+
+	// job information
+	jobInfoFile << PrettyLine;
+	jobInfoFile << " Nyx Job Information\n";
+	jobInfoFile << PrettyLine;
+
+	jobInfoFile << "inputs file: " << inputs_name << "\n\n";
+
+	jobInfoFile << "number of MPI processes: " << ParallelDescriptor::NProcs() << "\n";
+#ifdef _OPENMP
+	jobInfoFile << "number of threads:       " << omp_get_max_threads() << "\n";
+#endif
+	jobInfoFile << "\n";
+	jobInfoFile << "CPU time used since start of simulation (CPU-hours): " <<
+	  getCPUTime()/3600.0;
+
+	jobInfoFile << "\n\n";
+
+        // plotfile information
+	jobInfoFile << PrettyLine;
+	jobInfoFile << " Plotfile Information\n";
+	jobInfoFile << PrettyLine;
+
+	time_t now = time(0);
+
+	// Convert now to tm struct for local timezone
+	tm* localtm = localtime(&now);
+	jobInfoFile   << "output data / time: " << asctime(localtm);
+
+	char currentDir[FILENAME_MAX];
+	if (getcwd(currentDir, FILENAME_MAX)) {
+	  jobInfoFile << "output dir:         " << currentDir << "\n";
+	}
+
+	jobInfoFile << "\n\n";
+
+
+	// cosmology information
+	jobInfoFile << PrettyLine;
+	jobInfoFile << " Cosmology Information\n";
+	jobInfoFile << PrettyLine;
+
+        //	Real comoving_OmM, comoving_OmL, comoving_h;
+        //	fort_get_omm(&comoving_OmM);
+	// Omega lambda is defined algebraically
+	Real comoving_OmL = 1. - comoving_OmM;
+
+	// fort_get_hubble(&comoving_h);
+
+	jobInfoFile << "Omega_m (comoving):      " << comoving_OmM << "\n";
+	jobInfoFile << "Omega_lambda (comoving): " << comoving_OmL << "\n";
+	jobInfoFile << "h (comoving):            " << comoving_h << "\n";
+
+	jobInfoFile << "\n\n";
+
+        // build information
+	jobInfoFile << PrettyLine;
+	jobInfoFile << " Build Information\n";
+	jobInfoFile << PrettyLine;
+
+	jobInfoFile << "build date:    " << buildInfoGetBuildDate() << "\n";
+	jobInfoFile << "build machine: " << buildInfoGetBuildMachine() << "\n";
+	jobInfoFile << "build dir:     " << buildInfoGetBuildDir() << "\n";
+	jobInfoFile << "AMReX dir:     " << buildInfoGetAMReXDir() << "\n";
+
+	jobInfoFile << "\n";
+
+	jobInfoFile << "COMP:          " << buildInfoGetComp() << "\n";
+	jobInfoFile << "COMP version:  " << buildInfoGetCompVersion() << "\n";
+
+	jobInfoFile << "\n";
+
+	jobInfoFile << "C++ compiler:  " << buildInfoGetCXXName() << "\n";
+	jobInfoFile << "C++ flags:     " << buildInfoGetCXXFlags() << "\n";
+
+	jobInfoFile << "\n";
+
+	jobInfoFile << "Fortran comp:  " << buildInfoGetFName() << "\n";
+	jobInfoFile << "Fortran flags: " << buildInfoGetFFlags() << "\n";
+
+	jobInfoFile << "\n";
+
+	jobInfoFile << "Link flags:    " << buildInfoGetLinkFlags() << "\n";
+	jobInfoFile << "Libraries:     " << buildInfoGetLibraries() << "\n";
+
+	jobInfoFile << "\n";
+
+	const char* githash1 = buildInfoGetGitHash(1);
+	const char* githash2 = buildInfoGetGitHash(2);
+	if (strlen(githash1) > 0) {
+	  jobInfoFile << "Nyx    git hash: " << githash1 << "\n";
+	}
+	if (strlen(githash2) > 0) {
+	  jobInfoFile << "AMReX git hash:  " << githash2 << "\n";
+	}
+
+	jobInfoFile << "\n\n";
+
+	// grid information
+        jobInfoFile << PrettyLine;
+        jobInfoFile << " Grid Information\n";
+        jobInfoFile << PrettyLine;
+
+        int f_lev = parent->finestLevel();
+
+        for (int i = 0; i <= f_lev; i++)
+          {
+            jobInfoFile << " level: " << i << "\n";
+            jobInfoFile << "   number of boxes = " << parent->numGrids(i) << "\n";
+            jobInfoFile << "   maximum zones   = ";
+            for (int n = 0; n < BL_SPACEDIM; n++)
+              {
+                jobInfoFile << parent->Geom(i).Domain().length(n) << " ";
+                //jobInfoFile << parent->Geom(i).ProbHi(n) << " ";
+              }
+            jobInfoFile << "\n\n";
+          }
+
+        jobInfoFile << " Boundary conditions\n";
+        Vector<int> lo_bc_out(BL_SPACEDIM), hi_bc_out(BL_SPACEDIM);
+        ParmParse pp("nyx");
+        pp.getarr("lo_bc",lo_bc_out,0,BL_SPACEDIM);
+        pp.getarr("hi_bc",hi_bc_out,0,BL_SPACEDIM);
+
+
+        // these names correspond to the integer flags setup in the
+        // Nyx_setup.cpp
+        const char* names_bc[] =
+          { "interior", "inflow", "outflow",
+            "symmetry", "slipwall", "noslipwall" };
+
+
+        jobInfoFile << "   -x: " << names_bc[lo_bc_out[0]] << "\n";
+        jobInfoFile << "   +x: " << names_bc[hi_bc_out[0]] << "\n";
+        if (BL_SPACEDIM >= 2) {
+          jobInfoFile << "   -y: " << names_bc[lo_bc_out[1]] << "\n";
+          jobInfoFile << "   +y: " << names_bc[hi_bc_out[1]] << "\n";
+        }
+        if (BL_SPACEDIM == 3) {
+          jobInfoFile << "   -z: " << names_bc[lo_bc_out[2]] << "\n";
+          jobInfoFile << "   +z: " << names_bc[hi_bc_out[2]] << "\n";
+        }
+
+        jobInfoFile << "\n\n";
+
+
+	// runtime parameters
+	jobInfoFile << PrettyLine;
+	jobInfoFile << " Inputs File Parameters\n";
+	jobInfoFile << PrettyLine;
+
+	ParmParse::dumpTable(jobInfoFile, true);
+
+	jobInfoFile.close();
+}
 
 void
 Nyx::particle_plot_file (const std::string& dir)
@@ -792,7 +799,11 @@ Nyx::checkPoint (const std::string& dir,
                  bool               dump_old_default)
 {
   AmrLevel::checkPoint(dir, os, how, dump_old);
+
   particle_check_point(dir);
+
+  writeJobInfo(dir);
+
 #ifdef FORCING
   forcing_check_point(dir);
 #endif

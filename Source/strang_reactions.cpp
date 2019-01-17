@@ -20,6 +20,9 @@ Nyx::strang_first_step (Real time, Real dt, MultiFab& S_old, MultiFab& D_old)
     }
 #endif
 
+    /////////////////////Consider adding ifdefs for whether CVODE is compiled in for these statements
+    if(heat_cool_type == 3 || heat_cool_type==5 || heat_cool_type==7 || heat_cool_type==9)
+      {
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
@@ -43,6 +46,16 @@ Nyx::strang_first_step (Real time, Real dt, MultiFab& S_old, MultiFab& D_old)
 #endif
 
     }
+      }
+    else if(heat_cool_type== 10)
+      {
+	//#ifdef CVODE_LIBS
+    int ierr=integrate_state_grownbox(S_old,       D_old,       a, half_dt);
+    if(ierr)
+      amrex::Abort("error out of integrate_state_box");
+      }
+    else
+            amrex::Abort("Invalid heating cooling type");
 }
 
 void
@@ -71,6 +84,9 @@ Nyx::strang_second_step (Real time, Real dt, MultiFab& S_new, MultiFab& D_new)
     }
 #endif
 
+    /////////////////////Consider adding ifdefs for whether CVODE is compiled in for these statements
+    if(heat_cool_type == 3 || heat_cool_type==5 || heat_cool_type==7 || heat_cool_type==9)
+      {
 #ifdef _OPENMP
 #pragma omp parallel private(min_iter_grid,max_iter_grid) reduction(min:min_iter) reduction(max:max_iter)
 #endif
@@ -96,6 +112,17 @@ Nyx::strang_second_step (Real time, Real dt, MultiFab& S_new, MultiFab& D_new)
         min_iter = std::min(min_iter,min_iter_grid);
         max_iter = std::max(max_iter,max_iter_grid);
     }
+
+      }
+    else if(heat_cool_type== 10)
+      {
+	//#ifdef CVODE_LIBS
+    int ierr=integrate_state_box(S_new,       D_new,       a, half_dt);
+    if(ierr)
+      amrex::Abort("error out of integrate_state_box");
+      }
+    else
+            amrex::Abort("Invalid heating cooling type");
 
     ParallelDescriptor::ReduceIntMax(max_iter);
     ParallelDescriptor::ReduceIntMin(min_iter);

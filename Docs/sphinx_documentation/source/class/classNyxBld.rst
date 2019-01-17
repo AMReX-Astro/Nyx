@@ -1,0 +1,4 @@
+Class NyxBld
+============
+
+.. doxygenclass:: NyxBld

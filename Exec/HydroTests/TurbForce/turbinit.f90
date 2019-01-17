@@ -3,9 +3,7 @@
 module turbinit_module
 
   use amrex_fort_module, only : rt => amrex_real
-  use bl_types
-  use bl_space
-
+  use amrex_paralleldescriptor_module
   use turbforce_module
 
   implicit none
@@ -14,10 +12,8 @@ contains
 
   subroutine turbforce_init(prob_lo,prob_hi)
 
-    use parallel
-    use bl_constants_module, only: TWO, ONE, HALF, ZERO, M_PI
-    use box_module
-    use mt19937_module
+    use amrex_fort_module  , only: amrex_random
+    use amrex_constants_module, only: TWO, ONE, HALF, ZERO, M_PI
 
     real(rt), intent(in) :: prob_lo(:), prob_hi(:)
     
@@ -35,9 +31,8 @@ contains
     real(rt) :: freqMin,freqMax,freqDiff
     real(rt) :: rn
 
-    if (parallel_IOProcessor()) then
+    if (amrex_pd_ioprocessor()) &
        write (*,*) "Initialising random number generator..."
-    endif
 
     twicePi = TWO*M_PI
 
@@ -46,15 +41,18 @@ contains
 !      call blutilinitrand(blrandseed)
 !      rn = genrand_real1()
 !      call blutilinitrand(blrandseed)
-!      if (parallel_IOProcessor()) then
+!      if (amrex_pd_ioprocessor()) then
 !         write (*,*) "blrandseed = ",blrandseed
 !         write (*,*) "first random number = ",rn
 !      endif
 !   else
-       call init_genrand(111397)
-       rn = genrand_real1()
+!      call init_genrand(111397)
+!      rn = genrand_real1()
 !   endif
-    if (parallel_IOProcessor()) then
+
+    rn = amrex_random()
+
+    if (amrex_pd_ioprocessor()) then
        print *,"first random number = ",rn
     endif
 
@@ -62,7 +60,7 @@ contains
     Ly = prob_hi(2)-prob_lo(2)
     Lz = prob_hi(3)-prob_lo(3)
 
-    if (parallel_IOProcessor()) then
+    if (amrex_pd_ioprocessor()) then
        write(*,*) "Lx = ",Lx
        write(*,*) "Ly = ",Ly
        write(*,*) "Lz = ",Lz
@@ -73,7 +71,7 @@ contains
          nxmodes = nmodes*int(0.5+Lx/Lmin)
          nymodes = nmodes*int(0.5+Ly/Lmin)
          nzmodes = nmodes*int(0.5+Lz/Lmin)
-         if (parallel_IOProcessor()) then
+         if (amrex_pd_ioprocessor()) then
             write(*,*) "Lmin = ",Lmin
             write(*,*) "kappaMax = ",kappaMax
             write(*,*) "nxmodes = ",nxmodes
@@ -92,7 +90,7 @@ contains
          freqMax = one/forcing_time_scale_min
          freqDiff= freqMax-freqMin
 
-         if (parallel_IOProcessor()) then
+         if (amrex_pd_ioprocessor()) then
             write(*,*) "forcing_time_scale_min = ",forcing_time_scale_min
             write(*,*) "forcing_time_scale_max = ",forcing_time_scale_max
             write(*,*) "freqMin = ",freqMin
@@ -105,7 +103,7 @@ contains
          xstep = int(Lx/Lmin+0.5)
          ystep = int(Ly/Lmin+0.5)
          zstep = int(Lz/Lmin+0.5)
-         if (parallel_IOProcessor()) then
+         if (amrex_pd_ioprocessor()) then
             write (*,*) "Mode step ",xstep, ystep, zstep
          endif
 
@@ -121,42 +119,42 @@ contains
                   kappa = sqrt( (kxd*kxd)/(Lx*Lx) + (kyd*kyd)/(Ly*Ly) + (kzd*kzd)/(Lz*Lz) )
 
                   if (kappa.le.kappaMax) then
-                     rn = genrand_real1()
+                     rn = amrex_random()
                      FTX(kx,ky,kz) = (freqMin + freqDiff*rn)*twicePi
-                     rn = genrand_real1()
+                     rn = amrex_random()
                      FTY(kx,ky,kz) = (freqMin + freqDiff*rn)*twicePi
-                     rn = genrand_real1()
+                     rn = amrex_random()
                      FTZ(kx,ky,kz) = (freqMin + freqDiff*rn)*twicePi
 !     Translation angles, theta=0..2Pi and phi=0..Pi
-                     rn = genrand_real1()
+                     rn = amrex_random()
                      TAT(kx,ky,kz) = rn*twicePi
-                     rn = genrand_real1()
+                     rn = amrex_random()
                      TAP(kx,ky,kz) = rn*M_PI
 !     Phases
-                     rn = genrand_real1()
+                     rn = amrex_random()
                      FPXX(kx,ky,kz) = rn*twicePi
-                     rn = genrand_real1()
+                     rn = amrex_random()
                      FPYX(kx,ky,kz) = rn*twicePi
-                     rn = genrand_real1()
+                     rn = amrex_random()
                      FPZX(kx,ky,kz) = rn*twicePi
-                     rn = genrand_real1()
+                     rn = amrex_random()
                      FPXY(kx,ky,kz) = rn*twicePi
-                     rn = genrand_real1()
+                     rn = amrex_random()
                      FPYY(kx,ky,kz) = rn*twicePi
-                     rn = genrand_real1()
+                     rn = amrex_random()
                      FPZY(kx,ky,kz) = rn*twicePi
-                     rn = genrand_real1()
+                     rn = amrex_random()
                      FPXZ(kx,ky,kz) = rn*twicePi
-                     rn = genrand_real1()
+                     rn = amrex_random()
                      FPYZ(kx,ky,kz) = rn*twicePi
-                     rn = genrand_real1()
+                     rn = amrex_random()
                      FPZZ(kx,ky,kz) = rn*twicePi
 !     Amplitudes (alpha)
-                     rn = genrand_real1()
+                     rn = amrex_random()
                      thetaTmp      = rn*twicePi
                      cosThetaTmp   = cos(thetaTmp)
                      sinThetaTmp   = sin(thetaTmp)
-                     rn = genrand_real1()
+                     rn = amrex_random()
                      phiTmp        = rn*M_PI
                      cosPhiTmp     = cos(phiTmp)
                      sinPhiTmp     = sin(phiTmp)
@@ -192,7 +190,7 @@ contains
                            FAZ(kx,ky,kz) = pz * Ekh / mp2
                         endif
 
-!                       if (parallel_IOProcessor()) then
+!                       if (amrex_pd_ioprocessor()) then
 !                          write (*,*) "Mode"
 !                          write (*,*) "kappa = ",kx,ky,kz,kappa
 !                          write (*,*) "Amplitudes"

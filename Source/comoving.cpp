@@ -10,6 +10,8 @@ Real Nyx::final_z               = -1.0;
 Real Nyx::relative_max_change_a =  0.01;
 Real Nyx::absolute_max_change_a = -1.0;
 Real Nyx::dt_binpow             = -1.0;
+Real Nyx::initial_time          = -1.0;
+Real Nyx::final_time            = -1.0;
 
 void
 Nyx::read_comoving_params ()
@@ -44,6 +46,17 @@ Nyx::read_comoving_params ()
         std::cerr << "ERROR::Need to specify non-negative initial redshift \n";
         amrex::Error();
     }
+
+    // save start/end times, for reporting purposes
+    Real a0 = 0.0, a1 = 1.0/(1.0+initial_z);
+    fort_integrate_time_given_a(&a0, &a1, &initial_time);
+
+    if (final_z >= 0) {
+       a1 = 1.0/(1.0+final_z);
+    } else {
+       a1 = final_a;
+    }
+    fort_integrate_time_given_a(&a0, &a1, &final_time);
 }
 
 void
@@ -311,7 +324,7 @@ Nyx::comoving_a_post_restart (const std::string& restart_file)
 
 #ifdef HEATCOOL
      // Initialize "this_z" in the atomic_rates_module
-     if (heat_cool_type == 1 || heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7) {
+     if (heat_cool_type == 1 || heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type==9 || heat_cool_type==10) {
          Real old_z = 1.0/old_a - 1.0;
          fort_interp_to_this_z(&old_z);
      }

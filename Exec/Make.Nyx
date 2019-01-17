@@ -138,7 +138,7 @@ VPATH_LOCATIONS   += $(Blocs)
 
 #These are the directories in AMReX
 
-Pdirs   := Base AmrCore Amr Boundary Particle Extern/amrdata 
+Pdirs   := Base AmrCore Amr Boundary Particle Extern/amrdata F_Interfaces/Base
 Ppack	+= $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir)/Make.package)
 Plocs	+= $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir))
 
@@ -165,9 +165,10 @@ ifeq ($(USE_MG), TRUE)
   VPATH_LOCATIONS   += $(AMREX_HOME)/Src/LinearSolvers/MLMG
 endif
 
-include $(AMREX_HOME)/Src/F_BaseLib/FParallelMG.mak
-INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/F_BaseLib
-VPATH_LOCATIONS   += $(AMREX_HOME)/Src/F_BaseLib
+#INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/F_Interfaces
+#VPATH_LOCATIONS   += $(AMREX_HOME)/Src/F_Interfaces
+#INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/F_Interfaces/Base
+#VPATH_LOCATIONS   += $(AMREX_HOME)/Src/F_Interfaces/Base
 
 VODE_dir    := $(TOP)/Util/VODE
 include $(VODE_dir)/Make.package

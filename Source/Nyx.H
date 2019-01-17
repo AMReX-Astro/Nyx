@@ -108,6 +108,8 @@ public:
     virtual void writePlotFilePre(const std::string& dir, ostream& os);
     virtual void writePlotFilePost(const std::string& dir, ostream& os);
 
+    void writeJobInfo (const std::string& dir);
+
     //
     //Write amrex::MultiFab as plot file
     //
@@ -160,9 +162,19 @@ public:
     static void read_comoving_params();
 
     //
-    // Initial redshift (default = 0)
+    // Initial redshift
     //
     static amrex::Real initial_z;
+
+    //
+    // Initial time in code units
+    //
+    static amrex::Real initial_time;
+
+    //
+    // End time in code units
+    //
+    static amrex::Real final_time;
 
     //
     // Final a -- used as stopping criterion if positive
@@ -426,6 +438,9 @@ public:
                          amrex::Real dt, amrex::Real a_old, amrex::Real a_new, 
                          int sdc_iter);
 #endif
+  
+   int integrate_state_box(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
+   int integrate_state_grownbox(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
 
     amrex::Real advance_particles_only (amrex::Real time, amrex::Real dt, int iteration, int ncycle);
 

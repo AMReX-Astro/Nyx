@@ -43,9 +43,10 @@ program main
   CHARACTER(LEN=80) :: FMT, arg
   CHARACTER(LEN=6)  :: string
   integer :: STRANG_COMP
+  integer :: l
 !  integer :: i_loop, j_loop
 
-    DO i = 1, iargc()
+    DO i = 1, command_argument_count()
        CALL getarg(i, arg)
        WRITE (*,*) arg
     END DO
@@ -69,17 +70,19 @@ program main
 
     allocate(yvec(neq))
     
+    open(1,FILE=arg)
+    do
     fn_vode = 0
     NR_vode = 0
+    print*,"Read parameters"
 
  FMT="(A6,I1,/,ES21.15,/,ES21.15E2,/,ES21.15,/,ES21.15,/,ES21.15,/,ES21.15,/,ES21.15)"
+    read(1,FMT,iostat=l) string, STRANG_COMP, a, half_dt, rho, T_orig, ne_orig, e_orig
 
-    open(1,FILE=arg)
-    read(1,FMT) string, STRANG_COMP, a, half_dt, rho, T_orig, ne_orig, e_orig
-    close(1)
-
+    if(l.eq.-1) exit
     yvec(1) = e_orig
 
+    print*,"Finished reading parameters:"
     print(FMT), string,STRANG_COMP, a, half_dt, rho, T_orig, ne_orig, e_orig
 
     z = 1.d0/a - 1.d0
@@ -134,8 +137,6 @@ program main
     rtol = 1.0d-4
     atol = 1.0d-4*e_orig
     ierr = FCVodeSStolerances(CVmem, rtol, atol)
-    print*, "rtol = ",rtol
-    print*, "atol = ", atol
 
 !    if (ierr /= 0) then
 !      call amrex_abort('integrate_state_fcvode: FCVodeSStolerances() failed')
@@ -179,7 +180,7 @@ program main
                 if (e_out .lt. 0.d0) then
                     !$OMP CRITICAL
                     print *,'negative e exiting strang integration ',z, i,j,k, rho/mean_rhob, e_out
-                    call flush(6)
+!                    call flush(6)
                     !$OMP END CRITICAL
                     T_out  = 10.0
                     ne_out = 0.0
@@ -190,6 +191,11 @@ program main
 
                 ! Update T and ne (do not use stuff computed in f_rhs, per vode manual)
                 call nyx_eos_T_given_Re(JH_vode, JHe_vode, T_out, ne_out, rho, e_out, a, species)
+                print*, "Answer out of vode_wrapper:"
+                print*, "e_out   = ",e_out
+                print*, "T_out   = ",T_out
+                print*, "fn_vode = ", fn_vode
+                print*, "NR_vode = ", NR_vode
 
                 ! Instanteneous heating from reionization:
                 T_H = 0.0d0
@@ -211,10 +217,15 @@ program main
                    call nyx_eos_T_given_Re(JH_vode, JHe_vode, T_out, ne_out, rho, e_out, a, species)
                 endif
     !-----------------cut out end do ijk loops        
+    print*, "Answer at the end of main:"
+    print*, "e_out   = ",e_out
+    print*, "T_out   = ",T_out
     print*, "fn_vode = ", fn_vode
     print*, "NR_vode = ", NR_vode
 !    end do
 !    end do
+    enddo
+    close(1)
     call N_VDestroy_Serial(sunvec_y)
     call FCVodeFree(cvmem)
 

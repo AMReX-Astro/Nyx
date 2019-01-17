@@ -38,7 +38,7 @@ subroutine integrate_state_force(lo, hi, &
     use probdata_module, only: prob_lo, prob_hi, alpha, rho0, temp0
     use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, &
                                    NDIAG, TEMP_COMP, NE_COMP, small_pres, small_temp, gamma_minus_1
-    use bl_constants_module, only : TWO, ONE, HALF, ZERO, M_PI, M_SQRT_2
+    use amrex_constants_module, only : TWO, ONE, HALF, ZERO, M_PI, M_SQRT_2
     use fundamental_constants_module
  
     implicit none
@@ -131,7 +131,7 @@ subroutine integrate_state_force(lo, hi, &
         end do
     end do
 
-    if (neg_e_count > 0) call bl_abort('bad rho e in integrate_state_force_3d')
+    if (neg_e_count > 0) call amrex_abort('bad rho e in integrate_state_force_3d')
 
     delta_phase(:) = TWO*M_PI * dx(:) / (prob_hi(:) - prob_lo(:)) ! phase increment per cell
     phase_lo(:) = (dble(lo(:)) + HALF) * delta_phase(:)           ! phase of low corner
@@ -171,7 +171,7 @@ subroutine integrate_state_force(lo, hi, &
              phasefct_odd_x(num_phases(1)),  phasefct_odd_y(num_phases(2)),  phasefct_odd_z(num_phases(3)), &
              STAT=alloc)
 
-    if (alloc > 0) call bl_abort('failed to allocate arrays for phase factors')      
+    if (alloc > 0) call amrex_abort('failed to allocate arrays for phase factors')      
  
     ! initialize phase factors for each coordinate axis: 
     ! since phase factors for inverse FT are given by 

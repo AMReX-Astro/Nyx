@@ -39,7 +39,7 @@ subroutine integrate_state_with_source(lo, hi, &
     use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : NVAR, URHO, UEDEN, UEINT, &
                                    NDIAG, TEMP_COMP, NE_COMP, ZHI_COMP, gamma_minus_1
-    use bl_constants_module, only: M_PI, ONE, HALF
+    use amrex_constants_module, only: M_PI, ONE, HALF
     use eos_params_module
     use network
     use eos_module, only: nyx_eos_T_given_Re, nyx_eos_given_RT
@@ -130,7 +130,7 @@ subroutine integrate_state_with_source(lo, hi, &
                 if (e_orig .lt. 0.d0) then
                     !$OMP CRITICAL
                     print *,'negative e entering strang integration ', z, i,j,k, rho_orig/mean_rhob, e_orig
-                    call bl_abort('bad e in strang')
+                    call amrex_abort('bad e in strang')
                     !$OMP END CRITICAL
                 end if
 
@@ -180,7 +180,7 @@ subroutine integrate_state_with_source(lo, hi, &
                     
 !                    I_R(i,j,k) = ( aendsq * rho_out *e_out - ( (asq*rho_orig* e_orig + delta_time*rhoe_src) ) ) / &
 !                         (delta_time * ahalf) - aendsq * reset_src(i,j,k,1) / (delta_time * ahalf)
-                    !call bl_abort('bad e out of strang')
+                    !call amrex_abort('bad e out of strang')
                 end if
 
 
@@ -361,7 +361,7 @@ subroutine vode_wrapper_with_source_single(dt, rho_in, T_in, ne_in, e_in, rho_sr
        print *, 'istate = ', istate, 'at (i,j,k) ',i_vode,j_vode,k_vode
        call vode_wrapper_with_source(dt,rho_in,T_in,ne_in,e_in,rho_src,e_src, &
             rho_out ,T_out ,ne_out ,e_out)
-!       call bl_error("ERROR in vode_wrapper: integration failed")
+!       call amrex_error("ERROR in vode_wrapper: integration failed")
     endif
 
   end subroutine vode_wrapper_with_source_single
@@ -489,7 +489,7 @@ subroutine vode_wrapper_with_source_single(dt, rho_in, T_in, ne_in, e_in, rho_sr
 
     if (istate < 0) then
        print *, 'istate = ', istate, 'at (i,j,k) ',i_vode,j_vode,k_vode
-       call bl_error("ERROR in vode_wrapper: integration failed")
+       call amrex_error("ERROR in vode_wrapper: integration failed")
     endif
 
 end subroutine vode_wrapper_with_source

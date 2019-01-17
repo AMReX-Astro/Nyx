@@ -10,7 +10,7 @@ exec_prefix  = ${SUNDIALS_INSTALL}
 includedir   = ${SUNDIALS_INSTALL}/include
 libdir       = ${SUNDIALS_INSTALL}/lib
 
-F90         = pgfortran
+F90         = pgfortran #xlf
 F90FLAGS    = -O0 -g
 F90_LDFLAGS = -O0 -g
 F90_LIBS    =  -lm /usr/lib/x86_64-linux-gnu/librt.so
@@ -28,7 +28,7 @@ CUDALIBS = /sw/summitdev/cuda/9.0.69/lib64/libcudart.so
 
 LINKFLAGS = -Wl,-rpath,${SUNDIALS_INSTALL}/lib
 
-EXAMPLES = constants_mod constants_cosmo comoving_params reion_aux_module comoving_nd fsunlinsol_dense fnvector_serial fsunmat_dense fcvode farkode meth_params misc_params vode_aux atomic_rates eos_hc eos_params fcvode_extras f_rhs integrate_state_vode_3d ../BLAS/daxpy ../BLAS/ddot  ../BLAS/dscal  ../BLAS/idamax  ../BLAS/dcopy ../VODE/dewset ../VODE/dgesl ../VODE/dvhin  ../VODE/dvjac   ../VODE/dvnlsd ../VODE/dvode ../VODE/dvsol ../VODE/dvstep ../VODE/ixsav ../VODE/xsetf ../VODE/dacopy ../VODE/dgbfa ../VODE/dgefa ../VODE/dumach ../VODE/dvindy ../VODE/dvjust ../VODE/dvnorm ../VODE/dvset ../VODE/dvsrco ../VODE/iumach ../VODE/xerrwd ../VODE/xsetun ../VODE/dgbsl
+EXAMPLES = constants_mod constants_cosmo comoving_params reion_aux_module comoving_nd fsunlinsol_dense fnvector_serial fsunmat_dense fcvode cvode_interface farkode meth_params misc_params vode_aux atomic_rates eos_hc eos_params fcvode_extras f_rhs integrate_state_vode_3d ../BLAS/daxpy ../BLAS/ddot  ../BLAS/dscal  ../BLAS/idamax  ../BLAS/dcopy ../VODE/dewset ../VODE/dgesl ../VODE/dvhin  ../VODE/dvjac   ../VODE/dvnlsd ../VODE/dvode ../VODE/dvsol ../VODE/dvstep ../VODE/ixsav ../VODE/xsetf ../VODE/dacopy ../VODE/dgbfa ../VODE/dgefa ../VODE/dumach ../VODE/dvindy ../VODE/dvjust ../VODE/dvnorm ../VODE/dvset ../VODE/dvsrco ../VODE/iumach ../VODE/xerrwd ../VODE/xsetun ../VODE/dgbsl
 
 EXAMPLES_VODE = constants_mod constants_cosmo comoving_params reion_aux_module comoving_nd meth_params misc_params vode_aux atomic_rates eos_hc eos_params f_rhs integrate_state_vode_3d ../BLAS/daxpy ../BLAS/ddot  ../BLAS/dscal  ../BLAS/idamax  ../BLAS/dcopy ../VODE/dewset ../VODE/dgesl ../VODE/dvhin  ../VODE/dvjac   ../VODE/dvnlsd ../VODE/dvode ../VODE/dvsol ../VODE/dvstep ../VODE/ixsav ../VODE/xsetf ../VODE/dacopy ../VODE/dgbfa ../VODE/dgefa ../VODE/dumach ../VODE/dvindy ../VODE/dvjust ../VODE/dvnorm ../VODE/dvset ../VODE/dvsrco ../VODE/iumach ../VODE/xerrwd ../VODE/xsetun ../VODE/dgbsl
 
@@ -48,7 +48,7 @@ OBJECTS_F77  = ${EXAMPLES_F77:=.o}
 	${F90} ${F90FLAGS} ${INCLUDES} -c $< -o $(*F).o
 
 .f.o :
-	${F90} ${F90FLAGS} ${INCLUDES} -c $< -o $(@D)/$(*F).o
+	${F77} ${F90FLAGS} ${INCLUDES} -c $< -o $(@D)/$(*F).o
 
 .cuf.o :
 	${F90} ${F90FLAGS} ${INCLUDES} -c $< -o $(*F).o
@@ -61,9 +61,9 @@ fmain_vode.exe: reset_mod_cuf ${OBJECTS_VODE} fmain_vode.o
 	${F90} ${F90FLAGS} -o fmain_vode.exe -I${includedir} ${OBJECTS_VODE} fmain_vode.o ${LIBS} -L${libdir} ${CUDALIBS} /sw/summitdev/cuda/9.0.69/lib64/libcu*.so
 	echo "${F90} ${F90_LDFLAGS} -o fmain_vode.exe -I${includedir} ${OBJECTS_VODE} fmain_vode.o ${F90_LIBS} -L${libdir} -lsundials_fcvode -lsundials_cvode -lsundials_fcvode -lsundials_fnvecserial -lsundials_nvecserial" 
 
-fmain.exe: ${OBJECTS} fmain.o
-	${NVCC} ${NVCC_LDFLAGS} -o fmain.exe -I${includedir} ${OBJECTS} fmain.o ${LIBS} -L${libdir} -lsundials_fcvode -lsundials_cvode -lsundials_fcvode -lsundials_fnvecserial -lsundials_nvecserial -lsundials_arkode ${CUDALIBS} -L/sw/summitdev/gcc/6.3.1-20170301/lib64 -lgfortran ${LINKFLAGS}
-	echo "${F90} ${F90_LDFLAGS} -o fmain_vode.exe -I${includedir} ${OBJECTS} fmain_vode.o ${F90_LIBS} -L${libdir} -lsundials_fcvode -lsundials_cvode -lsundials_fcvode -lsundials_fnvecserial -lsundials_nvecserial" 
+fmain.exe: cleanmods ${OBJECTS} fmain.o
+	${F90} ${F90FLAGS} -o fmain.exe -I${includedir} ${OBJECTS} fmain.o ${LIBS} -L${libdir} -lsundials_fcvode -lsundials_cvode -lsundials_fcvode -lsundials_fnvecserial -lsundials_nvecserial -lsundials_arkode ${CUDALIBS} /sw/summitdev/cuda/9.0.69/lib64/libcu*.so ${LINKFLAGS}
+	echo "${F90} ${F90FLAGS} -o fmain.exe -I${includedir} ${OBJECTS} fmain.o ${LIBS} -L${libdir} -lsundials_fcvode -lsundials_cvode -lsundials_fcvode -lsundials_fnvecserial -lsundials_nvecserial -lsundials_arkode ${CUDALIBS} /sw/summitdev/cuda/9.0.69/lib64/libcu*.so ${LINKFLAGS}"
 
 fmain_gpu.exe: fmain_gpu.cuf constants_mod.f90 reion_aux_module.f90 comoving_nd.f90 comoving_params.f90 constants_cosmo.f90
 	pgfortran -o fmain_gpu.exe fmain_gpu.cuf constants_mod.f90  reion_aux_module.f90 comoving_nd.f90 comoving_params.f90  constants_cosmo.f90
@@ -81,8 +81,11 @@ reset_mod_cuf:
 	rm -f atomic_rates*mod vode_aux*mod meth_params*mod eos_hc*mod f_rhs*mod integrate_state_vode_3d*mod
 	rm -f atomic_rates.o vode_aux.o meth_params.o eos_hc.o f_rhs.o integrate_state_vode_3d.o
 
+cleanmods:
+	rm -f *.mod *.o
+
 clean:
-	rm -f ${OBJECTS} ${EXAMPLES:=.mod} ${OBJECTS_VODE} ${EXAMPLES_VODE:=.mod}
+	rm -f ${OBJECTS} ${EXAMPLES:=.mod} ${OBJECTS_VODE} ${EXAMPLES_VODE:=.mod} ${EXAMPLES:=_module.mod}  ${EXAMPLES_VODE:=_module.mod}
 
 realclean:
 	rm -f ${OBJECTS} ${EXAMPLES:=.mod} ${OBJECTS_VODE} ${EXAMPLES_VODE:=.mod}
