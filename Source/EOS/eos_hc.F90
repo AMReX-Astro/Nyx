@@ -250,14 +250,14 @@ module eos_module
       nh  = rho*XHYDROGEN/MPROTON
       ne  = 1.0d0 ! Guess
 
-      ! Number of threads in each thread block
+     ! ! Number of threads in each thread block
       blockSize = dim3(1024,1,1)
  
       ! Number of thread blocks in grid
-      gridSize = dim3(ceiling(real(n)/real(blockSize%x)) ,1,1)
+    !  gridSize = dim3(ceiling(real(n)/real(blockSize%x)) ,1,1)
  
       ! Execute the kernel
-      call iterate_ne<<<gridSize, blockSize>>>(JH, JHe, z, e, T, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
+      call iterate_ne(JH, JHe, z, e, T, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
 
       nh0  = nh*nh0
       nhep = nh*nhep
@@ -590,7 +590,7 @@ module eos_module
          i = i + 1
 
          ! Ion number densities
-         call ion_n<<<gridSize,blockSize>>>(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t)
+         call ion_n(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t)
 
          ! Forward difference derivatives
          if (ne .gt. 0.0d0) then
@@ -599,7 +599,7 @@ module eos_module
             eps = 1.0d-24
          endif
 	 ne2=ne+eps
-         call ion_n<<<gridSize,blockSize>>>(JH, JHe, U, nh, ne2, nhp_plus, nhep_plus, nhepp_plus, t)
+         call ion_n(JH, JHe, U, nh, ne2, nhp_plus, nhep_plus, nhepp_plus, t)
 
          NR_vode  = NR_vode + 2
 
@@ -623,7 +623,7 @@ module eos_module
       enddo
 
       ! Get rates for the final ne
-      call ion_n<<<gridSize,blockSize>>>(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t)
+      call ion_n(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t)
       NR_vode  = NR_vode + 1
 
       ! Neutral fractions:
@@ -635,7 +635,7 @@ module eos_module
 
      ! ****************************************************************************
 
-      attributes(global) subroutine ion_n(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t)
+      attributes(host) subroutine ion_n(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t)
 
       use meth_params_module,  only: gamma_minus_1
       use atomic_rates_module, only: YHELIUM, MPROTON, BOLTZMANN, &
@@ -661,8 +661,8 @@ module eos_module
       integer :: id
  
       ! Get our global thread ID
-      id = (blockidx%x-1)*blockdim%x + threadidx%x
- 
+     ! id = (blockidx%x-1)*blockdim%x + threadidx%x
+      id=1
       if(id .eq. 1) then
       mu = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+ne)
       t  = gamma_minus_1*MPROTON/BOLTZMANN * U * mu
