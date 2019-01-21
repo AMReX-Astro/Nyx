@@ -180,8 +180,8 @@ module eos_module
       double precision :: z, rho, U
       type(dim3) :: blockSize,gridSize
       integer :: n = 100000
-      attributes(managed) :: T,Ne,nh0, nhp, nhe0, nhep, nhepp, ne2
-      attributes(managed) ::  nhp_plus, nhep_plus, nhepp_plus, JH, JHe, z 
+!      attributes(managed) :: T,Ne,nh0, nhp, nhe0, nhep, nhepp, ne2
+!      attributes(managed) ::  nhp_plus, nhep_plus, nhepp_plus, JH, JHe, z 
 
       ! This converts from code units to CGS
       rho = R_in * density_to_cgs / a**3
@@ -562,8 +562,8 @@ module eos_module
       type(dim3) :: blockSize, gridSize
       real(rt) :: t2,  nhp2, nhep2, nhepp2, nh02, nhe02, ne_tmp2
       real(rt), allocatable :: ne2
-      attributes(managed) :: ne, t,  nhp, nhep, nhepp, nh0, nhe0, ne2
-      attributes(managed) ::  nhp_plus, nhep_plus, nhepp_plus
+!      attributes(managed) :: ne, t,  nhp, nhep, nhepp, nh0, nhe0, ne2
+!      attributes(managed) ::  nhp_plus, nhep_plus, nhepp_plus
     real(8) :: total
  
       integer :: id
@@ -649,7 +649,7 @@ module eos_module
       integer, value :: JH, JHe
       real(rt), value  :: U, nh, ne
       real(rt), intent(out):: nhp, nhep, nhepp, t
-      attributes(managed) :: nhp
+ !     attributes(managed) :: nhp
       real(rt) :: ahp, ahep, ahepp, ad, geh0, gehe0, gehep
       real(rt) :: ggh0ne, gghe0ne, gghepne
       real(rt) :: mu, tmp, logT, flo, fhi
