@@ -22,19 +22,21 @@ module eos_module
 
   real(rt), allocatable, public :: xacc ! EOS Newton-Raphson convergence tolerance
   real(c_double), allocatable, public :: vode_rtol, vode_atol_scaled ! VODE integration tolerances
-
+#ifdef AMREX_USE_CUDA
   attributes(managed) :: xacc, vode_rtol, vode_atol_scaled
-
+#endif
   contains
 
-      attributes(host) subroutine fort_setup_eos_params (xacc_in, vode_rtol_in, vode_atol_scaled_in) &
+       subroutine fort_setup_eos_params (xacc_in, vode_rtol_in, vode_atol_scaled_in) &
                                        bind(C, name='fort_setup_eos_params')
         use amrex_constants_module, only : rt => amrex_real, M_PI
         use cudafor
         implicit none
         real(rt), intent(in) :: xacc_in, vode_rtol_in, vode_atol_scaled_in
 
+#ifdef AMREX_USE_CUDA
         allocate(xacc,vode_rtol,vode_atol_scaled)
+#endif
         xacc = xacc_in
         vode_rtol = vode_rtol_in
         vode_atol_scaled = vode_atol_scaled_in
@@ -43,7 +45,7 @@ module eos_module
 
      ! ****************************************************************************
 
-      attributes(host) subroutine eos_init_small_pres(R, T, Ne, P, a)
+       subroutine eos_init_small_pres(R, T, Ne, P, a)
 
         use amrex_constants_module, only : rt => amrex_real, M_PI
         use atomic_rates_module, ONLY: YHELIUM
@@ -64,7 +66,7 @@ module eos_module
 
      ! ****************************************************************************
 
-      attributes(host) subroutine nyx_eos_soundspeed(c, R, e)
+       subroutine nyx_eos_soundspeed(c, R, e)
 
         use meth_params_module, only: gamma_const, gamma_minus_1
 
@@ -80,7 +82,7 @@ module eos_module
 
      ! ****************************************************************************
 
-      attributes(host) subroutine nyx_eos_S_given_Re(S, R, T, Ne, a)
+       subroutine nyx_eos_S_given_Re(S, R, T, Ne, a)
 
         use amrex_constants_module, only : M_PI
         use atomic_rates_module, ONLY: YHELIUM
@@ -108,7 +110,7 @@ module eos_module
 
      ! ****************************************************************************
 
-      attributes(host) subroutine nyx_eos_given_RT(e, P, R, T, Ne, a)
+       subroutine nyx_eos_given_RT(e, P, R, T, Ne, a)
 
         use atomic_rates_module, ONLY: YHELIUM
         use fundamental_constants_module, only: mp_over_kb
@@ -130,7 +132,7 @@ module eos_module
 
      ! ****************************************************************************
 
-      attributes(host) subroutine nyx_eos_given_RT_vec(e, P, R, T, Ne, a, veclen)
+       subroutine nyx_eos_given_RT_vec(e, P, R, T, Ne, a, veclen)
 
         use atomic_rates_module, ONLY: YHELIUM
         use fundamental_constants_module, only: mp_over_kb
@@ -156,7 +158,7 @@ module eos_module
 
      ! ****************************************************************************
 
-      attributes(host) subroutine nyx_eos_T_given_Re(JH, JHe, T, Ne, R_in, e_in, a, species)
+       subroutine nyx_eos_T_given_Re(JH, JHe, T, Ne, R_in, e_in, a, species)
 
       use atomic_rates_module, ONLY: XHYDROGEN, MPROTON, this_z, YHELIUM
       use fundamental_constants_module, only: density_to_cgs, e_to_cgs
@@ -204,7 +206,7 @@ module eos_module
 
      ! ****************************************************************************
 
-      attributes(host) subroutine nyx_eos_T_given_Re_vec(T, Ne, R_in, e_in, a, veclen)
+       subroutine nyx_eos_T_given_Re_vec(T, Ne, R_in, e_in, a, veclen)
 
       use amrex_constants_module, only : rt => amrex_real, M_PI
       use atomic_rates_module, ONLY: XHYDROGEN, MPROTON
@@ -232,7 +234,7 @@ module eos_module
 
      ! ****************************************************************************
 
-      attributes(host) subroutine nyx_eos_nh0_and_nhep(JH, JHe, z, rho, e, nh0, nhep)
+       subroutine nyx_eos_nh0_and_nhep(JH, JHe, z, rho, e, nh0, nhep)
       ! This is for skewers analysis code, input is in CGS
 
       use atomic_rates_module, only: XHYDROGEN, MPROTON
@@ -245,7 +247,9 @@ module eos_module
       real(rt) :: nh, nhp, nhe0, nhepp, T, ne
       type(dim3) :: blockSize,gridSize
       integer :: n = 100000
+#ifdef AMREX_USE_CUDA
       attributes(managed) :: T,Ne,nh0, nhp, nhe0, nhep, nhepp
+#endif
 
       nh  = rho*XHYDROGEN/MPROTON
       ne  = 1.0d0 ! Guess
@@ -266,7 +270,7 @@ module eos_module
 
      ! ****************************************************************************
 
-      attributes(host) subroutine iterate_ne_vec(z, U, t, nh, ne, nh0, nhp, nhe0, nhep, nhepp, veclen)
+       subroutine iterate_ne_vec(z, U, t, nh, ne, nh0, nhp, nhe0, nhep, nhepp, veclen)
 
       use atomic_rates_module, ONLY: this_z, YHELIUM, BOLTZMANN, MPROTON, TCOOLMAX_R
       use meth_params_module, only: gamma_minus_1
@@ -446,7 +450,7 @@ module eos_module
 
      ! ****************************************************************************
 
-      attributes(host) subroutine ion_n_vec(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t, vec_count)
+       subroutine ion_n_vec(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t, vec_count)
 
       use amrex_constants_module, only : rt => amrex_real, M_PI
       use meth_params_module, only: gamma_minus_1
@@ -537,7 +541,7 @@ module eos_module
 
      ! ****************************************************************************
 
-      attributes(host) subroutine iterate_ne(JH, JHe, z, U, t, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
+       subroutine iterate_ne(JH, JHe, z, U, t, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
 
       use atomic_rates_module, only: this_z, YHELIUM
       use vode_aux_module, only: i_vode,j_vode,k_vode, NR_vode
@@ -635,7 +639,7 @@ module eos_module
 
      ! ****************************************************************************
 
-      attributes(host) subroutine ion_n(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t)
+       subroutine ion_n(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t)
 
       use meth_params_module,  only: gamma_minus_1
       use atomic_rates_module, only: YHELIUM, MPROTON, BOLTZMANN, &
@@ -739,7 +743,7 @@ module eos_module
 
      ! ****************************************************************************
 
-      attributes(device) subroutine iterate_ne_device(JH, JHe, z, U, t, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
+      AMREX_CUDA_FORT_DEVICE subroutine iterate_ne_device(JH, JHe, z, U, t, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
 
       use amrex_error_module, only: amrex_abort
       use atomic_rates_module, only: this_z, YHELIUM
@@ -801,7 +805,7 @@ module eos_module
 
      ! ****************************************************************************
 
-      attributes(device) subroutine ion_n_device(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t)
+      AMREX_CUDA_FORT_DEVICE subroutine ion_n_device(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t)
 
       use meth_params_module,  only: gamma_minus_1
       use atomic_rates_module, only: YHELIUM, MPROTON, BOLTZMANN, &

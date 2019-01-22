@@ -28,10 +28,9 @@
       real(rt), intent(in   ) :: comoving_a
 
       integer          :: i,j,k, JH, JHe
-      real(rt) :: rhoInv,eint,T_out, e_out
+      real(rt) :: rhoInv,eint
       real(rt) :: ke,dummy_pres
       real(rt) :: z
-      attributes(managed) :: T_out, e_out
 
       z = 1.d0/comoving_a - 1.d0
 

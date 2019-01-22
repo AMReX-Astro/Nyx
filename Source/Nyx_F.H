@@ -302,7 +302,7 @@ extern "C"
      const amrex::Real* a, const amrex::Real* delta_time,
      const int* min_iter, const int* max_iter);
 
-  __device__ int RhsFnReal(amrex::Real t, amrex::Real* u, amrex::Real* udot, amrex::Real* rpar, int neq);
+  AMREX_GPU_DEVICE int RhsFnReal(amrex::Real t, amrex::Real* u, amrex::Real* udot, amrex::Real* rpar, int neq);
   void fort_ode_eos_finalize(double* e_out, double* rpar, int neq);
   void fort_ode_eos_setup(const amrex::Real& a,const amrex::Real& half_dt);
 

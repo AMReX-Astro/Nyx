@@ -87,7 +87,7 @@ module cvode_extras
     real(rt) :: species(5)
     real(rt) :: rho_vode, T_vode, ne_vode
     real(rt) :: a
-     attributes(managed) :: T_vode,Ne_vode
+!     attributes(managed) :: T_vode,Ne_vode
 
       T_vode=rpar(1)
       ne_vode=rpar(2)
@@ -137,7 +137,7 @@ module cvode_extras
     end subroutine ode_eos_finalize
 
     
-    attributes(device) integer(c_int) function RhsFnReal(tn, yvec, fvec, rpar, neq) &
+    AMREX_CUDA_FORT_DEVICE integer(c_int) function RhsFnReal(tn, yvec, fvec, rpar, neq) &
            result(ierr) bind(C,name='RhsFnReal')
 
       use, intrinsic :: iso_c_binding

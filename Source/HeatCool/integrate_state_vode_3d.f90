@@ -60,7 +60,6 @@ subroutine integrate_state_vode(lo, hi, &
     real(rt) :: T_orig, ne_orig, e_orig
     real(rt) :: T_out , ne_out , e_out, mu, mean_rhob, T_H, T_He
     real(rt) :: species(5)
-    attributes(managed) :: T_out, ne_out
 
     z = 1.d0/a - 1.d0
     call fort_integrate_comoving_a(a, a_end, half_dt)
