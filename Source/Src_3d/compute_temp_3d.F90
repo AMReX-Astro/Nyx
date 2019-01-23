@@ -1,6 +1,95 @@
 
       ! *************************************************************************************
 
+#ifdef AMREX_USE_CUDA
+      AMREX_CUDA_FORT_DEVICE subroutine fort_compute_temp(lo,hi, &
+                                   state   ,s_l1,s_l2,s_l3, s_h1,s_h2,s_h3, &
+                                   diag_eos,d_l1,d_l2,d_l3, d_h1,d_h2,d_h3, &
+                                   comoving_a, print_fortran_warnings) &
+      bind(C, name = "fort_compute_temp")
+
+      use amrex_error_module
+      use amrex_fort_module, only : rt => amrex_real
+      use eos_module
+      use atomic_rates_module, only: this_z
+      use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEINT, UEDEN, &
+                                     NDIAG, TEMP_COMP, NE_COMP, ZHI_COMP, &
+                                     small_temp, heat_cool_type
+      use reion_aux_module,    only: zhi_flash, zheii_flash, flash_h, flash_he, &
+                                     inhomogeneous_on
+
+      implicit none
+      integer         , intent(in   ) :: lo(3),hi(3)
+      integer         , intent(in   ) :: s_l1,s_l2,s_l3,s_h1,s_h2,s_h3
+      integer         , intent(in   ) :: d_l1,d_l2,d_l3,d_h1,d_h2,d_h3
+      integer         , intent(in   ) :: print_fortran_warnings
+      real(rt), intent(inout) ::    state(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3,NVAR)
+      real(rt), intent(inout) :: diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,NDIAG)
+      real(rt), value, intent(in   ) :: comoving_a
+
+      integer          :: i,j,k, JH, JHe
+      real(rt) :: rhoInv,eint
+      real(rt) :: ke,dummy_pres
+      real(rt) :: z
+
+#ifdef AMREX_USE_CUDA
+      attributes(managed) :: state, diag_eos, eint, dummy_pres
+#endif
+
+      z = 1.d0/comoving_a - 1.d0
+
+      ! Flash reionization?
+      if ((flash_h .eqv. .true.) .and. (z .gt. zhi_flash)) then
+         JH = 0
+      else
+         JH = 1
+      endif
+      if ((flash_he .eqv. .true.) .and. (z .gt. zheii_flash)) then
+         JHe = 0
+      else
+         JHe = 1
+      endif
+
+      do k = lo(3),hi(3)
+         do j = lo(2),hi(2)
+            do i = lo(1),hi(1)
+
+               rhoInv = 1.d0 / state(i,j,k,URHO)
+
+               if (state(i,j,k,UEINT) > 0.d0) then
+
+                   eint = state(i,j,k,UEINT) * rhoInv
+
+                   JH = 1
+                   if (inhomogeneous_on) then
+                       if (z .gt. diag_eos(i,j,k,ZHI_COMP)) JH = 0
+                   end if
+                   call nyx_eos_T_given_Re_device(JH, JHe, diag_eos(i,j,k,TEMP_COMP), diag_eos(i,j,k,NE_COMP), &
+                                           state(i,j,k,URHO), eint, comoving_a)
+
+               else
+                  if (print_fortran_warnings .gt. 0) then
+                     print *,'   '
+                     print *,'>>> Warning: (rho e) is negative in compute_temp: ',i,j,k
+                  end if
+                   ! Set temp to small_temp and compute corresponding internal energy
+                   call nyx_eos_given_RT(eint, dummy_pres, state(i,j,k,URHO), small_temp, &
+                                         diag_eos(i,j,k,NE_COMP), comoving_a)
+
+                   ke = 0.5d0 * (state(i,j,k,UMX)**2 + state(i,j,k,UMY)**2 + state(i,j,k,UMZ)**2) * rhoInv
+
+                   diag_eos(i,j,k,TEMP_COMP) = small_temp
+                   state(i,j,k,UEINT) = state(i,j,k,URHO) * eint
+                   state(i,j,k,UEDEN) = state(i,j,k,UEINT) + ke
+
+               end if
+
+            enddo
+         enddo
+      enddo
+
+      end subroutine fort_compute_temp
+#else
       subroutine fort_compute_temp(lo,hi, &
                                    state   ,s_l1,s_l2,s_l3, s_h1,s_h2,s_h3, &
                                    diag_eos,d_l1,d_l2,d_l3, d_h1,d_h2,d_h3, &
@@ -16,7 +105,6 @@
                                      small_temp, heat_cool_type
       use reion_aux_module,    only: zhi_flash, zheii_flash, flash_h, flash_he, &
                                      inhomogeneous_on
-      use  eos_params_module
 
       implicit none
       integer         , intent(in   ) :: lo(3),hi(3)
@@ -103,6 +191,7 @@
       enddo
 
       end subroutine fort_compute_temp
+#endif
 
       subroutine fort_compute_temp_vec(lo,hi, &
                                    state   ,s_l1,s_l2,s_l3, s_h1,s_h2,s_h3, &

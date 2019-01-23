@@ -7,15 +7,25 @@ subroutine init_allocations() &
 use vode_aux_module
 use atomic_rates_module
 use eos_module, only: xacc, vode_rtol, vode_atol_scaled
-use meth_params_module, only: gamma_minus_1
+use meth_params_module
+use reion_aux_module
 
 allocate(this_z)
+!! meth_params
 allocate(gamma_minus_1)
+allocate(URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX)
+allocate(TEMP_COMP, NE_COMP, ZHI_COMP, NTHERM, NVAR, NDIAG, small_temp, heat_cool_type)
+!!eos
 allocate(XHYDROGEN, YHELIUM)
 allocate(xacc,vode_rtol,vode_atol_scaled)
+!! vode
 allocate(z_vode, rho_vode, T_vode, ne_vode, JH_vode, JHe_vode, i_vode, j_vode, k_vode, fn_vode, NR_vode, firstcall)
+!! atomic
 allocate(TCOOLMIN, TCOOLMAX, TCOOLMAX_R, TCOOLMIN_R, deltaT)
 allocate(uvb_density_A, uvb_density_B, mean_rhob)
+!!Reion
+allocate(zhi_flash, zheii_flash, T_zhi, T_zheii)
+allocate(flash_h, flash_he, inhomogeneous_on)
 TCOOLMIN = 0.0d0
 TCOOLMAX = 9.0d0
 TCOOLMIN_R = 10.0d0**TCOOLMIN 
@@ -25,7 +35,14 @@ uvb_density_A = 1.0d0
 uvb_density_B = 0.0d0
 XHYDROGEN = 0.76d0
 YHELIUM   = 7.8947368421d-2
-
+!reion
+zhi_flash=-1.0
+zheii_flash=-1.0
+T_zhi=0.0
+T_zheii=0.0
+flash_h=.false.
+flash_he=.false.
+inhomogeneous_on=.false.
 end subroutine init_allocations
 
 subroutine init_tables_eos_params() &
@@ -144,13 +161,19 @@ subroutine fin_allocations() &
 use vode_aux_module
 use atomic_rates_module
 use eos_module, only: xacc, vode_rtol, vode_atol_scaled
-use meth_params_module, only: gamma_minus_1
+use meth_params_module
+use reion_aux_module
+
 deallocate(z_vode, rho_vode, T_vode, ne_vode, JH_vode, JHe_vode, i_vode, j_vode, k_vode, fn_vode, NR_vode, firstcall)
 deallocate(this_z)
 deallocate(gamma_minus_1)
+deallocate(URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX)
+deallocate(TEMP_COMP, NE_COMP, ZHI_COMP, NTHERM, NVAR, NDIAG, small_temp, heat_cool_type)
 deallocate(XHYDROGEN,YHELIUM)
 deallocate(TCOOLMIN, TCOOLMAX, TCOOLMAX_R, TCOOLMIN_R, deltaT)
 deallocate(uvb_density_A, uvb_density_B, mean_rhob)
+deallocate(zhi_flash, zheii_flash, T_zhi, T_zheii)
+deallocate(flash_h, flash_he, inhomogeneous_on)
 
 ! Initially allocated when the table is read
 deallocate(ggh0, gghe0, gghep, eh0, ehe0, ehep)

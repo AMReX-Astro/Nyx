@@ -5,4 +5,4 @@ f90EXE_sources += eos_stuff.f90
 endif
 
 F90EXE_sources += atomic_rates.F90
-f90EXE_sources += reion_aux_module.f90
+F90EXE_sources += reion_aux_module.F90

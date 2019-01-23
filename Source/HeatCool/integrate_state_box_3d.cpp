@@ -66,6 +66,7 @@ int Nyx::integrate_state_box
   for ( MFIter mfi(S_old, TilingIfNotGPU()); mfi.isValid(); ++mfi )
     {
       double* dptr;
+      double* dptrd;
       t=0.0;
       //check that copy contructor vs create constructor works??
       const Box& tbx = mfi.tilebox();;
@@ -99,11 +100,13 @@ int Nyx::integrate_state_box
       u = N_VNew_Cuda(neq);  /* Allocate u vector */
       if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
       dptr=N_VGetHostArrayPointer_Cuda(u);
+      dptrd=N_VGetDeviceArrayPointer_Cuda(u);
       S_old[mfi].copyToMem(tbx,Eint,1,dptr);
       N_VCopyToDevice_Cuda(u);
       /*Use N_Vector to create userdata, in order to allocate data on device*/
       N_Vector Data = N_VNew_Cuda(4*neq);  // Allocate u vector 
       double* rparh=N_VGetHostArrayPointer_Cuda(Data);
+      double* rpar=N_VGetDeviceArrayPointer_Cuda(Data);
       N_Vector rho_tmp = N_VNew_Cuda(neq);  // Allocate u vector 
       double* rho_tmp_ptr=N_VGetHostArrayPointer_Cuda(rho_tmp);
       N_VConst(0.0,rho_tmp);
@@ -117,11 +120,13 @@ int Nyx::integrate_state_box
 	    tbx.hiVect());  /* Initialize u vector */
 
       dptr=N_VGetArrayPointer_Serial(u);
+      dptrd=N_VGetArrayPointer_Serial(u);
       S_old[mfi].copyToMem(tbx,Nyx::Eint,1,dptr);
 
       /*Use N_Vector to create userdata, in order to allocate data on device*/
       N_Vector Data = N_VNew_Serial(4*neq);  // Allocate u vector 
       double* rparh=N_VGetArrayPointer_Serial(Data);
+      double* rpar=N_VGetArrayPointer_Serial(Data);
       N_Vector rho_tmp = N_VNew_Serial(neq);  // Allocate u vector 
       double* rho_tmp_ptr=N_VGetArrayPointer_Serial(rho_tmp);
 
@@ -226,8 +231,14 @@ int Nyx::integrate_state_box
 	  Tne_tmp_ptr[i]=rparh[4*i+0];   //rpar(1)=T_vode
 	  Tne_tmp_ptr[neq+i]=rparh[4*i+1];//    rpar(2)=ne_vode
 	  // rho should not change  rho_tmp_ptr[i]=rparh[4*i+2]; //    rpar(3)=rho_vode
-	  fort_ode_eos_finalize(&(dptr[i]), &(rparh[4*i]), one_in);
+	  //	  fort_ode_eos_finalize(&(dptr[i]), &(rparh[4*i]), one_in);
 	}
+      amrex::Cuda::setLaunchRegion(true);
+      AMREX_LAUNCH_DEVICE_LAMBDA(neq,i,
+				 {
+	  fort_ode_eos_finalize(&(dptrd[i]), &(rpar[4*i]), one_in);
+	  });
+      amrex::Cuda::setLaunchRegion(false);
       D_old[mfi].copyFromMem(tbx,Nyx::Temp_comp,2,Tne_tmp_ptr);
 
       N_VProd(u,rho_tmp,u);                
@@ -280,16 +291,18 @@ int Nyx::integrate_state_grownbox
   abstol = 1e-4;
 
   fort_ode_eos_setup(a,delta_time);
-  if(S_old.nGrow()>1)
-  S_old.Subtract(S_old,S_old,Eint,Eden,1,S_old.nGrow());
+
+  if (S_old.nGrow()>1)
+    S_old.Subtract(S_old,S_old,Eint,Eden,1,S_old.nGrow());
   else
-  S_old.Subtract(S_old,S_old,Eint,Eden,1,0);
+    S_old.Subtract(S_old,S_old,Eint,Eden,1,0);
 #ifdef _OPENMP
 #pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif
   for ( MFIter mfi(S_old, TilingIfNotGPU()); mfi.isValid(); ++mfi )
     {
       double* dptr;
+      double* dptrd;
       t=0.0;
       //check that copy contructor vs create constructor works??
       //      const Box& tbx = mfi.tilebox();;
@@ -322,11 +335,13 @@ int Nyx::integrate_state_grownbox
       u = N_VNew_Cuda(neq);  /* Allocate u vector */
       if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
       dptr=N_VGetHostArrayPointer_Cuda(u);
+      dptrd=N_VGetDeviceArrayPointer_Cuda(u);
       S_old[mfi].copyToMem(tbx,Eint,1,dptr);
       N_VCopyToDevice_Cuda(u);
       /*Use N_Vector to create userdata, in order to allocate data on device*/
       N_Vector Data = N_VNew_Cuda(4*neq);  // Allocate u vector 
       double* rparh=N_VGetHostArrayPointer_Cuda(Data);
+      double* rpar=N_VGetDeviceArrayPointer_Cuda(Data);
       N_Vector rho_tmp = N_VNew_Cuda(neq);  // Allocate u vector 
       N_VConst(0.0,rho_tmp);
       double* rho_tmp_ptr=N_VGetHostArrayPointer_Cuda(rho_tmp);
@@ -339,11 +354,13 @@ int Nyx::integrate_state_grownbox
 	    tbx.hiVect());  /* Initialize u vector */
 
       dptr=N_VGetArrayPointer_Serial(u);
+      dptrd=N_VGetArrayPointer_Serial(u);
       S_old[mfi].copyToMem(tbx,Nyx::Eint,1,dptr);
 
       /*Use N_Vector to create userdata, in order to allocate data on device*/
       N_Vector Data = N_VNew_Serial(4*neq);  // Allocate u vector 
       double* rparh=N_VGetArrayPointer_Serial(Data);
+      double* rpar=N_VGetArrayPointer_Serial(Data);
       N_Vector rho_tmp = N_VNew_Serial(neq);  // Allocate u vector 
       N_VConst(0.0,rho_tmp);
       double* rho_tmp_ptr=N_VGetArrayPointer_Serial(rho_tmp);
@@ -451,8 +468,13 @@ int Nyx::integrate_state_grownbox
 	  Tne_tmp_ptr[i]=rparh[4*i+0];   //rpar(1)=T_vode
 	  Tne_tmp_ptr[neq+i]=rparh[4*i+1];//    rpar(2)=ne_vode
 	  // rho should not change  rho_tmp_ptr[i]=rparh[4*i+2]; //    rpar(3)=rho_vode
-	  fort_ode_eos_finalize(&(dptr[i]), &(rparh[4*i]), one_in);
 	}
+      amrex::Cuda::setLaunchRegion(true);
+      AMREX_LAUNCH_DEVICE_LAMBDA(neq,i,
+				 {
+	  fort_ode_eos_finalize(&(dptrd[i]), &(rpar[4*i]), one_in);
+	  });
+      amrex::Cuda::setLaunchRegion(false);
       D_old[mfi].copyFromMem(tbx,Nyx::Temp_comp,2,Tne_tmp_ptr);
       amrex::Gpu::Device::synchronize();
       N_VProd(u,rho_tmp,u);                

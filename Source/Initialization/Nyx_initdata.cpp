@@ -419,9 +419,19 @@ Nyx::init_from_plotfile ()
             }
             else 
             {
-                fort_init_e_from_t
-                    (BL_TO_FORTRAN(S_new[mfi]), &ns,
-                    BL_TO_FORTRAN(D_new[mfi]), &nd, bx.loVect(), bx.hiVect(), &old_a);
+	    FArrayBox* fab = S_new.fabPtr(mfi);
+	    FArrayBox* fab_diag = D_new.fabPtr(mfi);
+	    const amrex::Real a=old_a;
+	    amrex::Cuda::setLaunchRegion(true);
+	    AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
+	    {
+	      const int* lo = tbx.loVect();
+	      const int* hi = tbx.hiVect();
+	      fort_init_e_from_t
+		(BL_TO_FORTRAN(*fab), &ns, 
+		 BL_TO_FORTRAN(*fab_diag), &nd, lo, hi, &a);
+	    });
+	    amrex::Cuda::setLaunchRegion(false);
             }
         }
 

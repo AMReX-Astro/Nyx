@@ -61,7 +61,7 @@ module cvode_extras
 
     end subroutine ode_eos_setup
 
-    subroutine ode_eos_finalize(e_out, rpar, num_eq) &
+    AMREX_CUDA_FORT_DEVICE subroutine ode_eos_finalize(e_out, rpar, num_eq) &
       bind(C,name="fort_ode_eos_finalize")
     use amrex_error_module, only : amrex_abort
     use meth_params_module, only : NVAR, URHO, UEDEN, UEINT, &
@@ -69,11 +69,8 @@ module cvode_extras
                                    gamma_minus_1
     use amrex_constants_module, only: M_PI
     use eos_params_module
-    use network
-    use eos_module, only: nyx_eos_T_given_Re, nyx_eos_given_RT
+    use eos_module, only: nyx_eos_T_given_Re, nyx_eos_given_RT, nyx_eos_T_given_Re_device
     use fundamental_constants_module
-    use comoving_module, only: comoving_h, comoving_OmB
-    use comoving_nd_module, only: fort_integrate_comoving_a
     use atomic_rates_module, only: YHELIUM
     use vode_aux_module    , only: JH_vode, JHe_vode, z_vode, i_vode, j_vode, k_vode
     use reion_aux_module   , only: zhi_flash, zheii_flash, flash_h, flash_he, &
@@ -96,10 +93,12 @@ module cvode_extras
 
 
       if (e_out(1) .lt. 0.d0) then
+#ifndef AMREX_USE_CUDA
          !$OMP CRITICAL
          print *,'negative e exiting strang integration ',z, rho/mean_rhob, e_out
          call flush(6)
          !$OMP END CRITICAL
+#endif
          T_vode  = 10.0
          ne_vode = 0.0
          mu     = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+ne_vode)
@@ -108,7 +107,7 @@ module cvode_extras
       end if
       
       ! Update T and ne (do not use stuff computed in f_rhs, per vode manual)
-      call nyx_eos_T_given_Re(JH_vode, JHe_vode, T_vode, ne_vode, rho_vode, e_out(1), a, species)
+      call nyx_eos_T_given_Re_device(JH_vode, JHe_vode, T_vode, ne_vode, rho_vode, e_out(1), a, species)
       
       ! Instanteneous heating from reionization:
       T_H = 0.0d0
@@ -127,7 +126,7 @@ module cvode_extras
          if (T_He .gt. 0.0d0) ne_vode = ne_vode + YHELIUM        !    this point.  It's a very minor
          mu = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+ne_vode)   !    detail compared to the overall approximation.
          e_out  = T_vode / (gamma_minus_1 * mp_over_kB * mu)
-         call nyx_eos_T_given_Re(JH_vode, JHe_vode, T_vode, ne_vode, rho_vode, e_out(1), a, species)
+         call nyx_eos_T_given_Re_device(JH_vode, JHe_vode, T_vode, ne_vode, rho_vode, e_out(1), a, species)
       endif
       rpar(1)=T_vode
       rpar(2)=ne_vode

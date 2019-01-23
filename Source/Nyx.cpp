@@ -2225,12 +2225,20 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new, MultiFab& reset_e_
     for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
-
+	  FArrayBox* fab = S_new.fabPtr(mfi);
+	  FArrayBox* fab_diag = D_new.fabPtr(mfi);
+	  FArrayBox* fab_reset = reset_e_src.fabPtr(mfi);
+	  int print_warn=0;	  
+	  amrex::Cuda::setLaunchRegion(true);
+	  AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
+	  {
         reset_internal_e
-            (bx.loVect(), bx.hiVect(),
-             BL_TO_FORTRAN(S_new[mfi]), BL_TO_FORTRAN(D_new[mfi]),
-	     BL_TO_FORTRAN(reset_e_src[mfi]),
-             &print_fortran_warnings, &a);
+            (tbx.loVect(), tbx.hiVect(),
+             BL_TO_FORTRAN(*fab), BL_TO_FORTRAN(*fab_diag),
+	     BL_TO_FORTRAN(*fab_reset),
+             &print_warn, &a);
+	  });
+	  amrex::Cuda::setLaunchRegion(false);
     }
 }
 #endif
@@ -2266,11 +2274,19 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
               BL_TO_FORTRAN(D_new[mfi]), &a,
                &print_fortran_warnings);
         } else {
+	  FArrayBox* fab = S_new.fabPtr(mfi);
+	  FArrayBox* fab_diag = D_new.fabPtr(mfi);
+	  int print_warn=0;
+	  amrex::Cuda::setLaunchRegion(true);
+	  AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
+	  {
             fort_compute_temp
-              (bx.loVect(), bx.hiVect(),
-              BL_TO_FORTRAN(S_new[mfi]),
-              BL_TO_FORTRAN(D_new[mfi]), &a,
-               &print_fortran_warnings);
+              (tbx.loVect(), tbx.hiVect(),
+              BL_TO_FORTRAN(*fab),
+              BL_TO_FORTRAN(*fab_diag), &a,
+               &print_warn);
+	  });
+	  amrex::Cuda::setLaunchRegion(false);
         }
     }
 

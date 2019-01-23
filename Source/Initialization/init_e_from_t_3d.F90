@@ -1,4 +1,4 @@
-      subroutine fort_init_e_from_t(state,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3,ns, &
+      AMREX_CUDA_FORT_DEVICE subroutine fort_init_e_from_t(state,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3,ns, &
                                     diag,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3,nd, &
                                    lo,hi,a_old) bind(C, name="fort_init_e_from_t")
 

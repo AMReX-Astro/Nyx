@@ -19,9 +19,9 @@ module meth_params_module
   integer, parameter     :: MAXADV  = 5
 
   ! NTHERM: number of thermodynamic variables
-  integer         , save :: NTHERM, NVAR, NDIAG
-  integer         , save :: URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX
-  integer         , save :: TEMP_COMP, NE_COMP, ZHI_COMP
+  integer         , allocatable :: NTHERM, NVAR, NDIAG
+  integer         , allocatable :: URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX
+  integer         , allocatable :: TEMP_COMP, NE_COMP, ZHI_COMP
 
   ! QTHERM: number of primitive variables
   integer         , save :: QTHERM, QVAR
@@ -29,7 +29,8 @@ module meth_params_module
   
   integer         , save :: nadv
 
-  real(rt)        , save :: small_dens, small_temp, small_pres  
+  real(rt)        , save :: small_dens, small_pres  
+  real(rt)        , allocatable :: small_temp
 
   integer         , save :: ppm_type
   integer         , save :: ppm_reference
@@ -40,7 +41,7 @@ module meth_params_module
   integer         , save :: corner_coupling
   integer         , save :: use_const_species
   integer         , save :: normalize_species
-  integer         , save :: heat_cool_type
+  integer         , allocatable :: heat_cool_type
   integer         , save :: inhomo_reion
   integer         , save :: grav_source_type
 
@@ -48,6 +49,8 @@ module meth_params_module
   integer, save, allocatable :: qpass_map(:), upass_map(:)
 #ifdef AMREX_USE_CUDA
   attributes(managed) :: gamma_minus_1
+  attributes(managed) :: URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX
+  attributes(managed) :: TEMP_COMP, NE_COMP, ZHI_COMP, NTHERM, NVAR, NDIAG, small_temp, heat_cool_type
 #endif
 
 end module meth_params_module

@@ -105,10 +105,10 @@ extern "C"
   void fort_check_initial_species
     (const int* lo, const int* hi, BL_FORT_FAB_ARG(state));
 
-  void fort_init_e_from_t
+  AMREX_GPU_DEVICE void fort_init_e_from_t
      (BL_FORT_FAB_ARG(state), const int* num_state,
       BL_FORT_FAB_ARG( diag), const int* num_diag,
-      const int* lo, const int* hi, amrex::Real* comoving_a);
+      const int* lo, const int* hi, const amrex::Real* comoving_a);
 
   void fort_init_e_from_rhoe
      (BL_FORT_FAB_ARG(state), const int* num_state,
@@ -121,13 +121,13 @@ extern "C"
     (BL_FORT_FAB_ARG(S_new), const int lo[], const int hi[],
      const int* print_fortran_warnings);
 
-  void reset_internal_e
+  AMREX_GPU_DEVICE void reset_internal_e
     (const int lo[], const int hi[],
      BL_FORT_FAB_ARG(S_new),
      BL_FORT_FAB_ARG(D_new),
      BL_FORT_FAB_ARG(reset_e_src),
      const int* print_fortran_warnings,
-     amrex::Real* comoving_a);
+     const amrex::Real* comoving_a);
 
   void hypfill
     (BL_FORT_FAB_ARG(state),
@@ -303,14 +303,14 @@ extern "C"
      const int* min_iter, const int* max_iter);
 
   AMREX_GPU_DEVICE int RhsFnReal(amrex::Real t, amrex::Real* u, amrex::Real* udot, amrex::Real* rpar, int neq);
-  void fort_ode_eos_finalize(double* e_out, double* rpar, int neq);
+  AMREX_GPU_DEVICE void fort_ode_eos_finalize(double* e_out, double* rpar, int neq);
   void fort_ode_eos_setup(const amrex::Real& a,const amrex::Real& half_dt);
 
-  void fort_compute_temp
+  AMREX_GPU_DEVICE void fort_compute_temp
     (const int lo[], const int hi[],
      const BL_FORT_FAB_ARG(state),
      const BL_FORT_FAB_ARG(diag_eos),
-     amrex::Real* comoving_a,
+     const amrex::Real* comoving_a,
      const int* print_fortran_warnings);
 
   void fort_compute_temp_vec

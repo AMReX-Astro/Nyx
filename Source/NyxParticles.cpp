@@ -756,12 +756,18 @@ Nyx::init_santa_barbara (int init_sb_vels)
     for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
     {
         const Box& box = mfi.tilebox();
-        const int* lo = box.loVect();
-        const int* hi = box.hiVect();
-
+	FArrayBox* fab = S_new.fabPtr(mfi);
+	FArrayBox* fab_diag = D_new.fabPtr(mfi);
+	amrex::Cuda::setLaunchRegion(true);
+	AMREX_LAUNCH_DEVICE_LAMBDA(box, tbx,
+	{
+        const int* lo = tbx.loVect();
+        const int* hi = tbx.hiVect();
         fort_init_e_from_t
-            (BL_TO_FORTRAN(S_new[mfi]), &ns, 
-             BL_TO_FORTRAN(D_new[mfi]), &nd, lo, hi, &a);
+            (BL_TO_FORTRAN(*fab), &ns, 
+             BL_TO_FORTRAN(*fab_diag), &nd, lo, hi, &a);
+	});
+	amrex::Cuda::setLaunchRegion(false);
     }
 
     // Convert X_i to (rho X)_i
