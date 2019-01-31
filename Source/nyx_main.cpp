@@ -160,8 +160,6 @@ nyx_main (int argc, char* argv[])
 
     }  // ---- end while( ! finished)
 
-    Nyx::dealloc_cuda_managed();
-    
 #ifdef AMREX_USE_CVODE
     Nyx::dealloc_simd_vec();
 #endif
@@ -196,6 +194,9 @@ nyx_main (int argc, char* argv[])
     BL_PROFILE_VAR_STOP(pmain);
     BL_PROFILE_REGION_STOP("main()");
     BL_PROFILE_SET_RUN_TIME(dRunTime2);
+    
+    Nyx::dealloc_cuda_managed();
+    
     }
     amrex::Finalize();
 }

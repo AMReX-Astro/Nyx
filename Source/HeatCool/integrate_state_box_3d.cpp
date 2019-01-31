@@ -82,7 +82,7 @@ int Nyx::integrate_state_box
       
       if(neq>1)
 	{
-	  if(amrex::Verbose()>2||true)
+	  if(amrex::Verbose()>2||false)
 	    {
 	      amrex::Print()<<"Integrating a box with "<<neq<<" cells"<<std::endl;
 	      amrex::Print()<<"Integrating a box with "<<neq2<<"real cells"<<std::endl;
@@ -219,7 +219,7 @@ int Nyx::integrate_state_box
       umax = N_VMaxNorm(u);
       flag = CVodeGetNumSteps(cvode_mem, &nst);
       check_retval(&flag, "CVodeGetNumSteps", 1);
-	  if(amrex::Verbose()>2||true)
+	  if(amrex::Verbose()>2||false)
 	    {
 	      PrintOutput(tout, umax, nst);
 	    }
@@ -249,7 +249,7 @@ int Nyx::integrate_state_box
     
       S_old[mfi].copyFromMem(tbx,Nyx::Eint,1,dptr);
       S_old[mfi].addFromMem(tbx,Nyx::Eden,1,dptr);
-      if(amrex::Verbose()>2||true)
+      if(amrex::Verbose()>2||false)
 	{
 	  amrex::Print()<<S_old[mfi].min(Eint)<<"at index"<<S_old[mfi].minIndex(Eint)<<std::endl;
 	  amrex::Print()<<S_old[mfi].min(Eden)<<"at index"<<S_old[mfi].minIndex(Eden)<<std::endl;
@@ -317,7 +317,7 @@ int Nyx::integrate_state_grownbox
       int long neq=(tile_size[0])*(tile_size[1])*(tile_size[2]);
       if(neq>1)
 	{
-	  if(amrex::Verbose()>1||true)
+	  if(amrex::Verbose()>1||false)
 	    {
 	      amrex::Print()<<"Integrating a box with "<<neq<<" cells"<<std::endl;
 	      amrex::Print()<<"Integrating a box with "<<neq2<<"real cells"<<std::endl;
@@ -453,7 +453,7 @@ int Nyx::integrate_state_grownbox
       umax = N_VMaxNorm(u);
       flag = CVodeGetNumSteps(cvode_mem, &nst);
       check_retval(&flag, "CVodeGetNumSteps", 1);
-      if(amrex::Verbose()>2||true)
+      if(amrex::Verbose()>2||false)
 	{
 	  PrintOutput(tout, umax, nst);
 	}
@@ -485,7 +485,7 @@ int Nyx::integrate_state_grownbox
       S_old[mfi].copyFromMem(tbx,Nyx::Eint,1,dptr);
       S_old[mfi].addFromMem(tbx,Nyx::Eden,1,dptr);
       amrex::Gpu::Device::synchronize();
-      if(amrex::Verbose()>2||true)
+      if(amrex::Verbose()>2||false)
 	{
 	  amrex::Print()<<S_old[mfi].min(Eint)<<"at index"<<S_old[mfi].minIndex(Eint)<<std::endl;
 	  amrex::Print()<<S_old[mfi].min(Eden)<<"at index"<<S_old[mfi].minIndex(Eden)<<std::endl;
