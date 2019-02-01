@@ -138,7 +138,7 @@ VPATH_LOCATIONS   += $(Blocs)
 
 #These are the directories in AMReX
 
-Pdirs   := Base AmrCore Amr Boundary Particle Extern/amrdata F_Interfaces/Base
+Pdirs   := Base AmrCore Amr Boundary Particle Extern/amrdata # F_Interfaces/Base
 Ppack	+= $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir)/Make.package)
 Plocs	+= $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir))
 
