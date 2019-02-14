@@ -32,9 +32,9 @@ nyx.hi_bc       =  4   2   4
 nyx.do_hydro = 1
 
 # COMOVING
-nyx.comoving_OmM = 1.0d0
-nyx.comoving_OmB = 0.0d0
-nyx.comoving_h   = 0.0d0
+nyx.comoving_OmM = 1.0e0
+nyx.comoving_OmB = 0.0e0
+nyx.comoving_h   = 0.0e0
 
 nyx.ppm_type    = 0
 nyx.use_colglaz = 0
