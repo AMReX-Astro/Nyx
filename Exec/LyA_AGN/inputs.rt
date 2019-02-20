@@ -64,7 +64,7 @@ nyx.do_grav  = 1
 # COMOVING
 nyx.comoving_OmM = 0.275
 nyx.comoving_OmB = 0.046
-nyx.comoving_h   = 0.702d0
+nyx.comoving_h   = 0.702e0
 
 # PARTICLES
 nyx.do_dm_particles = 1
