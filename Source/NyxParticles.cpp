@@ -993,7 +993,7 @@ Nyx::particle_redistribute (int lbase, bool my_init)
                    amrex::Print() << "Calling redistribute because DistMap changed " << '\n';
             }
 
-            DMPC->Redistribute(lbase, flev, parent->levelCount(lbase));
+            DMPC->Redistribute(lbase, -1, parent->levelCount(lbase));
             //
             // Use the new BoxArray and DistMap to define ba and dm for next time.
             //
