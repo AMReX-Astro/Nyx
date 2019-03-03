@@ -49,13 +49,22 @@ Nyx::advance_particles_only (Real time,
     //      we can't reduce this number as iteration increases.
  
     int ghost_width = ncycle + stencil_deposition_width;
+
+    // *** where_width ***  is used
+    //   *) to set how many cells the Where call in moveKickDrift tests =
+    //      ghost_width + (1-iteration) - 1:
+    //      the minus 1 arises because this occurs *after* the move
+
+    int where_width =  ghost_width + (1-iteration)  - 1;
  
     // *** grav_n_grow *** is used
     //   *) to determine how many ghost cells we need to fill in the MultiFab from
     //      which the particle interpolates its acceleration
     //   *) to set how many cells the Where call in moveKickDrift tests = (grav.nGrow()-2).
+    //   *) the (1-iteration) arises because the ghost particles are created on the coarser
+    //      level which means in iteration 2 the ghost particles may have moved 1 additional cell along
  
-    int grav_n_grow = ghost_width + (1-iteration) +
+    int grav_n_grow = ghost_width + (1-iteration) + (iteration-1) +
                       stencil_interpolation_width ;
 
     // Sanity checks
@@ -191,16 +200,16 @@ Nyx::advance_particles_only (Real time,
                 get_level(lev).gravity->get_old_grav_vector(lev, grav_vec_old, time);
                 
                 for (int i = 0; i < Nyx::theActiveParticles().size(); i++)
-                    Nyx::theActiveParticles()[i]->moveKickDrift(grav_vec_old, lev, dt, a_old, a_half);
+                    Nyx::theActiveParticles()[i]->moveKickDrift(grav_vec_old, lev, dt, a_old, a_half, where_width);
 
                 // Only need the coarsest virtual particles here.
                 if (lev == level && level < finest_level)
                     for (int i = 0; i < Nyx::theVirtualParticles().size(); i++)
-                        Nyx::theVirtualParticles()[i]->moveKickDrift(grav_vec_old, level, dt, a_old, a_half);
+                        Nyx::theVirtualParticles()[i]->moveKickDrift(grav_vec_old, level, dt, a_old, a_half, where_width);
 
                 // Miiiight need all Ghosts
                 for (int i = 0; i < Nyx::theGhostParticles().size(); i++)
-                    Nyx::theGhostParticles()[i]->moveKickDrift(grav_vec_old, lev, dt, a_new, a_half);
+                    Nyx::theGhostParticles()[i]->moveKickDrift(grav_vec_old, lev, dt, a_new, a_half, where_width);
             }
         }
     }
