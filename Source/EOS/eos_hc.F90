@@ -10,7 +10,9 @@
 module eos_module
 
   use amrex_constants_module, only : rt => amrex_real, M_PI
+#ifdef AMREX_USE_CUDA
   use cudafor
+#endif
   use iso_c_binding, only: c_double
 
   implicit none
@@ -30,7 +32,7 @@ module eos_module
        subroutine fort_setup_eos_params (xacc_in, vode_rtol_in, vode_atol_scaled_in) &
                                        bind(C, name='fort_setup_eos_params')
         use amrex_constants_module, only : rt => amrex_real, M_PI
-        use cudafor
+!        use cudafor
         implicit none
         real(rt), intent(in) :: xacc_in, vode_rtol_in, vode_atol_scaled_in
 
@@ -163,7 +165,7 @@ module eos_module
       use atomic_rates_module, ONLY: XHYDROGEN, MPROTON, this_z, YHELIUM
       use fundamental_constants_module, only: density_to_cgs, e_to_cgs
       use vode_aux_module, only: NR_vode
-      use cudafor
+!      use cudafor
 
       implicit none
       ! In/out variables
@@ -180,8 +182,6 @@ module eos_module
       real(rt) :: nhp_plus, nhep_plus, nhepp_plus
       real(rt) :: dnhp_dne, dnhep_dne, dnhepp_dne, dne
       double precision :: z, rho, U
-      type(dim3) :: blockSize,gridSize
-      integer :: n = 100000
 !      attributes(managed) :: T,Ne,nh0, nhp, nhe0, nhep, nhepp, ne2
 !      attributes(managed) ::  nhp_plus, nhep_plus, nhepp_plus, JH, JHe, z 
 
@@ -238,7 +238,7 @@ module eos_module
       use atomic_rates_module, ONLY: XHYDROGEN, MPROTON, this_z, YHELIUM
       use fundamental_constants_module, only: density_to_cgs, e_to_cgs
       use vode_aux_module, only: NR_vode
-      use cudafor
+!      use cudafor
 
       implicit none
       ! In/out variables
@@ -255,8 +255,6 @@ module eos_module
       real(rt) :: nhp_plus, nhep_plus, nhepp_plus
       real(rt) :: dnhp_dne, dnhep_dne, dnhepp_dne, dne
       double precision :: z, rho, U
-      type(dim3) :: blockSize,gridSize
-      integer :: n = 100000
 !      attributes(managed) :: T,Ne,nh0, nhp, nhe0, nhep, nhepp, ne2
 !      attributes(managed) ::  nhp_plus, nhep_plus, nhepp_plus, JH, JHe, z 
 
@@ -292,8 +290,6 @@ module eos_module
       real(rt),           intent(  out) :: nh0, nhep
 
       real(rt) :: nh, nhp, nhe0, nhepp, T, ne
-      type(dim3) :: blockSize,gridSize
-      integer :: n = 100000
 #ifdef AMREX_USE_CUDA
       attributes(managed) :: T,Ne,nh0, nhp, nhe0, nhep, nhepp
 #endif
@@ -301,12 +297,6 @@ module eos_module
       nh  = rho*XHYDROGEN/MPROTON
       ne  = 1.0d0 ! Guess
 
-     ! ! Number of threads in each thread block
-      blockSize = dim3(1024,1,1)
- 
-      ! Number of thread blocks in grid
-    !  gridSize = dim3(ceiling(real(n)/real(blockSize%x)) ,1,1)
- 
       ! Execute the kernel
       call iterate_ne(JH, JHe, z, e, T, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
 
@@ -592,7 +582,7 @@ module eos_module
 
       use atomic_rates_module, only: this_z, YHELIUM
       use vode_aux_module, only: i_vode,j_vode,k_vode, NR_vode
-      use cudafor
+!      use cudafor
 
       implicit none
 
@@ -610,7 +600,6 @@ module eos_module
       character(len=128) :: errmsg
       integer :: print_radius
       CHARACTER(LEN=80) :: FMT
-      type(dim3) :: blockSize, gridSize
       real(rt) :: t2,  nhp2, nhep2, nhepp2, nh02, nhe02, ne_tmp2
       real(rt), allocatable :: ne2
 !      attributes(managed) :: ne, t,  nhp, nhep, nhepp, nh0, nhe0, ne2
@@ -618,17 +607,8 @@ module eos_module
     real(8) :: total
  
       integer :: id
-      integer ::n = 1000000
-    blockSize = dim3(1024,1,1)
- 
-    ! Number of thread blocks in grid
-    gridSize = dim3(ceiling(real(n)/real(blockSize%x)) ,1,1)
      allocate(ne2)
 
-      ! Get our global thread ID
-!      id = (blockidx%x-1)*blockdim%x + threadidx%x
-! id=1
-!      if(id .eq. 1) then
       ! Check if we have interpolated to this z
       if (abs(z-this_z) .gt. xacc*z) then
 !          write(errmsg, *) "iterate_ne(): Wrong redshift! z = ", z, " but this_z = ", this_z
@@ -680,7 +660,6 @@ module eos_module
       ! Neutral fractions:
       nh0   = 1.0d0 - nhp
       nhe0  = YHELIUM - (nhep + nhepp)
-!      endif
        deallocate(ne2)
       end subroutine iterate_ne
 
@@ -695,7 +674,7 @@ module eos_module
                                      GammaeH0, GammaeHe0, GammaeHep, &
                                      ggh0, gghe0, gghep
       use vode_aux_module, only: i_vode,j_vode,k_vode, NR_vode
-      use cudafor
+!      use cudafor
 
       integer, value :: JH, JHe
       real(rt), value  :: U, nh, ne
@@ -709,12 +688,6 @@ module eos_module
       integer :: print_radius
       CHARACTER(LEN=80) :: FMT
 
-      integer :: id
- 
-      ! Get our global thread ID
-     ! id = (blockidx%x-1)*blockdim%x + threadidx%x
-      id=1
-      if(id .eq. 1) then
       mu = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+ne)
       t  = gamma_minus_1*MPROTON/BOLTZMANN * U * mu
 !      print*, "MPROTON/BOLTZMANN = ", MPROTON/BOLTZMANN
@@ -785,7 +758,7 @@ module eos_module
       else
          nhepp = 0.0d0
       endif
-   endif
+
       end subroutine ion_n
 
      ! ****************************************************************************

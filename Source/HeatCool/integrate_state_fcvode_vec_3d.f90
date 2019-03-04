@@ -45,7 +45,7 @@ subroutine integrate_state_fcvode_vec(lo, hi, &
     use fnvector_serial
     use fcvode_extras
     use misc_params, only: simd_width
-    use parallel, only : parallel_ioprocessor
+    use amrex_paralleldescriptor_module, only: amrex_pd_ioprocessor
     use, intrinsic :: iso_c_binding
 
     implicit none
@@ -76,7 +76,7 @@ subroutine integrate_state_fcvode_vec(lo, hi, &
     character(len=128) :: errmsg
 
     if (mod(hi(1)-lo(1)+1, simd_width) /= 0) then
-      if (parallel_ioprocessor()) then
+      if (amrex_pd_ioprocessor()) then
         !$omp single
         write(errmsg, *) "simd_width does not divide evenly to tile x-length! lo(1) = ", &
                          lo(1), " hi(1) = ", hi(1), " simd_width = ", simd_width

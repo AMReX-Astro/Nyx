@@ -4,9 +4,13 @@ contains
 
 subroutine init_allocations() &
      bind(C,name="fort_alloc_cuda_managed")
-use vode_aux_module
+#ifdef HEATCOOL
+  use vode_aux_module
+#endif
 use atomic_rates_module
+#ifdef HEATCOOL
 use eos_module, only: xacc, vode_rtol, vode_atol_scaled
+#endif
 use meth_params_module
 use reion_aux_module
 
@@ -17,9 +21,11 @@ allocate(URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX)
 allocate(TEMP_COMP, NE_COMP, ZHI_COMP, NTHERM, NVAR, NDIAG, small_temp, heat_cool_type)
 !!eos
 allocate(XHYDROGEN, YHELIUM)
+#ifdef HEATCOOL
 allocate(xacc,vode_rtol,vode_atol_scaled)
 !! vode
 allocate(z_vode, rho_vode, T_vode, ne_vode, JH_vode, JHe_vode, i_vode, j_vode, k_vode, fn_vode, NR_vode, firstcall)
+#endif
 !! atomic
 allocate(TCOOLMIN, TCOOLMAX, TCOOLMAX_R, TCOOLMIN_R, deltaT)
 allocate(uvb_density_A, uvb_density_B, mean_rhob)
@@ -49,14 +55,16 @@ subroutine init_tables_eos_params() &
      bind(C,name="fort_init_tables_eos_params")
   use amrex_constants_module, only : rt => amrex_real, M_PI
   use atomic_rates_module
-  use eos_module, only: fort_setup_eos_params
   use fundamental_constants_module, only: Gconst, mp_over_kb
   use comoving_module, only: comoving_h,comoving_OmB
   use comoving_nd_module, only: fort_integrate_comoving_a
   use reion_aux_module, only: zhi_flash, zheii_flash, T_zhi, T_zheii, &
        flash_h, flash_he, inhomogeneous_on
+#ifdef HEATCOOL
+  use eos_module, only: fort_setup_eos_params
   use vode_aux_module, only: fn_vode, NR_vode, z_vode, JH_vode, JHe_vode
-implicit none
+#endif
+  implicit none
   real(rt) :: vode_atol_scaled_in, vode_rtol_in, xacc_in
   integer :: simd_width
   real(rt) :: a, half_dt
@@ -65,6 +73,7 @@ implicit none
   
   call fort_tabulate_rates()
 
+#ifdef HEATCOOL
     simd_width = 1    
     vode_atol_scaled_in = 1e-4
     vode_rtol_in = 1e-4
@@ -73,7 +82,6 @@ implicit none
     call fort_setup_eos_params(xacc_in, vode_rtol_in, vode_atol_scaled_in)
 
     print*,"Finished reading table"
-
     fn_vode = 0
     NR_vode = 0
 !    print*,"Read parameters"
@@ -105,66 +113,27 @@ implicit none
     else
        JHe_vode = 1
     endif
+#endif
 
     if (flash_h ) H_reion_z  = zhi_flash
     if (flash_he) He_reion_z = zheii_flash
 
-    call SetCellInit()
 end subroutine init_tables_eos_params
-
-!!!!!!!!!!!!!!!!!!!! ASSUME inhomogeneous_on .eq. .false.
-subroutine SetCellInit()
-
-  use vode_aux_module, only: fn_vode, NR_vode, z_vode, JH_vode, JHe_vode
-print*,   fn_vode, NR_vode, z_vode, JH_vode, JHe_vode
-!                if (inhomogeneous_on) then
-!                   H_reion_z = 1*H_reion_z!diag_eos(i,j,k,ZHI_COMP)
-!                   if (z .gt. H_reion_z) then
-!                      JH_vode = 0
-!                   else
-!                      JH_vode = 1
-!                   endif
-!                endif
-
-!                if (e_orig .lt. 0.d0) then
-!!!                    !$OMP CRITICAL
-!                    print *,'negative e entering strang integration ',z, i,j,k, rho/mean_rhob, e_orig
-!                    call bl_abort('bad e in strang')
-!!!                    !$OMP END CRITICAL
-!                end if
-end subroutine SetCellInit
-
-!!!!!!!!!!!!!!!!!!!! ASSUME inhomogeneous_on .eq. .false.
-subroutine SetCellFin()
-
-  use vode_aux_module, only: fn_vode, NR_vode, z_vode, JH_vode, JHe_vode
-print*,   fn_vode, NR_vode, z_vode, JH_vode, JHe_vode
-!                if (inhomogeneous_on) then
-!                   H_reion_z = 1*H_reion_z!diag_eos(i,j,k,ZHI_COMP)
-!                   if (z .gt. H_reion_z) then
-!                      JH_vode = 0
-!                   else
-!                      JH_vode = 1
-!                   endif
-!                endif
-
-!                if (e_orig .lt. 0.d0) then
-!!!                    !$OMP CRITICAL
-!                    print *,'negative e entering strang integration ',z, i,j,k, rho/mean_rhob, e_orig
-!                    call bl_abort('bad e in strang')
-!!!                    !$OMP END CRITICAL
-!                end if
-end subroutine SetCellFin
 
 subroutine fin_allocations() &
      bind(C,name="fort_dealloc_cuda_managed")
-use vode_aux_module
+#ifdef HEATCOOL
+  use vode_aux_module
+  use eos_module, only: xacc, vode_rtol, vode_atol_scaled
+#endif
 use atomic_rates_module
-use eos_module, only: xacc, vode_rtol, vode_atol_scaled
 use meth_params_module
 use reion_aux_module
 
+#ifdef HEATCOOL
 deallocate(z_vode, rho_vode, T_vode, ne_vode, JH_vode, JHe_vode, i_vode, j_vode, k_vode, fn_vode, NR_vode, firstcall)
+deallocate(xacc,vode_rtol,vode_atol_scaled)
+#endif
 deallocate(this_z)
 deallocate(gamma_minus_1)
 deallocate(URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX)
@@ -176,18 +145,36 @@ deallocate(zhi_flash, zheii_flash, T_zhi, T_zheii)
 deallocate(flash_h, flash_he, inhomogeneous_on)
 
 ! Initially allocated when the table is read
-deallocate(ggh0, gghe0, gghep, eh0, ehe0, ehep)
+if(allocated(ggh0)) deallocate(ggh0)
+if(allocated(gghe0)) deallocate(gghe0)
+if(allocated(gghep)) deallocate(gghep)
+if(allocated(eh0)) deallocate(eh0)
+if(allocated(ehe0)) deallocate(ehe0)
+if(allocated(ehep)) deallocate(ehep)
 if(allocated(lzr)) deallocate( lzr)
 if(allocated(rggh0)) deallocate(rggh0)
 if(allocated(rgghe0)) deallocate( rgghe0)
 if(allocated(rgghep)) deallocate( rgghep)
-deallocate( reh0(NCOOLFILE), rehe0(NCOOLFILE), rehep(NCOOLFILE) )
-deallocate(NCOOLFILE)
-deallocate( AlphaHp(NCOOLTAB+1), AlphaHep(NCOOLTAB+1), AlphaHepp(NCOOLTAB+1), Alphad(NCOOLTAB+1))
-deallocate( GammaeH0(NCOOLTAB+1), GammaeHe0(NCOOLTAB+1), GammaeHep(NCOOLTAB+1))
-deallocate( BetaH0(NCOOLTAB+1), BetaHe0(NCOOLTAB+1), BetaHep(NCOOLTAB+1), Betaff1(NCOOLTAB+1), Betaff4(NCOOLTAB+1))
-deallocate( RecHp(NCOOLTAB+1), RecHep(NCOOLTAB+1), RecHepp(NCOOLTAB+1))
-deallocate(xacc,vode_rtol,vode_atol_scaled)
+
+if(allocated(reh0)) deallocate(reh0)
+if(allocated(rehe0)) deallocate(rehe0)
+if(allocated(rehep)) deallocate(rehep)
+if(allocated(NCOOLFILE)) deallocate(NCOOLFILE)
+if(allocated(AlphaHp)) deallocate(AlphaHp)
+if(allocated(AlphaHep)) deallocate(AlphaHep)
+if(allocated(AlphaHepp)) deallocate(AlphaHepp)
+if(allocated(Alphad)) deallocate(Alphad)
+if(allocated(GammaeH0)) deallocate(GammaeH0)
+if(allocated(GammaeHe0)) deallocate(GammaeHe0)
+if(allocated(GammaeHep)) deallocate(GammaeHep)
+if(allocated(BetaH0)) deallocate(BetaH0)
+if(allocated(BetaHe0)) deallocate(BetaHe0)
+if(allocated(BetaHep)) deallocate(BetaHep)
+if(allocated(Betaff1)) deallocate(Betaff1)
+if(allocated(Betaff4)) deallocate(Betaff4)
+if(allocated(RecHp)) deallocate(RecHp)
+if(allocated(RecHep)) deallocate(RecHep)
+if(allocated(RecHepp)) deallocate(RecHepp)
 end subroutine fin_allocations
 
 !!! subroutine dummy()
