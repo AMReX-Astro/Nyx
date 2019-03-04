@@ -22,7 +22,7 @@
       use amrex_fort_module, only : rt => amrex_real
       use amrex_mempool_module, only : amrex_allocate, amrex_deallocate
       use meth_params_module, only : QVAR, NVAR, NHYP, normalize_species, &
-           QC, QU, QV, QW, QPRES, use_flattening
+           QC, QPRES, use_flattening
       use flatten_module
       use amrex_constants_module
       use advection_module
@@ -108,14 +108,6 @@
       !    Note that (q,c,csml,flatn) are all dimensioned the same
       !    and set to correspond to coordinates of (lo:hi)
       ! 3) Translate source terms
-!      call ctoprim(lo,hi,uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
-!                   q2,c,csml,flatn,q_l1,q_l2,q_l3,q_h1,q_h2,q_h3, &
-!                   src , src_l1, src_l2, src_l3, src_h1, src_h2, src_h3, &
-!                   srcQ2,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
-!                   grav,gv_l1,gv_l2,gv_l3,gv_h1,gv_h2,gv_h3, &
-!                   dx,dy,dz,dt,ngq,ngf,a_old,a_new)
-
-      flatn=ONE
       ulo(1)=uin_l1
       ulo(2)=uin_l2
       ulo(3)=uin_l3
@@ -129,22 +121,15 @@
       qhi(1)=q_h1
       qhi(2)=q_h2
       qhi(3)=q_h3
+
+      ! Note that for now, csml is passed seperately
+      ! It's unclear whether qaux will bw generally useful
       call ca_ctoprim(qlo,qhi,uin,ulo, uhi, &
            q,qlo, qhi, &
            qaux,qlo, qhi,csml)
 
       c(:,:,:)=qaux(:,:,:,QC)
       if (use_flattening == 1) then
-!         do n=1,3
-!            loq(n)=lo(n)-ngf
-!            hiq(n)=hi(n)+ngf
-!         enddo
-!         call uflaten(loq,hiq, &
-!                      q(qlo(1),qlo(2),qlo(3),QPRES), &
-!                      q(q_l1,q_l2,q_l3,QU), &
-!                      q(q_l1,q_l2,q_l3,QV), &
-!                      q(q_l1,q_l2,q_l3,QW), &
-!                      flatn,q_l1,q_l2,q_l3,q_h1,q_h2,q_h3)
          call ca_uflatten(qlo,qhi,&
          q,qlo,qhi, &
          flatn, qlo, qhi, QPRES)
@@ -159,11 +144,7 @@
            grav,qlo, qhi, &
            src, qlo, qhi, &
            srcQ, qlo, qhi, a_old, a_new, dt)
-!      print*,sum(abs(srcQ-srcQ2))
 
-!      print*, sum(abs(q-q2))
-
-!      stop
       ! Compute hyperbolic fluxes using unsplit Godunov
       call umeth3d(q,c,csml,flatn,q_l1,q_l2,q_l3,q_h1,q_h2,q_h3, &
                    srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &

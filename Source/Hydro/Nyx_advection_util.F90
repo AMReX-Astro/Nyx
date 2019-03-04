@@ -73,23 +73,11 @@ subroutine ca_ctoprim(lo, hi, &
 
              q(i,j,k,QU:QW) = vel
 
-             ! Get the internal energy, which we'll use for
-             ! determining the pressure.  We use a dual energy
-             ! formalism. If (E - K) < eta1 and eta1 is suitably
-             ! small, then we risk serious numerical truncation error
-             ! in the internal energy.  Therefore we'll use the result
-             ! of the separately updated internal energy equation.
-             ! Otherwise, we'll set e = E - K.
-
-!             kineng = HALF * q(i,j,k,QRHO) * (q(i,j,k,QU)**2 + q(i,j,k,QV)**2 + q(i,j,k,QW)**2)
-
-!             if ( (uin(i,j,k,UEDEN) - kineng) / uin(i,j,k,UEDEN) .gt. dual_energy_eta1) then
-!                q(i,j,k,QREINT) = (uin(i,j,k,UEDEN) - kineng) * rhoinv
-!             else
+             ! Note the dual energy formulation is enforced elsewhere
              q(i,j,k,QREINT) = uin(i,j,k,UEINT) * rhoinv
-!             endif
 
-!             q(i,j,k,QTEMP) = -999999999999999999 !uin(i,j,k,UTEMP)
+             ! Note we assume QTEMP doesn't exists
+!             q(i,j,k,QTEMP) = uin(i,j,k,UTEMP)
 
          enddo
        enddo
@@ -116,12 +104,10 @@ subroutine ca_ctoprim(lo, hi, &
           do i = lo(1), hi(1)
 
              ! Define the soundspeed from the EOS
-!!!             call nyx_eos_soundspeed(c(i,j,k), q(i,j,k,QRHO), q(i,j,k,QREINT))
-             
-             ! Set csmal based on small_pres and small_dens
-!!!             qaux(i,j,k,QC   )  = sqrt(gamma_const * small_pres_over_dens)
-!             call nyx_eos_soundspeed(c(i,j,k), q(i,j,k,QRHO), q(i,j,k,QREINT))
+             !             call nyx_eos_soundspeed(c(i,j,k), q(i,j,k,QRHO), q(i,j,k,QREINT))
              call nyx_eos_soundspeed(qaux(i,j,k,QC), q(i,j,k,QRHO), q(i,j,k,QREINT))
+
+             ! Set csmal based on small_pres and small_dens
              csml(i,j,k) = sqrt(gamma_const * small_pres_over_dens)
              
              ! Convert "e" back to "rho e"
@@ -129,31 +115,14 @@ subroutine ca_ctoprim(lo, hi, &
              
              ! Pressure = (gamma - 1) * rho * e
              q(i,j,k,QPRES) = gamma_minus_1 * q(i,j,k,QREINT)
-               
-!             eos_state % T   = q(i,j,k,QTEMP )
-!             eos_state % rho = q(i,j,k,QRHO  )
-!             eos_state % e   = q(i,j,k,QREINT)
-!             eos_state % xn  = q(i,j,k,QFS:QFS+nspec-1)
-!             eos_state % aux = q(i,j,k,QFX:QFX+naux-1)
 
-!             call eos(eos_input_re, eos_state)
+             ! Note we are not using eos_type, and don't require an update call to eos
 
-!             q(i,j,k,QTEMP)  = eos_state % T
-!             q(i,j,k,QREINT) = eos_state % e * q(i,j,k,QRHO)
-!             q(i,j,k,QPRES)  = eos_state % p
-!             q(i,j,k,QGAME)  = q(i,j,k,QPRES) / q(i,j,k,QREINT) + ONE
-!             q(i,j,k,QGC) = eos_state % gam1
-
-!             qaux(i,j,k,QDPDR)  = eos_state % dpdr_e
-!             qaux(i,j,k,QDPDE)  = eos_state % dpde
-
-!             qaux(i,j,k,QGAMC)  = eos_state % gam1
-!             qaux(i,j,k,QC   )  = eos_state % cs
+             ! Note we are not storing dpdr and dpde since these are computable based on q
           enddo
        enddo
     enddo
-    ! Compute flattening coef for slope calculations
-    print*, "flatten is: ", use_flattening
+    ! Compute flattening coef for slope calculations in driver
       
   end subroutine ca_ctoprim
 
@@ -227,11 +196,6 @@ subroutine ca_ctoprim(lo, hi, &
              dpdr = gamma_minus_1 * q(i,j,k,QREINT)/q(i,j,k,QRHO)
              srcQ(i,j,k,QPRES ) = dpde * srcQ(i,j,k,QREINT) * rhoInv &
                                   + dpdr * srcQ(i,j,k,QRHO)
-!             srcQ(i,j,k,QPRES ) = qaux(i,j,k,QDPDE)*
-!             (srcQ(i,j,k,QREINT) - &
-!                  q(i,j,k,QREINT)*srcQ(i,j,k,QRHO)*rhoinv)
-!             * rhoinv + &
-!                  qaux(i,j,k,QDPDR)*srcQ(i,j,k,QRHO)
 
           enddo
        enddo
