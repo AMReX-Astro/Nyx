@@ -1,0 +1,35 @@
+# sources used with hydro
+F90EXE_sources += Nyx_advection_util.F90
+F90EXE_sources += flatten_nd.F90
+
+ifeq (FALSE, TRUE)
+F90EXE_sources += slope_nd.F90
+
+CEXE_sources += Castro_hydro.cpp
+CEXE_sources += Castro_ctu_hydro.cpp
+CEXE_sources += Castro_mol_hydro.cpp
+
+ifeq ($(USE_HYBRID_MOMENTUM), TRUE)
+  CEXE_sources += Castro_hybrid.cpp
+  ca_F90EXE_sources += hybrid_advection_nd.F90
+endif
+
+ca_F90EXE_sources += advection_util_nd.F90
+ca_F90EXE_sources += flatten_nd.F90
+
+ca_F90EXE_sources += ppm_nd.F90
+ca_F90EXE_sources += fourth_order.F90
+ca_F90EXE_sources += riemann_nd.F90
+ca_F90EXE_sources += riemann_util.F90
+ca_F90EXE_sources += slope_nd.F90
+ca_F90EXE_sources += trace_plm.F90
+ca_F90EXE_sources += trace_ppm.F90
+
+ca_F90EXE_sources += Castro_ctu_nd.F90
+ca_F90EXE_sources += Castro_mol_nd.F90
+ca_F90EXE_sources += Castro_fourth_order.F90
+
+ifneq ($(DIM), 1)
+  ca_F90EXE_sources += trans.F90
+endif
+endif

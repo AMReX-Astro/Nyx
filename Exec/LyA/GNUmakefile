@@ -2,7 +2,6 @@
 AMREX_HOME ?= ../../../amrex
 
 CVODE_LIB_DIR ?= $(CVODE_LIB)
-CVODE_LIB_DIR = /ccs/home/jmsexton/jan_restart/sundials/instdir/lib64
 
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ../..
