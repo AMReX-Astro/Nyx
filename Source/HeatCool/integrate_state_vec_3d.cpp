@@ -51,10 +51,18 @@ int Nyx::integrate_state_vec
       double* dptr;
       //check that copy contructor vs create constructor works??
       const Box& tbx = mfi.tilebox();
-      Array4<Real> const& state = S_old.array(mfi);
-      Array4<Real> const& diag_eos = D_old.array(mfi);
-      AMREX_PARALLEL_FOR_3D ( tbx, i, j, k,
-			      {
+      //      Array4<Real> const& state = S_old.array(mfi);
+      //      Array4<Real> const& diag_eos = D_old.array(mfi);
+      const auto len = amrex::length(tbx);  // length of box
+      const auto lo  = amrex::lbound(tbx);  // lower bound of box
+      const auto state = (S_old[mfi]).view(lo);  // a view starting from lo
+      const auto diag_eos = (D_old[mfi]).view(lo);  // a view starting from lo
+
+      for       (int k = 0; k < len.z; ++k) {
+	  // We know this is safe for simd on cpu.  So let's give compiler some help.
+	//	AMREX_PRAGMA_SIMD
+	for     (int j = 0; j < len.y; ++j) {
+	                       {
 				N_Vector u;
 				//  SUNLinearSolver LS;
 				void *cvode_mem;
@@ -63,28 +71,38 @@ int Nyx::integrate_state_vec
 				u = NULL;
 				//  LS = NULL;
 				cvode_mem = NULL;
+				long int neq = len.x;
 
-				u = N_VNew_Serial(1);  /* Allocate u vector */
+				u = N_VNew_Serial(neq);  /* Allocate u vector */
 				dptr=N_VGetArrayPointer_Serial(u);
 				//if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
-				N_VConst(state(i,j,k,Eint)/state(i,j,k,Density),u);
-				state(i,j,k,Eint)  -= state(i,j,k,Density) * (dptr[0]);
-				state(i,j,k,Eden)  -= state(i,j,k,Density) * (dptr[0]);
-								  
-				N_Vector Data = N_VNew_Serial(4);  // Allocate u vector 
+
+				for (int i = 0; i < neq; ++i) {
+				  dptr[i]=state(i,j,k,Eint)/state(i,j,k,Density);
+				  state(i,j,k,Eint)  -= state(i,j,k,Density) * (dptr[i]);
+				  state(i,j,k,Eden)  -= state(i,j,k,Density) * (dptr[i]);
+				}
+				
+				N_Vector Data = N_VNew_Serial(4*neq);  // Allocate u vector 
 				N_VConst(0.0,Data);
 				double* rparh=N_VGetArrayPointer_Serial(Data);
-				rparh[0]= diag_eos(i,j,k,Temp_comp);   //rpar(1)=T_vode
-				rparh[1]= diag_eos(i,j,k,Ne_comp);//    rpar(2)=ne_vode
-				rparh[2]= state(i,j,k,Density); //    rpar(3)=rho_vode
-				rparh[3]=1/a-1;    //    rpar(4)=z_vode
+				for (int i= 0;i < neq; ++i) {
+				  rparh[4*i+0]= diag_eos(i,j,k,Temp_comp);   //rpar(1)=T_vode
+				  rparh[4*i+1]= diag_eos(i,j,k,Ne_comp);//    rpar(2)=ne_vode
+				  rparh[4*i+2]= state(i,j,k,Density); //    rpar(3)=rho_vode
+				  rparh[4*i+3]=1/a-1;    //    rpar(4)=z_vode
+				}
 #ifdef CV_NEWTON
 				cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
 #else
 				cvode_mem = CVodeCreate(CV_BDF);
 #endif
 				flag = CVodeInit(cvode_mem, f, t, u);
-				flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
+				N_Vector abstol_vec = N_VNew_Serial(neq);
+				N_VScale(abstol,u,abstol_vec);
+				flag = CVodeSVtolerances(cvode_mem, reltol, abstol_vec);
+      
+				//				flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
 				flag = CVDiag(cvode_mem);
 
 				CVodeSetUserData(cvode_mem, &Data);
@@ -93,18 +111,25 @@ int Nyx::integrate_state_vec
 				//				diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
 				//	diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
 				// rho should not change  rho_tmp_ptr[i]=rparh[4*i+2]; //    rpar(3)=rho_vode
-				fort_ode_eos_finalize(&(dptr[0]), &(rparh[0]), 1);
-				diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
-				diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
+
+				for (int i= 0;i < neq; ++i) {
+				  fort_ode_eos_finalize(&(dptr[i]), &(rparh[4*i]), 1);
+				  diag_eos(i,j,k,Temp_comp)=rparh[4*i+0];   //rpar(1)=T_vode
+				  diag_eos(i,j,k,Ne_comp)=rparh[4*i+1];//    rpar(2)=ne_vode
 				
-				state(i,j,k,Eint)  += state(i,j,k,Density) * (dptr[0]);
-				state(i,j,k,Eden)  += state(i,j,k,Density) * (dptr[0]);
+				  state(i,j,k,Eint)  += state(i,j,k,Density) * (dptr[i]);
+				  state(i,j,k,Eden)  += state(i,j,k,Density) * (dptr[i]);
+				}
 				//PrintFinalStats(cvode_mem);
 				
 				N_VDestroy(u);          /* Free the u vector */
+				N_VDestroy(abstol_vec);          /* Free the u vector */
 				N_VDestroy(Data);          /* Free the userdata vector */
 				CVodeFree(&cvode_mem);  /* Free the integrator memory */
-			      });
+			      }//);
+			
+	}
+      }
 
     }
   #ifdef NDEBUG
@@ -142,67 +167,58 @@ int Nyx::integrate_state_grownvec
       double* dptr;
       //check that copy contructor vs create constructor works??
       const Box& tbx = mfi.growntilebox();
-      Array4<Real> const& state = S_old.array(mfi);
-      Array4<Real> const& diag_eos = D_old.array(mfi);
+            //      Array4<Real> const& state = S_old.array(mfi);
+      //      Array4<Real> const& diag_eos = D_old.array(mfi);
+      const auto len = amrex::length(tbx);  // length of box
+      const auto lo  = amrex::lbound(tbx);  // lower bound of box
+      const auto state = (S_old[mfi]).view(lo);  // a view starting from lo
+      const auto diag_eos = (D_old[mfi]).view(lo);  // a view starting from lo
 
-      double rho,e_orig;
-      long int neq=1;
-      AMREX_PARALLEL_FOR_3D ( tbx, i, j, k,
-			      {
+      for       (int k = 0; k < len.z; ++k) {
+	  // We know this is safe for simd on cpu.  So let's give compiler some help.
+	//	AMREX_PRAGMA_SIMD
+	for     (int j = 0; j < len.y; ++j) {
+	                       {
 				N_Vector u;
 				//  SUNLinearSolver LS;
 				void *cvode_mem;
+				realtype t=0.0;
 				
 				u = NULL;
 				//  LS = NULL;
 				cvode_mem = NULL;
-				realtype t=0.0;
+				long int neq = len.x;
+
 				u = N_VNew_Serial(neq);  /* Allocate u vector */
 				dptr=N_VGetArrayPointer_Serial(u);
 				//if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
-				/*
-				rho = state(i,j,k,Density);
-				e_orig = state(i,j,k,Eint)/rho;
-				N_VConst(e_orig,u);
-				*/
-				N_VConst(state(i,j,k,Eint)/state(i,j,k,Density),u);
-				
-				state(i,j,k,Eint)  -= state(i,j,k,Density) * (dptr[0]);
-				state(i,j,k,Eden)  -= state(i,j,k,Density) * (dptr[0]);
 
+				for (int i = 0; i < neq; ++i) {
+				  dptr[i]=state(i,j,k,Eint)/state(i,j,k,Density);
+				  state(i,j,k,Eint)  -= state(i,j,k,Density) * (dptr[i]);
+				  state(i,j,k,Eden)  -= state(i,j,k,Density) * (dptr[i]);
+				}
+				
 				N_Vector Data = N_VNew_Serial(4*neq);  // Allocate u vector 
 				N_VConst(0.0,Data);
 				double* rparh=N_VGetArrayPointer_Serial(Data);
-				rparh[0]= diag_eos(i,j,k,Temp_comp);   //rpar(1)=T_vode
-				rparh[1]= diag_eos(i,j,k,Ne_comp);//    rpar(2)=ne_vode
-				rparh[2]= state(i,j,k,Density); //    rpar(3)=rho_vode
-				rparh[3]=1/a-1;    //    rpar(4)=z_vode
-				if(neq==2)
-				  {
-				    dptr[1]*=1e2;
-				    rparh[4+0]= diag_eos(i,j,k,Temp_comp);   //rpar(1)=T_vode
-				    rparh[4+1]= diag_eos(i,j,k,Ne_comp);//    rpar(2)=ne_vode
-				    rparh[4+2]= state(i,j,k,Density); //    rpar(3)=rho_vode
-				    rparh[4+3]=1/a-1;    //    rpar(4)=z_vode
-				  }
+				for (int i= 0;i < neq; ++i) {
+				  rparh[4*i+0]= diag_eos(i,j,k,Temp_comp);   //rpar(1)=T_vode
+				  rparh[4*i+1]= diag_eos(i,j,k,Ne_comp);//    rpar(2)=ne_vode
+				  rparh[4*i+2]= state(i,j,k,Density); //    rpar(3)=rho_vode
+				  rparh[4*i+3]=1/a-1;    //    rpar(4)=z_vode
+				}
 #ifdef CV_NEWTON
 				cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
 #else
 				cvode_mem = CVodeCreate(CV_BDF);
 #endif
 				flag = CVodeInit(cvode_mem, f, t, u);
-
-				N_Vector abstol_vec =N_VNew_Serial(neq);
-				
-				NV_Ith_S(abstol_vec,0) = dptr[0]*abstol;
-				if(neq==2)
-				  {
-				    NV_Ith_S(abstol_vec,1) = dptr[1]*abstol;
-				    flag = CVodeSVtolerances(cvode_mem, reltol, abstol_vec);
-				  }
-				else
-				  flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
-
+				N_Vector abstol_vec = N_VNew_Serial(neq);
+				N_VScale(abstol,u,abstol_vec);
+				flag = CVodeSVtolerances(cvode_mem, reltol, abstol_vec);
+      
+				//				flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
 				flag = CVDiag(cvode_mem);
 
 				CVodeSetUserData(cvode_mem, &Data);
@@ -211,24 +227,25 @@ int Nyx::integrate_state_grownvec
 				//				diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
 				//	diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
 				// rho should not change  rho_tmp_ptr[i]=rparh[4*i+2]; //    rpar(3)=rho_vode
-				fort_ode_eos_finalize(&(dptr[0]), &(rparh[0]), 1);
-				diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
-				diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
 
-				/*				
-				state(i,j,k,Eint)  += rho * (dptr[0]-e_orig);
-				state(i,j,k,Eden)  += rho * (dptr[0]-e_orig);
-*/
-				state(i,j,k,Eint)  += state(i,j,k,Density) * (dptr[0]);
-				state(i,j,k,Eden)  += state(i,j,k,Density) * (dptr[0]);
-
+				for (int i= 0;i < neq; ++i) {
+				  fort_ode_eos_finalize(&(dptr[i]), &(rparh[4*i]), 1);
+				  diag_eos(i,j,k,Temp_comp)=rparh[4*i+0];   //rpar(1)=T_vode
+				  diag_eos(i,j,k,Ne_comp)=rparh[4*i+1];//    rpar(2)=ne_vode
+				
+				  state(i,j,k,Eint)  += state(i,j,k,Density) * (dptr[i]);
+				  state(i,j,k,Eden)  += state(i,j,k,Density) * (dptr[i]);
+				}
 				//PrintFinalStats(cvode_mem);
 				
 				N_VDestroy(u);          /* Free the u vector */
+				N_VDestroy(abstol_vec);          /* Free the u vector */
 				N_VDestroy(Data);          /* Free the userdata vector */
 				CVodeFree(&cvode_mem);  /* Free the integrator memory */
-			      });
-
+			      }//);
+			
+	}
+      }
     }
   #ifndef NDEBUG
         if (S_old.contains_nan())

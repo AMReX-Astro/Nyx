@@ -273,6 +273,8 @@ module eos_module
 
       ii = 0
       ne(1:veclen) = 1.0d0 ! 0 is a bad guess
+      JH(1:veclen) = 0.0d0
+      JHe(1:veclen) = 0.0d0
 
       do  ! Newton-Raphson solver
          ii = ii + 1
