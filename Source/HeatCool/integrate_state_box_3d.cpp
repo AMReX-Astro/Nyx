@@ -89,7 +89,7 @@ int Nyx::integrate_state_box
 
       /* Create a CUDA vector with initial values */
       u = N_VNew_Serial(neq);  /* Allocate u vector */
-      if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
+      //if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
 
       /*      FSetInternalEnergy_mfab(S_old[mfi].dataPtr(),
         tbx.loVect(),
@@ -128,13 +128,13 @@ int Nyx::integrate_state_box
       #else
       cvode_mem = CVodeCreate(CV_BDF);
       #endif
-      if(check_retval((void *)cvode_mem, "CVodeCreate", 0)) return(1);
+      //      if(check_retval((void *)cvode_mem, "CVodeCreate", 0)) return(1);
 
       /* Call CVodeInit to initialize the integrator memory and specify the
        * user's right hand side function in u'=f(t,u), the initial time T0, and
        * the initial dependent variable vector u. */
       flag = CVodeInit(cvode_mem, f, t, u);
-      if(check_retval(&flag, "CVodeInit", 1)) return(1);
+      //      if(check_retval(&flag, "CVodeInit", 1)) return(1);
 
       /* Call CVodeSStolerances to specify the scalar relative tolerance
        * and scalar absolute tolerance */
@@ -142,7 +142,7 @@ int Nyx::integrate_state_box
       N_VScale(abstol,u,abstol_vec);                                                                                                                                                                    
       flag = CVodeSVtolerances(cvode_mem, reltol, abstol_vec);
       //      flag = CVodeSStolerances(cvode_mem, reltol, abstol);
-      if (check_retval(&flag, "CVodeSVtolerances", 1)) return(1);
+      //      if (check_retval(&flag, "CVodeSVtolerances", 1)) return(1);
 
 #ifdef AMREX_USE_SUNDIALS_3x4x
       bool check_nonnegative=true;
@@ -151,7 +151,7 @@ int Nyx::integrate_state_box
       N_Vector constrain=N_VClone(u);
       N_VConst(2,constrain);	      
       flag =CVodeSetConstraints(cvode_mem,constrain);
-      if (check_retval(&flag, "CVodeSetConstraints", 1)) return(1);
+      //      if (check_retval(&flag, "CVodeSetConstraints", 1)) return(1);
 	}
 #endif
 
@@ -271,7 +271,7 @@ int Nyx::integrate_state_grownbox
 
       /* Create a CUDA vector with initial values */
       u = N_VNew_Serial(neq);  /* Allocate u vector */
-      if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
+      //      if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
 
       /*      FSetInternalEnergy_mfab(S_old[mfi].dataPtr(),
         tbx.loVect(),
@@ -310,13 +310,13 @@ int Nyx::integrate_state_grownbox
       #else
       cvode_mem = CVodeCreate(CV_BDF);
       #endif
-      if(check_retval((void *)cvode_mem, "CVodeCreate", 0)) return(1);
+      //      if(check_retval((void *)cvode_mem, "CVodeCreate", 0)) return(1);
 
       /* Call CVodeInit to initialize the integrator memory and specify the
        * user's right hand side function in u'=f(t,u), the initial time T0, and
        * the initial dependent variable vector u. */
       flag = CVodeInit(cvode_mem, f, t, u);
-      if(check_retval(&flag, "CVodeInit", 1)) return(1);
+      //      if(check_retval(&flag, "CVodeInit", 1)) return(1);
 
       /* Call CVodeSStolerances to specify the scalar relative tolerance
        * and scalar absolute tolerance */
@@ -324,7 +324,7 @@ int Nyx::integrate_state_grownbox
       N_VScale(abstol,u,abstol_vec);                                                                                                                                                                    
       flag = CVodeSVtolerances(cvode_mem, reltol, abstol_vec);
       //      flag = CVodeSStolerances(cvode_mem, reltol, abstol);
-      if (check_retval(&flag, "CVodeSVtolerances", 1)) return(1);
+      //      if (check_retval(&flag, "CVodeSVtolerances", 1)) return(1);
 
 #ifdef AMREX_USE_SUNDIALS_3x4x
       bool check_nonnegative=true;
@@ -333,7 +333,7 @@ int Nyx::integrate_state_grownbox
       N_Vector constrain=N_VClone(u);
       N_VConst(2,constrain);	      
       flag =CVodeSetConstraints(cvode_mem,constrain);
-      if (check_retval(&flag, "CVodeSetConstraints", 1)) return(1);
+      //      if (check_retval(&flag, "CVodeSetConstraints", 1)) return(1);
 	}
 #endif
 
