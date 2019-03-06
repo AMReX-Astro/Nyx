@@ -54,6 +54,13 @@ Nyx::strang_first_step (Real time, Real dt, MultiFab& S_old, MultiFab& D_old)
     if(ierr)
       amrex::Abort("error out of integrate_state_box");
       }
+    else if(heat_cool_type== 11)
+      {
+	//#ifdef CVODE_LIBS
+    int ierr=integrate_state_grownvec(S_old,       D_old,       a, half_dt);
+    if(ierr)
+      amrex::Abort("error out of integrate_state_box");
+      }
     else
             amrex::Abort("Invalid heating cooling type");
 }
@@ -118,6 +125,13 @@ Nyx::strang_second_step (Real time, Real dt, MultiFab& S_new, MultiFab& D_new)
       {
 	//#ifdef CVODE_LIBS
     int ierr=integrate_state_box(S_new,       D_new,       a, half_dt);
+    if(ierr)
+      amrex::Abort("error out of integrate_state_box");
+      }
+    else if(heat_cool_type== 11)
+      {
+	//#ifdef CVODE_LIBS
+    int ierr=integrate_state_vec(S_new,       D_new,       a, half_dt);
     if(ierr)
       amrex::Abort("error out of integrate_state_box");
       }
