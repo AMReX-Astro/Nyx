@@ -17,6 +17,9 @@
 #include <sundials/sundials_math.h>    /* definition of ABS and EXP   */
 
 #include <nvector/nvector_serial.h>
+#ifdef AMREX_USE_CUDA
+#include <nvector/nvector_cuda.h>
+#endif
 using namespace amrex;
 
 /* Functions Called by the Solver */
@@ -42,7 +45,16 @@ int Nyx::integrate_state_vec
   abstol = 1e-4;
 
   fort_ode_eos_setup(a,delta_time);
-  amrex::Cuda::setLaunchRegion(false);
+  //  amrex::Cuda::setLaunchRegion(false);
+  amrex::Cuda::setLaunchRegion(true);
+
+  int Temp_loc=Temp_comp;
+  int Ne_loc=Ne_comp;
+  int Eint_loc=Eint;
+  int Eden_loc=Eden;
+  int Density_loc=Density;
+  int one_in = 1;
+
   //#ifdef _OPENMP
   //#pragma omp parallel if (Gpu::notInLaunchRegion())
   //#endif
@@ -63,7 +75,6 @@ int Nyx::integrate_state_vec
 	//	AMREX_PRAGMA_SIMD
 	for     (int j = 0; j < len.y; ++j) {
 	                    for (int i = 0; i < len.x; ++i) {
-
 				N_Vector u;
 				//  SUNLinearSolver LS;
 				void *cvode_mem;
@@ -76,35 +87,48 @@ int Nyx::integrate_state_vec
 				long int neq = 1;
 				int loop = 0;
 
+#ifdef AMREX_USE_CUDA
+				u = N_VNew_Cuda(neq);  /* Allocate u vector */
+				dptr=N_VGetDeviceArrayPointer_Cuda(u);
+
+				N_Vector Data = N_VNew_Cuda(4*neq);  // Allocate u vector 
+				N_VConst(0.0,Data);
+				double* rparh=N_VGetDeviceArrayPointer_Cuda(Data);
+				N_Vector abstol_vec = N_VNew_Cuda(neq);
+#else
 				u = N_VNew_Serial(neq);  /* Allocate u vector */
 				dptr=N_VGetArrayPointer_Serial(u);
-				//if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
 
-				//				for (int i= 0;i < neq; ++i) {
-				  dptr[i*loop]=state(i,j,k,Eint)/state(i,j,k,Density);
-				  state(i,j,k,Eint)  -= state(i,j,k,Density) * (dptr[i*loop]);
-				  state(i,j,k,Eden)  -= state(i,j,k,Density) * (dptr[i*loop]);
-				  //}
-				
 				N_Vector Data = N_VNew_Serial(4*neq);  // Allocate u vector 
 				N_VConst(0.0,Data);
 				double* rparh=N_VGetArrayPointer_Serial(Data);
+				N_Vector abstol_vec = N_VNew_Serial(neq);
+#endif				//if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
+
+				AMREX_PARALLEL_FOR_1D ( neq, idx,
+				{	
+			//				for (int i= 0;i < neq; ++i) {
+				  dptr[i*loop]=state(i,j,k,Eint_loc)/state(i,j,k,Density_loc);
+				  state(i,j,k,Eint_loc)  -= state(i,j,k,Density_loc) * (dptr[i*loop]);
+				  state(i,j,k,Eden_loc)  -= state(i,j,k,Density_loc) * (dptr[i*loop]);
+				  //}			
 				//				for (int i= 0;i < neq; ++i) {
-				  rparh[4*i*loop+0]= diag_eos(i,j,k,Temp_comp);   //rpar(1)=T_vode
-				  rparh[4*i*loop+1]= diag_eos(i,j,k,Ne_comp);//    rpar(2)=ne_vode
-				  rparh[4*i*loop+2]= state(i,j,k,Density); //    rpar(3)=rho_vode
+				  rparh[4*i*loop+0]= diag_eos(i,j,k,Temp_loc);   //rpar(1)=T_vode
+				  rparh[4*i*loop+1]= diag_eos(i,j,k,Ne_loc);//    rpar(2)=ne_vode
+				  rparh[4*i*loop+2]= state(i,j,k,Density_loc); //    rpar(3)=rho_vode
 				  rparh[4*i*loop+3]=1/a-1;    //    rpar(4)=z_vode
 				  //				}
+				});
 #ifdef CV_NEWTON
 				cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
 #else
 				cvode_mem = CVodeCreate(CV_BDF);
 #endif
 				flag = CVodeInit(cvode_mem, f, t, u);
-				N_Vector abstol_vec = N_VNew_Serial(neq);
+
 				N_VScale(abstol,u,abstol_vec);
 				flag = CVodeSVtolerances(cvode_mem, reltol, abstol_vec);
-      
+
 				//				flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
 				flag = CVDiag(cvode_mem);
 
@@ -114,17 +138,19 @@ int Nyx::integrate_state_vec
 				//				diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
 				//	diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
 				// rho should not change  rho_tmp_ptr[i]=rparh[4*i+2]; //    rpar(3)=rho_vode
-
+				AMREX_PARALLEL_FOR_1D ( neq, idx,
+				{	
 				//				for (int i= 0;i < neq; ++i) {
-				  fort_ode_eos_finalize(&(dptr[i*loop]), &(rparh[4*i*loop]), 1);
-				  diag_eos(i,j,k,Temp_comp)=rparh[4*i*loop+0];   //rpar(1)=T_vode
-				  diag_eos(i,j,k,Ne_comp)=rparh[4*i*loop+1];//    rpar(2)=ne_vode
+				  fort_ode_eos_finalize(&(dptr[i*loop]), &(rparh[4*i*loop]), one_in);
+				  diag_eos(i,j,k,Temp_loc)=rparh[4*i*loop+0];   //rpar(1)=T_vode
+				  diag_eos(i,j,k,Ne_loc)=rparh[4*i*loop+1];//    rpar(2)=ne_vode
 				
-				  state(i,j,k,Eint)  += state(i,j,k,Density) * (dptr[i*loop]);
-				  state(i,j,k,Eden)  += state(i,j,k,Density) * (dptr[i*loop]);
+				  state(i,j,k,Eint_loc)  += state(i,j,k,Density_loc) * (dptr[i*loop]);
+				  state(i,j,k,Eden_loc)  += state(i,j,k,Density_loc) * (dptr[i*loop]);
 				  //				}
 				//PrintFinalStats(cvode_mem);
-				
+				});
+
 				N_VDestroy(u);          /* Free the u vector */
 				N_VDestroy(abstol_vec);          /* Free the u vector */
 				N_VDestroy(Data);          /* Free the userdata vector */
@@ -135,6 +161,7 @@ int Nyx::integrate_state_vec
       }
 
     }
+  amrex::Cuda::setLaunchRegion(false);
   #ifdef NDEBUG
   #ifndef NDEBUG
         if (S_old.contains_nan())
@@ -161,7 +188,16 @@ int Nyx::integrate_state_grownvec
   abstol = 1e-4;
 
   fort_ode_eos_setup(a,delta_time);
-  amrex::Cuda::setLaunchRegion(false);
+
+  amrex::Cuda::setLaunchRegion(true);
+
+  int Temp_loc=Temp_comp;
+  int Ne_loc=Ne_comp;
+  int Eint_loc=Eint;
+  int Eden_loc=Eden;
+  int Density_loc=Density;
+  int one_in = 1;
+
   //#ifdef _OPENMP
   //#pragma omp parallel if (Gpu::notInLaunchRegion())
   //#endif
@@ -170,7 +206,7 @@ int Nyx::integrate_state_grownvec
       double* dptr;
       //check that copy contructor vs create constructor works??
       const Box& tbx = mfi.growntilebox();
-            //      Array4<Real> const& state = S_old.array(mfi);
+      //      Array4<Real> const& state = S_old.array(mfi);
       //      Array4<Real> const& diag_eos = D_old.array(mfi);
       const auto len = amrex::length(tbx);  // length of box
       const auto lo  = amrex::lbound(tbx);  // lower bound of box
@@ -181,8 +217,7 @@ int Nyx::integrate_state_grownvec
 	  // We know this is safe for simd on cpu.  So let's give compiler some help.
 	//	AMREX_PRAGMA_SIMD
 	for     (int j = 0; j < len.y; ++j) {
-				for (int i= 0;i < len.x; ++i) 
-	                       {
+	                    for (int i = 0; i < len.x; ++i) {
 				N_Vector u;
 				//  SUNLinearSolver LS;
 				void *cvode_mem;
@@ -195,35 +230,48 @@ int Nyx::integrate_state_grownvec
 				long int neq = 1;
 				int loop = 0;
 
+#ifdef AMREX_USE_CUDA
+				u = N_VNew_Cuda(neq);  /* Allocate u vector */
+				dptr=N_VGetDeviceArrayPointer_Cuda(u);
+
+				N_Vector Data = N_VNew_Cuda(4*neq);  // Allocate u vector 
+				N_VConst(0.0,Data);
+				double* rparh=N_VGetDeviceArrayPointer_Cuda(Data);
+				N_Vector abstol_vec = N_VNew_Cuda(neq);
+#else
 				u = N_VNew_Serial(neq);  /* Allocate u vector */
 				dptr=N_VGetArrayPointer_Serial(u);
-				//if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
 
-				//				for (int i= 0;i < neq; ++i) {
-				  dptr[i*loop]=state(i,j,k,Eint)/state(i,j,k,Density);
-				  state(i,j,k,Eint)  -= state(i,j,k,Density) * (dptr[i*loop]);
-				  state(i,j,k,Eden)  -= state(i,j,k,Density) * (dptr[i*loop]);
-				  //}
-				
 				N_Vector Data = N_VNew_Serial(4*neq);  // Allocate u vector 
 				N_VConst(0.0,Data);
 				double* rparh=N_VGetArrayPointer_Serial(Data);
+				N_Vector abstol_vec = N_VNew_Serial(neq);
+#endif				//if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
+
+				AMREX_PARALLEL_FOR_1D ( neq, idx,
+				{	
+			//				for (int i= 0;i < neq; ++i) {
+				  dptr[i*loop]=state(i,j,k,Eint_loc)/state(i,j,k,Density_loc);
+				  state(i,j,k,Eint_loc)  -= state(i,j,k,Density_loc) * (dptr[i*loop]);
+				  state(i,j,k,Eden_loc)  -= state(i,j,k,Density_loc) * (dptr[i*loop]);
+				  //}			
 				//				for (int i= 0;i < neq; ++i) {
-				  rparh[4*i*loop+0]= diag_eos(i,j,k,Temp_comp);   //rpar(1)=T_vode
-				  rparh[4*i*loop+1]= diag_eos(i,j,k,Ne_comp);//    rpar(2)=ne_vode
-				  rparh[4*i*loop+2]= state(i,j,k,Density); //    rpar(3)=rho_vode
+				  rparh[4*i*loop+0]= diag_eos(i,j,k,Temp_loc);   //rpar(1)=T_vode
+				  rparh[4*i*loop+1]= diag_eos(i,j,k,Ne_loc);//    rpar(2)=ne_vode
+				  rparh[4*i*loop+2]= state(i,j,k,Density_loc); //    rpar(3)=rho_vode
 				  rparh[4*i*loop+3]=1/a-1;    //    rpar(4)=z_vode
 				  //				}
+				});
 #ifdef CV_NEWTON
 				cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
 #else
 				cvode_mem = CVodeCreate(CV_BDF);
 #endif
 				flag = CVodeInit(cvode_mem, f, t, u);
-				N_Vector abstol_vec = N_VNew_Serial(neq);
+
 				N_VScale(abstol,u,abstol_vec);
 				flag = CVodeSVtolerances(cvode_mem, reltol, abstol_vec);
-      
+
 				//				flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
 				flag = CVDiag(cvode_mem);
 
@@ -233,17 +281,19 @@ int Nyx::integrate_state_grownvec
 				//				diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
 				//	diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
 				// rho should not change  rho_tmp_ptr[i]=rparh[4*i+2]; //    rpar(3)=rho_vode
-
+				AMREX_PARALLEL_FOR_1D ( neq, idx,
+				{	
 				//				for (int i= 0;i < neq; ++i) {
-				  fort_ode_eos_finalize(&(dptr[i*loop]), &(rparh[4*i*loop]), 1);
-				  diag_eos(i,j,k,Temp_comp)=rparh[4*i*loop+0];   //rpar(1)=T_vode
-				  diag_eos(i,j,k,Ne_comp)=rparh[4*i*loop+1];//    rpar(2)=ne_vode
+				  fort_ode_eos_finalize(&(dptr[i*loop]), &(rparh[4*i*loop]), one_in);
+				  diag_eos(i,j,k,Temp_loc)=rparh[4*i*loop+0];   //rpar(1)=T_vode
+				  diag_eos(i,j,k,Ne_loc)=rparh[4*i*loop+1];//    rpar(2)=ne_vode
 				
-				  state(i,j,k,Eint)  += state(i,j,k,Density) * (dptr[i*loop]);
-				  state(i,j,k,Eden)  += state(i,j,k,Density) * (dptr[i*loop]);
+				  state(i,j,k,Eint_loc)  += state(i,j,k,Density_loc) * (dptr[i*loop]);
+				  state(i,j,k,Eden_loc)  += state(i,j,k,Density_loc) * (dptr[i*loop]);
 				  //				}
 				//PrintFinalStats(cvode_mem);
-				
+				});
+
 				N_VDestroy(u);          /* Free the u vector */
 				N_VDestroy(abstol_vec);          /* Free the u vector */
 				N_VDestroy(Data);          /* Free the userdata vector */
@@ -252,15 +302,102 @@ int Nyx::integrate_state_grownvec
 			
 	}
       }
+
     }
+  amrex::Cuda::setLaunchRegion(false);
+  #ifdef NDEBUG
   #ifndef NDEBUG
         if (S_old.contains_nan())
-            amrex::Abort("state has NaNs after the first strang call");
+            amrex::Abort("state has NaNs after the second strang call");
   #endif
+#endif
 
     return 0;
 }
 
+#ifdef AMREX_USE_CUDA
+__device__ void f_rhs_test(Real t,double* u_ptr,Real* udot_ptr, Real* rpar, int neq)
+{
+  /*
+1.635780036449432E-01 a
+8.839029760565609E-06 dt
+2.119999946752000E+12 rho
+3.255559960937500E+04 T
+1.076699972152710E+00 ne
+6.226414794921875E+02 e */
+  /*  double rpar2[4];
+    rpar2[0]= 3.255559960937500E+04;   //rpar(1)=T_vode
+  rpar2[1]= 1.076699972152710E+00;//    rpar(2)=ne_vode
+  rpar2[2]=  2.119999946752000E+12; //    rpar(3)=rho_vode
+  rpar2[3]=1/(1+1.635780036449432E-01);    //    rpar(4)=z_vode*/
+    int tid = blockIdx.x * blockDim.x + threadIdx.x;
+  //  if(tid==0)
+    if(tid<neq)
+      RhsFnReal(t,u_ptr+tid,udot_ptr+tid,rpar+4*tid,1);
+    //    udot_ptr[tid]=(neq-tid)*t
+  
+    //*********************************
+    /*    if(tid<neq)
+	  RhsFn(t,u_ptr+tid,udot_ptr+tid,rpar+4*tid,1);*/
+    //rpar[4*tid+1]=tid;
+    /**********************************
+    if(tid<neq)
+      udot_ptr[tid]=2.0*t;*/
+
+  /* Either way to setup IC seems to work
+    RhsFn(t,u_ptr+i,udot_ptr+i,rpar2,1);*/
+}
+
+static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
+{
+  Real* udot_ptr=N_VGetDeviceArrayPointer_Cuda(udot);
+  Real* u_ptr=N_VGetDeviceArrayPointer_Cuda(u);
+  int neq=N_VGetLength_Cuda(udot);
+  double*  rpar=N_VGetDeviceArrayPointer_Cuda(*(static_cast<N_Vector*>(user_data)));
+  
+  /*  N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));  
+  double*  rparh=N_VGetHostArrayPointer_Cuda(*(static_cast<N_Vector*>(user_data)));
+   
+   fprintf(stdout,"\nt=%g \n\n",t);
+   fprintf(stdout,"\nrparh[0]=%g \n\n",rparh[0]);
+  fprintf(stdout,"\nrparh[1]=%g \n\n",rparh[1]);
+  fprintf(stdout,"\nrparh[2]=%g \n\n",rparh[2]);
+  fprintf(stdout,"\nrparh[3]=%g \n\n",rparh[3]);*/
+  int numThreads = std::min(32, neq);
+  int numBlocks = static_cast<int>(ceil(((double) neq)/((double) numThreads)));
+  /*
+ ////////////////////////////  fprintf(stdout,"\n castro <<<%d,%d>>> \n\n",numBlocks, numThreads);
+
+    unsigned block = 256;
+    unsigned grid = (int) ceil((float)neq / block);
+ ////////////////////////////fprintf(stdout,"\n cvode <<<%d,%d>>> \n\n",grid, block);
+
+ int blockSize, gridSize;
+ 
+ // Number of threads in each thread block
+ blockSize = 1024;
+ 
+ // Number of thread blocks in grid
+ gridSize = (int)ceil((float)neq/blockSize);
+ ////////////////////////////fprintf(stdout,"\n olcf <<<%d,%d>>> \n\n",gridSize, blockSize);
+ */
+  AMREX_LAUNCH_DEVICE_LAMBDA ( neq, idx, {
+  f_rhs_test(t,u_ptr,udot_ptr, rpar, neq);
+  });
+
+ amrex::Cuda::Device::synchronize();
+ AMREX_GPU_ERROR_CHECK();
+
+/*      N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));
+      fprintf(stdout,"\nafter rparh[0]=%g \n\n",rparh[0]);
+  fprintf(stdout,"\nafter rparh[1]=%g \n\n",rparh[1]);
+  fprintf(stdout,"\nafter rparh[2]=%g \n\n",rparh[2]);
+  fprintf(stdout,"\nafter rparh[3]=%g \n\n",rparh[3]);
+  fprintf(stdout,"\nafter last rparh[4*(neq-1)+1]=%g \n\n",rparh[4*(neq-1)+1]);*/
+  return 0;
+}
+
+#else
 static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
 {
 
@@ -286,6 +423,7 @@ static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
   fprintf(stdout,"\nafter last rparh[4*(neq-1)+1]=%g \n\n",rpar[4*(neq-1)+1]);*/
   return 0;
 }
+#endif
 
 static void PrintOutput(realtype t, realtype umax, long int nst)
 {

@@ -505,7 +505,7 @@ int Nyx::integrate_state_grownbox
     return 0;
 }
 #ifdef AMREX_USE_CUDA
-__global__ void f_rhs_test(Real t,double* u_ptr,Real* udot_ptr, Real* rpar, int neq)
+__global__ void f_rhs_test_box(Real t,double* u_ptr,Real* udot_ptr, Real* rpar, int neq)
 {
   /*
 1.635780036449432E-01 a
@@ -570,7 +570,7 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
  gridSize = (int)ceil((float)neq/blockSize);
  ////////////////////////////fprintf(stdout,"\n olcf <<<%d,%d>>> \n\n",gridSize, blockSize);
  */
- f_rhs_test<<<numBlocks,numThreads>>>(t,u_ptr,udot_ptr, rpar, neq);
+ f_rhs_test_box<<<numBlocks,numThreads>>>(t,u_ptr,udot_ptr, rpar, neq);
 
  amrex::Cuda::Device::synchronize();
  AMREX_GPU_ERROR_CHECK();
