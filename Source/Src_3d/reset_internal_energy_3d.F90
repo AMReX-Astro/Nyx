@@ -149,7 +149,7 @@
                  print *,'>>> Warning: Nyx_3d::reset_internal_energy  ',i,j,k
                  print *,'>>> ... Resetting neg. e from EOS using small_temp: ',small_temp,&
                          ' from ',u(i,j,k,UEINT)/u(i,j,k,URHO),' to ', eint_new
-                 call flush(6)
+!                 call flush(6)
               end if
 
               ! Create reset source so u(i,j,k,UEINT) = u(i,j,k,UEINT) + r(i,j,k) = u(i,j,k,URHO) * eint_new

@@ -81,10 +81,15 @@ module atomic_rates_module
       logical, parameter :: Katz96=.false.
       real(rt), parameter :: t3=1.0d3, t5=1.0d5, t6=1.0d6
       real(rt) :: t, U, E, y, sqrt_t, corr_term, tmp
-      logical, save :: first=.true.
+      logical,save :: first
 
       character(len=:), allocatable :: file_in
       type(amrex_parmparse) :: pp
+
+      if (amrex_pd_ioprocessor()) then 
+         print*, "Forcing first true"
+      endif
+      first = .true.
 
       if (first) then
 

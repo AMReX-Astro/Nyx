@@ -33,7 +33,7 @@
       real(rt) :: z
 
 #ifdef AMREX_USE_CUDA
-      attributes(managed) :: state, diag_eos, eint, dummy_pres
+      attributes(managed) :: state, diag_eos !, eint, dummy_pres
 #endif
 
       z = 1.d0/comoving_a - 1.d0

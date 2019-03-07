@@ -96,7 +96,7 @@ module cvode_extras
 #ifndef AMREX_USE_CUDA
          !$OMP CRITICAL
          print *,'negative e exiting strang integration ',z, rho/mean_rhob, e_out
-         call flush(6)
+         !call flush(6)
          !$OMP END CRITICAL
 #endif
          T_vode  = 10.0

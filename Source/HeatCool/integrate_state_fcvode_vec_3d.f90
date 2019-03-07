@@ -168,7 +168,7 @@ subroutine integrate_state_fcvode_vec(lo, hi, &
                   if (e_out(ii) .lt. 0.d0) then
                       !$OMP CRITICAL
                       print *,'negative e exiting strang integration ',z, i,j,k, rho(ii)/mean_rhob, e_out(ii)
-                      call flush(6)
+                      !call flush(6)
                       !$OMP END CRITICAL
                       T_out(ii)  = 10.0
                       ne_out(ii) = 0.0

@@ -1391,14 +1391,14 @@
             if (rl(i) .lt. ZERO) then
                if (print_fortran_warnings .gt. 0) then
                   print *,'... setting NEG RL IN RIEMANN:IDIR ',idir,i,j,k3d,rl(i),' to ',small_dens
-                  call flush(6)
+!                  !call flush(6)
                endif
                rl(i) = max(rl(i),small_dens)
             else if (rl(i) .lt. small_dens) then
 
                if (print_fortran_warnings .gt. 0) then
                   print *,'... setting     RL IN RIEMANN:IDIR ',idir,i,j,k3d,rl(i),' to ',small_dens
-                  call flush(6)
+!                  !call flush(6)
                endif
                rl(i) = max(rl(i),small_dens)
             end if
@@ -1427,7 +1427,7 @@
                if (print_fortran_warnings .gt. 0) then
                   print *,'... setting PL/REL IN RIEMANN:IDIR ',idir,i,j,k3d, &
                           ql(i,j,kc,QPRES),' to ',small_pres
-                  call flush(6)
+!                  !call flush(6)
                endif
                pl(i)  = max(pl(i),small_pres)
                rel(i) = pl(i) / gamma_minus_1
@@ -1443,7 +1443,7 @@
                !
                if (print_fortran_warnings .gt. 0) then
                   print *,'... setting NEG RR IN RIEMANN:IDIR ',idir,i,j,k3d,rr(i),' to ',small_dens
-                  call flush(6)
+!                  !call flush(6)
                endif
                rr(i) = max(rr(i),small_dens)
             else if (rr(i) .lt. small_dens) then
@@ -1453,7 +1453,7 @@
 
                if (print_fortran_warnings .gt. 0) then
                   print *,'... setting     RR IN RIEMANN:IDIR ',idir,i,j,k3d,rr(i),' to ',small_dens
-                  call flush(6)
+!                  !call flush(6)
                endif
                rr(i) = max(rr(i),small_dens)
             end if
@@ -1481,7 +1481,7 @@
             if (pr(i) .lt. small_pres) then
                if (print_fortran_warnings .gt. 0) then
                  print *,'... setting PR/RER IN RIEMANN:IDIR ',idir,i,j,k3d,qr(i,j,kc,QPRES),' to ',small_pres
-                 call flush(6)
+!                 !call flush(6)
                endif
                pr(i) = max(pr(i),small_pres)
                rer(i) = pr(i) / gamma_minus_1
@@ -1542,7 +1542,7 @@
                !
                if (print_fortran_warnings .gt. 0) then
                   print *,'... setting RO     IN RIEMANN:IDIR ',idir,i,j,k3d,ro(i),' to ',small_dens
-                  call flush(6)
+!                  !call flush(6)
                endif
                ro(i) = max(ro(i),small_dens)
             end if
@@ -1563,7 +1563,7 @@
                !
                if (print_fortran_warnings .gt. 0) then
                   print *,'... setting RSTAR  IN RIEMANN:IDIR ',idir,i,j,k3d,rstar(i),' to ',small_dens
-                  call flush(6)
+!                  !call flush(6)
                endif
                rstar(i) = max(rstar(i),small_dens)
             end if
