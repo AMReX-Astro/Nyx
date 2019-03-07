@@ -74,7 +74,7 @@ int Nyx::integrate_state_vec
 	  // We know this is safe for simd on cpu.  So let's give compiler some help.
 	//	AMREX_PRAGMA_SIMD
 	for     (int j = 0; j < len.y; ++j) {
-	                    for (int i = 0; i < len.x; ++i) {
+	  //	                    for (int i = 0; i < len.x; ++i) {
 				N_Vector u;
 				//  SUNLinearSolver LS;
 				void *cvode_mem;
@@ -84,8 +84,8 @@ int Nyx::integrate_state_vec
 				//  LS = NULL;
 				cvode_mem = NULL;
 				//				long int neq = len.x;
-				long int neq = 1;
-				int loop = 0;
+				long int neq = len.x;
+				int loop = 1;
 
 #ifdef AMREX_USE_CUDA
 				u = N_VNew_Cuda(neq);  /* Allocate u vector */
@@ -105,7 +105,7 @@ int Nyx::integrate_state_vec
 				N_Vector abstol_vec = N_VNew_Serial(neq);
 #endif				//if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
 
-				AMREX_PARALLEL_FOR_1D ( neq, idx,
+				AMREX_PARALLEL_FOR_1D ( neq, i,
 				{	
 			//				for (int i= 0;i < neq; ++i) {
 				  dptr[i*loop]=state(i,j,k,Eint_loc)/state(i,j,k,Density_loc);
@@ -138,7 +138,7 @@ int Nyx::integrate_state_vec
 				//				diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
 				//	diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
 				// rho should not change  rho_tmp_ptr[i]=rparh[4*i+2]; //    rpar(3)=rho_vode
-				AMREX_PARALLEL_FOR_1D ( neq, idx,
+				AMREX_PARALLEL_FOR_1D ( neq, i,
 				{	
 				//				for (int i= 0;i < neq; ++i) {
 				  fort_ode_eos_finalize(&(dptr[i*loop]), &(rparh[4*i*loop]), one_in);
@@ -155,7 +155,7 @@ int Nyx::integrate_state_vec
 				N_VDestroy(abstol_vec);          /* Free the u vector */
 				N_VDestroy(Data);          /* Free the userdata vector */
 				CVodeFree(&cvode_mem);  /* Free the integrator memory */
-			      }//);
+			      //);
 			
 	}
       }
@@ -217,7 +217,7 @@ int Nyx::integrate_state_grownvec
 	  // We know this is safe for simd on cpu.  So let's give compiler some help.
 	//	AMREX_PRAGMA_SIMD
 	for     (int j = 0; j < len.y; ++j) {
-	                    for (int i = 0; i < len.x; ++i) {
+
 				N_Vector u;
 				//  SUNLinearSolver LS;
 				void *cvode_mem;
@@ -227,8 +227,8 @@ int Nyx::integrate_state_grownvec
 				//  LS = NULL;
 				cvode_mem = NULL;
 				//				long int neq = len.x;
-				long int neq = 1;
-				int loop = 0;
+				long int neq = len.x;
+				int loop = 1;
 
 #ifdef AMREX_USE_CUDA
 				u = N_VNew_Cuda(neq);  /* Allocate u vector */
@@ -248,7 +248,7 @@ int Nyx::integrate_state_grownvec
 				N_Vector abstol_vec = N_VNew_Serial(neq);
 #endif				//if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
 
-				AMREX_PARALLEL_FOR_1D ( neq, idx,
+				AMREX_PARALLEL_FOR_1D ( neq, i,
 				{	
 			//				for (int i= 0;i < neq; ++i) {
 				  dptr[i*loop]=state(i,j,k,Eint_loc)/state(i,j,k,Density_loc);
@@ -281,7 +281,7 @@ int Nyx::integrate_state_grownvec
 				//				diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
 				//	diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
 				// rho should not change  rho_tmp_ptr[i]=rparh[4*i+2]; //    rpar(3)=rho_vode
-				AMREX_PARALLEL_FOR_1D ( neq, idx,
+				AMREX_PARALLEL_FOR_1D ( neq, i,
 				{	
 				//				for (int i= 0;i < neq; ++i) {
 				  fort_ode_eos_finalize(&(dptr[i*loop]), &(rparh[4*i*loop]), one_in);
@@ -298,7 +298,7 @@ int Nyx::integrate_state_grownvec
 				N_VDestroy(abstol_vec);          /* Free the u vector */
 				N_VDestroy(Data);          /* Free the userdata vector */
 				CVodeFree(&cvode_mem);  /* Free the integrator memory */
-			      }//);
+			      //);
 			
 	}
       }
@@ -311,7 +311,6 @@ int Nyx::integrate_state_grownvec
             amrex::Abort("state has NaNs after the second strang call");
   #endif
 #endif
-
     return 0;
 }
 
