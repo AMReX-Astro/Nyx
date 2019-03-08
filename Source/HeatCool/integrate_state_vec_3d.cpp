@@ -91,13 +91,17 @@ int Nyx::integrate_state_vec
 				int loop = 1;
 
 #ifdef AMREX_USE_CUDA
+				cudaStream_t currentStream = amrex::Cuda::Device::cudaStream();
 				u = N_VNew_Cuda(neq);  /* Allocate u vector */
+				N_VSetCudaStream_Cuda(u, &currentStream);
 				dptr=N_VGetDeviceArrayPointer_Cuda(u);
 
 				N_Vector Data = N_VNew_Cuda(4*neq);  // Allocate u vector 
+				N_VSetCudaStream_Cuda(Data, &currentStream);
 				N_VConst(0.0,Data);
 				double* rparh=N_VGetDeviceArrayPointer_Cuda(Data);
 				N_Vector abstol_vec = N_VNew_Cuda(neq);
+				N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
 #else
 				u = N_VNew_Serial(neq);  /* Allocate u vector */
 				dptr=N_VGetArrayPointer_Serial(u);
@@ -123,8 +127,6 @@ int Nyx::integrate_state_vec
 				  rparh[4*idx*loop+3]=1/a-1;    //    rpar(4)=z_vode
 				  //				}
 				});
-				N_Vector eOrig =N_VClone(u);
-				N_VScale(1,u,eOrig);
 				
 #ifdef CV_NEWTON
 				cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
@@ -213,8 +215,8 @@ int Nyx::integrate_state_grownvec
       double* dptr;
       //check that copy contructor vs create constructor works??
       const Box& tbx = mfi.growntilebox();
-      //      Array4<Real> const& state = S_old.array(mfi);
-      //      Array4<Real> const& diag_eos = D_old.array(mfi);
+      //Array4<Real> const& state = S_old.array(mfi);
+      //Array4<Real> const& diag_eos = D_old.array(mfi);
       const auto len = amrex::length(tbx);  // length of box
       const auto lo  = amrex::lbound(tbx);  // lower bound of box
       const auto state = (S_old[mfi]).view(lo);  // a view starting from lo
@@ -240,13 +242,17 @@ int Nyx::integrate_state_grownvec
 				int loop = 1;
 
 #ifdef AMREX_USE_CUDA
+				cudaStream_t currentStream = amrex::Cuda::Device::cudaStream();
 				u = N_VNew_Cuda(neq);  /* Allocate u vector */
+				N_VSetCudaStream_Cuda(u, &currentStream);
 				dptr=N_VGetDeviceArrayPointer_Cuda(u);
 
 				N_Vector Data = N_VNew_Cuda(4*neq);  // Allocate u vector 
+				N_VSetCudaStream_Cuda(Data, &currentStream);
 				N_VConst(0.0,Data);
 				double* rparh=N_VGetDeviceArrayPointer_Cuda(Data);
 				N_Vector abstol_vec = N_VNew_Cuda(neq);
+				N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
 #else
 				u = N_VNew_Serial(neq);  /* Allocate u vector */
 				dptr=N_VGetArrayPointer_Serial(u);
@@ -271,8 +277,6 @@ int Nyx::integrate_state_grownvec
 				  rparh[4*idx*loop+3]=1/a-1;    //    rpar(4)=z_vode
 				  //				}
 				});
-				N_Vector eOrig =N_VClone(u);
-				N_VScale(1,u,eOrig);
 #ifdef CV_NEWTON
 				cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
 #else
@@ -376,6 +380,7 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
   fprintf(stdout,"\nrparh[3]=%g \n\n",rparh[3]);*/
   int numThreads = std::min(32, neq);
   int numBlocks = static_cast<int>(ceil(((double) neq)/((double) numThreads)));
+  cudaStream_t currentStream = amrex::Cuda::Device::cudaStream();
   /*
  ////////////////////////////  fprintf(stdout,"\n castro <<<%d,%d>>> \n\n",numBlocks, numThreads);
 
@@ -395,9 +400,8 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
   AMREX_LAUNCH_DEVICE_LAMBDA ( neq, idx, {
   f_rhs_test(t,u_ptr,udot_ptr, rpar, neq);
   });
-
- amrex::Cuda::Device::synchronize();
- AMREX_GPU_ERROR_CHECK();
+  cudaStreamSynchronize(currentStream);
+  AMREX_GPU_ERROR_CHECK();
 
 /*      N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));
       fprintf(stdout,"\nafter rparh[0]=%g \n\n",rparh[0]);
