@@ -24,7 +24,7 @@ module meth_params_module
   integer         , allocatable :: TEMP_COMP, NE_COMP, ZHI_COMP
 
   ! QTHERM: number of primitive variables
-  integer         , save :: QTHERM, QVAR
+  integer         , save :: QTHERM, QVAR, NQAUX, QC
   integer         , save :: QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS
   
   integer         , save :: nadv

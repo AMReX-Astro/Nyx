@@ -329,6 +329,8 @@
            else
               QVAR = QTHERM + nspec + naux + numadv
            end if
+           NQAUX = 1
+           QC = 1
 
            ! We use these to index into the state "Q"
            QRHO   = 1   ! rho
