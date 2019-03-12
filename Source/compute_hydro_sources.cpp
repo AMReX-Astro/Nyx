@@ -63,7 +63,8 @@ Nyx::compute_hydro_sources(amrex::Real time, amrex::Real dt, amrex::Real a_old, 
             u_gdnv[i].resize(amrex::grow(bxtmp, 1), 1);
             u_gdnv[i].setVal(1.e200);
         }
-        fort_make_hydro_sources
+	fort_ca_make_hydro_sources
+	  //fort_make_hydro_sources
             (&time, bx.loVect(), bx.hiVect(), 
              BL_TO_FORTRAN(state),
              BL_TO_FORTRAN(u_gdnv[0]),

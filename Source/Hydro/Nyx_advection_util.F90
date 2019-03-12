@@ -1,4 +1,5 @@
 module advection_module
+      use amrex_fort_module, only : rt => amrex_real
 contains
   
 subroutine ca_ctoprim(lo, hi, &
@@ -22,7 +23,6 @@ subroutine ca_ctoprim(lo, hi, &
 
     use amrex_constants_module, only: ZERO, HALF, ONE
     use amrex_error_module
-    use amrex_fort_module, only : rt => amrex_real
     implicit none
 
     integer, intent(in) :: lo(3), hi(3)
@@ -225,4 +225,254 @@ subroutine ca_ctoprim(lo, hi, &
 
   end subroutine ca_srctoprim
 
+    subroutine ca_apply_av(lo, hi, idir, dx, &
+       div, div_lo, div_hi, &
+       uin, uin_lo, uin_hi, &
+       flux, f_lo, f_hi, dt) bind(c, name="apply_av")
+
+    use amrex_constants_module, only: ZERO, FOURTH, ONE
+    use meth_params_module, only: NVAR, difmag
+    use prob_params_module, only: dg
+
+    implicit none
+
+    integer,  intent(in   ) :: lo(3), hi(3)
+    integer,  intent(in   ) :: div_lo(3), div_hi(3)
+    integer,  intent(in   ) :: uin_lo(3), uin_hi(3)
+    integer,  intent(in   ) :: f_lo(3), f_hi(3)
+    real(rt), intent(in   ) :: dx(3), dt
+    integer,  intent(in   ), value :: idir
+
+    real(rt), intent(in   ) :: div(div_lo(1):div_hi(1),div_lo(2):div_hi(2),div_lo(3):div_hi(3))
+    real(rt), intent(in   ) :: uin(uin_lo(1):uin_hi(1),uin_lo(2):uin_hi(2),uin_lo(3):uin_hi(3),NVAR)
+    real(rt), intent(inout) :: flux(f_lo(1):f_hi(1),f_lo(2):f_hi(2),f_lo(3):f_hi(3),NVAR)
+
+    integer :: i, j, k, n
+
+    real(rt) :: div1
+    real(rt) :: area(3)
+    real(rt) :: vol, volinv
+
+!!!    !$gpu
+
+    vol     = dx(1) * dx(2) * dx(3)
+    volinv  = ONE / vol
+
+    area(1)   =         dx(2) * dx(3)
+    area(2)   = dx(1)         * dx(3)
+    area(3)   = dx(1) * dx(2)
+
+    do n = 1, NVAR
+
+       do k = lo(3), hi(3)
+          do j = lo(2), hi(2)
+             do i = lo(1), hi(1)
+
+                if (idir .eq. 1) then
+
+                   div1 = FOURTH * (div(i,j,k        ) + div(i,j+1*dg(2),k        ) + &
+                        div(i,j,k+1*dg(3)) + div(i,j+1*dg(2),k+1*dg(3)))
+                   div1 = difmag * min(ZERO, div1)
+                   div1 = div1 * (uin(i,j,k,n) - uin(i-1*dg(1),j,k,n))
+
+                else if (idir .eq. 2) then
+
+                   div1 = FOURTH * (div(i,j,k        ) + div(i+1*dg(1),j,k        ) + &
+                        div(i,j,k+1*dg(3)) + div(i+1*dg(1),j,k+1*dg(3)))
+                   div1 = difmag * min(ZERO, div1)
+                   div1 = div1 * (uin(i,j,k,n) - uin(i,j-1*dg(2),k,n))
+
+                else
+
+                   div1 = FOURTH * (div(i,j        ,k) + div(i+1*dg(1),j        ,k) + &
+                        div(i,j+1*dg(2),k) + div(i+1*dg(1),j+1*dg(2),k))
+                   div1 = difmag * min(ZERO, div1)
+                   div1 = div1 * (uin(i,j,k,n) - uin(i,j,k-1*dg(3),n))
+
+                end if
+
+                flux(i,j,k,n) = flux(i,j,k,n) + dx(idir) * div1
+                flux(i,j,k,n) = flux(i,j,k,n) * area(idir) * dt
+
+             end do
+          end do
+       end do
+
+    end do
+
+  end subroutine ca_apply_av
+
+! :::
+! ::: ------------------------------------------------------------------
+! :::
+
+    subroutine ca_consup(uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
+                      hydro_src ,hsrc_l1,hsrc_l2,hsrc_l3,hsrc_h1,hsrc_h2,hsrc_h3, &
+                      flux1,flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3, &
+                      flux2,flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3, &
+                      flux3,flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3, &
+                      divu_nd,divu_cc,d_l1, d_l2, d_l3, d_h1, d_h2, d_h3, &
+                      lo,hi,dx,dy,dz,dt,a_old,a_new)
+
+      use amrex_fort_module, only : rt => amrex_real
+      use amrex_constants_module
+      use meth_params_module, only : difmag, NVAR, URHO, UMX, UMZ, &
+           UEDEN, UEINT, UFS, normalize_species, gamma_minus_1
+
+      implicit none
+
+      integer lo(3), hi(3)
+      integer   uin_l1,  uin_l2,  uin_l3,  uin_h1,  uin_h2,  uin_h3
+      integer   hsrc_l1,  hsrc_l2,  hsrc_l3,  hsrc_h1,  hsrc_h2,  hsrc_h3
+      integer d_l1,   d_l2,   d_l3,   d_h1,   d_h2,   d_h3
+      integer flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3
+      integer flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3
+      integer flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3
+
+      real(rt)  :: uin(uin_l1:uin_h1,uin_l2:uin_h2,uin_l3:uin_h3,NVAR)
+      real(rt)  :: hydro_src(hsrc_l1:hsrc_h1,hsrc_l2:hsrc_h2,hsrc_l3:hsrc_h3,NVAR)
+      real(rt)  :: flux1(flux1_l1:flux1_h1,flux1_l2:flux1_h2,flux1_l3:flux1_h3,NVAR)
+      real(rt)  :: flux2(flux2_l1:flux2_h1,flux2_l2:flux2_h2,flux2_l3:flux2_h3,NVAR)
+      real(rt)  :: flux3(flux3_l1:flux3_h1,flux3_l2:flux3_h2,flux3_l3:flux3_h3,NVAR)
+      real(rt)  :: divu_nd(lo(1):hi(1)+1,lo(2):hi(2)+1,lo(3):hi(3)+1)
+      real(rt)  :: divu_cc(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3)
+      real(rt)  :: dx, dy, dz, dt, a_old, a_new
+
+      real(rt) :: div1, a_half, a_oldsq, a_newsq
+      real(rt) :: area1, area2, area3
+      real(rt) :: vol, volinv, a_newsq_inv
+      real(rt) :: a_half_inv, a_new_inv, dt_a_new
+      integer  :: i, j, k, n
+
+      a_half  = HALF * (a_old + a_new)
+      a_oldsq = a_old * a_old
+      a_newsq = a_new * a_new
+      vol     = dx * dy * dz
+      volinv  = ONE / vol
+
+      area1   =      dy * dz
+      area2   = dx      * dz
+      area3   = dx * dy
+
+      do n= 1,NVAR
+         do k = lo(3),hi(3)
+            do j = lo(2),hi(2)
+               do i = lo(1),hi(1)+1
+!                  div1 = FOURTH*(divu_nd(i,j,k) + divu_nd(i,j+1,k) + divu_nd(i,j,k+1) + divu_nd(i,j+1,k+1))
+!                  div1 = difmag*min(ZERO,div1)
+!                  flux1(i,j,k,n) = flux1(i,j,k,n) + dx*div1*(uin(i,j,k,n)-uin(i-1,j,k,n))
+!                  flux1(i,j,k,n) = flux1(i,j,k,n) * area1 * dt
+               enddo
+            enddo
+         enddo
+         do k = lo(3),hi(3)
+            do j = lo(2),hi(2)+1
+               do i = lo(1),hi(1)
+!                  div1 = FOURTH*(divu_nd(i,j,k) + divu_nd(i+1,j,k) + divu_nd(i,j,k+1) + divu_nd(i+1,j,k+1))
+!                  div1 = difmag*min(ZERO,div1)
+!                  flux2(i,j,k,n) = flux2(i,j,k,n) + dy*div1*(uin(i,j,k,n)-uin(i,j-1,k,n))
+!                  flux2(i,j,k,n) = flux2(i,j,k,n) * area2 * dt
+               enddo
+            enddo
+         enddo
+         do k = lo(3),hi(3)+1
+            do j = lo(2),hi(2)
+               do i = lo(1),hi(1)
+!                  div1 = FOURTH*(divu_nd(i,j,k) + divu_nd(i+1,j,k) + divu_nd(i,j+1,k) + divu_nd(i+1,j+1,k))
+!                  div1 = difmag*min(ZERO,div1)
+!                  flux3(i,j,k,n) = flux3(i,j,k,n) + dz*div1*(uin(i,j,k,n)-uin(i,j,k-1,n))
+!                  flux3(i,j,k,n) = flux3(i,j,k,n) * area3 * dt
+               enddo
+            enddo
+         enddo
+         
+      enddo
+      
+      if (UFS .gt. 0 .and. normalize_species .eq. 1) &
+         call normalize_species_fluxes( &
+                  flux1,flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3, &
+                  flux2,flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3, &
+                  flux3,flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3, &
+                  lo,hi)
+
+      a_half_inv  = ONE / a_half
+      a_new_inv   = ONE / a_new
+      dt_a_new    = dt / a_new
+      a_newsq_inv = ONE / a_newsq
+
+      do n = 1, NVAR
+         do k = lo(3),hi(3)
+            do j = lo(2),hi(2)
+               do i = lo(1),hi(1)
+
+                  ! Density
+                  if (n .eq. URHO) then
+                      hydro_src(i,j,k,n) = &
+                          ( ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
+                          +   flux2(i,j,k,n) - flux2(i,j+1,k,n) &
+                          +   flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * volinv  ) * a_half_inv
+
+                  ! Momentum
+                  else if (n .ge. UMX .and. n .le. UMZ) then
+                     hydro_src(i,j,k,n) =  &
+                            ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
+                          +   flux2(i,j,k,n) - flux2(i,j+1,k,n) &
+                          +   flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * volinv
+
+                  ! (rho E)
+                  else if (n .eq. UEDEN) then
+                     hydro_src(i,j,k,n) =  &
+                            ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
+                          +   flux2(i,j,k,n) - flux2(i,j+1,k,n) &
+                          +   flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * a_half * volinv &
+                          +   a_half * (a_new - a_old) * ( TWO - THREE * gamma_minus_1) * uin(i,j,k,UEINT)
+
+                  ! (rho e)
+                  else if (n .eq. UEINT) then
+
+                     hydro_src(i,j,k,n) =  &
+                          ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
+                           +flux2(i,j,k,n) - flux2(i,j+1,k,n) &
+                           +flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * a_half * volinv &
+                           +a_half*(a_new - a_old) * ( TWO - THREE * gamma_minus_1) * uin(i,j,k,UEINT) &
+                           -a_half*dt*(gamma_minus_1 * uin(i,j,k,n)) * divu_cc(i,j,k)
+
+                  ! (rho X_i) and (rho adv_i) and (rho aux_i)
+                  else
+                     hydro_src(i,j,k,n) = &
+                            ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
+                          +   flux2(i,j,k,n) - flux2(i,j+1,k,n) &
+                          +   flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * volinv 
+                  endif
+
+                  hydro_src(i,j,k,n) = hydro_src(i,j,k,n) / dt
+
+               enddo
+            enddo
+         enddo
+      enddo
+
+      do n = 1, NVAR
+         if (n .eq. URHO) then
+            flux1(:,:,:,n) = flux1(:,:,:,n) * a_half_inv
+            flux2(:,:,:,n) = flux2(:,:,:,n) * a_half_inv
+            flux3(:,:,:,n) = flux3(:,:,:,n) * a_half_inv
+         else if (n.ge.UMX .and. n.le.UMZ) then
+            flux1(:,:,:,n) = flux1(:,:,:,n) * a_new_inv
+            flux2(:,:,:,n) = flux2(:,:,:,n) * a_new_inv
+            flux3(:,:,:,n) = flux3(:,:,:,n) * a_new_inv
+         else if (n.eq.UEINT .or. n.eq.UEDEN) then
+            flux1(:,:,:,n) = flux1(:,:,:,n) * (a_half * a_newsq_inv)
+            flux2(:,:,:,n) = flux2(:,:,:,n) * (a_half * a_newsq_inv)
+            flux3(:,:,:,n) = flux3(:,:,:,n) * (a_half * a_newsq_inv)
+         else
+            flux1(:,:,:,n) = flux1(:,:,:,n) * a_half_inv
+            flux2(:,:,:,n) = flux2(:,:,:,n) * a_half_inv
+            flux3(:,:,:,n) = flux3(:,:,:,n) * a_half_inv
+         end if
+      end do
+
+      end subroutine ca_consup
+
+  
 end module advection_module

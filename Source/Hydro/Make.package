@@ -1,6 +1,7 @@
 # sources used with hydro
 F90EXE_sources += Nyx_advection_util.F90
 F90EXE_sources += flatten_nd.F90
+#f90EXE_sources += make_hydro_sources_3d.f90
 
 ifeq (FALSE, TRUE)
 F90EXE_sources += slope_nd.F90

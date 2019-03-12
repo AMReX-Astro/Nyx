@@ -9,5 +9,5 @@ module prob_params_module
   integer         , save :: physbc_hi(3)
   integer         , save :: Outflow, Symmetry
   integer         , save :: coord_type
-
+  integer         , save :: dg(3) = 1
 end module prob_params_module
