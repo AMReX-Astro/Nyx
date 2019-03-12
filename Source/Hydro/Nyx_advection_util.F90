@@ -225,6 +225,71 @@ subroutine ca_ctoprim(lo, hi, &
 
   end subroutine ca_srctoprim
 
+  ! :::
+  ! ::: ------------------------------------------------------------------
+  ! :::
+
+  !> @brief this computes the *node-centered* divergence
+  !!
+  subroutine divu(lo, hi, &
+       q, q_lo, q_hi, &
+       dx, div, div_lo, div_hi) bind(C, name='divu')
+
+    use meth_params_module, only : QU, QV, QW, QVAR
+    use amrex_constants_module, only : HALF, FOURTH, ONE, ZERO
+    use prob_params_module, only : dg, coord_type
+    use amrex_fort_module, only : rt => amrex_real
+
+    implicit none
+
+    integer, intent(in) :: lo(3), hi(3)
+    integer, intent(in) :: q_lo(3), q_hi(3)
+    integer, intent(in) :: div_lo(3), div_hi(3)
+    real(rt), intent(in) :: dx(3)
+    real(rt), intent(inout) :: div(div_lo(1):div_hi(1),div_lo(2):div_hi(2),div_lo(3):div_hi(3))
+    real(rt), intent(in) :: q(q_lo(1):q_hi(1),q_lo(2):q_hi(2),q_lo(3):q_hi(3),QVAR)
+
+    integer  :: i, j, k
+    real(rt) :: ux, vy, wz, dxinv, dyinv, dzinv
+    real(rt) :: rl, rr, rc, ul, ur, vt, vb
+
+    !$gpu
+
+    dxinv = ONE/dx(1)
+    dyinv = ONE/dx(2)
+    dzinv = ONE/dx(3)
+
+    do k = lo(3), hi(3)
+       do j = lo(2), hi(2)
+          do i = lo(1), hi(1)
+
+             ux = FOURTH*( &
+                  + q(i        ,j        ,k        ,QU) - q(i-1*dg(1),j        ,k        ,QU) &
+                  + q(i        ,j        ,k-1*dg(3),QU) - q(i-1*dg(1),j        ,k-1*dg(3),QU) &
+                  + q(i        ,j-1*dg(2),k        ,QU) - q(i-1*dg(1),j-1*dg(2),k        ,QU) &
+                  + q(i        ,j-1*dg(2),k-1*dg(3),QU) - q(i-1*dg(1),j-1*dg(2),k-1*dg(3),QU) ) * dxinv
+
+             vy = FOURTH*( &
+                  + q(i        ,j        ,k        ,QV) - q(i        ,j-1*dg(2),k        ,QV) &
+                  + q(i        ,j        ,k-1*dg(3),QV) - q(i        ,j-1*dg(2),k-1*dg(3),QV) &
+                  + q(i-1*dg(1),j        ,k        ,QV) - q(i-1*dg(1),j-1*dg(2),k        ,QV) &
+                  + q(i-1*dg(1),j        ,k-1*dg(3),QV) - q(i-1*dg(1),j-1*dg(2),k-1*dg(3),QV) ) * dyinv
+
+             wz = FOURTH*( &
+                  + q(i        ,j        ,k        ,QW) - q(i        ,j        ,k-1*dg(3),QW) &
+                  + q(i        ,j-1*dg(2),k        ,QW) - q(i        ,j-1*dg(2),k-1*dg(3),QW) &
+                  + q(i-1*dg(1),j        ,k        ,QW) - q(i-1*dg(1),j        ,k-1*dg(3),QW) &
+                  + q(i-1*dg(1),j-1*dg(2),k        ,QW) - q(i-1*dg(1),j-1*dg(2),k-1*dg(3),QW) ) * dzinv
+
+             div(i,j,k) = ux + vy + wz
+
+          enddo
+       enddo
+    enddo
+
+  end subroutine divu
+
+  
     subroutine ca_apply_av(lo, hi, idir, dx, &
        div, div_lo, div_hi, &
        uin, uin_lo, uin_hi, &

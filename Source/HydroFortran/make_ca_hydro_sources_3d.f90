@@ -90,14 +90,12 @@
       srcq_h3 = hi(3)+NHYP
 
       call amrex_allocate(     q, lo-NHYP, hi+NHYP, QVAR)
-      call amrex_allocate(     q2, lo-NHYP, hi+NHYP, QVAR)
       call amrex_allocate(  qaux, lo-NHYP, hi+NHYP,    1)
       call amrex_allocate( flatn, lo-NHYP, hi+NHYP      )
       call amrex_allocate(     c, lo-NHYP, hi+NHYP      )
       call amrex_allocate(  csml, lo-NHYP, hi+NHYP      )
 
       call amrex_allocate(   srcQ, lo-NHYP, hi+NHYP, QVAR)
-      call amrex_allocate(   srcQ2, lo-NHYP, hi+NHYP, QVAR)
       call amrex_allocate(divu_nd, lo  , hi+1)
 
       dx = delta(1)
@@ -180,8 +178,9 @@
                    a_old,a_new,print_fortran_warnings)
 
       ! Compute divergence of velocity field (on surroundingNodes(lo,hi))
-      call make_divu_nd(lo,hi,q,q_l1,q_l2,q_l3,q_h1,q_h2,q_h3, &
-                        dx,dy,dz,divu_nd,lo(1),lo(2),lo(3),hi(1)+1,hi(2)+1,hi(3)+1)
+      call divu(lo,hi+1, &
+           q,qlo, qhi, &
+           delta, divu_nd, lo, hi+1)
 
       tmp_hi=hi
       tmp_hi(1)=tmp_hi(1)+1
@@ -217,7 +216,7 @@
           flux3, flux3_lo, flux3_hi)
      endif
       
-      ! Conservative update
+      ! Conservative update to make hydro sources
       call ca_consup(uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
                   hydro_src , hsrc_l1, hsrc_l2, hsrc_l3, hsrc_h1, hsrc_h2, hsrc_h3, &
                   flux1,flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3, &
@@ -228,6 +227,7 @@
 
       ! We are done with these here so can go ahead and free up the space.
       call amrex_deallocate(q)
+      call amrex_deallocate(qaux)
       call amrex_deallocate(flatn)
       call amrex_deallocate(c)
       call amrex_deallocate(csml)
