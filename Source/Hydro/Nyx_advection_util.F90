@@ -142,7 +142,7 @@ subroutine ca_ctoprim(lo, hi, &
                                      QREINT, QPRES, &
                                      npassive, upass_map, qpass_map, &
                                      nadv, small_dens, small_pres, &
-                                     gamma_const, gamma_minus_1, use_flattening
+                                     gamma_const, gamma_minus_1, use_flattening, QFA, QFS, UFS, UFA
     use amrex_constants_module, only: ZERO, HALF, ONE, THREE
     use amrex_fort_module, only : rt => amrex_real
 
@@ -163,7 +163,7 @@ subroutine ca_ctoprim(lo, hi, &
     real(rt)        , intent(inout) :: srcQ(srQ_lo(1):srQ_hi(1),srQ_lo(2):srQ_hi(2),srQ_lo(3):srQ_hi(3),QVAR)
 
     integer          :: i, j, k
-    integer          :: n, iq, ipassive
+    integer          :: n, iq, ipassive, iadv, ispec
     real(rt)         :: rhoinv, a_half, a_dot, dpde, dpdr
 
     !$gpu
@@ -195,7 +195,19 @@ subroutine ca_ctoprim(lo, hi, &
              dpde = gamma_minus_1 * q(i,j,k,QRHO)
              dpdr = gamma_minus_1 * q(i,j,k,QREINT)/q(i,j,k,QRHO)
              srcQ(i,j,k,QPRES ) = dpde * srcQ(i,j,k,QREINT) * rhoInv &
-                                  + dpdr * srcQ(i,j,k,QRHO)
+                  + dpdr * srcQ(i,j,k,QRHO)
+
+             !!!!!!!!!!!UFS and UFA mapping should be identical to ipassive
+!             if (UFS .gt. 0) then
+!                  do ispec = 1,nspec+naux
+!                     srcQ(i,j,k,QFS+ispec-1) = src(i,j,k,UFS+ispec-1)*rhoInv
+!                  enddo
+!               end if ! UFS > 0
+
+!               do iadv = 1,nadv
+!                  srcQ(i,j,k,QFA+iadv-1) = src(i,j,k,UFA+iadv-1)*rhoInv
+!               enddo
+
 
           enddo
        enddo

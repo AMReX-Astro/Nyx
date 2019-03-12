@@ -57,20 +57,18 @@
 
       ! Automatic arrays for workspace
       real(rt), pointer :: q(:,:,:,:)
-      real(rt), pointer :: q2(:,:,:,:)
       real(rt), pointer :: qaux(:,:,:,:)
       real(rt), pointer :: flatn(:,:,:)
       real(rt), pointer :: c(:,:,:)
       real(rt), pointer :: csml(:,:,:)
       real(rt), pointer :: divu_nd(:,:,:)
       real(rt), pointer :: srcQ(:,:,:,:)
-      real(rt), pointer :: srcQ2(:,:,:,:)
 
       real(rt) dx,dy,dz
       integer ngq,ngf
       integer q_l1, q_l2, q_l3, q_h1, q_h2, q_h3
       integer srcq_l1, srcq_l2, srcq_l3, srcq_h1, srcq_h2, srcq_h3
-      integer ulo(3), uhi(3), qlo(3), qhi(3), loq(3), hiq(3), n, tmp_hi(3)
+      integer ulo(3), uhi(3), qlo(3), qhi(3), loq(3), hiq(3), n, tmp_hi(3), glo(3), ghi(3)
       integer flux1_lo(3), flux1_hi(3), flux2_lo(3), flux2_hi(3), flux3_lo(3), flux3_hi(3)
       ngq = NHYP
       ngf = 1
@@ -121,6 +119,13 @@
       qhi(2)=q_h2
       qhi(3)=q_h3
 
+      glo(1)=gv_l1
+      glo(2)=gv_l2
+      glo(3)=gv_l3
+      ghi(1)=gv_h1
+      ghi(2)=gv_h2
+      ghi(3)=gv_h3
+
       flux1_lo(1)=flux1_l1
       flux1_lo(2)=flux1_l2
       flux1_lo(3)=flux1_l3
@@ -155,11 +160,10 @@
          flatn = ONE
       endif
 
-
       call ca_srctoprim(qlo,qhi, &
            q,qlo, qhi, &
            qaux,qlo, qhi, &
-           grav,qlo, qhi, &
+           grav,glo, ghi, &
            src, qlo, qhi, &
            srcQ, qlo, qhi, a_old, a_new, dt)
 
