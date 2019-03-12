@@ -22,7 +22,7 @@
       use amrex_fort_module, only : rt => amrex_real
       use amrex_mempool_module, only : amrex_allocate, amrex_deallocate
       use meth_params_module, only : QVAR, NVAR, NHYP, normalize_species, &
-           QC, QPRES, use_flattening
+           QC, QPRES, use_flattening, UFS
       use flatten_module
       use amrex_constants_module
       use advection_module
@@ -201,6 +201,21 @@
           divu_nd, lo, hi+1, &
           uin, ulo, uhi, &
           flux3, flux3_lo, flux3_hi, dt)
+
+     if (UFS .gt. 0 .and. normalize_species .eq. 1) then
+     tmp_hi=hi
+      tmp_hi(1)=tmp_hi(1)+1
+      call ca_normalize_species_fluxes(lo, tmp_hi, &
+               flux1, flux1_lo, flux1_hi)
+     tmp_hi=hi
+     tmp_hi(2)=tmp_hi(2)+1
+     call ca_normalize_species_fluxes(lo, tmp_hi, &
+          flux2, flux2_lo, flux2_hi)
+     tmp_hi=hi
+     tmp_hi(3)=tmp_hi(3)+1
+     call ca_normalize_species_fluxes(lo, tmp_hi, &
+          flux3, flux3_lo, flux3_hi)
+     endif
       
       ! Conservative update
       call ca_consup(uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &

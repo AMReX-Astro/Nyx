@@ -302,6 +302,54 @@ subroutine ca_ctoprim(lo, hi, &
 
   end subroutine ca_apply_av
 
+    !> @brief Normalize the fluxes of the mass fractions so that
+  !! they sum to 0.  This is essentially the CMA procedure that is
+  !! defined in Plewa & Muller, 1999, A&A, 342, 179.
+  !!
+  subroutine ca_normalize_species_fluxes(lo, hi, flux, f_lo, f_hi) bind(c, name="normalize_species_fluxes")
+
+    use network, only: nspec
+    use amrex_constants_module, only: ZERO, ONE
+    use amrex_fort_module, only: rt => amrex_real
+    use meth_params_module, only: NVAR, URHO, UFS
+
+    implicit none
+
+    integer,  intent(in   ) :: lo(3), hi(3)
+    integer,  intent(in   ) :: f_lo(3), f_hi(3)
+    real(rt), intent(inout) :: flux(f_lo(1):f_hi(1),f_lo(2):f_hi(2),f_lo(3):f_hi(3),NVAR)
+
+    ! Local variables
+    integer  :: i, j, k, n
+    real(rt) :: sum, fac
+
+    !$gpu
+
+    do k = lo(3), hi(3)
+       do j = lo(2), hi(2)
+          do i = lo(1), hi(1)
+
+             sum = ZERO
+
+             do n = UFS, UFS+nspec-1
+                sum = sum + flux(i,j,k,n)
+             end do
+
+             if (sum .ne. ZERO) then
+                fac = flux(i,j,k,URHO) / sum
+             else
+                fac = ONE
+             end if
+
+             do n = UFS, UFS+nspec-1
+                flux(i,j,k,n) = flux(i,j,k,n) * fac
+             end do
+
+          end do
+       end do
+    end do
+
+  end subroutine ca_normalize_species_fluxes
 ! :::
 ! ::: ------------------------------------------------------------------
 ! :::
@@ -349,17 +397,6 @@ subroutine ca_ctoprim(lo, hi, &
       a_newsq = a_new * a_new
       vol     = dx * dy * dz
       volinv  = ONE / vol
-
-      area1   =      dy * dz
-      area2   = dx      * dz
-      area3   = dx * dy
-
-      if (UFS .gt. 0 .and. normalize_species .eq. 1) &
-         call normalize_species_fluxes( &
-                  flux1,flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3, &
-                  flux2,flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3, &
-                  flux3,flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3, &
-                  lo,hi)
 
       a_half_inv  = ONE / a_half
       a_new_inv   = ONE / a_new
@@ -439,6 +476,5 @@ subroutine ca_ctoprim(lo, hi, &
       end do
 
       end subroutine ca_consup
-
   
 end module advection_module
