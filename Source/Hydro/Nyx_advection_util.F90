@@ -354,40 +354,6 @@ subroutine ca_ctoprim(lo, hi, &
       area2   = dx      * dz
       area3   = dx * dy
 
-      do n= 1,NVAR
-         do k = lo(3),hi(3)
-            do j = lo(2),hi(2)
-               do i = lo(1),hi(1)+1
-!                  div1 = FOURTH*(divu_nd(i,j,k) + divu_nd(i,j+1,k) + divu_nd(i,j,k+1) + divu_nd(i,j+1,k+1))
-!                  div1 = difmag*min(ZERO,div1)
-!                  flux1(i,j,k,n) = flux1(i,j,k,n) + dx*div1*(uin(i,j,k,n)-uin(i-1,j,k,n))
-!                  flux1(i,j,k,n) = flux1(i,j,k,n) * area1 * dt
-               enddo
-            enddo
-         enddo
-         do k = lo(3),hi(3)
-            do j = lo(2),hi(2)+1
-               do i = lo(1),hi(1)
-!                  div1 = FOURTH*(divu_nd(i,j,k) + divu_nd(i+1,j,k) + divu_nd(i,j,k+1) + divu_nd(i+1,j,k+1))
-!                  div1 = difmag*min(ZERO,div1)
-!                  flux2(i,j,k,n) = flux2(i,j,k,n) + dy*div1*(uin(i,j,k,n)-uin(i,j-1,k,n))
-!                  flux2(i,j,k,n) = flux2(i,j,k,n) * area2 * dt
-               enddo
-            enddo
-         enddo
-         do k = lo(3),hi(3)+1
-            do j = lo(2),hi(2)
-               do i = lo(1),hi(1)
-!                  div1 = FOURTH*(divu_nd(i,j,k) + divu_nd(i+1,j,k) + divu_nd(i,j+1,k) + divu_nd(i+1,j+1,k))
-!                  div1 = difmag*min(ZERO,div1)
-!                  flux3(i,j,k,n) = flux3(i,j,k,n) + dz*div1*(uin(i,j,k,n)-uin(i,j,k-1,n))
-!                  flux3(i,j,k,n) = flux3(i,j,k,n) * area3 * dt
-               enddo
-            enddo
-         enddo
-         
-      enddo
-      
       if (UFS .gt. 0 .and. normalize_species .eq. 1) &
          call normalize_species_fluxes( &
                   flux1,flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3, &

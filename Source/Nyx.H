@@ -697,6 +697,7 @@ protected:
 
     static int nsteps_from_plotfile;
 
+    static int hydro_convert;
     static int allow_untagging;
     static int use_const_species;
     static int normalize_species;
