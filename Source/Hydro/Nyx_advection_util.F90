@@ -431,13 +431,14 @@ subroutine ca_ctoprim(lo, hi, &
 ! ::: ------------------------------------------------------------------
 ! :::
 
-    subroutine ca_consup(uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
-                      hydro_src ,hsrc_l1,hsrc_l2,hsrc_l3,hsrc_h1,hsrc_h2,hsrc_h3, &
-                      flux1,flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3, &
-                      flux2,flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3, &
-                      flux3,flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3, &
-                      divu_nd,divu_cc,d_l1, d_l2, d_l3, d_h1, d_h2, d_h3, &
-                      lo,hi,dx,dy,dz,dt,a_old,a_new)
+    subroutine ca_consup(uin,ulo, uhi, &
+                      hydro_src ,hsrc_lo,hsrc_hi, &
+                      flux1,flux1_lo,flux1_hi, &
+                      flux2,flux2_lo,flux2_hi, &
+                      flux3,flux3_lo,flux3_hi, &
+                      divu_nd,dnd_lo,dnd_hi, &
+                      divu_cc,d_lo, d_hi, &
+                      lo,hi,dx,dt,a_old,a_new)
 
       use amrex_fort_module, only : rt => amrex_real
       use amrex_constants_module
@@ -447,21 +448,22 @@ subroutine ca_ctoprim(lo, hi, &
       implicit none
 
       integer lo(3), hi(3)
-      integer   uin_l1,  uin_l2,  uin_l3,  uin_h1,  uin_h2,  uin_h3
-      integer   hsrc_l1,  hsrc_l2,  hsrc_l3,  hsrc_h1,  hsrc_h2,  hsrc_h3
-      integer d_l1,   d_l2,   d_l3,   d_h1,   d_h2,   d_h3
-      integer flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3
-      integer flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3
-      integer flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3
+      integer ulo(3), uhi(3)
+      integer d_lo(3), d_hi(3)
+      integer dnd_lo(3), dnd_hi(3)
+      integer hsrc_lo(3), hsrc_hi(3)
+      real(rt), intent(in)  :: uin(ulo(1):uhi(1),ulo(2):uhi(2),ulo(3):uhi(3),NVAR)
+      integer, intent(in) :: flux1_lo(3), flux1_hi(3)
+      real(rt) :: flux1(flux1_lo(1):flux1_hi(1),flux1_lo(2):flux1_hi(2),flux1_lo(3):flux1_hi(3),NVAR)
+      integer, intent(in) :: flux2_lo(3), flux2_hi(3)
+      real(rt) :: flux2(flux2_lo(1):flux2_hi(1),flux2_lo(2):flux2_hi(2),flux2_lo(3):flux2_hi(3),NVAR)
+      integer, intent(in) :: flux3_lo(3), flux3_hi(3)
+      real(rt) :: flux3(flux3_lo(1):flux3_hi(1),flux3_lo(2):flux3_hi(2),flux3_lo(3):flux3_hi(3),NVAR)
 
-      real(rt)  :: uin(uin_l1:uin_h1,uin_l2:uin_h2,uin_l3:uin_h3,NVAR)
-      real(rt)  :: hydro_src(hsrc_l1:hsrc_h1,hsrc_l2:hsrc_h2,hsrc_l3:hsrc_h3,NVAR)
-      real(rt)  :: flux1(flux1_l1:flux1_h1,flux1_l2:flux1_h2,flux1_l3:flux1_h3,NVAR)
-      real(rt)  :: flux2(flux2_l1:flux2_h1,flux2_l2:flux2_h2,flux2_l3:flux2_h3,NVAR)
-      real(rt)  :: flux3(flux3_l1:flux3_h1,flux3_l2:flux3_h2,flux3_l3:flux3_h3,NVAR)
-      real(rt)  :: divu_nd(lo(1):hi(1)+1,lo(2):hi(2)+1,lo(3):hi(3)+1)
-      real(rt)  :: divu_cc(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3)
-      real(rt)  :: dx, dy, dz, dt, a_old, a_new
+      real(rt)  :: hydro_src(hsrc_lo(1):hsrc_hi(1),hsrc_lo(2):hsrc_hi(2),hsrc_lo(3):hsrc_hi(3),NVAR)
+      real(rt)  :: divu_nd(dnd_lo(1):dnd_hi(1),dnd_lo(2):dnd_hi(2),dnd_lo(3):dnd_hi(3))
+      real(rt)  :: divu_cc(d_lo(1):d_hi(1),d_lo(2):d_hi(2),d_lo(3):d_hi(3))
+      real(rt)  :: dx(3), dt, a_old, a_new
 
       real(rt) :: div1, a_half, a_oldsq, a_newsq
       real(rt) :: area1, area2, area3
@@ -472,7 +474,7 @@ subroutine ca_ctoprim(lo, hi, &
       a_half  = HALF * (a_old + a_new)
       a_oldsq = a_old * a_old
       a_newsq = a_new * a_new
-      vol     = dx * dy * dz
+      vol     = dx(1) * dx(2) * dx(3)
       volinv  = ONE / vol
 
       a_half_inv  = ONE / a_half
