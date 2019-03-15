@@ -21,6 +21,7 @@ UsersGuide/*.pdf
 # emacs temporaries
 *~
 \#*
+\.#*
 
 
 # executables
@@ -35,8 +36,10 @@ plt*
 chk*
 *plt?????
 *chk?????
+*bl_prof
 *plt?????.old*
 *chk?????.old*
+*bl_prof.old*
 *.xmgr
 ic_sb_32.ascii
 fixed_grids

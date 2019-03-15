@@ -24,8 +24,8 @@ module meth_params_module
   integer         , allocatable :: TEMP_COMP, NE_COMP, ZHI_COMP
 
   ! QTHERM: number of primitive variables
-  integer         , save :: QTHERM, QVAR, NQAUX, QC
-  integer         , save :: QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS
+  integer         , save :: QTHERM, QVAR, NQAUX, QC, NQSRC, NQ, UTEMP, QGAME, QGAMC, NGDNV, QTEMP, QFX,  QGC
+  integer         , save :: QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS, GDGAME, GDPRES, GDRHO, GDU, GDV, GDW
   
   integer         , save :: nadv
 
@@ -44,7 +44,19 @@ module meth_params_module
   integer         , allocatable :: heat_cool_type
   integer         , save :: inhomo_reion
   integer         , save :: grav_source_type
-
+  integer         , save :: cg_maxiter = 12
+  integer         , save :: cg_tol = 1.0d-5
+  integer         , save :: cg_blend = 0
+  integer         , save :: fix_mass_flux = 0
+  integer         , save :: ppm_predict_gammae = 0
+  integer         , save :: ppm_temp_fix = 0
+  integer         , save :: ppm_reference_eigenvectors = 0
+  integer         , save :: hybrid_riemann = 0
+  integer         , save :: riemann_solver = 0
+  integer         , save :: use_pslope = 0
+  integer         , save :: transverse_reset_density = 1
+  integer         , save :: transverse_reset_rhoe = 1
+ 
   integer, save :: npassive
   integer, save, allocatable :: qpass_map(:), upass_map(:)
 #ifdef AMREX_USE_CUDA

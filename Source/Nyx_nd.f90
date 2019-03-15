@@ -331,7 +331,23 @@
            end if
            NQAUX = 1
            QC = 1
-
+           QGC = -1
+           NQSRC = QVAR
+           NQ = QVAR
+           UTEMP = -1
+           QGAME = -1
+           QGAMC = -1
+           
+           ! We use these to index into the state "Q"
+           GDRHO = 1;
+           GDU = 2;
+           GDV = 3;
+           GDW = 4;
+           GDPRES = 5;
+           GDGAME = 6;
+           
+           NGDNV = 6
+           
            ! We use these to index into the state "Q"
            QRHO   = 1   ! rho
            QU     = 2   ! u

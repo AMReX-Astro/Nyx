@@ -103,6 +103,29 @@ int Nyx::Temp_comp = -1;
 int Nyx::  Ne_comp = -1;
 int Nyx:: Zhi_comp = -1;
 
+int Nyx::QVAR = 8;
+int Nyx::NQSRC = 8;
+int Nyx::NGDNV = 5;
+int Nyx::QRHO = 1;
+int Nyx::QU = 2;
+int Nyx::QV = 3;
+int Nyx::QW = 4;
+int Nyx::QGAME = -1;
+int Nyx::QGC = -1;
+int Nyx::QPRES = 5;
+int Nyx::QREINT = 6;
+int Nyx::QTEMP = -1;
+int Nyx::QFA = -1;
+int Nyx::QFS = -1;
+int Nyx::QFX = -1;
+
+int Nyx::GDRHO = 1;
+int Nyx::GDU = 2;
+int Nyx::GDV = 3;
+int Nyx::GDW = 4;
+int Nyx::GDPRES = 5;
+int Nyx::GDGAME = -1;
+
 int Nyx::NumSpec  = 0;
 int Nyx::NumAux   = 0;
 int Nyx::NumAdv   = 0;

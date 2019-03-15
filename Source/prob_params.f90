@@ -10,4 +10,5 @@ module prob_params_module
   integer         , save :: Outflow, Symmetry
   integer         , save :: coord_type
   integer         , save :: dg(3) = 1
+  integer         , save :: dim = 3
 end module prob_params_module

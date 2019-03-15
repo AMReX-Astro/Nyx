@@ -5,7 +5,8 @@ contains
 subroutine ca_ctoprim(lo, hi, &
        uin, uin_lo, uin_hi, &
        q,     q_lo,   q_hi, &
-       qaux, qa_lo,  qa_hi, csml) bind(c,name='ca_ctoprim')
+       qaux, qa_lo,  qa_hi, &
+       csml, ca_lo,  ca_hi) bind(c,name='ca_ctoprim')
 
     use network, only : nspec, naux
     use eos_module, only : nyx_eos_soundspeed
@@ -15,7 +16,7 @@ subroutine ca_ctoprim(lo, hi, &
                                      QREINT, QPRES, QFA, QFS, &!                                   UEDEN, UEINT, UTEMP, &
 !                                   QRHO, QU, QV, QW, &
 !                                   QREINT, QPRES, QTEMP, QGAME, QFS, QFX, &
-                                     !                                   NQ, QC, QGAMC, QGC, QDPDR, QDPDE,
+                                     !                                   QVAR, QC, QGAMC, QGC, QDPDR, QDPDE,
                                    QC, NQAUX, &
                                    npassive, upass_map, qpass_map, &
                                    small_dens, small_pres, &
@@ -29,11 +30,12 @@ subroutine ca_ctoprim(lo, hi, &
     integer, intent(in) :: uin_lo(3), uin_hi(3)
     integer, intent(in) :: q_lo(3), q_hi(3)
     integer, intent(in) :: qa_lo(3), qa_hi(3)
+    integer, intent(in) :: ca_lo(3), ca_hi(3)
 
     real(rt)        , intent(in   ) :: uin(uin_lo(1):uin_hi(1),uin_lo(2):uin_hi(2),uin_lo(3):uin_hi(3),NVAR)
     real(rt)        , intent(inout) :: q(q_lo(1):q_hi(1),q_lo(2):q_hi(2),q_lo(3):q_hi(3),QVAR)
     real(rt)        , intent(inout) :: qaux(qa_lo(1):qa_hi(1),qa_lo(2):qa_hi(2),qa_lo(3):qa_hi(3),NQAUX)
-    real(rt)        , intent(inout) :: csml(qa_lo(1):qa_hi(1),qa_lo(2):qa_hi(2),qa_lo(3):qa_hi(3))
+    real(rt)        , intent(inout) :: csml(ca_lo(1):ca_hi(1),ca_lo(2):ca_hi(2),ca_lo(3):ca_hi(3),1)
 
     real(rt)        , parameter :: small = 1.e-8_rt
 
@@ -108,7 +110,7 @@ subroutine ca_ctoprim(lo, hi, &
              call nyx_eos_soundspeed(qaux(i,j,k,QC), q(i,j,k,QRHO), q(i,j,k,QREINT))
 
              ! Set csmal based on small_pres and small_dens
-             csml(i,j,k) = sqrt(gamma_const * small_pres_over_dens)
+             csml(i,j,k,1) = sqrt(gamma_const * small_pres_over_dens)
              
              ! Convert "e" back to "rho e"
              q(i,j,k,QREINT) = q(i,j,k,QREINT)*q(i,j,k,QRHO)
@@ -169,8 +171,9 @@ subroutine ca_ctoprim(lo, hi, &
     !$gpu
     a_half = HALF * (a_old + a_new)
     a_dot   = (a_new - a_old) / dt
-      
+
     srcQ(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3),:) = ZERO
+!    srcQ = ZERO
 
     ! compute srcQ terms
     do k = lo(3), hi(3)
@@ -431,13 +434,13 @@ subroutine ca_ctoprim(lo, hi, &
 ! ::: ------------------------------------------------------------------
 ! :::
 
-    subroutine ca_consup(uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
+    subroutine ca_consup(lo, hi, uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
                       hydro_src ,hsrc_l1,hsrc_l2,hsrc_l3,hsrc_h1,hsrc_h2,hsrc_h3, &
                       flux1,flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3, &
                       flux2,flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3, &
                       flux3,flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3, &
-                      divu_nd,divu_cc,d_l1, d_l2, d_l3, d_h1, d_h2, d_h3, &
-                      lo,hi,dx,dy,dz,dt,a_old,a_new)
+                      divu_cc,d_l1, d_l2, d_l3, d_h1, d_h2, d_h3, &
+                      dx,dt,a_old,a_new) bind(C, name="ca_consup")
 
       use amrex_fort_module, only : rt => amrex_real
       use amrex_constants_module
@@ -459,9 +462,8 @@ subroutine ca_ctoprim(lo, hi, &
       real(rt)  :: flux1(flux1_l1:flux1_h1,flux1_l2:flux1_h2,flux1_l3:flux1_h3,NVAR)
       real(rt)  :: flux2(flux2_l1:flux2_h1,flux2_l2:flux2_h2,flux2_l3:flux2_h3,NVAR)
       real(rt)  :: flux3(flux3_l1:flux3_h1,flux3_l2:flux3_h2,flux3_l3:flux3_h3,NVAR)
-      real(rt)  :: divu_nd(lo(1):hi(1)+1,lo(2):hi(2)+1,lo(3):hi(3)+1)
       real(rt)  :: divu_cc(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3)
-      real(rt)  :: dx, dy, dz, dt, a_old, a_new
+      real(rt)  :: dx(3), dt, a_old, a_new
 
       real(rt) :: div1, a_half, a_oldsq, a_newsq
       real(rt) :: area1, area2, area3
@@ -472,7 +474,7 @@ subroutine ca_ctoprim(lo, hi, &
       a_half  = HALF * (a_old + a_new)
       a_oldsq = a_old * a_old
       a_newsq = a_new * a_new
-      vol     = dx * dy * dz
+      vol     = dx(1) * dx(2) * dx(3)
       volinv  = ONE / vol
 
       a_half_inv  = ONE / a_half
@@ -553,5 +555,279 @@ subroutine ca_ctoprim(lo, hi, &
       end do
 
       end subroutine ca_consup
+  !> @brief This is a basic multi-dimensional shock detection algorithm.
+  !! This implementation follows Flash, which in turn follows
+  !! AMRA and a Woodward (1995) (supposedly -- couldn't locate that).
+  !!
+  !! The spirit of this follows the shock detection in Colella &
+  !! Woodward (1984)
+  !!
+  subroutine ca_shock(lo, hi, &
+       q, qd_lo, qd_hi, &
+       shk, s_lo, s_hi, &
+       dx) bind(C, name="ca_shock")
+
+    use meth_params_module, only : QPRES, QU, QV, QW, QVAR
+    use prob_params_module, only : coord_type
+    use amrex_constants_module, only: ZERO, HALF, ONE
+    use amrex_error_module
+    use amrex_fort_module, only : rt => amrex_real
+
+    implicit none
+
+    integer, intent(in) :: qd_lo(3), qd_hi(3)
+    integer, intent(in) :: s_lo(3), s_hi(3)
+    integer, intent(in) :: lo(3), hi(3)
+    real(rt), intent(in) :: dx(3)
+    real(rt), intent(in) :: q(qd_lo(1):qd_hi(1),qd_lo(2):qd_hi(2),qd_lo(3):qd_hi(3),QVAR)
+    real(rt), intent(inout) :: shk(s_lo(1):s_hi(1),s_lo(2):s_hi(2),s_lo(3):s_hi(3))
+
+    integer :: i, j, k
+
+    real(rt) :: dxinv, dyinv, dzinv
+    real(rt) :: div_u
+    real(rt) :: px_pre, px_post, py_pre, py_post, pz_pre, pz_post
+    real(rt) :: e_x, e_y, e_z, d
+    real(rt) :: p_pre, p_post, pjump
+
+    real(rt), parameter :: small = 1.e-10_rt
+    real(rt), parameter :: eps = 0.33e0_rt
+
+    real(rt) :: rm, rc, rp
+
+    !$gpu
+
+    dxinv = ONE/dx(1)
+    dyinv = ONE/dx(2)
+    dzinv = ONE/dx(3)
+
+#ifndef AMREX_USE_CUDA
+    if (coord_type /= 0) then
+       call amrex_error("ERROR: invalid geometry in shock()")
+    endif
+#endif
+
+    do k = lo(3), hi(3)
+       do j = lo(2), hi(2)
+          do i = lo(1), hi(1)
+
+             ! construct div{U}
+             if (coord_type == 0) then
+                ! Cartesian
+                div_u = HALF*(q(i+1,j,k,QU) - q(i-1,j,k,QU))*dxinv
+#if (AMREX_SPACEDIM >= 2)
+                div_u = div_u + HALF*(q(i,j+1,k,QV) - q(i,j-1,k,QV))*dyinv
+#endif
+#if (AMREX_SPACEDIM == 3)
+                div_u = div_u + HALF*(q(i,j,k+1,QW) - q(i,j,k-1,QW))*dzinv
+#endif
+             elseif (coord_type == 1) then
+                ! r-z
+                rc = dble(i + HALF)*dx(1)
+                rm = dble(i - 1 + HALF)*dx(1)
+                rp = dble(i + 1 + HALF)*dx(1)
+
+#if (AMREX_SPACEDIM == 1)
+                div_u = HALF*(rp*q(i+1,j,k,QU) - rm*q(i-1,j,k,QU))/(rc*dx(1))
+#endif
+#if (AMREX_SPACEDIM == 2)
+                div_u = HALF*(rp*q(i+1,j,k,QU) - rm*q(i-1,j,k,QU))/(rc*dx(1)) + &
+                     HALF*(q(i,j+1,k,QV) - q(i,j-1,k,QV))/dx(2)
+#endif
+
+             elseif (coord_type == 2) then
+                ! 1-d spherical
+                rc = dble(i + HALF)*dx(1)
+                rm = dble(i - 1 + HALF)*dx(1)
+                rp = dble(i + 1 + HALF)*dx(1)
+
+                div_u = HALF*(rp**2*q(i+1,j,k,QU) - rm**2*q(i-1,j,k,QU))/(rc**2*dx(1))
+
+#ifndef AMREX_USE_CUDA
+             else
+                call amrex_error("ERROR: invalid coord_type in shock")
+#endif
+             endif
+
+
+             ! find the pre- and post-shock pressures in each direction
+             if (q(i+1,j,k,QPRES) - q(i-1,j,k,QPRES) < ZERO) then
+                px_pre  = q(i+1,j,k,QPRES)
+                px_post = q(i-1,j,k,QPRES)
+             else
+                px_pre  = q(i-1,j,k,QPRES)
+                px_post = q(i+1,j,k,QPRES)
+             endif
+
+#if (AMREX_SPACEDIM >= 2)
+             if (q(i,j+1,k,QPRES) - q(i,j-1,k,QPRES) < ZERO) then
+                py_pre  = q(i,j+1,k,QPRES)
+                py_post = q(i,j-1,k,QPRES)
+             else
+                py_pre  = q(i,j-1,k,QPRES)
+                py_post = q(i,j+1,k,QPRES)
+             endif
+#else
+             py_pre = ZERO
+             py_post = ZERO
+#endif
+
+#if (AMREX_SPACEDIM == 3)
+             if (q(i,j,k+1,QPRES) - q(i,j,k-1,QPRES) < ZERO) then
+                pz_pre  = q(i,j,k+1,QPRES)
+                pz_post = q(i,j,k-1,QPRES)
+             else
+                pz_pre  = q(i,j,k-1,QPRES)
+                pz_post = q(i,j,k+1,QPRES)
+             endif
+#else
+             pz_pre = ZERO
+             pz_post = ZERO
+#endif
+
+             ! use compression to create unit vectors for the shock direction
+             e_x = (q(i+1,j,k,QU) - q(i-1,j,k,QU))**2
+#if (AMREX_SPACEDIM >= 2)
+             e_y = (q(i,j+1,k,QV) - q(i,j-1,k,QV))**2
+#else
+             e_y = ZERO
+#endif
+#if (AMREX_SPACEDIM == 3)
+             e_z = (q(i,j,k+1,QW) - q(i,j,k-1,QW))**2
+#else
+             e_z = ZERO
+#endif
+             d = ONE/(e_x + e_y + e_z + small)
+
+             e_x = e_x*d
+             e_y = e_y*d
+             e_z = e_z*d
+
+             ! project the pressures onto the shock direction
+             p_pre  = e_x*px_pre + e_y*py_pre + e_z*pz_pre
+             p_post = e_x*px_post + e_y*py_post + e_z*pz_post
+
+             ! test for compression + pressure jump to flag a shock
+             if (p_pre == ZERO) then
+                ! this can happen if U = 0, so e_x, ... = 0
+                pjump = ZERO
+             else
+                pjump = eps - (p_post - p_pre)/p_pre
+             endif
+
+             if (pjump < ZERO .and. div_u < ZERO) then
+                shk(i,j,k) = ONE
+             else
+                shk(i,j,k) = ZERO
+             endif
+
+          enddo
+       enddo
+    enddo
+
+  end subroutine ca_shock
+
+  
+  !> @brief this computes the *node-centered* divergence
+  !!
+  subroutine calc_pdivu(lo, hi, &
+       q1, q1_lo, q1_hi, &
+       area1, a1_lo, a1_hi, &
+#if AMREX_SPACEDIM >= 2
+       q2, q2_lo, q2_hi, &
+       area2, a2_lo, a2_hi, &
+#endif
+#if AMREX_SPACEDIM == 3
+       q3, q3_lo, q3_hi, &
+       area3, a3_lo, a3_hi, &
+#endif
+       vol, v_lo, v_hi, &
+       dx, pdivu, div_lo, div_hi)
+
+    use meth_params_module, only : QVAR
+    use amrex_constants_module, only : HALF
+    use amrex_fort_module, only : rt => amrex_real
+    implicit none
+
+    integer, intent(in) :: lo(3), hi(3)
+
+    integer, intent(in) :: div_lo(3), div_hi(3)
+    real(rt), intent(in) :: dx(3)
+    real(rt), intent(inout) :: pdivu(div_lo(1):div_hi(1),div_lo(2):div_hi(2),div_lo(3):div_hi(3))
+
+    integer, intent(in) :: q1_lo(3), q1_hi(3)
+    integer, intent(in) :: a1_lo(3), a1_hi(3)
+    real(rt), intent(in) :: q1(q1_lo(1):q1_hi(1),q1_lo(2):q1_hi(2),q1_lo(3):q1_hi(3),QVAR)
+    real(rt), intent(in) :: area1(a1_lo(1):a1_hi(1),a1_lo(2):a1_hi(2),a1_lo(3):a1_hi(3))
+#if AMREX_SPACEDIM >= 2
+    integer, intent(in) :: q2_lo(3), q2_hi(3)
+    integer, intent(in) :: a2_lo(3), a2_hi(3)
+    real(rt), intent(in) :: q2(q2_lo(1):q2_hi(1),q2_lo(2):q2_hi(2),q2_lo(3):q2_hi(3),QVAR)
+    real(rt), intent(in) :: area2(a2_lo(1):a2_hi(1),a1_lo(2):a1_hi(2),a1_lo(3):a1_hi(3))
+#endif
+#if AMREX_SPACEDIM == 3
+    integer, intent(in) :: q3_lo(3), q3_hi(3)
+    integer, intent(in) :: a3_lo(3), a3_hi(3)
+    real(rt), intent(in) :: q3(q3_lo(1):q3_hi(1),q3_lo(2):q3_hi(2),q3_lo(3):q3_hi(3),QVAR)
+    real(rt), intent(in) :: area3(a3_lo(1):a3_hi(1),a1_lo(2):a1_hi(2),a1_lo(3):a1_hi(3))
+#endif
+    integer, intent(in) :: v_lo(3), v_hi(3)
+    real(rt), intent(in) :: vol(v_lo(1):v_hi(1),v_lo(2):v_hi(2),v_lo(3):v_hi(3))
+
+    integer  :: i, j, k
+
+    !$gpu
+
+    print*, "fail pdivu"
+    stop
+
+  end subroutine calc_pdivu
+
+      subroutine scale_flux(lo, hi, &
+#if AMREX_SPACEDIM == 1
+                          qint, qi_lo, qi_hi, &
+#endif
+                          flux, f_lo, f_hi, &
+                          area, a_lo, a_hi, dt) bind(c, name="scale_flux")
+
+    use meth_params_module, only: NVAR, UMX, GDPRES, NGDNV
+    use prob_params_module, only : coord_type
+
+    implicit none
+
+    integer,  intent(in   ) :: lo(3), hi(3)
+#if AMREX_SPACEDIM == 1
+    integer,  intent(in   ) :: qi_lo(3), qi_hi(3)
+#endif
+    integer,  intent(in   ) :: f_lo(3), f_hi(3)
+    integer,  intent(in   ) :: a_lo(3), a_hi(3)
+    real(rt), intent(in   ), value :: dt
+
+    real(rt), intent(inout) :: flux(f_lo(1):f_hi(1),f_lo(2):f_hi(2),f_lo(3):f_hi(3),NVAR)
+    real(rt), intent(in   ) :: area(a_lo(1):a_hi(1),a_lo(2):a_hi(2),a_lo(3):a_hi(3))
+#if AMREX_SPACEDIM == 1
+    real(rt), intent(in   ) :: qint(qi_lo(1):qi_hi(1), qi_lo(2):qi_hi(2), qi_lo(3):qi_hi(3), NGDNV)
+#endif
+    integer :: i, j, k, n
+
+    !$gpu
+
+    do n = 1, NVAR
+       do k = lo(3), hi(3)
+          do j = lo(2), hi(2)
+             do i = lo(1), hi(1)
+                flux(i,j,k,n) = dt * flux(i,j,k,n) * area(i,j,k)
+#if AMREX_SPACEDIM == 1
+                ! Correct the momentum flux with the grad p part.
+                if (coord_type == 0 .and. n == UMX) then
+                   flux(i,j,k,n) = flux(i,j,k,n) + dt * area(i,j,k) * qint(i,j,k,GDPRES)
+                endif
+#endif
+             enddo
+          enddo
+       enddo
+    enddo
+
+  end subroutine scale_flux
   
 end module advection_module

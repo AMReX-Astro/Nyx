@@ -22,7 +22,7 @@
       use amrex_fort_module, only : rt => amrex_real
       use amrex_mempool_module, only : amrex_allocate, amrex_deallocate
       use meth_params_module, only : QVAR, NVAR, NHYP, normalize_species, &
-           QC, QPRES, use_flattening, UFS
+           QC, QPRES, use_flattening
       use flatten_module
       use amrex_constants_module
       use advection_module
@@ -57,19 +57,20 @@
 
       ! Automatic arrays for workspace
       real(rt), pointer :: q(:,:,:,:)
+      real(rt), pointer :: q2(:,:,:,:)
       real(rt), pointer :: qaux(:,:,:,:)
       real(rt), pointer :: flatn(:,:,:)
       real(rt), pointer :: c(:,:,:)
       real(rt), pointer :: csml(:,:,:)
       real(rt), pointer :: divu_nd(:,:,:)
       real(rt), pointer :: srcQ(:,:,:,:)
+      real(rt), pointer :: srcQ2(:,:,:,:)
 
       real(rt) dx,dy,dz
       integer ngq,ngf
       integer q_l1, q_l2, q_l3, q_h1, q_h2, q_h3
       integer srcq_l1, srcq_l2, srcq_l3, srcq_h1, srcq_h2, srcq_h3
-      integer ulo(3), uhi(3), qlo(3), qhi(3), loq(3), hiq(3), n, tmp_hi(3), glo(3), ghi(3)
-      integer flux1_lo(3), flux1_hi(3), flux2_lo(3), flux2_hi(3), flux3_lo(3), flux3_hi(3)
+      integer ulo(3), uhi(3), qlo(3), qhi(3), loq(3), hiq(3), n
       ngq = NHYP
       ngf = 1
 
@@ -88,12 +89,14 @@
       srcq_h3 = hi(3)+NHYP
 
       call amrex_allocate(     q, lo-NHYP, hi+NHYP, QVAR)
+      call amrex_allocate(     q2, lo-NHYP, hi+NHYP, QVAR)
       call amrex_allocate(  qaux, lo-NHYP, hi+NHYP,    1)
       call amrex_allocate( flatn, lo-NHYP, hi+NHYP      )
       call amrex_allocate(     c, lo-NHYP, hi+NHYP      )
       call amrex_allocate(  csml, lo-NHYP, hi+NHYP      )
 
       call amrex_allocate(   srcQ, lo-NHYP, hi+NHYP, QVAR)
+      call amrex_allocate(   srcQ2, lo-NHYP, hi+NHYP, QVAR)
       call amrex_allocate(divu_nd, lo  , hi+1)
 
       dx = delta(1)
@@ -119,13 +122,6 @@
       qhi(2)=q_h2
       qhi(3)=q_h3
 
-      glo(1)=gv_l1
-      glo(2)=gv_l2
-      glo(3)=gv_l3
-      ghi(1)=gv_h1
-      ghi(2)=gv_h2
-      ghi(3)=gv_h3
-
       flux1_lo(1)=flux1_l1
       flux1_lo(2)=flux1_l2
       flux1_lo(3)=flux1_l3
@@ -149,7 +145,7 @@
       ! It's unclear whether qaux will bw generally useful
       call ca_ctoprim(qlo,qhi,uin,ulo, uhi, &
            q,qlo, qhi, &
-           qaux,qlo, qhi,csml, qlo, qhi)
+           qaux,qlo, qhi,csml)
 
       c(:,:,:)=qaux(:,:,:,QC)
       if (use_flattening == 1) then
@@ -160,10 +156,11 @@
          flatn = ONE
       endif
 
+
       call ca_srctoprim(qlo,qhi, &
            q,qlo, qhi, &
            qaux,qlo, qhi, &
-           grav,glo, ghi, &
+           grav,qlo, qhi, &
            src, qlo, qhi, &
            srcQ, qlo, qhi, a_old, a_new, dt)
 
@@ -182,56 +179,35 @@
                    a_old,a_new,print_fortran_warnings)
 
       ! Compute divergence of velocity field (on surroundingNodes(lo,hi))
-      call divu(lo,hi+1, &
-           q,qlo, qhi, &
-           delta, divu_nd, lo, hi+1)
+      call make_divu_nd(lo,hi,q,q_l1,q_l2,q_l3,q_h1,q_h2,q_h3, &
+                        dx,dy,dz,divu_nd,lo(1),lo(2),lo(3),hi(1)+1,hi(2)+1,hi(3)+1)
 
-      tmp_hi=hi
-      tmp_hi(1)=tmp_hi(1)+1
-     call ca_apply_av(lo, tmp_hi, 1, delta, &
-          divu_nd, lo, hi+1, &
-          uin, ulo, uhi, &
-          flux1, flux1_lo, flux1_hi, dt)
-     tmp_hi=hi
-      tmp_hi(2)=tmp_hi(2)+1
-     call ca_apply_av(lo, tmp_hi, 2, delta, &
-          divu_nd, lo, hi+1, &
-          uin, ulo, uhi, &
-          flux2, flux2_lo, flux2_hi, dt)
-     tmp_hi=hi
-     tmp_hi(3)=tmp_hi(3)+1
-     call ca_apply_av(lo, tmp_hi, 3, delta, &
-          divu_nd, lo, hi+1, &
-          uin, ulo, uhi, &
-          flux3, flux3_lo, flux3_hi, dt)
-
-     if (UFS .gt. 0 .and. normalize_species .eq. 1) then
-     tmp_hi=hi
-      tmp_hi(1)=tmp_hi(1)+1
-      call ca_normalize_species_fluxes(lo, tmp_hi, &
-               flux1, flux1_lo, flux1_hi)
-     tmp_hi=hi
-     tmp_hi(2)=tmp_hi(2)+1
-     call ca_normalize_species_fluxes(lo, tmp_hi, &
-          flux2, flux2_lo, flux2_hi)
-     tmp_hi=hi
-     tmp_hi(3)=tmp_hi(3)+1
-     call ca_normalize_species_fluxes(lo, tmp_hi, &
-          flux3, flux3_lo, flux3_hi)
-     endif
+!      call apply_av(qlo, qhi, 1, delta, &
+!       divu_nd, lo, hi+1, &
+!       uin, qlo, qhi, &
+!       flux1, flux1_lo, flux1_hi, dt)
       
-      ! Conservative update to make hydro sources
-      call ca_consup(lo,hi,uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
+      call ca_apply_av(qlo, qhi, 2, delta, &
+       divu_nd, lo, hi+1, &
+       uin, qlo, qhi, &
+       flux2, flux2_lo, flux2_hi, dt)
+
+!      call apply_av(qlo, qhi, 3, delta, &
+!       divu_nd, lo, hi+1, &
+!       uin, qlo, qhi, &
+!       flux3, flux3_lo, flux3_hi, dt)
+      
+      ! Conservative update
+      call consup(uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
                   hydro_src , hsrc_l1, hsrc_l2, hsrc_l3, hsrc_h1, hsrc_h2, hsrc_h3, &
                   flux1,flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3, &
                   flux2,flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3, &
                   flux3,flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3, &
-                  divu_cc,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3, &
-                  delta,dt,a_old,a_new)
+                  divu_nd,divu_cc,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3, &
+                  lo,hi,dx,dy,dz,dt,a_old,a_new)
 
       ! We are done with these here so can go ahead and free up the space.
       call amrex_deallocate(q)
-      call amrex_deallocate(qaux)
       call amrex_deallocate(flatn)
       call amrex_deallocate(c)
       call amrex_deallocate(csml)

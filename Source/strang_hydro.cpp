@@ -94,7 +94,13 @@ Nyx::strang_hydro (Real time,
 
     bool   init_flux_register = true;
     bool add_to_flux_register = true;
-    compute_hydro_sources(time,dt,a_old,a_new,S_old_tmp,D_old_tmp,
+
+    if(hydro_convert||false)
+      construct_ctu_hydro_source(time,dt,a_old,a_new,S_old_tmp,D_old_tmp,
+                          ext_src_old,hydro_src,grav_vector,divu_cc,
+                          init_flux_register, add_to_flux_register);
+    else
+      compute_hydro_sources(time,dt,a_old,a_new,S_old_tmp,D_old_tmp,
                           ext_src_old,hydro_src,grav_vector,divu_cc,
                           init_flux_register, add_to_flux_register);
 

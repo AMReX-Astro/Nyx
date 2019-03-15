@@ -418,6 +418,89 @@ public:
     void    sdc_hydro(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
 #endif
 
+
+///
+/// Calculate primitive variables from conserved variables (uses StateData)
+///
+/// @param time     current time
+///
+    void cons_to_prim(const amrex::Real time);
+
+///
+/// Calculate primitive variables from given conserved variables
+///
+/// @param u        MultiFab of conserved variables
+/// @param q        MultiFab to save primitive variables to
+/// @param qaux     MultiFab of auxiliary variables
+/// @param time     Current time
+///
+    void cons_to_prim(amrex::MultiFab& u, amrex::MultiFab& q, amrex::MultiFab& qaux, const amrex::Real time);
+
+  ///
+/// Calculate primitive variables from given conserved variables
+///
+/// @param u        MultiFab of conserved variables
+/// @param q        MultiFab to save primitive variables to
+/// @param qaux     MultiFab of auxiliary variables
+/// @param time     Current time
+///
+  void cons_to_prim(amrex::MultiFab& u, amrex::MultiFab& q, amrex::MultiFab& qaux, 
+		    amrex::MultiFab& grav, amrex::MultiFab& hydro_src, amrex::MultiFab& src_q,
+		    amrex::MultiFab& csml, amrex::Real& a_old, amrex::Real& a_new,
+		    amrex::Real& dt);
+
+///
+/// convert the conservative state cell averages to primitive cell
+/// averages with 4th order accuracy
+///
+/// @param time     current time
+///
+    void cons_to_prim_fourth(const amrex::Real time);
+
+///
+/// Check to see if the CFL condition has been violated
+///
+/// @param dt timestep
+///
+    void check_for_cfl_violation(const amrex::Real dt);
+
+///
+/// this constructs the hydrodynamic source (essentially the flux
+/// divergence) using the CTU framework for unsplit hydrodynamics
+///
+/// @param time     current time
+/// @param dt       timestep
+///
+    void construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
+                               amrex::MultiFab& S_border, amrex::MultiFab& D_border, 
+                               amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src, 
+                               amrex::MultiFab& grav, amrex::MultiFab& divu_cc,
+                               bool init_flux_register, bool add_to_flux_register);
+
+///
+/// this constructs the hydrodynamic source (essentially the flux
+/// divergence) using method of lines integration.  The output, is the
+/// divergence of the fluxes, A = -div{F(U)}
+///
+/// @param time     current time
+/// @param dt   timestep
+/// @param A_update   divergence of the fluxes
+///
+    void construct_mol_hydro_source(amrex::Real time, amrex::Real dt, amrex::MultiFab& A_update);
+
+  ///
+/// Hydrodynamic (and radiation) fluxes.
+///
+    amrex::Vector<std::unique_ptr<amrex::MultiFab> > fluxes;
+///
+/// Return the n'th fluxes MultiFab.
+///
+/// @param dir  direction in which to find the fluxes along
+///
+    amrex::MultiFab& Fluxes (int dir);
+  
+    amrex::Vector<std::unique_ptr<amrex::MultiFab> > mass_fluxes;
+
     void compute_hydro_sources(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
                                amrex::MultiFab& S_border, amrex::MultiFab& D_border, 
                                amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src, 
@@ -597,6 +680,9 @@ public:
     static int Density, Xmom, Ymom, Zmom, Eden, Eint;
 
     static int Temp_comp, Ne_comp, Zhi_comp;
+
+    static int QVAR, NQSRC, NGDNV, QRHO, QU, QV, QW, QGAME, QGC, QPRES, QREINT, QTEMP, QFA, QFS, QFX;
+    static int GDRHO, GDU, GDV, GDW, GDPRES, GDGAME;
 
     static int FirstSpec, FirstAux, FirstAdv;
     static int NumSpec, NumAux, NumAdv;
