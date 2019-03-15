@@ -4,18 +4,18 @@
 ! :::
 
       subroutine fort_ca_make_hydro_sources(time,lo,hi,&
-           uin,ulo, uhi, &
-           ugdnvx_out,ugdnvx_lo,ugdnvx_hi,&
-           ugdnvy_out,ugdnvy_lo,ugdnvy_hi ,&
-           ugdnvz_out,ugdnvz_lo,ugdnvz_hi ,&
-           src,src_lo,src_hi ,&
-           hydro_src,hsrc_lo,hsrc_hi ,&
-           divu_cc,d_lo,d_hi ,&
-           grav,gv_lo,gv_hi ,&
-           delta,dt,&
-           flux1,flux1_lo,flux1_hi ,&
-           flux2,flux2_lo,flux2_hi ,&
-           flux3,flux3_lo,flux3_hi ,&
+           uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
+           ugdnvx_out,ugdnvx_l1,ugdnvx_l2,ugdnvx_l3,ugdnvx_h1,ugdnvx_h2,ugdnvx_h3, &
+           ugdnvy_out,ugdnvy_l1,ugdnvy_l2,ugdnvy_l3,ugdnvy_h1,ugdnvy_h2,ugdnvy_h3, &
+           ugdnvz_out,ugdnvz_l1,ugdnvz_l2,ugdnvz_l3,ugdnvz_h1,ugdnvz_h2,ugdnvz_h3, &
+           src ,src_l1,src_l2,src_l3,src_h1,src_h2,src_h3, &
+           hydro_src ,hsrc_l1,hsrc_l2,hsrc_l3,hsrc_h1,hsrc_h2,hsrc_h3, &
+           divu_cc,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3, &
+           grav,gv_l1,gv_l2,gv_l3,gv_h1,gv_h2,gv_h3, &
+           delta,dt, &
+           flux1,flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3, &
+           flux2,flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3, &
+           flux3,flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3, &
            a_old,a_new,print_fortran_warnings) &
            bind(C, name="fort_ca_make_hydro_sources")
 
@@ -30,28 +30,28 @@
       implicit none
 
       integer lo(3),hi(3),print_fortran_warnings
-      integer ulo(3),uhi(3)
-      integer ugdnvx_lo(3),ugdnvx_hi(3)
-      integer ugdnvy_lo(3),ugdnvy_hi(3)
-      integer ugdnvz_lo(3),ugdnvz_hi(3)
-      integer flux1_lo(3),flux1_hi(3)
-      integer flux2_lo(3),flux2_hi(3)
-      integer flux3_lo(3),flux3_hi(3)
-      integer src_lo(3),src_hi(3)
-      integer hsrc_lo(3),hsrc_hi(3)
-      integer d_lo(3),d_hi(3)
-      integer gv_lo(3),gv_hi(3)
-      real(rt) uin(ulo(1):uhi(1),ulo(2):uhi(2),ulo(3):uhi(3),NVAR)
-      real(rt) ugdnvx_out(ugdnvx_lo(1):ugdnvx_hi(1),ugdnvx_lo(2):ugdnvx_hi(2),ugdnvx_lo(3):ugdnvx_hi(3))
-      real(rt) ugdnvy_out(ugdnvy_lo(1):ugdnvy_hi(1),ugdnvy_lo(2):ugdnvy_hi(2),ugdnvy_lo(3):ugdnvy_hi(3))
-      real(rt) ugdnvz_out(ugdnvz_lo(1):ugdnvz_hi(1),ugdnvz_lo(2):ugdnvz_hi(2),ugdnvz_lo(3):ugdnvz_hi(3))
-      real(rt)   src(  src_lo(1):src_hi(1),    src_lo(2):src_hi(2),     src_lo(3):src_hi(3),  NVAR)
-      real(rt) hydro_src(hsrc_lo(1):hsrc_hi(1),hsrc_lo(2):hsrc_hi(2),hsrc_lo(3):hsrc_hi(3),NVAR)
-      real(rt)  divu_cc(d_lo(1):d_hi(1),d_lo(2):d_hi(2),d_lo(3):d_hi(3))
-      real(rt)  grav( gv_lo(1):gv_hi(1),  gv_lo(2):gv_hi(2),   gv_lo(3):gv_hi(3),    3)
-      real(rt) flux1(flux1_lo(1):flux1_hi(1),flux1_lo(2):flux1_hi(2), flux1_lo(3):flux1_hi(3),NVAR)
-      real(rt) flux2(flux2_lo(1):flux2_hi(1),flux2_lo(2):flux2_hi(2), flux2_lo(3):flux2_hi(3),NVAR)
-      real(rt) flux3(flux3_lo(1):flux3_hi(1),flux3_lo(2):flux3_hi(2), flux3_lo(3):flux3_hi(3),NVAR)
+      integer uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3
+      integer ugdnvx_l1,ugdnvx_l2,ugdnvx_l3,ugdnvx_h1,ugdnvx_h2,ugdnvx_h3
+      integer ugdnvy_l1,ugdnvy_l2,ugdnvy_l3,ugdnvy_h1,ugdnvy_h2,ugdnvy_h3
+      integer ugdnvz_l1,ugdnvz_l2,ugdnvz_l3,ugdnvz_h1,ugdnvz_h2,ugdnvz_h3
+      integer flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3
+      integer flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3
+      integer flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3
+      integer src_l1,src_l2,src_l3,src_h1,src_h2,src_h3
+      integer hsrc_l1,hsrc_l2,hsrc_l3,hsrc_h1,hsrc_h2,hsrc_h3
+      integer d_l1,d_l2,d_l3,d_h1,d_h2,d_h3
+      integer gv_l1,gv_l2,gv_l3,gv_h1,gv_h2,gv_h3
+      real(rt)   uin(  uin_l1:uin_h1,    uin_l2:uin_h2,     uin_l3:uin_h3,  NVAR)
+      real(rt) ugdnvx_out(ugdnvx_l1:ugdnvx_h1,ugdnvx_l2:ugdnvx_h2,ugdnvx_l3:ugdnvx_h3)
+      real(rt) ugdnvy_out(ugdnvy_l1:ugdnvy_h1,ugdnvy_l2:ugdnvy_h2,ugdnvy_l3:ugdnvy_h3)
+      real(rt) ugdnvz_out(ugdnvz_l1:ugdnvz_h1,ugdnvz_l2:ugdnvz_h2,ugdnvz_l3:ugdnvz_h3)
+      real(rt)   src(  src_l1:src_h1,    src_l2:src_h2,     src_l3:src_h3,  NVAR)
+      real(rt) hydro_src(hsrc_l1:hsrc_h1,hsrc_l2:hsrc_h2,hsrc_l3:hsrc_h3,NVAR)
+      real(rt)  divu_cc(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3)
+      real(rt)  grav( gv_l1:gv_h1,  gv_l2:gv_h2,   gv_l3:gv_h3,    3)
+      real(rt) flux1(flux1_l1:flux1_h1,flux1_l2:flux1_h2, flux1_l3:flux1_h3,NVAR)
+      real(rt) flux2(flux2_l1:flux2_h1,flux2_l2:flux2_h2, flux2_l3:flux2_h3,NVAR)
+      real(rt) flux3(flux3_l1:flux3_h1,flux3_l2:flux3_h2, flux3_l3:flux3_h3,NVAR)
       real(rt) delta(3),dt,time
       real(rt) a_old, a_new
 
@@ -68,7 +68,8 @@
       integer ngq,ngf
       integer q_l1, q_l2, q_l3, q_h1, q_h2, q_h3
       integer srcq_l1, srcq_l2, srcq_l3, srcq_h1, srcq_h2, srcq_h3
-      integer qlo(3), qhi(3), loq(3), hiq(3), n, tmp_hi(3), glo(3), ghi(3)
+      integer ulo(3), uhi(3), qlo(3), qhi(3), loq(3), hiq(3), n, tmp_hi(3), glo(3), ghi(3)
+      integer flux1_lo(3), flux1_hi(3), flux2_lo(3), flux2_hi(3), flux3_lo(3), flux3_hi(3)
       ngq = NHYP
       ngf = 1
 
@@ -104,12 +105,45 @@
       !    Note that (q,c,csml,flatn) are all dimensioned the same
       !    and set to correspond to coordinates of (lo:hi)
       ! 3) Translate source terms
+      ulo(1)=uin_l1
+      ulo(2)=uin_l2
+      ulo(3)=uin_l3
+      uhi(1)=uin_h1
+      uhi(2)=uin_h2
+      uhi(3)=uin_h3
+
       qlo(1)=q_l1
       qlo(2)=q_l2
       qlo(3)=q_l3
       qhi(1)=q_h1
       qhi(2)=q_h2
       qhi(3)=q_h3
+
+      glo(1)=gv_l1
+      glo(2)=gv_l2
+      glo(3)=gv_l3
+      ghi(1)=gv_h1
+      ghi(2)=gv_h2
+      ghi(3)=gv_h3
+
+      flux1_lo(1)=flux1_l1
+      flux1_lo(2)=flux1_l2
+      flux1_lo(3)=flux1_l3
+      flux1_hi(1)=flux1_h1
+      flux1_hi(2)=flux1_h2
+      flux1_hi(3)=flux1_h3
+      flux2_lo(1)=flux2_l1
+      flux2_lo(2)=flux2_l2
+      flux2_lo(3)=flux2_l3
+      flux2_hi(1)=flux2_h1
+      flux2_hi(2)=flux2_h2
+      flux2_hi(3)=flux2_h3
+      flux3_lo(1)=flux3_l1
+      flux3_lo(2)=flux3_l2
+      flux3_lo(3)=flux3_l3
+      flux3_hi(1)=flux3_h1
+      flux3_hi(2)=flux3_h2
+      flux3_hi(3)=flux3_h3
 
       ! Note that for now, csml is passed seperately
       ! It's unclear whether qaux will bw generally useful
@@ -129,7 +163,7 @@
       call ca_srctoprim(qlo,qhi, &
            q,qlo, qhi, &
            qaux,qlo, qhi, &
-           grav,gv_lo, gv_hi, &
+           grav,glo, ghi, &
            src, qlo, qhi, &
            srcQ, qlo, qhi, a_old, a_new, dt)
 
@@ -137,14 +171,14 @@
       call umeth3d(q,c,csml,flatn,q_l1,q_l2,q_l3,q_h1,q_h2,q_h3, &
                    srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                    lo(1),lo(2),lo(3),hi(1),hi(2),hi(3),dx,dy,dz,dt, &
-                   flux1,flux1_lo(1),flux1_lo(2),flux1_lo(3),flux1_hi(1),flux1_hi(2),flux1_hi(3), &
-                   flux2,flux2_lo(1),flux2_lo(2),flux2_lo(3),flux2_hi(1),flux2_hi(2),flux2_hi(3), &
-                   flux3,flux3_lo(1),flux3_lo(2),flux3_lo(3),flux3_hi(1),flux3_hi(2),flux3_hi(3), &
-                   grav,gv_lo(1),gv_lo(2),gv_lo(3),gv_hi(1),gv_hi(2),gv_hi(3), &
-                   ugdnvx_out,ugdnvx_lo(1),ugdnvx_lo(2),ugdnvx_lo(3),ugdnvx_hi(1),ugdnvx_hi(2),ugdnvx_hi(3), &
-                   ugdnvy_out,ugdnvy_lo(1),ugdnvy_lo(2),ugdnvy_lo(3),ugdnvy_hi(1),ugdnvy_hi(2),ugdnvy_hi(3), &
-                   ugdnvz_out,ugdnvz_lo(1),ugdnvz_lo(2),ugdnvz_lo(3),ugdnvz_hi(1),ugdnvz_hi(2),ugdnvz_hi(3), &
-                   divu_cc,d_lo(1),d_lo(2),d_lo(3),d_hi(1),d_hi(2),d_hi(3), &
+                   flux1,flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3, &
+                   flux2,flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3, &
+                   flux3,flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3, &
+                   grav,gv_l1,gv_l2,gv_l3,gv_h1,gv_h2,gv_h3, &
+                   ugdnvx_out,ugdnvx_l1,ugdnvx_l2,ugdnvx_l3,ugdnvx_h1,ugdnvx_h2,ugdnvx_h3, &
+                   ugdnvy_out,ugdnvy_l1,ugdnvy_l2,ugdnvy_l3,ugdnvy_h1,ugdnvy_h2,ugdnvy_h3, &
+                   ugdnvz_out,ugdnvz_l1,ugdnvz_l2,ugdnvz_l3,ugdnvz_h1,ugdnvz_h2,ugdnvz_h3, &
+                   divu_cc,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3, &
                    a_old,a_new,print_fortran_warnings)
 
       ! Compute divergence of velocity field (on surroundingNodes(lo,hi))
@@ -187,14 +221,13 @@
      endif
       
       ! Conservative update to make hydro sources
-      call ca_consup(uin,ulo, uhi, &
-                  hydro_src , hsrc_lo, hsrc_hi, &
-                  flux1,flux1_lo,flux1_hi, &
-                  flux2,flux2_lo, flux2_hi, &
-                  flux3,flux3_lo,flux3_hi, &
-                  divu_nd,lo, hi+1, &
-                  divu_cc,d_lo,d_hi, &
-                  lo,hi,delta,dt,a_old,a_new)
+      call ca_consup(uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
+                  hydro_src , hsrc_l1, hsrc_l2, hsrc_l3, hsrc_h1, hsrc_h2, hsrc_h3, &
+                  flux1,flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3, &
+                  flux2,flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3, &
+                  flux3,flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3, &
+                  divu_nd,divu_cc,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3, &
+                  lo,hi,dx,dy,dz,dt,a_old,a_new)
 
       ! We are done with these here so can go ahead and free up the space.
       call amrex_deallocate(q)
