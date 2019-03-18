@@ -754,6 +754,8 @@ contains
     F(UMY) = U(UMY)*u_flx
     F(UMZ) = U(UMZ)*u_flx
 
+    F(UMX-1+idir) = F(UMX-1+idir) + p
+    
     F(UEINT) = U(UEINT)*u_flx
     F(UEDEN) = (U(UEDEN) + p)*u_flx
 

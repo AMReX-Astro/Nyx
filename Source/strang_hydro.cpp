@@ -25,6 +25,7 @@ Nyx::strang_hydro (Real time,
     const Real prev_time    = state[State_Type].prevTime();
     const Real cur_time     = state[State_Type].curTime();
     const int  finest_level = parent->finestLevel();
+    bool full_test = true;
 
     MultiFab&  S_old        = get_old_data(State_Type);
     MultiFab&  S_new        = get_new_data(State_Type);
@@ -54,7 +55,7 @@ Nyx::strang_hydro (Real time,
         }
     }
 #endif
-
+    
     // It's possible for interpolation to create very small negative values for
     // species so we make sure here that all species are non-negative after this
     // point
@@ -95,7 +96,7 @@ Nyx::strang_hydro (Real time,
     bool   init_flux_register = true;
     bool add_to_flux_register = true;
 
-    if(hydro_convert||false)
+    if(hydro_convert&&full_test)
       construct_ctu_hydro_source(time,dt,a_old,a_new,S_old_tmp,D_old_tmp,
                           ext_src_old,hydro_src,grav_vector,divu_cc,
                           init_flux_register, add_to_flux_register);

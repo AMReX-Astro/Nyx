@@ -188,19 +188,19 @@
 
       tmp_hi=hi
       tmp_hi(1)=tmp_hi(1)+1
-     call ca_apply_av(lo, tmp_hi, 1, delta, &
+     call ca_apply_av2(lo, tmp_hi, 1, delta, &
           divu_nd, lo, hi+1, &
           uin, ulo, uhi, &
           flux1, flux1_lo, flux1_hi, dt)
      tmp_hi=hi
       tmp_hi(2)=tmp_hi(2)+1
-     call ca_apply_av(lo, tmp_hi, 2, delta, &
+     call ca_apply_av2(lo, tmp_hi, 2, delta, &
           divu_nd, lo, hi+1, &
           uin, ulo, uhi, &
           flux2, flux2_lo, flux2_hi, dt)
      tmp_hi=hi
      tmp_hi(3)=tmp_hi(3)+1
-     call ca_apply_av(lo, tmp_hi, 3, delta, &
+     call ca_apply_av2(lo, tmp_hi, 3, delta, &
           divu_nd, lo, hi+1, &
           uin, ulo, uhi, &
           flux3, flux3_lo, flux3_hi, dt)
@@ -221,7 +221,7 @@
      endif
       
       ! Conservative update to make hydro sources
-      call ca_consup(lo,hi,uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
+      call ca_consup2(lo,hi,uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
                   hydro_src , hsrc_l1, hsrc_l2, hsrc_l3, hsrc_h1, hsrc_h2, hsrc_h3, &
                   flux1,flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3, &
                   flux2,flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3, &
