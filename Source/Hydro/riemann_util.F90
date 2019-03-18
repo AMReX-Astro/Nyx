@@ -560,7 +560,7 @@ contains
        im2 = UMX
        im3 = UMY
     end if
-
+    
     do k = lo(3), hi(3)
        do j = lo(2), hi(2)
           do i = lo(1), hi(1)
@@ -575,6 +575,7 @@ contains
              F(i,j,k,URHO) = qint(i,j,k,QRHO)*u_adv
 
              F(i,j,k,im1) = F(i,j,k,URHO)*qint(i,j,k,iu)
+             F(i,j,k,im1) = F(i,j,k,im1) + qint(i,j,k,QPRES)
              F(i,j,k,im2) = F(i,j,k,URHO)*qint(i,j,k,iv1)
              F(i,j,k,im3) = F(i,j,k,URHO)*qint(i,j,k,iv2)
 

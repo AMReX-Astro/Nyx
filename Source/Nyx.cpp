@@ -105,7 +105,7 @@ int Nyx:: Zhi_comp = -1;
 
 int Nyx::QVAR = 8;
 int Nyx::NQSRC = 8;
-int Nyx::NGDNV = 5;
+int Nyx::NGDNV = 8;
 int Nyx::QRHO = 1;
 int Nyx::QU = 2;
 int Nyx::QV = 3;
