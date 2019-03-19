@@ -27,10 +27,32 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
   // Compute_hydro_sources style
   MultiFab fluxes[BL_SPACEDIM];
+  const int finest_level = parent->finestLevel();
+
   for (int j = 0; j < BL_SPACEDIM; j++)
     {
       fluxes[j].define(getEdgeBoxArray(j), dmap, NUM_STATE, 0);
       fluxes[j].setVal(0.0);
+    }
+
+    //
+    // Get pointers to Flux registers, or set pointer to zero if not there.
+    //
+    FluxRegister* fine    = 0;
+    FluxRegister* current = 0;
+
+    if (do_reflux)
+    {
+      if (level < finest_level)
+      {
+         fine = &get_flux_reg(level+1);
+         if (init_flux_register)
+             fine->setVal(0);
+
+       } 
+       if (level > 0) {
+         current = &get_flux_reg(level);
+       }
     }
   /*/
   fluxes.resize(3);
@@ -113,8 +135,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
     
     hydro_source.setVal(0.0);
 
-  int finest_level = parent->finestLevel();
-
   const Real *dx = geom.CellSize();
 
   const int* domain_lo = geom.Domain().loVect();
@@ -192,7 +212,8 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
     FArrayBox qgdnvtmp1, qgdnvtmp2;
     FArrayBox ql, qr;
 #endif
-    FArrayBox flux[AMREX_SPACEDIM], qe[AMREX_SPACEDIM];
+    FArrayBox flux[AMREX_SPACEDIM];
+    FArrayBox qe[AMREX_SPACEDIM];
 #ifdef RADIATION
     FArrayBox rad_flux[AMREX_SPACEDIM];
 #endif
@@ -1281,14 +1302,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
         }
 #endif
 
-        Array4<Real> mass_fluxes_fab = (*mass_fluxes[idir]).array(mfi);
-        const int dens_comp = Density;
-
-        AMREX_HOST_DEVICE_FOR_4D(mfi.nodaltilebox(idir), 1, i, j, k, n,
-        {
-            mass_fluxes_fab(i,j,k,0) = flux_fab(i,j,k,dens_comp);
-        });
-
       } // idir loop
 
 #if AMREX_SPACEDIM <= 2
@@ -1314,6 +1327,9 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
       }
 #endif
+
+      for (int i = 0; i < BL_SPACEDIM; ++i) 
+	fluxes[i][mfi].copy(flux[i], mfi.nodaltilebox(i));
 
       //took out track_grid_losses
 
@@ -1342,6 +1358,22 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 #ifdef BL_LAZY
 	});
 #endif
+    }
+
+    if (add_to_flux_register)
+    {
+       if (do_reflux) {
+         if (current) {
+           for (int i = 0; i < BL_SPACEDIM ; i++) {
+             current->FineAdd(fluxes[i], i, 0, 0, NUM_STATE, 1);
+           }
+         }
+         if (fine) {
+           for (int i = 0; i < BL_SPACEDIM ; i++) {
+	         fine->CrseInit(fluxes[i],i,0,0,NUM_STATE,-1.,FluxRegister::ADD);
+           }
+         }
+       }
     }
 
 }
