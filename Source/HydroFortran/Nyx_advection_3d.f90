@@ -41,7 +41,7 @@
       use amrex_mempool_module, only : amrex_allocate, amrex_deallocate
       use amrex_constants_module
       use meth_params_module, only : QVAR, NVAR, QU, ppm_type, &
-                                     use_colglaz, corner_coupling, &
+                                     use_colglaz, &
                                      version_2
       use slope_module
       use trace_ppm_module
@@ -330,39 +330,36 @@
                      2,ilo1-1,ihi1+1,ilo2,ihi2+1,kc,kc,k3d,print_fortran_warnings)
 
  
-         if (corner_coupling .eq. 1) then
-
-             ! On x-edges
-             ! qxm + d/dy (fy) --> qmxy
-             ! qxp + d/dy (fy) --> qpxy
-             call transy1(qxm,qmxy,qxp,qpxy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+         ! On x-edges
+         ! qxm + d/dy (fy) --> qmxy
+         ! qxp + d/dy (fy) --> qpxy
+         call transy1(qxm,qmxy,qxp,qpxy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                           fy,ilo1-1,ilo2,1,ihi1+1,ihi2+1,2, &
                           ugdnvy,pgdnvy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                           cdtdy,ilo1-1,ihi1+1,ilo2,ihi2,kc,k3d)
 
-             ! On y-edges
-             ! qym + d/dx (fx) --> qmyx
-             ! qyp + d/dx (fx) --> qpyx
-             call transx1(qym,qmyx,qyp,qpyx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+         ! On y-edges
+         ! qym + d/dx (fx) --> qmyx
+         ! qyp + d/dx (fx) --> qpyx
+         call transx1(qym,qmyx,qyp,qpyx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                           fx,ilo1,ilo2-1,1,ihi1+1,ihi2+1,2, &
                           ugdnvx,pgdnvx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                           cdtdx,ilo1,ihi1,ilo2-1,ihi2+1,kc,k3d)
 
-             ! On x-edges -- choose state fxy based on qmxy, qpxy
-             call cmpflx(qmxy,qpxy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+         ! On x-edges -- choose state fxy based on qmxy, qpxy
+         call cmpflx(qmxy,qpxy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                          fxy,ilo1,ilo2-1,1,ihi1+1,ihi2+1,2, &
                          ugdnvtmpx,pgdnvtmpx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                          csml,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                          1,ilo1,ihi1+1,ilo2,ihi2,kc,kc,k3d,print_fortran_warnings)
 
-             ! On y-edges -- choose state fyx based on qmyx, qpyx
-             call cmpflx(qmyx,qpyx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+         ! On y-edges -- choose state fyx based on qmyx, qpyx
+         call cmpflx(qmyx,qpyx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                          fyx,ilo1-1,ilo2,1,ihi1+1,ihi2+1,2, &
                          ugdnvtmpy,pgdnvtmpy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                          csml,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                          2,ilo1,ihi1,ilo2,ihi2+1,kc,kc,k3d,print_fortran_warnings)
 
-         end if
 
          if (k3d.ge.ilo3) then
 
@@ -397,42 +394,40 @@
                         csml,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                         3,ilo1-1,ihi1+1,ilo2-1,ihi2+1,kc,kc,k3d,print_fortran_warnings)
 
-            if (corner_coupling .eq. 1) then
-
-                ! On z-edges
-                ! qzm + d/dy (fy) --> qmzy
-                ! qzp + d/dy (fy) --> qpzy
-                call transy2(qzm,qmzy,qzp,qpzy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+            ! On z-edges
+            ! qzm + d/dy (fy) --> qmzy
+            ! qzp + d/dy (fy) --> qpzy
+            call transy2(qzm,qmzy,qzp,qpzy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                              fy,ilo1-1,ilo2,1,ihi1+1,ihi2+1,2, &
                              ugdnvy,pgdnvy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                              cdtdy,ilo1-1,ihi1+1,ilo2,ihi2,kc,km,k3d)
 
-                ! On z-edges
-                ! qzm + d/dx (fx) --> qmzx
-                ! qzp + d/dx (fx) --> qpzx
-                call transx2(qzm,qmzx,qzp,qpzx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+            ! On z-edges
+            ! qzm + d/dx (fx) --> qmzx
+            ! qzp + d/dx (fx) --> qpzx
+            call transx2(qzm,qmzx,qzp,qpzx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                              fx,ilo1,ilo2-1,1,ihi1+1,ihi2+1,2, &
                              ugdnvx,pgdnvx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                              cdtdx,ilo1,ihi1,ilo2-1,ihi2+1,kc,km,k3d)
 
-                ! On z-edges -- choose state fzx based on qmzx, qpzx
-                call cmpflx(qmzx,qpzx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+            ! On z-edges -- choose state fzx based on qmzx, qpzx
+            call cmpflx(qmzx,qpzx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                             fzx,ilo1,ilo2-1,1,ihi1,ihi2+1,2, &
                             ugdnvtmpz1,pgdnvtmpz1,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                             csml,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                             3,ilo1,ihi1,ilo2-1,ihi2+1,kc,kc,k3d,print_fortran_warnings)
 
-                ! On z-edges -- choose state fzy based on qmzy, qpzy
-                call cmpflx(qmzy,qpzy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+            ! On z-edges -- choose state fzy based on qmzy, qpzy
+            call cmpflx(qmzy,qpzy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                             fzy,ilo1-1,ilo2,1,ihi1+1,ihi2,2, &
                             ugdnvtmpz2,pgdnvtmpz2,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                             csml,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                             3,ilo1-1,ihi1+1,ilo2,ihi2,kc,kc,k3d,print_fortran_warnings)
 
-                ! On z-edges
-                ! qzm + d/dx (fxy) + d/dy (fyx) --> qzl
-                ! qzp + d/dx (fxy) + d/dy (fyx) --> qzr
-                call transxy(qzm,qzl,qzp,qzr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+            ! On z-edges
+            ! qzm + d/dx (fxy) + d/dy (fyx) --> qzl
+            ! qzp + d/dx (fxy) + d/dy (fyx) --> qzr
+            call transxy(qzm,qzl,qzp,qzr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                              fxy,ilo1  ,ilo2-1,1,ihi1+1,ihi2+1,2, &
                              fyx,ilo1-1,ilo2  ,1,ihi1+1,ihi2+1,2, &
                              ugdnvtmpx,pgdnvtmpx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
@@ -440,25 +435,6 @@
                              srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                              hdt,hdtdx,hdtdy,ilo1,ihi1,ilo2,ihi2,kc,km,k3d,a_old,a_new)
 
-            else
-                ! On z-edges
-                ! qzm + d/dx (fx) + d/dy (fy) --> qzl
-                ! qzp + d/dx (fx) + d/dy (fy) --> qzr
-                call transxy(qzm,qzl,qzp,qzr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
-                             fx,ilo1  ,ilo2-1,1,ihi1+1,ihi2+1,2, &
-                             fy,ilo1-1,ilo2  ,1,ihi1+1,ihi2+1,2, &
-                             ugdnvx,pgdnvx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
-                             ugdnvy,pgdnvy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
-                             srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
-                             hdt,hdtdx,hdtdy,ilo1,ihi1,ilo2,ihi2,kc,km,k3d,a_old,a_new)
-            endif
-
-            if (version_2 .eq. 3) then
-               call tracez_src(q,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
-                               qzl,qzr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
-                               srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
-                               ilo1,ilo2,ihi1,ihi2,dt,a_old,km,kc,k3d)
-            endif
 
             ! Compute F^z at kc (k3d) -- note that flux3 is indexed by k3d, not kc
             ! On z-edges -- choose state fluxf3 based on qzl, qzr
@@ -485,38 +461,36 @@
 
             if (k3d.gt.ilo3) then
 
-               if (corner_coupling .eq. 1) then
-
-                   ! On x-edges:
-                   ! qxm + d/dz (fz) --> qmxz
-                   ! qxp + d/dz (fz) --> qpxz
-                   ! On y-edges:
-                   ! qym + d/dz (fz) --> qmyz 
-                   ! qyp + d/dz (fz) --> qpyz
-                   call transz(qxm,qmxz,qxp,qpxz, &
+               ! On x-edges:
+               ! qxm + d/dz (fz) --> qmxz
+               ! qxp + d/dz (fz) --> qpxz
+               ! On y-edges:
+               ! qym + d/dz (fz) --> qmyz 
+               ! qyp + d/dz (fz) --> qpyz
+               call transz(qxm,qmxz,qxp,qpxz, &
                                qym,qmyz,qyp,qpyz,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                                fz,ilo1-1,ilo2-1,1,ihi1+1,ihi2+1,2, &
                                ugdnvz,pgdnvz,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                                cdtdz,ilo1-1,ihi1+1,ilo2-1,ihi2+1,km,kc,k3d)
     
-                   ! On x-edges -- choose state fxz based on qmxz, qpxz
-                   call cmpflx(qmxz,qpxz,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+               ! On x-edges -- choose state fxz based on qmxz, qpxz
+               call cmpflx(qmxz,qpxz,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                                fxz,ilo1,ilo2-1,1,ihi1+1,ihi2+1,2, &
                                ugdnvx,pgdnvx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                                csml,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                                1,ilo1,ihi1+1,ilo2-1,ihi2+1,km,km,k3d-1,print_fortran_warnings)
 
-                   ! On y-edges -- choose state fyz based on qmyz, qpyz
-                   call cmpflx(qmyz,qpyz,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+               ! On y-edges -- choose state fyz based on qmyz, qpyz
+               call cmpflx(qmyz,qpyz,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                                fyz,ilo1-1,ilo2,1,ihi1+1,ihi2+1,2, &
                                ugdnvy,pgdnvy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                                csml,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                                2,ilo1-1,ihi1+1,ilo2,ihi2+1,km,km,k3d-1,print_fortran_warnings)
     
-                   ! On x-edges:
-                   ! qxm + d/dy (fyz) + d/dz(fzy) --> qxl
-                   ! qxp + d/dy (fyz) + d/dz(fzy) --> qxr
-                   call transyz(qxm,qxl,qxp,qxr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+               ! On x-edges:
+               ! qxm + d/dy (fyz) + d/dz(fzy) --> qxl
+               ! qxp + d/dy (fyz) + d/dz(fzy) --> qxr
+               call transyz(qxm,qxl,qxp,qxr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                                 fyz,ilo1-1,ilo2,1,ihi1+1,ihi2+1,2, &
                                 fzy,ilo1-1,ilo2,1,ihi1+1,ihi2  ,2, &
                                 ugdnvy,pgdnvy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
@@ -524,53 +498,16 @@
                                 srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                                 hdt,hdtdy,hdtdz,ilo1-1,ihi1+1,ilo2,ihi2,km,kc,k3d-1,a_old,a_new)
 
-                   ! On y-edges:
-                   ! qym + d/dx (fxz) + d/dz(fzx) --> qyl
-                   ! qyp + d/dx (fxz) + d/dz(fzx) --> qyr
-                   call transxz(qym,qyl,qyp,qyr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+               ! On y-edges:
+               ! qym + d/dx (fxz) + d/dz(fzx) --> qyl
+               ! qyp + d/dx (fxz) + d/dz(fzx) --> qyr
+               call transxz(qym,qyl,qyp,qyr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                                 fxz,ilo1,ilo2-1,1,ihi1+1,ihi2+1,2, &
                                 fzx,ilo1,ilo2-1,1,ihi1  ,ihi2+1,2, &
                                 ugdnvx,pgdnvx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                                 ugdnvtmpz1,pgdnvtmpz1,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                                 srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                                 hdt,hdtdx,hdtdz,ilo1,ihi1,ilo2-1,ihi2+1,km,kc,k3d-1,a_old,a_new)
-
-               else
-
-                   ! On x-edges:
-                   ! qxm + d/dy (fy) + d/dz(fz) --> qxl
-                   ! qxp + d/dy (fy) + d/dz(fz) --> qxr
-                   call transyz(qxm,qxl,qxp,qxr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
-                                fy,ilo1-1,ilo2  ,1,ihi1+1,ihi2+1,2, &
-                                fz,ilo1-1,ilo2-1,1,ihi1+1,ihi2+1,2, &
-                                ugdnvy,pgdnvy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
-                                ugdnvz,pgdnvz,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
-                                srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
-                                hdt,hdtdy,hdtdz,ilo1-1,ihi1+1,ilo2,ihi2,km,kc,k3d-1,a_old,a_new)
-
-                   ! On y-edges:
-                   ! qym + d/dx (fx) + d/dz(fz) --> qyl
-                   ! qyp + d/dx (fx) + d/dz(fz) --> qyr
-                   call transxz(qym,qyl,qyp,qyr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
-                                fx,ilo1  ,ilo2-1,1,ihi1+1,ihi2+1,2, &
-                                fz,ilo1-1,ilo2-1,1,ihi1+1,ihi2+1,2, &
-                                ugdnvx,pgdnvx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
-                                ugdnvz,pgdnvz,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
-                                srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
-                                hdt,hdtdx,hdtdz,ilo1,ihi1,ilo2-1,ihi2+1,km,kc,k3d-1,a_old,a_new)
-
-               end if
-
-               if (version_2 .eq. 3) then
-                  call tracex_src(q,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
-                                  qxl,qxr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
-                                  srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
-                                  ilo1,ilo2,ihi1,ihi2,dt,a_old,kc,k3d)
-                  call tracey_src(q,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
-                                  qyl,qyr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
-                                  srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
-                                  ilo1,ilo2,ihi1,ihi2,dt,a_old,kc,k3d)
-               endif
 
                ! On x-edges -- choose state flux1 based on qxl, qxr
                call cmpflx(qxl,qxr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &

@@ -53,7 +53,6 @@ extern "C"
      const int& ppm_type, const int& ppm_ref,
      const int& ppm_flatten_before_integrals,
      const int& use_colglaz, const int& use_flattening,
-     const int& corner_coupling,
      const int& version_2, const int& use_const_species,
      const amrex::Real& gamma_in, const int& normalize_species,
      const int& heat_cool_type, const int& inhomo_reion);

@@ -38,7 +38,6 @@ module meth_params_module
   integer         , save :: use_colglaz
   integer         , save :: use_flattening
   integer         , save :: version_2
-  integer         , save :: corner_coupling
   integer         , save :: use_const_species
   integer         , save :: normalize_species
   integer         , allocatable :: heat_cool_type
