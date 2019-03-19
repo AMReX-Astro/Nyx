@@ -54,7 +54,7 @@ module meth_params_module
   integer         , save :: riemann_solver = 0
   integer         , save :: use_pslope = 0
   integer         , save :: transverse_reset_density = 1
-  integer         , save :: transverse_reset_rhoe = 1
+  integer         , save :: transverse_reset_rhoe = 0
  
   integer, save :: npassive
   integer, save, allocatable :: qpass_map(:), upass_map(:)

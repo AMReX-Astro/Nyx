@@ -19,6 +19,7 @@ contains
   subroutine trace_ppm(lo, hi, &
                        idir, q, qd_lo, qd_hi, &
                        qaux, qa_lo, qa_hi, &
+                       flatn, f_lo, f_hi, &
                        Ip, Ip_lo, Ip_hi, &
                        Im, Im_lo, Im_hi, &
                        Ip_src, Ips_lo, Ips_hi, &
@@ -39,7 +40,8 @@ contains
     use network, only : nspec, naux
     use meth_params_module, only : QVAR, NQAUX, NQSRC, ppm_predict_gammae, &
                             ppm_temp_fix, QU, QV, QW, npassive, qpass_map, &
-                            fix_mass_flux, gamma_const, gamma_minus_1
+                            fix_mass_flux, gamma_const, gamma_minus_1, &
+                            ppm_flatten_before_integrals
     use prob_params_module, only : physbc_lo, physbc_hi, Outflow
 
     implicit none
@@ -49,6 +51,7 @@ contains
     integer, intent(in) :: qp_lo(3), qp_hi(3)
     integer, intent(in) :: qm_lo(3), qm_hi(3)
     integer, intent(in) :: qa_lo(3), qa_hi(3)
+    integer, intent(in) :: f_lo(3), f_hi(3)
     integer, intent(in) :: Ip_lo(3), Ip_hi(3)
     integer, intent(in) :: Im_lo(3), Im_hi(3)
     integer, intent(in) :: Ips_lo(3), Ips_hi(3)
@@ -65,6 +68,8 @@ contains
     real(rt), intent(in) ::     q(qd_lo(1):qd_hi(1),qd_lo(2):qd_hi(2),qd_lo(3):qd_hi(3),QVAR)
     real(rt), intent(in) ::  qaux(qa_lo(1):qa_hi(1),qa_lo(2):qa_hi(2),qa_lo(3):qa_hi(3),NQAUX)
 
+    real(rt), intent(in) :: flatn(f_lo(1):f_hi(1), f_lo(2):f_hi(2), f_lo(3):f_hi(3))
+    
     real(rt), intent(in) :: Ip(Ip_lo(1):Ip_hi(1),Ip_lo(2):Ip_hi(2),Ip_lo(3):Ip_hi(3),1:3,QVAR)
     real(rt), intent(in) :: Im(Im_lo(1):Im_hi(1),Im_lo(2):Im_hi(2),Im_lo(3):Im_hi(3),1:3,QVAR)
 
@@ -82,7 +87,7 @@ contains
     real(rt), intent(in) :: dt, dx(3)
 
 
-    real(rt) :: un
+    real(rt) :: un, xi
     integer :: ipassive, n, i, j, k
 
 #if AMREX_SPACEDIM == 1
@@ -108,7 +113,11 @@ contains
        do k = lo(3), hi(3)
           do j = lo(2), hi(2)
              do i = lo(1), hi(1)
-
+                if (ppm_flatten_before_integrals == 0) then
+                   xi = flatn(i,j,k)
+                else
+                   xi = ONE
+                endif
                 ! Plus state on face i
                 if ((idir == 1 .and. i >= vlo(1)) .or. &
                     (idir == 2 .and. j >= vlo(2)) .or. &
@@ -125,24 +134,24 @@ contains
                    ! wave, so no projection is needed.  Since we are not
                    ! projecting, the reference state doesn't matter
 
-                   qp(i,j,k,n) = merge(q(i,j,k,n), Im(i,j,k,2,n), un > ZERO)
-                   if (n <= NQSRC) qp(i,j,k,n) = qp(i,j,k,n) + HALF*dt*Im_src(i,j,k,2,n)
+                   qp(i,j,k,n) = merge(q(i,j,k,n), xi*Im(i,j,k,2,n), un > ZERO)
+                   if (n <= NQSRC) qp(i,j,k,n) = qp(i,j,k,n) + HALF*dt*xi*Im_src(i,j,k,2,n)
 
                 end if
 
                 ! Minus state on face i+1
                 if (idir == 1 .and. i <= vhi(1)) then
                    un = q(i,j,k,QU-1+idir)
-                   qm(i+1,j,k,n) = merge(Ip(i,j,k,2,n), q(i,j,k,n), un > ZERO)
-                   if (n <= NQSRC) qm(i+1,j,k,n) = qm(i+1,j,k,n) + HALF*dt*Ip_src(i,j,k,2,n)
+                   qm(i+1,j,k,n) = merge(xi*Ip(i,j,k,2,n), q(i,j,k,n), un > ZERO)
+                   if (n <= NQSRC) qm(i+1,j,k,n) = qm(i+1,j,k,n) + HALF*dt*xi*Ip_src(i,j,k,2,n)
                 else if (idir == 2 .and. j <= vhi(2)) then
                    un = q(i,j,k,QU-1+idir)
-                   qm(i,j+1,k,n) = merge(Ip(i,j,k,2,n), q(i,j,k,n), un > ZERO)
-                   if (n <= NQSRC) qm(i,j+1,k,n) = qm(i,j+1,k,n) + HALF*dt*Ip_src(i,j,k,2,n)
+                   qm(i,j+1,k,n) = merge(xi*Ip(i,j,k,2,n), q(i,j,k,n), un > ZERO)
+                   if (n <= NQSRC) qm(i,j+1,k,n) = qm(i,j+1,k,n) + HALF*dt*xi*Ip_src(i,j,k,2,n)
                 else if (idir == 3 .and. k <= vhi(3)) then
                    un = q(i,j,k,QU-1+idir)
-                   qm(i,j,k+1,n) = merge(Ip(i,j,k,2,n), q(i,j,k,n), un > ZERO)
-                   if (n <= NQSRC) qm(i,j,k+1,n) = qm(i,j,k+1,n) + HALF*dt*Ip_src(i,j,k,2,n)
+                   qm(i,j,k+1,n) = merge(xi*Ip(i,j,k,2,n), q(i,j,k,n), un > ZERO)
+                   if (n <= NQSRC) qm(i,j,k+1,n) = qm(i,j,k+1,n) + HALF*dt*xi*Ip_src(i,j,k,2,n)
                 end if
 
              end do
@@ -161,6 +170,7 @@ contains
           call trace_ppm_rhoe(lo, hi, &
                               idir, q, qd_lo, qd_hi, &
                               qaux, qa_lo, qa_hi, &
+                              flatn, f_lo, f_hi, &
                               Ip, Ip_lo, Ip_hi, &
                               Im, Im_lo, Im_hi, &
                               Ip_src, Ips_lo, Ips_hi, &
@@ -218,6 +228,7 @@ contains
   subroutine trace_ppm_rhoe(lo, hi, &
                             idir, q, qd_lo, qd_hi, &
                             qaux, qa_lo, qa_hi, &
+                            flatn, f_lo, f_hi, &
                             Ip, Ip_lo, Ip_hi, &
                             Im, Im_lo, Im_hi, &
                             Ip_src, Ips_lo, Ips_hi, &
@@ -239,7 +250,7 @@ contains
                                    small_dens, small_pres, &
                                    ppm_type, &
                                    ppm_reference_eigenvectors, &
-                                   fix_mass_flux
+                                   fix_mass_flux, ppm_flatten_before_integrals
     use prob_params_module, only : physbc_lo, physbc_hi, Outflow
 
     implicit none
@@ -249,6 +260,7 @@ contains
     integer, intent(in) :: qm_lo(3), qm_hi(3)
     integer, intent(in) :: qp_lo(3), qp_hi(3)
     integer, intent(in) :: qa_lo(3), qa_hi(3)
+    integer, intent(in) :: f_lo(3), f_hi(3)
     integer, intent(in) :: Ip_lo(3), Ip_hi(3)
     integer, intent(in) :: Im_lo(3), Im_hi(3)
     integer, intent(in) :: Ips_lo(3), Ips_hi(3)
@@ -265,6 +277,8 @@ contains
     real(rt), intent(in) ::     q(qd_lo(1):qd_hi(1),qd_lo(2):qd_hi(2),qd_lo(3):qd_hi(3),QVAR)
     real(rt), intent(in) ::  qaux(qa_lo(1):qa_hi(1),qa_lo(2):qa_hi(2),qa_lo(3):qa_hi(3),NQAUX)
 
+    real(rt), intent(in) :: flatn(f_lo(1):f_hi(1), f_lo(2):f_hi(2), f_lo(3):f_hi(3))
+    
     real(rt), intent(in) :: Ip(Ip_lo(1):Ip_hi(1),Ip_lo(2):Ip_hi(2),Ip_lo(3):Ip_hi(3),1:3,QVAR)
     real(rt), intent(in) :: Im(Im_lo(1):Im_hi(1),Im_lo(2):Im_hi(2),Im_lo(3):Im_hi(3),1:3,QVAR)
 
@@ -309,6 +323,7 @@ contains
     real(rt) :: cc, csq
     real(rt) :: rho, un, ut, utt, p, rhoe_g, h_g
     real(rt) :: gam_g
+    real(rt) :: xi, xi1
 
     real(rt) :: drho, dptot, drhoe_g
     real(rt) :: dup, dptotp
@@ -579,6 +594,18 @@ contains
                    qm(i+1,j,k,QREINT) = rhoe_g_ref + (alphap + alpham)*h_g_ev*csq_ev + alpha0e_g
                    qm(i+1,j,k,QPRES) = max(small_pres, p_ref + (alphap + alpham)*csq_ev)
 
+                   if (ppm_flatten_before_integrals == 0) then
+                      xi  = flatn(i,j,k)
+                      xi1 = ONE - flatn(i,j,k)
+ 
+                      qm(i+1,j,k,QRHO  ) = xi1*rho  + xi*qm(i+1,j,k,QRHO  )
+                      qm(i+1,j,k,QUN   ) = xi1*un   + xi*qm(i+1,j,k,QUN   )
+                      qm(i+1,j,k,QUT   ) = xi1*ut   + xi*qm(i+1,j,k,QUT   )
+                      qm(i+1,j,k,QUTT  ) = xi1*utt  + xi*qm(i+1,j,k,QUTT  )
+                      qm(i+1,j,k,QREINT) = xi1*rhoe_g + xi*qm(i+1,j,k,QREINT)
+                      qm(i+1,j,k,QPRES ) = xi1*p    + xi*qm(i+1,j,k,QPRES )
+                   endif
+                   
                    ! transverse velocities
                    qm(i+1,j,k,QUT) = Ip(i,j,k,2,QUT) + hdt*Ip_src(i,j,k,2,QUT)
                    qm(i+1,j,k,QUTT) = Ip(i,j,k,2,QUTT) + hdt*Ip_src(i,j,k,2,QUTT)
@@ -589,6 +616,17 @@ contains
                    qm(i,j+1,k,QREINT) = rhoe_g_ref + (alphap + alpham)*h_g_ev*csq_ev + alpha0e_g
                    qm(i,j+1,k,QPRES) = max(small_pres, p_ref + (alphap + alpham)*csq_ev)
 
+                   if (ppm_flatten_before_integrals == 0) then
+                      xi  = flatn(i,j,k)
+                      xi1 = ONE - flatn(i,j,k)
+ 
+                      qm(i,j+1,k,QRHO  ) = xi1*rho  + xi*qm(i,j+1,k,QRHO  )
+                      qm(i,j+1,k,QUN   ) = xi1*un   + xi*qm(i,j+1,k,QUN   )
+                      qm(i,j+1,k,QUT   ) = xi1*ut   + xi*qm(i,j+1,k,QUT   )
+                      qm(i,j+1,k,QUTT  ) = xi1*utt  + xi*qm(i,j+1,k,QUTT  )
+                      qm(i,j+1,k,QREINT) = xi1*rhoe_g + xi*qm(i,j+1,k,QREINT)
+                      qm(i,j+1,k,QPRES ) = xi1*p    + xi*qm(i,j+1,k,QPRES )
+                   endif
                    ! transverse velocities
                    qm(i,j+1,k,QUT) = Ip(i,j,k,2,QUT) + hdt*Ip_src(i,j,k,2,QUT)
                    qm(i,j+1,k,QUTT) = Ip(i,j,k,2,QUTT) + hdt*Ip_src(i,j,k,2,QUTT)
@@ -599,6 +637,18 @@ contains
                    qm(i,j,k+1,QREINT) = rhoe_g_ref + (alphap + alpham)*h_g_ev*csq_ev + alpha0e_g
                    qm(i,j,k+1,QPRES) = max(small_pres, p_ref + (alphap + alpham)*csq_ev)
 
+                   if (ppm_flatten_before_integrals == 0) then
+                      xi  = flatn(i,j,k)
+                      xi1 = ONE - flatn(i,j,k)
+ 
+                      qm(i,j,k+1,QRHO  ) = xi1*rho  + xi*qm(i,j,k+1,QRHO  )
+                      qm(i,j,k+1,QUN   ) = xi1*un   + xi*qm(i,j,k+1,QUN   )
+                      qm(i,j,k+1,QUT   ) = xi1*ut   + xi*qm(i,j,k+1,QUT   )
+                      qm(i,j,k+1,QUTT  ) = xi1*utt  + xi*qm(i,j,k+1,QUTT  )
+                      qm(i,j,k+1,QREINT) = xi1*rhoe_g + xi*qm(i,j,k+1,QREINT)
+                      qm(i,j,k+1,QPRES ) = xi1*p    + xi*qm(i,j,k+1,QPRES )
+                   endif
+                   
                    ! transverse velocities
                    qm(i,j,k+1,QUT) = Ip(i,j,k,2,QUT) + hdt*Ip_src(i,j,k,2,QUT)
                    qm(i,j,k+1,QUTT) = Ip(i,j,k,2,QUTT) + hdt*Ip_src(i,j,k,2,QUTT)

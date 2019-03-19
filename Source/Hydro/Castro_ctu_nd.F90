@@ -335,6 +335,7 @@ contains
           call trace_ppm(lo, hi, &
                          1, q, qd_lo, qd_hi, &
                          qaux, qa_lo, qa_hi, &
+                         flatn, f_lo, f_hi, &
                          Ip, Ip_lo, Ip_hi, &
                          Im, Im_lo, Im_hi, &
                          Ip_src, Ips_lo, Ips_hi, &
@@ -354,6 +355,7 @@ contains
           call trace_ppm(lo, hi, &
                          2, q, qd_lo, qd_hi, &
                          qaux, qa_lo, qa_hi, &
+                         flatn, f_lo, f_hi, &
                          Ip, Ip_lo, Ip_hi, &
                          Im, Im_lo, Im_hi, &
                          Ip_src, Ips_lo, Ips_hi, &
@@ -374,6 +376,7 @@ contains
           call trace_ppm(lo, hi, &
                          3, q, qd_lo, qd_hi, &
                          qaux, qa_lo, qa_hi, &
+                         flatn, f_lo, f_hi, &
                          Ip, Ip_lo, Ip_hi, &
                          Im, Im_lo, Im_hi, &
                          Ip_src, Ips_lo, Ips_hi, &
