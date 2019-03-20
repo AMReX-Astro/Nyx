@@ -1033,9 +1033,10 @@ contains
                        domlo, domhi, compute_interface_gamma)
 
     use prob_params_module, only : physbc_lo, physbc_hi
-    use meth_params_module, only : gamma_const, gamma_minus_1
+    use meth_params_module, only : gamma_const, gamma_minus_1, use_analriem
     use eos_module, only : eos
     use network, only : nspec
+    use analriem_module
 
     implicit none
 
@@ -1217,6 +1218,7 @@ contains
              rer = qr(i,j,k,QREINT,comp)
 #endif
 
+             if(use_analriem .eq.0) then
              ! ------------------------------------------------------------------
              ! estimate the star state: pstar, ustar
              ! ------------------------------------------------------------------
@@ -1273,6 +1275,19 @@ contains
                 ustar = ZERO
              endif
 
+          else
+                      ! Call analytic Riemann solver
+            call analriem_1cell(gamma_const, &
+                 pl, &
+                 rl, &
+                 ul, &
+                 pr, &
+                 rr, &
+                 ur, &
+                 small_pres, &
+                 pstar, &
+                 ustar)
+            endif
              ! ------------------------------------------------------------------
              ! look at the contact to determine which region we are in
              ! ------------------------------------------------------------------
