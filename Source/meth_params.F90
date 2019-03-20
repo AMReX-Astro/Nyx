@@ -56,7 +56,7 @@ module meth_params_module
   integer         , save :: use_pslope = 0
   integer         , save :: transverse_reset_density = 1
   integer         , save :: transverse_reset_rhoe = 0
-  integer         , save :: use_pressure_law_pdivu = 0
+  integer         , save :: use_pressure_law_pdivu = 1
   integer         , save :: use_analriem = 0
  
   integer, save :: npassive
