@@ -528,7 +528,8 @@ subroutine ca_ctoprim(lo, hi, &
       use amrex_fort_module, only : rt => amrex_real
       use amrex_constants_module
       use meth_params_module, only : difmag, NVAR, URHO, UMX, UMZ, &
-           UEDEN, UEINT, UFS, normalize_species, gamma_minus_1, NGDNV
+           UEDEN, UEINT, UFS, normalize_species, gamma_minus_1, NGDNV, &
+         use_pressure_law_pdivu
       !use advection_util_module, only : calc_pdivu
       
       implicit none
@@ -624,12 +625,21 @@ subroutine ca_ctoprim(lo, hi, &
                   ! (rho e)
                   else if (n .eq. UEINT) then
 
-                     hydro_src(i,j,k,n) =  &
+                     if(use_pressure_law_pdivu .eq. 0) then
+                        hydro_src(i,j,k,n) =  &
+                          ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
+                           +flux2(i,j,k,n) - flux2(i,j+1,k,n) &
+                           +flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * a_half * area1 * volinv & !hydro_src matches old with factor of dt here
+                           +a_half*(a_new - a_old) * ( TWO - THREE * gamma_minus_1) * uin(i,j,k,UEINT) &
+                           -a_half* pdivu(i,j,k)
+                     else
+                        hydro_src(i,j,k,n) =  &
                           ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
                            +flux2(i,j,k,n) - flux2(i,j+1,k,n) &
                            +flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * a_half * area1 * volinv & !hydro_src matches old with factor of dt here
                            +a_half*(a_new - a_old) * ( TWO - THREE * gamma_minus_1) * uin(i,j,k,UEINT) &
                            -a_half*dt*(gamma_minus_1 * uin(i,j,k,n)) * pdivu(i,j,k)
+                     endif
 
                   ! (rho X_i) and (rho adv_i) and (rho aux_i)
                   else
@@ -638,7 +648,6 @@ subroutine ca_ctoprim(lo, hi, &
                           +   flux2(i,j,k,n) - flux2(i,j+1,k,n) &
                           +   flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * area1 * volinv 
                   endif
-
 !                  hydro_src(i,j,k,n) = hydro_src(i,j,k,n) / dt
                enddo
             enddo
@@ -987,7 +996,8 @@ subroutine ca_ctoprim(lo, hi, &
        !vol, v_lo, v_hi, &
        dx, pdivu, div_lo, div_hi)
 
-    use meth_params_module, only : QVAR, GDPRES, GDU, GDV, GDW, NGDNV
+    use meth_params_module, only : QVAR, GDPRES, GDU, GDV, GDW, NGDNV, &
+         use_pressure_law_pdivu
     use amrex_constants_module, only : HALF
     use amrex_fort_module, only : rt => amrex_real
     implicit none
@@ -1020,6 +1030,7 @@ subroutine ca_ctoprim(lo, hi, &
     do k = lo(3), hi(3)
        do j = lo(2), hi(2)
           do i = lo(1), hi(1)
+             if(use_pressure_law_pdivu.eq.1) then
 #if AMREX_SPACEDIM == 1
              pdivu(i,j,k) = (q1(i+1,j,k,GDU)*area1 - q1(i,j,k,GDU)*area1) / vol
 #endif
@@ -1035,32 +1046,34 @@ subroutine ca_ctoprim(lo, hi, &
                   (q2(i,j+1,k,GDV) - q2(i,j,k,GDV))/dx(2) + &
                   (q3(i,j,k+1,GDW) - q3(i,j,k,GDW))/dx(3)
 #endif
-
+          else
+             
 !!!!!!!!!!!!!!!!!!!!!!This gives different pdivu contribution to hydro_src than gamma
-!#if AMREX_SPACEDIM == 1
-!             pdivu(i,j,k) = HALF * &
-!                  (q1(i+1,j,k,GDPRES) + q1(i,j,k,GDPRES))* &
-!                  (q1(i+1,j,k,GDU)*area1 - q1(i,j,k,GDU)*area1) / vol
-!#endif
+#if AMREX_SPACEDIM == 1
+             pdivu(i,j,k) = HALF * &
+                  (q1(i+1,j,k,GDPRES) + q1(i,j,k,GDPRES))* &
+                  (q1(i+1,j,k,GDU)*area1 - q1(i,j,k,GDU)*area1) / vol
+#endif
 
-!#if AMREX_SPACEDIM == 2
-!             pdivu(i,j,k) = HALF*( &
-!                  (q1(i+1,j,k,GDPRES) + q1(i,j,k,GDPRES)) * &
-!                  (q1(i+1,j,k,GDU)*area1 - q1(i,j,k,GDU)*area1) + &
-!                  (q2(i,j+1,k,GDPRES) + q2(i,j,k,GDPRES)) * &
-!                  (q2(i,j+1,k,GDV)*area2 - q2(i,j,k,GDV)*area2) ) / vol
-!#endif
 
-!#if AMREX_SPACEDIM == 3
-!             pdivu(i,j,k) = &
-!                  HALF*(q1(i+1,j,k,GDPRES) + q1(i,j,k,GDPRES)) * &
- !                 (q1(i+1,j,k,GDU) - q1(i,j,k,GDU))/dx(1) + &
- !                 HALF*(q2(i,j+1,k,GDPRES) + q2(i,j,k,GDPRES)) * &
- !                 (q2(i,j+1,k,GDV) - q2(i,j,k,GDV))/dx(2) + &
-!                  HALF*(q3(i,j,k+1,GDPRES) + q3(i,j,k,GDPRES)) * &
-!                  (q3(i,j,k+1,GDW) - q3(i,j,k,GDW))/dx(3)
-!#endif
+#if AMREX_SPACEDIM == 2
+             pdivu(i,j,k) = HALF*( &
+                  (q1(i+1,j,k,GDPRES) + q1(i,j,k,GDPRES)) * &
+                  (q1(i+1,j,k,GDU)*area1 - q1(i,j,k,GDU)*area1) + &
+                  (q2(i,j+1,k,GDPRES) + q2(i,j,k,GDPRES)) * &
+                  (q2(i,j+1,k,GDV)*area2 - q2(i,j,k,GDV)*area2) ) / vol
+#endif
 
+#if AMREX_SPACEDIM == 3
+             pdivu(i,j,k) = &
+                  HALF*(q1(i+1,j,k,GDPRES) + q1(i,j,k,GDPRES)) * &
+                 (q1(i+1,j,k,GDU) - q1(i,j,k,GDU))/dx(1) + &
+                 HALF*(q2(i,j+1,k,GDPRES) + q2(i,j,k,GDPRES)) * &
+                 (q2(i,j+1,k,GDV) - q2(i,j,k,GDV))/dx(2) + &
+                 HALF*(q3(i,j,k+1,GDPRES) + q3(i,j,k,GDPRES)) * &
+                  (q3(i,j,k+1,GDW) - q3(i,j,k,GDW))/dx(3)
+#endif
+          endif
           enddo
        enddo
     enddo

@@ -47,6 +47,7 @@ module meth_params_module
   integer         , save :: cg_tol = 1.0d-5
   integer         , save :: cg_blend = 0
   integer         , save :: fix_mass_flux = 0
+  !ppm ppm_predict_gammae=0 matches castro
   integer         , save :: ppm_predict_gammae = 1
   integer         , save :: ppm_temp_fix = 0
   integer         , save :: ppm_reference_eigenvectors = 0
@@ -55,6 +56,8 @@ module meth_params_module
   integer         , save :: use_pslope = 0
   integer         , save :: transverse_reset_density = 1
   integer         , save :: transverse_reset_rhoe = 0
+  integer         , save :: use_pressure_law_pdivu = 0
+  integer         , save :: use_analriem = 0
  
   integer, save :: npassive
   integer, save, allocatable :: qpass_map(:), upass_map(:)
