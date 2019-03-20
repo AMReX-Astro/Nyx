@@ -34,7 +34,7 @@ contains
 
     use network, only : nspec, naux
     use meth_params_module, only : QVAR, NVAR, NQAUX, QRHO, QU, QV, QW, &
-                                   QPRES, QREINT, QGAME, QFS, QFX, &
+                                   QPRES, QREINT, QFS, QFX, &
                                    QC, QGAMC, &
 #ifdef RADIATION
                                    qrad, qradhi, qptot, qreitot, &
@@ -373,21 +373,11 @@ contains
 #endif
                    qypo(i,j,k,QPRES) = max(pnewry, small_pres)
                 else
-                   ! Update gammae with its transverse terms
-#if AMREX_SPACEDIM == 2
-                   qypo(i,j,k,QGAME) = qyp(i,j,k,QGAME) + &
-                        hdt*( (geav-ONE)*(geav - gamc)*du)/vol(i,j,k) - cdtdx*uav*dge
-#else
-                   qypo(i,j,k,QGAME) = qyp(i,j,k,QGAME) + &
-                        cdtdx*( (geav-ONE)*(geav - gamc)*du - uav*dge )
-#endif
-                   ! and compute the p edge state from this and (rho e)
-                   qypo(i,j,k,QPRES) = qypo(i,j,k,QREINT)*(qypo(i,j,k,QGAME)-ONE)
+                   qypo(i,j,k,QPRES) = qypo(i,j,k,QREINT)*(gamma_const-ONE)
                    qypo(i,j,k,QPRES) = max(qypo(i,j,k,QPRES),small_pres)
                 end if
              else
                 qypo(i,j,k,QPRES) = qyp(i,j,k,QPRES)
-                qypo(i,j,k,QGAME) = qyp(i,j,k,QGAME)
              endif
 
              call reset_edge_state_thermo(qypo, qypo_lo, qypo_hi, i, j, k)
@@ -570,22 +560,11 @@ contains
 #endif
                    qymo(i,j,k,QPRES) = max(pnewly,small_pres)
                 else
-                   ! Update gammae with its transverse terms
-#if AMREX_SPACEDIM == 2
-                   qymo(i,j,k,QGAME) = qym(i,j,k,QGAME) + &
-                        hdt*( (geav-ONE)*(geav - gamc)*du)/vol(i,j-1,k) - cdtdx*uav*dge
-#else
-                   qymo(i,j,k,QGAME) = qym(i,j,k,QGAME) + &
-                        cdtdx*( (geav-ONE)*(geav - gamc)*du - uav*dge )
-#endif
-
-                   ! and compute the p edge state from this and (rho e)
-                   qymo(i,j,k,QPRES) = qymo(i,j,k,QREINT)*(qymo(i,j,k,QGAME)-ONE)
+                   qymo(i,j,k,QPRES) = qymo(i,j,k,QREINT)*(gamma_const-ONE)
                    qymo(i,j,k,QPRES) = max(qymo(i,j,k,QPRES), small_pres)
                 end if
              else
                 qymo(i,j,k,QPRES) = qym(i,j,k,QPRES)
-                qymo(i,j,k,QGAME) = qym(i,j,k,QGAME)
              endif
 
              call reset_edge_state_thermo(qymo, qymo_lo, qymo_hi, i, j, k)
@@ -622,7 +601,7 @@ contains
 
   use network, only : nspec, naux
   use meth_params_module, only : QVAR, NVAR, NQAUX, QRHO, QU, QV, QW, &
-                                 QPRES, QREINT, QGAME, QFS, QFX, &
+                                 QPRES, QREINT, QFS, QFX, &
                                  QC,  &
 #ifdef RADIATION
                                  qrad, qradhi, qptot, qreitot, &
@@ -869,17 +848,11 @@ contains
                    pnewrz = qzp(i,j,k,QPRES) - cdtdx*(dup + pav*du*(gamc - ONE))
                    qzpo(i,j,k,QPRES) = max(pnewrz,small_pres)
                 else
-                   ! Update gammae with its transverse terms
-                   qzpo(i,j,k,QGAME) = qzp(i,j,k,QGAME) + &
-                        cdtdx*( (geav-ONE)*(geav - gamc)*du - uav*dge )
-
-                   ! and compute the p edge state from this and (rho e)
-                   qzpo(i,j,k,QPRES) = qzpo(i,j,k,QREINT)*(qzpo(i,j,k,QGAME)-ONE)
+                   qzpo(i,j,k,QPRES) = qzpo(i,j,k,QREINT)*(gamma_const-ONE)
                    qzpo(i,j,k,QPRES) = max(qzpo(i,j,k,QPRES), small_pres)
                 endif
              else
                 qzpo(i,j,k,QPRES) = qzp(i,j,k,QPRES)
-                qzpo(i,j,k,QGAME) = qzp(i,j,k,QGAME)
              endif
 
              call reset_edge_state_thermo(qzpo, qzpo_lo, qzpo_hi, i, j, k)
@@ -1014,17 +987,11 @@ contains
                    pnewlz = qzm(i,j,k,QPRES) - cdtdx*(dup + pav*du*(gamc - ONE))
                    qzmo(i,j,k,QPRES) = max(pnewlz,small_pres)
                 else
-                   ! Update gammae with its transverse terms
-                   qzmo(i,j,k,QGAME) = qzm(i,j,k,QGAME) + &
-                        cdtdx*( (geav-ONE)*(geav - gamc)*du - uav*dge )
-
-                   ! and compute the p edge state from this and (rho e)
-                   qzmo(i,j,k,QPRES) = qzmo(i,j,k,QREINT)*(qzmo(i,j,k,QGAME)-ONE)
+                   qzmo(i,j,k,QPRES) = qzmo(i,j,k,QREINT)*(gamma_const-ONE)
                    qzmo(i,j,k,QPRES) = max(qzmo(i,j,k,QPRES), small_pres)
                 endif
              else
                 qzmo(i,j,k,QPRES) = qzm(i,j,k,QPRES)
-                qzmo(i,j,k,QGAME) = qzm(i,j,k,QGAME)
              endif
 
              call reset_edge_state_thermo(qzmo, qzmo_lo, qzmo_hi, i, j, k)
@@ -1064,7 +1031,7 @@ contains
 
     use network, only : nspec, naux
     use meth_params_module, only : QVAR, NVAR, NQAUX, QRHO, QU, QV, QW, &
-                                   QPRES, QREINT, QGAME, QFS, QFX, &
+                                   QPRES, QREINT, QFS, QFX, &
                                    QC,  &
 #ifdef RADIATION
                                    qrad, qradhi, qptot, qreitot, &
@@ -1306,17 +1273,11 @@ contains
                    pnewrx = qxp(i,j,k,QPRES) - cdtdy*(dup + pav*du*(gamc - ONE))
                    qxpo(i,j,k,QPRES) = max(pnewrx,small_pres)
                 else
-                   ! Update gammae with its transverse terms
-                   qxpo(i,j,k,QGAME) = qxp(i,j,k,QGAME) + &
-                        cdtdy*( (geav-ONE)*(geav - gamc)*du - uav*dge )
-
-                   ! and compute the p edge state from this and (rho e)
-                   qxpo(i,j,k,QPRES) = qxpo(i,j,k,QREINT)*(qxpo(i,j,k,QGAME)-ONE)
+                   qxpo(i,j,k,QPRES) = qxpo(i,j,k,QREINT)*(gamma_const-ONE)
                    qxpo(i,j,k,QPRES) = max(qxpo(i,j,k,QPRES), small_pres)
                 endif
              else
                 qxpo(i,j,k,QPRES) = qxp(i,j,k,QPRES)
-                qxpo(i,j,k,QGAME) = qxp(i,j,k,QGAME)
              endif
 
              call reset_edge_state_thermo(qxpo, qxpo_lo, qxpo_hi, i, j, k)
@@ -1451,17 +1412,11 @@ contains
                    pnewlx = qxm(i,j,k,QPRES) - cdtdy*(dup + pav*du*(gamc - ONE))
                    qxmo(i,j,k,QPRES) = max(pnewlx,small_pres)
                 else
-                   ! Update gammae with its transverse terms
-                   qxmo(i,j,k,QGAME) = qxm(i,j,k,QGAME) + &
-                        cdtdy*( (geav-ONE)*(geav - gamc)*du - uav*dge )
-
-                   ! and compute the p edge state from this and (rho e)
-                   qxmo(i,j,k,QPRES) = qxmo(i,j,k,QREINT)*(qxmo(i,j,k,QGAME)-ONE)
+                   qxmo(i,j,k,QPRES) = qxmo(i,j,k,QREINT)*(gamma_const-ONE)
                    qxmo(i,j,k,QPRES) = max(qxmo(i,j,k,QPRES), small_pres)
                 endif
              else
                 qxmo(i,j,k,QPRES) = qxm(i,j,k,QPRES)
-                qxmo(i,j,k,QGAME) = qxm(i,j,k,QGAME)
              endif
 
              call reset_edge_state_thermo(qxmo, qxmo_lo, qxmo_hi, i, j, k)
@@ -1498,7 +1453,7 @@ contains
 
     use network, only : nspec, naux
     use meth_params_module, only : QVAR, NVAR, NQAUX, QRHO, QU, QV, QW, &
-                                   QPRES, QREINT, QGAME, QFS, QFX, &
+                                   QPRES, QREINT, QFS, QFX, &
                                    QC,  &
 #ifdef RADIATION
                                    qrad, qradhi, qptot, qreitot, &
@@ -1741,17 +1696,11 @@ contains
                    pnewrz = qzp(i,j,k,QPRES) - cdtdy*(dup + pav*du*(gamc - ONE))
                    qzpo(i,j,k,QPRES) = max(pnewrz,small_pres)
                 else
-                   ! Update gammae with its transverse terms
-                   qzpo(i,j,k,QGAME) = qzp(i,j,k,QGAME) + &
-                        cdtdy*( (geav-ONE)*(geav - gamc)*du - uav*dge )
-
-                   ! and compute the p edge state from this and (rho e)
-                   qzpo(i,j,k,QPRES) = qzpo(i,j,k,QREINT)*(qzpo(i,j,k,QGAME)-ONE)
+                   qzpo(i,j,k,QPRES) = qzpo(i,j,k,QREINT)*(gamma_const-ONE)
                    qzpo(i,j,k,QPRES) = max(qzpo(i,j,k,QPRES), small_pres)
                 endif
              else
                 qzpo(i,j,k,QPRES) = qzp(i,j,k,QPRES)
-                qzpo(i,j,k,QGAME) = qzp(i,j,k,QGAME)
              endif
 
              call reset_edge_state_thermo(qzpo, qzpo_lo, qzpo_hi, i, j, k)
@@ -1887,17 +1836,11 @@ contains
                    pnewlz = qzm(i,j,k,QPRES) - cdtdy*(dup + pav*du*(gamc - ONE))
                    qzmo(i,j,k,QPRES) = max(pnewlz,small_pres)
                 else
-                   ! Update gammae with its transverse terms
-                   qzmo(i,j,k,QGAME) = qzm(i,j,k,QGAME) + &
-                        cdtdy*( (geav-ONE)*(geav - gamc)*du - uav*dge )
-
-                   ! and compute the p edge state from this and (rho e)
-                   qzmo(i,j,k,QPRES) = qzmo(i,j,k,QREINT)*(qzmo(i,j,k,QGAME)-ONE)
+                   qzmo(i,j,k,QPRES) = qzmo(i,j,k,QREINT)*(gamma_const-ONE)
                    qzmo(i,j,k,QPRES) = max(qzmo(i,j,k,QPRES), small_pres)
                 endif
              else
                 qzmo(i,j,k,QPRES) = qzm(i,j,k,QPRES)
-                qzmo(i,j,k,QGAME) = qzm(i,j,k,QGAME)
              endif
 
              call reset_edge_state_thermo(qzmo, qzmo_lo, qzmo_hi, i, j, k)
@@ -1939,7 +1882,7 @@ contains
 
     use network, only : nspec, naux
     use meth_params_module, only : QVAR, NVAR, NQAUX, QRHO, QU, QV, QW, &
-                                   QPRES, QREINT, QGAME, QFS, QFX, &
+                                   QPRES, QREINT, QFS, QFX, &
                                    QC,  &
 #ifdef RADIATION
                                    qrad, qradhi, qptot, qreitot, &
@@ -2177,17 +2120,11 @@ contains
                    pnewrx = qxp(i,j,k,QPRES) - cdtdz*(dup + pav*du*(gamc - ONE))
                    qxpo(i,j,k,QPRES) = max(pnewrx,small_pres)
                 else
-                   ! Update gammae with its transverse terms
-                   qxpo(i,j,k,QGAME) = qxp(i,j,k,QGAME) + &
-                        cdtdz*( (geav-ONE)*(geav - gamc)*du - uav*dge )
-
-                   ! and compute the p edge state from this and (rho e)
-                   qxpo(i,j,k,QPRES) = qxpo(i,j,k,QREINT)*(qxpo(i,j,k,QGAME)-ONE)
+                   qxpo(i,j,k,QPRES) = qxpo(i,j,k,QREINT)*(gamma_const-ONE)
                    qxpo(i,j,k,QPRES) = max(qxpo(i,j,k,QPRES), small_pres)
                 endif
              else
                 qxpo(i,j,k,QPRES) = qxp(i,j,k,QPRES)
-                qxpo(i,j,k,QGAME) = qxp(i,j,k,QGAME)
              endif
 
              call reset_edge_state_thermo(qxpo, qxpo_lo, qxpo_hi, i, j, k)
@@ -2320,17 +2257,11 @@ contains
                    pnewlx = qxm(i,j,k,QPRES) - cdtdz*(dup + pav*du*(gamc - ONE))
                    qxmo(i,j,k,QPRES) = max(pnewlx,small_pres)
                 else
-                   ! Update gammae with its transverse terms
-                   qxmo(i,j,k,QGAME) = qxm(i,j,k,QGAME) + &
-                        cdtdz*( (geav-ONE)*(geav - gamc)*du - uav*dge )
-
-                   ! and compute the p edge state from this and (rho e)
-                   qxmo(i,j,k,QPRES) = qxmo(i,j,k,QREINT)*(qxmo(i,j,k,QGAME)-ONE)
+                   qxmo(i,j,k,QPRES) = qxmo(i,j,k,QREINT)*(gamma_const-ONE)
                    qxmo(i,j,k,QPRES) = max(qxmo(i,j,k,QPRES), small_pres)
                 end if
              else
                 qxmo(i,j,k,QPRES) = qxm(i,j,k,QPRES)
-                qxmo(i,j,k,QGAME) = qxm(i,j,k,QGAME)
              endif
 
              call reset_edge_state_thermo(qxmo, qxmo_lo, qxmo_hi, i, j, k)
@@ -2367,7 +2298,7 @@ contains
 
     use network, only : nspec, naux
     use meth_params_module, only : QVAR, NVAR, NQAUX, QRHO, QU, QV, QW, &
-                                   QPRES, QREINT, QGAME, QFS, QFX, &
+                                   QPRES, QREINT, QFS, QFX, &
                                    QC,  &
 #ifdef RADIATION
                                    qrad, qradhi, qptot, qreitot, &
@@ -2601,21 +2532,18 @@ contains
                 ! If we are wrong, we will fix it later
 
                 if (ppm_predict_gammae == 0) then
+
                    ! add the transverse term to the p evolution eq here
                    pnewry = qyp(i,j,k,QPRES) - cdtdz*(dup + pav*du*(gamc - ONE))
                    qypo(i,j,k,QPRES) = max(pnewry,small_pres)
-                else
-                   ! Update gammae with its transverse terms
-                   qypo(i,j,k,QGAME) = qyp(i,j,k,QGAME) + &
-                        cdtdz*( (geav-ONE)*(geav - gamc)*du - uav*dge )
 
-                   ! and compute the p edge state from this and (rho e)
-                   qypo(i,j,k,QPRES) = qypo(i,j,k,QREINT)*(qypo(i,j,k,QGAME)-ONE)
+                else
+                   qypo(i,j,k,QPRES) = qypo(i,j,k,QREINT)*(gamma_const-ONE)
                    qypo(i,j,k,QPRES) = max(qypo(i,j,k,QPRES), small_pres)
                 endif
+
              else
                 qypo(i,j,k,QPRES) = qyp(i,j,k,QPRES)
-                qypo(i,j,k,QGAME) = qyp(i,j,k,QGAME)
              endif
 
              call reset_edge_state_thermo(qypo, qypo_lo, qypo_hi, i, j, k)
@@ -2749,17 +2677,11 @@ contains
                    pnewly = qym(i,j,k,QPRES) - cdtdz*(dup + pav*du*(gamc - ONE))
                    qymo(i,j,k,QPRES) = max(pnewly,small_pres)
                 else
-                   ! Update gammae with its transverse terms
-                   qymo(i,j,k,QGAME) = qym(i,j,k,QGAME) + &
-                        cdtdz*( (geav-ONE)*(geav - gamc)*du - uav*dge )
-
-                   ! and compute the p edge state from this and (rho e)
-                   qymo(i,j,k,QPRES) = qymo(i,j,k,QREINT)*(qymo(i,j,k,QGAME)-ONE)
+                   qymo(i,j,k,QPRES) = qymo(i,j,k,QREINT)*(gamma_const-ONE)
                    qymo(i,j,k,QPRES) = max(qymo(i,j,k,QPRES), small_pres)
                 endif
              else
                 qymo(i,j,k,QPRES) = qym(i,j,k,QPRES)
-                qymo(i,j,k,QGAME) = qym(i,j,k,QGAME)
              endif
 
              call reset_edge_state_thermo(qymo, qymo_lo, qymo_hi, i, j, k)
@@ -2786,13 +2708,7 @@ contains
                      qpo, qpo_lo, qpo_hi, &
                      qaux, qa_lo, qa_hi, &
                      fyz, fyz_lo, fyz_hi, &
-#ifdef RADIATION
-                     rfyz, rfyz_lo, rfyz_hi, &
-#endif
                      fzy, fzy_lo, fzy_hi, &
-#ifdef RADIATION
-                     rfzy, rfzy_lo, rfzy_hi, &
-#endif
                      qy, qy_lo, qy_hi, &
                      qz, qz_lo, qz_hi, &
                      hdt, cdtdy, cdtdz) bind(C, name="transyz")
@@ -2803,14 +2719,8 @@ contains
 
     use network, only : nspec, naux
     use meth_params_module, only : QVAR, NVAR, NQAUX, QRHO, QU, QV, QW, &
-                                   QPRES, QREINT, QGAME, QFS, QFX, &
+                                   QPRES, QREINT, QFS, QFX, &
                                    QC,  &
-#ifdef RADIATION
-                                   qrad, qradhi, qptot, qreitot, &
-                                   fspace_type, comoving, &
-                                   GDERADS, GDLAMS, &
-                                   QCG, QGAMCG, QLAMS, &
-#endif
                                    URHO, UMX, UMY, UMZ, UEDEN, UEINT, &
                                    NGDNV, GDPRES, GDU, GDV, GDW, GDGAME, &
                                    small_pres, small_temp, &
@@ -2818,10 +2728,6 @@ contains
                                    transverse_reset_density, transverse_reset_rhoe, &
                                    ppm_predict_gammae, gamma_const, gamma_minus_1
 
-#ifdef RADIATION
-    use rad_params_module, only : ngroups
-    use fluxlimiter_module, only : Edd_factor
-#endif
 
     integer, intent(in) :: qm_lo(3), qm_hi(3)
     integer, intent(in) :: qmo_lo(3), qmo_hi(3)
@@ -2934,10 +2840,6 @@ contains
              ugym  = qy(i,j,k,GDV)
              gegyp = qy(i,j+1,k,GDGAME)
              gegym = qy(i,j,k,GDGAME)
-#ifdef RADIATION
-             ergyp = qy(i,j+1,k,GDERADS:GDERADS-1+ngroups)
-             ergym = qy(i,j  ,k,GDERADS:GDERADS-1+ngroups)
-#endif
 
              pgzp  = qz(i,j,k+1,GDPRES)
              pgzm  = qz(i,j,k,GDPRES)
@@ -2945,10 +2847,6 @@ contains
              ugzm  = qz(i,j,k,GDW)
              gegzp = qz(i,j,k+1,GDGAME)
              gegzm = qz(i,j,k,GDGAME)
-#ifdef RADIATION
-             ergzp = qz(i,j,k+1,GDERADS:GDERADS-1+ngroups)
-             ergzm = qz(i,j,k,GDERADS:GDERADS-1+ngroups)
-#endif
 
              duyp = pgyp*ugyp - pgym*ugym
              pyav = HALF*(pgyp+pgym)
@@ -2956,13 +2854,8 @@ contains
              geyav = HALF*(gegyp+gegym)
              duy = ugyp-ugym
              dgey = gegyp-gegym
-#ifdef RADIATION
-             pynew = cdtdy*(duyp + pyav*duy*(qaux(i,j,k,QGAMCG) - ONE))
-             geynew = cdtdy*( (geyav-ONE)*(geyav - qaux(i,j,k,QGAMCG))*duy - uyav*dgey )
-#else
              pynew = cdtdy*(duyp + pyav*duy*(gamma_minus_1))
              geynew = cdtdy*( (geyav-ONE)*(geyav - gamma_const)*duy - uyav*dgey )
-#endif
 
              duzp = pgzp*ugzp - pgzm*ugzm
              pzav = HALF*(pgzp+pgzm)
@@ -2970,43 +2863,8 @@ contains
              gezav = HALF*(gegzp+gegzm)
              duz = ugzp-ugzm
              dgez = gegzp-gegzm
-#ifdef RADIATION
-             pznew = cdtdz*(duzp + pzav*duz*(qaux(i,j,k,QGAMCG) - ONE))
-             geznew = cdtdz*( (gezav-ONE)*(gezav - qaux(i,j,k,QGAMCG))*duz - uzav*dgez )
-#else
              pznew = cdtdz*(duzp + pzav*duz*(gamma_minus_1))
              geznew = cdtdz*( (gezav-ONE)*(gezav - gamma_const)*duz - uzav*dgez )
-#endif
-
-#ifdef RADIATION
-             lambda(:) = qaux(i,j,k,QLAMS:QLAMS+ngroups-1)
-
-             lgey = lambda(:) * (ergyp(:)-ergym(:))
-             lgez = lambda(:) * (ergzp(:)-ergzm(:))
-             dmy = - cdtdy*sum(lgey)
-             dmz = - cdtdz*sum(lgez)
-             lugey = HALF*(ugyp+ugym) * lgey(:)
-             lugez = HALF*(ugzp+ugzm) * lgez(:)
-             dre = -cdtdy*sum(lugey) - cdtdz*sum(lugez)
-
-             if (fspace_type .eq. 1 .and. comoving) then
-                do g=0, ngroups-1
-                   eddf = Edd_factor(lambda(g))
-                   f1 = HALF*(ONE-eddf)
-                   der(g) = f1*(cdtdy*HALF*(ugyp+ugym)*(ergyp(g)-ergym(g)) &
-                        +       cdtdz*HALF*(ugzp+ugzm)*(ergzp(g)-ergzm(g)) )
-                end do
-             else if (fspace_type .eq. 2) then
-                do g=0, ngroups-1
-                   eddf = Edd_factor(lambda(g))
-                   f1 = HALF*(ONE-eddf)
-                   der(g) = f1*(cdtdy*HALF*(ergyp(g)+ergym(g))*(ugym-ugyp) &
-                        +       cdtdz*HALF*(ergzp(g)+ergzm(g))*(ugzm-ugzp) )
-                end do
-             else ! mixed frame
-                der(:) = cdtdy*lugey + cdtdz*lugez
-             end if
-#endif
 
              ! Convert to conservation form
              rrr = qp(i,j,k,QRHO)
@@ -3015,9 +2873,6 @@ contains
              rwr = rrr*qp(i,j,k,QW)
              ekenr = HALF*rrr*sum(qp(i,j,k,QU:QW)**2)
              rer = qp(i,j,k,QREINT) + ekenr
-#ifdef RADIATION
-             err = qp(i,j,k,qrad:qradhi)
-#endif
 
              ! Add transverse predictor
              rrnewr = rrr - cdtdy*(fyz(i,j+1,k,URHO) - fyz(i,j,k,URHO)) &
@@ -3030,14 +2885,6 @@ contains
                           - cdtdz*(fzy(i,j,k+1,UMZ) - fzy(i,j,k,UMZ))
              renewr = rer - cdtdy*(fyz(i,j+1,k,UEDEN) - fyz(i,j,k,UEDEN)) &
                           - cdtdz*(fzy(i,j,k+1,UEDEN) - fzy(i,j,k,UEDEN))
-#ifdef RADIATION
-             rvnewr = rvnewr + dmy
-             rwnewr = rwnewr + dmz
-             renewr = renewr + dre
-             ernewr = err(:) - cdtdy*(rfyz(i,j+1,k,:) - rfyz(i,j,k,:)) &
-                             - cdtdz*(rfzy(i,j  ,k+1,:) - rfzy(i,j,k,:)) &
-                             + der(:)
-#endif
 
              ! Reset to original value if adding transverse terms
              ! made density negative
@@ -3048,9 +2895,6 @@ contains
                 rvnewr = rvr
                 rwnewr = rwr
                 renewr = rer
-#ifdef RADIATION
-                ernewr = err(:)
-#endif
                 reset_state = .true.
              end if
 
@@ -3081,26 +2925,15 @@ contains
                    pnewr = qp(i,j,k,QPRES) - pynew - pznew
                    qpo(i,j,k,QPRES) = pnewr
                 else
-                   ! Update gammae with its transverse terms
-                   qpo(i,j,k,QGAME) = qp(i,j,k,QGAME) + geynew + geznew
-
-                   ! and compute the p edge state from this and (rho e)
-                   qpo(i,j,k,QPRES) = qpo(i,j,k,QREINT)*(qpo(i,j,k,QGAME)-ONE)
+                   qpo(i,j,k,QPRES) = qpo(i,j,k,QREINT)*(gamma_const-ONE)
                 end if
              else
                 qpo(i,j,k,QPRES) = qp(i,j,k,QPRES)
-                qpo(i,j,k,QGAME) = qp(i,j,k,QGAME)
              endif
 
              qpo(i,j,k,QPRES) = max(qpo(i,j,k,QPRES), small_pres)
 
              call reset_edge_state_thermo(qpo, qpo_lo, qpo_hi, i, j, k)
-
-#ifdef RADIATION
-             qpo(i,j,k,qrad:qradhi) = ernewr(:)
-             qpo(i,j,k,qptot  ) = sum(lambda(:)*ernewr(:)) + qpo(i,j,k,QPRES)
-             qpo(i,j,k,qreitot) = sum(qpo(i,j,k,qrad:qradhi)) + qpo(i,j,k,QREINT)
-#endif
 
              !-------------------------------------------------------------------
              ! qxmo state
@@ -3112,10 +2945,6 @@ contains
              ugym  = qy(i-1,j,k,GDV)
              gegyp = qy(i-1,j+1,k,GDGAME)
              gegym = qy(i-1,j,k,GDGAME)
-#ifdef RADIATION
-             ergyp = qy(i-1,j+1,k,GDERADS:GDERADS-1+ngroups)
-             ergym = qy(i-1,j  ,k,GDERADS:GDERADS-1+ngroups)
-#endif
 
              pgzp  = qz(i-1,j,k+1,GDPRES)
              pgzm  = qz(i-1,j,k,GDPRES)
@@ -3123,10 +2952,6 @@ contains
              ugzm  = qz(i-1,j,k,GDW)
              gegzp = qz(i-1,j,k+1,GDGAME)
              gegzm = qz(i-1,j,k,GDGAME)
-#ifdef RADIATION
-             ergzp = qz(i-1,j,k+1,GDERADS:GDERADS-1+ngroups)
-             ergzm = qz(i-1,j,k,GDERADS:GDERADS-1+ngroups)
-#endif
 
              duyp = pgyp*ugyp - pgym*ugym
              pyav = HALF*(pgyp+pgym)
@@ -3134,13 +2959,8 @@ contains
              geyav = HALF*(gegyp+gegym)
              duy = ugyp-ugym
              dgey = gegyp-gegym
-#ifdef RADIATION
-             pynew = cdtdy*(duyp + pyav*duy*(qaux(i-1,j,k,QGAMCG) - ONE))
-             geynew = cdtdy*( (geyav-ONE)*(geyav - qaux(i-1,j,k,QGAMCG))*duy - uyav*dgey )
-#else
              pynew = cdtdy*(duyp + pyav*duy*(gamma_minus_1))
              geynew = cdtdy*( (geyav-ONE)*(geyav - gamma_const)*duy - uyav*dgey )
-#endif
 
              duzp = pgzp*ugzp - pgzm*ugzm
              pzav = HALF*(pgzp+pgzm)
@@ -3148,43 +2968,8 @@ contains
              gezav = HALF*(gegzp+gegzm)
              duz = ugzp-ugzm
              dgez = gegzp-gegzm
-#ifdef RADIATION
-             pznew = cdtdz*(duzp + pzav*duz*(qaux(i-1,j,k,QGAMCG) - ONE))
-             geznew = cdtdz*( (gezav-ONE)*(gezav - qaux(i-1,j,k,QGAMCG))*duz - uzav*dgez )
-#else
              pznew = cdtdz*(duzp + pzav*duz*(gamma_minus_1))
              geznew = cdtdz*( (gezav-ONE)*(gezav - gamma_const)*duz - uzav*dgez )
-#endif
-
-#ifdef RADIATION
-             lambda(:) = qaux(i-1,j,k,QLAMS:QLAMS+ngroups-1)
-
-             lgey = lambda(:) * (ergyp(:)-ergym(:))
-             lgez = lambda(:) * (ergzp(:)-ergzm(:))
-             dmy = - cdtdy*sum(lgey)
-             dmz = - cdtdz*sum(lgez)
-             lugey = HALF*(ugyp+ugym) * lgey(:)
-             lugez = HALF*(ugzp+ugzm) * lgez(:)
-             dre = -cdtdy*sum(lugey) - cdtdz*sum(lugez)
-
-             if (fspace_type .eq. 1 .and. comoving) then
-                do g=0, ngroups-1
-                   eddf = Edd_factor(lambda(g))
-                   f1 = HALF*(ONE-eddf)
-                   der(g) = f1*(cdtdy*HALF*(ugyp+ugym)*(ergyp(g)-ergym(g)) &
-                        +       cdtdz*HALF*(ugzp+ugzm)*(ergzp(g)-ergzm(g)) )
-                end do
-             else if (fspace_type .eq. 2) then
-                do g=0, ngroups-1
-                   eddf = Edd_factor(lambda(g))
-                   f1 = HALF*(ONE-eddf)
-                   der(g) = f1*(cdtdy*HALF*(ergyp(g)+ergym(g))*(ugym-ugyp) &
-                        +       cdtdz*HALF*(ergzp(g)+ergzm(g))*(ugzm-ugzp) )
-                end do
-             else ! mixed frame
-                der(:) = cdtdy*lugey + cdtdz*lugez
-             end if
-#endif
 
              ! Convert to conservation form
              rrl = qm(i,j,k,QRHO)
@@ -3193,9 +2978,6 @@ contains
              rwl = rrl*qm(i,j,k,QW)
              ekenl = HALF*rrl*sum(qm(i,j,k,QU:QW)**2)
              rel = qm(i,j,k,QREINT) + ekenl
-#ifdef RADIATION
-             erl = qm(i,j,k,qrad:qradhi)
-#endif
 
              ! Add transverse predictor
              rrnewl = rrl - cdtdy*(fyz(i-1,j+1,k,URHO) - fyz(i-1,j,k,URHO)) &
@@ -3208,14 +2990,6 @@ contains
                           - cdtdz*(fzy(i-1,j,k+1,UMZ) - fzy(i-1,j,k,UMZ))
              renewl = rel - cdtdy*(fyz(i-1,j+1,k,UEDEN) - fyz(i-1,j,k,UEDEN)) &
                           - cdtdz*(fzy(i-1,j,k+1,UEDEN) - fzy(i-1,j,k,UEDEN))
-#ifdef RADIATION
-             rvnewl = rvnewl + dmy
-             rwnewl = rwnewl + dmz
-             renewl = renewl + dre
-             ernewl = erl(:) - cdtdy*(rfyz(i-1,j+1,k,:) - rfyz(i-1,j,k,:)) &
-                             - cdtdz*(rfzy(i-1,j  ,k+1,:) - rfzy(i-1,j,k,:)) &
-                             + der(:)
-#endif
 
              ! Reset to original value if adding transverse terms made density negative
              reset_state = .false.
@@ -3225,9 +2999,6 @@ contains
                 rvnewl = rvl
                 rwnewl = rwl
                 renewl = rel
-#ifdef RADIATION
-                ernewl = erl(:)
-#endif
                 reset_state = .true.
              endif
 
@@ -3257,26 +3028,16 @@ contains
                    pnewl = qm(i,j,k,QPRES) - pynew - pznew
                    qmo(i,j,k,QPRES  ) = pnewl
                 else
-                   ! Update gammae with its transverse terms
-                   qmo(i,j,k,QGAME) = qm(i,j,k,QGAME) + geynew + geznew
-
-                   ! and compute the p edge state from this and (rho e)
-                   qmo(i,j,k,QPRES) = qmo(i,j,k,QREINT)*(qmo(i,j,k,QGAME)-ONE)
+                   qmo(i,j,k,QPRES) = qmo(i,j,k,QREINT)*(gamma_const-ONE)
                 end if
              else
                 qmo(i,j,k,QPRES  ) = qm(i,j,k,QPRES)
-                qmo(i,j,k,QGAME) = qm(i,j,k,QGAME)
              endif
 
              qmo(i,j,k,QPRES) = max(qmo(i,j,k,QPRES), small_pres)
 
              call reset_edge_state_thermo(qmo, qmo_lo, qmo_hi, i, j, k)
 
-#ifdef RADIATION
-             qmo(i,j,k,qrad:qradhi) = ernewl(:)
-             qmo(i,j,k,qptot) = sum(lambda(:)*ernewl(:)) + qmo(i,j,k,QPRES)
-             qmo(i,j,k,qreitot) = sum(qmo(i,j,k,qrad:qradhi)) + qmo(i,j,k,QREINT)
-#endif
 
           end do
        end do
@@ -3311,7 +3072,7 @@ contains
 
     use network, only : nspec, naux
     use meth_params_module, only : QVAR, NVAR, NQAUX, QRHO, QU, QV, QW, &
-                                   QPRES, QREINT, QGAME, QFS, QFX, &
+                                   QPRES, QREINT, QFS, QFX, &
                                    QC,  &
 #ifdef RADIATION
                                    qrad, qradhi, qptot, qreitot, &
@@ -3587,15 +3348,10 @@ contains
                    pnewr = qp(i,j,k,QPRES) - pxnew - pznew
                    qpo(i,j,k,QPRES) = pnewr
                 else
-                   ! Update gammae with its transverse terms
-                   qpo(i,j,k,QGAME) = qp(i,j,k,QGAME) + gexnew + geznew
-
-                   ! and compute the p edge state from this and (rho e)
-                   qpo(i,j,k,QPRES) = qpo(i,j,k,QREINT)*(qpo(i,j,k,QGAME)-ONE)
+                   qpo(i,j,k,QPRES) = qpo(i,j,k,QREINT)*(gamma_const-ONE)
                 endif
              else
                 qpo(i,j,k,QPRES) = qp(i,j,k,QPRES)
-                qpo(i,j,k,QGAME) = qp(i,j,k,QGAME)
              endif
 
              qpo(i,j,k,QPRES) = max(qpo(i,j,k,QPRES), small_pres)
@@ -3764,15 +3520,10 @@ contains
                    pnewl = qm(i,j,k,QPRES) - pxnew - pznew
                    qmo(i,j,k,QPRES) = pnewl
                 else
-                   ! Update gammae with its transverse terms
-                   qmo(i,j,k,QGAME) = qm(i,j,k,QGAME) + gexnew + geznew
-
-                   ! and compute the p edge state from this and (rho e)
-                   qmo(i,j,k,QPRES) = qmo(i,j,k,QREINT)*(qmo(i,j,k,QGAME)-ONE)
+                   qmo(i,j,k,QPRES) = qmo(i,j,k,QREINT)*(gamma_const-ONE)
                 endif
              else
                 qmo(i,j,k,QPRES) = qm(i,j,k,QPRES)
-                qmo(i,j,k,QGAME) = qm(i,j,k,QGAME)
              endif
 
              qmo(i,j,k,QPRES) = max(qmo(i,j,k,QPRES), small_pres)
@@ -3819,7 +3570,7 @@ contains
 
     use network, only : nspec, naux
     use meth_params_module, only : QVAR, NVAR, NQAUX, QRHO, QU, QV, QW, &
-                                   QPRES, QREINT, QGAME, QFS, QFX, &
+                                   QPRES, QREINT, QFS, QFX, &
                                    QC,  &
 #ifdef RADIATION
                                    qrad, qradhi, qptot, qreitot, &
@@ -4097,15 +3848,10 @@ contains
                    pnewr = qp(i,j,k,QPRES) - pxnew - pynew
                    qpo(i,j,k,QPRES) = pnewr
                 else
-                   ! Update gammae with its transverse terms
-                   qpo(i,j,k,QGAME) = qp(i,j,k,QGAME) + gexnew + geynew
-
-                   ! and compute the p edge state from this and (rho e)
-                   qpo(i,j,k,QPRES) = qpo(i,j,k,QREINT)*(qpo(i,j,k,QGAME)-ONE)
+                   qpo(i,j,k,QPRES) = qpo(i,j,k,QREINT)*(gamma_const-ONE)
                 endif
              else
                 qpo(i,j,k,QPRES) = qp(i,j,k,QPRES)
-                qpo(i,j,k,QGAME) = qp(i,j,k,QGAME)
              endif
 
              qpo(i,j,k,QPRES) = max(qpo(i,j,k,QPRES), small_pres)
@@ -4275,15 +4021,10 @@ contains
                    pnewl = qm(i,j,k,QPRES) - pxnew - pynew
                    qmo(i,j,k,QPRES) = pnewl
                 else
-                   ! Update gammae with its transverse terms
-                   qmo(i,j,k,QGAME) = qm(i,j,k,QGAME) + gexnew + geynew
-
-                   ! and compute the p edge state from this and (rho e)
-                   qmo(i,j,k,QPRES) = qmo(i,j,k,QREINT)*(qmo(i,j,k,QGAME)-ONE)
+                   qmo(i,j,k,QPRES) = qmo(i,j,k,QREINT)*(gamma_const-ONE)
                 endif
              else
                 qmo(i,j,k,QPRES) = qm(i,j,k,QPRES)
-                qmo(i,j,k,QGAME) = qm(i,j,k,QGAME)
              endif
 
              qmo(i,j,k,QPRES) = max(qmo(i,j,k,QPRES), small_pres)
@@ -4309,7 +4050,7 @@ contains
 
   use network, only : nspec, naux
   use meth_params_module, only : QVAR, NVAR, NQAUX, QRHO, &
-                                 QPRES, QREINT, QGAME, QFS, QFX, &
+                                 QPRES, QREINT, QFS, QFX, &
                                  small_pres, small_temp, &
                                  ppm_predict_gammae, &
                                  transverse_reset_rhoe, gamma_minus_1
