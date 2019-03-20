@@ -497,7 +497,6 @@ contains
 #ifdef HYBRID_MOMENTUM
     use hybrid_advection_module, only : compute_hybrid_flux
 #endif
-    use eos_module, only : eos
     use network, only : nspec
 
     integer, intent(in) :: idir
@@ -702,7 +701,6 @@ contains
              qgdnv(i,j,k,GDLAMS:GDLAMS-1+ngroups) = lambda(i,j,k,:)
              qgdnv(i,j,k,GDERADS:GDERADS-1+ngroups) = qint(i,j,k,QRAD:QRAD-1+ngroups)
 #endif
-
           end do
        end do
     end do

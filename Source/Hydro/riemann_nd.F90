@@ -48,7 +48,6 @@ contains
                                  shk, s_lo, s_hi, &
                                  idir, domlo, domhi) bind(C, name="cmpflx_plus_godunov")
 
-    use eos_module, only: eos
     use network, only: nspec, naux
     use amrex_error_module
     use amrex_fort_module, only : rt => amrex_real
@@ -131,7 +130,6 @@ contains
                     shk, s_lo, s_hi, &
                     idir, domlo, domhi)
 
-    use eos_module, only: eos
     use network, only: nspec, naux
     use amrex_error_module
     use amrex_fort_module, only : rt => amrex_real
@@ -296,7 +294,6 @@ contains
                            qaux, qa_lo, qa_hi, &
                            idir, lo, hi, domlo, domhi, compute_gammas)
 
-    use eos_module, only: eos
     use network, only: nspec, naux
     use amrex_error_module
     use amrex_fort_module, only : rt => amrex_real
@@ -447,7 +444,6 @@ contains
 #endif
     use prob_params_module, only : physbc_lo, physbc_hi
     use network, only : nspec, naux
-    use eos_module
     use meth_params_module, only : cg_maxiter, cg_tol, cg_blend, &
                                     gamma_const, gamma_minus_1
 #ifndef AMREX_USE_CUDA
@@ -1034,7 +1030,6 @@ contains
 
     use prob_params_module, only : physbc_lo, physbc_hi
     use meth_params_module, only : gamma_const, gamma_minus_1, use_analriem
-    use eos_module, only : eos
     use network, only : nspec
     use analriem_module
 

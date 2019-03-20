@@ -1210,7 +1210,6 @@ contains
                                    ppm_type, &
                                    ppm_reference_eigenvectors, &
                                    fix_mass_flux
-    use eos_module, only : eos
     use prob_params_module, only : physbc_lo, physbc_hi, Outflow
 
     implicit none

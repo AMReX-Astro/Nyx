@@ -745,7 +745,6 @@ contains
                                       Im_gc, Img_lo, Img_hi)
 
     use meth_params_module, only : QVAR, QVAR, QRHO, QPRES, QREINT, QFS,  small_temp
-    use eos_module, only : eos
     use network, only : nspec, naux
 
     integer, intent(in) :: lo(3), hi(3)
