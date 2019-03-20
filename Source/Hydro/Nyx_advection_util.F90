@@ -562,6 +562,7 @@ subroutine ca_ctoprim(lo, hi, &
       real(rt) :: area1, area2, area3
       real(rt) :: vol, volinv, a_newsq_inv
       real(rt) :: a_half_inv, a_new_inv, dt_a_new
+      real(rt) :: src_eint
       integer  :: i, j, k, n
 
       a_half  = HALF * (a_old + a_new)
@@ -625,21 +626,21 @@ subroutine ca_ctoprim(lo, hi, &
                   ! (rho e)
                   else if (n .eq. UEINT) then
 
-                     if(use_pressure_law_pdivu .eq. 0) then
-                        hydro_src(i,j,k,n) =  &
-                          ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
-                           +flux2(i,j,k,n) - flux2(i,j+1,k,n) &
-                           +flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * a_half * area1 * volinv & !hydro_src matches old with factor of dt here
-                           +a_half*(a_new - a_old) * ( TWO - THREE * gamma_minus_1) * uin(i,j,k,UEINT) &
-                           -a_half* pdivu(i,j,k)
+                     if (use_pressure_law_pdivu .eq. 0) then
+                        src_eint = &
+                          +(a_half*(a_new - a_old) * ( TWO - THREE * gamma_minus_1) * uin(i,j,k,UEINT) &
+                           -a_half*dt*pdivu(i,j,k)) / dt
                      else
-                        hydro_src(i,j,k,n) =  &
-                          ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
-                           +flux2(i,j,k,n) - flux2(i,j+1,k,n) &
-                           +flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * a_half * area1 * volinv & !hydro_src matches old with factor of dt here
-                           +a_half*(a_new - a_old) * ( TWO - THREE * gamma_minus_1) * uin(i,j,k,UEINT) &
-                           -a_half*dt*(gamma_minus_1 * uin(i,j,k,n)) * pdivu(i,j,k)
-                     endif
+                        src_eint = &
+                          +(a_half*(a_new - a_old) * ( TWO - THREE * gamma_minus_1) * uin(i,j,k,UEINT) &
+                           -a_half*dt*(gamma_minus_1 * uin(i,j,k,n)) * pdivu(i,j,k)) / dt
+                     end if
+
+                     hydro_src(i,j,k,n) =  &
+                       ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
+                        +flux2(i,j,k,n) - flux2(i,j+1,k,n) &
+                        +flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * a_half * area1 * volinv & !hydro_src matches old with factor of dt here
+                        +src_eint
 
                   ! (rho X_i) and (rho adv_i) and (rho aux_i)
                   else
@@ -653,31 +654,61 @@ subroutine ca_ctoprim(lo, hi, &
             enddo
          enddo
       enddo
-      
-      do n = 1, NVAR
-         if (n .eq. URHO) then
-            flux1(:,:,:,n) = flux1(:,:,:,n) * a_half_inv
-            flux2(:,:,:,n) = flux2(:,:,:,n) * a_half_inv
-            flux3(:,:,:,n) = flux3(:,:,:,n) * a_half_inv
-         else if (n.ge.UMX .and. n.le.UMZ) then
-            flux1(:,:,:,n) = flux1(:,:,:,n) * a_new_inv
-            flux2(:,:,:,n) = flux2(:,:,:,n) * a_new_inv
-            flux3(:,:,:,n) = flux3(:,:,:,n) * a_new_inv
-         else if (n.eq.UEINT) then
-            flux1(:,:,:,n) = flux1(:,:,:,n) * (a_half * a_newsq_inv)
-            flux2(:,:,:,n) = flux2(:,:,:,n) * (a_half * a_newsq_inv)
-            flux3(:,:,:,n) = flux3(:,:,:,n) * (a_half * a_newsq_inv)
-         else if (n.eq.UEDEN) then
-            flux1(:,:,:,n) = flux1(:,:,:,n) * (a_half * a_newsq_inv)
-            flux2(:,:,:,n) = flux2(:,:,:,n) * (a_half * a_newsq_inv)
-            flux3(:,:,:,n) = flux3(:,:,:,n) * (a_half * a_newsq_inv)
-         else
-            flux1(:,:,:,n) = flux1(:,:,:,n) * a_half_inv
-            flux2(:,:,:,n) = flux2(:,:,:,n) * a_half_inv
-            flux3(:,:,:,n) = flux3(:,:,:,n) * a_half_inv
-         end if
-      end do
 
+      do n = 1, NVAR
+         do k = lo(3),hi(3)
+            do j = lo(2),hi(2)
+               do i = lo(1),hi(1)+1
+                  if (n .eq. URHO) then
+                     flux1(i,j,k,n) = flux1(i,j,k,n) * a_half_inv
+                  else if (n.ge.UMX .and. n.le.UMZ) then
+                     flux1(i,j,k,n) = flux1(i,j,k,n) * a_new_inv
+                  else if (n.eq.UEINT .or. n.eq.UEDEN) then
+                     flux1(i,j,k,n) = flux1(i,j,k,n) * (a_half * a_newsq_inv)
+                  else
+                     flux1(i,j,k,n) = flux1(i,j,k,n) * a_half_inv
+                  end if
+               end do
+            enddo
+         enddo
+      enddo
+
+      do n = 1, NVAR
+         do k = lo(3),hi(3)
+            do j = lo(2),hi(2)+1
+               do i = lo(1),hi(1)
+                  if (n .eq. URHO) then
+                     flux2(i,j,k,n) = flux2(i,j,k,n) * a_half_inv
+                  else if (n.ge.UMX .and. n.le.UMZ) then
+                     flux2(i,j,k,n) = flux2(i,j,k,n) * a_new_inv
+                  else if (n.eq.UEINT .or. n.eq.UEDEN) then
+                     flux2(i,j,k,n) = flux2(i,j,k,n) * (a_half * a_newsq_inv)
+                  else
+                     flux2(i,j,k,n) = flux2(i,j,k,n) * a_half_inv
+                  end if
+               end do
+            enddo
+         enddo
+      enddo
+
+      do n = 1, NVAR
+         do k = lo(3),hi(3)+1
+            do j = lo(2),hi(2)
+               do i = lo(1),hi(1)
+                  if (n .eq. URHO) then
+                     flux3(i,j,k,n) = flux3(i,j,k,n) * a_half_inv
+                  else if (n.ge.UMX .and. n.le.UMZ) then
+                     flux3(i,j,k,n) = flux3(i,j,k,n) * a_new_inv
+                  else if (n.eq.UEINT .or. n.eq.UEDEN) then
+                     flux3(i,j,k,n) = flux3(i,j,k,n) * (a_half * a_newsq_inv)
+                  else
+                     flux3(i,j,k,n) = flux3(i,j,k,n) * a_half_inv
+                  end if
+               end do
+            enddo
+         enddo
+      enddo
+      
     end subroutine ca_consup
 
     subroutine ca_consup2(lo, hi, uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
