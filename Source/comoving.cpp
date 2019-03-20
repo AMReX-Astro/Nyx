@@ -47,16 +47,26 @@ Nyx::read_comoving_params ()
         amrex::Error();
     }
 
-    // save start/end times, for reporting purposes
-    Real a0 = 0.0, a1 = 1.0/(1.0+initial_z);
-    fort_integrate_time_given_a(&a0, &a1, &initial_time);
+    Real comoving_h;
+    fort_get_hubble(&comoving_h);
 
-    if (final_z >= 0) {
-       a1 = 1.0/(1.0+final_z);
+    if (comoving_h > 0)
+    {
+       // save start/end times, for reporting purposes
+       Real a0 = 0.0, a1 = 1.0/(1.0+initial_z);
+       fort_integrate_time_given_a(&a0, &a1, &initial_time);
+
+       if (final_z >= 0) {
+          a1 = 1.0/(1.0+final_z);
+       } else {
+          a1 = final_a;
+       }
+       fort_integrate_time_given_a(&a0, &a1, &final_time);
     } else {
-       a1 = final_a;
+       // These are just defaults so the values are defined
+       initial_time = 0.0;
+         final_time = 0.0;
     }
-    fort_integrate_time_given_a(&a0, &a1, &final_time);
 }
 
 void

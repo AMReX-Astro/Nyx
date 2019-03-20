@@ -37,13 +37,17 @@ module comoving_nd_module
         prev_soln = -1.0d0
         ! trapezoidal integration
         do iter = 1, 20  ! max allowed iterations
+
           n  = 2**iter
+
           h = (a1-a0)/(n-1)
+
           if (a0 .lt. 1.0d-10) then  ! prevent division by zero in invEz
              dt = 0.5*invEz(H0, Om, a1)
           else
              dt = 0.5*(invEz(H0, Om, a0) + invEz(H0, Om, a1))
           endif
+
           do j = 1, n-2
              dt = dt + invEz(H0, Om, a0+j*h)
           enddo
@@ -532,16 +536,16 @@ module comoving_nd_module
 ! ! ::: ----------------------------------------------------------------
 ! ! :::
 
-!       subroutine fort_get_hubble(hubble) &
-!          bind(C, name="fort_get_hubble")
+        subroutine fort_get_hubble(hubble) &
+           bind(C, name="fort_get_hubble")
 
-!         use comoving_module, only: comoving_h
+          use comoving_module, only: comoving_h
 
-!         real(rt) :: hubble
+          real(rt) :: hubble
 
-!         hubble = comoving_h
+          hubble = comoving_h
 
-!       end subroutine fort_get_hubble
+        end subroutine fort_get_hubble
 
 
 ! :::

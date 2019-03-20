@@ -28,7 +28,7 @@ extern "C"
 
   //  void fort_get_omm    (amrex::Real* omm);
   //  void fort_get_omb    (amrex::Real* frac);
-  //  void fort_get_hubble (amrex::Real* hubble);
+  void fort_get_hubble (amrex::Real* hubble);
 
   void fort_set_omm    (const amrex::Real& omm);
   void fort_set_omb    (const amrex::Real& frac);
