@@ -444,7 +444,7 @@ contains
                                    QFS, QFX, QTEMP, QREINT, &
                                    QC, QGAMC, NQAUX, QGAME, QREINT, &
                                    iorder, use_pslope, hybrid_riemann
-    use trace_plm_module, only : trace_plm
+    use trace_plm_module, only : trace_plm, trace_plm_orig
     use ca_slope_module, only : uslope, pslope
     use advection_module, only : ca_shock
     use prob_params_module, only : dg
@@ -561,7 +561,7 @@ contains
        ! compute the interface states
 
        if (idir == 1) then
-          call trace_plm(lo, hi, &
+          call trace_plm_orig(lo, hi, &
                          1, q, qd_lo, qd_hi, &
                          qaux, qa_lo, qa_hi, &
                          dq, dq_lo, dq_hi, &
@@ -576,7 +576,7 @@ contains
 
 #if AMREX_SPACEDIM >= 2
        else if (idir == 2) then
-          call trace_plm(lo, hi, &
+          call trace_plm_orig(lo, hi, &
                          2, q, qd_lo, qd_hi, &
                          qaux, qa_lo, qa_hi, &
                          dq, dq_lo, dq_hi, &
@@ -592,7 +592,7 @@ contains
 
 #if AMREX_SPACEDIM == 3
        else
-          call trace_plm(lo, hi, &
+          call trace_plm_orig(lo, hi, &
                          3, q, qd_lo, qd_hi, &
                          qaux, qa_lo, qa_hi, &
                          dq, dq_lo, dq_hi, &
