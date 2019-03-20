@@ -47,7 +47,7 @@ module meth_params_module
   integer         , save :: cg_tol = 1.0d-5
   integer         , save :: cg_blend = 0
   integer         , save :: fix_mass_flux = 0
-  integer         , save :: ppm_predict_gammae = 0
+  integer         , save :: ppm_predict_gammae = 1
   integer         , save :: ppm_temp_fix = 0
   integer         , save :: ppm_reference_eigenvectors = 0
   integer         , save :: hybrid_riemann = 0
