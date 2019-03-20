@@ -1,10 +1,6 @@
 #include "Nyx.H"
 #include "Nyx_F.H"
 
-#ifdef RADIATION
-#include "Radiation.H"
-#endif
-
 using namespace amrex;
 
 void
@@ -129,9 +125,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
     }
 
     dLogArea[0].clear();
-#if (BL_SPACEDIM <= 2)
-    geom.GetDLogA(dLogArea[0],grids,dmap,0,NUM_GROW);
-#endif
     
     hydro_source.setVal(0.0);
 
@@ -141,16 +134,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
   const int* domain_hi = geom.Domain().hiVect();
 
   MultiFab& S_new = get_new_data(State_Type);
-
-#ifdef RADIATION
-  MultiFab& Er_new = get_new_data(Rad_Type);
-
-  if (!Radiation::rad_hydro_combined) {
-    amrex::Abort("Nyx::construct_ctu_hydro_source -- we don't implement a mode where we have radiation, but it is not coupled to hydro");
-  }
-
-  int nstep_fsp = -1;
-#endif
 
   Real mass_lost = 0.;
   Real xmom_lost = 0.;
@@ -164,20 +147,10 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
   BL_PROFILE_VAR("Nyx::advance_hydro_ca_umdrv()", CA_UMDRV);
 
 #ifdef _OPENMP
-#ifdef RADIATION
-#pragma omp parallel reduction(max:nstep_fsp) \
-                     reduction(+:mass_lost,xmom_lost,ymom_lost,zmom_lost) \
-                     reduction(+:eden_lost,xang_lost,yang_lost,zang_lost)
-#else
 #pragma omp parallel reduction(+:mass_lost,xmom_lost,ymom_lost,zmom_lost) \
                      reduction(+:eden_lost,xang_lost,yang_lost,zang_lost)
 #endif
-#endif
   {
-
-#ifdef RADIATION
-    int priv_nstep_fsp = -1;
-#endif
 
     // Declare local storage now. This should be done outside the MFIter loop,
     // and then we will resize the Fabs in each MFIter loop iteration. Then,
@@ -185,49 +158,26 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
     // longer needed (only relevant for the asynchronous case, usually on GPUs).
 
     FArrayBox flatn;
-#ifdef RADIATION
-    FArrayBox flatg;
-#endif
     FArrayBox dq;
     FArrayBox Ip, Im, Ip_src, Im_src, Ip_gc, Im_gc;
     FArrayBox sm, sp;
     FArrayBox shk;
     FArrayBox qxm, qxp;
-#if AMREX_SPACEDIM >= 2
     FArrayBox qym, qyp;
-#endif
-#if AMREX_SPACEDIM == 3
     FArrayBox qzm, qzp;
-#endif
     FArrayBox div;
     FArrayBox q_int;
-#ifdef RADIATION
-    FArrayBox lambda_int;
-#endif
-#if AMREX_SPACEDIM >= 2
     FArrayBox ftmp1, ftmp2;
-#ifdef RADIATION
-    FArrayBox rftmp1, rftmp2;
-#endif
     FArrayBox qgdnvtmp1, qgdnvtmp2;
     FArrayBox ql, qr;
-#endif
     FArrayBox flux[AMREX_SPACEDIM];
     FArrayBox qe[AMREX_SPACEDIM];
-#ifdef RADIATION
-    FArrayBox rad_flux[AMREX_SPACEDIM];
-#endif
-#if AMREX_SPACEDIM <= 2
-    FArrayBox pradial;
-#endif
-#if AMREX_SPACEDIM == 3
     FArrayBox qmyx, qpyx;
     FArrayBox qmzx, qpzx;
     FArrayBox qmxy, qpxy;
     FArrayBox qmzy, qpzy;
     FArrayBox qmxz, qpxz;
     FArrayBox qmyz, qpyz;
-#endif
     FArrayBox pdivu;
 
     for (MFIter mfi(S_new, TilingIfNotGPU()); mfi.isValid(); ++mfi) {
@@ -244,40 +194,24 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       flatn.resize(obx, 1);
       Elixir elix_flatn = flatn.elixir();
 
-#ifdef RADIATION
-      flatg.resize(obx, 1);
-      Elixir elix_flatg = flatg.elixir();
-#endif
-
       q[mfi];
       // compute the flattening coefficient
       // remove first order check
       if (use_flattening == 1) {
-#ifdef RADIATION
-        ca_rad_flatten(ARLIM_3D(obx.loVect()), ARLIM_3D(obx.hiVect()),
-                       BL_TO_FORTRAN_ANYD(q[mfi]),
-                       BL_TO_FORTRAN_ANYD(flatn),
-                       BL_TO_FORTRAN_ANYD(flatg));
-#else
 #pragma gpu
         ca_uflatten(AMREX_INT_ANYD(obx.loVect()), AMREX_INT_ANYD(obx.hiVect()),
                     BL_TO_FORTRAN_ANYD(q[mfi]),
                     BL_TO_FORTRAN_ANYD(flatn), QPRES+1);
-#endif
       } else {
         flatn.setVal(1.0, obx);
       }
 
       const Box& xbx = amrex::surroundingNodes(bx, 0);
       const Box& gxbx = amrex::grow(xbx, 1);
-#if AMREX_SPACEDIM >= 2
       const Box& ybx = amrex::surroundingNodes(bx, 1);
       const Box& gybx = amrex::grow(ybx, 1);
-#endif
-#if AMREX_SPACEDIM == 3
       const Box& zbx = amrex::surroundingNodes(bx, 2);
       const Box& gzbx = amrex::grow(zbx, 1);
-#endif
 
       shk.resize(obx, 1);
       Elixir elix_shk = shk.elixir();
@@ -288,21 +222,17 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       qxp.resize(obx, QVAR);
       Elixir elix_qxp = qxp.elixir();
 
-#if AMREX_SPACEDIM >= 2
       qym.resize(obx, QVAR);
       Elixir elix_qym = qym.elixir();
 
       qyp.resize(obx, QVAR);
       Elixir elix_qyp = qyp.elixir();
-#endif
 
-#if AMREX_SPACEDIM == 3
       qzm.resize(obx, QVAR);
       Elixir elix_qzm = qzm.elixir();
 
       qzp.resize(obx, QVAR);
       Elixir elix_qzp = qzp.elixir();
-#endif
 
       if (ppm_type == 0) {
 
@@ -320,18 +250,11 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                        BL_TO_FORTRAN_ANYD(dq),
                        BL_TO_FORTRAN_ANYD(qxm),
                        BL_TO_FORTRAN_ANYD(qxp),
-#if AMREX_SPACEDIM >= 2
                        BL_TO_FORTRAN_ANYD(qym),
                        BL_TO_FORTRAN_ANYD(qyp),
-#endif
-#if AMREX_SPACEDIM == 3
                        BL_TO_FORTRAN_ANYD(qzm),
                        BL_TO_FORTRAN_ANYD(qzp),
-#endif
                        AMREX_REAL_ANYD(dx), dt,
-#if (AMREX_SPACEDIM < 3)
-                       BL_TO_FORTRAN_ANYD(dLogArea[0][mfi]),
-#endif
                        AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
 
       } else {
@@ -378,18 +301,11 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                        BL_TO_FORTRAN_ANYD(sp),
                        BL_TO_FORTRAN_ANYD(qxm),
                        BL_TO_FORTRAN_ANYD(qxp),
-#if AMREX_SPACEDIM >= 2
                        BL_TO_FORTRAN_ANYD(qym),
                        BL_TO_FORTRAN_ANYD(qyp),
-#endif
-#if AMREX_SPACEDIM == 3
                        BL_TO_FORTRAN_ANYD(qzm),
                        BL_TO_FORTRAN_ANYD(qzp),
-#endif
                        AMREX_REAL_ANYD(dx), dt,
-#if (AMREX_SPACEDIM < 3)
-                       BL_TO_FORTRAN_ANYD(dLogArea[0][mfi]),
-#endif
                        AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       }
 
@@ -406,89 +322,29 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       q_int.resize(obx, QVAR);
       Elixir elix_q_int = q_int.elixir();
 
-#ifdef RADIATION
-      lambda_int.resize(obx, Radiation::nGroups);
-      Elixir elix_lambda_int = lambda_int.elixir();
-#endif
-
       flux[0].resize(gxbx, NUM_STATE);
       Elixir elix_flux_x = flux[0].elixir();
 
       qe[0].resize(gxbx, NGDNV);
       Elixir elix_qe_x = qe[0].elixir();
 
-#ifdef RADIATION
-      rad_flux[0].resize(gxbx, Radiation::nGroups);
-      Elixir elix_rad_flux_x = rad_flux[0].elixir();
-#endif
-
-#if AMREX_SPACEDIM >= 2
       flux[1].resize(gybx, NUM_STATE);
       Elixir elix_flux_y = flux[1].elixir();
 
       qe[1].resize(gybx, NGDNV);
       Elixir elix_qe_y = qe[1].elixir();
 
-#ifdef RADIATION
-      rad_flux[1].resize(gybx, Radiation::nGroups);
-      Elixir elix_rad_flux_y = rad_flux[1].elixir();
-#endif
-#endif
-
-#if AMREX_SPACEDIM == 3
       flux[2].resize(gzbx, NUM_STATE);
       Elixir elix_flux_z = flux[2].elixir();
 
       qe[2].resize(gzbx, NGDNV);
       Elixir elix_qe_z = qe[2].elixir();
 
-#ifdef RADIATION
-      rad_flux[2].resize(gzbx, Radiation::nGroups);
-      Elixir elix_rad_flux_z = rad_flux[2].elixir();
-#endif
-#endif
-
-#if AMREX_SPACEDIM <= 2
-      if (!Geometry::IsCartesian()) {
-          pradial.resize(xbx, 1);
-          Elixir elix_pradial = pradial.elixir();
-      }
-#endif
-
-#if AMREX_SPACEDIM == 1
-#pragma gpu
-      cmpflx_plus_godunov(AMREX_INT_ANYD(xbx.loVect()), AMREX_INT_ANYD(xbx.hiVect()),
-                          BL_TO_FORTRAN_ANYD(qxm),
-                          BL_TO_FORTRAN_ANYD(qxp), 1, 1,
-                          BL_TO_FORTRAN_ANYD(flux[0]),
-                          BL_TO_FORTRAN_ANYD(q_int),
-#ifdef RADIATION
-                          BL_TO_FORTRAN_ANYD(rad_flux[0]),
-                          BL_TO_FORTRAN_ANYD(lambda_int),
-#endif
-                          BL_TO_FORTRAN_ANYD(qe[0]),
-                          BL_TO_FORTRAN_ANYD(qaux[mfi]),
-                          BL_TO_FORTRAN_ANYD(shk),
-                          1, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
-
-#endif // 1-d
-
-
-
-#if AMREX_SPACEDIM >= 2
       ftmp1.resize(obx, NUM_STATE);
       Elixir elix_ftmp1 = ftmp1.elixir();
 
       ftmp2.resize(obx, NUM_STATE);
       Elixir elix_ftmp2 = ftmp2.elixir();
-
-#ifdef RADIATION
-      rftmp1.resize(obx, Radiation::nGroups);
-      Elixir elix_rftmp1 = rftmp1.elixir();
-
-      rftmp2.resize(obx, Radiation::nGroups);
-      Elixir elix_rftmp2 = rftmp2.elixir();
-#endif
 
       qgdnvtmp1.resize(obx, NGDNV);
       Elixir elix_qgdnvtmp1 = qgdnvtmp1.elixir();
@@ -501,139 +357,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
       qr.resize(obx, QVAR);
       Elixir elix_qr = qr.elixir();
-#endif
-
-
-
-#if AMREX_SPACEDIM == 2
-
-      const amrex::Real hdt = 0.5*dt;
-      const amrex::Real hdtdx = 0.5*dt/dx[0];
-      const amrex::Real hdtdy = 0.5*dt/dx[1];
-
-      // compute F^x
-      // [lo(1), lo(2)-1, 0], [hi(1)+1, hi(2)+1, 0]
-      const Box& cxbx = amrex::grow(xbx, IntVect(AMREX_D_DECL(0,1,0)));
-
-      // ftmp1 = fx
-      // rftmp1 = rfx
-      // qgdnvtmp1 = qgdnxv
-#pragma gpu
-      cmpflx_plus_godunov(AMREX_INT_ANYD(cxbx.loVect()), AMREX_INT_ANYD(cxbx.hiVect()),
-                          BL_TO_FORTRAN_ANYD(qxm),
-                          BL_TO_FORTRAN_ANYD(qxp), 1, 1,
-                          BL_TO_FORTRAN_ANYD(ftmp1),
-                          BL_TO_FORTRAN_ANYD(q_int),
-#ifdef RADIATION
-                          BL_TO_FORTRAN_ANYD(rftmp1),
-                          BL_TO_FORTRAN_ANYD(lambda_int),
-#endif
-                          BL_TO_FORTRAN_ANYD(qgdnvtmp1),
-                          BL_TO_FORTRAN_ANYD(qaux[mfi]),
-                          BL_TO_FORTRAN_ANYD(shk),
-                          1, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
-
-      // compute F^y
-      // [lo(1)-1, lo(2), 0], [hi(1)+1, hi(2)+1, 0]
-      const Box& cybx = amrex::grow(ybx, IntVect(AMREX_D_DECL(1,0,0)));
-
-      // ftmp2 = fy
-      // rftmp2 = rfy
-#pragma gpu
-      cmpflx_plus_godunov(AMREX_INT_ANYD(cybx.loVect()), AMREX_INT_ANYD(cybx.hiVect()),
-                          BL_TO_FORTRAN_ANYD(qym),
-                          BL_TO_FORTRAN_ANYD(qyp), 1, 1,
-                          BL_TO_FORTRAN_ANYD(ftmp2),
-                          BL_TO_FORTRAN_ANYD(q_int),
-#ifdef RADIATION
-                          BL_TO_FORTRAN_ANYD(rftmp2),
-                          BL_TO_FORTRAN_ANYD(lambda_int),
-#endif
-                          BL_TO_FORTRAN_ANYD(qe[1]),
-                          BL_TO_FORTRAN_ANYD(qaux[mfi]),
-                          BL_TO_FORTRAN_ANYD(shk),
-                          2, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
-
-      // add the transverse flux difference in y to the x states
-      // [lo(1), lo(2), 0], [hi(1)+1, hi(2), 0]
-
-      // ftmp2 = fy
-      // rftmp2 = rfy
-#pragma gpu
-      transy_on_xstates(AMREX_INT_ANYD(xbx.loVect()), AMREX_INT_ANYD(xbx.hiVect()),
-                        BL_TO_FORTRAN_ANYD(qxm),
-                        BL_TO_FORTRAN_ANYD(ql),
-                        BL_TO_FORTRAN_ANYD(qxp),
-                        BL_TO_FORTRAN_ANYD(qr),
-                        BL_TO_FORTRAN_ANYD(qaux[mfi]),
-                        BL_TO_FORTRAN_ANYD(ftmp2),
-#ifdef RADIATION
-                        BL_TO_FORTRAN_ANYD(rftmp2),
-#endif
-                        BL_TO_FORTRAN_ANYD(qe[1]),
-                        hdtdy);
-
-      // solve the final Riemann problem axross the x-interfaces
-
-#pragma gpu
-      cmpflx_plus_godunov(AMREX_INT_ANYD(xbx.loVect()), AMREX_INT_ANYD(xbx.hiVect()),
-                          BL_TO_FORTRAN_ANYD(ql),
-                          BL_TO_FORTRAN_ANYD(qr), 1, 1,
-                          BL_TO_FORTRAN_ANYD(flux[0]),
-                          BL_TO_FORTRAN_ANYD(q_int),
-#ifdef RADIATION
-                          BL_TO_FORTRAN_ANYD(rad_flux[0]),
-                          BL_TO_FORTRAN_ANYD(lambda_int),
-#endif
-                          BL_TO_FORTRAN_ANYD(qe[0]),
-                          BL_TO_FORTRAN_ANYD(qaux[mfi]),
-                          BL_TO_FORTRAN_ANYD(shk),
-                          1, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
-
-      // add the transverse flux difference in x to the y states
-      // [lo(1), lo(2), 0], [hi(1), hi(2)+1, 0]
-
-      // ftmp1 = fx
-      // rftmp1 = rfx
-      // qgdnvtmp1 = qgdnvx
-
-#pragma gpu
-      transx_on_ystates(AMREX_INT_ANYD(ybx.loVect()), AMREX_INT_ANYD(ybx.hiVect()),
-                        BL_TO_FORTRAN_ANYD(qym),
-                        BL_TO_FORTRAN_ANYD(ql),
-                        BL_TO_FORTRAN_ANYD(qyp),
-                        BL_TO_FORTRAN_ANYD(qr),
-                        BL_TO_FORTRAN_ANYD(qaux[mfi]),
-                        BL_TO_FORTRAN_ANYD(ftmp1),
-#ifdef RADIATION
-                        BL_TO_FORTRAN_ANYD(rftmp1),
-#endif
-                        BL_TO_FORTRAN_ANYD(qgdnvtmp1),
-                        BL_TO_FORTRAN_ANYD(area[0][mfi]),
-                        BL_TO_FORTRAN_ANYD(volume[mfi]),
-                        hdt, hdtdx);
-
-      // solve the final Riemann problem axross the y-interfaces
-
-#pragma gpu
-      cmpflx_plus_godunov(AMREX_INT_ANYD(ybx.loVect()), AMREX_INT_ANYD(ybx.hiVect()),
-                          BL_TO_FORTRAN_ANYD(ql),
-                          BL_TO_FORTRAN_ANYD(qr), 1, 1,
-                          BL_TO_FORTRAN_ANYD(flux[1]),
-                          BL_TO_FORTRAN_ANYD(q_int),
-#ifdef RADIATION
-                          BL_TO_FORTRAN_ANYD(rad_flux[1]),
-                          BL_TO_FORTRAN_ANYD(lambda_int),
-#endif
-                          BL_TO_FORTRAN_ANYD(qe[1]),
-                          BL_TO_FORTRAN_ANYD(qaux[mfi]),
-                          BL_TO_FORTRAN_ANYD(shk),
-                          2, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
-#endif // 2-d
-
-
-
-#if AMREX_SPACEDIM == 3
 
       const amrex::Real hdt = 0.5*dt;
 
@@ -658,10 +381,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           BL_TO_FORTRAN_ANYD(qxp), 1, 1,
                           BL_TO_FORTRAN_ANYD(ftmp1),
                           BL_TO_FORTRAN_ANYD(q_int),
-#ifdef RADIATION
-                          BL_TO_FORTRAN_ANYD(rftmp1),
-                          BL_TO_FORTRAN_ANYD(lambda_int),
-#endif
                           BL_TO_FORTRAN_ANYD(qgdnvtmp1),
                           BL_TO_FORTRAN_ANYD(qaux[mfi]),
                           BL_TO_FORTRAN_ANYD(shk),
@@ -687,9 +406,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                         BL_TO_FORTRAN_ANYD(qpyx),
                         BL_TO_FORTRAN_ANYD(qaux[mfi]),
                         BL_TO_FORTRAN_ANYD(ftmp1),
-#ifdef RADIATION
-                        BL_TO_FORTRAN_ANYD(rftmp1),
-#endif
                         BL_TO_FORTRAN_ANYD(qgdnvtmp1),
                         hdt, cdtdx);
 
@@ -710,9 +426,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                         BL_TO_FORTRAN_ANYD(qpzx),
                         BL_TO_FORTRAN_ANYD(qaux[mfi]),
                         BL_TO_FORTRAN_ANYD(ftmp1),
-#ifdef RADIATION
-                        BL_TO_FORTRAN_ANYD(rftmp1),
-#endif
                         BL_TO_FORTRAN_ANYD(qgdnvtmp1),
                         hdt, cdtdx);
 
@@ -729,10 +442,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           BL_TO_FORTRAN_ANYD(qyp), 1, 1,
                           BL_TO_FORTRAN_ANYD(ftmp1),
                           BL_TO_FORTRAN_ANYD(q_int),
-#ifdef RADIATION
-                          BL_TO_FORTRAN_ANYD(rftmp1),
-                          BL_TO_FORTRAN_ANYD(lambda_int),
-#endif
                           BL_TO_FORTRAN_ANYD(qgdnvtmp1),
                           BL_TO_FORTRAN_ANYD(qaux[mfi]),
                           BL_TO_FORTRAN_ANYD(shk),
@@ -758,9 +467,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                         BL_TO_FORTRAN_ANYD(qpxy),
                         BL_TO_FORTRAN_ANYD(qaux[mfi]),
                         BL_TO_FORTRAN_ANYD(ftmp1),
-#ifdef RADIATION
-                        BL_TO_FORTRAN_ANYD(rftmp1),
-#endif
                         BL_TO_FORTRAN_ANYD(qgdnvtmp1),
                         cdtdy);
 
@@ -784,9 +490,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                         BL_TO_FORTRAN_ANYD(qpzy),
                         BL_TO_FORTRAN_ANYD(qaux[mfi]),
                         BL_TO_FORTRAN_ANYD(ftmp1),
-#ifdef RADIATION
-                        BL_TO_FORTRAN_ANYD(rftmp1),
-#endif
                         BL_TO_FORTRAN_ANYD(qgdnvtmp1),
                         cdtdy);
 
@@ -803,10 +506,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           BL_TO_FORTRAN_ANYD(qzp), 1, 1,
                           BL_TO_FORTRAN_ANYD(ftmp1),
                           BL_TO_FORTRAN_ANYD(q_int),
-#ifdef RADIATION
-                          BL_TO_FORTRAN_ANYD(rftmp1),
-                          BL_TO_FORTRAN_ANYD(lambda_int),
-#endif
                           BL_TO_FORTRAN_ANYD(qgdnvtmp1),
                           BL_TO_FORTRAN_ANYD(qaux[mfi]),
                           BL_TO_FORTRAN_ANYD(shk),
@@ -832,9 +531,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                         BL_TO_FORTRAN_ANYD(qpxz),
                         BL_TO_FORTRAN_ANYD(qaux[mfi]),
                         BL_TO_FORTRAN_ANYD(ftmp1),
-#ifdef RADIATION
-                        BL_TO_FORTRAN_ANYD(rftmp1),
-#endif
                         BL_TO_FORTRAN_ANYD(qgdnvtmp1),
                         cdtdz);
 
@@ -858,9 +554,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                         BL_TO_FORTRAN_ANYD(qpyz),
                         BL_TO_FORTRAN_ANYD(qaux[mfi]),
                         BL_TO_FORTRAN_ANYD(ftmp1),
-#ifdef RADIATION
-                        BL_TO_FORTRAN_ANYD(rftmp1),
-#endif
                         BL_TO_FORTRAN_ANYD(qgdnvtmp1),
                         cdtdz);
 
@@ -883,10 +576,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           BL_TO_FORTRAN_ANYD(qpyz), 1, 1,
                           BL_TO_FORTRAN_ANYD(ftmp1),
                           BL_TO_FORTRAN_ANYD(q_int),
-#ifdef RADIATION
-                          BL_TO_FORTRAN_ANYD(rftmp1),
-                          BL_TO_FORTRAN_ANYD(lambda_int),
-#endif
                           BL_TO_FORTRAN_ANYD(qgdnvtmp1),
                           BL_TO_FORTRAN_ANYD(qaux[mfi]),
                           BL_TO_FORTRAN_ANYD(shk),
@@ -905,10 +594,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           BL_TO_FORTRAN_ANYD(qpzy), 1, 1,
                           BL_TO_FORTRAN_ANYD(ftmp2),
                           BL_TO_FORTRAN_ANYD(q_int),
-#ifdef RADIATION
-                          BL_TO_FORTRAN_ANYD(rftmp2),
-                          BL_TO_FORTRAN_ANYD(lambda_int),
-#endif
                           BL_TO_FORTRAN_ANYD(qgdnvtmp2),
                           BL_TO_FORTRAN_ANYD(qaux[mfi]),
                           BL_TO_FORTRAN_ANYD(shk),
@@ -925,27 +610,17 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
               BL_TO_FORTRAN_ANYD(qr),
               BL_TO_FORTRAN_ANYD(qaux[mfi]),
               BL_TO_FORTRAN_ANYD(ftmp1),
-#ifdef RADIATION
-              BL_TO_FORTRAN_ANYD(rftmp1),
-#endif
               BL_TO_FORTRAN_ANYD(ftmp2),
-#ifdef RADIATION
-              BL_TO_FORTRAN_ANYD(rftmp2),
-#endif
               BL_TO_FORTRAN_ANYD(qgdnvtmp1),
               BL_TO_FORTRAN_ANYD(qgdnvtmp2),
               hdt, hdtdy, hdtdz);
 
 #pragma gpu
-      cmpflx_plus_godunov(AMREX_INT_ANYD(cxbx.loVect()), AMREX_INT_ANYD(cxbx.hiVect()),
+      cmpflx_plus_godunov(AMREX_INT_ANYD(xbx.loVect()), AMREX_INT_ANYD(xbx.hiVect()),
                           BL_TO_FORTRAN_ANYD(ql),
                           BL_TO_FORTRAN_ANYD(qr), 1, 1,
                           BL_TO_FORTRAN_ANYD(flux[0]),
                           BL_TO_FORTRAN_ANYD(q_int),
-#ifdef RADIATION
-                          BL_TO_FORTRAN_ANYD(rad_flux[0]),
-                          BL_TO_FORTRAN_ANYD(lambda_int),
-#endif
                           BL_TO_FORTRAN_ANYD(qe[0]),
                           BL_TO_FORTRAN_ANYD(qaux[mfi]),
                           BL_TO_FORTRAN_ANYD(shk),
@@ -968,10 +643,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           BL_TO_FORTRAN_ANYD(qpzx), 1, 1,
                           BL_TO_FORTRAN_ANYD(ftmp1),
                           BL_TO_FORTRAN_ANYD(q_int),
-#ifdef RADIATION
-                          BL_TO_FORTRAN_ANYD(rftmp1),
-                          BL_TO_FORTRAN_ANYD(lambda_int),
-#endif
                           BL_TO_FORTRAN_ANYD(qgdnvtmp1),
                           BL_TO_FORTRAN_ANYD(qaux[mfi]),
                           BL_TO_FORTRAN_ANYD(shk),
@@ -990,10 +661,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           BL_TO_FORTRAN_ANYD(qpxz), 1, 1,
                           BL_TO_FORTRAN_ANYD(ftmp2),
                           BL_TO_FORTRAN_ANYD(q_int),
-#ifdef RADIATION
-                          BL_TO_FORTRAN_ANYD(rftmp2),
-                          BL_TO_FORTRAN_ANYD(lambda_int),
-#endif
                           BL_TO_FORTRAN_ANYD(qgdnvtmp2),
                           BL_TO_FORTRAN_ANYD(qaux[mfi]),
                           BL_TO_FORTRAN_ANYD(shk),
@@ -1010,13 +677,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
               BL_TO_FORTRAN_ANYD(qr),
               BL_TO_FORTRAN_ANYD(qaux[mfi]),
               BL_TO_FORTRAN_ANYD(ftmp2),
-#ifdef RADIATION
-              BL_TO_FORTRAN_ANYD(rftmp2),
-#endif
               BL_TO_FORTRAN_ANYD(ftmp1),
-#ifdef RADIATION
-              BL_TO_FORTRAN_ANYD(rftmp1),
-#endif
               BL_TO_FORTRAN_ANYD(qgdnvtmp2),
               BL_TO_FORTRAN_ANYD(qgdnvtmp1),
               hdt, hdtdx, hdtdz);
@@ -1029,10 +690,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           BL_TO_FORTRAN_ANYD(qr), 1, 1,
                           BL_TO_FORTRAN_ANYD(flux[1]),
                           BL_TO_FORTRAN_ANYD(q_int),
-#ifdef RADIATION
-                          BL_TO_FORTRAN_ANYD(rad_flux[1]),
-                          BL_TO_FORTRAN_ANYD(lambda_int),
-#endif
                           BL_TO_FORTRAN_ANYD(qe[1]),
                           BL_TO_FORTRAN_ANYD(qaux[mfi]),
                           BL_TO_FORTRAN_ANYD(shk),
@@ -1055,10 +712,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           BL_TO_FORTRAN_ANYD(qpxy), 1, 1,
                           BL_TO_FORTRAN_ANYD(ftmp1),
                           BL_TO_FORTRAN_ANYD(q_int),
-#ifdef RADIATION
-                          BL_TO_FORTRAN_ANYD(rftmp1),
-                          BL_TO_FORTRAN_ANYD(lambda_int),
-#endif
                           BL_TO_FORTRAN_ANYD(qgdnvtmp1),
                           BL_TO_FORTRAN_ANYD(qaux[mfi]),
                           BL_TO_FORTRAN_ANYD(shk),
@@ -1077,10 +730,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           BL_TO_FORTRAN_ANYD(qpyx), 1, 1,
                           BL_TO_FORTRAN_ANYD(ftmp2),
                           BL_TO_FORTRAN_ANYD(q_int),
-#ifdef RADIATION
-                          BL_TO_FORTRAN_ANYD(rftmp2),
-                          BL_TO_FORTRAN_ANYD(lambda_int),
-#endif
                           BL_TO_FORTRAN_ANYD(qgdnvtmp2),
                           BL_TO_FORTRAN_ANYD(qaux[mfi]),
                           BL_TO_FORTRAN_ANYD(shk),
@@ -1097,13 +746,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
               BL_TO_FORTRAN_ANYD(qr),
               BL_TO_FORTRAN_ANYD(qaux[mfi]),
               BL_TO_FORTRAN_ANYD(ftmp1),
-#ifdef RADIATION
-              BL_TO_FORTRAN_ANYD(rftmp1),
-#endif
               BL_TO_FORTRAN_ANYD(ftmp2),
-#ifdef RADIATION
-              BL_TO_FORTRAN_ANYD(rftmp2),
-#endif
               BL_TO_FORTRAN_ANYD(qgdnvtmp1),
               BL_TO_FORTRAN_ANYD(qgdnvtmp2),
               hdt, hdtdx, hdtdy);
@@ -1117,16 +760,10 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           BL_TO_FORTRAN_ANYD(qr), 1, 1,
                           BL_TO_FORTRAN_ANYD(flux[2]),
                           BL_TO_FORTRAN_ANYD(q_int),
-#ifdef RADIATION
-                          BL_TO_FORTRAN_ANYD(rad_flux[2]),
-                          BL_TO_FORTRAN_ANYD(lambda_int),
-#endif
                           BL_TO_FORTRAN_ANYD(qe[2]),
                           BL_TO_FORTRAN_ANYD(qaux[mfi]),
                           BL_TO_FORTRAN_ANYD(shk),
                           3, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
-
-#endif // 3-d
 
       /*
       for (int idir = 0; idir < AMREX_SPACEDIM; ++idir) {
@@ -1143,17 +780,11 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
 	  /*          Array4<Real> const flux_arr = (flux[idir]).array();
           /*const int temp_comp = Temp_comp;
-#ifdef SHOCK_VAR
-          const int shk_comp = Shock;
-#endif
 
           // Zero out shock and temp fluxes -- these are physically meaningless here
           AMREX_PARALLEL_FOR_3D(nbx, i, j, k,
           {
               flux_arr(i,j,k,temp_comp) = 0.e0;
-#ifdef SHOCK_VAR
-              flux_arr(i,j,k,shk_comp) = 0.e0;
-#endif
           });*/
 
 #pragma gpu
@@ -1162,15 +793,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                    BL_TO_FORTRAN_ANYD(div),
                    BL_TO_FORTRAN_ANYD(Sborder[mfi]),
                    BL_TO_FORTRAN_ANYD(flux[idir]));
-
-#ifdef RADIATION
-#pragma gpu
-          apply_av_rad(AMREX_INT_ANYD(nbx.loVect()), AMREX_INT_ANYD(nbx.hiVect()),
-                       idir_f, AMREX_REAL_ANYD(dx),
-                       BL_TO_FORTRAN_ANYD(div),
-                       BL_TO_FORTRAN_ANYD(Erborder[mfi]),
-                       BL_TO_FORTRAN_ANYD(rad_flux[idir]));
-#endif
 
           if (0){//limit_fluxes_on_small_dens == 1) {
 #pragma gpu
@@ -1197,36 +819,16 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       Elixir elix_pdivu = pdivu.elixir();
 
       ca_consup(AMREX_INT_ANYD(bx.loVect()), AMREX_INT_ANYD(bx.hiVect()),
-		BL_TO_FORTRAN(Sborder[mfi]),
-		BL_TO_FORTRAN(hydro_source[mfi]),
-		BL_TO_FORTRAN(flux[0]),
-#if AMREX_SPACEDIM >= 2
-                 BL_TO_FORTRAN(flux[1]),
-#endif
-#if AMREX_SPACEDIM == 3
-                 BL_TO_FORTRAN(flux[2]),
-#endif
-                 BL_TO_FORTRAN_ANYD(qe[0]),
-#if AMREX_SPACEDIM >= 2
-                 BL_TO_FORTRAN_ANYD(qe[1]),
-#endif
-#if AMREX_SPACEDIM == 3
-                 BL_TO_FORTRAN_ANYD(qe[2]),
-#endif
-		BL_TO_FORTRAN_ANYD(div),
-		AMREX_REAL_ANYD(dx),&dt,&a_old,&a_new);
-
-      /*
-      for(int idir=0;idir<=3;++idir)
-	amrex::Print()<<"max flux["<<idir<<"]="<<flux[idir].max()<<std::endl;
-      */
-#ifdef RADIATION
-      nstep_fsp = std::max(nstep_fsp, priv_nstep_fsp);
-#endif
-
-#if AMREX_SPACEDIM <= 2
-      Array4<Real> pradial_fab = pradial.array();
-#endif
+                BL_TO_FORTRAN(Sborder[mfi]),
+                BL_TO_FORTRAN(hydro_source[mfi]),
+                BL_TO_FORTRAN(flux[0]),
+                BL_TO_FORTRAN(flux[1]),
+                BL_TO_FORTRAN(flux[2]),
+                BL_TO_FORTRAN_ANYD(qe[0]),
+                BL_TO_FORTRAN_ANYD(qe[1]),
+                BL_TO_FORTRAN_ANYD(qe[2]),
+                BL_TO_FORTRAN_ANYD(div),
+                AMREX_REAL_ANYD(dx),&dt,&a_old,&a_new);
 
       for (int idir = 0; idir < AMREX_SPACEDIM; ++idir) {
 
@@ -1234,41 +836,13 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
 #pragma gpu
         scale_flux(AMREX_INT_ANYD(nbx.loVect()), AMREX_INT_ANYD(nbx.hiVect()),
-#if AMREX_SPACEDIM == 1
-                   BL_TO_FORTRAN_ANYD(qe[idir]),
-#endif
                    BL_TO_FORTRAN_ANYD(flux[idir]),
                    BL_TO_FORTRAN_ANYD(area[idir][mfi]), dt);
-
-#ifdef RADIATION
-#pragma gpu
-        scale_rad_flux(AMREX_INT_ANYD(nbx.loVect()), AMREX_INT_ANYD(nbx.hiVect()),
-                       BL_TO_FORTRAN_ANYD(rad_flux[idir]),
-                       BL_TO_FORTRAN_ANYD(area[idir][mfi]), dt);
-#endif
 
         if (idir == 0) {
             // get the scaled radial pressure -- we need to treat this specially
             Array4<Real> const qex_fab = qe[idir].array();
             const int prescomp = GDPRES;
-
-#if AMREX_SPACEDIM == 1
-            if (!Geometry::IsCartesian()) {
-                AMREX_PARALLEL_FOR_3D(nbx, i, j, k,
-                {
-                    pradial_fab(i,j,k) = qex_fab(i,j,k,prescomp) * dt;
-                });
-            }
-#endif
-
-#if AMREX_SPACEDIM == 2
-            if (!mom_flux_has_p[0][0]) {
-                AMREX_PARALLEL_FOR_3D(nbx, i, j, k,
-                {
-                    pradial_fab(i,j,k) = qex_fab(i,j,k,prescomp) * dt;
-                });
-            }
-#endif
         }
 
         // Store the fluxes from this advance.
@@ -1286,54 +860,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
             {
                 fluxes_fab(i,j,k,n) += flux_fab(i,j,k,n);
             });
-
-#ifdef RADIATION
-        Array4<Real> const rad_flux_fab = (rad_flux[idir]).array();
-        Array4<Real> rad_fluxes_fab = (*rad_fluxes[idir]).array(mfi);
-        const int radcomp = Radiation::nGroups;
-
-        if (time_integration_method == SimplifiedSpectralDeferredCorrections) {
-
-            AMREX_HOST_DEVICE_FOR_4D(mfi.nodaltilebox(idir), radcomp, i, j, k, n,
-            {
-                rad_fluxes_fab(i,j,k,n) = rad_flux_fab(i,j,k,n);
-            });
-
-        } else {
-
-            AMREX_HOST_DEVICE_FOR_4D(mfi.nodaltilebox(idir), radcomp, i, j, k, n,
-            {
-                rad_fluxes_fab(i,j,k,n) += rad_flux_fab(i,j,k,n);
-            });
-
-        }
-#endif
-
       } // idir loop
-
-#if AMREX_SPACEDIM <= 2
-      if (!Geometry::IsCartesian()) {
-
-          Array4<Real> P_radial_fab = P_radial.array(mfi);
-
-          if (time_integration_method == SimplifiedSpectralDeferredCorrections) {
-
-              AMREX_HOST_DEVICE_FOR_4D(mfi.nodaltilebox(0), 1, i, j, k, n,
-              {
-                  P_radial_fab(i,j,k,0) = pradial_fab(i,j,k,0);
-              });
-
-          } else {
-
-              AMREX_HOST_DEVICE_FOR_4D(mfi.nodaltilebox(0), 1, i, j, k, n,
-              {
-                  P_radial_fab(i,j,k,0) += pradial_fab(i,j,k,0);
-              });
-
-          }
-
-      }
-#endif
 
       for (int i = 0; i < BL_SPACEDIM; ++i) 
 	fluxes[i][mfi].copy(flux[i], mfi.nodaltilebox(i));
