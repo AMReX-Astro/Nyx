@@ -230,6 +230,9 @@ extern "C"
       D_DECL(const BL_FORT_FAB_ARG(xflux),
              const BL_FORT_FAB_ARG(yflux),
              const BL_FORT_FAB_ARG(zflux)),
+             const BL_FORT_FAB_ARG_3D(xqe),
+             const BL_FORT_FAB_ARG_3D(yqe),
+             const BL_FORT_FAB_ARG_3D(zqe),
      /*
      BL_FORT_FAB_ARG(flux0),
 #if AMREX_SPACEDIM >= 2
@@ -239,7 +242,7 @@ extern "C"
      BL_FORT_FAB_ARG(flux2),
 #endif
      */
-     const BL_FORT_FAB_ARG(divu_cc),
+     const BL_FORT_FAB_ARG_3D(divu_cc),
      const amrex::Real* dx, const amrex::Real* dt,
      const amrex::Real* a_old, const amrex::Real* a_new);
   

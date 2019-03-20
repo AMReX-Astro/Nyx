@@ -605,7 +605,6 @@ contains
        end if
 
     end do
-
   end subroutine ctu_plm_states
 
 
@@ -780,16 +779,16 @@ contains
 
     call calc_pdivu(lo, hi, &
                     qx, qx_lo, qx_hi, &
-                    area1, area1_lo, area1_hi, &
+                    area1(area1_lo(1),area1_lo(2),area1_lo(3)), &
 #if AMREX_SPACEDIM >= 2
                     qy, qy_lo, qy_hi, &
-                    area2, area2_lo, area2_hi, &
+                    area2(area2_lo(1),area2_lo(2),area2_lo(3)), &
 #endif
 #if AMREX_SPACEDIM == 3
                     qz, qz_lo, qz_hi, &
-                    area3, area3_lo, area3_hi, &
+                    area3(area3_lo(1),area3_lo(2),area3_lo(3)), &
 #endif
-                    vol, vol_lo, vol_hi, &
+                    vol(vol_lo(1),vol_lo(2),vol_lo(3)), &
                     dx, pdivu, pdivu_lo, pdivu_hi)
 
 

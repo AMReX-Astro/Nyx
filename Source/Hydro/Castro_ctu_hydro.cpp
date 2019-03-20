@@ -1206,7 +1206,14 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 #if AMREX_SPACEDIM == 3
                  BL_TO_FORTRAN(flux[2]),
 #endif
-		BL_TO_FORTRAN(div),
+                 BL_TO_FORTRAN_ANYD(qe[0]),
+#if AMREX_SPACEDIM >= 2
+                 BL_TO_FORTRAN_ANYD(qe[1]),
+#endif
+#if AMREX_SPACEDIM == 3
+                 BL_TO_FORTRAN_ANYD(qe[2]),
+#endif
+		BL_TO_FORTRAN_ANYD(div),
 		AMREX_REAL_ANYD(dx),&dt,&a_old,&a_new);
 
       /*
