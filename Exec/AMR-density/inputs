@@ -52,8 +52,6 @@ amr.data_log = runlog
 gravity.gravity_type = PoissonGrav
 gravity.no_sync      = 1
 gravity.no_composite = 1
-gravity.solve_with_mlmg  = 1
-gravity.solve_with_hpgmg = 0
 
 mg.bottom_solver = 4
 
