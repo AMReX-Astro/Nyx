@@ -37,16 +37,6 @@ public:
     //
     void swap_time_levels(int level);
 
-    // 
-    // Use the HPGMG solver
-    //
-#ifdef USEHPGMG
-    void solve_with_HPGMG(int level, amrex::MultiFab& phi, const amrex::Vector<amrex::MultiFab*>& grad_phi,
-                        amrex::MultiFab& rhs, amrex::Real tol, amrex::Real abs_tol);
-#endif
-
-    void solve_for_phi_with_mlmg (int level, amrex::MultiFab& Rhs, amrex::MultiFab& phi,
-                                  const amrex::Vector<amrex::MultiFab*>& grad_phi, amrex::Real time);
     amrex::Real solve_with_MLMG (int crse_level, int fine_level,
                                  const amrex::Vector<amrex::MultiFab*>& phi,
                                  const amrex::Vector<const amrex::MultiFab*>& rhs,
@@ -66,13 +56,6 @@ public:
     void solve_for_delta_phi(int crse_level, int fine_level, amrex::MultiFab& CrseRhs,
                              const amrex::Vector<amrex::MultiFab*>& delta_phi,
                              const amrex::Vector<amrex::Vector<amrex::MultiFab*> >& grad_delta_phi);
-    void solve_for_delta_phi_with_mgt(int crse_level, int fine_level, amrex::MultiFab& CrseRhs,
-                                      const amrex::Vector<amrex::MultiFab*>& delta_phi,
-                                      const amrex::Vector<amrex::Vector<amrex::MultiFab*> >& grad_delta_phi);
-    void solve_for_delta_phi_with_mlmg(int crse_level, int fine_level, amrex::MultiFab& CrseRhs,
-                                       const amrex::Vector<amrex::MultiFab*>& delta_phi,
-                                       const amrex::Vector<amrex::Vector<amrex::MultiFab*> >& grad_delta_phi);
-
     void gravity_sync(int crse_level, int fine_level, int iteration, int ncycle, 
                       const amrex::MultiFab& drho_and_drhoU, const amrex::MultiFab& dphi,
                       const amrex::Vector<amrex::MultiFab*>& grad_delta_phi_cc);
@@ -151,8 +134,6 @@ protected:
     static int no_sync;
     static int no_composite;
     static int dirichlet_bcs;
-    static int solve_with_hpgmg;
-    static int solve_with_mlmg;
     static int mlmg_max_fmg_iter;
     static int mlmg_agglomeration;
     static int mlmg_consolidation;
