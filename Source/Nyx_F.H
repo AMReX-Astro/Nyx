@@ -628,7 +628,9 @@ extern "C"
 #endif
                const BL_FORT_FAB_ARG_3D(qy),
                const BL_FORT_FAB_ARG_3D(qz),
-               const amrex::Real hdt, const amrex::Real cdtdy, const amrex::Real cdtdz);
+	       const BL_FORT_FAB_ARG_3D(srcQ),
+               const amrex::Real hdt, const amrex::Real cdtdy, const amrex::Real cdtdz,
+	       const amrex::Real a_old, const amrex::Real a_new);
 
   void transxz(const int* lo, const int* hi,
                const BL_FORT_FAB_ARG_3D(qm),
@@ -646,7 +648,9 @@ extern "C"
 #endif
                const BL_FORT_FAB_ARG_3D(qx),
                const BL_FORT_FAB_ARG_3D(qz),
-               const amrex::Real hdt, const amrex::Real cdtdx, const amrex::Real cdtdz);
+	       const BL_FORT_FAB_ARG_3D(srcQ),
+               const amrex::Real hdt, const amrex::Real cdtdx, const amrex::Real cdtdz,
+	       const amrex::Real a_old, const amrex::Real a_new);
 
   void transxy(const int* lo, const int* hi,
                const BL_FORT_FAB_ARG_3D(qm),
@@ -664,7 +668,9 @@ extern "C"
 #endif
                const BL_FORT_FAB_ARG_3D(qx),
                const BL_FORT_FAB_ARG_3D(qy),
-               const amrex::Real hdt, const amrex::Real cdtdx, const amrex::Real cdtdy);
+	       const BL_FORT_FAB_ARG_3D(srcQ),
+               const amrex::Real hdt, const amrex::Real cdtdx, const amrex::Real cdtdy,
+	       const amrex::Real a_old, const amrex::Real a_new);
 
   void ca_mol_single_stage
     (const int* lo, const int* hi,

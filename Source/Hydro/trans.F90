@@ -2711,14 +2711,15 @@ contains
                      fzy, fzy_lo, fzy_hi, &
                      qy, qy_lo, qy_hi, &
                      qz, qz_lo, qz_hi, &
-                     hdt, cdtdy, cdtdz) bind(C, name="transyz")
+                     SrcQ, src_lo, src_hi, &
+                     hdt, cdtdy, cdtdz, a_old, a_new) bind(C, name="transyz")
 
     ! here, lo and hi are the bounds of the x interfaces we are looping over
 
     use amrex_constants_module, only : ZERO, ONE, HALF
 
     use network, only : nspec, naux
-    use meth_params_module, only : QVAR, NVAR, NQAUX, QRHO, QU, QV, QW, &
+    use meth_params_module, only : QVAR, NVAR, NQAUX, NQSRC, QRHO, QU, QV, QW, &
                                    QPRES, QREINT, QFS, QFX, &
                                    QC,  &
                                    URHO, UMX, UMY, UMZ, UEDEN, UEINT, &
@@ -2726,8 +2727,8 @@ contains
                                    small_pres, small_temp, &
                                    npassive, upass_map, qpass_map, &
                                    transverse_reset_density, transverse_reset_rhoe, &
-                                   ppm_predict_gammae, gamma_const, gamma_minus_1
-
+                                   ppm_predict_gammae, gamma_const, gamma_minus_1, &
+                                   use_srcQ_in_trace
 
     integer, intent(in) :: qm_lo(3), qm_hi(3)
     integer, intent(in) :: qmo_lo(3), qmo_hi(3)
@@ -2738,9 +2739,10 @@ contains
     integer, intent(in) :: fzy_lo(3), fzy_hi(3)
     integer, intent(in) :: qy_lo(3), qy_hi(3)
     integer, intent(in) :: qz_lo(3), qz_hi(3)
+    integer, intent(in) :: src_lo(3), src_hi(3)
     integer, intent(in) :: lo(3), hi(3)
 
-    real(rt), intent(in), value :: hdt, cdtdy, cdtdz
+    real(rt), intent(in), value :: hdt, cdtdy, cdtdz, a_old, a_new
 
 #ifdef RADIATION
     integer, intent(in) :: rfyz_lo(3), rfyz_hi(3)
@@ -2760,8 +2762,12 @@ contains
     real(rt), intent(in) :: fzy(fzy_lo(1):fzy_hi(1),fzy_lo(2):fzy_hi(2),fzy_lo(3):fzy_hi(3),NVAR)
     real(rt), intent(in) :: qy(qy_lo(1):qy_hi(1),qy_lo(2):qy_hi(2),qy_lo(3):qy_hi(3),NGDNV)
     real(rt), intent(in) :: qz(qz_lo(1):qz_hi(1),qz_lo(2):qz_hi(2),qz_lo(3):qz_hi(3),NGDNV)
+    
+    real(rt), intent(in) ::  srcQ(src_lo(1):src_hi(1),src_lo(2):src_hi(2),src_lo(3):src_hi(3),NQSRC)
 
     integer i, j, k, n, nqp, ipassive
+
+    real(rt)         a_half
 
     real(rt)         rrr, rur, rvr, rwr, rer, ekenr, rhoekenr
     real(rt)         rrl, rul, rvl, rwl, rel, ekenl, rhoekenl
@@ -2790,6 +2796,8 @@ contains
     ! transerse term and convert back to the primitive quantity
     !-------------------------------------------------------------------------
 
+    a_half = HALF * (a_old + a_new)
+    
     do ipassive = 1,npassive
        n  = upass_map(ipassive)
        nqp = qpass_map(ipassive)
@@ -2806,6 +2814,9 @@ contains
                                - cdtdz*(fzy(i,j  ,k+1,n   ) - fzy(i,j,k,n))
 
                 qpo(i  ,j,k,nqp) = compnr/rrnewr
+                if(use_srcQ_in_trace.eq.0) then
+                   qpo(i,j,k,nqp) = qpo(i,j,k,nqp) + hdt*srcQ(i,j,k,nqp) / a_half
+                endif
 
                 rrl = qm(i,j,k,QRHO)
                 compl = rrl*qm(i,j,k,nqp)
@@ -2815,6 +2826,10 @@ contains
                                - cdtdz*(fzy(i-1,j  ,k+1,n   ) - fzy(i-1,j,k,n))
 
                 qmo(i,j,k,nqp) = compnl/rrnewl
+                if(use_srcQ_in_trace.eq.0) then
+                   qmo(i,j,k,nqp) = qmo(i,j,k,nqp)+ hdt*srcQ(i,j,k-1,nqp) / a_half
+                endif
+                
              end do
           end do
        end do
@@ -2906,6 +2921,9 @@ contains
              ! note: we run the risk of (rho e) being negative here
              rhoekenr = HALF*(runewr**2 + rvnewr**2 + rwnewr**2)/rrnewr
              qpo(i,j,k,QREINT) = renewr - rhoekenr
+             if(use_srcQ_in_trace.eq.0) then
+                qpo(i,j,k,QREINT) = qpo(i,j,k,QREINT) + hdt* srcQ(i,j,k,QREINT) / a_old
+             endif
 
              if (.not. reset_state) then
                 if (transverse_reset_rhoe == 1 .and. qpo(i,j,k,QREINT) <= ZERO) then
@@ -3010,7 +3028,10 @@ contains
              ! note: we run the risk of (rho e) being negative here
              rhoekenl = HALF*(runewl**2 + rvnewl**2 + rwnewl**2)/rrnewl
              qmo(i,j,k,QREINT ) = renewl - rhoekenl
-
+             if(use_srcQ_in_trace.eq.0) then
+                qmo(i,j,k,QREINT) = qmo(i,j,k,QREINT) + hdt* srcQ(i,j,k,QREINT) / a_old
+             endif
+             
              if (.not. reset_state) then
                 if (transverse_reset_rhoe == 1 .and. qmo(i,j,k,QREINT) <= ZERO) then
                    ! If it is negative, reset the internal energy by using the discretized
@@ -3038,7 +3059,18 @@ contains
 
              call reset_edge_state_thermo(qmo, qmo_lo, qmo_hi, i, j, k)
 
-
+             if(use_srcQ_in_trace.eq.0) then
+                qpo(i,j,k,QRHO) = qpo(i,j,k,QRHO) + hdt*srcQ(i,j,k,QRHO) / a_old
+                qpo(i,j,k,QU  ) = qpo(i,j,k,QU  ) + hdt*srcQ(i,j,k,QU  ) / a_old
+                qpo(i,j,k,QV  ) = qpo(i,j,k,QV  ) + hdt*srcQ(i,j,k,QV  ) / a_old
+                qpo(i,j,k,QW  ) = qpo(i,j,k,QW  ) + hdt*srcQ(i,j,k,QW  ) / a_old
+                
+                qmo(i,j,k,QRHO) = qmo(i,j,k,QRHO) + hdt*srcQ(i,j,k-1,QRHO) / a_old
+                qmo(i,j,k,QU  ) = qmo(i,j,k,QU  ) + hdt*srcQ(i,j,k-1,QU  ) / a_old
+                qmo(i,j,k,QV  ) = qmo(i,j,k,QV  ) + hdt*srcQ(i,j,k-1,QV  ) / a_old 
+                qmo(i,j,k,QW  ) = qmo(i,j,k,QW  ) + hdt*srcQ(i,j,k-1,QW  ) / a_old
+             endif
+             
           end do
        end do
     end do
@@ -3064,14 +3096,15 @@ contains
 #endif
                      qx, qx_lo, qx_hi, &
                      qz, qz_lo, qz_hi, &
-                     hdt, cdtdx, cdtdz) bind(C, name="transxz")
+                     SrcQ, src_lo, src_hi, &
+                     hdt, cdtdx, cdtdz, a_old, a_new) bind(C, name="transxz")
 
     ! here, lo and hi are the bounds of the y interfaces we are looping over
 
     use amrex_constants_module, only : ZERO, ONE, HALF
 
     use network, only : nspec, naux
-    use meth_params_module, only : QVAR, NVAR, NQAUX, QRHO, QU, QV, QW, &
+    use meth_params_module, only : QVAR, NVAR, NQAUX, NQSRC, QRHO, QU, QV, QW, &
                                    QPRES, QREINT, QFS, QFX, &
                                    QC,  &
 #ifdef RADIATION
@@ -3085,7 +3118,8 @@ contains
                                    small_pres, small_temp, &
                                    npassive, upass_map, qpass_map, &
                                    transverse_reset_density, transverse_reset_rhoe, &
-                                   ppm_predict_gammae, gamma_const, gamma_minus_1
+                                   ppm_predict_gammae, gamma_const, gamma_minus_1, &
+                                   use_srcQ_in_trace
 
 #ifdef RADIATION
     use rad_params_module, only : ngroups
@@ -3101,9 +3135,10 @@ contains
     integer, intent(in) :: fzx_lo(3), fzx_hi(3)
     integer, intent(in) :: qx_lo(3),qx_hi(3)
     integer, intent(in) :: qz_lo(3),qz_hi(3)
+    integer, intent(in) :: src_lo(3), src_hi(3)
     integer, intent(in) :: lo(3), hi(3)
 
-    real(rt), intent(in), value :: hdt, cdtdx, cdtdz
+    real(rt), intent(in), value :: hdt, cdtdx, cdtdz, a_old, a_new
 
 #ifdef RADIATION
     integer, intent(in) :: rfxz_lo(3), rfxz_hi(3)
@@ -3124,7 +3159,11 @@ contains
     real(rt), intent(in) :: qx(qx_lo(1):qx_hi(1),qx_lo(2):qx_hi(2),qx_lo(3):qx_hi(3),NGDNV)
     real(rt), intent(in) :: qz(qz_lo(1):qz_hi(1),qz_lo(2):qz_hi(2),qz_lo(3):qz_hi(3),NGDNV)
 
+    real(rt), intent(in) ::  srcQ(src_lo(1):src_hi(1),src_lo(2):src_hi(2),src_lo(3):src_hi(3),NQSRC)
+
     integer i, j, k, n, nqp, ipassive
+
+    real(rt)         a_half
 
     real(rt)         rrr, rur, rvr, rwr, rer, ekenr, rhoekenr
     real(rt)         rrl, rul, rvl, rwl, rel, ekenl, rhoekenl
@@ -3153,6 +3192,8 @@ contains
     ! transerse term and convert back to the primitive quantity
     !-------------------------------------------------------------------------
 
+    a_half = HALF * (a_old + a_new)
+    
     do ipassive = 1,npassive
        n  = upass_map(ipassive)
        nqp = qpass_map(ipassive)
@@ -3168,7 +3209,10 @@ contains
                                - cdtdz*(fzx(i  ,j,k+1,n) - fzx(i,j,k,n))
 
                 qpo(i,j  ,k,nqp) = compnr/rrnewr
-
+                if(use_srcQ_in_trace.eq.0) then
+                   qpo(i,j,k,nqp) = qpo(i,j,k,nqp) + hdt*srcQ(i,j,k,nqp) / a_half
+                endif
+                
                 rrl = qm(i,j,k,QRHO)
                 compl = rrl*qm(i,j,k,nqp)
                 rrnewl = rrl - cdtdx*(fxz(i+1,j-1,k,URHO) - fxz(i,j-1,k,URHO)) &
@@ -3177,6 +3221,10 @@ contains
                                - cdtdz*(fzx(i  ,j-1,k+1,n) - fzx(i,j-1,k,n))
 
                 qmo(i,j,k,nqp) = compnl/rrnewl
+                if(use_srcQ_in_trace.eq.0) then
+                   qmo(i,j,k,nqp) = qmo(i,j,k,nqp)+ hdt*srcQ(i,j,k-1,nqp) / a_half
+                endif
+                
              end do
           end do
        end do
@@ -3329,7 +3377,10 @@ contains
              ! note: we run the risk of (rho e) being negative here
              rhoekenr = HALF*(runewr**2 + rvnewr**2 + rwnewr**2)/rrnewr
              qpo(i,j,k,QREINT) = renewr - rhoekenr
-
+             if(use_srcQ_in_trace.eq.0) then
+                qpo(i,j,k,QREINT) = qpo(i,j,k,QREINT) + hdt* srcQ(i,j,k,QREINT) / a_old
+             endif
+             
              if (.not. reset_state) then
                 if (transverse_reset_rhoe == 1 .and. qpo(i,j,k,QREINT) <= ZERO) then
                    ! If it is negative, reset the internal energy by
@@ -3502,7 +3553,10 @@ contains
              ! note: we run the risk of (rho e) being negative here
              rhoekenl = HALF*(runewl**2 + rvnewl**2 + rwnewl**2)/rrnewl
              qmo(i,j,k,QREINT) = renewl - rhoekenl
-
+             if(use_srcQ_in_trace.eq.0) then
+                qmo(i,j,k,QREINT) = qmo(i,j,k,QREINT) + hdt* srcQ(i,j,k,QREINT) / a_old
+             endif
+             
              if (.not. reset_state) then
                 if (transverse_reset_rhoe == 1 .and. qmo(i,j,k,QREINT) <= ZERO) then
                    ! If it is negative, reset the internal energy by using the discretized
@@ -3535,7 +3589,17 @@ contains
              qmo(i,j,k,qptot  ) = sum(lambda(:)*ernewl(:)) + qmo(i,j,k,QPRES)
              qmo(i,j,k,qreitot) = sum(qmo(i,j,k,qrad:qradhi)) + qmo(i,j,k,QREINT)
 #endif
-
+             if(use_srcQ_in_trace.eq.0) then
+                qpo(i,j,k,QRHO) = qpo(i,j,k,QRHO) + hdt*srcQ(i,j,k,QRHO) / a_old
+                qpo(i,j,k,QU  ) = qpo(i,j,k,QU  ) + hdt*srcQ(i,j,k,QU  ) / a_old
+                qpo(i,j,k,QV  ) = qpo(i,j,k,QV  ) + hdt*srcQ(i,j,k,QV  ) / a_old
+                qpo(i,j,k,QW  ) = qpo(i,j,k,QW  ) + hdt*srcQ(i,j,k,QW  ) / a_old
+                
+                qmo(i,j,k,QRHO) = qmo(i,j,k,QRHO) + hdt*srcQ(i,j,k-1,QRHO) / a_old
+                qmo(i,j,k,QU  ) = qmo(i,j,k,QU  ) + hdt*srcQ(i,j,k-1,QU  ) / a_old
+                qmo(i,j,k,QV  ) = qmo(i,j,k,QV  ) + hdt*srcQ(i,j,k-1,QV  ) / a_old 
+                qmo(i,j,k,QW  ) = qmo(i,j,k,QW  ) + hdt*srcQ(i,j,k-1,QW  ) / a_old
+             endif
           end do
        end do
     end do
@@ -3561,7 +3625,8 @@ contains
 #endif
                      qx, qx_lo, qx_hi, &
                      qy, qy_lo, qy_hi, &
-                     hdt, cdtdx, cdtdy) bind(C, name="transxy")
+                     SrcQ, src_lo, src_hi, &
+                     hdt, cdtdx, cdtdy, a_old, a_new) bind(C, name="transxy")
 
     ! here, lo and hi are the bounds of edges we are looping over
 
@@ -3569,7 +3634,7 @@ contains
     use amrex_constants_module, only : ZERO, ONE, HALF
 
     use network, only : nspec, naux
-    use meth_params_module, only : QVAR, NVAR, NQAUX, QRHO, QU, QV, QW, &
+    use meth_params_module, only : QVAR, NVAR, NQAUX, NQSRC, QRHO, QU, QV, QW, &
                                    QPRES, QREINT, QFS, QFX, &
                                    QC,  &
 #ifdef RADIATION
@@ -3583,7 +3648,8 @@ contains
                                    small_pres, small_temp, &
                                    npassive, upass_map, qpass_map, &
                                    transverse_reset_density, transverse_reset_rhoe, &
-                                   ppm_predict_gammae, gamma_const, gamma_minus_1
+                                   ppm_predict_gammae, gamma_const, gamma_minus_1, &
+                                   use_srcQ_in_trace
 
 #ifdef RADIATION
     use rad_params_module, only : ngroups
@@ -3599,9 +3665,10 @@ contains
     integer, intent(in) :: fyx_lo(3), fyx_hi(3)
     integer, intent(in) :: qx_lo(3), qx_hi(3)
     integer, intent(in) :: qy_lo(3), qy_hi(3)
+    integer, intent(in) :: src_lo(3), src_hi(3)
     integer, intent(in) :: lo(3), hi(3)
 
-    real(rt), intent(in), value :: hdt, cdtdx, cdtdy
+    real(rt), intent(in), value :: hdt, cdtdx, cdtdy, a_old, a_new
 
 #ifdef RADIATION
     integer, intent(in) :: rfxy_lo(3), rfxy_hi(3)
@@ -3621,9 +3688,13 @@ contains
     real(rt), intent(in) :: fyx(fyx_lo(1):fyx_hi(1),fyx_lo(2):fyx_hi(2),fyx_lo(3):fyx_hi(3),NVAR)
     real(rt), intent(in) :: qx(qx_lo(1):qx_hi(1),qx_lo(2):qx_hi(2),qx_lo(3):qx_hi(3),NGDNV)
     real(rt), intent(in) :: qy(qy_lo(1):qy_hi(1),qy_lo(2):qy_hi(2),qy_lo(3):qy_hi(3),NGDNV)
+    
+    real(rt), intent(in) ::  srcQ(src_lo(1):src_hi(1),src_lo(2):src_hi(2),src_lo(3):src_hi(3),NQSRC)
 
     integer i, j, k, n, nqp, ipassive
 
+    real(rt)         a_half
+    
     real(rt)         rrr, rur, rvr, rwr, rer, ekenr, rhoekenr
     real(rt)         rrl, rul, rvl, rwl, rel, ekenl, rhoekenl
     real(rt)         rrnewr, runewr, rvnewr, rwnewr, renewr
@@ -3651,6 +3722,8 @@ contains
     ! transerse term and convert back to the primitive quantity
     !-------------------------------------------------------------------------
 
+    a_half = HALF * (a_old + a_new)
+    
     do ipassive = 1,npassive
        n  = upass_map(ipassive)
        nqp = qpass_map(ipassive)
@@ -3666,6 +3739,9 @@ contains
                                - cdtdy*(fyx(i,j+1,k,n) - fyx(i,j,k,n))
 
                 qpo(i,j,k,nqp) = compnr/rrnewr
+                if(use_srcQ_in_trace.eq.0) then
+                   qpo(i,j,k,nqp) = qpo(i,j,k,nqp) + hdt*srcQ(i,j,k,nqp) / a_half
+                endif
 
                 rrl = qm(i,j,k,QRHO)
                 compl = rrl*qm(i,j,k,nqp)
@@ -3675,6 +3751,10 @@ contains
                                - cdtdy*(fyx(i,j+1,k-1,n) - fyx(i,j,k-1,n))
 
                 qmo(i,j,k,nqp) = compnl/rrnewl
+                if(use_srcQ_in_trace.eq.0) then
+                   qmo(i,j,k,nqp) = qmo(i,j,k,nqp)+ hdt*srcQ(i,j,k-1,nqp) / a_half
+                endif
+
              end do
           end do
        end do
@@ -3828,6 +3908,9 @@ contains
              ! note: we run the risk of (rho e) being negative here
              rhoekenr = HALF*(runewr**2 + rvnewr**2 + rwnewr**2)/rrnewr
              qpo(i,j,k,QREINT) = renewr - rhoekenr
+             if(use_srcQ_in_trace.eq.0) then
+                qpo(i,j,k,QREINT) = qpo(i,j,k,QREINT) + hdt* srcQ(i,j,k,QREINT) / a_old
+             endif
 
              if (.not. reset_state) then
                 if (transverse_reset_rhoe == 1 .and. qpo(i,j,k,QREINT) <= ZERO) then
@@ -4003,6 +4086,9 @@ contains
              ! note: we run the risk of (rho e) being negative here
              rhoekenl = HALF*(runewl**2 + rvnewl**2 + rwnewl**2)/rrnewl
              qmo(i,j,k,QREINT) = renewl - rhoekenl
+             if(use_srcQ_in_trace.eq.0) then
+                qmo(i,j,k,QREINT) = qmo(i,j,k,QREINT) + hdt* srcQ(i,j,k,QREINT) / a_old
+             endif
 
              if (.not. reset_state) then
                 if (transverse_reset_rhoe == 1 .and. qmo(i,j,k,QREINT) <= ZERO) then
@@ -4036,7 +4122,17 @@ contains
              qmo(i,j,k,qptot  ) = sum(lambda(:)*ernewl(:)) + qmo(i,j,k,QPRES)
              qmo(i,j,k,qreitot) = sum(qmo(i,j,k,qrad:qradhi)) + qmo(i,j,k,QREINT)
 #endif
-
+             if(use_srcQ_in_trace.eq.0) then
+                qpo(i,j,k,QRHO) = qpo(i,j,k,QRHO) + hdt*srcQ(i,j,k,QRHO) / a_old
+                qpo(i,j,k,QU  ) = qpo(i,j,k,QU  ) + hdt*srcQ(i,j,k,QU  ) / a_old
+                qpo(i,j,k,QV  ) = qpo(i,j,k,QV  ) + hdt*srcQ(i,j,k,QV  ) / a_old
+                qpo(i,j,k,QW  ) = qpo(i,j,k,QW  ) + hdt*srcQ(i,j,k,QW  ) / a_old
+                
+                qmo(i,j,k,QRHO) = qmo(i,j,k,QRHO) + hdt*srcQ(i,j,k-1,QRHO) / a_old
+                qmo(i,j,k,QU  ) = qmo(i,j,k,QU  ) + hdt*srcQ(i,j,k-1,QU  ) / a_old
+                qmo(i,j,k,QV  ) = qmo(i,j,k,QV  ) + hdt*srcQ(i,j,k-1,QV  ) / a_old 
+                qmo(i,j,k,QW  ) = qmo(i,j,k,QW  ) + hdt*srcQ(i,j,k-1,QW  ) / a_old
+             endif
           end do
        end do
     end do

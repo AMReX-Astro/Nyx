@@ -615,7 +615,8 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
               BL_TO_FORTRAN_ANYD(ftmp2),
               BL_TO_FORTRAN_ANYD(qgdnvtmp1),
               BL_TO_FORTRAN_ANYD(qgdnvtmp2),
-              hdt, hdtdy, hdtdz);
+              BL_TO_FORTRAN_ANYD(src_q[mfi]),
+              hdt, hdtdy, hdtdz, a_old, a_new);
 
 #pragma gpu
       cmpflx_plus_godunov(AMREX_INT_ANYD(xbx.loVect()), AMREX_INT_ANYD(xbx.hiVect()),
@@ -682,7 +683,8 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
               BL_TO_FORTRAN_ANYD(ftmp1),
               BL_TO_FORTRAN_ANYD(qgdnvtmp2),
               BL_TO_FORTRAN_ANYD(qgdnvtmp1),
-              hdt, hdtdx, hdtdz);
+	      BL_TO_FORTRAN_ANYD(src_q[mfi]),
+              hdt, hdtdx, hdtdz, a_old, a_new);
 
       // Compute the final F^y
       // [lo(1), lo(2), lo(3)], [hi(1), hi(2)+1, hi(3)]
@@ -751,7 +753,8 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
               BL_TO_FORTRAN_ANYD(ftmp2),
               BL_TO_FORTRAN_ANYD(qgdnvtmp1),
               BL_TO_FORTRAN_ANYD(qgdnvtmp2),
-              hdt, hdtdx, hdtdy);
+	      BL_TO_FORTRAN_ANYD(src_q[mfi]),
+              hdt, hdtdx, hdtdy, a_old, a_new);
 
       // compute the final z fluxes F^z
       // [lo(1), lo(2), lo(3)], [hi(1), hi(2), hi(3)+1]
