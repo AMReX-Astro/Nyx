@@ -550,15 +550,6 @@ contains
                end if
                 qp(i,j,k,QREINT) = qp(i,j,k,QPRES) / gamma_minus_1
 
-                ! add the source terms 
-                qp(i,j,k,QRHO  ) = qp(i,j,k,QRHO  ) + HALF*dt*srcQ(i,j,k,QRHO)
-                qp(i,j,k,QRHO  ) = max(small_dens, qp(i,j,k,QRHO))
-                qp(i,j,k,QUN   ) = qp(i,j,k,QUN   ) + HALF*dt*srcQ(i,j,k,QUN)
-                qp(i,j,k,QUT   ) = qp(i,j,k,QUT   ) + HALF*dt*srcQ(i,j,k,QUT)
-                qp(i,j,k,QUTT  ) = qp(i,j,k,QUTT  ) + HALF*dt*srcQ(i,j,k,QUTT)
-                qp(i,j,k,QREINT) = qp(i,j,k,QREINT) + HALF*dt*srcQ(i,j,k,QREINT)
-                qp(i,j,k,QPRES ) = qp(i,j,k,QPRES ) + HALF*dt*srcQ(i,j,k,QPRES)
-
              end if
 
              ! now construct the left state on the i+1 interface
@@ -593,14 +584,6 @@ contains
                 qm(i+1,j,k,QPRES) = max(small_pres, p + (apleft + amleft)*csq)
                 qm(i+1,j,k,QREINT) = rhoe + (apleft + amleft)*enth*csq + azeleft
 
-                ! add the source terms
-                qm(i+1,j,k,QRHO) = max(small_dens, qm(i+1,j,k,QRHO) + HALF*dt*srcQ(i,j,k,QRHO))
-                qm(i+1,j,k,QUN) = qm(i+1,j,k,QUN) + HALF*dt*srcQ(i,j,k,QUN)
-                qm(i+1,j,k,QUT) = qm(i+1,j,k,QUT) + HALF*dt*srcQ(i,j,k,QUT)
-                qm(i+1,j,k,QUTT) = qm(i+1,j,k,QUTT) + HALF*dt*srcQ(i,j,k,QUTT)
-                qm(i+1,j,k,QREINT) = qm(i+1,j,k,QREINT) + HALF*dt*srcQ(i,j,k,QREINT)
-                qm(i+1,j,k,QPRES) = qm(i+1,j,k,QPRES ) + HALF*dt*srcQ(i,j,k,QPRES)
-
              else if (idir == 2 .and. j <= vhi(2)) then
                 qm(i,j+1,k,QRHO) = max(small_dens, rho + apleft + amleft + azrleft)
                 qm(i,j+1,k,QUN) = un + (apleft - amleft)*cc/rho
@@ -609,14 +592,6 @@ contains
                 qm(i,j+1,k,QPRES) = max(small_pres, p + (apleft + amleft)*csq)
                 qm(i,j+1,k,QREINT) = rhoe + (apleft + amleft)*enth*csq + azeleft
 
-                ! add the source terms
-                qm(i,j+1,k,QRHO) = max(small_dens, qm(i,j+1,k,QRHO) + HALF*dt*srcQ(i,j,k,QRHO))
-                qm(i,j+1,k,QUN) = qm(i,j+1,k,QUN) + HALF*dt*srcQ(i,j,k,QUN)
-                qm(i,j+1,k,QUT) = qm(i,j+1,k,QUT) + HALF*dt*srcQ(i,j,k,QUT)
-                qm(i,j+1,k,QUTT) = qm(i,j+1,k,QUTT) + HALF*dt*srcQ(i,j,k,QUTT)
-                qm(i,j+1,k,QREINT) = qm(i,j+1,k,QREINT) + HALF*dt*srcQ(i,j,k,QREINT)
-                qm(i,j+1,k,QPRES) = qm(i,j+1,k,QPRES ) + HALF*dt*srcQ(i,j,k,QPRES)
-
              else if (idir == 3 .and. k <= vhi(3)) then
                 qm(i,j,k+1,QRHO) = max(small_dens, rho + apleft + amleft + azrleft)
                 qm(i,j,k+1,QUN) = un + (apleft - amleft)*cc/rho
@@ -624,14 +599,6 @@ contains
                 qm(i,j,k+1,QUTT) = utt + azutt1left
                 qm(i,j,k+1,QPRES) = max(small_pres, p + (apleft + amleft)*csq)
                 qm(i,j,k+1,QREINT) = rhoe + (apleft + amleft)*enth*csq + azeleft
-
-                ! add the source terms
-                qm(i,j,k+1,QRHO) = max(small_dens, qm(i,j,k+1,QRHO) + HALF*dt*srcQ(i,j,k,QRHO))
-                qm(i,j,k+1,QUN) = qm(i,j,k+1,QUN) + HALF*dt*srcQ(i,j,k,QUN)
-                qm(i,j,k+1,QUT) = qm(i,j,k+1,QUT) + HALF*dt*srcQ(i,j,k,QUT)
-                qm(i,j,k+1,QUTT) = qm(i,j,k+1,QUTT) + HALF*dt*srcQ(i,j,k,QUTT)
-                qm(i,j,k+1,QREINT) = qm(i,j,k+1,QREINT) + HALF*dt*srcQ(i,j,k,QREINT)
-                qm(i,j,k+1,QPRES) = qm(i,j,k+1,QPRES ) + HALF*dt*srcQ(i,j,k,QPRES)
 
              endif
 

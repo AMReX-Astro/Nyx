@@ -1441,6 +1441,16 @@
             pstar = ((wr*pl + wl*pr) + wl*wr*(ul - ur))/(wl + wr)
             ustar = ((wl*ul + wr*ur) +       (pl - pr))/(wl + wr)
 
+            pstar = max(pstar, small_pres)
+
+            ! for symmetry preservation, if ustar is really small, then we
+            ! set it to zero
+            do i=ilo,ihi
+               if (abs(ustar(i)) .lt. 1.d-12*HALF*(abs(ul(i)) + abs(ur(i)))) then
+                  ustar(i) = ZERO
+               endif
+            enddo
+            
          else
          ! Call analytic Riemann solver
             call analriem(ilo,ihi, &
