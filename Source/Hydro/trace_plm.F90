@@ -380,7 +380,7 @@ contains
 #endif
                        SrcQ, src_lo, src_hi, &
                        vlo, vhi, domlo, domhi, &
-                       dx, dt)
+                       dx, dt,a_old)
 
     ! here, lo and hi are the range we loop over -- this can include ghost cells
     ! vlo and vhi are the bounds of the valid box (no ghost cells)
@@ -389,7 +389,7 @@ contains
     use meth_params_module, only : QVAR, NQAUX, NQSRC, QRHO, QU, QV, QW, QC, &
                                    QREINT, QPRES, &
                                    npassive, qpass_map, small_dens, small_pres, &
-                                   ppm_type, gamma_minus_1
+                                   ppm_type, gamma_minus_1, use_srcQ_in_trace
     use amrex_constants_module
     use prob_params_module, only : physbc_lo, physbc_hi, Outflow
     use amrex_fort_module, only : rt => amrex_real
@@ -422,7 +422,7 @@ contains
     real(rt), intent(in) ::  dloga(dloga_lo(1):dloga_hi(1),dloga_lo(2):dloga_hi(2),dloga_lo(3):dloga_hi(3))
 #endif
     real(rt), intent(in) ::  srcQ(src_lo(1):src_hi(1),src_lo(2):src_hi(2),src_lo(3):src_hi(3),NQSRC)
-    real(rt), intent(in) :: dx(3), dt
+    real(rt), intent(in) :: dx(3), dt, a_old
 
     ! Local variables
     integer :: i, j, k, n, ipassive
@@ -450,7 +450,7 @@ contains
 
     !$gpu
 
-    dtdx = dt/dx(idir)
+    dtdx = dt/(dx(idir)*a_old)
 
 #ifndef AMREX_USE_CUDA
     if (ppm_type .ne. 0) then
@@ -550,6 +550,16 @@ contains
                end if
                 qp(i,j,k,QREINT) = qp(i,j,k,QPRES) / gamma_minus_1
 
+                if(use_srcQ_in_trace.eq.1) then
+                   ! add the source terms 
+                   qp(i,j,k,QRHO  ) = qp(i,j,k,QRHO  ) + HALF*dt*srcQ(i,j,k,QRHO)/a_old
+                   qp(i,j,k,QRHO  ) = max(small_dens, qp(i,j,k,QRHO)/a_old)
+                   qp(i,j,k,QUN   ) = qp(i,j,k,QUN   ) + HALF*dt*srcQ(i,j,k,QUN)/a_old
+                   qp(i,j,k,QUT   ) = qp(i,j,k,QUT   ) + HALF*dt*srcQ(i,j,k,QUT)/a_old
+                   qp(i,j,k,QUTT  ) = qp(i,j,k,QUTT  ) + HALF*dt*srcQ(i,j,k,QUTT)/a_old
+                   qp(i,j,k,QREINT) = qp(i,j,k,QREINT) + HALF*dt*srcQ(i,j,k,QREINT)/a_old
+                   qp(i,j,k,QPRES ) = qp(i,j,k,QPRES ) + HALF*dt*srcQ(i,j,k,QPRES)/a_old
+                endif
              end if
 
              ! now construct the left state on the i+1 interface
@@ -584,6 +594,15 @@ contains
                 qm(i+1,j,k,QPRES) = max(small_pres, p + (apleft + amleft)*csq)
                 qm(i+1,j,k,QREINT) = rhoe + (apleft + amleft)*enth*csq + azeleft
 
+                if(use_srcQ_in_trace.eq.1) then
+                   ! add the source terms
+                   qm(i+1,j,k,QRHO) = max(small_dens, qm(i+1,j,k,QRHO) + HALF*dt*srcQ(i,j,k,QRHO)/a_old)
+                   qm(i+1,j,k,QUN) = qm(i+1,j,k,QUN) + HALF*dt*srcQ(i,j,k,QUN)/a_old
+                   qm(i+1,j,k,QUT) = qm(i+1,j,k,QUT) + HALF*dt*srcQ(i,j,k,QUT)/a_old
+                   qm(i+1,j,k,QUTT) = qm(i+1,j,k,QUTT) + HALF*dt*srcQ(i,j,k,QUTT)/a_old
+                   qm(i+1,j,k,QREINT) = qm(i+1,j,k,QREINT) + HALF*dt*srcQ(i,j,k,QREINT)/a_old
+                   qm(i+1,j,k,QPRES) = qm(i+1,j,k,QPRES ) + HALF*dt*srcQ(i,j,k,QPRES)/a_old
+                endif
              else if (idir == 2 .and. j <= vhi(2)) then
                 qm(i,j+1,k,QRHO) = max(small_dens, rho + apleft + amleft + azrleft)
                 qm(i,j+1,k,QUN) = un + (apleft - amleft)*cc/rho
@@ -592,6 +611,15 @@ contains
                 qm(i,j+1,k,QPRES) = max(small_pres, p + (apleft + amleft)*csq)
                 qm(i,j+1,k,QREINT) = rhoe + (apleft + amleft)*enth*csq + azeleft
 
+                if(use_srcQ_in_trace.eq.1) then
+                   ! add the source terms
+                   qm(i,j+1,k,QRHO) = max(small_dens, qm(i,j+1,k,QRHO) + HALF*dt*srcQ(i,j,k,QRHO)/a_old)
+                   qm(i,j+1,k,QUN) = qm(i,j+1,k,QUN) + HALF*dt*srcQ(i,j,k,QUN)/a_old
+                   qm(i,j+1,k,QUT) = qm(i,j+1,k,QUT) + HALF*dt*srcQ(i,j,k,QUT)/a_old
+                   qm(i,j+1,k,QUTT) = qm(i,j+1,k,QUTT) + HALF*dt*srcQ(i,j,k,QUTT)/a_old
+                   qm(i,j+1,k,QREINT) = qm(i,j+1,k,QREINT) + HALF*dt*srcQ(i,j,k,QREINT)/a_old
+                   qm(i,j+1,k,QPRES) = qm(i,j+1,k,QPRES ) + HALF*dt*srcQ(i,j,k,QPRES)/a_old
+                endif
              else if (idir == 3 .and. k <= vhi(3)) then
                 qm(i,j,k+1,QRHO) = max(small_dens, rho + apleft + amleft + azrleft)
                 qm(i,j,k+1,QUN) = un + (apleft - amleft)*cc/rho
@@ -600,6 +628,15 @@ contains
                 qm(i,j,k+1,QPRES) = max(small_pres, p + (apleft + amleft)*csq)
                 qm(i,j,k+1,QREINT) = rhoe + (apleft + amleft)*enth*csq + azeleft
 
+                if(use_srcQ_in_trace.eq.1) then
+                   ! add the source terms
+                   qm(i,j,k+1,QRHO) = max(small_dens, qm(i,j,k+1,QRHO) + HALF*dt*srcQ(i,j,k,QRHO)/a_old)
+                   qm(i,j,k+1,QUN) = qm(i,j,k+1,QUN) + HALF*dt*srcQ(i,j,k,QUN)/a_old
+                   qm(i,j,k+1,QUT) = qm(i,j,k+1,QUT) + HALF*dt*srcQ(i,j,k,QUT)/a_old
+                   qm(i,j,k+1,QUTT) = qm(i,j,k+1,QUTT) + HALF*dt*srcQ(i,j,k,QUTT)/a_old
+                   qm(i,j,k+1,QREINT) = qm(i,j,k+1,QREINT) + HALF*dt*srcQ(i,j,k,QREINT)/a_old
+                   qm(i,j,k+1,QPRES) = qm(i,j,k+1,QPRES ) + HALF*dt*srcQ(i,j,k,QPRES)/a_old
+                endif
              endif
 
           end do

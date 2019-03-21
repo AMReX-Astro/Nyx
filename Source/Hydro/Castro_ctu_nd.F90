@@ -434,7 +434,7 @@ contains
                             qzm, qzm_lo, qzm_hi, &
                             qzp, qzp_lo, qzp_hi, &
 #endif
-                            dx, dt, &
+                            dx, dt, a_old, a_new, &
 #if AMREX_SPACEDIM < 3
                             dloga, dloga_lo, dloga_hi, &
 #endif
@@ -474,6 +474,8 @@ contains
 #endif
     real(rt), intent(in) :: dx(3)
     real(rt), intent(in), value :: dt
+    real(rt), intent(in), value :: a_old
+    real(rt), intent(in), value :: a_new
     integer, intent(in) :: domlo(3), domhi(3)
 
     real(rt), intent(in) ::     q(qd_lo(1):qd_hi(1),qd_lo(2):qd_hi(2),qd_lo(3):qd_hi(3),QVAR)
@@ -572,7 +574,7 @@ contains
 #endif
                          SrcQ, src_lo, src_hi, &
                          vlo, vhi, domlo, domhi, &
-                         dx, dt)
+                         dx, dt,a_old)
 
 #if AMREX_SPACEDIM >= 2
        else if (idir == 2) then
@@ -587,7 +589,7 @@ contains
 #endif
                          SrcQ, src_lo, src_hi, &
                          vlo, vhi, domlo, domhi, &
-                         dx, dt)
+                         dx, dt,a_old)
 #endif
 
 #if AMREX_SPACEDIM == 3
@@ -600,7 +602,7 @@ contains
                          qzp, qzp_lo, qzp_hi, &
                          SrcQ, src_lo, src_hi, &
                          vlo, vhi, domlo, domhi, &
-                         dx, dt)
+                         dx, dt,a_old)
 #endif
        end if
 

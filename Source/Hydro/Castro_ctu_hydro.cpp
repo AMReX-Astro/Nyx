@@ -255,6 +255,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                        BL_TO_FORTRAN_ANYD(qzm),
                        BL_TO_FORTRAN_ANYD(qzp),
                        AMREX_REAL_ANYD(dx), dt,
+		       a_old, a_new,
                        AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
 
       } else {
@@ -359,14 +360,15 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       Elixir elix_qr = qr.elixir();
 
       const amrex::Real hdt = 0.5*dt;
+      const amrex::Real a_half = 0.5 * (a_old + a_new);
 
-      const amrex::Real hdtdx = 0.5*dt/dx[0];
-      const amrex::Real hdtdy = 0.5*dt/dx[1];
-      const amrex::Real hdtdz = 0.5*dt/dx[2];
+      const amrex::Real hdtdx = 0.5*dt/dx[0]/a_half;
+      const amrex::Real hdtdy = 0.5*dt/dx[1]/a_half;
+      const amrex::Real hdtdz = 0.5*dt/dx[2]/a_half;
 
-      const amrex::Real cdtdx = dt/dx[0]/3.0;
-      const amrex::Real cdtdy = dt/dx[1]/3.0;
-      const amrex::Real cdtdz = dt/dx[2]/3.0;
+      const amrex::Real cdtdx = dt/dx[0]/3.0/a_half;
+      const amrex::Real cdtdy = dt/dx[1]/3.0/a_half;
+      const amrex::Real cdtdz = dt/dx[2]/3.0/a_half;
 
       // compute F^x
       // [lo(1), lo(2)-1, lo(3)-1], [hi(1)+1, hi(2)+1, hi(3)+1]

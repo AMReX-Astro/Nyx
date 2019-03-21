@@ -524,6 +524,7 @@ extern "C"
       BL_FORT_FAB_ARG_3D(qzp),
 #endif
       const amrex::Real* dx, const amrex::Real dt,
+      const amrex::Real a_old, const amrex::Real a_new,
 #if AMREX_SPACEDIM < 3
       const BL_FORT_FAB_ARG_3D(dloga),
 #endif

@@ -56,8 +56,12 @@ module meth_params_module
   integer         , save :: use_pslope = 0
   integer         , save :: transverse_reset_density = 1
   integer         , save :: transverse_reset_rhoe = 0
+  !use_pressure_law_pdivu = 1 matches old Nyx
   integer         , save :: use_pressure_law_pdivu = 1
+  !use_analriem = 0 matches castro
   integer         , save :: use_analriem = 0
+  !use_srcQ_in_trace = 1 matches castro
+  integer         , save :: use_srcQ_in_trace = 0
  
   integer, save :: npassive
   integer, save, allocatable :: qpass_map(:), upass_map(:)
