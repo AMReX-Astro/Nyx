@@ -478,30 +478,32 @@ subroutine ca_ctoprim(lo, hi, &
 
     !$gpu
 
-    do k = lo(3), hi(3)
-       do j = lo(2), hi(2)
-          do i = lo(1), hi(1)
-
-             sum = ZERO
-
-             do n = UFS, UFS+nspec-1
-                sum = sum + flux(i,j,k,n)
+    if(UFS .gt. 0) then
+       do k = lo(3), hi(3)
+          do j = lo(2), hi(2)
+             do i = lo(1), hi(1)
+                
+                sum = ZERO
+                
+                do n = UFS, UFS+nspec-1
+                   sum = sum + flux(i,j,k,n)
+                end do
+                
+                if (sum .ne. ZERO) then
+                   fac = flux(i,j,k,URHO) / sum
+                else
+                   fac = ONE
+                end if
+                
+                do n = UFS, UFS+nspec-1
+                   flux(i,j,k,n) = flux(i,j,k,n) * fac
+                end do
+                
              end do
-
-             if (sum .ne. ZERO) then
-                fac = flux(i,j,k,URHO) / sum
-             else
-                fac = ONE
-             end if
-
-             do n = UFS, UFS+nspec-1
-                flux(i,j,k,n) = flux(i,j,k,n) * fac
-             end do
-
           end do
        end do
-    end do
-
+    endif
+    
   end subroutine ca_normalize_species_fluxes
 ! :::
 ! ::: ------------------------------------------------------------------
