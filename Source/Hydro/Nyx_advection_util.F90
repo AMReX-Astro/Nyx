@@ -195,7 +195,6 @@ subroutine ca_ctoprim(lo, hi, &
                   q(i,j,k,QW)*src(i,j,k,UMZ) - &
                   a_dot * THREE * gamma_minus_1 * q(i,j,k,QREINT)
 
-
              dpde = gamma_minus_1 * q(i,j,k,QRHO)
              dpdr = gamma_minus_1 * q(i,j,k,QREINT)/q(i,j,k,QRHO)
              srcQ(i,j,k,QPRES ) = dpde * srcQ(i,j,k,QREINT) * rhoInv &
@@ -211,7 +210,6 @@ subroutine ca_ctoprim(lo, hi, &
                do iadv = 1,nadv
                   srcQ(i,j,k,QFA+iadv-1) = src(i,j,k,UFA+iadv-1)*rhoInv
                enddo
-
 
           enddo
        enddo
@@ -656,9 +654,9 @@ subroutine ca_ctoprim(lo, hi, &
       enddo
 
       do n = 1, NVAR
-         do k = lo(3),hi(3)
-            do j = lo(2),hi(2)
-               do i = lo(1),hi(1)+1
+         do k = flux1_l3,flux1_h3
+            do j = flux1_l2,flux1_h2
+               do i = flux1_l1,flux1_h1
                   if (n .eq. URHO) then
                      flux1(i,j,k,n) = flux1(i,j,k,n) * a_half_inv
                   else if (n.ge.UMX .and. n.le.UMZ) then
@@ -674,9 +672,9 @@ subroutine ca_ctoprim(lo, hi, &
       enddo
 
       do n = 1, NVAR
-         do k = lo(3),hi(3)
-            do j = lo(2),hi(2)+1
-               do i = lo(1),hi(1)
+         do k = flux2_l3,flux2_h3
+            do j = flux2_l2,flux2_h2
+               do i = flux2_l1,flux2_h1
                   if (n .eq. URHO) then
                      flux2(i,j,k,n) = flux2(i,j,k,n) * a_half_inv
                   else if (n.ge.UMX .and. n.le.UMZ) then
@@ -692,9 +690,9 @@ subroutine ca_ctoprim(lo, hi, &
       enddo
 
       do n = 1, NVAR
-         do k = lo(3),hi(3)+1
-            do j = lo(2),hi(2)
-               do i = lo(1),hi(1)
+         do k = flux3_l3,flux3_h3
+            do j = flux3_l2,flux3_h2
+               do i = flux3_l1,flux3_h1
                   if (n .eq. URHO) then
                      flux3(i,j,k,n) = flux3(i,j,k,n) * a_half_inv
                   else if (n.ge.UMX .and. n.le.UMZ) then

@@ -2827,7 +2827,7 @@ contains
 
                 qmo(i,j,k,nqp) = compnl/rrnewl
                 if(use_srcQ_in_trace.eq.0) then
-                   qmo(i,j,k,nqp) = qmo(i,j,k,nqp)+ hdt*srcQ(i,j,k-1,nqp) / a_half
+                   qmo(i,j,k,nqp) = qmo(i,j,k,nqp)+ hdt*srcQ(i-1,j,k,nqp) / a_half
                 endif
                 
              end do
@@ -3029,7 +3029,7 @@ contains
              rhoekenl = HALF*(runewl**2 + rvnewl**2 + rwnewl**2)/rrnewl
              qmo(i,j,k,QREINT ) = renewl - rhoekenl
              if(use_srcQ_in_trace.eq.0) then
-                qmo(i,j,k,QREINT) = qmo(i,j,k,QREINT) + hdt* srcQ(i,j,k,QREINT) / a_old
+                qmo(i,j,k,QREINT) = qmo(i,j,k,QREINT) + hdt* srcQ(i-1,j,k,QREINT) / a_old
              endif
              
              if (.not. reset_state) then
@@ -3065,10 +3065,10 @@ contains
                 qpo(i,j,k,QV  ) = qpo(i,j,k,QV  ) + hdt*srcQ(i,j,k,QV  ) / a_old
                 qpo(i,j,k,QW  ) = qpo(i,j,k,QW  ) + hdt*srcQ(i,j,k,QW  ) / a_old
                 
-                qmo(i,j,k,QRHO) = qmo(i,j,k,QRHO) + hdt*srcQ(i,j,k-1,QRHO) / a_old
-                qmo(i,j,k,QU  ) = qmo(i,j,k,QU  ) + hdt*srcQ(i,j,k-1,QU  ) / a_old
-                qmo(i,j,k,QV  ) = qmo(i,j,k,QV  ) + hdt*srcQ(i,j,k-1,QV  ) / a_old 
-                qmo(i,j,k,QW  ) = qmo(i,j,k,QW  ) + hdt*srcQ(i,j,k-1,QW  ) / a_old
+                qmo(i,j,k,QRHO) = qmo(i,j,k,QRHO) + hdt*srcQ(i-1,j,k,QRHO) / a_old
+                qmo(i,j,k,QU  ) = qmo(i,j,k,QU  ) + hdt*srcQ(i-1,j,k,QU  ) / a_old
+                qmo(i,j,k,QV  ) = qmo(i,j,k,QV  ) + hdt*srcQ(i-1,j,k,QV  ) / a_old 
+                qmo(i,j,k,QW  ) = qmo(i,j,k,QW  ) + hdt*srcQ(i-1,j,k,QW  ) / a_old
              endif
              
           end do
@@ -3554,7 +3554,7 @@ contains
              rhoekenl = HALF*(runewl**2 + rvnewl**2 + rwnewl**2)/rrnewl
              qmo(i,j,k,QREINT) = renewl - rhoekenl
              if(use_srcQ_in_trace.eq.0) then
-                qmo(i,j,k,QREINT) = qmo(i,j,k,QREINT) + hdt* srcQ(i,j,k,QREINT) / a_old
+                qmo(i,j,k,QREINT) = qmo(i,j,k,QREINT) + hdt* srcQ(i,j-1,k,QREINT) / a_old
              endif
              
              if (.not. reset_state) then
@@ -3595,10 +3595,10 @@ contains
                 qpo(i,j,k,QV  ) = qpo(i,j,k,QV  ) + hdt*srcQ(i,j,k,QV  ) / a_old
                 qpo(i,j,k,QW  ) = qpo(i,j,k,QW  ) + hdt*srcQ(i,j,k,QW  ) / a_old
                 
-                qmo(i,j,k,QRHO) = qmo(i,j,k,QRHO) + hdt*srcQ(i,j,k-1,QRHO) / a_old
-                qmo(i,j,k,QU  ) = qmo(i,j,k,QU  ) + hdt*srcQ(i,j,k-1,QU  ) / a_old
-                qmo(i,j,k,QV  ) = qmo(i,j,k,QV  ) + hdt*srcQ(i,j,k-1,QV  ) / a_old 
-                qmo(i,j,k,QW  ) = qmo(i,j,k,QW  ) + hdt*srcQ(i,j,k-1,QW  ) / a_old
+                qmo(i,j,k,QRHO) = qmo(i,j,k,QRHO) + hdt*srcQ(i,j-1,k,QRHO) / a_old
+                qmo(i,j,k,QU  ) = qmo(i,j,k,QU  ) + hdt*srcQ(i,j-1,k,QU  ) / a_old
+                qmo(i,j,k,QV  ) = qmo(i,j,k,QV  ) + hdt*srcQ(i,j-1,k,QV  ) / a_old 
+                qmo(i,j,k,QW  ) = qmo(i,j,k,QW  ) + hdt*srcQ(i,j-1,k,QW  ) / a_old
              endif
           end do
        end do
@@ -4087,7 +4087,7 @@ contains
              rhoekenl = HALF*(runewl**2 + rvnewl**2 + rwnewl**2)/rrnewl
              qmo(i,j,k,QREINT) = renewl - rhoekenl
              if(use_srcQ_in_trace.eq.0) then
-                qmo(i,j,k,QREINT) = qmo(i,j,k,QREINT) + hdt* srcQ(i,j,k,QREINT) / a_old
+                qmo(i,j,k,QREINT) = qmo(i,j,k,QREINT) + hdt* srcQ(i,j,k-1,QREINT) / a_old
              endif
 
              if (.not. reset_state) then
