@@ -26,7 +26,9 @@ Nyx::strang_hydro (Real time,
     const Real cur_time     = state[State_Type].curTime();
     const int  finest_level = parent->finestLevel();
     bool full_test = true;
-
+    bool use_grav_zero = false;
+    bool use_evolving_a = true;
+    
     MultiFab&  S_old        = get_old_data(State_Type);
     MultiFab&  S_new        = get_new_data(State_Type);
 
@@ -96,19 +98,47 @@ Nyx::strang_hydro (Real time,
     bool   init_flux_register = true;
     bool add_to_flux_register = true;
 
-    if(hydro_convert&&full_test)
-      construct_ctu_hydro_source(time,dt,a_old,a_new,S_old_tmp,D_old_tmp,
-                          ext_src_old,hydro_src,grav_vector,divu_cc,
-                          init_flux_register, add_to_flux_register);
+    amrex::Real dummy_a_new=a_new;
+    amrex::Real dummy_a_old=a_old;
+    if(!use_evolving_a)
+      amrex::Real dummy_a_new=a_old;
+
+    if(use_grav_zero)
+      {
+	MultiFab dummy_grav_vector(grids, dmap, BL_SPACEDIM, NUM_GROW);
+	dummy_grav_vector.setVal(0.);
+	
+	MultiFab dummy_src_vector(grids, dmap, NUM_STATE, NUM_GROW);
+	dummy_src_vector.setVal(0.);
+	
+	if(hydro_convert&&full_test)
+	  construct_ctu_hydro_source(time,dt,dummy_a_old,dummy_a_new,S_old_tmp,D_old_tmp,
+				     dummy_src_vector,hydro_src,dummy_grav_vector,divu_cc,
+				     init_flux_register, add_to_flux_register);
+	else
+	  compute_hydro_sources(time,dt,dummy_a_old,dummy_a_new,S_old_tmp,D_old_tmp,
+				dummy_src_vector,hydro_src,dummy_grav_vector,divu_cc,
+				init_flux_register, add_to_flux_register);
+	
+	update_state_with_sources(S_old_tmp,S_new,
+				  ext_src_old,hydro_src,grav_vector,divu_cc,
+				  dt,dummy_a_old,dummy_a_new);
+      }
     else
-      compute_hydro_sources(time,dt,a_old,a_new,S_old_tmp,D_old_tmp,
-                          ext_src_old,hydro_src,grav_vector,divu_cc,
-                          init_flux_register, add_to_flux_register);
-
-    update_state_with_sources(S_old_tmp,S_new,
-                              ext_src_old,hydro_src,grav_vector,divu_cc,
-                              dt,a_old,a_new);
-
+      {
+	if(hydro_convert&&full_test)
+	  construct_ctu_hydro_source(time,dt,dummy_a_old,dummy_a_new,S_old_tmp,D_old_tmp,
+				     ext_src_old,hydro_src,grav_vector,divu_cc,
+				     init_flux_register, add_to_flux_register);
+	else
+	  compute_hydro_sources(time,dt,dummy_a_old,dummy_a_new,S_old_tmp,D_old_tmp,
+				ext_src_old,hydro_src,grav_vector,divu_cc,
+				init_flux_register, add_to_flux_register);
+	
+	update_state_with_sources(S_old_tmp,S_new,
+				  ext_src_old,hydro_src,grav_vector,divu_cc,
+				  dt,dummy_a_old,dummy_a_new);	
+      }
     // We copy old Temp and Ne to new Temp and Ne so that they can be used
     //    as guesses when we next need them.
     MultiFab::Copy(D_new,D_old,0,0,D_old.nComp(),0);
