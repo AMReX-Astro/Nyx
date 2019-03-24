@@ -1029,7 +1029,7 @@ contains
                        domlo, domhi, compute_interface_gamma)
 
     use prob_params_module, only : physbc_lo, physbc_hi
-    use meth_params_module, only : gamma_const, gamma_minus_1, use_analriem
+    use meth_params_module, only : gamma_const, gamma_minus_1, use_analriem, use_csmall_gamma
     use network, only : nspec
     use analriem_module
 
@@ -1247,6 +1247,10 @@ contains
 #endif
              end if
 
+             if(use_csmall_gamma.eq. 1) then
+                csmall = sqrt(gamma_const * small_pres / small_dens)
+             endif
+             
 #ifndef RADIATION
                 gamcl = gamma_const !ql(i,j,k,QGC,comp)
                 gamcr = gamma_const !qr(i,j,k,QGC,comp)
