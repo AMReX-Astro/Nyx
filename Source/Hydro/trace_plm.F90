@@ -389,7 +389,8 @@ contains
     use meth_params_module, only : QVAR, NQAUX, NQSRC, QRHO, QU, QV, QW, QC, &
                                    QREINT, QPRES, &
                                    npassive, qpass_map, small_dens, small_pres, &
-                                   ppm_type, gamma_minus_1, use_srcQ_in_trace
+                                   ppm_type, gamma_minus_1, use_srcQ_in_trace, &
+                                   use_gamma_minus
     use amrex_constants_module
     use prob_params_module, only : physbc_lo, physbc_hi, Outflow
     use amrex_fort_module, only : rt => amrex_real
@@ -541,15 +542,19 @@ contains
                 qp(i,j,k,QUTT) = utt + azutt1rght
                 qp(i,j,k,QPRES) = max(small_pres, p + (apright + amright)*csq)
                 !                qp(i,j,k,QREINT) = rhoe_ref + (apright + amright)*enth*csq + azeright
-                ! If rho or p too small, set all the slopes to zero
-               if (qp(i,j,k,QRHO ) .lt. small_dens .or. &
-                   qp(i,j,k,QPRES) .lt. small_pres) then
-                  qp(i,j,k,QPRES) = p
-                  qp(i,j,k,QRHO)  = rho
-                  qp(i,j,k,QUN)    = un
-               end if
-                qp(i,j,k,QREINT) = qp(i,j,k,QPRES) / gamma_minus_1
 
+                if(use_gamma_minus.eq.1) then
+                   ! If rho or p too small, set all the slopes to zero
+                   if (qp(i,j,k,QRHO ) .lt. small_dens .or. &
+                        qp(i,j,k,QPRES) .lt. small_pres) then
+                      qp(i,j,k,QPRES) = q(i,j,k,QPRES)
+                      qp(i,j,k,QRHO)  = q(i,j,k,QRHO)
+                      qp(i,j,k,QUN)    = q(i,j,k,QUN)
+                   end if
+                   qp(i,j,k,QREINT) = qp(i,j,k,QPRES) / gamma_minus_1
+
+             endif
+             
                 if(use_srcQ_in_trace.eq.1) then
                    ! add the source terms 
                    qp(i,j,k,QRHO  ) = qp(i,j,k,QRHO  ) + HALF*dt*srcQ(i,j,k,QRHO)/a_old
@@ -594,6 +599,17 @@ contains
                 qm(i+1,j,k,QPRES) = max(small_pres, p + (apleft + amleft)*csq)
                 qm(i+1,j,k,QREINT) = rhoe + (apleft + amleft)*enth*csq + azeleft
 
+                if(use_gamma_minus.eq.1) then
+                   ! If rho or p too small, set all the slopes to zero
+                   if (qm(i+1,j,k,QRHO ) .lt. small_dens .or. &
+                        qm(i+1,j,k,QPRES) .lt. small_pres) then
+                      qm(i+1,j,k,QPRES) = q(i,j,k,QPRES)
+                      qm(i+1,j,k,QRHO)  = q(i,j,k,QRHO)
+                      qm(i+1,j,k,QUN)    = q(i,j,k,QUN)
+                   end if
+                   qm(i+1,j,k,QREINT) = qm(i+1,j,k,QPRES) / gamma_minus_1
+                endif
+                
                 if(use_srcQ_in_trace.eq.1) then
                    ! add the source terms
                    qm(i+1,j,k,QRHO) = max(small_dens, qm(i+1,j,k,QRHO) + HALF*dt*srcQ(i,j,k,QRHO)/a_old)
@@ -611,6 +627,17 @@ contains
                 qm(i,j+1,k,QPRES) = max(small_pres, p + (apleft + amleft)*csq)
                 qm(i,j+1,k,QREINT) = rhoe + (apleft + amleft)*enth*csq + azeleft
 
+                if(use_gamma_minus.eq.1) then
+                   ! If rho or p too small, set all the slopes to zero
+                   if (qm(i,j+1,k,QRHO ) .lt. small_dens .or. &
+                        qm(i,j+1,k,QPRES) .lt. small_pres) then
+                      qm(i,j+1,k,QPRES) = q(i,j,k,QPRES)
+                      qm(i,j+1,k,QRHO)  = q(i,j,k,QRHO)
+                      qm(i,j+1,k,QUN)    = q(i,j,k,QUN)
+                  end if
+                   qm(i,j+1,k,QREINT) = qm(i,j+1,k,QPRES) / gamma_minus_1
+                endif
+                
                 if(use_srcQ_in_trace.eq.1) then
                    ! add the source terms
                    qm(i,j+1,k,QRHO) = max(small_dens, qm(i,j+1,k,QRHO) + HALF*dt*srcQ(i,j,k,QRHO)/a_old)
@@ -627,7 +654,18 @@ contains
                 qm(i,j,k+1,QUTT) = utt + azutt1left
                 qm(i,j,k+1,QPRES) = max(small_pres, p + (apleft + amleft)*csq)
                 qm(i,j,k+1,QREINT) = rhoe + (apleft + amleft)*enth*csq + azeleft
-
+                
+                if(use_gamma_minus.eq.1) then
+                   ! If rho or p too small, set all the slopes to zero
+                   if (qm(i,j,k+1,QRHO ) .lt. small_dens .or. &
+                        qm(i,j,k+1,QPRES) .lt. small_pres) then
+                      qm(i,j,k+1,QPRES) = q(i,j,k,QPRES)
+                      qm(i,j,k+1,QRHO)  = q(i,j,k,QRHO)
+                      qm(i,j,k+1,QUN)    = q(i,j,k,QUN)
+                   end if
+                   qm(i,j,k+1,QREINT) = qm(i,j,k+1,QPRES) / gamma_minus_1
+                endif
+                
                 if(use_srcQ_in_trace.eq.1) then
                    ! add the source terms
                    qm(i,j,k+1,QRHO) = max(small_dens, qm(i,j,k+1,QRHO) + HALF*dt*srcQ(i,j,k,QRHO)/a_old)

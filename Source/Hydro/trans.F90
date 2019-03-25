@@ -346,7 +346,6 @@ contains
 
              qypo(i,j,k,QPRES) = qypo(i,j,k,QREINT)*(gamma_const-ONE)
              if (qypo(i,j,k,QPRES) .lt. small_pres) then
-                print*,i,j,k,qypo(i,j,k,:)
                 call amrex_abort("stopped here")
              endif
 
@@ -554,7 +553,8 @@ contains
                                  small_pres, small_temp, &
                                  npassive, upass_map, qpass_map, &
                                  transverse_reset_density, transverse_reset_rhoe, &
-                                 ppm_predict_gammae, gamma_const, gamma_minus_1
+                                 ppm_predict_gammae, gamma_const, gamma_minus_1, &
+                                 use_reset_state
 
 #ifdef RADIATION
   use rad_params_module, only : ngroups
@@ -769,13 +769,59 @@ contains
              rhoekenrz = HALF*(runewrz**2 + rvnewrz**2 + rwnewrz**2)*rhoinv
              qzpo(i,j,k,QREINT) = renewrz - rhoekenrz
 
-             qzpo(i,j,k,QPRES) = qzpo(i,j,k,QREINT)*(gamma_const-ONE)
+             if(use_reset_state.eq.1) then
 
-             if(qzpo(i,j,k,QPRES).lt.small_pres) then
-                call amrex_abort("stopped here")
+                if (.not. reset_state) then
+                ! do the transverse terms for p, gamma, and rhoe, as necessary
+
+                   if (transverse_reset_rhoe == 1 .and. qzpo(i,j,k,QREINT) <= ZERO) then
+                      ! If it is negative, reset the internal energy by
+                      ! using the discretized expression for updating
+                      ! (rho e).
+                      qzpo(i,j,k,QREINT) = qzp(i,j,k,QREINT) - &
+                           cdtdx*(fx(i+1,j,k,UEINT) - fx(i,j,k,UEINT) + pav*du)
+                   end if
+                   
+                   ! Pretend QREINT has been fixed and transverse_use_eos .ne. 1.
+                   ! If we are wrong, we will fix it later
+                   
+                   if (ppm_predict_gammae == 0) then
+                      ! add the transverse term to the p evolution eq here
+                      pnewrz = qzp(i,j,k,QPRES) - cdtdx*(dup + pav*du*(gamc - ONE))
+                      qzpo(i,j,k,QPRES) = max(pnewrz,small_pres)
+                   else
+                      qzpo(i,j,k,QPRES) = qzpo(i,j,k,QREINT)*(gamma_const-ONE)
+                      qzpo(i,j,k,QPRES) = max(qzpo(i,j,k,QPRES), small_pres)
+                   endif
+                else
+                   qzpo(i,j,k,QPRES) = qzp(i,j,k,QPRES)
+                endif
+                
+                call reset_edge_state_thermo(qzpo, qzpo_lo, qzpo_hi, i, j, k)
+                
+#ifdef RADIATION
+                qzpo(i,j,k,qrad:qradhi) = ernewr(:)
+                qzpo(i,j,k,qptot  ) = sum(lambda(:)*ernewr(:)) + qzpo(i,j,k,QPRES)
+                qzpo(i,j,k,qreitot) = sum(qzpo(i,j,k,qrad:qradhi)) + qzpo(i,j,k,QREINT)
+#endif
+             else
+             
+                qzpo(i,j,k,QPRES) = qzpo(i,j,k,QREINT) * gamma_minus_1
+
+                if (qzpo(i,j,k,QPRES) .lt. small_pres) then
+                   pgp  = qx(i+1,j,k,GDPRES)
+                   pgm  = qx(i  ,j,k,GDPRES)
+                   ugp  = qx(i+1,j,k,GDU   )
+                   ugm  = qx(i  ,j,k,GDU   )
+                   dup = pgp*ugp - pgm*ugm
+                   pav = HALF*(pgp+pgm)
+                   du = ugp-ugm
+                   pnewrz = qzp(i,j,k,QPRES) - cdtdx*(dup + pav*du*gamma_minus_1)
+                   qzpo(i,j,k,QPRES ) = pnewrz
+                   qzpo(i,j,k,QREINT) = qzpo(i,j,k,QPRES) / gamma_minus_1
+                end if
+!                call reset_edge_state_thermo(qzpo, qzpo_lo, qzpo_hi, i, j, k)
              endif
-
-             call reset_edge_state_thermo(qzpo, qzpo_lo, qzpo_hi, i, j, k)
 
 #ifdef RADIATION
              qzpo(i,j,k,qrad:qradhi) = ernewr(:)
@@ -889,13 +935,27 @@ contains
              rhoekenlz = HALF*(runewlz**2 + rvnewlz**2 + rwnewlz**2)*rhoinv
              qzmo(i,j,k,QREINT) = renewlz - rhoekenlz
 
-             qzmo(i,j,k,QPRES) = qzmo(i,j,k,QREINT)*(gamma_const-ONE)
-             if(qzmo(i,j,k,QPRES).lt.small_pres) then
-                call amrex_abort("stopped here")
+             if(use_reset_state.eq.1) then
+
+                call reset_edge_state_thermo(qzmo, qzmo_lo, qzmo_hi, i, j, k)
+             else
+                
+                qzmo(i,j,k,QPRES) = qzmo(i,j,k,QREINT) * gamma_minus_1
+                if (qzmo(i,j,k,QPRES) .lt. small_pres) then
+                   pgp  = qx(i+1,j,k-1,GDPRES)
+                   pgm  = qx(i  ,j,k-1,GDPRES)
+                   ugp  = qx(i+1,j,k-1,GDU   )
+                   ugm  = qx(i  ,j,k-1,GDU   )
+                   dup = pgp*ugp - pgm*ugm
+                   pav = HALF*(pgp+pgm)
+                   du = ugp-ugm
+                   pnewlz = qzm(i,j,k,QPRES) - cdtdx*(dup + pav*du*gamma_minus_1)
+                   qzmo(i,j,k,QPRES ) = pnewlz
+                   qzmo(i,j,k,QREINT) = qzmo(i,j,k,QPRES) / gamma_minus_1
+                end if
+              
+!             call reset_edge_state_thermo(qzmo, qzmo_lo, qzmo_hi, i, j, k)
              endif
-
-             call reset_edge_state_thermo(qzmo, qzmo_lo, qzmo_hi, i, j, k)
-
 #ifdef RADIATION
              qzmo(i,j,k,qrad:qradhi) = ernewl(:)
              qzmo(i,j,k,qptot  ) = sum(lambda(:)*ernewl(:)) + qzmo(i,j,k,QPRES)
