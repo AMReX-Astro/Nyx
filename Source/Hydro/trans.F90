@@ -936,6 +936,30 @@ contains
              qzmo(i,j,k,QREINT) = renewlz - rhoekenlz
 
              if(use_reset_state.eq.1) then
+                if (.not. reset_state) then
+                ! do the transverse terms for p, gamma, and rhoe, as necessary
+                   
+                   if (transverse_reset_rhoe == 1 .and. qzmo(i,j,k,QREINT) <= ZERO) then
+                      ! If it is negative, reset the internal energy by using the discretized
+                      ! expression for updating (rho e).
+                      qzmo(i,j,k,QREINT) = qzm(i,j,k,QREINT) - &
+                           cdtdx*(fx(i+1,j,k-1,UEINT) - fx(i,j,k-1,UEINT) + pav*du)
+                   endif
+                   
+                   ! Pretend QREINT has been fixed and transverse_use_eos .ne. 1.
+                   ! If we are wrong, we will fix it later
+                   
+                   if (ppm_predict_gammae == 0) then
+                      ! add the transverse term to the p evolution eq here
+                      pnewlz = qzm(i,j,k,QPRES) - cdtdx*(dup + pav*du*(gamc - ONE))
+                      qzmo(i,j,k,QPRES) = max(pnewlz,small_pres)
+                   else
+                      qzmo(i,j,k,QPRES) = qzmo(i,j,k,QREINT)*(gamma_const-ONE)
+                      qzmo(i,j,k,QPRES) = max(qzmo(i,j,k,QPRES), small_pres)
+                   endif
+                else
+                   qzmo(i,j,k,QPRES) = qzm(i,j,k,QPRES)
+                endif
 
                 call reset_edge_state_thermo(qzmo, qzmo_lo, qzmo_hi, i, j, k)
              else
@@ -2530,7 +2554,7 @@ contains
                                    npassive, upass_map, qpass_map, &
                                    transverse_reset_density, transverse_reset_rhoe, &
                                    ppm_predict_gammae, gamma_const, gamma_minus_1, &
-                                   use_srcQ_in_trace
+                                   use_srcQ_in_trace, use_reset_state
 
     integer, intent(in) :: qm_lo(3), qm_hi(3)
     integer, intent(in) :: qmo_lo(3), qmo_hi(3)
@@ -2727,13 +2751,45 @@ contains
                 qpo(i,j,k,QREINT) = qpo(i,j,k,QREINT) + hdt* srcQ(i,j,k,QREINT) / a_old
              endif
 
-             qpo(i,j,k,QPRES) = qpo(i,j,k,QREINT)*(gamma_const-ONE)
-             if(qpo(i,j,k,QPRES).lt.small_pres) then
-                call amrex_abort("stopped here")
-             endif
-            
+             if(use_reset_state.eq.1) then
 
-             call reset_edge_state_thermo(qpo, qpo_lo, qpo_hi, i, j, k)
+                if (.not. reset_state) then
+                   if (transverse_reset_rhoe == 1 .and. qpo(i,j,k,QREINT) <= ZERO) then
+                      ! If it is negative, reset the internal energy by
+                      ! using the discretized expression for updating
+                      ! (rho e).
+                      qpo(i,j,k,QREINT) = qp(i,j,k,QREINT) &
+                           - cdtdy*(fyz(i,j+1,k,UEINT) - fyz(i,j,k,UEINT) + pyav*duy) &
+                           - cdtdz*(fzy(i,j  ,k+1,UEINT) - fzy(i,j,k,UEINT) + pzav*duz)
+                   endif
+                   
+                   ! Pretend QREINT has been fixed and transverse_use_eos .ne. 1.
+                   ! If we are wrong, we will fix it later
+                   
+                   if (ppm_predict_gammae == 0) then
+                   ! add the transverse term to the p evolution eq here
+                      pnewr = qp(i,j,k,QPRES) - pynew - pznew
+                      qpo(i,j,k,QPRES) = pnewr
+                   else
+                      qpo(i,j,k,QPRES) = qpo(i,j,k,QREINT)*(gamma_const-ONE)
+                   end if
+                else
+                   qpo(i,j,k,QPRES) = qp(i,j,k,QPRES)
+                endif
+                
+                qpo(i,j,k,QPRES) = max(qpo(i,j,k,QPRES), small_pres)
+
+                call reset_edge_state_thermo(qpo, qpo_lo, qpo_hi, i, j, k)
+             else
+             
+                qpo(i,j,k,QPRES) = qpo(i,j,k,QREINT)*(gamma_const-ONE)
+                if (qpo(i,j,k,QPRES) .lt. small_pres) then
+                   pnewr = qp(i,j,k,QPRES) - pynew - pznew
+                   qpo(i,j,k,QPRES ) = pnewr + hdt* srcQ(i,j,k,QPRES ) / a_old
+                   qpo(i,j,k,QREINT) = qpo(i,j,k,QPRES) / gamma_minus_1
+               end if
+               !             call reset_edge_state_thermo(qpo, qpo_lo, qpo_hi, i, j, k)
+            endif
 
              !-------------------------------------------------------------------
              ! qxmo state
@@ -2814,12 +2870,45 @@ contains
                 qmo(i,j,k,QREINT) = qmo(i,j,k,QREINT) + hdt* srcQ(i-1,j,k,QREINT) / a_old
              endif
 
-             qmo(i,j,k,QPRES) = qmo(i,j,k,QREINT)*(gamma_const-ONE)
-             if(qmo(i,j,k,QPRES).lt.small_pres)then
-                call amrex_abort("stopped here")
-             endif
+             if(use_reset_state.eq.1) then
 
-             call reset_edge_state_thermo(qmo, qmo_lo, qmo_hi, i, j, k)
+                if (.not. reset_state) then
+                   if (transverse_reset_rhoe == 1 .and. qmo(i,j,k,QREINT) <= ZERO) then
+                      ! If it is negative, reset the internal energy by using the discretized
+                      ! expression for updating (rho e).
+                      qmo(i,j,k,QREINT ) = qm(i,j,k,QREINT) &
+                           - cdtdy*(fyz(i-1,j+1,k,UEINT) - fyz(i-1,j,k,UEINT) + pyav*duy) &
+                           - cdtdz*(fzy(i-1,j  ,k+1,UEINT) - fzy(i-1,j,k,UEINT) + pzav*duz)
+                   endif
+
+                   ! Pretend QREINT has been fixed and transverse_use_eos .ne. 1.
+                   ! If we are wrong, we will fix it later
+                   
+                   if (ppm_predict_gammae == 0) then
+                      ! add the transverse term to the p evolution eq here
+                      pnewl = qm(i,j,k,QPRES) - pynew - pznew
+                      qmo(i,j,k,QPRES  ) = pnewl
+                   else
+                      qmo(i,j,k,QPRES) = qmo(i,j,k,QREINT)*(gamma_const-ONE)
+                   end if
+                else
+                   qmo(i,j,k,QPRES  ) = qm(i,j,k,QPRES)
+                endif
+                
+                qmo(i,j,k,QPRES) = max(qmo(i,j,k,QPRES), small_pres)
+
+                call reset_edge_state_thermo(qmo, qmo_lo, qmo_hi, i, j, k)
+             else
+                
+                qmo(i,j,k,QPRES) = qmo(i,j,k,QREINT)*(gamma_const-ONE)
+                if(qmo(i,j,k,QPRES).lt.small_pres)then
+                   print*,i,j,k,qmo(i,j,k,QPRES)
+                   pnewl = qm(i,j,k,QPRES) - pynew - pznew
+                   qmo(i,j,k,QPRES ) = pnewl + hdt* srcQ(i-1,j,k,QPRES ) / a_old
+                   qmo(i,j,k,QREINT) = qmo(i,j,k,QPRES) / gamma_minus_1
+                endif
+             endif
+!             call reset_edge_state_thermo(qmo, qmo_lo, qmo_hi, i, j, k)
 
              if(use_srcQ_in_trace.eq.0) then
                 qpo(i,j,k,QRHO) = qpo(i,j,k,QRHO) + hdt*srcQ(i,j,k,QRHO) / a_old
@@ -3635,6 +3724,7 @@ contains
              qpo(i,j,k,QPRES) = qpo(i,j,k,QREINT) * gamma_minus_1
 
              if (qpo(i,j,k,QPRES) .lt. small_pres) then
+                print*,i,j,k,qpo(i,j,k,QPRES)
                 call amrex_abort("stopped here")
              endif
 

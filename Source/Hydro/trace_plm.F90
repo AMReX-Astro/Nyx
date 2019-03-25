@@ -536,11 +536,11 @@ contains
                  (idir == 2 .and. j >= vlo(2)) .or. &
                  (idir == 3 .and. k >= vlo(3))) then
 
-                qp(i,j,k,QRHO) = max(small_dens, rho + apright + amright + azrright)
+                qp(i,j,k,QRHO) = small_dens, rho + apright + amright + azrright
                 qp(i,j,k,QUN) = un + (apright - amright)*cc/rho
                 qp(i,j,k,QUT) = ut + azut1rght
                 qp(i,j,k,QUTT) = utt + azutt1rght
-                qp(i,j,k,QPRES) = max(small_pres, p + (apright + amright)*csq)
+                qp(i,j,k,QPRES) = small_pres, p + (apright + amright)*csq
                 !                qp(i,j,k,QREINT) = rhoe_ref + (apright + amright)*enth*csq + azeright
 
                 if(use_gamma_minus.eq.1) then
@@ -592,11 +592,11 @@ contains
             azutt1left = HALF*(ONE - spzero )*alpha0utt
             
              if (idir == 1 .and. i <= vhi(1)) then
-                qm(i+1,j,k,QRHO) = max(small_dens, rho + apleft + amleft + azrleft)
+                qm(i+1,j,k,QRHO) = rho + apleft + amleft + azrleft
                 qm(i+1,j,k,QUN) = un + (apleft - amleft)*cc/rho
                 qm(i+1,j,k,QUT) = ut + azut1left
                 qm(i+1,j,k,QUTT) = utt + azutt1left
-                qm(i+1,j,k,QPRES) = max(small_pres, p + (apleft + amleft)*csq)
+                qm(i+1,j,k,QPRES) = p + (apleft + amleft)*csq
                 qm(i+1,j,k,QREINT) = rhoe + (apleft + amleft)*enth*csq + azeleft
 
                 if(use_gamma_minus.eq.1) then
@@ -620,11 +620,11 @@ contains
                    qm(i+1,j,k,QPRES) = qm(i+1,j,k,QPRES ) + HALF*dt*srcQ(i,j,k,QPRES)/a_old
                 endif
              else if (idir == 2 .and. j <= vhi(2)) then
-                qm(i,j+1,k,QRHO) = max(small_dens, rho + apleft + amleft + azrleft)
+                qm(i,j+1,k,QRHO) = rho + apleft + amleft + azrleft
                 qm(i,j+1,k,QUN) = un + (apleft - amleft)*cc/rho
                 qm(i,j+1,k,QUT) = ut + azut1left
                 qm(i,j+1,k,QUTT) = utt + azutt1left
-                qm(i,j+1,k,QPRES) = max(small_pres, p + (apleft + amleft)*csq)
+                qm(i,j+1,k,QPRES) = p + (apleft + amleft)*csq
                 qm(i,j+1,k,QREINT) = rhoe + (apleft + amleft)*enth*csq + azeleft
 
                 if(use_gamma_minus.eq.1) then
@@ -648,11 +648,11 @@ contains
                    qm(i,j+1,k,QPRES) = qm(i,j+1,k,QPRES ) + HALF*dt*srcQ(i,j,k,QPRES)/a_old
                 endif
              else if (idir == 3 .and. k <= vhi(3)) then
-                qm(i,j,k+1,QRHO) = max(small_dens, rho + apleft + amleft + azrleft)
+                qm(i,j,k+1,QRHO) = rho + apleft + amleft + azrleft
                 qm(i,j,k+1,QUN) = un + (apleft - amleft)*cc/rho
                 qm(i,j,k+1,QUT) = ut + azut1left
                 qm(i,j,k+1,QUTT) = utt + azutt1left
-                qm(i,j,k+1,QPRES) = max(small_pres, p + (apleft + amleft)*csq)
+                qm(i,j,k+1,QPRES) = p + (apleft + amleft)*csq
                 qm(i,j,k+1,QREINT) = rhoe + (apleft + amleft)*enth*csq + azeleft
                 
                 if(use_gamma_minus.eq.1) then
@@ -676,7 +676,6 @@ contains
                    qm(i,j,k+1,QPRES) = qm(i,j,k+1,QPRES ) + HALF*dt*srcQ(i,j,k,QPRES)/a_old
                 endif
              endif
-
           end do
        end do
     end do
