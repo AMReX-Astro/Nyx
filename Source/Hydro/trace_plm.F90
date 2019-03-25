@@ -536,11 +536,11 @@ contains
                  (idir == 2 .and. j >= vlo(2)) .or. &
                  (idir == 3 .and. k >= vlo(3))) then
 
-                qp(i,j,k,QRHO) = small_dens, rho + apright + amright + azrright
+                qp(i,j,k,QRHO) = rho + apright + amright + azrright
                 qp(i,j,k,QUN) = un + (apright - amright)*cc/rho
                 qp(i,j,k,QUT) = ut + azut1rght
                 qp(i,j,k,QUTT) = utt + azutt1rght
-                qp(i,j,k,QPRES) = small_pres, p + (apright + amright)*csq
+                qp(i,j,k,QPRES) = p + (apright + amright)*csq
                 !                qp(i,j,k,QREINT) = rhoe_ref + (apright + amright)*enth*csq + azeright
 
                 if(use_gamma_minus.eq.1) then
