@@ -3420,12 +3420,46 @@ contains
                 qmo(i,j,k,QREINT) = qmo(i,j,k,QREINT) + hdt* srcQ(i,j-1,k,QREINT) / a_old
              endif
 
-             qmo(i,j,k,QPRES) = qmo(i,j,k,QREINT)*(gamma_const-ONE)
-             if(qmo(i,j,k,QPRES).lt.small_pres)then
-                call amrex_abort("stopped here")
-             endif
+             if(use_reset_state.eq.1) then
+                if (.not. reset_state) then
+                   if (transverse_reset_rhoe == 1 .and. qmo(i,j,k,QREINT) <= ZERO) then
+                      ! If it is negative, reset the internal energy by using the discretized
+                      ! expression for updating (rho e).
+                      qmo(i,j,k,QREINT) = qm(i,j,k,QREINT) &
+                           - cdtdx*(fxz(i+1,j-1,k,UEINT) - fxz(i,j-1,k,UEINT) + pxav*dux) &
+                           - cdtdz*(fzx(i,j-1,k+1,UEINT) - fzx(i,j-1,k,UEINT) + pzav*duz)
+                   endif
+                   
+                   ! Pretend QREINT has been fixed and transverse_use_eos .ne. 1.
+                   ! If we are wrong, we will fix it later
+                   
+                   if (ppm_predict_gammae == 0) then
+                      ! add the transverse term to the p evolution eq here
+                      pnewl = qm(i,j,k,QPRES) - pxnew - pznew
+                      qmo(i,j,k,QPRES) = pnewl
+                   else
+                      qmo(i,j,k,QPRES) = qmo(i,j,k,QREINT)*(gamma_const-ONE)
+                   endif
+                else
+                   qmo(i,j,k,QPRES) = qm(i,j,k,QPRES)
+                endif
+                
+                qmo(i,j,k,QPRES) = max(qmo(i,j,k,QPRES), small_pres)
 
-             call reset_edge_state_thermo(qmo, qmo_lo, qmo_hi, i, j, k)
+                call reset_edge_state_thermo(qmo, qmo_lo, qmo_hi, i, j, k)
+                
+             else
+
+               qmo(i,j,k,QPRES) = qmo(i,j,k,QREINT) * gamma_minus_1
+
+               if (qmo(i,j,k,QPRES) .lt. small_pres) then
+                   pnewl = qm(i,j,k,QPRES) - pxnew - pznew
+                   qmo(i,j,k,QPRES ) = pnewl + hdt* srcQ(i,j-1,k,QPRES ) / a_old
+                   qmo(i,j,k,QREINT) = qmo(i,j,k,QPRES) / gamma_minus_1
+                end if
+                
+             endif
+!             call reset_edge_state_thermo(qmo, qmo_lo, qmo_hi, i, j, k)
 
 #ifdef RADIATION
              qmo(i,j,k,qrad:qradhi) = ernewl(:)
@@ -3793,8 +3827,8 @@ contains
                 qpo(i,j,k,QPRES) = qpo(i,j,k,QREINT) * gamma_minus_1
 
                 if (qpo(i,j,k,QPRES) .lt. small_pres) then
-                   print*,i,j,k,qpo(i,j,k,QPRES)
-                   flush(6)
+!                   print*,i,j,k,qpo(i,j,k,QPRES)
+!                   flush(6)
                    duxp = pgxp*ugxp - pgxm*ugxm
                    pxav = HALF*(pgxp+pgxm)
                    dux = ugxp-ugxm
