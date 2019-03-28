@@ -1521,10 +1521,7 @@ contains
                    qxmo(i,j,k,QPRES ) = pnewlx
                    qxmo(i,j,k,QREINT) = qxmo(i,j,k,QPRES) / gamma_minus_1
                 end if
-!didn't actually encounter yet
-                if(qxmo(i,j,k,QPRES).lt.small_pres) then
-                   call amrex_abort("stopped here")
-                endif
+                !didn't actually encounter yet
              endif
 
 !             call reset_edge_state_thermo(qxmo, qxmo_lo, qxmo_hi, i, j, k)
@@ -4229,37 +4226,36 @@ contains
              !-------------------------------------------------------------------
              ! qzmo state
              !-------------------------------------------------------------------
-
-             pgxp = qx(i+1,j,k-1,GDPRES)
-             pgxm = qx(i,j,k-1,GDPRES)
-             ugxp = qx(i+1,j,k-1,GDU)
-             ugxm = qx(i,j,k-1,GDU)
-             gegxp = qx(i+1,j,k-1,GDGAME)
-             gegxm = qx(i,j,k-1,GDGAME)
+             pgxp = qx(i+1,j,k,GDPRES)
+             pgxm = qx(i,j,k,GDPRES)
+             ugxp = qx(i+1,j,k,GDU)
+             ugxm = qx(i,j,k,GDU)
+             gegxp = qx(i+1,j,k,GDGAME)
+             gegxm = qx(i,j,k,GDGAME)
 #ifdef RADIATION
-             ergxp = qx(i+1,j,k-1,GDERADS:GDERADS-1+ngroups)
-             ergxm = qx(i  ,j,k-1,GDERADS:GDERADS-1+ngroups)
+             ergxp = qx(i+1,j,k,GDERADS:GDERADS-1+ngroups)
+             ergxm = qx(i  ,j,k,GDERADS:GDERADS-1+ngroups)
 #endif
 
-             pgyp = qy(i,j+1,k-1,GDPRES)
-             pgym = qy(i,j,k-1,GDPRES)
-             ugyp = qy(i,j+1,k-1,GDV)
-             ugym = qy(i,j,k-1,GDV)
-             gegyp = qy(i,j+1,k-1,GDGAME)
-             gegym = qy(i,j,k-1,GDGAME)
+             pgyp = qy(i,j+1,k,GDPRES)
+             pgym = qy(i,j,k,GDPRES)
+             ugyp = qy(i,j+1,k,GDV)
+             ugym = qy(i,j,k,GDV)
+             gegyp = qy(i,j+1,k,GDGAME)
+             gegym = qy(i,j,k,GDGAME)
 #ifdef RADIATION
-             ergyp = qy(i,j+1,k-1,GDERADS:GDERADS-1+ngroups)
-             ergym = qy(i,j  ,k-1,GDERADS:GDERADS-1+ngroups)
+             ergyp = qy(i,j+1,k,GDERADS:GDERADS-1+ngroups)
+             ergym = qy(i,j  ,k,GDERADS:GDERADS-1+ngroups)
 #endif
-             pgxpm = qx(i+1,j,k-2,GDPRES)
-             pgxmm = qx(i,j,k-2,GDPRES)
-             ugxpm = qx(i+1,j,k-2,GDV)
-             ugxmm = qx(i,j,k-2,GDV)
+             pgxpm = qx(i+1,j,k-1,GDPRES)
+             pgxmm = qx(i,j,k-1,GDPRES)
+             ugxpm = qx(i+1,j,k-1,GDU)
+             ugxmm = qx(i,j,k-1,GDU)
 
-             pgypm = qy(i,j+1,k-2,GDPRES)
-             pgymm = qy(i,j,k-2,GDPRES)
-             ugypm = qy(i,j+1,k-2,GDV)
-             ugymm = qy(i,j,k-2,GDV)
+             pgypm = qy(i,j+1,k-1,GDPRES)
+             pgymm = qy(i,j,k-1,GDPRES)
+             ugypm = qy(i,j+1,k-1,GDV)
+             ugymm = qy(i,j,k-1,GDV)
 
              duxp = pgxp*ugxp - pgxm*ugxm
              pxav = HALF*(pgxp+pgxm)
@@ -4274,7 +4270,6 @@ contains
              pxnew = cdtdx*(duxp + pxav*dux*(gamma_minus_1))
              gexnew = cdtdx*( (gexav-ONE)*(gexav - gamma_const)*dux - uxav*dgex )
 #endif
-
              duyp = pgyp*ugyp - pgym*ugym
              pyav = HALF*(pgyp+pgym)
              uyav = HALF*(ugyp+ugym)

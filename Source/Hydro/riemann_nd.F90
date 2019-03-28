@@ -1029,7 +1029,7 @@ contains
                        domlo, domhi, compute_interface_gamma)
 
     use prob_params_module, only : physbc_lo, physbc_hi
-    use meth_params_module, only : gamma_const, gamma_minus_1, use_analriem, use_csmall_gamma
+    use meth_params_module, only : gamma_const, gamma_minus_1, use_analriem, use_csmall_gamma, use_gamma_minus
     use network, only : nspec
     use analriem_module
 
@@ -1490,7 +1490,11 @@ contains
 #else
 !             qint(i,j,k,QGAME) = qint(i,j,k,QPRES)/regdnv + ONE
              qint(i,j,k,QPRES) = max(qint(i,j,k,QPRES),small_pres)
-             qint(i,j,k,QREINT) = regdnv
+             if(use_gamma_minus.eq.1) then
+                qint(i,j,k,QREINT) = qint(i,j,k,QPRES) / gamma_minus_1
+             else
+                qint(i,j,k,QREINT) = regdnv
+             endif
 #endif
 
 
