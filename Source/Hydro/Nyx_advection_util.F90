@@ -310,7 +310,7 @@ subroutine ca_ctoprim(lo, hi, &
        flux, f_lo, f_hi, dt) bind(c, name="apply_av")
 
     use amrex_constants_module, only: ZERO, FOURTH, ONE
-    use meth_params_module, only: NVAR, difmag
+    use meth_params_module, only: NVAR, difmag, use_area_dt_scale_apply
     use prob_params_module, only: dg
 
     implicit none
@@ -371,6 +371,9 @@ subroutine ca_ctoprim(lo, hi, &
                 end if
 
                 flux(i,j,k,n) = flux(i,j,k,n) + dx(idir) * div1
+                if(use_area_dt_scale_apply.eq.1) then
+                   flux(i,j,k,n) = flux(i,j,k,n) * area(idir) * dt
+                endif
              end do
           end do
        end do
@@ -529,7 +532,8 @@ subroutine ca_ctoprim(lo, hi, &
       use amrex_constants_module
       use meth_params_module, only : difmag, NVAR, URHO, UMX, UMZ, &
            UEDEN, UEINT, UFS, normalize_species, gamma_minus_1, NGDNV, &
-         use_pressure_law_pdivu
+           use_pressure_law_pdivu, use_area_dt_scale_apply
+      
       !use advection_util_module, only : calc_pdivu
       
       implicit none
@@ -594,67 +598,130 @@ subroutine ca_ctoprim(lo, hi, &
                     vol, &
                     dx, pdivu, pdivu_lo, pdivu_hi)
     
-      do n = 1, NVAR
-         do k = lo(3),hi(3)
-            do j = lo(2),hi(2)
-               do i = lo(1),hi(1)
 
-                  ! Density
-                  if (n .eq. URHO) then
-                      hydro_src(i,j,k,n) = &
-                          ( ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
-                          +   flux2(i,j,k,n) - flux2(i,j+1,k,n) &
-                          +   flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * area1 * volinv  ) * a_half_inv
+      if(use_area_dt_scale_apply .eq. 1) then
 
-
-
-                  ! Momentum
-                  else if (n .ge. UMX .and. n .le. UMZ) then
-                     hydro_src(i,j,k,n) =  &
+         do n = 1, NVAR
+            do k = lo(3),hi(3)
+               do j = lo(2),hi(2)
+                  do i = lo(1),hi(1)
+                     
+                     ! Density
+                     if (n .eq. URHO) then
+                        hydro_src(i,j,k,n) = &
+                             ( ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
+                             +   flux2(i,j,k,n) - flux2(i,j+1,k,n) &
+                             +   flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * volinv  ) * a_half_inv
+                        
+                        
+                        
+                        ! Momentum
+                     else if (n .ge. UMX .and. n .le. UMZ) then
+                        hydro_src(i,j,k,n) =  &
+                             ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
+                             +   flux2(i,j,k,n) - flux2(i,j+1,k,n) &
+                             +   flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * volinv
+                        
+                        ! (rho E)
+                     else if (n .eq. UEDEN) then
+                        hydro_src(i,j,k,n) =  &
                             ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
                           +   flux2(i,j,k,n) - flux2(i,j+1,k,n) &
-                          +   flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * area1 * volinv
-
-                  ! (rho E)
-                  else if (n .eq. UEDEN) then
-                     hydro_src(i,j,k,n) =  &
-                            ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
-                          +   flux2(i,j,k,n) - flux2(i,j+1,k,n) &
-                          +   flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * a_half * area1 * volinv &
+                          +   flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * a_half * volinv &
                           +   a_half * (a_new - a_old) * ( TWO - THREE * gamma_minus_1) * uin(i,j,k,UEINT)
 
-                  ! (rho e)
-                  else if (n .eq. UEINT) then
+                        ! (rho e)
+                     else if (n .eq. UEINT) then
+                        
+                        if (use_pressure_law_pdivu .eq. 0) then
+                           src_eint = &
+                                +(a_half*(a_new - a_old) * ( TWO - THREE * gamma_minus_1) * uin(i,j,k,UEINT) &
+                                -a_half*dt*pdivu(i,j,k))
+                        else
+                           src_eint = &
+                                +(a_half*(a_new - a_old) * ( TWO - THREE * gamma_minus_1) * uin(i,j,k,UEINT) &
+                                -a_half*dt*(gamma_minus_1 * uin(i,j,k,n)) * pdivu(i,j,k))
+                        end if
+                        
+                        hydro_src(i,j,k,n) =  &
+                             ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
+                             +flux2(i,j,k,n) - flux2(i,j+1,k,n) &
+                             +flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * a_half * volinv & !hydro_src matches old with factor of dt here
+                             +src_eint
 
-                     if (use_pressure_law_pdivu .eq. 0) then
-                        src_eint = &
-                          +(a_half*(a_new - a_old) * ( TWO - THREE * gamma_minus_1) * uin(i,j,k,UEINT) &
-                           -a_half*dt*pdivu(i,j,k)) / dt
+                        ! (rho X_i) and (rho adv_i) and (rho aux_i)
                      else
-                        src_eint = &
-                          +(a_half*(a_new - a_old) * ( TWO - THREE * gamma_minus_1) * uin(i,j,k,UEINT) &
-                           -a_half*dt*(gamma_minus_1 * uin(i,j,k,n)) * pdivu(i,j,k)) / dt
-                     end if
-
-                     hydro_src(i,j,k,n) =  &
-                       ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
-                        +flux2(i,j,k,n) - flux2(i,j+1,k,n) &
-                        +flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * a_half * area1 * volinv & !hydro_src matches old with factor of dt here
-                        +src_eint
-
-                  ! (rho X_i) and (rho adv_i) and (rho aux_i)
-                  else
-                     hydro_src(i,j,k,n) = &
-                            ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
-                          +   flux2(i,j,k,n) - flux2(i,j+1,k,n) &
-                          +   flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * area1 * volinv 
-                  endif
-!                  hydro_src(i,j,k,n) = hydro_src(i,j,k,n) / dt
+                        hydro_src(i,j,k,n) = &
+                             ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
+                             +   flux2(i,j,k,n) - flux2(i,j+1,k,n) &
+                             +   flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * volinv 
+                     endif
+                  hydro_src(i,j,k,n) = hydro_src(i,j,k,n) / dt
+                  enddo
                enddo
             enddo
          enddo
-      enddo
 
+      else
+         do n = 1, NVAR
+            do k = lo(3),hi(3)
+               do j = lo(2),hi(2)
+                  do i = lo(1),hi(1)
+                     
+                     ! Density
+                     if (n .eq. URHO) then
+                        hydro_src(i,j,k,n) = &
+                             ( ( flux1(i,j,k,n) - flux1(i+1,j,k,n) ) * area1 &
+                             + (  flux2(i,j,k,n) - flux2(i,j+1,k,n) ) * area2 &
+                             + (  flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * area3) * volinv   * a_half_inv
+                        
+                        ! Momentum
+                     else if (n .ge. UMX .and. n .le. UMZ) then
+                        hydro_src(i,j,k,n) =  &
+                             ( ( flux1(i,j,k,n) - flux1(i+1,j,k,n) ) * area1 &
+                             + (  flux2(i,j,k,n) - flux2(i,j+1,k,n) ) * area2 &
+                             + (  flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * area3) * volinv  
+                        
+                        ! (rho E)
+                     else if (n .eq. UEDEN) then
+                        hydro_src(i,j,k,n) =  &
+                             ( ( flux1(i,j,k,n) - flux1(i+1,j,k,n) ) * area1 &
+                             + (  flux2(i,j,k,n) - flux2(i,j+1,k,n) ) * area2 &
+                             + (  flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * area3) * a_half * volinv  &
+                             +   a_half * (a_new - a_old) * ( TWO - THREE * gamma_minus_1) * uin(i,j,k,UEINT)
+                        
+                        ! (rho e)
+                     else if (n .eq. UEINT) then
+                        
+                        if (use_pressure_law_pdivu .eq. 0) then
+                           src_eint = &
+                                +(a_half*(a_new - a_old) * ( TWO - THREE * gamma_minus_1) * uin(i,j,k,UEINT) &
+                                -a_half*dt*pdivu(i,j,k)) / dt
+                        else
+                           src_eint = &
+                                +(a_half*(a_new - a_old) * ( TWO - THREE * gamma_minus_1) * uin(i,j,k,UEINT) &
+                                -a_half*dt*(gamma_minus_1 * uin(i,j,k,n)) * pdivu(i,j,k)) / dt
+                        end if
+                        
+                        hydro_src(i,j,k,n) =  &
+                             ( ( flux1(i,j,k,n) - flux1(i+1,j,k,n) ) * area1 &
+                             + (  flux2(i,j,k,n) - flux2(i,j+1,k,n) ) * area2 &
+                             + (  flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * area3) * a_half * volinv  &
+                             +src_eint
+                        ! (rho X_i) and (rho adv_i) and (rho aux_i)
+                     else
+                        hydro_src(i,j,k,n) = &
+                             ( ( flux1(i,j,k,n) - flux1(i+1,j,k,n) ) * area1 &
+                             + (  flux2(i,j,k,n) - flux2(i,j+1,k,n) ) * area2 &
+                             + (  flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * area3) * volinv 
+
+                     endif
+                  enddo
+               enddo
+            enddo
+         enddo
+      endif
+      
       do n = 1, NVAR
          do k = flux1_l3,flux1_h3
             do j = flux1_l2,flux1_h2
@@ -1118,7 +1185,8 @@ subroutine ca_ctoprim(lo, hi, &
                           flux, f_lo, f_hi, &
                           area, a_lo, a_hi, dt) bind(c, name="scale_flux")
 
-    use meth_params_module, only: NVAR, UMX, GDPRES, NGDNV
+    use meth_params_module, only: NVAR, UMX, GDPRES, NGDNV, &
+           use_area_dt_scale_apply
     use prob_params_module, only : coord_type
 
     implicit none
@@ -1139,23 +1207,23 @@ subroutine ca_ctoprim(lo, hi, &
     integer :: i, j, k, n
 
     !$gpu
-
-    do n = 1, NVAR
-       do k = lo(3), hi(3)
-          do j = lo(2), hi(2)
-             do i = lo(1), hi(1)
-                flux(i,j,k,n) = dt * flux(i,j,k,n) * area(i,j,k)
+    if(use_area_dt_scale_apply.ne.1) then
+       do n = 1, NVAR
+          do k = lo(3), hi(3)
+             do j = lo(2), hi(2)
+                do i = lo(1), hi(1)
+                   flux(i,j,k,n) = dt * flux(i,j,k,n) * area(i,j,k)
 #if AMREX_SPACEDIM == 1
                 ! Correct the momentum flux with the grad p part.
-                if (coord_type == 0 .and. n == UMX) then
-                   flux(i,j,k,n) = flux(i,j,k,n) + dt * area(i,j,k) * qint(i,j,k,GDPRES)
-                endif
+                   if (coord_type == 0 .and. n == UMX) then
+                      flux(i,j,k,n) = flux(i,j,k,n) + dt * area(i,j,k) * qint(i,j,k,GDPRES)
+                   endif
 #endif
+                enddo
              enddo
           enddo
        enddo
-    enddo
-
+    endif
   end subroutine scale_flux
   
 end module advection_module

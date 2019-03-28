@@ -65,7 +65,8 @@ module meth_params_module
   integer         , save :: use_csmall_gamma = 1
   integer         , save :: use_reset_state = 0
   integer         , save :: use_gamma_minus = 1
- 
+  integer         , save :: use_area_dt_scale_apply = 1
+  
   integer, save :: npassive
   integer, save, allocatable :: qpass_map(:), upass_map(:)
 #ifdef AMREX_USE_CUDA

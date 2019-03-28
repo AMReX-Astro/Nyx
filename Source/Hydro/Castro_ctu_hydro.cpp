@@ -797,7 +797,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                    idir_f, AMREX_REAL_ANYD(dx),
                    BL_TO_FORTRAN_ANYD(div),
                    BL_TO_FORTRAN_ANYD(Sborder[mfi]),
-                   BL_TO_FORTRAN_ANYD(flux[idir]));
+                   BL_TO_FORTRAN_ANYD(flux[idir]),&dt);
 
           if (0){//limit_fluxes_on_small_dens == 1) {
 #pragma gpu

@@ -391,7 +391,7 @@ extern "C"
      const int idir, const amrex::Real* dx,
      BL_FORT_FAB_ARG_3D(div),
      BL_FORT_FAB_ARG_3D(Sborder),
-     BL_FORT_FAB_ARG_3D(flux));
+     BL_FORT_FAB_ARG_3D(flux), const amrex::Real* dt);
 
 #ifdef RADIATION
   void apply_av_rad
