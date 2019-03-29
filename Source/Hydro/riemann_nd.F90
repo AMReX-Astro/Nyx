@@ -445,7 +445,8 @@ contains
     use prob_params_module, only : physbc_lo, physbc_hi
     use network, only : nspec, naux
     use meth_params_module, only : cg_maxiter, cg_tol, cg_blend, &
-                                    gamma_const, gamma_minus_1
+         gamma_const, gamma_minus_1, &
+         use_csmall_gamma
 #ifndef AMREX_USE_CUDA
     use riemann_util_module, only : pstar_bisection
 #endif
@@ -920,14 +921,6 @@ contains
                 spout = ushock
              endif
 
-             !if (spout-spin == ZERO) then
-             !   scr = small*cavg
-             !else
-             !   scr = spout-spin
-             !endif
-             !frac = (ONE + (spout + spin)/scr)*HALF
-             !frac = max(ZERO,min(ONE,frac))
-
              frac = HALF*(ONE + (spin + spout)/max(spout-spin, spin+spout, small*cavg))
 
              ! the transverse velocity states only depend on the
@@ -1059,6 +1052,7 @@ contains
     real(rt), intent(inout) :: lambda_int(l_lo(1):l_hi(1),l_lo(2):l_hi(2),l_lo(3):l_hi(3),0:ngroups-1)
 #endif
 
+    real(rt), parameter:: small = 1.d-8
     integer :: i, j, k
     integer :: n, nqp, ipassive
 
@@ -1405,20 +1399,36 @@ contains
              spout = co - sgnm*uo
              spin = cstar - sgnm*ustar
 
-             ! a simple estimate of the shock speed
              ushock = HALF*(spin + spout)
 
-             if (pstar-po > ZERO) then
-                spin = ushock
-                spout = ushock
-             endif
-
-             if (spout-spin == ZERO) then
-                scr = small*cavg
+             if(use_csmall_gamma.eq.1) then
+                if (pstar-po .ge. ZERO) then
+                   spin = ushock
+                   spout = ushock
+                endif
+                if (spout-spin .eq. ZERO) then
+                   scr = small*cavg
+                else
+                   scr = spout-spin
+                endif
              else
-                scr = spout-spin
+                ! a simple estimate of the shock speed
+                ushock = HALF*(spin + spout)
+                
+                if (pstar-po > ZERO) then
+                   spin = ushock
+                   spout = ushock
+                endif
+                
+                if (spout-spin == ZERO) then
+                   scr = small*cavg
+                else
+                   scr = spout-spin
+                endif
              endif
 
+          endif
+             
              ! interpolate for the case that we are in a rarefaction
              frac = (ONE + (spout + spin)/scr)*HALF
              frac = max(ZERO, min(ONE, frac))
@@ -1471,7 +1481,6 @@ contains
                 regdnv = estar
 #endif
              endif
-
 
 #ifdef RADIATION
              do g=0, ngroups-1
