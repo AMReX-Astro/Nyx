@@ -110,7 +110,10 @@
       integer          :: i,j,k
       real(rt) :: Up, Vp, Wp, ke, rho_eint, eint_new
       real(rt) :: dummy_pres, rhoInv
+      integer  :: use_rhoInv_rhoE
 
+      use_rhoInv_rhoE = 0
+      
       ! Reset internal energy if necessary
       do k = lo(3),hi(3)
       do j = lo(2),hi(2)
@@ -123,6 +126,11 @@
            ke     = 0.5d0 * u(i,j,k,URHO) * (Up*Up + Vp*Vp + Wp*Wp)
 
            rho_eint = u(i,j,k,UEDEN) - ke
+
+           if(use_rhoInv_rhoE.eq.1) then
+                ke     = 0.5d0 * (Up*Up + Vp*Vp + Wp*Wp)
+                rho_eint = (u(i,j,k,UEDEN) * rhoInv - ke) * u(i,j,k,URHO)
+           endif
 
            ! Reset (e from e) if it's greater than 0.01% of big E.
            if (rho_eint .gt. 0.d0 .and. rho_eint / u(i,j,k,UEDEN) .gt. 1.d-6) then
