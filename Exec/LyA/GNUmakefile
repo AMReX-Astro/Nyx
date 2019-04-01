@@ -7,8 +7,8 @@ CVODE_LIB_DIR ?= $(CVODE_LIB)
 TOP = ../..
 
 # compilation options
-COMP    = pgi  # gnu
-USE_MPI = TRUE
+COMP    = gnu
+USE_MPI = FALSE
 USE_OMP = FALSE
 
 USE_HENSON = FALSE
@@ -31,7 +31,7 @@ USE_GRAV = TRUE
 USE_HEATCOOL = TRUE
 USE_AGN = FALSE
 USE_CVODE = FALSE
-USE_SUNDIALS_3x4x = TRUE
+USE_SUNDIALS_3x4x = FALSE
 
 Bpack := ./Make.package
 Blocs := .

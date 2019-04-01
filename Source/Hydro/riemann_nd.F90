@@ -1427,8 +1427,6 @@ contains
                 endif
              endif
 
-          endif
-             
              ! interpolate for the case that we are in a rarefaction
              frac = (ONE + (spout + spin)/scr)*HALF
              frac = max(ZERO, min(ONE, frac))
