@@ -9,7 +9,7 @@ module meth_params_module
 
   implicit none
 
-  real(rt), save :: difmag        ! used only in consup to weight the divu contributin
+  real(rt), allocatable :: difmag        ! used only in consup to weight the divu contributin
   integer , save :: iorder        ! used only in uslope and uflaten
 
   real(rt), save, public  :: gamma_const
@@ -76,6 +76,7 @@ QTEMP, QFX,  QGC
   attributes(managed) :: URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX
   attributes(managed) :: TEMP_COMP, NE_COMP, ZHI_COMP, NTHERM, NVAR, NDIAG, small_temp, heat_cool_type
   attributes(managed) :: NGDNV, GDPRES, GDU, GDV, GDW, QVAR
+  attributes(managed) :: difmag
   attributes(managed) :: use_pressure_law_pdivu, use_area_dt_scale_apply
 #endif
 

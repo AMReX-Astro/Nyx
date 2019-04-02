@@ -224,6 +224,11 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
     FArrayBox* flux1 = &flux[1];
     FArrayBox* flux2 = &flux[2];
 
+    GpuArray<FArrayBox*, AMREX_SPACEDIM> fabflux;
+    AMREX_D_TERM(fabflux[0] = &flux[0];,
+		 fabflux[1] = &flux[1];,
+		 fabflux[2] = &flux[2];);
+
     FArrayBox* qe0 = &qe[0];
     FArrayBox* qe1 = &qe[1];
     FArrayBox* qe2 = &qe[2];
@@ -261,6 +266,10 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       const Box& bx = mfi.tilebox();
 
       const Box& obx = amrex::grow(bx, 1);
+
+      FArrayBox* fabSborder = Sborder.fabPtr(mfi);
+      FArrayBox* fabhydro_source = hydro_source.fabPtr(mfi);
+
 
       //      q.resize(obx, 1);
       //      Elixir elix_q = q.elixir();
@@ -867,12 +876,17 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
           });*/
 
 #pragma gpu
-          apply_av(AMREX_INT_ANYD(nbx.loVect()), AMREX_INT_ANYD(nbx.hiVect()),
+      amrex::Cuda::setLaunchRegion(true);
+      AMREX_LAUNCH_DEVICE_LAMBDA(nbx, tnbx,
+      {
+          apply_av(AMREX_INT_ANYD(tnbx.loVect()), AMREX_INT_ANYD(tnbx.hiVect()),
                    idir_f, AMREX_REAL_ANYD(dx),
-                   BL_TO_FORTRAN_ANYD(div),
-                   BL_TO_FORTRAN_ANYD(Sborder[mfi]),
-                   BL_TO_FORTRAN_ANYD(flux[idir]),&dt);
-
+                   BL_TO_FORTRAN_ANYD(*fabdiv),
+                   BL_TO_FORTRAN_ANYD(*fabSborder),
+                   BL_TO_FORTRAN_ANYD(*fabflux[idir]),&dt);
+      });
+      amrex::Gpu::Device::synchronize();
+      amrex::Cuda::setLaunchRegion(false);
           if (0){//limit_fluxes_on_small_dens == 1) {
 #pragma gpu
               limit_hydro_fluxes_on_small_dens
@@ -887,34 +901,21 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
           }
 
 #pragma gpu
-          normalize_species_fluxes(AMREX_INT_ANYD(nbx.loVect()), AMREX_INT_ANYD(nbx.hiVect()),
+	  normalize_species_fluxes(AMREX_INT_ANYD(nbx.loVect()), AMREX_INT_ANYD(nbx.hiVect()),
                                    BL_TO_FORTRAN_ANYD(flux[idir]));
-
+	  
 	  //	  amrex::Print()<<"max flux["<<idir<<"]="<<flux[idir].max()<<std::endl;
       }
 
 
       pdivu.resize(bx, 1);
       Elixir elix_pdivu = pdivu.elixir();
-    }
-
-    for (MFIter mfi(S_new, TilingIfNotGPU()); mfi.isValid(); ++mfi) {
-      //      for (MFIter mfi(S_new, hydro_tile_size); mfi.isValid(); ++mfi) {
-
-      // the valid region box
-      const Box& bx = mfi.tilebox();
-
-      const Box& obx = amrex::grow(bx, 1);
-
-      FArrayBox* fab1 = Sborder.fabPtr(mfi);
-      FArrayBox* fab2 = hydro_source.fabPtr(mfi);
-
       amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
       {
       ca_consup(AMREX_INT_ANYD(tbx.loVect()), AMREX_INT_ANYD(tbx.hiVect()),
-                BL_TO_FORTRAN(*fab1),
-                BL_TO_FORTRAN(*fab2),
+                BL_TO_FORTRAN(*fabSborder),
+                BL_TO_FORTRAN(*fabhydro_source),
                 BL_TO_FORTRAN(*flux0),
                 BL_TO_FORTRAN(*flux1),
                 BL_TO_FORTRAN(*flux2),

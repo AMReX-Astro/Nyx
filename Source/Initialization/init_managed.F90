@@ -19,6 +19,7 @@ allocate(this_z)
 allocate(gamma_minus_1)
 allocate(URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX)
 allocate(TEMP_COMP, NE_COMP, ZHI_COMP, NTHERM, NVAR, NDIAG, small_temp, heat_cool_type)
+allocate(difmag)
 allocate(NGDNV, GDPRES, GDU, GDV, GDW,QVAR,use_pressure_law_pdivu,use_area_dt_scale_apply)
 use_pressure_law_pdivu = 1
 use_area_dt_scale_apply = 1
@@ -143,6 +144,7 @@ deallocate(this_z)
 deallocate(gamma_minus_1)
 deallocate(URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX)
 deallocate(TEMP_COMP, NE_COMP, ZHI_COMP, NTHERM, NVAR, NDIAG, small_temp, heat_cool_type)
+deallocate(difmag)
 deallocate(NGDNV, GDPRES, GDU, GDV, GDW, QVAR,use_pressure_law_pdivu,use_area_dt_scale_apply)
 #ifdef HEATCOOL
 deallocate(XHYDROGEN,YHELIUM)

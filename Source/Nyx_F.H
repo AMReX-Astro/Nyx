@@ -388,7 +388,7 @@ extern "C"
      BL_FORT_FAB_ARG_3D(update));
 #endif
 
-  void apply_av
+  AMREX_GPU_DEVICE void apply_av
     (const int* lo, const int* hi,
      const int idir, const amrex::Real* dx,
      BL_FORT_FAB_ARG_3D(div),

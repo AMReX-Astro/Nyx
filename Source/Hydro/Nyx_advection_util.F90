@@ -304,14 +304,13 @@ subroutine ca_ctoprim(lo, hi, &
   end subroutine divu
 
   
-    subroutine ca_apply_av(lo, hi, idir, dx, &
+    AMREX_CUDA_FORT_DEVICE subroutine ca_apply_av(lo, hi, idir, dx, &
        div, div_lo, div_hi, &
        uin, uin_lo, uin_hi, &
        flux, f_lo, f_hi, dt) bind(c, name="apply_av")
 
     use amrex_constants_module, only: ZERO, FOURTH, ONE
     use meth_params_module, only: NVAR, difmag, use_area_dt_scale_apply
-    use prob_params_module, only: dg
 
     implicit none
 
@@ -330,8 +329,10 @@ subroutine ca_ctoprim(lo, hi, &
 
     real(rt) :: div1
     real(rt) :: area(3)
+    real(rt) :: dg(3)
     real(rt) :: vol, volinv
 
+    dg = 1
 !!!    !$gpu
 
     vol     = dx(1) * dx(2) * dx(3)
