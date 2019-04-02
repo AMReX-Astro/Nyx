@@ -19,7 +19,7 @@ contains
        do j = lo(2), hi(2)
           do i = lo(1), hi(1)
 
-             if (isnan(s(i,j,k,comp))) then
+             if (s(i,j,k,comp).ne.s(i,j,k,comp)) then
                 print *, "NaN: ", i, j, k, comp
                 call amrex_error("NaN")
              endif
