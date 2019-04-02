@@ -609,7 +609,7 @@ contains
     end do
   end subroutine ctu_plm_states
 
-
+#ifndef AMREX_USE_CUDA
   subroutine ctu_consup(lo, hi, &
                         uin, uin_lo, uin_hi, &
                         q, q_lo, q_hi, &
@@ -845,6 +845,6 @@ contains
 
 
   end subroutine ctu_consup
-
+#endif
 end module ctu_module
 

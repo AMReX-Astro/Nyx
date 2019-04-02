@@ -223,7 +223,7 @@ extern "C"
      BL_FORT_FAB_ARG_3D(flatn),
      BL_FORT_FAB_ARG_3D(flatg));
 
-    void ca_consup
+  AMREX_GPU_DEVICE void ca_consup
     (const int* lo, const int* hi,
      const BL_FORT_FAB_ARG(Sborder),
      BL_FORT_FAB_ARG(hydro_source),
@@ -246,6 +246,7 @@ extern "C"
      const amrex::Real* dx, const amrex::Real* dt,
      const amrex::Real* a_old, const amrex::Real* a_new);
   
+#ifndef AMREX_USE_CUDA
   void ctu_consup
     (const int* lo, const int* hi,
      const BL_FORT_FAB_ARG_3D(Sborder),
@@ -289,6 +290,7 @@ extern "C"
      const BL_FORT_FAB_ARG_3D(volume),
      const BL_FORT_FAB_ARG_3D(pdivu),
      const amrex::Real* dx, const amrex::Real dt);
+#endif
 
   void scale_flux
     (const int* lo, const int* hi,

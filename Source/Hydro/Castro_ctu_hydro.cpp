@@ -823,17 +823,35 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       pdivu.resize(bx, 1);
       Elixir elix_pdivu = pdivu.elixir();
 
-      ca_consup(AMREX_INT_ANYD(bx.loVect()), AMREX_INT_ANYD(bx.hiVect()),
-                BL_TO_FORTRAN(Sborder[mfi]),
-                BL_TO_FORTRAN(hydro_source[mfi]),
-                BL_TO_FORTRAN(flux[0]),
-                BL_TO_FORTRAN(flux[1]),
-                BL_TO_FORTRAN(flux[2]),
-                BL_TO_FORTRAN_ANYD(qe[0]),
-                BL_TO_FORTRAN_ANYD(qe[1]),
-                BL_TO_FORTRAN_ANYD(qe[2]),
-                BL_TO_FORTRAN_ANYD(div),
+      FArrayBox* fab1 = Sborder.fabPtr(mfi);
+      FArrayBox* fab2 = hydro_source.fabPtr(mfi);
+      FArrayBox* flux0 = &flux[0];
+      FArrayBox* flux1 = &flux[1];
+      FArrayBox* flux2 = &flux[2];
+
+
+      FArrayBox* qe0 = &qe[0];
+      FArrayBox* qe1 = &qe[1];
+      FArrayBox* qe2 = &qe[2];
+
+      FArrayBox* fabdiv = &div;
+
+      amrex::Cuda::setLaunchRegion(true);
+      AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
+      {
+      ca_consup(AMREX_INT_ANYD(tbx.loVect()), AMREX_INT_ANYD(tbx.hiVect()),
+                BL_TO_FORTRAN(*fab1),
+                BL_TO_FORTRAN(*fab2),
+                BL_TO_FORTRAN(*flux0),
+                BL_TO_FORTRAN(*flux1),
+                BL_TO_FORTRAN(*flux2),
+                BL_TO_FORTRAN_ANYD(*qe0),
+                BL_TO_FORTRAN_ANYD(*qe1),
+                BL_TO_FORTRAN_ANYD(*qe2),
+                BL_TO_FORTRAN_ANYD(*fabdiv),
                 AMREX_REAL_ANYD(dx),&dt,&a_old,&a_new);
+            });
+      amrex::Cuda::setLaunchRegion(false);
 
       for (int idir = 0; idir < AMREX_SPACEDIM; ++idir) {
 

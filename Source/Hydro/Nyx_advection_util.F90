@@ -512,7 +512,7 @@ subroutine ca_ctoprim(lo, hi, &
 ! ::: ------------------------------------------------------------------
 ! :::
 
-    subroutine ca_consup(lo, hi, uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
+    AMREX_CUDA_FORT_DEVICE subroutine ca_consup(lo, hi, uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
                       hydro_src ,hsrc_l1,hsrc_l2,hsrc_l3,hsrc_h1,hsrc_h2,hsrc_h3, &
                       flux1,flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3, &
                       flux2,flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3, &
@@ -530,8 +530,8 @@ subroutine ca_ctoprim(lo, hi, &
 
       use amrex_fort_module, only : rt => amrex_real
       use amrex_constants_module
-      use meth_params_module, only : difmag, NVAR, URHO, UMX, UMZ, &
-           UEDEN, UEINT, UFS, normalize_species, gamma_minus_1, NGDNV, &
+      use meth_params_module, only : NVAR, URHO, UMX, UMZ, &
+           UEDEN, UEINT, gamma_minus_1, NGDNV, &
            use_pressure_law_pdivu, use_area_dt_scale_apply
       
       !use advection_util_module, only : calc_pdivu
@@ -1076,7 +1076,7 @@ subroutine ca_ctoprim(lo, hi, &
   
   !> @brief this computes the *node-centered* divergence
   !!
-  subroutine calc_pdivu(lo, hi, &
+  AMREX_CUDA_FORT_DEVICE subroutine calc_pdivu(lo, hi, &
        q1, q1_lo, q1_hi, &
        !       area1, a1_lo, a1_hi, &
        area1, &
@@ -1094,7 +1094,7 @@ subroutine ca_ctoprim(lo, hi, &
        !vol, v_lo, v_hi, &
        dx, pdivu, div_lo, div_hi)
 
-    use meth_params_module, only : QVAR, GDPRES, GDU, GDV, GDW, NGDNV, &
+    use meth_params_module, only : GDPRES, GDU, GDV, GDW, NGDNV, &
          use_pressure_law_pdivu
     use amrex_constants_module, only : HALF
     use amrex_fort_module, only : rt => amrex_real
@@ -1107,20 +1107,19 @@ subroutine ca_ctoprim(lo, hi, &
     real(rt), intent(inout) :: pdivu(div_lo(1):div_hi(1),div_lo(2):div_hi(2),div_lo(3):div_hi(3))
 
     integer, intent(in) :: q1_lo(3), q1_hi(3)
-    real(rt), intent(in) :: q1(q1_lo(1):q1_hi(1),q1_lo(2):q1_hi(2),q1_lo(3):q1_hi(3),QVAR)
+    real(rt), intent(in) :: q1(q1_lo(1):q1_hi(1),q1_lo(2):q1_hi(2),q1_lo(3):q1_hi(3),NGDNV)
     real(rt), intent(in) :: area1
 #if AMREX_SPACEDIM >= 2
     integer, intent(in) :: q2_lo(3), q2_hi(3)
-    real(rt), intent(in) :: q2(q2_lo(1):q2_hi(1),q2_lo(2):q2_hi(2),q2_lo(3):q2_hi(3),QVAR)
+    real(rt), intent(in) :: q2(q2_lo(1):q2_hi(1),q2_lo(2):q2_hi(2),q2_lo(3):q2_hi(3),NGDNV)
     real(rt), intent(in) :: area2
 #endif
 #if AMREX_SPACEDIM == 3
     integer, intent(in) :: q3_lo(3), q3_hi(3)
-    real(rt), intent(in) :: q3(q3_lo(1):q3_hi(1),q3_lo(2):q3_hi(2),q3_lo(3):q3_hi(3),QVAR)
+    real(rt), intent(in) :: q3(q3_lo(1):q3_hi(1),q3_lo(2):q3_hi(2),q3_lo(3):q3_hi(3),NGDNV)
     real(rt), intent(in) :: area3
 #endif
     real(rt), intent(in) :: vol
-
     integer  :: i, j, k
 
     !$gpu
