@@ -1,5 +1,5 @@
 module init_managed
-
+use amrex_mempool_module, only : amrex_allocate, amrex_deallocate
 contains
 
 subroutine init_allocations() &
@@ -128,8 +128,8 @@ subroutine fin_allocations() &
 #ifdef HEATCOOL
   use vode_aux_module
   use eos_module, only: xacc, vode_rtol, vode_atol_scaled
+  use atomic_rates_module
 #endif
-use atomic_rates_module
 use meth_params_module
 use reion_aux_module
 
@@ -137,11 +137,14 @@ use reion_aux_module
 deallocate(z_vode, rho_vode, T_vode, ne_vode, JH_vode, JHe_vode, i_vode, j_vode, k_vode, fn_vode, NR_vode, firstcall)
 deallocate(xacc,vode_rtol,vode_atol_scaled)
 #endif
+#ifdef HEATCOOL
 deallocate(this_z)
+#endif
 deallocate(gamma_minus_1)
 deallocate(URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX)
 deallocate(TEMP_COMP, NE_COMP, ZHI_COMP, NTHERM, NVAR, NDIAG, small_temp, heat_cool_type)
 deallocate(NGDNV, GDPRES, GDU, GDV, GDW, QVAR,use_pressure_law_pdivu,use_area_dt_scale_apply)
+#ifdef HEATCOOL
 deallocate(XHYDROGEN,YHELIUM)
 deallocate(TCOOLMIN, TCOOLMAX, TCOOLMAX_R, TCOOLMIN_R, deltaT)
 deallocate(uvb_density_A, uvb_density_B, mean_rhob)
@@ -179,6 +182,7 @@ if(allocated(Betaff4)) deallocate(Betaff4)
 if(allocated(RecHp)) deallocate(RecHp)
 if(allocated(RecHep)) deallocate(RecHep)
 if(allocated(RecHepp)) deallocate(RecHepp)
+#endif
 end subroutine fin_allocations
 
 !!! subroutine dummy()

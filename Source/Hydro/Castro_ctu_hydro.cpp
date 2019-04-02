@@ -180,6 +180,80 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
     FArrayBox qmyz, qpyz;
     FArrayBox pdivu;
 
+    FArrayBox* fabflatn = &flatn;
+    FArrayBox* fabdq = &dq;
+    FArrayBox* fabIp = &Ip;
+    FArrayBox* fabIm = &Im;
+    FArrayBox* fabIp_src = &Ip_src;
+    FArrayBox* fabIm_src = &Im_src;
+    FArrayBox* fabIp_gc = &Ip_gc;
+    FArrayBox* fabIm_gc = &Im_gc;
+    FArrayBox* fabsm = &sm;
+    FArrayBox* fabsp = &sp;
+    FArrayBox* fabshk = &shk;
+    FArrayBox* fabqxm = &qxm;
+    FArrayBox* fabqxp = &qxp;
+    FArrayBox* fabqym = &qym;
+    FArrayBox* fabqyp = &qyp;
+    FArrayBox* fabqzm = &qzm;
+    FArrayBox* fabqzp = &qzp;
+    FArrayBox* fabdiv = &div;
+    FArrayBox* fabq_int = &q_int;
+    FArrayBox* fabftmp1 = &ftmp1;
+    FArrayBox* fabftmp2 = &ftmp2;
+    FArrayBox* fabqgdnvtmp1 = &qgdnvtmp1;
+    FArrayBox* fabqgdnvtmp2 = &qgdnvtmp2;
+    FArrayBox* fabql = &ql;
+    FArrayBox* fabqr = &qr;
+
+    FArrayBox* fabqmyx = &qmyx;
+    FArrayBox* fabqpyx = &qpyx;
+    FArrayBox* fabqmzx = &qmzx;
+    FArrayBox* fabqpzx = &qpzx;
+    FArrayBox* fabqmxy = &qmxy;
+    FArrayBox* fabqpxy = &qpxy;
+    FArrayBox* fabqmzy = &qmzy;
+    FArrayBox* fabqpzy = &qpzy;
+    FArrayBox* fabqmxz = &qmxz;
+    FArrayBox* fabqpxz = &qpxz;
+    FArrayBox* fabqmyz = &qmyz;
+    FArrayBox* fabqpyz = &qpyz;
+    FArrayBox* fabpdivu = &pdivu;
+
+    FArrayBox* flux0 = &flux[0];
+    FArrayBox* flux1 = &flux[1];
+    FArrayBox* flux2 = &flux[2];
+
+    FArrayBox* qe0 = &qe[0];
+    FArrayBox* qe1 = &qe[1];
+    FArrayBox* qe2 = &qe[2];
+
+    /*
+    // Make FArrayBox pointers for the launches
+    FArrayBox* fabflatn;
+    FArrayBox* fabdq;
+    FArrayBox* fabIp,* fabIm,* fabIp_src,* fabIm_src,* fabIp_gc,* fabIm_gc;
+    FArrayBox* fabsm,* fabsp;
+    FArrayBox* fabshk;
+    FArrayBox* fabqxm,* fabqxp;
+    FArrayBox* fabqym,* fabqyp;
+    FArrayBox* fabqzm,* fabqzp;
+    FArrayBox* fabdiv;
+    FArrayBox* fabq_int;
+    FArrayBox* fabftmp1,* fabftmp2;
+    FArrayBox* fabqgdnvtmp1,* fabqgdnvtmp2;
+    FArrayBox* fabql,* fabqr;
+    FArrayBox* fabflux[AMREX_SPACEDIM];
+    FArrayBox* fabqe[AMREX_SPACEDIM];
+    FArrayBox* fabqmyx,* fabqpyx;
+    FArrayBox* fabqmzx,* fabqpzx;
+    FArrayBox* fabqmxy,* fabqpxy;
+    FArrayBox* fabqmzy,* fabqpzy;
+    FArrayBox* fabqmxz,* fabqpxz;
+    FArrayBox* fabqmyz,* fabqpyz;
+    FArrayBox* fabpdivu;
+    */
+
     for (MFIter mfi(S_new, TilingIfNotGPU()); mfi.isValid(); ++mfi) {
       //      for (MFIter mfi(S_new, hydro_tile_size); mfi.isValid(); ++mfi) {
 
@@ -822,19 +896,18 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
       pdivu.resize(bx, 1);
       Elixir elix_pdivu = pdivu.elixir();
+    }
+
+    for (MFIter mfi(S_new, TilingIfNotGPU()); mfi.isValid(); ++mfi) {
+      //      for (MFIter mfi(S_new, hydro_tile_size); mfi.isValid(); ++mfi) {
+
+      // the valid region box
+      const Box& bx = mfi.tilebox();
+
+      const Box& obx = amrex::grow(bx, 1);
 
       FArrayBox* fab1 = Sborder.fabPtr(mfi);
       FArrayBox* fab2 = hydro_source.fabPtr(mfi);
-      FArrayBox* flux0 = &flux[0];
-      FArrayBox* flux1 = &flux[1];
-      FArrayBox* flux2 = &flux[2];
-
-
-      FArrayBox* qe0 = &qe[0];
-      FArrayBox* qe1 = &qe[1];
-      FArrayBox* qe2 = &qe[2];
-
-      FArrayBox* fabdiv = &div;
 
       amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
@@ -851,6 +924,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                 BL_TO_FORTRAN_ANYD(*fabdiv),
                 AMREX_REAL_ANYD(dx),&dt,&a_old,&a_new);
             });
+      amrex::Gpu::Device::synchronize();
       amrex::Cuda::setLaunchRegion(false);
 
       for (int idir = 0; idir < AMREX_SPACEDIM; ++idir) {

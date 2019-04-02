@@ -196,7 +196,7 @@ nyx_main (int argc, char* argv[])
     BL_PROFILE_SET_RUN_TIME(dRunTime2);
     
     Nyx::dealloc_cuda_managed();
-    
+    amrex::Cuda::setLaunchRegion(true);    
     }
     amrex::Finalize();
 }
