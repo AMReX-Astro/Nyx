@@ -44,7 +44,7 @@ Nyx::cons_to_prim(MultiFab& Sborder, MultiFab& q, MultiFab& qaux, MultiFab& grav
         // Convert the source terms expressed as sources to the conserved state to those
         // expressed as sources for the primitive state.
 #pragma gpu
-            ca_srctoprim(AMREX_INT_ANYD(qbx.loVect()), AMREX_INT_ANYD(qbx.hiVect()),
+            ca_srctoprim(AMREX_INT_ANYD(tqbx.loVect()), AMREX_INT_ANYD(tqbx.hiVect()),
                          BL_TO_FORTRAN_ANYD(*fab_q),
                          BL_TO_FORTRAN_ANYD(*fab_qaux),
                          BL_TO_FORTRAN_ANYD(*fab_grav),

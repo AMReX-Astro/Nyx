@@ -463,7 +463,7 @@ contains
 
   !> @brief given a primitive state, compute the flux in direction idir
   !!
-  subroutine compute_flux_q(lo, hi, &
+  AMREX_CUDA_FORT_DEVICE subroutine compute_flux_q(lo, hi, &
                             qint, q_lo, q_hi, &
                             F, F_lo, F_hi, &
 #ifdef RADIATION
@@ -497,7 +497,6 @@ contains
 #ifdef HYBRID_MOMENTUM
     use hybrid_advection_module, only : compute_hybrid_flux
 #endif
-    use network, only : nspec
 
     integer, intent(in) :: idir
     integer, intent(in) :: q_lo(3), q_hi(3)
@@ -651,7 +650,7 @@ contains
   !! @param[out] qgdnv real(rt)
   !!
 
-    subroutine ca_store_godunov_state(lo, hi, &
+    AMREX_CUDA_FORT_DEVICE subroutine ca_store_godunov_state(lo, hi, &
                                     qint, qi_lo, qi_hi, &
 #ifdef RADIATION
                                     lambda, l_lo, l_hi, &

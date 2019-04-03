@@ -33,7 +33,7 @@ module riemann_module
 
 contains
 
-  subroutine cmpflx_plus_godunov(lo, hi, &
+  AMREX_CUDA_FORT_DEVICE subroutine cmpflx_plus_godunov(lo, hi, &
                                  qm, qm_lo, qm_hi, &
                                  qp, qp_lo, qp_hi, nc, comp, &
                                  flx, flx_lo, flx_hi, &
@@ -47,7 +47,7 @@ contains
                                  shk, s_lo, s_hi, &
                                  idir, domlo, domhi) bind(C, name="cmpflx_plus_godunov")
 
-    use network, only: nspec, naux
+
     use amrex_error_module
     use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : hybrid_riemann, ppm_temp_fix, riemann_solver
@@ -116,7 +116,7 @@ contains
 
   end subroutine cmpflx_plus_godunov
 
-  subroutine cmpflx(lo, hi, &
+  AMREX_CUDA_FORT_DEVICE subroutine cmpflx(lo, hi, &
                     qm, qm_lo, qm_hi, &
                     qp, qp_lo, qp_hi, nc, comp, &
                     flx, flx_lo, flx_hi, &
@@ -129,7 +129,7 @@ contains
                     shk, s_lo, s_hi, &
                     idir, domlo, domhi)
 
-    use network, only: nspec, naux
+
     use amrex_error_module
     use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : hybrid_riemann, ppm_temp_fix, riemann_solver
@@ -204,7 +204,7 @@ contains
                            rflx, rflx_lo, rflx_hi, &
 #endif
                            idir)
-
+#ifndef AMREX_USE_CUDA
     elseif (riemann_solver == 2) then
        ! HLLC
        call HLLC(qm, qm_lo, qm_hi, &
@@ -214,13 +214,14 @@ contains
                  qint, q_lo, q_hi, &
                  idir, lo, hi, &
                  domlo, domhi)
+#endif
 #ifndef AMREX_USE_CUDA
     else
        call amrex_error("ERROR: invalid value of riemann_solver")
 #endif
     endif
 
-
+#ifndef AMREX_USE_CUDA
     if (hybrid_riemann == 1) then
        ! correct the fluxes using an HLL scheme if we are in a shock
        ! and doing the hybrid approach
@@ -262,7 +263,7 @@ contains
        end do
 
     endif
-
+#endif
   end subroutine cmpflx
 
 
@@ -284,7 +285,7 @@ contains
   !! @param[inout] qint real(rt)
   !! @param[in] qaux real(rt)
   !!
-  subroutine riemann_state(qm, qm_lo, qm_hi, &
+  AMREX_CUDA_FORT_DEVICE subroutine riemann_state(qm, qm_lo, qm_hi, &
                            qp, qp_lo, qp_hi, nc, comp, &
                            qint, q_lo, q_hi, &
 #ifdef RADIATION
@@ -293,7 +294,7 @@ contains
                            qaux, qa_lo, qa_hi, &
                            idir, lo, hi, domlo, domhi, compute_gammas)
 
-    use network, only: nspec, naux
+
     use amrex_error_module
     use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : hybrid_riemann, ppm_temp_fix, riemann_solver, &
@@ -386,7 +387,7 @@ contains
 #endif
                       idir, lo, hi, &
                       domlo, domhi, compute_interface_gamma)
-
+#ifndef AMREX_USE_CUDA
     elseif (riemann_solver == 1) then
        ! Colella & Glaz solver
 
@@ -402,7 +403,7 @@ contains
        call amrex_error("ERROR: CG solver does not support radiaiton")
 #endif
 #endif
-
+#endif
 #ifndef AMREX_USE_CUDA
     else
        call amrex_error("ERROR: invalid value of riemann_solver")
@@ -442,7 +443,7 @@ contains
     use amrex_mempool_module, only : bl_allocate, bl_deallocate
 #endif
     use prob_params_module, only : physbc_lo, physbc_hi
-    use network, only : nspec, naux
+    
     use meth_params_module, only : cg_maxiter, cg_tol, cg_blend, &
          gamma_minus_1, &
          use_csmall_gamma
@@ -1010,7 +1011,7 @@ contains
   !! this is a 2-shock solver that uses a very simple approximation for the
   !! star state, and carries an auxiliary jump condition for (rho e) to
   !! deal with a real gas
-  subroutine riemannus(ql, ql_lo, ql_hi, &
+  AMREX_CUDA_FORT_DEVICE subroutine riemannus(ql, ql_lo, ql_hi, &
                        qr, qr_lo, qr_hi, nc, comp, &
                        qaux, qa_lo, qa_hi, &
                        qint, q_lo, q_hi, &
@@ -1264,14 +1265,8 @@ contains
              if (abs(ustar) < smallu*HALF*(abs(ul) + abs(ur))) then
                 ustar = ZERO
              endif
-
+#ifndef AMREX_USE_CUDA
           else
-#ifdef AMREX_USE_CUDA
-             !call amrex_abort("Failed riemann")
-             print*,"Failed riemann"
-             flush(6)
-             STOP
-#else
                       ! Call analytic Riemann solver
             call analriem_1cell((gamma_minus_1+ONE), &
                  pl, &

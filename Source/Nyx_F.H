@@ -301,7 +301,7 @@ extern "C"
      amrex::Real* mass_lost, amrex::Real* xmom_lost, amrex::Real* ymom_lost, amrex::Real* zmom_lost,
      amrex::Real* eden_lost, amrex::Real* xang_lost, amrex::Real* yang_lost, amrex::Real* zang_lost);
 
-  void cmpflx_plus_godunov
+  AMREX_GPU_DEVICE void cmpflx_plus_godunov
     (const int* lo, const int* hi,
      const BL_FORT_FAB_ARG_3D(ql),
      const BL_FORT_FAB_ARG_3D(qr), const int nc, const int comp,
@@ -330,7 +330,7 @@ extern "C"
      BL_FORT_FAB_ARG_3D(shk),
      const amrex::Real* dx);
 
-  void ca_store_godunov_state
+  AMREX_GPU_DEVICE void ca_store_godunov_state
     (const int* lo, const int* hi,
      BL_FORT_FAB_ARG_3D(qint),
 #ifdef RADIATION
