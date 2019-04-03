@@ -71,7 +71,7 @@ int Nyx::integrate_state_vec
       const auto diag_eos = (D_old[mfi]).view(lo);  // a view starting from lo
       int width = len.x; //trying to run all i
       width = 8;
-
+      width = len.x;
 
       for       (int k = 0; k < len.z; ++k) {
 	  // We know this is safe for simd on cpu.  So let's give compiler some help.
