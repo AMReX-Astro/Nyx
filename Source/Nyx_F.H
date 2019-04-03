@@ -514,7 +514,7 @@ extern "C"
 #endif
       const int* domlo, const int* domhi);
 
-  void transx_on_ystates(const int* lo, const int* hi,
+  AMREX_GPU_DEVICE void transx_on_ystates(const int* lo, const int* hi,
                          const BL_FORT_FAB_ARG_3D(qym),
                          BL_FORT_FAB_ARG_3D(qymo),
                          const BL_FORT_FAB_ARG_3D(qyp),
@@ -531,7 +531,7 @@ extern "C"
 #endif
                          const amrex::Real hdt, const amrex::Real cdtdx);
 
-  void transx_on_zstates(const int* lo, const int* hi,
+  AMREX_GPU_DEVICE void transx_on_zstates(const int* lo, const int* hi,
                          const BL_FORT_FAB_ARG_3D(qzm),
                          BL_FORT_FAB_ARG_3D(qzmo),
                          const BL_FORT_FAB_ARG_3D(qzp),
@@ -544,7 +544,7 @@ extern "C"
                          const BL_FORT_FAB_ARG_3D(qx),
                          const amrex::Real hdt, const amrex::Real cdtdx);
 
-  void transy_on_xstates(const int* lo, const int* hi,
+  AMREX_GPU_DEVICE void transy_on_xstates(const int* lo, const int* hi,
                          const BL_FORT_FAB_ARG_3D(qxm),
                          BL_FORT_FAB_ARG_3D(qxmo),
                          const BL_FORT_FAB_ARG_3D(qxp),
@@ -557,7 +557,7 @@ extern "C"
                          const BL_FORT_FAB_ARG_3D(qy),
                          const amrex::Real cdtdy);
 
-  void transy_on_zstates(const int* lo, const int* hi,
+  AMREX_GPU_DEVICE void transy_on_zstates(const int* lo, const int* hi,
                          const BL_FORT_FAB_ARG_3D(qzm),
                          BL_FORT_FAB_ARG_3D(qzmo),
                          const BL_FORT_FAB_ARG_3D(qzp),
@@ -570,7 +570,7 @@ extern "C"
                          const BL_FORT_FAB_ARG_3D(qy),
                          const amrex::Real cdtdy);
 
-  void transz_on_xstates(const int* lo, const int* hi,
+  AMREX_GPU_DEVICE void transz_on_xstates(const int* lo, const int* hi,
                          const BL_FORT_FAB_ARG_3D(qxm),
                          BL_FORT_FAB_ARG_3D(qxmo),
                          const BL_FORT_FAB_ARG_3D(qxp),
@@ -583,7 +583,7 @@ extern "C"
                          const BL_FORT_FAB_ARG_3D(qz),
                          const amrex::Real cdtdz);
 
-  void transz_on_ystates(const int* lo, const int* hi,
+  AMREX_GPU_DEVICE void transz_on_ystates(const int* lo, const int* hi,
                          const BL_FORT_FAB_ARG_3D(qym),
                          BL_FORT_FAB_ARG_3D(qymo),
                          const BL_FORT_FAB_ARG_3D(qyp),
@@ -596,7 +596,7 @@ extern "C"
                          const BL_FORT_FAB_ARG_3D(qz),
                          const amrex::Real cdtdz);
 
-  void transyz(const int* lo, const int* hi,
+  AMREX_GPU_DEVICE void transyz(const int* lo, const int* hi,
                const BL_FORT_FAB_ARG_3D(qm),
                BL_FORT_FAB_ARG_3D(qmo),
                const BL_FORT_FAB_ARG_3D(qp),
@@ -616,7 +616,7 @@ extern "C"
                const amrex::Real hdt, const amrex::Real cdtdy, const amrex::Real cdtdz,
 	       const amrex::Real a_old, const amrex::Real a_new);
 
-  void transxz(const int* lo, const int* hi,
+  AMREX_GPU_DEVICE void transxz(const int* lo, const int* hi,
                const BL_FORT_FAB_ARG_3D(qm),
                BL_FORT_FAB_ARG_3D(qmo),
                const BL_FORT_FAB_ARG_3D(qp),
@@ -636,7 +636,7 @@ extern "C"
                const amrex::Real hdt, const amrex::Real cdtdx, const amrex::Real cdtdz,
 	       const amrex::Real a_old, const amrex::Real a_new);
 
-  void transxy(const int* lo, const int* hi,
+  AMREX_GPU_DEVICE void transxy(const int* lo, const int* hi,
                const BL_FORT_FAB_ARG_3D(qm),
                BL_FORT_FAB_ARG_3D(qmo),
                const BL_FORT_FAB_ARG_3D(qp),

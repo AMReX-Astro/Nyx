@@ -11,7 +11,7 @@ contains
   !===========================================================================
   ! transx routines
   !===========================================================================
-  subroutine transx_on_ystates(lo, hi, &
+  AMREX_CUDA_FORT_DEVICE subroutine transx_on_ystates(lo, hi, &
                                qym, qym_lo, qym_hi, &
                                qymo, qymo_lo, qymo_hi, &
                                qyp, qyp_lo, qyp_hi, &
@@ -32,7 +32,7 @@ contains
 
     use amrex_constants_module, only : ZERO, ONE, HALF
 
-    use network, only : nspec, naux
+    
     use meth_params_module, only : QVAR, NVAR, NQAUX, QRHO, QU, QV, QW, &
                                    QPRES, QREINT, QFS, QFX, &
                                    QC, QGAMC, &
@@ -382,7 +382,7 @@ contains
                    qypo(i,j,k,QPRES) = qyp(i,j,k,QPRES)
                 endif
                 
-                call reset_edge_state_thermo(qypo, qypo_lo, qypo_hi, i, j, k)
+ !!!               call reset_edge_state_thermo(qypo, qypo_lo, qypo_hi, i, j, k)
              else
 
                 qypo(i,j,k,QPRES) = qypo(i,j,k,QREINT) * gamma_minus_1
@@ -583,7 +583,7 @@ contains
                    qymo(i,j,k,QPRES) = qym(i,j,k,QPRES)
                 endif
 
-                call reset_edge_state_thermo(qymo, qymo_lo, qymo_hi, i, j, k)
+ !!!               call reset_edge_state_thermo(qymo, qymo_lo, qymo_hi, i, j, k)
                 
              else
                 
@@ -612,7 +612,7 @@ contains
   end subroutine transx_on_ystates
 
 
-  subroutine transx_on_zstates(lo, hi, &
+AMREX_CUDA_FORT_DEVICE  subroutine transx_on_zstates(lo, hi, &
                                qzm, qzm_lo, qzm_hi, &
                                qzmo, qzmo_lo, qzmo_hi, &
                                qzp, qzp_lo, qzp_hi, &
@@ -629,7 +629,7 @@ contains
 
   use amrex_constants_module, only : ZERO, ONE, HALF
 
-  use network, only : nspec, naux
+  
   use meth_params_module, only : QVAR, NVAR, NQAUX, QRHO, QU, QV, QW, &
                                  QPRES, QREINT, QFS, QFX, &
                                  QC,  &
@@ -888,7 +888,7 @@ contains
                    qzpo(i,j,k,QPRES) = qzp(i,j,k,QPRES)
                 endif
                 
-                call reset_edge_state_thermo(qzpo, qzpo_lo, qzpo_hi, i, j, k)
+ !!!               call reset_edge_state_thermo(qzpo, qzpo_lo, qzpo_hi, i, j, k)
                 
 #ifdef RADIATION
                 qzpo(i,j,k,qrad:qradhi) = ernewr(:)
@@ -911,7 +911,7 @@ contains
                    qzpo(i,j,k,QPRES ) = pnewrz
                    qzpo(i,j,k,QREINT) = qzpo(i,j,k,QPRES) / gamma_minus_1
                 end if
-!                call reset_edge_state_thermo(qzpo, qzpo_lo, qzpo_hi, i, j, k)
+! !!!               call reset_edge_state_thermo(qzpo, qzpo_lo, qzpo_hi, i, j, k)
              endif
 
 #ifdef RADIATION
@@ -1052,7 +1052,7 @@ contains
                    qzmo(i,j,k,QPRES) = qzm(i,j,k,QPRES)
                 endif
 
-                call reset_edge_state_thermo(qzmo, qzmo_lo, qzmo_hi, i, j, k)
+ !!!               call reset_edge_state_thermo(qzmo, qzmo_lo, qzmo_hi, i, j, k)
              else
                 
                 qzmo(i,j,k,QPRES) = qzmo(i,j,k,QREINT) * gamma_minus_1
@@ -1087,7 +1087,7 @@ contains
   !===========================================================================
   ! transy routines
   !===========================================================================
-  subroutine transy_on_xstates(lo, hi, &
+AMREX_CUDA_FORT_DEVICE  subroutine transy_on_xstates(lo, hi, &
                                qxm, qxm_lo, qxm_hi, &
                                qxmo, qxmo_lo, qxmo_hi, &
                                qxp, qxp_lo, qxp_hi, &
@@ -1104,7 +1104,7 @@ contains
 
     use amrex_constants_module, only : ZERO, ONE, HALF
 
-    use network, only : nspec, naux
+    
     use meth_params_module, only : QVAR, NVAR, NQAUX, QRHO, QU, QV, QW, &
                                    QPRES, QREINT, QFS, QFX, &
                                    QC,  &
@@ -1357,7 +1357,7 @@ contains
                    qxpo(i,j,k,QPRES) = qxp(i,j,k,QPRES)
                 endif
                 
-                call reset_edge_state_thermo(qxpo, qxpo_lo, qxpo_hi, i, j, k)
+ !!!               call reset_edge_state_thermo(qxpo, qxpo_lo, qxpo_hi, i, j, k)
              else
              
                 qxpo(i,j,k,QPRES) = qxpo(i,j,k,QREINT)*gamma_minus_1
@@ -1510,7 +1510,7 @@ contains
                    qxmo(i,j,k,QPRES) = qxm(i,j,k,QPRES)
                 endif
                 
-                call reset_edge_state_thermo(qxmo, qxmo_lo, qxmo_hi, i, j, k)
+ !!!               call reset_edge_state_thermo(qxmo, qxmo_lo, qxmo_hi, i, j, k)
              
              else
                 
@@ -1538,7 +1538,7 @@ contains
 
   end subroutine transy_on_xstates
 
-  subroutine transy_on_zstates(lo, hi, &
+AMREX_CUDA_FORT_DEVICE  subroutine transy_on_zstates(lo, hi, &
                                qzm, qzm_lo, qzm_hi, &
                                qzmo, qzmo_lo, qzmo_hi, &
                                qzp, qzp_lo, qzp_hi, &
@@ -1556,7 +1556,7 @@ contains
 
     use amrex_constants_module, only : ZERO, ONE, HALF
 
-    use network, only : nspec, naux
+    
     use meth_params_module, only : QVAR, NVAR, NQAUX, QRHO, QU, QV, QW, &
                                    QPRES, QREINT, QFS, QFX, &
                                    QC,  &
@@ -1811,7 +1811,7 @@ contains
                    qzpo(i,j,k,QPRES) = qzp(i,j,k,QPRES)
                 endif
                 
-                call reset_edge_state_thermo(qzpo, qzpo_lo, qzpo_hi, i, j, k)
+ !!!               call reset_edge_state_thermo(qzpo, qzpo_lo, qzpo_hi, i, j, k)
                 
              else
                 
@@ -1968,7 +1968,7 @@ contains
                    qzpo(i,j,k,QPRES) = qzp(i,j,k,QPRES)
                 endif
 
-                call reset_edge_state_thermo(qzpo, qzpo_lo, qzpo_hi, i, j, k)
+ !!!               call reset_edge_state_thermo(qzpo, qzpo_lo, qzpo_hi, i, j, k)
 
              else
                 
@@ -2004,7 +2004,7 @@ contains
   ! transz routines
   !===========================================================================
 
-  subroutine transz_on_xstates(lo, hi, &
+AMREX_CUDA_FORT_DEVICE  subroutine transz_on_xstates(lo, hi, &
                                qxm, qxm_lo, qxm_hi, &
                                qxmo, qxmo_lo, qxmo_hi, &
                                qxp, qxp_lo, qxp_hi, &
@@ -2021,7 +2021,7 @@ contains
 
     use amrex_constants_module, only : ZERO, ONE, HALF
 
-    use network, only : nspec, naux
+    
     use meth_params_module, only : QVAR, NVAR, NQAUX, QRHO, QU, QV, QW, &
                                    QPRES, QREINT, QFS, QFX, &
                                    QC,  &
@@ -2270,7 +2270,7 @@ contains
                    qxpo(i,j,k,QPRES) = qxp(i,j,k,QPRES)
                 endif
                 
-                call reset_edge_state_thermo(qxpo, qxpo_lo, qxpo_hi, i, j, k)
+ !!!               call reset_edge_state_thermo(qxpo, qxpo_lo, qxpo_hi, i, j, k)
 
              else
                 qxpo(i,j,k,QPRES) = qxpo(i,j,k,QREINT)*gamma_minus_1
@@ -2420,7 +2420,7 @@ contains
                    qxmo(i,j,k,QPRES) = qxm(i,j,k,QPRES)
                 endif
                 
-                call reset_edge_state_thermo(qxmo, qxmo_lo, qxmo_hi, i, j, k)
+ !!!               call reset_edge_state_thermo(qxmo, qxmo_lo, qxmo_hi, i, j, k)
              
              else
 
@@ -2447,7 +2447,7 @@ contains
   end subroutine transz_on_xstates
 
 
-  subroutine transz_on_ystates(lo, hi, &
+AMREX_CUDA_FORT_DEVICE  subroutine transz_on_ystates(lo, hi, &
                                qym, qym_lo, qym_hi, &
                                qymo, qymo_lo, qymo_hi, &
                                qyp, qyp_lo, qyp_hi, &
@@ -2464,7 +2464,7 @@ contains
 
     use amrex_constants_module, only : ZERO, ONE, HALF
 
-    use network, only : nspec, naux
+    
     use meth_params_module, only : QVAR, NVAR, NQAUX, QRHO, QU, QV, QW, &
                                    QPRES, QREINT, QFS, QFX, &
                                    QC,  &
@@ -2717,7 +2717,7 @@ contains
                    qypo(i,j,k,QPRES) = qyp(i,j,k,QPRES)
                 endif
                 
-                call reset_edge_state_thermo(qypo, qypo_lo, qypo_hi, i, j, k)
+ !!!               call reset_edge_state_thermo(qypo, qypo_lo, qypo_hi, i, j, k)
              
              else
                 
@@ -2870,7 +2870,7 @@ contains
                    qymo(i,j,k,QPRES) = qym(i,j,k,QPRES)
                 endif
                 
-                call reset_edge_state_thermo(qymo, qymo_lo, qymo_hi, i, j, k)
+ !!!               call reset_edge_state_thermo(qymo, qymo_lo, qymo_hi, i, j, k)
              
              else
                 
@@ -2899,7 +2899,7 @@ contains
   !===========================================================================
   ! transyz
   !===========================================================================
-  subroutine transyz(lo, hi, &
+AMREX_CUDA_FORT_DEVICE  subroutine transyz(lo, hi, &
                      qm, qm_lo, qm_hi, &
                      qmo, qmo_lo, qmo_hi, &
                      qp, qp_lo, qp_hi, &
@@ -2916,7 +2916,7 @@ contains
 
     use amrex_constants_module, only : ZERO, ONE, HALF
 
-    use network, only : nspec, naux
+    
     use meth_params_module, only : QVAR, NVAR, NQAUX, NQSRC, QRHO, QU, QV, QW, &
                                    QPRES, QREINT, QFS, QFX, &
                                    QC,  &
@@ -3151,7 +3151,7 @@ contains
                 
                 qpo(i,j,k,QPRES) = max(qpo(i,j,k,QPRES), small_pres)
 
-                call reset_edge_state_thermo(qpo, qpo_lo, qpo_hi, i, j, k)
+ !!!               call reset_edge_state_thermo(qpo, qpo_lo, qpo_hi, i, j, k)
              else
              
                 qpo(i,j,k,QPRES) = qpo(i,j,k,QREINT)*(gamma_minus_1)
@@ -3269,7 +3269,7 @@ contains
                 
                 qmo(i,j,k,QPRES) = max(qmo(i,j,k,QPRES), small_pres)
 
-                call reset_edge_state_thermo(qmo, qmo_lo, qmo_hi, i, j, k)
+ !!!               call reset_edge_state_thermo(qmo, qmo_lo, qmo_hi, i, j, k)
              else
                 
                 qmo(i,j,k,QPRES) = qmo(i,j,k,QREINT)*(gamma_minus_1)
@@ -3302,7 +3302,7 @@ contains
   !===========================================================================
   ! transxz
   !===========================================================================
-  subroutine transxz(lo, hi, &
+AMREX_CUDA_FORT_DEVICE  subroutine transxz(lo, hi, &
                      qm, qm_lo, qm_hi, &
                      qmo, qmo_lo, qmo_hi, &
                      qp, qp_lo, qp_hi, &
@@ -3325,7 +3325,7 @@ contains
 
     use amrex_constants_module, only : ZERO, ONE, HALF
 
-    use network, only : nspec, naux
+    
     use meth_params_module, only : QVAR, NVAR, NQAUX, NQSRC, QRHO, QU, QV, QW, &
                                    QPRES, QREINT, QFS, QFX, &
                                    QC,  &
@@ -3630,7 +3630,7 @@ contains
 
                 qpo(i,j,k,QPRES) = max(qpo(i,j,k,QPRES), small_pres)
 
-                call reset_edge_state_thermo(qpo, qpo_lo, qpo_hi, i, j, k)
+ !!!               call reset_edge_state_thermo(qpo, qpo_lo, qpo_hi, i, j, k)
 
              else
                 
@@ -3818,7 +3818,7 @@ contains
                 
                 qmo(i,j,k,QPRES) = max(qmo(i,j,k,QPRES), small_pres)
 
-                call reset_edge_state_thermo(qmo, qmo_lo, qmo_hi, i, j, k)
+ !!!               call reset_edge_state_thermo(qmo, qmo_lo, qmo_hi, i, j, k)
                 
              else
 
@@ -3858,7 +3858,7 @@ contains
   !===========================================================================
   ! transxy
   !===========================================================================
-  subroutine transxy(lo, hi, &
+AMREX_CUDA_FORT_DEVICE  subroutine transxy(lo, hi, &
                      qm, qm_lo, qm_hi, &
                      qmo, qmo_lo, qmo_hi, &
                      qp, qp_lo, qp_hi, &
@@ -3882,7 +3882,7 @@ contains
 
     use amrex_constants_module, only : ZERO, ONE, HALF
 
-    use network, only : nspec, naux
+    
     use meth_params_module, only : QVAR, NVAR, NQAUX, NQSRC, QRHO, QU, QV, QW, &
                                    QPRES, QREINT, QFS, QFX, &
                                    QC,  &
@@ -4193,7 +4193,7 @@ contains
              
                 qpo(i,j,k,QPRES) = max(qpo(i,j,k,QPRES), small_pres)
 
-                call reset_edge_state_thermo(qpo, qpo_lo, qpo_hi, i, j, k)
+ !!!               call reset_edge_state_thermo(qpo, qpo_lo, qpo_hi, i, j, k)
              else
              
                 qpo(i,j,k,QPRES) = qpo(i,j,k,QREINT) * gamma_minus_1
@@ -4398,7 +4398,7 @@ contains
 
                 qmo(i,j,k,QPRES) = max(qmo(i,j,k,QPRES), small_pres)
 
-                call reset_edge_state_thermo(qmo, qmo_lo, qmo_hi, i, j, k)
+ !!!               call reset_edge_state_thermo(qmo, qmo_lo, qmo_hi, i, j, k)
              else
                 qmo(i,j,k,QPRES) = qmo(i,j,k,QREINT) * gamma_minus_1
 
@@ -4449,7 +4449,7 @@ contains
 
   use amrex_constants_module, only : ZERO, ONE, HALF
 
-  use network, only : nspec, naux
+  
   use meth_params_module, only : QVAR, NVAR, NQAUX, QRHO, &
                                  QPRES, QREINT, QFS, QFX, &
                                  small_pres, small_temp, &

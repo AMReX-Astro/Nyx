@@ -473,7 +473,10 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp1 = rfx
       // qgdnvtmp1 = qgdnvx
 #pragma gpu
-      transx_on_ystates(AMREX_INT_ANYD(tyxbx.loVect()), AMREX_INT_ANYD(tyxbx.hiVect()),
+      amrex::Cuda::setLaunchRegion(true);
+      AMREX_LAUNCH_DEVICE_LAMBDA(tyxbx, ttyxbx,
+      {
+      transx_on_ystates(AMREX_INT_ANYD(ttyxbx.loVect()), AMREX_INT_ANYD(ttyxbx.hiVect()),
                         BL_TO_FORTRAN_ANYD(*fab_qym),
                         BL_TO_FORTRAN_ANYD(*fab_qyx),
                         BL_TO_FORTRAN_ANYD(*fab_qyp),
@@ -482,7 +485,8 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                         BL_TO_FORTRAN_ANYD(*fab_ftmp1),
                         BL_TO_FORTRAN_ANYD(*fab_qgdnvtmp1),
                         hdt, cdtdx);
-
+      });
+      amrex::Cuda::setLaunchRegion(false);
       // [lo(1), lo(2)-1, lo(3)], [hi(1), hi(2)+1, hi(3)+1]
       const Box& tzxbx = amrex::grow(zbx, IntVect(AMREX_D_DECL(0,1,0)));
 
@@ -493,7 +497,10 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       Elixir elix_qpzx = qpzx.elixir();
 
 #pragma gpu
-      transx_on_zstates(AMREX_INT_ANYD(tzxbx.loVect()), AMREX_INT_ANYD(tzxbx.hiVect()),
+      amrex::Cuda::setLaunchRegion(true);
+      AMREX_LAUNCH_DEVICE_LAMBDA(tzxbx, ttzxbx,
+      {
+      transx_on_zstates(AMREX_INT_ANYD(ttzxbx.loVect()), AMREX_INT_ANYD(ttzxbx.hiVect()),
                         BL_TO_FORTRAN_ANYD(*fab_qzm),
                         BL_TO_FORTRAN_ANYD(*fab_qzx),
                         BL_TO_FORTRAN_ANYD(*fab_qzp),
@@ -502,7 +509,9 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                         BL_TO_FORTRAN_ANYD(*fab_ftmp1),
                         BL_TO_FORTRAN_ANYD(*fab_qgdnvtmp1),
                         hdt, cdtdx);
-
+      });
+      amrex::Gpu::Device::synchronize();
+      amrex::Cuda::setLaunchRegion(false);
       // compute F^y
       // [lo(1)-1, lo(2), lo(3)-1], [hi(1)+1, hi(2)+1, hi(3)+1]
       const Box& cybx = amrex::grow(ybx, IntVect(AMREX_D_DECL(1,0,1)));
@@ -534,7 +543,10 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp1 = rfy
       // qgdnvtmp1 = qgdnvy
 #pragma gpu
-      transy_on_xstates(AMREX_INT_ANYD(txybx.loVect()), AMREX_INT_ANYD(txybx.hiVect()),
+      amrex::Cuda::setLaunchRegion(true);
+      AMREX_LAUNCH_DEVICE_LAMBDA(txybx, ttxybx,
+      {
+      transy_on_xstates(AMREX_INT_ANYD(ttxybx.loVect()), AMREX_INT_ANYD(ttxybx.hiVect()),
                         BL_TO_FORTRAN_ANYD(*fab_qxm),
                         BL_TO_FORTRAN_ANYD(*fab_qxy),
                         BL_TO_FORTRAN_ANYD(*fab_qxp),
@@ -543,7 +555,9 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                         BL_TO_FORTRAN_ANYD(*fab_ftmp1),
                         BL_TO_FORTRAN_ANYD(*fab_qgdnvtmp1),
                         cdtdy);
-
+      });
+      amrex::Gpu::Device::synchronize();
+      amrex::Cuda::setLaunchRegion(false);
       // [lo(1)-1, lo(2), lo(3)], [hi(1)+1, hi(2), lo(3)+1]
       const Box& tzybx = amrex::grow(zbx, IntVect(AMREX_D_DECL(1,0,0)));
 
@@ -557,7 +571,10 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp1 = rfy
       // qgdnvtmp1 = qgdnvy
 #pragma gpu
-      transy_on_zstates(AMREX_INT_ANYD(tzybx.loVect()), AMREX_INT_ANYD(tzybx.hiVect()),
+      amrex::Cuda::setLaunchRegion(true);
+      AMREX_LAUNCH_DEVICE_LAMBDA(tzybx, ttzybx,
+      {
+      transy_on_zstates(AMREX_INT_ANYD(ttzybx.loVect()), AMREX_INT_ANYD(ttzybx.hiVect()),
                         BL_TO_FORTRAN_ANYD(*fab_qzm),
                         BL_TO_FORTRAN_ANYD(*fab_qzy),
                         BL_TO_FORTRAN_ANYD(*fab_qzp),
@@ -566,7 +583,9 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                         BL_TO_FORTRAN_ANYD(*fab_ftmp1),
                         BL_TO_FORTRAN_ANYD(*fab_qgdnvtmp1),
                         cdtdy);
-
+      });
+      amrex::Gpu::Device::synchronize();
+      amrex::Cuda::setLaunchRegion(false);
       // compute F^z
       // [lo(1)-1, lo(2)-1, lo(3)], [hi(1)+1, hi(2)+1, hi(3)+1]
       const Box& czbx = amrex::grow(zbx, IntVect(AMREX_D_DECL(1,1,0)));
@@ -598,7 +617,10 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp1 = rfz
       // qgdnvtmp1 = qgdnvz
 #pragma gpu
-      transz_on_xstates(AMREX_INT_ANYD(txzbx.loVect()), AMREX_INT_ANYD(txzbx.hiVect()),
+      amrex::Cuda::setLaunchRegion(true);
+      AMREX_LAUNCH_DEVICE_LAMBDA(txzbx, ttxzbx,
+      {
+      transz_on_xstates(AMREX_INT_ANYD(ttxzbx.loVect()), AMREX_INT_ANYD(ttxzbx.hiVect()),
                         BL_TO_FORTRAN_ANYD(*fab_qxm),
                         BL_TO_FORTRAN_ANYD(*fab_qxz),
                         BL_TO_FORTRAN_ANYD(*fab_qxp),
@@ -607,7 +629,9 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                         BL_TO_FORTRAN_ANYD(*fab_ftmp1),
                         BL_TO_FORTRAN_ANYD(*fab_qgdnvtmp1),
                         cdtdz);
-
+      });
+      amrex::Gpu::Device::synchronize();
+      amrex::Cuda::setLaunchRegion(false);
       // [lo(1)-1, lo(2), lo(3)], [hi(1)+1, hi(2)+1, lo(3)]
       const Box& tyzbx = amrex::grow(ybx, IntVect(AMREX_D_DECL(1,0,0)));
 
@@ -621,7 +645,10 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp1 = rfz
       // qgdnvtmp1 = qgdnvz
 #pragma gpu
-      transz_on_ystates(AMREX_INT_ANYD(tyzbx.loVect()), AMREX_INT_ANYD(tyzbx.hiVect()),
+      amrex::Cuda::setLaunchRegion(true);
+      AMREX_LAUNCH_DEVICE_LAMBDA(tyzbx, ttyzbx,
+      {
+      transz_on_ystates(AMREX_INT_ANYD(ttyzbx.loVect()), AMREX_INT_ANYD(ttyzbx.hiVect()),
                         BL_TO_FORTRAN_ANYD(*fab_qym),
                         BL_TO_FORTRAN_ANYD(*fab_qyz),
                         BL_TO_FORTRAN_ANYD(*fab_qyp),
@@ -630,7 +657,9 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                         BL_TO_FORTRAN_ANYD(*fab_ftmp1),
                         BL_TO_FORTRAN_ANYD(*fab_qgdnvtmp1),
                         cdtdz);
-
+      });
+      amrex::Gpu::Device::synchronize();
+      amrex::Cuda::setLaunchRegion(false);
       // we now have q?zx, q?yx, q?zy, q?xy, q?yz, q?xz
 
       //
@@ -677,7 +706,10 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // [lo(1), lo(2), lo(3)], [hi(1)+1, hi(2), hi(3)]
 
 #pragma gpu
-      transyz(AMREX_INT_ANYD(xbx.loVect()), AMREX_INT_ANYD(xbx.hiVect()),
+      amrex::Cuda::setLaunchRegion(true);
+      AMREX_LAUNCH_DEVICE_LAMBDA(xbx, txbx,
+      {
+      transyz(AMREX_INT_ANYD(txbx.loVect()), AMREX_INT_ANYD(txbx.hiVect()),
               BL_TO_FORTRAN_ANYD(*fab_qxm),
               BL_TO_FORTRAN_ANYD(*fab_ql),
               BL_TO_FORTRAN_ANYD(*fab_qxp),
@@ -689,7 +721,9 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
               BL_TO_FORTRAN_ANYD(*fab_qgdnvtmp2),
               BL_TO_FORTRAN_ANYD(*fab_src_q),
               hdt, hdtdy, hdtdz, a_old, a_new);
-
+      });
+      amrex::Gpu::Device::synchronize();
+      amrex::Cuda::setLaunchRegion(false);
 #pragma gpu
       cmpflx_plus_godunov(AMREX_INT_ANYD(xbx.loVect()), AMREX_INT_ANYD(xbx.hiVect()),
                           BL_TO_FORTRAN_ANYD(*fab_ql),
@@ -745,7 +779,10 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // [lo(1), lo(2), lo(3)], [hi(1), hi(2)+1, hi(3)]
 
 #pragma gpu
-      transxz(AMREX_INT_ANYD(ybx.loVect()), AMREX_INT_ANYD(ybx.hiVect()),
+      amrex::Cuda::setLaunchRegion(true);
+      AMREX_LAUNCH_DEVICE_LAMBDA(ybx, tybx,
+      {
+      transxz(AMREX_INT_ANYD(tybx.loVect()), AMREX_INT_ANYD(tybx.hiVect()),
               BL_TO_FORTRAN_ANYD(*fab_qym),
               BL_TO_FORTRAN_ANYD(*fab_ql),
               BL_TO_FORTRAN_ANYD(*fab_qyp),
@@ -757,7 +794,9 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
               BL_TO_FORTRAN_ANYD(*fab_qgdnvtmp1),
 	      BL_TO_FORTRAN_ANYD(*fab_src_q),
               hdt, hdtdx, hdtdz, a_old, a_new);
-
+      });
+      amrex::Gpu::Device::synchronize();
+      amrex::Cuda::setLaunchRegion(false);
       // Compute the final F^y
       // [lo(1), lo(2), lo(3)], [hi(1), hi(2)+1, hi(3)]
 #pragma gpu
@@ -815,7 +854,10 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // [lo(1), lo(2), lo(3)], [hi(1), hi(2), hi(3)+1]
 
 #pragma gpu
-      transxy(AMREX_INT_ANYD(zbx.loVect()), AMREX_INT_ANYD(zbx.hiVect()),
+      amrex::Cuda::setLaunchRegion(true);
+      AMREX_LAUNCH_DEVICE_LAMBDA(zbx, tzbx,
+      {
+      transxy(AMREX_INT_ANYD(tzbx.loVect()), AMREX_INT_ANYD(tzbx.hiVect()),
               BL_TO_FORTRAN_ANYD(*fab_qzm),
               BL_TO_FORTRAN_ANYD(*fab_ql),
               BL_TO_FORTRAN_ANYD(*fab_qzp),
@@ -827,7 +869,9 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
               BL_TO_FORTRAN_ANYD(*fab_qgdnvtmp2),
 	      BL_TO_FORTRAN_ANYD(*fab_src_q),
               hdt, hdtdx, hdtdy, a_old, a_new);
-
+      });
+      amrex::Gpu::Device::synchronize();
+      amrex::Cuda::setLaunchRegion(false);
       // compute the final z fluxes F^z
       // [lo(1), lo(2), lo(3)], [hi(1), hi(2), hi(3)+1]
 
@@ -891,7 +935,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                                    BL_TO_FORTRAN_ANYD(*fab_flux[idir]));
       });
       amrex::Gpu::Device::synchronize();
-      amrex::Cuda::setLaunchRegion(false);	  
+      amrex::Cuda::setLaunchRegion(false);
 	  //	  amrex::Print()<<"max flux["<<idir<<"]="<<flux[idir].max()<<std::endl;
       }
 
