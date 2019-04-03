@@ -64,24 +64,6 @@ Nyx::compute_hydro_sources(amrex::Real time, amrex::Real dt, amrex::Real a_old, 
             u_gdnv[i].setVal(1.e200);
         }
 
-	if(hydro_convert)
-	  fort_ca_make_hydro_sources
-            (&time, bx.loVect(), bx.hiVect(), 
-             BL_TO_FORTRAN(state),
-             BL_TO_FORTRAN(u_gdnv[0]),
-             BL_TO_FORTRAN(u_gdnv[1]),
-             BL_TO_FORTRAN(u_gdnv[2]),
-             BL_TO_FORTRAN(ext_src_old[mfi]),
-             BL_TO_FORTRAN(hydro_src[mfi]),
-             BL_TO_FORTRAN(divu_cc[mfi]),
-             BL_TO_FORTRAN(grav_vector[mfi]),
-             dx, &dt,
-             BL_TO_FORTRAN(flux[0]),
-             BL_TO_FORTRAN(flux[1]),
-             BL_TO_FORTRAN(flux[2]),
-             &a_old, &a_new, 
-             &print_fortran_warnings);
-	else
 	  fort_make_hydro_sources
             (&time, bx.loVect(), bx.hiVect(), 
              BL_TO_FORTRAN(state),

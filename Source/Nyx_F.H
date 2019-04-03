@@ -164,24 +164,6 @@ extern "C"
      const amrex::Real* a_old, const amrex::Real* a_new,
      const int* print_fortran_warnings);
 
-    void fort_ca_make_hydro_sources
-    (const amrex::Real* time,
-     const int lo[], const int hi[],
-     const BL_FORT_FAB_ARG(state),
-     const BL_FORT_FAB_ARG(ugdnvx),
-     const BL_FORT_FAB_ARG(ugdnvy),
-     const BL_FORT_FAB_ARG(ugdnvz),
-     const BL_FORT_FAB_ARG(src),
-           BL_FORT_FAB_ARG(hydro_src),
-           BL_FORT_FAB_ARG(divu_cc),
-     const BL_FORT_FAB_ARG(grav),
-     const amrex::Real dx[], const amrex::Real* dt,
-     D_DECL(const BL_FORT_FAB_ARG(xflux),
-            const BL_FORT_FAB_ARG(yflux),
-            const BL_FORT_FAB_ARG(zflux)),
-     const amrex::Real* a_old, const amrex::Real* a_new,
-     const int* print_fortran_warnings);
-
   void ca_ctoprim(const int* lo, const int* hi,
 	          const amrex::Real* u, const int* u_lo, const int* u_hi,
 #ifdef RADIATION

@@ -25,7 +25,6 @@ Nyx::strang_hydro (Real time,
     const Real prev_time    = state[State_Type].prevTime();
     const Real cur_time     = state[State_Type].curTime();
     const int  finest_level = parent->finestLevel();
-    bool full_test = true;
     bool use_grav_zero = false;
     bool use_evolving_a = true;
     
@@ -111,7 +110,7 @@ Nyx::strang_hydro (Real time,
 	MultiFab dummy_src_vector(grids, dmap, NUM_STATE, NUM_GROW);
 	dummy_src_vector.setVal(0.);
 	
-	if(hydro_convert&&full_test)
+	if(hydro_convert)
 	  construct_ctu_hydro_source(time,dt,dummy_a_old,dummy_a_new,S_old_tmp,D_old_tmp,
 				     dummy_src_vector,hydro_src,dummy_grav_vector,divu_cc,
 				     init_flux_register, add_to_flux_register);
@@ -126,7 +125,7 @@ Nyx::strang_hydro (Real time,
       }
     else
       {
-	if(hydro_convert&&full_test)
+	if(hydro_convert)
 	  construct_ctu_hydro_source(time,dt,dummy_a_old,dummy_a_new,S_old_tmp,D_old_tmp,
 				     ext_src_old,hydro_src,grav_vector,divu_cc,
 				     init_flux_register, add_to_flux_register);
