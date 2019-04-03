@@ -1021,10 +1021,10 @@ contains
                        idir, lo, hi, &
                        domlo, domhi, compute_interface_gamma)
 
-    use prob_params_module, only : physbc_lo, physbc_hi
     use meth_params_module, only : gamma_const, gamma_minus_1, use_analriem, use_csmall_gamma, use_gamma_minus
-    use network, only : nspec
+#ifndef AMREX_USE_CUDA
     use analriem_module
+#endif
 
     implicit none
 
@@ -1083,8 +1083,6 @@ contains
     logical :: special_bnd_lo, special_bnd_hi, special_bnd_lo_x, special_bnd_hi_x
     real(rt) :: bnd_fac_x, bnd_fac_y, bnd_fac_z
     real(rt) :: wwinv, roinv, co2inv
-
-    real(rt), dimension(nspec) :: xn
 
     !$gpu
 
@@ -1269,6 +1267,12 @@ contains
              endif
 
           else
+#ifdef AMREX_USE_CUDA
+             !call amrex_abort("Failed riemann")
+             print*,"Failed riemann"
+             flush(6)
+             STOP
+#else
                       ! Call analytic Riemann solver
             call analriem_1cell(gamma_const, &
                  pl, &
@@ -1280,6 +1284,7 @@ contains
                  small_pres, &
                  pstar, &
                  ustar)
+#endif
             endif
              ! ------------------------------------------------------------------
              ! look at the contact to determine which region we are in
