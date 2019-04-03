@@ -416,7 +416,7 @@ contains
   !! @param[inout] q2           (modify) Godunov interface state in Y
   !! @param[inout] q3           (modify) Godunov interface state in Z
   !!
-  subroutine ctu_plm_states(lo, hi, &
+  AMREX_CUDA_FORT_DEVICE subroutine ctu_plm_states(lo, hi, &
                             vlo, vhi, &
                             q, qd_lo, qd_hi, &
                             flatn, f_lo, f_hi, &
@@ -446,8 +446,10 @@ contains
                                    iorder, use_pslope, hybrid_riemann
     use trace_plm_module, only : trace_plm, trace_plm_orig
     use ca_slope_module, only : uslope, pslope
+#ifndef AMREX_USE_CUDA
     use advection_module, only : ca_shock
-    use prob_params_module, only : dg
+#endif
+!    use prob_params_module, only : dg
 
     implicit none
 
@@ -518,6 +520,7 @@ contains
     compute_shock = .false.
 #endif
 
+#ifndef AMREX_USE_CUDA
     ! multidimensional shock detection -- this will be used to do the
     ! hybrid Riemann solver
     if (hybrid_riemann == 1 .or. compute_shock) then
@@ -528,7 +531,9 @@ contains
     else
        shk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3)) = ZERO
     endif
-
+#else
+    shk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3)) = ZERO
+#endif
     ! we don't need to reconstruct all of the NQ state variables,
     ! depending on how we are tracing
     reconstruct_state(:) = .true.

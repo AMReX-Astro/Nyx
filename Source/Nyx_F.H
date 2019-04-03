@@ -506,7 +506,7 @@ extern "C"
 #endif
       const int* domlo, const int* domhi);
 
-  void ctu_plm_states
+  AMREX_GPU_DEVICE void ctu_plm_states
      (const int* lo, const int* hi,
       const int* vlo, const int* vhi,
       const BL_FORT_FAB_ARG_3D(q),

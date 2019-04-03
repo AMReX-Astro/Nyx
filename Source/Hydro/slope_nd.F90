@@ -14,7 +14,7 @@ contains
   ! ::: ------------------------------------------------------------------
   ! :::
 
-  subroutine uslope(lo, hi, idir, &
+  AMREX_CUDA_FORT_DEVICE subroutine uslope(lo, hi, idir, &
                     q, qd_lo, qd_hi, n, &
                     flatn, f_lo, f_hi, &
                     dq, qpd_lo, qpd_hi)
@@ -193,7 +193,7 @@ contains
   ! ::: ------------------------------------------------------------------
   ! :::
 
-  subroutine pslope(lo, hi, idir, &
+  AMREX_CUDA_FORT_DEVICE subroutine pslope(lo, hi, idir, &
                     q, q_lo, q_hi, &
                     flatn, f_lo, f_hi, &
                     dq, qpd_lo, qpd_hi, &

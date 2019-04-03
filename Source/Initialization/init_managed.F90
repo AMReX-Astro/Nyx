@@ -16,7 +16,7 @@ use reion_aux_module
 
 allocate(this_z)
 !! meth_params
-allocate(gamma_minus_1)!,gamma_const)
+allocate(gamma_minus_1,iorder)!,gamma_const)
 allocate(URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX)
 allocate(TEMP_COMP, NE_COMP, ZHI_COMP, NTHERM, NVAR, NDIAG, small_temp, heat_cool_type)
 
@@ -166,7 +166,7 @@ deallocate(xacc,vode_rtol,vode_atol_scaled)
 #ifdef HEATCOOL
 deallocate(this_z)
 #endif
-deallocate(gamma_minus_1)!, gamma_const)
+deallocate(gamma_minus_1,iorder)!, gamma_const)
 deallocate(URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX)
 deallocate(TEMP_COMP, NE_COMP, ZHI_COMP, NTHERM, NVAR, NDIAG, small_temp, heat_cool_type)
 

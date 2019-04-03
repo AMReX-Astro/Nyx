@@ -12,7 +12,7 @@ module trace_plm_module
 
 contains
 
-  subroutine trace_plm(lo, hi, &
+  AMREX_CUDA_FORT_DEVICE subroutine trace_plm(lo, hi, &
                        idir, q, q_lo, q_hi, &
                        qaux, qa_lo, qa_hi, &
                        dq, dq_lo, dq_hi, &
@@ -28,13 +28,11 @@ contains
     ! here, lo and hi are the range we loop over -- this can include ghost cells
     ! vlo and vhi are the bounds of the valid box (no ghost cells)
 
-    use network, only : nspec, naux
     use meth_params_module, only : QVAR, NQAUX, NQSRC, QRHO, QU, QV, QW, QC, &
                                    QREINT, QPRES, &
                                    npassive, qpass_map, small_dens, small_pres, &
                                    ppm_type
     use amrex_constants_module
-    use prob_params_module, only : physbc_lo, physbc_hi, Outflow
     use amrex_fort_module, only : rt => amrex_real
 
     implicit none
@@ -369,7 +367,7 @@ contains
 
   end subroutine trace_plm
 
-  subroutine trace_plm_orig(lo, hi, &
+  AMREX_CUDA_FORT_DEVICE subroutine trace_plm_orig(lo, hi, &
                        idir, q, q_lo, q_hi, &
                        qaux, qa_lo, qa_hi, &
                        dq, dq_lo, dq_hi, &
@@ -385,14 +383,12 @@ contains
     ! here, lo and hi are the range we loop over -- this can include ghost cells
     ! vlo and vhi are the bounds of the valid box (no ghost cells)
 
-    use network, only : nspec, naux
     use meth_params_module, only : QVAR, NQAUX, NQSRC, QRHO, QU, QV, QW, QC, &
                                    QREINT, QPRES, &
                                    npassive, qpass_map, small_dens, small_pres, &
                                    ppm_type, gamma_minus_1, use_srcQ_in_trace, &
                                    use_gamma_minus
     use amrex_constants_module
-    use prob_params_module, only : physbc_lo, physbc_hi, Outflow
     use amrex_fort_module, only : rt => amrex_real
 
     implicit none

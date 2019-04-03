@@ -14,7 +14,7 @@ Nyx::cons_to_prim(MultiFab& Sborder, MultiFab& q, MultiFab& qaux, MultiFab& grav
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-    for (MFIter mfi(Sborder, true); mfi.isValid(); ++mfi) {
+  for (MFIter mfi(Sborder, TilingIfNotGPU()); mfi.isValid(); ++mfi) {
 
         const Box& qbx = mfi.growntilebox(NUM_GROW);
 	//	const Box& qbx = mfi.tilebox();
