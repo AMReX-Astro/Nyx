@@ -377,10 +377,15 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
       // compute divu -- we'll use this later when doing the artifical viscosity
 #pragma gpu
-      divu(AMREX_INT_ANYD(obx.loVect()), AMREX_INT_ANYD(obx.hiVect()),
+      amrex::Cuda::setLaunchRegion(true);
+      AMREX_LAUNCH_DEVICE_LAMBDA(obx, tobx,
+      {
+      divu(AMREX_INT_ANYD(tobx.loVect()), AMREX_INT_ANYD(tobx.hiVect()),
            BL_TO_FORTRAN_ANYD(*fab_q),
            AMREX_REAL_ANYD(dx),
            BL_TO_FORTRAN_ANYD(*fab_div));
+      });
+      amrex::Cuda::setLaunchRegion(false);
 
       q_int.resize(obx, QVAR);
       Elixir elix_q_int = q_int.elixir();

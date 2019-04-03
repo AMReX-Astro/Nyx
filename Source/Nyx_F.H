@@ -206,7 +206,7 @@ extern "C"
                       const amrex::Real dt, const amrex::Real* dx,
                       amrex::Real* courno, const int verbose);
 
-  void divu
+  AMREX_GPU_DEVICE void divu
     (const int* lo, const int* hi,
      BL_FORT_FAB_ARG_3D(q),
      const amrex::Real* dx,

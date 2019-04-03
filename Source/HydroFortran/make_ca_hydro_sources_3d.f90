@@ -182,7 +182,7 @@
                    a_old,a_new,print_fortran_warnings)
 
       ! Compute divergence of velocity field (on surroundingNodes(lo,hi))
-      call divu(lo,hi+1, &
+      call divu2(lo,hi+1, &
            q,qlo, qhi, &
            delta, divu_nd, lo, hi+1)
 
