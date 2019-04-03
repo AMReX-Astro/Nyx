@@ -9,7 +9,6 @@ module riemann_module
                                  QPRES, QREINT, QFS, QFX, &
                                  QC, QGAMC, QGC, &
                                  NGDNV, &
-
 #ifdef RADIATION
                                  qrad, qradhi, qptot, qreitot, &
                                  GDERADS, QGAMCG, QLAMS, QREITOT, &
@@ -298,7 +297,7 @@ contains
     use amrex_error_module
     use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : hybrid_riemann, ppm_temp_fix, riemann_solver, &
-                                             gamma_const, gamma_minus_1
+                                             gamma_minus_1
 
     implicit none
 
@@ -445,7 +444,7 @@ contains
     use prob_params_module, only : physbc_lo, physbc_hi
     use network, only : nspec, naux
     use meth_params_module, only : cg_maxiter, cg_tol, cg_blend, &
-         gamma_const, gamma_minus_1, &
+         gamma_minus_1, &
          use_csmall_gamma
 #ifndef AMREX_USE_CUDA
     use riemann_util_module, only : pstar_bisection
@@ -609,7 +608,7 @@ contains
 
              pl  = ql(i,j,k,QPRES,comp)
              rel = ql(i,j,k,QREINT,comp)
-                gcl = gamma_const !qaux(i-sx,j-sy,k-sz,QGAMC)
+                gcl = (gamma_minus_1+ONE) !qaux(i-sx,j-sy,k-sz,QGAMC)
 
              ! pick left velocities based on direction
              ul  = ql(i,j,k,iu,comp)
@@ -628,7 +627,7 @@ contains
                 print*, "consider hack to reset from small, doesn't include diag or a_old properly"
                 pl  = max(pl,small_pres)
                 rel = pl / gamma_minus_1
-                gcl = gamma_const !eos_state % gam1
+                gcl = (gamma_minus_1+ONE) !eos_state % gam1
              endif
 
              ! right state
@@ -636,7 +635,7 @@ contains
 
              pr  = qr(i,j,k,QPRES,comp)
              rer = qr(i,j,k,QREINT,comp)
-                gcr = gamma_const !qaux(i,j,k,QGAMC)
+                gcr = (gamma_minus_1+ONE) !qaux(i,j,k,QGAMC)
 
              ! pick right velocities based on direction
              ur  = qr(i,j,k,iu,comp)
@@ -652,7 +651,7 @@ contains
                 print*, "consider hack to reset from small, doesn't include diag or a_old properly"
                 pr  = max(pr,small_pres)
                 rer = pr / gamma_minus_1
-                gcr = gamma_const !eos_state % gam1
+                gcr = (gamma_minus_1+ONE) !eos_state % gam1
              endif
 
 
@@ -1021,7 +1020,7 @@ contains
                        idir, lo, hi, &
                        domlo, domhi, compute_interface_gamma)
 
-    use meth_params_module, only : gamma_const, gamma_minus_1, use_analriem, use_csmall_gamma, use_gamma_minus
+    use meth_params_module, only : gamma_minus_1, use_analriem, use_csmall_gamma, use_gamma_minus
 #ifndef AMREX_USE_CUDA
     use analriem_module
 #endif
@@ -1213,8 +1212,8 @@ contains
              if (idir == 1) then
                 csmall = max( small, max( small * qaux(i,j,k,QC) , small * qaux(i-1,j,k,QC))  )
                 cavg = HALF*(qaux(i,j,k,QC) + qaux(i-1,j,k,QC))
-                gamcl = gamma_const !qaux(i-1,j,k,QGAMC)
-                gamcr = gamma_const !qaux(i,j,k,QGAMC)
+                gamcl = (gamma_minus_1+ONE) !qaux(i-1,j,k,QGAMC)
+                gamcr = (gamma_minus_1+ONE) !qaux(i,j,k,QGAMC)
 #ifdef RADIATION
                 gamcgl = qaux(i-1,j,k,QGAMCG)
                 gamcgr = qaux(i,j,k,QGAMCG)
@@ -1222,8 +1221,8 @@ contains
              else if (idir == 2) then
                 csmall = max( small, max( small * qaux(i,j,k,QC) , small * qaux(i,j-1,k,QC))  )
                 cavg = HALF*(qaux(i,j,k,QC) + qaux(i,j-1,k,QC))
-                gamcl = gamma_const !qaux(i,j-1,k,QGAMC)
-                gamcr = gamma_const !qaux(i,j,k,QGAMC)
+                gamcl = (gamma_minus_1+ONE) !qaux(i,j-1,k,QGAMC)
+                gamcr = (gamma_minus_1+ONE) !qaux(i,j,k,QGAMC)
 #ifdef RADIATION
                 gamcgl = qaux(i,j-1,k,QGAMCG)
                 gamcgr = qaux(i,j,k,QGAMCG)
@@ -1231,8 +1230,8 @@ contains
              else
                 csmall = max( small, max( small * qaux(i,j,k,QC) , small * qaux(i,j,k-1,QC))  )
                 cavg = HALF*(qaux(i,j,k,QC) + qaux(i,j,k-1,QC))
-                gamcl = gamma_const !qaux(i,j,k-1,QGAMC)
-                gamcr = gamma_const !qaux(i,j,k,QGAMC)
+                gamcl = (gamma_minus_1+ONE) !qaux(i,j,k-1,QGAMC)
+                gamcr = (gamma_minus_1+ONE) !qaux(i,j,k,QGAMC)
 #ifdef RADIATION
                 gamcgl = qaux(i,j,k-1,QGAMCG)
                 gamcgr = qaux(i,j,k,QGAMCG)
@@ -1240,12 +1239,12 @@ contains
              end if
 
              if(use_csmall_gamma.eq. 1) then
-                csmall = sqrt(gamma_const * small_pres / small_dens)
+                csmall = sqrt((gamma_minus_1+ONE) * small_pres / small_dens)
              endif
              
 #ifndef RADIATION
-                gamcl = gamma_const !ql(i,j,k,QGC,comp)
-                gamcr = gamma_const !qr(i,j,k,QGC,comp)
+                gamcl = (gamma_minus_1+ONE) !ql(i,j,k,QGC,comp)
+                gamcr = (gamma_minus_1+ONE) !qr(i,j,k,QGC,comp)
 #endif
 
              wsmall = small_dens*csmall
@@ -1274,7 +1273,7 @@ contains
              STOP
 #else
                       ! Call analytic Riemann solver
-            call analriem_1cell(gamma_const, &
+            call analriem_1cell((gamma_minus_1+ONE), &
                  pl, &
                  rl, &
                  ul, &
@@ -1586,7 +1585,7 @@ contains
                   qint, q_lo, q_hi, &
                   idir, lo, hi, &
                   domlo, domhi)
-    use meth_params_module, only : gamma_const
+    use meth_params_module, only : gamma_minus_1
     use prob_params_module, only : physbc_lo, physbc_hi
 
     implicit none
@@ -1722,8 +1721,8 @@ contains
              csmall = max( small, max(small * qaux(i,j,k,QC) , small * qaux(i-sx,j-sy,k-sz,QC)) )
              cavg = HALF*(qaux(i,j,k,QC) + qaux(i-sx,j-sy,k-sz,QC))
 
-             gamcl = gamma_const !ql(i,j,k,QGC,comp)
-             gamcr = gamma_const !qr(i,j,k,QGC,comp)
+             gamcl = (gamma_minus_1+ONE) !ql(i,j,k,QGC,comp)
+             gamcr = (gamma_minus_1+ONE) !qr(i,j,k,QGC,comp)
 
              wsmall = small_dens*csmall
              wl = max(wsmall, sqrt(abs(gamcl*pl*rl)))

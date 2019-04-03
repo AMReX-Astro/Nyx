@@ -20,7 +20,7 @@ subroutine ca_ctoprim(lo, hi, &
                                    QC, NQAUX, &
                                    npassive, upass_map, qpass_map, &
                                    small_dens, small_pres, &
-                                   gamma_const, gamma_minus_1, use_flattening
+                                   gamma_minus_1, use_flattening
 
     use amrex_constants_module, only: ZERO, HALF, ONE
     use amrex_error_module
@@ -110,7 +110,7 @@ subroutine ca_ctoprim(lo, hi, &
              call nyx_eos_soundspeed(qaux(i,j,k,QC), q(i,j,k,QRHO), q(i,j,k,QREINT))
 
              ! Set csmal based on small_pres and small_dens
-             csml(i,j,k,1) = sqrt(gamma_const * small_pres_over_dens)
+             csml(i,j,k,1) = sqrt((gamma_minus_1+ONE) * small_pres_over_dens)
              
              ! Convert "e" back to "rho e"
              q(i,j,k,QREINT) = q(i,j,k,QREINT)*q(i,j,k,QRHO)
@@ -145,7 +145,7 @@ subroutine ca_ctoprim(lo, hi, &
                                      QREINT, QPRES, &
                                      npassive, upass_map, qpass_map, &
                                      nadv, small_dens, small_pres, &
-                                     gamma_const, gamma_minus_1, use_flattening, QFA, QFS, UFS, UFA
+                                     gamma_minus_1, use_flattening, QFA, QFS, UFS, UFA
     use amrex_constants_module, only: ZERO, HALF, ONE, THREE
     use amrex_fort_module, only : rt => amrex_real
 

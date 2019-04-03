@@ -40,7 +40,7 @@ contains
     use network, only : nspec, naux
     use meth_params_module, only : QVAR, NQAUX, NQSRC, ppm_predict_gammae, &
                             ppm_temp_fix, QU, QV, QW, npassive, qpass_map, &
-                            fix_mass_flux, gamma_const, gamma_minus_1, &
+                            fix_mass_flux, gamma_minus_1, &
                             ppm_flatten_before_integrals
     use prob_params_module, only : physbc_lo, physbc_hi, Outflow
 
@@ -737,7 +737,7 @@ contains
                                    ppm_type, &
                                    ppm_reference_eigenvectors, &
                                    fix_mass_flux, &
-                                   gamma_const, gamma_minus_1
+                                   gamma_minus_1
     use prob_params_module, only : physbc_lo, physbc_hi, Outflow
 
     implicit none
@@ -903,8 +903,8 @@ contains
              p = q(i,j,k,QPRES)
              rhoe_g = q(i,j,k,QREINT)
 
-             gam_g = gamma_const
-             game = gamma_const
+             gam_g = (gamma_minus_1+ONE)
+             game = (gamma_minus_1+ONE)
 
 
              !-------------------------------------------------------------------
@@ -928,7 +928,7 @@ contains
                 tau_ref  = ONE/Im(i,j,k,1,QRHO)
 
                 gam_g_ref  = Im_gc(i,j,k,1,1)
-                game_ref = gamma_const
+                game_ref = (gamma_minus_1+ONE)
 
                 rho_ref = max(rho_ref, small_dens)
                 p_ref = max(p_ref, small_pres)
@@ -976,7 +976,7 @@ contains
                 alphap = HALF*(-dup - dptotp*(ONE/Clag_ev))*(ONE/Clag_ev)
                 alpha0r = dtau + dptot*(ONE/Clag_ev)**2
 
-                dge   = game_ref - gamma_const
+                dge   = game_ref - (gamma_minus_1+ONE)
                 gfactor = (game - ONE)*(game - gam_g)
                 alpha0e_g = gfactor*dptot/(tau_ev*Clag_ev**2) + dge
 
@@ -1029,7 +1029,7 @@ contains
                 tau_ref  = ONE/Ip(i,j,k,3,QRHO)
 
                 gam_g_ref  = Ip_gc(i,j,k,3,1)
-                game_ref = gamma_const
+                game_ref = (gamma_minus_1+ONE)
 
                 rho_ref = max(rho_ref, small_dens)
                 p_ref = max(p_ref, small_pres)
@@ -1072,7 +1072,7 @@ contains
                 alphap = HALF*(-dup - dptotp*(ONE/Clag_ev))*(ONE/Clag_ev)
                 alpha0r = dtau + dptot*(ONE/Clag_ev)**2
 
-                dge = game_ref - gamma_const
+                dge = game_ref - (gamma_minus_1+ONE)
                 gfactor = (game - ONE)*(game - gam_g)
                 alpha0e_g = gfactor*dptot/(tau_ev*Clag_ev**2) + dge
 

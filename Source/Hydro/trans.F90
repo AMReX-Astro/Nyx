@@ -47,7 +47,7 @@ contains
                                    small_pres, small_temp, &
                                    npassive, upass_map, qpass_map, &
                                    transverse_reset_density, transverse_reset_rhoe, &
-                                   ppm_predict_gammae, gamma_const, gamma_minus_1, &
+                                   ppm_predict_gammae, gamma_minus_1, &
                                    use_reset_state
 
 #ifdef RADIATION
@@ -225,9 +225,9 @@ contains
 
              ! this is the gas gamma_1
 #ifdef RADIATION
-             gamc = gamma_const !qaux(i,j,k,QGAMCG)
+             gamc = (gamma_minus_1+ONE) !qaux(i,j,k,QGAMCG)
 #else
-             gamc = gamma_const !qaux(i,j,k,QGAMC)
+             gamc = (gamma_minus_1+ONE) !qaux(i,j,k,QGAMC)
 #endif
 
 #ifdef RADIATION
@@ -375,7 +375,7 @@ contains
 #endif
                       qypo(i,j,k,QPRES) = max(pnewry, small_pres)
                    else
-                      qypo(i,j,k,QPRES) = qypo(i,j,k,QREINT)*(gamma_const-ONE)
+                      qypo(i,j,k,QPRES) = qypo(i,j,k,QREINT)*(gamma_minus_1)
                       qypo(i,j,k,QPRES) = max(qypo(i,j,k,QPRES),small_pres)
                    end if
                 else
@@ -438,9 +438,9 @@ contains
 
              ! this is the gas gamma_1
 #ifdef RADIATION
-             gamc = gamma_const !qaux(i,j-1,k,QGAMCG)
+             gamc = (gamma_minus_1+ONE) !qaux(i,j-1,k,QGAMCG)
 #else
-             gamc = gamma_const !qaux(i,j-1,k,QGAMC)
+             gamc = (gamma_minus_1+ONE) !qaux(i,j-1,k,QGAMC)
 #endif
 
 #ifdef RADIATION
@@ -576,7 +576,7 @@ contains
 #endif
                       qymo(i,j,k,QPRES) = max(pnewly,small_pres)
                    else
-                      qymo(i,j,k,QPRES) = qymo(i,j,k,QREINT)*(gamma_const-ONE)
+                      qymo(i,j,k,QPRES) = qymo(i,j,k,QREINT)*(gamma_minus_1)
                       qymo(i,j,k,QPRES) = max(qymo(i,j,k,QPRES), small_pres)
                    end if
                 else
@@ -644,7 +644,7 @@ contains
                                  small_pres, small_temp, &
                                  npassive, upass_map, qpass_map, &
                                  transverse_reset_density, transverse_reset_rhoe, &
-                                 ppm_predict_gammae, gamma_const, gamma_minus_1, &
+                                 ppm_predict_gammae, gamma_minus_1, &
                                  use_reset_state
 
 #ifdef RADIATION
@@ -784,9 +784,9 @@ contains
 
              ! this is the gas gamma_1
 #ifdef RADIATION
-             gamc = gamma_const !qaux(i,j,k,QGAMCG)
+             gamc = (gamma_minus_1+ONE) !qaux(i,j,k,QGAMCG)
 #else
-             gamc = gamma_const !qaux(i,j,k,QGAMC)
+             gamc = (gamma_minus_1+ONE) !qaux(i,j,k,QGAMC)
 #endif
 
 #ifdef RADIATION
@@ -881,7 +881,7 @@ contains
                       pnewrz = qzp(i,j,k,QPRES) - cdtdx*(dup + pav*du*(gamc - ONE))
                       qzpo(i,j,k,QPRES) = max(pnewrz,small_pres)
                    else
-                      qzpo(i,j,k,QPRES) = qzpo(i,j,k,QREINT)*(gamma_const-ONE)
+                      qzpo(i,j,k,QPRES) = qzpo(i,j,k,QREINT)*(gamma_minus_1)
                       qzpo(i,j,k,QPRES) = max(qzpo(i,j,k,QPRES), small_pres)
                    endif
                 else
@@ -950,9 +950,9 @@ contains
 
              ! this is the gas gamma_1
 #ifdef RADIATION
-             gamc = gamma_const !qaux(i,j,k-1,QGAMCG)
+             gamc = (gamma_minus_1+ONE) !qaux(i,j,k-1,QGAMCG)
 #else
-             gamc = gamma_const !qaux(i,j,k-1,QGAMC)
+             gamc = (gamma_minus_1+ONE) !qaux(i,j,k-1,QGAMC)
 #endif
 
 #ifdef RADIATION
@@ -1045,7 +1045,7 @@ contains
                       pnewlz = qzm(i,j,k,QPRES) - cdtdx*(dup + pav*du*(gamc - ONE))
                       qzmo(i,j,k,QPRES) = max(pnewlz,small_pres)
                    else
-                      qzmo(i,j,k,QPRES) = qzmo(i,j,k,QREINT)*(gamma_const-ONE)
+                      qzmo(i,j,k,QPRES) = qzmo(i,j,k,QREINT)*(gamma_minus_1)
                       qzmo(i,j,k,QPRES) = max(qzmo(i,j,k,QPRES), small_pres)
                    endif
                 else
@@ -1119,7 +1119,7 @@ contains
                                    small_pres, small_temp, &
                                    npassive, upass_map, qpass_map, &
                                    transverse_reset_density, transverse_reset_rhoe, &
-                                   ppm_predict_gammae, gamma_const, gamma_minus_1, &
+                                   ppm_predict_gammae, gamma_minus_1, &
                                    use_reset_state
 
 #ifdef RADIATION
@@ -1255,9 +1255,9 @@ contains
 
              ! this is the gas gamma_1
 #ifdef RADIATION
-             gamc = gamma_const !qaux(i,j,k,QGAMCG)
+             gamc = (gamma_minus_1+ONE) !qaux(i,j,k,QGAMCG)
 #else
-             gamc = gamma_const !qaux(i,j,k,QGAMC)
+             gamc = (gamma_minus_1+ONE) !qaux(i,j,k,QGAMC)
 #endif
 
 #ifdef RADIATION
@@ -1350,7 +1350,7 @@ contains
                       pnewrx = qxp(i,j,k,QPRES) - cdtdy*(dup + pav*du*(gamc - ONE))
                       qxpo(i,j,k,QPRES) = max(pnewrx,small_pres)
                    else
-                      qxpo(i,j,k,QPRES) = qxpo(i,j,k,QREINT)*(gamma_const-ONE)
+                      qxpo(i,j,k,QPRES) = qxpo(i,j,k,QREINT)*(gamma_minus_1)
                       qxpo(i,j,k,QPRES) = max(qxpo(i,j,k,QPRES), small_pres)
                    endif
                 else
@@ -1408,9 +1408,9 @@ contains
 
              ! this is the gas gamma_1
 #ifdef RADIATION
-             gamc = gamma_const !qaux(i-1,j,k,QGAMCG)
+             gamc = (gamma_minus_1+ONE) !qaux(i-1,j,k,QGAMCG)
 #else
-             gamc = gamma_const !qaux(i-1,j,k,QGAMC)
+             gamc = (gamma_minus_1+ONE) !qaux(i-1,j,k,QGAMC)
 #endif
 
 #ifdef RADIATION
@@ -1503,7 +1503,7 @@ contains
                       pnewlx = qxm(i,j,k,QPRES) - cdtdy*(dup + pav*du*(gamc - ONE))
                       qxmo(i,j,k,QPRES) = max(pnewlx,small_pres)
                    else
-                      qxmo(i,j,k,QPRES) = qxmo(i,j,k,QREINT)*(gamma_const-ONE)
+                      qxmo(i,j,k,QPRES) = qxmo(i,j,k,QREINT)*(gamma_minus_1)
                       qxmo(i,j,k,QPRES) = max(qxmo(i,j,k,QPRES), small_pres)
                    endif
                 else
@@ -1571,7 +1571,7 @@ contains
                                    small_pres, small_temp, &
                                    npassive, upass_map, qpass_map, &
                                    transverse_reset_density, transverse_reset_rhoe, &
-                                   ppm_predict_gammae, gamma_const, gamma_minus_1, &
+                                   ppm_predict_gammae, gamma_minus_1, &
                                    use_reset_state
 
 #ifdef RADIATION
@@ -1707,9 +1707,9 @@ contains
 
              ! this is the gas gamma_1
 #ifdef RADIATION
-             gamc = gamma_const !qaux(i,j,k,QGAMCG)
+             gamc = (gamma_minus_1+ONE) !qaux(i,j,k,QGAMCG)
 #else
-             gamc = gamma_const !qaux(i,j,k,QGAMC)
+             gamc = (gamma_minus_1+ONE) !qaux(i,j,k,QGAMC)
 #endif
 
 
@@ -1804,7 +1804,7 @@ contains
                       pnewrz = qzp(i,j,k,QPRES) - cdtdy*(dup + pav*du*(gamc - ONE))
                       qzpo(i,j,k,QPRES) = max(pnewrz,small_pres)
                    else
-                      qzpo(i,j,k,QPRES) = qzpo(i,j,k,QREINT)*(gamma_const-ONE)
+                      qzpo(i,j,k,QPRES) = qzpo(i,j,k,QREINT)*(gamma_minus_1)
                       qzpo(i,j,k,QPRES) = max(qzpo(i,j,k,QPRES), small_pres)
                    endif
                 else
@@ -1865,9 +1865,9 @@ contains
 
              ! this is the gas gamma_1
 #ifdef RADIATION
-             gamc = gamma_const !qaux(i,j,k-1,QGAMCG)
+             gamc = (gamma_minus_1+ONE) !qaux(i,j,k-1,QGAMCG)
 #else
-             gamc = gamma_const !qaux(i,j,k-1,QGAMC)
+             gamc = (gamma_minus_1+ONE) !qaux(i,j,k-1,QGAMC)
 #endif
 
 
@@ -1961,7 +1961,7 @@ contains
                       pnewrz = qzp(i,j,k,QPRES) - cdtdy*(dup + pav*du*(gamc - ONE))
                       qzpo(i,j,k,QPRES) = max(pnewrz,small_pres)
                    else
-                      qzpo(i,j,k,QPRES) = qzpo(i,j,k,QREINT)*(gamma_const-ONE)
+                      qzpo(i,j,k,QPRES) = qzpo(i,j,k,QREINT)*(gamma_minus_1)
                       qzpo(i,j,k,QPRES) = max(qzpo(i,j,k,QPRES), small_pres)
                    endif
                 else
@@ -2036,7 +2036,7 @@ contains
                                    small_pres, small_temp, &
                                    npassive, upass_map, qpass_map, &
                                    transverse_reset_density, transverse_reset_rhoe, &
-                                   ppm_predict_gammae, gamma_const, gamma_minus_1, &
+                                   ppm_predict_gammae, gamma_minus_1, &
                                    use_reset_state
 
 #ifdef RADIATION
@@ -2168,9 +2168,9 @@ contains
 
              ! this is the gas gamma_1
 #ifdef RADIATION
-             gamc = gamma_const !qaux(i,j,k,QGAMCG)
+             gamc = (gamma_minus_1+ONE) !qaux(i,j,k,QGAMCG)
 #else
-             gamc = gamma_const !qaux(i,j,k,QGAMC)
+             gamc = (gamma_minus_1+ONE) !qaux(i,j,k,QGAMC)
 #endif
 
 #ifdef RADIATION
@@ -2263,7 +2263,7 @@ contains
                       pnewrx = qxp(i,j,k,QPRES) - cdtdz*(dup + pav*du*(gamc - ONE))
                       qxpo(i,j,k,QPRES) = max(pnewrx,small_pres)
                    else
-                      qxpo(i,j,k,QPRES) = qxpo(i,j,k,QREINT)*(gamma_const-ONE)
+                      qxpo(i,j,k,QPRES) = qxpo(i,j,k,QREINT)*(gamma_minus_1)
                       qxpo(i,j,k,QPRES) = max(qxpo(i,j,k,QPRES), small_pres)
                    endif
                 else
@@ -2319,9 +2319,9 @@ contains
 
              ! this is the gas gamma_1
 #ifdef RADIATION
-             gamc = gamma_const !qaux(i-1,j,k,QGAMCG)
+             gamc = (gamma_minus_1+ONE) !qaux(i-1,j,k,QGAMCG)
 #else
-             gamc = gamma_const !qaux(i-1,j,k,QGAMC)
+             gamc = (gamma_minus_1+ONE) !qaux(i-1,j,k,QGAMC)
 #endif
 
 #ifdef RADIATION
@@ -2413,7 +2413,7 @@ contains
                       pnewlx = qxm(i,j,k,QPRES) - cdtdz*(dup + pav*du*(gamc - ONE))
                       qxmo(i,j,k,QPRES) = max(pnewlx,small_pres)
                    else
-                      qxmo(i,j,k,QPRES) = qxmo(i,j,k,QREINT)*(gamma_const-ONE)
+                      qxmo(i,j,k,QPRES) = qxmo(i,j,k,QREINT)*(gamma_minus_1)
                       qxmo(i,j,k,QPRES) = max(qxmo(i,j,k,QPRES), small_pres)
                    end if
                 else
@@ -2479,7 +2479,7 @@ contains
                                    small_pres, small_temp, &
                                    npassive, upass_map, qpass_map, &
                                    transverse_reset_density, transverse_reset_rhoe, &
-                                   ppm_predict_gammae, gamma_const, gamma_minus_1, &
+                                   ppm_predict_gammae, gamma_minus_1, &
                                    use_reset_state
 
 #ifdef RADIATION
@@ -2611,9 +2611,9 @@ contains
 
              ! this is the gas gamma_1
 #ifdef RADIATION
-             gamc = gamma_const !qaux(i,j,k,QGAMCG)
+             gamc = (gamma_minus_1+ONE) !qaux(i,j,k,QGAMCG)
 #else
-             gamc = gamma_const !qaux(i,j,k,QGAMC)
+             gamc = (gamma_minus_1+ONE) !qaux(i,j,k,QGAMC)
 #endif
 
 #ifdef RADIATION
@@ -2709,7 +2709,7 @@ contains
                       qypo(i,j,k,QPRES) = max(pnewry,small_pres)
                       
                    else
-                      qypo(i,j,k,QPRES) = qypo(i,j,k,QREINT)*(gamma_const-ONE)
+                      qypo(i,j,k,QPRES) = qypo(i,j,k,QREINT)*(gamma_minus_1)
                       qypo(i,j,k,QPRES) = max(qypo(i,j,k,QPRES), small_pres)
                    endif
                    
@@ -2767,9 +2767,9 @@ contains
 
              ! this is the gas gamma_1
 #ifdef RADIATION
-             gamc = gamma_const !qaux(i,j-1,k,QGAMCG)
+             gamc = (gamma_minus_1+ONE) !qaux(i,j-1,k,QGAMCG)
 #else
-             gamc = gamma_const !qaux(i,j-1,k,QGAMC)
+             gamc = (gamma_minus_1+ONE) !qaux(i,j-1,k,QGAMC)
 #endif
 
 #ifdef RADIATION
@@ -2863,7 +2863,7 @@ contains
                       pnewly = qym(i,j,k,QPRES) - cdtdz*(dup + pav*du*(gamc - ONE))
                       qymo(i,j,k,QPRES) = max(pnewly,small_pres)
                    else
-                      qymo(i,j,k,QPRES) = qymo(i,j,k,QREINT)*(gamma_const-ONE)
+                      qymo(i,j,k,QPRES) = qymo(i,j,k,QREINT)*(gamma_minus_1)
                       qymo(i,j,k,QPRES) = max(qymo(i,j,k,QPRES), small_pres)
                    endif
                 else
@@ -2925,7 +2925,7 @@ contains
                                    small_pres, small_temp, &
                                    npassive, upass_map, qpass_map, &
                                    transverse_reset_density, transverse_reset_rhoe, &
-                                   ppm_predict_gammae, gamma_const, gamma_minus_1, &
+                                   ppm_predict_gammae, gamma_minus_1, &
                                    use_srcQ_in_trace, use_reset_state
 
     integer, intent(in) :: qm_lo(3), qm_hi(3)
@@ -3068,7 +3068,7 @@ contains
              duy = ugyp-ugym
              dgey = gegyp-gegym
              pynew = cdtdy*(duyp + pyav*duy*(gamma_minus_1))
-             geynew = cdtdy*( (geyav-ONE)*(geyav - gamma_const)*duy - uyav*dgey )
+             geynew = cdtdy*( (geyav-ONE)*(geyav - (gamma_minus_1+ONE))*duy - uyav*dgey )
 
              duzp = pgzp*ugzp - pgzm*ugzm
              pzav = HALF*(pgzp+pgzm)
@@ -3077,7 +3077,7 @@ contains
              duz = ugzp-ugzm
              dgez = gegzp-gegzm
              pznew = cdtdz*(duzp + pzav*duz*(gamma_minus_1))
-             geznew = cdtdz*( (gezav-ONE)*(gezav - gamma_const)*duz - uzav*dgez )
+             geznew = cdtdz*( (gezav-ONE)*(gezav - (gamma_minus_1+ONE))*duz - uzav*dgez )
 
              ! Convert to conservation form
              rrr = qp(i,j,k,QRHO)
@@ -3143,7 +3143,7 @@ contains
                       pnewr = qp(i,j,k,QPRES) - pynew - pznew
                       qpo(i,j,k,QPRES) = pnewr
                    else
-                      qpo(i,j,k,QPRES) = qpo(i,j,k,QREINT)*(gamma_const-ONE)
+                      qpo(i,j,k,QPRES) = qpo(i,j,k,QREINT)*(gamma_minus_1)
                    end if
                 else
                    qpo(i,j,k,QPRES) = qp(i,j,k,QPRES)
@@ -3154,7 +3154,7 @@ contains
                 call reset_edge_state_thermo(qpo, qpo_lo, qpo_hi, i, j, k)
              else
              
-                qpo(i,j,k,QPRES) = qpo(i,j,k,QREINT)*(gamma_const-ONE)
+                qpo(i,j,k,QPRES) = qpo(i,j,k,QREINT)*(gamma_minus_1)
                 if (qpo(i,j,k,QPRES) .lt. small_pres) then
                    pnewr = qp(i,j,k,QPRES) - pynew - pznew
                    qpo(i,j,k,QPRES ) = pnewr + hdt* srcQ(i,j,k,QPRES ) / a_old
@@ -3188,7 +3188,7 @@ contains
              duy = ugyp-ugym
              dgey = gegyp-gegym
              pynew = cdtdy*(duyp + pyav*duy*(gamma_minus_1))
-             geynew = cdtdy*( (geyav-ONE)*(geyav - gamma_const)*duy - uyav*dgey )
+             geynew = cdtdy*( (geyav-ONE)*(geyav - (gamma_minus_1+ONE))*duy - uyav*dgey )
 
              duzp = pgzp*ugzp - pgzm*ugzm
              pzav = HALF*(pgzp+pgzm)
@@ -3197,7 +3197,7 @@ contains
              duz = ugzp-ugzm
              dgez = gegzp-gegzm
              pznew = cdtdz*(duzp + pzav*duz*(gamma_minus_1))
-             geznew = cdtdz*( (gezav-ONE)*(gezav - gamma_const)*duz - uzav*dgez )
+             geznew = cdtdz*( (gezav-ONE)*(gezav - (gamma_minus_1+ONE))*duz - uzav*dgez )
 
              ! Convert to conservation form
              rrl = qm(i,j,k,QRHO)
@@ -3261,7 +3261,7 @@ contains
                       pnewl = qm(i,j,k,QPRES) - pynew - pznew
                       qmo(i,j,k,QPRES  ) = pnewl
                    else
-                      qmo(i,j,k,QPRES) = qmo(i,j,k,QREINT)*(gamma_const-ONE)
+                      qmo(i,j,k,QPRES) = qmo(i,j,k,QREINT)*(gamma_minus_1)
                    end if
                 else
                    qmo(i,j,k,QPRES  ) = qm(i,j,k,QPRES)
@@ -3272,7 +3272,7 @@ contains
                 call reset_edge_state_thermo(qmo, qmo_lo, qmo_hi, i, j, k)
              else
                 
-                qmo(i,j,k,QPRES) = qmo(i,j,k,QREINT)*(gamma_const-ONE)
+                qmo(i,j,k,QPRES) = qmo(i,j,k,QREINT)*(gamma_minus_1)
                 if(qmo(i,j,k,QPRES).lt.small_pres)then
                    pnewl = qm(i,j,k,QPRES) - pynew - pznew
                    qmo(i,j,k,QPRES ) = pnewl + hdt* srcQ(i-1,j,k,QPRES ) / a_old
@@ -3340,7 +3340,7 @@ contains
                                    small_pres, small_temp, &
                                    npassive, upass_map, qpass_map, &
                                    transverse_reset_density, transverse_reset_rhoe, &
-                                   ppm_predict_gammae, gamma_const, gamma_minus_1, &
+                                   ppm_predict_gammae, gamma_minus_1, &
                                    use_srcQ_in_trace, use_reset_state
 
 #ifdef RADIATION
@@ -3498,7 +3498,7 @@ contains
              gexnew = cdtdx*( (gexav-ONE)*(gexav - qaux(i,j,k,QGAMCG))*dux - uxav*dgex )
 #else
              pxnew = cdtdx*(duxp + pxav*dux*(gamma_minus_1))
-             gexnew = cdtdx*( (gexav-ONE)*(gexav - gamma_const)*dux - uxav*dgex )
+             gexnew = cdtdx*( (gexav-ONE)*(gexav - (gamma_minus_1+ONE))*dux - uxav*dgex )
 #endif
 
              duzp = pgzp*ugzp - pgzm*ugzm
@@ -3512,7 +3512,7 @@ contains
              geznew = cdtdz*( (gezav-ONE)*(gezav - qaux(i,j,k,QGAMCG))*duz - uzav*dgez )
 #else
              pznew = cdtdz*(duzp + pzav*duz*(gamma_minus_1))
-             geznew = cdtdz*( (gezav-ONE)*(gezav - gamma_const)*duz - uzav*dgez )
+             geznew = cdtdz*( (gezav-ONE)*(gezav - (gamma_minus_1+ONE))*duz - uzav*dgez )
 #endif
 
 #ifdef RADIATION
@@ -3622,7 +3622,7 @@ contains
                       pnewr = qp(i,j,k,QPRES) - pxnew - pznew
                       qpo(i,j,k,QPRES) = pnewr
                    else
-                      qpo(i,j,k,QPRES) = qpo(i,j,k,QREINT)*(gamma_const-ONE)
+                      qpo(i,j,k,QPRES) = qpo(i,j,k,QREINT)*(gamma_minus_1)
                    endif
                 else
                    qpo(i,j,k,QPRES) = qp(i,j,k,QPRES)
@@ -3687,7 +3687,7 @@ contains
              gexnew = cdtdx*( (gexav-ONE)*(gexav - qaux(i,j-1,k,QGAMCG))*dux - uxav*dgex )
 #else
              pxnew = cdtdx*(duxp + pxav*dux*(gamma_minus_1))
-             gexnew = cdtdx*( (gexav-ONE)*(gexav - gamma_const)*dux - uxav*dgex )
+             gexnew = cdtdx*( (gexav-ONE)*(gexav - (gamma_minus_1+ONE))*dux - uxav*dgex )
 #endif
 
              duzp = pgzp*ugzp - pgzm*ugzm
@@ -3701,7 +3701,7 @@ contains
              geznew = cdtdz*( (gezav-ONE)*(gezav - qaux(i,j-1,k,QGAMCG))*duz - uzav*dgez )
 #else
              pznew = cdtdz*(duzp + pzav*duz*(gamma_minus_1))
-             geznew = cdtdz*( (gezav-ONE)*(gezav - gamma_const)*duz - uzav*dgez )
+             geznew = cdtdz*( (gezav-ONE)*(gezav - (gamma_minus_1+ONE))*duz - uzav*dgez )
 #endif
 
 #ifdef RADIATION
@@ -3810,7 +3810,7 @@ contains
                       pnewl = qm(i,j,k,QPRES) - pxnew - pznew
                       qmo(i,j,k,QPRES) = pnewl
                    else
-                      qmo(i,j,k,QPRES) = qmo(i,j,k,QREINT)*(gamma_const-ONE)
+                      qmo(i,j,k,QPRES) = qmo(i,j,k,QREINT)*(gamma_minus_1)
                    endif
                 else
                    qmo(i,j,k,QPRES) = qm(i,j,k,QPRES)
@@ -3897,7 +3897,7 @@ contains
                                    small_pres, small_temp, &
                                    npassive, upass_map, qpass_map, &
                                    transverse_reset_density, transverse_reset_rhoe, &
-                                   ppm_predict_gammae, gamma_const, gamma_minus_1, &
+                                   ppm_predict_gammae, gamma_minus_1, &
                                    use_srcQ_in_trace, use_reset_state
 
 #ifdef RADIATION
@@ -4060,7 +4060,7 @@ contains
              gexnew = cdtdx*( (gexav-ONE)*(gexav - qaux(i,j,k,QGAMCG))*dux - uxav*dgex )
 #else
              pxnew = cdtdx*(duxp + pxav*dux*(gamma_minus_1))
-             gexnew = cdtdx*( (gexav-ONE)*(gexav - gamma_const)*dux - uxav*dgex )
+             gexnew = cdtdx*( (gexav-ONE)*(gexav - (gamma_minus_1+ONE))*dux - uxav*dgex )
 #endif
 
              duyp = pgyp*ugyp - pgym*ugym
@@ -4074,7 +4074,7 @@ contains
              geynew = cdtdy*( (geyav-ONE)*(geyav - qaux(i,j,k,QGAMCG))*duy - uyav*dgey )
 #else
              pynew = cdtdy*(duyp + pyav*duy*(gamma_minus_1))
-             geynew = cdtdy*( (geyav-ONE)*(geyav - gamma_const)*duy - uyav*dgey )
+             geynew = cdtdy*( (geyav-ONE)*(geyav - (gamma_minus_1+ONE))*duy - uyav*dgey )
 #endif
 
 #ifdef RADIATION
@@ -4185,7 +4185,7 @@ contains
                       pnewr = qp(i,j,k,QPRES) - pxnew - pynew
                       qpo(i,j,k,QPRES) = pnewr
                    else
-                      qpo(i,j,k,QPRES) = qpo(i,j,k,QREINT)*(gamma_const-ONE)
+                      qpo(i,j,k,QPRES) = qpo(i,j,k,QREINT)*(gamma_minus_1)
                    endif
                 else
                    qpo(i,j,k,QPRES) = qp(i,j,k,QPRES)
@@ -4268,7 +4268,7 @@ contains
              gexnew = cdtdx*( (gexav-ONE)*(gexav - qaux(i,j,k-1,QGAMCG))*dux - uxav*dgex )
 #else
              pxnew = cdtdx*(duxp + pxav*dux*(gamma_minus_1))
-             gexnew = cdtdx*( (gexav-ONE)*(gexav - gamma_const)*dux - uxav*dgex )
+             gexnew = cdtdx*( (gexav-ONE)*(gexav - (gamma_minus_1+ONE))*dux - uxav*dgex )
 #endif
              duyp = pgyp*ugyp - pgym*ugym
              pyav = HALF*(pgyp+pgym)
@@ -4281,7 +4281,7 @@ contains
              geynew = cdtdy*( (geyav-ONE)*(geyav - qaux(i,j,k-1,QGAMCG))*duy - uyav*dgey )
 #else
              pynew = cdtdy*(duyp + pyav*duy*(gamma_minus_1))
-             geynew = cdtdy*( (geyav-ONE)*(geyav - gamma_const)*duy - uyav*dgey )
+             geynew = cdtdy*( (geyav-ONE)*(geyav - (gamma_minus_1+ONE))*duy - uyav*dgey )
 #endif
 
 #ifdef RADIATION
@@ -4390,7 +4390,7 @@ contains
                       pnewl = qm(i,j,k,QPRES) - pxnew - pynew
                       qmo(i,j,k,QPRES) = pnewl
                    else
-                      qmo(i,j,k,QPRES) = qmo(i,j,k,QREINT)*(gamma_const-ONE)
+                      qmo(i,j,k,QPRES) = qmo(i,j,k,QREINT)*(gamma_minus_1)
                    endif
                 else
                    qmo(i,j,k,QPRES) = qm(i,j,k,QPRES)

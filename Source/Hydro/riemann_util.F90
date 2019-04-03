@@ -666,7 +666,7 @@ contains
 #ifdef RADIATION
                                    QRAD, GDERADS, GDLAMS, &
 #endif
-                                   GDRHO, GDU, GDV, GDW, gamma_const
+                                   GDRHO, GDU, GDV, GDW, gamma_minus_1
 
 #ifdef RADIATION
     use rad_params_module, only : ngroups
@@ -696,7 +696,7 @@ contains
              qgdnv(i,j,k,GDV) = qint(i,j,k,QV)
              qgdnv(i,j,k,GDW) = qint(i,j,k,QW)
              qgdnv(i,j,k,GDPRES) = qint(i,j,k,QPRES)
-             qgdnv(i,j,k,GDGAME) = gamma_const
+             qgdnv(i,j,k,GDGAME) = (gamma_minus_1+ONE)
 #ifdef RADIATION
              qgdnv(i,j,k,GDLAMS:GDLAMS-1+ngroups) = lambda(i,j,k,:)
              qgdnv(i,j,k,GDERADS:GDERADS-1+ngroups) = qint(i,j,k,QRAD:QRAD-1+ngroups)
