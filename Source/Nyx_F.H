@@ -274,7 +274,7 @@ extern "C"
      const amrex::Real* dx, const amrex::Real dt);
 #endif
 
-  void scale_flux
+  AMREX_GPU_DEVICE void scale_flux
     (const int* lo, const int* hi,
 #if AMREX_SPACEDIM == 1
      const BL_FORT_FAB_ARG_3D(qe0),
@@ -396,7 +396,7 @@ extern "C"
      BL_FORT_FAB_ARG_3D(area),
      const amrex::Real dt, const amrex::Real* dx);
 
-  void normalize_species_fluxes
+  AMREX_GPU_DEVICE void normalize_species_fluxes
     (const int* lo, const int* hi,
      BL_FORT_FAB_ARG_3D(flux));
 

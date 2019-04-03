@@ -245,6 +245,11 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       FArrayBox* fab_qaux = qaux.fabPtr(mfi);
       FArrayBox* fab_src_q = src_q.fabPtr(mfi);
 
+      GpuArray<FArrayBox*, AMREX_SPACEDIM> fab_area;
+      AMREX_D_TERM(fab_area[0] = area[0].fabPtr(mfi);,
+		   fab_area[1] = area[1].fabPtr(mfi);,
+		   fab_area[2] = area[2].fabPtr(mfi););
+      
       //      q.resize(obx, 1);
       //      Elixir elix_q = q.elixir();
       
@@ -868,10 +873,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                    BL_TO_FORTRAN_ANYD(*fab_div),
                    BL_TO_FORTRAN_ANYD(*fab_Sborder),
                    BL_TO_FORTRAN_ANYD(*fab_flux[idir]),&dt);
-      });
-      amrex::Gpu::Device::synchronize();
-      amrex::Cuda::setLaunchRegion(false);
-          if (0){//limit_fluxes_on_small_dens == 1) {
+	  /*          if (0){//limit_fluxes_on_small_dens == 1) {
 #pragma gpu
               limit_hydro_fluxes_on_small_dens
                   (AMREX_INT_ANYD(nbx.loVect()), AMREX_INT_ANYD(nbx.hiVect()),
@@ -882,12 +884,14 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                    BL_TO_FORTRAN_ANYD(*fab_flux[idir]),
                    BL_TO_FORTRAN_ANYD(area[idir][mfi]),
                    dt, AMREX_REAL_ANYD(dx));
-          }
+		   }*/
 
 #pragma gpu
-	  normalize_species_fluxes(AMREX_INT_ANYD(nbx.loVect()), AMREX_INT_ANYD(nbx.hiVect()),
+	  normalize_species_fluxes(AMREX_INT_ANYD(tnbx.loVect()), AMREX_INT_ANYD(tnbx.hiVect()),
                                    BL_TO_FORTRAN_ANYD(*fab_flux[idir]));
-	  
+      });
+      amrex::Gpu::Device::synchronize();
+      amrex::Cuda::setLaunchRegion(false);	  
 	  //	  amrex::Print()<<"max flux["<<idir<<"]="<<flux[idir].max()<<std::endl;
       }
 
@@ -917,10 +921,14 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
         const Box& nbx = amrex::surroundingNodes(bx, idir);
 
 #pragma gpu
-        scale_flux(AMREX_INT_ANYD(nbx.loVect()), AMREX_INT_ANYD(nbx.hiVect()),
+      amrex::Cuda::setLaunchRegion(true);
+      AMREX_LAUNCH_DEVICE_LAMBDA(nbx, tnbx,
+      {
+        scale_flux(AMREX_INT_ANYD(tnbx.loVect()), AMREX_INT_ANYD(tnbx.hiVect()),
                    BL_TO_FORTRAN_ANYD(*fab_flux[idir]),
-                   BL_TO_FORTRAN_ANYD(area[idir][mfi]), dt);
-
+                   BL_TO_FORTRAN_ANYD(*fab_area[idir]), dt);
+      });
+      amrex::Cuda::setLaunchRegion(false);
         if (idir == 0) {
             // get the scaled radial pressure -- we need to treat this specially
             Array4<Real> const qex_fab = qe[idir].array();

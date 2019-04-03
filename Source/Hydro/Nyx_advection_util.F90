@@ -388,12 +388,11 @@ subroutine ca_ctoprim(lo, hi, &
   !! they sum to 0.  This is essentially the CMA procedure that is
   !! defined in Plewa & Muller, 1999, A&A, 342, 179.
   !!
-  subroutine ca_normalize_species_fluxes(lo, hi, flux, f_lo, f_hi) bind(c, name="normalize_species_fluxes")
+  AMREX_CUDA_FORT_DEVICE subroutine ca_normalize_species_fluxes(lo, hi, flux, f_lo, f_hi) bind(c, name="normalize_species_fluxes")
 
-    use network, only: nspec
     use amrex_constants_module, only: ZERO, ONE
     use amrex_fort_module, only: rt => amrex_real
-    use meth_params_module, only: NVAR, URHO, UFS, use_const_species
+    use meth_params_module, only: NVAR, URHO, UFS, use_const_species, npassive, upass_map
 
     implicit none
 
@@ -402,7 +401,7 @@ subroutine ca_ctoprim(lo, hi, &
     real(rt), intent(inout) :: flux(f_lo(1):f_hi(1),f_lo(2):f_hi(2),f_lo(3):f_hi(3),NVAR)
 
     ! Local variables
-    integer  :: i, j, k, n
+    integer  :: i, j, k, n, ipassive
     real(rt) :: sum, fac
 
     !$gpu
@@ -413,8 +412,9 @@ subroutine ca_ctoprim(lo, hi, &
              do i = lo(1), hi(1)
                 
                 sum = ZERO
-                
-                do n = UFS, UFS+nspec-1
+
+                do ipassive = 1, npassive
+                   n = upass_map(ipassive)
                    sum = sum + flux(i,j,k,n)
                 end do
                 
@@ -423,8 +423,9 @@ subroutine ca_ctoprim(lo, hi, &
                 else
                    fac = ONE
                 end if
-                
-                do n = UFS, UFS+nspec-1
+
+                do ipassive = 1, npassive
+                   n = upass_map(ipassive)               
                    flux(i,j,k,n) = flux(i,j,k,n) * fac
                 end do
                 
@@ -980,7 +981,7 @@ subroutine ca_ctoprim(lo, hi, &
 
   end subroutine calc_pdivu
 
-      subroutine scale_flux(lo, hi, &
+    AMREX_CUDA_FORT_DEVICE  subroutine scale_flux(lo, hi, &
 #if AMREX_SPACEDIM == 1
                           qint, qi_lo, qi_hi, &
 #endif
@@ -989,7 +990,6 @@ subroutine ca_ctoprim(lo, hi, &
 
     use meth_params_module, only: NVAR, UMX, GDPRES, NGDNV, &
            use_area_dt_scale_apply
-    use prob_params_module, only : coord_type
 
     implicit none
 
@@ -1015,12 +1015,6 @@ subroutine ca_ctoprim(lo, hi, &
              do j = lo(2), hi(2)
                 do i = lo(1), hi(1)
                    flux(i,j,k,n) = dt * flux(i,j,k,n) * area(i,j,k)
-#if AMREX_SPACEDIM == 1
-                ! Correct the momentum flux with the grad p part.
-                   if (coord_type == 0 .and. n == UMX) then
-                      flux(i,j,k,n) = flux(i,j,k,n) + dt * area(i,j,k) * qint(i,j,k,GDPRES)
-                   endif
-#endif
                 enddo
              enddo
           enddo
