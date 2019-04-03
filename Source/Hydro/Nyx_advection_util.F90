@@ -2,13 +2,12 @@ module advection_module
       use amrex_fort_module, only : rt => amrex_real
 contains
   
-subroutine ca_ctoprim(lo, hi, &
+AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
        uin, uin_lo, uin_hi, &
        q,     q_lo,   q_hi, &
        qaux, qa_lo,  qa_hi, &
        csml, ca_lo,  ca_hi) bind(c,name='ca_ctoprim')
 
-    use network, only : nspec, naux
     use eos_module, only : nyx_eos_soundspeed
     use meth_params_module, only : NVAR, URHO, UMX, UMZ, &
                                      UEDEN, UEINT, UFA, UFS, &
@@ -107,7 +106,9 @@ subroutine ca_ctoprim(lo, hi, &
 
              ! Define the soundspeed from the EOS
              !             call nyx_eos_soundspeed(c(i,j,k), q(i,j,k,QRHO), q(i,j,k,QREINT))
-             call nyx_eos_soundspeed(qaux(i,j,k,QC), q(i,j,k,QRHO), q(i,j,k,QREINT))
+!             call nyx_eos_soundspeed(qaux(i,j,k,QC), q(i,j,k,QRHO), q(i,j,k,QREINT))
+
+             qaux(i,j,k,QC) = sqrt((gamma_minus_1+ONE) * q(i,j,k,QREINT)*gamma_minus_1)
 
              ! Set csmal based on small_pres and small_dens
              csml(i,j,k,1) = sqrt((gamma_minus_1+ONE) * small_pres_over_dens)
@@ -131,14 +132,13 @@ subroutine ca_ctoprim(lo, hi, &
 
 
 
-  subroutine ca_srctoprim(lo, hi, &
+  AMREX_CUDA_FORT_DEVICE subroutine ca_srctoprim(lo, hi, &
        q,     q_lo,   q_hi, &
        qaux, qa_lo,  qa_hi, &
        grav,  g_lo,   g_hi, &
        src, src_lo, src_hi, &
        srcQ,srQ_lo, srQ_hi, a_old, a_new, dt) bind(c,name='ca_srctoprim')
 
-    use network, only : nspec, naux
     use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, &
                                      UEDEN, UEINT, NQAUX, &
                                      QVAR, QRHO, QU, QV, QW, &
@@ -201,41 +201,41 @@ subroutine ca_ctoprim(lo, hi, &
                   + dpdr * srcQ(i,j,k,QRHO)
 
              !!!!!!!!!!!UFS and UFA mapping should be identical to ipassive
-             if (UFS .gt. 0) then
-                  do ispec = 1,nspec+naux
-                     srcQ(i,j,k,QFS+ispec-1) = src(i,j,k,UFS+ispec-1)*rhoInv
-                  enddo
-               end if ! UFS > 0
+!             if (UFS .gt. 0) then
+!                  do ispec = 1,nspec+naux
+!                     srcQ(i,j,k,QFS+ispec-1) = src(i,j,k,UFS+ispec-1)*rhoInv
+!                  enddo
+!               end if ! UFS > 0
 
-               do iadv = 1,nadv
-                  srcQ(i,j,k,QFA+iadv-1) = src(i,j,k,UFA+iadv-1)*rhoInv
-               enddo
+!               do iadv = 1,nadv
+!                  srcQ(i,j,k,QFA+iadv-1) = src(i,j,k,UFA+iadv-1)*rhoInv
+!               enddo
 
           enddo
        enddo
     enddo
 
-!    do ipassive = 1, npassive
-!       n = upass_map(ipassive)
-!       iq = qpass_map(ipassive)
+    do ipassive = 1, npassive
+       n = upass_map(ipassive)
+       iq = qpass_map(ipassive)
 
-!       ! we already accounted for velocities above
-!       if (iq == QU .or. iq == QV .or. iq == QW) cycle
+       ! we already accounted for velocities above
+       if (iq == QU .or. iq == QV .or. iq == QW) cycle
 
        ! we may not be including the ability to have species sources,
        ! so check to make sure that we are < NQSRC
-!       if (iq > QVAR) cycle
+       if (iq > QVAR) cycle
 
-!       do k = lo(3), hi(3)
-!          do j = lo(2), hi(2)
-!             do i = lo(1), hi(1)
-!                srcQ(i,j,k,iq) = ( src(i,j,k,n) - q(i,j,k,iq) * srcQ(i,j,k,QRHO) ) / &
-!                     q(i,j,k,QRHO)
-!             enddo
-!          enddo
-!       enddo
+       do k = lo(3), hi(3)
+          do j = lo(2), hi(2)
+             do i = lo(1), hi(1)
+                srcQ(i,j,k,iq) = ( src(i,j,k,n) - q(i,j,k,iq) * srcQ(i,j,k,QRHO) ) / &
+                     q(i,j,k,QRHO)
+             enddo
+          enddo
+       enddo
 
-!    enddo
+    enddo
 
   end subroutine ca_srctoprim
 

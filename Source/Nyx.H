@@ -420,23 +420,6 @@ public:
 
 
 ///
-/// Calculate primitive variables from conserved variables (uses StateData)
-///
-/// @param time     current time
-///
-    void cons_to_prim(const amrex::Real time);
-
-///
-/// Calculate primitive variables from given conserved variables
-///
-/// @param u        MultiFab of conserved variables
-/// @param q        MultiFab to save primitive variables to
-/// @param qaux     MultiFab of auxiliary variables
-/// @param time     Current time
-///
-    void cons_to_prim(amrex::MultiFab& u, amrex::MultiFab& q, amrex::MultiFab& qaux, const amrex::Real time);
-
-  ///
 /// Calculate primitive variables from given conserved variables
 ///
 /// @param u        MultiFab of conserved variables
@@ -446,23 +429,9 @@ public:
 ///
   void cons_to_prim(amrex::MultiFab& u, amrex::MultiFab& q, amrex::MultiFab& qaux, 
 		    amrex::MultiFab& grav, amrex::MultiFab& hydro_src, amrex::MultiFab& src_q,
-		    amrex::MultiFab& csml, amrex::Real& a_old, amrex::Real& a_new,
-		    amrex::Real& dt);
+		    amrex::MultiFab& csml, const amrex::Real a_old, const amrex::Real a_new,
+		    const amrex::Real dt);
 
-///
-/// convert the conservative state cell averages to primitive cell
-/// averages with 4th order accuracy
-///
-/// @param time     current time
-///
-    void cons_to_prim_fourth(const amrex::Real time);
-
-///
-/// Check to see if the CFL condition has been violated
-///
-/// @param dt timestep
-///
-    void check_for_cfl_violation(const amrex::Real dt);
 
 ///
 /// this constructs the hydrodynamic source (essentially the flux

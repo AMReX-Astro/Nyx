@@ -102,11 +102,11 @@ contains
   subroutine nyx_eos_soundspeed(c, R, e)
 
      use amrex_fort_module, only : rt => amrex_real
-     use meth_params_module, only: gamma_const, gamma_minus_1
+     use meth_params_module, only: gamma_minus_1
 
      ! In/out variables
-     real(rt), intent(in   ) :: R, e
-     real(rt), intent(  out) :: c
+     real(rt), value, intent(in   ) :: R, e
+     real(rt), intent(inout) :: c
 
      ! Pressure
      real(rt) :: P
@@ -114,7 +114,7 @@ contains
      P = R * e * gamma_minus_1
 
      ! sound speed
-     c = sqrt(gamma_const * P / R)
+     c = sqrt((gamma_minus_1+ONE) * P / R)
 
   end subroutine nyx_eos_soundspeed
   subroutine nyx_eos_T_given_Re(JH, JHe, T, Ne, R, e, comoving_a)
