@@ -3444,7 +3444,7 @@ AMREX_CUDA_FORT_DEVICE  subroutine transxz(lo, hi, &
 
                 qmo(i,j,k,nqp) = compnl/rrnewl
                 if(use_srcQ_in_trace.eq.0) then
-                   qmo(i,j,k,nqp) = qmo(i,j,k,nqp)+ hdt*srcQ(i,j,k-1,nqp) / a_half
+                   qmo(i,j,k,nqp) = qmo(i,j,k,nqp)+ hdt*srcQ(i,j-1,k,nqp) / a_half
                 endif
                 
              end do

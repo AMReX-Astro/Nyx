@@ -323,6 +323,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 		       a_old, a_new,
                        AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
+      amrex::Gpu::Device::synchronize();
       amrex::Cuda::setLaunchRegion(false);
 
       } else {
@@ -390,6 +391,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
            AMREX_REAL_ANYD(dx),
            BL_TO_FORTRAN_ANYD(*fab_div));
       });
+      amrex::Gpu::Device::synchronize();
       amrex::Cuda::setLaunchRegion(false);
 
       q_int.resize(obx, QVAR);
@@ -465,6 +467,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       });
       amrex::Gpu::Device::synchronize();
       amrex::Cuda::setLaunchRegion(false);
+
       // [lo(1), lo(2), lo(3)-1], [hi(1), hi(2)+1, hi(3)+1]
       const Box& tyxbx = amrex::grow(ybx, IntVect(AMREX_D_DECL(0,0,1)));
 
@@ -491,6 +494,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                         BL_TO_FORTRAN_ANYD(*fab_qgdnvtmp1),
                         hdt, cdtdx);
       });
+      amrex::Gpu::Device::synchronize();
       amrex::Cuda::setLaunchRegion(false);
       // [lo(1), lo(2)-1, lo(3)], [hi(1), hi(2)+1, hi(3)+1]
       const Box& tzxbx = amrex::grow(zbx, IntVect(AMREX_D_DECL(0,1,0)));
@@ -947,11 +951,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       });
       amrex::Gpu::Device::synchronize();
       amrex::Cuda::setLaunchRegion(false);
-      /*
-      for (int idir = 0; idir < AMREX_SPACEDIM; ++idir) {
-	amrex::Print()<<"max flux["<<idir<<"]="<<flux[idir].max()<<std::endl;
-	amrex::Print()<<flux[idir]<<std::endl;
-	}*/
+
       // clean the fluxes
 
       for (int idir = 0; idir < AMREX_SPACEDIM; ++idir) {
@@ -990,13 +990,20 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                    BL_TO_FORTRAN_ANYD(area[idir][mfi]),
                    dt, AMREX_REAL_ANYD(dx));
 		   }*/
+      });
+      amrex::Gpu::Device::synchronize();
+      amrex::Cuda::setLaunchRegion(false);
 
 #pragma gpu
+      amrex::Cuda::setLaunchRegion(true);
+      AMREX_LAUNCH_DEVICE_LAMBDA(nbx, tnbx,
+      {
 	  normalize_species_fluxes(AMREX_INT_ANYD(tnbx.loVect()), AMREX_INT_ANYD(tnbx.hiVect()),
                                    BL_TO_FORTRAN_ANYD(*fab_flux[idir]));
       });
       amrex::Gpu::Device::synchronize();
       amrex::Cuda::setLaunchRegion(false);
+
 	  //	  amrex::Print()<<"max flux["<<idir<<"]="<<flux[idir].max()<<std::endl;
       }
 
@@ -1033,6 +1040,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                    BL_TO_FORTRAN_ANYD(*fab_flux[idir]),
                    BL_TO_FORTRAN_ANYD(*fab_area[idir]), dt);
       });
+      amrex::Gpu::Device::synchronize();
       amrex::Cuda::setLaunchRegion(false);
         if (idir == 0) {
             // get the scaled radial pressure -- we need to treat this specially

@@ -145,7 +145,7 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
                                      QREINT, QPRES, &
                                      npassive, upass_map, qpass_map, &
                                      nadv, small_dens, small_pres, &
-                                     gamma_minus_1, use_flattening, QFA, QFS, UFS, UFA
+                                     gamma_minus_1, use_flattening, use_srcQ_in_trace
     use amrex_constants_module, only: ZERO, HALF, ONE, THREE
     use amrex_fort_module, only : rt => amrex_real
 
@@ -229,8 +229,14 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
        do k = lo(3), hi(3)
           do j = lo(2), hi(2)
              do i = lo(1), hi(1)
+                if(use_srcQ_in_trace.eq.1) then
                 srcQ(i,j,k,iq) = ( src(i,j,k,n) - q(i,j,k,iq) * srcQ(i,j,k,QRHO) ) / &
                      q(i,j,k,QRHO)
+             else
+                srcQ(i,j,k,iq) = ( src(i,j,k,n) ) / &
+                    q(i,j,k,QRHO)
+             endif
+
              enddo
           enddo
        enddo
@@ -650,9 +656,9 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
       endif
       
       do n = 1, NVAR
-         do k = flux1_l3,flux1_h3
-            do j = flux1_l2,flux1_h2
-               do i = flux1_l1,flux1_h1
+         do k = lo(3),hi(3)
+            do j = lo(2),hi(2)
+               do i = lo(1),hi(1)
                   if (n .eq. URHO) then
                      flux1(i,j,k,n) = flux1(i,j,k,n) * a_half_inv
                   else if (n.ge.UMX .and. n.le.UMZ) then
@@ -668,9 +674,9 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
       enddo
 
       do n = 1, NVAR
-         do k = flux2_l3,flux2_h3
-            do j = flux2_l2,flux2_h2
-               do i = flux2_l1,flux2_h1
+         do k = lo(3),hi(3)
+            do j = lo(2),hi(2)
+               do i = lo(1),hi(1)
                   if (n .eq. URHO) then
                      flux2(i,j,k,n) = flux2(i,j,k,n) * a_half_inv
                   else if (n.ge.UMX .and. n.le.UMZ) then
@@ -686,9 +692,9 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
       enddo
 
       do n = 1, NVAR
-         do k = flux3_l3,flux3_h3
-            do j = flux3_l2,flux3_h2
-               do i = flux3_l1,flux3_h1
+         do k = lo(3),hi(3)
+            do j = lo(2),hi(2)
+               do i = lo(1),hi(1)
                   if (n .eq. URHO) then
                      flux3(i,j,k,n) = flux3(i,j,k,n) * a_half_inv
                   else if (n.ge.UMX .and. n.le.UMZ) then

@@ -30,7 +30,6 @@ Nyx::cons_to_prim(MultiFab& Sborder, MultiFab& q, MultiFab& qaux, MultiFab& grav
 
         // Convert the conservative state to the primitive variable state.
         // This fills both q and qaux.
-  
 #pragma gpu
 	amrex::Cuda::setLaunchRegion(true);
 	AMREX_LAUNCH_DEVICE_LAMBDA(qbx, tqbx,
@@ -40,10 +39,16 @@ Nyx::cons_to_prim(MultiFab& Sborder, MultiFab& q, MultiFab& qaux, MultiFab& grav
                    BL_TO_FORTRAN_ANYD(*fab_q),
                    BL_TO_FORTRAN_ANYD(*fab_qaux),
 		   BL_TO_FORTRAN_ANYD(*fab_csml));
-	
+	});
+	amrex::Gpu::Device::synchronize();
+	amrex::Cuda::setLaunchRegion(false);	
+
         // Convert the source terms expressed as sources to the conserved state to those
         // expressed as sources for the primitive state.
 #pragma gpu
+	amrex::Cuda::setLaunchRegion(true);
+	AMREX_LAUNCH_DEVICE_LAMBDA(qbx, tqbx,
+	{
             ca_srctoprim(AMREX_INT_ANYD(tqbx.loVect()), AMREX_INT_ANYD(tqbx.hiVect()),
                          BL_TO_FORTRAN_ANYD(*fab_q),
                          BL_TO_FORTRAN_ANYD(*fab_qaux),
@@ -52,8 +57,8 @@ Nyx::cons_to_prim(MultiFab& Sborder, MultiFab& q, MultiFab& qaux, MultiFab& grav
                          BL_TO_FORTRAN_ANYD(*fab_src_q),
 			 &a_old, &a_new, &dt);
 	});
-	amrex::Cuda::setLaunchRegion(false);
-
+	amrex::Gpu::Device::synchronize();
+	amrex::Cuda::setLaunchRegion(false);	
 
     }
 

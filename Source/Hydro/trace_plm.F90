@@ -697,7 +697,9 @@ contains
                    spzero = merge(-ONE, un*dtdx, un >= ZERO)
                    acmprght = HALF*(-ONE - spzero)*dq(i,j,k,n)
                    qp(i,j,k,n) = q(i,j,k,n) + acmprght
-                   if (n <= NQSRC) qp(i,j,k,n) = qp(i,j,k,n) + HALF*dt*srcQ(i,j,k,n)
+                   if(use_srcQ_in_trace.eq.1) then
+                      if (n <= NQSRC) qp(i,j,k,n) = qp(i,j,k,n) + HALF*dt*srcQ(i,j,k,n)
+                   endif
                 endif
 
                 ! Left state
@@ -707,13 +709,19 @@ contains
 
                 if (idir == 1 .and. i <= vhi(1)) then
                    qm(i+1,j,k,n) = q(i,j,k,n) + acmpleft
-                   if (n <= NQSRC) qm(i+1,j,k,n) = qm(i+1,j,k,n) + HALF*dt*srcQ(i,j,k,n)
+                   if(use_srcQ_in_trace.eq.1) then
+                      if (n <= NQSRC) qm(i+1,j,k,n) = qm(i+1,j,k,n) + HALF*dt*srcQ(i,j,k,n)
+                   endif
                 else if (idir == 2 .and. j <= vhi(2)) then
                    qm(i,j+1,k,n) = q(i,j,k,n) + acmpleft
-                   if (n <= NQSRC) qm(i,j+1,k,n) = qm(i,j+1,k,n) + HALF*dt*srcQ(i,j,k,n)
+                   if(use_srcQ_in_trace.eq.1) then
+                      if (n <= NQSRC) qm(i,j+1,k,n) = qm(i,j+1,k,n) + HALF*dt*srcQ(i,j,k,n)
+                   endif
                 else if (idir == 3 .and. k <= vhi(3)) then
                    qm(i,j,k+1,n) = q(i,j,k,n) + acmpleft
-                   if (n <= NQSRC) qm(i,j,k+1,n) = qm(i,j,k+1,n) + HALF*dt*srcQ(i,j,k,n)
+                   if(use_srcQ_in_trace.eq.1) then
+                      if (n <= NQSRC) qm(i,j,k+1,n) = qm(i,j,k+1,n) + HALF*dt*srcQ(i,j,k,n)
+                   endif
                 endif
              enddo
 
