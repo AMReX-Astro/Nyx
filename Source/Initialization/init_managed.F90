@@ -23,11 +23,11 @@ allocate(TEMP_COMP, NE_COMP, ZHI_COMP, NTHERM, NVAR, NDIAG, small_temp, heat_coo
 allocate(nadv, small_pres, small_dens)
 allocate(npassive)
 allocate(QTHERM, NQAUX, QVAR, QC, NQSRC, NQ, UTEMP, QGAME, QGAMC, NGDNV, QTEMP, QFX,  QGC)
-allocate(QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS, GDGAME, GDRHO, GDPRES, GDRHO, GDU, GDV, GDW)
+allocate(QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS, GDGAME, GDRHO, GDPRES, GDU, GDV, GDW)
 
 allocate(difmag)
 !allocate(NGDNV, GDPRES, GDU, GDV, GDW,QVAR,use_pressure_law_pdivu,use_area_dt_scale_apply)
-allocate(ppm_type,ppm_reference,ppm_flatten_before_integrals,use_colglaz,use_flattening,version_2,use_const_species,normalize_species,heat_cool_type,inhomo_reion,grav_source_type)
+allocate(ppm_type,ppm_reference,ppm_flatten_before_integrals,use_colglaz,use_flattening,version_2,use_const_species,normalize_species,inhomo_reion,grav_source_type)
 allocate(cg_maxiter,cg_tol,cg_blend,fix_mass_flux,ppm_predict_gammae,ppm_temp_fix,ppm_reference_eigenvectors,hybrid_riemann,riemann_solver,use_pslope,transverse_reset_density,transverse_reset_rhoe,use_pressure_law_pdivu,use_analriem,use_srcQ_in_trace,use_csmall_gamma,use_reset_state,use_gamma_minus,use_area_dt_scale_apply)
 cg_maxiter=12
 cg_tol=1.0d-5
@@ -173,11 +173,11 @@ deallocate(TEMP_COMP, NE_COMP, ZHI_COMP, NTHERM, NVAR, NDIAG, small_temp, heat_c
 deallocate(nadv, small_pres, small_dens)
 deallocate(npassive)
 deallocate(QTHERM, NQAUX, QVAR, QC, NQSRC, NQ, UTEMP, QGAME, QGAMC, NGDNV, QTEMP, QFX,  QGC)
-deallocate(QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS, GDGAME, GDRHO, GDPRES, GDRHO, GDU, GDV, GDW)
+deallocate(QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS, GDGAME, GDRHO, GDPRES, GDU, GDV, GDW)
 
 deallocate(difmag)
 !deallocate(NGDNV, GDPRES, GDU, GDV, GDW, QVAR,use_pressure_law_pdivu,use_area_dt_scale_apply)
-deallocate(ppm_type,ppm_reference,ppm_flatten_before_integrals,use_colglaz,use_flattening,version_2,use_const_species,normalize_species,heat_cool_type,inhomo_reion,grav_source_type)
+deallocate(ppm_type,ppm_reference,ppm_flatten_before_integrals,use_colglaz,use_flattening,version_2,use_const_species,normalize_species,inhomo_reion,grav_source_type)
 deallocate(cg_maxiter,cg_tol,cg_blend,fix_mass_flux,ppm_predict_gammae,ppm_temp_fix,ppm_reference_eigenvectors,hybrid_riemann,riemann_solver,use_pslope,transverse_reset_density,transverse_reset_rhoe,use_pressure_law_pdivu,use_analriem,use_srcQ_in_trace,use_csmall_gamma,use_reset_state,use_gamma_minus,use_area_dt_scale_apply)
 #ifdef HEATCOOL
 deallocate(XHYDROGEN,YHELIUM)

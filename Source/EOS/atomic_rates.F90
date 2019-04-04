@@ -89,7 +89,12 @@ module atomic_rates_module
       if (amrex_pd_ioprocessor()) then 
          print*, "Forcing first true"
       endif
-      first = .true.
+
+      if(allocated(NCOOLFILE)) then
+         first = .false.
+      else
+         first = .true.
+      endif
 
       if (first) then
 

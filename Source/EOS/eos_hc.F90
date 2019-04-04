@@ -36,9 +36,6 @@ module eos_module
         implicit none
         real(rt), intent(in) :: xacc_in, vode_rtol_in, vode_atol_scaled_in
 
-#ifdef AMREX_USE_CUDA
-        allocate(xacc,vode_rtol,vode_atol_scaled)
-#endif
         xacc = xacc_in
         vode_rtol = vode_rtol_in
         vode_atol_scaled = vode_atol_scaled_in
