@@ -532,7 +532,7 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
                     dx, pdivu, pdivu_lo, pdivu_hi)
     
 
-      if(use_area_dt_scale_apply .eq. 1) then
+      if (use_area_dt_scale_apply .eq. 1) then
 
          do n = 1, NVAR
             do k = lo(3),hi(3)
@@ -542,11 +542,9 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
                      ! Density
                      if (n .eq. URHO) then
                         hydro_src(i,j,k,n) = &
-                             ( ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
-                             +   flux2(i,j,k,n) - flux2(i,j+1,k,n) &
-                             +   flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * volinv  ) * a_half_inv
-                        
-                        
+                             ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
+                             + flux2(i,j,k,n) - flux2(i,j+1,k,n) &
+                             + flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * volinv * a_half_inv
                         
                         ! Momentum
                      else if (n .ge. UMX .and. n .le. UMZ) then
@@ -586,10 +584,12 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
                      else
                         hydro_src(i,j,k,n) = &
                              ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
-                             +   flux2(i,j,k,n) - flux2(i,j+1,k,n) &
-                             +   flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * volinv 
-                     endif
-                  hydro_src(i,j,k,n) = hydro_src(i,j,k,n) / dt
+                             + flux2(i,j,k,n) - flux2(i,j+1,k,n) &
+                             + flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * volinv * a_half_inv
+                     end if
+
+                     hydro_src(i,j,k,n) = hydro_src(i,j,k,n) / dt
+
                   enddo
                enddo
             enddo
@@ -605,25 +605,26 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
                      if (n .eq. URHO) then
                         hydro_src(i,j,k,n) = &
                              ( ( flux1(i,j,k,n) - flux1(i+1,j,k,n) ) * area1 &
-                             + (  flux2(i,j,k,n) - flux2(i,j+1,k,n) ) * area2 &
-                             + (  flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * area3) * volinv   * a_half_inv
+                             + ( flux2(i,j,k,n) - flux2(i,j+1,k,n) ) * area2 &
+                             + ( flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * area3) * volinv * a_half_inv
                         
-                        ! Momentum
+                     ! Momentum
                      else if (n .ge. UMX .and. n .le. UMZ) then
                         hydro_src(i,j,k,n) =  &
                              ( ( flux1(i,j,k,n) - flux1(i+1,j,k,n) ) * area1 &
-                             + (  flux2(i,j,k,n) - flux2(i,j+1,k,n) ) * area2 &
-                             + (  flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * area3) * volinv  
-                        
-                        ! (rho E)
+                             + ( flux2(i,j,k,n) - flux2(i,j+1,k,n) ) * area2 &
+                             + ( flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * area3) * volinv  
+
+                     ! (rho E)
                      else if (n .eq. UEDEN) then
                         hydro_src(i,j,k,n) =  &
                              ( ( flux1(i,j,k,n) - flux1(i+1,j,k,n) ) * area1 &
-                             + (  flux2(i,j,k,n) - flux2(i,j+1,k,n) ) * area2 &
-                             + (  flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * area3) * a_half * volinv  &
+                             + ( flux2(i,j,k,n) - flux2(i,j+1,k,n) ) * area2 &
+                             + ( flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * area3) * a_half * volinv  &
                              +   a_half * (a_new - a_old) * ( TWO - THREE * gamma_minus_1) * uin(i,j,k,UEINT)
                         
-                        ! (rho e)
+
+                     ! (rho e)
                      else if (n .eq. UEINT) then
                         
                         if (use_pressure_law_pdivu .eq. 0) then
@@ -641,14 +642,15 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
                              + (  flux2(i,j,k,n) - flux2(i,j+1,k,n) ) * area2 &
                              + (  flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * area3) * a_half * volinv  &
                              +src_eint
-                        ! (rho X_i) and (rho adv_i) and (rho aux_i)
+
+                     ! (rho X_i) and (rho adv_i) and (rho aux_i)
                      else
                         hydro_src(i,j,k,n) = &
                              ( ( flux1(i,j,k,n) - flux1(i+1,j,k,n) ) * area1 &
-                             + (  flux2(i,j,k,n) - flux2(i,j+1,k,n) ) * area2 &
-                             + (  flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * area3) * volinv 
-
+                             + ( flux2(i,j,k,n) - flux2(i,j+1,k,n) ) * area2 &
+                             + ( flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * area3) * volinv * a_half_inv
                      endif
+
                   enddo
                enddo
             enddo
