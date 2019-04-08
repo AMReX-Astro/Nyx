@@ -281,7 +281,7 @@ extern "C"
 #endif
      BL_FORT_FAB_ARG_3D(flux),
      BL_FORT_FAB_ARG_3D(area),
-     const amrex::Real dt);
+     const amrex::Real dt, const amrex::Real* a_old, const amrex::Real* a_new);
 
   void scale_rad_flux
     (const int* lo, const int* hi,

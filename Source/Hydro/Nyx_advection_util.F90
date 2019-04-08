@@ -657,60 +657,6 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
          enddo
       endif
       
-      do n = 1, NVAR
-         do k = lo(3),hi(3)
-            do j = lo(2),hi(2)
-               do i = lo(1),hi(1)
-                  if (n .eq. URHO) then
-                     flux1(i,j,k,n) = flux1(i,j,k,n) * a_half_inv
-                  else if (n.ge.UMX .and. n.le.UMZ) then
-                     flux1(i,j,k,n) = flux1(i,j,k,n) * a_new_inv
-                  else if (n.eq.UEINT .or. n.eq.UEDEN) then
-                     flux1(i,j,k,n) = flux1(i,j,k,n) * (a_half * a_newsq_inv)
-                  else
-                     flux1(i,j,k,n) = flux1(i,j,k,n) * a_half_inv
-                  end if
-               end do
-            enddo
-         enddo
-      enddo
-
-      do n = 1, NVAR
-         do k = lo(3),hi(3)
-            do j = lo(2),hi(2)
-               do i = lo(1),hi(1)
-                  if (n .eq. URHO) then
-                     flux2(i,j,k,n) = flux2(i,j,k,n) * a_half_inv
-                  else if (n.ge.UMX .and. n.le.UMZ) then
-                     flux2(i,j,k,n) = flux2(i,j,k,n) * a_new_inv
-                  else if (n.eq.UEINT .or. n.eq.UEDEN) then
-                     flux2(i,j,k,n) = flux2(i,j,k,n) * (a_half * a_newsq_inv)
-                  else
-                     flux2(i,j,k,n) = flux2(i,j,k,n) * a_half_inv
-                  end if
-               end do
-            enddo
-         enddo
-      enddo
-
-      do n = 1, NVAR
-         do k = lo(3),hi(3)
-            do j = lo(2),hi(2)
-               do i = lo(1),hi(1)
-                  if (n .eq. URHO) then
-                     flux3(i,j,k,n) = flux3(i,j,k,n) * a_half_inv
-                  else if (n.ge.UMX .and. n.le.UMZ) then
-                     flux3(i,j,k,n) = flux3(i,j,k,n) * a_new_inv
-                  else if (n.eq.UEINT .or. n.eq.UEDEN) then
-                     flux3(i,j,k,n) = flux3(i,j,k,n) * (a_half * a_newsq_inv)
-                  else
-                     flux3(i,j,k,n) = flux3(i,j,k,n) * a_half_inv
-                  end if
-               end do
-            enddo
-         enddo
-      enddo
-      
     end subroutine ca_consup
 
   !> @brief This is a basic multi-dimensional shock detection algorithm.
@@ -994,10 +940,12 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
                           qint, qi_lo, qi_hi, &
 #endif
                           flux, f_lo, f_hi, &
-                          area, a_lo, a_hi, dt) bind(c, name="scale_flux")
+                          area, a_lo, a_hi, dt, a_old, a_new) bind(c, name="scale_flux")
 
     use meth_params_module, only: NVAR, UMX, GDPRES, NGDNV, &
-           use_area_dt_scale_apply
+           use_area_dt_scale_apply, URHO, UMX, UMZ, &
+           UEDEN, UEINT
+    use amrex_constants_module, only: HALF, ONE
 
     implicit none
 
@@ -1008,6 +956,7 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
     integer,  intent(in   ) :: f_lo(3), f_hi(3)
     integer,  intent(in   ) :: a_lo(3), a_hi(3)
     real(rt), intent(in   ), value :: dt
+    real(rt), intent(in   ) :: a_old, a_new
 
     real(rt), intent(inout) :: flux(f_lo(1):f_hi(1),f_lo(2):f_hi(2),f_lo(3):f_hi(3),NVAR)
     real(rt), intent(in   ) :: area(a_lo(1):a_hi(1),a_lo(2):a_hi(2),a_lo(3):a_hi(3))
@@ -1015,6 +964,17 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
     real(rt), intent(in   ) :: qint(qi_lo(1):qi_hi(1), qi_lo(2):qi_hi(2), qi_lo(3):qi_hi(3), NGDNV)
 #endif
     integer :: i, j, k, n
+
+    real(rt) :: a_half, a_newsq
+    real(rt) :: a_newsq_inv
+    real(rt) :: a_half_inv, a_new_inv
+
+    a_half  = HALF * (a_old + a_new)
+    a_newsq = a_new * a_new
+    
+    a_half_inv  = ONE / a_half
+    a_new_inv   = ONE / a_new
+    a_newsq_inv = ONE / a_newsq
 
     !$gpu
     if(use_area_dt_scale_apply.ne.1) then
@@ -1028,6 +988,25 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
           enddo
        enddo
     endif
+
+    do n = 1, NVAR
+       do k = lo(3), hi(3)
+          do j = lo(2), hi(2)
+             do i = lo(1), hi(1)
+                if (n .eq. URHO) then
+                   flux(i,j,k,n) = flux(i,j,k,n) * (1.d0/a_half)
+                else if (n.ge.UMX .and. n.le.UMZ) then
+                   flux(i,j,k,n) = flux(i,j,k,n) * a_new_inv
+                else if (n.eq.UEINT .or. n.eq.UEDEN) then
+                   flux(i,j,k,n) = flux(i,j,k,n) * (a_half * a_new_inv * a_new_inv)
+                else
+                   flux(i,j,k,n) = flux(i,j,k,n) * (1.d0/a_half)
+                end if
+             enddo
+          enddo
+       enddo
+    enddo
+
   end subroutine scale_flux
   
 end module advection_module

@@ -1022,7 +1022,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                 BL_TO_FORTRAN_ANYD(*fab_qe[0]),
                 BL_TO_FORTRAN_ANYD(*fab_qe[1]),
                 BL_TO_FORTRAN_ANYD(*fab_qe[2]),
-                BL_TO_FORTRAN_ANYD(*fab_div),
+                BL_TO_FORTRAN_ANYD(*fab_pdivu),
                 AMREX_REAL_ANYD(dx),&dt,&a_old,&a_new);
             });
       amrex::Gpu::Device::synchronize();
@@ -1038,7 +1038,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       {
         scale_flux(AMREX_INT_ANYD(tnbx.loVect()), AMREX_INT_ANYD(tnbx.hiVect()),
                    BL_TO_FORTRAN_ANYD(*fab_flux[idir]),
-                   BL_TO_FORTRAN_ANYD(*fab_area[idir]), dt);
+                   BL_TO_FORTRAN_ANYD(*fab_area[idir]), dt,&a_old,&a_new);
       });
       amrex::Gpu::Device::synchronize();
       amrex::Cuda::setLaunchRegion(false);
