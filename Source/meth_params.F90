@@ -77,7 +77,9 @@ module meth_params_module
   attributes(managed) :: QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS, GDGAME, GDRHO, GDPRES, GDU, GDV, GDW
   attributes(managed) :: difmag
  attributes(managed) :: ppm_type,ppm_reference,ppm_flatten_before_integrals,use_colglaz,use_flattening,version_2,use_const_species,normalize_species,inhomo_reion,grav_source_type
-  attributes(managed) :: cg_maxiter,cg_tol,cg_blend,fix_mass_flux,ppm_predict_gammae,ppm_temp_fix,ppm_reference_eigenvectors,hybrid_riemann,riemann_solver,use_pslope,transverse_reset_density,transverse_reset_rhoe,use_pressure_law_pdivu,use_analriem,use_srcQ_in_trace,use_csmall_gamma,use_reset_state,use_gamma_minus, use_area_dt_scale_apply
+ attributes(managed) :: cg_maxiter,cg_tol,cg_blend,fix_mass_flux,ppm_predict_gammae,ppm_temp_fix,ppm_reference_eigenvectors, &
+      hybrid_riemann,riemann_solver,use_pslope,transverse_reset_density,transverse_reset_rhoe,use_pressure_law_pdivu, &
+      use_analriem,use_srcQ_in_trace,use_csmall_gamma,use_reset_state,use_gamma_minus, use_area_dt_scale_apply
   attributes(managed) :: transverse_reset_density, transverse_reset_rhoe, ppm_predict_gammae, use_srcQ_in_trace, use_reset_state
 #endif
 
