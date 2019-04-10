@@ -438,6 +438,7 @@ void Nyx::initcosmo()
 		(BL_TO_FORTRAN(*fab), &ns, 
 		 BL_TO_FORTRAN(*fab_diag), &nd, lo, hi, &a);
 	    });
+	    amrex::Gpu::Device::synchronize();
 	    amrex::Cuda::setLaunchRegion(false);
      	}     	
 
