@@ -20,6 +20,11 @@ public:
     virtual void Redistribute (int lev_min              = 0,
                                int lev_max              =-1,
                                int nGrow                = 0) = 0;
+
+    virtual void RedistributeLocal (int lev_min              = 0,
+                                    int lev_max              =-1,
+                                    int nGrow                = 0) = 0;
+    
     virtual int finestLevel() const = 0;
     virtual void RemoveParticlesAtLevel (int level) = 0;
     virtual amrex::Real sumParticleMass (int level) const = 0;
@@ -82,6 +87,22 @@ public:
         amrex::NeighborParticleContainer<NSR,NSI>::Redistribute(lev_min, lev_max, nGrow);
     }
 
+    virtual void RedistributeLocal (int lev_min              = 0,
+                                    int lev_max              =-1,
+                                    int nGrow                = 0) override
+    {
+        AMREX_ASSERT(this->finestLevel() == 0);
+
+        const int local = true;
+        const int lev_min_local = 0;
+        const int lev_max_local = 0;
+        const int nGrow_local = 0;
+
+        amrex::NeighborParticleContainer<NSR,NSI>
+            ::Redistribute(lev_min_local, lev_max_local, nGrow_local, local);
+    }
+
+    
     virtual void RemoveParticlesAtLevel (int level) override
     {
 	amrex::NeighborParticleContainer<NSR,NSI>::RemoveParticlesAtLevel(level);
