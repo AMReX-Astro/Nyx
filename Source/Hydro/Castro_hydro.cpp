@@ -40,7 +40,7 @@ Nyx::cons_to_prim(MultiFab& Sborder, MultiFab& q, MultiFab& qaux, MultiFab& grav
                    BL_TO_FORTRAN_ANYD(*fab_qaux),
 		   BL_TO_FORTRAN_ANYD(*fab_csml));
 	});
-	amrex::Gpu::Device::synchronize();
+	amrex::Gpu::Device::streamSynchronize();
 	amrex::Cuda::setLaunchRegion(false);	
 
         // Convert the source terms expressed as sources to the conserved state to those
@@ -57,7 +57,7 @@ Nyx::cons_to_prim(MultiFab& Sborder, MultiFab& q, MultiFab& qaux, MultiFab& grav
                          BL_TO_FORTRAN_ANYD(*fab_src_q),
 			 &a_old, &a_new, &dt);
 	});
-	amrex::Gpu::Device::synchronize();
+	amrex::Gpu::Device::streamSynchronize();
 	amrex::Cuda::setLaunchRegion(false);	
 
     }
