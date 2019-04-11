@@ -2261,6 +2261,7 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new, MultiFab& reset_e_
 	     BL_TO_FORTRAN(*fab_reset),
              &print_warn, &a);
 	  });
+	  amrex::Gpu::Device::synchronize();
 	  amrex::Cuda::setLaunchRegion(false);
     }
 }
@@ -2309,6 +2310,7 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
               BL_TO_FORTRAN(*fab_diag), &a,
                &print_warn);
 	  });
+	  amrex::Gpu::Device::synchronize();
 	  amrex::Cuda::setLaunchRegion(false);
         }
     }

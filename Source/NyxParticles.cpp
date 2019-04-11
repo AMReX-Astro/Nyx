@@ -343,6 +343,7 @@ Nyx::init_particles ()
 {
     BL_PROFILE("Nyx::init_particles()");
 
+    amrex::Cuda::setLaunchRegion(false);
     if (level > 0)
         return;
 
@@ -767,6 +768,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
             (BL_TO_FORTRAN(*fab), &ns, 
              BL_TO_FORTRAN(*fab_diag), &nd, lo, hi, &a);
 	});
+	amrex::Gpu::Device::synchronize();
 	amrex::Cuda::setLaunchRegion(false);
     }
 

@@ -316,6 +316,8 @@ Nyx::initData ()
     if (level == 0)
         init_particles();
 
+    amrex::Gpu::Device::synchronize();
+
     if ( particle_init_type == "Cosmological")
         initcosmo();
 
@@ -431,6 +433,7 @@ Nyx::init_from_plotfile ()
 		(BL_TO_FORTRAN(*fab), &ns, 
 		 BL_TO_FORTRAN(*fab_diag), &nd, lo, hi, &a);
 	    });
+	    amrex::Gpu::Device::synchronize();
 	    amrex::Cuda::setLaunchRegion(false);
             }
         }
