@@ -669,7 +669,7 @@ contains
 
              ! Note: in the original Colella & Glaz paper, they predicted
              ! gamma_e to the interfaces using a special (non-hyperbolic)
-             ! evolution equation.  In Castro, we instead bring (rho e)
+             ! evolution equation.  In Nyx, we instead bring (rho e)
              ! to the edges, so we construct the necessary gamma_e here from
              ! what we have on the interfaces.
              gamel = pl/rel + ONE
@@ -1250,7 +1250,6 @@ contains
 
              wsmall = small_dens*csmall
 
-             ! this is Castro I: Eq. 33
              wl = max(wsmall, sqrt(abs(gamcl*pl*rl)))
              wr = max(wsmall, sqrt(abs(gamcr*pr*rr)))
 
