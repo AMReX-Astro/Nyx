@@ -754,12 +754,13 @@ Nyx::init_santa_barbara (int init_sb_vels)
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-    for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
+    amrex::Cuda::setLaunchRegion(true);
+    for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
         const Box& box = mfi.tilebox();
 	FArrayBox* fab = S_new.fabPtr(mfi);
 	FArrayBox* fab_diag = D_new.fabPtr(mfi);
-	amrex::Cuda::setLaunchRegion(true);
+
 	AMREX_LAUNCH_DEVICE_LAMBDA(box, tbx,
 	{
         const int* lo = tbx.loVect();
@@ -768,9 +769,10 @@ Nyx::init_santa_barbara (int init_sb_vels)
             (BL_TO_FORTRAN(*fab), &ns, 
              BL_TO_FORTRAN(*fab_diag), &nd, lo, hi, &a);
 	});
-	amrex::Gpu::Device::synchronize();
-	amrex::Cuda::setLaunchRegion(false);
+	amrex::Gpu::Device::streamSynchronize();
     }
+    amrex::Cuda::setLaunchRegion(false);
+
 
     // Convert X_i to (rho X)_i
     if (use_const_species == 0) {

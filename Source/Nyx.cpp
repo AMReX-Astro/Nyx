@@ -2245,14 +2245,14 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new, MultiFab& reset_e_
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-    for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
+    amrex::Cuda::setLaunchRegion(true);
+    for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
 	  FArrayBox* fab = S_new.fabPtr(mfi);
 	  FArrayBox* fab_diag = D_new.fabPtr(mfi);
 	  FArrayBox* fab_reset = reset_e_src.fabPtr(mfi);
 	  int print_warn=0;	  
-	  amrex::Cuda::setLaunchRegion(true);
 	  AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
 	  {
         reset_internal_e
@@ -2261,9 +2261,10 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new, MultiFab& reset_e_
 	     BL_TO_FORTRAN(*fab_reset),
              &print_warn, &a);
 	  });
-	  amrex::Gpu::Device::synchronize();
-	  amrex::Cuda::setLaunchRegion(false);
+	  amrex::Gpu::Device::streamSynchronize();
     }
+    amrex::Cuda::setLaunchRegion(false);
+
 }
 #endif
 
@@ -2287,7 +2288,8 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-    for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
+    amrex::Cuda::setLaunchRegion(true);
+    for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
 
@@ -2301,7 +2303,6 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 	  FArrayBox* fab = S_new.fabPtr(mfi);
 	  FArrayBox* fab_diag = D_new.fabPtr(mfi);
 	  int print_warn=0;
-	  amrex::Cuda::setLaunchRegion(true);
 	  AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
 	  {
             fort_compute_temp
@@ -2310,10 +2311,10 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
               BL_TO_FORTRAN(*fab_diag), &a,
                &print_warn);
 	  });
-	  amrex::Gpu::Device::synchronize();
-	  amrex::Cuda::setLaunchRegion(false);
+	  amrex::Gpu::Device::streamSynchronize();
         }
     }
+    amrex::Cuda::setLaunchRegion(false);
 
     // Compute the maximum temperature
     Real max_temp = D_new.norm0(Temp_comp);

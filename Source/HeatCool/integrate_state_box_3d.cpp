@@ -459,7 +459,7 @@ int Nyx::integrate_state_grownbox
 	}
       }
 #ifdef AMREX_USE_CUDA
-      amrex::Gpu::Device::synchronize();
+      amrex::Gpu::Device::streamSynchronize();
       N_VCopyFromDevice_Cuda(u);
 #endif            
       int one_in=1;
@@ -476,15 +476,15 @@ int Nyx::integrate_state_grownbox
 	  });
       amrex::Cuda::setLaunchRegion(false);
       D_old[mfi].copyFromMem(tbx,Nyx::Temp_comp,2,Tne_tmp_ptr);
-      amrex::Gpu::Device::synchronize();
+      amrex::Gpu::Device::streamSynchronize();
       N_VProd(u,rho_tmp,u);                
 #ifdef AMREX_USE_CUDA
       N_VCopyFromDevice_Cuda(u);
 #endif      
-      amrex::Gpu::Device::synchronize();
+      amrex::Gpu::Device::streamSynchronize();
       S_old[mfi].copyFromMem(tbx,Nyx::Eint,1,dptr);
       S_old[mfi].addFromMem(tbx,Nyx::Eden,1,dptr);
-      amrex::Gpu::Device::synchronize();
+      amrex::Gpu::Device::streamSynchronize();
       if(amrex::Verbose()>2||false)
 	{
 	  amrex::Print()<<S_old[mfi].min(Eint)<<"at index"<<S_old[mfi].minIndex(Eint)<<std::endl;
@@ -572,7 +572,7 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
  */
  f_rhs_test_box<<<numBlocks,numThreads>>>(t,u_ptr,udot_ptr, rpar, neq);
 
- amrex::Cuda::Device::synchronize();
+ amrex::Cuda::Device::streamSynchronize();
  AMREX_GPU_ERROR_CHECK();
 
 /*      N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));

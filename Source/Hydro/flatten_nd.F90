@@ -11,7 +11,7 @@ module flatten_module
 
 contains
 
-  subroutine ca_uflatten(lo, hi, &
+  AMREX_CUDA_FORT_DEVICE subroutine ca_uflatten(lo, hi, &
                          q, q_lo, q_hi, &
                          flatn, f_lo, f_hi, pres_comp) bind(c,name='ca_uflatten')
 

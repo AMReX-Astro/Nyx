@@ -194,7 +194,7 @@ extern "C"
      const amrex::Real* dx,
      BL_FORT_FAB_ARG_3D(div));
 
-  void ca_uflatten
+  AMREX_GPU_DEVICE void ca_uflatten
     (const int* lo, const int* hi,
      const BL_FORT_FAB_ARG_3D(q),
      BL_FORT_FAB_ARG_3D(flatn), int pres_comp);

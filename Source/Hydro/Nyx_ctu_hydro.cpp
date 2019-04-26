@@ -256,17 +256,24 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       flatn.resize(obx, 1);
       Elixir elix_flatn = flatn.elixir();
 
-      q[mfi];
       // compute the flattening coefficient
-      // remove first order check
+      // compute the flattening coefficient
+
+      Array4<Real> const flatn_arr = flatn.array();
+      int pres_comp = QPRES;
+
+      amrex::Cuda::setLaunchRegion(true);
       if (use_flattening == 1) {
-#pragma gpu
-        ca_uflatten(AMREX_INT_ANYD(obx.loVect()), AMREX_INT_ANYD(obx.hiVect()),
+      AMREX_LAUNCH_DEVICE_LAMBDA(obx, tobx,
+				 {
+        ca_uflatten(AMREX_INT_ANYD(tobx.loVect()), AMREX_INT_ANYD(tobx.hiVect()),
                     BL_TO_FORTRAN_ANYD(*fab_q),
-                    BL_TO_FORTRAN_ANYD(*fab_flatn), QPRES+1);
+                    BL_TO_FORTRAN_ANYD(*fab_flatn), pres_comp);
+				 });
       } else {
-        flatn.setVal(1.0, obx);
+        AMREX_PARALLEL_FOR_3D(obx, i, j, k, { flatn_arr(i,j,k) = 1.0; });
       }
+      amrex::Cuda::setLaunchRegion(false);
 
       const Box& xbx = amrex::surroundingNodes(bx, 0);
       const Box& gxbx = amrex::grow(xbx, 1);
