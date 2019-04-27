@@ -313,6 +313,16 @@ Nyx::initData ()
     }
 #endif
 
+    // Add partially redundant setup for small_dens
+    Real average_gas_density = -1e200;
+    Real average_temperature = -1e200;
+    Real a = get_comoving_a(cur_time);
+    Real small_pres = -1e200;
+
+    fort_set_small_values
+      (&average_gas_density, &average_temperature,
+       &a,  &small_dens, &small_temp, &small_pres);
+
     if (level == 0)
         init_particles();
 
