@@ -230,6 +230,8 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                  fab_qe[1] = &qe[1];,
                  fab_qe[2] = &qe[2];);
 
+    amrex::Cuda::setLaunchRegion(true);
+
     for (MFIter mfi(S_new, TilingIfNotGPU()); mfi.isValid(); ++mfi) {
       //      for (MFIter mfi(S_new, hydro_tile_size); mfi.isValid(); ++mfi) {
 
@@ -262,7 +264,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       Array4<Real> const flatn_arr = flatn.array();
       int pres_comp = QPRES;
 
-      amrex::Cuda::setLaunchRegion(true);
+      //amrex::Cuda::setLaunchRegion(true);
       if (use_flattening == 1) {
       AMREX_LAUNCH_DEVICE_LAMBDA(obx, tobx,
 				 {
@@ -273,7 +275,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       } else {
         AMREX_PARALLEL_FOR_3D(obx, i, j, k, { flatn_arr(i,j,k) = 1.0; });
       }
-      amrex::Cuda::setLaunchRegion(false);
+      //amrex::Cuda::setLaunchRegion(false);
 
       const Box& xbx = amrex::surroundingNodes(bx, 0);
       const Box& gxbx = amrex::grow(xbx, 1);
@@ -309,7 +311,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
         Elixir elix_dq = dq.elixir();
 
 #pragma gpu
-      amrex::Cuda::setLaunchRegion(true);
+      //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(obx, tobx,
       {
         ctu_plm_states(AMREX_INT_ANYD(tobx.loVect()), AMREX_INT_ANYD(tobx.hiVect()),
@@ -331,7 +333,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                        AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
       amrex::Gpu::Device::streamSynchronize();
-      amrex::Cuda::setLaunchRegion(false);
+      //amrex::Cuda::setLaunchRegion(false);
 
       } else {
 
@@ -390,7 +392,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
       // compute divu -- we'll use this later when doing the artifical viscosity
 #pragma gpu
-      amrex::Cuda::setLaunchRegion(true);
+      //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(obx, tobx,
       {
       divu(AMREX_INT_ANYD(tobx.loVect()), AMREX_INT_ANYD(tobx.hiVect()),
@@ -399,7 +401,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
            BL_TO_FORTRAN_ANYD(*fab_div));
       });
       amrex::Gpu::Device::streamSynchronize();
-      amrex::Cuda::setLaunchRegion(false);
+      //amrex::Cuda::setLaunchRegion(false);
 
       q_int.resize(obx, QVAR);
       Elixir elix_q_int = q_int.elixir();
@@ -459,7 +461,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp1 = rfx
       // qgdnvtmp1 = qgdnxv
 #pragma gpu
-      amrex::Cuda::setLaunchRegion(true);
+      //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(cxbx, tcxbx,
       {
       cmpflx_plus_godunov(AMREX_INT_ANYD(tcxbx.loVect()), AMREX_INT_ANYD(tcxbx.hiVect()),
@@ -473,7 +475,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           1, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
       amrex::Gpu::Device::streamSynchronize();
-      amrex::Cuda::setLaunchRegion(false);
+      //amrex::Cuda::setLaunchRegion(false);
 
       // [lo(1), lo(2), lo(3)-1], [hi(1), hi(2)+1, hi(3)+1]
       const Box& tyxbx = amrex::grow(ybx, IntVect(AMREX_D_DECL(0,0,1)));
@@ -488,7 +490,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp1 = rfx
       // qgdnvtmp1 = qgdnvx
 #pragma gpu
-      amrex::Cuda::setLaunchRegion(true);
+      //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(tyxbx, ttyxbx,
       {
       transx_on_ystates(AMREX_INT_ANYD(ttyxbx.loVect()), AMREX_INT_ANYD(ttyxbx.hiVect()),
@@ -502,7 +504,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                         hdt, cdtdx);
       });
       amrex::Gpu::Device::streamSynchronize();
-      amrex::Cuda::setLaunchRegion(false);
+      //amrex::Cuda::setLaunchRegion(false);
       // [lo(1), lo(2)-1, lo(3)], [hi(1), hi(2)+1, hi(3)+1]
       const Box& tzxbx = amrex::grow(zbx, IntVect(AMREX_D_DECL(0,1,0)));
 
@@ -513,7 +515,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       Elixir elix_qpzx = qpzx.elixir();
 
 #pragma gpu
-      amrex::Cuda::setLaunchRegion(true);
+      //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(tzxbx, ttzxbx,
       {
       transx_on_zstates(AMREX_INT_ANYD(ttzxbx.loVect()), AMREX_INT_ANYD(ttzxbx.hiVect()),
@@ -527,7 +529,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                         hdt, cdtdx);
       });
       amrex::Gpu::Device::streamSynchronize();
-      amrex::Cuda::setLaunchRegion(false);
+      //amrex::Cuda::setLaunchRegion(false);
       // compute F^y
       // [lo(1)-1, lo(2), lo(3)-1], [hi(1)+1, hi(2)+1, hi(3)+1]
       const Box& cybx = amrex::grow(ybx, IntVect(AMREX_D_DECL(1,0,1)));
@@ -536,7 +538,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp1 = rfy
       // qgdnvtmp1 = qgdnvy
 #pragma gpu
-      amrex::Cuda::setLaunchRegion(true);
+      //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(cybx, tcybx,
       {
       cmpflx_plus_godunov(AMREX_INT_ANYD(tcybx.loVect()), AMREX_INT_ANYD(tcybx.hiVect()),
@@ -550,7 +552,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           2, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
       amrex::Gpu::Device::streamSynchronize();
-      amrex::Cuda::setLaunchRegion(false);
+      //amrex::Cuda::setLaunchRegion(false);
       // [lo(1), lo(2), lo(3)-1], [hi(1)+1, hi(2), lo(3)+1]
       const Box& txybx = amrex::grow(xbx, IntVect(AMREX_D_DECL(0,0,1)));
 
@@ -564,7 +566,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp1 = rfy
       // qgdnvtmp1 = qgdnvy
 #pragma gpu
-      amrex::Cuda::setLaunchRegion(true);
+      //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(txybx, ttxybx,
       {
       transy_on_xstates(AMREX_INT_ANYD(ttxybx.loVect()), AMREX_INT_ANYD(ttxybx.hiVect()),
@@ -578,7 +580,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                         cdtdy);
       });
       amrex::Gpu::Device::streamSynchronize();
-      amrex::Cuda::setLaunchRegion(false);
+      //amrex::Cuda::setLaunchRegion(false);
       // [lo(1)-1, lo(2), lo(3)], [hi(1)+1, hi(2), lo(3)+1]
       const Box& tzybx = amrex::grow(zbx, IntVect(AMREX_D_DECL(1,0,0)));
 
@@ -592,7 +594,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp1 = rfy
       // qgdnvtmp1 = qgdnvy
 #pragma gpu
-      amrex::Cuda::setLaunchRegion(true);
+      //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(tzybx, ttzybx,
       {
       transy_on_zstates(AMREX_INT_ANYD(ttzybx.loVect()), AMREX_INT_ANYD(ttzybx.hiVect()),
@@ -606,7 +608,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                         cdtdy);
       });
       amrex::Gpu::Device::streamSynchronize();
-      amrex::Cuda::setLaunchRegion(false);
+      //amrex::Cuda::setLaunchRegion(false);
       // compute F^z
       // [lo(1)-1, lo(2)-1, lo(3)], [hi(1)+1, hi(2)+1, hi(3)+1]
       const Box& czbx = amrex::grow(zbx, IntVect(AMREX_D_DECL(1,1,0)));
@@ -615,7 +617,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp1 = rfz
       // qgdnvtmp1 = qgdnvz
 #pragma gpu
-      amrex::Cuda::setLaunchRegion(true);
+      //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(czbx, tczbx,
       {
       cmpflx_plus_godunov(AMREX_INT_ANYD(tczbx.loVect()), AMREX_INT_ANYD(tczbx.hiVect()),
@@ -629,7 +631,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           3, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
       amrex::Gpu::Device::streamSynchronize();
-      amrex::Cuda::setLaunchRegion(false);
+      //amrex::Cuda::setLaunchRegion(false);
       // [lo(1)-1, lo(2)-1, lo(3)], [hi(1)+1, hi(2)+1, lo(3)]
       const Box& txzbx = amrex::grow(xbx, IntVect(AMREX_D_DECL(0,1,0)));
 
@@ -643,7 +645,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp1 = rfz
       // qgdnvtmp1 = qgdnvz
 #pragma gpu
-      amrex::Cuda::setLaunchRegion(true);
+      //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(txzbx, ttxzbx,
       {
       transz_on_xstates(AMREX_INT_ANYD(ttxzbx.loVect()), AMREX_INT_ANYD(ttxzbx.hiVect()),
@@ -657,7 +659,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                         cdtdz);
       });
       amrex::Gpu::Device::streamSynchronize();
-      amrex::Cuda::setLaunchRegion(false);
+      //amrex::Cuda::setLaunchRegion(false);
       // [lo(1)-1, lo(2), lo(3)], [hi(1)+1, hi(2)+1, lo(3)]
       const Box& tyzbx = amrex::grow(ybx, IntVect(AMREX_D_DECL(1,0,0)));
 
@@ -671,7 +673,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp1 = rfz
       // qgdnvtmp1 = qgdnvz
 #pragma gpu
-      amrex::Cuda::setLaunchRegion(true);
+      //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(tyzbx, ttyzbx,
       {
       transz_on_ystates(AMREX_INT_ANYD(ttyzbx.loVect()), AMREX_INT_ANYD(ttyzbx.hiVect()),
@@ -685,7 +687,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                         cdtdz);
       });
       amrex::Gpu::Device::streamSynchronize();
-      amrex::Cuda::setLaunchRegion(false);
+      //amrex::Cuda::setLaunchRegion(false);
       // we now have q?zx, q?yx, q?zy, q?xy, q?yz, q?xz
 
       //
@@ -700,7 +702,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp1 = rfyz
       // qgdnvtmp1 = qgdnvyz
 #pragma gpu
-      amrex::Cuda::setLaunchRegion(true);
+      //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(cyzbx, tcyzbx,
       {
       cmpflx_plus_godunov(AMREX_INT_ANYD(tcyzbx.loVect()), AMREX_INT_ANYD(tcyzbx.hiVect()),
@@ -714,7 +716,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           2, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
       amrex::Gpu::Device::streamSynchronize();
-      amrex::Cuda::setLaunchRegion(false);
+      //amrex::Cuda::setLaunchRegion(false);
       // compute F^{z|y}
       // [lo(1)-1, lo(2), lo(3)], [hi(1)+1, hi(2), hi(3)+1]
       const Box& czybx = amrex::grow(zbx, IntVect(AMREX_D_DECL(1,0,0)));
@@ -723,7 +725,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp2 = rfzy
       // qgdnvtmp2 = qgdnvzy
 #pragma gpu
-      amrex::Cuda::setLaunchRegion(true);
+      //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(czybx, tczybx,
       {
       cmpflx_plus_godunov(AMREX_INT_ANYD(tczybx.loVect()), AMREX_INT_ANYD(tczybx.hiVect()),
@@ -737,12 +739,12 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           3, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
       amrex::Gpu::Device::streamSynchronize();
-      amrex::Cuda::setLaunchRegion(false);
+      //amrex::Cuda::setLaunchRegion(false);
       // compute the corrected x interface states and fluxes
       // [lo(1), lo(2), lo(3)], [hi(1)+1, hi(2), hi(3)]
 
 #pragma gpu
-      amrex::Cuda::setLaunchRegion(true);
+      //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(xbx, txbx,
       {
       transyz(AMREX_INT_ANYD(txbx.loVect()), AMREX_INT_ANYD(txbx.hiVect()),
@@ -759,9 +761,9 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
               hdt, hdtdy, hdtdz, a_old, a_new);
       });
       amrex::Gpu::Device::streamSynchronize();
-      amrex::Cuda::setLaunchRegion(false);
+      //amrex::Cuda::setLaunchRegion(false);
 #pragma gpu
-      amrex::Cuda::setLaunchRegion(true);
+      //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(xbx, txbx,
       {
       cmpflx_plus_godunov(AMREX_INT_ANYD(txbx.loVect()), AMREX_INT_ANYD(txbx.hiVect()),
@@ -775,7 +777,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           1, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
       amrex::Gpu::Device::streamSynchronize();
-      amrex::Cuda::setLaunchRegion(false);
+      //amrex::Cuda::setLaunchRegion(false);
       //
       // Use qy?, q?zx, q?xz to compute final y-flux
       //
@@ -788,7 +790,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp1 = rfzx
       // qgdnvtmp1 = qgdnvzx
 #pragma gpu
-      amrex::Cuda::setLaunchRegion(true);
+      //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(czxbx, tczxbx,
       {
       cmpflx_plus_godunov(AMREX_INT_ANYD(tczxbx.loVect()), AMREX_INT_ANYD(tczxbx.hiVect()),
@@ -802,7 +804,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           3, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
       amrex::Gpu::Device::streamSynchronize();
-      amrex::Cuda::setLaunchRegion(false);
+      //amrex::Cuda::setLaunchRegion(false);
       // compute F^{x|z}
       // [lo(1), lo(2)-1, lo(3)], [hi(1)+1, hi(2)+1, hi(3)]
       const Box& cxzbx = amrex::grow(xbx, IntVect(AMREX_D_DECL(0,1,0)));
@@ -811,7 +813,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp2 = rfxz
       // qgdnvtmp2 = qgdnvxz
 #pragma gpu
-      amrex::Cuda::setLaunchRegion(true);
+      //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(cxzbx, tcxzbx,
       {
       cmpflx_plus_godunov(AMREX_INT_ANYD(tcxzbx.loVect()), AMREX_INT_ANYD(tcxzbx.hiVect()),
@@ -825,12 +827,12 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           1, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
       amrex::Gpu::Device::streamSynchronize();
-      amrex::Cuda::setLaunchRegion(false);
+      //amrex::Cuda::setLaunchRegion(false);
       // Compute the corrected y interface states and fluxes
       // [lo(1), lo(2), lo(3)], [hi(1), hi(2)+1, hi(3)]
 
 #pragma gpu
-      amrex::Cuda::setLaunchRegion(true);
+      //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(ybx, tybx,
       {
       transxz(AMREX_INT_ANYD(tybx.loVect()), AMREX_INT_ANYD(tybx.hiVect()),
@@ -847,11 +849,11 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
               hdt, hdtdx, hdtdz, a_old, a_new);
       });
       amrex::Gpu::Device::streamSynchronize();
-      amrex::Cuda::setLaunchRegion(false);
+      //amrex::Cuda::setLaunchRegion(false);
       // Compute the final F^y
       // [lo(1), lo(2), lo(3)], [hi(1), hi(2)+1, hi(3)]
 #pragma gpu
-      amrex::Cuda::setLaunchRegion(true);
+      //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(ybx, tybx,
       {
       cmpflx_plus_godunov(AMREX_INT_ANYD(tybx.loVect()), AMREX_INT_ANYD(tybx.hiVect()),
@@ -865,7 +867,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           2, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
       amrex::Gpu::Device::streamSynchronize();
-      amrex::Cuda::setLaunchRegion(false);
+      //amrex::Cuda::setLaunchRegion(false);
       //
       // Use qz?, q?xy, q?yx to compute final z-flux
       //
@@ -878,7 +880,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp1 = rfxy
       // qgdnvtmp1 = qgdnvxy
 #pragma gpu
-      amrex::Cuda::setLaunchRegion(true);
+      //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(cxybx, tcxybx,
       {
       cmpflx_plus_godunov(AMREX_INT_ANYD(tcxybx.loVect()), AMREX_INT_ANYD(tcxybx.hiVect()),
@@ -892,7 +894,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           1, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
       amrex::Gpu::Device::streamSynchronize();
-      amrex::Cuda::setLaunchRegion(false);
+      //amrex::Cuda::setLaunchRegion(false);
       // compute F^{y|x}
       // [lo(1), lo(2), lo(3)-1], [hi(1), hi(2)+dg(2), hi(3)+1]
       const Box& cyxbx = amrex::grow(ybx, IntVect(AMREX_D_DECL(0,0,1)));
@@ -901,7 +903,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp2 = rfyx
       // qgdnvtmp2 = qgdnvyx
 #pragma gpu
-      amrex::Cuda::setLaunchRegion(true);
+      //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(cyxbx, tcyxbx,
       {
       cmpflx_plus_godunov(AMREX_INT_ANYD(tcyxbx.loVect()), AMREX_INT_ANYD(tcyxbx.hiVect()),
@@ -915,12 +917,12 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           2, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
       amrex::Gpu::Device::streamSynchronize();
-      amrex::Cuda::setLaunchRegion(false);
+      //amrex::Cuda::setLaunchRegion(false);
       // compute the corrected z interface states and fluxes
       // [lo(1), lo(2), lo(3)], [hi(1), hi(2), hi(3)+1]
 
 #pragma gpu
-      amrex::Cuda::setLaunchRegion(true);
+      //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(zbx, tzbx,
       {
       transxy(AMREX_INT_ANYD(tzbx.loVect()), AMREX_INT_ANYD(tzbx.hiVect()),
@@ -937,12 +939,12 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
               hdt, hdtdx, hdtdy, a_old, a_new);
       });
       amrex::Gpu::Device::streamSynchronize();
-      amrex::Cuda::setLaunchRegion(false);
+      //amrex::Cuda::setLaunchRegion(false);
       // compute the final z fluxes F^z
       // [lo(1), lo(2), lo(3)], [hi(1), hi(2), hi(3)+1]
 
 #pragma gpu
-      amrex::Cuda::setLaunchRegion(true);
+      //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(zbx, tzbx,
       {
       cmpflx_plus_godunov(AMREX_INT_ANYD(tzbx.loVect()), AMREX_INT_ANYD(tzbx.hiVect()),
@@ -957,7 +959,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
       });
       amrex::Gpu::Device::streamSynchronize();
-      amrex::Cuda::setLaunchRegion(false);
+      //amrex::Cuda::setLaunchRegion(false);
 
       // clean the fluxes
 
@@ -977,7 +979,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
           });*/
 
 #pragma gpu
-      amrex::Cuda::setLaunchRegion(true);
+      //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(nbx, tnbx,
       {
           apply_av(AMREX_INT_ANYD(tnbx.loVect()), AMREX_INT_ANYD(tnbx.hiVect()),
@@ -999,17 +1001,17 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 		   }*/
       });
       amrex::Gpu::Device::streamSynchronize();
-      amrex::Cuda::setLaunchRegion(false);
+      //amrex::Cuda::setLaunchRegion(false);
 
 #pragma gpu
-      amrex::Cuda::setLaunchRegion(true);
+      //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(nbx, tnbx,
       {
 	  normalize_species_fluxes(AMREX_INT_ANYD(tnbx.loVect()), AMREX_INT_ANYD(tnbx.hiVect()),
                                    BL_TO_FORTRAN_ANYD(*fab_flux[idir]));
       });
       amrex::Gpu::Device::streamSynchronize();
-      amrex::Cuda::setLaunchRegion(false);
+      //amrex::Cuda::setLaunchRegion(false);
 
 	  //	  amrex::Print()<<"max flux["<<idir<<"]="<<flux[idir].max()<<std::endl;
       }
@@ -1017,7 +1019,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
       pdivu.resize(bx, 1);
       Elixir elix_pdivu = pdivu.elixir();
-      amrex::Cuda::setLaunchRegion(true);
+      //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
       {
       ca_consup(AMREX_INT_ANYD(tbx.loVect()), AMREX_INT_ANYD(tbx.hiVect()),
@@ -1033,14 +1035,14 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                 AMREX_REAL_ANYD(dx),&dt,&a_old,&a_new);
             });
       amrex::Gpu::Device::streamSynchronize();
-      amrex::Cuda::setLaunchRegion(false);
+      //amrex::Cuda::setLaunchRegion(false);
 
       for (int idir = 0; idir < AMREX_SPACEDIM; ++idir) {
 
         const Box& nbx = amrex::surroundingNodes(bx, idir);
 
 #pragma gpu
-      amrex::Cuda::setLaunchRegion(true);
+      //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(nbx, tnbx,
       {
         scale_flux(AMREX_INT_ANYD(tnbx.loVect()), AMREX_INT_ANYD(tnbx.hiVect()),
@@ -1048,7 +1050,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                    BL_TO_FORTRAN_ANYD(*fab_area[idir]), dt,&a_old,&a_new);
       });
       amrex::Gpu::Device::streamSynchronize();
-      amrex::Cuda::setLaunchRegion(false);
+      //amrex::Cuda::setLaunchRegion(false);
         if (idir == 0) {
             // get the scaled radial pressure -- we need to treat this specially
             Array4<Real> const qex_fab = qe[idir].array();
@@ -1078,6 +1080,8 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       //took out track_grid_losses
 
     } // MFIter loop
+
+    amrex::Cuda::setLaunchRegion(false);
 
   } // OMP loop
 
