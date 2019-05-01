@@ -1,6 +1,217 @@
 module advection_module
       use amrex_fort_module, only : rt => amrex_real
 contains
+
+     AMREX_CUDA_FORT_DEVICE subroutine update_state(lo,hi, &
+                             uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
+                             uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
+                             src ,src_l1,src_l2,src_l3,src_h1,src_h2,src_h3, &
+                             hydro_src ,hsrc_l1,hsrc_l2,hsrc_l3,hsrc_h1,hsrc_h2,hsrc_h3, &
+                             divu_cc,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3, &
+                             dt,a_old,a_new,print_fortran_warnings) &
+                             bind(C, name="ca_fort_update_state")
+ 
+      use amrex_fort_module, only : rt => amrex_real
+      use amrex_constants_module
+      use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UFS, &
+                                     gamma_minus_1, normalize_species
+      use enforce_module, only : enforce_nonnegative_species
+
+      implicit none
+
+      integer, intent(in) :: lo(3), hi(3)
+      integer, intent(in) ::print_fortran_warnings
+      integer, intent(in) ::  uin_l1,   uin_l2,  uin_l3,  uin_h1,  uin_h2,  uin_h3
+      integer, intent(in) ::  uout_l1, uout_l2, uout_l3, uout_h1, uout_h2, uout_h3
+      integer, intent(in) ::   src_l1,  src_l2,  src_l3,  src_h1,  src_h2,  src_h3
+      integer, intent(in) ::  hsrc_l1, hsrc_l2, hsrc_l3, hsrc_h1, hsrc_h2, hsrc_h3
+      integer, intent(in) ::  d_l1,d_l2,d_l3,d_h1,d_h2,d_h3
+
+      real(rt), intent(in)  ::       uin( uin_l1: uin_h1, uin_l2: uin_h2, uin_l3: uin_h3,NVAR)
+      real(rt), intent(out) ::      uout(uout_l1:uout_h1,uout_l2:uout_h2,uout_l3:uout_h3,NVAR)
+      real(rt), intent(in)  ::       src( src_l1: src_h1, src_l2: src_h2, src_l3: src_h3,NVAR)
+      real(rt), intent(in)  :: hydro_src(hsrc_l1:hsrc_h1,hsrc_l2:hsrc_h2,hsrc_l3:hsrc_h3,NVAR)
+      real(rt), intent(in)  ::   divu_cc(   d_l1:   d_h1,   d_l2:   d_h2,   d_l3:   d_h3)
+      real(rt), intent(in)  ::  dt, a_old, a_new
+
+      real(rt) :: a_half, a_oldsq, a_newsq
+      real(rt) :: a_new_inv, a_newsq_inv, a_half_inv, dt_a_new
+      integer  :: i, j, k, n
+
+      a_half     = HALF * (a_old + a_new)
+      a_oldsq = a_old * a_old
+      a_newsq = a_new * a_new
+
+      a_half_inv  = ONE / a_half
+      a_new_inv   = ONE / a_new
+      a_newsq_inv = ONE / a_newsq
+
+      do n = 1, NVAR
+
+         ! Actually do the update here
+         do k = lo(3),hi(3)
+            do j = lo(2),hi(2)
+               do i = lo(1),hi(1)
+
+                  ! Density
+                  if (n .eq. URHO) then
+                     uout(i,j,k,n) = uin(i,j,k,n) + dt * hydro_src(i,j,k,n) &
+                                    + dt *  src(i,j,k,n) * a_half_inv
+
+                  ! Momentum
+                  else if (n .ge. UMX .and. n .le. UMZ) then
+                     uout(i,j,k,n) = a_old * uin(i,j,k,n) + dt * hydro_src(i,j,k,n) &
+                                    + dt   * src(i,j,k,n)
+                     uout(i,j,k,n) = uout(i,j,k,n) * a_new_inv
+
+                  ! (rho E)
+                  else if (n .eq. UEDEN) then
+                     uout(i,j,k,n) =  a_oldsq * uin(i,j,k,n) + dt * hydro_src(i,j,k,n) &
+                                    + a_half  * dt * src(i,j,k,n)  
+                     uout(i,j,k,n) = uout(i,j,k,n) * a_newsq_inv
+
+                  ! (rho e)
+                  else if (n .eq. UEINT) then
+
+                     uout(i,j,k,n) =  a_oldsq*uin(i,j,k,n) + dt * hydro_src(i,j,k,n) &
+                                    + a_half * dt * src(i,j,k,n) 
+
+                     uout(i,j,k,n) = uout(i,j,k,n) * a_newsq_inv 
+
+!                    We don't do this here because we are adding all of this term explicitly in hydro_src
+!                    uout(i,j,k,n) = uout(i,j,k,n) * a_newsq_inv / &
+!                        ( ONE + a_half * dt * (HALF * gamma_minus_1 * divu_cc(i,j,k)) * a_newsq_inv )
+
+                  ! (rho X_i) and (rho adv_i) and (rho aux_i)
+                  else
+                     uout(i,j,k,n) = uin(i,j,k,n) +  dt * hydro_src(i,j,k,n) &
+                                    + dt * src(i,j,k,n) * a_half_inv
+
+                  endif
+
+               enddo
+            enddo
+         enddo
+      enddo
+
+#ifndef AMREX_USE_CUDA
+      ! Enforce the density >= small_dens.  Make sure we do this immediately after consup.
+      call enforce_minimum_density(uin, uin_l1, uin_l2, uin_l3, uin_h1, uin_h2, uin_h3, &
+                                   uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
+                                   lo,hi,print_fortran_warnings)
+      
+      ! Enforce species >= 0
+      call enforce_nonnegative_species(uout,uout_l1,uout_l2,uout_l3, &
+                                       uout_h1,uout_h2,uout_h3,lo,hi,0)
+
+      ! Re-normalize the species
+      if (normalize_species .eq. 1) then
+         call normalize_new_species(uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
+                                    lo,hi)
+      end if
+#endif
+
+      end subroutine update_state
+
+! :::
+! ::: ------------------------------------------------------------------
+! :::
+
+    AMREX_CUDA_FORT_DEVICE subroutine fort_add_grav_source(lo,hi,&
+                               uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
+                               uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
+                               grav, gv_l1, gv_l2, gv_l3, gv_h1, gv_h2, gv_h3, &
+                               dt,a_old,a_new) &
+                               bind(C, name="ca_fort_add_grav_source")
+
+      use amrex_error_module
+      use amrex_fort_module, only : rt => amrex_real
+      use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, &
+           UEDEN, grav_source_type
+
+      implicit none
+
+      integer lo(3), hi(3)
+      integer uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3
+      integer  uout_l1, uout_l2, uout_l3, uout_h1, uout_h2, uout_h3
+      integer  gv_l1, gv_l2, gv_l3, gv_h1, gv_h2, gv_h3
+
+      real(rt)  uin( uin_l1: uin_h1, uin_l2: uin_h2, uin_l3: uin_h3,NVAR)
+      real(rt) uout(uout_l1:uout_h1,uout_l2:uout_h2,uout_l3:uout_h3,NVAR)
+      real(rt) grav(  gv_l1:  gv_h1,  gv_l2:  gv_h2,  gv_l3:  gv_h3,3)
+      real(rt) dt
+      real(rt) a_old, a_new
+
+      real(rt) :: a_half, a_oldsq, a_newsq, a_newsq_inv
+      real(rt) :: rho
+      real(rt) :: SrU, SrV, SrW, SrE
+      real(rt) :: rhoInv, dt_a_new
+      real(rt) :: old_rhoeint, new_rhoeint, old_ke, new_ke
+      integer          :: i, j, k
+
+      a_half  = 0.5d0 * (a_old + a_new)
+      a_oldsq = a_old * a_old
+      a_newsq = a_new * a_new
+      a_newsq_inv = 1.d0 / a_newsq
+
+      dt_a_new    = dt / a_new
+
+      ! Gravitational source options for how to add the work to (rho E):
+      ! grav_source_type = 
+      ! 1: Original version ("does work")
+      ! 3: Puts all gravitational work into KE, not (rho e)
+
+      ! Add gravitational source terms
+      do k = lo(3),hi(3)
+         do j = lo(2),hi(2)
+            do i = lo(1),hi(1)
+
+               ! **** Start Diagnostics ****
+               old_ke = 0.5d0 * (uout(i,j,k,UMX)**2 + uout(i,j,k,UMY)**2 + uout(i,j,k,UMZ)**2) / &
+                                 uout(i,j,k,URHO) 
+               old_rhoeint = uout(i,j,k,UEDEN) - old_ke
+               ! ****   End Diagnostics ****
+
+               rho    = uin(i,j,k,URHO)
+               rhoInv = 1.0d0 / rho
+
+               SrU = rho * grav(i,j,k,1)
+               SrV = rho * grav(i,j,k,2)
+               SrW = rho * grav(i,j,k,3)
+
+               ! We use a_new here because we think of d/dt(a rho u) = ... + (rho g)
+               uout(i,j,k,UMX)   = uout(i,j,k,UMX) + SrU * dt_a_new
+               uout(i,j,k,UMY)   = uout(i,j,k,UMY) + SrV * dt_a_new
+               uout(i,j,k,UMZ)   = uout(i,j,k,UMZ) + SrW * dt_a_new
+
+               if (grav_source_type .eq. 1) then
+
+                   ! This does work (in 1-d)
+                   ! Src = rho u dot g, evaluated with all quantities at t^n
+                   SrE = uin(i,j,k,UMX) * grav(i,j,k,1) + &
+                         uin(i,j,k,UMY) * grav(i,j,k,2) + &
+                         uin(i,j,k,UMZ) * grav(i,j,k,3)
+                   uout(i,j,k,UEDEN) = (a_newsq*uout(i,j,k,UEDEN) + SrE * (dt*a_half)) * a_newsq_inv
+
+               else if (grav_source_type .eq. 3) then
+
+                   new_ke = 0.5d0 * (uout(i,j,k,UMX)**2 + uout(i,j,k,UMY)**2 + uout(i,j,k,UMZ)**2) / &
+                                     uout(i,j,k,URHO) 
+                   uout(i,j,k,UEDEN) = old_rhoeint + new_ke
+               else 
+#ifndef AMREX_USE_CUDA
+                  call amrex_error("Error:: Nyx_advection_3d.f90 :: bogus grav_source_type")
+#else
+                  uout(i,j,k,UEDEN)=-3.d200
+#endif
+               end if
+
+            enddo
+         enddo
+      enddo
+
+      end subroutine fort_add_grav_source
+
   
 AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
        uin, uin_lo, uin_hi, &

@@ -793,6 +793,27 @@ extern "C"
                          const int* m_start);
 #endif
 
+  AMREX_GPU_DEVICE void ca_fort_update_state
+    ( const int* lo, const int* hi,
+      const BL_FORT_FAB_ARG(u_in),
+            BL_FORT_FAB_ARG(u_out),
+      const BL_FORT_FAB_ARG(src),
+      const BL_FORT_FAB_ARG(hydro_src),
+      const BL_FORT_FAB_ARG(divu_cc),
+      const amrex::Real* dt,
+      const amrex::Real* a_old,
+      const amrex::Real* a_new,
+      const int* print_fortran_warnings);
+
+  AMREX_GPU_DEVICE void ca_fort_add_grav_source
+    ( const int* lo, const int* hi,
+      const BL_FORT_FAB_ARG(u_in),
+            BL_FORT_FAB_ARG(u_out),
+      const BL_FORT_FAB_ARG(grav),
+      const amrex::Real* dt,
+      const amrex::Real* a_old,
+      const amrex::Real* a_new);
+
   void fort_update_state
     ( const int lo[], const int hi[],
       const BL_FORT_FAB_ARG(u_in),
