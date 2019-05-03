@@ -94,7 +94,44 @@ contains
          enddo
       enddo
 
-#ifndef AMREX_USE_CUDA
+    end subroutine update_state
+
+     subroutine clean_state(lo,hi, &
+                             uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
+                             uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
+                             src ,src_l1,src_l2,src_l3,src_h1,src_h2,src_h3, &
+                             hydro_src ,hsrc_l1,hsrc_l2,hsrc_l3,hsrc_h1,hsrc_h2,hsrc_h3, &
+                             divu_cc,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3, &
+                             dt,a_old,a_new,print_fortran_warnings) &
+                             bind(C, name="fort_clean_state")
+ 
+      use amrex_fort_module, only : rt => amrex_real
+      use amrex_constants_module
+      use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UFS, &
+                                     gamma_minus_1, normalize_species
+      use enforce_module, only : enforce_nonnegative_species
+
+      implicit none
+
+      integer, intent(in) :: lo(3), hi(3)
+      integer, intent(in) ::print_fortran_warnings
+      integer, intent(in) ::  uin_l1,   uin_l2,  uin_l3,  uin_h1,  uin_h2,  uin_h3
+      integer, intent(in) ::  uout_l1, uout_l2, uout_l3, uout_h1, uout_h2, uout_h3
+      integer, intent(in) ::   src_l1,  src_l2,  src_l3,  src_h1,  src_h2,  src_h3
+      integer, intent(in) ::  hsrc_l1, hsrc_l2, hsrc_l3, hsrc_h1, hsrc_h2, hsrc_h3
+      integer, intent(in) ::  d_l1,d_l2,d_l3,d_h1,d_h2,d_h3
+
+      real(rt), intent(in)  ::       uin( uin_l1: uin_h1, uin_l2: uin_h2, uin_l3: uin_h3,NVAR)
+      real(rt), intent(out) ::      uout(uout_l1:uout_h1,uout_l2:uout_h2,uout_l3:uout_h3,NVAR)
+      real(rt), intent(in)  ::       src( src_l1: src_h1, src_l2: src_h2, src_l3: src_h3,NVAR)
+      real(rt), intent(in)  :: hydro_src(hsrc_l1:hsrc_h1,hsrc_l2:hsrc_h2,hsrc_l3:hsrc_h3,NVAR)
+      real(rt), intent(in)  ::   divu_cc(   d_l1:   d_h1,   d_l2:   d_h2,   d_l3:   d_h3)
+      real(rt), intent(in)  ::  dt, a_old, a_new
+
+      real(rt) :: a_half, a_oldsq, a_newsq
+      real(rt) :: a_new_inv, a_newsq_inv, a_half_inv, dt_a_new
+      integer  :: i, j, k, n
+
       ! Enforce the density >= small_dens.  Make sure we do this immediately after consup.
       call enforce_minimum_density(uin, uin_l1, uin_l2, uin_l3, uin_h1, uin_h2, uin_h3, &
                                    uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
@@ -109,9 +146,8 @@ contains
          call normalize_new_species(uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
                                     lo,hi)
       end if
-#endif
 
-      end subroutine update_state
+      end subroutine clean_state
 
 ! :::
 ! ::: ------------------------------------------------------------------
