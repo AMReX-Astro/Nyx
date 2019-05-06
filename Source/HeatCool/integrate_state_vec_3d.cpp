@@ -432,7 +432,8 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
  ////////////////////////////fprintf(stdout,"\n olcf <<<%d,%d>>> \n\n",gridSize, blockSize);
  */
   AMREX_LAUNCH_DEVICE_LAMBDA ( neq, idx, {
-  f_rhs_test(t,u_ptr,udot_ptr, rpar, neq);
+      //  f_rhs_test(t,u_ptr,udot_ptr, rpar, neq);
+      RhsFnReal(t,u_ptr+idx,udot_ptr+idx, rpar+4*idx, 1);
   });
   cudaStreamSynchronize(currentStream);
   AMREX_GPU_ERROR_CHECK();
