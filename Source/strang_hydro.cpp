@@ -89,6 +89,41 @@ Nyx::strang_hydro (Real time,
 
     MultiFab divu_cc(grids, dmap, 1, 0);
     divu_cc.setVal(0.);
+#ifndef NDEBUG
+    if (S_old_tmp.contains_nan(Density, S_old_tmp.nComp(), 0))
+      {
+        for (int i = 0; i < S_old_tmp.nComp(); i++)
+        {
+            if (ParallelDescriptor::IOProcessor())
+                std::cout << "strang_hydro: testing component " << i << " for NaNs" << std::endl;
+            if (S_old_tmp.contains_nan(Density+i,1,0))
+                amrex::Abort("S_old_tmp has NaNs in this component before first strang");
+        }
+        amrex::Abort("S_new has NaNs before the second strang call");
+      }
+#endif
+    /*
+#ifndef NDEBUG
+    if (S_new.contains_nan(Density, S_new.nComp(), 0))
+      {
+        for (int i = 0; i < S_new.nComp(); i++)
+        {
+            if (ParallelDescriptor::IOProcessor())
+                std::cout << "strang_hydro: testing component " << i << " for NaNs" << std::endl;
+            if (S_new.contains_nan(Density+i,1,0))
+                amrex::Abort("S_new has NaNs in this component before first strang");
+        }
+        amrex::Abort("S_new has NaNs before the second strang call");
+      }
+#endif
+*/
+
+    MultiFab dummy(grids,dmap, 1,S_new.nGrow());
+    MultiFab::Copy(dummy,S_new,0,0,1,0);
+
+    writeMultiFabAsPlotFile("S_new",dummy, "density");
+    //    std::ofstream ofs("S_new.txt", std::ofstream::out);
+    //    Print(ofs) << S_new << std::endl;
 
 #ifdef HEATCOOL
     strang_first_step(time,dt,S_old_tmp,D_old_tmp);
@@ -138,6 +173,29 @@ Nyx::strang_hydro (Real time,
 				  ext_src_old,hydro_src,grav_vector,divu_cc,
 				  dt,dummy_a_old,dummy_a_new);	
       }
+
+#ifndef NDEBUG
+    if (S_new.contains_nan(Density, S_new.nComp(), 0))
+      {
+    for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
+    {
+
+        const Box& bx = mfi.tilebox();
+        for (int i = 0; i < S_new[mfi].nComp(); i++)
+        {
+	  IntVect p_nan(D_DECL(-10, -10, -10));
+            if (ParallelDescriptor::IOProcessor())
+                std::cout << "strang_hydro: testing component " << i << " for NaNs" << std::endl;
+            if (S_new[mfi].contains_nan(bx,Density+i,1,p_nan))
+	      {
+		std::cout<<"nans"<<p_nan<<std::flush<<std::endl;
+		amrex::Abort("S_new has NaNs in this component after hydro");
+	      }
+        }
+        amrex::Abort("S_new has NaNs before the second strang call");
+    }
+      }
+#endif
     // We copy old Temp and Ne to new Temp and Ne so that they can be used
     //    as guesses when we next need them.
     MultiFab::Copy(D_new,D_old,0,0,D_old.nComp(),0);
@@ -164,7 +222,20 @@ Nyx::strang_hydro (Real time,
 
 #ifndef NDEBUG
     if (S_new.contains_nan(Density, S_new.nComp(), 0))
+      {
+        for (int i = 0; i < S_new.nComp(); i++)
+        {
+	  IntVect p_nan(D_DECL(-10, -10, -10));
+            if (ParallelDescriptor::IOProcessor())
+                std::cout << "strang_hydro: testing component " << i << " for NaNs" << std::endl;
+            if (S_new.contains_nan(Density+i,1,0))
+	      {
+		amrex::Print()<<p_nan<<std::endl;
+                amrex::Abort("S_old has NaNs in this component");
+	      }
+        }
         amrex::Abort("S_new has NaNs before the second strang call");
+      }
 #endif
 
 #ifdef HEATCOOL

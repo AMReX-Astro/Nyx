@@ -33,6 +33,7 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
       FArrayBox* fab_grav = grav.fabPtr(mfi);
 
         const Box& bx = mfi.tilebox();
+
 	AMREX_LAUNCH_DEVICE_LAMBDA(bx,tbx,
 	{
 	  ca_fort_update_state (
@@ -57,6 +58,7 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
       FArrayBox* fab_grav = grav.fabPtr(mfi);
 
         const Box& bx = mfi.tilebox();
+
 	fort_clean_state (
 		  bx.loVect(), bx.hiVect(),
 		  BL_TO_FORTRAN(*fab_S_old),

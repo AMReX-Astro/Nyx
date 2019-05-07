@@ -22,7 +22,6 @@
 #include <hdf5.h>
 #endif
 
-
 using std::istream;
 using std::ostream;
 

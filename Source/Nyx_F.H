@@ -495,7 +495,7 @@ extern "C"
       const BL_FORT_FAB_ARG_3D(flatn),
       const BL_FORT_FAB_ARG_3D(qaux),
       const BL_FORT_FAB_ARG_3D(srcQ),
-      const BL_FORT_FAB_ARG_3D(shk),
+      BL_FORT_FAB_ARG_3D(shk),
       BL_FORT_FAB_ARG_3D(dq),
       BL_FORT_FAB_ARG_3D(qxm),
       BL_FORT_FAB_ARG_3D(qxp),

@@ -16,6 +16,7 @@ contains
       use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UFS, &
                                      gamma_minus_1, normalize_species
       use enforce_module, only : enforce_nonnegative_species
+      use amrex_error_module, only : amrex_error
 
       implicit none
 
@@ -110,6 +111,7 @@ contains
       use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UFS, &
                                      gamma_minus_1, normalize_species
       use enforce_module, only : enforce_nonnegative_species
+      use amrex_error_module, only : amrex_error
 
       implicit none
 
@@ -604,24 +606,24 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
 
                 if (idir .eq. 1) then
 
-                   div1 = FOURTH * (div(i,j,k        ) + div(i,j+1*dg(2),k        ) + &
-                        div(i,j,k+1*dg(3)) + div(i,j+1*dg(2),k+1*dg(3)))
+                   div1 = FOURTH * (div(i,j,k        ) + div(i,j+1      ,k        ) + &
+                        div(i,j,k+1      ) + div(i,j+1      ,k+1      ))
                    div1 = difmag * min(ZERO, div1)
-                   div1 = div1 * (uin(i,j,k,n) - uin(i-1*dg(1),j,k,n))
+                   div1 = div1 * (uin(i,j,k,n) - uin(i-1      ,j,k,n))
 
                 else if (idir .eq. 2) then
 
-                   div1 = FOURTH * (div(i,j,k        ) + div(i+1*dg(1),j,k        ) + &
-                        div(i,j,k+1*dg(3)) + div(i+1*dg(1),j,k+1*dg(3)))
+                   div1 = FOURTH * (div(i,j,k        ) + div(i+1      ,j,k        ) + &
+                        div(i,j,k+1      ) + div(i+1      ,j,k+1      ))
                    div1 = difmag * min(ZERO, div1)
-                   div1 = div1 * (uin(i,j,k,n) - uin(i,j-1*dg(2),k,n))
+                   div1 = div1 * (uin(i,j,k,n) - uin(i,j-1      ,k,n))
 
                 else
 
-                   div1 = FOURTH * (div(i,j        ,k) + div(i+1*dg(1),j        ,k) + &
-                        div(i,j+1*dg(2),k) + div(i+1*dg(1),j+1*dg(2),k))
+                   div1 = FOURTH * (div(i,j        ,k) + div(i+1      ,j        ,k) + &
+                        div(i,j+1      ,k) + div(i+1      ,j+1      ,k))
                    div1 = difmag * min(ZERO, div1)
-                   div1 = div1 * (uin(i,j,k,n) - uin(i,j,k-1*dg(3),n))
+                   div1 = div1 * (uin(i,j,k,n) - uin(i,j,k-1      ,n))
 
                 end if
 
@@ -629,6 +631,7 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
                 if(use_area_dt_scale_apply.eq.1) then
                    flux(i,j,k,n) = flux(i,j,k,n) * area(idir) * dt
                 endif
+
              end do
           end do
        end do

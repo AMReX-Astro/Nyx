@@ -48,6 +48,8 @@
             end do
          end do
       end do
+
+      if(nc.ge.3.and.nv.ge.3) then
       !
       ! (rho X)_1 --> X_1
       !
@@ -58,6 +60,7 @@
             end do
          end do
       end do
+      endif
  
       end subroutine derstate
 

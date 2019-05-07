@@ -250,7 +250,6 @@ Nyx::initData ()
             }
         }
     }
-
 #endif // end NO_HYDRO
 
 #ifdef GRAVITY
