@@ -800,6 +800,7 @@ extern "C"
       const BL_FORT_FAB_ARG(src),
       const BL_FORT_FAB_ARG(hydro_src),
       const BL_FORT_FAB_ARG(divu_cc),
+            BL_FORT_FAB_ARG_3D(sum_state),
       const amrex::Real* dt,
       const amrex::Real* a_old,
       const amrex::Real* a_new,

@@ -7,6 +7,7 @@ contains
     AMREX_CUDA_FORT_DEVICE subroutine ca_enforce_minimum_density(uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
                                        uout,uout_l1,uout_l2,uout_l3, &
                                        uout_h1,uout_h2,uout_h3, &
+                                       sum_state, s_lo, s_hi, &
                                        lo,hi,print_fortran_warnings)  bind(c,name='ca_enforce_minimum_density')
 
       use amrex_fort_module, only : rt => amrex_real
@@ -15,7 +16,8 @@ contains
 
       implicit none
 
-      integer          :: lo(3), hi(3), print_fortran_warnings
+      integer          :: lo(3), hi(3), s_lo(3), s_hi(3), print_fortran_warnings
+      real(rt), intent(inout) :: sum_state(s_lo(1):s_hi(1), s_lo(2):s_hi(2), s_lo(3):s_hi(3),NVAR)
       integer          ::  uin_l1,  uin_l2,  uin_l3,  uin_h1,  uin_h2,  uin_h3
       integer          :: uout_l1, uout_l2, uout_l3, uout_h1, uout_h2, uout_h3
       real(rt) ::  uin( uin_l1: uin_h1, uin_l2: uin_h2, uin_l3: uin_h3,NVAR)
@@ -28,9 +30,10 @@ contains
       integer          :: n,nmax
       logical          :: do_diag
       real(rt) :: min_dens
-      real(rt) :: sum_state (NVAR)
+#ifndef AMREX_USE_CUDA
       real(rt) :: sum_before(NVAR)
       real(rt) :: sum_after (NVAR)
+#endif
       real(rt) :: min_vel(3), max_vel(3)
       real(rt) :: min_e     , max_e
       real(rt) :: delta_mass,frac,omfrac
@@ -38,17 +41,7 @@ contains
       real(rt) :: delta_rhoe
       real(rt) :: new_xvel, new_yvel, new_zvel, new_e
       real(rt) :: temp_sum, temp_num
-      integer  :: num_positive_zones
-      real(rt) :: unew(NVAR)
       integer  :: s_lo(3),s_hi(3)
-
-      s_lo(1)=uout_l1
-      s_lo(2)=uout_l2
-      s_lo(3)=uout_l3
-
-      s_hi(1)=uout_h1
-      s_hi(2)=uout_h2
-      s_hi(3)=uout_h3
 
       nmax=upass_map(npassive)
 
@@ -86,8 +79,10 @@ contains
                   ! Find the minimum density and the sum of all the conserved
                   !      quantities of the non-corner neighbors
                   min_dens      =  1.d100
+#ifndef AMREX_USE_CUDA
                   sum_state(:)  =  0.d0
                   sum_before(:) =  0.d0
+#endif
                   min_vel(:)    =  1.d100
                   max_vel(:)    = -1.d100
                   min_e         =  1.d100
@@ -102,9 +97,11 @@ contains
                           max_vel(1:3) = max(max_vel(1:3),uout(ii,jj,kk,UMX:UMZ)/uout(ii,jj,kk,URHO))
                           min_e        = min(min_e       ,uout(ii,jj,kk,UEINT)  /uout(ii,jj,kk,URHO))
                           max_e        = max(max_e       ,uout(ii,jj,kk,UEINT)  /uout(ii,jj,kk,URHO))
-                          sum_state(URHO:nmax) = sum_state(URHO:nmax) + uout(ii,jj,kk,URHO:nmax)
+                          sum_state(i,j,k,URHO:nmax) = sum_state(i,j,k,URHO:nmax) + uout(ii,jj,kk,URHO:nmax)
                       end if
+#ifndef AMREX_USE_CUDA
                       sum_before(URHO:nmax) = sum_before(URHO:nmax) + uout(ii,jj,kk,URHO:nmax)
+#endif
                   end do
                   end do
                   end do
@@ -116,7 +113,7 @@ contains
                   ! Subtract from the neighbors in proportion to their own mass -- 
                   !     this conserves the conserved quantities and keeps velocities,
                   !     e, and E unchanged.
-                    frac = (delta_mass / sum_state(URHO))
+                    frac = (delta_mass / sum_state(i,j,k,URHO))
                   omfrac = 1.d0 - frac
 #ifndef AMREX_USE_CUDA
                   do kk = klo,khi
@@ -151,7 +148,7 @@ contains
 #endif
                   ! Now define the new state at (i,j,k)
                   uout(i,j,k,URHO    ) = min_dens
-                  uout(i,j,k,UMX:nmax) = uout(i,j,k,UMX:nmax) + frac * sum_state(UMX:nmax)
+                  uout(i,j,k,UMX:nmax) = uout(i,j,k,UMX:nmax) + frac * sum_state(i,j,k,UMX:nmax)
 
                   ! ***** Done fixing the density -- now worry about the other quantities ***
 
@@ -252,7 +249,7 @@ contains
                       !     print *,'new ufs       ',uout(i,j,k,UFS  )/uout(i,j,k,URHO)
                       !     print *,'new ufsp1     ',uout(i,j,k,UFS+1)/uout(i,j,k,URHO)
 !                      end if
-
+#ifndef AMREX_USE_CUDA
                       sum_after(:) = 0.d0
                       do kk = klo,khi
                       do jj = jlo,jhi
@@ -261,7 +258,7 @@ contains
                       end do
                       end do
                       end do
-#ifndef AMREX_USE_CUDA                  
+
                       do n = URHO, nmax
                           print *,"SUMS: BEFORE AFTER ",n,sum_before(n), sum_after(n)
                       end do

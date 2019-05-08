@@ -19,6 +19,7 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
       int print_fortran_warnings_tmp=print_fortran_warnings;
       int do_grav_tmp=do_grav;
     amrex::Cuda::setLaunchRegion(true);
+    FArrayBox sum_state;
 #ifdef _OPENMP
 #pragma omp parallel 
 #endif
@@ -31,8 +32,13 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
       FArrayBox* fab_hydro_src = hydro_src.fabPtr(mfi);
       FArrayBox* fab_divu_cc = divu_cc.fabPtr(mfi);
       FArrayBox* fab_grav = grav.fabPtr(mfi);
+      
+      const Box& bx = mfi.tilebox();
+      const Box& obx = amrex::grow(bx, 1);
 
-        const Box& bx = mfi.tilebox();
+      sum_state.resize(obx, AMREX_SPACEDIM);
+      Elixir elix_s = sum_state.elixir();
+      const auto fab_sum_state = sum_state.array();
 
 	AMREX_LAUNCH_DEVICE_LAMBDA(bx,tbx,
 	{
@@ -43,6 +49,7 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
 		  BL_TO_FORTRAN(*fab_ext_src_old),
 		  BL_TO_FORTRAN(*fab_hydro_src),
 		  BL_TO_FORTRAN(*fab_divu_cc),
+		  fab_sum_state.p,&((fab_sum_state).begin.x),amrex::GpuArray<int,3>{(fab_sum_state).end.x-1,(fab_sum_state).end.y-1,(fab_sum_state).end.z-1}.data(),
 		  &dt, &a_old, &a_new, &print_fortran_warnings_tmp);
 
 	  // Note this increments S_new, it doesn't add source to S_old

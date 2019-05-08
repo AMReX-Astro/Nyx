@@ -8,6 +8,7 @@ contains
                              src ,src_l1,src_l2,src_l3,src_h1,src_h2,src_h3, &
                              hydro_src ,hsrc_l1,hsrc_l2,hsrc_l3,hsrc_h1,hsrc_h2,hsrc_h3, &
                              divu_cc,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3, &
+                             sum_state, s_lo, s_hi, &
                              dt,a_old,a_new,print_fortran_warnings) &
                              bind(C, name="ca_fort_update_state")
  
@@ -28,12 +29,14 @@ contains
       integer, intent(in) ::   src_l1,  src_l2,  src_l3,  src_h1,  src_h2,  src_h3
       integer, intent(in) ::  hsrc_l1, hsrc_l2, hsrc_l3, hsrc_h1, hsrc_h2, hsrc_h3
       integer, intent(in) ::  d_l1,d_l2,d_l3,d_h1,d_h2,d_h3
+      integer, intent(in) :: s_lo(3), s_hi(3)
 
       real(rt), intent(in)  ::       uin( uin_l1: uin_h1, uin_l2: uin_h2, uin_l3: uin_h3,NVAR)
       real(rt), intent(out) ::      uout(uout_l1:uout_h1,uout_l2:uout_h2,uout_l3:uout_h3,NVAR)
       real(rt), intent(in)  ::       src( src_l1: src_h1, src_l2: src_h2, src_l3: src_h3,NVAR)
       real(rt), intent(in)  :: hydro_src(hsrc_l1:hsrc_h1,hsrc_l2:hsrc_h2,hsrc_l3:hsrc_h3,NVAR)
       real(rt), intent(in)  ::   divu_cc(   d_l1:   d_h1,   d_l2:   d_h2,   d_l3:   d_h3)
+      real(rt), intent(inout) :: sum_state(s_lo(1):s_hi(1), s_lo(2):s_hi(2), s_lo(3):s_hi(3),NVAR)
       real(rt), intent(in)  ::  dt, a_old, a_new
 
       real(rt) :: a_half, a_oldsq, a_newsq
@@ -99,6 +102,7 @@ contains
       ! Enforce the density >= small_dens.  Make sure we do this immediately after consup.
       call ca_enforce_minimum_density(uin, uin_l1, uin_l2, uin_l3, uin_h1, uin_h2, uin_h3, &
                                    uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
+                                   sum_state,s_lo,s_hi, &
                                    lo,hi,print_fortran_warnings)
       
       ! Enforce species >= 0
