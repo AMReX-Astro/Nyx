@@ -102,28 +102,6 @@ Nyx::strang_hydro (Real time,
         amrex::Abort("S_new has NaNs before the second strang call");
       }
 #endif
-    /*
-#ifndef NDEBUG
-    if (S_new.contains_nan(Density, S_new.nComp(), 0))
-      {
-        for (int i = 0; i < S_new.nComp(); i++)
-        {
-            if (ParallelDescriptor::IOProcessor())
-                std::cout << "strang_hydro: testing component " << i << " for NaNs" << std::endl;
-            if (S_new.contains_nan(Density+i,1,0))
-                amrex::Abort("S_new has NaNs in this component before first strang");
-        }
-        amrex::Abort("S_new has NaNs before the second strang call");
-      }
-#endif
-*/
-
-    MultiFab dummy(grids,dmap, 1,S_new.nGrow());
-    MultiFab::Copy(dummy,S_new,0,0,1,0);
-
-    writeMultiFabAsPlotFile("S_new",dummy, "density");
-    //    std::ofstream ofs("S_new.txt", std::ofstream::out);
-    //    Print(ofs) << S_new << std::endl;
 
 #ifdef HEATCOOL
     strang_first_step(time,dt,S_old_tmp,D_old_tmp);

@@ -283,7 +283,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       if (use_flattening == 1) {
       AMREX_LAUNCH_DEVICE_LAMBDA(obx, tobx,
 		{
-        ca_uflatten(AMREX_INT_ANYD(obx.loVect()), AMREX_INT_ANYD(obx.hiVect()),
+        ca_uflatten(AMREX_INT_ANYD(tobx.loVect()), AMREX_INT_ANYD(tobx.hiVect()),
                     BL_TO_FORTRAN_ANYD(*fab_q),
 		    BL_ARR4_TO_FORTRAN_3D(fab_flatn),
 		    pres_comp);
