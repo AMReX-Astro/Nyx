@@ -1,6 +1,8 @@
 # sources used with hydro
 F90EXE_sources += Nyx_advection_util.F90
 F90EXE_sources += flatten_nd.F90
+F90EXE_sources += enforce_minimum_density.F90
+F90EXE_sources += enforce_nonnegative_species.F90
 
 CEXE_sources += Nyx_hydro.cpp
 CEXE_sources += Nyx_ctu_hydro.cpp

@@ -15,7 +15,8 @@ contains
       use amrex_constants_module
       use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UFS, &
                                      gamma_minus_1, normalize_species
-      use enforce_module, only : enforce_nonnegative_species
+      use ca_enforce_module, only : enforce_nonnegative_species
+      use enforce_density_module, only : ca_enforce_minimum_density
       use amrex_error_module, only : amrex_error
 
       implicit none
@@ -95,47 +96,8 @@ contains
          enddo
       enddo
 
-    end subroutine update_state
-
-     subroutine clean_state(lo,hi, &
-                             uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
-                             uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
-                             src ,src_l1,src_l2,src_l3,src_h1,src_h2,src_h3, &
-                             hydro_src ,hsrc_l1,hsrc_l2,hsrc_l3,hsrc_h1,hsrc_h2,hsrc_h3, &
-                             divu_cc,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3, &
-                             dt,a_old,a_new,print_fortran_warnings) &
-                             bind(C, name="fort_clean_state")
- 
-      use amrex_fort_module, only : rt => amrex_real
-      use amrex_constants_module
-      use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UFS, &
-                                     gamma_minus_1, normalize_species
-      use enforce_module, only : enforce_nonnegative_species
-      use amrex_error_module, only : amrex_error
-
-      implicit none
-
-      integer, intent(in) :: lo(3), hi(3)
-      integer, intent(in) ::print_fortran_warnings
-      integer, intent(in) ::  uin_l1,   uin_l2,  uin_l3,  uin_h1,  uin_h2,  uin_h3
-      integer, intent(in) ::  uout_l1, uout_l2, uout_l3, uout_h1, uout_h2, uout_h3
-      integer, intent(in) ::   src_l1,  src_l2,  src_l3,  src_h1,  src_h2,  src_h3
-      integer, intent(in) ::  hsrc_l1, hsrc_l2, hsrc_l3, hsrc_h1, hsrc_h2, hsrc_h3
-      integer, intent(in) ::  d_l1,d_l2,d_l3,d_h1,d_h2,d_h3
-
-      real(rt), intent(in)  ::       uin( uin_l1: uin_h1, uin_l2: uin_h2, uin_l3: uin_h3,NVAR)
-      real(rt), intent(out) ::      uout(uout_l1:uout_h1,uout_l2:uout_h2,uout_l3:uout_h3,NVAR)
-      real(rt), intent(in)  ::       src( src_l1: src_h1, src_l2: src_h2, src_l3: src_h3,NVAR)
-      real(rt), intent(in)  :: hydro_src(hsrc_l1:hsrc_h1,hsrc_l2:hsrc_h2,hsrc_l3:hsrc_h3,NVAR)
-      real(rt), intent(in)  ::   divu_cc(   d_l1:   d_h1,   d_l2:   d_h2,   d_l3:   d_h3)
-      real(rt), intent(in)  ::  dt, a_old, a_new
-
-      real(rt) :: a_half, a_oldsq, a_newsq
-      real(rt) :: a_new_inv, a_newsq_inv, a_half_inv, dt_a_new
-      integer  :: i, j, k, n
-
       ! Enforce the density >= small_dens.  Make sure we do this immediately after consup.
-      call enforce_minimum_density(uin, uin_l1, uin_l2, uin_l3, uin_h1, uin_h2, uin_h3, &
+      call ca_enforce_minimum_density(uin, uin_l1, uin_l2, uin_l3, uin_h1, uin_h2, uin_h3, &
                                    uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
                                    lo,hi,print_fortran_warnings)
       
@@ -145,11 +107,11 @@ contains
 
       ! Re-normalize the species
       if (normalize_species .eq. 1) then
-         call normalize_new_species(uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
+         call ca_normalize_new_species(uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
                                     lo,hi)
       end if
 
-      end subroutine clean_state
+    end subroutine update_state
 
 ! :::
 ! ::: ------------------------------------------------------------------
@@ -640,7 +602,7 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
 
   end subroutine ca_apply_av
 
-    !> @brief Normalize the fluxes of the mass fractions so that
+  !> @brief Normalize the fluxes of the mass fractions so that
   !! they sum to 0.  This is essentially the CMA procedure that is
   !! defined in Plewa & Muller, 1999, A&A, 342, 179.
   !!
@@ -691,6 +653,55 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
     endif
     
   end subroutine ca_normalize_species_fluxes
+
+! :::
+! ::: ------------------------------------------------------------------
+! :::
+
+      AMREX_CUDA_FORT_DEVICE subroutine ca_normalize_new_species(u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,lo,hi)
+
+      use amrex_fort_module, only : rt => amrex_real
+      use meth_params_module, only : NVAR, URHO, UFS, upass_map, npassive
+
+      implicit none
+
+      integer          :: lo(3), hi(3)
+      integer          :: u_l1,u_l2,u_l3,u_h1,u_h2,u_h3
+      real(rt) :: u(u_l1:u_h1,u_l2:u_h2,u_l3:u_h3,NVAR)
+
+      ! Local variables
+      integer          :: i,j,k,n,ipassive
+      real(rt) :: fac,sum
+
+      if (UFS .gt. 0) then
+
+      do k = lo(3),hi(3)
+      do j = lo(2),hi(2)
+         do i = lo(1),hi(1)
+            sum = 0.d0
+            do ipassive = 1, npassive
+               n = upass_map(ipassive)
+!            do n = UFS, UFS+nspec-1
+               sum = sum + u(i,j,k,n)
+            end do
+            if (sum .ne. 0.d0) then
+               fac = u(i,j,k,URHO) / sum
+            else
+               fac = 1.d0
+            end if
+            do ipassive = 1, npassive
+               n = upass_map(ipassive)
+!            do n = UFS, UFS+nspec-1
+               u(i,j,k,n) = u(i,j,k,n) * fac
+            end do
+         end do
+      end do
+      end do
+
+      end if ! UFS > 0
+
+      end subroutine ca_normalize_new_species
+
 ! :::
 ! ::: ------------------------------------------------------------------
 ! :::

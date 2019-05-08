@@ -1153,14 +1153,14 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       } // idir loop
 
       //took out track_grid_losses
-      amrex::Gpu::Device::streamSynchronize();
+      ////      amrex::Gpu::Device::streamSynchronize();
     } // MFIter loop
 
     amrex::Cuda::setLaunchRegion(false);
 
   } // OMP loop
 
-  amrex::Gpu::Device::streamSynchronize();
+  ////  amrex::Gpu::Device::streamSynchronize();
   BL_PROFILE_VAR_STOP(CA_UMDRV);
 
   if (verbose && ParallelDescriptor::IOProcessor())

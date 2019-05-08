@@ -1,10 +1,13 @@
+module enforce_density_module
+
+contains
 ! ::
 ! :: ----------------------------------------------------------
 ! ::
-    subroutine enforce_minimum_density(uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
+    AMREX_CUDA_FORT_DEVICE subroutine ca_enforce_minimum_density(uin,uin_l1,uin_l2,uin_l3,uin_h1,uin_h2,uin_h3, &
                                        uout,uout_l1,uout_l2,uout_l3, &
                                        uout_h1,uout_h2,uout_h3, &
-                                       lo,hi,print_fortran_warnings)
+                                       lo,hi,print_fortran_warnings)  bind(c,name='ca_enforce_minimum_density')
 
       use amrex_fort_module, only : rt => amrex_real
       use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, &
@@ -35,6 +38,17 @@
       real(rt) :: delta_rhoe
       real(rt) :: new_xvel, new_yvel, new_zvel, new_e
       real(rt) :: temp_sum, temp_num
+      integer  :: num_positive_zones
+      real(rt) :: unew(NVAR)
+      integer  :: s_lo(3),s_hi(3)
+
+      s_lo(1)=uout_l1
+      s_lo(2)=uout_l2
+      s_lo(3)=uout_l3
+
+      s_hi(1)=uout_h1
+      s_hi(2)=uout_h2
+      s_hi(3)=uout_h3
 
       nmax=upass_map(npassive)
 
@@ -47,13 +61,17 @@
 
                if (uout(i,j,k,URHO) < small_dens) then
 
-                  ilo = max(i-1,lo(1))
-                  jlo = max(j-1,lo(2))
-                  klo = max(k-1,lo(3))
-                  ihi = min(i+1,hi(1))
-                  jhi = min(j+1,hi(2))
-                  khi = min(k+1,hi(3))
+!                  num_positive_zones = 0
+!                  unew(:) = ZERO
 
+                  ilo = max(i-1,s_lo(1))
+                  jlo = max(j-1,s_lo(2))
+                  klo = max(k-1,s_lo(3))
+                  ihi = min(i+1,s_hi(1))
+                  jhi = min(j+1,s_hi(2))
+                  khi = min(k+1,s_hi(3))
+
+#ifndef AMREX_USE_CUDA
                   if (do_diag) then
                       print *,'old xvel      ',uout(i,j,k,UMX  )/uout(i,j,k,URHO)
                       print *,'old yvel      ',uout(i,j,k,UMY  )/uout(i,j,k,URHO)
@@ -64,7 +82,7 @@
                           print *,'old ufsp1     ',uout(i,j,k,upass_map(npassive))/uout(i,j,k,URHO)
                       end if
                   end if
-
+#endif
                   ! Find the minimum density and the sum of all the conserved
                   !      quantities of the non-corner neighbors
                   min_dens      =  1.d100
@@ -100,6 +118,7 @@
                   !     e, and E unchanged.
                     frac = (delta_mass / sum_state(URHO))
                   omfrac = 1.d0 - frac
+#ifndef AMREX_USE_CUDA
                   do kk = klo,khi
                   do jj = jlo,jhi
                   do ii = ilo,ihi
@@ -110,7 +129,9 @@
                   end do
                   end do
                   end do
+#endif
 
+#ifndef AMREX_USE_CUDA
                   if (print_fortran_warnings .gt. 0) then
                      !
                      ! A critical region since we usually can't write from threads.
@@ -127,7 +148,7 @@
                         print *,'   '
                      end if
                   end if
-
+#endif
                   ! Now define the new state at (i,j,k)
                   uout(i,j,k,URHO    ) = min_dens
                   uout(i,j,k,UMX:nmax) = uout(i,j,k,UMX:nmax) + frac * sum_state(UMX:nmax)
@@ -136,7 +157,7 @@
 
                   ! Re-set the velocities to be the average of the neighbors in the same direction
                   ! For now don't worry about conservation of momentum
-                  if (i-1.ge.lo(1) .and. i+1.le.hi(1)) then
+                  if (i-1.ge.s_lo(1) .and. i+1.le.s_hi(1)) then
                      new_xvel = 0.5d0*(uout(i+1,j,k,UMX)/uout(i+1,j,k,URHO) + &
                                        uout(i-1,j,k,UMX)/uout(i-1,j,k,URHO) )
                   else
@@ -152,7 +173,7 @@
                       end do
                       new_xvel = temp_sum / temp_num
                   end if
-                  if (j-1.ge.lo(2) .and. j+1.le.hi(2)) then
+                  if (j-1.ge.s_lo(2) .and. j+1.le.s_hi(2)) then
                       new_yvel = 0.5d0*(uout(i,j+1,k,UMY)/uout(i,j+1,k,URHO) + &
                                         uout(i,j-1,k,UMY)/uout(i,j-1,k,URHO) )
                   else
@@ -168,7 +189,7 @@
                       end do
                       new_yvel = temp_sum / temp_num
                   end if
-                  if (k-1.ge.lo(3) .and. k+1.le.hi(3)) then
+                  if (k-1.ge.s_lo(3) .and. k+1.le.s_hi(3)) then
                       new_zvel = 0.5d0*(uout(i,j,k+1,UMZ)/uout(i,j,k+1,URHO) + &
                                         uout(i,j,k-1,UMZ)/uout(i,j,k-1,URHO) )
                   else
@@ -213,9 +234,10 @@
                   uout(i,j,k,UEINT) = uout(i,j,k,URHO) * new_e
                   uout(i,j,k,UEDEN) = uout(i,j,k,UEINT) + 0.5d0 / uout(i,j,k,URHO) * &
                     ( uout(i,j,k,UMX)**2 + uout(i,j,k,UMY)**2 + uout(i,j,k,UMZ)**2 )
-                  
+
                   ! Make sure the velocities didn't go nutty
                   if (do_diag) then
+#ifndef AMREX_USE_CUDA                  
                       print *,'min / new / max xvel ',min_vel(1), uout(i,j,k,UMX  )/uout(i,j,k,URHO), max_vel(1)
                       print *,'min / new / max yvel ',min_vel(2), uout(i,j,k,UMY  )/uout(i,j,k,URHO), max_vel(2)
                       print *,'min / new / max zvel ',min_vel(3), uout(i,j,k,UMZ  )/uout(i,j,k,URHO), max_vel(3)
@@ -225,7 +247,7 @@
                       print *,'Adding to ymom ',delta_ymom
                       print *,'Adding to zmom ',delta_zmom
                       print *,'Adding to re   ',delta_rhoe
-
+#endif
 !                      if (UFS .gt. 0) then
                       !     print *,'new ufs       ',uout(i,j,k,UFS  )/uout(i,j,k,URHO)
                       !     print *,'new ufsp1     ',uout(i,j,k,UFS+1)/uout(i,j,k,URHO)
@@ -239,10 +261,11 @@
                       end do
                       end do
                       end do
-
+#ifndef AMREX_USE_CUDA                  
                       do n = URHO, nmax
                           print *,"SUMS: BEFORE AFTER ",n,sum_before(n), sum_after(n)
                       end do
+#endif
                   end if  ! end do_diag
 
                end if  ! end if rho < rho_min
@@ -250,4 +273,6 @@
          enddo
       enddo
 
-    end subroutine enforce_minimum_density
+    end subroutine ca_enforce_minimum_density
+
+end module enforce_density_module
