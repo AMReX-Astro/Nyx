@@ -9,6 +9,7 @@ amr.prereadFAHeaders     = 1
 #amr.plot_headerversion = 1
 amr.checkpoint_headerversion = 2
 
+nyx.hydro_convert    = 1
 nyx.ppm_type         = 0
 nyx.ppm_reference    = 1
 nyx.use_colglaz      = 0
@@ -16,7 +17,7 @@ nyx.corner_coupling  = 1
 
 nyx.strang_split     = 1
 nyx.add_ext_src      = 0
-nyx.heat_cool_type   = 3
+nyx.heat_cool_type   = 11
 #nyx.simd_width       = 8
 
 nyx.use_const_species = 1

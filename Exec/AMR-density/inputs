@@ -17,7 +17,7 @@ vismf.usepersistentifstreams = 1
 vismf.usesynchronousreads    = 0
 vismf.usedynamicsetselection = 1
 
-
+nyx.hydro_convert    = 1
 nyx.ppm_type         = 1
 nyx.ppm_reference    = 1
 nyx.use_colglaz      = 0
@@ -25,7 +25,7 @@ nyx.corner_coupling  = 1
 
 nyx.strang_split     = 1
 nyx.add_ext_src      = 0
-nyx.heat_cool_type   = 3
+nyx.heat_cool_type   = 11
 #nyx.simd_width       = 8
 
 nyx.small_dens = 1.e-2

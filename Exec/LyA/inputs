@@ -21,6 +21,7 @@ nyx.use_const_species = 1
 nyx.h_species = .76
 nyx.he_species = .24
 
+nyx.hydro_convert    = 1
 nyx.ppm_type         = 0
 nyx.ppm_reference    = 1
 nyx.use_colglaz      = 0
@@ -28,7 +29,7 @@ nyx.corner_coupling  = 1
 
 nyx.strang_split     = 1
 nyx.add_ext_src      = 0
-nyx.heat_cool_type   = 0
+nyx.heat_cool_type   = 11
 #nyx.simd_width       = 8
 
 nyx.small_dens = 1.e-2
@@ -153,7 +154,7 @@ amr.checkpoint_nfiles = 64
 #fab.format          = NATIVE_32
 amr.plot_files_output = 1
 amr.plot_file       = plt
-amr.plot_int        = 1
+amr.plot_int        = -1
 amr.plot_nfiles     = 64
 nyx.plot_z_values   = 7.0 6.0 5.0 4.0 3.0 2.0
 
