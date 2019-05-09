@@ -1,5 +1,8 @@
 module ca_enforce_module
 
+#ifndef AMREX_USE_CUDA
+   use amrex_error_module
+#endif
    use amrex_fort_module, only : rt => amrex_real
 
    implicit none
