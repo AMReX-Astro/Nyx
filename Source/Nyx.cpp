@@ -503,6 +503,14 @@ Nyx::read_params ()
     pp_nyx.query("use_colglaz", use_colglaz);
     pp_nyx.query("version_2", version_2);
 
+    if(hydro_convert == 1)
+      { 
+	if (ppm_type == 0 && ParallelDescriptor::IOProcessor())
+	  std::cout << "Nyx::setting hydro_convert = 1 with ppm_type = 0 \n";
+	if(ppm_type != 0)
+	  amrex::Error("Nyx::ppm_type must be 0 with hydro_convert = 1");
+      }
+
     if (do_hydro == 1)
     {
         if (do_hydro == 1 && use_const_species == 1)
