@@ -334,7 +334,7 @@ Nyx::comoving_a_post_restart (const std::string& restart_file)
 
 #ifdef HEATCOOL
      // Initialize "this_z" in the atomic_rates_module
-     if (heat_cool_type == 1 || heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type==9 || heat_cool_type==10 || heat_cool_type == 11) {
+     if (heat_cool_type == 1 || heat_cool_type == 3 || heat_cool_type == 4 || heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type==9 || heat_cool_type==10 || heat_cool_type == 11) {
          Real old_z = 1.0/old_a - 1.0;
          fort_interp_to_this_z(&old_z);
      }

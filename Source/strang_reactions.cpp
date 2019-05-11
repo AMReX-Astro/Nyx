@@ -46,6 +46,22 @@ Nyx::strang_first_step (Real time, Real dt, MultiFab& S_old, MultiFab& D_old)
 #endif
 
     }
+    MultiFab dummy(S_old.boxArray(), S_old.DistributionMap(), 1, 0);
+
+    MultiFab::Copy(dummy, S_old, Eint,0,1,0);
+    writeMultiFabAsPlotFile("eint3", dummy, "E_int");
+
+      }
+    else if(heat_cool_type == 4)
+      {
+	int ierr=integrate_state_grownexact(S_old, D_old, a, half_dt);
+	if(ierr)
+	  amrex::Abort("error out of integrate_state_exact");
+	MultiFab dummy(S_old.boxArray(), S_old.DistributionMap(), 1, 0);
+
+	MultiFab::Copy(dummy, S_old, Eint,0,1,0);
+	writeMultiFabAsPlotFile("eint4", dummy, "E_int");
+
       }
     else if(heat_cool_type== 10)
       {
@@ -63,6 +79,7 @@ Nyx::strang_first_step (Real time, Real dt, MultiFab& S_old, MultiFab& D_old)
       }
     else
             amrex::Abort("Invalid heating cooling type");
+
 }
 
 void
@@ -120,6 +137,12 @@ Nyx::strang_second_step (Real time, Real dt, MultiFab& S_new, MultiFab& D_new)
         max_iter = std::max(max_iter,max_iter_grid);
     }
 
+      }
+    else if(heat_cool_type == 4)
+      {
+	int ierr=integrate_state_exact(S_new, D_new, a, half_dt);
+	if(ierr)
+	  amrex::Abort("error out of integrate_state_exact");
       }
     else if(heat_cool_type== 10)
       {

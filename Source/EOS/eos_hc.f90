@@ -514,7 +514,7 @@ module eos_module
 
       subroutine iterate_ne(JH, JHe, z, U, t, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
 
-      use amrex_error_module, only: amrex_abort
+      use amrex_error_module, only: amrex_abort, amrex_error
       use atomic_rates_module, only: this_z, YHELIUM
 
       integer :: i
@@ -566,7 +566,7 @@ module eos_module
          !$OMP CRITICAL
          if (i .gt. 12) then
             print*, "ITERATION: ", i, " NUMBERS: ", z, t, ne, nhp, nhep, nhepp, df
-            STOP 'iterate_ne(): No convergence in Newton-Raphson!'
+            call amrex_error('iterate_ne(): No convergence in Newton-Raphson!')
          endif
          !$OMP END CRITICAL
 

@@ -1,6 +1,8 @@
 ifeq ($(USE_HEATCOOL), TRUE)
 f90EXE_sources += integrate_state_3d.f90
 f90EXE_sources += integrate_state_vode_3d.f90
+CEXE_sources += integrate_state_exact_3d.cpp
+f90EXE_sources += update.f90
 
 ifeq ($(USE_SDC), TRUE)
 f90EXE_sources += integrate_state_with_source_3d.f90
