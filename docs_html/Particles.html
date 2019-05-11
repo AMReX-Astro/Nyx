@@ -288,8 +288,9 @@ so we must multiply <span class="math notranslate nohighlight">\({\bf \dot{x}}\)
 just a single file. To enable this option, set::</div>
 </div>
 <blockquote>
-<div>nyx.particle_init_type = BinaryMetaFile
-nyx.binary_particle_file =*particle file*</div></blockquote>
+<div><p>nyx.particle_init_type = BinaryMetaFile
+nyx.binary_particle_file =*particle file*</p>
+</div></blockquote>
 <div class="line-block">
 <div class="line">In this case the <em>particle_file</em> you specify is an ASCII file specifying a
 list of file names with full paths. Each of the files in this list is assumed
@@ -329,20 +330,20 @@ The SPH particles will be discarded by the code once the grid data has been init
 <h3>Cosmological<a class="headerlink" href="#cosmological" title="Permalink to this headline">¶</a></h3>
 <p>Using cosmological initial conditions is a three step process:</p>
 <ol class="arabic simple">
-<li>Generating a transfer function (e.g. with <code class="docutils literal notranslate"><span class="pre">camb</span></code>)</li>
-<li>Generating an initial displacement field (with <code class="docutils literal notranslate"><span class="pre">nyx-ic</span></code>)</li>
-<li>Starting nyx</li>
+<li><p>Generating a transfer function (e.g. with <code class="docutils literal notranslate"><span class="pre">camb</span></code>)</p></li>
+<li><p>Generating an initial displacement field (with <code class="docutils literal notranslate"><span class="pre">nyx-ic</span></code>)</p></li>
+<li><p>Starting nyx</p></li>
 </ol>
 <p>In the following we will look at each step a bit closer.</p>
 <div class="section" id="generating-a-transfer-function">
 <h4>Generating a transfer function<a class="headerlink" href="#generating-a-transfer-function" title="Permalink to this headline">¶</a></h4>
 <p>The transfer function is used in <code class="docutils literal notranslate"><span class="pre">nyx-ic</span></code> to generate the power
-spectrum. The usual way is to use <code class="docutils literal notranslate"><span class="pre">camb</span></code> <a class="footnote-reference" href="#id2" id="id1">[1]</a>
+spectrum. The usual way is to use <code class="docutils literal notranslate"><span class="pre">camb</span></code> <a class="footnote-reference brackets" href="#id2" id="id1">1</a>
 to calculate it for the desired universe. A sample <code class="docutils literal notranslate"><span class="pre">camb.ini</span></code> is
 provided with <code class="docutils literal notranslate"><span class="pre">nyx-ic</span></code>. The important options are:</p>
 <ul class="simple">
-<li><strong>transfer_redshift(1) = 50</strong></li>
-<li><strong>transfer_matterpower(1) = tf</strong></li>
+<li><p><strong>transfer_redshift(1) = 50</strong></p></li>
+<li><p><strong>transfer_matterpower(1) = tf</strong></p></li>
 </ul>
 <p>which determine the initial time for the simulation. You should make sure
 that you catch all necessary wave numbers for the considered box length and
@@ -413,32 +414,32 @@ future.</p>
 <div class="section" id="using-nyx-with-cosmological-initial-conditions">
 <h4>Using Nyx with cosmological initial conditions<a class="headerlink" href="#using-nyx-with-cosmological-initial-conditions" title="Permalink to this headline">¶</a></h4>
 <ul>
-<li><div class="first line-block">
+<li><div class="line-block">
 <div class="line"><strong>nyx.nyx.particle_init_type = Cosmological</strong></div>
 <div class="line">set the <em>right</em> init type</div>
 </div>
 </li>
-<li><div class="first line-block">
+<li><div class="line-block">
 <div class="line"><strong>cosmo.initDirName = init</strong></div>
 <div class="line">set the name of the displacements directory (amrex format)</div>
 </div>
 </li>
-<li><div class="first line-block">
+<li><div class="line-block">
 <div class="line"><strong>cosmo.particle_mass = 0.19178304E+10</strong></div>
 <div class="line">sets the mass [<span class="math notranslate nohighlight">\(M_\odot\)</span>] of each particle</div>
 </div>
 </li>
-<li><div class="first line-block">
+<li><div class="line-block">
 <div class="line"><strong>cosmo.omegam = 0.272</strong></div>
 <div class="line">set <span class="math notranslate nohighlight">\(\Omega_{Matter}\)</span></div>
 </div>
 </li>
-<li><div class="first line-block">
+<li><div class="line-block">
 <div class="line"><strong>cosmo.omegax = 0.728</strong></div>
 <div class="line">set <span class="math notranslate nohighlight">\(\Omega_\Lambda\)</span></div>
 </div>
 </li>
-<li><div class="first line-block">
+<li><div class="line-block">
 <div class="line"><strong>cosmo.hubble = 0.704</strong></div>
 <div class="line">set the reduced hubble constant <span class="math notranslate nohighlight">\(h\)</span></div>
 </div>
@@ -475,11 +476,11 @@ random number between 0 and 1 multiplied by 0.25 dx.</div>
 <h4>Move-Kick-Drift Algorithm<a class="headerlink" href="#move-kick-drift-algorithm" title="Permalink to this headline">¶</a></h4>
 <p>In each time step:</p>
 <ul class="simple">
-<li>Solve for <span class="math notranslate nohighlight">\({\mathbf g}^n\)</span> (only if multilevel, otherwise use <span class="math notranslate nohighlight">\({\mathbf g}^{n+1}\)</span> from previous step)</li>
-<li><span class="math notranslate nohighlight">\({\mathbf u}_i^{{n+\frac{1}{2}}} = \frac{1}{a^{{n+\frac{1}{2}}}} ( (a^n {\mathbf u}^n_i) + \frac{{\Delta t}}{2} \; {\mathbf g}^n_i )\)</span></li>
-<li><span class="math notranslate nohighlight">\({\mathbf x}_i^{n+1 } = {\mathbf x}^n_i +  \frac{{\Delta t}}{a^{{n+\frac{1}{2}}}}  {\mathbf u}_i^{{n+\frac{1}{2}}}\)</span></li>
-<li>Solve for <span class="math notranslate nohighlight">\({\mathbf g}^{n+1}\)</span> using <span class="math notranslate nohighlight">\({\mathbf x}_i^{n+1}\)</span></li>
-<li><span class="math notranslate nohighlight">\({\mathbf u}_i^{n+1} = \frac{1}{a^{n+1}} ( (a^{{n+\frac{1}{2}}} {\mathbf u}^{{n+\frac{1}{2}}}_i) + \frac{{\Delta t}}{2} \; {\mathbf g}^{n+1}_i )\)</span></li>
+<li><p>Solve for <span class="math notranslate nohighlight">\({\mathbf g}^n\)</span> (only if multilevel, otherwise use <span class="math notranslate nohighlight">\({\mathbf g}^{n+1}\)</span> from previous step)</p></li>
+<li><p><span class="math notranslate nohighlight">\({\mathbf u}_i^{{n+\frac{1}{2}}} = \frac{1}{a^{{n+\frac{1}{2}}}} ( (a^n {\mathbf u}^n_i) + \frac{{\Delta t}}{2} \; {\mathbf g}^n_i )\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\({\mathbf x}_i^{n+1 } = {\mathbf x}^n_i +  \frac{{\Delta t}}{a^{{n+\frac{1}{2}}}}  {\mathbf u}_i^{{n+\frac{1}{2}}}\)</span></p></li>
+<li><p>Solve for <span class="math notranslate nohighlight">\({\mathbf g}^{n+1}\)</span> using <span class="math notranslate nohighlight">\({\mathbf x}_i^{n+1}\)</span></p></li>
+<li><p><span class="math notranslate nohighlight">\({\mathbf u}_i^{n+1} = \frac{1}{a^{n+1}} ( (a^{{n+\frac{1}{2}}} {\mathbf u}^{{n+\frac{1}{2}}}_i) + \frac{{\Delta t}}{2} \; {\mathbf g}^{n+1}_i )\)</span></p></li>
 </ul>
 <p>Note that at the end of the timestep <span class="math notranslate nohighlight">\({\bf x}_i^{n+1}\)</span> is consistent with <span class="math notranslate nohighlight">\({\bf g}^{n+1}\)</span> becasue
 we have not advanced the positions after computing the new-time gravity. This has the benefit that
@@ -490,21 +491,21 @@ the particles are only moved once.</p>
 <h4>Computing <strong>g</strong><a class="headerlink" href="#computing-g" title="Permalink to this headline">¶</a></h4>
 <p>We solve for the gravitational vector as follows:</p>
 <ul class="simple">
-<li>Assign the mass of the particles onto the grid in the form of density, <span class="math notranslate nohighlight">\(\rho_{DM}\)</span>.
+<li><p>Assign the mass of the particles onto the grid in the form of density, <span class="math notranslate nohighlight">\(\rho_{DM}\)</span>.
 The mass of each particle is assumed to be uniformly distributed over a cube of side <span class="math notranslate nohighlight">\(\Delta x\)</span>,
 centered at what we call the position of the particle. We distribute the mass of each
 particle to the cells on the grid in proportion to the volume of the intersection of each cell
 with the particle’s cube. We then divide these cell values by <span class="math notranslate nohighlight">\(\Delta x^3\)</span> so that the
 right hand side of the Poisson solve will be in units of density rather than mass.
-Note that this is the <em>comoving</em> density.</li>
-<li>Solve <span class="math notranslate nohighlight">\(\nabla^2 \phi = \frac{4 \pi G}{a} \rho_{DM}\)</span>.
+Note that this is the <em>comoving</em> density.</p></li>
+<li><p>Solve <span class="math notranslate nohighlight">\(\nabla^2 \phi = \frac{4 \pi G}{a} \rho_{DM}\)</span>.
 We discretize with the standard 7-point Laplacian (5-point in 2D)
-and use multigrid with Gauss-Seidel red-black relaxation to solve the equation for <span class="math notranslate nohighlight">\(\phi\)</span> at cell centers.</li>
-<li>Compute the normal component of <span class="math notranslate nohighlight">\({\bf g} = -\nabla \phi\)</span> at cell faces by differencing the adjacent values of <span class="math notranslate nohighlight">\(\phi,\)</span>
+and use multigrid with Gauss-Seidel red-black relaxation to solve the equation for <span class="math notranslate nohighlight">\(\phi\)</span> at cell centers.</p></li>
+<li><p>Compute the normal component of <span class="math notranslate nohighlight">\({\bf g} = -\nabla \phi\)</span> at cell faces by differencing the adjacent values of <span class="math notranslate nohighlight">\(\phi,\)</span>
 e.g. if <span class="math notranslate nohighlight">\({\bf g} = (g_x, g_y, g_z),\)</span> then we define <span class="math notranslate nohighlight">\(g_x\)</span> on cell faces with a normal in the x-direction by computing
-<span class="math notranslate nohighlight">\(g_{x,i-{\frac{1}{2}},j,k} = -(\phi_{i,j,k} - \phi_{i-1,j,k}) / \Delta x.\)</span></li>
-<li>Interpolate each component of <span class="math notranslate nohighlight">\({\bf g}\)</span> from normal cell faces onto each particle position using
-linear interpolation in the normal direction.</li>
+<span class="math notranslate nohighlight">\(g_{x,i-{\frac{1}{2}},j,k} = -(\phi_{i,j,k} - \phi_{i-1,j,k}) / \Delta x.\)</span></p></li>
+<li><p>Interpolate each component of <span class="math notranslate nohighlight">\({\bf g}\)</span> from normal cell faces onto each particle position using
+linear interpolation in the normal direction.</p></li>
 </ul>
 </div>
 </div>
@@ -578,12 +579,11 @@ These control printing about the state of the calculation (time, value of :math:
  timing information.
 </pre></div>
 </div>
-<table class="docutils footnote" frame="void" id="id2" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>See <a class="reference external" href="http://camb.info/">http://camb.info/</a></td></tr>
-</tbody>
-</table>
+<dl class="footnote brackets">
+<dt class="label" id="id2"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
+<dd><p>See <a class="reference external" href="http://camb.info/">http://camb.info/</a></p>
+</dd>
+</dl>
 </div>
 </div>
 </div>
