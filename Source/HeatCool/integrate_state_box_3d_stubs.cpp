@@ -56,3 +56,24 @@ int Nyx::integrate_state_grownvec
   amrex::Abort("Using stubs file for heat_cool_type=11");
   return 0;
 }
+
+
+int Nyx::integrate_state_exact
+  (amrex::MultiFab &S_old,
+   amrex::MultiFab &D_old,
+   const Real& a, const Real& delta_time)
+{
+
+  amrex::Abort("Using stubs file for heat_cool_type=11");
+  return 0;
+}
+
+int Nyx::integrate_state_grownexact
+  (amrex::MultiFab &S_old,
+   amrex::MultiFab &D_old,
+   const Real& a, const Real& delta_time)
+{
+
+  amrex::Abort("Using stubs file for heat_cool_type=11");
+  return 0;
+}
