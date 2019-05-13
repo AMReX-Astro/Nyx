@@ -12,7 +12,7 @@ contains
 
       use amrex_fort_module, only : rt => amrex_real
       use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, &
-                                     small_dens, nadv, upass_map, npassive
+                                     small_dens, nadv, upass_map, npassive, UFS, UFA
 
       implicit none
 
@@ -41,9 +41,12 @@ contains
       real(rt) :: delta_rhoe
       real(rt) :: new_xvel, new_yvel, new_zvel, new_e
       real(rt) :: temp_sum, temp_num
-      integer  :: s_lo(3),s_hi(3)
 
-      nmax=upass_map(npassive)
+      if(UFS .gt. 0) then
+         nmax=upass_map(npassive)
+      else
+         nmax = UFA+nadv-1
+      endif
 
       ! do_diag = .true.
       do_diag = .false.
