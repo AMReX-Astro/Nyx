@@ -46,10 +46,6 @@ Nyx::strang_first_step (Real time, Real dt, MultiFab& S_old, MultiFab& D_old)
 #endif
 
     }
-    MultiFab dummy(S_old.boxArray(), S_old.DistributionMap(), 1, 0);
-
-    MultiFab::Copy(dummy, S_old, Eint,0,1,0);
-    writeMultiFabAsPlotFile("eint3", dummy, "E_int");
 
       }
     else if(heat_cool_type == 4)
@@ -57,10 +53,6 @@ Nyx::strang_first_step (Real time, Real dt, MultiFab& S_old, MultiFab& D_old)
 	int ierr=integrate_state_grownexact(S_old, D_old, a, half_dt);
 	if(ierr)
 	  amrex::Abort("error out of integrate_state_exact");
-	MultiFab dummy(S_old.boxArray(), S_old.DistributionMap(), 1, 0);
-
-	MultiFab::Copy(dummy, S_old, Eint,0,1,0);
-	writeMultiFabAsPlotFile("eint4", dummy, "E_int");
 
       }
     else if(heat_cool_type== 10)
