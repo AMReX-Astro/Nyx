@@ -152,12 +152,21 @@ int Nyx::integrate_state_vec
 
 				//				flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
 				flag = CVDiag(cvode_mem);
+				
+				CVodeSetMaxNumSteps(cvode_mem,2000);
 
+				N_Vector constrain=N_VClone(u);
+				N_VConst(2,constrain);	      
+				flag =CVodeSetConstraints(cvode_mem,constrain);
+				
 				CVodeSetUserData(cvode_mem, &Data);
 
 				//				CVodeSetMaxStep(cvode_mem, delta_time/10);
 				flag = CVode(cvode_mem, delta_time, u, &t, CV_NORMAL);
 
+#ifndef NDEBUG
+				PrintFinalStats(cvode_mem);
+#endif
 				//				diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
 				//	diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
 				// rho should not change  rho_tmp_ptr[i]=rparh[4*i+2]; //    rpar(3)=rho_vode
@@ -172,7 +181,7 @@ int Nyx::integrate_state_vec
 				  state4(i,j,k,Eint_loc)  += state4(i,j,k,Density_loc) * (dptr[idx*loop]-eptr[idx]);
 				  state4(i,j,k,Eden_loc)  += state4(i,j,k,Density_loc) * (dptr[idx*loop]-eptr[idx]);
 				  //				}
-				//PrintFinalStats(cvode_mem);
+				//
 				});
 
 				N_VDestroy(u);          /* Free the u vector */
@@ -322,10 +331,19 @@ int Nyx::integrate_state_grownvec
 				//				flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
 				flag = CVDiag(cvode_mem);
 
+				CVodeSetMaxNumSteps(cvode_mem,2000);
+
+				N_Vector constrain=N_VClone(u);
+				N_VConst(2,constrain);	      
+				flag =CVodeSetConstraints(cvode_mem,constrain);
+				
 				CVodeSetUserData(cvode_mem, &Data);
 				//				CVodeSetMaxStep(cvode_mem, delta_time/10);
 				flag = CVode(cvode_mem, delta_time, u, &t, CV_NORMAL);
 
+#ifndef NDEBUG
+				PrintFinalStats(cvode_mem);
+#endif
 				//				diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
 				//	diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
 				// rho should not change  rho_tmp_ptr[i]=rparh[4*i+2]; //    rpar(3)=rho_vode
