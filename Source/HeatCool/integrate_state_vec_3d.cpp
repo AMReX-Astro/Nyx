@@ -55,9 +55,9 @@ int Nyx::integrate_state_vec
   int Density_loc=Density;
   int one_in = 1;
 
-  //#ifdef _OPENMP
-  //#pragma omp parallel if (Gpu::notInLaunchRegion())
-  //#endif
+  #ifdef _OPENMP
+  #pragma omp parallel if (Gpu::notInLaunchRegion())
+  #endif
   for ( MFIter mfi(S_old, TilingIfNotGPU()); mfi.isValid(); ++mfi )
     {
       double* dptr;
@@ -232,9 +232,9 @@ int Nyx::integrate_state_grownvec
   int Density_loc=Density;
   int one_in = 1;
 
-  //#ifdef _OPENMP
-  //#pragma omp parallel if (Gpu::notInLaunchRegion())
-  //#endif
+  #ifdef _OPENMP
+  #pragma omp parallel if (Gpu::notInLaunchRegion())
+  #endif
   for ( MFIter mfi(S_old, TilingIfNotGPU()); mfi.isValid(); ++mfi )
     {
       double* dptr;

@@ -82,8 +82,8 @@ contains
                   ! Find the minimum density and the sum of all the conserved
                   !      quantities of the non-corner neighbors
                   min_dens      =  1.d100
+                  sum_state(i,j,k,:)  =  0.d0
 #ifndef AMREX_USE_CUDA
-                  sum_state(:)  =  0.d0
                   sum_before(:) =  0.d0
 #endif
                   min_vel(:)    =  1.d100
