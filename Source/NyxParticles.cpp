@@ -630,6 +630,8 @@ Nyx::init_santa_barbara (int init_sb_vels)
     Real cur_time = state[State_Type].curTime();
     Real a = old_a;
 
+    BL_PROFILE_VAR("Nyx::init_santa_barbara()::part", CA_part);
+    amrex::Cuda::setLaunchRegion(true);
     amrex::Print() << "... time and comoving a when data is initialized at level " 
                    << level << " " << cur_time << " " << a << '\n';
 
@@ -665,13 +667,17 @@ Nyx::init_santa_barbara (int init_sb_vels)
             delete SPHPC;
 	}
 
+	BL_PROFILE_VAR_STOP(CA_part);
+	BL_PROFILE_VAR("Nyx::init_santa_barbara()::avg", CA_avg);
+	amrex::Cuda::setLaunchRegion(false);
         for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
         {
             amrex::average_down(*particle_mf[lev+1], *particle_mf[lev],
                                  parent->Geom(lev+1), parent->Geom(lev), 0, 1,
                                  parent->refRatio(lev));
         }
-
+	BL_PROFILE_VAR_STOP(CA_avg);
+	BL_PROFILE_VAR("Nyx::init_santa_barbara()::partmf", CA_partmf);
         // Only multiply the density, not the velocities
         if (init_with_sph_particles == 0)
         {
@@ -684,35 +690,56 @@ Nyx::init_santa_barbara (int init_sb_vels)
                 particle_mf[level]->mult(frac_for_hydro / omfrac,0,1);
             }
         }
-
-        const Real * dx = geom.CellSize();
+	BL_PROFILE_VAR_STOP(CA_partmf);
+	amrex::Cuda::setLaunchRegion(true);
+	BL_PROFILE_VAR("Nyx::init_santa_barbara()::init", CA_init);
+        const auto dx = geom.CellSizeArray();
         MultiFab& S_new = get_new_data(State_Type);
         MultiFab& D_new = get_new_data(DiagEOS_Type);
 
         int ns = S_new.nComp();
         int nd = D_new.nComp(); 
-        for (MFIter mfi(S_new); mfi.isValid(); ++mfi)
+
+        for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
         {
-            RealBox gridloc = RealBox(grids[mfi.index()],
+	  RealBox gridloc = RealBox(grids[mfi.index()],
                                       geom.CellSize(),
                                       geom.ProbLo());
             const Box& box = mfi.validbox();
             const int* lo = box.loVect();
             const int* hi = box.hiVect();
+	    FArrayBox* fab_S_new=S_new.fabPtr(mfi);
+	    FArrayBox* fab_D_new=D_new.fabPtr(mfi);
 
             // Temp unused for GammaLaw, set it here so that pltfiles have
             // defined numbers
-            D_new[mfi].setVal(0, Temp_comp);
-            D_new[mfi].setVal(0,   Ne_comp);
+	    D_new[mfi].setVal(0, Temp_comp);
+	    D_new[mfi].setVal(0,   Ne_comp);
 
+	    Real z_in=initial_z;
+#ifdef AMREX_USE_CUDA
+	    //gridloc.lo matches box, not tbox
+	    AMREX_LAUNCH_DEVICE_LAMBDA(box,tbox,
+				       {
+            ca_fort_initdata
+		 (level, cur_time, tbox.loVect(), tbox.hiVect(), 
+                 ns,BL_TO_FORTRAN(*fab_S_new), 
+		  nd,BL_TO_FORTRAN(*fab_D_new), dx.data(),
+                 &z_in);
+				       });
+#else
             fort_initdata
                 (level, cur_time, lo, hi, 
-                 ns,BL_TO_FORTRAN(S_new[mfi]), 
-                 nd,BL_TO_FORTRAN(D_new[mfi]), dx,
+                 ns,BL_TO_FORTRAN(*fab_S_new), 
+                 nd,BL_TO_FORTRAN(*fab_D_new), dx.data(),
                  gridloc.lo(), gridloc.hi());
+#endif
         }
+	amrex::Gpu::Device::streamSynchronize();
 
         if (inhomo_reion) init_zhi();
+	BL_PROFILE_VAR_STOP(CA_init);
+
 
         // Add the particle density to the gas density 
         MultiFab::Add(S_new, *particle_mf[level], 0, Density, 1, S_new.nGrow());
@@ -729,7 +756,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
         }
 
     } else {
-
+	amrex::Cuda::setLaunchRegion(true);
         MultiFab& S_new = get_new_data(State_Type);
         FillCoarsePatch(S_new, 0, cur_time, State_Type, 0, S_new.nComp());
 
@@ -756,7 +783,6 @@ Nyx::init_santa_barbara (int init_sb_vels)
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-    amrex::Cuda::setLaunchRegion(true);
     for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
         const Box& box = mfi.tilebox();
@@ -773,7 +799,6 @@ Nyx::init_santa_barbara (int init_sb_vels)
 	});
 	amrex::Gpu::Device::streamSynchronize();
     }
-    amrex::Cuda::setLaunchRegion(false);
 
 
     // Convert X_i to (rho X)_i
@@ -782,6 +807,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
             MultiFab::Multiply(S_new, S_new, Density, FirstSpec+i, 1, 0);
 	}
     }
+    amrex::Cuda::setLaunchRegion(false);
 }
 #endif
 #endif

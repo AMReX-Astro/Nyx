@@ -96,6 +96,12 @@ extern "C"
      const int& num_diag,  BL_FORT_FAB_ARG(diag_eos), const amrex::Real dx[],
      const amrex::Real xlo[], const amrex::Real xhi[]);
 
+  AMREX_GPU_DEVICE void ca_fort_initdata
+    (const int& level, const amrex::Real& time, const int* lo, const int* hi,
+     const int& num_state, BL_FORT_FAB_ARG(state),
+     const int& num_diag,  BL_FORT_FAB_ARG(diag_eos), const amrex::Real dx[],
+     const amrex::Real* z_in);
+
   void fort_init_zhi
     (const int* lo, const int* hi, 
      const int& num_diag, BL_FORT_FAB_ARG(diag_eos),
