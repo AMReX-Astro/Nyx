@@ -528,11 +528,14 @@ static void PrintFinalStats(void *cvode_mem)
   check_retval(&retval, "CVodeGetNumErrTestFails", 1);
   retval = CVDiagGetNumRhsEvals(cvode_mem, &nfeLS);
 
+  if (ParallelDescriptor::IOProcessor())
+    {
   printf("\nFinal Statistics.. \n\n");
   printf("lenrw   = %5ld     leniw   = %5ld\n"  , lenrw, leniw);
   printf("nst     = %5ld\n"                     , nst);
   printf("nfe     = %5ld     nfeLS   = %5ld\n"  , nfe, nfeLS);
   printf("nsetups = %5ld     netf    = %5ld\n"  , nsetups, netf);
+    }
 
   return;
 }
