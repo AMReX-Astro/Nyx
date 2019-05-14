@@ -462,7 +462,9 @@ Nyx::init_particles ()
             // after reading in `m_pos[]`. Here we're reading in the particle
             // mass and velocity.
             //
+	    amrex::Cuda::setLaunchRegion(true);
             DMPC->InitFromBinaryFile(binary_particle_file, BL_SPACEDIM + 1);
+	    amrex::Cuda::setLaunchRegion(false);
             if (init_with_sph_particles == 1)
                 SPHPC->InitFromBinaryFile(ascii_particle_file, BL_SPACEDIM + 1);
         }
@@ -1003,7 +1005,9 @@ Nyx::particle_redistribute (int lbase, bool my_init)
                    amrex::Print() << "Calling redistribute because DistMap changed " << '\n';
             }
 
+	    amrex::Cuda::setLaunchRegion(true);
             DMPC->Redistribute(lbase, -1, parent->levelCount(lbase));
+	    amrex::Cuda::setLaunchRegion(false);
             //
             // Use the new BoxArray and DistMap to define ba and dm for next time.
             //

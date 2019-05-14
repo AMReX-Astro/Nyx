@@ -1344,9 +1344,13 @@ Nyx::post_timestep (int iteration)
     if ((iteration < ncycle and level < finest_level) || level == 0)
     {
         for (int i = 0; i < theActiveParticles().size(); i++)
+	  {
+	    amrex::Cuda::setLaunchRegion(true);
             theActiveParticles()[i]->Redistribute(level,
                                                   theActiveParticles()[i]->finestLevel(),
                                                   iteration);
+	    amrex::Cuda::setLaunchRegion(false);
+	  }
     }
 
 #ifndef NO_HYDRO

@@ -417,7 +417,9 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::WriteNyxPlotFile (const std::string& dir,
 {
   BL_PROFILE("NyxParticleContainer<NSR,NSI,NAR,NAI>::WriteNyxPlotFile()");
 
+  amrex::Cuda::setLaunchRegion(true);
   amrex::NeighborParticleContainer<NSR,NSI>::WritePlotFile(dir, name, real_comp_names);
+  amrex::Cuda::setLaunchRegion(false);
 }
 
 template <int NSR,int NSI,int NAR,int NAI>

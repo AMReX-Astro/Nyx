@@ -13,7 +13,9 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 	std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids, dmap, 1, 0));
         MultiFab temp_dat(grids, dmap, 1, 0);
         temp_dat.setVal(0);
+	amrex::Cuda::setLaunchRegion(true);
         Nyx::theDMPC()->Increment(temp_dat, level);
+	amrex::Cuda::setLaunchRegion(false);
         MultiFab::Copy(*derive_dat, temp_dat, 0, 0, 1, 0);
         return derive_dat;
     }
