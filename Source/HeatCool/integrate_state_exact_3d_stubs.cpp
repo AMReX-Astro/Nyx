@@ -16,28 +16,7 @@ using namespace amrex;
 /* Private function to check function return values */
 static int check_retval(void *flagvalue, const char *funcname, int opt);
 
-int Nyx::integrate_state_box
-  (amrex::MultiFab &S_old,
-   amrex::MultiFab &D_old,
-   const Real& a, const Real& delta_time)
-{
-
-  amrex::Abort("Using stubs file for heat_cool_type=10");
-  return 0;
-}
-
-int Nyx::integrate_state_grownbox
-  (amrex::MultiFab &S_old,
-   amrex::MultiFab &D_old,
-   const Real& a, const Real& delta_time)
-{
-
-  amrex::Abort("Using stubs file for heat_cool_type=10");
-  return 0;
-}
-
-
-int Nyx::integrate_state_vec
+int Nyx::integrate_state_exact
   (amrex::MultiFab &S_old,
    amrex::MultiFab &D_old,
    const Real& a, const Real& delta_time)
@@ -47,7 +26,7 @@ int Nyx::integrate_state_vec
   return 0;
 }
 
-int Nyx::integrate_state_grownvec
+int Nyx::integrate_state_grownexact
   (amrex::MultiFab &S_old,
    amrex::MultiFab &D_old,
    const Real& a, const Real& delta_time)
