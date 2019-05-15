@@ -138,10 +138,11 @@ Nyx::strang_second_step (Real time, Real dt, MultiFab& S_new, MultiFab& D_new)
     else
             amrex::Abort("Invalid heating cooling type");
 
-    ParallelDescriptor::ReduceIntMax(max_iter);
-    ParallelDescriptor::ReduceIntMin(min_iter);
-
     if (heat_cool_type == 1)
         if (ParallelDescriptor::IOProcessor())
+	  {
+	    ParallelDescriptor::ReduceIntMax(max_iter);
+	    ParallelDescriptor::ReduceIntMin(min_iter);
             std::cout << "Min/Max Number of Iterations in Second Strang: " << min_iter << " " << max_iter << std::endl;
+	  }
 }

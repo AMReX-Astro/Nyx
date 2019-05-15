@@ -16,6 +16,8 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
   BL_PROFILE("Nyx::construct_ctu_hydro_source()");
 
+  amrex::Cuda::setLaunchRegion(true);
+
   const Real strt_time = ParallelDescriptor::second();
 
   // this constructs the hydrodynamic source (essentially the flux
@@ -154,8 +156,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                      reduction(+:eden_lost,xang_lost,yang_lost,zang_lost)
 #endif
   {
-
-    amrex::Cuda::setLaunchRegion(true);
 
     // Declare local storage now. This should be done outside the MFIter loop,
     // and then we will resize the Fabs in each MFIter loop iteration. Then,

@@ -669,7 +669,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
 
 	BL_PROFILE_VAR_STOP(CA_part);
 	BL_PROFILE_VAR("Nyx::init_santa_barbara()::avg", CA_avg);
-	amrex::Cuda::setLaunchRegion(false);
+
         for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
         {
             amrex::average_down(*particle_mf[lev+1], *particle_mf[lev],
@@ -691,7 +691,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
             }
         }
 	BL_PROFILE_VAR_STOP(CA_partmf);
-	amrex::Cuda::setLaunchRegion(true);
+
 	BL_PROFILE_VAR("Nyx::init_santa_barbara()::init", CA_init);
         const auto dx = geom.CellSizeArray();
         MultiFab& S_new = get_new_data(State_Type);
