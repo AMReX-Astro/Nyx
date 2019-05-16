@@ -17,6 +17,9 @@
 #include <sundials/sundials_math.h>    /* definition of ABS and EXP   */
 
 #include <nvector/nvector_serial.h>
+#ifdef _OPENMP
+#include <nvector/nvector_openmp.h>
+#endif
 #ifdef AMREX_USE_CUDA
 #include <nvector/nvector_cuda.h>
 #endif
@@ -55,15 +58,19 @@ int Nyx::integrate_state_vec
   int Density_loc=Density;
   int one_in = 1;
 
-  #ifdef _OPENMP
-  #pragma omp parallel if (Gpu::notInLaunchRegion())
-  #endif
+  fort_ode_eos_setup(a,delta_time);
+
+  //#ifdef _OPENMP
+  //#pragma omp parallel if (Gpu::notInLaunchRegion())
+  //#endif
   for ( MFIter mfi(S_old, TilingIfNotGPU()); mfi.isValid(); ++mfi )
     {
+
       double* dptr;
       //check that copy contructor vs create constructor works??
       const Box& tbx = mfi.tilebox();
-
+      //Array4<Real> const& state = S_old.array(mfi);
+      //Array4<Real> const& diag_eos = D_old.array(mfi);
       const auto len = amrex::length(tbx);  // length of box
       const auto lo  = amrex::lbound(tbx);  // lower bound of box
       const auto state = (S_old[mfi]).view(lo);  // a view starting from lo
@@ -108,6 +115,18 @@ int Nyx::integrate_state_vec
 				N_Vector abstol_vec = N_VNew_Cuda(neq);
 				N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
 #else
+#ifdef _OPENMP
+				int nthreads=omp_get_max_threads();
+				u = N_VNew_OpenMP(neq,nthreads);  /* Allocate u vector */
+				N_Vector e_orig = N_VNew_OpenMP(neq,nthreads);  /* Allocate u vector */
+				double* eptr=N_VGetArrayPointer_Serial(e_orig);
+				dptr=N_VGetArrayPointer_OpenMP(u);
+
+				N_Vector Data = N_VNew_OpenMP(4*neq,nthreads);  // Allocate u vector 
+				N_VConst(0.0,Data);
+				double* rparh=N_VGetArrayPointer_OpenMP(Data);
+				N_Vector abstol_vec = N_VNew_OpenMP(neq,nthreads);
+#else
 				u = N_VNew_Serial(neq);  /* Allocate u vector */
 				N_Vector e_orig = N_VNew_Serial(neq);  /* Allocate u vector */
 				double* eptr=N_VGetArrayPointer_Serial(e_orig);
@@ -117,10 +136,21 @@ int Nyx::integrate_state_vec
 				N_VConst(0.0,Data);
 				double* rparh=N_VGetArrayPointer_Serial(Data);
 				N_Vector abstol_vec = N_VNew_Serial(neq);
+#endif
 #endif				//if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
 
+#ifdef _OPENMP
+      const Dim3 hi = amrex::ubound(tbx);
+
+#pragma omp parallel for collapse(3)
+      for (int k = lo.z; k <= hi.z; ++k) {
+	for (int j = lo.y; j <= hi.y; ++j) {
+	    for (int i = lo.x; i <= hi.x; ++i) {
+	      fort_ode_eos_setup(a,delta_time);
+#else
 				AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
 				{				  
+#endif
 				  int idx = i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
 				  //				  amrex::Print()<<i<<"\t"<<j<<"\t"<<k<<"\t"<<idx<<neq<<std::endl;
 			//				for (int i= 0;i < neq; ++i) {
@@ -138,7 +168,14 @@ int Nyx::integrate_state_vec
 				  rparh[4*idx*loop+2]= state4(i,j,k,Density_loc); //    rpar(3)=rho_vode
 				  rparh[4*idx*loop+3]=1/a-1;    //    rpar(4)=z_vode
 				  //				}
+#ifdef _OPENMP
+				}
+				}
+				}
+#pragma omp barrier
+#else
 				});
+#endif
 
 #ifdef CV_NEWTON
 				cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
@@ -152,7 +189,7 @@ int Nyx::integrate_state_vec
 
 				//				flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
 				flag = CVDiag(cvode_mem);
-				
+
 				CVodeSetMaxNumSteps(cvode_mem,2000);
 
 				N_Vector constrain=N_VClone(u);
@@ -160,7 +197,6 @@ int Nyx::integrate_state_vec
 				flag =CVodeSetConstraints(cvode_mem,constrain);
 				
 				CVodeSetUserData(cvode_mem, &Data);
-
 				//				CVodeSetMaxStep(cvode_mem, delta_time/10);
 				BL_PROFILE_VAR("Nyx::strang_second_cvode",cvode_timer2);
 				flag = CVode(cvode_mem, delta_time, u, &t, CV_NORMAL);
@@ -173,8 +209,15 @@ int Nyx::integrate_state_vec
 				//				diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
 				//	diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
 				// rho should not change  rho_tmp_ptr[i]=rparh[4*i+2]; //    rpar(3)=rho_vode
+#ifdef _OPENMP
+#pragma omp parallel for collapse(3)
+      for (int k = lo.z; k <= hi.z; ++k) {
+	for (int j = lo.y; j <= hi.y; ++j) {
+	    for (int i = lo.x; i <= hi.x; ++i) {
+#else
 				AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
-				{	
+				{				  
+#endif
 				  int  idx= i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
 				//				for (int i= 0;i < neq; ++i) {
 				  fort_ode_eos_finalize(&(dptr[idx*loop]), &(rparh[4*idx*loop]), one_in);
@@ -184,8 +227,15 @@ int Nyx::integrate_state_vec
 				  state4(i,j,k,Eint_loc)  += state4(i,j,k,Density_loc) * (dptr[idx*loop]-eptr[idx]);
 				  state4(i,j,k,Eden_loc)  += state4(i,j,k,Density_loc) * (dptr[idx*loop]-eptr[idx]);
 				  //				}
-				//
+				//PrintFinalStats(cvode_mem);
+#ifdef _OPENMP
+				}
+				}
+				}
+#pragma omp barrier
+#else
 				});
+#endif
 
 				N_VDestroy(u);          /* Free the u vector */
 				N_VDestroy(abstol_vec);          /* Free the u vector */
@@ -224,8 +274,6 @@ int Nyx::integrate_state_grownvec
   reltol = 1e-4;  /* Set the tolerances */
   abstol = 1e-4;
 
-  fort_ode_eos_setup(a,delta_time);
-
   amrex::Cuda::setLaunchRegion(true);
 
   int Temp_loc=Temp_comp;
@@ -235,11 +283,14 @@ int Nyx::integrate_state_grownvec
   int Density_loc=Density;
   int one_in = 1;
 
-  #ifdef _OPENMP
-  #pragma omp parallel if (Gpu::notInLaunchRegion())
-  #endif
+  fort_ode_eos_setup(a,delta_time);
+
+  //#ifdef _OPENMP
+  //#pragma omp parallel if (Gpu::notInLaunchRegion())
+  //#endif
   for ( MFIter mfi(S_old, TilingIfNotGPU()); mfi.isValid(); ++mfi )
     {
+
       double* dptr;
       //check that copy contructor vs create constructor works??
       const Box& tbx = mfi.growntilebox();
@@ -289,6 +340,18 @@ int Nyx::integrate_state_grownvec
 				N_Vector abstol_vec = N_VNew_Cuda(neq);
 				N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
 #else
+#ifdef _OPENMP
+				int nthreads=omp_get_max_threads();
+				u = N_VNew_OpenMP(neq,nthreads);  /* Allocate u vector */
+				N_Vector e_orig = N_VNew_OpenMP(neq,nthreads);  /* Allocate u vector */
+				double* eptr=N_VGetArrayPointer_Serial(e_orig);
+				dptr=N_VGetArrayPointer_OpenMP(u);
+
+				N_Vector Data = N_VNew_OpenMP(4*neq,nthreads);  // Allocate u vector 
+				N_VConst(0.0,Data);
+				double* rparh=N_VGetArrayPointer_OpenMP(Data);
+				N_Vector abstol_vec = N_VNew_OpenMP(neq,nthreads);
+#else
 				u = N_VNew_Serial(neq);  /* Allocate u vector */
 				N_Vector e_orig = N_VNew_Serial(neq);  /* Allocate u vector */
 				double* eptr=N_VGetArrayPointer_Serial(e_orig);
@@ -298,10 +361,21 @@ int Nyx::integrate_state_grownvec
 				N_VConst(0.0,Data);
 				double* rparh=N_VGetArrayPointer_Serial(Data);
 				N_Vector abstol_vec = N_VNew_Serial(neq);
+#endif
 #endif				//if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
 
+#ifdef _OPENMP
+      const Dim3 hi = amrex::ubound(tbx);
+
+#pragma omp parallel for collapse(3)
+      for (int k = lo.z; k <= hi.z; ++k) {
+	for (int j = lo.y; j <= hi.y; ++j) {
+	    for (int i = lo.x; i <= hi.x; ++i) {
+	      fort_ode_eos_setup(a,delta_time);
+#else
 				AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
 				{				  
+#endif
 				  int idx = i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
 				  //				  amrex::Print()<<i<<"\t"<<j<<"\t"<<k<<"\t"<<idx<<neq<<std::endl;
 			//				for (int i= 0;i < neq; ++i) {
@@ -319,7 +393,14 @@ int Nyx::integrate_state_grownvec
 				  rparh[4*idx*loop+2]= state4(i,j,k,Density_loc); //    rpar(3)=rho_vode
 				  rparh[4*idx*loop+3]=1/a-1;    //    rpar(4)=z_vode
 				  //				}
+#ifdef _OPENMP
+				}
+				}
+				}
+#pragma omp barrier
+#else
 				});
+#endif
 
 #ifdef CV_NEWTON
 				cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
@@ -353,8 +434,15 @@ int Nyx::integrate_state_grownvec
 				//				diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
 				//	diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
 				// rho should not change  rho_tmp_ptr[i]=rparh[4*i+2]; //    rpar(3)=rho_vode
+#ifdef _OPENMP
+#pragma omp parallel for collapse(3)
+      for (int k = lo.z; k <= hi.z; ++k) {
+	for (int j = lo.y; j <= hi.y; ++j) {
+	    for (int i = lo.x; i <= hi.x; ++i) {
+#else
 				AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
-				{	
+				{				  
+#endif
 				  int  idx= i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
 				//				for (int i= 0;i < neq; ++i) {
 				  fort_ode_eos_finalize(&(dptr[idx*loop]), &(rparh[4*idx*loop]), one_in);
@@ -365,7 +453,14 @@ int Nyx::integrate_state_grownvec
 				  state4(i,j,k,Eden_loc)  += state4(i,j,k,Density_loc) * (dptr[idx*loop]-eptr[idx]);
 				  //				}
 				//PrintFinalStats(cvode_mem);
+#ifdef _OPENMP
+				}
+				}
+				}
+#pragma omp barrier
+#else
 				});
+#endif
 
 				N_VDestroy(u);          /* Free the u vector */
 				N_VDestroy(abstol_vec);          /* Free the u vector */
