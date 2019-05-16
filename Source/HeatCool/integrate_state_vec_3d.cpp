@@ -579,6 +579,7 @@ static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
   fprintf(stdout,"\nrparh[1]=%g \n\n",rpar[1]);
   fprintf(stdout,"\nrparh[2]=%g \n\n",rpar[2]);
   fprintf(stdout,"\nrparh[3]=%g \n\n",rpar[3]);*/
+  #pragma omp parallel for
   for(int tid=0;tid<neq;tid++)
     {
       //    fprintf(stdout,"\nrpar[4*tid+0]=%g\n",rpar[4*tid]);

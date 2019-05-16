@@ -53,7 +53,7 @@ int Nyx::integrate_state_cell
   #endif
   for ( MFIter mfi(S_old, TilingIfNotGPU()); mfi.isValid(); ++mfi )
     {
-  fort_ode_eos_setup(a,delta_time);
+      fort_ode_eos_setup(a,delta_time);
       //check that copy contructor vs create constructor works??
       const Box& tbx = mfi.tilebox();
       Array4<Real> const& state = S_old.array(mfi);
@@ -62,71 +62,74 @@ int Nyx::integrate_state_cell
       const Dim3 lo = amrex::lbound(tbx);
       const Dim3 hi = amrex::ubound(tbx);
 
+      N_Vector u;
+      //  SUNLinearSolver LS;
+      void *cvode_mem;
+      realtype t=0.0;
+      double* dptr;
+      realtype tout;
+      realtype umax;
+      int flag;
+      
+      u = NULL;
+      //  LS = NULL;
+      cvode_mem = NULL;
+      
+      u = N_VNew_Serial(1);  /* Allocate u vector */
+      dptr=N_VGetArrayPointer_Serial(u);
+      //if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
+      
+      N_Vector Data = N_VNew_Serial(4);  // Allocate u vector 
+      N_VConst(0.0,Data);
+      double* rparh=N_VGetArrayPointer_Serial(Data);
+      
+#ifdef CV_NEWTON
+      cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
+#else
+      cvode_mem = CVodeCreate(CV_BDF);
+#endif
+      flag = CVodeInit(cvode_mem, f, t, u);
+      flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
+      flag = CVDiag(cvode_mem);
+      
+      CVodeSetUserData(cvode_mem, &Data);
       for (int k = lo.z; k <= hi.z; ++k) {
 	for (int j = lo.y; j <= hi.y; ++j) {
 	  AMREX_PRAGMA_SIMD
 	    for (int i = lo.x; i <= hi.x; ++i) {
-				N_Vector u;
-				//  SUNLinearSolver LS;
-				void *cvode_mem;
-				realtype t=0.0;
-				double* dptr;
-				realtype tout;
-				realtype umax;
-				int flag;
-				
-				u = NULL;
-				//  LS = NULL;
-				cvode_mem = NULL;
-
-				u = N_VNew_Serial(1);  /* Allocate u vector */
-				dptr=N_VGetArrayPointer_Serial(u);
-				//if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
-				N_VConst(state(i,j,k,Eint_loc)/state(i,j,k,Density_loc),u);
-				state(i,j,k,Eint_loc)  -= state(i,j,k,Density_loc) * (dptr[0]);
-				state(i,j,k,Eden_loc)  -= state(i,j,k,Density_loc) * (dptr[0]);
-								  
-				N_Vector Data = N_VNew_Serial(4);  // Allocate u vector 
-				N_VConst(0.0,Data);
-				double* rparh=N_VGetArrayPointer_Serial(Data);
-				rparh[0]= diag_eos(i,j,k,Temp_loc);   //rpar(1)=T_vode
-				rparh[1]= diag_eos(i,j,k,Ne_loc);//    rpar(2)=ne_vode
-				rparh[2]= state(i,j,k,Density_loc); //    rpar(3)=rho_vode
-				rparh[3]=1/a-1;    //    rpar(4)=z_vode
-#ifdef CV_NEWTON
-				cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
-#else
-				cvode_mem = CVodeCreate(CV_BDF);
-#endif
-				flag = CVodeInit(cvode_mem, f, t, u);
-				flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
-				flag = CVDiag(cvode_mem);
-
-				CVodeSetUserData(cvode_mem, &Data);
-				BL_PROFILE_VAR("Nyx::strang_second_cvode",cvode_timer2);
-				flag = CVode(cvode_mem, delta_time, u, &t, CV_NORMAL);
-				BL_PROFILE_VAR_STOP(cvode_timer2);
-
-				//				diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
-				//	diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
-				// rho should not change  rho_tmp_ptr[i]=rparh[4*i+2]; //    rpar(3)=rho_vode
-				AMREX_LAUNCH_DEVICE_LAMBDA(neq,i,
-                                     {
-                                     fort_ode_eos_finalize(&(dptr[0]), &(rparh[0]), 1);
-                                     });
-				diag_eos(i,j,k,Temp_loc)=rparh[0];   //rpar(1)=T_vode
-				diag_eos(i,j,k,Ne_loc)=rparh[1];//    rpar(2)=ne_vode
-				
-				state(i,j,k,Eint_loc)  += state(i,j,k,Density_loc) * (dptr[0]);
-				state(i,j,k,Eden_loc)  += state(i,j,k,Density_loc) * (dptr[0]);
-				//PrintFinalStats(cvode_mem);
-				
-				N_VDestroy(u);          /* Free the u vector */
-				N_VDestroy(Data);          /* Free the userdata vector */
-				CVodeFree(&cvode_mem);  /* Free the integrator memory */
+	      t=0;
+	      
+	      N_VConst(state(i,j,k,Eint_loc)/state(i,j,k,Density_loc),u);
+	      state(i,j,k,Eint_loc)  -= state(i,j,k,Density_loc) * (dptr[0]);
+	      state(i,j,k,Eden_loc)  -= state(i,j,k,Density_loc) * (dptr[0]);
+	      rparh[0]= diag_eos(i,j,k,Temp_loc);   //rpar(1)=T_vode
+	      rparh[1]= diag_eos(i,j,k,Ne_loc);//    rpar(2)=ne_vode
+	      rparh[2]= state(i,j,k,Density_loc); //    rpar(3)=rho_vode
+	      rparh[3]=1/a-1;    //    rpar(4)=z_vode
+	      flag = CVodeReInit(cvode_mem, t, u);
+	      flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
+	      
+	      BL_PROFILE_VAR("Nyx::strang_second_cvode",cvode_timer2);
+	      flag = CVode(cvode_mem, delta_time, u, &t, CV_NORMAL);
+	      BL_PROFILE_VAR_STOP(cvode_timer2);
+	      
+	      AMREX_LAUNCH_DEVICE_LAMBDA(neq,i,
+					 {
+					   fort_ode_eos_finalize(&(dptr[0]), &(rparh[0]), 1);
+					 });
+	      diag_eos(i,j,k,Temp_loc)=rparh[0];   //rpar(1)=T_vode
+	      diag_eos(i,j,k,Ne_loc)=rparh[1];//    rpar(2)=ne_vode
+	      
+	      state(i,j,k,Eint_loc)  += state(i,j,k,Density_loc) * (dptr[0]);
+	      state(i,j,k,Eden_loc)  += state(i,j,k,Density_loc) * (dptr[0]);
+	      
 	    }
 	}
       }
+      N_VDestroy(u);          /* Free the u vector */
+      N_VDestroy(Data);          /* Free the userdata vector */
+      CVodeFree(&cvode_mem);  /* Free the integrator memory */
+
     }
   #ifdef NDEBUG
   #ifndef NDEBUG
@@ -177,72 +180,74 @@ int Nyx::integrate_state_growncell
       const Dim3 lo = amrex::lbound(tbx);
       const Dim3 hi = amrex::ubound(tbx);
 
+      N_Vector u;
+      //  SUNLinearSolver LS;
+      void *cvode_mem;
+      realtype t=0.0;
+      double* dptr;
+      realtype tout;
+      realtype umax;
+      int flag;
+				
+      u = NULL;
+      //  LS = NULL;
+      cvode_mem = NULL;
+      
+      u = N_VNew_Serial(1);  /* Allocate u vector */
+      dptr=N_VGetArrayPointer_Serial(u);
+      //if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
+      
+      N_Vector Data = N_VNew_Serial(4);  // Allocate u vector 
+      N_VConst(0.0,Data);
+      double* rparh=N_VGetArrayPointer_Serial(Data);
+      
+#ifdef CV_NEWTON
+      cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
+#else
+      cvode_mem = CVodeCreate(CV_BDF);
+#endif
+      flag = CVodeInit(cvode_mem, f, t, u);
+      flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
+      flag = CVDiag(cvode_mem);
+      
+      CVodeSetUserData(cvode_mem, &Data);
       for (int k = lo.z; k <= hi.z; ++k) {
 	for (int j = lo.y; j <= hi.y; ++j) {
 	  AMREX_PRAGMA_SIMD
 	    for (int i = lo.x; i <= hi.x; ++i) {
-				N_Vector u;
-				//  SUNLinearSolver LS;
-				void *cvode_mem;
-				realtype t=0.0;
-				double* dptr;
-				realtype tout;
-				realtype umax;
-				int flag;
-				
-				u = NULL;
-				//  LS = NULL;
-				cvode_mem = NULL;
-
-				u = N_VNew_Serial(1);  /* Allocate u vector */
-				dptr=N_VGetArrayPointer_Serial(u);
-				//if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
-				N_VConst(state(i,j,k,Eint_loc)/state(i,j,k,Density_loc),u);
-				state(i,j,k,Eint_loc)  -= state(i,j,k,Density_loc) * (dptr[0]);
-				state(i,j,k,Eden_loc)  -= state(i,j,k,Density_loc) * (dptr[0]);
-								  
-				N_Vector Data = N_VNew_Serial(4);  // Allocate u vector 
-				N_VConst(0.0,Data);
-				double* rparh=N_VGetArrayPointer_Serial(Data);
-				rparh[0]= diag_eos(i,j,k,Temp_loc);   //rpar(1)=T_vode
-				rparh[1]= diag_eos(i,j,k,Ne_loc);//    rpar(2)=ne_vode
-				rparh[2]= state(i,j,k,Density_loc); //    rpar(3)=rho_vode
-				rparh[3]=1/a-1;    //    rpar(4)=z_vode
-#ifdef CV_NEWTON
-				cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
-#else
-				cvode_mem = CVodeCreate(CV_BDF);
-#endif
-				flag = CVodeInit(cvode_mem, f, t, u);
-				flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
-				flag = CVDiag(cvode_mem);
-
-				CVodeSetUserData(cvode_mem, &Data);
-				BL_PROFILE_VAR("Nyx::strang_first_cvode",cvode_timer1);
-				flag = CVode(cvode_mem, delta_time, u, &t, CV_NORMAL);
-				BL_PROFILE_VAR_STOP(cvode_timer1);
-
-				//				diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
-				//	diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
-				// rho should not change  rho_tmp_ptr[i]=rparh[4*i+2]; //    rpar(3)=rho_vode
-				AMREX_LAUNCH_DEVICE_LAMBDA(neq,i,
-                                     {
-                                     fort_ode_eos_finalize(&(dptr[0]), &(rparh[0]), 1);
-                                     });
-				diag_eos(i,j,k,Temp_loc)=rparh[0];   //rpar(1)=T_vode
-				diag_eos(i,j,k,Ne_loc)=rparh[1];//    rpar(2)=ne_vode
-				
-				state(i,j,k,Eint_loc)  += state(i,j,k,Density_loc) * (dptr[0]);
-				state(i,j,k,Eden_loc)  += state(i,j,k,Density_loc) * (dptr[0]);
-				//PrintFinalStats(cvode_mem);
-				
-				N_VDestroy(u);          /* Free the u vector */
-				N_VDestroy(Data);          /* Free the userdata vector */
-				CVodeFree(&cvode_mem);  /* Free the integrator memory */
+	      t=0;
+	      
+	      N_VConst(state(i,j,k,Eint_loc)/state(i,j,k,Density_loc),u);
+	      state(i,j,k,Eint_loc)  -= state(i,j,k,Density_loc) * (dptr[0]);
+	      state(i,j,k,Eden_loc)  -= state(i,j,k,Density_loc) * (dptr[0]);
+	      rparh[0]= diag_eos(i,j,k,Temp_loc);   //rpar(1)=T_vode
+	      rparh[1]= diag_eos(i,j,k,Ne_loc);//    rpar(2)=ne_vode
+	      rparh[2]= state(i,j,k,Density_loc); //    rpar(3)=rho_vode
+	      rparh[3]=1/a-1;    //    rpar(4)=z_vode
+	      flag = CVodeReInit(cvode_mem, t, u);
+	      flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
+	      
+	      BL_PROFILE_VAR("Nyx::strang_first_cvode",cvode_timer1);
+	      flag = CVode(cvode_mem, delta_time, u, &t, CV_NORMAL);
+	      BL_PROFILE_VAR_STOP(cvode_timer1);
+	      
+	      AMREX_LAUNCH_DEVICE_LAMBDA(neq,i,
+					 {
+					   fort_ode_eos_finalize(&(dptr[0]), &(rparh[0]), 1);
+					 });
+	      diag_eos(i,j,k,Temp_loc)=rparh[0];   //rpar(1)=T_vode
+	      diag_eos(i,j,k,Ne_loc)=rparh[1];//    rpar(2)=ne_vode
+	      
+	      state(i,j,k,Eint_loc)  += state(i,j,k,Density_loc) * (dptr[0]);
+	      state(i,j,k,Eden_loc)  += state(i,j,k,Density_loc) * (dptr[0]);
+	      
 	    }
 	}
       }
-
+      N_VDestroy(u);          /* Free the u vector */
+      N_VDestroy(Data);          /* Free the userdata vector */
+      CVodeFree(&cvode_mem);  /* Free the integrator memory */
+      
     }
   #ifndef NDEBUG
         if (S_old.contains_nan())
