@@ -700,6 +700,9 @@ Nyx::init_santa_barbara (int init_sb_vels)
         int ns = S_new.nComp();
         int nd = D_new.nComp(); 
 
+#ifdef _OPENMP
+#pragma omp parallel if (Gpu::notInLaunchRegion())
+#endif
         for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
         {
 	  RealBox gridloc = RealBox(grids[mfi.index()],

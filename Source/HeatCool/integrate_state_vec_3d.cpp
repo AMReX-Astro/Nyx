@@ -63,7 +63,11 @@ int Nyx::integrate_state_vec
   //#ifdef _OPENMP
   //#pragma omp parallel if (Gpu::notInLaunchRegion())
   //#endif
+#ifdef _OPENMP
+  for ( MFIter mfi(S_old, false); mfi.isValid(); ++mfi )
+#else
   for ( MFIter mfi(S_old, TilingIfNotGPU()); mfi.isValid(); ++mfi )
+#endif
     {
 
       double* dptr;
@@ -288,7 +292,11 @@ int Nyx::integrate_state_grownvec
   //#ifdef _OPENMP
   //#pragma omp parallel if (Gpu::notInLaunchRegion())
   //#endif
+#ifdef _OPENMP
+  for ( MFIter mfi(S_old, false); mfi.isValid(); ++mfi )
+#else
   for ( MFIter mfi(S_old, TilingIfNotGPU()); mfi.isValid(); ++mfi )
+#endif
     {
 
       double* dptr;

@@ -92,6 +92,10 @@ int Nyx::integrate_state_cell
       flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
       flag = CVDiag(cvode_mem);
       
+      N_Vector constrain=N_VClone(u);
+      N_VConst(2,constrain);	      
+      flag =CVodeSetConstraints(cvode_mem,constrain);
+
       CVodeSetUserData(cvode_mem, &Data);
       for (int k = lo.z; k <= hi.z; ++k) {
 	for (int j = lo.y; j <= hi.y; ++j) {
@@ -209,6 +213,10 @@ int Nyx::integrate_state_growncell
       flag = CVodeInit(cvode_mem, f, t, u);
       flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
       flag = CVDiag(cvode_mem);
+
+      N_Vector constrain=N_VClone(u);
+      N_VConst(2,constrain);	      
+      flag =CVodeSetConstraints(cvode_mem,constrain);
       
       CVodeSetUserData(cvode_mem, &Data);
       for (int k = lo.z; k <= hi.z; ++k) {

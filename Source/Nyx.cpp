@@ -2297,35 +2297,44 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
     }
 #endif
 
+    amrex::Cuda::setLaunchRegion(true);
+    if (heat_cool_type == 7) {
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-    amrex::Cuda::setLaunchRegion(true);
-    for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
-    {
-        const Box& bx = mfi.tilebox();
+      for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
+	{
+	  const Box& bx = mfi.tilebox();
 
-        if (heat_cool_type == 7) {
           fort_compute_temp_vec
-              (bx.loVect(), bx.hiVect(),
-              BL_TO_FORTRAN(S_new[mfi]),
-              BL_TO_FORTRAN(D_new[mfi]), &a,
-               &print_fortran_warnings);
-        } else {
-	  FArrayBox* fab = S_new.fabPtr(mfi);
-	  FArrayBox* fab_diag = D_new.fabPtr(mfi);
-	  int print_warn=0;
-	  AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
+	      (bx.loVect(), bx.hiVect(),
+	       BL_TO_FORTRAN(S_new[mfi]),
+	       BL_TO_FORTRAN(D_new[mfi]), &a,
+	       &print_fortran_warnings);
+	}
+    }
+    else
+      {
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
+	for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
 	  {
+	    const Box& bx = mfi.tilebox();
+
+	    FArrayBox* fab = S_new.fabPtr(mfi);
+	    FArrayBox* fab_diag = D_new.fabPtr(mfi);
+	    int print_warn=0;
+	    AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
+	    {
             fort_compute_temp
               (tbx.loVect(), tbx.hiVect(),
               BL_TO_FORTRAN(*fab),
               BL_TO_FORTRAN(*fab_diag), &a,
                &print_warn);
-	  });
-	  amrex::Gpu::Device::streamSynchronize();
-        }
-    }
+	    });
+	  }
+      }
     amrex::Cuda::setLaunchRegion(false);
 
     // Compute the maximum temperature
