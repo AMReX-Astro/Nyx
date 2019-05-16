@@ -1,0 +1,44 @@
+
+********************************************** **********************************************
+
+Program:
+
+ Given a N-dimensional data set, this program reads a plotfile and prints it in multiple
+ formats
+
+********************************************** **********************************************
+
+Usage:
+
+ The following are equivalent and all work:
+
+**********************************************
+
+AmrDerive3d.Linux.gcc.gfortran.MPI.ex inputs
+
+where the file inputs contains:
+
+infile  = plt00000
+nComp   = 1
+sComp   = 0
+
+**********************************************
+
+OR
+
+**********************************************
+
+AmrDerive3d.Linux.gcc.gfortran.MPI.ex infile=plt00000 nComp=2 sComp=0
+
+**********************************************
+
+OR
+
+**********************************************
+
+AmrDerive3d.Linux.gcc.gfortran.MPI.ex infile=plt00000 comps= 0 1
+
+
+**********************************************
+
+If you set verbose = 1 (command line or inputs file) then you will get all sort of output.
