@@ -448,8 +448,8 @@ Nyx::read_params ()
     }
 
 #ifdef HEATCOOL
-    if (heat_cool_type != 3 && heat_cool_type != 5 && heat_cool_type != 7 && heat_cool_type != 9 && heat_cool_type != 10 && heat_cool_type != 11)
-       amrex::Error("Nyx:: nonzero heat_cool_type must equal 3 or 5 or 7 or 9 or 10 or 11");
+    if (heat_cool_type != 3 && heat_cool_type != 5 && heat_cool_type != 7 && heat_cool_type != 9 && heat_cool_type != 10 && heat_cool_type != 11 &&  heat_cool_type != 12)
+       amrex::Error("Nyx:: nonzero heat_cool_type must equal 3 or 5 or 7 or 9 or 10 or 11 or 12");
     if (heat_cool_type == 0)
        amrex::Error("Nyx::contradiction -- HEATCOOL is defined but heat_cool_type == 0");
 
@@ -471,8 +471,8 @@ Nyx::read_params ()
 
 #ifndef AMREX_USE_CVODE
     #ifndef AMREX_USE_SUNDIALS_3x4x
-    if (heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 10 || heat_cool_type == 11)
-        amrex::Error("Nyx:: cannot set heat_cool_type = 5 or 7 or 10 or 11 unless USE_CVODE=TRUE or USE_SUNDIALS_3x4x=TRUE");
+    if (heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 10 || heat_cool_type == 11 || heat_cool_type == 12)
+        amrex::Error("Nyx:: cannot set heat_cool_type = 5 or 7 or 10 or 11 or 12 unless USE_CVODE=TRUE or USE_SUNDIALS_3x4x=TRUE");
     #ifndef AMREX_USE_ARKODE_LIBS
     if (heat_cool_type == 9)
         amrex::Error("Nyx:: cannot set heat_cool_type = 9 unless USE_SUNDIALS_3x4x=TRUE, and USE_ARKODE_LIBS=TRUE");
@@ -679,7 +679,7 @@ Nyx::Nyx (Amr&            papa,
 
 #ifdef HEATCOOL
      // Initialize "this_z" in the atomic_rates_module
-    if (heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 9 || heat_cool_type == 10 || heat_cool_type == 11)
+    if (heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 9 || heat_cool_type == 10 || heat_cool_type == 11 || heat_cool_type == 12)
          fort_interp_to_this_z(&initial_z);
 #endif
 }
@@ -2290,7 +2290,7 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
     Real a        = get_comoving_a(cur_time);
 
 #ifdef HEATCOOL 
-    if (heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 9 || heat_cool_type == 10 || heat_cool_type == 11)
+    if (heat_cool_type == 3 || heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 9 || heat_cool_type == 10 || heat_cool_type == 11 || heat_cool_type == 12)
     {
        const Real z = 1.0/a - 1.0;
        fort_interp_to_this_z(&z);

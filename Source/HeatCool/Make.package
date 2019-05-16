@@ -36,6 +36,7 @@ ifeq ($(USE_CVODE_LIBS), TRUE)
   F90EXE_sources += cvode_extras.F90
   CEXE_sources += integrate_state_box_3d.cpp
   CEXE_sources += integrate_state_vec_3d.cpp
+  CEXE_sources += integrate_state_cell_3d.cpp
 else
 CEXE_sources += integrate_state_box_3d_stubs.cpp
 endif

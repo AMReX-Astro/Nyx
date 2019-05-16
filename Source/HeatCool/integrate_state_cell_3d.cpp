@@ -32,173 +32,102 @@ static void PrintOutput(realtype t, realtype umax, long int nst);
 /* Private function to check function return values */
 static int check_retval(void *flagvalue, const char *funcname, int opt);
 
-int Nyx::integrate_state_vec
+int Nyx::integrate_state_cell
   (amrex::MultiFab &S_old,
    amrex::MultiFab &D_old,
    const Real& a, const Real& delta_time)
 {
     // time = starting time in the simulation
-  realtype reltol, abstol, t, tout, umax;
-  int flag;
+  realtype reltol, abstol;
     
   reltol = 1e-4;  /* Set the tolerances */
   abstol = 1e-4;
-
-  fort_ode_eos_setup(a,delta_time);
-  //  amrex::Cuda::setLaunchRegion(false);
-  amrex::Cuda::setLaunchRegion(true);
 
   int Temp_loc=Temp_comp;
   int Ne_loc=Ne_comp;
   int Eint_loc=Eint;
   int Eden_loc=Eden;
   int Density_loc=Density;
-  int one_in = 1;
-
   #ifdef _OPENMP
   #pragma omp parallel if (Gpu::notInLaunchRegion())
   #endif
   for ( MFIter mfi(S_old, TilingIfNotGPU()); mfi.isValid(); ++mfi )
     {
-      double* dptr;
+  fort_ode_eos_setup(a,delta_time);
       //check that copy contructor vs create constructor works??
       const Box& tbx = mfi.tilebox();
+      Array4<Real> const& state = S_old.array(mfi);
+      Array4<Real> const& diag_eos = D_old.array(mfi);
+      long int neq=1;
+      const Dim3 lo = amrex::lbound(tbx);
+      const Dim3 hi = amrex::ubound(tbx);
 
-      const auto len = amrex::length(tbx);  // length of box
-      const auto lo  = amrex::lbound(tbx);  // lower bound of box
-      const auto state = (S_old[mfi]).view(lo);  // a view starting from lo
-      const auto diag_eos = (D_old[mfi]).view(lo);  // a view starting from lo
-
-      Array4<Real> const& state4 = S_old.array(mfi);
-      Array4<Real> const& diag_eos4 = D_old.array(mfi);
-
-      int width = len.x; //trying to run all i
-      width = len.x*len.y*len.z;
-
-      /*      for       (int k = 0; k < len.z; ++k) {
-	  // We know this is safe for simd on cpu.  So let's give compiler some help.
-	//	AMREX_PRAGMA_SIMD
-	for     (int j = 0; j < len.y; ++j) {
-	for (int i = 0; i < len.x; i+=width) {*/
+      for (int k = lo.z; k <= hi.z; ++k) {
+	for (int j = lo.y; j <= hi.y; ++j) {
+	  AMREX_PRAGMA_SIMD
+	    for (int i = lo.x; i <= hi.x; ++i) {
 				N_Vector u;
 				//  SUNLinearSolver LS;
 				void *cvode_mem;
 				realtype t=0.0;
+				double* dptr;
+				realtype tout;
+				realtype umax;
+				int flag;
 				
 				u = NULL;
 				//  LS = NULL;
 				cvode_mem = NULL;
-				//				long int neq = len.x;
-				long int neq = width;
-				int loop = 1;
 
-#ifdef AMREX_USE_CUDA
-				cudaStream_t currentStream = amrex::Cuda::Device::cudaStream();
-				u = N_VNew_Cuda(neq);  /* Allocate u vector */
-				N_Vector e_orig = N_VNew_Cuda(neq);  /* Allocate u vector */
-				N_VSetCudaStream_Cuda(e_orig, &currentStream);
-				double* eptr=N_VGetDeviceArrayPointer_Cuda(e_orig);
-				N_VSetCudaStream_Cuda(u, &currentStream);
-				dptr=N_VGetDeviceArrayPointer_Cuda(u);
-
-				N_Vector Data = N_VNew_Cuda(4*neq);  // Allocate u vector 
-				N_VSetCudaStream_Cuda(Data, &currentStream);
-				N_VConst(0.0,Data);
-				double* rparh=N_VGetDeviceArrayPointer_Cuda(Data);
-				N_Vector abstol_vec = N_VNew_Cuda(neq);
-				N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
-#else
-				u = N_VNew_Serial(neq);  /* Allocate u vector */
-				N_Vector e_orig = N_VNew_Serial(neq);  /* Allocate u vector */
-				double* eptr=N_VGetArrayPointer_Serial(e_orig);
+				u = N_VNew_Serial(1);  /* Allocate u vector */
 				dptr=N_VGetArrayPointer_Serial(u);
-
-				N_Vector Data = N_VNew_Serial(4*neq);  // Allocate u vector 
+				//if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
+				N_VConst(state(i,j,k,Eint_loc)/state(i,j,k,Density_loc),u);
+				state(i,j,k,Eint_loc)  -= state(i,j,k,Density_loc) * (dptr[0]);
+				state(i,j,k,Eden_loc)  -= state(i,j,k,Density_loc) * (dptr[0]);
+								  
+				N_Vector Data = N_VNew_Serial(4);  // Allocate u vector 
 				N_VConst(0.0,Data);
 				double* rparh=N_VGetArrayPointer_Serial(Data);
-				N_Vector abstol_vec = N_VNew_Serial(neq);
-#endif				//if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
-
-				AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
-				{				  
-				  int idx = i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
-				  //				  amrex::Print()<<i<<"\t"<<j<<"\t"<<k<<"\t"<<idx<<neq<<std::endl;
-			//				for (int i= 0;i < neq; ++i) {
-				  dptr[idx*loop]=state4(i,j,k,Eint_loc)/state4(i,j,k,Density_loc);
-				  eptr[idx*loop]=state4(i,j,k,Eint_loc)/state4(i,j,k,Density_loc);
-				  if(false)
-				    {
-				      state4(i,j,k,Eint_loc)  -= state4(i,j,k,Density_loc) * (dptr[idx*loop]);
-				      state4(i,j,k,Eden_loc)  -= state4(i,j,k,Density_loc) * (dptr[idx*loop]);
-				    }
-				  //}			
-				//				for (int i= 0;i < neq; ++i) {
-				  rparh[4*idx*loop+0]= diag_eos4(i,j,k,Temp_loc);   //rpar(1)=T_vode
-				  rparh[4*idx*loop+1]= diag_eos4(i,j,k,Ne_loc);//    rpar(2)=ne_vode
-				  rparh[4*idx*loop+2]= state4(i,j,k,Density_loc); //    rpar(3)=rho_vode
-				  rparh[4*idx*loop+3]=1/a-1;    //    rpar(4)=z_vode
-				  //				}
-				});
-
+				rparh[0]= diag_eos(i,j,k,Temp_loc);   //rpar(1)=T_vode
+				rparh[1]= diag_eos(i,j,k,Ne_loc);//    rpar(2)=ne_vode
+				rparh[2]= state(i,j,k,Density_loc); //    rpar(3)=rho_vode
+				rparh[3]=1/a-1;    //    rpar(4)=z_vode
 #ifdef CV_NEWTON
 				cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
 #else
 				cvode_mem = CVodeCreate(CV_BDF);
 #endif
 				flag = CVodeInit(cvode_mem, f, t, u);
-
-				N_VScale(abstol,u,abstol_vec);
-				flag = CVodeSVtolerances(cvode_mem, reltol, abstol_vec);
-
-				//				flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
+				flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
 				flag = CVDiag(cvode_mem);
-				
-				CVodeSetMaxNumSteps(cvode_mem,2000);
 
-				N_Vector constrain=N_VClone(u);
-				N_VConst(2,constrain);	      
-				flag =CVodeSetConstraints(cvode_mem,constrain);
-				
 				CVodeSetUserData(cvode_mem, &Data);
-
-				//				CVodeSetMaxStep(cvode_mem, delta_time/10);
 				BL_PROFILE_VAR("Nyx::strang_second_cvode",cvode_timer2);
 				flag = CVode(cvode_mem, delta_time, u, &t, CV_NORMAL);
-				amrex::Cuda::Device::streamSynchronize();
 				BL_PROFILE_VAR_STOP(cvode_timer2);
 
-#ifndef NDEBUG
-				PrintFinalStats(cvode_mem);
-#endif
 				//				diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
 				//	diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
 				// rho should not change  rho_tmp_ptr[i]=rparh[4*i+2]; //    rpar(3)=rho_vode
-				AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
-				{	
-				  int  idx= i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
-				//				for (int i= 0;i < neq; ++i) {
-				  fort_ode_eos_finalize(&(dptr[idx*loop]), &(rparh[4*idx*loop]), one_in);
-				  diag_eos4(i,j,k,Temp_loc)=rparh[4*idx*loop+0];   //rpar(1)=T_vode
-				  diag_eos4(i,j,k,Ne_loc)=rparh[4*idx*loop+1];//    rpar(2)=ne_vode
+				AMREX_LAUNCH_DEVICE_LAMBDA(neq,i,
+                                     {
+                                     fort_ode_eos_finalize(&(dptr[0]), &(rparh[0]), 1);
+                                     });
+				diag_eos(i,j,k,Temp_loc)=rparh[0];   //rpar(1)=T_vode
+				diag_eos(i,j,k,Ne_loc)=rparh[1];//    rpar(2)=ne_vode
 				
-				  state4(i,j,k,Eint_loc)  += state4(i,j,k,Density_loc) * (dptr[idx*loop]-eptr[idx]);
-				  state4(i,j,k,Eden_loc)  += state4(i,j,k,Density_loc) * (dptr[idx*loop]-eptr[idx]);
-				  //				}
-				//
-				});
-
+				state(i,j,k,Eint_loc)  += state(i,j,k,Density_loc) * (dptr[0]);
+				state(i,j,k,Eden_loc)  += state(i,j,k,Density_loc) * (dptr[0]);
+				//PrintFinalStats(cvode_mem);
+				
 				N_VDestroy(u);          /* Free the u vector */
-				N_VDestroy(abstol_vec);          /* Free the u vector */
 				N_VDestroy(Data);          /* Free the userdata vector */
 				CVodeFree(&cvode_mem);  /* Free the integrator memory */
-			      //);
-				/*			    }
-			
+	    }
 	}
-	}*/
-
+      }
     }
-  amrex::Cuda::setLaunchRegion(false);
   #ifdef NDEBUG
   #ifndef NDEBUG
         if (S_old.contains_nan())
@@ -209,13 +138,13 @@ int Nyx::integrate_state_vec
     return 0;
 }
 
-int Nyx::integrate_state_grownvec
+int Nyx::integrate_state_growncell
   (amrex::MultiFab &S_old,
    amrex::MultiFab &D_old,
    const Real& a, const Real& delta_time)
 {
     // time = starting time in the simulation
-  realtype reltol, abstol, tout, umax;
+  realtype reltol, abstol;
   N_Vector u;
   //  SUNLinearSolver LS;
   int iout, flag;
@@ -224,203 +153,106 @@ int Nyx::integrate_state_grownvec
   reltol = 1e-4;  /* Set the tolerances */
   abstol = 1e-4;
 
-  fort_ode_eos_setup(a,delta_time);
-
-  amrex::Cuda::setLaunchRegion(true);
-
   int Temp_loc=Temp_comp;
   int Ne_loc=Ne_comp;
   int Eint_loc=Eint;
   int Eden_loc=Eden;
   int Density_loc=Density;
-  int one_in = 1;
 
+  fort_ode_eos_setup(a,delta_time);
+  amrex::Cuda::setLaunchRegion(false);
   #ifdef _OPENMP
   #pragma omp parallel if (Gpu::notInLaunchRegion())
   #endif
   for ( MFIter mfi(S_old, TilingIfNotGPU()); mfi.isValid(); ++mfi )
     {
-      double* dptr;
+  fort_ode_eos_setup(a,delta_time);
       //check that copy contructor vs create constructor works??
       const Box& tbx = mfi.growntilebox();
-      //Array4<Real> const& state = S_old.array(mfi);
-      //Array4<Real> const& diag_eos = D_old.array(mfi);
-      const auto len = amrex::length(tbx);  // length of box
-      const auto lo  = amrex::lbound(tbx);  // lower bound of box
-      const auto state = (S_old[mfi]).view(lo);  // a view starting from lo
-      const auto diag_eos = (D_old[mfi]).view(lo);  // a view starting from lo
+      Array4<Real> const& state = S_old.array(mfi);
+      Array4<Real> const& diag_eos = D_old.array(mfi);
 
-      Array4<Real> const& state4 = S_old.array(mfi);
-      Array4<Real> const& diag_eos4 = D_old.array(mfi);
+      double rho,e_orig;
+      long int neq=1;
+      const Dim3 lo = amrex::lbound(tbx);
+      const Dim3 hi = amrex::ubound(tbx);
 
-      int width = len.x; //trying to run all i
-      width = len.x*len.y*len.z;
-
-      /*      for       (int k = 0; k < len.z; ++k) {
-	  // We know this is safe for simd on cpu.  So let's give compiler some help.
-	//	AMREX_PRAGMA_SIMD
-	for     (int j = 0; j < len.y; ++j) {
-	for (int i = 0; i < len.x; i+=width) {*/
+      for (int k = lo.z; k <= hi.z; ++k) {
+	for (int j = lo.y; j <= hi.y; ++j) {
+	  AMREX_PRAGMA_SIMD
+	    for (int i = lo.x; i <= hi.x; ++i) {
 				N_Vector u;
 				//  SUNLinearSolver LS;
 				void *cvode_mem;
 				realtype t=0.0;
+				double* dptr;
+				realtype tout;
+				realtype umax;
+				int flag;
 				
 				u = NULL;
 				//  LS = NULL;
 				cvode_mem = NULL;
-				//				long int neq = len.x;
-				long int neq = width;
-				int loop = 1;
 
-#ifdef AMREX_USE_CUDA
-				cudaStream_t currentStream = amrex::Cuda::Device::cudaStream();
-				u = N_VNew_Cuda(neq);  /* Allocate u vector */
-				N_Vector e_orig = N_VNew_Cuda(neq);  /* Allocate u vector */
-				N_VSetCudaStream_Cuda(e_orig, &currentStream);
-				double* eptr=N_VGetDeviceArrayPointer_Cuda(e_orig);
-				N_VSetCudaStream_Cuda(u, &currentStream);
-				dptr=N_VGetDeviceArrayPointer_Cuda(u);
-
-				N_Vector Data = N_VNew_Cuda(4*neq);  // Allocate u vector 
-				N_VSetCudaStream_Cuda(Data, &currentStream);
-				N_VConst(0.0,Data);
-				double* rparh=N_VGetDeviceArrayPointer_Cuda(Data);
-				N_Vector abstol_vec = N_VNew_Cuda(neq);
-				N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
-#else
-				u = N_VNew_Serial(neq);  /* Allocate u vector */
-				N_Vector e_orig = N_VNew_Serial(neq);  /* Allocate u vector */
-				double* eptr=N_VGetArrayPointer_Serial(e_orig);
+				u = N_VNew_Serial(1);  /* Allocate u vector */
 				dptr=N_VGetArrayPointer_Serial(u);
-
-				N_Vector Data = N_VNew_Serial(4*neq);  // Allocate u vector 
+				//if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
+				N_VConst(state(i,j,k,Eint_loc)/state(i,j,k,Density_loc),u);
+				state(i,j,k,Eint_loc)  -= state(i,j,k,Density_loc) * (dptr[0]);
+				state(i,j,k,Eden_loc)  -= state(i,j,k,Density_loc) * (dptr[0]);
+								  
+				N_Vector Data = N_VNew_Serial(4);  // Allocate u vector 
 				N_VConst(0.0,Data);
 				double* rparh=N_VGetArrayPointer_Serial(Data);
-				N_Vector abstol_vec = N_VNew_Serial(neq);
-#endif				//if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
-
-				AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
-				{				  
-				  int idx = i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
-				  //				  amrex::Print()<<i<<"\t"<<j<<"\t"<<k<<"\t"<<idx<<neq<<std::endl;
-			//				for (int i= 0;i < neq; ++i) {
-				  dptr[idx*loop]=state4(i,j,k,Eint_loc)/state4(i,j,k,Density_loc);
-				  eptr[idx*loop]=state4(i,j,k,Eint_loc)/state4(i,j,k,Density_loc);
-				  if(false)
-				    {
-				      state4(i,j,k,Eint_loc)  -= state4(i,j,k,Density_loc) * (dptr[idx*loop]);
-				      state4(i,j,k,Eden_loc)  -= state4(i,j,k,Density_loc) * (dptr[idx*loop]);
-				    }
-				  //}			
-				//				for (int i= 0;i < neq; ++i) {
-				  rparh[4*idx*loop+0]= diag_eos4(i,j,k,Temp_loc);   //rpar(1)=T_vode
-				  rparh[4*idx*loop+1]= diag_eos4(i,j,k,Ne_loc);//    rpar(2)=ne_vode
-				  rparh[4*idx*loop+2]= state4(i,j,k,Density_loc); //    rpar(3)=rho_vode
-				  rparh[4*idx*loop+3]=1/a-1;    //    rpar(4)=z_vode
-				  //				}
-				});
-
+				rparh[0]= diag_eos(i,j,k,Temp_loc);   //rpar(1)=T_vode
+				rparh[1]= diag_eos(i,j,k,Ne_loc);//    rpar(2)=ne_vode
+				rparh[2]= state(i,j,k,Density_loc); //    rpar(3)=rho_vode
+				rparh[3]=1/a-1;    //    rpar(4)=z_vode
 #ifdef CV_NEWTON
 				cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
 #else
 				cvode_mem = CVodeCreate(CV_BDF);
 #endif
 				flag = CVodeInit(cvode_mem, f, t, u);
-
-				N_VScale(abstol,u,abstol_vec);
-				flag = CVodeSVtolerances(cvode_mem, reltol, abstol_vec);
-
-				//				flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
+				flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
 				flag = CVDiag(cvode_mem);
 
-				CVodeSetMaxNumSteps(cvode_mem,2000);
-
-				N_Vector constrain=N_VClone(u);
-				N_VConst(2,constrain);	      
-				flag =CVodeSetConstraints(cvode_mem,constrain);
-				
 				CVodeSetUserData(cvode_mem, &Data);
-				//				CVodeSetMaxStep(cvode_mem, delta_time/10);
 				BL_PROFILE_VAR("Nyx::strang_first_cvode",cvode_timer1);
 				flag = CVode(cvode_mem, delta_time, u, &t, CV_NORMAL);
-				amrex::Cuda::Device::streamSynchronize();
 				BL_PROFILE_VAR_STOP(cvode_timer1);
 
-#ifndef NDEBUG
-				PrintFinalStats(cvode_mem);
-#endif
 				//				diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
 				//	diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
 				// rho should not change  rho_tmp_ptr[i]=rparh[4*i+2]; //    rpar(3)=rho_vode
-				AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
-				{	
-				  int  idx= i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
-				//				for (int i= 0;i < neq; ++i) {
-				  fort_ode_eos_finalize(&(dptr[idx*loop]), &(rparh[4*idx*loop]), one_in);
-				  diag_eos4(i,j,k,Temp_loc)=rparh[4*idx*loop+0];   //rpar(1)=T_vode
-				  diag_eos4(i,j,k,Ne_loc)=rparh[4*idx*loop+1];//    rpar(2)=ne_vode
+				AMREX_LAUNCH_DEVICE_LAMBDA(neq,i,
+                                     {
+                                     fort_ode_eos_finalize(&(dptr[0]), &(rparh[0]), 1);
+                                     });
+				diag_eos(i,j,k,Temp_loc)=rparh[0];   //rpar(1)=T_vode
+				diag_eos(i,j,k,Ne_loc)=rparh[1];//    rpar(2)=ne_vode
 				
-				  state4(i,j,k,Eint_loc)  += state4(i,j,k,Density_loc) * (dptr[idx*loop]-eptr[idx]);
-				  state4(i,j,k,Eden_loc)  += state4(i,j,k,Density_loc) * (dptr[idx*loop]-eptr[idx]);
-				  //				}
+				state(i,j,k,Eint_loc)  += state(i,j,k,Density_loc) * (dptr[0]);
+				state(i,j,k,Eden_loc)  += state(i,j,k,Density_loc) * (dptr[0]);
 				//PrintFinalStats(cvode_mem);
-				});
-
+				
 				N_VDestroy(u);          /* Free the u vector */
-				N_VDestroy(abstol_vec);          /* Free the u vector */
 				N_VDestroy(Data);          /* Free the userdata vector */
 				CVodeFree(&cvode_mem);  /* Free the integrator memory */
-			      //);
-				/*			    }
-			
+	    }
 	}
-	}*/
+      }
 
     }
-  amrex::Cuda::setLaunchRegion(false);
-  #ifdef NDEBUG
   #ifndef NDEBUG
         if (S_old.contains_nan())
-            amrex::Abort("state has NaNs after the second strang call");
+            amrex::Abort("state has NaNs after the first strang call");
   #endif
-#endif
+
     return 0;
 }
 
 #ifdef AMREX_USE_CUDA
-__device__ void f_rhs_test(Real t,double* u_ptr,Real* udot_ptr, Real* rpar, int neq)
-{
-  /*
-1.635780036449432E-01 a
-8.839029760565609E-06 dt
-2.119999946752000E+12 rho
-3.255559960937500E+04 T
-1.076699972152710E+00 ne
-6.226414794921875E+02 e */
-  /*  double rpar2[4];
-    rpar2[0]= 3.255559960937500E+04;   //rpar(1)=T_vode
-  rpar2[1]= 1.076699972152710E+00;//    rpar(2)=ne_vode
-  rpar2[2]=  2.119999946752000E+12; //    rpar(3)=rho_vode
-  rpar2[3]=1/(1+1.635780036449432E-01);    //    rpar(4)=z_vode*/
-    int tid = blockIdx.x * blockDim.x + threadIdx.x;
-  //  if(tid==0)
-    if(tid<neq)
-      RhsFnReal(t,u_ptr+tid,udot_ptr+tid,rpar+4*tid,1);
-    //    udot_ptr[tid]=(neq-tid)*t
-  
-    //*********************************
-    /*    if(tid<neq)
-	  RhsFn(t,u_ptr+tid,udot_ptr+tid,rpar+4*tid,1);*/
-    //rpar[4*tid+1]=tid;
-    /**********************************
-    if(tid<neq)
-      udot_ptr[tid]=2.0*t;*/
-
-  /* Either way to setup IC seems to work
-    RhsFn(t,u_ptr+i,udot_ptr+i,rpar2,1);*/
-}
-
 static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
 {
   Real* udot_ptr=N_VGetDeviceArrayPointer_Cuda(udot);
@@ -498,6 +330,7 @@ static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
   return 0;
 }
 #endif
+
 
 static void PrintOutput(realtype t, realtype umax, long int nst)
 {
