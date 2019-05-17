@@ -35,10 +35,21 @@ print_usage (int,
     cout << '\n';
     cout << "Usage:" << '\n';
     cout << "    infile  = plotfilename" << '\n';
+    cout << "    outfile = outputfilename" << '\n';
+    cout << "    comps   = varnumbers" << '\n';
     cout << "   [-verbose]" << '\n';
     cout << '\n';
     exit(1);
 
+}
+
+static Vector<int> findComponents(const AmrData& amrd, const Vector<std::string>& names)
+{
+    const int n = names.size();
+    Vector<int> comps(n);
+    for (int i = 0; i < n; i++)
+        comps[i] = amrd.StateNumber(names[i]);
+    return comps;
 }
 
 int
@@ -64,7 +75,11 @@ main (int   argc,
     }
 
     std::string infile; 
+    std::cout << "Reading " << infile << "...";
     pp.get("infile",infile);
+
+    std::string outfile; 
+    pp.get("outfile",outfile);
 
     if (ParallelDescriptor::IOProcessor())
         std::cout << "Reading " << infile << "...";
@@ -133,7 +148,8 @@ main (int   argc,
     IntVect hi=lo; hi[dir] = probDomain.bigEnd()[dir];
     const Box resBox(lo,hi);
     FArrayBox resFab(resBox,nComp); resFab.setVal(0.);
-
+    
+    std::cout<<"finest level: "<<finestLevel<<std::endl;
     int accumFac = 1;
     for (int lev=finestLevel; lev>=0; --lev)
     {
@@ -161,9 +177,19 @@ main (int   argc,
         }
 
 	///////// Write elements to stdout, to file as ascii, to file as binary
-	std::ofstream ofs("fab_ascii.txt", std::ofstream::out);
+        int myRank=0;
+#ifdef AMREX_USE_MPI
+	MPI_Comm_rank(MPI_COMM_WORLD,&myRank);
+#endif
+        std::string filename=outfile+std::to_string(myRank);
+        std::string filename_ascii=outfile+"_ascii_"+std::to_string(myRank)+".txt";
+	std::ofstream ofs_mpi(filename,std::ios::binary); 
+	std::ofstream ofs(filename_ascii, std::ofstream::out);
+//MPI_comm_rank(MPI_COMM_WORLD,&myRank);
+/*	std::ofstream ofs("fab_ascii.txt", std::ofstream::out);
 	std::ofstream ofs_bin("fab_binary", std::ofstream::out);
-	std::cout<<"idx\ti\tj\tk\tf(i,j,k,n)"<<std::endl;
+*/
+	ofs<<"idx\tx\ty\tz\tdata"<<std::endl;
 	long int idx=0;
         for (MFIter mfi(mf); mfi.isValid(); ++mfi)
         {
@@ -179,9 +205,21 @@ main (int   argc,
 
 	    const Dim3 lo = amrex::lbound(box);
 	    const Dim3 hi = amrex::ubound(box);
+
+	    const auto dx = amrData.CellSize(lev);
+	    RealVect boxSizeH(amrData.ProbHi());
+	    std::cout<<"level"<<lev<<"dx: "<<dx[0]<<"dy: "<<dx[1]<<dx[2]<<std::endl;
+	    std::cout<<"Probhi"<<boxSizeH<<std::endl;
+	    /*	    RealBox gridloc = RealBox(ba[mfi.index()],
+				      amrData.CellSize(lev),
+				      amrData.ProbLo()[lev]);*/
+
+	    /*	    RealBox gridloc = RealBox(ba[mfi.index()],
+                                      amrData.CellSize(lev),
+                                      amrData.ProbLo());*/
+
 	    const auto len = amrex::length(box);  // length of box
 
-	    for (int n = 0; n < ncomp; ++n) {
 	      for (int z = lo.z; z <= hi.z; ++z) {
 		for (int y = lo.y; y <= hi.y; ++y) {
 		  // Don't use pragma simd
@@ -189,55 +227,50 @@ main (int   argc,
 			    for (int x = lo.x; x <= hi.x; ++x) {
 			      //idx assumes ncomp=1, is local to this fab
 			      //			      int idx = x+y*len.x+z*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
-			      if(fab_array(x,y,z,n) != bogus_flag)
+			      if(fab_array(x,y,z,0) != bogus_flag)
 				{
 				++idx;
 				if(verbose>0)
-				  std::cout<<idx<<"\t"<<x<<"\t"<<y<<"\t"<<z<<"\t"<<fab_array(x,y,z,n) <<std::endl;
+				  {
+				  ofs<<idx<<"\t"<<x*dx[0]<<"\t"<<y*dx[1]<<"\t"<<z*dx[2]<<"\t"<<dx[0]*dx[1]*dx[2];
+				  for (int n = 0; n < comps.size(); ++n) {
+				    ofs<<"\t"<<fab_array(x,y,z,comps[n]); 
+				  }
+				  ofs<<std::endl;
+				  }
 				else
-				  std::cout<<fab_array(x,y,z,n) <<std::endl;
+				  {
+				    for (int n = 0; n < comps.size(); ++n) {
+				    ofs<<"\t"<<fab_array(x,y,z,comps[n]); 
+				  }
+				  ofs<<std::endl;
 				}
-			    }
+
+				if(verbose>0)
+				  {
+				    //				    ofs_mpi.write(reinterpret_cast<const char*> (&fab_array(x,y,z,n), sizeof(amrex::Real));
+				  ofs_mpi<<idx<<x*dx[0]<<y*dx[1]<<z*dx[2]<<dx[0]*dx[1]*dx[2];
+				  for (int n = 0; n < comps.size(); ++n) {
+				    ofs_mpi<<fab_array(x,y,z,comps[n]); 
+				  }
+				  ofs_mpi<<std::endl;
+				  }
+				else
+				  {
+				    for (int n = 0; n < comps.size(); ++n) {
+				    ofs<<"\t"<<fab_array(x,y,z,comps[n]); 
+				  }
+				  ofs<<std::endl;
+				  }
+				  //					ofs_mpi.write(reinterpret_cast<const char*> (&fab_array(x,y,z,n), sizeof(amrex::Real));
+//				  ofs_mpi<<fab_array(x,y,z,n) <<std::endl;
+				}
 		}
 	      }
 	    }
 
-	    ofs<<fab<<std::endl;
-	    fab.writeOn(ofs_bin);
-
-        }
-
-	mf.setVal(0.);
-
-	////////// Read elements from binary file, print to stdout those which don't trip flag
-	std::ifstream ifs_bin("fab_binary", std::ofstream::in);
-        for (MFIter mfi(mf); mfi.isValid(); ++mfi)
-        {
-            FArrayBox& fab2 = mf[mfi];
-	    Array4<Real> const& fab_array = mf.array(mfi);
-	    int ncomp = mf.nComp();
-            const Box& box = mfi.validbox();
-
-            IntVect ivlo = box.smallEnd();
-            IntVect ivhi = box.bigEnd(); ivhi[dir] = ivlo[dir];
-
-	    const Dim3 lo = amrex::lbound(box);
-	    const Dim3 hi = amrex::ubound(box);
-
-	    fab2.readFrom(ifs_bin);
-
-	    for (int n = 0; n < ncomp; ++n) {
-	      for (int z = lo.z; z <= hi.z; ++z) {
-		for (int y = lo.y; y <= hi.y; ++y) {
-		  // Don't use pragma simd
-		  //		          AMREX_PRAGMA_SIMD
-			    for (int x = lo.x; x <= hi.x; ++x) {
-			      if(fab_array(x,y,z,n) != bogus_flag)
-				std::cout<<fab_array(x,y,z,n) <<std::endl;
-			    }
-		}
-	      }
-	    }
+	    //	    ofs<<fab<<std::endl;
+	    //fab.writeOn(ofs_bin);
 
         }
 

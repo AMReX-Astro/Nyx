@@ -1,5 +1,7 @@
 # AMREX_HOME defines the directory in which we will find all the BoxLib code
-AMREX_HOME ?= /project/projectdirs/nyx/src/amrex
+AMREX_HOME ?= ../../../amrex
+HDF5_DIR   ?=
+ 
 
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ..
@@ -7,7 +9,7 @@ TOP = ..
 EBASE     = AmrElements
 
 # compilation options
-COMP    = gcc
+COMP    = intel
 
 USE_MPI = FALSE
 USE_OMP = FALSE
@@ -50,3 +52,5 @@ all: $(executable)
 	@echo SUCCESS
 
 include $(AMREX_HOME)/Tools/GNUMake/Make.rules
+
+
