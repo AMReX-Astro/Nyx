@@ -74,6 +74,14 @@ main (int   argc,
         AmrData::SetVerbose(true);
     }
 
+    bool format_ascii = false;
+    //    pp.query("format_ascii",format_ascii);
+    if (pp.contains("format_ascii"))
+    {
+      format_ascii = true;
+    }
+    //    format_ascii = true;
+
     std::string infile; 
     std::cout << "Reading " << infile << "...";
     pp.get("infile",infile);
@@ -149,7 +157,22 @@ main (int   argc,
     const Box resBox(lo,hi);
     FArrayBox resFab(resBox,nComp); resFab.setVal(0.);
     
+    int myRank=0;
+#ifdef AMREX_USE_MPI
+    MPI_Comm_rank(MPI_COMM_WORLD,&myRank);
+#endif
+
     std::cout<<"finest level: "<<finestLevel<<std::endl;
+    std::string filename=outfile+"_"+std::to_string(myRank)+".bin";
+    std::string filename_ascii=outfile+"_ascii_"+std::to_string(myRank)+".txt";
+    std::ofstream ofs_mpi(filename,std::ios::binary);
+    std::ofstream ofs;
+    if(format_ascii)
+      {
+	ofs.open(filename_ascii, std::ofstream::out);
+	ofs<<"idx\tx\ty\tz\tdata"<<std::endl;
+      }
+
     int accumFac = 1;
     for (int lev=finestLevel; lev>=0; --lev)
     {
@@ -177,19 +200,6 @@ main (int   argc,
         }
 
 	///////// Write elements to stdout, to file as ascii, to file as binary
-        int myRank=0;
-#ifdef AMREX_USE_MPI
-	MPI_Comm_rank(MPI_COMM_WORLD,&myRank);
-#endif
-        std::string filename=outfile+std::to_string(myRank);
-        std::string filename_ascii=outfile+"_ascii_"+std::to_string(myRank)+".txt";
-	std::ofstream ofs_mpi(filename,std::ios::binary); 
-	std::ofstream ofs(filename_ascii, std::ofstream::out);
-//MPI_comm_rank(MPI_COMM_WORLD,&myRank);
-/*	std::ofstream ofs("fab_ascii.txt", std::ofstream::out);
-	std::ofstream ofs_bin("fab_binary", std::ofstream::out);
-*/
-	ofs<<"idx\tx\ty\tz\tdata"<<std::endl;
 	long int idx=0;
         for (MFIter mfi(mf); mfi.isValid(); ++mfi)
         {
@@ -208,8 +218,11 @@ main (int   argc,
 
 	    const auto dx = amrData.CellSize(lev);
 	    RealVect boxSizeH(amrData.ProbHi());
+	    if(verbose)
+	      {
 	    std::cout<<"level"<<lev<<"dx: "<<dx[0]<<"dy: "<<dx[1]<<dx[2]<<std::endl;
 	    std::cout<<"Probhi"<<boxSizeH<<std::endl;
+	      }
 	    /*	    RealBox gridloc = RealBox(ba[mfi.index()],
 				      amrData.CellSize(lev),
 				      amrData.ProbLo()[lev]);*/
@@ -220,60 +233,74 @@ main (int   argc,
 
 	    const auto len = amrex::length(box);  // length of box
 
-	      for (int z = lo.z; z <= hi.z; ++z) {
-		for (int y = lo.y; y <= hi.y; ++y) {
-		  // Don't use pragma simd
-		  //		          AMREX_PRAGMA_SIMD
-			    for (int x = lo.x; x <= hi.x; ++x) {
-			      //idx assumes ncomp=1, is local to this fab
-			      //			      int idx = x+y*len.x+z*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
+	    if(format_ascii)
+	      {
+		for (int z = lo.z; z <= hi.z; ++z) {
+		  for (int y = lo.y; y <= hi.y; ++y) {
+		    // Don't use pragma simd
+		    //		          AMREX_PRAGMA_SIMD
+		    for (int x = lo.x; x <= hi.x; ++x) {
+		      //idx assumes ncomp=1, is local to this fab
+		      //			      int idx = x+y*len.x+z*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
+		      if(fab_array(x,y,z,0) != bogus_flag)
+			{
+			  ++idx;
+			  if(verbose>0)
+			    {
+			      ofs<<idx<<"\t"<<x*dx[0]<<"\t"<<y*dx[1]<<"\t"<<z*dx[2]<<"\t"<<dx[0]*dx[1]*dx[2];
+			      for (int n = 0; n < comps.size(); ++n) {
+				ofs<<"\t"<<fab_array(x,y,z,comps[n]); 
+			      }
+			      ofs<<std::endl;
+			    }
+			  else
+			    {
+			      for (int n = 0; n < comps.size(); ++n) {
+				ofs<<"\t"<<fab_array(x,y,z,comps[n]); 
+				  }
+			      ofs<<std::endl;
+			    }
+			}
+		    }
+		  }
+		}
+	      }
+
+	    for (int z = lo.z; z <= hi.z; ++z) {
+	      for (int y = lo.y; y <= hi.y; ++y) {
+		// Don't use pragma simd
+		//		          AMREX_PRAGMA_SIMD
+		for (int x = lo.x; x <= hi.x; ++x) {
+		  //idx assumes ncomp=1, is local to this fab
+		  //			      int idx = x+y*len.x+z*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
 			      if(fab_array(x,y,z,0) != bogus_flag)
 				{
-				++idx;
-				if(verbose>0)
-				  {
-				  ofs<<idx<<"\t"<<x*dx[0]<<"\t"<<y*dx[1]<<"\t"<<z*dx[2]<<"\t"<<dx[0]*dx[1]*dx[2];
-				  for (int n = 0; n < comps.size(); ++n) {
-				    ofs<<"\t"<<fab_array(x,y,z,comps[n]); 
-				  }
-				  ofs<<std::endl;
-				  }
-				else
-				  {
-				    for (int n = 0; n < comps.size(); ++n) {
-				    ofs<<"\t"<<fab_array(x,y,z,comps[n]); 
-				  }
-				  ofs<<std::endl;
-				}
 
-				if(verbose>0)
-				  {
-				    //				    ofs_mpi.write(reinterpret_cast<const char*> (&fab_array(x,y,z,n), sizeof(amrex::Real));
-				  ofs_mpi<<idx<<x*dx[0]<<y*dx[1]<<z*dx[2]<<dx[0]*dx[1]*dx[2];
-				  for (int n = 0; n < comps.size(); ++n) {
-				    ofs_mpi<<fab_array(x,y,z,comps[n]); 
-				  }
-				  ofs_mpi<<std::endl;
-				  }
-				else
-				  {
+				    Real tmpx=x*dx[0];
+				    Real tmpy=y*dx[1];
+                                    Real tmpz=z*dx[2];
+                                    Real tmpvol=dx[2]*dx[0]*dx[1];
+				    
+				    ofs_mpi.write((char*) &tmpx, sizeof(Real));
+				    ofs_mpi.write((char*) &tmpy, sizeof(Real));
+				    ofs_mpi.write((char*) &tmpz, sizeof(Real));
+				    ofs_mpi.write((char*) &tmpvol, sizeof(Real));
+				    
 				    for (int n = 0; n < comps.size(); ++n) {
-				    ofs<<"\t"<<fab_array(x,y,z,comps[n]); 
-				  }
-				  ofs<<std::endl;
-				  }
-				  //					ofs_mpi.write(reinterpret_cast<const char*> (&fab_array(x,y,z,n), sizeof(amrex::Real));
-//				  ofs_mpi<<fab_array(x,y,z,n) <<std::endl;
+				      ofs_mpi.write((char *) &(fab_array(x,y,z,comps[n])), sizeof(amrex::Real)); 
+				    }
+				    //					ofs_mpi.write(reinterpret_cast<const char*> (&fab_array(x,y,z,n), sizeof(amrex::Real));
+				    //				  ofs_mpi<<fab_array(x,y,z,n) <<std::endl;
 				}
 		}
 	      }
 	    }
-
+	    
 	    //	    ofs<<fab<<std::endl;
 	    //fab.writeOn(ofs_bin);
-
+	    
         }
-
+	
 	//        if (lev>0)
 
     }
