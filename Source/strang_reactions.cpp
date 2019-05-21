@@ -9,6 +9,9 @@ void
 Nyx::strang_first_step (Real time, Real dt, MultiFab& S_old, MultiFab& D_old)
 {
     BL_PROFILE("Nyx::strang_first_step()");
+
+    amrex::Cuda::Device::streamSynchronize();
+    amrex::Cuda::setLaunchRegion(false);
     Real half_dt = 0.5*dt;
 
     const Real a = get_comoving_a(time);
@@ -17,9 +20,15 @@ Nyx::strang_first_step (Real time, Real dt, MultiFab& S_old, MultiFab& D_old)
     {
       const Real z = 1.0/a - 1.0;
       fort_interp_to_this_z(&z);
+      /*      int neq=1;
+      AMREX_LAUNCH_DEVICE_LAMBDA(neq,i,
+				 {
+				   ca_interp_to_this_z(&z);
+				 });*/
     }
 #endif
-
+    
+    amrex::Cuda::setLaunchRegion(true);
     /////////////////////Consider adding ifdefs for whether CVODE is compiled in for these statements
     if(heat_cool_type == 3 || heat_cool_type==5 || heat_cool_type==7 || heat_cool_type==9)
       {
@@ -76,6 +85,9 @@ void
 Nyx::strang_second_step (Real time, Real dt, MultiFab& S_new, MultiFab& D_new)
 {
     BL_PROFILE("Nyx::strang_second_step()");
+    amrex::Cuda::Device::streamSynchronize();
+    amrex::Cuda::setLaunchRegion(false);
+
     Real half_dt = 0.5*dt;
     int  min_iter = 100000;
     int  max_iter =      0;
@@ -86,17 +98,23 @@ Nyx::strang_second_step (Real time, Real dt, MultiFab& S_new, MultiFab& D_new)
     // Set a at the half of the time step in the second strang
     const Real a = get_comoving_a(time-half_dt);
 
-    MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
-    reset_e_src.setVal(0.0);
-    reset_internal_energy(S_new,D_new,reset_e_src);
-    compute_new_temp     (S_new,D_new);
-
 #ifndef FORCING
     {
       const Real z = 1.0/a - 1.0;
       fort_interp_to_this_z(&z);
+      /*      int neq=1;
+      AMREX_LAUNCH_DEVICE_LAMBDA(neq,i,
+      {
+      ca_interp_to_this_z(&z);
+      });*/
     }
 #endif
+    amrex::Cuda::setLaunchRegion(true);
+
+    MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
+    reset_e_src.setVal(0.0);
+    reset_internal_energy(S_new,D_new,reset_e_src);
+    compute_new_temp     (S_new,D_new);
 
     /////////////////////Consider adding ifdefs for whether CVODE is compiled in for these statements
     if(heat_cool_type == 3 || heat_cool_type==5 || heat_cool_type==7 || heat_cool_type==9)

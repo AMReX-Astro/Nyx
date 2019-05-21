@@ -18,7 +18,7 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
     {
       int print_fortran_warnings_tmp=print_fortran_warnings;
       int do_grav_tmp=do_grav;
-    amrex::Cuda::setLaunchRegion(true);
+
     FArrayBox sum_state;
 #ifdef _OPENMP
 #pragma omp parallel 
@@ -63,7 +63,7 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
 		    &dt, &a_old, &a_new);
 	});
     }
-    amrex::Cuda::setLaunchRegion(false);
+
     }
     else
       {

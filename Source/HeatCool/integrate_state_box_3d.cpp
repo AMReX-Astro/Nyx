@@ -54,12 +54,12 @@ int Nyx::integrate_state_box
 
   int count =0;
   fort_ode_eos_setup(a,delta_time);
-  //  amrex::Cuda::setLaunchRegion(true);
+
   if(S_old.nGrow()>1)
   S_old.Subtract(S_old,S_old,Eint,Eden,1,S_old.nGrow());
   else
   S_old.Subtract(S_old,S_old,Eint,Eden,1,0);
-  //  amrex::Cuda::setLaunchRegion(false);
+
 #ifdef _OPENMP
 #pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif
@@ -233,12 +233,12 @@ int Nyx::integrate_state_box
 	  // rho should not change  rho_tmp_ptr[i]=rparh[4*i+2]; //    rpar(3)=rho_vode
 	  //	  fort_ode_eos_finalize(&(dptr[i]), &(rparh[4*i]), one_in);
 	}
-      amrex::Cuda::setLaunchRegion(true);
+
       AMREX_LAUNCH_DEVICE_LAMBDA(neq,i,
 				 {
 	  fort_ode_eos_finalize(&(dptrd[i]), &(rpar[4*i]), one_in);
 	  });
-      amrex::Cuda::setLaunchRegion(false);
+
       D_old[mfi].copyFromMem(tbx,Nyx::Temp_comp,2,Tne_tmp_ptr);
 
       N_VProd(u,rho_tmp,u);                
@@ -469,12 +469,12 @@ int Nyx::integrate_state_grownbox
 	  Tne_tmp_ptr[neq+i]=rparh[4*i+1];//    rpar(2)=ne_vode
 	  // rho should not change  rho_tmp_ptr[i]=rparh[4*i+2]; //    rpar(3)=rho_vode
 	}
-      amrex::Cuda::setLaunchRegion(true);
+
       AMREX_LAUNCH_DEVICE_LAMBDA(neq,i,
 				 {
 	  fort_ode_eos_finalize(&(dptrd[i]), &(rpar[4*i]), one_in);
 	  });
-      amrex::Cuda::setLaunchRegion(false);
+
       D_old[mfi].copyFromMem(tbx,Nyx::Temp_comp,2,Tne_tmp_ptr);
       amrex::Gpu::Device::streamSynchronize();
       N_VProd(u,rho_tmp,u);                

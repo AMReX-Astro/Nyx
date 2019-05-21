@@ -16,7 +16,7 @@ contains
       use amrex_constants_module
       use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UFS, &
                                      gamma_minus_1, normalize_species
-      use ca_enforce_module, only : enforce_nonnegative_species
+      use ca_enforce_module, only : ca_enforce_nonnegative_species
       use enforce_density_module, only : ca_enforce_minimum_density
       use amrex_error_module, only : amrex_error
 
@@ -42,6 +42,9 @@ contains
       real(rt) :: a_half, a_oldsq, a_newsq
       real(rt) :: a_new_inv, a_newsq_inv, a_half_inv, dt_a_new
       integer  :: i, j, k, n
+      integer :: noprint
+
+      noprint = 0
 
       a_half     = HALF * (a_old + a_new)
       a_oldsq = a_old * a_old
@@ -104,10 +107,10 @@ contains
                                    uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
                                    sum_state,s_lo,s_hi, &
                                    lo,hi,print_fortran_warnings)
-      
+
       ! Enforce species >= 0
-      call enforce_nonnegative_species(uout,uout_l1,uout_l2,uout_l3, &
-                                       uout_h1,uout_h2,uout_h3,lo,hi,0)
+      call ca_enforce_nonnegative_species(uout,uout_l1,uout_l2,uout_l3, &
+                                       uout_h1,uout_h2,uout_h3,lo,hi,noprint)
 
       ! Re-normalize the species
       if (normalize_species .eq. 1) then

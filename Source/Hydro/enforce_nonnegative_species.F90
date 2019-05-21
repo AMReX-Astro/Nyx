@@ -12,10 +12,10 @@ module ca_enforce_module
       !===========================================================================
       ! This version is called from within threaded loops so *no* OMP here ...
       !===========================================================================
-      AMREX_CUDA_FORT_DEVICE subroutine enforce_nonnegative_species(uout,uout_l1,uout_l2,uout_l3, &
+      AMREX_CUDA_FORT_DEVICE subroutine ca_enforce_nonnegative_species(uout,uout_l1,uout_l2,uout_l3, &
                                              uout_h1,uout_h2,uout_h3, &
-                                             lo,hi,print_fortran_warnings)! &
-!      bind(C, name="fort_enforce_nonnegative_species")
+                                             lo,hi,print_fortran_warnings) &
+      bind(C, name="ca_enforce_nonnegative_species")
 
       use meth_params_module, only : NVAR, URHO, UFS, upass_map, npassive
 
@@ -131,6 +131,6 @@ module ca_enforce_module
 
       end if ! UFS > 0
 
-      end subroutine enforce_nonnegative_species
+      end subroutine ca_enforce_nonnegative_species
 
 end module ca_enforce_module

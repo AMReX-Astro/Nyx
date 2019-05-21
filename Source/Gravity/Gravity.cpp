@@ -635,6 +635,11 @@ Gravity::multilevel_solve_for_old_phi (int level,
     if (verbose)
         amrex::Print() << "Gravity ... multilevel solve for old phi at base level " << level
                        << " to finest level " << finest_level << '\n';
+    
+    bool prev_region = Gpu::inLaunchRegion();
+    amrex::Cuda::Device::streamSynchronize();
+    amrex::Cuda::setLaunchRegion(false);
+
 
     for (int lev = level; lev <= finest_level; lev++)
     {
@@ -650,6 +655,10 @@ Gravity::multilevel_solve_for_old_phi (int level,
     actual_multilevel_solve(level, finest_level,
 			    amrex::GetVecOfVecOfPtrs(grad_phi_prev),
                             is_new, ngrow, use_previous_phi_as_guess);
+
+    amrex::Cuda::Device::streamSynchronize();
+    amrex::Cuda::setLaunchRegion(prev_region);
+
 }
 
 void
@@ -668,6 +677,7 @@ Gravity::actual_multilevel_solve (int                       level,
     Vector<std::unique_ptr<MultiFab> > Rhs_p(num_levels);
 
     Vector<std::unique_ptr<MultiFab> > Rhs_particles(num_levels);
+
     for (int lev = 0; lev < num_levels; lev++)
     {
 	Rhs_particles[lev].reset(new MultiFab(grids[level+lev], dmap[level+lev], 1, 0));
@@ -734,7 +744,7 @@ Gravity::actual_multilevel_solve (int                       level,
             }
         }
 #endif
-        MultiFab::Add(*Rhs_p[lev], *Rhs_particles[lev], 0, 0, 1, 0);
+	MultiFab::Add(*Rhs_p[lev], *Rhs_particles[lev], 0, 0, 1, 0);
     }
 
     // Average phi from fine to coarse level before the solve.
@@ -753,7 +763,7 @@ Gravity::actual_multilevel_solve (int                       level,
             amrex::Print() << " ... subtracting average density " << mass_offset
                            << " from RHS at each level " << '\n';
 
-        for (int lev = 0; lev < num_levels; lev++)
+	for (int lev = 0; lev < num_levels; lev++)
             for (MFIter mfi(*Rhs_p[lev]); mfi.isValid(); ++mfi)
                 (*Rhs_p[lev])[mfi].plus(-mass_offset);
 
@@ -783,6 +793,7 @@ Gravity::actual_multilevel_solve (int                       level,
                 (*Rhs_p[lev]).plus(-sum, 0, 1, 0);
        }
     }
+    ///corrfirst pass
 
 // *****************************************************************************
 
@@ -1344,6 +1355,10 @@ Gravity::AddParticlesToRhs (int               level,
                             int               ngrow)
 {
     BL_PROFILE("Gravity::AddParticlesToRhs()");
+
+    bool prev_region = Gpu::inLaunchRegion();
+    amrex::Cuda::setLaunchRegion(true);
+
     // Use the same multifab for all particle types
     MultiFab particle_mf(grids[level], dmap[level], 1, ngrow);
 
@@ -1351,8 +1366,13 @@ Gravity::AddParticlesToRhs (int               level,
     {
         particle_mf.setVal(0.);
         Nyx::theActiveParticles()[i]->AssignDensitySingleLevel(particle_mf, level);
+	amrex::Cuda::Device::streamSynchronize();
         MultiFab::Add(Rhs, particle_mf, 0, 0, 1, 0);
     }
+
+    amrex::Cuda::Device::streamSynchronize();
+    amrex::Cuda::setLaunchRegion(prev_region);
+
 }
 
 void
@@ -1393,6 +1413,10 @@ Gravity::AddVirtualParticlesToRhs (int               level,
                                    int               ngrow)
 {
     BL_PROFILE("Gravity::AddVirtualParticlesToRhs()");
+
+    bool prev_region = Gpu::inLaunchRegion();
+    amrex::Cuda::setLaunchRegion(true);
+
     if (level <  parent->finestLevel())
     {
         // If we have virtual particles, add their density to the single level solve
@@ -1402,9 +1426,13 @@ Gravity::AddVirtualParticlesToRhs (int               level,
         {
             particle_mf.setVal(0.);
             Nyx::theVirtualParticles()[i]->AssignDensitySingleLevel(particle_mf, level, 1, 1);
+	    amrex::Cuda::Device::streamSynchronize();
             MultiFab::Add(Rhs, particle_mf, 0, 0, 1, 0);
         }
     }
+
+    amrex::Cuda::Device::streamSynchronize();
+    amrex::Cuda::setLaunchRegion(prev_region);
 }
 
 void
@@ -1431,6 +1459,10 @@ Gravity::AddGhostParticlesToRhs (int               level,
                                  MultiFab&         Rhs)
 {
     BL_PROFILE("Gravity::AddGhostParticlesToRhs()");
+
+    bool prev_region = Gpu::inLaunchRegion();
+    amrex::Cuda::setLaunchRegion(true);
+
     if (level > 0)
     {
         // If we have ghost particles, add their density to the single level solve
@@ -1440,9 +1472,12 @@ Gravity::AddGhostParticlesToRhs (int               level,
         {
             ghost_mf.setVal(0.);
             Nyx::theGhostParticles()[i]->AssignDensitySingleLevel(ghost_mf, level, 1, -1);
+	    amrex::Cuda::Device::streamSynchronize();
             MultiFab::Add(Rhs, ghost_mf, 0, 0, 1, 0);
         }
     }
+    amrex::Cuda::Device::streamSynchronize();
+    amrex::Cuda::setLaunchRegion(prev_region);
 }
 
 void

@@ -1346,7 +1346,12 @@ Nyx::post_timestep (int iteration)
         for (int i = 0; i < theActiveParticles().size(); i++)
 	  {
 	    amrex::Cuda::setLaunchRegion(true);
-            theActiveParticles()[i]->Redistribute(level,
+	    if(finest_level==0)
+	      theActiveParticles()[i]->RedistributeLocal(level,
+                                                  theActiveParticles()[i]->finestLevel(),
+                                                  iteration);
+	    else
+	      theActiveParticles()[i]->Redistribute(level,
                                                   theActiveParticles()[i]->finestLevel(),
                                                   iteration);
 	    amrex::Cuda::setLaunchRegion(false);
@@ -1384,9 +1389,11 @@ Nyx::post_timestep (int iteration)
         // they'll be over-written by averaging down
         if (level < finest_level)
             average_down();
-
+	
+	amrex::Cuda::setLaunchRegion(true);
         // This needs to be done after any changes to the state from refluxing.
         enforce_nonnegative_species(S_new_crse);
+	amrex::Cuda::setLaunchRegion(false);
 
 #ifdef GRAVITY
 #ifdef CGRAV
@@ -1789,10 +1796,13 @@ Nyx::post_regrid (int lbase,
      fort_set_finest_level(&new_finest);
 #endif
 #endif
-
+    bool prev_region = Gpu::inLaunchRegion();
+    amrex::Cuda::setLaunchRegion(true);
     if (level == lbase) {
         particle_redistribute(lbase, false);
     }
+    amrex::Cuda::Device::streamSynchronize();
+    amrex::Cuda::setLaunchRegion(prev_region);
 
 #ifdef GRAVITY
 
@@ -2001,16 +2011,42 @@ void
 Nyx::enforce_nonnegative_species (MultiFab& S_new)
 {
     BL_PROFILE("Nyx::enforce_nonnegative_species()");
+    int print_fortran_warnings_tmp=print_fortran_warnings;
+    if(Gpu::inLaunchRegion())
+      {
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-    for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
-    {
-        const Box& bx = mfi.tilebox();
-        fort_enforce_nonnegative_species
-	  (BL_TO_FORTRAN(S_new[mfi]), bx.loVect(), bx.hiVect(),
-	   &print_fortran_warnings);
-    }
+	for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
+	  {
+	    const Box& bx = mfi.tilebox();
+	    FArrayBox* fab_S_new = S_new.fabPtr(mfi);
+	    amrex::launch(bx,
+			  [=] AMREX_GPU_DEVICE (Box const& tbx)
+			  {
+			  /*	    AMREX_LAUNCH_DEVICE_LAMBDA(bx,tbx,
+				       {*/
+	    ca_enforce_nonnegative_species
+	      (BL_TO_FORTRAN(*fab_S_new), tbx.loVect(), tbx.hiVect(),
+	       &print_fortran_warnings_tmp);
+				       });
+	  }
+	
+      }
+    else
+      {
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
+	for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
+	  {
+	    const Box& bx = mfi.tilebox();
+	    FArrayBox* fab_S_new = S_new.fabPtr(mfi);
+	    fort_enforce_nonnegative_species
+	      (BL_TO_FORTRAN(*fab_S_new), bx.loVect(), bx.hiVect(),
+	       &print_fortran_warnings);
+	  }
+      }
 }
 
 void
@@ -2254,10 +2290,12 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new, MultiFab& reset_e_
     const Real  cur_time = state[State_Type].curTime();
     Real        a        = get_comoving_a(cur_time);
 
+    bool prev_region=Gpu::inLaunchRegion();
+    amrex::Cuda::setLaunchRegion(true);
+
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-    amrex::Cuda::setLaunchRegion(true);
     for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
@@ -2273,9 +2311,8 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new, MultiFab& reset_e_
 	     BL_TO_FORTRAN(*fab_reset),
              &print_warn, &a);
 	  });
-	  amrex::Gpu::Device::streamSynchronize();
     }
-    amrex::Cuda::setLaunchRegion(false);
+    amrex::Cuda::setLaunchRegion(prev_region);
 
 }
 #endif
@@ -2297,6 +2334,7 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
     }
 #endif
 
+    bool prev_region = Gpu::inLaunchRegion();
     amrex::Cuda::setLaunchRegion(true);
     if (heat_cool_type == 7) {
 #ifdef _OPENMP
@@ -2335,7 +2373,6 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 	    });
 	  }
       }
-    amrex::Cuda::setLaunchRegion(false);
 
     // Compute the maximum temperature
     Real max_temp = D_new.norm0(Temp_comp);
@@ -2371,6 +2408,8 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
                         << " at (i,j,k) " << imax << " " << jmax << " " << kmax << std::endl;
             }
     }
+    amrex::Cuda::setLaunchRegion(prev_region);
+
 }
 #endif
 

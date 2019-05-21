@@ -126,6 +126,10 @@ extern "C"
     (BL_FORT_FAB_ARG(S_new), const int lo[], const int hi[],
      const int* print_fortran_warnings);
 
+  AMREX_GPU_DEVICE void ca_enforce_nonnegative_species
+    (BL_FORT_FAB_ARG(S_new), const int lo[], const int hi[],
+     const int* print_fortran_warnings);
+
   AMREX_GPU_DEVICE void reset_internal_e
     (const int lo[], const int hi[],
      BL_FORT_FAB_ARG(S_new),

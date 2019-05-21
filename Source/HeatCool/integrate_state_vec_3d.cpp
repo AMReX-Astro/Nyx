@@ -49,6 +49,7 @@ int Nyx::integrate_state_vec
 
   fort_ode_eos_setup(a,delta_time);
   //  amrex::Cuda::setLaunchRegion(false);
+  bool prev_region=Gpu::inLaunchRegion();
   amrex::Cuda::setLaunchRegion(true);
 
   int Temp_loc=Temp_comp;
@@ -252,7 +253,7 @@ int Nyx::integrate_state_vec
 	}*/
 
     }
-  amrex::Cuda::setLaunchRegion(false);
+  amrex::Cuda::setLaunchRegion(prev_region);
   #ifdef NDEBUG
   #ifndef NDEBUG
         if (S_old.contains_nan())
@@ -278,8 +279,6 @@ int Nyx::integrate_state_grownvec
   reltol = 1e-4;  /* Set the tolerances */
   abstol = 1e-4;
 
-  amrex::Cuda::setLaunchRegion(true);
-
   int Temp_loc=Temp_comp;
   int Ne_loc=Ne_comp;
   int Eint_loc=Eint;
@@ -288,6 +287,8 @@ int Nyx::integrate_state_grownvec
   int one_in = 1;
 
   fort_ode_eos_setup(a,delta_time);
+  bool prev_region=Gpu::inLaunchRegion();
+  amrex::Cuda::setLaunchRegion(true);
 
   //#ifdef _OPENMP
   //#pragma omp parallel if (Gpu::notInLaunchRegion())
@@ -481,7 +482,8 @@ int Nyx::integrate_state_grownvec
 	}*/
 
     }
-  amrex::Cuda::setLaunchRegion(false);
+  amrex::Cuda::Device::streamSynchronize();
+  amrex::Cuda::setLaunchRegion(prev_region);
   #ifdef NDEBUG
   #ifndef NDEBUG
         if (S_old.contains_nan())

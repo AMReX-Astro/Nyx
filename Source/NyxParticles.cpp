@@ -846,7 +846,11 @@ Nyx::particle_post_restart (const std::string& restart_file, bool is_checkpoint)
         // 2 gives more stuff than 1.
         //
         DMPC->SetVerbose(particle_verbose);
+	bool prev_region = Gpu::inLaunchRegion();
+	amrex::Cuda::setLaunchRegion(true);
         DMPC->Restart(restart_file, dm_chk_particle_file, is_checkpoint);
+	amrex::Cuda::Device::streamSynchronize();
+	amrex::Cuda::setLaunchRegion(prev_region);
         //
         // We want the ability to write the particles out to an ascii file.
         //
@@ -953,6 +957,8 @@ Nyx::particle_redistribute (int lbase, bool my_init)
     BL_PROFILE("Nyx::particle_redistribute()");
     if (DMPC)
     {
+      bool prev_region = Gpu::inLaunchRegion();
+      amrex::Cuda::setLaunchRegion(true);
         //  
         // If we are calling with my_init = true, then we want to force the redistribute
         //    without checking whether the grids have changed.
@@ -960,6 +966,7 @@ Nyx::particle_redistribute (int lbase, bool my_init)
         if (my_init)
         {
             DMPC->Redistribute(lbase);
+	    amrex::Cuda::setLaunchRegion(prev_region);
             return;
         }
 
@@ -1034,9 +1041,7 @@ Nyx::particle_redistribute (int lbase, bool my_init)
                    amrex::Print() << "Calling redistribute because DistMap changed " << '\n';
             }
 
-	    amrex::Cuda::setLaunchRegion(true);
             DMPC->Redistribute(lbase, -1, parent->levelCount(lbase));
-	    amrex::Cuda::setLaunchRegion(false);
             //
             // Use the new BoxArray and DistMap to define ba and dm for next time.
             //
@@ -1051,6 +1056,7 @@ Nyx::particle_redistribute (int lbase, bool my_init)
             if (verbose)
                 amrex::Print() << "NOT calling redistribute because NOT changed " << '\n';
         }
+	    amrex::Cuda::setLaunchRegion(prev_region);
     }
 }
 
@@ -1102,6 +1108,10 @@ Nyx::setup_ghost_particles(int ngrow)
 {
     BL_PROFILE("Nyx::setup_ghost_particles()");
     BL_ASSERT(level < parent->finestLevel());
+
+    bool prev_region = Gpu::inLaunchRegion();
+    amrex::Cuda::setLaunchRegion(false);
+    
     if(Nyx::theDMPC() != 0)
     {
         DarkMatterParticleContainer::AoS ghosts;
@@ -1124,6 +1134,8 @@ Nyx::setup_ghost_particles(int ngrow)
         Nyx::theGhostNPC()->AddParticlesAtLevel(ghosts, level+1, ngrow);
     }
 #endif
+    amrex::Cuda::Device::streamSynchronize();
+    amrex::Cuda::setLaunchRegion(prev_region);
 }
 
 void
