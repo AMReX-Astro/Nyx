@@ -208,7 +208,7 @@ Nyx::hydro_setup()
     if (use_const_species == 1)
         fort_set_eos_params(h_species, he_species);
 
-    int coord_type = Geometry::Coord();
+    int coord_type = DefaultGeometry().Coord();
     fort_set_problem_params
          (dm, phys_bc.lo(), phys_bc.hi(), Outflow, Symmetry, coord_type);
 
@@ -646,7 +646,7 @@ Nyx::no_hydro_setup()
 
     fort_tabulate_rates();
 
-    int coord_type = Geometry::Coord();
+    int coord_type = DefaultGeometry().Coord();
     fort_set_problem_params(dm, phys_bc.lo(), phys_bc.hi(), Outflow, Symmetry, coord_type);
 
     // Note that the default is state_data_extrap = false,
