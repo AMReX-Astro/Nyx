@@ -339,7 +339,7 @@ Gravity::solve_for_phi (int               level,
         amrex::Print() << " ... solve for phi at level " << level << '\n';
 
     // This is a correction for fully periodic domains only
-    if (Geometry::isAllPeriodic())
+    if (parent->Geom(level).isAllPeriodic())
         CorrectRhsUsingOffset(level,Rhs);
 
     Rhs.mult(Ggravity);
@@ -747,7 +747,7 @@ Gravity::actual_multilevel_solve (int                       level,
 // *****************************************************************************
 
     // This correction is for fully periodic domains only.
-    if (Geometry::isAllPeriodic())
+    if (parent->Geom(level).isAllPeriodic())
     {
         if (verbose)
             amrex::Print() << " ... subtracting average density " << mass_offset

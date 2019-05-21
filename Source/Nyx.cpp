@@ -289,14 +289,14 @@ Nyx::read_params ()
     // Check phys_bc against possible periodic geometry
     // if periodic, must have internal BC marked.
     //
-    if (Geometry::isAnyPeriodic())
+    if (DefaultGeometry().isAnyPeriodic())
     {
         //
         // Do idiot check.  Periodic means interior in those directions.
         //
         for (int dir = 0; dir < BL_SPACEDIM; dir++)
         {
-            if (Geometry::isPeriodic(dir))
+            if (DefaultGeometry().isPeriodic(dir))
             {
                 if (lo_bc[dir] != Interior)
                 {
