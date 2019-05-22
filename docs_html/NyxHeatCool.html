@@ -207,7 +207,7 @@ However, while VODE is sufficient for computing this ODE correctly, it is an old
 CVODE is actively developed and maintained, and is more likely to be adapted to future architectures.
 To use CVODE in , one may use the <code class="docutils literal notranslate"><span class="pre">nyx.heat_cool_type=5</span></code> input parameter.
 Currently the performance of VODE is slightly better because CVODE evaluates the ODE RHS one more time than VODE per coarse time step integration.
-Users should note that, while the VODE solver is compiled automatically in , CVODE must be compiled as a separate library; instructions for compiling CVODE are provided in the  User Guide.
+Users should note that, while the VODE solver is compiled automatically in , CVODE must be compiled as a separate library; instructions for compiling CVODE are provided in the &nbsp;User Guide.
 To link the external CVODE solver into , one must set <code class="docutils literal notranslate"><span class="pre">USE_HEATCOOL=TRUE</span></code> as well as <code class="docutils literal notranslate"><span class="pre">USE_CVODE=TRUE</span></code> in the <code class="docutils literal notranslate"><span class="pre">GNUmakefile</span></code>.</p>
 <p>Finally, a third ODE integration option (which is new and <strong>*highly experimental*</strong>) consists of using CVODE while treating groups of ODEs in different cells as a single system of coupled ODEs.
 This option can be selected with the <code class="docutils literal notranslate"><span class="pre">nyx.heat_cool_type=7</span></code> option.
@@ -218,9 +218,9 @@ On Intel Xeon Phi, with 512 bit-wide SIMD instructions, an appropriate value for
 However, users are cautioned that this mode remains <strong>*experimental*</strong> and its results have not been subjected to the same level of verification as the other solver methods.
 In particular, the are three numerical tolerances, available as input parameters, which affect the convergence of the scalar vs SIMD ODE integration:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">nyx.eos_nr_eps</span></code>: this is the convergence criterion for the Newton-Raphson iteration which is used to evaluate the ODE RHS</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">nyx.vode_rtol</span></code>: this is the relative tolerance required for the ODE integration in VODE or CVODE</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">nyx.vode_atol_scaled</span></code>: this is the absolute tolerance required for the ODE integration in VODE or CVODE, scaled by the initial value of the independent variable in the ODE</p></li>
+<li><code class="docutils literal notranslate"><span class="pre">nyx.eos_nr_eps</span></code>: this is the convergence criterion for the Newton-Raphson iteration which is used to evaluate the ODE RHS</li>
+<li><code class="docutils literal notranslate"><span class="pre">nyx.vode_rtol</span></code>: this is the relative tolerance required for the ODE integration in VODE or CVODE</li>
+<li><code class="docutils literal notranslate"><span class="pre">nyx.vode_atol_scaled</span></code>: this is the absolute tolerance required for the ODE integration in VODE or CVODE, scaled by the initial value of the independent variable in the ODE</li>
 </ul>
 <p>These variables, in particular <code class="docutils literal notranslate"><span class="pre">nyx.vode_rtol</span></code>, have different effects depending on whether one is integrating a single ODE at a time, or a system of ODEs simultaneously.
 One should be mindful of the numerical differences which arise from these, which can be observed with the <code class="docutils literal notranslate"><span class="pre">fcompare</span></code> tool in AMReX.</p>

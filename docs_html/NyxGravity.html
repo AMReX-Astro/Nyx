@@ -214,32 +214,35 @@ Laplacian understands the coarse-fine interface and is different than
 the stencil used in the interior.</p>
 <p>There are two types of solves that we discuss with AMR:</p>
 <ul class="simple">
-<li><p><em>composite solve</em> : This is a multilevel solve, starting at
+<li><em>composite solve</em> : This is a multilevel solve, starting at
 a coarse level (usually level 0) and solving for the potential on
-all levels up to the finest level.</p></li>
-<li><p><em>level solve</em> : This solves for the potential only on
+all levels up to the finest level.</li>
+<li><em>level solve</em> : This solves for the potential only on
 a particular level. Finer levels are ignored. At coarse-fine
 interfaces, the data from the coarse levels acts as Dirichlet
-boundary conditions for the current-level-solve.</p></li>
+boundary conditions for the current-level-solve.</li>
 </ul>
 <p>Briefly:</p>
 <ul>
-<li><p>At the beginning of a simulation, we do a multilevel composite
+<li><p class="first">At the beginning of a simulation, we do a multilevel composite
 solve (if <code class="docutils literal notranslate"><span class="pre">gravity.no_composite</span></code> = 0).</p>
 <p>We also do a multilevel composite solve after each regrid.</p>
 </li>
-<li><p>The old-time gravity on the coarse level is defined based on
+<li><p class="first">The old-time gravity on the coarse level is defined based on
 this composite solve, but we also do a level solve on the coarse
 level, and use it to determine the difference between the composite
-solve and the level solve, and store that in a MultiFab.</p></li>
-<li><p>After the hydro advance on the coarse level, we do another level
+solve and the level solve, and store that in a MultiFab.</p>
+</li>
+<li><p class="first">After the hydro advance on the coarse level, we do another level
 solve, and use the (level solve - compositive solve) as a lagged
 predictor of how much we need to add back to that level solve to get
 an effective new-time value for phi on the coarse level, and that’s
-what defines the phi used for the new-time gravity</p></li>
-<li><p>Then we do the fine grid timestep(s), each using the same
-strategy</p></li>
-<li><p>At an AMR synchronization step across levels, if we’re
+what defines the phi used for the new-time gravity</p>
+</li>
+<li><p class="first">Then we do the fine grid timestep(s), each using the same
+strategy</p>
+</li>
+<li><p class="first">At an AMR synchronization step across levels, if we’re
 choosing to synchronize the gravitational field across levels
 (<code class="docutils literal notranslate"><span class="pre">gravity.no_sync</span></code> = 0) we then do a solve starting from the coarse
 grid that adjusts for the mismatch between the fine-grid phi and
@@ -290,7 +293,7 @@ and <span class="math notranslate nohighlight">\(a(t)\)</span> is the scale of t
 the hydrodynamics system. The main parameter here is
 <code class="docutils literal notranslate"><span class="pre">Nyx.grav_source_type</span></code>.</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">Nyx.grav_source_type</span></code> = 1 : we use a standard
+<li><code class="docutils literal notranslate"><span class="pre">Nyx.grav_source_type</span></code> = 1 : we use a standard
 predictor-corrector formalism for updating the momentum and
 energy. Specifically, our first update is equal to <span class="math notranslate nohighlight">\(\Delta t
 \times \mathbf{S}^n\)</span> , where <span class="math notranslate nohighlight">\(\mathbf{S}^n\)</span> is the value of
@@ -298,10 +301,10 @@ the source terms at the old-time (which is usually called time-level
 <span class="math notranslate nohighlight">\(n\)</span>). At the end of the timestep, we do a corrector step where
 we subtract off <span class="math notranslate nohighlight">\(\Delta t / 2 \times \mathbf{S}^n\)</span> and add on
 <span class="math notranslate nohighlight">\(\Delta t / 2 \times \mathbf{S}^{n+1}\)</span>, so that at the end of
-the timestep the source term is properly time centered.</p></li>
+the timestep the source term is properly time centered.</li>
 </ul>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">Nyx.grav_source_type</span></code> = 3 : we do the same momentum update as
+<li><code class="docutils literal notranslate"><span class="pre">Nyx.grav_source_type</span></code> = 3 : we do the same momentum update as
 the previous, but for the energy update, we put all of the work
 into updating the kinetic energy alone. In particular, we explicitly
 ensure that <span class="math notranslate nohighlight">\((rho e)\)</span> maintains the same, and update
@@ -309,7 +312,7 @@ ensure that <span class="math notranslate nohighlight">\((rho e)\)</span> mainta
 energy to the old internal energy to determine the final total gas
 energy. The physical motivation is that work should be done on the
 velocity, and should not directly update the temperature—only
-indirectly through things like shocks.</p></li>
+indirectly through things like shocks.</li>
 </ul>
 </div>
 </div>
