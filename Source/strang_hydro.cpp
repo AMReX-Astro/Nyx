@@ -45,6 +45,8 @@ Nyx::strang_hydro (Real time,
         amrex::Abort("time should equal prev_time in strang_hydro!");
     }
 
+    amrex::Cuda::Device::streamSynchronize();
+    amrex::Cuda::setLaunchRegion(false);
     if (S_old.contains_nan(Density, S_old.nComp(), 0))
     {
         for (int i = 0; i < S_old.nComp(); i++)
@@ -55,6 +57,7 @@ Nyx::strang_hydro (Real time,
                 amrex::Abort("S_old has NaNs in this component");
         }
     }
+    amrex::Cuda::setLaunchRegion(true);
 #endif
     
     // It's possible for interpolation to create very small negative values for
@@ -99,6 +102,8 @@ Nyx::strang_hydro (Real time,
     MultiFab divu_cc(grids, dmap, 1, 0);
     divu_cc.setVal(0.);
 #ifndef NDEBUG
+    amrex::Cuda::Device::streamSynchronize();
+    amrex::Cuda::setLaunchRegion(false);
     if (S_old_tmp.contains_nan(Density, S_old_tmp.nComp(), 0))
       {
         for (int i = 0; i < S_old_tmp.nComp(); i++)
@@ -110,6 +115,7 @@ Nyx::strang_hydro (Real time,
         }
         amrex::Abort("S_new has NaNs before the second strang call");
       }
+    amrex::Cuda::setLaunchRegion(true);
 #endif
 
 #ifdef HEATCOOL
@@ -162,6 +168,8 @@ Nyx::strang_hydro (Real time,
       }
 
 #ifndef NDEBUG
+    amrex::Cuda::Device::streamSynchronize();
+    amrex::Cuda::setLaunchRegion(false);
     if (S_new.contains_nan(Density, S_new.nComp(), 0))
       {
     for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
@@ -182,6 +190,7 @@ Nyx::strang_hydro (Real time,
         amrex::Abort("S_new has NaNs before the second strang call");
     }
       }
+    amrex::Cuda::setLaunchRegion(true);
 #endif
     // We copy old Temp and Ne to new Temp and Ne so that they can be used
     //    as guesses when we next need them.
@@ -213,6 +222,8 @@ Nyx::strang_hydro (Real time,
 
 
 #ifndef NDEBUG
+    amrex::Cuda::Device::streamSynchronize();
+    amrex::Cuda::setLaunchRegion(false);
     if (S_new.contains_nan(Density, S_new.nComp(), 0))
       {
         for (int i = 0; i < S_new.nComp(); i++)
@@ -228,6 +239,7 @@ Nyx::strang_hydro (Real time,
         }
         amrex::Abort("S_new has NaNs before the second strang call");
       }
+    amrex::Cuda::setLaunchRegion(true);
 #endif
 
 #ifdef HEATCOOL
@@ -236,8 +248,11 @@ Nyx::strang_hydro (Real time,
 #endif
 
 #ifndef NDEBUG
+    amrex::Cuda::Device::streamSynchronize();
+    amrex::Cuda::setLaunchRegion(false);
     if (S_new.contains_nan(Density, S_new.nComp(), 0))
         amrex::Abort("S_new has NaNs after the second strang call");
+    amrex::Cuda::setLaunchRegion(true);
 #endif
 
     amrex::Cuda::Device::streamSynchronize();

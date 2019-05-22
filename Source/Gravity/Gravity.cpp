@@ -833,6 +833,9 @@ Gravity::get_old_grav_vector (int       level,
                               Real      time)
 {
     BL_PROFILE("Gravity::get_old_grav_vector()");
+
+    bool prev_region=Gpu::inLaunchRegion();
+    amrex::Gpu::setLaunchRegion(true);
     // Set to zero to fill ghost cells.
     grav_vector.setVal(0);
 
@@ -897,6 +900,7 @@ Gravity::get_old_grav_vector (int       level,
     AmrLevel* amrlev = &parent->getLevel(level);
     int ng = grav_vector.nGrow();
     AmrLevel::FillPatch(*amrlev,grav_vector,ng,time,Gravity_Type,0,BL_SPACEDIM);
+    amrex::Gpu::setLaunchRegion(prev_region);
 }
 
 void
@@ -905,6 +909,9 @@ Gravity::get_new_grav_vector (int       level,
                               Real      time)
 {
     BL_PROFILE("Gravity::get_new_grav_vector()");
+
+    bool prev_region=Gpu::inLaunchRegion();
+    amrex::Gpu::setLaunchRegion(true);
 #ifdef CGRAV
     if (gravity_type == "PoissonGrav" || gravity_type == "CompositeGrav")
 #else
@@ -973,6 +980,7 @@ Gravity::get_new_grav_vector (int       level,
     AmrLevel* amrlev = &parent->getLevel(level) ;
     int ng = grav_vector.nGrow();
     AmrLevel::FillPatch(*amrlev,grav_vector,ng,time,Gravity_Type,0,BL_SPACEDIM);
+    amrex::Gpu::setLaunchRegion(prev_region);
 }
 
 void
