@@ -1387,11 +1387,15 @@ void
 Gravity::AddParticlesToRhs(int base_level, int finest_level, int ngrow, const Vector<MultiFab*>& Rhs_particles)
 {
     BL_PROFILE("Gravity::AddParticlesToRhsML()");
+
+    bool prev_region = Gpu::inLaunchRegion();
+    amrex::Cuda::setLaunchRegion(true);
     const int num_levels = finest_level - base_level + 1;
     for (int i = 0; i < Nyx::theActiveParticles().size(); i++)
     {
         Vector<std::unique_ptr<MultiFab> > PartMF;
         Nyx::theActiveParticles()[i]->AssignDensity(PartMF, base_level, 1, finest_level, ngrow);
+#ifndef NDEBUG
         for (int lev = 0; lev < num_levels; lev++)
         {
             if (PartMF[lev]->contains_nan())
@@ -1400,6 +1404,7 @@ Gravity::AddParticlesToRhs(int base_level, int finest_level, int ngrow, const Ve
                 amrex::Abort("...PartMF has NaNs in Gravity::actual_multilevel_solve()");
             }
         }
+#endif
 
         for (int lev = finest_level - 1 - base_level; lev >= 0; lev--)
         {
@@ -1412,6 +1417,8 @@ Gravity::AddParticlesToRhs(int base_level, int finest_level, int ngrow, const Ve
             MultiFab::Add(*Rhs_particles[lev], *PartMF[lev], 0, 0, 1, 0);
         }
     }
+    amrex::Cuda::Device::streamSynchronize();
+    amrex::Cuda::setLaunchRegion(prev_region);
 
 }
 
