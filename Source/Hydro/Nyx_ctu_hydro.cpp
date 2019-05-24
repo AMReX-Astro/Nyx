@@ -523,7 +523,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       AMREX_LAUNCH_DEVICE_LAMBDA(obx, tobx,
       {
         ctu_plm_states(AMREX_INT_ANYD(tobx.loVect()), AMREX_INT_ANYD(tobx.hiVect()),
-                       AMREX_INT_ANYD(bx.loVect()), AMREX_INT_ANYD(bx.hiVect()),
+                       1,AMREX_INT_ANYD(bx.loVect()), AMREX_INT_ANYD(bx.hiVect()),
                        BL_TO_FORTRAN_ANYD(*fab_q),
 		       BL_ARR4_TO_FORTRAN_3D(fab_flatn),
                        BL_TO_FORTRAN_ANYD(*fab_qaux),
@@ -532,8 +532,36 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                        BL_ARR4_TO_FORTRAN_3D(fab_dq),
                        BL_ARR4_TO_FORTRAN_3D(fab_qxm),
                        BL_ARR4_TO_FORTRAN_3D(fab_qxp),
+                       dx.data(), dt,
+		       a_old, a_new,
+                       AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
+      });
+      AMREX_LAUNCH_DEVICE_LAMBDA(obx, tobx,
+      {
+	        ctu_plm_states(AMREX_INT_ANYD(tobx.loVect()), AMREX_INT_ANYD(tobx.hiVect()),
+                       2,AMREX_INT_ANYD(bx.loVect()), AMREX_INT_ANYD(bx.hiVect()),
+                       BL_TO_FORTRAN_ANYD(*fab_q),
+		       BL_ARR4_TO_FORTRAN_3D(fab_flatn),
+                       BL_TO_FORTRAN_ANYD(*fab_qaux),
+                       BL_TO_FORTRAN_ANYD(*fab_src_q),
+                       BL_ARR4_TO_FORTRAN_3D(fab_shk),
+                       BL_ARR4_TO_FORTRAN_3D(fab_dq),
                        BL_ARR4_TO_FORTRAN_3D(fab_qym),
                        BL_ARR4_TO_FORTRAN_3D(fab_qyp),
+                       dx.data(), dt,
+		       a_old, a_new,
+                       AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
+      });
+      AMREX_LAUNCH_DEVICE_LAMBDA(obx, tobx,
+      {
+		        ctu_plm_states(AMREX_INT_ANYD(tobx.loVect()), AMREX_INT_ANYD(tobx.hiVect()),
+                       3,AMREX_INT_ANYD(bx.loVect()), AMREX_INT_ANYD(bx.hiVect()),
+                       BL_TO_FORTRAN_ANYD(*fab_q),
+		       BL_ARR4_TO_FORTRAN_3D(fab_flatn),
+                       BL_TO_FORTRAN_ANYD(*fab_qaux),
+                       BL_TO_FORTRAN_ANYD(*fab_src_q),
+                       BL_ARR4_TO_FORTRAN_3D(fab_shk),
+                       BL_ARR4_TO_FORTRAN_3D(fab_dq),
                        BL_ARR4_TO_FORTRAN_3D(fab_qzm),
                        BL_ARR4_TO_FORTRAN_3D(fab_qzp),
                        dx.data(), dt,

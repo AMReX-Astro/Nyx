@@ -500,6 +500,7 @@ extern "C"
 
   AMREX_GPU_DEVICE void ctu_plm_states
      (const int* lo, const int* hi,
+      const int idir,
       const int* vlo, const int* vhi,
       const BL_FORT_FAB_ARG_3D(q),
       const BL_FORT_FAB_ARG_3D(flatn),
@@ -507,16 +508,8 @@ extern "C"
       const BL_FORT_FAB_ARG_3D(srcQ),
       BL_FORT_FAB_ARG_3D(shk),
       BL_FORT_FAB_ARG_3D(dq),
-      BL_FORT_FAB_ARG_3D(qxm),
-      BL_FORT_FAB_ARG_3D(qxp),
-#if AMREX_SPACEDIM >= 2
-      BL_FORT_FAB_ARG_3D(qym),
-      BL_FORT_FAB_ARG_3D(qyp),
-#endif
-#if AMREX_SPACEDIM == 3
-      BL_FORT_FAB_ARG_3D(qzm),
-      BL_FORT_FAB_ARG_3D(qzp),
-#endif
+      BL_FORT_FAB_ARG_3D(qm),
+      BL_FORT_FAB_ARG_3D(qp),
       const amrex::Real* dx, const amrex::Real dt,
       const amrex::Real a_old, const amrex::Real a_new,
 #if AMREX_SPACEDIM < 3

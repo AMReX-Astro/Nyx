@@ -417,23 +417,15 @@ contains
   !! @param[inout] q3           (modify) Godunov interface state in Z
   !!
   AMREX_CUDA_FORT_DEVICE subroutine ctu_plm_states(lo, hi, &
-                            vlo, vhi, &
+                            idir, vlo, vhi, &
                             q, qd_lo, qd_hi, &
                             flatn, f_lo, f_hi, &
                             qaux, qa_lo, qa_hi, &
                             srcQ, src_lo, src_hi, &
                             shk, sk_lo, sk_hi, &
                             dq, dq_lo, dq_hi, &
-                            qxm, qxm_lo, qxm_hi, &
-                            qxp, qxp_lo, qxp_hi, &
-#if AMREX_SPACEDIM >= 2
-                            qym, qym_lo, qym_hi, &
-                            qyp, qyp_lo, qyp_hi, &
-#endif
-#if AMREX_SPACEDIM == 3
-                            qzm, qzm_lo, qzm_hi, &
-                            qzp, qzp_lo, qzp_hi, &
-#endif
+                            qm, qm_lo, qm_hi, &
+                            qp, qp_lo, qp_hi, &
                             dx, dt, a_old, a_new, &
 #if AMREX_SPACEDIM < 3
                             dloga, dloga_lo, dloga_hi, &
@@ -461,20 +453,13 @@ contains
     integer, intent(in) :: src_lo(3), src_hi(3)
     integer, intent(in) :: sk_lo(3), sk_hi(3)
     integer, intent(in) :: dq_lo(3), dq_hi(3)
-    integer, intent(in) :: qxm_lo(3), qxm_hi(3)
-    integer, intent(in) :: qxp_lo(3), qxp_hi(3)
-#if AMREX_SPACEDIM >= 2
-    integer, intent(in) :: qym_lo(3), qym_hi(3)
-    integer, intent(in) :: qyp_lo(3), qyp_hi(3)
-#endif
-#if AMREX_SPACEDIM == 3
-    integer, intent(in) :: qzm_lo(3), qzm_hi(3)
-    integer, intent(in) :: qzp_lo(3), qzp_hi(3)
-#endif
+    integer, intent(in) :: qm_lo(3), qm_hi(3)
+    integer, intent(in) :: qp_lo(3), qp_hi(3)
 #if AMREX_SPACEDIM < 3
     integer, intent(in) :: dloga_lo(3), dloga_hi(3)
 #endif
     real(rt), intent(in) :: dx(3)
+    integer, intent(in), value :: idir
     real(rt), intent(in), value :: dt
     real(rt), intent(in), value :: a_old
     real(rt), intent(in), value :: a_new
@@ -488,21 +473,13 @@ contains
     real(rt), intent(inout) :: shk(sk_lo(1):sk_hi(1), sk_lo(2):sk_hi(2), sk_lo(3):sk_hi(3))
     real(rt), intent(inout) :: dq(dq_lo(1):dq_hi(1), dq_lo(2):dq_hi(2), dq_lo(3):dq_hi(3), QVAR)
 
-    real(rt), intent(inout) :: qxm(qxm_lo(1):qxm_hi(1), qxm_lo(2):qxm_hi(2), qxm_lo(3):qxm_hi(3), QVAR)
-    real(rt), intent(inout) :: qxp(qxp_lo(1):qxp_hi(1), qxp_lo(2):qxp_hi(2), qxp_lo(3):qxp_hi(3), QVAR)
-#if AMREX_SPACEDIM >= 2
-    real(rt), intent(inout) :: qym(qym_lo(1):qym_hi(1), qym_lo(2):qym_hi(2), qym_lo(3):qym_hi(3), QVAR)
-    real(rt), intent(inout) :: qyp(qyp_lo(1):qyp_hi(1), qyp_lo(2):qyp_hi(2), qyp_lo(3):qyp_hi(3), QVAR)
-#endif
-#if AMREX_SPACEDIM == 3
-    real(rt), intent(inout) :: qzm(qzm_lo(1):qzm_hi(1), qzm_lo(2):qzm_hi(2), qzm_lo(3):qzm_hi(3), QVAR)
-    real(rt), intent(inout) :: qzp(qzp_lo(1):qzp_hi(1), qzp_lo(2):qzp_hi(2), qzp_lo(3):qzp_hi(3), QVAR)
-#endif
+    real(rt), intent(inout) :: qm(qm_lo(1):qm_hi(1), qm_lo(2):qm_hi(2), qm_lo(3):qm_hi(3), QVAR)
+    real(rt), intent(inout) :: qp(qp_lo(1):qp_hi(1), qp_lo(2):qp_hi(2), qp_lo(3):qp_hi(3), QVAR)
 #if AMREX_SPACEDIM < 3
     real(rt), intent(in) :: dloga(dloga_lo(1):dloga_hi(1),dloga_lo(2):dloga_hi(2),dloga_lo(3):dloga_hi(3))
 #endif
     real(rt) :: hdt
-    integer :: i, j, k, n, idir
+    integer :: i, j, k, n
 
     logical :: reconstruct_state(QVAR)
 
@@ -513,27 +490,8 @@ contains
     hdt = HALF*dt
 
     ! multidimensional shock detection
-
-#ifdef SHOCK_VAR
-    compute_shock = .true.
-#else
-    compute_shock = .false.
-#endif
-
-#ifndef AMREX_USE_CUDA
-    ! multidimensional shock detection -- this will be used to do the
-    ! hybrid Riemann solver
-    if (hybrid_riemann == 1 .or. compute_shock) then
-       call ca_shock(lo, hi, &
-                     q, qd_lo, qd_hi, &
-                     shk, sk_lo, sk_hi, &
-                     dx)
-    else
-       shk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3)) = ZERO
-    endif
-#else
     shk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3)) = ZERO
-#endif
+
     ! we don't need to reconstruct all of the NQ state variables,
     ! depending on how we are tracing
     reconstruct_state(:) = .true.
@@ -543,9 +501,6 @@ contains
     call amrex_error("ppm_type <=0 is not supported in with radiation")
 #endif
 #endif
-
-    ! Compute all slopes
-    do idir = 1, AMREX_SPACEDIM
 
        do n = 1, QVAR
           if (.not. reconstruct_state(n)) cycle
@@ -567,13 +522,12 @@ contains
 
        ! compute the interface states
 
-       if (idir == 1) then
           call trace_plm_orig(lo, hi, &
-                         1, q, qd_lo, qd_hi, &
+                         idir, q, qd_lo, qd_hi, &
                          qaux, qa_lo, qa_hi, &
                          dq, dq_lo, dq_hi, &
-                         qxm, qxm_lo, qxm_hi, &
-                         qxp, qxp_lo, qxp_hi, &
+                         qm, qm_lo, qm_hi, &
+                         qp, qp_lo, qp_hi, &
 #if AMREX_SPACEDIM < 3
                          dloga, dloga_lo, dloga_hi, &
 #endif
@@ -581,37 +535,6 @@ contains
                          vlo, vhi, domlo, domhi, &
                          dx, dt,a_old)
 
-#if AMREX_SPACEDIM >= 2
-       else if (idir == 2) then
-          call trace_plm_orig(lo, hi, &
-                         2, q, qd_lo, qd_hi, &
-                         qaux, qa_lo, qa_hi, &
-                         dq, dq_lo, dq_hi, &
-                         qym, qym_lo, qym_hi, &
-                         qyp, qyp_lo, qyp_hi, &
-#if AMREX_SPACEDIM < 3
-                         dloga, dloga_lo, dloga_hi, &
-#endif
-                         SrcQ, src_lo, src_hi, &
-                         vlo, vhi, domlo, domhi, &
-                         dx, dt,a_old)
-#endif
-
-#if AMREX_SPACEDIM == 3
-       else
-          call trace_plm_orig(lo, hi, &
-                         3, q, qd_lo, qd_hi, &
-                         qaux, qa_lo, qa_hi, &
-                         dq, dq_lo, dq_hi, &
-                         qzm, qzm_lo, qzm_hi, &
-                         qzp, qzp_lo, qzp_hi, &
-                         SrcQ, src_lo, src_hi, &
-                         vlo, vhi, domlo, domhi, &
-                         dx, dt,a_old)
-#endif
-       end if
-
-    end do
   end subroutine ctu_plm_states
 
 #ifndef AMREX_USE_CUDA
