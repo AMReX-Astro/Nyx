@@ -6,7 +6,7 @@
       !===========================================================================
       ! This is called from the C++ so the threading happens here...
       !===========================================================================
-      subroutine fort_correct_gsrc(lo,hi, &
+      AMREX_CUDA_FORT_DEVICE subroutine fort_correct_gsrc(lo,hi, &
                               gold,gold_l1,gold_l2,gold_l3,gold_h1,gold_h2,gold_h3, &
                               gnew,gnew_l1,gnew_l2,gnew_l3,gnew_h1,gnew_h2,gnew_h3, &
                               uold,uold_l1,uold_l2,uold_l3,uold_h1,uold_h2,uold_h3, &
@@ -14,7 +14,9 @@
                               a_old,a_new,dt) &
                               bind(C, name="fort_correct_gsrc")
 
+#ifndef AMREX_USE_CUDA
       use amrex_error_module
+#endif
       use amrex_fort_module, only : rt => amrex_real
       use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, grav_source_type
 
@@ -29,7 +31,7 @@
       real(rt)   gnew(gnew_l1:gnew_h1,gnew_l2:gnew_h2,gnew_l3:gnew_h3,3)
       real(rt)  uold(uold_l1:uold_h1,uold_l2:uold_h2,uold_l3:uold_h3,NVAR)
       real(rt)  unew(unew_l1:unew_h1,unew_l2:unew_h2,unew_l3:unew_h3,NVAR)
-      real(rt)  a_old,a_new,dt
+      real(rt), intent(in), value ::  a_old,a_new,dt
 
       integer i,j,k
       real(rt) SrU_old, SrV_old, SrW_old
@@ -106,8 +108,10 @@
                    new_ke = 0.5d0 * (unew(i,j,k,UMX)**2 + unew(i,j,k,UMY)**2 + unew(i,j,k,UMZ)**2) / &
                                      unew(i,j,k,URHO) 
                    unew(i,j,k,UEDEN) = old_rhoeint + new_ke
+#ifndef AMREX_USE_CUDA
                else 
                   call amrex_error("Error:: Nyx_advection_3d.f90 :: bogus grav_source_type")
+#endif
                end if
 
             enddo
@@ -118,7 +122,7 @@
 ! :::
 ! ::: ------------------------------------------------------------------
 ! :::
-      subroutine fort_syncgsrc(lo,hi, &
+      AMREX_CUDA_FORT_DEVICE subroutine fort_syncgsrc(lo,hi, &
                               gphi,gphi_l1,gphi_l2,gphi_l3,gphi_h1,gphi_h2,gphi_h3, &
                               gdphi,gdphi_l1,gdphi_l2,gdphi_l3,gdphi_h1,gdphi_h2,gdphi_h3, &
                               state,state_l1,state_l2,state_l3,state_h1,state_h2,state_h3, &
@@ -143,7 +147,7 @@
       real(rt)  state(state_l1:state_h1,state_l2:state_h2,state_l3:state_h3,NVAR)
       real(rt) dstate(dstate_l1:dstate_h1,dstate_l2:dstate_h2,dstate_l3:dstate_h3,3+1)
       real(rt) sync_src(src_l1:src_h1,src_l2:src_h2,src_l3:src_h3,3+1)
-      real(rt) a_new,dt
+      real(rt), intent(in), value :: a_new,dt
  
       !    Note that dstate is drho and drhoU, state is the entire state, and src
       !    is S_rhoU and S_rhoE

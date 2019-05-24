@@ -864,23 +864,23 @@ extern "C"
      const amrex::Real* a_old, const amrex::Real* a_new,
      const amrex::Real* dt);
 
-  void fort_correct_gsrc
-    (const int lo[], const int hi[],
+  AMREX_GPU_DEVICE void fort_correct_gsrc
+    (const int* lo, const int* hi,
      const BL_FORT_FAB_ARG(grav_src_old),
      const BL_FORT_FAB_ARG(grad_phi_cc),
      const BL_FORT_FAB_ARG(S_old), BL_FORT_FAB_ARG(S_new),
-     const amrex::Real* a_old, const amrex::Real* a_new,
-     const amrex::Real* dt);
+     const amrex::Real a_old, const amrex::Real a_new,
+     const amrex::Real dt);
 
-  void fort_syncgsrc
-    (const int lo[], const int hi[],
+  AMREX_GPU_DEVICE void fort_syncgsrc
+    (const int* lo, const int* hi,
      const BL_FORT_FAB_ARG(gPhi),
      const BL_FORT_FAB_ARG(gdPhi),
      const BL_FORT_FAB_ARG(S),
      const BL_FORT_FAB_ARG(dS),
      BL_FORT_FAB_ARG(src),
-     const amrex::Real* a_new,
-     const amrex::Real& dt);
+     const amrex::Real a_new,
+     const amrex::Real dt);
 
   void sum_over_level
     (BL_FORT_FAB_ARG(rho), const int lo[], const int hi[],

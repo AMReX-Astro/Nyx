@@ -2,6 +2,13 @@
 #include "Nyx.H"
 #include "Nyx_F.H"
 #include <AMReX_Particles_F.H>
+//#include <AMReX_MFIter.H>
+#include <Derive_F.H>
+#include <AMReX_VisMF.H>
+#include <AMReX_TagBox.H>
+#include <AMReX_Particles_F.H>
+#include <AMReX_Utility.H>
+#include <AMReX_Print.H>
 
 #ifdef GRAVITY
 #include "Gravity.H"
@@ -382,21 +389,33 @@ Nyx::advance_hydro_plus_particles (Real time,
 
         const Real* dx = get_level(lev).Geom().CellSize();
 
+    bool prev_region = Gpu::inLaunchRegion();
+    amrex::Gpu::setLaunchRegion(true);
+    // Now do corrector part of source term update
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-        for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
-        {
-            const Box& bx = mfi.tilebox();
+    for (MFIter mfi(S_new, Gpu::notInLaunchRegion()); mfi.isValid(); ++mfi)
+    {
+        const Box& bx = mfi.tilebox();
+	FArrayBox* fab_grav_vec_old = grav_vec_old.fabPtr(mfi);
+	FArrayBox* fab_grav_vec_new = grav_vec_new.fabPtr(mfi);
+	FArrayBox* fab_S_old = S_old.fabPtr(mfi);
+	FArrayBox* fab_S_new = S_new.fabPtr(mfi);
 
-            Real se  = 0;
-            Real ske = 0;
+	amrex::launch(bx,
+		      [=] AMREX_GPU_DEVICE (Box const& tbx)
+		      {
+			//	AMREX_LAUNCH_DEVICE_CUDA(bx,tbx,
+			//				 {
+        fort_correct_gsrc
+            (tbx.loVect(), tbx.hiVect(), BL_TO_FORTRAN(*fab_grav_vec_old),
+             BL_TO_FORTRAN(*fab_grav_vec_new), BL_TO_FORTRAN(*fab_S_old),
+             BL_TO_FORTRAN(*fab_S_new), a_old, a_new, dt);
+				 });
+    }
 
-            fort_correct_gsrc
-                (bx.loVect(), bx.hiVect(), BL_TO_FORTRAN(grav_vec_old[mfi]),
-                 BL_TO_FORTRAN(grav_vec_new[mfi]), BL_TO_FORTRAN(S_old[mfi]),
-                 BL_TO_FORTRAN(S_new[mfi]), &a_old, &a_new, &dt);
-        }
+    amrex::Gpu::setLaunchRegion(prev_region);
 
         // First reset internal energy before call to compute_temp
         get_level(lev).reset_internal_energy(S_new,D_new,reset_e_src);
@@ -555,22 +574,33 @@ Nyx::advance_hydro (Real time,
     MultiFab grav_vec_new(grids,dmap,BL_SPACEDIM,0);
     gravity->get_new_grav_vector(level,grav_vec_new,cur_time);
 
+    bool prev_region = Gpu::inLaunchRegion();
+    amrex::Gpu::setLaunchRegion(true);
     // Now do corrector part of source term update
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-    for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
+    for (MFIter mfi(S_new,Gpu::notInLaunchRegion()); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
+	FArrayBox* fab_grav_vec_old = grav_vec_old.fabPtr(mfi);
+	FArrayBox* fab_grav_vec_new = grav_vec_new.fabPtr(mfi);
+	FArrayBox* fab_S_old = S_old.fabPtr(mfi);
+	FArrayBox* fab_S_new = S_new.fabPtr(mfi);
 
+	amrex::launch(bx,
+	[=] AMREX_GPU_DEVICE (Box const& tbx)
+	  {
         fort_correct_gsrc
-            (bx.loVect(), bx.hiVect(), BL_TO_FORTRAN(grav_vec_old[mfi]),
-             BL_TO_FORTRAN(grav_vec_new[mfi]), BL_TO_FORTRAN(S_old[mfi]),
-             BL_TO_FORTRAN(S_new[mfi]), &a_old, &a_new, &dt);
+            (tbx.loVect(), tbx.hiVect(), BL_TO_FORTRAN(*fab_grav_vec_old),
+             BL_TO_FORTRAN(*fab_grav_vec_new), BL_TO_FORTRAN(*fab_S_old),
+             BL_TO_FORTRAN(*fab_S_new), a_old, a_new, dt);
+				 });
     }
 
 #endif /*GRAVITY*/
 
+    amrex::Gpu::setLaunchRegion(prev_region);
     // First reset internal energy before call to compute_temp
     reset_internal_energy(S_new,D_new,reset_e_src);
     compute_new_temp(S_new,D_new);

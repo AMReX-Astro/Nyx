@@ -48,6 +48,9 @@ using std::string;
 #include "agn_F.H"
 #endif
 
+#define BL_ARR4_TO_FORTRAN_3D(a) a.p,&((a).begin.x),amrex::GpuArray<int,3>{(a).end.x-1,(a).end.y-1,(a).end.z-1}.data()
+#define BL_ARR4_TO_FORTRAN(a) (a).p, AMREX_ARLIM(&((a).begin.x)), (a).end.x-1,(a).end.y-1,(a).end.z-1
+
 using namespace amrex;
 
 extern "C" {
@@ -1438,6 +1441,8 @@ Nyx::post_timestep (int iteration)
                 MultiFab grad_phi_cc(ba, dm, BL_SPACEDIM, 0);
                 gravity->get_new_grav_vector(lev, grad_phi_cc, cur_time);
 
+		bool prev_region=Gpu::inLaunchRegion();
+		amrex::Gpu::setLaunchRegion(true);
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
@@ -1445,10 +1450,12 @@ Nyx::post_timestep (int iteration)
 		  FArrayBox sync_src;
 		  FArrayBox dstate;
 
-		  for (MFIter mfi(S_new_lev,true); mfi.isValid(); ++mfi)
+		  for (MFIter mfi(S_new_lev,Gpu::notInLaunchRegion()); mfi.isValid(); ++mfi)
                   {
                     const Box& bx = mfi.tilebox();
                     dstate.resize(bx, BL_SPACEDIM + 1);
+		    Elixir elix_dstate = dstate.elixir();
+		    Array4<Real> fab_dstate = dstate.array();
                     if (lev == level)
                     {
 		      dstate.copy(drho_and_drhoU[mfi]);
@@ -1460,18 +1467,30 @@ Nyx::post_timestep (int iteration)
 
                     // Compute sync source
                     sync_src.resize(bx, BL_SPACEDIM+1);
-                    int i = mfi.index();
-                    fort_syncgsrc
-                        (bx.loVect(), bx.hiVect(), BL_TO_FORTRAN(grad_phi_cc[i]),
-                         BL_TO_FORTRAN((*grad_delta_phi_cc[lev-level])[i]),
-                         BL_TO_FORTRAN(S_new_lev[i]), BL_TO_FORTRAN(dstate),
-                         BL_TO_FORTRAN(sync_src), &a_new, dt_lev);
+		    Elixir elix_sync_src = sync_src.elixir();
+		    Array4<Real> fab_sync_src = sync_src.array();
+		    //                    int i = mfi.index();
 
-                    sync_src.mult(0.5 * dt_lev);
+		    FArrayBox* fab_grad_phi_cc = grad_phi_cc.fabPtr(mfi);
+		    FArrayBox* fab_grad_delta_phi_cc=(*grad_delta_phi_cc[lev-level]).fabPtr(mfi);
+		    FArrayBox* fab_S_new_lev = S_new_lev.fabPtr(mfi);
+
+		    AMREX_LAUNCH_DEVICE_LAMBDA(bx,tbx,
+					       {
+                    fort_syncgsrc
+                        (tbx.loVect(), tbx.hiVect(), BL_TO_FORTRAN(*fab_grad_phi_cc),
+                         BL_TO_FORTRAN(*fab_grad_delta_phi_cc),
+                         BL_TO_FORTRAN(*fab_S_new_lev), BL_ARR4_TO_FORTRAN(fab_dstate),
+                         BL_ARR4_TO_FORTRAN(fab_sync_src), a_new, dt_lev);
+					       });
+
+		    sync_src.mult(0.5 * dt_lev);
                     S_new_lev[mfi].plus(sync_src, 0, Xmom, BL_SPACEDIM);
                     S_new_lev[mfi].plus(sync_src, BL_SPACEDIM, Eden, 1);
 		  }
 		}
+		amrex::Gpu::Device::streamSynchronize();
+		amrex::Gpu::setLaunchRegion(prev_region);
 	    }
         }
 #endif
@@ -2374,6 +2393,13 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 	  }
       }
 
+    // Find the cell which has the maximum temp -- but only if not the first
+    // time step because in the first time step too many points have the same
+    // value.
+    Real prev_time   = state[State_Type].prevTime();
+    if (prev_time > 0.0 && verbose > 0)
+    {
+    BL_PROFILE("Nyx::compute_new_temp()::max_temp");
     // Compute the maximum temperature
     Real max_temp = D_new.norm0(Temp_comp);
 
@@ -2383,12 +2409,6 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 
     Real den_maxt;
 
-    // Find the cell which has the maximum temp -- but only if not the first
-    // time step because in the first time step too many points have the same
-    // value.
-    Real prev_time   = state[State_Type].prevTime();
-    if (prev_time > 0.0 && verbose > 0)
-    {
         for (MFIter mfi(S_new); mfi.isValid(); ++mfi)
         {
             const Box& bx = mfi.validbox();
