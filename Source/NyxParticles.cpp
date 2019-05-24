@@ -395,10 +395,11 @@ Nyx::init_particles ()
                                << " random particles with initial seed: "
                                << particle_initrandom_iseed << "\n\n";
             }
-
+	    amrex::Cuda::setLaunchRegion(true);
             DMPC->InitRandom(particle_initrandom_count,
                              particle_initrandom_iseed, pdata,
                              particle_initrandom_serialize);
+	    amrex::Cuda::setLaunchRegion(false);
         }
         else if (particle_init_type == "RandomPerBox")
         {
@@ -426,7 +427,9 @@ Nyx::init_particles ()
                 amrex::Print() << "\nInitializing DM with 1 random particle per cell " << "\n";
 
             int n_per_cell = 1;
+	    amrex::Cuda::setLaunchRegion(true);
             DMPC->InitNRandomPerCell(n_per_cell, pdata);
+	    amrex::Cuda::setLaunchRegion(false);
         }
         else if (particle_init_type == "AsciiFile")
         {
