@@ -1,8 +1,8 @@
 # AMREX_HOME defines the directory in which we will find all the BoxLib code
-AMREX_HOME ?= ../../../../amrex
+AMREX_HOME ?= ../../../amrex
 
 # TOP defines the directory in which we will find Source, Exec, etc
-TOP = ../../..
+TOP = ../..
 
 # compilation options
 COMP    = intel #gcc
