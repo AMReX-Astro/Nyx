@@ -88,7 +88,7 @@ Nyx::strang_hydro (Real time,
     gravity->get_old_grav_vector(level, grav_vector, time);
     grav_vector.FillBoundary(geom.periodicity());
 #endif
-    //    amrex::Cuda::setLaunchRegion(true);
+    amrex::Cuda::Device::streamSynchronize();
 
     // Create FAB for extended grid values (including boundaries) and fill.
     MultiFab S_old_tmp(S_old.boxArray(), S_old.DistributionMap(), NUM_STATE, NUM_GROW);

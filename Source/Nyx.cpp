@@ -764,7 +764,7 @@ Nyx::setTimeLevel (Real time,
                    Real dt_old,
                    Real dt_new)
 {
-    if (ParallelDescriptor::IOProcessor()) {
+    if (verbose && ParallelDescriptor::IOProcessor()) {
        std::cout << "Setting the current time in the state data to "
                  << parent->cumTime() << std::endl;
     }
@@ -2335,6 +2335,39 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new, MultiFab& reset_e_
              BL_TO_FORTRAN(*fab), BL_TO_FORTRAN(*fab_diag),
 	     BL_TO_FORTRAN(*fab_reset),
              &print_warn, &a);
+	  });
+    }
+    amrex::Cuda::setLaunchRegion(prev_region);
+
+}
+
+void
+Nyx::reset_internal_energy_nostore (MultiFab& S_new, MultiFab& D_new)
+{
+    BL_PROFILE("Nyx::reset_internal_energy_nostore()");
+    // Synchronize (rho e) and (rho E) so they are consistent with each other
+
+    const Real  cur_time = state[State_Type].curTime();
+    Real        a        = get_comoving_a(cur_time);
+
+    bool prev_region=Gpu::inLaunchRegion();
+    amrex::Cuda::setLaunchRegion(true);
+
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
+    for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
+    {
+        const Box& bx = mfi.tilebox();
+	  FArrayBox* fab = S_new.fabPtr(mfi);
+	  FArrayBox* fab_diag = D_new.fabPtr(mfi);
+	  int print_warn=0;	  
+	  AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
+	  {
+        reset_internal_e_nostore
+            (tbx.loVect(), tbx.hiVect(),
+             BL_TO_FORTRAN(*fab), BL_TO_FORTRAN(*fab_diag),
+             print_warn, a);
 	  });
     }
     amrex::Cuda::setLaunchRegion(prev_region);

@@ -171,8 +171,6 @@ contains
     real(rt), intent(in) :: qaux(qa_lo(1):qa_hi(1),qa_lo(2):qa_hi(2),qa_lo(3):qa_hi(3),NQAUX)
     real(rt), intent(in) ::  shk(s_lo(1):s_hi(1),s_lo(2):s_hi(2),s_lo(3):s_hi(3))
 
-    real(rt) :: ql_zone(QVAR), qr_zone(QVAR), flx_zone(NVAR)
-
     ! local variables
 
     integer i, j, k
@@ -221,49 +219,6 @@ contains
 #endif
     endif
 
-#ifndef AMREX_USE_CUDA
-    if (hybrid_riemann == 1) then
-       ! correct the fluxes using an HLL scheme if we are in a shock
-       ! and doing the hybrid approach
-       do k = lo(3), hi(3)
-          do j = lo(2), hi(2)
-             do i = lo(1), hi(1)
-
-                select case (idir)
-                case (1)
-                   is_shock = shk(i-1,j,k) + shk(i,j,k)
-                case (2)
-                   is_shock = shk(i,j-1,k) + shk(i,j,k)
-                case (3)
-                   is_shock = shk(i,j,k-1) + shk(i,j,k)
-                end select
-
-                if (is_shock >= 1) then
-
-                   select case (idir)
-                   case (1)
-                      cl = qaux(i-1,j,k,QC)
-                      cr = qaux(i,j,k,QC)
-                   case (2)
-                      cl = qaux(i,j-1,k,QC)
-                      cr = qaux(i,j,k,QC)
-                   case (3)
-                      cl = qaux(i,j,k-1,QC)
-                      cr = qaux(i,j,k,QC)
-                   end select
-
-                   ql_zone(:) = qm(i,j,k,:,comp)
-                   qr_zone(:) = qp(i,j,k,:,comp)
-                   call HLL(ql_zone, qr_zone, cl, cr, idir, flx_zone)
-                   flx(i,j,k,:) = flx_zone(:)
-                endif
-
-             end do
-          end do
-       end do
-
-    endif
-#endif
   end subroutine cmpflx
 
 

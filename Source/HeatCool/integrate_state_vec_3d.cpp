@@ -47,7 +47,6 @@ int Nyx::integrate_state_vec
   reltol = 1e-4;  /* Set the tolerances */
   abstol = 1e-4;
 
-  fort_ode_eos_setup(a,delta_time);
   //  amrex::Cuda::setLaunchRegion(false);
   bool prev_region=Gpu::inLaunchRegion();
   amrex::Cuda::setLaunchRegion(true);
@@ -58,7 +57,7 @@ int Nyx::integrate_state_vec
   int Eden_loc=Eden;
   int Density_loc=Density;
   int one_in = 1;
-
+  
   fort_ode_eos_setup(a,delta_time);
 
   //#ifdef _OPENMP
@@ -142,7 +141,7 @@ int Nyx::integrate_state_vec
 				double* rparh=N_VGetArrayPointer_Serial(Data);
 				N_Vector abstol_vec = N_VNew_Serial(neq);
 #endif
-#endif				//if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
+#endif
 
 #ifdef _OPENMP
       const Dim3 hi = amrex::ubound(tbx);
@@ -157,21 +156,12 @@ int Nyx::integrate_state_vec
 				{				  
 #endif
 				  int idx = i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
-				  //				  amrex::Print()<<i<<"\t"<<j<<"\t"<<k<<"\t"<<idx<<neq<<std::endl;
-			//				for (int i= 0;i < neq; ++i) {
-				  dptr[idx*loop]=state4(i,j,k,Eint_loc)/state4(i,j,k,Density_loc);
-				  eptr[idx*loop]=state4(i,j,k,Eint_loc)/state4(i,j,k,Density_loc);
-				  if(false)
-				    {
-				      state4(i,j,k,Eint_loc)  -= state4(i,j,k,Density_loc) * (dptr[idx*loop]);
-				      state4(i,j,k,Eden_loc)  -= state4(i,j,k,Density_loc) * (dptr[idx*loop]);
-				    }
-				  //}			
-				//				for (int i= 0;i < neq; ++i) {
-				  rparh[4*idx*loop+0]= diag_eos4(i,j,k,Temp_loc);   //rpar(1)=T_vode
-				  rparh[4*idx*loop+1]= diag_eos4(i,j,k,Ne_loc);//    rpar(2)=ne_vode
-				  rparh[4*idx*loop+2]= state4(i,j,k,Density_loc); //    rpar(3)=rho_vode
-				  rparh[4*idx*loop+3]=1/a-1;    //    rpar(4)=z_vode
+				  dptr[idx]=state4(i,j,k,Eint_loc)/state4(i,j,k,Density_loc);
+				  eptr[idx]=state4(i,j,k,Eint_loc)/state4(i,j,k,Density_loc);
+				  rparh[4*idx+0]= diag_eos4(i,j,k,Temp_loc);   //rpar(1)=T_vode
+				  rparh[4*idx+1]= diag_eos4(i,j,k,Ne_loc);//    rpar(2)=ne_vode
+				  rparh[4*idx+2]= state4(i,j,k,Density_loc); //    rpar(3)=rho_vode
+				  rparh[4*idx+3]=1/a-1;    //    rpar(4)=z_vode
 				  //				}
 #ifdef _OPENMP
 				}
@@ -388,19 +378,12 @@ int Nyx::integrate_state_grownvec
 				  int idx = i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
 				  //				  amrex::Print()<<i<<"\t"<<j<<"\t"<<k<<"\t"<<idx<<neq<<std::endl;
 			//				for (int i= 0;i < neq; ++i) {
-				  dptr[idx*loop]=state4(i,j,k,Eint_loc)/state4(i,j,k,Density_loc);
-				  eptr[idx*loop]=state4(i,j,k,Eint_loc)/state4(i,j,k,Density_loc);
-				  if(false)
-				    {
-				      state4(i,j,k,Eint_loc)  -= state4(i,j,k,Density_loc) * (dptr[idx*loop]);
-				      state4(i,j,k,Eden_loc)  -= state4(i,j,k,Density_loc) * (dptr[idx*loop]);
-				    }
-				  //}			
-				//				for (int i= 0;i < neq; ++i) {
-				  rparh[4*idx*loop+0]= diag_eos4(i,j,k,Temp_loc);   //rpar(1)=T_vode
-				  rparh[4*idx*loop+1]= diag_eos4(i,j,k,Ne_loc);//    rpar(2)=ne_vode
-				  rparh[4*idx*loop+2]= state4(i,j,k,Density_loc); //    rpar(3)=rho_vode
-				  rparh[4*idx*loop+3]=1/a-1;    //    rpar(4)=z_vode
+				  dptr[idx]=state4(i,j,k,Eint_loc)/state4(i,j,k,Density_loc);
+				  eptr[idx]=state4(i,j,k,Eint_loc)/state4(i,j,k,Density_loc);
+				  rparh[4*idx+0]= diag_eos4(i,j,k,Temp_loc);   //rpar(1)=T_vode
+				  rparh[4*idx+1]= diag_eos4(i,j,k,Ne_loc);//    rpar(2)=ne_vode
+				  rparh[4*idx+2]= state4(i,j,k,Density_loc); //    rpar(3)=rho_vode
+				  rparh[4*idx+3]=1/a-1;    //    rpar(4)=z_vode
 				  //				}
 #ifdef _OPENMP
 				}
@@ -470,7 +453,6 @@ int Nyx::integrate_state_grownvec
 #else
 				});
 #endif
-
 				N_VDestroy(u);          /* Free the u vector */
 				N_VDestroy(abstol_vec);          /* Free the u vector */
 				N_VDestroy(Data);          /* Free the userdata vector */

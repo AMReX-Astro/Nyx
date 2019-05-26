@@ -177,3 +177,75 @@
 
       end subroutine reset_internal_e
 #endif
+
+      AMREX_CUDA_FORT_DEVICE subroutine reset_internal_e_nostore(lo,hi, &
+                                  u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3, &
+                                  d,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3, &
+                                  print_fortran_warnings, comoving_a) &
+                                  bind(C, name="reset_internal_e_nostore")
+
+      use amrex_fort_module, only : rt => amrex_real
+      use eos_module
+      use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, small_temp, &
+                                     NDIAG, NE_COMP
+      use  eos_params_module
+
+      implicit none
+
+      integer, intent(in)          :: lo(3), hi(3)
+      integer, intent(in), value   :: print_fortran_warnings
+      integer, intent(in), value   :: u_l1,u_l2,u_l3,u_h1,u_h2,u_h3
+      integer, intent(in), value   :: d_l1,d_l2,d_l3,d_h1,d_h2,d_h3
+      real(rt) :: u(u_l1:u_h1,u_l2:u_h2,u_l3:u_h3,NVAR)
+      real(rt) :: d(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,NDIAG)
+
+      real(rt), intent(in   ), value :: comoving_a
+
+      ! Local variables
+      integer          :: i,j,k
+      real(rt) :: Up, Vp, Wp, ke, rho_eint, eint_new
+      real(rt) :: dummy_pres, rhoInv
+
+      ! Reset internal energy if necessary
+      do k = lo(3),hi(3)
+      do j = lo(2),hi(2)
+      do i = lo(1),hi(1)
+
+           rhoInv = 1.0d0 / u(i,j,k,URHO)
+           Up     = u(i,j,k,UMX) * rhoInv
+           Vp     = u(i,j,k,UMY) * rhoInv
+           Wp     = u(i,j,k,UMZ) * rhoInv
+           ke     = 0.5d0 * u(i,j,k,URHO) * (Up*Up + Vp*Vp + Wp*Wp)
+
+           rho_eint = u(i,j,k,UEDEN) - ke
+
+           ! Reset (e from e) if it's greater than 0.01% of big E.
+           if (rho_eint .gt. 0.d0 .and. rho_eint / u(i,j,k,UEDEN) .gt. 1.d-6) then
+
+               u(i,j,k,UEINT) = rho_eint
+
+           ! If (e from E) < 0 or (e from E) < .0001*E but (e from e) > 0.
+           else if (u(i,j,k,UEINT) .gt. 0.d0) then
+
+              u(i,j,k,UEDEN) = u(i,j,k,UEINT) + ke
+
+           ! If not resetting and little e is negative ...
+           else if (u(i,j,k,UEINT) .le. 0.d0) then
+
+              call nyx_eos_given_RT(eint_new, dummy_pres, u(i,j,k,URHO), small_temp, &
+                                    d(i,j,k,NE_COMP),comoving_a)
+
+              u(i,j,k,UEINT) = u(i,j,k,URHO) *  eint_new
+
+              u(i,j,k,UEDEN) = u(i,j,k,UEINT) + ke
+
+           end if
+
+           ! Scale reset source by 1/rho so src is in terms of e
+!           r(i,j,k) = r(i,j,k) / u(i,j,k,URHO)
+
+      enddo
+      enddo
+      enddo
+
+      end subroutine reset_internal_e_nostore

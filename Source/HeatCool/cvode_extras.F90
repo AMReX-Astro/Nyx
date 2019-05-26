@@ -27,11 +27,6 @@ module cvode_extras
      real(rt) :: mu, mean_rhob, T_H, T_He
     real(rt) :: species(5)
     real(rt) :: rho_vode, T_vode, ne_vode
-    z = 1.d0/a - 1.d0
-    call fort_integrate_comoving_a(a, a_end, half_dt)
-    z_end = 1.0d0/a_end - 1.0d0
-
-    mean_rhob = comoving_OmB * 3.d0*(comoving_h*100.d0)**2 / (8.d0*M_PI*Gconst)
 
     ! Flash reionization?
     if ((flash_h .eqv. .true.) .and. (z .gt. zhi_flash)) then

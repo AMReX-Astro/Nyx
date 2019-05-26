@@ -138,6 +138,13 @@ extern "C"
      const int* print_fortran_warnings,
      const amrex::Real* comoving_a);
 
+  AMREX_GPU_DEVICE void reset_internal_e_nostore
+    (const int* lo, const int* hi,
+     amrex::Real *S_new, const int, const int, const int, const int, const int, const int, 
+     amrex::Real *D_new, const int, const int, const int, const int, const int, const int, 
+     const int print_fortran_warnings,
+     const amrex::Real comoving_a);
+
   void hypfill
     (BL_FORT_FAB_ARG(state),
      const int dlo[], const int dhi[],

@@ -600,6 +600,9 @@ public:
     // Synchronize (rho e) and (rho E) so they are consistent with each other
     void reset_internal_energy(amrex::MultiFab& State, amrex::MultiFab& DiagEOS, amrex::MultiFab& reset_e_src);
 
+    // Synchronize (rho e) and (rho E) so they are consistent with each other without storing the change
+    void reset_internal_energy_nostore(amrex::MultiFab& State, amrex::MultiFab& DiagEOS);
+
     // Note: this no longer includes the call to reset_internal_energy
     void compute_new_temp(amrex::MultiFab& S_new, amrex::MultiFab& D_new);
 

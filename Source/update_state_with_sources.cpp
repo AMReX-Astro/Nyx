@@ -12,7 +12,8 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
                                 amrex::Real dt, amrex::Real a_old, amrex::Real a_new)
 {
     BL_PROFILE("Nyx::update_state_with_sources()");
-    amrex::Print() << "Updating state with the hydro sources ... " << std::endl;
+    if (verbose && ParallelDescriptor::IOProcessor())
+      std::cout << "Updating state with the hydro sources ... " << std::endl;
 
     if(hydro_convert)
     {
