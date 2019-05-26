@@ -1441,7 +1441,6 @@ Gravity::AddVirtualParticlesToRhs (int               level,
         {
             particle_mf.setVal(0.);
             Nyx::theVirtualParticles()[i]->AssignDensitySingleLevel(particle_mf, level, 1, 1);
-	    amrex::Cuda::Device::streamSynchronize();
             MultiFab::Add(Rhs, particle_mf, 0, 0, 1, 0);
         }
     }
@@ -1454,6 +1453,8 @@ void
 Gravity::AddVirtualParticlesToRhs(int finest_level, const Vector<MultiFab*>& Rhs_particles)
 {
     BL_PROFILE("Gravity::AddVirtualParticlesToRhsML()");
+    bool prev_region = Gpu::inLaunchRegion();
+    amrex::Cuda::setLaunchRegion(true);
     if (finest_level < parent->finestLevel())
     {
         // Should only need ghost cells for virtual particles if they're near
@@ -1467,6 +1468,8 @@ Gravity::AddVirtualParticlesToRhs(int finest_level, const Vector<MultiFab*>& Rhs
             MultiFab::Add(*Rhs_particles[finest_level], VirtPartMF, 0, 0, 1, 0);
         }
     }
+    amrex::Cuda::Device::streamSynchronize();
+    amrex::Cuda::setLaunchRegion(prev_region);
 }
 
 void
@@ -1487,7 +1490,6 @@ Gravity::AddGhostParticlesToRhs (int               level,
         {
             ghost_mf.setVal(0.);
             Nyx::theGhostParticles()[i]->AssignDensitySingleLevel(ghost_mf, level, 1, -1);
-	    amrex::Cuda::Device::streamSynchronize();
             MultiFab::Add(Rhs, ghost_mf, 0, 0, 1, 0);
         }
     }
@@ -1499,6 +1501,10 @@ void
 Gravity::AddGhostParticlesToRhs(int level, const Vector<MultiFab*>& Rhs_particles)
 {
     BL_PROFILE("Gravity::AddGhostParticlesToRhsML()");
+
+    bool prev_region = Gpu::inLaunchRegion();
+    amrex::Cuda::setLaunchRegion(true);
+
     if (level > 0)
     {
         // We require one ghost cell in GhostPartMF because that's how we handle
@@ -1517,6 +1523,8 @@ Gravity::AddGhostParticlesToRhs(int level, const Vector<MultiFab*>& Rhs_particle
             MultiFab::Add(*Rhs_particles[0], GhostPartMF, 0, 0, 1, 0);
         }
     }
+    amrex::Cuda::Device::streamSynchronize();
+    amrex::Cuda::setLaunchRegion(prev_region);
 }
 
 void

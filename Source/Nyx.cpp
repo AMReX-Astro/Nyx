@@ -775,6 +775,9 @@ void
 Nyx::init (AmrLevel& old)
 {
     BL_PROFILE("Nyx::init(old)");
+
+    bool prev_region=Gpu::inLaunchRegion();
+    amrex::Gpu::setLaunchRegion(true);
     Nyx* old_level = (Nyx*) &old;
     //
     // Create new grid data by fillpatching from old.
@@ -828,6 +831,9 @@ Nyx::init (AmrLevel& old)
         IR_new[fpi].copy(fpi());
     }
 #endif
+
+    amrex::Gpu::Device::streamSynchronize();
+    amrex::Gpu::setLaunchRegion(prev_region);
 }
 
 //

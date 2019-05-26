@@ -475,6 +475,7 @@ Nyx::advance_hydro_plus_particles (Real time,
 	
     }
 
+
     BL_PROFILE_REGION_STOP("R::Nyx::advance_hydro_plus_particles");
 
     // Redistribution happens in post_timestep
@@ -598,9 +599,10 @@ Nyx::advance_hydro (Real time,
 				 });
     }
 
+    amrex::Gpu::setLaunchRegion(prev_region);
+
 #endif /*GRAVITY*/
 
-    amrex::Gpu::setLaunchRegion(prev_region);
     // First reset internal energy before call to compute_temp
     reset_internal_energy(S_new,D_new,reset_e_src);
     compute_new_temp(S_new,D_new);

@@ -74,6 +74,7 @@ Nyx::strang_hydro (Real time,
 	amrex::Cuda::Device::streamSynchronize();
 	amrex::Cuda::setLaunchRegion(false);
 	get_old_source(prev_time, dt, ext_src_old);
+	amrex::Cuda::Device::streamSynchronize();
 	amrex::Cuda::setLaunchRegion(true);
       }
 
