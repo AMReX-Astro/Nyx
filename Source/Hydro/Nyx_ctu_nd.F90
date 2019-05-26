@@ -481,8 +481,6 @@ contains
     real(rt) :: hdt
     integer :: i, j, k, n
 
-    logical :: reconstruct_state(QVAR)
-
     logical :: compute_shock
 
     !$gpu
@@ -492,10 +490,6 @@ contains
     ! multidimensional shock detection
     shk(lo(1):hi(1),lo(2):hi(2),lo(3):hi(3)) = ZERO
 
-    ! we don't need to reconstruct all of the NQ state variables,
-    ! depending on how we are tracing
-    reconstruct_state(:) = .true.
-
 #ifdef RADIATION
 #ifndef AMREX_USE_CUDA
     call amrex_error("ppm_type <=0 is not supported in with radiation")
@@ -503,7 +497,6 @@ contains
 #endif
 
        do n = 1, QVAR
-          if (.not. reconstruct_state(n)) cycle
           call uslope(lo, hi, idir, &
                       q, qd_lo, qd_hi, n, &
                       flatn, f_lo, f_hi, &
