@@ -25,14 +25,21 @@ extern "C"
                      const int* hi,
 	             double* dptr);
 
-  /*  void RhsFn(realtype t, N_Vector u, N_Vector udot, void *user_data);*/
-  __device__ void RhsFn(double t, double* u, double* udot, double* rpar, int neq);
 
-  void fort_init_allocations();
+  AMREX_GPU_DEVICE int RhsFnReal(amrex::Real t, amrex::Real* u, amrex::Real* udot, amrex::Real* rpar, int neq);
+  AMREX_GPU_DEVICE void fort_ode_eos_finalize(double* e_out, double* rpar, int neq);
+  void fort_ode_eos_setup(const amrex::Real& a,const amrex::Real& half_dt);
+
+  void fort_setup_eos_params
+  (amrex::Real* eos_nr_eps,
+   amrex::Real* vode_rtol,
+   amrex::Real* vode_atol_scaled);
+
+  void fort_alloc_cuda_managed();
 
   void fort_init_tables_eos_params();
 
-  void fort_fin_allocations();
+  void fort_dealloc_cuda_managed();
 
     void fort_fab_copytoreal(const int* lo, const int* hi,
                                   const int* bx_lo, const int* bx_hi,
