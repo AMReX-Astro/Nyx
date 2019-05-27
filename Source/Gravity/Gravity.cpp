@@ -605,6 +605,7 @@ Gravity::multilevel_solve_for_new_phi (int level,
                                        int use_previous_phi_as_guess)
 {
     BL_PROFILE("Gravity::multilevel_solve_for_new_phi()");
+
     if (verbose)
         amrex::Print() << "Gravity ... multilevel solve for new phi at base level " << level
                        << " to finest level " << finest_level << '\n';
@@ -617,12 +618,17 @@ Gravity::multilevel_solve_for_new_phi (int level,
             const BoxArray eba = BoxArray(grids[lev]).surroundingNodes(n);
             grad_phi_curr[lev][n].reset(new MultiFab(eba, dmap[lev], 1, 1));
         }
-    }
+   }
 
+    bool prev_region = Gpu::inLaunchRegion();
+    amrex::Cuda::Device::streamSynchronize();
+    amrex::Cuda::setLaunchRegion(true);
     int is_new = 1;
     actual_multilevel_solve(level, finest_level, 
 			    amrex::GetVecOfVecOfPtrs(grad_phi_curr),
                             is_new, ngrow_for_solve, use_previous_phi_as_guess);
+    amrex::Cuda::Device::streamSynchronize();
+    amrex::Cuda::setLaunchRegion(prev_region);
 }
 
 void
@@ -636,11 +642,6 @@ Gravity::multilevel_solve_for_old_phi (int level,
         amrex::Print() << "Gravity ... multilevel solve for old phi at base level " << level
                        << " to finest level " << finest_level << '\n';
     
-    bool prev_region = Gpu::inLaunchRegion();
-    amrex::Cuda::Device::streamSynchronize();
-    amrex::Cuda::setLaunchRegion(false);
-
-
     for (int lev = level; lev <= finest_level; lev++)
     {
         BL_ASSERT(grad_phi_prev[lev].size() == BL_SPACEDIM);
@@ -650,6 +651,9 @@ Gravity::multilevel_solve_for_old_phi (int level,
             grad_phi_prev[lev][n].reset(new MultiFab(eba, dmap[lev], 1, 1));
         }
     }
+    bool prev_region = Gpu::inLaunchRegion();
+    amrex::Cuda::Device::streamSynchronize();
+    amrex::Cuda::setLaunchRegion(true);
 
     int is_new  = 0;
     actual_multilevel_solve(level, finest_level,
@@ -770,6 +774,7 @@ Gravity::actual_multilevel_solve (int                       level,
        // This is used to enforce solvability if appropriate.
        if ( parent->Geom(level).Domain().numPts() == grids[level].numPts() )
        {
+
            Real sum = 0;
            for (int lev = 0; lev < num_levels; lev++)
            {
@@ -777,6 +782,7 @@ Gravity::actual_multilevel_solve (int                       level,
                sum += nyx_level->vol_weight_sum(*Rhs_p[lev],true);
            }
 
+	   //	   ParallelDescriptor::ReduceRealSum(sum);
             sum /= parent->Geom(0).ProbSize();
 
             const Real eps = 1.e-10 * std::abs(mass_offset);
@@ -819,8 +825,11 @@ Gravity::actual_multilevel_solve (int                       level,
                                             grad_phi[amrlev][1],
                                             grad_phi[amrlev][2])});
     }
+    amrex::Gpu::Device::streamSynchronize();
+    amrex::Gpu::setLaunchRegion(false);
     solve_with_MLMG(level, finest_level, phi_p, amrex::GetVecOfConstPtrs(Rhs_p),
                     grad_phi_aa, crse_bcdata, rel_eps, abs_eps);
+    amrex::Gpu::setLaunchRegion(true);
 
     // Average grad_phi from fine to coarse level
     for (int lev = finest_level; lev > level; lev--)

@@ -244,12 +244,10 @@ int Nyx::integrate_state_vec
 
     }
   amrex::Cuda::setLaunchRegion(prev_region);
-  #ifdef NDEBUG
   #ifndef NDEBUG
         if (S_old.contains_nan())
             amrex::Abort("state has NaNs after the second strang call");
   #endif
-#endif
 
     return 0;
 }
@@ -464,14 +462,12 @@ int Nyx::integrate_state_grownvec
 	}*/
 
     }
-  amrex::Cuda::Device::streamSynchronize();
   amrex::Cuda::setLaunchRegion(prev_region);
-  #ifdef NDEBUG
   #ifndef NDEBUG
         if (S_old.contains_nan())
             amrex::Abort("state has NaNs after the second strang call");
   #endif
-#endif
+
     return 0;
 }
 
