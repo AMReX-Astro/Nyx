@@ -139,7 +139,7 @@ int Nyx::FirstAdv  = -1;
 
 Real Nyx::small_dens = -1.e200;
 Real Nyx::small_temp = -1.e200;
-Real Nyx::gamma      =  0;
+Real Nyx::gamma      =  5.0/3.0;
 
 Real Nyx::comoving_OmB;
 Real Nyx::comoving_OmM;
@@ -923,22 +923,66 @@ Nyx::est_time_step (Real dt_old)
     if (do_hydro)
     {
         Real a = get_comoving_a(cur_time);
-        const Real* dx = geom.CellSize();
+        const auto dx = geom.CellSizeArray();
 
 #ifdef _OPENMP
 #pragma omp parallel reduction(min:est_dt)
 #endif
 	{
           Real dt = 1.e200;
-	  for (MFIter mfi(stateMF,true); mfi.isValid(); ++mfi)
-	    {
-	      const Box& box = mfi.tilebox();
+	  Real grid_scl = std::cbrt(dx[0]*dx[1]*dx[2]);
+	  Real sound_speed_factor=sqrt(gamma*(gamma-1));
+	  int UEINT_loc=Eint;
+	  int Density_loc=Density;
+	  int UMX_loc=Xmom;
+	  int UMY_loc=Ymom;
+	  int UMZ_loc=Zmom;
 
-	      fort_estdt
-                (BL_TO_FORTRAN(stateMF[mfi]), box.loVect(), box.hiVect(), dx,
-                 &dt, &a);
-	    }
+	  bool prev_region=Gpu::inLaunchRegion();
+	  amrex::Gpu::setLaunchRegion(true);
+	  dt = amrex::ReduceMin(stateMF, 0,
+				[=] AMREX_GPU_HOST_DEVICE (Box const& bx, FArrayBox const& statefab) noexcept -> Real
+					    {
+					      const auto lo = amrex::lbound(bx);
+					      const auto hi = amrex::ubound(bx);
+					      const auto u = statefab.array();
+#if !defined(__CUDACC__) || (__CUDACC_VER_MAJOR__ != 9) || (__CUDACC_VER_MINOR__ != 2)
+					      amrex::Real dt_gpu = std::numeric_limits<amrex::Real>::max();
+#else
+					      amrex::Real dt_gpu = 1.e37;
+#endif
+
+					      for         (int k = lo.z; k <= hi.z; ++k) {
+						for     (int j = lo.y; j <= hi.y; ++j) {
+						  for (int i = lo.x; i <= hi.x; ++i) {
+						    Real rhoInv = 1.0 / u(i,j,k,Density_loc);
+						    Real ux     = u(i,j,k,UMX_loc)*rhoInv;
+						    Real uy     = u(i,j,k,UMY_loc)*rhoInv;
+						    Real uz     = u(i,j,k,UMZ_loc)*rhoInv;
+
+						    // Use internal energy for calculating dt 
+						    Real e  = u(i,j,k,UEINT_loc)*rhoInv;
+
+						    Real c;
+						    // Protect against negative e
+						    if (e > 0.0)
+						      c=sound_speed_factor*std::sqrt(e);
+						    else
+						      c = 0.0;
+
+						    Real dt1 = dx[0]/(c + std::abs(ux));
+						    Real dt2 = dx[1]/(c + std::abs(uy));
+						    Real dt3 = dx[2]/(c + std::abs(uz));
+						    dt_gpu = amrex::min(dt_gpu,amrex::min(dt1,amrex::min(dt2,dt3)));
+
+						  }
+						}
+					      }
+					      return dt_gpu;
+					    });
+
           est_dt = std::min(est_dt, dt);
+	  amrex::Gpu::setLaunchRegion(prev_region);
 	}
 
         // If in comoving coordinates, then scale dt (based on u and c) by a

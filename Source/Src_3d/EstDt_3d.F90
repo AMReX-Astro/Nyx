@@ -1,10 +1,10 @@
-     subroutine fort_estdt(u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,lo,hi,dx,dt,a_old) &
+     AMREX_CUDA_FORT_DEVICE subroutine fort_estdt(u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,lo,hi,dx,dt,a_old) &
         bind(C, name = "fort_estdt")
 
      use amrex_fort_module, only : rt => amrex_real
      use eos_module
      use meth_params_module, only : NVAR, URHO, UMX, UMY, UMZ, UEINT
-     use  eos_params_module
+!     use  eos_params_module
 
      implicit none
      ! 
@@ -24,6 +24,7 @@
      real(rt), parameter :: onethird = 1.d0/3.d0
 
      grid_scl = (dx(1)*dx(2)*dx(3))**onethird
+
      !
      ! Translate to primitive variables, compute sound speed
      !
@@ -41,7 +42,7 @@
 
                ! Protect against negative e
                if (e .gt. 0.d0) then
-                  call nyx_eos_soundspeed(c,u(i,j,k,URHO),e)
+                  call nyx_eos_soundspeed_device(c,u(i,j,k,URHO),e)
                else
                   c = 0.d0
                end if
@@ -49,7 +50,9 @@
                dt1 = dx(1)/(c + abs(ux))
                dt2 = dx(2)/(c + abs(uy))
                dt3 = dx(3)/(c + abs(uz))
+
                dt  = min(dt,dt1,dt2,dt3)
+
             enddo
          enddo
      enddo

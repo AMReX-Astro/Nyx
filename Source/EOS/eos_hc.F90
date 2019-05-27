@@ -75,9 +75,25 @@ module eos_module
         real(rt), intent(  out) :: c
 
         ! sound speed: c^2 = gamma*P/rho
-        c = sqrt(gamma_const * gamma_minus_1 *e)
+        c = sqrt((gamma_minus_1+1.d0) * gamma_minus_1 *e)
 
       end subroutine nyx_eos_soundspeed
+
+     ! ****************************************************************************
+
+       AMREX_CUDA_FORT_DEVICE subroutine nyx_eos_soundspeed_device(c, R, e)
+
+        use meth_params_module, only: gamma_const, gamma_minus_1
+
+        implicit none
+
+        real(rt), intent(in   ) :: R, e
+        real(rt), intent(  out) :: c
+
+        ! sound speed: c^2 = gamma*P/rho
+        c = sqrt((gamma_minus_1+1.d0) * gamma_minus_1 *e)
+
+      end subroutine nyx_eos_soundspeed_device
 
      ! ****************************************************************************
 

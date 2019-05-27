@@ -37,10 +37,10 @@ extern "C"
   void fort_set_omb    (const amrex::Real& frac);
   void fort_set_hubble (const amrex::Real& hubble);
 
-  void fort_estdt
-    (const BL_FORT_FAB_ARG(state),
-     const int lo[], const int hi[],
-     const amrex::Real dx[], amrex::Real* dt, amrex::Real* comoving_a);
+  AMREX_GPU_DEVICE void fort_estdt
+  (const BL_FORT_FAB_ARG(state),
+     const int* lo, const int* hi,
+     const amrex::Real* dx, amrex::Real* dt, amrex::Real comoving_a);
 
   void fort_estdt_comoving_a
     (amrex::Real* old_a, amrex::Real* new_dummy_a, amrex::Real* dt, amrex::Real* change_allowed,
