@@ -930,8 +930,10 @@ Nyx::est_time_step (Real dt_old)
 #endif
 	{
           Real dt = 1.e200;
-	  Real grid_scl = std::cbrt(dx[0]*dx[1]*dx[2]);
+	  //Doesn't seem to be used:
+	  //	  Real grid_scl = std::cbrt(dx[0]*dx[1]*dx[2]);
 	  Real sound_speed_factor=sqrt(gamma*(gamma-1));
+
 	  int UEINT_loc=Eint;
 	  int Density_loc=Density;
 	  int UMX_loc=Xmom;
@@ -965,8 +967,13 @@ Nyx::est_time_step (Real dt_old)
 
 						    Real c;
 						    // Protect against negative e
+#ifdef HEATCOOL
 						    if (e > 0.0)
 						      c=sound_speed_factor*std::sqrt(e);
+#else
+						    if (e > 0.0)
+						      c=sound_speed_factor*std::sqrt(u(i,j,k,Density_loc)*e/u(i,j,k,Density_loc));
+#endif
 						    else
 						      c = 0.0;
 
