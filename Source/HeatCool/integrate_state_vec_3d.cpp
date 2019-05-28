@@ -105,18 +105,18 @@ int Nyx::integrate_state_vec
 
 #ifdef AMREX_USE_CUDA
 				cudaStream_t currentStream = amrex::Cuda::Device::cudaStream();
-				u = N_VNew_Cuda(neq);  /* Allocate u vector */
-				N_Vector e_orig = N_VNew_Cuda(neq);  /* Allocate u vector */
+				u = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
+				N_Vector e_orig = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
 				N_VSetCudaStream_Cuda(e_orig, &currentStream);
 				double* eptr=N_VGetDeviceArrayPointer_Cuda(e_orig);
 				N_VSetCudaStream_Cuda(u, &currentStream);
 				dptr=N_VGetDeviceArrayPointer_Cuda(u);
 
-				N_Vector Data = N_VNew_Cuda(4*neq);  // Allocate u vector 
+				N_Vector Data = N_VNewManaged_Cuda(4*neq);  // Allocate u vector 
 				N_VSetCudaStream_Cuda(Data, &currentStream);
 				N_VConst(0.0,Data);
 				double* rparh=N_VGetDeviceArrayPointer_Cuda(Data);
-				N_Vector abstol_vec = N_VNew_Cuda(neq);
+				N_Vector abstol_vec = N_VNewManaged_Cuda(neq);
 				N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
 #else
 #ifdef _OPENMP
@@ -244,10 +244,6 @@ int Nyx::integrate_state_vec
 
     }
   amrex::Cuda::setLaunchRegion(prev_region);
-  #ifndef NDEBUG
-        if (S_old.contains_nan())
-            amrex::Abort("state has NaNs after the second strang call");
-  #endif
 
     return 0;
 }
@@ -323,18 +319,18 @@ int Nyx::integrate_state_grownvec
 
 #ifdef AMREX_USE_CUDA
 				cudaStream_t currentStream = amrex::Cuda::Device::cudaStream();
-				u = N_VNew_Cuda(neq);  /* Allocate u vector */
-				N_Vector e_orig = N_VNew_Cuda(neq);  /* Allocate u vector */
+				u = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
+				N_Vector e_orig = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
 				N_VSetCudaStream_Cuda(e_orig, &currentStream);
 				double* eptr=N_VGetDeviceArrayPointer_Cuda(e_orig);
 				N_VSetCudaStream_Cuda(u, &currentStream);
 				dptr=N_VGetDeviceArrayPointer_Cuda(u);
 
-				N_Vector Data = N_VNew_Cuda(4*neq);  // Allocate u vector 
+				N_Vector Data = N_VNewManaged_Cuda(4*neq);  // Allocate u vector 
 				N_VSetCudaStream_Cuda(Data, &currentStream);
 				N_VConst(0.0,Data);
 				double* rparh=N_VGetDeviceArrayPointer_Cuda(Data);
-				N_Vector abstol_vec = N_VNew_Cuda(neq);
+				N_Vector abstol_vec = N_VNewManaged_Cuda(neq);
 				N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
 #else
 #ifdef _OPENMP
@@ -463,10 +459,6 @@ int Nyx::integrate_state_grownvec
 
     }
   amrex::Cuda::setLaunchRegion(prev_region);
-  #ifndef NDEBUG
-        if (S_old.contains_nan())
-            amrex::Abort("state has NaNs after the second strang call");
-  #endif
 
     return 0;
 }
