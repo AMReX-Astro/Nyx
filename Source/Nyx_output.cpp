@@ -1072,3 +1072,99 @@ Nyx::forcing_check_point (const std::string& dir)
     }
 }
 #endif
+
+#ifdef AMREX_USE_CONDUIT
+void
+Nyx::blueprint_check_point ()
+{
+    MultiFab& S_new = get_new_data(State_Type);
+    //    MultiFab S_new_tmp(S_new.boxArray(), S_new.DistributionMap(), 1, 0 NUM_GROW);
+
+    Vector<std::string> particle_varnames;
+    particle_varnames.push_back("mass");
+    particle_varnames.push_back("xvel");
+    particle_varnames.push_back("yvel");
+    particle_varnames.push_back("zvel");
+
+    Vector<std::string> varnames;
+
+    int n = 0;
+    const Real cur_time     = state[State_Type].curTime();
+    /*
+      // this would need the mf from how we write plotfiles
+    for(int i=0;i<desc_lst.size();i++)
+      varnames.push_back((desc_lst[i]).name(i));
+    */
+
+    varnames.push_back("density");
+    ///////////////////////////////////////////////////////////////////////////
+    // Wrap our AMReX Mesh into a Conduit Mesh Blueprint Tree
+    ///////////////////////////////////////////////////////////////////////////
+    conduit::Node bp_mesh;
+    SingleLevelToBlueprint(S_new,
+                           varnames,
+                           geom,
+                           cur_time,
+			   n,
+                           bp_mesh);
+    conduit::Node bp_particles;
+    Vector<std::string> particle_int_varnames;
+    amrex::ParticleContainerToBlueprint(*(Nyx::theDMPC()),
+                                        particle_varnames,
+                                        particle_int_varnames,
+                                        bp_particles);
+    ///////////////////////////////////////////////////////////////////////////
+    // Save the Blueprint Mesh to a set of files that we can 
+    // view in VisIt. 
+    // (For debugging and to demonstrate how to do this w/o Ascent)
+    ///////////////////////////////////////////////////////////////////////////
+    WriteBlueprintFiles(bp_mesh,"bp_example_");
+    
+    ///////////////////////////////////////////////////////////////////
+    // Render with Ascent
+    ///////////////////////////////////////////////////////////////////
+    
+
+    // add a scene with a pseudocolor plot
+    Node scenes;
+    scenes["s1/plots/p1/type"] = "pseudocolor";
+    scenes["s1/plots/p1/field"] = "density";
+    // Set the output file name (ascent will add ".png")
+    scenes["s1/image_prefix"] = "ascent_render_mesh_";
+
+
+    // setup actions
+    Node actions;
+    Node &add_act = actions.append();
+    add_act["action"] = "add_scenes";
+    add_act["scenes"] = scenes;
+    actions.append()["action"] = "execute";
+    actions.append()["action"] = "reset";
+
+    Ascent ascent;
+    ascent.open();
+    
+    ascent.publish(bp_mesh);
+    ascent.execute(actions);
+        
+    // add a scene with a pseudocolor plot
+    scenes.reset();
+    scenes["s1/plots/p1/type"] = "pseudocolor";
+    scenes["s1/plots/p1/field"] = "mass";
+    // Set the output file name (ascent will add ".png")
+    scenes["s1/image_prefix"] = "ascent_render_particle_";
+
+    // setup actions
+    actions.reset();
+    Node &add_act2 = actions.append();
+    add_act2["action"] = "add_scenes";
+    add_act2["scenes"] = scenes;
+    actions.append()["action"] = "execute";
+    actions.append()["action"] = "reset";
+    
+    ascent.publish(bp_particles);
+    ascent.execute(actions);
+    
+    ascent.close();
+}
+#endif
