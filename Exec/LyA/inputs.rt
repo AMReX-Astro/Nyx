@@ -1,5 +1,7 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 max_step = 10000000
+#start out testing 10 steps
+max_step = 10
 
 # We set this to 1 so that we eliminate the OpenMP-induced variability
 # in the MultiFab and Nyx sums that was making the solution to the gravity solve

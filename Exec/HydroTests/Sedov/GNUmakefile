@@ -4,8 +4,12 @@ AMREX_HOME ?= ../../../../amrex
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ../../..
 
+#Ascent location
+USE_ASCENT_INSITU=TRUE 
+ASCENT_HOME=/project/projectdirs/alpine/software/ascent/gnu/7.3.0/ascent-install/
+
 # compilation options
-COMP    = intel #gcc
+COMP    = gcc
 
 USE_MPI = FALSE
 USE_OMP = FALSE
