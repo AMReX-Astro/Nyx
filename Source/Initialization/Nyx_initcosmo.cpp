@@ -9,7 +9,6 @@ extern "C"
 #include <Nyx.H>
 #include <Nyx_F.H>
 #include <NyxParticleContainer.H>
-#include <AMReX_Particles_F.H>
 
 using namespace amrex;
 

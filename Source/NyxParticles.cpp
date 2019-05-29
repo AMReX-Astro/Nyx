@@ -7,7 +7,6 @@
 #endif
 
 #include <Nyx_F.H>
-#include <AMReX_Particles_F.H>
 
 using namespace amrex;
 

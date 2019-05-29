@@ -20,50 +20,33 @@ module atomic_rates_module
   implicit none
 
   ! Photo- rates (from file)
-  integer, allocatable, public :: NCOOLFILE
-  real(rt), dimension(:), allocatable, public :: lzr
-  real(rt), dimension(:), allocatable, public :: rggh0, rgghe0, rgghep
-  real(rt), dimension(:), allocatable, public :: reh0, rehe0, rehep
+  integer, private :: NCOOLFILE
+  real(rt), dimension(:), allocatable, private :: lzr
+  real(rt), dimension(:), allocatable, private :: rggh0, rgghe0, rgghep
+  real(rt), dimension(:), allocatable, private :: reh0, rehe0, rehep
 
   ! Other rates (from equations)
   integer, parameter, public :: NCOOLTAB=2000
-  real(rt), dimension(:), allocatable, public :: AlphaHp, AlphaHep, AlphaHepp, Alphad
-  real(rt), dimension(:), allocatable, public :: GammaeH0, GammaeHe0, GammaeHep
-  real(rt), dimension(:), allocatable, public :: BetaH0, BetaHe0, BetaHep, Betaff1, Betaff4
-  real(rt), dimension(:), allocatable, public :: RecHp, RecHep, RecHepp
+  real(rt), dimension(NCOOLTAB+1), public :: AlphaHp, AlphaHep, AlphaHepp, Alphad
+  real(rt), dimension(NCOOLTAB+1), public :: GammaeH0, GammaeHe0, GammaeHep
+  real(rt), dimension(NCOOLTAB+1), public :: BetaH0, BetaHe0, BetaHep, Betaff1, Betaff4
+  real(rt), dimension(NCOOLTAB+1), public :: RecHp, RecHep, RecHepp
 
-  real(rt), allocatable, public :: ggh0, gghe0, gghep, eh0, ehe0, ehep
-  real(rt), allocatable, public :: this_z
+  real(rt), public, save :: this_z, ggh0, gghe0, gghep, eh0, ehe0, ehep
  
-  real(rt), allocatable, public :: TCOOLMIN, TCOOLMAX
-  real(rt), allocatable, public :: TCOOLMIN_R, TCOOLMAX_R
-  real(rt), allocatable, public :: deltaT
-
-!  real(rt), parameter, public :: TCOOLMIN = 0.0d0, TCOOLMAX = 9.0d0  ! in log10
-!  real(rt), parameter, public :: TCOOLMIN_R = 10.0d0**TCOOLMIN, TCOOLMAX_R = 10.0d0**TCOOLMAX
-!  real(rt), parameter, public :: deltaT = (TCOOLMAX - TCOOLMIN)/NCOOLTAB
+  real(rt), parameter, public :: TCOOLMIN = 0.0d0, TCOOLMAX = 9.0d0  ! in log10
+  real(rt), parameter, public :: TCOOLMIN_R = 10.0d0**TCOOLMIN, TCOOLMAX_R = 10.0d0**TCOOLMAX
+  real(rt), parameter, public :: deltaT = (TCOOLMAX - TCOOLMIN)/NCOOLTAB
 
   real(rt), parameter, public :: MPROTON = 1.6726231d-24, BOLTZMANN = 1.3806e-16
 
-  real(rt), allocatable, public :: uvb_density_A,  uvb_density_B, mean_rhob
+  real(rt), public, save :: uvb_density_A = 1.0d0, uvb_density_B = 0.0d0, mean_rhob
 
   ! Note that XHYDROGEN can be set by a call to set_xhydrogen which now
   ! lives in set_method_params.
-  real(rt), allocatable, public :: XHYDROGEN 
-  real(rt), allocatable, public :: YHELIUM     ! (1.0d0-XHYDROGEN)/(4.0d0*XHYDROGEN)
+  real(rt), public :: XHYDROGEN = 0.76d0
+  real(rt), public :: YHELIUM   = 7.8947368421d-2  ! (1.0d0-XHYDROGEN)/(4.0d0*XHYDROGEN)
 
-#ifdef AMREX_USE_CUDA
-  attributes(managed) :: NCOOLFILE, lzr, rggh0, rgghe0, rgghep, reh0, rehe0, rehep
-  attributes(managed) :: AlphaHp, AlphaHep, AlphaHepp, Alphad
-  attributes(managed) :: GammaeH0, GammaeHe0, GammaeHep
-  attributes(managed) :: BetaH0, BetaHe0, BetaHep, Betaff1, Betaff4
-  attributes(managed) :: RecHp, RecHep, RecHepp
-  attributes(managed) :: ggh0, gghe0, gghep, eh0, ehe0, ehep
-  attributes(managed) :: XHYDROGEN, YHELIUM
-  attributes(managed) :: TCOOLMIN, TCOOLMAX, TCOOLMAX_R, TCOOLMIN_R, deltaT
-  attributes(managed) :: uvb_density_A, uvb_density_B, mean_rhob
-#endif
-  
   contains
 
       subroutine fort_tabulate_rates() bind(C, name='fort_tabulate_rates')
@@ -75,26 +58,14 @@ module atomic_rates_module
       use reion_aux_module, only: zhi_flash, zheii_flash, T_zhi, T_zheii, &
                                   flash_h, flash_he, inhomogeneous_on
 
-      implicit none
-
       integer :: i, inhomo_reion
       logical, parameter :: Katz96=.false.
       real(rt), parameter :: t3=1.0d3, t5=1.0d5, t6=1.0d6
       real(rt) :: t, U, E, y, sqrt_t, corr_term, tmp
-      logical,save :: first
+      logical, save :: first=.true.
 
       character(len=:), allocatable :: file_in
       type(amrex_parmparse) :: pp
-
-      if (amrex_pd_ioprocessor()) then 
-         print*, "Forcing first true"
-      endif
-
-      if(allocated(NCOOLFILE)) then
-         first = .false.
-      else
-         first = .true.
-      endif
 
       if (first) then
 
@@ -176,8 +147,6 @@ module atomic_rates_module
             endif
          endif
 
-	 allocate(NCOOLFILE)
-	 allocate(ggh0, gghe0, gghep, eh0, ehe0, ehep)
          NCOOLFILE = 0
          do
             read(11,*,end=10) tmp, tmp, tmp, tmp, tmp,  tmp, tmp
@@ -187,10 +156,6 @@ module atomic_rates_module
 
          allocate( lzr(NCOOLFILE), rggh0(NCOOLFILE), rgghe0(NCOOlFILE), rgghep(NCOOLFILE) )
          allocate( reh0(NCOOLFILE), rehe0(NCOOLFILE), rehep(NCOOLFILE) )
-	 allocate( AlphaHp(NCOOLTAB+1), AlphaHep(NCOOLTAB+1), AlphaHepp(NCOOLTAB+1), Alphad(NCOOLTAB+1))
-	 allocate( GammaeH0(NCOOLTAB+1), GammaeHe0(NCOOLTAB+1), GammaeHep(NCOOLTAB+1))
-	 allocate( BetaH0(NCOOLTAB+1), BetaHe0(NCOOLTAB+1), BetaHep(NCOOLTAB+1), Betaff1(NCOOLTAB+1), Betaff4(NCOOLTAB+1))
-	 allocate( RecHp(NCOOLTAB+1), RecHep(NCOOLTAB+1), RecHepp(NCOOLTAB+1))
 
          do i = 1, NCOOLFILE
             read(11,*) lzr(i), rggh0(i), rgghe0(i), rgghep(i), &
