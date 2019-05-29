@@ -339,7 +339,7 @@ Nyx::advance_hydro_plus_particles (Real time,
     // Solve for new Gravity
     BL_PROFILE_VAR("solve_for_new_phi", solve_for_new_phi);
     int use_previous_phi_as_guess = 1;
-    if (finest_level_to_advance > level || true)
+    if (finest_level_to_advance > level)
     {
         // The particle may be as many as "iteration" ghost cells out
         int ngrow_for_solve = iteration + stencil_deposition_width;
