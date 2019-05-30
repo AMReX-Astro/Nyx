@@ -899,7 +899,7 @@ void
 Nyx::blueprint_check_point ()
 {
     MultiFab& S_new = get_new_data(State_Type);
-    //    MultiFab S_new_tmp(S_new.boxArray(), S_new.DistributionMap(), 1, 0 NUM_GROW);
+    //MultiFab S_new_tmp(S_new.boxArray(), S_new.DistributionMap(), 1, 0 NUM_GROW);
 
     Vector<std::string> particle_varnames;
     particle_varnames.push_back("mass");
@@ -911,13 +911,23 @@ Nyx::blueprint_check_point ()
 
     int n = 0;
     const Real cur_time     = state[State_Type].curTime();
-    /*
+    
       // this would need the mf from how we write plotfiles
-    for(int i=0;i<desc_lst.size();i++)
-      varnames.push_back((desc_lst[i]).name(i));
-    */
+    /*    for(int i=0;i<S_new.nComp();i++)
+      varnames.push_back((desc_lst[i]).name(i));*/
+    varnames.push_back("Density");
+    varnames.push_back("Xmom");
+    varnames.push_back("Ymom");
+    varnames.push_back("Zmom");
+    varnames.push_back("Eden");
+    varnames.push_back("Eint");
+    if(!use_const_species)
+      {
+	varnames.push_back("H");
+	varnames.push_back("He");
+      }
 
-    varnames.push_back("density");
+    //    varnames.push_back("density");
     ///////////////////////////////////////////////////////////////////////////
     // Wrap our AMReX Mesh into a Conduit Mesh Blueprint Tree
     ///////////////////////////////////////////////////////////////////////////
@@ -949,7 +959,7 @@ Nyx::blueprint_check_point ()
     // add a scene with a pseudocolor plot
     Node scenes;
     scenes["s1/plots/p1/type"] = "pseudocolor";
-    scenes["s1/plots/p1/field"] = "density";
+    scenes["s1/plots/p1/field"] = "Density";
     // Set the output file name (ascent will add ".png")
     scenes["s1/image_prefix"] = "ascent_render_mesh_";
 
