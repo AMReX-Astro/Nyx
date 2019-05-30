@@ -157,5 +157,11 @@ nyx.plot_z_values   = 7.0 6.0 5.0 4.0 3.0 2.0
 amr.plot_vars        = density xmom ymom zmom rho_e Temp phi_grav
 amr.derive_plot_vars = particle_mass_density
 
+# SENSEI in situ
+sensei.enabled = 0
+#sensei.config = write_vtk.xml
+sensei.config = render_iso_catalyst_3d.xml
+sensei.frequency = 2
+
 #PROBIN FILENAME
 amr.probin_file = probin
