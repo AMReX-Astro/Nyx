@@ -4,7 +4,6 @@
 #include "Nyx.H"
 #include "Nyx_F.H"
 #include "Gravity.H"
-#include <AMReX_Particles_F.H>
 #include <Gravity_F.H>
 
 using namespace amrex;
