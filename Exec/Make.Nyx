@@ -32,6 +32,10 @@ endif
 #      libraries := $(subst -lsundials_nvecopenmp, -lsundials_nvecserial,$(libraries))
 #endif
 
+ifeq ($(USE_CUDA), TRUE)
+      F90FLAGS := $(subst -gopt, ,$(F90FLAGS))
+endif
+
 ifeq ($(USE_GRAV), TRUE)
   DEFINES += -DGRAVITY
 endif
