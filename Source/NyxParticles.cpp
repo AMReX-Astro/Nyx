@@ -7,7 +7,7 @@
 #endif
 
 #include <Nyx_F.H>
-#include <AMReX_Particles_F.H>
+
 
 using namespace amrex;
 
@@ -429,6 +429,7 @@ Nyx::init_particles ()
             int n_per_cell = 1;
 	    amrex::Cuda::setLaunchRegion(true);
             DMPC->InitNRandomPerCell(n_per_cell, pdata);
+	    amrex::Gpu::Device::synchronize();
 	    amrex::Cuda::setLaunchRegion(false);
         }
         else if (particle_init_type == "AsciiFile")

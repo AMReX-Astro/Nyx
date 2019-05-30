@@ -8,8 +8,9 @@ TOP = ../..
 
 # compilation options
 COMP    = pgi
-USE_MPI = FALSE
+USE_MPI = TRUE
 USE_OMP = FALSE
+USE_CUDA = TRUE
 
 USE_HENSON = FALSE
 
@@ -32,7 +33,6 @@ USE_HEATCOOL = TRUE
 USE_AGN = FALSE
 USE_CVODE = FALSE
 USE_SUNDIALS_3x4x = FALSE
-USE_CUDA = TRUE
 
 Bpack := ./Make.package
 Blocs := .

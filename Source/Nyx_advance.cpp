@@ -1,12 +1,12 @@
 
 #include "Nyx.H"
 #include "Nyx_F.H"
-#include <AMReX_Particles_F.H>
+
 //#include <AMReX_MFIter.H>
 #include <Derive_F.H>
 #include <AMReX_VisMF.H>
 #include <AMReX_TagBox.H>
-#include <AMReX_Particles_F.H>
+
 #include <AMReX_Utility.H>
 #include <AMReX_Print.H>
 

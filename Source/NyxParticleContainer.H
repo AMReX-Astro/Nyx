@@ -63,11 +63,19 @@ public:
 
     virtual void AssignDensitySingleLevel (amrex::MultiFab& mf, int level, int ncomp=1, int particle_lvl_offset = 0) const override
     { 
+      bool prev_region = amrex::Gpu::inLaunchRegion();
+      amrex::Cuda::setLaunchRegion(true);
         amrex::NeighborParticleContainer<NSR,NSI>::AssignCellDensitySingleLevel(0, mf, level, ncomp, particle_lvl_offset);
+	amrex::Cuda::Device::streamSynchronize();
+      amrex::Cuda::setLaunchRegion(prev_region);
     }
     virtual void AssignDensity (amrex::Vector<std::unique_ptr<amrex::MultiFab> >& mf, int lev_min = 0, int ncomp = 1, int finest_level = -1, int ngrow = 1) const override
     {
+      bool prev_region = amrex::Gpu::inLaunchRegion();
+      amrex::Cuda::setLaunchRegion(true);
         amrex::NeighborParticleContainer<NSR,NSI>::AssignDensity(0, mf, lev_min, ncomp, finest_level, ngrow);
+	amrex::Cuda::Device::streamSynchronize();
+	amrex::Cuda::setLaunchRegion(prev_region);
     }
 
     void MultiplyParticleMass (int lev, amrex::Real mult);
@@ -272,10 +280,10 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
         return dt;
 
     const amrex::Real      strttime         = amrex::ParallelDescriptor::second();
-    if(this->m_gdb->finestLevel()==0&&true)
+    if(this->m_gdb->finestLevel()==0)
       {
-	/*	bool prev_region = amrex::Gpu::inLaunchRegion();
-		amrex::Cuda::setLaunchRegion(true);*/
+	bool prev_region = amrex::Gpu::inLaunchRegion();
+	amrex::Cuda::setLaunchRegion(true);
 	const amrex::Geometry& geom             = this->m_gdb->Geom(lev);
 	const amrex::GpuArray<amrex::Real,3>     dx    = geom.CellSizeArray();
 	amrex::Vector<std::unique_ptr<amrex::MultiFab> > particle_mf(1);
@@ -322,8 +330,8 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
 	amrex::ParallelDescriptor::ReduceRealMin(dt_part);
 
 	dt=dt_part;
-	//	amrex::Cuda::Device::streamSynchronize();
-	//	amrex::Cuda::setLaunchRegion(prev_region);
+	amrex::Cuda::Device::streamSynchronize();
+	amrex::Cuda::setLaunchRegion(prev_region);
       }
     else
       {

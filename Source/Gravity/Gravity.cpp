@@ -692,6 +692,7 @@ Gravity::actual_multilevel_solve (int                       level,
     AddParticlesToRhs(level,finest_level,ngrow_for_solve,rpp);
     AddGhostParticlesToRhs(level,rpp);
     AddVirtualParticlesToRhs(finest_level,rpp);
+    amrex::Cuda::Device::streamSynchronize();
 
     Nyx* cs = dynamic_cast<Nyx*>(&parent->getLevel(level));
 
