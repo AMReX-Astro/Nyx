@@ -149,6 +149,7 @@ int Nyx::do_hydro = -1;
 int Nyx::add_ext_src = 0;
 int Nyx::heat_cool_type = 0;
 int Nyx::strang_split = 1;
+int Nyx::strang_grown_box = 1;
 #ifdef SDC
 int Nyx::sdc_split    = 0;
 #endif
@@ -387,6 +388,7 @@ Nyx::read_params ()
 
     pp_nyx.query("add_ext_src", add_ext_src);
     pp_nyx.query("strang_split", strang_split);
+    pp_nyx.query("strang_grown_box", strang_grown_box);
 #ifdef SDC
     pp_nyx.query("sdc_split", sdc_split);
     if (sdc_split == 1 && strang_split == 1)
