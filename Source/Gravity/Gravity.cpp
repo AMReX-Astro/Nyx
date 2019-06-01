@@ -487,10 +487,9 @@ Gravity::gravity_sync (int crse_level, int fine_level, int iteration, int ncycle
     // Add the contribution of grad(delta_phi) to the flux register below if necessary.
     if (crse_level > 0 && iteration == ncycle)
     {
-        for (MFIter mfi(*delta_phi[0]); mfi.isValid(); ++mfi)
-            for (int n = 0; n < BL_SPACEDIM; ++n)
-                phi_flux_reg[crse_level]->FineAdd((*ec_gdPhi[0][n])[mfi], n,
-						  mfi.index(), 0, 0, 1, 1);
+        for (int n = 0; n < BL_SPACEDIM; ++n) {
+            phi_flux_reg[crse_level]->FineAdd(*ec_gdPhi[0][n], n, 0, 0, 1, 1.0);
+        }
     }
 
     for (int lev = crse_level; lev <= fine_level; lev++) {
@@ -1007,12 +1006,9 @@ Gravity::add_to_fluxes(int level, int iteration, int ncycle)
 
     if (phi_current && (iteration == ncycle))
     {
-      MultiFab& phi_curr = LevelData[level]->get_new_data(PhiGrav_Type);
-      for (MFIter mfi(phi_curr); mfi.isValid(); ++mfi)
-      {
-         for (int n=0; n<BL_SPACEDIM; ++n)
-	     phi_current->FineAdd((*grad_phi_curr[level][n])[mfi],n,mfi.index(),0,0,1,area[n]);
-      }
+        for (int n=0; n<BL_SPACEDIM; ++n) {
+            phi_current->FineAdd(*grad_phi_curr[level][n],n,0,0,1,area[n]);
+        }
     }
 }
 
