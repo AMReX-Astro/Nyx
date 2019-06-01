@@ -676,6 +676,9 @@ Gravity::actual_multilevel_solve (int                       level,
     BL_PROFILE("Gravity::actual_multilevel_solve()");
 
     const int num_levels = finest_level - level + 1;
+    bool prev_region = Gpu::inLaunchRegion();
+    amrex::Cuda::Device::streamSynchronize();
+    amrex::Cuda::setLaunchRegion(true);
 
     Vector<MultiFab*> phi_p(num_levels);
     Vector<std::unique_ptr<MultiFab> > Rhs_p(num_levels);
@@ -826,15 +829,17 @@ Gravity::actual_multilevel_solve (int                       level,
                                             grad_phi[amrlev][1],
                                             grad_phi[amrlev][2])});
     }
-    amrex::Gpu::Device::streamSynchronize();
-    amrex::Gpu::setLaunchRegion(false);
+    //    amrex::Gpu::Device::streamSynchronize();
+    //    amrex::Gpu::setLaunchRegion(false);
     solve_with_MLMG(level, finest_level, phi_p, amrex::GetVecOfConstPtrs(Rhs_p),
                     grad_phi_aa, crse_bcdata, rel_eps, abs_eps);
-    amrex::Gpu::setLaunchRegion(true);
+    //    amrex::Gpu::setLaunchRegion(true);
 
     // Average grad_phi from fine to coarse level
     for (int lev = finest_level; lev > level; lev--)
         average_fine_ec_onto_crse_ec(lev-1,is_new);
+    amrex::Gpu::Device::streamSynchronize();
+    amrex::Gpu::setLaunchRegion(prev_region);
 }
 
 void
