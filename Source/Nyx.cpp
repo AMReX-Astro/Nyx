@@ -2533,6 +2533,12 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
 
     Real rho_T_sum=0.0,   T_sum=0.0, Tinv_sum=0.0, T_meanrho_sum=0.0;
     Real   rho_sum=0.0, vol_sum=0.0,    vol_mn_sum=0.0;
+    Real rho_hi = 1.1*average_gas_density;
+    Real rho_lo = 0.9*average_gas_density;
+    const auto dx= geom.CellSize();
+    Real vol = dx[0]*dx[1]*dx[2];
+    int Temp_loc=Temp_comp;
+    int Density_loc=Density;
 
 #ifdef _OPENMP
 #pragma omp parallel reduction(+:rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum)
@@ -2540,12 +2546,30 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
     for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
+	const auto lo = amrex::lbound(bx);
+	const auto hi = amrex::ubound(bx);
+	const auto state    = S_new.array(mfi);
+	const auto diag_eos = D_new.array(mfi);
+	Real T_tmp, rho_tmp;
 
-        fort_compute_rho_temp
-            (bx.loVect(), bx.hiVect(), geom.CellSize(),
-             BL_TO_FORTRAN(S_new[mfi]),
-             BL_TO_FORTRAN(D_new[mfi]), &average_gas_density,
-             &rho_T_sum, &T_sum, &Tinv_sum, &T_meanrho_sum, &rho_sum, &vol_sum, &vol_mn_sum);
+	for     (int k = lo.z; k <= hi.z; ++k) {
+	  for   (int j = lo.y; j <= hi.y; ++j) {
+	    for (int i = lo.x; i <= hi.x; ++i) {
+	      T_tmp=diag_eos(i,j,k,Temp_loc);
+	      rho_tmp=state(i,j,k,Density_loc);
+	      T_sum += vol*T_tmp;
+	      Tinv_sum +=  rho_tmp/T_tmp;
+	      rho_T_sum += rho_tmp*T_tmp;
+	      rho_sum += rho_tmp;
+	      if ( (rho_tmp < rho_hi) &&  (rho_tmp > rho_lo) && (T_tmp <= 1.0e5) ) {
+		T_meanrho_sum += vol*log10(T_tmp);
+		vol_mn_sum += vol;
+	      }
+	      vol_sum += vol;
+	    }
+	  }
+	}
+
     }
     Real sums[7] = {rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum};
     ParallelDescriptor::ReduceRealSum(sums,7);
@@ -2574,18 +2598,49 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
     Real whim_mass=0.0, whim_vol=0.0, hh_mass=0.0, hh_vol=0.0, igm_mass=0.0, igm_vol=0.0;
     Real mass_sum=0.0, vol_sum=0.0;
 
+    Real rho_hi = 1.1*average_gas_density;
+    Real rho_lo = 0.9*average_gas_density;
+    const auto dx= geom.CellSize();
+    Real vol = dx[0]*dx[1]*dx[2];
+    int Temp_loc=Temp_comp;
+    int Density_loc=Density;
+
 #ifdef _OPENMP
 #pragma omp parallel reduction(+:whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum)
 #endif
     for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
+	const auto lo = amrex::lbound(bx);
+	const auto hi = amrex::ubound(bx);
+	const auto state    = S_new.array(mfi);
+	const auto diag_eos = D_new.array(mfi);
+	Real T, R, rho_vol;
 
-        fort_compute_gas_frac
-            (bx.loVect(), bx.hiVect(), geom.CellSize(),
-             BL_TO_FORTRAN(S_new[mfi]),
-             BL_TO_FORTRAN(D_new[mfi]), &average_gas_density, &T_cut, &rho_cut,
-             &whim_mass, &whim_vol, &hh_mass, &hh_vol, &igm_mass, &igm_vol, &mass_sum, &vol_sum);
+	for     (int k = lo.z; k <= hi.z; ++k) {
+	  for   (int j = lo.y; j <= hi.y; ++j) {
+	    for (int i = lo.x; i <= hi.x; ++i) {
+	      T = diag_eos(i,j,k,Temp_loc);
+	      R = state(i,j,k,Density_loc) / average_gas_density;
+	      rho_vol = state(i,j,k,Density_loc)*vol;
+	      if ( (T > T_cut) && (R <= rho_cut) ) {
+		whim_mass += rho_vol;
+		whim_vol  += vol;
+	      }
+	      else if ( (T > T_cut) && (R > rho_cut) ) {
+		hh_mass += rho_vol;
+		hh_vol  +=   vol;
+	      }
+	      else if ( (T <= T_cut) && (R <= rho_cut) ) {
+		igm_mass += rho_vol;
+		igm_vol  +=   vol;
+	      }
+	      mass_sum += rho_vol;
+	      vol_sum  += vol;
+	    }
+	  }
+	}
+
     }
     Real sums[8] = {whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum};
     ParallelDescriptor::ReduceRealSum(sums,8);
