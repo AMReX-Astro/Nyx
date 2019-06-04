@@ -1381,6 +1381,10 @@ void
 Nyx::post_timestep (int iteration)
 {
     BL_PROFILE("Nyx::post_timestep()");
+
+    bool prev_region=Gpu::inLaunchRegion();
+    amrex::Cuda::setLaunchRegion(true);
+
     //
     // Integration cycle on fine level grids is complete
     // do post_timestep stuff here.
@@ -1407,7 +1411,6 @@ Nyx::post_timestep (int iteration)
     {
         for (int i = 0; i < theActiveParticles().size(); i++)
 	  {
-	    amrex::Cuda::setLaunchRegion(true);
 	    if(finest_level==0)
 	      theActiveParticles()[i]->RedistributeLocal(level,
                                                   theActiveParticles()[i]->finestLevel(),
@@ -1416,7 +1419,6 @@ Nyx::post_timestep (int iteration)
 	      theActiveParticles()[i]->Redistribute(level,
                                                   theActiveParticles()[i]->finestLevel(),
                                                   iteration);
-	    amrex::Cuda::setLaunchRegion(false);
 	  }
     }
 
@@ -1452,10 +1454,8 @@ Nyx::post_timestep (int iteration)
         if (level < finest_level)
             average_down();
 	
-	amrex::Cuda::setLaunchRegion(true);
         // This needs to be done after any changes to the state from refluxing.
         enforce_nonnegative_species(S_new_crse);
-	amrex::Cuda::setLaunchRegion(false);
 
 #ifdef GRAVITY
 #ifdef CGRAV
@@ -1500,8 +1500,6 @@ Nyx::post_timestep (int iteration)
                 MultiFab grad_phi_cc(ba, dm, BL_SPACEDIM, 0);
                 gravity->get_new_grav_vector(lev, grad_phi_cc, cur_time);
 
-		bool prev_region=Gpu::inLaunchRegion();
-		amrex::Gpu::setLaunchRegion(true);
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
@@ -1548,8 +1546,6 @@ Nyx::post_timestep (int iteration)
                     S_new_lev[mfi].plus(sync_src, BL_SPACEDIM, Eden, 1);
 		  }
 		}
-		amrex::Gpu::Device::streamSynchronize();
-		amrex::Gpu::setLaunchRegion(prev_region);
 	    }
         }
 #endif
@@ -1586,14 +1582,16 @@ Nyx::post_timestep (int iteration)
        MultiFab& D_new = get_new_data(DiagEOS_Type);
 
        // First reset internal energy before call to compute_temp
-       MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
-       reset_e_src.setVal(0.0);
-       reset_internal_energy(S_new,D_new,reset_e_src);
+       reset_internal_energy_nostore(S_new,D_new);
 
        // Re-compute temperature after all the other updates.
        compute_new_temp(S_new,D_new);
     }
 #endif
+
+    amrex::Gpu::Device::streamSynchronize();
+    amrex::Gpu::setLaunchRegion(prev_region);
+
 }
 
 void

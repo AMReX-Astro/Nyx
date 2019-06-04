@@ -81,14 +81,15 @@ Nyx::vol_weight_sum (MultiFab& mf, bool masked)
     BL_PROFILE_VAR_STOP(volmask);
 
 #ifdef AMREX_USE_CUDA
-
         if ( !masked || (mask == 0) )
         {
-	  //	  sum = mf.sum(0,true)*dx[0]*dx[1]*dx[2];
+	  //	  sum = mf.sum(0,true)*dx[0]*dx[1]*dx[2]
+	  BL_PROFILE("vol_weight_nomask");
 	  sum = mf.sum(0)*dx[0]*dx[1]*dx[2];
         }
         else
         {
+	  BL_PROFILE("vol_weight_mask");
 	  //	  sum = amrex::MultiFab::Dot(mf,0,(*mask),0,1,0,true)*dx[0]*dx[1]*dx[2];
 	  sum = amrex::MultiFab::Dot(mf,0,(*mask),0,1,0)*dx[0]*dx[1]*dx[2];
         }

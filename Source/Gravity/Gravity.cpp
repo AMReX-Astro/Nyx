@@ -263,6 +263,8 @@ Gravity::solve_for_old_phi (int               level,
                             int               fill_interior)
 {
     BL_PROFILE("Gravity::solve_for_old_phi()");
+    bool prev_region = Gpu::inLaunchRegion();
+    amrex::Cuda::setLaunchRegion(true);
 #ifdef CGRAV
     if (gravity_type == "StaticGrav")
         return;
@@ -288,6 +290,9 @@ Gravity::solve_for_old_phi (int               level,
 
     const Real time  = LevelData[level]->get_state_data(PhiGrav_Type).prevTime();
     solve_for_phi(level, Rhs, phi, grad_phi, time, fill_interior);
+    amrex::Cuda::Device::streamSynchronize();
+    amrex::Cuda::setLaunchRegion(prev_region);
+
 }
 
 void
@@ -298,6 +303,8 @@ Gravity::solve_for_new_phi (int               level,
                             int               ngrow_for_solve)
 {
     BL_PROFILE("Gravity::solve_for_new_phi()");
+    bool prev_region = Gpu::inLaunchRegion();
+    amrex::Cuda::setLaunchRegion(true);
 #ifdef CGRAV
     if (gravity_type == "StaticGrav")
         return;
@@ -324,6 +331,8 @@ Gravity::solve_for_new_phi (int               level,
 
     const Real time = LevelData[level]->get_state_data(PhiGrav_Type).curTime();
     solve_for_phi(level, Rhs, phi, grad_phi, time, fill_interior);
+    amrex::Cuda::Device::streamSynchronize();
+    amrex::Cuda::setLaunchRegion(prev_region);
 }
 
 void
@@ -771,8 +780,7 @@ Gravity::actual_multilevel_solve (int                       level,
                            << " from RHS at each level " << '\n';
 
 	for (int lev = 0; lev < num_levels; lev++)
-            for (MFIter mfi(*Rhs_p[lev]); mfi.isValid(); ++mfi)
-                (*Rhs_p[lev])[mfi].plus(-mass_offset);
+	  (*Rhs_p[lev]).plus(-mass_offset,0,1,0);
 
        // This is used to enforce solvability if appropriate.
        if ( parent->Geom(level).Domain().numPts() == grids[level].numPts() )
@@ -850,6 +858,9 @@ Gravity::get_old_grav_vector (int       level,
 
     bool prev_region=Gpu::inLaunchRegion();
     amrex::Gpu::setLaunchRegion(true);
+
+    MultiFab& G_old = LevelData[level]->get_old_data(Gravity_Type);
+
     // Set to zero to fill ghost cells.
     grav_vector.setVal(0);
 
@@ -901,8 +912,6 @@ Gravity::get_old_grav_vector (int       level,
 #ifdef CGRAV
     }
 #endif
-
-    MultiFab& G_old = LevelData[level]->get_old_data(Gravity_Type);
 
     // Fill G_old from grav_vector
     MultiFab::Copy(G_old, grav_vector, 0, 0, BL_SPACEDIM, 0);
@@ -1542,12 +1551,16 @@ void
 Gravity::CorrectRhsUsingOffset(int level, MultiFab& Rhs)
 {
     BL_PROFILE("Gravity::CorrectRhsUsingOffset()");
+
+    bool prev_region = Gpu::inLaunchRegion();
+    amrex::Gpu::setLaunchRegion(true);
     if (verbose)
         amrex::Print() << " ... subtracting average density from RHS in solve ... "
                        << mass_offset << '\n';
 
-    for (MFIter mfi(Rhs); mfi.isValid(); ++mfi)
-        Rhs[mfi].plus(-mass_offset);
+    //    for (MFIter mfi(Rhs); mfi.isValid(); ++mfi)
+    //        Rhs[mfi].plus(-mass_offset);
+    Rhs.plus(-mass_offset,0,1,0);
     // This checks if mass has been conserved--in particular if
     // virtual particles are correctly representing finer particles.
     if (level == 0)
@@ -1568,6 +1581,8 @@ Gravity::CorrectRhsUsingOffset(int level, MultiFab& Rhs)
 
         Rhs.plus(-sum, 0, 1, 0);
     }
+
+    amrex::Gpu::setLaunchRegion(prev_region);
 }
 
 void

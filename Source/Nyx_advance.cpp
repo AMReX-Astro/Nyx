@@ -305,6 +305,8 @@ Nyx::advance_hydro_plus_particles (Real time,
     }
     BL_PROFILE_VAR_STOP(just_the_hydro);
 
+    bool prev_region=Gpu::inLaunchRegion();
+    amrex::Gpu::setLaunchRegion(true);
     //
     // We must reflux before doing the next gravity solve
     //
@@ -335,6 +337,7 @@ Nyx::advance_hydro_plus_particles (Real time,
                        parent->getLevel(lev).get_old_data(PhiGrav_Type),
                        0, 0, 1, 0);
     }
+    amrex::Gpu::setLaunchRegion(prev_region);
 
     // Solve for new Gravity
     BL_PROFILE_VAR("solve_for_new_phi", solve_for_new_phi);
