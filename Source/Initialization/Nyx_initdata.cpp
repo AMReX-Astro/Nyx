@@ -419,7 +419,7 @@ Nyx::init_from_plotfile ()
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-	amrex::Cuda::setLaunchRegion(true);
+	amrex::Gpu::setLaunchRegion(true);
         for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
         {
             const Box& bx = mfi.tilebox();
@@ -445,7 +445,7 @@ Nyx::init_from_plotfile ()
 	    amrex::Gpu::Device::streamSynchronize();
             }
         }
-	amrex::Cuda::setLaunchRegion(false);
+	amrex::Gpu::setLaunchRegion(false);
 
         // Define (rho E) given (rho e) and the momenta
         nyx_lev.enforce_consistent_e(S_new);

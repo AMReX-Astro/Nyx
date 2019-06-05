@@ -55,7 +55,7 @@ nyx_main (int argc, char* argv[])
 {
     amrex::Initialize(argc, argv);
     {
-      amrex::Cuda::setLaunchRegion(false);
+      amrex::Gpu::setLaunchRegion(false);
 
     // save the inputs file name for later
     if (argc > 1) {
@@ -196,7 +196,7 @@ nyx_main (int argc, char* argv[])
     BL_PROFILE_SET_RUN_TIME(dRunTime2);
     
     Nyx::dealloc_cuda_managed();
-    amrex::Cuda::setLaunchRegion(true);    
+    amrex::Gpu::setLaunchRegion(true);    
     }
     amrex::Finalize();
 }

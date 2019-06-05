@@ -572,7 +572,7 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
  */
  f_rhs_test_box<<<numBlocks,numThreads>>>(t,u_ptr,udot_ptr, rpar, neq);
 
- amrex::Cuda::Device::streamSynchronize();
+ amrex::Gpu::Device::streamSynchronize();
  AMREX_GPU_ERROR_CHECK();
 
 /*      N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));

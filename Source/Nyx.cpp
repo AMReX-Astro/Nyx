@@ -1383,7 +1383,7 @@ Nyx::post_timestep (int iteration)
     BL_PROFILE("Nyx::post_timestep()");
 
     bool prev_region=Gpu::inLaunchRegion();
-    amrex::Cuda::setLaunchRegion(true);
+    amrex::Gpu::setLaunchRegion(true);
 
     //
     // Integration cycle on fine level grids is complete
@@ -1873,12 +1873,12 @@ Nyx::post_regrid (int lbase,
 #endif
 #endif
     bool prev_region = Gpu::inLaunchRegion();
-    amrex::Cuda::setLaunchRegion(true);
+    amrex::Gpu::setLaunchRegion(true);
     if (level == lbase) {
         particle_redistribute(lbase, false);
     }
-    amrex::Cuda::Device::streamSynchronize();
-    amrex::Cuda::setLaunchRegion(prev_region);
+    amrex::Gpu::Device::streamSynchronize();
+    amrex::Gpu::setLaunchRegion(prev_region);
 
 #ifdef GRAVITY
 
@@ -2367,7 +2367,7 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new, MultiFab& reset_e_
     Real        a        = get_comoving_a(cur_time);
 
     bool prev_region=Gpu::inLaunchRegion();
-    amrex::Cuda::setLaunchRegion(true);
+    amrex::Gpu::setLaunchRegion(true);
 
 #ifdef _OPENMP
 #pragma omp parallel
@@ -2388,7 +2388,7 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new, MultiFab& reset_e_
              &print_warn, &a);
 	  });
     }
-    amrex::Cuda::setLaunchRegion(prev_region);
+    amrex::Gpu::setLaunchRegion(prev_region);
 
 }
 
@@ -2402,7 +2402,7 @@ Nyx::reset_internal_energy_nostore (MultiFab& S_new, MultiFab& D_new)
     Real        a        = get_comoving_a(cur_time);
 
     bool prev_region=Gpu::inLaunchRegion();
-    amrex::Cuda::setLaunchRegion(true);
+    amrex::Gpu::setLaunchRegion(true);
 
 #ifdef _OPENMP
 #pragma omp parallel
@@ -2421,7 +2421,7 @@ Nyx::reset_internal_energy_nostore (MultiFab& S_new, MultiFab& D_new)
              print_warn, a);
 	  });
     }
-    amrex::Cuda::setLaunchRegion(prev_region);
+    amrex::Gpu::setLaunchRegion(prev_region);
 
 }
 #endif
@@ -2444,7 +2444,7 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 #endif
 
     bool prev_region = Gpu::inLaunchRegion();
-    amrex::Cuda::setLaunchRegion(true);
+    amrex::Gpu::setLaunchRegion(true);
     if (heat_cool_type == 7) {
 #ifdef _OPENMP
 #pragma omp parallel
@@ -2518,7 +2518,7 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
                         << " at (i,j,k) " << imax << " " << jmax << " " << kmax << std::endl;
             }
     }
-    amrex::Cuda::setLaunchRegion(prev_region);
+    amrex::Gpu::setLaunchRegion(prev_region);
 
 }
 #endif
@@ -2529,7 +2529,7 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
 {
     BL_PROFILE("Nyx::compute_rho_temp()");
     bool prev_region=Gpu::inLaunchRegion();
-    amrex::Cuda::setLaunchRegion(true);
+    amrex::Gpu::setLaunchRegion(true);
     {
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
@@ -2605,6 +2605,8 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
     }
 
     amrex::Gpu::Device::streamSynchronize();
+
+#ifdef AMREX_USE_CUDA
     rho_T_sum = rho_T_sum_gpu.dataValue();
     rho_sum = rho_sum_gpu.dataValue();
     T_sum = T_sum_gpu.dataValue();
@@ -2612,6 +2614,7 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
     T_meanrho_sum = T_meanrho_sum_gpu.dataValue();
     vol_sum = vol_sum_gpu.dataValue();
     vol_mn_sum = vol_mn_sum_gpu.dataValue();
+#endif
 
     Real sums[7] = {rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum};
     ParallelDescriptor::ReduceRealSum(sums,7);
@@ -2624,7 +2627,7 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
        T_meanrho = pow(10.0, T_meanrho);
     }
     }
-    amrex::Cuda::setLaunchRegion(prev_region);
+    amrex::Gpu::setLaunchRegion(prev_region);
 }
 #endif
 
@@ -2637,7 +2640,7 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
 {
     BL_PROFILE("Nyx::compute_gas_fractions()");
     bool prev_region=Gpu::inLaunchRegion();
-    amrex::Cuda::setLaunchRegion(true);
+    amrex::Gpu::setLaunchRegion(true);
     {
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
@@ -2721,18 +2724,19 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
 
     }
 
-	whim_mass= whim_mass_gpu.dataValue();
-	whim_vol= whim_vol_gpu.dataValue();
-	hh_mass= hh_mass_gpu.dataValue();
-	hh_vol= hh_vol_gpu.dataValue();
-	igm_mass= igm_mass_gpu.dataValue();
-	igm_vol= igm_vol_gpu.dataValue();
-	mass_sum= mass_sum_gpu.dataValue();
-	vol_sum= vol_sum_gpu.dataValue();
-
 #ifdef AMREX_USE_CUDA
     amrex::Gpu::Device::streamSynchronize();
-    /*    whim_mass = whim_mass_gpu.dataValue();
+
+    whim_mass= whim_mass_gpu.dataValue();
+    whim_vol= whim_vol_gpu.dataValue();
+    hh_mass= hh_mass_gpu.dataValue();
+    hh_vol= hh_vol_gpu.dataValue();
+    igm_mass= igm_mass_gpu.dataValue();
+    igm_vol= igm_vol_gpu.dataValue();
+    mass_sum= mass_sum_gpu.dataValue();
+    vol_sum= vol_sum_gpu.dataValue();
+    
+/*    whim_mass = whim_mass_gpu.dataValue();
     whim_vol = whim_vol_gpu.dataValue();
     Real sums[8] = {whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum};
     //,whim_vol_gpu.dataValue(),hh_mass_gpu.dataValue(),hh_vol_gpu.dataValue(),igm_mass_gpu.dataValue(), igm_vol_gpu.dataValue(),mass_sum_gpu.dataValue(),vol_sum_gpu.dataValue()};*/
@@ -2759,7 +2763,7 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
     igm_mass_frac  = sums[4] / sums[6];
     igm_vol_frac   = sums[5] / sums[7];
     }
-    amrex::Cuda::setLaunchRegion(prev_region);
+    amrex::Gpu::setLaunchRegion(prev_region);
 }
 #endif
 

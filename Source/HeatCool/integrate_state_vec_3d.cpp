@@ -47,9 +47,9 @@ int Nyx::integrate_state_vec
   reltol = 1e-4;  /* Set the tolerances */
   abstol = 1e-4;
 
-  //  amrex::Cuda::setLaunchRegion(false);
+  //  amrex::Gpu::setLaunchRegion(false);
   bool prev_region=Gpu::inLaunchRegion();
-  amrex::Cuda::setLaunchRegion(true);
+  amrex::Gpu::setLaunchRegion(true);
 
   int Temp_loc=Temp_comp;
   int Ne_loc=Ne_comp;
@@ -104,7 +104,7 @@ int Nyx::integrate_state_vec
 				int loop = 1;
 
 #ifdef AMREX_USE_CUDA
-				cudaStream_t currentStream = amrex::Cuda::Device::cudaStream();
+				cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();
 				u = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
 				N_Vector e_orig = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
 				N_VSetCudaStream_Cuda(e_orig, &currentStream);
@@ -195,7 +195,7 @@ int Nyx::integrate_state_vec
 				//				CVodeSetMaxStep(cvode_mem, delta_time/10);
 				BL_PROFILE_VAR("Nyx::strang_second_cvode",cvode_timer2);
 				flag = CVode(cvode_mem, delta_time, u, &t, CV_NORMAL);
-				amrex::Cuda::Device::streamSynchronize();
+				amrex::Gpu::Device::streamSynchronize();
 				BL_PROFILE_VAR_STOP(cvode_timer2);
 
 #ifndef NDEBUG
@@ -243,7 +243,7 @@ int Nyx::integrate_state_vec
 	}*/
 
     }
-  amrex::Cuda::setLaunchRegion(prev_region);
+  amrex::Gpu::setLaunchRegion(prev_region);
 
     return 0;
 }
@@ -272,7 +272,7 @@ int Nyx::integrate_state_grownvec
 
   fort_ode_eos_setup(a,delta_time);
   bool prev_region=Gpu::inLaunchRegion();
-  amrex::Cuda::setLaunchRegion(true);
+  amrex::Gpu::setLaunchRegion(true);
 
   //#ifdef _OPENMP
   //#pragma omp parallel if (Gpu::notInLaunchRegion())
@@ -318,7 +318,7 @@ int Nyx::integrate_state_grownvec
 				int loop = 1;
 
 #ifdef AMREX_USE_CUDA
-				cudaStream_t currentStream = amrex::Cuda::Device::cudaStream();
+				cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();
 				u = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
 				N_Vector e_orig = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
 				N_VSetCudaStream_Cuda(e_orig, &currentStream);
@@ -411,7 +411,7 @@ int Nyx::integrate_state_grownvec
 				//				CVodeSetMaxStep(cvode_mem, delta_time/10);
 				BL_PROFILE_VAR("Nyx::strang_first_cvode",cvode_timer1);
 				flag = CVode(cvode_mem, delta_time, u, &t, CV_NORMAL);
-				amrex::Cuda::Device::streamSynchronize();
+				amrex::Gpu::Device::streamSynchronize();
 				BL_PROFILE_VAR_STOP(cvode_timer1);
 
 #ifndef NDEBUG
@@ -458,7 +458,7 @@ int Nyx::integrate_state_grownvec
 	}*/
 
     }
-  amrex::Cuda::setLaunchRegion(prev_region);
+  amrex::Gpu::setLaunchRegion(prev_region);
 
     return 0;
 }
@@ -513,7 +513,7 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
   fprintf(stdout,"\nrparh[3]=%g \n\n",rparh[3]);*/
   int numThreads = std::min(32, neq);
   int numBlocks = static_cast<int>(ceil(((double) neq)/((double) numThreads)));
-  cudaStream_t currentStream = amrex::Cuda::Device::cudaStream();
+  cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();
   /*
  ////////////////////////////  fprintf(stdout,"\n castro <<<%d,%d>>> \n\n",numBlocks, numThreads);
 

@@ -423,7 +423,7 @@ void Nyx::initcosmo()
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-	amrex::Cuda::setLaunchRegion(true);
+	amrex::Gpu::setLaunchRegion(true);
      	for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
      	{
      	    const Box& box = mfi.tilebox();
@@ -441,7 +441,7 @@ void Nyx::initcosmo()
 	    });
 	    amrex::Gpu::Device::streamSynchronize();
      	}     	
-	amrex::Cuda::setLaunchRegion(false);
+	amrex::Gpu::setLaunchRegion(false);
 
         // Convert X_i to (rho X)_i
         if (use_const_species == 0)

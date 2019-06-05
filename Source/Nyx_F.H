@@ -245,7 +245,7 @@ extern "C"
      const amrex::Real* dx, const amrex::Real* dt,
      const amrex::Real* a_old, const amrex::Real* a_new);
   
-#ifndef AMREX_USE_CUDA
+#ifndef AMREX_USE_GPU
   void ctu_consup
     (const int* lo, const int* hi,
      const BL_FORT_FAB_ARG_3D(Sborder),
@@ -333,7 +333,7 @@ extern "C"
      const BL_FORT_FAB_ARG_3D(shk),
      const int idir, const int* domlo, const int* domhi);
 
-#ifdef AMREX_USE_CUDA
+#ifdef AMREX_USE_GPU
   void ca_ppm_reconstruct
     (const int* lo, const int* hi, int put_on_edges, int idir,
      BL_FORT_FAB_ARG_3D(q), int nc, int nstart, int nend,

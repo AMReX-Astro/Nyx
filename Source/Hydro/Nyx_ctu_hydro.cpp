@@ -500,7 +500,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       Elixir elix_pdivu = pdivu.elixir();
     const auto fab_pdivu = pdivu.array();
 
-      //amrex::Cuda::setLaunchRegion(true);
+      //amrex::Gpu::setLaunchRegion(true);
       if (use_flattening == 1) {
       AMREX_LAUNCH_DEVICE_LAMBDA(obx, tobx,
 		{
@@ -514,12 +514,12 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       }
 
       //      amrex::Print()<<"flatn"<<std::endl;
-      //amrex::Cuda::setLaunchRegion(false);
+      //amrex::Gpu::setLaunchRegion(false);
 
       if (ppm_type == 0) {
 
 #pragma gpu
-	      //amrex::Cuda::setLaunchRegion(true);
+	      //amrex::Gpu::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(obx, tobx,
       {
         ctu_plm_states(AMREX_INT_ANYD(tobx.loVect()), AMREX_INT_ANYD(tobx.hiVect()),
@@ -570,7 +570,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       });
       //      amrex::Print()<<"1"<<std::endl;
       //////      amrex::Gpu::Device::synchronize();
-      //amrex::Cuda::setLaunchRegion(false);
+      //amrex::Gpu::setLaunchRegion(false);
 
       } else {
 
@@ -633,7 +633,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
       // compute divu -- we'll use this later when doing the artifical viscosity
 #pragma gpu
-      //amrex::Cuda::setLaunchRegion(true);
+      //amrex::Gpu::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(obx, tobx,
       {
       divu(AMREX_INT_ANYD(tobx.loVect()), AMREX_INT_ANYD(tobx.hiVect()),
@@ -643,13 +643,13 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       });
       ///      amrex::Print()<<"1"<<std::endl;
       //amrex::Gpu::Device::streamSynchronize();
-      //amrex::Cuda::setLaunchRegion(false);
+      //amrex::Gpu::setLaunchRegion(false);
 
       // ftmp1 = fx
       // rftmp1 = rfx
       // qgdnvtmp1 = qgdnxv
 #pragma gpu
-      //amrex::Cuda::setLaunchRegion(true);
+      //amrex::Gpu::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(cxbx, tcxbx,
       {
       cmpflx_plus_godunov(AMREX_INT_ANYD(tcxbx.loVect()), AMREX_INT_ANYD(tcxbx.hiVect()),
@@ -667,7 +667,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp1 = rfx
       // qgdnvtmp1 = qgdnvx
 #pragma gpu
-      //amrex::Cuda::setLaunchRegion(true);
+      //amrex::Gpu::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(tyxbx, ttyxbx,
       {
       transx_on_ystates(AMREX_INT_ANYD(ttyxbx.loVect()), AMREX_INT_ANYD(ttyxbx.hiVect()),
@@ -1047,7 +1047,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
         const Box& nbx = amrex::surroundingNodes(bx, idir);
 
 #pragma gpu
-      //amrex::Cuda::setLaunchRegion(true);
+      //amrex::Gpu::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(nbx, tnbx,
       {
         scale_flux(AMREX_INT_ANYD(tnbx.loVect()), AMREX_INT_ANYD(tnbx.hiVect()),
@@ -1055,7 +1055,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                    BL_TO_FORTRAN_ANYD(*fab_area[idir]), dt,&a_old,&a_new);
       });
       //amrex::Gpu::Device::streamSynchronize();
-      //amrex::Cuda::setLaunchRegion(false);
+      //amrex::Gpu::setLaunchRegion(false);
         if (idir == 0) {
             // get the scaled radial pressure -- we need to treat this specially
             Array4<Real> const qex_fab = qe[idir].array();

@@ -167,7 +167,7 @@ int Nyx::integrate_state_growncell
   int Density_loc=Density;
 
   fort_ode_eos_setup(a,delta_time);
-  amrex::Cuda::setLaunchRegion(false);
+  amrex::Gpu::setLaunchRegion(false);
   #ifdef _OPENMP
   #pragma omp parallel if (Gpu::notInLaunchRegion())
   #endif
@@ -283,7 +283,7 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
   fprintf(stdout,"\nrparh[3]=%g \n\n",rparh[3]);*/
   int numThreads = std::min(32, neq);
   int numBlocks = static_cast<int>(ceil(((double) neq)/((double) numThreads)));
-  cudaStream_t currentStream = amrex::Cuda::Device::cudaStream();
+  cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();
   /*
  ////////////////////////////  fprintf(stdout,"\n castro <<<%d,%d>>> \n\n",numBlocks, numThreads);
 
