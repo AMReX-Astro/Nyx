@@ -280,7 +280,7 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
         return dt;
 
     const amrex::Real      strttime         = amrex::ParallelDescriptor::second();
-    if(this->m_gdb->finestLevel()==0)
+    /*    if(this->m_gdb->finestLevel()==0&&false)
       {
 	bool prev_region = amrex::Gpu::inLaunchRegion();
 	amrex::Cuda::setLaunchRegion(true);
@@ -334,10 +334,12 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
 	amrex::Cuda::setLaunchRegion(prev_region);
       }
     else
-      {
+    {*/
     const amrex::Geometry& geom             = this->m_gdb->Geom(lev);
-    const amrex::Real*     dx               = geom.CellSize();
-    const amrex::Real      adx[BL_SPACEDIM] = { D_DECL(a*dx[0],a*dx[1],a*dx[2]) };
+    const amrex::IntVect   base             = geom.Domain().smallEnd();
+    const auto             dxi              = geom.InvCellSizeArray();
+    amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> adxi{dxi[0]/a,dxi[1]/a,dxi[2]/a};
+    const auto             plo              = geom.ProbLoArray();
     const ParticleLevel&   pmap             = this->GetParticles(lev);
     int             tnum             = 1;
 
@@ -364,6 +366,7 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
         ac_pointer->FillBoundary(geom.periodicity()); // DO WE NEED GHOST CELLS FILLED ???
     }
 
+
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
@@ -379,11 +382,20 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
 
             if (p.id() <= 0) continue;
 
-            amrex::IntVect cell = this->Index(p, lev);
-
-            const amrex::Real mag_vel_over_dx[BL_SPACEDIM] = { D_DECL(std::abs(p.rdata(1))/adx[0],
-                                                                      std::abs(p.rdata(2))/adx[1],
-                                                                      std::abs(p.rdata(3))/adx[2]) };
+	    /*	    amrex::IntVect cell{
+	      AMREX_D_DECL(static_cast<int>(floor((p.m_rdata.pos[0]-plo[0])*dxi[0])),
+			   static_cast<int>(floor((p.m_rdata.pos[1]-plo[1])*dxi[1])),
+			   static_cast<int>(floor((p.m_rdata.pos[2]-plo[2])*dxi[2])))};
+	    */
+	    amrex::IntVect cell;
+	    cell[0]= static_cast<int>(floor((p.pos(0)-plo[0])*dxi[0]));
+	    cell[1]= static_cast<int>(floor((p.pos(1)-plo[1])*dxi[1]));
+	    cell[2]= static_cast<int>(floor((p.pos(2)-plo[2])*dxi[2]));
+	    cell += base;
+	    
+            const amrex::Real mag_vel_over_dx[BL_SPACEDIM] = { D_DECL(std::abs(p.rdata(1))*adxi[0],
+                                                                      std::abs(p.rdata(2))*adxi[1],
+                                                                      std::abs(p.rdata(3))*adxi[2]) };
 
             amrex::Real max_mag_vel_over_dx = mag_vel_over_dx[0];
 
@@ -395,8 +407,6 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
 #endif
             amrex::Real dt_part = (max_mag_vel_over_dx > 0) ? (cfl / max_mag_vel_over_dx) : 1e50;
 
-	    //	    amrex::Print()<<"dt_part from particles from multifab ops"<<dt_part<<std::endl;
-
             const amrex::Real aval[BL_SPACEDIM] = { D_DECL(gfab(cell,0),
                                                            gfab(cell,1),
                                                            gfab(cell,2)) };
@@ -404,8 +414,9 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
             const amrex::Real mag_accel = sqrt(D_TERM(aval[0]*aval[0],
                                                       + aval[1]*aval[1],
                                                       + aval[2]*aval[2]));
+
             if (mag_accel > 0)
-                dt_part = std::min( dt_part, 1/std::sqrt(mag_accel/dx[0]) );
+	      dt_part = std::min( dt_part, 1/std::sqrt(mag_accel*dxi[0]) );
 
             int tid = 0;
 
@@ -414,7 +425,7 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
 #endif
             ldt[tid] = std::min(dt_part, ldt[tid]);
         }
-    }
+	//    }
 
     if (ac_pointer) delete ac_pointer;
 
