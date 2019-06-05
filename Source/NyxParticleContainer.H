@@ -278,63 +278,11 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
 
     if (this->GetParticles().size() == 0)
         return dt;
-
+    bool prev_region = amrex::Gpu::inLaunchRegion();
+    amrex::Cuda::setLaunchRegion(true);
+    {
     const amrex::Real      strttime         = amrex::ParallelDescriptor::second();
-    /*    if(this->m_gdb->finestLevel()==0&&false)
-      {
-	bool prev_region = amrex::Gpu::inLaunchRegion();
-	amrex::Cuda::setLaunchRegion(true);
-	const amrex::Geometry& geom             = this->m_gdb->Geom(lev);
-	const amrex::GpuArray<amrex::Real,3>     dx    = geom.CellSizeArray();
-	amrex::Vector<std::unique_ptr<amrex::MultiFab> > particle_mf(1);
-	this->AssignDensity(particle_mf, 0, BL_SPACEDIM+1);
-	//	(Nyx::theDMPC())->AssignDensityAndVels(particle_mf);
-	// Scale velocities by 1/(a*dx)
-	particle_mf[0]->mult(1/(a*dx[0]),1,1);
-	particle_mf[0]->mult(1/(a*dx[1]),2,1);
-	particle_mf[0]->mult(1/(a*dx[2]),3,1);
-	//	amrex::Cuda::Device::streamSynchronize();
 
-	// Get max over entire multifab in all 3 componenets
-	amrex::Real max_mag_vel_over_dx = amrex::max(particle_mf[0]->norm0(1),particle_mf[0]->norm0(2),particle_mf[0]->norm0(2));
-
-	// Check that we're not dividing by 0
-	amrex::Real dt_part = (max_mag_vel_over_dx > 0) ? (cfl / max_mag_vel_over_dx) : 1e50;
-
-	//Temporary multifab for magnitue of the acceleration
-	amrex::MultiFab mag_accel(    this->m_gdb->ParticleBoxArray(lev),
-				      this->m_gdb->ParticleDistributionMap(lev),
-				      1,0);
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
-	for (amrex::MFIter mfi(acceleration,amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi)
-	  {
-	    const amrex::Box& bx = mfi.tilebox();
-	    const amrex::Array4<amrex::Real> fab = acceleration.array(mfi);
-	    amrex::Array4<amrex::Real> fab_accel = mag_accel.array(mfi);
-	    AMREX_HOST_DEVICE_FOR_3D(bx, i, j, k,
-				     {
-				       fab_accel(i,j,k,0)=sqrt(fab(i,j,k,1)*fab(i,j,k,1)+fab(i,j,k,2)*fab(i,j,k,2)+fab(i,j,k,0)*fab(i,j,k,0));
-				     });
-	  }
-	amrex::Real mag_to_use = mag_accel.max(0);
-
-	//	amrex::Cuda::Device::streamSynchronize();
-	//It's unclear whether the double sqrt in the original code was a typo
-	if (mag_to_use > 0)
-	  dt_part = std::min( dt_part, 1/(mag_to_use/dx[0]) );
-	  //	  dt_part = std::min( dt_part, 1/sqrt(mag_to_use/dx[0]) );
-
-	//Consider making only one mpireduce
-	amrex::ParallelDescriptor::ReduceRealMin(dt_part);
-
-	dt=dt_part;
-	amrex::Cuda::Device::streamSynchronize();
-	amrex::Cuda::setLaunchRegion(prev_region);
-      }
-    else
-    {*/
     const amrex::Geometry& geom             = this->m_gdb->Geom(lev);
     const amrex::IntVect   base             = geom.Domain().smallEnd();
     const auto             dxi              = geom.InvCellSizeArray();
@@ -345,9 +293,16 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
 
 #ifdef _OPENMP
     tnum = omp_get_max_threads();
+#ifdef AMREX_USE_GPU
+    amrex::Abort("Using both omp and gpu, fix device vs multiple thread implementation ins NyxParticleContainer::estTimeStep");
+#endif
 #endif
 
+#ifndef AMREX_USE_GPU
     amrex::Vector<amrex::Real> ldt(tnum,1e50);
+#else
+    amrex::Real ldt=1e50;
+#endif
 
     long num_particles_at_level = 0;
 
@@ -373,15 +328,28 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
     for (MyConstParIter pti(*this, lev); pti.isValid(); ++pti) {
         const int grid = pti.index();
         const AoS&       pbox = pti.GetArrayOfStructs();
+	const ParticleType* pstruct = pbox().data();
         const int        n    = pbox.size();
-        const amrex::FArrayBox& gfab = (ac_pointer) ? (*ac_pointer)[grid] : acceleration[grid];
 
+        const auto gfab = (ac_pointer) ? (*ac_pointer).array(grid) : acceleration.array(grid);
+
+	//        const amrex::FArrayBox& gfab = (ac_pointer) ? (*ac_pointer)[grid] : acceleration[grid];
+
+#ifdef AMREX_USE_GPU
+	amrex::Gpu::DeviceScalar<amrex::Real> ldt_gpu(ldt);
+	amrex::Real* pldt = ldt_gpu.dataPtr();
+	//	amrex::Real* pldt = &ldt;
+#endif
         num_particles_at_level += n;
-        for (int i = 0; i < n; i++) {
-            const ParticleType& p = pbox[i];
+       
+	
+	amrex::ParallelFor(n,
+			   [=] AMREX_GPU_DEVICE (long i)
+			   {
+            const ParticleType& p = pstruct[i];
 
-            if (p.id() <= 0) continue;
-
+            if (p.id() > 0)
+	      {
 	    /*	    amrex::IntVect cell{
 	      AMREX_D_DECL(static_cast<int>(floor((p.m_rdata.pos[0]-plo[0])*dxi[0])),
 			   static_cast<int>(floor((p.m_rdata.pos[1]-plo[1])*dxi[1])),
@@ -400,37 +368,49 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
             amrex::Real max_mag_vel_over_dx = mag_vel_over_dx[0];
 
 #if (BL_SPACEDIM > 1)
-            max_mag_vel_over_dx = std::max(mag_vel_over_dx[1], max_mag_vel_over_dx);
+            max_mag_vel_over_dx = amrex::max(mag_vel_over_dx[1], max_mag_vel_over_dx);
 #endif
 #if (BL_SPACEDIM > 2)
-            max_mag_vel_over_dx = std::max(mag_vel_over_dx[2], max_mag_vel_over_dx);
+            max_mag_vel_over_dx = amrex::max(mag_vel_over_dx[2], max_mag_vel_over_dx);
 #endif
             amrex::Real dt_part = (max_mag_vel_over_dx > 0) ? (cfl / max_mag_vel_over_dx) : 1e50;
 
-            const amrex::Real aval[BL_SPACEDIM] = { D_DECL(gfab(cell,0),
-                                                           gfab(cell,1),
-                                                           gfab(cell,2)) };
+            const amrex::Real aval[BL_SPACEDIM] = { D_DECL(gfab(ARLIM(cell),0),
+							   gfab(ARLIM(cell),1),
+							   gfab(ARLIM(cell),2)) };
 
             const amrex::Real mag_accel = sqrt(D_TERM(aval[0]*aval[0],
                                                       + aval[1]*aval[1],
                                                       + aval[2]*aval[2]));
 
             if (mag_accel > 0)
-	      dt_part = std::min( dt_part, 1/std::sqrt(mag_accel*dxi[0]) );
+	      dt_part = amrex::min( dt_part, 1/std::sqrt(mag_accel*dxi[0]) );
 
             int tid = 0;
 
 #ifdef _OPENMP
             tid = omp_get_thread_num();
 #endif
+
+#ifdef AMREX_USE_GPU
+	    amrex::Gpu::Atomic::detail::atomicMin(pldt,dt_part);
+	    //	    *pldt=std::min(*pldt,dt_part);
+#else
             ldt[tid] = std::min(dt_part, ldt[tid]);
-        }
+#endif
+	      }
+	      });
 	//    }
 
     if (ac_pointer) delete ac_pointer;
 
+	
+#ifdef AMREX_USE_GPU
+    dt = amrex::min(dt,ldt_gpu.dataValue());
+#else
     for (int i = 0; i < ldt.size(); i++)
         dt = std::min(dt, ldt[i]);
+#endif
 
     amrex::ParallelDescriptor::ReduceRealMin(dt);
     //
@@ -440,7 +420,7 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
 
     if (num_particles_at_level == 0) dt = -1.e50;
 
-      }
+    }
 
     if (this->m_verbose > 1)
     {
@@ -453,6 +433,10 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
             std::cout << "NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep() time: " << stoptime << '\n';
         }
     }
+
+    }
+      amrex::Cuda::Device::streamSynchronize();
+      amrex::Cuda::setLaunchRegion(prev_region);
 
     return dt;
 }
