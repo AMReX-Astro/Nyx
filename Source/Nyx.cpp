@@ -2528,15 +2528,28 @@ void
 Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_meanrho)
 {
     BL_PROFILE("Nyx::compute_rho_temp()");
+    bool prev_region=Gpu::inLaunchRegion();
+    amrex::Cuda::setLaunchRegion(true);
+    {
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
 
     Real rho_T_sum=0.0,   T_sum=0.0, Tinv_sum=0.0, T_meanrho_sum=0.0;
     Real   rho_sum=0.0, vol_sum=0.0,    vol_mn_sum=0.0;
+
+#ifdef AMREX_USE_CUDA
+    Gpu::DeviceScalar<Real> rho_T_sum_gpu(rho_T_sum);
+    Gpu::DeviceScalar<Real> rho_sum_gpu(rho_sum);
+    Gpu::DeviceScalar<Real> T_sum_gpu(T_sum);
+    Gpu::DeviceScalar<Real> Tinv_sum_gpu(Tinv_sum);
+    Gpu::DeviceScalar<Real> T_meanrho_sum_gpu(T_meanrho_sum);
+    Gpu::DeviceScalar<Real> vol_sum_gpu(vol_sum);
+    Gpu::DeviceScalar<Real> vol_mn_sum_gpu(vol_mn_sum);
+#endif
+
     Real rho_hi = 1.1*average_gas_density;
     Real rho_lo = 0.9*average_gas_density;
-    const auto dx= geom.CellSize();
-    Real vol = dx[0]*dx[1]*dx[2];
+    const auto dx= geom.CellSizeArray();
     int Temp_loc=Temp_comp;
     int Density_loc=Density;
 
@@ -2550,27 +2563,56 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
 	const auto hi = amrex::ubound(bx);
 	const auto state    = S_new.array(mfi);
 	const auto diag_eos = D_new.array(mfi);
-	Real T_tmp, rho_tmp;
+	Real vol = dx[0]*dx[1]*dx[2];
 
-	for     (int k = lo.z; k <= hi.z; ++k) {
-	  for   (int j = lo.y; j <= hi.y; ++j) {
-	    for (int i = lo.x; i <= hi.x; ++i) {
+#ifdef AMREX_USE_CUDA
+	      Real* prho_T_sum = rho_T_sum_gpu.dataPtr();
+	      Real* prho_sum = rho_sum_gpu.dataPtr();
+	      Real* pT_sum = T_sum_gpu.dataPtr();
+	      Real* pTinv_sum = Tinv_sum_gpu.dataPtr();
+	      Real* pT_meanrho_sum = T_meanrho_sum_gpu.dataPtr();
+	      Real* pvol_sum = vol_sum_gpu.dataPtr();
+	      Real* pvol_mn_sum = vol_mn_sum_gpu.dataPtr();
+#else
+	      Real* prho_T_sum = &rho_T_sum;
+	      Real* prho_sum = &rho_sum;
+	      Real* pT_sum = &T_sum;
+	      Real* pTinv_sum = &Tinv_sum;
+	      Real* pT_meanrho_sum = &T_meanrho_sum;
+	      Real* pvol_sum = &vol_sum;
+	      Real* pvol_mn_sum = &vol_mn_sum;
+#endif
+
+	amrex::ParallelFor(bx,
+		      [=] AMREX_GPU_HOST_DEVICE (int i, int j, int k)
+	   {
+
+	      Real T_tmp, rho_tmp;     
+
 	      T_tmp=diag_eos(i,j,k,Temp_loc);
 	      rho_tmp=state(i,j,k,Density_loc);
-	      T_sum += vol*T_tmp;
-	      Tinv_sum +=  rho_tmp/T_tmp;
-	      rho_T_sum += rho_tmp*T_tmp;
-	      rho_sum += rho_tmp;
+	      amrex::Gpu::Atomic::Add(pT_sum, vol*T_tmp);
+	      amrex::Gpu::Atomic::Add(pTinv_sum, rho_tmp/T_tmp);
+	      amrex::Gpu::Atomic::Add(prho_T_sum, rho_tmp*T_tmp);
+	      amrex::Gpu::Atomic::Add(prho_sum, rho_tmp);
 	      if ( (rho_tmp < rho_hi) &&  (rho_tmp > rho_lo) && (T_tmp <= 1.0e5) ) {
-		T_meanrho_sum += vol*log10(T_tmp);
-		vol_mn_sum += vol;
+		amrex::Gpu::Atomic::Add(pT_meanrho_sum, vol*log10(T_tmp));
+		amrex::Gpu::Atomic::Add(pvol_mn_sum, vol);
 	      }
-	      vol_sum += vol;
-	    }
-	  }
-	}
+	      amrex::Gpu::Atomic::Add(pvol_sum, vol);
+	   });
 
     }
+
+    amrex::Gpu::Device::streamSynchronize();
+    rho_T_sum = rho_T_sum_gpu.dataValue();
+    rho_sum = rho_sum_gpu.dataValue();
+    T_sum = T_sum_gpu.dataValue();
+    Tinv_sum = Tinv_sum_gpu.dataValue();
+    T_meanrho_sum = T_meanrho_sum_gpu.dataValue();
+    vol_sum = vol_sum_gpu.dataValue();
+    vol_mn_sum = vol_mn_sum_gpu.dataValue();
+
     Real sums[7] = {rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum};
     ParallelDescriptor::ReduceRealSum(sums,7);
 
@@ -2581,6 +2623,8 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
        T_meanrho = sums[4] / sums[6];  // T at mean density
        T_meanrho = pow(10.0, T_meanrho);
     }
+    }
+    amrex::Cuda::setLaunchRegion(prev_region);
 }
 #endif
 
@@ -2592,57 +2636,120 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
                             Real& igm_mass_frac,  Real& igm_vol_frac)
 {
     BL_PROFILE("Nyx::compute_gas_fractions()");
+    bool prev_region=Gpu::inLaunchRegion();
+    amrex::Cuda::setLaunchRegion(true);
+    {
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
 
-    Real whim_mass=0.0, whim_vol=0.0, hh_mass=0.0, hh_vol=0.0, igm_mass=0.0, igm_vol=0.0;
-    Real mass_sum=0.0, vol_sum=0.0;
+    Real whim_mass=0.0, whim_vol=0.0, hh_mass=0.0, hh_vol=0.0, igm_mass=0.0, igm_vol=0.0, mass_sum=0.0, vol_sum=0.0;
 
+#ifdef AMREX_USE_CUDA
+    Gpu::DeviceScalar<Real> whim_mass_gpu( whim_mass);
+    Gpu::DeviceScalar<Real> whim_vol_gpu( whim_vol);
+    Gpu::DeviceScalar<Real> hh_mass_gpu( hh_mass);
+    Gpu::DeviceScalar<Real> hh_vol_gpu( hh_vol);
+    Gpu::DeviceScalar<Real> igm_mass_gpu( igm_mass);
+    Gpu::DeviceScalar<Real> igm_vol_gpu( igm_vol);
+    Gpu::DeviceScalar<Real> mass_sum_gpu( mass_sum);
+    Gpu::DeviceScalar<Real> vol_sum_gpu( vol_sum);
+    
+#endif
     Real rho_hi = 1.1*average_gas_density;
     Real rho_lo = 0.9*average_gas_density;
-    const auto dx= geom.CellSize();
-    Real vol = dx[0]*dx[1]*dx[2];
+    const auto dx= geom.CellSizeArray();
     int Temp_loc=Temp_comp;
     int Density_loc=Density;
+    int average_gas_density_loc=average_gas_density;
 
 #ifdef _OPENMP
 #pragma omp parallel reduction(+:whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum)
 #endif
-    for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
+    for (MFIter mfi(S_new,!amrex::Gpu::inLaunchRegion()); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
 	const auto lo = amrex::lbound(bx);
 	const auto hi = amrex::ubound(bx);
 	const auto state    = S_new.array(mfi);
 	const auto diag_eos = D_new.array(mfi);
-	Real T, R, rho_vol;
+	Real vol = dx[0]*dx[1]*dx[2];
 
-	for     (int k = lo.z; k <= hi.z; ++k) {
-	  for   (int j = lo.y; j <= hi.y; ++j) {
-	    for (int i = lo.x; i <= hi.x; ++i) {
+#ifdef AMREX_USE_CUDA
+    Real* pwhim_mass= whim_mass_gpu.dataPtr();
+    Real* pwhim_vol= whim_vol_gpu.dataPtr();
+    Real* phh_mass= hh_mass_gpu.dataPtr();
+    Real* phh_vol= hh_vol_gpu.dataPtr();
+    Real* pigm_mass= igm_mass_gpu.dataPtr();
+    Real* pigm_vol= igm_vol_gpu.dataPtr();
+    Real* pmass_sum= mass_sum_gpu.dataPtr();
+    Real* pvol_sum= vol_sum_gpu.dataPtr();
+#else
+    Real* pwhim_mass = &whim_mass;
+    Real* pwhim_vol = &whim_vol;
+    Real* phh_mass = &hh_mass;
+    Real* phh_vol = &hh_vol;
+    Real* pigm_mass = &igm_mass;
+    Real* pigm_vol = &igm_vol;
+    Real* pmass_sum = &mass_sum;
+    Real* pvol_sum = &vol_sum;
+#endif
+
+	amrex::ParallelFor(bx,
+		      [=] AMREX_GPU_HOST_DEVICE (int i, int j, int k)
+	   {
+
+	     Real T, R, rho_vol;
+
 	      T = diag_eos(i,j,k,Temp_loc);
-	      R = state(i,j,k,Density_loc) / average_gas_density;
+	      R = state(i,j,k,Density_loc) / average_gas_density_loc;
 	      rho_vol = state(i,j,k,Density_loc)*vol;
-	      if ( (T > T_cut) && (R <= rho_cut) ) {
-		whim_mass += rho_vol;
-		whim_vol  += vol;
-	      }
-	      else if ( (T > T_cut) && (R > rho_cut) ) {
-		hh_mass += rho_vol;
-		hh_vol  +=   vol;
-	      }
-	      else if ( (T <= T_cut) && (R <= rho_cut) ) {
-		igm_mass += rho_vol;
-		igm_vol  +=   vol;
-	      }
-	      mass_sum += rho_vol;
-	      vol_sum  += vol;
-	    }
-	  }
-	}
+              if ( (T > T_cut) && (R <= rho_cut) ) {
+		amrex::Gpu::Atomic::Add(pwhim_mass,rho_vol);
+		amrex::Gpu::Atomic::Add(pwhim_vol,vol);
+              }
+              else if ( (T > T_cut) && (R > rho_cut) ) {
+		amrex::Gpu::Atomic::Add(phh_mass, rho_vol);
+		amrex::Gpu::Atomic::Add(phh_vol, vol);
+              }
+              else if ( (T <= T_cut) && (R <= rho_cut) ) {
+		amrex::Gpu::Atomic::Add(pigm_mass, rho_vol);
+		amrex::Gpu::Atomic::Add(pigm_vol,  vol);
+              }
+	      amrex::Gpu::Atomic::Add(pmass_sum, rho_vol);
+	      amrex::Gpu::Atomic::Add(pvol_sum, vol);
+	   });
 
     }
+
+	whim_mass= whim_mass_gpu.dataValue();
+	whim_vol= whim_vol_gpu.dataValue();
+	hh_mass= hh_mass_gpu.dataValue();
+	hh_vol= hh_vol_gpu.dataValue();
+	igm_mass= igm_mass_gpu.dataValue();
+	igm_vol= igm_vol_gpu.dataValue();
+	mass_sum= mass_sum_gpu.dataValue();
+	vol_sum= vol_sum_gpu.dataValue();
+
+#ifdef AMREX_USE_CUDA
+    amrex::Gpu::Device::streamSynchronize();
+    /*    whim_mass = whim_mass_gpu.dataValue();
+    whim_vol = whim_vol_gpu.dataValue();
     Real sums[8] = {whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum};
+    //,whim_vol_gpu.dataValue(),hh_mass_gpu.dataValue(),hh_vol_gpu.dataValue(),igm_mass_gpu.dataValue(), igm_vol_gpu.dataValue(),mass_sum_gpu.dataValue(),vol_sum_gpu.dataValue()};*/
+    Real sums[8];
+    sums[0] = whim_mass;
+    sums[1] = whim_vol;
+    sums[2] = hh_mass;
+    sums[3] = hh_vol;
+    sums[4] = igm_mass;
+    sums[5] = igm_vol;
+    sums[6] = mass_sum;
+    sums[7] = vol_sum;
+    //    Real sums[8] = {whim_mass_gpu.dataValue(),whim_vol_gpu.dataValue(),hh_mass_gpu.dataValue(),hh_vol_gpu.dataValue(),igm_mass_gpu.dataValue(), igm_vol_gpu.dataValue(),mass_sum_gpu.dataValue(),vol_sum_gpu.dataValue()};
+#else
+    Real sums[8] = {whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum};
+#endif
+
     ParallelDescriptor::ReduceRealSum(sums,8);
 
     whim_mass_frac = sums[0] / sums[6];
@@ -2651,6 +2758,8 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
     hh_vol_frac    = sums[3] / sums[7];
     igm_mass_frac  = sums[4] / sums[6];
     igm_vol_frac   = sums[5] / sums[7];
+    }
+    amrex::Cuda::setLaunchRegion(prev_region);
 }
 #endif
 
