@@ -278,9 +278,9 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
 
     if (this->GetParticles().size() == 0)
         return dt;
-    bool prev_region = amrex::Gpu::inLaunchRegion();
-    amrex::Gpu::setLaunchRegion(true);
-    {
+
+    amrex::Gpu::LaunchSafeGuard lsg(true);
+
     const amrex::Real      strttime         = amrex::ParallelDescriptor::second();
 
     const amrex::Geometry& geom             = this->m_gdb->Geom(lev);
@@ -298,24 +298,14 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
 #endif
 #endif
 
-#ifdef AMREX_USE_GPU
-    amrex::Real ldt=1e50;
-#else
-    amrex::Vector<amrex::Real> ldt(tnum,1e50);
-#endif
-
     long num_particles_at_level = 0;
 
-    amrex::MultiFab* ac_pointer;
-    if (this->OnSameGrids(lev, acceleration))
+    std::unique_ptr<amrex::MultiFab> ac_pointer;
+    if (!this->OnSameGrids(lev, acceleration))
     {
-        ac_pointer = 0;
-    }
-    else 
-    {
-        ac_pointer = new amrex::MultiFab(this->m_gdb->ParticleBoxArray(lev), 
-					 this->m_gdb->ParticleDistributionMap(lev),
-					 acceleration.nComp(), acceleration.nGrow());
+        ac_pointer.reset(new amrex::MultiFab(this->m_gdb->ParticleBoxArray(lev), 
+                                             this->m_gdb->ParticleDistributionMap(lev),
+                                             acceleration.nComp(), acceleration.nGrow()));
 				  
         ac_pointer->copy(acceleration,0,0,BL_SPACEDIM);
         ac_pointer->FillBoundary(geom.periodicity()); // DO WE NEED GHOST CELLS FILLED ???
@@ -323,103 +313,66 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
 
 
 #ifdef _OPENMP
-#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())
+#pragma omp parallel if (amrex::Gpu::notInLaunchRegion()) reduction(min:dt)
 #endif
-    for (MyConstParIter pti(*this, lev); pti.isValid(); ++pti) {
-        const int grid = pti.index();
-        const AoS&       pbox = pti.GetArrayOfStructs();
-	const ParticleType* pstruct = pbox().data();
-        const int        n    = pbox.size();
+    {
+	amrex::Gpu::DeviceScalar<amrex::Real> ldt_gpu(dt);
+	amrex::Real* pldt = ldt_gpu.dataPtr();
 
-        const auto gfab = (ac_pointer) ? (*ac_pointer).array(grid) : acceleration.array(grid);
+        for (MyConstParIter pti(*this, lev); pti.isValid(); ++pti) {
+            const int grid = pti.index();
+            const AoS&       pbox = pti.GetArrayOfStructs();
+            const ParticleType* pstruct = pbox().data();
+            const int        n    = pbox.size();
+
+            const auto gfab = (ac_pointer) ? (*ac_pointer).array(grid) : acceleration.array(grid);
 
 	//        const amrex::FArrayBox& gfab = (ac_pointer) ? (*ac_pointer)[grid] : acceleration[grid];
 
-#ifdef AMREX_USE_GPU
-	amrex::Gpu::DeviceScalar<amrex::Real> ldt_gpu(ldt);
-	amrex::Real* pldt = ldt_gpu.dataPtr();
-	//	amrex::Real* pldt = &ldt;
-#endif
-        num_particles_at_level += n;
+            num_particles_at_level += n;
        
 	
-#ifdef AMREX_USE_GPU
-	amrex::ParallelFor(n,
-			   [=] AMREX_GPU_HOST_DEVICE (int i)
-#else
-			   for(int i=0;i<n;i++)
-			   {
-#endif
-            const ParticleType& p = pstruct[i];
+            AMREX_HOST_DEVICE_FOR_1D ( n, i,
+            {
+                const ParticleType& p = pstruct[i];
 
-            if (p.id() > 0)
-	      {
-	    /*	    amrex::IntVect cell{
-	      AMREX_D_DECL(static_cast<int>(floor((p.m_rdata.pos[0]-plo[0])*dxi[0])),
-			   static_cast<int>(floor((p.m_rdata.pos[1]-plo[1])*dxi[1])),
-			   static_cast<int>(floor((p.m_rdata.pos[2]-plo[2])*dxi[2])))};
-	    */
-	    amrex::IntVect cell;
-	    cell[0]= static_cast<int>(floor((p.pos(0)-plo[0])*dxi[0]));
-	    cell[1]= static_cast<int>(floor((p.pos(1)-plo[1])*dxi[1]));
-	    cell[2]= static_cast<int>(floor((p.pos(2)-plo[2])*dxi[2]));
-	    cell += base;
-	    
-            const amrex::Real mag_vel_over_dx[BL_SPACEDIM] = { D_DECL(std::abs(p.rdata(1))*adxi[0],
-                                                                      std::abs(p.rdata(2))*adxi[1],
-                                                                      std::abs(p.rdata(3))*adxi[2]) };
+                if (p.id() > 0)
+                {
+                    /*	    amrex::IntVect cell{
+                            AMREX_D_DECL(static_cast<int>(floor((p.m_rdata.pos[0]-plo[0])*dxi[0])),
+                            static_cast<int>(floor((p.m_rdata.pos[1]-plo[1])*dxi[1])),
+                            static_cast<int>(floor((p.m_rdata.pos[2]-plo[2])*dxi[2])))};
+                    */
+                    amrex::IntVect cell;
+                    cell[0]= static_cast<int>(floor((p.pos(0)-plo[0])*dxi[0]));
+                    cell[1]= static_cast<int>(floor((p.pos(1)-plo[1])*dxi[1]));
+                    cell[2]= static_cast<int>(floor((p.pos(2)-plo[2])*dxi[2]));
+                    cell += base;
+                    
+                    const amrex::Real mag_vel_over_dx = std::abs(p.rdata(1))*adxi[0];
+                    const amrex::Real mag_vel_over_dy = std::abs(p.rdata(2))*adxi[1];
+                    const amrex::Real mag_vel_over_dz = std::abs(p.rdata(3))*adxi[2];
+                    
+                    amrex::Real max_mag_vel_over_dx = amrex::max(mag_vel_over_dx,mag_vel_over_dy,mag_vel_over_dz);
+                    amrex::Real dt_part = (max_mag_vel_over_dx > 0) ? (cfl / max_mag_vel_over_dx) : 1e50;
+                    
+                    const amrex::Real aval_x = gfab(cell[0],cell[1],cell[2],0);
+                    const amrex::Real aval_y = gfab(cell[0],cell[1],cell[2],1);
+                    const amrex::Real aval_z = gfab(cell[0],cell[1],cell[2],2);
+                    const amrex::Real mag_accel = std::sqrt(aval_x*aval_x+aval_y*aval_y+aval_z*aval_z);
 
-            amrex::Real max_mag_vel_over_dx = mag_vel_over_dx[0];
+                    if (mag_accel > 0) {
+                        dt_part = amrex::min( dt_part, 1/std::sqrt(mag_accel*dxi[0]) );
+                    }
 
-#if (BL_SPACEDIM > 1)
-            max_mag_vel_over_dx = amrex::max(mag_vel_over_dx[1], max_mag_vel_over_dx);
-#endif
-#if (BL_SPACEDIM > 2)
-            max_mag_vel_over_dx = amrex::max(mag_vel_over_dx[2], max_mag_vel_over_dx);
-#endif
-            amrex::Real dt_part = (max_mag_vel_over_dx > 0) ? (cfl / max_mag_vel_over_dx) : 1e50;
+                    amrex::Gpu::Atomic::Min(pldt,dt_part);
+                }
+            });
+        }
 
-            const amrex::Real aval[BL_SPACEDIM] = { D_DECL(gfab(ARLIM(cell),0),
-							   gfab(ARLIM(cell),1),
-							   gfab(ARLIM(cell),2)) };
-
-            const amrex::Real mag_accel = sqrt(D_TERM(aval[0]*aval[0],
-                                                      + aval[1]*aval[1],
-                                                      + aval[2]*aval[2]));
-
-            if (mag_accel > 0)
-	      dt_part = amrex::min( dt_part, 1/std::sqrt(mag_accel*dxi[0]) );
-
-            int tid = 0;
-
-#ifdef _OPENMP
-            tid = omp_get_thread_num();
-#endif
-
-#ifdef AMREX_USE_GPU
-	    amrex::Gpu::Atomic::detail::atomicMin(pldt,dt_part);
-	    //	    *pldt=std::min(*pldt,dt_part);
-#else
-	    ldt[tid] = amrex::min(dt_part, ldt[tid]);
-#endif
-
-	      }
-#ifdef AMREX_USE_GPU
-			   });
-#else
+        amrex::Real ldt_cpu = ldt_gpu.dataValue();
+        dt = std::min(dt,ldt_cpu);
     }
-#endif
-	//    }
-
-    if (ac_pointer) delete ac_pointer;
-
-	
-#ifdef AMREX_USE_GPU
-    dt = amrex::min(dt,ldt_gpu.dataValue());
-#else
-    for (int i = 0; i < ldt.size(); i++)
-        dt = std::min(dt, ldt[i]);
-#endif
 
     amrex::ParallelDescriptor::ReduceRealMin(dt);
     //
@@ -428,8 +381,6 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
     amrex::ParallelDescriptor::ReduceLongSum(num_particles_at_level);
 
     if (num_particles_at_level == 0) dt = -1.e50;
-
-    }
 
     if (this->m_verbose > 1)
     {
@@ -442,10 +393,6 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
             std::cout << "NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep() time: " << stoptime << '\n';
         }
     }
-
-    }
-      amrex::Gpu::Device::streamSynchronize();
-      amrex::Gpu::setLaunchRegion(prev_region);
 
     return dt;
 }
