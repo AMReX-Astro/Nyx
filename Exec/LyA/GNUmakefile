@@ -1,5 +1,6 @@
 # AMREX_HOME defines the directory in which we will find all the AMReX code
 AMREX_HOME ?= ../../../amrex
+ASCENT_HOME ?=/project/projectdirs/alpine/software/ascent/gnu/7.3.0/ascent-install/
 
 CVODE_LIB_DIR ?= $(CVODE_LIB)
 
@@ -12,8 +13,7 @@ USE_MPI = FALSE
 USE_OMP = FALSE
 
 USE_HENSON = FALSE
-USE_ASCENT_INSITU=TRUE 
-ASCENT_HOME=/project/projectdirs/alpine/software/ascent/gnu/7.3.0/ascent-install/
+USE_ASCENT_INSITU=TRUE
 
 PROFILE       = TRUE
 TRACE_PROFILE = FALSE
@@ -21,7 +21,6 @@ COMM_PROFILE  = FALSE
 TINY_PROFILE  = FALSE
 
 PRECISION = DOUBLE
-USE_SINGLE_PRECISION_PARTICLES = FALSE
 DEBUG     = FALSE
 
 GIMLET = FALSE
