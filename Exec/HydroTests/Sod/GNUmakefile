@@ -5,12 +5,12 @@ AMREX_HOME ?= ../../../../amrex
 TOP = ../../..
 
 # compilation options
-COMP    = pgi
+COMP    = gcc
 
 USE_MPI = FALSE
 USE_OMP = FALSE
-USE_CUDA = TRUE
-TINY_PROFILE = TRUE
+USE_CUDA = FALSE
+#TINY_PROFILE = TRUE
 
 PRECISION = DOUBLE
 DEBUG     = FALSE

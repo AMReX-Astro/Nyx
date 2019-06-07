@@ -10,14 +10,14 @@ amr.prereadFAHeaders     = 1
 amr.checkpoint_headerversion = 2
 
 nyx.hydro_convert    = 1
-nyx.ppm_type         = 0
+nyx.ppm_type         = 1
 nyx.ppm_reference    = 1
 nyx.use_colglaz      = 0
 nyx.corner_coupling  = 1
 
 nyx.strang_split     = 1
 nyx.add_ext_src      = 0
-nyx.heat_cool_type   = 11
+nyx.heat_cool_type   = 3
 #nyx.simd_width       = 8
 
 nyx.use_const_species = 1
@@ -55,9 +55,8 @@ geometry.prob_hi     =  28.49002849  28.49002849  28.49002849
 
 amr.n_cell           =  64  64  64
 amr.max_grid_size    =  32
-amr.max_grid_size    =  64
 fabarray.mfiter_tile_size = 1024000 8 8
-fabarray.mfiter_tile_size = 1024000 1024000 1024000
+#fabarray.mfiter_tile_size = 1024000 1024000 1024000
 
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
 # 0 = Interior           3 = Symmetry
@@ -121,7 +120,7 @@ mg.v                  = 1       # verbosity in Amr.cpp
 particles.v           = 2       # verbosity in Particle class
 
 # REFINEMENT / REGRIDDING
-amr.max_level          = 0        # maximum level number allowed
+amr.max_level          = 2        # maximum level number allowed
 amr.ref_ratio          = 2 2 2 2
 amr.regrid_int         = 4 4 4 4
 amr.n_error_buf        = 0 0 0 8
@@ -131,7 +130,7 @@ amr.blocking_factor    = 16
 #amr.nosub              = 1
 
 # CHECKPOINT FILES
-amr.checkpoint_files_output = 1
+amr.checkpoint_files_output = 0
 amr.check_file        = chk
 amr.check_int         = 100
 amr.checkpoint_nfiles = 64
@@ -140,10 +139,10 @@ amr.checkpoint_nfiles = 64
 #fab.format          = NATIVE_32
 amr.plot_files_output = 1
 amr.plot_file       = plt
-amr.plot_int        = 1
+amr.plot_int        = 10
 amr.plot_nfiles     = 64
 
-amr.plot_vars        = density xmom ymom zmom rho_e Temp phi_grav Ne
+amr.plot_vars        = density xmom ymom zmom rho_e Temp phi_grav
 amr.derive_plot_vars = particle_mass_density
 
 #PROBIN FILENAME
