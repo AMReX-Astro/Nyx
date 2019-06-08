@@ -2404,6 +2404,11 @@ Nyx::reset_internal_energy_nostore (MultiFab& S_new, MultiFab& D_new)
     BL_PROFILE("Nyx::reset_internal_energy_nostore()");
     // Synchronize (rho e) and (rho E) so they are consistent with each other
 
+    MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
+    reset_e_src.setVal(0.0);
+
+    reset_internal_energy (S_new, D_new,  reset_e_src);
+    /*
     const Real  cur_time = state[State_Type].curTime();
     Real        a        = get_comoving_a(cur_time);
 
@@ -2428,7 +2433,7 @@ Nyx::reset_internal_energy_nostore (MultiFab& S_new, MultiFab& D_new)
 	  });
     }
     amrex::Gpu::setLaunchRegion(prev_region);
-
+    */
 }
 #endif
 

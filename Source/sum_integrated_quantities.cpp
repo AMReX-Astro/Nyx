@@ -285,6 +285,15 @@ Nyx::compute_average_temperature (Real& average_temperature)
         nyx_lev.compute_new_temp     (S_new,D_new);
 
         average_temperature += nyx_lev.vol_weight_sum("Temp",time,true);
+
+	if (verbose > 1) {
+	  std::cout << "Norm2 temperature" << D_new.norm2(Temp_comp)<<std::endl;
+	  std::cout << "Norm0 temperature" << D_new.norm0(Temp_comp)<<std::endl;
+
+	  std::cout << "Norm2 rho_e" << S_new.norm2(Eint)<<std::endl;
+	  std::cout << "Norm0 rho_e" << S_new.norm0(Eint)<<std::endl;
+
+	}
     }
  
     // Divide by physical volume of domain.

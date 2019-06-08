@@ -15,6 +15,13 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
     if (verbose && ParallelDescriptor::IOProcessor())
       std::cout << "Updating state with the hydro sources ... " << std::endl;
 
+    if(verbose>1) {
+        std::cout<<"hydro_src norm2(0)"<<hydro_src.norm2(0)<<std::endl;
+	std::cout<<"hydro_src norm2(Eint)"<<hydro_src.norm2(Eint)<<std::endl;
+	std::cout<<"hydro_src norm2(Eint)"<<hydro_src.norm2(Eden)<<std::endl;
+}
+
+
     if(hydro_convert)
     {
       int print_fortran_warnings_tmp=print_fortran_warnings;
@@ -94,4 +101,10 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
                 &dt, &a_old, &a_new);
    }
       }
+   if(verbose>1) {
+	std::cout<<"S_new norm2(0)"<<S_new.norm2(0)<<std::endl;
+	std::cout<<"S_new norm2(Eint)"<<S_new.norm2(Eint)<<std::endl;
+	std::cout<<"S_new norm2(Eint)"<<S_new.norm2(Eden)<<std::endl;
+}
+
 }

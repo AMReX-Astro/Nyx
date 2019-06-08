@@ -221,7 +221,11 @@ Nyx::strang_hydro (Real time,
         compute_new_temp(S_new,D_new);
     } // end if (add_ext_src)
 
-
+   if(verbose>1) {
+	std::cout<<"aS_new norm2(0)"<<S_new.norm2(0)<<std::endl;
+	std::cout<<"aS_new norm2(Eint)"<<S_new.norm2(Eint)<<std::endl;
+	std::cout<<"aS_new norm2(Eden)"<<S_new.norm2(Eden)<<std::endl;
+}
 #ifndef NDEBUG
     amrex::Gpu::Device::streamSynchronize();
     amrex::Gpu::setLaunchRegion(false);
@@ -247,7 +251,11 @@ Nyx::strang_hydro (Real time,
     // This returns updated (rho e), (rho E), and Temperature
     strang_second_step(cur_time,dt,S_new,D_new);
 #endif
-
+   if(verbose>1) {
+	std::cout<<"bS_new norm2(0)"<<S_new.norm2(0)<<std::endl;
+	std::cout<<"bS_new norm2(Eint)"<<S_new.norm2(Eint)<<std::endl;
+	std::cout<<"bS_new norm2(Eden)"<<S_new.norm2(Eden)<<std::endl;
+}
 #ifndef NDEBUG
     amrex::Gpu::Device::streamSynchronize();
     amrex::Gpu::setLaunchRegion(false);

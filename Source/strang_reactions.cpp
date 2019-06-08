@@ -132,6 +132,11 @@ Nyx::strang_second_step (Real time, Real dt, MultiFab& S_new, MultiFab& D_new)
     // Set a at the half of the time step in the second strang
     const Real a = get_comoving_a(time-half_dt);
 
+    MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
+    reset_e_src.setVal(0.0);
+    reset_internal_energy(S_new,D_new,reset_e_src);
+    compute_new_temp     (S_new,D_new);
+
 #ifndef FORCING
     {
       const Real z = 1.0/a - 1.0;
@@ -143,15 +148,6 @@ Nyx::strang_second_step (Real time, Real dt, MultiFab& S_new, MultiFab& D_new)
       });*/
     }
 #endif
-
-#ifdef SDC
-    MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
-    reset_e_src.setVal(0.0);
-    reset_internal_energy(S_new,D_new,reset_e_src);
-#else
-    reset_internal_energy_nostore(S_new,D_new);
-#endif
-    compute_new_temp     (S_new,D_new);
 
     /////////////////////Consider adding ifdefs for whether CVODE is compiled in for these statements
     if(heat_cool_type == 3 || heat_cool_type==5 || heat_cool_type==7 || heat_cool_type==9)

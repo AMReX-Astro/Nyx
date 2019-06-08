@@ -782,6 +782,8 @@ Gravity::actual_multilevel_solve (int                       level,
 	for (int lev = 0; lev < num_levels; lev++)
 	  (*Rhs_p[lev]).plus(-mass_offset,0,1,0);
 
+	if(verbose>1)
+	   std::cout<<"After mass correction"<<(*Rhs_p[0]).norm2(0)<<std::endl;
        // This is used to enforce solvability if appropriate.
        if ( parent->Geom(level).Domain().numPts() == grids[level].numPts() )
        {
@@ -1561,6 +1563,9 @@ Gravity::CorrectRhsUsingOffset(int level, MultiFab& Rhs)
     //    for (MFIter mfi(Rhs); mfi.isValid(); ++mfi)
     //        Rhs[mfi].plus(-mass_offset);
     Rhs.plus(-mass_offset,0,1,0);
+
+    if(verbose>1)
+        std::cout<<"After mass correction2"<<(Rhs).norm2(0)<<std::endl;
     // This checks if mass has been conserved--in particular if
     // virtual particles are correctly representing finer particles.
     if (level == 0)
