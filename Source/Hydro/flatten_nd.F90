@@ -1,4 +1,4 @@
-module flatten_module
+module ca_flatten_module
 
   use amrex_constants_module, only : ZERO
   use amrex_fort_module, only : rt => amrex_real
@@ -384,4 +384,4 @@ contains
 
   end subroutine uflaten
   
-end module flatten_module
+end module ca_flatten_module

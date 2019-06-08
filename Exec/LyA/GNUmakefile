@@ -10,7 +10,7 @@ TOP = ../..
 COMP    = intel # gnu
 USE_MPI = TRUE
 USE_OMP = TRUE
-USE_CUDA = TRUE
+USE_CUDA = FALSE
 
 USE_HENSON = FALSE
 

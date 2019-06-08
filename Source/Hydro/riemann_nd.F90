@@ -978,7 +978,7 @@ contains
 
     use meth_params_module, only : gamma_minus_1, use_analriem, use_csmall_gamma, use_gamma_minus
 #ifndef AMREX_USE_CUDA
-    use analriem_module
+    use amrex_error_module, only: amrex_abort
 #endif
 
     implicit none
@@ -1221,17 +1221,7 @@ contains
              endif
 #ifndef AMREX_USE_CUDA
           else
-                      ! Call analytic Riemann solver
-            call analriem_1cell((gamma_minus_1+ONE), &
-                 pl, &
-                 rl, &
-                 ul, &
-                 pr, &
-                 rr, &
-                 ur, &
-                 small_pres, &
-                 pstar, &
-                 ustar)
+             call amrex_abort("Requiring analytic riemann solve which is not implemented")
 #endif
             endif
              ! ------------------------------------------------------------------

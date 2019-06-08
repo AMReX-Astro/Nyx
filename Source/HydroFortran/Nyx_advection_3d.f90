@@ -41,7 +41,7 @@
       use amrex_mempool_module, only : amrex_allocate, amrex_deallocate
       use amrex_constants_module
       use meth_params_module, only : QVAR, NVAR, QU, ppm_type, &
-                                     use_colglaz, &
+                                     use_colglaz, corner_coupling, &
                                      version_2
       use slope_module
       use trace_ppm_module
@@ -330,36 +330,39 @@
                      2,ilo1-1,ihi1+1,ilo2,ihi2+1,kc,kc,k3d,print_fortran_warnings)
 
  
-         ! On x-edges
-         ! qxm + d/dy (fy) --> qmxy
-         ! qxp + d/dy (fy) --> qpxy
-         call transy1(qxm,qmxy,qxp,qpxy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+         if (corner_coupling .eq. 1) then
+
+             ! On x-edges
+             ! qxm + d/dy (fy) --> qmxy
+             ! qxp + d/dy (fy) --> qpxy
+             call transy1(qxm,qmxy,qxp,qpxy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                           fy,ilo1-1,ilo2,1,ihi1+1,ihi2+1,2, &
                           ugdnvy,pgdnvy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                           cdtdy,ilo1-1,ihi1+1,ilo2,ihi2,kc,k3d)
 
-         ! On y-edges
-         ! qym + d/dx (fx) --> qmyx
-         ! qyp + d/dx (fx) --> qpyx
-         call transx1(qym,qmyx,qyp,qpyx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+             ! On y-edges
+             ! qym + d/dx (fx) --> qmyx
+             ! qyp + d/dx (fx) --> qpyx
+             call transx1(qym,qmyx,qyp,qpyx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                           fx,ilo1,ilo2-1,1,ihi1+1,ihi2+1,2, &
                           ugdnvx,pgdnvx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                           cdtdx,ilo1,ihi1,ilo2-1,ihi2+1,kc,k3d)
 
-         ! On x-edges -- choose state fxy based on qmxy, qpxy
-         call cmpflx(qmxy,qpxy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+             ! On x-edges -- choose state fxy based on qmxy, qpxy
+             call cmpflx(qmxy,qpxy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                          fxy,ilo1,ilo2-1,1,ihi1+1,ihi2+1,2, &
                          ugdnvtmpx,pgdnvtmpx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                          csml,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                          1,ilo1,ihi1+1,ilo2,ihi2,kc,kc,k3d,print_fortran_warnings)
 
-         ! On y-edges -- choose state fyx based on qmyx, qpyx
-         call cmpflx(qmyx,qpyx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+             ! On y-edges -- choose state fyx based on qmyx, qpyx
+             call cmpflx(qmyx,qpyx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                          fyx,ilo1-1,ilo2,1,ihi1+1,ihi2+1,2, &
                          ugdnvtmpy,pgdnvtmpy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                          csml,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                          2,ilo1,ihi1,ilo2,ihi2+1,kc,kc,k3d,print_fortran_warnings)
 
+         end if
 
          if (k3d.ge.ilo3) then
 
@@ -394,40 +397,42 @@
                         csml,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                         3,ilo1-1,ihi1+1,ilo2-1,ihi2+1,kc,kc,k3d,print_fortran_warnings)
 
-            ! On z-edges
-            ! qzm + d/dy (fy) --> qmzy
-            ! qzp + d/dy (fy) --> qpzy
-            call transy2(qzm,qmzy,qzp,qpzy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+            if (corner_coupling .eq. 1) then
+
+                ! On z-edges
+                ! qzm + d/dy (fy) --> qmzy
+                ! qzp + d/dy (fy) --> qpzy
+                call transy2(qzm,qmzy,qzp,qpzy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                              fy,ilo1-1,ilo2,1,ihi1+1,ihi2+1,2, &
                              ugdnvy,pgdnvy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                              cdtdy,ilo1-1,ihi1+1,ilo2,ihi2,kc,km,k3d)
 
-            ! On z-edges
-            ! qzm + d/dx (fx) --> qmzx
-            ! qzp + d/dx (fx) --> qpzx
-            call transx2(qzm,qmzx,qzp,qpzx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+                ! On z-edges
+                ! qzm + d/dx (fx) --> qmzx
+                ! qzp + d/dx (fx) --> qpzx
+                call transx2(qzm,qmzx,qzp,qpzx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                              fx,ilo1,ilo2-1,1,ihi1+1,ihi2+1,2, &
                              ugdnvx,pgdnvx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                              cdtdx,ilo1,ihi1,ilo2-1,ihi2+1,kc,km,k3d)
 
-            ! On z-edges -- choose state fzx based on qmzx, qpzx
-            call cmpflx(qmzx,qpzx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+                ! On z-edges -- choose state fzx based on qmzx, qpzx
+                call cmpflx(qmzx,qpzx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                             fzx,ilo1,ilo2-1,1,ihi1,ihi2+1,2, &
                             ugdnvtmpz1,pgdnvtmpz1,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                             csml,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                             3,ilo1,ihi1,ilo2-1,ihi2+1,kc,kc,k3d,print_fortran_warnings)
 
-            ! On z-edges -- choose state fzy based on qmzy, qpzy
-            call cmpflx(qmzy,qpzy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+                ! On z-edges -- choose state fzy based on qmzy, qpzy
+                call cmpflx(qmzy,qpzy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                             fzy,ilo1-1,ilo2,1,ihi1+1,ihi2,2, &
                             ugdnvtmpz2,pgdnvtmpz2,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                             csml,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                             3,ilo1-1,ihi1+1,ilo2,ihi2,kc,kc,k3d,print_fortran_warnings)
 
-            ! On z-edges
-            ! qzm + d/dx (fxy) + d/dy (fyx) --> qzl
-            ! qzp + d/dx (fxy) + d/dy (fyx) --> qzr
-            call transxy(qzm,qzl,qzp,qzr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+                ! On z-edges
+                ! qzm + d/dx (fxy) + d/dy (fyx) --> qzl
+                ! qzp + d/dx (fxy) + d/dy (fyx) --> qzr
+                call transxy(qzm,qzl,qzp,qzr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                              fxy,ilo1  ,ilo2-1,1,ihi1+1,ihi2+1,2, &
                              fyx,ilo1-1,ilo2  ,1,ihi1+1,ihi2+1,2, &
                              ugdnvtmpx,pgdnvtmpx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
@@ -435,6 +440,25 @@
                              srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                              hdt,hdtdx,hdtdy,ilo1,ihi1,ilo2,ihi2,kc,km,k3d,a_old,a_new)
 
+            else
+                ! On z-edges
+                ! qzm + d/dx (fx) + d/dy (fy) --> qzl
+                ! qzp + d/dx (fx) + d/dy (fy) --> qzr
+                call transxy(qzm,qzl,qzp,qzr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+                             fx,ilo1  ,ilo2-1,1,ihi1+1,ihi2+1,2, &
+                             fy,ilo1-1,ilo2  ,1,ihi1+1,ihi2+1,2, &
+                             ugdnvx,pgdnvx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+                             ugdnvy,pgdnvy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+                             srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
+                             hdt,hdtdx,hdtdy,ilo1,ihi1,ilo2,ihi2,kc,km,k3d,a_old,a_new)
+            endif
+
+            if (version_2 .eq. 3) then
+               call tracez_src(q,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
+                               qzl,qzr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+                               srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
+                               ilo1,ilo2,ihi1,ihi2,dt,a_old,km,kc,k3d)
+            endif
 
             ! Compute F^z at kc (k3d) -- note that flux3 is indexed by k3d, not kc
             ! On z-edges -- choose state fluxf3 based on qzl, qzr
@@ -461,36 +485,38 @@
 
             if (k3d.gt.ilo3) then
 
-               ! On x-edges:
-               ! qxm + d/dz (fz) --> qmxz
-               ! qxp + d/dz (fz) --> qpxz
-               ! On y-edges:
-               ! qym + d/dz (fz) --> qmyz 
-               ! qyp + d/dz (fz) --> qpyz
-               call transz(qxm,qmxz,qxp,qpxz, &
+               if (corner_coupling .eq. 1) then
+
+                   ! On x-edges:
+                   ! qxm + d/dz (fz) --> qmxz
+                   ! qxp + d/dz (fz) --> qpxz
+                   ! On y-edges:
+                   ! qym + d/dz (fz) --> qmyz 
+                   ! qyp + d/dz (fz) --> qpyz
+                   call transz(qxm,qmxz,qxp,qpxz, &
                                qym,qmyz,qyp,qpyz,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                                fz,ilo1-1,ilo2-1,1,ihi1+1,ihi2+1,2, &
                                ugdnvz,pgdnvz,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                                cdtdz,ilo1-1,ihi1+1,ilo2-1,ihi2+1,km,kc,k3d)
     
-               ! On x-edges -- choose state fxz based on qmxz, qpxz
-               call cmpflx(qmxz,qpxz,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+                   ! On x-edges -- choose state fxz based on qmxz, qpxz
+                   call cmpflx(qmxz,qpxz,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                                fxz,ilo1,ilo2-1,1,ihi1+1,ihi2+1,2, &
                                ugdnvx,pgdnvx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                                csml,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                                1,ilo1,ihi1+1,ilo2-1,ihi2+1,km,km,k3d-1,print_fortran_warnings)
 
-               ! On y-edges -- choose state fyz based on qmyz, qpyz
-               call cmpflx(qmyz,qpyz,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+                   ! On y-edges -- choose state fyz based on qmyz, qpyz
+                   call cmpflx(qmyz,qpyz,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                                fyz,ilo1-1,ilo2,1,ihi1+1,ihi2+1,2, &
                                ugdnvy,pgdnvy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                                csml,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                                2,ilo1-1,ihi1+1,ilo2,ihi2+1,km,km,k3d-1,print_fortran_warnings)
     
-               ! On x-edges:
-               ! qxm + d/dy (fyz) + d/dz(fzy) --> qxl
-               ! qxp + d/dy (fyz) + d/dz(fzy) --> qxr
-               call transyz(qxm,qxl,qxp,qxr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+                   ! On x-edges:
+                   ! qxm + d/dy (fyz) + d/dz(fzy) --> qxl
+                   ! qxp + d/dy (fyz) + d/dz(fzy) --> qxr
+                   call transyz(qxm,qxl,qxp,qxr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                                 fyz,ilo1-1,ilo2,1,ihi1+1,ihi2+1,2, &
                                 fzy,ilo1-1,ilo2,1,ihi1+1,ihi2  ,2, &
                                 ugdnvy,pgdnvy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
@@ -498,16 +524,53 @@
                                 srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                                 hdt,hdtdy,hdtdz,ilo1-1,ihi1+1,ilo2,ihi2,km,kc,k3d-1,a_old,a_new)
 
-               ! On y-edges:
-               ! qym + d/dx (fxz) + d/dz(fzx) --> qyl
-               ! qyp + d/dx (fxz) + d/dz(fzx) --> qyr
-               call transxz(qym,qyl,qyp,qyr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+                   ! On y-edges:
+                   ! qym + d/dx (fxz) + d/dz(fzx) --> qyl
+                   ! qyp + d/dx (fxz) + d/dz(fzx) --> qyr
+                   call transxz(qym,qyl,qyp,qyr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                                 fxz,ilo1,ilo2-1,1,ihi1+1,ihi2+1,2, &
                                 fzx,ilo1,ilo2-1,1,ihi1  ,ihi2+1,2, &
                                 ugdnvx,pgdnvx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                                 ugdnvtmpz1,pgdnvtmpz1,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                                 srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                                 hdt,hdtdx,hdtdz,ilo1,ihi1,ilo2-1,ihi2+1,km,kc,k3d-1,a_old,a_new)
+
+               else
+
+                   ! On x-edges:
+                   ! qxm + d/dy (fy) + d/dz(fz) --> qxl
+                   ! qxp + d/dy (fy) + d/dz(fz) --> qxr
+                   call transyz(qxm,qxl,qxp,qxr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+                                fy,ilo1-1,ilo2  ,1,ihi1+1,ihi2+1,2, &
+                                fz,ilo1-1,ilo2-1,1,ihi1+1,ihi2+1,2, &
+                                ugdnvy,pgdnvy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+                                ugdnvz,pgdnvz,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+                                srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
+                                hdt,hdtdy,hdtdz,ilo1-1,ihi1+1,ilo2,ihi2,km,kc,k3d-1,a_old,a_new)
+
+                   ! On y-edges:
+                   ! qym + d/dx (fx) + d/dz(fz) --> qyl
+                   ! qyp + d/dx (fx) + d/dz(fz) --> qyr
+                   call transxz(qym,qyl,qyp,qyr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+                                fx,ilo1  ,ilo2-1,1,ihi1+1,ihi2+1,2, &
+                                fz,ilo1-1,ilo2-1,1,ihi1+1,ihi2+1,2, &
+                                ugdnvx,pgdnvx,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+                                ugdnvz,pgdnvz,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+                                srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
+                                hdt,hdtdx,hdtdz,ilo1,ihi1,ilo2-1,ihi2+1,km,kc,k3d-1,a_old,a_new)
+
+               end if
+
+               if (version_2 .eq. 3) then
+                  call tracex_src(q,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
+                                  qxl,qxr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+                                  srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
+                                  ilo1,ilo2,ihi1,ihi2,dt,a_old,kc,k3d)
+                  call tracey_src(q,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
+                                  qyl,qyr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+                                  srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
+                                  ilo1,ilo2,ihi1,ihi2,dt,a_old,kc,k3d)
+               endif
 
                ! On x-edges -- choose state flux1 based on qxl, qxr
                call cmpflx(qxl,qxr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
@@ -958,6 +1021,7 @@
       area3   = dx * dy
 
       do n = 1, NVAR
+
             do k = lo(3),hi(3)
                do j = lo(2),hi(2)
                   do i = lo(1),hi(1)+1
@@ -1011,9 +1075,9 @@
                   ! Density
                   if (n .eq. URHO) then
                       hydro_src(i,j,k,n) = &
-                          ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
-                          + flux2(i,j,k,n) - flux2(i,j+1,k,n) &
-                          + flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * volinv * a_half_inv
+                          ( ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
+                          +   flux2(i,j,k,n) - flux2(i,j+1,k,n) &
+                          +   flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * volinv  ) * a_half_inv
 
                   ! Momentum
                   else if (n .ge. UMX .and. n .le. UMZ) then
@@ -1042,10 +1106,10 @@
 
                   ! (rho X_i) and (rho adv_i) and (rho aux_i)
                   else
-                      hydro_src(i,j,k,n) = &
-                          ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
-                          + flux2(i,j,k,n) - flux2(i,j+1,k,n) &
-                          + flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * volinv * a_half_inv
+                     hydro_src(i,j,k,n) = &
+                            ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
+                          +   flux2(i,j,k,n) - flux2(i,j+1,k,n) &
+                          +   flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * volinv 
                   endif
 
                   hydro_src(i,j,k,n) = hydro_src(i,j,k,n) / dt
@@ -1285,8 +1349,7 @@
       use prob_params_module, only : physbc_lo, Symmetry
       use meth_params_module, only : QVAR, NVAR, QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS, &
                                      URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, &
-                                     nadv, small_dens, small_pres, gamma_const, gamma_minus_1, &
-                                     use_analriem
+                                     nadv, small_dens, small_pres, gamma_const, gamma_minus_1
       use analriem_module
 
       implicit none
@@ -1313,7 +1376,7 @@
       real(rt), dimension(ilo:ihi) :: rgdnv,v1gdnv,v2gdnv,regdnv,ustar
       real(rt), dimension(ilo:ihi) :: rl, ul, v1l, v2l, pl, rel
       real(rt), dimension(ilo:ihi) :: rr, ur, v1r, v2r, pr, rer
-      real(rt), dimension(ilo:ihi) :: wl, wr
+!     real(rt), dimension(ilo:ihi) :: wl, wr
       real(rt), dimension(ilo:ihi) :: rhoetot, scr
       real(rt), dimension(ilo:ihi) :: rstar, cstar, estar, pstar
       real(rt), dimension(ilo:ihi) :: ro, uo, po, reo, co, entho
@@ -1328,14 +1391,14 @@
             if (rl(i) .lt. ZERO) then
                if (print_fortran_warnings .gt. 0) then
                   print *,'... setting NEG RL IN RIEMANN:IDIR ',idir,i,j,k3d,rl(i),' to ',small_dens
-!                  !call flush(6)
+                  call flush(6)
                endif
                rl(i) = max(rl(i),small_dens)
             else if (rl(i) .lt. small_dens) then
 
                if (print_fortran_warnings .gt. 0) then
                   print *,'... setting     RL IN RIEMANN:IDIR ',idir,i,j,k3d,rl(i),' to ',small_dens
-!                  !call flush(6)
+                  call flush(6)
                endif
                rl(i) = max(rl(i),small_dens)
             end if
@@ -1364,7 +1427,7 @@
                if (print_fortran_warnings .gt. 0) then
                   print *,'... setting PL/REL IN RIEMANN:IDIR ',idir,i,j,k3d, &
                           ql(i,j,kc,QPRES),' to ',small_pres
-!                  !call flush(6)
+                  call flush(6)
                endif
                pl(i)  = max(pl(i),small_pres)
                rel(i) = pl(i) / gamma_minus_1
@@ -1380,7 +1443,7 @@
                !
                if (print_fortran_warnings .gt. 0) then
                   print *,'... setting NEG RR IN RIEMANN:IDIR ',idir,i,j,k3d,rr(i),' to ',small_dens
-!                  !call flush(6)
+                  call flush(6)
                endif
                rr(i) = max(rr(i),small_dens)
             else if (rr(i) .lt. small_dens) then
@@ -1390,7 +1453,7 @@
 
                if (print_fortran_warnings .gt. 0) then
                   print *,'... setting     RR IN RIEMANN:IDIR ',idir,i,j,k3d,rr(i),' to ',small_dens
-!                  !call flush(6)
+                  call flush(6)
                endif
                rr(i) = max(rr(i),small_dens)
             end if
@@ -1418,7 +1481,7 @@
             if (pr(i) .lt. small_pres) then
                if (print_fortran_warnings .gt. 0) then
                  print *,'... setting PR/RER IN RIEMANN:IDIR ',idir,i,j,k3d,qr(i,j,kc,QPRES),' to ',small_pres
-!                 !call flush(6)
+                 call flush(6)
                endif
                pr(i) = max(pr(i),small_pres)
                rer(i) = pr(i) / gamma_minus_1
@@ -1434,37 +1497,18 @@
          ! pstar = ((wr*pl + wl*pr) + wl*wr*(ul - ur))/(wl + wr)
          ! ustar = ((wl*ul + wr*ur) +       (pl - pr))/(wl + wr)
 
-         if(use_analriem .eq.0) then
-            ! We keep these here in case we want to use these instead of calling the analytic solver
-            wl = max(wsmall,sqrt(abs(gamma_const*pl*rl)))
-            wr = max(wsmall,sqrt(abs(gamma_const*pr*rr)))
-            pstar = ((wr*pl + wl*pr) + wl*wr*(ul - ur))/(wl + wr)
-            ustar = ((wl*ul + wr*ur) +       (pl - pr))/(wl + wr)
-
-            pstar = max(pstar, small_pres)
-
-            ! for symmetry preservation, if ustar is really small, then we
-            ! set it to zero
-            do i=ilo,ihi
-               if (abs(ustar(i)) .lt. 1.d-12*HALF*(abs(ul(i)) + abs(ur(i)))) then
-                  ustar(i) = ZERO
-               endif
-            enddo
-            
-         else
          ! Call analytic Riemann solver
-            call analriem(ilo,ihi, &
-                 gamma_const, &
-                 pl(ilo:ihi), &
-                 rl(ilo:ihi), &
-                 ul(ilo:ihi), &
-                 pr(ilo:ihi), &
-                 rr(ilo:ihi), &
-                 ur(ilo:ihi), &
-                 small_pres, &
-                 pstar(ilo:ihi), &
-                 ustar(ilo:ihi))
-         endif
+         call analriem(ilo,ihi, &
+                       gamma_const, &
+                       pl(ilo:ihi), &
+                       rl(ilo:ihi), &
+                       ul(ilo:ihi), &
+                       pr(ilo:ihi), &
+                       rr(ilo:ihi), &
+                       ur(ilo:ihi), &
+                       small_pres, &
+                       pstar(ilo:ihi), &
+                       ustar(ilo:ihi))
 
          ! This loop has more conditions and won't vectorize. But it's cheap
          ! compared to the loop that calls the analytic Riemann solver.
@@ -1498,7 +1542,7 @@
                !
                if (print_fortran_warnings .gt. 0) then
                   print *,'... setting RO     IN RIEMANN:IDIR ',idir,i,j,k3d,ro(i),' to ',small_dens
-!                  !call flush(6)
+                  call flush(6)
                endif
                ro(i) = max(ro(i),small_dens)
             end if
@@ -1519,7 +1563,7 @@
                !
                if (print_fortran_warnings .gt. 0) then
                   print *,'... setting RSTAR  IN RIEMANN:IDIR ',idir,i,j,k3d,rstar(i),' to ',small_dens
-!                  !call flush(6)
+                  call flush(6)
                endif
                rstar(i) = max(rstar(i),small_dens)
             end if

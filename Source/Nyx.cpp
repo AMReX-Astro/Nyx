@@ -2530,22 +2530,12 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
     BL_PROFILE("Nyx::compute_rho_temp()");
     bool prev_region=Gpu::inLaunchRegion();
     amrex::Gpu::setLaunchRegion(true);
-    {
+
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
 
     Real rho_T_sum=0.0,   T_sum=0.0, Tinv_sum=0.0, T_meanrho_sum=0.0;
     Real   rho_sum=0.0, vol_sum=0.0,    vol_mn_sum=0.0;
-
-#ifdef AMREX_USE_CUDA
-    Gpu::DeviceScalar<Real> rho_T_sum_gpu(rho_T_sum);
-    Gpu::DeviceScalar<Real> rho_sum_gpu(rho_sum);
-    Gpu::DeviceScalar<Real> T_sum_gpu(T_sum);
-    Gpu::DeviceScalar<Real> Tinv_sum_gpu(Tinv_sum);
-    Gpu::DeviceScalar<Real> T_meanrho_sum_gpu(T_meanrho_sum);
-    Gpu::DeviceScalar<Real> vol_sum_gpu(vol_sum);
-    Gpu::DeviceScalar<Real> vol_mn_sum_gpu(vol_mn_sum);
-#endif
 
     Real rho_hi = 1.1*average_gas_density;
     Real rho_lo = 0.9*average_gas_density;
@@ -2554,9 +2544,18 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
     int Density_loc=Density;
 
 #ifdef _OPENMP
-#pragma omp parallel reduction(+:rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum)
+#pragma omp parallel  reduction(+:rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum)
 #endif
-    for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
+    {
+    Gpu::DeviceScalar<Real> rho_T_sum_gpu(rho_T_sum);
+    Gpu::DeviceScalar<Real> rho_sum_gpu(rho_sum);
+    Gpu::DeviceScalar<Real> T_sum_gpu(T_sum);
+    Gpu::DeviceScalar<Real> Tinv_sum_gpu(Tinv_sum);
+    Gpu::DeviceScalar<Real> T_meanrho_sum_gpu(T_meanrho_sum);
+    Gpu::DeviceScalar<Real> vol_sum_gpu(vol_sum);
+    Gpu::DeviceScalar<Real> vol_mn_sum_gpu(vol_mn_sum);
+      
+    for (MFIter mfi(S_new,Gpu::notInLaunchRegion()); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
 	const auto lo = amrex::lbound(bx);
@@ -2565,30 +2564,19 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
 	const auto diag_eos = D_new.array(mfi);
 	Real vol = dx[0]*dx[1]*dx[2];
 
-#ifdef AMREX_USE_CUDA
-	      Real* prho_T_sum = rho_T_sum_gpu.dataPtr();
-	      Real* prho_sum = rho_sum_gpu.dataPtr();
-	      Real* pT_sum = T_sum_gpu.dataPtr();
-	      Real* pTinv_sum = Tinv_sum_gpu.dataPtr();
-	      Real* pT_meanrho_sum = T_meanrho_sum_gpu.dataPtr();
-	      Real* pvol_sum = vol_sum_gpu.dataPtr();
-	      Real* pvol_mn_sum = vol_mn_sum_gpu.dataPtr();
-#else
-	      Real* prho_T_sum = &rho_T_sum;
-	      Real* prho_sum = &rho_sum;
-	      Real* pT_sum = &T_sum;
-	      Real* pTinv_sum = &Tinv_sum;
-	      Real* pT_meanrho_sum = &T_meanrho_sum;
-	      Real* pvol_sum = &vol_sum;
-	      Real* pvol_mn_sum = &vol_mn_sum;
-#endif
+	Real* prho_T_sum = rho_T_sum_gpu.dataPtr();
+	Real* prho_sum = rho_sum_gpu.dataPtr();
+	Real* pT_sum = T_sum_gpu.dataPtr();
+	Real* pTinv_sum = Tinv_sum_gpu.dataPtr();
+	Real* pT_meanrho_sum = T_meanrho_sum_gpu.dataPtr();
+	Real* pvol_sum = vol_sum_gpu.dataPtr();
+	Real* pvol_mn_sum = vol_mn_sum_gpu.dataPtr();
 
-	amrex::ParallelFor(bx,
-		      [=] AMREX_GPU_HOST_DEVICE (int i, int j, int k)
+	AMREX_HOST_DEVICE_FOR_3D(bx,i,j,k,
 	   {
 
-	      Real T_tmp, rho_tmp;     
-
+	     Real T_tmp;
+	      Real rho_tmp;
 	      T_tmp=diag_eos(i,j,k,Temp_loc);
 	      rho_tmp=state(i,j,k,Density_loc);
 	      amrex::Gpu::Atomic::Add(pT_sum, vol*T_tmp);
@@ -2604,9 +2592,10 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
 
     }
 
+    
+
     amrex::Gpu::Device::streamSynchronize();
 
-#ifdef AMREX_USE_CUDA
     rho_T_sum = rho_T_sum_gpu.dataValue();
     rho_sum = rho_sum_gpu.dataValue();
     T_sum = T_sum_gpu.dataValue();
@@ -2614,7 +2603,8 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
     T_meanrho_sum = T_meanrho_sum_gpu.dataValue();
     vol_sum = vol_sum_gpu.dataValue();
     vol_mn_sum = vol_mn_sum_gpu.dataValue();
-#endif
+
+    }
 
     Real sums[7] = {rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum};
     ParallelDescriptor::ReduceRealSum(sums,7);
@@ -2626,7 +2616,7 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
        T_meanrho = sums[4] / sums[6];  // T at mean density
        T_meanrho = pow(10.0, T_meanrho);
     }
-    }
+
     amrex::Gpu::setLaunchRegion(prev_region);
 }
 #endif
