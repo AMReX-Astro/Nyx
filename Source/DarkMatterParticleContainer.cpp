@@ -87,7 +87,7 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     if (lev >= this->GetParticles().size())
         return;
 
-    const auto dxi              = Geom(lev).InvCellSizeArray();
+    const Real* dx = Geom(lev).CellSize();
 
     amrex::MultiFab* ac_ptr;
     if (this->OnSameGrids(lev, acceleration))
@@ -105,7 +105,7 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
         ac_ptr->FillBoundary();
     }
 
-    const GpuArray<Real,AMREX_SPACEDIM> plo = Geom(lev).ProbLoArray();
+    const Real* plo = Geom(lev).ProbLo();
 
     int do_move = 1;
 
@@ -115,24 +115,17 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
 
         AoS& particles = pti.GetArrayOfStructs();
-	ParticleType* pstruct = particles().data();
-	//        int Np = particles.size();
-	const long np = pti.numParticles();
+        int Np = particles.size();
 
-	//        if (Np > 0)
-	//        {
-	   Array4<amrex::Real const> accel= ac_ptr->array(pti);
+        if (Np > 0)
+        {
+           const Box& ac_box = (*ac_ptr)[pti].box();
 
-	   //	   	   for (int i = 0; i < Np; i++) {
-		     int nc=AMREX_SPACEDIM;
-	   amrex::ParallelFor(np,
-			      [=] AMREX_GPU_HOST_DEVICE ( long i)
-			      {
-			  update_dm_particle_single(pstruct[i],nc,
-				       accel,
-						    plo,dxi,dt,a_old, a_half,do_move);
-			      });
-	   //	   }
+           update_dm_particles(&Np, particles.data(),
+                               (*ac_ptr)[pti].dataPtr(),
+                               ac_box.loVect(), ac_box.hiVect(),
+                               plo,dx,dt,a_old,a_half,&do_move);
+        }
     }
 
     if (ac_ptr != &acceleration) delete ac_ptr;
@@ -187,8 +180,7 @@ DarkMatterParticleContainer::moveKick (MultiFab&       acceleration,
 {
     BL_PROFILE("DarkMatterParticleContainer::moveKick()");
 
-    //    const GpuArray<Real,AMREX_SPACEDIM> dx = Geom(lev).CellSizeArray();
-    const auto dxi              = Geom(lev).InvCellSizeArray();
+    const Real* dx = Geom(lev).CellSize();
 
     MultiFab* ac_ptr;
     if (OnSameGrids(lev,acceleration))
@@ -206,7 +198,7 @@ DarkMatterParticleContainer::moveKick (MultiFab&       acceleration,
         ac_ptr->FillBoundary();
     }
 
-    const GpuArray<Real,AMREX_SPACEDIM> plo = Geom(lev).ProbLoArray();
+    const Real* plo = Geom(lev).ProbLo();
 
     int do_move = 0;
 
@@ -216,92 +208,20 @@ DarkMatterParticleContainer::moveKick (MultiFab&       acceleration,
     for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
 
         AoS& particles = pti.GetArrayOfStructs();
-	ParticleType* pstruct = particles().data();
-	//        int Np = particles.size();
-	const long np = pti.numParticles();
+        int Np = particles.size();
 
-	//        if (Np > 0)
-	//        {
-	   Array4<amrex::Real const> accel= ac_ptr->array(pti);
+        if (Np > 0)
+        {
+           const Box& ac_box = (*ac_ptr)[pti].box();
 
-	   //	   	   for (int i = 0; i < Np; i++) {
-		     int nc=AMREX_SPACEDIM;
-	   amrex::ParallelFor(np,
-			      [=] AMREX_GPU_HOST_DEVICE ( long i)
-			      {
-			  update_dm_particle_single(pstruct[i],nc,
-				       accel,
-				       plo,dxi,dt,a_half,a_new,do_move);
-			      });
-	   //	   }
-
-    }
-
-    
-    if (ac_ptr != &acceleration) delete ac_ptr;
-}
-
-//template <typename P>
-AMREX_GPU_HOST_DEVICE AMREX_INLINE void DarkMatterParticleContainer::update_dm_particle_single (ParticleType  p,
-				     const int nc,
-				     amrex::Array4<amrex::Real const> const& acc,
-				     amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& plo,
-				     amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& dxi,
-				     const amrex::Real& dt, const amrex::Real& a_prev, 
-				     const amrex::Real& a_cur, const int& do_move)
-{
-
-							/*ParticleType const& p, 
-							const int nc,
-				     amrex::Array4<amrex::Real const> const& acc,
-				     amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& plo,
-				     amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& dxi,
-				     const amrex::Real& dt, const amrex::Real& a_prev, 
-				     const amrex::Real& a_cur, const int* do_move)
-{
-  void DarkMatterParticleContainer::update_dm_particle_single(amrex::Particle<4, 0> *, int, const amrex::Array4<const amrex::Real> &, const amrex::GpuArray<amrex::Real, 3UL> &, const amrex::GpuArray<amrex::Real, 3UL> &, const amrex::Real &, const amrex::Real &, const amrex::Real &, const int *)
-  num_particles_at_level += n;*/
-
-    amrex::Real half_dt       = 0.5 * dt;
-    amrex::Real a_cur_inv    = 1.0 / a_cur;
-    amrex::Real dt_a_cur_inv = dt * a_cur_inv;
-
-    amrex::Real lx = (p.pos(0) - plo[0]) * dxi[0] + 0.5;
-    amrex::Real ly = (p.pos(1) - plo[1]) * dxi[1] + 0.5;
-    amrex::Real lz = (p.pos(2) - plo[2]) * dxi[2] + 0.5;
-    
-    int i = std::floor(lx);
-    int j = std::floor(ly);
-    int k = std::floor(lz);
-    
-    amrex::Real xint = lx - i;
-    amrex::Real yint = ly - j;
-    amrex::Real zint = lz - k;
-    
-    amrex::Real sx[] = {1.-xint, xint};
-    amrex::Real sy[] = {1.-yint, yint};
-    amrex::Real sz[] = {1.-zint, zint};
-    
-    for (int ii = 0; ii <= 1; ++ii) { 
-        for (int jj = 0; jj <= 1; ++jj) { 
-            for (int kk = 0; kk <= 1; ++kk) {
-                for (int comp=0; comp < nc; ++comp) {
-                    amrex::Real acceleration = sx[ii]*sy[jj]*sz[kk]*acc(i+ii,j+jj,k+kk,comp);
-		    p.rdata(comp+1)=a_prev*p.rdata(comp+1)+half_dt * acceleration;
-		    p.rdata(comp+1)*=a_cur_inv;
-
-                }
-            }
+           update_dm_particles(&Np, particles.data(),
+                               (*ac_ptr)[pti].dataPtr(),
+                               ac_box.loVect(), ac_box.hiVect(),
+                               plo,dx,dt,a_half,a_new,&do_move);
         }
     }
-
-       if (do_move == 1) 
-	 {
-	   for (int comp=0; comp < nc; ++comp) {
-             p.pos(comp) = p.pos(comp) + dt_a_cur_inv * p.rdata(comp+1);
-	       }
-	 }
-
+    
+    if (ac_ptr != &acceleration) delete ac_ptr;
 }
 
 void

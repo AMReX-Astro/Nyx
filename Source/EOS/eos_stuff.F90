@@ -291,21 +291,55 @@ contains
 
   end subroutine nyx_eos_S_given_Re
 
-  AMREX_CUDA_FORT_DEVICE subroutine nyx_eos_given_RT(e, P, R, T, Ne, a)
+  AMREX_CUDA_FORT_DEVICE subroutine nyx_eos_given_RT(e, P, R, T, Ne, comoving_a)
 
      use amrex_fort_module, only : rt => amrex_real
      use meth_params_module, only : gamma_minus_1
 
-        double precision,          intent(  out) :: e, P
-        double precision,          intent(in   ) :: R, T, Ne
-        double precision, value,   intent(in   ) :: a
+          ! In/out variables
+     real(rt),           intent(  out) :: e, P
+     real(rt),           intent(in   ) :: R, T, Ne
+     real(rt),           intent(in   ) :: comoving_a
 
-        double precision :: mu
 
-        mu = (1.0d0+4.0d0*(1-XHYDROGEN)) / (2-XHYDROGEN+Ne)
-        e  = T / (gamma_minus_1 * mp_over_kB * mu)
+     ! Local variables
+     logical :: do_diag
+     
+     real(rt) :: xn_eos(nspec)
+     real(rt) :: temp_eos
+     real(rt) :: den_eos
+     real(rt) :: e_eos
+     real(rt) :: p_eos
+     real(rt) :: cv_eos
+     real(rt) :: dpdt_eos
+     real(rt) :: dpdr_eos
+     real(rt) :: dedt_eos
+     real(rt) ::    s_eos
+     real(rt) :: comoving_a_cubed
 
-        P  = gamma_minus_1 * R * e
+     do_diag = .false.
+
+     comoving_a_cubed = (comoving_a*comoving_a*comoving_a)
+
+     ! Density is the only variable we convert from comoving to proper coordinates
+     den_eos = R / comoving_a_cubed
+
+     temp_eos = T 
+
+     xn_eos(1) = XHYDROGEN
+     xn_eos(2) = (1.d0 - XHYDROGEN)
+
+     call eos_device(eos_input_rt, den_eos, temp_eos, &
+              xn_eos, &
+              p_eos, e_eos, cv_eos, &
+              dpdt_eos, dpdr_eos, dedt_eos, &
+              s_eos, &
+              do_diag)
+
+    ! Pressure must be converted from proper to comoving coordinates
+    P  = p_eos * comoving_a_cubed
+
+    e  = e_eos
 
   end subroutine nyx_eos_given_RT
 

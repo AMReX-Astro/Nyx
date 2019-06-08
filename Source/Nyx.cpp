@@ -1411,6 +1411,7 @@ Nyx::post_timestep (int iteration)
     {
         for (int i = 0; i < theActiveParticles().size(); i++)
 	  {
+#ifdef AMREX_USE_GPU
 	    if(finest_level==0)
 	      theActiveParticles()[i]->RedistributeLocal(level,
                                                   theActiveParticles()[i]->finestLevel(),
@@ -1419,6 +1420,11 @@ Nyx::post_timestep (int iteration)
 	      theActiveParticles()[i]->Redistribute(level,
                                                   theActiveParticles()[i]->finestLevel(),
                                                   iteration);
+#else
+	    theActiveParticles()[i]->Redistribute(level,
+                                                  theActiveParticles()[i]->finestLevel(),
+                                                  iteration);
+#endif
 	  }
     }
 
