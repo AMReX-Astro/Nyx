@@ -86,7 +86,7 @@
       do j = lo(2), hi(2)
       do i = lo(1), hi(1)
 
-         state(i,j,k,URHO)    = 1.5d0 * small_dens
+         state(i,j,k,URHO)    = 0.0d0 !1.5d0 * small_dens
 
          state(i,j,k,UMX:UMZ) = 0.0d0
 

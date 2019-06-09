@@ -554,9 +554,9 @@ Nyx::read_params ()
            amrex::Error("Nyx:: don't know what to do with version_2 flag");
 
         // Make sure ppm_type is set correctly.
-        if (ppm_type != 0 && ppm_type != 1)
+        if (ppm_type != 0 && ppm_type != 1 && ppm_type != 2)
         {
-           amrex::Error("Nyx::ppm_type must be 0 or 1");
+           amrex::Error("Nyx::ppm_type must be 0 or 1 or 2");
         }
     }
 

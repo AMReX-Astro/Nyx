@@ -197,7 +197,7 @@ Nyx::hydro_setup()
     fort_set_method_params
         (dm, NumAdv, NDIAG_C, do_hydro, ppm_type, ppm_reference,
          ppm_flatten_before_integrals,
-         use_colglaz, use_flattening, corner_coupling, version_2,
+         use_colglaz, use_flattening, version_2,
          use_const_species, gamma, normalize_species,
          heat_cool_type, inhomo_reion);
 
@@ -640,7 +640,7 @@ Nyx::no_hydro_setup()
     fort_set_method_params
         (dm, NumAdv, NDIAG_C, do_hydro, ppm_type, ppm_reference,
          ppm_flatten_before_integrals,
-         use_colglaz, use_flattening, corner_coupling, version_2,
+         use_colglaz, use_flattening, version_2,
          use_const_species, gamma, normalize_species,
          heat_cool_type, inhomo_reion);
 
@@ -749,6 +749,18 @@ Nyx::no_hydro_setup()
 #endif
 }
 #endif
+
+void
+Nyx::alloc_cuda_managed()
+{
+    fort_alloc_cuda_managed();
+}
+
+void
+Nyx::dealloc_cuda_managed()
+{
+    fort_dealloc_cuda_managed();
+}
 
 #ifdef AMREX_USE_CVODE
 void
