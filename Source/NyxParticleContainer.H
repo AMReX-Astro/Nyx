@@ -278,7 +278,8 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
 
     if (this->GetParticles().size() == 0)
         return dt;
-
+    bool prev_region = amrex::Gpu::inLaunchRegion();
+    amrex::Gpu::setLaunchRegion(true);
     amrex::Gpu::LaunchSafeGuard lsg(true);
 
     const amrex::Real      strttime         = amrex::ParallelDescriptor::second();
@@ -393,7 +394,7 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
             std::cout << "NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep() time: " << stoptime << '\n';
         }
     }
-
+    amrex::Gpu::setLaunchRegion(prev_region);
     return dt;
 }
 
