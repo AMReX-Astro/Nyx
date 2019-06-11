@@ -1017,7 +1017,7 @@ Gravity::add_to_fluxes(int level, int iteration, int ncycle)
     FluxRegister*   phi_current       = (level>0 ? phi_flux_reg[level].get() : nullptr);
     const Geometry& geom              = parent->Geom(level);
     const Real*     dx                = geom.CellSize();
-    const Real      area[BL_SPACEDIM] = { dx[1]*dx[2], dx[0]*dx[2], dx[0]*dx[1] };
+    const GpuArray<Real,BL_SPACEDIM>  area{ dx[1]*dx[2], dx[0]*dx[2], dx[0]*dx[1] };
 
 #ifdef CGRAV
     if (gravity_type == "StaticGrav")
@@ -1041,9 +1041,14 @@ Gravity::add_to_fluxes(int level, int iteration, int ncycle)
             for (MFIter mfi(fluxes,true); mfi.isValid(); ++mfi)
             {
                 const Box& tbx = mfi.tilebox();
-                FArrayBox& gphi_flux = fluxes[mfi];
-                gphi_flux.copy((*grad_phi_curr[level][n])[mfi],tbx);
-                gphi_flux.mult(area[n],tbx,0,1);
+                const auto gphi_flux = fluxes.array(mfi);
+                const auto gphi_flux_curr = grad_phi_curr[level][n]->array(mfi);
+		AMREX_HOST_DEVICE_FOR_3D(tbx,i,j,k,
+					 {
+
+					   gphi_flux(i,j,k,0)=area[n]*gphi_flux_curr(i,j,k,0);
+
+					 });
             }
             phi_fine->CrseInit(fluxes, n, 0, 0, 1, -1);
         }
@@ -1393,12 +1398,11 @@ Gravity::AddParticlesToRhs (int               level,
     MultiFab particle_mf(grids[level], dmap[level], 1, ngrow);
 
     for (int i = 0; i < Nyx::theActiveParticles().size(); i++)
-    {
-        particle_mf.setVal(0.);
+      {
         Nyx::theActiveParticles()[i]->AssignDensitySingleLevel(particle_mf, level);
 	amrex::Gpu::Device::streamSynchronize();
         MultiFab::Add(Rhs, particle_mf, 0, 0, 1, 0);
-    }
+      }
 
     amrex::Gpu::Device::streamSynchronize();
     amrex::Gpu::setLaunchRegion(prev_region);
