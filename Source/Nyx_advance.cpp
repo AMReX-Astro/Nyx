@@ -247,6 +247,8 @@ Nyx::advance_hydro_plus_particles (Real time,
                                               use_previous_phi_as_guess);
     }
     BL_PROFILE_VAR_STOP(solve_for_old_phi);
+    bool prev_region = amrex::Gpu::inLaunchRegion();
+    amrex::Gpu::setLaunchRegion(true);
     //
     // Advance Particles
     //
@@ -283,6 +285,7 @@ Nyx::advance_hydro_plus_particles (Real time,
             }
         }
     }
+    amrex::Gpu::setLaunchRegion(prev_region);
 
 #endif
     ////    amrex::Gpu::setLaunchRegion(true);
@@ -305,7 +308,7 @@ Nyx::advance_hydro_plus_particles (Real time,
     }
     BL_PROFILE_VAR_STOP(just_the_hydro);
 
-    bool prev_region=Gpu::inLaunchRegion();
+    prev_region=Gpu::inLaunchRegion();
     amrex::Gpu::setLaunchRegion(true);
     //
     // We must reflux before doing the next gravity solve
@@ -337,7 +340,6 @@ Nyx::advance_hydro_plus_particles (Real time,
                        parent->getLevel(lev).get_old_data(PhiGrav_Type),
                        0, 0, 1, 0);
     }
-    amrex::Gpu::setLaunchRegion(prev_region);
 
     // Solve for new Gravity
     BL_PROFILE_VAR("solve_for_new_phi", solve_for_new_phi);
@@ -392,8 +394,6 @@ Nyx::advance_hydro_plus_particles (Real time,
 
         const Real* dx = get_level(lev).Geom().CellSize();
 
-    bool prev_region = Gpu::inLaunchRegion();
-    amrex::Gpu::setLaunchRegion(true);
     // Now do corrector part of source term update
 #ifdef _OPENMP
 #pragma omp parallel
@@ -418,12 +418,12 @@ Nyx::advance_hydro_plus_particles (Real time,
 				 });
     }
 
-    amrex::Gpu::setLaunchRegion(prev_region);
 
         // First reset internal energy before call to compute_temp
         get_level(lev).reset_internal_energy(S_new,D_new,reset_e_src);
         get_level(lev).compute_new_temp(S_new,D_new);
     }
+
 
     // Must average down again after doing the gravity correction;
     //      always average down from finer to coarser.
@@ -478,6 +478,7 @@ Nyx::advance_hydro_plus_particles (Real time,
 	
     }
 
+    amrex::Gpu::setLaunchRegion(prev_region);
 
     BL_PROFILE_REGION_STOP("R::Nyx::advance_hydro_plus_particles");
 
