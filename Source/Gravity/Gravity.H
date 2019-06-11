@@ -7,6 +7,7 @@
 #include <AMReX_Particles.H>
 
 #include <AMReX_MLLinOp.H>
+#include <AMReX_MLPoisson.H>
 
 class Gravity {
 
@@ -36,6 +37,8 @@ public:
     // Moves curr phi data to prev and resets curr to 1.e50
     //
     void swap_time_levels(int level);
+
+    void setup_Poisson (int crse_level, int fine_level);
 
     amrex::Real solve_with_MLMG (int crse_level, int fine_level,
                                  const amrex::Vector<amrex::MultiFab*>& phi,
@@ -129,6 +132,7 @@ protected:
     int finest_level_allocated;
 
     amrex::BCRec* phys_bc;
+    std::unique_ptr<amrex::MLPoisson> mlpoisson;
 
     static int verbose;
     static int no_sync;
