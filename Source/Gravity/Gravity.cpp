@@ -1628,6 +1628,29 @@ Gravity::solve_for_delta_phi (int crse_level, int fine_level, MultiFab& CrseRhs,
     solve_with_MLMG(crse_level, fine_level, delta_phi, rhsp, grad, nullptr, rel_eps, abs_eps);
 }
 
+void 
+Gravity::setup_Poisson (int crse_level, int fine_level)
+{
+    const int nlevs = fine_level - crse_level + 1;
+
+    Vector<Geometry> gmv;
+    Vector<BoxArray> bav;
+    Vector<DistributionMapping> dmv;
+    for (int ilev = 0; ilev < nlevs; ++ilev)
+    {
+        gmv.push_back(parent->Geom(ilev+crse_level));
+        bav.push_back(grids[ilev]);
+        dmv.push_back(dmap[ilev]);
+    }
+
+    LPInfo info;
+    info.setAgglomeration(mlmg_agglomeration);
+    info.setConsolidation(mlmg_consolidation);
+
+    mlpoisson.reset(new MLPoisson(gmv, bav, dmv, info));
+
+}
+
 Real
 Gravity::solve_with_MLMG (int crse_level, int fine_level,
                           const Vector<MultiFab*>& phi,
@@ -1640,36 +1663,44 @@ Gravity::solve_with_MLMG (int crse_level, int fine_level,
 
     const int nlevs = fine_level - crse_level + 1;
 
-    Vector<Geometry> gmv;
-    Vector<BoxArray> bav;
-    Vector<DistributionMapping> dmv;
-    for (int ilev = 0; ilev < nlevs; ++ilev)
-    {
-        gmv.push_back(parent->Geom(ilev+crse_level));
-        bav.push_back(rhs[ilev]->boxArray());
-        dmv.push_back(rhs[ilev]->DistributionMap());
-    }
+    // should be redundant since setup_Poisson is called in post_regrid
+    if(nlevs>1)
+      {
 
-    LPInfo info;
-    info.setAgglomeration(mlmg_agglomeration);
-    info.setConsolidation(mlmg_consolidation);
+	Vector<Geometry> gmv;
+	Vector<BoxArray> bav;
+	Vector<DistributionMapping> dmv;
+	for (int ilev = 0; ilev < nlevs; ++ilev)
+	  {
+	    gmv.push_back(parent->Geom(ilev+crse_level));
+	    bav.push_back(rhs[ilev]->boxArray());
+	    dmv.push_back(rhs[ilev]->DistributionMap());
+	  }
 
-    MLPoisson mlpoisson(gmv, bav, dmv, info);
+	LPInfo info;
+	info.setAgglomeration(mlmg_agglomeration);
+	info.setConsolidation(mlmg_consolidation);
+
+	mlpoisson.reset(new MLPoisson(gmv, bav, dmv, info));
+      }
+
+    if(!mlpoisson)
+      setup_Poisson(crse_level,fine_level);
 
     // BC
-    mlpoisson.setDomainBC(mlmg_lobc, mlmg_hibc);
+    mlpoisson->setDomainBC(mlmg_lobc, mlmg_hibc);
 
-    if (mlpoisson.needsCoarseDataForBC())
+    if (mlpoisson->needsCoarseDataForBC())
     {
-        mlpoisson.setCoarseFineBC(crse_bcdata, parent->refRatio(crse_level-1)[0]);
+        mlpoisson->setCoarseFineBC(crse_bcdata, parent->refRatio(crse_level-1)[0]);
     }
     
     for (int ilev = 0; ilev < nlevs; ++ilev)
     {
-        mlpoisson.setLevelBC(ilev, phi[ilev]);
+        mlpoisson->setLevelBC(ilev, phi[ilev]);
     }
 
-    MLMG mlmg(mlpoisson);
+    MLMG mlmg(*mlpoisson);
     mlmg.setVerbose(verbose);
     if (crse_level == 0) {
 	mlmg.setMaxFmgIter(mlmg_max_fmg_iter);
