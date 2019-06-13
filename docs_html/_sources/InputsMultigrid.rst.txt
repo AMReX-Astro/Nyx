@@ -18,9 +18,9 @@ These must be preceded by "gravity" in the inputs file:
 +----------------------+-----------------------------------------------------------------------+-------------+--------------+
 | mlmg_max_fmg_iter    |  Maximum number of FMG cycles before starting V-cycles                |    Int      |   0          | 
 +----------------------+-----------------------------------------------------------------------+-------------+--------------+
-| mlmg_agglomeration   !  Should we agglomerate deep in the V-cycle                            !    Int      !   0          ! 
+| mlmg_agglomeration   |  Should we agglomerate deep in the V-cycle                            |    Int      |   0          ! 
 +----------------------+-----------------------------------------------------------------------+-------------+--------------+
-| mlmg_consolidation   !  Should we consolidate deep in the V-cycle                            !    Int      !   0          ! 
+| mlmg_consolidation   |  Should we consolidate deep in the V-cycle                            |    Int      |   0          ! 
 +----------------------+-----------------------------------------------------------------------+-------------+--------------+
 
 There are additional multigrid parameters for which Nyx just uses the AMReX default -- these include 
