@@ -17,6 +17,7 @@ Welcome to Nyx's documentation!
    NyxEquations
    Particles
    NyxHeatCool
+   InputsMultigrid 
 
 .. toctree::
    :maxdepth: 1
