@@ -1017,7 +1017,7 @@ Gravity::add_to_fluxes(int level, int iteration, int ncycle)
     FluxRegister*   phi_current       = (level>0 ? phi_flux_reg[level].get() : nullptr);
     const Geometry& geom              = parent->Geom(level);
     const Real*     dx                = geom.CellSize();
-    const GpuArray<Real,BL_SPACEDIM>  area{ dx[1]*dx[2], dx[0]*dx[2], dx[0]*dx[1] };
+    const Real      area[BL_SPACEDIM] = { dx[1]*dx[2], dx[0]*dx[2], dx[0]*dx[1] };
 
 #ifdef CGRAV
     if (gravity_type == "StaticGrav")
@@ -1041,14 +1041,9 @@ Gravity::add_to_fluxes(int level, int iteration, int ncycle)
             for (MFIter mfi(fluxes,true); mfi.isValid(); ++mfi)
             {
                 const Box& tbx = mfi.tilebox();
-                const auto gphi_flux = fluxes.array(mfi);
-                const auto gphi_flux_curr = grad_phi_curr[level][n]->array(mfi);
-		AMREX_HOST_DEVICE_FOR_3D(tbx,i,j,k,
-					 {
-
-					   gphi_flux(i,j,k,0)=area[n]*gphi_flux_curr(i,j,k,0);
-
-					 });
+                FArrayBox& gphi_flux = fluxes[mfi];
+                gphi_flux.copy((*grad_phi_curr[level][n])[mfi],tbx);
+                gphi_flux.mult(area[n],tbx,0,1);
             }
             phi_fine->CrseInit(fluxes, n, 0, 0, 1, -1);
         }
@@ -1398,11 +1393,12 @@ Gravity::AddParticlesToRhs (int               level,
     MultiFab particle_mf(grids[level], dmap[level], 1, ngrow);
 
     for (int i = 0; i < Nyx::theActiveParticles().size(); i++)
-      {
+    {
+        particle_mf.setVal(0.);
         Nyx::theActiveParticles()[i]->AssignDensitySingleLevel(particle_mf, level);
 	amrex::Gpu::Device::streamSynchronize();
         MultiFab::Add(Rhs, particle_mf, 0, 0, 1, 0);
-      }
+    }
 
     amrex::Gpu::Device::streamSynchronize();
     amrex::Gpu::setLaunchRegion(prev_region);
@@ -1637,29 +1633,6 @@ Gravity::solve_for_delta_phi (int crse_level, int fine_level, MultiFab& CrseRhs,
     solve_with_MLMG(crse_level, fine_level, delta_phi, rhsp, grad, nullptr, rel_eps, abs_eps);
 }
 
-void 
-Gravity::setup_Poisson (int crse_level, int fine_level)
-{
-    const int nlevs = fine_level - crse_level + 1;
-
-    Vector<Geometry> gmv;
-    Vector<BoxArray> bav;
-    Vector<DistributionMapping> dmv;
-    for (int ilev = 0; ilev < nlevs; ++ilev)
-    {
-        gmv.push_back(parent->Geom(ilev+crse_level));
-        bav.push_back(grids[ilev]);
-        dmv.push_back(dmap[ilev]);
-    }
-
-    LPInfo info;
-    info.setAgglomeration(mlmg_agglomeration);
-    info.setConsolidation(mlmg_consolidation);
-
-    mlpoisson.reset(new MLPoisson(gmv, bav, dmv, info));
-
-}
-
 Real
 Gravity::solve_with_MLMG (int crse_level, int fine_level,
                           const Vector<MultiFab*>& phi,
@@ -1672,44 +1645,36 @@ Gravity::solve_with_MLMG (int crse_level, int fine_level,
 
     const int nlevs = fine_level - crse_level + 1;
 
-    // should be redundant since setup_Poisson is called in post_regrid
-    if(nlevs>1)
-      {
+    Vector<Geometry> gmv;
+    Vector<BoxArray> bav;
+    Vector<DistributionMapping> dmv;
+    for (int ilev = 0; ilev < nlevs; ++ilev)
+    {
+        gmv.push_back(parent->Geom(ilev+crse_level));
+        bav.push_back(rhs[ilev]->boxArray());
+        dmv.push_back(rhs[ilev]->DistributionMap());
+    }
 
-	Vector<Geometry> gmv;
-	Vector<BoxArray> bav;
-	Vector<DistributionMapping> dmv;
-	for (int ilev = 0; ilev < nlevs; ++ilev)
-	  {
-	    gmv.push_back(parent->Geom(ilev+crse_level));
-	    bav.push_back(rhs[ilev]->boxArray());
-	    dmv.push_back(rhs[ilev]->DistributionMap());
-	  }
+    LPInfo info;
+    info.setAgglomeration(mlmg_agglomeration);
+    info.setConsolidation(mlmg_consolidation);
 
-	LPInfo info;
-	info.setAgglomeration(mlmg_agglomeration);
-	info.setConsolidation(mlmg_consolidation);
-
-	mlpoisson.reset(new MLPoisson(gmv, bav, dmv, info));
-      }
-
-    if(!mlpoisson)
-      setup_Poisson(crse_level,fine_level);
+    MLPoisson mlpoisson(gmv, bav, dmv, info);
 
     // BC
-    mlpoisson->setDomainBC(mlmg_lobc, mlmg_hibc);
+    mlpoisson.setDomainBC(mlmg_lobc, mlmg_hibc);
 
-    if (mlpoisson->needsCoarseDataForBC())
+    if (mlpoisson.needsCoarseDataForBC())
     {
-        mlpoisson->setCoarseFineBC(crse_bcdata, parent->refRatio(crse_level-1)[0]);
+        mlpoisson.setCoarseFineBC(crse_bcdata, parent->refRatio(crse_level-1)[0]);
     }
     
     for (int ilev = 0; ilev < nlevs; ++ilev)
     {
-        mlpoisson->setLevelBC(ilev, phi[ilev]);
+        mlpoisson.setLevelBC(ilev, phi[ilev]);
     }
 
-    MLMG mlmg(*mlpoisson);
+    MLMG mlmg(mlpoisson);
     mlmg.setVerbose(verbose);
     if (crse_level == 0) {
 	mlmg.setMaxFmgIter(mlmg_max_fmg_iter);
