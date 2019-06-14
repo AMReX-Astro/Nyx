@@ -11,14 +11,13 @@ Load Balancing
 
 The process of load balancing is typically independent of the process of grid creation; 
 the inputs to load balancing are a given set of grids with a set of weights 
-assigned to each grid.  (The exception to this is the KD-tree approach in which the
-grid creation process is governed by trying to balance the work in each grid.)
+assigned to each grid.
 
 Single-level load balancing algorithms are sequentially applied to each AMR level independently, 
 and the resulting distributions are mapped onto the ranks taking into account the weights 
 already assigned to them (assign heaviest set of grids to the least loaded rank)
 
-Options supported by AMReX include:
+Options supported by AMReX include the following; the default is SFC:
 
 - Knapsack: the default weight of a grid in the knapsack algorithm is the number of grid cells, 
   but AMReX supports the option to pass an array of weights – one per grid – or alternatively 
