@@ -1893,7 +1893,6 @@ Nyx::post_regrid (int lbase,
         do_grav_solve_here = (level == lbase);
     }
 
-    gravity->setup_Poisson(level,new_finest);
     // Only do solve here if we will be using it in the timestep right after without re-solving,
     //      or if this is called from somewhere other than Amr::timeStep
     const Real cur_time = state[PhiGrav_Type].curTime();
