@@ -13,6 +13,7 @@ Welcome to Nyx's documentation!
    NyxPreface
    NyxIntroduction
    NyxGettingStarted
+   ManagingGridHierarchy_Chapter
    NyxGravity
    NyxEquations
    Particles
