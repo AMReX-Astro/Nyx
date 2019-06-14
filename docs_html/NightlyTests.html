@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>&lt;no title&gt; &mdash; Nyx 18.10
+  <title>Nightly Regression Tests &mdash; Nyx 18.10
  documentation</title>
   
 
@@ -38,7 +38,9 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="File list" href="filelist.html" />
+    <link rel="prev" title="Multigrid Inputs" href="InputsMultigrid.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -88,7 +90,7 @@
             
             
               <p class="caption"><span class="caption-text">Nyx basics</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="NyxPreface.html">Preface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxIntroduction.html">Introduction to Nyx</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxGettingStarted.html">Getting Started</a></li>
@@ -98,7 +100,7 @@
 <li class="toctree-l1"><a class="reference internal" href="Particles.html">Dark matter particles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxHeatCool.html">Radiative Heating and Cooling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="InputsMultigrid.html">Multigrid Inputs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="NightlyTests.html">Nightly Regression Tests</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Nightly Regression Tests</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API</span></p>
 <ul>
@@ -150,13 +152,13 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>&lt;no title&gt;</li>
+      <li>Nightly Regression Tests</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/runtime_parameters.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/NightlyTests.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -193,12 +195,30 @@
     text-align: unset;
 }
 </style>
+<div class="section" id="nightly-regression-tests">
+<span id="chap-nightlytesting"></span><h1>Nightly Regression Tests<a class="headerlink" href="#nightly-regression-tests" title="Permalink to this headline">¶</a></h1>
+<p>The following regression tests are run nightly with Nyx.   The plotfiles generated in each night’s test
+are compared with the benchmark plotfiles using the AMReX <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">fcompare</span></span></code> utility to compare the mesh data
+and <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">particle_compare</span></span></code> to compare the particle data.</p>
+<p>The results of these tests can be found at <a class="reference external" href="https://ccse.lbl.gov/pub/RegressionTesting/Nyx">https://ccse.lbl.gov/pub/RegressionTesting/Nyx</a></p>
+<p>Below Ng = number of grids, Npa = number of particles, Np = number of MPI ranks / number of OMP threads per rank.
+(If just a single number then pure MPI.)</p>
+</div>
 
 
            </div>
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="filelist.html" class="btn btn-neutral float-right" title="File list" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="InputsMultigrid.html" class="btn btn-neutral float-left" title="Multigrid Inputs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>

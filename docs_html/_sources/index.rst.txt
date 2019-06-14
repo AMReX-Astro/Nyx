@@ -19,6 +19,7 @@ Welcome to Nyx's documentation!
    Particles
    NyxHeatCool
    InputsMultigrid 
+   NightlyTests
 
 .. toctree::
    :maxdepth: 1
