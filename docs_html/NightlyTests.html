@@ -95,10 +95,10 @@
 <li class="toctree-l1"><a class="reference internal" href="NyxIntroduction.html">Introduction to Nyx</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxGettingStarted.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ManagingGridHierarchy_Chapter.html">Gridding and Load Balancing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="NyxGravity.html">Gravity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxEquations.html">Hydrodynamic Equations in Comoving Coordinates</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Particles.html">Dark matter particles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxHeatCool.html">Radiative Heating and Cooling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxGravity.html">Gravity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="InputsMultigrid.html">Multigrid Inputs</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Nightly Regression Tests</a></li>
 </ul>
@@ -201,191 +201,9 @@
 are compared with the benchmark plotfiles using the AMReX <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">fcompare</span></span></code> utility to compare the mesh data
 and <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">particle_compare</span></span></code> to compare the particle data.</p>
 <p>The results of these tests can be found at <a class="reference external" href="https://ccse.lbl.gov/pub/RegressionTesting/Nyx">https://ccse.lbl.gov/pub/RegressionTesting/Nyx</a></p>
-<p>Below Ng = number of grids, Npa = number of particles, Np = number of MPI ranks / number of OMP threads per rank.
+<p>Below nx,ny,nz are the number of cells in each coordinate direction at the coarsest level;
+Npa = number of particles, Np = number of MPI ranks / number of OMP threads per rank.
 (If just a single number then pure MPI.)</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="34%" />
-<col width="6%" />
-<col width="0%" />
-<col width="5%" />
-<col width="0%" />
-<col width="9%" />
-<col width="0%" />
-<col width="5%" />
-<col width="0%" />
-<col width="6%" />
-<col width="34%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Test</th>
-<th class="head">nx
-ny
-nz</th>
-<th class="head" colspan="8"><dl class="first last docutils">
-<dt>Nl | Npa   | Ng | Np</dt>
-<dd><div class="first last line-block">
-<div class="line">|    |</div>
-<div class="line">|    |</div>
-</div>
-</dd>
-</dl>
-</th>
-<th class="head">What does this test?</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td>AMR-density</td>
-<td>32</td>
-<td colspan="8">3  | 5005  | 1  | 4</td>
-<td>Multilevel AMR</td>
-</tr>
-<tr class="row-odd"><td>DR_restart</td>
-<td>64</td>
-<td colspan="2">3</td>
-<td colspan="2">40040</td>
-<td colspan="2">8</td>
-<td colspan="2">2/2</td>
-<td>Hydro only - restart</td>
-</tr>
-<tr class="row-even"><td>DoubleRarefaction</td>
-<td>32</td>
-<td colspan="2">3</td>
-<td colspan="2">5005</td>
-<td colspan="2">8</td>
-<td colspan="2">2/2</td>
-<td>Hydro only</td>
-</tr>
-<tr class="row-odd"><td>DrivenTurbulence</td>
-<td>10</td>
-<td colspan="2">1</td>
-<td colspan="2">1611</td>
-<td colspan="2">1</td>
-<td colspan="2">1/4</td>
-<td>Turbulent forcing</td>
-</tr>
-<tr class="row-even"><td>DrivenTurbulence-OMP</td>
-<td>10</td>
-<td colspan="2">1</td>
-<td colspan="2">1611</td>
-<td colspan="2">1</td>
-<td colspan="2">1/4</td>
-<td>Forcing with OMP</td>
-</tr>
-<tr class="row-odd"><td>LyA</td>
-<td>10</td>
-<td colspan="2">1</td>
-<td colspan="2">1611</td>
-<td colspan="2">1</td>
-<td colspan="2">4</td>
-<td>Includes h/c</td>
-</tr>
-<tr class="row-even"><td>Lya-OMP</td>
-<td>4</td>
-<td colspan="2">1</td>
-<td colspan="2">2500</td>
-<td colspan="2">1</td>
-<td colspan="2">1</td>
-<td>Mixed MI/PO + Per</td>
-</tr>
-<tr class="row-odd"><td>MiniSB</td>
-<td>4</td>
-<td colspan="2">1</td>
-<td colspan="2">2500</td>
-<td colspan="2">1</td>
-<td colspan="2">2</td>
-<td>Mixed MI/PO + Per</td>
-</tr>
-<tr class="row-even"><td>MiniSB-ref</td>
-<td>4</td>
-<td colspan="2">2</td>
-<td colspan="2">2500</td>
-<td colspan="2">1</td>
-<td colspan="2">2</td>
-<td>Mixed MI/PO + Per</td>
-</tr>
-<tr class="row-odd"><td>Part-2line</td>
-<td>5</td>
-<td colspan="2">3</td>
-<td colspan="2">1</td>
-<td colspan="2">10</td>
-<td colspan="2">2</td>
-<td>Single particle</td>
-</tr>
-<tr class="row-even"><td>Part-2line_restart</td>
-<td>5</td>
-<td colspan="2">3</td>
-<td colspan="2">1</td>
-<td colspan="2">10</td>
-<td colspan="2">2</td>
-<td>Single particle</td>
-</tr>
-<tr class="row-odd"><td>Part-mass.nosub</td>
-<td>5</td>
-<td colspan="2">3</td>
-<td colspan="2">1</td>
-<td colspan="2">10</td>
-<td colspan="2">2</td>
-<td>Single particle</td>
-</tr>
-<tr class="row-even"><td>Part-mass.sub</td>
-<td>5</td>
-<td colspan="2">3</td>
-<td colspan="2">1</td>
-<td colspan="2">10</td>
-<td colspan="2">2</td>
-<td>Single particle</td>
-</tr>
-<tr class="row-odd"><td>SantaBarbara</td>
-<td>5</td>
-<td colspan="2">3</td>
-<td colspan="2">1</td>
-<td colspan="2">10</td>
-<td colspan="2">2</td>
-<td>Single particle</td>
-</tr>
-<tr class="row-even"><td>Sedov</td>
-<td>5</td>
-<td colspan="2">1</td>
-<td colspan="2">1</td>
-<td colspan="2">10</td>
-<td colspan="2">1</td>
-<td>Hydro only</td>
-</tr>
-<tr class="row-odd"><td>Sod</td>
-<td>5</td>
-<td colspan="2">3</td>
-<td colspan="2">1</td>
-<td colspan="2">10</td>
-<td colspan="2">1</td>
-<td>Hydro only</td>
-</tr>
-<tr class="row-even"><td>StrongShockTurb</td>
-<td>5</td>
-<td colspan="2">3</td>
-<td colspan="2">1</td>
-<td colspan="2">10</td>
-<td colspan="2">1</td>
-<td>Hydro only</td>
-</tr>
-<tr class="row-odd"><td>TurbForce</td>
-<td>5</td>
-<td colspan="2">1</td>
-<td colspan="2">1</td>
-<td colspan="2">10</td>
-<td colspan="2">4</td>
-<td>Turbulent forcing</td>
-</tr>
-<tr class="row-even"><td>TurbForce-OMP</td>
-<td>5</td>
-<td colspan="2">1</td>
-<td colspan="2">1</td>
-<td colspan="2">10</td>
-<td colspan="2">1</td>
-<td>Forcing with OMP</td>
-</tr>
-</tbody>
-</table>
 </div>
 
 

@@ -14,10 +14,10 @@ Welcome to Nyx's documentation!
    NyxIntroduction
    NyxGettingStarted
    ManagingGridHierarchy_Chapter
-   NyxGravity
    NyxEquations
    Particles
    NyxHeatCool
+   NyxGravity
    InputsMultigrid 
    NightlyTests
 
