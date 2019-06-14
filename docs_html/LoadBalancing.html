@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Gridding and Load Balancing &mdash; Nyx 18.10
+  <title>Load Balancing &mdash; Nyx 18.10
  documentation</title>
   
 
@@ -39,8 +39,8 @@
   <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Grid Creation" href="GridCreation.html" />
-    <link rel="prev" title="Getting Started" href="NyxGettingStarted.html" /> 
+    <link rel="next" title="Gravity" href="NyxGravity.html" />
+    <link rel="prev" title="Grid Creation" href="GridCreation.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -94,9 +94,9 @@
 <li class="toctree-l1"><a class="reference internal" href="NyxPreface.html">Preface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxIntroduction.html">Introduction to Nyx</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxGettingStarted.html">Getting Started</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Gridding and Load Balancing</a><ul>
+<li class="toctree-l1 current"><a class="reference internal" href="ManagingGridHierarchy_Chapter.html">Gridding and Load Balancing</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="GridCreation.html">Grid Creation</a></li>
-<li class="toctree-l2"><a class="reference internal" href="LoadBalancing.html">Load Balancing</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Load Balancing</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="NyxGravity.html">Gravity</a></li>
@@ -155,13 +155,15 @@
     
       <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Gridding and Load Balancing</li>
+          <li><a href="ManagingGridHierarchy_Chapter.html">Gridding and Load Balancing</a> &raquo;</li>
+        
+      <li>Load Balancing</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/ManagingGridHierarchy_Chapter.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/LoadBalancing.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -198,29 +200,25 @@
     text-align: unset;
 }
 </style>
-<div class="section" id="gridding-and-load-balancing">
-<h1>Gridding and Load Balancing<a class="headerlink" href="#gridding-and-load-balancing" title="Permalink to this headline">¶</a></h1>
-<p>Nyx has a great deal of flexibility when it comes to how to decompose the
-computational domain into individual rectangular grids, and how to distribute
-those grids to MPI ranks.  There can be grids of different sizes,
-more than one grid per MPI rank, and different strategies for distributing the grids to MPI ranks.</p>
-<p>We use the phrase “load balancing” here to refer to the combined process
-of grid creation (and re-creation when regridding) and distribution of grids to MPI ranks.</p>
-<p>See <a class="reference internal" href="GridCreation.html#sec-grid-creation"><span class="std std-ref">Grid Creation</span></a> for grids are created, i.e. how the <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">BoxArray</span></span></code> on which
-<code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">MultiFabs</span></span></code> will be built is defined at each level.</p>
-<p>See <a class="reference internal" href="LoadBalancing.html#sec-load-balancing"><span class="std std-ref">Load Balancing</span></a> for the strategies AMReX supports for distributing
-grids to MPI ranks, i.e. defining the <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">DistributionMapping</span></span></code> with which
-<code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">MultiFabs</span></span></code> at that level will be built.</p>
-<p>When running on multicore machines with OpenMP, we can also control the distribution of
-work by setting the size of grid tiles (by defining <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">fabarray_mfiter</span></span><span class="punctuation"><span class="pre">.</span></span><span class="name"><span class="pre">tile_size</span></span></code>).
-We can also specify the strategy for assigning tiles to OpenMP threads.
-See <span class="xref std std-ref">sec:basics:mfiter:tiling:</span> for more about tiling.</p>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="GridCreation.html">Grid Creation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="LoadBalancing.html">Load Balancing</a></li>
+<div class="section" id="load-balancing">
+<span id="sec-load-balancing"></span><h1>Load Balancing<a class="headerlink" href="#load-balancing" title="Permalink to this headline">¶</a></h1>
+<p>The process of load balancing is typically independent of the process of grid creation;
+the inputs to load balancing are a given set of grids with a set of weights
+assigned to each grid.  (The exception to this is the KD-tree approach in which the
+grid creation process is governed by trying to balance the work in each grid.)</p>
+<p>Single-level load balancing algorithms are sequentially applied to each AMR level independently,
+and the resulting distributions are mapped onto the ranks taking into account the weights
+already assigned to them (assign heaviest set of grids to the least loaded rank)</p>
+<p>Options supported by AMReX include:</p>
+<ul class="simple">
+<li>Knapsack: the default weight of a grid in the knapsack algorithm is the number of grid cells,
+but AMReX supports the option to pass an array of weights – one per grid – or alternatively
+to pass in a MultiFab of weights per cell which is used to compute the weight per grid</li>
+<li>SFC: enumerate grids with a space-filling Z-morton curve, then partition the
+resulting ordering across ranks in a way that balances the load</li>
+<li>Round-robin: sort grids and assign them to ranks in round-robin fashion – specifically
+FAB <em>i</em> is owned by CPU <a href="#id1"><span class="problematic" id="id2">*</span></a>i*%N where N is the total number of MPI ranks.</li>
 </ul>
-</div>
 </div>
 
 
@@ -231,10 +229,10 @@ See <span class="xref std std-ref">sec:basics:mfiter:tiling:</span> for more abo
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="GridCreation.html" class="btn btn-neutral float-right" title="Grid Creation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="NyxGravity.html" class="btn btn-neutral float-right" title="Gravity" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="NyxGettingStarted.html" class="btn btn-neutral float-left" title="Getting Started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="GridCreation.html" class="btn btn-neutral float-left" title="Grid Creation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
