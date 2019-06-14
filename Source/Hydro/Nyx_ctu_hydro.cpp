@@ -15,7 +15,10 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 {
 
   BL_PROFILE("Nyx::construct_ctu_hydro_source()");
-
+  /*
+  amrex::Print()<<"Beginning of construct_hydro"<<std::endl;
+  amrex::Arena::PrintUsage();
+  */
   const Real strt_time = ParallelDescriptor::second();
 
   // this constructs the hydrodynamic source (essentially the flux
@@ -105,14 +108,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 ///
 /// The data.
 ///
-    amrex::MultiFab             volume;
     amrex::MultiFab             area[3];
-    amrex::MultiFab             dLogArea[1];
-    amrex::Vector< amrex::Vector<amrex::Real> > radius;
-
-    volume.clear();
-    volume.define(grids,dmap,1,NUM_GROW);
-    geom.GetVolume(volume);
 
     for (int dir = 0; dir < BL_SPACEDIM; dir++)
     {
@@ -127,8 +123,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
         area[dir].setVal(0.0);
     }
 
-    dLogArea[0].clear();
-    
     hydro_source.setVal(0.0);
 
     amrex::GpuArray<Real,3> dx = geom.CellSizeArray();
@@ -146,7 +140,9 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
   Real xang_lost = 0.;
   Real yang_lost = 0.;
   Real zang_lost = 0.;
-
+  /*
+  amrex::Print()<<"construct_hydro after multifabs, before fabarrays"<<std::endl;
+  amrex::Arena::PrintUsage();*/
   BL_PROFILE_VAR("Nyx::advance_hydro_ca_umdrv()", CA_UMDRV);
 
 #ifdef _OPENMP
@@ -162,8 +158,8 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
     FArrayBox flatn;
     FArrayBox dq;
-    FArrayBox Ip, Im, Ip_src, Im_src, Ip_gc, Im_gc;
-    FArrayBox sm, sp;
+    //    FArrayBox Ip, Im, Ip_src, Im_src, Ip_gc, Im_gc;
+    //    FArrayBox sm, sp;
     FArrayBox shk;
     FArrayBox qxm, qxp;
     FArrayBox qym, qyp;
@@ -238,6 +234,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                  fab_qe[1] = qe[1].array();,
                  fab_qe[2] = qe[2].array(););*/
 
+    bool first = true;
 
     for (MFIter mfi(S_new, TilingIfNotGPU()); mfi.isValid(); ++mfi) {
       //      for (MFIter mfi(S_new, hydro_tile_size); mfi.isValid(); ++mfi) {
@@ -499,7 +496,14 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       pdivu.resize(bx, 1);
       Elixir elix_pdivu = pdivu.elixir();
     const auto fab_pdivu = pdivu.array();
-
+    /*
+    if(first)
+      {
+	amrex::Print()<<"construct_hydro after multifabs, before fabarrays"<<std::endl;
+	amrex::Arena::PrintUsage();
+	if(ParallelDescriptor::IOProcessor())
+	  first=false;
+	  }*/
       //amrex::Gpu::setLaunchRegion(true);
       if (use_flattening == 1) {
       AMREX_LAUNCH_DEVICE_LAMBDA(obx, tobx,
@@ -574,6 +578,8 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
       } else {
 
+	amrex::Abort("Entered ppm_type=1 loop in hydro_convert which is not well tested");
+	/*
         Ip.resize(obx, 3*QVAR);
         Elixir elix_Ip = Ip.elixir();
 
@@ -629,6 +635,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                        BL_ARR4_TO_FORTRAN_3D(fab_qzp),
                        dx.data(), dt,
                        AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
+	*/
       }
 
       // compute divu -- we'll use this later when doing the artifical viscosity
@@ -1080,7 +1087,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       } // idir loop
 
       //took out track_grid_losses
-      ////      amrex::Gpu::Device::synchronize();
+      amrex::Gpu::Device::synchronize();
     } // MFIter loop
 
 
