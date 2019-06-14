@@ -197,6 +197,53 @@
 <span id="chap-inputsmultigrid"></span><h1>Multigrid Inputs<a class="headerlink" href="#multigrid-inputs" title="Permalink to this headline">¶</a></h1>
 <p>The following inputs can be set directly in the AMReX solver classes but we set them via the Nyx gravity routines.</p>
 <p>These must be preceded by “gravity” in the inputs file:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="59%" />
+<col width="11%" />
+<col width="12%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">&#160;</th>
+<th class="head">Description</th>
+<th class="head">Type</th>
+<th class="head">Default</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>v</td>
+<td>Verbosity of multigrid solver</td>
+<td>Int</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>ml_tol</td>
+<td>Relative tolerance for multilevel solves</td>
+<td>Real</td>
+<td>1.e-12</td>
+</tr>
+<tr class="row-even"><td>sl_tol</td>
+<td>Relative tolerance for single-level solves</td>
+<td>Real</td>
+<td>1.e-12</td>
+</tr>
+<tr class="row-odd"><td>mlmg_max_fmg_iter</td>
+<td>Maximum number of FMG cycles before starting V-cycles</td>
+<td>Int</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td>mlmg_agglomeration</td>
+<td>Should we agglomerate deep in the V-cycle</td>
+<td>Int</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>mlmg_consolidation</td>
+<td>Should we consolidate deep in the V-cycle</td>
+<td>Int</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
 <p>There are additional multigrid parameters for which Nyx just uses the AMReX default – these include</p>
 <table border="1" class="docutils">
 <colgroup>
