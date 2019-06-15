@@ -179,7 +179,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
     FArrayBox qmyz, qpyz;
     FArrayBox pdivu;
 
-    /*    //    FArrayBox* fab_flatn = &flatn;
+    /*    //    const auto fab_flatn = &flatn;
     const auto fab_flatn = flatn.array();
     const auto fab_dq = dq.array();
     const auto fab_Ip = Ip.array();
@@ -244,22 +244,18 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
       const Box& obx = amrex::grow(bx, 1);
 
-      FArrayBox* fab_Sborder = Sborder.fabPtr(mfi);
-      FArrayBox* fab_hydro_source = hydro_source.fabPtr(mfi);
+      const auto fab_Sborder = Sborder.array(mfi);
+      const auto fab_hydro_source = hydro_source.array(mfi);
 
-      FArrayBox* fab_q = q.fabPtr(mfi);
-      FArrayBox* fab_qaux = qaux.fabPtr(mfi);
-      FArrayBox* fab_src_q = src_q.fabPtr(mfi);
+      const auto fab_q = q.array(mfi);
+      const auto fab_qaux = qaux.array(mfi);
+      const auto fab_src_q = src_q.array(mfi);
 
-      GpuArray<FArrayBox*, AMREX_SPACEDIM> fab_area;
-      AMREX_D_TERM(fab_area[0] = area[0].fabPtr(mfi);,
-		   fab_area[1] = area[1].fabPtr(mfi);,
-		   fab_area[2] = area[2].fabPtr(mfi););
+      GpuArray<Array4<Real>, AMREX_SPACEDIM> fab_area{AMREX_D_DECL(area[0].array(mfi),
+								   area[1].array(mfi), area[2].array(mfi))};
 
-      GpuArray<FArrayBox*, AMREX_SPACEDIM> fab_fluxes;
-      AMREX_D_TERM(fab_fluxes[0] = fluxes[0].fabPtr(mfi);,
-		   fab_fluxes[1] = fluxes[1].fabPtr(mfi);,
-		   fab_fluxes[2] = fluxes[2].fabPtr(mfi););
+      GpuArray<Array4<Real>, AMREX_SPACEDIM> fab_fluxes{AMREX_D_DECL(fluxes[0].array(mfi),
+								   fluxes[1].array(mfi), fluxes[2].array(mfi))};
       
       //      q.resize(obx, 1);
       //      Elixir elix_q = q.elixir();
@@ -509,7 +505,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       AMREX_LAUNCH_DEVICE_LAMBDA(obx, tobx,
 		{
         ca_uflatten(AMREX_INT_ANYD(tobx.loVect()), AMREX_INT_ANYD(tobx.hiVect()),
-                    BL_TO_FORTRAN_ANYD(*fab_q),
+                    BL_ARR4_TO_FORTRAN_3D(fab_q),
 		    BL_ARR4_TO_FORTRAN_3D(fab_flatn),
 		    pres_comp);
 		});
@@ -528,10 +524,10 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       {
         ctu_plm_states(AMREX_INT_ANYD(tobx.loVect()), AMREX_INT_ANYD(tobx.hiVect()),
                        1,AMREX_INT_ANYD(bx.loVect()), AMREX_INT_ANYD(bx.hiVect()),
-                       BL_TO_FORTRAN_ANYD(*fab_q),
+                       BL_ARR4_TO_FORTRAN_3D(fab_q),
 		       BL_ARR4_TO_FORTRAN_3D(fab_flatn),
-                       BL_TO_FORTRAN_ANYD(*fab_qaux),
-                       BL_TO_FORTRAN_ANYD(*fab_src_q),
+                       BL_ARR4_TO_FORTRAN_3D(fab_qaux),
+                       BL_ARR4_TO_FORTRAN_3D(fab_src_q),
                        BL_ARR4_TO_FORTRAN_3D(fab_shk),
                        BL_ARR4_TO_FORTRAN_3D(fab_dq),
                        BL_ARR4_TO_FORTRAN_3D(fab_qxm),
@@ -544,10 +540,10 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       {
 	        ctu_plm_states(AMREX_INT_ANYD(tobx.loVect()), AMREX_INT_ANYD(tobx.hiVect()),
                        2,AMREX_INT_ANYD(bx.loVect()), AMREX_INT_ANYD(bx.hiVect()),
-                       BL_TO_FORTRAN_ANYD(*fab_q),
+                       BL_ARR4_TO_FORTRAN_3D(fab_q),
 		       BL_ARR4_TO_FORTRAN_3D(fab_flatn),
-                       BL_TO_FORTRAN_ANYD(*fab_qaux),
-                       BL_TO_FORTRAN_ANYD(*fab_src_q),
+                       BL_ARR4_TO_FORTRAN_3D(fab_qaux),
+                       BL_ARR4_TO_FORTRAN_3D(fab_src_q),
                        BL_ARR4_TO_FORTRAN_3D(fab_shk),
                        BL_ARR4_TO_FORTRAN_3D(fab_dq),
                        BL_ARR4_TO_FORTRAN_3D(fab_qym),
@@ -560,10 +556,10 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       {
 		        ctu_plm_states(AMREX_INT_ANYD(tobx.loVect()), AMREX_INT_ANYD(tobx.hiVect()),
                        3,AMREX_INT_ANYD(bx.loVect()), AMREX_INT_ANYD(bx.hiVect()),
-                       BL_TO_FORTRAN_ANYD(*fab_q),
+                       BL_ARR4_TO_FORTRAN_3D(fab_q),
 		       BL_ARR4_TO_FORTRAN_3D(fab_flatn),
-                       BL_TO_FORTRAN_ANYD(*fab_qaux),
-                       BL_TO_FORTRAN_ANYD(*fab_src_q),
+                       BL_ARR4_TO_FORTRAN_3D(fab_qaux),
+                       BL_ARR4_TO_FORTRAN_3D(fab_src_q),
                        BL_ARR4_TO_FORTRAN_3D(fab_shk),
                        BL_ARR4_TO_FORTRAN_3D(fab_dq),
                        BL_ARR4_TO_FORTRAN_3D(fab_qzm),
@@ -614,10 +610,10 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 #pragma gpu
         ctu_ppm_states(AMREX_INT_ANYD(obx.loVect()), AMREX_INT_ANYD(obx.hiVect()),
                        AMREX_INT_ANYD(bx.loVect()), AMREX_INT_ANYD(bx.hiVect()),
-                       BL_TO_FORTRAN_ANYD(*fab_q),
+                       BL_ARR4_TO_FORTRAN_3D(fab_q),
                        BL_ARR4_TO_FORTRAN_3D(fab_flatn),
-                       BL_TO_FORTRAN_ANYD(*fab_qaux),
-                       BL_TO_FORTRAN_ANYD(*fab_src_q),
+                       BL_ARR4_TO_FORTRAN_3D(fab_qaux),
+                       BL_ARR4_TO_FORTRAN_3D(fab_src_q),
                        BL_ARR4_TO_FORTRAN_3D(fab_shk),
                        BL_ARR4_TO_FORTRAN_3D(fab_Ip),
                        BL_ARR4_TO_FORTRAN_3D(fab_Im),
@@ -644,7 +640,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       AMREX_LAUNCH_DEVICE_LAMBDA(obx, tobx,
       {
       divu(AMREX_INT_ANYD(tobx.loVect()), AMREX_INT_ANYD(tobx.hiVect()),
-           BL_TO_FORTRAN_ANYD(*fab_q),
+           BL_ARR4_TO_FORTRAN_3D(fab_q),
            dx.data(),
            BL_ARR4_TO_FORTRAN_3D(fab_div));
       });
@@ -665,7 +661,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           BL_ARR4_TO_FORTRAN_3D(fab_ftmp1),
                           BL_ARR4_TO_FORTRAN_3D(fab_q_int),
                           BL_ARR4_TO_FORTRAN_3D(fab_qgdnvtmp1),
-                          BL_TO_FORTRAN_ANYD(*fab_qaux),
+                          BL_ARR4_TO_FORTRAN_3D(fab_qaux),
                           BL_ARR4_TO_FORTRAN_3D(fab_shk),
                           1, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
@@ -682,7 +678,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                         BL_ARR4_TO_FORTRAN_3D(fab_qyx),
                         BL_ARR4_TO_FORTRAN_3D(fab_qyp),
                         BL_ARR4_TO_FORTRAN_3D(fab_qpyx),
-                        BL_TO_FORTRAN_ANYD(*fab_qaux),
+                        BL_ARR4_TO_FORTRAN_3D(fab_qaux),
                         BL_ARR4_TO_FORTRAN_3D(fab_ftmp1),
                         BL_ARR4_TO_FORTRAN_3D(fab_qgdnvtmp1),
                         hdt, cdtdx);
@@ -695,7 +691,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                         BL_ARR4_TO_FORTRAN_3D(fab_qzx),
                         BL_ARR4_TO_FORTRAN_3D(fab_qzp),
                         BL_ARR4_TO_FORTRAN_3D(fab_qpzx),
-                        BL_TO_FORTRAN_ANYD(*fab_qaux),
+                        BL_ARR4_TO_FORTRAN_3D(fab_qaux),
                         BL_ARR4_TO_FORTRAN_3D(fab_ftmp1),
                         BL_ARR4_TO_FORTRAN_3D(fab_qgdnvtmp1),
                         hdt, cdtdx);
@@ -712,7 +708,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           BL_ARR4_TO_FORTRAN_3D(fab_ftmp1),
                           BL_ARR4_TO_FORTRAN_3D(fab_q_int),
                           BL_ARR4_TO_FORTRAN_3D(fab_qgdnvtmp1),
-                          BL_TO_FORTRAN_ANYD(*fab_qaux),
+                          BL_ARR4_TO_FORTRAN_3D(fab_qaux),
                           BL_ARR4_TO_FORTRAN_3D(fab_shk),
                           2, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
@@ -727,7 +723,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                         BL_ARR4_TO_FORTRAN_3D(fab_qxy),
                         BL_ARR4_TO_FORTRAN_3D(fab_qxp),
                         BL_ARR4_TO_FORTRAN_3D(fab_qpxy),
-                        BL_TO_FORTRAN_ANYD(*fab_qaux),
+                        BL_ARR4_TO_FORTRAN_3D(fab_qaux),
                         BL_ARR4_TO_FORTRAN_3D(fab_ftmp1),
                         BL_ARR4_TO_FORTRAN_3D(fab_qgdnvtmp1),
                         cdtdy);
@@ -743,7 +739,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                         BL_ARR4_TO_FORTRAN_3D(fab_qzy),
                         BL_ARR4_TO_FORTRAN_3D(fab_qzp),
                         BL_ARR4_TO_FORTRAN_3D(fab_qpzy),
-                        BL_TO_FORTRAN_ANYD(*fab_qaux),
+                        BL_ARR4_TO_FORTRAN_3D(fab_qaux),
                         BL_ARR4_TO_FORTRAN_3D(fab_ftmp1),
                         BL_ARR4_TO_FORTRAN_3D(fab_qgdnvtmp1),
                         cdtdy);
@@ -761,7 +757,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           BL_ARR4_TO_FORTRAN_3D(fab_ftmp1),
                           BL_ARR4_TO_FORTRAN_3D(fab_q_int),
                           BL_ARR4_TO_FORTRAN_3D(fab_qgdnvtmp1),
-                          BL_TO_FORTRAN_ANYD(*fab_qaux),
+                          BL_ARR4_TO_FORTRAN_3D(fab_qaux),
                           BL_ARR4_TO_FORTRAN_3D(fab_shk),
                           3, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
@@ -776,7 +772,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                         BL_ARR4_TO_FORTRAN_3D(fab_qxz),
                         BL_ARR4_TO_FORTRAN_3D(fab_qxp),
                         BL_ARR4_TO_FORTRAN_3D(fab_qpxz),
-                        BL_TO_FORTRAN_ANYD(*fab_qaux),
+                        BL_ARR4_TO_FORTRAN_3D(fab_qaux),
                         BL_ARR4_TO_FORTRAN_3D(fab_ftmp1),
                         BL_ARR4_TO_FORTRAN_3D(fab_qgdnvtmp1),
                         cdtdz);
@@ -792,7 +788,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                         BL_ARR4_TO_FORTRAN_3D(fab_qyz),
                         BL_ARR4_TO_FORTRAN_3D(fab_qyp),
                         BL_ARR4_TO_FORTRAN_3D(fab_qpyz),
-                        BL_TO_FORTRAN_ANYD(*fab_qaux),
+                        BL_ARR4_TO_FORTRAN_3D(fab_qaux),
                         BL_ARR4_TO_FORTRAN_3D(fab_ftmp1),
                         BL_ARR4_TO_FORTRAN_3D(fab_qgdnvtmp1),
                         cdtdz);
@@ -815,7 +811,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           BL_ARR4_TO_FORTRAN_3D(fab_ftmp1),
                           BL_ARR4_TO_FORTRAN_3D(fab_q_int),
                           BL_ARR4_TO_FORTRAN_3D(fab_qgdnvtmp1),
-                          BL_TO_FORTRAN_ANYD(*fab_qaux),
+                          BL_ARR4_TO_FORTRAN_3D(fab_qaux),
                           BL_ARR4_TO_FORTRAN_3D(fab_shk),
                           2, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
@@ -833,7 +829,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           BL_ARR4_TO_FORTRAN_3D(fab_ftmp2),
                           BL_ARR4_TO_FORTRAN_3D(fab_q_int),
                           BL_ARR4_TO_FORTRAN_3D(fab_qgdnvtmp2),
-                          BL_TO_FORTRAN_ANYD(*fab_qaux),
+                          BL_ARR4_TO_FORTRAN_3D(fab_qaux),
                           BL_ARR4_TO_FORTRAN_3D(fab_shk),
                           3, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
@@ -846,12 +842,12 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
               BL_ARR4_TO_FORTRAN_3D(fab_ql),
               BL_ARR4_TO_FORTRAN_3D(fab_qxp),
               BL_ARR4_TO_FORTRAN_3D(fab_qr),
-              BL_TO_FORTRAN_ANYD(*fab_qaux),
+              BL_ARR4_TO_FORTRAN_3D(fab_qaux),
               BL_ARR4_TO_FORTRAN_3D(fab_ftmp1),
               BL_ARR4_TO_FORTRAN_3D(fab_ftmp2),
               BL_ARR4_TO_FORTRAN_3D(fab_qgdnvtmp1),
               BL_ARR4_TO_FORTRAN_3D(fab_qgdnvtmp2),
-              BL_TO_FORTRAN_ANYD(*fab_src_q),
+              BL_ARR4_TO_FORTRAN_3D(fab_src_q),
               hdt, hdtdy, hdtdz, a_old, a_new);
       });
 
@@ -863,7 +859,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           BL_ARR4_TO_FORTRAN_3D(fab_flux[0]),
                           BL_ARR4_TO_FORTRAN_3D(fab_q_int),
                           BL_ARR4_TO_FORTRAN_3D(fab_qe[0]),
-                          BL_TO_FORTRAN_ANYD(*fab_qaux),
+                          BL_ARR4_TO_FORTRAN_3D(fab_qaux),
                           BL_ARR4_TO_FORTRAN_3D(fab_shk),
                           1, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
@@ -885,7 +881,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           BL_ARR4_TO_FORTRAN_3D(fab_ftmp1),
                           BL_ARR4_TO_FORTRAN_3D(fab_q_int),
                           BL_ARR4_TO_FORTRAN_3D(fab_qgdnvtmp1),
-                          BL_TO_FORTRAN_ANYD(*fab_qaux),
+                          BL_ARR4_TO_FORTRAN_3D(fab_qaux),
                           BL_ARR4_TO_FORTRAN_3D(fab_shk),
                           3, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
@@ -902,7 +898,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           BL_ARR4_TO_FORTRAN_3D(fab_ftmp2),
                           BL_ARR4_TO_FORTRAN_3D(fab_q_int),
                           BL_ARR4_TO_FORTRAN_3D(fab_qgdnvtmp2),
-                          BL_TO_FORTRAN_ANYD(*fab_qaux),
+                          BL_ARR4_TO_FORTRAN_3D(fab_qaux),
                           BL_ARR4_TO_FORTRAN_3D(fab_shk),
                           1, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
@@ -915,12 +911,12 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
               BL_ARR4_TO_FORTRAN_3D(fab_ql),
               BL_ARR4_TO_FORTRAN_3D(fab_qyp),
               BL_ARR4_TO_FORTRAN_3D(fab_qr),
-              BL_TO_FORTRAN_ANYD(*fab_qaux),
+              BL_ARR4_TO_FORTRAN_3D(fab_qaux),
               BL_ARR4_TO_FORTRAN_3D(fab_ftmp2),
               BL_ARR4_TO_FORTRAN_3D(fab_ftmp1),
               BL_ARR4_TO_FORTRAN_3D(fab_qgdnvtmp2),
               BL_ARR4_TO_FORTRAN_3D(fab_qgdnvtmp1),
-	      BL_TO_FORTRAN_ANYD(*fab_src_q),
+	      BL_ARR4_TO_FORTRAN_3D(fab_src_q),
               hdt, hdtdx, hdtdz, a_old, a_new);
       });
 
@@ -933,7 +929,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           BL_ARR4_TO_FORTRAN_3D(fab_flux[1]),
                           BL_ARR4_TO_FORTRAN_3D(fab_q_int),
                           BL_ARR4_TO_FORTRAN_3D(fab_qe[1]),
-                          BL_TO_FORTRAN_ANYD(*fab_qaux),
+                          BL_ARR4_TO_FORTRAN_3D(fab_qaux),
                           BL_ARR4_TO_FORTRAN_3D(fab_shk),
                           2, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
@@ -955,7 +951,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           BL_ARR4_TO_FORTRAN_3D(fab_ftmp1),
                           BL_ARR4_TO_FORTRAN_3D(fab_q_int),
                           BL_ARR4_TO_FORTRAN_3D(fab_qgdnvtmp1),
-                          BL_TO_FORTRAN_ANYD(*fab_qaux),
+                          BL_ARR4_TO_FORTRAN_3D(fab_qaux),
                           BL_ARR4_TO_FORTRAN_3D(fab_shk),
                           1, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
@@ -972,7 +968,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           BL_ARR4_TO_FORTRAN_3D(fab_ftmp2),
                           BL_ARR4_TO_FORTRAN_3D(fab_q_int),
                           BL_ARR4_TO_FORTRAN_3D(fab_qgdnvtmp2),
-                          BL_TO_FORTRAN_ANYD(*fab_qaux),
+                          BL_ARR4_TO_FORTRAN_3D(fab_qaux),
                           BL_ARR4_TO_FORTRAN_3D(fab_shk),
                           2, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
@@ -985,12 +981,12 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
               BL_ARR4_TO_FORTRAN_3D(fab_ql),
               BL_ARR4_TO_FORTRAN_3D(fab_qzp),
               BL_ARR4_TO_FORTRAN_3D(fab_qr),
-              BL_TO_FORTRAN_ANYD(*fab_qaux),
+              BL_ARR4_TO_FORTRAN_3D(fab_qaux),
               BL_ARR4_TO_FORTRAN_3D(fab_ftmp1),
               BL_ARR4_TO_FORTRAN_3D(fab_ftmp2),
               BL_ARR4_TO_FORTRAN_3D(fab_qgdnvtmp1),
               BL_ARR4_TO_FORTRAN_3D(fab_qgdnvtmp2),
-	      BL_TO_FORTRAN_ANYD(*fab_src_q),
+	      BL_ARR4_TO_FORTRAN_3D(fab_src_q),
               hdt, hdtdx, hdtdy, a_old, a_new);
       });
 
@@ -1003,7 +999,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           BL_ARR4_TO_FORTRAN_3D(fab_flux[2]),
                           BL_ARR4_TO_FORTRAN_3D(fab_q_int),
                           BL_ARR4_TO_FORTRAN_3D(fab_qe[2]),
-                          BL_TO_FORTRAN_ANYD(*fab_qaux),
+                          BL_ARR4_TO_FORTRAN_3D(fab_qaux),
                           BL_ARR4_TO_FORTRAN_3D(fab_shk),
                           3, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
 
@@ -1022,7 +1018,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
           apply_av(AMREX_INT_ANYD(tnbx.loVect()), AMREX_INT_ANYD(tnbx.hiVect()),
                    idir_f, dx.data(),
                    BL_ARR4_TO_FORTRAN_3D(fab_div),
-                   BL_TO_FORTRAN_ANYD(*fab_Sborder),
+                   BL_ARR4_TO_FORTRAN_3D(fab_Sborder),
                    BL_ARR4_TO_FORTRAN_3D(fab_flux[idir]),&dt);
       });
 
@@ -1037,8 +1033,8 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
       {
       ca_consup(AMREX_INT_ANYD(tbx.loVect()), AMREX_INT_ANYD(tbx.hiVect()),
-                BL_TO_FORTRAN(*fab_Sborder),
-                BL_TO_FORTRAN(*fab_hydro_source),
+                BL_ARR4_TO_FORTRAN(fab_Sborder),
+                BL_ARR4_TO_FORTRAN(fab_hydro_source),
                 BL_ARR4_TO_FORTRAN(fab_flux[0]),
                 BL_ARR4_TO_FORTRAN(fab_flux[1]),
                 BL_ARR4_TO_FORTRAN(fab_flux[2]),
@@ -1059,7 +1055,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       {
         scale_flux(AMREX_INT_ANYD(tnbx.loVect()), AMREX_INT_ANYD(tnbx.hiVect()),
                    BL_ARR4_TO_FORTRAN_3D(fab_flux[idir]),
-                   BL_TO_FORTRAN_ANYD(*fab_area[idir]), dt,&a_old,&a_new);
+                   BL_ARR4_TO_FORTRAN_3D(fab_area[idir]), dt,&a_old,&a_new);
       });
       //amrex::Gpu::Device::streamSynchronize();
       //amrex::Gpu::setLaunchRegion(false);
