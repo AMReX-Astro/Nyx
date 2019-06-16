@@ -8,7 +8,7 @@
 using namespace amrex;
 
 void
-Nyx::cons_to_prim(MultiFab& Sborder, MultiFab& q, MultiFab& qaux, MultiFab& grav, MultiFab& sources_for_hydro, MultiFab& src_q, MultiFab& csml, Real a_old, Real a_new, Real dt)
+Nyx::cons_to_prim(MultiFab& Sborder, MultiFab& q, MultiFab& qaux, MultiFab& grav, MultiFab& sources_for_hydro, MultiFab& src_q, Real a_old, Real a_new, Real dt)
 {
 
   BL_PROFILE("Nyx::cons_to_prim()");
@@ -27,7 +27,6 @@ Nyx::cons_to_prim(MultiFab& Sborder, MultiFab& q, MultiFab& qaux, MultiFab& grav
 	const auto fab_q = q.array(mfi);
 	const auto fab_qaux = qaux.array(mfi);
 	const auto fab_src_q = src_q.array(mfi);
-	const auto fab_csml = csml.array(mfi);
 
         // Convert the conservative state to the primitive variable state.
         // This fills both q and qaux.
@@ -36,8 +35,7 @@ Nyx::cons_to_prim(MultiFab& Sborder, MultiFab& q, MultiFab& qaux, MultiFab& grav
         ca_ctoprim(AMREX_INT_ANYD(tqbx.loVect()), AMREX_INT_ANYD(tqbx.hiVect()),
                    BL_ARR4_TO_FORTRAN_3D(fab_Sborder),
                    BL_ARR4_TO_FORTRAN_3D(fab_q),
-                   BL_ARR4_TO_FORTRAN_3D(fab_qaux),
-		   BL_ARR4_TO_FORTRAN_3D(fab_csml));
+                   BL_ARR4_TO_FORTRAN_3D(fab_qaux));
 	});
         // Convert the source terms expressed as sources to the conserved state to those
         // expressed as sources for the primitive state.
@@ -49,7 +47,7 @@ Nyx::cons_to_prim(MultiFab& Sborder, MultiFab& q, MultiFab& qaux, MultiFab& grav
 		     BL_ARR4_TO_FORTRAN_3D(fab_grav),
 		     BL_ARR4_TO_FORTRAN_3D(fab_sources_for_hydro),
 		     BL_ARR4_TO_FORTRAN_3D(fab_src_q),
-		     &a_old, &a_new, &dt);
+		     a_old, a_new, dt);
 	});
 
     }

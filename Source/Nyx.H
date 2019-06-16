@@ -431,7 +431,7 @@ public:
 ///
   void cons_to_prim(amrex::MultiFab& u, amrex::MultiFab& q, amrex::MultiFab& qaux, 
 		    amrex::MultiFab& grav, amrex::MultiFab& hydro_src, amrex::MultiFab& src_q,
-		    amrex::MultiFab& csml, const amrex::Real a_old, const amrex::Real a_new,
+		    const amrex::Real a_old, const amrex::Real a_new,
 		    const amrex::Real dt);
 
 
