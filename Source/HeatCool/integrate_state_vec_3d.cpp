@@ -105,18 +105,22 @@ int Nyx::integrate_state_vec
 
 #ifdef AMREX_USE_CUDA
 				cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();
-				u = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
-				N_Vector e_orig = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
-				N_VSetCudaStream_Cuda(e_orig, &currentStream);
-				double* eptr=N_VGetDeviceArrayPointer_Cuda(e_orig);
-				N_VSetCudaStream_Cuda(u, &currentStream);
-				dptr=N_VGetDeviceArrayPointer_Cuda(u);
 
-				N_Vector Data = N_VNewManaged_Cuda(4*neq);  // Allocate u vector 
+				dptr=(double*) The_Managed_Arena()->alloc(neq*sizeof(double));
+				u = N_VMakeManaged_Cuda(neq,dptr);  /* Allocate u vector */
+				double* eptr= (double*) The_Managed_Arena()->alloc(neq*sizeof(double));
+				N_Vector e_orig = N_VMakeManaged_Cuda(neq,eptr);  /* Allocate u vector */
+				N_VSetCudaStream_Cuda(e_orig, &currentStream);
+				N_VSetCudaStream_Cuda(u, &currentStream);
+
+				double* rparh = (double*) The_Managed_Arena()->alloc(4*neq*sizeof(double));
+				N_Vector Data = N_VMakeManaged_Cuda(4*neq,rparh);  // Allocate u vector 
 				N_VSetCudaStream_Cuda(Data, &currentStream);
-				N_VConst(0.0,Data);
-				double* rparh=N_VGetDeviceArrayPointer_Cuda(Data);
-				N_Vector abstol_vec = N_VNewManaged_Cuda(neq);
+				// shouldn't need to initialize 
+				//N_VConst(0.0,Data);
+
+				double* abstol_ptr = (double*) The_Managed_Arena()->alloc(neq*sizeof(double));
+				N_Vector abstol_vec = N_VMakeManaged_Cuda(neq,abstol_ptr);
 				N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
 #else
 #ifdef _OPENMP
@@ -232,7 +236,12 @@ int Nyx::integrate_state_vec
 				});
 #endif
 
+      The_Managed_Arena()->free(dptr);
+      The_Managed_Arena()->free(eptr);
+      The_Managed_Arena()->free(rparh);
+      The_Managed_Arena()->free(abstol_ptr);
 				N_VDestroy(u);          /* Free the u vector */
+				N_VDestroy(e_orig);          /* Free the e_orig vector */
 				N_VDestroy(abstol_vec);          /* Free the u vector */
 				N_VDestroy(Data);          /* Free the userdata vector */
 				CVodeFree(&cvode_mem);  /* Free the integrator memory */
@@ -319,19 +328,23 @@ int Nyx::integrate_state_grownvec
 
 #ifdef AMREX_USE_CUDA
 				cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();
-				u = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
-				N_Vector e_orig = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
+				dptr=(double*) The_Managed_Arena()->alloc(neq*sizeof(double));
+				u = N_VMakeManaged_Cuda(neq,dptr);  /* Allocate u vector */
+				double* eptr= (double*) The_Managed_Arena()->alloc(neq*sizeof(double));
+				N_Vector e_orig = N_VMakeManaged_Cuda(neq,eptr);  /* Allocate u vector */
 				N_VSetCudaStream_Cuda(e_orig, &currentStream);
-				double* eptr=N_VGetDeviceArrayPointer_Cuda(e_orig);
 				N_VSetCudaStream_Cuda(u, &currentStream);
-				dptr=N_VGetDeviceArrayPointer_Cuda(u);
 
-				N_Vector Data = N_VNewManaged_Cuda(4*neq);  // Allocate u vector 
+				double* rparh = (double*) The_Managed_Arena()->alloc(4*neq*sizeof(double));
+				N_Vector Data = N_VMakeManaged_Cuda(4*neq,rparh);  // Allocate u vector 
 				N_VSetCudaStream_Cuda(Data, &currentStream);
-				N_VConst(0.0,Data);
-				double* rparh=N_VGetDeviceArrayPointer_Cuda(Data);
-				N_Vector abstol_vec = N_VNewManaged_Cuda(neq);
+				// shouldn't need to initialize 
+				//N_VConst(0.0,Data);
+
+				double* abstol_ptr = (double*) The_Managed_Arena()->alloc(neq*sizeof(double));
+				N_Vector abstol_vec = N_VMakeManaged_Cuda(neq,abstol_ptr);
 				N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
+
 #else
 #ifdef _OPENMP
 				int nthreads=omp_get_max_threads();
@@ -447,7 +460,12 @@ int Nyx::integrate_state_grownvec
 #else
 				});
 #endif
+      The_Managed_Arena()->free(dptr);
+      The_Managed_Arena()->free(eptr);
+      The_Managed_Arena()->free(rparh);
+      The_Managed_Arena()->free(abstol_ptr);
 				N_VDestroy(u);          /* Free the u vector */
+				N_VDestroy(e_orig);          /* Free the e_orig vector */
 				N_VDestroy(abstol_vec);          /* Free the u vector */
 				N_VDestroy(Data);          /* Free the userdata vector */
 				CVodeFree(&cvode_mem);  /* Free the integrator memory */
