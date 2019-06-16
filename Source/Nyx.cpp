@@ -1528,16 +1528,16 @@ Nyx::post_timestep (int iteration)
 		    Array4<Real> fab_sync_src = sync_src.array();
 		    //                    int i = mfi.index();
 
-		    FArrayBox* fab_grad_phi_cc = grad_phi_cc.fabPtr(mfi);
-		    FArrayBox* fab_grad_delta_phi_cc=(*grad_delta_phi_cc[lev-level]).fabPtr(mfi);
-		    FArrayBox* fab_S_new_lev = S_new_lev.fabPtr(mfi);
+		    const auto fab_grad_phi_cc = grad_phi_cc.array(mfi);
+		    const auto fab_grad_delta_phi_cc=(*grad_delta_phi_cc[lev-level]).array(mfi);
+		    const auto fab_S_new_lev = S_new_lev.array(mfi);
 
 		    AMREX_LAUNCH_DEVICE_LAMBDA(bx,tbx,
 					       {
                     fort_syncgsrc
-                        (tbx.loVect(), tbx.hiVect(), BL_TO_FORTRAN(*fab_grad_phi_cc),
-                         BL_TO_FORTRAN(*fab_grad_delta_phi_cc),
-                         BL_TO_FORTRAN(*fab_S_new_lev), BL_ARR4_TO_FORTRAN(fab_dstate),
+                        (tbx.loVect(), tbx.hiVect(), BL_ARR4_TO_FORTRAN(fab_grad_phi_cc),
+                         BL_ARR4_TO_FORTRAN(fab_grad_delta_phi_cc),
+                         BL_ARR4_TO_FORTRAN(fab_S_new_lev), BL_ARR4_TO_FORTRAN(fab_dstate),
                          BL_ARR4_TO_FORTRAN(fab_sync_src), a_new, dt_lev);
 					       });
 
@@ -1927,6 +1927,8 @@ Nyx::post_init (Real stop_time)
         parent->setLevelSteps(0,nsteps_from_plotfile);
     }
 
+    bool prev_region=Gpu::inLaunchRegion();
+    Gpu::setLaunchRegion(true);
     //
     // Average data down from finer levels
     // so that conserved data is consistent between levels.
@@ -1990,6 +1992,7 @@ Nyx::post_init (Real stop_time)
 #endif
 
     write_info();
+    Gpu::setLaunchRegion(prev_region);
 }
 
 int
@@ -2096,14 +2099,14 @@ Nyx::enforce_nonnegative_species (MultiFab& S_new)
 	for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
 	  {
 	    const Box& bx = mfi.tilebox();
-	    FArrayBox* fab_S_new = S_new.fabPtr(mfi);
+	    const auto fab_S_new = S_new.array(mfi);
 	    amrex::launch(bx,
 			  [=] AMREX_GPU_DEVICE (Box const& tbx)
 			  {
 			  /*	    AMREX_LAUNCH_DEVICE_LAMBDA(bx,tbx,
 				       {*/
 	    ca_enforce_nonnegative_species
-	      (BL_TO_FORTRAN(*fab_S_new), tbx.loVect(), tbx.hiVect(),
+	      (BL_ARR4_TO_FORTRAN(fab_S_new), tbx.loVect(), tbx.hiVect(),
 	       &print_fortran_warnings_tmp);
 				       });
 	  }
@@ -2117,9 +2120,9 @@ Nyx::enforce_nonnegative_species (MultiFab& S_new)
 	for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
 	  {
 	    const Box& bx = mfi.tilebox();
-	    FArrayBox* fab_S_new = S_new.fabPtr(mfi);
+	    const auto fab_S_new = S_new.array(mfi);
 	    fort_enforce_nonnegative_species
-	      (BL_TO_FORTRAN(*fab_S_new), bx.loVect(), bx.hiVect(),
+	      (BL_ARR4_TO_FORTRAN(fab_S_new), bx.loVect(), bx.hiVect(),
 	       &print_fortran_warnings);
 	  }
       }
@@ -2375,16 +2378,16 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new, MultiFab& reset_e_
     for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
-	  FArrayBox* fab = S_new.fabPtr(mfi);
-	  FArrayBox* fab_diag = D_new.fabPtr(mfi);
-	  FArrayBox* fab_reset = reset_e_src.fabPtr(mfi);
+	  const auto fab = S_new.array(mfi);
+	  const auto fab_diag = D_new.array(mfi);
+	  const auto fab_reset = reset_e_src.array(mfi);
 	  int print_warn=0;	  
 	  AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
 	  {
         reset_internal_e
             (tbx.loVect(), tbx.hiVect(),
-             BL_TO_FORTRAN(*fab), BL_TO_FORTRAN(*fab_diag),
-	     BL_TO_FORTRAN(*fab_reset),
+             BL_ARR4_TO_FORTRAN(fab), BL_ARR4_TO_FORTRAN(fab_diag),
+	     BL_ARR4_TO_FORTRAN(fab_reset),
              &print_warn, &a);
 	  });
     }
@@ -2410,14 +2413,14 @@ Nyx::reset_internal_energy_nostore (MultiFab& S_new, MultiFab& D_new)
     for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
-	  FArrayBox* fab = S_new.fabPtr(mfi);
-	  FArrayBox* fab_diag = D_new.fabPtr(mfi);
+	  const auto fab = S_new.array(mfi);
+	  const auto fab_diag = D_new.array(mfi);
 	  int print_warn=0;	  
 	  AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
 	  {
         reset_internal_e_nostore
             (tbx.loVect(), tbx.hiVect(),
-             BL_TO_FORTRAN(*fab), BL_TO_FORTRAN(*fab_diag),
+             BL_ARR4_TO_FORTRAN(fab), BL_ARR4_TO_FORTRAN(fab_diag),
              print_warn, a);
 	  });
     }
@@ -2469,15 +2472,15 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 	  {
 	    const Box& bx = mfi.tilebox();
 
-	    FArrayBox* fab = S_new.fabPtr(mfi);
-	    FArrayBox* fab_diag = D_new.fabPtr(mfi);
+	    const auto fab = S_new.array(mfi);
+	    const auto fab_diag = D_new.array(mfi);
 	    int print_warn=0;
 	    AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
 	    {
             fort_compute_temp
               (tbx.loVect(), tbx.hiVect(),
-              BL_TO_FORTRAN(*fab),
-              BL_TO_FORTRAN(*fab_diag), &a,
+              BL_ARR4_TO_FORTRAN(fab),
+              BL_ARR4_TO_FORTRAN(fab_diag), &a,
                &print_warn);
 	    });
 	  }

@@ -20,35 +20,35 @@ Nyx::cons_to_prim(MultiFab& Sborder, MultiFab& q, MultiFab& qaux, MultiFab& grav
         const Box& qbx = mfi.growntilebox(NUM_GROW);
 	//	const Box& qbx = mfi.tilebox();
 
-	FArrayBox* fab_Sborder = Sborder.fabPtr(mfi);
-	FArrayBox* fab_sources_for_hydro = sources_for_hydro.fabPtr(mfi);
-	FArrayBox* fab_grav = grav.fabPtr(mfi);
+	const auto fab_Sborder = Sborder.array(mfi);
+	const auto fab_sources_for_hydro = sources_for_hydro.array(mfi);
+	const auto fab_grav = grav.array(mfi);
 
-	FArrayBox* fab_q = q.fabPtr(mfi);
-	FArrayBox* fab_qaux = qaux.fabPtr(mfi);
-	FArrayBox* fab_src_q = src_q.fabPtr(mfi);
-	FArrayBox* fab_csml = csml.fabPtr(mfi);
+	const auto fab_q = q.array(mfi);
+	const auto fab_qaux = qaux.array(mfi);
+	const auto fab_src_q = src_q.array(mfi);
+	const auto fab_csml = csml.array(mfi);
 
         // Convert the conservative state to the primitive variable state.
         // This fills both q and qaux.
 	AMREX_LAUNCH_DEVICE_LAMBDA(qbx, tqbx,
 	{
         ca_ctoprim(AMREX_INT_ANYD(tqbx.loVect()), AMREX_INT_ANYD(tqbx.hiVect()),
-                   BL_TO_FORTRAN_ANYD(*fab_Sborder),
-                   BL_TO_FORTRAN_ANYD(*fab_q),
-                   BL_TO_FORTRAN_ANYD(*fab_qaux),
-		   BL_TO_FORTRAN_ANYD(*fab_csml));
+                   BL_ARR4_TO_FORTRAN_3D(fab_Sborder),
+                   BL_ARR4_TO_FORTRAN_3D(fab_q),
+                   BL_ARR4_TO_FORTRAN_3D(fab_qaux),
+		   BL_ARR4_TO_FORTRAN_3D(fab_csml));
 	});
         // Convert the source terms expressed as sources to the conserved state to those
         // expressed as sources for the primitive state.
 	AMREX_LAUNCH_DEVICE_LAMBDA(qbx, tqbx,
 	{
 	ca_srctoprim(AMREX_INT_ANYD(tqbx.loVect()), AMREX_INT_ANYD(tqbx.hiVect()),
-		     BL_TO_FORTRAN_ANYD(*fab_q),
-		     BL_TO_FORTRAN_ANYD(*fab_qaux),
-		     BL_TO_FORTRAN_ANYD(*fab_grav),
-		     BL_TO_FORTRAN_ANYD(*fab_sources_for_hydro),
-		     BL_TO_FORTRAN_ANYD(*fab_src_q),
+		     BL_ARR4_TO_FORTRAN_3D(fab_q),
+		     BL_ARR4_TO_FORTRAN_3D(fab_qaux),
+		     BL_ARR4_TO_FORTRAN_3D(fab_grav),
+		     BL_ARR4_TO_FORTRAN_3D(fab_sources_for_hydro),
+		     BL_ARR4_TO_FORTRAN_3D(fab_src_q),
 		     &a_old, &a_new, &dt);
 	});
 

@@ -715,8 +715,8 @@ Nyx::init_santa_barbara (int init_sb_vels)
             const Box& box = mfi.validbox();
             const int* lo = box.loVect();
             const int* hi = box.hiVect();
-	    FArrayBox* fab_S_new=S_new.fabPtr(mfi);
-	    FArrayBox* fab_D_new=D_new.fabPtr(mfi);
+	    const auto fab_S_new=S_new.array(mfi);
+	    const auto fab_D_new=D_new.array(mfi);
 
             // Temp unused for GammaLaw, set it here so that pltfiles have
             // defined numbers
@@ -730,15 +730,15 @@ Nyx::init_santa_barbara (int init_sb_vels)
 				       {
             ca_fort_initdata
 		 (level, cur_time, tbox.loVect(), tbox.hiVect(), 
-                 ns,BL_TO_FORTRAN(*fab_S_new), 
-		  nd,BL_TO_FORTRAN(*fab_D_new), dx.data(),
+                 ns,BL_ARR4_TO_FORTRAN(fab_S_new), 
+		  nd,BL_ARR4_TO_FORTRAN(fab_D_new), dx.data(),
                  &z_in);
 				       });
 #else
             fort_initdata
                 (level, cur_time, lo, hi, 
-                 ns,BL_TO_FORTRAN(*fab_S_new), 
-                 nd,BL_TO_FORTRAN(*fab_D_new), dx.data(),
+                 ns,BL_ARR4_TO_FORTRAN(fab_S_new), 
+                 nd,BL_ARR4_TO_FORTRAN(fab_D_new), dx.data(),
                  gridloc.lo(), gridloc.hi());
 #endif
         }
@@ -793,16 +793,16 @@ Nyx::init_santa_barbara (int init_sb_vels)
     for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
         const Box& box = mfi.tilebox();
-	FArrayBox* fab = S_new.fabPtr(mfi);
-	FArrayBox* fab_diag = D_new.fabPtr(mfi);
+	const auto fab = S_new.array(mfi);
+	const auto fab_diag = D_new.array(mfi);
 
 	AMREX_LAUNCH_DEVICE_LAMBDA(box, tbx,
 	{
         const int* lo = tbx.loVect();
         const int* hi = tbx.hiVect();
         fort_init_e_from_t
-            (BL_TO_FORTRAN(*fab), &ns, 
-             BL_TO_FORTRAN(*fab_diag), &nd, lo, hi, &a);
+            (BL_ARR4_TO_FORTRAN(fab), &ns, 
+             BL_ARR4_TO_FORTRAN(fab_diag), &nd, lo, hi, &a);
 	});
 	amrex::Gpu::Device::streamSynchronize();
     }

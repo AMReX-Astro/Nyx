@@ -401,10 +401,10 @@ Nyx::advance_hydro_plus_particles (Real time,
     for (MFIter mfi(S_new, Gpu::notInLaunchRegion()); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
-	FArrayBox* fab_grav_vec_old = grav_vec_old.fabPtr(mfi);
-	FArrayBox* fab_grav_vec_new = grav_vec_new.fabPtr(mfi);
-	FArrayBox* fab_S_old = S_old.fabPtr(mfi);
-	FArrayBox* fab_S_new = S_new.fabPtr(mfi);
+	const auto fab_grav_vec_old = grav_vec_old.array(mfi);
+	const auto fab_grav_vec_new = grav_vec_new.array(mfi);
+	const auto fab_S_old = S_old.array(mfi);
+	const auto fab_S_new = S_new.array(mfi);
 
 	amrex::launch(bx,
 		      [=] AMREX_GPU_DEVICE (Box const& tbx)
@@ -412,9 +412,9 @@ Nyx::advance_hydro_plus_particles (Real time,
 			//	AMREX_LAUNCH_DEVICE_CUDA(bx,tbx,
 			//				 {
         fort_correct_gsrc
-            (tbx.loVect(), tbx.hiVect(), BL_TO_FORTRAN(*fab_grav_vec_old),
-             BL_TO_FORTRAN(*fab_grav_vec_new), BL_TO_FORTRAN(*fab_S_old),
-             BL_TO_FORTRAN(*fab_S_new), a_old, a_new, dt);
+            (tbx.loVect(), tbx.hiVect(), BL_ARR4_TO_FORTRAN(fab_grav_vec_old),
+             BL_ARR4_TO_FORTRAN(fab_grav_vec_new), BL_ARR4_TO_FORTRAN(fab_S_old),
+             BL_ARR4_TO_FORTRAN(fab_S_new), a_old, a_new, dt);
 				 });
     }
 
@@ -588,18 +588,18 @@ Nyx::advance_hydro (Real time,
     for (MFIter mfi(S_new,Gpu::notInLaunchRegion()); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
-	FArrayBox* fab_grav_vec_old = grav_vec_old.fabPtr(mfi);
-	FArrayBox* fab_grav_vec_new = grav_vec_new.fabPtr(mfi);
-	FArrayBox* fab_S_old = S_old.fabPtr(mfi);
-	FArrayBox* fab_S_new = S_new.fabPtr(mfi);
+	const auto fab_grav_vec_old = grav_vec_old.array(mfi);
+	const auto fab_grav_vec_new = grav_vec_new.array(mfi);
+	const auto fab_S_old = S_old.array(mfi);
+	const auto fab_S_new = S_new.array(mfi);
 
 	amrex::launch(bx,
 	[=] AMREX_GPU_DEVICE (Box const& tbx)
 	  {
         fort_correct_gsrc
-            (tbx.loVect(), tbx.hiVect(), BL_TO_FORTRAN(*fab_grav_vec_old),
-             BL_TO_FORTRAN(*fab_grav_vec_new), BL_TO_FORTRAN(*fab_S_old),
-             BL_TO_FORTRAN(*fab_S_new), a_old, a_new, dt);
+            (tbx.loVect(), tbx.hiVect(), BL_ARR4_TO_FORTRAN(fab_grav_vec_old),
+             BL_ARR4_TO_FORTRAN(fab_grav_vec_new), BL_ARR4_TO_FORTRAN(fab_S_old),
+             BL_ARR4_TO_FORTRAN(fab_S_new), a_old, a_new, dt);
 				 });
     }
 

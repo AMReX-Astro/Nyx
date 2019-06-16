@@ -427,8 +427,8 @@ void Nyx::initcosmo()
      	for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
      	{
      	    const Box& box = mfi.tilebox();
-	    FArrayBox* fab = S_new.fabPtr(mfi);
-	    FArrayBox* fab_diag = D_new.fabPtr(mfi);
+	    const auto fab = S_new.array(mfi);
+	    const auto fab_diag = D_new.array(mfi);
 	    const amrex::Real a=old_a;
 
 	    AMREX_LAUNCH_DEVICE_LAMBDA(box, tbx,
@@ -436,8 +436,8 @@ void Nyx::initcosmo()
 	      const int* lo = tbx.loVect();
 	      const int* hi = tbx.hiVect();
 	      fort_init_e_from_t
-		(BL_TO_FORTRAN(*fab), &ns, 
-		 BL_TO_FORTRAN(*fab_diag), &nd, lo, hi, &a);
+		(BL_ARR4_TO_FORTRAN(fab), &ns, 
+		 BL_ARR4_TO_FORTRAN(fab_diag), &nd, lo, hi, &a);
 	    });
 	    amrex::Gpu::Device::streamSynchronize();
      	}     	
