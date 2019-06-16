@@ -92,20 +92,14 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
     amrex::MultiFab src_q;
 
     q.define(grids, dmap, QVAR, NUM_GROW);
-    q.setVal(0.0);
+
     // for qc
     qaux.define(grids, dmap, 1, NUM_GROW);
 
     src_q.define(grids, dmap, NQSRC, NUM_GROW);
     //src_q.setVal(0.0);
 
-    amrex::MultiFab csml;
-    csml.define(grids, dmap, 1, NUM_GROW);
-    csml.setVal(0.0);
-
-    cons_to_prim(Sborder, q, qaux, grav_vector, ext_src_old, src_q, csml, a_old, a_new, dt);
-
-    hydro_source.setVal(0.0);
+    cons_to_prim(Sborder, q, qaux, grav_vector, ext_src_old, src_q, a_old, a_new, dt);
 
     amrex::GpuArray<Real,3> dx = geom.CellSizeArray();
     amrex::GpuArray<Real,3> area{AMREX_D_DECL(dx[1] * dx[2],

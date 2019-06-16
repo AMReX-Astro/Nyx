@@ -223,8 +223,7 @@ contains
 AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
        uin, uin_lo, uin_hi, &
        q,     q_lo,   q_hi, &
-       qaux, qa_lo,  qa_hi, &
-       csml, ca_lo,  ca_hi) bind(c,name='ca_ctoprim')
+       qaux, qa_lo,  qa_hi) bind(c,name='ca_ctoprim')
 
     use eos_module, only : nyx_eos_soundspeed
     use meth_params_module, only : NVAR, URHO, UMX, UMZ, &
@@ -247,12 +246,12 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
     integer, intent(in) :: uin_lo(3), uin_hi(3)
     integer, intent(in) :: q_lo(3), q_hi(3)
     integer, intent(in) :: qa_lo(3), qa_hi(3)
-    integer, intent(in) :: ca_lo(3), ca_hi(3)
+!    integer, intent(in) :: ca_lo(3), ca_hi(3)
 
     real(rt)        , intent(in   ) :: uin(uin_lo(1):uin_hi(1),uin_lo(2):uin_hi(2),uin_lo(3):uin_hi(3),NVAR)
     real(rt)        , intent(inout) :: q(q_lo(1):q_hi(1),q_lo(2):q_hi(2),q_lo(3):q_hi(3),QVAR)
     real(rt)        , intent(inout) :: qaux(qa_lo(1):qa_hi(1),qa_lo(2):qa_hi(2),qa_lo(3):qa_hi(3),NQAUX)
-    real(rt)        , intent(inout) :: csml(ca_lo(1):ca_hi(1),ca_lo(2):ca_hi(2),ca_lo(3):ca_hi(3),1)
+!    real(rt)        , intent(inout) :: csml(ca_lo(1):ca_hi(1),ca_lo(2):ca_hi(2),ca_lo(3):ca_hi(3),1)
 
     real(rt)        , parameter :: small = 1.e-8_rt
 
@@ -328,8 +327,9 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
 
              qaux(i,j,k,QC) = sqrt((gamma_minus_1+ONE) * q(i,j,k,QREINT)*gamma_minus_1)
 
-             ! Set csmal based on small_pres and small_dens
-             csml(i,j,k,1) = sqrt((gamma_minus_1+ONE) * small_pres_over_dens)
+!             This is hard-coded into riemann since it doesn't vary per-cell
+!             ! Set csmal based on small_pres and small_dens
+!             csml(i,j,k,1) = sqrt((gamma_minus_1+ONE) * small_pres_over_dens)
              
              ! Convert "e" back to "rho e"
              q(i,j,k,QREINT) = q(i,j,k,QREINT)*q(i,j,k,QRHO)
@@ -375,7 +375,7 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
     integer, intent(in) ::   g_lo(3),   g_hi(3)
     integer, intent(in) :: src_lo(3), src_hi(3)
     integer, intent(in) :: srQ_lo(3), srQ_hi(3)
-    real(rt), intent(in) :: a_new, a_old, dt
+    real(rt), intent(in), value :: a_new, a_old, dt
 !grav explicitly includes spacedim
     real(rt)        , intent(in   ) :: q(q_lo(1):q_hi(1),q_lo(2):q_hi(2),q_lo(3):q_hi(3),QVAR)
     real(rt)        , intent(in   ) :: qaux(qa_lo(1):qa_hi(1),qa_lo(2):qa_hi(2),qa_lo(3):qa_hi(3),NQAUX)

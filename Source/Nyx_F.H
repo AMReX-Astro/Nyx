@@ -188,8 +188,7 @@ extern "C"
 		  const amrex::Real* lam, const int* lam_lo, const int* lam_hi,
 #endif
 		  amrex::Real* q, const int* q_lo, const int* q_hi,
-		  amrex::Real* qaux, const int* qa_lo, const int* qa_hi,
-		  amrex::Real* csml, const int* csml_lo, const int* csml_hi);
+		  amrex::Real* qaux, const int* qa_lo, const int* qa_hi );
 
   AMREX_GPU_DEVICE void ca_srctoprim(const int* lo,   const int* hi,
 		    const amrex::Real* q,   const int* q_lo,   const int* q_hi,
@@ -197,7 +196,7 @@ extern "C"
 		    const amrex::Real* grav, const int* ga_lo, const int* ga_hi,
 		    const amrex::Real* src, const int* src_lo, const int* src_hi,
 		    amrex::Real* srQ, const int* srQ_lo, const int* srQ_hi,
-		    const amrex::Real* a_old, const amrex::Real* a_new, const amrex::Real* dt);
+		    const amrex::Real a_old, const amrex::Real a_new, const amrex::Real dt);
 
   void ca_compute_cfl(const int* lo, const int* hi,
                       const BL_FORT_FAB_ARG_ANYD(q),
