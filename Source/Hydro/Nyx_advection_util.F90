@@ -1208,7 +1208,7 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
                           qint, qi_lo, qi_hi, &
 #endif
                           flux, f_lo, f_hi, &
-                          area, a_lo, a_hi, dt, a_old, a_new) bind(c, name="scale_flux")
+                          area, dt, a_old, a_new) bind(c, name="scale_flux")
 
     use meth_params_module, only: NVAR, UMX, GDPRES, NGDNV, &
            use_area_dt_scale_apply, URHO, UMX, UMZ, &
@@ -1222,12 +1222,12 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
     integer,  intent(in   ) :: qi_lo(3), qi_hi(3)
 #endif
     integer,  intent(in   ) :: f_lo(3), f_hi(3)
-    integer,  intent(in   ) :: a_lo(3), a_hi(3)
-    real(rt), intent(in   ), value :: dt
-    real(rt), intent(in   ) :: a_old, a_new
+!    integer,  intent(in   ) :: a_lo(3), a_hi(3)
+    real(rt), intent(in   ), value :: dt, area
+    real(rt), intent(in   ), value :: a_old, a_new
 
     real(rt), intent(inout) :: flux(f_lo(1):f_hi(1),f_lo(2):f_hi(2),f_lo(3):f_hi(3),NVAR)
-    real(rt), intent(in   ) :: area(a_lo(1):a_hi(1),a_lo(2):a_hi(2),a_lo(3):a_hi(3))
+    real(rt), intent(in   ) :: area
 #if AMREX_SPACEDIM == 1
     real(rt), intent(in   ) :: qint(qi_lo(1):qi_hi(1), qi_lo(2):qi_hi(2), qi_lo(3):qi_hi(3), NGDNV)
 #endif
@@ -1250,7 +1250,7 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
           do k = lo(3), hi(3)
              do j = lo(2), hi(2)
                 do i = lo(1), hi(1)
-                   flux(i,j,k,n) = dt * flux(i,j,k,n) * area(i,j,k)
+                   flux(i,j,k,n) = dt * flux(i,j,k,n) * area
                 enddo
              enddo
           enddo

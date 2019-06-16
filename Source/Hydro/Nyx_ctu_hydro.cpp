@@ -105,27 +105,12 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
     cons_to_prim(Sborder, q, qaux, grav_vector, ext_src_old, src_q, csml, a_old, a_new, dt);
 
-///
-/// The data.
-///
-    amrex::MultiFab             area[3];
-
-    for (int dir = 0; dir < BL_SPACEDIM; dir++)
-    {
-        area[dir].clear();
-	area[dir].define(getEdgeBoxArray(dir),dmap,1,NUM_GROW);
-        geom.GetFaceArea(area[dir],dir);
-    }
-    for (int dir = BL_SPACEDIM; dir < 3; dir++)
-    {
-        area[dir].clear();
-        area[dir].define(grids, dmap, 1, 0);
-        area[dir].setVal(0.0);
-    }
-
     hydro_source.setVal(0.0);
 
     amrex::GpuArray<Real,3> dx = geom.CellSizeArray();
+    amrex::GpuArray<Real,3> area{AMREX_D_DECL(dx[1] * dx[2],
+					      dx[0] * dx[2],
+					      dx[0] * dx[1])};
 
   const int* domain_lo = geom.Domain().loVect();
   const int* domain_hi = geom.Domain().hiVect();
@@ -250,9 +235,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       const auto fab_q = q.array(mfi);
       const auto fab_qaux = qaux.array(mfi);
       const auto fab_src_q = src_q.array(mfi);
-
-      GpuArray<Array4<Real>, AMREX_SPACEDIM> fab_area{AMREX_D_DECL(area[0].array(mfi),
-								   area[1].array(mfi), area[2].array(mfi))};
 
       GpuArray<Array4<Real>, AMREX_SPACEDIM> fab_fluxes{AMREX_D_DECL(fluxes[0].array(mfi),
 								   fluxes[1].array(mfi), fluxes[2].array(mfi))};
@@ -1099,7 +1081,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       {
         scale_flux(AMREX_INT_ANYD(tnbx.loVect()), AMREX_INT_ANYD(tnbx.hiVect()),
                    BL_ARR4_TO_FORTRAN_3D(fab_flux[idir]),
-                   BL_ARR4_TO_FORTRAN_3D(fab_area[idir]), dt,&a_old,&a_new);
+                   area[idir], dt, a_old, a_new);
       });
       //amrex::Gpu::Device::streamSynchronize();
       //amrex::Gpu::setLaunchRegion(false);
