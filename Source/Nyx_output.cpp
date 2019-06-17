@@ -901,20 +901,16 @@ Nyx::blueprint_check_point ()
     MultiFab& S_new = get_new_data(State_Type);
     //MultiFab S_new_tmp(S_new.boxArray(), S_new.DistributionMap(), 1, 0 NUM_GROW);
 
-    Vector<std::string> particle_varnames;
-    particle_varnames.push_back("mass");
-    particle_varnames.push_back("xvel");
-    particle_varnames.push_back("yvel");
-    particle_varnames.push_back("zvel");
-
-    Vector<std::string> varnames;
-
     int n = 0;
     const Real cur_time     = state[State_Type].curTime();
     
-      // this would need the mf from how we write plotfiles
-    /*    for(int i=0;i<S_new.nComp();i++)
-      varnames.push_back((desc_lst[i]).name(i));*/
+    // this would need the mf from how we write plotfiles
+    // for(int i=0;i<S_new.nComp();i++)
+    // {
+    //   std::cout << desc_lst[i].name(i) << std::endl;
+    // }
+
+    Vector<std::string> varnames;
     varnames.push_back("Density");
     varnames.push_back("Xmom");
     varnames.push_back("Ymom");
@@ -922,12 +918,11 @@ Nyx::blueprint_check_point ()
     varnames.push_back("Eden");
     varnames.push_back("Eint");
     if(!use_const_species)
-      {
-	varnames.push_back("H");
-	varnames.push_back("He");
-      }
+    {
+        varnames.push_back("H");
+        varnames.push_back("He");
+    }
 
-    //    varnames.push_back("density");
     ///////////////////////////////////////////////////////////////////////////
     // Wrap our AMReX Mesh into a Conduit Mesh Blueprint Tree
     ///////////////////////////////////////////////////////////////////////////
@@ -936,9 +931,16 @@ Nyx::blueprint_check_point ()
                            varnames,
                            geom,
                            cur_time,
-			   n,
+                           n,
                            bp_mesh);
     conduit::Node bp_particles;
+    
+    Vector<std::string> particle_varnames;
+    particle_varnames.push_back("mass");
+    particle_varnames.push_back("xvel");
+    particle_varnames.push_back("yvel");
+    particle_varnames.push_back("zvel");
+
     Vector<std::string> particle_int_varnames;
     amrex::ParticleContainerToBlueprint(*(Nyx::theDMPC()),
                                         particle_varnames,
@@ -949,12 +951,12 @@ Nyx::blueprint_check_point ()
     // view in VisIt. 
     // (For debugging and to demonstrate how to do this w/o Ascent)
     ///////////////////////////////////////////////////////////////////////////
-    WriteBlueprintFiles(bp_mesh,"bp_example_");
+    WriteBlueprintFiles(bp_mesh,"bp_example_",0,"hdf5");
+    WriteBlueprintFiles(bp_particles,"bp_particle_example_",0,"hdf5");
     
     ///////////////////////////////////////////////////////////////////
     // Render with Ascent
     ///////////////////////////////////////////////////////////////////
-    
 
     // add a scene with a pseudocolor plot
     Node scenes;
@@ -962,7 +964,6 @@ Nyx::blueprint_check_point ()
     scenes["s1/plots/p1/field"] = "Density";
     // Set the output file name (ascent will add ".png")
     scenes["s1/image_prefix"] = "ascent_render_mesh_";
-
 
     // setup actions
     Node actions;
@@ -974,7 +975,7 @@ Nyx::blueprint_check_point ()
 
     Ascent ascent;
     ascent.open();
-    
+
     ascent.publish(bp_mesh);
     ascent.execute(actions);
         
@@ -992,10 +993,10 @@ Nyx::blueprint_check_point ()
     add_act2["scenes"] = scenes;
     actions.append()["action"] = "execute";
     actions.append()["action"] = "reset";
-    
+
     ascent.publish(bp_particles);
     ascent.execute(actions);
-    
+
     ascent.close();
 }
 #endif
