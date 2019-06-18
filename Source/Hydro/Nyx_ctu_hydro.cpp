@@ -10,15 +10,16 @@ void
 Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
                            MultiFab& Sborder, MultiFab& D_border, 
                            MultiFab& ext_src_old, MultiFab& hydro_source, 
-                           MultiFab& grav_vector, MultiFab& divu_cc,
+                           MultiFab& grav_vector, MultiFab& divu_cc, 
+				//                           MultiFab& grav_vector,
                            bool init_flux_register, bool add_to_flux_register) 
 {
 
   BL_PROFILE("Nyx::construct_ctu_hydro_source()");
-  /*
+  
   amrex::Print()<<"Beginning of construct_hydro"<<std::endl;
   amrex::Arena::PrintUsage();
-  */
+  
   const Real strt_time = ParallelDescriptor::second();
 
   // this constructs the hydrodynamic source (essentially the flux
@@ -76,28 +77,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
   for (int dir = BL_SPACEDIM; dir < 3; ++dir)
     mass_fluxes[dir].reset(new MultiFab(get_new_data(State_Type).boxArray(), dmap, 1, 0));
   */
-///
-/// The primitive variable state array.
-///
-    amrex::MultiFab q;
-
-///
-/// The auxiliary primitive variable state array.
-///
-    amrex::MultiFab qaux;
-
-///
-/// The source terms in primitive form.
-///
-    amrex::MultiFab src_q;
-
-    q.define(grids, dmap, QVAR, NUM_GROW);
-
-    // for qc
-    qaux.define(grids, dmap, 1, NUM_GROW);
-
-    src_q.define(grids, dmap, NQSRC, NUM_GROW);
-    //src_q.setVal(0.0);
 
     amrex::GpuArray<Real,3> dx = geom.CellSizeArray();
     amrex::GpuArray<Real,3> area{AMREX_D_DECL(dx[1] * dx[2],
@@ -133,6 +112,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
     // we apply an Elixir to ensure that their memory is saved until it is no
     // longer needed (only relevant for the asynchronous case, usually on GPUs).
 
+    FArrayBox q, qaux, src_q;
     FArrayBox flatn;
     FArrayBox dq;
     //    FArrayBox Ip, Im, Ip_src, Im_src, Ip_gc, Im_gc;
@@ -148,12 +128,12 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
     FArrayBox ql, qr;
     FArrayBox flux[AMREX_SPACEDIM];
     FArrayBox qe[AMREX_SPACEDIM];
-    FArrayBox qmyx, qpyx;
-    FArrayBox qmzx, qpzx;
-    FArrayBox qmxy, qpxy;
-    FArrayBox qmzy, qpzy;
-    FArrayBox qmxz, qpxz;
-    FArrayBox qmyz, qpyz;
+    FArrayBox qyx, qpyx;
+    FArrayBox qzx, qpzx;
+    FArrayBox qxy, qpxy;
+    FArrayBox qzy, qpzy;
+    FArrayBox qxz, qpxz;
+    FArrayBox qyz, qpyz;
     FArrayBox pdivu;
 
     /*    //    const auto fab_flatn = &flatn;
@@ -183,17 +163,17 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
     const auto fab_ql = ql.array();
     const auto fab_qr = qr.array();
 
-    const auto fab_qyx = qmyx.array();
+    const auto fab_qyx = qyx.array();
     const auto fab_qpyx = qpyx.array();
-    const auto fab_qzx = qmzx.array();
+    const auto fab_qzx = qzx.array();
     const auto fab_qpzx = qpzx.array();
-    const auto fab_qxy = qmxy.array();
+    const auto fab_qxy = qxy.array();
     const auto fab_qpxy = qpxy.array();
-    const auto fab_qzy = qmzy.array();
+    const auto fab_qzy = qzy.array();
     const auto fab_qpzy = qpzy.array();
-    const auto fab_qxz = qmxz.array();
+    const auto fab_qxz = qxz.array();
     const auto fab_qpxz = qpxz.array();
-    const auto fab_qyz = qmyz.array();
+    const auto fab_qyz = qyz.array();
     const auto fab_qpyz = qpyz.array();
     const auto fab_pdivu = pdivu.array();*/
 
@@ -226,18 +206,28 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       const auto fab_sources_for_hydro = ext_src_old.array(mfi);
       const auto fab_grav = grav_vector.array(mfi);
 
-      const auto fab_q = q.array(mfi);
-      const auto fab_qaux = qaux.array(mfi);
-      const auto fab_src_q = src_q.array(mfi);
-
       const Box& qbx = amrex::grow(bx,NUM_GROW);
+
+      q.resize(qbx, QVAR);
+      Elixir elix_q = q.elixir();
+
+      qaux.resize(qbx, 1);
+      Elixir elix_qaux = qaux.elixir();
+
+      src_q.resize(qbx, NQSRC);
+      Elixir elix_src_q = src_q.elixir();
+
+      const auto fab_q = q.array();
+      const auto fab_qaux = qaux.array();
+      const auto fab_src_q = src_q.array();
+
 	//	const Box& qbx = mfi.tilebox();
 
         // Convert the conservative state to the primitive variable state.
         // This fills both q and qaux.
 	Sborder[mfi].prefetchToDevice();
-	q[mfi].prefetchToDevice();
-	qaux[mfi].prefetchToDevice();
+	q.prefetchToDevice();
+	qaux.prefetchToDevice();
 	AMREX_LAUNCH_DEVICE_LAMBDA(qbx, tqbx,
 	{
         ca_ctoprim(AMREX_INT_ANYD(tqbx.loVect()), AMREX_INT_ANYD(tqbx.hiVect()),
@@ -247,11 +237,11 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 	});
         // Convert the source terms expressed as sources to the conserved state to those
         // expressed as sources for the primitive state.
-	q[mfi].prefetchToDevice();
-	qaux[mfi].prefetchToDevice();
+	q.prefetchToDevice();
+	qaux.prefetchToDevice();
 	grav_vector[mfi].prefetchToDevice();
 	ext_src_old[mfi].prefetchToDevice();
-	src_q[mfi].prefetchToDevice();
+	src_q.prefetchToDevice();
 
 	AMREX_LAUNCH_DEVICE_LAMBDA(qbx, tqbx,
 	{
@@ -349,9 +339,9 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
       if (ppm_type == 0) {
 
-	q[mfi].prefetchToDevice();
-	qaux[mfi].prefetchToDevice();
-	src_q[mfi].prefetchToDevice();
+	q.prefetchToDevice();
+	qaux.prefetchToDevice();
+	src_q.prefetchToDevice();
 	flatn.prefetchToDevice();
 	shk.prefetchToDevice();
 	dq.prefetchToDevice();
@@ -482,7 +472,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
     const auto fab_div = div.array();
       // compute divu -- we'll use this later when doing the artifical viscosity
 
-    q[mfi].prefetchToDevice();
+    q.prefetchToDevice();
     div.prefetchToDevice();
 
       //amrex::Gpu::setLaunchRegion(true);
@@ -493,6 +483,8 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
            dx.data(),
            BL_ARR4_TO_FORTRAN_3D(fab_div));
       });
+
+      elix_q.clear();
       ///      amrex::Print()<<"1"<<std::endl;
       //amrex::Gpu::Device::streamSynchronize();
       //amrex::Cuda::setLaunchRegion(false);
@@ -582,7 +574,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       ftmp1.prefetchToDevice();
       q_int.prefetchToDevice();
       qgdnvtmp1.prefetchToDevice();
-      qaux[mfi].prefetchToDevice();
+      qaux.prefetchToDevice();
       shk.prefetchToDevice();
 
       AMREX_LAUNCH_DEVICE_LAMBDA(cxbx, tcxbx,
@@ -604,13 +596,13 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // [lo(1), lo(2), lo(3)-1], [hi(1), hi(2)+1, hi(3)+1]
       const Box& tyxbx = amrex::grow(ybx, IntVect(AMREX_D_DECL(0,0,1)));
 
-      qmyx.resize(tyxbx, QVAR);
-      Elixir elix_qmyx = qmyx.elixir();
+      qyx.resize(tyxbx, QVAR);
+      Elixir elix_qyx = qyx.elixir();
 
       qpyx.resize(tyxbx, QVAR);
       Elixir elix_qpyx = qpyx.elixir();
 
-    const auto fab_qyx = qmyx.array();
+    const auto fab_qyx = qyx.array();
     const auto fab_qpyx = qpyx.array();
 
       // ftmp1 = fx
@@ -636,18 +628,18 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // [lo(1), lo(2)-1, lo(3)], [hi(1), hi(2)+1, hi(3)+1]
       const Box& tzxbx = amrex::grow(zbx, IntVect(AMREX_D_DECL(0,1,0)));
 
-      qmzx.resize(tzxbx, QVAR);
-      Elixir elix_qmzx = qmzx.elixir();
+      qzx.resize(tzxbx, QVAR);
+      Elixir elix_qzx = qzx.elixir();
 
       qpzx.resize(tzxbx, QVAR);
       Elixir elix_qpzx = qpzx.elixir();
 
-      const auto fab_qzx = qmzx.array();
+      const auto fab_qzx = qzx.array();
       const auto fab_qpzx = qpzx.array();
 
       qzm.prefetchToDevice();
       qzp.prefetchToDevice();
-      qmzx.prefetchToDevice();
+      qzx.prefetchToDevice();
       qpzx.prefetchToDevice();
       ftmp1.prefetchToDevice();
       qgdnvtmp1.prefetchToDevice();
@@ -680,7 +672,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       ftmp1.prefetchToDevice();
       q_int.prefetchToDevice();
       qgdnvtmp1.prefetchToDevice();
-      qaux[mfi].prefetchToDevice();
+      qaux.prefetchToDevice();
       shk.prefetchToDevice();
 
       AMREX_LAUNCH_DEVICE_LAMBDA(cybx, tcybx,
@@ -700,12 +692,12 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // [lo(1), lo(2), lo(3)-1], [hi(1)+1, hi(2), lo(3)+1]
       const Box& txybx = amrex::grow(xbx, IntVect(AMREX_D_DECL(0,0,1)));
 
-      qmxy.resize(txybx, QVAR);
-      Elixir elix_qmxy = qmxy.elixir();
+      qxy.resize(txybx, QVAR);
+      Elixir elix_qxy = qxy.elixir();
 
       qpxy.resize(txybx, QVAR);
       Elixir elix_qpxy = qpxy.elixir();
-    const auto fab_qxy = qmxy.array();
+    const auto fab_qxy = qxy.array();
     const auto fab_qpxy = qpxy.array();
 
       // ftmp1 = fy
@@ -713,7 +705,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // qgdnvtmp1 = qgdnvy
 
       qxm.prefetchToDevice();
-      qmxy.prefetchToDevice();
+      qxy.prefetchToDevice();
       qxp.prefetchToDevice();
       qpxy.prefetchToDevice();
       ftmp1.prefetchToDevice();
@@ -736,13 +728,13 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // [lo(1)-1, lo(2), lo(3)], [hi(1)+1, hi(2), lo(3)+1]
       const Box& tzybx = amrex::grow(zbx, IntVect(AMREX_D_DECL(1,0,0)));
 
-      qmzy.resize(tzybx, QVAR);
-      Elixir elix_qmzy = qmzy.elixir();
+      qzy.resize(tzybx, QVAR);
+      Elixir elix_qzy = qzy.elixir();
 
       qpzy.resize(tzybx, QVAR);
       Elixir elix_qpzy = qpzy.elixir();
 
-    const auto fab_qzy = qmzy.array();
+    const auto fab_qzy = qzy.array();
     const auto fab_qpzy = qpzy.array();
       // ftmp1 = fy
       // rftmp1 = rfy
@@ -750,7 +742,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
       qzm.prefetchToDevice();
       qzp.prefetchToDevice();
-      qmzy.prefetchToDevice();
+      qzy.prefetchToDevice();
       qpzy.prefetchToDevice();
       ftmp1.prefetchToDevice();
       qgdnvtmp1.prefetchToDevice();
@@ -780,7 +772,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       ftmp1.prefetchToDevice();
       q_int.prefetchToDevice();
       qgdnvtmp1.prefetchToDevice();
-      qaux[mfi].prefetchToDevice();
+      qaux.prefetchToDevice();
       shk.prefetchToDevice();
 
       AMREX_LAUNCH_DEVICE_LAMBDA(czbx, tczbx,
@@ -800,13 +792,13 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // [lo(1)-1, lo(2)-1, lo(3)], [hi(1)+1, hi(2)+1, lo(3)]
       const Box& txzbx = amrex::grow(xbx, IntVect(AMREX_D_DECL(0,1,0)));
 
-      qmxz.resize(txzbx, QVAR);
-      Elixir elix_qmxz = qmxz.elixir();
+      qxz.resize(txzbx, QVAR);
+      Elixir elix_qxz = qxz.elixir();
 
       qpxz.resize(txzbx, QVAR);
       Elixir elix_qpxz = qpxz.elixir();
 
-    const auto fab_qxz = qmxz.array();
+    const auto fab_qxz = qxz.array();
     const auto fab_qpxz = qpxz.array();
 
       // ftmp1 = fz
@@ -814,7 +806,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // qgdnvtmp1 = qgdnvz
       qxm.prefetchToDevice();
       qxp.prefetchToDevice();
-      qmxz.prefetchToDevice();
+      qxz.prefetchToDevice();
       qpxz.prefetchToDevice();
       ftmp1.prefetchToDevice();
       qgdnvtmp1.prefetchToDevice();
@@ -836,13 +828,13 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // [lo(1)-1, lo(2), lo(3)], [hi(1)+1, hi(2)+1, lo(3)]
       const Box& tyzbx = amrex::grow(ybx, IntVect(AMREX_D_DECL(1,0,0)));
 
-      qmyz.resize(tyzbx, QVAR);
-      Elixir elix_qmyz = qmyz.elixir();
+      qyz.resize(tyzbx, QVAR);
+      Elixir elix_qyz = qyz.elixir();
 
       qpyz.resize(tyzbx, QVAR);
       Elixir elix_qpyz = qpyz.elixir();
 
-      const auto fab_qyz = qmyz.array();
+      const auto fab_qyz = qyz.array();
       const auto fab_qpyz = qpyz.array();
 
       // ftmp1 = fz
@@ -851,7 +843,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
       qym.prefetchToDevice();
       qyp.prefetchToDevice();
-      qmyz.prefetchToDevice();
+      qyz.prefetchToDevice();
       qpyz.prefetchToDevice();
       ftmp1.prefetchToDevice();
       qgdnvtmp1.prefetchToDevice();
@@ -881,12 +873,12 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp1 = rfyz
       // qgdnvtmp1 = qgdnvyz
 
-      qmyz.prefetchToDevice();
+      qyz.prefetchToDevice();
       qpyz.prefetchToDevice();
       ftmp1.prefetchToDevice();
       q_int.prefetchToDevice();
       qgdnvtmp1.prefetchToDevice();
-      qaux[mfi].prefetchToDevice();
+      qaux.prefetchToDevice();
       shk.prefetchToDevice();
 
       AMREX_LAUNCH_DEVICE_LAMBDA(cyzbx, tcyzbx,
@@ -902,7 +894,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           2, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
 
-      elix_qmyz.clear();
+      elix_qyz.clear();
       elix_qpyz.clear();
 
       // compute F^{z|y}
@@ -913,12 +905,12 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp2 = rfzy
       // qgdnvtmp2 = qgdnvzy
 
-      qmzy.prefetchToDevice();
+      qzy.prefetchToDevice();
       qpzy.prefetchToDevice();
       ftmp2.prefetchToDevice();
       q_int.prefetchToDevice();
       qgdnvtmp2.prefetchToDevice();
-      qaux[mfi].prefetchToDevice();
+      qaux.prefetchToDevice();
       shk.prefetchToDevice();
 
       AMREX_LAUNCH_DEVICE_LAMBDA(czybx, tczybx,
@@ -934,7 +926,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           3, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
 
-      elix_qmzy.clear();
+      elix_qzy.clear();
       elix_qpzy.clear();
 
       qxm.prefetchToDevice();
@@ -946,8 +938,8 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       ftmp2.prefetchToDevice();
       qgdnvtmp1.prefetchToDevice();
       qgdnvtmp2.prefetchToDevice();
-      qaux[mfi].prefetchToDevice();
-      src_q[mfi].prefetchToDevice();
+      qaux.prefetchToDevice();
+      src_q.prefetchToDevice();
 
       // compute the corrected x interface states and fluxes
       AMREX_LAUNCH_DEVICE_LAMBDA(xbx, txbx,
@@ -974,7 +966,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       flux[0].prefetchToDevice();
       q_int.prefetchToDevice();
       qe[0].prefetchToDevice();
-      qaux[mfi].prefetchToDevice();
+      qaux.prefetchToDevice();
       shk.prefetchToDevice();
 
       AMREX_LAUNCH_DEVICE_LAMBDA(xbx, txbx,
@@ -1014,7 +1006,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           3, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
 
-      elix_qmzx.clear();
+      elix_qzx.clear();
       elix_qpzx.clear();
       
       // compute F^{x|z}
@@ -1025,12 +1017,12 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp2 = rfxz
       // qgdnvtmp2 = qgdnvxz
 
-      qmxz.prefetchToDevice();
+      qxz.prefetchToDevice();
       qpxz.prefetchToDevice();
       ftmp2.prefetchToDevice();
       q_int.prefetchToDevice();
       ql.prefetchToDevice();
-      qaux[mfi].prefetchToDevice();
+      qaux.prefetchToDevice();
       shk.prefetchToDevice();
 
       AMREX_LAUNCH_DEVICE_LAMBDA(cxzbx, tcxzbx,
@@ -1046,7 +1038,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           1, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
 
-      elix_qmxz.clear();
+      elix_qxz.clear();
       elix_qpxz.clear();
 
       qym.prefetchToDevice();
@@ -1058,8 +1050,8 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       ftmp2.prefetchToDevice();
       qgdnvtmp1.prefetchToDevice();
       qgdnvtmp2.prefetchToDevice();
-      qaux[mfi].prefetchToDevice();
-      src_q[mfi].prefetchToDevice();
+      qaux.prefetchToDevice();
+      src_q.prefetchToDevice();
 
       // Compute the corrected y interface states and fluxes
       AMREX_LAUNCH_DEVICE_LAMBDA(ybx, tybx,
@@ -1087,7 +1079,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       flux[1].prefetchToDevice();
       q_int.prefetchToDevice();
       qe[1].prefetchToDevice();
-      qaux[mfi].prefetchToDevice();
+      qaux.prefetchToDevice();
       shk.prefetchToDevice();
 
       AMREX_LAUNCH_DEVICE_LAMBDA(ybx, tybx,
@@ -1127,7 +1119,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           1, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
 
-      elix_qmxy.clear();
+      elix_qxy.clear();
       elix_qpxy.clear();
       
       // compute F^{y|x}
@@ -1138,12 +1130,12 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp2 = rfyx
       // qgdnvtmp2 = qgdnvyx
 
-      qmyx.prefetchToDevice();
+      qyx.prefetchToDevice();
       qpyx.prefetchToDevice();
       ftmp2.prefetchToDevice();
       q_int.prefetchToDevice();
       qgdnvtmp2.prefetchToDevice();
-      qaux[mfi].prefetchToDevice();
+      qaux.prefetchToDevice();
       shk.prefetchToDevice();
 
       AMREX_LAUNCH_DEVICE_LAMBDA(cyxbx, tcyxbx,
@@ -1159,7 +1151,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                           2, AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
 
-      elix_qmyx.clear();
+      elix_qyx.clear();
       elix_qpyx.clear();
       
       qzm.prefetchToDevice();
@@ -1171,8 +1163,8 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       ftmp2.prefetchToDevice();
       qgdnvtmp1.prefetchToDevice();
       qgdnvtmp2.prefetchToDevice();
-      qaux[mfi].prefetchToDevice();
-      src_q[mfi].prefetchToDevice();
+      qaux.prefetchToDevice();
+      src_q.prefetchToDevice();
 
       // compute the corrected z interface states and fluxes
       AMREX_LAUNCH_DEVICE_LAMBDA(zbx, tzbx,
@@ -1191,6 +1183,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
               hdt, hdtdx, hdtdy, a_old, a_new);
       });
 
+      elix_src_q.clear();
       elix_qzm.clear();
       elix_qzp.clear();
       elix_ftmp1.clear();
@@ -1205,7 +1198,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       flux[2].prefetchToDevice();
       q_int.prefetchToDevice();
       qe[2].prefetchToDevice();
-      qaux[mfi].prefetchToDevice();
+      qaux.prefetchToDevice();
       shk.prefetchToDevice();
 
       AMREX_LAUNCH_DEVICE_LAMBDA(zbx, tzbx,
@@ -1222,6 +1215,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
       });
 
+      elix_qaux.clear();
       elix_ql.clear();
       elix_qr.clear();
       elix_shk.clear();
@@ -1327,7 +1321,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       } // idir loop
 
       //took out track_grid_losses
-      //      amrex::Gpu::Device::synchronize();
+      //amrex::Gpu::Device::synchronize();
     } // MFIter loop
 
 
