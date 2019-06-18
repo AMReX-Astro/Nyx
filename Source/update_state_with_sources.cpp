@@ -20,19 +20,18 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
       int print_fortran_warnings_tmp=print_fortran_warnings;
       int do_grav_tmp=do_grav;
 
-    FArrayBox sum_state;
+      FArrayBox sum_state, divu_cc_small;
 #ifdef _OPENMP
 #pragma omp parallel 
 #endif
     for (MFIter mfi(S_old,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
 
-      const auto fab_S_old = S_old.array(mfi);
-      const auto fab_S_new = S_new.array(mfi);
       const auto fab_ext_src_old = ext_src_old.array(mfi);
       const auto fab_hydro_src = hydro_src.array(mfi);
-      const auto fab_divu_cc = divu_cc.array(mfi);
       const auto fab_grav = grav.array(mfi);
+      const auto fab_S_old = S_old.array(mfi);
+      const auto fab_S_new = S_new.array(mfi);
       
       const Box& bx = mfi.tilebox();
       const Box& obx = amrex::grow(bx, 1);
@@ -41,11 +40,15 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
       Elixir elix_s = sum_state.elixir();
       const auto fab_sum_state = sum_state.array();
 
+      divu_cc_small.resize(bx, 1);
+      Elixir elix_divu_cc_small = divu_cc_small.elixir();
+      const auto fab_divu_cc = divu_cc_small.array();
+
       S_old[mfi].prefetchToDevice();
       S_new[mfi].prefetchToDevice();
       ext_src_old[mfi].prefetchToDevice();
       hydro_src[mfi].prefetchToDevice();
-      divu_cc[mfi].prefetchToDevice();
+      divu_cc_small.prefetchToDevice();
       grav[mfi].prefetchToDevice();
 
       sum_state.prefetchToDevice();

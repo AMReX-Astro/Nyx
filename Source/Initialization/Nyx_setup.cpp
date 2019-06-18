@@ -191,6 +191,8 @@ Nyx::hydro_setup()
     }
 
     NUM_STATE = cnt;
+    QVAR = cnt;
+    NQSRC = cnt;
 
     // Define NUM_GROW from the f90 module.
     fort_get_method_params(&NUM_GROW);
