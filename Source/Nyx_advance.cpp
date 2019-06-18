@@ -214,6 +214,7 @@ Nyx::advance_hydro_plus_particles (Real time,
     const Real cur_time  = state[State_Type].curTime();
     const Real a_old     = get_comoving_a(prev_time);
     const Real a_new     = get_comoving_a(cur_time);
+    bool prev_region=Gpu::inLaunchRegion();
     ////    amrex::Gpu::setLaunchRegion(false);
 #ifdef GRAVITY
     //
@@ -247,7 +248,7 @@ Nyx::advance_hydro_plus_particles (Real time,
                                               use_previous_phi_as_guess);
     }
     BL_PROFILE_VAR_STOP(solve_for_old_phi);
-    bool prev_region = amrex::Gpu::inLaunchRegion();
+    prev_region = amrex::Gpu::inLaunchRegion();
     amrex::Gpu::setLaunchRegion(true);
     //
     // Advance Particles
