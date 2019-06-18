@@ -1198,17 +1198,17 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
           const Box& nbx = amrex::surroundingNodes(bx, idir);
 
-          int idir_f = idir + 1;
+          const int idir_f = idir + 1;
 
       flux[idir].prefetchToDevice();
 
       AMREX_LAUNCH_DEVICE_LAMBDA(nbx, tnbx,
       {
           apply_av(AMREX_INT_ANYD(tnbx.loVect()), AMREX_INT_ANYD(tnbx.hiVect()),
-                   idir_f, dx.data(),
                    BL_ARR4_TO_FORTRAN_3D(fab_div),
                    BL_ARR4_TO_FORTRAN_3D(fab_Sborder),
-                   BL_ARR4_TO_FORTRAN_3D(fab_flux[idir]),&dt);
+                   BL_ARR4_TO_FORTRAN_3D(fab_flux[idir]),
+		   idir_f, dx.data(),dt);
       });
 
       AMREX_LAUNCH_DEVICE_LAMBDA(nbx, tnbx,
@@ -1249,7 +1249,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                 BL_ARR4_TO_FORTRAN_3D(fab_qe[1]),
                 BL_ARR4_TO_FORTRAN_3D(fab_qe[2]),
                 BL_ARR4_TO_FORTRAN_3D(fab_pdivu),
-                dx.data(),&dt,&a_old,&a_new);
+                dx.data(),dt,a_old,a_new);
             });
 
       for (int idir = 0; idir < AMREX_SPACEDIM; ++idir) {
