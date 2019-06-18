@@ -99,8 +99,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
     src_q.define(grids, dmap, NQSRC, NUM_GROW);
     //src_q.setVal(0.0);
 
-    cons_to_prim(Sborder, q, qaux, grav_vector, ext_src_old, src_q, a_old, a_new, dt);
-
     amrex::GpuArray<Real,3> dx = geom.CellSizeArray();
     amrex::GpuArray<Real,3> area{AMREX_D_DECL(dx[1] * dx[2],
 					      dx[0] * dx[2],
@@ -225,10 +223,47 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
       const auto fab_Sborder = Sborder.array(mfi);
       const auto fab_hydro_source = hydro_source.array(mfi);
+      const auto fab_sources_for_hydro = ext_src_old.array(mfi);
+      const auto fab_grav = grav_vector.array(mfi);
 
       const auto fab_q = q.array(mfi);
       const auto fab_qaux = qaux.array(mfi);
       const auto fab_src_q = src_q.array(mfi);
+
+      const Box& qbx = amrex::grow(bx,NUM_GROW);
+	//	const Box& qbx = mfi.tilebox();
+
+        // Convert the conservative state to the primitive variable state.
+        // This fills both q and qaux.
+	Sborder[mfi].prefetchToDevice();
+	q[mfi].prefetchToDevice();
+	qaux[mfi].prefetchToDevice();
+	AMREX_LAUNCH_DEVICE_LAMBDA(qbx, tqbx,
+	{
+        ca_ctoprim(AMREX_INT_ANYD(tqbx.loVect()), AMREX_INT_ANYD(tqbx.hiVect()),
+                   BL_ARR4_TO_FORTRAN_3D(fab_Sborder),
+                   BL_ARR4_TO_FORTRAN_3D(fab_q),
+                   BL_ARR4_TO_FORTRAN_3D(fab_qaux));
+	});
+        // Convert the source terms expressed as sources to the conserved state to those
+        // expressed as sources for the primitive state.
+	q[mfi].prefetchToDevice();
+	qaux[mfi].prefetchToDevice();
+	grav_vector[mfi].prefetchToDevice();
+	ext_src_old[mfi].prefetchToDevice();
+	src_q[mfi].prefetchToDevice();
+
+	AMREX_LAUNCH_DEVICE_LAMBDA(qbx, tqbx,
+	{
+	ca_srctoprim(AMREX_INT_ANYD(tqbx.loVect()), AMREX_INT_ANYD(tqbx.hiVect()),
+		     BL_ARR4_TO_FORTRAN_3D(fab_q),
+		     BL_ARR4_TO_FORTRAN_3D(fab_qaux),
+		     BL_ARR4_TO_FORTRAN_3D(fab_grav),
+		     BL_ARR4_TO_FORTRAN_3D(fab_sources_for_hydro),
+		     BL_ARR4_TO_FORTRAN_3D(fab_src_q),
+		     a_old, a_new, dt);
+	});
+
 
       GpuArray<Array4<Real>, AMREX_SPACEDIM> fab_fluxes{AMREX_D_DECL(fluxes[0].array(mfi),
 								   fluxes[1].array(mfi), fluxes[2].array(mfi))};
