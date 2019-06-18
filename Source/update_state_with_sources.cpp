@@ -48,6 +48,15 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
       Elixir elix_s = sum_state.elixir();
       const auto fab_sum_state = sum_state.array();
 
+      S_old[mfi].prefetchToDevice();
+      S_new[mfi].prefetchToDevice();
+      ext_src_old[mfi].prefetchToDevice();
+      hydro_src[mfi].prefetchToDevice();
+      divu_cc[mfi].prefetchToDevice();
+      grav[mfi].prefetchToDevice();
+
+      sum_state.prefetchToDevice();
+
 	AMREX_LAUNCH_DEVICE_LAMBDA(bx,tbx,
 	{
 	  ca_fort_update_state (
