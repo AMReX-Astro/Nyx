@@ -241,8 +241,8 @@ extern "C"
 #endif
      */
      const BL_FORT_FAB_ARG_3D(divu_cc),
-     const amrex::Real* dx, const amrex::Real* dt,
-     const amrex::Real* a_old, const amrex::Real* a_new);
+     const amrex::Real* dx, const amrex::Real dt,
+     const amrex::Real a_old, const amrex::Real a_new);
   
 #ifndef AMREX_USE_GPU
   void ctu_consup
@@ -388,10 +388,11 @@ extern "C"
 
   AMREX_GPU_DEVICE void apply_av
     (const int* lo, const int* hi,
-     const int idir, const amrex::Real* dx,
-     BL_FORT_FAB_ARG_3D(div),
-     BL_FORT_FAB_ARG_3D(Sborder),
-     BL_FORT_FAB_ARG_3D(flux), const amrex::Real* dt);
+     const BL_FORT_FAB_ARG_3D(div),
+     const BL_FORT_FAB_ARG_3D(Sborder),
+     BL_FORT_FAB_ARG_3D(flux), 
+     const int idir, const amrex::Real* dx, 
+     const amrex::Real dt);
 
 #ifdef RADIATION
   void apply_av_rad

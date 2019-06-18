@@ -529,10 +529,10 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
 
   end subroutine divu
 
-    AMREX_CUDA_FORT_DEVICE subroutine ca_apply_av(lo, hi, idir, dx, &
+    AMREX_CUDA_FORT_DEVICE subroutine ca_apply_av(lo, hi, &
        div, div_lo, div_hi, &
        uin, uin_lo, uin_hi, &
-       flux, f_lo, f_hi, dt) bind(c, name="apply_av")
+       flux, f_lo, f_hi, idir, dx, dt) bind(c, name="apply_av")
 
     use amrex_constants_module, only: ZERO, FOURTH, ONE
     use meth_params_module, only: NVAR, difmag, use_area_dt_scale_apply
@@ -543,12 +543,13 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
     integer,  intent(in   ) :: div_lo(3), div_hi(3)
     integer,  intent(in   ) :: uin_lo(3), uin_hi(3)
     integer,  intent(in   ) :: f_lo(3), f_hi(3)
-    real(rt), intent(in   ) :: dx(3), dt
+    real(rt), intent(in   ) :: dx(3)
     integer,  intent(in   ), value :: idir
+    real(rt), intent(in   ), value :: dt
 
-    real(rt), intent(in   ) :: div(div_lo(1):div_hi(1),div_lo(2):div_hi(2),div_lo(3):div_hi(3))
-    real(rt), intent(in   ) :: uin(uin_lo(1):uin_hi(1),uin_lo(2):uin_hi(2),uin_lo(3):uin_hi(3),NVAR)
-    real(rt), intent(inout) :: flux(f_lo(1):f_hi(1),f_lo(2):f_hi(2),f_lo(3):f_hi(3),NVAR)
+    real(rt) :: div(div_lo(1):div_hi(1),div_lo(2):div_hi(2),div_lo(3):div_hi(3))
+    real(rt) :: uin(uin_lo(1):uin_hi(1),uin_lo(2):uin_hi(2),uin_lo(3):uin_hi(3),NVAR)
+    real(rt) :: flux(f_lo(1):f_hi(1),f_lo(2):f_hi(2),f_lo(3):f_hi(3),NVAR)
 
     integer :: i, j, k, n
 
@@ -761,7 +762,8 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
       real(rt), intent(in) ::    qz(qz_lo(1):qz_hi(1),qz_lo(2):qz_hi(2),qz_lo(3):qz_hi(3),NGDNV)
       real(rt), intent(inout) :: pdivu(pdivu_lo(1):pdivu_hi(1),pdivu_lo(2):pdivu_hi(2),pdivu_lo(3):pdivu_hi(3))
 !      real(rt)  :: divu_cc(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3)
-      real(rt)  :: dx(3), dt, a_old, a_new
+      real(rt), intent(in)  :: dx(3)
+      real(rt), intent(in), value  :: dt, a_old, a_new
 
       real(rt) :: div1, a_half, a_oldsq, a_newsq
       real(rt) :: area1, area2, area3
@@ -1227,7 +1229,6 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
     real(rt), intent(in   ), value :: a_old, a_new
 
     real(rt), intent(inout) :: flux(f_lo(1):f_hi(1),f_lo(2):f_hi(2),f_lo(3):f_hi(3),NVAR)
-    real(rt), intent(in   ) :: area
 #if AMREX_SPACEDIM == 1
     real(rt), intent(in   ) :: qint(qi_lo(1):qi_hi(1), qi_lo(2):qi_hi(2), qi_lo(3):qi_hi(3), NGDNV)
 #endif
