@@ -67,10 +67,12 @@ Nyx::strang_hydro (Real time,
 
     MultiFab ext_src_old(grids, dmap, NUM_STATE, NUM_GROW);
     ext_src_old.setVal(0.);
+	//    std::unique_ptr<MultiFab> ext_src_old;
 
     //assume user-provided source is not CUDA
     if (add_ext_src)
       {
+	//	ext_src_old.reset(new MultiFab(grids, dmap, NUM_STATE, NUM_GROW));
 	amrex::Gpu::Device::streamSynchronize();
 	amrex::Gpu::setLaunchRegion(false);
 	get_old_source(prev_time, dt, ext_src_old);
@@ -102,8 +104,8 @@ Nyx::strang_hydro (Real time,
     MultiFab hydro_src(grids, dmap, NUM_STATE, 0);
     hydro_src.setVal(0.);
 
-    MultiFab divu_cc(grids, dmap, 1, 0);
-    divu_cc.setVal(0.);
+    std::unique_ptr<MultiFab> divu_cc;
+
 #ifndef NDEBUG
     amrex::Gpu::Device::streamSynchronize();
     amrex::Gpu::setLaunchRegion(false);
@@ -128,47 +130,22 @@ Nyx::strang_hydro (Real time,
     bool   init_flux_register = true;
     bool add_to_flux_register = true;
 
-    amrex::Real dummy_a_new=a_new;
-    amrex::Real dummy_a_old=a_old;
-    if(!use_evolving_a)
-      amrex::Real dummy_a_new=a_old;
-
-    if(use_grav_zero)
-      {
-	MultiFab dummy_grav_vector(grids, dmap, BL_SPACEDIM, NUM_GROW);
-	dummy_grav_vector.setVal(0.);
-	
-	MultiFab dummy_src_vector(grids, dmap, NUM_STATE, NUM_GROW);
-	dummy_src_vector.setVal(0.);
-	
-	if(hydro_convert)
-	  construct_ctu_hydro_source(time,dt,dummy_a_old,dummy_a_new,S_old_tmp,D_old_tmp,
-				     dummy_src_vector,hydro_src,dummy_grav_vector,divu_cc,
-				     init_flux_register, add_to_flux_register);
-	else
-	  compute_hydro_sources(time,dt,dummy_a_old,dummy_a_new,S_old_tmp,D_old_tmp,
-				dummy_src_vector,hydro_src,dummy_grav_vector,divu_cc,
-				init_flux_register, add_to_flux_register);
-	
-	update_state_with_sources(S_old_tmp,S_new,
-				  ext_src_old,hydro_src,grav_vector,divu_cc,
-				  dt,dummy_a_old,dummy_a_new);
-      }
+    if(hydro_convert)
+      construct_ctu_hydro_source(time,dt,a_old,a_new,S_old_tmp,D_old_tmp,
+				 ext_src_old,hydro_src,grav_vector,
+				 init_flux_register, add_to_flux_register);
     else
       {
-	if(hydro_convert)
-	  construct_ctu_hydro_source(time,dt,dummy_a_old,dummy_a_new,S_old_tmp,D_old_tmp,
-				     ext_src_old,hydro_src,grav_vector,divu_cc,
-				     init_flux_register, add_to_flux_register);
-	else
-	  compute_hydro_sources(time,dt,dummy_a_old,dummy_a_new,S_old_tmp,D_old_tmp,
-				ext_src_old,hydro_src,grav_vector,divu_cc,
-				init_flux_register, add_to_flux_register);
-	
-	update_state_with_sources(S_old_tmp,S_new,
-				  ext_src_old,hydro_src,grav_vector,divu_cc,
-				  dt,dummy_a_old,dummy_a_new);	
+	divu_cc.reset(new MultiFab(grids, dmap, 1, 0));
+	divu_cc->setVal(0.);
+	compute_hydro_sources(time,dt,a_old,a_new,S_old_tmp,D_old_tmp,
+			    ext_src_old,hydro_src,grav_vector,*divu_cc,
+			    init_flux_register, add_to_flux_register);
       }
+	
+    update_state_with_sources(S_old_tmp,S_new,
+			      ext_src_old,hydro_src,grav_vector,*divu_cc,
+			      dt,a_old,a_new);	
 
 #ifndef NDEBUG
     amrex::Gpu::Device::streamSynchronize();
@@ -218,7 +195,7 @@ Nyx::strang_hydro (Real time,
         get_new_source(prev_time, cur_time, dt, ext_src_new);
 
         time_center_source_terms(S_new, ext_src_old, ext_src_new, dt);
-
+	ext_src_old.clear();
 	amrex::Gpu::setLaunchRegion(true);
         compute_new_temp(S_new,D_new);
     } // end if (add_ext_src)

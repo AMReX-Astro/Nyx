@@ -10,7 +10,7 @@ void
 Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
                            MultiFab& Sborder, MultiFab& D_border, 
                            MultiFab& ext_src_old, MultiFab& hydro_source, 
-                           MultiFab& grav_vector, MultiFab& divu_cc, 
+                           MultiFab& grav_vector, 
 				//                           MultiFab& grav_vector,
                            bool init_flux_register, bool add_to_flux_register) 
 {
