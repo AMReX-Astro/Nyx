@@ -16,9 +16,11 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 {
 
   BL_PROFILE("Nyx::construct_ctu_hydro_source()");
-  
-  amrex::Print()<<"Beginning of construct_hydro"<<std::endl;
-  amrex::Arena::PrintUsage();
+
+  if(verbose) {  
+    amrex::Print()<<"Beginning of construct_hydro"<<std::endl;
+    amrex::Arena::PrintUsage();
+  }
   
   const Real strt_time = ParallelDescriptor::second();
 

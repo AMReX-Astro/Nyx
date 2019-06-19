@@ -65,7 +65,6 @@ Nyx::strang_hydro (Real time,
     enforce_nonnegative_species(S_old);
 
     MultiFab ext_src_old(grids, dmap, NUM_STATE, NUM_GROW);
-    ext_src_old.setVal(0.);
 	//    std::unique_ptr<MultiFab> ext_src_old;
 
     //assume user-provided source is not CUDA
@@ -81,7 +80,6 @@ Nyx::strang_hydro (Real time,
 
     // Define the gravity vector 
     MultiFab grav_vector(grids, dmap, BL_SPACEDIM, NUM_GROW);
-    grav_vector.setVal(0.);
 
     //Not sure if amrex::average_face_to_cellcenter, looks like it launches
     //    amrex::Gpu::setLaunchRegion(false);
@@ -99,9 +97,6 @@ Nyx::strang_hydro (Real time,
     MultiFab D_old_tmp(D_old.boxArray(), D_old.DistributionMap(), D_old.nComp(), NUM_GROW);
     FillPatch(*this, D_old_tmp, NUM_GROW, time, DiagEOS_Type, 0, D_old.nComp());
     BL_PROFILE_VAR_STOP(old_tmp);
-
-    MultiFab hydro_src(grids, dmap, NUM_STATE, 0);
-    hydro_src.setVal(0.);
 
     std::unique_ptr<MultiFab> divu_cc;
 
@@ -123,11 +118,17 @@ Nyx::strang_hydro (Real time,
 #endif
 
 #ifdef HEATCOOL
+    if(verbose) {
+      amrex::Print()<<"Before first strang:"<<std::endl;
+      amrex::Arena::PrintUsage();
+    }
     strang_first_step(time,dt,S_old_tmp,D_old_tmp);
 #endif
 
     bool   init_flux_register = true;
     bool add_to_flux_register = true;
+
+    MultiFab hydro_src(grids, dmap, NUM_STATE, 0);
 
     if(hydro_convert)
       construct_ctu_hydro_source(time,dt,a_old,a_new,S_old_tmp,D_old_tmp,
@@ -136,15 +137,20 @@ Nyx::strang_hydro (Real time,
     else
       {
 	divu_cc.reset(new MultiFab(grids, dmap, 1, 0));
-	divu_cc->setVal(0.);
 	compute_hydro_sources(time,dt,a_old,a_new,S_old_tmp,D_old_tmp,
 			    ext_src_old,hydro_src,grav_vector,*divu_cc,
 			    init_flux_register, add_to_flux_register);
       }
 	
+    D_old_tmp.clear();
+
     update_state_with_sources(S_old_tmp,S_new,
 			      ext_src_old,hydro_src,grav_vector,*divu_cc,
 			      dt,a_old,a_new);	
+
+    S_old_tmp.clear();
+    hydro_src.clear();
+
 
 #ifndef NDEBUG
     amrex::Gpu::Device::streamSynchronize();
@@ -171,9 +177,6 @@ Nyx::strang_hydro (Real time,
       }
     amrex::Gpu::setLaunchRegion(true);
 #endif
-    // We copy old Temp and Ne to new Temp and Ne so that they can be used
-    //    as guesses when we next need them.
-    MultiFab::Copy(D_new,D_old,0,0,D_old.nComp(),0);
 
     grav_vector.clear();
 
@@ -189,7 +192,6 @@ Nyx::strang_hydro (Real time,
 	amrex::Gpu::setLaunchRegion(false);
         // Compute source at new time (no ghost cells needed)
         MultiFab ext_src_new(grids, dmap, NUM_STATE, 0);
-        ext_src_new.setVal(0);
 
         get_new_source(prev_time, cur_time, dt, ext_src_new);
 
@@ -226,6 +228,10 @@ Nyx::strang_hydro (Real time,
 #endif
 
 #ifdef HEATCOOL
+    if(verbose) {
+      amrex::Print()<<"Before second strang:"<<std::endl;
+      amrex::Arena::PrintUsage();
+    }
     // This returns updated (rho e), (rho E), and Temperature
     strang_second_step(cur_time,dt,S_new,D_new);
 #endif
