@@ -195,9 +195,10 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
     bool first = true;
 
-    for (MFIter mfi(S_new, TilingIfNotGPU()); mfi.isValid(); ++mfi) {
+    for (MFIter mfi(S_new, TilingIfNotGPU()); mfi.isValid(); ++mfi, amrex::Gpu::Device::synchronize()) {
       //      for (MFIter mfi(S_new, hydro_tile_size); mfi.isValid(); ++mfi) {
 
+      
       // the valid region box
       const Box& bx = mfi.tilebox();
 
@@ -227,9 +228,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
         // Convert the conservative state to the primitive variable state.
         // This fills both q and qaux.
-	Sborder[mfi].prefetchToDevice();
-	q.prefetchToDevice();
-	qaux.prefetchToDevice();
 	AMREX_LAUNCH_DEVICE_LAMBDA(qbx, tqbx,
 	{
         ca_ctoprim(AMREX_INT_ANYD(tqbx.loVect()), AMREX_INT_ANYD(tqbx.hiVect()),
@@ -239,11 +237,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 	});
         // Convert the source terms expressed as sources to the conserved state to those
         // expressed as sources for the primitive state.
-	q.prefetchToDevice();
-	qaux.prefetchToDevice();
-	grav_vector[mfi].prefetchToDevice();
-	ext_src_old[mfi].prefetchToDevice();
-	src_q.prefetchToDevice();
 
 	AMREX_LAUNCH_DEVICE_LAMBDA(qbx, tqbx,
 	{
@@ -341,15 +334,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
       if (ppm_type == 0) {
 
-	q.prefetchToDevice();
-	qaux.prefetchToDevice();
-	src_q.prefetchToDevice();
-	flatn.prefetchToDevice();
-	shk.prefetchToDevice();
-	dq.prefetchToDevice();
-	qxm.prefetchToDevice();
-	qxp.prefetchToDevice();
-
 	      //amrex::Gpu::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(obx, tobx,
       {
@@ -367,8 +351,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 		       a_old, a_new,
                        AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
-	qym.prefetchToDevice();
-	qyp.prefetchToDevice();
+
       AMREX_LAUNCH_DEVICE_LAMBDA(obx, tobx,
       {
 	        ctu_plm_states(AMREX_INT_ANYD(tobx.loVect()), AMREX_INT_ANYD(tobx.hiVect()),
@@ -385,8 +368,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 		       a_old, a_new,
                        AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
-	qzm.prefetchToDevice();
-	qzp.prefetchToDevice();
+
       AMREX_LAUNCH_DEVICE_LAMBDA(obx, tobx,
       {
 		        ctu_plm_states(AMREX_INT_ANYD(tobx.loVect()), AMREX_INT_ANYD(tobx.hiVect()),
@@ -476,9 +458,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       Elixir elix_div = div.elixir();
     const auto fab_div = div.array();
       // compute divu -- we'll use this later when doing the artifical viscosity
-
-    q.prefetchToDevice();
-    div.prefetchToDevice();
 
       //amrex::Gpu::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(obx, tobx,
@@ -574,14 +553,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp1 = rfx
       // qgdnvtmp1 = qgdnxv
 
-      qxm.prefetchToDevice();
-      qxp.prefetchToDevice();
-      ftmp1.prefetchToDevice();
-      q_int.prefetchToDevice();
-      qgdnvtmp1.prefetchToDevice();
-      qaux.prefetchToDevice();
-      shk.prefetchToDevice();
-
       AMREX_LAUNCH_DEVICE_LAMBDA(cxbx, tcxbx,
       {
       cmpflx_plus_godunov(AMREX_INT_ANYD(tcxbx.loVect()), AMREX_INT_ANYD(tcxbx.hiVect()),
@@ -613,7 +584,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // ftmp1 = fx
       // rftmp1 = rfx
       // qgdnvtmp1 = qgdnvx
-#pragma gpu
+
       //amrex::Gpu::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(tyxbx, ttyxbx,
       {
@@ -642,13 +613,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       const auto fab_qzx = qzx.array();
       const auto fab_qpzx = qpzx.array();
 
-      qzm.prefetchToDevice();
-      qzp.prefetchToDevice();
-      qzx.prefetchToDevice();
-      qpzx.prefetchToDevice();
-      ftmp1.prefetchToDevice();
-      qgdnvtmp1.prefetchToDevice();
-
       //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(tzxbx, ttzxbx,
       {
@@ -671,14 +635,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // ftmp1 = fy
       // rftmp1 = rfy
       // qgdnvtmp1 = qgdnvy
-
-      qym.prefetchToDevice();
-      qyp.prefetchToDevice();
-      ftmp1.prefetchToDevice();
-      q_int.prefetchToDevice();
-      qgdnvtmp1.prefetchToDevice();
-      qaux.prefetchToDevice();
-      shk.prefetchToDevice();
 
       AMREX_LAUNCH_DEVICE_LAMBDA(cybx, tcybx,
       {
@@ -709,13 +665,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp1 = rfy
       // qgdnvtmp1 = qgdnvy
 
-      qxm.prefetchToDevice();
-      qxy.prefetchToDevice();
-      qxp.prefetchToDevice();
-      qpxy.prefetchToDevice();
-      ftmp1.prefetchToDevice();
-      qgdnvtmp1.prefetchToDevice();
-
       AMREX_LAUNCH_DEVICE_LAMBDA(txybx, ttxybx,
       {
       transy_on_xstates(AMREX_INT_ANYD(ttxybx.loVect()), AMREX_INT_ANYD(ttxybx.hiVect()),
@@ -745,13 +694,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp1 = rfy
       // qgdnvtmp1 = qgdnvy
 
-      qzm.prefetchToDevice();
-      qzp.prefetchToDevice();
-      qzy.prefetchToDevice();
-      qpzy.prefetchToDevice();
-      ftmp1.prefetchToDevice();
-      qgdnvtmp1.prefetchToDevice();
-
       AMREX_LAUNCH_DEVICE_LAMBDA(tzybx, ttzybx,
       {
       transy_on_zstates(AMREX_INT_ANYD(ttzybx.loVect()), AMREX_INT_ANYD(ttzybx.hiVect()),
@@ -771,14 +713,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // ftmp1 = fz
       // rftmp1 = rfz
       // qgdnvtmp1 = qgdnvz
-
-      qzm.prefetchToDevice();
-      qzp.prefetchToDevice();
-      ftmp1.prefetchToDevice();
-      q_int.prefetchToDevice();
-      qgdnvtmp1.prefetchToDevice();
-      qaux.prefetchToDevice();
-      shk.prefetchToDevice();
 
       AMREX_LAUNCH_DEVICE_LAMBDA(czbx, tczbx,
       {
@@ -809,12 +743,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // ftmp1 = fz
       // rftmp1 = rfz
       // qgdnvtmp1 = qgdnvz
-      qxm.prefetchToDevice();
-      qxp.prefetchToDevice();
-      qxz.prefetchToDevice();
-      qpxz.prefetchToDevice();
-      ftmp1.prefetchToDevice();
-      qgdnvtmp1.prefetchToDevice();
 
       AMREX_LAUNCH_DEVICE_LAMBDA(txzbx, ttxzbx,
       {
@@ -846,13 +774,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp1 = rfz
       // qgdnvtmp1 = qgdnvz
 
-      qym.prefetchToDevice();
-      qyp.prefetchToDevice();
-      qyz.prefetchToDevice();
-      qpyz.prefetchToDevice();
-      ftmp1.prefetchToDevice();
-      qgdnvtmp1.prefetchToDevice();
-
       AMREX_LAUNCH_DEVICE_LAMBDA(tyzbx, ttyzbx,
       {
       transz_on_ystates(AMREX_INT_ANYD(ttyzbx.loVect()), AMREX_INT_ANYD(ttyzbx.hiVect()),
@@ -878,14 +799,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp1 = rfyz
       // qgdnvtmp1 = qgdnvyz
 
-      qyz.prefetchToDevice();
-      qpyz.prefetchToDevice();
-      ftmp1.prefetchToDevice();
-      q_int.prefetchToDevice();
-      qgdnvtmp1.prefetchToDevice();
-      qaux.prefetchToDevice();
-      shk.prefetchToDevice();
-
       AMREX_LAUNCH_DEVICE_LAMBDA(cyzbx, tcyzbx,
       {
       cmpflx_plus_godunov(AMREX_INT_ANYD(tcyzbx.loVect()), AMREX_INT_ANYD(tcyzbx.hiVect()),
@@ -910,14 +823,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp2 = rfzy
       // qgdnvtmp2 = qgdnvzy
 
-      qzy.prefetchToDevice();
-      qpzy.prefetchToDevice();
-      ftmp2.prefetchToDevice();
-      q_int.prefetchToDevice();
-      qgdnvtmp2.prefetchToDevice();
-      qaux.prefetchToDevice();
-      shk.prefetchToDevice();
-
       AMREX_LAUNCH_DEVICE_LAMBDA(czybx, tczybx,
       {
       cmpflx_plus_godunov(AMREX_INT_ANYD(tczybx.loVect()), AMREX_INT_ANYD(tczybx.hiVect()),
@@ -933,18 +838,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
       elix_qzy.clear();
       elix_qpzy.clear();
-
-      qxm.prefetchToDevice();
-      qxp.prefetchToDevice();
-      ql.prefetchToDevice();
-      qr.prefetchToDevice();
-      q_int.prefetchToDevice();
-      ftmp1.prefetchToDevice();
-      ftmp2.prefetchToDevice();
-      qgdnvtmp1.prefetchToDevice();
-      qgdnvtmp2.prefetchToDevice();
-      qaux.prefetchToDevice();
-      src_q.prefetchToDevice();
 
       // compute the corrected x interface states and fluxes
       AMREX_LAUNCH_DEVICE_LAMBDA(xbx, txbx,
@@ -965,14 +858,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
       elix_qxm.clear();
       elix_qxp.clear();
-
-      ql.prefetchToDevice();
-      qr.prefetchToDevice();
-      flux[0].prefetchToDevice();
-      q_int.prefetchToDevice();
-      qe[0].prefetchToDevice();
-      qaux.prefetchToDevice();
-      shk.prefetchToDevice();
 
       AMREX_LAUNCH_DEVICE_LAMBDA(xbx, txbx,
       {
@@ -1022,14 +907,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp2 = rfxz
       // qgdnvtmp2 = qgdnvxz
 
-      qxz.prefetchToDevice();
-      qpxz.prefetchToDevice();
-      ftmp2.prefetchToDevice();
-      q_int.prefetchToDevice();
-      ql.prefetchToDevice();
-      qaux.prefetchToDevice();
-      shk.prefetchToDevice();
-
       AMREX_LAUNCH_DEVICE_LAMBDA(cxzbx, tcxzbx,
       {
       cmpflx_plus_godunov(AMREX_INT_ANYD(tcxzbx.loVect()), AMREX_INT_ANYD(tcxzbx.hiVect()),
@@ -1045,18 +922,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
       elix_qxz.clear();
       elix_qpxz.clear();
-
-      qym.prefetchToDevice();
-      qyp.prefetchToDevice();
-      ql.prefetchToDevice();
-      qr.prefetchToDevice();
-      q_int.prefetchToDevice();
-      ftmp1.prefetchToDevice();
-      ftmp2.prefetchToDevice();
-      qgdnvtmp1.prefetchToDevice();
-      qgdnvtmp2.prefetchToDevice();
-      qaux.prefetchToDevice();
-      src_q.prefetchToDevice();
 
       // Compute the corrected y interface states and fluxes
       AMREX_LAUNCH_DEVICE_LAMBDA(ybx, tybx,
@@ -1079,13 +944,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       elix_qyp.clear();
 
       // Compute the final F^y
-      ql.prefetchToDevice();
-      qr.prefetchToDevice();
-      flux[1].prefetchToDevice();
-      q_int.prefetchToDevice();
-      qe[1].prefetchToDevice();
-      qaux.prefetchToDevice();
-      shk.prefetchToDevice();
 
       AMREX_LAUNCH_DEVICE_LAMBDA(ybx, tybx,
       {
@@ -1135,14 +993,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       // rftmp2 = rfyx
       // qgdnvtmp2 = qgdnvyx
 
-      qyx.prefetchToDevice();
-      qpyx.prefetchToDevice();
-      ftmp2.prefetchToDevice();
-      q_int.prefetchToDevice();
-      qgdnvtmp2.prefetchToDevice();
-      qaux.prefetchToDevice();
-      shk.prefetchToDevice();
-
       AMREX_LAUNCH_DEVICE_LAMBDA(cyxbx, tcyxbx,
       {
       cmpflx_plus_godunov(AMREX_INT_ANYD(tcyxbx.loVect()), AMREX_INT_ANYD(tcyxbx.hiVect()),
@@ -1159,18 +1009,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       elix_qyx.clear();
       elix_qpyx.clear();
       
-      qzm.prefetchToDevice();
-      qzp.prefetchToDevice();
-      ql.prefetchToDevice();
-      qr.prefetchToDevice();
-      q_int.prefetchToDevice();
-      ftmp1.prefetchToDevice();
-      ftmp2.prefetchToDevice();
-      qgdnvtmp1.prefetchToDevice();
-      qgdnvtmp2.prefetchToDevice();
-      qaux.prefetchToDevice();
-      src_q.prefetchToDevice();
-
       // compute the corrected z interface states and fluxes
       AMREX_LAUNCH_DEVICE_LAMBDA(zbx, tzbx,
       {
@@ -1198,14 +1036,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 	
       // compute the final z fluxes F^z
 
-      ql.prefetchToDevice();
-      qr.prefetchToDevice();
-      flux[2].prefetchToDevice();
-      q_int.prefetchToDevice();
-      qe[2].prefetchToDevice();
-      qaux.prefetchToDevice();
-      shk.prefetchToDevice();
-
       AMREX_LAUNCH_DEVICE_LAMBDA(zbx, tzbx,
       {
       cmpflx_plus_godunov(AMREX_INT_ANYD(tzbx.loVect()), AMREX_INT_ANYD(tzbx.hiVect()),
@@ -1227,15 +1057,11 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       elix_shk.clear();
 
       // clean the fluxes
-      Sborder[mfi].prefetchToDevice();
-      div.prefetchToDevice();
       for (int idir = 0; idir < AMREX_SPACEDIM; ++idir) {
 
           const Box& nbx = amrex::surroundingNodes(bx, idir);
 
           const int idir_f = idir + 1;
-
-      flux[idir].prefetchToDevice();
 
       AMREX_LAUNCH_DEVICE_LAMBDA(nbx, tnbx,
       {
@@ -1260,16 +1086,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       pdivu.resize(bx, 1);
       Elixir elix_pdivu = pdivu.elixir();
     const auto fab_pdivu = pdivu.array();
-
-      Sborder[mfi].prefetchToDevice();
-      hydro_source[mfi].prefetchToDevice();
-      flux[0].prefetchToDevice();
-      flux[1].prefetchToDevice();
-      flux[2].prefetchToDevice();
-      qe[0].prefetchToDevice();
-      qe[1].prefetchToDevice();
-      qe[2].prefetchToDevice();
-      pdivu.prefetchToDevice();
 
       //amrex::Cuda::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
@@ -1296,7 +1112,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
         const Box& nbx = amrex::surroundingNodes(bx, idir);
 
-      flux[idir].prefetchToDevice();
       //amrex::Gpu::setLaunchRegion(true);
       AMREX_LAUNCH_DEVICE_LAMBDA(nbx, tnbx,
       {
