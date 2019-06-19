@@ -445,7 +445,7 @@ public:
     void construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
                                amrex::MultiFab& S_border, amrex::MultiFab& D_border, 
                                amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src, 
-                               amrex::MultiFab& grav, amrex::MultiFab& divu_cc,
+                               amrex::MultiFab& grav, 
                                bool init_flux_register, bool add_to_flux_register);
 
 ///
