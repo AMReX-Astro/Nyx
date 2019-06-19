@@ -403,6 +403,9 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 		       a_old, a_new,
                        AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
+
+
+      elix_flatn.clear();
       //      amrex::Print()<<"1"<<std::endl;
       //////      amrex::Gpu::Device::synchronize();
       //amrex::Gpu::setLaunchRegion(false);
@@ -1218,6 +1221,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       });
 
       elix_qaux.clear();
+      elix_q_int.clear();
       elix_ql.clear();
       elix_qr.clear();
       elix_shk.clear();
@@ -1283,6 +1287,11 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                 dx.data(),dt,a_old,a_new);
             });
 
+      elix_qe_x.clear();
+      elix_qe_y.clear();
+      elix_qe_z.clear();
+      elix_pdivu.clear();
+
       for (int idir = 0; idir < AMREX_SPACEDIM; ++idir) {
 
         const Box& nbx = amrex::surroundingNodes(bx, idir);
@@ -1297,11 +1306,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       });
       //amrex::Gpu::Device::streamSynchronize();
       //amrex::Gpu::setLaunchRegion(false);
-        if (idir == 0) {
-            // get the scaled radial pressure -- we need to treat this specially
-            Array4<Real> const qex_fab = qe[idir].array();
-            const int prescomp = GDPRES;
-        }
 
         // Store the fluxes from this advance.
 
@@ -1321,6 +1325,10 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                 fluxes_fab(i,j,k,n) += flux_fab(i,j,k,n);
             });
       } // idir loop
+
+      elix_flux_x.clear();
+      elix_flux_y.clear();
+      elix_flux_z.clear();
 
       //took out track_grid_losses
       //amrex::Gpu::Device::synchronize();
