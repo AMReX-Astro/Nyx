@@ -1662,6 +1662,12 @@ Gravity::solve_with_MLMG (int crse_level, int fine_level,
     LPInfo info;
     info.setAgglomeration(mlmg_agglomeration);
     info.setConsolidation(mlmg_consolidation);
+    
+    if(mlmg_agglomeration)
+      info.setAgglomerationGridSize(16);
+
+    if(mlmg_consolidation)
+      info.setConsolidationGridSize(16);
 
     MLPoisson mlpoisson(gmv, bav, dmv, info);
 

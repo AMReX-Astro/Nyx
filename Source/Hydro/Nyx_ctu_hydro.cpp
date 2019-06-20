@@ -34,17 +34,19 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
   MultiFab fluxes[BL_SPACEDIM];
   const int finest_level = parent->finestLevel();
 
-  for (int j = 0; j < BL_SPACEDIM; j++)
-    {
-      fluxes[j].define(getEdgeBoxArray(j), dmap, NUM_STATE, 0);
-      fluxes[j].setVal(0.0);
-    }
+  //
+  // Get pointers to Flux registers, or set pointer to zero if not there.
+  //
+  FluxRegister* fine    = 0;
+  FluxRegister* current = 0;
 
-    //
-    // Get pointers to Flux registers, or set pointer to zero if not there.
-    //
-    FluxRegister* fine    = 0;
-    FluxRegister* current = 0;
+  if(finest_level!=0)
+    {
+      for (int j = 0; j < BL_SPACEDIM; j++)
+	{
+	  fluxes[j].define(getEdgeBoxArray(j), dmap, NUM_STATE, 0);
+	  fluxes[j].setVal(0.0);
+	}
 
     if (do_reflux)
     {
@@ -58,6 +60,8 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
        if (level > 0) {
          current = &get_flux_reg(level);
        }
+    }
+
     }
   /*/
   fluxes.resize(3);
@@ -250,7 +254,8 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 	});
 
 
-      GpuArray<Array4<Real>, AMREX_SPACEDIM> fab_fluxes{AMREX_D_DECL(fluxes[0].array(mfi),
+	if(finest_level!=0)
+	  GpuArray<Array4<Real>, AMREX_SPACEDIM> fab_fluxes{AMREX_D_DECL(fluxes[0].array(mfi),
 								   fluxes[1].array(mfi), fluxes[2].array(mfi))};
       
       //      q.resize(obx, 1);
@@ -1129,6 +1134,8 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
         // we want to copy the fluxes since we expect that there will not be
         // subcycling and we only want the last iteration's fluxes.
 
+      if(finest_level!=0)
+	{
         Array4<Real> const flux_fab = (flux[idir]).array();
         Array4<Real> fluxes_fab = (fluxes[idir]).array(mfi);
         const int numcomp = NUM_STATE;
@@ -1139,6 +1146,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
             {
                 fluxes_fab(i,j,k,n) += flux_fab(i,j,k,n);
             });
+	}
       } // idir loop
 
       elix_flux_x.clear();
@@ -1176,7 +1184,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
     }
 
   // These seem to check if the provided flux is a gpuptr, and use launches
-    if (add_to_flux_register)
+    if (add_to_flux_register && finest_level!=0)
     {
        if (do_reflux) {
          if (current) {
