@@ -30,9 +30,6 @@ Nyx::cons_to_prim(MultiFab& Sborder, MultiFab& q, MultiFab& qaux, MultiFab& grav
 
         // Convert the conservative state to the primitive variable state.
         // This fills both q and qaux.
-	Sborder[mfi].prefetchToDevice();
-	q[mfi].prefetchToDevice();
-	qaux[mfi].prefetchToDevice();
 	AMREX_LAUNCH_DEVICE_LAMBDA(qbx, tqbx,
 	{
         ca_ctoprim(AMREX_INT_ANYD(tqbx.loVect()), AMREX_INT_ANYD(tqbx.hiVect()),
@@ -42,12 +39,6 @@ Nyx::cons_to_prim(MultiFab& Sborder, MultiFab& q, MultiFab& qaux, MultiFab& grav
 	});
         // Convert the source terms expressed as sources to the conserved state to those
         // expressed as sources for the primitive state.
-	q[mfi].prefetchToDevice();
-	qaux[mfi].prefetchToDevice();
-	grav[mfi].prefetchToDevice();
-	sources_for_hydro[mfi].prefetchToDevice();
-	src_q[mfi].prefetchToDevice();
-
 	AMREX_LAUNCH_DEVICE_LAMBDA(qbx, tqbx,
 	{
 	ca_srctoprim(AMREX_INT_ANYD(tqbx.loVect()), AMREX_INT_ANYD(tqbx.hiVect()),
