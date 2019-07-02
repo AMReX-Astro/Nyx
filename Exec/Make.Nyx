@@ -63,21 +63,6 @@ GIMLET_DIR ?= /home/vince/Development/gimlet
 FFTW_INC ?= /usr/include
 FFTW_DIR ?= /usr/lib/x86_64-linux-gnu
 
-REEBER_HOME ?= /project/projectdirs/nyx/ghweber/reeber2
-# Reeber needs Boost (both headers and libraries) and diy2.
-BOOST_INCLUDE_DIR ?= /project/projectdirs/nyx/ghweber/boost-1.61.0-noarch/include
-DIY_INCLUDE_DIR ?= /project/projectdirs/nyx/ghweber/diy/include
-
-ifeq ($(REEBER), TRUE)
-  DEFINES += -DREEBER
-  DEFINES += -DREEBER_USE_BOXLIB_READER -DREEBER_IN_SITU
-  DEFINES += -DPARALLEL_MPI -DBOOST_DATE_TIME_NO_LOCALE
-  INCLUDE_LOCATIONS += $(BOOST_INCLUDE_DIR)
-  INCLUDE_LOCATIONS += $(DIY_INCLUDE_DIR)
-  INCLUDE_LOCATIONS += $(REEBER_HOME)/include $(REEBER_HOME)/examples/include $(REEBER_HOME)/examples/local-global
-  VPATH_LOCATIONS += $(REEBER_HOME)/src $(REEBER_HOME)/examples/local-global
-  LIBRARIES += -lpthread
-endif
 ifeq ($(DEBUG), TRUE)
   DEFINES += -DDEBUG
 endif
@@ -162,6 +147,9 @@ endif
 #VPATH_LOCATIONS   += $(AMREX_HOME)/Src/F_Interfaces
 #INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/F_Interfaces/Base
 #VPATH_LOCATIONS   += $(AMREX_HOME)/Src/F_Interfaces/Base
+
+REEBER_HOME ?= $(TOP)/Util/reeber
+include $(REEBER_HOME)/Make.package
 
 VODE_dir    := $(TOP)/Util/VODE
 include $(VODE_dir)/Make.package

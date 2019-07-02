@@ -27,8 +27,11 @@ using std::string;
 #endif
 
 #ifdef REEBER
+#ifdef REEBER_HIST
 #include <ReeberAnalysis.H>
 #endif /* REEBER */
+#include <reeber.H>
+#endif /* REEBER_HIST */
 
 const int NyxHaloFinderSignal = 42;
 
@@ -92,6 +95,40 @@ Nyx::halo_find (Real dt)
    int ngrow   = 0;
 
 #ifdef REEBER
+#ifndef REEBER_HIST
+   
+   bool created_file = false;
+   bool do_analysis = true;
+
+   if (do_analysis || (reeber_int > 0 && nStep() % reeber_int == 0)) 
+   {
+
+     {
+
+       //       amrex::MultiFab reeberMF(simBA, simDM, 8, 0);
+     //       amrex::MultiFab
+     Vector<std::unique_ptr<MultiFab> > particle_mf;
+     //     std::unique_ptr<MultiFab> particle_mf(new MultiFab(simBA, simDM, 4, 0));
+       int cnt = 1;
+
+       Real cur_time = state[State_Type].curTime();
+       // global values updated when compute_average_density() called:
+       /*
+       average_gas_density;
+       average_dm_density;
+       average_neutr_density;
+       average_total_density;
+       */
+       
+       // Derive quantities and store in components 1... of MultiFAB
+
+       Nyx::theDMPC()->AssignDensityAndVels(particle_mf);
+
+       std::vector<Halo> reeber_halos;
+       runReeberAnalysis(new_state, *(particle_mf[0]), Geom(), nStep(), do_analysis, reeber_halos);
+
+#else
+
    const auto& reeber_density_var_list = getReeberHaloDensityVars();
    bool do_analysis(doAnalysisNow());
 
@@ -136,6 +173,7 @@ Nyx::halo_find (Real dt)
        std::vector<Halo> reeber_halos;
        runReeberAnalysis(reeberMF, Geom(), nStep(), do_analysis, &reeber_halos);
 
+#endif /* REEBER_HIST */
 #else
 
        // Before creating new AGN particles, check if any of the existing AGN particles should be merged

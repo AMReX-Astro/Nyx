@@ -7,7 +7,7 @@ CVODE_LIB_DIR ?= $(CVODE_LIB)
 TOP = ../..
 
 # compilation options
-COMP    = intel  # gnu
+COMP    = gnu
 USE_MPI = TRUE
 USE_OMP = FALSE
 

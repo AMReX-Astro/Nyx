@@ -16,6 +16,12 @@
 #include "NeutrinoParticleContainer.H"
 #endif
 
+#ifdef REEBER
+#ifndef REEBER_HIST
+#include <reeber.H>
+#endif
+#endif
+
 #include <iostream>
 
 #ifdef BL_HDF5
@@ -461,6 +467,8 @@ public:
     void halo_find(amrex::Real dt);
     void halo_merge();
     void halo_accrete(amrex::Real dt);
+
+    void runReeberAnalysis(const amrex::MultiFab & new_state, amrex::MultiFab & particle_mf, const amrex::Geometry Geom, int nStep, bool do_analysis, std::vector<Halo> reeber_halos);
     void Lya_statistics();
 
     //

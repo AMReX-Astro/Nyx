@@ -34,10 +34,6 @@ using std::string;
 #include "Forcing.H"
 #endif
 
-#ifdef REEBER
-#include <ReeberAnalysis.H>
-#endif
-
 #ifdef GIMLET
 #include <DoGimletAnalysis.H>
 #include <postprocess_tau_fields.H>

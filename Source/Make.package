@@ -59,13 +59,6 @@ FEXE_headers   += NeutrinoParticles_F.H
 F90EXE_sources += Neutrino_Particle_mod_3d.F90
 endif
 
-ifeq ($(REEBER), TRUE)
-  CEXE_sources += format.cpp
-  CEXE_sources += ReeberAnalysis.cpp mt-lg-ghosts.cpp
-  CEXE_headers += format.h
-  CEXE_headers += ReeberAnalysis.H mt-lg-ghosts.h
-endif
-
 ifeq ($(GIMLET), TRUE)
   f90EXE_sources += calc_tau.f90
   f90EXE_sources += calc_flux.f90

@@ -1,0 +1,30 @@
+# /project/projectdirs/nyx/ghweber/reeber2
+ifeq ($(REEBER_HIST), TRUE)
+     # Reeber needs Boost (both headers and libraries) and diy2.
+     BOOST_INCLUDE_DIR ?= /project/projectdirs/nyx/ghweber/boost-1.61.0-noarch/include
+     DIY_INCLUDE_DIR ?= /project/projectdirs/nyx/ghweber/diy/include
+endif
+
+ifeq ($(REEBER), TRUE)
+  DEFINES += -DREEBER
+  DEFINES += -DPARALLEL_MPI -DBOOST_DATE_TIME_NO_LOCALE
+ifeq ($(REEBER_HIST), TRUE)
+  DEFINES += -DREEBER_HIST
+  DEFINES += -DREEBER_USE_BOXLIB_READER -DREEBER_IN_SITU
+  INCLUDE_LOCATIONS += $(BOOST_INCLUDE_DIR)
+  INCLUDE_LOCATIONS += $(DIY_INCLUDE_DIR)
+  LIBRARIES += -lpthread
+endif
+  INCLUDE_LOCATIONS += $(REEBER_HOME)/include $(REEBER_HOME)/examples/include $(REEBER_HOME)/examples/local-global
+  VPATH_LOCATIONS += $(REEBER_HOME)/src $(REEBER_HOME)/examples/local-global
+endif
+
+ifeq ($(REEBER_HIST), TRUE)
+  CEXE_sources += format.cpp
+  CEXE_sources += ReeberAnalysis.cpp mt-lg-ghosts.cpp
+  CEXE_headers += format.h
+  CEXE_headers += ReeberAnalysis.H mt-lg-ghosts.h
+endif
+
+CEXE_headers += reeber.H
+CEXE_sources += reeber.cpp
