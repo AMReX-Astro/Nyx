@@ -344,6 +344,7 @@ Nyx::read_particle_params ()
 #ifdef NEUTRINO_PARTICLES
     pp.query("neutrino_particle_file", neutrino_particle_file);
     if (!neutrino_particle_file.empty() && (particle_init_type != "AsciiFile"&&
+					    particle_init_type != "BinaryMetaFile" && 
 					    particle_init_type != "BinaryFile" ))
 	{
 	  if (ParallelDescriptor::IOProcessor())
@@ -658,7 +659,20 @@ Nyx::init_particles ()
             //
             NPC->InitFromBinaryFile(neutrino_particle_file, BL_SPACEDIM + 1);
         }
-
+        else if (particle_init_type == "BinaryMetaFile")
+        {
+            if (verbose)
+            {
+                amrex::Print() << "\nInitializing NPC particles from meta file\""
+                               << binary_particle_file << "\" ...\n\n";
+            }
+            //
+            // The second argument is how many Reals we read into `m_data[]`
+            // after reading in `m_pos[]` in each of the binary particle files.
+            // Here we're reading in the particle mass and velocity.
+            //
+            NPC->InitFromBinaryMetaFile(binary_particle_file, BL_SPACEDIM + 1);
+        }
         else
         {
             amrex::Error("for right now we only init Neutrino particles with ascii or binary");
