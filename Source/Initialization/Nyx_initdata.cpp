@@ -2,7 +2,6 @@
 #include <Nyx.H>
 #include <Nyx_F.H>
 
-
 #ifdef GRAVITY
 #include <Gravity.H>
 #endif
@@ -103,10 +102,11 @@ Nyx::read_init_params ()
 
 #ifdef NEUTRINO_PARTICLES
     pp.query("neutrino_particle_file", neutrino_particle_file);
-    if (!neutrino_particle_file.empty() && particle_init_type != "AsciiFile")
+    if (!neutrino_particle_file.empty() && particle_init_type != "AsciiFile" &&
+	                                   particle_init_type != "BinaryFile")
     {
         if (ParallelDescriptor::IOProcessor())
-            std::cerr << "ERROR::particle_init_type is not AsciiFile but you specified neutrino_particle_file" << std::endl;
+            std::cerr << "ERROR::particle_init_type is not AsciiFile or BinaryFile but you specified neutrino_particle_file" << std::endl;
         amrex::Error();
     }
 #endif

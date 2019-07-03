@@ -8,7 +8,6 @@
 
 #include <Nyx_F.H>
 
-
 using namespace amrex;
 
 namespace
@@ -57,7 +56,13 @@ namespace
     AGNParticleContainer*         APC = 0;
 #endif
 #ifdef NEUTRINO_PARTICLES
-    NeutrinoParticleContainer*    NPC = 0;
+
+#ifdef NEUTRINO_DARK_PARTICLES
+  DarkMatterParticleContainer*    NPC = 0;
+#else
+  NeutrinoParticleContainer*    NPC = 0;
+#endif
+  
 #endif
 
     //
@@ -76,7 +81,13 @@ namespace
     AGNParticleContainer*        VirtAPC = 0;
 #endif
 #ifdef NEUTRINO_PARTICLES
+
+#ifdef NEUTRINO_DARK_PARTICLES
+    DarkMatterParticleContainer*  VirtNPC = 0;
+#else
     NeutrinoParticleContainer*   VirtNPC = 0;
+
+#endif
 #endif
     //
     // Container for temporary, ghost Particles
@@ -87,7 +98,11 @@ namespace
     AGNParticleContainer*        GhostAPC = 0;
 #endif
 #ifdef NEUTRINO_PARTICLES
+#ifdef NEUTRINO_DARK_PARTICLES
+    DarkMatterParticleContainer*  GhostNPC = 0;
+#else
     NeutrinoParticleContainer*   GhostNPC = 0;
+#endif  
 #endif
 
     void RemoveParticlesOnExit ()
@@ -208,6 +223,23 @@ Nyx::theGhostAPC ()
 #endif
 
 #ifdef NEUTRINO_PARTICLES
+#ifdef NEUTRINO_DARK_PARTICLES
+DarkMatterParticleContainer* 
+Nyx::theNPC ()
+{
+      return NPC;
+}
+DarkMatterParticleContainer* 
+Nyx::theVirtNPC ()
+{
+      return VirtNPC;
+}
+DarkMatterParticleContainer* 
+Nyx::theGhostNPC ()
+{
+      return GhostNPC;
+}
+#else
 NeutrinoParticleContainer* 
 Nyx::theNPC ()
 {
@@ -223,6 +255,7 @@ Nyx::theGhostNPC ()
 {
       return GhostNPC;
 }
+#endif
 #endif
 
 void
@@ -310,12 +343,13 @@ Nyx::read_particle_params ()
 
 #ifdef NEUTRINO_PARTICLES
     pp.query("neutrino_particle_file", neutrino_particle_file);
-    if (!neutrino_particle_file.empty() && particle_init_type != "AsciiFile")
-    {
-        if (ParallelDescriptor::IOProcessor())
-            std::cerr << "ERROR::particle_init_type is not AsciiFile but you specified neutrino_particle_file" << std::endl;;
-        amrex::Error();
-    }
+    if (!neutrino_particle_file.empty() && (particle_init_type != "AsciiFile"&&
+					    particle_init_type != "BinaryFile" ))
+	{
+	  if (ParallelDescriptor::IOProcessor())
+	    std::cerr << "ERROR::particle_init_type is not AsciiFile or BinaryFile but you specified neutrino_particle_file" << std::endl;;
+	  amrex::Error();
+	}
 #endif
 
     pp.query("write_particle_density_at_init", write_particle_density_at_init);
@@ -514,14 +548,6 @@ Nyx::init_particles ()
             amrex::Error("not a valid input for nyx.particle_init_type");
         }
 
-        if (write_particle_density_at_init == 1)
-        {
-            MultiFab particle_mf(grids,dmap,1,1);
-            DMPC->AssignDensitySingleLevel(particle_mf,0,1,0);
-
-            writeMultiFabAsPlotFile("ParticleDensity", particle_mf, "density");
-            exit(0);
-        }
 
         if (write_coarsened_particles)
         {
@@ -553,8 +579,12 @@ Nyx::init_particles ()
 #ifdef NEUTRINO_PARTICLES
     {
         BL_ASSERT (NPC == 0);
-        NPC = new NeutrinoParticleContainer(parent);
-        ActiveParticles.push_back(NPC); 
+#ifdef NEUTRINO_DARK_PARTICLES
+        NPC = new DarkMatterParticleContainer(parent);
+	ActiveParticles.push_back(NPC); 
+#else
+	NPC = new NeutrinoParticleContainer(parent);
+	ActiveParticles.push_back(NPC); 
 
         // Set the relativistic flag to 1 so that the density will be gamma-weighted
         //     when returned by AssignDensity calls.
@@ -564,8 +594,14 @@ Nyx::init_particles ()
         // Obviously this value is just a place-holder for now.
         NPC->SetCSquared(1.);
 
+#endif
+
 	if (parent->subCycle())
 	{
+#ifdef NEUTRINO_DARK_PARTICLES
+	    VirtNPC = new DarkMatterParticleContainer(parent);
+	    VirtualParticles.push_back(VirtNPC); 
+#else
 	    VirtNPC = new NeutrinoParticleContainer(parent);
             VirtualParticles.push_back(VirtNPC); 
 
@@ -573,12 +609,21 @@ Nyx::init_particles ()
             //     when returned by AssignDensity calls.
             VirtNPC->SetRelativistic(1);
 
+#endif
+
+#ifdef NEUTRINO_DARK_PARTICLES
+	    GhostNPC = new DarkMatterParticleContainer(parent);
+	    GhostParticles.push_back(GhostNPC); 
+
+#else
 	    GhostNPC = new NeutrinoParticleContainer(parent);
-            GhostParticles.push_back(GhostNPC); 
+	    GhostParticles.push_back(GhostNPC); 
 
             // Set the relativistic flag to 1 so that the density will be gamma-weighted
             //     when returned by AssignDensity calls.
             GhostNPC->SetRelativistic(1);
+#endif	    
+
 	}
         //
         // Make sure to call RemoveParticlesOnExit() on exit.
@@ -600,7 +645,11 @@ Nyx::init_particles ()
             // after reading in `m_pos[]`. Here we're reading in the particle
             // mass, velocity and angles.
             //
+#ifdef NEUTRINO_DARK_PARTICLES
+	    NPC->InitFromAsciiFile(neutrino_particle_file, BL_SPACEDIM + 1, &Nrep);
+#else
             NPC->InitFromAsciiFile(neutrino_particle_file, 2*BL_SPACEDIM + 1, &Nrep);
+#endif
         }
         else if (particle_init_type == "BinaryFile")
         {
@@ -622,7 +671,28 @@ Nyx::init_particles ()
             amrex::Error("for right now we only init Neutrino particles with ascii or binary");
         }
     }
+
+    if (write_particle_density_at_init == 1)
+        {
+
+	  Vector<std::unique_ptr<MultiFab> > particle_mf;//(new MultiFab(grids,dmap,1,1));
+	    
+	    DMPC->AssignDensity(particle_mf,0,1,0,0);
+
+            writeMultiFabAsPlotFile("ParticleDensity", *particle_mf[0], "density");
+
+#ifdef NEUTRINO_PARTICLES
+	    Vector<std::unique_ptr<MultiFab> > particle_npc_mf;//(new MultiFab(grids,dmap,1,1));
+	  //	  DMPC->AssignDensitySingleLevel(particle_mf,0,1,0,0);
+
+	    NPC->AssignDensity(particle_npc_mf,0,1,0,0);
+
+            writeMultiFabAsPlotFile("ParticleNPCDensity", *particle_npc_mf[0], "density");
 #endif
+            exit(0);
+        }
+
+#endif    
 }
 
 #ifdef GRAVITY
@@ -1133,7 +1203,11 @@ Nyx::setup_ghost_particles(int ngrow)
 #ifdef NEUTRINO_PARTICLES
     if(Nyx::theNPC() != 0)
     {
-        NeutrinoParticleContainer::AoS ghosts;
+#ifdef NEUTRINO_DARK_PARTICLES
+        DarkMatterParticleContainer::AoS ghosts;
+#else
+	NeutrinoParticleContainer::AoS ghosts;
+#endif
         Nyx::theNPC()->CreateGhostParticles(level, ngrow, ghosts);
         Nyx::theGhostNPC()->AddParticlesAtLevel(ghosts, level+1, ngrow);
     }

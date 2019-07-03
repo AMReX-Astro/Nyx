@@ -14,6 +14,10 @@ EBASE            = main
 CVODE_LIB_DIR ?= ${CVODE_LIB}
 USE_SUNDIALS_3x4x = TRUE
 
+ifeq ($(USE_HEATCOOL), TRUE)
+  DEFINES += -DHEATCOOL
+endif
+
 include $(AMREX_HOME)/Tools/GNUMake/Make.defs
 
 include ./Make.package

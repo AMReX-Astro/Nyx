@@ -15,10 +15,8 @@
 
 module atomic_rates_module
 
-  use constants_module, only : rt => type_real, M_PI
-  use cudafor
-  use iso_c_binding, only : c_float, c_double, c_size_t
-  
+  use amrex_fort_module, only : rt => amrex_real
+
   implicit none
 
   ! Photo- rates (from file)
@@ -34,7 +32,8 @@ module atomic_rates_module
   real(rt), dimension(:), allocatable, public :: BetaH0, BetaHe0, BetaHep, Betaff1, Betaff4
   real(rt), dimension(:), allocatable, public :: RecHp, RecHep, RecHepp
 
-  real(rt), allocatable, public:: this_z, ggh0, gghe0, gghep, eh0, ehe0, ehep
+  real(rt), allocatable, public :: ggh0, gghe0, gghep, eh0, ehe0, ehep
+  real(rt), allocatable, public :: this_z
  
   real(rt), allocatable, public :: TCOOLMIN, TCOOLMAX
   real(rt), allocatable, public :: TCOOLMIN_R, TCOOLMAX_R
@@ -50,73 +49,70 @@ module atomic_rates_module
 
   ! Note that XHYDROGEN can be set by a call to set_xhydrogen which now
   ! lives in set_method_params.
-  real(rt), parameter, public :: XHYDROGEN = 0.76d0
-  real(rt), parameter, public :: YHELIUM   = 7.8947368421d-2  ! (1.0d0-XHYDROGEN)/(4.0d0*XHYDROGEN)
+  real(rt), allocatable, public :: XHYDROGEN 
+  real(rt), allocatable, public :: YHELIUM     ! (1.0d0-XHYDROGEN)/(4.0d0*XHYDROGEN)
+
+#ifdef AMREX_USE_CUDA
   attributes(managed) :: NCOOLFILE, lzr, rggh0, rgghe0, rgghep, reh0, rehe0, rehep
   attributes(managed) :: AlphaHp, AlphaHep, AlphaHepp, Alphad
   attributes(managed) :: GammaeH0, GammaeHe0, GammaeHep
   attributes(managed) :: BetaH0, BetaHe0, BetaHep, Betaff1, Betaff4
   attributes(managed) :: RecHp, RecHep, RecHepp
-  attributes(managed) :: this_z, ggh0, gghe0, gghep, eh0, ehe0, ehep
-  attributes(constant) :: YHELIUM
+  attributes(managed) :: ggh0, gghe0, gghep, eh0, ehe0, ehep
+  attributes(managed) :: XHYDROGEN, YHELIUM
   attributes(managed) :: TCOOLMIN, TCOOLMAX, TCOOLMAX_R, TCOOLMIN_R, deltaT
   attributes(managed) :: uvb_density_A, uvb_density_B, mean_rhob
-
+#endif
+  
   contains
 
-      attributes(host) subroutine fort_tabulate_rates() bind(C, name='fort_tabulate_rates')
-!      use parallel, only: parallel_ioprocessor
-!      use amrex_parmparse_module
+      subroutine fort_tabulate_rates() bind(C, name='fort_tabulate_rates')
+      use amrex_paralleldescriptor_module, only: amrex_pd_ioprocessor
+      use amrex_parmparse_module
+      use amrex_constants_module, only: M_PI
       use fundamental_constants_module, only: Gconst
       use comoving_module, only: comoving_h,comoving_OmB
       use reion_aux_module, only: zhi_flash, zheii_flash, T_zhi, T_zheii, &
                                   flash_h, flash_he, inhomogeneous_on
 
-      real(rt), parameter :: M_PI    = &
-       3.141592653589793238462643383279502884197
+      implicit none
+
       integer :: i, inhomo_reion
       logical, parameter :: Katz96=.false.
       real(rt), parameter :: t3=1.0d3, t5=1.0d5, t6=1.0d6
       real(rt) :: t, U, E, y, sqrt_t, corr_term, tmp
-      logical, save :: first=.true.
-!      logical, save :: parallel_ioprocessor=.true.
+      logical,save :: first
 
-      character(len=80) :: file_in
-      character(len=14) :: var_name
-      character(len=2)  :: eq_name
-      character(len=80) :: FMT
-!      type(amrex_parmparse) :: pp
+      character(len=:), allocatable :: file_in
+      type(amrex_parmparse) :: pp
+
+      if (amrex_pd_ioprocessor()) then 
+         print*, "Forcing first true"
+      endif
+
+      if(allocated(NCOOLFILE)) then
+         first = .false.
+      else
+         first = .true.
+      endif
 
       if (first) then
 
          first = .false.
 
          ! Get info from inputs
-!         call amrex_parmparse_build(pp, "nyx")
-!         call pp%query("inhomo_reion"             , inhomo_reion)
-!         call pp%query("uvb_rates_file"           , file_in)
-!         call pp%query("uvb_density_A"            , uvb_density_A)
-!         call pp%query("uvb_density_B"            , uvb_density_B)
-!         call pp%query("reionization_zHI_flash"   , zhi_flash)
-!         call pp%query("reionization_zHeII_flash" , zheii_flash)
-!         call pp%query("reionization_T_zHI"       , T_zhi)
-!         call pp%query("reionization_T_zHeII"     , T_zheii)
-!         call amrex_parmparse_destroy(pp)
-!nyx.inhomo_reion     = 0
+         call amrex_parmparse_build(pp, "nyx")
+         call pp%query("inhomo_reion"             , inhomo_reion)
+         call pp%query("uvb_rates_file"           , file_in)
+         call pp%query("uvb_density_A"            , uvb_density_A)
+         call pp%query("uvb_density_B"            , uvb_density_B)
+         call pp%query("reionization_zHI_flash"   , zhi_flash)
+         call pp%query("reionization_zHeII_flash" , zheii_flash)
+         call pp%query("reionization_T_zHI"       , T_zhi)
+         call pp%query("reionization_T_zHeII"     , T_zheii)
+         call amrex_parmparse_destroy(pp)
 
-         open(2, FILE="inputs_atomic")
-
-         read(2,*) var_name, eq_name, inhomo_reion
-         read(2,*)  var_name, eq_name, file_in
-         read(2,*) var_name,eq_name, uvb_density_A != 1.0
-         read(2,*) var_name,eq_name, uvb_density_B != 0.0
-         read(2,*) var_name,eq_name,zHI_flash!=-1
-         read(2,*) var_name,eq_name,zHeII_flash!=-1
-         read(2,*) var_name,eq_name,T_zHI!=2.00E+004
-         read(2,*) var_name,eq_name,T_zHeII!=1.50E+004
-
-         close(2)
-         if (.true.) then !parallel_ioprocessor()) then
+         if (amrex_pd_ioprocessor()) then
             print*, 'TABULATE_RATES: reionization parameters are:'
             print*, '    reionization_zHI_flash     = ', zhi_flash
             print*, '    reionization_zHeII_flash   = ', zheii_flash
@@ -136,7 +132,7 @@ module atomic_rates_module
          !   Hydrogen reionization
          if (zhi_flash .gt. 0.0) then
             if (inhomo_reion .gt. 0) then
-               if (.true.) print*, 'TABULATE_RATES: ignoring reionization_zHI, as nyx.inhomo_reion > 0'
+               if (amrex_pd_ioprocessor()) print*, 'TABULATE_RATES: ignoring reionization_zHI, as nyx.inhomo_reion > 0'
                flash_h = .false.
                inhomogeneous_on = .true.
             else
@@ -159,7 +155,7 @@ module atomic_rates_module
             flash_he = .false.
          endif
 
-         if (.true.) then
+         if (amrex_pd_ioprocessor()) then
             print*, 'TABULATE_RATES: reionization flags are set to:'
             print*, '    Hydrogen flash            = ', flash_h
             print*, '    Helium   flash            = ', flash_he
@@ -170,18 +166,18 @@ module atomic_rates_module
          ! Read in UVB rates from a file
          if (len(file_in) .gt. 0) then
             open(unit=11, file=file_in, status='old')
-            if (.true.) then
+            if (amrex_pd_ioprocessor()) then
                print*, 'TABULATE_RATES: UVB file is set in inputs ('//file_in//').'
             endif
          else
             open(unit=11, file='TREECOOL', status='old')
-            if (.true.) then
+            if (amrex_pd_ioprocessor()) then
                print*, 'TABULATE_RATES: UVB file is defaulted to "TREECOOL".'
             endif
          endif
 
 	 allocate(NCOOLFILE)
-	 allocate(this_z, ggh0, gghe0, gghep, eh0, ehe0, ehep)
+	 allocate(ggh0, gghe0, gghep, eh0, ehe0, ehep)
          NCOOLFILE = 0
          do
             read(11,*,end=10) tmp, tmp, tmp, tmp, tmp,  tmp, tmp
@@ -284,7 +280,7 @@ module atomic_rates_module
                endif
                BetaHe0(i) = 9.38d-22 * sqrt_t * dexp(-285335.4d0/t) * corr_term
                BetaHep(i) = (5.54d-17 * t**(-0.397d0) * dexp(-473638.0d0/t) + & 
-                             4.85d-22 * sqrt_t * dexp(-631515.0d0/t) )*corr_term
+                             4.95d-22 * sqrt_t * dexp(-631515.0d0/t) )*corr_term
 
                ! Recombination cooling rates
                RecHp(i)   = 2.851d-27 * sqrt_t * (5.914d0-0.5d0*dlog(t)+1.184d-2*t**(1.0d0/3.0d0))
@@ -300,9 +296,9 @@ module atomic_rates_module
                endif
 
                if (t/4.0d0 .le. 3.2d5) then
-                  Betaff4(i) = 1.426d-27 * sqrt_t * 4.0d0*(0.79464d0 + 0.1243d0*dlog10(t))
+                  Betaff4(i) = 1.426d-27 * sqrt_t * 4.0d0*(0.79464d0 + 0.1243d0*dlog10(t/4.0d0))
                else
-                  Betaff4(i) = 1.426d-27 * sqrt_t * 4.0d0*(2.13164d0 - 0.1240d0*dlog10(t))
+                  Betaff4(i) = 1.426d-27 * sqrt_t * 4.0d0*(2.13164d0 - 0.1240d0*dlog10(t/4.0d0))
                endif
                
                t = t*10.0d0**deltaT
@@ -315,11 +311,11 @@ module atomic_rates_module
 
       ! ****************************************************************************
 
-      attributes(host) subroutine fort_interp_to_this_z(z) bind(C, name='fort_interp_to_this_z')
+      subroutine fort_interp_to_this_z(z) bind(C, name='fort_interp_to_this_z')
 
       use vode_aux_module, only: z_vode
 
-      real(rt), value, intent(in) :: z
+      real(rt), intent(in) :: z
       real(rt) :: lopz, fact
       integer :: i, j
 

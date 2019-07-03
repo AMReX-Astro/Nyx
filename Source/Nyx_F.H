@@ -976,6 +976,7 @@ extern "C"
 
   AMREX_GPU_DEVICE int RhsFnReal(amrex::Real t, amrex::Real* u, amrex::Real* udot, amrex::Real* rpar, int neq);
   AMREX_GPU_DEVICE void fort_ode_eos_finalize(double* e_out, double* rpar, int neq);
+  void fort_update_eos(double dt, double* u, double* uout, double* rpar);
   void fort_ode_eos_setup(const amrex::Real& a,const amrex::Real& half_dt);
 
   AMREX_GPU_DEVICE void fort_compute_temp

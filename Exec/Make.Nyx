@@ -52,6 +52,10 @@ ifeq ($(NEUTRINO_PARTICLES), TRUE)
   DEFINES += -DNEUTRINO_PARTICLES
 endif
 
+ifeq ($(NEUTRINO_DARK_PARTICLES), TRUE)
+  DEFINES += -DNEUTRINO_DARK_PARTICLES
+endif
+
 ifeq ($(USE_HEATCOOL), TRUE)
   DEFINES += -DHEATCOOL
 endif
@@ -137,6 +141,9 @@ VPATH_LOCATIONS   += $(Blocs)
 #These are the directories in AMReX
 
 Pdirs   := Base AmrCore Amr Boundary Particle Extern/amrdata # F_Interfaces/Base
+ifeq ($(USE_SENSEI_INSITU),TRUE)
+    Pdirs += Extern/SENSEI
+endif
 Ppack	+= $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir)/Make.package)
 Plocs	+= $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir))
 

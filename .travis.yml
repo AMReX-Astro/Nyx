@@ -1,24 +1,40 @@
-language: generic
+dist: xenial
+
+language: python
 
 python:
-  - "3.6"
+  - "3.7-dev"
 
 before_install:
-  - sudo add-apt-repository -y ppa:deadsnakes/ppa
-  - sudo apt-get update
-  - sudo apt-get install -y mpich2 gfortran python3.6 python3.6-venv texlive texlive-latex-extra texlive-lang-cjk latexmk
+  - export PATH=$(echo $PATH | tr ':' "\n" | sed '/\/opt\/python/d' | tr "\n" ":" | sed "s|::|:|g")
+#  - pwd
+#  - cd ~/; git clone https://github.com/amrex-codes/amrex
+#  - cd ~/; git clone https://github.com/amrex-codes/regression_testing
+
+
+addons:
+   apt:
+      packages:
+      - g++
+      - gfortran
+      - pandoc
+      - doxygen
+      - libgmp-dev
+      - libmpfr-dev
+      - pandoc
+      - doxygen
+      - texlive
+      - texlive-latex-extra
+      - texlive-lang-cjk
+      - latexmk
+      - mpich
+      - libmpich-dev
 
 install:
-  - pyenv global 3.6
-  - pip install --user sphinx sphinx_rtd_theme breathe sphinxcontrib-bibtex nbsphinx numpydoc ipython
+  - pip install -r requirements.txt
 
 script: bash ./build_and_deploy.sh
 
 env:
   global:
   - COMMIT_AUTHOR_EMAIL: "jmsexton@lbl.gov"
-
-addons:
-  apt:
-    packages:
-      - doxygen

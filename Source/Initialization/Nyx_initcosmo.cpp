@@ -10,7 +10,6 @@ extern "C"
 #include <Nyx_F.H>
 #include <NyxParticleContainer.H>
 
-
 using namespace amrex;
 
 #ifdef GRAVITY
