@@ -2,6 +2,7 @@
 
 #include "NeutrinoParticleContainer.H"
 #include "NeutrinoParticles_F.H"
+#include "dm_F.H"
 
 using namespace amrex;
 
@@ -79,11 +80,11 @@ NeutrinoParticleContainer::AssignRelativisticDensity (Vector<std::unique_ptr<Mul
         return;
     }
     
-    PhysBCFunct cphysbc, fphysbc;
     int lo_bc[] = {BCType::int_dir, BCType::int_dir, BCType::int_dir}; // periodic boundaries
     int hi_bc[] = {BCType::int_dir, BCType::int_dir, BCType::int_dir};
     Vector<BCRec> bcs(1, BCRec(lo_bc, hi_bc));
     PCInterp mapper;
+    int rho_index = 0;
     
     Vector<std::unique_ptr<MultiFab> > tmp(finest_level+1);
     for (int lev = lev_min; lev <= finest_level; ++lev) {
@@ -96,15 +97,30 @@ NeutrinoParticleContainer::AssignRelativisticDensity (Vector<std::unique_ptr<Mul
     for (int lev = lev_min; lev <= finest_level; ++lev) {
         
         AssignRelativisticDensitySingleLevel(*mf[lev], lev, 1, 0);
-        
-        if (lev < finest_level) {
-            amrex::InterpFromCoarseLevel(*tmp[lev+1], 0.0, *mf[lev],
-                                         0, 0, ncomp,
-                                         m_gdb->Geom(lev),
-                                         m_gdb->Geom(lev+1),
-                                         cphysbc, fphysbc,
-                                         m_gdb->refRatio(lev), &mapper, bcs);
-        }
+
+	if (lev < finest_level) {
+	  PhysBCFunct<BndryFuncArray> cphysbc(this->m_gdb->Geom(lev), bcs,
+					      BndryFuncArray([](Real* data,
+								AMREX_ARLIM_P(lo), AMREX_ARLIM_P(hi),
+								const int* dom_lo, const int* dom_hi,
+								const Real* dx, const Real* grd_lo,
+								const Real* time, const int* bc){}));
+	  PhysBCFunct<BndryFuncArray> fphysbc(this->m_gdb->Geom(lev+1), bcs,
+					      BndryFuncArray([](Real* data,
+								AMREX_ARLIM_P(lo), AMREX_ARLIM_P(hi),
+								const int* dom_lo, const int* dom_hi,
+								const Real* dx, const Real* grd_lo,
+								const Real* time, const int* bc){}));
+
+	  amrex::InterpFromCoarseLevel(*tmp[lev+1], 0.0, *mf[lev],
+				       rho_index, rho_index, ncomp,
+				       this->m_gdb->Geom(lev),
+				       this->m_gdb->Geom(lev+1),
+				       cphysbc, 0, fphysbc, 0,
+				       this->m_gdb->refRatio(lev), &mapper,
+				       bcs, 0);
+
+	}
         
         if (lev > lev_min) {
             // Note - this will double count the mass on the coarse level in 
@@ -176,12 +192,17 @@ NeutrinoParticleContainer::AssignRelativisticDensitySingleLevel (MultiFab& mf_to
 #endif
     const Real      strttime    = amrex::second();
     const Geometry& gm          = Geom(lev);
-    const Real*     plo         = gm.ProbLo();
     const Real*     dx_particle = Geom(lev + particle_lvl_offset).CellSize();
-    const Real*     dx          = gm.CellSize();
 
-    if (gm.isAnyPeriodic() && ! gm.isAllPeriodic()) {
-      amrex::Error("AssignRelativisticDensitySingleLevel: problem must be periodic in no or all directions");
+    const auto dx               = Geom(lev).CellSize();
+    const auto dxi              = Geom(lev).InvCellSizeArray();
+    const auto plo              = Geom(lev).ProbLoArray();
+    const auto pdxi             = Geom(lev + particle_lvl_offset).InvCellSizeArray();
+
+    if (Geom(lev).isAnyPeriodic() && ! Geom(lev).isAllPeriodic()) {
+        amrex::Error(
+            "AssignCellDensitySingleLevel: problem must be periodic in no or all directions"
+            );
     }
     
     for (MFIter mfi(*mf_pointer); mfi.isValid(); ++mfi) {
@@ -198,6 +219,7 @@ NeutrinoParticleContainer::AssignRelativisticDensitySingleLevel (MultiFab& mf_to
         for (MyConstParIter pti(*this, lev); pti.isValid(); ++pti) {
             const auto& particles = pti.GetArrayOfStructs();
             int nstride = particles.dataShape().first;
+            const auto pstruct = particles().data();
             const long np = pti.numParticles();
             FArrayBox& fab = (*mf_pointer)[pti];
             Real* data_ptr;
@@ -210,48 +232,55 @@ NeutrinoParticleContainer::AssignRelativisticDensitySingleLevel (MultiFab& mf_to
             data_ptr = local_rho.dataPtr();
             lo = tile_box.loVect();
             hi = tile_box.hiVect();
+            auto rhoarr = local_rho.array();
 #else
             const Box& box = fab.box();
             data_ptr = fab.dataPtr();
             lo = box.loVect();
             hi = box.hiVect();
+            auto rhoarr = fab.array();
 #endif
 
-            if (dx == dx_particle) {
+            if (particle_lvl_offset == 0) {
                 if (m_relativistic) {
                     neutrino_deposit_relativistic_cic(particles.data(), nstride, np, ncomp, 
-                                                      data_ptr, lo, hi, plo, dx, m_csq);
+                                                      data_ptr, lo, hi, plo.data(), dx, m_csq);
                 } else {
-                    amrex_deposit_cic(particles.data(), nstride, np, ncomp, 
-                                      data_ptr, lo, hi, plo, dx);
+                AMREX_FOR_1D( np, i,
+                {
+                    amrex_deposit_cic(pstruct[i], ncomp, rhoarr, plo, dxi);
+                });
                 }
             } else {
                 if (m_relativistic) {
                     neutrino_deposit_particle_dx_relativistic_cic(particles.data(), nstride, np, ncomp,
-                                                                  data_ptr, lo, hi, plo, dx, dx_particle, m_csq);
+                                                                  data_ptr, lo, hi, plo.data(), dx, dx_particle, m_csq);
                 } else {
-                    amrex_deposit_particle_dx_cic(particles.data(), nstride, np, ncomp,
-                                                  data_ptr, lo, hi, plo, dx, dx_particle);
+                AMREX_FOR_1D( np, i,
+                {
+                    amrex_deposit_particle_dx_cic(pstruct[i], ncomp, rhoarr, plo, dxi, pdxi);
+                });
                 }
             }
                 
 #ifdef _OPENMP
-            amrex_atomic_accumulate_fab(BL_TO_FORTRAN_3D(local_rho), 
-                                        BL_TO_FORTRAN_3D(fab), ncomp);
+            fab.atomicAdd(local_rho, tile_box, tile_box, 0, 0, ncomp);
 #endif
 
         }
     }
-
-    mf_pointer->SumBoundary(gm.periodicity());
+    
+    mf_pointer->SumBoundary(Geom(lev).periodicity());
     
     // If ncomp > 1, first divide the momenta (component n) 
     // by the mass (component 0) in order to get velocities.
     // Be careful not to divide by zero.
-    for (int n = 1; n < ncomp; n++){
-      for (MFIter mfi(*mf_pointer); mfi.isValid(); ++mfi) {
-	(*mf_pointer)[mfi].protected_divide((*mf_pointer)[mfi],0,n,1);
-      }
+    for (int n = 1; n < ncomp; n++)
+    {
+        for (MFIter mfi(*mf_pointer); mfi.isValid(); ++mfi)
+        {
+            (*mf_pointer)[mfi].protected_divide((*mf_pointer)[mfi],0,n,1);
+        }
     }
 
     // Only multiply the first component by (1/vol) because this converts mass
@@ -264,9 +293,10 @@ NeutrinoParticleContainer::AssignRelativisticDensitySingleLevel (MultiFab& mf_to
     // If mf_to_be_filled is not defined on the particle_box_array, then we need
     // to copy here from mf_pointer into mf_to_be_filled. I believe that we don't
     // need any information in ghost cells so we don't copy those.
-    if (mf_pointer != &mf_to_be_filled) {
-      mf_to_be_filled.copy(*mf_pointer,0,0,ncomp);
-      delete mf_pointer;
+    if (mf_pointer != &mf_to_be_filled)
+    {
+        mf_to_be_filled.copy(*mf_pointer,0,0,ncomp);
+        delete mf_pointer;
     }
     
     if (m_verbose > 1) {
@@ -279,24 +309,37 @@ NeutrinoParticleContainer::AssignRelativisticDensitySingleLevel (MultiFab& mf_to
 }
 
 void
-NeutrinoParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
+NeutrinoParticleContainer::moveKick (amrex::MultiFab&       acceleration,
                                             int                    lev,
                                             amrex::Real            dt,
-                                            amrex::Real            a_old,
-                                            amrex::Real            a_half,
-                                            int                    where_width)
+                                            amrex::Real            a_new,
+				            amrex::Real            a_half)
+
 {
-    amrex::Error("We shouldnt actually call moveKickDrift for neutrinos");
+  if(m_relativistic)
+    amrex::Error("We shouldnt actually call moveKick for neutrinos");
+  else
+    {
+    amrex::Error("MoveKick not defined for neutrinos");
+    }
 }
 
 void
-NeutrinoParticleContainer::moveKick (MultiFab&       acceleration,
+NeutrinoParticleContainer::moveKickDrift (MultiFab&       acceleration,
                                        int             lev,
                                        Real            dt,
-                                       Real            a_new,
-                                       Real            a_half)
+                                       Real            a_old,
+					  Real            a_half,
+					  int where_width)
 {
-    amrex::Error("We shouldnt actually call moveKick for neutrinos");
+
+  if(m_relativistic)
+    amrex::Error("We shouldnt actually call moveKickDrift for neutrinos");
+  else
+    {
+      amrex::Error("MoveKickDrift not defined for neutrinos");
+    }
+
 }
 
 #endif

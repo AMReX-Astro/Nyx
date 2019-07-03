@@ -134,7 +134,10 @@ Nyx::writePlotFile (const std::string& dir,
             if (it->name() == "particle_count" ||
                 it->name() == "total_particle_count" ||
                 it->name() == "particle_mass_density" ||
-                it->name() == "total_density")
+                it->name() == "total_density" || 
+                it->name() == "particle_x_velocity" ||
+                it->name() == "particle_y_velocity" ||
+                it->name() == "particle_z_velocity" )
             {
                 if (Nyx::theDMPC())
                 {
@@ -153,7 +156,10 @@ Nyx::writePlotFile (const std::string& dir,
 #endif
 #ifdef NEUTRINO_PARTICLES
             } else if (it->name() == "neutrino_particle_count" ||
-                       it->name() == "neutrino_mass_density")
+                       it->name() == "neutrino_mass_density" ||
+		       it->name() == "neutrino_x_velocity" ||
+		       it->name() == "neutrino_y_velocity" ||
+		       it->name() == "neutrino_z_velocity" )
             {
                 if (Nyx::theNPC())
                 {
