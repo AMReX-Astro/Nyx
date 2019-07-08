@@ -664,14 +664,14 @@ Nyx::init_particles ()
             if (verbose)
             {
                 amrex::Print() << "\nInitializing NPC particles from meta file\""
-                               << binary_particle_file << "\" ...\n\n";
+                               << neutrino_particle_file << "\" ...\n\n";
             }
             //
             // The second argument is how many Reals we read into `m_data[]`
             // after reading in `m_pos[]` in each of the binary particle files.
             // Here we're reading in the particle mass and velocity.
             //
-            NPC->InitFromBinaryMetaFile(binary_particle_file, BL_SPACEDIM + 1);
+            NPC->InitFromBinaryMetaFile(neutrino_particle_file, BL_SPACEDIM + 1);
         }
         else
         {
