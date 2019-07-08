@@ -55,7 +55,7 @@ nyx_main (int argc, char* argv[])
 {
     amrex::Initialize(argc, argv);
     {
-      ////    amrex::Cuda::setLaunchRegion(false);
+      ////    amrex::Gpu::setLaunchRegion(false);
 
     // save the inputs file name for later
     if (argc > 1) {

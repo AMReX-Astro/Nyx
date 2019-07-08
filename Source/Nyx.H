@@ -604,9 +604,15 @@ public:
 #endif
 
 #ifdef NEUTRINO_PARTICLES
+  #ifdef NEUTRINO_DARK_PARTICLES
+    static DarkMatterParticleContainer* theNPC();
+    static DarkMatterParticleContainer* theVirtNPC();
+    static DarkMatterParticleContainer* theGhostNPC();
+  #else
     static NeutrinoParticleContainer* theNPC();
     static NeutrinoParticleContainer* theVirtNPC();
     static NeutrinoParticleContainer* theGhostNPC();
+  #endif
 #endif
 
     static int NUM_STATE;

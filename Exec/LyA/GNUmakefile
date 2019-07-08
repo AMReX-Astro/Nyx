@@ -10,7 +10,6 @@ TOP = ../..
 COMP    = gnu
 USE_MPI = FALSE
 USE_OMP = FALSE
-
 USE_HENSON = FALSE
 USE_ASCENT_INSITU=TRUE 
 ASCENT_HOME=/project/projectdirs/alpine/software/ascent/gnu/7.3.0/ascent-install/

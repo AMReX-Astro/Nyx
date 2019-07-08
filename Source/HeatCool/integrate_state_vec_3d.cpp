@@ -42,7 +42,7 @@ int Nyx::integrate_state_vec
   abstol = 1e-4;
 
   fort_ode_eos_setup(a,delta_time);
-  amrex::Cuda::setLaunchRegion(false);
+  amrex::Gpu::setLaunchRegion(false);
   //#ifdef _OPENMP
   //#pragma omp parallel if (Gpu::notInLaunchRegion())
   //#endif
@@ -158,7 +158,7 @@ int Nyx::integrate_state_grownvec
   abstol = 1e-4;
 
   fort_ode_eos_setup(a,delta_time);
-  amrex::Cuda::setLaunchRegion(false);
+  amrex::Gpu::setLaunchRegion(false);
   //#ifdef _OPENMP
   //#pragma omp parallel if (Gpu::notInLaunchRegion())
   //#endif

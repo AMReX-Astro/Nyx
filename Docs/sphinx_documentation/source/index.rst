@@ -13,10 +13,13 @@ Welcome to Nyx's documentation!
    NyxPreface
    NyxIntroduction
    NyxGettingStarted
-   NyxGravity
+   ManagingGridHierarchy_Chapter
    NyxEquations
    Particles
    NyxHeatCool
+   NyxGravity
+   InputsMultigrid 
+   NightlyTests
 
 .. toctree::
    :maxdepth: 1

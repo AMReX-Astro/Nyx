@@ -50,12 +50,12 @@ int Nyx::integrate_state_box
   abstol = 1e-4;
 
   fort_ode_eos_setup(a,delta_time);
-  //  amrex::Cuda::setLaunchRegion(true);
+  //  amrex::Gpu::setLaunchRegion(true);
   if(S_old.nGrow()>1)
   S_old.Subtract(S_old,S_old,Eint,Eden,1,S_old.nGrow());
   else
   S_old.Subtract(S_old,S_old,Eint,Eden,1,0);
-  //  amrex::Cuda::setLaunchRegion(false);
+  //  amrex::Gpu::setLaunchRegion(false);
 #ifdef _OPENMP
 #pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif
