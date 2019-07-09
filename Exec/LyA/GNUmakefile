@@ -11,8 +11,14 @@ COMP    = gnu
 USE_MPI = FALSE
 USE_OMP = FALSE
 USE_HENSON = FALSE
+
 USE_ASCENT_INSITU=TRUE 
 ASCENT_HOME=/project/projectdirs/alpine/software/ascent/gnu/7.3.0/ascent-install/
+include $(ASCENT_HOME)/share/ascent/ascent_config.mk
+ASCENT_DIR = /project/projectdirs/alpine/software/ascent/gnu/7.3.0/ascent-install/
+#CONDUIT_DIR = /project/projectdirs/alpine/software/ascent/gnu/7.3.0/ascent-install/
+USE_CONDUIT = TRUE
+USE_ASCENT = TRUE
 
 PROFILE       = TRUE
 TRACE_PROFILE = FALSE
