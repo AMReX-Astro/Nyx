@@ -1094,6 +1094,7 @@ Nyx::blueprint_check_point ()
       // this would need the mf from how we write plotfiles
     /*    for(int i=0;i<S_new.nComp();i++)
       varnames.push_back((desc_lst[i]).name(i));*/
+    /*
     varnames.push_back("Density");
     varnames.push_back("Xmom");
     varnames.push_back("Ymom");
@@ -1104,7 +1105,22 @@ Nyx::blueprint_check_point ()
       {
 	varnames.push_back("H");
 	varnames.push_back("He");
+      }*/
+
+    varnames.push_back("density");
+    varnames.push_back("xmom");
+    varnames.push_back("ymom");
+    varnames.push_back("zmom");
+    varnames.push_back("rho_E");
+    varnames.push_back("rho_e");
+    if(!use_const_species)
+      {
+	varnames.push_back("H");
+	varnames.push_back("He");
       }
+
+    amrex::Print()<<varnames.size()<<S_new.nComp()<<std::endl;
+    amrex::Print()<<particle_varnames.size()<<4<<std::endl;
 
     //    varnames.push_back("density");
     ///////////////////////////////////////////////////////////////////////////
@@ -1128,39 +1144,42 @@ Nyx::blueprint_check_point ()
     // view in VisIt. 
     // (For debugging and to demonstrate how to do this w/o Ascent)
     ///////////////////////////////////////////////////////////////////////////
-    WriteBlueprintFiles(bp_mesh,"bp_example_");
+    WriteBlueprintFiles(bp_mesh,"bp_mesh_");
+    WriteBlueprintFiles(bp_particles,"bp_particles_");
     
     ///////////////////////////////////////////////////////////////////
     // Render with Ascent
     ///////////////////////////////////////////////////////////////////
+
+    Node scenes;
+    Node actions;
     
+    for(int i=0;i<S_new.nComp();i++)
+      {
 
     // add a scene with a pseudocolor plot
-    Node scenes;
     scenes["s1/plots/p1/type"] = "pseudocolor";
-    scenes["s1/plots/p1/field"] = "Density";
+    scenes["s1/plots/p1/field"] = varnames[i];
     // Set the output file name (ascent will add ".png")
     scenes["s1/image_prefix"] = "ascent_render_mesh_";
 
 
     // setup actions
-    Node actions;
     Node &add_act = actions.append();
     add_act["action"] = "add_scenes";
     add_act["scenes"] = scenes;
     actions.append()["action"] = "execute";
     actions.append()["action"] = "reset";
-
-    Ascent ascent;
-    ascent.open();
     
-    ascent.publish(bp_mesh);
-    ascent.execute(actions);
-        
+    }  
+
+    for(int i=0;i<4;i++)
+      {
+
     // add a scene with a pseudocolor plot
     scenes.reset();
     scenes["s1/plots/p1/type"] = "pseudocolor";
-    scenes["s1/plots/p1/field"] = "mass";
+    scenes["s1/plots/p1/field"] = particle_varnames[i];
     // Set the output file name (ascent will add ".png")
     scenes["s1/image_prefix"] = "ascent_render_particle_";
 
@@ -1171,10 +1190,17 @@ Nyx::blueprint_check_point ()
     add_act2["scenes"] = scenes;
     actions.append()["action"] = "execute";
     actions.append()["action"] = "reset";
-    
+
+      }
+
+    Ascent ascent;
+    ascent.open();
+
+    ascent.publish(bp_mesh);
     ascent.publish(bp_particles);
     ascent.execute(actions);
     
     ascent.close();
+
 }
 #endif
