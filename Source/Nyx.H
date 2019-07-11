@@ -416,6 +416,7 @@ public:
                                       int ncycle);
 
     void strang_hydro(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
+    void strang_hydro_ghost_state(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
 #ifdef SDC
     void    sdc_hydro(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
 #endif
@@ -761,6 +762,7 @@ protected:
 
     static int nsteps_from_plotfile;
 
+    static int nghost_state;
     static int hydro_convert;
     static int allow_untagging;
     static int use_const_species;

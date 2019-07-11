@@ -301,10 +301,16 @@ Nyx::advance_hydro_plus_particles (Real time,
         { 
            get_level(lev).sdc_hydro(time, dt, a_old, a_new);
         } else { 
-           get_level(lev).strang_hydro(time, dt, a_old, a_new);
+	  if( nghost_state==NUM_GROW)
+	    get_level(lev).strang_hydro_ghost_state(time, dt, a_old, a_new);
+	  else
+	    get_level(lev).strang_hydro(time, dt, a_old, a_new);
         } 
 #else
-           get_level(lev).strang_hydro(time, dt, a_old, a_new);
+	  if( nghost_state==NUM_GROW)
+	    get_level(lev).strang_hydro_ghost_state(time, dt, a_old, a_new);
+	  else
+	    get_level(lev).strang_hydro(time, dt, a_old, a_new);
 #endif
     }
     BL_PROFILE_VAR_STOP(just_the_hydro);
