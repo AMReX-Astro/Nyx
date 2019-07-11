@@ -819,7 +819,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
 
 
         // Add the particle density to the gas density 
-        MultiFab::Add(S_new, *particle_mf[level], 0, Density, 1, S_new.nGrow());
+        MultiFab::Add(S_new, *particle_mf[level], 0, Density, 1, 1);
 
         if (init_sb_vels == 1)
         {
@@ -829,13 +829,13 @@ Nyx::init_santa_barbara (int init_sb_vels)
 	    }
 
             // Add the particle momenta to the gas momenta (initially zero)
-            MultiFab::Add(S_new, *particle_mf[level], 1, Xmom, BL_SPACEDIM, S_new.nGrow());
+            MultiFab::Add(S_new, *particle_mf[level], 1, Xmom, BL_SPACEDIM, 1);
         }
 
     } else {
 	amrex::Gpu::setLaunchRegion(true);
         MultiFab& S_new = get_new_data(State_Type);
-        FillCoarsePatch(S_new, 0, cur_time, State_Type, 0, S_new.nComp());
+        FillCoarsePatch(S_new, 0, cur_time, State_Type, 0, S_new.nGrow());
 
         MultiFab& D_new = get_new_data(DiagEOS_Type);
         FillCoarsePatch(D_new, 0, cur_time, DiagEOS_Type, 0, D_new.nComp());

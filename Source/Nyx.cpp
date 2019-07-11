@@ -183,6 +183,7 @@ int Nyx::do_forcing = -1;
 int Nyx::do_forcing =  0;
 #endif
 
+int Nyx::nghost_state       = 1;
 int Nyx::hydro_convert      = 0;
 int Nyx::allow_untagging    = 0;
 int Nyx::use_const_species  = 0;
@@ -509,6 +510,7 @@ Nyx::read_params ()
        amrex::Error("Nyx::you set inhomo_reion > 0 but forgot to set USE_HEATCOOL = TRUE");
 #endif
 
+    pp_nyx.query("nghost_state", nghost_state);
     pp_nyx.query("hydro_convert", hydro_convert);
     pp_nyx.query("allow_untagging", allow_untagging);
     pp_nyx.query("use_const_species", use_const_species);

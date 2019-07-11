@@ -228,7 +228,7 @@ Nyx::hydro_setup()
 
     store_in_checkpoint = true;
     desc_lst.addDescriptor(State_Type, IndexType::TheCellType(),
-                           StateDescriptor::Point, 1, NUM_STATE, interp,
+                           StateDescriptor::Point, nghost_state, NUM_STATE, interp,
                            state_data_extrap, store_in_checkpoint);
 
     // This has two components: Temperature and Ne
