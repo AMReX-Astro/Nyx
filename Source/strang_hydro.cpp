@@ -93,14 +93,10 @@ Nyx::strang_hydro (Real time,
     // Create FAB for extended grid values (including boundaries) and fill.
     MultiFab S_old_tmp(S_old.boxArray(), S_old.DistributionMap(), NUM_STATE, NUM_GROW);
     MultiFab D_old_tmp(D_old.boxArray(), D_old.DistributionMap(), D_old.nComp(), NUM_GROW);
-    if(finest_level==0) {
-      S_old_tmp.FillBoundary();
-      D_old_tmp.FillBoundary();
-    }
-    else {
-      FillPatch(*this, S_old_tmp, NUM_GROW, time, State_Type, 0, NUM_STATE);
-      FillPatch(*this, D_old_tmp, NUM_GROW, time, DiagEOS_Type, 0, D_old.nComp());
-    }
+
+    FillPatch(*this, S_old_tmp, NUM_GROW, time, State_Type, 0, NUM_STATE);
+    FillPatch(*this, D_old_tmp, NUM_GROW, time, DiagEOS_Type, 0, D_old.nComp());
+
     BL_PROFILE_VAR_STOP(old_tmp);
 
     std::unique_ptr<MultiFab> divu_cc;
