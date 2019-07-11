@@ -44,6 +44,15 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
       Elixir elix_divu_cc_small = divu_cc_small.elixir();
       const auto fab_divu_cc = divu_cc_small.array();
 
+      S_old[mfi].prefetchToDevice();
+      S_new[mfi].prefetchToDevice();
+      ext_src_old[mfi].prefetchToDevice();
+      hydro_src[mfi].prefetchToDevice();
+      divu_cc_small.prefetchToDevice();
+      grav[mfi].prefetchToDevice();
+
+      sum_state.prefetchToDevice();
+
 	AMREX_LAUNCH_DEVICE_LAMBDA(bx,tbx,
 	{
 	  ca_fort_update_state (
