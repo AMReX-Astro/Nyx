@@ -656,6 +656,9 @@ protected:
 #ifdef AGN
     std::string retrieveAGN();
 #endif
+#ifdef NEUTRINO_DARK_PARTICLES
+    std::string retrieveNPC();
+#endif
 
 #ifndef NO_HYDRO
     amrex::FluxRegister& get_flux_reg();

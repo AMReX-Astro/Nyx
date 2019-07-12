@@ -29,6 +29,7 @@ namespace
   // const std::string chk_particle_file("DM");
     const std::string dm_chk_particle_file("DM");
     const std::string agn_chk_particle_file("AGN");
+    const std::string npc_chk_particle_file("NPC");
 
     //
     // We want to call this routine when on exit to clean up particles.
@@ -938,6 +939,45 @@ Nyx::particle_post_restart (const std::string& restart_file, bool is_checkpoint)
         if (!agn_particle_output_file.empty())
         {
             APC->WriteAsciiFile(agn_particle_output_file);
+        }
+    }
+#endif
+
+#ifdef NEUTRINO_DARK_PARTICLES
+    {
+        BL_ASSERT(NPC == 0);
+        NPC = new DarkMatterParticleContainer(parent);
+        ActiveParticles.push_back(NPC);
+ 
+        if (parent->subCycle())
+        {
+          VirtNPC = new DarkMatterParticleContainer(parent);
+          VirtualParticles.push_back(VirtNPC);
+ 
+          GhostNPC = new DarkMatterParticleContainer(parent);
+          GhostParticles.push_back(GhostNPC);
+        }
+
+        //
+        // Make sure to call RemoveParticlesOnExit() on exit.
+        //
+        amrex::ExecOnFinalize(RemoveParticlesOnExit);
+        //
+        // 2 gives more stuff than 1.
+        //
+        NPC->SetVerbose(particle_verbose);
+        NPC->Restart(restart_file, npc_chk_particle_file, is_checkpoint);
+        //
+        // We want the ability to write the particles out to an ascii file.
+        //
+        ParmParse pp("particles");
+
+        std::string npc_particle_output_file;
+        pp.query("npc_particle_output_file", npc_particle_output_file);
+
+        if (!npc_particle_output_file.empty())
+        {
+            NPC->WriteAsciiFile(npc_particle_output_file);
         }
     }
 #endif

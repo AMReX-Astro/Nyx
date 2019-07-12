@@ -2484,6 +2484,22 @@ Nyx::CreateLevelDirectory (const std::string &dir)
     }
 #endif
 
+#ifdef NEUTRINO_DARK_MATTER
+    std::string npc(dir + "/" + Nyx::retrieveNPC());
+    if(ParallelDescriptor::IOProcessor()) {
+      if( ! amrex::UtilCreateDirectory(npc, 0755)) {
+        amrex::CreateDirectoryFailed(npc);
+      }
+    }
+
+    LevelDirectoryNames(dir, Nyx::retrieveNPC(), LevelDir, FullPath);
+    if(ParallelDescriptor::IOProcessor()) {
+      if( ! amrex::UtilCreateDirectory(FullPath, 0755)) {
+        amrex::CreateDirectoryFailed(FullPath);
+      }
+    }
+#endif
+
     if(parent->UsingPrecreateDirectories()) {
       if(Nyx::theDMPC()) {
         Nyx::theDMPC()->SetLevelDirectoriesCreated(true);
