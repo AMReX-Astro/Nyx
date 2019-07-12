@@ -103,7 +103,6 @@ Nyx::halo_find (Real dt)
    if (do_analysis || (reeber_int > 0 && nStep() % reeber_int == 0)) 
    {
 
-     {
 
        //       amrex::MultiFab reeberMF(simBA, simDM, 8, 0);
      //       amrex::MultiFab
@@ -119,14 +118,21 @@ Nyx::halo_find (Real dt)
        average_neutr_density;
        average_total_density;
        */
-       
+
+       amrex::Vector<std::unique_ptr<amrex::MultiFab>> state_levels;
        // Derive quantities and store in components 1... of MultiFAB
 
+       state_levels.resize(parent->finestLevel()+1);
+       //Write all levels to Vector
+       for (int lev = 0; lev <= parent->finestLevel(); lev++)
+	 {
+	   state_levels[lev].reset(&((get_level(lev)).get_new_data(State_Type)));
+	 }
+   
        Nyx::theDMPC()->AssignDensityAndVels(particle_mf);
 
        std::vector<Halo> reeber_halos;
        runReeberAnalysis(new_state, *(particle_mf[0]), Geom(), nStep(), do_analysis, reeber_halos);
-
 #else
 
    const auto& reeber_density_var_list = getReeberHaloDensityVars();
@@ -143,7 +149,6 @@ Nyx::halo_find (Real dt)
      // Before creating new AGN particles, accrete mass onto existing particles 
      halo_accrete(dt);
 
-     { // we have no sidecars, so do everything in situ
 
        BoxArray reeberBA;
        DistributionMapping reeberDM;
@@ -210,8 +215,8 @@ Nyx::halo_find (Real dt)
                              vertices[vert[2]][2]));
            reeber_halos_pos.push_back(iv);
            reeber_halos_mass.push_back(haloMass);
-         }
-
+	 }
+       
 #endif // ifdef REEBER
 
        amrex::Real    halo_mass;
@@ -352,7 +357,6 @@ Nyx::halo_find (Real dt)
        //       Nyx::theAPC()->writeAllAtLevel(level);
 
 #ifdef REEBER
-     } 
 
      }
 #endif // ifdef REEBER
