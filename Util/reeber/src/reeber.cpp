@@ -17,34 +17,39 @@ int Nyx::Zmom = -1;*/
    average_neutr_density;
    average_total_density;*/
 
-void Nyx::runReeberAnalysis(const amrex::MultiFab & new_state, amrex::MultiFab & particle_mf, const amrex::Geometry Geom, int nStep, bool do_analysis, std::vector<Halo> reeber_halos)
+void Nyx::runReeberAnalysis(Vector<MultiFab*>& new_state,
+			   Vector<std::unique_ptr<MultiFab> >& particle_mf, const amrex::Geometry Geom, int nStep, bool do_analysis, std::vector<Halo> reeber_halos)
 {
 
   if(verbose)
     amrex::Print()<<"Running Reeber anaylsis"<<std::endl;
-  for ( MFIter mfi(new_state, TilingIfNotGPU()); mfi.isValid(); ++mfi )
+  for (int lev = 0; lev <= parent->finestLevel(); lev++)
     {
+      for ( MFIter mfi(*(new_state[lev]), TilingIfNotGPU()); mfi.isValid(); ++mfi )
+	{
 
-      const Box& tbx = mfi.tilebox();
-      Array4<const Real> state = new_state.array(mfi);
-      Array4<Real>  particle = particle_mf.array(mfi);
-      const Dim3 lo = amrex::lbound(tbx);
-      const Dim3 hi = amrex::ubound(tbx);
-      int ncomp = 4;
+	  const Box& tbx = mfi.tilebox();
+	  Array4<const Real> state = new_state[lev]->array(mfi);
+	  Array4<Real>  particle = particle_mf[lev]->array(mfi);
+	  /*	  
+		  FArrayBox& fab_state = new_state[lev][mfi];
+		  FArrayBox& fab_particle = particle_mf[lev][mfi];*/
+	  const Dim3 lo = amrex::lbound(tbx);
+	  const Dim3 hi = amrex::ubound(tbx);
+	  int ncomp = 4;
 
-      for (int n = 0; n < ncomp; ++n) {
-	for (int z = lo.z; z <= hi.z; ++z) {
-	  for (int y = lo.y; y <= hi.y; ++y) {
-	            AMREX_PRAGMA_SIMD
-		      for (int x = lo.x; x <= hi.x; ++x) {
-			state(x,y,z,n);
-			particle(x,y,z,n);
-		      }
+	  for (int n = 0; n < ncomp; ++n) {
+	    for (int z = lo.z; z <= hi.z; ++z) {
+	      for (int y = lo.y; y <= hi.y; ++y) {
+		AMREX_PRAGMA_SIMD
+		  for (int x = lo.x; x <= hi.x; ++x) {
+		    state(x,y,z,n);
+		    particle(x,y,z,n);
+		  }
+	      }
+	    }
 	  }
 	}
-      }
-
-
     }
   return;
 }

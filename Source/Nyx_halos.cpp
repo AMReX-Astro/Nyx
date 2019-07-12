@@ -111,6 +111,9 @@ Nyx::halo_find (Real dt)
        int cnt = 1;
 
        Real cur_time = state[State_Type].curTime();
+
+       std::vector<Halo> reeber_halos;
+
        // global values updated when compute_average_density() called:
        /*
        average_gas_density;
@@ -118,21 +121,21 @@ Nyx::halo_find (Real dt)
        average_neutr_density;
        average_total_density;
        */
-
-       amrex::Vector<std::unique_ptr<amrex::MultiFab>> state_levels;
+       
+       amrex::Vector<amrex::MultiFab*> state_levels;
        // Derive quantities and store in components 1... of MultiFAB
 
        state_levels.resize(parent->finestLevel()+1);
        //Write all levels to Vector
        for (int lev = 0; lev <= parent->finestLevel(); lev++)
 	 {
-	   state_levels[lev].reset(&((get_level(lev)).get_new_data(State_Type)));
+	   state_levels[lev]=&((get_level(lev)).get_new_data(State_Type));
 	 }
-   
-       Nyx::theDMPC()->AssignDensityAndVels(particle_mf);
 
-       std::vector<Halo> reeber_halos;
-       runReeberAnalysis(new_state, *(particle_mf[0]), Geom(), nStep(), do_analysis, reeber_halos);
+       //This will fill all levels in particle_mf with lev_min=0
+       Nyx::theDMPC()->AssignDensity(particle_mf, 0, 4);
+
+       runReeberAnalysis(state_levels, particle_mf, Geom(), nStep(), do_analysis, reeber_halos);
 #else
 
    const auto& reeber_density_var_list = getReeberHaloDensityVars();
