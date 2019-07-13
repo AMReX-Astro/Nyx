@@ -1077,7 +1077,7 @@ Nyx::forcing_check_point (const std::string& dir)
 void
 Nyx::blueprint_check_point ()
 {
-    MultiFab& S_new = get_new_data(State_Type);
+     MultiFab& S_new = get_new_data(State_Type);
     //MultiFab S_new_tmp(S_new.boxArray(), S_new.DistributionMap(), 1, 0 NUM_GROW);
 
     Vector<std::string> particle_varnames;
@@ -1108,9 +1108,9 @@ Nyx::blueprint_check_point ()
       }*/
 
     varnames.push_back("density");
-    varnames.push_back("xmom");
-    varnames.push_back("ymom");
-    varnames.push_back("zmom");
+    varnames.push_back("Xmom");
+    varnames.push_back("Ymom");
+    varnames.push_back("Zmom");
     varnames.push_back("rho_E");
     varnames.push_back("rho_e");
     if(!use_const_species)
@@ -1170,7 +1170,14 @@ Nyx::blueprint_check_point ()
     add_act["scenes"] = scenes;
     actions.append()["action"] = "execute";
     actions.append()["action"] = "reset";
+        Ascent ascent;
+    ascent.open();
+
+    ascent.publish(bp_mesh);
+    ascent.publish(bp_particles);
+    ascent.execute(actions);
     
+    ascent.close();
     }  
 
     for(int i=0;i<4;i++)
@@ -1190,9 +1197,6 @@ Nyx::blueprint_check_point ()
     add_act2["scenes"] = scenes;
     actions.append()["action"] = "execute";
     actions.append()["action"] = "reset";
-
-      }
-
     Ascent ascent;
     ascent.open();
 
@@ -1201,6 +1205,16 @@ Nyx::blueprint_check_point ()
     ascent.execute(actions);
     
     ascent.close();
+      }
+
+    /*    Ascent ascent;
+    ascent.open();
+
+    ascent.publish(bp_mesh);
+    ascent.publish(bp_particles);
+    ascent.execute(actions);
+    
+    ascent.close();*/
 
 }
 #endif
