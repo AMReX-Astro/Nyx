@@ -150,12 +150,12 @@ amr.checkpoint_nfiles = 64
 fab.format          = NATIVE_32
 amr.plot_files_output = 1
 amr.plot_file       = plt
-amr.plot_int        = -1
+amr.plot_int        = 1
 amr.plot_nfiles     = 64
 nyx.plot_z_values   = 7.0 6.0 5.0 4.0 3.0 2.0
 
 amr.plot_vars        = density xmom ymom zmom rho_e Temp phi_grav
-amr.derive_plot_vars = particle_mass_density
+amr.derive_plot_vars = particle_mass_density particle_count
 
 # SENSEI in situ
 sensei.enabled = 0
