@@ -9,7 +9,8 @@ void
 Nyx::strang_first_step (Real time, Real dt, MultiFab& S_old, MultiFab& D_old)
 {
     BL_PROFILE("Nyx::strang_first_step()");
-
+    
+    Gpu::LaunchSafeGuard lsg(true);
     Real half_dt = 0.5*dt;
 
     const Real a = get_comoving_a(time);
@@ -29,6 +30,8 @@ Nyx::strang_first_step (Real time, Real dt, MultiFab& S_old, MultiFab& D_old)
     /////////////////////Consider adding ifdefs for whether CVODE is compiled in for these statements
     if(heat_cool_type == 3 || heat_cool_type==5 || heat_cool_type==7 || heat_cool_type==9)
       {
+	Gpu::streamSynchronize();
+	Gpu::LaunchSafeGuard lsg(false);
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
@@ -131,6 +134,7 @@ Nyx::strang_second_step (Real time, Real dt, MultiFab& S_new, MultiFab& D_new)
 {
     BL_PROFILE("Nyx::strang_second_step()");
 
+    Gpu::LaunchSafeGuard lsg(true);
     Real half_dt = 0.5*dt;
     int  min_iter = 100000;
     int  max_iter =      0;
@@ -161,6 +165,8 @@ Nyx::strang_second_step (Real time, Real dt, MultiFab& S_new, MultiFab& D_new)
     /////////////////////Consider adding ifdefs for whether CVODE is compiled in for these statements
     if(heat_cool_type == 3 || heat_cool_type==5 || heat_cool_type==7 || heat_cool_type==9)
       {
+	Gpu::streamSynchronize();
+	Gpu::LaunchSafeGuard lsg(false);
 #ifdef _OPENMP
 #pragma omp parallel private(min_iter_grid,max_iter_grid) reduction(min:min_iter) reduction(max:max_iter)
 #endif

@@ -263,8 +263,7 @@ Gravity::solve_for_old_phi (int               level,
                             int               fill_interior)
 {
     BL_PROFILE("Gravity::solve_for_old_phi()");
-    bool prev_region = Gpu::inLaunchRegion();
-    amrex::Gpu::setLaunchRegion(true);
+    amrex::Gpu::LaunchSafeGuard lsg(true);
 #ifdef CGRAV
     if (gravity_type == "StaticGrav")
         return;
@@ -291,7 +290,6 @@ Gravity::solve_for_old_phi (int               level,
     const Real time  = LevelData[level]->get_state_data(PhiGrav_Type).prevTime();
     solve_for_phi(level, Rhs, phi, grad_phi, time, fill_interior);
     amrex::Gpu::Device::streamSynchronize();
-    amrex::Gpu::setLaunchRegion(prev_region);
 
 }
 
@@ -303,8 +301,7 @@ Gravity::solve_for_new_phi (int               level,
                             int               ngrow_for_solve)
 {
     BL_PROFILE("Gravity::solve_for_new_phi()");
-    bool prev_region = Gpu::inLaunchRegion();
-    amrex::Gpu::setLaunchRegion(true);
+    amrex::Gpu::LaunchSafeGuard lsg(true);
 #ifdef CGRAV
     if (gravity_type == "StaticGrav")
         return;
@@ -332,7 +329,6 @@ Gravity::solve_for_new_phi (int               level,
     const Real time = LevelData[level]->get_state_data(PhiGrav_Type).curTime();
     solve_for_phi(level, Rhs, phi, grad_phi, time, fill_interior);
     amrex::Gpu::Device::streamSynchronize();
-    amrex::Gpu::setLaunchRegion(prev_region);
 }
 
 void
@@ -636,7 +632,6 @@ Gravity::multilevel_solve_for_new_phi (int level,
 			    amrex::GetVecOfVecOfPtrs(grad_phi_curr),
                             is_new, ngrow_for_solve, use_previous_phi_as_guess);
     amrex::Gpu::Device::streamSynchronize();
-    amrex::Gpu::setLaunchRegion(prev_region);
 }
 
 void
@@ -669,7 +664,6 @@ Gravity::multilevel_solve_for_old_phi (int level,
                             is_new, ngrow, use_previous_phi_as_guess);
 
     amrex::Gpu::Device::streamSynchronize();
-    amrex::Gpu::setLaunchRegion(prev_region);
 
 }
 
@@ -848,7 +842,6 @@ Gravity::actual_multilevel_solve (int                       level,
     for (int lev = finest_level; lev > level; lev--)
         average_fine_ec_onto_crse_ec(lev-1,is_new);
     amrex::Gpu::Device::streamSynchronize();
-    amrex::Gpu::setLaunchRegion(prev_region);
 }
 
 void
@@ -925,7 +918,6 @@ Gravity::get_old_grav_vector (int       level,
     AmrLevel* amrlev = &parent->getLevel(level);
     int ng = grav_vector.nGrow();
     AmrLevel::FillPatch(*amrlev,grav_vector,ng,time,Gravity_Type,0,BL_SPACEDIM);
-    amrex::Gpu::setLaunchRegion(prev_region);
 }
 
 void
@@ -1005,7 +997,6 @@ Gravity::get_new_grav_vector (int       level,
     AmrLevel* amrlev = &parent->getLevel(level) ;
     int ng = grav_vector.nGrow();
     AmrLevel::FillPatch(*amrlev,grav_vector,ng,time,Gravity_Type,0,BL_SPACEDIM);
-    amrex::Gpu::setLaunchRegion(prev_region);
 }
 
 void
@@ -1391,8 +1382,7 @@ Gravity::AddParticlesToRhs (int               level,
 {
     BL_PROFILE("Gravity::AddParticlesToRhs()");
 
-    bool prev_region = Gpu::inLaunchRegion();
-    amrex::Gpu::setLaunchRegion(true);
+    amrex::Gpu::LaunchSafeGuard lsg(true);
 
     // Use the same multifab for all particle types
     MultiFab particle_mf(grids[level], dmap[level], 1, ngrow);
@@ -1405,7 +1395,6 @@ Gravity::AddParticlesToRhs (int               level,
       }
 
     amrex::Gpu::Device::streamSynchronize();
-    amrex::Gpu::setLaunchRegion(prev_region);
 
 }
 
@@ -1414,8 +1403,7 @@ Gravity::AddParticlesToRhs(int base_level, int finest_level, int ngrow, const Ve
 {
     BL_PROFILE("Gravity::AddParticlesToRhsML()");
 
-    bool prev_region = Gpu::inLaunchRegion();
-    amrex::Gpu::setLaunchRegion(true);
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     const int num_levels = finest_level - base_level + 1;
     for (int i = 0; i < Nyx::theActiveParticles().size(); i++)
     {
@@ -1444,7 +1432,6 @@ Gravity::AddParticlesToRhs(int base_level, int finest_level, int ngrow, const Ve
         }
     }
     amrex::Gpu::Device::streamSynchronize();
-    amrex::Gpu::setLaunchRegion(prev_region);
 
 }
 
@@ -1455,8 +1442,7 @@ Gravity::AddVirtualParticlesToRhs (int               level,
 {
     BL_PROFILE("Gravity::AddVirtualParticlesToRhs()");
 
-    bool prev_region = Gpu::inLaunchRegion();
-    amrex::Gpu::setLaunchRegion(true);
+    amrex::Gpu::LaunchSafeGuard lsg(true);
 
     if (level <  parent->finestLevel())
     {
@@ -1472,15 +1458,13 @@ Gravity::AddVirtualParticlesToRhs (int               level,
     }
 
     amrex::Gpu::Device::streamSynchronize();
-    amrex::Gpu::setLaunchRegion(prev_region);
 }
 
 void
 Gravity::AddVirtualParticlesToRhs(int finest_level, const Vector<MultiFab*>& Rhs_particles)
 {
     BL_PROFILE("Gravity::AddVirtualParticlesToRhsML()");
-    bool prev_region = Gpu::inLaunchRegion();
-    amrex::Gpu::setLaunchRegion(true);
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     if (finest_level < parent->finestLevel())
     {
         // Should only need ghost cells for virtual particles if they're near
@@ -1495,7 +1479,6 @@ Gravity::AddVirtualParticlesToRhs(int finest_level, const Vector<MultiFab*>& Rhs
         }
     }
     amrex::Gpu::Device::streamSynchronize();
-    amrex::Gpu::setLaunchRegion(prev_region);
 }
 
 void
@@ -1504,8 +1487,7 @@ Gravity::AddGhostParticlesToRhs (int               level,
 {
     BL_PROFILE("Gravity::AddGhostParticlesToRhs()");
 
-    bool prev_region = Gpu::inLaunchRegion();
-    amrex::Gpu::setLaunchRegion(true);
+    amrex::Gpu::LaunchSafeGuard lsg(true);
 
     if (level > 0)
     {
@@ -1520,7 +1502,6 @@ Gravity::AddGhostParticlesToRhs (int               level,
         }
     }
     amrex::Gpu::Device::streamSynchronize();
-    amrex::Gpu::setLaunchRegion(prev_region);
 }
 
 void
@@ -1528,8 +1509,7 @@ Gravity::AddGhostParticlesToRhs(int level, const Vector<MultiFab*>& Rhs_particle
 {
     BL_PROFILE("Gravity::AddGhostParticlesToRhsML()");
 
-    bool prev_region = Gpu::inLaunchRegion();
-    amrex::Gpu::setLaunchRegion(true);
+    amrex::Gpu::LaunchSafeGuard lsg(true);
 
     if (level > 0)
     {
@@ -1550,7 +1530,6 @@ Gravity::AddGhostParticlesToRhs(int level, const Vector<MultiFab*>& Rhs_particle
         }
     }
     amrex::Gpu::Device::streamSynchronize();
-    amrex::Gpu::setLaunchRegion(prev_region);
 }
 
 void
@@ -1558,8 +1537,7 @@ Gravity::CorrectRhsUsingOffset(int level, MultiFab& Rhs)
 {
     BL_PROFILE("Gravity::CorrectRhsUsingOffset()");
 
-    bool prev_region = Gpu::inLaunchRegion();
-    amrex::Gpu::setLaunchRegion(true);
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     if (verbose)
         amrex::Print() << " ... subtracting average density from RHS in solve ... "
                        << mass_offset << '\n';
@@ -1591,7 +1569,6 @@ Gravity::CorrectRhsUsingOffset(int level, MultiFab& Rhs)
         Rhs.plus(-sum, 0, 1, 0);
     }
 
-    amrex::Gpu::setLaunchRegion(prev_region);
 }
 
 void

@@ -47,9 +47,7 @@ int Nyx::integrate_state_vec
   reltol = 1e-4;  /* Set the tolerances */
   abstol = 1e-4;
 
-  //  amrex::Gpu::setLaunchRegion(false);
-  bool prev_region=Gpu::inLaunchRegion();
-  amrex::Gpu::setLaunchRegion(true);
+  amrex::Gpu::LaunchSafeGuard lsg(true);
 
   int Temp_loc=Temp_comp;
   int Ne_loc=Ne_comp;
@@ -254,7 +252,6 @@ int Nyx::integrate_state_vec
 	}*/
 
     }
-  amrex::Gpu::setLaunchRegion(prev_region);
 
     return 0;
 }
@@ -282,8 +279,7 @@ int Nyx::integrate_state_grownvec
   int one_in = 1;
 
   fort_ode_eos_setup(a,delta_time);
-  bool prev_region=Gpu::inLaunchRegion();
-  amrex::Gpu::setLaunchRegion(true);
+  amrex::Gpu::LaunchSafeGuard lsg(true);
 
   //#ifdef _OPENMP
   //#pragma omp parallel if (Gpu::notInLaunchRegion())
@@ -481,7 +477,6 @@ int Nyx::integrate_state_grownvec
 	}*/
 
     }
-  amrex::Gpu::setLaunchRegion(prev_region);
 
     return 0;
 }

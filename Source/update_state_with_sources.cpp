@@ -24,6 +24,7 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
 
     if(hydro_convert)
     {
+      Gpu::LaunchSafeGuard lsg(true);
       int print_fortran_warnings_tmp=print_fortran_warnings;
       int do_grav_tmp=do_grav;
 
@@ -87,6 +88,8 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
     }
     else
       {
+	Gpu::synchronize();
+	Gpu::LaunchSafeGuard lsg(false);
 #ifdef _OPENMP
 #pragma omp parallel 
 #endif
