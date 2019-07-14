@@ -214,8 +214,7 @@ Nyx::advance_hydro_plus_particles (Real time,
     const Real cur_time  = state[State_Type].curTime();
     const Real a_old     = get_comoving_a(prev_time);
     const Real a_new     = get_comoving_a(cur_time);
-    bool prev_region=Gpu::inLaunchRegion();
-    ////    amrex::Gpu::setLaunchRegion(false);
+
 #ifdef GRAVITY
     //
     // We now do a multilevel solve for old Gravity. This goes to the 
@@ -248,8 +247,9 @@ Nyx::advance_hydro_plus_particles (Real time,
                                               use_previous_phi_as_guess);
     }
     BL_PROFILE_VAR_STOP(solve_for_old_phi);
-    prev_region = amrex::Gpu::inLaunchRegion();
-    amrex::Gpu::setLaunchRegion(true);
+
+    {
+      amrex::Gpu::LaunchSafeGuard lsg(true);
     //
     // Advance Particles
     //
@@ -286,10 +286,10 @@ Nyx::advance_hydro_plus_particles (Real time,
             }
         }
     }
-    amrex::Gpu::setLaunchRegion(prev_region);
+    }
 
 #endif
-    ////    amrex::Gpu::setLaunchRegion(true);
+
     //
     // Call the hydro advance at each level to be advanced
     //
@@ -315,8 +315,8 @@ Nyx::advance_hydro_plus_particles (Real time,
     }
     BL_PROFILE_VAR_STOP(just_the_hydro);
 
-    prev_region=Gpu::inLaunchRegion();
-    amrex::Gpu::setLaunchRegion(true);
+    {
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     //
     // We must reflux before doing the next gravity solve
     //
@@ -334,7 +334,7 @@ Nyx::advance_hydro_plus_particles (Real time,
         get_level(lev).average_down(  State_Type);
         get_level(lev).average_down(DiagEOS_Type);
     }
-    ////    amrex::Gpu::setLaunchRegion(false);
+
 #ifdef GRAVITY
 
     //
@@ -470,7 +470,7 @@ Nyx::advance_hydro_plus_particles (Real time,
         }
     }
 #endif
-    ////    amrex::Gpu::setLaunchRegion(true);
+
     //
     // Synchronize Energies
     //
@@ -484,8 +484,7 @@ Nyx::advance_hydro_plus_particles (Real time,
 	get_level(lev).reset_internal_energy(S_new,D_new,reset_e_src);
 	
     }
-
-    amrex::Gpu::setLaunchRegion(prev_region);
+    }
 
     BL_PROFILE_REGION_STOP("R::Nyx::advance_hydro_plus_particles");
 
@@ -586,8 +585,8 @@ Nyx::advance_hydro (Real time,
     MultiFab grav_vec_new(grids,dmap,BL_SPACEDIM,0);
     gravity->get_new_grav_vector(level,grav_vec_new,cur_time);
 
-    bool prev_region = Gpu::inLaunchRegion();
-    amrex::Gpu::setLaunchRegion(true);
+    {
+      amrex::Gpu::LaunchSafeGuard lsg(true);
     // Now do corrector part of source term update
 #ifdef _OPENMP
 #pragma omp parallel
@@ -609,8 +608,7 @@ Nyx::advance_hydro (Real time,
              BL_ARR4_TO_FORTRAN(fab_S_new), a_old, a_new, dt);
 				 });
     }
-
-    amrex::Gpu::setLaunchRegion(prev_region);
+    }
 
 #endif /*GRAVITY*/
 
