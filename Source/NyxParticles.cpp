@@ -429,11 +429,13 @@ Nyx::init_particles ()
                                << " random particles with initial seed: "
                                << particle_initrandom_iseed << "\n\n";
             }
-	    amrex::Gpu::setLaunchRegion(true);
+	    {
+	    amrex::Gpu::LaunchSafeGuard lsg(true);
             DMPC->InitRandom(particle_initrandom_count,
                              particle_initrandom_iseed, pdata,
                              particle_initrandom_serialize);
-	    amrex::Gpu::setLaunchRegion(false);
+	    }
+
         }
         else if (particle_init_type == "RandomPerBox")
         {
@@ -461,10 +463,10 @@ Nyx::init_particles ()
                 amrex::Print() << "\nInitializing DM with 1 random particle per cell " << "\n";
 
             int n_per_cell = 1;
-	    amrex::Gpu::setLaunchRegion(true);
+	    amrex::Gpu::LaunchSafeGuard lsg(true);
             DMPC->InitNRandomPerCell(n_per_cell, pdata);
 	    amrex::Gpu::Device::synchronize();
-	    amrex::Gpu::setLaunchRegion(false);
+
         }
         else if (particle_init_type == "AsciiFile")
         {
@@ -500,9 +502,8 @@ Nyx::init_particles ()
             // after reading in `m_pos[]`. Here we're reading in the particle
             // mass and velocity.
             //
-	    amrex::Gpu::setLaunchRegion(true);
+	    amrex::Gpu::LaunchSafeGuard lsg(true);
             DMPC->InitFromBinaryFile(binary_particle_file, BL_SPACEDIM + 1);
-	    amrex::Gpu::setLaunchRegion(false);
             if (init_with_sph_particles == 1)
                 SPHPC->InitFromBinaryFile(ascii_particle_file, BL_SPACEDIM + 1);
         }
@@ -705,7 +706,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
     Real a = old_a;
 
     BL_PROFILE_VAR("Nyx::init_santa_barbara()::part", CA_part);
-    amrex::Gpu::setLaunchRegion(true);
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     amrex::Print() << "... time and comoving a when data is initialized at level " 
                    << level << " " << cur_time << " " << a << '\n';
 
@@ -833,7 +834,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
         }
 
     } else {
-	amrex::Gpu::setLaunchRegion(true);
+
         MultiFab& S_new = get_new_data(State_Type);
         FillCoarsePatch(S_new, 0, cur_time, State_Type, 0, S_new.nGrow());
 
@@ -884,7 +885,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
             MultiFab::Multiply(S_new, S_new, Density, FirstSpec+i, 1, 0);
 	}
     }
-    amrex::Gpu::setLaunchRegion(false);
+
 }
 #endif
 #endif
@@ -920,11 +921,12 @@ Nyx::particle_post_restart (const std::string& restart_file, bool is_checkpoint)
         // 2 gives more stuff than 1.
         //
         DMPC->SetVerbose(particle_verbose);
-	bool prev_region = Gpu::inLaunchRegion();
-	amrex::Gpu::setLaunchRegion(true);
-        DMPC->Restart(restart_file, dm_chk_particle_file, is_checkpoint);
-	amrex::Gpu::Device::streamSynchronize();
-	amrex::Gpu::setLaunchRegion(prev_region);
+
+	{
+	  amrex::Gpu::LaunchSafeGuard(true);
+	  DMPC->Restart(restart_file, dm_chk_particle_file, is_checkpoint);
+	  amrex::Gpu::Device::streamSynchronize();
+	}
         //
         // We want the ability to write the particles out to an ascii file.
         //
@@ -1031,8 +1033,9 @@ Nyx::particle_redistribute (int lbase, bool my_init)
     BL_PROFILE("Nyx::particle_redistribute()");
     if (DMPC)
     {
-      bool prev_region = Gpu::inLaunchRegion();
-      amrex::Gpu::setLaunchRegion(true);
+
+      amrex::Gpu::LaunchSafeGuard lsg(true);
+
         //  
         // If we are calling with my_init = true, then we want to force the redistribute
         //    without checking whether the grids have changed.
@@ -1040,7 +1043,6 @@ Nyx::particle_redistribute (int lbase, bool my_init)
         if (my_init)
         {
             DMPC->Redistribute(lbase);
-	    amrex::Gpu::setLaunchRegion(prev_region);
             return;
         }
 
@@ -1130,7 +1132,6 @@ Nyx::particle_redistribute (int lbase, bool my_init)
             if (verbose)
                 amrex::Print() << "NOT calling redistribute because NOT changed " << '\n';
         }
-	    amrex::Gpu::setLaunchRegion(prev_region);
     }
 }
 
