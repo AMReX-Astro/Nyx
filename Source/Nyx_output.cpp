@@ -104,6 +104,7 @@ Nyx::writePlotFile (const std::string& dir,
                     ostream&           os,
                     VisMF::How         how)
 {
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     int i, n;
     //
     // The list of indices of State to write to plotfile.
@@ -327,6 +328,8 @@ Nyx::writePlotFile (const std::string& dir,
         }
     }
 
+    amrex::prefetchToHost(plotMF);
+
     //
     // Use the Full pathname when naming the MultiFab.
     //
@@ -358,6 +361,7 @@ Nyx::writePlotFile (const std::string& dir,
 void
 Nyx::writePlotFilePre (const std::string& dir, ostream& os)
 {
+    amrex::Gpu::LaunchSafeGuard lsg(true);
   if(Nyx::theDMPC()) {
     Nyx::theDMPC()->WritePlotFilePre();
   }
@@ -373,6 +377,7 @@ Nyx::writePlotFilePre (const std::string& dir, ostream& os)
 void
 Nyx::writePlotFilePost (const std::string& dir, ostream& os)
 {
+  amrex::Gpu::LaunchSafeGuard lsg(true);
   if(Nyx::theDMPC()) {
     Nyx::theDMPC()->WritePlotFilePost();
   }
@@ -629,6 +634,7 @@ void
 Nyx::particle_check_point (const std::string& dir)
 {
   BL_PROFILE("Nyx::particle_check_point");
+  amrex::Gpu::LaunchSafeGuard lsg(true);
   if (level == 0)
     {
       if (Nyx::theDMPC())
@@ -798,7 +804,26 @@ Nyx::checkPoint (const std::string& dir,
                  VisMF::How         how,
                  bool               dump_old_default)
 {
+
+  for (int s = 0; s < desc_lst.size(); ++s) {
+      if (dump_old && state[s].hasOldData()) {
+          MultiFab& old_MF = get_old_data(s);
+          amrex::prefetchToHost(old_MF);
+      }
+      MultiFab& new_MF = get_new_data(s);
+      amrex::prefetchToHost(new_MF);
+  }
+
   AmrLevel::checkPoint(dir, os, how, dump_old);
+
+  for (int s = 0; s < desc_lst.size(); ++s) {
+      if (dump_old && state[s].hasOldData()) {
+          MultiFab& old_MF = get_old_data(s);
+          amrex::prefetchToDevice(old_MF);
+      }
+      MultiFab& new_MF = get_new_data(s);
+      amrex::prefetchToDevice(new_MF);
+  }
 
   particle_check_point(dir);
 
