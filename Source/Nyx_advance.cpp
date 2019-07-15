@@ -408,6 +408,10 @@ Nyx::advance_hydro_plus_particles (Real time,
     for (MFIter mfi(S_new, Gpu::notInLaunchRegion()); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
+	grav_vec_old[mfi].prefetchToDevice();
+	grav_vec_new[mfi].prefetchToDevice();
+	S_old[mfi].prefetchToDevice();
+	S_new[mfi].prefetchToDevice();
 	const auto fab_grav_vec_old = grav_vec_old.array(mfi);
 	const auto fab_grav_vec_new = grav_vec_new.array(mfi);
 	const auto fab_S_old = S_old.array(mfi);
