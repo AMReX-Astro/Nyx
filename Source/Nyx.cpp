@@ -2332,12 +2332,21 @@ Nyx::derive (const std::string& name,
              int                ngrow)
 {
     BL_PROFILE("Nyx::derive()");
+
+    amrex::Gpu::LaunchSafeGuard lsg(true);
+
     if (name == "Rank")
     {
 	std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids, dmap, 1, 0));
         for (MFIter mfi(*derive_dat); mfi.isValid(); ++mfi)
         {
-           (*derive_dat)[mfi].setVal(ParallelDescriptor::MyProc());
+	  const auto fab_derive_dat=derive_dat->array(mfi);
+        const Box& bx = mfi.tilebox();
+	Real my_proc = ParallelDescriptor::MyProc();
+	AMREX_HOST_DEVICE_FOR_3D ( bx, i, j, k,
+				   {
+				     fab_derive_dat(i,j,k,1)=my_proc;
+				   });
         }
         return derive_dat;
     } else {
