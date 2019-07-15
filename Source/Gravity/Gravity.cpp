@@ -610,6 +610,7 @@ Gravity::multilevel_solve_for_new_phi (int level,
 {
     BL_PROFILE("Gravity::multilevel_solve_for_new_phi()");
 
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     if (verbose)
         amrex::Print() << "Gravity ... multilevel solve for new phi at base level " << level
                        << " to finest level " << finest_level << '\n';
@@ -624,14 +625,10 @@ Gravity::multilevel_solve_for_new_phi (int level,
         }
    }
 
-    bool prev_region = Gpu::inLaunchRegion();
-    amrex::Gpu::Device::streamSynchronize();
-    amrex::Gpu::setLaunchRegion(true);
     int is_new = 1;
     actual_multilevel_solve(level, finest_level, 
 			    amrex::GetVecOfVecOfPtrs(grad_phi_curr),
                             is_new, ngrow_for_solve, use_previous_phi_as_guess);
-    amrex::Gpu::Device::streamSynchronize();
 }
 
 void
@@ -641,6 +638,9 @@ Gravity::multilevel_solve_for_old_phi (int level,
                                        int use_previous_phi_as_guess)
 {
     BL_PROFILE("Gravity::multilevel_solve_for_old_phi()");
+
+    amrex::Gpu::LaunchSafeGuard lsg(true);
+
     if (verbose)
         amrex::Print() << "Gravity ... multilevel solve for old phi at base level " << level
                        << " to finest level " << finest_level << '\n';
@@ -654,16 +654,11 @@ Gravity::multilevel_solve_for_old_phi (int level,
             grad_phi_prev[lev][n].reset(new MultiFab(eba, dmap[lev], 1, 1));
         }
     }
-    bool prev_region = Gpu::inLaunchRegion();
-    amrex::Gpu::Device::streamSynchronize();
-    amrex::Gpu::setLaunchRegion(true);
 
     int is_new  = 0;
     actual_multilevel_solve(level, finest_level,
 			    amrex::GetVecOfVecOfPtrs(grad_phi_prev),
                             is_new, ngrow, use_previous_phi_as_guess);
-
-    amrex::Gpu::Device::streamSynchronize();
 
 }
 
@@ -677,10 +672,9 @@ Gravity::actual_multilevel_solve (int                       level,
 {
     BL_PROFILE("Gravity::actual_multilevel_solve()");
 
+    amrex::Gpu::LaunchSafeGuard lsg(true);
+
     const int num_levels = finest_level - level + 1;
-    bool prev_region = Gpu::inLaunchRegion();
-    amrex::Gpu::Device::streamSynchronize();
-    amrex::Gpu::setLaunchRegion(true);
 
     Vector<MultiFab*> phi_p(num_levels);
     Vector<std::unique_ptr<MultiFab> > Rhs_p(num_levels);
@@ -832,16 +826,14 @@ Gravity::actual_multilevel_solve (int                       level,
                                             grad_phi[amrlev][1],
                                             grad_phi[amrlev][2])});
     }
-    //    amrex::Gpu::Device::streamSynchronize();
-    //    amrex::Gpu::setLaunchRegion(false);
+
     solve_with_MLMG(level, finest_level, phi_p, amrex::GetVecOfConstPtrs(Rhs_p),
                     grad_phi_aa, crse_bcdata, rel_eps, abs_eps);
-    //    amrex::Gpu::setLaunchRegion(true);
 
     // Average grad_phi from fine to coarse level
     for (int lev = finest_level; lev > level; lev--)
         average_fine_ec_onto_crse_ec(lev-1,is_new);
-    amrex::Gpu::Device::streamSynchronize();
+
 }
 
 void
@@ -851,8 +843,7 @@ Gravity::get_old_grav_vector (int       level,
 {
     BL_PROFILE("Gravity::get_old_grav_vector()");
 
-    bool prev_region=Gpu::inLaunchRegion();
-    amrex::Gpu::setLaunchRegion(true);
+    amrex::Gpu::LaunchSafeGuard lsg(true);
 
     MultiFab& G_old = LevelData[level]->get_old_data(Gravity_Type);
 
@@ -879,6 +870,11 @@ Gravity::get_old_grav_vector (int       level,
     }
     else
     {
+
+        // Has BL_PROC_CALL
+        amrex::Gpu::Device::synchronize();
+        amrex::Gpu::LaunchSafeGuard lsg(false);
+
         Vector<std::unique_ptr<MultiFab> > crse_grad_phi(BL_SPACEDIM);
         get_crse_grad_phi(level, crse_grad_phi, time);
         fill_ec_grow(level, amrex::GetVecOfPtrs(grad_phi_prev[level]),
@@ -927,8 +923,8 @@ Gravity::get_new_grav_vector (int       level,
 {
     BL_PROFILE("Gravity::get_new_grav_vector()");
 
-    bool prev_region=Gpu::inLaunchRegion();
-    amrex::Gpu::setLaunchRegion(true);
+    amrex::Gpu::LaunchSafeGuard lsg(true);
+
 #ifdef CGRAV
     if (gravity_type == "PoissonGrav" || gravity_type == "CompositeGrav")
 #else
@@ -1003,6 +999,9 @@ void
 Gravity::add_to_fluxes(int level, int iteration, int ncycle)
 {
     BL_PROFILE("Gravity::add_to_fluxes()");
+
+    amrex::Gpu::LaunchSafeGuard lsg(true);
+
     const int       finest_level      = parent->finestLevel();
     FluxRegister*   phi_fine          = (level<finest_level ? phi_flux_reg[level+1].get() : nullptr);
     FluxRegister*   phi_current       = (level>0 ? phi_flux_reg[level].get() : nullptr);
@@ -1057,6 +1056,7 @@ void
 Gravity::average_fine_ec_onto_crse_ec(int level, int is_new)
 {
     BL_PROFILE("Gravity::average_fine_ec_to_crse_ec()");
+
     //
     // NOTE: this is called with level == the coarser of the two levels involved.
     //
@@ -1276,6 +1276,9 @@ void
 Gravity::set_mass_offset (Real time)
 {
     BL_PROFILE("Gravity::set_mass_offset()");
+
+    amrex::Gpu::LaunchSafeGuard lsg(true);
+
     Real old_mass_offset = 0;
 
     int flev = parent->finestLevel();
@@ -1332,6 +1335,10 @@ Gravity::set_dirichlet_bcs (int       level,
                             MultiFab* phi)
 {
     BL_PROFILE("Gravity::set_dirichlet_bcs()");
+
+    amrex::Gpu::Device::synchronize();
+    amrex::Gpu::LaunchSafeGuard lsg(false);
+
     const Real* dx        = parent->Geom(level).CellSize();
     const int*  domain_lo = parent->Geom(level).Domain().loVect();
     const int*  domain_hi = parent->Geom(level).Domain().hiVect();
@@ -1357,6 +1364,10 @@ Gravity::make_prescribed_grav (int       level,
                                int       addToExisting)
 {
     BL_PROFILE("Gravity::make_prescribed_grav()");
+
+    amrex::Gpu::Device::synchronize();
+    amrex::Gpu::LaunchSafeGuard lsg(false);
+
     const Geometry& geom = parent->Geom(level);
     const Real*     dx   = geom.CellSize();
 
