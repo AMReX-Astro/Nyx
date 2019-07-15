@@ -780,8 +780,7 @@ Nyx::init (AmrLevel& old)
 {
     BL_PROFILE("Nyx::init(old)");
 
-    bool prev_region=Gpu::inLaunchRegion();
-    amrex::Gpu::setLaunchRegion(true);
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     Nyx* old_level = (Nyx*) &old;
     //
     // Create new grid data by fillpatching from old.
@@ -837,7 +836,7 @@ Nyx::init (AmrLevel& old)
 #endif
 
     amrex::Gpu::Device::streamSynchronize();
-    amrex::Gpu::setLaunchRegion(prev_region);
+
 }
 
 //
@@ -944,8 +943,7 @@ Nyx::est_time_step (Real dt_old)
 	  int UMY_loc=Ymom;
 	  int UMZ_loc=Zmom;
 
-	  bool prev_region=Gpu::inLaunchRegion();
-	  amrex::Gpu::setLaunchRegion(true);
+	  amrex::Gpu::LaunchSafeGuard lsg(true);
 	  dt = amrex::ReduceMin(stateMF, 0,
 				[=] AMREX_GPU_HOST_DEVICE (Box const& bx, FArrayBox const& statefab) noexcept -> Real
 					    {
@@ -993,7 +991,7 @@ Nyx::est_time_step (Real dt_old)
 					    });
 
           est_dt = std::min(est_dt, dt);
-	  amrex::Gpu::setLaunchRegion(prev_region);
+
 	}
 
         // If in comoving coordinates, then scale dt (based on u and c) by a
@@ -1384,8 +1382,7 @@ Nyx::post_timestep (int iteration)
 {
     BL_PROFILE("Nyx::post_timestep()");
 
-    bool prev_region=Gpu::inLaunchRegion();
-    amrex::Gpu::setLaunchRegion(true);
+    amrex::Gpu::LaunchSafeGuard lsg(true);
 
     //
     // Integration cycle on fine level grids is complete
@@ -1592,7 +1589,6 @@ Nyx::post_timestep (int iteration)
 #endif
 
     amrex::Gpu::Device::streamSynchronize();
-    amrex::Gpu::setLaunchRegion(prev_region);
 
 }
 
@@ -1874,13 +1870,11 @@ Nyx::post_regrid (int lbase,
      fort_set_finest_level(&new_finest);
 #endif
 #endif
-    bool prev_region = Gpu::inLaunchRegion();
-    amrex::Gpu::setLaunchRegion(true);
     if (level == lbase) {
+        amrex::Gpu::LaunchSafeGuard lsg(true);
         particle_redistribute(lbase, false);
     }
     amrex::Gpu::Device::streamSynchronize();
-    amrex::Gpu::setLaunchRegion(prev_region);
 
 #ifdef GRAVITY
 
@@ -1929,8 +1923,7 @@ Nyx::post_init (Real stop_time)
         parent->setLevelSteps(0,nsteps_from_plotfile);
     }
 
-    bool prev_region=Gpu::inLaunchRegion();
-    Gpu::setLaunchRegion(true);
+    Gpu::LaunchSafeGuard lsg(true);
     //
     // Average data down from finer levels
     // so that conserved data is consistent between levels.
@@ -1994,7 +1987,7 @@ Nyx::post_init (Real stop_time)
 #endif
 
     write_info();
-    Gpu::setLaunchRegion(prev_region);
+
 }
 
 int
@@ -2380,8 +2373,7 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new, MultiFab& reset_e_
     const Real  cur_time = state[State_Type].curTime();
     Real        a        = get_comoving_a(cur_time);
 
-    bool prev_region=Gpu::inLaunchRegion();
-    amrex::Gpu::setLaunchRegion(true);
+    amrex::Gpu::LaunchSafeGuard lsg(true);
 
 #ifdef _OPENMP
 #pragma omp parallel
@@ -2402,7 +2394,6 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new, MultiFab& reset_e_
              &print_warn, &a);
 	  });
     }
-    amrex::Gpu::setLaunchRegion(prev_region);
 
 }
 
@@ -2415,8 +2406,7 @@ Nyx::reset_internal_energy_nostore (MultiFab& S_new, MultiFab& D_new)
     const Real  cur_time = state[State_Type].curTime();
     Real        a        = get_comoving_a(cur_time);
 
-    bool prev_region=Gpu::inLaunchRegion();
-    amrex::Gpu::setLaunchRegion(true);
+    amrex::Gpu::LaunchSafeGuard lsg(true);
 
 #ifdef _OPENMP
 #pragma omp parallel
@@ -2435,7 +2425,6 @@ Nyx::reset_internal_energy_nostore (MultiFab& S_new, MultiFab& D_new)
              print_warn, a);
 	  });
     }
-    amrex::Gpu::setLaunchRegion(prev_region);
 
 }
 #endif
@@ -2457,8 +2446,7 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
     }
 #endif
 
-    bool prev_region = Gpu::inLaunchRegion();
-    amrex::Gpu::setLaunchRegion(true);
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     if (heat_cool_type == 7) {
 #ifdef _OPENMP
 #pragma omp parallel
@@ -2532,7 +2520,6 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
                         << " at (i,j,k) " << imax << " " << jmax << " " << kmax << std::endl;
             }
     }
-    amrex::Gpu::setLaunchRegion(prev_region);
 
 }
 #endif
@@ -2542,8 +2529,8 @@ void
 Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_meanrho)
 {
     BL_PROFILE("Nyx::compute_rho_temp()");
-    bool prev_region=Gpu::inLaunchRegion();
-    amrex::Gpu::setLaunchRegion(true);
+
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     {
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
@@ -2641,7 +2628,7 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
        T_meanrho = pow(10.0, T_meanrho);
     }
     }
-    amrex::Gpu::setLaunchRegion(prev_region);
+
 }
 #endif
 
@@ -2653,8 +2640,7 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
                             Real& igm_mass_frac,  Real& igm_vol_frac)
 {
     BL_PROFILE("Nyx::compute_gas_fractions()");
-    bool prev_region=Gpu::inLaunchRegion();
-    amrex::Gpu::setLaunchRegion(true);
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     {
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
@@ -2777,7 +2763,7 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
     igm_mass_frac  = sums[4] / sums[6];
     igm_vol_frac   = sums[5] / sums[7];
     }
-    amrex::Gpu::setLaunchRegion(prev_region);
+
 }
 #endif
 
