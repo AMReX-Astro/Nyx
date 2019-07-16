@@ -43,9 +43,6 @@ int Nyx::integrate_state_cell
   reltol = 1e-4;  /* Set the tolerances */
   abstol = 1e-4;
 
-  int Temp=Temp_comp;
-  int Ne=Ne_comp;
-
   #ifdef _OPENMP
   #pragma omp parallel if (Gpu::notInLaunchRegion())
   #endif
@@ -104,8 +101,8 @@ int Nyx::integrate_state_cell
 	      N_VConst(state(i,j,k,Eint)/state(i,j,k,Density),u);
 	      state(i,j,k,Eint)  -= state(i,j,k,Density) * (dptr[0]);
 	      state(i,j,k,Eden)  -= state(i,j,k,Density) * (dptr[0]);
-	      rparh[0]= diag_eos(i,j,k,Temp);   //rpar(1)=T_vode
-	      rparh[1]= diag_eos(i,j,k,Ne);//    rpar(2)=ne_vode
+	      rparh[0]= diag_eos(i,j,k,Temp_comp);   //rpar(1)=T_vode
+	      rparh[1]= diag_eos(i,j,k,Ne_comp);//    rpar(2)=ne_vode
 	      rparh[2]= state(i,j,k,Density); //    rpar(3)=rho_vode
 	      rparh[3]=1/a-1;    //    rpar(4)=z_vode
 	      flag = CVodeReInit(cvode_mem, t, u);
@@ -119,8 +116,8 @@ int Nyx::integrate_state_cell
 					 {
 					   fort_ode_eos_finalize(&(dptr[0]), &(rparh[0]), 1);
 					 });
-	      diag_eos(i,j,k,Temp)=rparh[0];   //rpar(1)=T_vode
-	      diag_eos(i,j,k,Ne)=rparh[1];//    rpar(2)=ne_vode
+	      diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
+	      diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
 	      
 	      state(i,j,k,Eint)  += state(i,j,k,Density) * (dptr[0]);
 	      state(i,j,k,Eden)  += state(i,j,k,Density) * (dptr[0]);
@@ -157,9 +154,6 @@ int Nyx::integrate_state_growncell
 
   reltol = 1e-4;  /* Set the tolerances */
   abstol = 1e-4;
-
-  int Temp=Temp_comp;
-  int Ne=Ne_comp;
 
   fort_ode_eos_setup(a,delta_time);
   amrex::Gpu::setLaunchRegion(false);
@@ -223,8 +217,8 @@ int Nyx::integrate_state_growncell
 	      N_VConst(state(i,j,k,Eint)/state(i,j,k,Density),u);
 	      state(i,j,k,Eint)  -= state(i,j,k,Density) * (dptr[0]);
 	      state(i,j,k,Eden)  -= state(i,j,k,Density) * (dptr[0]);
-	      rparh[0]= diag_eos(i,j,k,Temp);   //rpar(1)=T_vode
-	      rparh[1]= diag_eos(i,j,k,Ne);//    rpar(2)=ne_vode
+	      rparh[0]= diag_eos(i,j,k,Temp_comp);   //rpar(1)=T_vode
+	      rparh[1]= diag_eos(i,j,k,Ne_comp);//    rpar(2)=ne_vode
 	      rparh[2]= state(i,j,k,Density); //    rpar(3)=rho_vode
 	      rparh[3]=1/a-1;    //    rpar(4)=z_vode
 	      flag = CVodeReInit(cvode_mem, t, u);
@@ -238,8 +232,8 @@ int Nyx::integrate_state_growncell
 					 {
 					   fort_ode_eos_finalize(&(dptr[0]), &(rparh[0]), 1);
 					 });
-	      diag_eos(i,j,k,Temp)=rparh[0];   //rpar(1)=T_vode
-	      diag_eos(i,j,k,Ne)=rparh[1];//    rpar(2)=ne_vode
+	      diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
+	      diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
 	      
 	      state(i,j,k,Eint)  += state(i,j,k,Density) * (dptr[0]);
 	      state(i,j,k,Eden)  += state(i,j,k,Density) * (dptr[0]);

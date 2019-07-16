@@ -49,8 +49,6 @@ int Nyx::integrate_state_vec
 
   amrex::Gpu::LaunchSafeGuard lsg(true);
 
-  int Temp=Temp_comp;
-  int Ne=Ne_comp;
   int one_in = 1;
   
   fort_ode_eos_setup(a,delta_time);
@@ -72,8 +70,6 @@ int Nyx::integrate_state_vec
       //Array4<Real> const& diag_eos = D_old.array(mfi);
       const auto len = amrex::length(tbx);  // length of box
       const auto lo  = amrex::lbound(tbx);  // lower bound of box
-      const auto state = (S_old[mfi]).view(lo);  // a view starting from lo
-      const auto diag_eos = (D_old[mfi]).view(lo);  // a view starting from lo
 
       Array4<Real> const& state4 = S_old.array(mfi);
       Array4<Real> const& diag_eos4 = D_old.array(mfi);
@@ -157,8 +153,8 @@ int Nyx::integrate_state_vec
 				  int idx = i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
 				  dptr[idx]=state4(i,j,k,Eint)/state4(i,j,k,Density);
 				  eptr[idx]=state4(i,j,k,Eint)/state4(i,j,k,Density);
-				  rparh[4*idx+0]= diag_eos4(i,j,k,Temp);   //rpar(1)=T_vode
-				  rparh[4*idx+1]= diag_eos4(i,j,k,Ne);//    rpar(2)=ne_vode
+				  rparh[4*idx+0]= diag_eos4(i,j,k,Temp_comp);   //rpar(1)=T_vode
+				  rparh[4*idx+1]= diag_eos4(i,j,k,Ne_comp);//    rpar(2)=ne_vode
 				  rparh[4*idx+2]= state4(i,j,k,Density); //    rpar(3)=rho_vode
 				  rparh[4*idx+3]=1/a-1;    //    rpar(4)=z_vode
 				  //				}
@@ -215,8 +211,8 @@ int Nyx::integrate_state_vec
 				  int  idx= i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
 				//				for (int i= 0;i < neq; ++i) {
 				  fort_ode_eos_finalize(&(dptr[idx*loop]), &(rparh[4*idx*loop]), one_in);
-				  diag_eos4(i,j,k,Temp)=rparh[4*idx*loop+0];   //rpar(1)=T_vode
-				  diag_eos4(i,j,k,Ne)=rparh[4*idx*loop+1];//    rpar(2)=ne_vode
+				  diag_eos4(i,j,k,Temp_comp)=rparh[4*idx*loop+0];   //rpar(1)=T_vode
+				  diag_eos4(i,j,k,Ne_comp)=rparh[4*idx*loop+1];//    rpar(2)=ne_vode
 				
 				  state4(i,j,k,Eint)  += state4(i,j,k,Density) * (dptr[idx*loop]-eptr[idx]);
 				  state4(i,j,k,Eden)  += state4(i,j,k,Density) * (dptr[idx*loop]-eptr[idx]);
@@ -268,8 +264,6 @@ int Nyx::integrate_state_grownvec
   reltol = 1e-4;  /* Set the tolerances */
   abstol = 1e-4;
 
-  int Temp=Temp_comp;
-  int Ne=Ne_comp;
   int one_in = 1;
 
   fort_ode_eos_setup(a,delta_time);
@@ -292,8 +286,6 @@ int Nyx::integrate_state_grownvec
       //Array4<Real> const& diag_eos = D_old.array(mfi);
       const auto len = amrex::length(tbx);  // length of box
       const auto lo  = amrex::lbound(tbx);  // lower bound of box
-      const auto state = (S_old[mfi]).view(lo);  // a view starting from lo
-      const auto diag_eos = (D_old[mfi]).view(lo);  // a view starting from lo
 
       Array4<Real> const& state4 = S_old.array(mfi);
       Array4<Real> const& diag_eos4 = D_old.array(mfi);
@@ -379,8 +371,8 @@ int Nyx::integrate_state_grownvec
 			//				for (int i= 0;i < neq; ++i) {
 				  dptr[idx]=state4(i,j,k,Eint)/state4(i,j,k,Density);
 				  eptr[idx]=state4(i,j,k,Eint)/state4(i,j,k,Density);
-				  rparh[4*idx+0]= diag_eos4(i,j,k,Temp);   //rpar(1)=T_vode
-				  rparh[4*idx+1]= diag_eos4(i,j,k,Ne);//    rpar(2)=ne_vode
+				  rparh[4*idx+0]= diag_eos4(i,j,k,Temp_comp);   //rpar(1)=T_vode
+				  rparh[4*idx+1]= diag_eos4(i,j,k,Ne_comp);//    rpar(2)=ne_vode
 				  rparh[4*idx+2]= state4(i,j,k,Density); //    rpar(3)=rho_vode
 				  rparh[4*idx+3]=1/a-1;    //    rpar(4)=z_vode
 				  //				}
@@ -437,8 +429,8 @@ int Nyx::integrate_state_grownvec
 				  int  idx= i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
 				//				for (int i= 0;i < neq; ++i) {
 				  fort_ode_eos_finalize(&(dptr[idx*loop]), &(rparh[4*idx*loop]), one_in);
-				  diag_eos4(i,j,k,Temp)=rparh[4*idx*loop+0];   //rpar(1)=T_vode
-				  diag_eos4(i,j,k,Ne)=rparh[4*idx*loop+1];//    rpar(2)=ne_vode
+				  diag_eos4(i,j,k,Temp_comp)=rparh[4*idx*loop+0];   //rpar(1)=T_vode
+				  diag_eos4(i,j,k,Ne_comp)=rparh[4*idx*loop+1];//    rpar(2)=ne_vode
 				
 				  state4(i,j,k,Eint)  += state4(i,j,k,Density) * (dptr[idx*loop]-eptr[idx]);
 				  state4(i,j,k,Eden)  += state4(i,j,k,Density) * (dptr[idx*loop]-eptr[idx]);

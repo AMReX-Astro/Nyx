@@ -95,8 +95,6 @@ int Nyx::nsteps_from_plotfile = -1;
 
 ErrorList Nyx::err_list;
 
-int Nyx::Temp_comp = -1;
-int Nyx::  Ne_comp = -1;
 int Nyx:: Zhi_comp = -1;
 
 int Nyx::QVAR = -1;
@@ -2538,7 +2536,6 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
     Real rho_hi = 1.1*average_gas_density;
     Real rho_lo = 0.9*average_gas_density;
     const auto dx= geom.CellSizeArray();
-    int Temp=Temp_comp;
 
 #ifdef _OPENMP
 #pragma omp parallel reduction(+:rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum)
@@ -2576,7 +2573,7 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
 
 	      Real T_tmp, rho_tmp;     
 
-	      T_tmp=diag_eos(i,j,k,Temp);
+	      T_tmp=diag_eos(i,j,k,Temp_comp);
 	      rho_tmp=state(i,j,k,Density);
 	      amrex::Gpu::Atomic::Add(pT_sum, vol*T_tmp);
 	      amrex::Gpu::Atomic::Add(pTinv_sum, rho_tmp/T_tmp);
@@ -2647,7 +2644,6 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
     Real rho_hi = 1.1*average_gas_density;
     Real rho_lo = 0.9*average_gas_density;
     const auto dx= geom.CellSizeArray();
-    int Temp=Temp_comp;
     int average_gas_density=average_gas_density;
 
 #ifdef _OPENMP
@@ -2688,7 +2684,7 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
 
 	     Real T, R, rho_vol;
 
-	      T = diag_eos(i,j,k,Temp);
+	      T = diag_eos(i,j,k,Temp_comp);
 	      R = state(i,j,k,Density) / average_gas_density;
 	      rho_vol = state(i,j,k,Density)*vol;
               if ( (T > T_cut) && (R <= rho_cut) ) {
