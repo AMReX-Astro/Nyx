@@ -141,12 +141,6 @@ Nyx::hydro_setup()
     //
     // Set number of state variables and pointers to components
     //
-    Density = 0;
-    Xmom    = 1;
-    Ymom    = 2;
-    Zmom    = 3;
-    Eden    = 4;
-    Eint    = 5;
     int cnt = 6;
 
     NumAdv = 0;
@@ -633,7 +627,6 @@ Nyx::no_hydro_setup()
 {
     int dm = BL_SPACEDIM;
 
-    Density = 0;
     NUM_STATE = 1;
 
     int NDIAG_C = -1;

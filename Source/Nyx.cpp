@@ -95,13 +95,6 @@ int Nyx::nsteps_from_plotfile = -1;
 
 ErrorList Nyx::err_list;
 
-int Nyx::Density = -1;
-int Nyx::Eden = -1;
-int Nyx::Eint = -1;
-int Nyx::Xmom = -1;
-int Nyx::Ymom = -1;
-int Nyx::Zmom = -1;
-
 int Nyx::Temp_comp = -1;
 int Nyx::  Ne_comp = -1;
 int Nyx:: Zhi_comp = -1;
@@ -937,12 +930,6 @@ Nyx::est_time_step (Real dt_old)
 	  //	  Real grid_scl = std::cbrt(dx[0]*dx[1]*dx[2]);
 	  Real sound_speed_factor=sqrt(gamma*(gamma-1));
 
-	  int UEINT_loc=Eint;
-	  int Density_loc=Density;
-	  int UMX_loc=Xmom;
-	  int UMY_loc=Ymom;
-	  int UMZ_loc=Zmom;
-
 	  amrex::Gpu::LaunchSafeGuard lsg(true);
 	  dt = amrex::ReduceMin(stateMF, 0,
 				[=] AMREX_GPU_HOST_DEVICE (Box const& bx, FArrayBox const& statefab) noexcept -> Real
@@ -959,13 +946,13 @@ Nyx::est_time_step (Real dt_old)
 					      for         (int k = lo.z; k <= hi.z; ++k) {
 						for     (int j = lo.y; j <= hi.y; ++j) {
 						  for (int i = lo.x; i <= hi.x; ++i) {
-						    Real rhoInv = 1.0 / u(i,j,k,Density_loc);
-						    Real ux     = u(i,j,k,UMX_loc)*rhoInv;
-						    Real uy     = u(i,j,k,UMY_loc)*rhoInv;
-						    Real uz     = u(i,j,k,UMZ_loc)*rhoInv;
+						    Real rhoInv = 1.0 / u(i,j,k,Density);
+						    Real ux     = u(i,j,k,Xmom)*rhoInv;
+						    Real uy     = u(i,j,k,Ymom)*rhoInv;
+						    Real uz     = u(i,j,k,Zmom)*rhoInv;
 
 						    // Use internal energy for calculating dt 
-						    Real e  = u(i,j,k,UEINT_loc)*rhoInv;
+						    Real e  = u(i,j,k,Eint)*rhoInv;
 
 						    Real c;
 						    // Protect against negative e
@@ -974,7 +961,7 @@ Nyx::est_time_step (Real dt_old)
 						      c=sound_speed_factor*std::sqrt(e);
 #else
 						    if (e > 0.0)
-						      c=sound_speed_factor*std::sqrt(u(i,j,k,Density_loc)*e/u(i,j,k,Density_loc));
+						      c=sound_speed_factor*std::sqrt(u(i,j,k,Density)*e/u(i,j,k,Density));
 #endif
 						    else
 						      c = 0.0;
@@ -2551,8 +2538,7 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
     Real rho_hi = 1.1*average_gas_density;
     Real rho_lo = 0.9*average_gas_density;
     const auto dx= geom.CellSizeArray();
-    int Temp_loc=Temp_comp;
-    int Density_loc=Density;
+    int Temp=Temp_comp;
 
 #ifdef _OPENMP
 #pragma omp parallel reduction(+:rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum)
@@ -2590,8 +2576,8 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
 
 	      Real T_tmp, rho_tmp;     
 
-	      T_tmp=diag_eos(i,j,k,Temp_loc);
-	      rho_tmp=state(i,j,k,Density_loc);
+	      T_tmp=diag_eos(i,j,k,Temp);
+	      rho_tmp=state(i,j,k,Density);
 	      amrex::Gpu::Atomic::Add(pT_sum, vol*T_tmp);
 	      amrex::Gpu::Atomic::Add(pTinv_sum, rho_tmp/T_tmp);
 	      amrex::Gpu::Atomic::Add(prho_T_sum, rho_tmp*T_tmp);
@@ -2661,9 +2647,8 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
     Real rho_hi = 1.1*average_gas_density;
     Real rho_lo = 0.9*average_gas_density;
     const auto dx= geom.CellSizeArray();
-    int Temp_loc=Temp_comp;
-    int Density_loc=Density;
-    int average_gas_density_loc=average_gas_density;
+    int Temp=Temp_comp;
+    int average_gas_density=average_gas_density;
 
 #ifdef _OPENMP
 #pragma omp parallel reduction(+:whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum)
@@ -2703,9 +2688,9 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
 
 	     Real T, R, rho_vol;
 
-	      T = diag_eos(i,j,k,Temp_loc);
-	      R = state(i,j,k,Density_loc) / average_gas_density_loc;
-	      rho_vol = state(i,j,k,Density_loc)*vol;
+	      T = diag_eos(i,j,k,Temp);
+	      R = state(i,j,k,Density) / average_gas_density;
+	      rho_vol = state(i,j,k,Density)*vol;
               if ( (T > T_cut) && (R <= rho_cut) ) {
 		amrex::Gpu::Atomic::Add(pwhim_mass,rho_vol);
 		amrex::Gpu::Atomic::Add(pwhim_vol,vol);
