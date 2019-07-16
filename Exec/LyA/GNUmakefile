@@ -7,9 +7,9 @@ CVODE_LIB_DIR ?= $(CVODE_LIB)
 TOP = ../..
 
 # compilation options
-COMP    = intel # gnu
+COMP    = gnu
 USE_MPI = TRUE
-USE_OMP = TRUE
+USE_OMP = FALSE
 
 USE_SENSEI_INSITU = FALSE
 USE_HENSON = FALSE
@@ -24,7 +24,8 @@ USE_SINGLE_PRECISION_PARTICLES = TRUE
 DEBUG     = FALSE
 
 GIMLET = FALSE
-REEBER = FALSE
+REEBER = TRUE
+REEBER_HOME ?= ../../../reeber
 
 # physics
 DIM      = 3
