@@ -151,8 +151,6 @@ Nyx::hydro_setup()
     }
 
     int NDIAG_C;
-    Temp_comp = 0;
-      Ne_comp = 1;
     if (inhomo_reion > 0)
     {
         NDIAG_C  = 3;

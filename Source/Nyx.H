@@ -62,6 +62,12 @@ enum State_Type_Index {
   Eint    = 5
 
 };
+
+enum DiagEOS_Type_Index {
+  Temp_comp = 0,
+  Ne_comp   = 1
+
+};
 //
 // AmrLevel-derived class for hyperbolic conservation equations for stellar
 // media
@@ -675,9 +681,8 @@ public:
 #endif
 
     static int NUM_STATE;
-  //    static int Density, Xmom, Ymom, Zmom, Eden, Eint;
 
-    static int Temp_comp, Ne_comp, Zhi_comp;
+    static int Zhi_comp;
 
     static int QVAR, NQSRC, NGDNV, QRHO, QU, QV, QW, QGAME, QGC, QPRES, QREINT, QTEMP, QFA, QFS, QFX;
     static int GDRHO, GDU, GDV, GDW, GDPRES, GDGAME;

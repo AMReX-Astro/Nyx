@@ -143,7 +143,7 @@ int Nyx::integrate_state_box
       N_Vector T_tmp = N_VNew_Serial(2*neq);  // Allocate u vector 
       N_VConst(0.0,T_tmp);
       double* Tne_tmp_ptr=N_VGetArrayPointer_Serial(T_tmp);
-      D_old[mfi].copyToMem(tbx,Nyx::Temp_comp,2,Tne_tmp_ptr);
+      D_old[mfi].copyToMem(tbx,Temp_comp,2,Tne_tmp_ptr);
       for(int i=0;i<neq;i++)
 	{
 	  rparh[4*i+0]= Tne_tmp_ptr[i];   //rpar(1)=T_vode
@@ -239,7 +239,7 @@ int Nyx::integrate_state_box
 	  fort_ode_eos_finalize(&(dptrd[i]), &(rpar[4*i]), one_in);
 	  });
 
-      D_old[mfi].copyFromMem(tbx,Nyx::Temp_comp,2,Tne_tmp_ptr);
+      D_old[mfi].copyFromMem(tbx,Temp_comp,2,Tne_tmp_ptr);
 
       N_VProd(u,rho_tmp,u);                
 
@@ -373,7 +373,7 @@ int Nyx::integrate_state_grownbox
       N_Vector T_tmp = N_VNew_Serial(2*neq);  // Allocate u vector 
       N_VConst(0.0,T_tmp);
       double* Tne_tmp_ptr=N_VGetArrayPointer_Serial(T_tmp);
-      D_old[mfi].copyToMem(tbx,Nyx::Temp_comp,2,Tne_tmp_ptr);
+      D_old[mfi].copyToMem(tbx,Temp_comp,2,Tne_tmp_ptr);
       
       for(int i=0;i<neq;i++)
 	{
@@ -475,7 +475,7 @@ int Nyx::integrate_state_grownbox
 	  fort_ode_eos_finalize(&(dptrd[i]), &(rpar[4*i]), one_in);
 	  });
 
-      D_old[mfi].copyFromMem(tbx,Nyx::Temp_comp,2,Tne_tmp_ptr);
+      D_old[mfi].copyFromMem(tbx,Temp_comp,2,Tne_tmp_ptr);
       amrex::Gpu::Device::streamSynchronize();
       N_VProd(u,rho_tmp,u);                
 #ifdef AMREX_USE_CUDA
