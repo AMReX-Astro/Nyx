@@ -53,6 +53,15 @@ enum StateType {
 };
 #endif
 
+enum State_Type_Index {
+  Density = 0,
+  Xmom    = 1,
+  Ymom    = 2,
+  Zmom    = 3,
+  Eden    = 4,
+  Eint    = 5
+
+};
 //
 // AmrLevel-derived class for hyperbolic conservation equations for stellar
 // media
@@ -666,7 +675,7 @@ public:
 #endif
 
     static int NUM_STATE;
-    static int Density, Xmom, Ymom, Zmom, Eden, Eint;
+  //    static int Density, Xmom, Ymom, Zmom, Eden, Eint;
 
     static int Temp_comp, Ne_comp, Zhi_comp;
 

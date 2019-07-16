@@ -97,13 +97,13 @@ public:
         AMREX_ASSERT(this->finestLevel() == 0);
 
         const int local = true;
-        const int lev_min_local = 0;
-        const int lev_max_local = 0;
-        const int nGrow_local = 0;
+        const int lev_minal = 0;
+        const int lev_maxal = 0;
+        const int nGrowal = 0;
 
         amrex::Gpu::LaunchSafeGuard lsg(true);
         amrex::NeighborParticleContainer<NSR,NSI>
-            ::Redistribute(lev_min_local, lev_max_local, nGrow_local, local);
+            ::Redistribute(lev_minal, lev_maxal, nGrowal, local);
     }
 
     

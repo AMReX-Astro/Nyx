@@ -49,11 +49,8 @@ int Nyx::integrate_state_vec
 
   amrex::Gpu::LaunchSafeGuard lsg(true);
 
-  int Temp_loc=Temp_comp;
-  int Ne_loc=Ne_comp;
-  int Eint_loc=Eint;
-  int Eden_loc=Eden;
-  int Density_loc=Density;
+  int Temp=Temp_comp;
+  int Ne=Ne_comp;
   int one_in = 1;
   
   fort_ode_eos_setup(a,delta_time);
@@ -158,11 +155,11 @@ int Nyx::integrate_state_vec
 				{				  
 #endif
 				  int idx = i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
-				  dptr[idx]=state4(i,j,k,Eint_loc)/state4(i,j,k,Density_loc);
-				  eptr[idx]=state4(i,j,k,Eint_loc)/state4(i,j,k,Density_loc);
-				  rparh[4*idx+0]= diag_eos4(i,j,k,Temp_loc);   //rpar(1)=T_vode
-				  rparh[4*idx+1]= diag_eos4(i,j,k,Ne_loc);//    rpar(2)=ne_vode
-				  rparh[4*idx+2]= state4(i,j,k,Density_loc); //    rpar(3)=rho_vode
+				  dptr[idx]=state4(i,j,k,Eint)/state4(i,j,k,Density);
+				  eptr[idx]=state4(i,j,k,Eint)/state4(i,j,k,Density);
+				  rparh[4*idx+0]= diag_eos4(i,j,k,Temp);   //rpar(1)=T_vode
+				  rparh[4*idx+1]= diag_eos4(i,j,k,Ne);//    rpar(2)=ne_vode
+				  rparh[4*idx+2]= state4(i,j,k,Density); //    rpar(3)=rho_vode
 				  rparh[4*idx+3]=1/a-1;    //    rpar(4)=z_vode
 				  //				}
 #ifdef _OPENMP
@@ -218,11 +215,11 @@ int Nyx::integrate_state_vec
 				  int  idx= i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
 				//				for (int i= 0;i < neq; ++i) {
 				  fort_ode_eos_finalize(&(dptr[idx*loop]), &(rparh[4*idx*loop]), one_in);
-				  diag_eos4(i,j,k,Temp_loc)=rparh[4*idx*loop+0];   //rpar(1)=T_vode
-				  diag_eos4(i,j,k,Ne_loc)=rparh[4*idx*loop+1];//    rpar(2)=ne_vode
+				  diag_eos4(i,j,k,Temp)=rparh[4*idx*loop+0];   //rpar(1)=T_vode
+				  diag_eos4(i,j,k,Ne)=rparh[4*idx*loop+1];//    rpar(2)=ne_vode
 				
-				  state4(i,j,k,Eint_loc)  += state4(i,j,k,Density_loc) * (dptr[idx*loop]-eptr[idx]);
-				  state4(i,j,k,Eden_loc)  += state4(i,j,k,Density_loc) * (dptr[idx*loop]-eptr[idx]);
+				  state4(i,j,k,Eint)  += state4(i,j,k,Density) * (dptr[idx*loop]-eptr[idx]);
+				  state4(i,j,k,Eden)  += state4(i,j,k,Density) * (dptr[idx*loop]-eptr[idx]);
 				  //				}
 				//PrintFinalStats(cvode_mem);
 #ifdef _OPENMP
@@ -271,11 +268,8 @@ int Nyx::integrate_state_grownvec
   reltol = 1e-4;  /* Set the tolerances */
   abstol = 1e-4;
 
-  int Temp_loc=Temp_comp;
-  int Ne_loc=Ne_comp;
-  int Eint_loc=Eint;
-  int Eden_loc=Eden;
-  int Density_loc=Density;
+  int Temp=Temp_comp;
+  int Ne=Ne_comp;
   int one_in = 1;
 
   fort_ode_eos_setup(a,delta_time);
@@ -383,11 +377,11 @@ int Nyx::integrate_state_grownvec
 				  int idx = i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
 				  //				  amrex::Print()<<i<<"\t"<<j<<"\t"<<k<<"\t"<<idx<<neq<<std::endl;
 			//				for (int i= 0;i < neq; ++i) {
-				  dptr[idx]=state4(i,j,k,Eint_loc)/state4(i,j,k,Density_loc);
-				  eptr[idx]=state4(i,j,k,Eint_loc)/state4(i,j,k,Density_loc);
-				  rparh[4*idx+0]= diag_eos4(i,j,k,Temp_loc);   //rpar(1)=T_vode
-				  rparh[4*idx+1]= diag_eos4(i,j,k,Ne_loc);//    rpar(2)=ne_vode
-				  rparh[4*idx+2]= state4(i,j,k,Density_loc); //    rpar(3)=rho_vode
+				  dptr[idx]=state4(i,j,k,Eint)/state4(i,j,k,Density);
+				  eptr[idx]=state4(i,j,k,Eint)/state4(i,j,k,Density);
+				  rparh[4*idx+0]= diag_eos4(i,j,k,Temp);   //rpar(1)=T_vode
+				  rparh[4*idx+1]= diag_eos4(i,j,k,Ne);//    rpar(2)=ne_vode
+				  rparh[4*idx+2]= state4(i,j,k,Density); //    rpar(3)=rho_vode
 				  rparh[4*idx+3]=1/a-1;    //    rpar(4)=z_vode
 				  //				}
 #ifdef _OPENMP
@@ -443,11 +437,11 @@ int Nyx::integrate_state_grownvec
 				  int  idx= i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
 				//				for (int i= 0;i < neq; ++i) {
 				  fort_ode_eos_finalize(&(dptr[idx*loop]), &(rparh[4*idx*loop]), one_in);
-				  diag_eos4(i,j,k,Temp_loc)=rparh[4*idx*loop+0];   //rpar(1)=T_vode
-				  diag_eos4(i,j,k,Ne_loc)=rparh[4*idx*loop+1];//    rpar(2)=ne_vode
+				  diag_eos4(i,j,k,Temp)=rparh[4*idx*loop+0];   //rpar(1)=T_vode
+				  diag_eos4(i,j,k,Ne)=rparh[4*idx*loop+1];//    rpar(2)=ne_vode
 				
-				  state4(i,j,k,Eint_loc)  += state4(i,j,k,Density_loc) * (dptr[idx*loop]-eptr[idx]);
-				  state4(i,j,k,Eden_loc)  += state4(i,j,k,Density_loc) * (dptr[idx*loop]-eptr[idx]);
+				  state4(i,j,k,Eint)  += state4(i,j,k,Density) * (dptr[idx*loop]-eptr[idx]);
+				  state4(i,j,k,Eden)  += state4(i,j,k,Density) * (dptr[idx*loop]-eptr[idx]);
 				  //				}
 				//PrintFinalStats(cvode_mem);
 #ifdef _OPENMP

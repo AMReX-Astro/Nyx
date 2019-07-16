@@ -121,7 +121,7 @@ int Nyx::integrate_state_box
 
       dptr=N_VGetArrayPointer_Serial(u);
       dptrd=N_VGetArrayPointer_Serial(u);
-      S_old[mfi].copyToMem(tbx,Nyx::Eint,1,dptr);
+      S_old[mfi].copyToMem(tbx,Eint,1,dptr);
 
       /*Use N_Vector to create userdata, in order to allocate data on device*/
       N_Vector Data = N_VNew_Serial(4*neq);  // Allocate u vector 
@@ -136,7 +136,7 @@ int Nyx::integrate_state_box
       //      amrex::Print()<<"place "<<++count<<std::endl;
       N_VConst(0.0,Data);
 
-      S_old[mfi].copyToMem(tbx,Nyx::Density,1,rho_tmp_ptr);
+      S_old[mfi].copyToMem(tbx,Density,1,rho_tmp_ptr);
       #ifdef AMREX_USE_CUDA
       N_VCopyToDevice_Cuda(rho_tmp);
       #endif
@@ -247,8 +247,8 @@ int Nyx::integrate_state_box
       N_VCopyFromDevice_Cuda(u);
 #endif      
     
-      S_old[mfi].copyFromMem(tbx,Nyx::Eint,1,dptr);
-      S_old[mfi].addFromMem(tbx,Nyx::Eden,1,dptr);
+      S_old[mfi].copyFromMem(tbx,Eint,1,dptr);
+      S_old[mfi].addFromMem(tbx,Eden,1,dptr);
       if(amrex::Verbose()>2||false)
 	{
 	  amrex::Print()<<S_old[mfi].min(Eint)<<"at index"<<S_old[mfi].minIndex(Eint)<<std::endl;
@@ -355,7 +355,7 @@ int Nyx::integrate_state_grownbox
 
       dptr=N_VGetArrayPointer_Serial(u);
       dptrd=N_VGetArrayPointer_Serial(u);
-      S_old[mfi].copyToMem(tbx,Nyx::Eint,1,dptr);
+      S_old[mfi].copyToMem(tbx,Eint,1,dptr);
 
       /*Use N_Vector to create userdata, in order to allocate data on device*/
       N_Vector Data = N_VNew_Serial(4*neq);  // Allocate u vector 
@@ -366,7 +366,7 @@ int Nyx::integrate_state_grownbox
       double* rho_tmp_ptr=N_VGetArrayPointer_Serial(rho_tmp);
       #endif
       N_VConst(0.0,Data);
-      S_old[mfi].copyToMem(tbx,Nyx::Density,1,rho_tmp_ptr);
+      S_old[mfi].copyToMem(tbx,Density,1,rho_tmp_ptr);
       #ifdef AMREX_USE_CUDA
       N_VCopyToDevice_Cuda(rho_tmp);
       #endif
@@ -482,8 +482,8 @@ int Nyx::integrate_state_grownbox
       N_VCopyFromDevice_Cuda(u);
 #endif      
       amrex::Gpu::Device::streamSynchronize();
-      S_old[mfi].copyFromMem(tbx,Nyx::Eint,1,dptr);
-      S_old[mfi].addFromMem(tbx,Nyx::Eden,1,dptr);
+      S_old[mfi].copyFromMem(tbx,Eint,1,dptr);
+      S_old[mfi].addFromMem(tbx,Eden,1,dptr);
       amrex::Gpu::Device::streamSynchronize();
       if(amrex::Verbose()>2||false)
 	{
