@@ -901,8 +901,8 @@ Nyx::blueprint_check_point ()
     MultiFab& S_new = get_new_data(State_Type);
     //MultiFab S_new_tmp(S_new.boxArray(), S_new.DistributionMap(), 1, 0 NUM_GROW);
 
-    int n = 0;
     const Real cur_time     = state[State_Type].curTime();
+    int cycle = nStep();
     
     // this would need the mf from how we write plotfiles
     // for(int i=0;i<S_new.nComp();i++)
@@ -931,7 +931,7 @@ Nyx::blueprint_check_point ()
                            varnames,
                            geom,
                            cur_time,
-                           n,
+                           cycle,
                            bp_mesh);
     conduit::Node bp_particles;
     
@@ -951,8 +951,8 @@ Nyx::blueprint_check_point ()
     // view in VisIt. 
     // (For debugging and to demonstrate how to do this w/o Ascent)
     ///////////////////////////////////////////////////////////////////////////
-    WriteBlueprintFiles(bp_mesh,"bp_example_",0,"hdf5");
-    WriteBlueprintFiles(bp_particles,"bp_particle_example_",0,"hdf5");
+    WriteBlueprintFiles(bp_mesh,"bp_example_",cycle,"hdf5");
+    WriteBlueprintFiles(bp_particles,"bp_particle_example_",cycle,"hdf5");
     
     ///////////////////////////////////////////////////////////////////
     // Render with Ascent
@@ -974,8 +974,14 @@ Nyx::blueprint_check_point ()
     actions.append()["action"] = "reset";
 
     Ascent ascent;
-    ascent.open();
+    conduit::Node open_opts;
 
+#ifdef BL_USE_MPI
+    open_opts["mpi_comm"] = MPI_Comm_c2f(ParallelDescriptor::Communicator());
+#endif
+
+
+    ascent.open(open_opts);
     ascent.publish(bp_mesh);
     ascent.execute(actions);
         
