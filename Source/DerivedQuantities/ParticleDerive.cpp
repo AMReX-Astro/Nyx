@@ -113,6 +113,69 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 
         return derive_dat;
     }
+    else if (Nyx::theDMPC() && name == "particle_x_velocity")
+    {
+	std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids,dmap,1,0));
+
+        // We need to do the multilevel `assign_density` even though we're only
+        // asking for one level's worth because otherwise we don't get the
+        // coarse-fine distribution of particles correct.
+        Vector<std::unique_ptr<MultiFab> > particle_mf;
+        Nyx::theDMPC()->AssignDensityAndVels(particle_mf);
+
+        for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
+        {
+            amrex::average_down(*particle_mf[lev+1], *particle_mf[lev], 
+                                 parent->Geom(lev+1), parent->Geom(lev), 1, 1, 
+                                 parent->refRatio(lev));
+        }
+
+        MultiFab::Copy(*derive_dat, *particle_mf[level], 1, 0, 1, 0);
+
+        return derive_dat;
+    }
+    else if (Nyx::theDMPC() && name == "particle_y_velocity")
+    {
+	std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids,dmap,1,0));
+
+        // We need to do the multilevel `assign_density` even though we're only
+        // asking for one level's worth because otherwise we don't get the
+        // coarse-fine distribution of particles correct.
+        Vector<std::unique_ptr<MultiFab> > particle_mf;
+        Nyx::theDMPC()->AssignDensityAndVels(particle_mf);
+
+        for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
+        {
+            amrex::average_down(*particle_mf[lev+1], *particle_mf[lev], 
+                                 parent->Geom(lev+1), parent->Geom(lev), 2, 1, 
+                                 parent->refRatio(lev));
+        }
+
+        MultiFab::Copy(*derive_dat, *particle_mf[level], 2, 0, 1, 0);
+
+        return derive_dat;
+    }
+    else if (Nyx::theDMPC() && name == "particle_z_velocity")
+    {
+	std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids,dmap,1,0));
+
+        // We need to do the multilevel `assign_density` even though we're only
+        // asking for one level's worth because otherwise we don't get the
+        // coarse-fine distribution of particles correct.
+        Vector<std::unique_ptr<MultiFab> > particle_mf;
+        Nyx::theDMPC()->AssignDensityAndVels(particle_mf);
+
+        for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
+        {
+            amrex::average_down(*particle_mf[lev+1], *particle_mf[lev], 
+                                 parent->Geom(lev+1), parent->Geom(lev), 3, 1, 
+                                 parent->refRatio(lev));
+        }
+
+        MultiFab::Copy(*derive_dat, *particle_mf[level], 3, 0, 1, 0);
+
+        return derive_dat;
+    }
 #ifdef AGN
     else if (Nyx::theAPC() && name == "agn_mass_density")
     {
@@ -158,6 +221,95 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 
         return derive_dat;
     }
+#ifdef NEUTRINO_DARK_PARTICLES
+    else if (Nyx::theNPC() && name == "neutrino_x_velocity")
+    {
+	std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids,dmap,1,0));
+
+        // We need to do the multilevel `assign_density` even though we're only
+        // asking for one level's worth because otherwise we don't get the
+        // coarse-fine distribution of particles correct.
+        Vector<std::unique_ptr<MultiFab> > particle_mf;
+        Nyx::theNPC()->AssignDensityAndVels(particle_mf);
+
+        for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
+        {
+            amrex::average_down(*particle_mf[lev+1], *particle_mf[lev], 
+                                 parent->Geom(lev+1), parent->Geom(lev), 1, 1, 
+                                 parent->refRatio(lev));
+        }
+
+        MultiFab::Copy(*derive_dat, *particle_mf[level], 1, 0, 1, 0);
+
+        return derive_dat;
+    }
+    else if (Nyx::theNPC() && name == "neutrino_y_velocity")
+    {
+	std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids,dmap,1,0));
+
+        // We need to do the multilevel `assign_density` even though we're only
+        // asking for one level's worth because otherwise we don't get the
+        // coarse-fine distribution of particles correct.
+        Vector<std::unique_ptr<MultiFab> > particle_mf;
+        Nyx::theNPC()->AssignDensityAndVels(particle_mf);
+
+        for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
+        {
+            amrex::average_down(*particle_mf[lev+1], *particle_mf[lev], 
+                                 parent->Geom(lev+1), parent->Geom(lev), 2, 1, 
+                                 parent->refRatio(lev));
+        }
+
+        MultiFab::Copy(*derive_dat, *particle_mf[level], 2, 0, 1, 0);
+
+        return derive_dat;
+    }
+    else if (Nyx::theNPC() && name == "neutrino_z_velocity")
+    {
+	std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids,dmap,1,0));
+
+        // We need to do the multilevel `assign_density` even though we're only
+        // asking for one level's worth because otherwise we don't get the
+        // coarse-fine distribution of particles correct.
+        Vector<std::unique_ptr<MultiFab> > particle_mf;
+        Nyx::theNPC()->AssignDensityAndVels(particle_mf);
+
+        for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
+        {
+            amrex::average_down(*particle_mf[lev+1], *particle_mf[lev], 
+                                 parent->Geom(lev+1), parent->Geom(lev), 3, 1, 
+                                 parent->refRatio(lev));
+        }
+
+        MultiFab::Copy(*derive_dat, *particle_mf[level], 3, 0, 1, 0);
+
+        return derive_dat;
+    }
+#else
+    else if (Nyx::theNPC() && (name == "neutrino_x_velocity" || name == "neutrino_y_velocity" || name == "neutrino_z_velocity" ))
+    {
+        amrex::Print()<<"Returning mass density for neutrinos, since velocity not implemented for NEUTRINO_DARK_PARTICLES=FALSE"<<std::endl;
+	std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
+
+        // We need to do the multilevel `assign_density` even though we're only
+        // asking for one level's worth because otherwise we don't get the
+        // coarse-fine distribution of particles correct.
+        Vector<std::unique_ptr<MultiFab> > particle_mf;
+        Nyx::theNPC()->AssignDensity(particle_mf);
+
+        for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
+        {
+            amrex::average_down(*particle_mf[lev+1], *particle_mf[lev], 
+                                 parent->Geom(lev+1), parent->Geom(lev), 0, 1, 
+                                 parent->refRatio(lev));
+        }
+
+        MultiFab::Copy(*derive_dat, *particle_mf[level], 0, 0, 1, 0);
+
+        return derive_dat;
+    }
+    //////////////////////////////////////////////////////////
+#endif
 #endif
 #endif
     else if (name == "total_density")

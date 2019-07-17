@@ -19,7 +19,7 @@ int Nyx::integrate_state_exact
    const Real& a, const Real& delta_time)
 {
     
-  amrex::Cuda::setLaunchRegion(false);
+  amrex::Gpu::setLaunchRegion(false);
   //#ifdef _OPENMP
   //#pragma omp parallel if (Gpu::notInLaunchRegion())
   //#endif
@@ -74,7 +74,7 @@ int Nyx::integrate_state_grownexact
    const Real& a, const Real& delta_time)
 {
     
-  amrex::Cuda::setLaunchRegion(false);
+  amrex::Gpu::setLaunchRegion(false);
   //#ifdef _OPENMP
   //#pragma omp parallel if (Gpu::notInLaunchRegion())
   //#endif
