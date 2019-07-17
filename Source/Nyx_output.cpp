@@ -1099,6 +1099,78 @@ Nyx::blueprint_check_point ()
     // tell ascent to use the ghost_indicator field to exclude ghosts
 
     open_opts["ghost_field_name"] = "ghost_indicator";
+    open_opts["actions_file"] = "nyx_ascent_mesh_actions.yaml";
+
+#ifdef BL_USE_MPI
+    // if mpi, we need to provide the mpi comm to ascent
+    open_opts["mpi_comm"] = MPI_Comm_c2f(ParallelDescriptor::Communicator());
+#endif
+
+    ascent.open(open_opts);
+
+    // publish structured mesh to ascent
+    ascent.publish(bp_mesh);
+    // render all mesh fields
+    // call ascent, actions below will be overridden by those in
+    // nyx_ascent_mesh_actions.yaml
+    {
+        int i=0;
+        Node scenes;
+        Node actions;
+        // add a scene with a pseudocolor plot
+        scenes["s1/plots/p1/type"] = "pseudocolor";
+        scenes["s1/plots/p1/field"] = varnames[i];
+        // Set the output file name (ascent will add ".png")
+        scenes["s1/image_prefix"] = "ascent_render_mesh_" + varnames[i] + "_";
+
+        // setup actions
+        Node &add_act = actions.append();
+        add_act["action"] = "add_scenes";
+        add_act["scenes"] = scenes;
+        actions.append()["action"] = "execute";
+        actions.append()["action"] = "reset";
+
+        ascent.execute(actions);
+    }
+    ascent.close();
+
+    // user different default actions file for particles
+    open_opts["actions_file"] = "nyx_ascent_particle_actions.yaml";
+    ascent.open(open_opts);
+
+    // now publish the particle mesh to ascent
+    ascent.publish(bp_particles);
+    // call ascent, actions below will be overridden by those in
+    // nyx_ascent_particle_actions.yaml
+    {
+        int i=0;
+        Node scenes;
+        Node actions;
+        // add a scene with a pseudocolor plot
+        scenes["s1/plots/p1/type"] = "pseudocolor";
+        scenes["s1/plots/p1/field"] = particle_varnames[i];
+        // Set the output file name (ascent will add ".png")
+        scenes["s1/image_prefix"] = "ascent_render_particle_" + particle_varnames[i] + "_";
+
+        // setup actions
+        Node &add_act = actions.append();
+        add_act["action"] = "add_scenes";
+        add_act["scenes"] = scenes;
+        actions.append()["action"] = "execute";
+        actions.append()["action"] = "reset";
+        ascent.execute(actions);
+    }
+
+    ascent.close();
+
+    /*  example that renders out every field of the amr mesh and particle mesh
+    Ascent ascent;
+    conduit::Node open_opts;
+    // tell ascent to use the ghost_indicator field to exclude ghosts
+
+    open_opts["ghost_field_name"] = "ghost_indicator";
+    open_opts["actions_file"] = "nyx_ascent_mesh_actions.yaml";
+
 #ifdef BL_USE_MPI
     // if mpi, we need to provide the mpi comm to ascent
     open_opts["mpi_comm"] = MPI_Comm_c2f(ParallelDescriptor::Communicator());
@@ -1128,6 +1200,11 @@ Nyx::blueprint_check_point ()
 
         ascent.execute(actions);
     }
+    ascent.close();
+
+    // user different default actions file for particles
+    open_opts["actions_file"] = "nyx_ascent_particle_actions.yaml";
+    ascent.open(open_opts);
 
     // now publish the particle mesh to ascent
     ascent.publish(bp_particles);
@@ -1153,5 +1230,9 @@ Nyx::blueprint_check_point ()
     }
 
     ascent.close();
+    */
+
+
+
 }
 #endif
