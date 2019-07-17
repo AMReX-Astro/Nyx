@@ -35,22 +35,27 @@ static void PrintOutput(realtype t, realtype umax, long int nst);
 /* Private function to check function return values */
 static int check_retval(void *flagvalue, const char *funcname, int opt);
 
+//static amrex::Arena* Managed_Arena;
+
+void* sunalloc(size_t mem_size)
+{
+  return (void*) The_Managed_Arena()->alloc(mem_size);
+}
+
+void sunfree(void* ptr)
+{
+  The_Managed_Arena()->free(ptr);
+}
+
+
 int Nyx::integrate_state_vec
   (amrex::MultiFab &S_old,
    amrex::MultiFab &D_old,
    const Real& a, const Real& delta_time)
 {
     // time = starting time in the simulation
-  realtype reltol, abstol, t, tout, umax;
-  int flag;
-    
-  reltol = 1e-4;  /* Set the tolerances */
-  abstol = 1e-4;
 
   amrex::Gpu::LaunchSafeGuard lsg(true);
-
-  int one_in = 1;
-  
   fort_ode_eos_setup(a,delta_time);
 
   //#ifdef _OPENMP
@@ -63,55 +68,65 @@ int Nyx::integrate_state_vec
 #endif
     {
 
-      double* dptr;
       //check that copy contructor vs create constructor works??
       const Box& tbx = mfi.tilebox();
-      //Array4<Real> const& state = S_old.array(mfi);
-      //Array4<Real> const& diag_eos = D_old.array(mfi);
-      const auto len = amrex::length(tbx);  // length of box
-      const auto lo  = amrex::lbound(tbx);  // lower bound of box
 
       Array4<Real> const& state4 = S_old.array(mfi);
       Array4<Real> const& diag_eos4 = D_old.array(mfi);
 
-      int width = len.x; //trying to run all i
-      width = len.x*len.y*len.z;
+      integrate_state_vec_mfin(state4,diag_eos4,tbx,a,delta_time);
+}
+      return 0;
+}
 
-      /*      for       (int k = 0; k < len.z; ++k) {
-	  // We know this is safe for simd on cpu.  So let's give compiler some help.
-	//	AMREX_PRAGMA_SIMD
-	for     (int j = 0; j < len.y; ++j) {
-	for (int i = 0; i < len.x; i+=width) {*/
-				N_Vector u;
-				//  SUNLinearSolver LS;
-				void *cvode_mem;
-				realtype t=0.0;
+int Nyx::integrate_state_vec_mfin
+  (amrex::Array4<Real> const& state4,
+   amrex::Array4<Real> const& diag_eos4,
+   const Box& tbx,
+   const Real& a, const Real& delta_time)
+{
+
+  realtype reltol, abstol;
+  int flag;
+    
+  reltol = 1e-4;  /* Set the tolerances */
+  abstol = 1e-4;
+
+  int one_in = 1;
+  
+
+      const auto len = amrex::length(tbx);  // length of box
+      const auto lo  = amrex::lbound(tbx);  // lower bound of box
+
+      N_Vector u;
+      void *cvode_mem;
+      realtype t=0.0;
 				
-				u = NULL;
-				//  LS = NULL;
-				cvode_mem = NULL;
-				//				long int neq = len.x;
-				long int neq = width;
+      u = NULL;
+      cvode_mem = NULL;
+
+      long int neq = len.x*len.y*len.z;
 				int loop = 1;
 
 #ifdef AMREX_USE_CUDA
 				cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();
 
-				dptr=(double*) The_Managed_Arena()->alloc(neq*sizeof(double));
-				u = N_VMakeManaged_Cuda(neq,dptr);  /* Allocate u vector */
-				double* eptr= (double*) The_Managed_Arena()->alloc(neq*sizeof(double));
-				N_Vector e_orig = N_VMakeManaged_Cuda(neq,eptr);  /* Allocate u vector */
+				u = N_VMakeWithAllocator_Cuda(neq,sunalloc,sunfree);  /* Allocate u vector */
+				double* dptr=N_VGetDeviceArrayPointer_Cuda(u);
+
+				N_Vector e_orig = N_VMakeWithAllocator_Cuda(neq,sunalloc,sunfree);  /* Allocate u vector */
+				double* eptr=N_VGetDeviceArrayPointer_Cuda(e_orig);
 				N_VSetCudaStream_Cuda(e_orig, &currentStream);
 				N_VSetCudaStream_Cuda(u, &currentStream);
 
-				double* rparh = (double*) The_Managed_Arena()->alloc(4*neq*sizeof(double));
-				N_Vector Data = N_VMakeManaged_Cuda(4*neq,rparh);  // Allocate u vector 
+				N_Vector Data = N_VMakeWithAllocator_Cuda(4*neq,sunalloc,sunfree);  // Allocate u vector 
+				double* rparh = N_VGetDeviceArrayPointer_Cuda(Data);
 				N_VSetCudaStream_Cuda(Data, &currentStream);
 				// shouldn't need to initialize 
 				//N_VConst(0.0,Data);
 
-				double* abstol_ptr = (double*) The_Managed_Arena()->alloc(neq*sizeof(double));
-				N_Vector abstol_vec = N_VMakeManaged_Cuda(neq,abstol_ptr);
+				N_Vector abstol_vec = N_VMakeWithAllocator_Cuda(neq,sunalloc,sunfree);  
+				double* abstol_ptr = N_VGetDeviceArrayPointer_Cuda(abstol_vec);
 				N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
 #else
 #ifdef _OPENMP
@@ -119,7 +134,7 @@ int Nyx::integrate_state_vec
 				u = N_VNew_OpenMP(neq,nthreads);  /* Allocate u vector */
 				N_Vector e_orig = N_VNew_OpenMP(neq,nthreads);  /* Allocate u vector */
 				double* eptr=N_VGetArrayPointer_Serial(e_orig);
-				dptr=N_VGetArrayPointer_OpenMP(u);
+				double* dptr=N_VGetArrayPointer_OpenMP(u);
 
 				N_Vector Data = N_VNew_OpenMP(4*neq,nthreads);  // Allocate u vector 
 				N_VConst(0.0,Data);
@@ -129,7 +144,7 @@ int Nyx::integrate_state_vec
 				u = N_VNew_Serial(neq);  /* Allocate u vector */
 				N_Vector e_orig = N_VNew_Serial(neq);  /* Allocate u vector */
 				double* eptr=N_VGetArrayPointer_Serial(e_orig);
-				dptr=N_VGetArrayPointer_Serial(u);
+				double* dptr=N_VGetArrayPointer_Serial(u);
 
 				N_Vector Data = N_VNew_Serial(4*neq);  // Allocate u vector 
 				N_VConst(0.0,Data);
@@ -227,12 +242,6 @@ int Nyx::integrate_state_vec
 				});
 #endif
 
-#ifdef AMREX_USE_GPU
-      The_Managed_Arena()->free(dptr);
-      The_Managed_Arena()->free(eptr);
-      The_Managed_Arena()->free(rparh);
-      The_Managed_Arena()->free(abstol_ptr);
-#endif
 				N_VDestroy(u);          /* Free the u vector */
 				N_VDestroy(e_orig);          /* Free the e_orig vector */
 				N_VDestroy(abstol_vec);          /* Free the u vector */
@@ -243,10 +252,7 @@ int Nyx::integrate_state_vec
 			
 	}
 	}*/
-
-    }
-
-    return 0;
+				return 0;
 }
 
 int Nyx::integrate_state_grownvec
@@ -254,17 +260,6 @@ int Nyx::integrate_state_grownvec
    amrex::MultiFab &D_old,
    const Real& a, const Real& delta_time)
 {
-    // time = starting time in the simulation
-  realtype reltol, abstol, tout, umax;
-  N_Vector u;
-  //  SUNLinearSolver LS;
-  int iout, flag;
-  bool do_tiling=false;    
-
-  reltol = 1e-4;  /* Set the tolerances */
-  abstol = 1e-4;
-
-  int one_in = 1;
 
   fort_ode_eos_setup(a,delta_time);
   amrex::Gpu::LaunchSafeGuard lsg(true);
@@ -279,188 +274,16 @@ int Nyx::integrate_state_grownvec
 #endif
     {
 
-      double* dptr;
       //check that copy contructor vs create constructor works??
       const Box& tbx = mfi.growntilebox();
-      //Array4<Real> const& state = S_old.array(mfi);
-      //Array4<Real> const& diag_eos = D_old.array(mfi);
+
       const auto len = amrex::length(tbx);  // length of box
       const auto lo  = amrex::lbound(tbx);  // lower bound of box
 
       Array4<Real> const& state4 = S_old.array(mfi);
       Array4<Real> const& diag_eos4 = D_old.array(mfi);
 
-      int width = len.x; //trying to run all i
-      width = len.x*len.y*len.z;
-
-      /*      for       (int k = 0; k < len.z; ++k) {
-	  // We know this is safe for simd on cpu.  So let's give compiler some help.
-	//	AMREX_PRAGMA_SIMD
-	for     (int j = 0; j < len.y; ++j) {
-	for (int i = 0; i < len.x; i+=width) {*/
-				N_Vector u;
-				//  SUNLinearSolver LS;
-				void *cvode_mem;
-				realtype t=0.0;
-				
-				u = NULL;
-				//  LS = NULL;
-				cvode_mem = NULL;
-				//				long int neq = len.x;
-				long int neq = width;
-				int loop = 1;
-
-#ifdef AMREX_USE_CUDA
-				cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();
-				dptr=(double*) The_Managed_Arena()->alloc(neq*sizeof(double));
-				u = N_VMakeManaged_Cuda(neq,dptr);  /* Allocate u vector */
-				double* eptr= (double*) The_Managed_Arena()->alloc(neq*sizeof(double));
-				N_Vector e_orig = N_VMakeManaged_Cuda(neq,eptr);  /* Allocate u vector */
-				N_VSetCudaStream_Cuda(e_orig, &currentStream);
-				N_VSetCudaStream_Cuda(u, &currentStream);
-
-				double* rparh = (double*) The_Managed_Arena()->alloc(4*neq*sizeof(double));
-				N_Vector Data = N_VMakeManaged_Cuda(4*neq,rparh);  // Allocate u vector 
-				N_VSetCudaStream_Cuda(Data, &currentStream);
-				// shouldn't need to initialize 
-				//N_VConst(0.0,Data);
-
-				double* abstol_ptr = (double*) The_Managed_Arena()->alloc(neq*sizeof(double));
-				N_Vector abstol_vec = N_VMakeManaged_Cuda(neq,abstol_ptr);
-				N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
-
-#else
-#ifdef _OPENMP
-				int nthreads=omp_get_max_threads();
-				u = N_VNew_OpenMP(neq,nthreads);  /* Allocate u vector */
-				N_Vector e_orig = N_VNew_OpenMP(neq,nthreads);  /* Allocate u vector */
-				double* eptr=N_VGetArrayPointer_Serial(e_orig);
-				dptr=N_VGetArrayPointer_OpenMP(u);
-
-				N_Vector Data = N_VNew_OpenMP(4*neq,nthreads);  // Allocate u vector 
-				N_VConst(0.0,Data);
-				double* rparh=N_VGetArrayPointer_OpenMP(Data);
-				N_Vector abstol_vec = N_VNew_OpenMP(neq,nthreads);
-#else
-				u = N_VNew_Serial(neq);  /* Allocate u vector */
-				N_Vector e_orig = N_VNew_Serial(neq);  /* Allocate u vector */
-				double* eptr=N_VGetArrayPointer_Serial(e_orig);
-				dptr=N_VGetArrayPointer_Serial(u);
-
-				N_Vector Data = N_VNew_Serial(4*neq);  // Allocate u vector 
-				N_VConst(0.0,Data);
-				double* rparh=N_VGetArrayPointer_Serial(Data);
-				N_Vector abstol_vec = N_VNew_Serial(neq);
-#endif
-#endif				//if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
-
-#ifdef _OPENMP
-      const Dim3 hi = amrex::ubound(tbx);
-
-#pragma omp parallel for collapse(3)
-      for (int k = lo.z; k <= hi.z; ++k) {
-	for (int j = lo.y; j <= hi.y; ++j) {
-	    for (int i = lo.x; i <= hi.x; ++i) {
-	      fort_ode_eos_setup(a,delta_time);
-#else
-				AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
-				{				  
-#endif
-				  int idx = i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
-				  //				  amrex::Print()<<i<<"\t"<<j<<"\t"<<k<<"\t"<<idx<<neq<<std::endl;
-			//				for (int i= 0;i < neq; ++i) {
-				  dptr[idx]=state4(i,j,k,Eint)/state4(i,j,k,Density);
-				  eptr[idx]=state4(i,j,k,Eint)/state4(i,j,k,Density);
-				  rparh[4*idx+0]= diag_eos4(i,j,k,Temp_comp);   //rpar(1)=T_vode
-				  rparh[4*idx+1]= diag_eos4(i,j,k,Ne_comp);//    rpar(2)=ne_vode
-				  rparh[4*idx+2]= state4(i,j,k,Density); //    rpar(3)=rho_vode
-				  rparh[4*idx+3]=1/a-1;    //    rpar(4)=z_vode
-				  //				}
-#ifdef _OPENMP
-				}
-				}
-				}
-#pragma omp barrier
-#else
-				});
-#endif
-
-#ifdef CV_NEWTON
-				cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
-#else
-				cvode_mem = CVodeCreate(CV_BDF);
-#endif
-				flag = CVodeInit(cvode_mem, f, t, u);
-
-				N_VScale(abstol,u,abstol_vec);
-				flag = CVodeSVtolerances(cvode_mem, reltol, abstol_vec);
-
-				//				flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
-				flag = CVDiag(cvode_mem);
-
-				CVodeSetMaxNumSteps(cvode_mem,2000);
-
-				N_Vector constrain=N_VClone(u);
-				N_VConst(2,constrain);	      
-				flag =CVodeSetConstraints(cvode_mem,constrain);
-				
-				CVodeSetUserData(cvode_mem, &Data);
-				//				CVodeSetMaxStep(cvode_mem, delta_time/10);
-				BL_PROFILE_VAR("Nyx::strang_first_cvode",cvode_timer1);
-				flag = CVode(cvode_mem, delta_time, u, &t, CV_NORMAL);
-				amrex::Gpu::Device::streamSynchronize();
-				BL_PROFILE_VAR_STOP(cvode_timer1);
-
-#ifndef NDEBUG
-				PrintFinalStats(cvode_mem);
-#endif
-				//				diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
-				//	diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
-				// rho should not change  rho_tmp_ptr[i]=rparh[4*i+2]; //    rpar(3)=rho_vode
-#ifdef _OPENMP
-#pragma omp parallel for collapse(3)
-      for (int k = lo.z; k <= hi.z; ++k) {
-	for (int j = lo.y; j <= hi.y; ++j) {
-	    for (int i = lo.x; i <= hi.x; ++i) {
-#else
-				AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
-				{				  
-#endif
-				  int  idx= i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
-				//				for (int i= 0;i < neq; ++i) {
-				  fort_ode_eos_finalize(&(dptr[idx*loop]), &(rparh[4*idx*loop]), one_in);
-				  diag_eos4(i,j,k,Temp_comp)=rparh[4*idx*loop+0];   //rpar(1)=T_vode
-				  diag_eos4(i,j,k,Ne_comp)=rparh[4*idx*loop+1];//    rpar(2)=ne_vode
-				
-				  state4(i,j,k,Eint)  += state4(i,j,k,Density) * (dptr[idx*loop]-eptr[idx]);
-				  state4(i,j,k,Eden)  += state4(i,j,k,Density) * (dptr[idx*loop]-eptr[idx]);
-				  //				}
-				//PrintFinalStats(cvode_mem);
-#ifdef _OPENMP
-				}
-				}
-				}
-#pragma omp barrier
-#else
-				});
-#endif
-
-#ifdef AMREX_USE_GPU
-      The_Managed_Arena()->free(dptr);
-      The_Managed_Arena()->free(eptr);
-      The_Managed_Arena()->free(rparh);
-      The_Managed_Arena()->free(abstol_ptr);
-#endif
-				N_VDestroy(u);          /* Free the u vector */
-				N_VDestroy(e_orig);          /* Free the e_orig vector */
-				N_VDestroy(abstol_vec);          /* Free the u vector */
-				N_VDestroy(Data);          /* Free the userdata vector */
-				CVodeFree(&cvode_mem);  /* Free the integrator memory */
-			      //);
-				/*			    }
-			
-	}
-	}*/
+      integrate_state_vec_mfin(state4,diag_eos4,tbx,a,delta_time);
 
     }
 
@@ -655,3 +478,4 @@ static int check_retval(void *flagvalue, const char *funcname, int opt)
 
   return(0);
 }
+
