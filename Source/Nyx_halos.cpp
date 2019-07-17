@@ -77,6 +77,8 @@ Nyx::halo_find (Real dt)
 {
    BL_PROFILE("Nyx::halo_find()");
 
+   std::cerr << "ACHTUNG halo_find" << std::endl;
+
    const Real * dx = geom.CellSize();
 
    amrex::MultiFab& new_state = get_new_data(State_Type);
@@ -96,11 +98,11 @@ Nyx::halo_find (Real dt)
 
 #ifdef REEBER
 #ifndef REEBER_HIST
-   
+
    bool created_file = false;
    bool do_analysis = true;
 
-   if (do_analysis || (reeber_int > 0 && nStep() % reeber_int == 0)) 
+   if (do_analysis || (reeber_int > 0 && nStep() % reeber_int == 0))
    {
 
 
@@ -121,7 +123,7 @@ Nyx::halo_find (Real dt)
        average_neutr_density;
        average_total_density;
        */
-       
+
        amrex::Vector<amrex::MultiFab*> state_levels;
        // Derive quantities and store in components 1... of MultiFAB
 
@@ -143,13 +145,13 @@ Nyx::halo_find (Real dt)
 
    bool created_file = false;
 
-   if (do_analysis || (reeber_int > 0 && nStep() % reeber_int == 0)) 
+   if (do_analysis || (reeber_int > 0 && nStep() % reeber_int == 0))
    {
 
      // Before creating new AGN particles, check if any of the existing AGN particles should be merged
      halo_merge();
 
-     // Before creating new AGN particles, accrete mass onto existing particles 
+     // Before creating new AGN particles, accrete mass onto existing particles
      halo_accrete(dt);
 
 
@@ -219,7 +221,7 @@ Nyx::halo_find (Real dt)
            reeber_halos_pos.push_back(iv);
            reeber_halos_mass.push_back(haloMass);
 	 }
-       
+
 #endif // ifdef REEBER
 
        amrex::Real    halo_mass;
@@ -267,7 +269,7 @@ Nyx::halo_find (Real dt)
            halo_pos  = h.position;
 #else
 
-       
+
        for (int i = 0; i < reeber_halos_pos.size(); i++)
        {
            halo_mass = reeber_halos_mass[i];
@@ -279,14 +281,14 @@ Nyx::halo_find (Real dt)
                 amrex::Real x = (halo_pos[0]+0.5) * dx[0];
                 amrex::Real y = (halo_pos[1]+0.5) * dx[1];
                 amrex::Real z = (halo_pos[2]+0.5) * dx[2];
-   
+
                 amrex::Real mass = mass_seed;
 
                 int lev = 0;
                 int grid = 0;
                 int tile = 0;
 
-                // Note that we are going to add the particle into grid 0 and tile 0 at level 0 -- 
+                // Note that we are going to add the particle into grid 0 and tile 0 at level 0 --
                 //      this is not actually where the particle belongs, but we will let the Redistribute call
                 //      put it in the right place
 
