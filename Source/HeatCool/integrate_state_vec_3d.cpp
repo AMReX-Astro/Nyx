@@ -23,6 +23,8 @@
 #ifdef AMREX_USE_CUDA
 #include <nvector/nvector_cuda.h>
 #endif
+//#define PATCH 1
+#define MAKE_MANAGED 1
 using namespace amrex;
 
 /* Functions Called by the Solver */
@@ -71,6 +73,8 @@ int Nyx::integrate_state_vec
       //check that copy contructor vs create constructor works??
       const Box& tbx = mfi.tilebox();
 
+      S_old[mfi].prefetchToDevice();
+      D_old[mfi].prefetchToDevice();
       Array4<Real> const& state4 = S_old.array(mfi);
       Array4<Real> const& diag_eos4 = D_old.array(mfi);
 
@@ -79,7 +83,7 @@ int Nyx::integrate_state_vec
       return 0;
 }
 
-int Nyx::integrate_state_vec_mfin
+AMREX_INLINE int Nyx::integrate_state_vec_mfin
   (amrex::Array4<Real> const& state4,
    amrex::Array4<Real> const& diag_eos4,
    const Box& tbx,
@@ -109,25 +113,61 @@ int Nyx::integrate_state_vec_mfin
 				int loop = 1;
 
 #ifdef AMREX_USE_CUDA
-				cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();
+			cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();	
+#ifndef MAKE_MANAGED
 
+#ifdef PATCH
 				u = N_VMakeWithAllocator_Cuda(neq,sunalloc,sunfree);  /* Allocate u vector */
+#else
+				u = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
+#endif
 				double* dptr=N_VGetDeviceArrayPointer_Cuda(u);
 
+#ifdef PATCH
 				N_Vector e_orig = N_VMakeWithAllocator_Cuda(neq,sunalloc,sunfree);  /* Allocate u vector */
+#else
+				N_Vector e_orig = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
+#endif
 				double* eptr=N_VGetDeviceArrayPointer_Cuda(e_orig);
 				N_VSetCudaStream_Cuda(e_orig, &currentStream);
 				N_VSetCudaStream_Cuda(u, &currentStream);
 
+#ifdef PATCH
 				N_Vector Data = N_VMakeWithAllocator_Cuda(4*neq,sunalloc,sunfree);  // Allocate u vector 
+#else
+				N_Vector Data = N_VNewManaged_Cuda(4*neq);  /* Allocate u vector */
+#endif
 				double* rparh = N_VGetDeviceArrayPointer_Cuda(Data);
 				N_VSetCudaStream_Cuda(Data, &currentStream);
 				// shouldn't need to initialize 
 				//N_VConst(0.0,Data);
 
+#ifdef PATCH
 				N_Vector abstol_vec = N_VMakeWithAllocator_Cuda(neq,sunalloc,sunfree);  
+#else
+				N_Vector abstol_vec = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
+#endif
 				double* abstol_ptr = N_VGetDeviceArrayPointer_Cuda(abstol_vec);
 				N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
+#else
+				double* dptr=(double*) The_Managed_Arena()->alloc(neq*sizeof(double));
+				u = N_VMakeManaged_Cuda(neq,dptr);  /* Allocate u vector */
+				double* eptr= (double*) The_Managed_Arena()->alloc(neq*sizeof(double));
+				N_Vector e_orig = N_VMakeManaged_Cuda(neq,eptr);  /* Allocate u vector */
+				N_VSetCudaStream_Cuda(e_orig, &currentStream);
+				N_VSetCudaStream_Cuda(u, &currentStream);
+
+				double* rparh = (double*) The_Managed_Arena()->alloc(4*neq*sizeof(double));
+				N_Vector Data = N_VMakeManaged_Cuda(4*neq,rparh);  // Allocate u vector 
+				N_VSetCudaStream_Cuda(Data, &currentStream);
+				// shouldn't need to initialize 
+				//N_VConst(0.0,Data);
+
+				double* abstol_ptr = (double*) The_Managed_Arena()->alloc(neq*sizeof(double));
+				N_Vector abstol_vec = N_VMakeManaged_Cuda(neq,abstol_ptr);
+				N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
+#endif
+
 #else
 #ifdef _OPENMP
 				int nthreads=omp_get_max_threads();
@@ -203,10 +243,10 @@ int Nyx::integrate_state_vec_mfin
 				
 				CVodeSetUserData(cvode_mem, &Data);
 				//				CVodeSetMaxStep(cvode_mem, delta_time/10);
-				BL_PROFILE_VAR("Nyx::strang_second_cvode",cvode_timer2);
+				//				BL_PROFILE_VAR("Nyx::strang_second_cvode",cvode_timer2);
 				flag = CVode(cvode_mem, delta_time, u, &t, CV_NORMAL);
-				amrex::Gpu::Device::streamSynchronize();
-				BL_PROFILE_VAR_STOP(cvode_timer2);
+				//				amrex::Gpu::Device::streamSynchronize();
+				//				BL_PROFILE_VAR_STOP(cvode_timer2);
 
 #ifndef NDEBUG
 				PrintFinalStats(cvode_mem);
@@ -240,6 +280,13 @@ int Nyx::integrate_state_vec_mfin
 #pragma omp barrier
 #else
 				});
+#endif
+
+#ifdef AMREX_USE_GPU
+      The_Managed_Arena()->free(dptr);
+      The_Managed_Arena()->free(eptr);
+      The_Managed_Arena()->free(rparh);
+      The_Managed_Arena()->free(abstol_ptr);
 #endif
 
 				N_VDestroy(u);          /* Free the u vector */
@@ -277,8 +324,8 @@ int Nyx::integrate_state_grownvec
       //check that copy contructor vs create constructor works??
       const Box& tbx = mfi.growntilebox();
 
-      const auto len = amrex::length(tbx);  // length of box
-      const auto lo  = amrex::lbound(tbx);  // lower bound of box
+      S_old[mfi].prefetchToDevice();
+      D_old[mfi].prefetchToDevice();
 
       Array4<Real> const& state4 = S_old.array(mfi);
       Array4<Real> const& diag_eos4 = D_old.array(mfi);
