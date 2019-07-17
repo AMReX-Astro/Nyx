@@ -282,13 +282,14 @@ AMREX_INLINE int Nyx::integrate_state_vec_mfin
 				});
 #endif
 
+#ifdef MAKE_MANAGED
 #ifdef AMREX_USE_GPU
       The_Managed_Arena()->free(dptr);
       The_Managed_Arena()->free(eptr);
       The_Managed_Arena()->free(rparh);
       The_Managed_Arena()->free(abstol_ptr);
 #endif
-
+#endif
 				N_VDestroy(u);          /* Free the u vector */
 				N_VDestroy(e_orig);          /* Free the e_orig vector */
 				N_VDestroy(abstol_vec);          /* Free the u vector */
