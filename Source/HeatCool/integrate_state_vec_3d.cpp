@@ -149,6 +149,7 @@ AMREX_INLINE int Nyx::integrate_state_vec_mfin
 #endif
 				double* abstol_ptr = N_VGetDeviceArrayPointer_Cuda(abstol_vec);
 				N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
+				amrex::Gpu::Device::streamSynchronize();
 #else
 				double* dptr=(double*) The_Managed_Arena()->alloc(neq*sizeof(double));
 				u = N_VMakeManaged_Cuda(neq,dptr);  /* Allocate u vector */
@@ -220,6 +221,7 @@ AMREX_INLINE int Nyx::integrate_state_vec_mfin
 #pragma omp barrier
 #else
 				});
+      amrex::Gpu::Device::streamSynchronize();
 #endif
 
 #ifdef CV_NEWTON
@@ -280,6 +282,7 @@ AMREX_INLINE int Nyx::integrate_state_vec_mfin
 #pragma omp barrier
 #else
 				});
+      amrex::Gpu::Device::streamSynchronize();
 #endif
 
 #ifdef MAKE_MANAGED
