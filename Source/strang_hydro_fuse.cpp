@@ -67,18 +67,10 @@ Nyx::strang_hydro_fuse (Real time,
     // point
     enforce_nonnegative_species(S_old);
 
-    MultiFab ext_src_old(grids, dmap, NUM_STATE, NUM_GROW);
-	//    std::unique_ptr<MultiFab> ext_src_old;
-
     //assume user-provided source is not CUDA
     if (add_ext_src)
       {
-	//	ext_src_old.reset(new MultiFab(grids, dmap, NUM_STATE, NUM_GROW));
-#ifndef GPU_COMPATIBLE_PROBLEM
-	amrex::Gpu::Device::streamSynchronize();
-	Gpu::LaunchSafeGuard lsg(false);
-#endif
-	get_old_source(prev_time, dt, ext_src_old);
+	amrex::Abort("strang_fuse not defined for add_ext_src==1");
       }
 
     // Define the gravity vector 
@@ -94,19 +86,33 @@ Nyx::strang_hydro_fuse (Real time,
 
     BL_PROFILE_VAR("Nyx::strang_hydro()::old_tmp_patch",old_tmp);
     // Create FAB for extended grid values (including boundaries) and fill.
-    MultiFab S_old_tmp(S_old.boxArray(), S_old.DistributionMap(), NUM_STATE, NUM_GROW);
-    MultiFab D_old_tmp(D_old.boxArray(), D_old.DistributionMap(), D_old.nComp(), NUM_GROW);
+    std::unique_ptr<MultiFab> S_old_tmp;
+    std::unique_ptr<MultiFab> D_old_tmp;
+    if( nghost_state!=NUM_GROW)
+      {
+	S_old_tmp.reset(new MultiFab(S_old.boxArray(), S_old.DistributionMap(), NUM_STATE, NUM_GROW));
+	D_old_tmp.reset(new MultiFab(D_old.boxArray(), D_old.DistributionMap(), D_old.nComp(), NUM_GROW));
 
-    FillPatch(*this, S_old_tmp, NUM_GROW, time, State_Type, 0, NUM_STATE);
-    FillPatch(*this, D_old_tmp, NUM_GROW, time, DiagEOS_Type, 0, D_old.nComp());
-
+	FillPatch(*this, *S_old_tmp, NUM_GROW, time, State_Type, 0, NUM_STATE);
+	FillPatch(*this, *D_old_tmp, NUM_GROW, time, DiagEOS_Type, 0, D_old.nComp());
+      }
+    else
+      {
+	MultiFab::Copy(S_new,S_old,0,0,S_old.nComp(),0);//,S_old_tmp.nGrow());
+	FillPatch(*this, S_new, S_new.nGrow(), prev_time, State_Type, 0, NUM_STATE);
+	MultiFab::Copy(D_new,D_old,0,0,D_old.nComp(),0);//,S_old_tmp.nGrow());
+	FillPatch(*this, D_new, D_new.nGrow(), prev_time, DiagEOS_Type, 0, D_old.nComp());
+      }
     BL_PROFILE_VAR_STOP(old_tmp);
 
     std::unique_ptr<MultiFab> divu_cc;
     std::unique_ptr<MultiFab> hydro_src;
+    std::unique_ptr<MultiFab> ext_src_old;
 
 #ifndef NDEBUG
     {
+    if( nghost_state!=NUM_GROW)
+      {
 	amrex::Gpu::Device::streamSynchronize();
 	if (S_old_tmp.contains_nan(Density, S_old_tmp.nComp(), 0)) {
           {
@@ -119,6 +125,7 @@ Nyx::strang_hydro_fuse (Real time,
               }
 	    amrex::Abort("S_new has NaNs before the second strang call");
           }
+	}
       }
 #endif
 
@@ -128,16 +135,30 @@ Nyx::strang_hydro_fuse (Real time,
     //    MultiFab hydro_src(grids, dmap, NUM_STATE, 0);
 
     if(hydro_convert)
-      ctu_hydro_fuse(time,dt,a_old,a_new,S_old_tmp,D_old_tmp,
-				 ext_src_old,*hydro_src,grav_vector,
+      {
+	if( nghost_state!=NUM_GROW)
+	  {
+	    ctu_hydro_fuse(time,dt,a_old,a_new,*S_old_tmp,*D_old_tmp,
+				 *ext_src_old,*hydro_src,grav_vector,
 				 init_flux_register, add_to_flux_register);
+	  }
+	else
+	  {
+	    ctu_hydro_fuse(time,dt,a_old,a_new,S_new,D_new,
+				 *ext_src_old,*hydro_src,grav_vector,
+				 init_flux_register, add_to_flux_register);
+	  }
+      }
     else
       {
 	amrex::Abort("Behavior not defined for fuse and hydro_convert=0");
       }
-	
-    D_old_tmp.clear();
-    S_old_tmp.clear();
+
+    if( nghost_state!=NUM_GROW)
+      {
+	D_old_tmp->clear();
+	S_old_tmp->clear();
+      }
 
 #ifndef NDEBUG
     {
@@ -166,39 +187,11 @@ Nyx::strang_hydro_fuse (Real time,
 
     grav_vector.clear();
 
+    //assume user-provided source is not CUDA
     if (add_ext_src)
-    {
-#ifndef GPU_COMPATIBLE_PROBLEM
       {
-        amrex::Gpu::Device::streamSynchronize();
-	Gpu::LaunchSafeGuard lsg(false);
-        get_old_source(prev_time, dt, ext_src_old);
+	amrex::Abort("strang_fuse not defined for add_ext_src==1");
       }
-#else
-        get_old_source(prev_time, dt, ext_src_old);
-#endif
-
-        // Must compute new temperature in case it is needed in the source term evaluation
-        compute_new_temp(S_new,D_new);
-
-        // Compute source at new time (no ghost cells needed)
-        MultiFab ext_src_new(grids, dmap, NUM_STATE, 0);
-
-#ifndef GPU_COMPATIBLE_PROBLEM
-      {
-        amrex::Gpu::Device::streamSynchronize();
-	Gpu::LaunchSafeGuard lsg(false);
-        get_new_source(prev_time, cur_time, dt, ext_src_new);
-      }
-#else
-        get_new_source(prev_time, cur_time, dt, ext_src_new);
-#endif
-
-        time_center_source_terms(S_new, ext_src_old, ext_src_new, dt);
-	ext_src_old.clear();
-        compute_new_temp(S_new,D_new);
-    } // end if (add_ext_src)
-
 
 #ifndef NDEBUG
     amrex::Gpu::Device::streamSynchronize();
