@@ -7,21 +7,56 @@
 using namespace amrex;
 
 void
-Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
+Nyx::ctu_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
                            MultiFab& Sborder, MultiFab& D_border, 
-                           MultiFab& ext_src_old, MultiFab& hydro_source, 
+                           MultiFab& ext_src_old, MultiFab& hydro_source_big, 
                            MultiFab& grav_vector, 
 				//                           MultiFab& grav_vector,
                            bool init_flux_register, bool add_to_flux_register) 
 {
 
+  Gpu::LaunchSafeGuard lsg(true);
+#ifdef HEATCOOL
+  BL_PROFILE_VAR("Nyx::strang_first_step()",strang_first);
+    
+  const Real half_dt = 0.5*dt;
+
+  const Real a = get_comoving_a(time);
+
+  FArrayBox hydro_source;
+#ifndef FORCING
+    {
+      const Real z = 1.0/a - 1.0;
+      fort_interp_to_this_z(&z);
+    }
+#endif
+
+    {
+
+    fort_ode_eos_setup(a,half_dt);
+
+    }
+
+  BL_PROFILE_VAR_STOP(strang_first);
+#endif
+  BL_PROFILE_VAR("Nyx::update_state_with_sources()",update_sources);
+    if(hydro_convert)
+    {
+    if (verbose && ParallelDescriptor::IOProcessor())
+      std::cout << "Updating state with the hydro sources moved ... " << std::endl;
+    }
+
+    int print_fortran_warnings_tmp=print_fortran_warnings;
+    int do_grav_tmp=do_grav;
+
+    FArrayBox sum_state, divu_cc_small;
+    BL_PROFILE_VAR_STOP(update_sources);
   BL_PROFILE("Nyx::construct_ctu_hydro_source()");
 
   if(verbose) {  
     amrex::Print()<<"Beginning of construct_hydro"<<std::endl;
     amrex::Arena::PrintUsage();
   }
-  Gpu::LaunchSafeGuard lsg(true);
   
   const Real strt_time = ParallelDescriptor::second();
 
@@ -200,16 +235,30 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
     bool first = true;
 
-    for (MFIter mfi(S_new, TilingIfNotGPU()); mfi.isValid(); ++mfi) {
+    for (MFIter mfi(Sborder, TilingIfNotGPU()); mfi.isValid(); ++mfi) {
       //      for (MFIter mfi(S_new, hydro_tile_size); mfi.isValid(); ++mfi) {
 
+#ifdef HEATCOOL
+      {
+	BL_PROFILE("Nyx::strang_first_step()");
+	const auto tbx = mfi.growntilebox();
+
+	Sborder[mfi].prefetchToDevice();
+	D_border[mfi].prefetchToDevice();
+
+	const auto state4 = Sborder.array(mfi);
+	const auto diag_eos4 = D_border.array(mfi);
+	integrate_state_vec_mfin(state4,diag_eos4,tbx,a,half_dt);
+	//not sure if this is necessary for anything except timers
+	amrex::Gpu::streamSynchronize();
+      }
+#endif
       // the valid region box
       const Box& bx = mfi.tilebox();
 
       const Box& obx = amrex::grow(bx, 1);
 
       const auto fab_Sborder = Sborder.array(mfi);
-      const auto fab_hydro_source = hydro_source.array(mfi);
       const auto fab_sources_for_hydro = ext_src_old.array(mfi);
       const auto fab_grav = grav_vector.array(mfi);
 
@@ -1267,8 +1316,12 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       Elixir elix_pdivu = pdivu.elixir();
     const auto fab_pdivu = pdivu.array();
 
+    hydro_source.resize(bx,NUM_STATE);
+    Elixir elix_hydro_source = hydro_source.elixir();
+      const auto fab_hydro_source = hydro_source.array();
+
       Sborder[mfi].prefetchToDevice();
-      hydro_source[mfi].prefetchToDevice();
+      hydro_source.prefetchToDevice();
       flux[0].prefetchToDevice();
       flux[1].prefetchToDevice();
       flux[2].prefetchToDevice();
@@ -1339,6 +1392,60 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       elix_flux_y.clear();
       elix_flux_z.clear();
 
+      BL_PROFILE_VAR("Nyx::update_state_with_sources()",update_sources);
+      const auto fab_S_new = S_new.array(mfi);
+      
+      /*
+      const Box& bx = mfi.tilebox();
+      const Box& obx = amrex::grow(bx, 1);
+      */
+      sum_state.resize(obx, AMREX_SPACEDIM);
+      Elixir elix_s = sum_state.elixir();
+      const auto fab_sum_state = sum_state.array();
+
+      divu_cc_small.resize(bx, 1);
+      Elixir elix_divu_cc_small = divu_cc_small.elixir();
+      const auto fab_divu_cc = divu_cc_small.array();
+
+      Sborder[mfi].prefetchToDevice();
+      S_new[mfi].prefetchToDevice();
+      ext_src_old[mfi].prefetchToDevice();
+      hydro_source.prefetchToDevice();
+      divu_cc_small.prefetchToDevice();
+      grav_vector[mfi].prefetchToDevice();
+
+      sum_state.prefetchToDevice();
+
+	AMREX_LAUNCH_DEVICE_LAMBDA(bx,tbx,
+	{
+	  ca_fort_update_state (
+		  tbx.loVect(), tbx.hiVect(),
+		  BL_ARR4_TO_FORTRAN(fab_Sborder),
+		  BL_ARR4_TO_FORTRAN(fab_S_new),
+		  BL_ARR4_TO_FORTRAN(fab_sources_for_hydro),
+		  BL_ARR4_TO_FORTRAN(fab_hydro_source),
+		  BL_ARR4_TO_FORTRAN(fab_divu_cc),
+		  BL_ARR4_TO_FORTRAN_3D(fab_sum_state),
+		  &dt, &a_old, &a_new, &print_fortran_warnings_tmp);
+
+	  // Note this increments S_new, it doesn't add source to S_old
+	  // However we create the source term using rho_old
+	  if (do_grav_tmp)
+	    ca_fort_add_grav_source (
+		    tbx.loVect(), tbx.hiVect(),
+		    BL_ARR4_TO_FORTRAN(fab_Sborder),
+		    BL_ARR4_TO_FORTRAN(fab_S_new),
+		    BL_ARR4_TO_FORTRAN(fab_grav),
+		    &dt, &a_old, &a_new);
+	});
+
+	elix_hydro_source.clear();
+	elix_s.clear();
+	elix_divu_cc_small.clear();
+
+	//Unsure whether this stream synchronize is useful for anything other than profiling timers
+	amrex::Gpu::streamSynchronize();
+      BL_PROFILE_VAR_STOP(update_sources);
       //took out track_grid_losses
       //amrex::Gpu::Device::synchronize();
     } // MFIter loop

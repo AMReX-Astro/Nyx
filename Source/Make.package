@@ -21,6 +21,7 @@ ifneq ($(NO_HYDRO), TRUE)
 CEXE_sources += compute_hydro_sources.cpp
 CEXE_sources += update_state_with_sources.cpp
 CEXE_sources += strang_hydro.cpp
+CEXE_sources += strang_hydro_fuse.cpp
 CEXE_sources += strang_reactions.cpp
 CEXE_sources += sum_integrated_quantities.cpp
 CEXE_sources += sum_utils.cpp

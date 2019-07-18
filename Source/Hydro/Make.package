@@ -6,6 +6,7 @@ F90EXE_sources += enforce_nonnegative_species.F90
 
 CEXE_sources += Nyx_hydro.cpp
 CEXE_sources += Nyx_ctu_hydro.cpp
+CEXE_sources += Nyx_ctu_fuse.cpp
 F90EXE_sources += slope_nd.F90
 F90EXE_sources += ppm_nd.F90
 F90EXE_sources += riemann_util.F90

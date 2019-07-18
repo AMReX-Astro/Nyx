@@ -304,13 +304,23 @@ Nyx::advance_hydro_plus_particles (Real time,
 	  if( nghost_state==NUM_GROW)
 	    get_level(lev).strang_hydro_ghost_state(time, dt, a_old, a_new);
 	  else
-	    get_level(lev).strang_hydro(time, dt, a_old, a_new);
+	    {
+	    if(strang_fuse > 0)
+	      get_level(lev).strang_hydro_fuse(time, dt, a_old, a_new);
+	    else
+	      get_level(lev).strang_hydro(time, dt, a_old, a_new);
+	    }
         } 
 #else
 	  if( nghost_state==NUM_GROW)
 	    get_level(lev).strang_hydro_ghost_state(time, dt, a_old, a_new);
 	  else
-	    get_level(lev).strang_hydro(time, dt, a_old, a_new);
+	    {
+	    if(strang_fuse > 0)
+	      get_level(lev).strang_hydro_fuse(time, dt, a_old, a_new);
+	    else
+	      get_level(lev).strang_hydro(time, dt, a_old, a_new);
+	    }
 #endif
     }
     BL_PROFILE_VAR_STOP(just_the_hydro);

@@ -432,6 +432,7 @@ public:
 
     void strang_hydro(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
     void strang_hydro_ghost_state(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
+    void strang_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
 #ifdef SDC
     void    sdc_hydro(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
 #endif
@@ -463,6 +464,12 @@ public:
                                amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src, 
                                amrex::MultiFab& grav, 
                                bool init_flux_register, bool add_to_flux_register);
+
+    void ctu_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
+			amrex::MultiFab& S_border, amrex::MultiFab& D_border, 
+			amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src, 
+			amrex::MultiFab& grav, 
+			bool init_flux_register, bool add_to_flux_register);
 
 ///
 /// this constructs the hydrodynamic source (essentially the flux
@@ -850,6 +857,9 @@ protected:
 
     // if true , incorporate the source term through Strang-splitting
     static int strang_split;
+
+    // if true , fuse MFIter loops for new hydro with heat_cool_type=11
+    static int strang_fuse;
 
 #ifdef SDC
     // if true , use SDC to couple hydro and reactions
