@@ -103,6 +103,7 @@ Nyx::strang_hydro (Real time,
     BL_PROFILE_VAR_STOP(old_tmp);
 
     std::unique_ptr<MultiFab> divu_cc;
+    std::unique_ptr<MultiFab> hydro_src;
 
 #ifndef NDEBUG
     {
@@ -133,17 +134,17 @@ Nyx::strang_hydro (Real time,
     bool   init_flux_register = true;
     bool add_to_flux_register = true;
 
-    MultiFab hydro_src(grids, dmap, NUM_STATE, 0);
+    //    MultiFab hydro_src(grids, dmap, NUM_STATE, 0);
 
     if(hydro_convert)
       construct_ctu_hydro_source(time,dt,a_old,a_new,S_old_tmp,D_old_tmp,
-				 ext_src_old,hydro_src,grav_vector,
+				 ext_src_old,*hydro_src,grav_vector,
 				 init_flux_register, add_to_flux_register);
     else
       {
 	divu_cc.reset(new MultiFab(grids, dmap, 1, 0));
 	compute_hydro_sources(time,dt,a_old,a_new,S_old_tmp,D_old_tmp,
-			    ext_src_old,hydro_src,grav_vector,*divu_cc,
+			    ext_src_old,*hydro_src,grav_vector,*divu_cc,
 			    init_flux_register, add_to_flux_register);
       }
 	
@@ -155,8 +156,6 @@ Nyx::strang_hydro (Real time,
     //			      dt,a_old,a_new);	
 
     S_old_tmp.clear();
-    hydro_src.clear();
-
 
 #ifndef NDEBUG
     {
