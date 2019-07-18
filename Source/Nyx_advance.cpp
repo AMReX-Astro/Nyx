@@ -384,6 +384,7 @@ Nyx::advance_hydro_plus_particles (Real time,
     //
     for (int lev = level; lev <= finest_level_to_advance; lev++)
     {
+        amrex::Gpu::LaunchSafeGuard lsg(true);
         MultiFab& S_old = get_level(lev).get_old_data(State_Type);
         MultiFab& S_new = get_level(lev).get_new_data(State_Type);
         MultiFab& D_new = get_level(lev).get_new_data(DiagEOS_Type);
@@ -484,10 +485,8 @@ Nyx::advance_hydro_plus_particles (Real time,
     {
         MultiFab& S_new = get_level(lev).get_new_data(State_Type);
         MultiFab& D_new = get_level(lev).get_new_data(DiagEOS_Type);
-        MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
-	reset_e_src.setVal(0.0);
 
-	get_level(lev).reset_internal_energy(S_new,D_new,reset_e_src);
+	get_level(lev).reset_internal_energy_nostore(S_new,D_new);
 	
     }
     }
@@ -600,6 +599,10 @@ Nyx::advance_hydro (Real time,
     for (MFIter mfi(S_new,Gpu::notInLaunchRegion()); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
+	grav_vec_old[mfi].prefetchToDevice();
+	grav_vec_new[mfi].prefetchToDevice();
+	S_old[mfi].prefetchToDevice();
+	S_new[mfi].prefetchToDevice();
 	const auto fab_grav_vec_old = grav_vec_old.array(mfi);
 	const auto fab_grav_vec_new = grav_vec_new.array(mfi);
 	const auto fab_S_old = S_old.array(mfi);
