@@ -125,7 +125,8 @@ Nyx::strang_hydro (Real time,
       amrex::Print()<<"Before first strang:"<<std::endl;
       amrex::Arena::PrintUsage();
     }
-    strang_first_step(time,dt,S_old_tmp,D_old_tmp);
+    amrex::Print()<<"Moved strang_first_step"<<std::endl;
+    ////////    strang_first_step(time,dt,S_old_tmp,D_old_tmp);
 #endif
 
     bool   init_flux_register = true;
