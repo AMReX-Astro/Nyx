@@ -9,7 +9,7 @@ using namespace amrex;
 void
 Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
                            MultiFab& Sborder, MultiFab& D_border, 
-                           MultiFab& ext_src_old, MultiFab& hydro_source, 
+                           MultiFab& ext_src_old, MultiFab& hydro_source_big, 
                            MultiFab& grav_vector, 
 				//                           MultiFab& grav_vector,
                            bool init_flux_register, bool add_to_flux_register) 
@@ -23,6 +23,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
   const Real a = get_comoving_a(time);
 
+  FArrayBox hydro_source;
 #ifndef FORCING
     {
       const Real z = 1.0/a - 1.0;
@@ -260,7 +261,6 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       const Box& obx = amrex::grow(bx, 1);
 
       const auto fab_Sborder = Sborder.array(mfi);
-      const auto fab_hydro_source = hydro_source.array(mfi);
       const auto fab_sources_for_hydro = ext_src_old.array(mfi);
       const auto fab_grav = grav_vector.array(mfi);
 
@@ -1318,8 +1318,12 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       Elixir elix_pdivu = pdivu.elixir();
     const auto fab_pdivu = pdivu.array();
 
+    hydro_source.resize(bx,NUM_STATE);
+    Elixir elix_hydro_source = hydro_source.elixir();
+      const auto fab_hydro_source = hydro_source.array();
+
       Sborder[mfi].prefetchToDevice();
-      hydro_source[mfi].prefetchToDevice();
+      hydro_source.prefetchToDevice();
       flux[0].prefetchToDevice();
       flux[1].prefetchToDevice();
       flux[2].prefetchToDevice();
@@ -1408,7 +1412,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       Sborder[mfi].prefetchToDevice();
       S_new[mfi].prefetchToDevice();
       ext_src_old[mfi].prefetchToDevice();
-      hydro_source[mfi].prefetchToDevice();
+      hydro_source.prefetchToDevice();
       divu_cc_small.prefetchToDevice();
       grav_vector[mfi].prefetchToDevice();
 
@@ -1436,6 +1440,10 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 		    BL_ARR4_TO_FORTRAN(fab_grav),
 		    &dt, &a_old, &a_new);
 	});
+
+	elix_hydro_source.clear();
+	elix_s.clear();
+	elix_divu_cc_small.clear();
 
 	//Unsure whether this stream synchronize is useful for anything other than profiling timers
 	amrex::Gpu::streamSynchronize();
