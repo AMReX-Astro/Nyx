@@ -15,13 +15,39 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                            bool init_flux_register, bool add_to_flux_register) 
 {
 
+  Gpu::LaunchSafeGuard lsg(true);
+
+  BL_PROFILE_VAR("Nyx::strang_first_step()",strang_first);
+    
+  const Real half_dt = 0.5*dt;
+
+  const Real a = get_comoving_a(time);
+
+#ifndef FORCING
+    {
+      const Real z = 1.0/a - 1.0;
+      fort_interp_to_this_z(&z);
+      /*      int neq=1;
+      AMREX_LAUNCH_DEVICE_LAMBDA(neq,i,
+				 {
+				   ca_interp_to_this_z(&z);
+				 });*/
+    }
+#endif
+
+    {
+
+    fort_ode_eos_setup(a,half_dt);
+
+    }
+
+  BL_PROFILE_VAR_STOP(strang_first);
   BL_PROFILE("Nyx::construct_ctu_hydro_source()");
 
   if(verbose) {  
     amrex::Print()<<"Beginning of construct_hydro"<<std::endl;
     amrex::Arena::PrintUsage();
   }
-  Gpu::LaunchSafeGuard lsg(true);
   
   const Real strt_time = ParallelDescriptor::second();
 
@@ -93,7 +119,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
   const int* domain_lo = geom.Domain().loVect();
   const int* domain_hi = geom.Domain().hiVect();
 
-  MultiFab& S_new = get_new_data(State_Type);
+//  MultiFab& S_new = get_new_data(State_Type);
 
   Real mass_lost = 0.;
   Real xmom_lost = 0.;
@@ -200,9 +226,20 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
     bool first = true;
 
-    for (MFIter mfi(S_new, TilingIfNotGPU()); mfi.isValid(); ++mfi) {
+    for (MFIter mfi(Sborder, TilingIfNotGPU()); mfi.isValid(); ++mfi) {
       //      for (MFIter mfi(S_new, hydro_tile_size); mfi.isValid(); ++mfi) {
 
+      {
+	BL_PROFILE("Nyx::strang_first_step()");
+	const auto tbx = mfi.growntilebox();
+
+	Sborder[mfi].prefetchToDevice();
+	D_border[mfi].prefetchToDevice();
+
+	const auto state4 = Sborder.array(mfi);
+	const auto diag_eos4 = D_border.array(mfi);
+	integrate_state_vec_mfin(state4,diag_eos4,tbx,a,half_dt);
+      }
       // the valid region box
       const Box& bx = mfi.tilebox();
 

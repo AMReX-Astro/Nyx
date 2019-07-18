@@ -23,8 +23,8 @@
 #ifdef AMREX_USE_CUDA
 #include <nvector/nvector_cuda.h>
 #endif
-//#define PATCH 1
-#define MAKE_MANAGED 1
+#define PATCH 1
+//#define MAKE_MANAGED 1
 using namespace amrex;
 
 /* Functions Called by the Solver */
@@ -83,7 +83,7 @@ int Nyx::integrate_state_vec
       return 0;
 }
 
-AMREX_INLINE int Nyx::integrate_state_vec_mfin
+int Nyx::integrate_state_vec_mfin
   (amrex::Array4<Real> const& state4,
    amrex::Array4<Real> const& diag_eos4,
    const Box& tbx,
