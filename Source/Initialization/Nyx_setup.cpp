@@ -225,7 +225,7 @@ Nyx::hydro_setup()
 
     // This has two components: Temperature and Ne
     desc_lst.addDescriptor(DiagEOS_Type, IndexType::TheCellType(),
-                           StateDescriptor::Point, 1, NDIAG_C, interp,
+                           StateDescriptor::Point, nghost_state, NDIAG_C, interp,
                            state_data_extrap, store_in_checkpoint);
 
 #ifdef SDC

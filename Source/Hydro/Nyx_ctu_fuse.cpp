@@ -9,7 +9,7 @@ using namespace amrex;
 void
 Nyx::ctu_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
                            MultiFab& Sborder, MultiFab& D_border, 
-                           MultiFab& ext_src_old, MultiFab& hydro_source_big, 
+                           MultiFab& ext_src_old_big, MultiFab& hydro_source_big, 
                            MultiFab& grav_vector, 
 				//                           MultiFab& grav_vector,
                            bool init_flux_register, bool add_to_flux_register) 
@@ -24,6 +24,7 @@ Nyx::ctu_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::
   const Real a = get_comoving_a(time);
 
   FArrayBox hydro_source;
+  FArrayBox ext_src_old;
 #ifndef FORCING
     {
       const Real z = 1.0/a - 1.0;
@@ -259,7 +260,6 @@ Nyx::ctu_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::
       const Box& obx = amrex::grow(bx, 1);
 
       const auto fab_Sborder = Sborder.array(mfi);
-      const auto fab_sources_for_hydro = ext_src_old.array(mfi);
       const auto fab_grav = grav_vector.array(mfi);
 
       const Box& qbx = amrex::grow(bx,NUM_GROW);
@@ -291,14 +291,25 @@ Nyx::ctu_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::
                    BL_ARR4_TO_FORTRAN_3D(fab_q),
                    BL_ARR4_TO_FORTRAN_3D(fab_qaux));
 	});
+
+	ext_src_old.resize(qbx,NUM_STATE);
+	Elixir elix_ext_src_old = ext_src_old.elixir();
+	const auto fab_sources_for_hydro = ext_src_old.array();
+
         // Convert the source terms expressed as sources to the conserved state to those
         // expressed as sources for the primitive state.
 	q.prefetchToDevice();
 	qaux.prefetchToDevice();
 	grav_vector[mfi].prefetchToDevice();
-	ext_src_old[mfi].prefetchToDevice();
+	ext_src_old.prefetchToDevice();
 	src_q.prefetchToDevice();
 
+        const int numcomp = NUM_STATE;
+	AMREX_HOST_DEVICE_FOR_4D(qbx,numcomp, i,j,k,n,
+	{
+	  fab_sources_for_hydro(i,j,k,n)=0.0;
+	});
+				   
 	AMREX_LAUNCH_DEVICE_LAMBDA(qbx, tqbx,
 	{
 	ca_srctoprim(AMREX_INT_ANYD(tqbx.loVect()), AMREX_INT_ANYD(tqbx.hiVect()),
@@ -1409,7 +1420,7 @@ Nyx::ctu_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::
 
       Sborder[mfi].prefetchToDevice();
       S_new[mfi].prefetchToDevice();
-      ext_src_old[mfi].prefetchToDevice();
+      ext_src_old.prefetchToDevice();
       hydro_source.prefetchToDevice();
       divu_cc_small.prefetchToDevice();
       grav_vector[mfi].prefetchToDevice();
@@ -1439,6 +1450,7 @@ Nyx::ctu_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::
 		    &dt, &a_old, &a_new);
 	});
 
+	elix_ext_src_old.clear();
 	elix_hydro_source.clear();
 	elix_s.clear();
 	elix_divu_cc_small.clear();
