@@ -148,9 +148,10 @@ Nyx::strang_hydro (Real time,
 	
     D_old_tmp.clear();
 
-    update_state_with_sources(S_old_tmp,S_new,
-			      ext_src_old,hydro_src,grav_vector,*divu_cc,
-			      dt,a_old,a_new);	
+    amrex::Print()<<"Moved update_state_with_sources"<<std::endl;
+    //    update_state_with_sources(S_old_tmp,S_new,
+    //			      ext_src_old,hydro_src,grav_vector,*divu_cc,
+    //			      dt,a_old,a_new);	
 
     S_old_tmp.clear();
     hydro_src.clear();
