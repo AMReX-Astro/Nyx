@@ -11,7 +11,8 @@ AMREX_CUDA_FORT_DEVICE subroutine f_rhs_rpar(time, e_in, energy, rpar)
                                      uvb_density_A, uvb_density_B, mean_rhob, &
                                      BetaH0, BetaHe0, BetaHep, Betaff1, Betaff4, &
                                      RecHp, RecHep, RecHepp, &
-                                     eh0, ehe0, ehep
+                                     eh0, ehe0, ehep, &
+                                     eh0_2, ehe0_2, ehep_2
 
       use vode_aux_module       , only: &!z_vode, rho_vode, T_vode, ne_vode, &
                                         JH_vode, JHe_vode, i_vode, j_vode, k_vode, fn_vode, NR_vode

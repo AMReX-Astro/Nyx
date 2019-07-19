@@ -98,9 +98,9 @@ Nyx::strang_hydro_fuse (Real time,
       }
     else
       {
-	MultiFab::Copy(S_new,S_old,0,0,S_old.nComp(),0);//,S_old_tmp.nGrow());
+	//	MultiFab::Copy(S_new,S_old,0,0,S_old.nComp(),0);//,S_old_tmp.nGrow());
 	FillPatch(*this, S_new, S_new.nGrow(), prev_time, State_Type, 0, NUM_STATE);
-	MultiFab::Copy(D_new,D_old,0,0,D_old.nComp(),0);//,S_old_tmp.nGrow());
+	//	MultiFab::Copy(D_new,D_old,0,0,D_old.nComp(),0);//,S_old_tmp.nGrow());
 	FillPatch(*this, D_new, D_new.nGrow(), prev_time, DiagEOS_Type, 0, D_old.nComp());
       }
     BL_PROFILE_VAR_STOP(old_tmp);
@@ -114,19 +114,20 @@ Nyx::strang_hydro_fuse (Real time,
     if( nghost_state!=NUM_GROW)
       {
 	amrex::Gpu::Device::streamSynchronize();
-	if (S_old_tmp.contains_nan(Density, S_old_tmp.nComp(), 0)) {
+	if (S_old_tmp->contains_nan(Density, S_old_tmp->nComp(), 0)) {
           {
-	    for (int i = 0; i < S_old_tmp.nComp(); i++)
+	    for (int i = 0; i < S_old_tmp->nComp(); i++)
 	      {
 	        if (ParallelDescriptor::IOProcessor())
 		  std::cout << "strang_hydro: testing component " << i << " for NaNs" << std::endl;
-		if (S_old_tmp.contains_nan(Density+i,1,0))
+		if (S_old_tmp->contains_nan(Density+i,1,0))
 		  amrex::Abort("S_old_tmp has NaNs in this component before first strang");
               }
 	    amrex::Abort("S_new has NaNs before the second strang call");
           }
 	}
       }
+    }
 #endif
 
     bool   init_flux_register = true;
@@ -183,6 +184,7 @@ Nyx::strang_hydro_fuse (Real time,
         amrex::Abort("S_new has NaNs before the second strang call");
     }
       }
+    }
 #endif
 
     grav_vector.clear();
@@ -210,15 +212,6 @@ Nyx::strang_hydro_fuse (Real time,
         }
         amrex::Abort("S_new has NaNs before the second strang call");
       }
-#endif
-
-#ifdef HEATCOOL
-    if(verbose) {
-      amrex::Print()<<"Before second strang:"<<std::endl;
-      amrex::Arena::PrintUsage();
-    }
-    // This returns updated (rho e), (rho E), and Temperature
-    strang_second_step(cur_time,dt,S_new,D_new);
 #endif
 
 #ifndef NDEBUG

@@ -180,6 +180,7 @@ module atomic_rates_module
 
 	 allocate(NCOOLFILE)
 	 allocate(ggh0, gghe0, gghep, eh0, ehe0, ehep)
+	 allocate(ggh0_2, gghe0_2, gghep_2, eh0_2, ehe0_2, ehep_2)
          NCOOLFILE = 0
          do
             read(11,*,end=10) tmp, tmp, tmp, tmp, tmp,  tmp, tmp
@@ -328,12 +329,12 @@ module atomic_rates_module
          lopz   = dlog10(1.0d0 + -(z+1)-1) ! -((1/(-a)-1)+1)-1)
          
          if (lopz .ge. lzr(NCOOLFILE)) then
-            ggh0  = 0.0d0
-            gghe0 = 0.0d0
-            gghep = 0.0d0
-            eh0   = 0.0d0
-            ehe0  = 0.0d0
-            ehep  = 0.0d0
+            ggh0_2  = 0.0d0
+            gghe0_2 = 0.0d0
+            gghep_2 = 0.0d0
+            eh0_2   = 0.0d0
+            ehe0_2  = 0.0d0
+            ehep_2  = 0.0d0
             return
          endif
 
@@ -350,7 +351,7 @@ module atomic_rates_module
 
          fact  = (lopz-lzr(j))/(lzr(j+1)-lzr(j))
 
-         ggh0_@  = rggh0(j)  + (rggh0(j+1)-rggh0(j))*fact
+         ggh0_2  = rggh0(j)  + (rggh0(j+1)-rggh0(j))*fact
          gghe0_2 = rgghe0(j) + (rgghe0(j+1)-rgghe0(j))*fact
          gghep_2 = rgghep(j) + (rgghep(j+1)-rgghep(j))*fact
          eh0_2   = reh0(j)   + (reh0(j+1)-reh0(j))*fact
@@ -393,5 +394,33 @@ module atomic_rates_module
          ehep  = rehep(j)  + (rehep(j+1)-rehep(j))*fact
       endif
        end subroutine fort_interp_to_this_z
+
+!       AMREX_CUDA_FORT_DEVICE subroutine ca_interp_to_this_z(z)
+
+!         use cudafor
+
+!         implicit none
+
+!      real(rt), intent(inout) :: z
+!      real(rt) :: lopz, fact, temp_z
+!      integer :: i, j
+!      logical :: test_table
+ 
+!      i = (blockidx%x-1) * blockdim%x + threadidx%x 
+!      lopz=5
+!      lopz   = dlog10(1.0d0 + z)
+!      j=lzr(NCOOLFILE)
+!      test_table = lopz .ge. lzr(NCOOLFILE)
+!      if (test_table) then
+!      if(i.eq.0) ggh0 = 0.0d0
+!         gghe0 = 0.0d0
+!         gghep = 0.0d0
+!         eh0   = 0.0d0
+!         ehe0  = 0.0d0
+!         ehep  = 0.0d0
+!      endif
+
+
+! end subroutine ca_interp_to_this_z
 
 end module atomic_rates_module

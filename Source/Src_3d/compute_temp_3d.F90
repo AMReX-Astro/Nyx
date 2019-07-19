@@ -64,7 +64,8 @@
                    if (inhomogeneous_on) then
                        if (z .gt. diag_eos(i,j,k,ZHI_COMP)) JH = 0
                    end if
-                   call nyx_eos_T_given_Re_device(JH, JHe, diag_eos(i,j,k,TEMP_COMP), diag_eos(i,j,k,NE_COMP), &
+                   ! SHOULD be full, segfaults
+                   call nyx_eos_T_given_Re_full_device(JH, JHe, diag_eos(i,j,k,TEMP_COMP), diag_eos(i,j,k,NE_COMP), &
                                            state(i,j,k,URHO), eint, comoving_a)
 
                else

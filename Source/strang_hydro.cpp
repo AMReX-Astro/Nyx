@@ -106,7 +106,7 @@ Nyx::strang_hydro (Real time,
 #ifndef NDEBUG
     {
 	amrex::Gpu::Device::streamSynchronize();
-	if (S_old_tmp.contains_nan(Density, S_old_tmp.nComp(), 0)) {
+	if (S_old_tmp.contains_nan(Density, S_old_tmp.nComp(), 0)) 
           {
 	    for (int i = 0; i < S_old_tmp.nComp(); i++)
 	      {
@@ -117,7 +117,7 @@ Nyx::strang_hydro (Real time,
               }
 	    amrex::Abort("S_new has NaNs before the second strang call");
           }
-      }
+    }
 #endif
 
 #ifdef HEATCOOL
@@ -178,6 +178,7 @@ Nyx::strang_hydro (Real time,
         amrex::Abort("S_new has NaNs before the second strang call");
     }
       }
+    }
 #endif
 
     grav_vector.clear();
@@ -359,23 +360,6 @@ Nyx::strang_hydro_ghost_state (Real time,
     FillPatch(*this, D_new, NUM_GROW, prev_time, DiagEOS_Type, 0, D_old.nComp());*/
 
     std::unique_ptr<MultiFab> divu_cc;
-
-#ifndef NDEBUG
-    amrex::Gpu::Device::streamSynchronize();
-    amrex::Gpu::setLaunchRegion(false);
-    if (S_old_tmp.contains_nan(Density, S_old_tmp.nComp(), 0))
-      {
-        for (int i = 0; i < S_old_tmp.nComp(); i++)
-        {
-            if (ParallelDescriptor::IOProcessor())
-                std::cout << "strang_hydro: testing component " << i << " for NaNs" << std::endl;
-            if (S_old_tmp.contains_nan(Density+i,1,0))
-                amrex::Abort("S_old_tmp has NaNs in this component before first strang");
-        }
-        amrex::Abort("S_new has NaNs before the second strang call");
-      }
-    amrex::Gpu::setLaunchRegion(true);
-#endif
 
 #ifdef HEATCOOL
     if(verbose) {
