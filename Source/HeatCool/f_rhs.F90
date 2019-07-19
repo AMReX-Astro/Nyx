@@ -37,13 +37,17 @@ AMREX_CUDA_FORT_DEVICE subroutine f_rhs_rpar(time, e_in, energy, rpar)
       T_vode=rpar(1)
       ne_vode=rpar(2)
       rho_vode=rpar(3)
-      z_vode=rpar(4)
+      if(rpar(4).lt.0) then
+         z_vode=-(-(rpar(4)+1)-1) ! -(-((1/(-a)-1)+1)-1)
+      else
+         z_vode=rpar(4)
+      endif
 
 
       if(e_in(1).le.0) e_in(1)=tiny(1.0d0)
 
      ! Converts from code units to CGS
-      rho = rho_vode * density_to_cgs * (1.0d0+z_vode)**3
+      rho = rho_vode * density_to_cgs * (1.0d0+abs(z_vode))**3
         U = e_in(1) * e_to_cgs
       nh  = rho*XHYDROGEN/MPROTON
 
@@ -64,17 +68,16 @@ AMREX_CUDA_FORT_DEVICE subroutine f_rhs_rpar(time, e_in, energy, rpar)
       if (logT .ge. TCOOLMAX) then ! Only free-free and Compton cooling are relevant
          lambda_ff = 1.42d-27 * dsqrt(T_vode) * (1.1d0 + 0.34d0*dexp(-(5.5d0 - logT)**2 / 3.0d0)) &
                               * (nhp + 4.0d0*nhepp)*ne_vode
-         lambda_c  = compt_c*T_cmb**4 * ne_vode * (T_vode - T_cmb*(1.0d0+z_vode))*(1.0d0 + z_vode)**4
+         lambda_c  = compt_c*T_cmb**4 * ne_vode * (T_vode - T_cmb*(1.0d0+abs(z_vode)))*(1.0d0 + abs(z_vode))**4
 
-         energy  = (-lambda_ff -lambda_c) * heat_from_cgs/(1.0d0+z_vode)**4
+         energy  = (-lambda_ff -lambda_c) * heat_from_cgs/(1.0d0+abs(z_vode))**4
 
          ! Convert to the actual term to be used in e_out = e_in + dt*energy
-         energy  = energy / rho_vode * (1.0d0+z_vode)
+         energy  = energy / rho_vode * (1.0d0+abs(z_vode))
          ne_vode = ne_vode / nh
          rpar(1)=T_vode
          rpar(2)=ne_vode
          rpar(3)=rho_vode
-         rpar(4)=z_vode
          return
       end if
 
@@ -102,25 +105,28 @@ AMREX_CUDA_FORT_DEVICE subroutine f_rhs_rpar(time, e_in, energy, rpar)
                  rhp*nhp + rhep*nhep + rhepp*nhepp + &
                  bff1*(nhp+nhep) + bff4*nhepp ) * ne_vode
 
-      lambda_c = compt_c*T_cmb**4*ne_vode*(T_vode - T_cmb*(1.0d0+z_vode))*(1.0d0 + z_vode)**4   ! Compton cooling
+      lambda_c = compt_c*T_cmb**4*ne_vode*(T_vode - T_cmb*(1.0d0+abs(z_vode)))*(1.0d0 + abs(z_vode))**4   ! Compton cooling
       lambda = lambda + lambda_c
 
       ! Heating terms
-      heat = JH_vode*nh0*eh0 + JH_vode*nhe0*ehe0 + JHe_vode*nhep*ehep
+      if(z_vode.lt.0) then
+         heat = JH_vode*nh0*eh0_2 + JH_vode*nhe0*ehe0_2 + JHe_vode*nhep*ehep_2
+      else
+         heat = JH_vode*nh0*eh0 + JH_vode*nhe0*ehe0 + JHe_vode*nhep*ehep
+      endif
       rho_heat = uvb_density_A * (rho_vode/mean_rhob)**uvb_density_B
       heat = rho_heat*heat
 
       ! Convert back to code units
       ne_vode     = ne_vode / nh
-      energy = (heat - lambda)*heat_from_cgs/(1.0d0+z_vode)**4
+      energy = (heat - lambda)*heat_from_cgs/(1.0d0+abs(z_vode))**4
 
       ! Convert to the actual term to be used in e_out = e_in + dt*energy
-      a = 1.d0 / (1.d0 + z_vode)
+      a = 1.d0 / (1.d0 + abs(z_vode))
       energy = energy / rho_vode / a
       rpar(1)=T_vode
       rpar(2)=ne_vode
       rpar(3)=rho_vode
-      rpar(4)=z_vode
 
 end subroutine f_rhs_rpar
 

@@ -20,8 +20,10 @@ Nyx::ctu_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::
   BL_PROFILE_VAR("Nyx::strang_first_step()",strang_first);
     
   const Real half_dt = 0.5*dt;
-
+  const Real prev_time    = state[State_Type].prevTime();
+  const Real cur_time     = state[State_Type].curTime();
   const Real a = get_comoving_a(time);
+  const Real a_2 = get_comoving_a(cur_time-half_dt);
 
   FArrayBox hydro_source;
   FArrayBox ext_src_old;
@@ -29,6 +31,8 @@ Nyx::ctu_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::
     {
       const Real z = 1.0/a - 1.0;
       fort_interp_to_this_z(&z);
+      const Real z_2 = 1.0/a_2 - 1.0;
+      fort_interp_to_this_z(&z_2);
     }
 #endif
 

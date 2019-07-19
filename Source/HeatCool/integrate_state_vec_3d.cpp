@@ -389,9 +389,6 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
   fprintf(stdout,"\nrparh[1]=%g \n\n",rparh[1]);
   fprintf(stdout,"\nrparh[2]=%g \n\n",rparh[2]);
   fprintf(stdout,"\nrparh[3]=%g \n\n",rparh[3]);*/
-  int numThreads = std::min(32, neq);
-  int numBlocks = static_cast<int>(ceil(((double) neq)/((double) numThreads)));
-  cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();
   /*
  ////////////////////////////  fprintf(stdout,"\n castro <<<%d,%d>>> \n\n",numBlocks, numThreads);
 
@@ -408,6 +405,7 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
  gridSize = (int)ceil((float)neq/blockSize);
  ////////////////////////////fprintf(stdout,"\n olcf <<<%d,%d>>> \n\n",gridSize, blockSize);
  */
+  cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();
   AMREX_LAUNCH_DEVICE_LAMBDA ( neq, idx, {
       //  f_rhs_test(t,u_ptr,udot_ptr, rpar, neq);
       RhsFnReal(t,u_ptr+idx,udot_ptr+idx, rpar+4*idx, 1);
