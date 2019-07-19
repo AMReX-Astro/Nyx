@@ -200,6 +200,7 @@ Nyx::hydro_setup()
 
 #ifdef HEATCOOL
     fort_tabulate_rates();
+    amrex::Gpu::streamSynchronize();
 #endif
 
     if (use_const_species == 1)

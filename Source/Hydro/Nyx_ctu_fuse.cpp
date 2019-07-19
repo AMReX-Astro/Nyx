@@ -24,6 +24,7 @@ Nyx::ctu_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::
   const Real cur_time     = state[State_Type].curTime();
   const Real a = get_comoving_a(time);
   const Real a_2 = get_comoving_a(cur_time-half_dt);
+  const Real a_end = get_comoving_a(cur_time);
 
   FArrayBox hydro_source;
   FArrayBox ext_src_old;
@@ -134,6 +135,7 @@ Nyx::ctu_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::
   const int* domain_hi = geom.Domain().hiVect();
 
   MultiFab& S_new = get_new_data(State_Type);
+  MultiFab& D_new = get_new_data(DiagEOS_Type);
 
   Real mass_lost = 0.;
   Real xmom_lost = 0.;
@@ -1409,6 +1411,7 @@ Nyx::ctu_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::
 
       BL_PROFILE_VAR("Nyx::update_state_with_sources()",update_sources);
       const auto fab_S_new = S_new.array(mfi);
+      const auto fab_D_new = D_new.array(mfi);
       
       /*
       const Box& bx = mfi.tilebox();
@@ -1462,6 +1465,50 @@ Nyx::ctu_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::
 	//Unsure whether this stream synchronize is useful for anything other than profiling timers
 	amrex::Gpu::streamSynchronize();
       BL_PROFILE_VAR_STOP(update_sources);
+      {
+	S_new[mfi].prefetchToDevice();
+	D_new[mfi].prefetchToDevice();
+	BL_PROFILE("Nyx::reset_internal_energy_nostore()");
+	  AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
+	  {
+        reset_internal_e_nostore
+            (tbx.loVect(), tbx.hiVect(),
+             BL_ARR4_TO_FORTRAN(fab_S_new), BL_ARR4_TO_FORTRAN(fab_D_new),
+             print_fortran_warnings_tmp, a_end);
+	  });
+
+	  amrex::Gpu::streamSynchronize();
+      }
+      {
+	S_new[mfi].prefetchToDevice();
+	D_new[mfi].prefetchToDevice();
+	BL_PROFILE("Nyx::compute_new_temp()");
+	    AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
+	    {
+            fort_compute_temp
+              (tbx.loVect(), tbx.hiVect(),
+              BL_ARR4_TO_FORTRAN(fab_S_new),
+              BL_ARR4_TO_FORTRAN(fab_D_new), &a_end,
+               &print_fortran_warnings_tmp);
+	    });      
+	  amrex::Gpu::streamSynchronize();
+      }
+
+#ifdef HEATCOOL
+      {
+	BL_PROFILE("Nyx::strang_second_step()");
+	const auto tbx = mfi.tilebox();
+
+	S_new[mfi].prefetchToDevice();
+	D_new[mfi].prefetchToDevice();
+
+	const auto state4 = S_new.array(mfi);
+	const auto diag_eos4 = D_new.array(mfi);
+	integrate_state_vec_mfin(state4,diag_eos4,tbx,a_2,half_dt);
+	//not sure if this is necessary for anything except timers
+	amrex::Gpu::streamSynchronize();
+      }
+#endif
       //took out track_grid_losses
       //amrex::Gpu::Device::synchronize();
     } // MFIter loop

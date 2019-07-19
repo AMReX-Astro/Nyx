@@ -275,6 +275,51 @@ module eos_module
       end subroutine nyx_eos_T_given_Re_device
 
      ! ****************************************************************************
+      AMREX_CUDA_FORT_DEVICE subroutine nyx_eos_T_given_Re_full_device(JH, JHe, T, Ne, R_in, e_in, a, species)
+
+      use atomic_rates_module, ONLY: XHYDROGEN, MPROTON, this_z, YHELIUM
+      use fundamental_constants_module, only: density_to_cgs, e_to_cgs
+      use vode_aux_module, only: NR_vode
+!      use cudafor
+
+      implicit none
+      ! In/out variables
+      integer,  value,  intent(in)    :: JH, JHe
+      real(rt),   intent(inout) :: T, Ne
+      real(rt),   intent(in   ) :: R_in, e_in
+      real(rt),  value, intent(in   ) :: a
+      real(rt), optional, intent(out) :: species(5)
+
+      integer :: i
+      CHARACTER(LEN=80) :: FMT
+      double precision :: nh, nh0, nhep, nhp, nhe0, nhepp, ne2
+      real(rt) :: f, df, eps
+      real(rt) :: nhp_plus, nhep_plus, nhepp_plus
+      real(rt) :: dnhp_dne, dnhep_dne, dnhepp_dne, dne
+      double precision :: z, rho, U
+!      attributes(managed) :: T,Ne,nh0, nhp, nhe0, nhep, nhepp, ne2
+!      attributes(managed) ::  nhp_plus, nhep_plus, nhepp_plus, JH, JHe, z 
+
+      ! This converts from code units to CGS
+      rho = R_in * density_to_cgs / a**3
+        U = e_in * e_to_cgs
+      nh  = rho*XHYDROGEN/MPROTON
+
+      z   = 1.d0/a - 1.d0
+
+    call iterate_ne_full_device(JH, Jhe, z, U, T, nh, Ne, nh0, nhp, nhe0, nhep, nhepp)
+
+      if (present(species)) then
+         species(1) = nh0
+         species(2) = nhp
+         species(3) = nhe0
+         species(4) = nhep
+         species(5) = nhepp
+      endif
+
+      end subroutine nyx_eos_T_given_Re_full_device
+
+     ! ****************************************************************************
 
        subroutine nyx_eos_nh0_and_nhep(JH, JHe, z, rho, e, nh0, nhep)
       ! This is for skewers analysis code, input is in CGS
@@ -946,6 +991,189 @@ module eos_module
       endif
 
       end subroutine ion_n_device
+     ! ****************************************************************************
+
+      AMREX_CUDA_FORT_DEVICE subroutine iterate_ne_full_device(JH, JHe, z, U, t, nh, ne, nh0, nhp, nhe0, nhep, nhepp)
+
+      use amrex_error_module, only: amrex_abort
+      use atomic_rates_module, only: this_z, YHELIUM
+
+      implicit none
+
+      integer :: i
+
+      integer, intent(in) :: JH, JHe
+      real(rt), intent (in   ) :: z, U, nh
+      real(rt), intent (inout) :: ne
+      real(rt), intent (  out) :: t, nh0, nhp, nhe0, nhep, nhepp
+
+      real(rt) :: f, df, eps
+      real(rt) :: nhp_plus, nhep_plus, nhepp_plus
+      real(rt) :: dnhp_dne, dnhep_dne, dnhepp_dne, dne
+      character(len=128) :: errmsg
+
+      ! Check if we have interpolated to this z
+
+      i = 0
+      ne = 1.0d0 ! 0 is a bad guess
+      
+      do  ! Newton-Raphson solver
+         i = i + 1
+
+         ! Ion number densities
+         call ion_n_full_device(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t, z)
+
+         ! Forward difference derivatives
+         if (ne .gt. 0.0d0) then
+            eps = xacc*ne
+         else
+            eps = 1.0d-24
+         endif
+         call ion_n_full_device(JH, JHe, U, nh, (ne+eps), nhp_plus, nhep_plus, nhepp_plus, t, z)
+
+         dnhp_dne   = (nhp_plus   - nhp)   / eps
+         dnhep_dne  = (nhep_plus  - nhep)  / eps
+         dnhepp_dne = (nhepp_plus - nhepp) / eps
+
+         f   = ne - nhp - nhep - 2.0d0*nhepp
+         df  = 1.0d0 - dnhp_dne - dnhep_dne - 2.0d0*dnhepp_dne
+         dne = f/df
+
+         ne = max((ne-dne), 0.0d0)
+
+         if (abs(dne) < xacc) exit
+
+         !            if (i .gt. 12) &
+         !               STOP
+
+      enddo
+
+      ! Get rates for the final ne
+      call ion_n_full_device(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t, z)
+
+      ! Neutral fractions:
+      nh0   = 1.0d0 - nhp
+      nhe0  = YHELIUM - (nhep + nhepp)
+
+      end subroutine iterate_ne_full_device
+
+     ! ****************************************************************************
+
+      AMREX_CUDA_FORT_DEVICE subroutine ion_n_full_device(JH, JHe, U, nh, ne, nhp, nhep, nhepp, t, z)
+
+      use meth_params_module,  only: gamma_minus_1
+      use atomic_rates_module, only: YHELIUM, MPROTON, BOLTZMANN, &
+                                     TCOOLMIN, TCOOLMAX, NCOOLTAB, deltaT, &
+                                     AlphaHp, AlphaHep, AlphaHepp, Alphad, &
+                                     GammaeH0, GammaeHe0, GammaeHep, &
+                                     rggh0, rgghe0, rgghep, &
+                                     reh0, rehe0, rehep, &
+                                     lzr, NCOOLFILE
+
+      implicit none
+
+      integer, intent(in) :: JH, JHe
+      real(rt), intent(in   ) :: U, nh, ne, z
+      real(rt), intent(  out) :: nhp, nhep, nhepp, t
+      real(rt) :: ahp, ahep, ahepp, ad, geh0, gehe0, gehep
+      real(rt) :: ggh0ne, gghe0ne, gghepne
+      real(rt) :: mu, tmp, logT, flo, fhi
+      real(rt), parameter :: smallest_val=tiny(1.0d0)
+      real(rt) :: lopz, fact
+      integer :: i, j
+      real(rt) :: ggh0, gghe0, gghep, eh0, ehe0, ehep
+
+      lopz   = dlog10(1.0d0 + z)
+         
+      if (lopz .ge. lzr(NCOOLFILE)) then
+         ggh0  = 0.0d0
+         gghe0 = 0.0d0
+         gghep = 0.0d0
+         eh0   = 0.0d0
+         ehe0  = 0.0d0
+         ehep  = 0.0d0
+      else
+
+         if (lopz .le. lzr(1)) then
+            j = 1
+         else
+            do i = 2, NCOOLFILE
+               if (lopz .lt. lzr(i)) then
+                  j = i-1
+                  exit
+               endif
+            enddo
+         endif
+
+         fact  = (lopz-lzr(j))/(lzr(j+1)-lzr(j))
+
+         ggh0  = rggh0(j)  + (rggh0(j+1)-rggh0(j))*fact
+         gghe0 = rgghe0(j) + (rgghe0(j+1)-rgghe0(j))*fact
+         gghep = rgghep(j) + (rgghep(j+1)-rgghep(j))*fact
+         eh0   = reh0(j)   + (reh0(j+1)-reh0(j))*fact
+         ehe0  = rehe0(j)  + (rehe0(j+1)-rehe0(j))*fact
+         ehep  = rehep(j)  + (rehep(j+1)-rehep(j))*fact
+      endif
+
+      mu = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+ne)
+      t  = gamma_minus_1*MPROTON/BOLTZMANN * U * mu
+
+      logT = dlog10(t)
+      if (logT .ge. TCOOLMAX) then ! Fully ionized plasma
+         nhp   = 1.0d0
+         nhep  = 0.0d0
+         nhepp = YHELIUM
+         return
+      endif
+
+      ! Temperature floor
+      if (logT .le. TCOOLMIN) logT = TCOOLMIN + 0.5d0*deltaT
+
+      ! Interpolate rates
+      tmp = (logT-TCOOLMIN)/deltaT
+      j = int(tmp)
+      fhi = tmp - j
+      flo = 1.0d0 - fhi
+      j = j + 1 ! F90 arrays start with 1
+
+      ahp   = flo*AlphaHp  (j) + fhi*AlphaHp  (j+1)
+      ahep  = flo*AlphaHep (j) + fhi*AlphaHep (j+1)
+      ahepp = flo*AlphaHepp(j) + fhi*AlphaHepp(j+1)
+      ad    = flo*Alphad   (j) + fhi*Alphad   (j+1)
+      geh0  = flo*GammaeH0 (j) + fhi*GammaeH0 (j+1)
+      gehe0 = flo*GammaeHe0(j) + fhi*GammaeHe0(j+1)
+      gehep = flo*GammaeHep(j) + fhi*GammaeHep(j+1)
+
+      if (ne .gt. 0.0d0) then
+         ggh0ne   = JH  * ggh0  / (ne*nh)
+         gghe0ne  = JH  * gghe0 / (ne*nh)
+         gghepne  = JHe * gghep / (ne*nh)
+      else
+         ggh0ne   = 0.0d0
+         gghe0ne  = 0.0d0
+         gghepne  = 0.0d0
+      endif
+
+      ! H+
+      nhp = 1.0d0 - ahp/(ahp + geh0 + ggh0ne)
+
+      ! He+
+      if ((gehe0 + gghe0ne) .gt. smallest_val) then
+
+         nhep  = YHELIUM/(1.0d0 + (ahep  + ad     )/(gehe0 + gghe0ne) &
+                                + (gehep + gghepne)/ahepp)
+      else
+         nhep  = 0.0d0
+      endif
+
+      ! He++
+      if (nhep .gt. 0.0d0) then
+         nhepp = nhep*(gehep + gghepne)/ahepp
+      else
+         nhepp = 0.0d0
+      endif
+
+      end subroutine ion_n_full_device
 
      ! ****************************************************************************
 
@@ -1008,20 +1236,20 @@ module eos_module
       endif
 
       ! H+
-      nhp = 1.0d0 - ahp/(ahp + geh0 + ggh0ne_2)
+      nhp = 1.0d0 - ahp/(ahp + geh0 + ggh0ne)
 
       ! He+
-      if ((gehe0 + gghe0ne_2) .gt. smallest_val) then
+      if ((gehe0 + gghe0ne) .gt. smallest_val) then
 
-         nhep  = YHELIUM/(1.0d0 + (ahep  + ad     )/(gehe0 + gghe0ne_2) &
-                                + (gehep + gghepne_2)/ahepp)
+         nhep  = YHELIUM/(1.0d0 + (ahep  + ad     )/(gehe0 + gghe0ne) &
+                                + (gehep + gghepne)/ahepp)
       else
          nhep  = 0.0d0
       endif
 
       ! He++
       if (nhep .gt. 0.0d0) then
-         nhepp = nhep*(gehep + gghepne_2)/ahepp
+         nhepp = nhep*(gehep + gghepne)/ahepp
       else
          nhepp = 0.0d0
       endif
