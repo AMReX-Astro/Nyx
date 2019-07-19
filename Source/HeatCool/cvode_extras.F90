@@ -83,8 +83,11 @@ module cvode_extras
       T_vode=rpar(1)
       ne_vode=rpar(2)
       rho_vode=rpar(3)
-      a=1/(rpar(4)+1)
-
+      if(rpar(4).lt.0) then
+         a=1/(-(rpar(4)+1)) ! -(-((1/(-a)-1)+1)-1)
+      else
+         a=1/(rpar(4)+1)
+      endif
 
       if (e_out(1) .lt. 0.d0) then
 #ifndef AMREX_USE_CUDA
@@ -125,7 +128,6 @@ module cvode_extras
       rpar(1)=T_vode
       rpar(2)=ne_vode
       rpar(3)=rho_vode
-      rpar(4)=z_vode      
 
     end subroutine ode_eos_finalize
 

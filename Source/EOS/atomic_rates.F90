@@ -33,6 +33,7 @@ module atomic_rates_module
   real(rt), dimension(:), allocatable, public :: RecHp, RecHep, RecHepp
 
   real(rt), allocatable, public :: ggh0, gghe0, gghep, eh0, ehe0, ehep
+  real(rt), allocatable, public :: ggh0_2, gghe0_2, gghep_2, eh0_2, ehe0_2, ehep_2
   real(rt), allocatable, public :: this_z
  
   real(rt), allocatable, public :: TCOOLMIN, TCOOLMAX
@@ -59,6 +60,7 @@ module atomic_rates_module
   attributes(managed) :: BetaH0, BetaHe0, BetaHep, Betaff1, Betaff4
   attributes(managed) :: RecHp, RecHep, RecHepp
   attributes(managed) :: ggh0, gghe0, gghep, eh0, ehe0, ehep
+  attributes(managed) :: ggh0_2, gghe0_2, gghep_2, eh0_2, ehe0_2, ehep_2
   attributes(managed) :: XHYDROGEN, YHELIUM
   attributes(managed) :: TCOOLMIN, TCOOLMAX, TCOOLMAX_R, TCOOLMIN_R, deltaT
   attributes(managed) :: uvb_density_A, uvb_density_B, mean_rhob
@@ -319,40 +321,77 @@ module atomic_rates_module
       real(rt) :: lopz, fact
       integer :: i, j
 
-      this_z = z
-      z_vode = z
-      lopz   = dlog10(1.0d0 + z)
+      if(z.lt.0) then
 
-      if (lopz .ge. lzr(NCOOLFILE)) then
-         ggh0  = 0.0d0
-         gghe0 = 0.0d0
-         gghep = 0.0d0
-         eh0   = 0.0d0
-         ehe0  = 0.0d0
-         ehep  = 0.0d0
-         return
-      endif
+         this_z = (-(z+1)-1) ! -((1/(-a)-1)+1)-1
+         z_vode = (-(z+1)-1) ! -((1/(-a)-1)+1)-1z
+         lopz   = dlog10(1.0d0 + -(z+1)-1) ! -((1/(-a)-1)+1)-1)
+         
+         if (lopz .ge. lzr(NCOOLFILE)) then
+            ggh0  = 0.0d0
+            gghe0 = 0.0d0
+            gghep = 0.0d0
+            eh0   = 0.0d0
+            ehe0  = 0.0d0
+            ehep  = 0.0d0
+            return
+         endif
 
-      if (lopz .le. lzr(1)) then
-         j = 1
+         if (lopz .le. lzr(1)) then
+            j = 1
+         else
+            do i = 2, NCOOLFILE
+               if (lopz .lt. lzr(i)) then
+                  j = i-1
+                  exit
+               endif
+            enddo
+         endif
+
+         fact  = (lopz-lzr(j))/(lzr(j+1)-lzr(j))
+
+         ggh0_@  = rggh0(j)  + (rggh0(j+1)-rggh0(j))*fact
+         gghe0_2 = rgghe0(j) + (rgghe0(j+1)-rgghe0(j))*fact
+         gghep_2 = rgghep(j) + (rgghep(j+1)-rgghep(j))*fact
+         eh0_2   = reh0(j)   + (reh0(j+1)-reh0(j))*fact
+         ehe0_2  = rehe0(j)  + (rehe0(j+1)-rehe0(j))*fact
+         ehep_2  = rehep(j)  + (rehep(j+1)-rehep(j))*fact
+
       else
-         do i = 2, NCOOLFILE
-            if (lopz .lt. lzr(i)) then
-               j = i-1
-               exit
-            endif
-         enddo
+         this_z = z
+         z_vode = z
+         lopz   = dlog10(1.0d0 + z)
+         
+         if (lopz .ge. lzr(NCOOLFILE)) then
+            ggh0  = 0.0d0
+            gghe0 = 0.0d0
+            gghep = 0.0d0
+            eh0   = 0.0d0
+            ehe0  = 0.0d0
+            ehep  = 0.0d0
+            return
+         endif
+
+         if (lopz .le. lzr(1)) then
+            j = 1
+         else
+            do i = 2, NCOOLFILE
+               if (lopz .lt. lzr(i)) then
+                  j = i-1
+                  exit
+               endif
+            enddo
+         endif
+
+         fact  = (lopz-lzr(j))/(lzr(j+1)-lzr(j))
+
+         ggh0  = rggh0(j)  + (rggh0(j+1)-rggh0(j))*fact
+         gghe0 = rgghe0(j) + (rgghe0(j+1)-rgghe0(j))*fact
+         gghep = rgghep(j) + (rgghep(j+1)-rgghep(j))*fact
+         eh0   = reh0(j)   + (reh0(j+1)-reh0(j))*fact
+         ehe0  = rehe0(j)  + (rehe0(j+1)-rehe0(j))*fact
+         ehep  = rehep(j)  + (rehep(j+1)-rehep(j))*fact
       endif
-
-      fact  = (lopz-lzr(j))/(lzr(j+1)-lzr(j))
-
-      ggh0  = rggh0(j)  + (rggh0(j+1)-rggh0(j))*fact
-      gghe0 = rgghe0(j) + (rgghe0(j+1)-rgghe0(j))*fact
-      gghep = rgghep(j) + (rgghep(j+1)-rgghep(j))*fact
-      eh0   = reh0(j)   + (reh0(j+1)-reh0(j))*fact
-      ehe0  = rehe0(j)  + (rehe0(j+1)-rehe0(j))*fact
-      ehep  = rehep(j)  + (rehep(j+1)-rehep(j))*fact
-
-      end subroutine fort_interp_to_this_z
+       end subroutine fort_interp_to_this_z
 
 end module atomic_rates_module
