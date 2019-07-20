@@ -470,7 +470,8 @@ public:
 
     void runReeberAnalysis(amrex::Vector<amrex::MultiFab*>& new_state,
 			               amrex::Vector<std::unique_ptr<amrex::MultiFab> >& particle_mf,
-                           const amrex::Geometry Geom, int nStep, bool do_analysis, std::vector<Halo>& reeber_halos);
+                           const amrex::Geometry Geom, const amrex::Vector<amrex::IntVect>& level_refinements,
+                           int nStep, bool do_analysis, std::vector<Halo>& reeber_halos);
     void Lya_statistics();
 
     //

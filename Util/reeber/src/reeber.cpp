@@ -22,7 +22,6 @@
 
 #include <fab-block.h>
 #include <fab-cc-block.h>
-//#include <reader-interfaces.h"
 
 #include <amr-connected-components-complex.h>
 
@@ -36,11 +35,9 @@ using Bounds = diy::DiscreteBounds;
 using AmrVertexId = r::AmrVertexId;
 using AmrEdge = reeber::AmrEdge;
 
-#define DIM 3
+using FabBlockR = FabBlock<Real, AMREX_SPACEDIM>;
 
-using FabBlockR = FabBlock<Real, DIM>;
-
-using Block = FabComponentBlock<Real, DIM>;
+using Block = FabComponentBlock<Real, AMREX_SPACEDIM>;
 using Vertex = Block::Vertex;
 using Component = Block::Component;
 using MaskedBox = Block::MaskedBox;
@@ -70,7 +67,7 @@ diy::AMRLink::Bounds bounds(const amrex::Box& box)
     return bounds;
 }
 
-void record_wrap(const Box& domain, const Box& valid_box, const std::array<bool, DIM>& is_periodic, diy::AMRLink* link)
+void set_wrap(const Box& domain, const Box& valid_box, const std::array<bool, AMREX_SPACEDIM>& is_periodic, diy::AMRLink* link)
 {
     for(int dir_x : {-1, 0, 1})
     {
@@ -98,29 +95,33 @@ void record_wrap(const Box& domain, const Box& valid_box, const std::array<bool,
     }
 }
 
-void record_neighbors(int level, int finest_level, const std::vector<int>& gid_offsets, const std::vector<int>& refinements,
-        Vector<std::unique_ptr<MultiFab> >& particle_mf, const Box& valid_box,
-        const std::array<bool, DIM>& is_periodic, diy::AMRLink* link)
+void set_neighbors(int level, int finest_level, const std::vector<int>& gid_offsets, const std::vector<int>& refinements,
+        const Box& domain, Vector<std::unique_ptr<MultiFab> >& particle_mf, const Box& valid_box,
+        const std::array<bool, AMREX_SPACEDIM>& is_periodic, diy::AMRLink* link)
 {
     for(int nbr_lev = std::max(0, level - 1); nbr_lev <= std::min(finest_level, level + 1); ++nbr_lev)
     {
         // gotta do this yoga to work around AMReX's static variables
-        // TODO: where to get domain? if we have refinements, can
-        // calculate it myself from domain of the 0th level in geom_in
-        //const Box& nbr_lev_domain; // = particle_mf[level]->boxArray();
-        Box nbr_lev_domain; // = particle_mf[level]->boxArray();
+
+        Box nbr_lev_domain = domain;
+        nbr_lev_domain.refine(refinements[level]);
 
         Periodicity periodicity(IntVect(AMREX_D_DECL(nbr_lev_domain.length(0) * is_periodic[0],
                 nbr_lev_domain.length(1) * is_periodic[1],
                 nbr_lev_domain.length(2) * is_periodic[2])));
 
         const std::vector<IntVect>& pshifts = periodicity.shiftIntVect();
-        // TODO: here we always assume ghosts, get this information somehow
+        // TODO: here we always assume no ghosts, get this information somehow
         int ng = 0;
         const BoxArray& ba = particle_mf[nbr_lev]->boxArray();
-        // TODO!
-//                        int ratio = mesh.RefRatio().at(std::min(lev, nbr_lev));
-        int ratio = 2;
+        // TODO: check!
+        int ratio;
+        if (nbr_lev < level)
+        {
+            ratio = refinements[level] / refinements[nbr_lev];
+        } else {
+            ratio = refinements[nbr_lev] / refinements[level];
+        }
 
         Box gbx = valid_box;
         if (nbr_lev < level)
@@ -146,42 +147,42 @@ void record_neighbors(int level, int finest_level, const std::vector<int>& gid_o
                 link->add_bounds(nbr_lev, refinements.at(nbr_lev), bounds(nbr_box), bounds(nbr_ghost_box));
             }
         }
-    } // loop to record neighbors
+    } // loop to set neighbors
 }
 
 
 void prepare_master_reader(
-        int nblocks,
         diy::Master& master_reader,
         diy::MemoryBuffer& header,
-        diy::DiscreteBounds& domain_diy,
+        diy::DiscreteBounds& diy_domain,
         Vector<MultiFab*>& new_state,
         Vector<std::unique_ptr<MultiFab> >& particle_mf,
         int finest_level,
+        const Vector<IntVect>& level_refinements,
         const amrex::Geometry geom_in)
 {
-    std::vector<std::string> all_var_names { "particle_mass_density", "density", "xmom", "ymom", "zmom" };
+    std::vector<std::string> new_state_vars { "density", "xmom", "ymom", "zmom" };
+    std::vector<std::string> all_vars { "particle_mass_density", "density", "xmom", "ymom", "zmom" };
 
     bool debug = false;
     const int n_levels = finest_level + 1;
 
-    std::array<bool, DIM> is_periodic;
-    for(int i = 0; i < DIM; ++i) {
+    std::array<bool, AMREX_SPACEDIM> is_periodic;
+    for(int i = 0; i < AMREX_SPACEDIM; ++i) {
         is_periodic[i] = geom_in.isPeriodic(i);
     }
 
     const Box& domain = geom_in.Domain();
 
-    for(int i = 0; i < DIM; ++i)
+    for(int i = 0; i < AMREX_SPACEDIM; ++i)
     {
-        domain_diy.min[i] = domain.loVect()[i];
-        domain_diy.max[i] = domain.hiVect()[i];
+        diy_domain.min[i] = domain.loVect()[i];
+        diy_domain.max[i] = domain.hiVect()[i];
     }
-
 
     std::vector<int> gid_offsets = {0};
     std::vector<int> refinements = {1};
-    nblocks = 0;
+    int nblocks = 0;
 
     // iterate over all levels to collect refinements and box array sizes (=gid offsets)
     for(int level = 0; level < n_levels; ++level)
@@ -192,35 +193,31 @@ void prepare_master_reader(
         nblocks += ba.size();
         gid_offsets.push_back(nblocks);
 
-        // TODO: refinements?
-        //refinements.push_back(refinements.back() * plotfile.refRatio(level));
+        // we accumulate in refinements ratio to the coarsest level
+        // assuming uniform refinement ratio in all dimensions
+        // level_refinements contains fine_ratio
+        refinements.push_back(refinements.back() * level_refinements[level][0]);
     }
 
     Real* fab_ptr_copy{nullptr};
 
     std::map<int, Real*> gid_to_fab;
+    std::map<int, long long int> gid_to_fab_size;
     std::map<int, std::vector<Real*>> gid_to_extra_pointers;
 
     for(int level = 0; level < n_levels; ++level)
     {
-        const MultiFab& mf = *particle_mf[level];
-        const BoxArray ba = mf.boxArray();
-        BoxArray ba_finer;
-        if (level < finest_level)
-        {
-            // TODO: this will load actual data; we only boxes from finer level
-            const MultiFab& mf_finer = *particle_mf[level + 1];
-            ba_finer = mf_finer.boxArray();
-        }
+        const MultiFab& dm_mf = *particle_mf[level];
+        const BoxArray ba = dm_mf.boxArray();
 
         // false is for no tiling in MFIter; we want boxes exactly as they are in plotfile
-        for(MFIter mfi(mf, false); mfi.isValid(); ++mfi)
+        for(MFIter mfi(dm_mf, false); mfi.isValid(); ++mfi)
         {
-            const FArrayBox& dm_fab = mf[mfi];
+            const FArrayBox& dm_fab = dm_mf[mfi];
 
             const Box& valid_box = mfi.validbox();
             Block::Shape valid_shape;
-            for(size_t i = 0; i < DIM; ++i) {
+            for(size_t i = 0; i < AMREX_SPACEDIM; ++i) {
                 valid_shape[i] = valid_box.bigEnd()[i] - valid_box.smallEnd()[i] + 1;
             }
 
@@ -237,6 +234,7 @@ void prepare_master_reader(
             // init fab; dm_fab contains only dark matter density
             Real* fab_ptr = const_cast<Real*>(dm_fab.dataPtr(0));
             long long int fab_size = valid_box.numPts();
+            gid_to_fab_size[gid] = fab_size;
             if (valid_box.numPts() != valid_shape[0] * valid_shape[1] * valid_shape[2]) {
                 throw std::runtime_error("shape mismatch in valid_box");
             }
@@ -245,7 +243,7 @@ void prepare_master_reader(
             // actual copying for next fields will happen later
             fab_ptr_copy = new Real[fab_size];
             std::vector<Real*> extra_pointers;
-            for(int i = 0; i < all_var_names.size(); ++i)
+            for(int i = 0; i < new_state_vars.size(); ++i)
             {
                 Real* extra_ptr_copy = new Real[fab_size];
                 extra_pointers.push_back(extra_ptr_copy);
@@ -259,17 +257,35 @@ void prepare_master_reader(
             // copy dark matter density to extra_data
             memcpy(extra_pointers[0], fab_ptr, sizeof(Real) * fab_size);
 
-            master_reader.add(gid, new FabBlockR(fab_ptr_copy, all_var_names, extra_pointers, valid_shape), link);
+            if (all_vars.size() != extra_pointers.size())
+                throw std::runtime_error("all_vars.size() != extra_pointers.size()");
 
-            record_wrap(domain, valid_box, is_periodic, link);
+            master_reader.add(gid, new FabBlockR(fab_ptr_copy, all_vars, extra_pointers, valid_shape), link);
 
-            record_neighbors(level, finest_level, gid_offsets, refinements, particle_mf, valid_box, is_periodic, link);
+            set_wrap(domain, valid_box, is_periodic, link);
 
+            set_neighbors(level, finest_level, gid_offsets, refinements, domain, particle_mf, valid_box, is_periodic, link);
+        } // loop over tiles
+    } // loop over levels for dark matter
+
+    for(int level = 0; level < n_levels; ++level)
+    {
+        const MultiFab& state_mf = *new_state[level];
+        // false is for no tiling in MFIter; we want boxes exactly as they are
+        for(MFIter mfi(state_mf, false); mfi.isValid(); ++mfi)
+        {
+            const FArrayBox& state_fab = state_mf[mfi];
+
+            int gid = gid_offsets[level] + mfi.index();
+            long long int fab_size = gid_to_fab_size[gid];
+            for(int var_idx = 0; var_idx < new_state_vars.size(); ++var_idx)
             {
-                /*
+                Real* fab_ptr = const_cast<Real*>(state_fab.dataPtr(var_idx));
                 Real* block_extra_ptr = gid_to_extra_pointers.at(gid).at(var_idx);
                 Real* block_fab_ptr = gid_to_fab.at(gid);
-                bool add_to_fab = var_idx < n_mt_vars;
+                bool add_to_fab = new_state_vars[var_idx] == "density";
+                // momentum will be divied by density in FabComponentBlock ctor
+                // later, here we just copy it
                 for(int i = 0; i < fab_size; ++i)
                 {
                     if (add_to_fab)
@@ -278,35 +294,38 @@ void prepare_master_reader(
                     }
                     block_extra_ptr[i] = fab_ptr[i];
                 }
-                */
             }
         } // loop over tiles
-    } // loop over levels
+    } // loop over levels for new state
+
 
     // fill dynamic assigner and fix links
     diy::DynamicAssigner assigner(master_reader.communicator(), master_reader.communicator().size(), nblocks);
     diy::fix_links(master_reader, assigner);
 
-    master_reader.foreach([debug](Block* b, const diy::Master::ProxyWithLink& cp) {
+    master_reader.foreach([](FabBlockR* b, const diy::Master::ProxyWithLink& cp) {
                 auto* l = static_cast<diy::AMRLink*>(cp.link());
                 auto receivers = link_unique(l, cp.gid());
             }
     );
 }
 
-void compute_halos(diy::mpi::communicator& world,
-        diy::Master& master_reader,
-        int threads,
-        diy::DiscreteBounds domain,
-        Real absolute_rho,
-        bool negate,
-        Real min_halo_volume)
+
+std::vector<Halo> compute_halos(diy::mpi::communicator& world,
+                                diy::Master& master_reader,
+                                const amrex::Geometry geom_in,
+                                int threads,
+                                diy::DiscreteBounds domain,
+                                Real absolute_rho,
+                                bool negate,
+                                Real min_halo_volume)
 {
-    world.barrier();
     std::string prefix = "./DIY.XXXXXX";
     int in_memory = -1;
     std::string log_level = "info";
     diy::FileStorage storage(prefix);
+
+    std::vector<Halo> result;
 
     dlog::add_stream(std::cerr, dlog::severity(log_level))
             << dlog::stamp() << dlog::aux_reporter(world.rank()) << dlog::color_pre() << dlog::level()
@@ -335,22 +354,27 @@ void compute_halos(diy::mpi::communicator& world,
                                 new_link, absolute_rho, negate, /*absolute = */ true),
                         new_link);
 
+                // after master initialized its blocks,
+                // data in b->fab is no longer needed;
+                // extra_fabs will be released in FabComponentBlock::init
+                delete [] b->fab.data();
+
             });
 
     int global_n_undone = 1;
 
-    master.foreach(&send_edges_to_neighbors_cc<Real, DIM>);
+    master.foreach(&send_edges_to_neighbors_cc<Real, AMREX_SPACEDIM>);
     master.exchange();
-    master.foreach(&delete_low_edges_cc<Real, DIM>);
+    master.foreach(&delete_low_edges_cc<Real, AMREX_SPACEDIM>);
 
     int rounds = 0;
     while(global_n_undone)
     {
         rounds++;
 
-        master.foreach(&amr_cc_send<Real, DIM>);
+        master.foreach(&amr_cc_send<Real, AMREX_SPACEDIM>);
         master.exchange();
-        master.foreach(&amr_cc_receive<Real, DIM>);
+        master.foreach(&amr_cc_receive<Real, AMREX_SPACEDIM>);
         master.exchange();
 
         global_n_undone = master.proxy(master.loaded_block()).read<int>();
@@ -366,20 +390,25 @@ void compute_halos(diy::mpi::communicator& world,
 
     bool has_density = true;
     bool has_particle_mass_density = true;
-    bool has_momentum = false;
+    bool has_momentum = true;
+
+    RealBox prob_domain = geom_in.ProbDomain();
 
     master.foreach(
-            [domain, min_halo_volume,
+            [&result, domain, prob_domain, min_halo_volume,
                     has_density, has_particle_mass_density,
                     has_momentum](
                     Block* b,
                     const diy::Master::ProxyWithLink& cp) {
 
-                diy::Point<int, 3> domain_shape;
-                for(int i = 0; i < 3; ++i)
+                diy::Point<int, AMREX_SPACEDIM> domain_shape;
+                Real domain_volume = 1;
+                for(int i = 0; i < AMREX_SPACEDIM; ++i)
                 {
                     domain_shape[i] = domain.max[i] - domain.min[i] + 1;
+                    domain_volume *= domain_shape[i];
                 }
+
 
                 diy::GridRef<void*, 3> domain_box(nullptr, domain_shape, /* c_order = */ false);
 
@@ -404,10 +433,32 @@ void compute_halos(diy::mpi::communicator& world,
                     Real m_gas = has_density ? values.at("density") : 0;
                     Real m_particles = has_particle_mass_density ? values.at("particle_mass_density") : 0;
                     Real m_total = m_gas + m_particles;
-                    // TODO: add halo to vector
 
+                    Halo new_halo;
+
+                    // TODO: position in multi-level case
+                    new_halo.int_volume = halo_volume;
+                    new_halo.volume = (Real)halo_volume * prob_domain.volume() / domain_volume;
+
+                    auto halo_root_position = b->local_.global_position(root);
+
+                    for(int i = 0; i < AMREX_SPACEDIM; ++i) {
+                        new_halo.position[i] = halo_root_position[i];
+
+                        new_halo.real_position[i] = prob_domain.lo(i) +
+                            (prob_domain.hi(i) - prob_domain.lo(i)) * (Real)(halo_root_position[i]) / (Real)(domain_shape[i]);
+                    }
+
+                    new_halo.id = domain_box.index(halo_root_position);
+                    new_halo.gas_mass = m_gas;
+                    new_halo.dm_mass = m_particles;
+                    new_halo.total_mass = m_total;
+
+                    result.push_back(new_halo);
                 }
             });
+
+    return result;
 }
 
 
@@ -429,6 +480,7 @@ int Nyx::Zmom = -1;*/
 void Nyx::runReeberAnalysis(Vector<MultiFab*>& new_state,
         Vector<std::unique_ptr<MultiFab> >& particle_mf,
         const amrex::Geometry geom_in,
+        const Vector<IntVect>& level_refinements,
         int n_step,
         bool do_analysis,
         std::vector<Halo>& reeber_halos)
@@ -442,41 +494,31 @@ void Nyx::runReeberAnalysis(Vector<MultiFab*>& new_state,
     if (!do_analysis)
         return;
 
+
+    diy::mpi::communicator world = ParallelDescriptor::Communicator();
+
+    int threads = 1;
+    std::string prefix = "./DIY.XXXXXX";
+    int in_memory = -1;
+    diy::FileStorage storage(prefix);
+
+    diy::MemoryBuffer header;
+
+    diy::Master master_reader(world, threads, in_memory, &FabBlockR::create, &FabBlockR::destroy,
+            &storage, &FabBlockR::save, &FabBlockR::load);
+
+    diy::DiscreteBounds diy_domain;
+
+    // TODO: get threshold
+    Real absolute_rho = 81.66;
+    bool negate = true;  // sweep superlevel sets, highest density = root
+    // TODO: take as parameter
+    Real min_halo_volume = 10;
+
     int finest_level = parent->finestLevel();
 
-    for (int lev = 0; lev <= parent->finestLevel(); lev++)
-    {
-        bool do_tiling = false; // TilingIfNotGPU()
-        for ( MFIter mfi(*(new_state[lev]), do_tiling); mfi.isValid(); ++mfi )
-        {
-            const Box& tbx = mfi.tilebox();
+    prepare_master_reader(master_reader, header, diy_domain, new_state, particle_mf,
+                          finest_level, level_refinements, geom_in);
 
-            Array4<const Real> state = new_state[lev]->array(mfi);
-
-            Array4<Real> particle = particle_mf[lev]->array(mfi);
-
-            /*
-            FArrayBox& fab_state = new_state[lev][mfi];
-            FArrayBox& fab_particle = particle_mf[lev][mfi];
-            */
-
-            const Dim3 lo = amrex::lbound(tbx);
-            const Dim3 hi = amrex::ubound(tbx);
-            int ncomp = 4;
-
-            for (int n = 0; n < ncomp; ++n) {
-                for (int z = lo.z; z <= hi.z; ++z) {
-                    for (int y = lo.y; y <= hi.y; ++y) {
-                        AMREX_PRAGMA_SIMD
-                        for (int x = lo.x; x <= hi.x; ++x) {
-                            state(x,y,z,n);
-                            particle(x,y,z,n);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-
+    reeber_halos = compute_halos(world, master_reader, geom_in, threads, diy_domain, absolute_rho, negate, min_halo_volume);
 } // runReeberAnalysis

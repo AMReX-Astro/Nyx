@@ -127,17 +127,20 @@ Nyx::halo_find (Real dt)
        amrex::Vector<amrex::MultiFab*> state_levels;
        // Derive quantities and store in components 1... of MultiFAB
 
+       amrex::Vector<amrex::IntVect> level_refinements;
+
        state_levels.resize(parent->finestLevel()+1);
        //Write all levels to Vector
        for (int lev = 0; lev <= parent->finestLevel(); lev++)
-	 {
-	   state_levels[lev]=&((get_level(lev)).get_new_data(State_Type));
-	 }
+	   {
+	     state_levels[lev]=&((get_level(lev)).get_new_data(State_Type));
+         level_refinements.push_back(get_level(lev).fineRatio());
+	   }
 
        //This will fill all levels in particle_mf with lev_min=0
        Nyx::theDMPC()->AssignDensity(particle_mf, 0, 4);
 
-       runReeberAnalysis(state_levels, particle_mf, Geom(), nStep(), do_analysis, reeber_halos);
+       runReeberAnalysis(state_levels, particle_mf, Geom(), level_refinements, nStep(), do_analysis, reeber_halos);
 #else
 
    const auto& reeber_density_var_list = getReeberHaloDensityVars();
@@ -265,7 +268,7 @@ Nyx::halo_find (Real dt)
               created_file = true;
            }
 #endif
-           halo_mass = h.totalMass;
+           halo_mass = h.total_mass;
            halo_pos  = h.position;
 #else
 
