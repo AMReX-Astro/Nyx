@@ -243,6 +243,12 @@ void prepare_master_reader(
             // actual copying for next fields will happen later
             fab_ptr_copy = new Real[fab_size];
             std::vector<Real*> extra_pointers;
+
+            // reserve memory for dm_density
+            Real* extra_ptr_copy = new Real[fab_size];
+            extra_pointers.push_back(extra_ptr_copy);
+
+            // reserve memory for variables in new_state
             for(int i = 0; i < new_state_vars.size(); ++i)
             {
                 Real* extra_ptr_copy = new Real[fab_size];
