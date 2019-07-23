@@ -16,7 +16,7 @@ Nyx::ctu_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::
 {
 
   Gpu::LaunchSafeGuard lsg(true);
-#ifdef HEATCOOL
+
   BL_PROFILE_VAR("Nyx::strang_first_step()",strang_first);
     
   const Real half_dt = 0.5*dt;
@@ -28,6 +28,7 @@ Nyx::ctu_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::
 
   FArrayBox hydro_source;
   FArrayBox ext_src_old;
+#ifdef HEATCOOL
 #ifndef FORCING
     {
       const Real z = 1.0/a - 1.0;

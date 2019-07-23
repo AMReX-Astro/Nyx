@@ -64,9 +64,14 @@
                    if (inhomogeneous_on) then
                        if (z .gt. diag_eos(i,j,k,ZHI_COMP)) JH = 0
                    end if
-                   ! SHOULD be full, segfaults
+                   ! SHOULD be full, allows for fused strang
+#ifdef HEATCOOL
                    call nyx_eos_T_given_Re_full_device(JH, JHe, diag_eos(i,j,k,TEMP_COMP), diag_eos(i,j,k,NE_COMP), &
                                            state(i,j,k,URHO), eint, comoving_a)
+#else
+                   call nyx_eos_T_given_Re_device(JH, JHe, diag_eos(i,j,k,TEMP_COMP), diag_eos(i,j,k,NE_COMP), &
+                                           state(i,j,k,URHO), eint, comoving_a)
+#endif
 
                else
                   if (print_fortran_warnings .gt. 0) then
