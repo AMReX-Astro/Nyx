@@ -32,7 +32,7 @@ using namespace amrex;
 using AMRLink = diy::AMRLink;
 
 using Bounds = diy::DiscreteBounds;
-using AmrVertexId = r::AmrVertexId;
+using AmrVertexId = reeber::AmrVertexId;
 using AmrEdge = reeber::AmrEdge;
 
 using FabBlockR = FabBlock<Real, AMREX_SPACEDIM>;
@@ -46,6 +46,10 @@ using GidSet = Block::GidSet;
 
 using TripletMergeTree = Block::TripletMergeTree;
 using Neighbor = TripletMergeTree::Neighbor;
+
+using Grid = Block::Grid;
+using GridRef = Block::GridRef;
+using Shape = Block::Shape;
 
 struct IsAmrVertexLocal
 {
@@ -144,7 +148,8 @@ void set_neighbors(int level, int finest_level, const std::vector<int>& gid_offs
                 Box nbr_ghost_box = grow(nbr_box, ng);
                 link->add_neighbor(diy::BlockID{nbr_gid,
                                                 -1});        // we don't know the proc, but we'll figure it out later through DynamicAssigner
-                link->add_bounds(nbr_lev, refinements.at(nbr_lev), bounds(nbr_box), bounds(nbr_ghost_box));
+                // we ignore ghost data, hence nbr_box in last two parameter
+                link->add_bounds(nbr_lev, refinements.at(nbr_lev), bounds(nbr_box), bounds(nbr_box));
             }
         }
     } // loop to set neighbors
@@ -159,7 +164,8 @@ void prepare_master_reader(
         Vector<std::unique_ptr<MultiFab> >& particle_mf,
         int finest_level,
         const Vector<IntVect>& level_refinements,
-        const amrex::Geometry geom_in)
+        const amrex::Geometry geom_in,
+        std::vector<std::unique_ptr<Real[]>>& pointers_to_copied_data)
 {
     std::vector<std::string> new_state_vars { "density", "xmom", "ymom", "zmom" };
     std::vector<std::string> all_vars { "particle_mass_density", "density", "xmom", "ymom", "zmom" };
@@ -199,8 +205,6 @@ void prepare_master_reader(
         refinements.push_back(refinements.back() * level_refinements[level][0]);
     }
 
-    Real* fab_ptr_copy{nullptr};
-
     std::map<int, Real*> gid_to_fab;
     std::map<int, long long int> gid_to_fab_size;
     std::map<int, std::vector<Real*>> gid_to_extra_pointers;
@@ -214,63 +218,80 @@ void prepare_master_reader(
         for(MFIter mfi(dm_mf, false); mfi.isValid(); ++mfi)
         {
             const FArrayBox& dm_fab = dm_mf[mfi];
-
-            const Box& valid_box = mfi.validbox();
-            Block::Shape valid_shape;
-            for(size_t i = 0; i < AMREX_SPACEDIM; ++i) {
-                valid_shape[i] = valid_box.bigEnd()[i] - valid_box.smallEnd()[i] + 1;
-            }
-
-            // This is the Box on which the FArrayBox is defined.
-            // Note that "abox" includes ghost cells (if there are any),
-            // and is thus larger than or equal to "box".
-            Box abox = dm_fab.box();
-
             int gid = gid_offsets[level] + mfi.index();
 
+
+            // core stuff
+            const Box& core_box = mfi.validbox();
+            Shape core_shape;
+            for(size_t i = 0; i < AMREX_SPACEDIM; ++i) {
+                core_shape[i] = core_box.bigEnd()[i] - core_box.smallEnd()[i] + 1;
+            }
+            long long int core_fab_size = core_box.numPts();
+            gid_to_fab_size[gid] = core_fab_size;
+
+            pointers_to_copied_data.emplace_back(new Real[core_fab_size]);
+            Real* core_fab_ptr = pointers_to_copied_data.back().get();
+
+            GridRef core_grid_ref(core_fab_ptr, core_shape, false);
+
+            // ghost stuff
+            Box ghost_box = dm_fab.box();
+            Shape ghost_shape;
+            for(size_t i = 0; i < AMREX_SPACEDIM; ++i) {
+                ghost_shape[i] = ghost_box.bigEnd()[i] - ghost_box.smallEnd()[i] + 1;
+            }
+            // this grid ref points directly to dm_fab data
+            GridRef ghost_grid_ref(const_cast<Real*>(dm_fab.dataPtr(0)), ghost_shape, /* c_order = */ false);
+
+            Shape core_ghost_adjustment;
+            for(size_t i = 0; i < AMREX_SPACEDIM; ++i) {
+                core_ghost_adjustment[i] = core_box.smallEnd()[i] - ghost_box.smallEnd()[i];
+                if (core_ghost_adjustment[i] < 0) { throw std::runtime_error("ghost box must be larger than core box"); }
+            }
+
+            // copy particle data in the core to core_grid_ref
+            diy::for_each(core_shape, [&core_grid_ref, &ghost_grid_ref, core_ghost_adjustment](const Vertex& v) {
+                    core_grid_ref(v) = ghost_grid_ref(v + core_ghost_adjustment);
+                    });
+
             std::vector<std::pair<int, Box>> isects;
-            diy::AMRLink* link = new diy::AMRLink(3, level, refinements[level], bounds(valid_box), bounds(abox));
+            diy::AMRLink* link = new diy::AMRLink(3, level, refinements[level], bounds(core_box), bounds(core_box));
+
 
             // init fab; dm_fab contains only dark matter density
-            Real* fab_ptr = const_cast<Real*>(dm_fab.dataPtr(0));
-            long long int fab_size = valid_box.numPts();
-            gid_to_fab_size[gid] = fab_size;
-            if (valid_box.numPts() != valid_shape[0] * valid_shape[1] * valid_shape[2]) {
-                throw std::runtime_error("shape mismatch in valid_box");
-            }
+            fmt::print(std::cerr, "Added box, particle_mf ghost_box = {}, core_box = {}, core_fab_size = {}\n", ghost_box, core_box, core_fab_size);
 
             // allocate memory for all fields that we store in FabBlock
             // actual copying for next fields will happen later
-            fab_ptr_copy = new Real[fab_size];
             std::vector<Real*> extra_pointers;
 
             // reserve memory for dm_density
-            Real* extra_ptr_copy = new Real[fab_size];
+            pointers_to_copied_data.emplace_back(new Real[core_fab_size]);
+            Real* extra_ptr_copy = pointers_to_copied_data.back().get();
             extra_pointers.push_back(extra_ptr_copy);
 
             // reserve memory for variables in new_state
             for(int i = 0; i < new_state_vars.size(); ++i)
             {
-                Real* extra_ptr_copy = new Real[fab_size];
+                Real* extra_ptr_copy = new Real[core_fab_size];
                 extra_pointers.push_back(extra_ptr_copy);
             }
 
-            gid_to_fab[gid] = fab_ptr_copy;
+            gid_to_fab[gid] = core_fab_ptr;
             gid_to_extra_pointers[gid] = extra_pointers;
 
-            // copy dark matter density to FabBlock
-            memcpy(fab_ptr_copy, fab_ptr, sizeof(Real) * fab_size);
             // copy dark matter density to extra_data
-            memcpy(extra_pointers[0], fab_ptr, sizeof(Real) * fab_size);
+            memcpy(extra_pointers[0], core_fab_ptr, sizeof(Real) * core_fab_size);
 
             if (all_vars.size() != extra_pointers.size())
                 throw std::runtime_error("all_vars.size() != extra_pointers.size()");
 
-            master_reader.add(gid, new FabBlockR(fab_ptr_copy, all_vars, extra_pointers, valid_shape), link);
+            master_reader.add(gid, new FabBlockR(core_fab_ptr, all_vars, extra_pointers, core_shape), link);
 
-            set_wrap(domain, valid_box, is_periodic, link);
+            set_wrap(domain, core_box, is_periodic, link);
 
-            set_neighbors(level, finest_level, gid_offsets, refinements, domain, particle_mf, valid_box, is_periodic, link);
+            set_neighbors(level, finest_level, gid_offsets, refinements, domain, particle_mf, core_box, is_periodic, link);
         } // loop over tiles
     } // loop over levels for dark matter
 
@@ -283,24 +304,54 @@ void prepare_master_reader(
             const FArrayBox& state_fab = state_mf[mfi];
 
             int gid = gid_offsets[level] + mfi.index();
-            long long int fab_size = gid_to_fab_size[gid];
+            long long int fab_size = gid_to_fab_size.at(gid);
+
+            fmt::print(std::cerr, "new_state_vars, level = {}, gid = {}, fab_size = {}, mfi.index = {}, gid[offsets[level] = {}\n",
+                    level, gid, fab_size, mfi.index(), gid_offsets[level]);
+
+            // core box and shape
+            const Box& core_box = mfi.validbox();
+            if (core_box.numPts() != fab_size) { throw std::runtime_error("shape mismatch state_mf != particle_mf"); }
+            Shape core_shape;
+            for(size_t i = 0; i < AMREX_SPACEDIM; ++i) { core_shape[i] = core_box.bigEnd()[i] - core_box.smallEnd()[i] + 1; }
+
+            // ghost box and shape
+            Box ghost_box = state_fab.box();
+            Shape ghost_shape;
+            for(size_t i = 0; i < AMREX_SPACEDIM; ++i) { ghost_shape[i] = ghost_box.bigEnd()[i] - ghost_box.smallEnd()[i] + 1; }
+
+            Shape core_ghost_adjustment;
+            for(size_t i = 0; i < AMREX_SPACEDIM; ++i) { core_ghost_adjustment[i] = core_box.smallEnd()[i] - ghost_box.smallEnd()[i]; }
+
+            fmt::print(std::cerr, "state_fab  ghost_box = {}, core_box = {}, state_mf.contains_nan = {} (grow = 0)\n",
+                    ghost_box, core_box, state_mf.contains_nan(0, new_state_vars.size(), 0, false));
+
             for(int var_idx = 0; var_idx < new_state_vars.size(); ++var_idx)
             {
-                Real* fab_ptr = const_cast<Real*>(state_fab.dataPtr(var_idx));
+                // this grid ref points directly to dm_fab data
+                GridRef ghost_grid_ref(const_cast<Real*>(state_fab.dataPtr(var_idx)), ghost_shape, /* c_order = */ false);
+
                 Real* block_extra_ptr = gid_to_extra_pointers.at(gid).at(var_idx);
-                Real* block_fab_ptr = gid_to_fab.at(gid);
+                GridRef core_grid_ref(block_extra_ptr, core_shape, false);
+                // copy core data to block_extra_ptr
+                diy::for_each(core_shape, [&core_grid_ref, &ghost_grid_ref, core_ghost_adjustment](const Vertex& v) {
+                        core_grid_ref(v) = ghost_grid_ref(v + core_ghost_adjustment);
+                        });
+
                 bool add_to_fab = new_state_vars[var_idx] == "density";
-                // momentum will be divied by density in FabComponentBlock ctor
-                // later, here we just copy it
-                for(int i = 0; i < fab_size; ++i)
-                {
-                    if (add_to_fab)
-                    {
-                        block_fab_ptr[i] += fab_ptr[i];
-                    }
-                    block_extra_ptr[i] = fab_ptr[i];
+
+                fmt::print(std::cerr, "copied variable {} to extra_pointers, add_to_fab = {}\n",
+                        new_state_vars[var_idx], add_to_fab);
+
+                if (add_to_fab) {
+                    Real* block_fab_ptr = gid_to_fab.at(gid);
+                    GridRef core_grid_ref(block_extra_ptr, core_shape, false);
+                    // add core density data to block_fab_ptr
+                    diy::for_each(core_shape, [&core_grid_ref, &ghost_grid_ref, core_ghost_adjustment](const Vertex& v) {
+                            core_grid_ref(v)  += ghost_grid_ref(v + core_ghost_adjustment);
+                            });
                 }
-            }
+            } // loop over vars
         } // loop over tiles
     } // loop over levels for new state
 
@@ -326,6 +377,7 @@ std::vector<Halo> compute_halos(diy::mpi::communicator& world,
                                 bool negate,
                                 Real min_halo_volume)
 {
+    bool debug = world.rank() == 0;
     std::string prefix = "./DIY.XXXXXX";
     int in_memory = -1;
     std::string log_level = "info";
@@ -333,18 +385,19 @@ std::vector<Halo> compute_halos(diy::mpi::communicator& world,
 
     std::vector<Halo> result;
 
-    dlog::add_stream(std::cerr, dlog::severity(log_level))
-            << dlog::stamp() << dlog::aux_reporter(world.rank()) << dlog::color_pre() << dlog::level()
-            << dlog::color_post() >> dlog::flush();
-
+    if (debug) fmt::print(std::cerr, "Master reader - started\n");
 
     // copy FabBlocks to FabComponentBlocks
     // in FabTmtConstructor mask will be set and local trees will be computed
     // FabBlock can be safely discarded afterwards
     diy::Master master(world, threads, in_memory, &Block::create, &Block::destroy, &storage, &Block::save,
             &Block::load);
+
+    if (debug) fmt::print(std::cerr, "Master reader created\n");
+
+
     master_reader.foreach(
-            [&master, domain, absolute_rho, negate](FabBlockR* b, const diy::Master::ProxyWithLink& cp) {
+            [&master, debug, domain, absolute_rho, negate](FabBlockR* b, const diy::Master::ProxyWithLink& cp) {
                 auto* l = static_cast<AMRLink*>(cp.link());
                 AMRLink* new_link = new AMRLink(*l);
 
@@ -353,6 +406,8 @@ std::vector<Halo> compute_halos(diy::mpi::communicator& world,
                 int local_ref = l->refinement()[0];
                 int local_lev = l->level();
 
+                if (debug) fmt::print(std::cerr, "adding block, bounds = {}, core = {}, gid = {}\n", l->bounds(), l->core(), cp.gid());
+
                 master.add(cp.gid(),
                         new Block(b->fab, b->extra_names_, b->extra_fabs_, local_ref, local_lev, domain,
                                 l->bounds(),
@@ -360,18 +415,18 @@ std::vector<Halo> compute_halos(diy::mpi::communicator& world,
                                 new_link, absolute_rho, negate, /*absolute = */ true),
                         new_link);
 
-                // after master initialized its blocks,
-                // data in b->fab is no longer needed;
-                // extra_fabs will be released in FabComponentBlock::init
-                delete [] b->fab.data();
-
+                if (debug) fmt::print(std::cerr, "Added block gid = {}\n", cp.gid());
             });
+
+    if (debug) fmt::print(std::cerr, "Master populated\n");
 
     int global_n_undone = 1;
 
     master.foreach(&send_edges_to_neighbors_cc<Real, AMREX_SPACEDIM>);
     master.exchange();
     master.foreach(&delete_low_edges_cc<Real, AMREX_SPACEDIM>);
+
+    if (debug) fmt::print(std::cerr, "Low edges deleted\n");
 
     int rounds = 0;
     while(global_n_undone)
@@ -384,6 +439,9 @@ std::vector<Halo> compute_halos(diy::mpi::communicator& world,
         master.exchange();
 
         global_n_undone = master.proxy(master.loaded_block()).read<int>();
+
+        if (debug) fmt::print(std::cerr, "global_n_undone = {}\n", global_n_undone);
+
     }
 
     master.foreach([](Block* b, const diy::Master::ProxyWithLink& cp) {
@@ -391,8 +449,7 @@ std::vector<Halo> compute_halos(diy::mpi::communicator& world,
         b->compute_local_integral();
     });
 
-    LOG_SEV_IF(world.rank() == 0, info) << "Local integrals computed";
-    dlog::flush();
+    if (debug) fmt::print(std::cerr, "Local integrals computed");
 
     bool has_density = true;
     bool has_particle_mass_density = true;
@@ -491,15 +548,18 @@ void Nyx::runReeberAnalysis(Vector<MultiFab*>& new_state,
         bool do_analysis,
         std::vector<Halo>& reeber_halos)
 {
-    amrex::Print() << "ACHTUNG REEBER" << std::endl;
-
-    if(verbose) {
-        amrex::Print()<<"Running Reeber anaylsis"<<std::endl;
-    }
-
     if (!do_analysis)
         return;
 
+    verbose = true;
+
+    if(verbose) {
+        fmt::print(std::cerr, "Running Reeber anaylsis");
+    }
+
+    // store pointers to all dynamically allocated arrays, so that
+    // data will be freed automatically after exiting compute_halos
+    std::vector<std::unique_ptr<Real[]>> pointers_to_copied_data;
 
     diy::mpi::communicator world = ParallelDescriptor::Communicator();
 
@@ -516,15 +576,23 @@ void Nyx::runReeberAnalysis(Vector<MultiFab*>& new_state,
     diy::DiscreteBounds diy_domain;
 
     // TODO: get threshold
-    Real absolute_rho = 81.66;
+    Real rho = 81.66;
+    Real absolute_rho = Nyx::average_dm_density * rho;
     bool negate = true;  // sweep superlevel sets, highest density = root
     // TODO: take as parameter
     Real min_halo_volume = 10;
 
     int finest_level = parent->finestLevel();
 
+    if (verbose and world.rank() == 0) fmt::print(std::cerr, "fmt prepare_master_reader called, finest_level = {}, rho = {}\n", finest_level, absolute_rho);
+
     prepare_master_reader(master_reader, header, diy_domain, new_state, particle_mf,
-                          finest_level, level_refinements, geom_in);
+                          finest_level, level_refinements, geom_in, pointers_to_copied_data);
+
+
+    if (verbose and world.rank() == 0) fmt::print(std::cerr, "prepare_master_reader finished\n");
 
     reeber_halos = compute_halos(world, master_reader, geom_in, threads, diy_domain, absolute_rho, negate, min_halo_volume);
+
+    if (verbose and world.rank() == 0) fmt::print(std::cerr, "compute_halos finished, result.size = {}\n", reeber_halos.size());
 } // runReeberAnalysis
