@@ -468,10 +468,13 @@ public:
     void halo_merge();
     void halo_accrete(amrex::Real dt);
 
+#ifdef REEBER
     void runReeberAnalysis(amrex::Vector<amrex::MultiFab*>& new_state,
 			               amrex::Vector<std::unique_ptr<amrex::MultiFab> >& particle_mf,
                            const amrex::Geometry Geom, const amrex::Vector<amrex::IntVect>& level_refinements,
                            int nStep, bool do_analysis, std::vector<Halo>& reeber_halos);
+#endif
+
     void Lya_statistics();
 
     //

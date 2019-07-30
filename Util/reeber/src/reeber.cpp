@@ -553,6 +553,10 @@ void Nyx::runReeberAnalysis(Vector<MultiFab*>& new_state,
 
     verbose = true;
 
+    BL_PROFILE("Nyx::runReeberAnalysis()");
+
+    amrex::Print() << "ACHTUNG REEBER" << std::endl;
+
     if(verbose) {
         fmt::print(std::cerr, "Running Reeber anaylsis");
     }
@@ -570,8 +574,12 @@ void Nyx::runReeberAnalysis(Vector<MultiFab*>& new_state,
 
     diy::MemoryBuffer header;
 
+    BL_PROFILE_VAR("Nyx::runReeberAnalysis()::master_reader",master_reader_var);
+
     diy::Master master_reader(world, threads, in_memory, &FabBlockR::create, &FabBlockR::destroy,
             &storage, &FabBlockR::save, &FabBlockR::load);
+
+    BL_PROFILE_VAR_STOP(master_reader_var);
 
     diy::DiscreteBounds diy_domain;
 
@@ -586,13 +594,20 @@ void Nyx::runReeberAnalysis(Vector<MultiFab*>& new_state,
 
     if (verbose and world.rank() == 0) fmt::print(std::cerr, "fmt prepare_master_reader called, finest_level = {}, rho = {}\n", finest_level, absolute_rho);
 
+    BL_PROFILE_VAR("Nyx::runReeberAnalysis()::prepare_master_reader",prepare_master_reader_var);
+
     prepare_master_reader(master_reader, header, diy_domain, new_state, particle_mf,
                           finest_level, level_refinements, geom_in, pointers_to_copied_data);
 
+    BL_PROFILE_VAR_STOP(prepare_master_reader_var);
 
     if (verbose and world.rank() == 0) fmt::print(std::cerr, "prepare_master_reader finished\n");
 
-    reeber_halos = compute_halos(world, master_reader, geom_in, threads, diy_domain, absolute_rho, negate, min_halo_volume);
+    BL_PROFILE_VAR("Nyx::runReeberAnalysis()::compute_halos",compute_halos_var);
 
+    reeber_halos = compute_halos(world, master_reader, geom_in, threads, diy_domain, absolute_rho, negate, min_halo_volume);
     if (verbose and world.rank() == 0) fmt::print(std::cerr, "compute_halos finished, result.size = {}\n", reeber_halos.size());
+
+    BL_PROFILE_VAR_STOP(compute_halos_var);
+
 } // runReeberAnalysis

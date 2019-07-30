@@ -2,6 +2,8 @@
 AMREX_HOME ?= ../../../amrex
 
 CVODE_LIB_DIR ?= $(CVODE_LIB)
+DIY_INCLUDE_DIR ?= ../../../diy/include
+REEBER_EXT_HOME ?= ../../../reeber2-git
 
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ../..
