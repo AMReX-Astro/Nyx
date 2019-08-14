@@ -504,22 +504,22 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
           do i = lo(1), hi(1)
 
              ux = FOURTH*( &
-                  + q(i        ,j        ,k        ,QU) - q(i-1*dg(1),j        ,k        ,QU) &
-                  + q(i        ,j        ,k-1*dg(3),QU) - q(i-1*dg(1),j        ,k-1*dg(3),QU) &
-                  + q(i        ,j-1*dg(2),k        ,QU) - q(i-1*dg(1),j-1*dg(2),k        ,QU) &
-                  + q(i        ,j-1*dg(2),k-1*dg(3),QU) - q(i-1*dg(1),j-1*dg(2),k-1*dg(3),QU) ) * dxinv
+                  + q(i  ,j  ,k  ,QU) - q(i-1,j  ,k  ,QU) &
+                  + q(i  ,j  ,k-1,QU) - q(i-1,j  ,k-1,QU) &
+                  + q(i  ,j-1,k  ,QU) - q(i-1,j-1,k  ,QU) &
+                  + q(i  ,j-1,k-1,QU) - q(i-1,j-1,k-1,QU) ) * dxinv
 
              vy = FOURTH*( &
-                  + q(i        ,j        ,k        ,QV) - q(i        ,j-1*dg(2),k        ,QV) &
-                  + q(i        ,j        ,k-1*dg(3),QV) - q(i        ,j-1*dg(2),k-1*dg(3),QV) &
-                  + q(i-1*dg(1),j        ,k        ,QV) - q(i-1*dg(1),j-1*dg(2),k        ,QV) &
-                  + q(i-1*dg(1),j        ,k-1*dg(3),QV) - q(i-1*dg(1),j-1*dg(2),k-1*dg(3),QV) ) * dyinv
+                  + q(i  ,j  ,k  ,QV) - q(i  ,j-1,k  ,QV) &
+                  + q(i  ,j  ,k-1,QV) - q(i  ,j-1,k-1,QV) &
+                  + q(i-1,j  ,k  ,QV) - q(i-1,j-1,k  ,QV) &
+                  + q(i-1,j  ,k-1,QV) - q(i-1,j-1,k-1,QV) ) * dyinv
 
              wz = FOURTH*( &
-                  + q(i        ,j        ,k        ,QW) - q(i        ,j        ,k-1*dg(3),QW) &
-                  + q(i        ,j-1*dg(2),k        ,QW) - q(i        ,j-1*dg(2),k-1*dg(3),QW) &
-                  + q(i-1*dg(1),j        ,k        ,QW) - q(i-1*dg(1),j        ,k-1*dg(3),QW) &
-                  + q(i-1*dg(1),j-1*dg(2),k        ,QW) - q(i-1*dg(1),j-1*dg(2),k-1*dg(3),QW) ) * dzinv
+                  + q(i  ,j  ,k  ,QW) - q(i  ,j  ,k-1,QW) &
+                  + q(i  ,j-1,k  ,QW) - q(i  ,j-1,k-1,QW) &
+                  + q(i-1,j  ,k  ,QW) - q(i-1,j  ,k-1,QW) &
+                  + q(i-1,j-1,k  ,QW) - q(i-1,j-1,k-1,QW) ) * dzinv
 
              div(i,j,k) = ux + vy + wz
 

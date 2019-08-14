@@ -67,6 +67,7 @@ Nyx::strang_hydro (Real time,
     enforce_nonnegative_species(S_old);
 
     MultiFab ext_src_old(grids, dmap, NUM_STATE, NUM_GROW);
+    ext_src_old.setVal(0.);
 	//    std::unique_ptr<MultiFab> ext_src_old;
 
     //assume user-provided source is not CUDA
@@ -132,6 +133,7 @@ Nyx::strang_hydro (Real time,
     bool add_to_flux_register = true;
 
     MultiFab hydro_src(grids, dmap, NUM_STATE, 0);
+    hydro_src.setVal(0.);
 
     if(hydro_convert)
       construct_ctu_hydro_source(time,dt,a_old,a_new,S_old_tmp,D_old_tmp,
@@ -140,6 +142,7 @@ Nyx::strang_hydro (Real time,
     else
       {
 	divu_cc.reset(new MultiFab(grids, dmap, 1, 0));
+	divu_cc->setVal(0.);
 	compute_hydro_sources(time,dt,a_old,a_new,S_old_tmp,D_old_tmp,
 			    ext_src_old,hydro_src,grav_vector,*divu_cc,
 			    init_flux_register, add_to_flux_register);
@@ -181,6 +184,10 @@ Nyx::strang_hydro (Real time,
     }
 #endif
 
+    // We copy old Temp and Ne to new Temp and Ne so that they can be used
+    //    as guesses when we next need them.
+    MultiFab::Copy(D_new,D_old,0,0,D_old.nComp(),0);
+    
     grav_vector.clear();
 
     if (add_ext_src)
@@ -200,6 +207,7 @@ Nyx::strang_hydro (Real time,
 
         // Compute source at new time (no ghost cells needed)
         MultiFab ext_src_new(grids, dmap, NUM_STATE, 0);
+	ext_src_new.setVal(0);
 
 #ifndef GPU_COMPATIBLE_PROBLEM
       {
@@ -216,11 +224,6 @@ Nyx::strang_hydro (Real time,
         compute_new_temp(S_new,D_new);
     } // end if (add_ext_src)
 
-   if(verbose>1) {
-	std::cout<<"aS_new norm2(0)"<<S_new.norm2(0)<<std::endl;
-	std::cout<<"aS_new norm2(Eint)"<<S_new.norm2(Eint)<<std::endl;
-	std::cout<<"aS_new norm2(Eden)"<<S_new.norm2(Eden)<<std::endl;
-}
 #ifndef NDEBUG
     amrex::Gpu::Device::streamSynchronize();
     if (S_new.contains_nan(Density, S_new.nComp(), 0))
@@ -248,11 +251,7 @@ Nyx::strang_hydro (Real time,
     // This returns updated (rho e), (rho E), and Temperature
     strang_second_step(cur_time,dt,S_new,D_new);
 #endif
-   if(verbose>1) {
-	std::cout<<"bS_new norm2(0)"<<S_new.norm2(0)<<std::endl;
-	std::cout<<"bS_new norm2(Eint)"<<S_new.norm2(Eint)<<std::endl;
-	std::cout<<"bS_new norm2(Eden)"<<S_new.norm2(Eden)<<std::endl;
-}
+
 #ifndef NDEBUG
     amrex::Gpu::Device::streamSynchronize();
     if (S_new.contains_nan(Density, S_new.nComp(), 0))
