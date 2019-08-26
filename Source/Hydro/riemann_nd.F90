@@ -1219,10 +1219,21 @@ contains
              if (abs(ustar) < smallu*HALF*(abs(ul) + abs(ur))) then
                 ustar = ZERO
              endif
-#ifndef AMREX_USE_CUDA
+!#ifndef AMREX_USE_CUDA
           else
-             call amrex_abort("Requiring analytic riemann solve which is not implemented")
-#endif
+!             call amrex_abort("Requiring analytic riemann solve which is not implemented")
+            call analriem_1cell((gamma_minus_1+ONE), &
+                 pl, &
+                 rl, &
+                 ul, &
+                 pr, &
+                 rr, &
+                 ur, &
+                 small_pres, &
+                 pstar, &
+                 ustar)
+
+!#endif
             endif
              ! ------------------------------------------------------------------
              ! look at the contact to determine which region we are in

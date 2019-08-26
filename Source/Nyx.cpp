@@ -523,8 +523,8 @@ Nyx::read_params ()
 	  std::cout << "Nyx::setting hydro_convert = 1 with ppm_type = 0 \n";
 	if(ppm_type != 0)
 	  amrex::Error("Nyx::ppm_type must be 0 with hydro_convert = 1");
-	if(use_analriem != 0)
-	  amrex::Error("Nyx::use_analriem must be 0 with hydro_convert = 1");
+	//	if(use_analriem != 0)
+	//amrex::Error("Nyx::use_analriem must be 0 with hydro_convert = 1");
       }
 
     if (do_hydro == 1)
