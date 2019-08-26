@@ -804,6 +804,7 @@ protected:
     static int ppm_flatten_before_integrals;
     static int use_colglaz;
     static int use_flattening;
+    static int use_analriem;
     static int corner_coupling;
     static int version_2;
     static int strang_grown_box;

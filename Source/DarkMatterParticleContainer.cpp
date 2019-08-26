@@ -83,6 +83,9 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
 {
     BL_PROFILE("DarkMatterParticleContainer::moveKickDrift()");
 
+    Gpu::streamSynchronize();
+    amrex::Gpu::LaunchSafeGuard lsg(false);
+
     //If there are no particles at this level
     if (lev >= this->GetParticles().size())
         return;
@@ -179,6 +182,9 @@ DarkMatterParticleContainer::moveKick (MultiFab&       acceleration,
                                        Real            a_half) 
 {
     BL_PROFILE("DarkMatterParticleContainer::moveKick()");
+
+    Gpu::streamSynchronize();
+    amrex::Gpu::LaunchSafeGuard lsg(false);
 
     const Real* dx = Geom(lev).CellSize();
 

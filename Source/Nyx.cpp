@@ -189,6 +189,7 @@ int Nyx::version_2          = 0;
 
 int Nyx::use_flattening     = 1;
 int Nyx::ppm_flatten_before_integrals = 0;
+int Nyx::use_analriem       = 1;
 
 Real Nyx:: h_species        = 0.0;
 Real Nyx::he_species        = 0.0;
@@ -511,6 +512,7 @@ Nyx::read_params ()
     pp_nyx.query("ppm_type", ppm_type);
     pp_nyx.query("ppm_reference", ppm_reference);
     pp_nyx.query("ppm_flatten_before_integrals", ppm_flatten_before_integrals);
+    pp_nyx.query("use_analriem", use_analriem);
     pp_nyx.query("use_flattening", use_flattening);
     pp_nyx.query("use_colglaz", use_colglaz);
     pp_nyx.query("version_2", version_2);
@@ -521,6 +523,8 @@ Nyx::read_params ()
 	  std::cout << "Nyx::setting hydro_convert = 1 with ppm_type = 0 \n";
 	if(ppm_type != 0)
 	  amrex::Error("Nyx::ppm_type must be 0 with hydro_convert = 1");
+	if(use_analriem != 0)
+	  amrex::Error("Nyx::use_analriem must be 0 with hydro_convert = 1");
       }
 
     if (do_hydro == 1)
@@ -1410,11 +1414,11 @@ Nyx::post_timestep (int iteration)
         for (int i = 0; i < theActiveParticles().size(); i++)
 	  {
 #ifdef AMREX_USE_GPU
-	    if(finest_level==0)
+	    /*	    if(finest_level==0)
 	      theActiveParticles()[i]->RedistributeLocal(level,
                                                   theActiveParticles()[i]->finestLevel(),
                                                   iteration);
-	    else
+	    else*/
 	      theActiveParticles()[i]->Redistribute(level,
                                                   theActiveParticles()[i]->finestLevel(),
                                                   iteration);

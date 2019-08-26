@@ -420,10 +420,10 @@ void Nyx::initcosmo()
             D_new.setVal(0.0, Zhi_comp);
 
 	{
+	  amrex::Gpu::LaunchSafeGuard lsg(true);
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-	amrex::Gpu::LaunchSafeGuard lsg(true);
      	for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
      	{
      	    const Box& box = mfi.tilebox();
