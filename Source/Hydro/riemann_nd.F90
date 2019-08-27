@@ -978,6 +978,7 @@ contains
 
     use meth_params_module, only : gamma_minus_1, use_analriem, use_csmall_gamma, use_gamma_minus
 #ifndef AMREX_USE_CUDA
+    use analriem_module, only: analriem
     use amrex_error_module, only: amrex_abort
 #endif
 
@@ -1015,6 +1016,7 @@ contains
     real(rt) :: rl, ul, v1l, v2l, pl, rel
     real(rt) :: rr, ur, v1r, v2r, pr, rer
     real(rt) :: wl, wr, scr
+!    real(rt), dimension(ilo:ihi) :: pstar2, ustar2
     real(rt) :: rstar, cstar, estar, pstar, ustar
     real(rt) :: ro, uo, po, reo, co, gamco, entho, drho
     real(rt) :: sgnm, spin, spout, ushock, frac
@@ -1038,6 +1040,10 @@ contains
     logical :: special_bnd_lo, special_bnd_hi, special_bnd_lo_x, special_bnd_hi_x
     real(rt) :: bnd_fac_x, bnd_fac_y, bnd_fac_z
     real(rt) :: wwinv, roinv, co2inv
+    integer :: iloop, ilo, ihi
+
+    ilo=1
+    ihi=1
 
     !$gpu
 
