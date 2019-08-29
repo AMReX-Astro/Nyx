@@ -18,7 +18,7 @@ module eos_module
   implicit none
 
   ! Routines:
-  public  :: nyx_eos_given_RT, nyx_eos_given_RT_vec, nyx_eos_T_given_Re_vec, eos_init_small_pres
+  public  :: nyx_eos_given_RT, nyx_eos_given_RT_host, nyx_eos_given_RT_vec, nyx_eos_T_given_Re_vec, eos_init_small_pres
   public  :: iterate_ne, iterate_ne_vec
   public :: ion_n
 
@@ -128,6 +128,28 @@ module eos_module
         P  = gamma_minus_1 * R * e
 
       end subroutine nyx_eos_given_RT
+
+     ! ****************************************************************************
+
+       subroutine nyx_eos_given_RT_host(e, P, R, T, Ne, a)
+
+        use atomic_rates_module, ONLY: YHELIUM
+        use fundamental_constants_module, only: mp_over_kb
+        use meth_params_module, only: gamma_minus_1
+        implicit none
+
+        double precision,          intent(  out) :: e, P
+        double precision,          intent(in   ) :: R, T, Ne
+        double precision, value,   intent(in   ) :: a
+
+        double precision :: mu
+
+        mu = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+Ne)
+        e  = T / (gamma_minus_1 * mp_over_kB * mu)
+
+        P  = gamma_minus_1 * R * e
+
+      end subroutine nyx_eos_given_RT_host
 
      ! ****************************************************************************
 

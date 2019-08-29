@@ -43,7 +43,7 @@ module eos_module
   private nspec, aion, zion
 
   public eos_init_small_pres, nyx_eos_T_given_Re_device, nyx_eos_T_given_Re, nyx_eos_T_given_Re_vec, nyx_eos_S_given_Re, &
-         nyx_eos_soundspeed, nyx_eos_given_RT, nyx_eos_given_RT_vec, eos, eos_device
+         nyx_eos_soundspeed, nyx_eos_given_RT, nyx_eos_given_RT_host, nyx_eos_given_RT_vec, eos, eos_device
 
 contains
 
@@ -342,6 +342,58 @@ contains
     e  = e_eos
 
   end subroutine nyx_eos_given_RT
+
+  subroutine nyx_eos_given_RT_host(e, P, R, T, Ne, comoving_a)
+
+     use amrex_fort_module, only : rt => amrex_real
+     use meth_params_module, only : gamma_minus_1
+
+          ! In/out variables
+     real(rt),           intent(  out) :: e, P
+     real(rt),           intent(in   ) :: R, T, Ne
+     real(rt),           intent(in   ) :: comoving_a
+
+
+     ! Local variables
+     logical :: do_diag
+     
+     real(rt) :: xn_eos(nspec)
+     real(rt) :: temp_eos
+     real(rt) :: den_eos
+     real(rt) :: e_eos
+     real(rt) :: p_eos
+     real(rt) :: cv_eos
+     real(rt) :: dpdt_eos
+     real(rt) :: dpdr_eos
+     real(rt) :: dedt_eos
+     real(rt) ::    s_eos
+     real(rt) :: comoving_a_cubed
+
+     do_diag = .false.
+
+     comoving_a_cubed = (comoving_a*comoving_a*comoving_a)
+
+     ! Density is the only variable we convert from comoving to proper coordinates
+     den_eos = R / comoving_a_cubed
+
+     temp_eos = T 
+
+     xn_eos(1) = XHYDROGEN
+     xn_eos(2) = (1.d0 - XHYDROGEN)
+
+     call eos(eos_input_rt, den_eos, temp_eos, &
+              xn_eos, &
+              p_eos, e_eos, cv_eos, &
+              dpdt_eos, dpdr_eos, dedt_eos, &
+              s_eos, &
+              do_diag)
+
+    ! Pressure must be converted from proper to comoving coordinates
+    P  = p_eos * comoving_a_cubed
+
+    e  = e_eos
+
+  end subroutine nyx_eos_given_RT_host
 
   !---------------------------------------------------------------------------
   ! The main interface -- this is used directly by MAESTRO

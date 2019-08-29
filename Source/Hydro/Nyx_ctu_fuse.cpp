@@ -1489,8 +1489,8 @@ Nyx::ctu_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::
             fort_compute_temp
               (tbx.loVect(), tbx.hiVect(),
               BL_ARR4_TO_FORTRAN(fab_S_new),
-              BL_ARR4_TO_FORTRAN(fab_D_new), &a_end,
-               &print_fortran_warnings_tmp);
+              BL_ARR4_TO_FORTRAN(fab_D_new), a_end,
+               print_fortran_warnings_tmp);
 	    });      
 	  amrex::Gpu::streamSynchronize();
       }

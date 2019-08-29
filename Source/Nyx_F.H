@@ -981,6 +981,13 @@ extern "C"
   void fort_ode_eos_setup(const amrex::Real& a,const amrex::Real& half_dt);
 
   AMREX_GPU_DEVICE void fort_compute_temp
+    (const int* lo, const int* hi,
+     const BL_FORT_FAB_ARG(state),
+     const BL_FORT_FAB_ARG(diag_eos),
+     const amrex::Real comoving_a,
+     const int print_fortran_warnings);
+
+  void fort_compute_temp_host
     (const int lo[], const int hi[],
      const BL_FORT_FAB_ARG(state),
      const BL_FORT_FAB_ARG(diag_eos),

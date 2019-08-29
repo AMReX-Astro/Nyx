@@ -2461,6 +2461,7 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
     }
 #endif
 
+    amrex::Gpu::synchronize();
     amrex::Gpu::LaunchSafeGuard lsg(true);
     if (heat_cool_type == 7) {
 #ifdef _OPENMP
@@ -2479,6 +2480,9 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
     }
     else
       {
+	    FArrayBox test, test_d;
+	    int print_warn=0;
+
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
@@ -2486,17 +2490,44 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 	  {
 	    const Box& bx = mfi.tilebox();
 
+	    /*
+	    test.resize(bx,S_new.nComp());
+	    test_d.resize(bx,S_new.nComp());
+	    test.copy(S_new[mfi],bx);
+	    test_d.copy(D_new[mfi],bx);
+	    //	    test.copy(S_new[mfi],0,0,S_new.nComp());
+	    //test_d.copy(D_new[mfi],0,0,D_new.nComp());*/
 	    const auto fab = S_new.array(mfi);
 	    const auto fab_diag = D_new.array(mfi);
-	    int print_warn=0;
+	    /*	    const auto test_fab = test.array();
+	    const auto test_fab_diag = test_d.array();
+	    amrex::Print()<<"2-norm of test: "<<test_d.norm(2,1)<<std::endl;
+	    amrex::Print()<<"2-norm of compare: "<<(D_new[mfi]).norm(2,1)<<std::endl;
+	    */
 	    AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
 	    {
             fort_compute_temp
               (tbx.loVect(), tbx.hiVect(),
               BL_ARR4_TO_FORTRAN(fab),
+              BL_ARR4_TO_FORTRAN(fab_diag), a,
+               print_warn);
+	    });
+	    amrex::Gpu::synchronize();
+	    /*
+            fort_compute_temp_host
+              (bx.loVect(), bx.hiVect(),
+              BL_ARR4_TO_FORTRAN(fab),
               BL_ARR4_TO_FORTRAN(fab_diag), &a,
                &print_warn);
-	    });
+
+	    amrex::Print()<<"2-norm of test: "<<test_d.norm(bx,2,1)<<std::endl;
+	    amrex::Print()<<"2-norm of compare: "<<(D_new[mfi]).norm(bx,2,1)<<std::endl;
+	    amrex::Print()<<"infnorm of test: "<<test_d.norm(bx,0,1)<<std::endl;
+	    amrex::Print()<<"infnorm of compare: "<<(D_new[mfi]).norm(bx,0,1)<<std::endl;
+	    amrex::Print()<<"1-norm of test: "<<test_d.norm(bx,1,1)<<std::endl;
+	    amrex::Print()<<"1-norm of compare: "<<(D_new[mfi]).norm(bx,1,1)<<std::endl;
+	    */
+	    amrex::Gpu::synchronize();
 	  }
       }
 
@@ -2535,7 +2566,7 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
                         << " at (i,j,k) " << imax << " " << jmax << " " << kmax << std::endl;
             }
     }
-
+    amrex::Gpu::synchronize();
 }
 #endif
 
