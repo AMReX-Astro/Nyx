@@ -24,6 +24,14 @@ public:
     virtual void RedistributeLocal (int lev_min              = 0,
                                     int lev_max              =-1,
                                     int nGrow                = 0) = 0;
+
+    virtual void RedistributeOK    (int lev_min              = 0,
+                                    int lev_max              =-1,
+                                    int nGrow                = 0) = 0;
+
+    virtual void RedistributeGPU   (int lev_min              = 0,
+                                    int lev_max              =-1,
+                                    int nGrow                = 0) = 0;
     
     virtual int finestLevel() const = 0;
     virtual void RemoveParticlesAtLevel (int level) = 0;
@@ -106,6 +114,43 @@ public:
             ::Redistribute(lev_minal, lev_maxal, nGrowal, local);
     }
 
+    virtual void RedistributeOK    (int lev_min              = 0,
+                                    int lev_max              =-1,
+                                    int nGrow                = 0) override
+    {
+
+        amrex::Gpu::LaunchSafeGuard lsg(true);
+	const int local =         amrex::NeighborParticleContainer<NSR,NSI>
+	  ::OK(lev_min, lev_max);
+	//	amrex::Print()<<"local flag is: "<<local<<std::endl;
+        amrex::NeighborParticleContainer<NSR,NSI>
+            ::Redistribute(lev_min, lev_max, nGrow, local);
+
+    }
+
+    virtual void RedistributeGPU   (int lev_min              = 0,
+                                    int lev_max              =-1,
+                                    int nGrow                = 0) override
+    {
+        AMREX_ASSERT(this->finestLevel() == 0);
+
+        int local = false;
+        const int lev_minal = 0;
+        const int lev_maxal = 0;
+        const int nGrowal = 0;
+
+	amrex::Gpu::synchronize();
+        amrex::Gpu::LaunchSafeGuard lsg(true);
+	local =         amrex::NeighborParticleContainer<NSR,NSI>
+	  ::OK(lev_minal, lev_maxal);
+	//	amrex::Print()<<"local flag is: "<<local<<std::endl;
+	if(local)
+        amrex::NeighborParticleContainer<NSR,NSI>
+            ::RedistributeGPU(lev_minal, lev_maxal, nGrowal, local);
+	else
+        amrex::NeighborParticleContainer<NSR,NSI>
+            ::RedistributeCPU(lev_minal, lev_maxal, nGrowal, local);
+    }
     
     virtual void RemoveParticlesAtLevel (int level) override
     {
