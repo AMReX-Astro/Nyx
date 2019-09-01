@@ -41,7 +41,7 @@ public:
     void InitFromBinaryMortonFile(const std::string& particle_directory, int nextra, int skip_factor);
 
     AMREX_GPU_HOST_DEVICE AMREX_INLINE  
-      void update_dm_particle_single(ParticleType  particle,
+      void update_dm_particle_single(ParticleType&  particle,
 				     const int nc,
 				     amrex::Array4<amrex::Real const> const& acc,
 				     amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& plo,
