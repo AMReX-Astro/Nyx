@@ -103,6 +103,7 @@ Nyx::read_init_params ()
 #ifdef NEUTRINO_PARTICLES
     pp.query("neutrino_particle_file", neutrino_particle_file);
     if (!neutrino_particle_file.empty() && particle_init_type != "AsciiFile" &&
+	                                   particle_init_type != "BinaryMetaFile" && 
 	                                   particle_init_type != "BinaryFile")
     {
         if (ParallelDescriptor::IOProcessor())

@@ -1412,11 +1412,17 @@ Nyx::post_timestep (int iteration)
     if ((iteration < ncycle and level < finest_level) || level == 0)
     {
         for (int i = 0; i < theActiveParticles().size(); i++)
-	  {
-	      theActiveParticles()[i]->RedistributeOK(level,
+	{
+  	    if(finest_level == 0)
+                theActiveParticles()[i]->RedistributeLocal(level,
                                                   theActiveParticles()[i]->finestLevel(),
                                                   iteration);
-	  }
+	    else
+                theActiveParticles()[i]->Redistribute(level,
+                                                  theActiveParticles()[i]->finestLevel(),
+                                                  iteration);
+
+	}
     }
 
 #ifndef NO_HYDRO
@@ -2919,6 +2925,22 @@ Nyx::CreateLevelDirectory (const std::string &dir)
     }
 
     LevelDirectoryNames(dir, Nyx::retrieveAGN(), LevelDir, FullPath);
+    if(ParallelDescriptor::IOProcessor()) {
+      if( ! amrex::UtilCreateDirectory(FullPath, 0755)) {
+        amrex::CreateDirectoryFailed(FullPath);
+      }
+    }
+#endif
+
+#ifdef NEUTRINO_DARK_MATTER
+    std::string npc(dir + "/" + Nyx::retrieveNPC());
+    if(ParallelDescriptor::IOProcessor()) {
+      if( ! amrex::UtilCreateDirectory(npc, 0755)) {
+        amrex::CreateDirectoryFailed(npc);
+      }
+    }
+
+    LevelDirectoryNames(dir, Nyx::retrieveNPC(), LevelDir, FullPath);
     if(ParallelDescriptor::IOProcessor()) {
       if( ! amrex::UtilCreateDirectory(FullPath, 0755)) {
         amrex::CreateDirectoryFailed(FullPath);

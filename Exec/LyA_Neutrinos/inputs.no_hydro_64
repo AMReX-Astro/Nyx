@@ -31,8 +31,8 @@ nyx.heat_cool_type   = 3
 nyx.small_dens = 1.e-2
 nyx.small_temp = 1.e-2
 
-nyx.do_santa_barbara = 1
-nyx.init_sb_vels     = 1
+nyx.do_santa_barbara = 0
+nyx.init_sb_vels     = 0
 gravity.ml_tol = 1.e-10
 gravity.sl_tol = 1.e-10
 
@@ -64,7 +64,7 @@ geometry.prob_lo     =  0     0     0
 #Domain size in Mpc
 geometry.prob_hi     =  28.49002849  28.49002849  28.49002849
 
-amr.n_cell           =  64  64  64
+amr.n_cell           =  64 64 64
 amr.max_grid_size    = 32
 #fabarray.mfiter_tile_size = 128 8 8
 fabarray.mfiter_tile_size = 1024000 8 8
@@ -78,7 +78,7 @@ nyx.lo_bc       =  0   0   0
 nyx.hi_bc       =  0   0   0
 
 # WHICH PHYSICS
-nyx.do_hydro = 1
+nyx.do_hydro = 0
 nyx.do_grav  = 1
 
 # COSMOLOGY
@@ -155,12 +155,12 @@ amr.checkpoint_nfiles = 64
 fab.format          = NATIVE_32
 amr.plot_files_output = 1
 amr.plot_file       = plt
-amr.plot_int        = -1
+amr.plot_int        = 1
 amr.plot_nfiles     = 64
 nyx.plot_z_values   = 7.0 6.0 5.0 4.0 3.0 2.0
 
 amr.plot_vars        = density xmom ymom zmom rho_e Temp phi_grav
-amr.derive_plot_vars = neutrino_mass_density particle_count particle_mass_density neutrino_particle_count particle_count
+amr.derive_plot_vars = neutrino_mass_density particle_count particle_mass_density neutrino_particle_count particle_count particle_x_velocity particle_y_velocity particle_z_velocity neutrino_x_velocity neutrino_y_velocity neutrino_z_velocity
 
 #PROBIN FILENAME
 amr.probin_file = probin

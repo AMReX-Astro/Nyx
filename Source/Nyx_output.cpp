@@ -21,6 +21,10 @@ namespace
 
     const std::string agn_chk_particle_file("AGN");
     const std::string agn_plt_particle_file("AGN");
+
+    const std::string npc_chk_particle_file("NPC");
+    const std::string npc_plt_particle_file("NPC");
+
 }
 
 std::string
@@ -42,6 +46,13 @@ Nyx::retrieveDM () {
 std::string
 Nyx::retrieveAGN () {
     return agn_chk_particle_file;
+}
+#endif
+
+#ifdef NEUTRINO_DARK_PARTICLES
+std::string
+Nyx::retrieveNPC () {
+    return npc_chk_particle_file;
 }
 #endif
 
@@ -135,7 +146,10 @@ Nyx::writePlotFile (const std::string& dir,
             if (it->name() == "particle_count" ||
                 it->name() == "total_particle_count" ||
                 it->name() == "particle_mass_density" ||
-                it->name() == "total_density")
+                it->name() == "total_density" || 
+                it->name() == "particle_x_velocity" ||
+                it->name() == "particle_y_velocity" ||
+                it->name() == "particle_z_velocity" )
             {
                 if (Nyx::theDMPC())
                 {
@@ -154,7 +168,10 @@ Nyx::writePlotFile (const std::string& dir,
 #endif
 #ifdef NEUTRINO_PARTICLES
             } else if (it->name() == "neutrino_particle_count" ||
-                       it->name() == "neutrino_mass_density")
+                       it->name() == "neutrino_mass_density" ||
+		       it->name() == "neutrino_x_velocity" ||
+		       it->name() == "neutrino_y_velocity" ||
+		       it->name() == "neutrino_z_velocity" )
             {
                 if (Nyx::theNPC())
                 {
@@ -355,6 +372,11 @@ Nyx::writePlotFile (const std::string& dir,
       Nyx::theAPC()->SetLevelDirectoriesCreated(false);
     }
 #endif
+#ifdef NEUTRINO_DARK_PARTICLES
+    if(Nyx::theNPC()) {
+      Nyx::theNPC()->SetLevelDirectoriesCreated(false);
+    }
+#endif
 
 }
 
@@ -368,6 +390,12 @@ Nyx::writePlotFilePre (const std::string& dir, ostream& os)
 #ifdef AGN
   if(Nyx::theAPC()) {
     Nyx::theAPC()->WritePlotFilePre();
+  }
+#endif
+
+#ifdef NEUTRINO_DARK_PARTICLES
+  if(Nyx::theNPC()) {
+    Nyx::theNPC()->WritePlotFilePre();
   }
 #endif
 
@@ -386,6 +414,12 @@ Nyx::writePlotFilePost (const std::string& dir, ostream& os)
     Nyx::theAPC()->WritePlotFilePost();
   }
 #endif
+#ifdef NEUTRINO_DARK_PARTICLES
+  if(Nyx::theNPC()) {
+    Nyx::theNPC()->WritePlotFilePost();
+  }
+#endif
+
 }
 
 void
@@ -573,6 +607,13 @@ Nyx::particle_plot_file (const std::string& dir)
           }
 #endif
 
+#ifdef NEUTRINO_DARK_PARTICLES
+        if (Nyx::theNPC())
+          {
+            Nyx::theNPC()->WriteNyxPlotFile(dir, npc_plt_particle_file);
+          }
+#endif
+
 #ifdef NO_HYDRO
         Real cur_time = state[PhiGrav_Type].curTime();
 #else
@@ -627,6 +668,22 @@ Nyx::particle_plot_file (const std::string& dir)
             File.close();
         }
 #endif
+
+#ifdef NEUTRINO_DARK_PARTICLES
+        // Write particle_plotfile_format into its own file in the particle directory
+        if (Nyx::theNPC() && ParallelDescriptor::IOProcessor())
+        {
+            std::string FileName = dir + "/" + npc_plt_particle_file + "/precision";
+            std::ofstream File;
+            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
+            if ( ! File.good()) {
+                amrex::FileOpenFailed(FileName);
+	    }
+            File.precision(15);
+            File << particle_plotfile_format << '\n';
+            File.close();
+        }
+#endif
     }
 }
 
@@ -645,6 +702,12 @@ Nyx::particle_check_point (const std::string& dir)
       if (Nyx::theAPC())
         {
           Nyx::theAPC()->NyxCheckpoint(dir, agn_chk_particle_file);
+        }
+#endif
+#ifdef NEUTRINO_DARK_PARTICLES
+      if (Nyx::theNPC())
+        {
+          Nyx::theNPC()->NyxCheckpoint(dir, npc_chk_particle_file);
         }
 #endif
 
@@ -855,6 +918,11 @@ Nyx::checkPoint (const std::string& dir,
       Nyx::theAPC()->SetLevelDirectoriesCreated(false);
     }
 #endif
+#ifdef NEUTRINO_DARK_PARTICLES
+    if(Nyx::theNPC()) {
+      Nyx::theNPC()->SetLevelDirectoriesCreated(false);
+    }
+#endif
 
 }
 
@@ -868,6 +936,11 @@ Nyx::checkPointPre (const std::string& dir,
 #ifdef AGN
   if(Nyx::theAPC()) {
     Nyx::theAPC()->CheckpointPre();
+  }
+#endif
+#ifdef NEUTRINO_DARK_PARTICLES
+  if(Nyx::theNPC()) {
+    Nyx::theNPC()->CheckpointPre();
   }
 #endif
 
@@ -884,6 +957,11 @@ Nyx::checkPointPost (const std::string& dir,
 #ifdef AGN
   if(Nyx::theAPC()) {
     Nyx::theAPC()->CheckpointPost();
+  }
+#endif
+#ifdef NEUTRINO_DARK_PARTICLES
+  if(Nyx::theNPC()) {
+    Nyx::theNPC()->CheckpointPost();
   }
 #endif
 }
