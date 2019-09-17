@@ -2532,34 +2532,27 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
     Real prev_time   = state[State_Type].prevTime();
     if (prev_time > 0.0 && verbose > 0)
     {
-    BL_PROFILE("Nyx::compute_new_temp()::max_temp");
-    // Compute the maximum temperature
-    Real max_temp = D_new.norm0(Temp_comp);
 
-    int imax = -1;
-    int jmax = -1;
-    int kmax = -1;
+      if (verbose > 1)
+	{
+	    BL_PROFILE("Nyx::compute_new_temp()::max_temp");
+	    // Compute the maximum temperature
+	    Real max_temp = D_new.norm0(Temp_comp);
+	    IntVect max_temp_loc = D_new.maxIndex(Temp_comp);
 
-    Real den_maxt;
-
-        for (MFIter mfi(S_new); mfi.isValid(); ++mfi)
-        {
-            const Box& bx = mfi.validbox();
-
-            fort_compute_max_temp_loc
-                (bx.loVect(), bx.hiVect(),
-                BL_TO_FORTRAN(S_new[mfi]),
-                BL_TO_FORTRAN(D_new[mfi]),
-                &max_temp,&den_maxt,&imax,&jmax,&kmax);
-        }
-
-        if (verbose > 1 && ParallelDescriptor::IOProcessor())
-            if (imax > -1 && jmax > -1 && kmax > -1)
-            {
-              std::cout << "Maximum temp. at level " << level << " is " << max_temp
-                        << " at density " << den_maxt
-                        << " at (i,j,k) " << imax << " " << jmax << " " << kmax << std::endl;
-            }
+	    for (MFIter mfi(S_new); mfi.isValid(); ++mfi)
+	      {
+		const Box& bx = mfi.validbox();
+		if(bx.contains(max_temp_loc))
+		  {
+		    const auto fab_state = S_new.array(mfi);
+		    Real den_maxt=fab_state(max_temp_loc,Density);
+		    std::cout << "Maximum temp. at level " << level << " is " << max_temp
+				<< " at density " << den_maxt
+				<< " at (i,j,k) " << max_temp_loc << std::endl;
+		  }
+	      }
+	  }
     }
     amrex::Gpu::synchronize();
 }
