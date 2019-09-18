@@ -860,6 +860,12 @@ protected:
     // specifies the heating/cooling source term
     static int heat_cool_type;
 
+    // specifies the allocation type for sundials vector
+    static int sundials_alloc_type;
+
+    // if true, use non-negative constraint on energy
+    static int use_sundials_constraint;
+
     // specifies inhomogeneous reionization type
     static int inhomo_reion;
     static std::string inhomo_zhi_file;

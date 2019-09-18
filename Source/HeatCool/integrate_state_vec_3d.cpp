@@ -93,8 +93,8 @@ int Nyx::integrate_state_vec_mfin
   realtype reltol, abstol;
   int flag;
     
-  reltol = 1e-12;  /* Set the tolerances */
-  abstol = 1e-12;
+  reltol = 1e-4;  /* Set the tolerances */
+  abstol = 1e-4;
 
   int one_in = 1;
   
@@ -244,10 +244,14 @@ int Nyx::integrate_state_vec_mfin
 				flag = CVDiag(cvode_mem);
 
 				CVodeSetMaxNumSteps(cvode_mem,2000);
-				
-				N_Vector constrain=N_VClone(u);
-				N_VConst(2,constrain);	      
-				flag =CVodeSetConstraints(cvode_mem,constrain);
+
+				N_Vector constrain;
+				if(use_sundials_constraint)
+				  {
+				    constrain=N_VClone(u);
+				    N_VConst(2,constrain);	      
+				    flag =CVodeSetConstraints(cvode_mem,constrain);
+				  }
 				
 				CVodeSetUserData(cvode_mem, &Data);
 				//				CVodeSetMaxStep(cvode_mem, delta_time/10);
@@ -265,8 +269,6 @@ int Nyx::integrate_state_vec_mfin
       for (int k = lo.z; k <= hi.z; ++k) {
 	for (int j = lo.y; j <= hi.y; ++j) {
 	    for (int i = lo.x; i <= hi.x; ++i) {
-	      if(i==24&&j==14&&k==19)
-		std::cout<<"rho_e(24,14,19): "<<state4(24,14,19,Eint)<<std::endl;
 #else
 				AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
 				{				  
@@ -295,14 +297,16 @@ int Nyx::integrate_state_vec_mfin
 #ifdef AMREX_USE_GPU
       The_Managed_Arena()->free(dptr);
       The_Managed_Arena()->free(eptr);
-      The_Managed_Arena()->free(constrain);
+      if(use_sundials_constraint)
+	The_Managed_Arena()->free(constrain);
       The_Managed_Arena()->free(rparh);
       The_Managed_Arena()->free(abstol_ptr);
 #endif
 #endif
 				N_VDestroy(u);          /* Free the u vector */
 				N_VDestroy(e_orig);          /* Free the e_orig vector */
-				N_VDestroy(constrain);          /* Free the constrain vector */
+				if(use_sundials_constraint)
+				  N_VDestroy(constrain);          /* Free the constrain vector */
 				N_VDestroy(abstol_vec);          /* Free the u vector */
 				N_VDestroy(Data);          /* Free the userdata vector */
 				CVodeFree(&cvode_mem);  /* Free the integrator memory */

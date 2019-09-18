@@ -127,6 +127,9 @@ nyx_main (int argc, char* argv[])
 #endif
 
     bool finished(false);
+    {
+
+    BL_PROFILE_REGION("R::Nyx::coarseTimeStep");
 
     while ( ! finished) 
     {
@@ -159,6 +162,8 @@ nyx_main (int argc, char* argv[])
      }
 
     }  // ---- end while( ! finished)
+
+    }
 
 #ifdef AMREX_USE_CVODE
     Nyx::dealloc_simd_vec();

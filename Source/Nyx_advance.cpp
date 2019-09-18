@@ -119,7 +119,8 @@ Nyx::advance_hydro_plus_particles (Real time,
     int grav_n_grow = ghost_width + (1-iteration) + (iteration-1) +
                       stencil_interpolation_width ;
 
-    BL_PROFILE_REGION_START("R::Nyx::advance_hydro_plus_particles");
+    {
+    BL_PROFILE_REGION("R::Nyx::advance_hydro_plus_particles");
     BL_PROFILE("Nyx::advance_hydro_plus_particles()");
     // Sanity checks
     if (!do_hydro)
@@ -495,8 +496,8 @@ Nyx::advance_hydro_plus_particles (Real time,
 	
     }
     }
-
-    BL_PROFILE_REGION_STOP("R::Nyx::advance_hydro_plus_particles");
+    }
+    //    BL_PROFILE_REGION_STOP("R::Nyx::advance_hydro_plus_particles");
 
     // Redistribution happens in post_timestep
     return dt;

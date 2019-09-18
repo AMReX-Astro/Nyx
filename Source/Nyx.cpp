@@ -138,6 +138,8 @@ Real Nyx::comoving_h;
 int Nyx::do_hydro = -1;
 int Nyx::add_ext_src = 0;
 int Nyx::heat_cool_type = 0;
+int Nyx::use_sundials_constraint = 0;
+int Nyx::sundials_alloc_type = 0;
 int Nyx::strang_split = 1;
 int Nyx::strang_fuse = 0;
 int Nyx::strang_grown_box = 1;
@@ -503,7 +505,7 @@ Nyx::read_params ()
     if (inhomo_reion > 0)
        amrex::Error("Nyx::you set inhomo_reion > 0 but forgot to set USE_HEATCOOL = TRUE");
 #endif
-
+    pp_nyx.query("use_sundials_constraint", use_sundials_constraint);
     pp_nyx.query("nghost_state", nghost_state);
     pp_nyx.query("hydro_convert", hydro_convert);
     pp_nyx.query("allow_untagging", allow_untagging);

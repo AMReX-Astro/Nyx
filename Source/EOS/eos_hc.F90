@@ -878,8 +878,8 @@ module eos_module
 
             if (abs(dne) < xacc) exit
 
-            !            if (i .gt. 12) &
-            !               STOP
+            if (i .gt. 15) &
+                 exit
 
          enddo
 
@@ -918,8 +918,8 @@ module eos_module
 
             if (abs(dne) < xacc) exit
 
-            !            if (i .gt. 12) &
-            !               STOP
+            if (i .gt. 15) &
+                 exit
 
          enddo
 
@@ -1065,8 +1065,8 @@ module eos_module
 
          if (abs(dne) < xacc) exit
 
-         !            if (i .gt. 12) &
-         !               STOP
+         if (i .gt. 15) &
+              exit
 
       enddo
 
