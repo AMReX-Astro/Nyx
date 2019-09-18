@@ -111,8 +111,7 @@ int Nyx::integrate_state_vec_mfin
 
       long int neq = len.x*len.y*len.z;
       amrex::Gpu::streamSynchronize();
-      amrex::Print()<<"len: "<<len<<"lo: "<<lo<<"neq: "<<neq<<std::endl;
-				int loop = 1;
+      int loop = 1;
 
 #ifdef AMREX_USE_CUDA
 			cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();	
@@ -206,17 +205,6 @@ int Nyx::integrate_state_vec_mfin
 	for (int j = lo.y; j <= hi.y; ++j) {
 	    for (int i = lo.x; i <= hi.x; ++i) {
 	      fort_ode_eos_setup(a,delta_time);
-	      if(i==24&&j==14&&k==19)
-		{
-		  std::cout<<"rho_e(24,14,19): "<<state4(24,14,19,Eint)<<"\n"
-			   <<state4(i,j,k,Eden)<<"\n"
-			   <<state4(i,j,k,Density)<<"\n"
-			   <<state4(i,j,k,Eint)/state4(i,j,k,Density)<<"\n"
-			   <<diag_eos4(i,j,k,Ne_comp)<<"\n"
-			   <<diag_eos4(i,j,k,Temp_comp)<<"\n"
-			   <<"z: "<<1/a-1<<"\n"
-			   <<"a: "<<a<<std::endl;
-		}
 #else
 				AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
 				{				  
@@ -228,7 +216,7 @@ int Nyx::integrate_state_vec_mfin
 				  rparh[4*idx+1]= diag_eos4(i,j,k,Ne_comp);//    rpar(2)=ne_vode
 				  rparh[4*idx+2]= state4(i,j,k,Density); //    rpar(3)=rho_vode
 				  rparh[4*idx+3]=1/a-1;    //    rpar(4)=z_vode
-				  abstol_ptr[idx]= diag_eos4(i,j,k,Ne_comp)<1e-7||true ? state4(i,j,k,Eint)/state4(i,j,k,Density)*abstol : 1e4*state4(i,j,k,Eint)/state4(i,j,k,Density)*abstol ;
+				  abstol_ptr[idx]= state4(i,j,k,Eint)/state4(i,j,k,Density)*abstol;
 				  //				}
 #ifdef _OPENMP
 				}
@@ -271,85 +259,6 @@ int Nyx::integrate_state_vec_mfin
 #ifndef NDEBUG
 				PrintFinalStats(cvode_mem);
 #endif
-				//				diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
-				//	diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
-				// rho should not change  rho_tmp_ptr[i]=rparh[4*i+2]; //    rpar(3)=rho_vode
-				/*
-				const Dim3 hi = amrex::ubound(tbx);
-
-				amrex::Gpu::LaunchSafeGuard lsg(true);
-				amrex::Gpu::streamSynchronize();
-
-				for (int k = lo.z; k <= hi.z; ++k) {
-				  for (int j = lo.y; j <= hi.y; ++j) {
-				    for (int i = lo.x; i <= hi.x; ++i) {
-				      amrex::Gpu::streamSynchronize();
-				      int idx = i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
-				      realtype t=0.0;
-				      amrex::Gpu::streamSynchronize();
-				      if(rparh[4*idx+1] >1e-4)
-					{
-					  std::cout<<"rparh: "<<rparh[4*idx+1]<<std::endl;
-					  N_Vector u = N_VNewManaged_Cuda(1);  
-					  double* dptr_tmp=N_VGetDeviceArrayPointer_Cuda(u);
-					  
-					  N_Vector Data = N_VNewManaged_Cuda(4*1);  // Allocate u vector 
-					  N_VConst(0.0,Data);
-
-					  N_VSetCudaStream_Cuda(Data, &currentStream);
-					  N_VSetCudaStream_Cuda(u, &currentStream);
-					  double* rparh_tmp=N_VGetDeviceArrayPointer_Cuda(Data);
-					  N_Vector abstol_vec = N_VNewManaged_Cuda(1);
-					  N_VSetCudaStream_Cuda(abstol_vec, &currentStream);
-					  double* abstol_ptr=N_VGetDeviceArrayPointer_Cuda(abstol_vec);
-					  amrex::Gpu::streamSynchronize();
-					  idx=0;
-
-					  dptr_tmp[idx]=state4(i,j,k,Eint)/state4(i,j,k,Density);
-					  rparh_tmp[4*idx+0]= diag_eos4(i,j,k,Temp_comp);   //rpar(1)=T_vode
-					  rparh_tmp[4*idx+1]= diag_eos4(i,j,k,Ne_comp);//    rpar(2)=ne_vode
-					  rparh_tmp[4*idx+2]= state4(i,j,k,Density); //    rpar(3)=rho_vode
-					  rparh_tmp[4*idx+3]=1/a-1;    //    rpar(4)=z_vode
-					  amrex::Gpu::streamSynchronize();
-					  std::cout<<"solving new outputs"<<dptr_tmp[idx]<<"\t"<<rparh_tmp[4*idx+2]<<"\t"<<idx<<"\t"<<i<<"\t"<<j<<"\t"<<k<<std::endl;
-#ifdef CV_NEWTON
-					  void* cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
-#else
-					  void* cvode_mem = CVodeCreate(CV_BDF);
-#endif
-					  flag = CVodeInit(cvode_mem, f, t, u);
-
-					  N_VScale(abstol,u,abstol_vec);
-
-					  flag = CVodeSVtolerances(cvode_mem, reltol, abstol_vec);
-
-				//				flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
-					  flag = CVDiag(cvode_mem);
-
-					  CVodeSetMaxNumSteps(cvode_mem,2000);
-
-					  CVodeSetUserData(cvode_mem, &Data);
-				//				CVodeSetMaxStep(cvode_mem, delta_time/10);
-				//				BL_PROFILE_VAR("Nyx::strang_second_cvode",cvode_timer2);
-					  flag = CVode(cvode_mem, delta_time, u, &t, CV_NORMAL);
-					  amrex::Gpu::streamSynchronize();
-
-					  idx= i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
-					  dptr[idx]=dptr_tmp[0];
-					  rparh[4*idx+0]=rparh_tmp[0];
-					  rparh[4*idx+1]=rparh_tmp[1];
-					  rparh[4*idx+2]=rparh_tmp[2];
-					  rparh[4*idx+3]=rparh_tmp[3];
-					  std::cout<<"finished setting new outputs"<<dptr[idx]<<"\t"<<rparh[4*idx+2]<<idx<<i<<j<<k<<std::endl;
-
-					}
-				      amrex::Gpu::streamSynchronize();
-
-				    }
-				  }
-				}
-
-				std::cout<<"finished checking new outputs"<<std::endl;*/
 
 #ifdef _OPENMP
 #pragma omp parallel for collapse(3)
@@ -373,12 +282,6 @@ int Nyx::integrate_state_vec_mfin
 				  //				}
 				//PrintFinalStats(cvode_mem);
 #ifdef _OPENMP
-	      if(i==24&&j==14&&k==19)
-		{
-		std::cout<<"end: rho_e(24,14,19): "<<state4(24,14,19,Eint)<<std::endl;
-		std::cout<<"end: Temp(24,14,19): "<<diag_eos4(24,14,19,Temp_comp)<<std::endl;
-		std::cout<<"end: Ne(24,14,19): "<<diag_eos4(24,14,19,Ne_comp)<<std::endl;
-		}
 				}
 				}
 				}
@@ -546,8 +449,6 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
   int neq=N_VGetLength_Cuda(udot);
   double*  rpar=N_VGetDeviceArrayPointer_Cuda(*(static_cast<N_Vector*>(user_data)));
   
-  std::cout<<"t: "<<t<<std::endl;
-
   /*  N_VCopyFromDevice_Cuda(*(static_cast<N_Vector*>(user_data)));  
   double*  rparh=N_VGetHostArrayPointer_Cuda(*(static_cast<N_Vector*>(user_data)));
    

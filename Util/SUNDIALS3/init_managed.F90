@@ -72,6 +72,8 @@ uvb_density_A = 1.0d0
 uvb_density_B = 0.0d0
 XHYDROGEN = 0.76d0
 YHELIUM   = 7.8947368421d-2
+gamma_minus_1 = 2.d0/3.d0
+
 !reion
 zhi_flash=-1.0
 zheii_flash=-1.0
@@ -125,7 +127,7 @@ subroutine init_tables_eos_params() &
 
 !    print*,"Finished reading parameters:"
 !    print(FMT), string,STRANG_COMP, a, half_dt, rho, T_orig, ne_orig, e_orig
-    a=1.635780036449432E-01
+    a=0.0688707121 !1.635780036449432E-01
 
     z = 1.d0/a - 1.d0
     call fort_integrate_comoving_a(a, a_end, half_dt)
