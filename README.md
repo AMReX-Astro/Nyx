@@ -1,5 +1,7 @@
 # Nyx
 
+[![AMReX](https://amrex-codes.github.io/badges/powered%20by-AMReX-red.svg)](https://amrex-codes.github.io)
+
 *an adaptive mesh, massively-parallel, cosmological simulation code*
 
 ******
