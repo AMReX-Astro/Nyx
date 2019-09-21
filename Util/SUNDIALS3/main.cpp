@@ -13,7 +13,12 @@
 #include <AMReX_BLFort.H>
 
 #include <cvode/cvode.h>               /* prototypes for CVODE fcts., consts. */
+#include <arkode/arkode_arkstep.h>      // prototypes for ARKStep fcts., consts.
 #include <cvode/cvode_diag.h>          /* access to CVDiag interface */
+#include <sunmatrix/sunmatrix_dense.h>     /* access to dense SUNMatrix            */
+#include <sunlinsol/sunlinsol_dense.h>     /* access to dense SUNLinearSolver      */
+#include <sunlinsol/sunlinsol_pcg.h>  /* access to PCG SUNLinearSolver        */
+#include <sunlinsol/sunlinsol_spgmr.h>  /* access to SPGMR SUNLinearSolver             */
 #include <sundials/sundials_types.h>   /* definition of type realtype */
 #include <sundials/sundials_math.h>    /* definition of ABS and EXP   */
 
@@ -41,6 +46,11 @@ enum DiagEOS_Type_Index {
   Ne_comp   = 1
 
 };
+
+    bool use_cvode=1;
+    int use_cvdiag=1;
+    bool do_tiling=false;
+
   int integrate_state_vec(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
 /* Functions Called by the Solver */
 static int f(realtype t, N_Vector u, N_Vector udot, void *user_data);
@@ -80,9 +90,10 @@ int integrate_state_vec
   //#pragma omp parallel if (Gpu::notInLaunchRegion())
   //#endif
 #ifdef _OPENMP
-  for ( MFIter mfi(S_old, false); mfi.isValid(); ++mfi )
+  for ( MFIter mfi(S_old, do_tiling); mfi.isValid(); ++mfi )
 #else
-  for ( MFIter mfi(S_old, TilingIfNotGPU()); mfi.isValid(); ++mfi )
+    //    for ( MFIter mfi(S_old, IntVect(AMREX_D_DECL(4,4,4))); mfi.isValid(); ++mfi )
+    for ( MFIter mfi(S_old, do_tiling && TilingIfNotGPU()); mfi.isValid(); ++mfi )
 #endif
     {
 
@@ -118,8 +129,8 @@ int main (int argc, char* argv[])
     bool test_ic;
     int n_cell, max_grid_size;
     int write_plotfile;
-    bool do_tiling;
-    bool test_match;
+    bool test_match=1;
+    bool increase_tol=0;
 
     // inputs parameters
     {
@@ -136,7 +147,10 @@ int main (int argc, char* argv[])
 
       pp.get("write_plotfile",write_plotfile);
       pp.get("do_tiling",do_tiling);
-      pp.get("test_match",test_match);
+      pp.query("test_match",test_match);
+      pp.query("use_cvode",use_cvode);
+      pp.query("use_cvdiag",use_cvdiag);
+      pp.query("increase_tol",increase_tol);
     }
 
     amrex::Print() << "This is AMReX version " << amrex::Version() << std::endl;
@@ -205,11 +219,12 @@ int main (int argc, char* argv[])
       }
 
     S_old.setVal(6.896610338e+12,4,1,0); //    rho*E
+    S_old.setVal(0,6,1,0); //    rho*E
     D_old.setVal(11026.08482 ,0,1,0); //    rpar(1)=T_vode
     D_old.setVal(0.008728890037 ,1,1,0); //    rpar(2)=ne_vode
     Real half_dt=4.907133436e-06;
 
-	for (MFIter mfi(S_old,true); mfi.isValid(); ++mfi)
+	for (MFIter mfi(S_old,do_tiling); mfi.isValid(); ++mfi)
 	  {
 	    // Note that this "bx" includes the grow cells 
 	    const Box& bx = mfi.tilebox();
@@ -220,11 +235,13 @@ int main (int argc, char* argv[])
 		if(test_match)
 		  {
 		    fab_state(test_point,5)=2.920381766e+12;//,5,1,0); //    rho*e
+		    fab_state(test_point,6)=increase_tol;//,5,1,0); //    rho*e
 		    fab_state(test_point,0)=2.587879236e+10;//,0,1,0); //    rpar(3)=rho_vode
 		  }
 		else
 		  {
 		    fab_state(test_point,5)=1.83E12;//,5,1,0); //    rho*e
+		    fab_state(test_point,6)=increase_tol;//,5,1,0); //    rho*e
 		    fab_state(test_point,0)=1.98E10;//,0,1,0); //    rpar(3)=rho_vode
 		  }
 	      }
@@ -244,8 +261,16 @@ int main (int argc, char* argv[])
     
     fort_dealloc_cuda_managed();
 
-    amrex::Print()<<"Maximum of repacked final solution: "<<S_old.max(5,0,0)<<std::endl;
-    amrex::Print()<<"Minimum of repacked final solution: "<<S_old.min(5,0,0)<<std::endl;
+    amrex::Print()<<"Maximum of repacked final solution: "<<S_old.max(5,0,0)<<
+      "\nArkode max: "<<S_old.max(5,0,0)-2880041560931.35<<
+      "\nArkode relative max: "<<(S_old.max(5,0,0)-2880041560931.35)/2880041560931.35<<
+      "\nCvode max: "<<S_old.max(5,0,0)-2880345125756.03<<
+      "\nCvode relative max: "<<(S_old.max(5,0,0)-2880345125756.03)/2880345125756.03<<std::endl;
+    amrex::Print()<<"Minimum of repacked final solution: "<<S_old.min(5,0,0)<<
+      "\nArkode min: "<<(S_old.min(5,0,0)-1829794600851.52)<<
+      "\nArkode relative min: "<<(S_old.min(5,0,0)-1829794600851.52)/1829794600851.52<<
+      "\nCvode min: "<<S_old.min(5,0,0)-1829795010808.2<<
+      "\nCvode relative min: "<<(S_old.min(5,0,0)-1829795010808.2)/1829795010808.2<<std::endl;
     
     if (write_plotfile)
     {
@@ -306,7 +331,7 @@ int integrate_state_vec_mfin
 
       long int neq = len.x*len.y*len.z;
       amrex::Gpu::streamSynchronize();
-      amrex::Print()<<"len: "<<len<<"lo: "<<lo<<"neq: "<<neq<<std::endl;
+      //      amrex::Print()<<"len: "<<len<<"lo: "<<lo<<"neq: "<<neq<<std::endl;
 				int loop = 1;
 
 #ifdef AMREX_USE_CUDA
@@ -424,7 +449,7 @@ int integrate_state_vec_mfin
 				  rparh[4*idx+2]= state4(i,j,k,Density); //    rpar(3)=rho_vode
 				  rparh[4*idx+3]=1/a-1;    //    rpar(4)=z_vode
 				  //				  abstol_ptr[idx]= diag_eos4(i,j,k,Ne_comp)<1e-7||true ? state4(i,j,k,Eint)/state4(i,j,k,Density)*abstol : 1e4*state4(i,j,k,Eint)/state4(i,j,k,Density)*abstol ;
-				  abstol_ptr[idx]= state4(i,j,k,Eint)/state4(i,j,k,Density)*abstol;
+				  abstol_ptr[idx]= state4(i,j,k,6) ? state4(i,j,k,Eint)/state4(i,j,k,Density)*1e-12 : state4(i,j,k,Eint)/state4(i,j,k,Density)*abstol;
 				  //				}
 #ifdef _OPENMP
 				}
@@ -436,6 +461,30 @@ int integrate_state_vec_mfin
       amrex::Gpu::Device::streamSynchronize();
 #endif
 
+      SUNMatrix A = NULL;             /* empty matrix for linear solver */
+      SUNLinearSolver LS = NULL;      /* empty linear solver object */
+     
+      if(use_cvdiag==2)
+	{
+	  std::cout<<"Dense: "<<use_cvdiag<<std::endl;
+	  A = SUNDenseMatrix(neq, neq);
+	  LS = SUNLinSol_Dense(u, A);
+	}
+      else if(use_cvdiag==3||N_VMin(abstol_vec)<1e-7)
+	{
+	  LS = SUNLinSol_PCG(u,0,1);
+	}
+      else if(use_cvdiag==4)
+	{
+	  LS = SUNLinSol_SPGMR(u,0,1);
+	  flag = SUNLinSol_SPGMRSetGSType(LS, CLASSICAL_GS);
+
+	  //	  flag = ARKStepSetEpsLin(cvode_mem, DELT);
+	  //	  if(check_flag(&flag, "ARKStepSetEpsLin", 1)) return(1);
+	}
+      amrex::Gpu::streamSynchronize();
+  if(use_cvode)
+  {
 #ifdef CV_NEWTON
 				cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
 #else
@@ -443,33 +492,72 @@ int integrate_state_vec_mfin
 #endif
 				flag = CVodeInit(cvode_mem, f, t, u);
 
-				N_VScale(abstol,u,abstol_vec);
-				/*
-				N_VConst(N_VMaxNorm(abstol_vec),abstol_vec);
+				//				N_VScale(abstol,u,abstol_vec);
+				if(N_VMin(abstol_vec)<1e-7)
+				  flag = CVodeSVtolerances(cvode_mem, 1e-6*reltol, abstol_vec);
+				else
+				  flag = CVodeSVtolerances(cvode_mem, reltol, abstol_vec);
 
-				flag = CVodeSVtolerances(cvode_mem, reltol, abstol_vec);*/
-				N_VScale(abstol,u,abstol_vec);
-				flag = CVodeSVtolerances(cvode_mem, reltol, abstol_vec);
-				
-				//				flag = CVodeSStolerances(cvode_mem, reltol, N_VMin(abstol_vec));
-				flag = CVDiag(cvode_mem);
-
+				if(use_cvdiag==1)
+				  flag = CVDiag(cvode_mem);
+				else if(use_cvdiag==2)//||N_VMin(abstol_vec)<1e-7)
+				  {
+				  flag = CVodeSetLinearSolver(cvode_mem, LS, A);        /* Attach matrix and linear solver */
+				  }
+				else
+				  {
+				  flag = CVodeSetLinearSolver(cvode_mem, LS, NULL);        /* Attach matrix and linear solver */
+				  }
+				CVodeSetUserData(cvode_mem, &Data);
 				CVodeSetMaxNumSteps(cvode_mem,2000);
+				//				CVodeSetInitStep(cvode_mem, delta_time/5);
+				flag = CVode(cvode_mem, delta_time, u, &t, CV_NORMAL);
+
+  }
+
+  else
+    {
+      
+      cvode_mem = ARKStepCreate(NULL, f, t, u);
+
+      //      N_VScale(abstol,u,abstol_vec);
+      flag = ARKStepSVtolerances(cvode_mem, reltol, abstol_vec);
+				//////				flag = CVodeSVtolerances(cvode_mem, reltol, abstol_vec);
+				
+      /* Linear solver interface */
+      ARKStepSetLinear(cvode_mem,0);
+      if(use_cvdiag==2)
+	{
+	  flag = ARKStepSetLinearSolver(cvode_mem, LS, A);        /* Attach matrix and linear solver */
+	}
+      else
+	{
+	  flag = ARKStepSetLinearSolver(cvode_mem, LS, NULL);        /* Attach matrix and linear solver */
+	}
+      flag = ARKStepSetAdaptivityMethod(cvode_mem, 4,1,0, NULL);
+      //      flag = ARKStepSetInitStep(cvode_mem, delta_time/5);
+		//				flag = CVodeSStolerances(cvode_mem, reltol, N_VMin(abstol_vec));
+      //      flag = CVDiag(cvode_mem);
+
+      ARKStepSetMaxNumSteps(cvode_mem,2000);
 				/*
 				N_Vector constrain=N_VClone(u);
 				N_VConst(2,constrain);	      
 				flag =CVodeSetConstraints(cvode_mem,constrain);
 				*/
-				CVodeSetUserData(cvode_mem, &Data);
-				//				CVodeSetMaxStep(cvode_mem, delta_time/10);
+      ARKStepSetUserData(cvode_mem, &Data);
+				//
 				//				BL_PROFILE_VAR("Nyx::strang_second_cvode",cvode_timer2);
-				flag = CVode(cvode_mem, delta_time, u, &t, CV_NORMAL);
+      flag = ARKStepEvolve(cvode_mem, delta_time, u, &t, ARK_NORMAL);
 				//				amrex::Gpu::Device::streamSynchronize();
 				//				BL_PROFILE_VAR_STOP(cvode_timer2);
 
+    }
+      amrex::Gpu::streamSynchronize();
 #ifndef NDEBUG
 				PrintFinalStats(cvode_mem);
 #endif
+
 				//				diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
 				//	diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
 				// rho should not change  rho_tmp_ptr[i]=rparh[4*i+2]; //    rpar(3)=rho_vode
@@ -601,7 +689,25 @@ int integrate_state_vec_mfin
 				///			N_VDestroy(constrain);          /* Free the constrain vector */
 				N_VDestroy(abstol_vec);          /* Free the u vector */
 				N_VDestroy(Data);          /* Free the userdata vector */
-				CVodeFree(&cvode_mem);  /* Free the integrator memory */
+
+				
+				//N_Vector ele= N_VClone(u);
+				if(use_cvode)
+				  {
+				    //				      CVodeGetEstLocalErrors(cvode_mem, ele);
+				    //				      std::cout<<"maximum local estimated error: "<<N_VMaxNorm(ele)<<std::endl;
+				    //				      amrex::Gpu::streamSynchronize();
+				    //N_VDestroy(ele);          // Free the u vector 
+				      CVodeFree(&cvode_mem);  // Free the integrator memory 
+				  }
+				else
+				  {
+				    //				    ARKStepGetEstLocalErrors(cvode_mem, ele);
+				    //				    std::cout<<"maximum local estimated error: "<<N_VMaxNorm(ele)<<std::endl;
+				    //				    amrex::Gpu::streamSynchronize();
+				    //				    N_VDestroy(ele);          // Free the u vector 
+				    ARKStepFree(&cvode_mem);  // Free the integrator memory 
+				  }
 			      //);
 				/*			    }
 			
@@ -657,14 +763,56 @@ static void PrintOutput(realtype t, realtype umax, long int nst)
 
 /* Get and print some final statistics */
 
+/*-------------------------------
+ * Private helper functions
+ *-------------------------------*/
+
+/* Check function return value...
+    opt == 0 means SUNDIALS function allocates memory so check if
+             returned NULL pointer
+    opt == 1 means SUNDIALS function returns a flag so check if
+             flag >= 0
+    opt == 2 means function allocates memory so check if returned
+             NULL pointer
+*/
+static int check_flag(void *flagvalue, const char *funcname, int opt)
+{
+  int *errflag;
+
+  /* Check if SUNDIALS function returned NULL pointer - no memory allocated */
+  if (opt == 0 && flagvalue == NULL) {
+    fprintf(stderr, "\nSUNDIALS_ERROR: %s() failed - returned NULL pointer\n\n",
+            funcname);
+    return 1; }
+
+  /* Check if flag < 0 */
+  else if (opt == 1) {
+    errflag = (int *) flagvalue;
+    if (*errflag < 0) {
+      fprintf(stderr, "\nSUNDIALS_ERROR: %s() failed with flag = %d\n\n",
+              funcname, *errflag);
+      return 1; }}
+
+  /* Check if function returned NULL pointer - no memory allocated */
+  else if (opt == 2 && flagvalue == NULL) {
+    fprintf(stderr, "\nMEMORY_ERROR: %s() failed - returned NULL pointer\n\n",
+            funcname);
+    return 1; }
+
+  return 0;
+}
+
 static void PrintFinalStats(void *cvode_mem)
 {
   long lenrw, leniw ;
   long lenrwLS, leniwLS;
   long int nst, nfe, nsetups, nni, ncfn, netf;
   long int nli, npe, nps, ncfl, nfeLS;
-  int retval;
+  long int nst_a, nfi, nje;
+  int retval, flag;
 
+  if(use_cvode)
+    {
   retval = CVodeGetWorkSpace(cvode_mem, &lenrw, &leniw);
   check_retval(&retval, "CVodeGetWorkSpace", 1);
   retval = CVodeGetNumSteps(cvode_mem, &nst);
@@ -682,6 +830,39 @@ static void PrintFinalStats(void *cvode_mem)
   printf("nst     = %5ld\n"                     , nst);
   printf("nfe     = %5ld     nfeLS   = %5ld\n"  , nfe, nfeLS);
   printf("nsetups = %5ld     netf    = %5ld\n"  , nsetups, netf);
+    }
+  else
+    {
+  /* Get/print some final statistics on how the solve progressed */
+  flag = ARKStepGetNumSteps(cvode_mem, &nst);
+  check_flag(&flag, "ARKStepGetNumSteps", 1);
+  flag = ARKStepGetNumStepAttempts(cvode_mem, &nst_a);
+  check_flag(&flag, "ARKStepGetNumStepAttempts", 1);
+  flag = ARKStepGetNumRhsEvals(cvode_mem, &nfe, &nfi);
+  check_flag(&flag, "ARKStepGetNumRhsEvals", 1);
+  flag = ARKStepGetNumLinSolvSetups(cvode_mem, &nsetups);
+  check_flag(&flag, "ARKStepGetNumLinSolvSetups", 1);
+  flag = ARKStepGetNumErrTestFails(cvode_mem, &netf);
+  check_flag(&flag, "ARKStepGetNumErrTestFails", 1);
+  flag = ARKStepGetNumNonlinSolvIters(cvode_mem, &nni);
+  check_flag(&flag, "ARKStepGetNumNonlinSolvIters", 1);
+  flag = ARKStepGetNumNonlinSolvConvFails(cvode_mem, &ncfn);
+  check_flag(&flag, "ARKStepGetNumNonlinSolvConvFails", 1);
+  flag = ARKStepGetNumJacEvals(cvode_mem, &nje);
+  check_flag(&flag, "ARKStepGetNumJacEvals", 1);
+  flag = ARKStepGetNumLinRhsEvals(cvode_mem, &nfeLS);
+  check_flag(&flag, "ARKStepGetNumLinRhsEvals", 1);
+
+  printf("\nFinal Solver Statistics:\n");
+  printf("   Internal solver steps = %li (attempted = %li)\n", nst, nst_a);
+  printf("   Total RHS evals:  Fe = %li,  Fi = %li\n", nfe, nfi);
+  printf("   Total linear solver setups = %li\n", nsetups);
+  printf("   Total RHS evals for setting up the linear system = %li\n", nfeLS);
+  printf("   Total number of Jacobian evaluations = %li\n", nje);
+  printf("   Total number of Newton iterations = %li\n", nni);
+  printf("   Total number of linear solver convergence failures = %li\n", ncfn);
+  printf("   Total number of error test failures = %li\n\n", netf);
+    }
 
   return;
 }
