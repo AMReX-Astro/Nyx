@@ -2494,20 +2494,52 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 	    test_d.copy(D_new[mfi],bx);
 	    //	    test.copy(S_new[mfi],0,0,S_new.nComp());
 	    //test_d.copy(D_new[mfi],0,0,D_new.nComp());*/
-	    const auto fab = S_new.array(mfi);
-	    const auto fab_diag = D_new.array(mfi);
+	    const auto state = S_new.array(mfi);
+	    const auto diag_eos = D_new.array(mfi);
 	    /*	    const auto test_fab = test.array();
 	    const auto test_fab_diag = test_d.array();
 	    amrex::Print()<<"2-norm of test: "<<test_d.norm(2,1)<<std::endl;
 	    amrex::Print()<<"2-norm of compare: "<<(D_new[mfi]).norm(2,1)<<std::endl;
 	    */
-	    AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
+	    //	    AMREX_LAUNCH_DEVICE_LAMBDA
+
+
+	    Real dummy_small_temp=small_temp;
+	    Real h_species_in=h_species;
+	    Real gamma_minus_1_in=gamma - 1.0;
+	    AMREX_PARALLEL_FOR_3D(bx, i, j ,k,
 	    {
-            fort_compute_temp
-              (tbx.loVect(), tbx.hiVect(),
-              BL_ARR4_TO_FORTRAN(fab),
-              BL_ARR4_TO_FORTRAN(fab_diag), a,
-               print_warn);
+
+	      Real rhoInv = 1.e0 / state(i,j,k,Density);
+	      Real eint = state(i,j,k,Eint) * rhoInv;
+
+	    if (state(i,j,k,Eint) > 0.0) 
+	      {
+
+		eint = state(i,j,k,Eint) * rhoInv;
+		
+		int JH = 1;
+		int JHe = 1;
+
+		nyx_eos_T_given_Re_device(gamma_minus_1_in, h_species_in, JH, JHe, &diag_eos(i,j,k,Temp_comp), &diag_eos(i,j,k,Ne_comp), 
+					       state(i,j,k,Density), eint, a);
+	      }
+	    else
+	      {
+		Real dummy_pres=0.0;
+		// Set temp to small_temp and compute corresponding internal energy
+		nyx_eos_given_RT(gamma_minus_1_in, h_species_in, &eint, &dummy_pres, state(i,j,k,Density), dummy_small_temp, 
+				    diag_eos(i,j,k,Ne_comp), a);
+
+		Real ke = 0.5e0 * (state(i,j,k,Xmom) * state(i,j,k,Xmom) + 
+			      state(i,j,k,Ymom) * state(i,j,k,Ymom) + 
+			      state(i,j,k,Zmom) * state(i,j,k,Zmom)) * rhoInv;
+
+		diag_eos(i,j,k,Temp_comp) = dummy_small_temp;
+		state(i,j,k,Eint) = state(i,j,k,Density) * eint;
+		state(i,j,k,Eden) = state(i,j,k,Eint) + ke;
+	      }
+
 	    });
 	    amrex::Gpu::synchronize();
 	    /*
