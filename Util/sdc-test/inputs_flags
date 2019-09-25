@@ -1,0 +1,26 @@
+n_cell = 128
+max_grid_size = 64
+
+write_plotfile = 0
+
+#tighten tolerances for unique box
+increase_tol = 0
+
+#swap between high and low point being singleton
+test_match = 1
+
+#int flag, can be 1 (cvdiag),2 (dense) ,3 (pcg),4 (spgmr)
+use_cvdiag = 1
+
+#bool flag, 0 is arkode
+use_cvode = 1
+do_tiling = 0
+
+nyx.inhomo_reion  = 0
+nyx.uvb_rates_file  = "TREECOOL_middle"
+nyx.uvb_density_A = 1.0
+nyx.uvb_density_B = 0.0
+nyx.zHI_flash     = -1.0
+nyx.zHeII_flash   = -1.0
+nyx.T_zHI         = 2.0e4
+nyx.T_zHeII       = 1.5e4

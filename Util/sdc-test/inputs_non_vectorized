@@ -1,0 +1,21 @@
+n_cell = 64
+max_grid_size = 1
+
+# 1 = Adams (non-stiff); 2 = BDF (stiff)
+cvode_meth = 2
+
+# 1 = functional iteration; 2 = Newton iteration
+cvode_itmeth = 2
+
+write_plotfile = 1
+
+do_tiling = 0
+
+nyx.inhomo_reion  = 0
+nyx.uvb_rates_file  = "TREECOOL_middle"
+nyx.uvb_density_A = 1.0
+nyx.uvb_density_B = 0.0
+nyx.zHI_flash     = -1.0
+nyx.zHeII_flash   = -1.0
+nyx.T_zHI         = 2.0e4
+nyx.T_zHeII       = 1.5e4
