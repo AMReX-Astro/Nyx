@@ -1415,12 +1415,12 @@ Nyx::post_timestep (int iteration)
     {
         for (int i = 0; i < theActiveParticles().size(); i++)
 	{
-  	    if(finest_level == 0)
-                theActiveParticles()[i]->RedistributeLocal(level,
+	     if(finest_level == 0 && nStep()>2)
+	         theActiveParticles()[i]->RedistributeLocal(level,
                                                   theActiveParticles()[i]->finestLevel(),
                                                   iteration);
-	    else
-                theActiveParticles()[i]->Redistribute(level,
+	     else
+	         theActiveParticles()[i]->Redistribute(level,
                                                   theActiveParticles()[i]->finestLevel(),
                                                   iteration);
 

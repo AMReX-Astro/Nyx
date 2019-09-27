@@ -294,7 +294,7 @@ Nyx::advance_hydro_plus_particles (Real time,
         { 
            get_level(lev).sdc_hydro(time, dt, a_old, a_new);
         } else {
-#ifdef AMREX_USE_CVODE
+#ifdef AMREX_USE_SUNDIALS_3x4x
 	  if(strang_fuse > 0)
 	      get_level(lev).strang_hydro_fuse(time, dt, a_old, a_new);
 	  else
@@ -308,7 +308,7 @@ Nyx::advance_hydro_plus_particles (Real time,
         } 
 #else
 	
-#ifdef AMREX_USE_CVODE
+#ifdef AMREX_USE_SUNDIALS_3x4x
 	if(strang_fuse > 0)
 	  get_level(lev).strang_hydro_fuse(time, dt, a_old, a_new);
 	else
