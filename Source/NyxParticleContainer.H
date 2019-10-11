@@ -94,8 +94,10 @@ public:
                                int lev_max              =-1,
         		       int nGrow                = 0) override
     {
-        amrex::Gpu::LaunchSafeGuard lsg(true);
-        amrex::NeighborParticleContainer<NSR,NSI>::Redistribute(lev_min, lev_max, nGrow);
+        amrex::Gpu::synchronize();
+        amrex::Gpu::LaunchSafeGuard lsg(false);
+        amrex::NeighborParticleContainer<NSR,NSI>::RedistributeCPU(lev_min, lev_max, nGrow);
+        amrex::Gpu::synchronize();
     }
 
     virtual void RedistributeLocal (int lev_min              = 0,

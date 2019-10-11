@@ -504,10 +504,13 @@ Nyx::init_particles ()
             // after reading in `m_pos[]`. Here we're reading in the particle
             // mass and velocity.
             //
-	    amrex::Gpu::LaunchSafeGuard lsg(true);
+	    amrex::Gpu::synchronize();
+	    amrex::Gpu::LaunchSafeGuard lsg(false);
             DMPC->InitFromBinaryFile(binary_particle_file, BL_SPACEDIM + 1);
             if (init_with_sph_particles == 1)
                 SPHPC->InitFromBinaryFile(ascii_particle_file, BL_SPACEDIM + 1);
+	    amrex::Gpu::synchronize();
+
         }
         else if (particle_init_type == "BinaryMetaFile")
         {
