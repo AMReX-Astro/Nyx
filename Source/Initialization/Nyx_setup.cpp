@@ -1,5 +1,6 @@
 
 #include "AMReX_LevelBld.H"
+#include "AMReX_buildInfo.H"
 
 #include "Nyx.H"
 #include "Nyx_F.H"
@@ -105,6 +106,13 @@ Nyx::variable_setup()
   startCPUTime = ParallelDescriptor::second();
 
     BL_ASSERT(desc_lst.size() == 0);
+
+    if (ParallelDescriptor::IOProcessor()) {
+          const char* amrex_hash  = amrex::buildInfoGetGitHash(2);
+          std::cout << "\n" << "AMReX git describe: " << amrex_hash << "\n";
+          const char* nyx_hash  = amrex::buildInfoGetGitHash(1);
+          std::cout << "\n" << "Nyx git describe:   " << nyx_hash << "\n";
+    }
 
     // Initialize the network
     network_init();
