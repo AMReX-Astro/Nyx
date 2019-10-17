@@ -10,7 +10,7 @@
 module eos_module
 
   use amrex_constants_module, only : rt => amrex_real, M_PI
-#ifdef AMREX_USE_CUDA
+#ifdef AMREX_USE_CUDA_FORTRAN
   use cudafor
 #endif
   use iso_c_binding, only: c_double
@@ -24,7 +24,7 @@ module eos_module
 
   real(rt), allocatable, public :: xacc ! EOS Newton-Raphson convergence tolerance
   real(c_double), allocatable, public :: vode_rtol, vode_atol_scaled ! VODE integration tolerances
-#ifdef AMREX_USE_CUDA
+#ifdef AMREX_USE_CUDA_FORTRAN
   attributes(managed) :: xacc, vode_rtol, vode_atol_scaled
 #endif
   contains
@@ -404,7 +404,7 @@ module eos_module
       real(rt),           intent(  out) :: nh0, nhep
 
       real(rt) :: nh, nhp, nhe0, nhepp, T, ne
-#ifdef AMREX_USE_CUDA
+#ifdef AMREX_USE_CUDA_FORTRAN
       attributes(managed) :: T,Ne,nh0, nhp, nhe0, nhep, nhepp
 #endif
 

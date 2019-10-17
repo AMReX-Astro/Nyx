@@ -6,7 +6,7 @@ module reion_aux_module
   ! Global variables (re)set on inputs
   real(rt), allocatable :: zhi_flash, zheii_flash, T_zhi, T_zheii
   logical, allocatable  :: flash_h, flash_he, inhomogeneous_on
-#ifdef AMREX_USE_CUDA
+#ifdef AMREX_USE_CUDA_FORTRAN
   attributes(managed) :: zhi_flash, zheii_flash, T_zhi, T_zheii
   attributes(managed)  :: flash_h, flash_he, inhomogeneous_on
 #endif

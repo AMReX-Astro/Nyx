@@ -68,7 +68,7 @@ module meth_params_module
   integer, save, allocatable :: qpass_map(:), upass_map(:)
 
   integer, save :: corner_coupling=1
-#ifdef AMREX_USE_CUDA
+#ifdef AMREX_USE_CUDA_FORTRAN
   attributes(managed) :: gamma_minus_1, iorder!, gamma_const
   attributes(managed) :: URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX
   attributes(managed) :: TEMP_COMP, NE_COMP, ZHI_COMP, NTHERM, NVAR, NDIAG, small_temp, heat_cool_type

@@ -53,7 +53,7 @@ module atomic_rates_module
   real(rt), allocatable, public :: XHYDROGEN 
   real(rt), allocatable, public :: YHELIUM     ! (1.0d0-XHYDROGEN)/(4.0d0*XHYDROGEN)
 
-#ifdef AMREX_USE_CUDA
+#ifdef AMREX_USE_CUDA_FORTRAN
   attributes(managed) :: NCOOLFILE, lzr, rggh0, rgghe0, rgghep, reh0, rehe0, rehep
   attributes(managed) :: AlphaHp, AlphaHep, AlphaHepp, Alphad
   attributes(managed) :: GammaeH0, GammaeHe0, GammaeHep

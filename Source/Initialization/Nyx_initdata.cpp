@@ -201,7 +201,7 @@ Nyx::initData ()
     if ( (fabs(dx[0] - dx[1]) > SMALL) || (fabs(dx[0] - dx[2]) > SMALL) )
         amrex::Abort("We don't support dx != dy != dz");
 
-#ifndef NO_HYDRO
+#ifndef NO_HYDRO    
     int         ns       = S_new.nComp();
 
     Real  cur_time = state[State_Type].curTime();
@@ -252,6 +252,8 @@ Nyx::initData ()
             }
         }
     }
+#else
+        Real  cur_time = state[PhiGrav_Type].curTime();
 #endif // end NO_HYDRO
 
 #ifdef GRAVITY
@@ -313,6 +315,7 @@ Nyx::initData ()
 	    std::cout << "Readin stuff...done\n";
     }
 #endif
+    
 
     // Add partially redundant setup for small_dens
     Real average_gas_density = -1e200;

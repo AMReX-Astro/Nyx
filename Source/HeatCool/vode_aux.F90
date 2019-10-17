@@ -13,7 +13,7 @@ module vode_aux_module
   real(rt), dimension(:), allocatable, save :: rho_vode_vec, T_vode_vec, ne_vode_vec
   integer , allocatable :: JH_vode, JHe_vode, i_vode, j_vode, k_vode, fn_vode, NR_vode
   logical,  allocatable :: firstcall
-#ifdef AMREX_USE_CUDA
+#ifdef AMREX_USE_CUDA_FORTRAN
   attributes(managed) :: z_vode, NR_vode, T_vode, ne_vode, rho_vode, JH_vode, JHe_vode, i_vode, j_vode, k_vode, fn_vode
 #endif
   !$OMP THREADPRIVATE (rho_vode, rho_vode_vec, T_vode, T_vode_vec, ne_vode, ne_vode_vec, JH_vode, JHe_vode, i_vode, j_vode, k_vode, fn_vode, NR_vode, firstcall)
