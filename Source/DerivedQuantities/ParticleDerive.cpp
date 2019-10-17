@@ -340,13 +340,10 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 #endif
         return derive_dat; 
       }
-#ifndef NO_HYDRO
       else 
       {
         return derive("density",time,0);
       }
-#endif
-
 #else
         return derive("density",time,0);
 #endif

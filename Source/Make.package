@@ -26,8 +26,8 @@ ifeq ($(USE_CVODE_LIBS), TRUE)
 endif
 CEXE_sources += strang_reactions.cpp
 CEXE_sources += sum_integrated_quantities.cpp
-CEXE_sources += sum_utils.cpp
 endif
+CEXE_sources += sum_utils.cpp
 
 ifeq ($(USE_SDC), TRUE)
 CEXE_sources += sdc_hydro.cpp

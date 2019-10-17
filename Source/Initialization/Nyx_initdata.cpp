@@ -140,7 +140,8 @@ Nyx::init_zhi ()
     const int ratio = prob_res / file_res;
 
     BL_ASSERT(ratio >= 1);
-
+    
+#ifndef NO_HYDRO
     MultiFab& D_new = get_new_data(DiagEOS_Type);
     int nd = D_new.nComp();
 
@@ -165,7 +166,7 @@ Nyx::init_zhi ()
                       nd, BL_TO_FORTRAN(D_new[mfi]),
                       ratio, BL_TO_FORTRAN(zhi[mfi]));
     }
-
+#endif
     if (ParallelDescriptor::IOProcessor()) std::cout << "done.\n";
 }
 
@@ -181,9 +182,9 @@ Nyx::initData ()
         return;
     }
 
+#ifndef NO_HYDRO    
     MultiFab&   S_new    = get_new_data(State_Type);
 
-#ifndef NO_HYDRO
     // We need this because otherwise we might operate on uninitialized data.
     S_new.setVal(0.0);
 #endif

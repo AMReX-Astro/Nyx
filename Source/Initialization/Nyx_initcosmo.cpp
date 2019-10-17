@@ -97,6 +97,7 @@ void Nyx::icReadAndPrepareFab(std::string mfDirName, int nghost, MultiFab &mf)
 }
 #endif
 
+#ifndef NO_HYDRO    
 void Nyx::initcosmo()
 {
 
@@ -468,3 +469,9 @@ void Nyx::initcosmo()
 
 #endif //ifdef GRAVITY
 }
+#else
+void Nyx::initcosmo()
+{
+  amrex::Abort("Nyx::initcosmo is not defined for NO_HYDRO=TRUE");
+}
+#endif
