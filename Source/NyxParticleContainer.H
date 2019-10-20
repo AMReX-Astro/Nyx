@@ -358,8 +358,9 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion()) reduction(min:dt)
 #endif
     {
-	amrex::Gpu::DeviceScalar<amrex::Real> ldt_gpu(dt);
-	amrex::Real* pldt = ldt_gpu.dataPtr();
+      amrex::ReduceOps<amrex::ReduceOpMin> reduce_op;
+      amrex::ReduceData<amrex::Real> reduce_data(reduce_op);
+      using ReduceTuple = typename decltype(reduce_data)::Type;
 
         for (MyConstParIter pti(*this, lev); pti.isValid(); ++pti) {
             const int grid = pti.index();
@@ -371,8 +372,8 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
 
             num_particles_at_level += n;
        	
-            AMREX_HOST_DEVICE_FOR_1D ( n, i,
-            {
+                reduce_op.eval(n, reduce_data,
+                [=] AMREX_GPU_DEVICE (const int i) -> ReduceTuple {
                 const ParticleType& p = pstruct[i];
 
                 if (p.id() > 0)
@@ -404,12 +405,14 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
                         dt_part = amrex::min( dt_part, 1/std::sqrt(mag_accel*dxi[0]) );
                     }
 
-                    amrex::Gpu::Atomic::Min(pldt,dt_part);
+                    return dt_part;
                 }
             });
         }
 
-        amrex::Real ldt_cpu = ldt_gpu.dataValue();
+        ReduceTuple hv = reduce_data.value();
+	amrex::Real ldt_cpu = amrex::get<0>(hv);
+
         dt = std::min(dt,ldt_cpu);
     }
 

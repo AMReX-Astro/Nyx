@@ -1396,6 +1396,7 @@ Nyx::post_timestep (int iteration)
     int finest_level = parent->finestLevel();
     const int ncycle = parent->nCycle(level);
 
+    BL_PROFILE_VAR("Nyx::post_timestep()::remove_virt_ghost",rm);
     //
     // Remove virtual particles at this level if we have any.
     //
@@ -1406,6 +1407,9 @@ Nyx::post_timestep (int iteration)
     //
     if (iteration == ncycle)
         remove_ghost_particles();
+    amrex::Gpu::streamSynchronize();
+    BL_PROFILE_VAR_STOP(rm);
+    BL_PROFILE_VAR("Nyx::post_timestep()::redist",redist);
 
     //
     // Sync up if we're level 0 or if we have particles that may have moved
@@ -1426,6 +1430,9 @@ Nyx::post_timestep (int iteration)
 
 	}
     }
+    amrex::Gpu::streamSynchronize();
+    BL_PROFILE_VAR_STOP(redist);
+    BL_PROFILE_VAR("Nyx::post_timestep()::do_reflux",do_reflux);
 
 #ifndef NO_HYDRO
     if (do_reflux && level < finest_level)
@@ -1560,6 +1567,10 @@ Nyx::post_timestep (int iteration)
     if (level < finest_level)
         average_down();
 
+    amrex::Gpu::streamSynchronize();
+    BL_PROFILE_VAR_STOP(do_reflux);
+    BL_PROFILE_VAR("Nyx::post_timestep()::sum_write",sum_write);
+
     if (level == 0)
     {
         int nstep = parent->levelSteps(0);
@@ -1580,6 +1591,10 @@ Nyx::post_timestep (int iteration)
 #endif
     }
 
+    amrex::Gpu::streamSynchronize();
+    BL_PROFILE_VAR_STOP(sum_write);
+    BL_PROFILE_VAR("Nyx::post_timestep()::compute_temp",compute_temp);
+
 #ifndef NO_HYDRO
     if (do_hydro)
     {
@@ -1595,6 +1610,7 @@ Nyx::post_timestep (int iteration)
 #endif
 
     amrex::Gpu::Device::streamSynchronize();
+    BL_PROFILE_VAR_STOP(compute_temp);
 
 }
 
