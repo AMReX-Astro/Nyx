@@ -2358,12 +2358,12 @@ Nyx::derive (const std::string& name,
         for (MFIter mfi(*derive_dat); mfi.isValid(); ++mfi)
         {
 	  const auto fab_derive_dat=derive_dat->array(mfi);
-        const Box& bx = mfi.tilebox();
-	Real my_proc = ParallelDescriptor::MyProc();
-	AMREX_HOST_DEVICE_FOR_3D ( bx, i, j, k,
+	  const Box& bx = mfi.tilebox();
+	  Real my_proc = ParallelDescriptor::MyProc();
+	  AMREX_HOST_DEVICE_FOR_3D ( bx, i, j, k,
 				   {
-				     fab_derive_dat(i,j,k,1)=my_proc;
-				   });
+				     fab_derive_dat(i,j,k,0)=my_proc;
+				     });
         }
         return derive_dat;
     } else {
