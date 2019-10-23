@@ -407,6 +407,8 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
 
                     return dt_part;
                 }
+
+		return 1e50;
             });
         }
 
