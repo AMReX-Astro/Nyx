@@ -1644,6 +1644,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
 
    int nstep = parent->levelSteps(0);
 
+#ifndef NO_HYDRO
    if (slice_int > -1 && nstep%slice_int == 0)
    {
       BL_PROFILE("Nyx::postCoarseTimeStep: get_all_slice_data");
@@ -1762,6 +1763,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
     }
 
    }
+#endif
 }
 
 void
