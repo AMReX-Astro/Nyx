@@ -36,6 +36,7 @@ subroutine integrate_state_with_source(lo, hi, &
 !   state : double array (dims) @todo
 !       The state vars
 !
+    use amrex_error_module, only : amrex_abort
     use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : NVAR, URHO, UEDEN, UEINT, &
                                    NDIAG, TEMP_COMP, NE_COMP, ZHI_COMP, gamma_minus_1
@@ -227,6 +228,7 @@ end subroutine integrate_state_with_source
 
 subroutine vode_wrapper_with_source_single(dt, rho_in, T_in, ne_in, e_in, rho_src, e_src, rho_out, T_out, ne_out, e_out)
 
+    use amrex_error_module, only : amrex_abort
     use amrex_fort_module, only : rt => amrex_real
     use vode_aux_module, only: rho_vode, T_vode, ne_vode, &
                                i_vode, j_vode, k_vode, NR_vode, rho_src_vode, e_src_vode,&
@@ -368,6 +370,7 @@ subroutine vode_wrapper_with_source_single(dt, rho_in, T_in, ne_in, e_in, rho_sr
 
   subroutine vode_wrapper_with_source(dt, rho_in, T_in, ne_in, e_in, rho_src, e_src, rho_out, T_out, ne_out, e_out)
 
+    use amrex_error_module, only : amrex_error
     use amrex_fort_module, only : rt => amrex_real
     use vode_aux_module, only: rho_vode, T_vode, ne_vode, &
                                i_vode, j_vode, k_vode, NR_vode, rho_src_vode, e_src_vode,&

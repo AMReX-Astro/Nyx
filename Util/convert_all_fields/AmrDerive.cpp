@@ -70,13 +70,13 @@ bool neutrinos_on(std::string& fns)
     struct stat sbuf;
     const char *fn = fns.c_str();
     if( lstat( fn, &sbuf ) == -1 ) {
-        printf( "Neutrinos are off\n");
+        Print()<< "Neutrinos are off\n" << endl;
         return false;
       } else if( S_ISDIR( sbuf.st_mode ) ) {
-        printf( "Neutrinos are on \n");
+        Print()<<"Neutrinos are on \n" << endl;
         return true;
       } else {
-        printf( "What?\n");
+        Print() << "What?\n" << endl;;
 	return false;
       }
 }
@@ -430,6 +430,7 @@ void printHWM(const char* info, MPI_Comm comm) {
 int main(int argc, char **argv) {
     amrex::Initialize(argc, argv);
 
+    {
     // MPI info...
     MPI_Comm comm = MPI_COMM_WORLD;
     int mpi_size, mpi_rank;
@@ -539,7 +540,7 @@ int main(int argc, char **argv) {
     bool neutrinos=neutrinos_on(fn);
 
     fn=input_path+"/job_info";
-    bool hydro=true; //hydro_on(fn);
+    bool hydro=hydro_on(fn);
     const int nGhost = 0;
     int nComp = 5;
 
@@ -550,9 +551,8 @@ int main(int argc, char **argv) {
 
     if(hydro)
     {
-        Print() << "Hydro on";
+        Print() << "Hydro on" << endl;
         nComp+=5;
-        Print() << nComp;
     }
 
     Vector<int> comps(nComp);
@@ -567,10 +567,8 @@ int main(int argc, char **argv) {
     comps[3]= i_dm_vy;
     int i_dm_vz(amrData.StateNumber("particle_z_velocity"));
     comps[4]= i_dm_vz;
-    int i_temp(amrData.StateNumber("Temp"));
-    comps[5] = i_temp;
 
-    int val = 5;
+    int val = 4;
 
 
     //Neutrino fields
@@ -587,12 +585,19 @@ int main(int argc, char **argv) {
     Print() << "Converting hydro states \n";
     int i_gas_density(amrData.StateNumber("density"));
     comps[val+1] = i_gas_density;
+    Print() << "density \n";
     int i_xmom(amrData.StateNumber("xmom"));
     comps[val+2] = i_xmom;
+    Print() << "xmom \n";
     int i_ymom(amrData.StateNumber("ymom"));
     comps[val+3] = i_ymom;
+    Print() << "ymom \n";
     int i_zmom(amrData.StateNumber("zmom"));
     comps[val+4] = i_zmom;
+    Print() << "zmom \n";
+    int i_temp(amrData.StateNumber("Temp"));
+    comps[val+5] = i_temp;
+    Print() << "Temp \n";
     Print() << "\n0:";
     Print() << comps[0];
     Print() <<"\n 1:";
@@ -749,26 +754,6 @@ int main(int argc, char **argv) {
     output_write_field(output_path, field_path, mf1);
     ParallelDescriptor::Barrier();
 
-    // Dark Matter count
-
-    field_path = "native_fields/dark_matter_count";
-
-    if (ParallelDescriptor::IOProcessor()) {
-        std::cout << "\nReading particle_count." << std::endl;
-    }
-
-    amrData.FillVar(mf1, level, "particle_count", comp_start);
-    amrData.FlushGrids(amrData.StateNumber("particle_count"));
-
-    if (ParallelDescriptor::IOProcessor()) {
-        std::cout << "Writing to file." << std::endl;
-        output_create_field(output_path, field_path, "Particles",
-                            grid_nx, grid_ny, grid_nz);
-    }
-    ParallelDescriptor::Barrier();
-    output_write_field(output_path, field_path, mf1);
-    ParallelDescriptor::Barrier();
-
 
     // Particle velocity in x
 
@@ -831,26 +816,6 @@ int main(int argc, char **argv) {
     output_write_field(output_path, field_path, mf1);
     ParallelDescriptor::Barrier();
 
-    // Temperature
-
-    field_path = "native_fields/temperature";
-
-    if (ParallelDescriptor::IOProcessor()) {
-        std::cout << "\nReading Temp." << std::endl;
-    }
-
-    amrData.FillVar(mf1, level, "Temp", comp_start);
-    amrData.FlushGrids(amrData.StateNumber("Temp"));
-
-    if (ParallelDescriptor::IOProcessor()) {
-        std::cout << "Writing to file." << std::endl;
-        output_create_field(output_path, field_path, "cgs",
-                            grid_nx, grid_ny, grid_nz);
-    }
-    ParallelDescriptor::Barrier();
-    output_write_field(output_path, field_path, mf1);
-    ParallelDescriptor::Barrier();
-
     //
     // Neutrino matter density
     //
@@ -893,7 +858,7 @@ int main(int argc, char **argv) {
 
     if(hydro){
 
-    field_path = "native_fields/grid_density";
+    field_path = "native_fields/baryon_density";
 
     if (ParallelDescriptor::IOProcessor()) {
         std::cout << "\nReading density." << std::endl;
@@ -926,7 +891,7 @@ int main(int argc, char **argv) {
     output_write_field(output_path, field_path, mf1);
     ParallelDescriptor::Barrier();
 
-    field_path = "native_fields/grid_vx";
+    field_path = "native_fields/velocity_x";
 
     if (ParallelDescriptor::IOProcessor()) {
         std::cout << "\nReading xmom." << std::endl;
@@ -944,7 +909,7 @@ int main(int argc, char **argv) {
     output_write_field(output_path, field_path, mf1);
     ParallelDescriptor::Barrier();
 
-    field_path = "native_fields/grid_vy";
+    field_path = "native_fields/velocity_y";
 
     if (ParallelDescriptor::IOProcessor()) {
         std::cout << "\nReading ymom." << std::endl;
@@ -962,7 +927,7 @@ int main(int argc, char **argv) {
     output_write_field(output_path, field_path, mf1);
     ParallelDescriptor::Barrier();
 
-    field_path = "native_fields/grid_vz";
+    field_path = "native_fields/velocity_z";
 
     if (ParallelDescriptor::IOProcessor()) {
         std::cout << "\nReading zmom." << std::endl;
@@ -980,10 +945,30 @@ int main(int argc, char **argv) {
     output_write_field(output_path, field_path, mf1);
     ParallelDescriptor::Barrier();
 
+    // Temperature
+
+    field_path = "native_fields/temperature";
+
+    if (ParallelDescriptor::IOProcessor()) {
+        std::cout << "\nReading Temp." << std::endl;
+    }
+
+    amrData.FillVar(mf1, level, "Temp", comp_start);
+    amrData.FlushGrids(amrData.StateNumber("Temp"));
+
+    if (ParallelDescriptor::IOProcessor()) {
+        std::cout << "Writing to file." << std::endl;
+        output_create_field(output_path, field_path, "cgs",
+                            grid_nx, grid_ny, grid_nz);
+    }
+    ParallelDescriptor::Barrier();
+    output_write_field(output_path, field_path, mf1);
+    ParallelDescriptor::Barrier();
+
     }
 
     Print() << "End allocation in Fabs: " << TotalBytesAllocatedInFabs()/(1024*1024.) << " Mb." << std::endl;
-
+    }
     amrex::Finalize();
     return 0;
 }
