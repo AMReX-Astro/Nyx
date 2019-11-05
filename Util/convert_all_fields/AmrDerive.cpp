@@ -430,6 +430,7 @@ void printHWM(const char* info, MPI_Comm comm) {
 int main(int argc, char **argv) {
     amrex::Initialize(argc, argv);
 
+    {
     // MPI info...
     MPI_Comm comm = MPI_COMM_WORLD;
     int mpi_size, mpi_rank;
@@ -967,7 +968,7 @@ int main(int argc, char **argv) {
     }
 
     Print() << "End allocation in Fabs: " << TotalBytesAllocatedInFabs()/(1024*1024.) << " Mb." << std::endl;
-
+    }
     amrex::Finalize();
     return 0;
 }
