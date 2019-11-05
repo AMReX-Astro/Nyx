@@ -754,7 +754,46 @@ int main(int argc, char **argv) {
     ParallelDescriptor::Barrier();
 
 
-    // Particle velocity in x
+    //
+    // Neutrino matter density
+    //
+
+    if(neutrinos){
+
+    field_path = "native_fields/neutrino_matter_density";
+
+    if (ParallelDescriptor::IOProcessor()) {
+        std::cout << "\nReading neutrino_mass_density." << std::endl;
+    }
+    amrData.FillVar(mf1, level, "neutrino_mass_density", comp_start);
+    amrData.FlushGrids(amrData.StateNumber("neutrino_mass_density"));
+
+    if (ParallelDescriptor::IOProcessor()) {
+        std::cout << "Computing mean." << std::endl;
+    }
+
+    double mean_neu_density = mf1.norm1() / num_cells;
+
+    if (ParallelDescriptor::IOProcessor()) {
+        printf("Mean DM density: %.14e Msun/Mpc**3\n", mean_dm_density);
+        fflush(stdout);
+    }
+
+    // Convert to mean units.
+    double mean_neu_density_inv = 1.0/mean_neu_density;
+    mf1.mult(mean_neu_density_inv);
+
+    if (ParallelDescriptor::IOProcessor()) {
+        std::cout << "Writing to file." << std::endl;
+        output_create_field(output_path, field_path, "(mean)",
+                            grid_nx, grid_ny, grid_nz);
+    }
+    ParallelDescriptor::Barrier();
+    output_write_field(output_path, field_path, mf1);
+    ParallelDescriptor::Barrier();
+    }
+
+     // Particle velocity in x
 
     field_path = "native_fields/particle_vx";
 
@@ -794,8 +833,7 @@ int main(int argc, char **argv) {
     output_write_field(output_path, field_path, mf1);
     ParallelDescriptor::Barrier();
 
-
-    // Particle velocity in z
+        // Particle velocity in z
 
     field_path = "native_fields/particle_vz";
 
@@ -815,45 +853,27 @@ int main(int argc, char **argv) {
     output_write_field(output_path, field_path, mf1);
     ParallelDescriptor::Barrier();
 
-    //
-    // Neutrino matter density
-    //
 
-    if(neutrinos){
 
-    field_path = "native_fields/neutrino_matter_density";
+    // Temperature
+
+    field_path = "native_fields/temperature";
 
     if (ParallelDescriptor::IOProcessor()) {
-        std::cout << "\nReading neutrino_mass_density." << std::endl;
+        std::cout << "\nReading Temp." << std::endl;
     }
 
-    amrData.FillVar(mf1, level, "neutrino_mass_density", comp_start);
-    amrData.FlushGrids(amrData.StateNumber("neutrino_mass_density"));
-
-    if (ParallelDescriptor::IOProcessor()) {
-        std::cout << "Computing mean." << std::endl;
-    }
-
-    double mean_neu_density = mf1.norm1() / num_cells;
-
-    if (ParallelDescriptor::IOProcessor()) {
-        printf("Mean DM density: %.14e Msun/Mpc**3\n", mean_dm_density);
-        fflush(stdout);
-    }
-
-    // Convert to mean units.
-    double mean_neu_density_inv = 1.0/mean_neu_density;
-    mf1.mult(mean_neu_density_inv);
+    amrData.FillVar(mf1, level, "Temp", comp_start);
+    amrData.FlushGrids(amrData.StateNumber("Temp"));
 
     if (ParallelDescriptor::IOProcessor()) {
         std::cout << "Writing to file." << std::endl;
-        output_create_field(output_path, field_path, "(mean)",
+        output_create_field(output_path, field_path, "cgs",
                             grid_nx, grid_ny, grid_nz);
     }
     ParallelDescriptor::Barrier();
     output_write_field(output_path, field_path, mf1);
     ParallelDescriptor::Barrier();
-    }
 
     if(hydro){
 
@@ -934,26 +954,6 @@ int main(int argc, char **argv) {
 
     amrData.FillVar(mf1, level, "zmom", comp_start);
     amrData.FlushGrids(amrData.StateNumber("zmom"));
-
-    if (ParallelDescriptor::IOProcessor()) {
-        std::cout << "Writing to file." << std::endl;
-        output_create_field(output_path, field_path, "cgs",
-                            grid_nx, grid_ny, grid_nz);
-    }
-    ParallelDescriptor::Barrier();
-    output_write_field(output_path, field_path, mf1);
-    ParallelDescriptor::Barrier();
-
-    // Temperature
-
-    field_path = "native_fields/temperature";
-
-    if (ParallelDescriptor::IOProcessor()) {
-        std::cout << "\nReading Temp." << std::endl;
-    }
-
-    amrData.FillVar(mf1, level, "Temp", comp_start);
-    amrData.FlushGrids(amrData.StateNumber("Temp"));
 
     if (ParallelDescriptor::IOProcessor()) {
         std::cout << "Writing to file." << std::endl;
