@@ -144,6 +144,8 @@ long Nyx::particle_initrandom_count;
 long Nyx::particle_initrandom_count_per_box;
 int  Nyx::particle_initrandom_iseed;
 
+int Nyx::particle_launch_ics            = 1;
+
 int Nyx::particle_verbose               = 1;
 int Nyx::write_particle_density_at_init = 0;
 int Nyx::write_coarsened_particles      = 0;
@@ -432,7 +434,7 @@ Nyx::init_particles ()
                                << particle_initrandom_iseed << "\n\n";
             }
 	    {
-	    amrex::Gpu::LaunchSafeGuard lsg(true);
+	    amrex::Gpu::LaunchSafeGuard lsg(particle_launch_ics);
             DMPC->InitRandom(particle_initrandom_count,
                              particle_initrandom_iseed, pdata,
                              particle_initrandom_serialize);
@@ -465,7 +467,7 @@ Nyx::init_particles ()
                 amrex::Print() << "\nInitializing DM with 1 random particle per cell " << "\n";
 
             int n_per_cell = 1;
-	    amrex::Gpu::LaunchSafeGuard lsg(true);
+	    amrex::Gpu::LaunchSafeGuard lsg(particle_launch_ics);
             DMPC->InitNRandomPerCell(n_per_cell, pdata);
 	    amrex::Gpu::Device::synchronize();
 
@@ -504,7 +506,7 @@ Nyx::init_particles ()
             // after reading in `m_pos[]`. Here we're reading in the particle
             // mass and velocity.
             //
-	    amrex::Gpu::LaunchSafeGuard lsg(true);
+	    amrex::Gpu::LaunchSafeGuard lsg(particle_launch_ics);
             DMPC->InitFromBinaryFile(binary_particle_file, BL_SPACEDIM + 1);
             if (init_with_sph_particles == 1)
                 SPHPC->InitFromBinaryFile(ascii_particle_file, BL_SPACEDIM + 1);
@@ -525,7 +527,7 @@ Nyx::init_particles ()
             // after reading in `m_pos[]` in each of the binary particle files.
             // Here we're reading in the particle mass and velocity.
             //
-	    amrex::Gpu::LaunchSafeGuard lsg(true);
+	    amrex::Gpu::LaunchSafeGuard lsg(particle_launch_ics);
             DMPC->InitFromBinaryMetaFile(binary_particle_file, BL_SPACEDIM + 1);
             if (init_with_sph_particles == 1)
                 SPHPC->InitFromBinaryMetaFile(sph_particle_file, BL_SPACEDIM + 1);

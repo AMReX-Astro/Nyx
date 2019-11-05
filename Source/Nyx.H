@@ -895,6 +895,9 @@ protected:
     static int particle_initrandom_iseed;
     static int particle_skip_factor;
 
+    // This controls the LaunchSafeGuard for particle initialization
+    static int particle_launch_ics;
+
     static amrex::IntVect Nrep;  // how many times the initial conditions are replicated in each direction
 
     static amrex::Vector<amrex::Real> plot_z_values;      // These are the value of "z" at which to dump plotfiles.

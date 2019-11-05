@@ -371,7 +371,10 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
             const auto gfab = (ac_pointer) ? (*ac_pointer).array(grid) : acceleration.array(grid);
 
             num_particles_at_level += n;
-       	
+	    for(int i=0;i<n;i++)
+	      if ((pstruct[i]).id() > 0)
+		num_particles_at_level++;
+
                 reduce_op.eval(n, reduce_data,
                 [=] AMREX_GPU_DEVICE (const int i) -> ReduceTuple {
                 const ParticleType& p = pstruct[i];
@@ -419,6 +422,21 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
     }
 
     amrex::ParallelDescriptor::ReduceRealMin(dt);
+
+    if (this->m_verbose > 1)
+    {
+      long local_num_particles_at_level = num_particles_at_level;
+      long min_local_num_particles_at_level = num_particles_at_level;
+      long max_local_num_particles_at_level = num_particles_at_level;
+
+      amrex::ParallelDescriptor::ReduceLongMin(min_local_num_particles_at_level);
+      amrex::ParallelDescriptor::ReduceLongMax(max_local_num_particles_at_level);
+
+      amrex::Print()<<"Min particles      : "<<min_local_num_particles_at_level<<std::endl;
+      amrex::Print()<<"Max particles      : "<<max_local_num_particles_at_level<<std::endl;
+      amrex::Arena::PrintUsage();
+    }
+
     //
     // Set dt negative if there are no particles at this level.
     //
