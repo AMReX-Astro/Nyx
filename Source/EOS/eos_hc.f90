@@ -566,8 +566,9 @@ module eos_module
          !$OMP CRITICAL
          if (i .gt. 12) then
             print*, "ITERATION: ", i, " NUMBERS: ", z, t, ne, nhp, nhep, nhepp, df
-            call amrex_error('iterate_ne(): No convergence in Newton-Raphson!')
+!            call amrex_error('iterate_ne(): No convergence in Newton-Raphson!')
          endif
+         if (i .gt. 15) exit
          !$OMP END CRITICAL
 
       enddo
