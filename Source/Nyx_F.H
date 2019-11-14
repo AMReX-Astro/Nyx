@@ -124,7 +124,8 @@ extern "C"
      BL_FORT_FAB_ARG(D_new),
      BL_FORT_FAB_ARG(reset_e_src),
      const int* print_fortran_warnings,
-     amrex::Real* comoving_a);
+     amrex::Real* comoving_a,
+     const int* interp);
 
   void hypfill
     (BL_FORT_FAB_ARG(state),

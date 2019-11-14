@@ -786,6 +786,11 @@ Nyx::init (AmrLevel& old)
             S_new[fpi].copy(tmp);
             D_new[fpi].copy(dtmp);
         }
+
+	MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
+	reset_e_src.setVal(0.0);
+	reset_internal_energy_interp(S_new,D_new,reset_e_src);
+    
     }
 #endif
 
@@ -817,6 +822,7 @@ Nyx::init ()
 {
     BL_PROFILE("Nyx::init()");
     Real dt        = parent->dtLevel(level);
+    int finest_level = parent->finestLevel();
 #ifdef NO_HYDRO
     Real cur_time  = get_level(level-1).state[PhiGrav_Type].curTime();
     Real prev_time = get_level(level-1).state[PhiGrav_Type].prevTime();
@@ -833,6 +839,42 @@ Nyx::init ()
     MultiFab& D_new = get_new_data(DiagEOS_Type);
     FillCoarsePatch(S_new, 0, cur_time,   State_Type, 0, S_new.nComp());
     FillCoarsePatch(D_new, 0, cur_time, DiagEOS_Type, 0, D_new.nComp());
+
+    Real rho_E = 0;
+    Real rho_e = 0;
+
+    for (int lev = 0; lev <= 0; lev++)
+      //      for (int lev = 0; lev <= finest_level; lev++)
+    {
+        Nyx& nyx_lev = get_level(lev);
+
+        rho_E += nyx_lev.vol_weight_sum("rho_E", prev_time, true);
+        rho_e += nyx_lev.vol_weight_sum("rho_e", prev_time, true);
+    }
+    amrex::Print()<<"total RHO*E    "<<rho_E/(geom.ProbSize())<<std::endl;
+
+    MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
+    Copy(reset_e_src,S_new, Eden,0,1,1);
+    amrex::Print()<<"total from S_new RHO*E    "<<vol_weight_sum(reset_e_src,true)/(geom.ProbSize())<<std::endl;
+   
+
+    reset_e_src.setVal(0.0);
+    reset_internal_energy_interp(S_new,D_new,reset_e_src);
+
+    rho_E = 0;
+    rho_e = 0;
+
+    for (int lev = 0; lev <= 0; lev++)
+    {
+        Nyx& nyx_lev = get_level(lev);
+
+        rho_E += nyx_lev.vol_weight_sum("rho_E", prev_time, true);
+        rho_e += nyx_lev.vol_weight_sum("rho_e", prev_time, true);
+    }    
+    amrex::Print()<<"total RHO*E    "<<rho_E/(geom.ProbSize())<<std::endl;
+    Copy(reset_e_src,S_new, Eden,0,1,1);
+    amrex::Print()<<"total from S_new RHO*E    "<<vol_weight_sum(reset_e_src,true)/(geom.ProbSize())<<std::endl; 
+
 #endif
 
 #ifdef GRAVITY
@@ -2240,6 +2282,7 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new, MultiFab& reset_e_
 
     const Real  cur_time = state[State_Type].curTime();
     Real        a        = get_comoving_a(cur_time);
+    int interp=false;
 
 #ifdef _OPENMP
 #pragma omp parallel
@@ -2252,7 +2295,32 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new, MultiFab& reset_e_
             (bx.loVect(), bx.hiVect(),
              BL_TO_FORTRAN(S_new[mfi]), BL_TO_FORTRAN(D_new[mfi]),
 	     BL_TO_FORTRAN(reset_e_src[mfi]),
-             &print_fortran_warnings, &a);
+             &print_fortran_warnings, &a, &interp);
+    }
+}
+
+void
+Nyx::reset_internal_energy_interp (MultiFab& S_new, MultiFab& D_new, MultiFab& reset_e_src)
+{
+    BL_PROFILE("Nyx::reset_internal_energy()");
+    // Synchronize (rho e) and (rho E) so they are consistent with each other
+
+    const Real  cur_time = state[State_Type].curTime();
+    Real        a        = get_comoving_a(cur_time);
+    int interp=true;
+
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
+    for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
+    {
+        const Box& bx = mfi.tilebox();
+
+        reset_internal_e
+            (bx.loVect(), bx.hiVect(),
+             BL_TO_FORTRAN(S_new[mfi]), BL_TO_FORTRAN(D_new[mfi]),
+	     BL_TO_FORTRAN(reset_e_src[mfi]),
+             &print_fortran_warnings, &a, &interp);
     }
 }
 #endif

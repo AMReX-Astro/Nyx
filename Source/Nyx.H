@@ -547,6 +547,8 @@ public:
     // Synchronize (rho e) and (rho E) so they are consistent with each other
     void reset_internal_energy(amrex::MultiFab& State, amrex::MultiFab& DiagEOS, amrex::MultiFab& reset_e_src);
 
+    void reset_internal_energy_interp(amrex::MultiFab& State, amrex::MultiFab& DiagEOS, amrex::MultiFab& reset_e_src);
+
     // Note: this no longer includes the call to reset_internal_energy
     void compute_new_temp(amrex::MultiFab& S_new, amrex::MultiFab& D_new);
 
