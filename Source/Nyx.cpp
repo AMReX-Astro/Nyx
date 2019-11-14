@@ -854,27 +854,8 @@ Nyx::init ()
     amrex::Print()<<"total RHO*E    "<<rho_E/(geom.ProbSize())<<std::endl;
 
     MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
-    Copy(reset_e_src,S_new, Eden,0,1,1);
-    amrex::Print()<<"total from S_new RHO*E    "<<vol_weight_sum(reset_e_src,true)/(geom.ProbSize())<<std::endl;
-   
-
     reset_e_src.setVal(0.0);
     reset_internal_energy_interp(S_new,D_new,reset_e_src);
-
-    rho_E = 0;
-    rho_e = 0;
-
-    for (int lev = 0; lev <= 0; lev++)
-    {
-        Nyx& nyx_lev = get_level(lev);
-
-        rho_E += nyx_lev.vol_weight_sum("rho_E", prev_time, true);
-        rho_e += nyx_lev.vol_weight_sum("rho_e", prev_time, true);
-    }    
-    amrex::Print()<<"total RHO*E    "<<rho_E/(geom.ProbSize())<<std::endl;
-    Copy(reset_e_src,S_new, Eden,0,1,1);
-    amrex::Print()<<"total from S_new RHO*E    "<<vol_weight_sum(reset_e_src,true)/(geom.ProbSize())<<std::endl; 
-
 #endif
 
 #ifdef GRAVITY
