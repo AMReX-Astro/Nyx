@@ -137,7 +137,8 @@ extern "C"
      BL_FORT_FAB_ARG(D_new),
      BL_FORT_FAB_ARG(reset_e_src),
      const int* print_fortran_warnings,
-     const amrex::Real* comoving_a);
+     const amrex::Real* comoving_a,
+     const int* interp);
 
   AMREX_GPU_DEVICE void reset_internal_e_nostore
     (const int* lo, const int* hi,

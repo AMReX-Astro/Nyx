@@ -650,6 +650,14 @@ module eos_module
 
          if (abs(dne) < xacc) exit
 
+         !$OMP CRITICAL
+         if (i .gt. 12) then
+            print*, "ITERATION: ", i, " NUMBERS: ", z, t, ne, nhp, nhep, nhepp, df
+!            call amrex_error('iterate_ne(): No convergence in Newton-Raphson!')
+         endif
+         !$OMP END CRITICAL
+         if (i .gt. 15) exit
+
       enddo
 
       ! Get rates for the final ne
