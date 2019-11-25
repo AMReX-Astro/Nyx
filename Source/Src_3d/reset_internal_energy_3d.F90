@@ -3,7 +3,7 @@
                                   u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3, &
                                   d,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3, &
                                   r,r_l1,r_l2,r_l3,r_h1,r_h2,r_h3, &
-                                  print_fortran_warnings, comoving_a) &
+                                  print_fortran_warnings, comoving_a, interp) &
                                   bind(C, name="reset_internal_e")
 
       use amrex_fort_module, only : rt => amrex_real
@@ -16,6 +16,7 @@
 
       integer          :: lo(3), hi(3)
       integer          :: print_fortran_warnings
+      integer          :: interp
       integer          :: u_l1,u_l2,u_l3,u_h1,u_h2,u_h3
       integer          :: d_l1,d_l2,d_l3,d_h1,d_h2,d_h3
       integer          :: r_l1,r_l2,r_l3,r_h1,r_h2,r_h3
@@ -44,7 +45,7 @@
            rho_eint = u(i,j,k,UEDEN) - ke
 
            ! Reset (e from e) if it's greater than 0.01% of big E.
-           if (rho_eint .gt. 0.d0 .and. rho_eint / u(i,j,k,UEDEN) .gt. 1.d-6) then
+           if (rho_eint .gt. 0.d0 .and. rho_eint / u(i,j,k,UEDEN) .gt. 1.d-6 .and. interp .eq. 0) then
 
               ! Create reset source so u(i,j,k,UEINT) = u(i,j,k,UEINT) + r(i,j,k) = rho_eint
                r(i,j,k) = rho_eint - u(i,j,k,UEINT)
@@ -84,7 +85,7 @@
                                   u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3, &
                                   d,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3, &
                                   r,r_l1,r_l2,r_l3,r_h1,r_h2,r_h3, &
-                                  print_fortran_warnings, comoving_a) &
+                                  print_fortran_warnings, comoving_a, interp) &
                                   bind(C, name="reset_internal_e")
 
       use amrex_fort_module, only : rt => amrex_real
@@ -97,6 +98,7 @@
 
       integer          :: lo(3), hi(3)
       integer          :: print_fortran_warnings
+      integer          :: interp
       integer          :: u_l1,u_l2,u_l3,u_h1,u_h2,u_h3
       integer          :: d_l1,d_l2,d_l3,d_h1,d_h2,d_h3
       integer          :: r_l1,r_l2,r_l3,r_h1,r_h2,r_h3
@@ -133,7 +135,7 @@
            endif
 
            ! Reset (e from e) if it's greater than 0.01% of big E.
-           if (rho_eint .gt. 0.d0 .and. rho_eint / u(i,j,k,UEDEN) .gt. 1.d-6) then
+           if (rho_eint .gt. 0.d0 .and. rho_eint / u(i,j,k,UEDEN) .gt. 1.d-6 .and. interp .eq. 0) then
 
               ! Create reset source so u(i,j,k,UEINT) = u(i,j,k,UEINT) + r(i,j,k) = rho_eint
                r(i,j,k) = rho_eint - u(i,j,k,UEINT)
