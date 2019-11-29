@@ -790,15 +790,6 @@ Nyx::remake_level (int lev, Real time, const BoxArray& ba, const DistributionMap
     }
 #endif
 
-#ifdef GRAVITY
-    if (gravity != 0)
-    {
-        if (verbose > 1 && ParallelDescriptor::IOProcessor())
-            std::cout << "Deleting gravity in remake_level...\n";
-        delete gravity;
-        gravity = 0;
-    }
-#endif
 #ifdef FORCING
     if (forcing != 0)
     {
@@ -823,17 +814,13 @@ Nyx::remake_level (int lev, Real time, const BoxArray& ba, const DistributionMap
     {
         BL_ASSERT(gravity == 0);
 
-        gravity = new Gravity(parent, parent->finestLevel(), &phys_bc, Density);
-
         if (level == 0)
         {
             for (int lev = 0; lev <= parent->finestLevel(); lev++)
             {
                 AmrLevel& this_level = get_level(lev);
-                gravity->install_level(lev, &this_level);
+                gravity->remake_level(lev, &this_level);
             }
-
-            gravity->set_mass_offset(cur_time);
 
             if (
 #ifdef CGRAV
@@ -843,12 +830,6 @@ Nyx::remake_level (int lev, Real time, const BoxArray& ba, const DistributionMap
 #endif
 )
             {
-                // Do multilevel solve here.  We now store phi in the checkpoint file so we can use it
-                //  at restart.
-                int ngrow_for_solve = 1;
-                int use_previous_phi_as_guess = 0;
-                gravity->multilevel_solve_for_new_phi(0,parent->finestLevel(),ngrow_for_solve,use_previous_phi_as_guess);
-
 #ifndef AGN
                 if (do_dm_particles)
 #endif

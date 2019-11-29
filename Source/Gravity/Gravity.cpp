@@ -398,7 +398,7 @@ Gravity::solve_for_phi (int               level,
     if (parent->Geom(level).isAllPeriodic())
         CorrectRhsUsingOffset(level,Rhs);
 
-    Rhs.mult(Ggravty);
+    Rhs.mult(Ggravity);
 
     Nyx* cs = dynamic_cast<Nyx*>(&parent->getLevel(level));
 
