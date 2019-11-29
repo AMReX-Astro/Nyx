@@ -770,6 +770,121 @@ Nyx::restart (Amr&     papa,
 }
 
 void
+Nyx::remake_level (int lev, Real time, const BoxArray& ba, const DistributionMapping& dm)
+{
+
+#ifdef NO_HYDRO
+    Real cur_time = state[PhiGrav_Type].curTime();
+#else
+    Real cur_time = state[State_Type].curTime();
+#endif
+  if(level == 0)
+    {
+#ifndef NO_HYDRO
+    if (flux_reg != 0)
+    {
+      if (verbose > 1 && ParallelDescriptor::IOProcessor())
+	std::cout << "Deleting flux_reg in remake_level...\n";
+      delete flux_reg;
+      flux_reg = 0;
+    }
+#endif
+
+#ifdef GRAVITY
+    if (gravity != 0)
+    {
+        if (verbose > 1 && ParallelDescriptor::IOProcessor())
+            std::cout << "Deleting gravity in remake_level...\n";
+        delete gravity;
+        gravity = 0;
+    }
+#endif
+#ifdef FORCING
+    if (forcing != 0)
+    {
+        if (verbose > 1 && ParallelDescriptor::IOProcessor())
+            std::cout << "Deleting forcing in remake_level...\n";
+        delete forcing;
+        forcing = 0;
+    }
+#endif
+
+#ifndef NO_HYDRO
+    if (do_hydro == 1)
+    {
+        BL_ASSERT(flux_reg == 0);
+        if (level > 0 && do_reflux)
+            flux_reg = new FluxRegister(grids, dmap, crse_ratio, level, NUM_STATE);
+    }
+#endif
+
+#ifdef GRAVITY
+    if (do_grav && level == 0)
+    {
+        BL_ASSERT(gravity == 0);
+
+        gravity = new Gravity(parent, parent->finestLevel(), &phys_bc, Density);
+
+        if (level == 0)
+        {
+            for (int lev = 0; lev <= parent->finestLevel(); lev++)
+            {
+                AmrLevel& this_level = get_level(lev);
+                gravity->install_level(lev, &this_level);
+            }
+
+            gravity->set_mass_offset(cur_time);
+
+            if (
+#ifdef CGRAV
+            (gravity->get_gravity_type() == "PoissonGrav"||gravity->get_gravity_type() == "CompositeGrav")
+#else
+	    gravity->get_gravity_type() == "PoissonGrav"
+#endif
+)
+            {
+                // Do multilevel solve here.  We now store phi in the checkpoint file so we can use it
+                //  at restart.
+                int ngrow_for_solve = 1;
+                int use_previous_phi_as_guess = 0;
+                gravity->multilevel_solve_for_new_phi(0,parent->finestLevel(),ngrow_for_solve,use_previous_phi_as_guess);
+
+#ifndef AGN
+                if (do_dm_particles)
+#endif
+                {
+                    for (int k = 0; k <= parent->finestLevel(); k++)
+                    {
+                        const auto& ba = get_level(k).boxArray();
+                        const auto& dm = get_level(k).DistributionMap();
+                        MultiFab grav_vec_new(ba, dm, BL_SPACEDIM, 0);
+                        gravity->get_new_grav_vector(k, grav_vec_new, cur_time);
+                    }
+                }
+            }
+        }
+    }
+#endif
+
+#ifdef FORCING
+    const Real* prob_lo = geom.ProbLo();
+    const Real* prob_hi = geom.ProbHi();
+
+    if (do_forcing)
+    {
+        // forcing is a static object, only alloc if not already there
+        if (forcing == 0)
+           forcing = new StochasticForcing();
+
+        forcing->init(BL_SPACEDIM, prob_lo, prob_hi);
+    }
+#endif
+    }
+
+    //    post_regrid(level,parent->finestLevel());
+}
+
+void
 Nyx::build_metrics ()
 {
 }
@@ -1418,6 +1533,38 @@ Nyx::post_timestep (int iteration)
     //
     int finest_level = parent->finestLevel();
     const int ncycle = parent->nCycle(level);
+
+#ifdef NO_HYDRO
+    Real cur_time = state[PhiGrav_Type].curTime();
+#else
+    Real cur_time = state[State_Type].curTime();
+#endif
+
+    /*
+        Vector<long> wgts(fine_src_ba.size());
+
+        for (unsigned int i = 0; i < wgts.size(); i++)
+        {
+            wgts[i] = fine_src_ba[i].numPts();
+        }
+        DistributionMapping dm;
+        //
+        // This call doesn't invoke the MinimizeCommCosts() stuff.
+        // There's very little to gain with these types of coverings
+        // of trying to use SFC or anything else.
+        // This also guarantees that these DMs won't be put into the
+        // cache, as it's not representative of that used for more
+        // usual MultiFabs.
+        //
+        dm.KnapSackProcessorMap(wgts, ParallelDescriptor::NProcs());
+    */
+
+    const DistributionMapping newdmap = dmap;
+    //    const DistributionMapping newdmap = DistributionMapping::makeKnapSack(*wgts[lev], nmax);
+      /* (load_balance_with_sfc)
+            ? DistributionMapping::makeSFC(*costs[lev], false)
+            : DistributionMapping::makeKnapSack(*costs[lev], nmax);*/
+    remake_level(level, cur_time, grids, newdmap);
 
     BL_PROFILE_VAR("Nyx::post_timestep()::remove_virt_ghost",rm);
     //

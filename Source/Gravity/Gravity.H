@@ -19,6 +19,8 @@ public:
 
     void install_level(int level, amrex::AmrLevel* level_data_to_install);
 
+    void remake_level(int level, amrex::AmrLevel* level_data_to_install);
+
     std::string get_gravity_type();
     amrex::Real get_const_grav ();
     int get_no_sync();
