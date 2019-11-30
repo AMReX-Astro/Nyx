@@ -770,7 +770,7 @@ Nyx::restart (Amr&     papa,
 }
 
 void
-Nyx::remake_level (int lev, Real time, const BoxArray& ba, const DistributionMapping& dm)
+Nyx::remake_level (int lev, Real time, const BoxArray& ba, DistributionMapping dm)
 {
 
 #ifdef NO_HYDRO
@@ -778,8 +778,15 @@ Nyx::remake_level (int lev, Real time, const BoxArray& ba, const DistributionMap
 #else
     Real cur_time = state[State_Type].curTime();
 #endif
+
+    AmrLevel& this_level = get_level(lev);
+    parent->SetDistributionMap(lev,dm);//this_level.DistributionMap()=dm;
+    this_level.UpdateDistributionMaps(dm);
+    //    (&this_level)->SetDistributionMap(lev,dm);//this_level.DistributionMap()=dm;
+
   if(level == 0)
     {
+
 #ifndef NO_HYDRO
     if (flux_reg != 0)
     {
@@ -806,44 +813,7 @@ Nyx::remake_level (int lev, Real time, const BoxArray& ba, const DistributionMap
         BL_ASSERT(flux_reg == 0);
         if (level > 0 && do_reflux)
             flux_reg = new FluxRegister(grids, dmap, crse_ratio, level, NUM_STATE);
-    }
-#endif
 
-#ifdef GRAVITY
-    if (do_grav && level == 0)
-    {
-        BL_ASSERT(gravity == 0);
-
-        if (level == 0)
-        {
-            for (int lev = 0; lev <= parent->finestLevel(); lev++)
-            {
-                AmrLevel& this_level = get_level(lev);
-                gravity->remake_level(lev, &this_level);
-            }
-
-            if (
-#ifdef CGRAV
-            (gravity->get_gravity_type() == "PoissonGrav"||gravity->get_gravity_type() == "CompositeGrav")
-#else
-	    gravity->get_gravity_type() == "PoissonGrav"
-#endif
-)
-            {
-#ifndef AGN
-                if (do_dm_particles)
-#endif
-                {
-                    for (int k = 0; k <= parent->finestLevel(); k++)
-                    {
-                        const auto& ba = get_level(k).boxArray();
-                        const auto& dm = get_level(k).DistributionMap();
-                        MultiFab grav_vec_new(ba, dm, BL_SPACEDIM, 0);
-                        gravity->get_new_grav_vector(k, grav_vec_new, cur_time);
-                    }
-                }
-            }
-        }
     }
 #endif
 
@@ -861,6 +831,123 @@ Nyx::remake_level (int lev, Real time, const BoxArray& ba, const DistributionMap
     }
 #endif
     }
+
+#ifndef NO_HYDRO
+    if (do_hydro == 1)
+      {
+        MultiFab& S_new = get_new_data(State_Type);
+        MultiFab& D_new = get_new_data(DiagEOS_Type);
+
+        MultiFab& S_old = get_old_data(State_Type);
+        MultiFab& D_old = get_old_data(DiagEOS_Type);
+
+        {
+          const IntVect& ng = (S_new).nGrowVect();
+          auto pmf = std::unique_ptr<MultiFab>(new MultiFab(S_new.boxArray(),
+							    dm, S_new.nComp(), ng));
+          pmf->Redistribute((S_new), 0, 0, S_new.nComp(), ng);
+	  //          get_state_data(State_Type).new_data = std::move(pmf);
+          //&(get_state_data(State_Type).newData()) = std::move(pmf);
+	  //          get_state_data(State_Type).replaceNewData(&(*pmf));
+	  get_state_data(State_Type).replaceNewData(pmf);
+	  get_state_data(State_Type).setDistributionMap(dm);
+        }
+        {
+          const IntVect& ng = (D_new).nGrowVect();
+          auto pmf = std::unique_ptr<MultiFab>(new MultiFab(D_new.boxArray(),
+							    dm, D_new.nComp(), ng));
+          pmf->Redistribute((D_new), 0, 0, D_new.nComp(), ng);
+	  get_state_data(DiagEOS_Type).replaceNewData(pmf);
+	  get_state_data(DiagEOS_Type).setDistributionMap(dm);
+        }
+
+        {
+          const IntVect& ng = (S_old).nGrowVect();
+          auto pmf = std::unique_ptr<MultiFab>(new MultiFab(S_old.boxArray(),
+                                                            dm, S_old.nComp(), ng));
+          pmf->Redistribute((S_old), 0, 0, S_old.nComp(), ng);
+	  get_state_data(State_Type).replaceOldData(pmf);
+        }
+        {
+          const IntVect& ng = (D_old).nGrowVect();
+          auto pmf = std::unique_ptr<MultiFab>(new MultiFab(D_old.boxArray(),
+                                                            dm, D_old.nComp(), ng));
+          pmf->Redistribute((D_old), 0, 0, D_old.nComp(), ng);
+	  get_state_data(DiagEOS_Type).replaceOldData(pmf);
+        }
+
+      }
+#endif
+
+#ifdef GRAVITY
+    MultiFab& Phi_new = get_new_data(PhiGrav_Type);
+    MultiFab& Phi_old = get_old_data(PhiGrav_Type);
+
+    {
+      const IntVect& ng = (Phi_new).nGrowVect();
+      auto pmf = std::unique_ptr<MultiFab>(new MultiFab(Phi_new.boxArray(),
+							dm, Phi_new.nComp(), ng));
+      pmf->Redistribute((Phi_new), 0, 0, Phi_new.nComp(), ng);
+      get_state_data(PhiGrav_Type).replaceNewData(pmf);
+      get_state_data(PhiGrav_Type).setDistributionMap(dm);
+    }
+    {
+      const IntVect& ng = (Phi_old).nGrowVect();
+      auto pmf = std::unique_ptr<MultiFab>(new MultiFab(Phi_old.boxArray(),
+							dm, Phi_old.nComp(), ng));
+      pmf->Redistribute((Phi_old), 0, 0, Phi_old.nComp(), ng);
+      get_state_data(PhiGrav_Type).replaceOldData(pmf);
+    }
+    {
+    MultiFab& Phi_new = get_new_data(Gravity_Type);
+    MultiFab& Phi_old = get_old_data(Gravity_Type);
+
+    {
+      const IntVect& ng = (Phi_new).nGrowVect();
+      auto pmf = std::unique_ptr<MultiFab>(new MultiFab(Phi_new.boxArray(),
+							dm, Phi_new.nComp(), ng));
+      pmf->Redistribute((Phi_new), 0, 0, Phi_new.nComp(), ng);
+      get_state_data(Gravity_Type).replaceNewData(pmf);
+      get_state_data(Gravity_Type).setDistributionMap(dm);
+    }
+    {
+      const IntVect& ng = (Phi_old).nGrowVect();
+      auto pmf = std::unique_ptr<MultiFab>(new MultiFab(Phi_old.boxArray(),
+							dm, Phi_old.nComp(), ng));
+      pmf->Redistribute((Phi_old), 0, 0, Phi_old.nComp(), ng);
+      get_state_data(Gravity_Type).replaceOldData(pmf);
+    }
+    }
+#endif
+
+#ifdef SDC
+    MultiFab& IR_new = get_new_data(SDC_IR_Type);
+    MultiFab& IR_old = get_old_data(SDC_IR_Type);
+
+    {
+      const IntVect& ng = (IR_new).nGrowVect();
+      auto pmf = std::unique_ptr<MultiFab>(new MultiFab(IR_new.boxArray(),
+							dm, IR_new.nComp(), ng));
+      pmf->Redistribute((IR_new), 0, 0, IR_new.nComp(), ng);
+      get_state_data(SDC_IR_Type).replaceNewData(pmf);
+      get_state_data(SDC_IR_Type).setDistributionMap(dm);
+    }
+    {
+      const IntVect& ng = (IR_old).nGrowVect();
+      auto pmf = std::unique_ptr<MultiFab>(new MultiFab(IR_old.boxArray(),
+							dm, IR_old.nComp(), ng));
+      pmf->Redistribute((IR_old), 0, 0, IR_old.nComp(), ng);
+      get_state_data(SDC_IR_Type).replaceOldData(pmf);
+    }
+#endif
+
+#ifdef GRAVITY
+    if (do_grav)
+    {
+      AmrLevel& this_level = get_level(lev);
+      gravity->remake_level(lev, &this_level);
+    }
+#endif
 
     //    post_regrid(level,parent->finestLevel());
 }
@@ -1515,38 +1602,6 @@ Nyx::post_timestep (int iteration)
     int finest_level = parent->finestLevel();
     const int ncycle = parent->nCycle(level);
 
-#ifdef NO_HYDRO
-    Real cur_time = state[PhiGrav_Type].curTime();
-#else
-    Real cur_time = state[State_Type].curTime();
-#endif
-
-    /*
-        Vector<long> wgts(fine_src_ba.size());
-
-        for (unsigned int i = 0; i < wgts.size(); i++)
-        {
-            wgts[i] = fine_src_ba[i].numPts();
-        }
-        DistributionMapping dm;
-        //
-        // This call doesn't invoke the MinimizeCommCosts() stuff.
-        // There's very little to gain with these types of coverings
-        // of trying to use SFC or anything else.
-        // This also guarantees that these DMs won't be put into the
-        // cache, as it's not representative of that used for more
-        // usual MultiFabs.
-        //
-        dm.KnapSackProcessorMap(wgts, ParallelDescriptor::NProcs());
-    */
-
-    const DistributionMapping newdmap = dmap;
-    //    const DistributionMapping newdmap = DistributionMapping::makeKnapSack(*wgts[lev], nmax);
-      /* (load_balance_with_sfc)
-            ? DistributionMapping::makeSFC(*costs[lev], false)
-            : DistributionMapping::makeKnapSack(*costs[lev], nmax);*/
-    remake_level(level, cur_time, grids, newdmap);
-
     BL_PROFILE_VAR("Nyx::post_timestep()::remove_virt_ghost",rm);
     //
     // Remove virtual particles at this level if we have any.
@@ -1894,6 +1949,56 @@ void
 Nyx::postCoarseTimeStep (Real cumtime)
 {
    BL_PROFILE("Nyx::postCoarseTimeStep()");
+
+#ifdef NO_HYDRO
+    Real cur_time = state[PhiGrav_Type].curTime();
+#else
+    Real cur_time = state[State_Type].curTime();
+#endif
+
+    for (int lev = 0; lev <= parent->finestLevel(); lev++)
+    {
+    
+        Vector<long> wgts(grids.size());
+
+        for (unsigned int i = 0; i < wgts.size(); i++)
+        {
+            wgts[i] = grids[i].numPts();
+        }
+        DistributionMapping dm;
+        //
+        // This call doesn't invoke the MinimizeCommCosts() stuff.
+        // There's very little to gain with these types of coverings
+        // of trying to use SFC or anything else.
+        // This also guarantees that these DMs won't be put into the
+        // cache, as it's not representative of that used for more
+        // usual MultiFabs.
+        //
+        dm.KnapSackProcessorMap(wgts, ParallelDescriptor::NProcs());
+	amrex::Gpu::Device::streamSynchronize();
+	const DistributionMapping& newdmap = dm;
+
+	//    const DistributionMapping newdmap = DistributionMapping::makeKnapSack(*wgts[lev], nmax);
+	/* (load_balance_with_sfc)
+            ? DistributionMapping::makeSFC(*costs[lev], false)
+            : DistributionMapping::makeKnapSack(*costs[lev], nmax);*/
+	remake_level(lev, cur_time, grids, newdmap);
+
+	delete fine_mask;
+	fine_mask = 0;
+
+        for (int i = 0; i < theActiveParticles().size(); i++)
+	{
+	     int iteration = 1;
+	     theActiveParticles()[i]->Regrid(newdmap, grids, lev);
+	     theActiveParticles()[i]->Redistribute(lev,
+                                                  theActiveParticles()[i]->finestLevel(),
+                                                  iteration);
+
+	}
+
+    amrex::Gpu::streamSynchronize();
+    }
 
    AmrLevel::postCoarseTimeStep(cumtime);
 

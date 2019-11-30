@@ -200,6 +200,7 @@ Gravity::remake_level (int       level,
 #endif
 
     const auto& dm = level_data_to_install->DistributionMap();
+    dmap[level] = dm;
 
     grad_phi_prev[level].resize(BL_SPACEDIM);
     for (int n=0; n<BL_SPACEDIM; ++n)

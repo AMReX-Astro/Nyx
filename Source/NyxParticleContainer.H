@@ -17,6 +17,7 @@ public:
   			amrex::Real a_old = 1.0, amrex::Real a_half = 1.0, int where_width = 0) = 0;
     virtual void moveKick      (amrex::MultiFab& acceleration, int level, amrex::Real timestep, 
   				amrex::Real a_new = 1.0, amrex::Real a_half = 1.0) = 0;
+    virtual void Regrid (const amrex::DistributionMapping& dmap, const amrex::BoxArray& ba, const int lev) = 0;
     virtual void Redistribute (int lev_min              = 0,
                                int lev_max              =-1,
                                int nGrow                = 0) = 0;
@@ -88,6 +89,14 @@ public:
     virtual int finestLevel() const override
     {
         return amrex::NeighborParticleContainer<NSR,NSI>::finestLevel();
+    }
+
+  virtual void Regrid (const amrex::DistributionMapping& dmap, const amrex::BoxArray& ba, const int lev)
+    {
+      //        amrex::Gpu::synchronize();
+        amrex::Gpu::LaunchSafeGuard lsg(true);
+        amrex::NeighborParticleContainer<NSR,NSI>::Regrid(dmap, ba, lev);
+	//        amrex::Gpu::synchronize();
     }
 
     virtual void Redistribute (int lev_min              = 0,

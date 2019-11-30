@@ -762,6 +762,8 @@ Nyx::no_hydro_setup()
     derive_lst.addComponent("particle_mass_density", desc_lst, PhiGrav_Type, 0, 1);
 
 #ifndef NO_HYDRO    
+    if(do_hydro == 1)
+    {
     derive_lst.add("particle_x_velocity", IndexType::TheCellType(), 1,
                    BL_FORT_PROC_CALL(DERNULL, dernull), grow_box_by_one);
     derive_lst.addComponent("particle_x_velocity", desc_lst, State_Type,
@@ -774,6 +776,7 @@ Nyx::no_hydro_setup()
                    BL_FORT_PROC_CALL(DERNULL, dernull), grow_box_by_one);
     derive_lst.addComponent("particle_z_velocity", desc_lst, State_Type,
                             Zmom, 1);
+    }
 #endif
     
     derive_lst.add("total_particle_count", IndexType::TheCellType(), 1,

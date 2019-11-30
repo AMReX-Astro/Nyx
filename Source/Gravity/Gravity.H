@@ -120,7 +120,7 @@ protected:
     //
     const amrex::Vector<amrex::BoxArray>& grids;
     //
-    const amrex::Vector<amrex::DistributionMapping>& dmap;
+          amrex::Vector<amrex::DistributionMapping> dmap;
     //
     // Resnorm at each level
     //
