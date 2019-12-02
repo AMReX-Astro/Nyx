@@ -75,7 +75,15 @@ Nyx::advance_particles_only (Real time,
     const int finest_level = parent->finestLevel();
     int finest_level_to_advance;
     bool nosub = !parent->subCycle();
-    
+
+	  {
+	  Vector<std::unique_ptr<MultiFab> > particle_mf;//(new MultiFab(grids,dmap,1,1));
+	    
+	  theDMPC()->AssignDensity(particle_mf,0,1,0,0);
+
+	  writeMultiFabAsPlotFile("ParticleDensityBegAdv", *particle_mf[0], "density");
+	    //	    amrex::Abort("wrote plots");
+	  }                    
     if (nosub)
     {
         if (level > 0)
@@ -117,7 +125,14 @@ Nyx::advance_particles_only (Real time,
            get_level(lev).setup_ghost_particles(ghost_width);
         }
     }
+	  {
+	  Vector<std::unique_ptr<MultiFab> > particle_mf;//(new MultiFab(grids,dmap,1,1));
+	    
+	  theDMPC()->AssignDensity(particle_mf,0,1,0,0);
 
+	  writeMultiFabAsPlotFile("ParticleDensityPostGos", *particle_mf[0], "density");
+	    //	    amrex::Abort("wrote plots");
+	  }                
     Real dt_lev;
 
     //
@@ -167,7 +182,14 @@ Nyx::advance_particles_only (Real time,
         // swap grav data
         for (int lev = level; lev <= finest_level; lev++)
             get_level(lev).gravity->swap_time_levels(lev);
+	  {
+	  Vector<std::unique_ptr<MultiFab> > particle_mf;//(new MultiFab(grids,dmap,1,1));
+	    
+	  theDMPC()->AssignDensity(particle_mf,0,1,0,0);
 
+	  writeMultiFabAsPlotFile("ParticleDensityPostSwap", *particle_mf[0], "density");
+	    //	    amrex::Abort("wrote plots");
+	  }                
         //
         // Solve for phi
         // If a single-level calculation we can still use the previous phi as a guess.
@@ -175,6 +197,14 @@ Nyx::advance_particles_only (Real time,
         int use_previous_phi_as_guess = 1;
         gravity->multilevel_solve_for_old_phi(level, finest_level,
                                               use_previous_phi_as_guess);
+	  {
+	  Vector<std::unique_ptr<MultiFab> > particle_mf;//(new MultiFab(grids,dmap,1,1));
+	    
+	  theDMPC()->AssignDensity(particle_mf,0,1,0,0);
+
+	  writeMultiFabAsPlotFile("ParticleDensityPostSolve", *particle_mf[0], "density");
+	    //	    amrex::Abort("wrote plots");
+	  }                
     }
     //
     // Advance Particles
@@ -197,7 +227,14 @@ Nyx::advance_particles_only (Real time,
                 const auto& dm = get_level(lev).get_new_data(PhiGrav_Type).DistributionMap();
                 MultiFab grav_vec_old(ba, dm, BL_SPACEDIM, grav_n_grow);
                 get_level(lev).gravity->get_old_grav_vector(lev, grav_vec_old, time);
-                
+	  {
+	  Vector<std::unique_ptr<MultiFab> > particle_mf;//(new MultiFab(grids,dmap,1,1));
+	    
+	  theDMPC()->AssignDensity(particle_mf,0,1,0,0);
+
+	  writeMultiFabAsPlotFile("ParticleDensityPreDrift", *particle_mf[0], "density");
+	    //	    amrex::Abort("wrote plots");
+	  }                
                 for (int i = 0; i < Nyx::theActiveParticles().size(); i++)
                     Nyx::theActiveParticles()[i]->moveKickDrift(grav_vec_old, lev, dt, a_old, a_half, where_width);
 
@@ -257,7 +294,14 @@ Nyx::advance_particles_only (Real time,
                 const auto& dm = get_level(lev).get_new_data(PhiGrav_Type).DistributionMap();
                 MultiFab grav_vec_new(ba, dm, BL_SPACEDIM, grav_n_grow);
                 get_level(lev).gravity->get_new_grav_vector(lev, grav_vec_new, cur_time);
+	  {
+	  Vector<std::unique_ptr<MultiFab> > particle_mf;//(new MultiFab(grids,dmap,1,1));
+	    
+	  theDMPC()->AssignDensity(particle_mf,0,1,0,0);
 
+	  writeMultiFabAsPlotFile("ParticleDensityPreKick", *particle_mf[0], "density");
+	    //	    amrex::Abort("wrote plots");
+	  }
                 for (int i = 0; i < Nyx::theActiveParticles().size(); i++)
                     Nyx::theActiveParticles()[i]->moveKick(grav_vec_new, lev, dt, a_new, a_half);
 
@@ -268,6 +312,14 @@ Nyx::advance_particles_only (Real time,
                     for (int i = 0; i < Nyx::theGhostParticles().size(); i++)
                         Nyx::theGhostParticles()[i]->moveKick(grav_vec_new, lev, dt, a_new, a_half);
             }
+	  {
+	  Vector<std::unique_ptr<MultiFab> > particle_mf;//(new MultiFab(grids,dmap,1,1));
+	    
+	  theDMPC()->AssignDensity(particle_mf,0,1,0,0);
+
+	  writeMultiFabAsPlotFile("ParticleDensityPostKick", *particle_mf[0], "density");
+	    //	    amrex::Abort("wrote plots");
+	  }
         }
     }
 

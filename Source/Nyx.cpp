@@ -1434,6 +1434,22 @@ Nyx::post_timestep (int iteration)
     BL_PROFILE_VAR_STOP(rm);
     BL_PROFILE_VAR("Nyx::post_timestep()::redist",redist);
 
+    Vector<long> wgts(grids.size());
+    /*    for (int j = 0; j < theActiveParticles().size(); j++)                                                                                                                            {
+      //all valid particles
+      wgts=theActiveParticles()[j]->NumberOfParticlesInGrid(level,false,false);
+      }*/
+    wgts=theDMPC()->NumberOfParticlesInGrid(level,false,false);
+    /*
+        for (unsigned int i = 0; i < wgts.size(); i++)                                                                                                                                 {
+      wgts[i]=0.0;
+      for (int j = 0; j < theActiveParticles().size(); j++)                                                                                                                            {                                                                                                                                                                                //all local valid particles                                                                                                                                                             
+              //              wgts[i] += theActiveParticles()[j]->TotalNumberOfParticlesHat(false, true);                                                                                             
+              wgts[i] += theDMPC()->TotalNumberOfParticles(false, true);                                                                                                                           
+            }                                                                                                                                                                                         
+      //          wgts[i] = grids[i].numPts();//theDMPC()->TotalNumberOfParticlesHat(false, true);                                                                                                            
+      }                                                                                                                                                                                */
+        DistributionMapping dm;                                                                                                                                                        dm.KnapSackProcessorMap(wgts, ParallelDescriptor::NProcs());                                                                                                                   amrex::Gpu::Device::streamSynchronize();                                                                                                                                       const DistributionMapping& newdmap = dm;  
     //
     // Sync up if we're level 0 or if we have particles that may have moved
     // off the next finest level and need to be added to our own level.
@@ -1442,14 +1458,43 @@ Nyx::post_timestep (int iteration)
     {
         for (int i = 0; i < theActiveParticles().size(); i++)
 	{
-	     if(finest_level == 0 && nStep()>2)
+	  {
+	  Vector<std::unique_ptr<MultiFab> > particle_mf;//(new MultiFab(grids,dmap,1,1));
+	    
+	  theDMPC()->AssignDensity(particle_mf,0,1,0,0);
+
+	  writeMultiFabAsPlotFile("ParticleDensityPreGrid", *particle_mf[0], "density");
+	}
+
+	  //	  theActiveParticles()[i]->Regrid(newdmap,grids,level);
+	  theActiveParticles()[i]->Regrid(newdmap,grids,level);
+	  /*	     if(finest_level == 0 && nStep()>2)
 	         theActiveParticles()[i]->RedistributeLocal(level,
                                                   theActiveParticles()[i]->finestLevel(),
                                                   iteration);
-	     else
+	     else*/
+	  {
+	  Vector<std::unique_ptr<MultiFab> > particle_mf;//(new MultiFab(grids,dmap,1,1));
+	    
+	  theDMPC()->AssignDensity(particle_mf,0,1,0,0);
+
+	  writeMultiFabAsPlotFile("ParticleDensityPostRegrid", *particle_mf[0], "density");
+	  }
 	         theActiveParticles()[i]->Redistribute(level,
                                                   theActiveParticles()[i]->finestLevel(),
                                                   iteration);
+
+	  {
+	  Vector<std::unique_ptr<MultiFab> > particle_mf;//(new MultiFab(grids,dmap,1,1));
+	    
+	  theDMPC()->AssignDensity(particle_mf,0,1,0,0);
+
+	  writeMultiFabAsPlotFile("ParticleDensityPostRedist", *particle_mf[0], "density");
+	  //	  if(nStep()>100)
+	  //	       amrex::Abort("wrote plots");
+	    //	  amrex::Print()<<"STEP "<<nStep()<<std::endl;
+
+	  }
 
 	}
     }

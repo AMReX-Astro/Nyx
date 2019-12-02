@@ -36,6 +36,10 @@ public:
     virtual int finestLevel() const = 0;
     virtual void RemoveParticlesAtLevel (int level) = 0;
     virtual amrex::Real sumParticleMass (int level) const = 0;
+    virtual void Regrid  (const amrex::DistributionMapping& dmap, const amrex::BoxArray& ba, const int lev) = 0;
+  //  void RegridHat (const amrex::DistributionMapping& dmap, const amrex::BoxArray& ba, const int lev);
+  virtual amrex::Vector<long> NumberOfParticlesInGrid (int lev, bool only_valid, bool only_local) = 0;
+
     virtual void AssignDensitySingleLevel (amrex::MultiFab& mf, int level, int ncomp=1,
 					   int particle_lvl_offset = 0) const = 0;
     virtual void AssignDensity (amrex::Vector<std::unique_ptr<amrex::MultiFab> >& mf, int lev_min = 0, int ncomp = 1,
@@ -66,7 +70,16 @@ public:
     virtual amrex::Real sumParticleMass (int level) const override {
 	return amrex::NeighborParticleContainer<NSR,NSI>::sumParticleMass(0,level);
     }
-    
+
+    virtual void Regrid (const amrex::DistributionMapping& dmap, const amrex::BoxArray& ba, const int lev) override {
+	  amrex::Gpu::LaunchSafeGuard lsg(true);
+	  amrex::NeighborParticleContainer<NSR,NSI>::Regrid(dmap, ba, lev);
+    }
+
+  virtual amrex::Vector<long> NumberOfParticlesInGrid (int lev, bool only_valid, bool only_local) override {
+	  amrex::Gpu::LaunchSafeGuard lsg(true);
+	  return amrex::NeighborParticleContainer<NSR,NSI>::NumberOfParticlesInGrid(lev,only_valid,only_local);
+  }
     void sumParticleMomentum (int lev, amrex::Real* mom) const;
 
     virtual void AssignDensitySingleLevel (amrex::MultiFab& mf, int level, int ncomp=1, int particle_lvl_offset = 0) const override
