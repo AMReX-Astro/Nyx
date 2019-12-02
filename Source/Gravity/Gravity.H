@@ -19,8 +19,6 @@ public:
 
     void install_level(int level, amrex::AmrLevel* level_data_to_install);
 
-    void remake_level(int level, amrex::AmrLevel* level_data_to_install);
-
     std::string get_gravity_type();
     amrex::Real get_const_grav ();
     int get_no_sync();
@@ -120,7 +118,7 @@ protected:
     //
     const amrex::Vector<amrex::BoxArray>& grids;
     //
-          amrex::Vector<amrex::DistributionMapping> dmap;
+    const amrex::Vector<amrex::DistributionMapping>& dmap;
     //
     // Resnorm at each level
     //

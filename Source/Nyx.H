@@ -152,11 +152,6 @@ public:
     virtual void restart(amrex::Amr& papa, istream& is, bool b_read_special=false);
 
     //
-    //Remake level-specific data
-    //
-    void remake_level(int lev, amrex::Real time, const amrex::BoxArray& ba, amrex::DistributionMapping dm);
-
-    //
     //Call amrex::AmrLevel::checkPoint and then add radiation info
     //
     virtual void checkPoint(const std::string& dir, std::ostream& os,
