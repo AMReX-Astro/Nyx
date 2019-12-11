@@ -89,7 +89,7 @@ for pf_path in pf_paths:
 
     # open particles file
     p_file_path = os.path.join(pf_path, "particles.ascii")
-    p_data = np.loadtxt(p_file_path, skiprows=1)
+    p_data = np.loadtxt(p_file_path, skiprows=5)
 
     print "DONE"
     sys.stdout.write("Processing particle data ... ")

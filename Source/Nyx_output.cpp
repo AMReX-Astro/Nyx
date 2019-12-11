@@ -606,6 +606,14 @@ Nyx::particle_plot_file (const std::string& dir)
         if (Nyx::theDMPC())
           {
             Nyx::theDMPC()->WriteNyxPlotFile(dir, dm_plt_particle_file);
+	    ParmParse pp("particles");
+
+	    int dm_particle_output_ascii;
+	    pp.query("dm_particle_output_ascii", dm_particle_output_ascii);
+	    if (dm_particle_output_ascii != 0)
+	    {
+	      Nyx::theDMPC()->WriteAsciiFile(dir+"/particles.ascii");
+	    }
           }
 
 #ifdef AGN
