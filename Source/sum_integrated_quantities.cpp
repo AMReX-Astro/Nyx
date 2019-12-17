@@ -270,6 +270,7 @@ Nyx::compute_average_temperature (Real& average_temperature)
     Real            time         = state[State_Type].curTime();
     const Geometry& crse_geom    = parent->Geom(0);
 
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     // Add up the temperature -- this is just volume-weighted, not mass-weighted
     average_temperature = 0;
     for (int lev = 0; lev <= finest_level; lev++)
