@@ -1,4 +1,3 @@
-
 #ifndef _NyxParticleContainer_H_
 #define _NyxParticleContainer_H_
 
@@ -384,11 +383,7 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
             const auto gfab = (ac_pointer) ? (*ac_pointer).array(grid) : acceleration.array(grid);
 
             num_particles_at_level += n;
-	    /*
-	    for(int i=0;i<n;i++)
-	      if ((pstruct[i]).id() > 0)
-		num_particles_at_level++;
-	    */
+
                 reduce_op.eval(n, reduce_data,
                 [=] AMREX_GPU_DEVICE (const int i) -> ReduceTuple {
                 const ParticleType& p = pstruct[i];
