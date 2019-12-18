@@ -138,7 +138,7 @@ Nyx::halo_find (Real dt)
 	   }
 
        //This will fill all levels in particle_mf with lev_min=0
-       Nyx::theDMPC()->AssignDensity(particle_mf, 0, 4);
+       Nyx::theDMPC()->AssignDensity(particle_mf, 0, 4, -1, 0);
 
        runReeberAnalysis(state_levels, particle_mf, Geom(), level_refinements, nStep(), do_analysis, reeber_halos);
 #else
@@ -296,7 +296,7 @@ Nyx::halo_find (Real dt)
                 //      put it in the right place
 
                 Nyx::theAPC()->AddOneParticle(lev,grid,tile,mass,x,y,z); // ,u,v,w);
-                std::cout << "ADDED A PARTICLE AT " << x << " " << y << " " << z << " WITH MASS " << mass << std::endl;
+                //std::cout << "ADDED A PARTICLE AT " << x << " " << y << " " << z << " WITH MASS " << mass << std::endl;
            }
        } // end of loop over creating new particles from halos
 

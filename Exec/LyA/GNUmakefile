@@ -25,7 +25,6 @@ DEBUG     = FALSE
 
 GIMLET = FALSE
 REEBER = TRUE
-REEBER_HOME ?= ../../../reeber
 
 # physics
 DIM      = 3

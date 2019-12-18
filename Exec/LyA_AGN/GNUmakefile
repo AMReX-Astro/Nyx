@@ -2,8 +2,6 @@
 AMREX_HOME ?= ../../../amrex
 
 CVODE_LIB_DIR ?= $(CVODE_LIB)
-DIY_INCLUDE_DIR ?= ../../../diy/include
-REEBER_EXT_HOME ?= ../../../reeber2-git
 
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ../..
@@ -20,7 +18,7 @@ TINY_PROFILE  = FALSE
 
 PRECISION = DOUBLE
 USE_SINGLE_PRECISION_PARTICLES = FALSE
-DEBUG     = TRUE
+DEBUG     = FALSE
 
 GIMLET = FALSE
 REEBER = TRUE
@@ -36,4 +34,3 @@ Bpack := ./Make.package
 Blocs := .
 
 include $(TOP)/Exec/Make.Nyx
-

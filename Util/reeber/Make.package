@@ -1,7 +1,7 @@
 ifeq ($(REEBER), TRUE)
   DEFINES += -DREEBER
   DEFINES += -DPARALLEL_MPI -DBOOST_DATE_TIME_NO_LOCALE
-  DEFINES += -DEXTRA_INTEGRAL
+  DEFINES += -DREEBER_EXTRA_INTEGRAL
   DEFINES += -DZARIJA
 ifeq ($(PRECISION), DOUBLE)
   DEFINES += -DREEBER_REAL=double
@@ -12,8 +12,8 @@ endif
 #  BOOST_INCLUDE_DIR ?= /project/projectdirs/nyx/ghweber/boost-1.61.0-noarch/include
 #  DIY_INCLUDE_DIR ?= /project/projectdirs/nyx/ghweber/diy/include
   BOOST_INCLUDE_DIR ?= /usr/include/boost
-  DIY_INCLUDE_DIR ?= /home/narn/code/diy_versions/diy-new/include
-  REEBER_EXT_HOME ?= /home/narn/code/berkeley-2018/reeber2-git
+  DIY_INCLUDE_DIR ?= ../../../diy/include
+  REEBER_EXT_HOME ?= ../../../reeber
 ifeq ($(REEBER_HIST), TRUE)
   DEFINES += -DREEBER_HIST
   DEFINES += -DREEBER_USE_BOXLIB_READER -DREEBER_IN_SITU
