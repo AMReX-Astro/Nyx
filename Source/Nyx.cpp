@@ -1439,23 +1439,33 @@ Nyx::post_timestep (int iteration)
       regrid_int=10000;
     else
       regrid_int=10;
-    amrex::BoxArray grids_ref(grids);
-    grids_ref.refine(4);
-    //    Vector<std::unique_ptr<MultiFab> > particle_mf;//(new MultiFab(grids,dmap,1,1));
-    MultiFab particle_mf(grids_ref,theDMPC()->ParticleDistributionMap(level),1,1);
-	    
-    theDMPC()->DarkMatterParticleContainer::AssignDensitySingleLevel(particle_mf,level);
-    Vector<long> wgts(grids.size());
-    wgts=theDMPC()->NumberOfParticlesInGrid(level,false,false);
 
+    if(nStep() % regrid_int == 0)// || max_p/(1.0*cnt_p) > 2 * 1.0/ParallelDescriptor::NProcs())
+      {
+	// for using refined smaller boxes
+	/*	
+	  amrex::BoxArray grids_ref(grids);
+	  //needs if statement so doesn't become exponential refinement
+	  grids_ref.refine(2);
+    //    Vector<std::unique_ptr<MultiFab> > particle_mf;//(new MultiFab(grids,dmap,1,1));
+	  MultiFab particle_mf(grids_ref,theDMPC()->ParticleDistributionMap(level),1,1);
+	    
+	  theDMPC()->DarkMatterParticleContainer::AssignDensitySingleLevel(particle_mf,level);
+    */
+	//for using same boxes
+	  	
+	Vector<long> wgts(grids.size());
+	wgts=theDMPC()->NumberOfParticlesInGrid(level,false,false);
+
+	//for if we want to have a particle_cound based regrid criterion
+/*
     long max_p=0.0;
     long cnt_p=0.0;
     for (int i = 0; i < wgts.size(); i++) {
       max_p=std::max(max_p,wgts[i]);
       cnt_p+=wgts[i];
     }
-    if(nStep() % regrid_int == 0 || max_p/(1.0*cnt_p) > 2 * 1.0/ParallelDescriptor::NProcs())
-      {
+    */
     /*
         for (unsigned int i = 0; i < wgts.size(); i++)                                                                                                                                 {
       wgts[i]=0.0;
@@ -1465,26 +1475,28 @@ Nyx::post_timestep (int iteration)
             }                                                                                                                                                                                         
       //          wgts[i] = grids[i].numPts();//theDMPC()->TotalNumberOfParticlesHat(false, true);                                                                                                            
       }                                                                                                                                                                                */
-	/*
-	  DistributionMapping dm;                                                                                                                                                        dm.KnapSackProcessorMap(wgts, ParallelDescriptor::NProcs());*/
-	DistributionMapping dm;
-	dm.makeKnapSack(particle_mf, ParallelDescriptor::NProcs());
+	//using same boxes
+	  
+	  DistributionMapping dm;                                                                                                                                                        dm.KnapSackProcessorMap(wgts, ParallelDescriptor::NProcs());
+	  
+	  //if we wanted to use smaller boxes
+	  /*
+	    DistributionMapping dm;
+	    dm.makeKnapSack(particle_mf, ParallelDescriptor::NProcs());
+	  */
 	  amrex::Gpu::Device::streamSynchronize();                                                                                                                                       const DistributionMapping& newdmap = dm;  
       
-    //
-    // Sync up if we're level 0 or if we have particles that may have moved
-    // off the next finest level and need to be added to our own level.
-    //
-    if ((iteration < ncycle and level < finest_level) || level == 0)
-    {
-        for (int i = 0; i < theActiveParticles().size(); i++)
-	{
+	  if (level == 0)
+	    {
+	      for (int i = 0; i < theActiveParticles().size(); i++)
+		{
 
-	  //Regrid includes a redistribute
-	  theActiveParticles()[i]->Regrid(newdmap,grids_ref,level);
-
-	}
-    }
+		  //Regrid includes a redistribute
+		  theActiveParticles()[i]->Regrid(newdmap,grids,level);
+		  //different boxes
+		  //theActiveParticles()[i]->Regrid(newdmap,grids_ref,level);
+		}
+	    }
       }
     else
       {
