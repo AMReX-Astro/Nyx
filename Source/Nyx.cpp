@@ -1435,10 +1435,16 @@ Nyx::post_timestep (int iteration)
     BL_PROFILE_VAR("Nyx::post_timestep()::redist",redist);
 
     int regrid_int=10000;
-    if(nStep()<1500)
+    if(nStep()<500)
       regrid_int=10000;
     else
       regrid_int=10;
+    amrex::BoxArray grids_ref(grids);
+    grids_ref.refine(4);
+    //    Vector<std::unique_ptr<MultiFab> > particle_mf;//(new MultiFab(grids,dmap,1,1));
+    MultiFab particle_mf(grids_ref,theDMPC()->ParticleDistributionMap(level),1,1);
+	    
+    theDMPC()->DarkMatterParticleContainer::AssignDensitySingleLevel(particle_mf,level);
     Vector<long> wgts(grids.size());
     wgts=theDMPC()->NumberOfParticlesInGrid(level,false,false);
 
@@ -1459,7 +1465,11 @@ Nyx::post_timestep (int iteration)
             }                                                                                                                                                                                         
       //          wgts[i] = grids[i].numPts();//theDMPC()->TotalNumberOfParticlesHat(false, true);                                                                                                            
       }                                                                                                                                                                                */
-        DistributionMapping dm;                                                                                                                                                        dm.KnapSackProcessorMap(wgts, ParallelDescriptor::NProcs());                                                                                                                   amrex::Gpu::Device::streamSynchronize();                                                                                                                                       const DistributionMapping& newdmap = dm;  
+	/*
+	  DistributionMapping dm;                                                                                                                                                        dm.KnapSackProcessorMap(wgts, ParallelDescriptor::NProcs());*/
+	DistributionMapping dm;
+	dm.makeKnapSack(particle_mf, ParallelDescriptor::NProcs());
+	  amrex::Gpu::Device::streamSynchronize();                                                                                                                                       const DistributionMapping& newdmap = dm;  
       
     //
     // Sync up if we're level 0 or if we have particles that may have moved
@@ -1471,7 +1481,7 @@ Nyx::post_timestep (int iteration)
 	{
 
 	  //Regrid includes a redistribute
-	  theActiveParticles()[i]->Regrid(newdmap,grids,level);
+	  theActiveParticles()[i]->Regrid(newdmap,grids_ref,level);
 
 	}
     }
