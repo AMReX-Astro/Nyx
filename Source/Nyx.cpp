@@ -121,6 +121,7 @@ Real Nyx::comoving_h;
 int Nyx::do_hydro = -1;
 int Nyx::add_ext_src = 0;
 int Nyx::heat_cool_type = 0;
+int Nyx::use_sundials_constraint = 0;
 int Nyx::strang_split = 1;
 #ifdef SDC
 int Nyx::sdc_split    = 0;
@@ -423,6 +424,7 @@ Nyx::read_params ()
         pp_nyx.get("inhomo_grid", inhomo_grid);
     }
 
+
 #ifdef HEATCOOL
     if (heat_cool_type != 3 && heat_cool_type !=4 && heat_cool_type != 5 && heat_cool_type != 7 && heat_cool_type != 9 && heat_cool_type != 10 && heat_cool_type != 11)
        amrex::Error("Nyx:: nonzero heat_cool_type must equal 3 or 5 or 7 or 9 or 10 or 11");
@@ -480,6 +482,7 @@ Nyx::read_params ()
     if (inhomo_reion > 0)
        amrex::Error("Nyx::you set inhomo_reion > 0 but forgot to set USE_HEATCOOL = TRUE");
 #endif
+    pp_nyx.query("use_sundials_constraint", use_sundials_constraint);
 
     pp_nyx.query("allow_untagging", allow_untagging);
     pp_nyx.query("use_const_species", use_const_species);

@@ -447,6 +447,7 @@ public:
   
   int integrate_state_vec(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
    int integrate_state_grownvec(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
+  int integrate_state_vec_mfin(amrex::Array4<amrex::Real>const& state4,   amrex::Array4<amrex::Real>const& diag_eos4,const  amrex::Box& tbx,  const amrex::Real& a, const amrex::Real& delta_time);
 
     amrex::Real advance_particles_only (amrex::Real time, amrex::Real dt, int iteration, int ncycle);
 
@@ -748,6 +749,10 @@ protected:
     static amrex::Real particle_initrandom_mass;
     static int particle_initrandom_iseed;
     static int particle_skip_factor;
+    static amrex::Real particle_inituniform_mass;
+    static amrex::Real particle_inituniform_vx;
+    static amrex::Real particle_inituniform_vy;
+    static amrex::Real particle_inituniform_vz;
 
     static amrex::IntVect Nrep;  // how many times the initial conditions are replicated in each direction
 
@@ -767,6 +772,9 @@ protected:
 
     // specifies the heating/cooling source term
     static int heat_cool_type;
+
+    // if true, use non-negative constraint on energy
+    static int use_sundials_constraint;
 
     // specifies inhomogeneous reionization type
     static int inhomo_reion;

@@ -143,6 +143,10 @@ Real Nyx::particle_initrandom_mass;
 long Nyx::particle_initrandom_count;
 long Nyx::particle_initrandom_count_per_box;
 int  Nyx::particle_initrandom_iseed;
+Real Nyx::particle_inituniform_mass;
+Real Nyx::particle_inituniform_vx;
+Real Nyx::particle_inituniform_vy;
+Real Nyx::particle_inituniform_vz;
 
 int Nyx::particle_verbose               = 1;
 int Nyx::write_particle_density_at_init = 0;
@@ -293,6 +297,10 @@ Nyx::read_particle_params ()
     pp.query("particle_initrandom_iseed", particle_initrandom_iseed);
     pp.query("particle_skip_factor", particle_skip_factor);
     pp.query("ascii_particle_file", ascii_particle_file);
+    pp.query("particle_inituniform_mass", particle_inituniform_mass);
+    pp.query("particle_inituniform_vx", particle_inituniform_vx);
+    pp.query("particle_inituniform_vy", particle_inituniform_vy);
+    pp.query("particle_inituniform_vz", particle_inituniform_vz);
 
     // Input error check
     if (do_dm_particles && !ascii_particle_file.empty() && particle_init_type != "AsciiFile")
@@ -462,6 +470,15 @@ Nyx::init_particles ()
 
             int n_per_cell = 1;
             DMPC->InitNRandomPerCell(n_per_cell, pdata);
+        }
+        else if (particle_init_type == "OnePerCell")
+        {
+            if (verbose)
+                amrex::Print() << "\nInitializing DM with 1 uniform particle per cell " << "\n";
+
+	    //            int n_per_cell = 1;
+	    DarkMatterParticleContainer::ParticleInitData pdata_vel = {particle_inituniform_mass, particle_inituniform_vx, particle_inituniform_vy, particle_inituniform_vz };
+            DMPC->InitOnePerCell(0.5, 0.5, 0.5, pdata_vel);
         }
         else if (particle_init_type == "AsciiFile")
         {
