@@ -427,10 +427,13 @@ Nyx::writePlotFilePost (const std::string& dir, ostream& os)
     Real cur_time = state[State_Type].curTime();
 #endif
 
-    if (cur_time == 0) {
-      amrex::Print().SetPrecision(15) << "Output file " << dir << " at time " << std::to_string(old_a) << " and step " << std::to_string(nStep()) << std::endl;
-    } else {
-      amrex::Print().SetPrecision(15) << "Output file " << dir << " at time " << std::to_string(new_a) << " and step " << std::to_string(nStep()) << std::endl;
+    if (level == 0)
+    {
+      if (cur_time == 0) {
+	amrex::Print().SetPrecision(15) << "Output file " << dir << " at time " << std::to_string(old_a) << " and step " << std::to_string(nStep()) << std::endl;
+      } else {
+	amrex::Print().SetPrecision(15) << "Output file " << dir << " at time " << std::to_string(new_a) << " and step " << std::to_string(nStep()) << std::endl;
+      }
     }
   }
 }

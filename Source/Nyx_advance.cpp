@@ -567,6 +567,8 @@ Nyx::advance_hydro (Real time,
 #endif
     BL_PROFILE_VAR_STOP(just_the_hydro);
 
+    {
+      amrex::Gpu::LaunchSafeGuard lsg(true);
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
     MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
@@ -596,8 +598,6 @@ Nyx::advance_hydro (Real time,
     MultiFab grav_vec_new(grids,dmap,BL_SPACEDIM,0);
     gravity->get_new_grav_vector(level,grav_vec_new,cur_time);
 
-    {
-      amrex::Gpu::LaunchSafeGuard lsg(true);
     // Now do corrector part of source term update
 #ifdef _OPENMP
 #pragma omp parallel
@@ -623,13 +623,13 @@ Nyx::advance_hydro (Real time,
              BL_ARR4_TO_FORTRAN(fab_S_new), a_old, a_new, dt);
 				 });
     }
-    }
 
 #endif /*GRAVITY*/
 
     // First reset internal energy before call to compute_temp
     reset_internal_energy(S_new,D_new,reset_e_src);
     compute_new_temp(S_new,D_new);
+    }
 
     return dt;
 }
