@@ -126,7 +126,7 @@ end
                state(i,j,k,UFS+1) = (1.d0 - XHYDROGEN)
             end if
 
-            diag_eos(i,j,k,TEMP_COMP) = 0.021d0*(1.0d0 + z_in)**2
+            diag_eos(i,j,k,TEMP_COMP) = 1.841d2*((1.0d0 + z_in)/(1.0d0 + 1.0d2))**2
             diag_eos(i,j,k,  NE_COMP) = 0.d0
 
             if (ZHI_COMP .gt. -1) then

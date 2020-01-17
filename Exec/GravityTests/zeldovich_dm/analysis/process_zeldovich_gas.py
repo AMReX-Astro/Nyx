@@ -26,12 +26,14 @@ plt.rc('text', usetex=True)
 plt.rc('font', family='serif')
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
+import yt
+from yt.mods import *
 
 from zeldovich import get_redshift, get_scale_factor, perturbed_x, perturbed_v_x
 
 # path to initial conditions files
 ic_path = os.path.abspath("../ics/")
-run_path = os.path.abspath("../run/")
+run_path = os.path.abspath("../run_hydro/")
 
 ### Read in params
 reader = csv.DictReader(open(os.path.join(ic_path, "zeldovich_params.csv"), "r"))
@@ -40,7 +42,8 @@ params = reader.__next__()
 initial_z = float(params["initial_z"])
 caustic_z = float(params["caustic_z"])
 initial_a = get_scale_factor(initial_z)
-box_length = float(params["box_length"])
+box_length = float(params["box_length_long"])
+box_length_short = float(params["box_length_short"])
 k = float(params["k"])
 offset = float(params["offset"])
 H_0 = float(params["H_0"])
@@ -48,8 +51,8 @@ sheet_normal = np.array((params["normal_x"], params["normal_y"],
                                     params["normal_z"])).astype(float)
 
 normal_length = min(box_length / sheet_normal[0],
-                    box_length / sheet_normal[1],
-                    box_length / sheet_normal[2])
+                    box_length_short / sheet_normal[1],
+                    box_length_short / sheet_normal[2])
 q_array = np.linspace(0, normal_length, 100 * box_length * k)
 
 print("")
@@ -61,9 +64,9 @@ pfs_path = run_path
 fig_dir = os.path.abspath(os.path.dirname(__file__))
 
 # Make a figs dir in the same dir as the pf's.
-if not os.path.exists(os.path.join(fig_dir, "figs")):
-    os.makedirs(os.path.join(fig_dir, "figs"))
-figs_path = os.path.join(fig_dir, "figs")
+if not os.path.exists(os.path.join(fig_dir, "figs_hydro")):
+    os.makedirs(os.path.join(fig_dir, "figs_hydro"))
+figs_path = os.path.join(fig_dir, "figs_hydro")
 
 # search for pltnnnnn dirs
 pf_paths = [os.path.join(pfs_path, f) for f in os.listdir(pfs_path)
@@ -174,13 +177,51 @@ for pf_path in pf_paths:
     ax.set_zlabel("z (Mpc)")
     ax.view_init(20, -85)
     ax.plot(xs, ys, zs, '.', alpha=0.015)
-    ax.text(box_length, 0.0, box_length*1.25, r"$z_c =$ {:.2f}".format(caustic_z))
-    ax.text(box_length, 0.0, box_length*1.1, r"$z =$ {:.2f}".format(current_z))
+    ax.text(box_length, 0.0, box_length_short*1.25, r"$z_c =$ {:.2f}".format(caustic_z))
+    ax.text(box_length, 0.0, box_length_short*1.1, r"$z =$ {:.2f}".format(current_z))
     ax.set_xlim3d(0, box_length)
-    ax.set_ylim3d(0, box_length)
-    ax.set_zlim3d(0, box_length)
+    ax.set_ylim3d(0, box_length_short)
+    ax.set_zlim3d(0, box_length_short)
 
     fig.savefig("positions_{:05d}.png".format(plt_num))
+    plt.close()
+    
+    # Gas velocity, density, and temperature
+    pf = load(pf_path)
+    dims = pf.domain_dimensions
+    dens = pf.covering_grid(0,left_edge=[0,0,0],dims=dims,fields=["density"])['density'].reshape((dims[0],dims[1],dims[2])).value
+    mean_dens = np.mean(dens)
+    temp = pf.covering_grid(0,left_edge=[0,0,0],dims=dims,fields=["Temp"])['Temp'].reshape((dims[0],dims[1],dims[2])).value
+    xmom = pf.covering_grid(0,left_edge=[0,0,0],dims=dims,fields=["xmom"])['xmom'].reshape((dims[0],dims[1],dims[2])).value
+    # Prepare the plot
+    fig,ax = plt.subplots(3,1,figsize=(5,12))
+    ax[0].set_xlim(0,box_length)
+    ax[0].set_ylim(-1.2*(xmom/dens).max(),1.2*(xmom/dens).max())
+    ax[0].set_title("Baryonic Zeldovich Pancake")
+    ax[0].set_ylabel("Velocity [km/s]")
+    ax[1].set_xlim(0,box_length)
+    ax[1].set_ylim(0.75*dens.min()/mean_dens,1.5*dens.max()/mean_dens)
+    ax[1].set_yscale("log")
+    ax[1].set_ylabel("Overdensity")
+    ax[2].set_ylabel("Temperature")
+    ax[2].set_xlabel("Distance [cMpc]")
+    ax[2].set_xlim(0,box_length)
+    ax[2].set_ylim(0.75*temp.min(),1.5*temp.max())
+    ax[2].set_yscale("log")
+    # Loop over y/z columns?
+    # Unnecessary because all columns are identical!
+    #for ii in range(64):
+    #    for jj in range(64):
+    ax[0].plot((box_length/dims[0])*np.arange(dims[0]),np.roll(xmom[:,dims[1]//2-1,dims[2]//2-1]/dens[:,dims[1]//2-1,dims[2]//2-1],0), color="None", linestyle="None", marker=".",
+           markerfacecolor=None, markeredgecolor="red", alpha=1.0)
+    ax[1].plot((box_length/dims[0])*np.arange(dims[0]),np.roll(dens[:,dims[1]//2-1,dims[2]//2-1],0)/mean_dens, color="None", linestyle="None", marker=".",
+           markerfacecolor=None, markeredgecolor="red", alpha=1.0,zorder=2)
+    ax[2].plot((box_length/dims[0])*np.arange(dims[0]),np.roll(temp[:,dims[1]//2-1,dims[2]//2-1],0), color="None", linestyle="None", marker=".",
+           markerfacecolor=None, markeredgecolor="red", alpha=1.0)
+
+    ax[2].plot((box_length/dims[0])*np.arange(dims[0]),(184.1*((1+current_z)/101.0)**2)*(np.mean(dens,axis=(1,2))/mean_dens)**(2.0/3.0),
+                   c='k',lw=1.5,zorder=1)
+    fig.savefig("gas_{:05d}.png".format(plt_num))
     plt.close()
     
     print("DONE")
