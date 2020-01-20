@@ -140,6 +140,7 @@ int Nyx::add_ext_src = 0;
 int Nyx::heat_cool_type = 0;
 int Nyx::use_sundials_constraint = 0;
 int Nyx::sundials_alloc_type = 0;
+
 int Nyx::strang_split = 1;
 int Nyx::strang_fuse = 0;
 int Nyx::strang_grown_box = 1;
@@ -447,6 +448,7 @@ Nyx::read_params ()
         pp_nyx.get("inhomo_zhi_file", inhomo_zhi_file);
         pp_nyx.get("inhomo_grid", inhomo_grid);
     }
+
 
 #ifdef HEATCOOL
     if (heat_cool_type != 3 && heat_cool_type !=4 && heat_cool_type != 5 && heat_cool_type != 7 && heat_cool_type != 9 && heat_cool_type != 10 && heat_cool_type != 11 &&  heat_cool_type != 12)

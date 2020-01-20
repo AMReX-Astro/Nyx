@@ -896,6 +896,10 @@ protected:
     static amrex::Real particle_initrandom_mass;
     static int particle_initrandom_iseed;
     static int particle_skip_factor;
+    static amrex::Real particle_inituniform_mass;
+    static amrex::Real particle_inituniform_vx;
+    static amrex::Real particle_inituniform_vy;
+    static amrex::Real particle_inituniform_vz;
 
     // This controls the LaunchSafeGuard for particle initialization
     static int particle_launch_ics;

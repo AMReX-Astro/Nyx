@@ -62,7 +62,8 @@ Nyx::setPlotVariables ()
     AmrLevel::setPlotVariables();
 
     ParmParse pp("nyx");
-    bool plot_X, plot_rank;
+    bool plot_X = false;
+    bool plot_rank = false;
     if (pp.query("plot_rank", plot_rank))
     {
         if (plot_rank)
@@ -614,6 +615,14 @@ Nyx::particle_plot_file (const std::string& dir)
         if (Nyx::theDMPC())
           {
             Nyx::theDMPC()->WriteNyxPlotFile(dir, dm_plt_particle_file);
+	    ParmParse pp("particles");
+
+	    int dm_particle_output_ascii = 0;
+	    pp.query("dm_particle_output_ascii", dm_particle_output_ascii);
+	    if (dm_particle_output_ascii != 0)
+	    {
+	      Nyx::theDMPC()->WriteAsciiFile(dir+"/particles.ascii");
+	    }
           }
 
 #ifdef AGN

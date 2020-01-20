@@ -22,6 +22,9 @@ nyx.ppm_type         = 1
 nyx.ppm_reference    = 1
 nyx.use_colglaz      = 0
 nyx.corner_coupling  = 1
+nyx.use_const_species = 1
+nyx.h_species = .76
+nyx.he_species = .24
 
 nyx.strang_split     = 1
 nyx.add_ext_src      = 0
@@ -31,8 +34,8 @@ nyx.heat_cool_type   = 0
 nyx.small_dens = 1.e-2
 nyx.small_temp = 1.e-2
 
-nyx.do_santa_barbara = 0
-nyx.init_sb_vels     = 0
+nyx.do_santa_barbara = 1
+nyx.init_sb_vels     = 1
 gravity.ml_tol = 1.e-10
 gravity.sl_tol = 1.e-10
 
@@ -76,13 +79,12 @@ nyx.lo_bc       =  0   0   0
 nyx.hi_bc       =  0   0   0
 
 # WHICH PHYSICS
-#nyx.do_hydro = 1
-nyx.do_hydro = 0
+nyx.do_hydro = 1
 nyx.do_grav  = 1
 
 # COMOVING: the SCDM Cosmology, and nyx.comoving_OmL = 0.0
-nyx.comoving_OmM = 1.0
-nyx.comoving_OmB = 0.0
+nyx.comoving_OmM = 0.85
+nyx.comoving_OmB = 0.15
 nyx.comoving_h   = 0.5
 
 
