@@ -510,6 +510,7 @@ Nyx::read_params ()
     pp_nyx.query("use_sundials_constraint", use_sundials_constraint);
     pp_nyx.query("nghost_state", nghost_state);
     pp_nyx.query("hydro_convert", hydro_convert);
+    pp_nyx.query("sundials_alloc_type", sundials_alloc_type);
     pp_nyx.query("allow_untagging", allow_untagging);
     pp_nyx.query("use_const_species", use_const_species);
     pp_nyx.query("normalize_species", normalize_species);
