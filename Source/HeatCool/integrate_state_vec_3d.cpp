@@ -59,7 +59,8 @@ int Nyx::integrate_state_vec
 
   amrex::Gpu::LaunchSafeGuard lsg(true);
   fort_ode_eos_setup(a,delta_time);
-
+  long int store_steps=new_max_sundials_steps;
+  
   //#ifdef _OPENMP
   //#pragma omp parallel if (Gpu::notInLaunchRegion())
   //#endif
@@ -78,7 +79,7 @@ int Nyx::integrate_state_vec
       Array4<Real> const& state4 = S_old.array(mfi);
       Array4<Real> const& diag_eos4 = D_old.array(mfi);
 
-      integrate_state_vec_mfin(state4,diag_eos4,tbx,a,delta_time);
+      integrate_state_vec_mfin(state4,diag_eos4,tbx,a,delta_time,store_steps,new_max_sundials_steps);
 }
       return 0;
 }
@@ -87,7 +88,8 @@ int Nyx::integrate_state_vec_mfin
   (amrex::Array4<Real> const& state4,
    amrex::Array4<Real> const& diag_eos4,
    const Box& tbx,
-   const Real& a, const Real& delta_time)
+   const Real& a, const Real& delta_time,
+   long int& old_max_steps, long int& new_max_steps)
 {
 
   realtype reltol, abstol;
@@ -256,6 +258,8 @@ int Nyx::integrate_state_vec_mfin
 
 				CVodeSetMaxNumSteps(cvode_mem,2000);
 
+				CVodeSetMaxStep(cvode_mem,delta_time/(old_max_steps));
+
 				N_Vector constrain;
 				if(use_sundials_constraint)
 				  {
@@ -268,6 +272,12 @@ int Nyx::integrate_state_vec_mfin
 				//				CVodeSetMaxStep(cvode_mem, delta_time/10);
 				//				BL_PROFILE_VAR("Nyx::strang_second_cvode",cvode_timer2);
 				flag = CVode(cvode_mem, delta_time, u, &t, CV_NORMAL);
+				if(use_typical_steps)
+				  {
+				    long int nst=0;
+				    flag = CVodeGetNumSteps(cvode_mem, &nst);
+				    new_max_steps=std::max(nst,new_max_steps);
+				  }
 				//				amrex::Gpu::Device::streamSynchronize();
 				//				BL_PROFILE_VAR_STOP(cvode_timer2);
 
@@ -340,7 +350,7 @@ int Nyx::integrate_state_grownvec
 
   fort_ode_eos_setup(a,delta_time);
   amrex::Gpu::LaunchSafeGuard lsg(true);
-
+  long int store_steps=old_max_sundials_steps;
   
   const Real prev_time     = state[State_Type].prevTime();
   
@@ -363,7 +373,7 @@ int Nyx::integrate_state_grownvec
       Array4<Real> const& state4 = S_old.array(mfi);
       Array4<Real> const& diag_eos4 = D_old.array(mfi);
 
-      integrate_state_vec_mfin(state4,diag_eos4,tbx,a,delta_time);
+      integrate_state_vec_mfin(state4,diag_eos4,tbx,a,delta_time,store_steps,old_max_sundials_steps);
     }
 
     return 0;

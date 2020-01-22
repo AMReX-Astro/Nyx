@@ -25,7 +25,9 @@ Nyx::ctu_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::
   const Real a = get_comoving_a(time);
   const Real a_2 = get_comoving_a(cur_time-half_dt);
   const Real a_end = get_comoving_a(cur_time);
-
+  long int old_store_steps=old_max_sundials_steps;
+  long int new_store_steps=new_max_sundials_steps;
+  
   FArrayBox hydro_source;
   FArrayBox ext_src_old;
 #ifdef HEATCOOL
@@ -256,7 +258,7 @@ Nyx::ctu_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::
 
 	const auto state4 = Sborder.array(mfi);
 	const auto diag_eos4 = D_border.array(mfi);
-	integrate_state_vec_mfin(state4,diag_eos4,tbx,a,half_dt);
+	integrate_state_vec_mfin(state4,diag_eos4,tbx,a,half_dt,old_store_steps,old_max_sundials_steps);
 	//not sure if this is necessary for anything except timers
 	amrex::Gpu::streamSynchronize();
       }
@@ -1505,7 +1507,7 @@ Nyx::ctu_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::
 
 	const auto state4 = S_new.array(mfi);
 	const auto diag_eos4 = D_new.array(mfi);
-	integrate_state_vec_mfin(state4,diag_eos4,tbx,a_2,half_dt);
+	integrate_state_vec_mfin(state4,diag_eos4,tbx,a_2,half_dt,new_store_steps,new_max_sundials_steps);
 	//not sure if this is necessary for anything except timers
 	amrex::Gpu::streamSynchronize();
       }

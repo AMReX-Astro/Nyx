@@ -139,6 +139,7 @@ int Nyx::do_hydro = -1;
 int Nyx::add_ext_src = 0;
 int Nyx::heat_cool_type = 0;
 int Nyx::use_sundials_constraint = 0;
+int Nyx::use_typical_steps = 0;
 int Nyx::sundials_alloc_type = 0;
 
 int Nyx::strang_split = 1;
@@ -152,6 +153,9 @@ Real Nyx::average_gas_density = 0;
 Real Nyx::average_dm_density = 0;
 Real Nyx::average_neutr_density = 0;
 Real Nyx::average_total_density = 0;
+
+long int Nyx::old_max_sundials_steps = 3;
+long int Nyx::new_max_sundials_steps = 3;
 
 int         Nyx::inhomo_reion = 0;
 std::string Nyx::inhomo_zhi_file = "";
@@ -511,6 +515,7 @@ Nyx::read_params ()
     pp_nyx.query("nghost_state", nghost_state);
     pp_nyx.query("hydro_convert", hydro_convert);
     pp_nyx.query("sundials_alloc_type", sundials_alloc_type);
+    pp_nyx.query("use_typical_steps", use_typical_steps);
     pp_nyx.query("allow_untagging", allow_untagging);
     pp_nyx.query("use_const_species", use_const_species);
     pp_nyx.query("normalize_species", normalize_species);
@@ -532,6 +537,11 @@ Nyx::read_params ()
 	//amrex::Error("Nyx::use_analriem must be 0 with hydro_convert = 1");
       }
 
+    if(use_typical_steps != 0 && strang_grown_box == 0)
+      { 
+	  amrex::Error("Nyx::use_typical_steps must be 0 with strang_grown_box = 0");
+      }
+   
     if (do_hydro == 1)
     {
         if (do_hydro == 1 && use_const_species == 1)
@@ -1641,6 +1651,38 @@ Nyx::post_timestep (int iteration)
 }
 
 void
+Nyx::typical_values_post_restart (const std::string& restart_file)
+{
+    if (level > 0)
+        return;
+
+    if (use_typical_steps)
+    {
+      if (ParallelDescriptor::IOProcessor())
+	{
+	  std::string FileName = restart_file + "/first_max_steps";
+	  std::ifstream File;
+	  File.open(FileName.c_str(),std::ios::in);
+	  if (!File.good())
+            amrex::FileOpenFailed(FileName);
+	  File >> old_max_sundials_steps;
+	}
+      ParallelDescriptor::Bcast(&old_max_sundials_steps, 1, ParallelDescriptor::IOProcessorNumber());
+
+      if (ParallelDescriptor::IOProcessor())
+	{
+	  std::string FileName = restart_file + "/second_max_steps";
+	  std::ifstream File;
+	  File.open(FileName.c_str(),std::ios::in);
+	  if (!File.good())
+            amrex::FileOpenFailed(FileName);
+	  File >> new_max_sundials_steps;
+	}
+      ParallelDescriptor::Bcast(&new_max_sundials_steps, 1, ParallelDescriptor::IOProcessorNumber());
+    }
+}
+
+void
 Nyx::post_restart ()
 {
     BL_PROFILE("Nyx::post_restart()");
@@ -1649,6 +1691,9 @@ Nyx::post_restart ()
 
     if (level == 0)
         comoving_a_post_restart(parent->theRestartFile());
+
+    if (level == 0)
+        typical_values_post_restart(parent->theRestartFile());
 
     if (inhomo_reion) init_zhi();
 
