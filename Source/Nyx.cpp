@@ -78,6 +78,11 @@ Real Nyx::new_a_time = -1.0;
 Vector<Real> Nyx::plot_z_values;
 Vector<Real> Nyx::analysis_z_values;
 
+int Nyx::load_balance_int = -1;
+int Nyx::load_balance_wgt_strategy = 0;
+int Nyx::load_balance_grids_ref = 0;
+int Nyx::load_balance_remake_level = 0;
+
 bool Nyx::dump_old = false;
 int Nyx::verbose      = 0;
 
@@ -616,6 +621,11 @@ Nyx::read_params ()
       pp_nyx.queryarr("analysis_z_values",analysis_z_values,0,num_z_values);
     }
 
+    pp_nyx.query("load_balance_int",          load_balance_int);
+    pp_nyx.query("load_balance_wgt_strategy", load_balance_wgt_strategy);
+    pp_nyx.query("load_balance_grids_ref",    load_balance_grids_ref);
+    pp_nyx.query("load_balance_remake_level", load_balance_remake_level);
+
     // How often do we want to write x,y,z 2-d slices of S_new
     pp_nyx.query("slice_int",    slice_int);
     pp_nyx.query("slice_file",   slice_file);
@@ -780,6 +790,189 @@ Nyx::restart (Amr&     papa,
         forcing->init(BL_SPACEDIM, prob_lo, prob_hi);
     }
 #endif
+}
+
+void
+Nyx::remake_level (int lev, Real time, const BoxArray& ba, DistributionMapping dm)
+{
+
+#ifdef NO_HYDRO
+    Real cur_time = state[PhiGrav_Type].curTime();
+#else
+    Real cur_time = state[State_Type].curTime();
+#endif
+
+    AmrLevel& this_level = get_level(lev);
+    parent->SetDistributionMap(lev,dm);//this_level.DistributionMap()=dm;
+    this_level.UpdateDistributionMaps(dm);
+    //    (&this_level)->SetDistributionMap(lev,dm);//this_level.DistributionMap()=dm;
+
+  if(level == 0)
+    {
+
+#ifndef NO_HYDRO
+    if (flux_reg != 0)
+    {
+      if (verbose > 1 && ParallelDescriptor::IOProcessor())
+	std::cout << "Deleting flux_reg in remake_level...\n";
+      delete flux_reg;
+      flux_reg = 0;
+    }
+#endif
+
+#ifdef FORCING
+    if (forcing != 0)
+    {
+        if (verbose > 1 && ParallelDescriptor::IOProcessor())
+            std::cout << "Deleting forcing in remake_level...\n";
+        delete forcing;
+        forcing = 0;
+    }
+#endif
+
+#ifndef NO_HYDRO
+    if (do_hydro == 1)
+    {
+        BL_ASSERT(flux_reg == 0);
+        if (level > 0 && do_reflux)
+            flux_reg = new FluxRegister(grids, dmap, crse_ratio, level, NUM_STATE);
+
+    }
+#endif
+
+#ifdef FORCING
+    const Real* prob_lo = geom.ProbLo();
+    const Real* prob_hi = geom.ProbHi();
+
+    if (do_forcing)
+    {
+        // forcing is a static object, only alloc if not already there
+        if (forcing == 0)
+           forcing = new StochasticForcing();
+
+        forcing->init(BL_SPACEDIM, prob_lo, prob_hi);
+    }
+#endif
+    }
+
+#ifndef NO_HYDRO
+    if (do_hydro == 1)
+      {
+        MultiFab& S_new = get_new_data(State_Type);
+        MultiFab& D_new = get_new_data(DiagEOS_Type);
+
+        MultiFab& S_old = get_old_data(State_Type);
+        MultiFab& D_old = get_old_data(DiagEOS_Type);
+
+        {
+          const IntVect& ng = (S_new).nGrowVect();
+          auto pmf = std::unique_ptr<MultiFab>(new MultiFab(S_new.boxArray(),
+							    dm, S_new.nComp(), ng));
+          pmf->Redistribute((S_new), 0, 0, S_new.nComp(), ng);
+	  //          get_state_data(State_Type).new_data = std::move(pmf);
+          //&(get_state_data(State_Type).newData()) = std::move(pmf);
+	  //          get_state_data(State_Type).replaceNewData(&(*pmf));
+	  get_state_data(State_Type).replaceNewData(pmf);
+	  get_state_data(State_Type).setDistributionMap(dm);
+        }
+        {
+          const IntVect& ng = (D_new).nGrowVect();
+          auto pmf = std::unique_ptr<MultiFab>(new MultiFab(D_new.boxArray(),
+							    dm, D_new.nComp(), ng));
+          pmf->Redistribute((D_new), 0, 0, D_new.nComp(), ng);
+	  get_state_data(DiagEOS_Type).replaceNewData(pmf);
+	  get_state_data(DiagEOS_Type).setDistributionMap(dm);
+        }
+
+        {
+          const IntVect& ng = (S_old).nGrowVect();
+          auto pmf = std::unique_ptr<MultiFab>(new MultiFab(S_old.boxArray(),
+                                                            dm, S_old.nComp(), ng));
+          pmf->Redistribute((S_old), 0, 0, S_old.nComp(), ng);
+	  get_state_data(State_Type).replaceOldData(pmf);
+        }
+        {
+          const IntVect& ng = (D_old).nGrowVect();
+          auto pmf = std::unique_ptr<MultiFab>(new MultiFab(D_old.boxArray(),
+                                                            dm, D_old.nComp(), ng));
+          pmf->Redistribute((D_old), 0, 0, D_old.nComp(), ng);
+	  get_state_data(DiagEOS_Type).replaceOldData(pmf);
+        }
+
+      }
+#endif
+
+#ifdef GRAVITY
+    MultiFab& Phi_new = get_new_data(PhiGrav_Type);
+    MultiFab& Phi_old = get_old_data(PhiGrav_Type);
+
+    {
+      const IntVect& ng = (Phi_new).nGrowVect();
+      auto pmf = std::unique_ptr<MultiFab>(new MultiFab(Phi_new.boxArray(),
+							dm, Phi_new.nComp(), ng));
+      pmf->Redistribute((Phi_new), 0, 0, Phi_new.nComp(), ng);
+      get_state_data(PhiGrav_Type).replaceNewData(pmf);
+      get_state_data(PhiGrav_Type).setDistributionMap(dm);
+    }
+    {
+      const IntVect& ng = (Phi_old).nGrowVect();
+      auto pmf = std::unique_ptr<MultiFab>(new MultiFab(Phi_old.boxArray(),
+							dm, Phi_old.nComp(), ng));
+      pmf->Redistribute((Phi_old), 0, 0, Phi_old.nComp(), ng);
+      get_state_data(PhiGrav_Type).replaceOldData(pmf);
+    }
+    {
+    MultiFab& Phi_new = get_new_data(Gravity_Type);
+    MultiFab& Phi_old = get_old_data(Gravity_Type);
+
+    {
+      const IntVect& ng = (Phi_new).nGrowVect();
+      auto pmf = std::unique_ptr<MultiFab>(new MultiFab(Phi_new.boxArray(),
+							dm, Phi_new.nComp(), ng));
+      pmf->Redistribute((Phi_new), 0, 0, Phi_new.nComp(), ng);
+      get_state_data(Gravity_Type).replaceNewData(pmf);
+      get_state_data(Gravity_Type).setDistributionMap(dm);
+    }
+    {
+      const IntVect& ng = (Phi_old).nGrowVect();
+      auto pmf = std::unique_ptr<MultiFab>(new MultiFab(Phi_old.boxArray(),
+							dm, Phi_old.nComp(), ng));
+      pmf->Redistribute((Phi_old), 0, 0, Phi_old.nComp(), ng);
+      get_state_data(Gravity_Type).replaceOldData(pmf);
+    }
+    }
+#endif
+
+#ifdef SDC
+    MultiFab& IR_new = get_new_data(SDC_IR_Type);
+    MultiFab& IR_old = get_old_data(SDC_IR_Type);
+
+    {
+      const IntVect& ng = (IR_new).nGrowVect();
+      auto pmf = std::unique_ptr<MultiFab>(new MultiFab(IR_new.boxArray(),
+							dm, IR_new.nComp(), ng));
+      pmf->Redistribute((IR_new), 0, 0, IR_new.nComp(), ng);
+      get_state_data(SDC_IR_Type).replaceNewData(pmf);
+      get_state_data(SDC_IR_Type).setDistributionMap(dm);
+    }
+    {
+      const IntVect& ng = (IR_old).nGrowVect();
+      auto pmf = std::unique_ptr<MultiFab>(new MultiFab(IR_old.boxArray(),
+							dm, IR_old.nComp(), ng));
+      pmf->Redistribute((IR_old), 0, 0, IR_old.nComp(), ng);
+      get_state_data(SDC_IR_Type).replaceOldData(pmf);
+    }
+#endif
+
+#ifdef GRAVITY
+    if (do_grav)
+    {
+      AmrLevel& this_level = get_level(lev);
+      gravity->remake_level(lev, &this_level);
+    }
+#endif
+
+    //    post_regrid(level,parent->finestLevel());
 }
 
 void
@@ -1447,72 +1640,8 @@ Nyx::post_timestep (int iteration)
     BL_PROFILE_VAR_STOP(rm);
     BL_PROFILE_VAR("Nyx::post_timestep()::redist",redist);
 
-    int regrid_int=10000;
-    if(nStep()<500)
-      regrid_int=10000;
-    else
-      regrid_int=10;
-
-    if(nStep() % regrid_int == 0)// || max_p/(1.0*cnt_p) > 2 * 1.0/ParallelDescriptor::NProcs())
-      {
-	// for using refined smaller boxes
-	/*	
-	  amrex::BoxArray grids_ref(grids);
-	  //needs if statement so doesn't become exponential refinement
-	  grids_ref.refine(2);
-    //    Vector<std::unique_ptr<MultiFab> > particle_mf;//(new MultiFab(grids,dmap,1,1));
-	  MultiFab particle_mf(grids_ref,theDMPC()->ParticleDistributionMap(level),1,1);
-	    
-	  theDMPC()->DarkMatterParticleContainer::AssignDensitySingleLevel(particle_mf,level);
-    */
-	//for using same boxes
-	  	
-	Vector<long> wgts(grids.size());
-	wgts=theDMPC()->NumberOfParticlesInGrid(level,false,false);
-
-	//for if we want to have a particle_cound based regrid criterion
-/*
-    long max_p=0.0;
-    long cnt_p=0.0;
-    for (int i = 0; i < wgts.size(); i++) {
-      max_p=std::max(max_p,wgts[i]);
-      cnt_p+=wgts[i];
-    }
-    */
-    /*
-        for (unsigned int i = 0; i < wgts.size(); i++)                                                                                                                                 {
-      wgts[i]=0.0;
-      for (int j = 0; j < theActiveParticles().size(); j++)                                                                                                                            {                                                                                                                                                                                //all local valid particles                                                                                                                                                             
-              //              wgts[i] += theActiveParticles()[j]->TotalNumberOfParticlesHat(false, true);                                                                                             
-              wgts[i] += theDMPC()->TotalNumberOfParticles(false, true);                                                                                                                           
-            }                                                                                                                                                                                         
-      //          wgts[i] = grids[i].numPts();//theDMPC()->TotalNumberOfParticlesHat(false, true);                                                                                                            
-      }                                                                                                                                                                                */
-	//using same boxes
-	  
-	  DistributionMapping dm;                                                                                                                                                        dm.KnapSackProcessorMap(wgts, ParallelDescriptor::NProcs());
-	  
-	  //if we wanted to use smaller boxes
-	  /*
-	    DistributionMapping dm;
-	    dm.makeKnapSack(particle_mf, ParallelDescriptor::NProcs());
-	  */
-	  amrex::Gpu::Device::streamSynchronize();                                                                                                                                       const DistributionMapping& newdmap = dm;  
-      
-	  if (level == 0)
-	    {
-	      for (int i = 0; i < theActiveParticles().size(); i++)
-		{
-
-		  //Regrid includes a redistribute
-		  theActiveParticles()[i]->Regrid(newdmap,grids,level);
-		  //different boxes
-		  //theActiveParticles()[i]->Regrid(newdmap,grids_ref,level);
-		}
-	    }
-      }
-    else
-      {
+    if(load_balance_int < 0 || !(nStep() % load_balance_int == 0 && level == 0))
+    {
 
     //
     // Sync up if we're level 0 or if we have particles that may have moved
@@ -1534,7 +1663,7 @@ Nyx::post_timestep (int iteration)
 	}
     }
 
-      }
+    }
     amrex::Gpu::streamSynchronize();
     BL_PROFILE_VAR_STOP(redist);
     BL_PROFILE_VAR("Nyx::post_timestep()::do_reflux",do_reflux);
@@ -1883,6 +2012,75 @@ void
 Nyx::postCoarseTimeStep (Real cumtime)
 {
    BL_PROFILE("Nyx::postCoarseTimeStep()");
+
+    if(load_balance_int >= 0 && nStep() % load_balance_int == 0)
+    {
+      amrex::Print()<<"Load balancing since "<<nStep()<<" mod "<<load_balance_int<<" == 0"<<std::endl;
+#ifdef NO_HYDRO
+    Real cur_time = state[PhiGrav_Type].curTime();
+#else
+    Real cur_time = state[State_Type].curTime();
+#endif
+
+    for (int lev = 0; lev <= parent->finestLevel(); lev++)
+    {
+    
+        Vector<long> wgts(grids.size());
+        DistributionMapping dm;
+	//Should be copy constructor, so grids_ref.refine() should be consistent
+	amrex::BoxArray grids_ref(grids);
+
+	if(load_balance_grids_ref != 0)
+	{
+	  //needs if statement so doesn't become exponential refinement?
+	  grids_ref.refine(load_balance_grids_ref);
+	}
+
+	//Should these weights be constructed based on level=0, or lev from for?
+        if(load_balance_wgt_strategy == 0)
+        {
+            for (unsigned int i = 0; i < wgts.size(); i++)
+            {
+                wgts[i] = grids_ref[i].numPts();
+            }
+	    dm.KnapSackProcessorMap(wgts, ParallelDescriptor::NProcs());
+        }
+	else if(load_balance_wgt_strategy == 1 && load_balance_grids_ref == 0)
+	{
+	    wgts = theDMPC()->NumberOfParticlesInGrid(level,false,false);
+	    dm.KnapSackProcessorMap(wgts, ParallelDescriptor::NProcs());
+	}
+	else if(load_balance_wgt_strategy == 2)
+	{
+	    MultiFab particle_mf(grids_ref,theDMPC()->ParticleDistributionMap(level),1,1);
+	    theDMPC()->DarkMatterParticleContainer::AssignDensitySingleLevel(particle_mf,level);
+	    dm.makeKnapSack(particle_mf, ParallelDescriptor::NProcs());
+	  }
+	else
+	{
+	    amrex::Abort("Selected load balancing strategy not implemented");
+	}
+
+	amrex::Gpu::Device::streamSynchronize();
+	const DistributionMapping& newdmap = dm;
+	
+	if(load_balance_remake_level == 1)
+	{
+	    remake_level(lev, cur_time, grids_ref, newdmap);
+	}
+
+	delete fine_mask;
+	fine_mask = 0;
+
+        for (int i = 0; i < theActiveParticles().size(); i++)
+	{
+	     theActiveParticles()[i]->Regrid(newdmap, grids_ref, lev);
+	}
+
+    amrex::Gpu::streamSynchronize();
+    }
+
+    }
 
    AmrLevel::postCoarseTimeStep(cumtime);
 

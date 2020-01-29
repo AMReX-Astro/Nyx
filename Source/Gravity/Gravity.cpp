@@ -187,6 +187,58 @@ Gravity::install_level (int       level,
     finest_level_allocated = level;
 }
 
+void
+Gravity::remake_level (int       level,
+                        AmrLevel* level_data_to_install)
+{
+    if (verbose > 1)
+        amrex::Print() << "Installing Gravity level " << level << '\n';
+
+#ifdef CGRAV
+    if (gravity_type != "StaticGrav")
+    {
+#endif
+
+    const auto& dm = level_data_to_install->DistributionMap();
+    dmap[level] = dm;
+
+    grad_phi_prev[level].resize(BL_SPACEDIM);
+    for (int n=0; n<BL_SPACEDIM; ++n)
+    {
+        const IntVect& ng = (grad_phi_prev[level][n])->nGrowVect();
+	auto pmf = std::unique_ptr<MultiFab>(new MultiFab(grad_phi_prev[level][n]->boxArray(),
+							  dm, grad_phi_prev[level][n]->nComp(), ng));
+	pmf->Redistribute(*(grad_phi_prev[level][n]), 0, 0, grad_phi_prev[level][n]->nComp(), ng);
+	grad_phi_prev[level][n] = std::move(pmf);
+    }
+
+    grad_phi_curr[level].resize(BL_SPACEDIM);
+    for (int n = 0; n < BL_SPACEDIM; ++n)
+    {
+        const IntVect& ng = (grad_phi_curr[level][n])->nGrowVect();
+	auto pmf = std::unique_ptr<MultiFab>(new MultiFab(grad_phi_curr[level][n]->boxArray(),
+							  dm, grad_phi_curr[level][n]->nComp(), ng));
+	pmf->Redistribute(*(grad_phi_curr[level][n]), 0, 0, grad_phi_curr[level][n]->nComp(), ng);
+	grad_phi_curr[level][n] = std::move(pmf);
+    }
+
+    if (level > 0)
+    {
+        IntVect crse_ratio = parent->refRatio(level-1);
+        phi_flux_reg[level].reset(new FluxRegister(level_data_to_install->boxArray(),
+						   dm, crse_ratio, level, 1));
+    }
+
+#ifdef CGRAV
+    }
+#endif
+    LevelData[level] = level_data_to_install;
+
+    level_solver_resnorm[level] = 0;
+
+    finest_level_allocated = level;
+}
+
 std::string
 Gravity::get_gravity_type ()
 {
