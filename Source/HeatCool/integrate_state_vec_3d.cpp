@@ -258,7 +258,8 @@ int Nyx::integrate_state_vec_mfin
 
 				CVodeSetMaxNumSteps(cvode_mem,2000);
 
-				CVodeSetMaxStep(cvode_mem,delta_time/(old_max_steps));
+				if(use_typical_steps)
+				    CVodeSetMaxStep(cvode_mem,delta_time/(old_max_steps));
 
 				N_Vector constrain;
 				if(use_sundials_constraint)
