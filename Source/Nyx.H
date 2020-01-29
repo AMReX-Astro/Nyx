@@ -315,6 +315,11 @@ public:
     void comoving_a_post_restart(const std::string& restart_file);
 
     //
+    // How to initialize typical values at restart (from checkpoint or plotfile)
+    //
+    void typical_values_post_restart(const std::string& restart_file);
+
+    //
     // Initialize the zhi component of the EOS from a binary input file
     //
     void init_zhi ();
@@ -575,7 +580,7 @@ public:
   
   int integrate_state_vec(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
    int integrate_state_grownvec(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
-  int integrate_state_vec_mfin(amrex::Array4<amrex::Real>const& state4,   amrex::Array4<amrex::Real>const& diag_eos4,const  amrex::Box& tbx,  const amrex::Real& a, const amrex::Real& delta_time);
+  int integrate_state_vec_mfin(amrex::Array4<amrex::Real>const& state4,   amrex::Array4<amrex::Real>const& diag_eos4,const  amrex::Box& tbx,  const amrex::Real& a, const amrex::Real& delta_time, long int& old_max_steps, long int& new_max_steps);
 
   int integrate_state_cell(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
    int integrate_state_growncell(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
@@ -896,6 +901,10 @@ protected:
     static amrex::Real particle_initrandom_mass;
     static int particle_initrandom_iseed;
     static int particle_skip_factor;
+    static amrex::Real particle_inituniform_mass;
+    static amrex::Real particle_inituniform_vx;
+    static amrex::Real particle_inituniform_vy;
+    static amrex::Real particle_inituniform_vz;
 
     // This controls the LaunchSafeGuard for particle initialization
     static int particle_launch_ics;
@@ -921,6 +930,9 @@ protected:
 
     // specifies the allocation type for sundials vector
     static int sundials_alloc_type;
+
+    // specifies the allocation type for sundials vector
+    static int use_typical_steps;
 
     // if true, use non-negative constraint on energy
     static int use_sundials_constraint;
@@ -972,6 +984,9 @@ protected:
     static amrex::Real average_neutr_density;
     static amrex::Real average_total_density;
 
+  // Previous maximum number of steps for sundials
+  static long int old_max_sundials_steps;
+  static long int new_max_sundials_steps;
 
   // for keeping track of the amount of CPU time used -- this will persist
   // after restarts

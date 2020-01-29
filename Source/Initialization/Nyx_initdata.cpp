@@ -175,7 +175,8 @@ void
 Nyx::initData ()
 {
     BL_PROFILE("Nyx::initData()");
-
+    
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     // Here we initialize the grid data and the particles from a plotfile.
     if (!parent->theRestartPlotFile().empty())
     {
@@ -324,9 +325,13 @@ Nyx::initData ()
     Real a = get_comoving_a(cur_time);
     Real small_pres = -1e200;
 
+    amrex::Gpu::Device::synchronize();
+
     fort_set_small_values
       (&average_gas_density, &average_temperature,
        &a,  &small_dens, &small_temp, &small_pres);
+
+    amrex::Gpu::Device::synchronize();
 
     if (level == 0)
         init_particles();
