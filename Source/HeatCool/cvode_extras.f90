@@ -30,7 +30,7 @@ module cvode_extras
     z = 1.d0/a - 1.d0
     call fort_integrate_comoving_a(a, a_end, half_dt)
     z_end = 1.0d0/a_end - 1.0d0
-    print*, z,z_end,a,a_end,half_dt
+!    print*, z,z_end,a,a_end,half_dt
 
     mean_rhob = comoving_OmB * 3.d0*(comoving_h*100.d0)**2 / (8.d0*M_PI*Gconst)
 

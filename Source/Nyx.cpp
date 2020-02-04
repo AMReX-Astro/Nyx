@@ -122,6 +122,9 @@ int Nyx::do_hydro = -1;
 int Nyx::add_ext_src = 0;
 int Nyx::heat_cool_type = 0;
 int Nyx::use_sundials_constraint = 0;
+int Nyx::use_typical_steps = 0;
+int Nyx::sundials_alloc_type = 0;
+
 int Nyx::strang_split = 1;
 #ifdef SDC
 int Nyx::sdc_split    = 0;
@@ -131,6 +134,9 @@ Real Nyx::average_gas_density = 0;
 Real Nyx::average_dm_density = 0;
 Real Nyx::average_neutr_density = 0;
 Real Nyx::average_total_density = 0;
+
+long int Nyx::old_max_sundials_steps = 3;
+long int Nyx::new_max_sundials_steps = 3;
 
 int         Nyx::inhomo_reion = 0;
 std::string Nyx::inhomo_zhi_file = "";
@@ -484,6 +490,8 @@ Nyx::read_params ()
 #endif
     pp_nyx.query("use_sundials_constraint", use_sundials_constraint);
 
+    pp_nyx.query("sundials_alloc_type", sundials_alloc_type);
+    pp_nyx.query("use_typical_steps", use_typical_steps);
     pp_nyx.query("allow_untagging", allow_untagging);
     pp_nyx.query("use_const_species", use_const_species);
     pp_nyx.query("normalize_species", normalize_species);

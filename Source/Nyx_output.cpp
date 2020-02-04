@@ -656,6 +656,30 @@ Nyx::particle_plot_file (const std::string& dir)
             File.close();
         }
 
+	if (ParallelDescriptor::IOProcessor() && use_typical_steps)
+        {
+            std::string FileName = dir + "/first_max_steps";
+            std::ofstream File;
+            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
+            if ( ! File.good()) {
+                amrex::FileOpenFailed(FileName);
+	    }
+            File.precision(15);
+	    File << old_max_sundials_steps << '\n';
+        }
+
+	if (ParallelDescriptor::IOProcessor() && use_typical_steps)
+        {
+            std::string FileName = dir + "/second_max_steps";
+            std::ofstream File;
+            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
+            if ( ! File.good()) {
+                amrex::FileOpenFailed(FileName);
+	    }
+            File.precision(15);
+	    File << old_max_sundials_steps << '\n';
+        }
+
         // Write particle_plotfile_format into its own file in the particle directory
         if (Nyx::theDMPC() && ParallelDescriptor::IOProcessor())
         {
@@ -748,6 +772,30 @@ Nyx::particle_check_point (const std::string& dir)
             } else {
                File << new_a << '\n';
             }
+        }
+
+	if (ParallelDescriptor::IOProcessor())
+        {
+            std::string FileName = dir + "/first_max_steps";
+            std::ofstream File;
+            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
+            if ( ! File.good()) {
+                amrex::FileOpenFailed(FileName);
+	    }
+            File.precision(15);
+	    File << old_max_sundials_steps << '\n';
+        }
+
+	if (ParallelDescriptor::IOProcessor())
+        {
+            std::string FileName = dir + "/second_max_steps";
+            std::ofstream File;
+            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
+            if ( ! File.good()) {
+                amrex::FileOpenFailed(FileName);
+	    }
+            File.precision(15);
+	    File << old_max_sundials_steps << '\n';
         }
     }
 }
