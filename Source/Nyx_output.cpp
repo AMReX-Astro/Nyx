@@ -957,16 +957,17 @@ Nyx::blueprint_check_point ()
     // amrex::Print()<<particle_varnames.size()<<4<<std::endl;
 
     ///////////////////////////////////////////////////////////////////////////
+    // Uncomment below to: 
     // Save the Blueprint Mesh to a set of files that we can 
     // view in VisIt. 
     // (For debugging and to demonstrate how to do this w/o Ascent)
     ///////////////////////////////////////////////////////////////////////////
-
-    amrex::Print()<< "Exporting Conduit Blueprint HDF5 files (cycle="
-                  << cycle <<")"
-                  << std::endl;
-
-    WriteBlueprintFiles(bp_mesh,"bp_example_",cycle,"hdf5");
+    //
+    // amrex::Print()<< "Exporting Conduit Blueprint HDF5 files (cycle="
+    //               << cycle <<")"
+    //               << std::endl;
+    //
+    // WriteBlueprintFiles(bp_mesh,"bp_example_",cycle,"hdf5");
 
     ///////////////////////////////////////////////////////////////////
     // Render with Ascent
