@@ -1053,19 +1053,20 @@ Nyx::blueprint_check_point ()
                            cur_time,
                            cycle,
                            bp_mesh);
-    conduit::Node bp_particles;
+
+    //conduit::Node bp_particles;
     
     Vector<std::string> particle_varnames;
-    particle_varnames.push_back("mass");
-    particle_varnames.push_back("xvel");
-    particle_varnames.push_back("yvel");
-    particle_varnames.push_back("zvel");
+    particle_varnames.push_back("particle_mass");
+    particle_varnames.push_back("particle_xvel");
+    particle_varnames.push_back("particle_yvel");
+    particle_varnames.push_back("particle_zvel");
 
     Vector<std::string> particle_int_varnames;
     amrex::ParticleContainerToBlueprint(*(Nyx::theDMPC()),
                                         particle_varnames,
                                         particle_int_varnames,
-                                        bp_particles);
+                                        bp_mesh);
     
     // very helpful for debugging when we actual try
     // to pull the varnames list from amrex, vs hand initing
@@ -1084,7 +1085,7 @@ Nyx::blueprint_check_point ()
                   << std::endl;
 
     WriteBlueprintFiles(bp_mesh,"bp_example_",cycle,"hdf5");
-    WriteBlueprintFiles(bp_particles,"bp_particle_example_",cycle,"hdf5");
+    //WriteBlueprintFiles(bp_particles,"bp_particle_example_",cycle,"hdf5");
 
     ///////////////////////////////////////////////////////////////////
     // Render with Ascent
@@ -1099,7 +1100,7 @@ Nyx::blueprint_check_point ()
     // tell ascent to use the ghost_indicator field to exclude ghosts
 
     open_opts["ghost_field_name"] = "ghost_indicator";
-    open_opts["actions_file"] = "nyx_ascent_mesh_actions.yaml";
+    //open_opts["actions_file"] = "nyx_ascent_mesh_actions.yaml";
 
 #ifdef BL_USE_MPI
     // if mpi, we need to provide the mpi comm to ascent
@@ -1107,61 +1108,58 @@ Nyx::blueprint_check_point ()
 #endif
 
     ascent.open(open_opts);
-
     // publish structured mesh to ascent
     ascent.publish(bp_mesh);
+    
     // render all mesh fields
     // call ascent, actions below will be overridden by those in
-    // nyx_ascent_mesh_actions.yaml
+    // ascent_actions.yaml
     {
-        int i=0;
-        Node scenes;
+        // int i=0;
+        // Node scenes;
         Node actions;
-        // add a scene with a pseudocolor plot
-        scenes["s1/plots/p1/type"] = "pseudocolor";
-        scenes["s1/plots/p1/field"] = varnames[i];
-        // Set the output file name (ascent will add ".png")
-        scenes["s1/image_prefix"] = "ascent_render_mesh_" + varnames[i] + "_";
-
-        // setup actions
-        Node &add_act = actions.append();
-        add_act["action"] = "add_scenes";
-        add_act["scenes"] = scenes;
-        actions.append()["action"] = "execute";
-        actions.append()["action"] = "reset";
-
+        // // add a scene with a pseudocolor plot
+        // scenes["s1/plots/p1/type"] = "pseudocolor";
+        // scenes["s1/plots/p1/field"] = varnames[i];
+        // // Set the output file name (ascent will add ".png")
+        // scenes["s1/image_prefix"] = "ascent_render_mesh_" + varnames[i] + "_";
+        //
+        // // setup actions
+        // Node &add_act = actions.append();
+        // add_act["action"] = "add_scenes";
+        // add_act["scenes"] = scenes;
         ascent.execute(actions);
     }
     ascent.close();
 
-    // user different default actions file for particles
-    open_opts["actions_file"] = "nyx_ascent_particle_actions.yaml";
-    ascent.open(open_opts);
-
-    // now publish the particle mesh to ascent
-    ascent.publish(bp_particles);
-    // call ascent, actions below will be overridden by those in
-    // nyx_ascent_particle_actions.yaml
-    {
-        int i=0;
-        Node scenes;
-        Node actions;
-        // add a scene with a pseudocolor plot
-        scenes["s1/plots/p1/type"] = "pseudocolor";
-        scenes["s1/plots/p1/field"] = particle_varnames[i];
-        // Set the output file name (ascent will add ".png")
-        scenes["s1/image_prefix"] = "ascent_render_particle_" + particle_varnames[i] + "_";
-
-        // setup actions
-        Node &add_act = actions.append();
-        add_act["action"] = "add_scenes";
-        add_act["scenes"] = scenes;
-        actions.append()["action"] = "execute";
-        actions.append()["action"] = "reset";
-        ascent.execute(actions);
-    }
-
-    ascent.close();
+    // // user different default actions file for particles
+//     open_opts["actions_file"] = "nyx_ascent_particle_actions.yaml";
+//     ascent.open(open_opts);
+//
+//     // now publish the particle mesh to ascent
+//     ascent.publish(bp_particles);
+//     // call ascent, actions below will be overridden by those in
+//     // nyx_ascent_particle_actions.yaml
+//     {
+//         int i=0;
+//         Node scenes;
+//         Node actions;
+//         // add a scene with a pseudocolor plot
+//         scenes["s1/plots/p1/type"] = "pseudocolor";
+//         scenes["s1/plots/p1/field"] = particle_varnames[i];
+//         // Set the output file name (ascent will add ".png")
+//         scenes["s1/image_prefix"] = "ascent_render_particle_" + particle_varnames[i] + "_";
+//
+//         // setup actions
+//         Node &add_act = actions.append();
+//         add_act["action"] = "add_scenes";
+//         add_act["scenes"] = scenes;
+//         actions.append()["action"] = "execute";
+//         actions.append()["action"] = "reset";
+//         ascent.execute(actions);
+//     }
+//
+//     ascent.close();
 
     /*  example that renders out every field of the amr mesh and particle mesh
     Ascent ascent;
