@@ -793,6 +793,26 @@ int main(int argc, char **argv) {
     ParallelDescriptor::Barrier();
     }
 
+     // Particle count
+
+    field_path = "native_fields/particle_count";
+
+    if (ParallelDescriptor::IOProcessor()) {
+        std::cout << "\nReading particle_count." << std::endl;
+    }
+
+    amrData.FillVar(mf1, level, "particle_count", comp_start);
+    amrData.FlushGrids(amrData.StateNumber("particle_count"));
+
+    if (ParallelDescriptor::IOProcessor()) {
+        std::cout << "Writing to file." << std::endl;
+        output_create_field(output_path, field_path, "Code units",
+                            grid_nx, grid_ny, grid_nz);
+    }
+    ParallelDescriptor::Barrier();
+    output_write_field(output_path, field_path, mf1);
+    ParallelDescriptor::Barrier();
+
      // Particle velocity in x
 
     field_path = "native_fields/particle_vx";
