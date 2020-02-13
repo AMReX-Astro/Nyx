@@ -442,7 +442,7 @@ int main(int argc, char **argv) {
     // Parameter parsing
     //
 
-    if (argc < 3) {
+    if (argc != 3) {
         print_usage(argc, argv);
     }
 
@@ -566,10 +566,8 @@ int main(int argc, char **argv) {
     comps[3]= i_dm_vy;
     int i_dm_vz(amrData.StateNumber("particle_z_velocity"));
     comps[4]= i_dm_vz;
-    int i_temp(amrData.StateNumber("Temp"));
-    comps[5] = i_temp;
 
-    int val = 5;
+    int val = 4;
 
 
     //Neutrino fields
@@ -583,18 +581,20 @@ int main(int argc, char **argv) {
     //Hydro fields
     if(hydro)
     {
+    int i_temp(amrData.StateNumber("Temp"));
+    comps[val+1] = i_temp;
     Print() << "Converting hydro states \n";
     int i_gas_density(amrData.StateNumber("density"));
-    comps[val+1] = i_gas_density;
+    comps[val+2] = i_gas_density;
     Print() << "density \n";
     int i_xmom(amrData.StateNumber("xmom"));
-    comps[val+2] = i_xmom;
+    comps[val+3] = i_xmom;
     Print() << "xmom \n";
     int i_ymom(amrData.StateNumber("ymom"));
-    comps[val+3] = i_ymom;
+    comps[val+4] = i_ymom;
     Print() << "ymom \n";
     int i_zmom(amrData.StateNumber("zmom"));
-    comps[val+4] = i_zmom;
+    comps[val+5] = i_zmom;
     Print() << "zmom \n";
     Print() << "Temp \n";
     Print() << "\n0:";
@@ -880,6 +880,7 @@ int main(int argc, char **argv) {
     ParallelDescriptor::Barrier();
 
 
+    if(hydro){
 
     // Temperature
 
@@ -901,7 +902,6 @@ int main(int argc, char **argv) {
     output_write_field(output_path, field_path, mf1);
     ParallelDescriptor::Barrier();
 
-    if(hydro){
 
     field_path = "native_fields/baryon_density";
 
