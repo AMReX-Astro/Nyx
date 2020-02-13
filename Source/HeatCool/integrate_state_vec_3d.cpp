@@ -59,7 +59,8 @@ int Nyx::integrate_state_vec
 
   amrex::Gpu::LaunchSafeGuard lsg(true);
   fort_ode_eos_setup(a,delta_time);
-
+  long int store_steps=new_max_sundials_steps;
+  
   //#ifdef _OPENMP
   //#pragma omp parallel if (Gpu::notInLaunchRegion())
   //#endif
@@ -78,7 +79,7 @@ int Nyx::integrate_state_vec
       Array4<Real> const& state4 = S_old.array(mfi);
       Array4<Real> const& diag_eos4 = D_old.array(mfi);
 
-      integrate_state_vec_mfin(state4,diag_eos4,tbx,a,delta_time);
+      integrate_state_vec_mfin(state4,diag_eos4,tbx,a,delta_time,store_steps,new_max_sundials_steps);
 }
       return 0;
 }
@@ -87,7 +88,8 @@ int Nyx::integrate_state_vec_mfin
   (amrex::Array4<Real> const& state4,
    amrex::Array4<Real> const& diag_eos4,
    const Box& tbx,
-   const Real& a, const Real& delta_time)
+   const Real& a, const Real& delta_time,
+   long int& old_max_steps, long int& new_max_steps)
 {
 
   realtype reltol, abstol;
@@ -103,10 +105,18 @@ int Nyx::integrate_state_vec_mfin
       const auto lo  = amrex::lbound(tbx);  // lower bound of box
 
       N_Vector u;
+      N_Vector e_orig;
+      N_Vector Data;
+      N_Vector abstol_vec;
+
       void *cvode_mem;
+      double *dptr, *eptr, *rpar, *rparh, *abstol_ptr;
       realtype t=0.0;
 				
       u = NULL;
+      e_orig = NULL;
+      Data = NULL;
+      abstol_vec = NULL;
       cvode_mem = NULL;
 
       long int neq = len.x*len.y*len.z;
@@ -115,85 +125,88 @@ int Nyx::integrate_state_vec_mfin
 
 #ifdef AMREX_USE_CUDA
 			cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();	
-#ifndef MAKE_MANAGED
+			if(sundials_alloc_type%2==0)
+			{
+			  if(sundials_alloc_type==0)
+			    u = N_VMakeWithManagedAllocator_Cuda(neq,sunalloc,sunfree);  /* Allocate u vector */
+			  else
+			    u = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
 
-#ifdef PATCH
-				u = N_VMakeWithManagedAllocator_Cuda(neq,sunalloc,sunfree);  /* Allocate u vector */
-#else
-				u = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
-#endif
-				double* dptr=N_VGetDeviceArrayPointer_Cuda(u);
+			  dptr=N_VGetDeviceArrayPointer_Cuda(u);
 
-#ifdef PATCH
-				N_Vector e_orig = N_VMakeWithManagedAllocator_Cuda(neq,sunalloc,sunfree);  /* Allocate u vector */
-#else
-				N_Vector e_orig = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
-#endif
-				double* eptr=N_VGetDeviceArrayPointer_Cuda(e_orig);
-				N_VSetCudaStream_Cuda(e_orig, &currentStream);
-				N_VSetCudaStream_Cuda(u, &currentStream);
+			  if(sundials_alloc_type==0)
+			    e_orig = N_VMakeWithManagedAllocator_Cuda(neq,sunalloc,sunfree);  /* Allocate u vector */
+			  else
+			    e_orig = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
 
-#ifdef PATCH
-				N_Vector Data = N_VMakeWithManagedAllocator_Cuda(4*neq,sunalloc,sunfree);  // Allocate u vector 
-#else
-				N_Vector Data = N_VNewManaged_Cuda(4*neq);  /* Allocate u vector */
-#endif
-				double* rparh = N_VGetDeviceArrayPointer_Cuda(Data);
-				N_VSetCudaStream_Cuda(Data, &currentStream);
-				// shouldn't need to initialize 
-				//N_VConst(0.0,Data);
+			  eptr=N_VGetDeviceArrayPointer_Cuda(e_orig);
+			  N_VSetCudaStream_Cuda(e_orig, &currentStream);
+			  N_VSetCudaStream_Cuda(u, &currentStream);
 
-#ifdef PATCH
-				N_Vector abstol_vec = N_VMakeWithManagedAllocator_Cuda(neq,sunalloc,sunfree);  
-#else
-				N_Vector abstol_vec = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
-#endif
-				double* abstol_ptr = N_VGetDeviceArrayPointer_Cuda(abstol_vec);
-				N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
-				amrex::Gpu::Device::streamSynchronize();
-#else
-				double* dptr=(double*) The_Managed_Arena()->alloc(neq*sizeof(double));
-				u = N_VMakeManaged_Cuda(neq,dptr);  /* Allocate u vector */
-				double* eptr= (double*) The_Managed_Arena()->alloc(neq*sizeof(double));
-				N_Vector e_orig = N_VMakeManaged_Cuda(neq,eptr);  /* Allocate u vector */
-				N_VSetCudaStream_Cuda(e_orig, &currentStream);
-				N_VSetCudaStream_Cuda(u, &currentStream);
+			  if(sundials_alloc_type==0)
+			    Data = N_VMakeWithManagedAllocator_Cuda(4*neq,sunalloc,sunfree);  // Allocate u vector 
+			  else
+			    Data = N_VNewManaged_Cuda(4*neq);  /* Allocate u vector */
 
-				double* rparh = (double*) The_Managed_Arena()->alloc(4*neq*sizeof(double));
-				N_Vector Data = N_VMakeManaged_Cuda(4*neq,rparh);  // Allocate u vector 
-				N_VSetCudaStream_Cuda(Data, &currentStream);
-				// shouldn't need to initialize 
-				//N_VConst(0.0,Data);
+			  rparh = N_VGetDeviceArrayPointer_Cuda(Data);
+			  N_VSetCudaStream_Cuda(Data, &currentStream);
+			  // shouldn't need to initialize 
+			  //N_VConst(0.0,Data);
 
-				double* abstol_ptr = (double*) The_Managed_Arena()->alloc(neq*sizeof(double));
-				N_Vector abstol_vec = N_VMakeManaged_Cuda(neq,abstol_ptr);
-				N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
-#endif
+			  if(sundials_alloc_type==0)
+			    abstol_vec = N_VMakeWithManagedAllocator_Cuda(neq,sunalloc,sunfree);  
+			  else
+			    abstol_vec = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
+
+			  abstol_ptr = N_VGetDeviceArrayPointer_Cuda(abstol_vec);
+			  N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
+			  amrex::Gpu::Device::streamSynchronize();
+			}
+			else
+			{
+			  dptr=(double*) The_Managed_Arena()->alloc(neq*sizeof(double));
+			  u = N_VMakeManaged_Cuda(neq,dptr);  /* Allocate u vector */
+			  eptr= (double*) The_Managed_Arena()->alloc(neq*sizeof(double));
+			  e_orig = N_VMakeManaged_Cuda(neq,eptr);  /* Allocate u vector */
+			  N_VSetCudaStream_Cuda(e_orig, &currentStream);
+			  N_VSetCudaStream_Cuda(u, &currentStream);
+
+			  rparh = (double*) The_Managed_Arena()->alloc(4*neq*sizeof(double));
+			  Data = N_VMakeManaged_Cuda(4*neq,rparh);  // Allocate u vector 
+			  N_VSetCudaStream_Cuda(Data, &currentStream);
+			  // shouldn't need to initialize 
+			  //N_VConst(0.0,Data);
+
+			  abstol_ptr = (double*) The_Managed_Arena()->alloc(neq*sizeof(double));
+			  abstol_vec = N_VMakeManaged_Cuda(neq,abstol_ptr);
+			  N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
+			  amrex::Gpu::streamSynchronize();
+			}
 
 #else
 #ifdef _OPENMP
-				int nthreads=omp_get_max_threads();
-				u = N_VNew_OpenMP(neq,nthreads);  /* Allocate u vector */
-				N_Vector e_orig = N_VNew_OpenMP(neq,nthreads);  /* Allocate u vector */
-				double* eptr=N_VGetArrayPointer_Serial(e_orig);
-				double* dptr=N_VGetArrayPointer_OpenMP(u);
+			int nthreads=omp_get_max_threads();
+			u = N_VNew_OpenMP(neq,nthreads);  /* Allocate u vector */
+			e_orig = N_VNew_OpenMP(neq,nthreads);  /* Allocate u vector */
+			eptr=N_VGetArrayPointer_Serial(e_orig);
+			dptr=N_VGetArrayPointer_OpenMP(u);
 
-				N_Vector Data = N_VNew_OpenMP(4*neq,nthreads);  // Allocate u vector 
-				N_VConst(0.0,Data);
-				double* rparh=N_VGetArrayPointer_OpenMP(Data);
-				N_Vector abstol_vec = N_VNew_OpenMP(neq,nthreads);
-				double* abstol_ptr=N_VGetArrayPointer_OpenMP(abstol_vec);
+			Data = N_VNew_OpenMP(4*neq,nthreads);  // Allocate u vector 
+			N_VConst(0.0,Data);
+			rparh=N_VGetArrayPointer_OpenMP(Data);
+			abstol_vec = N_VNew_OpenMP(neq,nthreads);
+			abstol_ptr=N_VGetArrayPointer_OpenMP(abstol_vec);
 #else
-				u = N_VNew_Serial(neq);  /* Allocate u vector */
-				N_Vector e_orig = N_VNew_Serial(neq);  /* Allocate u vector */
-				double* eptr=N_VGetArrayPointer_Serial(e_orig);
-				double* dptr=N_VGetArrayPointer_Serial(u);
+			u = N_VNew_Serial(neq);  /* Allocate u vector */
+			e_orig = N_VNew_Serial(neq);  /* Allocate u vector */
+			eptr=N_VGetArrayPointer_Serial(e_orig);
+			dptr=N_VGetArrayPointer_Serial(u);
 
-				N_Vector Data = N_VNew_Serial(4*neq);  // Allocate u vector 
-				N_VConst(0.0,Data);
-				double* rparh=N_VGetArrayPointer_Serial(Data);
-				N_Vector abstol_vec = N_VNew_Serial(neq);
-				double* abstol_ptr=N_VGetArrayPointer_Serial(abstol_vec);
+			Data = N_VNew_Serial(4*neq);  // Allocate u vector 
+			N_VConst(0.0,Data);
+			rparh=N_VGetArrayPointer_Serial(Data);
+			abstol_vec = N_VNew_Serial(neq);
+			abstol_ptr=N_VGetArrayPointer_Serial(abstol_vec);
 #endif
 #endif
 
@@ -245,6 +258,9 @@ int Nyx::integrate_state_vec_mfin
 
 				CVodeSetMaxNumSteps(cvode_mem,2000);
 
+				if(use_typical_steps)
+				    CVodeSetMaxStep(cvode_mem,delta_time/(old_max_steps));
+
 				N_Vector constrain;
 				if(use_sundials_constraint)
 				  {
@@ -257,6 +273,12 @@ int Nyx::integrate_state_vec_mfin
 				//				CVodeSetMaxStep(cvode_mem, delta_time/10);
 				//				BL_PROFILE_VAR("Nyx::strang_second_cvode",cvode_timer2);
 				flag = CVode(cvode_mem, delta_time, u, &t, CV_NORMAL);
+				if(use_typical_steps)
+				  {
+				    long int nst=0;
+				    flag = CVodeGetNumSteps(cvode_mem, &nst);
+				    new_max_steps=std::max(nst,new_max_steps);
+				  }
 				//				amrex::Gpu::Device::streamSynchronize();
 				//				BL_PROFILE_VAR_STOP(cvode_timer2);
 
@@ -293,16 +315,19 @@ int Nyx::integrate_state_vec_mfin
       amrex::Gpu::Device::streamSynchronize();
 #endif
 
-#ifdef MAKE_MANAGED
-#ifdef AMREX_USE_GPU
-      The_Managed_Arena()->free(dptr);
-      The_Managed_Arena()->free(eptr);
-      if(use_sundials_constraint)
-	The_Managed_Arena()->free(constrain);
-      The_Managed_Arena()->free(rparh);
-      The_Managed_Arena()->free(abstol_ptr);
+
+#ifdef AMREX_USE_CUDA
+      if(sundials_alloc_type%2!=0)
+      {
+	The_Managed_Arena()->free(dptr);
+	The_Managed_Arena()->free(eptr);
+	if(use_sundials_constraint)
+	  The_Managed_Arena()->free(constrain);
+	The_Managed_Arena()->free(rparh);
+	The_Managed_Arena()->free(abstol_ptr);
+      }
 #endif
-#endif
+
 				N_VDestroy(u);          /* Free the u vector */
 				N_VDestroy(e_orig);          /* Free the e_orig vector */
 				if(use_sundials_constraint)
@@ -326,7 +351,7 @@ int Nyx::integrate_state_grownvec
 
   fort_ode_eos_setup(a,delta_time);
   amrex::Gpu::LaunchSafeGuard lsg(true);
-
+  long int store_steps=old_max_sundials_steps;
   
   const Real prev_time     = state[State_Type].prevTime();
   
@@ -349,7 +374,7 @@ int Nyx::integrate_state_grownvec
       Array4<Real> const& state4 = S_old.array(mfi);
       Array4<Real> const& diag_eos4 = D_old.array(mfi);
 
-      integrate_state_vec_mfin(state4,diag_eos4,tbx,a,delta_time);
+      integrate_state_vec_mfin(state4,diag_eos4,tbx,a,delta_time,store_steps,old_max_sundials_steps);
     }
 
     return 0;

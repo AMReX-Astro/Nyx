@@ -64,6 +64,8 @@ Nyx::strang_first_step (Real time, Real dt, MultiFab& S_old, MultiFab& D_old)
       }
     else if(heat_cool_type== 11)
       {
+	if(use_typical_steps)
+	    amrex::ParallelDescriptor::ReduceLongMax(new_max_sundials_steps);
 	//#ifdef CVODE_LIBS
     int ierr=integrate_state_grownvec(S_old,       D_old,       a, half_dt);
     if(ierr)
@@ -146,6 +148,8 @@ Nyx::strang_second_step (Real time, Real dt, MultiFab& S_new, MultiFab& D_new)
     else if(heat_cool_type== 11)
       {
 	//#ifdef CVODE_LIBS
+	  if(use_typical_steps)
+	      amrex::ParallelDescriptor::ReduceLongMax(old_max_sundials_steps);
     int ierr=integrate_state_vec(S_new,       D_new,       a, half_dt);
     if(ierr)
       amrex::Abort("error out of integrate_state_box");
@@ -153,8 +157,11 @@ Nyx::strang_second_step (Real time, Real dt, MultiFab& S_new, MultiFab& D_new)
     else
             amrex::Abort("Invalid heating cooling type");
 
-    ParallelDescriptor::ReduceIntMax(max_iter);
-    ParallelDescriptor::ReduceIntMin(min_iter);
+    if(heat_cool_type == 3 || heat_cool_type==5 || heat_cool_type==7 || heat_cool_type==9)
+    {
+        ParallelDescriptor::ReduceIntMax(max_iter);
+	ParallelDescriptor::ReduceIntMin(min_iter);
+    }
 
     if (heat_cool_type == 1)
         if (ParallelDescriptor::IOProcessor())

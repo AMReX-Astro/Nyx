@@ -62,7 +62,8 @@ Nyx::setPlotVariables ()
     AmrLevel::setPlotVariables();
 
     ParmParse pp("nyx");
-    bool plot_X, plot_rank;
+    bool plot_X = false;
+    bool plot_rank = false;
     if (pp.query("plot_rank", plot_rank))
     {
         if (plot_rank)
@@ -608,7 +609,7 @@ Nyx::particle_plot_file (const std::string& dir)
             Nyx::theDMPC()->WriteNyxPlotFile(dir, dm_plt_particle_file);
 	    ParmParse pp("particles");
 
-	    int dm_particle_output_ascii;
+	    int dm_particle_output_ascii = 0;
 	    pp.query("dm_particle_output_ascii", dm_particle_output_ascii);
 	    if (dm_particle_output_ascii != 0)
 	    {
@@ -653,6 +654,30 @@ Nyx::particle_plot_file (const std::string& dir)
                File << new_a << '\n';
             }
             File.close();
+        }
+
+	if (ParallelDescriptor::IOProcessor() && use_typical_steps)
+        {
+            std::string FileName = dir + "/first_max_steps";
+            std::ofstream File;
+            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
+            if ( ! File.good()) {
+                amrex::FileOpenFailed(FileName);
+	    }
+            File.precision(15);
+	    File << old_max_sundials_steps << '\n';
+        }
+
+	if (ParallelDescriptor::IOProcessor() && use_typical_steps)
+        {
+            std::string FileName = dir + "/second_max_steps";
+            std::ofstream File;
+            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
+            if ( ! File.good()) {
+                amrex::FileOpenFailed(FileName);
+	    }
+            File.precision(15);
+	    File << old_max_sundials_steps << '\n';
         }
 
         // Write particle_plotfile_format into its own file in the particle directory
@@ -747,6 +772,30 @@ Nyx::particle_check_point (const std::string& dir)
             } else {
                File << new_a << '\n';
             }
+        }
+
+	if (ParallelDescriptor::IOProcessor())
+        {
+            std::string FileName = dir + "/first_max_steps";
+            std::ofstream File;
+            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
+            if ( ! File.good()) {
+                amrex::FileOpenFailed(FileName);
+	    }
+            File.precision(15);
+	    File << old_max_sundials_steps << '\n';
+        }
+
+	if (ParallelDescriptor::IOProcessor())
+        {
+            std::string FileName = dir + "/second_max_steps";
+            std::ofstream File;
+            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
+            if ( ! File.good()) {
+                amrex::FileOpenFailed(FileName);
+	    }
+            File.precision(15);
+	    File << old_max_sundials_steps << '\n';
         }
     }
 }
