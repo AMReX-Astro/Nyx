@@ -663,6 +663,11 @@ public:
                           int n_error_buf=0, int ngrow=0);
 
     //
+    // Error estimation for regridding.
+    //
+    virtual int WorkEstType () { return 0; }
+
+    //
     // Called in grid_places after other tagging routines to modify
     //   the list of tagged points
     //
