@@ -1192,7 +1192,21 @@ Nyx::particle_redistribute (int lbase, bool my_init)
                    amrex::Print() << "Calling redistribute because DistMap changed " << '\n';
             }
 
-            DMPC->Redistribute(lbase, -1, parent->levelCount(lbase));
+	    int iteration = 1;
+	    int finest_level = parent->finestLevel();
+	    for (int i = 0; i < theActiveParticles().size(); i++)
+	      {
+		if(finest_level == 0)
+		  theActiveParticles()[i]->RedistributeLocal(lbase,
+                                                  theActiveParticles()[i]->finestLevel(),
+                                                  iteration);
+		else
+		  theActiveParticles()[i]->Redistribute(lbase,
+                                                  theActiveParticles()[i]->finestLevel(),
+                                                  iteration);
+
+	      }
+
             //
             // Use the new BoxArray and DistMap to define ba and dm for next time.
             //
