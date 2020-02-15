@@ -890,6 +890,10 @@ Nyx::init ()
     setTimeLevel(cur_time, dt_old, dt);
 
 #ifndef NO_HYDRO
+
+    if(do_hydro)
+    {
+
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
     FillCoarsePatch(S_new, 0, cur_time,   State_Type, 0, S_new.nComp());
@@ -911,6 +915,7 @@ Nyx::init ()
     MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
     reset_e_src.setVal(0.0);
     reset_internal_energy_interp(S_new,D_new,reset_e_src);
+    }
 #endif
 
 #ifdef GRAVITY
