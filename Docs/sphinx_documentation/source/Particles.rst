@@ -2,9 +2,20 @@
 Dark matter particles
 *********************
 
-| For the moment, assume that we are running in comoving coordinates,
-  with dark matter particles only (no hydro) and that the particles all exist at level 0. These assumptions are
-  encapsulated in the following lines in the inputs file:
+For the moment, assume that we are running in comoving coordinates,
+with dark matter particles only (no hydro) and that the particles all exist at level 0. These assumptions are
+encapsulated in the following lines in the inputs file::
+
+  nyx.do_hydro=0
+  nyx.do_santa_barbara=0
+  nyx.init_sb_vels=0
+
+  nyx.do_grav=1
+  nyx.do_dm_particles=1
+
+This setup can be selected at compile time using the make flags::
+
+    NO_HYDRO=TRUE
 
 Equations
 =========
@@ -32,6 +43,10 @@ One must include the dark matter particles in the ``GNUmakefile`` by setting::
    nyx.do_dm_particles=1
 
 And the particles can be initialized via ascii file, binary file, or other means.
+The standard precision to use for the mesh is double precision and for the particles is single precision, set with the make flags::
+
+  PRECISION = DOUBLE
+  USE_SINGLE_PRECISION_PARTICLES = TRUE
 
 Read from an ASCII file
 -----------------------
@@ -64,16 +79,23 @@ To enable this option, set::
 Read from a binary "meta" file
 ------------------------------
 
-| This option allows you to read particles from a series of files rather than
-  just a single file. To enable this option, set::
+This option allows you to read particles from a series of files rather than
+just a single file. To enable this option, set::
 
-    nyx.particle_init_type = BinaryMetaFile
-    nyx.binary_particle_file =*particle file*
-    
-| In this case the *particle_file* you specify is an ASCII file specifying a
-  list of file names with full paths. Each of the files in this list is assumed
-  to be binary and is read sequentially (individual files are read in parallel) in
-  the order listed.
+  nyx.particle_init_type = BinaryMetaFile
+  nyx.binary_particle_file =*particle file*
+
+In this case the *particle_file* you specify is an ASCII file specifying a
+list of file names with full paths. Each of the files in this list is assumed
+to be binary and is read sequentially (individual files are read in parallel) in
+the order listed.
+
+Since individual files are read sequentially, more particles should be read before
+redistributing across MPI ranks. This is set by optimizing the maximum number of
+readers and increasing the number of particles per read::
+
+  amr.nreaders
+  amr.nparts_per_read
 
 Reading SPH particles
 ---------------------
@@ -96,13 +118,41 @@ Random placement
 
 To enable this option, set::
 
-  nyx.nyx.particle_init_type = Random
+  nyx.particle_init_type = Random
   
 There are then a number of parameters to set, for example::
   
   nyx.particle_initrandom_count = 100000
   nyx.particle_initrandom_mass = 1
   nyx.particle_initrandom_iseed = 15
+
+Random placement (1 particle per grid cell)
+-------------------------------------------
+
+To enable this option, set::
+
+  nyx.particle_init_type = RandomPerCell
+  
+Then only set the mass per particle::
+
+  nyx.particle_initrandom_mass = 1
+
+Note to increase the number of cells and keep the problem domain size 
+and total mass fixed, the mass per particle must decrease proportionally.
+
+Uniform placement
+-----------------
+
+To enable this option, set::
+
+  nyx.particle_init_type = OnePerCell
+  
+There are then a number of parameters to set, for example::
+  
+  nyx.particle_inituniform_mass = 1
+  nyx.particle_inituniform_vx = -1
+  nyx.particle_inituniform_vy = 1
+  nyx.particle_inituniform_vz = 1
 
 Cosmological
 ------------
@@ -204,7 +254,7 @@ future.
 Using Nyx with cosmological initial conditions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
--  | **nyx.nyx.particle_init_type = Cosmological**
+-  | **nyx.particle_init_type = Cosmological**
    | set the *right* init type
 
 -  | **cosmo.initDirName = init**
@@ -242,14 +292,16 @@ There are currently two different ways in which particles can be moved:
 Random
 ------
 
-| To enable this option, set
+| To enable this option, set::
+  nyx.particle_move_type = Random
 | Update the particle positions at the end of each coarse time step using a
   random number between 0 and 1 multiplied by 0.25 dx.
 
 Motion by Self-Gravity
 ----------------------
 
-| To enable this option, set
+| To enable this option, set::
+  nyx.particle_move_type = Gravitational
 
 Move-Kick-Drift Algorithm
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -309,15 +361,28 @@ Checkpoint Files
 Plot Files
 ----------
 
-If **particles.write_in_plotfile =** 1 in the inputs file
-then the particle positions and velocities will be written in a binary file in each plotfile directory.
+The particle positions and velocities will be written in a binary file in each plotfile directory.
+Dark matter particles will be in DM, active galactic nuclei particles will be in AGN,
+neutrino particles will be in NPC.
 
 | In addition, we can also
-  visualize the particle locations as represented on the grid. There are two “derived quantities”
-  which represent the particles. Setting
+  visualize the particle locations as represented on the grid. There are multiple “derived quantities”
+  which represent the particles. Including particle variables in the derived variables will make them
+  be written as plotfile fields on the grid, i.e. ::
+  
+    amr.derive_plot_vars = particle_count particle_mass_density 
+
 | in the inputs file will generate plotfiles with only two variables.
   **particle_count** represents the number of particles in a grid cell;
   **particle_mass_density** is the density on the grid resulting from the particles.
+
+| The same naming convention follows for particle velocities on the grid: **particle_x_velocity**,
+  **particle_y_velocity**, **particle_z_velocity**
+
+| Derived variables with **particle_** represent quantities from the Dark Matter Particle Container.
+  Similar variables from the AGN particle container, and the Neutrino Particle Container
+  are named **agn_** and **neutrino_**. Note these are particle fields written to the grid,
+  which are distinct from the **density** field in the plotfile, which is baryonic density on the grid.
 
 | We note that the value of :math:`a` is also written in each plotfile directory,
   in a separate ASCII file called *comoving_a*, containing only the single value.
