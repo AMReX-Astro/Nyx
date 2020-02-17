@@ -253,10 +253,1322 @@
 </style>
 <div class="section" id="file-nyx-h">
 <h1>File Nyx.H<a class="headerlink" href="#file-nyx-h" title="Permalink to this headline">¶</a></h1>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">doxygenfile: No breathe_default_project config setting to fall back on for directive with no ‘project’ or ‘path’ specified.</p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Typedefs</p>
+<dl class="type">
+<dt id="_CPPv424StellarParticleContainer">
+<span class="target" id="Nyx_8H_1a6ca7d7ca6fba173aa4bfbda0928c1377"></span><em class="property">typedef </em>NyxParticleContainer&lt;1 + BL_SPACEDIM + 3&gt; <code class="descname">StellarParticleContainer</code><a class="headerlink" href="#_CPPv424StellarParticleContainer" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
 </div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Enums</p>
+<dl class="enum">
+<dt id="_CPPv49StateType">
+<span class="target" id="Nyx_8H_1a1615968a92950438f6e67a28e9d56e5c"></span><em class="property">enum </em><code class="descname">StateType</code><a class="headerlink" href="#_CPPv49StateType" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p><em>Values:</em></p>
+<dl class="enumerator">
+<dt id="_CPPv410State_Type">
+<span class="target" id="Nyx_8H_1a1615968a92950438f6e67a28e9d56e5cadd98d635e41dd186b57fdfc14ca25ad6"></span><code class="descname">State_Type</code> = 0<a class="headerlink" href="#_CPPv410State_Type" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="enumerator">
+<dt id="_CPPv412DiagEOS_Type">
+<span class="target" id="Nyx_8H_1a1615968a92950438f6e67a28e9d56e5ca674353678c2e413fa7445291af5f5ee0"></span><code class="descname">DiagEOS_Type</code><a class="headerlink" href="#_CPPv412DiagEOS_Type" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="enumerator">
+<dt id="_CPPv414NUM_STATE_TYPE">
+<span class="target" id="Nyx_8H_1a1615968a92950438f6e67a28e9d56e5ca355baaecd829874ac38a8753212a747e"></span><code class="descname">NUM_STATE_TYPE</code><a class="headerlink" href="#_CPPv414NUM_STATE_TYPE" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Variables</p>
+<dl class="member">
+<dt id="_CPPv410reeber_int">
+<span class="target" id="Nyx_8H_1ac62537a8c8fd65d4b478d8621be10698"></span>int <code class="descname">reeber_int</code><a class="headerlink" href="#_CPPv410reeber_int" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv410gimlet_int">
+<span class="target" id="Nyx_8H_1af3a427eb2bcd08222eae63f002cfd3ea"></span>int <code class="descname">gimlet_int</code><a class="headerlink" href="#_CPPv410gimlet_int" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<dl class="class">
+<dt id="_CPPv43Nyx">
+<span class="target" id="classNyx"></span><em class="property">class </em><code class="descname">Nyx</code> : <em class="property">public</em> AmrLevel<br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt id="_CPPv4N3Nyx3NyxEv">
+<span class="target" id="classNyx_1a293f94361f7fbcd8ae3dd65aa3a6be1e"></span><code class="descname">Nyx</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx3NyxERN5amrex3AmrEiRKN5amrex8GeometryERKN5amrex8BoxArrayERKN5amrex19DistributionMappingEN5amrex4RealE">
+<span class="target" id="classNyx_1a98a3ba4c4f8cf1fe51eb1355479bc97c"></span><code class="descname">Nyx</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Amr &amp;<em>papa</em>, int <em>lev</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Geometry &amp;<em>level_geom</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::BoxArray &amp;<em>bl</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::DistributionMapping &amp;<em>dm</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3NyxD0Ev">
+<span class="target" id="classNyx_1ad381e74280e227e09d88589947bddeea"></span><code class="descname">~Nyx</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx7restartERN5amrex3AmrER7istreamb">
+<span class="target" id="classNyx_1a2844318ed14533a0dc6f1d407df7b65b"></span>void <code class="descname">restart</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Amr &amp;<em>papa</em>, istream &amp;<em>is</em>, bool <em>b_read_special</em> = false<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx10checkPointERKNSt6stringERNSt7ostreamEN5amrex5VisMF3HowEb">
+<span class="target" id="classNyx_1ab936a247c9f0ef1d987f8561a889e4a9"></span>void <code class="descname">checkPoint</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>dir</em>, std::ostream &amp;<em>os</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::VisMF::How <em>how</em>, bool <em>dump_old</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx13checkPointPreERKNSt6stringERNSt7ostreamE">
+<span class="target" id="classNyx_1a61c212bd8ad38785c48f9320900076d6"></span>void <code class="descname">checkPointPre</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>dir</em>, std::ostream &amp;<em>os</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx14checkPointPostERKNSt6stringERNSt7ostreamE">
+<span class="target" id="classNyx_1a83c530a6d0f954776da95ea3322c50bf"></span>void <code class="descname">checkPointPost</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>dir</em>, std::ostream &amp;<em>os</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4NK3Nyx15thePlotFileTypeEv">
+<span class="target" id="classNyx_1a0debc050c0071c922289c056a96a99d0"></span>std::string <code class="descname">thePlotFileType</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx16setPlotVariablesEv">
+<span class="target" id="classNyx_1a5e8be508106445a44158063d78aadec9"></span>void <code class="descname">setPlotVariables</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx13writePlotFileERKNSt6stringER7ostreamN5amrex5VisMF3HowE">
+<span class="target" id="classNyx_1aa99d36b5715931ea30aee5ff9642155f"></span>void <code class="descname">writePlotFile</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>dir</em>, ostream &amp;<em>os</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::VisMF::How <em>how</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx16writePlotFilePreERKNSt6stringER7ostream">
+<span class="target" id="classNyx_1a092fd890012df0955fed467788b22da2"></span>void <code class="descname">writePlotFilePre</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>dir</em>, ostream &amp;<em>os</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx17writePlotFilePostERKNSt6stringER7ostream">
+<span class="target" id="classNyx_1a00a0f8ed84a66d0a36d195ae157727d3"></span>void <code class="descname">writePlotFilePost</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>dir</em>, ostream &amp;<em>os</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx12writeJobInfoERKNSt6stringE">
+<span class="target" id="classNyx_1ac4a37943df9aca52221937ab68f2b35b"></span>void <code class="descname">writeJobInfo</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>dir</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx23writeMultiFabAsPlotFileERKNSt6stringERKN5amrex8MultiFabENSt6stringE">
+<span class="target" id="classNyx_1a20d68220ebde902cd58ef546f869e263"></span>void <code class="descname">writeMultiFabAsPlotFile</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>pltfile</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>mf</em>, std::string <em>componentName</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx20write_parameter_fileERKNSt6stringE">
+<span class="target" id="classNyx_1a18bb6003f2862d9caf469020f7b7b485"></span>void <code class="descname">write_parameter_file</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>dir</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx8initDataEv">
+<span class="target" id="classNyx_1a3c6f300678494dc518bc9881b88715fc"></span>void <code class="descname">initData</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx18init_from_plotfileEv">
+<span class="target" id="classNyx_1a9c802d3fe5c39c2fac2182717c8473fa"></span>void <code class="descname">init_from_plotfile</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx12ReadPlotFileEbRKNSt6stringERb">
+<span class="target" id="classNyx_1a0a03f701dcc3eb6d9772e7fbc549ef42"></span>void <code class="descname">ReadPlotFile</code><span class="sig-paren">(</span>bool <em>first</em>, <em class="property">const</em> std::string &amp;<em>plot_file_name</em>, bool &amp;<em>rhoe_infile</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx14get_comoving_aEN5amrex4RealE">
+<span class="target" id="classNyx_1a777952d3007cb85ed50557661b3abd01"></span>Real <code class="descname">get_comoving_a</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx20integrate_comoving_aEN5amrex4RealEN5amrex4RealE">
+<span class="target" id="classNyx_1ab3b43974e96cf1f0748c86584840485a"></span>void <code class="descname">integrate_comoving_a</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx22comoving_est_time_stepERN5amrex4RealERN5amrex4RealE">
+<span class="target" id="classNyx_1ab25e26a8116e1a3a9137ec165255e178"></span>void <code class="descname">comoving_est_time_step</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>cur_time</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>est_dt</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx20plot_z_est_time_stepERN5amrex4RealERb">
+<span class="target" id="classNyx_1afb028156e8c1fd5952cad0db8e98a49e"></span>void <code class="descname">plot_z_est_time_step</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>est_dt</em>, bool &amp;<em>dt_changed</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx24analysis_z_est_time_stepERN5amrex4RealERb">
+<span class="target" id="classNyx_1aa919928d631b0ff40aeca6f5191e70af"></span>void <code class="descname">analysis_z_est_time_step</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>est_dt</em>, bool &amp;<em>dt_changed</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx23comoving_a_post_restartERKNSt6stringE">
+<span class="target" id="classNyx_1ae3e32902bbeb68331c6bf9489cbf98e5"></span>void <code class="descname">comoving_a_post_restart</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>restart_file</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx8init_zhiEv">
+<span class="target" id="classNyx_1a9d9b026723f096e3b0680b51aa4de744"></span>void <code class="descname">init_zhi</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx9initcosmoEv">
+<span class="target" id="classNyx_1a807c717e6223f42d59ea48128aa2b756"></span>void <code class="descname">initcosmo</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx20particle_check_pointERKNSt6stringE">
+<span class="target" id="classNyx_1ac9d027a7fcb95f19af8934cadd79ee10"></span>void <code class="descname">particle_check_point</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>dir</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx18particle_plot_fileERKNSt6stringE">
+<span class="target" id="classNyx_1aebb56de5bdf1731f314ab6db8f80e85e"></span>void <code class="descname">particle_plot_file</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>dir</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx21particle_post_restartERKNSt6stringEb">
+<span class="target" id="classNyx_1a6a806f894e09adca21646722a7004714"></span>void <code class="descname">particle_post_restart</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>restart_file</em>, bool <em>is_checkpoint</em> = true<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx21particle_redistributeEib">
+<span class="target" id="classNyx_1aec29907e34841d53752851351b1e7ca7"></span>void <code class="descname">particle_redistribute</code><span class="sig-paren">(</span>int <em>lbase</em> = 0, bool <em>init</em> = false<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx20particle_move_randomEv">
+<span class="target" id="classNyx_1a3364eb3d59db71227889ee71bd5b2405"></span>void <code class="descname">particle_move_random</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx14init_particlesEv">
+<span class="target" id="classNyx_1aa61226628cd5b456d1f78b77d104f173"></span>void <code class="descname">init_particles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx23setup_virtual_particlesEv">
+<span class="target" id="classNyx_1a764ad145efbedeec7a1c18704695d217"></span>void <code class="descname">setup_virtual_particles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx24remove_virtual_particlesEv">
+<span class="target" id="classNyx_1a59c1e6d05b5b4d4b391ea4f66e0531cb"></span>void <code class="descname">remove_virtual_particles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx21setup_ghost_particlesEi">
+<span class="target" id="classNyx_1a2bb2adf45e74a9fa3bb03a1c6ef92b33"></span>void <code class="descname">setup_ghost_particles</code><span class="sig-paren">(</span>int <em>ngrow</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx22remove_ghost_particlesEv">
+<span class="target" id="classNyx_1a46fde5fd341927abed46e2168320d013"></span>void <code class="descname">remove_ghost_particles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx22particle_est_time_stepERN5amrex4RealE">
+<span class="target" id="classNyx_1a17a1e0a23488cdc1968b9b562838c807"></span>void <code class="descname">particle_est_time_step</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>est_dt</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx15particle_deriveERKNSt6stringEN5amrex4RealEi">
+<span class="target" id="classNyx_1a0a2776458f3eae6347712a89de2c0630"></span>std::unique_ptr&lt;MultiFab&gt; <code class="descname">particle_derive</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>name</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em>, int <em>ngrow</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx12setTimeLevelEN5amrex4RealEN5amrex4RealEN5amrex4RealE">
+<span class="target" id="classNyx_1ab6240f718e9f2dc83b45a20bcc55f42f"></span>void <code class="descname">setTimeLevel</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt_old</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt_new</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx4initERN5amrex8AmrLevelE">
+<span class="target" id="classNyx_1af51c406c9a54b4b35643521a85606114"></span>void <code class="descname">init</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::AmrLevel &amp;<em>old</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx4initEv">
+<span class="target" id="classNyx_1a83828a4d7833be8cbfe7c8641bcb1e2f"></span>void <code class="descname">init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx12okToContinueEv">
+<span class="target" id="classNyx_1a73634d02633da023ca2e433bc824e297"></span>int <code class="descname">okToContinue</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx12writePlotNowEv">
+<span class="target" id="classNyx_1a7c49f27015c1deedec79e0e68265873a"></span>bool <code class="descname">writePlotNow</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx13doAnalysisNowEv">
+<span class="target" id="classNyx_1adc4300a006bdd08979bdfd4707b0b28a"></span>bool <code class="descname">doAnalysisNow</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx7advanceEN5amrex4RealEN5amrex4RealEii">
+<span class="target" id="classNyx_1a1f60dd9d96602add8208cc1730ff30c2"></span>Real <code class="descname">advance</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em>, int <em>iteration</em>, int <em>ncycle</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx13advance_hydroEN5amrex4RealEN5amrex4RealEii">
+<span class="target" id="classNyx_1ab0695b8601eece00c7c1f3beab0b7e51"></span>Real <code class="descname">advance_hydro</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em>, int <em>iteration</em>, int <em>ncycle</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx16advance_no_hydroEN5amrex4RealEN5amrex4RealEii">
+<span class="target" id="classNyx_1ada43beeb01561d71e7613c497063fb78"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <code class="descname">advance_no_hydro</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em>, int <em>iteration</em>, int <em>ncycle</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx28advance_hydro_plus_particlesEN5amrex4RealEN5amrex4RealEii">
+<span class="target" id="classNyx_1af92a02bced74514187bb615f734b5d71"></span>Real <code class="descname">advance_hydro_plus_particles</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em>, int <em>iteration</em>, int <em>ncycle</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx12strang_hydroEN5amrex4RealEN5amrex4RealEN5amrex4RealEN5amrex4RealE">
+<span class="target" id="classNyx_1a1b60a15660ea75b2dd5669243158c7da"></span>void <code class="descname">strang_hydro</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>a_old</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>a_new</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx21compute_hydro_sourcesEN5amrex4RealEN5amrex4RealEN5amrex4RealEN5amrex4RealERN5amrex8MultiFabERN5amrex8MultiFabERN5amrex8MultiFabERN5amrex8MultiFabERN5amrex8MultiFabERN5amrex8MultiFabEbb">
+<span class="target" id="classNyx_1a188b1a6673a83714fc6573d1918f4a2c"></span>void <code class="descname">compute_hydro_sources</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>a_old</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>a_new</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>S_border</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>D_border</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>ext_src_old</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>hydro_src</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>grav</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>divu_cc</em>, bool <em>init_flux_register</em>, bool <em>add_to_flux_register</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx25update_state_with_sourcesERN5amrex8MultiFabERN5amrex8MultiFabERN5amrex8MultiFabERN5amrex8MultiFabERN5amrex8MultiFabERN5amrex8MultiFabEN5amrex4RealEN5amrex4RealEN5amrex4RealE">
+<span class="target" id="classNyx_1a60afe4e179108186ccb00f469c1d2a7d"></span>void <code class="descname">update_state_with_sources</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>S_old</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>S_new</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>ext_src_old</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>hydro_src</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>grav</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>divu_cc</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>a_old</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>a_new</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx17strang_first_stepEN5amrex4RealEN5amrex4RealERN5amrex8MultiFabERN5amrex8MultiFabE">
+<span class="target" id="classNyx_1a8f22b909b1f0bbb6fc909006bccbec6e"></span>void <code class="descname">strang_first_step</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>state</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>dstate</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx18strang_second_stepEN5amrex4RealEN5amrex4RealERN5amrex8MultiFabERN5amrex8MultiFabE">
+<span class="target" id="classNyx_1af99b60bb13e236b8aa0048bd0cef18d6"></span>void <code class="descname">strang_second_step</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>state</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>dstate</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx21integrate_state_exactERN5amrex8MultiFabERN5amrex8MultiFabERKN5amrex4RealERKN5amrex4RealE">
+<span class="target" id="classNyx_1ab938b3306ae6bab8e459af1d8a8b826c"></span>int <code class="descname">integrate_state_exact</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>state</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>diag_eos</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>a</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>delta_time</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx26integrate_state_grownexactERN5amrex8MultiFabERN5amrex8MultiFabERKN5amrex4RealERKN5amrex4RealE">
+<span class="target" id="classNyx_1a881e81d20bfa5f1199ead8dafe79d4b6"></span>int <code class="descname">integrate_state_grownexact</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>state</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>diag_eos</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>a</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>delta_time</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx19integrate_state_boxERN5amrex8MultiFabERN5amrex8MultiFabERKN5amrex4RealERKN5amrex4RealE">
+<span class="target" id="classNyx_1a50a3dcee17eee9771469f3a217cb6c6c"></span>int <code class="descname">integrate_state_box</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>state</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>diag_eos</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>a</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>delta_time</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx24integrate_state_grownboxERN5amrex8MultiFabERN5amrex8MultiFabERKN5amrex4RealERKN5amrex4RealE">
+<span class="target" id="classNyx_1a4f9c5fffc87d015b12f79911e6e8ddcc"></span>int <code class="descname">integrate_state_grownbox</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>state</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>diag_eos</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>a</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>delta_time</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx19integrate_state_vecERN5amrex8MultiFabERN5amrex8MultiFabERKN5amrex4RealERKN5amrex4RealE">
+<span class="target" id="classNyx_1a7a05a9d7552ef1c2edacac58b5cb3970"></span>int <code class="descname">integrate_state_vec</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>state</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>diag_eos</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>a</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>delta_time</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx24integrate_state_grownvecERN5amrex8MultiFabERN5amrex8MultiFabERKN5amrex4RealERKN5amrex4RealE">
+<span class="target" id="classNyx_1ad188b43182bbf888db16910c90d02bfa"></span>int <code class="descname">integrate_state_grownvec</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>state</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>diag_eos</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>a</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>delta_time</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx24integrate_state_vec_mfinERKN5amrex6Array4IN5amrex4RealEEERKN5amrex6Array4IN5amrex4RealEEERKN5amrex3BoxERKN5amrex4RealERKN5amrex4RealERlRl">
+<span class="target" id="classNyx_1a07ef452a036c0502690ef8e7d8212683"></span>int <code class="descname">integrate_state_vec_mfin</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Array4&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real&gt; <em class="property">const</em> &amp;<em>state4</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Array4&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real&gt; <em class="property">const</em> &amp;<em>diag_eos4</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Box &amp;<em>tbx</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>a</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>delta_time</em>, long int &amp;<em>old_max_steps</em>, long int &amp;<em>new_max_steps</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx22advance_particles_onlyEN5amrex4RealEN5amrex4RealEii">
+<span class="target" id="classNyx_1ab7fbca811ab644ff3e2cf236c68f85a6"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <code class="descname">advance_particles_only</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em>, int <em>iteration</em>, int <em>ncycle</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx18moveKickDriftExactEN5amrex4RealE">
+<span class="target" id="classNyx_1afc3bd74444568d2f38aebb1bca5bb2e8"></span>void <code class="descname">moveKickDriftExact</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx13moveKickExactEN5amrex4RealE">
+<span class="target" id="classNyx_1aef85ab4a37d20261a3da4abebfc8868d"></span>void <code class="descname">moveKickExact</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx24time_center_source_termsERN5amrex8MultiFabERN5amrex8MultiFabERN5amrex8MultiFabEN5amrex4RealE">
+<span class="target" id="classNyx_1a42161aec2b0db038b75e8a390eee073d"></span>void <code class="descname">time_center_source_terms</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>S_new</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>ext_src_old</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>ext_src_new</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx22conserved_to_primitiveERN5amrex8MultiFabE">
+<span class="target" id="classNyx_1a459aa5a7e4a846d45fdf4e59e6451c68"></span>void <code class="descname">conserved_to_primitive</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>state</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx22primitive_to_conservedERN5amrex8MultiFabE">
+<span class="target" id="classNyx_1a1a508203c2ae36f89a0bd5d5c60ece4c"></span>void <code class="descname">primitive_to_conserved</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>state</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx9halo_findEN5amrex4RealE">
+<span class="target" id="classNyx_1a68cd3b8b713bc7170726ec61163bbfaa"></span>void <code class="descname">halo_find</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx10halo_mergeEv">
+<span class="target" id="classNyx_1a7ed94ea6672bb19301fe09d8bcf44b74"></span>void <code class="descname">halo_merge</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx12halo_accreteEN5amrex4RealE">
+<span class="target" id="classNyx_1af439c638ebc62a5e5c5700a9b8d3ce3b"></span>void <code class="descname">halo_accrete</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx14Lya_statisticsEv">
+<span class="target" id="classNyx_1ace4a3fa9dd758b9eb597ba104c475290"></span>void <code class="descname">Lya_statistics</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx13est_time_stepEN5amrex4RealE">
+<span class="target" id="classNyx_1ab1db36056589a859305f5f27a9fbd21c"></span>Real <code class="descname">est_time_step</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt_old</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx17initial_time_stepEv">
+<span class="target" id="classNyx_1a49989cd7260775b7e8b857a1629e65b7"></span>Real <code class="descname">initial_time_step</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx16computeInitialDtEiiRN5amrex6VectorIiEERKN5amrex6VectorIN5amrex7IntVectEEERN5amrex6VectorIN5amrex4RealEEEN5amrex4RealE">
+<span class="target" id="classNyx_1a48633230fba1990a22525eb6b7239e5e"></span>void <code class="descname">computeInitialDt</code><span class="sig-paren">(</span>int <em>finest_level</em>, int <em>sub_cycle</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;int&gt; &amp;<em>n_cycle</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::IntVect&gt; &amp;<em>ref_ratio</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real&gt; &amp;<em>dt_level</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>stop_time</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx12computeNewDtEiiRN5amrex6VectorIiEERKN5amrex6VectorIN5amrex7IntVectEEERN5amrex6VectorIN5amrex4RealEEERN5amrex6VectorIN5amrex4RealEEEN5amrex4RealEi">
+<span class="target" id="classNyx_1a2fefb955259d4078762c45d6c0a42dde"></span>void <code class="descname">computeNewDt</code><span class="sig-paren">(</span>int <em>finest_level</em>, int <em>sub_cycle</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;int&gt; &amp;<em>n_cycle</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::IntVect&gt; &amp;<em>ref_ratio</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real&gt; &amp;<em>dt_min</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real&gt; &amp;<em>dt_level</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>stop_time</em>, int <em>post_regrid_flag</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx21do_energy_diagnosticsEv">
+<span class="target" id="classNyx_1a860f6b899417c220620ca856e315c120"></span>void <code class="descname">do_energy_diagnostics</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx13post_timestepEi">
+<span class="target" id="classNyx_1a50045bf98167278ee621cc55c7d12ba6"></span>void <code class="descname">post_timestep</code><span class="sig-paren">(</span>int <em>iteration</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx18postCoarseTimeStepEN5amrex4RealE">
+<span class="target" id="classNyx_1a281bd2784c9c835e27b8b742241c6012"></span>void <code class="descname">postCoarseTimeStep</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>cumtime</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx11post_regridEii">
+<span class="target" id="classNyx_1ae0becf295ebb5bae71bfdc4f8064c8cd"></span>void <code class="descname">post_regrid</code><span class="sig-paren">(</span>int <em>lbase</em>, int <em>new_finest</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx12post_restartEv">
+<span class="target" id="classNyx_1ac5a8153ca1565d13de09c1394f725983"></span>void <code class="descname">post_restart</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx9post_initEN5amrex4RealE">
+<span class="target" id="classNyx_1af80e17ca8c0aaff2d81d4008f4c3ab75"></span>void <code class="descname">post_init</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>stop_time</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx8errorEstERN5amrex11TagBoxArrayEiiN5amrex4RealEii">
+<span class="target" id="classNyx_1af2d4f3fea06bcd22fa9e6a11284514a1"></span>void <code class="descname">errorEst</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::TagBoxArray &amp;<em>tb</em>, int <em>clearval</em>, int <em>tagval</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em>, int <em>n_error_buf</em> = 0, int <em>ngrow</em> = 0<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx21manual_tags_placementERN5amrex11TagBoxArrayERKN5amrex6VectorIN5amrex7IntVectEEE">
+<span class="target" id="classNyx_1a31474ead58a4cd93935e4620f625acd4"></span>void <code class="descname">manual_tags_placement</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::TagBoxArray &amp;<em>tags</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::IntVect&gt; &amp;<em>bf_lev</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx6deriveERKNSt6stringEN5amrex4RealEi">
+<span class="target" id="classNyx_1a4ebfe9a85f328191deccaa1195717be7"></span>std::unique_ptr&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab&gt; <code class="descname">derive</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>name</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em>, int <em>ngrow</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx6deriveERKNSt6stringEN5amrex4RealERN5amrex8MultiFabEi">
+<span class="target" id="classNyx_1a9fc3ab15ca6ce942a315cf48ec07589e"></span>void <code class="descname">derive</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>name</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>mf</em>, int <em>dcomp</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx21reset_internal_energyERN5amrex8MultiFabERN5amrex8MultiFabERN5amrex8MultiFabE">
+<span class="target" id="classNyx_1a5cf162a670d5a45e16f849bf6665f3da"></span>void <code class="descname">reset_internal_energy</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>State</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>DiagEOS</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>reset_e_src</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx28reset_internal_energy_interpERN5amrex8MultiFabERN5amrex8MultiFabERN5amrex8MultiFabE">
+<span class="target" id="classNyx_1ae70a399ac9fe551c7b843dd034a6494e"></span>void <code class="descname">reset_internal_energy_interp</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>State</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>DiagEOS</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>reset_e_src</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx16compute_new_tempERN5amrex8MultiFabERN5amrex8MultiFabE">
+<span class="target" id="classNyx_1a88459f1849edb352843e876b4b147476"></span>void <code class="descname">compute_new_temp</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>S_new</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>D_new</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx16compute_rho_tempERN5amrex4RealERN5amrex4RealERN5amrex4RealERN5amrex4RealE">
+<span class="target" id="classNyx_1a063be01752484835a65055d775beabcb"></span>void <code class="descname">compute_rho_temp</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>rho_T_avg</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>T_avg</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>Tinv_avg</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>T_meanrho</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx21compute_gas_fractionsEN5amrex4RealEN5amrex4RealERN5amrex4RealERN5amrex4RealERN5amrex4RealERN5amrex4RealERN5amrex4RealERN5amrex4RealE">
+<span class="target" id="classNyx_1a9cc43e0015f38e4a673f1dae9e7b179d"></span>void <code class="descname">compute_gas_fractions</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>T_cut</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>rho_cut</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>whim_mass_frac</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>whim_vol_frac</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>hh_mass_frac</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>hh_vol_frac</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>igm_mass_frac</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>igm_vol_frac</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx14get_old_sourceEN5amrex4RealEN5amrex4RealERN5amrex8MultiFabE">
+<span class="target" id="classNyx_1a2027296e9767a225a6c5576f85020671"></span>void <code class="descname">get_old_source</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>old_time</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>Rhs</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx14get_new_sourceEN5amrex4RealEN5amrex4RealEN5amrex4RealERN5amrex8MultiFabE">
+<span class="target" id="classNyx_1acdb9fed1a581dfb43f069e6d156a335d"></span>void <code class="descname">get_new_source</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>old_time</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>new_time</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>Rhs</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx14vol_weight_sumERKNSt6stringEN5amrex4RealEb">
+<span class="target" id="classNyx_1af4a3b630ab90d5b780690e1d087fa816"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <code class="descname">vol_weight_sum</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>name</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em>, bool <em>masked</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx14vol_weight_sumERN5amrex8MultiFabEb">
+<span class="target" id="classNyx_1af4c836006b019582e87211803459242a"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <code class="descname">vol_weight_sum</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>mf</em>, bool <em>masked</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx22vol_weight_squared_sumERKNSt6stringEN5amrex4RealE">
+<span class="target" id="classNyx_1adb97c34033ecda836e8391c0e7c2f032"></span>Real <code class="descname">vol_weight_squared_sum</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>name</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx28vol_weight_squared_sum_levelERKNSt6stringEN5amrex4RealE">
+<span class="target" id="classNyx_1aa8d75d7148fd7f4b1785b32dbe3d0740"></span>Real <code class="descname">vol_weight_squared_sum_level</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>name</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx15build_fine_maskEv">
+<span class="target" id="classNyx_1a308d50f3d495d0d29c687eae4e7b33c9"></span>MultiFab *<code class="descname">build_fine_mask</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx19LevelDirectoryNamesERKNSt6stringERKNSt6stringERNSt6stringERNSt6stringE">
+<span class="target" id="classNyx_1ac060d9384d62aa066d158497292000b3"></span>void <code class="descname">LevelDirectoryNames</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>dir</em>, <em class="property">const</em> std::string &amp;<em>secondDir</em>, std::string &amp;<em>LevelDir</em>, std::string &amp;<em>FullPath</em><span class="sig-paren">)</span><br /></dt>
+<dd><p>Get the level directory names. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx20CreateLevelDirectoryERKNSt6stringE">
+<span class="target" id="classNyx_1ae8f7ddab3ad7f73f1592b153d5d322d5"></span>void <code class="descname">CreateLevelDirectory</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>dir</em><span class="sig-paren">)</span><br /></dt>
+<dd><p>Create the Level_ and other directories in checkpoint and plot files. </p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Members</p>
+<dl class="member">
+<dt id="_CPPv4N3Nyx9fine_maskE">
+<span class="target" id="classNyx_1a1a142fe956d7fabfa6302aeef04ce013"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab *<code class="descname">fine_mask</code><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Static Functions</p>
+<dl class="function">
+<dt id="_CPPv4N3Nyx14variable_setupEv">
+<span class="target" id="classNyx_1ae8ad392af149c0f2918f014919acf372"></span>void <code class="descname">variable_setup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx11hydro_setupEv">
+<span class="target" id="classNyx_1ac985ea3a7f64e69da590d3464dda8a3d"></span>void <code class="descname">hydro_setup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx14no_hydro_setupEv">
+<span class="target" id="classNyx_1a02c31161625effd64d7d78b0f0aa8a9e"></span><em class="property">static</em> void <code class="descname">no_hydro_setup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx11error_setupEv">
+<span class="target" id="classNyx_1a3f2ffd8f9d0c2291835f0485f3e24084"></span>void <code class="descname">error_setup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx16variable_cleanupEv">
+<span class="target" id="classNyx_1a961a7ef67060723458378e8f9c05a336"></span>void <code class="descname">variable_cleanup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx20read_comoving_paramsEv">
+<span class="target" id="classNyx_1a31f252c7fa21332ab64d3214c342b6c3"></span>void <code class="descname">read_comoving_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx20read_particle_paramsEv">
+<span class="target" id="classNyx_1a6ac0cdf6f1a876af726ab1f4c5304f6a"></span>void <code class="descname">read_particle_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx16read_init_paramsEv">
+<span class="target" id="classNyx_1ab00d419cd7d80fa833b1d7a48d38c4a7"></span>void <code class="descname">read_init_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx8Do_HydroEv">
+<span class="target" id="classNyx_1ade492068a8fe52f1f41c2e4bb73ffe7f"></span>int <code class="descname">Do_Hydro</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx8num_growEv">
+<span class="target" id="classNyx_1acd020d31bf2c1e76c02aab2ec2d5a4d8"></span>int <code class="descname">num_grow</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx18theActiveParticlesEv">
+<span class="target" id="classNyx_1ab6531d353c1e2108d493397bb5c61dff"></span>Vector&lt;<a class="reference internal" href="../class/classNyxParticleContainerBase.html#_CPPv424NyxParticleContainerBase" title="NyxParticleContainerBase">NyxParticleContainerBase</a> *&gt; &amp;<code class="descname">theActiveParticles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx19theVirtualParticlesEv">
+<span class="target" id="classNyx_1a0b49fa519232bc762778c17b951a991e"></span>Vector&lt;<a class="reference internal" href="../class/classNyxParticleContainerBase.html#_CPPv424NyxParticleContainerBase" title="NyxParticleContainerBase">NyxParticleContainerBase</a> *&gt; &amp;<code class="descname">theVirtualParticles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx17theGhostParticlesEv">
+<span class="target" id="classNyx_1a2d33c7787facee64f6b0cb608a5810dc"></span>Vector&lt;<a class="reference internal" href="../class/classNyxParticleContainerBase.html#_CPPv424NyxParticleContainerBase" title="NyxParticleContainerBase">NyxParticleContainerBase</a> *&gt; &amp;<code class="descname">theGhostParticles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx7theDMPCEv">
+<span class="target" id="classNyx_1ab4cb59de85a75f2f19ad02b275668f1c"></span><a class="reference internal" href="../class/classDarkMatterParticleContainer.html#_CPPv427DarkMatterParticleContainer" title="DarkMatterParticleContainer">DarkMatterParticleContainer</a> *<code class="descname">theDMPC</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx9theVirtPCEv">
+<span class="target" id="classNyx_1ab03fdd52324e444bc26aa6ccdcc8ef38"></span><a class="reference internal" href="../class/classDarkMatterParticleContainer.html#_CPPv427DarkMatterParticleContainer" title="DarkMatterParticleContainer">DarkMatterParticleContainer</a> *<code class="descname">theVirtPC</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx10theGhostPCEv">
+<span class="target" id="classNyx_1a0f06968a9aed8d858dab32eb54adb326"></span><a class="reference internal" href="../class/classDarkMatterParticleContainer.html#_CPPv427DarkMatterParticleContainer" title="DarkMatterParticleContainer">DarkMatterParticleContainer</a> *<code class="descname">theGhostPC</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx6theSPCEv">
+<span class="target" id="classNyx_1afe933c4b5a63c1867362c934af5125b9"></span><a class="reference internal" href="#_CPPv424StellarParticleContainer" title="StellarParticleContainer">StellarParticleContainer</a> *<code class="descname">theSPC</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx10theVirtSPCEv">
+<span class="target" id="classNyx_1a1a339d3ff092efef31ed6c8adc0ef630"></span><a class="reference internal" href="#_CPPv424StellarParticleContainer" title="StellarParticleContainer">StellarParticleContainer</a> *<code class="descname">theVirtSPC</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx11theGhostSPCEv">
+<span class="target" id="classNyx_1a19d1d4254c6cf8e2db2cc2100b7b3f7b"></span><a class="reference internal" href="#_CPPv424StellarParticleContainer" title="StellarParticleContainer">StellarParticleContainer</a> *<code class="descname">theGhostSPC</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx13InitErrorListEv">
+<span class="target" id="classNyx_1a825b6224d2d9c3e04398ab63579740ec"></span>void <code class="descname">InitErrorList</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx14InitDeriveListEv">
+<span class="target" id="classNyx_1ae2487bf82b29ef88a21b875863a8e025"></span>void <code class="descname">InitDeriveList</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx14set_simd_widthEKi">
+<span class="target" id="classNyx_1aac8cfc3d9345e7d2910e45e8f47692cb"></span><em class="property">static</em> void <code class="descname">set_simd_width</code><span class="sig-paren">(</span><em class="property">const</em> int <em>simd_width</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx14alloc_simd_vecEv">
+<span class="target" id="classNyx_1a4a4980cc78430e8ca71eb77e883778b4"></span><em class="property">static</em> void <code class="descname">alloc_simd_vec</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx16dealloc_simd_vecEv">
+<span class="target" id="classNyx_1a4c6b85dc392ee2f309c4dcd750e81465"></span><em class="property">static</em> void <code class="descname">dealloc_simd_vec</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Static Attributes</p>
+<dl class="member">
+<dt id="_CPPv4N3Nyx28write_parameters_in_plotfileE">
+<span class="target" id="classNyx_1a5f224d8196f3d100bd99ad6c3b888aa0"></span>int <code class="descname">write_parameters_in_plotfile</code> = true<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx22print_fortran_warningsE">
+<span class="target" id="classNyx_1aecb82bb0d1743a60366325f54433621a"></span>int <code class="descname">print_fortran_warnings</code> = true<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx9initial_zE">
+<span class="target" id="classNyx_1a2e88e536e9b3cda5a0837c454521bb16"></span>Real <code class="descname">initial_z</code> = -1.0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx12initial_timeE">
+<span class="target" id="classNyx_1a48985f43b6c0260867f6c9d221738a2d"></span>Real <code class="descname">initial_time</code> = -1.0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx10final_timeE">
+<span class="target" id="classNyx_1a61bcbecc292c96157e0ec037f6ec44e6"></span>Real <code class="descname">final_time</code> = -1.0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx7final_aE">
+<span class="target" id="classNyx_1a9a669bc1c47c90d6b77d46067f18d237"></span>Real <code class="descname">final_a</code> = -1.0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx7final_zE">
+<span class="target" id="classNyx_1a3008aaf08370ee0fed14ba5df64b7fbe"></span>Real <code class="descname">final_z</code> = -1.0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx21relative_max_change_aE">
+<span class="target" id="classNyx_1a2db902e30f54e4de0aef0eb8a012fbc5"></span>Real <code class="descname">relative_max_change_a</code> = 0.01<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx21absolute_max_change_aE">
+<span class="target" id="classNyx_1a84b7092994191b4cfedc7e398f995b71"></span>Real <code class="descname">absolute_max_change_a</code> = -1.0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx9dt_binpowE">
+<span class="target" id="classNyx_1a86e4f585f5257e8e9ee742044624834a"></span>Real <code class="descname">dt_binpow</code> = -1.0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx10old_a_timeE">
+<span class="target" id="classNyx_1a97cf8cb7dad06d2bfc66adf466f0d32c"></span>Real <code class="descname">old_a_time</code> = -1.0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx10new_a_timeE">
+<span class="target" id="classNyx_1abbf8b225deec8b2c9deb89994b71e42d"></span>Real <code class="descname">new_a_time</code> = -1.0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx5old_aE">
+<span class="target" id="classNyx_1a4b0b5e6f8c1ffcb3e1354d971a8181b2"></span>Real <code class="descname">old_a</code> = -1.0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx5new_aE">
+<span class="target" id="classNyx_1a9f91d7363c0b4d50cbe5a50737849143"></span>Real <code class="descname">new_a</code> = -1.0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx12comoving_OmBE">
+<span class="target" id="classNyx_1a51cfa9a77cc0217a258a560c609fc1c7"></span>Real <code class="descname">comoving_OmB</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx12comoving_OmME">
+<span class="target" id="classNyx_1ade6f8b0c652184f385e5c360d52366b5"></span>Real <code class="descname">comoving_OmM</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx10comoving_hE">
+<span class="target" id="classNyx_1abd3c7e1a4b47dd204f10fc2397b9f622"></span>Real <code class="descname">comoving_h</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx16particle_verboseE">
+<span class="target" id="classNyx_1ac6307e09133474e0478bb3df926df635"></span>int <code class="descname">particle_verbose</code> = 1<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx12particle_cflE">
+<span class="target" id="classNyx_1a7152f0d367428a19aa371ceebf40312b"></span>Real <code class="descname">particle_cfl</code> = 0.5<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx30write_particle_density_at_initE">
+<span class="target" id="classNyx_1ae9111080165bad7566e7a0b1297cf30f"></span>int <code class="descname">write_particle_density_at_init</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx25write_coarsened_particlesE">
+<span class="target" id="classNyx_1a269b1d8a2a992ee710f42b121f9ea3d0"></span>int <code class="descname">write_coarsened_particles</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx9NUM_STATEE">
+<span class="target" id="classNyx_1af802eb2960a7d253df0f2fefa59d870b"></span>int <code class="descname">NUM_STATE</code> = -1<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx7DensityE">
+<span class="target" id="classNyx_1a7466afd420a16947b13ac57014143c32"></span>int <code class="descname">Density</code> = -1<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx4XmomE">
+<span class="target" id="classNyx_1a32790983eaf505901506db9d9ace39af"></span>int <code class="descname">Xmom</code> = -1<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx4YmomE">
+<span class="target" id="classNyx_1a29c5280a5b5dbf0200e4c86e7b0be016"></span>int <code class="descname">Ymom</code> = -1<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx4ZmomE">
+<span class="target" id="classNyx_1a60b0a4e3ba7c0af1a43292eaa2aacb7e"></span>int <code class="descname">Zmom</code> = -1<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx4EdenE">
+<span class="target" id="classNyx_1a3c462e3b8d907d3cc53295f5ef928a95"></span>int <code class="descname">Eden</code> = -1<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx4EintE">
+<span class="target" id="classNyx_1a772dc554bea10dc75ca3956191ac9515"></span>int <code class="descname">Eint</code> = -1<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx9Temp_compE">
+<span class="target" id="classNyx_1a57c59e10184f3322bf9f40bccee0c56c"></span>int <code class="descname">Temp_comp</code> = -1<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx7Ne_compE">
+<span class="target" id="classNyx_1a7d9ecda3bff0078f0b704ee4dc045204"></span>int <code class="descname">Ne_comp</code> = -1<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx8Zhi_compE">
+<span class="target" id="classNyx_1ae42ae0f07be9e50bee49fcc442fc6fb1"></span>int <code class="descname">Zhi_comp</code> = -1<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx9FirstSpecE">
+<span class="target" id="classNyx_1a73eff1671970da9c38ab68e8db371b13"></span>int <code class="descname">FirstSpec</code> = -1<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx8FirstAuxE">
+<span class="target" id="classNyx_1ad826f7f80493877b7db0dde9627dc1af"></span>int <code class="descname">FirstAux</code> = -1<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx8FirstAdvE">
+<span class="target" id="classNyx_1a7aa232bd67a2665d642e94da4d597ef2"></span>int <code class="descname">FirstAdv</code> = -1<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx7NumSpecE">
+<span class="target" id="classNyx_1a5bbecbdc0ee0b72213ff8f9edaaf256b"></span>int <code class="descname">NumSpec</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx6NumAuxE">
+<span class="target" id="classNyx_1accd6edcd0cc0983426d46e1047d3f76f"></span>int <code class="descname">NumAux</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx6NumAdvE">
+<span class="target" id="classNyx_1a3e88d59d94f0b17ded28c3f0e7ff04c4"></span>int <code class="descname">NumAdv</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx17strict_subcyclingE">
+<span class="target" id="classNyx_1a7f0ad658b144f9a1fd3b968026061273"></span>int <code class="descname">strict_subcycling</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx23init_with_sph_particlesE">
+<span class="target" id="classNyx_1ac3dd9dae16b1903c614a4420706b88d6"></span>int <code class="descname">init_with_sph_particles</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx24particle_plotfile_formatE">
+<span class="target" id="classNyx_1a15e66e7e5eceb1624008340a030d775a"></span>std::string <code class="descname">particle_plotfile_format</code> = &quot;NATIVE&quot;<br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Protected Functions</p>
+<dl class="function">
+<dt id="_CPPv4N3Nyx9get_levelEi">
+<span class="target" id="classNyx_1a5152316aa4fa4ed1802e07a5a2ce73dd"></span><a class="reference internal" href="../class/classNyx.html#_CPPv43Nyx" title="Nyx">Nyx</a> &amp;<code class="descname">get_level</code><span class="sig-paren">(</span>int <em>lev</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx10retrieveDMEv">
+<span class="target" id="classNyx_1aadfc6ef8346c7188980185f7a77995d1"></span>std::string <code class="descname">retrieveDM</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx12get_flux_regEv">
+<span class="target" id="classNyx_1a5b058cc9a80b17a854a10e40b5c640ac"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::FluxRegister &amp;<code class="descname">get_flux_reg</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx12get_flux_regEi">
+<span class="target" id="classNyx_1a213cbb5beffc1e1a55d841063c1ad24a"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::FluxRegister &amp;<code class="descname">get_flux_reg</code><span class="sig-paren">(</span>int <em>lev</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx6refluxEv">
+<span class="target" id="classNyx_1a9ed369ad515dd4348a5f096431eb2d7f"></span>void <code class="descname">reflux</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx27enforce_nonnegative_speciesERN5amrex8MultiFabE">
+<span class="target" id="classNyx_1af6431d4abf0d5affba8879e06511700c"></span>void <code class="descname">enforce_nonnegative_species</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>S_new</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx20enforce_consistent_eERN5amrex8MultiFabE">
+<span class="target" id="classNyx_1abba8881748bdd50f4edf9c5fc57578b6"></span>void <code class="descname">enforce_consistent_e</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>S</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx12average_downEv">
+<span class="target" id="classNyx_1a0078f6fcacdf2d9dea7e1e0855efb72e"></span>void <code class="descname">average_down</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx12average_downEi">
+<span class="target" id="classNyx_1abf6e46524214ad980cd14bf808b90e71"></span>void <code class="descname">average_down</code><span class="sig-paren">(</span>int <em>state_indx</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx13build_metricsEv">
+<span class="target" id="classNyx_1aa47ad80e5d10b7afe73e74b9897adb49"></span>void <code class="descname">build_metrics</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx25sum_integrated_quantitiesEv">
+<span class="target" id="classNyx_1a41354f794a0fbda961c2b07ebd680d11"></span>void <code class="descname">sum_integrated_quantities</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx23compute_average_densityEv">
+<span class="target" id="classNyx_1a4e3ed9c0ce560549b4ec375220db5d0e"></span>void <code class="descname">compute_average_density</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx27compute_average_temperatureERN5amrex4RealE">
+<span class="target" id="classNyx_1ad560927d987ea2df67b8fc32c711c894"></span>void <code class="descname">compute_average_temperature</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>average_temperature</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx23compute_average_speciesEiiRN5amrex6VectorIN5amrex4RealEEE">
+<span class="target" id="classNyx_1a873357b411d0db9b149a30e496ad7cf3"></span>void <code class="descname">compute_average_species</code><span class="sig-paren">(</span>int <em>nspec</em>, int <em>naux</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real&gt; &amp;<em>average_species</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx16set_small_valuesEv">
+<span class="target" id="classNyx_1aaa372c5a700d350a841c97a2b081e41e"></span>void <code class="descname">set_small_values</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx10write_infoEv">
+<span class="target" id="classNyx_1a246aed3610ed53e8ca250349bcc871c0"></span>void <code class="descname">write_info</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Protected Attributes</p>
+<dl class="member">
+<dt id="_CPPv4N3Nyx8flux_regE">
+<span class="target" id="classNyx_1a5771e46259dc71b10910c282b5a6c317"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::FluxRegister *<code class="descname">flux_reg</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx22FillPatchedOldState_okE">
+<span class="target" id="classNyx_1a923b0189e01f8dfa1784c044dcb9982d"></span>bool <code class="descname">FillPatchedOldState_ok</code><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Protected Static Functions</p>
+<dl class="function">
+<dt id="_CPPv4N3Nyx12network_initEv">
+<span class="target" id="classNyx_1a6e53d5ec38518d41ab38933c09471b0c"></span>void <code class="descname">network_init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx11read_paramsEv">
+<span class="target" id="classNyx_1a6fe668a0ea09abc7b394504c81e9b8a9"></span>void <code class="descname">read_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx10getCPUTimeEv">
+<span class="target" id="classNyx_1ac37cc993cb579746a65229a3d40827fa"></span>Real <code class="descname">getCPUTime</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Protected Static Attributes</p>
+<dl class="member">
+<dt id="_CPPv4N3Nyx8dump_oldE">
+<span class="target" id="classNyx_1a65b766c237606bf0bc2770ef6fcee3bf"></span>bool <code class="descname">dump_old</code> = false<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx7verboseE">
+<span class="target" id="classNyx_1ae779186785a870925c03f0b5ea4980a0"></span>int <code class="descname">verbose</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx3cflE">
+<span class="target" id="classNyx_1a959b7528ba54d7e6ed76631b8791d691"></span>Real <code class="descname">cfl</code> = 0.8<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx11init_shrinkE">
+<span class="target" id="classNyx_1ab62878a083fac8442fd1bba786df6747"></span>Real <code class="descname">init_shrink</code> = 1.0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx10change_maxE">
+<span class="target" id="classNyx_1afe621f8b8747b0b503784fa2e1b1a603"></span>Real <code class="descname">change_max</code> = 1.1<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx9do_refluxE">
+<span class="target" id="classNyx_1aea574ca3a95b2527f1af820f21ff4347"></span>int <code class="descname">do_reflux</code> = 1<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx8err_listE">
+<span class="target" id="classNyx_1a3c25170f3cef57dcbb607a07afd0082f"></span>ErrorList <code class="descname">err_list</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx7phys_bcE">
+<span class="target" id="classNyx_1aaca015f0c73884e044e29e5d3c0c3a1e"></span>BCRec <code class="descname">phys_bc</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx8NUM_GROWE">
+<span class="target" id="classNyx_1ae13b0f0e6e313af530a6078d6b3fb4f0"></span>int <code class="descname">NUM_GROW</code> = -1<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx20nsteps_from_plotfileE">
+<span class="target" id="classNyx_1a83877eb802c9153c823b5ddde62f168a"></span>int <code class="descname">nsteps_from_plotfile</code> = -1<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx15allow_untaggingE">
+<span class="target" id="classNyx_1a3388a03ad63f3644e4777604b7d551e5"></span>int <code class="descname">allow_untagging</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx17use_const_speciesE">
+<span class="target" id="classNyx_1a559bd700ed706e8011220d4618ec459d"></span>int <code class="descname">use_const_species</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx17normalize_speciesE">
+<span class="target" id="classNyx_1aa8a632f114d666980cf3fb0d622b7e30"></span>int <code class="descname">normalize_species</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx18do_special_taggingE">
+<span class="target" id="classNyx_1a427f33e1f481c7f65b73cbb1295526e4"></span>int <code class="descname">do_special_tagging</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx8ppm_typeE">
+<span class="target" id="classNyx_1a25b11b7b93bb430b185544fc03a984de"></span>int <code class="descname">ppm_type</code> = 1<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx13ppm_referenceE">
+<span class="target" id="classNyx_1a63cfafe1e19346d142373de8e62ed13e"></span>int <code class="descname">ppm_reference</code> = 1<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx28ppm_flatten_before_integralsE">
+<span class="target" id="classNyx_1a660bd4581af40ad2064019c7a858675a"></span>int <code class="descname">ppm_flatten_before_integrals</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx11use_colglazE">
+<span class="target" id="classNyx_1a80d3a941a58407289735ecf6883fbd46"></span>int <code class="descname">use_colglaz</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx14use_flatteningE">
+<span class="target" id="classNyx_1aa7a210d7d5ba34dc359480fbd67f4f9c"></span>int <code class="descname">use_flattening</code> = 1<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx15corner_couplingE">
+<span class="target" id="classNyx_1a9eb14bdf7efdcdcf56a004bf26961017"></span>int <code class="descname">corner_coupling</code> = 1<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx9version_2E">
+<span class="target" id="classNyx_1a0a2e2f817d68ed3f0c0f65925c9798b2"></span>int <code class="descname">version_2</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx17use_exact_gravityE">
+<span class="target" id="classNyx_1aa08236ac4ac1d560f2108a65d9d89d50"></span>int <code class="descname">use_exact_gravity</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx19num_particle_ghostsE">
+<span class="target" id="classNyx_1a7189ffc8c75709cb763ed655e12d7250"></span>int <code class="descname">num_particle_ghosts</code> = 1<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx10small_densE">
+<span class="target" id="classNyx_1aa6aff541691a1b524b94f0e0db5d5946"></span>Real <code class="descname">small_dens</code> = -1.e200<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx10small_tempE">
+<span class="target" id="classNyx_1ab7f853615e4a6d68f7d95b0715426ed0"></span>Real <code class="descname">small_temp</code> = -1.e200<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx5gammaE">
+<span class="target" id="classNyx_1ae5aecac5ef90a5c74e68c4af8eacca3b"></span>Real <code class="descname">gamma</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx9h_speciesE">
+<span class="target" id="classNyx_1aeaed8474424e87555f0b1e27f07abcf3"></span>Real <code class="descname">h_species</code> = 0.0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx10he_speciesE">
+<span class="target" id="classNyx_1a0fe985fbc15ed95ba10aed1f46c667cb"></span>Real <code class="descname">he_species</code> = 0.0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx15do_dm_particlesE">
+<span class="target" id="classNyx_1aca1d5c86338dec1c1137a57d511925eb"></span>bool <code class="descname">do_dm_particles</code> = false<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx18particle_init_typeE">
+<span class="target" id="classNyx_1af96a8bada545b1eaed84adf16988ab2b"></span>std::string <code class="descname">particle_init_type</code> = &quot;&quot;<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx18particle_move_typeE">
+<span class="target" id="classNyx_1a23997933a560c09495bed02b37a42f2e"></span>std::string <code class="descname">particle_move_type</code> = &quot;&quot;<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx29particle_initrandom_serializeE">
+<span class="target" id="classNyx_1a2786a5a71d61d885bc0ea503a4790368"></span>bool <code class="descname">particle_initrandom_serialize</code> = false<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx25particle_initrandom_countE">
+<span class="target" id="classNyx_1a237a853bd8aca71f4558baface338289"></span>long <code class="descname">particle_initrandom_count</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx33particle_initrandom_count_per_boxE">
+<span class="target" id="classNyx_1a3a8db1464911878acafeb0e5892d5a26"></span>long <code class="descname">particle_initrandom_count_per_box</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx24particle_initrandom_massE">
+<span class="target" id="classNyx_1a6251372d35e1c9bad2f8609828b48e0b"></span>Real <code class="descname">particle_initrandom_mass</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx25particle_initrandom_iseedE">
+<span class="target" id="classNyx_1a6c3a0e01de1893cffd0277dd6cf1f49a"></span>int <code class="descname">particle_initrandom_iseed</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx20particle_skip_factorE">
+<span class="target" id="classNyx_1ab0a9cb9ca1d64467a5e4e2413ab8e9c2"></span>int <code class="descname">particle_skip_factor</code> = 1<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx25particle_inituniform_massE">
+<span class="target" id="classNyx_1a686c0564812dbd2cd3dbec6e84528109"></span>Real <code class="descname">particle_inituniform_mass</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx23particle_inituniform_vxE">
+<span class="target" id="classNyx_1ae85b5adf88e391d689158d8f47ec2525"></span>Real <code class="descname">particle_inituniform_vx</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx23particle_inituniform_vyE">
+<span class="target" id="classNyx_1ae22e273c693c7cae3e39c888cd9f7fcc"></span>Real <code class="descname">particle_inituniform_vy</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx23particle_inituniform_vzE">
+<span class="target" id="classNyx_1a0ef575f6cf6a78054a913cc0756f8a8e"></span>Real <code class="descname">particle_inituniform_vz</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx4NrepE">
+<span class="target" id="classNyx_1a58326c433af8dd0d70a43bb7ae4fe520"></span>IntVect <code class="descname">Nrep</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx13plot_z_valuesE">
+<span class="target" id="classNyx_1ad4910d9637e106449806446d0ab294f7"></span>Vector&lt;Real&gt; <code class="descname">plot_z_values</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx17analysis_z_valuesE">
+<span class="target" id="classNyx_1a2824fe4bb5199244569707a8578c1f39"></span>Vector&lt;Real&gt; <code class="descname">analysis_z_values</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx8do_hydroE">
+<span class="target" id="classNyx_1ab8a6f6b33ddd6251d64fec750140f87e"></span>int <code class="descname">do_hydro</code> = -1<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx7do_gravE">
+<span class="target" id="classNyx_1a9434d46d865de27bdddb09d5896f67fc"></span>int <code class="descname">do_grav</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx11add_ext_srcE">
+<span class="target" id="classNyx_1a92af57f6c2067221a295e5f03bb4ebc8"></span>int <code class="descname">add_ext_src</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx14heat_cool_typeE">
+<span class="target" id="classNyx_1a1e16308ca19e5bfc005edf111ea2e36c"></span>int <code class="descname">heat_cool_type</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx19sundials_alloc_typeE">
+<span class="target" id="classNyx_1a6c13e186654f1aca302917190f4041e4"></span>int <code class="descname">sundials_alloc_type</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx17use_typical_stepsE">
+<span class="target" id="classNyx_1a1055d77a7bef7d4ab89504beb952e8e1"></span>int <code class="descname">use_typical_steps</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx23use_sundials_constraintE">
+<span class="target" id="classNyx_1a8a792f1530502d3b283a870e789f04b1"></span>int <code class="descname">use_sundials_constraint</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx12inhomo_reionE">
+<span class="target" id="classNyx_1a817fa1887451335bd0092255e125f860"></span>int <code class="descname">inhomo_reion</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx15inhomo_zhi_fileE">
+<span class="target" id="classNyx_1ab8ab932745f7e612587ef16295ed3e6c"></span>std::string <code class="descname">inhomo_zhi_file</code> = &quot;&quot;<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx11inhomo_gridE">
+<span class="target" id="classNyx_1a2985d2030620945b86e8eeae86d34130"></span>int <code class="descname">inhomo_grid</code> = -1<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx10do_forcingE">
+<span class="target" id="classNyx_1a727f8bcc0365470d0d9a37d2b4e81c74"></span>int <code class="descname">do_forcing</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx12strang_splitE">
+<span class="target" id="classNyx_1a8347e3463f3f2fd65921651842062b21"></span>int <code class="descname">strang_split</code> = 1<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx19average_gas_densityE">
+<span class="target" id="classNyx_1a8b93c205976016434d0d85064f81bad5"></span>Real <code class="descname">average_gas_density</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx18average_dm_densityE">
+<span class="target" id="classNyx_1ab4091a251c0e9109ade39b13a3ba17bc"></span>Real <code class="descname">average_dm_density</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx21average_neutr_densityE">
+<span class="target" id="classNyx_1a6fa82264f978cdac4f711bbe6f446213"></span>Real <code class="descname">average_neutr_density</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx21average_total_densityE">
+<span class="target" id="classNyx_1a7347c95a9c5b381fbc7987492195060f"></span>Real <code class="descname">average_total_density</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx22old_max_sundials_stepsE">
+<span class="target" id="classNyx_1a37ca3efb57539f765454099d2f721051"></span>long int <code class="descname">old_max_sundials_steps</code> = 3<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx22new_max_sundials_stepsE">
+<span class="target" id="classNyx_1a37c3bb97ef020b441d6c9763d144bf2e"></span>long int <code class="descname">new_max_sundials_steps</code> = 3<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx19previousCPUTimeUsedE">
+<span class="target" id="classNyx_1a97d0bb92fecd4d5ef2464d6667fdd9cb"></span>Real <code class="descname">previousCPUTimeUsed</code> = 0.0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx12startCPUTimeE">
+<span class="target" id="classNyx_1a421c69f19d8d9adb290912933a309aa7"></span>Real <code class="descname">startCPUTime</code> = 0.0<br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
 </div>
 
 

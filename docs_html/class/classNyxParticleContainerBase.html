@@ -211,10 +211,65 @@
 </style>
 <div class="section" id="class-nyxparticlecontainerbase">
 <h1>Class NyxParticleContainerBase<a class="headerlink" href="#class-nyxparticlecontainerbase" title="Permalink to this headline">¶</a></h1>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">doxygenclass: No breathe_default_project config setting to fall back on for directive with no ‘project’ or ‘path’ specified.</p>
+<dl class="class">
+<dt id="_CPPv424NyxParticleContainerBase">
+<span class="target" id="classNyxParticleContainerBase"></span><em class="property">class </em><code class="descname">NyxParticleContainerBase</code><a class="headerlink" href="#_CPPv424NyxParticleContainerBase" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Subclassed by <a class="reference internal" href="../file/NyxParticleContainer_8H.html#classNyxParticleContainer"><span class="std std-ref">NyxParticleContainer&lt; NSR, NSI, NAR, NAI &gt;</span></a>, <a class="reference internal" href="../file/NyxParticleContainer_8H.html#classNyxParticleContainer"><span class="std std-ref">NyxParticleContainer&lt; 1+BL_SPACEDIM &gt;</span></a>, <a class="reference internal" href="../file/NyxParticleContainer_8H.html#classNyxParticleContainer"><span class="std std-ref">NyxParticleContainer&lt; 3+BL_SPACEDIM, 0, 0, 0 &gt;</span></a></p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt id="_CPPv4N24NyxParticleContainerBaseD0Ev">
+<span class="target" id="classNyxParticleContainerBase_1a5135074ae9e70333c3a313bd3ff69be3"></span><em class="property">virtual</em> <code class="descname">~NyxParticleContainerBase</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N24NyxParticleContainerBaseD0Ev" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N24NyxParticleContainerBase13moveKickDriftERN5amrex8MultiFabEiN5amrex4RealEN5amrex4RealEN5amrex4RealEi">
+<span class="target" id="classNyxParticleContainerBase_1a6ff05bd34f71c761dad4770615b750ab"></span><em class="property">virtual</em> void <code class="descname">moveKickDrift</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>acceleration</em>, int <em>level</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>timestep</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>a_old</em> = 1.0, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>a_half</em> = 1.0, int <em>where_width</em> = 0<span class="sig-paren">)</span> = 0<a class="headerlink" href="#_CPPv4N24NyxParticleContainerBase13moveKickDriftERN5amrex8MultiFabEiN5amrex4RealEN5amrex4RealEN5amrex4RealEi" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N24NyxParticleContainerBase8moveKickERN5amrex8MultiFabEiN5amrex4RealEN5amrex4RealEN5amrex4RealE">
+<span class="target" id="classNyxParticleContainerBase_1a6f6e9070f3620aa56f64cbb00a7af808"></span><em class="property">virtual</em> void <code class="descname">moveKick</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>acceleration</em>, int <em>level</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>timestep</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>a_new</em> = 1.0, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>a_half</em> = 1.0<span class="sig-paren">)</span> = 0<a class="headerlink" href="#_CPPv4N24NyxParticleContainerBase8moveKickERN5amrex8MultiFabEiN5amrex4RealEN5amrex4RealEN5amrex4RealE" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N24NyxParticleContainerBase12RedistributeEiii">
+<span class="target" id="classNyxParticleContainerBase_1adad183505c77d1da3f1fd7ec4e65f21e"></span><em class="property">virtual</em> void <code class="descname">Redistribute</code><span class="sig-paren">(</span>int <em>lev_min</em> = 0, int <em>lev_max</em> = -1, int <em>nGrow</em> = 0<span class="sig-paren">)</span> = 0<a class="headerlink" href="#_CPPv4N24NyxParticleContainerBase12RedistributeEiii" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N24NyxParticleContainerBase17RedistributeLocalEiii">
+<span class="target" id="classNyxParticleContainerBase_1a837f304cd65abf748d0d5c5ca3a65664"></span><em class="property">virtual</em> void <code class="descname">RedistributeLocal</code><span class="sig-paren">(</span>int <em>lev_min</em> = 0, int <em>lev_max</em> = -1, int <em>nGrow</em> = 0<span class="sig-paren">)</span> = 0<a class="headerlink" href="#_CPPv4N24NyxParticleContainerBase17RedistributeLocalEiii" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4NK24NyxParticleContainerBase11finestLevelEv">
+<span class="target" id="classNyxParticleContainerBase_1aa7190c91f4299e3c09f240042ab433ab"></span><em class="property">virtual</em> int <code class="descname">finestLevel</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em> = 0<a class="headerlink" href="#_CPPv4NK24NyxParticleContainerBase11finestLevelEv" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N24NyxParticleContainerBase22RemoveParticlesAtLevelEi">
+<span class="target" id="classNyxParticleContainerBase_1a58911f7406826d42bd3a249d7ebe1eed"></span><em class="property">virtual</em> void <code class="descname">RemoveParticlesAtLevel</code><span class="sig-paren">(</span>int <em>level</em><span class="sig-paren">)</span> = 0<a class="headerlink" href="#_CPPv4N24NyxParticleContainerBase22RemoveParticlesAtLevelEi" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4NK24NyxParticleContainerBase15sumParticleMassEi">
+<span class="target" id="classNyxParticleContainerBase_1a5ac48112ff8b1e0970820600e37e93af"></span><em class="property">virtual</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <code class="descname">sumParticleMass</code><span class="sig-paren">(</span>int <em>level</em><span class="sig-paren">)</span> <em class="property">const</em> = 0<a class="headerlink" href="#_CPPv4NK24NyxParticleContainerBase15sumParticleMassEi" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4NK24NyxParticleContainerBase24AssignDensitySingleLevelERN5amrex8MultiFabEiii">
+<span class="target" id="classNyxParticleContainerBase_1af36ff5edcb41d5dfd36979f6e550b783"></span><em class="property">virtual</em> void <code class="descname">AssignDensitySingleLevel</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>mf</em>, int <em>level</em>, int <em>ncomp</em> = 1, int <em>particle_lvl_offset</em> = 0<span class="sig-paren">)</span> <em class="property">const</em> = 0<a class="headerlink" href="#_CPPv4NK24NyxParticleContainerBase24AssignDensitySingleLevelERN5amrex8MultiFabEiii" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4NK24NyxParticleContainerBase13AssignDensityERN5amrex6VectorINSt10unique_ptrIN5amrex8MultiFabEEEEEiiii">
+<span class="target" id="classNyxParticleContainerBase_1a54d8f60f8613af61a482a424ea185793"></span><em class="property">virtual</em> void <code class="descname">AssignDensity</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;std::unique_ptr&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab&gt;&gt; &amp;<em>mf</em>, int <em>lev_min</em> = 0, int <em>ncomp</em> = 1, int <em>finest_level</em> = -1, int <em>ngrow</em> = 1<span class="sig-paren">)</span> <em class="property">const</em> = 0<a class="headerlink" href="#_CPPv4NK24NyxParticleContainerBase13AssignDensityERN5amrex6VectorINSt10unique_ptrIN5amrex8MultiFabEEEEEiiii" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
 </div>
+</dd></dl>
+
 </div>
 
 

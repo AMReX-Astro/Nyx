@@ -253,9 +253,43 @@
 </style>
 <div class="section" id="file-agn-f-h">
 <h1>File agn_F.H<a class="headerlink" href="#file-agn-f-h" title="Permalink to this headline">¶</a></h1>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">doxygenfile: No breathe_default_project config setting to fall back on for directive with no ‘project’ or ‘path’ specified.</p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Functions</p>
+<dl class="function">
+<dt id="_CPPv420update_agn_particlesPKiPvPKN5amrex4RealEPKiPKiPKN5amrex4RealEPKN5amrex4RealERKN5amrex4RealERKN5amrex4RealERKN5amrex4RealEPKi">
+<span class="target" id="agn__F_8H_1aec6f2a5f8eef9e0142321fbca42311eb"></span>void <code class="descname">update_agn_particles</code><span class="sig-paren">(</span><em class="property">const</em> int *<em>np</em>, void *<em>particles</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>accel</em>, <em class="property">const</em> int *<em>accel_lo</em>, <em class="property">const</em> int *<em>accel_hi</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>prob_lo</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>dx</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>dt</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>a_prev</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>a_cur</em>, <em class="property">const</em> int *<em>do_move</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv420update_agn_particlesPKiPvPKN5amrex4RealEPKiPKiPKN5amrex4RealEPKN5amrex4RealERKN5amrex4RealERKN5amrex4RealERKN5amrex4RealEPKi" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv419nyx_compute_overlapPKiPvPKiPvPKN5amrex4RealE">
+<span class="target" id="agn__F_8H_1a87986a19d9a9be8624c369cb71d95954"></span>void <code class="descname">nyx_compute_overlap</code><span class="sig-paren">(</span><em class="property">const</em> int *<em>np</em>, void *<em>particles</em>, <em class="property">const</em> int *<em>ng</em>, void *<em>ghosts</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>dx</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv419nyx_compute_overlapPKiPvPKiPvPKN5amrex4RealE" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv419agn_merge_particlesPKiPvPKiPvPKN5amrex4RealE">
+<span class="target" id="agn__F_8H_1a3f43b1c85fc71e440a6fc0e242fab1a2"></span>void <code class="descname">agn_merge_particles</code><span class="sig-paren">(</span><em class="property">const</em> int *<em>np</em>, void *<em>particles</em>, <em class="property">const</em> int *<em>ng</em>, void *<em>ghosts</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>dx</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv419agn_merge_particlesPKiPvPKiPvPKN5amrex4RealE" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv421agn_particle_velocityPKiPvPKN5amrex4RealEPKiPKiPKN5amrex4RealEPKiPKiPKN5amrex4RealEPKi">
+<span class="target" id="agn__F_8H_1a060c35898ec0726252e0f54a72e23cf1"></span>void <code class="descname">agn_particle_velocity</code><span class="sig-paren">(</span><em class="property">const</em> int *<em>np</em>, void *<em>particles</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>state_old</em>, <em class="property">const</em> int *<em>sold_lo</em>, <em class="property">const</em> int *<em>sold_hi</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>state_new</em>, <em class="property">const</em> int *<em>snew_lo</em>, <em class="property">const</em> int *<em>snew_hi</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>dx</em>, <em class="property">const</em> int *<em>add_energy</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv421agn_particle_velocityPKiPvPKN5amrex4RealEPKiPKiPKN5amrex4RealEPKiPKiPKN5amrex4RealEPKi" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv416agn_accrete_massPKiPvPKN5amrex4RealEPKN5amrex4RealEPKiPKiPKN5amrex4RealEPKN5amrex4RealE">
+<span class="target" id="agn__F_8H_1a14f912ff784be6c762a3cb2f94a70f7c"></span>void <code class="descname">agn_accrete_mass</code><span class="sig-paren">(</span><em class="property">const</em> int *<em>np</em>, void *<em>particles</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>state</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>density_lost</em>, <em class="property">const</em> int *<em>s_lo</em>, <em class="property">const</em> int *<em>s_hi</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>dt</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>dx</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv416agn_accrete_massPKiPvPKN5amrex4RealEPKN5amrex4RealEPKiPKiPKN5amrex4RealEPKN5amrex4RealE" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv418agn_release_energyPKiPvPKN5amrex4RealEPKiPKiPKN5amrex4RealEPKiPKiPKN5amrex4RealEPKN5amrex4RealE">
+<span class="target" id="agn__F_8H_1ae32926bcafc307399e75e8e9eab3e8f1"></span>void <code class="descname">agn_release_energy</code><span class="sig-paren">(</span><em class="property">const</em> int *<em>np</em>, void *<em>particles</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>state</em>, <em class="property">const</em> int *<em>s_lo</em>, <em class="property">const</em> int *<em>s_hi</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>diag_eos</em>, <em class="property">const</em> int *<em>d_lo</em>, <em class="property">const</em> int *<em>d_hi</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>a</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>dx</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv418agn_release_energyPKiPvPKN5amrex4RealEPKiPKiPKN5amrex4RealEPKiPKiPKN5amrex4RealEPKN5amrex4RealE" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv418init_uniform01_rngv">
+<span class="target" id="agn__F_8H_1a73ed504419cdfa74ef57f211acfbc9fe"></span>void <code class="descname">init_uniform01_rng</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv418init_uniform01_rngv" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
 </div>
 </div>
 

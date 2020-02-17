@@ -253,10 +253,366 @@
 </style>
 <div class="section" id="file-gravity-h">
 <h1>File Gravity.H<a class="headerlink" href="#file-gravity-h" title="Permalink to this headline">¶</a></h1>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">doxygenfile: No breathe_default_project config setting to fall back on for directive with no ‘project’ or ‘path’ specified.</p>
+<dl class="class">
+<dt id="_CPPv47Gravity">
+<span class="target" id="classGravity"></span><em class="property">class </em><code class="descname">Gravity</code><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt id="_CPPv4N7Gravity7GravityEPN5amrex3AmrEiPN5amrex5BCRecEi">
+<span class="target" id="classGravity_1abe8f44802d38219bbeb34bfa244fc31e"></span><code class="descname">Gravity</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Amr *<em>Parent</em>, int <em>_finest_level</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::BCRec *<em>_phys_bc</em>, int <em>_Density</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7GravityD0Ev">
+<span class="target" id="classGravity_1a6fcaf5f5f0d4672c4a1d97a3102e053a"></span><code class="descname">~Gravity</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity11read_paramsEv">
+<span class="target" id="classGravity_1a6069f195122b406d09303ee22a7c8f0c"></span>void <code class="descname">read_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity13install_levelEiPN5amrex8AmrLevelE">
+<span class="target" id="classGravity_1affdada558997d9c91a1375b92a57102a"></span>void <code class="descname">install_level</code><span class="sig-paren">(</span>int <em>level</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::AmrLevel *<em>level_data_to_install</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity16get_gravity_typeEv">
+<span class="target" id="classGravity_1ac1111ad311c18e7134d528cee52d55f7"></span>std::string <code class="descname">get_gravity_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity14get_const_gravEv">
+<span class="target" id="classGravity_1a02c1820217c0ff4390f3cebb6b87ffba"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <code class="descname">get_const_grav</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity11get_no_syncEv">
+<span class="target" id="classGravity_1aab56f55757568a9a31b74f22f7bb8e43"></span>int <code class="descname">get_no_sync</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity16get_no_compositeEv">
+<span class="target" id="classGravity_1a481510f88a92fc74fd8d1fcb81854534"></span>int <code class="descname">get_no_composite</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity15set_mass_offsetEN5amrex4RealE">
+<span class="target" id="classGravity_1af34b23ffe7118fa9c7bf17d07bcd3c8c"></span>void <code class="descname">set_mass_offset</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity17get_grad_phi_prevEi">
+<span class="target" id="classGravity_1aa802cca7c8ba3fcbfd48e911baff9b3e"></span>Vector&lt;MultiFab *&gt; <code class="descname">get_grad_phi_prev</code><span class="sig-paren">(</span>int <em>level</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity17get_grad_phi_currEi">
+<span class="target" id="classGravity_1ab99a2b122fa05991b2bcafca4b555a50"></span>Vector&lt;MultiFab *&gt; <code class="descname">get_grad_phi_curr</code><span class="sig-paren">(</span>int <em>level</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity13plus_phi_currEiRN5amrex8MultiFabE">
+<span class="target" id="classGravity_1a90936873e9bc7a5ab0fc4a3359a81965"></span>void <code class="descname">plus_phi_curr</code><span class="sig-paren">(</span>int <em>level</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>addend</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity18plus_grad_phi_currEiRKN5amrex6VectorIPN5amrex8MultiFabEEE">
+<span class="target" id="classGravity_1a13e533e9dbc839dee419b22d27c99824"></span>void <code class="descname">plus_grad_phi_curr</code><span class="sig-paren">(</span>int <em>level</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab *&gt; &amp;<em>addend</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity16swap_time_levelsEi">
+<span class="target" id="classGravity_1a06468b8d629df8f22aaf8b39307c07ef"></span>void <code class="descname">swap_time_levels</code><span class="sig-paren">(</span>int <em>level</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity15solve_with_MLMGEiiRKN5amrex6VectorIPN5amrex8MultiFabEEERKN5amrex6VectorIPKN5amrex8MultiFabEEERKN5amrex6VectorINSt5arrayIPN5amrex8MultiFabE14AMREX_SPACEDIMEEEEPCKN5amrex8MultiFabEN5amrex4RealEN5amrex4RealE">
+<span class="target" id="classGravity_1a75ee8448650f78805d72da858790bd5b"></span>Real <code class="descname">solve_with_MLMG</code><span class="sig-paren">(</span>int <em>crse_level</em>, int <em>fine_level</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab *&gt; &amp;<em>phi</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab *&gt; &amp;<em>rhs</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;std::array&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab *, AMREX_SPACEDIM&gt;&gt; &amp;<em>grad_phi</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab *<em class="property">const</em> <em>crse_bcdata</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>rel_eps</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>abs_eps</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity12set_boundaryERN5amrex9BndryDataERN5amrex8MultiFabEPKN5amrex4RealE">
+<span class="target" id="classGravity_1a411c408d300aaf04407ebeb859f7e0db"></span>void <code class="descname">set_boundary</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::BndryData &amp;<em>bd</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>rhs</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>dx</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity17solve_for_old_phiEiRN5amrex8MultiFabERKN5amrex6VectorIPN5amrex8MultiFabEEEii">
+<span class="target" id="classGravity_1a41903fd0e454d61a0e680401184db7e0"></span>void <code class="descname">solve_for_old_phi</code><span class="sig-paren">(</span>int <em>level</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>phi</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab *&gt; &amp;<em>grad_phi</em>, int <em>fill_interior</em>, int <em>grav_n_grow</em> = 1<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity17solve_for_new_phiEiRN5amrex8MultiFabERKN5amrex6VectorIPN5amrex8MultiFabEEEii">
+<span class="target" id="classGravity_1a8e0c991dd53e8296fc7a9dd33778a0f7"></span>void <code class="descname">solve_for_new_phi</code><span class="sig-paren">(</span>int <em>level</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>phi</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab *&gt; &amp;<em>grad_phi</em>, int <em>fill_interior</em>, int <em>grav_n_grow</em> = 1<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity13solve_for_phiEiRN5amrex8MultiFabERN5amrex8MultiFabERKN5amrex6VectorIPN5amrex8MultiFabEEEN5amrex4RealEi">
+<span class="target" id="classGravity_1a44f1de36caadd609d9cc64d56d2aeeb7"></span>void <code class="descname">solve_for_phi</code><span class="sig-paren">(</span>int <em>level</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>Rhs</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>phi</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab *&gt; &amp;<em>grad_phi</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em>, int <em>fill_interior</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity19solve_for_delta_phiEiiRN5amrex8MultiFabERKN5amrex6VectorIPN5amrex8MultiFabEEERKN5amrex6VectorIN5amrex6VectorIPN5amrex8MultiFabEEEEE">
+<span class="target" id="classGravity_1ac135b849ed9cfd197cb021e7982aaf86"></span>void <code class="descname">solve_for_delta_phi</code><span class="sig-paren">(</span>int <em>crse_level</em>, int <em>fine_level</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>CrseRhs</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab *&gt; &amp;<em>delta_phi</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab *&gt;&gt; &amp;<em>grad_delta_phi</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity12gravity_syncEiiiiRKN5amrex8MultiFabERKN5amrex8MultiFabERKN5amrex6VectorIPN5amrex8MultiFabEEE">
+<span class="target" id="classGravity_1a0f0d4bc1b07aaf0978ef69e7f93db632"></span>void <code class="descname">gravity_sync</code><span class="sig-paren">(</span>int <em>crse_level</em>, int <em>fine_level</em>, int <em>iteration</em>, int <em>ncycle</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>drho_and_drhoU</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>dphi</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab *&gt; &amp;<em>grad_delta_phi_cc</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity28multilevel_solve_for_old_phiEiiii">
+<span class="target" id="classGravity_1a278597b90b4f54a55336ce6f0b19368a"></span>void <code class="descname">multilevel_solve_for_old_phi</code><span class="sig-paren">(</span>int <em>level</em>, int <em>finest_level</em>, int <em>ngrow_for_solve</em>, int <em>use_previous_phi_as_guess</em> = 0<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity28multilevel_solve_for_new_phiEiiii">
+<span class="target" id="classGravity_1a844b8b2d64ca012c20c31afd98ba302b"></span>void <code class="descname">multilevel_solve_for_new_phi</code><span class="sig-paren">(</span>int <em>level</em>, int <em>finest_level</em>, int <em>ngrow_for_solve</em>, int <em>use_previous_phi_as_guess</em> = 0<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity23actual_multilevel_solveEiiRKN5amrex6VectorIN5amrex6VectorIPN5amrex8MultiFabEEEEEiii">
+<span class="target" id="classGravity_1a8f030a660b1d77f0d27d9cf9f53a84fb"></span>void <code class="descname">actual_multilevel_solve</code><span class="sig-paren">(</span>int <em>level</em>, int <em>finest_level</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab *&gt;&gt; &amp;<em>grad_phi</em>, int <em>is_new</em>, int <em>ngrow_for_solve</em>, int <em>use_previous_phi_as_guess</em> = 0<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity17get_crse_grad_phiEiRN5amrex6VectorINSt10unique_ptrIN5amrex8MultiFabEEEEEN5amrex4RealE">
+<span class="target" id="classGravity_1a8d3d64add6fb51216ade9a7d99adcf73"></span>void <code class="descname">get_crse_grad_phi</code><span class="sig-paren">(</span>int <em>level</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;std::unique_ptr&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab&gt;&gt; &amp;<em>grad_phi_crse</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity12get_crse_phiEiRN5amrex8MultiFabEN5amrex4RealE">
+<span class="target" id="classGravity_1ab8383f55c13e2d30d922530ac2e9adc0"></span>void <code class="descname">get_crse_phi</code><span class="sig-paren">(</span>int <em>level</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>phi_crse</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity17zero_phi_flux_regEi">
+<span class="target" id="classGravity_1a628f3a5c110784d38429b281275c92db"></span>void <code class="descname">zero_phi_flux_reg</code><span class="sig-paren">(</span>int <em>level</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity19get_old_grav_vectorEiRN5amrex8MultiFabEN5amrex4RealE">
+<span class="target" id="classGravity_1afd769b96df67586649b086de75bd25fd"></span>void <code class="descname">get_old_grav_vector</code><span class="sig-paren">(</span>int <em>level</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>grav_vector</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity19get_new_grav_vectorEiRN5amrex8MultiFabEN5amrex4RealE">
+<span class="target" id="classGravity_1a517300a35456457611f7dffcdda34870"></span>void <code class="descname">get_new_grav_vector</code><span class="sig-paren">(</span>int <em>level</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>grav_vector</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity28average_fine_ec_onto_crse_ecEii">
+<span class="target" id="classGravity_1a46a37eac5cf80f96ecaabbf564d47fb0"></span>void <code class="descname">average_fine_ec_onto_crse_ec</code><span class="sig-paren">(</span>int <em>level</em>, int <em>is_new</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity13add_to_fluxesEiii">
+<span class="target" id="classGravity_1a83a46ff687066285f21d9045e05170d6"></span>void <code class="descname">add_to_fluxes</code><span class="sig-paren">(</span>int <em>level</em>, int <em>iteration</em>, int <em>ncycle</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity10reflux_phiEiRN5amrex8MultiFabE">
+<span class="target" id="classGravity_1a6a05f4e148b6b4317b8af82cdfdc1e3e"></span>void <code class="descname">reflux_phi</code><span class="sig-paren">(</span>int <em>level</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>dphi</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity10make_mg_bcEv">
+<span class="target" id="classGravity_1afe42c53b873e967735b52f6e9523be95"></span>void <code class="descname">make_mg_bc</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity17set_dirichlet_bcsEiPN5amrex8MultiFabE">
+<span class="target" id="classGravity_1a4f787499fb89105f0eaef973616425bb"></span>void <code class="descname">set_dirichlet_bcs</code><span class="sig-paren">(</span>int <em>level</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab *<em>phi</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
 </div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Members</p>
+<dl class="member">
+<dt id="_CPPv4N7Gravity9mlmg_lobcE">
+<span class="target" id="classGravity_1a4ffacfd0a49e17ed02232088b41c5140"></span>std::array&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MLLinOp::BCType, AMREX_SPACEDIM&gt; <code class="descname">mlmg_lobc</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N7Gravity9mlmg_hibcE">
+<span class="target" id="classGravity_1a8cff1c275aec86c6ee88a49fb0328b3d"></span>std::array&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MLLinOp::BCType, AMREX_SPACEDIM&gt; <code class="descname">mlmg_hibc</code><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Protected Functions</p>
+<dl class="function">
+<dt id="_CPPv4NK7Gravity12fill_ec_growEiRKN5amrex6VectorIPN5amrex8MultiFabEEERKN5amrex6VectorIPN5amrex8MultiFabEEE">
+<span class="target" id="classGravity_1aa88a8fb3212af450e7ca25b29f26488c"></span>void <code class="descname">fill_ec_grow</code><span class="sig-paren">(</span>int <em>level</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab *&gt; &amp;<em>ecF</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab *&gt; &amp;<em>ecC</em><span class="sig-paren">)</span> <em class="property">const</em><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity17AddParticlesToRhsEiRN5amrex8MultiFabEi">
+<span class="target" id="classGravity_1a315b9e43daaacc4ab0bc46659380153a"></span>void <code class="descname">AddParticlesToRhs</code><span class="sig-paren">(</span>int <em>level</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>Rhs</em>, int <em>ngrow</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity22AddGhostParticlesToRhsEiRN5amrex8MultiFabE">
+<span class="target" id="classGravity_1a9fb27bd6c049327263f3bf2494d9c5d8"></span>void <code class="descname">AddGhostParticlesToRhs</code><span class="sig-paren">(</span>int <em>level</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>Rhs</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity24AddVirtualParticlesToRhsEiRN5amrex8MultiFabEi">
+<span class="target" id="classGravity_1a7ca426ccd81e7a988381ecc48d5f5697"></span>void <code class="descname">AddVirtualParticlesToRhs</code><span class="sig-paren">(</span>int <em>level</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>Rhs</em>, int <em>ngrow</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity17AddParticlesToRhsEiiiRKN5amrex6VectorIPN5amrex8MultiFabEEE">
+<span class="target" id="classGravity_1aa24c085a8cf4be5a1f29c827d07fbbe2"></span>void <code class="descname">AddParticlesToRhs</code><span class="sig-paren">(</span>int <em>base_level</em>, int <em>finest_level</em>, int <em>ngrow</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab *&gt; &amp;<em>Rhs_particles</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity22AddGhostParticlesToRhsEiRKN5amrex6VectorIPN5amrex8MultiFabEEE">
+<span class="target" id="classGravity_1af1c9f772bdfde53c613a44abdb520112"></span>void <code class="descname">AddGhostParticlesToRhs</code><span class="sig-paren">(</span>int <em>level</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab *&gt; &amp;<em>Rhs_particles</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity24AddVirtualParticlesToRhsEiRKN5amrex6VectorIPN5amrex8MultiFabEEE">
+<span class="target" id="classGravity_1af737b5a46d004c8b98932a300838addf"></span>void <code class="descname">AddVirtualParticlesToRhs</code><span class="sig-paren">(</span>int <em>finest_level</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab *&gt; &amp;<em>Rhs_particles</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N7Gravity21CorrectRhsUsingOffsetEiRN5amrex8MultiFabE">
+<span class="target" id="classGravity_1ac883af2257824792409b91c2cdffa386"></span>void <code class="descname">CorrectRhsUsingOffset</code><span class="sig-paren">(</span>int <em>level</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>Rhs</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Protected Attributes</p>
+<dl class="member">
+<dt id="_CPPv4N7Gravity6parentE">
+<span class="target" id="classGravity_1aabb853453b6ec4af0e0c4c4cce0709a8"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Amr *<code class="descname">parent</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N7Gravity9LevelDataE">
+<span class="target" id="classGravity_1adc94a9198e6dd967c1fa15c1e582aca5"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::AmrLevel *&gt; <code class="descname">LevelData</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N7Gravity13grad_phi_currE">
+<span class="target" id="classGravity_1ac5726f2f29f2503f7640fbced9a9565a"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;std::unique_ptr&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab&gt;&gt;&gt; <code class="descname">grad_phi_curr</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N7Gravity13grad_phi_prevE">
+<span class="target" id="classGravity_1a6e09f9e6f28784c6866b5b76db4c805c"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;std::unique_ptr&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab&gt;&gt;&gt; <code class="descname">grad_phi_prev</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N7Gravity12phi_flux_regE">
+<span class="target" id="classGravity_1ac9be7dcae5d24d0ef799b2bf22595ea2"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;std::unique_ptr&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::FluxRegister&gt;&gt; <code class="descname">phi_flux_reg</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N7Gravity5gridsE">
+<span class="target" id="classGravity_1ae2070a6eb8f95b031b97e8f990843f58"></span><em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::BoxArray&gt; &amp;<code class="descname">grids</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N7Gravity4dmapE">
+<span class="target" id="classGravity_1a363b6786e53f09fbf005f2c79ed5ee5d"></span><em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::DistributionMapping&gt; &amp;<code class="descname">dmap</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N7Gravity20level_solver_resnormE">
+<span class="target" id="classGravity_1a183711252629be95b0954e69c88b6d45"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real&gt; <code class="descname">level_solver_resnorm</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N7Gravity7densityE">
+<span class="target" id="classGravity_1a2afdae561978584fa8ca407fd69d0076"></span>int <code class="descname">density</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N7Gravity12finest_levelE">
+<span class="target" id="classGravity_1a4488c2636d8beef373f89f1e0c55e91e"></span>int <code class="descname">finest_level</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N7Gravity22finest_level_allocatedE">
+<span class="target" id="classGravity_1a79dc456ce35ab432cc1bec772f001cd7"></span>int <code class="descname">finest_level_allocated</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N7Gravity7phys_bcE">
+<span class="target" id="classGravity_1a6d41ecceba6c104316eddedae0a2867b"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::BCRec *<code class="descname">phys_bc</code><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Protected Static Attributes</p>
+<dl class="member">
+<dt id="_CPPv4N7Gravity7verboseE">
+<span class="target" id="classGravity_1a0edc0e34db6aed40e5d90afa3ae714d4"></span>int <code class="descname">verbose</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N7Gravity7no_syncE">
+<span class="target" id="classGravity_1a1b0b1ecbb033c81c9860ffe9c2666b2a"></span>int <code class="descname">no_sync</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N7Gravity12no_compositeE">
+<span class="target" id="classGravity_1a4a82497e9387e830cf1cf77b7732c704"></span>int <code class="descname">no_composite</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N7Gravity13dirichlet_bcsE">
+<span class="target" id="classGravity_1a768d65c8ac044849ef62766c8ff72bd1"></span>int <code class="descname">dirichlet_bcs</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N7Gravity17mlmg_max_fmg_iterE">
+<span class="target" id="classGravity_1ae6f7f9c537eaa312205be4811b88e501"></span>int <code class="descname">mlmg_max_fmg_iter</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N7Gravity18mlmg_agglomerationE">
+<span class="target" id="classGravity_1a630212699945ac50bb24a75964b7e37e"></span>int <code class="descname">mlmg_agglomeration</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N7Gravity18mlmg_consolidationE">
+<span class="target" id="classGravity_1ac7b90335e96a0aaa82be3b87b868a6e4"></span>int <code class="descname">mlmg_consolidation</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N7Gravity11mass_offsetE">
+<span class="target" id="classGravity_1a653063ef33fc9b552b689b3871a0e1c0"></span>Real <code class="descname">mass_offset</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N7Gravity6sl_tolE">
+<span class="target" id="classGravity_1a94b522d5607a6a0cc0ce4890d22d626a"></span>Real <code class="descname">sl_tol</code> = 1.e-12<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N7Gravity6ml_tolE">
+<span class="target" id="classGravity_1abcbb6b9621c554885b2bb806a854bc73"></span>Real <code class="descname">ml_tol</code> = 1.e-12<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N7Gravity9delta_tolE">
+<span class="target" id="classGravity_1ae4d69478b8b74ead31ca50ddfb1f5b29"></span>Real <code class="descname">delta_tol</code> = 1.e-12<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N7Gravity12gravity_typeE">
+<span class="target" id="classGravity_1a6ab0d3ef6cbd6c39c33451457c2fb490"></span>std::string <code class="descname">gravity_type</code> = &quot;fill_me_please&quot;<br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
 </div>
 
 

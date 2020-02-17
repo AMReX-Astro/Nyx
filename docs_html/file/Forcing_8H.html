@@ -253,10 +253,352 @@
 </style>
 <div class="section" id="file-forcing-h">
 <h1>File Forcing.H<a class="headerlink" href="#file-forcing-h" title="Permalink to this headline">¶</a></h1>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">doxygenfile: No breathe_default_project config setting to fall back on for directive with no ‘project’ or ‘path’ specified.</p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Defines</p>
+<dl class="macro">
+<dt id="c.MAX_DIMENSION">
+<span class="target" id="Forcing_8H_1a776947deb6cf27cbd4faf91e0d60ff49"></span><code class="descname">MAX_DIMENSION</code><a class="headerlink" href="#c.MAX_DIMENSION" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Typedefs</p>
+<dl class="type">
+<dt id="_CPPv418spect_profile_type">
+<span class="target" id="Forcing_8H_1aee98dca30470025482789d33eaf21e69"></span><em class="property">typedef </em>int <code class="descname">spect_profile_type</code><a class="headerlink" href="#_CPPv418spect_profile_type" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Variables</p>
+<dl class="member">
+<dt id="_CPPv44None">
+<span class="target" id="Forcing_8H_1ac2fcfd616bdd9a8f169bb8e7473e6105"></span><em class="property">const</em> <a class="reference internal" href="#_CPPv418spect_profile_type" title="spect_profile_type">spect_profile_type</a> <code class="descname">None</code> = 0<a class="headerlink" href="#_CPPv44None" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv45Plane">
+<span class="target" id="Forcing_8H_1a512e520c338b2820bba928ea842e8f2f"></span><em class="property">const</em> <a class="reference internal" href="#_CPPv418spect_profile_type" title="spect_profile_type">spect_profile_type</a> <code class="descname">Plane</code> = 1<a class="headerlink" href="#_CPPv45Plane" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv44Band">
+<span class="target" id="Forcing_8H_1a3a7a68a8a0f4f9c40da370363b81fe09"></span><em class="property">const</em> <a class="reference internal" href="#_CPPv418spect_profile_type" title="spect_profile_type">spect_profile_type</a> <code class="descname">Band</code> = 2<a class="headerlink" href="#_CPPv44Band" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv49Parabolic">
+<span class="target" id="Forcing_8H_1a451c16e0978a6b377c109d7fd8e24444"></span><em class="property">const</em> <a class="reference internal" href="#_CPPv418spect_profile_type" title="spect_profile_type">spect_profile_type</a> <code class="descname">Parabolic</code> = 3<a class="headerlink" href="#_CPPv49Parabolic" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<dl class="class">
+<dt id="_CPPv417StochasticForcing">
+<span class="target" id="classStochasticForcing"></span><em class="property">class </em><code class="descname">StochasticForcing</code><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing17StochasticForcingEv">
+<span class="target" id="classStochasticForcing_1af0b0a2371ee07b184bc901ae6f719121"></span><code class="descname">StochasticForcing</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcingD0Ev">
+<span class="target" id="classStochasticForcing_1aaa2f817c652c747c9a2c5680e51b5137"></span><code class="descname">~StochasticForcing</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing4initEiPKN5amrex4RealEPKN5amrex4RealE">
+<span class="target" id="classStochasticForcing_1ae4a141551f4031a881975c0d0e3a022f"></span>void <code class="descname">init</code><span class="sig-paren">(</span>int <em>rank</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>prob_lo</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>prob_hi</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing6evolveEN5amrex4RealE">
+<span class="target" id="classStochasticForcing_1acf033dd566eded088fb9fcddb2bab517"></span>void <code class="descname">evolve</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing10distributeEv">
+<span class="target" id="classStochasticForcing_1a38a634b6cef8634f878c8c7247daab36"></span>void <code class="descname">distribute</code><span class="sig-paren">(</span>void<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing3rmsEv">
+<span class="target" id="classStochasticForcing_1a0cd9a0fa1dc945cdc0715139da1cd9d5"></span>Real <code class="descname">rms</code><span class="sig-paren">(</span>void<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing12ReadSpectrumEPc">
+<span class="target" id="classStochasticForcing_1a073d5288bd3992cb76fd2dc67a1923b4"></span>int <code class="descname">ReadSpectrum</code><span class="sig-paren">(</span>char *<em>fname</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing13WriteSpectrumEPc">
+<span class="target" id="classStochasticForcing_1afb17a1c27abd19ca12794a877083118d"></span>int <code class="descname">WriteSpectrum</code><span class="sig-paren">(</span>char *<em>fname</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing9set_decayEv">
+<span class="target" id="classStochasticForcing_1a0fadda7ec6edeb02340b4122c5445f0c"></span>void <code class="descname">set_decay</code><span class="sig-paren">(</span>void<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing20set_SolenoidalWeightEi">
+<span class="target" id="classStochasticForcing_1a2669a28718ba57b2c1a67998fe98806a"></span>void <code class="descname">set_SolenoidalWeight</code><span class="sig-paren">(</span>int <em>my_soln_weight</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing16get_SpectralRankEv">
+<span class="target" id="classStochasticForcing_1ac3d57fe05b31c3558aa7038f3668a9a6"></span>int <code class="descname">get_SpectralRank</code><span class="sig-paren">(</span>void<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing16get_LeftBoundaryEi">
+<span class="target" id="classStochasticForcing_1aaafa97ff17bba4e7df838657fb8f8bae"></span>int <code class="descname">get_LeftBoundary</code><span class="sig-paren">(</span>int <em>dim</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing17get_RightBoundaryEi">
+<span class="target" id="classStochasticForcing_1afa5dc7dfcc52ef36fbb14e689147c5f4"></span>int <code class="descname">get_RightBoundary</code><span class="sig-paren">(</span>int <em>dim</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing9get_RangeEi">
+<span class="target" id="classStochasticForcing_1aa2ebef9516b9aa4588b1a560364e7ee6"></span>int <code class="descname">get_Range</code><span class="sig-paren">(</span>int <em>dim</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing12get_NumModesEv">
+<span class="target" id="classStochasticForcing_1a8d501195af56effb6dd1ac54949fa453"></span>int <code class="descname">get_NumModes</code><span class="sig-paren">(</span>void<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing19get_NumNonZeroModesEv">
+<span class="target" id="classStochasticForcing_1a8e573715f2928fa7c777386f5b0f1712"></span>int <code class="descname">get_NumNonZeroModes</code><span class="sig-paren">(</span>void<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing16get_SpectProfileEv">
+<span class="target" id="classStochasticForcing_1ac5a0d99dff01100ef7360b3972fe20b7"></span><a class="reference internal" href="#_CPPv418spect_profile_type" title="spect_profile_type">spect_profile_type</a> <code class="descname">get_SpectProfile</code><span class="sig-paren">(</span>void<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing14get_WaveNumberEi">
+<span class="target" id="classStochasticForcing_1a49ca906a86f94e6750cc98450f16b4aa"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <code class="descname">get_WaveNumber</code><span class="sig-paren">(</span>int <em>dim</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing15get_IntgrLengthEi">
+<span class="target" id="classStochasticForcing_1a5a17962ef1208a2b1d32ebca81aebf3d"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <code class="descname">get_IntgrLength</code><span class="sig-paren">(</span>int <em>dim</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing13get_IntgrTimeEi">
+<span class="target" id="classStochasticForcing_1adf36376b7982d9e564acd123df34d66c"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <code class="descname">get_IntgrTime</code><span class="sig-paren">(</span>int <em>dim</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing9copy_maskEPi">
+<span class="target" id="classStochasticForcing_1acce92a9698579e6cefb1e88d74d59593"></span>void <code class="descname">copy_mask</code><span class="sig-paren">(</span>int *<em>target</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing17copy_SpectrumEvenEiPN5amrex4RealE">
+<span class="target" id="classStochasticForcing_1a12f08319fa75f25fd0fb81538148837a"></span>void <code class="descname">copy_SpectrumEven</code><span class="sig-paren">(</span>int <em>dim</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>target</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing16copy_SpectrumOddEiPN5amrex4RealE">
+<span class="target" id="classStochasticForcing_1adaa8796727bb63dcbfa9233cac66e49a"></span>void <code class="descname">copy_SpectrumOdd</code><span class="sig-paren">(</span>int <em>dim</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>target</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing21copy_ExpandedSpectrumEiPN5amrex4RealE">
+<span class="target" id="classStochasticForcing_1ae28aed86029020c548882e37bb1f75ed"></span>void <code class="descname">copy_ExpandedSpectrum</code><span class="sig-paren">(</span>int <em>dim</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>target</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing13read_SpectrumERNSt8ifstreamE">
+<span class="target" id="classStochasticForcing_1ac1b5bfe7e195a2c48e51d63503cad396"></span>void <code class="descname">read_Spectrum</code><span class="sig-paren">(</span>std::ifstream &amp;<em>input</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing14write_SpectrumERNSt8ofstreamE">
+<span class="target" id="classStochasticForcing_1a860e1f6f1fbe272e0a5b7963796549ff"></span>void <code class="descname">write_Spectrum</code><span class="sig-paren">(</span>std::ofstream &amp;<em>output</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Private Functions</p>
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing6injectEv">
+<span class="target" id="classStochasticForcing_1a4370ca19cdb823a4c28dc225007a9709"></span>void <code class="descname">inject</code><span class="sig-paren">(</span>void<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing13gauss_deviateEN5amrex4RealEPN5amrex4RealEPN5amrex4RealE">
+<span class="target" id="classStochasticForcing_1a19f13fd03b2a451a59db12f36056a41e"></span>void <code class="descname">gauss_deviate</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>amplt</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>x</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>y</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing11read_paramsEv">
+<span class="target" id="classStochasticForcing_1a195c9eb8057bc03818779a1d79ccd9c6"></span>void <code class="descname">read_params</code><span class="sig-paren">(</span>void<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Private Members</p>
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing8NumModesE">
+<span class="target" id="classStochasticForcing_1ab45ab2d03a0d4a68e95f3e8492331817"></span>int <code class="descname">NumModes</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing15NumNonZeroModesE">
+<span class="target" id="classStochasticForcing_1a7117a9ee0ecc89bc968761e457b96131"></span>int <code class="descname">NumNonZeroModes</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing2i1E">
+<span class="target" id="classStochasticForcing_1a8e342efc3b905ac21348b19cc5d442ee"></span>int <code class="descname">i1</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing2i2E">
+<span class="target" id="classStochasticForcing_1a66428ca3ba295e36de74af49c76c678a"></span>int <code class="descname">i2</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing2j1E">
+<span class="target" id="classStochasticForcing_1ab3761852efc6e8f9a02e650653c5f954"></span>int <code class="descname">j1</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing2j2E">
+<span class="target" id="classStochasticForcing_1a18b9a5f3d28fe598d9dbf90c4d104823"></span>int <code class="descname">j2</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing2k1E">
+<span class="target" id="classStochasticForcing_1a07cac9d8bf04a9466c83cf12e8ac8884"></span>int <code class="descname">k1</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing2k2E">
+<span class="target" id="classStochasticForcing_1a6da1c5f311e16c20ead11a27a13df932"></span>int <code class="descname">k2</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing5decayE">
+<span class="target" id="classStochasticForcing_1ae094ba41694bc573a27609b3c12e0ec8"></span>int <code class="descname">decay</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing4seedE">
+<span class="target" id="classStochasticForcing_1a5745edceba901745d77dd8e7cf85a7ba"></span>int <code class="descname">seed</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing11AmpltThreshE">
+<span class="target" id="classStochasticForcing_1a66e5a0e72c4d7b11f31c30d407d30b12"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <code class="descname">AmpltThresh</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing5alphaE">
+<span class="target" id="classStochasticForcing_1aa8b7cc0c2891f766517c62e8b8486c35"></span>int <code class="descname">alpha</code>[<code class="descname">MAX_DIMENSION</code>]<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing9BandWidthE">
+<span class="target" id="classStochasticForcing_1a10cd44729d80dd1e7a253907d49b5381"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <code class="descname">BandWidth</code>[<code class="descname">MAX_DIMENSION</code>]<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing13IntgrVelocityE">
+<span class="target" id="classStochasticForcing_1aff1f2e42e5d99bd8a3384b358c557284"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <code class="descname">IntgrVelocity</code>[<code class="descname">MAX_DIMENSION</code>]<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing9IntgrTimeE">
+<span class="target" id="classStochasticForcing_1a530123beaf0fd3230492b528ae56a03f"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <code class="descname">IntgrTime</code>[<code class="descname">MAX_DIMENSION</code>]<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing11IntgrLengthE">
+<span class="target" id="classStochasticForcing_1a84d7220831d34717ef9fdb3b90230229"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <code class="descname">IntgrLength</code>[<code class="descname">MAX_DIMENSION</code>]<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing10WaveNumberE">
+<span class="target" id="classStochasticForcing_1af3a90e10dc1bc08f21df267ed0805215"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <code class="descname">WaveNumber</code>[<code class="descname">MAX_DIMENSION</code>]<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing12SpectProfileE">
+<span class="target" id="classStochasticForcing_1aa67089c27f45bd5dddc5476799ab32bd"></span><a class="reference internal" href="#_CPPv418spect_profile_type" title="spect_profile_type">spect_profile_type</a> <code class="descname">SpectProfile</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing13AutoCorrlTimeE">
+<span class="target" id="classStochasticForcing_1a65b765c27c74c32b91022d5d51651ed6"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <code class="descname">AutoCorrlTime</code>[<code class="descname">MAX_DIMENSION</code>]<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing16SolenoidalWeightE">
+<span class="target" id="classStochasticForcing_1a4f76d05fcfd3c834b7390b729f9ac90d"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <code class="descname">SolenoidalWeight</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing13DecayInitTimeE">
+<span class="target" id="classStochasticForcing_1a9fc88daf901e6e037240f290727be69d"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <code class="descname">DecayInitTime</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing4maskE">
+<span class="target" id="classStochasticForcing_1a71646664c001448473264bb1c0042ae7"></span>int *<code class="descname">mask</code><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing9AmplitudeE">
+<span class="target" id="classStochasticForcing_1a266af17b9464780c2556ce0f09c42b6d"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<code class="descname">Amplitude</code>[<code class="descname">MAX_DIMENSION</code>]<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing13InjectionEvenE">
+<span class="target" id="classStochasticForcing_1a57978ecf7e247c3e1275bfaca896db4e"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<code class="descname">InjectionEven</code>[<code class="descname">MAX_DIMENSION</code>]<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing12InjectionOddE">
+<span class="target" id="classStochasticForcing_1aa91331cae3d4cc956514c0a53c9048da"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<code class="descname">InjectionOdd</code>[<code class="descname">MAX_DIMENSION</code>]<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing12SpectrumEvenE">
+<span class="target" id="classStochasticForcing_1af22bcaa4465592fdf2892f1f9baa404b"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<code class="descname">SpectrumEven</code>[<code class="descname">MAX_DIMENSION</code>]<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing11SpectrumOddE">
+<span class="target" id="classStochasticForcing_1a11dd33b6e67035ef14ffa987507fe0d6"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<code class="descname">SpectrumOdd</code>[<code class="descname">MAX_DIMENSION</code>]<br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Private Static Attributes</p>
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing7verboseE">
+<span class="target" id="classStochasticForcing_1a27b758934ea7ba04d65a146b9945aa7f"></span>int <code class="descname">verbose</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing12SpectralRankE">
+<span class="target" id="classStochasticForcing_1a3c82e07f7d634d8da4fd87fd79f09f1c"></span>int <code class="descname">SpectralRank</code> = 3<br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
 </div>
 
 

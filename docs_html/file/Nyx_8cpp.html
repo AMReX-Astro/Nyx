@@ -253,9 +253,86 @@
 </style>
 <div class="section" id="file-nyx-cpp">
 <h1>File Nyx.cpp<a class="headerlink" href="#file-nyx-cpp" title="Permalink to this headline">¶</a></h1>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">doxygenfile: No breathe_default_project config setting to fall back on for directive with no ‘project’ or ‘path’ specified.</p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Functions</p>
+<dl class="function">
+<dt id="_CPPv413get_comp_urhov">
+<span class="target" id="Nyx_8cpp_1a237f69baec66fbdd1f2c62ed229867b6"></span>int <code class="descname">get_comp_urho</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv413get_comp_urhov" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv413get_comp_tempv">
+<span class="target" id="Nyx_8cpp_1acb0607347d5937bbd7d7565a7c2e227c"></span>int <code class="descname">get_comp_temp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv413get_comp_tempv" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv414get_comp_e_intv">
+<span class="target" id="Nyx_8cpp_1a02981370271f28648ef567285aab3fb8"></span>int <code class="descname">get_comp_e_int</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv414get_comp_e_intv" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<span class="target" id="Nyx_8cpp_1a4c276f65adbe87c857a4d6e02c475c75"></span><code class="descname">int reeber_int(0)</code></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt>
+<span class="target" id="Nyx_8cpp_1ac4f327c4b528ba327e76f54bfec55bba"></span><code class="descname">int gimlet_int(0)</code></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Variables</p>
+<dl class="member">
+<dt id="_CPPv419NyxHaloFinderSignal">
+<span class="target" id="Nyx_8cpp_1a498285863f9acfbb7f081cbf41a46d18"></span><em class="property">const</em> int <code class="descname">NyxHaloFinderSignal</code> = 42<a class="headerlink" href="#_CPPv419NyxHaloFinderSignal" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv412GimletSignal">
+<span class="target" id="Nyx_8cpp_1ab8805eaaec56fe85a6bd711b72a4bd29"></span><em class="property">const</em> int <code class="descname">GimletSignal</code> = 55<a class="headerlink" href="#_CPPv412GimletSignal" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv412sum_interval">
+<span class="target" id="Nyx_8cpp_1a233bb2d84fa895783e2cb29f6ca16d26"></span>int <code class="descname">sum_interval</code> = -1<a class="headerlink" href="#_CPPv412sum_interval" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv48fixed_dt">
+<span class="target" id="Nyx_8cpp_1a68ceaf275e4e01a58b1e211f7e33fc72"></span>Real <code class="descname">fixed_dt</code> = -1.0<a class="headerlink" href="#_CPPv48fixed_dt" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv410initial_dt">
+<span class="target" id="Nyx_8cpp_1a6f81e7fc8d227b43b2451e0e7e4c69a3"></span>Real <code class="descname">initial_dt</code> = -1.0<a class="headerlink" href="#_CPPv410initial_dt" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv49dt_cutoff">
+<span class="target" id="Nyx_8cpp_1ac09a101d4fd1f7d4c1c393c99e7b4acf"></span>Real <code class="descname">dt_cutoff</code> = 0<a class="headerlink" href="#_CPPv49dt_cutoff" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv410simd_width">
+<span class="target" id="Nyx_8cpp_1af6a1ffb0e136d35d4dd7a427c26f596f"></span>int <code class="descname">simd_width</code> = 1<a class="headerlink" href="#_CPPv410simd_width" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv49slice_int">
+<span class="target" id="Nyx_8cpp_1a6e9efc90c311bbdff7320b8e59b1328c"></span>int <code class="descname">slice_int</code> = -1<a class="headerlink" href="#_CPPv49slice_int" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv410slice_file">
+<span class="target" id="Nyx_8cpp_1a39dd91ea3f29fb6f0305ea7ab4718b6f"></span>std::string <code class="descname">slice_file</code> = &quot;slice_&quot;<a class="headerlink" href="#_CPPv410slice_file" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv412slice_nfiles">
+<span class="target" id="Nyx_8cpp_1a6b8cfcb16ab6a3221e638a374a63a29d"></span>int <code class="descname">slice_nfiles</code> = 128<a class="headerlink" href="#_CPPv412slice_nfiles" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
 </div>
 </div>
 

@@ -253,9 +253,64 @@
 </style>
 <div class="section" id="file-nyx-setup-cpp">
 <h1>File Nyx_setup.cpp<a class="headerlink" href="#file-nyx-setup-cpp" title="Permalink to this headline">¶</a></h1>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">doxygenfile: No breathe_default_project config setting to fall back on for directive with no ‘project’ or ‘path’ specified.</p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Typedefs</p>
+<dl class="type">
+<dt id="_CPPv49BndryFunc">
+<span class="target" id="Nyx__setup_8cpp_1ae88b962106519da922916984252abe4d"></span><em class="property">typedef </em>StateDescriptor::BndryFunc <code class="descname">BndryFunc</code><a class="headerlink" href="#_CPPv49BndryFunc" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Functions</p>
+<dl class="function">
+<dt id="_CPPv412the_same_boxRK3Box">
+<span class="target" id="Nyx__setup_8cpp_1aa6bea83e2b8b2921dbe0e39ee1e37ade"></span><em class="property">static</em> Box <code class="descname">the_same_box</code><span class="sig-paren">(</span><em class="property">const</em> Box &amp;<em>b</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv412the_same_boxRK3Box" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv415grow_box_by_oneRK3Box">
+<span class="target" id="Nyx__setup_8cpp_1a22be578a5f78bae6c393fed033a597fe"></span><em class="property">static</em> Box <code class="descname">grow_box_by_one</code><span class="sig-paren">(</span><em class="property">const</em> Box &amp;<em>b</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv415grow_box_by_oneRK3Box" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv413set_scalar_bcR5BCRecRK5BCRec">
+<span class="target" id="Nyx__setup_8cpp_1a9401c90fc0d65070a7bc987b0bdfbb19"></span><em class="property">static</em> void <code class="descname">set_scalar_bc</code><span class="sig-paren">(</span>BCRec &amp;<em>bc</em>, <em class="property">const</em> BCRec &amp;<em>phys_bc</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv413set_scalar_bcR5BCRecRK5BCRec" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv412set_x_vel_bcR5BCRecRK5BCRec">
+<span class="target" id="Nyx__setup_8cpp_1a645bc2187bcf78e7d6650f9dbbcd5e69"></span><em class="property">static</em> void <code class="descname">set_x_vel_bc</code><span class="sig-paren">(</span>BCRec &amp;<em>bc</em>, <em class="property">const</em> BCRec &amp;<em>phys_bc</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv412set_x_vel_bcR5BCRecRK5BCRec" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv412set_y_vel_bcR5BCRecRK5BCRec">
+<span class="target" id="Nyx__setup_8cpp_1a3cf2f4d49190d059e8b9a12a81c93b8c"></span><em class="property">static</em> void <code class="descname">set_y_vel_bc</code><span class="sig-paren">(</span>BCRec &amp;<em>bc</em>, <em class="property">const</em> BCRec &amp;<em>phys_bc</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv412set_y_vel_bcR5BCRecRK5BCRec" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv412set_z_vel_bcR5BCRecRK5BCRec">
+<span class="target" id="Nyx__setup_8cpp_1ad991519dd39be52fe2ec26e03a3f6c6c"></span><em class="property">static</em> void <code class="descname">set_z_vel_bc</code><span class="sig-paren">(</span>BCRec &amp;<em>bc</em>, <em class="property">const</em> BCRec &amp;<em>phys_bc</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv412set_z_vel_bcR5BCRecRK5BCRec" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Variables</p>
+<dl class="member">
+<dt id="_CPPv49scalar_bc">
+<span class="target" id="Nyx__setup_8cpp_1a482c494f63b3603d90c5e9cf9a916ba8"></span>int <code class="descname">scalar_bc</code>[] = {    INT_DIR, EXT_DIR, FOEXTRAP, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN}<a class="headerlink" href="#_CPPv49scalar_bc" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv411norm_vel_bc">
+<span class="target" id="Nyx__setup_8cpp_1a4d4102ec15f745ea258998b2ecb07f2f"></span>int <code class="descname">norm_vel_bc</code>[] = {    INT_DIR, EXT_DIR, FOEXTRAP, REFLECT_ODD, REFLECT_ODD, REFLECT_ODD}<a class="headerlink" href="#_CPPv411norm_vel_bc" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv411tang_vel_bc">
+<span class="target" id="Nyx__setup_8cpp_1ad472550f146d2e50297f8a016ac126f8"></span>int <code class="descname">tang_vel_bc</code>[] = {    INT_DIR, EXT_DIR, FOEXTRAP, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN}<a class="headerlink" href="#_CPPv411tang_vel_bc" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
 </div>
 </div>
 

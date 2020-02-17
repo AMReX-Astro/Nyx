@@ -12,7 +12,7 @@ refinement in both space and time, utilizing the
 AMReX library.
 
 For the first paper describing the Nbody, adiabatic hydro and gravity algorithms:
-  * A. S. Almgren, J. B. Bell, M.J. Lijewski, Z. Lukic, E. Van Andel, **"Nyx: A Massively Parallel AMR Code for Computational Cosmology"** Astrophysical Journal, **765**, 39, 2013. [[pdf]](../../Publications/almgren/nyx.pdf)
+  * A. S. Almgren, J. B. Bell, M.J. Lijewski, Z. Lukic, E. Van Andel, **"Nyx: A Massively Parallel AMR Code for Computational Cosmology"** Astrophysical Journal, **765**, 39, 2013. [[arxiv]](https://arxiv.org/abs/1301.4498)
 For the reaction and thermal rates of the primordial chemical composition gas (and convergence tests in the context of the Lymanalpha forest), see:
   * Zarija Lukic, Casey Stark, Peter Nugent, Martin White, Avery Meiksin, Ann Almgren, **"The Lymanalpha forest in opticallythin hydrodynamical simulations,"** Monthly Notices of the Royal Astronomical Society, **446**, 36973724, 2015 [[arxiv]](http://arxiv.org/abs/1406.6361).
 For the synthesis model of the UV background, which provides the photoionization and photoheating rates, see:

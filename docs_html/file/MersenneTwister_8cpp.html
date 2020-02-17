@@ -253,9 +253,84 @@
 </style>
 <div class="section" id="file-mersennetwister-cpp">
 <h1>File MersenneTwister.cpp<a class="headerlink" href="#file-mersennetwister-cpp" title="Permalink to this headline">¶</a></h1>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">doxygenfile: No breathe_default_project config setting to fall back on for directive with no ‘project’ or ‘path’ specified.</p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Defines</p>
+<dl class="macro">
+<dt id="c.MT_LEN">
+<span class="target" id="MersenneTwister_8cpp_1a429b2f062be33c921b23cb08d4f20bff"></span><code class="descname">MT_LEN</code><a class="headerlink" href="#c.MT_LEN" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="macro">
+<dt id="c.MT_IA">
+<span class="target" id="MersenneTwister_8cpp_1a5f5c4f0b9aa83d47bfc9f57990684add"></span><code class="descname">MT_IA</code><a class="headerlink" href="#c.MT_IA" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="macro">
+<dt id="c.MT_IB">
+<span class="target" id="MersenneTwister_8cpp_1a9ad917e792e4589abf809a6e722ed061"></span><code class="descname">MT_IB</code><a class="headerlink" href="#c.MT_IB" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="macro">
+<dt id="c.UPPER_MASK">
+<span class="target" id="MersenneTwister_8cpp_1a39bc458849360f8f371b54c4365d397f"></span><code class="descname">UPPER_MASK</code><a class="headerlink" href="#c.UPPER_MASK" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="macro">
+<dt id="c.LOWER_MASK">
+<span class="target" id="MersenneTwister_8cpp_1a4ddd8cab3564b7a86a4b0e52ba08f70e"></span><code class="descname">LOWER_MASK</code><a class="headerlink" href="#c.LOWER_MASK" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="macro">
+<dt id="c.MATRIX_A">
+<span class="target" id="MersenneTwister_8cpp_1a376c3581bae3c2367fc9ce694e5a8949"></span><code class="descname">MATRIX_A</code><a class="headerlink" href="#c.MATRIX_A" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="macro">
+<dt id="c.TWIST">
+<span class="target" id="MersenneTwister_8cpp_1a8d652dbeb307ba8c6ee72598489ffbd8"></span><code class="descname">TWIST</code><span class="sig-paren">(</span>b, i, j<span class="sig-paren">)</span><a class="headerlink" href="#c.TWIST" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="macro">
+<dt id="c.MAGIC">
+<span class="target" id="MersenneTwister_8cpp_1a086cf0fd892bf21f38dadc1117f07b23"></span><code class="descname">MAGIC</code><span class="sig-paren">(</span>s<span class="sig-paren">)</span><a class="headerlink" href="#c.MAGIC" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Functions</p>
+<dl class="function">
+<dt id="_CPPv47mt_initj">
+<span class="target" id="MersenneTwister_8cpp_1a458e026fb06640fd4a88546112d56a5e"></span>void <code class="descname">mt_init</code><span class="sig-paren">(</span>unsigned int <em>seed</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv47mt_readRNSt8ifstreamE">
+<span class="target" id="MersenneTwister_8cpp_1a5fb5bfff43d83d98c5f108e199f98ee8"></span>void <code class="descname">mt_read</code><span class="sig-paren">(</span>std::ifstream &amp;<em>input</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv48mt_writeRNSt8ofstreamE">
+<span class="target" id="MersenneTwister_8cpp_1aa07104cb51f67dd8991a7338a3789108"></span>void <code class="descname">mt_write</code><span class="sig-paren">(</span>std::ofstream &amp;<em>output</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv48mt_writeRNSt8ofstreamE" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv49mt_randomv">
+<span class="target" id="MersenneTwister_8cpp_1a7304bb8035ae2ab4c6fec78e06187e51"></span>unsigned long int <code class="descname">mt_random</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Variables</p>
+<dl class="member">
+<dt id="_CPPv48mt_index">
+<span class="target" id="MersenneTwister_8cpp_1ad29fae81e1ab07fa90b1a464b76bb445"></span>int <code class="descname">mt_index</code><a class="headerlink" href="#_CPPv48mt_index" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv49mt_buffer">
+<span class="target" id="MersenneTwister_8cpp_1a6be8fddf8475fd30551f6f0e270db901"></span>unsigned long int <code class="descname">mt_buffer</code>[<code class="descname">MT_LEN</code>]<a class="headerlink" href="#_CPPv49mt_buffer" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
 </div>
 </div>
 

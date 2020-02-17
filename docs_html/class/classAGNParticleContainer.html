@@ -211,10 +211,106 @@
 </style>
 <div class="section" id="class-agnparticlecontainer">
 <h1>Class AGNParticleContainer<a class="headerlink" href="#class-agnparticlecontainer" title="Permalink to this headline">¶</a></h1>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">doxygenclass: No breathe_default_project config setting to fall back on for directive with no ‘project’ or ‘path’ specified.</p>
+<dl class="class">
+<dt id="_CPPv420AGNParticleContainer">
+<span class="target" id="classAGNParticleContainer"></span><em class="property">class </em><code class="descname">AGNParticleContainer</code> : <em class="property">public</em> NyxParticleContainer&lt;3 + BL_SPACEDIM, 0, 0, 0&gt;<a class="headerlink" href="#_CPPv420AGNParticleContainer" title="Permalink to this definition">¶</a><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Types</p>
+<dl class="type">
+<dt id="_CPPv4N20AGNParticleContainer9MyParIterE">
+<span class="target" id="classAGNParticleContainer_1a833df859d39bad7e2b4a49184a80ad3f"></span><em class="property">using </em><code class="descname">MyParIter</code> = <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::ParIter&lt;3 + BL_SPACEDIM&gt;<a class="headerlink" href="#_CPPv4N20AGNParticleContainer9MyParIterE" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
 </div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt id="_CPPv4N20AGNParticleContainer20AGNParticleContainerEPN5amrex3AmrEi">
+<span class="target" id="classAGNParticleContainer_1a011429cc78922caf78ff3581cf942a3f"></span><code class="descname">AGNParticleContainer</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Amr *<em>amr</em>, int <em>nghost</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N20AGNParticleContainer20AGNParticleContainerEPN5amrex3AmrEi" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N20AGNParticleContainerD0Ev">
+<span class="target" id="classAGNParticleContainer_1a6b4f4b817d44d8a66a6420109914e2bc"></span><em class="property">virtual</em> <code class="descname">~AGNParticleContainer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N20AGNParticleContainerD0Ev" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N20AGNParticleContainer17NumberOfParticlesER9MyParIter">
+<span class="target" id="classAGNParticleContainer_1aeda5f1d01eab151b73c82c7664ee8ad9"></span><em class="property">const</em> int <code class="descname">NumberOfParticles</code><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N20AGNParticleContainer9MyParIterE" title="AGNParticleContainer::MyParIter">MyParIter</a> &amp;<em>pti</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N20AGNParticleContainer17NumberOfParticlesER9MyParIter" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N20AGNParticleContainer13moveKickDriftERN5amrex8MultiFabEiN5amrex4RealEN5amrex4RealEN5amrex4RealEi">
+<span class="target" id="classAGNParticleContainer_1a10ef1d6c7a44ef107d7b5d826f6c932e"></span>void <code class="descname">moveKickDrift</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>acceleration</em>, int <em>level</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>timestep</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>a_old</em> = 1.0, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>a_half</em> = 1.0, int <em>where_width</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N20AGNParticleContainer13moveKickDriftERN5amrex8MultiFabEiN5amrex4RealEN5amrex4RealEN5amrex4RealEi" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N20AGNParticleContainer8moveKickERN5amrex8MultiFabEiN5amrex4RealEN5amrex4RealEN5amrex4RealE">
+<span class="target" id="classAGNParticleContainer_1a0238e828bc46513dfe237da515841867"></span>void <code class="descname">moveKick</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>acceleration</em>, int <em>level</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>timestep</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>a_new</em> = 1.0, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>a_half</em> = 1.0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N20AGNParticleContainer8moveKickERN5amrex8MultiFabEiN5amrex4RealEN5amrex4RealEN5amrex4RealE" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N20AGNParticleContainer14AddOneParticleEiiiN5amrex4RealEN5amrex4RealEN5amrex4RealEN5amrex4RealE">
+<span class="target" id="classAGNParticleContainer_1a2060e66ea4974d9bb9e9f894cc92ba96"></span>void <code class="descname">AddOneParticle</code><span class="sig-paren">(</span>int <em>lev</em>, int <em>grid</em>, int <em>tile</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>mass</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>x</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>y</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>z</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N20AGNParticleContainer14AddOneParticleEiiiN5amrex4RealEN5amrex4RealEN5amrex4RealEN5amrex4RealE" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N20AGNParticleContainer14AddOneParticleER16ParticleTileTypeN5amrex4RealEN5amrex4RealEN5amrex4RealEN5amrex4RealE">
+<span class="target" id="classAGNParticleContainer_1a046fb56ae424cc240bd31809ad38bf4e"></span>void <code class="descname">AddOneParticle</code><span class="sig-paren">(</span>ParticleTileType &amp;<em>particle_tile</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>mass</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>x</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>y</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>z</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N20AGNParticleContainer14AddOneParticleER16ParticleTileTypeN5amrex4RealEN5amrex4RealEN5amrex4RealEN5amrex4RealE" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N20AGNParticleContainer14ComputeOverlapEi">
+<span class="target" id="classAGNParticleContainer_1a3fce565da37ac87a174c3ed51b3c2bda"></span>void <code class="descname">ComputeOverlap</code><span class="sig-paren">(</span>int <em>lev</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N20AGNParticleContainer14ComputeOverlapEi" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Invalidate particles in cells that are already occupied </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N20AGNParticleContainer5MergeEi">
+<span class="target" id="classAGNParticleContainer_1ae574c88cb118e6e22051d575adfa0151"></span>void <code class="descname">Merge</code><span class="sig-paren">(</span>int <em>lev</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N20AGNParticleContainer5MergeEi" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Invalidate particles that have been merged with other particles </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N20AGNParticleContainer23ComputeParticleVelocityEiRN5amrex8MultiFabERN5amrex8MultiFabEi">
+<span class="target" id="classAGNParticleContainer_1ad423b9f3536f88d4aa74e23c404ac538"></span>void <code class="descname">ComputeParticleVelocity</code><span class="sig-paren">(</span>int <em>lev</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>state_old</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>state_new</em>, int <em>add_energy</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N20AGNParticleContainer23ComputeParticleVelocityEiRN5amrex8MultiFabERN5amrex8MultiFabEi" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Compute the momentum that has been removed from the gas in order to define the particle velocity </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N20AGNParticleContainer11AccreteMassEiRN5amrex8MultiFabERN5amrex8MultiFabEN5amrex4RealE">
+<span class="target" id="classAGNParticleContainer_1ad0d835bb6531f29643b897c5d5b2f35a"></span>void <code class="descname">AccreteMass</code><span class="sig-paren">(</span>int <em>lev</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>state</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>density_lost</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N20AGNParticleContainer11AccreteMassEiRN5amrex8MultiFabERN5amrex8MultiFabEN5amrex4RealE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Accrete mass from the grid onto the existing AGN particles </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N20AGNParticleContainer13ReleaseEnergyEiRN5amrex8MultiFabERN5amrex8MultiFabEN5amrex4RealE">
+<span class="target" id="classAGNParticleContainer_1adcff872e88f31e1a8c909547f7b8e136"></span>void <code class="descname">ReleaseEnergy</code><span class="sig-paren">(</span>int <em>lev</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>state</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>D_new</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>a</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N20AGNParticleContainer13ReleaseEnergyEiRN5amrex8MultiFabERN5amrex8MultiFabEN5amrex4RealE" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Release energy if it exceeds thermal feedback threshold. </p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N20AGNParticleContainer15writeAllAtLevelEi">
+<span class="target" id="classAGNParticleContainer_1a7cdfb4c9f21dcb7faf52aea5871ee599"></span>void <code class="descname">writeAllAtLevel</code><span class="sig-paren">(</span>int <em>lev</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N20AGNParticleContainer15writeAllAtLevelEi" title="Permalink to this definition">¶</a><br /></dt>
+<dd><p>Write out all particles at a level </p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Protected Attributes</p>
+<dl class="member">
+<dt id="_CPPv4N20AGNParticleContainer9sub_cycleE">
+<span class="target" id="classAGNParticleContainer_1a927f15cdf30e949cb687b3de7d9524e3"></span>bool <code class="descname">sub_cycle</code><a class="headerlink" href="#_CPPv4N20AGNParticleContainer9sub_cycleE" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N20AGNParticleContainer15real_comp_namesE">
+<span class="target" id="classAGNParticleContainer_1a549401da5f6adfe701d2fccf336a4c6f"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;std::string&gt; <code class="descname">real_comp_names</code><a class="headerlink" href="#_CPPv4N20AGNParticleContainer15real_comp_namesE" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
 </div>
 
 

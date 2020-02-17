@@ -105,6 +105,8 @@
 <li class="toctree-l3"><a class="reference internal" href="#read-from-a-binary-meta-file">Read from a binary “meta” file</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#reading-sph-particles">Reading SPH particles</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#random-placement">Random placement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#random-placement-1-particle-per-grid-cell">Random placement (1 particle per grid cell)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#uniform-placement">Uniform placement</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#cosmological">Cosmological</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#generating-a-transfer-function">Generating a transfer function</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#setting-up-the-initial-displacements">Setting up the initial displacements</a></li>
@@ -232,10 +234,20 @@
 </style>
 <div class="section" id="dark-matter-particles">
 <h1>Dark matter particles<a class="headerlink" href="#dark-matter-particles" title="Permalink to this headline">¶</a></h1>
-<div class="line-block">
-<div class="line">For the moment, assume that we are running in comoving coordinates,
+<p>For the moment, assume that we are running in comoving coordinates,
 with dark matter particles only (no hydro) and that the particles all exist at level 0. These assumptions are
-encapsulated in the following lines in the inputs file:</div>
+encapsulated in the following lines in the inputs file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">do_hydro</span><span class="o">=</span><span class="mi">0</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">do_santa_barbara</span><span class="o">=</span><span class="mi">0</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">init_sb_vels</span><span class="o">=</span><span class="mi">0</span>
+
+<span class="n">nyx</span><span class="o">.</span><span class="n">do_grav</span><span class="o">=</span><span class="mi">1</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">do_dm_particles</span><span class="o">=</span><span class="mi">1</span>
+</pre></div>
+</div>
+<p>This setup can be selected at compile time using the make flags:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">NO_HYDRO</span><span class="o">=</span><span class="n">TRUE</span>
+</pre></div>
 </div>
 <div class="section" id="equations">
 <h2>Equations<a class="headerlink" href="#equations" title="Permalink to this headline">¶</a></h2>
@@ -256,7 +268,12 @@ to solve</p>
 <span class="n">nyx</span><span class="o">.</span><span class="n">do_dm_particles</span><span class="o">=</span><span class="mi">1</span>
 </pre></div>
 </div>
-<p>And the particles can be initialized via ascii file, binary file, or other means.</p>
+<p>And the particles can be initialized via ascii file, binary file, or other means.
+The standard precision to use for the mesh is double precision and for the particles is single precision, set with the make flags:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PRECISION</span> <span class="o">=</span> <span class="n">DOUBLE</span>
+<span class="n">USE_SINGLE_PRECISION_PARTICLES</span> <span class="o">=</span> <span class="n">TRUE</span>
+</pre></div>
+</div>
 <div class="section" id="read-from-an-ascii-file">
 <h3>Read from an ASCII file<a class="headerlink" href="#read-from-an-ascii-file" title="Permalink to this headline">¶</a></h3>
 <p>To enable this option, set:</p>
@@ -287,18 +304,22 @@ so we must multiply <span class="math notranslate nohighlight">\({\bf \dot{x}}\)
 </div>
 <div class="section" id="read-from-a-binary-meta-file">
 <h3>Read from a binary “meta” file<a class="headerlink" href="#read-from-a-binary-meta-file" title="Permalink to this headline">¶</a></h3>
-<div class="line-block">
-<div class="line">This option allows you to read particles from a series of files rather than
-just a single file. To enable this option, set::</div>
+<p>This option allows you to read particles from a series of files rather than
+just a single file. To enable this option, set:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_init_type</span> <span class="o">=</span> <span class="n">BinaryMetaFile</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">binary_particle_file</span> <span class="o">=*</span><span class="n">particle</span> <span class="n">file</span><span class="o">*</span>
+</pre></div>
 </div>
-<blockquote>
-<div>nyx.particle_init_type = BinaryMetaFile
-nyx.binary_particle_file =*particle file*</div></blockquote>
-<div class="line-block">
-<div class="line">In this case the <em>particle_file</em> you specify is an ASCII file specifying a
+<p>In this case the <em>particle_file</em> you specify is an ASCII file specifying a
 list of file names with full paths. Each of the files in this list is assumed
 to be binary and is read sequentially (individual files are read in parallel) in
-the order listed.</div>
+the order listed.</p>
+<p>Since individual files are read sequentially, more particles should be read before
+redistributing across MPI ranks. This is set by optimizing the maximum number of
+readers and increasing the number of particles per read:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">amr</span><span class="o">.</span><span class="n">nreaders</span>
+<span class="n">amr</span><span class="o">.</span><span class="n">nparts_per_read</span>
+</pre></div>
 </div>
 </div>
 <div class="section" id="reading-sph-particles">
@@ -319,13 +340,40 @@ The SPH particles will be discarded by the code once the grid data has been init
 <div class="section" id="random-placement">
 <h3>Random placement<a class="headerlink" href="#random-placement" title="Permalink to this headline">¶</a></h3>
 <p>To enable this option, set:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_init_type</span> <span class="o">=</span> <span class="n">Random</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_init_type</span> <span class="o">=</span> <span class="n">Random</span>
 </pre></div>
 </div>
 <p>There are then a number of parameters to set, for example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_initrandom_count</span> <span class="o">=</span> <span class="mi">100000</span>
 <span class="n">nyx</span><span class="o">.</span><span class="n">particle_initrandom_mass</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="n">nyx</span><span class="o">.</span><span class="n">particle_initrandom_iseed</span> <span class="o">=</span> <span class="mi">15</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="random-placement-1-particle-per-grid-cell">
+<h3>Random placement (1 particle per grid cell)<a class="headerlink" href="#random-placement-1-particle-per-grid-cell" title="Permalink to this headline">¶</a></h3>
+<p>To enable this option, set:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_init_type</span> <span class="o">=</span> <span class="n">RandomPerCell</span>
+</pre></div>
+</div>
+<p>Then only set the mass per particle:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_initrandom_mass</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>Note to increase the number of cells and keep the problem domain size
+and total mass fixed, the mass per particle must decrease proportionally.</p>
+</div>
+<div class="section" id="uniform-placement">
+<h3>Uniform placement<a class="headerlink" href="#uniform-placement" title="Permalink to this headline">¶</a></h3>
+<p>To enable this option, set:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_init_type</span> <span class="o">=</span> <span class="n">OnePerCell</span>
+</pre></div>
+</div>
+<p>There are then a number of parameters to set, for example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_inituniform_mass</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">particle_inituniform_vx</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">particle_inituniform_vy</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">particle_inituniform_vz</span> <span class="o">=</span> <span class="mi">1</span>
 </pre></div>
 </div>
 </div>
@@ -418,7 +466,7 @@ future.</p>
 <h4>Using Nyx with cosmological initial conditions<a class="headerlink" href="#using-nyx-with-cosmological-initial-conditions" title="Permalink to this headline">¶</a></h4>
 <ul>
 <li><div class="first line-block">
-<div class="line"><strong>nyx.nyx.particle_init_type = Cosmological</strong></div>
+<div class="line"><strong>nyx.particle_init_type = Cosmological</strong></div>
 <div class="line">set the <em>right</em> init type</div>
 </div>
 </li>
@@ -465,7 +513,8 @@ that cell. Velocities are calculated in the Zel’dovich approximation by</p>
 <div class="section" id="random">
 <h3>Random<a class="headerlink" href="#random" title="Permalink to this headline">¶</a></h3>
 <div class="line-block">
-<div class="line">To enable this option, set</div>
+<div class="line">To enable this option, set::
+nyx.particle_move_type = Random</div>
 <div class="line">Update the particle positions at the end of each coarse time step using a
 random number between 0 and 1 multiplied by 0.25 dx.</div>
 </div>
@@ -473,7 +522,8 @@ random number between 0 and 1 multiplied by 0.25 dx.</div>
 <div class="section" id="motion-by-self-gravity">
 <h3>Motion by Self-Gravity<a class="headerlink" href="#motion-by-self-gravity" title="Permalink to this headline">¶</a></h3>
 <div class="line-block">
-<div class="line">To enable this option, set</div>
+<div class="line">To enable this option, set::
+nyx.particle_move_type = Gravitational</div>
 </div>
 <div class="section" id="move-kick-drift-algorithm">
 <h4>Move-Kick-Drift Algorithm<a class="headerlink" href="#move-kick-drift-algorithm" title="Permalink to this headline">¶</a></h4>
@@ -526,15 +576,31 @@ in a separate ASCII file called <em>comoving_a</em>, containing only the single 
 </div>
 <div class="section" id="plot-files">
 <h3>Plot Files<a class="headerlink" href="#plot-files" title="Permalink to this headline">¶</a></h3>
-<p>If <strong>particles.write_in_plotfile =</strong> 1 in the inputs file
-then the particle positions and velocities will be written in a binary file in each plotfile directory.</p>
+<p>The particle positions and velocities will be written in a binary file in each plotfile directory.
+Dark matter particles will be in DM, active galactic nuclei particles will be in AGN,
+neutrino particles will be in NPC.</p>
 <div class="line-block">
 <div class="line">In addition, we can also
-visualize the particle locations as represented on the grid. There are two “derived quantities”
-which represent the particles. Setting</div>
+visualize the particle locations as represented on the grid. There are multiple “derived quantities”
+which represent the particles. Including particle variables in the derived variables will make them
+be written as plotfile fields on the grid, i.e. ::</div>
+</div>
+<blockquote>
+<div>amr.derive_plot_vars = particle_count particle_mass_density</div></blockquote>
+<div class="line-block">
 <div class="line">in the inputs file will generate plotfiles with only two variables.
 <strong>particle_count</strong> represents the number of particles in a grid cell;
 <strong>particle_mass_density</strong> is the density on the grid resulting from the particles.</div>
+</div>
+<div class="line-block">
+<div class="line">The same naming convention follows for particle velocities on the grid: <strong>particle_x_velocity</strong>,
+<strong>particle_y_velocity</strong>, <strong>particle_z_velocity</strong></div>
+</div>
+<div class="line-block">
+<div class="line">Derived variables with <strong>particle_</strong> represent quantities from the Dark Matter Particle Container.
+Similar variables from the AGN particle container, and the Neutrino Particle Container
+are named <strong>agn_</strong> and <strong>neutrino_</strong>. Note these are particle fields written to the grid,
+which are distinct from the <strong>density</strong> field in the plotfile, which is baryonic density on the grid.</div>
 </div>
 <div class="line-block">
 <div class="line">We note that the value of <span class="math notranslate nohighlight">\(a\)</span> is also written in each plotfile directory,

@@ -211,10 +211,77 @@
 </style>
 <div class="section" id="class-darkmatterparticlecontainer">
 <h1>Class DarkMatterParticleContainer<a class="headerlink" href="#class-darkmatterparticlecontainer" title="Permalink to this headline">¶</a></h1>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">doxygenclass: No breathe_default_project config setting to fall back on for directive with no ‘project’ or ‘path’ specified.</p>
+<dl class="class">
+<dt id="_CPPv427DarkMatterParticleContainer">
+<span class="target" id="classDarkMatterParticleContainer"></span><em class="property">class </em><code class="descname">DarkMatterParticleContainer</code> : <em class="property">public</em> NyxParticleContainer&lt;1 + BL_SPACEDIM&gt;<a class="headerlink" href="#_CPPv427DarkMatterParticleContainer" title="Permalink to this definition">¶</a><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Types</p>
+<dl class="type">
+<dt id="_CPPv4N27DarkMatterParticleContainer9MyParIterE">
+<span class="target" id="classDarkMatterParticleContainer_1ac25ba0a8d8bbc3af607f0e6729c41974"></span><em class="property">using </em><code class="descname">MyParIter</code> = <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::ParIter&lt;1 + BL_SPACEDIM&gt;<a class="headerlink" href="#_CPPv4N27DarkMatterParticleContainer9MyParIterE" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="type">
+<dt id="_CPPv4N27DarkMatterParticleContainer14MyConstParIterE">
+<span class="target" id="classDarkMatterParticleContainer_1a5f9a3aacb19b0bb6c6709df1baa688b4"></span><em class="property">using </em><code class="descname">MyConstParIter</code> = <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::ParConstIter&lt;1 + BL_SPACEDIM&gt;<a class="headerlink" href="#_CPPv4N27DarkMatterParticleContainer14MyConstParIterE" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
 </div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric">Public Functions</p>
+<dl class="function">
+<dt id="_CPPv4N27DarkMatterParticleContainer27DarkMatterParticleContainerEPN5amrex3AmrE">
+<span class="target" id="classDarkMatterParticleContainer_1a4fbdb95541155b222042e322421efda5"></span><code class="descname">DarkMatterParticleContainer</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Amr *<em>amr</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N27DarkMatterParticleContainer27DarkMatterParticleContainerEPN5amrex3AmrE" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N27DarkMatterParticleContainerD0Ev">
+<span class="target" id="classDarkMatterParticleContainer_1a8d824a828e34a409163d8a5f53a30a64"></span><em class="property">virtual</em> <code class="descname">~DarkMatterParticleContainer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N27DarkMatterParticleContainerD0Ev" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N27DarkMatterParticleContainer9InitCosmoERN5amrex8MultiFabEA_KN5amrex4RealEKN5amrex6VectorIiEEKN5amrex4RealE">
+<span class="target" id="classDarkMatterParticleContainer_1a136192964193483d04adc1b860ae4564"></span>void <code class="descname">InitCosmo</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>mf</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>vel_fac</em>[], <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;int&gt; <em>n_part</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>particleMass</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N27DarkMatterParticleContainer9InitCosmoERN5amrex8MultiFabEA_KN5amrex4RealEKN5amrex6VectorIiEEKN5amrex4RealE" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N27DarkMatterParticleContainer9InitCosmoERN5amrex8MultiFabEA_KN5amrex4RealEKN5amrex6VectorIiEEKN5amrex4RealEA_KN5amrex4RealE">
+<span class="target" id="classDarkMatterParticleContainer_1a66d15ade4153ebdefbec246374a129b3"></span>void <code class="descname">InitCosmo</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>mf</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>vel_fac</em>[], <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;int&gt; <em>n_part</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>particleMass</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>shift</em>[]<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N27DarkMatterParticleContainer9InitCosmoERN5amrex8MultiFabEA_KN5amrex4RealEKN5amrex6VectorIiEEKN5amrex4RealEA_KN5amrex4RealE" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N27DarkMatterParticleContainer13InitCosmo1ppcERN5amrex8MultiFabEA_KN5amrex4RealEKN5amrex4RealE">
+<span class="target" id="classDarkMatterParticleContainer_1ae360cd80854ed12841707105fc125ec9"></span>void <code class="descname">InitCosmo1ppc</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>mf</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>vel_fac</em>[], <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>particleMass</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N27DarkMatterParticleContainer13InitCosmo1ppcERN5amrex8MultiFabEA_KN5amrex4RealEKN5amrex4RealE" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N27DarkMatterParticleContainer23InitCosmo1ppcMultiLevelERN5amrex8MultiFabEA_KN5amrex4RealEA_KN5amrex4RealEKN5amrex4RealEiiRN5amrex8BoxArrayEii">
+<span class="target" id="classDarkMatterParticleContainer_1aba9636414895f3412cf3d8ed7b9b0b39"></span>void <code class="descname">InitCosmo1ppcMultiLevel</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>mf</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>disp_fac</em>[], <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>vel_fac</em>[], <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>particleMass</em>, int <em>disp_idx</em>, int <em>vel_idx</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::BoxArray &amp;<em>baWhereNot</em>, int <em>lev</em>, int <em>nlevs</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N27DarkMatterParticleContainer23InitCosmo1ppcMultiLevelERN5amrex8MultiFabEA_KN5amrex4RealEA_KN5amrex4RealEKN5amrex4RealEiiRN5amrex8BoxArrayEii" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4NK27DarkMatterParticleContainer20AssignDensityAndVelsERN5amrex6VectorINSt10unique_ptrIN5amrex8MultiFabEEEEEi">
+<span class="target" id="classDarkMatterParticleContainer_1addadfc75c0eb6544a82dcaea599ed768"></span>void <code class="descname">AssignDensityAndVels</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;std::unique_ptr&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab&gt;&gt; &amp;<em>mf</em>, int <em>lev_min</em> = 0<span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK27DarkMatterParticleContainer20AssignDensityAndVelsERN5amrex6VectorINSt10unique_ptrIN5amrex8MultiFabEEEEEi" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N27DarkMatterParticleContainer13moveKickDriftERN5amrex8MultiFabEiN5amrex4RealEN5amrex4RealEN5amrex4RealEi">
+<span class="target" id="classDarkMatterParticleContainer_1a987f7571ae4ce04b5e684f8f1c0ae638"></span>void <code class="descname">moveKickDrift</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>acceleration</em>, int <em>level</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>timestep</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>a_old</em> = 1.0, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>a_half</em> = 1.0, int <em>where_width</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N27DarkMatterParticleContainer13moveKickDriftERN5amrex8MultiFabEiN5amrex4RealEN5amrex4RealEN5amrex4RealEi" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N27DarkMatterParticleContainer8moveKickERN5amrex8MultiFabEiN5amrex4RealEN5amrex4RealEN5amrex4RealE">
+<span class="target" id="classDarkMatterParticleContainer_1a7e1d5f7499d64d2a8b5bb9097ec3daa3"></span>void <code class="descname">moveKick</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>acceleration</em>, int <em>level</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>timestep</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>a_new</em> = 1.0, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>a_half</em> = 1.0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N27DarkMatterParticleContainer8moveKickERN5amrex8MultiFabEiN5amrex4RealEN5amrex4RealEN5amrex4RealE" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N27DarkMatterParticleContainer24InitFromBinaryMortonFileERKNSt6stringEii">
+<span class="target" id="classDarkMatterParticleContainer_1a9b4c74136061a169f4406e48c760a832"></span>void <code class="descname">InitFromBinaryMortonFile</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>particle_directory</em>, int <em>nextra</em>, int <em>skip_factor</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N27DarkMatterParticleContainer24InitFromBinaryMortonFileERKNSt6stringEii" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
 </div>
 
 
