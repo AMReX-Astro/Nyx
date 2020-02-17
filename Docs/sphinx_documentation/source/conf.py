@@ -39,7 +39,6 @@ import subprocess
 sys.path.insert(0, os.path.abspath('../../'))
 sys.path.append(os.path.dirname(breathe.__file__))
 
-
 def get_version():
     prog = shlex.split("git describe --tags --abbrev=0")
     p0 = subprocess.Popen(prog, stdout=subprocess.PIPE,
@@ -165,6 +164,20 @@ html_sidebars = {
     ]
 }
 
+# -- Options for breathe -------------------------------------------------
+
+breathe_projects = {
+        "Nyx": "../doxy_files/xml",
+    }
+
+breathe_default_project = "Nyx"
+
+breathe_default_members = ('members', 'undoc-members', 'protected-members',
+                                                      'private-members')
+
+breathe_doxygen_config_options = {'EXTRACT_ALL': 'YES',
+                                  'SHOW_USED_FILES': 'YES', 'RECURSIVE': 'YES'
+                                                                    }
 
 # -- Options for HTMLHelp output ------------------------------------------
 
