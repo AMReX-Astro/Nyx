@@ -40,9 +40,9 @@ rm -rf out/docs_html/**/* || exit 0
 rm -rf out/tutorials_html/**/* || exit 0
 
 # build the Doxygen documentation
-##cd Docs/Doxygen
-##doxygen doxygen.conf
-##cd ../..
+cd Docs/sphinx_documentation
+doxygen Doxyfile
+cd ../..
 
 mkdir -p out/docs_html
 #mkdir -p out/tutorials_html
