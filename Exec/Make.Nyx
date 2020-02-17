@@ -34,6 +34,12 @@ endif
 
 ifeq ($(NO_HYDRO), TRUE)
   DEFINES += -DNO_HYDRO
+else
+
+ifeq ($(USE_HEATCOOL), TRUE)
+  DEFINES += -DHEATCOOL
+endif
+
 endif
 
 ifeq ($(USE_AGN), TRUE)
@@ -46,10 +52,6 @@ endif
 
 ifeq ($(NEUTRINO_DARK_PARTICLES), TRUE)
   DEFINES += -DNEUTRINO_DARK_PARTICLES
-endif
-
-ifeq ($(USE_HEATCOOL), TRUE)
-  DEFINES += -DHEATCOOL
 endif
 
 ifeq ($(USE_SDC), TRUE)
