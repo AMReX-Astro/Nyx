@@ -354,7 +354,8 @@ Nyx::writePlotFile (const std::string& dir,
     std::string TheFullPath = FullPath;
     TheFullPath += BaseName;
     VisMF::Write(plotMF, TheFullPath, how, true);
-    VisMF::Write(plotMF, TheFullPath, how, true, true); //with compression 
+
+    VisMF::Write(plotMF, TheFullPath+"_c", how, true, true); //with compression 
 
     //
     // Write the particles and `comoving_a` in a plotfile directory. 
