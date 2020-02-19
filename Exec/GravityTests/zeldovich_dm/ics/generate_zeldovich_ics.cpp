@@ -79,23 +79,23 @@ void write_particle(ofstream& p_file, Particle p, double mass);
 // ================ //
 
 // Redshifts
-double initial_z = 10.0;
-double caustic_z = 5.0;
+double initial_z = 100.0;
+double caustic_z = 10.0;
 
 // Required cosmology
-double h = 0.50;  // the weird little h used in the def. of Hubble rate.
+double h = 0.675;  // the weird little h used in the def. of Hubble rate.
 double H_0 = 100.0 * h;  // the Hubble rate in the standard km Mpc^-1 s^-1.
 
 // The size of the box. Note that all lengths are in Mpc, not Mpc h^-1.
-double box_length = 16;
+double box_length = 1.0/0.675;
 
 // How many sheets should fit in the box. This determines the perturbation
 // wavelength (k mode).
-double num_sheets = 4;
-double offset = 2.05;  // wave offset
+double num_sheets = 1;
+double offset = 0.75*box_length;//PI/2;  // wave offset
 
 // Particle number (mass determined by critical density)
-long num_particles_1d = 64;
+long num_particles_1d = 128;
 
 // Normal vector to the sheets
 Point sheet_normal = get_unit_vector(Point(1.0, 0.0, 0.0));

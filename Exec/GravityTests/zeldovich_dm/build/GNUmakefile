@@ -7,10 +7,9 @@ TOP = ../../../..
 # compilation options
 COMP    = gcc
 USE_MPI = TRUE
-USE_OMP = FALSE
+USE_OMP = TRUE
 
 PRECISION = DOUBLE
-DEBUG     = TRUE
 DEBUG     = FALSE
 
 # physics
