@@ -2,7 +2,7 @@
 AMREX_HOME ?= ../../../amrex
 
 #This install location assumes modules: pgi/19.10 cuda/10.1.243
-INSTALL_PREFIX ?= /gpfs/alpine/proj-shared/ast160/software/sundials/instdir
+INSTALL_PREFIX ?= /projects/exasky/sundials/instdir
 #CVODE_LIB_DIR ?= $(CVODE_LIB)
 CVODE_LIB_DIR ?= $(INSTALL_PREFIX)/lib64/
 
@@ -17,6 +17,7 @@ USE_CUDA = TRUE
 
 USE_SENSEI_INSITU = FALSE
 USE_HENSON = FALSE
+USE_COMPRESSION = TRUE
 
 PROFILE       = FALSE
 TRACE_PROFILE = FALSE
@@ -40,6 +41,8 @@ USE_SUNDIALS_3x4x = TRUE
 
 Bpack := ./Make.package
 Blocs := .
+
+$(shell ./build_compressors.sh)
 
 include $(TOP)/Exec/Make.Nyx
 

@@ -156,7 +156,7 @@ amr.plot_files_output = 1
 amr.plot_file       = plt
 amr.plot_int        = -1
 amr.plot_nfiles     = 64
-nyx.plot_z_values   = 7.0 6.0 5.0 4.0 3.0 2.0
+nyx.plot_z_values   = 20.0 15.0 10.0 9.0 8.0 7.0 6.0 5.0 4.0 3.0 2.0
 
 amr.plot_vars        = density xmom ymom zmom rho_e Temp phi_grav rho_E
 amr.derive_plot_vars = particle_mass_density

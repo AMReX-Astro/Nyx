@@ -14,6 +14,7 @@ USE_CUDA = FALSE
 
 USE_SENSEI_INSITU = FALSE
 USE_HENSON = FALSE
+USE_COMPRESSION = TRUE
 
 PROFILE       = TRUE
 TRACE_PROFILE = FALSE
@@ -37,6 +38,8 @@ USE_SUNDIALS_3x4x = FALSE
 
 Bpack := ./Make.package
 Blocs := .
+
+$(shell ./build_compressors.sh) 
 
 include $(TOP)/Exec/Make.Nyx
 

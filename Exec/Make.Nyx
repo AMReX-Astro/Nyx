@@ -144,6 +144,16 @@ Pdirs   := Base AmrCore Amr Boundary Particle Extern/amrdata # F_Interfaces/Base
 ifeq ($(USE_SENSEI_INSITU),TRUE)
     Pdirs += Extern/SENSEI
 endif
+
+ifeq ($(USE_COMPRESSION),TRUE)
+    BLOSC_DIR = /projects/exasky/Nyx_GPU/Exec/LyA/c-blosc
+    INCLUDE_LOCATIONS += $(BLOSC_DIR)/install/include
+    LIBRARY_LOCATIONS += $(BLOSC_DIR)/install/lib
+    LIBRARIES += -lblosc 
+    DEFINES += -DCOMPRESSION
+    #Pdirs += Extern/compression
+endif
+
 Ppack	+= $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir)/Make.package)
 Plocs	+= $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir))
 
