@@ -27,9 +27,11 @@ if [ ! -d c-blosc ]; then
 
     echo "Building BLOSC done!"
 fi
-BLOSC_DIR=$(pwd)/c-blosc
+export BLOSC_DIR=$(pwd)/c-blosc/install
 
-#INCLUDE_LOCATIONS += $(BLOSC_DIR)/install/include
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$BLOSC_DIR/lib
+
+#INCLUDE_LOCATIONS += $(BLOSC_DIR)/include
 #LIBRARY_LOCATIONS += $(BLOSC_DIR)/lib
 #INCLUDE_LIBRARIES += -lblosc
 

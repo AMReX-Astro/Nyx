@@ -1,6 +1,7 @@
 # If you set AMREX_HOME as an environment variable, this line will be ignored
 AMREX_HOME ?= ../../../amrex
-HDF5_DIR   ?=
+HDF5_DIR   ?= 
+BLOSC_DIR  ?= 
 
 DEBUG     = FALSE
 USE_MPI   = TRUE
@@ -30,6 +31,12 @@ INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/Extern/amrdata
 INCLUDE_LOCATIONS += $(HDF5_DIR)/include
 LIBRARY_LOCATIONS += $(HDF5_DIR)/lib
 LIBRARIES += -lhdf5 #$(GPERFTOOLS_TCMALLOC)
+
+# compression stuff
+INCLUDE_LOCATIONS += $(BLOSC_DIR)/include
+LIBRARY_LOCATIONS += $(BLOSC_DIR)/lib
+LIBRARIES += -lblosc
+DEFINES   += -DCOMPRESSION 
 
 vpathdir += $(AMREX_HOME)/Src/Boundary
 vpathdir += $(AMREX_HOME)/Src/Base
