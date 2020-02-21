@@ -28,6 +28,14 @@ ifeq ($(USE_HENSON), TRUE)
   LIBRARIES += $(HENSON_LIBRARY) $(HENSON_LIBPMPI)
 endif
 
+#ifeq ($(USE_SUNDIALS_3x4x), TRUE)
+#      libraries := $(subst -lsundials_nvecopenmp, -lsundials_nvecserial,$(libraries))
+#endif
+
+ifeq ($(USE_CUDA), TRUE)
+      F90FLAGS := $(subst -gopt, ,$(F90FLAGS))
+endif
+
 ifeq ($(USE_GRAV), TRUE)
   DEFINES += -DGRAVITY
 endif
@@ -108,7 +116,7 @@ endif
 
 #These are the directories in Nyx 
 
-Bdirs 	:= Source Source/Src_3d Source/HydroFortran Source/Tagging Source/Initialization
+Bdirs 	:= Source Source/Src_3d Source/HydroFortran Source/Hydro Source/Tagging Source/Initialization
 Bdirs 	+= Source/EOS Source/Network Source/HeatCool
 Bdirs 	+= Source/SourceTerms Source/DerivedQuantities
 ifeq ($(USE_MPI), TRUE)

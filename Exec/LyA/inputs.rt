@@ -6,6 +6,7 @@ max_step = 10000000
 # have sufficient variability that this failed the regression test using OpenMP.
 amrex.regtest_reduction = 1
 
+nyx.hydro_convert=0
 nyx.ppm_type         = 1
 nyx.add_ext_src      = 0
 nyx.heat_cool_type   = 3
@@ -55,7 +56,7 @@ geometry.prob_hi     =  8.0  8.0  8.0
 
 amr.n_cell           = 32 32 32
 amr.max_grid_size    = 32
-
+#fabarray.mfiter_tile_size = 1024000 1024 1024
 
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
 # 0 = Interior           3 = Symmetry

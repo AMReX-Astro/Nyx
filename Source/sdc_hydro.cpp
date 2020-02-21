@@ -2,10 +2,6 @@
 #include "Nyx.H"
 #include "Nyx_F.H"
 
-#ifdef GRAVITY
-#include "Gravity.H"
-#endif
-
 using namespace amrex;
 
 using std::string;

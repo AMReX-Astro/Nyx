@@ -149,12 +149,6 @@ Nyx::hydro_setup()
     //
     // Set number of state variables and pointers to components
     //
-    Density = 0;
-    Xmom    = 1;
-    Ymom    = 2;
-    Zmom    = 3;
-    Eden    = 4;
-    Eint    = 5;
     int cnt = 6;
 
     NumAdv = 0;
@@ -165,8 +159,6 @@ Nyx::hydro_setup()
     }
 
     int NDIAG_C;
-    Temp_comp = 0;
-      Ne_comp = 1;
     if (inhomo_reion > 0)
     {
         NDIAG_C  = 3;
@@ -199,6 +191,8 @@ Nyx::hydro_setup()
     }
 
     NUM_STATE = cnt;
+    QVAR = cnt;
+    NQSRC = cnt;
 
     // Define NUM_GROW from the f90 module.
     fort_get_method_params(&NUM_GROW);
@@ -208,12 +202,13 @@ Nyx::hydro_setup()
     fort_set_method_params
         (dm, NumAdv, NDIAG_C, do_hydro, ppm_type, ppm_reference,
          ppm_flatten_before_integrals,
-         use_colglaz, use_flattening, corner_coupling, version_2,
+         use_colglaz, use_flattening, use_analriem, version_2,
          use_const_species, gamma, normalize_species,
          heat_cool_type, inhomo_reion);
 
 #ifdef HEATCOOL
     fort_tabulate_rates();
+    amrex::Gpu::streamSynchronize();
 #endif
 
     if (use_const_species == 1)
@@ -234,12 +229,12 @@ Nyx::hydro_setup()
 
     store_in_checkpoint = true;
     desc_lst.addDescriptor(State_Type, IndexType::TheCellType(),
-                           StateDescriptor::Point, 1, NUM_STATE, interp,
+                           StateDescriptor::Point, nghost_state, NUM_STATE, interp,
                            state_data_extrap, store_in_checkpoint);
 
     // This has two components: Temperature and Ne
     desc_lst.addDescriptor(DiagEOS_Type, IndexType::TheCellType(),
-                           StateDescriptor::Point, 1, NDIAG_C, interp,
+                           StateDescriptor::Point, nghost_state, NDIAG_C, interp,
                            state_data_extrap, store_in_checkpoint);
 
 #ifdef SDC
@@ -665,7 +660,6 @@ Nyx::no_hydro_setup()
 {
     int dm = BL_SPACEDIM;
 
-    Density = 0;
     NUM_STATE = 1;
 
     int NDIAG_C = -1;
@@ -675,8 +669,8 @@ Nyx::no_hydro_setup()
 
     fort_set_method_params
         (dm, NumAdv, NDIAG_C, do_hydro, ppm_type, ppm_reference,
-         ppm_flatten_before_integrals,
-         use_colglaz, use_flattening, corner_coupling, version_2,
+         ppm_flatten_before_integrals, 
+         use_colglaz, use_flattening, use_analriem, version_2,
          use_const_species, gamma, normalize_species,
          heat_cool_type, inhomo_reion);
 
@@ -821,6 +815,18 @@ Nyx::no_hydro_setup()
 #endif
 }
 #endif
+
+void
+Nyx::alloc_cuda_managed()
+{
+    fort_alloc_cuda_managed();
+}
+
+void
+Nyx::dealloc_cuda_managed()
+{
+    fort_dealloc_cuda_managed();
+}
 
 #ifdef AMREX_USE_CVODE
 void

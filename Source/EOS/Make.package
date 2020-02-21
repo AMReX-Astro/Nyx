@@ -1,8 +1,10 @@
 ifeq ($(USE_HEATCOOL), TRUE)
-f90EXE_sources += eos_hc.f90
+F90EXE_sources += eos_hc.F90
 else
-f90EXE_sources += eos_stuff.f90
+F90EXE_sources += eos_stuff.F90
 endif
 
-f90EXE_sources += atomic_rates.f90
-f90EXE_sources += reion_aux_module.f90
+CEXE_sources += eos_interface.cpp
+
+F90EXE_sources += atomic_rates.F90
+F90EXE_sources += reion_aux_module.F90

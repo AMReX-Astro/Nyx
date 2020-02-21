@@ -55,7 +55,7 @@ nyx_main (int argc, char* argv[])
 {
     amrex::Initialize(argc, argv);
     {
-      ////    amrex::Gpu::setLaunchRegion(false);
+      amrex::Gpu::LaunchSafeGuard lsg(false);
 
     // save the inputs file name for later
     if (argc > 1) {
@@ -108,6 +108,9 @@ nyx_main (int argc, char* argv[])
     reeber_int = initReeberAnalysis();
 #endif
 
+    // Allocate fortran module parameters which are cuda managed for the reactions
+    Nyx::alloc_cuda_managed();
+    
     Amr *amrptr = new Amr;
     amrptr->init(strt_time,stop_time);
 
@@ -124,6 +127,9 @@ nyx_main (int argc, char* argv[])
 #endif
 
     bool finished(false);
+    {
+
+    BL_PROFILE_REGION("R::Nyx::coarseTimeStep");
 
     while ( ! finished) 
     {
@@ -156,6 +162,8 @@ nyx_main (int argc, char* argv[])
      }
 
     }  // ---- end while( ! finished)
+
+    }
 
 #ifdef AMREX_USE_CVODE
     Nyx::dealloc_simd_vec();
@@ -191,6 +199,9 @@ nyx_main (int argc, char* argv[])
     BL_PROFILE_VAR_STOP(pmain);
     BL_PROFILE_REGION_STOP("main()");
     BL_PROFILE_SET_RUN_TIME(dRunTime2);
+    
+    Nyx::dealloc_cuda_managed();
+
     }
     amrex::Finalize();
 }

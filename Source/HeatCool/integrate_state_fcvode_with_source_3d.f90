@@ -215,7 +215,7 @@ subroutine integrate_state_with_source_fcvode(lo, hi, &
                     !$OMP CRITICAL
                     print *,'negative e exiting strang integration ', z, i,j,k, rho_orig/mean_rhob, e_out, &
                              state_n(i,j,k,UEINT)/state_n(i,j,k,URHO)
-                    call flush(6)
+                    !call flush(6)
                     !$OMP END CRITICAL
                     T_out  = 10.0
                     ne_out = 0.0

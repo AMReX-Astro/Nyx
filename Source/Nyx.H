@@ -2,6 +2,9 @@
 #ifndef _Nyx_H_
 #define _Nyx_H_
 
+#define BL_ARR4_TO_FORTRAN_3D(a) a.p,&((a).begin.x),amrex::GpuArray<int,3>{(a).end.x-1,(a).end.y-1,(a).end.z-1}.data()
+#define BL_ARR4_TO_FORTRAN(a) (a).p, AMREX_ARLIM(&((a).begin.x)), (a).end.x-1,(a).end.y-1,(a).end.z-1
+
 #include <AMReX_BC_TYPES.H>
 #include <AMReX_AmrLevel.H>
 #include <AMReX_ErrorList.H>
@@ -21,7 +24,6 @@
 #ifdef BL_HDF5
 #include <hdf5.h>
 #endif
-
 
 using std::istream;
 using std::ostream;
@@ -50,6 +52,72 @@ enum StateType {
     NUM_STATE_TYPE
 };
 #endif
+
+enum State_Type_Index {
+  Density = 0,
+  Xmom    = 1,
+  Ymom    = 2,
+  Zmom    = 3,
+  Eden    = 4,
+  Eint    = 5
+
+};
+
+enum DiagEOS_Type_Index {
+  Temp_comp = 0,
+  Ne_comp   = 1
+
+};
+
+// Relation of our code units & CGS 
+static constexpr amrex::Real  M_unit = 1.98848e33;    // M_sun
+static constexpr amrex::Real  L_unit = 3.0856776e24;  // Mpc
+static constexpr amrex::Real  V_unit = 1.e5;          // km/s
+static constexpr amrex::Real  T_unit = L_unit/V_unit; // time unit
+
+  
+//   Fundamental constants
+  
+   //   static constexpr amrex::Real  Gconst = 6.67408e-8       
+   //     * M_unit*T_unit**2/L_unit**3;// Newton [g^-1*s^-2*cm^3]
+  
+static constexpr amrex::Real  k_B    = 1.38064852e-16          
+  * T_unit*T_unit/(M_unit*L_unit*L_unit);// Boltzmann [g*cm^2/s^2*K]
+  
+//static constexpr amrex::Real  hbar   = 1.0545718e-27           
+  //  * T_unit/(M_unit*L_unit**2);// Planck/2pi [g*cm^2/s]
+  
+static constexpr amrex::Real  n_A    = 6.022140857e23          
+  * M_unit;// Avogadro's number [mol^-1]
+
+static constexpr amrex::Real  m_nucleon    = 1.0/n_A;
+  
+static constexpr amrex::Real  m_proton = 1.672621e-24          
+  / M_unit;// Proton mass [g]
+  
+//static constexpr amrex::Real  sigma_T =  6.6524587158e-25         
+//  / L_unit**2;// Thomson cross section [cm^2]
+  
+static constexpr amrex::Real  c_light = 2.99792458e10   
+  / V_unit;// Speed of light [cm/s] 
+         
+static constexpr amrex::Real  Hubble_const = 100.;    //            Hubble constant / h
+
+  
+  // Useful quantities and conversions
+  
+  static constexpr amrex::Real  mp_over_kb = m_proton/k_B;
+
+//static constexpr amrex::Real  density_to_cgs = M_unit / L_unit**3;
+
+// For internal energy
+//static constexpr amrex::Real  e_to_cgs = V_unit**2;
+
+// For source terms we convert [erg/(s*cm^3) = g/(s^3*cm)] into code units
+//static constexpr amrex::Real  heat_from_cgs = L_unit*(T_unit**3 / M_unit);
+
+// For AGN accretion rate
+//static constexpr amrex::Real  eddington_const = 4.00*pi * Gconst * m_proton / (sigma_T * c_light);
 
 //
 // AmrLevel-derived class for hyperbolic conservation equations for stellar
@@ -247,6 +315,11 @@ public:
     void comoving_a_post_restart(const std::string& restart_file);
 
     //
+    // How to initialize typical values at restart (from checkpoint or plotfile)
+    //
+    void typical_values_post_restart(const std::string& restart_file);
+
+    //
     // Initialize the zhi component of the EOS from a binary input file
     //
     void init_zhi ();
@@ -414,9 +487,69 @@ public:
                                       int ncycle);
 
     void strang_hydro(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
+    void strang_hydro_ghost_state(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
+    void strang_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
 #ifdef SDC
     void    sdc_hydro(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
 #endif
+
+
+///
+/// Calculate primitive variables from given conserved variables
+///
+/// @param u        MultiFab of conserved variables
+/// @param q        MultiFab to save primitive variables to
+/// @param qaux     MultiFab of auxiliary variables
+/// @param time     Current time
+///
+  void cons_to_prim(amrex::MultiFab& u, amrex::MultiFab& q, amrex::MultiFab& qaux, 
+		    amrex::MultiFab& grav, amrex::MultiFab& hydro_src, amrex::MultiFab& src_q,
+		    const amrex::Real a_old, const amrex::Real a_new,
+		    const amrex::Real dt);
+
+
+///
+/// this constructs the hydrodynamic source (essentially the flux
+/// divergence) using the CTU framework for unsplit hydrodynamics
+///
+/// @param time     current time
+/// @param dt       timestep
+///
+    void construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
+                               amrex::MultiFab& S_border, amrex::MultiFab& D_border, 
+                               amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src, 
+                               amrex::MultiFab& grav, 
+                               bool init_flux_register, bool add_to_flux_register);
+
+    void ctu_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
+			amrex::MultiFab& S_border, amrex::MultiFab& D_border, 
+			amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src, 
+			amrex::MultiFab& grav, 
+			bool init_flux_register, bool add_to_flux_register);
+
+///
+/// this constructs the hydrodynamic source (essentially the flux
+/// divergence) using method of lines integration.  The output, is the
+/// divergence of the fluxes, A = -div{F(U)}
+///
+/// @param time     current time
+/// @param dt   timestep
+/// @param A_update   divergence of the fluxes
+///
+    void construct_mol_hydro_source(amrex::Real time, amrex::Real dt, amrex::MultiFab& A_update);
+
+  ///
+/// Hydrodynamic (and radiation) fluxes.
+///
+    amrex::Vector<std::unique_ptr<amrex::MultiFab> > fluxes;
+///
+/// Return the n'th fluxes MultiFab.
+///
+/// @param dir  direction in which to find the fluxes along
+///
+    amrex::MultiFab& Fluxes (int dir);
+  
+    amrex::Vector<std::unique_ptr<amrex::MultiFab> > mass_fluxes;
 
     void compute_hydro_sources(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
                                amrex::MultiFab& S_border, amrex::MultiFab& D_border, 
@@ -448,6 +581,9 @@ public:
   int integrate_state_vec(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
    int integrate_state_grownvec(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
   int integrate_state_vec_mfin(amrex::Array4<amrex::Real>const& state4,   amrex::Array4<amrex::Real>const& diag_eos4,const  amrex::Box& tbx,  const amrex::Real& a, const amrex::Real& delta_time, long int& old_max_steps, long int& new_max_steps);
+
+  int integrate_state_cell(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
+   int integrate_state_growncell(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
 
     amrex::Real advance_particles_only (amrex::Real time, amrex::Real dt, int iteration, int ncycle);
 
@@ -527,6 +663,11 @@ public:
                           int n_error_buf=0, int ngrow=0);
 
     //
+    // Error estimation for regridding.
+    //
+    virtual int WorkEstType () { return 0; }
+
+    //
     // Called in grid_places after other tagging routines to modify
     //   the list of tagged points
     //
@@ -545,13 +686,21 @@ public:
     static int Do_Hydro();
     static int num_grow();
 
+    void enforce_nonnegative_species(amrex::MultiFab& S_new);
+
     // Synchronize (rho e) and (rho E) so they are consistent with each other
     void reset_internal_energy(amrex::MultiFab& State, amrex::MultiFab& DiagEOS, amrex::MultiFab& reset_e_src);
+
+    // Synchronize (rho e) and (rho E) so they are consistent with each other without storing the change
+    void reset_internal_energy_nostore(amrex::MultiFab& State, amrex::MultiFab& DiagEOS);
 
     void reset_internal_energy_interp(amrex::MultiFab& State, amrex::MultiFab& DiagEOS, amrex::MultiFab& reset_e_src);
 
     // Note: this no longer includes the call to reset_internal_energy
     void compute_new_temp(amrex::MultiFab& S_new, amrex::MultiFab& D_new);
+
+  AMREX_GPU_DEVICE void nyx_eos_T_given_Re_device(amrex::Real, amrex::Real, int JH, int JHe, amrex::Real* T, amrex::Real* Ne, amrex::Real R,amrex::Real e,amrex::Real comoving_a);
+  AMREX_GPU_DEVICE void nyx_eos_given_RT(amrex::Real, amrex::Real, amrex::Real* e, amrex::Real* P, amrex::Real R, amrex::Real T, amrex::Real Ne,amrex::Real comoving_a);
 
     void compute_rho_temp(amrex::Real& rho_T_avg, amrex::Real& T_avg, amrex::Real& Tinv_avg, amrex::Real& T_meanrho);
     void compute_gas_fractions(amrex::Real T_cut, amrex::Real rho_cut,
@@ -606,9 +755,11 @@ public:
 #endif
 
     static int NUM_STATE;
-    static int Density, Xmom, Ymom, Zmom, Eden, Eint;
 
-    static int Temp_comp, Ne_comp, Zhi_comp;
+    static int Zhi_comp;
+
+    static int QVAR, NQSRC, NGDNV, QRHO, QU, QV, QW, QGAME, QGC, QPRES, QREINT, QTEMP, QFA, QFS, QFX;
+    static int GDRHO, GDU, GDV, GDW, GDPRES, GDGAME;
 
     static int FirstSpec, FirstAux, FirstAdv;
     static int NumSpec, NumAux, NumAdv;
@@ -630,6 +781,9 @@ public:
 
     static void InitErrorList();
     static void InitDeriveList();
+
+    static void alloc_cuda_managed();
+    static void dealloc_cuda_managed();
 
     static void set_simd_width(const int simd_width);
     static void alloc_simd_vec();
@@ -669,7 +823,6 @@ protected:
 
     void reflux();
 
-    void enforce_nonnegative_species(amrex::MultiFab& S_new);
     void enforce_consistent_e(amrex::MultiFab& S);
 #endif
 
@@ -709,6 +862,8 @@ protected:
 
     static int nsteps_from_plotfile;
 
+    static int nghost_state;
+    static int hydro_convert;
     static int allow_untagging;
     static int use_const_species;
     static int normalize_species;
@@ -718,8 +873,10 @@ protected:
     static int ppm_flatten_before_integrals;
     static int use_colglaz;
     static int use_flattening;
+    static int use_analriem;
     static int corner_coupling;
     static int version_2;
+    static int strang_grown_box;
 
     static int use_exact_gravity;
 
@@ -753,6 +910,9 @@ protected:
     static amrex::Real particle_inituniform_vx;
     static amrex::Real particle_inituniform_vy;
     static amrex::Real particle_inituniform_vz;
+
+    // This controls the LaunchSafeGuard for particle initialization
+    static int particle_launch_ics;
 
     static amrex::IntVect Nrep;  // how many times the initial conditions are replicated in each direction
 
@@ -792,6 +952,9 @@ protected:
 
     // if true , incorporate the source term through Strang-splitting
     static int strang_split;
+
+    // if true , fuse MFIter loops for new hydro with heat_cool_type=11
+    static int strang_fuse;
 
 #ifdef SDC
     // if true , use SDC to couple hydro and reactions

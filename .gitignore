@@ -21,6 +21,7 @@ UsersGuide/*.pdf
 # emacs temporaries
 *~
 \#*
+\.#*
 
 
 # executables
@@ -33,16 +34,19 @@ Nyx*.ex
 # plt and chk files
 plt*
 chk*
+diffs*
 *plt?????
 *chk?????
+*bl_prof
 *plt?????.old*
 *chk?????.old*
+*diffs.old*
+*bl_prof.old*
 *.xmgr
 ic_sb_32.ascii
 fixed_grids
-*Test*-*
-*Test*o*
-*Test*e*
+*est*-*
+*est.??????
 
 # build directories
 o/

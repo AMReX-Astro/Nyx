@@ -47,6 +47,9 @@ using std::string;
 #include "agn_F.H"
 #endif
 
+#define BL_ARR4_TO_FORTRAN_3D(a) a.p,&((a).begin.x),amrex::GpuArray<int,3>{(a).end.x-1,(a).end.y-1,(a).end.z-1}.data()
+#define BL_ARR4_TO_FORTRAN(a) (a).p, AMREX_ARLIM(&((a).begin.x)), (a).end.x-1,(a).end.y-1,(a).end.z-1
+
 using namespace amrex;
 
 extern "C" {
@@ -91,16 +94,30 @@ int Nyx::nsteps_from_plotfile = -1;
 
 ErrorList Nyx::err_list;
 
-int Nyx::Density = -1;
-int Nyx::Eden = -1;
-int Nyx::Eint = -1;
-int Nyx::Xmom = -1;
-int Nyx::Ymom = -1;
-int Nyx::Zmom = -1;
-
-int Nyx::Temp_comp = -1;
-int Nyx::  Ne_comp = -1;
 int Nyx:: Zhi_comp = -1;
+
+int Nyx::QVAR = -1;
+int Nyx::NQSRC = -1;
+int Nyx::NGDNV = 6;
+int Nyx::QRHO = 1;
+int Nyx::QU = 2;
+int Nyx::QV = 3;
+int Nyx::QW = 4;
+int Nyx::QGAME = -1;
+int Nyx::QGC = -1;
+int Nyx::QPRES = 5;
+int Nyx::QREINT = 6;
+int Nyx::QTEMP = -1;
+int Nyx::QFA = -1;
+int Nyx::QFS = -1;
+int Nyx::QFX = -1;
+
+int Nyx::GDRHO = 1;
+int Nyx::GDU = 2;
+int Nyx::GDV = 3;
+int Nyx::GDW = 4;
+int Nyx::GDPRES = 5;
+int Nyx::GDGAME = -1;
 
 int Nyx::NumSpec  = 0;
 int Nyx::NumAux   = 0;
@@ -112,7 +129,7 @@ int Nyx::FirstAdv  = -1;
 
 Real Nyx::small_dens = -1.e200;
 Real Nyx::small_temp = -1.e200;
-Real Nyx::gamma      =  0;
+Real Nyx::gamma      =  5.0/3.0;
 
 Real Nyx::comoving_OmB;
 Real Nyx::comoving_OmM;
@@ -126,6 +143,8 @@ int Nyx::use_typical_steps = 0;
 int Nyx::sundials_alloc_type = 0;
 
 int Nyx::strang_split = 1;
+int Nyx::strang_fuse = 0;
+int Nyx::strang_grown_box = 1;
 #ifdef SDC
 int Nyx::sdc_split    = 0;
 #endif
@@ -163,19 +182,21 @@ int Nyx::do_forcing = -1;
 int Nyx::do_forcing =  0;
 #endif
 
+int Nyx::nghost_state       = 1;
+int Nyx::hydro_convert      = 0;
 int Nyx::allow_untagging    = 0;
 int Nyx::use_const_species  = 0;
 int Nyx::normalize_species  = 0;
 int Nyx::do_special_tagging = 0;
 int Nyx::ppm_type           = 1;
 int Nyx::ppm_reference      = 1;
-int Nyx::corner_coupling    = 1;
 
 int Nyx::use_colglaz        = 0;
 int Nyx::version_2          = 0;
 
 int Nyx::use_flattening     = 1;
 int Nyx::ppm_flatten_before_integrals = 0;
+int Nyx::use_analriem       = 1;
 
 Real Nyx:: h_species        = 0.0;
 Real Nyx::he_species        = 0.0;
@@ -367,6 +388,8 @@ Nyx::read_params ()
 
     pp_nyx.query("add_ext_src", add_ext_src);
     pp_nyx.query("strang_split", strang_split);
+    pp_nyx.query("strang_fuse", strang_fuse);
+    pp_nyx.query("strang_grown_box", strang_grown_box);
 #ifdef SDC
     pp_nyx.query("sdc_split", sdc_split);
     if (sdc_split == 1 && strang_split == 1)
@@ -432,8 +455,8 @@ Nyx::read_params ()
 
 
 #ifdef HEATCOOL
-    if (heat_cool_type != 3 && heat_cool_type !=4 && heat_cool_type != 5 && heat_cool_type != 7 && heat_cool_type != 9 && heat_cool_type != 10 && heat_cool_type != 11)
-       amrex::Error("Nyx:: nonzero heat_cool_type must equal 3 or 5 or 7 or 9 or 10 or 11");
+    if (heat_cool_type != 3 && heat_cool_type !=4 && heat_cool_type != 5 && heat_cool_type != 7 && heat_cool_type != 9 && heat_cool_type != 10 && heat_cool_type != 11 &&  heat_cool_type != 12)
+       amrex::Error("Nyx:: nonzero heat_cool_type must equal 3 or 4 or 5 or 7 or 9 or 10 or 11 or 12");
     if (heat_cool_type == 0)
        amrex::Error("Nyx::contradiction -- HEATCOOL is defined but heat_cool_type == 0");
 
@@ -468,8 +491,8 @@ Nyx::read_params ()
 
 #ifndef AMREX_USE_CVODE
     #ifndef AMREX_USE_SUNDIALS_3x4x
-    if (heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 10 || heat_cool_type == 11)
-        amrex::Error("Nyx:: cannot set heat_cool_type = 5 or 7 or 10 or 11 unless USE_CVODE=TRUE or USE_SUNDIALS_3x4x=TRUE");
+    if (heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 10 || heat_cool_type == 11 || heat_cool_type == 12)
+        amrex::Error("Nyx:: cannot set heat_cool_type = 5 or 7 or 10 or 11 or 12 unless USE_CVODE=TRUE or USE_SUNDIALS_3x4x=TRUE");
     #ifndef AMREX_USE_ARKODE_LIBS
     if (heat_cool_type == 9)
         amrex::Error("Nyx:: cannot set heat_cool_type = 9 unless USE_SUNDIALS_3x4x=TRUE, and USE_ARKODE_LIBS=TRUE");
@@ -489,7 +512,8 @@ Nyx::read_params ()
        amrex::Error("Nyx::you set inhomo_reion > 0 but forgot to set USE_HEATCOOL = TRUE");
 #endif
     pp_nyx.query("use_sundials_constraint", use_sundials_constraint);
-
+    pp_nyx.query("nghost_state", nghost_state);
+    pp_nyx.query("hydro_convert", hydro_convert);
     pp_nyx.query("sundials_alloc_type", sundials_alloc_type);
     pp_nyx.query("use_typical_steps", use_typical_steps);
     pp_nyx.query("allow_untagging", allow_untagging);
@@ -498,11 +522,26 @@ Nyx::read_params ()
     pp_nyx.query("ppm_type", ppm_type);
     pp_nyx.query("ppm_reference", ppm_reference);
     pp_nyx.query("ppm_flatten_before_integrals", ppm_flatten_before_integrals);
+    pp_nyx.query("use_analriem", use_analriem);
     pp_nyx.query("use_flattening", use_flattening);
     pp_nyx.query("use_colglaz", use_colglaz);
     pp_nyx.query("version_2", version_2);
-    pp_nyx.query("corner_coupling", corner_coupling);
 
+    if(hydro_convert == 1)
+      { 
+	if (ppm_type == 0 && ParallelDescriptor::IOProcessor())
+	  std::cout << "Nyx::setting hydro_convert = 1 with ppm_type = 0 \n";
+	if(ppm_type != 0)
+	  amrex::Error("Nyx::ppm_type must be 0 with hydro_convert = 1");
+	//	if(use_analriem != 0)
+	//amrex::Error("Nyx::use_analriem must be 0 with hydro_convert = 1");
+      }
+
+    if(use_typical_steps != 0 && strang_grown_box == 0)
+      { 
+	  amrex::Error("Nyx::use_typical_steps must be 0 with strang_grown_box = 0");
+      }
+   
     if (do_hydro == 1)
     {
         if (do_hydro == 1 && use_const_species == 1)
@@ -537,13 +576,13 @@ Nyx::read_params ()
         if (version_2 > 0 && ppm_type == 0)
            amrex::Error("Nyx::version_2 only defined for ppm_type = 1");
 
-        if (version_2 !=0 && version_2 != 1 && version_2 != 2 && version_2 != 3)
+        if (version_2 !=0 && version_2 != 1 && version_2 != 2)
            amrex::Error("Nyx:: don't know what to do with version_2 flag");
 
         // Make sure ppm_type is set correctly.
         if (ppm_type != 0 && ppm_type != 1 && ppm_type != 2)
         {
-           amrex::Error("Nyx::ppm_type must be 0, 1 or 2");
+           amrex::Error("Nyx::ppm_type must be 0 or 1 or 2");
         }
     }
 
@@ -671,7 +710,7 @@ Nyx::Nyx (Amr&            papa,
 
 #ifdef HEATCOOL
      // Initialize "this_z" in the atomic_rates_module
-    if (heat_cool_type == 3 || heat_cool_type == 4 || heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 9 || heat_cool_type == 10 || heat_cool_type == 11)
+    if (heat_cool_type == 3 || heat_cool_type == 4 || heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 9 || heat_cool_type == 10 || heat_cool_type == 11 || heat_cool_type == 12)
          fort_interp_to_this_z(&initial_z);
 #endif
 }
@@ -753,7 +792,7 @@ Nyx::setTimeLevel (Real time,
                    Real dt_old,
                    Real dt_new)
 {
-    if (ParallelDescriptor::IOProcessor()) {
+    if (verbose && ParallelDescriptor::IOProcessor()) {
        std::cout << "Setting the current time in the state data to "
                  << parent->cumTime() << std::endl;
     }
@@ -764,6 +803,8 @@ void
 Nyx::init (AmrLevel& old)
 {
     BL_PROFILE("Nyx::init(old)");
+
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     Nyx* old_level = (Nyx*) &old;
     //
     // Create new grid data by fillpatching from old.
@@ -822,6 +863,9 @@ Nyx::init (AmrLevel& old)
         IR_new[fpi].copy(fpi());
     }
 #endif
+
+    amrex::Gpu::Device::streamSynchronize();
+
 }
 
 //
@@ -846,6 +890,10 @@ Nyx::init ()
     setTimeLevel(cur_time, dt_old, dt);
 
 #ifndef NO_HYDRO
+
+    if(do_hydro)
+    {
+
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
     FillCoarsePatch(S_new, 0, cur_time,   State_Type, 0, S_new.nComp());
@@ -867,6 +915,7 @@ Nyx::init ()
     MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
     reset_e_src.setVal(0.0);
     reset_internal_energy_interp(S_new,D_new,reset_e_src);
+    }
 #endif
 
 #ifdef GRAVITY
@@ -929,22 +978,66 @@ Nyx::est_time_step (Real dt_old)
     if (do_hydro)
     {
         Real a = get_comoving_a(cur_time);
-        const Real* dx = geom.CellSize();
+        const auto dx = geom.CellSizeArray();
 
 #ifdef _OPENMP
 #pragma omp parallel reduction(min:est_dt)
 #endif
 	{
           Real dt = 1.e200;
-	  for (MFIter mfi(stateMF,true); mfi.isValid(); ++mfi)
-	    {
-	      const Box& box = mfi.tilebox();
+	  //Doesn't seem to be used:
+	  //	  Real grid_scl = std::cbrt(dx[0]*dx[1]*dx[2]);
+	  Real sound_speed_factor=sqrt(gamma*(gamma-1));
 
-	      fort_estdt
-                (BL_TO_FORTRAN(stateMF[mfi]), box.loVect(), box.hiVect(), dx,
-                 &dt, &a);
-	    }
+	  amrex::Gpu::LaunchSafeGuard lsg(true);
+	  dt = amrex::ReduceMin(stateMF, 0,
+				[=] AMREX_GPU_HOST_DEVICE (Box const& bx, FArrayBox const& statefab) noexcept -> Real
+					    {
+					      const auto lo = amrex::lbound(bx);
+					      const auto hi = amrex::ubound(bx);
+					      const auto u = statefab.array();
+#if !defined(__CUDACC__) || (__CUDACC_VER_MAJOR__ != 9) || (__CUDACC_VER_MINOR__ != 2)
+					      amrex::Real dt_gpu = std::numeric_limits<amrex::Real>::max();
+#else
+					      amrex::Real dt_gpu = 1.e37;
+#endif
+
+					      for         (int k = lo.z; k <= hi.z; ++k) {
+						for     (int j = lo.y; j <= hi.y; ++j) {
+						  for (int i = lo.x; i <= hi.x; ++i) {
+						    Real rhoInv = 1.0 / u(i,j,k,Density);
+						    Real ux     = u(i,j,k,Xmom)*rhoInv;
+						    Real uy     = u(i,j,k,Ymom)*rhoInv;
+						    Real uz     = u(i,j,k,Zmom)*rhoInv;
+
+						    // Use internal energy for calculating dt 
+						    Real e  = u(i,j,k,Eint)*rhoInv;
+
+						    Real c;
+						    // Protect against negative e
+#ifdef HEATCOOL
+						    if (e > 0.0)
+						      c=sound_speed_factor*std::sqrt(e);
+#else
+						    if (e > 0.0)
+						      c=sound_speed_factor*std::sqrt(u(i,j,k,Density)*e/u(i,j,k,Density));
+#endif
+						    else
+						      c = 0.0;
+
+						    Real dt1 = dx[0]/(c + std::abs(ux));
+						    Real dt2 = dx[1]/(c + std::abs(uy));
+						    Real dt3 = dx[2]/(c + std::abs(uz));
+						    dt_gpu = amrex::min(dt_gpu,amrex::min(dt1,amrex::min(dt2,dt3)));
+
+						  }
+						}
+					      }
+					      return dt_gpu;
+					    });
+
           est_dt = std::min(est_dt, dt);
+
 	}
 
         // If in comoving coordinates, then scale dt (based on u and c) by a
@@ -1334,6 +1427,9 @@ void
 Nyx::post_timestep (int iteration)
 {
     BL_PROFILE("Nyx::post_timestep()");
+
+    amrex::Gpu::LaunchSafeGuard lsg(true);
+
     //
     // Integration cycle on fine level grids is complete
     // do post_timestep stuff here.
@@ -1341,6 +1437,7 @@ Nyx::post_timestep (int iteration)
     int finest_level = parent->finestLevel();
     const int ncycle = parent->nCycle(level);
 
+    BL_PROFILE_VAR("Nyx::post_timestep()::remove_virt_ghost",rm);
     //
     // Remove virtual particles at this level if we have any.
     //
@@ -1351,6 +1448,9 @@ Nyx::post_timestep (int iteration)
     //
     if (iteration == ncycle)
         remove_ghost_particles();
+    amrex::Gpu::streamSynchronize();
+    BL_PROFILE_VAR_STOP(rm);
+    BL_PROFILE_VAR("Nyx::post_timestep()::redist",redist);
 
     //
     // Sync up if we're level 0 or if we have particles that may have moved
@@ -1360,17 +1460,20 @@ Nyx::post_timestep (int iteration)
     {
         for (int i = 0; i < theActiveParticles().size(); i++)
 	{
-	    if(finest_level == 0)
-                theActiveParticles()[i]->RedistributeLocal(level,
+	     if(finest_level == 0)
+	         theActiveParticles()[i]->RedistributeLocal(level,
                                                   theActiveParticles()[i]->finestLevel(),
                                                   iteration);
-	    else
-                theActiveParticles()[i]->Redistribute(level,
+	     else
+	         theActiveParticles()[i]->Redistribute(level,
                                                   theActiveParticles()[i]->finestLevel(),
                                                   iteration);
 
 	}
     }
+    amrex::Gpu::streamSynchronize();
+    BL_PROFILE_VAR_STOP(redist);
+    BL_PROFILE_VAR("Nyx::post_timestep()::do_reflux",do_reflux);
 
 #ifndef NO_HYDRO
     if (do_reflux && level < finest_level)
@@ -1403,7 +1506,7 @@ Nyx::post_timestep (int iteration)
         // they'll be over-written by averaging down
         if (level < finest_level)
             average_down();
-
+	
         // This needs to be done after any changes to the state from refluxing.
         enforce_nonnegative_species(S_new_crse);
 
@@ -1457,10 +1560,12 @@ Nyx::post_timestep (int iteration)
 		  FArrayBox sync_src;
 		  FArrayBox dstate;
 
-		  for (MFIter mfi(S_new_lev,true); mfi.isValid(); ++mfi)
+		  for (MFIter mfi(S_new_lev,Gpu::notInLaunchRegion()); mfi.isValid(); ++mfi)
                   {
                     const Box& bx = mfi.tilebox();
                     dstate.resize(bx, BL_SPACEDIM + 1);
+		    Elixir elix_dstate = dstate.elixir();
+		    Array4<Real> fab_dstate = dstate.array();
                     if (lev == level)
                     {
 		      dstate.copy(drho_and_drhoU[mfi]);
@@ -1472,14 +1577,24 @@ Nyx::post_timestep (int iteration)
 
                     // Compute sync source
                     sync_src.resize(bx, BL_SPACEDIM+1);
-                    int i = mfi.index();
-                    fort_syncgsrc
-                        (bx.loVect(), bx.hiVect(), BL_TO_FORTRAN(grad_phi_cc[i]),
-                         BL_TO_FORTRAN((*grad_delta_phi_cc[lev-level])[i]),
-                         BL_TO_FORTRAN(S_new_lev[i]), BL_TO_FORTRAN(dstate),
-                         BL_TO_FORTRAN(sync_src), &a_new, dt_lev);
+		    Elixir elix_sync_src = sync_src.elixir();
+		    Array4<Real> fab_sync_src = sync_src.array();
+		    //                    int i = mfi.index();
 
-                    sync_src.mult(0.5 * dt_lev);
+		    const auto fab_grad_phi_cc = grad_phi_cc.array(mfi);
+		    const auto fab_grad_delta_phi_cc=(*grad_delta_phi_cc[lev-level]).array(mfi);
+		    const auto fab_S_new_lev = S_new_lev.array(mfi);
+
+		    AMREX_LAUNCH_DEVICE_LAMBDA(bx,tbx,
+					       {
+                    fort_syncgsrc
+                        (tbx.loVect(), tbx.hiVect(), BL_ARR4_TO_FORTRAN(fab_grad_phi_cc),
+                         BL_ARR4_TO_FORTRAN(fab_grad_delta_phi_cc),
+                         BL_ARR4_TO_FORTRAN(fab_S_new_lev), BL_ARR4_TO_FORTRAN(fab_dstate),
+                         BL_ARR4_TO_FORTRAN(fab_sync_src), a_new, dt_lev);
+					       });
+
+		    sync_src.mult(0.5 * dt_lev);
                     S_new_lev[mfi].plus(sync_src, 0, Xmom, BL_SPACEDIM);
                     S_new_lev[mfi].plus(sync_src, BL_SPACEDIM, Eden, 1);
 		  }
@@ -1492,6 +1607,10 @@ Nyx::post_timestep (int iteration)
 
     if (level < finest_level)
         average_down();
+
+    amrex::Gpu::streamSynchronize();
+    BL_PROFILE_VAR_STOP(do_reflux);
+    BL_PROFILE_VAR("Nyx::post_timestep()::sum_write",sum_write);
 
     if (level == 0)
     {
@@ -1513,6 +1632,10 @@ Nyx::post_timestep (int iteration)
 #endif
     }
 
+    amrex::Gpu::streamSynchronize();
+    BL_PROFILE_VAR_STOP(sum_write);
+    BL_PROFILE_VAR("Nyx::post_timestep()::compute_temp",compute_temp);
+
 #ifndef NO_HYDRO
     if (do_hydro)
     {
@@ -1520,14 +1643,48 @@ Nyx::post_timestep (int iteration)
        MultiFab& D_new = get_new_data(DiagEOS_Type);
 
        // First reset internal energy before call to compute_temp
-       MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
-       reset_e_src.setVal(0.0);
-       reset_internal_energy(S_new,D_new,reset_e_src);
+       reset_internal_energy_nostore(S_new,D_new);
 
        // Re-compute temperature after all the other updates.
        compute_new_temp(S_new,D_new);
     }
 #endif
+
+    amrex::Gpu::Device::streamSynchronize();
+    BL_PROFILE_VAR_STOP(compute_temp);
+
+}
+
+void
+Nyx::typical_values_post_restart (const std::string& restart_file)
+{
+    if (level > 0)
+        return;
+
+    if (use_typical_steps)
+    {
+      if (ParallelDescriptor::IOProcessor())
+	{
+	  std::string FileName = restart_file + "/first_max_steps";
+	  std::ifstream File;
+	  File.open(FileName.c_str(),std::ios::in);
+	  if (!File.good())
+            amrex::FileOpenFailed(FileName);
+	  File >> old_max_sundials_steps;
+	}
+      ParallelDescriptor::Bcast(&old_max_sundials_steps, 1, ParallelDescriptor::IOProcessorNumber());
+
+      if (ParallelDescriptor::IOProcessor())
+	{
+	  std::string FileName = restart_file + "/second_max_steps";
+	  std::ifstream File;
+	  File.open(FileName.c_str(),std::ios::in);
+	  if (!File.good())
+            amrex::FileOpenFailed(FileName);
+	  File >> new_max_sundials_steps;
+	}
+      ParallelDescriptor::Bcast(&new_max_sundials_steps, 1, ParallelDescriptor::IOProcessorNumber());
+    }
 }
 
 void
@@ -1539,6 +1696,9 @@ Nyx::post_restart ()
 
     if (level == 0)
         comoving_a_post_restart(parent->theRestartFile());
+
+    if (level == 0)
+        typical_values_post_restart(parent->theRestartFile());
 
     if (inhomo_reion) init_zhi();
 
@@ -1810,10 +1970,11 @@ Nyx::post_regrid (int lbase,
      fort_set_finest_level(&new_finest);
 #endif
 #endif
-
     if (level == lbase) {
+        amrex::Gpu::LaunchSafeGuard lsg(true);
         particle_redistribute(lbase, false);
     }
+    amrex::Gpu::Device::streamSynchronize();
 
 #ifdef GRAVITY
 
@@ -1862,6 +2023,7 @@ Nyx::post_init (Real stop_time)
         parent->setLevelSteps(0,nsteps_from_plotfile);
     }
 
+    Gpu::LaunchSafeGuard lsg(true);
     //
     // Average data down from finer levels
     // so that conserved data is consistent between levels.
@@ -1925,6 +2087,7 @@ Nyx::post_init (Real stop_time)
 #endif
 
     write_info();
+
 }
 
 int
@@ -2022,16 +2185,42 @@ void
 Nyx::enforce_nonnegative_species (MultiFab& S_new)
 {
     BL_PROFILE("Nyx::enforce_nonnegative_species()");
+    int print_fortran_warnings_tmp=print_fortran_warnings;
+    if(Gpu::inLaunchRegion())
+      {
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-    for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
-    {
-        const Box& bx = mfi.tilebox();
-        fort_enforce_nonnegative_species
-	  (BL_TO_FORTRAN(S_new[mfi]), bx.loVect(), bx.hiVect(),
-	   &print_fortran_warnings);
-    }
+	for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
+	  {
+	    const Box& bx = mfi.tilebox();
+	    const auto fab_S_new = S_new.array(mfi);
+	    amrex::launch(bx,
+			  [=] AMREX_GPU_DEVICE (Box const& tbx)
+			  {
+			  /*	    AMREX_LAUNCH_DEVICE_LAMBDA(bx,tbx,
+				       {*/
+	    ca_enforce_nonnegative_species
+	      (BL_ARR4_TO_FORTRAN(fab_S_new), tbx.loVect(), tbx.hiVect(),
+	       &print_fortran_warnings_tmp);
+				       });
+	  }
+	
+      }
+    else
+      {
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
+	for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
+	  {
+	    const Box& bx = mfi.tilebox();
+	    const auto fab_S_new = S_new.array(mfi);
+	    fort_enforce_nonnegative_species
+	      (BL_ARR4_TO_FORTRAN(fab_S_new), bx.loVect(), bx.hiVect(),
+	       &print_fortran_warnings);
+	  }
+      }
 }
 
 void
@@ -2236,12 +2425,21 @@ Nyx::derive (const std::string& name,
              int                ngrow)
 {
     BL_PROFILE("Nyx::derive()");
+
+    amrex::Gpu::LaunchSafeGuard lsg(true);
+
     if (name == "Rank")
     {
 	std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids, dmap, 1, 0));
         for (MFIter mfi(*derive_dat); mfi.isValid(); ++mfi)
         {
-           (*derive_dat)[mfi].setVal(ParallelDescriptor::MyProc());
+	  const auto fab_derive_dat=derive_dat->array(mfi);
+	  const Box& bx = mfi.tilebox();
+	  Real my_proc = ParallelDescriptor::MyProc();
+	  AMREX_HOST_DEVICE_FOR_3D ( bx, i, j, k,
+				   {
+				     fab_derive_dat(i,j,k,0)=my_proc;
+				     });
         }
         return derive_dat;
     } else {
@@ -2283,11 +2481,18 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new, MultiFab& reset_e_
     {
         const Box& bx = mfi.tilebox();
 
+	const auto fab = S_new.array(mfi);
+	const auto fab_diag = D_new.array(mfi);
+	const auto fab_reset = reset_e_src.array(mfi);
+	int print_warn=0;	  
+	AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
+	{
         reset_internal_e
-            (bx.loVect(), bx.hiVect(),
-             BL_TO_FORTRAN(S_new[mfi]), BL_TO_FORTRAN(D_new[mfi]),
-	     BL_TO_FORTRAN(reset_e_src[mfi]),
-             &print_fortran_warnings, &a, &interp);
+            (tbx.loVect(), tbx.hiVect(),
+	     BL_ARR4_TO_FORTRAN(fab), BL_ARR4_TO_FORTRAN(fab_diag),
+	     BL_ARR4_TO_FORTRAN(fab_reset),
+             &print_warn, &a, &interp);
+	});
     }
 }
 
@@ -2301,19 +2506,65 @@ Nyx::reset_internal_energy_interp (MultiFab& S_new, MultiFab& D_new, MultiFab& r
     Real        a        = get_comoving_a(cur_time);
     int interp=true;
 
+    amrex::Gpu::LaunchSafeGuard lsg(true);
+
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-    for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
+    for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
-
+	  const auto fab = S_new.array(mfi);
+	  const auto fab_diag = D_new.array(mfi);
+	  const auto fab_reset = reset_e_src.array(mfi);
+	  int print_warn=0;	  
+	  AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
+	  {
         reset_internal_e
-            (bx.loVect(), bx.hiVect(),
-             BL_TO_FORTRAN(S_new[mfi]), BL_TO_FORTRAN(D_new[mfi]),
-	     BL_TO_FORTRAN(reset_e_src[mfi]),
-             &print_fortran_warnings, &a, &interp);
+            (tbx.loVect(), tbx.hiVect(),
+	     BL_ARR4_TO_FORTRAN(fab), BL_ARR4_TO_FORTRAN(fab_diag),
+	     BL_ARR4_TO_FORTRAN(fab_reset),
+             &print_warn, &a, &interp);
+	  });
     }
+
+}
+
+void
+Nyx::reset_internal_energy_nostore (MultiFab& S_new, MultiFab& D_new)
+{
+    BL_PROFILE("Nyx::reset_internal_energy_nostore()");
+    // Synchronize (rho e) and (rho E) so they are consistent with each other
+
+    MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
+    reset_e_src.setVal(0.0);
+
+    reset_internal_energy (S_new, D_new,  reset_e_src);
+    /*
+    const Real  cur_time = state[State_Type].curTime();
+    Real        a        = get_comoving_a(cur_time);
+
+    amrex::Gpu::LaunchSafeGuard lsg(true);
+
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
+    for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
+    {
+        const Box& bx = mfi.tilebox();
+	  const auto fab = S_new.array(mfi);
+	  const auto fab_diag = D_new.array(mfi);
+	  int print_warn=0;	  
+	  AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
+	  {
+        reset_internal_e_nostore
+            (tbx.loVect(), tbx.hiVect(),
+             BL_ARR4_TO_FORTRAN(fab), BL_ARR4_TO_FORTRAN(fab_diag),
+             print_warn, a);
+	  });
+    }
+    */
+
 }
 #endif
 
@@ -2327,43 +2578,114 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
     Real a        = get_comoving_a(cur_time);
 
 #ifdef HEATCOOL 
-    if (heat_cool_type == 3 || heat_cool_type == 4 || heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 9 || heat_cool_type == 10 || heat_cool_type == 11)
+    if (heat_cool_type == 3 || heat_cool_type == 4 || heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 9 || heat_cool_type == 10 || heat_cool_type == 11 || heat_cool_type == 12)
     {
        const Real z = 1.0/a - 1.0;
        fort_interp_to_this_z(&z);
     }
 #endif
 
+    amrex::Gpu::synchronize();
+    amrex::Gpu::LaunchSafeGuard lsg(true);
+    if (heat_cool_type == 7) {
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-    for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
-    {
-        const Box& bx = mfi.tilebox();
+      for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
+	{
+	  const Box& bx = mfi.tilebox();
 
-        if (heat_cool_type == 7) {
           fort_compute_temp_vec
-              (bx.loVect(), bx.hiVect(),
-              BL_TO_FORTRAN(S_new[mfi]),
-              BL_TO_FORTRAN(D_new[mfi]), &a,
-               &print_fortran_warnings);
-        } else {
-            fort_compute_temp
-              (bx.loVect(), bx.hiVect(),
-              BL_TO_FORTRAN(S_new[mfi]),
-              BL_TO_FORTRAN(D_new[mfi]), &a,
-               &print_fortran_warnings);
-        }
+	      (bx.loVect(), bx.hiVect(),
+	       BL_TO_FORTRAN(S_new[mfi]),
+	       BL_TO_FORTRAN(D_new[mfi]), &a,
+	       &print_fortran_warnings);
+	}
     }
+    else
+      {
+	    FArrayBox test, test_d;
+	    int print_warn=0;
 
-    // Compute the maximum temperature
-    Real max_temp = D_new.norm0(Temp_comp);
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
+	for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
+	  {
+	    const Box& bx = mfi.tilebox();
 
-    int imax = -1;
-    int jmax = -1;
-    int kmax = -1;
+	    /*
+	    test.resize(bx,S_new.nComp());
+	    test_d.resize(bx,S_new.nComp());
+	    test.copy(S_new[mfi],bx);
+	    test_d.copy(D_new[mfi],bx);
+	    //	    test.copy(S_new[mfi],0,0,S_new.nComp());
+	    //test_d.copy(D_new[mfi],0,0,D_new.nComp());*/
+	    const auto state = S_new.array(mfi);
+	    const auto diag_eos = D_new.array(mfi);
+	    /*	    const auto test_fab = test.array();
+	    const auto test_fab_diag = test_d.array();
+	    amrex::Print()<<"2-norm of test: "<<test_d.norm(2,1)<<std::endl;
+	    amrex::Print()<<"2-norm of compare: "<<(D_new[mfi]).norm(2,1)<<std::endl;
+	    */
+	    //	    AMREX_LAUNCH_DEVICE_LAMBDA
 
-    Real den_maxt;
+
+	    Real dummy_small_temp=small_temp;
+	    Real h_species_in=h_species;
+	    Real gamma_minus_1_in=gamma - 1.0;
+	    AMREX_PARALLEL_FOR_3D(bx, i, j ,k,
+	    {
+
+	      Real rhoInv = 1.e0 / state(i,j,k,Density);
+	      Real eint = state(i,j,k,Eint) * rhoInv;
+
+	    if (state(i,j,k,Eint) > 0.0) 
+	      {
+
+		eint = state(i,j,k,Eint) * rhoInv;
+		
+		int JH = 1;
+		int JHe = 1;
+
+		nyx_eos_T_given_Re_device(gamma_minus_1_in, h_species_in, JH, JHe, &diag_eos(i,j,k,Temp_comp), &diag_eos(i,j,k,Ne_comp), 
+					       state(i,j,k,Density), eint, a);
+	      }
+	    else
+	      {
+		Real dummy_pres=0.0;
+		// Set temp to small_temp and compute corresponding internal energy
+		nyx_eos_given_RT(gamma_minus_1_in, h_species_in, &eint, &dummy_pres, state(i,j,k,Density), dummy_small_temp, 
+				    diag_eos(i,j,k,Ne_comp), a);
+
+		Real ke = 0.5e0 * (state(i,j,k,Xmom) * state(i,j,k,Xmom) + 
+			      state(i,j,k,Ymom) * state(i,j,k,Ymom) + 
+			      state(i,j,k,Zmom) * state(i,j,k,Zmom)) * rhoInv;
+
+		diag_eos(i,j,k,Temp_comp) = dummy_small_temp;
+		state(i,j,k,Eint) = state(i,j,k,Density) * eint;
+		state(i,j,k,Eden) = state(i,j,k,Eint) + ke;
+	      }
+
+	    });
+	    amrex::Gpu::synchronize();
+	    /*
+            fort_compute_temp_host
+              (bx.loVect(), bx.hiVect(),
+              BL_ARR4_TO_FORTRAN(fab),
+              BL_ARR4_TO_FORTRAN(fab_diag), &a,
+               &print_warn);
+
+	    amrex::Print()<<"2-norm of test: "<<test_d.norm(bx,2,1)<<std::endl;
+	    amrex::Print()<<"2-norm of compare: "<<(D_new[mfi]).norm(bx,2,1)<<std::endl;
+	    amrex::Print()<<"infnorm of test: "<<test_d.norm(bx,0,1)<<std::endl;
+	    amrex::Print()<<"infnorm of compare: "<<(D_new[mfi]).norm(bx,0,1)<<std::endl;
+	    amrex::Print()<<"1-norm of test: "<<test_d.norm(bx,1,1)<<std::endl;
+	    amrex::Print()<<"1-norm of compare: "<<(D_new[mfi]).norm(bx,1,1)<<std::endl;
+	    */
+	    amrex::Gpu::synchronize();
+	  }
+      }
 
     // Find the cell which has the maximum temp -- but only if not the first
     // time step because in the first time step too many points have the same
@@ -2371,25 +2693,29 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
     Real prev_time   = state[State_Type].prevTime();
     if (prev_time > 0.0 && verbose > 0)
     {
-        for (MFIter mfi(S_new); mfi.isValid(); ++mfi)
-        {
-            const Box& bx = mfi.validbox();
 
-            fort_compute_max_temp_loc
-                (bx.loVect(), bx.hiVect(),
-                BL_TO_FORTRAN(S_new[mfi]),
-                BL_TO_FORTRAN(D_new[mfi]),
-                &max_temp,&den_maxt,&imax,&jmax,&kmax);
-        }
+      if (verbose > 1)
+	{
+	    BL_PROFILE("Nyx::compute_new_temp()::max_temp");
+	    // Compute the maximum temperature
+	    Real max_temp = D_new.norm0(Temp_comp);
+	    IntVect max_temp_loc = D_new.maxIndex(Temp_comp);
 
-        if (verbose > 1 && ParallelDescriptor::IOProcessor())
-            if (imax > -1 && jmax > -1 && kmax > -1)
-            {
-              std::cout << "Maximum temp. at level " << level << " is " << max_temp
-                        << " at density " << den_maxt
-                        << " at (i,j,k) " << imax << " " << jmax << " " << kmax << std::endl;
-            }
+	    for (MFIter mfi(S_new); mfi.isValid(); ++mfi)
+	      {
+		const Box& bx = mfi.validbox();
+		if(bx.contains(max_temp_loc))
+		  {
+		    const auto fab_state = S_new.array(mfi);
+		    Real den_maxt=fab_state(max_temp_loc,Density);
+		    std::cout << "Maximum temp. at level " << level << " is " << max_temp
+				<< " at density " << den_maxt
+				<< " at (i,j,k) " << max_temp_loc << std::endl;
+		  }
+	      }
+	  }
     }
+    amrex::Gpu::synchronize();
 }
 #endif
 
@@ -2398,25 +2724,90 @@ void
 Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_meanrho)
 {
     BL_PROFILE("Nyx::compute_rho_temp()");
+
+    amrex::Gpu::LaunchSafeGuard lsg(true);
+    {
+
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
 
     Real rho_T_sum=0.0,   T_sum=0.0, Tinv_sum=0.0, T_meanrho_sum=0.0;
     Real   rho_sum=0.0, vol_sum=0.0,    vol_mn_sum=0.0;
 
+    Real rho_hi = 1.1*average_gas_density;
+    Real rho_lo = 0.9*average_gas_density;
+    const auto dx= geom.CellSizeArray();
+
+#ifdef _OPENMP
+#pragma omp parallel  reduction(+:rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum)
+#endif
+    {
+    Gpu::DeviceScalar<Real> rho_T_sum_gpu(rho_T_sum);
+    Gpu::DeviceScalar<Real> rho_sum_gpu(rho_sum);
+    Gpu::DeviceScalar<Real> T_sum_gpu(T_sum);
+    Gpu::DeviceScalar<Real> Tinv_sum_gpu(Tinv_sum);
+    Gpu::DeviceScalar<Real> T_meanrho_sum_gpu(T_meanrho_sum);
+    Gpu::DeviceScalar<Real> vol_sum_gpu(vol_sum);
+    Gpu::DeviceScalar<Real> vol_mn_sum_gpu(vol_mn_sum);
+
+    Real rho_hi = 1.1*average_gas_density;
+    Real rho_lo = 0.9*average_gas_density;
+    const auto dx= geom.CellSizeArray();
+
 #ifdef _OPENMP
 #pragma omp parallel reduction(+:rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum)
 #endif
-    for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
+    for (MFIter mfi(S_new,Gpu::notInLaunchRegion()); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
+	const auto lo = amrex::lbound(bx);
+	const auto hi = amrex::ubound(bx);
+	const auto state    = S_new.array(mfi);
+	const auto diag_eos = D_new.array(mfi);
+	Real vol = dx[0]*dx[1]*dx[2];
 
-        fort_compute_rho_temp
-            (bx.loVect(), bx.hiVect(), geom.CellSize(),
-             BL_TO_FORTRAN(S_new[mfi]),
-             BL_TO_FORTRAN(D_new[mfi]), &average_gas_density,
-             &rho_T_sum, &T_sum, &Tinv_sum, &T_meanrho_sum, &rho_sum, &vol_sum, &vol_mn_sum);
+	Real* prho_T_sum = rho_T_sum_gpu.dataPtr();
+	Real* prho_sum = rho_sum_gpu.dataPtr();
+	Real* pT_sum = T_sum_gpu.dataPtr();
+	Real* pTinv_sum = Tinv_sum_gpu.dataPtr();
+	Real* pT_meanrho_sum = T_meanrho_sum_gpu.dataPtr();
+	Real* pvol_sum = vol_sum_gpu.dataPtr();
+	Real* pvol_mn_sum = vol_mn_sum_gpu.dataPtr();
+
+	AMREX_HOST_DEVICE_FOR_3D(bx,i,j,k,
+	   {
+
+	     Real T_tmp;
+	      Real rho_tmp;
+	      T_tmp=diag_eos(i,j,k,Temp_comp);
+	      rho_tmp=state(i,j,k,Density);
+	      amrex::Gpu::Atomic::Add(pT_sum, vol*T_tmp);
+	      amrex::Gpu::Atomic::Add(pTinv_sum, rho_tmp/T_tmp);
+	      amrex::Gpu::Atomic::Add(prho_T_sum, rho_tmp*T_tmp);
+	      amrex::Gpu::Atomic::Add(prho_sum, rho_tmp);
+	      if ( (rho_tmp < rho_hi) &&  (rho_tmp > rho_lo) && (T_tmp <= 1.0e5) ) {
+		amrex::Gpu::Atomic::Add(pT_meanrho_sum, vol*log10(T_tmp));
+		amrex::Gpu::Atomic::Add(pvol_mn_sum, vol);
+	      }
+	      amrex::Gpu::Atomic::Add(pvol_sum, vol);
+	   });
+
     }
+
+    
+
+    amrex::Gpu::Device::streamSynchronize();
+
+    rho_T_sum = rho_T_sum_gpu.dataValue();
+    rho_sum = rho_sum_gpu.dataValue();
+    T_sum = T_sum_gpu.dataValue();
+    Tinv_sum = Tinv_sum_gpu.dataValue();
+    T_meanrho_sum = T_meanrho_sum_gpu.dataValue();
+    vol_sum = vol_sum_gpu.dataValue();
+    vol_mn_sum = vol_mn_sum_gpu.dataValue();
+
+    }
+
     Real sums[7] = {rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum};
     ParallelDescriptor::ReduceRealSum(sums,7);
 
@@ -2427,9 +2818,12 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
        T_meanrho = sums[4] / sums[6];  // T at mean density
        T_meanrho = pow(10.0, T_meanrho);
     }
+    }
+
 }
 #endif
 
+#ifdef AMREX_USE_GPU
 #ifndef NO_HYDRO
 void
 Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
@@ -2438,26 +2832,119 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
                             Real& igm_mass_frac,  Real& igm_vol_frac)
 {
     BL_PROFILE("Nyx::compute_gas_fractions()");
+    amrex::Gpu::LaunchSafeGuard lsg(true);
+    {
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
 
-    Real whim_mass=0.0, whim_vol=0.0, hh_mass=0.0, hh_vol=0.0, igm_mass=0.0, igm_vol=0.0;
-    Real mass_sum=0.0, vol_sum=0.0;
+    Real whim_mass=0.0, whim_vol=0.0, hh_mass=0.0, hh_vol=0.0, igm_mass=0.0, igm_vol=0.0, mass_sum=0.0, vol_sum=0.0;
+
+#ifdef AMREX_USE_CUDA
+    Gpu::DeviceScalar<Real> whim_mass_gpu( whim_mass);
+    Gpu::DeviceScalar<Real> whim_vol_gpu( whim_vol);
+    Gpu::DeviceScalar<Real> hh_mass_gpu( hh_mass);
+    Gpu::DeviceScalar<Real> hh_vol_gpu( hh_vol);
+    Gpu::DeviceScalar<Real> igm_mass_gpu( igm_mass);
+    Gpu::DeviceScalar<Real> igm_vol_gpu( igm_vol);
+    Gpu::DeviceScalar<Real> mass_sum_gpu( mass_sum);
+    Gpu::DeviceScalar<Real> vol_sum_gpu( vol_sum);
+    
+#endif
+    Real rho_hi = 1.1*average_gas_density;
+    Real rho_lo = 0.9*average_gas_density;
+    const auto dx= geom.CellSizeArray();
+    int average_gas_density=average_gas_density;
 
 #ifdef _OPENMP
 #pragma omp parallel reduction(+:whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum)
 #endif
-    for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
+    for (MFIter mfi(S_new,!amrex::Gpu::inLaunchRegion()); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
+	const auto lo = amrex::lbound(bx);
+	const auto hi = amrex::ubound(bx);
+	const auto state    = S_new.array(mfi);
+	const auto diag_eos = D_new.array(mfi);
+	Real vol = dx[0]*dx[1]*dx[2];
 
-        fort_compute_gas_frac
-            (bx.loVect(), bx.hiVect(), geom.CellSize(),
-             BL_TO_FORTRAN(S_new[mfi]),
-             BL_TO_FORTRAN(D_new[mfi]), &average_gas_density, &T_cut, &rho_cut,
-             &whim_mass, &whim_vol, &hh_mass, &hh_vol, &igm_mass, &igm_vol, &mass_sum, &vol_sum);
+#ifdef AMREX_USE_CUDA
+    Real* pwhim_mass= whim_mass_gpu.dataPtr();
+    Real* pwhim_vol= whim_vol_gpu.dataPtr();
+    Real* phh_mass= hh_mass_gpu.dataPtr();
+    Real* phh_vol= hh_vol_gpu.dataPtr();
+    Real* pigm_mass= igm_mass_gpu.dataPtr();
+    Real* pigm_vol= igm_vol_gpu.dataPtr();
+    Real* pmass_sum= mass_sum_gpu.dataPtr();
+    Real* pvol_sum= vol_sum_gpu.dataPtr();
+#else
+    Real* pwhim_mass = &whim_mass;
+    Real* pwhim_vol = &whim_vol;
+    Real* phh_mass = &hh_mass;
+    Real* phh_vol = &hh_vol;
+    Real* pigm_mass = &igm_mass;
+    Real* pigm_vol = &igm_vol;
+    Real* pmass_sum = &mass_sum;
+    Real* pvol_sum = &vol_sum;
+#endif
+
+	amrex::ParallelFor(bx,
+		      [=] AMREX_GPU_HOST_DEVICE (int i, int j, int k)
+	   {
+
+	     Real T, R, rho_vol;
+
+	      T = diag_eos(i,j,k,Temp_comp);
+	      R = state(i,j,k,Density) / average_gas_density;
+	      rho_vol = state(i,j,k,Density)*vol;
+              if ( (T > T_cut) && (R <= rho_cut) ) {
+		amrex::Gpu::Atomic::Add(pwhim_mass,rho_vol);
+		amrex::Gpu::Atomic::Add(pwhim_vol,vol);
+              }
+              else if ( (T > T_cut) && (R > rho_cut) ) {
+		amrex::Gpu::Atomic::Add(phh_mass, rho_vol);
+		amrex::Gpu::Atomic::Add(phh_vol, vol);
+              }
+              else if ( (T <= T_cut) && (R <= rho_cut) ) {
+		amrex::Gpu::Atomic::Add(pigm_mass, rho_vol);
+		amrex::Gpu::Atomic::Add(pigm_vol,  vol);
+              }
+	      amrex::Gpu::Atomic::Add(pmass_sum, rho_vol);
+	      amrex::Gpu::Atomic::Add(pvol_sum, vol);
+	   });
+
+
     }
+
+#ifdef AMREX_USE_CUDA
+    amrex::Gpu::Device::streamSynchronize();
+
+    whim_mass= whim_mass_gpu.dataValue();
+    whim_vol= whim_vol_gpu.dataValue();
+    hh_mass= hh_mass_gpu.dataValue();
+    hh_vol= hh_vol_gpu.dataValue();
+    igm_mass= igm_mass_gpu.dataValue();
+    igm_vol= igm_vol_gpu.dataValue();
+    mass_sum= mass_sum_gpu.dataValue();
+    vol_sum= vol_sum_gpu.dataValue();
+    
+/*    whim_mass = whim_mass_gpu.dataValue();
+    whim_vol = whim_vol_gpu.dataValue();
     Real sums[8] = {whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum};
+    //,whim_vol_gpu.dataValue(),hh_mass_gpu.dataValue(),hh_vol_gpu.dataValue(),igm_mass_gpu.dataValue(), igm_vol_gpu.dataValue(),mass_sum_gpu.dataValue(),vol_sum_gpu.dataValue()};*/
+    Real sums[8];
+    sums[0] = whim_mass;
+    sums[1] = whim_vol;
+    sums[2] = hh_mass;
+    sums[3] = hh_vol;
+    sums[4] = igm_mass;
+    sums[5] = igm_vol;
+    sums[6] = mass_sum;
+    sums[7] = vol_sum;
+    //    Real sums[8] = {whim_mass_gpu.dataValue(),whim_vol_gpu.dataValue(),hh_mass_gpu.dataValue(),hh_vol_gpu.dataValue(),igm_mass_gpu.dataValue(), igm_vol_gpu.dataValue(),mass_sum_gpu.dataValue(),vol_sum_gpu.dataValue()};
+#else
+    Real sums[8] = {whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum};
+#endif
+
     ParallelDescriptor::ReduceRealSum(sums,8);
 
     whim_mass_frac = sums[0] / sums[6];
@@ -2466,7 +2953,52 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
     hh_vol_frac    = sums[3] / sums[7];
     igm_mass_frac  = sums[4] / sums[6];
     igm_vol_frac   = sums[5] / sums[7];
+    }
+
 }
+#endif
+#else
+
+
+#ifndef NO_HYDRO
+void
+Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
+			    Real& whim_mass_frac, Real& whim_vol_frac,
+			    Real& hh_mass_frac,   Real& hh_vol_frac,
+			    Real& igm_mass_frac,  Real& igm_vol_frac)
+{
+  BL_PROFILE("Nyx::compute_gas_fractions()");
+  MultiFab& S_new = get_new_data(State_Type);
+  MultiFab& D_new = get_new_data(DiagEOS_Type);
+
+  Real whim_mass=0.0, whim_vol=0.0, hh_mass=0.0, hh_vol=0.0, igm_mass=0.0, igm_vol=0.0;
+  Real mass_sum=0.0, vol_sum=0.0;
+
+  #ifdef _OPENMP
+#pragma omp parallel reduction(+:whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum)
+  #endif
+  for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
+    {
+      const Box& bx = mfi.tilebox();
+
+              fort_compute_gas_frac
+		(bx.loVect(), bx.hiVect(), geom.CellSize(),
+		 BL_TO_FORTRAN(S_new[mfi]),
+		 BL_TO_FORTRAN(D_new[mfi]), &average_gas_density, &T_cut, &rho_cut,
+		 &whim_mass, &whim_vol, &hh_mass, &hh_vol, &igm_mass, &igm_vol, &mass_sum, &vol_sum);
+    }
+  Real sums[8] = {whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum};
+  ParallelDescriptor::ReduceRealSum(sums,8);
+
+  whim_mass_frac = sums[0] / sums[6];
+  whim_vol_frac  = sums[1] / sums[7];
+  hh_mass_frac   = sums[2] / sums[6];
+  hh_vol_frac    = sums[3] / sums[7];
+  igm_mass_frac  = sums[4] / sums[6];
+  igm_vol_frac   = sums[5] / sums[7];
+}
+#endif
+
 #endif
 
 Real

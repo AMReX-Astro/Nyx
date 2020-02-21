@@ -119,7 +119,8 @@ Nyx::advance_hydro_plus_particles (Real time,
     int grav_n_grow = ghost_width + (1-iteration) + (iteration-1) +
                       stencil_interpolation_width ;
 
-    BL_PROFILE_REGION_START("R::Nyx::advance_hydro_plus_particles");
+    {
+    BL_PROFILE_REGION("R::Nyx::advance_hydro_plus_particles");
     BL_PROFILE("Nyx::advance_hydro_plus_particles()");
     // Sanity checks
     if (!do_hydro)
@@ -206,7 +207,7 @@ Nyx::advance_hydro_plus_particles (Real time,
     const Real cur_time  = state[State_Type].curTime();
     const Real a_old     = get_comoving_a(prev_time);
     const Real a_new     = get_comoving_a(cur_time);
-    ////    amrex::Gpu::setLaunchRegion(false);
+
 #ifdef GRAVITY
     //
     // We now do a multilevel solve for old Gravity. This goes to the 
@@ -239,6 +240,9 @@ Nyx::advance_hydro_plus_particles (Real time,
                                               use_previous_phi_as_guess);
     }
     BL_PROFILE_VAR_STOP(solve_for_old_phi);
+
+    {
+      amrex::Gpu::LaunchSafeGuard lsg(true);
     //
     // Advance Particles
     //
@@ -275,9 +279,10 @@ Nyx::advance_hydro_plus_particles (Real time,
             }
         }
     }
+    }
 
 #endif
-    ////    amrex::Gpu::setLaunchRegion(true);
+
     //
     // Call the hydro advance at each level to be advanced
     //
@@ -288,15 +293,38 @@ Nyx::advance_hydro_plus_particles (Real time,
         if (sdc_split > 0) 
         { 
            get_level(lev).sdc_hydro(time, dt, a_old, a_new);
-        } else { 
-           get_level(lev).strang_hydro(time, dt, a_old, a_new);
+        } else {
+#ifdef AMREX_USE_SUNDIALS_3x4x
+	  if(strang_fuse > 0)
+	      get_level(lev).strang_hydro_fuse(time, dt, a_old, a_new);
+	  else
+#endif
+	    {
+	      if( nghost_state==NUM_GROW)
+		get_level(lev).strang_hydro_ghost_state(time, dt, a_old, a_new);
+	      else
+		get_level(lev).strang_hydro(time, dt, a_old, a_new);
+	    }
         } 
 #else
-           get_level(lev).strang_hydro(time, dt, a_old, a_new);
+	
+#ifdef AMREX_USE_SUNDIALS_3x4x
+	if(strang_fuse > 0)
+	  get_level(lev).strang_hydro_fuse(time, dt, a_old, a_new);
+	else
+#endif
+	  {
+	    if( nghost_state==NUM_GROW)
+	      get_level(lev).strang_hydro_ghost_state(time, dt, a_old, a_new);
+	    else
+	      get_level(lev).strang_hydro(time, dt, a_old, a_new);
+	  }
 #endif
     }
     BL_PROFILE_VAR_STOP(just_the_hydro);
 
+    {
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     //
     // We must reflux before doing the next gravity solve
     //
@@ -314,7 +342,7 @@ Nyx::advance_hydro_plus_particles (Real time,
         get_level(lev).average_down(  State_Type);
         get_level(lev).average_down(DiagEOS_Type);
     }
-    ////    amrex::Gpu::setLaunchRegion(false);
+
 #ifdef GRAVITY
 
     //
@@ -362,6 +390,7 @@ Nyx::advance_hydro_plus_particles (Real time,
     //
     for (int lev = level; lev <= finest_level_to_advance; lev++)
     {
+        amrex::Gpu::LaunchSafeGuard lsg(true);
         MultiFab& S_old = get_level(lev).get_old_data(State_Type);
         MultiFab& S_new = get_level(lev).get_new_data(State_Type);
         MultiFab& D_new = get_level(lev).get_new_data(DiagEOS_Type);
@@ -381,26 +410,40 @@ Nyx::advance_hydro_plus_particles (Real time,
 
         const Real* dx = get_level(lev).Geom().CellSize();
 
+    // Now do corrector part of source term update
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-        for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
-        {
-            const Box& bx = mfi.tilebox();
+    for (MFIter mfi(S_new, Gpu::notInLaunchRegion()); mfi.isValid(); ++mfi)
+    {
+        const Box& bx = mfi.tilebox();
+	grav_vec_old[mfi].prefetchToDevice();
+	grav_vec_new[mfi].prefetchToDevice();
+	S_old[mfi].prefetchToDevice();
+	S_new[mfi].prefetchToDevice();
+	const auto fab_grav_vec_old = grav_vec_old.array(mfi);
+	const auto fab_grav_vec_new = grav_vec_new.array(mfi);
+	const auto fab_S_old = S_old.array(mfi);
+	const auto fab_S_new = S_new.array(mfi);
 
-            Real se  = 0;
-            Real ske = 0;
+	amrex::launch(bx,
+		      [=] AMREX_GPU_DEVICE (Box const& tbx)
+		      {
+			//	AMREX_LAUNCH_DEVICE_CUDA(bx,tbx,
+			//				 {
+        fort_correct_gsrc
+            (tbx.loVect(), tbx.hiVect(), BL_ARR4_TO_FORTRAN(fab_grav_vec_old),
+             BL_ARR4_TO_FORTRAN(fab_grav_vec_new), BL_ARR4_TO_FORTRAN(fab_S_old),
+             BL_ARR4_TO_FORTRAN(fab_S_new), a_old, a_new, dt);
+				 });
+    }
 
-            fort_correct_gsrc
-                (bx.loVect(), bx.hiVect(), BL_TO_FORTRAN(grav_vec_old[mfi]),
-                 BL_TO_FORTRAN(grav_vec_new[mfi]), BL_TO_FORTRAN(S_old[mfi]),
-                 BL_TO_FORTRAN(S_new[mfi]), &a_old, &a_new, &dt);
-        }
 
         // First reset internal energy before call to compute_temp
         get_level(lev).reset_internal_energy(S_new,D_new,reset_e_src);
         get_level(lev).compute_new_temp(S_new,D_new);
     }
+
 
     // Must average down again after doing the gravity correction;
     //      always average down from finer to coarser.
@@ -440,7 +483,7 @@ Nyx::advance_hydro_plus_particles (Real time,
         }
     }
 #endif
-    ////    amrex::Gpu::setLaunchRegion(true);
+
     //
     // Synchronize Energies
     //
@@ -448,14 +491,13 @@ Nyx::advance_hydro_plus_particles (Real time,
     {
         MultiFab& S_new = get_level(lev).get_new_data(State_Type);
         MultiFab& D_new = get_level(lev).get_new_data(DiagEOS_Type);
-        MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
-	reset_e_src.setVal(0.0);
 
-	get_level(lev).reset_internal_energy(S_new,D_new,reset_e_src);
+	get_level(lev).reset_internal_energy_nostore(S_new,D_new);
 	
     }
-
-    BL_PROFILE_REGION_STOP("R::Nyx::advance_hydro_plus_particles");
+    }
+    }
+    //    BL_PROFILE_REGION_STOP("R::Nyx::advance_hydro_plus_particles");
 
     // Redistribution happens in post_timestep
     return dt;
@@ -525,6 +567,8 @@ Nyx::advance_hydro (Real time,
 #endif
     BL_PROFILE_VAR_STOP(just_the_hydro);
 
+    {
+      amrex::Gpu::LaunchSafeGuard lsg(true);
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
     MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
@@ -558,14 +602,26 @@ Nyx::advance_hydro (Real time,
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-    for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
+    for (MFIter mfi(S_new,Gpu::notInLaunchRegion()); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
+	grav_vec_old[mfi].prefetchToDevice();
+	grav_vec_new[mfi].prefetchToDevice();
+	S_old[mfi].prefetchToDevice();
+	S_new[mfi].prefetchToDevice();
+	const auto fab_grav_vec_old = grav_vec_old.array(mfi);
+	const auto fab_grav_vec_new = grav_vec_new.array(mfi);
+	const auto fab_S_old = S_old.array(mfi);
+	const auto fab_S_new = S_new.array(mfi);
 
+	amrex::launch(bx,
+	[=] AMREX_GPU_DEVICE (Box const& tbx)
+	  {
         fort_correct_gsrc
-            (bx.loVect(), bx.hiVect(), BL_TO_FORTRAN(grav_vec_old[mfi]),
-             BL_TO_FORTRAN(grav_vec_new[mfi]), BL_TO_FORTRAN(S_old[mfi]),
-             BL_TO_FORTRAN(S_new[mfi]), &a_old, &a_new, &dt);
+            (tbx.loVect(), tbx.hiVect(), BL_ARR4_TO_FORTRAN(fab_grav_vec_old),
+             BL_ARR4_TO_FORTRAN(fab_grav_vec_new), BL_ARR4_TO_FORTRAN(fab_S_old),
+             BL_ARR4_TO_FORTRAN(fab_S_new), a_old, a_new, dt);
+				 });
     }
 
 #endif /*GRAVITY*/
@@ -573,6 +629,7 @@ Nyx::advance_hydro (Real time,
     // First reset internal energy before call to compute_temp
     reset_internal_energy(S_new,D_new,reset_e_src);
     compute_new_temp(S_new,D_new);
+    }
 
     return dt;
 }

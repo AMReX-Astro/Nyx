@@ -148,6 +148,8 @@ Real Nyx::particle_inituniform_vx;
 Real Nyx::particle_inituniform_vy;
 Real Nyx::particle_inituniform_vz;
 
+int Nyx::particle_launch_ics            = 1;
+
 int Nyx::particle_verbose               = 1;
 int Nyx::write_particle_density_at_init = 0;
 int Nyx::write_coarsened_particles      = 0;
@@ -387,6 +389,7 @@ Nyx::init_particles ()
 {
     BL_PROFILE("Nyx::init_particles()");
 
+    amrex::Gpu::setLaunchRegion(false);
     if (level > 0)
         return;
 
@@ -438,10 +441,13 @@ Nyx::init_particles ()
                                << " random particles with initial seed: "
                                << particle_initrandom_iseed << "\n\n";
             }
-
+	    {
+	    amrex::Gpu::LaunchSafeGuard lsg(particle_launch_ics);
             DMPC->InitRandom(particle_initrandom_count,
                              particle_initrandom_iseed, pdata,
                              particle_initrandom_serialize);
+	    }
+
         }
         else if (particle_init_type == "RandomPerBox")
         {
@@ -469,7 +475,10 @@ Nyx::init_particles ()
                 amrex::Print() << "\nInitializing DM with 1 random particle per cell " << "\n";
 
             int n_per_cell = 1;
+	    amrex::Gpu::LaunchSafeGuard lsg(particle_launch_ics);
             DMPC->InitNRandomPerCell(n_per_cell, pdata);
+	    amrex::Gpu::Device::synchronize();
+
         }
         else if (particle_init_type == "OnePerCell")
         {
@@ -514,9 +523,11 @@ Nyx::init_particles ()
             // after reading in `m_pos[]`. Here we're reading in the particle
             // mass and velocity.
             //
+	    amrex::Gpu::LaunchSafeGuard lsg(particle_launch_ics);
             DMPC->InitFromBinaryFile(binary_particle_file, BL_SPACEDIM + 1);
             if (init_with_sph_particles == 1)
                 SPHPC->InitFromBinaryFile(ascii_particle_file, BL_SPACEDIM + 1);
+
         }
         else if (particle_init_type == "BinaryMetaFile")
         {
@@ -533,6 +544,7 @@ Nyx::init_particles ()
             // after reading in `m_pos[]` in each of the binary particle files.
             // Here we're reading in the particle mass and velocity.
             //
+	    amrex::Gpu::LaunchSafeGuard lsg(particle_launch_ics);
             DMPC->InitFromBinaryMetaFile(binary_particle_file, BL_SPACEDIM + 1);
             if (init_with_sph_particles == 1)
                 SPHPC->InitFromBinaryMetaFile(sph_particle_file, BL_SPACEDIM + 1);
@@ -729,6 +741,8 @@ Nyx::init_santa_barbara (int init_sb_vels)
     Real cur_time = state[State_Type].curTime();
     Real a = old_a;
 
+    BL_PROFILE_VAR("Nyx::init_santa_barbara()::part", CA_part);
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     amrex::Print() << "... time and comoving a when data is initialized at level " 
                    << level << " " << cur_time << " " << a << '\n';
 
@@ -764,13 +778,17 @@ Nyx::init_santa_barbara (int init_sb_vels)
             delete SPHPC;
 	}
 
+	BL_PROFILE_VAR_STOP(CA_part);
+	BL_PROFILE_VAR("Nyx::init_santa_barbara()::avg", CA_avg);
+
         for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
         {
             amrex::average_down(*particle_mf[lev+1], *particle_mf[lev],
                                  parent->Geom(lev+1), parent->Geom(lev), 0, 1,
                                  parent->refRatio(lev));
         }
-
+	BL_PROFILE_VAR_STOP(CA_avg);
+	BL_PROFILE_VAR("Nyx::init_santa_barbara()::partmf", CA_partmf);
         // Only multiply the density, not the velocities
         if (init_with_sph_particles == 0)
         {
@@ -783,38 +801,62 @@ Nyx::init_santa_barbara (int init_sb_vels)
                 particle_mf[level]->mult(frac_for_hydro / omfrac,0,1);
             }
         }
+	BL_PROFILE_VAR_STOP(CA_partmf);
 
-        const Real * dx = geom.CellSize();
+	BL_PROFILE_VAR("Nyx::init_santa_barbara()::init", CA_init);
+        const auto dx = geom.CellSizeArray();
         MultiFab& S_new = get_new_data(State_Type);
         MultiFab& D_new = get_new_data(DiagEOS_Type);
 
         int ns = S_new.nComp();
         int nd = D_new.nComp(); 
-        for (MFIter mfi(S_new); mfi.isValid(); ++mfi)
+
+#ifdef _OPENMP
+#pragma omp parallel if (Gpu::notInLaunchRegion())
+#endif
+        for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
         {
-            RealBox gridloc = RealBox(grids[mfi.index()],
+	  RealBox gridloc = RealBox(grids[mfi.index()],
                                       geom.CellSize(),
                                       geom.ProbLo());
             const Box& box = mfi.validbox();
             const int* lo = box.loVect();
             const int* hi = box.hiVect();
+	    const auto fab_S_new=S_new.array(mfi);
+	    const auto fab_D_new=D_new.array(mfi);
 
             // Temp unused for GammaLaw, set it here so that pltfiles have
             // defined numbers
-            D_new[mfi].setVal(0, Temp_comp);
-            D_new[mfi].setVal(0,   Ne_comp);
+	    D_new[mfi].setVal(0, Temp_comp);
+	    D_new[mfi].setVal(0,   Ne_comp);
 
+	    Real z_in=initial_z;
+#ifdef AMREX_USE_CUDA
+	    //gridloc.lo matches box, not tbox
+	    AMREX_LAUNCH_DEVICE_LAMBDA(box,tbox,
+				       {
+            ca_fort_initdata
+		 (level, cur_time, tbox.loVect(), tbox.hiVect(), 
+                 ns,BL_ARR4_TO_FORTRAN(fab_S_new), 
+		  nd,BL_ARR4_TO_FORTRAN(fab_D_new), dx.data(),
+                 &z_in);
+				       });
+#else
             fort_initdata
                 (level, cur_time, lo, hi, 
-                 ns,BL_TO_FORTRAN(S_new[mfi]), 
-                 nd,BL_TO_FORTRAN(D_new[mfi]), dx,
+                 ns,BL_ARR4_TO_FORTRAN(fab_S_new), 
+                 nd,BL_ARR4_TO_FORTRAN(fab_D_new), dx.data(),
                  gridloc.lo(), gridloc.hi());
+#endif
         }
+	amrex::Gpu::Device::streamSynchronize();
 
         if (inhomo_reion) init_zhi();
+	BL_PROFILE_VAR_STOP(CA_init);
+
 
         // Add the particle density to the gas density 
-        MultiFab::Add(S_new, *particle_mf[level], 0, Density, 1, S_new.nGrow());
+        MultiFab::Add(S_new, *particle_mf[level], 0, Density, 1, 1);
 
         if (init_sb_vels == 1)
         {
@@ -824,13 +866,13 @@ Nyx::init_santa_barbara (int init_sb_vels)
 	    }
 
             // Add the particle momenta to the gas momenta (initially zero)
-            MultiFab::Add(S_new, *particle_mf[level], 1, Xmom, BL_SPACEDIM, S_new.nGrow());
+            MultiFab::Add(S_new, *particle_mf[level], 1, Xmom, BL_SPACEDIM, 1);
         }
 
     } else {
 
         MultiFab& S_new = get_new_data(State_Type);
-        FillCoarsePatch(S_new, 0, cur_time, State_Type, 0, S_new.nComp());
+        FillCoarsePatch(S_new, 0, cur_time, State_Type, 0, S_new.nGrow());
 
         MultiFab& D_new = get_new_data(DiagEOS_Type);
         FillCoarsePatch(D_new, 0, cur_time, DiagEOS_Type, 0, D_new.nComp());
@@ -855,16 +897,23 @@ Nyx::init_santa_barbara (int init_sb_vels)
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-    for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
+    for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
         const Box& box = mfi.tilebox();
-        const int* lo = box.loVect();
-        const int* hi = box.hiVect();
+	const auto fab = S_new.array(mfi);
+	const auto fab_diag = D_new.array(mfi);
 
+	AMREX_LAUNCH_DEVICE_LAMBDA(box, tbx,
+	{
+        const int* lo = tbx.loVect();
+        const int* hi = tbx.hiVect();
         fort_init_e_from_t
-            (BL_TO_FORTRAN(S_new[mfi]), &ns, 
-             BL_TO_FORTRAN(D_new[mfi]), &nd, lo, hi, &a);
+            (BL_ARR4_TO_FORTRAN(fab), &ns, 
+             BL_ARR4_TO_FORTRAN(fab_diag), &nd, lo, hi, &a);
+	});
+	amrex::Gpu::Device::streamSynchronize();
     }
+
 
     // Convert X_i to (rho X)_i
     if (use_const_species == 0) {
@@ -872,6 +921,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
             MultiFab::Multiply(S_new, S_new, Density, FirstSpec+i, 1, 0);
 	}
     }
+
 }
 #endif
 #endif
@@ -907,7 +957,12 @@ Nyx::particle_post_restart (const std::string& restart_file, bool is_checkpoint)
         // 2 gives more stuff than 1.
         //
         DMPC->SetVerbose(particle_verbose);
-        DMPC->Restart(restart_file, dm_chk_particle_file, is_checkpoint);
+
+	{
+	  amrex::Gpu::LaunchSafeGuard(true);
+	  DMPC->Restart(restart_file, dm_chk_particle_file, is_checkpoint);
+	  amrex::Gpu::Device::streamSynchronize();
+	}
         //
         // We want the ability to write the particles out to an ascii file.
         //
@@ -1053,6 +1108,9 @@ Nyx::particle_redistribute (int lbase, bool my_init)
     BL_PROFILE("Nyx::particle_redistribute()");
     if (DMPC)
     {
+
+      amrex::Gpu::LaunchSafeGuard lsg(true);
+
         //  
         // If we are calling with my_init = true, then we want to force the redistribute
         //    without checking whether the grids have changed.
@@ -1134,7 +1192,21 @@ Nyx::particle_redistribute (int lbase, bool my_init)
                    amrex::Print() << "Calling redistribute because DistMap changed " << '\n';
             }
 
-            DMPC->Redistribute(lbase, -1, parent->levelCount(lbase));
+	    int iteration = 1;
+	    int finest_level = parent->finestLevel();
+	    for (int i = 0; i < theActiveParticles().size(); i++)
+	      {
+		if(finest_level == 0)
+		  theActiveParticles()[i]->RedistributeLocal(lbase,
+                                                  theActiveParticles()[i]->finestLevel(),
+                                                  iteration);
+		else
+		  theActiveParticles()[i]->Redistribute(lbase,
+                                                  theActiveParticles()[i]->finestLevel(),
+                                                  iteration);
+
+	      }
+
             //
             // Use the new BoxArray and DistMap to define ba and dm for next time.
             //
@@ -1200,6 +1272,10 @@ Nyx::setup_ghost_particles(int ngrow)
 {
     BL_PROFILE("Nyx::setup_ghost_particles()");
     BL_ASSERT(level < parent->finestLevel());
+
+    bool prev_region = Gpu::inLaunchRegion();
+    amrex::Gpu::setLaunchRegion(false);
+    
     if(Nyx::theDMPC() != 0)
     {
         DarkMatterParticleContainer::AoS ghosts;
@@ -1226,6 +1302,8 @@ Nyx::setup_ghost_particles(int ngrow)
         Nyx::theGhostNPC()->AddParticlesAtLevel(ghosts, level+1, ngrow);
     }
 #endif
+    amrex::Gpu::Device::streamSynchronize();
+    amrex::Gpu::setLaunchRegion(prev_region);
 }
 
 void
