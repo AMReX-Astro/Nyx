@@ -104,7 +104,7 @@ Nyx::strang_hydro (Real time,
 
     std::unique_ptr<MultiFab> divu_cc;
 
-#ifndef AMREX_DEBUG
+#ifdef AMREX_DEBUG
     {
 	amrex::Gpu::Device::streamSynchronize();
 	if (S_old_tmp.contains_nan(Density, S_old_tmp.nComp(), 0)) 
@@ -158,7 +158,7 @@ Nyx::strang_hydro (Real time,
     hydro_src.clear();
 
 
-#ifndef AMREX_DEBUG
+#ifdef AMREX_DEBUG
     {
     amrex::Gpu::Device::streamSynchronize();
     if (S_new.contains_nan(Density, S_new.nComp(), 0))
@@ -224,7 +224,7 @@ Nyx::strang_hydro (Real time,
         compute_new_temp(S_new,D_new);
     } // end if (add_ext_src)
 
-#ifndef AMREX_DEBUG
+#ifdef AMREX_DEBUG
     amrex::Gpu::Device::streamSynchronize();
     if (S_new.contains_nan(Density, S_new.nComp(), 0))
       {
@@ -252,7 +252,7 @@ Nyx::strang_hydro (Real time,
     strang_second_step(cur_time,dt,S_new,D_new);
 #endif
 
-#ifndef AMREX_DEBUG
+#ifdef AMREX_DEBUG
     amrex::Gpu::Device::streamSynchronize();
     if (S_new.contains_nan(Density, S_new.nComp(), 0))
         amrex::Abort("S_new has NaNs after the second strang call");
@@ -284,7 +284,7 @@ Nyx::strang_hydro_ghost_state (Real time,
     MultiFab&  D_old        = get_old_data(DiagEOS_Type);
     MultiFab&  D_new        = get_new_data(DiagEOS_Type);
 
-#ifndef AMREX_DEBUG
+#ifdef AMREX_DEBUG
     if (std::abs(time-prev_time) > (1.e-10*cur_time) )
     {
         if (ParallelDescriptor::IOProcessor())
@@ -402,7 +402,7 @@ Nyx::strang_hydro_ghost_state (Real time,
     hydro_src.clear();
 
 
-#ifndef AMREX_DEBUG
+#ifdef AMREX_DEBUG
     amrex::Gpu::Device::streamSynchronize();
     amrex::Gpu::setLaunchRegion(false);
     if (S_new.contains_nan(Density, S_new.nComp(), 0))
@@ -482,13 +482,9 @@ Nyx::strang_hydro_ghost_state (Real time,
     strang_second_step(cur_time,dt,S_new,D_new);
 #endif
 
-<<<<<<< HEAD
     amrex::Gpu::Device::streamSynchronize();
     amrex::Gpu::setLaunchRegion(false);
-#ifndef AMREX_DEBUG
-=======
 #ifdef AMREX_DEBUG
->>>>>>> development
     if (S_new.contains_nan(Density, S_new.nComp(), 0))
         amrex::Abort("S_new has NaNs after the second strang call");
     amrex::Gpu::setLaunchRegion(true);

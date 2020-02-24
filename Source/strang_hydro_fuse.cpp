@@ -36,7 +36,7 @@ Nyx::strang_hydro_fuse (Real time,
     MultiFab&  D_old        = get_old_data(DiagEOS_Type);
     MultiFab&  D_new        = get_new_data(DiagEOS_Type);
 
-#ifndef AMREX_DEBUG
+#ifdef AMREX_DEBUG
     if (std::abs(time-prev_time) > (1.e-10*cur_time) )
     {
         if (ParallelDescriptor::IOProcessor())
@@ -109,7 +109,7 @@ Nyx::strang_hydro_fuse (Real time,
     std::unique_ptr<MultiFab> hydro_src;
     std::unique_ptr<MultiFab> ext_src_old;
 
-#ifndef AMREX_DEBUG
+#ifdef AMREX_DEBUG
     {
     if( nghost_state!=NUM_GROW)
       {
@@ -161,7 +161,7 @@ Nyx::strang_hydro_fuse (Real time,
 	S_old_tmp->clear();
       }
 
-#ifndef AMREX_DEBUG
+#ifdef AMREX_DEBUG
     {
     amrex::Gpu::Device::streamSynchronize();
     if (S_new.contains_nan(Density, S_new.nComp(), 0))
@@ -195,7 +195,7 @@ Nyx::strang_hydro_fuse (Real time,
 	amrex::Abort("strang_fuse not defined for add_ext_src==1");
       }
 
-#ifndef AMREX_DEBUG
+#ifdef AMREX_DEBUG
     amrex::Gpu::Device::streamSynchronize();
     if (S_new.contains_nan(Density, S_new.nComp(), 0))
       {
@@ -214,7 +214,7 @@ Nyx::strang_hydro_fuse (Real time,
       }
 #endif
 
-#ifndef AMREX_DEBUG
+#ifdef AMREX_DEBUG
     amrex::Gpu::Device::streamSynchronize();
     if (S_new.contains_nan(Density, S_new.nComp(), 0))
         amrex::Abort("S_new has NaNs after the second strang call");

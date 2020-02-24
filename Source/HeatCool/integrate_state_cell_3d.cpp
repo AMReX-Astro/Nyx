@@ -131,7 +131,7 @@ int Nyx::integrate_state_cell
 
     }
   #ifdef AMREX_DEBUG
-  #ifndef AMREX_DEBUG
+  #ifdef AMREX_DEBUG
         if (S_old.contains_nan())
             amrex::Abort("state has NaNs after the second strang call");
   #endif
@@ -246,7 +246,7 @@ int Nyx::integrate_state_growncell
       CVodeFree(&cvode_mem);  /* Free the integrator memory */
       
     }
-  #ifndef AMREX_DEBUG
+  #ifdef AMREX_DEBUG
         if (S_old.contains_nan())
             amrex::Abort("state has NaNs after the first strang call");
   #endif
