@@ -554,7 +554,7 @@ int integrate_state_vec_mfin
 
     }
       amrex::Gpu::streamSynchronize();
-#ifndef NDEBUG
+#ifndef AMREX_DEBUG
 				PrintFinalStats(cvode_mem);
 #endif
 
@@ -690,7 +690,6 @@ int integrate_state_vec_mfin
 				N_VDestroy(abstol_vec);          /* Free the u vector */
 				N_VDestroy(Data);          /* Free the userdata vector */
 
-				
 				//N_Vector ele= N_VClone(u);
 				if(use_cvode)
 				  {
@@ -713,7 +712,16 @@ int integrate_state_vec_mfin
 			
 	}
 	}*/
-				return 0;
+
+
+  #ifdef AMREX_DEBUG
+  #ifndef AMREX_DEBUG
+        if (S_old.contains_nan())
+            amrex::Abort("state has NaNs after the second strang call");
+  #endif
+#endif
+
+    return 0;
 }
 
 static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
