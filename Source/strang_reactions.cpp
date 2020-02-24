@@ -11,6 +11,7 @@ Nyx::strang_first_step (Real time, Real dt, MultiFab& S_old, MultiFab& D_old)
     BL_PROFILE("Nyx::strang_first_step()");
     
     Gpu::LaunchSafeGuard lsg(true);
+    const Real strt_time = ParallelDescriptor::second();
     Real half_dt = 0.5*dt;
 
     const Real a = get_comoving_a(time);
@@ -129,6 +130,23 @@ Nyx::strang_first_step (Real time, Real dt, MultiFab& S_old, MultiFab& D_old)
 	  amrex::Abort("Invalid heating cooling type");
       }
 
+    if (verbose > 0)
+    {
+        const int IOProc   = ParallelDescriptor::IOProcessorNumber();
+	Real      run_time = ParallelDescriptor::second() - strt_time;
+
+#ifdef BL_LAZY
+	Lazy::QueueReduction( [=] () mutable {
+#endif
+        ParallelDescriptor::ReduceRealMax(run_time,IOProc);
+
+	if (ParallelDescriptor::IOProcessor())
+	  std::cout << "Nyx::strang_first_step() time = " << run_time << "\n" << "\n";
+#ifdef BL_LAZY
+	});
+#endif
+    }
+
 }
 
 void
@@ -137,6 +155,7 @@ Nyx::strang_second_step (Real time, Real dt, MultiFab& S_new, MultiFab& D_new)
     BL_PROFILE("Nyx::strang_second_step()");
 
     Gpu::LaunchSafeGuard lsg(true);
+    const Real strt_time = ParallelDescriptor::second();
     Real half_dt = 0.5*dt;
     int  min_iter = 100000;
     int  max_iter =      0;
@@ -241,4 +260,21 @@ Nyx::strang_second_step (Real time, Real dt, MultiFab& S_new, MultiFab& D_new)
 	    ParallelDescriptor::ReduceIntMin(min_iter);
             std::cout << "Min/Max Number of Iterations in Second Strang: " << min_iter << " " << max_iter << std::endl;
 	  }
+
+    if (verbose > 0)
+    {
+        const int IOProc   = ParallelDescriptor::IOProcessorNumber();
+	Real      run_time = ParallelDescriptor::second() - strt_time;
+
+#ifdef BL_LAZY
+	Lazy::QueueReduction( [=] () mutable {
+#endif
+        ParallelDescriptor::ReduceRealMax(run_time,IOProc);
+
+	if (ParallelDescriptor::IOProcessor())
+	  std::cout << "Nyx::strang_second_step() time = " << run_time << "\n" << "\n";
+#ifdef BL_LAZY
+	});
+#endif
+    }
 }
