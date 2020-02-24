@@ -35,7 +35,7 @@ Nyx::strang_hydro (Real time,
     MultiFab&  D_old        = get_old_data(DiagEOS_Type);
     MultiFab&  D_new        = get_new_data(DiagEOS_Type);
 
-#ifndef AMREX_DEBUG
+#ifdef AMREX_DEBUG
     if (std::abs(time-prev_time) > (1.e-10*cur_time) )
     {
         if (ParallelDescriptor::IOProcessor())
@@ -454,7 +454,7 @@ Nyx::strang_hydro_ghost_state (Real time,
 
     amrex::Gpu::Device::streamSynchronize();
     amrex::Gpu::setLaunchRegion(false);
-#ifndef AMREX_DEBUG
+#ifdef AMREX_DEBUG
     if (S_new.contains_nan(Density, S_new.nComp(), 0))
       {
         for (int i = 0; i < S_new.nComp(); i++)
@@ -482,9 +482,13 @@ Nyx::strang_hydro_ghost_state (Real time,
     strang_second_step(cur_time,dt,S_new,D_new);
 #endif
 
+<<<<<<< HEAD
     amrex::Gpu::Device::streamSynchronize();
     amrex::Gpu::setLaunchRegion(false);
 #ifndef AMREX_DEBUG
+=======
+#ifdef AMREX_DEBUG
+>>>>>>> development
     if (S_new.contains_nan(Density, S_new.nComp(), 0))
         amrex::Abort("S_new has NaNs after the second strang call");
     amrex::Gpu::setLaunchRegion(true);

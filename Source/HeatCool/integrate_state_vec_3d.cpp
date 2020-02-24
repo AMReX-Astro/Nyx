@@ -282,7 +282,7 @@ int Nyx::integrate_state_vec_mfin
 				//				amrex::Gpu::Device::streamSynchronize();
 				//				BL_PROFILE_VAR_STOP(cvode_timer2);
 
-#ifndef AMREX_DEBUG
+#ifdef AMREX_DEBUG
 				PrintFinalStats(cvode_mem);
 #endif
 
