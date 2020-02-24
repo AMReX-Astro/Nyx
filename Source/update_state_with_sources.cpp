@@ -14,7 +14,7 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
     BL_PROFILE("Nyx::update_state_with_sources()");
     if (verbose && ParallelDescriptor::IOProcessor())
       std::cout << "Updating state with the hydro sources ... " << std::endl;
-
+    MultiFab::RegionTag amrhydro_tag("HydroUpdate_" + std::to_string(level));
     if(verbose>1) {
         std::cout<<"hydro_src norm2(0)"<<hydro_src.norm2(0)<<std::endl;
 	std::cout<<"hydro_src norm2(Eint)"<<hydro_src.norm2(Eint)<<std::endl;

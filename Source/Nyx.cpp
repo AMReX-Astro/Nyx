@@ -651,6 +651,9 @@ Nyx::Nyx (Amr&            papa,
     AmrLevel(papa,lev,level_geom,bl,dm,time)
 {
     BL_PROFILE("Nyx::Nyx(Amr)");
+
+    MultiFab::RegionTag amrlevel_tag("AmrLevel_Level_" + std::to_string(lev));
+
     build_metrics();
     fine_mask = 0;
 
@@ -805,6 +808,7 @@ Nyx::init (AmrLevel& old)
     BL_PROFILE("Nyx::init(old)");
 
     amrex::Gpu::LaunchSafeGuard lsg(true);
+    MultiFab::RegionTag amrInit_tag("Init_" + std::to_string(level));
     Nyx* old_level = (Nyx*) &old;
     //
     // Create new grid data by fillpatching from old.
@@ -1429,6 +1433,7 @@ Nyx::post_timestep (int iteration)
     BL_PROFILE("Nyx::post_timestep()");
 
     amrex::Gpu::LaunchSafeGuard lsg(true);
+    MultiFab::RegionTag amrPost_tag("Post_" + std::to_string(level));
 
     //
     // Integration cycle on fine level grids is complete
@@ -1819,6 +1824,7 @@ void
 Nyx::postCoarseTimeStep (Real cumtime)
 {
    BL_PROFILE("Nyx::postCoarseTimeStep()");
+   MultiFab::RegionTag amrPost_tag("Post_" + std::to_string(level));
 
    AmrLevel::postCoarseTimeStep(cumtime);
 
@@ -1958,6 +1964,13 @@ Nyx::postCoarseTimeStep (Real cumtime)
 
    }
 #endif
+   if(verbose>1)
+   {
+   amrex::Print()<<"End of postCoarseTimeStep, printing:"<<std::endl;
+   MultiFab::printMemUsage();
+   amrex::Arena::PrintUsage();
+   }
+
 }
 
 void

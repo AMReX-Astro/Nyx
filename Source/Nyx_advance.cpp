@@ -31,6 +31,9 @@ Nyx::advance (Real time,
   //    ncycle    : the number of subcycles at this level
 
 {
+
+  MultiFab::RegionTag amrlevel_tag("AmrLevel_Level_" + std::to_string(level));
+
 #ifndef NO_HYDRO
     if (do_hydro)
     {
@@ -192,6 +195,7 @@ Nyx::advance_hydro_plus_particles (Real time,
     //
     if (level == 0 || iteration > 1)
     {
+
         for (int lev = level; lev <= finest_level; lev++)
         {
             dt_lev = parent->dtLevel(lev);
@@ -217,6 +221,9 @@ Nyx::advance_hydro_plus_particles (Real time,
     BL_PROFILE_VAR("solve_for_old_phi", solve_for_old_phi);
     if (level == 0 || iteration > 1)
     {
+
+        MultiFab::RegionTag amrGrav_tag("Gravity_" + std::to_string(level));
+
         // fix fluxes on finer grids
         if (do_reflux)
         {
@@ -257,6 +264,8 @@ Nyx::advance_hydro_plus_particles (Real time,
             if (particle_verbose && ParallelDescriptor::IOProcessor())
                 std::cout << "moveKickDrift ... updating particle positions and velocity\n"; 
 
+	    MultiFab::RegionTag amrMoveKickDrift_tag("MoveKickDrift_" + std::to_string(level));
+
             for (int lev = level; lev <= finest_level_to_advance; lev++)
             {
                 // We need grav_n_grow grow cells to track boundary particles
@@ -287,6 +296,10 @@ Nyx::advance_hydro_plus_particles (Real time,
     // Call the hydro advance at each level to be advanced
     //
     BL_PROFILE_VAR("just_the_hydro", just_the_hydro);
+    {
+
+      MultiFab::RegionTag amrhydro_tag("Hydro_" + std::to_string(level));
+
     for (int lev = level; lev <= finest_level_to_advance; lev++)
     {
 #ifdef SDC
@@ -320,6 +333,7 @@ Nyx::advance_hydro_plus_particles (Real time,
 	      get_level(lev).strang_hydro(time, dt, a_old, a_new);
 	  }
 #endif
+    }
     }
     BL_PROFILE_VAR_STOP(just_the_hydro);
 
@@ -361,6 +375,7 @@ Nyx::advance_hydro_plus_particles (Real time,
     int use_previous_phi_as_guess = 1;
     if (finest_level_to_advance > level)
     {
+        MultiFab::RegionTag amrGrav_tag("Gravity_" + std::to_string(level));
         // The particle may be as many as "iteration" ghost cells out
         int ngrow_for_solve = iteration + stencil_deposition_width;
         gravity->multilevel_solve_for_new_phi(level, finest_level_to_advance, 
@@ -369,6 +384,7 @@ Nyx::advance_hydro_plus_particles (Real time,
     }
     else
     {
+        MultiFab::RegionTag amrGrav_tag("Gravity_" + std::to_string(level));
         int fill_interior = 0;
         gravity->solve_for_new_phi(level,get_new_data(PhiGrav_Type),
                                gravity->get_grad_phi_curr(level),
@@ -379,6 +395,7 @@ Nyx::advance_hydro_plus_particles (Real time,
     // Reflux
     if (do_reflux)
     {
+        MultiFab::RegionTag amrGrav_tag("Gravity_" + std::to_string(level));
         for (int lev = level; lev <= finest_level_to_advance; lev++)
         {
             gravity->add_to_fluxes(lev, iteration, ncycle);
@@ -390,6 +407,7 @@ Nyx::advance_hydro_plus_particles (Real time,
     //
     for (int lev = level; lev <= finest_level_to_advance; lev++)
     {
+        MultiFab::RegionTag amrGrav_tag("Gravity_" + std::to_string(lev));
         amrex::Gpu::LaunchSafeGuard lsg(true);
         MultiFab& S_old = get_level(lev).get_old_data(State_Type);
         MultiFab& S_new = get_level(lev).get_new_data(State_Type);
@@ -458,6 +476,7 @@ Nyx::advance_hydro_plus_particles (Real time,
         // locations.
         if (particle_move_type == "Gravitational")
         {
+	    MultiFab::RegionTag amrMoveKickDrift_tag("MoveKick_" + std::to_string(level));
             const Real a_half = 0.5 * (a_old + a_new);
 
             if (particle_verbose && ParallelDescriptor::IOProcessor())
@@ -489,6 +508,7 @@ Nyx::advance_hydro_plus_particles (Real time,
     //
     for (int lev = level; lev <= finest_level_to_advance; lev++)
     {
+        MultiFab::RegionTag amrReset_tag("Reset_" + std::to_string(lev));
         MultiFab& S_new = get_level(lev).get_new_data(State_Type);
         MultiFab& D_new = get_level(lev).get_new_data(DiagEOS_Type);
 

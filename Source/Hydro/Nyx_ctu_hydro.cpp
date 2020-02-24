@@ -22,7 +22,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
     amrex::Arena::PrintUsage();
   }
   Gpu::LaunchSafeGuard lsg(true);
-  
+  MultiFab::RegionTag amrhydro_tag("HydroConstruct_" + std::to_string(level));
   const Real strt_time = ParallelDescriptor::second();
 
   // this constructs the hydrodynamic source (essentially the flux
