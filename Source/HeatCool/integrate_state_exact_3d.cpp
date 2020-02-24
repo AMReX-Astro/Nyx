@@ -59,7 +59,7 @@ int Nyx::integrate_state_exact
 
     }
   #ifdef AMREX_DEBUG
-  #ifndef AMREX_DEBUG
+  #ifdef AMREX_DEBUG
         if (S_old.contains_nan())
             amrex::Abort("state has NaNs after the second strang call");
   #endif
@@ -115,7 +115,7 @@ int Nyx::integrate_state_grownexact
 
     }
   #ifdef AMREX_DEBUG
-  #ifndef AMREX_DEBUG
+  #ifdef AMREX_DEBUG
         if (S_old.contains_nan())
             amrex::Abort("state has NaNs after the second strang call");
   #endif

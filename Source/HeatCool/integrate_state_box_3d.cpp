@@ -204,7 +204,7 @@ int Nyx::integrate_state_box
       N_VDestroy(T_tmp);
       N_VDestroy(rho_tmp);
       CVodeFree(&cvode_mem);  /* Free the integrator memory */
-#ifndef AMREX_DEBUG
+#ifdef AMREX_DEBUG
         if (S_old[mfi].contains_nan())
             amrex::Abort("state has NaNs after the first strang call");
 #endif
@@ -386,7 +386,7 @@ int Nyx::integrate_state_grownbox
       N_VDestroy(T_tmp);
       N_VDestroy(rho_tmp);
       CVodeFree(&cvode_mem);  /* Free the integrator memory */
-#ifndef AMREX_DEBUG
+#ifdef AMREX_DEBUG
         if (S_old[mfi].contains_nan())
             amrex::Abort("state has NaNs after the first strang call");
 #endif

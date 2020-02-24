@@ -351,7 +351,7 @@ Gravity::solve_for_phi (int               level,
     // Here we divide by a for the Poisson solve.
     Rhs.mult(1 / cs->get_comoving_a(time));
 
-#ifndef AMREX_DEBUG
+#ifdef AMREX_DEBUG
     if (Rhs.contains_nan(0,1,0))
     {
         std::cout << "Rhs in solve_for_phi at level " << level << " has NaNs" << std::endl;

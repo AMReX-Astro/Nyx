@@ -364,7 +364,7 @@ int integrate_state_vec
 				amrex::Cuda::Device::streamSynchronize();
 				BL_PROFILE_VAR_STOP(cvode_timer2);
 
-#ifndef AMREX_DEBUG
+#ifdef AMREX_DEBUG
 				PrintFinalStats(cvode_mem);
 #endif
 
@@ -401,7 +401,7 @@ int integrate_state_vec
     }
 
   #ifdef AMREX_DEBUG
-  #ifndef AMREX_DEBUG
+  #ifdef AMREX_DEBUG
         if (S_old.contains_nan())
             amrex::Abort("state has NaNs after the second strang call");
   #endif

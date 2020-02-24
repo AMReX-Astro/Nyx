@@ -40,7 +40,7 @@ Nyx::strang_first_step (Real time, Real dt, MultiFab& S_old, MultiFab& D_old)
                  BL_TO_FORTRAN(D_old[mfi]),
                  &a, &half_dt, &min_iter, &max_iter);
 
-#ifndef AMREX_DEBUG
+#ifdef AMREX_DEBUG
         if (S_old[mfi].contains_nan())
             amrex::Abort("state has NaNs after the first strang call");
 #endif
