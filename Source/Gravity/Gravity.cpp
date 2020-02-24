@@ -1420,7 +1420,7 @@ Gravity::AddParticlesToRhs(int base_level, int finest_level, int ngrow, const Ve
     {
         Vector<std::unique_ptr<MultiFab> > PartMF;
         Nyx::theActiveParticles()[i]->AssignDensity(PartMF, base_level, 1, finest_level, ngrow);
-#ifndef NDEBUG
+#ifndef AMREX_DEBUG
         for (int lev = 0; lev < num_levels; lev++)
         {
             if (PartMF[lev]->contains_nan())

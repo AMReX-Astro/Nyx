@@ -725,7 +725,7 @@ int integrate_state_vec_mfin
       N_VPrint_Serial(u);
       N_VPrint_Serial(e_orig2);
 #endif
-#ifndef NDEBUG
+#ifndef AMREX_DEBUG
 				PrintFinalStats(cvode_mem);
 #endif
 
