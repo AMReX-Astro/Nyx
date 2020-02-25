@@ -942,6 +942,9 @@ protected:
     // if true, use non-negative constraint on energy
     static int use_sundials_constraint;
 
+    // specifies the memory priority
+    static int minimize_memory;
+
     // specifies inhomogeneous reionization type
     static int inhomo_reion;
     static std::string inhomo_zhi_file;

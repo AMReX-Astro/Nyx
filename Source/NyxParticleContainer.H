@@ -34,6 +34,7 @@ public:
                                     int nGrow                = 0) = 0;
     
     virtual int finestLevel() const = 0;
+    virtual void ShrinkToFit() = 0;
     virtual void RemoveParticlesAtLevel (int level) = 0;
     virtual amrex::Real sumParticleMass (int level) const = 0;
     virtual void AssignDensitySingleLevel (amrex::MultiFab& mf, int level, int ncomp=1,
@@ -88,6 +89,11 @@ public:
     virtual int finestLevel() const override
     {
         return amrex::NeighborParticleContainer<NSR,NSI>::finestLevel();
+    }
+
+    virtual void ShrinkToFit() override
+    {
+        amrex::NeighborParticleContainer<NSR,NSI>::ShrinkToFit();
     }
 
     virtual void Redistribute (int lev_min              = 0,
