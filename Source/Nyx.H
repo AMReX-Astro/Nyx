@@ -218,6 +218,7 @@ public:
     //
     static amrex::Real comoving_OmB;
     static amrex::Real comoving_OmM;
+    static amrex::Real comoving_OmR;
     static amrex::Real comoving_h;
 
     //

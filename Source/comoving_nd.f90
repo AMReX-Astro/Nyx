@@ -9,9 +9,9 @@ module comoving_nd_module
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      real(rt) function invEz(H0, Om, a)
-        real(rt), intent(in) :: H0, Om, a
-        invEz = 1.0d0 / ( H0*dsqrt(Om/a + (1.0d0-Om)*a*a) )
+      real(rt) function invEz(H0, Om, Or, a)
+        real(rt), intent(in) :: H0, Om, Or, a
+        invEz = 1.0d0 / ( H0*dsqrt(Om/a + Or/(a*a) + (1.0d0-Om-Or)*a*a) )
       end function invEz
 
 ! :::
@@ -22,17 +22,19 @@ module comoving_nd_module
          bind(C, name="fort_integrate_time_given_a")
 
         use fundamental_constants_module, only: Hubble_const
-        use comoving_module             , only: comoving_h, comoving_OmM
+        use comoving_module             , only: comoving_h, comoving_OmM, &
+                                                comoving_OmR
 
         real(rt), intent(in   ) :: a0, a1
         real(rt), intent(  out) :: dt
 
         real(rt), parameter :: xacc = 1.0d-6
-        real(rt) :: H0, Om, prev_soln, h
+        real(rt) :: H0, OmM, OmR, prev_soln, h
         integer :: iter, n, j
 
-        H0 = comoving_h*Hubble_const
-        Om = comoving_OmM
+        H0  = comoving_h*Hubble_const
+        OmM = comoving_OmM
+        OmR = comoving_OmR
 
         prev_soln = -1.0d0
         ! trapezoidal integration
@@ -43,13 +45,13 @@ module comoving_nd_module
           h = (a1-a0)/(n-1)
 
           if (a0 .lt. 1.0d-10) then  ! prevent division by zero in invEz
-             dt = 0.5*invEz(H0, Om, a1)
+             dt = 0.5*invEz(H0, OmM, OmR, a1)
           else
-             dt = 0.5*(invEz(H0, Om, a0) + invEz(H0, Om, a1))
+             dt = 0.5*(invEz(H0, OmM, OmR, a0) + invEz(H0, OmM, OmR, a1))
           endif
 
           do j = 1, n-2
-             dt = dt + invEz(H0, Om, a0+j*h)
+             dt = dt + invEz(H0, OmM, OmR, a0+j*h)
           enddo
           dt = dt*h
 
@@ -69,7 +71,8 @@ module comoving_nd_module
          bind(C, name="fort_integrate_comoving_a")
 
         use fundamental_constants_module, only: Hubble_const
-        use comoving_module             , only: comoving_h, comoving_OmM, comoving_type
+        use comoving_module             , only: comoving_h, comoving_OmM, &
+                                                comoving_OmR, comoving_type
 
         implicit none
 
@@ -88,7 +91,7 @@ module comoving_nd_module
         endif
 
         H_0 = comoving_h * Hubble_const
-        OmL = 1.d0 - comoving_OmM 
+        OmL = 1.d0 - comoving_OmM - comoving_OmR 
 
         prev_soln = 2.0d0 ! 0<a<1 so a=2 will do as "wrong" solution
         do iter = 1, 11  ! max allowed iterations
@@ -98,12 +101,12 @@ module comoving_nd_module
 
           do j = 1, nsteps
             ! This uses RK2 to integrate the ODE:
-            !   da / dt = H_0 * sqrt(OmM/a + OmL*a^2)
+            !   da / dt = H_0 * sqrt(OmM/a + OmR/a^2 + OmL*a^2)
             start_a = end_a
 
             ! Compute the slope at the old time
             if (comoving_type > 0) then
-                start_slope = H_0*dsqrt(comoving_OmM / start_a + OmL*start_a**2)
+                start_slope = H_0*dsqrt(comoving_OmM/start_a + comoving_OmR/(start_a*start_a) + OmL*start_a**2)
             else
                 start_slope = comoving_h
             end if
@@ -113,7 +116,7 @@ module comoving_nd_module
 
             ! Compute the slope at the new time
             if (comoving_type > 0) then
-                end_slope = H_0*dsqrt(comoving_OmM / end_a + OmL*end_a**2)
+                end_slope = H_0*dsqrt(comoving_OmM/end_a + comoving_OmR/(end_a*end_a) + OmL*end_a**2)
             else
                 end_slope = comoving_h 
             end if
@@ -138,7 +141,8 @@ module comoving_nd_module
          bind(C, name="fort_integrate_comoving_a_to_z")
 
         use fundamental_constants_module, only: Hubble_const
-        use comoving_module             , only: comoving_h, comoving_OmM, comoving_type
+        use comoving_module             , only: comoving_h, comoving_OmM, &
+                                                comoving_OmR, comoving_type
 
         implicit none
 
@@ -156,7 +160,7 @@ module comoving_nd_module
           call amrex_error("fort_integrate_comoving_a_to_z: Shouldn't be setting plot_z_values if not evolving a")
 
         H_0 = comoving_h * Hubble_const
-        OmL = 1.d0 - comoving_OmM 
+        OmL = 1.d0 - comoving_OmM - comoving_OmR
       
         ! Translate the target "z" into a target "a"
         a_value = 1.d0 / (1.d0 + z_value)
@@ -169,12 +173,12 @@ module comoving_nd_module
         end_a = old_a
         do j = 1, nsteps
             ! This uses RK2 to integrate the ODE:
-            !   da / dt = H_0 * sqrt(OmM/a + OmL*a^2)
+            !   da / dt = H_0 * sqrt(OmM/a + OmR/a^2 + OmL*a^2)
             start_a = end_a
 
             ! Compute the slope at the old time
             if (comoving_type > 0) then
-                start_slope = H_0*dsqrt(comoving_OmM / start_a + OmL*start_a**2)
+                start_slope = H_0*dsqrt(comoving_OmM/start_a + comoving_OmR/(start_a*start_a) + OmL*start_a**2)
             else
                 start_slope = comoving_h
             end if
@@ -184,7 +188,7 @@ module comoving_nd_module
 
             ! Compute the slope at the new time
             if (comoving_type > 0) then
-                end_slope = H_0*dsqrt(comoving_OmM / end_a + OmL*end_a**2)
+                end_slope = H_0*dsqrt(comoving_OmM/end_a + comoving_OmR/(end_a*end_a) + OmL*end_a**2)
             else
                 end_slope = comoving_h 
             end if
@@ -210,7 +214,8 @@ module comoving_nd_module
          bind(C, name="fort_integrate_comoving_a_to_a")
 
         use fundamental_constants_module, only: Hubble_const
-        use comoving_module             , only: comoving_h, comoving_OmM, comoving_type
+        use comoving_module             , only: comoving_h, comoving_OmM, &
+                                                comoving_OmR, comoving_type
 
         implicit none
 
@@ -229,7 +234,7 @@ module comoving_nd_module
           call amrex_error("fort_integrate_comoving_a_to_z: Shouldn't be setting plot_z_values if not evolving a")
 
         H_0 = comoving_h * Hubble_const
-        OmL = 1.d0 - comoving_OmM 
+        OmL = 1.d0 - comoving_OmM - comoving_OmR
       
 
         ! Use lots of steps if we want to nail the z_value
@@ -243,12 +248,12 @@ module comoving_nd_module
         end_a = old_a
         do j = 1, nsteps
             ! This uses RK2 to integrate the ODE:
-            !   da / dt = H_0 * sqrt(OmM/a + OmL*a^2)
+            !   da / dt = H_0 * sqrt(OmM/a + OmR/a^2 + OmL*a^2)
             start_a = end_a
 
             ! Compute the slope at the old time
             if (comoving_type > 0) then
-                start_slope = H_0*dsqrt(comoving_OmM / start_a + OmL*start_a**2)
+                start_slope = H_0*dsqrt(comoving_OmM/start_a + comoving_OmR/(start_a*start_a) + OmL*start_a**2)
             else
                 start_slope = comoving_h
             end if
@@ -258,7 +263,7 @@ module comoving_nd_module
 
             ! Compute the slope at the new time
             if (comoving_type > 0) then
-                end_slope = H_0*dsqrt(comoving_OmM / end_a + OmL*end_a**2)
+                end_slope = H_0*dsqrt(comoving_OmM/end_a + comoving_OmR/(end_a*end_a) + OmL*end_a**2)
             else
                 end_slope = comoving_h 
             end if
@@ -282,7 +287,8 @@ module comoving_nd_module
       subroutine fort_est_maxdt_comoving_a(old_a,dt)
 
         use fundamental_constants_module, only: Hubble_const
-        use comoving_module             , only: comoving_h, comoving_OmM, comoving_type
+        use comoving_module             , only: comoving_h, comoving_OmM, &
+                                                comoving_OmR, comoving_type
 
         implicit none
 
@@ -292,7 +298,7 @@ module comoving_nd_module
         real(rt) :: H_0, OmL
         real(rt) :: max_dt
 
-        OmL = 1.d0 - comoving_OmM 
+        OmL = 1.d0 - comoving_OmM - comoving_OmR
 
         ! This subroutine computes dt based on not changing a by more than 5% 
         ! if we use forward Euler integration
@@ -302,7 +308,7 @@ module comoving_nd_module
 
         if (H_0 .ne. 0.0d0) then
            if (comoving_type > 0) then
-              max_dt = (0.05d0) / H_0 / dsqrt(comoving_OmM / old_a**3 + OmL)
+              max_dt = (0.05d0) / H_0 / dsqrt(comoving_OmM/old_a**3 + comoving_OmR/old_a**4 + OmL)
            else
               max_dt = (0.05d0) / abs(comoving_h)
            end if
@@ -324,7 +330,8 @@ module comoving_nd_module
       subroutine fort_est_lindt_comoving_a(old_a,new_a,dt)
 
         use fundamental_constants_module, only: Hubble_const
-        use comoving_module             , only: comoving_h, comoving_OmM, comoving_type
+        use comoving_module             , only: comoving_h, comoving_OmM, &
+                                                comoving_OmR, comoving_type
 
         implicit none
 
@@ -334,19 +341,18 @@ module comoving_nd_module
         real(rt) :: H_0, OmL
         real(rt) :: lin_dt
 
-        OmL = 1.d0 - comoving_OmM 
+        OmL = 1.d0 - comoving_OmM - comoving_OmR
 
         ! This subroutine computes dt based on not changing a by more than 5% 
         ! if we use forward Euler integration
-        !   d(ln(a)) / dt = H_0 * sqrt(OmM/a^3 + OmL)
+        !   d(ln(a)) / dt = H_0 * sqrt(OmM/a^3 + OmR/a^4 + OmL)
 
         H_0 = comoving_h * Hubble_const
 
         ! Could definately be optimized better
         if (H_0 .ne. 0.0d0) then
 
-           lin_dt= ((new_a/(.75**(2/3)*(OmL+ comoving_OmM)**(1/3)))**(.75)  - &
-                ((old_a/(.75**(2/3)*(OmL+ comoving_OmM)**(1/3)))**(.75) ) ) /H_0
+           lin_dt= ( (new_a/(.75**(2/3)))**(.75)  - (old_a/(.75**(2/3)))**(.75) ) / H_0
            dt=lin_dt
            
         else 
@@ -578,6 +584,22 @@ module comoving_nd_module
         comoving_OmM = omm
 
       end subroutine fort_set_omm
+
+
+! :::
+! ::: ----------------------------------------------------------------
+! :::
+
+      subroutine fort_set_omr(omr) &
+         bind(C, name="fort_set_omr")
+
+        use comoving_module, only: comoving_OmR
+
+        real(rt), intent(in) :: omr
+
+        comoving_OmR = omr
+
+      end subroutine fort_set_omr
 
 ! :::
 ! ::: ----------------------------------------------------------------
