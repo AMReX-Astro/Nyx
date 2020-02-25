@@ -35,6 +35,7 @@ extern "C"
 
   void fort_set_omm    (const amrex::Real& omm);
   void fort_set_omb    (const amrex::Real& frac);
+  void fort_set_omr    (const amrex::Real& omr);
   void fort_set_hubble (const amrex::Real& hubble);
 
   AMREX_GPU_DEVICE void fort_estdt
