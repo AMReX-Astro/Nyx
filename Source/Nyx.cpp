@@ -78,6 +78,9 @@ Real Nyx::new_a_time = -1.0;
 Vector<Real> Nyx::plot_z_values;
 Vector<Real> Nyx::analysis_z_values;
 
+int Nyx::load_balance_int = -1;
+int Nyx::load_balance_wgt_strategy = 0;
+
 bool Nyx::dump_old = false;
 int Nyx::verbose      = 0;
 
@@ -620,6 +623,9 @@ Nyx::read_params ()
       analysis_z_values.resize(num_z_values);
       pp_nyx.queryarr("analysis_z_values",analysis_z_values,0,num_z_values);
     }
+
+    pp_nyx.query("load_balance_int",          load_balance_int);
+    pp_nyx.query("load_balance_wgt_strategy", load_balance_wgt_strategy);
 
     // How often do we want to write x,y,z 2-d slices of S_new
     pp_nyx.query("slice_int",    slice_int);
@@ -1462,6 +1468,9 @@ Nyx::post_timestep (int iteration)
     BL_PROFILE_VAR_STOP(rm);
     BL_PROFILE_VAR("Nyx::post_timestep()::redist",redist);
 
+    if(load_balance_int < 0 || !(nStep() % load_balance_int == 0 && level == 0))
+    {
+
     //
     // Sync up if we're level 0 or if we have particles that may have moved
     // off the next finest level and need to be added to our own level.
@@ -1483,6 +1492,8 @@ Nyx::post_timestep (int iteration)
 	         theActiveParticles()[i]->ShrinkToFit();
 
 	}
+    }
+
     }
     amrex::Gpu::streamSynchronize();
     BL_PROFILE_VAR_STOP(redist);
@@ -1833,6 +1844,59 @@ Nyx::postCoarseTimeStep (Real cumtime)
 {
    BL_PROFILE("Nyx::postCoarseTimeStep()");
    MultiFab::RegionTag amrPost_tag("Post_" + std::to_string(level));
+
+    if(load_balance_int >= 0 && nStep() % load_balance_int == 0)
+    {
+      amrex::Print()<<"Load balancing since "<<nStep()<<" mod "<<load_balance_int<<" == 0"<<std::endl;
+#ifdef NO_HYDRO
+    Real cur_time = state[PhiGrav_Type].curTime();
+#else
+    Real cur_time = state[State_Type].curTime();
+#endif
+
+    for (int lev = 0; lev <= parent->finestLevel(); lev++)
+    {
+    
+        Vector<long> wgts(grids.size());
+        DistributionMapping dm;
+
+	//Should these weights be constructed based on level=0, or lev from for?
+        if(load_balance_wgt_strategy == 0)
+        {
+            for (unsigned int i = 0; i < wgts.size(); i++)
+            {
+                wgts[i] = grids[i].numPts();
+            }
+	    dm.KnapSackProcessorMap(wgts, ParallelDescriptor::NProcs());
+        }
+	else if(load_balance_wgt_strategy == 1)
+	{
+	    wgts = theDMPC()->NumberOfParticlesInGrid(level,false,false);
+	    dm.KnapSackProcessorMap(wgts, ParallelDescriptor::NProcs());
+	}
+	else if(load_balance_wgt_strategy == 2)
+	{
+	    MultiFab particle_mf(grids,theDMPC()->ParticleDistributionMap(level),1,1);
+	    theDMPC()->DarkMatterParticleContainer::AssignDensitySingleLevel(particle_mf,level);
+	    dm.makeKnapSack(particle_mf, ParallelDescriptor::NProcs());
+	  }
+	else
+	{
+	    amrex::Abort("Selected load balancing strategy not implemented");
+	}
+
+	amrex::Gpu::Device::streamSynchronize();
+	const DistributionMapping& newdmap = dm;
+	
+        for (int i = 0; i < theActiveParticles().size(); i++)
+	{
+	     theActiveParticles()[i]->Regrid(newdmap, grids, lev);
+	}
+
+    amrex::Gpu::streamSynchronize();
+    }
+
+    }
 
    AmrLevel::postCoarseTimeStep(cumtime);
 

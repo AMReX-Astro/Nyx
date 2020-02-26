@@ -920,6 +920,9 @@ protected:
     static amrex::Vector<amrex::Real> plot_z_values;      // These are the value of "z" at which to dump plotfiles.
     static amrex::Vector<amrex::Real> analysis_z_values;  // These are the value of "z" at which to perform analysis
 
+    static int load_balance_int;
+    static int load_balance_wgt_strategy;
+
     bool FillPatchedOldState_ok;
 
     // permits hydro to be turned on and off for running pure rad problems:
