@@ -96,7 +96,6 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     }
     else
     {
-      amrex::Print()<<"recreating ptr"<<std::endl;
         const IntVect& ng = acceleration.nGrowVect();
         ac_ptr = new amrex::MultiFab(this->ParticleBoxArray(lev),
 			             this->ParticleDistributionMap(lev),
@@ -200,16 +199,7 @@ DarkMatterParticleContainer::moveKick (MultiFab&       acceleration,
         ac_ptr = &acceleration;
     }
     else 
-    {/*
-        ac_ptr = new MultiFab(ParticleBoxArray(lev),
-				  ParticleDistributionMap(lev),
-				  acceleration.nComp(),acceleration.nGrow());
-        for (MFIter mfi(*ac_ptr); mfi.isValid(); ++mfi)
-            ac_ptr->setVal(0.);
-        ac_ptr->copy(acceleration,0,0,acceleration.nComp());
-        ac_ptr->FillBoundary();*/
-
-      amrex::Print()<<"recreating ptr"<<std::endl;
+    {
         const IntVect& ng = acceleration.nGrowVect();
         ac_ptr = new amrex::MultiFab(this->ParticleBoxArray(lev),
 			             this->ParticleDistributionMap(lev),
