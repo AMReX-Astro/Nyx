@@ -152,11 +152,6 @@ public:
     virtual void restart(amrex::Amr& papa, istream& is, bool b_read_special=false);
 
     //
-    //Remake level-specific data
-    //
-    void remake_level(int lev, amrex::Real time, const amrex::BoxArray& ba, amrex::DistributionMapping dm);
-
-    //
     //Call amrex::AmrLevel::checkPoint and then add radiation info
     //
     virtual void checkPoint(const std::string& dir, std::ostream& os,
@@ -921,8 +916,6 @@ protected:
 
     static int load_balance_int;
     static int load_balance_wgt_strategy;
-    static int load_balance_grids_ref;
-    static int load_balance_remake_level;
 
     bool FillPatchedOldState_ok;
 
