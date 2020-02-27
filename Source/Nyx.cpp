@@ -80,6 +80,7 @@ Vector<Real> Nyx::analysis_z_values;
 
 int Nyx::load_balance_int = -1;
 int Nyx::load_balance_wgt_strategy = 0;
+int Nyx::load_balance_wgt_nmax = -1;
 
 bool Nyx::dump_old = false;
 int Nyx::verbose      = 0;
@@ -626,6 +627,8 @@ Nyx::read_params ()
 
     pp_nyx.query("load_balance_int",          load_balance_int);
     pp_nyx.query("load_balance_wgt_strategy", load_balance_wgt_strategy);
+    load_balance_wgt_nmax = amrex::ParallelDescriptor::NProcs();
+    pp_nyx.query("load_balance_wgt_nmax",     load_balance_wgt_nmax);
 
     // How often do we want to write x,y,z 2-d slices of S_new
     pp_nyx.query("slice_int",    slice_int);
@@ -1847,7 +1850,8 @@ Nyx::postCoarseTimeStep (Real cumtime)
 
     if(load_balance_int >= 0 && nStep() % load_balance_int == 0)
     {
-      amrex::Print()<<"Load balancing since "<<nStep()<<" mod "<<load_balance_int<<" == 0"<<std::endl;
+      if(verbose>0)
+	amrex::Print()<<"Load balancing since "<<nStep()<<" mod "<<load_balance_int<<" == 0"<<std::endl;
 #ifdef NO_HYDRO
     Real cur_time = state[PhiGrav_Type].curTime();
 #else
@@ -1867,19 +1871,28 @@ Nyx::postCoarseTimeStep (Real cumtime)
             {
                 wgts[i] = grids[i].numPts();
             }
-	    dm.KnapSackProcessorMap(wgts, ParallelDescriptor::NProcs());
+	    if(dm.strategy()==DistributionMapping::Strategy::KNAPSACK)
+	        dm.KnapSackProcessorMap(wgts, load_balance_wgt_nmax);
+	    else if(dm.strategy()==DistributionMapping::Strategy::SFC)
+	        dm.SFCProcessorMap(grids, wgts, load_balance_wgt_nmax);
         }
 	else if(load_balance_wgt_strategy == 1)
 	{
 	    wgts = theDMPC()->NumberOfParticlesInGrid(level,false,false);
-	    dm.KnapSackProcessorMap(wgts, ParallelDescriptor::NProcs());
+	    if(dm.strategy()==DistributionMapping::Strategy::KNAPSACK)
+	        dm.KnapSackProcessorMap(wgts, load_balance_wgt_nmax);
+	    else if(dm.strategy()==DistributionMapping::Strategy::SFC)
+	      dm.SFCProcessorMap(grids, wgts, load_balance_wgt_nmax);
 	}
 	else if(load_balance_wgt_strategy == 2)
 	{
 	    MultiFab particle_mf(grids,theDMPC()->ParticleDistributionMap(level),1,1);
-	    theDMPC()->DarkMatterParticleContainer::AssignDensitySingleLevel(particle_mf,level);
-	    dm.makeKnapSack(particle_mf, ParallelDescriptor::NProcs());
-	  }
+	    theDMPC()->Increment(particle_mf, level);
+	    if(dm.strategy()==DistributionMapping::Strategy::KNAPSACK)
+	        dm.KnapSackProcessorMap(wgts, load_balance_wgt_nmax);
+	    else if(dm.strategy()==DistributionMapping::Strategy::SFC)
+	        dm.SFCProcessorMap(grids, wgts, load_balance_wgt_nmax);
+	}
 	else
 	{
 	    amrex::Abort("Selected load balancing strategy not implemented");
