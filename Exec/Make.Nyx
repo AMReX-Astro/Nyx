@@ -148,8 +148,10 @@ endif
 #INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/F_Interfaces/Base
 #VPATH_LOCATIONS   += $(AMREX_HOME)/Src/F_Interfaces/Base
 
-REEBER_HOME ?= $(TOP)/Util/reeber
-include $(REEBER_HOME)/Make.package
+ifeq ($(REEBER), TRUE)
+     REEBER_NYX_HOME ?= $(TOP)/Util/reeber
+     include $(REEBER_NYX_HOME)/Make.package
+endif
 
 VODE_dir    := $(TOP)/Util/VODE
 include $(VODE_dir)/Make.package

@@ -125,11 +125,6 @@ public:
     ///
     void writeAllAtLevel(int lev);
 
- protected:
-    
-    bool sub_cycle;
-    amrex::Vector<std::string> real_comp_names;
-
 };
 
 #endif /* _AGNParticleContainer_H_ */
