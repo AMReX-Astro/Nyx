@@ -333,124 +333,6 @@ Nyx::writePlotFile (const std::string& dir,
         }
     }
 
-#ifdef AMREX_USE_CONDUIT
-    conduit::Node bp_mesh;
-    Vector<std::string> varnames;
-
-    //    varnames.resize(plot_var_map.size()+1);
-    for (i = 0; i < plot_var_map.size(); i++)
-    {
-        int typ = plot_var_map[i].first;
-        int comp = plot_var_map[i].second;
-	varnames.push_back((state[typ].descriptor()->name(comp)));
-    }
-    for (std::list<std::string>::iterator it = derive_names.begin();
-             it != derive_names.end(); ++it)
-      {
-	varnames.push_back(*it);
-      }
-    SingleLevelToBlueprint(plotMF,
-                           varnames,
-                           geom,
-                           cur_time,
-			   0,
-                           bp_mesh);
-    ///////////////////////////////////////////////////////////////////////////
-    // Save the Blueprint Mesh to a set of files that we can 
-    // view in VisIt. 
-    // (For debugging and to demonstrate how to do this w/o Ascent)
-    ///////////////////////////////////////////////////////////////////////////
-    WriteBlueprintFiles(bp_mesh,"bp_mesh_");
-    
-    ///////////////////////////////////////////////////////////////////
-    // Render with Ascent
-    ///////////////////////////////////////////////////////////////////
-
-    Node scenes;
-    Node actions;
-    //Vector<Node> scenes;
-    //scenes.resize(varnames.size());
-    for (i = 0; i < varnames.size(); i++)
-    {
-
-	// add a scene with a pseudocolor plot
-	scenes["s1/plots/p1/type"] = "pseudocolor";
-	scenes["s1/plots/p1/field"] = varnames[i];
-	// Set the output file name (ascent will add ".png")
-	scenes["s1/image_prefix"] = "ascent_render_mesh_"+varnames[i]+"_"+std::to_string(nStep())+"_";
-
-	// setup actions
-	Node &add_act = actions.append();
-	add_act["action"] = "add_scenes";
-	add_act["scenes"] = scenes;
-	actions.append()["action"] = "execute";
-	actions.append()["action"] = "reset";
-
-    Ascent ascent;
-    ascent.open();
-    ascent.publish(bp_mesh);
-    ascent.execute(actions);   
-    ascent.close();
-
-    }
-
-    /*
-    Node scenes;
-    Node actions;
-    for (i = 0; i < plot_var_map.size(); i++)
-    {
-
-        int typ = plot_var_map[i].first;
-        int comp = plot_var_map[i].second;
-	// add a scene with a pseudocolor plot
-	scenes["s1/plots/p1/type"] = "pseudocolor";
-	scenes["s1/plots/p1/field"] = ((state[typ].descriptor()->name(comp)));
-	// Set the output file name (ascent will add ".png")
-	scenes["s1/image_prefix"] = "ascent_render_mesh_";
-
-	// setup actions
-	Node &add_act = actions.append();
-	add_act["action"] = "add_scenes";
-	add_act["scenes"] = scenes;
-	actions.append()["action"] = "execute";
-	actions.append()["action"] = "reset";
-
-	Ascent ascent;
-	ascent.open();
-
-	ascent.publish(bp_mesh);
-	ascent.execute(actions);
-    
-	ascent.close();
-    }
-    for (std::list<std::string>::iterator it = derive_names.begin();
-             it != derive_names.end(); ++it)
-      {
-
-	// add a scene with a pseudocolor plot
-	scenes["s1/plots/p1/type"] = "pseudocolor";
-	scenes["s1/plots/p1/field"] = *it;
-	// Set the output file name (ascent will add ".png")
-	scenes["s1/image_prefix"] = "ascent_render_mesh_";
-
-	// setup actions
-	Node &add_act = actions.append();
-	add_act["action"] = "add_scenes";
-	add_act["scenes"] = scenes;
-	actions.append()["action"] = "execute";
-	actions.append()["action"] = "reset";
-
-	Ascent ascent;
-	ascent.open();
-
-	ascent.publish(bp_mesh);
-	ascent.execute(actions);
-    
-	ascent.close();
-
-	}  */
-#endif
-
     //
     // Use the Full pathname when naming the MultiFab.
     //
@@ -1022,52 +904,27 @@ Nyx::forcing_check_point (const std::string& dir)
 void
 Nyx::blueprint_check_point ()
 {
-     MultiFab& S_new = get_new_data(State_Type);
+    MultiFab& S_new = get_new_data(State_Type);
     //MultiFab S_new_tmp(S_new.boxArray(), S_new.DistributionMap(), 1, 0 NUM_GROW);
 
-    Vector<std::string> particle_varnames;
-    particle_varnames.push_back("mass");
-    particle_varnames.push_back("xvel");
-    particle_varnames.push_back("yvel");
-    particle_varnames.push_back("zvel");
+    const Real cur_time = state[State_Type].curTime();
+    int cycle = nStep();
 
     Vector<std::string> varnames;
 
-    int n = 0;
-    const Real cur_time     = state[State_Type].curTime();
-    
-      // this would need the mf from how we write plotfiles
-    /*    for(int i=0;i<S_new.nComp();i++)
-      varnames.push_back((desc_lst[i]).name(i));*/
-    /*
     varnames.push_back("Density");
     varnames.push_back("Xmom");
     varnames.push_back("Ymom");
     varnames.push_back("Zmom");
     varnames.push_back("Eden");
     varnames.push_back("Eint");
+
     if(!use_const_species)
-      {
-	varnames.push_back("H");
-	varnames.push_back("He");
-      }*/
+    {
+        varnames.push_back("H");
+        varnames.push_back("He");
+    }
 
-    varnames.push_back("density");
-    varnames.push_back("Xmom");
-    varnames.push_back("Ymom");
-    varnames.push_back("Zmom");
-    varnames.push_back("rho_E");
-    varnames.push_back("rho_e");
-    if(!use_const_species)
-      {
-	varnames.push_back("H");
-	varnames.push_back("He");
-      }
-
-    amrex::Print()<<varnames.size()<<S_new.nComp()<<std::endl;
-    amrex::Print()<<particle_varnames.size()<<4<<std::endl;
-
-    //    varnames.push_back("density");
     ///////////////////////////////////////////////////////////////////////////
     // Wrap our AMReX Mesh into a Conduit Mesh Blueprint Tree
     ///////////////////////////////////////////////////////////////////////////
@@ -1076,90 +933,73 @@ Nyx::blueprint_check_point ()
                            varnames,
                            geom,
                            cur_time,
-			   n,
+                           cycle,
                            bp_mesh);
-    conduit::Node bp_particles;
+
+    //conduit::Node bp_particles;
+    
+    Vector<std::string> particle_varnames;
+    particle_varnames.push_back("particle_mass");
+    particle_varnames.push_back("particle_xvel");
+    particle_varnames.push_back("particle_yvel");
+    particle_varnames.push_back("particle_zvel");
+
     Vector<std::string> particle_int_varnames;
     amrex::ParticleContainerToBlueprint(*(Nyx::theDMPC()),
                                         particle_varnames,
                                         particle_int_varnames,
-                                        bp_particles);
+                                        bp_mesh);
+    
+    // very helpful for debugging when we actual try
+    // to pull the varnames list from amrex, vs hand initing
+    //
+    // amrex::Print()<<varnames.size()<<S_new.nComp()<<std::endl;
+    // amrex::Print()<<particle_varnames.size()<<4<<std::endl;
+
     ///////////////////////////////////////////////////////////////////////////
+    // Uncomment below to: 
     // Save the Blueprint Mesh to a set of files that we can 
     // view in VisIt. 
     // (For debugging and to demonstrate how to do this w/o Ascent)
     ///////////////////////////////////////////////////////////////////////////
-    WriteBlueprintFiles(bp_mesh,"bp_mesh_");
-    WriteBlueprintFiles(bp_particles,"bp_particles_");
-    
+    //
+    // amrex::Print()<< "Exporting Conduit Blueprint HDF5 files (cycle="
+    //               << cycle <<")"
+    //               << std::endl;
+    //
+    // WriteBlueprintFiles(bp_mesh,"bp_example_",cycle,"hdf5");
+
     ///////////////////////////////////////////////////////////////////
     // Render with Ascent
     ///////////////////////////////////////////////////////////////////
 
-    Node scenes;
-    Node actions;
-    
-    for(int i=0;i<S_new.nComp();i++)
-      {
+    amrex::Print()<< "Executing Ascent (cycle="
+                  << cycle <<")"
+                  << std::endl;
 
-    // add a scene with a pseudocolor plot
-    scenes["s1/plots/p1/type"] = "pseudocolor";
-    scenes["s1/plots/p1/field"] = varnames[i];
-    // Set the output file name (ascent will add ".png")
-    scenes["s1/image_prefix"] = "ascent_render_mesh_";
-
-
-    // setup actions
-    Node &add_act = actions.append();
-    add_act["action"] = "add_scenes";
-    add_act["scenes"] = scenes;
-    actions.append()["action"] = "execute";
-    actions.append()["action"] = "reset";
-        Ascent ascent;
-    ascent.open();
-
-    ascent.publish(bp_mesh);
-    ascent.publish(bp_particles);
-    ascent.execute(actions);
-    
-    ascent.close();
-    }  
-
-    for(int i=0;i<4;i++)
-      {
-
-    // add a scene with a pseudocolor plot
-    scenes.reset();
-    scenes["s1/plots/p1/type"] = "pseudocolor";
-    scenes["s1/plots/p1/field"] = particle_varnames[i];
-    // Set the output file name (ascent will add ".png")
-    scenes["s1/image_prefix"] = "ascent_render_particle_";
-
-    // setup actions
-    actions.reset();
-    Node &add_act2 = actions.append();
-    add_act2["action"] = "add_scenes";
-    add_act2["scenes"] = scenes;
-    actions.append()["action"] = "execute";
-    actions.append()["action"] = "reset";
     Ascent ascent;
-    ascent.open();
+    conduit::Node open_opts;
+    // tell ascent to use the ghost_indicator field to exclude ghosts
 
-    ascent.publish(bp_mesh);
-    ascent.publish(bp_particles);
-    ascent.execute(actions);
+    open_opts["ghost_field_name"] = "ghost_indicator";
     
+#ifdef BL_USE_MPI
+    // if mpi, we need to provide the mpi comm to ascent
+    open_opts["mpi_comm"] = MPI_Comm_c2f(ParallelDescriptor::Communicator());
+#endif
+
+    ascent.open(open_opts);
+    // publish structured mesh to ascent
+    ascent.publish(bp_mesh);
+    
+    // call ascent, with empty actions.
+    // actions below will be overridden by those in
+    // ascent_actions.yaml
+    Node actions;
+    ascent.execute(actions);
     ascent.close();
-      }
 
-    /*    Ascent ascent;
-    ascent.open();
 
-    ascent.publish(bp_mesh);
-    ascent.publish(bp_particles);
-    ascent.execute(actions);
-    
-    ascent.close();*/
 
 }
 #endif

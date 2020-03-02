@@ -10,7 +10,7 @@ Nyx::write_info ()
     Real time_unit = 3.0856776e19 / 31557600.0; // conversion to Julian years
 
 #ifdef AMREX_USE_CONDUIT
-    //    blueprint_check_point();
+    blueprint_check_point();
 #endif
 
     if (ndatalogs > 0)
