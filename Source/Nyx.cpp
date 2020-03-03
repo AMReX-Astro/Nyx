@@ -643,6 +643,10 @@ Nyx::read_params ()
         {
             load_balance_strategy=DistributionMapping::Strategy::KNAPSACK;
         }
+        else if (theStrategy == "ROUNDROBIN")
+        {
+            load_balance_strategy=DistributionMapping::Strategy::ROUNDROBIN;
+        }
         else
         {
             std::string msg("Unknown strategy: ");
@@ -1896,6 +1900,8 @@ Nyx::postCoarseTimeStep (Real cumtime)
 	        dm.KnapSackProcessorMap(wgts, load_balance_wgt_nmax);
 	    else if(load_balance_strategy==DistributionMapping::Strategy::SFC)
 	        dm.SFCProcessorMap(grids, wgts, load_balance_wgt_nmax);
+	    else if(load_balance_strategy==DistributionMapping::Strategy::ROUNDROBIN)
+	        dm.RoundRobinProcessorMap(wgts, load_balance_wgt_nmax);
         }
 	else if(load_balance_wgt_strategy == 1)
 	{
@@ -1904,6 +1910,8 @@ Nyx::postCoarseTimeStep (Real cumtime)
 	        dm.KnapSackProcessorMap(wgts, load_balance_wgt_nmax);
 	    else if(load_balance_strategy==DistributionMapping::Strategy::SFC)
 	        dm.SFCProcessorMap(grids, wgts, load_balance_wgt_nmax);
+	    else if(load_balance_strategy==DistributionMapping::Strategy::ROUNDROBIN)
+	        dm.RoundRobinProcessorMap(wgts, load_balance_wgt_nmax);
 	}
 	else if(load_balance_wgt_strategy == 2)
 	{
@@ -1913,6 +1921,8 @@ Nyx::postCoarseTimeStep (Real cumtime)
 	        dm.KnapSackProcessorMap(wgts, load_balance_wgt_nmax);
 	    else if(load_balance_strategy==DistributionMapping::Strategy::SFC)
 	        dm.SFCProcessorMap(grids, wgts, load_balance_wgt_nmax);
+	    else if(load_balance_strategy==DistributionMapping::Strategy::ROUNDROBIN)
+	        dm.RoundRobinProcessorMap(wgts, load_balance_wgt_nmax);
 	}
 	else
 	{
