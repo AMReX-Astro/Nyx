@@ -1925,6 +1925,9 @@ Nyx::postCoarseTimeStep (Real cumtime)
         for (int i = 0; i < theActiveParticles().size(); i++)
 	{
 	     theActiveParticles()[i]->Regrid(newdmap, grids, lev);
+
+	     if(minimize_memory)
+	         theActiveParticles()[i]->ShrinkToFit();
 	}
 
     amrex::Gpu::streamSynchronize();
