@@ -1892,26 +1892,26 @@ Nyx::postCoarseTimeStep (Real cumtime)
             {
                 wgts[i] = grids[i].numPts();
             }
-	    if(dm.strategy()==DistributionMapping::Strategy::KNAPSACK)
+	    if(load_balance_strategy==DistributionMapping::Strategy::KNAPSACK)
 	        dm.KnapSackProcessorMap(wgts, load_balance_wgt_nmax);
-	    else if(dm.strategy()==DistributionMapping::Strategy::SFC)
+	    else if(load_balance_strategy==DistributionMapping::Strategy::SFC)
 	        dm.SFCProcessorMap(grids, wgts, load_balance_wgt_nmax);
         }
 	else if(load_balance_wgt_strategy == 1)
 	{
 	    wgts = theDMPC()->NumberOfParticlesInGrid(level,false,false);
-	    if(dm.strategy()==DistributionMapping::Strategy::KNAPSACK)
+	    if(load_balance_strategy==DistributionMapping::Strategy::KNAPSACK)
 	        dm.KnapSackProcessorMap(wgts, load_balance_wgt_nmax);
-	    else if(dm.strategy()==DistributionMapping::Strategy::SFC)
-	      dm.SFCProcessorMap(grids, wgts, load_balance_wgt_nmax);
+	    else if(load_balance_strategy==DistributionMapping::Strategy::SFC)
+	        dm.SFCProcessorMap(grids, wgts, load_balance_wgt_nmax);
 	}
 	else if(load_balance_wgt_strategy == 2)
 	{
 	    MultiFab particle_mf(grids,theDMPC()->ParticleDistributionMap(level),1,1);
 	    theDMPC()->Increment(particle_mf, level);
-	    if(dm.strategy()==DistributionMapping::Strategy::KNAPSACK)
+	    if(load_balance_strategy==DistributionMapping::Strategy::KNAPSACK)
 	        dm.KnapSackProcessorMap(wgts, load_balance_wgt_nmax);
-	    else if(dm.strategy()==DistributionMapping::Strategy::SFC)
+	    else if(load_balance_strategy==DistributionMapping::Strategy::SFC)
 	        dm.SFCProcessorMap(grids, wgts, load_balance_wgt_nmax);
 	}
 	else
