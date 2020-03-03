@@ -117,6 +117,29 @@ Nyx::writePlotFile (const std::string& dir,
                     VisMF::How         how)
 {
     amrex::Gpu::LaunchSafeGuard lsg(true);
+    //
+    // To keep backwards compatability with original plotfle writing
+    // add a passthrough for when compression is enabled to output
+    // of both types. oss handles the main writing now
+    //
+    ParmParse pp("nyx");
+    bool do_compress = false;
+    bool ppc = false;
+    if (pp.query("plot_compress", ppc))
+    {
+        if(ppc)
+        {
+            do_compress = true;
+            std::cout << "nyx.plot_compress is enabled. " << std::endl;
+            //std::string dirNoTemp(dir.substr(0, dir.length() - 5)); // remove .temp
+            //dirNoTemp+="_c.temp"; // add compression indicator
+            //std::cout << "nyx.plot_compress is enabled. " << dirNoTemp << std::endl;
+            //writePlotFileCompress(dirNoTemp, os, how);
+            //return;
+        }
+    }
+    std::ostringstream oss;
+
     int i, n;
     //
     // The list of indices of State to write to plotfile.
@@ -203,13 +226,13 @@ Nyx::writePlotFile (const std::string& dir,
         //
         // The first thing we write out is the plotfile type.
         //
-        os << thePlotFileType() << '\n';
+        oss << thePlotFileType() << '\n';
 
         if (n_data_items == 0) {
             amrex::Error("Must specify at least one valid data item to plot");
 	}
 
-        os << n_data_items << '\n';
+        oss << n_data_items << '\n';
         //
         // Names of variables -- first state, then derived
         //
@@ -217,43 +240,43 @@ Nyx::writePlotFile (const std::string& dir,
         {
             int typ = plot_var_map[i].first;
             int comp = plot_var_map[i].second;
-            os << desc_lst[typ].name(comp) << '\n';
+            oss << desc_lst[typ].name(comp) << '\n';
         }
 
         for (std::list<std::string>::iterator it = derive_names.begin();
              it != derive_names.end(); ++it)
         {
             const DeriveRec* rec = derive_lst.get(*it);
-            os << rec->variableName(0) << '\n';
+            oss << rec->variableName(0) << '\n';
         }
 
-        os << BL_SPACEDIM << '\n';
-        os << parent->cumTime() << '\n';
+        oss << BL_SPACEDIM << '\n';
+        oss << parent->cumTime() << '\n';
         int f_lev = parent->finestLevel();
-        os << f_lev << '\n';
+        oss << f_lev << '\n';
         for (i = 0; i < BL_SPACEDIM; i++)
-            os << Geom().ProbLo(i) << ' ';
-        os << '\n';
+            oss << Geom().ProbLo(i) << ' ';
+        oss << '\n';
         for (i = 0; i < BL_SPACEDIM; i++)
-            os << Geom().ProbHi(i) << ' ';
-        os << '\n';
+            oss << Geom().ProbHi(i) << ' ';
+        oss << '\n';
         for (i = 0; i < f_lev; i++)
-            os << parent->refRatio(i)[0] << ' ';
-        os << '\n';
+            oss << parent->refRatio(i)[0] << ' ';
+        oss << '\n';
         for (i = 0; i <= f_lev; i++)
-            os << parent->Geom(i).Domain() << ' ';
-        os << '\n';
+            oss << parent->Geom(i).Domain() << ' ';
+        oss << '\n';
         for (i = 0; i <= f_lev; i++)
-            os << parent->levelSteps(i) << ' ';
-        os << '\n';
+            oss << parent->levelSteps(i) << ' ';
+        oss << '\n';
         for (i = 0; i <= f_lev; i++)
         {
             for (int k = 0; k < BL_SPACEDIM; k++)
-                os << parent->Geom(i).CellSize()[k] << ' ';
-            os << '\n';
+                oss << parent->Geom(i).CellSize()[k] << ' ';
+            oss << '\n';
         }
-        os << (int) Geom().Coord() << '\n';
-        os << "0\n"; // Write bndry data.
+        oss << (int) Geom().Coord() << '\n';
+        oss << "0\n"; // Write bndry data.
 
         writeJobInfo(dir);
     }
@@ -288,17 +311,31 @@ Nyx::writePlotFile (const std::string& dir,
       //
       ParallelDescriptor::Barrier();
     }
+    
+    //
+    // Ask IO Processor to create the compression directory if enabled
+    // This is needed for Dual I/O support
+    //
+    if(do_compress) {
+        if (ParallelDescriptor::IOProcessor()) {
+             std::string FullPath_c=FullPath+"_c";
+             if ( ! amrex::UtilCreateDirectory(FullPath_c, 0755)) {
+                  amrex::CreateDirectoryFailed(FullPath_c);
+             }
+        }
+        ParallelDescriptor::Barrier();
+    }
 
     if (ParallelDescriptor::IOProcessor())
     {
-        os << level << ' ' << grids.size() << ' ' << cur_time << '\n';
-        os << parent->levelSteps(level) << '\n';
+        oss << level << ' ' << grids.size() << ' ' << cur_time << '\n';
+        oss << parent->levelSteps(level) << '\n';
 
         for (i = 0; i < grids.size(); ++i)
         {
             RealBox gridloc = RealBox(grids[i], geom.CellSize(), geom.ProbLo());
             for (n = 0; n < BL_SPACEDIM; n++)
-                os << gridloc.lo(n) << ' ' << gridloc.hi(n) << '\n';
+                oss << gridloc.lo(n) << ' ' << gridloc.hi(n) << '\n';
         }
         //
         // The full relative pathname of the MultiFabs at this level.
@@ -308,9 +345,29 @@ Nyx::writePlotFile (const std::string& dir,
         if (n_data_items > 0)
         {
             std::string PathNameInHeader = Level;
+            //
+            // This creates a duplicate header to point to the
+            // compressed data paths
+            //
+            if (do_compress)
+            {
+                std::ofstream ofs;
+                ofs.open(dir+"/Header_c", std::fstream::out);
+                ofs << oss.str(); 
+                ofs << PathNameInHeader+"_c"+BaseName << '\n';
+                ofs.close();
+            }
+            //
+            // Append the traditional paths
+            //
             PathNameInHeader += BaseName;
-            os << PathNameInHeader << '\n';
+            oss << PathNameInHeader << '\n';
         }
+        // -------SYNC-------
+        // Finally sync os with oss, enabling double header outputs
+        // This will complete the 'old' header file with traditional paths
+        //
+        os << oss.str();
     }
     //
     // We combine all of the multifabs -- state, derived, etc -- into one
@@ -353,9 +410,13 @@ Nyx::writePlotFile (const std::string& dir,
     //
     std::string TheFullPath = FullPath;
     TheFullPath += BaseName;
-    //VisMF::Write(plotMF, TheFullPath, how, true);
-    VisMF::Write(plotMF, TheFullPath+"_orig", how, true);
-    VisMF::Write(plotMF, TheFullPath        , how, true, true); //with compression 
+    VisMF::Write(plotMF, TheFullPath, how, true);
+    if(do_compress)
+    {
+        TheFullPath = FullPath+"_c";
+        TheFullPath += BaseName;
+        VisMF::Write(plotMF, TheFullPath, how, true, true);
+    }
 
     //
     // Write the particles and `comoving_a` in a plotfile directory. 
@@ -380,12 +441,13 @@ Nyx::writePlotFile (const std::string& dir,
       Nyx::theNPC()->SetLevelDirectoriesCreated(false);
     }
 #endif
-
 }
+
 
 void
 Nyx::writePlotFilePre (const std::string& dir, ostream& os)
 {
+   std::cout << "Nyx::writePlotFilePre " << dir << std::endl;
     amrex::Gpu::LaunchSafeGuard lsg(true);
   if(Nyx::theDMPC()) {
     Nyx::theDMPC()->WritePlotFilePre();
@@ -408,6 +470,7 @@ Nyx::writePlotFilePre (const std::string& dir, ostream& os)
 void
 Nyx::writePlotFilePost (const std::string& dir, ostream& os)
 {
+  std::cout << "Nyx::writePlotFilePost " << dir << std::endl;
   amrex::Gpu::LaunchSafeGuard lsg(true);
   if(Nyx::theDMPC()) {
     Nyx::theDMPC()->WritePlotFilePost();
