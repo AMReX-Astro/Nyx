@@ -81,6 +81,7 @@ Vector<Real> Nyx::analysis_z_values;
 int Nyx::load_balance_int = -1;
 int Nyx::load_balance_wgt_strategy = 0;
 int Nyx::load_balance_wgt_nmax = -1;
+int Nyx::load_balance_strategy = DistributionMapping::SFC;
 
 bool Nyx::dump_old = false;
 int Nyx::verbose      = 0;
@@ -629,6 +630,26 @@ Nyx::read_params ()
     pp_nyx.query("load_balance_wgt_strategy", load_balance_wgt_strategy);
     load_balance_wgt_nmax = amrex::ParallelDescriptor::NProcs();
     pp_nyx.query("load_balance_wgt_nmax",     load_balance_wgt_nmax);
+
+    std::string theStrategy;
+
+    if (pp_nyx.query("load_balance_strategy", theStrategy))
+    {
+        if (theStrategy == "SFC")
+        {
+            load_balance_strategy=DistributionMapping::Strategy::SFC;
+        }
+        else if (theStrategy == "KNAPSACK")
+        {
+            load_balance_strategy=DistributionMapping::Strategy::KNAPSACK;
+        }
+        else
+        {
+            std::string msg("Unknown strategy: ");
+            msg += theStrategy;
+            amrex::Warning(msg.c_str());
+        }
+    }
 
     // How often do we want to write x,y,z 2-d slices of S_new
     pp_nyx.query("slice_int",    slice_int);

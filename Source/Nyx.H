@@ -923,6 +923,7 @@ protected:
     static int load_balance_int;
     static int load_balance_wgt_strategy;
     static int load_balance_wgt_nmax;
+    static int load_balance_strategy;
 
     bool FillPatchedOldState_ok;
 
