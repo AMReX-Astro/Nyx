@@ -146,7 +146,7 @@ ifeq ($(USE_SENSEI_INSITU),TRUE)
 endif
 
 ifeq ($(USE_COMPRESSION),TRUE)
-    BLOSC_DIR = /projects/exasky/Nyx_GPU/Exec/LyA/c-blosc
+    BLOSC_DIR ?=/projects/exasky/Nyx_GPU/Exec/LyA/c-blosc
     INCLUDE_LOCATIONS += $(BLOSC_DIR)/install/include
     LIBRARY_LOCATIONS += $(BLOSC_DIR)/install/lib
     LIBRARIES += -lblosc 
