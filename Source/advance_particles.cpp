@@ -126,6 +126,7 @@ Nyx::advance_particles_only (Real time,
     //
     if (level == 0 || iteration > 1)
     {
+        amrex::Gpu::LaunchSafeGuard lsg(true);
         for (int lev = level; lev <= finest_level; lev++)
         {
             dt_lev = parent->dtLevel(lev);
@@ -155,6 +156,7 @@ Nyx::advance_particles_only (Real time,
     // finer levels.
     if (level == 0 || iteration > 1)
     {
+        amrex::Gpu::LaunchSafeGuard lsg(true);
         // fix fluxes on finer grids
         if (do_reflux)
         {
@@ -222,6 +224,7 @@ Nyx::advance_particles_only (Real time,
     //
     for (int lev = level; lev <= finest_level_to_advance; lev++)
     {
+        amrex::Gpu::LaunchSafeGuard lsg(true);
         MultiFab::Copy(parent->getLevel(lev).get_new_data(PhiGrav_Type),
                        parent->getLevel(lev).get_old_data(PhiGrav_Type),
                        0, 0, 1, 0);
