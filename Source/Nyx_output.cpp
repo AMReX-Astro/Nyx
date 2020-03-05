@@ -963,6 +963,11 @@ Nyx::checkPoint (const std::string& dir,
 
   particle_check_point(dir);
 
+  if (level == 0 && ParallelDescriptor::IOProcessor())
+  {
+      writeJobInfo(dir);
+  }
+
   writeJobInfo(dir);
 
 #ifdef FORCING
