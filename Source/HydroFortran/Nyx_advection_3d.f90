@@ -1075,9 +1075,9 @@
                   ! Density
                   if (n .eq. URHO) then
                       hydro_src(i,j,k,n) = &
-                          ( ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
-                          +   flux2(i,j,k,n) - flux2(i,j+1,k,n) &
-                          +   flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * volinv  ) * a_half_inv
+                          ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
+                          + flux2(i,j,k,n) - flux2(i,j+1,k,n) &
+                          + flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * volinv * a_half_inv
 
                   ! Momentum
                   else if (n .ge. UMX .and. n .le. UMZ) then

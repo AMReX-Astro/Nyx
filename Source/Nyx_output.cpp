@@ -968,8 +968,6 @@ Nyx::checkPoint (const std::string& dir,
       writeJobInfo(dir);
   }
 
-  writeJobInfo(dir);
-
 #ifdef FORCING
   forcing_check_point(dir);
 #endif
