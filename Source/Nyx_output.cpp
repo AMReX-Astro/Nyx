@@ -447,7 +447,6 @@ Nyx::writePlotFile (const std::string& dir,
 void
 Nyx::writePlotFilePre (const std::string& dir, ostream& os)
 {
-   std::cout << "Nyx::writePlotFilePre " << dir << std::endl;
     amrex::Gpu::LaunchSafeGuard lsg(true);
   if(Nyx::theDMPC()) {
     Nyx::theDMPC()->WritePlotFilePre();
@@ -470,7 +469,6 @@ Nyx::writePlotFilePre (const std::string& dir, ostream& os)
 void
 Nyx::writePlotFilePost (const std::string& dir, ostream& os)
 {
-  std::cout << "Nyx::writePlotFilePost " << dir << std::endl;
   amrex::Gpu::LaunchSafeGuard lsg(true);
   if(Nyx::theDMPC()) {
     Nyx::theDMPC()->WritePlotFilePost();
