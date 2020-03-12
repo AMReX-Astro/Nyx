@@ -42,7 +42,8 @@ USE_SUNDIALS_3x4x = TRUE
 Bpack := ./Make.package
 Blocs := .
 
-$(shell ./build_compressors.sh)
+# See if compressors need to be built
+#$(shell ./build_compressors.sh)
 
 include $(TOP)/Exec/Make.Nyx
 

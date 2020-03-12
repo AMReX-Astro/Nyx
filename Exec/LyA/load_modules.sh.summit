@@ -1,0 +1,11 @@
+#!/bin/bash
+
+module load pgi/19.10
+module load cuda/10.1.243
+module load cmake
+module load c-blosc
+module list
+
+export INSTALL_PREFIX=/gpfs/alpine/proj-shared/ast160/lanl_compression/sundials/instdir
+export BLOSC_DIR=$OLCF_C_BLOSC_ROOT
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$BLOS_DIR/lib

@@ -10,25 +10,35 @@
 #module load openmpi/3.1.4-pgi_19.7
 #export CUDA_HOME=/projects/opt/centos7/cuda/10.1/
 
-# Build blosc
-if [ ! -d c-blosc ]; then
-    echo "Building BLOSC ... "
+if [ -z "$OLCF_C_BLOSC_ROOT" ]; then
 
-    git clone https://github.com/Blosc/c-blosc.git
-    cd c-blosc/
-    git checkout v1.10.2
-    mkdir install
-    mkdir build
-    cd build
-    #Need to patch ../blosc/blosc-export.h to add -- defined(__PGI)
-    sed -i.bak '20s/$/ || defined(__PGI) /' ../blosc/blosc-export.h
-    cmake .. -DCMAKE_INSTALL_PREFIX=../install -DBUILD_STATIC=ON
-    make -j
-    make install
-    cd ..
-    cd ..
+  # Build blosc
+  if [ ! -d c-blosc ]; then
+      echo "Building BLOSC ... "
 
-    echo "Building BLOSC done!"
+      git clone https://github.com/Blosc/c-blosc.git
+      cd c-blosc/
+      git checkout v1.10.2
+      mkdir install
+      mkdir build
+      cd build
+      #Need to patch ../blosc/blosc-export.h to add -- defined(__PGI)
+      sed -i.bak '20s/$/ || defined(__PGI) /' ../blosc/blosc-export.h
+      cmake .. -DCMAKE_INSTALL_PREFIX=../install -DBUILD_STATIC=ON
+      make -j
+      make install
+      cd ..
+      cd ..
+
+      echo "Building BLOSC done!"
+  fi
+  #export BLOSC_DIR=$(pwd)/c-blosc/install
+  #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/c-blosc/install/lib
+
+else
+
+  echo "Using olcf blosc"
+  export BLOSC_DIR=$OLCF_C_BLOSC_ROOT
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$BLOS_DIR/lib
+
 fi
-#BLOSC_DIR=$(pwd)/c-blosc
-#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/c-blosc/install/lib
