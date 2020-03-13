@@ -124,13 +124,14 @@ Nyx::writePlotFile (const std::string& dir,
     //
     ParmParse pp("nyx");
     bool do_compress = false;
+    bool do_orig_comp = false;
     bool ppc = false;
     if (pp.query("plot_compress", ppc))
     {
         if(ppc)
         {
             do_compress = true;
-            std::cout << "nyx.plot_compress is enabled. " << std::endl;
+            //std::cout << "nyx.plot_compress is enabled. " << std::endl;
             //std::string dirNoTemp(dir.substr(0, dir.length() - 5)); // remove .temp
             //dirNoTemp+="_c.temp"; // add compression indicator
             //std::cout << "nyx.plot_compress is enabled. " << dirNoTemp << std::endl;
@@ -138,6 +139,9 @@ Nyx::writePlotFile (const std::string& dir,
             //return;
         }
     }
+    if (pp.query("plot_orig_comp", ppc))
+        if(ppc)
+            do_orig_comp=true;
     std::ostringstream oss;
 
     int i, n;
@@ -316,7 +320,7 @@ Nyx::writePlotFile (const std::string& dir,
     // Ask IO Processor to create the compression directory if enabled
     // This is needed for Dual I/O support
     //
-    if(do_compress) {
+    if(do_orig_comp) {
         if (ParallelDescriptor::IOProcessor()) {
              std::string FullPath_c=FullPath+"_c";
              if ( ! amrex::UtilCreateDirectory(FullPath_c, 0755)) {
@@ -349,7 +353,7 @@ Nyx::writePlotFile (const std::string& dir,
             // This creates a duplicate header to point to the
             // compressed data paths
             //
-            if (do_compress)
+            if (do_orig_comp)
             {
                 std::ofstream ofs;
                 ofs.open(dir+"/Header_c", std::fstream::out);
@@ -408,14 +412,32 @@ Nyx::writePlotFile (const std::string& dir,
     //
     // Use the Full pathname when naming the MultiFab.
     //
-    std::string TheFullPath = FullPath;
-    TheFullPath += BaseName;
-    VisMF::Write(plotMF, TheFullPath, how, true);
-    if(do_compress)
-    {
+    if(do_orig_comp) {
+        //
+        // Write out both original and compressed in the same dir
+        //
+        std::string TheFullPath = FullPath;
+        TheFullPath += BaseName;
+        VisMF::Write(plotMF, TheFullPath, how, true);
         TheFullPath = FullPath+"_c";
         TheFullPath += BaseName;
         VisMF::Write(plotMF, TheFullPath, how, true, true);
+    } else {
+      if(do_compress) {
+        //
+        // Write out only the compressed file
+        //
+        std::string TheFullPath = FullPath;
+        TheFullPath += BaseName;
+        VisMF::Write(plotMF, TheFullPath, how, true, true);
+      } else {
+        //
+        // Write out only the original file
+        //
+        std::string TheFullPath = FullPath;
+        TheFullPath += BaseName;
+        VisMF::Write(plotMF, TheFullPath, how, true);
+      }
     }
 
     //
