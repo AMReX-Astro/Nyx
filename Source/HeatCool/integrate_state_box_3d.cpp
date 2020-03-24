@@ -90,7 +90,7 @@ int Nyx::integrate_state_box
 	      amrex::Print()<<"Integrating a box with tile_size"<<tile_size<<std::endl;
 	      amrex::Print()<<"Integrating a box with lo tile_size"<<lo[0]<<lo[1]<<lo[2]<<std::endl;
 	      amrex::Print()<<"Integrating a box with hi tile_size"<<hi[0]<<hi[1]<<hi[2]<<std::endl;
-	      amrex::Print()<<S_old[mfi].min(Eint)<<"at index"<<S_old[mfi].minIndex(Eint)<<std::endl;
+	      amrex::Print()<<S_old[mfi].min<RunOn::Device>(Eint)<<"at index"<<S_old[mfi].minIndex<RunOn::Device>(Eint)<<std::endl;
 	    }
 	//	neq=neq2;
 	}
@@ -101,7 +101,7 @@ int Nyx::integrate_state_box
       if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
       dptr=N_VGetHostArrayPointer_Cuda(u);
       dptrd=N_VGetDeviceArrayPointer_Cuda(u);
-      S_old[mfi].copyToMem(tbx,Eint,1,dptr);
+      S_old[mfi].copyToMem<RunOn::Device>(tbx,Eint,1,dptr);
       N_VCopyToDevice_Cuda(u);
       /*Use N_Vector to create userdata, in order to allocate data on device*/
       N_Vector Data = N_VNew_Cuda(4*neq);  // Allocate u vector 
@@ -121,7 +121,7 @@ int Nyx::integrate_state_box
 
       dptr=N_VGetArrayPointer_Serial(u);
       dptrd=N_VGetArrayPointer_Serial(u);
-      S_old[mfi].copyToMem(tbx,Eint,1,dptr);
+      S_old[mfi].copyToMem<RunOn::Device>(tbx,Eint,1,dptr);
 
       /*Use N_Vector to create userdata, in order to allocate data on device*/
       N_Vector Data = N_VNew_Serial(4*neq);  // Allocate u vector 
@@ -136,14 +136,14 @@ int Nyx::integrate_state_box
       //      amrex::Print()<<"place "<<++count<<std::endl;
       N_VConst(0.0,Data);
 
-      S_old[mfi].copyToMem(tbx,Density,1,rho_tmp_ptr);
+      S_old[mfi].copyToMem<RunOn::Device>(tbx,Density,1,rho_tmp_ptr);
       #ifdef AMREX_USE_CUDA
       N_VCopyToDevice_Cuda(rho_tmp);
       #endif
       N_Vector T_tmp = N_VNew_Serial(2*neq);  // Allocate u vector 
       N_VConst(0.0,T_tmp);
       double* Tne_tmp_ptr=N_VGetArrayPointer_Serial(T_tmp);
-      D_old[mfi].copyToMem(tbx,Temp_comp,2,Tne_tmp_ptr);
+      D_old[mfi].copyToMem<RunOn::Device>(tbx,Temp_comp,2,Tne_tmp_ptr);
       for(int i=0;i<neq;i++)
 	{
 	  rparh[4*i+0]= Tne_tmp_ptr[i];   //rpar(1)=T_vode
@@ -239,7 +239,7 @@ int Nyx::integrate_state_box
 	  fort_ode_eos_finalize(&(dptrd[i]), &(rpar[4*i]), one_in);
 	  });
 
-      D_old[mfi].copyFromMem(tbx,Temp_comp,2,Tne_tmp_ptr);
+      D_old[mfi].copyFromMem<RunOn::Device>(tbx,Temp_comp,2,Tne_tmp_ptr);
 
       N_VProd(u,rho_tmp,u);                
 
@@ -247,12 +247,12 @@ int Nyx::integrate_state_box
       N_VCopyFromDevice_Cuda(u);
 #endif      
     
-      S_old[mfi].copyFromMem(tbx,Eint,1,dptr);
-      S_old[mfi].addFromMem(tbx,Eden,1,dptr);
+      S_old[mfi].copyFromMem<RunOn::Device>(tbx,Eint,1,dptr);
+      S_old[mfi].addFromMem<RunOn::Device>(tbx,Eden,1,dptr);
       if(amrex::Verbose()>2||false)
 	{
-	  amrex::Print()<<S_old[mfi].min(Eint)<<"at index"<<S_old[mfi].minIndex(Eint)<<std::endl;
-	  amrex::Print()<<S_old[mfi].min(Eden)<<"at index"<<S_old[mfi].minIndex(Eden)<<std::endl;
+	  amrex::Print()<<S_old[mfi].min<RunOn::Device>(Eint)<<"at index"<<S_old[mfi].minIndex<RunOn::Device>(Eint)<<std::endl;
+	  amrex::Print()<<S_old[mfi].min<RunOn::Device>(Eden)<<"at index"<<S_old[mfi].minIndex<RunOn::Device>(Eden)<<std::endl;
 	  PrintFinalStats(cvode_mem);
 	}
 
@@ -262,7 +262,7 @@ int Nyx::integrate_state_box
       N_VDestroy(rho_tmp);
       CVodeFree(&cvode_mem);  /* Free the integrator memory */
 #ifdef AMREX_DEBUG
-        if (S_old[mfi].contains_nan())
+        if (S_old[mfi].contains_nan<RunOn::Device>())
             amrex::Abort("state has NaNs after the first strang call");
 #endif
     }
@@ -325,7 +325,7 @@ int Nyx::integrate_state_grownbox
 	      amrex::Print()<<"Integrating a box with tile_size"<<tile_size<<std::endl;
 	      amrex::Print()<<"Integrating a box with lo tile_size"<<lo[0]<<lo[1]<<lo[2]<<std::endl;
 	      amrex::Print()<<"Integrating a box with hi tile_size"<<hi[0]<<hi[1]<<hi[2]<<std::endl;
-	      amrex::Print()<<S_old[mfi].min(Eint)<<"at index"<<S_old[mfi].minIndex(Eint)<<std::endl;
+	      amrex::Print()<<S_old[mfi].min<RunOn::Device>(Eint)<<"at index"<<S_old[mfi].minIndex<RunOn::Device>(Eint)<<std::endl;
 	      //	neq=neq2;
 	    }
 	}
@@ -336,7 +336,7 @@ int Nyx::integrate_state_grownbox
       if(check_retval((void*)u, "N_VNew_Serial", 0)) return(1);
       dptr=N_VGetHostArrayPointer_Cuda(u);
       dptrd=N_VGetDeviceArrayPointer_Cuda(u);
-      S_old[mfi].copyToMem(tbx,Eint,1,dptr);
+      S_old[mfi].copyToMem<RunOn::Device>(tbx,Eint,1,dptr);
       N_VCopyToDevice_Cuda(u);
       /*Use N_Vector to create userdata, in order to allocate data on device*/
       N_Vector Data = N_VNew_Cuda(4*neq);  // Allocate u vector 
@@ -355,7 +355,7 @@ int Nyx::integrate_state_grownbox
 
       dptr=N_VGetArrayPointer_Serial(u);
       dptrd=N_VGetArrayPointer_Serial(u);
-      S_old[mfi].copyToMem(tbx,Eint,1,dptr);
+      S_old[mfi].copyToMem<RunOn::Device>(tbx,Eint,1,dptr);
 
       /*Use N_Vector to create userdata, in order to allocate data on device*/
       N_Vector Data = N_VNew_Serial(4*neq);  // Allocate u vector 
@@ -366,14 +366,14 @@ int Nyx::integrate_state_grownbox
       double* rho_tmp_ptr=N_VGetArrayPointer_Serial(rho_tmp);
       #endif
       N_VConst(0.0,Data);
-      S_old[mfi].copyToMem(tbx,Density,1,rho_tmp_ptr);
+      S_old[mfi].copyToMem<RunOn::Device>(tbx,Density,1,rho_tmp_ptr);
       #ifdef AMREX_USE_CUDA
       N_VCopyToDevice_Cuda(rho_tmp);
       #endif
       N_Vector T_tmp = N_VNew_Serial(2*neq);  // Allocate u vector 
       N_VConst(0.0,T_tmp);
       double* Tne_tmp_ptr=N_VGetArrayPointer_Serial(T_tmp);
-      D_old[mfi].copyToMem(tbx,Temp_comp,2,Tne_tmp_ptr);
+      D_old[mfi].copyToMem<RunOn::Device>(tbx,Temp_comp,2,Tne_tmp_ptr);
       
       for(int i=0;i<neq;i++)
 	{
@@ -475,20 +475,20 @@ int Nyx::integrate_state_grownbox
 	  fort_ode_eos_finalize(&(dptrd[i]), &(rpar[4*i]), one_in);
 	  });
 
-      D_old[mfi].copyFromMem(tbx,Temp_comp,2,Tne_tmp_ptr);
+      D_old[mfi].copyFromMem<RunOn::Device>(tbx,Temp_comp,2,Tne_tmp_ptr);
       amrex::Gpu::Device::streamSynchronize();
       N_VProd(u,rho_tmp,u);                
 #ifdef AMREX_USE_CUDA
       N_VCopyFromDevice_Cuda(u);
 #endif      
       amrex::Gpu::Device::streamSynchronize();
-      S_old[mfi].copyFromMem(tbx,Eint,1,dptr);
-      S_old[mfi].addFromMem(tbx,Eden,1,dptr);
+      S_old[mfi].copyFromMem<RunOn::Device>(tbx,Eint,1,dptr);
+      S_old[mfi].addFromMem<RunOn::Device>(tbx,Eden,1,dptr);
       amrex::Gpu::Device::streamSynchronize();
       if(amrex::Verbose()>2||false)
 	{
-	  amrex::Print()<<S_old[mfi].min(Eint)<<"at index"<<S_old[mfi].minIndex(Eint)<<std::endl;
-	  amrex::Print()<<S_old[mfi].min(Eden)<<"at index"<<S_old[mfi].minIndex(Eden)<<std::endl;
+	  amrex::Print()<<S_old[mfi].min<RunOn::Device>(Eint)<<"at index"<<S_old[mfi].minIndex<RunOn::Device>(Eint)<<std::endl;
+	  amrex::Print()<<S_old[mfi].min<RunOn::Device>(Eden)<<"at index"<<S_old[mfi].minIndex<RunOn::Device>(Eden)<<std::endl;
 	  PrintFinalStats(cvode_mem);
 	}
 
@@ -498,7 +498,7 @@ int Nyx::integrate_state_grownbox
       N_VDestroy(rho_tmp);
       CVodeFree(&cvode_mem);  /* Free the integrator memory */
 #ifdef AMREX_DEBUG
-        if (S_old[mfi].contains_nan())
+        if (S_old[mfi].contains_nan<RunOn::Device>())
             amrex::Abort("state has NaNs after the first strang call");
 #endif
     }

@@ -247,7 +247,7 @@ Nyx::build_fine_mask()
 
         for (int ii = 0; ii < isects.size(); ii++)
         {
-            fab.setVal(0.0,isects[ii].second,0);
+            fab.setVal<RunOn::Device>(0.0,isects[ii].second,0);
         }
     }
 

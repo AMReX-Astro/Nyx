@@ -808,6 +808,11 @@ Nyx::init_santa_barbara (int init_sb_vels)
         MultiFab& S_new = get_new_data(State_Type);
         MultiFab& D_new = get_new_data(DiagEOS_Type);
 
+        // Temp unused for GammaLaw, set it here so that pltfiles have
+        // defined numbers
+        D_new.setVal(0, Temp_comp);
+        D_new.setVal(0,   Ne_comp);
+	
         int ns = S_new.nComp();
         int nd = D_new.nComp(); 
 
@@ -824,11 +829,6 @@ Nyx::init_santa_barbara (int init_sb_vels)
             const int* hi = box.hiVect();
 	    const auto fab_S_new=S_new.array(mfi);
 	    const auto fab_D_new=D_new.array(mfi);
-
-            // Temp unused for GammaLaw, set it here so that pltfiles have
-            // defined numbers
-	    D_new[mfi].setVal(0, Temp_comp);
-	    D_new[mfi].setVal(0,   Ne_comp);
 
 	    Real z_in=initial_z;
 #ifdef AMREX_USE_CUDA

@@ -870,17 +870,8 @@ Nyx::init (AmrLevel& old)
         MultiFab& S_new = get_new_data(State_Type);
         MultiFab& D_new = get_new_data(DiagEOS_Type);
 
-        for (FillPatchIterator
-                 fpi(old, S_new, 0, cur_time,   State_Type, 0, NUM_STATE),
-                dfpi(old, D_new, 0, cur_time, DiagEOS_Type, 0, D_new.nComp());
-                fpi.isValid() && dfpi.isValid();
-                ++fpi,++dfpi)
-        {
-            FArrayBox&  tmp =  fpi();
-            FArrayBox& dtmp = dfpi();
-            S_new[fpi].copy(tmp);
-            D_new[fpi].copy(dtmp);
-        }
+	FillPatch(old, S_new, 0, cur_time,   State_Type, 0, NUM_STATE);
+	FillPatch(old, D_new, 0, cur_time, DiagEOS_Type, 0, D_new.nComp());
 
 	MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
 	reset_e_src.setVal(0.0);
@@ -891,20 +882,12 @@ Nyx::init (AmrLevel& old)
 
 #ifdef GRAVITY
     MultiFab& Phi_new = get_new_data(PhiGrav_Type);
-    for (FillPatchIterator fpi(old, Phi_new, 0, cur_time, PhiGrav_Type, 0, 1);
-         fpi.isValid(); ++fpi)
-    {
-        Phi_new[fpi].copy(fpi());
-    }
+    FillPatch(old, Phi_new, 0, cur_time, PhiGrav_Type, 0, 1);
 #endif
 
 #ifdef SDC
     MultiFab& IR_new = get_new_data(SDC_IR_Type);
-    for (FillPatchIterator fpi(old, IR_new, 0, cur_time, SDC_IR_Type, 0, 1);
-         fpi.isValid(); ++fpi)
-    {
-        IR_new[fpi].copy(fpi());
-    }
+    FillPatch(old, IR_new, 0, cur_time, SDC_IR_Type, 0, 1);
 #endif
 
     amrex::Gpu::Device::streamSynchronize();
@@ -1034,11 +1017,10 @@ Nyx::est_time_step (Real dt_old)
 
 	  amrex::Gpu::LaunchSafeGuard lsg(true);
 	  dt = amrex::ReduceMin(stateMF, 0,
-				[=] AMREX_GPU_HOST_DEVICE (Box const& bx, FArrayBox const& statefab) noexcept -> Real
+				[=] AMREX_GPU_HOST_DEVICE (Box const& bx, Array4<Real const> const& u) noexcept -> Real
 					    {
 					      const auto lo = amrex::lbound(bx);
 					      const auto hi = amrex::ubound(bx);
-					      const auto u = statefab.array();
 #if !defined(__CUDACC__) || (__CUDACC_VER_MAJOR__ != 9) || (__CUDACC_VER_MINOR__ != 2)
 					      amrex::Real dt_gpu = std::numeric_limits<amrex::Real>::max();
 #else
@@ -1620,11 +1602,11 @@ Nyx::post_timestep (int iteration)
 		    Array4<Real> fab_dstate = dstate.array();
                     if (lev == level)
                     {
-		      dstate.copy(drho_and_drhoU[mfi]);
+		      dstate.copy<RunOn::Device>(drho_and_drhoU[mfi]);
                     }
                     else
                     {
-		      dstate.setVal(0);
+		      dstate.setVal<RunOn::Device>(0);
                     }
 
                     // Compute sync source
@@ -1646,9 +1628,9 @@ Nyx::post_timestep (int iteration)
                          BL_ARR4_TO_FORTRAN(fab_sync_src), a_new, dt_lev);
 					       });
 
-		    sync_src.mult(0.5 * dt_lev);
-                    S_new_lev[mfi].plus(sync_src, 0, Xmom, BL_SPACEDIM);
-                    S_new_lev[mfi].plus(sync_src, BL_SPACEDIM, Eden, 1);
+		    sync_src.mult<RunOn::Device>(0.5 * dt_lev);
+                    S_new_lev[mfi].plus<RunOn::Device>(sync_src, 0, Xmom, BL_SPACEDIM);
+                    S_new_lev[mfi].plus<RunOn::Device>(sync_src, BL_SPACEDIM, Eden, 1);
 		  }
 		}
 	    }
