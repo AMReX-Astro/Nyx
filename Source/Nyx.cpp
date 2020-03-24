@@ -1609,7 +1609,7 @@ Nyx::post_timestep (int iteration)
 		      dstate.setVal<RunOn::Device>(0);
                     }
 
-                    // Compute sync source
+		    // Compute sync source
                     sync_src.resize(bx, BL_SPACEDIM+1);
 		    Elixir elix_sync_src = sync_src.elixir();
 		    Array4<Real> fab_sync_src = sync_src.array();

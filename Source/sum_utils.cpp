@@ -247,9 +247,17 @@ Nyx::build_fine_mask()
 
         for (int ii = 0; ii < isects.size(); ii++)
         {
-            fab.setVal<RunOn::Device>(0.0,isects[ii].second,0);
+            fab.setVal<RunOn::Host>(0.0,isects[ii].second,0);
         }
     }
-
+/*
+    if (fine_mask.empty()) {
+        fine_mask = makeFineMask(parent->boxArray(level-1),
+                                 parent->DistributionMap(level-1),
+                                 parent->boxArray(level), crse_ratio,
+                                 1.0,  // coarse
+                                 0.0); // fine
+    }
+*/
     return fine_mask;
 }

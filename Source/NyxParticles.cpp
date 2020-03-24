@@ -812,7 +812,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
         // defined numbers
         D_new.setVal(0, Temp_comp);
         D_new.setVal(0,   Ne_comp);
-	
+
         int ns = S_new.nComp();
         int nd = D_new.nComp(); 
 
