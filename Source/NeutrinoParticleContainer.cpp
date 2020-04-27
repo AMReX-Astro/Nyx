@@ -6,6 +6,7 @@
 
 using namespace amrex;
 
+#ifndef NEUTRINO_DARK_PARTICLES
 void
 NeutrinoParticleContainer::AssignRelativisticDensity (Vector<std::unique_ptr<MultiFab> >& mf_to_be_filled,
                                                       int               lev_min,
@@ -307,6 +308,7 @@ NeutrinoParticleContainer::AssignRelativisticDensitySingleLevel (MultiFab& mf_to
       amrex::Print() << "NeutrinoParticleContainer::AssignRelativisticDensitySingleLevel time: " << stoptime << '\n';
     }
 }
+#endif
 
 void
 NeutrinoParticleContainer::moveKick (amrex::MultiFab&       acceleration,
