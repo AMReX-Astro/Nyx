@@ -11,9 +11,6 @@ endif
   LIBRARIES += -lpthread
 #  BOOST_INCLUDE_DIR ?= /project/projectdirs/nyx/ghweber/boost-1.61.0-noarch/include
 #  DIY_INCLUDE_DIR ?= /project/projectdirs/nyx/ghweber/diy/include
-  BOOST_INCLUDE_DIR ?= /usr/include/boost
-  DIY_INCLUDE_DIR ?= ../../../diy/include
-  REEBER_EXT_HOME ?= ../../../reeber
 ifeq ($(REEBER_HIST), TRUE)
   DEFINES += -DREEBER_HIST
   DEFINES += -DREEBER_USE_BOXLIB_READER -DREEBER_IN_SITU

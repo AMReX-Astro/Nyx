@@ -2,6 +2,7 @@
 AMREX_HOME ?= ../../../amrex
 
 CVODE_LIB_DIR ?= $(CVODE_LIB)
+BOOST_INLUDE_DIR := ${OLCF_BOOST_ROOT}/include/boost
 
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ../..

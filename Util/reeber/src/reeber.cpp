@@ -589,7 +589,7 @@ void Nyx::runReeberAnalysis(Vector<MultiFab*>& new_state,
 
     BL_PROFILE_VAR_STOP(master_reader_var);
 
-    diy::DiscreteBounds diy_domain;
+    diy::DiscreteBounds diy_domain(3);
 
     // TODO: take rho, min_halo_n_cells as parameters
     Real min_halo_n_cells = 10;
