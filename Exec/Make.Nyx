@@ -150,6 +150,9 @@ endif
 
 ifeq ($(REEBER), TRUE)
      REEBER_NYX_HOME ?= $(TOP)/Util/reeber
+     DIY_INCLUDE_DIR ?= ../../../diy/include
+     REEBER_EXT_HOME ?= ../../../Reeber2
+#     BOOST_INCLUDE_DIR ?= /usr/include/boost
      include $(REEBER_NYX_HOME)/Make.package
 endif
 
