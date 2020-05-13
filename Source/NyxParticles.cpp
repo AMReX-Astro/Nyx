@@ -939,7 +939,7 @@ Nyx::particle_post_restart (const std::string& restart_file, bool is_checkpoint)
         BL_ASSERT(DMPC == 0);
         DMPC = new DarkMatterParticleContainer(parent);
         ActiveParticles.push_back(DMPC);
- 
+
         if (parent->subCycle())
         {
             VirtPC = new DarkMatterParticleContainer(parent);
@@ -953,13 +953,14 @@ Nyx::particle_post_restart (const std::string& restart_file, bool is_checkpoint)
         // Make sure to call RemoveParticlesOnExit() on exit.
         //
         amrex::ExecOnFinalize(RemoveParticlesOnExit);
+
         //
         // 2 gives more stuff than 1.
         //
         DMPC->SetVerbose(particle_verbose);
 
 	{
-	  amrex::Gpu::LaunchSafeGuard(true);
+	  amrex::Gpu::LaunchSafeGuard lsg(true);
 	  DMPC->Restart(restart_file, dm_chk_particle_file, is_checkpoint);
 	  amrex::Gpu::Device::streamSynchronize();
 	}
@@ -1240,6 +1241,8 @@ void
 Nyx::setup_virtual_particles()
 {
     BL_PROFILE("Nyx::setup_virtual_particles()");
+
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     if(Nyx::theDMPC() != 0 && !virtual_particles_set)
     {
         DarkMatterParticleContainer::AoS virts;
@@ -1259,6 +1262,8 @@ void
 Nyx::remove_virtual_particles()
 {
     BL_PROFILE("Nyx::remove_virtual_particles()");
+
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     for (int i = 0; i < VirtualParticles.size(); i++)
     {
         if (VirtualParticles[i] != 0)
@@ -1273,9 +1278,7 @@ Nyx::setup_ghost_particles(int ngrow)
     BL_PROFILE("Nyx::setup_ghost_particles()");
     BL_ASSERT(level < parent->finestLevel());
 
-    bool prev_region = Gpu::inLaunchRegion();
-    amrex::Gpu::setLaunchRegion(false);
-    
+    amrex::Gpu::LaunchSafeGuard lsg(true);    
     if(Nyx::theDMPC() != 0)
     {
         DarkMatterParticleContainer::AoS ghosts;
@@ -1303,13 +1306,14 @@ Nyx::setup_ghost_particles(int ngrow)
     }
 #endif
     amrex::Gpu::Device::streamSynchronize();
-    amrex::Gpu::setLaunchRegion(prev_region);
 }
 
 void
 Nyx::remove_ghost_particles()
 {
     BL_PROFILE("Nyx::remove_ghost_particles()");
+
+    amrex::Gpu::LaunchSafeGuard lsg(true);    
     for (int i = 0; i < GhostParticles.size(); i++)
     {
         if (GhostParticles[i] != 0)

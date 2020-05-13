@@ -535,21 +535,21 @@ Gravity::get_crse_phi (int       level,
 
         if (fabs(alpha-1.0) < 1.e-15)
         {
-            phi_crse[mfi].copy<RunOn::Host>(LevelData[level-1]->get_new_data(PhiGrav_Type)[mfi]);
+            phi_crse[mfi].copy<RunOn::Device>(LevelData[level-1]->get_new_data(PhiGrav_Type)[mfi]);
         }
         else if (fabs(alpha) < 1.e-15)
         {
-            phi_crse[mfi].copy<RunOn::Host>(LevelData[level-1]->get_old_data(PhiGrav_Type)[mfi]);
+            phi_crse[mfi].copy<RunOn::Device>(LevelData[level-1]->get_old_data(PhiGrav_Type)[mfi]);
         }
         else
         {
-            phi_crse_temp.copy<RunOn::Host>(LevelData[level-1]->get_old_data(PhiGrav_Type)[mfi]);
+            phi_crse_temp.copy<RunOn::Device>(LevelData[level-1]->get_old_data(PhiGrav_Type)[mfi]);
             Real omalpha = 1.0 - alpha;
-            phi_crse_temp.mult<RunOn::Host>(omalpha);
+            phi_crse_temp.mult<RunOn::Device>(omalpha);
 
-            phi_crse[mfi].copy<RunOn::Host>(LevelData[level-1]->get_new_data(PhiGrav_Type)[mfi],gtbx);
-            phi_crse[mfi].mult<RunOn::Host>(alpha,gtbx);
-            phi_crse[mfi].plus<RunOn::Host>(phi_crse_temp);
+            phi_crse[mfi].copy<RunOn::Device>(LevelData[level-1]->get_new_data(PhiGrav_Type)[mfi],gtbx);
+            phi_crse[mfi].mult<RunOn::Device>(alpha,gtbx);
+            phi_crse[mfi].plus<RunOn::Device>(phi_crse_temp);
         }
     }
 
