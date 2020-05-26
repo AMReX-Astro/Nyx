@@ -106,9 +106,8 @@ contains
 !      call ca_enforce_minimum_density(uin, uin_l1, uin_l2, uin_l3, uin_h1, uin_h2, uin_h3, &
 !                                   uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
 !                                   sum_state,s_lo,s_hi, &
-      !                                   lo,hi,print_fortran_warnings)
+!                                   lo,hi,print_fortran_warnings)
 
-      uout(:,:,:,:)=uin(:,:,:,:)
       call ca_enforce_minimum_density_1cell(lo, hi, &
                                    uout,s_lo, s_hi, &
                                    print_fortran_warnings)
