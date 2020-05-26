@@ -17,7 +17,7 @@ contains
       use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UFS, &
                                      gamma_minus_1, normalize_species
       use ca_enforce_module, only : ca_enforce_nonnegative_species
-      use enforce_density_module, only : ca_enforce_minimum_density
+      use enforce_density_module, only : ca_enforce_minimum_density_1cell
       use amrex_error_module, only : amrex_error
 
       implicit none
@@ -103,10 +103,15 @@ contains
       enddo
 
       ! Enforce the density >= small_dens.  Make sure we do this immediately after consup.
-      call ca_enforce_minimum_density(uin, uin_l1, uin_l2, uin_l3, uin_h1, uin_h2, uin_h3, &
-                                   uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
-                                   sum_state,s_lo,s_hi, &
-                                   lo,hi,print_fortran_warnings)
+!      call ca_enforce_minimum_density(uin, uin_l1, uin_l2, uin_l3, uin_h1, uin_h2, uin_h3, &
+!                                   uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
+!                                   sum_state,s_lo,s_hi, &
+      !                                   lo,hi,print_fortran_warnings)
+
+      uout(:,:,:,:)=uin(:,:,:,:)
+      call ca_enforce_minimum_density_1cell(lo, hi, &
+                                   uout,s_lo, s_hi, &
+                                   print_fortran_warnings)
 
       ! Enforce species >= 0
       call ca_enforce_nonnegative_species(uout,uout_l1,uout_l2,uout_l3, &

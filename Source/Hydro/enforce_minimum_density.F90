@@ -131,7 +131,7 @@ contains
                   end do
 #endif
 
-#ifndef AMREX_USE_CUDA
+!#ifndef AMREX_USE_CUDA
                   if (print_fortran_warnings .gt. 0) then
                      !
                      ! A critical region since we usually can't write from threads.
@@ -147,8 +147,22 @@ contains
                         print *,'>>> FROM ',uout(i,j,k,URHO),' TO ',min_dens
                         print *,'   '
                      end if
+
+                     do kk = klo,khi
+                        do jj = jlo,jhi
+                           do ii = ilo,ihi
+                              if ( (i-ii)*(j-jj)*(k-kk) .eq. 0 ) then
+                                 print*,'  '
+                                 print *,'>>> RESETTING STATE with DENSITY AT ',ii,jj,kk
+                                 print *,'>>> FROM ',uin(ii,jj,kk,URHO),' TO ',uout(ii,jj,kk,URHO)
+                                 print*,'  '
+                              endif
+                           enddo
+                        enddo
+                     enddo
+             
                   end if
-#endif
+!#endif
                   ! Now define the new state at (i,j,k)
                   uout(i,j,k,URHO    ) = min_dens
                   uout(i,j,k,UMX:nmax) = uout(i,j,k,UMX:nmax) + frac * sum_state(i,j,k,UMX:nmax)
@@ -275,4 +289,70 @@ contains
 
     end subroutine ca_enforce_minimum_density
 
+    AMREX_CUDA_FORT_DEVICE subroutine ca_enforce_minimum_density_1cell(lo, hi, &
+                                        state, s_lo, s_hi, &
+                                        verbose)
+
+    use network, only: nspec, naux
+    use meth_params_module, only: NVAR, URHO, UMX, UMY, UMZ, UTEMP, UEINT, UEDEN, UFS, small_temp, small_dens, npassive, upass_map
+    use amrex_constants_module, only: ZERO
+    use amrex_error_module, only: amrex_error
+    use amrex_fort_module, only: rt => amrex_real
+
+    implicit none
+
+    integer,  intent(in   ) :: lo(3), hi(3)
+    integer,  intent(in   ) :: s_lo(3), s_hi(3)
+    real(rt), intent(inout) :: state(s_lo(1):s_hi(1),s_lo(2):s_hi(2),s_lo(3):s_hi(3),NVAR)
+    integer,  intent(in   ), value :: verbose
+
+    ! Local variables
+    integer  :: i, j, k
+
+    integer          :: n, ipassive
+
+    do k = lo(3), hi(3)
+       do j = lo(2), hi(2)
+          do i = lo(1), hi(1)
+
+             if (state(i,j,k,URHO) < small_dens) then
+
+#ifndef AMREX_USE_CUDA
+                if (verbose .gt. 0) then
+                   print *,'   '
+                   if (state(i,j,k,URHO) < ZERO) then
+                      print *,'>>> RESETTING NEG.  DENSITY AT ', i, j, k
+                   else
+                      print *,'>>> RESETTING SMALL DENSITY AT ', i, j, k
+                   endif
+                   print *,'>>> FROM ', state(i,j,k,URHO), ' TO ', small_dens
+                   print *,'>>> IN GRID ', lo(1), lo(2), lo(3), hi(1), hi(2), hi(3)
+                   print *,'   '
+                end if
+#endif
+
+                do ipassive = 1, npassive
+                   n = upass_map(ipassive)
+                   state(i,j,k,n) = state(i,j,k,n) * (small_dens / state(i,j,k,URHO))
+                end do
+
+                state(i,j,k,URHO ) = small_dens
+                state(i,j,k,UTEMP) = small_temp
+
+                state(i,j,k,UMX  ) = ZERO
+                state(i,j,k,UMY  ) = ZERO
+                state(i,j,k,UMZ  ) = ZERO
+
+                state(i,j,k,UEINT) = state(i,j,k,UEINT)
+                state(i,j,k,UEDEN) = state(i,j,k,UEINT)
+
+
+             end if
+
+          end do
+       end do
+    end do
+
+  end subroutine ca_enforce_minimum_density_1cell
+  
 end module enforce_density_module
