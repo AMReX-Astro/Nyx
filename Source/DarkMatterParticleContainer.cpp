@@ -297,7 +297,9 @@ AMREX_GPU_HOST_DEVICE AMREX_INLINE void DarkMatterParticleContainer::update_dm_p
                 for (int ii = 0; ii <= 1; ++ii)
                 {
 		  //                    val += sx[ii]*sy[jj]*sz[kk]*acc(i+ii,j+jj,k+kk,d);
-		  val += sx[abs(ii-1)]*sy[abs(jj-1)]*sz[abs(kk-1)]*acc(i-ii,j-jj,k-kk,d);
+                    val += sx[amrex::Math::abs(ii-1)]*
+                           sy[amrex::Math::abs(jj-1)]*
+                           sz[amrex::Math::abs(kk-1)]*acc(i-ii,j-jj,k-kk,d);
 		  //		  amrex::Print()<<sx[abs(ii-1)]*sy[abs(jj-1)]*sz[abs(kk-1)]<<"\t"<<acc(i-ii,j-jj,k-kk,d)<<std::endl;
                 }
             }
