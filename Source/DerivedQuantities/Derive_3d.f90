@@ -1,4 +1,53 @@
 
+     subroutine derpres(p,p_l1,p_l2,p_l3,p_h1,p_h2,p_h3,ncomp_p, &
+           u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,ncomp_u,lo,hi,domlo, &
+           domhi,dx,xlo,time,dt,bc,level,grid_no)
+      !
+      ! Compute pressure from (rho e)
+      !
+      use meth_params_module, only : UEINT, gamma_minus_1
+      use  eos_params_module
+
+      use amrex_fort_module, only : rt => amrex_real
+      use amrex_error_module, only : amrex_error
+      implicit none
+
+      integer p_l1,p_l2,p_l3,p_h1,p_h2,p_h3,ncomp_p
+      integer u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,ncomp_u
+      integer lo(3), hi(3), domlo(3), domhi(3)
+      real(rt) p(p_l1:p_h1,p_l2:p_h2,p_l3:p_h3,ncomp_p)
+      real(rt) u(u_l1:u_h1,u_l2:u_h2,u_l3:u_h3,ncomp_u)
+      real(rt) dx(3), xlo(3), time, dt
+      integer bc(3,2,ncomp_u), level, grid_no
+
+      integer          :: i,j,k
+      ! 
+      ! Here dat contains (Density, Xmom, Ymom, Zmom, (rho E), (rho e))
+      ! 
+      do k = lo(3),hi(3)
+         do j = lo(2),hi(2)
+            do i = lo(1),hi(1)
+
+               !
+               ! Protect against negative internal energy.
+               !
+               if (u(i,j,k,UEINT) .le. 0.d0) then
+                  print *,'   '
+                  print *,'>>> Error: deriving pressure at ',i,j,k
+                  print *,'>>> but rho*eint is negative: ', u(i,j,k,UEINT)
+                  print *,'    '
+                  call amrex_error("Error:: Derive_3d.f90 :: derpres")
+               else
+                  p(i,j,k,1) = gamma_minus_1 * u(i,j,k,UEINT)
+               end if
+
+            enddo
+         enddo
+      enddo
+
+      end subroutine derpres
+
+
       subroutine dersoundspeed(c,c_l1,c_l2,c_l3,c_h1,c_h2,c_h3,ncomp_c, &
            u,u_l1,u_l2,u_l3,u_h1,u_h2,u_h3,ncomp_u,lo,hi,domlo, &
            domhi,dx,xlo,time,dt,bc,level,grid_no)

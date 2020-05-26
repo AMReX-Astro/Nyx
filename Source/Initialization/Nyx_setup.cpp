@@ -399,7 +399,8 @@ Nyx::hydro_setup()
     // Pressure
     //
     derive_lst.add("pressure", IndexType::TheCellType(), 1,
-                   derpres, the_same_box);
+                   BL_FORT_PROC_CALL(DERPRES, derpres), the_same_box);
+    //                   derpres, the_same_box);
     derive_lst.addComponent("pressure", desc_lst, State_Type, Density,
                             NUM_STATE);
 

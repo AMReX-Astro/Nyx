@@ -128,27 +128,7 @@ extern "C"
 
                        });
   }
-
-    void derpres(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
-                 const FArrayBox& datfab, const Geometry& geomdata,
-                 Real /*time*/, const int* /*bcrec*/, int /*level*/)
-    {
-
-      auto const dat = datfab.array();
-      auto const der = derfab.array();
-
-      amrex::Real gamma_minus_1_local = Nyx::gamma - 1.0_rt;
-      //No abort call for non-positive energy
-      amrex::ParallelFor(bx,
-      [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
-      {
-
-        der(i,j,k,0) = gamma_minus_1_local * dat(i,j,k,UEINT);
-
-      });
-    }
-
-
+  
     void dereint1(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
                   const FArrayBox& datfab, const Geometry& geomdata,
                   Real /*time*/, const int* /*bcrec*/, int /*level*/)
