@@ -26,14 +26,14 @@
     
     <!-- Header -->
     <header id="header">
-      <h1><a href="https://github.com/AMReX-Astro">AMReX-Astro Codes</a></h1>
+      <!-- <h1><a href="https://github.com/AMReX-Astro">AMReX-Astro Codes</a></h1> -->
       <nav id="nav">
 	<ul>
-	  <li><a href="about.html">About</a></li>
-	  <li><a href="science.html">Science</a></li>
-	  <li><a href="papers.html">Papers</a></li>
-	  <li><a href="who.html">Developers</a></li>
-	  <li><a href="help.html" class="button special">Get Help</a></li>
+	  <li><a href="#About">About</a></li>
+          <li><a href="#Usage">Getting Started</a></li>
+          <li><a href="#Development">Development</a></li>
+	  <li><a href="#Pubs">Publications</a></li>
+	  <li><a href="science.html" class="button special">Science</a></li>
 	</ul>
       </nav>
     </header>
@@ -41,7 +41,7 @@
     <!-- Banner -->
     <section id="banner">
       <h2>Nyx</h2>
-      <p>an adaptive mesh, compressible cosmological hydrodynamics simulation code</p>
+      <p>an adaptive mesh, cosmological hydrodynamics simulation code</p>
       <ul class="actions">
 	<li>
 	  <a href="https://github.com/AMReX-Astro/Nyx" class="button big">Source Code</a>
@@ -49,17 +49,20 @@
 	<li>
 	<a href="https://amrex-astro.github.io/Nyx/docs_html" class="button big">Documentation</a>
 	</li>
-	
+        <li>
+          <a href="index.html" class="button big">User's Guide</a>
+        </li>	
       </ul>
-      <!--ul class="actions">
+      <ul class="actions">
 	<li>
-	  <a href="https://amrex-astro.github.io/Nyx/docs_html" class="button">Documentation</a>
+	  <a href="https://amrex-codes.github.io/amrex/" class="button big">AMReX</a>
 	</li>
-      </ul-->
+      </ul>
     </section>
 
+
     <!-- One -->
-    <!--    
+    <!--
     <section id="one" class="wrapper style1 special">
       <div class="container">
 	<header class="major">
@@ -107,9 +110,64 @@
       </div>
     </section>
     -->
-    <!-- Two -->
-    <!--
-    <section id="two" class="wrapper style2 special">
+
+
+    <!-- About -->
+
+    <section id="About" class="wrapper style1 special">
+      <div class="container">
+        <header class="major">
+          <h2>About</h2>
+          <p>evolving the universe on high-performance computers</p>
+        </header>
+
+           <p>Sky surveys from powerful observatories
+              show that the matter in our universe is not randomly distributed,
+              but that it exibits a structure: a "cosmic web" of filaments
+              and sheets encompassing large void regions.
+              Properties of this cosmic web will differ for different cosmological models,
+              for example when postulating different forms of dark matter and dark energy.
+              Testing different models requires precise predictions for the
+              formation of structure, which may be observed via galaxies, or the
+              diffuse gas that fills the vast volumes between the galaxies,
+              called the intergalactic medium (IGM).
+
+              Various physical effects, ranging from the nature of dark matter to
+              the radiation from star-forming galaxies and quasars, set the observable properties of
+              the IGM, making the IGM a powerful probe of both fundamental physics and astrophysics.
+
+              To attain the necessary realism and accuracy in modeling the observations,
+              sophisticated, large-scale simulations of cosmic structure formation are essential,
+              which is the main driver for the development of the Nyx code.</p>
+
+           <p>Nyx is an adaptive mesh, massively-parallel, cosmological simulation code that solves
+              equations of compressible hydrodynamics flow describing the evolution of baryonic gas
+              coupled with an N-body treatment of the dark matter in an expending universe.
+
+              Nyx's hydrodynamics is based on formulation in Eulerian coordinates.
+              The code uses a dimensionally-unsplit 2nd order PPM approach to
+              construct the fluxes through the interfaces of each cell.
+
+              The Poisson equation for self-gravity of the gas and
+              dark matter is solved using geometric multigrid method.
+
+              The approach to AMR in Nyx uses a nested hierarchy
+              of logically-rectangular grids with simultaneous
+              refinement of the grids in both space and time.  The
+              integration algorithm on the grid hierarchy is a
+              recursive procedure in which coarse grids are advanced
+              in time, fine grids are advanced multiple steps to reach
+              the same time as the coarse grids and the data at
+              different levels are then synchronized.  A separate
+              synchronization is done for gravity.</p>
+
+      </div>
+    </section>
+
+
+    <!-- Usage -->
+    
+    <section id="Usage" class="wrapper style2 special">
       <div class="container">
 	<header class="major">
 	  <h2>Getting Started</h2>
@@ -117,19 +175,20 @@
 	</header>
 	  <ul class="alt">
 	    <li><h3><span class="icon fa-download"></span> Clone</h3>
-	      <pre>
-git clone https://github.com/AMReX-Codes/amrex.git
-git clone https://github.com/AMReX-Astro/Nyx.git
+	      <pre>git clone https://github.com/AMReX-Codes/amrex.git<br>git clone https://github.com/AMReX-Astro/Nyx.git</pre>
+              
 	    </li>
 
-	    <li><h3><span class="icon fa-cogs"></span> Setup your environment</h3>
+            <!--
+	    <li><h3><span class="icon fa-magic"></span> Setup your environment</h3>
 	      <pre>
-export AMREX_HOME=/path/to/AMReX
+              export AMREX_HOME=/path/to/AMReX
 	    </li>
+            -->
 
-	    <li><h3><span class="icon fa-magic"></span> Compile</h3>
+	    <li><h3><span class="icon fa-cogs"></span> Compile</h3>
 	      problems are compiled in their own directory.  E.g.,
-	      <pre>cd Nyx/Exec/LyA/ make DIM=3</pre>
+	      <pre>cd Nyx/Exec/LyA/<br>make -j 8</pre>
 	    </li>
 
 	    <li><h3><span class="icon fa-laptop"></span> Run</h3>
@@ -139,52 +198,150 @@ export AMREX_HOME=/path/to/AMReX
 	    </li>
 
 	    <li><h3><span class="icon fa-image"></span> Visualize</h3>
-	      Nyx output (AMReX format) is supported natively by yt, VisIt, and amrvis
+	      Nyx output (AMReX format) is supported natively by
+                  <a href="https://www.paraview.org/">Paraview</a>,
+                  <a href="https://wci.llnl.gov/simulation/computer-codes/visit/">VisIt</a>,
+                  <a href="https://yt-project.org/doc/index.html">yt</a>, and
+                  <a href="https://github.com/AMReX-Codes/amrvis">Amrvis</a>
 	    </li>
 
 	  </ul>
 
+       <!-- 
 	<footer>
-	  <p>The User's Guide is the best place to learn more about
+	<p>The User's Guide is the best place to learn more about
 	  how Nyx is organized.  You can also ask for help on the Nyx mailing list.</p>
 	  <ul class="actions">
 	    <li>
-	      <a href="https://groups.google.com/forum/#!forum/nyx-help" class="button big">Join the Nyx mailing list</a>
+	      <a href="https://groups.google.com/forum/#!forum/nyx-help" class="button big">User's Guide</a>
 	    </li>
 	  </ul>
 	</footer>
+      -->
       </div>
     </section>
-    -->
-    <!-- Three -->
-    <section id="three" class="wrapper style1 special">
+    
+
+    <!-- Development -->
+
+    <section id="Development" class="wrapper style1 special">
       <div class="container">
-	<header class="major">
-	  <h2>Development</h2>
-	  <p>Nyx is BSD-licensed and hosted on github.  Contributions are welcomed.</p>
-	</header>
-	Nyx is written in a mix of C++ and Fortran.  The main driver, memory
-	management, and parallelization are implemented in C++ (using
-	the AMReX framework) and the physics kernels are written in
-	Fortran.  New code features are done either on the "<tt>development</tt>" branch
-	or in a separate feature branch and periodically merged into "<tt>master</tt>".  If
-	you want to contribute to Nyx, clone the Nyx git repo, make your changes
-	on "<tt>development</tt>" and then issue a pull-request to the Nyx "<tt>development</tt>" branch.
+        <header class="major">
+          <h2>Development</h2>
+          <p>Nyx is BSD-licensed and hosted on github; contributions are welcomed</p>
+        </header>
+        Nyx uses a hybrid programming model based on MPI and
+        OpenMP with kernel offloading in Cuda.
+        The code is written in a mix of C++ and Fortran.  The main driver, memory
+        management, and parallelization are implemented in C++ (using
+        the AMReX framework) and the physics kernels are written in
+        Fortran or C++.  If you want to contribute to Nyx, clone the Nyx git repo, make your changes
+        on <code>development</code> branch and then issue a pull-request.
+
+        <p>Many people contributed to Nyx development, including:</p>
+
+          <p>
+            <div class="table-wrapper">
+              <table>
+                <tr><td><a href="https://ccse.lbl.gov/people/almgren/">Ann Almgren</a></td>
+                    <td>Vince Beckner</td></tr>
+                <tr><td><a href="ihttps://www.nersc.gov/about/nersc-staff/advanced-technologies-group/christopher-daley/">Chris Daley</a></td>
+                    <td><a href="https://www.nersc.gov/about/nersc-staff/application-performance/brian-friesen/">Brian Friesen</a></td></tr>
+                <tr><td><a href="https://crd.lbl.gov/departments/computational-science/c3/c3-people/zarija-lukic/">Zarija Lukic</a></td>
+                    <td><a href="https://ccse.lbl.gov/people/amyers/index.html">Andrew Myers</a></td></tr>
+                <tr><td><a href="https://ccse.lbl.gov/people/jmsexton/index.html">Jean Sexton</a></td>
+                    <td><a href="https://ccse.lbl.gov/people/weiqun/index.html">Weiqun Zhang</a></td></tr>
+              </table>
+            </div>
+          </p>
+
+            <footer>
+             Nyx is part of the AMReX suite of codes and heavily leverages the development of AMReX.
+             Check out the <a href="https://github.com/AMReX-Codes/amrex">AMReX github page</a>
+             to see their list of developers.
+            </footer>
+
       </div>
     </section>
+
+
+   <!-- Publications -->
+   <script async src="https://badge.dimensions.ai/badge.js" charset="utf-8"></script>
+
+    <section id="Pubs" class="wrapper style1 special">
+      <div class="container">
+        <header class="major">
+          <h2>Publications</h2>
+          <p>
+             if you find Nyx useful for your research, please cite
+             <a href="https://iopscience.iop.org/article/10.1088/0004-637X/765/1/39">the original code paper</a>
+             <br>
+             papers citing the Nyx "code" paper:
+            <a href="http://adsabs.harvard.edu/cgi-bin/nph-ref_query?bibcode=2013ApJ...765...39A&amp;refs=CITATIONS&amp;db_key=AST">[NASA ADS]</a>, <a href="https://scholar.google.com/scholar?oi=bibs&hl=en&cites=7749734492150896421">[Google Scholar]</a>
+          </p>
+        </header>
+
+        <p>Nyx has been instrumental for many scientific works and results;
+           a list of publications referencing the Nyx code paper provide
+           insights about its usage. For more details on research we are doing with Nyx you can
+           also take a look at <a href="science.html">our science page</a>.
+
+           Papers which contain algorithmic and physical description of code's components are:</p>
+
+          <p>
+            <div class='table-wrapper'>
+              <table>
+
+                <tr><td>
+                     <span class="__dimensions_badge_embed__" data-id="pub.1038213549" data-style="small_rectangle"></span>
+                      Ann S. Almgren, John B. Bell, Mike J. Lijewski, Zarija Lukic, Ethan Van Andel,
+                      <b>"Nyx: A Massively Parallel AMR Code for Computational Cosmology"</b>
+                      <em>Astrophysical Journal</em>, <b>765</b>, 39, (2013)
+                      <a href="https://iopscience.iop.org/article/10.1088/0004-637X/765/1/39/pdf" style="text-decoration: none;">[pdf]</a>
+                </td></tr>
+
+                <tr><td>
+                      <span class="__dimensions_badge_embed__" data-id="pub.1059915020" data-style="small_rectangle"></span>
+                      Zarija Lukic, Casey Stark, Peter Nugent, Martin White, Avery Meiksin, Ann Almgren,
+                      <b>"The Lyman-alpha forest in optically-thin hydrodynamical simulations,"</b>
+                      <em>Monthly Notices of the Royal Astronomical Society</em>,
+                      <b>446</b>, 3697-3724, (2015)
+                      <a href="https://academic.oup.com/mnras/article/446/4/3697/2892888" style="text-decoration: none;">[pdf]</a>
+                </td></tr>
+
+                <tr><td>
+                      <span class="__dimensions_badge_embed__" data-id="pub.1113286356" data-style="small_rectangle"></span>
+                      Jose Onorbe, Frederick B. Davies, Zarija Lukic, Joseph F. Hennawi, Daniele Sorini
+                      <b>"Inhomogeneous reionization models in cosmological hydrodynamical simulations,"</b>
+                      <em>Monthly Notices of the Royal Astronomical Society</em>,
+                      <b>486</b>, 4075-4097, (2019)
+                      <a href="https://academic.oup.com/mnras/article/486/3/4075/5485597" style="text-decoration: none;">[pdf]</a>
+                </td></tr>
+
+              </table>
+            </div>
+          </p>
+
+      </div>
+    </section>
+
 
     <!-- Footer -->
     <footer id="footer">
       <div class="container">
 	<section class="ack">
-         The development of Nyx began as part of an LDRD-funded project
-         at Lawrence Berkeley National Laboratory, continued under funding 
-         from the SciDAC-3 project, Computation-Driven Discovery for the Dark Universe, and is now a part of the DOE ECP ExaSky project. 
+         The development of Nyx is supported by the <a href="https://www.exascaleproject.org/">Exascale Computing Project</a>
+         from the <a href="https://www.energy.gov/">US Department of Energy</a>.<br>
+         Previous fundings include <a href="https://www.lbl.gov/">Berkeley Lab's</a>
+         LDRD program, 
+         and the <a href="https://www.scidac.gov/">SciDAC-3</a> project from
+         the <a href="https://www.energy.gov/science/office-science">Office of Science</a>.
 	</section>
 	<div class="row">
 	  <div class="8u 12u$(medium)">
 	    <ul class="copyright">
 	      <li>&copy; Nyx development team. All rights reserved.</li>
+              <li>Design: <a href="http://templated.co">TEMPLATED</a></li>
 	    </ul>
 	  </div>
 	</div>
