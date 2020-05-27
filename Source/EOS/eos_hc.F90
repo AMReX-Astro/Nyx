@@ -117,8 +117,8 @@ module eos_module
         use meth_params_module, only: gamma_minus_1
         implicit none
 
-        double precision,          intent(  out) :: e, P
-        double precision,          intent(in   ) :: R, T, Ne
+        double precision,          intent(inout) :: e, P
+        double precision, value,   intent(in   ) :: R, T, Ne
         double precision, value,   intent(in   ) :: a
 
         double precision :: mu

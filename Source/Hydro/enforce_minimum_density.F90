@@ -337,7 +337,6 @@ contains
                 end do
 
                 state(i,j,k,URHO ) = small_dens
-                state(i,j,k,UTEMP) = small_temp
 
                 state(i,j,k,UMX  ) = ZERO
                 state(i,j,k,UMY  ) = ZERO

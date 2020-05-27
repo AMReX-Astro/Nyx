@@ -2764,6 +2764,23 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 
 		nyx_eos_T_given_Re_device(gamma_minus_1_in, h_species_in, JH, JHe, &diag_eos(i,j,k,Temp_comp), &diag_eos(i,j,k,Ne_comp), 
 					       state(i,j,k,Density), eint, a);
+		if(diag_eos(i,j,k,Temp_comp)>=1e9)
+		{
+		  diag_eos(i,j,k,Temp_comp)=1e9;
+
+		  Real dummy_pres=0.0;
+		  // Set temp to small_temp and compute corresponding internal energy
+		  nyx_eos_given_RT(gamma_minus_1_in, h_species_in, &eint, &dummy_pres, state(i,j,k,Density), diag_eos(i,j,k,Temp_comp),
+				    diag_eos(i,j,k,Ne_comp), a);
+
+	           Real ke = 0.5e0 * (state(i,j,k,Xmom) * state(i,j,k,Xmom) +
+			      state(i,j,k,Ymom) * state(i,j,k,Ymom) +
+			      state(i,j,k,Zmom) * state(i,j,k,Zmom)) * rhoInv;
+
+		   state(i,j,k,Eint) = state(i,j,k,Density) * eint;
+		   state(i,j,k,Eden) = state(i,j,k,Eint) + ke;
+
+		}
 	      }
 	    else
 	      {
