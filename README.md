@@ -23,12 +23,8 @@ Additional physics capabilities are under development.
 Nyx is parallelized with MPI + OpenMP, and has been run at parallel concurrency
 of up to 2,097,152 (on NERSC's Cori).
 
-More information on Nyx can be found here:
+More information on Nyx can be found at 
 http://amrex-astro.github.io/Nyx/
-
-If you prefer to run depreciated BoxLib-based version of the code, then 
-you can use the `boxlib` branch (which will no longer be updated).
-
 
 ## Getting Started
 
