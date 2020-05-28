@@ -21,15 +21,19 @@ ifneq ($(NO_HYDRO), TRUE)
 CEXE_sources += compute_hydro_sources.cpp
 CEXE_sources += update_state_with_sources.cpp
 CEXE_sources += strang_hydro.cpp
-CEXE_sources += strang_reactions.cpp
-CEXE_sources += sum_integrated_quantities.cpp
+ifeq ($(USE_CVODE_LIBS), TRUE)   
+     CEXE_sources += strang_hydro_fuse.cpp
 endif
-CEXE_sources += sum_utils.cpp
+CEXE_sources += strang_reactions.cpp
 
 ifeq ($(USE_SDC), TRUE)
 CEXE_sources += sdc_hydro.cpp
 CEXE_sources += sdc_reactions.cpp
 endif
+
+CEXE_sources += sum_integrated_quantities.cpp
+endif
+CEXE_sources += sum_utils.cpp
 
 CEXE_headers += Nyx.H
 CEXE_headers += Nyx_output.H
@@ -43,7 +47,7 @@ f90EXE_headers += dm_F.H
 
 f90EXE_sources += Nyx_nd.f90
 f90EXE_sources +=  eos_params.f90
-f90EXE_sources += meth_params.f90
+F90EXE_sources += meth_params.F90
 f90EXE_sources += misc_params.f90
 f90EXE_sources += prob_params.f90
 f90EXE_sources += comoving_params.f90

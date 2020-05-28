@@ -176,6 +176,7 @@ Nyx::sum_integrated_quantities ()
 void
 Nyx::compute_average_density ()
 {
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     int             finest_level = parent->finestLevel();
     Real            time         = state[State_Type].curTime();
     const Geometry& crse_geom    = parent->Geom(0);
@@ -261,11 +262,13 @@ Nyx::compute_average_density ()
 #endif
         std::cout << "Average    total density " << average_total_density << '\n';
     }
+    amrex::Gpu::synchronize();
 }
 
 void
 Nyx::compute_average_temperature (Real& average_temperature)
 {
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     int             finest_level = parent->finestLevel();
     Real            time         = state[State_Type].curTime();
     const Geometry& crse_geom    = parent->Geom(0);
@@ -285,6 +288,15 @@ Nyx::compute_average_temperature (Real& average_temperature)
         nyx_lev.compute_new_temp     (S_new,D_new);
 
         average_temperature += nyx_lev.vol_weight_sum("Temp",time,true);
+
+	if (verbose > 1) {
+	  std::cout << "Norm2 temperature" << D_new.norm2(Temp_comp)<<std::endl;
+	  std::cout << "Norm0 temperature" << D_new.norm0(Temp_comp)<<std::endl;
+
+	  std::cout << "Norm2 rho_e" << S_new.norm2(Eint)<<std::endl;
+	  std::cout << "Norm0 rho_e" << S_new.norm0(Eint)<<std::endl;
+
+	}
     }
  
     // Divide by physical volume of domain.
@@ -293,6 +305,7 @@ Nyx::compute_average_temperature (Real& average_temperature)
     if (verbose > 0 && ParallelDescriptor::IOProcessor()) {
         std::cout << "Average temperature " << average_temperature << '\n';
     }
+    amrex::Gpu::synchronize();
 }
 
 void
@@ -300,6 +313,7 @@ Nyx::compute_average_species (int          nspec,
                               int          naux,
                               Vector<Real>& average_species)
 {
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     if (use_const_species == 1)
     {
        average_species[0] = h_species;
@@ -367,5 +381,6 @@ Nyx::compute_average_species (int          nspec,
                std::cout << "Average species " << i << ": " << average_species[i] << '\n';
         }
     } // end if not use_const_species
+    amrex::Gpu::synchronize();
 }
 #endif

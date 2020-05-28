@@ -1,7 +1,11 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
-max_step = 5
+max_step = 9
 
-nyx.ppm_type         = 1
+#nyx.use_const_species = 1
+#nyx.h_species = .76
+#nyx.he_species = .24
+nyx.ppm_type         = 0
+nyx.version_2        = 0
 nyx.ppm_reference    = 1
 nyx.use_colglaz      = 0
 nyx.corner_coupling  = 1
@@ -12,6 +16,7 @@ nyx.heat_cool_type   = 3
 #nyx.simd_width       = 8
 
 nyx.small_dens = 1.e-2
+nyx.small_pres = 1.e-10
 nyx.small_temp = 1.e-2
 
 nyx.do_santa_barbara = 1
@@ -47,10 +52,10 @@ geometry.prob_lo     =  0     0     0
 #Domain size in Mpc
 geometry.prob_hi     =  28.49002849  28.49002849  28.49002849
 
-amr.n_cell           =  64  64  64
-amr.max_grid_size    = 32
+amr.n_cell           =  64 64 64
+amr.max_grid_size    = 64
 #fabarray.mfiter_tile_size = 128 8 8
-fabarray.mfiter_tile_size = 1024000 8 8
+fabarray.mfiter_tile_size = 1024000 1024000 1024000
 
 nyx.particle_initrandom_mass  = 3.317482451E9
 
@@ -121,7 +126,7 @@ amr.max_level          = 0        # maximum level number allowed
 #amr.n_error_buf        = 0 0 0 8
 #amr.refine_grid_layout = 1
 amr.regrid_on_restart  = 1
-#amr.blocking_factor    = 32
+amr.blocking_factor    = 64
 #amr.nosub              = 1
 
 # CHECKPOINT FILES
@@ -131,14 +136,14 @@ amr.check_int         = 100
 amr.checkpoint_nfiles = 64
 
 # PLOTFILES
-amr.plot_files_output = 0  # no output
-fab.format          = NATIVE_32
+amr.plot_files_output = 1  # no output
+#fab.format          = NATIVE_32
 amr.plot_file       = plt
-amr.plot_int        = -1
+amr.plot_int        = 1
 amr.plot_nfiles     = 64
 nyx.plot_z_values   = 7.0 6.0 5.0 4.0 3.0 2.0
 
-amr.plot_vars        = density xmom ymom zmom rho_e Temp phi_grav
+amr.plot_vars        = density xmom ymom zmom rho_e Temp phi_grav eint_E
 amr.derive_plot_vars = particle_mass_density
 
 #PROBIN FILENAME

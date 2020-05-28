@@ -4,6 +4,7 @@
 
 #include "Nyx.H"
 #include "Nyx_F.H"
+#include "Derive.H"
 #include "Derive_F.H"
 #ifdef FORCING
 #include "Forcing.H"
@@ -149,12 +150,6 @@ Nyx::hydro_setup()
     //
     // Set number of state variables and pointers to components
     //
-    Density = 0;
-    Xmom    = 1;
-    Ymom    = 2;
-    Zmom    = 3;
-    Eden    = 4;
-    Eint    = 5;
     int cnt = 6;
 
     NumAdv = 0;
@@ -165,8 +160,6 @@ Nyx::hydro_setup()
     }
 
     int NDIAG_C;
-    Temp_comp = 0;
-      Ne_comp = 1;
     if (inhomo_reion > 0)
     {
         NDIAG_C  = 3;
@@ -199,6 +192,8 @@ Nyx::hydro_setup()
     }
 
     NUM_STATE = cnt;
+    QVAR = cnt;
+    NQSRC = cnt;
 
     // Define NUM_GROW from the f90 module.
     fort_get_method_params(&NUM_GROW);
@@ -208,12 +203,13 @@ Nyx::hydro_setup()
     fort_set_method_params
         (dm, NumAdv, NDIAG_C, do_hydro, ppm_type, ppm_reference,
          ppm_flatten_before_integrals,
-         use_colglaz, use_flattening, corner_coupling, version_2,
+         use_colglaz, use_flattening, use_analriem, version_2,
          use_const_species, gamma, normalize_species,
          heat_cool_type, inhomo_reion);
 
 #ifdef HEATCOOL
     fort_tabulate_rates();
+    amrex::Gpu::streamSynchronize();
 #endif
 
     if (use_const_species == 1)
@@ -234,12 +230,12 @@ Nyx::hydro_setup()
 
     store_in_checkpoint = true;
     desc_lst.addDescriptor(State_Type, IndexType::TheCellType(),
-                           StateDescriptor::Point, 1, NUM_STATE, interp,
+                           StateDescriptor::Point, nghost_state, NUM_STATE, interp,
                            state_data_extrap, store_in_checkpoint);
 
     // This has two components: Temperature and Ne
     desc_lst.addDescriptor(DiagEOS_Type, IndexType::TheCellType(),
-                           StateDescriptor::Point, 1, NDIAG_C, interp,
+                           StateDescriptor::Point, nghost_state, NDIAG_C, interp,
                            state_data_extrap, store_in_checkpoint);
 
 #ifdef SDC
@@ -404,6 +400,7 @@ Nyx::hydro_setup()
     //
     derive_lst.add("pressure", IndexType::TheCellType(), 1,
                    BL_FORT_PROC_CALL(DERPRES, derpres), the_same_box);
+    //                   derpres, the_same_box);
     derive_lst.addComponent("pressure", desc_lst, State_Type, Density,
                             NUM_STATE);
 
@@ -411,7 +408,7 @@ Nyx::hydro_setup()
     // Kinetic energy
     //
     derive_lst.add("kineng", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERKINENG, derkineng), the_same_box);
+                   derkineng, the_same_box);
     derive_lst.addComponent("kineng", desc_lst, State_Type, Density, 1);
     derive_lst.addComponent("kineng", desc_lst, State_Type, Xmom, BL_SPACEDIM);
 
@@ -455,14 +452,14 @@ Nyx::hydro_setup()
     // Internal energy as derived from rho*E, part of the state
     //
     derive_lst.add("eint_E", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DEREINT1, dereint1), the_same_box);
+                   dereint1, the_same_box);
     derive_lst.addComponent("eint_E", desc_lst, State_Type, Density, NUM_STATE);
 
     //
     // Internal energy as derived from rho*e, part of the state
     //
     derive_lst.add("eint_e", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DEREINT2, dereint2), the_same_box);
+                   dereint2, the_same_box);
     derive_lst.addComponent("eint_e", desc_lst, State_Type, Density, NUM_STATE);
 
     //
@@ -473,7 +470,7 @@ Nyx::hydro_setup()
     derive_lst.addComponent("logden", desc_lst, State_Type, Density, 1);
 
     derive_lst.add("StateErr", IndexType::TheCellType(), 3,
-                   BL_FORT_PROC_CALL(DERSTATE, derstate),
+                   derstate,
                    grow_box_by_one);
     derive_lst.addComponent("StateErr", desc_lst,   State_Type, Density, 1);
     derive_lst.addComponent("StateErr", desc_lst, DiagEOS_Type, Temp_comp, 1);
@@ -490,7 +487,7 @@ Nyx::hydro_setup()
             string spec_string = "X(" + spec_names[i] + ")";
 
             derive_lst.add(spec_string, IndexType::TheCellType(), 1,
-                           BL_FORT_PROC_CALL(DERSPEC, derspec), the_same_box);
+                           derspec, the_same_box);
             derive_lst.addComponent(spec_string, desc_lst, State_Type, Density, 1);
             derive_lst.addComponent(spec_string, desc_lst, State_Type,
                                     FirstSpec + i, 1);
@@ -515,17 +512,17 @@ Nyx::hydro_setup()
     // Velocities
     //
     derive_lst.add("x_velocity", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERVEL, dervel), the_same_box);
+                   dervel, the_same_box);
     derive_lst.addComponent("x_velocity", desc_lst, State_Type, Density, 1);
     derive_lst.addComponent("x_velocity", desc_lst, State_Type, Xmom, 1);
 
     derive_lst.add("y_velocity", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERVEL, dervel), the_same_box);
+                   dervel, the_same_box);
     derive_lst.addComponent("y_velocity", desc_lst, State_Type, Density, 1);
     derive_lst.addComponent("y_velocity", desc_lst, State_Type, Ymom, 1);
 
     derive_lst.add("z_velocity", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERVEL, dervel), the_same_box);
+                   dervel, the_same_box);
     derive_lst.addComponent("z_velocity", desc_lst, State_Type, Density, 1);
     derive_lst.addComponent("z_velocity", desc_lst, State_Type, Zmom, 1);
 
@@ -533,7 +530,7 @@ Nyx::hydro_setup()
     // Magnitude of velocity.
     //
     derive_lst.add("magvel", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERMAGVEL, dermagvel), the_same_box);
+                   dermagvel, the_same_box);
     derive_lst.addComponent("magvel", desc_lst, State_Type, Density, 1);
     derive_lst.addComponent("magvel", desc_lst, State_Type, Xmom, BL_SPACEDIM);
 
@@ -552,12 +549,12 @@ Nyx::hydro_setup()
     // Magnitude of momentum.
     //
     derive_lst.add("magmom", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERMAGMOM, dermagmom), the_same_box);
+                   dermagmom, the_same_box);
     derive_lst.addComponent("magmom", desc_lst, State_Type, Xmom, BL_SPACEDIM);
 
 #ifdef GRAVITY
     derive_lst.add("maggrav", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERMAGGRAV, dermaggrav),
+                   dermaggrav,
                    the_same_box);
     derive_lst.addComponent("maggrav", desc_lst, Gravity_Type, 0, BL_SPACEDIM);
 #endif
@@ -569,80 +566,82 @@ Nyx::hydro_setup()
     // We'll actually set the values in `writePlotFile()`.
     //
     derive_lst.add("particle_count", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERNULL, dernull), the_same_box);
+                   dernull, the_same_box);
     derive_lst.addComponent("particle_count", desc_lst, State_Type, Density, 1);
 
     derive_lst.add("particle_mass_density", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERNULL, dernull), grow_box_by_one);
+                   dernull, grow_box_by_one);
     derive_lst.addComponent("particle_mass_density", desc_lst, State_Type,
                             Density, 1);
 
+    if(do_hydro==1)
+      {
     derive_lst.add("particle_x_velocity", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERNULL, dernull), grow_box_by_one);
+                   dernull, grow_box_by_one);
     derive_lst.addComponent("particle_x_velocity", desc_lst, State_Type,
                             Xmom, 1);
     derive_lst.add("particle_y_velocity", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERNULL, dernull), grow_box_by_one);
+                   dernull, grow_box_by_one);
     derive_lst.addComponent("particle_y_velocity", desc_lst, State_Type,
                             Ymom, 1);
     derive_lst.add("particle_z_velocity", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERNULL, dernull), grow_box_by_one);
+                   dernull, grow_box_by_one);
     derive_lst.addComponent("particle_z_velocity", desc_lst, State_Type,
                             Zmom, 1);
-
+      }
 #ifdef AGN
     derive_lst.add("agn_particle_count", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERNULL, dernull), the_same_box);
+                   dernull, the_same_box);
     derive_lst.addComponent("agn_particle_count", desc_lst, State_Type, Density, 1);
 
     derive_lst.add("agn_mass_density", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERNULL, dernull), grow_box_by_one);
+                   dernull, grow_box_by_one);
     derive_lst.addComponent("agn_mass_density", desc_lst, State_Type,
                             Density, 1);
 #endif
 
 #ifdef NEUTRINO_PARTICLES
     derive_lst.add("neutrino_particle_count", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERNULL, dernull), the_same_box);
+                   dernull, the_same_box);
     derive_lst.addComponent("neutrino_particle_count", desc_lst, State_Type, Density, 1);
 
     derive_lst.add("neutrino_mass_density", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERNULL, dernull), grow_box_by_one);
+                   dernull, grow_box_by_one);
     derive_lst.addComponent("neutrino_mass_density", desc_lst, State_Type,
                             Density, 1);
 
     derive_lst.add("neutrino_x_velocity", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERNULL, dernull), grow_box_by_one);
+                   dernull, grow_box_by_one);
     derive_lst.addComponent("neutrino_x_velocity", desc_lst, State_Type,
                             Xmom, 1);
     derive_lst.add("neutrino_y_velocity", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERNULL, dernull), grow_box_by_one);
+                   dernull, grow_box_by_one);
     derive_lst.addComponent("neutrino_y_velocity", desc_lst, State_Type,
                             Ymom, 1);
     derive_lst.add("neutrino_z_velocity", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERNULL, dernull), grow_box_by_one);
+                   dernull, grow_box_by_one);
     derive_lst.addComponent("neutrino_z_velocity", desc_lst, State_Type,
                             Zmom, 1);
 #endif
 
     derive_lst.add("total_particle_count", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERNULL, dernull), the_same_box);
+                   dernull, the_same_box);
     derive_lst.addComponent("total_particle_count", desc_lst, State_Type,
                             Density, 1);
 
     derive_lst.add("total_density", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERNULL, dernull), grow_box_by_one);
+                   dernull, grow_box_by_one);
     derive_lst.addComponent("total_density", desc_lst, State_Type,
                             Density, 1);
     derive_lst.add("Rank", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERNULL, dernull), grow_box_by_one);
+                   dernull, grow_box_by_one);
 
     if (use_const_species == 0)
     {
         for (int i = 0; i < NumSpec; i++)
         {
             derive_lst.add(spec_names[i], IndexType::TheCellType(), 1,
-                           BL_FORT_PROC_CALL(DERSPEC, derspec), the_same_box);
+                           derspec, the_same_box);
             derive_lst.addComponent(spec_names[i], desc_lst, State_Type, Density, 1);
             derive_lst.addComponent(spec_names[i], desc_lst, State_Type,
                                     FirstSpec + i, 1);
@@ -651,7 +650,7 @@ Nyx::hydro_setup()
         for (int i = 0; i < NumAux; i++)
         {
             derive_lst.add(aux_names[i], IndexType::TheCellType(), 1,
-                           BL_FORT_PROC_CALL(DERSPEC, derspec), the_same_box);
+                           derspec, the_same_box);
             derive_lst.addComponent(aux_names[i], desc_lst, State_Type, Density, 1);
             derive_lst.addComponent(aux_names[i], desc_lst, State_Type, FirstAux+i, 1);
         }
@@ -665,7 +664,6 @@ Nyx::no_hydro_setup()
 {
     int dm = BL_SPACEDIM;
 
-    Density = 0;
     NUM_STATE = 1;
 
     int NDIAG_C = -1;
@@ -675,8 +673,8 @@ Nyx::no_hydro_setup()
 
     fort_set_method_params
         (dm, NumAdv, NDIAG_C, do_hydro, ppm_type, ppm_reference,
-         ppm_flatten_before_integrals,
-         use_colglaz, use_flattening, corner_coupling, version_2,
+         ppm_flatten_before_integrals, 
+         use_colglaz, use_flattening, use_analriem, version_2,
          use_const_species, gamma, normalize_species,
          heat_cool_type, inhomo_reion);
 
@@ -748,7 +746,7 @@ Nyx::no_hydro_setup()
                              BndryFunc(generic_fill));
 
        derive_lst.add("maggrav", IndexType::TheCellType(), 1,
-                      BL_FORT_PROC_CALL(DERMAGGRAV, dermaggrav),
+                      dermaggrav,
                       the_same_box);
        derive_lst.addComponent("maggrav", desc_lst, Gravity_Type, 0, BL_SPACEDIM);
     }
@@ -760,67 +758,82 @@ Nyx::no_hydro_setup()
     // We'll actually set the values in `writePlotFile()`.
     //
     derive_lst.add("particle_count", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERNULL, dernull), the_same_box);
+                   dernull, the_same_box);
     derive_lst.addComponent("particle_count", desc_lst, PhiGrav_Type, 0, 1);
 
     derive_lst.add("particle_mass_density", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERNULL, dernull), grow_box_by_one);
+                   dernull, grow_box_by_one);
     derive_lst.addComponent("particle_mass_density", desc_lst, PhiGrav_Type, 0, 1);
 
 #ifndef NO_HYDRO    
+    if(do_hydro==1)
+      {
     derive_lst.add("particle_x_velocity", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERNULL, dernull), grow_box_by_one);
+                   dernull, grow_box_by_one);
     derive_lst.addComponent("particle_x_velocity", desc_lst, State_Type,
                             Xmom, 1);
     derive_lst.add("particle_y_velocity", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERNULL, dernull), grow_box_by_one);
+                   dernull, grow_box_by_one);
     derive_lst.addComponent("particle_y_velocity", desc_lst, State_Type,
                             Ymom, 1);
     derive_lst.add("particle_z_velocity", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERNULL, dernull), grow_box_by_one);
+                   dernull, grow_box_by_one);
     derive_lst.addComponent("particle_z_velocity", desc_lst, State_Type,
                             Zmom, 1);
+      }
 #endif
     
     derive_lst.add("total_particle_count", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERNULL, dernull), the_same_box);
+                   dernull, grow_box_by_one);
     derive_lst.addComponent("total_particle_count", desc_lst, PhiGrav_Type, 0, 1);
 
     derive_lst.add("total_density", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERNULL, dernull), grow_box_by_one);
+                   dernull, grow_box_by_one);
     derive_lst.addComponent("total_density", desc_lst, PhiGrav_Type, 0, 1);
 
 #ifdef AGN
     derive_lst.add("agn_mass_density", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERNULL, dernull), grow_box_by_one);
+                   dernull, grow_box_by_one);
     derive_lst.addComponent("agn_mass_density", desc_lst, Gravity_Type, 0, 1);
 #endif
 #ifdef NEUTRINO_PARTICLES
     derive_lst.add("neutrino_particle_count", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERNULL, dernull), the_same_box);
+                   dernull, grow_box_by_one);
     derive_lst.addComponent("neutrino_particle_count", desc_lst, State_Type, Density, 1);
 
     derive_lst.add("neutrino_mass_density", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERNULL, dernull), grow_box_by_one);
+                   dernull, grow_box_by_one);
     derive_lst.addComponent("neutrino_mass_density", desc_lst, State_Type,
                             Density, 1);
 #ifndef NO_HYDRO
     derive_lst.add("neutrino_x_velocity", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERNULL, dernull), grow_box_by_one);
+                   dernull, grow_box_by_one);
     derive_lst.addComponent("neutrino_x_velocity", desc_lst, State_Type,
                             Xmom, 1);
     derive_lst.add("neutrino_y_velocity", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERNULL, dernull), grow_box_by_one);
+                   dernull, grow_box_by_one);
     derive_lst.addComponent("neutrino_y_velocity", desc_lst, State_Type,
                             Ymom, 1);
     derive_lst.add("neutrino_z_velocity", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERNULL, dernull), grow_box_by_one);
+                   dernull, grow_box_by_one);
     derive_lst.addComponent("neutrino_z_velocity", desc_lst, State_Type,
                             Zmom, 1);
 #endif
 #endif
 }
 #endif
+
+void
+Nyx::alloc_cuda_managed()
+{
+    fort_alloc_cuda_managed();
+}
+
+void
+Nyx::dealloc_cuda_managed()
+{
+    fort_dealloc_cuda_managed();
+}
 
 #ifdef AMREX_USE_CVODE
 void

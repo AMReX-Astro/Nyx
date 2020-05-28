@@ -26,6 +26,7 @@ public:
 
     void SetCSquared (amrex::Real csq) { m_csq = csq; }
 
+#ifndef NEUTRINO_DARK_PARTICLES
     void AssignDensity (amrex::Vector<std::unique_ptr<amrex::MultiFab> >& mf, int lev_min = 0, 
                         int ncomp = 1, int finest_level = -1, int ngrow = 2) const
         {  AssignRelativisticDensity (mf,lev_min,ncomp,finest_level,ngrow); }
@@ -34,6 +35,7 @@ public:
     
     void AssignRelativisticDensity (amrex::Vector<std::unique_ptr<amrex::MultiFab> >& mf, 
                                     int lev_min = 0, int ncomp = 1, int finest_level = -1, int ngrow = 2) const;
+#endif
 
     virtual void moveKickDrift (amrex::MultiFab& acceleration, int level, amrex::Real timestep,
                                 amrex::Real a_old = 1.0, amrex::Real a_half = 1.0, int where_width = 0);

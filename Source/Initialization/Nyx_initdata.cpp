@@ -50,6 +50,7 @@ Nyx::read_init_params ()
 
     pp.query("do_readin_ics",       do_readin_ics);
     pp.query("readin_ics_fname", readin_ics_fname);
+    pp.query("particle_launch_ics",       particle_launch_ics);
     pp.query("ascii_particle_file", ascii_particle_file);
 
     // Input error check
@@ -174,7 +175,8 @@ void
 Nyx::initData ()
 {
     BL_PROFILE("Nyx::initData()");
-
+    
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     // Here we initialize the grid data and the particles from a plotfile.
     if (!parent->theRestartPlotFile().empty())
     {
@@ -201,7 +203,7 @@ Nyx::initData ()
     if ( (fabs(dx[0] - dx[1]) > SMALL) || (fabs(dx[0] - dx[2]) > SMALL) )
         amrex::Abort("We don't support dx != dy != dz");
 
-#ifndef NO_HYDRO
+#ifndef NO_HYDRO    
     int         ns       = S_new.nComp();
 
     Real  cur_time = state[State_Type].curTime();
@@ -252,7 +254,8 @@ Nyx::initData ()
             }
         }
     }
-
+#else
+        Real  cur_time = state[PhiGrav_Type].curTime();
 #endif // end NO_HYDRO
 
 #ifdef GRAVITY
@@ -314,9 +317,26 @@ Nyx::initData ()
 	    std::cout << "Readin stuff...done\n";
     }
 #endif
+    
+
+    // Add partially redundant setup for small_dens
+    Real average_gas_density = -1e200;
+    Real average_temperature = -1e200;
+    Real a = get_comoving_a(cur_time);
+    Real small_pres = -1e200;
+
+    amrex::Gpu::Device::synchronize();
+
+    fort_set_small_values
+      (&average_gas_density, &average_temperature,
+       &a,  &small_dens, &small_temp, &small_pres);
+
+    amrex::Gpu::Device::synchronize();
 
     if (level == 0)
         init_particles();
+
+    amrex::Gpu::Device::synchronize();
 
     if ( particle_init_type == "Cosmological")
         initcosmo();
@@ -407,10 +427,12 @@ Nyx::init_from_plotfile ()
         int ns = S_new.nComp();
         int nd = D_new.nComp();
 
+	{
+	  amrex::Gpu::LaunchSafeGuard lsg(true);
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-        for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
+        for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
         {
             const Box& bx = mfi.tilebox();
 
@@ -421,11 +443,21 @@ Nyx::init_from_plotfile ()
             }
             else 
             {
-                fort_init_e_from_t
-                    (BL_TO_FORTRAN(S_new[mfi]), &ns,
-                    BL_TO_FORTRAN(D_new[mfi]), &nd, bx.loVect(), bx.hiVect(), &old_a);
+	    const auto fab = S_new.array(mfi);
+	    const auto fab_diag = D_new.array(mfi);
+	    const amrex::Real a=old_a;
+	    AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
+	    {
+	      const int* lo = tbx.loVect();
+	      const int* hi = tbx.hiVect();
+	      fort_init_e_from_t
+		(BL_ARR4_TO_FORTRAN(fab), &ns, 
+		 BL_ARR4_TO_FORTRAN(fab_diag), &nd, lo, hi, &a);
+	    });
+	    amrex::Gpu::Device::streamSynchronize();
             }
         }
+	}
 
         // Define (rho E) given (rho e) and the momenta
         nyx_lev.enforce_consistent_e(S_new);

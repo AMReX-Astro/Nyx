@@ -263,6 +263,7 @@ Gravity::solve_for_old_phi (int               level,
                             int               fill_interior)
 {
     BL_PROFILE("Gravity::solve_for_old_phi()");
+    amrex::Gpu::LaunchSafeGuard lsg(true);
 #ifdef CGRAV
     if (gravity_type == "StaticGrav")
         return;
@@ -288,6 +289,8 @@ Gravity::solve_for_old_phi (int               level,
 
     const Real time  = LevelData[level]->get_state_data(PhiGrav_Type).prevTime();
     solve_for_phi(level, Rhs, phi, grad_phi, time, fill_interior);
+    amrex::Gpu::Device::streamSynchronize();
+
 }
 
 void
@@ -298,6 +301,7 @@ Gravity::solve_for_new_phi (int               level,
                             int               ngrow_for_solve)
 {
     BL_PROFILE("Gravity::solve_for_new_phi()");
+    amrex::Gpu::LaunchSafeGuard lsg(true);
 #ifdef CGRAV
     if (gravity_type == "StaticGrav")
         return;
@@ -324,6 +328,7 @@ Gravity::solve_for_new_phi (int               level,
 
     const Real time = LevelData[level]->get_state_data(PhiGrav_Type).curTime();
     solve_for_phi(level, Rhs, phi, grad_phi, time, fill_interior);
+    amrex::Gpu::Device::streamSynchronize();
 }
 
 void
@@ -407,7 +412,7 @@ Gravity::gravity_sync (int crse_level, int fine_level, int iteration, int ncycle
 #pragma omp parallel if (!system::regtest_reduction) reduction(+:local_correction)
 #endif
         for (MFIter mfi(crse_rhs,true); mfi.isValid(); ++mfi)
-            local_correction += crse_rhs[mfi].sum(mfi.tilebox(), 0, 1);
+            local_correction += crse_rhs[mfi].sum<RunOn::Host>(mfi.tilebox(), 0, 1);
         ParallelDescriptor::ReduceRealSum(local_correction);
 
         local_correction /= grids[crse_level].numPts();
@@ -450,7 +455,7 @@ Gravity::gravity_sync (int crse_level, int fine_level, int iteration, int ncycle
 #pragma omp parallel if (!system::regtest_reduction) reduction(+:local_correction)
 #endif
        for (MFIter mfi(*delta_phi[0],true); mfi.isValid(); ++mfi) {
-           local_correction += (*delta_phi[0])[mfi].sum(mfi.tilebox(),0,1);
+           local_correction += (*delta_phi[0])[mfi].sum<RunOn::Host>(mfi.tilebox(),0,1);
        }
        ParallelDescriptor::ReduceRealSum(local_correction);
 
@@ -530,21 +535,21 @@ Gravity::get_crse_phi (int       level,
 
         if (fabs(alpha-1.0) < 1.e-15)
         {
-            phi_crse[mfi].copy(LevelData[level-1]->get_new_data(PhiGrav_Type)[mfi]);
+            phi_crse[mfi].copy<RunOn::Device>(LevelData[level-1]->get_new_data(PhiGrav_Type)[mfi]);
         }
         else if (fabs(alpha) < 1.e-15)
         {
-            phi_crse[mfi].copy(LevelData[level-1]->get_old_data(PhiGrav_Type)[mfi]);
+            phi_crse[mfi].copy<RunOn::Device>(LevelData[level-1]->get_old_data(PhiGrav_Type)[mfi]);
         }
         else
         {
-            phi_crse_temp.copy(LevelData[level-1]->get_old_data(PhiGrav_Type)[mfi]);
+            phi_crse_temp.copy<RunOn::Device>(LevelData[level-1]->get_old_data(PhiGrav_Type)[mfi]);
             Real omalpha = 1.0 - alpha;
-            phi_crse_temp.mult(omalpha);
+            phi_crse_temp.mult<RunOn::Device>(omalpha);
 
-            phi_crse[mfi].copy(LevelData[level-1]->get_new_data(PhiGrav_Type)[mfi],gtbx);
-            phi_crse[mfi].mult(alpha,gtbx);
-            phi_crse[mfi].plus(phi_crse_temp);
+            phi_crse[mfi].copy<RunOn::Device>(LevelData[level-1]->get_new_data(PhiGrav_Type)[mfi],gtbx);
+            phi_crse[mfi].mult<RunOn::Device>(alpha,gtbx);
+            phi_crse[mfi].plus<RunOn::Device>(phi_crse_temp);
         }
     }
 
@@ -586,12 +591,12 @@ Gravity::get_crse_grad_phi (int               level,
                 const Box& tbx = mfi.tilebox();
                 grad_phi_crse_temp.resize(tbx,1);
 
-                grad_phi_crse_temp.copy((*grad_phi_prev[level-1][i])[mfi]);
-                grad_phi_crse_temp.mult(omalpha);
+                grad_phi_crse_temp.copy<RunOn::Host>((*grad_phi_prev[level-1][i])[mfi]);
+                grad_phi_crse_temp.mult<RunOn::Host>(omalpha);
 
-                (*grad_phi_crse[i])[mfi].copy((*grad_phi_curr[level-1][i])[mfi],tbx);
-                (*grad_phi_crse[i])[mfi].mult(alpha,tbx);
-                (*grad_phi_crse[i])[mfi].plus(grad_phi_crse_temp);
+                (*grad_phi_crse[i])[mfi].copy<RunOn::Host>((*grad_phi_curr[level-1][i])[mfi],tbx);
+                (*grad_phi_crse[i])[mfi].mult<RunOn::Host>(alpha,tbx);
+                (*grad_phi_crse[i])[mfi].plus<RunOn::Host>(grad_phi_crse_temp);
             }
         }
     }
@@ -604,6 +609,8 @@ Gravity::multilevel_solve_for_new_phi (int level,
                                        int use_previous_phi_as_guess)
 {
     BL_PROFILE("Gravity::multilevel_solve_for_new_phi()");
+
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     if (verbose)
         amrex::Print() << "Gravity ... multilevel solve for new phi at base level " << level
                        << " to finest level " << finest_level << '\n';
@@ -616,7 +623,7 @@ Gravity::multilevel_solve_for_new_phi (int level,
             const BoxArray eba = BoxArray(grids[lev]).surroundingNodes(n);
             grad_phi_curr[lev][n].reset(new MultiFab(eba, dmap[lev], 1, 1));
         }
-    }
+   }
 
     int is_new = 1;
     actual_multilevel_solve(level, finest_level, 
@@ -631,10 +638,13 @@ Gravity::multilevel_solve_for_old_phi (int level,
                                        int use_previous_phi_as_guess)
 {
     BL_PROFILE("Gravity::multilevel_solve_for_old_phi()");
+
+    amrex::Gpu::LaunchSafeGuard lsg(true);
+
     if (verbose)
         amrex::Print() << "Gravity ... multilevel solve for old phi at base level " << level
                        << " to finest level " << finest_level << '\n';
-
+    
     for (int lev = level; lev <= finest_level; lev++)
     {
         BL_ASSERT(grad_phi_prev[lev].size() == BL_SPACEDIM);
@@ -649,6 +659,7 @@ Gravity::multilevel_solve_for_old_phi (int level,
     actual_multilevel_solve(level, finest_level,
 			    amrex::GetVecOfVecOfPtrs(grad_phi_prev),
                             is_new, ngrow, use_previous_phi_as_guess);
+
 }
 
 void
@@ -661,12 +672,15 @@ Gravity::actual_multilevel_solve (int                       level,
 {
     BL_PROFILE("Gravity::actual_multilevel_solve()");
 
+    amrex::Gpu::LaunchSafeGuard lsg(true);
+
     const int num_levels = finest_level - level + 1;
 
     Vector<MultiFab*> phi_p(num_levels);
     Vector<std::unique_ptr<MultiFab> > Rhs_p(num_levels);
 
     Vector<std::unique_ptr<MultiFab> > Rhs_particles(num_levels);
+
     for (int lev = 0; lev < num_levels; lev++)
     {
 	Rhs_particles[lev].reset(new MultiFab(grids[level+lev], dmap[level+lev], 1, 0));
@@ -677,6 +691,7 @@ Gravity::actual_multilevel_solve (int                       level,
     AddParticlesToRhs(level,finest_level,ngrow_for_solve,rpp);
     AddGhostParticlesToRhs(level,rpp);
     AddVirtualParticlesToRhs(finest_level,rpp);
+    amrex::Gpu::Device::streamSynchronize();
 
     Nyx* cs = dynamic_cast<Nyx*>(&parent->getLevel(level));
 
@@ -733,7 +748,7 @@ Gravity::actual_multilevel_solve (int                       level,
             }
         }
 #endif
-        MultiFab::Add(*Rhs_p[lev], *Rhs_particles[lev], 0, 0, 1, 0);
+	MultiFab::Add(*Rhs_p[lev], *Rhs_particles[lev], 0, 0, 1, 0);
     }
 
     // Average phi from fine to coarse level before the solve.
@@ -752,13 +767,15 @@ Gravity::actual_multilevel_solve (int                       level,
             amrex::Print() << " ... subtracting average density " << mass_offset
                            << " from RHS at each level " << '\n';
 
-        for (int lev = 0; lev < num_levels; lev++)
-            for (MFIter mfi(*Rhs_p[lev]); mfi.isValid(); ++mfi)
-                (*Rhs_p[lev])[mfi].plus(-mass_offset);
+	for (int lev = 0; lev < num_levels; lev++)
+	  (*Rhs_p[lev]).plus(-mass_offset,0,1,0);
 
+	if(verbose>1)
+	   std::cout<<"After mass correction"<<(*Rhs_p[0]).norm2(0)<<std::endl;
        // This is used to enforce solvability if appropriate.
        if ( parent->Geom(level).Domain().numPts() == grids[level].numPts() )
        {
+
            Real sum = 0;
            for (int lev = 0; lev < num_levels; lev++)
            {
@@ -766,6 +783,7 @@ Gravity::actual_multilevel_solve (int                       level,
                sum += nyx_level->vol_weight_sum(*Rhs_p[lev],true);
            }
 
+	   //	   ParallelDescriptor::ReduceRealSum(sum);
             sum /= parent->Geom(0).ProbSize();
 
             const Real eps = 1.e-10 * std::abs(mass_offset);
@@ -782,6 +800,7 @@ Gravity::actual_multilevel_solve (int                       level,
                 (*Rhs_p[lev]).plus(-sum, 0, 1, 0);
        }
     }
+    ///corrfirst pass
 
 // *****************************************************************************
 
@@ -807,12 +826,14 @@ Gravity::actual_multilevel_solve (int                       level,
                                             grad_phi[amrlev][1],
                                             grad_phi[amrlev][2])});
     }
+
     solve_with_MLMG(level, finest_level, phi_p, amrex::GetVecOfConstPtrs(Rhs_p),
                     grad_phi_aa, crse_bcdata, rel_eps, abs_eps);
 
     // Average grad_phi from fine to coarse level
     for (int lev = finest_level; lev > level; lev--)
         average_fine_ec_onto_crse_ec(lev-1,is_new);
+
 }
 
 void
@@ -821,6 +842,11 @@ Gravity::get_old_grav_vector (int       level,
                               Real      time)
 {
     BL_PROFILE("Gravity::get_old_grav_vector()");
+
+    amrex::Gpu::LaunchSafeGuard lsg(true);
+
+    MultiFab& G_old = LevelData[level]->get_old_data(Gravity_Type);
+
     // Set to zero to fill ghost cells.
     grav_vector.setVal(0);
 
@@ -844,6 +870,11 @@ Gravity::get_old_grav_vector (int       level,
     }
     else
     {
+
+        // Has BL_PROC_CALL
+        amrex::Gpu::Device::synchronize();
+        amrex::Gpu::LaunchSafeGuard lsg(false);
+
         Vector<std::unique_ptr<MultiFab> > crse_grad_phi(BL_SPACEDIM);
         get_crse_grad_phi(level, crse_grad_phi, time);
         fill_ec_grow(level, amrex::GetVecOfPtrs(grad_phi_prev[level]),
@@ -873,8 +904,6 @@ Gravity::get_old_grav_vector (int       level,
     }
 #endif
 
-    MultiFab& G_old = LevelData[level]->get_old_data(Gravity_Type);
-
     // Fill G_old from grav_vector
     MultiFab::Copy(G_old, grav_vector, 0, 0, BL_SPACEDIM, 0);
 
@@ -893,6 +922,9 @@ Gravity::get_new_grav_vector (int       level,
                               Real      time)
 {
     BL_PROFILE("Gravity::get_new_grav_vector()");
+
+    amrex::Gpu::LaunchSafeGuard lsg(true);
+
 #ifdef CGRAV
     if (gravity_type == "PoissonGrav" || gravity_type == "CompositeGrav")
 #else
@@ -967,12 +999,15 @@ void
 Gravity::add_to_fluxes(int level, int iteration, int ncycle)
 {
     BL_PROFILE("Gravity::add_to_fluxes()");
+
+    amrex::Gpu::LaunchSafeGuard lsg(true);
+
     const int       finest_level      = parent->finestLevel();
     FluxRegister*   phi_fine          = (level<finest_level ? phi_flux_reg[level+1].get() : nullptr);
     FluxRegister*   phi_current       = (level>0 ? phi_flux_reg[level].get() : nullptr);
     const Geometry& geom              = parent->Geom(level);
     const Real*     dx                = geom.CellSize();
-    const Real      area[BL_SPACEDIM] = { dx[1]*dx[2], dx[0]*dx[2], dx[0]*dx[1] };
+    const GpuArray<Real,BL_SPACEDIM>  area{ dx[1]*dx[2], dx[0]*dx[2], dx[0]*dx[1] };
 
 #ifdef CGRAV
     if (gravity_type == "StaticGrav")
@@ -996,9 +1031,14 @@ Gravity::add_to_fluxes(int level, int iteration, int ncycle)
             for (MFIter mfi(fluxes,true); mfi.isValid(); ++mfi)
             {
                 const Box& tbx = mfi.tilebox();
-                FArrayBox& gphi_flux = fluxes[mfi];
-                gphi_flux.copy((*grad_phi_curr[level][n])[mfi],tbx);
-                gphi_flux.mult(area[n],tbx,0,1);
+                const auto gphi_flux = fluxes.array(mfi);
+                const auto gphi_flux_curr = grad_phi_curr[level][n]->array(mfi);
+		AMREX_HOST_DEVICE_FOR_3D(tbx,i,j,k,
+					 {
+
+					   gphi_flux(i,j,k,0)=area[n]*gphi_flux_curr(i,j,k,0);
+
+					 });
             }
             phi_fine->CrseInit(fluxes, n, 0, 0, 1, -1);
         }
@@ -1016,6 +1056,7 @@ void
 Gravity::average_fine_ec_onto_crse_ec(int level, int is_new)
 {
     BL_PROFILE("Gravity::average_fine_ec_to_crse_ec()");
+
     //
     // NOTE: this is called with level == the coarser of the two levels involved.
     //
@@ -1196,7 +1237,7 @@ Gravity::fill_ec_grow (int                     level,
 #pragma omp parallel
 #endif
         for (MFIter mfi(*ecF[n]); mfi.isValid(); ++mfi)
-            (*ecF[n])[mfi].copy(ecFG[mfi]);
+            (*ecF[n])[mfi].copy<RunOn::Host>(ecFG[mfi]);
     }
 
     for (int n = 0; n < BL_SPACEDIM; ++n)
@@ -1235,6 +1276,9 @@ void
 Gravity::set_mass_offset (Real time)
 {
     BL_PROFILE("Gravity::set_mass_offset()");
+
+    amrex::Gpu::LaunchSafeGuard lsg(true);
+
     Real old_mass_offset = 0;
 
     int flev = parent->finestLevel();
@@ -1291,6 +1335,10 @@ Gravity::set_dirichlet_bcs (int       level,
                             MultiFab* phi)
 {
     BL_PROFILE("Gravity::set_dirichlet_bcs()");
+
+    amrex::Gpu::Device::synchronize();
+    amrex::Gpu::LaunchSafeGuard lsg(false);
+
     const Real* dx        = parent->Geom(level).CellSize();
     const int*  domain_lo = parent->Geom(level).Domain().loVect();
     const int*  domain_hi = parent->Geom(level).Domain().hiVect();
@@ -1316,6 +1364,10 @@ Gravity::make_prescribed_grav (int       level,
                                int       addToExisting)
 {
     BL_PROFILE("Gravity::make_prescribed_grav()");
+
+    amrex::Gpu::Device::synchronize();
+    amrex::Gpu::LaunchSafeGuard lsg(false);
+
     const Geometry& geom = parent->Geom(level);
     const Real*     dx   = geom.CellSize();
 
@@ -1340,26 +1392,35 @@ Gravity::AddParticlesToRhs (int               level,
                             int               ngrow)
 {
     BL_PROFILE("Gravity::AddParticlesToRhs()");
+
+    amrex::Gpu::LaunchSafeGuard lsg(true);
+
     // Use the same multifab for all particle types
     MultiFab particle_mf(grids[level], dmap[level], 1, ngrow);
 
     for (int i = 0; i < Nyx::theActiveParticles().size(); i++)
-    {
-        particle_mf.setVal(0.);
+      {
         Nyx::theActiveParticles()[i]->AssignDensitySingleLevel(particle_mf, level);
+	amrex::Gpu::Device::streamSynchronize();
         MultiFab::Add(Rhs, particle_mf, 0, 0, 1, 0);
-    }
+      }
+
+    amrex::Gpu::Device::streamSynchronize();
+
 }
 
 void
 Gravity::AddParticlesToRhs(int base_level, int finest_level, int ngrow, const Vector<MultiFab*>& Rhs_particles)
 {
     BL_PROFILE("Gravity::AddParticlesToRhsML()");
+
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     const int num_levels = finest_level - base_level + 1;
     for (int i = 0; i < Nyx::theActiveParticles().size(); i++)
     {
         Vector<std::unique_ptr<MultiFab> > PartMF;
         Nyx::theActiveParticles()[i]->AssignDensity(PartMF, base_level, 1, finest_level, ngrow);
+#ifdef AMREX_DEBUG
         for (int lev = 0; lev < num_levels; lev++)
         {
             if (PartMF[lev]->contains_nan())
@@ -1368,6 +1429,7 @@ Gravity::AddParticlesToRhs(int base_level, int finest_level, int ngrow, const Ve
                 amrex::Abort("...PartMF has NaNs in Gravity::actual_multilevel_solve()");
             }
         }
+#endif
 
         for (int lev = finest_level - 1 - base_level; lev >= 0; lev--)
         {
@@ -1380,6 +1442,7 @@ Gravity::AddParticlesToRhs(int base_level, int finest_level, int ngrow, const Ve
             MultiFab::Add(*Rhs_particles[lev], *PartMF[lev], 0, 0, 1, 0);
         }
     }
+    amrex::Gpu::Device::streamSynchronize();
 
 }
 
@@ -1389,6 +1452,9 @@ Gravity::AddVirtualParticlesToRhs (int               level,
                                    int               ngrow)
 {
     BL_PROFILE("Gravity::AddVirtualParticlesToRhs()");
+
+    amrex::Gpu::LaunchSafeGuard lsg(true);
+
     if (level <  parent->finestLevel())
     {
         // If we have virtual particles, add their density to the single level solve
@@ -1401,12 +1467,15 @@ Gravity::AddVirtualParticlesToRhs (int               level,
             MultiFab::Add(Rhs, particle_mf, 0, 0, 1, 0);
         }
     }
+
+    amrex::Gpu::Device::streamSynchronize();
 }
 
 void
 Gravity::AddVirtualParticlesToRhs(int finest_level, const Vector<MultiFab*>& Rhs_particles)
 {
     BL_PROFILE("Gravity::AddVirtualParticlesToRhsML()");
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     if (finest_level < parent->finestLevel())
     {
         // Should only need ghost cells for virtual particles if they're near
@@ -1420,6 +1489,7 @@ Gravity::AddVirtualParticlesToRhs(int finest_level, const Vector<MultiFab*>& Rhs
             MultiFab::Add(*Rhs_particles[finest_level], VirtPartMF, 0, 0, 1, 0);
         }
     }
+    amrex::Gpu::Device::streamSynchronize();
 }
 
 void
@@ -1427,6 +1497,9 @@ Gravity::AddGhostParticlesToRhs (int               level,
                                  MultiFab&         Rhs)
 {
     BL_PROFILE("Gravity::AddGhostParticlesToRhs()");
+
+    amrex::Gpu::LaunchSafeGuard lsg(true);
+
     if (level > 0)
     {
         // If we have ghost particles, add their density to the single level solve
@@ -1439,12 +1512,16 @@ Gravity::AddGhostParticlesToRhs (int               level,
             MultiFab::Add(Rhs, ghost_mf, 0, 0, 1, 0);
         }
     }
+    amrex::Gpu::Device::streamSynchronize();
 }
 
 void
 Gravity::AddGhostParticlesToRhs(int level, const Vector<MultiFab*>& Rhs_particles)
 {
     BL_PROFILE("Gravity::AddGhostParticlesToRhsML()");
+
+    amrex::Gpu::LaunchSafeGuard lsg(true);
+
     if (level > 0)
     {
         // We require one ghost cell in GhostPartMF because that's how we handle
@@ -1463,18 +1540,25 @@ Gravity::AddGhostParticlesToRhs(int level, const Vector<MultiFab*>& Rhs_particle
             MultiFab::Add(*Rhs_particles[0], GhostPartMF, 0, 0, 1, 0);
         }
     }
+    amrex::Gpu::Device::streamSynchronize();
 }
 
 void
 Gravity::CorrectRhsUsingOffset(int level, MultiFab& Rhs)
 {
     BL_PROFILE("Gravity::CorrectRhsUsingOffset()");
+
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     if (verbose)
         amrex::Print() << " ... subtracting average density from RHS in solve ... "
                        << mass_offset << '\n';
 
-    for (MFIter mfi(Rhs); mfi.isValid(); ++mfi)
-        Rhs[mfi].plus(-mass_offset);
+    //    for (MFIter mfi(Rhs); mfi.isValid(); ++mfi)
+    //        Rhs[mfi].plus(-mass_offset);
+    Rhs.plus(-mass_offset,0,1,0);
+
+    if(verbose>1)
+        std::cout<<"After mass correction2"<<(Rhs).norm2(0)<<std::endl;
     // This checks if mass has been conserved--in particular if
     // virtual particles are correctly representing finer particles.
     if (level == 0)
@@ -1495,6 +1579,7 @@ Gravity::CorrectRhsUsingOffset(int level, MultiFab& Rhs)
 
         Rhs.plus(-sum, 0, 1, 0);
     }
+
 }
 
 void
@@ -1565,6 +1650,12 @@ Gravity::solve_with_MLMG (int crse_level, int fine_level,
     LPInfo info;
     info.setAgglomeration(mlmg_agglomeration);
     info.setConsolidation(mlmg_consolidation);
+    
+    if(mlmg_agglomeration)
+      info.setAgglomerationGridSize(16);
+
+    if(mlmg_consolidation)
+      info.setConsolidationGridSize(16);
 
     MLPoisson mlpoisson(gmv, bav, dmv, info);
 

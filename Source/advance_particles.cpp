@@ -126,6 +126,7 @@ Nyx::advance_particles_only (Real time,
     //
     if (level == 0 || iteration > 1)
     {
+        amrex::Gpu::LaunchSafeGuard lsg(true);
         for (int lev = level; lev <= finest_level; lev++)
         {
             dt_lev = parent->dtLevel(lev);
@@ -155,6 +156,7 @@ Nyx::advance_particles_only (Real time,
     // finer levels.
     if (level == 0 || iteration > 1)
     {
+        amrex::Gpu::LaunchSafeGuard lsg(true);
         // fix fluxes on finer grids
         if (do_reflux)
         {
@@ -176,6 +178,9 @@ Nyx::advance_particles_only (Real time,
         gravity->multilevel_solve_for_old_phi(level, finest_level,
                                               use_previous_phi_as_guess);
     }
+
+    {
+      amrex::Gpu::LaunchSafeGuard lsg(true);
     //
     // Advance Particles
     //
@@ -219,9 +224,11 @@ Nyx::advance_particles_only (Real time,
     //
     for (int lev = level; lev <= finest_level_to_advance; lev++)
     {
+        amrex::Gpu::LaunchSafeGuard lsg(true);
         MultiFab::Copy(parent->getLevel(lev).get_new_data(PhiGrav_Type),
                        parent->getLevel(lev).get_old_data(PhiGrav_Type),
                        0, 0, 1, 0);
+    }
     }
 
     // Solve for new Gravity
@@ -239,6 +246,8 @@ Nyx::advance_particles_only (Real time,
                                fill_interior, grav_n_grow);
     }
 
+    {
+      amrex::Gpu::LaunchSafeGuard lsg(true);
     if (Nyx::theActiveParticles().size() > 0)
     {
         // Advance the particle velocities by dt/2 to the new time. We use the
@@ -269,6 +278,7 @@ Nyx::advance_particles_only (Real time,
                         Nyx::theGhostParticles()[i]->moveKick(grav_vec_new, lev, dt, a_new, a_half);
             }
         }
+    }
     }
 
     // Redistribution happens in post_timestep

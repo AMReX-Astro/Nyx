@@ -37,16 +37,25 @@ static void PrintOutput(realtype t, realtype umax, long int nst);
 /* Private function to check function return values */
 static int check_retval(void *flagvalue, const char *funcname, int opt);
 
+amrex::Vector<void*> ptr_lst;
 //static amrex::Arena* Managed_Arena;
 
 void* sunalloc(size_t mem_size)
 {
-  return (void*) The_Managed_Arena()->alloc(mem_size);
+  amrex::MultiFab::updateMemUsage ("Sunalloc", mem_size, nullptr);
+  amrex::MultiFab::updateMemUsage ("All", mem_size, nullptr);
+  void * ptr = (void*) The_Arena()->alloc(mem_size);
+  ptr_lst.push_back(ptr);
+  return ptr;
 }
 
 void sunfree(void* ptr)
 {
-  The_Managed_Arena()->free(ptr);
+  size_t mem_size = dynamic_cast<CArena*>(The_Arena())->sizeOf(ptr);
+  ptr_lst.erase(std::remove_if(ptr_lst.begin(), ptr_lst.end(), [ptr](void* x) { return x == ptr; }));
+  The_Arena()->free(ptr);
+  amrex::MultiFab::updateMemUsage ("Sunalloc", -mem_size, nullptr);
+  amrex::MultiFab::updateMemUsage ("All", -mem_size, nullptr);
 }
 
 
@@ -268,7 +277,17 @@ int Nyx::integrate_state_vec_mfin
 				    N_VConst(2,constrain);	      
 				    flag =CVodeSetConstraints(cvode_mem,constrain);
 				  }
-				
+
+#ifdef SUNDIALS_VERSION_MAJOR
+#if SUNDIALS_VERSION_MAJOR >= 5
+#if SUNDIALS_VERSION_MINOR >= 3
+				if(use_sundials_fused)
+				{
+                                     flag = CVodeSetUseIntegratorFusedKernels(cvode_mem, SUNTRUE);
+				}
+#endif
+#endif
+#endif
 				CVodeSetUserData(cvode_mem, &Data);
 				//				CVodeSetMaxStep(cvode_mem, delta_time/10);
 				//				BL_PROFILE_VAR("Nyx::strang_second_cvode",cvode_timer2);

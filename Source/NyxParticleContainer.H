@@ -1,4 +1,3 @@
-
 #ifndef _NyxParticleContainer_H_
 #define _NyxParticleContainer_H_
 
@@ -24,10 +23,23 @@ public:
     virtual void RedistributeLocal (int lev_min              = 0,
                                     int lev_max              =-1,
                                     int nGrow                = 0) = 0;
+
+    virtual void RedistributeOK    (int lev_min              = 0,
+                                    int lev_max              =-1,
+                                    int nGrow                = 0) = 0;
+
+    virtual void RedistributeGPU   (int lev_min              = 0,
+                                    int lev_max              =-1,
+                                    int nGrow                = 0) = 0;
     
     virtual int finestLevel() const = 0;
+    virtual void ShrinkToFit() = 0;
     virtual void RemoveParticlesAtLevel (int level) = 0;
     virtual amrex::Real sumParticleMass (int level) const = 0;
+    virtual void Regrid  (const amrex::DistributionMapping& dmap, const amrex::BoxArray& ba, const int lev) = 0;
+  //  void RegridHat (const amrex::DistributionMapping& dmap, const amrex::BoxArray& ba, const int lev);
+  virtual amrex::Vector<long> NumberOfParticlesInGrid (int lev, bool only_valid, bool only_local) = 0;
+
     virtual void AssignDensitySingleLevel (amrex::MultiFab& mf, int level, int ncomp=1,
 					   int particle_lvl_offset = 0) const = 0;
     virtual void AssignDensity (amrex::Vector<std::unique_ptr<amrex::MultiFab> >& mf, int lev_min = 0, int ncomp = 1,
@@ -58,15 +70,26 @@ public:
     virtual amrex::Real sumParticleMass (int level) const override {
 	return amrex::NeighborParticleContainer<NSR,NSI>::sumParticleMass(0,level);
     }
-    
+
+    virtual void Regrid (const amrex::DistributionMapping& dmap, const amrex::BoxArray& ba, const int lev) override {
+	  amrex::Gpu::LaunchSafeGuard lsg(true);
+	  amrex::NeighborParticleContainer<NSR,NSI>::Regrid(dmap, ba, lev);
+    }
+
+  virtual amrex::Vector<long> NumberOfParticlesInGrid (int lev, bool only_valid, bool only_local) override {
+	  amrex::Gpu::LaunchSafeGuard lsg(true);
+	  return amrex::NeighborParticleContainer<NSR,NSI>::NumberOfParticlesInGrid(lev,only_valid,only_local);
+  }
     void sumParticleMomentum (int lev, amrex::Real* mom) const;
 
     virtual void AssignDensitySingleLevel (amrex::MultiFab& mf, int level, int ncomp=1, int particle_lvl_offset = 0) const override
     { 
+        amrex::Gpu::LaunchSafeGuard lsg(true);
         amrex::NeighborParticleContainer<NSR,NSI>::AssignCellDensitySingleLevel(0, mf, level, ncomp, particle_lvl_offset);
     }
     virtual void AssignDensity (amrex::Vector<std::unique_ptr<amrex::MultiFab> >& mf, int lev_min = 0, int ncomp = 1, int finest_level = -1, int ngrow = 1) const override
     {
+        amrex::Gpu::LaunchSafeGuard lsg(true);
         amrex::NeighborParticleContainer<NSR,NSI>::AssignDensity(0, mf, lev_min, ncomp, finest_level, ngrow);
     }
 
@@ -80,11 +103,19 @@ public:
         return amrex::NeighborParticleContainer<NSR,NSI>::finestLevel();
     }
 
+    virtual void ShrinkToFit() override
+    {
+        amrex::NeighborParticleContainer<NSR,NSI>::ShrinkToFit();
+    }
+
     virtual void Redistribute (int lev_min              = 0,
                                int lev_max              =-1,
         		       int nGrow                = 0) override
     {
+      //        amrex::Gpu::synchronize();
+        amrex::Gpu::LaunchSafeGuard lsg(true);
         amrex::NeighborParticleContainer<NSR,NSI>::Redistribute(lev_min, lev_max, nGrow);
+	//        amrex::Gpu::synchronize();
     }
 
     virtual void RedistributeLocal (int lev_min              = 0,
@@ -94,14 +125,52 @@ public:
         AMREX_ASSERT(this->finestLevel() == 0);
 
         const int local = true;
-        const int lev_min_local = 0;
-        const int lev_max_local = 0;
-        const int nGrow_local = 0;
+        const int lev_minal = 0;
+        const int lev_maxal = 0;
+        const int nGrowal = 0;
 
+        amrex::Gpu::LaunchSafeGuard lsg(true);
         amrex::NeighborParticleContainer<NSR,NSI>
-            ::Redistribute(lev_min_local, lev_max_local, nGrow_local, local);
+            ::Redistribute(lev_minal, lev_maxal, nGrowal, local);
     }
 
+    virtual void RedistributeOK    (int lev_min              = 0,
+                                    int lev_max              =-1,
+                                    int nGrow                = 0) override
+    {
+
+        amrex::Gpu::LaunchSafeGuard lsg(true);
+	const int local =         amrex::NeighborParticleContainer<NSR,NSI>
+	  ::OK(lev_min, lev_max);
+	//	amrex::Print()<<"local flag is: "<<local<<std::endl;
+        amrex::NeighborParticleContainer<NSR,NSI>
+            ::Redistribute(lev_min, lev_max, nGrow, local);
+
+    }
+
+    virtual void RedistributeGPU   (int lev_min              = 0,
+                                    int lev_max              =-1,
+                                    int nGrow                = 0) override
+    {
+        AMREX_ASSERT(this->finestLevel() == 0);
+
+        int local = false;
+        const int lev_minal = 0;
+        const int lev_maxal = 0;
+        const int nGrowal = 0;
+
+	amrex::Gpu::synchronize();
+        amrex::Gpu::LaunchSafeGuard lsg(true);
+	local =         amrex::NeighborParticleContainer<NSR,NSI>
+	  ::OK(lev_minal, lev_maxal);
+	//	amrex::Print()<<"local flag is: "<<local<<std::endl;
+	if(local)
+        amrex::NeighborParticleContainer<NSR,NSI>
+            ::RedistributeGPU(lev_minal, lev_maxal, nGrowal, local);
+	else
+        amrex::NeighborParticleContainer<NSR,NSI>
+            ::RedistributeCPU(lev_minal, lev_maxal, nGrowal, local);
+    }
     
     virtual void RemoveParticlesAtLevel (int level) override
     {
@@ -270,93 +339,119 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
 
     if (this->GetParticles().size() == 0)
         return dt;
+    amrex::Gpu::LaunchSafeGuard lsg(true);
 
     const amrex::Real      strttime         = amrex::ParallelDescriptor::second();
+
     const amrex::Geometry& geom             = this->m_gdb->Geom(lev);
-    const amrex::Real*     dx               = geom.CellSize();
-    const amrex::Real      adx[BL_SPACEDIM] = { D_DECL(a*dx[0],a*dx[1],a*dx[2]) };
+    const amrex::IntVect   base             = geom.Domain().smallEnd();
+    const auto             dxi              = geom.InvCellSizeArray();
+    amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> adxi{dxi[0]/a,dxi[1]/a,dxi[2]/a};
+    const auto             plo              = geom.ProbLoArray();
     const ParticleLevel&   pmap             = this->GetParticles(lev);
     int             tnum             = 1;
 
 #ifdef _OPENMP
     tnum = omp_get_max_threads();
+#ifdef AMREX_USE_GPU
+    amrex::Abort("Using both omp and gpu, fix device vs multiple thread implementation ins NyxParticleContainer::estTimeStep");
 #endif
-
-    amrex::Vector<amrex::Real> ldt(tnum,1e50);
+#endif
 
     long num_particles_at_level = 0;
 
-    amrex::MultiFab* ac_pointer;
-    if (this->OnSameGrids(lev, acceleration))
+    std::unique_ptr<amrex::MultiFab> ac_pointer;
+    if (!this->OnSameGrids(lev, acceleration))
     {
-        ac_pointer = 0;
-    }
-    else 
-    {
-        ac_pointer = new amrex::MultiFab(this->m_gdb->ParticleBoxArray(lev), 
-					 this->m_gdb->ParticleDistributionMap(lev),
-					 acceleration.nComp(), acceleration.nGrow());
+        ac_pointer.reset(new amrex::MultiFab(this->m_gdb->ParticleBoxArray(lev), 
+                                             this->m_gdb->ParticleDistributionMap(lev),
+                                             acceleration.nComp(), acceleration.nGrow()));
 				  
-        ac_pointer->copy(acceleration,0,0,BL_SPACEDIM);
+        ac_pointer->Redistribute(acceleration,0,0,BL_SPACEDIM,acceleration.nGrowVect());
         ac_pointer->FillBoundary(geom.periodicity()); // DO WE NEED GHOST CELLS FILLED ???
     }
 
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
-    for (MyConstParIter pti(*this, lev); pti.isValid(); ++pti) {
-        const int grid = pti.index();
-        const AoS&       pbox = pti.GetArrayOfStructs();
-        const int        n    = pbox.size();
-        const amrex::FArrayBox& gfab = (ac_pointer) ? (*ac_pointer)[grid] : acceleration[grid];
-
-        num_particles_at_level += n;
-        for (int i = 0; i < n; i++) {
-            const ParticleType& p = pbox[i];
-
-            if (p.id() <= 0) continue;
-
-            amrex::IntVect cell = this->Index(p, lev);
-
-            const amrex::Real mag_vel_over_dx[BL_SPACEDIM] = { D_DECL(std::abs(p.rdata(1))/adx[0],
-                                                                      std::abs(p.rdata(2))/adx[1],
-                                                                      std::abs(p.rdata(3))/adx[2]) };
-
-            amrex::Real max_mag_vel_over_dx = mag_vel_over_dx[0];
-
-#if (BL_SPACEDIM > 1)
-            max_mag_vel_over_dx = std::max(mag_vel_over_dx[1], max_mag_vel_over_dx);
-#endif
-#if (BL_SPACEDIM > 2)
-            max_mag_vel_over_dx = std::max(mag_vel_over_dx[2], max_mag_vel_over_dx);
-#endif
-            amrex::Real dt_part = (max_mag_vel_over_dx > 0) ? (cfl / max_mag_vel_over_dx) : 1e50;
-
-            const amrex::Real aval[BL_SPACEDIM] = { D_DECL(gfab(cell,0),
-                                                           gfab(cell,1),
-                                                           gfab(cell,2)) };
-
-            const amrex::Real mag_accel = sqrt(D_TERM(aval[0]*aval[0],
-                                                      + aval[1]*aval[1],
-                                                      + aval[2]*aval[2]));
-            if (mag_accel > 0)
-                dt_part = std::min( dt_part, 1/std::sqrt(mag_accel/dx[0]) );
-
-            int tid = 0;
 
 #ifdef _OPENMP
-            tid = omp_get_thread_num();
+#pragma omp parallel if (amrex::Gpu::notInLaunchRegion()) reduction(min:dt)
 #endif
-            ldt[tid] = std::min(dt_part, ldt[tid]);
+    {
+      amrex::ReduceOps<amrex::ReduceOpMin> reduce_op;
+      amrex::ReduceData<amrex::Real> reduce_data(reduce_op);
+      using ReduceTuple = typename decltype(reduce_data)::Type;
+
+        for (MyConstParIter pti(*this, lev); pti.isValid(); ++pti) {
+            const int grid = pti.index();
+            const AoS&       pbox = pti.GetArrayOfStructs();
+            const ParticleType* pstruct = pbox().data();
+            const int        n    = pbox.size();
+
+            const auto gfab = (ac_pointer) ? (*ac_pointer).array(grid) : acceleration.array(grid);
+
+            num_particles_at_level += n;
+
+                reduce_op.eval(n, reduce_data,
+                [=] AMREX_GPU_DEVICE (const int i) -> ReduceTuple {
+                const ParticleType& p = pstruct[i];
+
+                if (p.id() > 0)
+                {
+                    /*	    amrex::IntVect cell{
+                            AMREX_D_DECL(static_cast<int>(floor((p.m_rdata.pos[0]-plo[0])*dxi[0])),
+                            static_cast<int>(floor((p.m_rdata.pos[1]-plo[1])*dxi[1])),
+                            static_cast<int>(floor((p.m_rdata.pos[2]-plo[2])*dxi[2])))};
+                    */
+                    amrex::IntVect cell;
+                    cell[0]= static_cast<int>(floor((p.pos(0)-plo[0])*dxi[0]));
+                    cell[1]= static_cast<int>(floor((p.pos(1)-plo[1])*dxi[1]));
+                    cell[2]= static_cast<int>(floor((p.pos(2)-plo[2])*dxi[2]));
+                    cell += base;
+                    
+                    const amrex::Real mag_vel_over_dx = std::abs(p.rdata(1))*adxi[0];
+                    const amrex::Real mag_vel_over_dy = std::abs(p.rdata(2))*adxi[1];
+                    const amrex::Real mag_vel_over_dz = std::abs(p.rdata(3))*adxi[2];
+                    
+                    amrex::Real max_mag_vel_over_dx = amrex::max(mag_vel_over_dx,mag_vel_over_dy,mag_vel_over_dz);
+                    amrex::Real dt_part = (max_mag_vel_over_dx > 0) ? (cfl / max_mag_vel_over_dx) : 1e50;
+                    
+                    const amrex::Real aval_x = gfab(cell[0],cell[1],cell[2],0);
+                    const amrex::Real aval_y = gfab(cell[0],cell[1],cell[2],1);
+                    const amrex::Real aval_z = gfab(cell[0],cell[1],cell[2],2);
+                    const amrex::Real mag_accel = std::sqrt(aval_x*aval_x+aval_y*aval_y+aval_z*aval_z);
+
+                    if (mag_accel > 0) {
+                        dt_part = amrex::min( dt_part, 1/std::sqrt(mag_accel*dxi[0]) );
+                    }
+
+                    return dt_part;
+                }
+
+		return 1e50;
+            });
         }
+
+        ReduceTuple hv = reduce_data.value();
+	amrex::Real ldt_cpu = amrex::get<0>(hv);
+
+        dt = std::min(dt,ldt_cpu);
     }
 
-    if (ac_pointer) delete ac_pointer;
-
-    for (int i = 0; i < ldt.size(); i++)
-        dt = std::min(dt, ldt[i]);
-
     amrex::ParallelDescriptor::ReduceRealMin(dt);
+
+    if (this->m_verbose > 1)
+    {
+      long local_num_particles_at_level = num_particles_at_level;
+      long min_local_num_particles_at_level = num_particles_at_level;
+      long max_local_num_particles_at_level = num_particles_at_level;
+
+      amrex::ParallelDescriptor::ReduceLongMin(min_local_num_particles_at_level);
+      amrex::ParallelDescriptor::ReduceLongMax(max_local_num_particles_at_level);
+
+      amrex::Print()<<"Min particles      : "<<min_local_num_particles_at_level<<std::endl;
+      amrex::Print()<<"Max particles      : "<<max_local_num_particles_at_level<<std::endl;
+      amrex::Arena::PrintUsage();
+    }
+
     //
     // Set dt negative if there are no particles at this level.
     //
@@ -383,7 +478,7 @@ template <int NSR,int NSI,int NAR,int NAI>
 void
 NyxParticleContainer<NSR,NSI,NAR,NAI>::MultiplyParticleMass (int lev, amrex::Real mult)
 {
-  BL_PROFILE("NyxParticleContainer<NSR,NSI,NAR,NAI>::MultiplyParticleMass()");
+   BL_PROFILE("NyxParticleContainer<NSR,NSI,NAR,NAI>::MultiplyParticleMass()");
    BL_ASSERT(lev == 0);
 
    ParticleLevel& pmap = this->GetParticles(lev);
@@ -417,7 +512,9 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::WriteNyxPlotFile (const std::string& dir,
 {
   BL_PROFILE("NyxParticleContainer<NSR,NSI,NAR,NAI>::WriteNyxPlotFile()");
 
+    amrex::Gpu::LaunchSafeGuard lsg(true);
   amrex::NeighborParticleContainer<NSR,NSI>::WritePlotFile(dir, name, real_comp_names);
+
 }
 
 template <int NSR,int NSI,int NAR,int NAI>
@@ -428,6 +525,7 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::NyxCheckpoint (const std::string& dir,
   BL_PROFILE("NyxParticleContainer<NSR,NSI,NAR,NAI>::NyxCheckpoint()");
 
   bool is_checkpoint = true;
+  amrex::Gpu::LaunchSafeGuard lsg(true);
   amrex::NeighborParticleContainer<NSR,NSI>::Checkpoint(dir, name, is_checkpoint, real_comp_names);
 }
 

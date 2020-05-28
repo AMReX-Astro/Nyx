@@ -15,6 +15,7 @@ Nyx::vol_weight_sum (const std::string& name,
     const Real* dx  = geom.CellSize();
     auto        mf  = derive(name, time, 0);
 
+    BL_PROFILE("vol_weight_sum(name)");
     BL_ASSERT(mf != 0);
 
     if (masked)
@@ -59,11 +60,12 @@ Nyx::vol_weight_sum (const std::string& name,
 Real
 Nyx::vol_weight_sum (MultiFab& mf, bool masked)
 {
+    BL_PROFILE("vol_weight_sum");
     Real        sum = 0;
     const Real* dx  = geom.CellSize();
 
     MultiFab* mask = 0;
-
+    BL_PROFILE_VAR("Nyx::vol_weight_sum()::mask",volmask);
     if (masked)
     {
         int flev = parent->finestLevel();
@@ -76,6 +78,23 @@ Nyx::vol_weight_sum (MultiFab& mf, bool masked)
         }
     }
 
+    BL_PROFILE_VAR_STOP(volmask);
+
+#ifdef AMREX_USE_CUDA
+        if ( !masked || (mask == 0) )
+        {
+	  //	  sum = mf.sum(0,true)*dx[0]*dx[1]*dx[2]
+	  BL_PROFILE("vol_weight_nomask");
+	  sum = mf.sum(0)*dx[0]*dx[1]*dx[2];
+        }
+        else
+        {
+	  BL_PROFILE("vol_weight_mask");
+	  //	  sum = amrex::MultiFab::Dot(mf,0,(*mask),0,1,0,true)*dx[0]*dx[1]*dx[2];
+	  sum = amrex::MultiFab::Dot(mf,0,(*mask),0,1,0)*dx[0]*dx[1]*dx[2];
+        }
+
+#else
 #ifdef _OPENMP
 #pragma omp parallel if (!system::regtest_reduction) reduction(+:sum)
 #endif
@@ -104,7 +123,7 @@ Nyx::vol_weight_sum (MultiFab& mf, bool masked)
     }
 
     ParallelDescriptor::ReduceRealSum(sum);
-
+#endif
     if (!masked) 
         sum /= geom.ProbSize();
 
@@ -118,7 +137,7 @@ Nyx::vol_weight_squared_sum_level (const std::string& name,
     Real        sum = 0;
     const Real* dx  = geom.CellSize();
     auto        mf  = derive(name, time, 0);
-
+    BL_PROFILE("vol_weight_squared_sum_level");
     BL_ASSERT(mf != 0);
 
     Real lev_vol = parent->boxArray(level).d_numPts() * dx[0] * dx[1] * dx[2];
@@ -151,6 +170,8 @@ Real
 Nyx::vol_weight_squared_sum (const std::string& name,
                              Real               time)
 {
+
+    BL_PROFILE("vol_weight_squared_sum");
     Real        sum = 0;
     const Real* dx  = geom.CellSize();
     auto        mf  = derive(name, time, 0);
@@ -226,9 +247,17 @@ Nyx::build_fine_mask()
 
         for (int ii = 0; ii < isects.size(); ii++)
         {
-            fab.setVal(0.0,isects[ii].second,0);
+            fab.setVal<RunOn::Host>(0.0,isects[ii].second,0);
         }
     }
-
+/*
+    if (fine_mask.empty()) {
+        fine_mask = makeFineMask(parent->boxArray(level-1),
+                                 parent->DistributionMap(level-1),
+                                 parent->boxArray(level), crse_ratio,
+                                 1.0,  // coarse
+                                 0.0); // fine
+    }
+*/
     return fine_mask;
 }

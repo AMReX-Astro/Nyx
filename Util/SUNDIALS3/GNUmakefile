@@ -14,6 +14,11 @@ EBASE            = main
 CVODE_LIB_DIR ?= ${CVODE_LIB}
 USE_SUNDIALS_3x4x = TRUE
 
+#For consistency testing:
+USE_CUDA=FALSE 
+USE_HEATCOOL=TRUE
+USE_ARKODE_LIBS=TRUE
+
 ifeq ($(USE_HEATCOOL), TRUE)
   DEFINES += -DHEATCOOL
 endif

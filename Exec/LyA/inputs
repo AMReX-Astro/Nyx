@@ -17,15 +17,19 @@ vismf.usepersistentifstreams = 1
 vismf.usesynchronousreads    = 0
 vismf.usedynamicsetselection = 1
 
+nyx.use_const_species = 1
+nyx.h_species = .76
+nyx.he_species = .24
 
-nyx.ppm_type         = 1
+nyx.hydro_convert    = 1
+nyx.ppm_type         = 0
 nyx.ppm_reference    = 1
 nyx.use_colglaz      = 0
 nyx.corner_coupling  = 1
 
 nyx.strang_split     = 1
 nyx.add_ext_src      = 0
-nyx.heat_cool_type   = 3
+nyx.heat_cool_type   = 11
 #nyx.simd_width       = 8
 
 nyx.small_dens = 1.e-2
@@ -45,8 +49,8 @@ amr.data_log = runlog
 
 #This is how we restart from a checkpoint and write an ascii particle file
 #Leave this commented out in cvs version
-#amr.restart = chk00100
-#max_step = 4
+#amr.restart = chk00060
+#max_step = 204
 #particles.particle_output_file = particle_output
 
 gravity.gravity_type = PoissonGrav
@@ -65,9 +69,9 @@ geometry.prob_lo     =  0     0     0
 geometry.prob_hi     =  28.49002849  28.49002849  28.49002849
 
 amr.n_cell           =  64  64  64
-amr.max_grid_size    = 32
+amr.max_grid_size    = 64
 #fabarray.mfiter_tile_size = 128 8 8
-fabarray.mfiter_tile_size = 1024000 8 8
+fabarray.mfiter_tile_size = 1024000 1024 1024
 
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
 # 0 = Interior           3 = Symmetry
@@ -148,14 +152,14 @@ amr.check_int         = 100
 amr.checkpoint_nfiles = 64
 
 # PLOTFILES
-fab.format          = NATIVE_32
+#fab.format          = NATIVE_32
 amr.plot_files_output = 1
 amr.plot_file       = plt
 amr.plot_int        = -1
 amr.plot_nfiles     = 64
 nyx.plot_z_values   = 7.0 6.0 5.0 4.0 3.0 2.0
 
-amr.plot_vars        = density xmom ymom zmom rho_e Temp phi_grav
+amr.plot_vars        = density xmom ymom zmom rho_e Temp phi_grav rho_E
 amr.derive_plot_vars = particle_mass_density
 
 # SENSEI in situ

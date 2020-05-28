@@ -19,6 +19,7 @@ geometry.prob_hi     =  0.125  1.    0.125
 
 amr.n_cell           = 4     32      4
 amr.max_level        = 2       # maximum level number allowed
+#fabarray.mfiter_tile_size = 1024000 1024 1024
 
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
 # 0 = Interior           3 = Symmetry

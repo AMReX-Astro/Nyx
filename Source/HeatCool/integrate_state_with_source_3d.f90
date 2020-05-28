@@ -167,7 +167,7 @@ subroutine integrate_state_with_source(lo, hi, &
                     !$OMP CRITICAL
                     print *,'negative e exiting single step integration ', z, i,j,k, rho_orig/mean_rhob, e_out, &
                              state_n(i,j,k,UEINT)/state_n(i,j,k,URHO), (state_n(i,j,k,UEINT) + delta_time * ahalf * I_R(i,j,k) / aendsq) / state_n(i,j,k,URHO)/state_n(i,j,k,URHO)
-                    call flush(6)
+                    !call flush(6)
                     !$OMP END CRITICAL
 
                     !!!!! FIXME !!!!!!

@@ -32,12 +32,13 @@ f90EXE_sources += integrate_state_farkode_3d_stubs.f90
 f90EXE_sources += integrate_state_fcvode_vec_3d_stubs.f90
 f90EXE_sources += integrate_state_fcvode_with_source_3d_stubs.f90
 endif
-f90EXE_sources += vode_aux.f90
-f90EXE_sources += f_rhs.f90
+F90EXE_sources += vode_aux.F90
+F90EXE_sources += f_rhs.F90
 ifeq ($(USE_CVODE_LIBS), TRUE)
-  f90EXE_sources += cvode_extras.f90
+  F90EXE_sources += cvode_extras.F90
   CEXE_sources += integrate_state_box_3d.cpp
   CEXE_sources += integrate_state_vec_3d.cpp
+  CEXE_sources += integrate_state_cell_3d.cpp
 else
 CEXE_sources += integrate_state_box_3d_stubs.cpp
 endif

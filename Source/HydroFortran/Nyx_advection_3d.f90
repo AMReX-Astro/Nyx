@@ -1348,7 +1348,7 @@
       use amrex_constants_module
       use prob_params_module, only : physbc_lo, Symmetry
       use meth_params_module, only : QVAR, NVAR, QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS, &
-                                     URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, &
+                                     URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, use_analriem, &
                                      nadv, small_dens, small_pres, gamma_const, gamma_minus_1
       use analriem_module
 
@@ -1376,7 +1376,8 @@
       real(rt), dimension(ilo:ihi) :: rgdnv,v1gdnv,v2gdnv,regdnv,ustar
       real(rt), dimension(ilo:ihi) :: rl, ul, v1l, v2l, pl, rel
       real(rt), dimension(ilo:ihi) :: rr, ur, v1r, v2r, pr, rer
-!     real(rt), dimension(ilo:ihi) :: wl, wr
+      real(rt), dimension(ilo:ihi) :: wl, wr
+      real(rt), dimension(ilo:ihi) :: pstar2, ustar2
       real(rt), dimension(ilo:ihi) :: rhoetot, scr
       real(rt), dimension(ilo:ihi) :: rstar, cstar, estar, pstar
       real(rt), dimension(ilo:ihi) :: ro, uo, po, reo, co, entho
@@ -1497,18 +1498,86 @@
          ! pstar = ((wr*pl + wl*pr) + wl*wr*(ul - ur))/(wl + wr)
          ! ustar = ((wl*ul + wr*ur) +       (pl - pr))/(wl + wr)
 
-         ! Call analytic Riemann solver
-         call analriem(ilo,ihi, &
+         if(use_analriem .eq.0) then
+            ! We keep these here in case we want to use these instead of calling the analytic solver
+            wl = max(wsmall,sqrt(abs(gamma_const*pl*rl)))
+            wr = max(wsmall,sqrt(abs(gamma_const*pr*rr)))
+            pstar = ((wr*pl + wl*pr) + wl*wr*(ul - ur))/(wl + wr)
+            ustar = ((wl*ul + wr*ur) +       (pl - pr))/(wl + wr)
+
+            pstar = max(pstar, small_pres)
+
+            ! for symmetry preservation, if ustar is really small, then we
+            ! set it to zero
+            do i=ilo,ihi
+               if (abs(ustar(i)) .lt. 1.d-12*HALF*(abs(ul(i)) + abs(ur(i)))) then
+                  ustar(i) = ZERO
+               endif
+            enddo
+            
+         elseif(use_analriem.eq.2) then
+               do i=ilo,ihi
+                  call analriem(i,i, &
                        gamma_const, &
-                       pl(ilo:ihi), &
-                       rl(ilo:ihi), &
-                       ul(ilo:ihi), &
-                       pr(ilo:ihi), &
-                       rr(ilo:ihi), &
-                       ur(ilo:ihi), &
+                       pl(i), &
+                       rl(i), &
+                       ul(i), &
+                       pr(i), &
+                       rr(i), &
+                       ur(i), &
                        small_pres, &
-                       pstar(ilo:ihi), &
-                       ustar(ilo:ihi))
+                       pstar(i), &
+                       ustar(i))
+!                  call analriem_1cell((gamma_minus_1+ONE), &
+!                       pl(i), &
+!                       rl(i), &
+!                       ul(i), &
+!                       pr(i), &
+!                       rr(i), &
+!                       ur(i), &
+!                       small_pres, &
+!                       pstar2(i), &
+!                       ustar2(i))
+               end do
+!               wl = max(wsmall,sqrt(abs(gamma_const*pl*rl)))
+!               wr = max(wsmall,sqrt(abs(gamma_const*pr*rr)))
+!               pstar2 = ((wr*pl + wl*pr) + wl*wr*(ul - ur))/(wl + wr)
+!               ustar2 = ((wl*ul + wr*ur) +       (pl - pr))/(wl + wr)
+!               
+!               pstar2 = max(pstar2, small_pres)
+
+               ! for symmetry preservation, if ustar is really small, then we
+               ! set it to zero
+!               do i=ilo,ihi
+!                  if (abs(ustar2(i)) .lt. 1.d-12*HALF*(abs(ul(i)) + abs(ur(i)))) then
+!                     ustar2(i) = ZERO
+!                  endif
+!               enddo
+!               call analriem(ilo,ihi, &
+!                    gamma_const, &
+!                    pl(ilo:ihi), &
+!                    rl(ilo:ihi), &
+!                    ul(ilo:ihi), &
+!                    pr(ilo:ihi), &
+!                    rr(ilo:ihi), &
+!                    ur(ilo:ihi), &
+!                    small_pres, &
+!                    pstar2(ilo:ihi), &
+!                    ustar2(ilo:ihi))
+         else
+         ! Call analytic Riemann solver
+            call analriem(ilo,ihi, &
+                 gamma_const, &
+                 pl(ilo:ihi), &
+                 rl(ilo:ihi), &
+                 ul(ilo:ihi), &
+                 pr(ilo:ihi), &
+                 rr(ilo:ihi), &
+                 ur(ilo:ihi), &
+                 small_pres, &
+                 pstar(ilo:ihi), &
+                 ustar(ilo:ihi))
+         endif
 
          ! This loop has more conditions and won't vectorize. But it's cheap
          ! compared to the loop that calls the analytic Riemann solver.

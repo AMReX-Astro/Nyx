@@ -1,0 +1,23 @@
+# sources used with hydro
+F90EXE_sources += Nyx_advection_util.F90
+F90EXE_sources += flatten_nd.F90
+F90EXE_sources += enforce_minimum_density.F90
+F90EXE_sources += enforce_nonnegative_species.F90
+
+ifneq ($(NO_HYDRO), TRUE)
+CEXE_sources += Nyx_hydro.cpp
+CEXE_sources += Nyx_ctu_hydro.cpp
+ifeq ($(USE_CVODE_LIBS), TRUE)
+     CEXE_sources += Nyx_ctu_fuse.cpp
+endif
+endif
+F90EXE_sources += slope_nd.F90
+F90EXE_sources += ppm_nd.F90
+F90EXE_sources += riemann_util.F90
+F90EXE_sources += riemann_nd.F90
+F90EXE_sources += trace_plm.F90
+F90EXE_sources += trace_ppm.F90
+f90EXE_sources += check_for_nan.f90
+
+F90EXE_sources += Nyx_ctu_nd.F90
+F90EXE_sources += trans.F90

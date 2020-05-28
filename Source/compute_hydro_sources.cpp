@@ -61,9 +61,10 @@ Nyx::compute_hydro_sources(amrex::Real time, amrex::Real dt, amrex::Real a_old, 
             const Box &bxtmp = amrex::surroundingNodes(bx, i);
             flux[i].resize(bxtmp, NUM_STATE);
             u_gdnv[i].resize(amrex::grow(bxtmp, 1), 1);
-            u_gdnv[i].setVal(1.e200);
+            u_gdnv[i].setVal<RunOn::Host>(1.e200);
         }
-        fort_make_hydro_sources
+
+	  fort_make_hydro_sources
             (&time, bx.loVect(), bx.hiVect(), 
              BL_TO_FORTRAN(state),
              BL_TO_FORTRAN(u_gdnv[0]),
@@ -81,7 +82,7 @@ Nyx::compute_hydro_sources(amrex::Real time, amrex::Real dt, amrex::Real a_old, 
              &print_fortran_warnings);
 
         for (int i = 0; i < BL_SPACEDIM; ++i) 
-          fluxes[i][mfi].copy(flux[i], mfi.nodaltilebox(i));
+          fluxes[i][mfi].copy<RunOn::Host>(flux[i], mfi.nodaltilebox(i));
         
     } // end of MFIter loop
 

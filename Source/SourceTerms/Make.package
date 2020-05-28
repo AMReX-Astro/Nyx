@@ -7,7 +7,7 @@ endif
 f90EXE_sources += Nyx_sources_3d.f90
 
 ifeq ($(USE_GRAV), TRUE)
-f90EXE_sources += Nyx_grav_sources_3d.f90
+F90EXE_sources += Nyx_grav_sources_3d.F90
 endif
 
 f90EXE_sources += ext_src_3d.f90

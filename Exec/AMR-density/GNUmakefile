@@ -10,6 +10,7 @@ TOP = ../..
 COMP    = intel  # gnu
 USE_MPI = TRUE
 USE_OMP = TRUE
+USE_CUDA = FALSE
 
 PROFILE       = TRUE
 TRACE_PROFILE = FALSE
@@ -29,6 +30,7 @@ USE_GRAV = TRUE
 USE_HEATCOOL = TRUE
 USE_AGN = FALSE
 USE_CVODE = FALSE
+USE_SUNDIALS_3x4x = FALSE
 
 Bpack := ./Make.package
 Blocs := .

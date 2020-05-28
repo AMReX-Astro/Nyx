@@ -86,8 +86,8 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     //If there are no particles at this level
     if (lev >= this->GetParticles().size())
         return;
-
-    const Real* dx = Geom(lev).CellSize();
+    const GpuArray<Real,AMREX_SPACEDIM> dx = Geom(lev).CellSizeArray();
+    const auto dxi              = Geom(lev).InvCellSizeArray();
 
     amrex::MultiFab* ac_ptr;
     if (this->OnSameGrids(lev, acceleration))
@@ -96,16 +96,17 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     }
     else
     {
-        ac_ptr = new amrex::MultiFab(this->m_gdb->ParticleBoxArray(lev),
-			             this->m_gdb->ParticleDistributionMap(lev),
+        const IntVect& ng = acceleration.nGrowVect();
+        ac_ptr = new amrex::MultiFab(this->ParticleBoxArray(lev),
+			             this->ParticleDistributionMap(lev),
 				     acceleration.nComp(),acceleration.nGrow());
         for (amrex::MFIter mfi(*ac_ptr); mfi.isValid(); ++mfi)
             ac_ptr->setVal(0.);
-        ac_ptr->copy(acceleration,0,0,acceleration.nComp());
+        ac_ptr->Redistribute(acceleration,0,0,acceleration.nComp(),ng);
         ac_ptr->FillBoundary();
     }
 
-    const Real* plo = Geom(lev).ProbLo();
+    const GpuArray<Real,AMREX_SPACEDIM> plo = Geom(lev).ProbLoArray();
 
     int do_move = 1;
 
@@ -115,17 +116,26 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
 
         AoS& particles = pti.GetArrayOfStructs();
-        int Np = particles.size();
+	ParticleType* pstruct = particles().data();
+	const long np = pti.numParticles();
+	int grid    = pti.index();
+	auto& ptile = ParticlesAt(lev, pti);
+	auto& aos  = ptile.GetArrayOfStructs();
+	const int n = aos.size();
+	auto p_pbox = aos().data();
 
-        if (Np > 0)
-        {
-           const Box& ac_box = (*ac_ptr)[pti].box();
+	const FArrayBox& accel_fab= ((*ac_ptr)[grid]);
+	Array4<amrex::Real const> accel= accel_fab.array();
 
-           update_dm_particles(&Np, particles.data(),
-                               (*ac_ptr)[pti].dataPtr(),
-                               ac_box.loVect(), ac_box.hiVect(),
-                               plo,dx,dt,a_old,a_half,&do_move);
-        }
+	int Np = particles.size();
+	int nc=AMREX_SPACEDIM;
+	amrex::ParallelFor(np,
+			   [=] AMREX_GPU_HOST_DEVICE ( long i)
+			   {
+			     update_dm_particle_single(pstruct[i],nc,
+						       accel,
+						       plo,dxi,dt,a_old, a_half,do_move);
+			   });
     }
 
     if (ac_ptr != &acceleration) delete ac_ptr;
@@ -180,7 +190,8 @@ DarkMatterParticleContainer::moveKick (MultiFab&       acceleration,
 {
     BL_PROFILE("DarkMatterParticleContainer::moveKick()");
 
-    const Real* dx = Geom(lev).CellSize();
+    const GpuArray<Real,AMREX_SPACEDIM> dx = Geom(lev).CellSizeArray();
+    const auto dxi              = Geom(lev).InvCellSizeArray();
 
     MultiFab* ac_ptr;
     if (OnSameGrids(lev,acceleration))
@@ -189,16 +200,17 @@ DarkMatterParticleContainer::moveKick (MultiFab&       acceleration,
     }
     else 
     {
-        ac_ptr = new MultiFab(ParticleBoxArray(lev),
-				  ParticleDistributionMap(lev),
-				  acceleration.nComp(),acceleration.nGrow());
-        for (MFIter mfi(*ac_ptr); mfi.isValid(); ++mfi)
+        const IntVect& ng = acceleration.nGrowVect();
+        ac_ptr = new amrex::MultiFab(this->ParticleBoxArray(lev),
+			             this->ParticleDistributionMap(lev),
+				     acceleration.nComp(),acceleration.nGrow());
+        for (amrex::MFIter mfi(*ac_ptr); mfi.isValid(); ++mfi)
             ac_ptr->setVal(0.);
-        ac_ptr->copy(acceleration,0,0,acceleration.nComp());
+        ac_ptr->Redistribute(acceleration,0,0,acceleration.nComp(),ng);
         ac_ptr->FillBoundary();
     }
 
-    const Real* plo = Geom(lev).ProbLo();
+    const GpuArray<Real,AMREX_SPACEDIM> plo = Geom(lev).ProbLoArray();
 
     int do_move = 0;
 
@@ -208,20 +220,112 @@ DarkMatterParticleContainer::moveKick (MultiFab&       acceleration,
     for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
 
         AoS& particles = pti.GetArrayOfStructs();
-        int Np = particles.size();
+	ParticleType* pstruct = particles().data();
+	const long np = pti.numParticles();
+	int Np = particles.size();
+	int grid    = pti.index();
+	auto& ptile = ParticlesAt(lev, pti);
+	auto& aos  = ptile.GetArrayOfStructs();
+	const int n = aos.size();
+	auto p_pbox = aos().data();
 
-        if (Np > 0)
-        {
-           const Box& ac_box = (*ac_ptr)[pti].box();
+	const FArrayBox& accel_fab= ((*ac_ptr)[grid]);
+	Array4<amrex::Real const> accel= accel_fab.array();
 
-           update_dm_particles(&Np, particles.data(),
-                               (*ac_ptr)[pti].dataPtr(),
-                               ac_box.loVect(), ac_box.hiVect(),
-                               plo,dx,dt,a_half,a_new,&do_move);
-        }
+	int nc=AMREX_SPACEDIM;
+	amrex::ParallelFor(np,
+			   [=] AMREX_GPU_HOST_DEVICE ( long i)
+			   {
+			     update_dm_particle_single(pstruct[i],nc,
+						       accel,
+						       plo,dxi,dt,a_half,a_new,do_move);
+			   });
     }
+
     
     if (ac_ptr != &acceleration) delete ac_ptr;
+}
+
+//template <typename P>
+AMREX_GPU_HOST_DEVICE AMREX_INLINE void DarkMatterParticleContainer::update_dm_particle_single (ParticleType&  p,
+				     const int nc,
+				     amrex::Array4<amrex::Real const> const& acc,
+				     amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& plo,
+				     amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& dxi,
+				     const amrex::Real& dt, const amrex::Real& a_prev, 
+				     const amrex::Real& a_cur, const int& do_move)
+{
+
+							/*ParticleType const& p, 
+							const int nc,
+				     amrex::Array4<amrex::Real const> const& acc,
+				     amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& plo,
+				     amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& dxi,
+				     const amrex::Real& dt, const amrex::Real& a_prev, 
+				     const amrex::Real& a_cur, const int* do_move)
+{
+  void DarkMatterParticleContainer::update_dm_particle_single(amrex::Particle<4, 0> *, int, const amrex::Array4<const amrex::Real> &, const amrex::GpuArray<amrex::Real, 3UL> &, const amrex::GpuArray<amrex::Real, 3UL> &, const amrex::Real &, const amrex::Real &, const amrex::Real &, const int *)
+  num_particles_at_level += n;*/
+
+    amrex::Real half_dt       = 0.5 * dt;
+    amrex::Real a_cur_inv    = 1.0 / a_cur;
+    amrex::Real dt_a_cur_inv = dt * a_cur_inv;
+
+    amrex::Real lx = (p.pos(0) - plo[0]) * dxi[0] + 0.5;
+    amrex::Real ly = (p.pos(1) - plo[1]) * dxi[1] + 0.5;
+    amrex::Real lz = (p.pos(2) - plo[2]) * dxi[2] + 0.5;
+    
+    int i = std::floor(lx);
+    int j = std::floor(ly);
+    int k = std::floor(lz);
+    
+    amrex::Real xint = lx - i;
+    amrex::Real yint = ly - j;
+    amrex::Real zint = lz - k;
+    
+    amrex::Real sx[] = {1.-xint, xint};
+    amrex::Real sy[] = {1.-yint, yint};
+    amrex::Real sz[] = {1.-zint, zint};
+
+    for (int d=0; d < AMREX_SPACEDIM; ++d)
+    {
+      amrex::Real val = 0.0;
+        for (int kk = 0; kk<=1; ++kk)
+	{
+            for (int jj = 0; jj <= 1; ++jj)
+            {
+                for (int ii = 0; ii <= 1; ++ii)
+                {
+		  //                    val += sx[ii]*sy[jj]*sz[kk]*acc(i+ii,j+jj,k+kk,d);
+                    val += sx[amrex::Math::abs(ii-1)]*
+                           sy[amrex::Math::abs(jj-1)]*
+                           sz[amrex::Math::abs(kk-1)]*acc(i-ii,j-jj,k-kk,d);
+		  //		  amrex::Print()<<sx[abs(ii-1)]*sy[abs(jj-1)]*sz[abs(kk-1)]<<"\t"<<acc(i-ii,j-jj,k-kk,d)<<std::endl;
+                }
+            }
+        }
+
+	/*	amrex::Real val2= sx[1]*sy[1]*sz[1]*acc(i,j,k,d) + 
+	  sx[1]*sy[1]*sz[0]*acc(i,j,k-1,d) + 
+	  sx[1]*sy[0]*sz[1]*acc(i,j-1,k,d) + 
+	  sx[1]*sy[0]*sz[0]*acc(i,j-1,k-1,d) + 
+	  sx[0]*sy[1]*sz[1]*acc(i-1,j,k,d) + 
+	  sx[0]*sy[1]*sz[0]*acc(i-1,j,k-1,d) + 
+	  sx[0]*sy[0]*sz[1]*acc(i-1,j-1,k,d) + 
+	  sx[0]*sy[0]*sz[0]*acc(i-1,j-1,k-1,d);
+	*/
+
+	p.rdata(d+1)=a_prev*p.rdata(d+1)+half_dt * val;
+	p.rdata(d+1)*=a_cur_inv;
+    }        
+
+       if (do_move == 1) 
+	 {
+	   for (int comp=0; comp < nc; ++comp) {
+             p.pos(comp) = p.pos(comp) + dt_a_cur_inv * p.rdata(comp+1);
+	   }
+	 }
+
 }
 
 void
@@ -681,6 +785,7 @@ DarkMatterParticleContainer::InitCosmo(
 void
 DarkMatterParticleContainer::AssignDensityAndVels (Vector<std::unique_ptr<MultiFab> >& mf, int lev_min) const
 {
+     amrex::Gpu::LaunchSafeGuard lsg(true);
      AssignDensity(mf, lev_min, BL_SPACEDIM+1);
 }
 
