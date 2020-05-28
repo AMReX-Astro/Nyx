@@ -958,6 +958,9 @@ protected:
     // specifies the memory priority
     static int minimize_memory;
 
+    // specifies the ShrinkToFit priority
+    static int shrink_to_fit;
+
     // specifies inhomogeneous reionization type
     static int inhomo_reion;
     static std::string inhomo_zhi_file;

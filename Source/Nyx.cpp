@@ -149,6 +149,7 @@ int Nyx::use_sundials_fused = 0;
 int Nyx::use_typical_steps = 0;
 int Nyx::sundials_alloc_type = 0;
 int Nyx::minimize_memory = 0;
+int Nyx::shrink_to_fit = 0;
 
 int Nyx::strang_split = 1;
 int Nyx::strang_fuse = 0;
@@ -527,6 +528,7 @@ Nyx::read_params ()
     pp_nyx.query("hydro_convert", hydro_convert);
     pp_nyx.query("sundials_alloc_type", sundials_alloc_type);
     pp_nyx.query("minimize_memory", minimize_memory);
+    pp_nyx.query("shrink_to_fit", shrink_to_fit);
     pp_nyx.query("use_typical_steps", use_typical_steps);
     pp_nyx.query("allow_untagging", allow_untagging);
     pp_nyx.query("use_const_species", use_const_species);
@@ -1500,7 +1502,7 @@ Nyx::post_timestep (int iteration)
                                                   theActiveParticles()[i]->finestLevel(),
                                                   iteration);
 
-	     if(minimize_memory)
+	     if(shrink_to_fit)
 	         theActiveParticles()[i]->ShrinkToFit();
 
 	}
@@ -1920,7 +1922,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
 	{
 	     theActiveParticles()[i]->Regrid(newdmap, grids, lev);
 
-	     if(minimize_memory)
+	     if(shrink_to_fit)
 	         theActiveParticles()[i]->ShrinkToFit();
 	}
 
