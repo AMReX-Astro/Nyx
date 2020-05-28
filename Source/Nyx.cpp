@@ -145,6 +145,7 @@ int Nyx::do_hydro = -1;
 int Nyx::add_ext_src = 0;
 int Nyx::heat_cool_type = 0;
 int Nyx::use_sundials_constraint = 0;
+int Nyx::use_sundials_fused = 0;
 int Nyx::use_typical_steps = 0;
 int Nyx::sundials_alloc_type = 0;
 int Nyx::minimize_memory = 0;
@@ -521,6 +522,7 @@ Nyx::read_params ()
        amrex::Error("Nyx::you set inhomo_reion > 0 but forgot to set USE_HEATCOOL = TRUE");
 #endif
     pp_nyx.query("use_sundials_constraint", use_sundials_constraint);
+    pp_nyx.query("use_sundials_fused", use_sundials_fused);
     pp_nyx.query("nghost_state", nghost_state);
     pp_nyx.query("hydro_convert", hydro_convert);
     pp_nyx.query("sundials_alloc_type", sundials_alloc_type);

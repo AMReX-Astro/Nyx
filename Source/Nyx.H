@@ -958,6 +958,9 @@ protected:
     // if true, use non-negative constraint on energy
     static int use_sundials_constraint;
 
+    // if true, use non-negative constraint on energy
+    static int use_sundials_fused;
+
     // specifies the memory priority
     static int minimize_memory;
 
