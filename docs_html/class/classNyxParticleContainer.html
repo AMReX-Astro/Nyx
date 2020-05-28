@@ -275,6 +275,16 @@ template&lt;&gt;<br /><span class="target" id="classNyxParticleContainer_1a9985d
 <dd></dd></dl>
 
 <dl class="function">
+<dt id="_CPPv4N20NyxParticleContainer6RegridERKN5amrex19DistributionMappingERKN5amrex8BoxArrayEKi">
+<span class="target" id="classNyxParticleContainer_1a8794f820377bc0445fdc050432218f25"></span><em class="property">virtual</em> void <code class="descname">Regrid</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::DistributionMapping &amp;<em>dmap</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::BoxArray &amp;<em>ba</em>, <em class="property">const</em> int <em>lev</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N20NyxParticleContainer6RegridERKN5amrex19DistributionMappingERKN5amrex8BoxArrayEKi" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N20NyxParticleContainer23NumberOfParticlesInGridEibb">
+<span class="target" id="classNyxParticleContainer_1af2aba0c25be2a7d9fbab79fd7b9b6aeb"></span><em class="property">virtual</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;long&gt; <code class="descname">NumberOfParticlesInGrid</code><span class="sig-paren">(</span>int <em>lev</em>, bool <em>only_valid</em>, bool <em>only_local</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N20NyxParticleContainer23NumberOfParticlesInGridEibb" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="_CPPv4NK20NyxParticleContainer19sumParticleMomentumEiPN5amrex4RealE">
 <span class="target" id="classNyxParticleContainer_1adecdb9c4e4569a0e099ee9c6f5f91edd"></span>void <code class="descname">sumParticleMomentum</code><span class="sig-paren">(</span>int <em>lev</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>mom</em><span class="sig-paren">)</span> <em class="property">const</em><a class="headerlink" href="#_CPPv4NK20NyxParticleContainer19sumParticleMomentumEiPN5amrex4RealE" title="Permalink to this definition">¶</a><br /></dt>
 <dd></dd></dl>
@@ -310,6 +320,11 @@ template&lt;&gt;<br /><span class="target" id="classNyxParticleContainer_1a9985d
 <dd></dd></dl>
 
 <dl class="function">
+<dt id="_CPPv4N20NyxParticleContainer11ShrinkToFitEv">
+<span class="target" id="classNyxParticleContainer_1a3277963e7fa9ae35a8e22e362bf69752"></span><em class="property">virtual</em> void <code class="descname">ShrinkToFit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N20NyxParticleContainer11ShrinkToFitEv" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="_CPPv4N20NyxParticleContainer12RedistributeEiii">
 <span class="target" id="classNyxParticleContainer_1a3f02d014d7908609d9a90b47c5595937"></span><em class="property">virtual</em> void <code class="descname">Redistribute</code><span class="sig-paren">(</span>int <em>lev_min</em> = 0, int <em>lev_max</em> = -1, int <em>nGrow</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N20NyxParticleContainer12RedistributeEiii" title="Permalink to this definition">¶</a><br /></dt>
 <dd></dd></dl>
@@ -317,6 +332,16 @@ template&lt;&gt;<br /><span class="target" id="classNyxParticleContainer_1a9985d
 <dl class="function">
 <dt id="_CPPv4N20NyxParticleContainer17RedistributeLocalEiii">
 <span class="target" id="classNyxParticleContainer_1a681dca66bdf4539dcfe53bad1e480ca4"></span><em class="property">virtual</em> void <code class="descname">RedistributeLocal</code><span class="sig-paren">(</span>int <em>lev_min</em> = 0, int <em>lev_max</em> = -1, int <em>nGrow</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N20NyxParticleContainer17RedistributeLocalEiii" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N20NyxParticleContainer14RedistributeOKEiii">
+<span class="target" id="classNyxParticleContainer_1a9ba1983936c37943a63ec5194f666088"></span><em class="property">virtual</em> void <code class="descname">RedistributeOK</code><span class="sig-paren">(</span>int <em>lev_min</em> = 0, int <em>lev_max</em> = -1, int <em>nGrow</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N20NyxParticleContainer14RedistributeOKEiii" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N20NyxParticleContainer15RedistributeGPUEiii">
+<span class="target" id="classNyxParticleContainer_1a23f72634efa7c3e3df85c72f280a14d7"></span><em class="property">virtual</em> void <code class="descname">RedistributeGPU</code><span class="sig-paren">(</span>int <em>lev_min</em> = 0, int <em>lev_max</em> = -1, int <em>nGrow</em> = 0<span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N20NyxParticleContainer15RedistributeGPUEiii" title="Permalink to this definition">¶</a><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">

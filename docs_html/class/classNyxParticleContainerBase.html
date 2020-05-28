@@ -243,8 +243,23 @@
 <dd></dd></dl>
 
 <dl class="function">
+<dt id="_CPPv4N24NyxParticleContainerBase14RedistributeOKEiii">
+<span class="target" id="classNyxParticleContainerBase_1a3a7f2a8d2f8cb5fda10a3f37f59a4445"></span><em class="property">virtual</em> void <code class="descname">RedistributeOK</code><span class="sig-paren">(</span>int <em>lev_min</em> = 0, int <em>lev_max</em> = -1, int <em>nGrow</em> = 0<span class="sig-paren">)</span> = 0<a class="headerlink" href="#_CPPv4N24NyxParticleContainerBase14RedistributeOKEiii" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N24NyxParticleContainerBase15RedistributeGPUEiii">
+<span class="target" id="classNyxParticleContainerBase_1af49e9cf616f9312bcd082afed41a7c47"></span><em class="property">virtual</em> void <code class="descname">RedistributeGPU</code><span class="sig-paren">(</span>int <em>lev_min</em> = 0, int <em>lev_max</em> = -1, int <em>nGrow</em> = 0<span class="sig-paren">)</span> = 0<a class="headerlink" href="#_CPPv4N24NyxParticleContainerBase15RedistributeGPUEiii" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="_CPPv4NK24NyxParticleContainerBase11finestLevelEv">
 <span class="target" id="classNyxParticleContainerBase_1aa7190c91f4299e3c09f240042ab433ab"></span><em class="property">virtual</em> int <code class="descname">finestLevel</code><span class="sig-paren">(</span><span class="sig-paren">)</span> <em class="property">const</em> = 0<a class="headerlink" href="#_CPPv4NK24NyxParticleContainerBase11finestLevelEv" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N24NyxParticleContainerBase11ShrinkToFitEv">
+<span class="target" id="classNyxParticleContainerBase_1a4b7cbce8a24761ae05e9fd4086e4ec07"></span><em class="property">virtual</em> void <code class="descname">ShrinkToFit</code><span class="sig-paren">(</span><span class="sig-paren">)</span> = 0<a class="headerlink" href="#_CPPv4N24NyxParticleContainerBase11ShrinkToFitEv" title="Permalink to this definition">¶</a><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -255,6 +270,16 @@
 <dl class="function">
 <dt id="_CPPv4NK24NyxParticleContainerBase15sumParticleMassEi">
 <span class="target" id="classNyxParticleContainerBase_1a5ac48112ff8b1e0970820600e37e93af"></span><em class="property">virtual</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <code class="descname">sumParticleMass</code><span class="sig-paren">(</span>int <em>level</em><span class="sig-paren">)</span> <em class="property">const</em> = 0<a class="headerlink" href="#_CPPv4NK24NyxParticleContainerBase15sumParticleMassEi" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N24NyxParticleContainerBase6RegridERKN5amrex19DistributionMappingERKN5amrex8BoxArrayEKi">
+<span class="target" id="classNyxParticleContainerBase_1a3eb9b07b89999d6a7531978cf03e57f2"></span><em class="property">virtual</em> void <code class="descname">Regrid</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::DistributionMapping &amp;<em>dmap</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::BoxArray &amp;<em>ba</em>, <em class="property">const</em> int <em>lev</em><span class="sig-paren">)</span> = 0<a class="headerlink" href="#_CPPv4N24NyxParticleContainerBase6RegridERKN5amrex19DistributionMappingERKN5amrex8BoxArrayEKi" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N24NyxParticleContainerBase23NumberOfParticlesInGridEibb">
+<span class="target" id="classNyxParticleContainerBase_1a5762ca339c24def54e6d601b11480dcb"></span><em class="property">virtual</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Vector&lt;long&gt; <code class="descname">NumberOfParticlesInGrid</code><span class="sig-paren">(</span>int <em>lev</em>, bool <em>only_valid</em>, bool <em>only_local</em><span class="sig-paren">)</span> = 0<a class="headerlink" href="#_CPPv4N24NyxParticleContainerBase23NumberOfParticlesInGridEibb" title="Permalink to this definition">¶</a><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
