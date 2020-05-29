@@ -4,7 +4,5 @@ else
 F90EXE_sources += eos_stuff.F90
 endif
 
-CEXE_sources += eos_interface.cpp
-
 F90EXE_sources += atomic_rates.F90
 F90EXE_sources += reion_aux_module.F90
