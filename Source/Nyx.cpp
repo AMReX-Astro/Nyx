@@ -298,6 +298,7 @@ Nyx::read_params ()
 
     pp_nyx.query("small_dens", small_dens);
     pp_nyx.query("small_temp", small_temp);
+    pp_nyx.query("large_temp", large_temp);
     pp_nyx.query("gamma", gamma);
 
     pp_nyx.query("strict_subcycling",strict_subcycling);
@@ -2751,6 +2752,8 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 
 
 	    Real dummy_small_temp=small_temp;
+	    Real dummy_large_temp=large_temp;
+	    int  dummy_max_temp_dt=max_temp_dt;
 	    Real h_species_in=h_species;
 	    Real gamma_minus_1_in=gamma - 1.0;
 	    AMREX_PARALLEL_FOR_3D(bx, i, j ,k,
@@ -2769,9 +2772,9 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 
 		nyx_eos_T_given_Re_device(gamma_minus_1_in, h_species_in, JH, JHe, &diag_eos(i,j,k,Temp_comp), &diag_eos(i,j,k,Ne_comp), 
 					       state(i,j,k,Density), eint, a);
-		if(diag_eos(i,j,k,Temp_comp)>=1e9)
+		if(diag_eos(i,j,k,Temp_comp)>=dummy_large_temp && dummy_max_temp_dt == 1)
 		{
-		  diag_eos(i,j,k,Temp_comp)=1e9;
+		  diag_eos(i,j,k,Temp_comp)=dummy_large_temp;
 
 		  Real dummy_pres=0.0;
 		  // Set temp to small_temp and compute corresponding internal energy
