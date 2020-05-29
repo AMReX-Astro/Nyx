@@ -168,7 +168,8 @@ contains
 
   end subroutine nyx_eos_T_given_Re
 
-  AMREX_CUDA_FORT_DEVICE subroutine nyx_eos_T_given_Re_device(JH, JHe, T, Ne, R, e, comoving_a)
+  AMREX_CUDA_FORT_DEVICE subroutine nyx_eos_T_given_Re_device(JH, JHe, T, Ne, R, e, comoving_a)  &
+       bind(C, name = "fort_nyx_eos_T_given_Re_device")
 
      use amrex_fort_module, only : rt => amrex_real
      use meth_params_module, only : gamma_minus_1
@@ -291,7 +292,8 @@ contains
 
   end subroutine nyx_eos_S_given_Re
 
-  AMREX_CUDA_FORT_DEVICE subroutine nyx_eos_given_RT(e, P, R, T, Ne, comoving_a)
+  AMREX_CUDA_FORT_DEVICE subroutine nyx_eos_given_RT(e, P, R, T, Ne, comoving_a)  &
+       bind(C, name = "fort_nyx_eos_given_RT")
 
      use amrex_fort_module, only : rt => amrex_real
      use meth_params_module, only : gamma_minus_1

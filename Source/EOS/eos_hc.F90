@@ -18,7 +18,7 @@ module eos_module
   implicit none
 
   ! Routines:
-  public  :: nyx_eos_given_RT, nyx_eos_given_RT_host, nyx_eos_given_RT_vec, nyx_eos_T_given_Re_vec, eos_init_small_pres
+  public  :: nyx_eos_given_RT, nyx_eos_given_RT_host, nyx_eos_given_RT_vec, nyx_eos_T_given_Re_vec, eos_init_small_pres, nyx_eos_T_given_Re_device
   public  :: iterate_ne, iterate_ne_vec
   public :: ion_n
 
@@ -109,7 +109,8 @@ module eos_module
 
      ! ****************************************************************************
 
-       AMREX_CUDA_FORT_DEVICE subroutine nyx_eos_given_RT(e, P, R, T, Ne, a)
+       AMREX_CUDA_FORT_DEVICE subroutine nyx_eos_given_RT(e, P, R, T, Ne, a) &
+       bind(C, name = "fort_nyx_eos_given_RT")
 
         use atomic_rates_module, ONLY: YHELIUM
         use fundamental_constants_module, only: mp_over_kb
@@ -252,7 +253,7 @@ module eos_module
       end subroutine nyx_eos_T_given_Re_vec
 
      ! ****************************************************************************
-      AMREX_CUDA_FORT_DEVICE subroutine nyx_eos_T_given_Re_device(JH, JHe, T, Ne, R_in, e_in, a, species)
+     AMREX_CUDA_FORT_DEVICE subroutine nyx_eos_T_given_Re_device(JH, JHe, T, Ne, R_in, e_in, a, species)  
 
       use atomic_rates_module, ONLY: XHYDROGEN, MPROTON, this_z, YHELIUM
       use fundamental_constants_module, only: density_to_cgs, e_to_cgs
@@ -295,6 +296,55 @@ module eos_module
       endif
 
       end subroutine nyx_eos_T_given_Re_device
+
+     ! ****************************************************************************
+
+!     AMREX_CUDA_FORT_DEVICE subroutine nyx_eos_T_given_Re_device(JH, JHe, T, Ne, R_in, e_in, a, species)  &
+!       bind(C, name = "fort_nyx_eos_T_given_Re_device")
+     AMREX_CUDA_FORT_DEVICE subroutine nyx_eos_T_given_Re_device_nospec(JH, JHe, T, Ne, R_in, e_in, a)  &
+       bind(C, name = "fort_nyx_eos_T_given_Re_device")
+      use atomic_rates_module, ONLY: XHYDROGEN, MPROTON, this_z, YHELIUM
+      use fundamental_constants_module, only: density_to_cgs, e_to_cgs
+      use vode_aux_module, only: NR_vode
+!      use cudafor
+
+      implicit none
+      ! In/out variables
+      integer,  value,  intent(in)    :: JH, JHe
+      real(rt),   intent(inout) :: T, Ne
+      real(rt), value,   intent(in   ) :: R_in, e_in
+      real(rt),  value, intent(in   ) :: a
+!      real(rt), optional, intent(out) :: species(5)
+      real(rt) :: species(5)
+
+      integer :: i
+      CHARACTER(LEN=80) :: FMT
+      double precision :: nh, nh0, nhep, nhp, nhe0, nhepp, ne2
+      real(rt) :: f, df, eps
+      real(rt) :: nhp_plus, nhep_plus, nhepp_plus
+      real(rt) :: dnhp_dne, dnhep_dne, dnhepp_dne, dne
+      double precision :: z, rho, U
+!      attributes(managed) :: T,Ne,nh0, nhp, nhe0, nhep, nhepp, ne2
+!      attributes(managed) ::  nhp_plus, nhep_plus, nhepp_plus, JH, JHe, z 
+
+      ! This converts from code units to CGS
+      rho = R_in * density_to_cgs / a**3
+        U = e_in * e_to_cgs
+      nh  = rho*XHYDROGEN/MPROTON
+
+      z   = 1.d0/a - 1.d0
+
+    call iterate_ne_device(JH, Jhe, z, U, T, nh, Ne, nh0, nhp, nhe0, nhep, nhepp)
+
+!      if (present(species)) then
+         species(1) = nh0
+         species(2) = nhp
+         species(3) = nhe0
+         species(4) = nhep
+         species(5) = nhepp
+!      endif
+
+      end subroutine nyx_eos_T_given_Re_device_nospec
 
      ! ****************************************************************************
       AMREX_CUDA_FORT_DEVICE subroutine nyx_eos_T_given_Re_full_device(JH, JHe, T, Ne, R_in, e_in, a, species)

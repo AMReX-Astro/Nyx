@@ -982,6 +982,13 @@ extern "C"
   void fort_update_eos(double dt, double* u, double* uout, double* rpar);
   void fort_ode_eos_setup(const amrex::Real& a,const amrex::Real& half_dt);
 
+  //#ifdef HEATCOOL
+  //  AMREX_GPU_DEVICE void fort_nyx_eos_T_given_Re_device(int JH, int JHe, amrex::Real* T, amrex::Real* Ne, amrex::Real R,amrex::Real e,amrex::Real comoving_a,amrex::Real*);
+  //#else
+  AMREX_GPU_DEVICE void fort_nyx_eos_T_given_Re_device(int JH, int JHe, amrex::Real* T, amrex::Real* Ne, amrex::Real R,amrex::Real e,amrex::Real comoving_a);
+  //#endif
+  AMREX_GPU_DEVICE void fort_nyx_eos_given_RT(amrex::Real* e, amrex::Real* P, amrex::Real R, amrex::Real T, amrex::Real Ne,amrex::Real comoving_a);
+  
   AMREX_GPU_DEVICE void fort_compute_temp
     (const int* lo, const int* hi,
      const BL_FORT_FAB_ARG(state),
