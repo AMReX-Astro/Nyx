@@ -64,6 +64,7 @@ const int GimletSignal = 55;
 static int sum_interval = -1;
 static Real fixed_dt    = -1.0;
 static Real initial_dt  = -1.0;
+static Real max_temp_dt = -1.0;
 static Real dt_cutoff   =  0;
 
 int simd_width = 1;
@@ -134,6 +135,7 @@ int Nyx::FirstAdv  = -1;
 
 Real Nyx::small_dens = -1.e200;
 Real Nyx::small_temp = -1.e200;
+Real Nyx::large_temp =  1.e9;
 Real Nyx::gamma      =  5.0/3.0;
 
 Real Nyx::comoving_OmB;
