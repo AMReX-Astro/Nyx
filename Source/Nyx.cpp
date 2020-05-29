@@ -290,6 +290,7 @@ Nyx::read_params ()
     pp_nyx.query("change_max", change_max);
     pp_nyx.query("fixed_dt", fixed_dt);
     pp_nyx.query("initial_dt", initial_dt);
+    pp_nyx.query("max_temp_dt", max_temp_dt);
     pp_nyx.query("sum_interval", sum_interval);
     pp_nyx.query("do_reflux", do_reflux);
     do_reflux = (do_reflux ? 1 : 0);
