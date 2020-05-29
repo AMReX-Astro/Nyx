@@ -63,16 +63,6 @@ enum State_Type_Index {
 
 };
 
-enum State_Type_UIndex {
-  URHO     = 0,
-  UMX      = 1,
-  UMY      = 2,
-  UMZ      = 3,
-  UEINT    = 4,
-  UEDEN    = 5
-
-};
-
 enum DiagEOS_Type_Index {
   Temp_comp = 0,
   Ne_comp   = 1
@@ -768,7 +758,6 @@ public:
 
     static int FirstSpec, FirstAux, FirstAdv;
     static int NumSpec, NumAux, NumAdv;
-    static amrex::Real gamma;
 
     static int strict_subcycling;
 
@@ -890,6 +879,8 @@ protected:
 
     static amrex::Real small_dens;
     static amrex::Real small_temp;
+	static amrex::Real large_temp;
+    static amrex::Real gamma;
 
     static amrex::Real  h_species;
     static amrex::Real he_species;
