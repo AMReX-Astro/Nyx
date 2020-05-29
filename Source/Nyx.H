@@ -896,6 +896,7 @@ protected:
 
     static amrex::Real small_dens;
     static amrex::Real small_temp;
+	static amrex::Real large_temp;
 
     static amrex::Real  h_species;
     static amrex::Real he_species;

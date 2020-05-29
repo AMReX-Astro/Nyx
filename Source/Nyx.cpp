@@ -64,6 +64,7 @@ const int GimletSignal = 55;
 static int sum_interval = -1;
 static Real fixed_dt    = -1.0;
 static Real initial_dt  = -1.0;
+static Real max_temp_dt = -1.0;
 static Real dt_cutoff   =  0;
 
 int simd_width = 1;
@@ -134,6 +135,7 @@ int Nyx::FirstAdv  = -1;
 
 Real Nyx::small_dens = -1.e200;
 Real Nyx::small_temp = -1.e200;
+Real Nyx::large_temp =  1.e9;
 Real Nyx::gamma      =  5.0/3.0;
 
 Real Nyx::comoving_OmB;
@@ -297,6 +299,7 @@ Nyx::read_params ()
 
     pp_nyx.query("small_dens", small_dens);
     pp_nyx.query("small_temp", small_temp);
+	pp_nyx.query("large_temp", large_temp);
     pp_nyx.query("gamma", gamma);
 
     pp_nyx.query("strict_subcycling",strict_subcycling);
@@ -2768,9 +2771,9 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 
 		nyx_eos_T_given_Re_device(gamma_minus_1_in, h_species_in, JH, JHe, &diag_eos(i,j,k,Temp_comp), &diag_eos(i,j,k,Ne_comp), 
 					       state(i,j,k,Density), eint, a);
-		if(diag_eos(i,j,k,Temp_comp)>=1e9)
+		if(diag_eos(i,j,k,Temp_comp)>=large_temp && max_temp_dt == 1)
 		{
-		  diag_eos(i,j,k,Temp_comp)=1e9;
+		  diag_eos(i,j,k,Temp_comp)=large_temp;
 
 		  Real dummy_pres=0.0;
 		  // Set temp to small_temp and compute corresponding internal energy
