@@ -41,7 +41,9 @@ USE_SUNDIALS_3x4x = TRUE
 Bpack := ./Make.package
 Blocs := .
 
-#LIBRARIES += -L$(CVODE_LIB_DIR) -lsundials_cvode_fused_cuda
+ifeq ($(USE_FUSED),TRUE)
+     LIBRARIES += -L$(CVODE_LIB_DIR) -lsundials_cvode_fused_cuda
+endif
 
 include $(TOP)/Exec/Make.Nyx
 
