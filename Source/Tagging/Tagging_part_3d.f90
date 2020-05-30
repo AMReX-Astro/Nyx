@@ -24,6 +24,7 @@
                                   lo,hi,nd,domlo,domhi, &
                                   delta,xlo,problo,time,level)
       use probdata_module
+      use amrex_fort_module, only : rt => amrex_real
       implicit none
 
       integer          :: set, clear, nd, level
