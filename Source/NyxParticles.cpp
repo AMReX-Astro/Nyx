@@ -866,13 +866,13 @@ Nyx::init_santa_barbara (int init_sb_vels)
 	    }
 
             // Add the particle momenta to the gas momenta (initially zero)
-            MultiFab::Add(S_new, *particle_mf[level], 1, Xmom, BL_SPACEDIM, 1);
+            MultiFab::Add(S_new, *particle_mf[level], 1, Xmom, BL_SPACEDIM, S_new.nGrow());
         }
 
     } else {
 
         MultiFab& S_new = get_new_data(State_Type);
-        FillCoarsePatch(S_new, 0, cur_time, State_Type, 0, S_new.nGrow());
+        FillCoarsePatch(S_new, 0, cur_time, State_Type, 0, S_new.nComp());
 
         MultiFab& D_new = get_new_data(DiagEOS_Type);
         FillCoarsePatch(D_new, 0, cur_time, DiagEOS_Type, 0, D_new.nComp());
