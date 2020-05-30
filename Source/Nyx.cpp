@@ -1621,17 +1621,16 @@ Nyx::post_timestep (int iteration)
                     Array4<Real const> const& gdphi = grad_delta_phi_cc[lev-level]->array(mfi);
                     Array4<Real      > const& s_fab = S_new_lev.array(mfi);
 
-                    int URHO  = Density;
-                    int UEDEN = Eden;
+                    int iden  = Density;
+                    int ieden = Eden;
 
-                    amrex::ParallelFor(bx, [s_fab,d_fab,gphi,gdphi,a_new,dt_lev,URHO,UEDEN]
+                    amrex::ParallelFor(bx, [s_fab,d_fab,gphi,gdphi,a_new,dt_lev,iden,ieden]
                        AMREX_GPU_DEVICE (int i, int j, int k) noexcept
 		       {
-                           int UMX = URHO+1; int UMY = URHO+2; int UMZ = URHO+3;
-                           Real rho_pre  = s_fab(i,j,k,URHO) - d_fab(i,j,k,0);
-                           Real rhoU_pre = s_fab(i,j,k,UMX)  - d_fab(i,j,k,1);
-                           Real rhoV_pre = s_fab(i,j,k,UMY)  - d_fab(i,j,k,2);
-                           Real rhoW_pre = s_fab(i,j,k,UMZ)  - d_fab(i,j,k,3);
+                           Real rho_pre  = s_fab(i,j,k,iden  ) - d_fab(i,j,k,0);
+                           Real rhoU_pre = s_fab(i,j,k,iden+1) - d_fab(i,j,k,1);
+                           Real rhoV_pre = s_fab(i,j,k,iden+2) - d_fab(i,j,k,2);
+                           Real rhoW_pre = s_fab(i,j,k,iden+3) - d_fab(i,j,k,3);
 
                            Real SrU = d_fab(i,j,k,1)*gphi(i,j,k,0) + rho_pre*gdphi(i,j,k,0);
                            Real SrV = d_fab(i,j,k,1)*gphi(i,j,k,1) + rho_pre*gdphi(i,j,k,1);
@@ -1643,10 +1642,10 @@ Nyx::post_timestep (int iteration)
 
                            Real a_new_inv = 1. / a_new;
 
-                           s_fab(i,j,k,UMX   ) += SrU * a_new_inv * 0.5 * dt_lev;
-                           s_fab(i,j,k,UMY   ) += SrV * a_new_inv * 0.5 * dt_lev;
-                           s_fab(i,j,k,UMZ   ) += SrW * a_new_inv * 0.5 * dt_lev;
-                           s_fab(i,j,k,UEDEN ) += SrE * a_new_inv * 0.5 * dt_lev;
+                           s_fab(i,j,k,iden+1) += SrU * a_new_inv * 0.5 * dt_lev;
+                           s_fab(i,j,k,iden+2) += SrV * a_new_inv * 0.5 * dt_lev;
+                           s_fab(i,j,k,iden+3) += SrW * a_new_inv * 0.5 * dt_lev;
+                           s_fab(i,j,k,ieden ) += SrE * a_new_inv * 0.5 * dt_lev;
 		       });
 
 //		    const auto fab_grad_phi_cc = grad_phi_cc.array(mfi);
