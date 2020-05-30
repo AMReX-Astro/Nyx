@@ -143,7 +143,7 @@ extern "C"
       [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
       {
 
-        der(i,j,k,0) = gamma_minus_1_local * dat(i,j,k,UEINT);
+        der(i,j,k,0) = gamma_minus_1_local * dat(i,j,k,Eint);
 
       });
     }
@@ -161,12 +161,12 @@ extern "C"
       [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
       {
 
-        Real rhoInv = 1.0_rt/dat(i,j,k,URHO);
-        Real ux = dat(i,j,k,UMX)*rhoInv;
-        Real uy = dat(i,j,k,UMY)*rhoInv;
-        Real uz = dat(i,j,k,UMZ)*rhoInv;
+        Real rhoInv = 1.0_rt/dat(i,j,k,Density);
+        Real ux = dat(i,j,k,Xmom)*rhoInv;
+        Real uy = dat(i,j,k,Ymom)*rhoInv;
+        Real uz = dat(i,j,k,Zmom)*rhoInv;
 
-        der(i,j,k,0) = dat(i,j,k,UEDEN)*rhoInv -
+        der(i,j,k,0) = dat(i,j,k,Eden)*rhoInv -
           0.5_rt * (ux*ux + uy*uy + uz*uz);
       });
     }
@@ -183,7 +183,7 @@ extern "C"
       [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
       {
 
-        der(i,j,k,0) = dat(i,j,k,UEINT) / dat(i,j,k,URHO);
+        der(i,j,k,0) = dat(i,j,k,Eint) / dat(i,j,k,Density);
       });
     }
 
