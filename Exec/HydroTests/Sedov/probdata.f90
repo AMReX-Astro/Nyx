@@ -17,6 +17,7 @@ module probdata_module
       real(rt), save ::  center(3)
 
 !     Sod variables
+      real(rt), save ::  p_l, u_l, rho_l, p_r, u_r, rho_r, rhoe_l, rhoe_r, frac
       real(rt), save ::  p_ambient, dens_ambient, exp_energy
       real(rt), save ::  r_init
       integer , save ::  nsub
