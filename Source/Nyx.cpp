@@ -209,8 +209,8 @@ int Nyx::use_flattening     = 1;
 int Nyx::ppm_flatten_before_integrals = 0;
 int Nyx::use_analriem       = 1;
 
-Real Nyx:: h_species        = 0.0;
-Real Nyx::he_species        = 0.0;
+Real Nyx:: h_species        = 0.76;
+Real Nyx::he_species        = 0.24;
 
 int Nyx::use_exact_gravity  = 0;
 
