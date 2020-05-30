@@ -22,5 +22,4 @@ USE_HEATCOOL = FALSE
 Bpack := ./Make.package
 Blocs := .
 
-include $(TOP)/Exec/Make.Nyx
-
+include $(TOP)/Exec/HydroTests/Make.Nyx
