@@ -2781,7 +2781,6 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 	    int  dummy_max_temp_dt=max_temp_dt;
 	    Real h_species_in=h_species;
 	    Real gamma_minus_1_in=gamma - 1.0;
-#ifdef HEATCOOL
 	    AMREX_PARALLEL_FOR_3D(bx, i, j ,k,
 	    {
 
@@ -2831,17 +2830,8 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 		state(i,j,k,Eint) = state(i,j,k,Density) * eint;
 		state(i,j,k,Eden) = state(i,j,k,Eint) + ke;
 	      }
-        });
-#else
-		AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
-								   {
-		  fort_compute_temp
-			  (tbx.loVect(), tbx.hiVect(),
-              BL_ARR4_TO_FORTRAN(state),
-              BL_ARR4_TO_FORTRAN(diag_eos), a,
-              print_warn);
-	  	    });
-#endif
+
+	    });
 	    amrex::Gpu::synchronize();
 	    /*
             fort_compute_temp_host
