@@ -1599,15 +1599,15 @@ Nyx::post_timestep (int iteration)
 #pragma omp parallel
 #endif
 		{
-		  FArrayBox sync_src;
 		  FArrayBox dstate;
 
 		  for (MFIter mfi(S_new_lev,Gpu::notInLaunchRegion()); mfi.isValid(); ++mfi)
                   {
                     const Box& bx = mfi.tilebox();
+
                     dstate.resize(bx, BL_SPACEDIM + 1);
-		    Elixir elix_dstate = dstate.elixir();
-		    Array4<Real> fab_dstate = dstate.array();
+		    Array4<Real> d_fab = dstate.array();
+
                     if (lev == level)
                     {
 		      dstate.copy<RunOn::Device>(drho_and_drhoU[mfi]);
@@ -1617,28 +1617,52 @@ Nyx::post_timestep (int iteration)
 		      dstate.setVal<RunOn::Device>(0);
                     }
 
-		    // Compute sync source
-                    sync_src.resize(bx, BL_SPACEDIM+1);
-		    Elixir elix_sync_src = sync_src.elixir();
-		    Array4<Real> fab_sync_src = sync_src.array();
-		    //                    int i = mfi.index();
+                    Array4<Real const> const&  gphi = grad_phi_cc.array(mfi);
+                    Array4<Real const> const& gdphi = grad_delta_phi_cc[lev-level]->array(mfi);
+                    Array4<Real      > const& s_fab = S_new_lev.array(mfi);
 
-		    const auto fab_grad_phi_cc = grad_phi_cc.array(mfi);
-		    const auto fab_grad_delta_phi_cc=(*grad_delta_phi_cc[lev-level]).array(mfi);
-		    const auto fab_S_new_lev = S_new_lev.array(mfi);
+                    int URHO  = Density;
+                    int UEDEN = Eden;
 
-		    AMREX_LAUNCH_DEVICE_LAMBDA(bx,tbx,
-					       {
-                    fort_syncgsrc
-                        (tbx.loVect(), tbx.hiVect(), BL_ARR4_TO_FORTRAN(fab_grad_phi_cc),
-                         BL_ARR4_TO_FORTRAN(fab_grad_delta_phi_cc),
-                         BL_ARR4_TO_FORTRAN(fab_S_new_lev), BL_ARR4_TO_FORTRAN(fab_dstate),
-                         BL_ARR4_TO_FORTRAN(fab_sync_src), a_new, dt_lev);
-					       });
+                    amrex::ParallelFor(bx, [s_fab,d_fab,gphi,gdphi,a_new,dt_lev,URHO,UEDEN]
+                       AMREX_GPU_DEVICE (int i, int j, int k) noexcept
+		       {
+                           int UMX = URHO+1; int UMY = URHO+2; int UMZ = URHO+3;
+                           Real rho_pre  = s_fab(i,j,k,URHO) - d_fab(i,j,k,0);
+                           Real rhoU_pre = s_fab(i,j,k,UMX)  - d_fab(i,j,k,1);
+                           Real rhoV_pre = s_fab(i,j,k,UMY)  - d_fab(i,j,k,2);
+                           Real rhoW_pre = s_fab(i,j,k,UMZ)  - d_fab(i,j,k,3);
 
-		    sync_src.mult<RunOn::Device>(0.5 * dt_lev);
-                    S_new_lev[mfi].plus<RunOn::Device>(sync_src, 0, Xmom, BL_SPACEDIM);
-                    S_new_lev[mfi].plus<RunOn::Device>(sync_src, BL_SPACEDIM, Eden, 1);
+                           Real SrU = d_fab(i,j,k,1)*gphi(i,j,k,0) + rho_pre*gdphi(i,j,k,0);
+                           Real SrV = d_fab(i,j,k,1)*gphi(i,j,k,1) + rho_pre*gdphi(i,j,k,1);
+                           Real SrW = d_fab(i,j,k,1)*gphi(i,j,k,2) + rho_pre*gdphi(i,j,k,2);
+
+                           Real SrE = ( SrU * (rhoU_pre + (0.5*dt_lev)*SrU) +
+                                        SrV * (rhoV_pre + (0.5*dt_lev)*SrV) +
+                                        SrW * (rhoW_pre + (0.5*dt_lev)*SrW) ) / rho_pre;
+
+                           Real a_new_inv = 1. / a_new;
+
+                           s_fab(i,j,k,UMX   ) += SrU * a_new_inv * 0.5 * dt_lev;
+                           s_fab(i,j,k,UMY   ) += SrV * a_new_inv * 0.5 * dt_lev;
+                           s_fab(i,j,k,UMZ   ) += SrW * a_new_inv * 0.5 * dt_lev;
+                           s_fab(i,j,k,UEDEN ) += SrE * a_new_inv * 0.5 * dt_lev;
+		       });
+
+//		    const auto fab_grad_phi_cc = grad_phi_cc.array(mfi);
+//		    const auto fab_grad_delta_phi_cc=(*grad_delta_phi_cc[lev-level]).array(mfi);
+//		    const auto fab_S_new_lev = S_new_lev.array(mfi);
+//	            AMREX_LAUNCH_DEVICE_LAMBDA(bx,tbx,
+//                  fort_syncgsrc
+//                      (tbx.loVect(), tbx.hiVect(), BL_ARR4_TO_FORTRAN(fab_grad_phi_cc),
+//                       BL_ARR4_TO_FORTRAN(fab_grad_delta_phi_cc),
+//                       BL_ARR4_TO_FORTRAN(fab_S_new_lev), BL_ARR4_TO_FORTRAN(fab_dstate),
+//                       BL_ARR4_TO_FORTRAN(fab_sync_src), a_new, dt_lev);
+//				            });
+
+//		    sync_src.mult<RunOn::Device>(0.5 * dt_lev);
+//                  S_new_lev[mfi].plus<RunOn::Device>(sync_src, 0, Xmom, BL_SPACEDIM);
+//                  S_new_lev[mfi].plus<RunOn::Device>(sync_src, BL_SPACEDIM, Eden, 1);
 		  }
 		}
 	    }

@@ -143,9 +143,6 @@ protected:
     static amrex::Real delta_tol;
     static std::string gravity_type;
 
-    void fill_ec_grow(int level, const amrex::Vector<amrex::MultiFab*>& ecF,
-                      const amrex::Vector<amrex::MultiFab*>& ecC) const;
-
     void AddParticlesToRhs(int level, amrex::MultiFab& Rhs, int ngrow);
     void AddGhostParticlesToRhs(int level, amrex::MultiFab& Rhs);
     void AddVirtualParticlesToRhs(int level, amrex::MultiFab& Rhs, int ngrow);

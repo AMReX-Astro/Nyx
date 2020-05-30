@@ -3,8 +3,6 @@ CEXE_sources += Gravity.cpp
 CEXE_headers += Gravity.H
 FEXE_headers += Gravity_F.H
 f90EXE_sources += Gravity_nd.f90
-f90EXE_sources += Gravity_3d.f90
-f90EXE_sources += set_dirichlet_bcs_3d.f90
 
 ifeq ($(USE_CGRAV), TRUE)
 f90EXE_sources += prescribe_grav_3d.f90
