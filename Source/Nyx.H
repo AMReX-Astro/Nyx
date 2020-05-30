@@ -494,6 +494,11 @@ public:
     void    sdc_hydro(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
 #endif
 
+#ifdef GRAVITY
+    void correct_gsrc(int lev, amrex::Real time, amrex::Real prev_time, amrex::Real cur_time,
+                               amrex::Real dt); 
+#endif
+
 
 ///
 /// Calculate primitive variables from given conserved variables

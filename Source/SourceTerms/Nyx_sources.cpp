@@ -106,30 +106,5 @@ Nyx::get_new_source (Real      old_time,
 
     ext_src.EnforcePeriodicity(0, NUM_STATE, geom.periodicity());
 }
-
-void
-Nyx::time_center_source_terms (MultiFab& S_new,
-                               MultiFab& ext_src_old,
-                               MultiFab& ext_src_new,
-                               Real      dt)
-{
-    BL_PROFILE("Nyx::time_center_source_terms()");
-
-    // Subtract off half of the old source term, and add half of the new.
-    const Real prev_time = state[State_Type].prevTime();
-    const Real  cur_time = state[State_Type].curTime();
-
-    Real a_old = get_comoving_a(prev_time);
-    Real a_new = get_comoving_a(cur_time);
-
-    for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
-    {
-        const Box& bx = mfi.tilebox();
-        time_center_sources
-            (bx.loVect(), bx.hiVect(), BL_TO_FORTRAN(S_new[mfi]),
-             BL_TO_FORTRAN(ext_src_old[mfi]), BL_TO_FORTRAN(ext_src_new[mfi]),
-             &a_old, &a_new, &dt, &print_fortran_warnings);
-    }
-}
 #endif
 #endif

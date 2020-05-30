@@ -71,6 +71,8 @@ extern "C"
 
   void fort_set_xhydrogen(amrex::Real& xhydrogen_in);
 
+  void get_grav_source_type(int* grav_source_type);
+
   void fort_get_num_spec(int* nspec);
 
   void fort_get_num_aux(int* naux);

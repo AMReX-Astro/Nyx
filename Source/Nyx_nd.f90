@@ -2,6 +2,25 @@
 ! ::: ----------------------------------------------------------------
 ! :::
 
+      subroutine get_grav_source_type(type_out) &
+        bind(C, name="get_grav_source_type")
+
+        use meth_params_module, only: grav_source_type
+
+        implicit none
+
+        integer, intent(out) :: type_out
+
+        type_out = grav_source_type
+
+      end subroutine get_grav_source_type
+
+! :::
+! ::: ----------------------------------------------------------------
+! :::
+! ::: ----------------------------------------------------------------
+! :::
+
       subroutine fort_network_init() &
         bind(C, name="fort_network_init")
 
