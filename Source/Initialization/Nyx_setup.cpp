@@ -415,8 +415,7 @@ Nyx::hydro_setup()
     // Sound speed (c)
     //
     derive_lst.add("soundspeed", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERSOUNDSPEED, dersoundspeed),
-                   the_same_box);
+                   dersoundspeed, the_same_box);
     derive_lst.addComponent("soundspeed", desc_lst, State_Type, Density,
                             NUM_STATE);
 
@@ -424,8 +423,7 @@ Nyx::hydro_setup()
     // Mach number(M)
     //
     derive_lst.add("MachNumber", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERMACHNUMBER, dermachnumber),
-                   the_same_box);
+                   dermachnumber, the_same_box);
     derive_lst.addComponent("MachNumber", desc_lst, State_Type, Density,
                             NUM_STATE);
 
@@ -434,7 +432,7 @@ Nyx::hydro_setup()
     //
 #ifdef GRAVITY
     //derive_lst.add("rhog",IndexType::TheCellType(),1,
-    //               BL_FORT_PROC_CALL(RHOG,rhog),the_same_box);
+    //               rhog,the_same_box);
     //derive_lst.addComponent("rhog",desc_lst,State_Type,Density,1);
     //derive_lst.addComponent("rhog",desc_lst,Gravity_Type,0,BL_SPACEDIM);
 #endif
@@ -443,7 +441,7 @@ Nyx::hydro_setup()
     // Div(u)
     //
     derive_lst.add("divu", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERDIVU, derdivu), grow_box_by_one);
+                   derdivu, grow_box_by_one);
     derive_lst.addComponent("divu", desc_lst, State_Type, Density, 1);
     derive_lst.addComponent("divu", desc_lst, State_Type, Xmom, BL_SPACEDIM);
 
@@ -465,7 +463,7 @@ Nyx::hydro_setup()
     // Log(density)
     //
     derive_lst.add("logden", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERLOGDEN, derlogden), the_same_box);
+                   derlogden, the_same_box);
     derive_lst.addComponent("logden", desc_lst, State_Type, Density, 1);
 
     derive_lst.add("StateErr", IndexType::TheCellType(), 3,
@@ -537,7 +535,7 @@ Nyx::hydro_setup()
     // Magnitude of vorticity.
     //
     derive_lst.add("magvort",IndexType::TheCellType(),1,
-                   BL_FORT_PROC_CALL(DERMAGVORT,dermagvort),grow_box_by_one);
+                   dermagvort,grow_box_by_one);
     // Here we exploit the fact that Xmom = Density + 1
     //   in order to use the correct interpolation.
     if (Xmom != Density+1)

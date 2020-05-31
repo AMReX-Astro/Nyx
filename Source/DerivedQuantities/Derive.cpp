@@ -53,8 +53,6 @@ extern "C"
       });
     }
 
-
-
     void dermagvel(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
                    const FArrayBox& datfab, const Geometry& geomdata,
         	   Real /*time*/, const int* /*bcrec*/, int /*level*/)
@@ -73,23 +71,34 @@ extern "C"
       });
     }
 
-    /*    {
+    void dermagvort(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
+                    const FArrayBox& datfab, const Geometry& geomdata,
+        	    Real /*time*/, const int* /*bcrec*/, int /*level*/)
+    {
 
       auto const dat = datfab.array();
       auto const der = derfab.array();
+
+      auto const dx = geomdata.CellSize();
 
       amrex::ParallelFor(bx,
       [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
       {
 
-        Real deninv = 1.0_rt/dat(i,j,k,0);
+        Real uy = (dat(i,j+1,k,1)/dat(i,j+1,k,0) - dat(i,j-1,k,1)/dat(i,j-1,k,0)) / dx[1];
+        Real uz = (dat(i,j,k+1,1)/dat(i,j,k+1,0) - dat(i,j,k-1,1)/dat(i,j,k-1,0)) / dx[2];
+        Real vx = (dat(i+1,j,k,2)/dat(i+1,j,k,0) - dat(i-1,j,k,2)/dat(i-1,j,k,0)) / dx[0];
+        Real vz = (dat(i,j,k+1,2)/dat(i,j,k+1,0) - dat(i,j,k-1,2)/dat(i,j,k-1,0)) / dx[2];
+        Real wx = (dat(i+1,j,k,3)/dat(i+1,j,k,0) - dat(i-1,j,k,3)/dat(i-1,j,k,0)) / dx[0];
+        Real wy = (dat(i,j+1,k,3)/dat(i,j+1,k,0) - dat(i,j-1,k,3)/dat(i,j-1,k,0)) / dx[1];
+ 
+        Real v1 = 0.5 * (wy - vz);  
+        Real v2 = 0.5 * (uz - wx);  
+        Real v3 = 0.5 * (vx - uy);  
 
-        der(i,j,k,0) = std::sqrt( (dat(i,j,k,1) * dat(i,j,k,1) +
-                                   dat(i,j,k,2) * dat(i,j,k,2) +
-                                   dat(i,j,k,3) * dat(i,j,k,3)) ) * deninv;
+        der(i,j,k,0) = std::sqrt(v1*v1 + v2*v2 + v3*v3); 
       });
-    }*/
-
+    }
 
     void dermaggrav(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
         	    const FArrayBox& datfab, const Geometry& geomdata,
@@ -148,6 +157,20 @@ extern "C"
       });
     }
 
+    void derlogden(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
+                   const FArrayBox& datfab, const Geometry& geomdata,
+                   Real /*time*/, const int* /*bcrec*/, int /*level*/)
+    {
+
+      auto const dat = datfab.array();
+      auto const der = derfab.array();
+
+      amrex::ParallelFor(bx,
+      [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
+      {
+             der(i,j,k,0) = std::log(dat(i,j,k,0));
+      });
+    }
 
     void dereint1(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
                   const FArrayBox& datfab, const Geometry& geomdata,
@@ -205,13 +228,9 @@ extern "C"
 
   }
 
-  void dernull(Real* der, const int* der_lo, const int* der_hi, const int* nvar,
-                  const Real* data, const int* data_lo, const int* data_hi, const int* ncomp,
-                  const int* lo, const int* hi,
-                  const int* domain_lo, const int* domain_hi,
-                  const Real* delta, const Real* xlo,
-                  const Real* time, const Real* dt, const int* bcrec, 
-                  const int* level, const int* grid_no)
+  void dernull(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
+               const FArrayBox& datfab, const Geometry& geomdata,
+               Real /*time*/, const int* /*bcrec*/, int /*level*/)
   {
 
     // This routine is used by particle_count.  Yes it does nothing.
@@ -219,8 +238,8 @@ extern "C"
   }
 
   void derspec(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
-                  const FArrayBox& datfab, const Geometry& geomdata,
-                  Real /*time*/, const int* /*bcrec*/, int /*level*/)
+               const FArrayBox& datfab, const Geometry& geomdata,
+               Real /*time*/, const int* /*bcrec*/, int /*level*/)
     {
 
       auto const dat = datfab.array();
@@ -230,6 +249,90 @@ extern "C"
       [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
       {
              der(i,j,k,0) = dat(i,j,k,1) / dat(i,j,k,0);
+      });
+    }
+
+    void dersoundspeed(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
+           	       const FArrayBox& datfab, const Geometry& geomdata,
+                       Real /*time*/, const int* /*bcrec*/, int /*level*/)
+    {
+
+      // Here dat contains (Density, Xmom, Ymom, Zmom, (rho E), (rho e))
+
+      auto const dat = datfab.array();
+      auto const der = derfab.array();
+
+      amrex::ParallelFor(bx,
+      [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
+      {
+        Real rho = dat(i,j,k,0);
+        Real e = dat(i,j,k,Eint) / rho;
+
+//      if (e > 0.) 
+//      {
+//          Real c; // = nyx_eos_soundspeed(c, rho, e);
+//          der(i,j,k,0) = c;
+//      } else {
+            der(i,j,k,0) = 0.0;
+//      }
+      });
+    }
+
+    void dermachnumber(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
+           	       const FArrayBox& datfab, const Geometry& geomdata,
+                       Real /*time*/, const int* /*bcrec*/, int /*level*/)
+    {
+
+      // Here dat contains (Density, Xmom, Ymom, Zmom, (rho E), (rho e))
+
+      auto const dat = datfab.array();
+      auto const der = derfab.array();
+
+      amrex::ParallelFor(bx,
+      [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
+      {
+        Real rho = dat(i,j,k,0);
+        Real e = dat(i,j,k,Eint) / rho;
+
+//      if (e > 0.) 
+//      {
+//          Real magvel = std::sqrt( (dat(i,j,k,1)/rho)*(dat(i,j,k,1)/rho) +
+//			   	     (dat(i,j,k,2)/rho)*(dat(i,j,k,2)/rho) +
+//				     (dat(i,j,k,3)/rho)*(dat(i,j,k,3)/rho) );
+//          Real c; // = nyx_eos_soundspeed(c, u(i,j,k,URHO), e);
+//          der(i,j,k,0) = magvel / c;
+//      } else {
+            der(i,j,k,0) = 0.0;
+//      }
+      });
+    }
+
+    void derdivu(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
+                 const FArrayBox& datfab, const Geometry& geomdata,
+                 Real /*time*/, const int* /*bcrec*/, int /*level*/)
+    {
+
+      auto const dat = datfab.array();
+      auto const der = derfab.array();
+
+      auto const dx = geomdata.CellSize();
+
+      // Here dat contains (Density, Xmom, Ymom, Zmom)
+
+      amrex::ParallelFor(bx,
+      [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
+      {
+        Real rho = dat(i,j,k,0);
+
+        Real uhi = dat(i+1,j,k,1) / rho;
+        Real ulo = dat(i-1,j,k,1) / rho;
+        Real vhi = dat(i,j+1,k,2) / rho;
+        Real vlo = dat(i,j-1,k,2) / rho;
+        Real whi = dat(i,j,k+1,3) / rho;
+        Real wlo = dat(i,j,k-1,3) / rho;
+
+        der(i,j,k,0) = 0.5 * ( (uhi-ulo) / dx[0] + (vhi-vlo) / dx[1] + (whi-wlo) / dx[2] );
+
       });
     }
 

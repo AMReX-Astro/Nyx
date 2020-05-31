@@ -6,3 +6,5 @@ f90EXE_sources += ext_src_3d.f90
 f90EXE_sources += ext_src_force_3d.f90
 f90EXE_sources += integrate_state_force_3d.f90
 
+f90EXE_sources += Derive_prob_3d.f90
+

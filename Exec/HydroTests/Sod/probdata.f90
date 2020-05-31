@@ -23,6 +23,6 @@ module probdata_module
       integer , save ::  nsub
 
 !     These help specify which specific problem
-      integer, save ::  probtype,idir
+      integer, save ::  probtype, idir
 
 end module probdata_module

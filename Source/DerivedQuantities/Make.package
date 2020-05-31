@@ -1,6 +1,7 @@
 
 CEXE_sources += ParticleDerive.cpp
 FEXE_headers += Derive_F.H
-f90EXE_sources += Derive_3d.f90
 CEXE_headers += Derive.H
 CEXE_sources += Derive.cpp
+
+f90EXE_sources += Derive_3d.f90

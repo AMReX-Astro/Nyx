@@ -13,6 +13,9 @@ module probdata_module
 
 !     Use these in add_turb_forcing.
       real(rt), save ::  prob_lo(3), prob_hi(3)
+
+!     Tagging variables (only include here so we can build with particles)
+      integer, save :: max_num_part
       
 !because of harald... ;)
       real(rt), save :: center(3)   
