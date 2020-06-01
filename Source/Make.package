@@ -43,7 +43,6 @@ CEXE_headers += DarkMatterParticleContainer.H
 FEXE_headers += Nyx_F.H
 
 f90EXE_sources += particle_mod.f90
-f90EXE_headers += dm_F.H
 
 f90EXE_sources += Nyx_nd.f90
 f90EXE_sources +=  eos_params.f90

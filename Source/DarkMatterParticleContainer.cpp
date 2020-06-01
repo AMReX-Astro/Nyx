@@ -1,7 +1,6 @@
 #include <stdint.h>
 
 #include "DarkMatterParticleContainer.H"
-#include "dm_F.H"
 
 using namespace amrex;
 

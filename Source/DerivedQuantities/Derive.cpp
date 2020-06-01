@@ -219,7 +219,9 @@ extern "C"
       auto const dat = datfab.array();
       auto const der = derfab.array();
 
-	  Real sound_speed_factor=sqrt(Nyx::gamma*(Nyx::gamma-1.0_rt));
+      // Here dat contains the full conserved state variable
+
+      Real sound_speed_factor=sqrt(Nyx::gamma*(Nyx::gamma-1.0_rt));
 
       amrex::ParallelFor(bx,
       [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
@@ -230,23 +232,22 @@ extern "C"
         Real uy = dat(i,j,k,Ymom)*rhoInv;
         Real uz = dat(i,j,k,Zmom)*rhoInv;
 
-		// Use internal energy for calculating dt 
-		Real e  = dat(i,j,k,Eint)*rhoInv;
+	// Use internal energy for calculating dt 
+	Real e  = dat(i,j,k,Eint)*rhoInv;
 
-		// Protect against negative e
+	// Protect against negative e
 #ifdef HEATCOOL
-		if (e > 0.0)
-		    der(i,j,k,0)=sound_speed_factor*std::sqrt(e);
+	if (e > 0.0)
+	    der(i,j,k,0)=sound_speed_factor*std::sqrt(e);
 #else
-		if (e > 0.0)
-		    der(i,j,k,0)=sound_speed_factor*std::sqrt(dat(i,j,k,Density)*e/dat(i,j,k,Density));
+	if (e > 0.0)
+	    der(i,j,k,0)=sound_speed_factor*std::sqrt(dat(i,j,k,Density)*e/dat(i,j,k,Density));
 #endif
-		else
-			der(i,j,k,0) = 0.0;
+	else
+	    der(i,j,k,0) = 0.0;
 
       });
     }
-
 
     void dermachnumber(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
                        const FArrayBox& datfab, const Geometry& geomdata,
@@ -256,7 +257,9 @@ extern "C"
       auto const dat = datfab.array();
       auto const der = derfab.array();
 
-	  Real sound_speed_factor=sqrt(Nyx::gamma*(Nyx::gamma-1.0_rt));
+      // Here dat contains the full conserved state variable
+
+      Real sound_speed_factor=sqrt(Nyx::gamma*(Nyx::gamma-1.0_rt));
 
       amrex::ParallelFor(bx,
       [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
@@ -267,22 +270,22 @@ extern "C"
         Real uy = dat(i,j,k,Ymom)*rhoInv;
         Real uz = dat(i,j,k,Zmom)*rhoInv;
 
-		// Use internal energy for calculating dt 
-		Real e  = dat(i,j,k,Eint)*rhoInv;
+	// Use internal energy for calculating dt 
+	Real e  = dat(i,j,k,Eint)*rhoInv;
 
-		Real c;
-		// Protect against negative e
+	Real c;
+	// Protect against negative e
 #ifdef HEATCOOL
-		if (e > 0.0)
-			c=sound_speed_factor*std::sqrt(e);
+	if (e > 0.0)
+		c = sound_speed_factor*std::sqrt(e);
 #else
-		if (e > 0.0)
-		    c=sound_speed_factor*std::sqrt(dat(i,j,k,Density)*e/dat(i,j,k,Density));
+	if (e > 0.0)
+	    c=sound_speed_factor*std::sqrt(dat(i,j,k,Density)*e/dat(i,j,k,Density));
 #endif
-		else
-			c = 0.0;
+	else
+	    c = 0.0;
 
-		der(i,j,k,0) = std::sqrt((ux*ux + uy*uy + uz*uz)) / c;
+        der(i,j,k,0) = std::sqrt((ux*ux + uy*uy + uz*uz)) / c;
 
       });
 
@@ -357,6 +360,24 @@ extern "C"
         der(i,j,k,0) = 0.5 * ( (uhi-ulo) / dx[0] + (vhi-vlo) / dx[1] + (whi-wlo) / dx[2] );
 
       });
+    }
+
+    void derforcex(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
+                   const FArrayBox& datfab, const Geometry& geomdata,
+                   Real /*time*/, const int* /*bcrec*/, int /*level*/)
+    {
+    }
+
+    void derforcey(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
+                   const FArrayBox& datfab, const Geometry& geomdata,
+                   Real /*time*/, const int* /*bcrec*/, int /*level*/)
+    {
+    }
+
+    void derforcez(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
+                   const FArrayBox& datfab, const Geometry& geomdata,
+                   Real /*time*/, const int* /*bcrec*/, int /*level*/)
+    {
     }
 
 #ifdef __cplusplus

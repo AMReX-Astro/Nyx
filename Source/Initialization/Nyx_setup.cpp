@@ -491,7 +491,6 @@ Nyx::hydro_setup()
         }
     }
 
-#ifdef FORCING
     derive_lst.add("forcex", IndexType::TheCellType(), 1,
                    BL_FORT_PROC_CALL(DERFORCEX, derforcex), the_same_box);
     derive_lst.addComponent("forcex", desc_lst, State_Type, Density, 1);
@@ -503,7 +502,6 @@ Nyx::hydro_setup()
     derive_lst.add("forcez", IndexType::TheCellType(), 1,
                    BL_FORT_PROC_CALL(DERFORCEZ, derforcez), the_same_box);
     derive_lst.addComponent("forcez", desc_lst, State_Type, Density, 1);
-#endif
 
     //
     // Velocities
