@@ -8,7 +8,6 @@ f90EXE_sources += Nyx_advection_3d.f90
 f90EXE_sources += ppm_3d.f90
 f90EXE_sources += slope_3d.f90
 f90EXE_sources += trace_3d.f90
-f90EXE_sources += trace_colglaz_3d.f90
 f90EXE_sources += trace_ppm_3d.f90
 f90EXE_sources += trace_src_3d.f90
 f90EXE_sources += trans_3d.f90

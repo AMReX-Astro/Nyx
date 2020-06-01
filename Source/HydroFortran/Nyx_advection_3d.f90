@@ -40,8 +40,7 @@
       use amrex_fort_module, only : rt => amrex_real
       use amrex_mempool_module, only : amrex_allocate, amrex_deallocate
       use amrex_constants_module
-      use meth_params_module, only : QVAR, NVAR, QU, ppm_type, &
-                                     use_colglaz, version_2
+      use meth_params_module, only : QVAR, NVAR, QU, ppm_type, version_2
       use slope_module
       use trace_ppm_module
       use trace_src_module
@@ -297,17 +296,10 @@
                         ilo1,ilo2,ihi1,ihi2,kc,k3d,QVAR)
 
             ! Compute U_x and U_y at kc (k3d)
-            if (use_colglaz .eq. 1) then
-               call tracexy_cg(q,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
-                               dqx,dqy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
-                               qxm,qxp,qym,qyp,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
-                               ilo1,ilo2,ihi1,ihi2,dx,dy,dt,kc,k3d,a_old)
-            else
-               call tracexy(q,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
-                            dqx,dqy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
-                            qxm,qxp,qym,qyp,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
-                            ilo1,ilo2,ihi1,ihi2,dx,dy,dt,kc,k3d,a_old)
-            end if
+            call tracexy(q,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
+                         dqx,dqy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+                         qxm,qxp,qym,qyp,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+                         ilo1,ilo2,ihi1,ihi2,dx,dy,dt,kc,k3d,a_old)
 
          else 
             print *,'>>> ... we only support ppm_type >= 0, not: ',ppm_type 
@@ -369,17 +361,10 @@
                                srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                                ilo1,ilo2,ihi1,ihi2,dt,a_old,km,kc,k3d)
             else if (ppm_type .eq. 0) then
-               if (use_colglaz .eq. 1) then
-                  call tracez_cg(q,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
-                              dqz,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
-                              qzm,qzp,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
-                              ilo1,ilo2,ihi1,ihi2,dz,dt,km,kc,k3d,a_old)
-               else
-                  call tracez(q,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
-                              dqz,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
-                              qzm,qzp,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
-                              ilo1,ilo2,ihi1,ihi2,dz,dt,km,kc,k3d,a_old)
-               end if
+               call tracez(q,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
+                           dqz,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+                           qzm,qzp,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+                           ilo1,ilo2,ihi1,ihi2,dz,dt,km,kc,k3d,a_old)
             else 
                print *,'>>> ... we only support ppm_type >= 0, not: ',ppm_type 
                call amrex_error("Error:: Nyx_advection_3d.f90 :: umeth3d")

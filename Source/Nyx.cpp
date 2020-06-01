@@ -202,7 +202,6 @@ int Nyx::do_special_tagging = 0;
 int Nyx::ppm_type           = 1;
 int Nyx::ppm_reference      = 1;
 
-int Nyx::use_colglaz        = 0;
 int Nyx::version_2          = 0;
 
 int Nyx::use_flattening     = 1;
@@ -542,7 +541,6 @@ Nyx::read_params ()
     pp_nyx.query("ppm_flatten_before_integrals", ppm_flatten_before_integrals);
     pp_nyx.query("use_analriem", use_analriem);
     pp_nyx.query("use_flattening", use_flattening);
-    pp_nyx.query("use_colglaz", use_colglaz);
     pp_nyx.query("version_2", version_2);
 
     if(hydro_convert == 1)
@@ -573,15 +571,6 @@ Nyx::read_params ()
                          << h_species << " and " << he_species
                          << " in the hydro and in the EOS " << std::endl;
            }
-        }
-
-        //
-        if (use_colglaz == 1)
-        {
-           if (ppm_type == 0 && ParallelDescriptor::IOProcessor())
-               std::cout << "Nyx::setting use_colglaz = 1 with ppm_type = 0 \n";
-           if (ppm_type != 0)
-               amrex::Error("Nyx::ppm_type must be 0 with use_colglaz = 1");
         }
 
         // ppm_flatten_before_integrals is only done for ppm_type != 0

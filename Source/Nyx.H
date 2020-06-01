@@ -888,7 +888,6 @@ protected:
     static int ppm_type;
     static int ppm_reference;
     static int ppm_flatten_before_integrals;
-    static int use_colglaz;
     static int use_flattening;
     static int use_analriem;
     static int version_2;

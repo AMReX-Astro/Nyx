@@ -2,7 +2,6 @@
 max_step = 10000000
 
 nyx.ppm_type = 0
-nyx.use_colglaz = 1
 nyx.add_ext_src = 0
 
 #This is 1e-8 times the lowest density in plt00000
