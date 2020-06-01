@@ -5,7 +5,6 @@ max_step = 400
 nyx.ppm_type         = 1
 nyx.ppm_reference    = 1
 nyx.use_colglaz      = 0
-nyx.corner_coupling  = 1
 
 nyx.add_ext_src      = 0
 nyx.heat_cool_type   = 3
