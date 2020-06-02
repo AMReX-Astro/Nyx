@@ -5,7 +5,6 @@
 #include "Nyx.H"
 #include "Nyx_F.H"
 #include "Derive.H"
-#include "Derive_F.H"
 #ifdef FORCING
 #include "Forcing.H"
 #endif
@@ -492,15 +491,15 @@ Nyx::hydro_setup()
     }
 
     derive_lst.add("forcex", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERFORCEX, derforcex), the_same_box);
+                   derforcex, the_same_box);
     derive_lst.addComponent("forcex", desc_lst, State_Type, Density, 1);
 
     derive_lst.add("forcey", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERFORCEY, derforcey), the_same_box);
+                   derforcey, the_same_box);
     derive_lst.addComponent("forcey", desc_lst, State_Type, Density, 1);
 
     derive_lst.add("forcez", IndexType::TheCellType(), 1,
-                   BL_FORT_PROC_CALL(DERFORCEZ, derforcez), the_same_box);
+                   derforcez, the_same_box);
     derive_lst.addComponent("forcez", desc_lst, State_Type, Density, 1);
 
     //

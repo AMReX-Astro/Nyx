@@ -249,6 +249,39 @@ extern "C"
       });
     }
 
+    void derentropy(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
+                 const FArrayBox& datfab, const Geometry& geomdata,
+                 Real /*time*/, const int* /*bcrec*/, int /*level*/)
+    {
+
+      auto const dat = datfab.array();
+      auto const der = derfab.array();
+
+      //  Here dat contains (Density, Xmom, Ymom, Zmom, (rho E), (rho e), Temp, Ne)
+
+      amrex::ParallelFor(bx,
+      [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
+      {
+           Real rhoInv = 1.0_rt/dat(i,j,k,Density);
+	   Real      e = dat(i,j,k,Eint)*rhoInv;
+
+	// Protect against negative e
+#ifdef HEATCOOL
+//	if (e > 0.0)
+//            call nyx_eos_S_given_Re(s(i,j,k,1), u(i,j,k,URHO), e, &
+//                                    u(i,j,k,7), u(i,j,k,8), &
+//                                    comoving_a = 1.d0)
+#else
+//      if (e > 0.0)
+//            call nyx_eos_S_given_Re(s(i,j,k,1), u(i,j,k,URHO), e, &
+//                                    u(i,j,k,7), u(i,j,k,8), &
+//                                    comoving_a = 1.d0)
+#endif
+//	else
+	    der(i,j,k,0) = 0.0;
+      });
+    }
+
     void dermachnumber(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
                        const FArrayBox& datfab, const Geometry& geomdata,
                        Real /*time*/, const int* /*bcrec*/, int /*level*/)
@@ -361,24 +394,26 @@ extern "C"
       });
     }
 
-    void derforcex(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
-                   const FArrayBox& datfab, const Geometry& geomdata,
-                   Real /*time*/, const int* /*bcrec*/, int /*level*/)
+    void dermomt(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
+                 const FArrayBox& datfab, const Geometry& geomdata,
+                 Real /*time*/, const int* /*bcrec*/, int /*level*/)
     {
-    }
 
-    void derforcey(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
-                   const FArrayBox& datfab, const Geometry& geomdata,
-                   Real /*time*/, const int* /*bcrec*/, int /*level*/)
-    {
-    }
+      auto const dat = datfab.array();
+      auto const der = derfab.array();
 
-    void derforcez(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
-                   const FArrayBox& datfab, const Geometry& geomdata,
-                   Real /*time*/, const int* /*bcrec*/, int /*level*/)
-    {
-    }
+      auto const dx = geomdata.CellSizeArray();
 
+      // Here dat contains (Density, Single Component of Momentum, Sdens)
+
+      amrex::ParallelFor(bx,
+      [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
+      {
+
+          der(i,j,k,0) = dat(i,j,k,1) + dat(i,j,k,1)*dat(i,j,k,2)/dat(i,j,k,0);
+
+      });
+    }
 #ifdef __cplusplus
 }
 #endif

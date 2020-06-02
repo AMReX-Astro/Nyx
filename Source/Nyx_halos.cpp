@@ -18,7 +18,7 @@ using std::string;
 #include <AMReX_CONSTANTS.H>
 #include <Nyx.H>
 #include <Nyx_F.H>
-#include <Derive_F.H>
+#include <Derive.H>
 
 #include "AGNParticleContainer.H"
 
