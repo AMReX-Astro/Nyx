@@ -326,7 +326,7 @@ module atomic_rates_module
 
          this_z = (-(z+1)-1) ! -((1/(-a)-1)+1)-1
          z_vode = (-(z+1)-1) ! -((1/(-a)-1)+1)-1z
-         lopz   = dlog10(1.0d0 + -(z+1)-1) ! -((1/(-a)-1)+1)-1)
+         lopz   = dlog10( 1.0d0 + (-(z+1)-1) ) ! -((1/(-a)-1)+1)-1)
          
          if (lopz .ge. lzr(NCOOLFILE)) then
             ggh0_2  = 0.0d0
