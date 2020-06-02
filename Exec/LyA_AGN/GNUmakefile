@@ -2,22 +2,23 @@
 AMREX_HOME ?= ../../../amrex
 
 CVODE_LIB_DIR ?= $(CVODE_LIB)
+BOOST_INLUDE_DIR := ${OLCF_BOOST_ROOT}/include/boost
 
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ../..
 
 # compilation options
-COMP    = intel  # gnu
+COMP    = gnu
 USE_MPI = TRUE
 USE_OMP = FALSE
 
-PROFILE       = TRUE
+PROFILE       = FALSE
 TRACE_PROFILE = FALSE
 COMM_PROFILE  = FALSE
 TINY_PROFILE  = FALSE
 
 PRECISION = DOUBLE
-USE_SINGLE_PRECISION_PARTICLES = TRUE
+USE_SINGLE_PRECISION_PARTICLES = FALSE
 DEBUG     = FALSE
 
 GIMLET = FALSE
@@ -34,4 +35,3 @@ Bpack := ./Make.package
 Blocs := .
 
 include $(TOP)/Exec/Make.Nyx
-

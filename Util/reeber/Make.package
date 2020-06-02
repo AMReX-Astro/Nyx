@@ -1,0 +1,38 @@
+ifeq ($(REEBER), TRUE)
+  DEFINES += -DREEBER
+  DEFINES += -DPARALLEL_MPI -DBOOST_DATE_TIME_NO_LOCALE
+  DEFINES += -DREEBER_EXTRA_INTEGRAL
+  DEFINES += -DZARIJA
+ifeq ($(PRECISION), DOUBLE)
+  DEFINES += -DREEBER_REAL=double
+else
+  DEFINES += -DREEBER_REAL=float
+endif
+  LIBRARIES += -lpthread
+#  BOOST_INCLUDE_DIR ?= /project/projectdirs/nyx/ghweber/boost-1.61.0-noarch/include
+#  DIY_INCLUDE_DIR ?= /project/projectdirs/nyx/ghweber/diy/include
+ifeq ($(REEBER_HIST), TRUE)
+  DEFINES += -DREEBER_HIST
+  DEFINES += -DREEBER_USE_BOXLIB_READER -DREEBER_IN_SITU
+endif
+  INCLUDE_LOCATIONS += $(BOOST_INCLUDE_DIR)
+  INCLUDE_LOCATIONS += $(DIY_INCLUDE_DIR)
+  INCLUDE_LOCATIONS += $(REEBER_NYX_HOME)/include
+  INCLUDE_LOCATIONS += $(REEBER_EXT_HOME)/include
+  INCLUDE_LOCATIONS += $(REEBER_EXT_HOME)/examples/include
+  INCLUDE_LOCATIONS += $(REEBER_EXT_HOME)/examples/local-global
+  INCLUDE_LOCATIONS += $(REEBER_EXT_HOME)/examples/amr-merge-tree/include
+  INCLUDE_LOCATIONS += $(REEBER_EXT_HOME)/examples/amr-connected-components/include
+  VPATH_LOCATIONS += $(REEBER_NYX_HOME)/src
+  VPATH_LOCATIONS += $(REEBER_EXT_HOME)/src
+endif
+
+ifeq ($(REEBER_HIST), TRUE)
+  CEXE_sources += format.cpp
+  CEXE_sources += ReeberAnalysis.cpp mt-lg-ghosts.cpp
+  CEXE_headers += format.h
+  CEXE_headers += ReeberAnalysis.H mt-lg-ghosts.h
+endif
+
+CEXE_headers += reeber.H
+CEXE_sources += reeber.cpp

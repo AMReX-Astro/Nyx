@@ -19,6 +19,12 @@
 #include "NeutrinoParticleContainer.H"
 #endif
 
+#ifdef REEBER
+#ifndef REEBER_HIST
+#include <reeber.H>
+#endif
+#endif
+
 #include <iostream>
 
 #ifdef BL_HDF5
@@ -362,7 +368,7 @@ public:
     // Restore spectrum at restart
     //
     void forcing_post_restart(const std::string& restart_file);
-#endif 
+#endif
 
     //
     // Read particle-related inputs
@@ -564,12 +570,12 @@ public:
     amrex::Vector<std::unique_ptr<amrex::MultiFab> > mass_fluxes;
 
     void compute_hydro_sources(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
-                               amrex::MultiFab& S_border, amrex::MultiFab& D_border, 
-                               amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src, 
+                               amrex::MultiFab& S_border, amrex::MultiFab& D_border,
+                               amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src,
                                amrex::MultiFab& grav, amrex::MultiFab& divu_cc,
                                bool init_flux_register, bool add_to_flux_register);
 
-    void update_state_with_sources( amrex::MultiFab& S_old      , amrex::MultiFab& S_new, 
+    void update_state_with_sources( amrex::MultiFab& S_old      , amrex::MultiFab& S_new,
                                     amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src,
                                     amrex::MultiFab& grav       , amrex::MultiFab& divu_cc,
                                     amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
@@ -579,17 +585,17 @@ public:
 
 #ifdef SDC
     void sdc_reactions ( amrex::MultiFab& state_old, amrex::MultiFab& state_new, amrex::MultiFab&  dstate,
-                         amrex::MultiFab& hydro_src, amrex::MultiFab& IR, 
-                         amrex::Real dt, amrex::Real a_old, amrex::Real a_new, 
+                         amrex::MultiFab& hydro_src, amrex::MultiFab& IR,
+                         amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
                          int sdc_iter);
 #endif
 
   int integrate_state_exact(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
   int integrate_state_grownexact(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
-  
+
    int integrate_state_box(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
    int integrate_state_grownbox(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
-  
+
   int integrate_state_vec(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
    int integrate_state_grownvec(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
   int integrate_state_vec_mfin(amrex::Array4<amrex::Real>const& state4,   amrex::Array4<amrex::Real>const& diag_eos4,const  amrex::Box& tbx,  const amrex::Real& a, const amrex::Real& delta_time, long int& old_max_steps, long int& new_max_steps);
@@ -610,6 +616,14 @@ public:
     void halo_find(amrex::Real dt);
     void halo_merge();
     void halo_accrete(amrex::Real dt);
+
+#ifdef REEBER
+    void runReeberAnalysis(amrex::Vector<amrex::MultiFab*>& new_state,
+			               amrex::Vector<std::unique_ptr<amrex::MultiFab> >& particle_mf,
+                           const amrex::Geometry Geom, const amrex::Vector<amrex::IntVect>& level_refinements,
+                           int nStep, bool do_analysis, std::vector<Halo>& reeber_halos);
+#endif
+
     void Lya_statistics();
 
     //

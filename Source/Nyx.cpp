@@ -34,10 +34,6 @@ using std::string;
 #include "Forcing.H"
 #endif
 
-#ifdef REEBER
-#include <ReeberAnalysis.H>
-#endif
-
 #ifdef GIMLET
 #include <DoGimletAnalysis.H>
 #include <postprocess_tau_fields.H>
@@ -1955,7 +1951,10 @@ Nyx::postCoarseTimeStep (Real cumtime)
    AmrLevel::postCoarseTimeStep(cumtime);
 
 #ifdef AGN
-   halo_find(parent->dtLevel(level));
+   if (level == 0)
+     {
+       halo_find(parent->dtLevel(level));
+     }
 #endif 
 
 #ifdef GIMLET

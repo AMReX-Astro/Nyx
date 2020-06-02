@@ -24,7 +24,9 @@
 #include <Nyx.H>
 
 #ifdef REEBER
+#ifdef REEBER_HIST
 #include <ReeberAnalysis.H> // This actually works both in situ and in-transit.
+#endif
 #endif
 
 #include "Nyx_output.H"
@@ -105,7 +107,9 @@ nyx_main (int argc, char* argv[])
 
     // Reeber has to do some initialization.
 #ifdef REEBER
+#ifdef REEBER_HIST
     reeber_int = initReeberAnalysis();
+#endif
 #endif
 
     // Allocate fortran module parameters which are cuda managed for the reactions
