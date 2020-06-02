@@ -362,16 +362,7 @@ Nyx::initData ()
 #endif
 
     if (do_hydro)
-    {
-        // Verify that the sum of (rho X)_i = rho at every cell.
-        for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
-        {
-            const Box& bx = mfi.tilebox();
-
-            fort_check_initial_species
-                (bx.loVect(), bx.hiVect(), BL_TO_FORTRAN(S_new[mfi]));
-        }
-    }
+        check_initial_species();
 
     //
     // Need to compute this in case we want to use overdensity for regridding.
@@ -476,4 +467,61 @@ Nyx::init_from_plotfile ()
         std::cout << " " << std::endl; 
     }
 
+}
+
+void
+Nyx::check_initial_species ()
+{
+    // Verify that the sum of (rho X)_i = rho at every cell.
+
+    MultiFab&   S_new    = get_new_data(State_Type);
+
+    int iufs; 
+    int nspec; 
+
+    // Get the number of species from the network model.
+    fort_get_num_spec(&nspec);
+    fort_get_UFS(&iufs);
+
+    int iden = Density;
+
+    ReduceOps<ReduceOpMax> reduce_op;
+    ReduceData<Real> reduce_data(reduce_op);
+    using ReduceTuple = typename decltype(reduce_data)::Type;
+
+    if (iufs > 0)
+    {
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
+        for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
+        {
+          const auto state = S_new.array(mfi);
+
+          const Box& tbx = mfi.tilebox();
+
+          reduce_op.eval(tbx, reduce_data,
+          [state,nspec,iden,iufs] 
+          AMREX_GPU_DEVICE (int i, int j, int k) -> ReduceTuple
+          {
+               Real sum = state(i,j,k,iufs-1);
+               for (int n = 1; n < nspec; n++) 
+                  sum += state(i,j,k,iufs-1+n);
+
+               sum /= state(i,j,k,iden);
+
+               Real x = amrex::Math::abs(amrex::Math::abs(sum) - 1.e-8);
+               return x;
+          });
+        }
+
+        ReduceTuple hv = reduce_data.value();
+        ParallelDescriptor::ReduceRealMax(amrex::get<0>(hv));
+        if (get<0>(hv) > 1.e-8) 
+            amrex::Abort("Error:: Failed check of initial species summing to 1");
+
+    } else {
+      if (amrex::Math::abs(1.0 - h_species - he_species) > 1.e-8) 
+          amrex::Abort("Error:: Failed check of initial species summing to 1");
+    }
 }

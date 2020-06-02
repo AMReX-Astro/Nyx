@@ -81,6 +81,8 @@ extern "C"
 
   void fort_get_aux_names(int* aux_names, int* iaux, int* len);
 
+  void fort_get_UFS(int* ufs);
+
   void fort_set_eos_params(const amrex::Real& h_species_in, const amrex::Real& he_species_in);
 
   void fort_set_small_values
@@ -110,9 +112,6 @@ extern "C"
     (const int* lo, const int* hi, 
      const int& num_diag, BL_FORT_FAB_ARG(diag_eos),
      const int& ratio, BL_FORT_FAB_ARG(zhi));
-
-  void fort_check_initial_species
-    (const int* lo, const int* hi, BL_FORT_FAB_ARG(state));
 
   AMREX_GPU_DEVICE void fort_init_e_from_t
      (BL_FORT_FAB_ARG(state), const int* num_state,

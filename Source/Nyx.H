@@ -342,6 +342,8 @@ public:
     void init_santa_barbara(int init_sb_vels);
 #endif
 
+    void check_initial_species();
+
     //
     // Initialize from MUSIC
     //
