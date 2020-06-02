@@ -476,20 +476,15 @@ Nyx::check_initial_species ()
 
     MultiFab&   S_new    = get_new_data(State_Type);
 
-    int iufs; 
-    int nspec; 
-
-    // Get the number of species from the network model.
-    fort_get_num_spec(&nspec);
-    fort_get_UFS(&iufs);
-
     int iden = Density;
+    int iufs=FirstSpec+1;
+    int nspec=NumSpec;
 
     ReduceOps<ReduceOpMax> reduce_op;
     ReduceData<Real> reduce_data(reduce_op);
     using ReduceTuple = typename decltype(reduce_data)::Type;
 
-    if (iufs > 0)
+    if (use_const_species != 1 && iufs > 0)
     {
 #ifdef _OPENMP
 #pragma omp parallel
@@ -505,7 +500,7 @@ Nyx::check_initial_species ()
           AMREX_GPU_DEVICE (int i, int j, int k) -> ReduceTuple
           {
                Real sum = state(i,j,k,iufs-1);
-               for (int n = 1; n < nspec; n++) 
+               for (int n = 0; n < nspec; n++)
                   sum += state(i,j,k,iufs-1+n);
 
                sum /= state(i,j,k,iden);
