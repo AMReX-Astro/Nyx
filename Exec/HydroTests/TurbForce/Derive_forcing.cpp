@@ -48,12 +48,12 @@ extern "C"
       amrex::ParallelFor(bx,
       [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
       {
+        Real f1 = 0.0;
 #if 0
         Real x = (i+0.5) * dx[0];
         Real y = (j+0.5) * dx[1];
         Real z = (k+0.5) * dx[2];
                
-        Real f1 = 0.0;
         for (int kz = mode_start*zstep; kz < nzmodes; kz += zstep)
         {
            Real kzd = static_cast<Real>(kz);
@@ -82,9 +82,8 @@ extern "C"
            }
         }
 
-        der(i,j,k,0) = dat(i,j,k,0)*f1;
 #endif
-
+        der(i,j,k,0) = dat(i,j,k,0)*f1;
       });
     }
 
@@ -155,13 +154,13 @@ extern "C"
                      }
                  }
                
-               der(i,j,k,0) = dat(i,j,k,0)*f2;
               }
            }
         }
 #endif
+        der(i,j,k,0) = dat(i,j,k,0)*f2;
       });
-}
+    }
 
     void derforcez(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
                    const FArrayBox& datfab, const Geometry& geomdata,
@@ -229,14 +228,13 @@ extern "C"
                                                               sin(freqz*z+FPXZ(kx,ky,kz)) );
                      }
                  }
-               
-               der(i,j,k,0) = dat(i,j,k,0)*f3;
               }
            }
         }
 #endif
+        der(i,j,k,0) = dat(i,j,k,0)*f3;
       });
-}
+   } 
 
 #ifdef __cplusplus
 }
