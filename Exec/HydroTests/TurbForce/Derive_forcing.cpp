@@ -24,16 +24,18 @@ extern "C"
 
       Real twicePi = 2.0*M_PI;
 
-#if 0
-      Real Lx = prob_hi(1)-prob_lo(1);
-      Real Ly = prob_hi(2)-prob_lo(2);
-      Real Lz = prob_hi(3)-prob_lo(3);
+      Real Lx = geomdata.ProbHi(0)-geomdata.ProbLo(0);
+      Real Ly = geomdata.ProbHi(1)-geomdata.ProbLo(1);
+      Real Lz = geomdata.ProbHi(1)-geomdata.ProbLo(2);
     
       Real Lmin = amrex::min(Lx,Ly,Lz);
-      Real kappaMax = static_cast<Real>(modes) / Lmin + 1.0e-8;
+
+#if 0
+      Real kappaMax = static_cast<Real>(nmodes) / Lmin + 1.0e-8;
       int  nxmodes = nmodes* static_cast<int>(amrex::Math::floor(0.5+Lx/Lmin));
       int  nymodes = nmodes* static_cast<int>(amrex::Math::floor(0.5+Ly/Lmin));
       int  nzmodes = nmodes* static_cast<int>(amrex::Math::floor(0.5+Lz/Lmin));
+#endif
     
       int xstep = int(Lx/Lmin+0.5);
       int ystep = int(Ly/Lmin+0.5);
@@ -42,7 +44,6 @@ extern "C"
       Real HLx = Lx;
       Real HLy = Ly;
       Real HLz = Lz;
-#endif
 
       amrex::ParallelFor(bx,
       [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
@@ -100,16 +101,17 @@ extern "C"
 
       Real twicePi = 2.0*M_PI;
 
-#if 0
-      Real Lx = prob_hi(1)-prob_lo(1);
-      Real Ly = prob_hi(2)-prob_lo(2);
-      Real Lz = prob_hi(3)-prob_lo(3);
-    
+      Real Lx = geomdata.ProbHi(0)-geomdata.ProbLo(0);
+      Real Ly = geomdata.ProbHi(1)-geomdata.ProbLo(1);
+      Real Lz = geomdata.ProbHi(1)-geomdata.ProbLo(2);
+
       Real Lmin = amrex::min(Lx,Ly,Lz);
-      Real kappaMax = static_cast<Real>(modes) / Lmin + 1.0e-8;
+#if 0
+      Real kappaMax = static_cast<Real>(nmodes) / Lmin + 1.0e-8;
       int  nxmodes = nmodes* static_cast<int>(amrex::Math::floor(0.5+Lx/Lmin));
       int  nymodes = nmodes* static_cast<int>(amrex::Math::floor(0.5+Ly/Lmin));
       int  nzmodes = nmodes* static_cast<int>(amrex::Math::floor(0.5+Lz/Lmin));
+#endif
     
       int xstep = int(Lx/Lmin+0.5);
       int ystep = int(Ly/Lmin+0.5);
@@ -118,7 +120,6 @@ extern "C"
       Real HLx = Lx;
       Real HLy = Ly;
       Real HLz = Lz;
-#endif
 
       amrex::ParallelFor(bx,
       [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
@@ -175,16 +176,17 @@ extern "C"
 
       Real twicePi = 2.0*M_PI;
 
-#if 0
-      Real Lx = prob_hi(1)-prob_lo(1);
-      Real Ly = prob_hi(2)-prob_lo(2);
-      Real Lz = prob_hi(3)-prob_lo(3);
+      Real Lx = geomdata.ProbHi(0)-geomdata.ProbLo(0);
+      Real Ly = geomdata.ProbHi(1)-geomdata.ProbLo(1);
+      Real Lz = geomdata.ProbHi(1)-geomdata.ProbLo(2);
     
       Real Lmin = amrex::min(Lx,Ly,Lz);
-      Real kappaMax = static_cast<Real>(modes) / Lmin + 1.0e-8;
+#if 0
+      Real kappaMax = static_cast<Real>(nmodes) / Lmin + 1.0e-8;
       int  nxmodes = nmodes* static_cast<int>(amrex::Math::floor(0.5+Lx/Lmin));
       int  nymodes = nmodes* static_cast<int>(amrex::Math::floor(0.5+Ly/Lmin));
       int  nzmodes = nmodes* static_cast<int>(amrex::Math::floor(0.5+Lz/Lmin));
+#endif
     
       int xstep = int(Lx/Lmin+0.5);
       int ystep = int(Ly/Lmin+0.5);
@@ -193,7 +195,6 @@ extern "C"
       Real HLx = Lx;
       Real HLy = Ly;
       Real HLz = Lz;
-#endif
 
       amrex::ParallelFor(bx,
       [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
