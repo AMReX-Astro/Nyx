@@ -48,7 +48,7 @@ Nyx::strang_hydro (Real time,
 
     {
       amrex::Gpu::Device::streamSynchronize();
-      if (S_old.contains_nan(Density, S_old.nComp(), 0))
+      /*      if (S_old.contains_nan(Density, S_old.nComp(), 0))
 	{
 	  for (int i = 0; i < S_old.nComp(); i++)
 	    {
@@ -57,7 +57,7 @@ Nyx::strang_hydro (Real time,
 	      if (S_old.contains_nan(Density+i,1,0))
                 amrex::Abort("S_old has NaNs in this component");
 	    }
-	}
+	}*/
     }
 #endif
     
@@ -107,7 +107,7 @@ Nyx::strang_hydro (Real time,
 #ifdef AMREX_DEBUG
     {
 	amrex::Gpu::Device::streamSynchronize();
-	if (S_old_tmp.contains_nan(Density, S_old_tmp.nComp(), 0)) 
+	/*	if (S_old_tmp.contains_nan(Density, S_old_tmp.nComp(), 0)) 
           {
 	    for (int i = 0; i < S_old_tmp.nComp(); i++)
 	      {
@@ -117,7 +117,7 @@ Nyx::strang_hydro (Real time,
 		  amrex::Abort("S_old_tmp has NaNs in this component before first strang");
               }
 	    amrex::Abort("S_new has NaNs before the second strang call");
-          }
+	    }*/
     }
 #endif
 
@@ -161,7 +161,7 @@ Nyx::strang_hydro (Real time,
 #ifdef AMREX_DEBUG
     {
     amrex::Gpu::Device::streamSynchronize();
-    if (S_new.contains_nan(Density, S_new.nComp(), 0))
+    /*    if (S_new.contains_nan(Density, S_new.nComp(), 0))
       {
     for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
@@ -180,7 +180,7 @@ Nyx::strang_hydro (Real time,
         }
         amrex::Abort("S_new has NaNs before the second strang call");
     }
-      }
+    }*/
     }
 #endif
 
@@ -226,7 +226,7 @@ Nyx::strang_hydro (Real time,
 
 #ifdef AMREX_DEBUG
     amrex::Gpu::Device::streamSynchronize();
-    if (S_new.contains_nan(Density, S_new.nComp(), 0))
+    /*    if (S_new.contains_nan(Density, S_new.nComp(), 0))
       {
         for (int i = 0; i < S_new.nComp(); i++)
         {
@@ -240,7 +240,7 @@ Nyx::strang_hydro (Real time,
 	      }
         }
         amrex::Abort("S_new has NaNs before the second strang call");
-      }
+	}*/
 #endif
 
 #ifdef HEATCOOL
@@ -254,8 +254,8 @@ Nyx::strang_hydro (Real time,
 
 #ifdef AMREX_DEBUG
     amrex::Gpu::Device::streamSynchronize();
-    if (S_new.contains_nan(Density, S_new.nComp(), 0))
-        amrex::Abort("S_new has NaNs after the second strang call");
+    /*    if (S_new.contains_nan(Density, S_new.nComp(), 0))
+	  amrex::Abort("S_new has NaNs after the second strang call");*/
 #endif
 
     amrex::Gpu::Device::streamSynchronize();
@@ -297,7 +297,7 @@ Nyx::strang_hydro_ghost_state (Real time,
 
     amrex::Gpu::Device::streamSynchronize();
     amrex::Gpu::setLaunchRegion(false);
-    if (S_old.contains_nan(Density, S_old.nComp(), 0))
+    /*    if (S_old.contains_nan(Density, S_old.nComp(), 0))
     {
         for (int i = 0; i < S_old.nComp(); i++)
         {
@@ -306,7 +306,7 @@ Nyx::strang_hydro_ghost_state (Real time,
             if (S_old.contains_nan(Density+i,1,0))
                 amrex::Abort("S_old has NaNs in this component");
         }
-    }
+	}*/
     amrex::Gpu::setLaunchRegion(true);
 #endif
     
@@ -405,7 +405,7 @@ Nyx::strang_hydro_ghost_state (Real time,
 #ifdef AMREX_DEBUG
     amrex::Gpu::Device::streamSynchronize();
     amrex::Gpu::setLaunchRegion(false);
-    if (S_new.contains_nan(Density, S_new.nComp(), 0))
+    /*    if (S_new.contains_nan(Density, S_new.nComp(), 0))
       {
     for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
@@ -424,7 +424,7 @@ Nyx::strang_hydro_ghost_state (Real time,
         }
         amrex::Abort("S_new has NaNs before the second strang call");
     }
-      }
+    }*/
     amrex::Gpu::setLaunchRegion(true);
 #endif
 
@@ -455,7 +455,7 @@ Nyx::strang_hydro_ghost_state (Real time,
     amrex::Gpu::Device::streamSynchronize();
     amrex::Gpu::setLaunchRegion(false);
 #ifdef AMREX_DEBUG
-    if (S_new.contains_nan(Density, S_new.nComp(), 0))
+    /*    if (S_new.contains_nan(Density, S_new.nComp(), 0))
       {
         for (int i = 0; i < S_new.nComp(); i++)
         {
@@ -469,7 +469,7 @@ Nyx::strang_hydro_ghost_state (Real time,
 	      }
         }
         amrex::Abort("S_new has NaNs before the second strang call");
-      }
+	}*/
     amrex::Gpu::setLaunchRegion(true);
 #endif
 
@@ -485,8 +485,8 @@ Nyx::strang_hydro_ghost_state (Real time,
     amrex::Gpu::Device::streamSynchronize();
     amrex::Gpu::setLaunchRegion(false);
 #ifdef AMREX_DEBUG
-    if (S_new.contains_nan(Density, S_new.nComp(), 0))
-        amrex::Abort("S_new has NaNs after the second strang call");
+    /*    if (S_new.contains_nan(Density, S_new.nComp(), 0))
+	  amrex::Abort("S_new has NaNs after the second strang call");*/
     amrex::Gpu::setLaunchRegion(true);
 #endif
 

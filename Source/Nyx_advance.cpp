@@ -491,6 +491,7 @@ Nyx::advance_hydro (Real time,
                     int  ncycle)
 {
     BL_PROFILE("Nyx::advance_hydro()");
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     // sanity checks
     if (!do_hydro)
         amrex::Abort("In `advance_hydro` but `do_hydro` not true");
