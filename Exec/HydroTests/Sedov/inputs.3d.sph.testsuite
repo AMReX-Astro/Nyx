@@ -68,9 +68,9 @@ amr.check_file      = chk     # root name of checkpoint file
 amr.check_int       = 200       # number of timesteps between checkpoints
 
 # PLOTFILES
-amr.plot_file       = plt
-amr.plot_int        = 200
-amr.derive_plot_vars=ALL
+amr.plot_file        = plt
+amr.plot_int         = 200
+amr.derive_plot_vars = pressure
 
 # PROBIN FILENAME
 amr.probin_file = probin.3d.sph
