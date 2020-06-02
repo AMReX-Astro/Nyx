@@ -1011,6 +1011,8 @@ Nyx::est_time_step (Real dt_old)
 	  //Doesn't seem to be used:
 	  //	  Real grid_scl = std::cbrt(dx[0]*dx[1]*dx[2]);
 	  Real sound_speed_factor=sqrt(gamma*(gamma-1));
+          Real dummy_small_dens=small_dens;
+          int  dummy_max_temp_dt=max_temp_dt;
 
 	  amrex::Gpu::LaunchSafeGuard lsg(true);
 	  dt = amrex::ReduceMin(stateMF, 0,
@@ -1027,6 +1029,9 @@ Nyx::est_time_step (Real dt_old)
 					      for         (int k = lo.z; k <= hi.z; ++k) {
 						for     (int j = lo.y; j <= hi.y; ++j) {
 						  for (int i = lo.x; i <= hi.x; ++i) {
+						    if(u(i,j,k,Density)<=1.1*dummy_small_dens && dummy_max_temp_dt==1)
+						      continue;
+
 						    Real rhoInv = 1.0 / u(i,j,k,Density);
 						    Real ux     = u(i,j,k,Xmom)*rhoInv;
 						    Real uy     = u(i,j,k,Ymom)*rhoInv;
