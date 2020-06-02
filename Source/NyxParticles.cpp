@@ -152,7 +152,6 @@ int Nyx::particle_launch_ics            = 1;
 
 int Nyx::particle_verbose               = 1;
 int Nyx::write_particle_density_at_init = 0;
-int Nyx::write_coarsened_particles      = 0;
 Real Nyx::particle_cfl = 0.5;
 #ifdef NEUTRINO_PARTICLES
 Real Nyx::neutrino_cfl = 0.5;
@@ -365,7 +364,6 @@ Nyx::read_particle_params ()
 #endif
 
     pp.query("write_particle_density_at_init", write_particle_density_at_init);
-    pp.query("write_coarsened_particles", write_coarsened_particles);
     //
     // Control the verbosity of the Particle class
     //
@@ -570,13 +568,6 @@ Nyx::init_particles ()
         else
         {
             amrex::Error("not a valid input for nyx.particle_init_type");
-        }
-
-
-        if (write_coarsened_particles)
-        {
-            DMPC->WriteCoarsenedAsciiFile("coarse_particle_file.ascii");
-            exit(0);
         }
     }
 #ifdef AGN

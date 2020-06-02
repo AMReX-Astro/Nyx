@@ -451,12 +451,6 @@ public:
     static int write_particle_density_at_init;
 
     //
-    // Shall we write an ascii file with only the particles in every other cell --
-    //   this is a cheap way of creating a "coarser" particle file
-    //
-    static int write_coarsened_particles;
-
-    //
     //Set time levels of state data.
     //
     virtual void setTimeLevel (amrex::Real time, amrex::Real dt_old, amrex::Real dt_new);
