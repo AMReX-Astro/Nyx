@@ -51,8 +51,8 @@ Nyx::strang_first_step (Real time, Real dt, MultiFab& S_old, MultiFab& D_old)
                  &a, &half_dt, &min_iter, &max_iter);
 
 #ifdef AMREX_DEBUG
-        if (S_old[mfi].contains_nan())
-            amrex::Abort("state has NaNs after the first strang call");
+	    /*        if (S_old[mfi].contains_nan())
+		      amrex::Abort("state has NaNs after the first strang call");*/
 #endif
 
     }
@@ -205,11 +205,11 @@ Nyx::strang_second_step (Real time, Real dt, MultiFab& S_new, MultiFab& D_new)
              BL_TO_FORTRAN(D_new[mfi]),
              &a, &half_dt, &min_iter_grid, &max_iter_grid);
 
-        if (S_new[mfi].contains_nan<RunOn::Device>(bx,0,S_new.nComp()))
+	/*        if (S_new[mfi].contains_nan<RunOn::Device>(bx,0,S_new.nComp()))
         {
             amrex::Gpu::streamSynchronize();
             std::cout << "NANS IN THIS GRID " << bx << std::endl;
-        }
+	    }*/
 
         min_iter = std::min(min_iter,min_iter_grid);
         max_iter = std::max(max_iter,max_iter_grid);
