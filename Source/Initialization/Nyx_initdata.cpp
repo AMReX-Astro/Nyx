@@ -499,6 +499,8 @@ Nyx::init_e_from_T (const Real& a)
 
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
+    Real h_species_in=h_species;
+    Real gamma_minus_1_in=gamma - 1.0;
 
 #ifdef _OPENMP
 #pragma omp parallel
@@ -508,22 +510,22 @@ Nyx::init_e_from_T (const Real& a)
         const Box& bx = mfi.tilebox();
 
         const auto state  = S_new.array(mfi);
-        const auto dstate = D_new.array(mfi);
-
-        amrex::ParallelFor(bx,
-        [state,dstate,a] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
+        const auto diag_eos = D_new.array(mfi);
+        amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
         {
              Real rho =  state(i,j,k,Density);
-             Real T   = dstate(i,j,k,Temp_comp);
-             Real ne  = dstate(i,j,k,  Ne_comp);
+             Real T   = diag_eos(i,j,k,Temp_comp);
+             Real ne  = diag_eos(i,j,k,  Ne_comp);
 
-             Real e, pres;
+             Real eint;
 
              // Call EOS to get the internal energy
-             // HACK HACK HACK -- need C++ version here
-             // call nyx_eos_given_RT(e, pres, rho, T, ne, a)
+			 Real dummy_pres=0.0;
+			 // Set temp to small_temp and compute corresponding internal energy
+        	 nyx_eos_given_RT(gamma_minus_1_in, h_species_in, &eint, &dummy_pres, state(i,j,k,Density), diag_eos(i,j,k,Temp_comp),
+				    diag_eos(i,j,k,Ne_comp), a);
 
-             state(i,j,k,Eint) = state(i,j,k,Density) * e;
+             state(i,j,k,Eint) = state(i,j,k,Density) * eint;
 
              state(i,j,k,Eden) = state(i,j,k,Eint) + 0.5 * ( 
                 state(i,j,k,Xmom)*state(i,j,k,Xmom) +
