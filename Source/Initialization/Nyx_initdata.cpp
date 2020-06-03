@@ -466,7 +466,6 @@ Nyx::init_from_plotfile ()
         std::cout << "Done initializing the particles from the plotfile " << std::endl;
         std::cout << " " << std::endl; 
     }
-
 }
 
 void
@@ -476,9 +475,9 @@ Nyx::check_initial_species ()
 
     MultiFab&   S_new    = get_new_data(State_Type);
 
-    int iden = Density;
-    int iufs=FirstSpec+1;
-    int nspec=NumSpec;
+    int iden  = Density;
+    int iufs  = FirstSpec;
+    int nspec = NumSpec;
 
     ReduceOps<ReduceOpMax> reduce_op;
     ReduceData<Real> reduce_data(reduce_op);
@@ -496,27 +495,27 @@ Nyx::check_initial_species ()
           const Box& tbx = mfi.tilebox();
 
           reduce_op.eval(tbx, reduce_data,
-          [state,nspec,iden,iufs] 
+          [state,nspec,iden,iufs]
           AMREX_GPU_DEVICE (int i, int j, int k) -> ReduceTuple
           {
-               Real sum = state(i,j,k,iufs-1);
-               for (int n = 0; n < nspec; n++)
-                  sum += state(i,j,k,iufs-1+n);
+               Real sum = state(i,j,k,iufs);
+               for (int n = 1; n < nspec; n++)
+                  sum += state(i,j,k,iufs+n);
 
                sum /= state(i,j,k,iden);
 
-               Real x = amrex::Math::abs(amrex::Math::abs(sum) - 1.e-8);
+               Real x = amrex::Math::abs(amrex::Math::abs(sum) - 1.);
                return x;
           });
         }
 
         ReduceTuple hv = reduce_data.value();
         ParallelDescriptor::ReduceRealMax(amrex::get<0>(hv));
-        if (get<0>(hv) > 1.e-8) 
+        if (get<0>(hv) > 1.e-8)
             amrex::Abort("Error:: Failed check of initial species summing to 1");
 
     } else {
-      if (amrex::Math::abs(1.0 - h_species - he_species) > 1.e-8) 
+      if (amrex::Math::abs(1.0 - h_species - he_species) > 1.e-8)
           amrex::Abort("Error:: Failed check of initial species summing to 1");
     }
 }
