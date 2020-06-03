@@ -885,26 +885,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
     int ns = S_new.nComp();
     int nd = D_new.nComp();
 
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
-    for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
-    {
-        const Box& box = mfi.tilebox();
-	const auto fab = S_new.array(mfi);
-	const auto fab_diag = D_new.array(mfi);
-
-	AMREX_LAUNCH_DEVICE_LAMBDA(box, tbx,
-	{
-        const int* lo = tbx.loVect();
-        const int* hi = tbx.hiVect();
-        fort_init_e_from_t
-            (BL_ARR4_TO_FORTRAN(fab), &ns, 
-             BL_ARR4_TO_FORTRAN(fab_diag), &nd, lo, hi, &a);
-	});
-	amrex::Gpu::Device::streamSynchronize();
-    }
-
+    init_e_from_T(a);
 
     // Convert X_i to (rho X)_i
     if (use_const_species == 0) {
@@ -912,7 +893,6 @@ Nyx::init_santa_barbara (int init_sb_vels)
             MultiFab::Multiply(S_new, S_new, Density, FirstSpec+i, 1, 0);
 	}
     }
-
 }
 #endif
 #endif

@@ -420,30 +420,7 @@ void Nyx::initcosmo()
         if (inhomo_reion > 0)
             D_new.setVal(0.0, Zhi_comp);
 
-	{
-	  amrex::Gpu::LaunchSafeGuard lsg(true);
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
-     	for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
-     	{
-     	    const Box& box = mfi.tilebox();
-	    const auto fab = S_new.array(mfi);
-	    const auto fab_diag = D_new.array(mfi);
-	    const amrex::Real a=old_a;
-
-	    AMREX_LAUNCH_DEVICE_LAMBDA(box, tbx,
-	    {
-	      const int* lo = tbx.loVect();
-	      const int* hi = tbx.hiVect();
-	      fort_init_e_from_t
-		(BL_ARR4_TO_FORTRAN(fab), &ns, 
-		 BL_ARR4_TO_FORTRAN(fab_diag), &nd, lo, hi, &a);
-	    });
-	    amrex::Gpu::Device::streamSynchronize();
-     	}     	
-
-	}
+        init_e_from_T(old_a);
 
         // Convert X_i to (rho X)_i
         if (use_const_species == 0)

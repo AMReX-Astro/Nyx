@@ -113,15 +113,6 @@ extern "C"
      const int& num_diag, BL_FORT_FAB_ARG(diag_eos),
      const int& ratio, BL_FORT_FAB_ARG(zhi));
 
-  AMREX_GPU_DEVICE void fort_init_e_from_t
-     (BL_FORT_FAB_ARG(state), const int* num_state,
-      BL_FORT_FAB_ARG( diag), const int* num_diag,
-      const int* lo, const int* hi, const amrex::Real* comoving_a);
-
-  void fort_init_e_from_rhoe
-     (BL_FORT_FAB_ARG(state), const int* num_state,
-      const int* lo, const int* hi, amrex::Real* comoving_a);
-
   void fort_enforce_consistent_e
     (const int* lo, const int* hi, BL_FORT_FAB_ARG(state));
 

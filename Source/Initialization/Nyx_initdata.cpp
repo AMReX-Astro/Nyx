@@ -409,7 +409,6 @@ Nyx::init_from_plotfile ()
     //if (use_const_species == 0)
     //    amrex::Error("init_from_plotfile assumes we are using constant species");
 
-    // Construct internal energy given density, temperature and species
     for (int lev = 0; lev <= parent->finestLevel(); ++lev)
     {
         Nyx& nyx_lev = get_level(lev);
@@ -418,37 +417,12 @@ Nyx::init_from_plotfile ()
         int ns = S_new.nComp();
         int nd = D_new.nComp();
 
-	{
-	  amrex::Gpu::LaunchSafeGuard lsg(true);
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
-        for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
-        {
-            const Box& bx = mfi.tilebox();
-
-            if (rhoe_infile)
-            {
-                fort_init_e_from_rhoe
-                    (BL_TO_FORTRAN(S_new[mfi]), &ns, bx.loVect(), bx.hiVect(), &old_a);
-            }
-            else 
-            {
-	    const auto fab = S_new.array(mfi);
-	    const auto fab_diag = D_new.array(mfi);
-	    const amrex::Real a=old_a;
-	    AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
-	    {
-	      const int* lo = tbx.loVect();
-	      const int* hi = tbx.hiVect();
-	      fort_init_e_from_t
-		(BL_ARR4_TO_FORTRAN(fab), &ns, 
-		 BL_ARR4_TO_FORTRAN(fab_diag), &nd, lo, hi, &a);
-	    });
-	    amrex::Gpu::Device::streamSynchronize();
-            }
-        }
-	}
+        if (rhoe_infile)
+           // Construct (rho E) given (rho e) and momenta and density
+           init_rhoE_from_rhoe();
+        else
+           // Construct internal energy given density, temperature and species
+           init_e_from_T(old_a);
 
         // Define (rho E) given (rho e) and the momenta
         nyx_lev.enforce_consistent_e(S_new);
@@ -517,5 +491,71 @@ Nyx::check_initial_species ()
     } else {
       if (amrex::Math::abs(1.0 - h_species - he_species) > 1.e-8)
           amrex::Abort("Error:: Failed check of initial species summing to 1");
+    }
+}
+
+void
+Nyx::init_rhoE_from_rhoe ()
+{
+    MultiFab& S_new = get_new_data(State_Type);
+
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
+    for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
+    {
+        const Box& bx = mfi.tilebox();
+
+        const auto state  = S_new.array(mfi);
+
+        amrex::ParallelFor(bx,
+        [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
+        {
+             state(i,j,k,Eden) = state(i,j,k,Eint) + 0.5 * ( 
+                state(i,j,k,Xmom)*state(i,j,k,Xmom) +
+                state(i,j,k,Ymom)*state(i,j,k,Ymom) +
+                state(i,j,k,Zmom)*state(i,j,k,Zmom) ) / state(i,j,k,Density);
+        });
+    }
+}
+
+void
+Nyx::init_e_from_T (const Real& a)
+{
+
+    MultiFab& S_new = get_new_data(State_Type);
+    MultiFab& D_new = get_new_data(DiagEOS_Type);
+
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
+    for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
+    {
+        const Box& bx = mfi.tilebox();
+
+        const auto state  = S_new.array(mfi);
+        const auto dstate = D_new.array(mfi);
+
+        amrex::ParallelFor(bx,
+        [state,dstate,a] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
+        {
+             Real rho =  state(i,j,k,Density);
+             Real T   = dstate(i,j,k,Temp_comp);
+             Real ne  = dstate(i,j,k,  Ne_comp);
+
+             Real e, pres;
+
+             // Call EOS to get the internal energy
+             // HACK HACK HACK -- need C++ version here
+             // call nyx_eos_given_RT(e, pres, rho, T, ne, a)
+
+             state(i,j,k,Eint) = state(i,j,k,Density) * e;
+
+             state(i,j,k,Eden) = state(i,j,k,Eint) + 0.5 * ( 
+                state(i,j,k,Xmom)*state(i,j,k,Xmom) +
+                state(i,j,k,Ymom)*state(i,j,k,Ymom) +
+                state(i,j,k,Zmom)*state(i,j,k,Zmom) ) / state(i,j,k,Density);
+        });
+        amrex::Gpu::Device::streamSynchronize();
     }
 }
