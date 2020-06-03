@@ -1,6 +1,5 @@
 F90EXE_sources += init_e_from_t_3d.F90
 f90EXE_sources += init_e_from_rhoe_3d.f90
-f90EXE_sources += interpolate.f90
 CEXE_sources   += Nyx_setup.cpp
 CEXE_sources   += Nyx_initdata.cpp
 CEXE_sources   += Nyx_initcosmo.cpp
