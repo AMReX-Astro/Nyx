@@ -1,4 +1,5 @@
 f90EXE_sources += particle_mod.f90
+f90EXE_sources += update_particles_3d.f90
 
 CEXE_headers += NyxParticleContainer.H
 CEXE_headers += DarkMatterParticleContainer.H
@@ -17,3 +18,4 @@ endif
 
 CEXE_sources += NyxParticles.cpp
 CEXE_sources += DarkMatterParticleContainer.cpp
+

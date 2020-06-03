@@ -349,7 +349,6 @@ public:
 #endif
 
     void check_initial_species();
-    void init_rhoE_from_rhoe();
     void init_e_from_T(const amrex::Real& a);
 
     //

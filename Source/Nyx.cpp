@@ -2364,18 +2364,27 @@ Nyx::enforce_nonnegative_species (MultiFab& S_new)
 void
 Nyx::enforce_consistent_e (MultiFab& S)
 {
-    BL_PROFILE("Nyx::enforce_consistent_e()");
+  BL_PROFILE("Nyx::enforce_consistent_e()");
+
+  //  Set (rho E) = (rho e) + 1/2 rho (u^2 +_ v^2 + w^2)
+
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-  for (MFIter mfi(S,true); mfi.isValid(); ++mfi)
-    {
-        const Box& box = mfi.tilebox();
-        const int* lo = box.loVect();
-        const int* hi = box.hiVect();
-        fort_enforce_consistent_e
-	  (lo, hi, BL_TO_FORTRAN(S[mfi]));
-    }
+  for (MFIter mfi(S,TilingIfNotGPU()); mfi.isValid(); ++mfi)
+  {
+        const Box& bx = mfi.tilebox();
+        auto const state = S.array(mfi);
+
+        amrex::ParallelFor(bx,
+        [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
+        {
+             state(i,j,k,Eden) = state(i,j,k,Eint) + 0.5 * (
+                state(i,j,k,Xmom)*state(i,j,k,Xmom) +
+                state(i,j,k,Ymom)*state(i,j,k,Ymom) +
+                state(i,j,k,Zmom)*state(i,j,k,Zmom) ) / state(i,j,k,Density);
+        });
+  }
 }
 #endif
 

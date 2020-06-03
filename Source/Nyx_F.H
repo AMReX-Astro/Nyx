@@ -113,9 +113,6 @@ extern "C"
      const int& num_diag, BL_FORT_FAB_ARG(diag_eos),
      const int& ratio, BL_FORT_FAB_ARG(zhi));
 
-  void fort_enforce_consistent_e
-    (const int* lo, const int* hi, BL_FORT_FAB_ARG(state));
-
   void fort_enforce_nonnegative_species
     (BL_FORT_FAB_ARG(S_new), const int lo[], const int hi[],
      const int* print_fortran_warnings);
