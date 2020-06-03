@@ -1,0 +1,19 @@
+f90EXE_sources += particle_mod.f90
+
+CEXE_headers += NyxParticleContainer.H
+CEXE_headers += DarkMatterParticleContainer.H
+
+ifeq ($(USE_AGN), TRUE)
+CEXE_headers   += AGNParticleContainer.H
+CEXE_sources   += AGNParticleContainer.cpp
+endif
+
+ifeq ($(NEUTRINO_PARTICLES), TRUE)
+CEXE_sources += NeutrinoParticleContainer.cpp
+CEXE_headers   += NeutrinoParticleContainer.H
+FEXE_headers   += NeutrinoParticles_F.H
+F90EXE_sources += Neutrino_Particle_mod_3d.F90
+endif
+
+CEXE_sources += NyxParticles.cpp
+CEXE_sources += DarkMatterParticleContainer.cpp
