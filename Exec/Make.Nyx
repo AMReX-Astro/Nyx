@@ -103,7 +103,7 @@ endif
 
 Bdirs 	:= Source Source/Src_3d Source/HydroFortran Source/Hydro Source/Tagging Source/Initialization
 Bdirs 	+= Source/EOS Source/Network Source/HeatCool
-Bdirs 	+= Source/SourceTerms Source/DerivedQuantities
+Bdirs 	+= Source/SourceTerms Source/DerivedQuantities Source/Particle
 ifeq ($(USE_MPI), TRUE)
 Bdirs 	+= Source/Monitors
 endif
