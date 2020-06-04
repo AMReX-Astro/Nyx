@@ -24,7 +24,6 @@ Real
 Nyx::vol_weight_sum (MultiFab& mf, bool masked)
 {
     BL_PROFILE("vol_weight_sum");
-    AMREX_ASSERT(mf != 0);
 
     Real        sum = 0;
     const Real* dx  = geom.CellSize();
