@@ -13,7 +13,6 @@ Nyx::vol_weight_sum (const std::string& name,
 {
     BL_PROFILE("vol_weight_sum(name)");
 
-    const Real* dx  = geom.CellSize();
     auto        mf  = derive(name, time, 0);
 
     Real sum = vol_weight_sum(*mf, masked);
@@ -25,8 +24,7 @@ Nyx::vol_weight_sum (MultiFab& mf, bool masked)
 {
     BL_PROFILE("vol_weight_sum");
 
-    Real        sum = 0;
-    const Real* dx  = geom.CellSize();
+    const auto dx  = geom.CellSizeArray();
 
     MultiFab* mask = 0;
     if (masked)
@@ -89,7 +87,7 @@ Nyx::vol_weight_sum (MultiFab& mf, bool masked)
     ReduceTuple hv = reduce_data.value();
     ParallelDescriptor::ReduceRealSum(amrex::get<0>(hv));
 
-    sum += get<0>(hv) * (dx[0] * dx[1] * dx[2]);
+    Real sum = get<0>(hv) * (dx[0] * dx[1] * dx[2]);
 
     if (!masked) 
         sum /= geom.ProbSize();
@@ -105,8 +103,6 @@ Nyx::vol_weight_squared_sum_level (const std::string& name,
 
     auto        mf  = derive(name, time, 0);
     AMREX_ASSERT(mf != 0);
-
-    const Real* dx  = geom.CellSize();
 
     ReduceOps<ReduceOpSum> reduce_op;
     ReduceData<Real> reduce_data(reduce_op);
@@ -147,7 +143,7 @@ Nyx::vol_weight_squared_sum (const std::string& name,
     auto        mf  = derive(name, time, 0);
     AMREX_ASSERT(mf != 0);
 
-    const Real* dx  = geom.CellSize();
+    const auto dx = geom.CellSizeArray();
 
     bool masked = true;
 
