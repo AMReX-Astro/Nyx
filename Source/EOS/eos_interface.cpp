@@ -144,18 +144,14 @@ AMREX_GPU_DEVICE void Nyx::nyx_eos_given_RT(Real gamma_minus_1, Real h_species, 
   // Compute e = k T / [(mu m_nucleon)*(gamma-1)] from T
   *e = temp_eos / (mu * m_nucleon_over_kB * gamma_minus_1);
 
-  //    !-------------------------------------------------------------------------
-  //    ! now we have the density and temperature (and mass fractions / mu)
-  //    ! regardless of the inputs.
-  //    !-------------------------------------------------------------------------
+  // -------------------------------------------------------------------------
+  //  now we have the density and temperature (and mass fractions / mu)
+  //  regardless of the inputs.
+  // -------------------------------------------------------------------------
 
-  //    ! compute the pressure simply from the ideal gas law
-  Real p_eos = gamma_minus_1 * den_eos * *e;
-
-  // Pressure must be converted from proper to comoving coordinates
-  *P  = p_eos * comoving_a_cubed;
-
-  *e  = e_eos;
+  // Compute the pressure from the ideal gas law -- 
+  //    note it must be converted from proper to comoving coordinates
+  *P = ( gamma_minus_1 * den_eos * (*e) ) * comoving_a_cubed;;
 
 #else
   fort_nyx_eos_given_RT(e,P,R,T,Ne,comoving_a);
