@@ -170,9 +170,9 @@ Nyx::writePlotFile (const std::string& dir,
 #ifdef NEUTRINO_PARTICLES
             } else if (it->name() == "neutrino_particle_count" ||
                        it->name() == "neutrino_mass_density" ||
-		       it->name() == "neutrino_x_velocity" ||
-		       it->name() == "neutrino_y_velocity" ||
-		       it->name() == "neutrino_z_velocity" )
+                       it->name() == "neutrino_x_velocity" ||
+                       it->name() == "neutrino_y_velocity" ||
+                       it->name() == "neutrino_z_velocity" )
             {
                 if (Nyx::theNPC())
                 {
@@ -207,7 +207,7 @@ Nyx::writePlotFile (const std::string& dir,
 
         if (n_data_items == 0) {
             amrex::Error("Must specify at least one valid data item to plot");
-	}
+        }
 
         os << n_data_items << '\n';
         //
@@ -281,7 +281,7 @@ Nyx::writePlotFile (const std::string& dir,
       if (ParallelDescriptor::IOProcessor()) {
         if ( ! amrex::UtilCreateDirectory(FullPath, 0755)) {
             amrex::CreateDirectoryFailed(FullPath);
-	}
+        }
       }
       //
       // Force other processors to wait until directory is built.
@@ -362,7 +362,7 @@ Nyx::writePlotFile (const std::string& dir,
 
     // Write out all parameters into the plotfile
     if (write_parameters_in_plotfile) {
-	write_parameter_file(dir);
+        write_parameter_file(dir);
     }
 
     if(Nyx::theDMPC()) {
@@ -431,9 +431,9 @@ Nyx::writePlotFilePost (const std::string& dir, ostream& os)
     if (level == 0)
     {
       if (cur_time == 0) {
-	amrex::Print().SetPrecision(15) << "Output file " << dir << " at time " << std::to_string(old_a) << " and step " << std::to_string(nStep()) << std::endl;
+        amrex::Print().SetPrecision(15) << "Output file " << dir << " at time " << std::to_string(old_a) << " and step " << std::to_string(nStep()) << std::endl;
       } else {
-	amrex::Print().SetPrecision(15) << "Output file " << dir << " at time " << std::to_string(new_a) << " and step " << std::to_string(nStep()) << std::endl;
+        amrex::Print().SetPrecision(15) << "Output file " << dir << " at time " << std::to_string(new_a) << " and step " << std::to_string(nStep()) << std::endl;
       }
     }
   }
@@ -443,113 +443,113 @@ void
 Nyx::writeJobInfo (const std::string& dir)
 {
         // job_info file with details about the run
-	std::ofstream jobInfoFile;
-	std::string FullPathJobInfoFile = dir;
-	FullPathJobInfoFile += "/job_info";
-	jobInfoFile.open(FullPathJobInfoFile.c_str(), std::ios::out);
+        std::ofstream jobInfoFile;
+        std::string FullPathJobInfoFile = dir;
+        FullPathJobInfoFile += "/job_info";
+        jobInfoFile.open(FullPathJobInfoFile.c_str(), std::ios::out);
 
-	std::string PrettyLine = std::string(78, '=') + "\n";
-	std::string OtherLine = std::string(78, '-') + "\n";
-	std::string SkipSpace = std::string(8, ' ');
+        std::string PrettyLine = std::string(78, '=') + "\n";
+        std::string OtherLine = std::string(78, '-') + "\n";
+        std::string SkipSpace = std::string(8, ' ');
 
-	// job information
-	jobInfoFile << PrettyLine;
-	jobInfoFile << " Nyx Job Information\n";
-	jobInfoFile << PrettyLine;
+        // job information
+        jobInfoFile << PrettyLine;
+        jobInfoFile << " Nyx Job Information\n";
+        jobInfoFile << PrettyLine;
 
-	jobInfoFile << "inputs file: " << inputs_name << "\n\n";
+        jobInfoFile << "inputs file: " << inputs_name << "\n\n";
 
-	jobInfoFile << "number of MPI processes: " << ParallelDescriptor::NProcs() << "\n";
+        jobInfoFile << "number of MPI processes: " << ParallelDescriptor::NProcs() << "\n";
 #ifdef _OPENMP
-	jobInfoFile << "number of threads:       " << omp_get_max_threads() << "\n";
+        jobInfoFile << "number of threads:       " << omp_get_max_threads() << "\n";
 #endif
-	jobInfoFile << "\n";
-	jobInfoFile << "CPU time used since start of simulation (CPU-hours): " <<
-	  getCPUTime()/3600.0;
+        jobInfoFile << "\n";
+        jobInfoFile << "CPU time used since start of simulation (CPU-hours): " <<
+          getCPUTime()/3600.0;
 
-	jobInfoFile << "\n\n";
+        jobInfoFile << "\n\n";
 
         // plotfile information
-	jobInfoFile << PrettyLine;
-	jobInfoFile << " Plotfile Information\n";
-	jobInfoFile << PrettyLine;
+        jobInfoFile << PrettyLine;
+        jobInfoFile << " Plotfile Information\n";
+        jobInfoFile << PrettyLine;
 
-	time_t now = time(0);
+        time_t now = time(0);
 
-	// Convert now to tm struct for local timezone
-	tm* localtm = localtime(&now);
-	jobInfoFile   << "output data / time: " << asctime(localtm);
+        // Convert now to tm struct for local timezone
+        tm* localtm = localtime(&now);
+        jobInfoFile   << "output data / time: " << asctime(localtm);
 
-	char currentDir[FILENAME_MAX];
-	if (getcwd(currentDir, FILENAME_MAX)) {
-	  jobInfoFile << "output dir:         " << currentDir << "\n";
-	}
+        char currentDir[FILENAME_MAX];
+        if (getcwd(currentDir, FILENAME_MAX)) {
+          jobInfoFile << "output dir:         " << currentDir << "\n";
+        }
 
-	jobInfoFile << "\n\n";
+        jobInfoFile << "\n\n";
 
 
-	// cosmology information
-	jobInfoFile << PrettyLine;
-	jobInfoFile << " Cosmology Information\n";
-	jobInfoFile << PrettyLine;
+        // cosmology information
+        jobInfoFile << PrettyLine;
+        jobInfoFile << " Cosmology Information\n";
+        jobInfoFile << PrettyLine;
 
-        //	Real comoving_OmM, comoving_OmL, comoving_h;
-        //	fort_get_omm(&comoving_OmM);
-	// Omega lambda is defined algebraically
-	Real comoving_OmL = 1. - comoving_OmM;
+        //      Real comoving_OmM, comoving_OmL, comoving_h;
+        //      fort_get_omm(&comoving_OmM);
+        // Omega lambda is defined algebraically
+        Real comoving_OmL = 1. - comoving_OmM;
 
-	// fort_get_hubble(&comoving_h);
+        // fort_get_hubble(&comoving_h);
 
-	jobInfoFile << "Omega_m (comoving):      " << comoving_OmM << "\n";
-	jobInfoFile << "Omega_lambda (comoving): " << comoving_OmL << "\n";
-	jobInfoFile << "h (comoving):            " << comoving_h << "\n";
+        jobInfoFile << "Omega_m (comoving):      " << comoving_OmM << "\n";
+        jobInfoFile << "Omega_lambda (comoving): " << comoving_OmL << "\n";
+        jobInfoFile << "h (comoving):            " << comoving_h << "\n";
 
-	jobInfoFile << "\n\n";
+        jobInfoFile << "\n\n";
 
         // build information
-	jobInfoFile << PrettyLine;
-	jobInfoFile << " Build Information\n";
-	jobInfoFile << PrettyLine;
+        jobInfoFile << PrettyLine;
+        jobInfoFile << " Build Information\n";
+        jobInfoFile << PrettyLine;
 
-	jobInfoFile << "build date:    " << buildInfoGetBuildDate() << "\n";
-	jobInfoFile << "build machine: " << buildInfoGetBuildMachine() << "\n";
-	jobInfoFile << "build dir:     " << buildInfoGetBuildDir() << "\n";
-	jobInfoFile << "AMReX dir:     " << buildInfoGetAMReXDir() << "\n";
+        jobInfoFile << "build date:    " << buildInfoGetBuildDate() << "\n";
+        jobInfoFile << "build machine: " << buildInfoGetBuildMachine() << "\n";
+        jobInfoFile << "build dir:     " << buildInfoGetBuildDir() << "\n";
+        jobInfoFile << "AMReX dir:     " << buildInfoGetAMReXDir() << "\n";
 
-	jobInfoFile << "\n";
+        jobInfoFile << "\n";
 
-	jobInfoFile << "COMP:          " << buildInfoGetComp() << "\n";
-	jobInfoFile << "COMP version:  " << buildInfoGetCompVersion() << "\n";
+        jobInfoFile << "COMP:          " << buildInfoGetComp() << "\n";
+        jobInfoFile << "COMP version:  " << buildInfoGetCompVersion() << "\n";
 
-	jobInfoFile << "\n";
+        jobInfoFile << "\n";
 
-	jobInfoFile << "C++ compiler:  " << buildInfoGetCXXName() << "\n";
-	jobInfoFile << "C++ flags:     " << buildInfoGetCXXFlags() << "\n";
+        jobInfoFile << "C++ compiler:  " << buildInfoGetCXXName() << "\n";
+        jobInfoFile << "C++ flags:     " << buildInfoGetCXXFlags() << "\n";
 
-	jobInfoFile << "\n";
+        jobInfoFile << "\n";
 
-	jobInfoFile << "Fortran comp:  " << buildInfoGetFName() << "\n";
-	jobInfoFile << "Fortran flags: " << buildInfoGetFFlags() << "\n";
+        jobInfoFile << "Fortran comp:  " << buildInfoGetFName() << "\n";
+        jobInfoFile << "Fortran flags: " << buildInfoGetFFlags() << "\n";
 
-	jobInfoFile << "\n";
+        jobInfoFile << "\n";
 
-	jobInfoFile << "Link flags:    " << buildInfoGetLinkFlags() << "\n";
-	jobInfoFile << "Libraries:     " << buildInfoGetLibraries() << "\n";
+        jobInfoFile << "Link flags:    " << buildInfoGetLinkFlags() << "\n";
+        jobInfoFile << "Libraries:     " << buildInfoGetLibraries() << "\n";
 
-	jobInfoFile << "\n";
+        jobInfoFile << "\n";
 
-	const char* githash1 = buildInfoGetGitHash(1);
-	const char* githash2 = buildInfoGetGitHash(2);
-	if (strlen(githash1) > 0) {
-	  jobInfoFile << "Nyx    git hash: " << githash1 << "\n";
-	}
-	if (strlen(githash2) > 0) {
-	  jobInfoFile << "AMReX git hash:  " << githash2 << "\n";
-	}
+        const char* githash1 = buildInfoGetGitHash(1);
+        const char* githash2 = buildInfoGetGitHash(2);
+        if (strlen(githash1) > 0) {
+          jobInfoFile << "Nyx    git hash: " << githash1 << "\n";
+        }
+        if (strlen(githash2) > 0) {
+          jobInfoFile << "AMReX git hash:  " << githash2 << "\n";
+        }
 
-	jobInfoFile << "\n\n";
+        jobInfoFile << "\n\n";
 
-	// grid information
+        // grid information
         jobInfoFile << PrettyLine;
         jobInfoFile << " Grid Information\n";
         jobInfoFile << PrettyLine;
@@ -597,14 +597,14 @@ Nyx::writeJobInfo (const std::string& dir)
         jobInfoFile << "\n\n";
 
 
-	// runtime parameters
-	jobInfoFile << PrettyLine;
-	jobInfoFile << " Inputs File Parameters\n";
-	jobInfoFile << PrettyLine;
+        // runtime parameters
+        jobInfoFile << PrettyLine;
+        jobInfoFile << " Inputs File Parameters\n";
+        jobInfoFile << PrettyLine;
 
-	ParmParse::dumpTable(jobInfoFile, true);
+        ParmParse::dumpTable(jobInfoFile, true);
 
-	jobInfoFile.close();
+        jobInfoFile.close();
 }
 
 void
@@ -615,14 +615,14 @@ Nyx::particle_plot_file (const std::string& dir)
         if (Nyx::theDMPC())
           {
             Nyx::theDMPC()->WriteNyxPlotFile(dir, dm_plt_particle_file);
-	    ParmParse pp("particles");
+            ParmParse pp("particles");
 
-	    int dm_particle_output_ascii = 0;
-	    pp.query("dm_particle_output_ascii", dm_particle_output_ascii);
-	    if (dm_particle_output_ascii != 0)
-	    {
-	      Nyx::theDMPC()->WriteAsciiFile(dir+"/particles.ascii");
-	    }
+            int dm_particle_output_ascii = 0;
+            pp.query("dm_particle_output_ascii", dm_particle_output_ascii);
+            if (dm_particle_output_ascii != 0)
+            {
+              Nyx::theDMPC()->WriteAsciiFile(dir+"/particles.ascii");
+            }
           }
 
 #ifdef AGN
@@ -653,7 +653,7 @@ Nyx::particle_plot_file (const std::string& dir)
             File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
             if ( ! File.good()) {
                 amrex::FileOpenFailed(FileName);
-	    }
+            }
             File.precision(15);
             if (cur_time == 0)
             {
@@ -664,28 +664,28 @@ Nyx::particle_plot_file (const std::string& dir)
             File.close();
         }
 
-	if (ParallelDescriptor::IOProcessor() && use_typical_steps)
+        if (ParallelDescriptor::IOProcessor() && use_typical_steps)
         {
             std::string FileName = dir + "/first_max_steps";
             std::ofstream File;
             File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
             if ( ! File.good()) {
                 amrex::FileOpenFailed(FileName);
-	    }
+            }
             File.precision(15);
-	    File << old_max_sundials_steps << '\n';
+            File << old_max_sundials_steps << '\n';
         }
 
-	if (ParallelDescriptor::IOProcessor() && use_typical_steps)
+        if (ParallelDescriptor::IOProcessor() && use_typical_steps)
         {
             std::string FileName = dir + "/second_max_steps";
             std::ofstream File;
             File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
             if ( ! File.good()) {
                 amrex::FileOpenFailed(FileName);
-	    }
+            }
             File.precision(15);
-	    File << old_max_sundials_steps << '\n';
+            File << old_max_sundials_steps << '\n';
         }
 
         // Write particle_plotfile_format into its own file in the particle directory
@@ -696,7 +696,7 @@ Nyx::particle_plot_file (const std::string& dir)
             File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
             if ( ! File.good()) {
                 amrex::FileOpenFailed(FileName);
-	    }
+            }
             File.precision(15);
             File << particle_plotfile_format << '\n';
             File.close();
@@ -711,7 +711,7 @@ Nyx::particle_plot_file (const std::string& dir)
             File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
             if ( ! File.good()) {
                 amrex::FileOpenFailed(FileName);
-	    }
+            }
             File.precision(15);
             File << particle_plotfile_format << '\n';
             File.close();
@@ -727,7 +727,7 @@ Nyx::particle_plot_file (const std::string& dir)
             File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
             if ( ! File.good()) {
                 amrex::FileOpenFailed(FileName);
-	    }
+            }
             File.precision(15);
             File << particle_plotfile_format << '\n';
             File.close();
@@ -773,7 +773,7 @@ Nyx::particle_check_point (const std::string& dir)
             File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
             if ( ! File.good()) {
                 amrex::FileOpenFailed(FileName);
-	    }
+            }
             File.precision(15);
             if (cur_time == 0)
             {
@@ -783,28 +783,28 @@ Nyx::particle_check_point (const std::string& dir)
             }
         }
 
-	if (ParallelDescriptor::IOProcessor())
+        if (ParallelDescriptor::IOProcessor())
         {
             std::string FileName = dir + "/first_max_steps";
             std::ofstream File;
             File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
             if ( ! File.good()) {
                 amrex::FileOpenFailed(FileName);
-	    }
+            }
             File.precision(15);
-	    File << old_max_sundials_steps << '\n';
+            File << old_max_sundials_steps << '\n';
         }
 
-	if (ParallelDescriptor::IOProcessor())
+        if (ParallelDescriptor::IOProcessor())
         {
             std::string FileName = dir + "/second_max_steps";
             std::ofstream File;
             File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
             if ( ! File.good()) {
                 amrex::FileOpenFailed(FileName);
-	    }
+            }
             File.precision(15);
-	    File << old_max_sundials_steps << '\n';
+            File << old_max_sundials_steps << '\n';
         }
     }
 }
@@ -821,7 +821,7 @@ Nyx::write_parameter_file (const std::string& dir)
             File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
             if ( ! File.good()) {
                 amrex::FileOpenFailed(FileName);
-	    }
+            }
             File.precision(15);
             ParmParse::dumpTable(File,true);
             File.close();
@@ -839,7 +839,7 @@ Nyx::writeMultiFabAsPlotFile(const std::string& pltfile,
     {
         if( ! amrex::UtilCreateDirectory(pltfile, 0755)) {
           amrex::CreateDirectoryFailed(pltfile);
-	}
+        }
         std::string HeaderFileName = pltfile + "/Header";
         os.open(HeaderFileName.c_str(), std::ios::out|std::ios::trunc|std::ios::binary);
         // The first thing we write out is the plotfile type.
@@ -892,7 +892,7 @@ Nyx::writeMultiFabAsPlotFile(const std::string& pltfile,
     if (ParallelDescriptor::IOProcessor()) {
         if ( ! amrex::UtilCreateDirectory(FullPath, 0755)) {
             amrex::CreateDirectoryFailed(FullPath);
-	}
+        }
     }
     //
     // Force other processors to wait until directory is built.
@@ -975,14 +975,14 @@ Nyx::checkPoint (const std::string& dir,
   if (level == 0 && ParallelDescriptor::IOProcessor())
     {
       {
-	// store elapsed CPU time
-	std::ofstream CPUFile;
-	std::string FullPathCPUFile = dir;
-	FullPathCPUFile += "/CPUtime";
-	CPUFile.open(FullPathCPUFile.c_str(), std::ios::out);
+        // store elapsed CPU time
+        std::ofstream CPUFile;
+        std::string FullPathCPUFile = dir;
+        FullPathCPUFile += "/CPUtime";
+        CPUFile.open(FullPathCPUFile.c_str(), std::ios::out);
 
-	CPUFile << std::setprecision(15) << getCPUTime();
-	CPUFile.close();
+        CPUFile << std::setprecision(15) << getCPUTime();
+        CPUFile.close();
       }
     }
 
@@ -1056,7 +1056,7 @@ Nyx::forcing_check_point (const std::string& dir)
             File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
             if ( ! File.good()) {
                 amrex::FileOpenFailed(FileName);
-	    }
+            }
             File.setf(std::ios::scientific, std::ios::floatfield);
             File.precision(16);
             forcing->write_Spectrum(File);
@@ -1066,7 +1066,7 @@ Nyx::forcing_check_point (const std::string& dir)
             File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
             if ( ! File.good()) {
                 amrex::FileOpenFailed(FileName);
-	    }
+            }
             mt_write(File);
         }
     }

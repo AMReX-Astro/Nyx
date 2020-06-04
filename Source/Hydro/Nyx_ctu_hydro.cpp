@@ -11,7 +11,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                            MultiFab& Sborder, MultiFab& D_border, 
                            MultiFab& ext_src_old, MultiFab& hydro_source, 
                            MultiFab& grav_vector, 
-				//                           MultiFab& grav_vector,
+                                //                           MultiFab& grav_vector,
                            bool init_flux_register, bool add_to_flux_register) 
 {
 
@@ -44,10 +44,10 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
   if(finest_level!=0)
     {
       for (int j = 0; j < BL_SPACEDIM; j++)
-	{
-	  fluxes[j].define(getEdgeBoxArray(j), dmap, NUM_STATE, 0);
-	  fluxes[j].setVal(0.0);
-	}
+        {
+          fluxes[j].define(getEdgeBoxArray(j), dmap, NUM_STATE, 0);
+          fluxes[j].setVal(0.0);
+        }
 
     if (do_reflux)
     {
@@ -87,8 +87,8 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
     amrex::GpuArray<Real,3> dx = geom.CellSizeArray();
     amrex::GpuArray<Real,3> area{AMREX_D_DECL(dx[1] * dx[2],
-					      dx[0] * dx[2],
-					      dx[0] * dx[1])};
+                                              dx[0] * dx[2],
+                                              dx[0] * dx[1])};
 
   const int* domain_lo = geom.Domain().loVect();
   const int* domain_hi = geom.Domain().hiVect();
@@ -188,8 +188,8 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       AMREX_D_DECL(flux[0].array(), flux[1].array(),flux[2].array())};
     /*    GpuArray<Array4<Real>, AMREX_SPACEDIM> fab_flux;
     AMREX_D_TERM(fab_flux[0] = flux[0].array();,
-		 fab_flux[1] = flux[1].array();,
-		 fab_flux[2] = flux[2].array(););*/
+                 fab_flux[1] = flux[1].array();,
+                 fab_flux[2] = flux[2].array(););*/
 
     GpuArray<Array4<Real>, AMREX_SPACEDIM> fab_qe{
       AMREX_D_DECL(qe[0].array(), qe[1].array(),qe[2].array())};
@@ -228,43 +228,43 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       const auto fab_qaux = qaux.array();
       const auto fab_src_q = src_q.array();
 
-	//	const Box& qbx = mfi.tilebox();
+        //      const Box& qbx = mfi.tilebox();
 
         // Convert the conservative state to the primitive variable state.
         // This fills both q and qaux.
-	Sborder[mfi].prefetchToDevice();
-	q.prefetchToDevice();
-	qaux.prefetchToDevice();
-	AMREX_LAUNCH_DEVICE_LAMBDA(qbx, tqbx,
-	{
+        Sborder[mfi].prefetchToDevice();
+        q.prefetchToDevice();
+        qaux.prefetchToDevice();
+        AMREX_LAUNCH_DEVICE_LAMBDA(qbx, tqbx,
+        {
         ca_ctoprim(AMREX_INT_ANYD(tqbx.loVect()), AMREX_INT_ANYD(tqbx.hiVect()),
                    BL_ARR4_TO_FORTRAN_3D(fab_Sborder),
                    BL_ARR4_TO_FORTRAN_3D(fab_q),
                    BL_ARR4_TO_FORTRAN_3D(fab_qaux));
-	});
+        });
         // Convert the source terms expressed as sources to the conserved state to those
         // expressed as sources for the primitive state.
-	q.prefetchToDevice();
-	qaux.prefetchToDevice();
-	grav_vector[mfi].prefetchToDevice();
-	ext_src_old[mfi].prefetchToDevice();
-	src_q.prefetchToDevice();
+        q.prefetchToDevice();
+        qaux.prefetchToDevice();
+        grav_vector[mfi].prefetchToDevice();
+        ext_src_old[mfi].prefetchToDevice();
+        src_q.prefetchToDevice();
 
-	AMREX_LAUNCH_DEVICE_LAMBDA(qbx, tqbx,
-	{
-	ca_srctoprim(AMREX_INT_ANYD(tqbx.loVect()), AMREX_INT_ANYD(tqbx.hiVect()),
-		     BL_ARR4_TO_FORTRAN_3D(fab_q),
-		     BL_ARR4_TO_FORTRAN_3D(fab_qaux),
-		     BL_ARR4_TO_FORTRAN_3D(fab_grav),
-		     BL_ARR4_TO_FORTRAN_3D(fab_sources_for_hydro),
-		     BL_ARR4_TO_FORTRAN_3D(fab_src_q),
-		     a_old, a_new, dt);
-	});
+        AMREX_LAUNCH_DEVICE_LAMBDA(qbx, tqbx,
+        {
+        ca_srctoprim(AMREX_INT_ANYD(tqbx.loVect()), AMREX_INT_ANYD(tqbx.hiVect()),
+                     BL_ARR4_TO_FORTRAN_3D(fab_q),
+                     BL_ARR4_TO_FORTRAN_3D(fab_qaux),
+                     BL_ARR4_TO_FORTRAN_3D(fab_grav),
+                     BL_ARR4_TO_FORTRAN_3D(fab_sources_for_hydro),
+                     BL_ARR4_TO_FORTRAN_3D(fab_src_q),
+                     a_old, a_new, dt);
+        });
 
 
-	if(finest_level!=0)
-	  GpuArray<Array4<Real>, AMREX_SPACEDIM> fab_fluxes{AMREX_D_DECL(fluxes[0].array(mfi),
-								   fluxes[1].array(mfi), fluxes[2].array(mfi))};
+        if(finest_level!=0)
+          GpuArray<Array4<Real>, AMREX_SPACEDIM> fab_fluxes{AMREX_D_DECL(fluxes[0].array(mfi),
+                                                                   fluxes[1].array(mfi), fluxes[2].array(mfi))};
       
       //      q.resize(obx, 1);
       //      Elixir elix_q = q.elixir();
@@ -284,20 +284,20 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
     /*
     if(first)
       {
-	amrex::Print()<<"construct_hydro after multifabs, before fabarrays"<<std::endl;
-	amrex::Arena::PrintUsage();
-	if(ParallelDescriptor::IOProcessor())
-	  first=false;
-	  }*/
+        amrex::Print()<<"construct_hydro after multifabs, before fabarrays"<<std::endl;
+        amrex::Arena::PrintUsage();
+        if(ParallelDescriptor::IOProcessor())
+          first=false;
+          }*/
       
       if (use_flattening == 1) {
       AMREX_LAUNCH_DEVICE_LAMBDA(obx, tobx,
-		{
+                {
         ca_uflatten(AMREX_INT_ANYD(tobx.loVect()), AMREX_INT_ANYD(tobx.hiVect()),
                     BL_ARR4_TO_FORTRAN_3D(fab_q),
-		    BL_ARR4_TO_FORTRAN_3D(fab_flatn),
-		    pres_comp);
-		});
+                    BL_ARR4_TO_FORTRAN_3D(fab_flatn),
+                    pres_comp);
+                });
       } else {
         AMREX_PARALLEL_FOR_3D(obx, i, j, k, { flatn_arr(i,j,k) = 1.0; });
       }
@@ -347,22 +347,22 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
       if (ppm_type == 0) {
 
-	q.prefetchToDevice();
-	qaux.prefetchToDevice();
-	src_q.prefetchToDevice();
-	flatn.prefetchToDevice();
-	shk.prefetchToDevice();
-	dq.prefetchToDevice();
-	qxm.prefetchToDevice();
-	qxp.prefetchToDevice();
+        q.prefetchToDevice();
+        qaux.prefetchToDevice();
+        src_q.prefetchToDevice();
+        flatn.prefetchToDevice();
+        shk.prefetchToDevice();
+        dq.prefetchToDevice();
+        qxm.prefetchToDevice();
+        qxp.prefetchToDevice();
 
-	      
+              
       AMREX_LAUNCH_DEVICE_LAMBDA(obx, tobx,
       {
         ctu_plm_states(AMREX_INT_ANYD(tobx.loVect()), AMREX_INT_ANYD(tobx.hiVect()),
                        1,AMREX_INT_ANYD(bx.loVect()), AMREX_INT_ANYD(bx.hiVect()),
                        BL_ARR4_TO_FORTRAN_3D(fab_q),
-		       BL_ARR4_TO_FORTRAN_3D(fab_flatn),
+                       BL_ARR4_TO_FORTRAN_3D(fab_flatn),
                        BL_ARR4_TO_FORTRAN_3D(fab_qaux),
                        BL_ARR4_TO_FORTRAN_3D(fab_src_q),
                        BL_ARR4_TO_FORTRAN_3D(fab_shk),
@@ -370,17 +370,17 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                        BL_ARR4_TO_FORTRAN_3D(fab_qxm),
                        BL_ARR4_TO_FORTRAN_3D(fab_qxp),
                        dx.data(), dt,
-		       a_old, a_new,
+                       a_old, a_new,
                        AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
-	qym.prefetchToDevice();
-	qyp.prefetchToDevice();
+        qym.prefetchToDevice();
+        qyp.prefetchToDevice();
       AMREX_LAUNCH_DEVICE_LAMBDA(obx, tobx,
       {
-	        ctu_plm_states(AMREX_INT_ANYD(tobx.loVect()), AMREX_INT_ANYD(tobx.hiVect()),
+                ctu_plm_states(AMREX_INT_ANYD(tobx.loVect()), AMREX_INT_ANYD(tobx.hiVect()),
                        2,AMREX_INT_ANYD(bx.loVect()), AMREX_INT_ANYD(bx.hiVect()),
                        BL_ARR4_TO_FORTRAN_3D(fab_q),
-		       BL_ARR4_TO_FORTRAN_3D(fab_flatn),
+                       BL_ARR4_TO_FORTRAN_3D(fab_flatn),
                        BL_ARR4_TO_FORTRAN_3D(fab_qaux),
                        BL_ARR4_TO_FORTRAN_3D(fab_src_q),
                        BL_ARR4_TO_FORTRAN_3D(fab_shk),
@@ -388,17 +388,17 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                        BL_ARR4_TO_FORTRAN_3D(fab_qym),
                        BL_ARR4_TO_FORTRAN_3D(fab_qyp),
                        dx.data(), dt,
-		       a_old, a_new,
+                       a_old, a_new,
                        AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
-	qzm.prefetchToDevice();
-	qzp.prefetchToDevice();
+        qzm.prefetchToDevice();
+        qzp.prefetchToDevice();
       AMREX_LAUNCH_DEVICE_LAMBDA(obx, tobx,
       {
-		        ctu_plm_states(AMREX_INT_ANYD(tobx.loVect()), AMREX_INT_ANYD(tobx.hiVect()),
+                        ctu_plm_states(AMREX_INT_ANYD(tobx.loVect()), AMREX_INT_ANYD(tobx.hiVect()),
                        3,AMREX_INT_ANYD(bx.loVect()), AMREX_INT_ANYD(bx.hiVect()),
                        BL_ARR4_TO_FORTRAN_3D(fab_q),
-		       BL_ARR4_TO_FORTRAN_3D(fab_flatn),
+                       BL_ARR4_TO_FORTRAN_3D(fab_flatn),
                        BL_ARR4_TO_FORTRAN_3D(fab_qaux),
                        BL_ARR4_TO_FORTRAN_3D(fab_src_q),
                        BL_ARR4_TO_FORTRAN_3D(fab_shk),
@@ -406,7 +406,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                        BL_ARR4_TO_FORTRAN_3D(fab_qzm),
                        BL_ARR4_TO_FORTRAN_3D(fab_qzp),
                        dx.data(), dt,
-		       a_old, a_new,
+                       a_old, a_new,
                        AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
       });
 
@@ -418,8 +418,8 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 
       } else {
 
-	amrex::Abort("Entered ppm_type=1 loop in hydro_convert which is not well tested");
-	/*
+        amrex::Abort("Entered ppm_type=1 loop in hydro_convert which is not well tested");
+        /*
         Ip.resize(obx, 3*QVAR);
         Elixir elix_Ip = Ip.elixir();
 
@@ -475,7 +475,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                        BL_ARR4_TO_FORTRAN_3D(fab_qzp),
                        dx.data(), dt,
                        AMREX_INT_ANYD(domain_lo), AMREX_INT_ANYD(domain_hi));
-	*/
+        */
       }
 
       div.resize(obx, 1);
@@ -551,8 +551,8 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       AMREX_D_DECL(flux[0].array(), flux[1].array(),flux[2].array())};
     /*    GpuArray<Array4<Real>, AMREX_SPACEDIM> fab_flux;
     AMREX_D_TERM(fab_flux[0] = flux[0].array();,
-		 fab_flux[1] = flux[1].array();,
-		 fab_flux[2] = flux[2].array(););*/
+                 fab_flux[1] = flux[1].array();,
+                 fab_flux[2] = flux[2].array(););*/
 
     GpuArray<Array4<Real>, AMREX_SPACEDIM> fab_qe{
       AMREX_D_DECL(qe[0].array(), qe[1].array(),qe[2].array())};
@@ -1077,7 +1077,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
               BL_ARR4_TO_FORTRAN_3D(fab_ftmp1),
               BL_ARR4_TO_FORTRAN_3D(fab_qgdnvtmp2),
               BL_ARR4_TO_FORTRAN_3D(fab_qgdnvtmp1),
-	      BL_ARR4_TO_FORTRAN_3D(fab_src_q),
+              BL_ARR4_TO_FORTRAN_3D(fab_src_q),
               hdt, hdtdx, hdtdz, a_old, a_new);
       });
 
@@ -1190,7 +1190,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
               BL_ARR4_TO_FORTRAN_3D(fab_ftmp2),
               BL_ARR4_TO_FORTRAN_3D(fab_qgdnvtmp1),
               BL_ARR4_TO_FORTRAN_3D(fab_qgdnvtmp2),
-	      BL_ARR4_TO_FORTRAN_3D(fab_src_q),
+              BL_ARR4_TO_FORTRAN_3D(fab_src_q),
               hdt, hdtdx, hdtdy, a_old, a_new);
       });
 
@@ -1201,7 +1201,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
       elix_ftmp2.clear();
       elix_qgdnvtmp1.clear();
       elix_qgdnvtmp2.clear();
-	
+        
       // compute the final z fluxes F^z
 
       ql.prefetchToDevice();
@@ -1249,12 +1249,12 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
                    BL_ARR4_TO_FORTRAN_3D(fab_div),
                    BL_ARR4_TO_FORTRAN_3D(fab_Sborder),
                    BL_ARR4_TO_FORTRAN_3D(fab_flux[idir]),
-		   idir_f, dx.data(),dt);
+                   idir_f, dx.data(),dt);
       });
 
       AMREX_LAUNCH_DEVICE_LAMBDA(nbx, tnbx,
       {
-	  normalize_species_fluxes(AMREX_INT_ANYD(tnbx.loVect()), AMREX_INT_ANYD(tnbx.hiVect()),
+          normalize_species_fluxes(AMREX_INT_ANYD(tnbx.loVect()), AMREX_INT_ANYD(tnbx.hiVect()),
                                    BL_ARR4_TO_FORTRAN_3D(fab_flux[idir]));
       });
 
@@ -1321,18 +1321,18 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
         // subcycling and we only want the last iteration's fluxes.
 
       if(finest_level!=0)
-	{
+        {
         Array4<Real> const flux_fab = (flux[idir]).array();
         Array4<Real> fluxes_fab = (fluxes[idir]).array(mfi);
         const int numcomp = NUM_STATE;
-	fluxes[idir][mfi].prefetchToDevice();
-	flux[idir].prefetchToDevice();
+        fluxes[idir][mfi].prefetchToDevice();
+        flux[idir].prefetchToDevice();
 
             AMREX_HOST_DEVICE_FOR_4D(mfi.nodaltilebox(idir), numcomp, i, j, k, n,
             {
                 fluxes_fab(i,j,k,n) += flux_fab(i,j,k,n);
             });
-	}
+        }
       } // idir loop
 
       elix_flux_x.clear();
@@ -1362,10 +1362,10 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
 #endif
         ParallelDescriptor::ReduceRealMax(run_time,IOProc);
 
-	if (ParallelDescriptor::IOProcessor())
-	  std::cout << "Nyx::construct_ctu_hydro_source() time = " << run_time << "\n" << "\n";
+        if (ParallelDescriptor::IOProcessor())
+          std::cout << "Nyx::construct_ctu_hydro_source() time = " << run_time << "\n" << "\n";
 #ifdef BL_LAZY
-	});
+        });
 #endif
     }
 
@@ -1380,7 +1380,7 @@ Nyx::construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_
          }
          if (fine) {
            for (int i = 0; i < BL_SPACEDIM ; i++) {
-	         fine->CrseInit(fluxes[i],i,0,0,NUM_STATE,-1.,FluxRegister::ADD);
+                 fine->CrseInit(fluxes[i],i,0,0,NUM_STATE,-1.,FluxRegister::ADD);
            }
          }
        }

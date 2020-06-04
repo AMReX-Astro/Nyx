@@ -20,7 +20,7 @@ class NyxBld
                                   const Geometry& level_geom,
                                   const BoxArray& ba, 
                                   const DistributionMapping& dm, 
-				  Real time);
+                                  Real time);
 };
 
 NyxBld Nyx_bld;

@@ -98,29 +98,29 @@ NeutrinoParticleContainer::AssignRelativisticDensity (Vector<std::unique_ptr<Mul
         
         AssignRelativisticDensitySingleLevel(*mf[lev], lev, 1, 0);
 
-	if (lev < finest_level) {
-	  PhysBCFunct<BndryFuncArray> cphysbc(this->m_gdb->Geom(lev), bcs,
-					      BndryFuncArray([](Real* data,
-								AMREX_ARLIM_P(lo), AMREX_ARLIM_P(hi),
-								const int* dom_lo, const int* dom_hi,
-								const Real* dx, const Real* grd_lo,
-								const Real* time, const int* bc){}));
-	  PhysBCFunct<BndryFuncArray> fphysbc(this->m_gdb->Geom(lev+1), bcs,
-					      BndryFuncArray([](Real* data,
-								AMREX_ARLIM_P(lo), AMREX_ARLIM_P(hi),
-								const int* dom_lo, const int* dom_hi,
-								const Real* dx, const Real* grd_lo,
-								const Real* time, const int* bc){}));
+        if (lev < finest_level) {
+          PhysBCFunct<BndryFuncArray> cphysbc(this->m_gdb->Geom(lev), bcs,
+                                              BndryFuncArray([](Real* data,
+                                                                AMREX_ARLIM_P(lo), AMREX_ARLIM_P(hi),
+                                                                const int* dom_lo, const int* dom_hi,
+                                                                const Real* dx, const Real* grd_lo,
+                                                                const Real* time, const int* bc){}));
+          PhysBCFunct<BndryFuncArray> fphysbc(this->m_gdb->Geom(lev+1), bcs,
+                                              BndryFuncArray([](Real* data,
+                                                                AMREX_ARLIM_P(lo), AMREX_ARLIM_P(hi),
+                                                                const int* dom_lo, const int* dom_hi,
+                                                                const Real* dx, const Real* grd_lo,
+                                                                const Real* time, const int* bc){}));
 
-	  amrex::InterpFromCoarseLevel(*tmp[lev+1], 0.0, *mf[lev],
-				       rho_index, rho_index, ncomp,
-				       this->m_gdb->Geom(lev),
-				       this->m_gdb->Geom(lev+1),
-				       cphysbc, 0, fphysbc, 0,
-				       this->m_gdb->refRatio(lev), &mapper,
-				       bcs, 0);
+          amrex::InterpFromCoarseLevel(*tmp[lev+1], 0.0, *mf[lev],
+                                       rho_index, rho_index, ncomp,
+                                       this->m_gdb->Geom(lev),
+                                       this->m_gdb->Geom(lev+1),
+                                       cphysbc, 0, fphysbc, 0,
+                                       this->m_gdb->refRatio(lev), &mapper,
+                                       bcs, 0);
 
-	}
+        }
         
         if (lev > lev_min) {
             // Note - this will double count the mass on the coarse level in 
@@ -176,8 +176,8 @@ NeutrinoParticleContainer::AssignRelativisticDensitySingleLevel (MultiFab& mf_to
       // If mf_to_be_filled is not defined on the particle_box_array, then we need 
       // to make a temporary here and copy into mf_to_be_filled at the end.
       mf_pointer = new MultiFab(ParticleBoxArray(lev), 
-				ParticleDistributionMap(lev),
-				ncomp, mf_to_be_filled.nGrow());
+                                ParticleDistributionMap(lev),
+                                ncomp, mf_to_be_filled.nGrow());
     }
 
     // We must have ghost cells for each FAB so that a particle in one grid can spread 
@@ -314,7 +314,7 @@ NeutrinoParticleContainer::moveKick (amrex::MultiFab&       acceleration,
                                             int                    lev,
                                             amrex::Real            dt,
                                             amrex::Real            a_new,
-				            amrex::Real            a_half)
+                                            amrex::Real            a_half)
 
 {
   if(m_relativistic)
@@ -330,8 +330,8 @@ NeutrinoParticleContainer::moveKickDrift (MultiFab&       acceleration,
                                        int             lev,
                                        Real            dt,
                                        Real            a_old,
-					  Real            a_half,
-					  int where_width)
+                                          Real            a_half,
+                                          int where_width)
 {
 
   if(m_relativistic)

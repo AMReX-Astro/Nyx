@@ -96,7 +96,7 @@ Nyx::sdc_hydro (Real time,
        MultiFab::Subtract(ext_src_old,IR_tmp,0,Eint,1,0);
 
        ext_src_old.FillBoundary(geom.periodicity());
-	      
+              
        update_state_with_sources(S_old_tmp,S_new,
                                  ext_src_old,hydro_src,grav_vector,divu_cc,
                                  dt,a_old,a_new);

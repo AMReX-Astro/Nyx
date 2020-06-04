@@ -334,7 +334,7 @@ Nyx::read_particle_params ()
     // Input error check
     if (!binary_particle_file.empty() && (particle_init_type != "BinaryFile" &&
                                           particle_init_type != "BinaryMetaFile" && 
-					  particle_init_type != "BinaryMortonFile"))
+                                          particle_init_type != "BinaryMortonFile"))
     {
         if (ParallelDescriptor::IOProcessor())
             std::cerr << "ERROR::particle_init_type is not BinaryFile, BinaryMetaFile, or BinaryMortonFile but you specified binary_particle_file" << std::endl;
@@ -354,13 +354,13 @@ Nyx::read_particle_params ()
 #ifdef NEUTRINO_PARTICLES
     pp.query("neutrino_particle_file", neutrino_particle_file);
     if (!neutrino_particle_file.empty() && (particle_init_type != "AsciiFile"&&
-					    particle_init_type != "BinaryMetaFile" && 
-					    particle_init_type != "BinaryFile" ))
-	{
-	  if (ParallelDescriptor::IOProcessor())
-	    std::cerr << "ERROR::particle_init_type is not AsciiFile or BinaryFile but you specified neutrino_particle_file" << std::endl;;
-	  amrex::Error();
-	}
+                                            particle_init_type != "BinaryMetaFile" && 
+                                            particle_init_type != "BinaryFile" ))
+        {
+          if (ParallelDescriptor::IOProcessor())
+            std::cerr << "ERROR::particle_init_type is not AsciiFile or BinaryFile but you specified neutrino_particle_file" << std::endl;;
+          amrex::Error();
+        }
 #endif
 
     pp.query("write_particle_density_at_init", write_particle_density_at_init);
@@ -403,12 +403,12 @@ Nyx::init_particles ()
         if (init_with_sph_particles == 1)
            SPHPC = new DarkMatterParticleContainer(parent);
 
-	if (parent->subCycle())
-	{
-	    VirtPC = new DarkMatterParticleContainer(parent);
+        if (parent->subCycle())
+        {
+            VirtPC = new DarkMatterParticleContainer(parent);
             VirtualParticles.push_back(VirtPC); 
 
-	    GhostPC = new DarkMatterParticleContainer(parent);
+            GhostPC = new DarkMatterParticleContainer(parent);
             GhostParticles.push_back(GhostPC); }
         //
         // Make sure to call RemoveParticlesOnExit() on exit.
@@ -439,12 +439,12 @@ Nyx::init_particles ()
                                << " random particles with initial seed: "
                                << particle_initrandom_iseed << "\n\n";
             }
-	    {
-	    amrex::Gpu::LaunchSafeGuard lsg(particle_launch_ics);
+            {
+            amrex::Gpu::LaunchSafeGuard lsg(particle_launch_ics);
             DMPC->InitRandom(particle_initrandom_count,
                              particle_initrandom_iseed, pdata,
                              particle_initrandom_serialize);
-	    }
+            }
 
         }
         else if (particle_init_type == "RandomPerBox")
@@ -473,9 +473,9 @@ Nyx::init_particles ()
                 amrex::Print() << "\nInitializing DM with 1 random particle per cell " << "\n";
 
             int n_per_cell = 1;
-	    amrex::Gpu::LaunchSafeGuard lsg(particle_launch_ics);
+            amrex::Gpu::LaunchSafeGuard lsg(particle_launch_ics);
             DMPC->InitNRandomPerCell(n_per_cell, pdata);
-	    amrex::Gpu::Device::synchronize();
+            amrex::Gpu::Device::synchronize();
 
         }
         else if (particle_init_type == "OnePerCell")
@@ -483,8 +483,8 @@ Nyx::init_particles ()
             if (verbose)
                 amrex::Print() << "\nInitializing DM with 1 uniform particle per cell " << "\n";
 
-	    //            int n_per_cell = 1;
-	    DarkMatterParticleContainer::ParticleInitData pdata_vel = {particle_inituniform_mass, particle_inituniform_vx, particle_inituniform_vy, particle_inituniform_vz };
+            //            int n_per_cell = 1;
+            DarkMatterParticleContainer::ParticleInitData pdata_vel = {particle_inituniform_mass, particle_inituniform_vx, particle_inituniform_vy, particle_inituniform_vz };
             DMPC->InitOnePerCell(0.5, 0.5, 0.5, pdata_vel);
         }
         else if (particle_init_type == "AsciiFile")
@@ -521,7 +521,7 @@ Nyx::init_particles ()
             // after reading in `m_pos[]`. Here we're reading in the particle
             // mass and velocity.
             //
-	    amrex::Gpu::LaunchSafeGuard lsg(particle_launch_ics);
+            amrex::Gpu::LaunchSafeGuard lsg(particle_launch_ics);
             DMPC->InitFromBinaryFile(binary_particle_file, BL_SPACEDIM + 1);
             if (init_with_sph_particles == 1)
                 SPHPC->InitFromBinaryFile(ascii_particle_file, BL_SPACEDIM + 1);
@@ -542,28 +542,28 @@ Nyx::init_particles ()
             // after reading in `m_pos[]` in each of the binary particle files.
             // Here we're reading in the particle mass and velocity.
             //
-	    amrex::Gpu::LaunchSafeGuard lsg(particle_launch_ics);
+            amrex::Gpu::LaunchSafeGuard lsg(particle_launch_ics);
             DMPC->InitFromBinaryMetaFile(binary_particle_file, BL_SPACEDIM + 1);
             if (init_with_sph_particles == 1)
                 SPHPC->InitFromBinaryMetaFile(sph_particle_file, BL_SPACEDIM + 1);
         }
         else if (particle_init_type == "BinaryMortonFile")
         {
-	  if (verbose)
+          if (verbose)
             {
-	      amrex::Print() << "\nInitializing DM particles from morton-ordered binary file\""
-			     << binary_particle_file << "\" ...\n\n";
-	      if (init_with_sph_particles == 1)
-		amrex::Error("Morton-ordered input is not supported for sph particles.");
+              amrex::Print() << "\nInitializing DM particles from morton-ordered binary file\""
+                             << binary_particle_file << "\" ...\n\n";
+              if (init_with_sph_particles == 1)
+                amrex::Error("Morton-ordered input is not supported for sph particles.");
             }
             //
             // The second argument is how many Reals we read into `m_data[]`
             // after reading in `m_pos[]` in each of the binary particle files.
             // Here we're reading in the particle mass and velocity.
             //
-	  DMPC->InitFromBinaryMortonFile(binary_particle_file,
-					 BL_SPACEDIM + 1,
-					 particle_skip_factor);
+          DMPC->InitFromBinaryMortonFile(binary_particle_file,
+                                         BL_SPACEDIM + 1,
+                                         particle_skip_factor);
         }
         else
         {
@@ -577,14 +577,14 @@ Nyx::init_particles ()
         APC = new AGNParticleContainer(parent, num_particle_ghosts);
         ActiveParticles.push_back(APC); 
 
-	if (parent->subCycle())
-	{
-	    VirtAPC = new AGNParticleContainer(parent, num_particle_ghosts);
+        if (parent->subCycle())
+        {
+            VirtAPC = new AGNParticleContainer(parent, num_particle_ghosts);
             VirtualParticles.push_back(VirtAPC); 
 
-	    GhostAPC = new AGNParticleContainer(parent, num_particle_ghosts);
+            GhostAPC = new AGNParticleContainer(parent, num_particle_ghosts);
             GhostParticles.push_back(GhostAPC); 
-	}
+        }
         //
         // 2 gives more stuff than 1.
         //
@@ -596,10 +596,10 @@ Nyx::init_particles ()
         BL_ASSERT (NPC == 0);
 #ifdef NEUTRINO_DARK_PARTICLES
         NPC = new DarkMatterParticleContainer(parent);
-	ActiveParticles.push_back(NPC); 
+        ActiveParticles.push_back(NPC); 
 #else
-	NPC = new NeutrinoParticleContainer(parent);
-	ActiveParticles.push_back(NPC); 
+        NPC = new NeutrinoParticleContainer(parent);
+        ActiveParticles.push_back(NPC); 
 
         // Set the relativistic flag to 1 so that the density will be gamma-weighted
         //     when returned by AssignDensity calls.
@@ -611,13 +611,13 @@ Nyx::init_particles ()
 
 #endif
 
-	if (parent->subCycle())
-	{
+        if (parent->subCycle())
+        {
 #ifdef NEUTRINO_DARK_PARTICLES
-	    VirtNPC = new DarkMatterParticleContainer(parent);
-	    VirtualParticles.push_back(VirtNPC); 
+            VirtNPC = new DarkMatterParticleContainer(parent);
+            VirtualParticles.push_back(VirtNPC); 
 #else
-	    VirtNPC = new NeutrinoParticleContainer(parent);
+            VirtNPC = new NeutrinoParticleContainer(parent);
             VirtualParticles.push_back(VirtNPC); 
 
             // Set the relativistic flag to 1 so that the density will be gamma-weighted
@@ -627,19 +627,19 @@ Nyx::init_particles ()
 #endif
 
 #ifdef NEUTRINO_DARK_PARTICLES
-	    GhostNPC = new DarkMatterParticleContainer(parent);
-	    GhostParticles.push_back(GhostNPC); 
+            GhostNPC = new DarkMatterParticleContainer(parent);
+            GhostParticles.push_back(GhostNPC); 
 
 #else
-	    GhostNPC = new NeutrinoParticleContainer(parent);
-	    GhostParticles.push_back(GhostNPC); 
+            GhostNPC = new NeutrinoParticleContainer(parent);
+            GhostParticles.push_back(GhostNPC); 
 
             // Set the relativistic flag to 1 so that the density will be gamma-weighted
             //     when returned by AssignDensity calls.
             GhostNPC->SetRelativistic(1);
-#endif	    
+#endif      
 
-	}
+        }
         //
         // Make sure to call RemoveParticlesOnExit() on exit.
         //   (if do_dm_particles then we have already called ExecOnFinalize)
@@ -661,7 +661,7 @@ Nyx::init_particles ()
             // mass, velocity and angles.
             //
 #ifdef NEUTRINO_DARK_PARTICLES
-	    NPC->InitFromAsciiFile(neutrino_particle_file, BL_SPACEDIM + 1, &Nrep);
+            NPC->InitFromAsciiFile(neutrino_particle_file, BL_SPACEDIM + 1, &Nrep);
 #else
             NPC->InitFromAsciiFile(neutrino_particle_file, 2*BL_SPACEDIM + 1, &Nrep);
 #endif
@@ -703,17 +703,17 @@ Nyx::init_particles ()
     if (write_particle_density_at_init == 1)
         {
 
-	  Vector<std::unique_ptr<MultiFab> > particle_mf;//(new MultiFab(grids,dmap,1,1));
-	    
-	    DMPC->AssignDensity(particle_mf,0,1,0,0);
+          Vector<std::unique_ptr<MultiFab> > particle_mf;//(new MultiFab(grids,dmap,1,1));
+            
+            DMPC->AssignDensity(particle_mf,0,1,0,0);
 
             writeMultiFabAsPlotFile("ParticleDensity", *particle_mf[0], "density");
 
 #ifdef NEUTRINO_PARTICLES
-	    Vector<std::unique_ptr<MultiFab> > particle_npc_mf;//(new MultiFab(grids,dmap,1,1));
-	  //	  DMPC->AssignDensitySingleLevel(particle_mf,0,1,0,0);
+            Vector<std::unique_ptr<MultiFab> > particle_npc_mf;//(new MultiFab(grids,dmap,1,1));
+          //      DMPC->AssignDensitySingleLevel(particle_mf,0,1,0,0);
 
-	    NPC->AssignDensity(particle_npc_mf,0,1,0,0);
+            NPC->AssignDensity(particle_npc_mf,0,1,0,0);
 
             writeMultiFabAsPlotFile("ParticleNPCDensity", *particle_npc_mf[0], "density");
 #endif
@@ -744,33 +744,33 @@ Nyx::init_santa_barbara (int init_sb_vels)
  
         if ( (init_with_sph_particles == 0) && (frac_for_hydro != 1.0) ) {
             DMPC->MultiplyParticleMass(level, omfrac);
-	}
+        }
 
         Vector<std::unique_ptr<MultiFab> > particle_mf(1);
         if (init_sb_vels == 1)
         {
             if (init_with_sph_particles == 1) {
                SPHPC->AssignDensityAndVels(particle_mf);
-	    } else {
+            } else {
                DMPC->AssignDensityAndVels(particle_mf);
-	    }
+            }
 
         } else {
             if (init_with_sph_particles == 1) {
                 SPHPC->AssignDensity(particle_mf);
-	    } else {
+            } else {
                 DMPC->AssignDensity(particle_mf);
-	    }
+            }
         }
 
         // As soon as we have used the SPH particles to define the density
         //    and velocity on the grid, we can go ahead and destroy them.
         if (init_with_sph_particles == 1) {
             delete SPHPC;
-	}
+        }
 
-	BL_PROFILE_VAR_STOP(CA_part);
-	BL_PROFILE_VAR("Nyx::init_santa_barbara()::avg", CA_avg);
+        BL_PROFILE_VAR_STOP(CA_part);
+        BL_PROFILE_VAR("Nyx::init_santa_barbara()::avg", CA_avg);
 
         for (int lev = parent->finestLevel()-1; lev >= 0; lev--)
         {
@@ -778,8 +778,8 @@ Nyx::init_santa_barbara (int init_sb_vels)
                                  parent->Geom(lev+1), parent->Geom(lev), 0, 1,
                                  parent->refRatio(lev));
         }
-	BL_PROFILE_VAR_STOP(CA_avg);
-	BL_PROFILE_VAR("Nyx::init_santa_barbara()::partmf", CA_partmf);
+        BL_PROFILE_VAR_STOP(CA_avg);
+        BL_PROFILE_VAR("Nyx::init_santa_barbara()::partmf", CA_partmf);
         // Only multiply the density, not the velocities
         if (init_with_sph_particles == 0)
         {
@@ -792,9 +792,9 @@ Nyx::init_santa_barbara (int init_sb_vels)
                 particle_mf[level]->mult(frac_for_hydro / omfrac,0,1);
             }
         }
-	BL_PROFILE_VAR_STOP(CA_partmf);
+        BL_PROFILE_VAR_STOP(CA_partmf);
 
-	BL_PROFILE_VAR("Nyx::init_santa_barbara()::init", CA_init);
+        BL_PROFILE_VAR("Nyx::init_santa_barbara()::init", CA_init);
         const auto dx = geom.CellSizeArray();
         MultiFab& S_new = get_new_data(State_Type);
         MultiFab& D_new = get_new_data(DiagEOS_Type);
@@ -812,26 +812,26 @@ Nyx::init_santa_barbara (int init_sb_vels)
 #endif
         for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
         {
-	  RealBox gridloc = RealBox(grids[mfi.index()],
+          RealBox gridloc = RealBox(grids[mfi.index()],
                                       geom.CellSize(),
                                       geom.ProbLo());
             const Box& box = mfi.validbox();
             const int* lo = box.loVect();
             const int* hi = box.hiVect();
-	    const auto fab_S_new=S_new.array(mfi);
-	    const auto fab_D_new=D_new.array(mfi);
+            const auto fab_S_new=S_new.array(mfi);
+            const auto fab_D_new=D_new.array(mfi);
 
-	    Real z_in=initial_z;
+            Real z_in=initial_z;
 #ifdef AMREX_USE_CUDA
-	    //gridloc.lo matches box, not tbox
-	    AMREX_LAUNCH_DEVICE_LAMBDA(box,tbox,
-				       {
+            //gridloc.lo matches box, not tbox
+            AMREX_LAUNCH_DEVICE_LAMBDA(box,tbox,
+                                       {
             ca_fort_initdata
-		 (level, cur_time, tbox.loVect(), tbox.hiVect(), 
+                 (level, cur_time, tbox.loVect(), tbox.hiVect(), 
                  ns,BL_ARR4_TO_FORTRAN(fab_S_new), 
-		  nd,BL_ARR4_TO_FORTRAN(fab_D_new), dx.data(),
+                  nd,BL_ARR4_TO_FORTRAN(fab_D_new), dx.data(),
                  &z_in);
-				       });
+                                       });
 #else
             fort_initdata
                 (level, cur_time, lo, hi, 
@@ -840,10 +840,10 @@ Nyx::init_santa_barbara (int init_sb_vels)
                  gridloc.lo(), gridloc.hi());
 #endif
         }
-	amrex::Gpu::Device::streamSynchronize();
+        amrex::Gpu::Device::streamSynchronize();
 
         if (inhomo_reion) init_zhi();
-	BL_PROFILE_VAR_STOP(CA_init);
+        BL_PROFILE_VAR_STOP(CA_init);
 
 
         // Add the particle density to the gas density 
@@ -854,7 +854,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
             // Convert velocity to momentum
             for (int i = 0; i < BL_SPACEDIM; ++i) {
                MultiFab::Multiply(*particle_mf[level], *particle_mf[level], 0, 1+i, 1, 0);
-	    }
+            }
 
             // Add the particle momenta to the gas momenta (initially zero)
             MultiFab::Add(S_new, *particle_mf[level], 1, Xmom, BL_SPACEDIM, S_new.nGrow());
@@ -875,7 +875,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
        if (use_const_species == 0) {
            for (int i = 0; i < NumSpec; ++i) {
                MultiFab::Divide(S_new, S_new, Density, FirstSpec+i, 1, 0);
-	   }
+           }
        }
     }
 
@@ -891,7 +891,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
     if (use_const_species == 0) {
         for (int i = 0; i < NumSpec; ++i) {
             MultiFab::Multiply(S_new, S_new, Density, FirstSpec+i, 1, 0);
-	}
+        }
     }
 }
 #endif
@@ -930,11 +930,11 @@ Nyx::particle_post_restart (const std::string& restart_file, bool is_checkpoint)
         //
         DMPC->SetVerbose(particle_verbose);
 
-	{
-	  amrex::Gpu::LaunchSafeGuard lsg(true);
-	  DMPC->Restart(restart_file, dm_chk_particle_file, is_checkpoint);
-	  amrex::Gpu::Device::streamSynchronize();
-	}
+        {
+          amrex::Gpu::LaunchSafeGuard lsg(true);
+          DMPC->Restart(restart_file, dm_chk_particle_file, is_checkpoint);
+          amrex::Gpu::Device::streamSynchronize();
+        }
         //
         // We want the ability to write the particles out to an ascii file.
         //
@@ -1041,13 +1041,13 @@ Nyx::particle_est_time_step (Real& est_dt)
 
         if (est_dt_particle > 0) {
             est_dt = std::min(est_dt, est_dt_particle);
-	}
+        }
 
 #ifdef NEUTRINO_PARTICLES
         const Real est_dt_neutrino = NPC->estTimestep(grav, a, level, neutrino_cfl);
         if (est_dt_neutrino > 0) {
             est_dt = std::min(est_dt, est_dt_neutrino);
-	}
+        }
 #endif
 
         if (verbose)
@@ -1105,10 +1105,10 @@ Nyx::particle_redistribute (int lbase, bool my_init)
         bool ba_size_changed = false;
 
         int flev = parent->finestLevel();
-	
+        
         while ( parent->getAmrLevels()[flev] == nullptr ) {
             flev--;
-	}
+        }
  
         if (ba.size() != flev+1)
         {
@@ -1150,9 +1150,9 @@ Nyx::particle_redistribute (int lbase, bool my_init)
         {
             //
             // We only need to call Redistribute if the BoxArrays or DistMaps have changed.
-	    // We also only call it for particles >= lbase. This is
-	    // because of we called redistribute during a subcycle, there may be particles not in
-	    // the proper position on coarser levels.
+            // We also only call it for particles >= lbase. This is
+            // because of we called redistribute during a subcycle, there may be particles not in
+            // the proper position on coarser levels.
             //
             if (verbose)
             {
@@ -1164,20 +1164,20 @@ Nyx::particle_redistribute (int lbase, bool my_init)
                    amrex::Print() << "Calling redistribute because DistMap changed " << '\n';
             }
 
-	    int iteration = 1;
-	    int finest_level = parent->finestLevel();
-	    for (int i = 0; i < theActiveParticles().size(); i++)
-	      {
-		if(finest_level == 0)
-		  theActiveParticles()[i]->RedistributeLocal(lbase,
+            int iteration = 1;
+            int finest_level = parent->finestLevel();
+            for (int i = 0; i < theActiveParticles().size(); i++)
+              {
+                if(finest_level == 0)
+                  theActiveParticles()[i]->RedistributeLocal(lbase,
                                                   theActiveParticles()[i]->finestLevel(),
                                                   iteration);
-		else
-		  theActiveParticles()[i]->Redistribute(lbase,
+                else
+                  theActiveParticles()[i]->Redistribute(lbase,
                                                   theActiveParticles()[i]->finestLevel(),
                                                   iteration);
 
-	      }
+              }
 
             //
             // Use the new BoxArray and DistMap to define ba and dm for next time.
@@ -1219,11 +1219,11 @@ Nyx::setup_virtual_particles()
         DarkMatterParticleContainer::AoS virts;
         if (level < parent->finestLevel())
         {
-    	    get_level(level + 1).setup_virtual_particles();
-	    Nyx::theVirtPC()->CreateVirtualParticles(level+1, virts);
-	    Nyx::theVirtPC()->AddParticlesAtLevel(virts, level);
-	    Nyx::theDMPC()->CreateVirtualParticles(level+1, virts);
-	    Nyx::theVirtPC()->AddParticlesAtLevel(virts, level);
+            get_level(level + 1).setup_virtual_particles();
+            Nyx::theVirtPC()->CreateVirtualParticles(level+1, virts);
+            Nyx::theVirtPC()->AddParticlesAtLevel(virts, level);
+            Nyx::theDMPC()->CreateVirtualParticles(level+1, virts);
+            Nyx::theVirtPC()->AddParticlesAtLevel(virts, level);
         }
         virtual_particles_set = true;
     }
@@ -1270,7 +1270,7 @@ Nyx::setup_ghost_particles(int ngrow)
 #ifdef NEUTRINO_DARK_PARTICLES
         DarkMatterParticleContainer::AoS ghosts;
 #else
-	NeutrinoParticleContainer::AoS ghosts;
+        NeutrinoParticleContainer::AoS ghosts;
 #endif
         Nyx::theNPC()->CreateGhostParticles(level, ngrow, ghosts);
         Nyx::theGhostNPC()->AddParticlesAtLevel(ghosts, level+1, ngrow);

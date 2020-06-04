@@ -65,16 +65,16 @@ void Nyx::icReadAndPrepareFab(std::string mfDirName, int nghost, MultiFab &mf)
 
     if (! ((ba.contains(ba_read) && ba_read.contains(ba))) )
     {
-	if (ParallelDescriptor::IOProcessor()){
+        if (ParallelDescriptor::IOProcessor()){
             std::cout << "ba      :" << ba << std::endl;
-	    std::cout << "ba_read :" << ba_read << std::endl;
+            std::cout << "ba_read :" << ba_read << std::endl;
             std::cout << "Read mf and hydro mf DO NOT cover the same domain!" 
-        	      << std::endl;
-	}
-	ParallelDescriptor::Barrier();
-	if (ParallelDescriptor::IOProcessor()){
+                      << std::endl;
+        }
+        ParallelDescriptor::Barrier();
+        if (ParallelDescriptor::IOProcessor()){
             amrex::Abort();
-	}
+        }
     }
 
     mf.FillBoundary();
@@ -121,12 +121,12 @@ void Nyx::initcosmo()
     {
         std::cout << "You have more refinement than grids, there might be a problem with your refinement criterion..." << std::endl;
 
-    	MultiFab& S_new = get_level(level).get_new_data(State_Type);
-    	MultiFab& D_new = get_level(level).get_new_data(DiagEOS_Type);
+        MultiFab& S_new = get_level(level).get_new_data(State_Type);
+        MultiFab& D_new = get_level(level).get_new_data(DiagEOS_Type);
 
         FillCoarsePatch(S_new, 0, 0,   State_Type, 0, S_new.nComp());
         FillCoarsePatch(D_new, 0, 0, DiagEOS_Type, 0, D_new.nComp());
-	return;
+        return;
     }
 
     //
@@ -163,8 +163,8 @@ void Nyx::initcosmo()
     {
             if (ParallelDescriptor::IOProcessor())
             {
-        	    std::cout << "You assume a non-flat universe - \\Omega_K = "
-        		      << comoving_OmK << std::endl;
+                    std::cout << "You assume a non-flat universe - \\Omega_K = "
+                              << comoving_OmK << std::endl;
             }
             amrex::Abort();
     }
@@ -175,7 +175,7 @@ void Nyx::initcosmo()
     if (ParallelDescriptor::IOProcessor())
     {
        std::cout << "Mean baryonic matter density is " << rhoB 
-      	         << " M_sun/Mpc^3." << '\n';
+                 << " M_sun/Mpc^3." << '\n';
     }
 
 #ifdef NUFLUID
@@ -207,7 +207,7 @@ void Nyx::initcosmo()
           std::cout << std::endl;
           std::cout << std::endl;
           std::cout << "You chose a baryonic matter content greater than 0, "
-        	    << "but chose not to do hydro" << std::endl;
+                    << "but chose not to do hydro" << std::endl;
           std::cout << "I will be using \\rho_M for the dark matter density..." << std::endl;
           std::cout << std::endl;
           std::cout << std::endl;
@@ -275,7 +275,7 @@ void Nyx::initcosmo()
        if (ParallelDescriptor::IOProcessor())
        {
           std::cout << "Particle mass at level " << level 
-		    << " is " << particleMass 
+                    << " is " << particleMass 
                     << " M_sun." << '\n';
        }
     }
@@ -294,7 +294,7 @@ void Nyx::initcosmo()
        for (int n=0;n<BL_SPACEDIM;n++)
        {
           vel_fac[n] = len[n]*comoving_a*std::sqrt(comoving_OmM/pow(comoving_a,3)+comoving_OmL)*comoving_h*100;
-	  dis_fac[n] = len[n];
+          dis_fac[n] = len[n];
        }
        //Compute particle mass
        Real simulationVolume  = len[0]*len[1]*len[2];
@@ -309,7 +309,7 @@ void Nyx::initcosmo()
     else
     {
        std::cout << "No clue from which code the initial coniditions originate..." << std::endl
-	         << "Aborting...!" << std::endl;
+                 << "Aborting...!" << std::endl;
        amrex::Abort();
     }
 
@@ -320,7 +320,7 @@ void Nyx::initcosmo()
 //       baWhereNot = parent->boxArray(level+1);
 //       baWhereNot.coarsen(parent->refRatio()[level]);
         baWhereNot = parent->initialBa(level+1);
-	//std::cout << "Don't generate particles in region: " << baWhereNot << std::endl;
+        //std::cout << "Don't generate particles in region: " << baWhereNot << std::endl;
     }
     //initialize particles
     //std::cout << "FIXME!!!!!!!!!!!!!!!!!!" << std::endl;
@@ -333,10 +333,10 @@ void Nyx::initcosmo()
     // we also have to restrict the creation of particles to non refined parts of the domain.
 //    if (level == 0)
     Nyx::theDMPC()->InitCosmo1ppcMultiLevel(mf, dis_fac, vel_fac, 
-		                  particleMass, 
-				  part_dx, part_vx,
-				  myBaWhereNot,
-	                          level, parent->initialBaLevels()+1);
+                                  particleMass, 
+                                  part_dx, part_vx,
+                                  myBaWhereNot,
+                                  level, parent->initialBaLevels()+1);
 //    Nyx::theDMPC()->InitCosmo(mf, vel_fac, n_part, particleMass);
     //Nyx::theDMPC()->InitCosmo(mf, vel_fac, n_part, particleMass, part_dx, part_vx);
 
@@ -371,22 +371,22 @@ void Nyx::initcosmo()
             std::cout << "Do hydro initialization..." << '\n';
         }
 
-    	MultiFab& S_new = get_level(level).get_new_data(State_Type);
-    	MultiFab& D_new = get_level(level).get_new_data(DiagEOS_Type);
+        MultiFab& S_new = get_level(level).get_new_data(State_Type);
+        MultiFab& D_new = get_level(level).get_new_data(DiagEOS_Type);
 
         //Fill everything with old data...should only affect ghostzones, but
-	//seems to have no effect...
-	if (level > 0)
-	{
+        //seems to have no effect...
+        if (level > 0)
+        {
            FillCoarsePatch(S_new, 0, 0,   State_Type, 0, S_new.nComp());
-	   FillCoarsePatch(D_new, 0, 0, DiagEOS_Type, 0, D_new.nComp());
-	}
+           FillCoarsePatch(D_new, 0, 0, DiagEOS_Type, 0, D_new.nComp());
+        }
 
-     	//copy density 
-     	S_new.setVal(0.);
-     	S_new.copy(mf, baryon_den, Density, 1);
-     	S_new.plus(1,     Density, 1, S_new.nGrow());
-     	S_new.mult(rhoB,  Density, 1, S_new.nGrow());
+        //copy density 
+        S_new.setVal(0.);
+        S_new.copy(mf, baryon_den, Density, 1);
+        S_new.plus(1,     Density, 1, S_new.nGrow());
+        S_new.mult(rhoB,  Density, 1, S_new.nGrow());
 
 //      //This block assigns "the same" density for the baryons as for the dm.
 //      Vector<std::unique_ptr<MultiFab> > particle_mf;
@@ -394,15 +394,15 @@ void Nyx::initcosmo()
 //      particle_mf[0]->mult(comoving_OmB / comoving_OmD);
 //      S_new.copy(*particle_mf[0], 0, Density, 1);
 
-     	//copy velocities...
-     	S_new.copy(mf, baryon_vx, Xmom, 3);
+        //copy velocities...
+        S_new.copy(mf, baryon_vx, Xmom, 3);
 
         //...and "transform" to momentum
-     	S_new.mult(vel_fac[0], Xmom, 1, S_new.nGrow());
-     	MultiFab::Multiply(S_new, S_new, Density, Xmom, 1, S_new.nGrow());
-     	S_new.mult(vel_fac[1], Ymom, 1, S_new.nGrow());
-     	MultiFab::Multiply(S_new, S_new, Density, Ymom, 1, S_new.nGrow());
-     	S_new.mult(vel_fac[2], Zmom, 1, S_new.nGrow());
+        S_new.mult(vel_fac[0], Xmom, 1, S_new.nGrow());
+        MultiFab::Multiply(S_new, S_new, Density, Xmom, 1, S_new.nGrow());
+        S_new.mult(vel_fac[1], Ymom, 1, S_new.nGrow());
+        MultiFab::Multiply(S_new, S_new, Density, Ymom, 1, S_new.nGrow());
+        S_new.mult(vel_fac[2], Zmom, 1, S_new.nGrow());
         MultiFab::Multiply(S_new, S_new, Density, Zmom, 1, S_new.nGrow());
 
         // Convert (rho X)_i to X_i before calling init_e_from_T

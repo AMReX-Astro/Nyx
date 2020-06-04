@@ -65,7 +65,7 @@ Nyx::sum_integrated_quantities ()
 
         if (parent->NumDataLogs() >= num_global_data_logs + lev + 1)
         {
-  	    if (ParallelDescriptor::IOProcessor())
+            if (ParallelDescriptor::IOProcessor())
                 std::cout << "Computing statistics for level " << lev << " at time " << time << '\n';
 
             rho_E_lev = nyx_lev.vol_weight_sum("rho_E", time, false);
@@ -136,7 +136,7 @@ Nyx::sum_integrated_quantities ()
 
       if (parent->NumDataLogs() >= 2)
       {
-	std::ostream& data_log1 = parent->DataLog(1);
+        std::ostream& data_log1 = parent->DataLog(1);
 
         if (time == 0)
         {
@@ -281,22 +281,22 @@ Nyx::compute_average_temperature (Real& average_temperature)
         MultiFab& S_new = nyx_lev.get_new_data(State_Type);
         MultiFab& D_new = nyx_lev.get_new_data(DiagEOS_Type);
 
-	MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
-	reset_e_src.setVal(0.0);
+        MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
+        reset_e_src.setVal(0.0);
 
         nyx_lev.reset_internal_energy(S_new,D_new,reset_e_src);
         nyx_lev.compute_new_temp     (S_new,D_new);
 
         average_temperature += nyx_lev.vol_weight_sum("Temp",time,true);
 
-	if (verbose > 1) {
-	  std::cout << "Norm2 temperature" << D_new.norm2(Temp_comp)<<std::endl;
-	  std::cout << "Norm0 temperature" << D_new.norm0(Temp_comp)<<std::endl;
+        if (verbose > 1) {
+          std::cout << "Norm2 temperature" << D_new.norm2(Temp_comp)<<std::endl;
+          std::cout << "Norm0 temperature" << D_new.norm0(Temp_comp)<<std::endl;
 
-	  std::cout << "Norm2 rho_e" << S_new.norm2(Eint)<<std::endl;
-	  std::cout << "Norm0 rho_e" << S_new.norm0(Eint)<<std::endl;
+          std::cout << "Norm2 rho_e" << S_new.norm2(Eint)<<std::endl;
+          std::cout << "Norm0 rho_e" << S_new.norm0(Eint)<<std::endl;
 
-	}
+        }
     }
  
     // Divide by physical volume of domain.

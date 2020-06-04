@@ -42,12 +42,12 @@ public:
 
     AMREX_GPU_HOST_DEVICE AMREX_INLINE  
       void update_dm_particle_single(ParticleType&  particle,
-				     const int nc,
-				     amrex::Array4<amrex::Real const> const& acc,
-				     amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& plo,
-				     amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& dxi,
-				     const amrex::Real& dt, const amrex::Real& a_prev, 
-				     const amrex::Real& a_cur, const int& do_move);
+                                     const int nc,
+                                     amrex::Array4<amrex::Real const> const& acc,
+                                     amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& plo,
+                                     amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& dxi,
+                                     const amrex::Real& dt, const amrex::Real& a_prev, 
+                                     const amrex::Real& a_cur, const int& do_move);
 
 };
 

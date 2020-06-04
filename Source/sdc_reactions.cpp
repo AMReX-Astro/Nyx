@@ -52,9 +52,9 @@ Nyx::sdc_reactions (MultiFab& S_old, MultiFab& S_new, MultiFab& D_new,
                  BL_TO_FORTRAN(S_old[mfi]),
                  BL_TO_FORTRAN(S_new[mfi]),
                  BL_TO_FORTRAN(D_new[mfi]),
-		 BL_TO_FORTRAN(hydro_src[mfi]),
-		 BL_TO_FORTRAN(reset_e_src[mfi]),
-		 BL_TO_FORTRAN(IR[mfi]),
+                 BL_TO_FORTRAN(hydro_src[mfi]),
+                 BL_TO_FORTRAN(reset_e_src[mfi]),
+                 BL_TO_FORTRAN(IR[mfi]),
                  &a_old, &delta_time, &min_iter_grid, &max_iter_grid);
 
         min_iter = std::min(min_iter,min_iter_grid);
@@ -73,15 +73,15 @@ Nyx::sdc_reactions (MultiFab& S_old, MultiFab& S_new, MultiFab& D_new,
 
         min_iter_grid = 100000;
         max_iter_grid =      0;
-	
+        
         integrate_state_fcvode_with_source
                 (bx.loVect(), bx.hiVect(), 
                  BL_TO_FORTRAN(S_old[mfi]),
                  BL_TO_FORTRAN(S_new[mfi]),
                  BL_TO_FORTRAN(D_new[mfi]),
-		 BL_TO_FORTRAN(hydro_src[mfi]),
-		 BL_TO_FORTRAN(reset_e_src[mfi]),
-		 BL_TO_FORTRAN(IR[mfi]),
+                 BL_TO_FORTRAN(hydro_src[mfi]),
+                 BL_TO_FORTRAN(reset_e_src[mfi]),
+                 BL_TO_FORTRAN(IR[mfi]),
                  &a_old, &delta_time, &min_iter_grid, &max_iter_grid);
 
         min_iter = std::min(min_iter,min_iter_grid);

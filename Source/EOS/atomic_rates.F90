@@ -178,9 +178,9 @@ module atomic_rates_module
             endif
          endif
 
-	 allocate(NCOOLFILE)
-	 allocate(ggh0, gghe0, gghep, eh0, ehe0, ehep)
-	 allocate(ggh0_2, gghe0_2, gghep_2, eh0_2, ehe0_2, ehep_2)
+         allocate(NCOOLFILE)
+         allocate(ggh0, gghe0, gghep, eh0, ehe0, ehep)
+         allocate(ggh0_2, gghe0_2, gghep_2, eh0_2, ehe0_2, ehep_2)
          NCOOLFILE = 0
          do
             read(11,*,end=10) tmp, tmp, tmp, tmp, tmp,  tmp, tmp
@@ -190,10 +190,10 @@ module atomic_rates_module
 
          allocate( lzr(NCOOLFILE), rggh0(NCOOLFILE), rgghe0(NCOOlFILE), rgghep(NCOOLFILE) )
          allocate( reh0(NCOOLFILE), rehe0(NCOOLFILE), rehep(NCOOLFILE) )
-	 allocate( AlphaHp(NCOOLTAB+1), AlphaHep(NCOOLTAB+1), AlphaHepp(NCOOLTAB+1), Alphad(NCOOLTAB+1))
-	 allocate( GammaeH0(NCOOLTAB+1), GammaeHe0(NCOOLTAB+1), GammaeHep(NCOOLTAB+1))
-	 allocate( BetaH0(NCOOLTAB+1), BetaHe0(NCOOLTAB+1), BetaHep(NCOOLTAB+1), Betaff1(NCOOLTAB+1), Betaff4(NCOOLTAB+1))
-	 allocate( RecHp(NCOOLTAB+1), RecHep(NCOOLTAB+1), RecHepp(NCOOLTAB+1))
+         allocate( AlphaHp(NCOOLTAB+1), AlphaHep(NCOOLTAB+1), AlphaHepp(NCOOLTAB+1), Alphad(NCOOLTAB+1))
+         allocate( GammaeH0(NCOOLTAB+1), GammaeHe0(NCOOLTAB+1), GammaeHep(NCOOLTAB+1))
+         allocate( BetaH0(NCOOLTAB+1), BetaHe0(NCOOLTAB+1), BetaHep(NCOOLTAB+1), Betaff1(NCOOLTAB+1), Betaff4(NCOOLTAB+1))
+         allocate( RecHp(NCOOLTAB+1), RecHep(NCOOLTAB+1), RecHepp(NCOOLTAB+1))
 
          do i = 1, NCOOLFILE
             read(11,*) lzr(i), rggh0(i), rgghe0(i), rgghep(i), &

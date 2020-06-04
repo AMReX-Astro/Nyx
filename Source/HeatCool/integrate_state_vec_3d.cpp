@@ -121,7 +121,7 @@ int Nyx::integrate_state_vec_mfin
       void *cvode_mem;
       double *dptr, *eptr, *rpar, *rparh, *abstol_ptr;
       realtype t=0.0;
-				
+                                
       u = NULL;
       e_orig = NULL;
       Data = NULL;
@@ -133,89 +133,89 @@ int Nyx::integrate_state_vec_mfin
       int loop = 1;
 
 #ifdef AMREX_USE_CUDA
-			cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();	
-			if(sundials_alloc_type%2==0)
-			{
-			  if(sundials_alloc_type==0)
-			    u = N_VMakeWithManagedAllocator_Cuda(neq,sunalloc,sunfree);  /* Allocate u vector */
-			  else
-			    u = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
+                        cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();  
+                        if(sundials_alloc_type%2==0)
+                        {
+                          if(sundials_alloc_type==0)
+                            u = N_VMakeWithManagedAllocator_Cuda(neq,sunalloc,sunfree);  /* Allocate u vector */
+                          else
+                            u = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
 
-			  dptr=N_VGetDeviceArrayPointer_Cuda(u);
+                          dptr=N_VGetDeviceArrayPointer_Cuda(u);
 
-			  if(sundials_alloc_type==0)
-			    e_orig = N_VMakeWithManagedAllocator_Cuda(neq,sunalloc,sunfree);  /* Allocate u vector */
-			  else
-			    e_orig = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
+                          if(sundials_alloc_type==0)
+                            e_orig = N_VMakeWithManagedAllocator_Cuda(neq,sunalloc,sunfree);  /* Allocate u vector */
+                          else
+                            e_orig = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
 
-			  eptr=N_VGetDeviceArrayPointer_Cuda(e_orig);
-			  N_VSetCudaStream_Cuda(e_orig, &currentStream);
-			  N_VSetCudaStream_Cuda(u, &currentStream);
+                          eptr=N_VGetDeviceArrayPointer_Cuda(e_orig);
+                          N_VSetCudaStream_Cuda(e_orig, &currentStream);
+                          N_VSetCudaStream_Cuda(u, &currentStream);
 
-			  if(sundials_alloc_type==0)
-			    Data = N_VMakeWithManagedAllocator_Cuda(4*neq,sunalloc,sunfree);  // Allocate u vector 
-			  else
-			    Data = N_VNewManaged_Cuda(4*neq);  /* Allocate u vector */
+                          if(sundials_alloc_type==0)
+                            Data = N_VMakeWithManagedAllocator_Cuda(4*neq,sunalloc,sunfree);  // Allocate u vector 
+                          else
+                            Data = N_VNewManaged_Cuda(4*neq);  /* Allocate u vector */
 
-			  rparh = N_VGetDeviceArrayPointer_Cuda(Data);
-			  N_VSetCudaStream_Cuda(Data, &currentStream);
-			  // shouldn't need to initialize 
-			  //N_VConst(0.0,Data);
+                          rparh = N_VGetDeviceArrayPointer_Cuda(Data);
+                          N_VSetCudaStream_Cuda(Data, &currentStream);
+                          // shouldn't need to initialize 
+                          //N_VConst(0.0,Data);
 
-			  if(sundials_alloc_type==0)
-			    abstol_vec = N_VMakeWithManagedAllocator_Cuda(neq,sunalloc,sunfree);  
-			  else
-			    abstol_vec = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
+                          if(sundials_alloc_type==0)
+                            abstol_vec = N_VMakeWithManagedAllocator_Cuda(neq,sunalloc,sunfree);  
+                          else
+                            abstol_vec = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
 
-			  abstol_ptr = N_VGetDeviceArrayPointer_Cuda(abstol_vec);
-			  N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
-			  amrex::Gpu::Device::streamSynchronize();
-			}
-			else
-			{
-			  dptr=(double*) The_Managed_Arena()->alloc(neq*sizeof(double));
-			  u = N_VMakeManaged_Cuda(neq,dptr);  /* Allocate u vector */
-			  eptr= (double*) The_Managed_Arena()->alloc(neq*sizeof(double));
-			  e_orig = N_VMakeManaged_Cuda(neq,eptr);  /* Allocate u vector */
-			  N_VSetCudaStream_Cuda(e_orig, &currentStream);
-			  N_VSetCudaStream_Cuda(u, &currentStream);
+                          abstol_ptr = N_VGetDeviceArrayPointer_Cuda(abstol_vec);
+                          N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
+                          amrex::Gpu::Device::streamSynchronize();
+                        }
+                        else
+                        {
+                          dptr=(double*) The_Managed_Arena()->alloc(neq*sizeof(double));
+                          u = N_VMakeManaged_Cuda(neq,dptr);  /* Allocate u vector */
+                          eptr= (double*) The_Managed_Arena()->alloc(neq*sizeof(double));
+                          e_orig = N_VMakeManaged_Cuda(neq,eptr);  /* Allocate u vector */
+                          N_VSetCudaStream_Cuda(e_orig, &currentStream);
+                          N_VSetCudaStream_Cuda(u, &currentStream);
 
-			  rparh = (double*) The_Managed_Arena()->alloc(4*neq*sizeof(double));
-			  Data = N_VMakeManaged_Cuda(4*neq,rparh);  // Allocate u vector 
-			  N_VSetCudaStream_Cuda(Data, &currentStream);
-			  // shouldn't need to initialize 
-			  //N_VConst(0.0,Data);
+                          rparh = (double*) The_Managed_Arena()->alloc(4*neq*sizeof(double));
+                          Data = N_VMakeManaged_Cuda(4*neq,rparh);  // Allocate u vector 
+                          N_VSetCudaStream_Cuda(Data, &currentStream);
+                          // shouldn't need to initialize 
+                          //N_VConst(0.0,Data);
 
-			  abstol_ptr = (double*) The_Managed_Arena()->alloc(neq*sizeof(double));
-			  abstol_vec = N_VMakeManaged_Cuda(neq,abstol_ptr);
-			  N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
-			  amrex::Gpu::streamSynchronize();
-			}
+                          abstol_ptr = (double*) The_Managed_Arena()->alloc(neq*sizeof(double));
+                          abstol_vec = N_VMakeManaged_Cuda(neq,abstol_ptr);
+                          N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
+                          amrex::Gpu::streamSynchronize();
+                        }
 
 #else
 #ifdef _OPENMP
-			int nthreads=omp_get_max_threads();
-			u = N_VNew_OpenMP(neq,nthreads);  /* Allocate u vector */
-			e_orig = N_VNew_OpenMP(neq,nthreads);  /* Allocate u vector */
-			eptr=N_VGetArrayPointer_Serial(e_orig);
-			dptr=N_VGetArrayPointer_OpenMP(u);
+                        int nthreads=omp_get_max_threads();
+                        u = N_VNew_OpenMP(neq,nthreads);  /* Allocate u vector */
+                        e_orig = N_VNew_OpenMP(neq,nthreads);  /* Allocate u vector */
+                        eptr=N_VGetArrayPointer_Serial(e_orig);
+                        dptr=N_VGetArrayPointer_OpenMP(u);
 
-			Data = N_VNew_OpenMP(4*neq,nthreads);  // Allocate u vector 
-			N_VConst(0.0,Data);
-			rparh=N_VGetArrayPointer_OpenMP(Data);
-			abstol_vec = N_VNew_OpenMP(neq,nthreads);
-			abstol_ptr=N_VGetArrayPointer_OpenMP(abstol_vec);
+                        Data = N_VNew_OpenMP(4*neq,nthreads);  // Allocate u vector 
+                        N_VConst(0.0,Data);
+                        rparh=N_VGetArrayPointer_OpenMP(Data);
+                        abstol_vec = N_VNew_OpenMP(neq,nthreads);
+                        abstol_ptr=N_VGetArrayPointer_OpenMP(abstol_vec);
 #else
-			u = N_VNew_Serial(neq);  /* Allocate u vector */
-			e_orig = N_VNew_Serial(neq);  /* Allocate u vector */
-			eptr=N_VGetArrayPointer_Serial(e_orig);
-			dptr=N_VGetArrayPointer_Serial(u);
+                        u = N_VNew_Serial(neq);  /* Allocate u vector */
+                        e_orig = N_VNew_Serial(neq);  /* Allocate u vector */
+                        eptr=N_VGetArrayPointer_Serial(e_orig);
+                        dptr=N_VGetArrayPointer_Serial(u);
 
-			Data = N_VNew_Serial(4*neq);  // Allocate u vector 
-			N_VConst(0.0,Data);
-			rparh=N_VGetArrayPointer_Serial(Data);
-			abstol_vec = N_VNew_Serial(neq);
-			abstol_ptr=N_VGetArrayPointer_Serial(abstol_vec);
+                        Data = N_VNew_Serial(4*neq);  // Allocate u vector 
+                        N_VConst(0.0,Data);
+                        rparh=N_VGetArrayPointer_Serial(Data);
+                        abstol_vec = N_VNew_Serial(neq);
+                        abstol_ptr=N_VGetArrayPointer_Serial(abstol_vec);
 #endif
 #endif
 
@@ -224,113 +224,113 @@ int Nyx::integrate_state_vec_mfin
 
 #pragma omp parallel for collapse(3)
       for (int k = lo.z; k <= hi.z; ++k) {
-	for (int j = lo.y; j <= hi.y; ++j) {
-	    for (int i = lo.x; i <= hi.x; ++i) {
-	      fort_ode_eos_setup(a,delta_time);
+        for (int j = lo.y; j <= hi.y; ++j) {
+            for (int i = lo.x; i <= hi.x; ++i) {
+              fort_ode_eos_setup(a,delta_time);
 #else
-				AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
-				{				  
+                                AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
+                                {                                 
 #endif
-				  int idx = i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
-				  dptr[idx]=state4(i,j,k,Eint)/state4(i,j,k,Density);
-				  eptr[idx]=state4(i,j,k,Eint)/state4(i,j,k,Density);
-				  rparh[4*idx+0]= diag_eos4(i,j,k,Temp_comp);   //rpar(1)=T_vode
-				  rparh[4*idx+1]= diag_eos4(i,j,k,Ne_comp);//    rpar(2)=ne_vode
-				  rparh[4*idx+2]= state4(i,j,k,Density); //    rpar(3)=rho_vode
-				  rparh[4*idx+3]=1/a-1;    //    rpar(4)=z_vode
-				  abstol_ptr[idx]= state4(i,j,k,Eint)/state4(i,j,k,Density)*abstol;
-				  //				}
+                                  int idx = i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
+                                  dptr[idx]=state4(i,j,k,Eint)/state4(i,j,k,Density);
+                                  eptr[idx]=state4(i,j,k,Eint)/state4(i,j,k,Density);
+                                  rparh[4*idx+0]= diag_eos4(i,j,k,Temp_comp);   //rpar(1)=T_vode
+                                  rparh[4*idx+1]= diag_eos4(i,j,k,Ne_comp);//    rpar(2)=ne_vode
+                                  rparh[4*idx+2]= state4(i,j,k,Density); //    rpar(3)=rho_vode
+                                  rparh[4*idx+3]=1/a-1;    //    rpar(4)=z_vode
+                                  abstol_ptr[idx]= state4(i,j,k,Eint)/state4(i,j,k,Density)*abstol;
+                                  //                            }
 #ifdef _OPENMP
-				}
-				}
-				}
+                                }
+                                }
+                                }
 #pragma omp barrier
 #else
-				});
+                                });
       amrex::Gpu::Device::streamSynchronize();
 #endif
 
 #ifdef CV_NEWTON
-				cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
+                                cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
 #else
-				cvode_mem = CVodeCreate(CV_BDF);
+                                cvode_mem = CVodeCreate(CV_BDF);
 #endif
-				flag = CVodeInit(cvode_mem, f, t, u);
+                                flag = CVodeInit(cvode_mem, f, t, u);
 
-				N_VScale(abstol,u,abstol_vec);
-				//				N_VConst(N_VMin(abstol_vec),abstol_vec);
+                                N_VScale(abstol,u,abstol_vec);
+                                //                              N_VConst(N_VMin(abstol_vec),abstol_vec);
 
-				flag = CVodeSVtolerances(cvode_mem, reltol, abstol_vec);
+                                flag = CVodeSVtolerances(cvode_mem, reltol, abstol_vec);
 
-				//				flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
-				flag = CVDiag(cvode_mem);
+                                //                              flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
+                                flag = CVDiag(cvode_mem);
 
-				CVodeSetMaxNumSteps(cvode_mem,2000);
+                                CVodeSetMaxNumSteps(cvode_mem,2000);
 
-				if(use_typical_steps)
-				    CVodeSetMaxStep(cvode_mem,delta_time/(old_max_steps));
+                                if(use_typical_steps)
+                                    CVodeSetMaxStep(cvode_mem,delta_time/(old_max_steps));
 
-				N_Vector constrain;
-				if(use_sundials_constraint)
-				  {
-				    constrain=N_VClone(u);
-				    N_VConst(2,constrain);	      
-				    flag =CVodeSetConstraints(cvode_mem,constrain);
-				  }
+                                N_Vector constrain;
+                                if(use_sundials_constraint)
+                                  {
+                                    constrain=N_VClone(u);
+                                    N_VConst(2,constrain);            
+                                    flag =CVodeSetConstraints(cvode_mem,constrain);
+                                  }
 
 #ifdef SUNDIALS_VERSION_MAJOR
 #if SUNDIALS_VERSION_MAJOR >= 5
 #if SUNDIALS_VERSION_MINOR >= 3
-				if(use_sundials_fused)
-				{
+                                if(use_sundials_fused)
+                                {
                                      flag = CVodeSetUseIntegratorFusedKernels(cvode_mem, SUNTRUE);
-				}
+                                }
 #endif
 #endif
 #endif
-				CVodeSetUserData(cvode_mem, &Data);
-				//				CVodeSetMaxStep(cvode_mem, delta_time/10);
-				//				BL_PROFILE_VAR("Nyx::strang_second_cvode",cvode_timer2);
-				flag = CVode(cvode_mem, delta_time, u, &t, CV_NORMAL);
-				if(use_typical_steps)
-				  {
-				    long int nst=0;
-				    flag = CVodeGetNumSteps(cvode_mem, &nst);
-				    new_max_steps=std::max(nst,new_max_steps);
-				  }
-				//				amrex::Gpu::Device::streamSynchronize();
-				//				BL_PROFILE_VAR_STOP(cvode_timer2);
+                                CVodeSetUserData(cvode_mem, &Data);
+                                //                              CVodeSetMaxStep(cvode_mem, delta_time/10);
+                                //                              BL_PROFILE_VAR("Nyx::strang_second_cvode",cvode_timer2);
+                                flag = CVode(cvode_mem, delta_time, u, &t, CV_NORMAL);
+                                if(use_typical_steps)
+                                  {
+                                    long int nst=0;
+                                    flag = CVodeGetNumSteps(cvode_mem, &nst);
+                                    new_max_steps=std::max(nst,new_max_steps);
+                                  }
+                                //                              amrex::Gpu::Device::streamSynchronize();
+                                //                              BL_PROFILE_VAR_STOP(cvode_timer2);
 
 #ifdef AMREX_DEBUG
-				PrintFinalStats(cvode_mem);
+                                PrintFinalStats(cvode_mem);
 #endif
 
 #ifdef _OPENMP
 #pragma omp parallel for collapse(3)
       for (int k = lo.z; k <= hi.z; ++k) {
-	for (int j = lo.y; j <= hi.y; ++j) {
-	    for (int i = lo.x; i <= hi.x; ++i) {
+        for (int j = lo.y; j <= hi.y; ++j) {
+            for (int i = lo.x; i <= hi.x; ++i) {
 #else
-				AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
-				{				  
+                                AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
+                                {                                 
 #endif
-				  int  idx= i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
-				//				for (int i= 0;i < neq; ++i) {
-				  fort_ode_eos_finalize(&(dptr[idx*loop]), &(rparh[4*idx*loop]), one_in);
-				  diag_eos4(i,j,k,Temp_comp)=rparh[4*idx*loop+0];   //rpar(1)=T_vode
-				  diag_eos4(i,j,k,Ne_comp)=rparh[4*idx*loop+1];//    rpar(2)=ne_vode
-				
-				  state4(i,j,k,Eint)  += state4(i,j,k,Density) * (dptr[idx*loop]-eptr[idx]);
-				  state4(i,j,k,Eden)  += state4(i,j,k,Density) * (dptr[idx*loop]-eptr[idx]);
-				  //				}
-				//PrintFinalStats(cvode_mem);
+                                  int  idx= i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
+                                //                              for (int i= 0;i < neq; ++i) {
+                                  fort_ode_eos_finalize(&(dptr[idx*loop]), &(rparh[4*idx*loop]), one_in);
+                                  diag_eos4(i,j,k,Temp_comp)=rparh[4*idx*loop+0];   //rpar(1)=T_vode
+                                  diag_eos4(i,j,k,Ne_comp)=rparh[4*idx*loop+1];//    rpar(2)=ne_vode
+                                
+                                  state4(i,j,k,Eint)  += state4(i,j,k,Density) * (dptr[idx*loop]-eptr[idx]);
+                                  state4(i,j,k,Eden)  += state4(i,j,k,Density) * (dptr[idx*loop]-eptr[idx]);
+                                  //                            }
+                                //PrintFinalStats(cvode_mem);
 #ifdef _OPENMP
-				}
-				}
-				}
+                                }
+                                }
+                                }
 #pragma omp barrier
 #else
-				});
+                                });
       amrex::Gpu::Device::streamSynchronize();
 #endif
 
@@ -338,28 +338,28 @@ int Nyx::integrate_state_vec_mfin
 #ifdef AMREX_USE_CUDA
       if(sundials_alloc_type%2!=0)
       {
-	The_Managed_Arena()->free(dptr);
-	The_Managed_Arena()->free(eptr);
-	if(use_sundials_constraint)
-	  The_Managed_Arena()->free(constrain);
-	The_Managed_Arena()->free(rparh);
-	The_Managed_Arena()->free(abstol_ptr);
+        The_Managed_Arena()->free(dptr);
+        The_Managed_Arena()->free(eptr);
+        if(use_sundials_constraint)
+          The_Managed_Arena()->free(constrain);
+        The_Managed_Arena()->free(rparh);
+        The_Managed_Arena()->free(abstol_ptr);
       }
 #endif
 
-				N_VDestroy(u);          /* Free the u vector */
-				N_VDestroy(e_orig);          /* Free the e_orig vector */
-				if(use_sundials_constraint)
-				  N_VDestroy(constrain);          /* Free the constrain vector */
-				N_VDestroy(abstol_vec);          /* Free the u vector */
-				N_VDestroy(Data);          /* Free the userdata vector */
-				CVodeFree(&cvode_mem);  /* Free the integrator memory */
-			      //);
-				/*			    }
-			
-	}
-	}*/
-				return 0;
+                                N_VDestroy(u);          /* Free the u vector */
+                                N_VDestroy(e_orig);          /* Free the e_orig vector */
+                                if(use_sundials_constraint)
+                                  N_VDestroy(constrain);          /* Free the constrain vector */
+                                N_VDestroy(abstol_vec);          /* Free the u vector */
+                                N_VDestroy(Data);          /* Free the userdata vector */
+                                CVodeFree(&cvode_mem);  /* Free the integrator memory */
+                              //);
+                                /*                          }
+                        
+        }
+        }*/
+                                return 0;
 }
 
 int Nyx::integrate_state_grownvec

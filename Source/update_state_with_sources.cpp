@@ -17,8 +17,8 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
     MultiFab::RegionTag amrhydro_tag("HydroUpdate_" + std::to_string(level));
     if(verbose>1) {
         std::cout<<"hydro_src norm2(0)"<<hydro_src.norm2(0)<<std::endl;
-	std::cout<<"hydro_src norm2(Eint)"<<hydro_src.norm2(Eint)<<std::endl;
-	std::cout<<"hydro_src norm2(Eint)"<<hydro_src.norm2(Eden)<<std::endl;
+        std::cout<<"hydro_src norm2(Eint)"<<hydro_src.norm2(Eint)<<std::endl;
+        std::cout<<"hydro_src norm2(Eint)"<<hydro_src.norm2(Eden)<<std::endl;
 }
 
 
@@ -61,35 +61,35 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
 
       sum_state.prefetchToDevice();
 
-	AMREX_LAUNCH_DEVICE_LAMBDA(bx,tbx,
-	{
-	  ca_fort_update_state (
-		  tbx.loVect(), tbx.hiVect(),
-		  BL_ARR4_TO_FORTRAN(fab_S_old),
-		  BL_ARR4_TO_FORTRAN(fab_S_new),
-		  BL_ARR4_TO_FORTRAN(fab_ext_src_old),
-		  BL_ARR4_TO_FORTRAN(fab_hydro_src),
-		  BL_ARR4_TO_FORTRAN(fab_divu_cc),
-		  BL_ARR4_TO_FORTRAN_3D(fab_sum_state),
-		  &dt, &a_old, &a_new, &print_fortran_warnings_tmp);
+        AMREX_LAUNCH_DEVICE_LAMBDA(bx,tbx,
+        {
+          ca_fort_update_state (
+                  tbx.loVect(), tbx.hiVect(),
+                  BL_ARR4_TO_FORTRAN(fab_S_old),
+                  BL_ARR4_TO_FORTRAN(fab_S_new),
+                  BL_ARR4_TO_FORTRAN(fab_ext_src_old),
+                  BL_ARR4_TO_FORTRAN(fab_hydro_src),
+                  BL_ARR4_TO_FORTRAN(fab_divu_cc),
+                  BL_ARR4_TO_FORTRAN_3D(fab_sum_state),
+                  &dt, &a_old, &a_new, &print_fortran_warnings_tmp);
 
-	  // Note this increments S_new, it doesn't add source to S_old
-	  // However we create the source term using rho_old
-	  if (do_grav_tmp)
-	    ca_fort_add_grav_source (
-		    tbx.loVect(), tbx.hiVect(),
-		    BL_ARR4_TO_FORTRAN(fab_S_old),
-		    BL_ARR4_TO_FORTRAN(fab_S_new),
-		    BL_ARR4_TO_FORTRAN(fab_grav),
-		    &dt, &a_old, &a_new);
-	});
+          // Note this increments S_new, it doesn't add source to S_old
+          // However we create the source term using rho_old
+          if (do_grav_tmp)
+            ca_fort_add_grav_source (
+                    tbx.loVect(), tbx.hiVect(),
+                    BL_ARR4_TO_FORTRAN(fab_S_old),
+                    BL_ARR4_TO_FORTRAN(fab_S_new),
+                    BL_ARR4_TO_FORTRAN(fab_grav),
+                    &dt, &a_old, &a_new);
+        });
     }
 
     }
     else
       {
-	Gpu::synchronize();
-	Gpu::LaunchSafeGuard lsg(false);
+        Gpu::synchronize();
+        Gpu::LaunchSafeGuard lsg(false);
 #ifdef _OPENMP
 #pragma omp parallel 
 #endif
@@ -117,9 +117,9 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
    }
       }
    if(verbose>1) {
-	std::cout<<"S_new norm2(0)"<<S_new.norm2(0)<<std::endl;
-	std::cout<<"S_new norm2(Eint)"<<S_new.norm2(Eint)<<std::endl;
-	std::cout<<"S_new norm2(Eint)"<<S_new.norm2(Eden)<<std::endl;
+        std::cout<<"S_new norm2(0)"<<S_new.norm2(0)<<std::endl;
+        std::cout<<"S_new norm2(Eint)"<<S_new.norm2(Eint)<<std::endl;
+        std::cout<<"S_new norm2(Eint)"<<S_new.norm2(Eden)<<std::endl;
 }
 
 }

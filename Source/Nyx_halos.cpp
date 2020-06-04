@@ -132,10 +132,10 @@ Nyx::halo_find (Real dt)
        state_levels.resize(parent->finestLevel()+1);
        //Write all levels to Vector
        for (int lev = 0; lev <= parent->finestLevel(); lev++)
-	   {
-	     state_levels[lev]=&((get_level(lev)).get_new_data(State_Type));
+           {
+             state_levels[lev]=&((get_level(lev)).get_new_data(State_Type));
          level_refinements.push_back(get_level(lev).fineRatio());
-	   }
+           }
 
        //This will fill all levels in particle_mf with lev_min=0
        Nyx::theDMPC()->AssignDensity(particle_mf, 0, 4, -1, 0);
@@ -223,7 +223,7 @@ Nyx::halo_find (Real dt)
                              vertices[vert[2]][2]));
            reeber_halos_pos.push_back(iv);
            reeber_halos_mass.push_back(haloMass);
-	 }
+         }
 
 #endif // ifdef REEBER
 

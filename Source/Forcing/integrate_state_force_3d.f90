@@ -108,24 +108,24 @@ subroutine integrate_state_force(lo, hi, &
                 ! Original values
                 rho        = state(i,j,k,URHO)
                 rho_e_orig = state(i,j,k,UEINT)
-		rho_K_res  = state(i,j,k,UEDEN) - state(i,j,k,UEINT)
+                rho_K_res  = state(i,j,k,UEDEN) - state(i,j,k,UEINT)
                 T_orig     = diag_eos(i,j,k,TEMP_COMP)
                 !ne         = diag_eos(i,j,k,  NE_COMP)
 
                 if (rho_e_orig .lt. 0.d0) neg_e_count = neg_e_count + 1
 
                 ! Compute temperature increment and ensure that new temperature is positive
-		delta = half_dt * alpha * (temp0 - T_orig) / a
-		diag_eos(i,j,k,TEMP_COMP) = max(T_orig + delta, small_temp)
+                delta = half_dt * alpha * (temp0 - T_orig) / a
+                diag_eos(i,j,k,TEMP_COMP) = max(T_orig + delta, small_temp)
 
                 ! Call EOS to get internal energy for constant equilibrium temperature
                 eint0 = temp0 / (mu * m_nucleon_over_kB * gamma_minus_1)
-		delta_re = half_dt * alpha * (rho*eint0 - rho_e_orig) / a
+                delta_re = half_dt * alpha * (rho*eint0 - rho_e_orig) / a
 
                 ! Call EOS to get the internal energy floor
 
                 ! Update cell quantities
- 		state(i,j,k,UEINT) = max(rho_e_orig + delta_re, rho*small_eint)
+                state(i,j,k,UEINT) = max(rho_e_orig + delta_re, rho*small_eint)
                 state(i,j,k,UEDEN) = state(i,j,k,UEINT) + rho_K_res
             end do
         end do
@@ -261,7 +261,7 @@ subroutine integrate_state_force(lo, hi, &
 
              accel(:) = M_SQRT_2 * accel(:)
 
-             ! add forcing to state		
+             ! add forcing to state             
              state(i,j,k,UMX) = state(i,j,k,UMX) + half_dt * state(i,j,k,URHO)*accel(1) / a
              state(i,j,k,UMY) = state(i,j,k,UMY) + half_dt * state(i,j,k,URHO)*accel(2) / a
              state(i,j,k,UMZ) = state(i,j,k,UMZ) + half_dt * state(i,j,k,URHO)*accel(3) / a

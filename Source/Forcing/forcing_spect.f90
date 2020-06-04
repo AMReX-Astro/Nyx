@@ -59,7 +59,7 @@ contains
     integer, intent(in) :: kvect(amrex_spacedim)
 
     if ((m.lt.0).or.(m.ge.num_modes)) then
-	call amrex_abort('invalid index of wavevector')
+        call amrex_abort('invalid index of wavevector')
     end if
 
     wavevectors(:,m+1) = kvect(:) ! index conversion from C to Fortran
@@ -76,7 +76,7 @@ contains
     integer m
 
     if ((length.ne.num_modes).or.(comp.ge.amrex_spacedim)) then
-	call amrex_abort('dimensions of input arrays do not match')
+        call amrex_abort('dimensions of input arrays do not match')
     end if
 
     modes_even(1:num_modes,comp+1) = even(:)

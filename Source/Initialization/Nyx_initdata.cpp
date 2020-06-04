@@ -84,7 +84,7 @@ Nyx::read_init_params ()
     // Input error check
     if (!binary_particle_file.empty() && (particle_init_type != "BinaryFile" &&
                                           particle_init_type != "BinaryMetaFile" && 
-					  particle_init_type != "BinaryMortonFile"))
+                                          particle_init_type != "BinaryMortonFile"))
     {
         if (ParallelDescriptor::IOProcessor())
             std::cerr << "ERROR::particle_init_type is not BinaryFile, BinaryMetaFile, or BinaryMortonFile but you specified binary_particle_file" << std::endl;
@@ -104,8 +104,8 @@ Nyx::read_init_params ()
 #ifdef NEUTRINO_PARTICLES
     pp.query("neutrino_particle_file", neutrino_particle_file);
     if (!neutrino_particle_file.empty() && particle_init_type != "AsciiFile" &&
-	                                   particle_init_type != "BinaryMetaFile" && 
-	                                   particle_init_type != "BinaryFile")
+                                           particle_init_type != "BinaryMetaFile" && 
+                                           particle_init_type != "BinaryFile")
     {
         if (ParallelDescriptor::IOProcessor())
             std::cerr << "ERROR::particle_init_type is not AsciiFile or BinaryFile but you specified neutrino_particle_file" << std::endl;
@@ -232,8 +232,8 @@ Nyx::initData ()
             if (inhomo_reion) init_zhi();
 
             // First reset internal energy before call to compute_temp
-	    MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
-	    reset_e_src.setVal(0.0);
+            MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
+            reset_e_src.setVal(0.0);
 
             reset_internal_energy(S_new,D_new,reset_e_src);
             compute_new_temp     (S_new,D_new);
@@ -297,17 +297,17 @@ Nyx::initData ()
     //
     if (do_readin_ics)
     {
-	std::string mfDirName(readin_ics_fname);
+        std::string mfDirName(readin_ics_fname);
 
-	MultiFab mf;
-	mfDirName.append("/Level_0/Cell");
+        MultiFab mf;
+        mfDirName.append("/Level_0/Cell");
 
-	VisMF::Read(mf, mfDirName.c_str());
+        VisMF::Read(mf, mfDirName.c_str());
 
         MultiFab& S_new_crse = get_level(0).get_new_data(State_Type);
-	
-	S_new_crse.copy(mf, 0, 0, 6);
-	S_new_crse.copy(mf, 0, FirstSpec, 1);
+        
+        S_new_crse.copy(mf, 0, 0, 6);
+        S_new_crse.copy(mf, 0, FirstSpec, 1);
 
         if (do_hydro == 1) 
         {
@@ -315,8 +315,8 @@ Nyx::initData ()
             D_new.setVal(0.);
         }
 
-	if (ParallelDescriptor::IOProcessor())
-	    std::cout << "Readin stuff...done\n";
+        if (ParallelDescriptor::IOProcessor())
+            std::cout << "Readin stuff...done\n";
     }
 #endif
     
@@ -521,8 +521,8 @@ Nyx::init_e_from_T (const Real& a)
              Real eint;
 
              // Call EOS to get the internal energy
-	     Real dummy_pres=0.0;
-	     // Set temp to small_temp and compute corresponding internal energy
+             Real dummy_pres=0.0;
+             // Set temp to small_temp and compute corresponding internal energy
              nyx_eos_given_RT(gamma_minus_1_in, h_species_in, &eint, &dummy_pres, rho, T, ne, a);
 
              state(i,j,k,Eint) = state(i,j,k,Density) * eint;

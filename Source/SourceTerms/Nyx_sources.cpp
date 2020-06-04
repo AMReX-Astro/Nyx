@@ -45,8 +45,8 @@ Nyx::get_old_source (Real      old_time,
 
         // The formulae in subroutine ctoprim assume that the source term for density is zero
         // Here we abort if it is non-zero.
-	Real norm_density = ext_src[mfi].norm<RunOn::Device>(0,Density,1);
-	amrex::Gpu::streamSynchronize();
+        Real norm_density = ext_src[mfi].norm<RunOn::Device>(0,Density,1);
+        amrex::Gpu::streamSynchronize();
         if (norm_density != 0)
         {
             std::cout << "The source terms for density are non-zero" << std::endl;

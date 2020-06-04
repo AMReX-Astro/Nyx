@@ -88,42 +88,42 @@ int Nyx::integrate_state_cell
       flag = CVDiag(cvode_mem);
       
       N_Vector constrain=N_VClone(u);
-      N_VConst(2,constrain);	      
+      N_VConst(2,constrain);          
       flag =CVodeSetConstraints(cvode_mem,constrain);
 
       CVodeSetUserData(cvode_mem, &Data);
       for (int k = lo.z; k <= hi.z; ++k) {
-	for (int j = lo.y; j <= hi.y; ++j) {
-	  AMREX_PRAGMA_SIMD
-	    for (int i = lo.x; i <= hi.x; ++i) {
-	      t=0;
-	      
-	      N_VConst(state(i,j,k,Eint)/state(i,j,k,Density),u);
-	      state(i,j,k,Eint)  -= state(i,j,k,Density) * (dptr[0]);
-	      state(i,j,k,Eden)  -= state(i,j,k,Density) * (dptr[0]);
-	      rparh[0]= diag_eos(i,j,k,Temp_comp);   //rpar(1)=T_vode
-	      rparh[1]= diag_eos(i,j,k,Ne_comp);//    rpar(2)=ne_vode
-	      rparh[2]= state(i,j,k,Density); //    rpar(3)=rho_vode
-	      rparh[3]=1/a-1;    //    rpar(4)=z_vode
-	      flag = CVodeReInit(cvode_mem, t, u);
-	      flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
-	      
-	      BL_PROFILE_VAR("Nyx::strang_second_cvode",cvode_timer2);
-	      flag = CVode(cvode_mem, delta_time, u, &t, CV_NORMAL);
-	      BL_PROFILE_VAR_STOP(cvode_timer2);
-	      
-	      AMREX_LAUNCH_DEVICE_LAMBDA(neq,i,
-					 {
-					   fort_ode_eos_finalize(&(dptr[0]), &(rparh[0]), 1);
-					 });
-	      diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
-	      diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
-	      
-	      state(i,j,k,Eint)  += state(i,j,k,Density) * (dptr[0]);
-	      state(i,j,k,Eden)  += state(i,j,k,Density) * (dptr[0]);
-	      
-	    }
-	}
+        for (int j = lo.y; j <= hi.y; ++j) {
+          AMREX_PRAGMA_SIMD
+            for (int i = lo.x; i <= hi.x; ++i) {
+              t=0;
+              
+              N_VConst(state(i,j,k,Eint)/state(i,j,k,Density),u);
+              state(i,j,k,Eint)  -= state(i,j,k,Density) * (dptr[0]);
+              state(i,j,k,Eden)  -= state(i,j,k,Density) * (dptr[0]);
+              rparh[0]= diag_eos(i,j,k,Temp_comp);   //rpar(1)=T_vode
+              rparh[1]= diag_eos(i,j,k,Ne_comp);//    rpar(2)=ne_vode
+              rparh[2]= state(i,j,k,Density); //    rpar(3)=rho_vode
+              rparh[3]=1/a-1;    //    rpar(4)=z_vode
+              flag = CVodeReInit(cvode_mem, t, u);
+              flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
+              
+              BL_PROFILE_VAR("Nyx::strang_second_cvode",cvode_timer2);
+              flag = CVode(cvode_mem, delta_time, u, &t, CV_NORMAL);
+              BL_PROFILE_VAR_STOP(cvode_timer2);
+              
+              AMREX_LAUNCH_DEVICE_LAMBDA(neq,i,
+                                         {
+                                           fort_ode_eos_finalize(&(dptr[0]), &(rparh[0]), 1);
+                                         });
+              diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
+              diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
+              
+              state(i,j,k,Eint)  += state(i,j,k,Density) * (dptr[0]);
+              state(i,j,k,Eden)  += state(i,j,k,Density) * (dptr[0]);
+              
+            }
+        }
       }
       N_VDestroy(u);          /* Free the u vector */
       N_VDestroy(Data);          /* Free the userdata vector */
@@ -181,7 +181,7 @@ int Nyx::integrate_state_growncell
       realtype tout;
       realtype umax;
       int flag;
-				
+                                
       u = NULL;
       //  LS = NULL;
       cvode_mem = NULL;
@@ -204,42 +204,42 @@ int Nyx::integrate_state_growncell
       flag = CVDiag(cvode_mem);
 
       N_Vector constrain=N_VClone(u);
-      N_VConst(2,constrain);	      
+      N_VConst(2,constrain);          
       flag =CVodeSetConstraints(cvode_mem,constrain);
       
       CVodeSetUserData(cvode_mem, &Data);
       for (int k = lo.z; k <= hi.z; ++k) {
-	for (int j = lo.y; j <= hi.y; ++j) {
-	  AMREX_PRAGMA_SIMD
-	    for (int i = lo.x; i <= hi.x; ++i) {
-	      t=0;
-	      
-	      N_VConst(state(i,j,k,Eint)/state(i,j,k,Density),u);
-	      state(i,j,k,Eint)  -= state(i,j,k,Density) * (dptr[0]);
-	      state(i,j,k,Eden)  -= state(i,j,k,Density) * (dptr[0]);
-	      rparh[0]= diag_eos(i,j,k,Temp_comp);   //rpar(1)=T_vode
-	      rparh[1]= diag_eos(i,j,k,Ne_comp);//    rpar(2)=ne_vode
-	      rparh[2]= state(i,j,k,Density); //    rpar(3)=rho_vode
-	      rparh[3]=1/a-1;    //    rpar(4)=z_vode
-	      flag = CVodeReInit(cvode_mem, t, u);
-	      flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
-	      
-	      BL_PROFILE_VAR("Nyx::strang_first_cvode",cvode_timer1);
-	      flag = CVode(cvode_mem, delta_time, u, &t, CV_NORMAL);
-	      BL_PROFILE_VAR_STOP(cvode_timer1);
-	      
-	      AMREX_LAUNCH_DEVICE_LAMBDA(neq,i,
-					 {
-					   fort_ode_eos_finalize(&(dptr[0]), &(rparh[0]), 1);
-					 });
-	      diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
-	      diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
-	      
-	      state(i,j,k,Eint)  += state(i,j,k,Density) * (dptr[0]);
-	      state(i,j,k,Eden)  += state(i,j,k,Density) * (dptr[0]);
-	      
-	    }
-	}
+        for (int j = lo.y; j <= hi.y; ++j) {
+          AMREX_PRAGMA_SIMD
+            for (int i = lo.x; i <= hi.x; ++i) {
+              t=0;
+              
+              N_VConst(state(i,j,k,Eint)/state(i,j,k,Density),u);
+              state(i,j,k,Eint)  -= state(i,j,k,Density) * (dptr[0]);
+              state(i,j,k,Eden)  -= state(i,j,k,Density) * (dptr[0]);
+              rparh[0]= diag_eos(i,j,k,Temp_comp);   //rpar(1)=T_vode
+              rparh[1]= diag_eos(i,j,k,Ne_comp);//    rpar(2)=ne_vode
+              rparh[2]= state(i,j,k,Density); //    rpar(3)=rho_vode
+              rparh[3]=1/a-1;    //    rpar(4)=z_vode
+              flag = CVodeReInit(cvode_mem, t, u);
+              flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
+              
+              BL_PROFILE_VAR("Nyx::strang_first_cvode",cvode_timer1);
+              flag = CVode(cvode_mem, delta_time, u, &t, CV_NORMAL);
+              BL_PROFILE_VAR_STOP(cvode_timer1);
+              
+              AMREX_LAUNCH_DEVICE_LAMBDA(neq,i,
+                                         {
+                                           fort_ode_eos_finalize(&(dptr[0]), &(rparh[0]), 1);
+                                         });
+              diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
+              diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
+              
+              state(i,j,k,Eint)  += state(i,j,k,Density) * (dptr[0]);
+              state(i,j,k,Eden)  += state(i,j,k,Density) * (dptr[0]);
+              
+            }
+        }
       }
       N_VDestroy(u);          /* Free the u vector */
       N_VDestroy(Data);          /* Free the userdata vector */

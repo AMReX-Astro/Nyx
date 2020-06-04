@@ -64,7 +64,7 @@ Nyx::compute_hydro_sources(amrex::Real time, amrex::Real dt, amrex::Real a_old, 
             u_gdnv[i].setVal<RunOn::Host>(1.e200);
         }
 
-	  fort_make_hydro_sources
+          fort_make_hydro_sources
             (&time, bx.loVect(), bx.hiVect(), 
              BL_TO_FORTRAN(state),
              BL_TO_FORTRAN(u_gdnv[0]),
@@ -98,7 +98,7 @@ Nyx::compute_hydro_sources(amrex::Real time, amrex::Real dt, amrex::Real a_old, 
          }
          if (fine) {
            for (int i = 0; i < BL_SPACEDIM ; i++) {
-	         fine->CrseInit(fluxes[i],i,0,0,NUM_STATE,-1.,FluxRegister::ADD);
+                 fine->CrseInit(fluxes[i],i,0,0,NUM_STATE,-1.,FluxRegister::ADD);
            }
          }
        }

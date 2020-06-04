@@ -10,7 +10,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 {
     if (Nyx::theDMPC() && name == "particle_count")
     {
-	std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids, dmap, 1, 0));
+        std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids, dmap, 1, 0));
         MultiFab temp_dat(grids, dmap, 1, 0);
         temp_dat.setVal(0);
         Nyx::theDMPC()->Increment(temp_dat, level);
@@ -20,7 +20,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 #ifdef AGN
     else if (Nyx::theAPC() && name == "agn_particle_count")
     {
-	std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids, dmap, 1, 0));
+        std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids, dmap, 1, 0));
         MultiFab temp_dat(grids, dmap, 1, 0);
         temp_dat.setVal(0);
         Nyx::theAPC()->Increment(temp_dat, level);
@@ -31,7 +31,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 #ifdef NEUTRINO_PARTICLES
     else if (Nyx::theNPC() && name == "neutrino_particle_count")
     {
-	std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids, dmap, 1, 0));
+        std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids, dmap, 1, 0));
         MultiFab temp_dat(grids, dmap, 1, 0);
         temp_dat.setVal(0);
         Nyx::theNPC()->Increment(temp_dat, level);
@@ -44,7 +44,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
         //
         // We want the total particle count at this level or higher.
         //
-	std::unique_ptr<MultiFab> derive_dat = particle_derive("particle_count", time, ngrow);
+        std::unique_ptr<MultiFab> derive_dat = particle_derive("particle_count", time, ngrow);
         IntVect trr(D_DECL(1, 1, 1));
 
         // @todo: level vs. lev
@@ -94,7 +94,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 #ifdef GRAVITY
     else if (Nyx::theDMPC() && name == "particle_mass_density")
     {
-	std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids,dmap,1,0));
+        std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids,dmap,1,0));
 
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
@@ -115,7 +115,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
     }
     else if (Nyx::theDMPC() && name == "particle_x_velocity")
     {
-	std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids,dmap,1,0));
+        std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids,dmap,1,0));
 
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
@@ -136,7 +136,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
     }
     else if (Nyx::theDMPC() && name == "particle_y_velocity")
     {
-	std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids,dmap,1,0));
+        std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids,dmap,1,0));
 
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
@@ -157,7 +157,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
     }
     else if (Nyx::theDMPC() && name == "particle_z_velocity")
     {
-	std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids,dmap,1,0));
+        std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids,dmap,1,0));
 
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
@@ -179,7 +179,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 #ifdef AGN
     else if (Nyx::theAPC() && name == "agn_mass_density")
     {
-	std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids,dmap,1,0));
+        std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids,dmap,1,0));
 
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
@@ -202,7 +202,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 #ifdef NEUTRINO_PARTICLES
     else if (Nyx::theNPC() && name == "neutrino_mass_density")
     {
-	std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
+        std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
 
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
@@ -224,7 +224,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 #ifdef NEUTRINO_DARK_PARTICLES
     else if (Nyx::theNPC() && name == "neutrino_x_velocity")
     {
-	std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids,dmap,1,0));
+        std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids,dmap,1,0));
 
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
@@ -245,7 +245,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
     }
     else if (Nyx::theNPC() && name == "neutrino_y_velocity")
     {
-	std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids,dmap,1,0));
+        std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids,dmap,1,0));
 
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
@@ -266,7 +266,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
     }
     else if (Nyx::theNPC() && name == "neutrino_z_velocity")
     {
-	std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids,dmap,1,0));
+        std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids,dmap,1,0));
 
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
@@ -289,7 +289,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
     else if (Nyx::theNPC() && (name == "neutrino_x_velocity" || name == "neutrino_y_velocity" || name == "neutrino_z_velocity" ))
     {
         amrex::Print()<<"Returning mass density for neutrinos, since velocity not implemented for NEUTRINO_DARK_PARTICLES=FALSE"<<std::endl;
-	std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
+        std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids,dmap,1,0));
 
         // We need to do the multilevel `assign_density` even though we're only
         // asking for one level's worth because otherwise we don't get the
@@ -335,7 +335,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
         MultiFab::Copy(*derive_dat, *particle_mf[level], 0, 0, 1, 0);
 
 #ifndef NO_HYDRO
-	std::unique_ptr<MultiFab> gas_density = derive("density",time,0);
+        std::unique_ptr<MultiFab> gas_density = derive("density",time,0);
         MultiFab::Add(*derive_dat,*gas_density, 0, 0, 1, 0);
 #endif
         return derive_dat; 

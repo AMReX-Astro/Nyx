@@ -264,7 +264,7 @@ Nyx::advance_hydro_plus_particles (Real time,
             if (particle_verbose && ParallelDescriptor::IOProcessor())
                 std::cout << "moveKickDrift ... updating particle positions and velocity\n"; 
 
-	    MultiFab::RegionTag amrMoveKickDrift_tag("MoveKickDrift_" + std::to_string(level));
+            MultiFab::RegionTag amrMoveKickDrift_tag("MoveKickDrift_" + std::to_string(level));
 
             for (int lev = level; lev <= finest_level_to_advance; lev++)
             {
@@ -308,30 +308,30 @@ Nyx::advance_hydro_plus_particles (Real time,
            get_level(lev).sdc_hydro(time, dt, a_old, a_new);
         } else {
 #ifdef AMREX_USE_SUNDIALS_3x4x
-	  if(strang_fuse > 0)
-	      get_level(lev).strang_hydro_fuse(time, dt, a_old, a_new);
-	  else
+          if(strang_fuse > 0)
+              get_level(lev).strang_hydro_fuse(time, dt, a_old, a_new);
+          else
 #endif
-	    {
-	      if( nghost_state==NUM_GROW)
-		get_level(lev).strang_hydro_ghost_state(time, dt, a_old, a_new);
-	      else
-		get_level(lev).strang_hydro(time, dt, a_old, a_new);
-	    }
+            {
+              if( nghost_state==NUM_GROW)
+                get_level(lev).strang_hydro_ghost_state(time, dt, a_old, a_new);
+              else
+                get_level(lev).strang_hydro(time, dt, a_old, a_new);
+            }
         } 
 #else
-	
+        
 #ifdef AMREX_USE_SUNDIALS_3x4x
-	if(strang_fuse > 0)
-	  get_level(lev).strang_hydro_fuse(time, dt, a_old, a_new);
-	else
+        if(strang_fuse > 0)
+          get_level(lev).strang_hydro_fuse(time, dt, a_old, a_new);
+        else
 #endif
-	  {
-	    if( nghost_state==NUM_GROW)
-	      get_level(lev).strang_hydro_ghost_state(time, dt, a_old, a_new);
-	    else
-	      get_level(lev).strang_hydro(time, dt, a_old, a_new);
-	  }
+          {
+            if( nghost_state==NUM_GROW)
+              get_level(lev).strang_hydro_ghost_state(time, dt, a_old, a_new);
+            else
+              get_level(lev).strang_hydro(time, dt, a_old, a_new);
+          }
 #endif
     }
     }
@@ -437,7 +437,7 @@ Nyx::advance_hydro_plus_particles (Real time,
         // locations.
         if (particle_move_type == "Gravitational")
         {
-	    MultiFab::RegionTag amrMoveKickDrift_tag("MoveKick_" + std::to_string(level));
+            MultiFab::RegionTag amrMoveKickDrift_tag("MoveKick_" + std::to_string(level));
             const Real a_half = 0.5 * (a_old + a_new);
 
             if (particle_verbose && ParallelDescriptor::IOProcessor())
@@ -473,8 +473,8 @@ Nyx::advance_hydro_plus_particles (Real time,
         MultiFab& S_new = get_level(lev).get_new_data(State_Type);
         MultiFab& D_new = get_level(lev).get_new_data(DiagEOS_Type);
 
-	get_level(lev).reset_internal_energy_nostore(S_new,D_new);
-	
+        get_level(lev).reset_internal_energy_nostore(S_new,D_new);
+        
     }
     }
     }
@@ -620,16 +620,16 @@ Nyx::correct_gsrc(int lev, Real time, Real prev_time, Real cur_time, Real dt)
     {
         const Box& bx = mfi.tilebox();
 
-	grav_vec_old[mfi].prefetchToDevice();
-	grav_vec_new[mfi].prefetchToDevice();
+        grav_vec_old[mfi].prefetchToDevice();
+        grav_vec_new[mfi].prefetchToDevice();
 
-	S_old[mfi].prefetchToDevice();
-	S_new[mfi].prefetchToDevice();
+        S_old[mfi].prefetchToDevice();
+        S_new[mfi].prefetchToDevice();
 
-	const auto g_old = grav_vec_old.array(mfi);
-	const auto g_new = grav_vec_new.array(mfi);
-	const auto s_old = S_old.array(mfi);
-	const auto s_new = S_new.array(mfi);
+        const auto g_old = grav_vec_old.array(mfi);
+        const auto g_new = grav_vec_new.array(mfi);
+        const auto s_old = S_old.array(mfi);
+        const auto s_new = S_new.array(mfi);
 
         int  iden = Density; 
         int ieden = Eden; 
@@ -705,7 +705,7 @@ Nyx::correct_gsrc(int lev, Real time, Real prev_time, Real cur_time, Real dt)
                                       s_new(i,j,k,izmom)*s_new(i,j,k,izmom) ) / s_new(i,j,k,iden);
                 s_new(i,j,k,ieden) = old_rhoeint + new_ke;
             }
-	 });
+         });
     }
 }
 #endif

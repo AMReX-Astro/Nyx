@@ -745,7 +745,7 @@ module eos_module
          else
             eps = 1.0d-24
          endif
-	 ne2=ne+eps
+         ne2=ne+eps
          call ion_n(JH, JHe, U, nh, ne2, nhp_plus, nhep_plus, nhepp_plus, t)
 
          NR_vode  = NR_vode + 2

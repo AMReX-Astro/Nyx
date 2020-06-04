@@ -9,11 +9,11 @@ using std::endl;
 
 void
 AGNParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
-		                     int                    lev,
-                    		     amrex::Real            dt,
-		                     amrex::Real            a_old,
-				     amrex::Real            a_half,
-				     int                    where_width)
+                                     int                    lev,
+                                     amrex::Real            dt,
+                                     amrex::Real            a_old,
+                                     amrex::Real            a_half,
+                                     int                    where_width)
 {
     BL_PROFILE("AGNParticleContainer::moveKickDrift()");
 
@@ -32,8 +32,8 @@ AGNParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     else
     {
         ac_ptr = new amrex::MultiFab(this->m_gdb->ParticleBoxArray(lev),
-					 this->m_gdb->ParticleDistributionMap(lev),
-					 acceleration.nComp(),acceleration.nGrow());
+                                         this->m_gdb->ParticleDistributionMap(lev),
+                                         acceleration.nComp(),acceleration.nGrow());
         for (amrex::MFIter mfi(*ac_ptr); mfi.isValid(); ++mfi)
             ac_ptr->setVal(0.);
         ac_ptr->copy(acceleration,0,0,acceleration.nComp());
@@ -120,8 +120,8 @@ AGNParticleContainer::moveKick (MultiFab&       acceleration,
     else 
     {
         ac_ptr = new MultiFab(ParticleBoxArray(lev),
-				  ParticleDistributionMap(lev),
-				  acceleration.nComp(),acceleration.nGrow());
+                                  ParticleDistributionMap(lev),
+                                  acceleration.nComp(),acceleration.nGrow());
         for (MFIter mfi(*ac_ptr); mfi.isValid(); ++mfi)
             ac_ptr->setVal(0.);
         ac_ptr->copy(acceleration,0,0,acceleration.nComp());

@@ -473,28 +473,28 @@ Nyx::read_params ()
     if (ParallelDescriptor::IOProcessor()) {
       std::cout << "Integrating heating/cooling method with the following method: ";
       switch (heat_cool_type)
-	{
-	case 3:
-	  std::cout << "VODE";
-	  break;
-	case 4:
-	  std::cout << "Exact";
-	  break;
-	case 5:
-	  std::cout << "CVODE";
-	  break;
-	case 7:
-	  std::cout << "SIMD CVODE";
-	break;
-	case 9:
-	  std::cout << "ARKODE";
-	break;
-	case 10:
-	  std::cout << "Vectorized copytomem CVODE";
-	  break;
-	case 11:
-	  std::cout << "Vectorized CVODE";
-	  break;
+        {
+        case 3:
+          std::cout << "VODE";
+          break;
+        case 4:
+          std::cout << "Exact";
+          break;
+        case 5:
+          std::cout << "CVODE";
+          break;
+        case 7:
+          std::cout << "SIMD CVODE";
+        break;
+        case 9:
+          std::cout << "ARKODE";
+        break;
+        case 10:
+          std::cout << "Vectorized copytomem CVODE";
+          break;
+        case 11:
+          std::cout << "Vectorized CVODE";
+          break;
       }
       std::cout << std::endl;
     }
@@ -541,17 +541,17 @@ Nyx::read_params ()
 
     if(hydro_convert == 1)
       { 
-	if (ppm_type == 0 && ParallelDescriptor::IOProcessor())
-	  std::cout << "Nyx::setting hydro_convert = 1 with ppm_type = 0 \n";
-	if(ppm_type != 0)
-	  amrex::Error("Nyx::ppm_type must be 0 with hydro_convert = 1");
-	//	if(use_analriem != 0)
-	//amrex::Error("Nyx::use_analriem must be 0 with hydro_convert = 1");
+        if (ppm_type == 0 && ParallelDescriptor::IOProcessor())
+          std::cout << "Nyx::setting hydro_convert = 1 with ppm_type = 0 \n";
+        if(ppm_type != 0)
+          amrex::Error("Nyx::ppm_type must be 0 with hydro_convert = 1");
+        //      if(use_analriem != 0)
+        //amrex::Error("Nyx::use_analriem must be 0 with hydro_convert = 1");
       }
 
     if(use_typical_steps != 0 && strang_grown_box == 0)
       { 
-	  amrex::Error("Nyx::use_typical_steps must be 0 with strang_grown_box = 0");
+          amrex::Error("Nyx::use_typical_steps must be 0 with strang_grown_box = 0");
       }
    
     if (do_hydro == 1)
@@ -708,14 +708,14 @@ Nyx::Nyx (Amr&            papa,
         // gravity is a static object, only alloc if not already there
         if (gravity == 0) {
           gravity = new Gravity(parent, parent->finestLevel(), &phys_bc, Density);
-	}
+        }
 
         gravity->install_level(level, this);
 
         if (verbose && level == 0 && ParallelDescriptor::IOProcessor()) {
             std::cout << "Setting the gravity type to "
                       << gravity->get_gravity_type() << '\n';
-	}
+        }
    }
 #endif
 
@@ -863,12 +863,12 @@ Nyx::init (AmrLevel& old)
         MultiFab& S_new = get_new_data(State_Type);
         MultiFab& D_new = get_new_data(DiagEOS_Type);
 
-	FillPatch(old, S_new, 0, cur_time,   State_Type, 0, NUM_STATE);
-	FillPatch(old, D_new, 0, cur_time, DiagEOS_Type, 0, D_new.nComp());
+        FillPatch(old, S_new, 0, cur_time,   State_Type, 0, NUM_STATE);
+        FillPatch(old, D_new, 0, cur_time, DiagEOS_Type, 0, D_new.nComp());
 
-	MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
-	reset_e_src.setVal(0.0);
-	reset_internal_energy_interp(S_new,D_new,reset_e_src);
+        MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
+        reset_e_src.setVal(0.0);
+        reset_internal_energy_interp(S_new,D_new,reset_e_src);
     
     }
 #endif
@@ -1002,66 +1002,66 @@ Nyx::est_time_step (Real dt_old)
 #ifdef _OPENMP
 #pragma omp parallel reduction(min:est_dt)
 #endif
-	{
+        {
           Real dt = 1.e200;
-	  //Doesn't seem to be used:
-	  //	  Real grid_scl = std::cbrt(dx[0]*dx[1]*dx[2]);
-	  Real sound_speed_factor=sqrt(gamma*(gamma-1));
+          //Doesn't seem to be used:
+          //      Real grid_scl = std::cbrt(dx[0]*dx[1]*dx[2]);
+          Real sound_speed_factor=sqrt(gamma*(gamma-1));
           Real dummy_small_dens=small_dens;
           int  dummy_max_temp_dt=max_temp_dt;
 
-	  amrex::Gpu::LaunchSafeGuard lsg(true);
-	  dt = amrex::ReduceMin(stateMF, 0,
-				[=] AMREX_GPU_HOST_DEVICE (Box const& bx, Array4<Real const> const& u) noexcept -> Real
-					    {
-					      const auto lo = amrex::lbound(bx);
-					      const auto hi = amrex::ubound(bx);
+          amrex::Gpu::LaunchSafeGuard lsg(true);
+          dt = amrex::ReduceMin(stateMF, 0,
+                                [=] AMREX_GPU_HOST_DEVICE (Box const& bx, Array4<Real const> const& u) noexcept -> Real
+                                            {
+                                              const auto lo = amrex::lbound(bx);
+                                              const auto hi = amrex::ubound(bx);
 #if !defined(__CUDACC__) || (__CUDACC_VER_MAJOR__ != 9) || (__CUDACC_VER_MINOR__ != 2)
-					      amrex::Real dt_gpu = std::numeric_limits<amrex::Real>::max();
+                                              amrex::Real dt_gpu = std::numeric_limits<amrex::Real>::max();
 #else
-					      amrex::Real dt_gpu = 1.e37;
+                                              amrex::Real dt_gpu = 1.e37;
 #endif
 
-					      for         (int k = lo.z; k <= hi.z; ++k) {
-						for     (int j = lo.y; j <= hi.y; ++j) {
-						  for (int i = lo.x; i <= hi.x; ++i) {
-						    if(u(i,j,k,Density)<=1.1*dummy_small_dens && dummy_max_temp_dt==1)
-						      continue;
+                                              for         (int k = lo.z; k <= hi.z; ++k) {
+                                                for     (int j = lo.y; j <= hi.y; ++j) {
+                                                  for (int i = lo.x; i <= hi.x; ++i) {
+                                                    if(u(i,j,k,Density)<=1.1*dummy_small_dens && dummy_max_temp_dt==1)
+                                                      continue;
 
-						    Real rhoInv = 1.0 / u(i,j,k,Density);
-						    Real ux     = u(i,j,k,Xmom)*rhoInv;
-						    Real uy     = u(i,j,k,Ymom)*rhoInv;
-						    Real uz     = u(i,j,k,Zmom)*rhoInv;
+                                                    Real rhoInv = 1.0 / u(i,j,k,Density);
+                                                    Real ux     = u(i,j,k,Xmom)*rhoInv;
+                                                    Real uy     = u(i,j,k,Ymom)*rhoInv;
+                                                    Real uz     = u(i,j,k,Zmom)*rhoInv;
 
-						    // Use internal energy for calculating dt 
-						    Real e  = u(i,j,k,Eint)*rhoInv;
+                                                    // Use internal energy for calculating dt 
+                                                    Real e  = u(i,j,k,Eint)*rhoInv;
 
-						    Real c;
-						    // Protect against negative e
+                                                    Real c;
+                                                    // Protect against negative e
 #ifdef HEATCOOL
-						    if (e > 0.0)
-						      c=sound_speed_factor*std::sqrt(e);
+                                                    if (e > 0.0)
+                                                      c=sound_speed_factor*std::sqrt(e);
 #else
-						    if (e > 0.0)
-						      c=sound_speed_factor*std::sqrt(u(i,j,k,Density)*e/u(i,j,k,Density));
+                                                    if (e > 0.0)
+                                                      c=sound_speed_factor*std::sqrt(u(i,j,k,Density)*e/u(i,j,k,Density));
 #endif
-						    else
-						      c = 0.0;
+                                                    else
+                                                      c = 0.0;
 
-						    Real dt1 = dx[0]/(c + std::abs(ux));
-						    Real dt2 = dx[1]/(c + std::abs(uy));
-						    Real dt3 = dx[2]/(c + std::abs(uz));
-						    dt_gpu = amrex::min(dt_gpu,amrex::min(dt1,amrex::min(dt2,dt3)));
+                                                    Real dt1 = dx[0]/(c + std::abs(ux));
+                                                    Real dt2 = dx[1]/(c + std::abs(uy));
+                                                    Real dt3 = dx[2]/(c + std::abs(uz));
+                                                    dt_gpu = amrex::min(dt_gpu,amrex::min(dt1,amrex::min(dt2,dt3)));
 
-						  }
-						}
-					      }
-					      return dt_gpu;
-					    });
+                                                  }
+                                                }
+                                              }
+                                              return dt_gpu;
+                                            });
 
           est_dt = std::min(est_dt, dt);
 
-	}
+        }
 
         // If in comoving coordinates, then scale dt (based on u and c) by a
         est_dt *= a;
@@ -1486,20 +1486,20 @@ Nyx::post_timestep (int iteration)
     if ((iteration < ncycle and level < finest_level) || level == 0)
     {
         for (int i = 0; i < theActiveParticles().size(); i++)
-	{
-	     if(finest_level == 0)
-	         theActiveParticles()[i]->RedistributeLocal(level,
+        {
+             if(finest_level == 0)
+                 theActiveParticles()[i]->RedistributeLocal(level,
                                                   theActiveParticles()[i]->finestLevel(),
                                                   iteration);
-	     else
-	         theActiveParticles()[i]->Redistribute(level,
+             else
+                 theActiveParticles()[i]->Redistribute(level,
                                                   theActiveParticles()[i]->finestLevel(),
                                                   iteration);
 
-	     if(shrink_to_fit)
-	         theActiveParticles()[i]->ShrinkToFit();
+             if(shrink_to_fit)
+                 theActiveParticles()[i]->ShrinkToFit();
 
-	}
+        }
     }
 
     }
@@ -1538,7 +1538,7 @@ Nyx::post_timestep (int iteration)
         // they'll be over-written by averaging down
         if (level < finest_level)
             average_down();
-	
+        
         // This needs to be done after any changes to the state from refluxing.
         enforce_nonnegative_species(S_new_crse);
 
@@ -1564,13 +1564,13 @@ Nyx::post_timestep (int iteration)
             {
                 grad_delta_phi_cc[lev-level].reset(
                                       new MultiFab(get_level(lev).boxArray(),
-						   get_level(lev).DistributionMap(),
-						   BL_SPACEDIM, 0));
+                                                   get_level(lev).DistributionMap(),
+                                                   BL_SPACEDIM, 0));
                 grad_delta_phi_cc[lev-level]->setVal(0);
             }
 
             gravity->gravity_sync(level,finest_level,iteration,ncycle,drho_and_drhoU,dphi,
-				  amrex::GetVecOfPtrs(grad_delta_phi_cc));
+                                  amrex::GetVecOfPtrs(grad_delta_phi_cc));
             dphi.clear();
 
             for (int lev = level; lev <= finest_level; lev++)
@@ -1588,23 +1588,23 @@ Nyx::post_timestep (int iteration)
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-		{
-		  FArrayBox dstate;
+                {
+                  FArrayBox dstate;
 
-		  for (MFIter mfi(S_new_lev,Gpu::notInLaunchRegion()); mfi.isValid(); ++mfi)
+                  for (MFIter mfi(S_new_lev,Gpu::notInLaunchRegion()); mfi.isValid(); ++mfi)
                   {
                     const Box& bx = mfi.tilebox();
 
                     dstate.resize(bx, BL_SPACEDIM + 1);
-		    Array4<Real> d_fab = dstate.array();
+                    Array4<Real> d_fab = dstate.array();
 
                     if (lev == level)
                     {
-		      dstate.copy<RunOn::Device>(drho_and_drhoU[mfi]);
+                      dstate.copy<RunOn::Device>(drho_and_drhoU[mfi]);
                     }
                     else
                     {
-		      dstate.setVal<RunOn::Device>(0);
+                      dstate.setVal<RunOn::Device>(0);
                     }
 
                     Array4<Real const> const&  gphi = grad_phi_cc.array(mfi);
@@ -1616,7 +1616,7 @@ Nyx::post_timestep (int iteration)
 
                     amrex::ParallelFor(bx, [s_fab,d_fab,gphi,gdphi,a_new,dt_lev,iden,ieden]
                        AMREX_GPU_DEVICE (int i, int j, int k) noexcept
-		       {
+                       {
                            Real rho_pre  = s_fab(i,j,k,iden  ) - d_fab(i,j,k,0);
                            Real rhoU_pre = s_fab(i,j,k,iden+1) - d_fab(i,j,k,1);
                            Real rhoV_pre = s_fab(i,j,k,iden+2) - d_fab(i,j,k,2);
@@ -1636,25 +1636,25 @@ Nyx::post_timestep (int iteration)
                            s_fab(i,j,k,iden+2) += SrV * a_new_inv * 0.5 * dt_lev;
                            s_fab(i,j,k,iden+3) += SrW * a_new_inv * 0.5 * dt_lev;
                            s_fab(i,j,k,ieden ) += SrE * a_new_inv * 0.5 * dt_lev;
-		       });
+                       });
 
-//		    const auto fab_grad_phi_cc = grad_phi_cc.array(mfi);
-//		    const auto fab_grad_delta_phi_cc=(*grad_delta_phi_cc[lev-level]).array(mfi);
-//		    const auto fab_S_new_lev = S_new_lev.array(mfi);
-//	            AMREX_LAUNCH_DEVICE_LAMBDA(bx,tbx,
+//                  const auto fab_grad_phi_cc = grad_phi_cc.array(mfi);
+//                  const auto fab_grad_delta_phi_cc=(*grad_delta_phi_cc[lev-level]).array(mfi);
+//                  const auto fab_S_new_lev = S_new_lev.array(mfi);
+//                  AMREX_LAUNCH_DEVICE_LAMBDA(bx,tbx,
 //                  fort_syncgsrc
 //                      (tbx.loVect(), tbx.hiVect(), BL_ARR4_TO_FORTRAN(fab_grad_phi_cc),
 //                       BL_ARR4_TO_FORTRAN(fab_grad_delta_phi_cc),
 //                       BL_ARR4_TO_FORTRAN(fab_S_new_lev), BL_ARR4_TO_FORTRAN(fab_dstate),
 //                       BL_ARR4_TO_FORTRAN(fab_sync_src), a_new, dt_lev);
-//				            });
+//                                          });
 
-//		    sync_src.mult<RunOn::Device>(0.5 * dt_lev);
+//                  sync_src.mult<RunOn::Device>(0.5 * dt_lev);
 //                  S_new_lev[mfi].plus<RunOn::Device>(sync_src, 0, Xmom, BL_SPACEDIM);
 //                  S_new_lev[mfi].plus<RunOn::Device>(sync_src, BL_SPACEDIM, Eden, 1);
-		  }
-		}
-	    }
+                  }
+                }
+            }
         }
 #endif
     }
@@ -1719,25 +1719,25 @@ Nyx::typical_values_post_restart (const std::string& restart_file)
     if (use_typical_steps)
     {
       if (ParallelDescriptor::IOProcessor())
-	{
-	  std::string FileName = restart_file + "/first_max_steps";
-	  std::ifstream File;
-	  File.open(FileName.c_str(),std::ios::in);
-	  if (!File.good())
+        {
+          std::string FileName = restart_file + "/first_max_steps";
+          std::ifstream File;
+          File.open(FileName.c_str(),std::ios::in);
+          if (!File.good())
             amrex::FileOpenFailed(FileName);
-	  File >> old_max_sundials_steps;
-	}
+          File >> old_max_sundials_steps;
+        }
       ParallelDescriptor::Bcast(&old_max_sundials_steps, 1, ParallelDescriptor::IOProcessorNumber());
 
       if (ParallelDescriptor::IOProcessor())
-	{
-	  std::string FileName = restart_file + "/second_max_steps";
-	  std::ifstream File;
-	  File.open(FileName.c_str(),std::ios::in);
-	  if (!File.good())
+        {
+          std::string FileName = restart_file + "/second_max_steps";
+          std::ifstream File;
+          File.open(FileName.c_str(),std::ios::in);
+          if (!File.good())
             amrex::FileOpenFailed(FileName);
-	  File >> new_max_sundials_steps;
-	}
+          File >> new_max_sundials_steps;
+        }
       ParallelDescriptor::Bcast(&new_max_sundials_steps, 1, ParallelDescriptor::IOProcessorNumber());
     }
 }
@@ -1791,7 +1791,7 @@ Nyx::post_restart ()
 #ifdef CGRAV
             (gravity->get_gravity_type() == "PoissonGrav"||gravity->get_gravity_type() == "CompositeGrav")
 #else
-	    gravity->get_gravity_type() == "PoissonGrav"
+            gravity->get_gravity_type() == "PoissonGrav"
 #endif
 )
             {
@@ -1879,7 +1879,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
     if(load_balance_int >= 0 && nStep() % load_balance_int == 0)
     {
       if(verbose>0)
-	amrex::Print()<<"Load balancing since "<<nStep()<<" mod "<<load_balance_int<<" == 0"<<std::endl;
+        amrex::Print()<<"Load balancing since "<<nStep()<<" mod "<<load_balance_int<<" == 0"<<std::endl;
 #ifdef NO_HYDRO
     Real cur_time = state[PhiGrav_Type].curTime();
 #else
@@ -1892,56 +1892,56 @@ Nyx::postCoarseTimeStep (Real cumtime)
         Vector<long> wgts(grids.size());
         DistributionMapping dm;
 
-	//Should these weights be constructed based on level=0, or lev from for?
+        //Should these weights be constructed based on level=0, or lev from for?
         if(load_balance_wgt_strategy == 0)
         {
             for (unsigned int i = 0; i < wgts.size(); i++)
             {
                 wgts[i] = grids[i].numPts();
             }
-	    if(load_balance_strategy==DistributionMapping::Strategy::KNAPSACK)
-	        dm.KnapSackProcessorMap(wgts, load_balance_wgt_nmax);
-	    else if(load_balance_strategy==DistributionMapping::Strategy::SFC)
-	        dm.SFCProcessorMap(grids, wgts, load_balance_wgt_nmax);
-	    else if(load_balance_strategy==DistributionMapping::Strategy::ROUNDROBIN)
-	        dm.RoundRobinProcessorMap(wgts, load_balance_wgt_nmax);
+            if(load_balance_strategy==DistributionMapping::Strategy::KNAPSACK)
+                dm.KnapSackProcessorMap(wgts, load_balance_wgt_nmax);
+            else if(load_balance_strategy==DistributionMapping::Strategy::SFC)
+                dm.SFCProcessorMap(grids, wgts, load_balance_wgt_nmax);
+            else if(load_balance_strategy==DistributionMapping::Strategy::ROUNDROBIN)
+                dm.RoundRobinProcessorMap(wgts, load_balance_wgt_nmax);
         }
-	else if(load_balance_wgt_strategy == 1)
-	{
-	    wgts = theDMPC()->NumberOfParticlesInGrid(level,false,false);
-	    if(load_balance_strategy==DistributionMapping::Strategy::KNAPSACK)
-	        dm.KnapSackProcessorMap(wgts, load_balance_wgt_nmax);
-	    else if(load_balance_strategy==DistributionMapping::Strategy::SFC)
-	        dm.SFCProcessorMap(grids, wgts, load_balance_wgt_nmax);
-	    else if(load_balance_strategy==DistributionMapping::Strategy::ROUNDROBIN)
-	        dm.RoundRobinProcessorMap(wgts, load_balance_wgt_nmax);
-	}
-	else if(load_balance_wgt_strategy == 2)
-	{
-	    MultiFab particle_mf(grids,theDMPC()->ParticleDistributionMap(level),1,1);
-	    theDMPC()->Increment(particle_mf, level);
-	    if(load_balance_strategy==DistributionMapping::Strategy::KNAPSACK)
-	        dm.KnapSackProcessorMap(wgts, load_balance_wgt_nmax);
-	    else if(load_balance_strategy==DistributionMapping::Strategy::SFC)
-	        dm.SFCProcessorMap(grids, wgts, load_balance_wgt_nmax);
-	    else if(load_balance_strategy==DistributionMapping::Strategy::ROUNDROBIN)
-	        dm.RoundRobinProcessorMap(wgts, load_balance_wgt_nmax);
-	}
-	else
-	{
-	    amrex::Abort("Selected load balancing strategy not implemented");
-	}
+        else if(load_balance_wgt_strategy == 1)
+        {
+            wgts = theDMPC()->NumberOfParticlesInGrid(level,false,false);
+            if(load_balance_strategy==DistributionMapping::Strategy::KNAPSACK)
+                dm.KnapSackProcessorMap(wgts, load_balance_wgt_nmax);
+            else if(load_balance_strategy==DistributionMapping::Strategy::SFC)
+                dm.SFCProcessorMap(grids, wgts, load_balance_wgt_nmax);
+            else if(load_balance_strategy==DistributionMapping::Strategy::ROUNDROBIN)
+                dm.RoundRobinProcessorMap(wgts, load_balance_wgt_nmax);
+        }
+        else if(load_balance_wgt_strategy == 2)
+        {
+            MultiFab particle_mf(grids,theDMPC()->ParticleDistributionMap(level),1,1);
+            theDMPC()->Increment(particle_mf, level);
+            if(load_balance_strategy==DistributionMapping::Strategy::KNAPSACK)
+                dm.KnapSackProcessorMap(wgts, load_balance_wgt_nmax);
+            else if(load_balance_strategy==DistributionMapping::Strategy::SFC)
+                dm.SFCProcessorMap(grids, wgts, load_balance_wgt_nmax);
+            else if(load_balance_strategy==DistributionMapping::Strategy::ROUNDROBIN)
+                dm.RoundRobinProcessorMap(wgts, load_balance_wgt_nmax);
+        }
+        else
+        {
+            amrex::Abort("Selected load balancing strategy not implemented");
+        }
 
-	amrex::Gpu::Device::streamSynchronize();
-	const DistributionMapping& newdmap = dm;
-	
+        amrex::Gpu::Device::streamSynchronize();
+        const DistributionMapping& newdmap = dm;
+        
         for (int i = 0; i < theActiveParticles().size(); i++)
-	{
-	     theActiveParticles()[i]->Regrid(newdmap, grids, lev);
+        {
+             theActiveParticles()[i]->Regrid(newdmap, grids, lev);
 
-	     if(shrink_to_fit)
-	         theActiveParticles()[i]->ShrinkToFit();
-	}
+             if(shrink_to_fit)
+                 theActiveParticles()[i]->ShrinkToFit();
+        }
 
     amrex::Gpu::streamSynchronize();
     }
@@ -2180,7 +2180,7 @@ Nyx::post_init (Real stop_time)
             (gravity->get_gravity_type() == "PoissonGrav" ||
              gravity->get_gravity_type() == "CompositeGrav")
 #else
-	    (gravity->get_gravity_type() == "PoissonGrav")
+            (gravity->get_gravity_type() == "PoissonGrav")
 #endif
         {
             //
@@ -2255,7 +2255,7 @@ Nyx::okToContinue ()
                 std::cout << "...a " << a
                           << " is greater than or equal to final_a " << final_a
                           << '\n';
-	    }
+            }
         }
     }
     return test;
@@ -2329,35 +2329,35 @@ Nyx::enforce_nonnegative_species (MultiFab& S_new)
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-	for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
-	  {
-	    const Box& bx = mfi.tilebox();
-	    const auto fab_S_new = S_new.array(mfi);
-	    amrex::launch(bx,
-			  [=] AMREX_GPU_DEVICE (Box const& tbx)
-			  {
-			  /*	    AMREX_LAUNCH_DEVICE_LAMBDA(bx,tbx,
-				       {*/
-	    ca_enforce_nonnegative_species
-	      (BL_ARR4_TO_FORTRAN(fab_S_new), tbx.loVect(), tbx.hiVect(),
-	       &print_fortran_warnings_tmp);
-				       });
-	  }
-	
+        for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
+          {
+            const Box& bx = mfi.tilebox();
+            const auto fab_S_new = S_new.array(mfi);
+            amrex::launch(bx,
+                          [=] AMREX_GPU_DEVICE (Box const& tbx)
+                          {
+                          /*        AMREX_LAUNCH_DEVICE_LAMBDA(bx,tbx,
+                                       {*/
+            ca_enforce_nonnegative_species
+              (BL_ARR4_TO_FORTRAN(fab_S_new), tbx.loVect(), tbx.hiVect(),
+               &print_fortran_warnings_tmp);
+                                       });
+          }
+        
       }
     else
       {
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-	for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
-	  {
-	    const Box& bx = mfi.tilebox();
-	    const auto fab_S_new = S_new.array(mfi);
-	    fort_enforce_nonnegative_species
-	      (BL_ARR4_TO_FORTRAN(fab_S_new), bx.loVect(), bx.hiVect(),
-	       &print_fortran_warnings);
-	  }
+        for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
+          {
+            const Box& bx = mfi.tilebox();
+            const auto fab_S_new = S_new.array(mfi);
+            fort_enforce_nonnegative_species
+              (BL_ARR4_TO_FORTRAN(fab_S_new), bx.loVect(), bx.hiVect(),
+               &print_fortran_warnings);
+          }
       }
 }
 
@@ -2502,38 +2502,38 @@ Nyx::errorEst (TagBoxArray& tags,
 
             for (MFIter mfi(*mf,true); mfi.isValid(); ++mfi)
             {
-		// FABs
-		FArrayBox&  datfab  = (*mf)[mfi];
-		TagBox&     tagfab  = tags[mfi];
+                // FABs
+                FArrayBox&  datfab  = (*mf)[mfi];
+                TagBox&     tagfab  = tags[mfi];
 
-		// Box in physical space
-		int         idx     = mfi.index();
-		RealBox     gridloc = RealBox(grids[idx],geom.CellSize(),geom.ProbLo());
+                // Box in physical space
+                int         idx     = mfi.index();
+                RealBox     gridloc = RealBox(grids[idx],geom.CellSize(),geom.ProbLo());
 
-		// tile box
-		const Box&  tilebx  = mfi.tilebox();
+                // tile box
+                const Box&  tilebx  = mfi.tilebox();
 
-		//fab box
-		const Box&  datbox  = datfab.box();
+                //fab box
+                const Box&  datbox  = datfab.box();
 
-		// We cannot pass tagfab to Fortran becuase it is BaseFab<char>.
-		// So we are going to get a temporary integer array.
-		tagfab.get_itags(itags, tilebx);
+                // We cannot pass tagfab to Fortran becuase it is BaseFab<char>.
+                // So we are going to get a temporary integer array.
+                tagfab.get_itags(itags, tilebx);
 
-		// data pointer and index space
-		int*        tptr    = itags.dataPtr();
-		const int*  tlo     = tilebx.loVect();
-		const int*  thi     = tilebx.hiVect();
-		//
-		const int*  lo      = tlo;
-		const int*  hi      = thi;
-		//
-		const Real* xlo     = gridloc.lo();
-		//
-		Real*       dat     = datfab.dataPtr();
-		const int*  dlo     = datbox.loVect();
-		const int*  dhi     = datbox.hiVect();
-		const int   ncomp   = datfab.nComp();
+                // data pointer and index space
+                int*        tptr    = itags.dataPtr();
+                const int*  tlo     = tilebx.loVect();
+                const int*  thi     = tilebx.hiVect();
+                //
+                const int*  lo      = tlo;
+                const int*  hi      = thi;
+                //
+                const Real* xlo     = gridloc.lo();
+                //
+                Real*       dat     = datfab.dataPtr();
+                const int*  dlo     = datbox.loVect();
+                const int*  dhi     = datbox.hiVect();
+                const int   ncomp   = datfab.nComp();
 
                 if (err_list[j].errType() == ErrorRec::Standard)
                 {
@@ -2577,16 +2577,16 @@ Nyx::derive (const std::string& name,
 
     if (name == "Rank")
     {
-	std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids, dmap, 1, 0));
+        std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids, dmap, 1, 0));
         for (MFIter mfi(*derive_dat); mfi.isValid(); ++mfi)
         {
-	  const auto fab_derive_dat=derive_dat->array(mfi);
-	  const Box& bx = mfi.tilebox();
-	  Real my_proc = ParallelDescriptor::MyProc();
-	  AMREX_HOST_DEVICE_FOR_3D ( bx, i, j, k,
-				   {
-				     fab_derive_dat(i,j,k,0)=my_proc;
-				     });
+          const auto fab_derive_dat=derive_dat->array(mfi);
+          const Box& bx = mfi.tilebox();
+          Real my_proc = ParallelDescriptor::MyProc();
+          AMREX_HOST_DEVICE_FOR_3D ( bx, i, j, k,
+                                   {
+                                     fab_derive_dat(i,j,k,0)=my_proc;
+                                     });
         }
         return derive_dat;
     } else {
@@ -2628,18 +2628,18 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new, MultiFab& reset_e_
     {
         const Box& bx = mfi.tilebox();
 
-	const auto fab = S_new.array(mfi);
-	const auto fab_diag = D_new.array(mfi);
-	const auto fab_reset = reset_e_src.array(mfi);
-	int print_warn=0;	  
-	AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
-	{
+        const auto fab = S_new.array(mfi);
+        const auto fab_diag = D_new.array(mfi);
+        const auto fab_reset = reset_e_src.array(mfi);
+        int print_warn=0;         
+        AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
+        {
         reset_internal_e
             (tbx.loVect(), tbx.hiVect(),
-	     BL_ARR4_TO_FORTRAN(fab), BL_ARR4_TO_FORTRAN(fab_diag),
-	     BL_ARR4_TO_FORTRAN(fab_reset),
+             BL_ARR4_TO_FORTRAN(fab), BL_ARR4_TO_FORTRAN(fab_diag),
+             BL_ARR4_TO_FORTRAN(fab_reset),
              &print_warn, &a, &interp);
-	});
+        });
     }
 }
 
@@ -2661,18 +2661,18 @@ Nyx::reset_internal_energy_interp (MultiFab& S_new, MultiFab& D_new, MultiFab& r
     for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
-	  const auto fab = S_new.array(mfi);
-	  const auto fab_diag = D_new.array(mfi);
-	  const auto fab_reset = reset_e_src.array(mfi);
-	  int print_warn=0;	  
-	  AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
-	  {
+          const auto fab = S_new.array(mfi);
+          const auto fab_diag = D_new.array(mfi);
+          const auto fab_reset = reset_e_src.array(mfi);
+          int print_warn=0;       
+          AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
+          {
         reset_internal_e
             (tbx.loVect(), tbx.hiVect(),
-	     BL_ARR4_TO_FORTRAN(fab), BL_ARR4_TO_FORTRAN(fab_diag),
-	     BL_ARR4_TO_FORTRAN(fab_reset),
+             BL_ARR4_TO_FORTRAN(fab), BL_ARR4_TO_FORTRAN(fab_diag),
+             BL_ARR4_TO_FORTRAN(fab_reset),
              &print_warn, &a, &interp);
-	  });
+          });
     }
 
 }
@@ -2699,16 +2699,16 @@ Nyx::reset_internal_energy_nostore (MultiFab& S_new, MultiFab& D_new)
     for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
-	  const auto fab = S_new.array(mfi);
-	  const auto fab_diag = D_new.array(mfi);
-	  int print_warn=0;	  
-	  AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
-	  {
+          const auto fab = S_new.array(mfi);
+          const auto fab_diag = D_new.array(mfi);
+          int print_warn=0;       
+          AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
+          {
         reset_internal_e_nostore
             (tbx.loVect(), tbx.hiVect(),
              BL_ARR4_TO_FORTRAN(fab), BL_ARR4_TO_FORTRAN(fab_diag),
              print_warn, a);
-	  });
+          });
     }
     */
 
@@ -2739,118 +2739,118 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 #pragma omp parallel
 #endif
       for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
-	{
-	  const Box& bx = mfi.tilebox();
+        {
+          const Box& bx = mfi.tilebox();
 
           fort_compute_temp_vec
-	      (bx.loVect(), bx.hiVect(),
-	       BL_TO_FORTRAN(S_new[mfi]),
-	       BL_TO_FORTRAN(D_new[mfi]), &a,
-	       &print_fortran_warnings);
-	}
+              (bx.loVect(), bx.hiVect(),
+               BL_TO_FORTRAN(S_new[mfi]),
+               BL_TO_FORTRAN(D_new[mfi]), &a,
+               &print_fortran_warnings);
+        }
     }
     else
       {
-	    FArrayBox test, test_d;
-	    int print_warn=0;
+            FArrayBox test, test_d;
+            int print_warn=0;
 
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
-	for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
-	  {
-	    const Box& bx = mfi.tilebox();
+        for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
+          {
+            const Box& bx = mfi.tilebox();
 
-	    /*
-	    test.resize(bx,S_new.nComp());
-	    test_d.resize(bx,S_new.nComp());
-	    test.copy(S_new[mfi],bx);
-	    test_d.copy(D_new[mfi],bx);
-	    //	    test.copy(S_new[mfi],0,0,S_new.nComp());
-	    //test_d.copy(D_new[mfi],0,0,D_new.nComp());*/
-	    const auto state = S_new.array(mfi);
-	    const auto diag_eos = D_new.array(mfi);
-	    /*	    const auto test_fab = test.array();
-	    const auto test_fab_diag = test_d.array();
-	    amrex::Print()<<"2-norm of test: "<<test_d.norm(2,1)<<std::endl;
-	    amrex::Print()<<"2-norm of compare: "<<(D_new[mfi]).norm(2,1)<<std::endl;
-	    */
-	    //	    AMREX_LAUNCH_DEVICE_LAMBDA
+            /*
+            test.resize(bx,S_new.nComp());
+            test_d.resize(bx,S_new.nComp());
+            test.copy(S_new[mfi],bx);
+            test_d.copy(D_new[mfi],bx);
+            //      test.copy(S_new[mfi],0,0,S_new.nComp());
+            //test_d.copy(D_new[mfi],0,0,D_new.nComp());*/
+            const auto state = S_new.array(mfi);
+            const auto diag_eos = D_new.array(mfi);
+            /*      const auto test_fab = test.array();
+            const auto test_fab_diag = test_d.array();
+            amrex::Print()<<"2-norm of test: "<<test_d.norm(2,1)<<std::endl;
+            amrex::Print()<<"2-norm of compare: "<<(D_new[mfi]).norm(2,1)<<std::endl;
+            */
+            //      AMREX_LAUNCH_DEVICE_LAMBDA
 
 
-	    Real dummy_small_temp=small_temp;
-	    Real dummy_large_temp=large_temp;
-	    int  dummy_max_temp_dt=max_temp_dt;
-	    Real h_species_in=h_species;
-	    Real gamma_minus_1_in=gamma - 1.0;
-	    AMREX_PARALLEL_FOR_3D(bx, i, j ,k,
-	    {
+            Real dummy_small_temp=small_temp;
+            Real dummy_large_temp=large_temp;
+            int  dummy_max_temp_dt=max_temp_dt;
+            Real h_species_in=h_species;
+            Real gamma_minus_1_in=gamma - 1.0;
+            AMREX_PARALLEL_FOR_3D(bx, i, j ,k,
+            {
 
-	      Real rhoInv = 1.e0 / state(i,j,k,Density);
-	      Real eint = state(i,j,k,Eint) * rhoInv;
+              Real rhoInv = 1.e0 / state(i,j,k,Density);
+              Real eint = state(i,j,k,Eint) * rhoInv;
 
-	    if (state(i,j,k,Eint) > 0.0) 
-	      {
+            if (state(i,j,k,Eint) > 0.0) 
+              {
 
-		eint = state(i,j,k,Eint) * rhoInv;
-		
-		int JH = 1;
-		int JHe = 1;
+                eint = state(i,j,k,Eint) * rhoInv;
+                
+                int JH = 1;
+                int JHe = 1;
 
-		nyx_eos_T_given_Re_device(gamma_minus_1_in, h_species_in, JH, JHe, &diag_eos(i,j,k,Temp_comp), &diag_eos(i,j,k,Ne_comp), 
-					       state(i,j,k,Density), eint, a);
-		if(diag_eos(i,j,k,Temp_comp)>=dummy_large_temp && dummy_max_temp_dt == 1)
-		{
-		  diag_eos(i,j,k,Temp_comp)=dummy_large_temp;
+                nyx_eos_T_given_Re_device(gamma_minus_1_in, h_species_in, JH, JHe, &diag_eos(i,j,k,Temp_comp), &diag_eos(i,j,k,Ne_comp), 
+                                               state(i,j,k,Density), eint, a);
+                if(diag_eos(i,j,k,Temp_comp)>=dummy_large_temp && dummy_max_temp_dt == 1)
+                {
+                  diag_eos(i,j,k,Temp_comp)=dummy_large_temp;
 
-		  Real dummy_pres=0.0;
-		  // Set temp to small_temp and compute corresponding internal energy
-		  nyx_eos_given_RT(gamma_minus_1_in, h_species_in, &eint, &dummy_pres, state(i,j,k,Density), diag_eos(i,j,k,Temp_comp),
-				    diag_eos(i,j,k,Ne_comp), a);
+                  Real dummy_pres=0.0;
+                  // Set temp to small_temp and compute corresponding internal energy
+                  nyx_eos_given_RT(gamma_minus_1_in, h_species_in, &eint, &dummy_pres, state(i,j,k,Density), diag_eos(i,j,k,Temp_comp),
+                                    diag_eos(i,j,k,Ne_comp), a);
 
-	           Real ke = 0.5e0 * (state(i,j,k,Xmom) * state(i,j,k,Xmom) +
-			      state(i,j,k,Ymom) * state(i,j,k,Ymom) +
-			      state(i,j,k,Zmom) * state(i,j,k,Zmom)) * rhoInv;
+                   Real ke = 0.5e0 * (state(i,j,k,Xmom) * state(i,j,k,Xmom) +
+                              state(i,j,k,Ymom) * state(i,j,k,Ymom) +
+                              state(i,j,k,Zmom) * state(i,j,k,Zmom)) * rhoInv;
 
-		   state(i,j,k,Eint) = state(i,j,k,Density) * eint;
-		   state(i,j,k,Eden) = state(i,j,k,Eint) + ke;
+                   state(i,j,k,Eint) = state(i,j,k,Density) * eint;
+                   state(i,j,k,Eden) = state(i,j,k,Eint) + ke;
 
-		}
-	      }
-	    else
-	      {
-		Real dummy_pres=0.0;
-		// Set temp to small_temp and compute corresponding internal energy
-		nyx_eos_given_RT(gamma_minus_1_in, h_species_in, &eint, &dummy_pres, state(i,j,k,Density), dummy_small_temp, 
-				    diag_eos(i,j,k,Ne_comp), a);
+                }
+              }
+            else
+              {
+                Real dummy_pres=0.0;
+                // Set temp to small_temp and compute corresponding internal energy
+                nyx_eos_given_RT(gamma_minus_1_in, h_species_in, &eint, &dummy_pres, state(i,j,k,Density), dummy_small_temp, 
+                                    diag_eos(i,j,k,Ne_comp), a);
 
-		Real ke = 0.5e0 * (state(i,j,k,Xmom) * state(i,j,k,Xmom) + 
-			      state(i,j,k,Ymom) * state(i,j,k,Ymom) + 
-			      state(i,j,k,Zmom) * state(i,j,k,Zmom)) * rhoInv;
+                Real ke = 0.5e0 * (state(i,j,k,Xmom) * state(i,j,k,Xmom) + 
+                              state(i,j,k,Ymom) * state(i,j,k,Ymom) + 
+                              state(i,j,k,Zmom) * state(i,j,k,Zmom)) * rhoInv;
 
-		diag_eos(i,j,k,Temp_comp) = dummy_small_temp;
-		state(i,j,k,Eint) = state(i,j,k,Density) * eint;
-		state(i,j,k,Eden) = state(i,j,k,Eint) + ke;
-	      }
+                diag_eos(i,j,k,Temp_comp) = dummy_small_temp;
+                state(i,j,k,Eint) = state(i,j,k,Density) * eint;
+                state(i,j,k,Eden) = state(i,j,k,Eint) + ke;
+              }
 
-	    });
-	    amrex::Gpu::synchronize();
-	    /*
+            });
+            amrex::Gpu::synchronize();
+            /*
             fort_compute_temp_host
               (bx.loVect(), bx.hiVect(),
               BL_ARR4_TO_FORTRAN(fab),
               BL_ARR4_TO_FORTRAN(fab_diag), &a,
                &print_warn);
 
-	    amrex::Print()<<"2-norm of test: "<<test_d.norm(bx,2,1)<<std::endl;
-	    amrex::Print()<<"2-norm of compare: "<<(D_new[mfi]).norm(bx,2,1)<<std::endl;
-	    amrex::Print()<<"infnorm of test: "<<test_d.norm(bx,0,1)<<std::endl;
-	    amrex::Print()<<"infnorm of compare: "<<(D_new[mfi]).norm(bx,0,1)<<std::endl;
-	    amrex::Print()<<"1-norm of test: "<<test_d.norm(bx,1,1)<<std::endl;
-	    amrex::Print()<<"1-norm of compare: "<<(D_new[mfi]).norm(bx,1,1)<<std::endl;
-	    */
-	    amrex::Gpu::synchronize();
-	  }
+            amrex::Print()<<"2-norm of test: "<<test_d.norm(bx,2,1)<<std::endl;
+            amrex::Print()<<"2-norm of compare: "<<(D_new[mfi]).norm(bx,2,1)<<std::endl;
+            amrex::Print()<<"infnorm of test: "<<test_d.norm(bx,0,1)<<std::endl;
+            amrex::Print()<<"infnorm of compare: "<<(D_new[mfi]).norm(bx,0,1)<<std::endl;
+            amrex::Print()<<"1-norm of test: "<<test_d.norm(bx,1,1)<<std::endl;
+            amrex::Print()<<"1-norm of compare: "<<(D_new[mfi]).norm(bx,1,1)<<std::endl;
+            */
+            amrex::Gpu::synchronize();
+          }
       }
 
     // Find the cell which has the maximum temp -- but only if not the first
@@ -2861,25 +2861,25 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
     {
 
       if (verbose > 1)
-	{
-	    BL_PROFILE("Nyx::compute_new_temp()::max_temp");
-	    // Compute the maximum temperature
-	    Real max_temp = D_new.norm0(Temp_comp);
-	    IntVect max_temp_loc = D_new.maxIndex(Temp_comp);
+        {
+            BL_PROFILE("Nyx::compute_new_temp()::max_temp");
+            // Compute the maximum temperature
+            Real max_temp = D_new.norm0(Temp_comp);
+            IntVect max_temp_loc = D_new.maxIndex(Temp_comp);
 
-	    for (MFIter mfi(S_new); mfi.isValid(); ++mfi)
-	      {
-		const Box& bx = mfi.validbox();
-		if(bx.contains(max_temp_loc))
-		  {
-		    const auto fab_state = S_new.array(mfi);
-		    Real den_maxt=fab_state(max_temp_loc,Density);
-		    std::cout << "Maximum temp. at level " << level << " is " << max_temp
-				<< " at density " << den_maxt
-				<< " at (i,j,k) " << max_temp_loc << std::endl;
-		  }
-	      }
-	  }
+            for (MFIter mfi(S_new); mfi.isValid(); ++mfi)
+              {
+                const Box& bx = mfi.validbox();
+                if(bx.contains(max_temp_loc))
+                  {
+                    const auto fab_state = S_new.array(mfi);
+                    Real den_maxt=fab_state(max_temp_loc,Density);
+                    std::cout << "Maximum temp. at level " << level << " is " << max_temp
+                                << " at density " << den_maxt
+                                << " at (i,j,k) " << max_temp_loc << std::endl;
+                  }
+              }
+          }
     }
     amrex::Gpu::synchronize();
 }
@@ -2926,37 +2926,37 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
     for (MFIter mfi(S_new,Gpu::notInLaunchRegion()); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
-	const auto lo = amrex::lbound(bx);
-	const auto hi = amrex::ubound(bx);
-	const auto state    = S_new.array(mfi);
-	const auto diag_eos = D_new.array(mfi);
-	Real vol = dx[0]*dx[1]*dx[2];
+        const auto lo = amrex::lbound(bx);
+        const auto hi = amrex::ubound(bx);
+        const auto state    = S_new.array(mfi);
+        const auto diag_eos = D_new.array(mfi);
+        Real vol = dx[0]*dx[1]*dx[2];
 
-	Real* prho_T_sum = rho_T_sum_gpu.dataPtr();
-	Real* prho_sum = rho_sum_gpu.dataPtr();
-	Real* pT_sum = T_sum_gpu.dataPtr();
-	Real* pTinv_sum = Tinv_sum_gpu.dataPtr();
-	Real* pT_meanrho_sum = T_meanrho_sum_gpu.dataPtr();
-	Real* pvol_sum = vol_sum_gpu.dataPtr();
-	Real* pvol_mn_sum = vol_mn_sum_gpu.dataPtr();
+        Real* prho_T_sum = rho_T_sum_gpu.dataPtr();
+        Real* prho_sum = rho_sum_gpu.dataPtr();
+        Real* pT_sum = T_sum_gpu.dataPtr();
+        Real* pTinv_sum = Tinv_sum_gpu.dataPtr();
+        Real* pT_meanrho_sum = T_meanrho_sum_gpu.dataPtr();
+        Real* pvol_sum = vol_sum_gpu.dataPtr();
+        Real* pvol_mn_sum = vol_mn_sum_gpu.dataPtr();
 
-	AMREX_HOST_DEVICE_FOR_3D(bx,i,j,k,
-	   {
+        AMREX_HOST_DEVICE_FOR_3D(bx,i,j,k,
+           {
 
-	     Real T_tmp;
-	      Real rho_tmp;
-	      T_tmp=diag_eos(i,j,k,Temp_comp);
-	      rho_tmp=state(i,j,k,Density);
-	      amrex::Gpu::Atomic::Add(pT_sum, vol*T_tmp);
-	      amrex::Gpu::Atomic::Add(pTinv_sum, rho_tmp/T_tmp);
-	      amrex::Gpu::Atomic::Add(prho_T_sum, rho_tmp*T_tmp);
-	      amrex::Gpu::Atomic::Add(prho_sum, rho_tmp);
-	      if ( (rho_tmp < rho_hi) &&  (rho_tmp > rho_lo) && (T_tmp <= 1.0e5) ) {
-		amrex::Gpu::Atomic::Add(pT_meanrho_sum, vol*log10(T_tmp));
-		amrex::Gpu::Atomic::Add(pvol_mn_sum, vol);
-	      }
-	      amrex::Gpu::Atomic::Add(pvol_sum, vol);
-	   });
+             Real T_tmp;
+              Real rho_tmp;
+              T_tmp=diag_eos(i,j,k,Temp_comp);
+              rho_tmp=state(i,j,k,Density);
+              amrex::Gpu::Atomic::Add(pT_sum, vol*T_tmp);
+              amrex::Gpu::Atomic::Add(pTinv_sum, rho_tmp/T_tmp);
+              amrex::Gpu::Atomic::Add(prho_T_sum, rho_tmp*T_tmp);
+              amrex::Gpu::Atomic::Add(prho_sum, rho_tmp);
+              if ( (rho_tmp < rho_hi) &&  (rho_tmp > rho_lo) && (T_tmp <= 1.0e5) ) {
+                amrex::Gpu::Atomic::Add(pT_meanrho_sum, vol*log10(T_tmp));
+                amrex::Gpu::Atomic::Add(pvol_mn_sum, vol);
+              }
+              amrex::Gpu::Atomic::Add(pvol_sum, vol);
+           });
 
     }
 
@@ -3027,11 +3027,11 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
     for (MFIter mfi(S_new,!amrex::Gpu::inLaunchRegion()); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
-	const auto lo = amrex::lbound(bx);
-	const auto hi = amrex::ubound(bx);
-	const auto state    = S_new.array(mfi);
-	const auto diag_eos = D_new.array(mfi);
-	Real vol = dx[0]*dx[1]*dx[2];
+        const auto lo = amrex::lbound(bx);
+        const auto hi = amrex::ubound(bx);
+        const auto state    = S_new.array(mfi);
+        const auto diag_eos = D_new.array(mfi);
+        Real vol = dx[0]*dx[1]*dx[2];
 
 #ifdef AMREX_USE_CUDA
     Real* pwhim_mass= whim_mass_gpu.dataPtr();
@@ -3053,30 +3053,30 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
     Real* pvol_sum = &vol_sum;
 #endif
 
-	amrex::ParallelFor(bx,
-		      [=] AMREX_GPU_HOST_DEVICE (int i, int j, int k)
-	   {
+        amrex::ParallelFor(bx,
+                      [=] AMREX_GPU_HOST_DEVICE (int i, int j, int k)
+           {
 
-	     Real T, R, rho_vol;
+             Real T, R, rho_vol;
 
-	      T = diag_eos(i,j,k,Temp_comp);
-	      R = state(i,j,k,Density) / average_gas_density;
-	      rho_vol = state(i,j,k,Density)*vol;
+              T = diag_eos(i,j,k,Temp_comp);
+              R = state(i,j,k,Density) / average_gas_density;
+              rho_vol = state(i,j,k,Density)*vol;
               if ( (T > T_cut) && (R <= rho_cut) ) {
-		amrex::Gpu::Atomic::Add(pwhim_mass,rho_vol);
-		amrex::Gpu::Atomic::Add(pwhim_vol,vol);
+                amrex::Gpu::Atomic::Add(pwhim_mass,rho_vol);
+                amrex::Gpu::Atomic::Add(pwhim_vol,vol);
               }
               else if ( (T > T_cut) && (R > rho_cut) ) {
-		amrex::Gpu::Atomic::Add(phh_mass, rho_vol);
-		amrex::Gpu::Atomic::Add(phh_vol, vol);
+                amrex::Gpu::Atomic::Add(phh_mass, rho_vol);
+                amrex::Gpu::Atomic::Add(phh_vol, vol);
               }
               else if ( (T <= T_cut) && (R <= rho_cut) ) {
-		amrex::Gpu::Atomic::Add(pigm_mass, rho_vol);
-		amrex::Gpu::Atomic::Add(pigm_vol,  vol);
+                amrex::Gpu::Atomic::Add(pigm_mass, rho_vol);
+                amrex::Gpu::Atomic::Add(pigm_vol,  vol);
               }
-	      amrex::Gpu::Atomic::Add(pmass_sum, rho_vol);
-	      amrex::Gpu::Atomic::Add(pvol_sum, vol);
-	   });
+              amrex::Gpu::Atomic::Add(pmass_sum, rho_vol);
+              amrex::Gpu::Atomic::Add(pvol_sum, vol);
+           });
 
 
     }
@@ -3129,9 +3129,9 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
 #ifndef NO_HYDRO
 void
 Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
-			    Real& whim_mass_frac, Real& whim_vol_frac,
-			    Real& hh_mass_frac,   Real& hh_vol_frac,
-			    Real& igm_mass_frac,  Real& igm_vol_frac)
+                            Real& whim_mass_frac, Real& whim_vol_frac,
+                            Real& hh_mass_frac,   Real& hh_vol_frac,
+                            Real& igm_mass_frac,  Real& igm_vol_frac)
 {
   BL_PROFILE("Nyx::compute_gas_fractions()");
   MultiFab& S_new = get_new_data(State_Type);
@@ -3148,10 +3148,10 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
       const Box& bx = mfi.tilebox();
 
               fort_compute_gas_frac
-		(bx.loVect(), bx.hiVect(), geom.CellSize(),
-		 BL_TO_FORTRAN(S_new[mfi]),
-		 BL_TO_FORTRAN(D_new[mfi]), &average_gas_density, &T_cut, &rho_cut,
-		 &whim_mass, &whim_vol, &hh_mass, &hh_vol, &igm_mass, &igm_vol, &mass_sum, &vol_sum);
+                (bx.loVect(), bx.hiVect(), geom.CellSize(),
+                 BL_TO_FORTRAN(S_new[mfi]),
+                 BL_TO_FORTRAN(D_new[mfi]), &average_gas_density, &T_cut, &rho_cut,
+                 &whim_mass, &whim_vol, &hh_mass, &hh_vol, &igm_mass, &igm_vol, &mass_sum, &vol_sum);
     }
   Real sums[8] = {whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum};
   ParallelDescriptor::ReduceRealSum(sums,8);

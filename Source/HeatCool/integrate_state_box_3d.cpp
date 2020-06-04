@@ -81,19 +81,19 @@ int Nyx::integrate_state_box
       int long neq=(tile_size[0])*(tile_size[1])*(tile_size[2]);
       
       if(neq>1)
-	{
-	  if(amrex::Verbose()>2||false)
-	    {
-	      amrex::Print()<<"Integrating a box with "<<neq<<" cells"<<std::endl;
-	      amrex::Print()<<"Integrating a box with "<<neq2<<"real cells"<<std::endl;
-	      amrex::Print()<<"Integrating a box with "<<S_old.nGrow()<<"grow cells"<<std::endl;
-	      amrex::Print()<<"Integrating a box with tile_size"<<tile_size<<std::endl;
-	      amrex::Print()<<"Integrating a box with lo tile_size"<<lo[0]<<lo[1]<<lo[2]<<std::endl;
-	      amrex::Print()<<"Integrating a box with hi tile_size"<<hi[0]<<hi[1]<<hi[2]<<std::endl;
-	      amrex::Print()<<S_old[mfi].min<RunOn::Device>(Eint)<<"at index"<<S_old[mfi].minIndex<RunOn::Device>(Eint)<<std::endl;
-	    }
-	//	neq=neq2;
-	}
+        {
+          if(amrex::Verbose()>2||false)
+            {
+              amrex::Print()<<"Integrating a box with "<<neq<<" cells"<<std::endl;
+              amrex::Print()<<"Integrating a box with "<<neq2<<"real cells"<<std::endl;
+              amrex::Print()<<"Integrating a box with "<<S_old.nGrow()<<"grow cells"<<std::endl;
+              amrex::Print()<<"Integrating a box with tile_size"<<tile_size<<std::endl;
+              amrex::Print()<<"Integrating a box with lo tile_size"<<lo[0]<<lo[1]<<lo[2]<<std::endl;
+              amrex::Print()<<"Integrating a box with hi tile_size"<<hi[0]<<hi[1]<<hi[2]<<std::endl;
+              amrex::Print()<<S_old[mfi].min<RunOn::Device>(Eint)<<"at index"<<S_old[mfi].minIndex<RunOn::Device>(Eint)<<std::endl;
+            }
+        //      neq=neq2;
+        }
       //      amrex::Print()<<"place "<<++count<<std::endl;
       /* Create a CUDA vector with initial values */
       #ifdef AMREX_USE_CUDA
@@ -117,7 +117,7 @@ int Nyx::integrate_state_box
 
       /*      FSetInternalEnergy_mfab(S_old[mfi].dataPtr(),
         tbx.loVect(),
-	    tbx.hiVect());  /* Initialize u vector */
+            tbx.hiVect());  /* Initialize u vector */
 
       dptr=N_VGetArrayPointer_Serial(u);
       dptrd=N_VGetArrayPointer_Serial(u);
@@ -145,13 +145,13 @@ int Nyx::integrate_state_box
       double* Tne_tmp_ptr=N_VGetArrayPointer_Serial(T_tmp);
       D_old[mfi].copyToMem<RunOn::Device>(tbx,Temp_comp,2,Tne_tmp_ptr);
       for(int i=0;i<neq;i++)
-	{
-	  rparh[4*i+0]= Tne_tmp_ptr[i];   //rpar(1)=T_vode
-	  rparh[4*i+1]= Tne_tmp_ptr[neq+i];//    rpar(2)=ne_vode
-	  rparh[4*i+2]= rho_tmp_ptr[i]; //    rpar(3)=rho_vode
-	  rparh[4*i+3]=1/a-1;    //    rpar(4)=z_vode
+        {
+          rparh[4*i+0]= Tne_tmp_ptr[i];   //rpar(1)=T_vode
+          rparh[4*i+1]= Tne_tmp_ptr[neq+i];//    rpar(2)=ne_vode
+          rparh[4*i+2]= rho_tmp_ptr[i]; //    rpar(3)=rho_vode
+          rparh[4*i+3]=1/a-1;    //    rpar(4)=z_vode
 
-	}
+        }
 
       N_VDiv(u,rho_tmp,u);
 
@@ -185,12 +185,12 @@ int Nyx::integrate_state_box
 #ifdef AMREX_USE_SUNDIALS_3x4x
       bool check_nonnegative=true;
       if(check_nonnegative)
-	{
+        {
       N_Vector constrain=N_VClone(u);
-      N_VConst(2,constrain);	      
+      N_VConst(2,constrain);          
       flag =CVodeSetConstraints(cvode_mem,constrain);
       //      if (check_retval(&flag, "CVodeSetConstraints", 1)) return(1);
-	}
+        }
 #endif
 
       /* Create SPGMR solver structure without preconditioning
@@ -219,25 +219,25 @@ int Nyx::integrate_state_box
       umax = N_VMaxNorm(u);
       flag = CVodeGetNumSteps(cvode_mem, &nst);
       check_retval(&flag, "CVodeGetNumSteps", 1);
-	  if(amrex::Verbose()>2||false)
-	    {
-	      PrintOutput(tout, umax, nst);
-	    }
+          if(amrex::Verbose()>2||false)
+            {
+              PrintOutput(tout, umax, nst);
+            }
       }
 
       int one_in=1;
       for(int i=0;i<neq;i++)
-	{
-	  Tne_tmp_ptr[i]=rparh[4*i+0];   //rpar(1)=T_vode
-	  Tne_tmp_ptr[neq+i]=rparh[4*i+1];//    rpar(2)=ne_vode
-	  // rho should not change  rho_tmp_ptr[i]=rparh[4*i+2]; //    rpar(3)=rho_vode
-	  //	  fort_ode_eos_finalize(&(dptr[i]), &(rparh[4*i]), one_in);
-	}
+        {
+          Tne_tmp_ptr[i]=rparh[4*i+0];   //rpar(1)=T_vode
+          Tne_tmp_ptr[neq+i]=rparh[4*i+1];//    rpar(2)=ne_vode
+          // rho should not change  rho_tmp_ptr[i]=rparh[4*i+2]; //    rpar(3)=rho_vode
+          //      fort_ode_eos_finalize(&(dptr[i]), &(rparh[4*i]), one_in);
+        }
 
       AMREX_LAUNCH_DEVICE_LAMBDA(neq,i,
-				 {
-	  fort_ode_eos_finalize(&(dptrd[i]), &(rpar[4*i]), one_in);
-	  });
+                                 {
+          fort_ode_eos_finalize(&(dptrd[i]), &(rpar[4*i]), one_in);
+          });
 
       D_old[mfi].copyFromMem<RunOn::Device>(tbx,Temp_comp,2,Tne_tmp_ptr);
 
@@ -250,11 +250,11 @@ int Nyx::integrate_state_box
       S_old[mfi].copyFromMem<RunOn::Device>(tbx,Eint,1,dptr);
       S_old[mfi].addFromMem<RunOn::Device>(tbx,Eden,1,dptr);
       if(amrex::Verbose()>2||false)
-	{
-	  amrex::Print()<<S_old[mfi].min<RunOn::Device>(Eint)<<"at index"<<S_old[mfi].minIndex<RunOn::Device>(Eint)<<std::endl;
-	  amrex::Print()<<S_old[mfi].min<RunOn::Device>(Eden)<<"at index"<<S_old[mfi].minIndex<RunOn::Device>(Eden)<<std::endl;
-	  PrintFinalStats(cvode_mem);
-	}
+        {
+          amrex::Print()<<S_old[mfi].min<RunOn::Device>(Eint)<<"at index"<<S_old[mfi].minIndex<RunOn::Device>(Eint)<<std::endl;
+          amrex::Print()<<S_old[mfi].min<RunOn::Device>(Eden)<<"at index"<<S_old[mfi].minIndex<RunOn::Device>(Eden)<<std::endl;
+          PrintFinalStats(cvode_mem);
+        }
 
       N_VDestroy(u);          /* Free the u vector */
       N_VDestroy(Data);          /* Free the userdata vector */
@@ -316,19 +316,19 @@ int Nyx::integrate_state_grownbox
       //neq2=(hi[0]-lo[0]+1)*(hi[1]-lo[1]+1)*(hi[2]-lo[2]+1);
       int long neq=(tile_size[0])*(tile_size[1])*(tile_size[2]);
       if(neq>1)
-	{
-	  if(amrex::Verbose()>1||false)
-	    {
-	      amrex::Print()<<"Integrating a box with "<<neq<<" cells"<<std::endl;
-	      amrex::Print()<<"Integrating a box with "<<neq2<<"real cells"<<std::endl;
-	      amrex::Print()<<"Integrating a box with "<<S_old.nGrow()<<"grow cells"<<std::endl;
-	      amrex::Print()<<"Integrating a box with tile_size"<<tile_size<<std::endl;
-	      amrex::Print()<<"Integrating a box with lo tile_size"<<lo[0]<<lo[1]<<lo[2]<<std::endl;
-	      amrex::Print()<<"Integrating a box with hi tile_size"<<hi[0]<<hi[1]<<hi[2]<<std::endl;
-	      amrex::Print()<<S_old[mfi].min<RunOn::Device>(Eint)<<"at index"<<S_old[mfi].minIndex<RunOn::Device>(Eint)<<std::endl;
-	      //	neq=neq2;
-	    }
-	}
+        {
+          if(amrex::Verbose()>1||false)
+            {
+              amrex::Print()<<"Integrating a box with "<<neq<<" cells"<<std::endl;
+              amrex::Print()<<"Integrating a box with "<<neq2<<"real cells"<<std::endl;
+              amrex::Print()<<"Integrating a box with "<<S_old.nGrow()<<"grow cells"<<std::endl;
+              amrex::Print()<<"Integrating a box with tile_size"<<tile_size<<std::endl;
+              amrex::Print()<<"Integrating a box with lo tile_size"<<lo[0]<<lo[1]<<lo[2]<<std::endl;
+              amrex::Print()<<"Integrating a box with hi tile_size"<<hi[0]<<hi[1]<<hi[2]<<std::endl;
+              amrex::Print()<<S_old[mfi].min<RunOn::Device>(Eint)<<"at index"<<S_old[mfi].minIndex<RunOn::Device>(Eint)<<std::endl;
+              //        neq=neq2;
+            }
+        }
 
       /* Create a CUDA vector with initial values */
       #ifdef AMREX_USE_CUDA
@@ -351,7 +351,7 @@ int Nyx::integrate_state_grownbox
 
       /*      FSetInternalEnergy_mfab(S_old[mfi].dataPtr(),
         tbx.loVect(),
-	    tbx.hiVect());  /* Initialize u vector */
+            tbx.hiVect());  /* Initialize u vector */
 
       dptr=N_VGetArrayPointer_Serial(u);
       dptrd=N_VGetArrayPointer_Serial(u);
@@ -376,13 +376,13 @@ int Nyx::integrate_state_grownbox
       D_old[mfi].copyToMem<RunOn::Device>(tbx,Temp_comp,2,Tne_tmp_ptr);
       
       for(int i=0;i<neq;i++)
-	{
-	  rparh[4*i+0]= Tne_tmp_ptr[i];   //rpar(1)=T_vode
-	  rparh[4*i+1]= Tne_tmp_ptr[neq+i];//    rpar(2)=ne_vode
-	  rparh[4*i+2]= rho_tmp_ptr[i]; //    rpar(3)=rho_vode
-	  rparh[4*i+3]=1/a-1;    //    rpar(4)=z_vode
+        {
+          rparh[4*i+0]= Tne_tmp_ptr[i];   //rpar(1)=T_vode
+          rparh[4*i+1]= Tne_tmp_ptr[neq+i];//    rpar(2)=ne_vode
+          rparh[4*i+2]= rho_tmp_ptr[i]; //    rpar(3)=rho_vode
+          rparh[4*i+3]=1/a-1;    //    rpar(4)=z_vode
 
-	}
+        }
       N_VDiv(u,rho_tmp,u);
 #ifdef AMREX_USE_CUDA
       N_VCopyToDevice_Cuda(Data);
@@ -418,12 +418,12 @@ int Nyx::integrate_state_grownbox
 #ifdef AMREX_USE_SUNDIALS_3x4x
       bool check_nonnegative=true;
       if(check_nonnegative)
-	{
+        {
       N_Vector constrain=N_VClone(u);
-      N_VConst(2,constrain);	      
+      N_VConst(2,constrain);          
       flag =CVodeSetConstraints(cvode_mem,constrain);
       //      if (check_retval(&flag, "CVodeSetConstraints", 1)) return(1);
-	}
+        }
 #endif
 
       /* Create SPGMR solver structure without preconditioning
@@ -454,9 +454,9 @@ int Nyx::integrate_state_grownbox
       flag = CVodeGetNumSteps(cvode_mem, &nst);
       check_retval(&flag, "CVodeGetNumSteps", 1);
       if(amrex::Verbose()>2||false)
-	{
-	  PrintOutput(tout, umax, nst);
-	}
+        {
+          PrintOutput(tout, umax, nst);
+        }
       }
 #ifdef AMREX_USE_CUDA
       amrex::Gpu::Device::streamSynchronize();
@@ -464,16 +464,16 @@ int Nyx::integrate_state_grownbox
 #endif            
       int one_in=1;
       for(int i=0;i<neq;i++)
-	{
-	  Tne_tmp_ptr[i]=rparh[4*i+0];   //rpar(1)=T_vode
-	  Tne_tmp_ptr[neq+i]=rparh[4*i+1];//    rpar(2)=ne_vode
-	  // rho should not change  rho_tmp_ptr[i]=rparh[4*i+2]; //    rpar(3)=rho_vode
-	}
+        {
+          Tne_tmp_ptr[i]=rparh[4*i+0];   //rpar(1)=T_vode
+          Tne_tmp_ptr[neq+i]=rparh[4*i+1];//    rpar(2)=ne_vode
+          // rho should not change  rho_tmp_ptr[i]=rparh[4*i+2]; //    rpar(3)=rho_vode
+        }
 
       AMREX_LAUNCH_DEVICE_LAMBDA(neq,i,
-				 {
-	  fort_ode_eos_finalize(&(dptrd[i]), &(rpar[4*i]), one_in);
-	  });
+                                 {
+          fort_ode_eos_finalize(&(dptrd[i]), &(rpar[4*i]), one_in);
+          });
 
       D_old[mfi].copyFromMem<RunOn::Device>(tbx,Temp_comp,2,Tne_tmp_ptr);
       amrex::Gpu::Device::streamSynchronize();
@@ -486,11 +486,11 @@ int Nyx::integrate_state_grownbox
       S_old[mfi].addFromMem<RunOn::Device>(tbx,Eden,1,dptr);
       amrex::Gpu::Device::streamSynchronize();
       if(amrex::Verbose()>2||false)
-	{
-	  amrex::Print()<<S_old[mfi].min<RunOn::Device>(Eint)<<"at index"<<S_old[mfi].minIndex<RunOn::Device>(Eint)<<std::endl;
-	  amrex::Print()<<S_old[mfi].min<RunOn::Device>(Eden)<<"at index"<<S_old[mfi].minIndex<RunOn::Device>(Eden)<<std::endl;
-	  PrintFinalStats(cvode_mem);
-	}
+        {
+          amrex::Print()<<S_old[mfi].min<RunOn::Device>(Eint)<<"at index"<<S_old[mfi].minIndex<RunOn::Device>(Eint)<<std::endl;
+          amrex::Print()<<S_old[mfi].min<RunOn::Device>(Eden)<<"at index"<<S_old[mfi].minIndex<RunOn::Device>(Eden)<<std::endl;
+          PrintFinalStats(cvode_mem);
+        }
 
       N_VDestroy(u);          /* Free the u vector */
       N_VDestroy(Data);          /* Free the userdata vector */
@@ -527,7 +527,7 @@ __global__ void f_rhs_test_box(Real t,double* u_ptr,Real* udot_ptr, Real* rpar, 
   
     //*********************************
     /*    if(tid<neq)
-	  RhsFn(t,u_ptr+tid,udot_ptr+tid,rpar+4*tid,1);*/
+          RhsFn(t,u_ptr+tid,udot_ptr+tid,rpar+4*tid,1);*/
     //rpar[4*tid+1]=tid;
     /**********************************
     if(tid<neq)

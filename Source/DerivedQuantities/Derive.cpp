@@ -55,7 +55,7 @@ extern "C"
 
     void dermagvel(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
                    const FArrayBox& datfab, const Geometry& geomdata,
-        	   Real /*time*/, const int* /*bcrec*/, int /*level*/)
+                   Real /*time*/, const int* /*bcrec*/, int /*level*/)
     {
 
       auto const dat = datfab.array();
@@ -66,14 +66,14 @@ extern "C"
       {
 
         der(i,j,k,0) = std::sqrt( (dat(i,j,k,1) / dat(i,j,k,0))*(dat(i,j,k,1) / dat(i,j,k,0)) +
-				  (dat(i,j,k,2) / dat(i,j,k,0))*(dat(i,j,k,2) / dat(i,j,k,0)) +
-				  (dat(i,j,k,3) / dat(i,j,k,0))*(dat(i,j,k,3) / dat(i,j,k,0)));
+                                  (dat(i,j,k,2) / dat(i,j,k,0))*(dat(i,j,k,2) / dat(i,j,k,0)) +
+                                  (dat(i,j,k,3) / dat(i,j,k,0))*(dat(i,j,k,3) / dat(i,j,k,0)));
       });
     }
 
     void dermagvort(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
                     const FArrayBox& datfab, const Geometry& geomdata,
-        	    Real /*time*/, const int* /*bcrec*/, int /*level*/)
+                    Real /*time*/, const int* /*bcrec*/, int /*level*/)
     {
 
       auto const dat = datfab.array();
@@ -101,7 +101,7 @@ extern "C"
     }
 
     void dermaggrav(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
-        	    const FArrayBox& datfab, const Geometry& geomdata,
+                    const FArrayBox& datfab, const Geometry& geomdata,
                     Real /*time*/, const int* /*bcrec*/, int /*level*/)
     {
 
@@ -232,19 +232,19 @@ extern "C"
         Real uy = dat(i,j,k,Ymom)*rhoInv;
         Real uz = dat(i,j,k,Zmom)*rhoInv;
 
-	// Use internal energy for calculating dt 
-	Real e  = dat(i,j,k,Eint)*rhoInv;
+        // Use internal energy for calculating dt 
+        Real e  = dat(i,j,k,Eint)*rhoInv;
 
-	// Protect against negative e
+        // Protect against negative e
 #ifdef HEATCOOL
-	if (e > 0.0)
-	    der(i,j,k,0)=sound_speed_factor*std::sqrt(e);
+        if (e > 0.0)
+            der(i,j,k,0)=sound_speed_factor*std::sqrt(e);
 #else
-	if (e > 0.0)
-	    der(i,j,k,0)=sound_speed_factor*std::sqrt(dat(i,j,k,Density)*e/dat(i,j,k,Density));
+        if (e > 0.0)
+            der(i,j,k,0)=sound_speed_factor*std::sqrt(dat(i,j,k,Density)*e/dat(i,j,k,Density));
 #endif
-	else
-	    der(i,j,k,0) = 0.0;
+        else
+            der(i,j,k,0) = 0.0;
 
       });
     }
@@ -263,11 +263,11 @@ extern "C"
       [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
       {
            Real rhoInv = 1.0_rt/dat(i,j,k,Density);
-	   Real      e = dat(i,j,k,Eint)*rhoInv;
+           Real      e = dat(i,j,k,Eint)*rhoInv;
 
-	// Protect against negative e
+        // Protect against negative e
 #ifdef HEATCOOL
-//	if (e > 0.0)
+//      if (e > 0.0)
 //            call nyx_eos_S_given_Re(s(i,j,k,1), u(i,j,k,URHO), e, &
 //                                    u(i,j,k,7), u(i,j,k,8), &
 //                                    comoving_a = 1.d0)
@@ -277,8 +277,8 @@ extern "C"
 //                                    u(i,j,k,7), u(i,j,k,8), &
 //                                    comoving_a = 1.d0)
 #endif
-//	else
-	    der(i,j,k,0) = 0.0;
+//      else
+            der(i,j,k,0) = 0.0;
       });
     }
 
@@ -303,20 +303,20 @@ extern "C"
         Real uy = dat(i,j,k,Ymom)*rhoInv;
         Real uz = dat(i,j,k,Zmom)*rhoInv;
 
-	// Use internal energy for calculating dt 
-	Real e  = dat(i,j,k,Eint)*rhoInv;
+        // Use internal energy for calculating dt 
+        Real e  = dat(i,j,k,Eint)*rhoInv;
 
-	Real c;
-	// Protect against negative e
+        Real c;
+        // Protect against negative e
 #ifdef HEATCOOL
-	if (e > 0.0)
-		c = sound_speed_factor*std::sqrt(e);
+        if (e > 0.0)
+                c = sound_speed_factor*std::sqrt(e);
 #else
-	if (e > 0.0)
-	    c=sound_speed_factor*std::sqrt(dat(i,j,k,Density)*e/dat(i,j,k,Density));
+        if (e > 0.0)
+            c=sound_speed_factor*std::sqrt(dat(i,j,k,Density)*e/dat(i,j,k,Density));
 #endif
-	else
-	    c = 0.0;
+        else
+            c = 0.0;
 
         der(i,j,k,0) = std::sqrt((ux*ux + uy*uy + uz*uz)) / c;
 

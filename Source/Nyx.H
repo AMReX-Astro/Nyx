@@ -154,7 +154,7 @@ public:
     //The basic constructor.
     //
     Nyx(amrex::Amr& papa, int lev, const amrex::Geometry& level_geom,
-	const amrex::BoxArray& bl, const amrex::DistributionMapping& dm,
+        const amrex::BoxArray& bl, const amrex::DistributionMapping& dm,
         amrex::Real time);
 
     //
@@ -522,9 +522,9 @@ public:
 /// @param time     Current time
 ///
   void cons_to_prim(amrex::MultiFab& u, amrex::MultiFab& q, amrex::MultiFab& qaux, 
-		    amrex::MultiFab& grav, amrex::MultiFab& hydro_src, amrex::MultiFab& src_q,
-		    const amrex::Real a_old, const amrex::Real a_new,
-		    const amrex::Real dt);
+                    amrex::MultiFab& grav, amrex::MultiFab& hydro_src, amrex::MultiFab& src_q,
+                    const amrex::Real a_old, const amrex::Real a_new,
+                    const amrex::Real dt);
 
 
 ///
@@ -541,10 +541,10 @@ public:
                                bool init_flux_register, bool add_to_flux_register);
 
     void ctu_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
-			amrex::MultiFab& S_border, amrex::MultiFab& D_border, 
-			amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src, 
-			amrex::MultiFab& grav, 
-			bool init_flux_register, bool add_to_flux_register);
+                        amrex::MultiFab& S_border, amrex::MultiFab& D_border, 
+                        amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src, 
+                        amrex::MultiFab& grav, 
+                        bool init_flux_register, bool add_to_flux_register);
 
 ///
 /// this constructs the hydrodynamic source (essentially the flux
@@ -620,7 +620,7 @@ public:
 
 #ifdef REEBER
     void runReeberAnalysis(amrex::Vector<amrex::MultiFab*>& new_state,
-			               amrex::Vector<std::unique_ptr<amrex::MultiFab> >& particle_mf,
+                                       amrex::Vector<std::unique_ptr<amrex::MultiFab> >& particle_mf,
                            const amrex::Geometry Geom, const amrex::Vector<amrex::IntVect>& level_refinements,
                            int nStep, bool do_analysis, std::vector<Halo>& reeber_halos);
 #endif
@@ -906,7 +906,7 @@ protected:
 
     static amrex::Real small_dens;
     static amrex::Real small_temp;
-	static amrex::Real large_temp;
+        static amrex::Real large_temp;
 
     static amrex::Real  h_species;
     static amrex::Real he_species;

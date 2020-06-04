@@ -174,21 +174,21 @@ extern "C"
      const int* print_fortran_warnings);
 
   AMREX_GPU_DEVICE void ca_ctoprim(const int* lo, const int* hi,
-	          const amrex::Real* u, const int* u_lo, const int* u_hi,
+                  const amrex::Real* u, const int* u_lo, const int* u_hi,
 #ifdef RADIATION
-		  const amrex::Real* Er, const int* Er_lo, const int* Er_hi,
-		  const amrex::Real* lam, const int* lam_lo, const int* lam_hi,
+                  const amrex::Real* Er, const int* Er_lo, const int* Er_hi,
+                  const amrex::Real* lam, const int* lam_lo, const int* lam_hi,
 #endif
-		  amrex::Real* q, const int* q_lo, const int* q_hi,
-		  amrex::Real* qaux, const int* qa_lo, const int* qa_hi );
+                  amrex::Real* q, const int* q_lo, const int* q_hi,
+                  amrex::Real* qaux, const int* qa_lo, const int* qa_hi );
 
   AMREX_GPU_DEVICE void ca_srctoprim(const int* lo,   const int* hi,
-		    const amrex::Real* q,   const int* q_lo,   const int* q_hi,
-		    const amrex::Real* qaux, const int* qa_lo, const int* qa_hi,
-		    const amrex::Real* grav, const int* ga_lo, const int* ga_hi,
-		    const amrex::Real* src, const int* src_lo, const int* src_hi,
-		    amrex::Real* srQ, const int* srQ_lo, const int* srQ_hi,
-		    const amrex::Real a_old, const amrex::Real a_new, const amrex::Real dt);
+                    const amrex::Real* q,   const int* q_lo,   const int* q_hi,
+                    const amrex::Real* qaux, const int* qa_lo, const int* qa_hi,
+                    const amrex::Real* grav, const int* ga_lo, const int* ga_hi,
+                    const amrex::Real* src, const int* src_lo, const int* src_hi,
+                    amrex::Real* srQ, const int* srQ_lo, const int* srQ_hi,
+                    const amrex::Real a_old, const amrex::Real a_new, const amrex::Real dt);
 
   void ca_compute_cfl(const int* lo, const int* hi,
                       const BL_FORT_FAB_ARG_ANYD(q),
@@ -614,9 +614,9 @@ extern "C"
 #endif
                const BL_FORT_FAB_ARG_3D(qy),
                const BL_FORT_FAB_ARG_3D(qz),
-	       const BL_FORT_FAB_ARG_3D(srcQ),
+               const BL_FORT_FAB_ARG_3D(srcQ),
                const amrex::Real hdt, const amrex::Real cdtdy, const amrex::Real cdtdz,
-	       const amrex::Real a_old, const amrex::Real a_new);
+               const amrex::Real a_old, const amrex::Real a_new);
 
   AMREX_GPU_DEVICE void transxz(const int* lo, const int* hi,
                const BL_FORT_FAB_ARG_3D(qm),
@@ -634,9 +634,9 @@ extern "C"
 #endif
                const BL_FORT_FAB_ARG_3D(qx),
                const BL_FORT_FAB_ARG_3D(qz),
-	       const BL_FORT_FAB_ARG_3D(srcQ),
+               const BL_FORT_FAB_ARG_3D(srcQ),
                const amrex::Real hdt, const amrex::Real cdtdx, const amrex::Real cdtdz,
-	       const amrex::Real a_old, const amrex::Real a_new);
+               const amrex::Real a_old, const amrex::Real a_new);
 
   AMREX_GPU_DEVICE void transxy(const int* lo, const int* hi,
                const BL_FORT_FAB_ARG_3D(qm),
@@ -654,9 +654,9 @@ extern "C"
 #endif
                const BL_FORT_FAB_ARG_3D(qx),
                const BL_FORT_FAB_ARG_3D(qy),
-	       const BL_FORT_FAB_ARG_3D(srcQ),
+               const BL_FORT_FAB_ARG_3D(srcQ),
                const amrex::Real hdt, const amrex::Real cdtdx, const amrex::Real cdtdy,
-	       const amrex::Real a_old, const amrex::Real a_new);
+               const amrex::Real a_old, const amrex::Real a_new);
 
   void ca_mol_single_stage
     (const int* lo, const int* hi,

@@ -50,15 +50,15 @@ Nyx::strang_hydro_fuse (Real time,
     {
       amrex::Gpu::Device::streamSynchronize();
       /*      if (S_old.contains_nan(Density, S_old.nComp(), 0))
-	{
-	  for (int i = 0; i < S_old.nComp(); i++)
-	    {
-	      if (ParallelDescriptor::IOProcessor())
+        {
+          for (int i = 0; i < S_old.nComp(); i++)
+            {
+              if (ParallelDescriptor::IOProcessor())
                 std::cout << "strang_hydro: testing component " << i << " for NaNs" << std::endl;
-	      if (S_old.contains_nan(Density+i,1,0))
+              if (S_old.contains_nan(Density+i,1,0))
                 amrex::Abort("S_old has NaNs in this component");
-	    }
-	    }*/
+            }
+            }*/
     }
 #endif
     
@@ -70,7 +70,7 @@ Nyx::strang_hydro_fuse (Real time,
     //assume user-provided source is not CUDA
     if (add_ext_src)
       {
-	amrex::Abort("strang_fuse not defined for add_ext_src==1");
+        amrex::Abort("strang_fuse not defined for add_ext_src==1");
       }
 
     // Define the gravity vector 
@@ -90,18 +90,18 @@ Nyx::strang_hydro_fuse (Real time,
     std::unique_ptr<MultiFab> D_old_tmp;
     if( nghost_state!=NUM_GROW)
       {
-	S_old_tmp.reset(new MultiFab(S_old.boxArray(), S_old.DistributionMap(), NUM_STATE, NUM_GROW));
-	D_old_tmp.reset(new MultiFab(D_old.boxArray(), D_old.DistributionMap(), D_old.nComp(), NUM_GROW));
+        S_old_tmp.reset(new MultiFab(S_old.boxArray(), S_old.DistributionMap(), NUM_STATE, NUM_GROW));
+        D_old_tmp.reset(new MultiFab(D_old.boxArray(), D_old.DistributionMap(), D_old.nComp(), NUM_GROW));
 
-	FillPatch(*this, *S_old_tmp, NUM_GROW, time, State_Type, 0, NUM_STATE);
-	FillPatch(*this, *D_old_tmp, NUM_GROW, time, DiagEOS_Type, 0, D_old.nComp());
+        FillPatch(*this, *S_old_tmp, NUM_GROW, time, State_Type, 0, NUM_STATE);
+        FillPatch(*this, *D_old_tmp, NUM_GROW, time, DiagEOS_Type, 0, D_old.nComp());
       }
     else
       {
-	//	MultiFab::Copy(S_new,S_old,0,0,S_old.nComp(),0);//,S_old_tmp.nGrow());
-	FillPatch(*this, S_new, S_new.nGrow(), prev_time, State_Type, 0, NUM_STATE);
-	//	MultiFab::Copy(D_new,D_old,0,0,D_old.nComp(),0);//,S_old_tmp.nGrow());
-	FillPatch(*this, D_new, D_new.nGrow(), prev_time, DiagEOS_Type, 0, D_old.nComp());
+        //      MultiFab::Copy(S_new,S_old,0,0,S_old.nComp(),0);//,S_old_tmp.nGrow());
+        FillPatch(*this, S_new, S_new.nGrow(), prev_time, State_Type, 0, NUM_STATE);
+        //      MultiFab::Copy(D_new,D_old,0,0,D_old.nComp(),0);//,S_old_tmp.nGrow());
+        FillPatch(*this, D_new, D_new.nGrow(), prev_time, DiagEOS_Type, 0, D_old.nComp());
       }
     BL_PROFILE_VAR_STOP(old_tmp);
 
@@ -113,19 +113,19 @@ Nyx::strang_hydro_fuse (Real time,
     {
     if( nghost_state!=NUM_GROW)
       {
-	amrex::Gpu::Device::streamSynchronize();
-	/*	if (S_old_tmp->contains_nan(Density, S_old_tmp->nComp(), 0)) {
+        amrex::Gpu::Device::streamSynchronize();
+        /*      if (S_old_tmp->contains_nan(Density, S_old_tmp->nComp(), 0)) {
           {
-	    for (int i = 0; i < S_old_tmp->nComp(); i++)
-	      {
-	        if (ParallelDescriptor::IOProcessor())
-		  std::cout << "strang_hydro: testing component " << i << " for NaNs" << std::endl;
-		if (S_old_tmp->contains_nan(Density+i,1,0))
-		  amrex::Abort("S_old_tmp has NaNs in this component before first strang");
+            for (int i = 0; i < S_old_tmp->nComp(); i++)
+              {
+                if (ParallelDescriptor::IOProcessor())
+                  std::cout << "strang_hydro: testing component " << i << " for NaNs" << std::endl;
+                if (S_old_tmp->contains_nan(Density+i,1,0))
+                  amrex::Abort("S_old_tmp has NaNs in this component before first strang");
               }
-	    amrex::Abort("S_new has NaNs before the second strang call");
+            amrex::Abort("S_new has NaNs before the second strang call");
           }
-	  }*/
+          }*/
       }
     }
 #endif
@@ -137,28 +137,28 @@ Nyx::strang_hydro_fuse (Real time,
 
     if(hydro_convert)
       {
-	if( nghost_state!=NUM_GROW)
-	  {
-	    ctu_hydro_fuse(time,dt,a_old,a_new,*S_old_tmp,*D_old_tmp,
-				 *ext_src_old,*hydro_src,grav_vector,
-				 init_flux_register, add_to_flux_register);
-	  }
-	else
-	  {
-	    ctu_hydro_fuse(time,dt,a_old,a_new,S_new,D_new,
-				 *ext_src_old,*hydro_src,grav_vector,
-				 init_flux_register, add_to_flux_register);
-	  }
+        if( nghost_state!=NUM_GROW)
+          {
+            ctu_hydro_fuse(time,dt,a_old,a_new,*S_old_tmp,*D_old_tmp,
+                                 *ext_src_old,*hydro_src,grav_vector,
+                                 init_flux_register, add_to_flux_register);
+          }
+        else
+          {
+            ctu_hydro_fuse(time,dt,a_old,a_new,S_new,D_new,
+                                 *ext_src_old,*hydro_src,grav_vector,
+                                 init_flux_register, add_to_flux_register);
+          }
       }
     else
       {
-	amrex::Abort("Behavior not defined for fuse and hydro_convert=0");
+        amrex::Abort("Behavior not defined for fuse and hydro_convert=0");
       }
 
     if( nghost_state!=NUM_GROW)
       {
-	D_old_tmp->clear();
-	S_old_tmp->clear();
+        D_old_tmp->clear();
+        S_old_tmp->clear();
       }
 
 #ifdef AMREX_DEBUG
@@ -172,14 +172,14 @@ Nyx::strang_hydro_fuse (Real time,
         const Box& bx = mfi.tilebox();
         for (int i = 0; i < S_new[mfi].nComp(); i++)
         {
-	  IntVect p_nan(D_DECL(-10, -10, -10));
+          IntVect p_nan(D_DECL(-10, -10, -10));
             if (ParallelDescriptor::IOProcessor())
                 std::cout << "strang_hydro: testing component " << i << " for NaNs" << std::endl;
             if (S_new[mfi].contains_nan(bx,Density+i,1,p_nan))
-	      {
-		std::cout<<"nans"<<p_nan<<std::flush<<std::endl;
-		amrex::Abort("S_new has NaNs in this component after hydro");
-	      }
+              {
+                std::cout<<"nans"<<p_nan<<std::flush<<std::endl;
+                amrex::Abort("S_new has NaNs in this component after hydro");
+              }
         }
         amrex::Abort("S_new has NaNs before the second strang call");
     }
@@ -192,7 +192,7 @@ Nyx::strang_hydro_fuse (Real time,
     //assume user-provided source is not CUDA
     if (add_ext_src)
       {
-	amrex::Abort("strang_fuse not defined for add_ext_src==1");
+        amrex::Abort("strang_fuse not defined for add_ext_src==1");
       }
 
 #ifdef AMREX_DEBUG
@@ -201,23 +201,23 @@ Nyx::strang_hydro_fuse (Real time,
       {
         for (int i = 0; i < S_new.nComp(); i++)
         {
-	  IntVect p_nan(D_DECL(-10, -10, -10));
+          IntVect p_nan(D_DECL(-10, -10, -10));
             if (ParallelDescriptor::IOProcessor())
                 std::cout << "strang_hydro: testing component " << i << " for NaNs" << std::endl;
             if (S_new.contains_nan(Density+i,1,0))
-	      {
-		amrex::Print()<<p_nan<<std::endl;
+              {
+                amrex::Print()<<p_nan<<std::endl;
                 amrex::Abort("S_old has NaNs in this component");
-	      }
+              }
         }
         amrex::Abort("S_new has NaNs before the second strang call");
-	}*/
+        }*/
 #endif
 
 #ifdef AMREX_DEBUG
     amrex::Gpu::Device::streamSynchronize();
     /*    if (S_new.contains_nan(Density, S_new.nComp(), 0))
-	  amrex::Abort("S_new has NaNs after the second strang call");*/
+          amrex::Abort("S_new has NaNs after the second strang call");*/
 #endif
 
     amrex::Gpu::Device::streamSynchronize();

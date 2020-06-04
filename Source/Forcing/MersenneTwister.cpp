@@ -69,12 +69,12 @@ unsigned long int mt_random() {
       idx = 0;
       i = 0;
       for (; i < MT_IB; i++) {
-	s = TWIST(b, i, i+1);
-	b[i] = b[i + MT_IA] ^ (s >> 1) ^ MAGIC(s);
+        s = TWIST(b, i, i+1);
+        b[i] = b[i + MT_IA] ^ (s >> 1) ^ MAGIC(s);
       }
       for (; i < MT_LEN-1; i++) {
-	s = TWIST(b, i, i+1);
-	b[i] = b[i - MT_IB] ^ (s >> 1) ^ MAGIC(s);
+        s = TWIST(b, i, i+1);
+        b[i] = b[i - MT_IB] ^ (s >> 1) ^ MAGIC(s);
       }
       
       s = TWIST(b, MT_LEN-1, 0);

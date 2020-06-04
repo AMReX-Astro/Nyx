@@ -34,28 +34,28 @@ int Nyx::integrate_state_exact
       const Dim3 lo = amrex::lbound(bx);
       const Dim3 hi = amrex::ubound(bx);
       amrex::Print()<<lo<<hi<<bx<<std::endl;
-	for (int k = lo.z; k <= hi.z; ++k) {
-	  for (int j = lo.y; j <= hi.y; ++j) {
-	    //	    AMREX_PRAGMA_SIMD
-	      for (int i = lo.x; i <= hi.x; ++i) {
-		double rparh[4];
-		double e_in=state(i,j,k,Eint)/state(i,j,k,Density);
-		double e_out=-10;
-		rparh[0]= diag_eos(i,j,k,Temp_comp);   //rpar(1)=T_vode
-		rparh[1]= diag_eos(i,j,k,Ne_comp);//    rpar(2)=ne_vode
-		rparh[2]= state(i,j,k,Density); //    rpar(3)=rho_vode
-		rparh[3]=1/a-1;    //    rpar(4)=z_vode
-		fort_update_eos(delta_time,&e_in,&e_out,rparh);
-		diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
-		diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
-				
-		state(i,j,k,Eint)  += state(i,j,k,Density) * (e_out-e_in);
-		state(i,j,k,Eden)  += state(i,j,k,Density) * (e_out-e_in);
+        for (int k = lo.z; k <= hi.z; ++k) {
+          for (int j = lo.y; j <= hi.y; ++j) {
+            //      AMREX_PRAGMA_SIMD
+              for (int i = lo.x; i <= hi.x; ++i) {
+                double rparh[4];
+                double e_in=state(i,j,k,Eint)/state(i,j,k,Density);
+                double e_out=-10;
+                rparh[0]= diag_eos(i,j,k,Temp_comp);   //rpar(1)=T_vode
+                rparh[1]= diag_eos(i,j,k,Ne_comp);//    rpar(2)=ne_vode
+                rparh[2]= state(i,j,k,Density); //    rpar(3)=rho_vode
+                rparh[3]=1/a-1;    //    rpar(4)=z_vode
+                fort_update_eos(delta_time,&e_in,&e_out,rparh);
+                diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
+                diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
+                                
+                state(i,j,k,Eint)  += state(i,j,k,Density) * (e_out-e_in);
+                state(i,j,k,Eden)  += state(i,j,k,Density) * (e_out-e_in);
 
-	      }
-	  }
-	}
-		 
+              }
+          }
+        }
+                 
 
     }
   #ifdef AMREX_DEBUG
@@ -89,29 +89,29 @@ int Nyx::integrate_state_grownexact
       const Dim3 lo = amrex::lbound(bx);
       const Dim3 hi = amrex::ubound(bx);
       amrex::Print()<<lo<<hi<<"\n"<<bx<<std::endl;
-      	for (int k = lo.z; k <= hi.z; ++k) {
-	  for (int j = lo.y; j <= hi.y; ++j) {
-	    //	    AMREX_PRAGMA_SIMD
-	      for (int i = lo.x; i <= hi.x; ++i) {
-		double rparh[4];
-		double e_in=state(i,j,k,Eint)/state(i,j,k,Density);
-		double e_out=-10;
-		rparh[0]= diag_eos(i,j,k,Temp_comp);   //rpar(1)=T_vode
-		rparh[1]= diag_eos(i,j,k,Ne_comp);//    rpar(2)=ne_vode
-		rparh[2]= state(i,j,k,Density); //    rpar(3)=rho_vode
-		rparh[3]=1/a-1;    //    rpar(4)=z_vode
+        for (int k = lo.z; k <= hi.z; ++k) {
+          for (int j = lo.y; j <= hi.y; ++j) {
+            //      AMREX_PRAGMA_SIMD
+              for (int i = lo.x; i <= hi.x; ++i) {
+                double rparh[4];
+                double e_in=state(i,j,k,Eint)/state(i,j,k,Density);
+                double e_out=-10;
+                rparh[0]= diag_eos(i,j,k,Temp_comp);   //rpar(1)=T_vode
+                rparh[1]= diag_eos(i,j,k,Ne_comp);//    rpar(2)=ne_vode
+                rparh[2]= state(i,j,k,Density); //    rpar(3)=rho_vode
+                rparh[3]=1/a-1;    //    rpar(4)=z_vode
 
-		fort_update_eos(delta_time,&e_in,&e_out,&(rparh[0]));
-		diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
-		diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
+                fort_update_eos(delta_time,&e_in,&e_out,&(rparh[0]));
+                diag_eos(i,j,k,Temp_comp)=rparh[0];   //rpar(1)=T_vode
+                diag_eos(i,j,k,Ne_comp)=rparh[1];//    rpar(2)=ne_vode
 
-		state(i,j,k,Eint)  += state(i,j,k,Density) * (e_out-e_in);
-		state(i,j,k,Eden)  += state(i,j,k,Density) * (e_out-e_in);
+                state(i,j,k,Eint)  += state(i,j,k,Density) * (e_out-e_in);
+                state(i,j,k,Eden)  += state(i,j,k,Density) * (e_out-e_in);
 
-	      }
-	  }
-	}
-		 
+              }
+          }
+        }
+                 
 
     }
   #ifdef AMREX_DEBUG

@@ -177,7 +177,7 @@ Gravity::install_level (int       level,
     {
         IntVect crse_ratio = parent->refRatio(level-1);
         phi_flux_reg[level].reset(new FluxRegister(level_data_to_install->boxArray(),
-						   dm, crse_ratio, level, 1));
+                                                   dm, crse_ratio, level, 1));
     }
 
 #ifdef CGRAV
@@ -236,9 +236,9 @@ Gravity::swap_time_levels (int level)
     {
         for (int n=0; n < BL_SPACEDIM; n++)
         {
-	    std::swap(grad_phi_prev[level][n], grad_phi_curr[level][n]);
+            std::swap(grad_phi_prev[level][n], grad_phi_curr[level][n]);
             grad_phi_curr[level][n].reset(new MultiFab(BoxArray(grids[level]).surroundingNodes(n), 
-						       dmap[level], 1, 1));
+                                                       dmap[level], 1, 1));
             grad_phi_curr[level][n]->setVal(1.e50);
         }
     }
@@ -437,14 +437,14 @@ Gravity::gravity_sync (int crse_level, int fine_level, int iteration, int ncycle
         ec_gdPhi[lev-crse_level].resize(BL_SPACEDIM);
         for (int n = 0; n < BL_SPACEDIM; ++n)
            ec_gdPhi[lev-crse_level][n].reset(new MultiFab(Nyx_lev->getEdgeBoxArray(n),
-							  Nyx_lev->DistributionMap(),
-							  1,0));
+                                                          Nyx_lev->DistributionMap(),
+                                                          1,0));
     }
 
     // Do multi-level solve for delta_phi
     solve_for_delta_phi(crse_level, fine_level, crse_rhs, 
-			amrex::GetVecOfPtrs(delta_phi),
-			amrex::GetVecOfVecOfPtrs(ec_gdPhi));
+                        amrex::GetVecOfPtrs(delta_phi),
+                        amrex::GetVecOfVecOfPtrs(ec_gdPhi));
 
     crse_rhs.clear();
 
@@ -578,8 +578,8 @@ Gravity::get_crse_grad_phi (int               level,
     {
         BL_ASSERT(!grad_phi_crse[i]);
         grad_phi_crse[i].reset(new MultiFab(Nyx_crse_lev->getEdgeBoxArray(i), 
-					    Nyx_crse_lev->DistributionMap(),
-					    1, 0));
+                                            Nyx_crse_lev->DistributionMap(),
+                                            1, 0));
 
 #ifdef _OPENMP
 #pragma omp parallel
@@ -627,7 +627,7 @@ Gravity::multilevel_solve_for_new_phi (int level,
 
     int is_new = 1;
     actual_multilevel_solve(level, finest_level, 
-			    amrex::GetVecOfVecOfPtrs(grad_phi_curr),
+                            amrex::GetVecOfVecOfPtrs(grad_phi_curr),
                             is_new, ngrow_for_solve, use_previous_phi_as_guess);
 }
 
@@ -657,7 +657,7 @@ Gravity::multilevel_solve_for_old_phi (int level,
 
     int is_new  = 0;
     actual_multilevel_solve(level, finest_level,
-			    amrex::GetVecOfVecOfPtrs(grad_phi_prev),
+                            amrex::GetVecOfVecOfPtrs(grad_phi_prev),
                             is_new, ngrow, use_previous_phi_as_guess);
 
 }
@@ -683,7 +683,7 @@ Gravity::actual_multilevel_solve (int                       level,
 
     for (int lev = 0; lev < num_levels; lev++)
     {
-	Rhs_particles[lev].reset(new MultiFab(grids[level+lev], dmap[level+lev], 1, 0));
+        Rhs_particles[lev].reset(new MultiFab(grids[level+lev], dmap[level+lev], 1, 0));
         Rhs_particles[lev]->setVal(0.);
     }
 
@@ -748,7 +748,7 @@ Gravity::actual_multilevel_solve (int                       level,
             }
         }
 #endif
-	MultiFab::Add(*Rhs_p[lev], *Rhs_particles[lev], 0, 0, 1, 0);
+        MultiFab::Add(*Rhs_p[lev], *Rhs_particles[lev], 0, 0, 1, 0);
     }
 
     // Average phi from fine to coarse level before the solve.
@@ -767,11 +767,11 @@ Gravity::actual_multilevel_solve (int                       level,
             amrex::Print() << " ... subtracting average density " << mass_offset
                            << " from RHS at each level " << '\n';
 
-	for (int lev = 0; lev < num_levels; lev++)
-	  (*Rhs_p[lev]).plus(-mass_offset,0,1,0);
+        for (int lev = 0; lev < num_levels; lev++)
+          (*Rhs_p[lev]).plus(-mass_offset,0,1,0);
 
-	if(verbose>1)
-	   std::cout<<"After mass correction"<<(*Rhs_p[0]).norm2(0)<<std::endl;
+        if(verbose>1)
+           std::cout<<"After mass correction"<<(*Rhs_p[0]).norm2(0)<<std::endl;
        // This is used to enforce solvability if appropriate.
        if ( parent->Geom(level).Domain().numPts() == grids[level].numPts() )
        {
@@ -783,7 +783,7 @@ Gravity::actual_multilevel_solve (int                       level,
                sum += nyx_level->vol_weight_sum(*Rhs_p[lev],true);
            }
 
-	   //	   ParallelDescriptor::ReduceRealSum(sum);
+           //      ParallelDescriptor::ReduceRealSum(sum);
             sum /= parent->Geom(0).ProbSize();
 
             const Real eps = 1.e-10 * std::abs(mass_offset);
@@ -868,8 +868,8 @@ Gravity::get_old_grav_vector (int       level,
 
     // Average edge-centered gradients to cell centers.
     amrex::average_face_to_cellcenter(grav_vector, 
-				      amrex::GetVecOfConstPtrs(grad_phi_prev[level]),
-				      geom);
+                                      amrex::GetVecOfConstPtrs(grad_phi_prev[level]),
+                                      geom);
 
 #ifdef CGRAV
     if (gravity_type == "CompositeGrav")
@@ -919,8 +919,8 @@ Gravity::get_new_grav_vector (int       level,
 
         // Average edge-centered gradients to cell centers, excluding grow cells
         amrex::average_face_to_cellcenter(grav_vector,
-					   amrex::GetVecOfConstPtrs(grad_phi_curr[level]),
-					   geom);
+                                           amrex::GetVecOfConstPtrs(grad_phi_curr[level]),
+                                           geom);
 
 #ifdef CGRAV
         if (gravity_type == "CompositeGrav")
@@ -990,12 +990,12 @@ Gravity::add_to_fluxes(int level, int iteration, int ncycle)
                 const Box& tbx = mfi.tilebox();
                 const auto gphi_flux = fluxes.array(mfi);
                 const auto gphi_flux_curr = grad_phi_curr[level][n]->array(mfi);
-		AMREX_HOST_DEVICE_FOR_3D(tbx,i,j,k,
-					 {
+                AMREX_HOST_DEVICE_FOR_3D(tbx,i,j,k,
+                                         {
 
-					   gphi_flux(i,j,k,0)=area[n]*gphi_flux_curr(i,j,k,0);
+                                           gphi_flux(i,j,k,0)=area[n]*gphi_flux_curr(i,j,k,0);
 
-					 });
+                                         });
             }
             phi_fine->CrseInit(fluxes, n, 0, 0, 1, -1);
         }
@@ -1039,13 +1039,13 @@ Gravity::average_fine_ec_onto_crse_ec(int level, int is_new)
     auto& grad_phi = (is_new) ? grad_phi_curr : grad_phi_prev;
 
     amrex::average_down_faces(amrex::GetVecOfConstPtrs(grad_phi[level+1]),
-			       amrex::GetVecOfPtrs(crse_gphi_fine), fine_ratio);
+                               amrex::GetVecOfPtrs(crse_gphi_fine), fine_ratio);
 
     const Geometry& cgeom = parent->Geom(level);
 
     for (int n = 0; n < BL_SPACEDIM; ++n)
     {
-	grad_phi[level][n]->copy(*crse_gphi_fine[n], cgeom.periodicity());
+        grad_phi[level][n]->copy(*crse_gphi_fine[n], cgeom.periodicity());
     }
 }
 
@@ -1205,7 +1205,7 @@ Gravity::AddParticlesToRhs (int               level,
     for (int i = 0; i < Nyx::theActiveParticles().size(); i++)
       {
         Nyx::theActiveParticles()[i]->AssignDensitySingleLevel(particle_mf, level);
-	amrex::Gpu::Device::streamSynchronize();
+        amrex::Gpu::Device::streamSynchronize();
         MultiFab::Add(Rhs, particle_mf, 0, 0, 1, 0);
       }
 
@@ -1479,9 +1479,9 @@ Gravity::solve_with_MLMG (int crse_level, int fine_level,
     MLMG mlmg(mlpoisson);
     mlmg.setVerbose(verbose);
     if (crse_level == 0) {
-	mlmg.setMaxFmgIter(mlmg_max_fmg_iter);
+        mlmg.setMaxFmgIter(mlmg_max_fmg_iter);
     } else {
-	mlmg.setMaxFmgIter(0); // Vcycle
+        mlmg.setMaxFmgIter(0); // Vcycle
     }
 
     Real final_resnorm = mlmg.solve(phi, rhs, rel_eps, abs_eps);

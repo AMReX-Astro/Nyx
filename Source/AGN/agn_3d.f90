@@ -21,9 +21,9 @@
           r2 = sum((particles(i)%pos - particles(j)%pos)**2)
 
           if (r2 <= cutoff*cutoff) then
-	     print *, "found overlap particles", particles(i)%id, particles(j)%id
-	     ! If one of the particles is already invalidated, don't do anything
-	     if (particles(i)%id .eq. -1 .or. particles(j)%id .eq. -1) cycle
+             print *, "found overlap particles", particles(i)%id, particles(j)%id
+             ! If one of the particles is already invalidated, don't do anything
+             if (particles(i)%id .eq. -1 .or. particles(j)%id .eq. -1) cycle
              ! We only remove the newer (aka of lower mass) particle
              if (particles(i)%mass .lt. particles(j)%mass)  then
                 particles(i)%id = -1
@@ -91,32 +91,32 @@
 
           if (r2 <= cutoff*cutoff) then
 
-	     if (cutoff_vel .eqv. .true.) then
+             if (cutoff_vel .eqv. .true.) then
 
                  ! Relative velocity
                  vrelsq = sum((particles(i)%vel - particles(j)%vel)**2)
                  !larger_mass = max(particles(i)%mass, particles(j)%mass)
                  r = sqrt(r2)
                  !if ( (vrelsq * r) < Gconst * larger_mass) then
-	         if ( sqrt(vrelsq) * mergetime < r) then
+                 if ( sqrt(vrelsq) * mergetime < r) then
 
-		   ! If one of the particles is already invalidated, don't do anything
+                   ! If one of the particles is already invalidated, don't do anything
                     if (particles(i)%id .eq. -1 .or. particles(j)%id .eq. -1) cycle
                     ! Merge lighter particle into heavier one.
                     ! Set particle ID of lighter particle to -1
                     if (particles(i)%mass >= particles(j)%mass) then
                         call agn_merge_pair(particles(i), particles(j))
                         particles(j)%id = -1
-		        merger_count = merger_count +1
+                        merger_count = merger_count +1
                     else
                        call agn_merge_pair(particles(j), particles(i))
                        particles(i)%id = -1
-		       merger_count = merger_count +1 
+                       merger_count = merger_count +1 
                     end if
                  end if
-	     else ! just merge
-		print *, "found merging particles", particles(i)%id, particles(j)%id
-		if (particles(i)%id .eq. -1 .or. particles(j)%id .eq. -1) cycle
+             else ! just merge
+                print *, "found merging particles", particles(i)%id, particles(j)%id
+                if (particles(i)%id .eq. -1 .or. particles(j)%id .eq. -1) cycle
                 if (particles(i)%mass >= particles(j)%mass) then
                     call agn_merge_pair(particles(i), particles(j))
                     particles(j)%id = -1
@@ -129,7 +129,7 @@
 
             end if
 
-	  end if
+          end if
 
        end do
     end do
@@ -144,12 +144,12 @@
 
           if (r2 <= cutoff*cutoff) then
              if (cutoff_vel .eqv. .true.) then
-             	vrelsq = sum((particles(i)%vel - ghosts(j)%vel)**2)
-             	!larger_mass = max(particles(i)%mass, ghosts(j)%mass)
+                vrelsq = sum((particles(i)%vel - ghosts(j)%vel)**2)
+                !larger_mass = max(particles(i)%mass, ghosts(j)%mass)
 
-             	!if ( (vrelsq * sqrt(r2)) < Gconst * larger_mass) then
-	        if ( sqrt(vrelsq) * mergetime <  sqrt(r2) ) then
-		    !print *, "found merging ghost particles", particles(i)%id, ghosts(j)%id
+                !if ( (vrelsq * sqrt(r2)) < Gconst * larger_mass) then
+                if ( sqrt(vrelsq) * mergetime <  sqrt(r2) ) then
+                    !print *, "found merging ghost particles", particles(i)%id, ghosts(j)%id
                     if (particles(i)%mass > ghosts(j)%mass) then
                        ! The bigger particle "i" is in the valid region,
                        ! so we put all the mass onto it.
@@ -162,14 +162,14 @@
                    end if
                end if
 
-	   else
+           else
 
-	   	if (particles(i)%mass > ghosts(j)%mass) then
+                if (particles(i)%mass > ghosts(j)%mass) then
                     call agn_merge_pair(particles(i), ghosts(j))
                 else
                     particles(i)%id = -1
                 end if
-	   end if
+           end if
 
         end if
 

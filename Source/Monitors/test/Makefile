@@ -15,18 +15,18 @@ CPP_OBJ = $(CPP_SOURCES:.cpp=.o)
 
 
 default: $(CPP_SOURCES) $(PROGS)
-	rm -rf *.o
+        rm -rf *.o
 
 .PHONY: clean tarball
 clean:
-	rm -rf *.o ../*.o $(PROGS)
+        rm -rf *.o ../*.o $(PROGS)
 
 tarball:
-	tar -zcf source.tar.gz $(CPP_SOURCES) $(INCLUDE) Makefile
+        tar -zcf source.tar.gz $(CPP_SOURCES) $(INCLUDE) Makefile
 
 test: $(CPP_OBJ)
-	$(CXX) $(LDFLAGS) $(CPP_OBJ) -o $@ $(LDLIBS)
+        $(CXX) $(LDFLAGS) $(CPP_OBJ) -o $@ $(LDLIBS)
 
 .cpp.o: $(INCLUDE)
-	$(CXX) -c $(CXXFLAGS) $< -o $@
+        $(CXX) -c $(CXXFLAGS) $< -o $@
 
