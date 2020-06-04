@@ -714,6 +714,7 @@ public:
     static int num_grow();
 
     void enforce_nonnegative_species(amrex::MultiFab& S_new);
+    void enforce_consistent_e(amrex::MultiFab& S);
 
     // Synchronize (rho e) and (rho E) so they are consistent with each other
     void reset_internal_energy(amrex::MultiFab& State, amrex::MultiFab& DiagEOS, amrex::MultiFab& reset_e_src);
@@ -847,7 +848,6 @@ protected:
 
     void reflux();
 
-    void enforce_consistent_e(amrex::MultiFab& S);
 #endif
 
     void average_down();
