@@ -1166,11 +1166,6 @@ contains
              rer = qr(i,j,k,QREINT,comp)
 #endif
 
-             if(use_analriem .eq.0) then
-             ! ------------------------------------------------------------------
-             ! estimate the star state: pstar, ustar
-             ! ------------------------------------------------------------------
-
              if (idir == 1) then
                 csmall = max( small, max( small * qaux(i,j,k,QC) , small * qaux(i-1,j,k,QC))  )
                 cavg = HALF*(qaux(i,j,k,QC) + qaux(i-1,j,k,QC))
@@ -1208,7 +1203,10 @@ contains
                 gamcl = (gamma_minus_1+ONE) !ql(i,j,k,QGC,comp)
                 gamcr = (gamma_minus_1+ONE) !qr(i,j,k,QGC,comp)
 #endif
-
+             if(use_analriem .eq.0) then
+             ! ------------------------------------------------------------------
+             ! estimate the star state: pstar, ustar
+             ! ------------------------------------------------------------------
              wsmall = small_dens*csmall
 
              wl = max(wsmall, sqrt(abs(gamcl*pl*rl)))
