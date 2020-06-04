@@ -850,44 +850,12 @@ extern "C"
       const amrex::Real* a_old,
       const amrex::Real* a_new);
 
-  void time_center_sources
-    (const int lo[], const int hi[], BL_FORT_FAB_ARG(S_new),
-     BL_FORT_FAB_ARG(ext_src_old), BL_FORT_FAB_ARG(ext_src_new),
-     const amrex::Real* a_old, const amrex::Real* a_new,
-     const amrex::Real* dt, const int* print_fortran_warnings);
-
   void adjust_heat_cool
     (const int lo[], const int hi[],
      BL_FORT_FAB_ARG(S_old), BL_FORT_FAB_ARG(S_new),
      BL_FORT_FAB_ARG(ext_src_old), BL_FORT_FAB_ARG(ext_src_new),
      const amrex::Real* a_old, const amrex::Real* a_new,
      const amrex::Real* dt);
-
-  AMREX_GPU_DEVICE void fort_correct_gsrc
-    (const int* lo, const int* hi,
-     const BL_FORT_FAB_ARG(grav_src_old),
-     const BL_FORT_FAB_ARG(grad_phi_cc),
-     const BL_FORT_FAB_ARG(S_old), BL_FORT_FAB_ARG(S_new),
-     const amrex::Real a_old, const amrex::Real a_new,
-     const amrex::Real dt);
-
-  void sum_over_level
-    (BL_FORT_FAB_ARG(rho), const int lo[], const int hi[],
-     const amrex::Real dx[], amrex::Real* sum);
-
-  void sum_product
-    (BL_FORT_FAB_ARG(fab1), BL_FORT_FAB_ARG(fab2),
-     const int lo[], const int hi[], const amrex::Real dx[], amrex::Real* sum);
-
-  void sum_prod_prod
-    (BL_FORT_FAB_ARG(fab1), BL_FORT_FAB_ARG(fab2),
-     BL_FORT_FAB_ARG(fab3),
-     const int lo[], const int hi[], const amrex::Real dx[], amrex::Real* sum);
-
-  void fort_avgdown
-    (BL_FORT_FAB_ARG(crse_fab), const int& nc,
-     const BL_FORT_FAB_ARG(fine_fab),
-     const int ovlo[], const int ovhi[], const int rat[]);
 
 #ifdef FORCING
   void fort_alloc_spect

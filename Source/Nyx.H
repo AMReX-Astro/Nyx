@@ -738,13 +738,9 @@ public:
     void get_old_source(amrex::Real old_time, amrex::Real dt, amrex::MultiFab& Rhs);
     void get_new_source(amrex::Real old_time, amrex::Real new_time, amrex::Real dt, amrex::MultiFab& Rhs);
 
-    amrex::Real vol_weight_sum(const std::string& name, amrex::Real time, bool masked);
-    amrex::Real vol_weight_sum(amrex::MultiFab& mf, bool masked);
-
-#ifdef DER_AMOM
-    void vol_weight_sum_angmom(amrex::Real* angsum1, amrex::Real* angsum2, amrex::Real* angsum3, const amrex::Real time);
-#endif
-    amrex::Real vol_weight_squared_sum(const std::string& name, amrex::Real time);
+    amrex::Real vol_weight_sum              (const std::string& name, amrex::Real time, bool masked);
+    amrex::Real vol_weight_sum              (amrex::MultiFab& mf, bool masked);
+    amrex::Real vol_weight_squared_sum      (const std::string& name, amrex::Real time);
     amrex::Real vol_weight_squared_sum_level(const std::string& name, amrex::Real time);
 
 #ifdef AUX_UPDATE

@@ -11,49 +11,12 @@ Nyx::vol_weight_sum (const std::string& name,
                      Real               time,
                      bool               masked)
 {
-    Real        sum = 0;
+    BL_PROFILE("vol_weight_sum(name)");
+
     const Real* dx  = geom.CellSize();
     auto        mf  = derive(name, time, 0);
 
-    BL_PROFILE("vol_weight_sum(name)");
-    BL_ASSERT(mf != 0);
-
-    if (masked)
-    {
-        int flev = parent->finestLevel();
-        while (parent->getAmrLevels()[flev] == nullptr)
-            flev--;
-
-        if (level < flev)
-        {
-            Nyx* fine_level = dynamic_cast<Nyx*>(&(parent->getLevel(level+1)));
-            const MultiFab* mask = fine_level->build_fine_mask();
-            MultiFab::Multiply(*mf, *mask, 0, 0, 1, 0);
-        }
-    }
-
-#ifdef _OPENMP
-#pragma omp parallel if (!system::regtest_reduction) reduction(+:sum)
-#endif
-    for (MFIter mfi(*mf,true); mfi.isValid(); ++mfi)
-    {
-        FArrayBox& fab = (*mf)[mfi];
-
-        Real       s;
-        const Box& box = mfi.tilebox();
-        const int* lo  = box.loVect();
-        const int* hi  = box.hiVect();
-
-         sum_over_level
-            (BL_TO_FORTRAN(fab), lo, hi, dx, &s);
-        sum += s;
-    }
-
-    ParallelDescriptor::ReduceRealSum(sum);
-
-    if (!masked) 
-        sum /= geom.ProbSize();
-
+    Real sum = vol_weight_sum(*mf, masked);
     return sum;
 }
 
@@ -61,11 +24,12 @@ Real
 Nyx::vol_weight_sum (MultiFab& mf, bool masked)
 {
     BL_PROFILE("vol_weight_sum");
+    AMREX_ASSERT(mf != 0);
+
     Real        sum = 0;
     const Real* dx  = geom.CellSize();
 
     MultiFab* mask = 0;
-    BL_PROFILE_VAR("Nyx::vol_weight_sum()::mask",volmask);
     if (masked)
     {
         int flev = parent->finestLevel();
@@ -78,52 +42,56 @@ Nyx::vol_weight_sum (MultiFab& mf, bool masked)
         }
     }
 
-    BL_PROFILE_VAR_STOP(volmask);
+    ReduceOps<ReduceOpSum> reduce_op;
+    ReduceData<Real> reduce_data(reduce_op);
+    using ReduceTuple = typename decltype(reduce_data)::Type;
 
-#ifdef AMREX_USE_CUDA
-        if ( !masked || (mask == 0) )
-        {
-	  //	  sum = mf.sum(0,true)*dx[0]*dx[1]*dx[2]
-	  BL_PROFILE("vol_weight_nomask");
-	  sum = mf.sum(0)*dx[0]*dx[1]*dx[2];
-        }
-        else
-        {
-	  BL_PROFILE("vol_weight_mask");
-	  //	  sum = amrex::MultiFab::Dot(mf,0,(*mask),0,1,0,true)*dx[0]*dx[1]*dx[2];
-	  sum = amrex::MultiFab::Dot(mf,0,(*mask),0,1,0)*dx[0]*dx[1]*dx[2];
-        }
-
-#else
-#ifdef _OPENMP
-#pragma omp parallel if (!system::regtest_reduction) reduction(+:sum)
-#endif
-    for (MFIter mfi(mf,true); mfi.isValid(); ++mfi)
+    if ( !masked || (mask == 0) )
     {
-        FArrayBox& fab = (mf)[mfi];
 
-        Real       s;
-        const Box& box = mfi.tilebox();
-        const int* lo  = box.loVect();
-        const int* hi  = box.hiVect();
-
-        if ( !masked || (mask == 0) )
+#ifdef _OPENMP
+#pragma omp parallel if (!system::regtest_reduction)
+#endif
+        for (MFIter mfi(mf,TilingIfNotGPU()); mfi.isValid(); ++mfi)
         {
-            sum_over_level
-                (BL_TO_FORTRAN(fab), lo, hi, dx, &s);
-        }
-        else
-        {
-            FArrayBox& fab2 = (*mask)[mfi];
-            sum_product
-                (BL_TO_FORTRAN(fab), BL_TO_FORTRAN(fab2), lo, hi, dx, &s);
+            const auto fab = mf.array(mfi);
+            const Box& tbx = mfi.tilebox();
+  
+            reduce_op.eval(tbx, reduce_data,
+            [fab]
+            AMREX_GPU_DEVICE (int i, int j, int k) -> ReduceTuple
+            {
+                 Real x = fab(i,j,k);
+                 return x;
+            });
         }
 
-        sum += s;
+    } else {
+
+#ifdef _OPENMP
+#pragma omp parallel if (!system::regtest_reduction)
+#endif
+        for (MFIter mfi(mf,TilingIfNotGPU()); mfi.isValid(); ++mfi)
+        {
+            const auto fab = mf.array(mfi);
+            const auto msk = mask->array(mfi);
+            const Box& tbx = mfi.tilebox();
+  
+            reduce_op.eval(tbx, reduce_data,
+            [fab,msk]
+            AMREX_GPU_DEVICE (int i, int j, int k) -> ReduceTuple
+            {
+                 Real x = fab(i,j,k)*msk(i,j,k);
+                 return x;
+            });
+        }
     }
 
-    ParallelDescriptor::ReduceRealSum(sum);
-#endif
+    ReduceTuple hv = reduce_data.value();
+    ParallelDescriptor::ReduceRealSum(amrex::get<0>(hv));
+
+    sum += get<0>(hv) * (dx[0] * dx[1] * dx[2]);
+
     if (!masked) 
         sum /= geom.ProbSize();
 
@@ -134,34 +102,38 @@ Real
 Nyx::vol_weight_squared_sum_level (const std::string& name,
                                    Real               time)
 {
-    Real        sum = 0;
-    const Real* dx  = geom.CellSize();
-    auto        mf  = derive(name, time, 0);
     BL_PROFILE("vol_weight_squared_sum_level");
-    BL_ASSERT(mf != 0);
 
-    Real lev_vol = parent->boxArray(level).d_numPts() * dx[0] * dx[1] * dx[2];
+    auto        mf  = derive(name, time, 0);
+    AMREX_ASSERT(mf != 0);
+
+    const Real* dx  = geom.CellSize();
+
+    ReduceOps<ReduceOpSum> reduce_op;
+    ReduceData<Real> reduce_data(reduce_op);
+    using ReduceTuple = typename decltype(reduce_data)::Type;
 
 #ifdef _OPENMP
-#pragma omp parallel if (!system::regtest_reduction) reduction(+:sum)
+#pragma omp parallel if (!system::regtest_reduction)
 #endif
-    for (MFIter mfi(*mf,true); mfi.isValid(); ++mfi)
+    for (MFIter mfi(*mf,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
-        FArrayBox& fab = (*mf)[mfi];
+        const auto fab = mf->array(mfi);
+        const Box& tbx = mfi.tilebox();
 
-        Real       s;
-        const Box& box = mfi.tilebox();
-        const int* lo  = box.loVect();
-        const int* hi  = box.hiVect();
-
-        sum_product
-            (BL_TO_FORTRAN(fab), BL_TO_FORTRAN(fab), lo, hi, dx, &s);
-        sum += s;
+        reduce_op.eval(tbx, reduce_data,
+        [fab]
+        AMREX_GPU_DEVICE (int i, int j, int k) -> ReduceTuple
+        {
+             Real x = fab(i,j,k)*fab(i,j,k);
+             return x;
+        });
     }
+    
+    ReduceTuple hv = reduce_data.value();
+    ParallelDescriptor::ReduceRealSum(amrex::get<0>(hv));
 
-    ParallelDescriptor::ReduceRealSum(sum);
-
-    sum /= lev_vol;
+    Real sum = get<0>(hv) / grids.d_numPts();
 
     return sum;
 }
@@ -172,52 +144,76 @@ Nyx::vol_weight_squared_sum (const std::string& name,
 {
 
     BL_PROFILE("vol_weight_squared_sum");
-    Real        sum = 0;
-    const Real* dx  = geom.CellSize();
+
     auto        mf  = derive(name, time, 0);
+    AMREX_ASSERT(mf != 0);
 
-    BL_ASSERT(mf != 0);
+    const Real* dx  = geom.CellSize();
 
-    int flev = parent->finestLevel();
-    while (parent->getAmrLevels()[flev] == nullptr) flev--;
+    bool masked = true;
 
     MultiFab* mask = 0;
-    if (level < flev)
+    if (masked)
     {
-        Nyx* fine_level = dynamic_cast<Nyx*>(&(parent->getLevel(level+1)));
-        mask = fine_level->build_fine_mask();
+        int flev = parent->finestLevel();
+        while (parent->getAmrLevels()[flev] == nullptr) flev--;
+
+        if (level < flev)
+        {
+            Nyx* fine_level = dynamic_cast<Nyx*>(&(parent->getLevel(level+1)));
+            mask = fine_level->build_fine_mask();
+        }
     }
+
+    ReduceOps<ReduceOpSum> reduce_op;
+    ReduceData<Real> reduce_data(reduce_op);
+    using ReduceTuple = typename decltype(reduce_data)::Type;
+
+    if ( !masked || (mask == 0) )
+    {
 
 #ifdef _OPENMP
-#pragma omp parallel if (!system::regtest_reduction) reduction(+:sum)
+#pragma omp parallel if (!system::regtest_reduction)
 #endif
-    for (MFIter mfi(*mf,true); mfi.isValid(); ++mfi)
-    {
-        FArrayBox& fab = (*mf)[mfi];
-
-        Real       s;
-        const Box& box = mfi.tilebox();
-        const int* lo  = box.loVect();
-        const int* hi  = box.hiVect();
-
-        if (mask == 0)
+        for (MFIter mfi(*mf,TilingIfNotGPU()); mfi.isValid(); ++mfi)
         {
-            sum_product
-                (BL_TO_FORTRAN(fab), BL_TO_FORTRAN(fab), 
-                 lo, hi, dx, &s);
-        }
-        else
-        {
-            FArrayBox& fab2 = (*mask)[mfi];
-            sum_prod_prod
-                (BL_TO_FORTRAN(fab), BL_TO_FORTRAN(fab), BL_TO_FORTRAN(fab2), 
-                 lo, hi, dx, &s);
+            const auto fab = mf->array(mfi);
+            const Box& tbx = mfi.tilebox();
+  
+            reduce_op.eval(tbx, reduce_data,
+            [fab]
+            AMREX_GPU_DEVICE (int i, int j, int k) -> ReduceTuple
+            {
+                 Real x = fab(i,j,k)*fab(i,j,k);
+                 return x;
+            });
         }
 
-        sum += s;
+    } else {
+
+#ifdef _OPENMP
+#pragma omp parallel if (!system::regtest_reduction)
+#endif
+        for (MFIter mfi(*mf,TilingIfNotGPU()); mfi.isValid(); ++mfi)
+        {
+            const auto fab = mf->array(mfi);
+            const auto msk = mask->array(mfi);
+            const Box& tbx = mfi.tilebox();
+  
+            reduce_op.eval(tbx, reduce_data,
+            [fab,msk]
+            AMREX_GPU_DEVICE (int i, int j, int k) -> ReduceTuple
+            {
+                 Real x = fab(i,j,k)*fab(i,j,k)*msk(i,j,k);
+                 return x;
+            });
+        }
     }
 
-    ParallelDescriptor::ReduceRealSum(sum);
+    ReduceTuple hv = reduce_data.value();
+    ParallelDescriptor::ReduceRealSum(amrex::get<0>(hv));
+
+    Real sum = get<0>(hv) * (dx[0] * dx[1] * dx[2]);
 
     return sum;
 }

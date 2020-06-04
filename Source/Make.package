@@ -8,12 +8,9 @@ CEXE_sources += advance_particles.cpp
 CEXE_sources += Nyx.cpp
 CEXE_sources += Nyx_advance.cpp
 CEXE_sources += Nyx_halos.cpp
-CEXE_sources += Nyx_output.cpp
 CEXE_sources += NyxBld.cpp
 CEXE_sources += ParticleDerive.cpp
 CEXE_sources += comoving.cpp
-CEXE_sources += write_info.cpp
-#CEXE_sources += bl_random_c.cpp
 
 ifneq ($(NO_HYDRO), TRUE)
 CEXE_sources += compute_hydro_sources.cpp
@@ -34,8 +31,6 @@ endif
 CEXE_sources += sum_utils.cpp
 
 CEXE_headers += Nyx.H
-CEXE_headers += Nyx_output.H
-#CEXE_headers += bl_random_c.H
 FEXE_headers += Nyx_F.H
 
 f90EXE_sources += Nyx_nd.f90
@@ -45,9 +40,6 @@ f90EXE_sources += misc_params.f90
 f90EXE_sources += prob_params.f90
 f90EXE_sources += comoving_params.f90
 f90EXE_sources += comoving_nd.f90
-#f90EXE_sources += agn_params.f90
-#f90EXE_sources += uniform01.f90
-#f90EXE_sources += bl_random_f.f90
 
 ifeq ($(GIMLET), TRUE)
   f90EXE_sources += calc_tau.f90

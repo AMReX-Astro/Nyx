@@ -509,8 +509,9 @@ Nyx::init_e_from_T (const Real& a)
     {
         const Box& bx = mfi.tilebox();
 
-        const auto state  = S_new.array(mfi);
+        const auto state    = S_new.array(mfi);
         const auto diag_eos = D_new.array(mfi);
+
         amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
         {
              Real rho =  state(i,j,k,Density);
@@ -520,10 +521,9 @@ Nyx::init_e_from_T (const Real& a)
              Real eint;
 
              // Call EOS to get the internal energy
-			 Real dummy_pres=0.0;
-			 // Set temp to small_temp and compute corresponding internal energy
-        	 nyx_eos_given_RT(gamma_minus_1_in, h_species_in, &eint, &dummy_pres, state(i,j,k,Density), diag_eos(i,j,k,Temp_comp),
-				    diag_eos(i,j,k,Ne_comp), a);
+	     Real dummy_pres=0.0;
+	     // Set temp to small_temp and compute corresponding internal energy
+             nyx_eos_given_RT(gamma_minus_1_in, h_species_in, &eint, &dummy_pres, rho, T, ne, a);
 
              state(i,j,k,Eint) = state(i,j,k,Density) * eint;
 
