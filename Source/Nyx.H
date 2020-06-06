@@ -118,11 +118,10 @@ static constexpr amrex::Real  c_light = 2.99792458e10
   / V_unit;// Speed of light [cm/s] 
 
 #ifndef HEATCOOL
-static constexpr amrex::Real  Hubble_const = 100.;    //            Hubble constant / h
-#else
 static constexpr amrex::Real  Hubble_const = 32.407764868e-19;    //            Hubble constant / h
+#else
+static constexpr amrex::Real  Hubble_const = 100.;    //            Hubble constant / h
 #endif
-  
   // Useful quantities and conversions
   
   static constexpr amrex::Real  mp_over_kb = m_proton/k_B;
@@ -307,12 +306,14 @@ public:
     static amrex::Real comoving_OmM;
     static amrex::Real comoving_OmR;
     static amrex::Real comoving_h;
+	static int         comoving_type;
 
     //
     // Get the comoving coordinate "a"
     //
     amrex::Real get_comoving_a(amrex::Real time);
-    static void integrate_time_given_a(const amrex::Real a0, const amrex::Real a1, amrex::Real dt);
+    static void integrate_time_given_a(const amrex::Real a0, const amrex::Real a1, amrex::Real& dt);
+    void integrate_comoving_a(const amrex::Real old_a, amrex::Real& new_a, const amrex::Real dt);
     void integrate_comoving_a(amrex::Real time, amrex::Real dt);
 
     //

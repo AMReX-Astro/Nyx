@@ -55,7 +55,7 @@ module comoving_nd_module
 
             ! Compute a provisional value of ln(a) at the new time 
             end_a = start_a + start_slope * Delta_t
-
+            
             ! Compute the slope at the new time
             if (comoving_type > 0) then
                 end_slope = H_0*dsqrt(comoving_OmM/end_a + comoving_OmR/(end_a*end_a) + OmL*end_a**2)

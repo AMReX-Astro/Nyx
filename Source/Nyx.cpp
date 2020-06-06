@@ -138,6 +138,7 @@ Real Nyx::comoving_OmB;
 Real Nyx::comoving_OmM;
 Real Nyx::comoving_OmR = 0.0;
 Real Nyx::comoving_h;
+int  Nyx::comoving_type = 1;
 
 int Nyx::do_hydro = -1;
 int Nyx::add_ext_src = 0;
@@ -378,6 +379,7 @@ Nyx::read_params ()
     pp_nyx.get("comoving_OmM", comoving_OmM);
     pp_nyx.query("comoving_OmR", comoving_OmR);
     pp_nyx.get("comoving_h", comoving_h);
+	pp_nyx.query("comoving_type", comoving_type);
 
     fort_set_omb(comoving_OmB);
     fort_set_omm(comoving_OmM);

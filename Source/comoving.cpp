@@ -114,7 +114,7 @@ Nyx::comoving_est_time_step (Real& cur_time, Real& estdt)
             estdt = dt*(pow(2,(-std::ceil( std::log2(dt/estdt)))));
             //      std::cout << "Lavel > 4" <<std::endl;
           }
-        fort_integrate_comoving_a(&new_a,&new_dummy_a,&estdt);
+        integrate_comoving_a(new_a,new_dummy_a,estdt);
       }
     else
       {
@@ -171,7 +171,7 @@ Nyx::comoving_est_time_step (Real& cur_time, Real& estdt)
             estdt = dt*(pow(2,(-std::ceil( std::log2(dt/estdt)))));
             //      std::cout << "Lavel > 4" <<std::endl;
           }
-        fort_integrate_comoving_a(&old_a,&new_dummy_a,&estdt);
+        integrate_comoving_a(old_a,new_dummy_a,estdt);
       }
     else
       {
@@ -258,8 +258,8 @@ Nyx::integrate_comoving_a (Real time,Real dt)
 
         // Update a
         old_a      = new_a;
-        fort_integrate_comoving_a(&old_a, &new_a, &dt);
-
+		integrate_comoving_a(old_a, new_a, dt);
+		
         // Update the times
         old_a_time = new_a_time;
         new_a_time = old_a_time + dt;
@@ -275,7 +275,7 @@ Nyx::integrate_comoving_a (Real time,Real dt)
     else if (std::abs(time-old_a_time) <= 1.e-10 * time) 
     {
         // Leave old_a and old_a_time alone -- we have already swapped them
-        fort_integrate_comoving_a(&old_a, &new_a, &dt);
+        integrate_comoving_a(old_a, new_a, dt);
             (&old_a, &new_a, &dt);
 
         // Update the new time only
@@ -306,7 +306,7 @@ Real invEz(Real H0, Real Om, Real Or, Real a)
 }
 
 void
-Nyx::integrate_time_given_a(const Real a0, const Real a1, Real dt)
+Nyx::integrate_time_given_a(const Real a0, const Real a1, Real& dt)
 {
 
     const Real xacc = 1.0e-6;
@@ -341,6 +341,67 @@ Nyx::integrate_time_given_a(const Real a0, const Real a1, Real dt)
                 return;
 
         prev_soln = dt;
+    }
+}
+
+void
+Nyx::integrate_comoving_a (const Real old_a, Real& new_a, const Real dt)
+{
+
+    const Real xacc = 1.0e-8;
+    Real H_0, OmL, Delta_t, prev_soln;
+    Real start_a, end_a, start_slope, end_slope;
+    int iter, j, nsteps;
+
+    if (comoving_h == 0.0)
+    {
+        new_a = old_a;
+        return;
+    }
+
+    H_0 = comoving_h * Hubble_const;
+    OmL = 1.e0 - comoving_OmM - comoving_OmR;
+
+    prev_soln = 2.0e0; // 0<a<1 so a=2 will do as "wrong" solution
+    for(iter = 1; iter<=11; iter++)//  ! max allowed iterations
+    {
+        nsteps  = std::pow(2,iter-1);
+
+        Delta_t = dt/nsteps;
+        end_a = old_a;
+
+        for(j = 1; j <= nsteps; j++)
+        {
+            // This uses RK2 to integrate the ODE:
+            //   da / dt = H_0 * sqrt(OmM/a + OmR/a^2 + OmL*a^2)
+            start_a = end_a;
+
+            // Compute the slope at the old time
+            if (comoving_type > 0)
+                start_slope = H_0*std::sqrt(comoving_OmM/start_a + comoving_OmR/(start_a*start_a) + OmL*start_a*start_a);
+            else
+                start_slope = comoving_h;
+
+            // Compute a provisional value of ln(a) at the new time 
+            end_a = start_a + start_slope * Delta_t;
+			
+            // Compute the slope at the new time
+            if (comoving_type > 0)
+                end_slope = H_0*std::sqrt(comoving_OmM/end_a + comoving_OmR/(end_a*end_a) + OmL*end_a*end_a);
+            else
+                end_slope = comoving_h;
+       
+            // Now recompute a at the new time using the average of the two slopes
+            end_a = start_a + 0.5e0 * (start_slope + end_slope) * Delta_t;
+
+        }
+
+        new_a  = end_a;
+
+        if (std::abs(1.0e0-new_a/prev_soln) <= xacc)
+              return;
+        prev_soln = new_a;
+
     }
 }
 
@@ -450,7 +511,7 @@ Nyx::plot_z_est_time_step (Real& dt_0, bool& dt_changed)
     // This is where we would be if we advance by twice the current dt_0
     Real two_dt = 2.0*dt_0;
 
-    fort_integrate_comoving_a(&a_old, &a_new, &two_dt);
+    integrate_comoving_a(a_old, a_new, two_dt);
 
     z_new = (1. / a_new) - 1.;
 
@@ -558,7 +619,7 @@ Nyx::analysis_z_est_time_step (Real& dt_0, bool& dt_changed)
     // This is where we would be if we advance by twice the current dt_0
     Real two_dt = 2.0*dt_0;
 
-    fort_integrate_comoving_a(&a_old, &a_new, &two_dt); 
+    integrate_comoving_a(a_old, a_new, two_dt); 
     z_new = (1. / a_new) - 1.;
 
     // Find the relevant entry of the analysis_z_values array
