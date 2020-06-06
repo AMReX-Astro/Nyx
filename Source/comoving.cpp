@@ -47,21 +47,18 @@ Nyx::read_comoving_params ()
         amrex::Error();
     }
 
-    Real comoving_h;
-    fort_get_hubble(&comoving_h);
-
     if (comoving_h > 0)
     {
        // save start/end times, for reporting purposes
        Real a0 = 0.0, a1 = 1.0/(1.0+initial_z);
-       fort_integrate_time_given_a(&a0, &a1, &initial_time);
+       integrate_time_given_a(a0, a1, initial_time);
 
        if (final_z >= 0) {
           a1 = 1.0/(1.0+final_z);
        } else {
           a1 = final_a;
        }
-       fort_integrate_time_given_a(&a0, &a1, &final_time);
+       integrate_time_given_a(a0, a1, final_time);
     } else {
        // These are just defaults so the values are defined
        initial_time = 0.0;
@@ -299,6 +296,51 @@ Nyx::integrate_comoving_a (Real time,Real dt)
             std::cout << "Old / new A                         " << old_a      << " " << new_a      << std::endl;
             std::cerr << "ERROR::dont know what to do in integrate_comoving_a" << std::endl;
             amrex::Error();
+    }
+}
+
+Real invEz(Real H0, Real Om, Real Or, Real a)
+{
+        //      invEz = 
+        return 1.0e0 / ( H0*std::sqrt(Om/a + Or/(a*a) + (1.0e0-Om-Or)*a*a) );
+}
+
+void
+Nyx::integrate_time_given_a(const Real a0, const Real a1, Real dt)
+{
+
+    const Real xacc = 1.0e-6;
+    Real H0, OmM, OmR, prev_soln, h;
+    int iter, n, j;
+
+    H0  = comoving_h*Hubble_const;
+    OmM = comoving_OmM;
+    OmR = comoving_OmR;
+
+    prev_soln = -1.0e0;
+    // trapezoidal integration
+    for(iter = 1; iter<= 20; iter++)
+    {
+        n  = std::pow(2,iter);
+
+        h = (a1-a0)/(n-1);
+
+        if (a0 < 1.0e-10) // prevent division by zero in invEz
+            dt = 0.5*invEz(H0, OmM, OmR, a1);
+        else
+            dt = 0.5*(invEz(H0, OmM, OmR, a0) + invEz(H0, OmM, OmR, a1));
+
+        for(j = 1; j <= n-2; j++)
+        {
+            dt = dt + invEz(H0, OmM, OmR, a0+j*h);
+        }
+        dt = dt*h;
+
+        if (iter > 4)
+            if (std::abs(dt-prev_soln) < xacc*std::abs(prev_soln))
+                return;
+
+        prev_soln = dt;
     }
 }
 

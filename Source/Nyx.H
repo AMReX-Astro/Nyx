@@ -116,9 +116,12 @@ static constexpr amrex::Real  m_proton = 1.672621e-24
   
 static constexpr amrex::Real  c_light = 2.99792458e10   
   / V_unit;// Speed of light [cm/s] 
-         
-static constexpr amrex::Real  Hubble_const = 100.;    //            Hubble constant / h
 
+#ifndef HEATCOOL
+static constexpr amrex::Real  Hubble_const = 100.;    //            Hubble constant / h
+#else
+static constexpr amrex::Real  Hubble_const = 32.407764868e-19;    //            Hubble constant / h
+#endif
   
   // Useful quantities and conversions
   
@@ -309,6 +312,7 @@ public:
     // Get the comoving coordinate "a"
     //
     amrex::Real get_comoving_a(amrex::Real time);
+    static void integrate_time_given_a(const amrex::Real a0, const amrex::Real a1, amrex::Real dt);
     void integrate_comoving_a(amrex::Real time, amrex::Real dt);
 
     //

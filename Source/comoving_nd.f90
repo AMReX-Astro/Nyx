@@ -9,64 +9,6 @@ module comoving_nd_module
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      real(rt) function invEz(H0, Om, Or, a)
-        real(rt), intent(in) :: H0, Om, Or, a
-        invEz = 1.0d0 / ( H0*dsqrt(Om/a + Or/(a*a) + (1.0d0-Om-Or)*a*a) )
-      end function invEz
-
-! :::
-! ::: ----------------------------------------------------------------
-! :::
-
-      subroutine fort_integrate_time_given_a(a0, a1, dt) &
-         bind(C, name="fort_integrate_time_given_a")
-
-        use fundamental_constants_module, only: Hubble_const
-        use comoving_module             , only: comoving_h, comoving_OmM, &
-                                                comoving_OmR
-
-        real(rt), intent(in   ) :: a0, a1
-        real(rt), intent(  out) :: dt
-
-        real(rt), parameter :: xacc = 1.0d-6
-        real(rt) :: H0, OmM, OmR, prev_soln, h
-        integer :: iter, n, j
-
-        H0  = comoving_h*Hubble_const
-        OmM = comoving_OmM
-        OmR = comoving_OmR
-
-        prev_soln = -1.0d0
-        ! trapezoidal integration
-        do iter = 1, 20  ! max allowed iterations
-
-          n  = 2**iter
-
-          h = (a1-a0)/(n-1)
-
-          if (a0 .lt. 1.0d-10) then  ! prevent division by zero in invEz
-             dt = 0.5*invEz(H0, OmM, OmR, a1)
-          else
-             dt = 0.5*(invEz(H0, OmM, OmR, a0) + invEz(H0, OmM, OmR, a1))
-          endif
-
-          do j = 1, n-2
-             dt = dt + invEz(H0, OmM, OmR, a0+j*h)
-          enddo
-          dt = dt*h
-
-          if (iter .gt. 4) then
-             if (abs(dt-prev_soln) .le. xacc*abs(prev_soln)) return
-          endif
-          prev_soln = dt
-        enddo
-
-      end subroutine fort_integrate_time_given_a
-
-! :::
-! ::: ----------------------------------------------------------------
-! :::
-
       subroutine fort_integrate_comoving_a(old_a,new_a,dt) &
          bind(C, name="fort_integrate_comoving_a")
 
