@@ -319,6 +319,12 @@ public:
     //
     // Time step control based on "a" not growing too fast
     //
+    void integrate_comoving_a_to_a(const amrex::Real old_a, const amrex::Real a_value, amrex::Real& dt);
+    void est_maxdt_comoving_a(const amrex::Real old_a, amrex::Real & dt);
+    void est_lindt_comoving_a(const amrex::Real old_a, const amrex::Real new_a, amrex::Real& dt);
+    void estdt_comoving_a(const amrex::Real old_a,amrex::Real& new_a,amrex::Real& dt,const amrex::Real change_allowed,const amrex::Real fixed_da,const amrex::Real final_a,int& dt_modified);
+    void enforce_percent_change(const amrex::Real old_a,amrex::Real& new_a,amrex::Real& dt,const amrex::Real change_allowed);
+    void enforce_final_a(const amrex::Real old_a,amrex::Real& new_a,amrex::Real& dt,const amrex::Real final_a);
     void comoving_est_time_step(amrex::Real& cur_time, amrex::Real& est_dt);
 
     //

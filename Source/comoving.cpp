@@ -67,6 +67,229 @@ Nyx::read_comoving_params ()
 }
 
 void
+Nyx::integrate_comoving_a_to_a(const Real old_a, const Real a_value, Real& dt)
+{
+    const Real xacc = 1.0e-8;
+    Real H_0, OmL;
+    Real Delta_t;
+    Real start_a, end_a, start_slope, end_slope;
+    int j, nsteps;
+
+    Real max_dt;
+
+    if (comoving_h == 0.0)
+        amrex::Abort("fort_integrate_comoving_a_to_z: Shouldn't be setting plot_z_values if not evolving a");
+
+    H_0 = comoving_h * Hubble_const;
+    OmL = 1.e0 - comoving_OmM - comoving_OmR;
+
+    // Use lots of steps if we want to nail the z_value
+    //        nsteps = 1024
+
+    // Use enough steps if we want to be close to the a_value
+    nsteps = 2048;
+
+    // We integrate a, but stop when a = a_value (or close enough)
+    Delta_t = dt/nsteps;
+    end_a = old_a;
+    for(j = 1; j <= nsteps; j++)
+    {
+        // This uses RK2 to integrate the ODE:
+        //   da / dt = H_0 * sqrt(OmM/a + OmR/a^2 + OmL*a^2)
+        start_a = end_a;
+
+        // Compute the slope at the old time
+        if (comoving_type > 0)
+            start_slope = H_0*std::sqrt(comoving_OmM/start_a + comoving_OmR/(start_a*start_a) + OmL*start_a*start_a);
+        else
+            start_slope = comoving_h;
+
+        // Compute a provisional value of ln(a) at the new time
+        end_a = start_a + start_slope * Delta_t;
+
+        // Compute the slope at the new time
+        if (comoving_type > 0)
+            end_slope = H_0*std::sqrt(comoving_OmM/end_a + comoving_OmR/(end_a*end_a) + OmL*end_a*end_a);
+        else
+            end_slope = comoving_h;
+
+        // Now recompute a at the new time using the average of the two slopes
+        end_a = start_a + 0.5e0 * (start_slope + end_slope) * Delta_t;
+
+        // We have crossed from a too small to a too big in this step
+        if ( (end_a - a_value) * (start_a - a_value) < 0)
+        {
+            dt = ( (  end_a - a_value) * double(j  ) +
+                   (a_value - start_a) * double(j+1) ) / (end_a - start_a) * Delta_t;
+            break;
+        }
+
+     }
+}
+
+void
+Nyx::est_maxdt_comoving_a(const Real old_a, Real & dt)
+{
+    Real H_0, OmL;
+    Real max_dt;
+
+    OmL = 1.e0 - comoving_OmM - comoving_OmR;
+
+    // This subroutine computes dt based on not changing a by more than 5%
+    // if we use forward Euler integration
+    //   d(ln(a)) / dt = H_0 * sqrt(OmM/a^3 + OmL)
+
+    H_0 = comoving_h * Hubble_const;
+
+    if (H_0 != 0.0)
+    {
+        if (comoving_type > 0)
+            max_dt = (0.05) / H_0 / std::sqrt(comoving_OmM/(old_a*old_a*old_a) + comoving_OmR/(old_a*old_a*old_a*old_a) + OmL);
+        else
+            max_dt = (0.05) / std::abs(comoving_h);
+        dt = amrex::min(dt,max_dt);
+    }
+}
+
+// This might only work for t=0=> a=.00625, although constant canceled
+void
+Nyx::est_lindt_comoving_a(const Real old_a, const Real new_a, Real& dt)
+{
+    Real H_0, OmL;
+    Real lin_dt;
+
+    OmL = 1.e0 - comoving_OmM - comoving_OmR;
+
+    // This subroutine computes dt based on not changing a by more than 5%
+    // if we use forward Euler integration
+    //   d(ln(a)) / dt = H_0 * sqrt(OmM/a^3 + OmR/a^4 + OmL)
+
+    H_0 = comoving_h * Hubble_const;
+
+    // Could definately be optimized better
+    if (H_0 != 0.0)
+    {
+        lin_dt= (   pow((new_a/(pow(.75,(2_rt/3_rt)))),(.75))
+                    - pow((old_a/(pow(.75,(2_rt/3_rt)))),(.75))  ) / H_0;
+        dt=lin_dt;
+    }
+}
+
+void
+Nyx::estdt_comoving_a(const Real old_a,Real& new_a,Real& dt,const Real change_allowed,const Real fixed_da,const Real final_a,int& dt_modified)
+{
+    Real a_value;
+    Real max_dt;
+    max_dt = dt;
+
+    if (comoving_h != 0.0e0)
+    {
+        if( fixed_da <= 0.0e0)
+        {
+            // First call this to make sure dt that we send to integration routine isnt outrageous
+            est_maxdt_comoving_a(old_a,dt);
+
+            // Initial call to see if existing dt will work
+            integrate_comoving_a(old_a,new_a,dt);
+
+            // Make sure a isn't growing too fast
+            enforce_percent_change(old_a,new_a,dt,change_allowed);
+        }
+        else
+        {
+            // First call this to make sure dt that we send to integration routine isnt outrageous
+            new_a = (old_a +  fixed_da);
+            est_lindt_comoving_a(old_a,new_a,dt);
+            est_maxdt_comoving_a(old_a,dt);
+
+            // Then integrate old_a to a_value using dt as a guess for the maximum dt
+            // output dt is based on a fraction of the input dt
+            integrate_comoving_a_to_a(old_a,new_a,dt);
+        }
+        // Make sure we don't go past final_a (if final_a is set)
+        if (final_a > 0.0e0)
+            enforce_final_a(old_a,new_a,dt,final_a);
+
+        dt_modified = 1;
+    }
+    else
+    {
+        // dt is unchanged by this call
+
+        dt_modified = 0;
+    }
+}
+
+void
+Nyx::enforce_percent_change(const Real old_a,Real& new_a, Real& dt,const Real change_allowed)
+{
+
+    int i;
+    Real factor = ( (new_a - old_a) / old_a ) / change_allowed;
+
+    // Only go into this process if percent change exceeds change_allowed
+
+    if(factor > 1.0)
+    {
+        for(i = 1; i <= 100; i++)
+        {
+            factor = ( (new_a - old_a) / old_a ) / change_allowed;
+
+            // Note: 0.99 is just a fudge factor so we don't get bogged down.
+            if(factor > 1.0)
+            {
+                dt = (1.0 / factor) * dt * 0.99;
+                integrate_comoving_a(old_a,new_a,dt);
+            }
+            else if (i < 100)
+            {
+                integrate_comoving_a(old_a,new_a,dt);
+                // We're done
+                return;
+            }
+            else
+                amrex::Abort("Too many iterations in enforce_percent_change");
+
+        }
+    }
+    else
+        return;
+}
+
+void
+Nyx::enforce_final_a(const Real old_a,Real& new_a,Real& dt,const Real final_a)
+{
+    int i;
+    Real factor;
+    const Real eps = 1.e-10;
+
+    if (old_a > final_a)
+        amrex::Abort("Oops -- old_a > final_a");
+
+    // Only go into this process if new_a is past final_a
+    if (new_a > final_a)
+    {
+        for(i = 1; i <= 100; i++)
+        {
+            if ( (new_a > (final_a+eps)) || (new_a < final_a) )
+            {
+                factor = (final_a - old_a) / (new_a - old_a);
+                dt = dt * factor;
+                integrate_comoving_a(old_a,new_a,dt);
+            }
+            else if (i<100)
+                return;
+            else
+                amrex::Abort("Too many iterations in enforce_final_a");
+        }
+    }
+    else
+        // We don't need to do anything
+        return;
+}
+
+
+void
 Nyx::comoving_est_time_step (Real& cur_time, Real& estdt)
 {
     Real change_allowed = relative_max_change_a;
@@ -81,8 +304,8 @@ Nyx::comoving_est_time_step (Real& cur_time, Real& estdt)
         // Initial guess -- note that we send in "new_a" because we haven't yet swapped
         // "old_a" and "new_a" -- we can't do that until after we compute dt and then
         // integrate a forward.
-        fort_estdt_comoving_a
-          (&new_a, &new_dummy_a, &dt, &change_allowed, &fixed_da, &final_a, &dt_modified);
+        estdt_comoving_a
+          (new_a, new_dummy_a, dt, change_allowed, fixed_da, final_a, dt_modified);
 
     if(dt_binpow >= 0)
       {
@@ -139,8 +362,8 @@ Nyx::comoving_est_time_step (Real& cur_time, Real& estdt)
         // Initial guess -- note that we send in "new_a" because we haven't yet swapped
         // "old_a" and "new_a" -- we can't do that until after we compute dt and then
         // integrate a forward.
-        fort_estdt_comoving_a
-          (&old_a, &new_dummy_a, &dt, &change_allowed, &fixed_da, &final_a, &dt_modified);
+        estdt_comoving_a
+          (old_a, new_dummy_a, dt, change_allowed, fixed_da, final_a, dt_modified);
     if(dt_binpow >= 0)
       {
         if(estdt>=dt)
@@ -258,8 +481,8 @@ Nyx::integrate_comoving_a (Real time,Real dt)
 
         // Update a
         old_a      = new_a;
-		integrate_comoving_a(old_a, new_a, dt);
-		
+        integrate_comoving_a(old_a, new_a, dt);
+
         // Update the times
         old_a_time = new_a_time;
         new_a_time = old_a_time + dt;
@@ -382,15 +605,15 @@ Nyx::integrate_comoving_a (const Real old_a, Real& new_a, const Real dt)
             else
                 start_slope = comoving_h;
 
-            // Compute a provisional value of ln(a) at the new time 
+            // Compute a provisional value of ln(a) at the new time
             end_a = start_a + start_slope * Delta_t;
-			
+
             // Compute the slope at the new time
             if (comoving_type > 0)
                 end_slope = H_0*std::sqrt(comoving_OmM/end_a + comoving_OmR/(end_a*end_a) + OmL*end_a*end_a);
             else
                 end_slope = comoving_h;
-       
+
             // Now recompute a at the new time using the average of the two slopes
             end_a = start_a + 0.5e0 * (start_slope + end_slope) * Delta_t;
 
