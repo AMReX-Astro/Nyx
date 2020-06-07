@@ -4,16 +4,10 @@
 extern "C"
 {
 #endif
-    void update_agn_particles(const int* np, void* particles,
-                              const amrex::Real* accel, const int* accel_lo, const int* accel_hi,
-                              const amrex::Real* prob_lo,
-                              const amrex::Real* dx, const amrex::Real& dt,
-                              const amrex::Real& a_prev, const amrex::Real& a_cur, const int* do_move);
-
-    void nyx_compute_overlap(const int* np, void* particles, 
+    void nyx_compute_overlap(const int* np, void* particles,
                              const int* ng, void*    ghosts, const amrex::Real* dx);
 
-    void agn_merge_particles(const int* np, void* particles, 
+    void agn_merge_particles(const int* np, void* particles,
                              const int* ng, void*    ghosts, const amrex::Real* dx);
 
     void agn_particle_velocity(const int* np, void* particles,
