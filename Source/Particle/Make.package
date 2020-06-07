@@ -11,9 +11,8 @@ endif
 
 ifeq ($(NEUTRINO_PARTICLES), TRUE)
 CEXE_sources += NeutrinoParticleContainer.cpp
-CEXE_headers   += NeutrinoParticleContainer.H
-FEXE_headers   += NeutrinoParticles_F.H
-F90EXE_sources += Neutrino_Particle_mod_3d.F90
+CEXE_headers += NeutrinoParticleContainer.H
+CEXE_headers += NeutrinoParticles_K.H
 endif
 
 CEXE_sources += NyxParticles.cpp
