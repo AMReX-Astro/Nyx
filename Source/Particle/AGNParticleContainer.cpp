@@ -21,7 +21,8 @@ AGNParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     if (lev >= this->GetParticles().size())
         return;
 
-    const Real* dx = Geom(lev).CellSize();
+    const auto dxi = Geom(lev).InvCellSizeArray();
+    const GpuArray<Real,AMREX_SPACEDIM> plo = Geom(lev).ProbLoArray();
     const Periodicity& periodic = Geom(lev).periodicity();
 
     amrex::MultiFab* ac_ptr;
@@ -40,32 +41,35 @@ AGNParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
         ac_ptr->FillBoundary(periodic);
     }
 
-    const Real* plo = Geom(lev).ProbLo();
-
     int do_move = 1;
 
     for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
 
         AoS& particles = pti.GetArrayOfStructs();
+        ParticleType* pstruct = particles().data();
         int Np = particles.size();
+
+        const FArrayBox& accel_fab= ((*ac_ptr)[pti.index()]);
+        Array4<amrex::Real const> accel= accel_fab.array();
 
         if (Np > 0)
         {
-           const Box& ac_box = (*ac_ptr)[pti].box();
-
-           update_agn_particles(&Np, particles.data(),
-                                (*ac_ptr)[pti].dataPtr(),
-                                ac_box.loVect(), ac_box.hiVect(),
-                                plo,dx,dt,a_old,a_half,&do_move);
+            amrex::ParallelFor(Np,
+                               [=] AMREX_GPU_HOST_DEVICE ( long i)
+                               {
+                                   update_agn_particle_single(pstruct[i],
+                                                              accel,
+                                                              plo,dxi,dt,a_old, a_half,do_move);
+                               });
         }
     }
 
     if (ac_ptr != &acceleration) delete ac_ptr;
-    
+
     ParticleLevel&    pmap          = this->GetParticles(lev);
     if (lev > 0 && sub_cycle)
     {
-        amrex::ParticleLocData pld; 
+        amrex::ParticleLocData pld;
         for (auto& kv : pmap) {
             AoS&  pbox       = kv.second.GetArrayOfStructs();
             const int   n    = pbox.size();
@@ -78,7 +82,7 @@ AGNParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
                 ParticleType& p = pbox[i];
                 if (p.id() <= 0) continue;
 
-                // Move the particle to the proper ghost cell. 
+                // Move the particle to the proper ghost cell.
                 //      and remove any *ghost* particles that have gone too far
                 // Note that this should only negate ghost particles, not real particles.
                 if (!this->Where(p, pld, lev, lev, where_width))
@@ -105,19 +109,20 @@ AGNParticleContainer::moveKick (MultiFab&       acceleration,
                                 int             lev,
                                 Real            dt,
                                 Real            a_new,
-                                Real            a_half) 
+                                Real            a_half)
 {
     BL_PROFILE("AGNParticleContainer::moveKick()");
 
-    const Real* dx = Geom(lev).CellSize();
+    const auto dxi = Geom(lev).InvCellSizeArray();
     const Periodicity& periodic = Geom(lev).periodicity();
+    const GpuArray<Real,AMREX_SPACEDIM> plo = Geom(lev).ProbLoArray();
 
     MultiFab* ac_ptr;
     if (OnSameGrids(lev,acceleration))
     {
         ac_ptr = &acceleration;
     }
-    else 
+    else
     {
         ac_ptr = new MultiFab(ParticleBoxArray(lev),
                                   ParticleDistributionMap(lev),
@@ -128,26 +133,29 @@ AGNParticleContainer::moveKick (MultiFab&       acceleration,
         ac_ptr->FillBoundary(periodic);
     }
 
-    const Real* plo = Geom(lev).ProbLo();
-
     int do_move = 0;
 
     for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
 
         AoS& particles = pti.GetArrayOfStructs();
+        ParticleType* pstruct = particles().data();
         int Np = particles.size();
+
+        const FArrayBox& accel_fab= ((*ac_ptr)[pti.index()]);
+        Array4<amrex::Real const> accel= accel_fab.array();
 
         if (Np > 0)
         {
-           const Box& ac_box = (*ac_ptr)[pti].box();
-
-           update_agn_particles(&Np, particles.data(),
-                                (*ac_ptr)[pti].dataPtr(),
-                                ac_box.loVect(), ac_box.hiVect(),
-                                plo,dx,dt,a_half,a_new,&do_move);
+            amrex::ParallelFor(Np,
+                               [=] AMREX_GPU_HOST_DEVICE ( long i)
+                               {
+                                   update_agn_particle_single(pstruct[i],
+                                                              accel,
+                                                              plo,dxi,dt,a_half,a_new,do_move);
+                               });
         }
     }
-    
+
     if (ac_ptr != &acceleration) delete ac_ptr;
 }
 
@@ -302,6 +310,65 @@ void AGNParticleContainer::writeAllAtLevel(int lev)
                   << " energy " << energy
                   << " mdot " << mdot
                   << endl;
+        }
+    }
+}
+
+AMREX_GPU_HOST_DEVICE AMREX_INLINE
+void AGNParticleContainer::
+update_agn_particle_single (ParticleType&  p,
+                            amrex::Array4<amrex::Real const> const& acc,
+                            amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& plo,
+                            amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& dxi,
+                            const amrex::Real& dt, const amrex::Real& a_prev,
+                            const amrex::Real& a_cur, const int& do_move)
+{
+    if (p.id() <= 0) return;
+
+    amrex::Real half_dt       = 0.5 * dt;
+    amrex::Real a_cur_inv    = 1.0 / a_cur;
+    amrex::Real dt_a_cur_inv = dt * a_cur_inv;
+
+    amrex::Real lx = (p.pos(0) - plo[0]) * dxi[0] + 0.5;
+    amrex::Real ly = (p.pos(1) - plo[1]) * dxi[1] + 0.5;
+    amrex::Real lz = (p.pos(2) - plo[2]) * dxi[2] + 0.5;
+
+    int i = std::floor(lx);
+    int j = std::floor(ly);
+    int k = std::floor(lz);
+
+    amrex::Real xint = lx - i;
+    amrex::Real yint = ly - j;
+    amrex::Real zint = lz - k;
+
+    amrex::Real sx[] = {1.-xint, xint};
+    amrex::Real sy[] = {1.-yint, yint};
+    amrex::Real sz[] = {1.-zint, zint};
+
+    for (int d=0; d < AMREX_SPACEDIM; ++d)
+    {
+        amrex::Real val = 0.0;
+        for (int kk = 0; kk<=1; ++kk)
+        {
+            for (int jj = 0; jj <= 1; ++jj)
+            {
+                for (int ii = 0; ii <= 1; ++ii)
+                {
+                    val += sx[amrex::Math::abs(ii-1)]*
+                           sy[amrex::Math::abs(jj-1)]*
+                           sz[amrex::Math::abs(kk-1)]*acc(i-ii,j-jj,k-kk,d);
+                }
+            }
+        }
+
+        p.rdata(d+1)=a_prev*p.rdata(d+1)+half_dt * val;
+        p.rdata(d+1)*=a_cur_inv;
+    }
+
+    if (do_move == 1)
+    {
+        for (int comp=0; comp < AMREX_SPACEDIM; ++comp) {
+            p.pos(comp) = p.pos(comp) + dt_a_cur_inv * p.rdata(comp+1);
         }
     }
 }
