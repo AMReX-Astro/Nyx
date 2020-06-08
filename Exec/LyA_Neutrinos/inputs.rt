@@ -82,6 +82,10 @@ nyx.do_dm_particles = 1
 # >>>>>>>>>>>>>  PARTICLE INIT OPTIONS <<<<<<<<<<<<<<<<
 nyx.particle_init_type = BinaryFile
 nyx.binary_particle_file = 32.nyx
+nyx.neutrino_particle_file = 32.nyx
+particles.neutrino_dm_model = 1
+particles.relativistic = 0
+particles.nparts_per_read = 2097152
 
 # >>>>>>>>>>>>>  PARTICLE MOVE OPTIONS <<<<<<<<<<<<<<<<
 #  "Gravitational"    "Random"
