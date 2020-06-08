@@ -117,11 +117,8 @@ static constexpr amrex::Real  m_proton = 1.672621e-24
 static constexpr amrex::Real  c_light = 2.99792458e10   
   / V_unit;// Speed of light [cm/s] 
 
-#ifndef HEATCOOL
-static constexpr amrex::Real  Hubble_const = 32.407764868e-19;    //            Hubble constant / h
-#else
 static constexpr amrex::Real  Hubble_const = 100.;    //            Hubble constant / h
-#endif
+
   // Useful quantities and conversions
   
   static constexpr amrex::Real  mp_over_kb = m_proton/k_B;
