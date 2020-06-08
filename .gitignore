@@ -23,6 +23,8 @@ UsersGuide/*.pdf
 \#*
 \.#*
 
+# Mac:
+.DS_Store
 
 # executables
 *.ex
