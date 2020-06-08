@@ -584,7 +584,6 @@ Nyx::advance_hydro (Real time,
 
     return dt;
 }
-#endif
 
 #ifdef GRAVITY
 void
@@ -708,4 +707,5 @@ Nyx::correct_gsrc(int lev, Real time, Real prev_time, Real cur_time, Real dt)
          });
     }
 }
+#endif
 #endif

@@ -441,6 +441,7 @@ Nyx::init_from_plotfile ()
     }
 }
 
+#ifndef NO_HYDRO
 void
 Nyx::check_initial_species ()
 {
@@ -535,3 +536,4 @@ Nyx::init_e_from_T (const Real& a)
         amrex::Gpu::Device::streamSynchronize();
     }
 }
+#endif
