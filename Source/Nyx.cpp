@@ -401,6 +401,7 @@ Nyx::read_params ()
 #endif
 #endif
 
+#ifndef NO_HYDRO
     pp_nyx.query("add_ext_src", add_ext_src);
     pp_nyx.query("strang_split", strang_split);
     pp_nyx.query("strang_fuse", strang_fuse);
@@ -417,6 +418,7 @@ Nyx::read_params ()
     if (strang_split != 1)
         amrex::Error("Cant have strang_split != 1 with USE_SDC != TRUE");
 #endif
+#endif // NO_HYDRO
 
 #ifdef FORCING
     pp_nyx.get("do_forcing", do_forcing);
@@ -431,6 +433,9 @@ Nyx::read_params ()
        amrex::Error("Nyx::you set do_forcing = 1 but forgot to set USE_FORCING = TRUE ");
 #endif
 
+    pp_nyx.query("use_exact_gravity", use_exact_gravity);
+
+#ifndef NO_HYDRO
     pp_nyx.query("heat_cool_type", heat_cool_type);
     if (heat_cool_type == 7)
     {
@@ -467,7 +472,6 @@ Nyx::read_params ()
         pp_nyx.get("inhomo_zhi_file", inhomo_zhi_file);
         pp_nyx.get("inhomo_grid", inhomo_grid);
     }
-
 
 #ifdef HEATCOOL
     if (heat_cool_type != 3 && heat_cool_type !=4 && heat_cool_type != 5 && heat_cool_type != 7 && heat_cool_type != 9 && heat_cool_type != 10 && heat_cool_type != 11 &&  heat_cool_type != 12)
@@ -525,7 +529,10 @@ Nyx::read_params ()
        amrex::Error("Nyx::you set heat_cool_type > 0 but forgot to set USE_HEATCOOL = TRUE");
     if (inhomo_reion > 0)
        amrex::Error("Nyx::you set inhomo_reion > 0 but forgot to set USE_HEATCOOL = TRUE");
-#endif
+#endif  // HEATCOOL
+
+#endif //NO_HYDRO
+
     pp_nyx.query("use_sundials_constraint", use_sundials_constraint);
     pp_nyx.query("use_sundials_fused", use_sundials_fused);
     pp_nyx.query("nghost_state", nghost_state);
