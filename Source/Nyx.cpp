@@ -214,7 +214,7 @@ Real Nyx::he_species        = 0.0;
 
 int Nyx::use_exact_gravity  = 0;
 
-#ifdef AGN
+#ifdef REEBER
 Real Nyx::mass_halo_min     = 1.e10;
 Real Nyx::mass_seed         = 1.e5;
 #endif
@@ -676,8 +676,7 @@ Nyx::read_params ()
     pp_nyx.query("slice_nfiles", slice_nfiles);
 
     pp_nyx.query("gimlet_int", gimlet_int);
-
-#ifdef AGN
+#ifdef REEBER
     pp_nyx.query("mass_halo_min", mass_halo_min);
     pp_nyx.query("mass_seed", mass_seed);
 #endif
@@ -1950,8 +1949,18 @@ Nyx::postCoarseTimeStep (Real cumtime)
    AmrLevel::postCoarseTimeStep(cumtime);
 
 #ifdef AGN
-   halo_find(parent->dtLevel(level));
-#endif 
+   if (level == 0)
+     {
+       agn_halo_find(parent->dtLevel(level));
+     }
+#else
+#ifdef REEBER
+   if (level == 0)
+     {
+       halo_find(parent->dtLevel(level));
+     }
+#endif
+#endif
 
 #ifdef GIMLET
    LyA_statistics();

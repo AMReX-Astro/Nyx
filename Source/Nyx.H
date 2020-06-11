@@ -601,8 +601,17 @@ public:
     void primitive_to_conserved(amrex::MultiFab& state);
 
     void halo_find(amrex::Real dt);
-    void halo_merge();
-    void halo_accrete(amrex::Real dt);
+    void agn_halo_find(amrex::Real dt);
+    void agn_halo_merge();
+    void agn_halo_accrete(amrex::Real dt);
+
+#ifdef REEBER
+    void runReeberAnalysis(amrex::Vector<amrex::MultiFab*>& new_state,
+                                       amrex::Vector<std::unique_ptr<amrex::MultiFab> >& particle_mf,
+                           const amrex::Geometry Geom, const amrex::Vector<amrex::IntVect>& level_refinements,
+                           int nStep, bool do_analysis, std::vector<Halo>& reeber_halos);
+#endif
+
     void Lya_statistics();
 
     //
@@ -991,7 +1000,7 @@ protected:
     static class StochasticForcing *forcing;
 #endif
 
-#ifdef AGN
+#ifdef REEBER
   //
   // Threshold for halo to create SMBH
   //

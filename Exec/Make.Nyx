@@ -129,9 +129,9 @@ endif
 ifeq ($(USE_FORCING), TRUE)
    Bdirs 	+= Source/Forcing
 endif
-ifeq ($(USE_AGN), TRUE)
+#ifeq ($(USE_AGN), TRUE)
    Bdirs 	+= Source/AGN
-endif
+#endif
 
 Bpack	+= $(foreach dir, $(Bdirs), $(TOP)/$(dir)/Make.package)
 Blocs	+= $(foreach dir, $(Bdirs), $(TOP)/$(dir))
