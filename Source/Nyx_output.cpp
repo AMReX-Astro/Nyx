@@ -112,85 +112,42 @@ Nyx::setPlotVariables ()
 }
 
 void
+Nyx::writePlotFilePre (const std::string& dir, ostream& os)
+{
+    amrex::Gpu::LaunchSafeGuard lsg(true);
+  if(Nyx::theDMPC()) {
+    Nyx::theDMPC()->WritePlotFilePre();
+  }
+#ifdef AGN
+  if(Nyx::theAPC()) {
+    Nyx::theAPC()->WritePlotFilePre();
+  }
+#endif
+
+#ifdef NEUTRINO_DARK_PARTICLES
+  if(Nyx::theNPC()) {
+    Nyx::theNPC()->WritePlotFilePre();
+  }
+#endif
+
+}
+
+void
 Nyx::writePlotFile (const std::string& dir,
                     ostream&           os,
                     VisMF::How         how)
 {
+
     amrex::Gpu::LaunchSafeGuard lsg(true);
-    int i, n;
-    //
-    // The list of indices of State to write to plotfile.
-    // first component of pair is state_type,
-    // second component of pair is component # within the state_type
-    //
-    std::vector<std::pair<int,int> > plot_var_map;
-    for (int typ = 0; typ < desc_lst.size(); typ++)
-    {
-        for (int comp = 0; comp < desc_lst[typ].nComp();comp++)
-        {
-            if (parent->isStatePlotVar(desc_lst[typ].name(comp))
-                && desc_lst[typ].getType() == IndexType::TheCellType())
-            {
-                plot_var_map.push_back(std::pair<int,int>(typ, comp));
-            }
-        }
-    }
+    AmrLevel::writePlotFile(dir, os, how);
 
-    int num_derive = 0;
-    std::list<std::string> derive_names;
+}
 
-    for (std::list<DeriveRec>::const_iterator it = derive_lst.dlist().begin();
-         it != derive_lst.dlist().end(); ++it)
-    {
-        if (parent->isDerivePlotVar(it->name()))
-        {
-            if (it->name() == "particle_count" ||
-                it->name() == "total_particle_count" ||
-                it->name() == "particle_mass_density" ||
-                it->name() == "total_density" || 
-                it->name() == "particle_x_velocity" ||
-                it->name() == "particle_y_velocity" ||
-                it->name() == "particle_z_velocity" )
-            {
-                if (Nyx::theDMPC())
-                {
-                    derive_names.push_back(it->name());
-                    num_derive++;
-                }
-#ifdef AGN
-            } else if (it->name() == "agn_particle_count" ||
-                       it->name() == "agn_mass_density")
-            {
-                if (Nyx::theAPC())
-                {
-                    derive_names.push_back(it->name());
-                    num_derive++;
-                }
-#endif
-#ifdef NEUTRINO_PARTICLES
-            } else if (it->name() == "neutrino_particle_count" ||
-                       it->name() == "neutrino_mass_density" ||
-		       it->name() == "neutrino_x_velocity" ||
-		       it->name() == "neutrino_y_velocity" ||
-		       it->name() == "neutrino_z_velocity" )
-            {
-                if (Nyx::theNPC())
-                {
-                    derive_names.push_back(it->name());
-                    num_derive++;
-                }
-#endif
-            } else if (it->name() == "Rank") {
-                derive_names.push_back(it->name());
-                num_derive++;
-            } else {
-                derive_names.push_back(it->name());
-                num_derive++;
-            }
-        }
-    }
+void
+Nyx::writePlotFilePost (const std::string& dir, ostream& os)
+{
 
-    int n_data_items = plot_var_map.size() + num_derive;
+  amrex::Gpu::LaunchSafeGuard lsg(true);
 
 #ifdef NO_HYDRO
     Real cur_time = state[PhiGrav_Type].curTime();
@@ -198,162 +155,53 @@ Nyx::writePlotFile (const std::string& dir,
     Real cur_time = state[State_Type].curTime();
 #endif
 
+        // Write comoving_a into its own file in the particle directory
+        if (ParallelDescriptor::IOProcessor())
+        {
+            std::string FileName = dir + "/comoving_a";
+            std::ofstream File;
+            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
+            if ( ! File.good()) {
+                amrex::FileOpenFailed(FileName);
+            }
+            File.precision(15);
+            if (cur_time == 0)
+            {
+               File << old_a << '\n';
+            } else {
+               File << new_a << '\n';
+            }
+            File.close();
+        }
+
+        if (ParallelDescriptor::IOProcessor() && use_typical_steps)
+        {
+            std::string FileName = dir + "/first_max_steps";
+            std::ofstream File;
+            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
+            if ( ! File.good()) {
+                amrex::FileOpenFailed(FileName);
+            }
+            File.precision(15);
+            File << old_max_sundials_steps << '\n';
+        }
+
+        if (ParallelDescriptor::IOProcessor() && use_typical_steps)
+        {
+            std::string FileName = dir + "/second_max_steps";
+            std::ofstream File;
+            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
+            if ( ! File.good()) {
+                amrex::FileOpenFailed(FileName);
+            }
+            File.precision(15);
+            File << old_max_sundials_steps << '\n';
+        }
+
     if (level == 0 && ParallelDescriptor::IOProcessor())
     {
-        //
-        // The first thing we write out is the plotfile type.
-        //
-        os << thePlotFileType() << '\n';
-
-        if (n_data_items == 0) {
-            amrex::Error("Must specify at least one valid data item to plot");
-	}
-
-        os << n_data_items << '\n';
-        //
-        // Names of variables -- first state, then derived
-        //
-        for (i = 0; i < plot_var_map.size(); i++)
-        {
-            int typ = plot_var_map[i].first;
-            int comp = plot_var_map[i].second;
-            os << desc_lst[typ].name(comp) << '\n';
-        }
-
-        for (std::list<std::string>::iterator it = derive_names.begin();
-             it != derive_names.end(); ++it)
-        {
-            const DeriveRec* rec = derive_lst.get(*it);
-            os << rec->variableName(0) << '\n';
-        }
-
-        os << BL_SPACEDIM << '\n';
-        os << parent->cumTime() << '\n';
-        int f_lev = parent->finestLevel();
-        os << f_lev << '\n';
-        for (i = 0; i < BL_SPACEDIM; i++)
-            os << Geom().ProbLo(i) << ' ';
-        os << '\n';
-        for (i = 0; i < BL_SPACEDIM; i++)
-            os << Geom().ProbHi(i) << ' ';
-        os << '\n';
-        for (i = 0; i < f_lev; i++)
-            os << parent->refRatio(i)[0] << ' ';
-        os << '\n';
-        for (i = 0; i <= f_lev; i++)
-            os << parent->Geom(i).Domain() << ' ';
-        os << '\n';
-        for (i = 0; i <= f_lev; i++)
-            os << parent->levelSteps(i) << ' ';
-        os << '\n';
-        for (i = 0; i <= f_lev; i++)
-        {
-            for (int k = 0; k < BL_SPACEDIM; k++)
-                os << parent->Geom(i).CellSize()[k] << ' ';
-            os << '\n';
-        }
-        os << (int) Geom().Coord() << '\n';
-        os << "0\n"; // Write bndry data.
-
-        writeJobInfo(dir);
+      writeJobInfo(dir);
     }
-
-    // Build the directory to hold the MultiFab at this level.
-    // The name is relative to the directory containing the Header file.
-    //
-    static const std::string BaseName = "/Cell";
-
-    std::string Level = amrex::Concatenate("Level_", level, 1);
-    //
-    // Now for the full pathname of that directory.
-    //
-    std::string FullPath = dir;
-    if ( ! FullPath.empty() && FullPath[FullPath.size()-1] != '/') {
-        FullPath += '/';
-    }
-    FullPath += Level;
-    //
-    // Only the I/O processor makes the directory if it doesn't already exist.
-    //
-    if( ! levelDirectoryCreated) {
-      amrex::Print() << "IOIOIOIO:CD  Nyx::writePlotFile:  ! ldc:  creating directory:  "
-                     << FullPath << '\n';
-      if (ParallelDescriptor::IOProcessor()) {
-        if ( ! amrex::UtilCreateDirectory(FullPath, 0755)) {
-            amrex::CreateDirectoryFailed(FullPath);
-	}
-      }
-      //
-      // Force other processors to wait until directory is built.
-      //
-      ParallelDescriptor::Barrier();
-    }
-
-    if (ParallelDescriptor::IOProcessor())
-    {
-        os << level << ' ' << grids.size() << ' ' << cur_time << '\n';
-        os << parent->levelSteps(level) << '\n';
-
-        for (i = 0; i < grids.size(); ++i)
-        {
-            RealBox gridloc = RealBox(grids[i], geom.CellSize(), geom.ProbLo());
-            for (n = 0; n < BL_SPACEDIM; n++)
-                os << gridloc.lo(n) << ' ' << gridloc.hi(n) << '\n';
-        }
-        //
-        // The full relative pathname of the MultiFabs at this level.
-        // The name is relative to the Header file containing this name.
-        // It's the name that gets written into the Header.
-        //
-        if (n_data_items > 0)
-        {
-            std::string PathNameInHeader = Level;
-            PathNameInHeader += BaseName;
-            os << PathNameInHeader << '\n';
-        }
-    }
-    //
-    // We combine all of the multifabs -- state, derived, etc -- into one
-    // multifab -- plotMF.
-    // NOTE: we are assuming that each state variable has one component,
-    // but a derived variable is allowed to have multiple components.
-    int cnt = 0;
-    const int nGrow = 0;
-    MultiFab plotMF(grids, dmap, n_data_items, nGrow);
-    MultiFab* this_dat = 0;
-    //
-    // Cull data from state variables -- use no ghost cells.
-    //
-    for (i = 0; i < plot_var_map.size(); i++)
-    {
-        int typ = plot_var_map[i].first;
-        int comp = plot_var_map[i].second;
-        this_dat = &state[typ].newData();
-        MultiFab::Copy(plotMF, *this_dat, comp, cnt, 1, nGrow);
-        cnt++;
-    }
-    //
-    // Cull data from derived variables.
-    //
-    if (derive_names.size() > 0)
-    {
-        for (std::list<std::string>::iterator it = derive_names.begin();
-             it != derive_names.end(); ++it)
-        {
-            const auto& derive_dat = derive(*it, cur_time, nGrow);
-            MultiFab::Copy(plotMF, *derive_dat, 0, cnt, 1, nGrow);
-            cnt++;
-        }
-    }
-
-    amrex::prefetchToHost(plotMF);
-
-    //
-    // Use the Full pathname when naming the MultiFab.
-    //
-    std::string TheFullPath = FullPath;
-    TheFullPath += BaseName;
-    VisMF::Write(plotMF, TheFullPath, how, true);
 
     //
     // Write the particles and `comoving_a` in a plotfile directory. 
@@ -379,34 +227,7 @@ Nyx::writePlotFile (const std::string& dir,
     }
 #endif
 
-}
 
-void
-Nyx::writePlotFilePre (const std::string& dir, ostream& os)
-{
-    amrex::Gpu::LaunchSafeGuard lsg(true);
-  if(Nyx::theDMPC()) {
-    Nyx::theDMPC()->WritePlotFilePre();
-  }
-#ifdef AGN
-  if(Nyx::theAPC()) {
-    Nyx::theAPC()->WritePlotFilePre();
-  }
-#endif
-
-#ifdef NEUTRINO_DARK_PARTICLES
-  if(Nyx::theNPC()) {
-    Nyx::theNPC()->WritePlotFilePre();
-  }
-#endif
-
-}
-
-
-void
-Nyx::writePlotFilePost (const std::string& dir, ostream& os)
-{
-  amrex::Gpu::LaunchSafeGuard lsg(true);
   if(Nyx::theDMPC()) {
     Nyx::theDMPC()->WritePlotFilePost();
   }
@@ -422,11 +243,6 @@ Nyx::writePlotFilePost (const std::string& dir, ostream& os)
 #endif
 
   if(verbose) {
-#ifdef NO_HYDRO
-    Real cur_time = state[PhiGrav_Type].curTime();
-#else
-    Real cur_time = state[State_Type].curTime();
-#endif
 
     if (level == 0)
     {
@@ -644,49 +460,6 @@ Nyx::particle_plot_file (const std::string& dir)
 #else
         Real cur_time = state[State_Type].curTime();
 #endif
-
-        // Write comoving_a into its own file in the particle directory
-        if (ParallelDescriptor::IOProcessor())
-        {
-            std::string FileName = dir + "/comoving_a";
-            std::ofstream File;
-            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
-            if ( ! File.good()) {
-                amrex::FileOpenFailed(FileName);
-	    }
-            File.precision(15);
-            if (cur_time == 0)
-            {
-               File << old_a << '\n';
-            } else {
-               File << new_a << '\n';
-            }
-            File.close();
-        }
-
-	if (ParallelDescriptor::IOProcessor() && use_typical_steps)
-        {
-            std::string FileName = dir + "/first_max_steps";
-            std::ofstream File;
-            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
-            if ( ! File.good()) {
-                amrex::FileOpenFailed(FileName);
-	    }
-            File.precision(15);
-	    File << old_max_sundials_steps << '\n';
-        }
-
-	if (ParallelDescriptor::IOProcessor() && use_typical_steps)
-        {
-            std::string FileName = dir + "/second_max_steps";
-            std::ofstream File;
-            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
-            if ( ! File.good()) {
-                amrex::FileOpenFailed(FileName);
-	    }
-            File.precision(15);
-	    File << old_max_sundials_steps << '\n';
-        }
 
         // Write particle_plotfile_format into its own file in the particle directory
         if (Nyx::theDMPC() && ParallelDescriptor::IOProcessor())
