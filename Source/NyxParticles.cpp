@@ -1184,16 +1184,18 @@ Nyx::particle_redistribute (int lbase, bool my_init)
                    amrex::Print() << "Calling redistribute because DistMap changed " << '\n';
             }
 
-	    int iteration = 1;
-	    int finest_level = parent->finestLevel();
-	    for (int i = 0; i < theActiveParticles().size(); i++)
-	      {
-		if(finest_level == 0)
-		  theActiveParticles()[i]->RedistributeLocal(lbase,
+            int iteration = 1;
+            int finest_level = parent->finestLevel();
+            for (int i = 0; i < theActiveParticles().size(); i++)
+              {
+#ifdef AMREX_USE_CUDA
+                if(finest_level == 0)
+                  theActiveParticles()[i]->RedistributeLocal(lbase,
                                                   theActiveParticles()[i]->finestLevel(),
                                                   iteration);
-		else
-		  theActiveParticles()[i]->Redistribute(lbase,
+                else
+#endif
+                  theActiveParticles()[i]->Redistribute(lbase,
                                                   theActiveParticles()[i]->finestLevel(),
                                                   iteration);
 
