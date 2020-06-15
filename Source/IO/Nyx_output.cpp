@@ -1073,11 +1073,39 @@ Nyx::forcing_check_point (const std::string& dir)
 }
 #endif
 
+int
+Nyx::updateInSitu ()
+{
+#if defined(BL_USE_SENSEI_INSITU) || defined(AMREX_USE_ASCENT)
+    BL_PROFILE("Nyx::UpdateInSitu()");
+
+#ifdef BL_USE_SENSEI_INSITU
+    if (insitu_bridge->update(istep[0], t_new[0],
+        dynamic_cast<amrex::AmrMesh*>(const_cast<WarpX*>(this)),
+        {&mf_avg}, {varnames}))
+    {
+        amrex::ErrorStream()
+            << "Nyx::UpdateInSitu : Failed to update the in situ bridge."
+            << std::endl;
+
+        amrex::Abort();
+    }
+#endif
+
+#ifdef AMREX_USE_CONDUIT
+    blueprint_check_point();
+#endif
+
+#endif
+    return 0;
+}
+
+
 #ifdef AMREX_USE_CONDUIT
 void
 Nyx::blueprint_check_point ()
 {
-    MultiFab& S_new = get_new_data(State_Type);
+  //    MultiFab& S_new = get_new_data(State_Type);
     //MultiFab S_new_tmp(S_new.boxArray(), S_new.DistributionMap(), 1, 0 NUM_GROW);
 
     const Real cur_time = state[State_Type].curTime();
@@ -1102,7 +1130,7 @@ Nyx::blueprint_check_point ()
     // Wrap our AMReX Mesh into a Conduit Mesh Blueprint Tree
     ///////////////////////////////////////////////////////////////////////////
     conduit::Node bp_mesh;
-    SingleLevelToBlueprint(S_new,
+    SingleLevelToBlueprint(get_new_data(State_Type),
                            varnames,
                            geom,
                            cur_time,

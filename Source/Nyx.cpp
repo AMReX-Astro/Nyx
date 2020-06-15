@@ -1684,6 +1684,9 @@ Nyx::post_timestep (int iteration)
             sum_integrated_quantities();
         }
 #endif
+
+	updateInSitu();
+
         write_info();
 
 #if BL_USE_MPI

@@ -512,6 +512,8 @@ public:
     //
     bool doAnalysisNow();
 
+    int updateInSitu();
+
     //
     // Advance grids at this level in time.
     //
