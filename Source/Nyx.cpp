@@ -1966,13 +1966,6 @@ Nyx::postCoarseTimeStep (Real cumtime)
      {
        agn_halo_find(parent->dtLevel(level));
      }
-#else
-#ifdef REEBER
-   if (level == 0)
-     {
-       halo_find(parent->dtLevel(level));
-     }
-#endif
 #endif
 
 #ifdef GIMLET

@@ -1079,21 +1079,20 @@ Nyx::updateInSitu ()
 #if defined(BL_USE_SENSEI_INSITU) || defined(AMREX_USE_ASCENT)
     BL_PROFILE("Nyx::UpdateInSitu()");
 
-#ifdef BL_USE_SENSEI_INSITU
-    if (insitu_bridge->update(istep[0], t_new[0],
-        dynamic_cast<amrex::AmrMesh*>(const_cast<WarpX*>(this)),
-        {&mf_avg}, {varnames}))
+#if defined(BL_USE_SENSEI_INSITU)
+    if (insitu_bridge && insitu_bridge->update(this))
     {
-        amrex::ErrorStream()
-            << "Nyx::UpdateInSitu : Failed to update the in situ bridge."
-            << std::endl;
-
+        amrex::ErrorStream() << "Amr::updateInSitu : Failed to update." << std::endl;
         amrex::Abort();
     }
 #endif
 
 #ifdef AMREX_USE_CONDUIT
     blueprint_check_point();
+#endif
+
+#ifdef REEBER
+    halo_find(parent->dtLevel(level));
 #endif
 
 #endif
