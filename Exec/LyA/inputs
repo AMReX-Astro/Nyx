@@ -17,19 +17,15 @@ vismf.usepersistentifstreams = 1
 vismf.usesynchronousreads    = 0
 vismf.usedynamicsetselection = 1
 
-nyx.use_const_species = 1
-nyx.h_species = .76
-nyx.he_species = .24
 
-nyx.hydro_convert    = 1
-nyx.ppm_type         = 0
+nyx.ppm_type         = 1
 nyx.ppm_reference    = 1
 nyx.use_colglaz      = 0
 nyx.corner_coupling  = 1
 
 nyx.strang_split     = 1
 nyx.add_ext_src      = 0
-nyx.heat_cool_type   = 11
+nyx.heat_cool_type   = 3
 #nyx.simd_width       = 8
 
 nyx.small_dens = 1.e-2
@@ -49,8 +45,8 @@ amr.data_log = runlog
 
 #This is how we restart from a checkpoint and write an ascii particle file
 #Leave this commented out in cvs version
-#amr.restart = chk00060
-#max_step = 204
+#amr.restart = chk00100
+#max_step = 4
 #particles.particle_output_file = particle_output
 
 gravity.gravity_type = PoissonGrav
@@ -69,9 +65,9 @@ geometry.prob_lo     =  0     0     0
 geometry.prob_hi     =  28.49002849  28.49002849  28.49002849
 
 amr.n_cell           =  64  64  64
-amr.max_grid_size    = 64
+amr.max_grid_size    = 32
 #fabarray.mfiter_tile_size = 128 8 8
-fabarray.mfiter_tile_size = 1024000 1024 1024
+fabarray.mfiter_tile_size = 1024000 8 8
 
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
 # 0 = Interior           3 = Symmetry
@@ -88,7 +84,6 @@ nyx.do_grav  = 1
 # COSMOLOGY
 nyx.comoving_OmM = 0.275
 nyx.comoving_OmB = 0.046
-nyx.comoving_OmR = 0.0
 nyx.comoving_h   = 0.702e0
 
 # UVB and reionization
@@ -152,7 +147,7 @@ amr.check_int         = 100
 amr.checkpoint_nfiles = 64
 
 # PLOTFILES
-#fab.format          = NATIVE_32
+fab.format          = NATIVE_32
 amr.plot_files_output = 1
 amr.plot_file       = plt
 amr.plot_int        = 1
