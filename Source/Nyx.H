@@ -19,10 +19,20 @@
 #include "NeutrinoParticleContainer.H"
 #endif
 
+
 #ifdef REEBER
 #ifndef REEBER_HIST
 #include <reeber.H>
 #endif
+#endif
+
+#ifdef AMREX_USE_CONDUIT
+#include <AMReX_Conduit_Blueprint.H>
+using namespace amrex;
+using namespace conduit;
+
+#include <ascent.hpp>
+using namespace ascent;
 #endif
 
 #include <iostream>
@@ -192,6 +202,10 @@ public:
     virtual void writePlotFilePost(const std::string& dir, ostream& os);
 
     void writeJobInfo (const std::string& dir);
+
+#ifdef AMREX_USE_CONDUIT
+    void blueprint_check_point ();
+#endif
 
     //
     //Write amrex::MultiFab as plot file

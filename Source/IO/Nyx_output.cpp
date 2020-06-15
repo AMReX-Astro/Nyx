@@ -1072,3 +1072,107 @@ Nyx::forcing_check_point (const std::string& dir)
     }
 }
 #endif
+
+#ifdef AMREX_USE_CONDUIT
+void
+Nyx::blueprint_check_point ()
+{
+    MultiFab& S_new = get_new_data(State_Type);
+    //MultiFab S_new_tmp(S_new.boxArray(), S_new.DistributionMap(), 1, 0 NUM_GROW);
+
+    const Real cur_time = state[State_Type].curTime();
+    int cycle = nStep();
+
+    Vector<std::string> varnames;
+
+    varnames.push_back("Density");
+    varnames.push_back("Xmom");
+    varnames.push_back("Ymom");
+    varnames.push_back("Zmom");
+    varnames.push_back("Eden");
+    varnames.push_back("Eint");
+
+    if(!use_const_species)
+    {
+        varnames.push_back("H");
+        varnames.push_back("He");
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Wrap our AMReX Mesh into a Conduit Mesh Blueprint Tree
+    ///////////////////////////////////////////////////////////////////////////
+    conduit::Node bp_mesh;
+    SingleLevelToBlueprint(S_new,
+                           varnames,
+                           geom,
+                           cur_time,
+                           cycle,
+                           bp_mesh);
+
+    //conduit::Node bp_particles;
+    
+    Vector<std::string> particle_varnames;
+    particle_varnames.push_back("particle_mass");
+    particle_varnames.push_back("particle_xvel");
+    particle_varnames.push_back("particle_yvel");
+    particle_varnames.push_back("particle_zvel");
+
+    Vector<std::string> particle_int_varnames;
+    amrex::ParticleContainerToBlueprint(*(Nyx::theDMPC()),
+                                        particle_varnames,
+                                        particle_int_varnames,
+                                        bp_mesh);
+    
+    // very helpful for debugging when we actual try
+    // to pull the varnames list from amrex, vs hand initing
+    //
+    // amrex::Print()<<varnames.size()<<S_new.nComp()<<std::endl;
+    // amrex::Print()<<particle_varnames.size()<<4<<std::endl;
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Uncomment below to: 
+    // Save the Blueprint Mesh to a set of files that we can 
+    // view in VisIt. 
+    // (For debugging and to demonstrate how to do this w/o Ascent)
+    ///////////////////////////////////////////////////////////////////////////
+    //
+    // amrex::Print()<< "Exporting Conduit Blueprint HDF5 files (cycle="
+    //               << cycle <<")"
+    //               << std::endl;
+    //
+    // WriteBlueprintFiles(bp_mesh,"bp_example_",cycle,"hdf5");
+
+    ///////////////////////////////////////////////////////////////////
+    // Render with Ascent
+    ///////////////////////////////////////////////////////////////////
+
+    amrex::Print()<< "Executing Ascent (cycle="
+                  << cycle <<")"
+                  << std::endl;
+
+    Ascent ascent;
+    conduit::Node open_opts;
+    // tell ascent to use the ghost_indicator field to exclude ghosts
+
+    open_opts["ghost_field_name"] = "ghost_indicator";
+    
+#ifdef BL_USE_MPI
+    // if mpi, we need to provide the mpi comm to ascent
+    open_opts["mpi_comm"] = MPI_Comm_c2f(ParallelDescriptor::Communicator());
+#endif
+
+    ascent.open(open_opts);
+    // publish structured mesh to ascent
+    ascent.publish(bp_mesh);
+    
+    // call ascent, with empty actions.
+    // actions below will be overridden by those in
+    // ascent_actions.yaml
+    Node actions;
+    ascent.execute(actions);
+    ascent.close();
+
+
+
+}
+#endif
