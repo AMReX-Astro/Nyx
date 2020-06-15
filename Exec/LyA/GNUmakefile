@@ -1,13 +1,14 @@
 # AMREX_HOME defines the directory in which we will find all the AMReX code
 AMREX_HOME  ?= ../../../amrex
-ASCENT_HOME ?=/project/projectdirs/alpine/software/ascent/gnu/7.3.0/ascent-install/
+#ASCENT_HOME ?=/project/projectdirs/alpine/software/ascent/gnu/7.3.0/ascent-install/
+ASCENT_HOME ?=/gpfs/alpine/world-shared/csc340/software/ascent/0.5.3-pre/summit/cuda/gnu/ascent-install/
 
 #This install location assumes modules: pgi/19.10 cuda/10.1.243
 USE_FUSED = TRUE
 ifeq ($(USE_FUSED),TRUE)
-INSTALL_PREFIX ?= /gpfs/alpine/proj-shared/ast160/software/sundials-5.3.0-fused-lasterror/instdir
+INSTALL_PREFIX ?= /gpfs/alpine/world-shared/ast160/software/sundials-5.3.0-fused-lasterror/instdir
 else
-INSTALL_PREFIX ?= /gpfs/alpine/proj-shared/ast160/software/sundials/instdir
+INSTALL_PREFIX ?= /gpfs/alpine/world-shared/ast160/software/sundials/instdir
 endif
 #CVODE_LIB_DIR ?= $(CVODE_LIB)
 CVODE_LIB_DIR ?= $(INSTALL_PREFIX)/lib64/
@@ -58,6 +59,7 @@ ifeq ($(USE_CUDA),TRUE)
 	USE_SUNDIALS_3x4x = TRUE
 	USE_SUNDIALS = TRUE
 	COMP = pgi
+	USE_OMP = FALSE
 endif
 
 USE_OWN_BCS = FALSE
@@ -66,7 +68,9 @@ Bpack := ./Make.package
 Blocs := .
 
 ifeq ($(USE_FUSED),TRUE)
+ifeq ($(USE_CUDA),TRUE)
      LIBRARIES += -L$(CVODE_LIB_DIR) -lsundials_cvode_fused_cuda
+endif
 endif
 
 include $(TOP)/Exec/Make.Nyx
