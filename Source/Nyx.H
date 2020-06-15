@@ -948,6 +948,8 @@ protected:
 
     static amrex::Vector<amrex::Real> plot_z_values;      // These are the value of "z" at which to dump plotfiles.
     static amrex::Vector<amrex::Real> analysis_z_values;  // These are the value of "z" at which to perform analysis
+    static int insitu_int;
+    static int insitu_start;
 
     static int load_balance_int;
     static int load_balance_wgt_strategy;

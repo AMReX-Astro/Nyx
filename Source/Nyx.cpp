@@ -78,6 +78,8 @@ Real Nyx::new_a_time = -1.0;
 
 Vector<Real> Nyx::plot_z_values;
 Vector<Real> Nyx::analysis_z_values;
+int Nyx::insitu_start = 0;
+int Nyx::insitu_int = 0;
 
 int Nyx::load_balance_int = -1;
 int Nyx::load_balance_wgt_strategy = 0;
@@ -640,6 +642,10 @@ Nyx::read_params ()
       analysis_z_values.resize(num_z_values);
       pp_nyx.queryarr("analysis_z_values",analysis_z_values,0,num_z_values);
     }
+
+    ParmParse pp_insitu("insitu");
+    pp_insitu.query("int", insitu_int);
+    pp_insitu.query("start", insitu_start);
 
     pp_nyx.query("load_balance_int",          load_balance_int);
     pp_nyx.query("load_balance_wgt_strategy", load_balance_wgt_strategy);
@@ -1674,8 +1680,11 @@ Nyx::post_timestep (int iteration)
             sum_integrated_quantities();
         }
 #endif
+        bool do_insitu = ((nstep+1) >= insitu_start) &&
+            (insitu_int > 0) && ((nstep+1) % insitu_int == 0);
 
-	updateInSitu();
+	if(do_insitu || doAnalysisNow())
+            updateInSitu();
 
         write_info();
 
