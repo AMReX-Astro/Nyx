@@ -157,6 +157,12 @@ nyx.plot_z_values   = 7.0 6.0 5.0 4.0 3.0 2.0
 amr.plot_vars        = density xmom ymom zmom rho_e Temp phi_grav
 amr.derive_plot_vars = particle_mass_density particle_count
 
+# ANALYSIS in situ
+nyx.analysis_z_values   = 7.0 6.0 5.0 4.0 3.0 2.0
+insitu.int              = 100
+insitu.start            = 0
+insitu.reeber_int       = 100
+
 # SENSEI in situ
 sensei.enabled = 0
 #sensei.config = write_vtk.xml
