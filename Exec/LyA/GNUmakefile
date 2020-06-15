@@ -19,8 +19,9 @@ TOP = ../..
 
 # compilation options
 COMP    = gnu
-USE_MPI = FALSE
-USE_OMP = FALSE
+USE_MPI = TRUE
+USE_OMP = TRUE
+USE_CUDA ?= FALSE
 
 USE_SENSEI_INSITU = FALSE
 USE_HENSON = FALSE
