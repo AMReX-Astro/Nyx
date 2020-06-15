@@ -1173,9 +1173,10 @@ Nyx::blueprint_check_point ()
     // Render with Ascent
     ///////////////////////////////////////////////////////////////////
 
-    amrex::Print()<< "Executing Ascent (cycle="
-                  << cycle <<")"
-                  << std::endl;
+    if(verbose)
+        amrex::Print()<< "Executing Ascent (cycle="
+                      << cycle <<")"
+                      << std::endl;
 
     Ascent ascent;
     conduit::Node open_opts;

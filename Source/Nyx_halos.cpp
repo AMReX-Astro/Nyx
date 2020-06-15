@@ -42,7 +42,8 @@ Nyx::halo_find (Real dt)
 {
    BL_PROFILE("Nyx::halo_find()");
 
-   std::cerr << "ACHTUNG halo_find" << std::endl;
+   if(verbose > 2)
+      std::cerr << "ACHTUNG halo_find" << std::endl;
 
    const Real * dx = geom.CellSize();
 
