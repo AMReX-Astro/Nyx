@@ -865,13 +865,47 @@ Nyx::updateInSitu ()
 #endif
 
 #ifdef REEBER
-    halo_find(parent->dtLevel(level));
+    amrex::Vector<Halo>& reeber_halos);
+    halo_find(parent->dtLevel(level), reeber_halos);
+    halo_print(reeber_halos);
 #endif
 
 #endif
     return 0;
 }
 
+#ifdef REEBER
+void Nyx::halo_print(amrex::Vector<Halo>& reeber_halos)
+{
+
+       amrex::Real    halo_mass;
+       amrex::IntVect halo_pos ;
+       const auto dx = geom.CellSizeArray();
+
+       for (const Halo& h : reeber_halos)
+       {
+           halo_mass = h.total_mass;
+           halo_pos  = h.position;
+
+           if (halo_mass > mass_halo_min)
+           {
+                amrex::Real x = (halo_pos[0]+0.5) * dx[0];
+                amrex::Real y = (halo_pos[1]+0.5) * dx[1];
+                amrex::Real z = (halo_pos[2]+0.5) * dx[2];
+
+                amrex::Real mass = mass_seed;
+
+                int lev = 0;
+                int grid = 0;
+                int tile = 0;
+
+		amrex::AllPrintToFile("reeber_halos")<<h.id<<"\t"<<x<<"\t"<<y<<"\t"<<z<<"\t"<<h.total_mass<<"\t"<<h.n_cells<<"\t"<<h.n_cells<<std::endl;
+
+           }
+       } // end of loop over creating new particles from halos
+
+}
+#endif
 
 #ifdef AMREX_USE_CONDUIT
 void

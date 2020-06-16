@@ -38,7 +38,7 @@ const int comp0 = 0;
 using namespace amrex;
 
 void
-Nyx::halo_find (Real dt)
+Nyx::halo_find (Real dt, amrex::Vector<Halo>& reeber_halos)
 {
    BL_PROFILE("Nyx::halo_find()");
 
@@ -79,8 +79,6 @@ Nyx::halo_find (Real dt)
 
        Real cur_time = state[State_Type].curTime();
 
-       std::vector<Halo> reeber_halos;
-
        // global values updated when compute_average_density() called:
        /*
        average_gas_density;
@@ -107,47 +105,6 @@ Nyx::halo_find (Real dt)
 
        runReeberAnalysis(state_levels, particle_mf, Geom(), level_refinements, nStep(), do_analysis, reeber_halos);
        //////////////////////////////////////////////
-
-       amrex::Real    halo_mass;
-       amrex::IntVect halo_pos ;
-
-       std::ofstream os;
-
-       for (const Halo& h : reeber_halos)
-       {
-#if 0
-           // We aren't actually writing to this file so don't create it
-           if (reeber_halos_pos.size() > 0)
-           {
-              if (!created_file)
-                 os.open(amrex::Concatenate(amrex::Concatenate("debug-halos-", nStep(), 5), ParallelDescriptor::MyProc(), 2));
-              created_file = true;
-           }
-#endif
-           halo_mass = h.total_mass;
-           halo_pos  = h.position;
-
-           if (halo_mass > mass_halo_min)
-           {
-                amrex::Real x = (halo_pos[0]+0.5) * dx[0];
-                amrex::Real y = (halo_pos[1]+0.5) * dx[1];
-                amrex::Real z = (halo_pos[2]+0.5) * dx[2];
-
-                amrex::Real mass = mass_seed;
-
-                int lev = 0;
-                int grid = 0;
-                int tile = 0;
-
-                // Note that we are going to add the particle into grid 0 and tile 0 at level 0 --
-                //      this is not actually where the particle belongs, but we will let the Redistribute call
-                //      put it in the right place
-
-                //                Nyx::theAPC()->AddOneParticle(lev,grid,tile,mass,x,y,z); // ,u,v,w);
-                std::cout << "ADDED A PARTICLE AT " << x << " " << y << " " << z << " WITH MASS " << mass << std::endl;
-           }
-       } // end of loop over creating new particles from halos
-
 
      }
 }
