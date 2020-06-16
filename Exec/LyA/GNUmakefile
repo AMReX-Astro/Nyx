@@ -20,6 +20,8 @@ TOP = ../..
 # compilation options
 COMP    = gnu
 USE_MPI = TRUE
+# Use with Async IO
+MPI_THREAD_MULTIPLE = FALSE
 USE_OMP = TRUE
 USE_CUDA ?= FALSE
 
@@ -61,6 +63,18 @@ ifeq ($(USE_CUDA),TRUE)
 	USE_SUNDIALS = TRUE
 	COMP = pgi
 	USE_OMP = FALSE
+ifeq ($(REEBER), TRUE)
+#6.4.0
+#	NVCC_CCBIN=/sw/summit/gcc/6.4.0/bin/g++
+#        BOOST_INCLUDE_DIR=/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-6.4.0/boost-1.66.0-l6qu5nrynyuksm4ex7gswb6rsvvhsj42/include
+#	LIBRARY_LOCATIONS += /sw/summit/gcc/6.4.0/lib64/
+#        LIBRARIES += -Wl,-rpath, /sw/summit/gcc/6.4.0/lib64/
+#7.4.0
+	NVCC_CCBIN=/sw/summit/gcc/7.4.0/bin/g++
+	BOOST_INCLUDE_DIR=/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-7.4.0/boost-1.66.0-lmjl4oabmluitwt3kdwc6vks6riuuqqm/include
+	LIBRARY_LOCATIONS += /sw/summit/gcc/7.4.0/lib64/
+        LIBRARIES += -Wl,-rpath, /sw/summit/gcc/7.4.0/lib64/
+endif
 endif
 
 USE_OWN_BCS = FALSE

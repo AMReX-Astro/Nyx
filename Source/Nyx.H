@@ -616,7 +616,10 @@ public:
     void conserved_to_primitive(amrex::MultiFab& state);
     void primitive_to_conserved(amrex::MultiFab& state);
 
-    void halo_find(amrex::Real dt);
+#ifdef REEBER
+    void halo_find(amrex::Real dt,        amrex::Vector<Halo>& reeber_halos);
+    void halo_print(amrex::Vector<Halo>& reeber_halos);
+#endif
     void agn_halo_find(amrex::Real dt);
     void agn_halo_merge();
     void agn_halo_accrete(amrex::Real dt);
