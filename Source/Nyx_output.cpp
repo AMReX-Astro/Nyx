@@ -879,10 +879,15 @@ Nyx::blueprint_check_point ()
 {
   //    MultiFab& S_new = get_new_data(State_Type);
     //MultiFab S_new_tmp(S_new.boxArray(), S_new.DistributionMap(), 1, 0 NUM_GROW);
-
+#ifdef NO_HYDRO
+    const Real cur_time = state[PhiGrav_Type].curTime();
+#else
     const Real cur_time = state[State_Type].curTime();
+#endif
     int cycle = nStep();
 
+    conduit::Node bp_mesh;
+#ifndef NO_HYDRO
     Vector<std::string> varnames;
 
     varnames.push_back("Density");
@@ -901,14 +906,13 @@ Nyx::blueprint_check_point ()
     ///////////////////////////////////////////////////////////////////////////
     // Wrap our AMReX Mesh into a Conduit Mesh Blueprint Tree
     ///////////////////////////////////////////////////////////////////////////
-    conduit::Node bp_mesh;
     SingleLevelToBlueprint(get_new_data(State_Type),
                            varnames,
                            geom,
                            cur_time,
                            cycle,
                            bp_mesh);
-
+#endif
     //conduit::Node bp_particles;
     
     Vector<std::string> particle_varnames;
