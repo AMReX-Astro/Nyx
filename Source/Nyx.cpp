@@ -633,6 +633,7 @@ Nyx::read_params ()
     ParmParse pp_insitu("insitu");
     pp_insitu.query("int", insitu_int);
     pp_insitu.query("start", insitu_start);
+    pp_insitu.query("reeber_int", reeber_int);
 
     pp_nyx.query("load_balance_int",          load_balance_int);
     pp_nyx.query("load_balance_wgt_strategy", load_balance_wgt_strategy);
@@ -2621,7 +2622,22 @@ Nyx::derive (const std::string& name,
              int                dcomp)
 {
     BL_PROFILE("Nyx::derive(mf)");
-    AmrLevel::derive(name, time, mf, dcomp);
+	if (name == "Rank")
+    {
+        for (MFIter mfi(mf); mfi.isValid(); ++mfi)
+        {
+          const auto fab_derive_dat=mf.array(mfi);
+          const Box& bx = mfi.tilebox();
+          Real my_proc = ParallelDescriptor::MyProc();
+          AMREX_HOST_DEVICE_FOR_3D ( bx, i, j, k,
+                                   {
+                                     fab_derive_dat(i,j,k,dcomp)=my_proc;
+                                     });
+        }
+    } else {
+		const auto& derive_dat = particle_derive(name, time, mf.nGrow());
+		MultiFab::Copy(mf, *derive_dat, 0, dcomp, 1, mf.nGrow());
+    }
 }
 
 void
