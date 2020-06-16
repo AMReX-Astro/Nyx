@@ -385,6 +385,7 @@ Nyx::read_params ()
     pp_nyx.get("comoving_OmM", comoving_OmM);
     pp_nyx.query("comoving_OmR", comoving_OmR);
     pp_nyx.get("comoving_h", comoving_h);
+    pp_nyx.query("comoving_type", comoving_type);
 
     fort_set_omb(comoving_OmB);
     fort_set_omm(comoving_OmM);
@@ -1684,7 +1685,7 @@ Nyx::post_timestep (int iteration)
         bool do_insitu = ((nstep+1) >= insitu_start) &&
             (insitu_int > 0) && ((nstep+1) % insitu_int == 0);
 
-	if(do_insitu || doAnalysisNow())
+    if(do_insitu || doAnalysisNow())
             updateInSitu();
 
         write_info();
@@ -2603,7 +2604,7 @@ Nyx::derive (const std::string& name,
              int                dcomp)
 {
     BL_PROFILE("Nyx::derive(mf)");
-	if (name == "Rank")
+    if (name == "Rank")
     {
         for (MFIter mfi(mf); mfi.isValid(); ++mfi)
         {
@@ -2616,8 +2617,8 @@ Nyx::derive (const std::string& name,
                                      });
         }
     } else {
-		const auto& derive_dat = particle_derive(name, time, mf.nGrow());
-		MultiFab::Copy(mf, *derive_dat, 0, dcomp, 1, mf.nGrow());
+        const auto& derive_dat = particle_derive(name, time, mf.nGrow());
+        MultiFab::Copy(mf, *derive_dat, 0, dcomp, 1, mf.nGrow());
     }
 }
 

@@ -775,7 +775,7 @@ Nyx::no_hydro_setup()
     derive_lst.addComponent("particle_z_velocity", desc_lst, State_Type,
                             Density, 1);
 #else
-	derive_lst.add("particle_x_velocity", IndexType::TheCellType(), 1,
+    derive_lst.add("particle_x_velocity", IndexType::TheCellType(), 1,
                    dernull, grow_box_by_one);
     derive_lst.addComponent("particle_x_velocity", desc_lst, PhiGrav_Type,
                             Density, 1);

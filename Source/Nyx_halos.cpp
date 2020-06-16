@@ -103,7 +103,7 @@ Nyx::halo_find (Real dt)
        Nyx::theDMPC()->AssignDensity(particle_mf, 0, 4, -1, 0);
 
        runReeberAnalysis(state_levels, particle_mf, Geom(), level_refinements, nStep(), do_analysis, reeber_halos);
-	   //////////////////////////////////////////////
+       //////////////////////////////////////////////
 
        amrex::Real    halo_mass;
        amrex::IntVect halo_pos ;
@@ -140,7 +140,7 @@ Nyx::halo_find (Real dt)
                 //      this is not actually where the particle belongs, but we will let the Redistribute call
                 //      put it in the right place
 
-				//                Nyx::theAPC()->AddOneParticle(lev,grid,tile,mass,x,y,z); // ,u,v,w);
+                //                Nyx::theAPC()->AddOneParticle(lev,grid,tile,mass,x,y,z); // ,u,v,w);
                 std::cout << "ADDED A PARTICLE AT " << x << " " << y << " " << z << " WITH MASS " << mass << std::endl;
            }
        } // end of loop over creating new particles from halos
