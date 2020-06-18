@@ -226,6 +226,8 @@ Real Nyx::mass_seed         = 1.e5;
 #endif
 
 int Nyx::write_parameters_in_plotfile = true;
+int Nyx::write_skip_prepost = 0;
+int Nyx::write_hdf5 = 0;
 int Nyx::print_fortran_warnings       = true;
 
 // Do we use separate SPH particles to initialize
@@ -626,6 +628,16 @@ Nyx::read_params ()
     read_init_params();
 
     pp_nyx.query("write_parameter_file",write_parameters_in_plotfile);
+    if(pp_nyx.query("write_hdf5",write_hdf5))
+        write_skip_prepost = write_hdf5;
+    else
+        pp_nyx.query("write_skip_prepost",write_skip_prepost);
+
+#ifndef AMREX_USE_HDF5
+    if(write_hdf5 == 1)
+        amrex::Error("Must compile with USE_HDF5 = TRUE for write_hdf5 = 1");
+#endif
+
     pp_nyx.query("print_fortran_warnings",print_fortran_warnings);
 
     read_comoving_params();

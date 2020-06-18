@@ -13,6 +13,7 @@ endif
 #CVODE_LIB_DIR ?= $(CVODE_LIB)
 CVODE_LIB_DIR ?= $(INSTALL_PREFIX)/lib64/
 BOOST_INLUDE_DIR := ${OLCF_BOOST_ROOT}/include/boost
+HDF5_HOME := ${OLCF_HDF5_ROOT}
 
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ../..
@@ -29,7 +30,9 @@ USE_SENSEI_INSITU = FALSE
 USE_HENSON = FALSE
 REEBER = FALSE
 
-USE_ASCENT_INSITU=TRUE
+USE_HDF5 ?= FALSE
+
+USE_ASCENT_INSITU = FALSE
 
 ifeq ($(USE_ASCENT_INSITU),TRUE)
   ASCENT_HOME ?= NOT_SET
@@ -104,6 +107,12 @@ ifeq ($(USE_ASCENT_INSITU),TRUE)
                        -lascent_lodepng \
                        -lrover_mpi $(DRAY_LINK_RPATH) $(DRAY_LIB_FLAGS) $(ASCENT_VTKH_MPI_LIB_FLAGS) $(ASCENT_VTKM_LIB_FLAGS) $(ASCENT_CONDUIT_MPI_LIB_FLAGS) $(ASCENT_MFEM_LIB_FLAGS) $(ASCENT_PYTHON_LIBS) $(ASCENT_OPENMP_LINK_FLAGS) -L $(ASCENT_CUDA_LIB_FLAGS)
 #endif
+endif
+
+ifeq ($(USE_HDF5), TRUE)
+DEFINES += -DAMREX_USE_HDF5
+INCLUDE_LOCATIONS += $(HDF5_HOME)/include
+LIBRARIES         += -lhdf5 -lz -ldl -L$(HDF5_HOME)/lib
 endif
 
 include $(TOP)/Exec/Make.Nyx

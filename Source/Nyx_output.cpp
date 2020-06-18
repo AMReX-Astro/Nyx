@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <Nyx.H>
 #include <Nyx_F.H>
+#include <AMReX_PlotFileUtil.H>
 #include "Nyx_output.H"
 
 #include "AMReX_buildInfo.H"
@@ -115,6 +116,14 @@ void
 Nyx::writePlotFilePre (const std::string& dir, ostream& os)
 {
     amrex::Gpu::LaunchSafeGuard lsg(true);
+    if(write_hdf5 == 1 && (parent->maxLevel() > 0))
+        amrex::Error("Calling single-level hdf5 interface for multilevel code (max_level > 0)");
+    if(write_skip_prepost == 1)
+    {
+        amrex::Print()<<"Skip writePlotFilePre"<<std::endl;
+    }
+    else
+    {
   if(Nyx::theDMPC()) {
     Nyx::theDMPC()->WritePlotFilePre();
   }
@@ -129,7 +138,7 @@ Nyx::writePlotFilePre (const std::string& dir, ostream& os)
     Nyx::theNPC()->WritePlotFilePre();
   }
 #endif
-
+    }
 }
 
 void
@@ -139,7 +148,145 @@ Nyx::writePlotFile (const std::string& dir,
 {
 
     amrex::Gpu::LaunchSafeGuard lsg(true);
-    AmrLevel::writePlotFile(dir, os, how);
+#ifdef AMREX_USE_HDF5
+    if(write_hdf5==1 && parent->finestLevel() == 0)
+    {
+#ifdef NO_HYDRO
+    Real cur_time = state[PhiGrav_Type].curTime();
+#else
+    Real cur_time = state[State_Type].curTime();
+#endif
+
+    std::string dir_final = dir;
+    if(!amrex::AsyncOut::UseAsyncOut())
+    {
+        auto start_position_to_erase = dir_final.find(".temp");
+        dir_final.erase(start_position_to_erase,5);
+    }
+
+    int i, n;
+    //
+    // The list of indices of State to write to plotfile.
+    // first component of pair is state_type,
+    // second component of pair is component # within the state_type
+    //
+    std::vector<std::pair<int,int> > plot_var_map;
+    for (int typ = 0; typ < desc_lst.size(); typ++)
+    {
+        for (int comp = 0; comp < desc_lst[typ].nComp();comp++)
+        {
+            if (parent->isStatePlotVar(desc_lst[typ].name(comp))
+                && desc_lst[typ].getType() == IndexType::TheCellType())
+            {
+                plot_var_map.push_back(std::pair<int,int>(typ, comp));
+            }
+        }
+    }
+
+    int num_derive = 0;
+    std::list<std::string> derive_names;
+
+    for (std::list<DeriveRec>::const_iterator it = derive_lst.dlist().begin();
+         it != derive_lst.dlist().end(); ++it)
+    {
+        if (parent->isDerivePlotVar(it->name()))
+        {
+            if (it->name() == "particle_count" ||
+                it->name() == "total_particle_count" ||
+                it->name() == "particle_mass_density" ||
+                it->name() == "total_density" || 
+                it->name() == "particle_x_velocity" ||
+                it->name() == "particle_y_velocity" ||
+                it->name() == "particle_z_velocity" )
+            {
+                if (Nyx::theDMPC())
+                {
+                    derive_names.push_back(it->name());
+                    num_derive++;
+                }
+#ifdef AGN
+            } else if (it->name() == "agn_particle_count" ||
+                       it->name() == "agn_mass_density")
+            {
+                if (Nyx::theAPC())
+                {
+                    derive_names.push_back(it->name());
+                    num_derive++;
+                }
+#endif
+#ifdef NEUTRINO_PARTICLES
+            } else if (it->name() == "neutrino_particle_count" ||
+                       it->name() == "neutrino_mass_density" ||
+		       it->name() == "neutrino_x_velocity" ||
+		       it->name() == "neutrino_y_velocity" ||
+		       it->name() == "neutrino_z_velocity" )
+            {
+                if (Nyx::theNPC())
+                {
+                    derive_names.push_back(it->name());
+                    num_derive++;
+                }
+#endif
+            } else if (it->name() == "Rank") {
+                derive_names.push_back(it->name());
+                num_derive++;
+            } else {
+                derive_names.push_back(it->name());
+                num_derive++;
+            }
+        }
+    }
+
+    int n_data_items = plot_var_map.size() + num_derive;
+
+    //
+    // We combine all of the multifabs -- state, derived, etc -- into one
+    // multifab -- plotMF.
+    // NOTE: we are assuming that each state variable has one component,
+    // but a derived variable is allowed to have multiple components.
+    int cnt = 0;
+    const int nGrow = 0;
+    MultiFab plotMF(grids, dmap, n_data_items, nGrow);
+    MultiFab* this_dat = 0;
+    Vector<std::string> varnames;
+    //
+    // Cull data from state variables -- use no ghost cells.
+    //
+    for (i = 0; i < plot_var_map.size(); i++)
+    {
+        int typ = plot_var_map[i].first;
+        int comp = plot_var_map[i].second;
+        varnames.push_back(desc_lst[typ].name(comp));
+        this_dat = &state[typ].newData();
+        MultiFab::Copy(plotMF, *this_dat, comp, cnt, 1, nGrow);
+        cnt++;
+    }
+    //
+    // Cull data from derived variables.
+    //
+    if (derive_names.size() > 0)
+    {
+      for (std::list<DeriveRec>::const_iterator it = derive_lst.dlist().begin();
+	   it != derive_lst.dlist().end(); ++it)
+        {
+            varnames.push_back(it->name());
+            const auto& derive_dat = derive(it->name(), cur_time, nGrow);
+            MultiFab::Copy(plotMF, *derive_dat, 0, cnt, 1, nGrow);
+            cnt++;
+        }
+    }
+
+    WriteSingleLevelPlotfileHDF5(dir_final,
+                          plotMF, varnames,
+                          Geom(), cur_time, nStep());
+//                          const std::string &versionName,
+//                          const std::string &levelPrefix,
+//                          const std::string &mfPrefix,
+//                          const Vector<std::string>& extra_dirs)
+    }
+    else
+#endif
+        AmrLevel::writePlotFile(dir, os, how);
 
 }
 
@@ -148,12 +295,18 @@ Nyx::writePlotFilePost (const std::string& dir, ostream& os)
 {
 
   amrex::Gpu::LaunchSafeGuard lsg(true);
-
 #ifdef NO_HYDRO
     Real cur_time = state[PhiGrav_Type].curTime();
 #else
     Real cur_time = state[State_Type].curTime();
 #endif
+
+    if(write_skip_prepost == 1)
+    {
+        amrex::Print()<<"Skip writePlotFilePost"<<std::endl;
+    }
+    else
+    {
 
         // Write comoving_a into its own file in the particle directory
         if (ParallelDescriptor::IOProcessor())
@@ -241,7 +394,7 @@ Nyx::writePlotFilePost (const std::string& dir, ostream& os)
     Nyx::theNPC()->WritePlotFilePost();
   }
 #endif
-
+    }
   if(verbose) {
 
     if (level == 0)

@@ -210,6 +210,8 @@ public:
     //
     static int write_parameters_in_plotfile;
     virtual void write_parameter_file(const std::string& dir);
+    static int write_skip_prepost;
+    static int write_hdf5;
 
     //
     // If true then print the warnings from the Fortran routines
