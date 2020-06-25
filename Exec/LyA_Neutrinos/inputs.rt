@@ -126,6 +126,14 @@ amr.plot_int        = 10000
 amr.plot_vars        = ALL
 amr.derive_plot_vars = particle_count particle_mass_density pressure magvel
 
+# ANALYSIS in situ
+# Forces time-step to land on these z
+nyx.analysis_z_values   = 7.0 6.0 5.0 4.0 3.0 2.0
+# Calls actions in updateInSitu at these intervals
+insitu.int              = 100   # USE_ASCENT_INSITU=TRUE and/or REEBER=TRUE
+insitu.start            = 0     # USE_ASCENT_INSITU=TRUE and/or REEBER=TRUE
+insitu.reeber_int       = 100   # REEBER=TRUE
+
 #PROBIN FILENAME
 amr.probin_file = probin
 

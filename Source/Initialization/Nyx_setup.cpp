@@ -802,6 +802,7 @@ Nyx::no_hydro_setup()
     derive_lst.addComponent("agn_mass_density", desc_lst, Gravity_Type, 0, 1);
 #endif
 #ifdef NEUTRINO_PARTICLES
+#ifndef NO_HYDRO
     derive_lst.add("neutrino_particle_count", IndexType::TheCellType(), 1,
                    dernull, grow_box_by_one);
     derive_lst.addComponent("neutrino_particle_count", desc_lst, State_Type, Density, 1);
@@ -810,7 +811,6 @@ Nyx::no_hydro_setup()
                    dernull, grow_box_by_one);
     derive_lst.addComponent("neutrino_mass_density", desc_lst, State_Type,
                             Density, 1);
-#ifndef NO_HYDRO
     derive_lst.add("neutrino_x_velocity", IndexType::TheCellType(), 1,
                    dernull, grow_box_by_one);
     derive_lst.addComponent("neutrino_x_velocity", desc_lst, State_Type,
@@ -824,6 +824,14 @@ Nyx::no_hydro_setup()
     derive_lst.addComponent("neutrino_z_velocity", desc_lst, State_Type,
                             Density, 1);
 #else
+    derive_lst.add("neutrino_particle_count", IndexType::TheCellType(), 1,
+                   dernull, grow_box_by_one);
+    derive_lst.addComponent("neutrino_particle_count", desc_lst, PhiGrav_Type, Density, 1);
+
+    derive_lst.add("neutrino_mass_density", IndexType::TheCellType(), 1,
+                   dernull, grow_box_by_one);
+    derive_lst.addComponent("neutrino_mass_density", desc_lst, PhiGrav_Type,
+                            Density, 1);
     derive_lst.add("neutrino_x_velocity", IndexType::TheCellType(), 1,
                    dernull, grow_box_by_one);
     derive_lst.addComponent("neutrino_x_velocity", desc_lst, PhiGrav_Type,

@@ -1112,7 +1112,24 @@ Nyx::blueprint_check_point ()
     amrex::ParticleContainerToBlueprint(*(Nyx::theDMPC()),
                                         particle_varnames,
                                         particle_int_varnames,
-                                        bp_mesh);
+                                        bp_mesh,dm_plt_particle_file);
+
+#ifdef NEUTRINO_PARTICLES
+
+#ifdef NEUTRINO_DARK_PARTICLES    
+    Vector<std::string> neutrino_varnames;
+    neutrino_varnames.push_back("neutrino_mass");
+    neutrino_varnames.push_back("neutrino_xvel");
+    neutrino_varnames.push_back("neutrino_yvel");
+    neutrino_varnames.push_back("neutrino_zvel");
+
+    Vector<std::string> neutrino_int_varnames;
+    amrex::ParticleContainerToBlueprint(*(Nyx::theNPC()),
+                                        neutrino_varnames,
+                                        neutrino_int_varnames,
+                                        bp_mesh,npc_plt_particle_file);
+#endif
+#endif
     
     // very helpful for debugging when we actual try
     // to pull the varnames list from amrex, vs hand initing
