@@ -7,4 +7,6 @@ endif
 CEXE_sources += eos_interface.cpp
 
 F90EXE_sources += atomic_rates.F90
+CEXE_headers += atomic_rates_data.H
+CEXE_sources += atomic_rates_data.cpp
 F90EXE_sources += reion_aux_module.F90
