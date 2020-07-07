@@ -4,6 +4,8 @@
 #include <AMReX_REAL.H>
 #include <AMReX_Arena.H>
 
+#define NUM_SPECIES 2
+
 #define URHO 0
 #define UMX 1
 #define UMY 2
