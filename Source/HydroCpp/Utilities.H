@@ -5,9 +5,11 @@
 #include "Constants.H"
 #include "IndexDefines.H"
 
+/*
 AMREX_GPU_DEVICE
 void pc_cmpTemp(
   const int i, const int j, const int k, amrex::Array4<amrex::Real> const& S);
+*/
 
 AMREX_GPU_DEVICE
 void pc_rst_int_e(
@@ -50,6 +52,7 @@ pc_ctoprim(
   amrex::Real dpdr_e, dpde, gam1, cs, wbar, p;
 
   // Are all these EOS calls needed? Seems fairly convoluted.
+  /* // Below vars may be garbage
   EOS::Y2WBAR(massfrac, wbar);
   EOS::EY2T(e, massfrac, T);
   EOS::RTY2P(rho, T, massfrac, p);
@@ -57,6 +60,7 @@ pc_ctoprim(
   EOS::TY2G(T, massfrac, gam1);
   EOS::RPE2dpdr_e(rho, p, e, dpdr_e);
   EOS::RG2dpde(rho, gam1, dpde);
+  */
 
   q(i, j, k, QTEMP) = T;
   q(i, j, k, QREINT) = e * rho;
@@ -69,7 +73,7 @@ pc_ctoprim(
   qa(i, j, k, QGAMC) = gam1;
   qa(i, j, k, QC) = cs;
   qa(i, j, k, QCSML) = amrex::max(SMALL, SMALL * cs);
-  qa(i, j, k, QRSPEC) = EOS::RU / wbar;
+  //  qa(i, j, k, QRSPEC) = EOS::RU / wbar;
 }
 
 AMREX_GPU_DEVICE

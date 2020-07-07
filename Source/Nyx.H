@@ -596,6 +596,15 @@ public:
   
     amrex::Vector<std::unique_ptr<amrex::MultiFab> > mass_fluxes;
 
+    void construct_hydro_source(
+                                const amrex::MultiFab& S,
+                                amrex::Real time,
+                                amrex::Real dt,
+                                int amr_iteration,
+                                int amr_ncycle,
+                                int sub_iteration,
+                                int sub_ncycle);
+
     void compute_hydro_sources(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
                                amrex::MultiFab& S_border, amrex::MultiFab& D_border,
                                amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src,

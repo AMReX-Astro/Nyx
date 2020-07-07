@@ -1,5 +1,6 @@
 #include "Utilities.H"
 
+/*
 AMREX_GPU_DEVICE
 void
 pc_cmpTemp(
@@ -14,7 +15,7 @@ pc_cmpTemp(
   }
   EOS::EY2T(e, massfrac, T);
   S(i, j, k, UTEMP) = T;
-}
+}*/
 
 AMREX_GPU_DEVICE
 void
