@@ -1,7 +1,6 @@
 #ifndef _RIEMANN_H_
 #define _RIEMANN_H_
-#include "PeleC.H"
-#include "EOS.H"
+#include "Nyx.H"
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE

@@ -3,7 +3,6 @@
 
 #include <AMReX_REAL.H>
 #include <AMReX_Arena.H>
-#include "mechanism.h"
 
 #define URHO 0
 #define UMX 1

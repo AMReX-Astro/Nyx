@@ -4,7 +4,7 @@
  *  Set up the source terms to go into the hydro.
  */
 void
-PeleC::construct_hydro_source(
+Nyx::construct_hydro_source(
   const amrex::MultiFab& S,
   amrex::Real time,
   amrex::Real dt,
@@ -79,7 +79,7 @@ PeleC::construct_hydro_source(
     amrex::Real yang_lost = 0.;
     amrex::Real zang_lost = 0.;
 
-    BL_PROFILE_VAR("PeleC::advance_hydro_pc_umdrv()", PC_UMDRV);
+    BL_PROFILE_VAR("Nyx::advance_hydro_pc_umdrv()", PC_UMDRV);
 
 #ifdef _OPENMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())               \
@@ -136,7 +136,7 @@ PeleC::construct_hydro_source(
         auto const& qauxar = qaux.array();
         auto const& srcqarr = src_q.array();
 
-        BL_PROFILE_VAR("PeleC::ctoprim()", ctop);
+        BL_PROFILE_VAR("Nyx::ctoprim()", ctop);
         amrex::ParallelFor(
           qbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
             pc_ctoprim(i, j, k, s, qarr, qauxar);
@@ -185,7 +185,7 @@ PeleC::construct_hydro_source(
                      &time, dx, &dt);
       }
 #endif
-        BL_PROFILE_VAR("PeleC::srctoprim()", srctop);
+        BL_PROFILE_VAR("Nyx::srctoprim()", srctop);
         const auto& src_in = sources_for_hydro.array(mfi);
         amrex::ParallelFor(
           qbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -204,7 +204,7 @@ PeleC::construct_hydro_source(
 #else
         auto device = amrex::RunOn::Cpu;
 #endif
-        BL_PROFILE_VAR("PeleC::umdrv()", purm);
+        BL_PROFILE_VAR("Nyx::umdrv()", purm);
         const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>
           flx_arr{
             AMREX_D_DECL(flux[0].array(), flux[1].array(), flux[2].array())};
@@ -373,7 +373,7 @@ pc_umdrv(
   auto const& divarr = divu.array();
   auto const& pdivuarr = pdivu.array();
 
-  BL_PROFILE_VAR("PeleC::umeth()", umeth);
+  BL_PROFILE_VAR("Nyx::umeth()", umeth);
 #if AMREX_SPACEDIM == 1
   amrex::Abort("PLM isn't implemented in 1D.");
   //pc_umeth_1D(

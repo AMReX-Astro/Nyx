@@ -3,7 +3,6 @@
 
 #include "Nyx.H"
 #include "IndexDefines.H"
-#include "EOS.H"
 #include "Utilities.H"
 #include "PLM.H"
 
