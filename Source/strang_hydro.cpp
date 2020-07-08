@@ -135,18 +135,11 @@ Nyx::strang_hydro (Real time,
     MultiFab hydro_src(grids, dmap, NUM_STATE, 0);
     hydro_src.setVal(0.);
 
-    if(hydro_convert)
-		/*      construct_ctu_hydro_source(time,dt,a_old,a_new,S_old_tmp,D_old_tmp,
-                                 ext_src_old,hydro_src,grav_vector,
-                                 init_flux_register, add_to_flux_register);*/
-    else
-      {
-        divu_cc.reset(new MultiFab(grids, dmap, 1, 0));
-        divu_cc->setVal(0.);
-        compute_hydro_sources(time,dt,a_old,a_new,S_old_tmp,D_old_tmp,
-                            ext_src_old,hydro_src,grav_vector,*divu_cc,
-                            init_flux_register, add_to_flux_register);
-      }
+    divu_cc.reset(new MultiFab(grids, dmap, 1, 0));
+    divu_cc->setVal(0.);
+    compute_hydro_sources(time,dt,a_old,a_new,S_old_tmp,D_old_tmp,
+                          ext_src_old,hydro_src,grav_vector,*divu_cc,
+                          init_flux_register, add_to_flux_register);
         
     D_old_tmp.clear();
 
@@ -379,19 +372,10 @@ Nyx::strang_hydro_ghost_state (Real time,
 
     MultiFab hydro_src(grids, dmap, NUM_STATE, 0);
 
-    if(hydro_convert)
-      {
-        construct_ctu_hydro_source(time,dt,a_old,a_new,S_new,D_old_tmp,
-                                 ext_src_old,hydro_src,grav_vector,
-                                 init_flux_register, add_to_flux_register);
-      }
-    else
-      {
-        divu_cc.reset(new MultiFab(grids, dmap, 1, 0));
-        compute_hydro_sources(time,dt,a_old,a_new,S_new,D_old_tmp,
-                            ext_src_old,hydro_src,grav_vector,*divu_cc,
-                            init_flux_register, add_to_flux_register);
-      }
+    divu_cc.reset(new MultiFab(grids, dmap, 1, 0));
+    compute_hydro_sources(time,dt,a_old,a_new,S_new,D_old_tmp,
+                          ext_src_old,hydro_src,grav_vector,*divu_cc,
+                          init_flux_register, add_to_flux_register);
         
     D_old_tmp.clear();
 
