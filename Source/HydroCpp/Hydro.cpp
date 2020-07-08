@@ -6,6 +6,7 @@
 void
 Nyx::construct_hydro_source(
   const amrex::MultiFab& S,
+        amrex::MultiFab& sources_for_hydro,
   amrex::Real time,
   amrex::Real dt,
   int amr_iteration,
@@ -13,13 +14,6 @@ Nyx::construct_hydro_source(
   int sub_iteration,
   int sub_ncycle)
 {
-  if (do_mol) {
-    if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
-      amrex::Print() << "... Zeroing Godunov-based hydro advance" << std::endl;
-    }
-    hydro_source.setVal(0);
-  } else {
-
     if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
       amrex::Print() << "... Computing hydro advance" << std::endl;
     }
@@ -221,33 +215,9 @@ Nyx::construct_hydro_source(
         BL_PROFILE_VAR("courno + flux reg", crno);
         courno = amrex::max(courno, cflLoc);
 
-        // Filter hydro source and fluxes here
-        if (use_explicit_filter) {
-          for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
-            const amrex::Box& bxtmp = amrex::surroundingNodes(bx, dir);
-            amrex::FArrayBox filtered_flux(bxtmp, NVAR);
-            amrex::Elixir filtered_flux_eli = filtered_flux.elixir();
-            les_filter.apply_filter(
-              bxtmp, flux[dir], filtered_flux, Density, NVAR);
-
-            setV(bxtmp, flux[dir].nComp(), flx_arr[dir], 0.0);
-            copy_array4(
-              bxtmp, flux[dir].nComp(), filtered_flux.array(), flx_arr[dir]);
-          }
-
-          amrex::FArrayBox filtered_source_out(bx, NVAR);
-          amrex::Elixir filtered_source_out_eli = filtered_source_out.elixir();
-          les_filter.apply_filter(
-            bx, hydro_source[mfi], filtered_source_out, Density, NVAR);
-
-          setV(bx, hyd_src.nComp(), hyd_src, 0.0);
-          copy_array4(
-            bx, hyd_src.nComp(), filtered_source_out.array(), hyd_src);
-        }
-
         if (do_reflux && sub_iteration == sub_ncycle - 1) {
           if (level < finest_level) {
-            getFluxReg(level + 1).CrseAdd(
+            get_flux_reg(level + 1).CrseAdd(
               mfi, {AMREX_D_DECL(&(flux[0]), &(flux[1]), &(flux[2]))}, dxDp, dt,
               device);
 
@@ -258,7 +228,7 @@ Nyx::construct_hydro_source(
           }
 
           if (level > 0) {
-            getFluxReg(level).FineAdd(
+            get_flux_reg(level).FineAdd(
               mfi, {AMREX_D_DECL(&(flux[0]), &(flux[1]), &(flux[2]))}, dxDp, dt,
               device);
 
@@ -273,17 +243,6 @@ Nyx::construct_hydro_source(
     }   // end of OMP parallel region
 
     BL_PROFILE_VAR_STOP(PC_UMDRV);
-
-    if (track_grid_losses) {
-      material_lost_through_boundary_temp[0] += mass_lost;
-      material_lost_through_boundary_temp[1] += xmom_lost;
-      material_lost_through_boundary_temp[2] += ymom_lost;
-      material_lost_through_boundary_temp[3] += zmom_lost;
-      material_lost_through_boundary_temp[4] += eden_lost;
-      material_lost_through_boundary_temp[5] += xang_lost;
-      material_lost_through_boundary_temp[6] += yang_lost;
-      material_lost_through_boundary_temp[7] += zang_lost;
-    }
 
     if (print_energy_diagnostics) {
       amrex::Real foo[5] = {
@@ -323,11 +282,7 @@ Nyx::construct_hydro_source(
     if (courno > 1.0) {
       amrex::Print() << "WARNING -- EFFECTIVE CFL AT THIS LEVEL " << level
                      << " IS " << courno << '\n';
-      if (hard_cfl_limit == 1)
-        amrex::Abort("CFL is too high at this level -- go back to a checkpoint "
-                     "and restart with lower cfl number");
     }
-  }
 }
 
 void
