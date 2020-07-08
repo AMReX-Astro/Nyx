@@ -285,7 +285,8 @@ Nyx::construct_hydro_source(
     BL_PROFILE_VAR_STOP(PC_UMDRV);
 
 #ifdef AMREX_DEBUG
-    if (print_energy_diagnostics) {
+//  if (print_energy_diagnostics) 
+    {
       amrex::Real foo[5] = {
         E_added_flux, xmom_added_flux, ymom_added_flux, zmom_added_flux,
         mass_added_flux};
