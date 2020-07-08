@@ -21,12 +21,12 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
         std::cout<<"hydro_src norm2(Eint)"<<hydro_src.norm2(Eden)<<std::endl;
 }
 
-	int ng = 0;
+    int ng = 0;
 
-	amrex::MultiFab::Copy(S_new, S_old, 0, 0, S_new.nComp(), ng);
-	amrex::MultiFab::Saxpy(S_new, dt, hydro_src, 0, 0, S_new.nComp(), ng);
+    amrex::MultiFab::Copy(S_new, S_old, 0, 0, S_new.nComp(), ng);
+    amrex::MultiFab::Saxpy(S_new, dt, hydro_src, 0, 0, S_new.nComp(), ng);
 
-	if(verbose>1) {
+    if(verbose>1) {
         std::cout<<"S_new norm2(0)"<<S_new.norm2(0)<<std::endl;
         std::cout<<"S_new norm2(Eint)"<<S_new.norm2(Eint)<<std::endl;
         std::cout<<"S_new norm2(Eint)"<<S_new.norm2(Eden)<<std::endl;

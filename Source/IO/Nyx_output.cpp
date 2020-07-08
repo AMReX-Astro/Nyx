@@ -217,9 +217,9 @@ Nyx::writePlotFile (const std::string& dir,
 #ifdef NEUTRINO_PARTICLES
             } else if (it->name() == "neutrino_particle_count" ||
                        it->name() == "neutrino_mass_density" ||
-		       it->name() == "neutrino_x_velocity" ||
-		       it->name() == "neutrino_y_velocity" ||
-		       it->name() == "neutrino_z_velocity" )
+                       it->name() == "neutrino_x_velocity" ||
+                       it->name() == "neutrino_y_velocity" ||
+                       it->name() == "neutrino_z_velocity" )
             {
                 if (Nyx::theNPC())
                 {
@@ -267,7 +267,7 @@ Nyx::writePlotFile (const std::string& dir,
     if (derive_names.size() > 0)
     {
       for (std::list<DeriveRec>::const_iterator it = derive_lst.dlist().begin();
-	   it != derive_lst.dlist().end(); ++it)
+           it != derive_lst.dlist().end(); ++it)
         {
             varnames.push_back(it->name());
             const auto& derive_dat = derive(it->name(), cur_time, nGrow);
@@ -1052,7 +1052,7 @@ void Nyx::halo_print(amrex::Vector<Halo>& reeber_halos)
                 int grid = 0;
                 int tile = 0;
 
-		amrex::AllPrintToFile("reeber_halos")<<h.id<<"\t"<<x<<"\t"<<y<<"\t"<<z<<"\t"<<h.total_mass<<"\t"<<h.n_cells<<"\t"<<h.n_cells<<std::endl;
+                amrex::AllPrintToFile("reeber_halos")<<h.id<<"\t"<<x<<"\t"<<y<<"\t"<<z<<"\t"<<h.total_mass<<"\t"<<h.n_cells<<"\t"<<h.n_cells<<std::endl;
 
            }
        } // end of loop over creating new particles from halos

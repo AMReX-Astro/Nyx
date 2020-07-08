@@ -19,20 +19,20 @@ Nyx::construct_hydro_source(
     sources_for_hydro.FillBoundary(geom.periodicity());
     hydro_source.setVal(0);
 
-	int nGrowF = 0;
+    int nGrowF = 0;
     // Compute_hydro_sources style
-	amrex::MultiFab fluxes[BL_SPACEDIM];
+    amrex::MultiFab fluxes[BL_SPACEDIM];
     int finest_level = parent->finestLevel();
 
     //
     // Get pointers to Flux registers, or set pointer to zero if not there.
     //
-	amrex::FluxRegister* fine    = 0;
-	amrex::FluxRegister* current = 0;
+    amrex::FluxRegister* fine    = 0;
+    amrex::FluxRegister* current = 0;
 
     if(finest_level!=0)
     {
-		for (int j = 0; j < BL_SPACEDIM; j++)
+        for (int j = 0; j < BL_SPACEDIM; j++)
         {
             fluxes[j].define(getEdgeBoxArray(j), dmap, NUM_STATE, 0);
             fluxes[j].setVal(0.0);
@@ -85,9 +85,9 @@ Nyx::construct_hydro_source(
 #ifdef _OPENMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())               \
     reduction(+:E_added_flux,mass_added_flux)                           \
-    reduction(+:xmom_added_flux,ymom_added_flux,zmom_added_flux)	\
-    reduction(+:mass_lost,xmom_lost,ymom_lost,zmom_lost)		\
-    reduction(+:eden_lost,xang_lost,yang_lost,zang_lost) 		\
+    reduction(+:xmom_added_flux,ymom_added_flux,zmom_added_flux)    \
+    reduction(+:mass_lost,xmom_lost,ymom_lost,zmom_lost)        \
+    reduction(+:eden_lost,xang_lost,yang_lost,zang_lost)        \
     reduction(max:courno)
 #endif
     {
@@ -170,8 +170,8 @@ Nyx::construct_hydro_source(
       // here we put physbc values in the appropriate faces for the non-nscbc case
       set_bc_mask(lo, hi, domain_lo, domain_hi,
                   AMREX_D_DECL(AMREX_TO_FORTRAN(bcMask[0]),
-	                       AMREX_TO_FORTRAN(bcMask[1]),
-                         AMREX_TO_FORTRAN(bcMask[2])));
+                               AMREX_TO_FORTRAN(bcMask[1]),
+                               AMREX_TO_FORTRAN(bcMask[2])));
 
       if (nscbc_adv == 1)
       {
