@@ -13,7 +13,8 @@ Nyx::construct_hydro_source(
   int amr_iteration,
   int amr_ncycle,
   int sub_iteration,
-  int sub_ncycle)
+  int sub_ncycle,
+  bool init_flux_register, bool add_to_flux_register)
 {
     if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
       amrex::Print() << "... Computing hydro advance" << std::endl;
@@ -22,7 +23,37 @@ Nyx::construct_hydro_source(
     sources_for_hydro.FillBoundary(geom.periodicity());
     hydro_source.setVal(0);
 
+	int nGrowF = 0;
+    // Compute_hydro_sources style
+	amrex::MultiFab fluxes[BL_SPACEDIM];
     int finest_level = parent->finestLevel();
+
+    //
+    // Get pointers to Flux registers, or set pointer to zero if not there.
+    //
+	amrex::FluxRegister* fine    = 0;
+	amrex::FluxRegister* current = 0;
+
+    if(finest_level!=0)
+    {
+		for (int j = 0; j < BL_SPACEDIM; j++)
+        {
+            fluxes[j].define(getEdgeBoxArray(j), dmap, NUM_STATE, 0);
+            fluxes[j].setVal(0.0);
+        }
+        if (do_reflux)
+        {
+            if (level < finest_level)
+            {
+                fine = &get_flux_reg(level+1);
+                if (init_flux_register)
+                    fine->setVal(0);
+            }
+            if (level > 0) {
+                current = &get_flux_reg(level);
+            }
+        }
+    }
 
     const amrex::Real* dx = geom.CellSize();
 
@@ -214,34 +245,45 @@ Nyx::construct_hydro_source(
           volume.array(mfi), cflLoc);
         BL_PROFILE_VAR_STOP(purm);
 
-        BL_PROFILE_VAR("courno + flux reg", crno);
+        BL_PROFILE_VAR("courno", crno);
         courno = amrex::max(courno, cflLoc);
 
-        if (do_reflux && sub_iteration == sub_ncycle - 1) {
-          if (level < finest_level) {
-            get_flux_reg(level + 1).CrseAdd(
-              mfi, {AMREX_D_DECL(&(flux[0]), &(flux[1]), &(flux[2]))}, dxDp, dt,
-              device);
+        // Replacing YAFluxRegister or EBFluxRegister function with copy:
+        //HostDevice::Atomic::Add(fluxes_fab(i,j,k,n),flux_fab(i,j,k,n));
+        if(finest_level!=0)
+        {
+            for (int idir = 0; idir < AMREX_SPACEDIM; ++idir) {
+                amrex::Array4<amrex::Real> const flux_fab = (flux[idir]).array();
+                amrex::Array4<amrex::Real> fluxes_fab = (fluxes[idir]).array(mfi);
+                const int numcomp = NUM_STATE;
+                fluxes[idir][mfi].prefetchToDevice();
+                flux[idir].prefetchToDevice();
 
-            if (!amrex::DefaultGeometry().IsCartesian()) {
-              amrex::Abort("Flux registers not r-z compatible yet");
-              // getPresReg(level+1).CrseAdd(mfi,pradial, dx,dt);
+                AMREX_HOST_DEVICE_FOR_4D(mfi.nodaltilebox(idir), numcomp, i, j, k, n,
+                {
+                    fluxes_fab(i,j,k,n) += flux_fab(i,j,k,n);
+                });
+            }
+        }
+
+        BL_PROFILE_VAR_STOP(crno);
+      } // MFIter loop
+      // These seem to check if the provided flux is a gpuptr, and use launches
+      if (add_to_flux_register && finest_level!=0)
+      {
+        if (do_reflux) {
+          if (current) {
+            for (int i = 0; i < BL_SPACEDIM ; i++) {
+              current->FineAdd(fluxes[i], i, 0, 0, NUM_STATE, 1);
             }
           }
-
-          if (level > 0) {
-            get_flux_reg(level).FineAdd(
-              mfi, {AMREX_D_DECL(&(flux[0]), &(flux[1]), &(flux[2]))}, dxDp, dt,
-              device);
-
-            if (!amrex::DefaultGeometry().IsCartesian()) {
-              amrex::Abort("Flux registers not r-z compatible yet");
-              // getPresReg(level).FineAdd(mfi,pradial, dx,dt);
+          if (fine) {
+            for (int i = 0; i < BL_SPACEDIM ; i++) {
+              fine->CrseInit(fluxes[i],i,0,0,NUM_STATE,-1.,amrex::FluxRegister::ADD);
             }
           }
         }
-        BL_PROFILE_VAR_STOP(crno);
-      } // MFIter loop
+      }
     }   // end of OMP parallel region
 
     BL_PROFILE_VAR_STOP(PC_UMDRV);
