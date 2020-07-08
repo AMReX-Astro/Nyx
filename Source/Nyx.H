@@ -598,6 +598,7 @@ public:
 
     void construct_hydro_source(const amrex::MultiFab& S,
                                       amrex::MultiFab& sources_for_hydro,
+                                amrex::MultiFab& hydro_source,
                                 amrex::Real time,
                                 amrex::Real dt,
                                 int amr_iteration,

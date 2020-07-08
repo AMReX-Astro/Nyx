@@ -7,6 +7,7 @@ void
 Nyx::construct_hydro_source(
   const amrex::MultiFab& S,
         amrex::MultiFab& sources_for_hydro,
+  amrex::MultiFab& hydro_source, 
   amrex::Real time,
   amrex::Real dt,
   int amr_iteration,
@@ -18,27 +19,6 @@ Nyx::construct_hydro_source(
       amrex::Print() << "... Computing hydro advance" << std::endl;
     }
 
-    AMREX_ASSERT(S.nGrow() == NUM_GROW + nGrowF);
-    sources_for_hydro.setVal(0.0);
-    int ng = 0; // TODO: This is currently the largest ngrow of the source
-                // data...maybe this needs fixing?
-    for (int n = 0; n < src_list.size(); ++n) {
-      amrex::MultiFab::Saxpy(
-        sources_for_hydro, 0.5, *new_sources[src_list[n]], 0, 0, NVAR, ng);
-      amrex::MultiFab::Saxpy(
-        sources_for_hydro, 0.5, *old_sources[src_list[n]], 0, 0, NVAR, ng);
-    }
-#ifdef PELEC_USE_REACTIONS
-    // Add I_R terms to advective forcing
-    if (do_react == 1) {
-      amrex::MultiFab::Add(
-        sources_for_hydro, get_new_data(Reactions_Type), 0, FirstSpec,
-        NUM_SPECIES, ng);
-      amrex::MultiFab::Add(
-        sources_for_hydro, get_new_data(Reactions_Type), NUM_SPECIES, Eden, 1,
-        ng);
-    }
-#endif
     sources_for_hydro.FillBoundary(geom.periodicity());
     hydro_source.setVal(0);
 
@@ -199,6 +179,28 @@ Nyx::construct_hydro_source(
         auto device = amrex::RunOn::Cpu;
 #endif
         BL_PROFILE_VAR("Nyx::umdrv()", purm);
+        amrex::MultiFab             volume;
+        amrex::MultiFab             area[3];
+        amrex::MultiFab             dLogArea[1];
+        amrex::Vector< amrex::Vector<amrex::Real> > radius;
+
+        volume.clear();
+        volume.define(grids,dmap,1,NUM_GROW);
+        geom.GetVolume(volume);
+
+        for (int dir = 0; dir < BL_SPACEDIM; dir++)
+        {
+            area[dir].clear();
+            area[dir].define(getEdgeBoxArray(dir),dmap,1,NUM_GROW);
+            geom.GetFaceArea(area[dir],dir);
+        }
+        for (int dir = BL_SPACEDIM; dir < 3; dir++)
+        {
+            area[dir].clear();
+            area[dir].define(grids, dmap, 1, 0);
+            area[dir].setVal(0.0);
+        }
+
         const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>
           flx_arr{
             AMREX_D_DECL(flux[0].array(), flux[1].array(), flux[2].array())};
@@ -244,6 +246,7 @@ Nyx::construct_hydro_source(
 
     BL_PROFILE_VAR_STOP(PC_UMDRV);
 
+#ifdef AMREX_DEBUG
     if (print_energy_diagnostics) {
       amrex::Real foo[5] = {
         E_added_flux, xmom_added_flux, ymom_added_flux, zmom_added_flux,
@@ -261,7 +264,6 @@ Nyx::construct_hydro_source(
           ymom_added_flux = foo[2];
           zmom_added_flux = foo[3];
           mass_added_flux = foo[4];
-#ifdef AMREX_DEBUG
           amrex::Print() << "mass added from fluxes                      : "
                          << mass_added_flux << std::endl;
           amrex::Print() << "xmom added from fluxes                      : "
@@ -272,12 +274,12 @@ Nyx::construct_hydro_source(
                          << zmom_added_flux << std::endl;
           amrex::Print() << "(rho E) added from fluxes                   : "
                          << E_added_flux << std::endl;
-#endif
         }
 #ifdef AMREX_LAZY
       });
 #endif
     }
+#endif
 
     if (courno > 1.0) {
       amrex::Print() << "WARNING -- EFFECTIVE CFL AT THIS LEVEL " << level
