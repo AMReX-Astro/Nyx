@@ -10,10 +10,6 @@ Nyx::construct_hydro_source(
   amrex::MultiFab& hydro_source, 
   amrex::Real time,
   amrex::Real dt,
-  int amr_iteration,
-  int amr_ncycle,
-  int sub_iteration,
-  int sub_ncycle,
   bool init_flux_register, bool add_to_flux_register)
 {
     if (verbose && amrex::ParallelDescriptor::IOProcessor()) {

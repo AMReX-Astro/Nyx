@@ -601,10 +601,6 @@ public:
                                 amrex::MultiFab& hydro_source,
                                 amrex::Real time,
                                 amrex::Real dt,
-                                int amr_iteration,
-                                int amr_ncycle,
-                                int sub_iteration,
-                                int sub_ncycle,
                                 bool init_flux_register, bool add_to_flux_register);
 
     void compute_hydro_sources(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new,

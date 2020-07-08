@@ -136,9 +136,9 @@ Nyx::strang_hydro (Real time,
     hydro_src.setVal(0.);
 
     if(hydro_convert)
-      construct_ctu_hydro_source(time,dt,a_old,a_new,S_old_tmp,D_old_tmp,
+		/*      construct_ctu_hydro_source(time,dt,a_old,a_new,S_old_tmp,D_old_tmp,
                                  ext_src_old,hydro_src,grav_vector,
-                                 init_flux_register, add_to_flux_register);
+                                 init_flux_register, add_to_flux_register);*/
     else
       {
         divu_cc.reset(new MultiFab(grids, dmap, 1, 0));

@@ -6,6 +6,7 @@
 #include <AMReX_FArrayBox.H>
 #include <AMReX_IArrayBox.H>
 
+#include "Nyx.H"
 #include "Constants.H"
 #include "IndexDefines.H"
 #include "Riemann.H"
