@@ -2352,6 +2352,7 @@ Nyx::average_down ()
 }
 
 #ifndef NO_HYDRO
+
 void
 Nyx::enforce_nonnegative_species (MultiFab& S_new)
 {
@@ -2376,7 +2377,6 @@ Nyx::enforce_nonnegative_species (MultiFab& S_new)
                &print_fortran_warnings_tmp);
                                        });
           }
-        
       }
     else
       {

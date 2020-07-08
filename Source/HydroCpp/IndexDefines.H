@@ -12,8 +12,7 @@
 #define UMZ 3
 #define UEDEN 4
 #define UEINT 5
-#define UTEMP 6
-#define UFA 7
+#define UFA 6
 
 #define QRHO 0
 #define QU 1
@@ -63,7 +62,6 @@
 
 #define UFS UFA + NUM_ADV
 #define UFX UFS + NUM_SPECIES
-#define NVAR NTHERM + NUM_ADV + NUM_SPECIES + NUM_AUX
 
 #define QFS QFA + NUM_ADV
 #define QFX QFS + NUM_SPECIES

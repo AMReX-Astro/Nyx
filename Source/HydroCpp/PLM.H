@@ -2025,35 +2025,28 @@ pc_artif_visc(
                  , div1 = 0.25 * (div(i, j, k) + div(i, j + 1, k) +
                                   div(i, j, k + 1) + div(i, j + 1, k + 1)););
     div1 = difmag * amrex::min(0.0, div1);
-    for (int n = 0; n < NVAR; ++n) {
-      if (n != UTEMP) {
+    for (int n = 0; n < flx.nComp(); ++n) {
         // Passing in difmag TODO not pass in.
         flx(i, j, k, n) += dx * div1 * (u(i, j, k, n) - u(i - 1, j, k, n));
-      }
     }
   } else if (dir == 1) { // Y direction
     AMREX_D_PICK(, div1 = 0.5 * (div(i, j, k) + div(i + 1, j, k));
                  , div1 = 0.25 * (div(i, j, k) + div(i + 1, j, k) +
                                   div(i, j, k + 1) + div(i + 1, j, k + 1)););
     div1 = difmag * amrex::min(0.0, div1);
-    for (int n = 0; n < NVAR; ++n) {
-      if (n != UTEMP) {
+    for (int n = 0; n < flx.nComp(); ++n) {
         flx(i, j, k, n) +=
           dx * div1 * (u(i, j, k, n) - u(i, j - 1, k, n)); // Here dx is dy
-      }
     }
   } else { // Z direction
     div1 = 0.25 * (div(i, j, k) + div(i + 1, j, k) + div(i, j + 1, k) +
                    div(i + 1, j + 1, k));
     div1 = difmag * amrex::min(0.0, div1);
-    for (int n = 0; n < NVAR; ++n) {
-      if (n != UTEMP) {
+    for (int n = 0; n < flx.nComp(); ++n) {
         flx(i, j, k, n) +=
           dx * div1 * (u(i, j, k, n) - u(i, j, k - 1, n)); // Here dx is dz
-      }
     }
   }
-  flx(i, j, k, UTEMP) = 0.0;
 }
 
 // Host Functions

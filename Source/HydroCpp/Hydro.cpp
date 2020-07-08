@@ -119,7 +119,7 @@ Nyx::construct_hydro_source(
         amrex::Elixir flux_eli[AMREX_SPACEDIM];
         for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
           const amrex::Box& efbx = surroundingNodes(fbx, dir);
-          flux[dir].resize(efbx, NVAR);
+          flux[dir].resize(efbx, S.nComp());
           flux_eli[dir] = flux[dir].elixir();
         }
 

@@ -43,7 +43,8 @@ pc_ctoprim(
   }
 
   const amrex::Real e = (u(i, j, k, UEDEN) - kineng) * rhoinv;
-  amrex::Real T = u(i, j, k, UTEMP);
+  // Below vars may be garbage
+  amrex::Real T; //= u(i, j, k, UTEMP);
   amrex::Real massfrac[NUM_SPECIES];
   //    amrex::Real aux[NUM_AUX];
   for (int sp = 0; sp < NUM_SPECIES; ++sp)

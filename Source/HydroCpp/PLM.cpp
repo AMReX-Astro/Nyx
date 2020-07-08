@@ -112,7 +112,7 @@ pc_umeth_3D(
   // method X initial fluxes
   cdir = 0;
   const amrex::Box& xflxbx = surroundingNodes(grow(bxg2, cdir, -1), cdir);
-  amrex::FArrayBox fx(xflxbx, NVAR);
+  amrex::FArrayBox fx(xflxbx, flx1.nComp());
   amrex::Elixir fxeli = fx.elixir();
   auto const& fxarr = fx.array();
   amrex::FArrayBox qgdx(xflxbx, NGDNV);
@@ -127,7 +127,7 @@ pc_umeth_3D(
 
   // Y initial fluxes
   cdir = 1;
-  amrex::FArrayBox fy(yflxbx, NVAR);
+  amrex::FArrayBox fy(yflxbx, flx2.nComp());
   amrex::Elixir fyeli = fy.elixir();
   auto const& fyarr = fy.array();
   amrex::FArrayBox qgdy(yflxbx, NGDNV);
@@ -142,7 +142,7 @@ pc_umeth_3D(
 
   // Z initial fluxes
   cdir = 2;
-  amrex::FArrayBox fz(zflxbx, NVAR);
+  amrex::FArrayBox fz(zflxbx, flx3.nComp());
   amrex::Elixir fzeli = fz.elixir();
   auto const& fzarr = fz.array();
   amrex::FArrayBox qgdz(zflxbx, NGDNV);
@@ -183,8 +183,8 @@ pc_umeth_3D(
   });
 
   const amrex::Box& txfxbx = surroundingNodes(bxg1, cdir);
-  amrex::FArrayBox fluxxy(txfxbx, NVAR);
-  amrex::FArrayBox fluxxz(txfxbx, NVAR);
+  amrex::FArrayBox fluxxy(txfxbx, flx1.nComp());
+  amrex::FArrayBox fluxxz(txfxbx, flx1.nComp());
   amrex::FArrayBox gdvxyfab(txfxbx, NGDNV);
   amrex::FArrayBox gdvxzfab(txfxbx, NGDNV);
   amrex::Elixir fluxxyeli = fluxxy.elixir(), gdvxyeli = gdvxyfab.elixir();
@@ -240,8 +240,8 @@ pc_umeth_3D(
 
   // Riemann problem Y|X Y|Z
   const amrex::Box& tyfxbx = surroundingNodes(bxg1, cdir);
-  amrex::FArrayBox fluxyx(tyfxbx, NVAR);
-  amrex::FArrayBox fluxyz(tyfxbx, NVAR);
+  amrex::FArrayBox fluxyx(tyfxbx, flx1.nComp());
+  amrex::FArrayBox fluxyz(tyfxbx, flx1.nComp());
   amrex::FArrayBox gdvyxfab(tyfxbx, NGDNV);
   amrex::FArrayBox gdvyzfab(tyfxbx, NGDNV);
   amrex::Elixir fluxyxeli = fluxyx.elixir(), gdvyxeli = gdvyxfab.elixir();
@@ -299,8 +299,8 @@ pc_umeth_3D(
 
   // Riemann problem Z|X Z|Y
   const amrex::Box& tzfxbx = surroundingNodes(bxg1, cdir);
-  amrex::FArrayBox fluxzx(tzfxbx, NVAR);
-  amrex::FArrayBox fluxzy(tzfxbx, NVAR);
+  amrex::FArrayBox fluxzx(tzfxbx, flx1.nComp());
+  amrex::FArrayBox fluxzy(tzfxbx, flx1.nComp());
   amrex::FArrayBox gdvzxfab(tzfxbx, NGDNV);
   amrex::FArrayBox gdvzyfab(tzfxbx, NGDNV);
   amrex::Elixir fluxzxeli = fluxzx.elixir(), gdvzxeli = gdvzxfab.elixir();
@@ -493,7 +493,7 @@ pc_umeth_2D(
   // method X initial fluxes
   cdir = 0;
   const amrex::Box& xflxbx = surroundingNodes(bxg1, cdir);
-  amrex::FArrayBox fx(xflxbx, NVAR);
+  amrex::FArrayBox fx(xflxbx, flx1.nComp());
   amrex::Elixir fxeli = fx.elixir();
   auto const& fxarr = fx.array();
   amrex::FArrayBox qgdx(bxg2, NGDNV);
@@ -508,7 +508,7 @@ pc_umeth_2D(
 
   // Y initial fluxes
   cdir = 1;
-  amrex::FArrayBox fy(yflxbx, NVAR);
+  amrex::FArrayBox fy(yflxbx, flx1.nComp());
   amrex::Elixir fyeli = fy.elixir();
   auto const& fyarr = fy.array();
   amrex::ParallelFor(

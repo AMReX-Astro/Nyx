@@ -120,8 +120,8 @@ pc_ext_flx(
   amrex::Array4<amrex::Real> const& flx,
   amrex::Array4<const amrex::Real> const& a)
 {
-  amrex::Real area = a(i, j, k); // avoid reading from global memory NVAR times
-  for (int n = 0; n < NVAR; ++n)
+  amrex::Real area = a(i, j, k); // avoid reading from global memory flx1.nComp() times
+  for (int n = 0; n < flx.nComp(); ++n)
     flx(i, j, k, n) *= area;
 }
 
@@ -138,7 +138,7 @@ pc_update(
   amrex::Array4<const amrex::Real> const& pdivu)
 {
   amrex::Real v = vol(i, j, k);
-  for (int n = 0; n < NVAR; ++n) {
+  for (int n = 0; n < update.nComp(); ++n) {
     update(i, j, k, n) += (AMREX_D_TERM(
                             flx[0](i, j, k, n) - flx[0](i + 1, j, k, n),
                             +flx[1](i, j, k, n) - flx[1](i, j + 1, k, n),
