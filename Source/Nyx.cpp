@@ -100,36 +100,7 @@ ErrorList Nyx::err_list;
 
 int Nyx:: Zhi_comp = -1;
 
-int Nyx::QVAR = -1;
-int Nyx::NQSRC = -1;
-int Nyx::NGDNV = 6;
-int Nyx::QRHO = 1;
-int Nyx::QU = 2;
-int Nyx::QV = 3;
-int Nyx::QW = 4;
-int Nyx::QGAME = -1;
-int Nyx::QGC = -1;
-int Nyx::QPRES = 5;
-int Nyx::QREINT = 6;
-int Nyx::QTEMP = -1;
-int Nyx::QFA = -1;
-int Nyx::QFS = -1;
-int Nyx::QFX = -1;
-
-int Nyx::GDRHO = 1;
-int Nyx::GDU = 2;
-int Nyx::GDV = 3;
-int Nyx::GDW = 4;
-int Nyx::GDPRES = 5;
-int Nyx::GDGAME = -1;
-
 int Nyx::NumSpec  = 0;
-int Nyx::NumAux   = 0;
-int Nyx::NumAdv   = 0;
-
-int Nyx::FirstSpec = -1;
-int Nyx::FirstAux  = -1;
-int Nyx::FirstAdv  = -1;
 
 Real Nyx::small_dens = -1.e200;
 Real Nyx::small_temp = -1.e200;
@@ -1888,7 +1859,6 @@ Nyx::set_small_values ()
        // Get the number of species from the network model.
        //
        fort_get_num_spec(&NumSpec);
-       fort_get_num_aux (&NumAux);
 
        fort_set_small_values
             (&average_gas_density, &average_temperature,

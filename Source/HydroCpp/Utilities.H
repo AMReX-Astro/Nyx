@@ -4,7 +4,7 @@
 #include <AMReX_FArrayBox.H>
 #include "Constants.H"
 #include "IndexDefines.H"
-
+#include "Nyx.H"
 /*
 AMREX_GPU_DEVICE
 void pc_cmpTemp(
@@ -24,57 +24,33 @@ pc_ctoprim(
   const int k,
   amrex::Array4<const amrex::Real> const& u,
   amrex::Array4<amrex::Real> const& q,
-  amrex::Array4<amrex::Real> const& qa)
+  amrex::Array4<amrex::Real> const& qa,
+  const int NumSpec, const amrex::Real gamma_minus_1)
 {
   const amrex::Real rho = u(i, j, k, URHO);
   const amrex::Real rhoinv = 1.0 / rho;
   const amrex::Real vx = u(i, j, k, UMX) * rhoinv;
   const amrex::Real vy = u(i, j, k, UMY) * rhoinv;
   const amrex::Real vz = u(i, j, k, UMZ) * rhoinv;
-  const amrex::Real kineng = 0.5 * rho * (vx * vx + vy * vy + vz * vz);
+  const amrex::Real e = u(i, j, k, UEINT) * rhoinv;
+  //  const amrex::Real kineng = 0.5 * rho * (vx * vx + vy * vy + vz * vz);
   q(i, j, k, QRHO) = rho;
   q(i, j, k, QU) = vx;
   q(i, j, k, QV) = vy;
   q(i, j, k, QW) = vz;
-  for (int ipassive = 0; ipassive < NPASSIVE; ++ipassive) {
-    const int n = indxmap::upass_map(ipassive);
-    const int nq = indxmap::qpass_map(ipassive);
-    q(i, j, k, nq) = u(i, j, k, n) / rho;
+  q(i,j,k,QREINT) = e;
+
+  // Convert "e" back to "rho e"
+  q(i,j,k,QREINT) = q(i,j,k,QREINT)*q(i,j,k,QRHO);
+  
+  // Pressure = (gamma - 1) * rho * e
+  q(i,j,k,QPRES) = gamma_minus_1 * q(i,j,k,QREINT);
+
+  for (int n = 0; n < NumSpec; ++n) {
+    q(i, j, k, FirstSpec + n) = u(i, j, k, FirstSpec + n) / rho;
   }
 
-  const amrex::Real e = (u(i, j, k, UEDEN) - kineng) * rhoinv;
-  // Below vars may be garbage
-  amrex::Real T; //= u(i, j, k, UTEMP);
-  amrex::Real massfrac[NUM_SPECIES];
-  //    amrex::Real aux[NUM_AUX];
-  for (int sp = 0; sp < NUM_SPECIES; ++sp)
-    massfrac[sp] = q(i, j, k, sp + QFS);
-  //    for(int ax = 0; ax < NUM_AUX; ++ax) aux[ax] = q(i,j,k,ax+QFX);
-  amrex::Real dpdr_e, dpde, gam1, cs, wbar, p;
-
-  // Are all these EOS calls needed? Seems fairly convoluted.
-  /* // Below vars may be garbage
-  EOS::Y2WBAR(massfrac, wbar);
-  EOS::EY2T(e, massfrac, T);
-  EOS::RTY2P(rho, T, massfrac, p);
-  EOS::RTY2Cs(rho, T, massfrac, cs);
-  EOS::TY2G(T, massfrac, gam1);
-  EOS::RPE2dpdr_e(rho, p, e, dpdr_e);
-  EOS::RG2dpde(rho, gam1, dpde);
-  */
-
-  q(i, j, k, QTEMP) = T;
-  q(i, j, k, QREINT) = e * rho;
-  q(i, j, k, QPRES) = p;
-  q(i, j, k, QGAME) = p / (e * rho) + 1.0;
-
-  // Auxilary Fab
-  qa(i, j, k, QDPDR) = dpdr_e;
-  qa(i, j, k, QDPDE) = dpde;
-  qa(i, j, k, QGAMC) = gam1;
-  qa(i, j, k, QC) = cs;
-  qa(i, j, k, QCSML) = amrex::max(SMALL, SMALL * cs);
-  //  qa(i, j, k, QRSPEC) = EOS::RU / wbar;
+  qa(i,j,k,QC) = std::sqrt((gamma_minus_1+1.0) * q(i,j,k,QREINT)*gamma_minus_1);
 }
 
 AMREX_GPU_DEVICE

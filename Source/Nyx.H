@@ -70,12 +70,13 @@ enum StateType {
 #endif
 
 enum State_Type_Index {
-  Density = 0,
-  Xmom    = 1,
-  Ymom    = 2,
-  Zmom    = 3,
-  Eden    = 4,
-  Eint    = 5
+  Density   = 0,
+  Xmom      = 1,
+  Ymom      = 2,
+  Zmom      = 3,
+  Eden      = 4,
+  Eint      = 5,
+  FirstSpec = 6
 
 };
 
@@ -86,6 +87,16 @@ enum State_Type_UIndex {
   UMZ      = 3,
   UEINT    = 4,
   UEDEN    = 5
+
+};
+
+enum State_Type_QIndex {
+  QRHO     = 0,
+  QU       = 1,
+  QV       = 2,
+  QW       = 3,
+  QPRES    = 4,
+  QREINT   = 5
 
 };
 
@@ -819,11 +830,7 @@ public:
 
     static int Zhi_comp;
 
-    static int QVAR, NQSRC, NGDNV, QRHO, QU, QV, QW, QGAME, QGC, QPRES, QREINT, QTEMP, QFA, QFS, QFX;
-    static int GDRHO, GDU, GDV, GDW, GDPRES, GDGAME;
-
-    static int FirstSpec, FirstAux, FirstAdv;
-    static int NumSpec, NumAux, NumAdv;
+    static int NumSpec;
     static amrex::Real gamma;
 
     static int strict_subcycling;

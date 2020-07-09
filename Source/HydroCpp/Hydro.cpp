@@ -104,6 +104,8 @@ Nyx::construct_hydro_source(
 
       const int* domain_lo = geom.Domain().loVect();
       const int* domain_hi = geom.Domain().hiVect();
+      const int NumSpec_loc = NumSpec;
+      const int gamma_minus_1_loc = gamma-1.0;
 
       // Temporary Fabs needed for Hydro Computation
       for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
@@ -140,7 +142,7 @@ Nyx::construct_hydro_source(
         BL_PROFILE_VAR("Nyx::ctoprim()", ctop);
         amrex::ParallelFor(
           qbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            pc_ctoprim(i, j, k, s, qarr, qauxar);
+            pc_ctoprim(i, j, k, s, qarr, qauxar, NumSpec_loc, gamma_minus_1_loc);
           });
         BL_PROFILE_VAR_STOP(ctop);
 

@@ -1,26 +1,15 @@
 #ifndef _INDEX_DEFINES_H_
 #define _INDEX_DEFINES_H_
 
+#include "Nyx.H"
 #include <AMReX_REAL.H>
 #include <AMReX_Arena.H>
 
 #define NUM_SPECIES 2
 
-#define URHO 0
-#define UMX 1
-#define UMY 2
-#define UMZ 3
-#define UEDEN 4
-#define UEINT 5
 #define UFA 6
 
-#define QRHO 0
-#define QU 1
-#define QV 2
-#define QW 3
 #define QGAME 4
-#define QPRES 5
-#define QREINT 6
 #define QTEMP 7
 #define QFA 8
 

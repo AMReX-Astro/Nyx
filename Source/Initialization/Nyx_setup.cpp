@@ -151,13 +151,6 @@ Nyx::hydro_setup()
     //
     int cnt = 6;
 
-    NumAdv = 0;
-    if (NumAdv > 0)
-    {
-        FirstAdv = cnt;
-        cnt += NumAdv;
-    }
-
     int NDIAG_C;
     if (inhomo_reion > 0)
     {
@@ -176,23 +169,11 @@ Nyx::hydro_setup()
     {
         if (NumSpec > 0)
         {
-            FirstSpec = cnt;
             cnt += NumSpec;
-        }
-
-        // Get the number of auxiliary quantities from the network model.
-        fort_get_num_aux(&NumAux);
-
-        if (NumAux > 0)
-        {
-            FirstAux = cnt;
-            cnt += NumAux;
         }
     }
 
     NUM_STATE = cnt;
-    QVAR = cnt;
-    NQSRC = cnt;
 
     // Define NUM_GROW from the f90 module.
     fort_get_method_params(&NUM_GROW);
@@ -200,7 +181,7 @@ Nyx::hydro_setup()
     // Note that we must set NDIAG_C before we call set_method_params because
     // we use the C++ value to set the Fortran value
     fort_set_method_params
-        (dm, NumAdv, NDIAG_C, do_hydro, ppm_type, ppm_reference,
+        (dm, 0, NDIAG_C, do_hydro, ppm_type, ppm_reference,
          ppm_flatten_before_integrals,
          use_flattening, use_analriem, version_2,
          use_const_species, gamma, normalize_species,
@@ -276,14 +257,6 @@ Nyx::hydro_setup()
     cnt++;
     set_scalar_bc(bc, phys_bc);  bcs[cnt] = bc;  name[cnt] = "rho_e";
 
-    for (int i = 0; i < NumAdv; ++i)
-    {
-        cnt++;
-        set_scalar_bc(bc, phys_bc);
-        bcs[cnt]  = bc;
-        name[cnt] = amrex::Concatenate("adv_", i, 1);
-    }
-
     // Get the species names from the network model.
     Vector<std::string> spec_names(NumSpec);
 
@@ -315,43 +288,8 @@ Nyx::hydro_setup()
             cnt++;
             set_scalar_bc(bc,phys_bc);
             bcs[cnt] = bc;
-                name[cnt] = "rho_" + spec_names[i];
+            name[cnt] = "rho_" + spec_names[i];
          }
-    }
-
-    // Get the auxiliary names from the network model.
-    Vector<std::string> aux_names(NumAux);
-
-    for (int i = 0; i < NumAux; i++)
-    {
-        int len = 20;
-        Vector<int> int_aux_names(len);
-
-        // This call return the actual length of each string in "len"
-        fort_get_aux_names
-            (int_aux_names.dataPtr(), &i, &len);
-
-        for (int j = 0; j < len; j++)
-            aux_names[i].push_back(int_aux_names[j]);
-    }
-
-    if (ParallelDescriptor::IOProcessor())
-    {
-        std::cout << NumAux << " Auxiliary Variables: ";
-        for (int i = 0; i < NumAux; i++)
-           std::cout << aux_names[i] << ' ' << ' ';
-        std::cout << '\n';
-    }
-
-    if (use_const_species == 0)
-    {
-        for (int i = 0; i < NumAux; ++i)
-        {
-            cnt++;
-            set_scalar_bc(bc, phys_bc);
-            bcs[cnt] = bc;
-            name[cnt] = "rho_" + aux_names[i];
-        }
     }
 
     desc_lst.setComponent(State_Type, Density, name, bcs,
@@ -638,14 +576,6 @@ Nyx::hydro_setup()
             derive_lst.addComponent(spec_names[i], desc_lst, State_Type,
                                     FirstSpec + i, 1);
         }
-
-        for (int i = 0; i < NumAux; i++)
-        {
-            derive_lst.add(aux_names[i], IndexType::TheCellType(), 1,
-                           derspec, the_same_box);
-            derive_lst.addComponent(aux_names[i], desc_lst, State_Type, Density, 1);
-            derive_lst.addComponent(aux_names[i], desc_lst, State_Type, FirstAux+i, 1);
-        }
     }
 }
 #endif
@@ -664,7 +594,7 @@ Nyx::no_hydro_setup()
     fort_get_method_params(&NUM_GROW);
 
     fort_set_method_params
-        (dm, NumAdv, NDIAG_C, do_hydro, ppm_type, ppm_reference,
+        (dm, 0, NDIAG_C, do_hydro, ppm_type, ppm_reference,
          ppm_flatten_before_integrals, 
          use_flattening, use_analriem, version_2,
          use_const_species, gamma, normalize_species,
