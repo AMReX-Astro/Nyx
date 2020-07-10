@@ -9,6 +9,8 @@ Nyx::construct_hydro_source(
         amrex::MultiFab& sources_for_hydro,
   amrex::MultiFab& hydro_source, 
   amrex::Real time,
+  amrex::Real a_old,
+  amrex::Real a_new,
   amrex::Real dt,
   bool init_flux_register, bool add_to_flux_register)
 {
@@ -104,6 +106,18 @@ Nyx::construct_hydro_source(
 
       const int* domain_lo = geom.Domain().loVect();
       const int* domain_hi = geom.Domain().hiVect();
+
+      const amrex::Real hdt = 0.5*dt;
+      const amrex::Real a_half = 0.5 * (a_old + a_new);
+      const amrex::Real a_dot = (a_new - a_old) / dt;
+
+      const amrex::Real hdtdx = 0.5*dt/dx[0]/a_half;
+      const amrex::Real hdtdy = 0.5*dt/dx[1]/a_half;
+      const amrex::Real hdtdz = 0.5*dt/dx[2]/a_half;
+
+      const amrex::Real cdtdx = dt/dx[0]/3.0/a_half;
+      const amrex::Real cdtdy = dt/dx[1]/3.0/a_half;
+      const amrex::Real cdtdz = dt/dx[2]/3.0/a_half;
       const int NumSpec_loc = NumSpec;
       const int gamma_minus_1_loc = gamma-1.0;
 
@@ -129,7 +143,7 @@ Nyx::construct_hydro_source(
         auto const& hyd_src = hydro_source.array(mfi);
 
         // Resize Temporary Fabs
-        amrex::FArrayBox q(qbx, QVAR), qaux(qbx, NQAUX), src_q(qbx, QVAR);
+        amrex::FArrayBox q(qbx, S.nComp()), qaux(qbx, NQAUX), src_q(qbx, S.nComp());
         // Use Elixir Construct to steal the Fabs metadata
         amrex::Elixir qeli = q.elixir();
         amrex::Elixir qauxeli = qaux.elixir();
@@ -139,6 +153,8 @@ Nyx::construct_hydro_source(
         auto const& qauxar = qaux.array();
         auto const& srcqarr = src_q.array();
 
+		//		amrex::Print()<<"s"<<S[mfi]<<std::endl;
+
         BL_PROFILE_VAR("Nyx::ctoprim()", ctop);
         amrex::ParallelFor(
           qbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -146,6 +162,7 @@ Nyx::construct_hydro_source(
           });
         BL_PROFILE_VAR_STOP(ctop);
 
+		//		amrex::Print()<<"q"<<q<<"\nqaux"<<qaux<<std::endl;
         // TODO GPUize NCSCBC
         // Imposing Ghost-Cells Navier-Stokes Characteristic BCs if "UserBC" are
         // used For the theory, see Motheau et al. AIAA J. Vol. 55, No. 10 : pp.
@@ -192,9 +209,11 @@ Nyx::construct_hydro_source(
         const auto& src_in = sources_for_hydro.array(mfi);
         amrex::ParallelFor(
           qbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            pc_srctoprim(i, j, k, qarr, qauxar, src_in, srcqarr);
+            pc_srctoprim(i, j, k, qarr, qauxar, src_in, srcqarr,
+            a_half, a_dot, NumSpec_loc, gamma_minus_1_loc);
           });
         BL_PROFILE_VAR_STOP(srctop);
+		//		amrex::Print()<<"src_in"<<sources_for_hydro[mfi]<<"\nsrcq"<<src_q<<std::endl;
 
         amrex::FArrayBox pradial(amrex::Box::TheUnitBox(), 1);
         if (!amrex::DefaultGeometry().IsCartesian()) {

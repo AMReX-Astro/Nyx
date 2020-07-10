@@ -16,7 +16,9 @@ pc_srctoprim(
   amrex::Array4<const amrex::Real> const& q,
   amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& src,
-  amrex::Array4<amrex::Real> const& srcq)
+  amrex::Array4<amrex::Real> const& srcq,
+  const amrex::Real a_half, const amrex::Real a_dot,
+  const int NumSpec, const amrex::Real gamma_minus_1)
 {
   // Local loading Vars ==> Load once from global memory use multiple times
   const amrex::Real srcrho = src(i, j, k, URHO);
@@ -35,15 +37,26 @@ pc_srctoprim(
   srcq(i, j, k, QREINT) = src(i, j, k, UEDEN) - vx * umx - vy * umy -
                           vz * umz +
                           srcrho * (vx * vx + vy * vy + vz * vz);
-  srcq(i, j, k, QPRES) =
-    qa(i, j, k, QDPDE) *
-      (srcq(i, j, k, QREINT) - q(i, j, k, QREINT) * srcrho * rhoinv) * rhoinv +
-    qa(i, j, k, QDPDR) * srcrho;
+  /*
+             srcQ(i,j,k,QRHO  ) = src(i,j,k,URHO)
+             srcQ(i,j,k,QU    ) = src(i,j,k,UMX) * rhoInv - a_dot * q(i,j,k,QU) + &
+                  grav(i,j,k,1)
+             srcQ(i,j,k,QV    ) = src(i,j,k,UMY) * rhoInv - a_dot * q(i,j,k,QV) + &
+                  grav(i,j,k,2)
+             srcQ(i,j,k,QW    ) = src(i,j,k,UMZ) * rhoInv - a_dot * q(i,j,k,QW) + &
+                  grav(i,j,k,3)
+             srcQ(i,j,k,QREINT) = src(i,j,k,UEDEN) - q(i,j,k,QU)*src(i,j,k,UMX) - &
+                  q(i,j,k,QV)*src(i,j,k,UMY) - &
+                  q(i,j,k,QW)*src(i,j,k,UMZ) - &
+                  a_dot * THREE * gamma_minus_1 * q(i,j,k,QREINT)
+  */
+  const amrex::Real dpde = gamma_minus_1 * q(i,j,k,QRHO);
+  const amrex::Real dpdr = gamma_minus_1 * q(i,j,k,QREINT)/q(i,j,k,QRHO);
+  srcq(i,j,k,QPRES ) = dpde * srcq(i,j,k,QREINT) * rhoinv
+	  + dpdr * srcq(i,j,k,QRHO);
 
-  for (int ip = 0; ip < NPASSIVE; ++ip) {
-    const int n = indxmap::upass_map(ip);
-    const int nq = indxmap::qpass_map(ip);
-    srcq(i, j, k, nq) = (src(i, j, k, n) - q(i, j, k, nq) * srcrho) * rhoinv;
+  for (int n = 0; n < NumSpec; ++n) {
+    srcq(i, j, k, FirstSpec + n) = (src(i, j, k, FirstSpec + n) - q(i, j, k, FirstSpec + n) * srcrho) * rhoinv;
   }
 }
 

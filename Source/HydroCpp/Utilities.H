@@ -4,7 +4,7 @@
 #include <AMReX_FArrayBox.H>
 #include "Constants.H"
 #include "IndexDefines.H"
-#include "Nyx.H"
+
 /*
 AMREX_GPU_DEVICE
 void pc_cmpTemp(
@@ -50,7 +50,8 @@ pc_ctoprim(
     q(i, j, k, FirstSpec + n) = u(i, j, k, FirstSpec + n) / rho;
   }
 
-  qa(i,j,k,QC) = std::sqrt((gamma_minus_1+1.0) * q(i,j,k,QREINT)*gamma_minus_1);
+  qa(i, j, k, QC) = std::sqrt((gamma_minus_1+1.0) * q(i,j,k,QREINT)*gamma_minus_1);
+  //  qa(i, j, k, QCSML) = std::sqrt((gamma_minus_1+1.0) * small_pres_over_dens);
 }
 
 AMREX_GPU_DEVICE

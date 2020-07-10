@@ -611,6 +611,8 @@ public:
                                       amrex::MultiFab& sources_for_hydro,
                                 amrex::MultiFab& hydro_source,
                                 amrex::Real time,
+								amrex::Real a_old,
+								amrex::Real a_new,
                                 amrex::Real dt,
                                 bool init_flux_register, bool add_to_flux_register);
 

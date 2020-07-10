@@ -38,6 +38,7 @@ riemann(
   amrex::Real& qint_gdpres,
   amrex::Real& qint_gdgame)
 {
+	//  const amrex::Real wsmall = SMALL_DENS * std::sqrt((gamma_minus_1+1.0) * small_pres / small_dens);
   const amrex::Real wsmall = SMALL_DENS * csmall;
 
   amrex::Real gdnv_state_rho = rl;
