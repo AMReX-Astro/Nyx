@@ -2057,6 +2057,7 @@ void pc_umeth_3D(
   const int* domlo,
   const int* domhi,
   amrex::Array4<const amrex::Real> const& q,
+  const int nq,
   amrex::Array4<const amrex::Real> const& qaux,
   amrex::Array4<const amrex::Real> const& srcQ,
   amrex::Array4<amrex::Real> const& flx1,
@@ -2072,26 +2073,4 @@ void pc_umeth_3D(
   amrex::Array4<const amrex::Real> const& vol,
   const amrex::Real* del,
   const amrex::Real dt);
-
-void pc_umeth_2D(
-  amrex::Box const& bx,
-  const int* bclo,
-  const int* bchi,
-  const int* domlo,
-  const int* domhi,
-  amrex::Array4<const amrex::Real> const& q,
-  amrex::Array4<const amrex::Real> const& qaux,
-  amrex::Array4<const amrex::Real> const& srcQ,
-  amrex::Array4<amrex::Real> const& flx1,
-  amrex::Array4<amrex::Real> const& flx2,
-  // amrex::Array4<const amrex::Real> const& dloga,
-  amrex::Array4<amrex::Real> const& q1,
-  amrex::Array4<amrex::Real> const& q2,
-  amrex::Array4<const amrex::Real> const& a1,
-  amrex::Array4<const amrex::Real> const& a2,
-  amrex::Array4<amrex::Real> const& pdivu,
-  amrex::Array4<const amrex::Real> const& vol,
-  const amrex::Real* del,
-  const amrex::Real dt);
-
 #endif

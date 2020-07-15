@@ -119,7 +119,7 @@ Nyx::construct_hydro_source(
       const amrex::Real cdtdy = dt/dx[1]/3.0/a_half;
       const amrex::Real cdtdz = dt/dx[2]/3.0/a_half;
       const int NumSpec_loc = NumSpec;
-      const int gamma_minus_1_loc = gamma-1.0;
+      const amrex::Real gamma_minus_1_loc = gamma-1.0;
 
       // Temporary Fabs needed for Hydro Computation
       for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
@@ -390,22 +390,14 @@ pc_umdrv(
   auto const& divarr = divu.array();
   auto const& pdivuarr = pdivu.array();
 
+  const int nq = q.nComp();
+
   BL_PROFILE_VAR("Nyx::umeth()", umeth);
-#if AMREX_SPACEDIM == 1
-  amrex::Abort("PLM isn't implemented in 1D.");
-  //pc_umeth_1D(
-  //  bx, bclo, bchi, domlo, domhi, q, qaux, src_q, // bcMask,
-  //  flx[0], qec_arr[0], a[0], pdivuarr, vol, dx, dt);
-#elif AMREX_SPACEDIM == 2
-  pc_umeth_2D(
-    bx, bclo, bchi, domlo, domhi, q, qaux, src_q, // bcMask,
-    flx[0], flx[1], qec_arr[0], qec_arr[1], a[0], a[1], pdivuarr, vol, dx, dt);
-#elif AMREX_SPACEDIM == 3
+  amrex::Print() << "QAUX NCOMP " << qaux.nComp() << std::endl;
   pc_umeth_3D(
-    bx, bclo, bchi, domlo, domhi, q, qaux, src_q, // bcMask,
+    bx, bclo, bchi, domlo, domhi, q, nq, qaux, src_q, // bcMask,
     flx[0], flx[1], flx[2], qec_arr[0], qec_arr[1], qec_arr[2], a[0], a[1],
     a[2], pdivuarr, vol, dx, dt);
-#endif
   BL_PROFILE_VAR_STOP(umeth);
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
     qec_eli[dir].clear();
