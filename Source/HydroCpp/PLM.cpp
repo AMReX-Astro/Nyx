@@ -109,7 +109,6 @@ pc_umeth_3D(
     //   slope[n] = plm_slope(i, j, k, n, 2, q);
     // pc_plm_z(i, j, k, qzmarr, qzparr, slope, q, qaux(i, j, k, QC), dz, dt);
   });
-  exit(0);
 
   // These are the first flux estimates as per the corner-transport-upwind
   // method X initial fluxes

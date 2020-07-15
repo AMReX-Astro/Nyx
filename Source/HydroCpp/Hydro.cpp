@@ -393,12 +393,12 @@ pc_umdrv(
   const int nq = q.nComp();
 
   BL_PROFILE_VAR("Nyx::umeth()", umeth);
-  amrex::Print() << "QAUX NCOMP " << qaux.nComp() << std::endl;
   pc_umeth_3D(
     bx, bclo, bchi, domlo, domhi, q, nq, qaux, src_q, // bcMask,
     flx[0], flx[1], flx[2], qec_arr[0], qec_arr[1], qec_arr[2], a[0], a[1],
     a[2], pdivuarr, vol, dx, dt);
   BL_PROFILE_VAR_STOP(umeth);
+
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
     qec_eli[dir].clear();
   }
