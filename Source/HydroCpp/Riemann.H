@@ -72,21 +72,21 @@ riemann(
       const amrex::Real weakwv  = 1.e-3;
       const amrex::Real  small  = 1.e-6;
 
-      amrex::Real wl = amrex::Math::sqrt(gamma*pl*rl);
-      amrex::Real wr = amrex::Math::sqrt(gamma*pr*rr);
+      amrex::Real wl = amrex::Math::sqrt(amrex::Math::abs(gamma*pl*amrex::max(rl,small_dens)));
+      amrex::Real wr = amrex::Math::sqrt(amrex::Math::abs(gamma*pr*amrex::max(rr,small_dens)));
 
-      amrex::Real cleft  = wl/rl;
-      amrex::Real cright = wr/rr;
+      amrex::Real cleft  = wl/amrex::max(rl,small_dens);
+      amrex::Real cright = wr/amrex::max(rr,small_dens);
 
       pstar = amrex::max( (wl*pr+wr*pl-wr*wl*(ur-ul))/(wl+wr), small_pres );
 
       amrex::Real pstnm1 = pstar;
 
-      amrex::Real wlsq = (.5*(gamma-1.0)*(pstar+pl)+pstar) * rl;
-      amrex::Real wrsq = (.5*(gamma-1.0)*(pstar+pr)+pstar) * rr;
+      amrex::Real wlsq = (.5*(gamma-1.0)*(pstar+pl)+pstar) * amrex::max(rl,small_dens);
+      amrex::Real wrsq = (.5*(gamma-1.0)*(pstar+pr)+pstar) * amrex::max(rr,small_dens);
 
-      wl = amrex::Math::sqrt(wlsq);
-      wr = amrex::Math::sqrt(wrsq);
+      wl = amrex::Math::sqrt(amrex::Math::abs(wlsq));
+      wr = amrex::Math::sqrt(amrex::Math::abs(wrsq));
 
       amrex::Real ustarp = ul - (pstar-pl)/wl;
       amrex::Real ustarm = ur + (pstar-pr)/wr;
@@ -95,11 +95,11 @@ riemann(
 
       for (int iter = 0; iter < 3; iter++)
       {
-        wlsq = (.5*(gamma-1.0)*(pstar+pl)+pstar) * rl;
-        wrsq = (.5*(gamma-1.0)*(pstar+pr)+pstar) * rr;
+        wlsq = (.5*(gamma-1.0)*(pstar+pl)+pstar) * amrex::max(rl,small_dens);
+        wrsq = (.5*(gamma-1.0)*(pstar+pr)+pstar) * amrex::max(rr,small_dens);
 
-        wl = 1.0/sqrt(wlsq);
-        wr = 1.0/sqrt(wrsq);
+        wl = 1.0/sqrt(amrex::Math::abs(wlsq));
+        wr = 1.0/sqrt(amrex::Math::abs(wrsq));
 
         amrex::Real ustnm1 = ustarm;
         amrex::Real ustnp1 = ustarp;
@@ -131,7 +131,7 @@ riemann(
 #endif
 
   bool mask = ustar > 0.0;
-  amrex::Real ro = mask ? rl : rr;
+  amrex::Real ro = mask ? amrex::max(rl,small_dens) : amrex::max(rr,small_dens);
   amrex::Real uo = mask ? ul : ur;
   amrex::Real po = mask ? pl : pr;
   const amrex::Real  gamcr = gamma;
@@ -147,7 +147,7 @@ riemann(
   mask = ( ( amrex::Math::abs(ustar) < small_vel * 0.5 * 
             (amrex::Math::abs(ul) + amrex::Math::abs(ur)) ) || ustar == 0.0 );
   ustar = mask ? 0.0 : ustar;
-  ro = mask ? 0.5 * (rl + rr) : ro;
+  ro = mask ? 0.5 * (amrex::max(rl,small_dens) + amrex::max(rr,small_dens)) : ro;
   uo = mask ? 0.5 * (ul + ur) : uo;
   po = mask ? 0.5 * (pl + pr) : po;
   reo = mask ? 0.5 * (rel + rer) : reo;
