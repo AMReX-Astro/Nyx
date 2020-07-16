@@ -259,7 +259,8 @@ Nyx::construct_hydro_source(
         pc_umdrv(
           is_finest_level, time, bx, domain_lo, domain_hi, phys_bc.lo(),
           phys_bc.hi(), s, hyd_src, qarr, qauxar, srcqarr, dx, dt, flx_arr, a,
-          volume.array(mfi), cflLoc);
+          volume.array(mfi), small_dens, small_pres, small_vel, small, gamma,
+          FirstSpec, NumSpec, cflLoc);
         BL_PROFILE_VAR_STOP(purm);
 
         BL_PROFILE_VAR("courno", crno);
@@ -368,6 +369,10 @@ pc_umdrv(
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
     a,
   amrex::Array4<amrex::Real> const& vol,
+  const amrex::Real small_dens, const amrex::Real small_pres, 
+  const amrex::Real small_vel , const amrex::Real small, 
+  const amrex::Real gamma, 
+  const int FirstSpec, const int NumSpec,
   amrex::Real cflLoc)
 {
   //  Set Up for Hydro Flux Calculations
@@ -390,13 +395,17 @@ pc_umdrv(
   auto const& divarr = divu.array();
   auto const& pdivuarr = pdivu.array();
 
-  const int nq = q.nComp();
+  const int nq    = q.nComp();
+  const int nqaux = qaux.nComp();
+
+  amrex::Print() << " QAUX HAS NCOMP " << nqaux << std::endl;
 
   BL_PROFILE_VAR("Nyx::umeth()", umeth);
   pc_umeth_3D(
     bx, bclo, bchi, domlo, domhi, q, nq, qaux, src_q, // bcMask,
     flx[0], flx[1], flx[2], qec_arr[0], qec_arr[1], qec_arr[2], a[0], a[1],
-    a[2], pdivuarr, vol, dx, dt);
+    a[2], pdivuarr, vol, FirstSpec, NumSpec, small_dens, small_pres, small_vel, small,
+    gamma, dx, dt);
   BL_PROFILE_VAR_STOP(umeth);
 
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {

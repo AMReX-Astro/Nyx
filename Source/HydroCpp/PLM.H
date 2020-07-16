@@ -84,12 +84,18 @@ pc_cmpflx(
   amrex::Array4<amrex::Real> const& q,
   amrex::Array4<const amrex::Real> const& qa,
   // amrex::Array4<const int> const& bcMask,
+  const amrex::Real small_dens,
+  const amrex::Real small_pres,
+  const amrex::Real small_vel,
+  const amrex::Real small,
+  const amrex::Real gamma,
+  const int FirstSpec, const int NumSpec,
   const int dir)
 {
   amrex::Real cav, ustar;
-  amrex::Real spl[NUM_SPECIES];
-  amrex::Real spr[NUM_SPECIES];
-  amrex::Real ul, ur, vl, vr, v2l, v2r, rel, rer, gamcl, gamcr;
+  amrex::Real spl[NumSpec];
+  amrex::Real spr[NumSpec];
+  amrex::Real ul, ur, vl, vr, v2l, v2r, rel, rer;
   int idx;
   int IU, IV, IV2;
   int GU, GV, GV2;
@@ -101,8 +107,6 @@ pc_cmpflx(
     GU = GDU;
     GV = GDV;
     GV2 = GDW;
-    gamcl = qa(i - 1, j, k, QGAMC);
-    gamcr = qa(i, j, k, QGAMC);
     cav = 0.5 * (qa(i, j, k, QC) + qa(i - 1, j, k, QC));
     f_idx[0] = UMX;
     f_idx[1] = UMY;
@@ -114,8 +118,6 @@ pc_cmpflx(
     GU = GDV;
     GV = GDU;
     GV2 = GDW;
-    gamcl = qa(i, j - 1, k, QGAMC);
-    gamcr = qa(i, j, k, QGAMC);
     cav = 0.5 * (qa(i, j, k, QC) + qa(i, j - 1, k, QC));
     f_idx[0] = UMY;
     f_idx[1] = UMX;
@@ -127,17 +129,17 @@ pc_cmpflx(
     GU = GDW;
     GV = GDU;
     GV2 = GDV;
-    gamcl = qa(i, j, k - 1, QGAMC);
-    gamcr = qa(i, j, k, QGAMC);
     cav = 0.5 * (qa(i, j, k, QC) + qa(i, j, k - 1, QC));
     f_idx[0] = UMZ;
     f_idx[1] = UMX;
     f_idx[2] = UMY;
   }
 
-  for (int sp = 0; sp < NUM_SPECIES; ++sp) {
-    spl[sp] = ql(i, j, k, QFS + sp);
-    spr[sp] = qr(i, j, k, QFS + sp);
+  std::cout << "HERE FOR IJK " << i << " " << j << " " << k << std::endl;
+  std::cout << "FS NS " << FirstSpec << " " << NumSpec << " " << std::endl;
+  for (int sp = 0; sp < NumSpec; ++sp) {
+    spl[sp] = ql(i, j, k, FirstSpec + sp);
+    spr[sp] = qr(i, j, k, FirstSpec + sp);
   }
   ul = ql(i, j, k, IU);
   vl = ql(i, j, k, IV);
@@ -168,13 +170,17 @@ pc_cmpflx(
   }
 
   const int bc_test_val = 1;
+
   riemann(
-    ql(i, j, k, QRHO), ul, vl, v2l, ql(i, j, k, QPRES), rel, spl, gamcl,
-    qr(i, j, k, QRHO), ur, vr, v2r, qr(i, j, k, QPRES), rer, spr, gamcr,
-    bc_test_val, qa(i, j, k, QCSML), cav, ustar, flx(i, j, k, URHO),
+    ql(i, j, k, QRHO), ul, vl, v2l, ql(i, j, k, QPRES), rel, spl, 
+    qr(i, j, k, QRHO), ur, vr, v2r, qr(i, j, k, QPRES), rer, spr, 
+    bc_test_val, qa(i, j, k, QC), cav, ustar, flx(i, j, k, URHO),
     flx(i, j, k, f_idx[0]), flx(i, j, k, f_idx[1]), flx(i, j, k, f_idx[2]),
     flx(i, j, k, UEDEN), flx(i, j, k, UEINT), q(i, j, k, GU), q(i, j, k, GV),
-    q(i, j, k, GV2), q(i, j, k, GDPRES), q(i, j, k, GDGAME));
+    q(i, j, k, GV2), q(i, j, k, GDPRES), q(i, j, k, GDGAME), 
+    small_dens, small_pres, small_vel, small, gamma, NumSpec);
+
+  std::cout << "OUT OF RIEMANN " << std::endl;
 
   amrex::Real flxrho = flx(i, j, k, URHO);
   for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
@@ -198,7 +204,7 @@ pc_plm_x(
   const int k,
   amrex::Array4<amrex::Real> const& qm,
   amrex::Array4<amrex::Real> const& qp,
-  amrex::Real const slope[QVAR],
+  amrex::Real const slope[],
   amrex::Array4<const amrex::Real> const& q,
   amrex::Real const cc,
   // amrex::Array4<const amrex::Real> const& dloga,
@@ -323,7 +329,7 @@ pc_plm_y(
   const int k,
   amrex::Array4<amrex::Real> const& qm,
   amrex::Array4<amrex::Real> const& qp,
-  amrex::Real const slope[QVAR],
+  amrex::Real const slope[],
   amrex::Array4<const amrex::Real> const& q,
   amrex::Real const cc,
   amrex::Real const dy,
@@ -447,7 +453,7 @@ pc_plm_z(
   const int k,
   amrex::Array4<amrex::Real> const& qm,
   amrex::Array4<amrex::Real> const& qp,
-  amrex::Real const slope[QVAR],
+  amrex::Real const slope[],
   amrex::Array4<const amrex::Real> const& q,
   amrex::Real const cc,
   amrex::Real const dz,
@@ -2071,6 +2077,10 @@ void pc_umeth_3D(
   amrex::Array4<const amrex::Real> const& a3,
   amrex::Array4<amrex::Real> const& pdivu,
   amrex::Array4<const amrex::Real> const& vol,
+  const int FirstSpec, const int NumSpec,
+  const amrex::Real small_dens, const amrex::Real small_pres, 
+  const amrex::Real small_vel , const amrex::Real small, 
+  const amrex::Real gamma, 
   const amrex::Real* del,
   const amrex::Real dt);
 #endif

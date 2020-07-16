@@ -951,8 +951,12 @@ protected:
     static int num_particle_ghosts;
 
     static amrex::Real small_dens;
+    static amrex::Real small_pres;
+    static amrex::Real small_vel;
     static amrex::Real small_temp;
-        static amrex::Real large_temp;
+    static amrex::Real small;
+
+    static amrex::Real large_temp;
 
     static amrex::Real  h_species;
     static amrex::Real he_species;

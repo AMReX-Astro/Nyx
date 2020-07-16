@@ -172,7 +172,7 @@
         real(rt), intent(in   ) :: average_dens, average_temp
         real(rt), intent(in   ) :: a
         real(rt), intent(inout) :: small_dens_inout, small_temp_inout, &
-                                           small_pres_inout
+                                   small_pres_inout
 
         ! Local variables
         real(rt) :: frac = 1.d-6

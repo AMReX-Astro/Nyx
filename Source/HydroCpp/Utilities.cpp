@@ -4,14 +4,15 @@
 AMREX_GPU_DEVICE
 void
 pc_cmpTemp(
-  const int i, const int j, const int k, amrex::Array4<amrex::Real> const& S)
+           const int i, const int j, const int k, const int FirstSpec, const int NumSpec,
+           amrex::Array4<amrex::Real> const& S)
 {
   amrex::Real rhoInv = 1.0 / S(i, j, k, URHO);
   amrex::Real T = S(i, j, k, UTEMP);
   amrex::Real e = S(i, j, k, UEINT) * rhoInv;
-  amrex::Real massfrac[NUM_SPECIES];
-  for (int n = 0; n < NUM_SPECIES; ++n) {
-    massfrac[n] = S(i, j, k, UFS + n) * rhoInv;
+  amrex::Real massfrac[NumSpec];
+  for (int n = 0; n < NumSpec; ++n) {
+    massfrac[n] = S(i, j, k, FirstSpec + n) * rhoInv;
   }
   EOS::EY2T(e, massfrac, T);
   S(i, j, k, UTEMP) = T;

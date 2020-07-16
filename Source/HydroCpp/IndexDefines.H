@@ -15,10 +15,6 @@
 
 #define QGAMC 0
 #define QC 1
-#define QCSML 2
-#define QDPDR 3
-#define QDPDE 4
-#define QRSPEC 5
 
 #define GDRHO 0
 #define GDU 1
@@ -32,18 +28,6 @@
 #define dComp_xi dComp_mu + 1
 #define dComp_lambda dComp_xi + 1
 
-#define comp_Cs2 0
-#define comp_CI comp_Cs2 + 1
-#define comp_PrT comp_CI + 1
-#define comp_Cs2ovPrT comp_PrT
-#define nCompC comp_PrT + 1
-
-#define SlipWall 4
-#define NoSlipWall 5
-
-#define NTHERM 7
-#define QTHERM 8
-
 #ifndef PELEC_USE_AUX
 #define NUM_ADV 0
 #define NUM_AUX 0
@@ -54,9 +38,7 @@
 
 #define QFS QFA + NUM_ADV
 #define QFX QFS + NUM_SPECIES
-#define QVAR QTHERM + NUM_ADV + NUM_SPECIES + NUM_AUX
-#define NQ QVAR
-#define NQAUX 6
+#define NQAUX 2
 #define NGDNV 6
 
 #define NPASSIVE NUM_SPECIES + NUM_ADV + NUM_AUX + 3 - AMREX_SPACEDIM

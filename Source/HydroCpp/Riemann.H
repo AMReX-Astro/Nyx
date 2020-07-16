@@ -12,18 +12,16 @@ riemann(
   const amrex::Real v2l,
   const amrex::Real pl,
   const amrex::Real rel,
-  const amrex::Real spl[NUM_SPECIES],
-  const amrex::Real gamcl,
+  const amrex::Real spl[NumSpec],
   const amrex::Real rr,
   const amrex::Real ur,
   const amrex::Real vr,
   const amrex::Real v2r,
   const amrex::Real pr,
   const amrex::Real rer,
-  const amrex::Real spr[NUM_SPECIES],
-  const amrex::Real gamcr,
+  const amrex::Real spr[NumSpec],
   const int bc_test_val,
-  const amrex::Real csmall,
+  const amrex::Real c,
   const amrex::Real cav,
   amrex::Real& ustar,
   amrex::Real& uflx_rho,
@@ -36,64 +34,79 @@ riemann(
   amrex::Real& qint_iv1,
   amrex::Real& qint_iv2,
   amrex::Real& qint_gdpres,
-  amrex::Real& qint_gdgame)
+  amrex::Real& qint_gdgame,
+  const amrex::Real& small_dens,
+  const amrex::Real& small_pres,
+  const amrex::Real& small_vel,
+  const amrex::Real& small,
+  const amrex::Real& gamma,
+  const int NumSpec)
 {
-	//  const amrex::Real wsmall = SMALL_DENS * std::sqrt((gamma_minus_1+1.0) * small_pres / small_dens);
-  const amrex::Real wsmall = SMALL_DENS * csmall;
+  const amrex::Real csmall = small * c;
+  const amrex::Real wsmall = small_dens * csmall;
 
   amrex::Real gdnv_state_rho = rl;
   amrex::Real gdnv_state_p = pl;
-  amrex::Real gdnv_state_massfrac[NUM_SPECIES];
-  for (int n = 0; n < NUM_SPECIES; n++) {
-    gdnv_state_massfrac[n] = spl[n];
+  amrex::Real gdnv_state_massfrac[NumSpec];
+  for (int n = 0; n < NumSpec; n++) {
+     gdnv_state_massfrac[n] = spl[n];
   }
+
   amrex::Real gdnv_state_cs;
   // Put soundspeed here:
   //  EOS::RPY2Cs(gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, gdnv_state_cs);
-  const amrex::Real csl = gdnv_state_cs;
+  // const amrex::Real csl = gdnv_state_cs;
 
   gdnv_state_rho = rr;
   gdnv_state_p = pr;
-  for (int n = 0; n < NUM_SPECIES; n++) {
+  for (int n = 0; n < NumSpec; n++) {
     gdnv_state_massfrac[n] = spr[n];
   }
   // Put soundspeed here:
   //  EOS::RPY2Cs(gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, gdnv_state_cs);
-  const amrex::Real csr = gdnv_state_cs;
+  // const amrex::Real csr = gdnv_state_cs;
+
+  amrex::Print() << "WSMALL " << wsmall << std::endl; 
+  amrex::Print() << "PL PR " << pl  << " " << pr << std::endl; 
+  amrex::Print() << "GAMMA " << gamma  << std::endl; 
+
+  amrex::Print() << "NUMSPEC " << NumSpec  << std::endl; 
 
   const amrex::Real wl =
-    amrex::max(wsmall, std::sqrt(amrex::Math::abs(gamcl * pl * rl)));
+    amrex::max(wsmall, std::sqrt(amrex::Math::abs(gamma * pl * rl)));
   const amrex::Real wr =
-    amrex::max(wsmall, std::sqrt(amrex::Math::abs(gamcr * pr * rr)));
+    amrex::max(wsmall, std::sqrt(amrex::Math::abs(gamma * pr * rr)));
   const amrex::Real pstar = amrex::max(
-    SMALL_PRES, ((wr * pl + wl * pr) + wl * wr * (ul - ur)) / (wl + wr));
+    small_pres, ((wr * pl + wl * pr) + wl * wr * (ul - ur)) / (wl + wr));
   ustar = ((wl * ul + wr * ur) + (pl - pr)) / (wl + wr);
 
   bool mask = ustar > 0.0;
   amrex::Real ro = mask ? rl : rr;
   amrex::Real uo = mask ? ul : ur;
   amrex::Real po = mask ? pl : pr;
-  amrex::Real sp[NUM_SPECIES];
-  for (int n = 0; n < NUM_SPECIES; n++) {
-    sp[n] = mask ? spl[n] : spr[n];
+  amrex::Real sp[NumSpec];
+  for (int n = 0; n < NumSpec; n++) {
+  //   sp[n] = mask ? spl[n] : spr[n];
   }
 
-  mask = amrex::Math::abs(ustar) <
-           SMALLU * 0.5 * (amrex::Math::abs(ul) + amrex::Math::abs(ur)) ||
-         ustar == 0.0;
+  mask = ( ( amrex::Math::abs(ustar) < small_vel * 0.5 * 
+            (amrex::Math::abs(ul) + amrex::Math::abs(ur)) ) || ustar == 0.0 );
   ustar = mask ? 0.0 : ustar;
   ro = mask ? 0.5 * (rl + rr) : ro;
   uo = mask ? 0.5 * (ul + ur) : uo;
   po = mask ? 0.5 * (pl + pr) : po;
-  for (int n = 0; n < NUM_SPECIES; n++) {
-    sp[n] = mask ? 0.5 * (spl[n] + spr[n]) : sp[n];
+  for (int n = 0; n < NumSpec; n++) {
+//     sp[n] = mask ? 0.5 * (spl[n] + spr[n]) : sp[n];
   }
+
+  exit(0); 
 
   gdnv_state_rho = ro;
   gdnv_state_p = po;
-  for (int n = 0; n < NUM_SPECIES; n++) {
+  for (int n = 0; n < NumSpec; n++) {
     gdnv_state_massfrac[n] = sp[n];
   }
+
   amrex::Real gdnv_state_e;
   //Put nyx_eos_given_rp ???
   //  EOS::RYP2E(gdnv_state_rho, gdnv_state_massfrac, gdnv_state_p, gdnv_state_e);
@@ -103,11 +116,11 @@ riemann(
   const amrex::Real co = gdnv_state_cs;
 
   const amrex::Real drho = (pstar - po) / (co * co);
-  const amrex::Real rstar = amrex::max(SMALL_DENS, ro + drho);
+  const amrex::Real rstar = amrex::max(small_dens, ro + drho);
 
   gdnv_state_rho = rstar;
   gdnv_state_p = pstar;
-  for (int n = 0; n < NUM_SPECIES; n++) {
+  for (int n = 0; n < NumSpec; n++) {
     gdnv_state_massfrac[n] = sp[n];
   }
   //Put nyx_eos_given_rp ???
@@ -127,7 +140,7 @@ riemann(
   spout = mask ? spout : ushock;
   spin = mask ? spin : ushock;
 
-  const amrex::Real scr = (spout == spin) ? SMALL * cav : spout - spin;
+  const amrex::Real scr = (spout == spin) ? small * cav : spout - spin;
   const amrex::Real frac =
     amrex::max(0.0, amrex::min(1.0, (1.0 + (spout + spin) / scr) * 0.5));
 
@@ -144,7 +157,7 @@ riemann(
 
   gdnv_state_rho = rgd;
   gdnv_state_p = qint_gdpres;
-  for (int n = 0; n < NUM_SPECIES; n++) {
+  for (int n = 0; n < NumSpec; n++) {
     gdnv_state_massfrac[n] = sp[n];
   }
   //Put nyx_eos_given_rp ???
@@ -165,7 +178,7 @@ riemann(
 
   gdnv_state_rho = rgd;
   gdnv_state_p = qint_gdpres;
-  for (int n = 0; n < NUM_SPECIES; n++) {
+  for (int n = 0; n < NumSpec; n++) {
     gdnv_state_massfrac[n] = sp[n];
   }
   //Put nyx_eos_given_rp ???
@@ -183,6 +196,7 @@ riemann(
     0.5 * rgd * (qint_iu * qint_iu + qint_iv1 * qint_iv1 + qint_iv2 * qint_iv2);
   uflx_eden = qint_iu * (rhoetot + qint_gdpres);
   uflx_eint = qint_iu * regd;
+  amrex::Print() << "LEAVING ROUTINE " << std::endl;
 }
 
 #endif

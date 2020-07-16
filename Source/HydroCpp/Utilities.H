@@ -8,7 +8,9 @@
 /*
 AMREX_GPU_DEVICE
 void pc_cmpTemp(
-  const int i, const int j, const int k, amrex::Array4<amrex::Real> const& S);
+  const int i, const int j, const int k, 
+  const int FirstSpec, const int NumSpec,
+  amrex::Array4<amrex::Real> const& S);
 */
 
 AMREX_GPU_DEVICE
@@ -51,7 +53,6 @@ pc_ctoprim(
   }
 
   qa(i, j, k, QC) = std::sqrt((gamma_minus_1+1.0) * q(i,j,k,QREINT)*gamma_minus_1);
-  //  qa(i, j, k, QCSML) = std::sqrt((gamma_minus_1+1.0) * small_pres_over_dens);
 }
 
 AMREX_GPU_DEVICE

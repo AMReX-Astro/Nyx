@@ -325,7 +325,6 @@ Nyx::initData ()
     Real average_gas_density = -1e200;
     Real average_temperature = -1e200;
     Real a = get_comoving_a(cur_time);
-    Real small_pres = -1e200;
 
     amrex::Gpu::Device::synchronize();
 

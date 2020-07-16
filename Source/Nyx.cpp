@@ -104,6 +104,9 @@ int Nyx::NumSpec  = 0;
 
 Real Nyx::small_dens = -1.e200;
 Real Nyx::small_temp = -1.e200;
+Real Nyx::small_pres = -1.e200;
+Real Nyx::small_vel  =  1.e-12;
+Real Nyx::small      =  1.e-8;
 Real Nyx::large_temp =  1.e9;
 Real Nyx::gamma      =  5.0/3.0;
 
@@ -1847,8 +1850,6 @@ Nyx::set_small_values ()
        if (do_hydro == 0) {
           return;
        }
-
-       Real small_pres;
 
        const Real cur_time = state[State_Type].curTime();
        Real a = get_comoving_a(cur_time);
