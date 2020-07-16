@@ -104,17 +104,18 @@ pc_umeth_3D(
     // X slopes and interp
     for (int n = 0; n < nq; ++n)
       slope[n] = plm_slope(i, j, k, n, 0, q);
-    pc_plm_x(i, j, k, qxmarr, qxparr, slope, q, c, dx, dt);
+    pc_plm_x(i, j, k, qxmarr, qxparr, slope, q, c, dx, dt, NumSpec, gamma);
 
     // Y slopes and interp
     for (int n = 0; n < nq; n++)
       slope[n] = plm_slope(i, j, k, n, 1, q);
-    pc_plm_y(i, j, k, qymarr, qyparr, slope, q, c, dy, dt);
+    pc_plm_y(i, j, k, qymarr, qyparr, slope, q, c, dy, dt, NumSpec, gamma);
 
     // Z slopes and interp
     for (int n = 0; n < nq; ++n)
       slope[n] = plm_slope(i, j, k, n, 2, q);
-    pc_plm_z(i, j, k, qzmarr, qzparr, slope, q, c, dz, dt);
+    pc_plm_z(i, j, k, qzmarr, qzparr, slope, q, c, dz, dt, NumSpec, gamma);
+
   });
 
   // These are the first flux estimates as per the corner-transport-upwind

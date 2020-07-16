@@ -189,9 +189,8 @@ pc_cmpflx(
   std::cout << "OUT OF RIEMANN " << std::endl;
 
   amrex::Real flxrho = flx(i, j, k, URHO);
-  for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    int n = indxmap::upass_map(ipass);
-    int nqp = indxmap::qpass_map(ipass);
+  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+    int nqp = n;
     if (ustar > 0.0)
       flx(i, j, k, n) = flxrho * ql(i, j, k, nqp);
     else if (ustar < 0.0)
@@ -215,7 +214,7 @@ pc_plm_x(
   amrex::Real const cc,
   // amrex::Array4<const amrex::Real> const& dloga,
   amrex::Real const dx,
-  amrex::Real const dt)
+  amrex::Real const dt, const int NumSpec, const amrex::Real gamma)
 {
   amrex::Real e[3];
   amrex::Real dtdx = dt / dx;
@@ -310,8 +309,8 @@ pc_plm_x(
   qm(i + 1, j, k, QPRES) = amrex::max(qm(i + 1, j, k, QPRES), SMALL_PRES);
   qm(i + 1, j, k, QREINT) = rhoe_ref + (apleft + amleft) * enth * cs + azeleft;
   // Upwind the passive variables
-  for (int ipassive = 0; ipassive < NPASSIVE; ++ipassive) {
-    int n = indxmap::qpass_map(ipassive);
+  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+
     // Right state
     u = q(i, j, k, QU);
     amrex::Real spzero;
@@ -338,7 +337,7 @@ pc_plm_y(
   amrex::Array4<const amrex::Real> const& q,
   amrex::Real const cc,
   amrex::Real const dy,
-  amrex::Real const dt)
+  amrex::Real const dt, const int NumSpec, const amrex::Real gamma)
 {
   amrex::Real e[3];
   amrex::Real dtdy = dt / dy;
@@ -434,8 +433,8 @@ pc_plm_y(
   qm(i, j + 1, k, QREINT) = rhoe_ref + (apleft + amleft) * enth * cs + azeleft;
 
   // Upwind the passive variables
-  for (int ipassive = 0; ipassive < NPASSIVE; ++ipassive) {
-    int n = indxmap::qpass_map(ipassive);
+  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+
     // Right state
     v = q(i, j, k, QV);
     amrex::Real spzero;
@@ -462,7 +461,7 @@ pc_plm_z(
   amrex::Array4<const amrex::Real> const& q,
   amrex::Real const cc,
   amrex::Real const dz,
-  amrex::Real const dt)
+  amrex::Real const dt, const int NumSpec, const amrex::Real gamma)
 {
   amrex::Real e[3];
   amrex::Real dtdz = dt / dz;
@@ -558,8 +557,8 @@ pc_plm_z(
   qm(i, j, k + 1, QREINT) = rhoe_ref + (apleft + amleft) * enth * cs + azeleft;
 
   // Upwind the passive variables
-  for (int ipassive = 0; ipassive < NPASSIVE; ++ipassive) {
-    int n = indxmap::qpass_map(ipassive);
+  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+
     // Right state
     w = q(i, j, k, QW);
     amrex::Real spzero;
@@ -590,8 +589,7 @@ pc_transx(
   amrex::Array4<const amrex::Real> const& qint,
   amrex::Array4<const amrex::Real> const& a1,
   amrex::Array4<const amrex::Real> const& vol,
-  const amrex::Real gamma_minus_1,
-  const amrex::Real hdt)
+  const amrex::Real hdt, const int NumSpec, const amrex::Real gamma_minus_1)
 {
   //  Local variables to avoid reading from global memory too much
   amrex::Real compn, rr, rrnew, compo;
@@ -624,9 +622,8 @@ pc_transx(
   srcp = srcQ(i, j, k, QPRES);
   
   // Update passive variables
-  for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    int n = indxmap::upass_map(ipass);
-    int nqp = indxmap::qpass_map(ipass);
+  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+    int nqp = n;
     srcpass = srcQ(i, j, k, nqp);
     compn = hdt *
             (a1(i + 1, j, k) * flxx(i + 1, j, k, n) -
@@ -747,9 +744,8 @@ pc_transy(
 
 
   // Update passive variables
-  for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    int n = indxmap::upass_map(ipass);
-    int nqp = indxmap::qpass_map(ipass);
+  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+    int nqp = n;
     srcpass = srcQ(i, j, k, nqp);
     compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
     rr = qxp(i, j, k, QRHO);
@@ -861,9 +857,8 @@ pc_transx1(
   flxe = cdtdx * (flxx(i + 1, j, k, UEDEN) - flxx(i, j, k, UEDEN));
 
   // Update passive variables
-  for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    int n = indxmap::upass_map(ipass);
-    int nqp = indxmap::qpass_map(ipass);
+  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+    int nqp = n;
     compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n));
     rr = qyp(i, j, k, QRHO);
     rrnew = rr - flxrho;
@@ -985,9 +980,8 @@ pc_transy1(
   flxe = cdtdy * (flxy(i, j + 1, k, UEDEN) - flxy(i, j, k, UEDEN));
 
   // -  Update Passive Variables
-  for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    int n = indxmap::upass_map(ipass);
-    int nqp = indxmap::qpass_map(ipass);
+  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+    int nqp = n;
     compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
     rr = qxp(i, j, k, QRHO);
     rrnew = rr - flxrho;
@@ -1109,9 +1103,8 @@ pc_transx2(
   flxe = cdtdx * (flxx(i + 1, j, k, UEDEN) - flxx(i, j, k, UEDEN));
 
   // -  Update Passive Variables
-  for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    int n = indxmap::upass_map(ipass);
-    int nqp = indxmap::qpass_map(ipass);
+  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+    int nqp = n;
     compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n));
     rr = qzp(i, j, k, QRHO);
     rrnew = rr - flxrho;
@@ -1232,9 +1225,8 @@ pc_transy2(
   flxe = cdtdy * (flxy(i, j + 1, k, UEDEN) - flxy(i, j, k, UEDEN));
 
   // -  Update Passive Variables
-  for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    int n = indxmap::upass_map(ipass);
-    int nqp = indxmap::qpass_map(ipass);
+  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+    int nqp = n;
     compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
     rr = qzp(i, j, k, QRHO);
     rrnew = rr - flxrho;
@@ -1355,9 +1347,8 @@ pc_transz1(
   flxe = cdtdz * (flxz(i, j, k + 1, UEDEN) - flxz(i, j, k, UEDEN));
 
   // -  Update Passive Variables
-  for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    int n = indxmap::upass_map(ipass);
-    int nqp = indxmap::qpass_map(ipass);
+  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+    int nqp = n;
     compn = cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
     rr = qxp(i, j, k, QRHO);
     rrnew = rr - flxrho;
@@ -1479,9 +1470,8 @@ pc_transz2(
   flxe = cdtdz * (flxz(i, j, k + 1, UEDEN) - flxz(i, j, k, UEDEN));
 
   // Update passive variables
-  for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    int n = indxmap::upass_map(ipass);
-    int nqp = indxmap::qpass_map(ipass);
+  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+    int nqp = n;
     compn = cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
     rr = qyp(i, j, k, QRHO);
     rrnew = rr - flxrho;
@@ -1625,9 +1615,8 @@ pc_transxy(
   rrl = qzm(i, j, k + 1, QRHO);
   rrnewl = rrl - flxrho;
   rrnewr = rrr - flxrho;
-  for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    int n = indxmap::upass_map(ipass);
-    int nqp = indxmap::qpass_map(ipass);
+  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+    int nqp = n;
     srcpass = srcq(i, j, k, nqp);
     compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n)) +
             cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
@@ -1762,9 +1751,8 @@ pc_transxz(
   rrl = qym(i, j + 1, k, QRHO);
   rrnewl = rrl - flxrho;
   rrnewr = rrr - flxrho;
-  for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    int n = indxmap::upass_map(ipass);
-    int nqp = indxmap::qpass_map(ipass);
+  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+    int nqp = n;
     srcpass = srcq(i, j, k, nqp);
     compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n)) +
             cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
@@ -1900,9 +1888,8 @@ pc_transyz(
   rrnewl = rrl - flxrho;
   rrnewr = rrr - flxrho;
 
-  for (int ipass = 0; ipass < NPASSIVE; ++ipass) {
-    int n = indxmap::upass_map(ipass);
-    int nqp = indxmap::qpass_map(ipass);
+  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+    int nqp = n;
     srcpass = srcq(i, j, k, nqp);
     compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n)) +
             cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
