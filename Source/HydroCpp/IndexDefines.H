@@ -13,7 +13,6 @@
 #define QTEMP 7
 #define QFA 8
 
-#define QGAMC 0
 #define QC 1
 
 #define GDRHO 0

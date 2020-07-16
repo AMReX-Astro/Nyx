@@ -183,9 +183,9 @@ void pc_umdrv(
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
     a,
   amrex::Array4<amrex::Real> const& vol,
-  amrex::Real small_dens, amrex::Real small_pres,
-  amrex::Real small_vel , amrex::Real small,
-  amrex::Real gamma, 
+  const amrex::Real small_dens, const amrex::Real small_pres,
+  const amrex::Real small_vel , const amrex::Real small,
+  const amrex::Real gamma, const amrex::Real gamma_minus_1, 
   const int FirstSpec, const int NumSpec,
   amrex::Real cflLoc);
 

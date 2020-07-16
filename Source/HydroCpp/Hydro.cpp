@@ -259,8 +259,8 @@ Nyx::construct_hydro_source(
         pc_umdrv(
           is_finest_level, time, bx, domain_lo, domain_hi, phys_bc.lo(),
           phys_bc.hi(), s, hyd_src, qarr, qauxar, srcqarr, dx, dt, flx_arr, a,
-          volume.array(mfi), small_dens, small_pres, small_vel, small, gamma,
-          FirstSpec, NumSpec, cflLoc);
+          volume.array(mfi), small_dens, small_pres, small_vel, small, 
+          gamma, gamma_minus_1_loc, FirstSpec, NumSpec, cflLoc);
         BL_PROFILE_VAR_STOP(purm);
 
         BL_PROFILE_VAR("courno", crno);
@@ -371,7 +371,7 @@ pc_umdrv(
   amrex::Array4<amrex::Real> const& vol,
   const amrex::Real small_dens, const amrex::Real small_pres, 
   const amrex::Real small_vel , const amrex::Real small, 
-  const amrex::Real gamma, 
+  const amrex::Real gamma, const amrex::Real gamma_minus_1, 
   const int FirstSpec, const int NumSpec,
   amrex::Real cflLoc)
 {
@@ -405,7 +405,7 @@ pc_umdrv(
     bx, bclo, bchi, domlo, domhi, q, nq, qaux, src_q, // bcMask,
     flx[0], flx[1], flx[2], qec_arr[0], qec_arr[1], qec_arr[2], a[0], a[1],
     a[2], pdivuarr, vol, FirstSpec, NumSpec, small_dens, small_pres, small_vel, small,
-    gamma, dx, dt);
+    gamma, gamma_minus_1, dx, dt);
   BL_PROFILE_VAR_STOP(umeth);
 
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
