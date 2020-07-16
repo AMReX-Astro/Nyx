@@ -38,11 +38,11 @@ riemann(
   const amrex::Real& small_dens,
   const amrex::Real& small_pres,
   const amrex::Real& small_vel,
-  const amrex::Real& small,
+  const amrex::Real& small_in,
   const amrex::Real& gamma,
   const int NumSpec)
 {
-  const amrex::Real csmall = small * c;
+  const amrex::Real csmall = small_in * c;
   const amrex::Real wsmall = small_dens * csmall;
 
   amrex::Real gdnv_state_rho = rl;
@@ -53,12 +53,9 @@ riemann(
   gdnv_state_rho = rr;
   gdnv_state_p = pr;
 
-  amrex::Print() << "WSMALL " << wsmall << std::endl; 
-  amrex::Print() << "PL PR " << pl  << " " << pr << std::endl; 
-  amrex::Print() << "GAMMA " << gamma  << std::endl; 
+  amrex::Real pstar;
 
-  amrex::Print() << "NUMSPEC " << NumSpec  << std::endl; 
-
+#if 0
   const amrex::Real wl =
     amrex::max(wsmall, std::sqrt(amrex::Math::abs(gamma * pl * rl)));
   const amrex::Real wr =
@@ -70,6 +67,68 @@ riemann(
   const amrex::Real pstar = amrex::max(
     small_pres, ((wr * pl + wl * pr) + wl * wr * (ul - ur)) / (wl + wr));
   ustar = ((wl * ul + wr * ur) + (pl - pr)) / (wl + wr);
+#else
+{
+      const amrex::Real weakwv  = 1.e-3;
+      const amrex::Real  small  = 1.e-6;
+
+      amrex::Real wl = amrex::Math::sqrt(gamma*pl*rl);
+      amrex::Real wr = amrex::Math::sqrt(gamma*pr*rr);
+
+      amrex::Real cleft  = wl/rl;
+      amrex::Real cright = wr/rr;
+
+      pstar = amrex::max( (wl*pr+wr*pl-wr*wl*(ur-ul))/(wl+wr), small_pres );
+
+      amrex::Real pstnm1 = pstar;
+
+      amrex::Real wlsq = (.5*(gamma-1.0)*(pstar+pl)+pstar) * rl;
+      amrex::Real wrsq = (.5*(gamma-1.0)*(pstar+pr)+pstar) * rr;
+
+      wl = amrex::Math::sqrt(wlsq);
+      wr = amrex::Math::sqrt(wrsq);
+
+      amrex::Real ustarp = ul - (pstar-pl)/wl;
+      amrex::Real ustarm = ur + (pstar-pr)/wr;
+
+      pstar = amrex::max( (wl*pr+wr*pl-wr*wl*(ur-ul))/(wl+wr), small_pres );
+
+      for (int iter = 0; iter < 3; iter++)
+      {
+        wlsq = (.5*(gamma-1.0)*(pstar+pl)+pstar) * rl;
+        wrsq = (.5*(gamma-1.0)*(pstar+pr)+pstar) * rr;
+
+        wl = 1.0/sqrt(wlsq);
+        wr = 1.0/sqrt(wrsq);
+
+        amrex::Real ustnm1 = ustarm;
+        amrex::Real ustnp1 = ustarp;
+
+        amrex::Real ustarm = ur - (pr-pstar)*wr;
+        amrex::Real ustarp = ul + (pl-pstar)*wl;
+
+        amrex::Real dpditer = abs(pstnm1-pstar);
+        amrex::Real zp      = abs(ustarp-ustnp1);
+
+        if (zp-weakwv*cleft < 0.)
+            zp = dpditer*wl;
+
+        amrex::Real zm = amrex::Math::abs(ustarm-ustnm1);
+
+        if (zm-weakwv*cright < 0.) 
+           zm = dpditer*wr;
+
+        amrex::Real denom  = dpditer / amrex::max(zp+zm,small*(cleft+cright));
+        amrex::Real pstnm1 = pstar;
+
+        pstar = pstar - denom*(ustarm-ustarp);
+
+        pstar = amrex::max(pstar,small_pres);
+
+        ustar = 0.5*(ustarm+ustarp);
+     }
+}
+#endif
 
   bool mask = ustar > 0.0;
   amrex::Real ro = mask ? rl : rr;
@@ -118,7 +177,7 @@ riemann(
   spin = mask ? spin : ushock;
 
   /////////////////// Continue here
-  const amrex::Real scr = (spout == spin) ? small * cav : spout - spin;
+  const amrex::Real scr = (spout == spin) ? small_in * cav : spout - spin;
   const amrex::Real frac =
     amrex::max(0.0, amrex::min(1.0, (1.0 + (spout + spin) / scr) * 0.5));
 
