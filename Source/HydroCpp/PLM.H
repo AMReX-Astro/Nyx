@@ -178,7 +178,7 @@ pc_cmpflx(
   //    ql(i, j, k, QRHO), ul, vl, v2l, ql(i, j, k, QPRES), rel, spl, 
   //    qr(i, j, k, QRHO), ur, vr, v2r, qr(i, j, k, QPRES), rer, spr, 
 
-  amrex::Real c = std::sqrt(std::abs(gamma * q(i,j,k,QPRES) / q(i,j,k,QRHO)));
+  amrex::Real c = std::sqrt((gamma) * qprim(i,j,k,QREINT)*(gamma - 1.0));//std::sqrt(std::abs(gamma * q(i,j,k,QPRES) / q(i,j,k,QRHO)));
   riemann(
     ql(i, j, k, QRHO), ul, vl, v2l, ql(i, j, k, QPRES), rel,
     qr(i, j, k, QRHO), ur, vr, v2r, qr(i, j, k, QPRES), rer,
