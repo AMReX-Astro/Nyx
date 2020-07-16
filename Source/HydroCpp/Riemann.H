@@ -107,8 +107,8 @@ riemann(
         amrex::Real ustarm = ur - (pr-pstar)*wr;
         amrex::Real ustarp = ul + (pl-pstar)*wl;
 
-        amrex::Real dpditer = abs(pstnm1-pstar);
-        amrex::Real zp      = abs(ustarp-ustnp1);
+        amrex::Real dpditer = amrex::Math::abs(pstnm1-pstar);
+        amrex::Real zp      = amrex::Math::abs(ustarp-ustnp1);
 
         if (zp-weakwv*cleft < 0.)
             zp = dpditer*wl;
