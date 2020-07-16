@@ -139,8 +139,6 @@ pc_cmpflx(
     f_idx[2] = UMY;
   }
 
-  std::cout << "HERE FOR IJK " << i << " " << j << " " << k << std::endl;
-  std::cout << "FS NS " << FirstSpec << " " << NumSpec << " " << std::endl;
   for (int sp = 0; sp < NumSpec; ++sp) {
     spl[sp] = ql(i, j, k, FirstSpec + sp);
     spr[sp] = qr(i, j, k, FirstSpec + sp);
@@ -187,8 +185,6 @@ pc_cmpflx(
     flx(i, j, k, UEDEN), flx(i, j, k, UEINT), q(i, j, k, GU), q(i, j, k, GV),
     q(i, j, k, GV2), q(i, j, k, GDPRES), q(i, j, k, GDGAME), 
     small_dens, small_pres, small_vel, small, gamma, NumSpec);
-
-  std::cout << "OUT OF RIEMANN " << std::endl;
 
   amrex::Real flxrho = flx(i, j, k, URHO);
   for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
