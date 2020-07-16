@@ -227,7 +227,6 @@ riemann(
     0.5 * rgd * (qint_iu * qint_iu + qint_iv1 * qint_iv1 + qint_iv2 * qint_iv2);
   uflx_eden = qint_iu * (rhoetot + qint_gdpres);
   uflx_eint = qint_iu * regd;
-  amrex::Print() << "LEAVING ROUTINE " << std::endl;
 }
 
 #endif
