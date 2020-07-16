@@ -723,9 +723,9 @@ pc_transy(
   amrex::Array4<const amrex::Real> const& srcQ,
   amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
-  const amrex::Real gamma_minus_1,
   const amrex::Real hdt,
-  const amrex::Real cdtdy)
+  const amrex::Real cdtdy, const int NumSpec, 
+  const amrex::Real gamma)
 {
   //  Local variables to avoid reading from global memory too much
   amrex::Real compn, rr, rrnew, compo;
@@ -795,7 +795,7 @@ pc_transy(
   qp(i, j, k, QU) = runewr / rrnewr + hdt * srcQ(i, j, k, QU);
   qp(i, j, k, QV) = rvnewr / rrnewr + hdt * srcQ(i, j, k, QV);
   rhoekinr = 0.5 * (runewr * runewr + rvnewr * rvnewr) / rrnewr;
-  amrex::Real pnewr = qxp(i, j, k, QPRES) - cdtdy * (dup + pav * du * gamma_minus_1);
+  amrex::Real pnewr = qxp(i, j, k, QPRES) - cdtdy * (dup + pav * du * (gamma-1.0));
   qp(i, j, k, QPRES) = amrex::max(pnewr + hdt * srcp, SMALL_PRES);
   qp(i, j, k, QREINT) = renewr - rhoekinr + hdt * srce;
 
@@ -822,7 +822,7 @@ pc_transy(
   rhoekinl = 0.5 * (runewl * runewl + rvnewl * rvnewl) / rrnewl;
 
   amrex::Real pnewl =
-    qxm(i + 1, j, k, QPRES) - cdtdy * (dup + pav * du * gamma_minus_1);
+    qxm(i + 1, j, k, QPRES) - cdtdy * (dup + pav * du * (gamma-1.0));
   qm(i + 1, j, k, QPRES) = amrex::max(pnewl + hdt * srcp, SMALL_PRES);
   qm(i + 1, j, k, QREINT) = renewl - rhoekinl + hdt * srce;
 }
@@ -842,8 +842,8 @@ pc_transx1(
   amrex::Array4<const amrex::Real> const& flxx,
   amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
-  const amrex::Real gamma_minus_1,
-  const amrex::Real cdtdx)
+  const amrex::Real cdtdx, const int NumSpec,
+  const amrex::Real gamma) 
 {
   // Local variables to avoid reading from global memory too much
   amrex::Real compn, rr, rrnew, compo, rwr;
@@ -915,7 +915,7 @@ pc_transx1(
   rhoekinr =
     0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
   amrex::Real pnewr =
-    qyp(i, j, k, QPRES) - cdtdx * (dAup + pav * dAu * gamma_minus_1);
+    qyp(i, j, k, QPRES) - cdtdx * (dAup + pav * dAu * (gamma-1.0));
   qp(i, j, k, QPRES) = amrex::max(pnewr, SMALL_PRES);
   qp(i, j, k, QREINT) = renewr - rhoekinr;
   // QM
@@ -947,7 +947,7 @@ pc_transx1(
 
   qm(i, j + 1, k, QREINT) = renewl - rhoekinl;
   amrex::Real pnewl =
-    qym(i, j + 1, k, QPRES) - cdtdx * (dAup + pav * dAu * gamma_minus_1);
+    qym(i, j + 1, k, QPRES) - cdtdx * (dAup + pav * dAu * (gamma-1.0));
   qm(i, j + 1, k, QPRES) = amrex::max(pnewl, SMALL_PRES);
 }
 
@@ -966,8 +966,8 @@ pc_transy1(
   amrex::Array4<const amrex::Real> const& flxy,
   amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
-  const amrex::Real gamma_minus_1,
-  const amrex::Real cdtdy)
+  const amrex::Real cdtdy, const int NumSpec, 
+  const amrex::Real gamma)
 {
 
   amrex::Real compn, rr, rrnew, compo, rwr;
@@ -1041,7 +1041,7 @@ pc_transy1(
   rhoekinr =
     0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
 
-  pnewr = qxp(i, j, k, QPRES) - cdtdy * (dup + pav * du * gamma_minus_1);
+  pnewr = qxp(i, j, k, QPRES) - cdtdy * (dup + pav * du * (gamma-1.0));
   qp(i, j, k, QPRES) = amrex::max(pnewr, SMALL_PRES);
   qp(i, j, k, QREINT) = renewr - rhoekinr;
 
@@ -1072,7 +1072,7 @@ pc_transy1(
   rhoekinl =
     0.5 * (runewl * runewl + rvnewl * rvnewl + rwnewl * rwnewl) / rrnewl;
 
-  pnewl = qxm(i + 1, j, k, QPRES) - cdtdy * (dup + pav * du * gamma_minus_1);
+  pnewl = qxm(i + 1, j, k, QPRES) - cdtdy * (dup + pav * du * (gamma-1.0));
   qm(i + 1, j, k, QPRES) = amrex::max(pnewl, SMALL_PRES);
   qm(i + 1, j, k, QREINT) = renewl - rhoekinl;
 }
@@ -1092,8 +1092,8 @@ pc_transx2(
   amrex::Array4<const amrex::Real> const& flxx,
   amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
-  const amrex::Real gamma_minus_1,
-  const amrex::Real cdtdx)
+  const amrex::Real cdtdx, const int NumSpec, 
+  const amrex::Real gamma)
 {
   // Local variables to avoid reading from global memory too much
   amrex::Real compn, rr, rrnew, compo, rwr;
@@ -1165,7 +1165,7 @@ pc_transx2(
   rhoekinr =
     0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
   amrex::Real pnewr =
-    qzp(i, j, k, QPRES) - cdtdx * (dAup + pav * dAu * gamma_minus_1);
+    qzp(i, j, k, QPRES) - cdtdx * (dAup + pav * dAu * (gamma-1.0));
   qp(i, j, k, QPRES) = amrex::max(pnewr, SMALL_PRES);
   qp(i, j, k, QREINT) = renewr - rhoekinr;
   // QM
@@ -1197,7 +1197,7 @@ pc_transx2(
 
   qm(i, j, k + 1, QREINT) = renewl - rhoekinl;
   amrex::Real pnewl =
-    qzm(i, j, k + 1, QPRES) - cdtdx * (dAup + pav * dAu * gamma_minus_1);
+    qzm(i, j, k + 1, QPRES) - cdtdx * (dAup + pav * dAu * (gamma-1.0));
   qm(i, j, k + 1, QPRES) = amrex::max(pnewl, SMALL_PRES);
 }
 
@@ -1216,8 +1216,8 @@ pc_transy2(
   amrex::Array4<const amrex::Real> const& flxy,
   amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
-  const amrex::Real gamma_minus_1,
-  const amrex::Real cdtdy)
+  const amrex::Real cdtdy, const int NumSpec, 
+  const amrex::Real gamma)
 {
   // Local variables to avoid reading from global memory too much
   amrex::Real compn, rr, rrnew, compo, rwr;
@@ -1289,7 +1289,7 @@ pc_transy2(
   rhoekinr =
     0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
   amrex::Real pnewr =
-    qzp(i, j, k, QPRES) - cdtdy * (dAup + pav * dAu * gamma_minus_1);
+    qzp(i, j, k, QPRES) - cdtdy * (dAup + pav * dAu * (gamma-1.0));
   qp(i, j, k, QPRES) = amrex::max(pnewr, SMALL_PRES);
   qp(i, j, k, QREINT) = renewr - rhoekinr;
   // QM
@@ -1321,7 +1321,7 @@ pc_transy2(
 
   qm(i, j, k + 1, QREINT) = renewl - rhoekinl;
   amrex::Real pnewl =
-    qzm(i, j, k + 1, QPRES) - cdtdy * (dAup + pav * dAu * gamma_minus_1);
+    qzm(i, j, k + 1, QPRES) - cdtdy * (dAup + pav * dAu * (gamma-1.0));
   qm(i, j, k + 1, QPRES) = amrex::max(pnewl, SMALL_PRES);
 }
 
@@ -1340,8 +1340,8 @@ pc_transz1(
   amrex::Array4<const amrex::Real> const& flxz,
   amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
-  const amrex::Real gamma_minus_1,
-  const amrex::Real cdtdz)
+  const amrex::Real cdtdz, const int NumSpec, 
+  const amrex::Real gamma)
 {
   amrex::Real compn, rr, rrnew, compo, rwr;
   amrex::Real rrr, rur, rvr, ekinr, rer, rrnewr;
@@ -1414,7 +1414,7 @@ pc_transz1(
   rhoekinr =
     0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
 
-  pnewr = qxp(i, j, k, QPRES) - cdtdz * (dup + pav * du * gamma_minus_1);
+  pnewr = qxp(i, j, k, QPRES) - cdtdz * (dup + pav * du * (gamma-1.0));
   qp(i, j, k, QPRES) = amrex::max(pnewr, SMALL_PRES);
   qp(i, j, k, QREINT) = renewr - rhoekinr;
 
@@ -1445,7 +1445,7 @@ pc_transz1(
   rhoekinl =
     0.5 * (runewl * runewl + rvnewl * rvnewl + rwnewl * rwnewl) / rrnewl;
 
-  pnewl = qxm(i + 1, j, k, QPRES) - cdtdz * (dup + pav * du * gamma_minus_1);
+  pnewl = qxm(i + 1, j, k, QPRES) - cdtdz * (dup + pav * du * (gamma-1.0));
   qm(i + 1, j, k, QPRES) = amrex::max(pnewl, SMALL_PRES);
   qm(i + 1, j, k, QREINT) = renewl - rhoekinl;
 }
@@ -1465,8 +1465,8 @@ pc_transz2(
   amrex::Array4<const amrex::Real> const& flxz,
   amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
-  const amrex::Real gamma_minus_1,
-  const amrex::Real cdtdz)
+  const amrex::Real cdtdz, const int NumSpec, 
+  const amrex::Real gamma)
 {
   // Local variables to avoid reading from global memory too much
   amrex::Real compn, rr, rrnew, compo, rwr;
@@ -1537,7 +1537,7 @@ pc_transz2(
   rhoekinr =
     0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
   amrex::Real pnewr =
-    qyp(i, j, k, QPRES) - cdtdz * (dAup + pav * dAu * gamma_minus_1);
+    qyp(i, j, k, QPRES) - cdtdz * (dAup + pav * dAu * (gamma-1.0));
   qp(i, j, k, QPRES) = amrex::max(pnewr, SMALL_PRES);
   qp(i, j, k, QREINT) = renewr - rhoekinr;
 
@@ -1570,7 +1570,7 @@ pc_transz2(
 
   qm(i, j + 1, k, QREINT) = renewl - rhoekinl;
   amrex::Real pnewl =
-    qym(i, j + 1, k, QPRES) - cdtdz * (dAup + pav * dAu * gamma_minus_1);
+    qym(i, j + 1, k, QPRES) - cdtdz * (dAup + pav * dAu * (gamma-1.0));
   qm(i, j + 1, k, QPRES) = amrex::max(pnewl, SMALL_PRES);
 }
 
@@ -1592,10 +1592,10 @@ pc_transxy(
   amrex::Array4<const amrex::Real> const& qy,
   amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& srcq,
-  const amrex::Real gamma_minus_1,
   const amrex::Real hdt,
   const amrex::Real cdtdx,
-  const amrex::Real cdtdy)
+  const amrex::Real cdtdy, 
+  const int NumSpec, const amrex::Real gamma)
 {
   amrex::Real compn, compo, rwr;
   amrex::Real rrr, rur, rvr, ekinr, rer, rrnewr;
@@ -1664,8 +1664,8 @@ pc_transxy(
   dAupy = pggpy * ugpy - pggmy * ugmy;
   pavy = 0.5 * (pggpy + pggmy);
   dAuy = ugpy - ugmy;
-  amrex::Real pxnew = cdtdx * (dAupx + pavx * dAux * gamma_minus_1);
-  amrex::Real pynew = cdtdy * (dAupy + pavy * dAuy * gamma_minus_1);
+  amrex::Real pxnew = cdtdx * (dAupx + pavx * dAux * (gamma-1.0));
+  amrex::Real pynew = cdtdy * (dAupy + pavy * dAuy * (gamma-1.0));
 
   // qp state
   rur = rrr * qzp(i, j, k, QU);
@@ -1730,10 +1730,10 @@ pc_transxz(
   amrex::Array4<const amrex::Real> const& qz,
   amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& srcq,
-  const amrex::Real gamma_minus_1,
   const amrex::Real hdt,
   const amrex::Real cdtdx,
-  const amrex::Real cdtdz)
+  const amrex::Real cdtdz, 
+  const int NumSpec, const amrex::Real gamma)
 {
   amrex::Real compn, compo, rwr;
   amrex::Real rrr, rur, rvr, ekinr, rer, rrnewr;
@@ -1802,8 +1802,8 @@ pc_transxz(
   dAupz = pggpz * ugpz - pggmz * ugmz;
   pavz = 0.5 * (pggpz + pggmz);
   dAuz = ugpz - ugmz;
-  amrex::Real pxnew = cdtdx * (dAupx + pavx * dAux * gamma_minus_1);
-  amrex::Real pznew = cdtdz * (dAupz + pavz * dAuz * gamma_minus_1);
+  amrex::Real pxnew = cdtdx * (dAupx + pavx * dAux * (gamma-1.0));
+  amrex::Real pznew = cdtdz * (dAupz + pavz * dAuz * (gamma-1.0));
 
   // qp state
   rur = rrr * qyp(i, j, k, QU);
@@ -1868,10 +1868,10 @@ pc_transyz(
   amrex::Array4<const amrex::Real> const& qz,
   amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& srcq,
-  const amrex::Real gamma_minus_1,
   const amrex::Real hdt,
   const amrex::Real cdtdy,
-  const amrex::Real cdtdz)
+  const amrex::Real cdtdz, 
+  const int NumSpec, const amrex::Real gamma)
 {
   amrex::Real compn, compo, rwr;
   amrex::Real rrr, rur, rvr, ekinr, rer, rrnewr;
@@ -1941,8 +1941,8 @@ pc_transyz(
   dAupy = pggpy * ugpy - pggmy * ugmy;
   pavy = 0.5 * (pggpy + pggmy);
   dAuy = ugpy - ugmy;
-  amrex::Real pznew = cdtdz * (dAupz + pavz * dAuz * gamma_minus_1);
-  amrex::Real pynew = cdtdy * (dAupy + pavy * dAuy * gamma_minus_1);
+  amrex::Real pznew = cdtdz * (dAupz + pavz * dAuz * (gamma-1.0));
+  amrex::Real pynew = cdtdy * (dAupy + pavy * dAuy * (gamma-1.0));
 
   // qp state
   rur = rrr * qxp(i, j, k, QU);
