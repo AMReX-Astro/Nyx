@@ -723,7 +723,7 @@ pc_transy(
   amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
   const amrex::Real hdt,
-  const amrex::Real cdtdy)
+  const amrex::Real cdtdy, const int NumSpec, const amrex::Real gamma)
 {
   //  Local variables to avoid reading from global memory too much
   amrex::Real compn, rr, rrnew, compo, c;
@@ -840,7 +840,7 @@ pc_transx1(
   amrex::Array4<const amrex::Real> const& flxx,
   amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
-  const amrex::Real cdtdx)
+  const amrex::Real cdtdx, const int NumSpec, const amrex::Real gamma)
 {
   // Local variables to avoid reading from global memory too much
   amrex::Real compn, rr, rrnew, compo, rwr, c;
@@ -963,7 +963,7 @@ pc_transy1(
   amrex::Array4<const amrex::Real> const& flxy,
   amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
-  const amrex::Real cdtdy)
+  const amrex::Real cdtdy, const int NumSpec, const amrex::Real gamma)
 {
 
   amrex::Real compn, rr, rrnew, compo, rwr, c;
@@ -1088,7 +1088,7 @@ pc_transx2(
   amrex::Array4<const amrex::Real> const& flxx,
   amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
-  const amrex::Real cdtdx)
+  const amrex::Real cdtdx, const int NumSpec, const amrex::Real gamma)
 {
   // Local variables to avoid reading from global memory too much
   amrex::Real compn, rr, rrnew, compo, rwr, c;
@@ -1211,7 +1211,7 @@ pc_transy2(
   amrex::Array4<const amrex::Real> const& flxy,
   amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
-  const amrex::Real cdtdy)
+  const amrex::Real cdtdy, const int NumSpec, const amrex::Real gamma)
 {
   // Local variables to avoid reading from global memory too much
   amrex::Real compn, rr, rrnew, compo, rwr, c;
@@ -1334,7 +1334,7 @@ pc_transz1(
   amrex::Array4<const amrex::Real> const& flxz,
   amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
-  const amrex::Real cdtdz)
+  const amrex::Real cdtdz, const int NumSpec, const amrex::Real gamma)
 {
   amrex::Real compn, rr, rrnew, compo, rwr, c;
   amrex::Real rrr, rur, rvr, ekinr, rer, rrnewr;
@@ -1458,7 +1458,7 @@ pc_transz2(
   amrex::Array4<const amrex::Real> const& flxz,
   amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
-  const amrex::Real cdtdz)
+  const amrex::Real cdtdz, const int NumSpec, const amrex::Real gamma)
 {
   // Local variables to avoid reading from global memory too much
   amrex::Real compn, rr, rrnew, compo, rwr, c;
@@ -1586,7 +1586,7 @@ pc_transxy(
   amrex::Array4<const amrex::Real> const& srcq,
   const amrex::Real hdt,
   const amrex::Real cdtdx,
-  const amrex::Real cdtdy)
+  const amrex::Real cdtdy, const int NumSpec, const amrex::Real gamma)
 {
   amrex::Real compn, compo, rwr, c;
   amrex::Real rrr, rur, rvr, ekinr, rer, rrnewr;
@@ -1723,7 +1723,7 @@ pc_transxz(
   amrex::Array4<const amrex::Real> const& srcq,
   const amrex::Real hdt,
   const amrex::Real cdtdx,
-  const amrex::Real cdtdz)
+  const amrex::Real cdtdz, const int NumSpec, const amrex::Real gamma)
 {
   amrex::Real compn, compo, rwr, c;
   amrex::Real rrr, rur, rvr, ekinr, rer, rrnewr;
@@ -1860,7 +1860,7 @@ pc_transyz(
   amrex::Array4<const amrex::Real> const& srcq,
   const amrex::Real hdt,
   const amrex::Real cdtdy,
-  const amrex::Real cdtdz)
+  const amrex::Real cdtdz, const int NumSpec, const amrex::Real gamma)
 {
   amrex::Real compn, compo, rwr, c;
   amrex::Real rrr, rur, rvr, ekinr, rer, rrnewr;

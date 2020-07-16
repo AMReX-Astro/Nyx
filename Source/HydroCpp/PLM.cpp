@@ -188,10 +188,10 @@ pc_umeth_3D(
   amrex::ParallelFor(txbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     // X|Y
     pc_transy1(
-      i, j, k, qmxy, qpxy, qxmarr, qxparr, fyarr, qaux, gdtempy, cdtdy);
+      i, j, k, qmxy, qpxy, qxmarr, qxparr, fyarr, qaux, gdtempy, cdtdy, NumSpec, gamma);
     // X|Z
     pc_transz1(
-      i, j, k, qmxz, qpxz, qxmarr, qxparr, fzarr, qaux, gdtempz, cdtdz);
+      i, j, k, qmxz, qpxz, qxmarr, qxparr, fzarr, qaux, gdtempz, cdtdz, NumSpec, gamma);
   });
 
   const amrex::Box& txfxbx = surroundingNodes(bxg1, cdir);
@@ -245,10 +245,10 @@ pc_umeth_3D(
   amrex::ParallelFor(tybx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     // Y|X
     pc_transx1(
-      i, j, k, qmyx, qpyx, qymarr, qyparr, fxarr, qaux, gdtempx, cdtdx);
+      i, j, k, qmyx, qpyx, qymarr, qyparr, fxarr, qaux, gdtempx, cdtdx, NumSpec, gamma);
     // Y|Z
     pc_transz2(
-      i, j, k, qmyz, qpyz, qymarr, qyparr, fzarr, qaux, gdtempz, cdtdz);
+      i, j, k, qmyz, qpyz, qymarr, qyparr, fzarr, qaux, gdtempz, cdtdz, NumSpec, gamma);
   });
 
   fzeli.clear();
@@ -306,10 +306,10 @@ pc_umeth_3D(
   amrex::ParallelFor(tzbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     // Z|X
     pc_transx2(
-      i, j, k, qmzx, qpzx, qzmarr, qzparr, fxarr, qaux, gdtempx, cdtdx);
+      i, j, k, qmzx, qpzx, qzmarr, qzparr, fxarr, qaux, gdtempx, cdtdx, NumSpec, gamma);
     // Z|Y
     pc_transy2(
-      i, j, k, qmzy, qpzy, qzmarr, qzparr, fyarr, qaux, gdtempy, cdtdy);
+      i, j, k, qmzy, qpzy, qzmarr, qzparr, fyarr, qaux, gdtempy, cdtdy, NumSpec, gamma);
   });
 
   fxeli.clear();
@@ -365,7 +365,7 @@ pc_umeth_3D(
   amrex::ParallelFor(tyzbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_transyz(
       i, j, k, qm, qp, qxmarr, qxparr, flyz, flzy, qyz, qzy, qaux, srcQ, hdt,
-      hdtdy, hdtdz);
+      hdtdy, hdtdz, NumSpec, gamma);
   });
 
   fluxzyeli.clear();
@@ -388,7 +388,7 @@ pc_umeth_3D(
   amrex::ParallelFor(txzbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_transxz(
       i, j, k, qm, qp, qymarr, qyparr, flxz, flzx, qxz, qzx, qaux, srcQ, hdt,
-      hdtdx, hdtdz);
+      hdtdx, hdtdz, NumSpec, gamma);
   });
 
   fluxzxeli.clear();
@@ -411,7 +411,7 @@ pc_umeth_3D(
   amrex::ParallelFor(txybx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_transxy(
       i, j, k, qm, qp, qzmarr, qzparr, flxy, flyx, qxy, qyx, qaux, srcQ, hdt,
-      hdtdx, hdtdy);
+      hdtdx, hdtdy, NumSpec, gamma);
   });
 
   gdvyxeli.clear();
