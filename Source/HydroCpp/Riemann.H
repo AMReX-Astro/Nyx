@@ -47,24 +47,11 @@ riemann(
 
   amrex::Real gdnv_state_rho = rl;
   amrex::Real gdnv_state_p = pl;
-  //  amrex::Real gdnv_state_massfrac[NumSpec];
-  //  for (int n = 0; n < NumSpec; n++) {
-  //     gdnv_state_massfrac[n] = spl[n];
-  //  }
 
   amrex::Real gdnv_state_cs;
-  // Put soundspeed here:
-  //  EOS::RPY2Cs(gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, gdnv_state_cs);
-  //  const amrex::Real csl = gdnv_state_cs;
 
   gdnv_state_rho = rr;
   gdnv_state_p = pr;
-  //  for (int n = 0; n < NumSpec; n++) {
-  //    gdnv_state_massfrac[n] = spr[n];
-  //  }
-  // Put soundspeed here:
-  //  EOS::RPY2Cs(gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, gdnv_state_cs);
-  //  const amrex::Real csr = gdnv_state_cs;
 
   amrex::Print() << "WSMALL " << wsmall << std::endl; 
   amrex::Print() << "PL PR " << pl  << " " << pr << std::endl; 
@@ -93,12 +80,8 @@ riemann(
   // Make data types/vars match:
   //             rel = ql(i,j,k,QREINT,comp)
   //             rer = qr(i,j,k,QREINT,comp)
-  //reo = mask ? rel : rer
-  //gamco = mask ? gamcl : gamcr
-  amrex::Real sp[NumSpec];
-  for (int n = 0; n < NumSpec; n++) {
-  //   sp[n] = mask ? spl[n] : spr[n];
-  }
+  amrex::Real reo = mask ? rel : rer;
+  amrex::Real gamco = mask ? gamcl : gamcr;
   //0 case and also small ustar case
   //Figure out how to set small_vel to be consistent with:
   //          ro = max(small_dens, ro)
@@ -108,63 +91,22 @@ riemann(
   ro = mask ? 0.5 * (rl + rr) : ro;
   uo = mask ? 0.5 * (ul + ur) : uo;
   po = mask ? 0.5 * (pl + pr) : po;
-  //reo = mask ? 0.5 * (rel + rer) : reo
-  //gamco = mask ? 0.5 * (gamcl + gamcr) : gamco
-  for (int n = 0; n < NumSpec; n++) {
-//     sp[n] = mask ? 0.5 * (spl[n] + spr[n]) : sp[n];
-  }
-  /*
-  exit(0); 
+  reo = mask ? 0.5 * (rel + rer) : reo;
+  gamco = mask ? 0.5 * (gamcl + gamcr) : gamco;
 
-  gdnv_state_rho = ro;
-  gdnv_state_p = po;
-  for (int n = 0; n < NumSpec; n++) {
-    gdnv_state_massfrac[n] = sp[n];
-  }
-  
-  amrex::Real gdnv_state_e;
-  //Put nyx_eos_given_rp ???
-  //  EOS::RYP2E(gdnv_state_rho, gdnv_state_massfrac, gdnv_state_p, gdnv_state_e);
-  const amrex::Real reo = gdnv_state_rho * gdnv_state_e;
-  // Put soundspeed here:
-  //  EOS::RPY2Cs(gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, gdnv_state_cs);
-  const amrex::Real co = gdnv_state_cs;
-  */
-
-  //From riemannus, looks equivalent:
-  /*
-             ro = max(small_dens, ro)
-
-             roinv = ONE/ro
-
-             co = sqrt(abs(gamco*po*roinv))
-             co = max(csmall,co)
-  */
   const amrex::Real co = std::sqrt(std::abs(gamco * po / ro));
 
   //Is a max or limiter similar to the mask above needed for co?
 
   const amrex::Real drho = (pstar - po) / (co * co);
   const amrex::Real rstar = amrex::max(small_dens, ro + drho);
-  /*
-  gdnv_state_rho = rstar;
-  gdnv_state_p = pstar;
-  for (int n = 0; n < NumSpec; n++) {
-    gdnv_state_massfrac[n] = sp[n];
-  }
-  //Put nyx_eos_given_rp ???
-  //  EOS::RYP2E(gdnv_state_rho, gdnv_state_massfrac, gdnv_state_p, gdnv_state_e);
-  const amrex::Real estar = gdnv_state_rho * gdnv_state_e;
-  // Put soundspeed here:
-  //  EOS::RPY2Cs(gdnv_state_rho, gdnv_state_p, gdnv_state_massfrac, gdnv_state_cs);
-  const amrex::Real cstar = gdnv_state_cs;
-*/
-  //Fix data type:
-             entho = (reo + po)/(ro*co*co)
-             estar = reo + (pstar - po)*entho
 
-             cstar = sqrt(abs(gamco*pstar/rstar))
-             cstar = max(cstar, csmall)
+  //Fix data type:
+  const amrex::Real entho = (reo + po)/(ro*co*co);
+  const amrex::Real estar = reo + (pstar - po)*entho;
+
+  amrex::Real cstar = std::sqrt(amrex::Math::abs(gamco*pstar/rstar));
+  cstar = amrex::Math::max(cstar, csmall);
   const amrex::Real sgnm = amrex::Math::copysign(1.0, ustar);
 
   amrex::Real spout = co - sgnm * uo;
