@@ -143,14 +143,12 @@ Nyx::construct_hydro_source(
         auto const& hyd_src = hydro_source.array(mfi);
 
         // Resize Temporary Fabs
-        amrex::FArrayBox q(qbx, S.nComp()), qaux(qbx, NQAUX), src_q(qbx, S.nComp());
+        amrex::FArrayBox q(qbx, S.nComp()), src_q(qbx, S.nComp());
         // Use Elixir Construct to steal the Fabs metadata
         amrex::Elixir qeli = q.elixir();
-        amrex::Elixir qauxeli = qaux.elixir();
         amrex::Elixir src_qeli = src_q.elixir();
         // Get Arrays to pass to the gpu.
         auto const& qarr = q.array();
-        auto const& qauxar = qaux.array();
         auto const& srcqarr = src_q.array();
 
 		//		amrex::Print()<<"s"<<S[mfi]<<std::endl;
@@ -158,11 +156,10 @@ Nyx::construct_hydro_source(
         BL_PROFILE_VAR("Nyx::ctoprim()", ctop);
         amrex::ParallelFor(
           qbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            pc_ctoprim(i, j, k, s, qarr, qauxar, NumSpec_loc, gamma_minus_1_loc);
+            pc_ctoprim(i, j, k, s, qarr, NumSpec_loc, gamma_minus_1_loc);
           });
         BL_PROFILE_VAR_STOP(ctop);
 
-		//		amrex::Print()<<"q"<<q<<"\nqaux"<<qaux<<std::endl;
         // TODO GPUize NCSCBC
         // Imposing Ghost-Cells Navier-Stokes Characteristic BCs if "UserBC" are
         // used For the theory, see Motheau et al. AIAA J. Vol. 55, No. 10 : pp.
@@ -172,44 +169,11 @@ Nyx::construct_hydro_source(
         // additional optional arguments to temporary fill ghost-cells for
         // EXT_DIR and to provide target BC values. See the examples.
 
-        // Allocate fabs for bcMask. Note that we grow in the opposite direction
-        // because the Riemann solver wants a face value in a ghost-cell
-#if 0 
-      for (int dir = 0; dir < AMREX_SPACEDIM ; dir++)  {
-        const Box& bxtmp = amrex::surroundingNodes(fbx,dir);
-        Box TestBox(bxtmp);
-        for(int d=0; d<AMREX_SPACEDIM; ++d) {
-          if (dir!=d) TestBox.grow(d,1);
-        }
-        bcMask[dir].resize(TestBox,1);
-        bcMask[dir].setVal(0);
-      }
-      
-      // Becase bcMask is read in the Riemann solver in any case,
-      // here we put physbc values in the appropriate faces for the non-nscbc case
-      set_bc_mask(lo, hi, domain_lo, domain_hi,
-                  AMREX_D_DECL(AMREX_TO_FORTRAN(bcMask[0]),
-                               AMREX_TO_FORTRAN(bcMask[1]),
-                               AMREX_TO_FORTRAN(bcMask[2])));
-
-      if (nscbc_adv == 1)
-      {
-        impose_NSCBC(lo, hi, domain_lo, domain_hi,
-                     AMREX_TO_FORTRAN(*statein),
-                     AMREX_TO_FORTRAN(q.fab()),
-                     AMREX_TO_FORTRAN(qaux.fab()),
-                     AMREX_D_DECL(AMREX_TO_FORTRAN(bcMask[0]),
-                            AMREX_TO_FORTRAN(bcMask[1]),
-                            AMREX_TO_FORTRAN(bcMask[2])),
-                     &flag_nscbc_isAnyPerio, flag_nscbc_perio, 
-                     &time, dx, &dt);
-      }
-#endif
         BL_PROFILE_VAR("Nyx::srctoprim()", srctop);
         const auto& src_in = sources_for_hydro.array(mfi);
         amrex::ParallelFor(
           qbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            pc_srctoprim(i, j, k, qarr, qauxar, src_in, srcqarr,
+            pc_srctoprim(i, j, k, qarr, src_in, srcqarr,
             a_half, a_dot, NumSpec_loc, gamma_minus_1_loc);
           });
         BL_PROFILE_VAR_STOP(srctop);
@@ -258,7 +222,7 @@ Nyx::construct_hydro_source(
             area[0].array(mfi), area[1].array(mfi), area[2].array(mfi))};
         pc_umdrv(
           is_finest_level, time, bx, domain_lo, domain_hi, phys_bc.lo(),
-          phys_bc.hi(), s, hyd_src, qarr, qauxar, srcqarr, dx, dt, flx_arr, a,
+          phys_bc.hi(), s, hyd_src, qarr, srcqarr, dx, dt, flx_arr, a,
           volume.array(mfi), small_dens, small_pres, small_vel, small, 
           gamma, gamma_minus_1_loc, FirstSpec, NumSpec, cflLoc);
         BL_PROFILE_VAR_STOP(purm);
@@ -360,7 +324,6 @@ pc_umdrv(
   amrex::Array4<const amrex::Real> const& uin,
   amrex::Array4<amrex::Real> const& uout,
   amrex::Array4<const amrex::Real> const& q,
-  amrex::Array4<const amrex::Real> const& qaux,
   amrex::Array4<const amrex::Real> const&
     src_q, // amrex::IArrayBox const& bcMask,
   const amrex::Real* dx,
@@ -396,13 +359,10 @@ pc_umdrv(
   auto const& pdivuarr = pdivu.array();
 
   const int nq    = q.nComp();
-  const int nqaux = qaux.nComp();
-
-  amrex::Print() << " QAUX HAS NCOMP " << nqaux << std::endl;
 
   BL_PROFILE_VAR("Nyx::umeth()", umeth);
   pc_umeth_3D(
-    bx, bclo, bchi, domlo, domhi, q, nq, qaux, src_q, // bcMask,
+    bx, bclo, bchi, domlo, domhi, q, nq, src_q, // bcMask,
     flx[0], flx[1], flx[2], qec_arr[0], qec_arr[1], qec_arr[2], a[0], a[1],
     a[2], pdivuarr, vol, FirstSpec, NumSpec, small_dens, small_pres, small_vel, small,
     gamma, gamma_minus_1, dx, dt);

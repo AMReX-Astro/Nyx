@@ -26,7 +26,6 @@ pc_ctoprim(
   const int k,
   amrex::Array4<const amrex::Real> const& u,
   amrex::Array4<amrex::Real> const& q,
-  amrex::Array4<amrex::Real> const& qa,
   const int NumSpec, const amrex::Real gamma_minus_1)
 {
   const amrex::Real rho = u(i, j, k, URHO);
@@ -51,8 +50,6 @@ pc_ctoprim(
   for (int n = 0; n < NumSpec; ++n) {
     q(i, j, k, FirstSpec + n) = u(i, j, k, FirstSpec + n) / rho;
   }
-
-  qa(i, j, k, QC) = std::sqrt((gamma_minus_1+1.0) * q(i,j,k,QREINT)*gamma_minus_1);
 }
 
 AMREX_GPU_DEVICE

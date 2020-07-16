@@ -82,7 +82,6 @@ pc_cmpflx(
   amrex::Array4<const amrex::Real> const& qr,
   amrex::Array4<amrex::Real> const& flx,
   amrex::Array4<amrex::Real> const& q,
-  amrex::Array4<const amrex::Real> const& qa,
   // amrex::Array4<const int> const& bcMask,
   const amrex::Real small_dens,
   const amrex::Real small_pres,
@@ -107,7 +106,8 @@ pc_cmpflx(
     GU = GDU;
     GV = GDV;
     GV2 = GDW;
-    cav = 0.5 * (qa(i, j, k, QC) + qa(i - 1, j, k, QC));
+    cav = 0.5 * ( std::sqrt(std::abs(gamma * q(i-1,j,k,QPRES) / q(i-1,j,k,QRHO)))
+                 +std::sqrt(std::abs(gamma * q(i  ,j,k,QPRES) / q(i  ,j,k,QRHO))) );
     f_idx[0] = UMX;
     f_idx[1] = UMY;
     f_idx[2] = UMZ;
@@ -118,7 +118,8 @@ pc_cmpflx(
     GU = GDV;
     GV = GDU;
     GV2 = GDW;
-    cav = 0.5 * (qa(i, j, k, QC) + qa(i, j - 1, k, QC));
+    cav = 0.5 * ( std::sqrt(std::abs(gamma * q(i,j-1,k,QPRES) / q(i,j-1,k,QRHO)))
+                 +std::sqrt(std::abs(gamma * q(i,j  ,k,QPRES) / q(i,j  ,k,QRHO))) );
     f_idx[0] = UMY;
     f_idx[1] = UMX;
     f_idx[2] = UMZ;
@@ -129,7 +130,8 @@ pc_cmpflx(
     GU = GDW;
     GV = GDU;
     GV2 = GDV;
-    cav = 0.5 * (qa(i, j, k, QC) + qa(i, j, k - 1, QC));
+    cav = 0.5 * ( std::sqrt(std::abs(gamma * q(i,j,k-1,QPRES) / q(i,j,k-1,QRHO)))
+                 +std::sqrt(std::abs(gamma * q(i,j,k  ,QPRES) / q(i,j,k  ,QRHO))) );
     f_idx[0] = UMZ;
     f_idx[1] = UMX;
     f_idx[2] = UMY;
@@ -174,10 +176,11 @@ pc_cmpflx(
   //    ql(i, j, k, QRHO), ul, vl, v2l, ql(i, j, k, QPRES), rel, spl, 
   //    qr(i, j, k, QRHO), ur, vr, v2r, qr(i, j, k, QPRES), rer, spr, 
 
+  amrex::Real c = std::sqrt(std::abs(gamma * q(i,j,k,QPRES) / q(i,j,k,QRHO)));
   riemann(
     ql(i, j, k, QRHO), ul, vl, v2l, ql(i, j, k, QPRES), rel,
     qr(i, j, k, QRHO), ur, vr, v2r, qr(i, j, k, QPRES), rer,
-    bc_test_val, qa(i, j, k, QC), cav, ustar, flx(i, j, k, URHO),
+    bc_test_val, c, cav, ustar, flx(i, j, k, URHO),
     flx(i, j, k, f_idx[0]), flx(i, j, k, f_idx[1]), flx(i, j, k, f_idx[2]),
     flx(i, j, k, UEDEN), flx(i, j, k, UEINT), q(i, j, k, GU), q(i, j, k, GV),
     q(i, j, k, GV2), q(i, j, k, GDPRES), q(i, j, k, GDGAME), 
@@ -216,7 +219,6 @@ pc_plm_x(
 {
   amrex::Real e[3];
   amrex::Real dtdx = dt / dx;
-  // amrex::Real cc = qa(i,j,k,QC);
   amrex::Real cs = cc * cc;
   amrex::Real rho = q(i, j, k, QRHO);
   amrex::Real u = q(i, j, k, QU);
@@ -585,7 +587,6 @@ pc_transx(
   amrex::Array4<const amrex::Real> const& qyp,
   amrex::Array4<const amrex::Real> const& flxx,
   amrex::Array4<const amrex::Real> const& srcQ,
-  amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
   amrex::Array4<const amrex::Real> const& a1,
   amrex::Array4<const amrex::Real> const& vol,
@@ -721,7 +722,6 @@ pc_transy(
   amrex::Array4<const amrex::Real> const& qxp,
   amrex::Array4<const amrex::Real> const& flxy,
   amrex::Array4<const amrex::Real> const& srcQ,
-  amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
   const amrex::Real hdt,
   const amrex::Real cdtdy, const int NumSpec, 
@@ -840,7 +840,6 @@ pc_transx1(
   amrex::Array4<const amrex::Real> const& qym,
   amrex::Array4<const amrex::Real> const& qyp,
   amrex::Array4<const amrex::Real> const& flxx,
-  amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
   const amrex::Real cdtdx, const int NumSpec,
   const amrex::Real gamma) 
@@ -964,7 +963,6 @@ pc_transy1(
   amrex::Array4<const amrex::Real> const& qxm,
   amrex::Array4<const amrex::Real> const& qxp,
   amrex::Array4<const amrex::Real> const& flxy,
-  amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
   const amrex::Real cdtdy, const int NumSpec, 
   const amrex::Real gamma)
@@ -1090,7 +1088,6 @@ pc_transx2(
   amrex::Array4<const amrex::Real> const& qzm,
   amrex::Array4<const amrex::Real> const& qzp,
   amrex::Array4<const amrex::Real> const& flxx,
-  amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
   const amrex::Real cdtdx, const int NumSpec, 
   const amrex::Real gamma)
@@ -1214,7 +1211,6 @@ pc_transy2(
   amrex::Array4<const amrex::Real> const& qzm,
   amrex::Array4<const amrex::Real> const& qzp,
   amrex::Array4<const amrex::Real> const& flxy,
-  amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
   const amrex::Real cdtdy, const int NumSpec, 
   const amrex::Real gamma)
@@ -1338,7 +1334,6 @@ pc_transz1(
   amrex::Array4<const amrex::Real> const& qxm,
   amrex::Array4<const amrex::Real> const& qxp,
   amrex::Array4<const amrex::Real> const& flxz,
-  amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
   const amrex::Real cdtdz, const int NumSpec, 
   const amrex::Real gamma)
@@ -1463,7 +1458,6 @@ pc_transz2(
   amrex::Array4<const amrex::Real> const& qym,
   amrex::Array4<const amrex::Real> const& qyp,
   amrex::Array4<const amrex::Real> const& flxz,
-  amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& qint,
   const amrex::Real cdtdz, const int NumSpec, 
   const amrex::Real gamma)
@@ -1590,7 +1584,6 @@ pc_transxy(
   amrex::Array4<const amrex::Real> const& flxy,
   amrex::Array4<const amrex::Real> const& qx,
   amrex::Array4<const amrex::Real> const& qy,
-  amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& srcq,
   const amrex::Real hdt,
   const amrex::Real cdtdx,
@@ -1728,7 +1721,6 @@ pc_transxz(
   amrex::Array4<const amrex::Real> const& flxz,
   amrex::Array4<const amrex::Real> const& qx,
   amrex::Array4<const amrex::Real> const& qz,
-  amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& srcq,
   const amrex::Real hdt,
   const amrex::Real cdtdx,
@@ -1866,7 +1858,6 @@ pc_transyz(
   amrex::Array4<const amrex::Real> const& flxz,
   amrex::Array4<const amrex::Real> const& qy,
   amrex::Array4<const amrex::Real> const& qz,
-  amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& srcq,
   const amrex::Real hdt,
   const amrex::Real cdtdy,
@@ -2078,7 +2069,6 @@ void pc_umeth_3D(
   const int* domhi,
   amrex::Array4<const amrex::Real> const& q,
   const int nq,
-  amrex::Array4<const amrex::Real> const& qaux,
   amrex::Array4<const amrex::Real> const& srcQ,
   amrex::Array4<amrex::Real> const& flx1,
   amrex::Array4<amrex::Real> const& flx2,

@@ -9,11 +9,7 @@
 
 #define UFA 6
 
-#define QGAME 4
-#define QTEMP 7
 #define QFA 8
-
-#define QC 1
 
 #define GDRHO 0
 #define GDU 1
@@ -21,11 +17,6 @@
 #define GDW 3
 #define GDPRES 4
 #define GDGAME 5
-
-#define dComp_rhoD 0
-#define dComp_mu dComp_rhoD + NUM_SPECIES
-#define dComp_xi dComp_mu + 1
-#define dComp_lambda dComp_xi + 1
 
 #ifndef PELEC_USE_AUX
 #define NUM_ADV 0
@@ -37,7 +28,6 @@
 
 #define QFS QFA + NUM_ADV
 #define QFX QFS + NUM_SPECIES
-#define NQAUX 2
 #define NGDNV 6
 
 #define NPASSIVE NUM_SPECIES + NUM_ADV + NUM_AUX + 3 - AMREX_SPACEDIM

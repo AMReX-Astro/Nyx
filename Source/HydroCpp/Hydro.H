@@ -14,7 +14,6 @@ pc_srctoprim(
   const int j,
   const int k,
   amrex::Array4<const amrex::Real> const& q,
-  amrex::Array4<const amrex::Real> const& qa,
   amrex::Array4<const amrex::Real> const& src,
   amrex::Array4<amrex::Real> const& srcq,
   const amrex::Real a_half, const amrex::Real a_dot,
@@ -174,7 +173,6 @@ void pc_umdrv(
   amrex::Array4<const amrex::Real> const& uin,
   amrex::Array4<amrex::Real> const& uout,
   amrex::Array4<const amrex::Real> const& q,
-  amrex::Array4<const amrex::Real> const& qaux,
   amrex::Array4<const amrex::Real> const&
     src_q, // amrex::IArrayBox const& bcMask,
   const amrex::Real* dx,
