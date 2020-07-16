@@ -171,9 +171,12 @@ pc_cmpflx(
 
   const int bc_test_val = 1;
 
+  //    ql(i, j, k, QRHO), ul, vl, v2l, ql(i, j, k, QPRES), rel, spl, 
+  //    qr(i, j, k, QRHO), ur, vr, v2r, qr(i, j, k, QPRES), rer, spr, 
+
   riemann(
-    ql(i, j, k, QRHO), ul, vl, v2l, ql(i, j, k, QPRES), rel, spl, 
-    qr(i, j, k, QRHO), ur, vr, v2r, qr(i, j, k, QPRES), rer, spr, 
+    ql(i, j, k, QRHO), ul, vl, v2l, ql(i, j, k, QPRES), rel,
+    qr(i, j, k, QRHO), ur, vr, v2r, qr(i, j, k, QPRES), rer,
     bc_test_val, qa(i, j, k, QC), cav, ustar, flx(i, j, k, URHO),
     flx(i, j, k, f_idx[0]), flx(i, j, k, f_idx[1]), flx(i, j, k, f_idx[2]),
     flx(i, j, k, UEDEN), flx(i, j, k, UEINT), q(i, j, k, GU), q(i, j, k, GV),
