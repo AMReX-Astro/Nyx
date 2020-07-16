@@ -83,6 +83,7 @@ pc_cmpflx(
   amrex::Array4<amrex::Real> const& flx,
   amrex::Array4<amrex::Real> const& q,
   // amrex::Array4<const int> const& bcMask,
+  amrex::Array4<const amrex::Real> const& qprim,
   const amrex::Real small_dens,
   const amrex::Real small_pres,
   const amrex::Real small_vel,
@@ -99,6 +100,7 @@ pc_cmpflx(
   int IU, IV, IV2;
   int GU, GV, GV2;
   int f_idx[3];
+
   if (dir == 0) {
     IU = QU;
     IV = QV;
@@ -106,8 +108,8 @@ pc_cmpflx(
     GU = GDU;
     GV = GDV;
     GV2 = GDW;
-    cav = 0.5 * ( std::sqrt(std::abs(gamma * q(i-1,j,k,QPRES) / q(i-1,j,k,QRHO)))
-                 +std::sqrt(std::abs(gamma * q(i  ,j,k,QPRES) / q(i  ,j,k,QRHO))) );
+    cav = 0.5 * ( std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i-1,j,k,QREINT) / qprim(i-1,j,k,QRHO)))
+                  +std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i  ,j,k,QREINT) / qprim(i  ,j,k,QRHO))) );
     f_idx[0] = UMX;
     f_idx[1] = UMY;
     f_idx[2] = UMZ;
@@ -118,8 +120,8 @@ pc_cmpflx(
     GU = GDV;
     GV = GDU;
     GV2 = GDW;
-    cav = 0.5 * ( std::sqrt(std::abs(gamma * q(i,j-1,k,QPRES) / q(i,j-1,k,QRHO)))
-                 +std::sqrt(std::abs(gamma * q(i,j  ,k,QPRES) / q(i,j  ,k,QRHO))) );
+    cav = 0.5 * ( std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j-1,k,QREINT) / qprim(i,j-1,k,QRHO)))
+				  +std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j  ,k,QREINT) / qprim(i,j  ,k,QRHO))) );
     f_idx[0] = UMY;
     f_idx[1] = UMX;
     f_idx[2] = UMZ;
@@ -130,8 +132,8 @@ pc_cmpflx(
     GU = GDW;
     GV = GDU;
     GV2 = GDV;
-    cav = 0.5 * ( std::sqrt(std::abs(gamma * q(i,j,k-1,QPRES) / q(i,j,k-1,QRHO)))
-                 +std::sqrt(std::abs(gamma * q(i,j,k  ,QPRES) / q(i,j,k  ,QRHO))) );
+    cav = 0.5 * ( std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j,k-1,QREINT) / qprim(i,j,k-1,QRHO)))
+				  +std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
     f_idx[0] = UMZ;
     f_idx[1] = UMX;
     f_idx[2] = UMY;
