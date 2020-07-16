@@ -106,7 +106,7 @@ riemann(
   const amrex::Real estar = reo + (pstar - po)*entho;
 
   amrex::Real cstar = std::sqrt(amrex::Math::abs(gamco*pstar/rstar));
-  cstar = amrex::Math::max(cstar, csmall);
+  cstar = amrex::max(cstar, csmall);
   const amrex::Real sgnm = amrex::Math::copysign(1.0, ustar);
 
   amrex::Real spout = co - sgnm * uo;
@@ -135,12 +135,9 @@ riemann(
 
   gdnv_state_rho = rgd;
   gdnv_state_p = qint_gdpres;
-  for (int n = 0; n < NumSpec; n++) {
-    gdnv_state_massfrac[n] = sp[n];
-  }
-  //Put nyx_eos_given_rp ???
-  //  EOS::RYP2E(gdnv_state_rho, gdnv_state_massfrac, gdnv_state_p, gdnv_state_e);
-  amrex::Real regd = gdnv_state_rho * gdnv_state_e;
+
+  // Might need rho factor
+  amrex::Real regd = gdnv_state_p / (gamma - 1.0);
 
   mask = (spout < 0.0);
   rgd = mask ? ro : rgd;
@@ -156,12 +153,9 @@ riemann(
 
   gdnv_state_rho = rgd;
   gdnv_state_p = qint_gdpres;
-  for (int n = 0; n < NumSpec; n++) {
-    gdnv_state_massfrac[n] = sp[n];
-  }
-  //Put nyx_eos_given_rp ???
-  //  EOS::RYP2E(gdnv_state_rho, gdnv_state_massfrac, gdnv_state_p, gdnv_state_e);
-  regd = gdnv_state_rho * gdnv_state_e;
+
+  // Might need rho factor
+  regd = gdnv_state_p / (gamma - 1.0);
 
   qint_gdgame = qint_gdpres / regd + 1.0;
   qint_iu = bc_test_val * qint_iu;
