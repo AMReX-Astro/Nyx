@@ -2639,6 +2639,7 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new, MultiFab& reset_e_
     const Real  cur_time = state[State_Type].curTime();
     Real        a        = get_comoving_a(cur_time);
     int interp=false;
+    Real gamma_minus_1 = gamma - 1.0;
 
 #ifdef _OPENMP
 #pragma omp parallel
@@ -2650,15 +2651,12 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new, MultiFab& reset_e_
         const auto fab = S_new.array(mfi);
         const auto fab_diag = D_new.array(mfi);
         const auto fab_reset = reset_e_src.array(mfi);
-        int print_warn=0;         
-        AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
-        {
+        int print_warn=0;
+        amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
         reset_internal_e
-            (tbx.loVect(), tbx.hiVect(),
-             BL_ARR4_TO_FORTRAN(fab), BL_ARR4_TO_FORTRAN(fab_diag),
-             BL_ARR4_TO_FORTRAN(fab_reset),
-             &print_warn, &a, &interp);
-        });
+            (i,j,k,fab,fab_diag,fab_reset,
+             a, gamma_minus_1,h_species, small_temp, interp);
+          });
     }
 }
 
@@ -2671,6 +2669,7 @@ Nyx::reset_internal_energy_interp (MultiFab& S_new, MultiFab& D_new, MultiFab& r
     const Real  cur_time = state[State_Type].curTime();
     Real        a        = get_comoving_a(cur_time);
     int interp=true;
+	Real gamma_minus_1 = gamma - 1.0;
 
     amrex::Gpu::LaunchSafeGuard lsg(true);
 
@@ -2683,14 +2682,11 @@ Nyx::reset_internal_energy_interp (MultiFab& S_new, MultiFab& D_new, MultiFab& r
           const auto fab = S_new.array(mfi);
           const auto fab_diag = D_new.array(mfi);
           const auto fab_reset = reset_e_src.array(mfi);
-          int print_warn=0;       
-          AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
-          {
+          int print_warn=0;
+          amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
         reset_internal_e
-            (tbx.loVect(), tbx.hiVect(),
-             BL_ARR4_TO_FORTRAN(fab), BL_ARR4_TO_FORTRAN(fab_diag),
-             BL_ARR4_TO_FORTRAN(fab_reset),
-             &print_warn, &a, &interp);
+            (i,j,k,fab,fab_diag,fab_reset,
+             a, gamma_minus_1,h_species, small_temp, interp);
           });
     }
 
@@ -2732,6 +2728,63 @@ Nyx::reset_internal_energy_nostore (MultiFab& S_new, MultiFab& D_new)
     */
 
 }
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+Nyx::reset_internal_e (const int i,
+                       const int j,
+                       const int k,
+                       amrex::Array4<amrex::Real> const& u,
+                       amrex::Array4<amrex::Real> const& d,
+                       amrex::Array4<amrex::Real> const& r,
+                       const amrex::Real comoving_a,
+                       const amrex::Real gamma_minus_1,
+                       const amrex::Real h_species,
+                       const amrex::Real small_temp,
+                       const int interp)
+{
+    Real rhoInv = 1.0 / u(i,j,k,URHO);
+    Real Up     = u(i,j,k,UMX) * rhoInv;
+    Real Vp     = u(i,j,k,UMY) * rhoInv;
+    Real Wp     = u(i,j,k,UMZ) * rhoInv;
+    Real ke     = 0.5 * u(i,j,k,URHO) * (Up*Up + Vp*Vp + Wp*Wp);
+
+    Real rho_eint = u(i,j,k,UEDEN) - ke;
+	Real dummy_pres = 1e200;
+	Real eint_new = -1e200;
+
+    // Reset (e from e) if it's greater than 0.01% of big E.
+    if (rho_eint > 0.0 && rho_eint / u(i,j,k,UEDEN) > 1.0e-6 && interp == 0)
+    {
+        // Create reset source so u(i,j,k,UEINT) = u(i,j,k,UEINT) + r(i,j,k) = rho_eint
+        r(i,j,k) = rho_eint - u(i,j,k,UEINT);
+        u(i,j,k,UEINT) = rho_eint;
+    }
+    // If (e from E) < 0 or (e from E) < .0001*E but (e from e) > 0.
+    else if (u(i,j,k,UEINT) > 0.0)
+    {
+        // e is not updated, so reset source is zero
+        r(i,j,k) = 0.0;
+        u(i,j,k,UEDEN) = u(i,j,k,UEINT) + ke;
+    }
+    // If not resetting and little e is negative ...
+    else if (u(i,j,k,UEINT) <= 0.0)
+    {
+        nyx_eos_given_RT(gamma_minus_1, h_species, &eint_new, &dummy_pres, u(i,j,k,URHO), small_temp, 
+                         d(i,j,k,Ne_comp),comoving_a);
+
+        // Create reset source so u(i,j,k,UEINT) = u(i,j,k,UEINT) + r(i,j,k) = u(i,j,k,URHO) * eint_new
+        r(i,j,k) = u(i,j,k,URHO) *  eint_new - u(i,j,k,UEINT);
+        u(i,j,k,UEINT) = u(i,j,k,URHO) *  eint_new;
+
+        u(i,j,k,UEDEN) = u(i,j,k,UEINT) + ke;
+    }
+
+    // Scale reset source by 1/rho so src is in terms of e
+    //           r(i,j,k) = r(i,j,k) / u(i,j,k,URHO)
+}
+
 #endif
 
 #ifndef NO_HYDRO

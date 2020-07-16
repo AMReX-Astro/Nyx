@@ -114,22 +114,6 @@ extern "C"
     (BL_FORT_FAB_ARG(S_new), const int lo[], const int hi[],
      const int* print_fortran_warnings);
 
-  AMREX_GPU_DEVICE void reset_internal_e
-    (const int lo[], const int hi[],
-     BL_FORT_FAB_ARG(S_new),
-     BL_FORT_FAB_ARG(D_new),
-     BL_FORT_FAB_ARG(reset_e_src),
-     const int* print_fortran_warnings,
-     const amrex::Real* comoving_a,
-     const int* interp);
-
-  AMREX_GPU_DEVICE void reset_internal_e_nostore
-    (const int* lo, const int* hi,
-     amrex::Real *S_new, const int, const int, const int, const int, const int, const int, 
-     amrex::Real *D_new, const int, const int, const int, const int, const int, const int, 
-     const int print_fortran_warnings,
-     const amrex::Real comoving_a);
-
   void hypfill
     (BL_FORT_FAB_ARG(state),
      const int dlo[], const int dhi[],
