@@ -66,9 +66,16 @@ public:
     
     void GetParticleVelocities (amrex::Vector<amrex::Real>& part_vels);
     void SetParticleVelocities (amrex::Vector<amrex::Real>& part_data);
-    
+
     virtual amrex::Real sumParticleMass (int level) const override {
-        return amrex::NeighborParticleContainer<NSR,NSI>::sumParticleMass(0,level);
+        using PType = typename amrex::ParticleContainer<NSR, NSI>::SuperParticleType;
+        auto msum = amrex::ReduceSum(*this, level,
+                                     [=] AMREX_GPU_HOST_DEVICE (const PType& p) -> amrex::Real
+                                     {
+                                         return (p.id() > 0) ? p.rdata(0) : 0.0;
+                                     });
+        amrex::ParallelAllReduce::Sum(msum, amrex::ParallelContext::CommunicatorSub());
+        return msum;
     }
 
     virtual void Regrid (const amrex::DistributionMapping& dmap, const amrex::BoxArray& ba, const int lev) override {
