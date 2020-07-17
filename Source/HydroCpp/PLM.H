@@ -1978,24 +1978,12 @@ pc_pdivu(
     amrex::Array4<const amrex::Real> const& q1,
     amrex::Array4<const amrex::Real> const& q2,
     amrex::Array4<const amrex::Real> const& q3),
-  AMREX_D_DECL(
-    amrex::Array4<const amrex::Real> const& a1,
-    amrex::Array4<const amrex::Real> const& a2,
-    amrex::Array4<const amrex::Real> const& a3),
-  amrex::Array4<const amrex::Real> const& vol)
+  const amrex::Real dx, const amrex::Real dy, const amrex::Real dz)
 {
-  pdivu(i, j, k) = 0.5 *
-                   (AMREX_D_TERM(
-                     (q1(i + 1, j, k, GDPRES) + q1(i, j, k, GDPRES)) *
-                       (q1(i + 1, j, k, GDU) * a1(i + 1, j, k) -
-                        q1(i, j, k, GDU) * a1(i, j, k)),
-                     +(q2(i, j + 1, k, GDPRES) + q2(i, j, k, GDPRES)) *
-                       (q2(i, j + 1, k, GDV) * a2(i, j + 1, k) -
-                        q2(i, j, k, GDV) * a2(i, j, k)),
-                     +(q3(i, j, k + 1, GDPRES) + q3(i, j, k, GDPRES)) *
-                       (q3(i, j, k + 1, GDW) * a3(i, j, k + 1) -
-                        q3(i, j, k, GDW) * a3(i, j, k)))) /
-                   vol(i, j, k);
+	pdivu(i,j,k) = -(
+				  (q1(i+1,j,k,GDU) - q1(i,j,k,GDU))/dx +
+				  (q2(i,j+1,k,GDV) - q2(i,j,k,GDV))/dy +
+				  (q3(i,j,k+1,GDW) - q3(i,j,k,GDW))/dz);
 }
 
 // Consup Support Functions
