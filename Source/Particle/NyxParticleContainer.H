@@ -72,7 +72,7 @@ public:
         auto msum = amrex::ReduceSum(*this, level,
                                      [=] AMREX_GPU_HOST_DEVICE (const PType& p) -> amrex::Real
                                      {
-                                         return p.rdata(0);
+                                         return (p.id() > 0) ? p.rdata(0) : 0.0;
                                      });
         amrex::ParallelAllReduce::Sum(msum, amrex::ParallelContext::CommunicatorSub());
         return msum;
