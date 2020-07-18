@@ -133,6 +133,9 @@ static constexpr amrex::Real  Hubble_const = 100.;    //            Hubble const
   
   static constexpr amrex::Real  mp_over_kb = m_proton/k_B;
 
+  static constexpr amrex::Real XHYDROGEN=.76;
+  static constexpr amrex::Real YHELIUM= 7.8947368421e-2;
+
 //static constexpr amrex::Real  density_to_cgs = M_unit / L_unit**3;
 
 // For internal energy
