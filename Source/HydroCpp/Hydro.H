@@ -144,10 +144,12 @@ pc_update(
   const int i,
   const int j,
   const int k,
+  amrex::Array4<const amrex::Real> const& u,
   amrex::Array4<amrex::Real> const& update,
   const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
   amrex::Array4<const amrex::Real> const& vol,
-  amrex::Array4<const amrex::Real> const& pdivu)
+  amrex::Array4<const amrex::Real> const& pdivu,
+  const amrex::Real gamma_minus_1)
 {
   amrex::Real v = vol(i, j, k);
   for (int n = 0; n < update.nComp(); ++n) {
@@ -158,7 +160,7 @@ pc_update(
                           v;
   }
 
-  update(i, j, k, UEINT) -= pdivu(i, j, k);
+  update(i, j, k, UEINT) += pdivu(i, j, k)*u(i,j,k,UEINT)*gamma_minus_1;
 }
 
 // Host functions
@@ -198,5 +200,6 @@ void pc_consup(
   amrex::Array4<const amrex::Real> const& div,
   amrex::Array4<const amrex::Real> const& pdivu,
   amrex::Real const* del,
-  amrex::Real const difmag);
+  amrex::Real const difmag,
+  amrex::Real const gamma_minus_1);
 #endif

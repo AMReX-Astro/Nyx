@@ -381,7 +381,7 @@ pc_umdrv(
 
   // consup
   amrex::Real difmag = 0.1;
-  pc_consup(bx, uin, uout, flx, a, vol, divarr, pdivuarr, dx, difmag);
+  pc_consup(bx, uin, uout, flx, a, vol, divarr, pdivuarr, dx, difmag, gamma_minus_1);
 }
 
 void
@@ -396,7 +396,8 @@ pc_consup(
   amrex::Array4<const amrex::Real> const& div,
   amrex::Array4<const amrex::Real> const& pdivu,
   amrex::Real const* del,
-  amrex::Real const difmag)
+  amrex::Real const difmag,
+  amrex::Real const gamma_minus_1)
 {
   // Flux alterations
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
@@ -413,6 +414,6 @@ pc_consup(
 
   // Combine for Hydro Sources
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_update(i, j, k, update, flx, vol, pdivu);
+      pc_update(i, j, k, u, update, flx, vol, pdivu, gamma_minus_1);
   });
 }
