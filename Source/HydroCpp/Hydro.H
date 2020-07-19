@@ -109,17 +109,16 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 pc_norm_spec_flx(
-  const int i, const int j, const int k, amrex::Array4<amrex::Real> const& flx)
+				 const int i, const int j, const int k, amrex::Array4<amrex::Real> const& flx, const int NumSpec)
 {
-  const int num = NUM_SPECIES + UFS;
   amrex::Real summ, fac;
   summ = 0.0;
-  for (int n = UFS; n < num; ++n)
-    summ += flx(i, j, k, n);
+  for (int n = 0; n < NumSpec; ++n)
+    summ += flx(i, j, k, FirstSpec + n);
 
   fac = (summ != 0.0) ? flx(i, j, k, URHO) / summ : 1.0;
-  for (int n = UFS; n < num; ++n)
-    flx(i, j, k, n) *= fac;
+  for (int n = 0; n < NumSpec; ++n)
+    flx(i, j, k, FirstSpec + n) *= fac;
 }
 
 AMREX_GPU_DEVICE
@@ -201,5 +200,6 @@ void pc_consup(
   amrex::Array4<const amrex::Real> const& pdivu,
   amrex::Real const* del,
   amrex::Real const difmag,
+  const int NumSpec,
   amrex::Real const gamma_minus_1);
 #endif

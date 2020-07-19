@@ -118,6 +118,7 @@ Nyx::construct_hydro_source(
       const amrex::Real cdtdx = dt/dx[0]/3.0/a_half;
       const amrex::Real cdtdy = dt/dx[1]/3.0/a_half;
       const amrex::Real cdtdz = dt/dx[2]/3.0/a_half;
+      NumSpec = S.nComp() - 6;
       const int NumSpec_loc = NumSpec;
       const amrex::Real gamma_minus_1_loc = gamma-1.0;
 
@@ -381,7 +382,7 @@ pc_umdrv(
 
   // consup
   amrex::Real difmag = 0.1;
-  pc_consup(bx, uin, uout, flx, a, vol, divarr, pdivuarr, dx, difmag, gamma_minus_1);
+  pc_consup(bx, uin, uout, flx, a, vol, divarr, pdivuarr, dx, difmag, NumSpec, gamma_minus_1);
 }
 
 void
@@ -397,6 +398,7 @@ pc_consup(
   amrex::Array4<const amrex::Real> const& pdivu,
   amrex::Real const* del,
   amrex::Real const difmag,
+  const int NumSpec,
   amrex::Real const gamma_minus_1)
 {
   // Flux alterations
@@ -406,7 +408,7 @@ pc_consup(
     amrex::ParallelFor(fbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       pc_artif_visc(i, j, k, flx[dir], div, u, dx, difmag, dir);
       // Normalize Species Flux
-      pc_norm_spec_flx(i, j, k, flx[dir]);
+      pc_norm_spec_flx(i, j, k, flx[dir], NumSpec);
       // Make flux extensive
       pc_ext_flx(i, j, k, flx[dir], a[dir]);
     });

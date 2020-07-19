@@ -162,15 +162,18 @@ Nyx::hydro_setup()
 
     int dm = BL_SPACEDIM;
 
-    // Get the number of species from the network model.
-    fort_get_num_spec(&NumSpec);
-
     if (use_const_species == 0)
     {
+        // Get the number of species from the network model.
+        fort_get_num_spec(&NumSpec);
         if (NumSpec > 0)
         {
             cnt += NumSpec;
         }
+    }
+    else
+    {
+        NumSpec = 0;
     }
 
     NUM_STATE = cnt;
