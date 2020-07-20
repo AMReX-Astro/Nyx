@@ -541,15 +541,13 @@ int main(int argc, char **argv) {
     fn=input_path+"/job_info";
     bool hydro=hydro_on(fn);
     const int nGhost = 0;
-    int nComp = 5;
+    int nComp = 4;
 
-    if(neutrinos)
-    {
+    if (neutrinos) {
         nComp+=1;
     }
 
-    if(hydro)
-    {
+    if (hydro) {
         Print() << "Hydro on" << endl;
         nComp+=5;
     }
@@ -558,53 +556,49 @@ int main(int argc, char **argv) {
     //Dark matter fields
     int i_dm_density(amrData.StateNumber("particle_mass_density"));
     comps[0] = i_dm_density;
-    int i_dm_count(amrData.StateNumber("particle_count"));
-    comps[1] = i_dm_count;
     int i_dm_vx(amrData.StateNumber("particle_x_velocity"));
-    comps[2] = i_dm_vx;
+    comps[1] = i_dm_vx;
     int i_dm_vy(amrData.StateNumber("particle_y_velocity"));
-    comps[3]= i_dm_vy;
+    comps[2]= i_dm_vy;
     int i_dm_vz(amrData.StateNumber("particle_z_velocity"));
-    comps[4]= i_dm_vz;
+    comps[3]= i_dm_vz;
 
-    int val = 4;
+    int val = 3;
 
 
     //Neutrino fields
-    if(neutrinos)
-   {
-    int i_neu_density(amrData.StateNumber("neutrino_mass_density"));
-    comps[val+1] = i_neu_density;
-    val+=1;
-   }
+    if (neutrinos) {
+        int i_neu_density(amrData.StateNumber("neutrino_mass_density"));
+        comps[val+1] = i_neu_density;
+        val += 1;
+    }
 
     //Hydro fields
-    if(hydro)
-    {
-    int i_temp(amrData.StateNumber("Temp"));
-    comps[val+1] = i_temp;
-    Print() << "Converting hydro states \n";
-    int i_gas_density(amrData.StateNumber("density"));
-    comps[val+2] = i_gas_density;
-    Print() << "density \n";
-    int i_xmom(amrData.StateNumber("xmom"));
-    comps[val+3] = i_xmom;
-    Print() << "xmom \n";
-    int i_ymom(amrData.StateNumber("ymom"));
-    comps[val+4] = i_ymom;
-    Print() << "ymom \n";
-    int i_zmom(amrData.StateNumber("zmom"));
-    comps[val+5] = i_zmom;
-    Print() << "zmom \n";
-    Print() << "Temp \n";
-    Print() << "\n0:";
-    Print() << comps[0];
-    Print() <<"\n 1:";
-    Print() << comps[1];
-    Print() << "\n";
-    Print() << val;
-    Print() << "+4:";
-    Print() << comps[val+4];
+    if (hydro) {
+        int i_temp(amrData.StateNumber("Temp"));
+        comps[val+1] = i_temp;
+        Print() << "Converting hydro states \n";
+        int i_gas_density(amrData.StateNumber("density"));
+        comps[val+2] = i_gas_density;
+        Print() << "density \n";
+        int i_xmom(amrData.StateNumber("xmom"));
+        comps[val+3] = i_xmom;
+        Print() << "xmom \n";
+        int i_ymom(amrData.StateNumber("ymom"));
+        comps[val+4] = i_ymom;
+        Print() << "ymom \n";
+        int i_zmom(amrData.StateNumber("zmom"));
+        comps[val+5] = i_zmom;
+        Print() << "zmom \n";
+        Print() << "Temp \n";
+        Print() << "\n0:";
+        Print() << comps[0];
+        Print() <<"\n 1:";
+        Print() << comps[1];
+        Print() << "\n";
+        Print() << val;
+        Print() << "+4:";
+        Print() << comps[val+4];
     }
 
     const Vector<string>& plotVarNames = amrData.PlotVarNames();
@@ -720,7 +714,11 @@ int main(int argc, char **argv) {
     // Dark matter density
     //
 
-    std::string field_path = "native_fields/matter_density";
+    if (hydro) {
+        std::string field_path = "native_fields/dm_density";
+    } else {
+        std::string field_path = "native_fields/matter_density";
+    }
 
     if (ParallelDescriptor::IOProcessor()) {
         std::cout << "\nReading particle_mass_density." << std::endl;
@@ -755,12 +753,12 @@ int main(int argc, char **argv) {
 
 
     //
-    // Neutrino matter density
+    // Neutrino mass density
     //
 
     if(neutrinos){
 
-    field_path = "native_fields/neutrino_matter_density";
+    field_path = "native_fields/neutrino_density";
 
     if (ParallelDescriptor::IOProcessor()) {
         std::cout << "\nReading neutrino_mass_density." << std::endl;
@@ -793,27 +791,7 @@ int main(int argc, char **argv) {
     ParallelDescriptor::Barrier();
     }
 
-     // Particle count
-
-    field_path = "native_fields/particle_count";
-
-    if (ParallelDescriptor::IOProcessor()) {
-        std::cout << "\nReading particle_count." << std::endl;
-    }
-
-    amrData.FillVar(mf1, level, "particle_count", comp_start);
-    amrData.FlushGrids(amrData.StateNumber("particle_count"));
-
-    if (ParallelDescriptor::IOProcessor()) {
-        std::cout << "Writing to file." << std::endl;
-        output_create_field(output_path, field_path, "Code units",
-                            grid_nx, grid_ny, grid_nz);
-    }
-    ParallelDescriptor::Barrier();
-    output_write_field(output_path, field_path, mf1);
-    ParallelDescriptor::Barrier();
-
-     // Particle velocity in x
+    // Particle velocity in x
 
     field_path = "native_fields/particle_vx";
 
@@ -857,7 +835,7 @@ int main(int argc, char **argv) {
     output_write_field(output_path, field_path, mf1);
     ParallelDescriptor::Barrier();
 
-        // Particle velocity in z
+    // Particle velocity in z
 
     field_path = "native_fields/particle_vz";
 
