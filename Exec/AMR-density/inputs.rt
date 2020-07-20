@@ -127,7 +127,6 @@ amr.check_int         = 100
 amr.checkpoint_nfiles = 64
 
 # PLOTFILES
-fab.format          = NATIVE_32
 amr.plot_files_output = 1
 amr.plot_file       = plt
 amr.plot_int        = 10
