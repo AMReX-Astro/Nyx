@@ -104,8 +104,8 @@ riemann(
         amrex::Real ustnm1 = ustarm;
         amrex::Real ustnp1 = ustarp;
 
-        amrex::Real ustarm = ur - (pr-pstar)*wr;
-        amrex::Real ustarp = ul + (pl-pstar)*wl;
+        ustarm = ur - (pr-pstar)*wr;
+        ustarp = ul + (pl-pstar)*wl;
 
         amrex::Real dpditer = amrex::Math::abs(pstnm1-pstar);
         amrex::Real zp      = amrex::Math::abs(ustarp-ustnp1);
@@ -119,7 +119,7 @@ riemann(
            zm = dpditer*wr;
 
         amrex::Real denom  = dpditer / amrex::max(zp+zm,small*(cleft+cright));
-        amrex::Real pstnm1 = pstar;
+        pstnm1 = pstar;
 
         pstar = pstar - denom*(ustarm-ustarp);
 
