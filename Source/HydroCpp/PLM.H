@@ -570,256 +570,6 @@ pc_plm_z(
   }
 }
 
-// Corrects the left and right Y-states with the X-Flux
-AMREX_GPU_DEVICE
-AMREX_FORCE_INLINE
-void
-pc_transx(
-  const int i,
-  const int j,
-  const int k,
-  amrex::Array4<amrex::Real> const& qm,
-  amrex::Array4<amrex::Real> const& qp,
-  amrex::Array4<const amrex::Real> const& qym,
-  amrex::Array4<const amrex::Real> const& qyp,
-  amrex::Array4<const amrex::Real> const& flxx,
-  amrex::Array4<const amrex::Real> const& srcQ,
-  amrex::Array4<const amrex::Real> const& qint,
-  amrex::Array4<const amrex::Real> const& a1,
-  amrex::Array4<const amrex::Real> const& vol,
-  const amrex::Real hdt, const int NumSpec, const amrex::Real gamma_minus_1)
-{
-  //  Local variables to avoid reading from global memory too much
-  amrex::Real compn, rr, rrnew, compo;
-  amrex::Real rrr, rur, rvr, ekinr, rer, rrnewr;
-  amrex::Real runewr, rvnewr, renewr, rhoekinr;
-  amrex::Real rrl, rul, rvl, ekinl, rel, rrnewl, runewl, rvnewl, renewl;
-  amrex::Real rhoekinl, srcr, srce, srcp, srcpass;
-  amrex::Real pggp, pggm, ugp, ugm;
-  amrex::Real dAup, pav, dAu;
-  amrex::Real flxrho, flxu, flxv, flxe;
-
-  flxrho = hdt *
-           (a1(i + 1, j, k) * flxx(i + 1, j, k, URHO) -
-            a1(i, j, k) * flxx(i, j, k, URHO)) /
-           vol(i, j, k);
-  flxu = hdt *
-         (a1(i + 1, j, k) * flxx(i + 1, j, k, UMX) -
-          a1(i, j, k) * flxx(i, j, k, UMX)) /
-         vol(i, j, k);
-  flxv = hdt *
-         (a1(i + 1, j, k) * flxx(i + 1, j, k, UMY) -
-          a1(i, j, k) * flxx(i, j, k, UMY)) /
-         vol(i, j, k);
-  flxe = hdt *
-         (a1(i + 1, j, k) * flxx(i + 1, j, k, UEDEN) -
-          a1(i, j, k) * flxx(i, j, k, UEDEN)) /
-         vol(i, j, k);
-  srcr = srcQ(i, j, k, QRHO);
-  srce = srcQ(i, j, k, QREINT);
-  srcp = srcQ(i, j, k, QPRES);
-  
-  // Update passive variables
-  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
-    int nqp = n;
-    srcpass = srcQ(i, j, k, nqp);
-    compn = hdt *
-            (a1(i + 1, j, k) * flxx(i + 1, j, k, n) -
-             a1(i, j, k) * flxx(i, j, k, n)) /
-            vol(i, j, k);
-    rr = qyp(i, j, k, QRHO);
-    rrnew = rr - flxrho;
-    compo = rr * qyp(i, j, k, nqp) - compn;
-    qp(i, j, k, nqp) = compo / rrnew + hdt * srcpass;
-
-    rr = qym(i, j + 1, k, QRHO);
-    rrnew = rr - flxrho;
-    compo = rr * qym(i, j + 1, k, nqp) - compn;
-    qm(i, j + 1, k, nqp) = compo / rrnew + hdt * srcpass;
-  }
-
-  pggp = qint(i + 1, j, k, GDPRES);
-  pggm = qint(i, j, k, GDPRES);
-  ugp = qint(i + 1, j, k, GDU);
-  ugm = qint(i, j, k, GDU);
-
-  dAup = a1(i + 1, j, k) * pggp * ugp - a1(i, j, k) * pggm * ugm;
-  pav = 0.5 * (pggp + pggm);
-  dAu = a1(i + 1, j, k) * ugp - a1(i, j, k) * ugm;
-
-  // QP
-
-  // Convert to conservative
-  rrr = qyp(i, j, k, QRHO);
-  rur = qyp(i, j, k, QU);
-  rvr = qyp(i, j, k, QV);
-  ekinr = 0.5 * rrr * (rur * rur + rvr * rvr);
-  rur *= rrr;
-  rvr *= rrr;
-
-  rer = qyp(i, j, k, QREINT) + ekinr;
-  // Add transverse predictor
-  rrnewr = rrr - flxrho;
-  runewr = rur - flxu;
-  rvnewr = rvr - flxv;
-  renewr = rer - flxe;
-
-  // Convert back to primitive
-  qp(i, j, k, QRHO) = rrnewr + hdt * srcr;
-  qp(i, j, k, QU) = runewr / rrnewr + hdt * srcQ(i, j, k, QU);
-  qp(i, j, k, QV) = rvnewr / rrnewr + hdt * srcQ(i, j, k, QV);
-  rhoekinr = 0.5 * (runewr * runewr + rvnewr * rvnewr) / rrnewr;
-  amrex::Real pnewr =
-    qyp(i, j, k, QPRES) - hdt * (dAup + pav * dAu * (gamma_minus_1)) / vol(i, j, k);
-  pnewr += hdt * srcp;
-  qp(i, j, k, QPRES) = amrex::max(pnewr, SMALL_PRES);
-  qp(i, j, k, QREINT) = renewr - rhoekinr + hdt * srce;
-
-  // QM
-
-  // Conversion to Conservative
-  rrl = qym(i, j + 1, k, QRHO);
-  rul = qym(i, j + 1, k, QU);
-  rvl = qym(i, j + 1, k, QV);
-  ekinl = 0.5 * rrl * (rul * rul + rvl * rvl);
-  rul *= rrl;
-  rvl *= rrl;
-  rel = qym(i, j + 1, k, QREINT) + ekinl;
-
-  // Transverse fluxes
-  rrnewl = rrl - flxrho;
-  runewl = rul - flxu;
-  rvnewl = rvl - flxv;
-  renewl = rel - flxe;
-
-  qm(i, j + 1, k, QRHO) = rrnewl + hdt * srcr;
-  qm(i, j + 1, k, QU) = runewl / rrnewl + hdt * srcQ(i, j, k, QU);
-  qm(i, j + 1, k, QV) = rvnewl / rrnewl + hdt * srcQ(i, j, k, QV);
-  rhoekinl = 0.5 * (runewl * runewl + rvnewl * rvnewl) / rrnewl;
-
-  qm(i, j + 1, k, QREINT) = renewl - rhoekinl + hdt * srce;
-  amrex::Real pnewl = qym(i, j + 1, k, QPRES) -
-                      hdt * (dAup + pav * dAu * gamma_minus_1) / vol(i, j, k);
-  qm(i, j + 1, k, QPRES) = amrex::max(pnewl + hdt * srcp, SMALL_PRES);
-}
-
-// Corrects the left and right Y-states with the X-Flux
-AMREX_GPU_DEVICE
-AMREX_FORCE_INLINE
-void
-pc_transy(
-  const int i,
-  const int j,
-  const int k,
-  amrex::Array4<amrex::Real> const& qm,
-  amrex::Array4<amrex::Real> const& qp,
-  amrex::Array4<const amrex::Real> const& qxm,
-  amrex::Array4<const amrex::Real> const& qxp,
-  amrex::Array4<const amrex::Real> const& flxy,
-  amrex::Array4<const amrex::Real> const& srcQ,
-  amrex::Array4<const amrex::Real> const& qint,
-  const amrex::Real hdt,
-  const amrex::Real cdtdy, const int NumSpec, 
-  const amrex::Real gamma)
-{
-  //  Local variables to avoid reading from global memory too much
-  amrex::Real compn, rr, rrnew, compo;
-  amrex::Real rrr, rur, rvr, ekinr, rer, rrnewr;
-  amrex::Real runewr, rvnewr, renewr, rhoekinr;
-  amrex::Real rrl, rul, rvl, ekinl, rel, rrnewl, runewl, rvnewl, renewl;
-  amrex::Real rhoekinl, srcr, srce, srcp, srcpass;
-  amrex::Real pggp, pggm, ugp, ugm;
-  amrex::Real dup, pav, du;
-  amrex::Real flxrho, flxu, flxv, flxe;
-
-  flxrho = cdtdy * (flxy(i, j + 1, k, URHO) - flxy(i, j, k, URHO));
-  flxu = cdtdy * (flxy(i, j + 1, k, UMX) - flxy(i, j, k, UMX));
-  flxv = cdtdy * (flxy(i, j + 1, k, UMY) - flxy(i, j, k, UMY));
-  flxe = cdtdy * (flxy(i, j + 1, k, UEDEN) - flxy(i, j, k, UEDEN));
-  srcr = srcQ(i, j, k, QRHO);
-  srce = srcQ(i, j, k, QREINT);
-  srcp = srcQ(i, j, k, QPRES);
-
-
-  // Update passive variables
-  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
-    int nqp = n;
-    srcpass = srcQ(i, j, k, nqp);
-    compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
-    rr = qxp(i, j, k, QRHO);
-    rrnew = rr - flxrho;
-    compo = rr * qxp(i, j, k, nqp) - compn;
-    qp(i, j, k, nqp) = compo / rrnew + hdt * srcpass;
-
-    rr = qxm(i + 1, j, k, QRHO);
-    rrnew = rr - flxrho;
-    compo = rr * qxm(i + 1, j, k, nqp) - compn;
-    qm(i + 1, j, k, nqp) = compo / rrnew + hdt * srcpass;
-  }
-
-  // Update hydro vars
-  pggp = qint(i, j + 1, k, GDPRES);
-  pggm = qint(i, j, k, GDPRES);
-  ugp = qint(i, j + 1, k, GDV);
-  ugm = qint(i, j, k, GDV);
-
-  dup = pggp * ugp - pggm * ugm;
-  pav = 0.5 * (pggp + pggm);
-  du = ugp - ugm;
-
-  // QP
-
-  // Convert to conservative
-  rrr = qxp(i, j, k, QRHO);
-  rur = qxp(i, j, k, QU);
-  rvr = qxp(i, j, k, QV);
-  ekinr = 0.5 * rrr * (rur * rur + rvr * rvr);
-  rur *= rrr;
-  rvr *= rrr;
-
-  rer = qxp(i, j, k, QREINT) + ekinr;
-  // Add transverse predictor
-  rrnewr = rrr - flxrho;
-  runewr = rur - flxu;
-  rvnewr = rvr - flxv;
-  renewr = rer - flxe;
-
-  // Convert back to primitive
-  qp(i, j, k, QRHO) = rrnewr + hdt * srcr;
-  qp(i, j, k, QU) = runewr / rrnewr + hdt * srcQ(i, j, k, QU);
-  qp(i, j, k, QV) = rvnewr / rrnewr + hdt * srcQ(i, j, k, QV);
-  rhoekinr = 0.5 * (runewr * runewr + rvnewr * rvnewr) / rrnewr;
-  amrex::Real pnewr = qxp(i, j, k, QPRES) - cdtdy * (dup + pav * du * (gamma-1.0));
-  qp(i, j, k, QPRES) = amrex::max(pnewr + hdt * srcp, SMALL_PRES);
-  qp(i, j, k, QREINT) = renewr - rhoekinr + hdt * srce;
-
-  // QM
-
-  // Conversion to Conservative
-  rrl = qxm(i + 1, j, k, QRHO);
-  rul = qxm(i + 1, j, k, QU);
-  rvl = qxm(i + 1, j, k, QV);
-  ekinl = 0.5 * rrl * (rul * rul + rvl * rvl);
-  rul *= rrl;
-  rvl *= rrl;
-  rel = qxm(i + 1, j, k, QREINT) + ekinl;
-
-  // Transverse fluxes
-  rrnewl = rrl - flxrho;
-  runewl = rul - flxu;
-  rvnewl = rvl - flxv;
-  renewl = rel - flxe;
-
-  qm(i + 1, j, k, QRHO) = rrnewl + hdt * srcr;
-  qm(i + 1, j, k, QU) = runewl / rrnewl + hdt * srcQ(i, j, k, QU);
-  qm(i + 1, j, k, QV) = rvnewl / rrnewl + hdt * srcQ(i, j, k, QV);
-  rhoekinl = 0.5 * (runewl * runewl + rvnewl * rvnewl) / rrnewl;
-
-  amrex::Real pnewl =
-    qxm(i + 1, j, k, QPRES) - cdtdy * (dup + pav * du * (gamma-1.0));
-  qm(i + 1, j, k, QPRES) = amrex::max(pnewl + hdt * srcp, SMALL_PRES);
-  qm(i + 1, j, k, QREINT) = renewl - rhoekinl + hdt * srce;
-}
 
 // First Transverse Correction for Predicted Y-states, using X-Flux
 AMREX_GPU_DEVICE
@@ -906,10 +656,10 @@ pc_transx1(
   qp(i, j, k, QW) = rwnewr / rrnewr;
   rhoekinr =
     0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
-  amrex::Real pnewr =
-    qyp(i, j, k, QPRES) - cdtdx * (dAup + pav * dAu * (gamma-1.0));
-  qp(i, j, k, QPRES) = amrex::max(pnewr, SMALL_PRES);
   qp(i, j, k, QREINT) = renewr - rhoekinr;
+  amrex::Real pnewr = qp(i, j, k, QREINT) * (gamma - 1.0);
+  qp(i, j, k, QPRES) = amrex::max(pnewr, SMALL_PRES);
+
   // QM
 
   // Conversion to Conservative
@@ -938,9 +688,9 @@ pc_transx1(
     0.5 * (runewl * runewl + rvnewl * rvnewl + rwnewl * rwnewl) / rrnewl;
 
   qm(i, j + 1, k, QREINT) = renewl - rhoekinl;
-  amrex::Real pnewl =
-    qym(i, j + 1, k, QPRES) - cdtdx * (dAup + pav * dAu * (gamma-1.0));
+  amrex::Real pnewl = qm(i, j + 1, k, QREINT) * (gamma - 1.0);
   qm(i, j + 1, k, QPRES) = amrex::max(pnewl, SMALL_PRES);
+
 }
 
 // Corrects the left and right x states with y flux
@@ -1031,9 +781,9 @@ pc_transy1(
   rhoekinr =
     0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
 
-  pnewr = qxp(i, j, k, QPRES) - cdtdy * (dup + pav * du * (gamma-1.0));
-  qp(i, j, k, QPRES) = amrex::max(pnewr, SMALL_PRES);
   qp(i, j, k, QREINT) = renewr - rhoekinr;
+  pnewr = qp(i, j, k, QREINT) * (gamma-1.0);
+  qp(i, j, k, QPRES) = amrex::max(pnewr, SMALL_PRES);
 
   // QM
 
@@ -1062,9 +812,9 @@ pc_transy1(
   rhoekinl =
     0.5 * (runewl * runewl + rvnewl * rvnewl + rwnewl * rwnewl) / rrnewl;
 
-  pnewl = qxm(i + 1, j, k, QPRES) - cdtdy * (dup + pav * du * (gamma-1.0));
-  qm(i + 1, j, k, QPRES) = amrex::max(pnewl, SMALL_PRES);
   qm(i + 1, j, k, QREINT) = renewl - rhoekinl;
+  pnewl = qm(i + 1, j, k, QREINT) * (gamma-1.0);
+  qm(i + 1, j, k, QPRES) = amrex::max(pnewl, SMALL_PRES);
 }
 
 /* Transverse Correction for Predicted Z-states, using X-Flux */
@@ -1152,10 +902,11 @@ pc_transx2(
   qp(i, j, k, QW) = rwnewr / rrnewr;
   rhoekinr =
     0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
-  amrex::Real pnewr =
-    qzp(i, j, k, QPRES) - cdtdx * (dAup + pav * dAu * (gamma-1.0));
-  qp(i, j, k, QPRES) = amrex::max(pnewr, SMALL_PRES);
   qp(i, j, k, QREINT) = renewr - rhoekinr;
+  amrex::Real pnewr =
+  qp(i, j, k, QREINT) * (gamma-1.0);
+  qp(i, j, k, QPRES) = amrex::max(pnewr, SMALL_PRES);
+
   // QM
 
   // Conversion to Conservative
@@ -1185,7 +936,7 @@ pc_transx2(
 
   qm(i, j, k + 1, QREINT) = renewl - rhoekinl;
   amrex::Real pnewl =
-    qzm(i, j, k + 1, QPRES) - cdtdx * (dAup + pav * dAu * (gamma-1.0));
+    qm(i, j, k + 1, QREINT) * (gamma-1.0);
   qm(i, j, k + 1, QPRES) = amrex::max(pnewl, SMALL_PRES);
 }
 
@@ -1274,10 +1025,11 @@ pc_transy2(
   qp(i, j, k, QW) = rwnewr / rrnewr;
   rhoekinr =
     0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
-  amrex::Real pnewr =
-    qzp(i, j, k, QPRES) - cdtdy * (dAup + pav * dAu * (gamma-1.0));
-  qp(i, j, k, QPRES) = amrex::max(pnewr, SMALL_PRES);
   qp(i, j, k, QREINT) = renewr - rhoekinr;
+  amrex::Real pnewr =
+    qp(i, j, k, QREINT) * (gamma-1.0);
+  qp(i, j, k, QPRES) = amrex::max(pnewr, SMALL_PRES);
+
   // QM
 
   // Conversion to Conservative
@@ -1307,7 +1059,7 @@ pc_transy2(
 
   qm(i, j, k + 1, QREINT) = renewl - rhoekinl;
   amrex::Real pnewl =
-    qzm(i, j, k + 1, QPRES) - cdtdy * (dAup + pav * dAu * (gamma-1.0));
+    qm(i, j, k + 1, QREINT) * (gamma-1.0);
   qm(i, j, k + 1, QPRES) = amrex::max(pnewl, SMALL_PRES);
 }
 
@@ -1398,9 +1150,9 @@ pc_transz1(
   rhoekinr =
     0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
 
-  pnewr = qxp(i, j, k, QPRES) - cdtdz * (dup + pav * du * (gamma-1.0));
-  qp(i, j, k, QPRES) = amrex::max(pnewr, SMALL_PRES);
   qp(i, j, k, QREINT) = renewr - rhoekinr;
+  pnewr = qp(i, j, k, QREINT) * (gamma-1.0);
+  qp(i, j, k, QPRES) = amrex::max(pnewr, SMALL_PRES);
 
   // QM
 
@@ -1429,9 +1181,10 @@ pc_transz1(
   rhoekinl =
     0.5 * (runewl * runewl + rvnewl * rvnewl + rwnewl * rwnewl) / rrnewl;
 
-  pnewl = qxm(i + 1, j, k, QPRES) - cdtdz * (dup + pav * du * (gamma-1.0));
-  qm(i + 1, j, k, QPRES) = amrex::max(pnewl, SMALL_PRES);
   qm(i + 1, j, k, QREINT) = renewl - rhoekinl;
+  pnewl = qm(i + 1, j, k, QREINT) * (gamma-1.0);
+  qm(i + 1, j, k, QPRES) = amrex::max(pnewl, SMALL_PRES);
+
 }
 
 // Transverse Correction for Predicted Y-states, using Z-Flux
@@ -1518,10 +1271,11 @@ pc_transz2(
   qp(i, j, k, QW) = rwnewr / rrnewr;
   rhoekinr =
     0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
-  amrex::Real pnewr =
-    qyp(i, j, k, QPRES) - cdtdz * (dAup + pav * dAu * (gamma-1.0));
-  qp(i, j, k, QPRES) = amrex::max(pnewr, SMALL_PRES);
   qp(i, j, k, QREINT) = renewr - rhoekinr;
+  amrex::Real pnewr =
+    qp(i, j, k, QREINT) * (gamma-1.0);
+  qp(i, j, k, QPRES) = amrex::max(pnewr, SMALL_PRES);
+
 
   // QM
 
@@ -1552,7 +1306,7 @@ pc_transz2(
 
   qm(i, j + 1, k, QREINT) = renewl - rhoekinl;
   amrex::Real pnewl =
-    qym(i, j + 1, k, QPRES) - cdtdz * (dAup + pav * dAu * (gamma-1.0));
+    qm(i, j + 1, k, QREINT) * (gamma-1.0);
   qm(i, j + 1, k, QPRES) = amrex::max(pnewl, SMALL_PRES);
 }
 
@@ -1666,7 +1420,7 @@ pc_transxy(
   rhoekinr =
     0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
   qp(i, j, k, QREINT) = renewr - rhoekinr + hdt * srce;
-  amrex::Real temppres = qzp(i, j, k, QPRES) - pxnew - pynew + hdt * srcp;
+  amrex::Real temppres = qp(i, j, k, QREINT) * (gamma - 1.0);
   qp(i, j, k, QPRES) = amrex::max(temppres, SMALL_PRES);
 
   // qm state
@@ -1688,7 +1442,7 @@ pc_transxy(
   rhoekinl =
     0.5 * (runewl * runewl + rvnewl * rvnewl + rwnewl * rwnewl) / rrnewl;
   qm(i, j, k + 1, QREINT) = renewl - rhoekinl + hdt * srce;
-  temppres = qzm(i, j, k + 1, QPRES) - pxnew - pynew + hdt * srcp;
+  temppres = qm(i, j, k + 1, QREINT) * (gamma - 1.0);
   qm(i, j, k + 1, QPRES) = amrex::max(temppres, SMALL_PRES);
 }
 
@@ -1802,7 +1556,7 @@ pc_transxz(
   rhoekinr =
     0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
   qp(i, j, k, QREINT) = renewr - rhoekinr + hdt * srce;
-  amrex::Real temppres = qyp(i, j, k, QPRES) - pxnew - pznew + hdt * srcp;
+  amrex::Real temppres = qp(i, j, k, QREINT) * (gamma - 1.0);
   qp(i, j, k, QPRES) = amrex::max(temppres, SMALL_PRES);
 
   // qm state
@@ -1824,7 +1578,7 @@ pc_transxz(
   rhoekinl =
     0.5 * (runewl * runewl + rvnewl * rvnewl + rwnewl * rwnewl) / rrnewl;
   qm(i, j + 1, k, QREINT) = renewl - rhoekinl + hdt * srce;
-  temppres = qym(i, j + 1, k, QPRES) - pxnew - pznew + hdt * srcp;
+  temppres = qm(i, j + 1, k, QREINT) * (gamma - 1.0);
   qm(i, j + 1, k, QPRES) = amrex::max(temppres, SMALL_PRES);
 }
 
@@ -1939,7 +1693,7 @@ pc_transyz(
   rhoekinr =
     0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
   qp(i, j, k, QREINT) = renewr - rhoekinr + hdt * srce;
-  amrex::Real temppres = qxp(i, j, k, QPRES) - pznew - pynew + hdt * srcp;
+  amrex::Real temppres = qp(i, j, k, QREINT) * (gamma - 1.0);
   qp(i, j, k, QPRES) = amrex::max(temppres, SMALL_PRES);
 
   // qm state
@@ -1961,7 +1715,7 @@ pc_transyz(
   rhoekinl =
     0.5 * (runewl * runewl + rvnewl * rvnewl + rwnewl * rwnewl) / rrnewl;
   qm(i + 1, j, k, QREINT) = renewl - rhoekinl + hdt * srce;
-  temppres = qxm(i + 1, j, k, QPRES) - pznew - pynew + hdt * srcp;
+  temppres = qm(i + 1, j, k, QREINT) * (gamma - 1.0);
   qm(i + 1, j, k, QPRES) = amrex::max(temppres, SMALL_PRES);
 }
 
