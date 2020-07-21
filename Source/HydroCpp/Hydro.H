@@ -129,11 +129,12 @@ pc_ext_flx(
   const int j,
   const int k,
   amrex::Array4<amrex::Real> const& flx,
-  amrex::Array4<const amrex::Real> const& a)
+  amrex::Array4<const amrex::Real> const& a,
+  amrex::Real const dt)
 {
   amrex::Real area = a(i, j, k); // avoid reading from global memory flx1.nComp() times
   for (int n = 0; n < flx.nComp(); ++n)
-    flx(i, j, k, n) *= area;
+     flx(i,j,k,n)*=area*dt;
 }
 
 AMREX_GPU_DEVICE
@@ -148,6 +149,7 @@ pc_update(
   const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
   amrex::Array4<const amrex::Real> const& vol,
   amrex::Array4<const amrex::Real> const& pdivu,
+  amrex::Real const dt,
   const amrex::Real gamma_minus_1)
 {
   amrex::Real v = vol(i, j, k);
@@ -159,7 +161,7 @@ pc_update(
                           v;
   }
 
-  update(i, j, k, UEINT) += pdivu(i, j, k)*u(i,j,k,UEINT)*gamma_minus_1;
+  update(i, j, k, UEINT) += pdivu(i, j, k)*u(i,j,k,UEINT)*gamma_minus_1*dt;
 }
 
 // Host functions
@@ -200,6 +202,7 @@ void pc_consup(
   amrex::Array4<const amrex::Real> const& pdivu,
   amrex::Real const* del,
   amrex::Real const difmag,
+  amrex::Real const dt,
   const int NumSpec,
   amrex::Real const gamma_minus_1);
 #endif

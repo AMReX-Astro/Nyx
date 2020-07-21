@@ -382,7 +382,7 @@ pc_umdrv(
 
   // consup
   amrex::Real difmag = 0.1;
-  pc_consup(bx, uin, uout, flx, a, vol, divarr, pdivuarr, dx, difmag, NumSpec, gamma_minus_1);
+  pc_consup(bx, uin, uout, flx, a, vol, divarr, pdivuarr, dx, difmag, dt, NumSpec, gamma_minus_1);
 }
 
 void
@@ -398,6 +398,7 @@ pc_consup(
   amrex::Array4<const amrex::Real> const& pdivu,
   amrex::Real const* del,
   amrex::Real const difmag,
+  amrex::Real const dt,
   const int NumSpec,
   amrex::Real const gamma_minus_1)
 {
@@ -410,12 +411,12 @@ pc_consup(
       // Normalize Species Flux
       pc_norm_spec_flx(i, j, k, flx[dir], NumSpec);
       // Make flux extensive
-      pc_ext_flx(i, j, k, flx[dir], a[dir]);
+      pc_ext_flx(i, j, k, flx[dir], a[dir], dt);
     });
   }
 
   // Combine for Hydro Sources
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      pc_update(i, j, k, u, update, flx, vol, pdivu, gamma_minus_1);
+	  pc_update(i, j, k, u, update, flx, vol, pdivu, dt, gamma_minus_1);
   });
 }

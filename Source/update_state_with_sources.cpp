@@ -24,7 +24,7 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
     int ng = 0;
 
     amrex::MultiFab::Copy(S_new, S_old, 0, 0, S_new.nComp(), ng);
-    amrex::MultiFab::Saxpy(S_new, dt, hydro_src, 0, 0, S_new.nComp(), ng);
+    amrex::MultiFab::Saxpy(S_new, 1.0, hydro_src, 0, 0, S_new.nComp(), ng);
 
     if(verbose>1) {
         std::cout<<"S_new norm2(0)"<<S_new.norm2(0)<<std::endl;
