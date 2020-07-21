@@ -93,8 +93,6 @@ pc_cmpflx(
   const int dir)
 {
   amrex::Real cav, ustar;
-  amrex::Real spl[NumSpec];
-  amrex::Real spr[NumSpec];
   amrex::Real ul, ur, vl, vr, v2l, v2r, rel, rer;
   int idx;
   int IU, IV, IV2;
@@ -139,10 +137,6 @@ pc_cmpflx(
     f_idx[2] = UMY;
   }
 
-  for (int sp = 0; sp < NumSpec; ++sp) {
-    spl[sp] = ql(i, j, k, FirstSpec + sp);
-    spr[sp] = qr(i, j, k, FirstSpec + sp);
-  }
   ul = ql(i, j, k, IU);
   vl = ql(i, j, k, IV);
   v2l = ql(i, j, k, IV2);

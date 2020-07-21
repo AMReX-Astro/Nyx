@@ -2329,28 +2329,6 @@ Nyx::enforce_nonnegative_species (MultiFab& S_new)
 {
     BL_PROFILE("Nyx::enforce_nonnegative_species()");
     int print_fortran_warnings_tmp=print_fortran_warnings;
-    if(Gpu::inLaunchRegion())
-      {
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
-        for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
-          {
-            const Box& bx = mfi.tilebox();
-            const auto fab_S_new = S_new.array(mfi);
-            amrex::launch(bx,
-                          [=] AMREX_GPU_DEVICE (Box const& tbx)
-                          {
-                          /*        AMREX_LAUNCH_DEVICE_LAMBDA(bx,tbx,
-                                       {*/
-            ca_enforce_nonnegative_species
-              (BL_ARR4_TO_FORTRAN(fab_S_new), tbx.loVect(), tbx.hiVect(),
-               &print_fortran_warnings_tmp);
-                                       });
-          }
-      }
-    else
-      {
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
@@ -2362,7 +2340,6 @@ Nyx::enforce_nonnegative_species (MultiFab& S_new)
               (BL_ARR4_TO_FORTRAN(fab_S_new), bx.loVect(), bx.hiVect(),
                &print_fortran_warnings);
           }
-      }
 }
 
 void
@@ -2652,10 +2629,12 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new, MultiFab& reset_e_
         const auto fab_diag = D_new.array(mfi);
         const auto fab_reset = reset_e_src.array(mfi);
         int print_warn=0;
+        Real h_species_in=h_species;
+        Real small_temp_in=small_temp;
         amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
         reset_internal_e
             (i,j,k,fab,fab_diag,fab_reset,
-             a, gamma_minus_1,h_species, small_temp, interp);
+             a, gamma_minus_1,h_species_in, small_temp_in, interp);
           });
     }
 }
@@ -2683,10 +2662,12 @@ Nyx::reset_internal_energy_interp (MultiFab& S_new, MultiFab& D_new, MultiFab& r
           const auto fab_diag = D_new.array(mfi);
           const auto fab_reset = reset_e_src.array(mfi);
           int print_warn=0;
+          Real h_species_in=h_species;
+          Real small_temp_in=small_temp;
           amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
         reset_internal_e
             (i,j,k,fab,fab_diag,fab_reset,
-             a, gamma_minus_1,h_species, small_temp, interp);
+             a, gamma_minus_1,h_species_in, small_temp_in, interp);
           });
     }
 

@@ -97,7 +97,7 @@ pc_umeth_3D(
   // over the same box
   amrex::ParallelFor(bxg2, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
 
-    amrex::Real slope[nq];
+    amrex::Real slope[8];
 
     const amrex::Real c = std::sqrt(std::abs((gamma_minus_1+1.0) * q(i,j,k,QREINT)*gamma_minus_1));
 
