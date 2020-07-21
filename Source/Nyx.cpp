@@ -387,7 +387,6 @@ Nyx::read_params ()
     pp_nyx.get("comoving_OmM", comoving_OmM);
     pp_nyx.query("comoving_OmR", comoving_OmR);
     pp_nyx.get("comoving_h", comoving_h);
-    pp_nyx.query("comoving_type", comoving_type);
 
     fort_set_omb(comoving_OmB);
     fort_set_omm(comoving_OmM);

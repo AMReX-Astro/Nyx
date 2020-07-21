@@ -15,6 +15,7 @@ CEXE_sources += NyxParticles.cpp
 CEXE_sources += ParticleDerive.cpp
 CEXE_sources += DarkMatterParticleContainer.cpp
 CEXE_sources += comoving.cpp
+CEXE_sources += Nyx_output.cpp
 CEXE_sources += write_info.cpp
 #CEXE_sources += bl_random_c.cpp
 
