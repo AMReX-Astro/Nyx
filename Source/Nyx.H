@@ -85,8 +85,8 @@ enum State_Type_UIndex {
   UMX      = 1,
   UMY      = 2,
   UMZ      = 3,
-  UEINT    = 4,
-  UEDEN    = 5
+  UEDEN    = 4,
+  UEINT    = 5,
 
 };
 
