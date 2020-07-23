@@ -757,9 +757,6 @@ public:
     // Note: this no longer includes the call to reset_internal_energy
     void compute_new_temp(amrex::MultiFab& S_new, amrex::MultiFab& D_new);
 
-  AMREX_GPU_DEVICE void nyx_eos_T_given_Re_device(amrex::Real, amrex::Real, int JH, int JHe, amrex::Real* T, amrex::Real* Ne, amrex::Real R,amrex::Real e,amrex::Real comoving_a);
-  AMREX_GPU_DEVICE void nyx_eos_given_RT(amrex::Real, amrex::Real, amrex::Real* e, amrex::Real* P, amrex::Real R, amrex::Real T, amrex::Real Ne,amrex::Real comoving_a);
-
     void compute_rho_temp(amrex::Real& rho_T_avg, amrex::Real& T_avg, amrex::Real& Tinv_avg, amrex::Real& T_meanrho);
     void compute_gas_fractions(amrex::Real T_cut, amrex::Real rho_cut,
                                amrex::Real& whim_mass_frac, amrex::Real& whim_vol_frac,
@@ -1069,6 +1066,9 @@ protected:
   static amrex::Real getCPUTime();
 
 };
+
+  AMREX_GPU_DEVICE void nyx_eos_T_given_Re_device(amrex::Real, amrex::Real, int JH, int JHe, amrex::Real* T, amrex::Real* Ne, amrex::Real R,amrex::Real e,amrex::Real comoving_a);
+  AMREX_GPU_DEVICE void nyx_eos_given_RT(amrex::Real, amrex::Real, amrex::Real* e, amrex::Real* P, amrex::Real R, amrex::Real T, amrex::Real Ne,amrex::Real comoving_a);
 
 // time step interval for finding halos
 extern int reeber_int;
