@@ -246,13 +246,14 @@ DarkMatterParticleContainer::moveKick (MultiFab&       acceleration,
 }
 
 //template <typename P>
-AMREX_GPU_HOST_DEVICE AMREX_INLINE void DarkMatterParticleContainer::update_dm_particle_single (ParticleType&  p,
-                                     const int nc,
-                                     amrex::Array4<amrex::Real const> const& acc,
-                                     amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& plo,
-                                     amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& dxi,
-                                     const amrex::Real& dt, const amrex::Real& a_prev, 
-                                     const amrex::Real& a_cur, const int& do_move)
+AMREX_GPU_HOST_DEVICE AMREX_INLINE
+void update_dm_particle_single (amrex::ParticleContainer<4, 0>::SuperParticleType&  p,
+                                const int nc,
+                                amrex::Array4<amrex::Real const> const& acc,
+                                amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& plo,
+                                amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& dxi,
+                                const amrex::Real& dt, const amrex::Real& a_prev,
+                                const amrex::Real& a_cur, const int& do_move)
 {
 
                                                         /*ParticleType const& p, 
