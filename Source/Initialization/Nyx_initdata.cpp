@@ -6,6 +6,8 @@
 #include <Gravity.H>
 #endif
 
+#include <Prob.H>
+
 using namespace amrex;
 
 namespace
@@ -196,7 +198,7 @@ Nyx::initData ()
     if (verbose && ParallelDescriptor::IOProcessor())
         std::cout << "Initializing the data at level " << level << '\n';
 
-    const Real* dx = geom.CellSize();
+    const auto dx = geom.CellSizeArray();
 
     // Make sure dx = dy = dz -- that's all we guarantee to support
     const Real SMALL = 1.e-13;
@@ -204,8 +206,6 @@ Nyx::initData ()
         amrex::Abort("We don't support dx != dy != dz");
 
 #ifndef NO_HYDRO    
-    int         ns       = S_new.nComp();
-
     Real  cur_time = state[State_Type].curTime();
 
     if ( (do_santa_barbara == 0) && (do_readin_ics == 0) && (particle_init_type != "Cosmological") )
@@ -213,20 +213,21 @@ Nyx::initData ()
         if (do_hydro == 1) 
         {
             MultiFab&   D_new    = get_new_data(DiagEOS_Type);
-            int         nd       = D_new.nComp();
             D_new.setVal(0., Temp_comp);
             D_new.setVal(0.,   Ne_comp);
 
             for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
             {
                 const Box& bx = mfi.tilebox();
-                RealBox gridloc = RealBox(bx, geom.CellSize(), geom.ProbLo());
+                const auto fab_S_new=S_new.array(mfi);
+                const auto fab_D_new=D_new.array(mfi);
 
-                fort_initdata
-                    (level, cur_time, bx.loVect(), bx.hiVect(), 
-                     ns, BL_TO_FORTRAN(S_new[mfi]), 
-                     nd, BL_TO_FORTRAN(D_new[mfi]), 
-                     dx, gridloc.lo(), gridloc.hi());
+                Real z_in=initial_z;
+                amrex::ParallelFor(
+                               bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+                                 prob_initdata
+                                   (i, j ,k, fab_S_new, fab_D_new, dx,z_in);
+                               });
             }
 
             if (inhomo_reion) init_zhi();
@@ -246,13 +247,14 @@ Nyx::initData ()
             for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
             {
                 const Box& bx = mfi.tilebox();
-                RealBox gridloc = RealBox(bx, geom.CellSize(), geom.ProbLo());
-    
-                fort_initdata
-                    (level, cur_time, bx.loVect(), bx.hiVect(), 
-                     ns, BL_TO_FORTRAN(S_new[mfi]), 
-                     ns, BL_TO_FORTRAN(S_new[mfi]), 
-                     dx, gridloc.lo(), gridloc.hi());
+                const auto fab_S_new=S_new.array(mfi);                
+
+                Real z_in=initial_z;
+                amrex::ParallelFor(
+                               bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+                                 prob_initdata_state
+                                   (i, j ,k, fab_S_new, dx,z_in);
+                               });
             }
         }
     }

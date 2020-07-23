@@ -19,7 +19,6 @@
 #include "NeutrinoParticleContainer.H"
 #endif
 
-
 #ifdef REEBER
 #ifndef REEBER_HIST
 #include <reeber.H>
@@ -91,7 +90,8 @@ enum State_Type_UIndex {
 
 enum DiagEOS_Type_Index {
   Temp_comp = 0,
-  Ne_comp   = 1
+  Ne_comp   = 1,
+  Zhi_comp  = 2
 
 };
 
