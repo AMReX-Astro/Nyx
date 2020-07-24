@@ -20,7 +20,7 @@ int main()
         for (auto& kv : pmap) {
             const auto& pbx = kv.second.GetArrayOfStructs();
             for (const auto& p : pbx) {
-                if (p.m_idata.id > 0) {
+                if (p.id() > 0) {
                     // Load positions
                     for (int d=0; d < BL_SPACEDIM; d++)
                         locations.push_back(p.m_rdata.pos[d]);
