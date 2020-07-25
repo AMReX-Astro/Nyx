@@ -28,37 +28,40 @@ plm_slope(
 {
   const int bdim[3] = {dir == 0, dir == 1, dir == 2};
 
-  amrex::Real dlft, drgt, dcen, dfm, dfp, dlim, dsgn, dtemp;
+  amrex::Real dlft, drgt, dcen, dfm, dfp, dlim, dsgn, dtemp, drgtm1, dlftp1;
   const amrex::Real qc = q(i, j, k, n);
   const amrex::Real qm =
     q(i - 1 * bdim[0], j - 1 * bdim[1], k - 1 * bdim[2], n);
   const amrex::Real qp =
     q(i + 1 * bdim[0], j + 1 * bdim[1], k + 1 * bdim[2], n);
 
-  dlft = qm - q(i - 2 * bdim[0], j - 2 * bdim[1], k - 2 * bdim[2], n);
-  drgt = qc - qm;
-  dcen = 0.5 * (dlft + drgt);
+  dlft = (qm - q(i - 2 * bdim[0], j - 2 * bdim[1], k - 2 * bdim[2], n))*2.0;
+  drgt = (qc - qm)*2.0;
+
+  dcen = 0.25 * (dlft + drgt);
   dsgn = amrex::Math::copysign(1.0, dcen);
   dlim = (dlft * drgt >= 0.0)
-           ? 2.0 * amrex::min(amrex::Math::abs(dlft), amrex::Math::abs(drgt))
+           ? amrex::min(amrex::Math::abs(dlft), amrex::Math::abs(drgt))
            : 0.0;
   dfm = dsgn * amrex::min(dlim, amrex::Math::abs(dcen));
+  drgtm1=drgt;
 
-  dlft = qp - qc;
-  drgt = q(i + 2 * bdim[0], j + 2 * bdim[1], k + 2 * bdim[2], n) - qp;
-  dcen = 0.5 * (dlft + drgt);
+  dlft = (qp - qc)*2.0;
+  drgt = (q(i + 2 * bdim[0], j + 2 * bdim[1], k + 2 * bdim[2], n) - qp)*2.0;
+  dcen = 0.25 * (dlft + drgt);
   dsgn = amrex::Math::copysign(1.0, dcen);
   dlim = (dlft * drgt >= 0.0)
-           ? 2.0 * amrex::min(amrex::Math::abs(dlft), amrex::Math::abs(drgt))
+           ? amrex::min(amrex::Math::abs(dlft), amrex::Math::abs(drgt))
            : 0.0;
   dfp = dsgn * amrex::min(dlim, amrex::Math::abs(dcen));
+  dlftp1=dlft;
 
-  dlft = qc - qm;
-  drgt = qp - qc;
-  dcen = 0.5 * (dlft + drgt);
+  dlft = drgtm1;//(qc - qm)*2.0;
+  drgt = dlftp1;//(qp - qc)*2.0;
+  dcen = 0.25 * (dlft + drgt);
   dsgn = amrex::Math::copysign(1.0, dcen);
   dlim = (dlft * drgt >= 0.0)
-           ? 2.0 * amrex::min(amrex::Math::abs(dlft), amrex::Math::abs(drgt))
+           ? amrex::min(amrex::Math::abs(dlft), amrex::Math::abs(drgt))
            : 0.0;
   dcen = dsgn * amrex::min(dlim, amrex::Math::abs(dcen));
 
@@ -235,13 +238,13 @@ pc_plm_x(
   e[1] = u;
   e[2] = u + cc;
   //  Construct the right state on the i-1/2 interface
-  amrex::Real rho_ref = rho - 0.5 * (1.0 + dtdx * amrex::min(e[0], 0.0)) * drho;
-  amrex::Real u_ref = u - 0.5 * (1.0 + dtdx * amrex::min(e[0], 0.0)) * du;
-  amrex::Real v_ref = v - 0.5 * (1.0 + dtdx * amrex::min(e[0], 0.0)) * dv;
-  amrex::Real w_ref = w - 0.5 * (1.0 + dtdx * amrex::min(e[0], 0.0)) * dw;
-  amrex::Real p_ref = p - 0.5 * (1.0 + dtdx * amrex::min(e[0], 0.0)) * dp;
+  amrex::Real rho_ref = rho;// - 0.5 * (1.0 + dtdx * amrex::min(e[0], 0.0)) * drho;
+  amrex::Real u_ref = u;// - 0.5 * (1.0 + dtdx * amrex::min(e[0], 0.0)) * du;
+  amrex::Real v_ref = v;// - 0.5 * (1.0 + dtdx * amrex::min(e[0], 0.0)) * dv;
+  amrex::Real w_ref = w;// - 0.5 * (1.0 + dtdx * amrex::min(e[0], 0.0)) * dw;
+  amrex::Real p_ref = p;// - 0.5 * (1.0 + dtdx * amrex::min(e[0], 0.0)) * dp;
   amrex::Real rhoe_ref =
-    rhoe - 0.5 * (1.0 + dtdx * amrex::min(e[0], 0.0)) * drhoe;
+      rhoe;// - 0.5 * (1.0 + dtdx * amrex::min(e[0], 0.0)) * drhoe;
 
   amrex::Real apright = 0.25 * dtdx * (e[0] - e[2]) *
                         (1.0 - amrex::Math::copysign(1.0, e[2])) * alphap;
@@ -270,27 +273,41 @@ pc_plm_x(
 
   //  Construct the left state on the i+1/2 interface
 
-  rho_ref = rho + 0.5 * (1.0 - dtdx * amrex::max(e[2], 0.0)) * drho;
-  u_ref = u + 0.5 * (1.0 - dtdx * amrex::max(e[2], 0.0)) * du;
-  v_ref = v + 0.5 * (1.0 - dtdx * amrex::max(e[2], 0.0)) * dv;
-  w_ref = w + 0.5 * (1.0 - dtdx * amrex::max(e[2], 0.0)) * dw;
-  p_ref = p + 0.5 * (1.0 - dtdx * amrex::max(e[2], 0.0)) * dp;
-  rhoe_ref = rhoe + 0.5 * (1.0 - dtdx * amrex::max(e[2], 0.0)) * drhoe;
+  rho_ref = rho;// + 0.5 * (1.0 - dtdx * amrex::max(e[2], 0.0)) * drho;
+  u_ref = u;// + 0.5 * (1.0 - dtdx * amrex::max(e[2], 0.0)) * du;
+  v_ref = v;// + 0.5 * (1.0 - dtdx * amrex::max(e[2], 0.0)) * dv;
+  w_ref = w;// + 0.5 * (1.0 - dtdx * amrex::max(e[2], 0.0)) * dw;
+  p_ref = p;// + 0.5 * (1.0 - dtdx * amrex::max(e[2], 0.0)) * dp;
+  rhoe_ref = rhoe;// + 0.5 * (1.0 - dtdx * amrex::max(e[2], 0.0)) * drhoe;
 
   //                  apleft = 0.25*dtdx*(e[2] - e[2])*(1.0 +
   //                  amrex::Math::copysign(1.0,e[2]))*alphap;
-  amrex::Real apleft = 0.0;
-  amrex::Real amleft = 0.25 * dtdx * (e[2] - e[0]) *
-                       (1.0 + amrex::Math::copysign(1.0, e[0])) * alpham;
 
-  amrex::Real azrleft = 0.25 * dtdx * (e[2] - e[1]) *
-                        (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0r;
-  amrex::Real azeleft = 0.25 * dtdx * (e[2] - e[1]) *
-                        (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0e;
-  amrex::Real azv1left = 0.25 * dtdx * (e[2] - e[1]) *
-                         (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0v;
-  amrex::Real azw1left = 0.25 * dtdx * (e[2] - e[1]) *
-                         (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0w;
+  amrex::Real spminus;
+  amrex::Real spplus;
+  amrex::Real spzero;
+
+   if (u-cc >= 0.0)
+	   spminus = (u-cc)*dtdx;
+   else
+	   spminus = 1.0;
+
+   if (u+cc >= 0.0)
+	   spplus = (u+cc)*dtdx;
+   else
+	   spplus = 1.0;
+   if (u <= 0.0)
+	   spzero = u*dtdx;
+   else
+	   spzero = 1.0;
+
+  amrex::Real apleft = 0.5*(1.0 - spplus )*alphap;
+  amrex::Real amleft = 0.5*(1.0 - spminus )*alpham;
+  amrex::Real azrleft = 0.5*(1.0 - spzero )*alpha0r;
+  amrex::Real azeleft = 0.5*(1.0 - spzero )*alpha0e;
+  amrex::Real azv1left = 0.5*(1.0 - spzero )*alpha0v;
+  amrex::Real azw1left = 0.5*(1.0 - spzero )*alpha0w;
+
   qm(i + 1, j, k, QRHO) = rho_ref + apleft + amleft + azrleft;
   qm(i + 1, j, k, QRHO) = amrex::max(qm(i + 1, j, k, QRHO), SMALL_DENS);
   AMREX_D_TERM(qm(i + 1, j, k, QU) = u_ref + (apleft - amleft) * cc / rho;
@@ -300,6 +317,7 @@ pc_plm_x(
   qm(i + 1, j, k, QPRES) = p_ref + (apleft + amleft) * cs;
   qm(i + 1, j, k, QPRES) = amrex::max(qm(i + 1, j, k, QPRES), SMALL_PRES);
   qm(i + 1, j, k, QREINT) = rhoe_ref + (apleft + amleft) * enth * cs + azeleft;
+
   // Upwind the passive variables
   for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
 
