@@ -246,22 +246,32 @@ pc_plm_x(
   amrex::Real p_ref = p;// - 0.5 * (1.0 + dtdx * amrex::min(e[0], 0.0)) * dp;
   amrex::Real rhoe_ref =
       rhoe;// - 0.5 * (1.0 + dtdx * amrex::min(e[0], 0.0)) * drhoe;
+  amrex::Real spminus;
+  amrex::Real spplus;
+  amrex::Real spzero;
 
-  amrex::Real apright = 0.25 * dtdx * (e[0] - e[2]) *
-                        (1.0 - amrex::Math::copysign(1.0, e[2])) * alphap;
-  //                  amright = 0.25*dtdx*(e[0] - e[0])*(1.0 -
-  //                  amrex::Math::copysign(1.0, e[0]))*alpham;
-  amrex::Real amright = 0.0;
+   if (u-cc > 0.0)
+	   spminus = -1.0;
+   else
+	   spminus = (u-cc)*dtdx;
 
-  amrex::Real azrright = 0.25 * dtdx * (e[0] - e[1]) *
-                         (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0r;
-  amrex::Real azeright = 0.25 * dtdx * (e[0] - e[1]) *
-                         (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0e;
-  amrex::Real azv1rght = 0.25 * dtdx * (e[0] - e[1]) *
-                         (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0v;
-  amrex::Real azw1rght = 0.25 * dtdx * (e[0] - e[1]) *
-                         (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0w;
+   if (u+cc > 0.0)
+	   spplus = -1.0;
+   else
+	   spplus = (u+cc)*dtdx;
 
+   if (u > 0.0)
+	   spzero = -1.0;
+   else
+	   spzero = u*dtdx;
+
+  amrex::Real apright = 0.5*(-1.0 - spplus )*alphap;
+  amrex::Real amright = 0.5*(-1.0 - spminus )*alpham;
+  amrex::Real azrright = 0.5*(-1.0 - spzero )*alpha0r;
+  amrex::Real azeright = 0.5*(-1.0 - spzero )*alpha0e;
+  amrex::Real azv1rght = 0.5*(-1.0 - spzero )*alpha0v;
+  amrex::Real azw1rght = 0.5*(-1.0 - spzero )*alpha0w;
+  
   qp(i, j, k, QRHO) = rho_ref + apright + amright + azrright;
   qp(i, j, k, QRHO) = amrex::max(SMALL_DENS, qp(i, j, k, QRHO));
   AMREX_D_TERM(qp(i, j, k, QU) = u_ref + (apright - amright) * cc / rho;
@@ -283,10 +293,6 @@ pc_plm_x(
 
   //                  apleft = 0.25*dtdx*(e[2] - e[2])*(1.0 +
   //                  amrex::Math::copysign(1.0,e[2]))*alphap;
-
-  amrex::Real spminus;
-  amrex::Real spplus;
-  amrex::Real spzero;
 
    if (u-cc >= 0.0)
 	   spminus = (u-cc)*dtdx;

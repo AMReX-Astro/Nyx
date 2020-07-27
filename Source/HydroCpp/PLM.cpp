@@ -99,7 +99,7 @@ pc_umeth_3D(
 
     amrex::Real slope[8];
 
-    const amrex::Real c = std::sqrt(std::abs((gamma_minus_1+1.0) * q(i,j,k,QREINT)*gamma_minus_1));
+    const amrex::Real c = std::sqrt((gamma_minus_1+1.0) * q(i,j,k,QREINT)/q(i,j,k,QRHO)*gamma_minus_1);
 
     // X slopes and interp
     for (int n = 0; n < nq; ++n)
