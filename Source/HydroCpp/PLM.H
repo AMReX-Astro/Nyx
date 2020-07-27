@@ -183,8 +183,7 @@ pc_cmpflx(
     flx(i, j, k, UEDEN), flx(i, j, k, UEINT), q(i, j, k, GU), q(i, j, k, GV),
     q(i, j, k, GV2), q(i, j, k, GDPRES), q(i, j, k, GDGAME), 
     small_dens, small_pres, small_vel, small, gamma, NumSpec);
-  //  if(i==2&&j==0&&k==0)
-  //	  exit(0);
+
   amrex::Real flxrho = flx(i, j, k, URHO);
   for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
     int nqp = n;
@@ -325,11 +324,7 @@ pc_plm_x(
   qm(i + 1, j, k, QPRES) = p_ref + (apleft + amleft) * cs;
   qm(i + 1, j, k, QPRES) = amrex::max(qm(i + 1, j, k, QPRES), SMALL_PRES);
   qm(i + 1, j, k, QREINT) = rhoe_ref + (apleft + amleft) * enth * cs + azeleft;
-  if(i==1&&j==0&&k==0)
-	  {
-		  amrex::Print()<<qm(i+1,j,k,QRHO)<<"\t"<<rho_ref<<"\t"<<apleft<<"\t"<<amleft<<"\t"<<azrleft<<std::endl;
-		  // exit(0);
-		}
+
   // Upwind the passive variables
   for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
 
