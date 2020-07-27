@@ -56,14 +56,15 @@ plm_slope(
   dfp = dsgn * amrex::min(dlim, amrex::Math::abs(dcen));
   dlftp1=dlft;
 
-  dlft = drgtm1;//(qc - qm)*2.0;
-  drgt = dlftp1;//(qp - qc)*2.0;
+  //Replace with limited fourth order slopes
+  dlft = drgtm1;
+  drgt = dlftp1;
   dcen = 0.25 * (dlft + drgt);
   dsgn = amrex::Math::copysign(1.0, dcen);
   dlim = (dlft * drgt >= 0.0)
            ? amrex::min(amrex::Math::abs(dlft), amrex::Math::abs(drgt))
            : 0.0;
-  dcen = dsgn * amrex::min(dlim, amrex::Math::abs(dcen));
+  //Use limiter on dq, not dcen
 
   dtemp = 4.0 / 3.0 * dcen - 1.0 / 6.0 * (dfp + dfm);
   // flattening can go here.
