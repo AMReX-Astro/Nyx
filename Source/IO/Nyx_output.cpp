@@ -1099,6 +1099,28 @@ Nyx::blueprint_check_point ()
                            cur_time,
                            cycle,
                            bp_mesh);
+#else
+    Vector<std::string> varnames;
+    const int n_data_items = 5;
+    const int nGrow = 0;
+    MultiFab plotMF(grids, dmap, n_data_items, nGrow);
+    varnames.push_back("particle_mass_density");
+    varnames.push_back("particle_count");
+    varnames.push_back("particle_x_velocity");
+    varnames.push_back("particle_y_velocity");
+    varnames.push_back("particle_z_velocity");
+
+    for(int cnt = 0; cnt < n_data_items; cnt++)
+    {
+        const auto& derive_dat = derive(varnames[cnt], cur_time, nGrow);
+        MultiFab::Copy(plotMF, *derive_dat, 0, cnt, 1, nGrow);
+    }
+    SingleLevelToBlueprint(plotMF,
+                           varnames,
+                           geom,
+                           cur_time,
+                           cycle,
+                           bp_mesh);
 #endif
     //conduit::Node bp_particles;
     
@@ -1112,7 +1134,24 @@ Nyx::blueprint_check_point ()
     amrex::ParticleContainerToBlueprint(*(Nyx::theDMPC()),
                                         particle_varnames,
                                         particle_int_varnames,
-                                        bp_mesh);
+                                        bp_mesh,dm_plt_particle_file);
+
+#ifdef NEUTRINO_PARTICLES
+
+#ifdef NEUTRINO_DARK_PARTICLES    
+    Vector<std::string> neutrino_varnames;
+    neutrino_varnames.push_back("neutrino_mass");
+    neutrino_varnames.push_back("neutrino_xvel");
+    neutrino_varnames.push_back("neutrino_yvel");
+    neutrino_varnames.push_back("neutrino_zvel");
+
+    Vector<std::string> neutrino_int_varnames;
+    amrex::ParticleContainerToBlueprint(*(Nyx::theNPC()),
+                                        neutrino_varnames,
+                                        neutrino_int_varnames,
+                                        bp_mesh,npc_plt_particle_file);
+#endif
+#endif
     
     // very helpful for debugging when we actual try
     // to pull the varnames list from amrex, vs hand initing

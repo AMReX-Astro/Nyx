@@ -1,0 +1,25 @@
+- 
+  action: "add_scenes"
+  scenes: 
+    scene1: 
+      image_prefix: "ascent_render_particles_xvel_"
+      plots: 
+        plt1: 
+          type: "pseudocolor"
+          field: "particle_xvel"
+    scene2: 
+      image_prefix: "ascent_render_neutrinos_xvel_"
+      plots: 
+        plt1: 
+          type: "pseudocolor"
+          field: "neutrino_xvel"
+    scene3: 
+      image_prefix: "ascent_render_both_"
+      plots: 
+        plt1: 
+          type: "pseudocolor"
+          field: "particle_xvel"
+        plt2: 
+          type: "pseudocolor"
+          field: "neutrino_xvel"
+

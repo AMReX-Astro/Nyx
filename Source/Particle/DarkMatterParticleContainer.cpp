@@ -882,8 +882,8 @@ DarkMatterParticleContainer::InitFromBinaryMortonFile(const std::string& particl
         
         p.m_rdata.arr[BL_SPACEDIM] *= skip_factor;
         
-        p.m_idata.id  = ParticleType::NextID();
-        p.m_idata.cpu = ParallelDescriptor::MyProc();
+        p.id()  = ParticleType::NextID();
+        p.cpu() = ParallelDescriptor::MyProc();
         particles[std::make_pair(grid, tile)].push_back(p);
       }
     }    

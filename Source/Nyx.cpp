@@ -598,6 +598,11 @@ Nyx::read_params ()
         amrex::Error("Must compile with USE_HDF5 = TRUE for write_hdf5 = 1");
 #endif
 
+#ifdef AMREX_USE_HDF5_ASYNC
+    // Complete all previous async writes on amrex::Finalize()
+    amrex::ExecOnFinalize(H5VLasync_waitall);
+#endif
+
     pp_nyx.query("print_fortran_warnings",print_fortran_warnings);
 
     read_comoving_params();
