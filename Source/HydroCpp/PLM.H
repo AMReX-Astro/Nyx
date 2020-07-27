@@ -174,7 +174,7 @@ pc_cmpflx(
   //    ql(i, j, k, QRHO), ul, vl, v2l, ql(i, j, k, QPRES), rel, spl, 
   //    qr(i, j, k, QRHO), ur, vr, v2r, qr(i, j, k, QPRES), rer, spr, 
 
-  amrex::Real c = std::sqrt((gamma) * qprim(i,j,k,QREINT)*(gamma - 1.0));//std::sqrt(std::abs(gamma * q(i,j,k,QPRES) / q(i,j,k,QRHO)));
+  amrex::Real c = std::sqrt((gamma) * qprim(i,j,k,QREINT)/qprim(i,j,k,QRHO)*(gamma - 1.0));//std::sqrt(std::abs(gamma * q(i,j,k,QPRES) / q(i,j,k,QRHO)));
   riemann(
     ql(i, j, k, QRHO), ul, vl, v2l, ql(i, j, k, QPRES), rel,
     qr(i, j, k, QRHO), ur, vr, v2r, qr(i, j, k, QPRES), rer,
@@ -183,7 +183,8 @@ pc_cmpflx(
     flx(i, j, k, UEDEN), flx(i, j, k, UEINT), q(i, j, k, GU), q(i, j, k, GV),
     q(i, j, k, GV2), q(i, j, k, GDPRES), q(i, j, k, GDGAME), 
     small_dens, small_pres, small_vel, small, gamma, NumSpec);
-
+  //  if(i==2&&j==0&&k==0)
+  //	  exit(0);
   amrex::Real flxrho = flx(i, j, k, URHO);
   for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
     int nqp = n;
@@ -303,7 +304,7 @@ pc_plm_x(
 	   spplus = (u+cc)*dtdx;
    else
 	   spplus = 1.0;
-   if (u <= 0.0)
+   if (u >= 0.0)
 	   spzero = u*dtdx;
    else
 	   spzero = 1.0;
@@ -324,7 +325,11 @@ pc_plm_x(
   qm(i + 1, j, k, QPRES) = p_ref + (apleft + amleft) * cs;
   qm(i + 1, j, k, QPRES) = amrex::max(qm(i + 1, j, k, QPRES), SMALL_PRES);
   qm(i + 1, j, k, QREINT) = rhoe_ref + (apleft + amleft) * enth * cs + azeleft;
-
+  if(i==1&&j==0&&k==0)
+	  {
+		  amrex::Print()<<qm(i+1,j,k,QRHO)<<"\t"<<rho_ref<<"\t"<<apleft<<"\t"<<amleft<<"\t"<<azrleft<<std::endl;
+		  // exit(0);
+		}
   // Upwind the passive variables
   for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
 

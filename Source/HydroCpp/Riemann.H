@@ -156,9 +156,10 @@ riemann(
   const amrex::Real co = std::sqrt(std::abs(gamco * po / ro));
 
   //Is a max or limiter similar to the mask above needed for co?
-
   const amrex::Real drho = (pstar - po) / (co * co);
   const amrex::Real rstar = amrex::max(small_dens, ro + drho);
+  amrex::Print()<<"drho"<<"\t"<<drho<<"\t"<<pstar<<"\t"<<po<<"\t"<<co<<"\t"<<(1/(co*co))
+				<<"\t"<<gamco<<"\t"<<po<<"\t"<<1/ro<<"\t"<<small_dens<<"\t"<<ro<<"\t"<<rl<<"\t"<<rr<<"\t"<<0.5 * (amrex::max(rl,small_dens) + amrex::max(rr,small_dens)) <<std::endl;
 
   //Fix data type:
   const amrex::Real entho = (reo + po)/(ro*co*co);
@@ -188,6 +189,7 @@ riemann(
   mask = (ustar == 0.0);
   qint_iv1 = mask ? 0.5 * (vl + vr) : qint_iv1;
   qint_iv2 = mask ? 0.5 * (v2l + v2r) : qint_iv2;
+  amrex::Print()<<"frac"<<frac<<"\t"<<rstar<<"\t"<<ro<<std::endl;
   amrex::Real rgd = frac * rstar + (1.0 - frac) * ro;
   qint_iu = frac * ustar + (1.0 - frac) * uo;
   qint_gdpres = frac * pstar + (1.0 - frac) * po;
@@ -219,6 +221,7 @@ riemann(
   qint_gdgame = qint_gdpres / regd + 1.0;
   qint_iu = bc_test_val * qint_iu;
   uflx_rho = rgd * qint_iu;
+  amrex::Print()<<uflx_rho<<"\t"<<qint_iu<<"\t"<<rgd<<std::endl;
   uflx_u = uflx_rho * qint_iu + qint_gdpres;
   uflx_v = uflx_rho * qint_iv1;
   uflx_w = uflx_rho * qint_iv2;
