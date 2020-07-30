@@ -47,9 +47,16 @@ pc_ctoprim(
   // Pressure = (gamma - 1) * rho * e
   q(i,j,k,QPRES) = gamma_minus_1 * q(i,j,k,QREINT);
 
+  if(i==0&&j==2&&k==0)
+	  amrex::Print()<<q(i,j,k,QPRES)<<"\t"<<gamma_minus_1<<"\t"<<q(i,j,k,QREINT)<<"\t"<<q(i,j,k,QRHO)<<std::endl;
   for (int n = 0; n < NumSpec; ++n) {
     q(i, j, k, FirstSpec + n) = u(i, j, k, FirstSpec + n) / rho;
   }
+    if(i==0&&j==2&&k==0)
+		{
+	  amrex::Print()<<q(i,j,k,QPRES)<<"\t"<<gamma_minus_1<<"\t"<<q(i,j,k,QREINT)<<"\t"<<q(i,j,k,QRHO)<<std::endl;
+	  //	  exit(0);
+		}
 }
 
 AMREX_GPU_DEVICE

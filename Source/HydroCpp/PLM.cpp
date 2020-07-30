@@ -117,7 +117,23 @@ pc_umeth_3D(
     pc_plm_z(i, j, k, qzmarr, qzparr, slope, q, c, dz, dt, NumSpec, gamma);
 
   });
-
+    /*    if(i==2&&j==0&&k==0&&n==0)
+	  {
+		  amrex::Print()<<dsgn * amrex::min(dlim, amrex::Math::abs(dtemp))<<"\t"
+						<<1.0<<"\t"<<dsgn<<"\t"<<dlim<<"\t"<<amrex::Math::abs(dtemp)
+						<<"\t"<<dcen<<"\t"<<dlft<<"\t"<<drgt<<std::endl;
+		  exit(0);
+	  }
+	
+  amrex::Print()<<"q"<<amrex::FArrayBox(q)<<std::endl;
+  amrex::Print()<<"qxmarr"<<amrex::FArrayBox(qxmarr)<<std::endl;
+  amrex::Print()<<"qxparr"<<amrex::FArrayBox(qxparr)<<std::endl;
+  amrex::Print()<<"qymarr"<<amrex::FArrayBox(qymarr)<<std::endl;
+  amrex::Print()<<"qyparr"<<amrex::FArrayBox(qyparr)<<std::endl;
+  amrex::Print()<<"qzmarr"<<amrex::FArrayBox(qzmarr)<<std::endl;
+  amrex::Print()<<"qzparr"<<amrex::FArrayBox(qzparr)<<std::endl;
+  exit(0);
+*/
   // These are the first flux estimates as per the corner-transport-upwind
   // method X initial fluxes
   cdir = 0;
@@ -194,7 +210,7 @@ pc_umeth_3D(
     pc_transz1(
       i, j, k, qmxz, qpxz, qxmarr, qxparr, fzarr, gdtempz, cdtdz, NumSpec, gamma);
   });
-
+  
   const amrex::Box& txfxbx = surroundingNodes(bxg1, cdir);
   amrex::FArrayBox fluxxy(txfxbx, flx1.nComp());
   amrex::FArrayBox fluxxz(txfxbx, flx1.nComp());
@@ -312,6 +328,13 @@ pc_umeth_3D(
     pc_transy2(
       i, j, k, qmzy, qpzy, qzmarr, qzparr, fyarr, gdtempy, cdtdy, NumSpec, gamma);
   });
+  /*
+amrex::Print()<<"fyarr"<<amrex::FArrayBox(fyarr)<<std::endl;
+  amrex::Print()<<"gdtempy"<<amrex::FArrayBox(gdtempy)<<std::endl;
+  amrex::Print()<<"qmzy"<<amrex::FArrayBox(qmzy)<<std::endl;
+  amrex::Print()<<"qpzy"<<amrex::FArrayBox(qpzy)<<std::endl;
+  exit(0);
+*/	 
 
   fxeli.clear();
   fyeli.clear();

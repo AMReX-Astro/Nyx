@@ -28,7 +28,7 @@ plm_slope(
 {
   const int bdim[3] = {dir == 0, dir == 1, dir == 2};
 
-  amrex::Real dlft, drgt, dcen, dfm, dfp, dlim, dsgn, dtemp, drgtm1, dlftp1;
+  amrex::Real dlft, drgt, dcen, dfm, dfp, dlim, dsgn, dtemp, drgtm1, dlftp1, slop;
   const amrex::Real qc = q(i, j, k, n);
   const amrex::Real qm =
     q(i - 1 * bdim[0], j - 1 * bdim[1], k - 1 * bdim[2], n);
@@ -45,7 +45,13 @@ plm_slope(
            : 0.0;
   dfm = dsgn * amrex::min(dlim, amrex::Math::abs(dcen));
   drgtm1=drgt;
-
+  if(i==0&&j==2&&k==0&&dir==1)
+  {
+	  amrex::Print()<<qc<<"\t"<<qm<<"\t"<<dlft<<
+		  "\t"<<dcen<<"\t"<<drgt<<"\t"<<dfm<<"\t"<<dlim<<"\t"<<n<<std::endl;
+	  //	  if(n==FirstSpec+2)
+		  //	  exit(0);
+  }
   dlft = (qp - qc)*2.0;
   drgt = (q(i + 2 * bdim[0], j + 2 * bdim[1], k + 2 * bdim[2], n) - qp)*2.0;
   dcen = 0.25 * (dlft + drgt);
@@ -68,6 +74,11 @@ plm_slope(
 
   dtemp = 4.0 / 3.0 * dcen - 1.0 / 6.0 * (dfp + dfm);
   // flattening can go here.
+  if(i==0&&j==2&&k==0&&dir==1)
+  {
+	  amrex::Print()<<dtemp<<"\t"<<dcen<<"\t"<<dfp<<"\t"<<dfm<<"\t"<<dlim<<std::endl;
+	  //	  exit(0);
+  }
   return dsgn * amrex::min(dlim, amrex::Math::abs(dtemp));
 }
 
@@ -383,28 +394,38 @@ pc_plm_y(
   e[1] = v;
   e[2] = v + cc;
   // Construct the "right" state on the j-1/2 interface
-  amrex::Real rho_ref = rho - 0.5 * (1.0 + dtdy * amrex::min(e[0], 0.0)) * drho;
-  amrex::Real u_ref = u - 0.5 * (1.0 + dtdy * amrex::min(e[0], 0.0)) * du;
-  amrex::Real v_ref = v - 0.5 * (1.0 + dtdy * amrex::min(e[0], 0.0)) * dv;
-  amrex::Real w_ref = w - 0.5 * (1.0 + dtdy * amrex::min(e[0], 0.0)) * dw;
-  amrex::Real p_ref = p - 0.5 * (1.0 + dtdy * amrex::min(e[0], 0.0)) * dp;
+  amrex::Real rho_ref = rho;// - 0.5 * (1.0 + dtdy * amrex::min(e[0], 0.0)) * drho;
+  amrex::Real u_ref = u;// - 0.5 * (1.0 + dtdy * amrex::min(e[0], 0.0)) * du;
+  amrex::Real v_ref = v;// - 0.5 * (1.0 + dtdy * amrex::min(e[0], 0.0)) * dv;
+  amrex::Real w_ref = w;// - 0.5 * (1.0 + dtdy * amrex::min(e[0], 0.0)) * dw;
+  amrex::Real p_ref = p;// - 0.5 * (1.0 + dtdy * amrex::min(e[0], 0.0)) * dp;
   amrex::Real rhoe_ref =
-    rhoe - 0.5 * (1.0 + dtdy * amrex::min(e[0], 0.0)) * drhoe;
+    rhoe;// - 0.5 * (1.0 + dtdy * amrex::min(e[0], 0.0)) * drhoe;
+  amrex::Real spminus;
+  amrex::Real spplus;
+  amrex::Real spzero;
 
-  amrex::Real apright = 0.25 * dtdy * (e[0] - e[2]) *
-                        (1.0 - amrex::Math::copysign(1.0, e[2])) * alphap;
-  //     amright = 0.25*dtdy*(e[0] - e[0])*(1.0 - amrex::Math::copysign(1.0,
-  //     e[0]))*alpham;
-  amrex::Real amright = 0.0;
+   if (v-cc > 0.0)
+	   spminus = -1.0;
+   else
+	   spminus = (v-cc)*dtdy;
 
-  amrex::Real azrright = 0.25 * dtdy * (e[0] - e[1]) *
-                         (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0r;
-  amrex::Real azeright = 0.25 * dtdy * (e[0] - e[1]) *
-                         (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0e;
-  amrex::Real azu1rght = 0.25 * dtdy * (e[0] - e[1]) *
-                         (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0u;
-  amrex::Real azw1rght = 0.25 * dtdy * (e[0] - e[1]) *
-                         (1.0 - amrex::Math::copysign(1.0, e[1])) * alpha0w;
+   if (v+cc > 0.0)
+	   spplus = -1.0;
+   else
+	   spplus = (v+cc)*dtdy;
+
+   if (v > 0.0)
+	   spzero = -1.0;
+   else
+	   spzero = v*dtdy;
+
+  amrex::Real apright = 0.5*(-1.0 - spplus )*alphap;
+  amrex::Real amright = 0.5*(-1.0 - spminus )*alpham;
+  amrex::Real azrright = 0.5*(-1.0 - spzero )*alpha0r;
+  amrex::Real azeright = 0.5*(-1.0 - spzero )*alpha0e;
+  amrex::Real azu1rght = 0.5*(-1.0 - spzero )*alpha0u;
+  amrex::Real azw1rght = 0.5*(-1.0 - spzero )*alpha0w;
 
   qp(i, j, k, QRHO) = rho_ref + apright + amright + azrright;
   qp(i, j, k, QRHO) = amrex::max(SMALL_DENS, qp(i, j, k, QRHO));
@@ -414,30 +435,44 @@ pc_plm_y(
   qp(i, j, k, QPRES) = p_ref + (apright + amright) * cs;
   qp(i, j, k, QPRES) = amrex::max(qp(i, j, k, QPRES), SMALL_PRES);
   qp(i, j, k, QREINT) = rhoe_ref + (apright + amright) * enth * cs + azeright;
-
+  if(i==0&&j==2&&k==0)
+	  {
+		  amrex::Print()<<"plm_y\n"<<rho_ref<<"\t"<<apright<<"\t"<<amright<<"\t"<<azrright<<"\t"<<azu1rght<<"\t"<<azw1rght<< std::endl;
+		  amrex::Print()<<u<<"\t"<<cc<<"\t"<<dp<<"\t"<<du<<std::endl;
+		  //		  exit(0);
+	  }
   // Construct the "left" state on the j+1/2 interface
 
-  rho_ref = rho + 0.5 * (1.0 - dtdy * amrex::max(e[2], 0.0)) * drho;
-  u_ref = u + 0.5 * (1.0 - dtdy * amrex::max(e[2], 0.0)) * du;
-  v_ref = v + 0.5 * (1.0 - dtdy * amrex::max(e[2], 0.0)) * dv;
-  w_ref = w + 0.5 * (1.0 - dtdy * amrex::max(e[2], 0.0)) * dw;
-  p_ref = p + 0.5 * (1.0 - dtdy * amrex::max(e[2], 0.0)) * dp;
-  rhoe_ref = rhoe + 0.5 * (1.0 - dtdy * amrex::max(e[2], 0.0)) * drhoe;
+  rho_ref = rho;// + 0.5 * (1.0 - dtdy * amrex::max(e[2], 0.0)) * drho;
+  u_ref = u;// + 0.5 * (1.0 - dtdy * amrex::max(e[2], 0.0)) * du;
+  v_ref = v;// + 0.5 * (1.0 - dtdy * amrex::max(e[2], 0.0)) * dv;
+  w_ref = w;// + 0.5 * (1.0 - dtdy * amrex::max(e[2], 0.0)) * dw;
+  p_ref = p;// + 0.5 * (1.0 - dtdy * amrex::max(e[2], 0.0)) * dp;
+  rhoe_ref = rhoe;// + 0.5 * (1.0 - dtdy * amrex::max(e[2], 0.0)) * drhoe;
 
   //                 apleft = 0.25*dtdy*(e[2] - e[2])*(1.0 +
   //                 amrex::Math::copysign(1.0,e[2]))*alphap;
-  amrex::Real apleft = 0.0;
-  amrex::Real amleft = 0.25 * dtdy * (e[2] - e[0]) *
-                       (1.0 + amrex::Math::copysign(1.0, e[0])) * alpham;
 
-  amrex::Real azrleft = 0.25 * dtdy * (e[2] - e[1]) *
-                        (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0r;
-  amrex::Real azeleft = 0.25 * dtdy * (e[2] - e[1]) *
-                        (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0e;
-  amrex::Real azu1left = 0.25 * dtdy * (e[2] - e[1]) *
-                         (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0u;
-  amrex::Real azw1left = 0.25 * dtdy * (e[2] - e[1]) *
-                         (1.0 + amrex::Math::copysign(1.0, e[1])) * alpha0w;
+   if (v-cc >= 0.0)
+	   spminus = (v-cc)*dtdy;
+   else
+	   spminus = 1.0;
+
+   if (v+cc >= 0.0)
+	   spplus = (v+cc)*dtdy;
+   else
+	   spplus = 1.0;
+   if (v >= 0.0)
+	   spzero = v*dtdy;
+   else
+	   spzero = 1.0;
+
+  amrex::Real apleft = 0.5*(1.0 - spplus )*alphap;
+  amrex::Real amleft = 0.5*(1.0 - spminus )*alpham;
+  amrex::Real azrleft = 0.5*(1.0 - spzero )*alpha0r;
+  amrex::Real azeleft = 0.5*(1.0 - spzero )*alpha0e;
+  amrex::Real azu1left = 0.5*(1.0 - spzero )*alpha0u;
+  amrex::Real azw1left = 0.5*(1.0 - spzero )*alpha0w;
 
   qm(i, j + 1, k, QRHO) = rho_ref + apleft + amleft + azrleft;
   qm(i, j + 1, k, QRHO) = amrex::max(qm(i, j + 1, k, QRHO), SMALL_DENS);
@@ -834,6 +869,9 @@ pc_transy1(
   qm(i + 1, j, k, QREINT) = renewl - rhoekinl;
   pnewl = qm(i + 1, j, k, QREINT) * (gamma-1.0);
   qm(i + 1, j, k, QPRES) = amrex::max(pnewl, SMALL_PRES);
+  //  amrex::Print()<<rrnewl<<"\t"<<rrl<<"\t"<<flxrho<<std::endl;
+  //  exit(0);
+
 }
 
 /* Transverse Correction for Predicted Z-states, using X-Flux */
