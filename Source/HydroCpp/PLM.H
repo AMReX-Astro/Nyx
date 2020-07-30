@@ -45,13 +45,7 @@ plm_slope(
            : 0.0;
   dfm = dsgn * amrex::min(dlim, amrex::Math::abs(dcen));
   drgtm1=drgt;
-  if(i==0&&j==2&&k==0&&dir==1)
-  {
-	  amrex::Print()<<qc<<"\t"<<qm<<"\t"<<dlft<<
-		  "\t"<<dcen<<"\t"<<drgt<<"\t"<<dfm<<"\t"<<dlim<<"\t"<<n<<std::endl;
-	  //	  if(n==FirstSpec+2)
-		  //	  exit(0);
-  }
+
   dlft = (qp - qc)*2.0;
   drgt = (q(i + 2 * bdim[0], j + 2 * bdim[1], k + 2 * bdim[2], n) - qp)*2.0;
   dcen = 0.25 * (dlft + drgt);
@@ -74,11 +68,6 @@ plm_slope(
 
   dtemp = 4.0 / 3.0 * dcen - 1.0 / 6.0 * (dfp + dfm);
   // flattening can go here.
-  if(i==0&&j==2&&k==0&&dir==1)
-  {
-	  amrex::Print()<<dtemp<<"\t"<<dcen<<"\t"<<dfp<<"\t"<<dfm<<"\t"<<dlim<<std::endl;
-	  //	  exit(0);
-  }
   return dsgn * amrex::min(dlim, amrex::Math::abs(dtemp));
 }
 
@@ -435,12 +424,7 @@ pc_plm_y(
   qp(i, j, k, QPRES) = p_ref + (apright + amright) * cs;
   qp(i, j, k, QPRES) = amrex::max(qp(i, j, k, QPRES), SMALL_PRES);
   qp(i, j, k, QREINT) = rhoe_ref + (apright + amright) * enth * cs + azeright;
-  if(i==0&&j==2&&k==0)
-	  {
-		  amrex::Print()<<"plm_y\n"<<rho_ref<<"\t"<<apright<<"\t"<<amright<<"\t"<<azrright<<"\t"<<azu1rght<<"\t"<<azw1rght<< std::endl;
-		  amrex::Print()<<u<<"\t"<<cc<<"\t"<<dp<<"\t"<<du<<std::endl;
-		  //		  exit(0);
-	  }
+
   // Construct the "left" state on the j+1/2 interface
 
   rho_ref = rho;// + 0.5 * (1.0 - dtdy * amrex::max(e[2], 0.0)) * drho;
@@ -885,8 +869,6 @@ pc_transy1(
   qm(i + 1, j, k, QREINT) = renewl - rhoekinl;
   pnewl = qm(i + 1, j, k, QREINT) * (gamma-1.0);
   qm(i + 1, j, k, QPRES) = amrex::max(pnewl, SMALL_PRES);
-  //  amrex::Print()<<rrnewl<<"\t"<<rrl<<"\t"<<flxrho<<std::endl;
-  //  exit(0);
 
 }
 
