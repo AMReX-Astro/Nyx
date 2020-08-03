@@ -7,7 +7,8 @@ void
 Nyx::construct_hydro_source(
   const amrex::MultiFab& S,
         amrex::MultiFab& sources_for_hydro,
-  amrex::MultiFab& hydro_source, 
+  amrex::MultiFab& hydro_source,
+  amrex::MultiFab& grav_vector, 
   amrex::Real time,
   amrex::Real a_old,
   amrex::Real a_new,
@@ -172,9 +173,10 @@ Nyx::construct_hydro_source(
 
         BL_PROFILE_VAR("Nyx::srctoprim()", srctop);
         const auto& src_in = sources_for_hydro.array(mfi);
+        const auto& grav_in = grav_vector.array(mfi);
         amrex::ParallelFor(
           qbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            pc_srctoprim(i, j, k, qarr, src_in, srcqarr,
+            pc_srctoprim(i, j, k, qarr, grav_in, src_in, srcqarr,
             a_half, a_dot, NumSpec_loc, gamma_minus_1_loc);
           });
         BL_PROFILE_VAR_STOP(srctop);
@@ -223,9 +225,10 @@ Nyx::construct_hydro_source(
             area[0].array(mfi), area[1].array(mfi), area[2].array(mfi))};
         pc_umdrv(
           is_finest_level, time, bx, domain_lo, domain_hi, phys_bc.lo(),
-          phys_bc.hi(), s, hyd_src, qarr, srcqarr, dx, dt, flx_arr, a,
-          volume.array(mfi), small_dens, small_pres, small_vel, small, 
-          gamma, gamma_minus_1_loc, FirstSpec, NumSpec, cflLoc);
+          phys_bc.hi(), s, hyd_src, qarr, srcqarr, flx_arr, dx, dt, a_old, a_new,
+          gamma, gamma_minus_1_loc, NumSpec,
+          small_dens, small_pres, small_vel, small, 
+          cflLoc, a, volume.array(mfi));
         BL_PROFILE_VAR_STOP(purm);
 
         BL_PROFILE_VAR("courno", crno);
@@ -327,17 +330,19 @@ pc_umdrv(
   amrex::Array4<const amrex::Real> const& q,
   amrex::Array4<const amrex::Real> const&
     src_q, // amrex::IArrayBox const& bcMask,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
   const amrex::Real* dx,
   const amrex::Real dt,
-  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
-  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
-    a,
-  amrex::Array4<amrex::Real> const& vol,
+  const amrex::Real a_old,
+  const amrex::Real a_new,
+  const amrex::Real gamma, const amrex::Real gamma_minus_1, 
+  const int NumSpec,
   const amrex::Real small_dens, const amrex::Real small_pres, 
   const amrex::Real small_vel , const amrex::Real small, 
-  const amrex::Real gamma, const amrex::Real gamma_minus_1, 
-  const int FirstSpec, const int NumSpec,
-  amrex::Real cflLoc)
+  amrex::Real cflLoc,
+  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
+    a,
+  amrex::Array4<amrex::Real> const& vol)
 {
   //  Set Up for Hydro Flux Calculations
   auto const& bxg2 = grow(bx, 2);
@@ -365,8 +370,8 @@ pc_umdrv(
   pc_umeth_3D(
     bx, bclo, bchi, domlo, domhi, q, nq, src_q, // bcMask,
     flx[0], flx[1], flx[2], qec_arr[0], qec_arr[1], qec_arr[2], a[0], a[1],
-    a[2], pdivuarr, vol, FirstSpec, NumSpec, small_dens, small_pres, small_vel, small,
-    gamma, gamma_minus_1, dx, dt);
+    a[2], pdivuarr, vol, dx, dt, a_old, a_new, NumSpec, gamma, gamma_minus_1,
+	small_dens, small_pres, small_vel, small);
   BL_PROFILE_VAR_STOP(umeth);
 
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {

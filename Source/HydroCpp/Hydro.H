@@ -14,6 +14,7 @@ pc_srctoprim(
   const int j,
   const int k,
   amrex::Array4<const amrex::Real> const& q,
+  amrex::Array4<const amrex::Real> const& grav,
   amrex::Array4<const amrex::Real> const& src,
   amrex::Array4<amrex::Real> const& srcq,
   const amrex::Real a_half, const amrex::Real a_dot,
@@ -28,14 +29,32 @@ pc_srctoprim(
   const amrex::Real umx = src(i, j, k, UMX);
   const amrex::Real umy = src(i, j, k, UMY);
   const amrex::Real umz = src(i, j, k, UMZ);
+  const amrex::Real gravx = grav(i, j, k, 0);
+  const amrex::Real gravy = grav(i, j, k, 1);
+  const amrex::Real gravz = grav(i, j, k, 2);
+
+  // Assume srcrho == rhoinv
   // SrcQ Calc
   srcq(i, j, k, QRHO) = srcrho;
-  srcq(i, j, k, QU) = (umx - vx * srcrho) * rhoinv;
-  srcq(i, j, k, QV) = (umy - vy * srcrho) * rhoinv;
-  srcq(i, j, k, QW) = (umz - vz * srcrho) * rhoinv;
+  srcq(i, j, k, QU) = (umx - a_dot * vx * srcrho) * rhoinv + gravx;
+  srcq(i, j, k, QV) = (umy - a_dot * vy * srcrho) * rhoinv + gravy;
+  srcq(i, j, k, QW) = (umz - a_dot * vz * srcrho) * rhoinv + gravz;
+
+  //QREINT src depends on total and internal energy relationship
+  /*
   srcq(i, j, k, QREINT) = src(i, j, k, UEDEN) - vx * umx - vy * umy -
                           vz * umz +
                           srcrho * (vx * vx + vy * vy + vz * vz);
+  */
+  srcq(i, j, k, QREINT) = src(i, j, k, UEDEN) - vx * umx - vy * umy -
+                          vz * umz +
+                          - a_dot * 3.0 * gamma_minus_1 * q(i , j, k, QREINT);
+  /*
+  if(i==1&&j==2&&k==2)
+	  {
+		  amrex::Print()<<srcq(i,j,k,QU)<<"\t"<<umx<<"\t"<<vx<<"\t"<<srcrho<<"\t"<<rhoinv<<std::endl;
+		  exit(0			   );
+	  }*/
   /*
              srcQ(i,j,k,QRHO  ) = src(i,j,k,URHO)
              srcQ(i,j,k,QU    ) = src(i,j,k,UMX) * rhoInv - a_dot * q(i,j,k,QU) + &
@@ -54,6 +73,7 @@ pc_srctoprim(
   srcq(i,j,k,QPRES ) = dpde * srcq(i,j,k,QREINT) * rhoinv
 	  + dpdr * srcq(i,j,k,QRHO);
 
+  //Might not need correction from q
   for (int n = 0; n < NumSpec; ++n) {
     srcq(i, j, k, FirstSpec + n) = (src(i, j, k, FirstSpec + n) - q(i, j, k, FirstSpec + n) * srcrho) * rhoinv;
   }
@@ -178,17 +198,19 @@ void pc_umdrv(
   amrex::Array4<const amrex::Real> const& q,
   amrex::Array4<const amrex::Real> const&
     src_q, // amrex::IArrayBox const& bcMask,
+  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
   const amrex::Real* dx,
   const amrex::Real dt,
-  const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
+  const amrex::Real a_old,
+  const amrex::Real a_new,
+  const amrex::Real gamma, const amrex::Real gamma_minus_1, 
+  const int NumSpec,
+  const amrex::Real small_dens, const amrex::Real small_pres, 
+  const amrex::Real small_vel , const amrex::Real small, 
+  amrex::Real cflLoc,
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
     a,
-  amrex::Array4<amrex::Real> const& vol,
-  const amrex::Real small_dens, const amrex::Real small_pres,
-  const amrex::Real small_vel , const amrex::Real small,
-  const amrex::Real gamma, const amrex::Real gamma_minus_1, 
-  const int FirstSpec, const int NumSpec,
-  amrex::Real cflLoc);
+  amrex::Array4<amrex::Real> const& vol);
 
 void pc_consup(
   amrex::Box const& bx,

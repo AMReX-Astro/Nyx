@@ -609,12 +609,13 @@ public:
 
     void construct_hydro_source(const amrex::MultiFab& S,
                                       amrex::MultiFab& sources_for_hydro,
-                                amrex::MultiFab& hydro_source,
-                                amrex::Real time,
-								amrex::Real a_old,
-								amrex::Real a_new,
-                                amrex::Real dt,
-                                bool init_flux_register, bool add_to_flux_register);
+                                      amrex::MultiFab& hydro_source,
+                                      amrex::MultiFab& grav, 
+                                      amrex::Real time,
+                                      amrex::Real a_old,
+                                      amrex::Real a_new,
+                                      amrex::Real dt,
+                                      bool init_flux_register, bool add_to_flux_register);
 
     void compute_hydro_sources(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
                                amrex::MultiFab& S_border, amrex::MultiFab& D_border,

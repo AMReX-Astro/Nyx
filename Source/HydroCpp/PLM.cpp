@@ -22,25 +22,28 @@ pc_umeth_3D(
   amrex::Array4<const amrex::Real> const& a3,
   amrex::Array4<amrex::Real> const& pdivu,
   amrex::Array4<const amrex::Real> const& vol,
-  const int FirstSpec, const int NumSpec,
-  const amrex::Real small_dens, const amrex::Real small_pres,
-  const amrex::Real small_vel , const amrex::Real small,
-  const amrex::Real gamma, const amrex::Real gamma_minus_1, 
   const amrex::Real* del,
-  const amrex::Real dt)
+  const amrex::Real dt,
+  const amrex::Real a_old,
+  const amrex::Real a_new, 
+  const int NumSpec,
+  const amrex::Real gamma, const amrex::Real gamma_minus_1,
+  const amrex::Real small_dens, const amrex::Real small_pres, 
+  const amrex::Real small_vel , const amrex::Real small)
 {
   const int FirstSpec_loc = FirstSpec;
   const int NumSpec_loc   = NumSpec;
 
+  const amrex::Real a_half = 0.5 * (a_old + a_new);
   amrex::Real const dx = del[0];
   amrex::Real const dy = del[1];
   amrex::Real const dz = del[2];
-  amrex::Real const hdtdx = 0.5 * dt / dx;
-  amrex::Real const hdtdy = 0.5 * dt / dy;
-  amrex::Real const hdtdz = 0.5 * dt / dz;
-  amrex::Real const cdtdx = 1.0 / 3.0 * dt / dx;
-  amrex::Real const cdtdy = 1.0 / 3.0 * dt / dy;
-  amrex::Real const cdtdz = 1.0 / 3.0 * dt / dz;
+  amrex::Real const hdtdx = 0.5 * dt / dx / a_half;
+  amrex::Real const hdtdy = 0.5 * dt / dy / a_half;
+  amrex::Real const hdtdz = 0.5 * dt / dz / a_half;
+  amrex::Real const cdtdx = 1.0 / 3.0 * dt / dx / a_half;
+  amrex::Real const cdtdy = 1.0 / 3.0 * dt / dy / a_half;
+  amrex::Real const cdtdz = 1.0 / 3.0 * dt / dz / a_half;
   amrex::Real const hdt = 0.5 * dt;
 
   const int bclx = bclo[0];
@@ -100,23 +103,44 @@ pc_umeth_3D(
     amrex::Real slope[8];
 
     const amrex::Real c = std::sqrt((gamma_minus_1+1.0) * q(i,j,k,QREINT)/q(i,j,k,QRHO)*gamma_minus_1);
-
+	/*	if(i==1&&j==2&&k==2)
+		{
+	amrex::Print()<<c<<"\t"<<q(i,j,k,QREINT)/q(i,j,k,QRHO)<<std::endl;
+	exit(0);
+	}*/
     // X slopes and interp
     for (int n = 0; n < nq; ++n)
       slope[n] = plm_slope(i, j, k, n, 0, q);
-    pc_plm_x(i, j, k, qxmarr, qxparr, slope, q, c, dx, dt, NumSpec, gamma);
+    pc_plm_x(i, j, k, qxmarr, qxparr, slope, q, c, a_old, dx, dt, NumSpec, gamma);
 
     // Y slopes and interp
     for (int n = 0; n < nq; n++)
       slope[n] = plm_slope(i, j, k, n, 1, q);
-    pc_plm_y(i, j, k, qymarr, qyparr, slope, q, c, dy, dt, NumSpec, gamma);
+    pc_plm_y(i, j, k, qymarr, qyparr, slope, q, c, a_old, dy, dt, NumSpec, gamma);
 
     // Z slopes and interp
     for (int n = 0; n < nq; ++n)
       slope[n] = plm_slope(i, j, k, n, 2, q);
-    pc_plm_z(i, j, k, qzmarr, qzparr, slope, q, c, dz, dt, NumSpec, gamma);
+    pc_plm_z(i, j, k, qzmarr, qzparr, slope, q, c, a_old, dz, dt, NumSpec, gamma);
 
   });
+    /*    if(i==2&&j==0&&k==0&&n==0)
+	  {
+		  amrex::Print()<<dsgn * amrex::min(dlim, amrex::Math::abs(dtemp))<<"\t"
+						<<1.0<<"\t"<<dsgn<<"\t"<<dlim<<"\t"<<amrex::Math::abs(dtemp)
+						<<"\t"<<dcen<<"\t"<<dlft<<"\t"<<drgt<<std::endl;
+		  exit(0);
+	  }
+	
+  amrex::Print()<<"q"<<amrex::FArrayBox(q)<<std::endl;
+  amrex::Print()<<"srcq"<<amrex::FArrayBox(srcQ)<<std::endl;
+  amrex::Print()<<"qxmarr"<<amrex::FArrayBox(qxmarr)<<std::endl;
+  amrex::Print()<<"qxparr"<<amrex::FArrayBox(qxparr)<<std::endl;
+  amrex::Print()<<"qymarr"<<amrex::FArrayBox(qymarr)<<std::endl;
+  amrex::Print()<<"qyparr"<<amrex::FArrayBox(qyparr)<<std::endl;
+  amrex::Print()<<"qzmarr"<<amrex::FArrayBox(qzmarr)<<std::endl;
+  amrex::Print()<<"qzparr"<<amrex::FArrayBox(qzparr)<<std::endl;
+  exit(0);*/
 
   // These are the first flux estimates as per the corner-transport-upwind
   // method X initial fluxes
@@ -194,7 +218,10 @@ pc_umeth_3D(
     pc_transz1(
       i, j, k, qmxz, qpxz, qxmarr, qxparr, fzarr, gdtempz, cdtdz, NumSpec, gamma);
   });
-
+  /*  amrex::Print()<<"qxmarr"<<amrex::FArrayBox(qxmarr)<<std::endl;
+  amrex::Print()<<"qxparr"<<amrex::FArrayBox(qxparr)<<std::endl;
+  //  amrex::Print()<<"flx2"<<amrex::FArrayBox(flx2)<<std::endl;
+  exit(0);*/
   const amrex::Box& txfxbx = surroundingNodes(bxg1, cdir);
   amrex::FArrayBox fluxxy(txfxbx, flx1.nComp());
   amrex::FArrayBox fluxxz(txfxbx, flx1.nComp());
@@ -222,7 +249,10 @@ pc_umeth_3D(
         q, small_dens, small_pres, small_vel, small, gamma, 
         FirstSpec_loc, NumSpec_loc, cdir);
     });
-
+  /*  amrex::Print()<<"qmxz"<<amrex::FArrayBox(qmxz)<<std::endl;
+  amrex::Print()<<"qpxz"<<amrex::FArrayBox(qpxz)<<std::endl;
+  //  amrex::Print()<<"flx2"<<amrex::FArrayBox(flx2)<<std::endl;
+  exit(0);*/
   qxymeli.clear();
   qxypeli.clear();
   qxzmeli.clear();
@@ -312,6 +342,13 @@ pc_umeth_3D(
     pc_transy2(
       i, j, k, qmzy, qpzy, qzmarr, qzparr, fyarr, gdtempy, cdtdy, NumSpec, gamma);
   });
+  /*
+amrex::Print()<<"fyarr"<<amrex::FArrayBox(fyarr)<<std::endl;
+  amrex::Print()<<"gdtempy"<<amrex::FArrayBox(gdtempy)<<std::endl;
+  amrex::Print()<<"qmzy"<<amrex::FArrayBox(qmzy)<<std::endl;
+  amrex::Print()<<"qpzy"<<amrex::FArrayBox(qpzy)<<std::endl;
+  exit(0);
+*/	 
 
   fxeli.clear();
   fyeli.clear();
@@ -391,6 +428,11 @@ pc_umeth_3D(
       i, j, k, qm, qp, qymarr, qyparr, flxz, flzx, qxz, qzx, srcQ, hdt,
       hdtdx, hdtdz, NumSpec, gamma);
   });
+  /*  amrex::Print()<<"qymarr"<<amrex::FArrayBox(qymarr)<<std::endl;
+  amrex::Print()<<"qyparr"<<amrex::FArrayBox(qyparr)<<std::endl;
+  //  amrex::Print()<<"flx2"<<amrex::FArrayBox(flx2)<<std::endl;
+  exit(0);*/
+
 
   fluxzxeli.clear();
   gdvzxeli.clear();
@@ -404,7 +446,7 @@ pc_umeth_3D(
               q, small_dens, small_pres, small_vel, small, gamma,
               FirstSpec_loc, NumSpec_loc, cdir);
   });
-
+  
   // Z | X&Y
   cdir = 2;
   const amrex::Box& zfxbx = surroundingNodes(bx, cdir);
