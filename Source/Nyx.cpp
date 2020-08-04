@@ -2351,7 +2351,7 @@ Nyx::enforce_nonnegative_species (MultiFab& S_new)
                Real x;
                Real dom_spec;
                int int_dom_spec;
-               for (int n = 0; n < FirstSpec + NumSpec; n++)
+               for (int n = FirstSpec; n < FirstSpec + NumSpec; n++)
 	       {
 		   if (uout(i,j,k,n) < 0.0)
 		   {

@@ -73,6 +73,7 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
 
 	}
 
+    enforce_nonnegative_species(S_new);
     if(verbose>1) {
         std::cout<<"S_new norm2(0)"<<S_new.norm2(0)<<std::endl;
         std::cout<<"S_new norm2(Eint)"<<S_new.norm2(Eint)<<std::endl;
