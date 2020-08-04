@@ -207,9 +207,9 @@ pc_update(
                             +flx[2](i, j, k, n) - flx[2](i, j, k + 1, n))) *
                           volinv * a_fact[n];
   }
-  if(i==21&&j==11&&k==17&&true)
+  if(i==3&&j==3&&k==0&&false)
 	  {
-		  int n=UEINT;
+		  int n=UEDEN;
 		  amrex::Print().SetPrecision(18)<<pdivu(i,j,k)<<"\t"<<u(i,j,k,n)<<"\t"<<gamma_minus_1<<"\t"<<dt<<update(i,j,k,n)<<std::endl;
 		  amrex::Print().SetPrecision(18) <<                            flx[0](i, j, k, n) - flx[0](i + 1, j, k, n)<<"\t"<<
                             flx[1](i, j, k, n)<<"-\t"<<
@@ -219,7 +219,7 @@ pc_update(
  	  exit(0);
 	  }
 
-  update(i, j, k, UEINT) += pdivu(i, j, k)*u(i,j,k,UEINT)*gamma_minus_1*dt*a_half*0.0;
+  update(i, j, k, UEINT) += pdivu(i, j, k)*u(i,j,k,UEINT)*gamma_minus_1*dt*a_half;
 }
 
 // Host functions
