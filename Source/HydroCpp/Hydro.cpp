@@ -153,8 +153,6 @@ Nyx::construct_hydro_source(
         auto const& qarr = q.array();
         auto const& srcqarr = src_q.array();
 
-		//		amrex::Print()<<"s"<<S[mfi]<<std::endl;
-
         BL_PROFILE_VAR("Nyx::ctoprim()", ctop);
         amrex::ParallelFor(
           qbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -180,7 +178,6 @@ Nyx::construct_hydro_source(
             a_half, a_dot, NumSpec_loc, gamma_minus_1_loc);
           });
         BL_PROFILE_VAR_STOP(srctop);
-		//		amrex::Print()<<"src_in"<<sources_for_hydro[mfi]<<"\nsrcq"<<src_q<<std::endl;
 
         amrex::FArrayBox pradial(amrex::Box::TheUnitBox(), 1);
         if (!amrex::DefaultGeometry().IsCartesian()) {

@@ -50,26 +50,6 @@ pc_srctoprim(
                           vz * umz +
                           - a_dot * 3.0 * gamma_minus_1 * q(i , j, k, QREINT);
   
-  /*
-  if(i==7&&j==1&&k==1)
-	  {
-		  amrex::Print()<<srcq(i,j,k,QU)<<"\t"<<umx<<"\t"<<vx<<"\t"<<srcrho<<"\t"<<rhoinv<<"\t"<<srcrho*rhoinv<<"\t"<<gravx<<"\t"<<a_dot<<std::endl;
-		  amrex::Print()<< (umx - a_dot * vx * srcrho) * rhoinv + gravx<<"\t"<< (umx - a_dot * vx * srcrho) * rhoinv <<"\t"<< (umx - a_dot * vx * srcrho)<<"\t"<< umx <<"\t"<< - a_dot * vx * srcrho<<std::endl;
-		  exit(0			   );
-	  }
-  
-             srcQ(i,j,k,QRHO  ) = src(i,j,k,URHO)
-             srcQ(i,j,k,QU    ) = src(i,j,k,UMX) * rhoInv - a_dot * q(i,j,k,QU) + &
-                  grav(i,j,k,1)
-             srcQ(i,j,k,QV    ) = src(i,j,k,UMY) * rhoInv - a_dot * q(i,j,k,QV) + &
-                  grav(i,j,k,2)
-             srcQ(i,j,k,QW    ) = src(i,j,k,UMZ) * rhoInv - a_dot * q(i,j,k,QW) + &
-                  grav(i,j,k,3)
-             srcQ(i,j,k,QREINT) = src(i,j,k,UEDEN) - q(i,j,k,QU)*src(i,j,k,UMX) - &
-                  q(i,j,k,QV)*src(i,j,k,UMY) - &
-                  q(i,j,k,QW)*src(i,j,k,UMZ) - &
-                  a_dot * THREE * gamma_minus_1 * q(i,j,k,QREINT)
-  */
   const amrex::Real dpde = gamma_minus_1 * q(i,j,k,QRHO);
   const amrex::Real dpdr = gamma_minus_1 * q(i,j,k,QREINT)/q(i,j,k,QRHO);
   srcq(i,j,k,QPRES ) = dpde * srcq(i,j,k,QREINT) * rhoinv
@@ -79,9 +59,7 @@ pc_srctoprim(
   for (int n = 0; n < NumSpec; ++n) {
     srcq(i, j, k, FirstSpec + n) = (src(i, j, k, FirstSpec + n) - q(i, j, k, FirstSpec + n) * srcrho) * rhoinv;
   }
-  /*  for (int n = 0; n < srcq.nComp(); ++n) {
-	  srcq(i,j,k,n)=0.0;
-	  }*/
+
 }
 
 AMREX_GPU_DEVICE
@@ -207,17 +185,6 @@ pc_update(
                             +flx[2](i, j, k, n) - flx[2](i, j, k + 1, n))) *
                           volinv * a_fact[n];
   }
-  if(i==3&&j==3&&k==0&&false)
-	  {
-		  int n=UEDEN;
-		  amrex::Print().SetPrecision(18)<<pdivu(i,j,k)<<"\t"<<u(i,j,k,n)<<"\t"<<gamma_minus_1<<"\t"<<dt<<update(i,j,k,n)<<std::endl;
-		  amrex::Print().SetPrecision(18) <<                            flx[0](i, j, k, n) - flx[0](i + 1, j, k, n)<<"\t"<<
-                            flx[1](i, j, k, n)<<"-\t"<<
-                            flx[1](i, j+1, k, n)<<"\t"<<
-                            flx[2](i, j, k, n) - flx[2](i, j, k + 1, n)<<"\t"<<
-			  volinv<<"\t"<<pdivu(i, j, k)*u(i,j,k,UEINT)*gamma_minus_1*a_half<<std::endl;;
- 	  exit(0);
-	  }
 
   update(i, j, k, UEINT) += pdivu(i, j, k)*u(i,j,k,UEINT)*gamma_minus_1*dt*a_half;
 }

@@ -183,8 +183,7 @@ pc_cmpflx(
     flx(i, j, k, UEDEN), flx(i, j, k, UEINT), q(i, j, k, GU), q(i, j, k, GV),
     q(i, j, k, GV2), q(i, j, k, GDPRES), q(i, j, k, GDGAME), 
     small_dens, small_pres, small_vel, small, gamma, NumSpec);
-  if(i==21&&j==11&&k==17)
-	  amrex::Print().SetPrecision(18)<<q(i,j,k,GU)<<"\t"<<flx(i,j,k,UEINT)/q(i,j,k,GU)<<"\t"<<flx(i,j,k,UEINT)<<std::endl;
+
   amrex::Real flxrho = flx(i, j, k, URHO);
   for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
     int nqp = n;
@@ -318,15 +317,6 @@ pc_plm_x(
   amrex::Real azw1left = 0.5*(1.0 - spzero )*alpha0w;
 
   qm(i + 1, j, k, QRHO) = rho_ref + apleft + amleft + azrleft;
-  /*
-  if(i==1&&j==2&&k==2)
-	  {
-		  amrex::Print()<<rho_ref<<"\t"<<apleft<<"\t"<<amleft<<"\t"<<azrleft<<"\t"<<qm(i+1,j,k,QRHO)<<std::endl;
-		  amrex::Print()<<spplus<<"\t"<<alphap<<"\t"<<alpham<<"\t"<<alpha0r<<"\t"<<spminus<<"\t"<<spzero<<std::endl;
-	
-		  amrex::Print()<<u<<"\t"<<cc<<"\t"<<dtdx<<"\t"<<dt<<"\t"<<dx<<std::endl;
-		  exit(0);
-	  }*/
   qm(i + 1, j, k, QRHO) = amrex::max(qm(i + 1, j, k, QRHO), SMALL_DENS);
   AMREX_D_TERM(qm(i + 1, j, k, QU) = u_ref + (apleft - amleft) * cc / rho;
                qm(i + 1, j, k, QV) = 0.; qm(i + 1, j, k, QW) = 0.;
@@ -1221,11 +1211,6 @@ pc_transz1(
   qp(i, j, k, QREINT) = renewr - rhoekinr;
   pnewr = qp(i, j, k, QREINT) * (gamma-1.0);
   qp(i, j, k, QPRES) = amrex::max(pnewr, SMALL_PRES);
-  /*  if(i==0&&j==0&&k==0)
-	  {
-		  amrex::Print()<<renewr<<"\t"<<rhoekinr<<"\t"<<renewr - rhoekinr<<"\t"<<qp(i,j,k,QREINT)<<std::endl;
-		  exit(0);
-	  }*/
 
   // QM
 
@@ -1629,12 +1614,6 @@ pc_transxz(
   rhoekinr =
     0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
   qp(i, j, k, QREINT) = renewr - rhoekinr + hdt * srce;
-  if(i==4&&j==4&&k==4&&false)
-  {
-  	  amrex::Print().SetPrecision(18)<<runewr<<"\t"<<rvnewr<<"\t"<<rwnewr<<"\t"<<rrnewr<<"\t"<<rhoekinr<<"\t"<<hdt<<"\t"<<srce<<"\t"<<qp(i,j,k,QREINT)<<std::endl;
-	  amrex::Print().SetPrecision(18)<<renewr<<"\t"<<rhoekinr<<"\t"<<hdt<<"\t"<<srce<<"\t"<<qp(i,j,k,QREINT)<<std::endl;
-	  exit(0);
-  }
   amrex::Real temppres = qp(i, j, k, QREINT) * (gamma - 1.0);
   qp(i, j, k, QPRES) = amrex::max(temppres, SMALL_PRES);
 
@@ -1659,12 +1638,7 @@ pc_transxz(
   qm(i, j + 1, k, QREINT) = renewl - rhoekinl + hdt * srce;
   temppres = qm(i, j + 1, k, QREINT) * (gamma - 1.0);
   qm(i, j + 1, k, QPRES) = amrex::max(temppres, SMALL_PRES);
-  /*  if(i==6&&j==8&&k==6)
-	  {
-		  amrex::Print()<<qp(i,j,k,QW)<<"\t"<<hdt<<"\t"<<srcq(i,j,k,QW)<<"\tno aold\t"<<rwnewr<<"\t"<<rrnewr<<"\t"<<rrr<<"\t"<<cdtdx<<"\t"<<cdtdz<<"\n"<<flxx(i + 1, j, k, UMZ) <<"-\t"<< flxx(i, j, k, UMZ) <<"\t"<<
-			  flxz(i, j, k + 1, UMZ) <<"-\t"<< flxz(i, j, k, UMZ)<<std::endl;
-		  exit(0);
-		  }*/
+
 }
 
 // x corrected by y and z
