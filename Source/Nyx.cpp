@@ -2334,8 +2334,7 @@ Nyx::enforce_nonnegative_species (MultiFab& S_new)
 {
     BL_PROFILE("Nyx::enforce_nonnegative_species()");
     Real eps = -1.0e-16;
-    int FirstSpec = FirstSpec;
-    int NumSpec = NumSpec;
+    int NumSpec = S_new.nComp()-FirstSpec;
     if (use_const_species != 1 && NumSpec > 0)
     {
 #ifdef _OPENMP
@@ -2780,8 +2779,7 @@ Nyx::reset_internal_energy_nostore (MultiFab& S_new, MultiFab& D_new)
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
-void
-Nyx::reset_internal_e (const int i,
+void reset_internal_e (const int i,
                        const int j,
                        const int k,
                        amrex::Array4<amrex::Real> const& u,
