@@ -8,7 +8,7 @@ using std::string;
 void
 Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
                                 MultiFab& ext_src_old, MultiFab& hydro_source,
-                                MultiFab& grav, MultiFab& divu_cc,
+                                MultiFab& grav_vector, MultiFab& divu_cc,
                                 amrex::Real dt, amrex::Real a_old, amrex::Real a_new)
 {
     BL_PROFILE("Nyx::update_state_with_sources()");
@@ -26,6 +26,7 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
     const amrex::Real a_newsq = a_new * a_new;
     const amrex::Real a_new_inv = 1.0 / a_new;
     const amrex::Real a_newsq_inv = 1.0 / a_newsq;
+	const amrex::Real dt_a_new    = dt / a_new;
 	/*
     int ng = 0;
     const amrex::Real a_fact[8] = {a_half_inv,a_new_inv,a_new_inv,a_new_inv,a_new_sq_inv,a_new_sq_inv,1.0,1.0};
@@ -73,7 +74,63 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
 
 	}
 
+    // Need enforce_minimum_density here
+
     enforce_nonnegative_species(S_new);
+
+    const int grav_source_type = 1;
+    for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
+           ++mfi) {
+
+        const amrex::Box& bx = mfi.tilebox();
+        auto const& uin = S_old.array(mfi);
+        auto const& uout = S_new.array(mfi);
+        auto const& hydro_src = hydro_source.array(mfi);
+        auto const& src = ext_src_old.array(mfi);
+        auto const& grav = grav_vector.array(mfi);
+        amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+                const amrex::Real rhoInv = 1.0 / uout(i,j,k,URHO);
+                const amrex::Real vx = uout(i, j, k, UMX);
+                const amrex::Real vy = uout(i, j, k, UMY);
+                const amrex::Real vz = uout(i, j, k, UMZ);
+                // **** Start Diagnostics ****
+                //Multiplies by rhoInv
+                const amrex::Real old_ke = 0.5 * rhoInv * (vx * vx + vy * vy + vz * vz);
+                const amrex::Real old_rhoeint = uout(i,j,k,UEDEN) - old_ke;
+                // ****   End Diagnostics ****
+                const amrex::Real rho = uin(i, j, k, URHO);
+
+                const amrex::Real SrU = rho * grav(i,j,k,0);
+                const amrex::Real SrV = rho * grav(i,j,k,1);
+                const amrex::Real SrW = rho * grav(i,j,k,2);
+
+                // We use a_new here because we think of d/dt(a rho u) = ... + (rho g)
+                uout(i,j,k,UMX)   += SrU * dt_a_new;
+                uout(i,j,k,UMY)   += SrV * dt_a_new;
+                uout(i,j,k,UMZ)   += SrW * dt_a_new;
+
+                if (grav_source_type == 1)
+                {
+                    // This does work (in 1-d)
+                    // Src = rho u dot g, evaluated with all quantities at t^n
+                    const amrex::Real SrE = uin(i,j,k,UMX) * grav(i,j,k,0) +
+                        uin(i,j,k,UMY) * grav(i,j,k,1) +
+                        uin(i,j,k,UMZ) * grav(i,j,k,2);
+                    uout(i,j,k,UEDEN) = (a_newsq*uout(i,j,k,UEDEN) + SrE * (dt*a_half)) * a_newsq_inv;
+                }
+                else if (grav_source_type == 3)
+                {
+                    const amrex::Real vx = uout(i, j, k, UMX);
+                    const amrex::Real vy = uout(i, j, k, UMY);
+                    const amrex::Real vz = uout(i, j, k, UMZ);
+                    //Multiplies by rhoInv
+                    const amrex::Real new_ke = 0.5 * rhoInv * (vx * vx + vy * vy + vz * vz);
+                    uout(i,j,k,UEDEN) = old_rhoeint + new_ke;
+				}
+                else
+                    amrex::Abort("Error:: Nyx_advection_3d.f90 :: bogus grav_source_type");
+            });
+    }
     if(verbose>1) {
         std::cout<<"S_new norm2(0)"<<S_new.norm2(0)<<std::endl;
         std::cout<<"S_new norm2(Eint)"<<S_new.norm2(Eint)<<std::endl;
