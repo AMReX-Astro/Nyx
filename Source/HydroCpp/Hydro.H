@@ -33,12 +33,12 @@ pc_srctoprim(
   const amrex::Real gravy = grav(i, j, k, 1);
   const amrex::Real gravz = grav(i, j, k, 2);
 
-  // Assume srcrho == rhoinv
+  // srcrho != rhoinv
   // SrcQ Calc
   srcq(i, j, k, QRHO) = srcrho;
-  srcq(i, j, k, QU) = (umx - a_dot * vx * srcrho) * rhoinv + gravx;
-  srcq(i, j, k, QV) = (umy - a_dot * vy * srcrho) * rhoinv + gravy;
-  srcq(i, j, k, QW) = (umz - a_dot * vz * srcrho) * rhoinv + gravz;
+  srcq(i, j, k, QU) = umx * rhoinv - a_dot * vx + gravx;
+  srcq(i, j, k, QV) = umy * rhoinv - a_dot * vy + gravy;
+  srcq(i, j, k, QW) = umz * rhoinv - a_dot * vz + gravz;
 
   //QREINT src depends on total and internal energy relationship
   /*
@@ -49,13 +49,15 @@ pc_srctoprim(
   srcq(i, j, k, QREINT) = src(i, j, k, UEDEN) - vx * umx - vy * umy -
                           vz * umz +
                           - a_dot * 3.0 * gamma_minus_1 * q(i , j, k, QREINT);
+  
   /*
-  if(i==1&&j==2&&k==2)
+  if(i==7&&j==1&&k==1)
 	  {
-		  amrex::Print()<<srcq(i,j,k,QU)<<"\t"<<umx<<"\t"<<vx<<"\t"<<srcrho<<"\t"<<rhoinv<<std::endl;
+		  amrex::Print()<<srcq(i,j,k,QU)<<"\t"<<umx<<"\t"<<vx<<"\t"<<srcrho<<"\t"<<rhoinv<<"\t"<<srcrho*rhoinv<<"\t"<<gravx<<"\t"<<a_dot<<std::endl;
+		  amrex::Print()<< (umx - a_dot * vx * srcrho) * rhoinv + gravx<<"\t"<< (umx - a_dot * vx * srcrho) * rhoinv <<"\t"<< (umx - a_dot * vx * srcrho)<<"\t"<< umx <<"\t"<< - a_dot * vx * srcrho<<std::endl;
 		  exit(0			   );
-	  }*/
-  /*
+	  }
+  
              srcQ(i,j,k,QRHO  ) = src(i,j,k,URHO)
              srcQ(i,j,k,QU    ) = src(i,j,k,UMX) * rhoInv - a_dot * q(i,j,k,QU) + &
                   grav(i,j,k,1)
@@ -77,9 +79,9 @@ pc_srctoprim(
   for (int n = 0; n < NumSpec; ++n) {
     srcq(i, j, k, FirstSpec + n) = (src(i, j, k, FirstSpec + n) - q(i, j, k, FirstSpec + n) * srcrho) * rhoinv;
   }
-  for (int n = 0; n < srcq.nComp(); ++n) {
+  /*  for (int n = 0; n < srcq.nComp(); ++n) {
 	  srcq(i,j,k,n)=0.0;
-  }
+	  }*/
 }
 
 AMREX_GPU_DEVICE
@@ -205,19 +207,19 @@ pc_update(
                             +flx[2](i, j, k, n) - flx[2](i, j, k + 1, n))) *
                           volinv * a_fact[n];
   }
-  if(i==3&&j==3&&k==3&&false)
+  if(i==21&&j==11&&k==17&&true)
 	  {
-		  int n=URHO;
+		  int n=UEINT;
 		  amrex::Print().SetPrecision(18)<<pdivu(i,j,k)<<"\t"<<u(i,j,k,n)<<"\t"<<gamma_minus_1<<"\t"<<dt<<update(i,j,k,n)<<std::endl;
 		  amrex::Print().SetPrecision(18) <<                            flx[0](i, j, k, n) - flx[0](i + 1, j, k, n)<<"\t"<<
                             flx[1](i, j, k, n)<<"-\t"<<
                             flx[1](i, j+1, k, n)<<"\t"<<
                             flx[2](i, j, k, n) - flx[2](i, j, k + 1, n)<<"\t"<<
-		  volinv<<std::endl;;
+			  volinv<<"\t"<<pdivu(i, j, k)*u(i,j,k,UEINT)*gamma_minus_1*a_half<<std::endl;;
  	  exit(0);
 	  }
 
-  update(i, j, k, UEINT) += pdivu(i, j, k)*u(i,j,k,UEINT)*gamma_minus_1*dt;
+  update(i, j, k, UEINT) += pdivu(i, j, k)*u(i,j,k,UEINT)*gamma_minus_1*dt*a_half*0.0;
 }
 
 // Host functions

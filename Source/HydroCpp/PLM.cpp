@@ -44,7 +44,7 @@ pc_umeth_3D(
   amrex::Real const cdtdx = 1.0 / 3.0 * dt / dx / a_half;
   amrex::Real const cdtdy = 1.0 / 3.0 * dt / dy / a_half;
   amrex::Real const cdtdz = 1.0 / 3.0 * dt / dz / a_half;
-  amrex::Real const hdt = 0.5 * dt;
+  amrex::Real const hdt = 0.5 * dt / a_old;
 
   const int bclx = bclo[0];
   const int bcly = bclo[1];
@@ -429,8 +429,8 @@ amrex::Print().SetPrecision(18)<<"fyarr"<<amrex::FArrayBox(fyarr)<<std::endl;
       i, j, k, qm, qp, qymarr, qyparr, flxz, flzx, qxz, qzx, srcQ, hdt,
       hdtdx, hdtdz, NumSpec, gamma);
   });
-  /*
-  amrex::Print().SetPrecision(18)<<"qymarr"<<amrex::FArrayBox(qymarr)<<std::endl;
+  
+  /*  amrex::Print().SetPrecision(18)<<"qymarr"<<amrex::FArrayBox(qymarr)<<std::endl;
   amrex::Print().SetPrecision(18)<<"qyparr"<<amrex::FArrayBox(qyparr)<<std::endl;
   amrex::Print().SetPrecision(18)<<"qm"<<amrex::FArrayBox(qm)<<std::endl;
   amrex::Print().SetPrecision(18)<<"qp"<<amrex::FArrayBox(qp)<<std::endl;
@@ -449,6 +449,8 @@ amrex::Print().SetPrecision(18)<<"fyarr"<<amrex::FArrayBox(fyarr)<<std::endl;
               q, small_dens, small_pres, small_vel, small, gamma,
               FirstSpec_loc, NumSpec_loc, cdir);
   });
+  //  amrex::Print().SetPrecision(18)<<"flxy"<<flx2(4,4,4,UEINT)<<flx2(4,5,4,UEINT)<<std::endl;
+  //  exit(0);
   /*  amrex::Print().SetPrecision(18)<<"flx2"<<amrex::FArrayBox(flx2)<<std::endl;
 	  exit(0);*/
   // Z | X&Y

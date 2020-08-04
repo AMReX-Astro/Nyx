@@ -173,7 +173,6 @@ Nyx::construct_hydro_source(
 
         BL_PROFILE_VAR("Nyx::srctoprim()", srctop);
         const auto& src_in = sources_for_hydro.array(mfi);
-		grav_vector[mfi].setVal(0);
         const auto& grav_in = grav_vector.array(mfi);
         amrex::ParallelFor(
           qbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {

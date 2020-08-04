@@ -70,14 +70,14 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
 			}
 		  }
 	   });
-		amrex::Print()<<amrex::FArrayBox(uin)<<std::endl;
+		/*		amrex::Print()<<amrex::FArrayBox(uin)<<std::endl;
 		amrex::Print()<<"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"<<std::endl;
 		amrex::Print()<<amrex::FArrayBox(hydro_src)<<std::endl;
 		amrex::Print()<<"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"<<std::endl;
 		amrex::Print()<<amrex::FArrayBox(src)<<std::endl;
 		amrex::Print()<<"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"<<std::endl;
-		amrex::Print()<<amrex::FArrayBox(uout)<<std::endl;
-		exit(0);
+		amrex::Print()<<amrex::FArrayBox(uout)<<std::endl;*/
+		//		exit(0);
 	}
 
     if(verbose>1) {

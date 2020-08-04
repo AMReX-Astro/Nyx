@@ -183,7 +183,8 @@ pc_cmpflx(
     flx(i, j, k, UEDEN), flx(i, j, k, UEINT), q(i, j, k, GU), q(i, j, k, GV),
     q(i, j, k, GV2), q(i, j, k, GDPRES), q(i, j, k, GDGAME), 
     small_dens, small_pres, small_vel, small, gamma, NumSpec);
-
+  if(i==21&&j==11&&k==17)
+	  amrex::Print().SetPrecision(18)<<q(i,j,k,GU)<<"\t"<<flx(i,j,k,UEINT)/q(i,j,k,GU)<<"\t"<<flx(i,j,k,UEINT)<<std::endl;
   amrex::Real flxrho = flx(i, j, k, URHO);
   for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
     int nqp = n;
@@ -1628,6 +1629,12 @@ pc_transxz(
   rhoekinr =
     0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
   qp(i, j, k, QREINT) = renewr - rhoekinr + hdt * srce;
+  if(i==4&&j==4&&k==4&&false)
+  {
+  	  amrex::Print().SetPrecision(18)<<runewr<<"\t"<<rvnewr<<"\t"<<rwnewr<<"\t"<<rrnewr<<"\t"<<rhoekinr<<"\t"<<hdt<<"\t"<<srce<<"\t"<<qp(i,j,k,QREINT)<<std::endl;
+	  amrex::Print().SetPrecision(18)<<renewr<<"\t"<<rhoekinr<<"\t"<<hdt<<"\t"<<srce<<"\t"<<qp(i,j,k,QREINT)<<std::endl;
+	  exit(0);
+  }
   amrex::Real temppres = qp(i, j, k, QREINT) * (gamma - 1.0);
   qp(i, j, k, QPRES) = amrex::max(temppres, SMALL_PRES);
 
