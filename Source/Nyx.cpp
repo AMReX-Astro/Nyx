@@ -2333,18 +2333,81 @@ void
 Nyx::enforce_nonnegative_species (MultiFab& S_new)
 {
     BL_PROFILE("Nyx::enforce_nonnegative_species()");
-    int print_fortran_warnings_tmp=print_fortran_warnings;
+    Real eps = -1.0e-16;
+    int FirstSpec = FirstSpec;
+    int NumSpec = NumSpec;
+    if (use_const_species != 1 && NumSpec > 0)
+    {
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
         for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
-          {
+        {
             const Box& bx = mfi.tilebox();
-            const auto fab_S_new = S_new.array(mfi);
-            fort_enforce_nonnegative_species
-              (BL_ARR4_TO_FORTRAN(fab_S_new), bx.loVect(), bx.hiVect(),
-               &print_fortran_warnings);
-          }
+            const auto uout = S_new.array(mfi);
+
+            amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
+            {
+               bool any_negative=false;
+               Real x;
+               Real dom_spec;
+               int int_dom_spec;
+               for (int n = 0; n < FirstSpec + NumSpec; n++)
+	       {
+		   if (uout(i,j,k,n) < 0.0)
+		   {
+                       x = uout(i,j,k,n)/uout(i,j,k,URHO);
+		       if (x > eps)
+			   uout(i,j,k,n) = 0.0;
+		       else
+ 			   any_negative = true;
+		   }
+	       }
+
+	       //
+	       // We know there are one or more undershoots needing correction.
+	       //
+	       if (any_negative)
+	       {
+	       //
+	       // Find the dominant species.
+	       //
+  		   int_dom_spec = FirstSpec;
+		   dom_spec     = uout(i,j,k,int_dom_spec);
+
+		   for (int n = 0; n < FirstSpec + NumSpec; n++)
+		   {
+		       if (uout(i,j,k,n) > dom_spec)
+		       {
+			   dom_spec     = uout(i,j,k,n);
+			   int_dom_spec = n;
+		       }
+		   }
+		   //
+		   // Now take care of undershoots greater in magnitude than 1e-16.
+		   //
+		   for (int n = 0; n < FirstSpec + NumSpec; n++)
+		   {
+		       if (uout(i,j,k,n) < 0.0)
+		       {
+			   x = uout(i,j,k,n)/uout(i,j,k,URHO);
+			   //
+			   // Take enough from the dominant species to fill the negative one.
+			   //
+			   uout(i,j,k,int_dom_spec) = uout(i,j,k,int_dom_spec) + uout(i,j,k,n);
+			   //
+			   // Test that we didn't make the dominant species negative.
+			   //
+			   //
+			   // Now set the negative species to zero.
+			   //
+			   uout(i,j,k,n) = 0.00;
+		       }
+		   }
+	       }
+            });
+	}
+    }
 }
 
 void

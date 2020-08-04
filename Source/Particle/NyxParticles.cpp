@@ -7,7 +7,7 @@
 #endif
 
 #include <Nyx_F.H>
-
+#include <Prob.H>
 using namespace amrex;
 
 namespace
@@ -804,41 +804,21 @@ Nyx::init_santa_barbara (int init_sb_vels)
         D_new.setVal(0, Temp_comp);
         D_new.setVal(0,   Ne_comp);
 
-        int ns = S_new.nComp();
-        int nd = D_new.nComp(); 
-
 #ifdef _OPENMP
 #pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif
         for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
         {
-          RealBox gridloc = RealBox(grids[mfi.index()],
-                                      geom.CellSize(),
-                                      geom.ProbLo());
             const Box& box = mfi.validbox();
-            const int* lo = box.loVect();
-            const int* hi = box.hiVect();
             const auto fab_S_new=S_new.array(mfi);
             const auto fab_D_new=D_new.array(mfi);
 
             Real z_in=initial_z;
-#ifdef AMREX_USE_CUDA
-            //gridloc.lo matches box, not tbox
-            AMREX_LAUNCH_DEVICE_LAMBDA(box,tbox,
-                                       {
-            ca_fort_initdata
-                 (level, cur_time, tbox.loVect(), tbox.hiVect(), 
-                 ns,BL_ARR4_TO_FORTRAN(fab_S_new), 
-                  nd,BL_ARR4_TO_FORTRAN(fab_D_new), dx.data(),
-                 &z_in);
-                                       });
-#else
-            fort_initdata
-                (level, cur_time, lo, hi, 
-                 ns,BL_ARR4_TO_FORTRAN(fab_S_new), 
-                 nd,BL_ARR4_TO_FORTRAN(fab_D_new), dx.data(),
-                 gridloc.lo(), gridloc.hi());
-#endif
+            amrex::ParallelFor(
+                               box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+                                 prob_initdata
+                                   (i, j ,k, fab_S_new, fab_D_new, dx,z_in);
+                               });
         }
         amrex::Gpu::Device::streamSynchronize();
 
