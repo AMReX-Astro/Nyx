@@ -173,6 +173,7 @@ Nyx::construct_hydro_source(
 
         BL_PROFILE_VAR("Nyx::srctoprim()", srctop);
         const auto& src_in = sources_for_hydro.array(mfi);
+		grav_vector[mfi].setVal(0);
         const auto& grav_in = grav_vector.array(mfi);
         amrex::ParallelFor(
           qbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -387,7 +388,7 @@ pc_umdrv(
 
   // consup
   amrex::Real difmag = 0.1;
-  pc_consup(bx, uin, uout, flx, a, vol, divarr, pdivuarr, dx, difmag, dt, NumSpec, gamma_minus_1);
+  pc_consup(bx, uin, uout, flx, a, vol, divarr, pdivuarr, a_old, a_new, dx, dt, NumSpec, gamma_minus_1, difmag);
 }
 
 void
@@ -401,11 +402,13 @@ pc_consup(
   amrex::Array4<const amrex::Real> const& vol,
   amrex::Array4<const amrex::Real> const& div,
   amrex::Array4<const amrex::Real> const& pdivu,
+  amrex::Real const a_old,
+  amrex::Real const a_new,
   amrex::Real const* del,
-  amrex::Real const difmag,
   amrex::Real const dt,
   const int NumSpec,
-  amrex::Real const gamma_minus_1)
+  amrex::Real const gamma_minus_1,
+  amrex::Real const difmag)
 {
   // Flux alterations
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
@@ -422,6 +425,6 @@ pc_consup(
 
   // Combine for Hydro Sources
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-	  pc_update(i, j, k, u, update, flx, vol, pdivu, dt, gamma_minus_1);
+         pc_update(i, j, k, u, update, flx, vol, pdivu, a_old, a_new, dt, gamma_minus_1);
   });
 }

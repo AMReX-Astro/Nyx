@@ -77,6 +77,9 @@ pc_srctoprim(
   for (int n = 0; n < NumSpec; ++n) {
     srcq(i, j, k, FirstSpec + n) = (src(i, j, k, FirstSpec + n) - q(i, j, k, FirstSpec + n) * srcrho) * rhoinv;
   }
+  for (int n = 0; n < srcq.nComp(); ++n) {
+	  srcq(i,j,k,n)=0.0;
+  }
 }
 
 AMREX_GPU_DEVICE
@@ -154,7 +157,23 @@ pc_ext_flx(
 {
   amrex::Real area = a(i, j, k); // avoid reading from global memory flx1.nComp() times
   for (int n = 0; n < flx.nComp(); ++n)
-     flx(i,j,k,n)*=area*dt;
+	  flx(i,j,k,n)*=area*dt;
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+pc_ext_flx_dt(
+  const int i,
+  const int j,
+  const int k,
+  amrex::Array4<amrex::Real> const& flx,
+  amrex::Array4<const amrex::Real> const& a,
+  amrex::Real const dt)
+{
+  amrex::Real area = a(i, j, k); // avoid reading from global memory flx1.nComp() times
+  /*  for (int n = 0; n < flx.nComp(); ++n)
+     flx(i,j,k,n)/=dt;*/
 }
 
 AMREX_GPU_DEVICE
@@ -169,17 +188,34 @@ pc_update(
   const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
   amrex::Array4<const amrex::Real> const& vol,
   amrex::Array4<const amrex::Real> const& pdivu,
+  amrex::Real const a_old,
+  amrex::Real const a_new,
   amrex::Real const dt,
   const amrex::Real gamma_minus_1)
 {
-  amrex::Real v = vol(i, j, k);
+  const amrex::Real volinv = 1 / vol(i, j, k);
+  const amrex::Real a_half = 0.5*(a_old + a_new);
+  const amrex::Real a_half_inv = 1.0 / a_half;
+  //Store all 8 factors
+  const amrex::Real a_fact[8] = {a_half_inv,1.0,1.0,1.0,a_half,a_half,a_half_inv,a_half_inv};
   for (int n = 0; n < update.nComp(); ++n) {
     update(i, j, k, n) += (AMREX_D_TERM(
                             flx[0](i, j, k, n) - flx[0](i + 1, j, k, n),
                             +flx[1](i, j, k, n) - flx[1](i, j + 1, k, n),
-                            +flx[2](i, j, k, n) - flx[2](i, j, k + 1, n))) /
-                          v;
+                            +flx[2](i, j, k, n) - flx[2](i, j, k + 1, n))) *
+                          volinv * a_fact[n];
   }
+  if(i==3&&j==3&&k==3&&false)
+	  {
+		  int n=URHO;
+		  amrex::Print().SetPrecision(18)<<pdivu(i,j,k)<<"\t"<<u(i,j,k,n)<<"\t"<<gamma_minus_1<<"\t"<<dt<<update(i,j,k,n)<<std::endl;
+		  amrex::Print().SetPrecision(18) <<                            flx[0](i, j, k, n) - flx[0](i + 1, j, k, n)<<"\t"<<
+                            flx[1](i, j, k, n)<<"-\t"<<
+                            flx[1](i, j+1, k, n)<<"\t"<<
+                            flx[2](i, j, k, n) - flx[2](i, j, k + 1, n)<<"\t"<<
+		  volinv<<std::endl;;
+ 	  exit(0);
+	  }
 
   update(i, j, k, UEINT) += pdivu(i, j, k)*u(i,j,k,UEINT)*gamma_minus_1*dt;
 }
@@ -222,9 +258,11 @@ void pc_consup(
   amrex::Array4<const amrex::Real> const& vol,
   amrex::Array4<const amrex::Real> const& div,
   amrex::Array4<const amrex::Real> const& pdivu,
+  amrex::Real const a_old,
+  amrex::Real const a_new,
   amrex::Real const* del,
-  amrex::Real const difmag,
   amrex::Real const dt,
   const int NumSpec,
-  amrex::Real const gamma_minus_1);
+  amrex::Real const gamma_minus_1,
+  amrex::Real const difmag);
 #endif

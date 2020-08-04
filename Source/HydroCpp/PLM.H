@@ -1220,6 +1220,11 @@ pc_transz1(
   qp(i, j, k, QREINT) = renewr - rhoekinr;
   pnewr = qp(i, j, k, QREINT) * (gamma-1.0);
   qp(i, j, k, QPRES) = amrex::max(pnewr, SMALL_PRES);
+  /*  if(i==0&&j==0&&k==0)
+	  {
+		  amrex::Print()<<renewr<<"\t"<<rhoekinr<<"\t"<<renewr - rhoekinr<<"\t"<<qp(i,j,k,QREINT)<<std::endl;
+		  exit(0);
+	  }*/
 
   // QM
 
@@ -1647,6 +1652,12 @@ pc_transxz(
   qm(i, j + 1, k, QREINT) = renewl - rhoekinl + hdt * srce;
   temppres = qm(i, j + 1, k, QREINT) * (gamma - 1.0);
   qm(i, j + 1, k, QPRES) = amrex::max(temppres, SMALL_PRES);
+  /*  if(i==6&&j==8&&k==6)
+	  {
+		  amrex::Print()<<qp(i,j,k,QW)<<"\t"<<hdt<<"\t"<<srcq(i,j,k,QW)<<"\tno aold\t"<<rwnewr<<"\t"<<rrnewr<<"\t"<<rrr<<"\t"<<cdtdx<<"\t"<<cdtdz<<"\n"<<flxx(i + 1, j, k, UMZ) <<"-\t"<< flxx(i, j, k, UMZ) <<"\t"<<
+			  flxz(i, j, k + 1, UMZ) <<"-\t"<< flxz(i, j, k, UMZ)<<std::endl;
+		  exit(0);
+		  }*/
 }
 
 // x corrected by y and z
