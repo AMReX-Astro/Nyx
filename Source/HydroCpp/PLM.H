@@ -18,12 +18,91 @@
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 amrex::Real
+plm_flatten(
+  const int i,
+  const int j,
+  const int k,
+  const int dir,
+  amrex::Array4<const amrex::Real> const& q)
+{
+  const int bdim[3] = {dir == 0, dir == 1, dir == 2};
+  const int n = QPRES;
+  //Parameters from uflatten
+  const amrex::Real small_pres = 1.e-200;
+  const amrex::Real shktst = 0.33e0;
+  const amrex::Real zcut1 = 0.75e0;
+  const amrex::Real zcut2 = 0.85e0;
+  const amrex::Real dzcut = 1.0/(zcut2-zcut1);
+
+  amrex::Real dlft, drgt, dcen, dfm, dfp, dlim, dsgn, dtemp, drgtm1, dlftp1, slop;
+  const amrex::Real qc = q(i, j, k, n);
+  const amrex::Real qm =
+    q(i - 1 * bdim[0], j - 1 * bdim[1], k - 1 * bdim[2], n);
+  const amrex::Real qp =
+    q(i + 1 * bdim[0], j + 1 * bdim[1], k + 1 * bdim[2], n);
+  //assumes QU,QV,QW ordering
+  const amrex::Real qmun =
+    q(i - 1 * bdim[0], j - 1 * bdim[1], k - 1 * bdim[2], QU+dir);
+  const amrex::Real qpun =
+    q(i + 1 * bdim[0], j + 1 * bdim[1], k + 1 * bdim[2], QU+dir);
+  const amrex::Real qmm =
+    q(i - 2 * bdim[0], j - 2 * bdim[1], k - 2 * bdim[2], n);
+  const amrex::Real qpp =
+    q(i + 2 * bdim[0], j + 2 * bdim[1], k + 2 * bdim[2], n);
+
+  amrex::Real dp = qp - qm;
+
+  const int ishft = (dp > 0.0) ? 1 : -1;
+
+  amrex::Real denom = amrex::max(small_pres, amrex::Math::abs(qpp-qmm));
+  amrex::Real zeta = amrex::Math::abs(dp) / denom;
+  const amrex::Real    z = amrex::min(1.0, amrex::max(0.0, dzcut * (zeta - zcut1)));
+
+  amrex::Real tst = (qmun-qpun >= 0.0) ? 1.0 : 0.0;
+
+  amrex::Real tmp = amrex::min(qp,qm);
+
+  const amrex::Real chi = (amrex::Math::abs(dp)/tmp) > shktst ? tst : 0.0;
+
+  const amrex::Real qpshft =
+	  q(i + (1-ishft) * bdim[0], j + (1-ishft) * bdim[1], k + (1-ishft) * bdim[2], n);
+  const amrex::Real qmshft =
+	  q(i - (1+ishft) * bdim[0], j - (1+ishft) * bdim[1], k - (1+ishft) * bdim[2], n);
+  const amrex::Real qpunshft =
+	  q(i + (1-ishft) * bdim[0], j + (1-ishft) * bdim[1], k + (1-ishft) * bdim[2], QU+dir);
+  const amrex::Real qmunshft =
+	  q(i - (1+ishft) * bdim[0], j - (1+ishft) * bdim[1], k - (1+ishft) * bdim[2], QU+dir);
+  const amrex::Real qppshft =
+	  q(i + (2-ishft) * bdim[0], j + (2-ishft) * bdim[1], k + (2-ishft) * bdim[2], n);
+  const amrex::Real qmmshft =
+	  q(i - (2+ishft) * bdim[0], j - (2+ishft) * bdim[1], k - (2+ishft) * bdim[2], n);
+
+  dp = qpshft - qmshft;
+
+  denom = amrex::max(small_pres, amrex::Math::abs(qppshft-qmmshft));
+  zeta = amrex::Math::abs(dp) / denom;
+  const amrex::Real z2 = amrex::min(1.0, amrex::max(0.0, dzcut * (zeta - zcut1)));
+
+  tst =  (qmunshft - qpunshft >= 0.0) ? 1.0 : 0.0;
+
+  tmp = amrex::min(qpshft, qmshft);
+
+  const amrex::Real chi2 = (amrex::Math::abs(dp)/tmp) > shktst ? tst : 0.0;
+
+  return 1.0 - amrex::max(chi2 * z2, chi * z);
+
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+amrex::Real
 plm_slope(
   const int i,
   const int j,
   const int k,
   const int n,
   const int dir,
+  const int use_flattening,
   amrex::Array4<const amrex::Real> const& q)
 {
   const int bdim[3] = {dir == 0, dir == 1, dir == 2};
@@ -67,8 +146,20 @@ plm_slope(
   //Use limiter on dq, not dcen
 
   dtemp = 4.0 / 3.0 * dcen - 1.0 / 6.0 * (dfp + dfm);
-  // flattening can go here.
-  return dsgn * amrex::min(dlim, amrex::Math::abs(dtemp));
+
+  amrex::Real flatn = 1.0;
+  //Calculate flattening in-place
+  if(use_flattening == 1)
+  {
+    int dir_flat = 0;
+    flatn = plm_flatten(i, j, k, dir_flat, q);
+    for(dir_flat = 1; dir_flat < AMREX_SPACEDIM; dir_flat++)
+    {
+      flatn = amrex::min(flatn,plm_flatten(i, j, k, dir_flat, q));
+    }
+  }
+
+  return flatn * dsgn * amrex::min(dlim, amrex::Math::abs(dtemp));
 }
 
 AMREX_GPU_DEVICE
@@ -1874,5 +1965,6 @@ void pc_umeth_3D(
   const int NumSpec,
   const amrex::Real gamma, const amrex::Real gamma_minus_1,
   const amrex::Real small_dens, const amrex::Real small_pres, 
-  const amrex::Real small_vel , const amrex::Real small);
+  const amrex::Real small_vel , const amrex::Real small,
+  const int use_flattening);
 #endif

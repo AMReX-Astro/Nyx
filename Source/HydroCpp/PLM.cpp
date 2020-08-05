@@ -29,10 +29,12 @@ pc_umeth_3D(
   const int NumSpec,
   const amrex::Real gamma, const amrex::Real gamma_minus_1,
   const amrex::Real small_dens, const amrex::Real small_pres, 
-  const amrex::Real small_vel , const amrex::Real small)
+  const amrex::Real small_vel , const amrex::Real small,
+  const int use_flattening)
 {
   const int FirstSpec_loc = FirstSpec;
   const int NumSpec_loc   = NumSpec;
+  const int use_flattening_loc   = use_flattening;
 
   const amrex::Real a_half = 0.5 * (a_old + a_new);
   amrex::Real const dx = del[0];
@@ -106,17 +108,17 @@ pc_umeth_3D(
 
     // X slopes and interp
     for (int n = 0; n < nq; ++n)
-      slope[n] = plm_slope(i, j, k, n, 0, q);
+      slope[n] = plm_slope(i, j, k, n, 0, use_flattening_loc, q);
     pc_plm_x(i, j, k, qxmarr, qxparr, slope, q, c, a_old, dx, dt, NumSpec, gamma);
 
     // Y slopes and interp
     for (int n = 0; n < nq; n++)
-      slope[n] = plm_slope(i, j, k, n, 1, q);
+      slope[n] = plm_slope(i, j, k, n, 1, use_flattening_loc, q);
     pc_plm_y(i, j, k, qymarr, qyparr, slope, q, c, a_old, dy, dt, NumSpec, gamma);
 
     // Z slopes and interp
     for (int n = 0; n < nq; ++n)
-      slope[n] = plm_slope(i, j, k, n, 2, q);
+      slope[n] = plm_slope(i, j, k, n, 2, use_flattening_loc, q);
     pc_plm_z(i, j, k, qzmarr, qzparr, slope, q, c, a_old, dz, dt, NumSpec, gamma);
 
   });
