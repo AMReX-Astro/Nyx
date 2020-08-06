@@ -100,29 +100,69 @@ pc_umeth_3D(
   // Put the PLM and slopes in the same kernel launch to avoid unnecessary
   // launch overhead Pelec_Slope_* are SIMD as well as PeleC_plm_* which loop
   // over the same box
+  
+  if(ppm_type == 0 ){
 
-  amrex::ParallelFor(bxg2, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    amrex::ParallelFor(bxg2, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
 
-    amrex::Real slope[8];
+      amrex::Real slope[8];
 
-    const amrex::Real c = std::sqrt((gamma_minus_1+1.0) * q(i,j,k,QREINT)/q(i,j,k,QRHO)*gamma_minus_1);
+      const amrex::Real c = std::sqrt((gamma_minus_1+1.0) * q(i,j,k,QREINT)/q(i,j,k,QRHO)*gamma_minus_1);
 
-    // X slopes and interp
-    for (int n = 0; n < nq; ++n)
-      slope[n] = plm_slope(i, j, k, n, 0, use_flattening_loc, q);
-    pc_plm_x(i, j, k, qxmarr, qxparr, slope, q, c, a_old, dx, dt, NumSpec, gamma);
+      // X slopes and interp
+      for (int n = 0; n < nq; ++n)
+        slope[n] = plm_slope(i, j, k, n, 0, use_flattening_loc, q);
+      pc_plm_x(i, j, k, qxmarr, qxparr, slope, q, c, a_old, dx, dt, NumSpec, gamma);
 
-    // Y slopes and interp
-    for (int n = 0; n < nq; n++)
-      slope[n] = plm_slope(i, j, k, n, 1, use_flattening_loc, q);
-    pc_plm_y(i, j, k, qymarr, qyparr, slope, q, c, a_old, dy, dt, NumSpec, gamma);
+      // Y slopes and interp
+      for (int n = 0; n < nq; n++)
+        slope[n] = plm_slope(i, j, k, n, 1, use_flattening_loc, q);
+      pc_plm_y(i, j, k, qymarr, qyparr, slope, q, c, a_old, dy, dt, NumSpec, gamma);
 
-    // Z slopes and interp
-    for (int n = 0; n < nq; ++n)
-      slope[n] = plm_slope(i, j, k, n, 2, use_flattening_loc, q);
-    pc_plm_z(i, j, k, qzmarr, qzparr, slope, q, c, a_old, dz, dt, NumSpec, gamma);
+       // Z slopes and interp
+       for (int n = 0; n < nq; ++n)
+         slope[n] = plm_slope(i, j, k, n, 2, use_flattening_loc, q);
+       pc_plm_z(i, j, k, qzmarr, qzparr, slope, q, c, a_old, dz, dt, NumSpec, gamma);
 
-  });
+     });
+
+  } else {
+
+
+  // Compute the normal interface states by reconstructing
+  // the primitive variables using the piecewise parabolic method
+  // and doing characteristic tracing.  We do not apply the
+  // transverse terms here.
+
+  for (int idir = 0; idir < AMREX_SPACEDIM; idir++) {
+
+    if (idir == 0) {
+      trace_ppm(bxg1,
+                idir,
+                q, srcQ, flatn,
+                qxmarr, qxparr,
+                bx, dt);
+
+    } else if (idir == 1) {
+      trace_ppm(bxg1,
+                idir,
+                q, srcQ, flatn,
+                qymarr, qyparr,
+                bx, dt);
+
+    } else {
+      trace_ppm(bxg1,
+                idir,
+                q, srcQ, flatn,
+                qzmarr, qzparr,
+                bx, dt);
+
+    }
+  }
+
+
+
+  }
 
   // These are the first flux estimates as per the corner-transport-upwind
   // method X initial fluxes
