@@ -24,7 +24,7 @@ Nyx::construct_hydro_source(
 
     int nGrowF = 0;
     // Compute_hydro_sources style
-    amrex::MultiFab fluxes[BL_SPACEDIM];
+    amrex::MultiFab fluxes[AMREX_SPACEDIM];
     int finest_level = parent->finestLevel();
 
     //
@@ -35,7 +35,7 @@ Nyx::construct_hydro_source(
 
     if(finest_level!=0)
     {
-        for (int j = 0; j < BL_SPACEDIM; j++)
+        for (int j = 0; j < AMREX_SPACEDIM; j++)
         {
             fluxes[j].define(getEdgeBoxArray(j), dmap, NUM_STATE, 0);
             fluxes[j].setVal(0.0);
@@ -61,7 +61,7 @@ Nyx::construct_hydro_source(
       dx1 *= dx[dir];
     }
 
-    std::array<amrex::Real, AMREX_SPACEDIM> dxD = {AMREX_D_DECL(dx1, dx1, dx1)};
+    std::array<amrex::Real, AMREX_SPACEDIM> dxD = {dx1, dx1, dx1};
     const amrex::Real* dxDp = &(dxD[0]);
 
     amrex::Real courno = -1.0e+200;
@@ -199,26 +199,19 @@ Nyx::construct_hydro_source(
         volume.define(grids,dmap,1,NUM_GROW);
         geom.GetVolume(volume);
 
-        for (int dir = 0; dir < BL_SPACEDIM; dir++)
+        for (int dir = 0; dir < AMREX_SPACEDIM; dir++)
         {
             area[dir].clear();
             area[dir].define(getEdgeBoxArray(dir),dmap,1,NUM_GROW);
             geom.GetFaceArea(area[dir],dir);
         }
-        for (int dir = BL_SPACEDIM; dir < 3; dir++)
-        {
-            area[dir].clear();
-            area[dir].define(grids, dmap, 1, 0);
-            area[dir].setVal(0.0);
-        }
-
         const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>
-          flx_arr{
-            AMREX_D_DECL(flux[0].array(), flux[1].array(), flux[2].array())};
+          flx_arr{flux[0].array(), flux[1].array(), flux[2].array()};
+
         const amrex::GpuArray<
           const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
-          a{AMREX_D_DECL(
-            area[0].array(mfi), area[1].array(mfi), area[2].array(mfi))};
+          a{area[0].array(mfi), area[1].array(mfi), area[2].array(mfi)};
+
         pc_umdrv(
           is_finest_level, time, bx, domain_lo, domain_hi, phys_bc.lo(),
           phys_bc.hi(), s, hyd_src, qarr, srcqarr, flx_arr, dx, dt, a_old, a_new,
@@ -255,12 +248,12 @@ Nyx::construct_hydro_source(
       {
         if (do_reflux) {
           if (current) {
-            for (int i = 0; i < BL_SPACEDIM ; i++) {
+            for (int i = 0; i < AMREX_SPACEDIM ; i++) {
               current->FineAdd(fluxes[i], i, 0, 0, NUM_STATE, 1);
             }
           }
           if (fine) {
-            for (int i = 0; i < BL_SPACEDIM ; i++) {
+            for (int i = 0; i < AMREX_SPACEDIM ; i++) {
               fine->CrseInit(fluxes[i],i,0,0,NUM_STATE,-1.,amrex::FluxRegister::ADD);
             }
           }
@@ -350,8 +343,8 @@ pc_umdrv(
     qec[dir].resize(eboxes, NGDNV);
     qec_eli[dir] = qec[dir].elixir();
   }
-  amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> qec_arr{
-    AMREX_D_DECL(qec[0].array(), qec[1].array(), qec[2].array())};
+  amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> qec_arr
+    {qec[0].array(), qec[1].array(), qec[2].array()};
 
   //  Temporary FArrayBoxes
   amrex::FArrayBox divu(bxg2, 1);
@@ -379,7 +372,7 @@ pc_umdrv(
   AMREX_D_TERM(const amrex::Real dx0 = dx[0];, const amrex::Real dx1 = dx[1];
                , const amrex::Real dx2 = dx[2];);
   amrex::ParallelFor(bxg2, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_divu(i, j, k, q, AMREX_D_DECL(dx0, dx1, dx2), divarr);
+    pc_divu(i, j, k, q, dx0, dx1, dx2, divarr);
   });
 
   // consup

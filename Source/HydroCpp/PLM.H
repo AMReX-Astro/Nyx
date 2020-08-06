@@ -1878,10 +1878,9 @@ pc_pdivu(
   const int j,
   const int k,
   amrex::Array4<amrex::Real> const& pdivu,
-  AMREX_D_DECL(
-    amrex::Array4<const amrex::Real> const& q1,
-    amrex::Array4<const amrex::Real> const& q2,
-    amrex::Array4<const amrex::Real> const& q3),
+  amrex::Array4<const amrex::Real> const& q1,
+  amrex::Array4<const amrex::Real> const& q2,
+  amrex::Array4<const amrex::Real> const& q3,
   const amrex::Real dx, const amrex::Real dy, const amrex::Real dz)
 {
 	pdivu(i,j,k) = -(

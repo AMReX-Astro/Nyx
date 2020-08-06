@@ -100,6 +100,7 @@ pc_umeth_3D(
   // Put the PLM and slopes in the same kernel launch to avoid unnecessary
   // launch overhead Pelec_Slope_* are SIMD as well as PeleC_plm_* which loop
   // over the same box
+
   amrex::ParallelFor(bxg2, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
 
     amrex::Real slope[8];
@@ -437,7 +438,7 @@ pc_umeth_3D(
   qpeli.clear();
   // Construct p div{U}
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_pdivu(i, j, k, pdivu, AMREX_D_DECL(q1, q2, q3), dx, dy, dz);
+    pc_pdivu(i, j, k, pdivu, q1, q2, q3, dx, dy, dz);
   });
 }
 

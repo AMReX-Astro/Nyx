@@ -437,7 +437,7 @@ pc_umeth_3D(
   qpeli.clear();
   // Construct p div{U}
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_pdivu(i, j, k, pdivu, AMREX_D_DECL(q1, q2, q3), dx, dy, dz);
+    pc_pdivu(i, j, k, pdivu, q1, q2, q3, dx, dy, dz);
   });
 }
 
