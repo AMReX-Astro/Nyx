@@ -2,10 +2,6 @@
 #include "Castro_F.H"
 #include "Castro_hydro_F.H"
 
-#ifdef RADIATION
-#include "Radiation.H"
-#endif
-
 #include <cmath>
 
 #include <ppm.H>
@@ -30,8 +26,6 @@ Castro::trace_ppm(const Box& bx,
   // here, lo and hi are the range we loop over -- this can include ghost cells
   // vlo and vhi are the bounds of the valid box (no ghost cells)
 
-  // To allow for easy integration of radiation, we adopt the
-  // following conventions:
   //
   // rho : mass density
   // u, v, w : velocities
@@ -40,7 +34,7 @@ Castro::trace_ppm(const Box& bx,
   //        just the gas pressure)
   // rhoe_g : gas specific internal energy
   // cgas : sound speed for just the gas contribution
-  // cc : total sound speed (including radiation)
+  // cc : total sound speed 
   // h_g : gas specific enthalpy / cc**2
   // gam_g : the gas Gamma_1
   // game : gas gamma_e

@@ -68,7 +68,6 @@ Nyx::construct_hydro_source(
 
     amrex::MultiFab& S_new = get_new_data(State_Type);
 
-    // note: the radiation consup currently does not fill these
     amrex::Real E_added_flux = 0.;
     amrex::Real mass_added_flux = 0.;
     amrex::Real xmom_added_flux = 0.;
