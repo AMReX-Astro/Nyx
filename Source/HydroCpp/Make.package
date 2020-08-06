@@ -1,6 +1,8 @@
 #C++ files
+CEXE_sources += Godunov.cpp
 CEXE_sources += Hydro.cpp
-CEXE_sources += PLM.cpp
+CEXE_sources += trace_plm.cpp
+CEXE_sources += trace_ppm.cpp
 CEXE_sources += Utilities.cpp
 
 #C++ headers
@@ -8,6 +10,7 @@ CEXE_headers += Constants.H
 CEXE_headers += Hydro.H
 CEXE_headers += IndexDefines.H
 CEXE_headers += PLM.H
+CEXE_headers += PPM.H
 CEXE_headers += Utilities.H
 CEXE_headers += Riemann.H
 
