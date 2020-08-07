@@ -4,7 +4,7 @@
 #include "Nyx.H"
 #include "IndexDefines.H"
 #include "Utilities.H"
-#include "PLM.H"
+#include "Godunov.H"
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE

@@ -1,5 +1,5 @@
-#ifndef _PLM_H_
-#define _PLM_H_
+#ifndef _Godunov_H_
+#define _Godunov_H_
 
 #include <cmath>
 

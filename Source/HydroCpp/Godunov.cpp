@@ -1,4 +1,4 @@
-#include "PLM.H"
+#include "Godunov.H"
 
 // Host function to call gpu hydro functions
 void
@@ -97,8 +97,8 @@ pc_umeth_3D(
   auto const& qzmarr = qzm.array();
   auto const& qzparr = qzp.array();
 
-  // Put the PLM and slopes in the same kernel launch to avoid unnecessary
-  // launch overhead Pelec_Slope_* are SIMD as well as PeleC_plm_* which loop
+  // Put the Godunov and slopes in the same kernel launch to avoid unnecessary
+  // launch overhead Nyx_Slope_* are SIMD as well as Nyx_plm_* which loop
   // over the same box
   amrex::ParallelFor(bxg2, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
 
