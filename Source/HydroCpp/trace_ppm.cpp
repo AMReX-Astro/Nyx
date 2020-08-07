@@ -1,3 +1,4 @@
+#include <Nyx.H>
 #include <PPM.H>
 
 using namespace amrex;
@@ -6,13 +7,12 @@ void
 trace_ppm(const Box& bx,
           const int idir,
           Array4<Real const> const& q_arr,
-          Array4<Real const> const& qaux_arr,
           Array4<Real const> const& srcQ,
-          Array4<Real const> const& flatn,
           Array4<Real> const& qm,
           Array4<Real> const& qp,
           const Box& vbx,
-          const Real dt) {
+          const Real dt, 
+          const amrex::Real gamma) {
 
   // here, lo and hi are the range we loop over -- this can include ghost cells
   // vlo and vhi are the bounds of the valid box (no ghost cells)
@@ -126,13 +126,24 @@ trace_ppm(const Box& bx,
 
     Real rho = q_arr(i,j,k,QRHO);
 
+    Real cc = std::sqrt(gamma * q(i,j,k,QPRES)/q(i,j,k,QRHO));
 
-    Real cc = qaux_arr(i,j,k,QC);
     Real un = q_arr(i,j,k,QUN);
 
     // do the parabolic reconstruction and compute the
     // integrals under the characteristic waves
     Real s[5];
+
+    Real flat = 1.0;
+  //Calculate flattening in-place
+  if(use_flattening == 1)
+  {
+    for(dir_flat = 0; dir_flat < AMREX_SPACEDIM; dir_flat++)
+    {
+      flat = amrex::min(flat,plm_flatten(i, j, k, dir_flat, q_arr));
+    }
+   }
+
     Real flat = flatn(i,j,k);
     Real sm;
     Real sp;
@@ -170,39 +181,6 @@ trace_ppm(const Box& bx,
       ppm_int_profile(sm, sp, s[i0], un, cc, dtdx, Ip[n], Im[n]);
 
     }
-
-    // gamma_c
-
-    Real Ip_gc[3];
-    Real Im_gc[3];
-
-    if (idir == 0) {
-        s[im2] = qaux_arr(i-2,j,k,QGAMC);
-        s[im1] = qaux_arr(i-1,j,k,QGAMC);
-        s[i0]  = qaux_arr(i,j,k,QGAMC);
-        s[ip1] = qaux_arr(i+1,j,k,QGAMC);
-        s[ip2] = qaux_arr(i+2,j,k,QGAMC);
-
-    } else if (idir == 1) {
-        s[im2] = qaux_arr(i,j-2,k,QGAMC);
-        s[im1] = qaux_arr(i,j-1,k,QGAMC);
-        s[i0]  = qaux_arr(i,j,k,QGAMC);
-        s[ip1] = qaux_arr(i,j+1,k,QGAMC);
-        s[ip2] = qaux_arr(i,j+2,k,QGAMC);
-
-    } else {
-        s[im2] = qaux_arr(i,j,k-2,QGAMC);
-        s[im1] = qaux_arr(i,j,k-1,QGAMC);
-        s[i0]  = qaux_arr(i,j,k,QGAMC);
-        s[ip1] = qaux_arr(i,j,k+1,QGAMC);
-        s[ip2] = qaux_arr(i,j,k+2,QGAMC);
-
-    }
-
-
-    ppm_reconstruct(s, flat, sm, sp);
-    ppm_int_profile(sm, sp, s[i0], un, cc, dtdx, Ip_gc, Im_gc);
-
 
     // source terms
     Real Ip_src[NQSRC][3];
@@ -332,7 +310,7 @@ trace_ppm(const Box& bx,
       Real p_ref = Im[QPRES][0];
       Real rhoe_g_ref = Im[QREINT][0];
 
-      Real gam_g_ref = Im_gc[0];
+      Real gam_g_ref = gamma;
 
       rho_ref = amrex::max(rho_ref, lsmall_dens);
 
@@ -413,7 +391,7 @@ trace_ppm(const Box& bx,
       Real p_ref = Ip[QPRES][2];
       Real rhoe_g_ref = Ip[QREINT][2];
 
-      Real gam_g_ref = Ip_gc[2];
+      Real gam_g_ref = gamma;
 
       rho_ref = amrex::max(rho_ref, lsmall_dens);
       Real rho_ref_inv = 1.0_rt/rho_ref;

@@ -514,35 +514,4 @@ pc_plm_z(
     qm(i, j, k + 1, n) = q(i, j, k, n) + acmpbot;
   }
 }
-
-// Host Functions
-void pc_umeth_3D(
-  amrex::Box const& bx,
-  const int* bclo,
-  const int* bchi,
-  const int* domlo,
-  const int* domhi,
-  amrex::Array4<const amrex::Real> const& q,
-  const int nq,
-  amrex::Array4<const amrex::Real> const& srcQ,
-  amrex::Array4<amrex::Real> const& flx1,
-  amrex::Array4<amrex::Real> const& flx2,
-  amrex::Array4<amrex::Real> const& flx3,
-  amrex::Array4<amrex::Real> const& q1,
-  amrex::Array4<amrex::Real> const& q2,
-  amrex::Array4<amrex::Real> const& q3,
-  amrex::Array4<const amrex::Real> const& a1,
-  amrex::Array4<const amrex::Real> const& a2,
-  amrex::Array4<const amrex::Real> const& a3,
-  amrex::Array4<amrex::Real> const& pdivu,
-  amrex::Array4<const amrex::Real> const& vol,
-  const amrex::Real* del,
-  const amrex::Real dt,
-  const amrex::Real a_old,
-  const amrex::Real a_new, 
-  const int NumSpec,
-  const amrex::Real gamma, const amrex::Real gamma_minus_1,
-  const amrex::Real small_dens, const amrex::Real small_pres, 
-  const amrex::Real small_vel , const amrex::Real small,
-  const int use_flattening);
 #endif

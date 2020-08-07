@@ -9,9 +9,9 @@ USE_ASCENT_INSITU=TRUE
 ASCENT_HOME=/project/projectdirs/alpine/software/ascent/gnu/7.3.0/ascent-install/
 
 # compilation options
-COMP    = intel #gcc
+COMP    = gcc
 
-USE_MPI = FALSE
+USE_MPI = TRUE
 USE_OMP = FALSE
 USE_CUDA = FALSE
 #TINY_PROFILE = TRUE

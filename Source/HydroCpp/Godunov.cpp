@@ -6,7 +6,6 @@ extern void
 trace_ppm(const Box& bx,
           const int idir,
           Array4<Real const> const& q_arr,
-          Array4<Real const> const& qaux_arr,
           Array4<Real const> const& srcQ,
           Array4<Real const> const& flatn,
           Array4<Real> const& qm,
@@ -153,23 +152,23 @@ pc_umeth_3D(
     if (idir == 0) {
       trace_ppm(bxg1,
                 idir,
-                q, srcQ, flatn,
+                q, srcQ
                 qxmarr, qxparr,
-                bx, dt);
+                bx, dt,  gamma);
 
     } else if (idir == 1) {
       trace_ppm(bxg1,
                 idir,
-                q, srcQ, flatn,
+                q, srcQ
                 qymarr, qyparr,
-                bx, dt);
+                bx, dt,  gamma);
 
     } else {
       trace_ppm(bxg1,
                 idir,
-                q, srcQ, flatn,
+                q, srcQ
                 qzmarr, qzparr,
-                bx, dt);
+                bx, dt,  gamma);
 
     }
   }
