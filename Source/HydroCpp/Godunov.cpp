@@ -2,16 +2,17 @@
 #include "PLM.H"
 #include "PPM.H"
 
+using namespace amrex;
+
 extern void
 trace_ppm(const Box& bx,
           const int idir,
           Array4<Real const> const& q_arr,
           Array4<Real const> const& srcQ,
-          Array4<Real const> const& flatn,
           Array4<Real> const& qm,
           Array4<Real> const& qp,
           const Box& vbx,
-          const Real dt);
+          const Real dt, const amrex::Real gamma);
 
 // Host function to call gpu hydro functions
 void
@@ -149,21 +150,21 @@ pc_umeth_3D(
       int idir = 0;
       trace_ppm(bxg1,
                 idir,
-                q, srcQ
+                q, srcQ,
                 qxmarr, qxparr,
                 bx, dt,  gamma);
 
       idir = 1;
       trace_ppm(bxg1,
                 idir,
-                q, srcQ
+                q, srcQ,
                 qymarr, qyparr,
                 bx, dt,  gamma);
 
       idir = 2;
       trace_ppm(bxg1,
                 idir,
-                q, srcQ
+                q, srcQ,
                 qzmarr, qzparr,
                 bx, dt,  gamma);
 
