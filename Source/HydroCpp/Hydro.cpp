@@ -217,7 +217,7 @@ Nyx::construct_hydro_source(
           phys_bc.hi(), s, hyd_src, qarr, srcqarr, flx_arr, dx, dt, a_old, a_new,
           gamma, gamma_minus_1_loc, NumSpec,
           small_dens, small_pres, small_vel, small, 
-          cflLoc, use_flattening, a, volume.array(mfi));
+          cflLoc, ppm_type, use_flattening, a, volume.array(mfi));
         BL_PROFILE_VAR_STOP(purm);
 
         BL_PROFILE_VAR("courno", crno);
@@ -329,7 +329,7 @@ pc_umdrv(
   const amrex::Real small_dens, const amrex::Real small_pres, 
   const amrex::Real small_vel , const amrex::Real small, 
   amrex::Real cflLoc,
-  const int use_flattening,
+  const int ppm_type, const int use_flattening,
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
     a,
   amrex::Array4<amrex::Real> const& vol)
