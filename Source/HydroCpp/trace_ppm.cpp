@@ -3,16 +3,16 @@
 using namespace amrex;
 
 void
-Nyx::trace_ppm(const Box& bx,
-                  const int idir,
-                  Array4<Real const> const& q_arr,
-                  Array4<Real const> const& qaux_arr,
-                  Array4<Real const> const& srcQ,
-                  Array4<Real const> const& flatn,
-                  Array4<Real> const& qm,
-                  Array4<Real> const& qp,
-                  const Box& vbx,
-                  const Real dt) {
+trace_ppm(const Box& bx,
+          const int idir,
+          Array4<Real const> const& q_arr,
+          Array4<Real const> const& qaux_arr,
+          Array4<Real const> const& srcQ,
+          Array4<Real const> const& flatn,
+          Array4<Real> const& qm,
+          Array4<Real> const& qp,
+          const Box& vbx,
+          const Real dt) {
 
   // here, lo and hi are the range we loop over -- this can include ghost cells
   // vlo and vhi are the bounds of the valid box (no ghost cells)

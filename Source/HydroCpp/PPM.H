@@ -1,11 +1,16 @@
 
 #include <cmath>
-#include "reconstruction.H"
 
 #ifndef _ppm_H_
 #define _ppm_H_
 
 using namespace amrex;
+
+constexpr int im2 = 0;
+constexpr int im1 = 1;
+constexpr int i0  = 2;
+constexpr int ip1 = 3;
+constexpr int ip2 = 4;
 
 ///
 /// Compute the coefficients of a parabolic reconstruction of the data in a zone.
