@@ -68,9 +68,10 @@ pc_umeth_3D(
 
   // X data
   int cdir = 0;
-  const amrex::Box& xmbx = growHi(bxg2, cdir, 1);
+  const amrex::Box& xmbx = growHi(bxg1, cdir, 1);
+  const amrex::Box& xflxbx = surroundingNodes(grow(bxg1, cdir, -1), cdir);
   amrex::FArrayBox qxm(xmbx, nq);
-  amrex::FArrayBox qxp(bxg2, nq);
+  amrex::FArrayBox qxp(bxg1, nq);
   amrex::Elixir qxmeli = qxm.elixir();
   amrex::Elixir qxpeli = qxp.elixir();
   auto const& qxmarr = qxm.array();
@@ -78,10 +79,10 @@ pc_umeth_3D(
 
   // Y data
   cdir = 1;
-  const amrex::Box& yflxbx = surroundingNodes(grow(bxg2, cdir, -1), cdir);
-  const amrex::Box& ymbx = growHi(bxg2, cdir, 1);
+  const amrex::Box& yflxbx = surroundingNodes(grow(bxg1, cdir, -1), cdir);
+  const amrex::Box& ymbx = growHi(bxg1, cdir, 1);
   amrex::FArrayBox qym(ymbx, nq);
-  amrex::FArrayBox qyp(bxg2, nq);
+  amrex::FArrayBox qyp(bxg1, nq);
   amrex::Elixir qymeli = qym.elixir();
   amrex::Elixir qypeli = qyp.elixir();
   auto const& qymarr = qym.array();
@@ -89,10 +90,10 @@ pc_umeth_3D(
 
   // Z data
   cdir = 2;
-  const amrex::Box& zmbx = growHi(bxg2, cdir, 1);
-  const amrex::Box& zflxbx = surroundingNodes(grow(bxg2, cdir, -1), cdir);
+  const amrex::Box& zmbx = growHi(bxg1, cdir, 1);
+  const amrex::Box& zflxbx = surroundingNodes(grow(bxg1, cdir, -1), cdir);
   amrex::FArrayBox qzm(zmbx, nq);
-  amrex::FArrayBox qzp(bxg2, nq);
+  amrex::FArrayBox qzp(bxg1, nq);
   amrex::Elixir qzmeli = qzm.elixir();
   amrex::Elixir qzpeli = qzp.elixir();
   auto const& qzmarr = qzm.array();
@@ -101,7 +102,7 @@ pc_umeth_3D(
   // Put the Godunov and slopes in the same kernel launch to avoid unnecessary
   // launch overhead Nyx_Slope_* are SIMD as well as Nyx_plm_* which loop
   // over the same box
-  amrex::ParallelFor(bxg2, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+  amrex::ParallelFor(bxg1, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
 
     amrex::Real slope[8];
 
@@ -127,7 +128,6 @@ pc_umeth_3D(
   // These are the first flux estimates as per the corner-transport-upwind
   // method X initial fluxes
   cdir = 0;
-  const amrex::Box& xflxbx = surroundingNodes(grow(bxg2, cdir, -1), cdir);
   amrex::FArrayBox fx(xflxbx, flx1.nComp());
   amrex::Elixir fxeli = fx.elixir();
   auto const& fxarr = fx.array();
