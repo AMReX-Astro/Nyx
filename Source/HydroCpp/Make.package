@@ -1,7 +1,6 @@
 #C++ files
 CEXE_sources += Godunov.cpp
 CEXE_sources += Hydro.cpp
-CEXE_sources += trace_plm.cpp
 CEXE_sources += trace_ppm.cpp
 CEXE_sources += Utilities.cpp
 
