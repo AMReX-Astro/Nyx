@@ -1,5 +1,6 @@
 #include "Godunov.H"
 #include "PLM.H"
+#include "PPM.H"
 
 // Host function to call gpu hydro functions
 void
