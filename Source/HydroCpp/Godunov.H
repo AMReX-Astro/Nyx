@@ -1465,5 +1465,5 @@ void pc_umeth_3D(
   const amrex::Real gamma, const amrex::Real gamma_minus_1,
   const amrex::Real small_dens, const amrex::Real small_pres, 
   const amrex::Real small_vel , const amrex::Real small,
-  const int use_flattening);
+  const int ppm_type, const int use_flattening);
 #endif
