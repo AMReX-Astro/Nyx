@@ -12,7 +12,11 @@ trace_ppm(const Box& bx,
           Array4<Real> const& qp,
           const Box& vbx,
           const Real dt, 
-          const amrex::Real gamma) {
+          const Real* dx,
+          const Real gamma,
+          const Real small_dens, const Real small_pres,
+          const Real small_vel , const Real small)
+{
 
   // here, lo and hi are the range we loop over -- this can include ghost cells
   // vlo and vhi are the bounds of the valid box (no ghost cells)
@@ -32,9 +36,6 @@ trace_ppm(const Box& bx,
   //
   // for pure hydro, we will only consider:
   //    rho, u, v, w, ptot, rhoe_g, cc, h_g
-
-
-  const auto dx = geom.CellSizeArray();
 
   Real hdt = 0.5_rt * dt;
   Real dtdx = dt / dx[idir];

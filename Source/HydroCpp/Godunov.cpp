@@ -12,55 +12,59 @@ trace_ppm(const Box& bx,
           Array4<Real> const& qm,
           Array4<Real> const& qp,
           const Box& vbx,
-          const Real dt, const amrex::Real gamma);
+          const Real dt, const Real* del,
+          const Real gamma,
+          const Real small_dens, const Real small_pres, 
+          const Real small_vel , const Real small);
 
 // Host function to call gpu hydro functions
 void
 pc_umeth_3D(
-  amrex::Box const& bx,
+  Box const& bx,
   const int* bclo,
   const int* bchi,
   const int* domlo,
   const int* domhi,
-  amrex::Array4<const amrex::Real> const& q,
+  Array4<const Real> const& q,
   const int nq,
-  amrex::Array4<const amrex::Real> const& srcQ, 
-  amrex::Array4<amrex::Real> const& flx1,
-  amrex::Array4<amrex::Real> const& flx2,
-  amrex::Array4<amrex::Real> const& flx3, 
-  amrex::Array4<amrex::Real> const& q1,
-  amrex::Array4<amrex::Real> const& q2,
-  amrex::Array4<amrex::Real> const& q3,
-  amrex::Array4<const amrex::Real> const& a1,
-  amrex::Array4<const amrex::Real> const& a2,
-  amrex::Array4<const amrex::Real> const& a3,
-  amrex::Array4<amrex::Real> const& pdivu,
-  amrex::Array4<const amrex::Real> const& vol,
-  const amrex::Real* del,
-  const amrex::Real dt,
-  const amrex::Real a_old,
-  const amrex::Real a_new, 
+  Array4<const Real> const& srcQ, 
+  Array4<Real> const& flx1,
+  Array4<Real> const& flx2,
+  Array4<Real> const& flx3, 
+  Array4<Real> const& q1,
+  Array4<Real> const& q2,
+  Array4<Real> const& q3,
+  Array4<const Real> const& a1,
+  Array4<const Real> const& a2,
+  Array4<const Real> const& a3,
+  Array4<Real> const& pivu,
+  Array4<const Real> const& vol,
+  const Real* del,
+  const Real dt,
+  const Real a_old,
+  const Real a_new, 
   const int NumSpec,
-  const amrex::Real gamma, const amrex::Real gamma_minus_1,
-  const amrex::Real small_dens, const amrex::Real small_pres, 
-  const amrex::Real small_vel , const amrex::Real small,
+  const Real gamma, const Real gamma_minus_1,
+  const Real small_dens, const Real small_pres, 
+  const Real small_vel , const Real small,
   const int ppm_type, const int use_flattening)
 {
   const int FirstSpec_loc = FirstSpec;
   const int NumSpec_loc   = NumSpec;
   const int use_flattening_loc   = use_flattening;
 
-  const amrex::Real a_half = 0.5 * (a_old + a_new);
-  amrex::Real const dx = del[0];
-  amrex::Real const dy = del[1];
-  amrex::Real const dz = del[2];
-  amrex::Real const hdtdx = 0.5 * dt / dx / a_half;
-  amrex::Real const hdtdy = 0.5 * dt / dy / a_half;
-  amrex::Real const hdtdz = 0.5 * dt / dz / a_half;
-  amrex::Real const cdtdx = 1.0 / 3.0 * dt / dx / a_half;
-  amrex::Real const cdtdy = 1.0 / 3.0 * dt / dy / a_half;
-  amrex::Real const cdtdz = 1.0 / 3.0 * dt / dz / a_half;
-  amrex::Real const hdt = 0.5 * dt / a_old;
+  const Real a_half = 0.5 * (a_old + a_new);
+  Real const dx = del[0];
+  Real const dy = del[1];
+  Real const dz = del[2];
+
+  Real const hdtdx = 0.5 * dt / dx / a_half;
+  Real const hdtdy = 0.5 * dt / dy / a_half;
+  Real const hdtdz = 0.5 * dt / dz / a_half;
+  Real const cdtdx = 1.0 / 3.0 * dt / dx / a_half;
+  Real const cdtdy = 1.0 / 3.0 * dt / dy / a_half;
+  Real const cdtdz = 1.0 / 3.0 * dt / dz / a_half;
+  Real const hdt = 0.5 * dt / a_old;
 
   const int bclx = bclo[0];
   const int bcly = bclo[1];
@@ -152,21 +156,27 @@ pc_umeth_3D(
                 idir,
                 q, srcQ,
                 qxmarr, qxparr,
-                bx, dt,  gamma);
+                bx, dt, del, gamma, 
+                small_dens, small_pres,
+                small_vel, small);
 
       idir = 1;
       trace_ppm(bxg1,
                 idir,
                 q, srcQ,
                 qymarr, qyparr,
-                bx, dt,  gamma);
+                bx, dt, del, gamma, 
+                small_dens, small_pres,
+                small_vel, small);
 
       idir = 2;
       trace_ppm(bxg1,
                 idir,
                 q, srcQ,
                 qzmarr, qzparr,
-                bx, dt,  gamma);
+                bx, dt, del, gamma, 
+                small_dens, small_pres,
+                small_vel, small);
 
   }
 
