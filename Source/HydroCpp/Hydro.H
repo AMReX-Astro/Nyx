@@ -1,7 +1,6 @@
 #ifndef _HYDRO_H_
 #define _HYDRO_H_
 
-#include "Nyx.H"
 #include "IndexDefines.H"
 #include "Utilities.H"
 #include "Godunov.H"

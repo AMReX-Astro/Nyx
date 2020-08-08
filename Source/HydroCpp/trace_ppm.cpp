@@ -1,4 +1,3 @@
-#include <Nyx.H>
 #include <Godunov.H>
 #include <PPM.H>
 
@@ -113,7 +112,7 @@ trace_ppm(const Box& bx,
     {
         for(int dir_flat = 0; dir_flat < AMREX_SPACEDIM; dir_flat++)
         {
-            flat = amrex::min(flat,plm_flatten(i, j, k, dir_flat, q_arr));
+            flat = amrex::min(flat,flatten(i, j, k, dir_flat, q_arr));
         }
     }
 

@@ -6,7 +6,6 @@
 #include <AMReX_FArrayBox.H>
 #include <AMReX_IArrayBox.H>
 
-#include "Nyx.H"
 #include "Constants.H"
 #include "IndexDefines.H"
 #include "Riemann.H"
@@ -71,14 +70,10 @@ plm_slope(
 
   amrex::Real flatn = 1.0;
   //Calculate flattening in-place
-  if(use_flattening == 1)
+  if (use_flattening == 1)
   {
-    int dir_flat = 0;
-    flatn = plm_flatten(i, j, k, dir_flat, q);
-    for(dir_flat = 1; dir_flat < AMREX_SPACEDIM; dir_flat++)
-    {
-      flatn = amrex::min(flatn,plm_flatten(i, j, k, dir_flat, q));
-    }
+    for (int dir_flat = 0; dir_flat < AMREX_SPACEDIM; dir_flat++)
+      flatn = amrex::min(flatn,flatten(i, j, k, dir_flat, q));
   }
 
   return flatn * dsgn * amrex::min(dlim, amrex::Math::abs(dtemp));
@@ -163,10 +158,10 @@ pc_plm_x(
   
   qp(i, j, k, QRHO) = rho_ref + apright + amright + azrright;
   qp(i, j, k, QRHO) = amrex::max(SMALL_DENS, qp(i, j, k, QRHO));
-  AMREX_D_TERM(qp(i, j, k, QU) = u_ref + (apright - amright) * cc / rho;
-               qp(i, j, k, QV) = 0.; qp(i, j, k, QW) = 0.;
-               , qp(i, j, k, QV) = v_ref + azv1rght;
-               , qp(i, j, k, QW) = w_ref + azw1rght;);
+  qp(i, j, k, QU) = u_ref + (apright - amright) * cc / rho;
+  qp(i, j, k, QV) = 0.; qp(i, j, k, QW) = 0.;
+  qp(i, j, k, QV) = v_ref + azv1rght;
+  qp(i, j, k, QW) = w_ref + azw1rght;
   qp(i, j, k, QPRES) = p_ref + (apright + amright) * cs;
   qp(i, j, k, QPRES) = amrex::max(qp(i, j, k, QPRES), SMALL_PRES);
   qp(i, j, k, QREINT) = rhoe_ref + (apright + amright) * enth * cs + azeright;
@@ -206,10 +201,9 @@ pc_plm_x(
 
   qm(i + 1, j, k, QRHO) = rho_ref + apleft + amleft + azrleft;
   qm(i + 1, j, k, QRHO) = amrex::max(qm(i + 1, j, k, QRHO), SMALL_DENS);
-  AMREX_D_TERM(qm(i + 1, j, k, QU) = u_ref + (apleft - amleft) * cc / rho;
-               qm(i + 1, j, k, QV) = 0.; qm(i + 1, j, k, QW) = 0.;
-               , qm(i + 1, j, k, QV) = v_ref + azv1left;
-               , qm(i + 1, j, k, QW) = w_ref + azw1left;);
+  qm(i + 1, j, k, QU) = u_ref + (apleft - amleft) * cc / rho;
+  qm(i + 1, j, k, QV) = v_ref + azv1left;
+  qm(i + 1, j, k, QW) = w_ref + azw1left;
   qm(i + 1, j, k, QPRES) = p_ref + (apleft + amleft) * cs;
   qm(i + 1, j, k, QPRES) = amrex::max(qm(i + 1, j, k, QPRES), SMALL_PRES);
   qm(i + 1, j, k, QREINT) = rhoe_ref + (apleft + amleft) * enth * cs + azeleft;
@@ -310,7 +304,7 @@ pc_plm_y(
   qp(i, j, k, QRHO) = amrex::max(SMALL_DENS, qp(i, j, k, QRHO));
   qp(i, j, k, QU) = u_ref + azu1rght;
   qp(i, j, k, QV) = v_ref + (apright - amright) * cc / rho;
-  AMREX_D_TERM(qp(i, j, k, QW) = 0.;, , qp(i, j, k, QW) = w_ref + azw1rght;);
+  qp(i, j, k, QW) = w_ref + azw1rght;
   qp(i, j, k, QPRES) = p_ref + (apright + amright) * cs;
   qp(i, j, k, QPRES) = amrex::max(qp(i, j, k, QPRES), SMALL_PRES);
   qp(i, j, k, QREINT) = rhoe_ref + (apright + amright) * enth * cs + azeright;
@@ -352,8 +346,7 @@ pc_plm_y(
   qm(i, j + 1, k, QRHO) = amrex::max(qm(i, j + 1, k, QRHO), SMALL_DENS);
   qm(i, j + 1, k, QU) = u_ref + azu1left;
   qm(i, j + 1, k, QV) = v_ref + (apleft - amleft) * cc / rho;
-  AMREX_D_TERM(qm(i, j + 1, k, QW) = 0.;
-               , , qm(i, j + 1, k, QW) = w_ref + azw1left;);
+  qm(i, j + 1, k, QW) = w_ref + azw1left;
   qm(i, j + 1, k, QPRES) = p_ref + (apleft + amleft) * cs;
   qm(i, j + 1, k, QPRES) = amrex::max(qm(i, j + 1, k, QPRES), SMALL_PRES);
   qm(i, j + 1, k, QREINT) = rhoe_ref + (apleft + amleft) * enth * cs + azeleft;

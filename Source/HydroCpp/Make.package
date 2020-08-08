@@ -8,7 +8,6 @@ CEXE_sources += Utilities.cpp
 CEXE_headers += Constants.H
 CEXE_headers += Godunov.H
 CEXE_headers += Hydro.H
-CEXE_headers += IndexDefines.H
 CEXE_headers += PLM.H
 CEXE_headers += PPM.H
 CEXE_headers += Utilities.H

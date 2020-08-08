@@ -6,7 +6,6 @@
 #include <AMReX_FArrayBox.H>
 #include <AMReX_IArrayBox.H>
 
-#include "Nyx.H"
 #include "Constants.H"
 #include "IndexDefines.H"
 #include "Riemann.H"
@@ -18,7 +17,7 @@
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 amrex::Real
-plm_flatten(
+flatten(
   const int i,
   const int j,
   const int k,

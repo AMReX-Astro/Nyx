@@ -526,20 +526,13 @@ Nyx::read_params ()
     pp_nyx.query("use_flattening", use_flattening);
     pp_nyx.query("version_2", version_2);
 
-    if(hydro_convert == 1)
-      { 
-        if (ppm_type == 0 && ParallelDescriptor::IOProcessor())
-          std::cout << "Nyx::setting hydro_convert = 1 with ppm_type = 0 \n";
-        if(ppm_type != 0)
-          amrex::Error("Nyx::ppm_type must be 0 with hydro_convert = 1");
-        //      if(use_analriem != 0)
-        //amrex::Error("Nyx::use_analriem must be 0 with hydro_convert = 1");
-      }
+    if (hydro_convert == 1)
+        amrex::Print() << "Nyx::setting hydro_convert = 1 with ppm_type = " << ppm_type << std::endl;
 
-    if(use_typical_steps != 0 && strang_grown_box == 0)
-      { 
+    if (use_typical_steps != 0 && strang_grown_box == 0)
+    { 
           amrex::Error("Nyx::use_typical_steps must be 0 with strang_grown_box = 0");
-      }
+    }
    
     if (do_hydro == 1)
     {
