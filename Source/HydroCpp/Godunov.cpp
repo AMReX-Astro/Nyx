@@ -37,9 +37,6 @@ pc_umeth_3D(
   Array4<Real> const& q1,
   Array4<Real> const& q2,
   Array4<Real> const& q3,
-  Array4<const Real> const& a1,
-  Array4<const Real> const& a2,
-  Array4<const Real> const& a3,
   Array4<Real> const& pdivu,
   Array4<const Real> const& vol,
   const Real* del,
@@ -88,10 +85,10 @@ pc_umeth_3D(
 
   // X data
   int cdir = 0;
-  const amrex::Box& xmbx = growHi(bxg1, cdir, 1);
-  const amrex::Box& xflxbx = surroundingNodes(grow(bxg1, cdir, -1), cdir);
+  const amrex::Box& xmbx = growHi(bxg2, cdir, 1);
+  const amrex::Box& xflxbx = surroundingNodes(grow(bxg2, cdir, -1), cdir);
   amrex::FArrayBox qxm(xmbx, nq);
-  amrex::FArrayBox qxp(bxg1, nq);
+  amrex::FArrayBox qxp(bxg2, nq);
   amrex::Elixir qxmeli = qxm.elixir();
   amrex::Elixir qxpeli = qxp.elixir();
   auto const& qxmarr = qxm.array();
@@ -99,10 +96,10 @@ pc_umeth_3D(
 
   // Y data
   cdir = 1;
-  const amrex::Box& yflxbx = surroundingNodes(grow(bxg1, cdir, -1), cdir);
-  const amrex::Box& ymbx = growHi(bxg1, cdir, 1);
+  const amrex::Box& yflxbx = surroundingNodes(grow(bxg2, cdir, -1), cdir);
+  const amrex::Box& ymbx = growHi(bxg2, cdir, 1);
   amrex::FArrayBox qym(ymbx, nq);
-  amrex::FArrayBox qyp(bxg1, nq);
+  amrex::FArrayBox qyp(bxg2, nq);
   amrex::Elixir qymeli = qym.elixir();
   amrex::Elixir qypeli = qyp.elixir();
   auto const& qymarr = qym.array();
@@ -110,10 +107,10 @@ pc_umeth_3D(
 
   // Z data
   cdir = 2;
-  const amrex::Box& zmbx = growHi(bxg1, cdir, 1);
-  const amrex::Box& zflxbx = surroundingNodes(grow(bxg1, cdir, -1), cdir);
+  const amrex::Box& zmbx = growHi(bxg2, cdir, 1);
+  const amrex::Box& zflxbx = surroundingNodes(grow(bxg2, cdir, -1), cdir);
   amrex::FArrayBox qzm(zmbx, nq);
-  amrex::FArrayBox qzp(bxg1, nq);
+  amrex::FArrayBox qzp(bxg2, nq);
   amrex::Elixir qzmeli = qzm.elixir();
   amrex::Elixir qzpeli = qzp.elixir();
   auto const& qzmarr = qzm.array();
@@ -133,17 +130,17 @@ pc_umeth_3D(
       // X slopes and interp
       for (int n = 0; n < nq; ++n)
         slope[n] = plm_slope(i, j, k, n, 0, use_flattening_loc, q);
-      pc_plm_x(i, j, k, qxmarr, qxparr, slope, q, c, a_old, dx, dt, NumSpec, gamma);
+      pc_plm_x(i, j, k, qxmarr, qxparr, slope, q, c, a_old, dx, dt, NumSpec);
 
       // Y slopes and interp
       for (int n = 0; n < nq; n++)
         slope[n] = plm_slope(i, j, k, n, 1, use_flattening_loc, q);
-      pc_plm_y(i, j, k, qymarr, qyparr, slope, q, c, a_old, dy, dt, NumSpec, gamma);
+      pc_plm_y(i, j, k, qymarr, qyparr, slope, q, c, a_old, dy, dt, NumSpec);
 
        // Z slopes and interp
        for (int n = 0; n < nq; ++n)
          slope[n] = plm_slope(i, j, k, n, 2, use_flattening_loc, q);
-       pc_plm_z(i, j, k, qzmarr, qzparr, slope, q, c, a_old, dz, dt, NumSpec, gamma);
+       pc_plm_z(i, j, k, qzmarr, qzparr, slope, q, c, a_old, dz, dt, NumSpec);
 
      });
 

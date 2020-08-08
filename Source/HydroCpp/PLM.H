@@ -94,7 +94,7 @@ pc_plm_x(
   // amrex::Array4<const amrex::Real> const& dloga,
   amrex::Real const a_old,
   amrex::Real const dx,
-  amrex::Real const dt, const int NumSpec, const amrex::Real gamma)
+  amrex::Real const dt, const int NumSpec)
 {
   amrex::Real e[3];
   amrex::Real dtdx = dt / (a_old * dx);
@@ -238,7 +238,7 @@ pc_plm_y(
   amrex::Real const cc,
   amrex::Real const a_old,
   amrex::Real const dy,
-  amrex::Real const dt, const int NumSpec, const amrex::Real gamma)
+  amrex::Real const dt, const int NumSpec)
 {
   amrex::Real e[3];
   amrex::Real dtdy = dt / (a_old * dy);
@@ -381,7 +381,7 @@ pc_plm_z(
   amrex::Real const cc,
   amrex::Real const a_old,
   amrex::Real const dz,
-  amrex::Real const dt, const int NumSpec, const amrex::Real gamma)
+  amrex::Real const dt, const int NumSpec)
 {
   amrex::Real e[3];
   amrex::Real dtdz = dt / (a_old*dz);
