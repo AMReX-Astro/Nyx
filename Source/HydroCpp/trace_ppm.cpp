@@ -1,4 +1,5 @@
 #include <Nyx.H>
+#include <Godunov.H>
 #include <PPM.H>
 
 using namespace amrex;
@@ -17,7 +18,8 @@ trace_ppm(const Box& bx,
           const Real gamma,
           const Real small_dens, const Real small_pres,
           const Real small_vel , const Real small,
-          const int FirstSpec, const int NumSpec)
+          const int FirstSpec, const int NumSpec,
+          const int use_flattening)
 {
 
   // here, lo and hi are the range we loop over -- this can include ghost cells
@@ -97,7 +99,7 @@ trace_ppm(const Box& bx,
 
     Real rho = q_arr(i,j,k,QRHO);
 
-    Real cc = std::sqrt(gamma * q(i,j,k,QPRES)/q(i,j,k,QRHO));
+    Real cc = std::sqrt(gamma * q_arr(i,j,k,QPRES)/q_arr(i,j,k,QRHO));
 
     Real un = q_arr(i,j,k,QUN);
 
@@ -106,16 +108,15 @@ trace_ppm(const Box& bx,
     Real s[5];
 
     Real flat = 1.0;
-  //Calculate flattening in-place
-  if(use_flattening == 1)
-  {
-    for(dir_flat = 0; dir_flat < AMREX_SPACEDIM; dir_flat++)
+    //Calculate flattening in-place
+    if (use_flattening == 1)
     {
-      flat = amrex::min(flat,plm_flatten(i, j, k, dir_flat, q_arr));
+        for(int dir_flat = 0; dir_flat < AMREX_SPACEDIM; dir_flat++)
+        {
+            flat = amrex::min(flat,plm_flatten(i, j, k, dir_flat, q_arr));
+        }
     }
-   }
 
-    Real flat = flatn(i,j,k);
     Real sm;
     Real sp;
 
@@ -123,7 +124,6 @@ trace_ppm(const Box& bx,
     Real Im[nq][3];
 
     for (int n = 0; n < nq; n++) {
-      if (n == QTEMP) continue;
 
       if (idir == 0) {
         s[im2] = q_arr(i-2,j,k,n);
