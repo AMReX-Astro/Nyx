@@ -18,7 +18,8 @@ trace_ppm(const Box& bx,
           const Real small_dens, const Real small_pres,
           const Real small_vel , const Real small,
           const int FirstSpec, const int NumSpec,
-          const int use_flattening)
+          const int use_flattening,
+          const Real a_old)
 {
 
   // here, lo and hi are the range we loop over -- this can include ghost cells
@@ -268,15 +269,15 @@ trace_ppm(const Box& bx,
 
 
       // we also add the sources here so they participate in the tracing
-      Real dum = un_ref - Im[QUN][0] - hdt*Im_src[QUN][0];
-      Real dptotm = p_ref - Im[QPRES][0] - hdt*Im_src[QPRES][0];
+      Real dum    = un_ref - Im[QUN][0] - hdt*Im_src[QUN][0] / a_old;
+      Real dptotm =  p_ref - Im[QPRES][0] - hdt*Im_src[QPRES][0] / a_old;
 
-      Real drho = rho_ref - Im[QRHO][1] - hdt*Im_src[QRHO][1];
-      Real dptot = p_ref - Im[QPRES][1] - hdt*Im_src[QPRES][1];
-      Real drhoe_g = rhoe_g_ref - Im[QREINT][1] - hdt*Im_src[QREINT][1];
+      Real drho = rho_ref - Im[QRHO][1] - hdt*Im_src[QRHO][1] / a_old;
+      Real dptot = p_ref - Im[QPRES][1] - hdt*Im_src[QPRES][1] / a_old;
+      Real drhoe_g = rhoe_g_ref - Im[QREINT][1] - hdt*Im_src[QREINT][1] / a_old;
 
-      Real dup = un_ref - Im[QUN][2] - hdt*Im_src[QUN][2];
-      Real dptotp = p_ref - Im[QPRES][2] - hdt*Im_src[QPRES][2];
+      Real dup = un_ref - Im[QUN][2] - hdt*Im_src[QUN][2] / a_old;
+      Real dptotp = p_ref - Im[QPRES][2] - hdt*Im_src[QPRES][2] / a_old;
 
       // {rho, u, p, (rho e)} eigensystem
 
@@ -309,8 +310,8 @@ trace_ppm(const Box& bx,
       // Recall that I already takes the limit of the parabola
       // in the event that the wave is not moving toward the
       // interface
-      qp(i,j,k,QUT) = Im[QUT][1] + hdt*Im_src[QUT][1];
-      qp(i,j,k,QUTT) = Im[QUTT][1] + hdt*Im_src[QUTT][1];
+      qp(i,j,k,QUT)  = Im[QUT][1] + hdt*Im_src[QUT][1] / a_old;
+      qp(i,j,k,QUTT) = Im[QUTT][1] + hdt*Im_src[QUTT][1] / a_old;
 
     }
 
@@ -343,15 +344,15 @@ trace_ppm(const Box& bx,
       // *m are the jumps carried by u-c
       // *p are the jumps carried by u+c
 
-      Real dum = un_ref - Ip[QUN][0] - hdt*Ip_src[QUN][0];
-      Real dptotm  = p_ref - Ip[QPRES][0] - hdt*Ip_src[QPRES][0];
+      Real dum     = un_ref - Ip[QUN][0] - hdt*Ip_src[QUN][0] / a_old;
+      Real dptotm  =  p_ref - Ip[QPRES][0] - hdt*Ip_src[QPRES][0] / a_old;
 
-      Real drho = rho_ref - Ip[QRHO][1] - hdt*Ip_src[QRHO][1];
-      Real dptot = p_ref - Ip[QPRES][1] - hdt*Ip_src[QPRES][1];
-      Real drhoe_g = rhoe_g_ref - Ip[QREINT][1] - hdt*Ip_src[QREINT][1];
+      Real drho    = rho_ref -    Ip[QRHO][1] - hdt*Ip_src[QRHO][1] / a_old;
+      Real dptot   =   p_ref    - Ip[QPRES][1] - hdt*Ip_src[QPRES][1] / a_old;
+      Real drhoe_g = rhoe_g_ref - Ip[QREINT][1] - hdt*Ip_src[QREINT][1] / a_old;
 
-      Real dup = un_ref - Ip[QUN][2] - hdt*Ip_src[QUN][2];
-      Real dptotp = p_ref - Ip[QPRES][2] - hdt*Ip_src[QPRES][2];
+      Real dup    = un_ref - Ip[QUN][2] - hdt*Ip_src[QUN][2] / a_old;
+      Real dptotp =  p_ref - Ip[QPRES][2] - hdt*Ip_src[QPRES][2] / a_old;
 
       // {rho, u, p, (rho e)} eigensystem
 
@@ -379,8 +380,8 @@ trace_ppm(const Box& bx,
         qm(i+1,j,k,QPRES) = amrex::max(lsmall_pres, p_ref + (alphap + alpham)*csq_ref);
 
         // transverse velocities
-        qm(i+1,j,k,QUT) = Ip[QUT][1] + hdt*Ip_src[QUT][1];
-        qm(i+1,j,k,QUTT) = Ip[QUTT][1] + hdt*Ip_src[QUTT][1];
+        qm(i+1,j,k,QUT) = Ip[QUT][1] + hdt*Ip_src[QUT][1] / a_old;
+        qm(i+1,j,k,QUTT) = Ip[QUTT][1] + hdt*Ip_src[QUTT][1] / a_old;
 
       } else if (idir == 1) {
         qm(i,j+1,k,QRHO) = amrex::max(lsmall_dens, rho_ref +  alphap + alpham + alpha0r);
@@ -389,8 +390,8 @@ trace_ppm(const Box& bx,
         qm(i,j+1,k,QPRES) = amrex::max(lsmall_pres, p_ref + (alphap + alpham)*csq_ref);
 
         // transverse velocities
-        qm(i,j+1,k,QUT) = Ip[QUT][1] + hdt*Ip_src[QUT][1];
-        qm(i,j+1,k,QUTT) = Ip[QUTT][1] + hdt*Ip_src[QUTT][1];
+        qm(i,j+1,k,QUT) = Ip[QUT][1] + hdt*Ip_src[QUT][1] / a_old;
+        qm(i,j+1,k,QUTT) = Ip[QUTT][1] + hdt*Ip_src[QUTT][1] / a_old;
 
       } else if (idir == 2) {
         qm(i,j,k+1,QRHO) = amrex::max(lsmall_dens, rho_ref +  alphap + alpham + alpha0r);
@@ -399,8 +400,8 @@ trace_ppm(const Box& bx,
         qm(i,j,k+1,QPRES) = amrex::max(lsmall_pres, p_ref + (alphap + alpham)*csq_ref);
 
         // transverse velocities
-        qm(i,j,k+1,QUT) = Ip[QUT][1] + hdt*Ip_src[QUT][1];
-        qm(i,j,k+1,QUTT) = Ip[QUTT][1] + hdt*Ip_src[QUTT][1];
+        qm(i,j,k+1,QUT) = Ip[QUT][1] + hdt*Ip_src[QUT][1] / a_old;
+        qm(i,j,k+1,QUTT) = Ip[QUTT][1] + hdt*Ip_src[QUTT][1] / a_old;
       }
 
     }

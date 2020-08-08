@@ -91,7 +91,6 @@ pc_plm_x(
   amrex::Real const slope[],
   amrex::Array4<const amrex::Real> const& q,
   amrex::Real const cc,
-  // amrex::Array4<const amrex::Real> const& dloga,
   amrex::Real const a_old,
   amrex::Real const dx,
   amrex::Real const dt, const int NumSpec)
