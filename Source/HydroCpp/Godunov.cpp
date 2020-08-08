@@ -37,7 +37,7 @@ pc_umeth_3D(
   Array4<const Real> const& a1,
   Array4<const Real> const& a2,
   Array4<const Real> const& a3,
-  Array4<Real> const& pivu,
+  Array4<Real> const& pdivu,
   Array4<const Real> const& vol,
   const Real* del,
   const Real dt,
