@@ -939,7 +939,6 @@ protected:
     static int ppm_type;
     static int use_flattening;
     static int use_analriem;
-    static int version_2;
     static int strang_grown_box;
 
     static int use_exact_gravity;

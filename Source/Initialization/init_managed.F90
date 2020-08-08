@@ -26,29 +26,16 @@ allocate(QTHERM, NQAUX, QVAR, QC, NQSRC, NQ, UTEMP, QGAME, QGAMC, NGDNV, QTEMP, 
 allocate(QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS, GDGAME, GDRHO, GDPRES, GDU, GDV, GDW)
 
 allocate(difmag)
-!allocate(NGDNV, GDPRES, GDU, GDV, GDW,QVAR,use_pressure_law_pdivu,use_area_dt_scale_apply)
-allocate(ppm_type,use_flattening,version_2,use_const_species,normalize_species,inhomo_reion,grav_source_type)
-allocate(cg_maxiter,cg_tol,cg_blend,fix_mass_flux,ppm_predict_gammae,ppm_temp_fix,&
-     hybrid_riemann,riemann_solver,use_pslope,transverse_reset_density,transverse_reset_rhoe,use_pressure_law_pdivu, &
-     use_analriem,use_srcQ_in_trace,use_csmall_gamma,use_reset_state,use_gamma_minus,use_area_dt_scale_apply)
+!allocate(NGDNV, GDPRES, GDU, GDV, GDW,QVAR)
+allocate(ppm_type,use_flattening,use_const_species,normalize_species,inhomo_reion,grav_source_type)
+allocate(cg_maxiter,cg_tol,cg_blend,fix_mass_flux,use_analriem,use_srcQ_in_trace,use_reset_state)
 cg_maxiter=12
 cg_tol=1.0d-5
 cg_blend=0
 fix_mass_flux=0
-ppm_predict_gammae=1
-ppm_temp_fix=0
-hybrid_riemann=0
-riemann_solver=0
-use_pslope=0
-transverse_reset_density=1
-transverse_reset_rhoe=0
-use_pressure_law_pdivu=1
 use_analriem=1
 use_srcQ_in_trace=0
-use_csmall_gamma=1
 use_reset_state=0
-use_gamma_minus=1
-use_area_dt_scale_apply = 1
 !!eos
 allocate(XHYDROGEN, YHELIUM)
 #ifdef HEATCOOL
@@ -177,12 +164,11 @@ deallocate(QTHERM, NQAUX, QVAR, QC, NQSRC, NQ, UTEMP, QGAME, QGAMC, NGDNV, QTEMP
 deallocate(QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS, GDGAME, GDRHO, GDPRES, GDU, GDV, GDW)
 
 deallocate(difmag)
-!deallocate(NGDNV, GDPRES, GDU, GDV, GDW, QVAR,use_pressure_law_pdivu,use_area_dt_scale_apply)
-deallocate(ppm_type,use_flattening,version_2, &
+!deallocate(NGDNV, GDPRES, GDU, GDV, GDW, QVAR)
+deallocate(ppm_type,use_flattening,&
      use_const_species,normalize_species,inhomo_reion,grav_source_type)
-deallocate(cg_maxiter,cg_tol,cg_blend,fix_mass_flux,ppm_predict_gammae,ppm_temp_fix,&
-     hybrid_riemann,riemann_solver,use_pslope,transverse_reset_density,transverse_reset_rhoe,use_pressure_law_pdivu, &
-     use_analriem,use_srcQ_in_trace,use_csmall_gamma,use_reset_state,use_gamma_minus,use_area_dt_scale_apply)
+deallocate(cg_maxiter,cg_tol,cg_blend,fix_mass_flux,&
+     use_analriem,use_srcQ_in_trace,use_reset_state)
 #ifdef HEATCOOL
 deallocate(XHYDROGEN,YHELIUM)
 deallocate(TCOOLMIN, TCOOLMAX, TCOOLMAX_R, TCOOLMIN_R, deltaT)

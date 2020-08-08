@@ -174,8 +174,6 @@ int Nyx::normalize_species  = 0;
 int Nyx::do_special_tagging = 0;
 int Nyx::ppm_type           = 1;
 
-int Nyx::version_2          = 0;
-
 int Nyx::use_flattening     = 1;
 int Nyx::use_analriem       = 1;
 
@@ -520,7 +518,6 @@ Nyx::read_params ()
     pp_nyx.query("ppm_type", ppm_type);
     pp_nyx.query("use_analriem", use_analriem);
     pp_nyx.query("use_flattening", use_flattening);
-    pp_nyx.query("version_2", version_2);
 
     if (hydro_convert == 1)
         amrex::Print() << "Nyx::setting hydro_convert = 1 with ppm_type = " << ppm_type << std::endl;
@@ -545,17 +542,9 @@ Nyx::read_params ()
            }
         }
 
-        if (version_2 > 0 && ppm_type == 0)
-           amrex::Error("Nyx::version_2 only defined for ppm_type = 1");
-
-        if (version_2 !=0 && version_2 != 1 && version_2 != 2)
-           amrex::Error("Nyx:: don't know what to do with version_2 flag");
-
         // Make sure ppm_type is set correctly.
-        if (ppm_type != 0 && ppm_type != 1 && ppm_type != 2)
-        {
-           amrex::Error("Nyx::ppm_type must be 0 or 1 or 2");
-        }
+        if (ppm_type != 0 && ppm_type != 1)
+           amrex::Error("Nyx::ppm_type must be 0 or 1");
     }
 
     // Make sure not to call refluxing if we're not actually doing any hydro.
