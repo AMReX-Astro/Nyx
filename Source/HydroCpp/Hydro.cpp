@@ -123,8 +123,8 @@ Nyx::construct_hydro_source(
       const amrex::Real gamma_minus_1_loc = gamma-1.0;
 
       // Temporary Fabs needed for Hydro Computation
-      for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
-           ++mfi) {
+      for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) 
+      {
 
         const amrex::Box& bx = mfi.tilebox();
         const amrex::Box& qbx = amrex::grow(bx, NUM_GROW + nGrowF);
@@ -148,6 +148,7 @@ Nyx::construct_hydro_source(
         // Use Elixir Construct to steal the Fabs metadata
         amrex::Elixir qeli = q.elixir();
         amrex::Elixir src_qeli = src_q.elixir();
+
         // Get Arrays to pass to the gpu.
         auto const& qarr = q.array();
         auto const& srcqarr = src_q.array();
@@ -243,23 +244,23 @@ Nyx::construct_hydro_source(
 
         BL_PROFILE_VAR_STOP(crno);
       } // MFIter loop
-      // These seem to check if the provided flux is a gpuptr, and use launches
-      if (add_to_flux_register && finest_level!=0)
-      {
-        if (do_reflux) {
-          if (current) {
-            for (int i = 0; i < AMREX_SPACEDIM ; i++) {
-              current->FineAdd(fluxes[i], i, 0, 0, NUM_STATE, 1);
-            }
+    }   // end of OMP parallel region
+
+    if (add_to_flux_register && finest_level!=0)
+    {
+      if (do_reflux) {
+        if (current) {
+          for (int i = 0; i < AMREX_SPACEDIM ; i++) {
+            current->FineAdd(fluxes[i], i, 0, 0, NUM_STATE, 1);
           }
-          if (fine) {
-            for (int i = 0; i < AMREX_SPACEDIM ; i++) {
-              fine->CrseInit(fluxes[i],i,0,0,NUM_STATE,-1.,amrex::FluxRegister::ADD);
-            }
+        }
+        if (fine) { // HACK
+          for (int i = 0; i < AMREX_SPACEDIM ; i++) {
+            fine->CrseInit(fluxes[i],i,0,0,NUM_STATE,-1.,amrex::FluxRegister::ADD);
           }
         }
       }
-    }   // end of OMP parallel region
+    }
 
     BL_PROFILE_VAR_STOP(PC_UMDRV);
 
