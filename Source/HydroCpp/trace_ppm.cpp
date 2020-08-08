@@ -8,6 +8,7 @@ trace_ppm(const Box& bx,
           const int idir,
           Array4<Real const> const& q_arr,
           Array4<Real const> const& srcQ,
+          const int nq,
           Array4<Real> const& qm,
           Array4<Real> const& qp,
           const Box& vbx,
@@ -15,7 +16,8 @@ trace_ppm(const Box& bx,
           const Real* dx,
           const Real gamma,
           const Real small_dens, const Real small_pres,
-          const Real small_vel , const Real small)
+          const Real small_vel , const Real small,
+          const int FirstSpec, const int NumSpec)
 {
 
   // here, lo and hi are the range we loop over -- this can include ghost cells
@@ -46,34 +48,7 @@ trace_ppm(const Box& bx,
   auto vlo = vbx.loVect3d();
   auto vhi = vbx.hiVect3d();
 
-
-#ifndef AMREX_USE_CUDA
-
-  // if we're on the CPU, we preprocess the sources over the whole
-  // tile up front -- we don't want to trace under a source that is
-  // empty. This check only needs to be done over the tile we're
-  // working on, since the PPM reconstruction and integration done
-  // here is only local to this tile.
-
-  GpuArray<int, NQSRC> do_source_trace;
-
-  for (int n = 0; n < NQSRC; n++) {
-    do_source_trace[n] = 0;
-
-    for (int k = lo[2]-2*dg2; k <= hi[2]+2*dg2; k++) {
-      for (int j = lo[1]-2*dg1; j <= hi[1]+2*dg1; j++) {
-        for (int i = lo[0]-2; i <= hi[0]+2; i++) {
-          if (std::abs(srcQ(i,j,k,n)) > 0.0_rt) {
-            do_source_trace[n] = 1;
-            break;
-          }
-        }
-        if (do_source_trace[n] == 1) break;
-      }
-      if (do_source_trace[n] == 1) break;
-    }
-  }
-#endif
+  int do_source_trace = 1;
 
   // This does the characteristic tracing to build the interface
   // states using the normal predictor only (no transverse terms).
@@ -115,11 +90,6 @@ trace_ppm(const Box& bx,
   Real lsmall_dens = small_dens;
   Real lsmall_pres = small_pres;
 
-  GpuArray<int, npassive> qpass_map_p;
-  for (int n = 0; n < npassive; n++){
-    qpass_map_p[n] = qpass_map[n];
-  }
-
   // Trace to left and right edges using upwind PPM
   amrex::ParallelFor(bx,
   [=] AMREX_GPU_HOST_DEVICE (int i, int j, int k) noexcept
@@ -149,10 +119,10 @@ trace_ppm(const Box& bx,
     Real sm;
     Real sp;
 
-    Real Ip[NQ][3];
-    Real Im[NQ][3];
+    Real Ip[nq][3];
+    Real Im[nq][3];
 
-    for (int n = 0; n < NQ; n++) {
+    for (int n = 0; n < nq; n++) {
       if (n == QTEMP) continue;
 
       if (idir == 0) {
@@ -184,41 +154,13 @@ trace_ppm(const Box& bx,
     }
 
     // source terms
-    Real Ip_src[NQSRC][3];
-    Real Im_src[NQSRC][3];
+    Real Ip_src[nq][3];
+    Real Im_src[nq][3];
 
-    for (int n = 0; n < NQSRC; n++) {
+    for (int n = 0; n < nq; n++) {
 
-      // do we even need to trace (non-zero source?)
-#ifndef AMREX_USE_CUDA
-      int do_trace = do_source_trace[n];
-#else
-      int do_trace = 0;
-      if (idir == 0) {
-        for (int b = i-2; b <= i+2; b++) {
-          if (std::abs(srcQ(b,j,k,n)) > 0.0_rt) {
-            do_trace = 1;
-            break;
-          }
-        }
-      } else if (idir == 1) {
-        for (int b = j-2; b <= j+2; b++) {
-          if (std::abs(srcQ(i,b,k,n)) > 0.0_rt) {
-            do_trace = 1;
-            break;
-          }
-        }
-      } else {
-        for (int b = k-2; b <= k+2; b++) {
-          if (std::abs(srcQ(i,j,b,n)) > 0.0_rt) {
-            do_trace = 1;
-            break;
-          }
-        }
-      }
-#endif
-
-      if (do_trace) {
+      if (do_source_trace) 
+      {
 
         if (idir == 0) {
           s[im2] = srcQ(i-2,j,k,n);
@@ -247,6 +189,7 @@ trace_ppm(const Box& bx,
         ppm_int_profile(sm, sp, s[i0], un, cc, dtdx, Ip_src[n], Im_src[n]);
 
       } else {
+
         Ip_src[n][0] = 0.0_rt;
         Ip_src[n][1] = 0.0_rt;
         Ip_src[n][2] = 0.0_rt;
@@ -258,13 +201,7 @@ trace_ppm(const Box& bx,
 
     }
 
-    // do the passives separately
-
-    // the passive stuff is the same regardless of the tracing
-  
-    for (int ipassive = 0; ipassive < npassive; ipassive++) {
-
-      int n = qpass_map_p[ipassive];
+    for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
 
       // Plus state on face i
       if ((idir == 0 && i >= vlo[0]) ||

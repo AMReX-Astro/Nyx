@@ -16,7 +16,8 @@ trace_ppm(const Box& bx,
           const Real dt, const Real* del,
           const Real gamma,
           const Real small_dens, const Real small_pres, 
-          const Real small_vel , const Real small);
+          const Real small_vel , const Real small,
+          const int FirstSpec, const int NumSpec);
 
 // Host function to call gpu hydro functions
 void
@@ -159,7 +160,8 @@ pc_umeth_3D(
                 qxmarr, qxparr,
                 bx, dt, del, gamma, 
                 small_dens, small_pres,
-                small_vel, small);
+                small_vel, small,
+                FirstSpec, NumSpec);
 
       idir = 1;
       trace_ppm(bxg1,
@@ -168,7 +170,8 @@ pc_umeth_3D(
                 qymarr, qyparr,
                 bx, dt, del, gamma, 
                 small_dens, small_pres,
-                small_vel, small);
+                small_vel, small,
+                FirstSpec, NumSpec);
 
       idir = 2;
       trace_ppm(bxg1,
@@ -177,7 +180,8 @@ pc_umeth_3D(
                 qzmarr, qzparr,
                 bx, dt, del, gamma, 
                 small_dens, small_pres,
-                small_vel, small);
+                small_vel, small,
+                FirstSpec, NumSpec);
 
   }
 
