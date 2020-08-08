@@ -8,7 +8,6 @@ amrex.regtest_reduction = 1
 nyx.ppm_type         = 0
 nyx.add_ext_src      = 0
 nyx.heat_cool_type   = 11
-nyx.hydro_convert    = 1
 
 nyx.use_const_species = 1
 nyx.h_species = .76

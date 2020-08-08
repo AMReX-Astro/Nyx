@@ -167,7 +167,6 @@ int Nyx::do_forcing =  0;
 #endif
 
 int Nyx::nghost_state       = 1;
-int Nyx::hydro_convert      = 0;
 int Nyx::allow_untagging    = 0;
 int Nyx::use_const_species  = 0;
 int Nyx::normalize_species  = 0;
@@ -507,7 +506,6 @@ Nyx::read_params ()
     pp_nyx.query("use_sundials_constraint", use_sundials_constraint);
     pp_nyx.query("use_sundials_fused", use_sundials_fused);
     pp_nyx.query("nghost_state", nghost_state);
-    pp_nyx.query("hydro_convert", hydro_convert);
     pp_nyx.query("sundials_alloc_type", sundials_alloc_type);
     pp_nyx.query("minimize_memory", minimize_memory);
     pp_nyx.query("shrink_to_fit", shrink_to_fit);
@@ -518,9 +516,6 @@ Nyx::read_params ()
     pp_nyx.query("ppm_type", ppm_type);
     pp_nyx.query("use_analriem", use_analriem);
     pp_nyx.query("use_flattening", use_flattening);
-
-    if (hydro_convert == 1)
-        amrex::Print() << "Nyx::setting hydro_convert = 1 with ppm_type = " << ppm_type << std::endl;
 
     if (use_typical_steps != 0 && strang_grown_box == 0)
     { 

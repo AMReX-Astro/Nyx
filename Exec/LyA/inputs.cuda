@@ -28,25 +28,21 @@ nyx.strang_grown_box=1
 
 ###a
 #old comparison
-nyx.hydro_convert=0
 nyx.strang_fuse=0
 nyx.heat_cool_type=3
 
 ###b
 #old comparison
-nyx.hydro_convert=1
 nyx.strang_fuse=0
 nyx.heat_cool_type=3
 
 ###c
 #cuda
-nyx.hydro_convert=1
 nyx.strang_fuse=0
 nyx.heat_cool_type=11
 
 ###d
 #cuda
-#nyx.hydro_convert=1
 #nyx.strang_fuse=1
 #nyx.heat_cool_type=11
 

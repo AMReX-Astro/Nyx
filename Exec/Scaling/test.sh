@@ -1,14 +1,14 @@
 #!/bin/bash
 make -j
 /bin/rm -rf plt* out*
-./Nyx3d.gnu.PROF.ex* inputs nyx.hydro_convert=1 max_step=$1 | tee out.1
+./Nyx3d.gnu.PROF.ex* inputs max_step=$1 | tee out.1
 
 xstart=1;xend=$1;xstep=1
 for (( x = $xstart; x <= $xend; x += $xstep));
 do
     mv plt0000$x plt1_0000$x
 done
-./Nyx3d.gnu.PROF.ex* inputs nyx.hydro_convert=0 max_step=$1 | tee out.0
+./Nyx3d.gnu.PROF.ex* inputs max_step=$1 | tee out.0
 
 #xstart=1;xend=9;xstep=1
 for (( x = $xstart; x <= $xend; x += $xstep));

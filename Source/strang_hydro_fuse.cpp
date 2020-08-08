@@ -134,26 +134,16 @@ Nyx::strang_hydro_fuse (Real time,
     bool add_to_flux_register = true;
 
     //    MultiFab hydro_src(grids, dmap, NUM_STATE, 0);
-
-    if(hydro_convert)
-      {
-        if( nghost_state!=NUM_GROW)
-          {
-            ctu_hydro_fuse(time,dt,a_old,a_new,*S_old_tmp,*D_old_tmp,
-                                 *ext_src_old,*hydro_src,grav_vector,
-                                 init_flux_register, add_to_flux_register);
-          }
-        else
-          {
-            ctu_hydro_fuse(time,dt,a_old,a_new,S_new,D_new,
-                                 *ext_src_old,*hydro_src,grav_vector,
-                                 init_flux_register, add_to_flux_register);
-          }
-      }
-    else
-      {
-        amrex::Abort("Behavior not defined for fuse and hydro_convert=0");
-      }
+    if ( nghost_state!=NUM_GROW)
+    {
+        ctu_hydro_fuse(time,dt,a_old,a_new,*S_old_tmp,*D_old_tmp,
+                       *ext_src_old,*hydro_src,grav_vector,
+                        init_flux_register, add_to_flux_register);
+    } else {
+        ctu_hydro_fuse(time,dt,a_old,a_new,S_new,D_new,
+                       *ext_src_old,*hydro_src,grav_vector,
+                        init_flux_register, add_to_flux_register);
+    }
 
     if( nghost_state!=NUM_GROW)
       {
