@@ -127,7 +127,7 @@ VPATH_LOCATIONS   += $(Blocs)
 
 #These are the directories in AMReX
 
-Pdirs   := Base AmrCore Amr Boundary Particle Extern/amrdata # F_Interfaces/Base
+Pdirs   := Base AmrCore Amr Boundary Particle Extern/amrdata 
 ifeq ($(USE_SENSEI_INSITU),TRUE)
     Pdirs += Extern/SENSEI
 endif
@@ -148,19 +148,10 @@ ifeq ($(USE_GRAV), TRUE)
 endif
 
 ifeq ($(USE_MG), TRUE)
-  include $(AMREX_HOME)/Src/LinearSolvers/C_CellMG/Make.package
-  INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/LinearSolvers/C_CellMG
-  VPATH_LOCATIONS   += $(AMREX_HOME)/Src/LinearSolvers/C_CellMG
-
   include $(AMREX_HOME)/Src/LinearSolvers/MLMG/Make.package
   INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/LinearSolvers/MLMG
   VPATH_LOCATIONS   += $(AMREX_HOME)/Src/LinearSolvers/MLMG
 endif
-
-#INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/F_Interfaces
-#VPATH_LOCATIONS   += $(AMREX_HOME)/Src/F_Interfaces
-#INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/F_Interfaces/Base
-#VPATH_LOCATIONS   += $(AMREX_HOME)/Src/F_Interfaces/Base
 
 ifeq ($(REEBER), TRUE)
      REEBER_NYX_HOME ?= $(TOP)/Util/reeber

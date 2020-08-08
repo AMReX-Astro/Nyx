@@ -6,8 +6,6 @@
 #include <Gravity_F.H>
 #include <Nyx_F.H>
 
-#include <AMReX_MultiGrid.H>
-#include <AMReX_Laplacian.H>
 #include <AMReX_MacBndry.H>
 #include <AMReX_LO_BCTYPES.H>
 
