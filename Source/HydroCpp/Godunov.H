@@ -64,17 +64,17 @@ flatten(
   const amrex::Real chi = (amrex::Math::abs(dp)/tmp) > shktst ? tst : 0.0;
 
   const amrex::Real qpshft =
-	  q(i + (1-ishft) * bdim[0], j + (1-ishft) * bdim[1], k + (1-ishft) * bdim[2], n);
+          q(i + (1-ishft) * bdim[0], j + (1-ishft) * bdim[1], k + (1-ishft) * bdim[2], n);
   const amrex::Real qmshft =
-	  q(i - (1+ishft) * bdim[0], j - (1+ishft) * bdim[1], k - (1+ishft) * bdim[2], n);
+          q(i - (1+ishft) * bdim[0], j - (1+ishft) * bdim[1], k - (1+ishft) * bdim[2], n);
   const amrex::Real qpunshft =
-	  q(i + (1-ishft) * bdim[0], j + (1-ishft) * bdim[1], k + (1-ishft) * bdim[2], QU+dir);
+          q(i + (1-ishft) * bdim[0], j + (1-ishft) * bdim[1], k + (1-ishft) * bdim[2], QU+dir);
   const amrex::Real qmunshft =
-	  q(i - (1+ishft) * bdim[0], j - (1+ishft) * bdim[1], k - (1+ishft) * bdim[2], QU+dir);
+          q(i - (1+ishft) * bdim[0], j - (1+ishft) * bdim[1], k - (1+ishft) * bdim[2], QU+dir);
   const amrex::Real qppshft =
-	  q(i + (2-ishft) * bdim[0], j + (2-ishft) * bdim[1], k + (2-ishft) * bdim[2], n);
+          q(i + (2-ishft) * bdim[0], j + (2-ishft) * bdim[1], k + (2-ishft) * bdim[2], n);
   const amrex::Real qmmshft =
-	  q(i - (2+ishft) * bdim[0], j - (2+ishft) * bdim[1], k - (2+ishft) * bdim[2], n);
+          q(i - (2+ishft) * bdim[0], j - (2+ishft) * bdim[1], k - (2+ishft) * bdim[2], n);
 
   dp = qpshft - qmshft;
 
@@ -145,7 +145,7 @@ pc_cmpflx(
     GV = GDU;
     GV2 = GDW;
     cav = 0.5 * ( std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j-1,k,QREINT) / qprim(i,j-1,k,QRHO)))
-				  +std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j  ,k,QREINT) / qprim(i,j  ,k,QRHO))) );
+                                  +std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j  ,k,QREINT) / qprim(i,j  ,k,QRHO))) );
     f_idx[0] = UMY;
     f_idx[1] = UMX;
     f_idx[2] = UMZ;
@@ -157,7 +157,7 @@ pc_cmpflx(
     GV = GDU;
     GV2 = GDV;
     cav = 0.5 * ( std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j,k-1,QREINT) / qprim(i,j,k-1,QRHO)))
-				  +std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
+                                  +std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
     f_idx[0] = UMZ;
     f_idx[1] = UMX;
     f_idx[2] = UMY;
@@ -1382,10 +1382,10 @@ pc_pdivu(
   amrex::Array4<const amrex::Real> const& q3,
   const amrex::Real dx, const amrex::Real dy, const amrex::Real dz)
 {
-	pdivu(i,j,k) = -(
-				  (q1(i+1,j,k,GDU) - q1(i,j,k,GDU))/dx +
-				  (q2(i,j+1,k,GDV) - q2(i,j,k,GDV))/dy +
-				  (q3(i,j,k+1,GDW) - q3(i,j,k,GDW))/dz);
+        pdivu(i,j,k) = -(
+                                  (q1(i+1,j,k,GDU) - q1(i,j,k,GDU))/dx +
+                                  (q2(i,j+1,k,GDV) - q2(i,j,k,GDV))/dy +
+                                  (q3(i,j,k+1,GDW) - q3(i,j,k,GDW))/dz);
 }
 
 // Consup Support Functions

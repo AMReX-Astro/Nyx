@@ -2318,60 +2318,60 @@ Nyx::enforce_nonnegative_species (MultiFab& S_new)
                Real dom_spec;
                int int_dom_spec;
                for (int n = FirstSpec; n < FirstSpec + NumSpec; n++)
-	       {
-		   if (uout(i,j,k,n) < 0.0)
-		   {
+               {
+                   if (uout(i,j,k,n) < 0.0)
+                   {
                        x = uout(i,j,k,n)/uout(i,j,k,URHO);
-		       if (x > eps)
-			   uout(i,j,k,n) = 0.0;
-		       else
- 			   any_negative = true;
-		   }
-	       }
+                       if (x > eps)
+                           uout(i,j,k,n) = 0.0;
+                       else
+                           any_negative = true;
+                   }
+               }
 
-	       //
-	       // We know there are one or more undershoots needing correction.
-	       //
-	       if (any_negative)
-	       {
-	       //
-	       // Find the dominant species.
-	       //
-  		   int_dom_spec = FirstSpec;
-		   dom_spec     = uout(i,j,k,int_dom_spec);
+               //
+               // We know there are one or more undershoots needing correction.
+               //
+               if (any_negative)
+               {
+               //
+               // Find the dominant species.
+               //
+                   int_dom_spec = FirstSpec;
+                   dom_spec     = uout(i,j,k,int_dom_spec);
 
-		   for (int n = 0; n < FirstSpec + NumSpec; n++)
-		   {
-		       if (uout(i,j,k,n) > dom_spec)
-		       {
-			   dom_spec     = uout(i,j,k,n);
-			   int_dom_spec = n;
-		       }
-		   }
-		   //
-		   // Now take care of undershoots greater in magnitude than 1e-16.
-		   //
-		   for (int n = 0; n < FirstSpec + NumSpec; n++)
-		   {
-		       if (uout(i,j,k,n) < 0.0)
-		       {
-			   x = uout(i,j,k,n)/uout(i,j,k,URHO);
-			   //
-			   // Take enough from the dominant species to fill the negative one.
-			   //
-			   uout(i,j,k,int_dom_spec) = uout(i,j,k,int_dom_spec) + uout(i,j,k,n);
-			   //
-			   // Test that we didn't make the dominant species negative.
-			   //
-			   //
-			   // Now set the negative species to zero.
-			   //
-			   uout(i,j,k,n) = 0.00;
-		       }
-		   }
-	       }
+                   for (int n = 0; n < FirstSpec + NumSpec; n++)
+                   {
+                       if (uout(i,j,k,n) > dom_spec)
+                       {
+                           dom_spec     = uout(i,j,k,n);
+                           int_dom_spec = n;
+                       }
+                   }
+                   //
+                   // Now take care of undershoots greater in magnitude than 1e-16.
+                   //
+                   for (int n = 0; n < FirstSpec + NumSpec; n++)
+                   {
+                       if (uout(i,j,k,n) < 0.0)
+                       {
+                           x = uout(i,j,k,n)/uout(i,j,k,URHO);
+                           //
+                           // Take enough from the dominant species to fill the negative one.
+                           //
+                           uout(i,j,k,int_dom_spec) = uout(i,j,k,int_dom_spec) + uout(i,j,k,n);
+                           //
+                           // Test that we didn't make the dominant species negative.
+                           //
+                           //
+                           // Now set the negative species to zero.
+                           //
+                           uout(i,j,k,n) = 0.00;
+                       }
+                   }
+               }
             });
-	}
+        }
     }
 }
 
@@ -2681,7 +2681,7 @@ Nyx::reset_internal_energy_interp (MultiFab& S_new, MultiFab& D_new, MultiFab& r
     const Real  cur_time = state[State_Type].curTime();
     Real        a        = get_comoving_a(cur_time);
     int interp=true;
-	Real gamma_minus_1 = gamma - 1.0;
+        Real gamma_minus_1 = gamma - 1.0;
 
     amrex::Gpu::LaunchSafeGuard lsg(true);
 
@@ -2764,8 +2764,8 @@ void reset_internal_e (const int i,
     Real ke     = 0.5 * u(i,j,k,URHO) * (Up*Up + Vp*Vp + Wp*Wp);
 
     Real rho_eint = u(i,j,k,UEDEN) - ke;
-	Real dummy_pres = 1e200;
-	Real eint_new = -1e200;
+        Real dummy_pres = 1e200;
+        Real eint_new = -1e200;
 
     // Reset (e from e) if it's greater than 0.01% of big E.
     if (rho_eint > 0.0 && rho_eint / u(i,j,k,UEDEN) > 1.0e-6 && interp == 0)

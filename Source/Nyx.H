@@ -1098,7 +1098,7 @@ protected:
                          const amrex::Real gamma_minus_1,
                          const amrex::Real h_species,
                          const amrex::Real small_temp,
-                         const int interp);	
+                         const int interp);     
 
 // time step interval for finding halos
 extern int reeber_int;

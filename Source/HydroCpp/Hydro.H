@@ -52,7 +52,7 @@ pc_srctoprim(
   const amrex::Real dpde = gamma_minus_1 * q(i,j,k,QRHO);
   const amrex::Real dpdr = gamma_minus_1 * q(i,j,k,QREINT)/q(i,j,k,QRHO);
   srcq(i,j,k,QPRES ) = dpde * srcq(i,j,k,QREINT) * rhoinv
-	  + dpdr * srcq(i,j,k,QRHO);
+          + dpdr * srcq(i,j,k,QRHO);
 
   //Might not need correction from q
   for (int n = 0; n < NumSpec; ++n) {
@@ -100,7 +100,7 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 pc_norm_spec_flx(
-				 const int i, const int j, const int k, amrex::Array4<amrex::Real> const& flx, const int NumSpec)
+                                 const int i, const int j, const int k, amrex::Array4<amrex::Real> const& flx, const int NumSpec)
 {
   amrex::Real summ, fac;
   summ = 0.0;
@@ -125,7 +125,7 @@ pc_ext_flx(
 {
   amrex::Real area = a(i, j, k); // avoid reading from global memory flx1.nComp() times
   for (int n = 0; n < flx.nComp(); ++n)
-	  flx(i,j,k,n)*=area*dt;
+          flx(i,j,k,n)*=area*dt;
 }
 
 AMREX_GPU_DEVICE

@@ -135,19 +135,19 @@ pc_plm_x(
   amrex::Real spzero;
 
    if (u-cc > 0.0)
-	   spminus = -1.0;
+           spminus = -1.0;
    else
-	   spminus = (u-cc)*dtdx;
+           spminus = (u-cc)*dtdx;
 
    if (u+cc > 0.0)
-	   spplus = -1.0;
+           spplus = -1.0;
    else
-	   spplus = (u+cc)*dtdx;
+           spplus = (u+cc)*dtdx;
 
    if (u > 0.0)
-	   spzero = -1.0;
+           spzero = -1.0;
    else
-	   spzero = u*dtdx;
+           spzero = u*dtdx;
 
   amrex::Real apright = 0.5*(-1.0 - spplus )*alphap;
   amrex::Real amright = 0.5*(-1.0 - spminus )*alpham;
@@ -179,18 +179,18 @@ pc_plm_x(
   //                  amrex::Math::copysign(1.0,e[2]))*alphap;
 
    if (u-cc >= 0.0)
-	   spminus = (u-cc)*dtdx;
+           spminus = (u-cc)*dtdx;
    else
-	   spminus = 1.0;
+           spminus = 1.0;
 
    if (u+cc >= 0.0)
-	   spplus = (u+cc)*dtdx;
+           spplus = (u+cc)*dtdx;
    else
-	   spplus = 1.0;
+           spplus = 1.0;
    if (u >= 0.0)
-	   spzero = u*dtdx;
+           spzero = u*dtdx;
    else
-	   spzero = 1.0;
+           spzero = 1.0;
 
   amrex::Real apleft = 0.5*(1.0 - spplus )*alphap;
   amrex::Real amleft = 0.5*(1.0 - spminus )*alpham;
@@ -279,19 +279,19 @@ pc_plm_y(
   amrex::Real spzero;
 
    if (v-cc > 0.0)
-	   spminus = -1.0;
+           spminus = -1.0;
    else
-	   spminus = (v-cc)*dtdy;
+           spminus = (v-cc)*dtdy;
 
    if (v+cc > 0.0)
-	   spplus = -1.0;
+           spplus = -1.0;
    else
-	   spplus = (v+cc)*dtdy;
+           spplus = (v+cc)*dtdy;
 
    if (v > 0.0)
-	   spzero = -1.0;
+           spzero = -1.0;
    else
-	   spzero = v*dtdy;
+           spzero = v*dtdy;
 
   amrex::Real apright = 0.5*(-1.0 - spplus )*alphap;
   amrex::Real amright = 0.5*(-1.0 - spminus )*alpham;
@@ -322,18 +322,18 @@ pc_plm_y(
   //                 amrex::Math::copysign(1.0,e[2]))*alphap;
 
    if (v-cc >= 0.0)
-	   spminus = (v-cc)*dtdy;
+           spminus = (v-cc)*dtdy;
    else
-	   spminus = 1.0;
+           spminus = 1.0;
 
    if (v+cc >= 0.0)
-	   spplus = (v+cc)*dtdy;
+           spplus = (v+cc)*dtdy;
    else
-	   spplus = 1.0;
+           spplus = 1.0;
    if (v >= 0.0)
-	   spzero = v*dtdy;
+           spzero = v*dtdy;
    else
-	   spzero = 1.0;
+           spzero = 1.0;
 
   amrex::Real apleft = 0.5*(1.0 - spplus )*alphap;
   amrex::Real amleft = 0.5*(1.0 - spminus )*alpham;
@@ -424,19 +424,19 @@ pc_plm_z(
   amrex::Real spzero;
 
    if (w-cc > 0.0)
-	   spminus = -1.0;
+           spminus = -1.0;
    else
-	   spminus = (w-cc)*dtdz;
+           spminus = (w-cc)*dtdz;
 
    if (w+cc > 0.0)
-	   spplus = -1.0;
+           spplus = -1.0;
    else
-	   spplus = (w+cc)*dtdz;
+           spplus = (w+cc)*dtdz;
 
    if (w > 0.0)
-	   spzero = -1.0;
+           spzero = -1.0;
    else
-	   spzero = w*dtdz;
+           spzero = w*dtdz;
 
   amrex::Real apright = 0.5*(-1.0 - spplus )*alphap;
   amrex::Real amright = 0.5*(-1.0 - spminus )*alpham;
@@ -463,18 +463,18 @@ pc_plm_z(
   p_ref = p;// + 0.5 * (1.0 - dtdz * amrex::max(e[2], 0.0)) * dp;
   rhoe_ref = rhoe;// + 0.5 * (1.0 - dtdz * amrex::max(e[2], 0.0)) * drhoe;
    if (w-cc >= 0.0)
-	   spminus = (w-cc)*dtdz;
+           spminus = (w-cc)*dtdz;
    else
-	   spminus = 1.0;
+           spminus = 1.0;
 
    if (w+cc >= 0.0)
-	   spplus = (w+cc)*dtdz;
+           spplus = (w+cc)*dtdz;
    else
-	   spplus = 1.0;
+           spplus = 1.0;
    if (w >= 0.0)
-	   spzero = w*dtdz;
+           spzero = w*dtdz;
    else
-	   spzero = 1.0;
+           spzero = 1.0;
 
   amrex::Real apleft = 0.5*(1.0 - spplus )*alphap;
   amrex::Real amleft = 0.5*(1.0 - spminus )*alpham;
