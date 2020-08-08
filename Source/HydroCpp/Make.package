@@ -12,5 +12,3 @@ CEXE_headers += PLM.H
 CEXE_headers += PPM.H
 CEXE_headers += Utilities.H
 CEXE_headers += Riemann.H
-
-F90EXE_sources += enforce_nonnegative_species.F90
