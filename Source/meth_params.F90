@@ -34,8 +34,6 @@ module meth_params_module
   real(rt)        , allocatable :: small_temp
 
   integer,allocatable::ppm_type
-  integer,allocatable::ppm_reference
-  integer,allocatable::ppm_flatten_before_integrals
   integer,allocatable::use_flattening
   integer,allocatable::version_2
   integer,allocatable::use_const_species
@@ -49,7 +47,6 @@ module meth_params_module
   integer,allocatable::fix_mass_flux
   integer,allocatable::ppm_predict_gammae
   integer,allocatable::ppm_temp_fix
-  integer,allocatable::ppm_reference_eigenvectors
   integer,allocatable::hybrid_riemann
   integer,allocatable::riemann_solver
   integer,allocatable::use_pslope
@@ -76,8 +73,8 @@ module meth_params_module
   attributes(managed) ::  QTHERM, NQAUX, QVAR, QC, NQSRC, NQ, UTEMP, QGAME, QGAMC, NGDNV, QTEMP, QFX,  QGC
   attributes(managed) :: QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS, GDGAME, GDRHO, GDPRES, GDU, GDV, GDW
   attributes(managed) :: difmag
- attributes(managed) :: ppm_type,ppm_reference,ppm_flatten_before_integrals,use_flattening,version_2,use_const_species,normalize_species,inhomo_reion,grav_source_type
- attributes(managed) :: cg_maxiter,cg_tol,cg_blend,fix_mass_flux,ppm_predict_gammae,ppm_temp_fix,ppm_reference_eigenvectors, &
+ attributes(managed) :: ppm_type,use_flattening,version_2,use_const_species,normalize_species,inhomo_reion,grav_source_type
+ attributes(managed) :: cg_maxiter,cg_tol,cg_blend,fix_mass_flux,ppm_predict_gammae,ppm_temp_fix,&
       hybrid_riemann,riemann_solver,use_pslope,transverse_reset_density,transverse_reset_rhoe,use_pressure_law_pdivu, &
       use_analriem,use_srcQ_in_trace,use_csmall_gamma,use_reset_state,use_gamma_minus, use_area_dt_scale_apply
   attributes(managed) :: transverse_reset_density, transverse_reset_rhoe, ppm_predict_gammae, use_srcQ_in_trace, use_reset_state

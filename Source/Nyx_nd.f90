@@ -205,8 +205,7 @@
 ! :::
 
       subroutine fort_set_method_params( &
-                 dm, numadv, ndiag_in, do_hydro, ppm_type_in, ppm_ref_in, &
-                 ppm_flatten_before_integrals_in, &
+                 dm, numadv, ndiag_in, do_hydro, ppm_type_in, &
                  use_flattening_in, use_analriem_in, version_2_in, &
                  use_const_species_in, gamma_in, normalize_species_in, &
                  heat_cool_in, inhomo_reion_in) &
@@ -230,8 +229,6 @@
         integer,  intent(in) :: ndiag_in
         integer,  intent(in) :: do_hydro
         integer,  intent(in) :: ppm_type_in
-        integer,  intent(in) :: ppm_ref_in
-        integer,  intent(in) :: ppm_flatten_before_integrals_in
         integer,  intent(in) :: use_flattening_in
         integer,  intent(in) :: use_analriem_in
         integer,  intent(in) :: version_2_in
@@ -395,8 +392,6 @@
            gamma_minus_1 = gamma_const - 1.d0
 
            ppm_type                     = ppm_type_in
-           ppm_reference                = ppm_ref_in
-           ppm_flatten_before_integrals = ppm_flatten_before_integrals_in
            use_analriem                 = use_analriem_in
            use_flattening               = use_flattening_in
            version_2                    = version_2_in

@@ -937,8 +937,6 @@ protected:
     static int normalize_species;
     static int do_special_tagging;
     static int ppm_type;
-    static int ppm_reference;
-    static int ppm_flatten_before_integrals;
     static int use_flattening;
     static int use_analriem;
     static int version_2;

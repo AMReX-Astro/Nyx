@@ -44,8 +44,7 @@ extern "C"
 
   void fort_set_method_params
     (const int& dm, const int& NumAdv, const int& Ndiag, const int& do_hydro,
-     const int& ppm_type, const int& ppm_ref,
-     const int& ppm_flatten_before_integrals,
+     const int& ppm_type, 
      const int& use_flattening,
      const int& use_analriem,
      const int& version_2, const int& use_const_species,
