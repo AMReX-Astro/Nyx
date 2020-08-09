@@ -421,4 +421,13 @@ pc_consup(
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
          pc_update(i, j, k, u, update, flx, vol, pdivu, a_old, a_new, dt, gamma_minus_1);
   });
+
+  for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
+    amrex::Box const& fbx = surroundingNodes(bx, dir);
+    const amrex::Real dx = del[dir];
+    amrex::ParallelFor(fbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+        // Change scaling for flux registers
+        pc_ext_flx_dt(i, j, k, flx[dir], a_old, a_new, dt);
+    });
+  }
 }

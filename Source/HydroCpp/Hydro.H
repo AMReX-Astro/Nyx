@@ -136,12 +136,18 @@ pc_ext_flx_dt(
   const int j,
   const int k,
   amrex::Array4<amrex::Real> const& flx,
-  amrex::Array4<const amrex::Real> const& a,
+  amrex::Real const a_old,
+  amrex::Real const a_new,
   amrex::Real const dt)
 {
-  amrex::Real area = a(i, j, k); // avoid reading from global memory flx1.nComp() times
-  /*  for (int n = 0; n < flx.nComp(); ++n)
-     flx(i,j,k,n)/=dt;*/
+  const amrex::Real a_half = 0.5*(a_old + a_new);
+  const amrex::Real a_half_inv = 1.0 / a_half;
+  const amrex::Real a_new_inv = 1.0 / a_new;
+  const amrex::Real a_newsq_inv = 1.0 / (a_new * a_new);
+  //Store all 8 factors
+  const amrex::Real a_fact[8] = {a_half_inv,a_new_inv,a_new_inv,a_new_inv,a_half*a_newsq_inv,a_half*a_newsq_inv,a_half_inv,a_half_inv};
+  for (int n = 0; n < flx.nComp(); ++n)
+     flx(i,j,k,n)*=a_fact[n];
 }
 
 AMREX_GPU_DEVICE
