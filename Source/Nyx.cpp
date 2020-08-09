@@ -590,7 +590,7 @@ Nyx::read_params ()
         }
 
         if (version_2 > 0 && ppm_type == 0)
-           amrex::Error("Nyx::version_2 only defined for ppm_type = 1");
+            version_2 = 0;
 
         if (version_2 !=0 && version_2 != 1 && version_2 != 2)
            amrex::Error("Nyx:: don't know what to do with version_2 flag");
