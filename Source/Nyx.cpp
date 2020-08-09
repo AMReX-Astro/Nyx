@@ -201,7 +201,7 @@ int Nyx::do_special_tagging = 0;
 int Nyx::ppm_type           = 1;
 int Nyx::ppm_reference      = 1;
 
-int Nyx::version_2          = 0;
+int Nyx::version_2          = 2;
 
 int Nyx::use_flattening     = 1;
 int Nyx::ppm_flatten_before_integrals = 0;
