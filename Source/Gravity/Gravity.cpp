@@ -969,9 +969,6 @@ Gravity::add_to_fluxes(int level, int iteration, int ncycle)
         return;
 #endif
 
-    int ngrow;
-    fort_get_method_params(&ngrow);
-
     if (phi_fine)
     {
         for (int n = 0; n < BL_SPACEDIM; ++n)

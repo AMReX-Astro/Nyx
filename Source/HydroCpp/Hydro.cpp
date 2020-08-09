@@ -1,4 +1,5 @@
 #include "Hydro.H"
+#include "Nyx.H"
 
 /**
  *  Set up the source terms to go into the hydro.

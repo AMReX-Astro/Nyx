@@ -120,25 +120,6 @@
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine fort_get_method_params(nGrowHyp) &
-        bind(C, name = "fort_get_method_params")
-
-        ! Passing data from f90 back to C++
-
-        use meth_params_module
-
-        implicit none
-
-        integer, intent(out) :: ngrowHyp
-
-        nGrowHyp = NHYP
-
-      end subroutine fort_get_method_params
-
-! :::
-! ::: ----------------------------------------------------------------
-! :::
-
       subroutine fort_set_xhydrogen(xhydrogen_in) &
         bind(C, name="fort_set_xhydrogen")
 

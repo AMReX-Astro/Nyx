@@ -92,7 +92,6 @@ Real Nyx::change_max  = 1.1;
 BCRec Nyx::phys_bc;
 int Nyx::do_reflux = 1;
 int Nyx::NUM_STATE = -1;
-int Nyx::NUM_GROW  = -1;
 
 int Nyx::nsteps_from_plotfile = -1;
 

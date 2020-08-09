@@ -10,6 +10,8 @@
 #include <AMReX_ErrorList.H>
 #include <AMReX_FluxRegister.H>
 
+#include "IndexDefines.H"
+
 #include "NyxParticleContainer.H"
 #include "DarkMatterParticleContainer.H"
 #ifdef AGN
@@ -67,44 +69,6 @@ enum StateType {
     NUM_STATE_TYPE
 };
 #endif
-
-enum State_Type_Index {
-  Density   = 0,
-  Xmom      = 1,
-  Ymom      = 2,
-  Zmom      = 3,
-  Eden      = 4,
-  Eint      = 5,
-  FirstSpec = 6
-
-};
-
-enum State_Type_UIndex {
-  URHO     = 0,
-  UMX      = 1,
-  UMY      = 2,
-  UMZ      = 3,
-  UEDEN    = 4,
-  UEINT    = 5,
-
-};
-
-enum State_Type_QIndex {
-  QRHO     = 0,
-  QU       = 1,
-  QV       = 2,
-  QW       = 3,
-  QPRES    = 4,
-  QREINT   = 5
-
-};
-
-enum DiagEOS_Type_Index {
-  Temp_comp = 0,
-  Ne_comp   = 1,
-  Zhi_comp  = 2
-
-};
 
 // Relation of our code units & CGS 
 static constexpr amrex::Real  M_unit = 1.98848e33;    // M_sun
@@ -762,7 +726,6 @@ public:
     void derive(const std::string& name, amrex::Real time, amrex::MultiFab& mf, int dcomp);
 
     static int Do_Hydro();
-    static int num_grow();
 
     void enforce_nonnegative_species(amrex::MultiFab& S_new);
     void enforce_consistent_e(amrex::MultiFab& S);
@@ -926,7 +889,6 @@ protected:
     static int do_reflux;
     static amrex::ErrorList err_list;
     static amrex::BCRec phys_bc;
-    static int NUM_GROW;
 
     static int nsteps_from_plotfile;
 
@@ -1113,13 +1075,6 @@ int
 Nyx::Do_Hydro()
 {
     return do_hydro;
-}
-
-inline
-int
-Nyx::num_grow()
-{
-    return NUM_GROW;
 }
 
 inline

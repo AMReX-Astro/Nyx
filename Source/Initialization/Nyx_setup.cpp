@@ -178,9 +178,6 @@ Nyx::hydro_setup()
 
     NUM_STATE = cnt;
 
-    // Define NUM_GROW from the f90 module.
-    fort_get_method_params(&NUM_GROW);
-
     // Note that we must set NDIAG_C before we call set_method_params because
     // we use the C++ value to set the Fortran value
     fort_set_method_params
@@ -591,9 +588,6 @@ Nyx::no_hydro_setup()
     NUM_STATE = 1;
 
     int NDIAG_C = -1;
-
-    // Define NUM_GROW from the f90 module.
-    fort_get_method_params(&NUM_GROW);
 
     fort_set_method_params
         (dm, 0, NDIAG_C, do_hydro, ppm_type, 

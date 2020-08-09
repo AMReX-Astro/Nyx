@@ -40,8 +40,6 @@ extern "C"
      const int* lo, const int* hi,
      const amrex::Real* dx, amrex::Real* dt, amrex::Real comoving_a);
 
-  void fort_get_method_params(int* HYP_GROW);
-
   void fort_set_method_params
     (const int& dm, const int& NumAdv, const int& Ndiag, const int& do_hydro,
      const int& ppm_type, 
