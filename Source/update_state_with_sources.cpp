@@ -1,5 +1,6 @@
 #include "Nyx.H"
 #include "Nyx_F.H"
+#include "Hydro.H"
 
 using namespace amrex;
 
@@ -26,7 +27,7 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
     const amrex::Real a_newsq = a_new * a_new;
     const amrex::Real a_new_inv = 1.0 / a_new;
     const amrex::Real a_newsq_inv = 1.0 / a_newsq;
-        const amrex::Real dt_a_new    = dt / a_new;
+    const amrex::Real dt_a_new    = dt / a_new;
         /*
     int ng = 0;
     const amrex::Real a_fact[8] = {a_half_inv,a_new_inv,a_new_inv,a_new_inv,a_new_sq_inv,a_new_sq_inv,1.0,1.0};
@@ -72,9 +73,12 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
                   }
            });
 
-        }
+           //Unclear whether this should be part of previous ParallelFor
+           amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+				   do_enforce_minimum_density(i, j, k, uout, NumSpec, small_dens);
+		   });
 
-    // Need enforce_minimum_density here
+        }
 
     enforce_nonnegative_species(S_new);
 

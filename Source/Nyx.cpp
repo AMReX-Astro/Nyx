@@ -2763,8 +2763,8 @@ void reset_internal_e (const int i,
     Real ke     = 0.5 * u(i,j,k,URHO) * (Up*Up + Vp*Vp + Wp*Wp);
 
     Real rho_eint = u(i,j,k,UEDEN) - ke;
-        Real dummy_pres = 1e200;
-        Real eint_new = -1e200;
+    Real dummy_pres = 1e200;
+    Real eint_new = -1e200;
 
     // Reset (e from e) if it's greater than 0.01% of big E.
     if (rho_eint > 0.0 && rho_eint / u(i,j,k,UEDEN) > 1.0e-6 && interp == 0)
