@@ -171,9 +171,9 @@ do_enforce_minimum_density(
 
         state(i,j,k,URHO ) = small_dens;
 
-        state(i,j,k,UMX) = 0.0_rt;
-        state(i,j,k,UMY) = 0.0_rt;
-        state(i,j,k,UMZ) = 0.0_rt;
+        state(i,j,k,UMX) = 0.0;
+        state(i,j,k,UMY) = 0.0;
+        state(i,j,k,UMZ) = 0.0;
 
     /*
     Consider resetting UEINT here as well, like negative e in reset_internal_energy:
