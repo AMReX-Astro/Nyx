@@ -201,8 +201,6 @@ int Nyx::do_special_tagging = 0;
 int Nyx::ppm_type           = 1;
 int Nyx::ppm_reference      = 1;
 
-int Nyx::version_2          = 2;
-
 int Nyx::use_flattening     = 1;
 int Nyx::ppm_flatten_before_integrals = 0;
 int Nyx::use_analriem       = 1;
@@ -550,7 +548,6 @@ Nyx::read_params ()
     pp_nyx.query("ppm_flatten_before_integrals", ppm_flatten_before_integrals);
     pp_nyx.query("use_analriem", use_analriem);
     pp_nyx.query("use_flattening", use_flattening);
-    pp_nyx.query("version_2", version_2);
 
     if(hydro_convert == 1)
       { 
@@ -588,12 +585,6 @@ Nyx::read_params ()
             std::cerr << "ppm_flatten_before_integrals > 0 not implemented for ppm_type != 0 \n";
             amrex::Error();
         }
-
-        if (version_2 > 0 && ppm_type == 0)
-            version_2 = 0;
-
-        if (version_2 !=0 && version_2 != 1 && version_2 != 2)
-           amrex::Error("Nyx:: don't know what to do with version_2 flag");
 
         // Make sure ppm_type is set correctly.
         if (ppm_type != 0 && ppm_type != 1 && ppm_type != 2)

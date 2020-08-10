@@ -16,8 +16,7 @@ contains
 
     use amrex_error_module
     use amrex_fort_module, only : rt => amrex_real
-    use meth_params_module, only : QVAR, QRHO, QU, QV, QW, &
-                                   QREINT, QPRES, version_2, &
+    use meth_params_module, only : QVAR, QRHO, QU, QV, QW, QREINT, QPRES, &
                                    npassive, qpass_map, ppm_type, ppm_reference, &
                                    ppm_flatten_before_integrals, &
                                    small_dens, small_pres, gamma_minus_1
@@ -166,13 +165,8 @@ contains
              dup   =    u_ref - Im(i,j,kc,1,3,QU)
              dpp   =    p_ref - Im(i,j,kc,1,3,QPRES)
    
-             if (version_2 .eq. 1) then
-                 dum = dum - halfdt*srcQ(i,j,k3d,QU)/a_old
-                 dup = dup - halfdt*srcQ(i,j,k3d,QU)/a_old
-             else if (version_2 .eq. 2) then
-                 dum = dum - halfdt*Im_g(i,j,kc,1,1,igx)/a_old
-                 dup = dup - halfdt*Im_g(i,j,kc,1,3,igx)/a_old
-             end if
+             dum = dum - halfdt*Im_g(i,j,kc,1,1,igx)/a_old
+             dup = dup - halfdt*Im_g(i,j,kc,1,3,igx)/a_old
 
             ! These are analogous to the beta's from the original PPM
             ! paper (except we work with rho instead of tau).  This is
@@ -223,13 +217,8 @@ contains
              dv = Im(i,j,kc,1,2,QV)
              dw = Im(i,j,kc,1,2,QW)
    
-             if (version_2 .eq. 1) then
-                dv  = dv  - halfdt*srcQ(i,j,k3d,QV)/a_old
-                dw  = dw  - halfdt*srcQ(i,j,k3d,QW)/a_old
-             else if (version_2 .eq. 2) then
-                dv  = dv  - halfdt*Im_g(i,j,kc,1,2,igy)/a_old
-                dw  = dw  - halfdt*Im_g(i,j,kc,1,2,igz)/a_old
-             end if
+             dv  = dv  - halfdt*Im_g(i,j,kc,1,2,igy)/a_old
+             dw  = dw  - halfdt*Im_g(i,j,kc,1,2,igz)/a_old
 
              ! Recall that I already takes the limit of the parabola
              ! in the event that the wave is not moving toward the
@@ -309,13 +298,8 @@ contains
              dup   =    u_ref - Ip(i,j,kc,1,3,QU)
              dpp   =    p_ref - Ip(i,j,kc,1,3,QPRES)
    
-             if (version_2 .eq. 1) then
-                 dum = dum - halfdt*srcQ(i,j,k3d,QU)/a_old
-                 dup = dup - halfdt*srcQ(i,j,k3d,QU)/a_old
-             else if (version_2 .eq. 2) then
-                 dum = dum - halfdt*Ip_g(i,j,kc,1,1,igx)/a_old
-                 dup = dup - halfdt*Ip_g(i,j,kc,1,3,igx)/a_old
-             end if
+             dum = dum - halfdt*Ip_g(i,j,kc,1,1,igx)/a_old
+             dup = dup - halfdt*Ip_g(i,j,kc,1,3,igx)/a_old
 
              ! These are analogous to the beta's from the original PPM
              ! paper (except we work with rho instead of tau).  This is
@@ -364,13 +348,8 @@ contains
              dv    = Ip(i,j,kc,1,2,QV)
              dw    = Ip(i,j,kc,1,2,QW)
    
-             if (version_2 .eq. 1) then
-                 dv  = dv  - halfdt*srcQ(i,j,k3d,QV)/a_old
-                 dw  = dw  - halfdt*srcQ(i,j,k3d,QW)/a_old
-             else if (version_2 .eq. 2) then
-                 dv  = dv  - halfdt*Ip_g(i,j,kc,1,2,igy)/a_old
-                 dw  = dw  - halfdt*Ip_g(i,j,kc,1,2,igz)/a_old
-             end if
+             dv  = dv  - halfdt*Ip_g(i,j,kc,1,2,igy)/a_old
+             dw  = dw  - halfdt*Ip_g(i,j,kc,1,2,igz)/a_old
 
              if (u < ZERO) then
                 qxm(i+1,j,kc,QV    ) = v
@@ -537,13 +516,8 @@ contains
              dvp   =    v_ref - Im(i,j,kc,2,3,QV)
              dpp   =    p_ref - Im(i,j,kc,2,3,QPRES)
    
-             if (version_2 .eq. 1) then
-                 dvm = dvm - halfdt*srcQ(i,j,k3d,QV)/a_old
-                 dvp = dvp - halfdt*srcQ(i,j,k3d,QV)/a_old
-             else if (version_2 .eq. 2) then
-                 dvm = dvm - halfdt*Im_g(i,j,kc,2,1,igy)/a_old
-                 dvp = dvp - halfdt*Im_g(i,j,kc,2,3,igy)/a_old
-             end if
+             dvm = dvm - halfdt*Im_g(i,j,kc,2,1,igy)/a_old
+             dvp = dvp - halfdt*Im_g(i,j,kc,2,3,igy)/a_old
 
              ! These are analogous to the beta's from the original PPM
              ! paper (except we work with rho instead of tau).  This
@@ -592,13 +566,8 @@ contains
              du    = Im(i,j,kc,2,2,QU)
              dw    = Im(i,j,kc,2,2,QW)
    
-             if (version_2 .eq. 1) then
-                 du  = du  - halfdt*srcQ(i,j,k3d,QU)/a_old
-                 dw  = dw  - halfdt*srcQ(i,j,k3d,QW)/a_old
-             else if (version_2 .eq. 2) then
-                 du  = du  - halfdt*Im_g(i,j,kc,2,2,igx)/a_old
-                 dw  = dw  - halfdt*Im_g(i,j,kc,2,2,igz)/a_old
-             end if
+             du  = du  - halfdt*Im_g(i,j,kc,2,2,igx)/a_old
+             dw  = dw  - halfdt*Im_g(i,j,kc,2,2,igz)/a_old
  
              if (v > ZERO) then
                 qyp(i,j,kc,QU    ) = u
@@ -673,13 +642,8 @@ contains
              dvp   =    v_ref - Ip(i,j,kc,2,3,QV)
              dpp   =    p_ref - Ip(i,j,kc,2,3,QPRES)
 
-             if (version_2 .eq. 1) then
-                 dvm = dvm - halfdt*srcQ(i,j,k3d,QV)/a_old
-                 dvp = dvp - halfdt*srcQ(i,j,k3d,QV)/a_old
-             else if (version_2 .eq. 2) then
-                 dvm = dvm - halfdt*Ip_g(i,j,kc,2,1,igy)/a_old
-                 dvp = dvp - halfdt*Ip_g(i,j,kc,2,3,igy)/a_old
-             end if
+             dvm = dvm - halfdt*Ip_g(i,j,kc,2,1,igy)/a_old
+             dvp = dvp - halfdt*Ip_g(i,j,kc,2,3,igy)/a_old
 
              ! These are analogous to the beta's from the original PPM
              ! paper.  This is simply (l . dq), where dq = qref - I(q)
@@ -727,13 +691,8 @@ contains
              du    = Ip(i,j,kc,2,2,QU)
              dw    = Ip(i,j,kc,2,2,QW)
 
-             if (version_2 .eq. 1) then
-                 du  = du  - halfdt*srcQ(i,j,k3d,QU)/a_old
-                 dw  = dw  - halfdt*srcQ(i,j,k3d,QW)/a_old
-             else if (version_2 .eq. 2) then
-                 du  = du  - halfdt*Ip_g(i,j,kc,2,2,igx)/a_old
-                 dw  = dw  - halfdt*Ip_g(i,j,kc,2,2,igz)/a_old
-             end if
+             du  = du  - halfdt*Ip_g(i,j,kc,2,2,igx)/a_old
+             dw  = dw  - halfdt*Ip_g(i,j,kc,2,2,igz)/a_old
  
              if (v < ZERO) then
                 qym(i,j+1,kc,QU    ) = u
@@ -834,8 +793,7 @@ contains
 
     use amrex_error_module
     use amrex_fort_module, only : rt => amrex_real
-    use meth_params_module, only : QVAR, QRHO, QU, QV, QW, &
-                                   QREINT, QPRES, version_2, &
+    use meth_params_module, only : QVAR, QRHO, QU, QV, QW, QREINT, QPRES, &
                                    npassive, qpass_map, ppm_type, &
                                    npassive, qpass_map, ppm_type, ppm_reference, &
                                    ppm_flatten_before_integrals, &
@@ -957,13 +915,8 @@ contains
           dwp   =    w_ref - Im(i,j,kc,3,3,QW)
           dpp   =    p_ref - Im(i,j,kc,3,3,QPRES)
 
-          if (version_2 .eq. 1) then
-              dwm = dwm - halfdt*srcQ(i,j,k3d,QW)/a_old
-              dwp = dwp - halfdt*srcQ(i,j,k3d,QW)/a_old
-          else if (version_2 .eq. 2) then
-              dwm = dwm - halfdt*Im_g(i,j,kc,3,1,igz)/a_old
-              dwp = dwp - halfdt*Im_g(i,j,kc,3,3,igz)/a_old
-          end if
+          dwm = dwm - halfdt*Im_g(i,j,kc,3,1,igz)/a_old
+          dwp = dwp - halfdt*Im_g(i,j,kc,3,3,igz)/a_old
 
           ! These are analogous to the beta's from the original PPM
           ! paper.  This is simply (l . dq), where dq = qref - I(q)
@@ -1008,13 +961,8 @@ contains
           du    = Im(i,j,kc,3,2,QU)
           dv    = Im(i,j,kc,3,2,QV)
 
-          if (version_2 .eq. 1) then
-              du  = du  - halfdt*srcQ(i,j,k3d,QU)/a_old
-              dv  = dv  - halfdt*srcQ(i,j,k3d,QV)/a_old
-          else if (version_2 .eq. 2) then
-              du  = du  - halfdt*Im_g(i,j,kc,3,2,igx)/a_old
-              dv  = dv  - halfdt*Im_g(i,j,kc,3,2,igy)/a_old
-          end if
+          du  = du  - halfdt*Im_g(i,j,kc,3,2,igx)/a_old
+          dv  = dv  - halfdt*Im_g(i,j,kc,3,2,igy)/a_old
 
           if (w > ZERO) then 
              qzp(i,j,kc,QU    ) = u
@@ -1103,13 +1051,8 @@ contains
           dwp   = (   w_ref - Ip(i,j,km,3,3,QW))
           dpp   = (   p_ref - Ip(i,j,km,3,3,QPRES))
 
-          if (version_2 .eq. 1) then
-              dwm = dwm - halfdt*srcQ(i,j,k3d-1,QW)/a_old
-              dwp = dwp - halfdt*srcQ(i,j,k3d-1,QW)/a_old
-          else if (version_2 .eq. 2) then
-              dwm = dwm - halfdt*Ip_g(i,j,km,3,1,igz)/a_old
-              dwp = dwp - halfdt*Ip_g(i,j,km,3,3,igz)/a_old
-          end if
+          dwm = dwm - halfdt*Ip_g(i,j,km,3,1,igz)/a_old
+          dwp = dwp - halfdt*Ip_g(i,j,km,3,3,igz)/a_old
 
           ! These are analogous to the beta's from the original PPM
           ! paper.  This is simply (l . dq), where dq = qref - I(q)
@@ -1155,13 +1098,8 @@ contains
           du = Ip(i,j,km,3,2,QU)
           dv = Ip(i,j,km,3,2,QV)
 
-          if (version_2 .eq. 1) then
-              du  = du  - halfdt*srcQ(i,j,k3d-1,QU)/a_old
-              dv  = dv  - halfdt*srcQ(i,j,k3d-1,QV)/a_old
-          else if (version_2 .eq. 2) then
-              du  = du  - halfdt*Ip_g(i,j,km,3,2,igx)/a_old
-              dv  = dv  - halfdt*Ip_g(i,j,km,3,2,igy)/a_old
-          end if
+          du  = du  - halfdt*Ip_g(i,j,km,3,2,igx)/a_old
+          dv  = dv  - halfdt*Ip_g(i,j,km,3,2,igy)/a_old
  
           if (w < ZERO) then
              qzm(i,j,kc,QU    ) = u

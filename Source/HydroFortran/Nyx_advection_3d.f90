@@ -40,7 +40,7 @@
       use amrex_fort_module, only : rt => amrex_real
       use amrex_mempool_module, only : amrex_allocate, amrex_deallocate
       use amrex_constants_module
-      use meth_params_module, only : QVAR, NVAR, QU, ppm_type, version_2
+      use meth_params_module, only : QVAR, NVAR, QU, ppm_type
       use slope_module
       use trace_ppm_module
       use trace_src_module
@@ -268,18 +268,13 @@
                         ilo1,ilo2,ihi1,ihi2,dx,dy,dz,dt,k3d,kc,a_old)
             end do
 
-            if (version_2 .eq. 2) then
-               do n=1,3
-                  call ppm(srcQ(:,:,:,QU+n-1),srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
-                           q(:,:,:,QU:),c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
-                           flatn,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
-                           Ip_g(:,:,:,:,:,n),Im_g(:,:,:,:,:,n), &
-                           ilo1,ilo2,ihi1,ihi2,dx,dy,dz,dt,k3d,kc,a_old)
-               end do
-            else
-               Ip_g(:,:,:,:,:,:) = ZERO
-               Im_g(:,:,:,:,:,:) = ZERO
-            end if
+            do n=1,3
+               call ppm(srcQ(:,:,:,QU+n-1),srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
+                        q(:,:,:,QU:),c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
+                        flatn,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
+                        Ip_g(:,:,:,:,:,n),Im_g(:,:,:,:,:,n), &
+                        ilo1,ilo2,ihi1,ihi2,dx,dy,dz,dt,k3d,kc,a_old)
+            end do
 
             ! Compute U_x and U_y at kc (k3d)
             call tracexy_ppm(q,c,flatn,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
@@ -418,13 +413,6 @@
                          srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                          hdt,hdtdx,hdtdy,ilo1,ihi1,ilo2,ihi2,kc,km,k3d,a_old,a_new)
 
-            if (version_2 .eq. 3) then
-               call tracez_src(q,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
-                               qzl,qzr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
-                               srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
-                               ilo1,ilo2,ihi1,ihi2,dt,a_old,km,kc,k3d)
-            endif
-
             ! Compute F^z at kc (k3d) -- note that flux3 is indexed by k3d, not kc
             ! On z-edges -- choose state fluxf3 based on qzl, qzr
             call cmpflx(qzl,qzr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
@@ -497,17 +485,6 @@
                             ugdnvtmpz1,pgdnvtmpz1,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                             srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                             hdt,hdtdx,hdtdz,ilo1,ihi1,ilo2-1,ihi2+1,km,kc,k3d-1,a_old,a_new)
-
-               if (version_2 .eq. 3) then
-                  call tracex_src(q,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
-                                  qxl,qxr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
-                                  srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
-                                  ilo1,ilo2,ihi1,ihi2,dt,a_old,kc,k3d)
-                  call tracey_src(q,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
-                                  qyl,qyr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
-                                  srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
-                                  ilo1,ilo2,ihi1,ihi2,dt,a_old,kc,k3d)
-               endif
 
                ! On x-edges -- choose state flux1 based on qxl, qxr
                call cmpflx(qxl,qxr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
