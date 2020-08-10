@@ -65,6 +65,7 @@ contains
     real(rt) apleft, amleft, azrleft, azeleft
     real(rt) xi, xi1
     real(rt) halfdt
+    real(rt) csqref,cref
 
     integer, parameter :: igx = 1
     integer, parameter :: igy = 2
@@ -120,8 +121,8 @@ contains
           rhoe = q(i,j,k3d,QREINT)
 
           cc = c(i,j,k3d)
-          csq = cc**2
-          enth = ( (rhoe+p)/rho )/csq
+       !  csq = cc**2
+       !  enth = ( (rhoe+p)/rho )/csq
 
           ! ******************************************************************************
 
@@ -147,6 +148,10 @@ contains
                    p_ref = Im(i,j,kc,1,1,QPRES)
                 rhoe_ref = Im(i,j,kc,1,1,QREINT)
              endif
+
+             csqref = (1.d0+gamma_minus_1)*p_ref/rho_ref
+             cref = sqrt(csqref)
+             enthref = (rhoe_ref+p_ref)/(rho_ref*csqref)
    
              ! *m are the jumps carried by u-c
              ! *p are the jumps carried by u+c
@@ -178,10 +183,10 @@ contains
             ! paper (except we work with rho instead of tau).  This is
             ! simply (l . dq), where dq = qref - I(q)
 
-             alpham = HALF*(dpm/(rho*cc) - dum)*rho/cc
-             alphap = HALF*(dpp/(rho*cc) + dup)*rho/cc
-             alpha0r = drho - dp/csq
-             alpha0e = drhoe - dp*enth
+             alpham = HALF*(dpm/(rho_ref*cref) - dum)*rho_ref/cref
+             alphap = HALF*(dpp/(rho_ref*cref) + dup)*rho_ref/cref
+             alpha0r = drho - dp/csqref
+             alpha0e = drhoe - dp*enthref
 
              if (u-cc .gt. ZERO) then
                 amright = ZERO
@@ -213,9 +218,9 @@ contains
              ! The final interface states are just
              ! q_s = q_ref - sum(l . dq) r
              qxp(i,j,kc,QRHO  ) =  rho_ref +  apright + amright + azrright
-             qxp(i,j,kc,QU    ) =    u_ref + (apright - amright)*cc/rho
-             qxp(i,j,kc,QREINT) = rhoe_ref + (apright + amright)*enth*csq + azeright
-             qxp(i,j,kc,QPRES ) =    p_ref + (apright + amright)*csq
+             qxp(i,j,kc,QU    ) =    u_ref + (apright - amright)*cref/rho_ref
+             qxp(i,j,kc,QREINT) = rhoe_ref + (apright + amright)*enthref*csqref + azeright
+             qxp(i,j,kc,QPRES ) =    p_ref + (apright + amright)*csqref
 
              ! Transverse velocities -- there's no projection here, so we don't
              ! need a reference state.  We only care about the state traced under
@@ -244,17 +249,17 @@ contains
 
              ! We may have already dealt with the flattening in the construction
              ! of the parabola
-             if (ppm_flatten_before_integrals == 0) then
-                xi  = flatn(i,j,k3d)
-                xi1 = ONE-flatn(i,j,k3d)
- 
-                qxp(i,j,kc,QRHO  ) = xi1*rho  + xi*qxp(i,j,kc,QRHO  )
-                qxp(i,j,kc,QU    ) = xi1*u    + xi*qxp(i,j,kc,QU    )
-                qxp(i,j,kc,QV    ) = xi1*v    + xi*qxp(i,j,kc,QV    )
-                qxp(i,j,kc,QW    ) = xi1*w    + xi*qxp(i,j,kc,QW    )
-                qxp(i,j,kc,QREINT) = xi1*rhoe + xi*qxp(i,j,kc,QREINT)
-                qxp(i,j,kc,QPRES ) = xi1*p    + xi*qxp(i,j,kc,QPRES )
-             endif
+         !   if (ppm_flatten_before_integrals == 0) then
+         !      xi  = flatn(i,j,k3d)
+         !      xi1 = ONE-flatn(i,j,k3d)
+!
+!               qxp(i,j,kc,QRHO  ) = xi1*rho  + xi*qxp(i,j,kc,QRHO  )
+!               qxp(i,j,kc,QU    ) = xi1*u    + xi*qxp(i,j,kc,QU    )
+!               qxp(i,j,kc,QV    ) = xi1*v    + xi*qxp(i,j,kc,QV    )
+!               qxp(i,j,kc,QW    ) = xi1*w    + xi*qxp(i,j,kc,QW    )
+!               qxp(i,j,kc,QREINT) = xi1*rhoe + xi*qxp(i,j,kc,QREINT)
+!               qxp(i,j,kc,QPRES ) = xi1*p    + xi*qxp(i,j,kc,QPRES )
+!            endif
 
              ! If rho or p too small, set all the slopes to zero
              if (qxp(i,j,kc,QRHO ) .lt. small_dens .or. &
@@ -292,6 +297,10 @@ contains
                    p_ref = Ip(i,j,kc,1,3,QPRES)
                 rhoe_ref = Ip(i,j,kc,1,3,QREINT)
              endif
+
+             csqref = (1.d0+gamma_minus_1)*p_ref/rho_ref
+             cref = sqrt(csqref)
+             enthref = (rhoe_ref+p_ref)/(rho_ref*csqref)
    
              ! *m are the jumps carried by u-c
              ! *p are the jumps carried by u+c
@@ -321,10 +330,10 @@ contains
              ! paper (except we work with rho instead of tau).  This is
              ! simply (l . dq), where dq = qref - I(q)
 
-             alpham = HALF*(dpm/(rho*cc) - dum)*rho/cc
-             alphap = HALF*(dpp/(rho*cc) + dup)*rho/cc
-             alpha0r = drho - dp/csq
-             alpha0e = drhoe - dp*enth
+             alpham = HALF*(dpm/(rho_ref*cref) - dum)*rho_ref/cref
+             alphap = HALF*(dpp/(rho_ref*cref) + dup)*rho_ref/cref
+             alpha0r = drho - dp/csqref
+             alpha0e = drhoe - dp*enthref
 
              if (u-cc .gt. ZERO) then
                 amleft = -alpham
@@ -356,9 +365,9 @@ contains
              ! The final interface states are just
              ! q_s = q_ref - sum (l . dq) r
              qxm(i+1,j,kc,QRHO  ) =  rho_ref + apleft + amleft + azrleft
-             qxm(i+1,j,kc,QU    ) =    u_ref + (apleft - amleft)*cc/rho
-             qxm(i+1,j,kc,QREINT) = rhoe_ref + (apleft + amleft)*enth*csq + azeleft
-             qxm(i+1,j,kc,QPRES ) =    p_ref + (apleft + amleft)*csq
+             qxm(i+1,j,kc,QU    ) =    u_ref + (apleft - amleft)*cref/rho_ref
+             qxm(i+1,j,kc,QREINT) = rhoe_ref + (apleft + amleft)*enthref*csqref + azeleft
+             qxm(i+1,j,kc,QPRES ) =    p_ref + (apleft + amleft)*csqref
 
              ! Transverse velocities
              dv    = Ip(i,j,kc,1,2,QV)
@@ -381,17 +390,17 @@ contains
              endif
  
              ! We may have already dealt with flattening in the parabolas
-             if (ppm_flatten_before_integrals == 0) then
-                xi  = flatn(i,j,k3d)
-                xi1 = ONE - flatn(i,j,k3d)
- 
-                qxm(i+1,j,kc,QRHO  ) = xi1*rho  + xi*qxm(i+1,j,kc,QRHO  )
-                qxm(i+1,j,kc,QU    ) = xi1*u    + xi*qxm(i+1,j,kc,QU    )
-                qxm(i+1,j,kc,QV    ) = xi1*v    + xi*qxm(i+1,j,kc,QV    )
-                qxm(i+1,j,kc,QW    ) = xi1*w    + xi*qxm(i+1,j,kc,QW    )
-                qxm(i+1,j,kc,QREINT) = xi1*rhoe + xi*qxm(i+1,j,kc,QREINT)
-                qxm(i+1,j,kc,QPRES ) = xi1*p    + xi*qxm(i+1,j,kc,QPRES )
-             endif
+!            if (ppm_flatten_before_integrals == 0) then
+!               xi  = flatn(i,j,k3d)
+!               xi1 = ONE - flatn(i,j,k3d)
+!
+!               qxm(i+1,j,kc,QRHO  ) = xi1*rho  + xi*qxm(i+1,j,kc,QRHO  )
+!               qxm(i+1,j,kc,QU    ) = xi1*u    + xi*qxm(i+1,j,kc,QU    )
+!               qxm(i+1,j,kc,QV    ) = xi1*v    + xi*qxm(i+1,j,kc,QV    )
+!               qxm(i+1,j,kc,QW    ) = xi1*w    + xi*qxm(i+1,j,kc,QW    )
+!               qxm(i+1,j,kc,QREINT) = xi1*rhoe + xi*qxm(i+1,j,kc,QREINT)
+!               qxm(i+1,j,kc,QPRES ) = xi1*p    + xi*qxm(i+1,j,kc,QPRES )
+!            endif
  
              ! If rho or p too small, set all the slopes to zero
              if (qxm(i+1,j,kc,QRHO ) .lt. small_dens .or. &
