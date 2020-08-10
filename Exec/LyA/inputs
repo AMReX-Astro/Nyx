@@ -19,7 +19,6 @@ vismf.usedynamicsetselection = 1
 
 
 nyx.ppm_type         = 1
-nyx.ppm_reference    = 1
 nyx.use_colglaz      = 0
 nyx.corner_coupling  = 1
 

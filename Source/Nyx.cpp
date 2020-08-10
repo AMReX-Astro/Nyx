@@ -199,10 +199,8 @@ int Nyx::use_const_species  = 0;
 int Nyx::normalize_species  = 0;
 int Nyx::do_special_tagging = 0;
 int Nyx::ppm_type           = 1;
-int Nyx::ppm_reference      = 1;
 
 int Nyx::use_flattening     = 1;
-int Nyx::ppm_flatten_before_integrals = 0;
 int Nyx::use_analriem       = 1;
 
 Real Nyx:: h_species        = 0.76;
@@ -544,8 +542,6 @@ Nyx::read_params ()
     pp_nyx.query("use_const_species", use_const_species);
     pp_nyx.query("normalize_species", normalize_species);
     pp_nyx.query("ppm_type", ppm_type);
-    pp_nyx.query("ppm_reference", ppm_reference);
-    pp_nyx.query("ppm_flatten_before_integrals", ppm_flatten_before_integrals);
     pp_nyx.query("use_analriem", use_analriem);
     pp_nyx.query("use_flattening", use_flattening);
 
@@ -579,15 +575,8 @@ Nyx::read_params ()
            }
         }
 
-        // ppm_flatten_before_integrals is only done for ppm_type != 0
-        if (ppm_type == 0 && ppm_flatten_before_integrals > 0)
-        {
-            std::cerr << "ppm_flatten_before_integrals > 0 not implemented for ppm_type != 0 \n";
-            amrex::Error();
-        }
-
         // Make sure ppm_type is set correctly.
-        if (ppm_type != 0 && ppm_type != 1 && ppm_type != 2)
+        if (ppm_type != 0 && ppm_type != 1)
         {
            amrex::Error("Nyx::ppm_type must be 0 or 1 or 2");
         }

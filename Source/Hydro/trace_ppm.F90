@@ -40,8 +40,7 @@ contains
     use network, only : nspec, naux
     use meth_params_module, only : QVAR, NQAUX, NQSRC, ppm_predict_gammae, &
                             ppm_temp_fix, QU, QV, QW, npassive, qpass_map, &
-                            fix_mass_flux, gamma_minus_1, &
-                            ppm_flatten_before_integrals
+                            fix_mass_flux, gamma_minus_1
     use prob_params_module, only : physbc_lo, physbc_hi, Outflow
 
     implicit none
@@ -113,11 +112,7 @@ contains
        do k = lo(3), hi(3)
           do j = lo(2), hi(2)
              do i = lo(1), hi(1)
-                if (ppm_flatten_before_integrals == 0) then
-                   xi = flatn(i,j,k)
-                else
-                   xi = ONE
-                endif
+                xi = ONE
                 ! Plus state on face i
                 if ((idir == 1 .and. i >= vlo(1)) .or. &
                     (idir == 2 .and. j >= vlo(2)) .or. &
@@ -249,8 +244,7 @@ contains
                                    QREINT, QPRES, QGAME, QC, QGAMC, &
                                    small_dens, small_pres, &
                                    ppm_type, &
-                                   ppm_reference_eigenvectors, &
-                                   fix_mass_flux, ppm_flatten_before_integrals
+                                   fix_mass_flux
     use prob_params_module, only : physbc_lo, physbc_hi, Outflow
 
     implicit none
@@ -465,19 +459,11 @@ contains
                 dptotp = p_ref - Im(i,j,k,3,QPRES) - hdt*Im_src(i,j,k,3,QPRES)
 
 
-                ! Optionally use the reference state in evaluating the
-                ! eigenvectors
-                if (ppm_reference_eigenvectors == 0) then
-                   rho_ev  = rho
-                   cc_ev   = cc
-                   csq_ev  = csq
-                   h_g_ev = h_g
-                else
-                   rho_ev  = rho_ref
-                   cc_ev   = cc_ref
-                   csq_ev  = csq_ref
-                   h_g_ev = h_g_ref
-                endif
+                ! use the reference state in evaluating the eigenvectors
+                rho_ev  = rho_ref
+                cc_ev   = cc_ref
+                csq_ev  = csq_ref
+                h_g_ev = h_g_ref
 
                 ! (rho, u, p, (rho e) eigensystem
 
@@ -555,19 +541,11 @@ contains
                 dup = un_ref - Ip(i,j,k,3,QUN) - hdt*Ip_src(i,j,k,3,QUN)
                 dptotp = p_ref - Ip(i,j,k,3,QPRES) - hdt*Ip_src(i,j,k,3,QPRES)
 
-                ! Optionally use the reference state in evaluating the
-                ! eigenvectors
-                if (ppm_reference_eigenvectors == 0) then
-                   rho_ev  = rho
-                   cc_ev   = cc
-                   csq_ev  = csq
-                   h_g_ev = h_g
-                else
-                   rho_ev  = rho_ref
-                   cc_ev   = cc_ref
-                   csq_ev  = csq_ref
-                   h_g_ev = h_g_ref
-                endif
+                ! Use the reference state in evaluating the eigenvectors
+                rho_ev  = rho_ref
+                cc_ev   = cc_ref
+                csq_ev  = csq_ref
+                h_g_ev = h_g_ref
 
                 ! (rho, u, p, (rho e)) eigensystem
 
@@ -594,18 +572,6 @@ contains
                    qm(i+1,j,k,QREINT) = rhoe_g_ref + (alphap + alpham)*h_g_ev*csq_ev + alpha0e_g
                    qm(i+1,j,k,QPRES) = max(small_pres, p_ref + (alphap + alpham)*csq_ev)
 
-                   if (ppm_flatten_before_integrals == 0) then
-                      xi  = flatn(i,j,k)
-                      xi1 = ONE - flatn(i,j,k)
- 
-                      qm(i+1,j,k,QRHO  ) = xi1*rho  + xi*qm(i+1,j,k,QRHO  )
-                      qm(i+1,j,k,QUN   ) = xi1*un   + xi*qm(i+1,j,k,QUN   )
-                      qm(i+1,j,k,QUT   ) = xi1*ut   + xi*qm(i+1,j,k,QUT   )
-                      qm(i+1,j,k,QUTT  ) = xi1*utt  + xi*qm(i+1,j,k,QUTT  )
-                      qm(i+1,j,k,QREINT) = xi1*rhoe_g + xi*qm(i+1,j,k,QREINT)
-                      qm(i+1,j,k,QPRES ) = xi1*p    + xi*qm(i+1,j,k,QPRES )
-                   endif
-                   
                    ! transverse velocities
                    qm(i+1,j,k,QUT) = Ip(i,j,k,2,QUT) + hdt*Ip_src(i,j,k,2,QUT)
                    qm(i+1,j,k,QUTT) = Ip(i,j,k,2,QUTT) + hdt*Ip_src(i,j,k,2,QUTT)
@@ -616,17 +582,6 @@ contains
                    qm(i,j+1,k,QREINT) = rhoe_g_ref + (alphap + alpham)*h_g_ev*csq_ev + alpha0e_g
                    qm(i,j+1,k,QPRES) = max(small_pres, p_ref + (alphap + alpham)*csq_ev)
 
-                   if (ppm_flatten_before_integrals == 0) then
-                      xi  = flatn(i,j,k)
-                      xi1 = ONE - flatn(i,j,k)
- 
-                      qm(i,j+1,k,QRHO  ) = xi1*rho  + xi*qm(i,j+1,k,QRHO  )
-                      qm(i,j+1,k,QUN   ) = xi1*un   + xi*qm(i,j+1,k,QUN   )
-                      qm(i,j+1,k,QUT   ) = xi1*ut   + xi*qm(i,j+1,k,QUT   )
-                      qm(i,j+1,k,QUTT  ) = xi1*utt  + xi*qm(i,j+1,k,QUTT  )
-                      qm(i,j+1,k,QREINT) = xi1*rhoe_g + xi*qm(i,j+1,k,QREINT)
-                      qm(i,j+1,k,QPRES ) = xi1*p    + xi*qm(i,j+1,k,QPRES )
-                   endif
                    ! transverse velocities
                    qm(i,j+1,k,QUT) = Ip(i,j,k,2,QUT) + hdt*Ip_src(i,j,k,2,QUT)
                    qm(i,j+1,k,QUTT) = Ip(i,j,k,2,QUTT) + hdt*Ip_src(i,j,k,2,QUTT)
@@ -637,18 +592,6 @@ contains
                    qm(i,j,k+1,QREINT) = rhoe_g_ref + (alphap + alpham)*h_g_ev*csq_ev + alpha0e_g
                    qm(i,j,k+1,QPRES) = max(small_pres, p_ref + (alphap + alpham)*csq_ev)
 
-                   if (ppm_flatten_before_integrals == 0) then
-                      xi  = flatn(i,j,k)
-                      xi1 = ONE - flatn(i,j,k)
- 
-                      qm(i,j,k+1,QRHO  ) = xi1*rho  + xi*qm(i,j,k+1,QRHO  )
-                      qm(i,j,k+1,QUN   ) = xi1*un   + xi*qm(i,j,k+1,QUN   )
-                      qm(i,j,k+1,QUT   ) = xi1*ut   + xi*qm(i,j,k+1,QUT   )
-                      qm(i,j,k+1,QUTT  ) = xi1*utt  + xi*qm(i,j,k+1,QUTT  )
-                      qm(i,j,k+1,QREINT) = xi1*rhoe_g + xi*qm(i,j,k+1,QREINT)
-                      qm(i,j,k+1,QPRES ) = xi1*p    + xi*qm(i,j,k+1,QPRES )
-                   endif
-                   
                    ! transverse velocities
                    qm(i,j,k+1,QUT) = Ip(i,j,k,2,QUT) + hdt*Ip_src(i,j,k,2,QUT)
                    qm(i,j,k+1,QUTT) = Ip(i,j,k,2,QUTT) + hdt*Ip_src(i,j,k,2,QUTT)
@@ -735,7 +678,6 @@ contains
                                    QREINT, QPRES, QC, &
                                    small_dens, small_pres, &
                                    ppm_type, &
-                                   ppm_reference_eigenvectors, &
                                    fix_mass_flux, &
                                    gamma_minus_1
     use prob_params_module, only : physbc_lo, physbc_hi, Outflow
@@ -956,15 +898,9 @@ contains
                 dptotp = p_ref - Im(i,j,k,3,QPRES) - hdt*Im_src(i,j,k,3,QPRES)
 
 
-                ! Optionally use the reference state in evaluating the
-                ! eigenvectors
-                if (ppm_reference_eigenvectors == 0) then
-                   Clag_ev = Clag
-                   tau_ev  = ONE/rho
-                else
-                   Clag_ev = Clag_ref
-                   tau_ev  = tau_ref
-                endif
+                ! Use the reference state in evaluating the eigenvectors
+                Clag_ev = Clag_ref
+                tau_ev  = tau_ref
 
                 ! (tau, u, p, game) eigensystem
 
@@ -1053,15 +989,9 @@ contains
                 dup = un_ref - Ip(i,j,k,3,QUN) - hdt*Ip_src(i,j,k,3,QUN)
                 dptotp = p_ref - Ip(i,j,k,3,QPRES) - hdt*Ip_src(i,j,k,3,QPRES)
 
-                ! Optionally use the reference state in evaluating the
-                ! eigenvectors
-                if (ppm_reference_eigenvectors == 0) then
-                   Clag_ev = Clag
-                   tau_ev  = ONE/rho
-                else
-                   Clag_ev = Clag_ref
-                   tau_ev  = tau_ref
-                endif
+                ! Use the reference state in evaluating the eigenvectors
+                Clag_ev = Clag_ref
+                tau_ev  = tau_ref
 
                 ! (tau, u, p, game) eigensystem
 
@@ -1208,7 +1138,6 @@ contains
                                    QREINT, QPRES, QTEMP, QC, QFS, QFX, &
                                    small_dens, small_pres, &
                                    ppm_type, &
-                                   ppm_reference_eigenvectors, &
                                    fix_mass_flux
     use prob_params_module, only : physbc_lo, physbc_hi, Outflow
 

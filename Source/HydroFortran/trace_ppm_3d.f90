@@ -17,8 +17,7 @@ contains
     use amrex_error_module
     use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : QVAR, QRHO, QU, QV, QW, QREINT, QPRES, &
-                                   npassive, qpass_map, ppm_type, ppm_reference, &
-                                   ppm_flatten_before_integrals, &
+                                   npassive, qpass_map, ppm_type, &
                                    small_dens, small_pres, gamma_minus_1
     use amrex_constants_module
 
@@ -62,7 +61,6 @@ contains
     real(rt) enth, alpham, alphap, alpha0r, alpha0e
     real(rt) apright, amright, azrright, azeright
     real(rt) apleft, amleft, azrleft, azeleft
-    real(rt) xi, xi1
     real(rt) halfdt
 
     integer, parameter :: igx = 1
@@ -129,8 +127,7 @@ contains
              ! Plus state on face i
 
              ! Set the reference state
-             if (ppm_reference == 0 .or. &
-                (ppm_reference == 1 .and. u - cc >= 0.0d0) ) then
+             if ( u - cc >= 0.0d0 ) then
                  rho_ref = rho
                    u_ref = u
                    v_ref = v
@@ -231,20 +228,6 @@ contains
                 qxp(i,j,kc,QW    ) = dw
              endif
 
-             ! We may have already dealt with the flattening in the construction
-             ! of the parabola
-             if (ppm_flatten_before_integrals == 0) then
-                xi  = flatn(i,j,k3d)
-                xi1 = ONE-flatn(i,j,k3d)
- 
-                qxp(i,j,kc,QRHO  ) = xi1*rho  + xi*qxp(i,j,kc,QRHO  )
-                qxp(i,j,kc,QU    ) = xi1*u    + xi*qxp(i,j,kc,QU    )
-                qxp(i,j,kc,QV    ) = xi1*v    + xi*qxp(i,j,kc,QV    )
-                qxp(i,j,kc,QW    ) = xi1*w    + xi*qxp(i,j,kc,QW    )
-                qxp(i,j,kc,QREINT) = xi1*rhoe + xi*qxp(i,j,kc,QREINT)
-                qxp(i,j,kc,QPRES ) = xi1*p    + xi*qxp(i,j,kc,QPRES )
-             endif
-
              ! If rho or p too small, set all the slopes to zero
              if (qxp(i,j,kc,QRHO ) .lt. small_dens .or. &
                  qxp(i,j,kc,QPRES) .lt. small_pres) then
@@ -264,8 +247,7 @@ contains
              ! Minus state on face i+1
 
              ! Set the reference state
-             if (ppm_reference == 0 .or. &
-                (ppm_reference == 1 .and. u + cc <= 0.0d0) ) then
+             if ( u + cc <= 0.0d0 ) then
                  rho_ref = rho
                    u_ref = u
                    v_ref = v
@@ -359,19 +341,6 @@ contains
                 qxm(i+1,j,kc,QW    ) = dw
              endif
  
-             ! We may have already dealt with flattening in the parabolas
-             if (ppm_flatten_before_integrals == 0) then
-                xi  = flatn(i,j,k3d)
-                xi1 = ONE - flatn(i,j,k3d)
- 
-                qxm(i+1,j,kc,QRHO  ) = xi1*rho  + xi*qxm(i+1,j,kc,QRHO  )
-                qxm(i+1,j,kc,QU    ) = xi1*u    + xi*qxm(i+1,j,kc,QU    )
-                qxm(i+1,j,kc,QV    ) = xi1*v    + xi*qxm(i+1,j,kc,QV    )
-                qxm(i+1,j,kc,QW    ) = xi1*w    + xi*qxm(i+1,j,kc,QW    )
-                qxm(i+1,j,kc,QREINT) = xi1*rhoe + xi*qxm(i+1,j,kc,QREINT)
-                qxm(i+1,j,kc,QPRES ) = xi1*p    + xi*qxm(i+1,j,kc,QPRES )
-             endif
- 
              ! If rho or p too small, set all the slopes to zero
              if (qxm(i+1,j,kc,QRHO ) .lt. small_dens .or. &
                  qxm(i+1,j,kc,QPRES) .lt. small_pres) then
@@ -398,40 +367,13 @@ contains
           ! Plus state on face i
           do i = ilo1, ihi1+1
              u = q(i,j,k3d,QU)
-
-             if (ppm_flatten_before_integrals == 0) then
-                xi = flatn(i,j,k3d)
-             else
-                xi = ONE
-             endif
- 
-             ! The flattening here is a little confusing.  If
-             ! ppm_flatten_before_integrals = 0, then we are blending
-             ! the cell centered state and the edge state here through
-             ! the flattening procedure.  Otherwise, we've already
-             ! took care of flattening.  What we want to do is:
-             !
-             ! q_l*  (1-xi)*q_i + xi*q_l
-             !
-             ! where
-             !
-             ! q_l = q_ref - Proj{(q_ref - I)}
-             !
-             ! and Proj{} represents the characteristic projection.
-             ! But for these, there is only 1-wave that matters, the u
-             ! wave, so no projection is needed.  Since we are not
-             ! projecting, the reference state doesn't matter, so we
-             ! take it to be q_i, therefore, we reduce to
-             !
-             ! q_l* = (1-xi)*q_i + xi*[q_i - (q_i - I)]
-             !      = q_i + xi*(I - q_i)
  
              if (u .gt. ZERO) then
                 qxp(i,j,kc,n) = q(i,j,k3d,n)
              else if (u .lt. ZERO) then
-                qxp(i,j,kc,n) = q(i,j,k3d,n) + xi*(Im(i,j,kc,1,2,n) - q(i,j,k3d,n))
+                qxp(i,j,kc,n) = q(i,j,k3d,n) + (Im(i,j,kc,1,2,n) - q(i,j,k3d,n))
              else
-                qxp(i,j,kc,n) = q(i,j,k3d,n) + HALF*xi*(Im(i,j,kc,1,2,n) - q(i,j,k3d,n))
+                qxp(i,j,kc,n) = q(i,j,k3d,n) + HALF*(Im(i,j,kc,1,2,n) - q(i,j,k3d,n))
              endif
 
           enddo
@@ -440,18 +382,12 @@ contains
           do i = ilo1-1, ihi1
              u = q(i,j,k3d,QU)
  
-             if (ppm_flatten_before_integrals == 0) then
-                xi = flatn(i,j,k3d)
-             else
-                xi = ONE
-             endif
- 
              if (u .gt. ZERO) then
-                qxm(i+1,j,kc,n) = q(i,j,k3d,n) + xi*(Ip(i,j,kc,1,2,n) - q(i,j,k3d,n))
+                qxm(i+1,j,kc,n) = q(i,j,k3d,n) + (Ip(i,j,kc,1,2,n) - q(i,j,k3d,n))
              else if (u .lt. ZERO) then
                 qxm(i+1,j,kc,n) = q(i,j,k3d,n)
              else
-                qxm(i+1,j,kc,n) = q(i,j,k3d,n) + HALF*xi*(Ip(i,j,kc,1,2,n) - q(i,j,k3d,n))
+                qxm(i+1,j,kc,n) = q(i,j,k3d,n) + HALF*(Ip(i,j,kc,1,2,n) - q(i,j,k3d,n))
              endif
           enddo
 
@@ -482,8 +418,7 @@ contains
              ! Plus state on face j
 
              ! Set the reference state
-             if (ppm_reference == 0 .or. &
-                (ppm_reference == 1 .and. v - cc >= 0.0d0) ) then
+             if ( v - cc >= 0.0d0 ) then
                  rho_ref = rho
                    u_ref = u
                    v_ref = v
@@ -577,19 +512,6 @@ contains
                 qyp(i,j,kc,QW    ) = dw
              endif
  
-             ! We may have already dealt with flattening in the parabola
-             if (ppm_flatten_before_integrals == 0) then
-                xi  = flatn(i,j,k3d)
-                xi1 = ONE - flatn(i,j,k3d)
- 
-                qyp(i,j,kc,QRHO  ) = xi1*rho  + xi*qyp(i,j,kc,QRHO  )
-                qyp(i,j,kc,QV    ) = xi1*v    + xi*qyp(i,j,kc,QV    )
-                qyp(i,j,kc,QU    ) = xi1*u    + xi*qyp(i,j,kc,QU    )
-                qyp(i,j,kc,QW    ) = xi1*w    + xi*qyp(i,j,kc,QW    )
-                qyp(i,j,kc,QREINT) = xi1*rhoe + xi*qyp(i,j,kc,QREINT)
-                qyp(i,j,kc,QPRES ) = xi1*p    + xi*qyp(i,j,kc,QPRES )
-             endif
-
              ! If rho or p too small, set all the slopes to zero
              if (qyp(i,j,kc,QRHO ) .lt. small_dens .or. &
                  qyp(i,j,kc,QPRES) .lt. small_pres) then
@@ -608,8 +530,7 @@ contains
              ! Minus state on face j+1
 
              ! Set the reference state
-             if (ppm_reference == 0 .or. &
-                (ppm_reference == 1 .and. v + cc <= 0.0d0) ) then
+             if ( v + cc <= 0.0d0 ) then
                  rho_ref = rho
                    u_ref = u
                    v_ref = v
@@ -702,19 +623,6 @@ contains
                 qym(i,j+1,kc,QW    ) = dw
              endif
 
-             ! We may have already dealt with flattening in the parabola
-             if (ppm_flatten_before_integrals == 0) then
-                xi  = flatn(i,j,k3d)
-                xi1 = ONE - flatn(i,j,k3d)
- 
-                qym(i,j+1,kc,QRHO  ) = xi1*rho  + xi*qym(i,j+1,kc,QRHO  )
-                qym(i,j+1,kc,QV    ) = xi1*v    + xi*qym(i,j+1,kc,QV    )
-                qym(i,j+1,kc,QU    ) = xi1*u    + xi*qym(i,j+1,kc,QU    )
-                qym(i,j+1,kc,QW    ) = xi1*w    + xi*qym(i,j+1,kc,QW    )
-                qym(i,j+1,kc,QREINT) = xi1*rhoe + xi*qym(i,j+1,kc,QREINT)
-                qym(i,j+1,kc,QPRES ) = xi1*p    + xi*qym(i,j+1,kc,QPRES )
-             endif
-
              ! If rho or p too small, set all the slopes to zero
              if (qym(i,j+1,kc,QRHO ) .lt. small_dens .or. &
                  qym(i,j+1,kc,QPRES) .lt. small_pres) then
@@ -742,18 +650,12 @@ contains
           do j = ilo2, ihi2+1
              v = q(i,j,k3d,QV)
 
-             if (ppm_flatten_before_integrals == 0) then
-                xi = flatn(i,j,k3d)
-             else
-                xi = ONE
-             endif
-
              if (v .gt. ZERO) then
                 qyp(i,j,kc,n) = q(i,j,k3d,n)
              else if (v .lt. ZERO) then
-                qyp(i,j,kc,n) = q(i,j,k3d,n) + xi*(Im(i,j,kc,2,2,n) - q(i,j,k3d,n))
+                qyp(i,j,kc,n) = q(i,j,k3d,n) + (Im(i,j,kc,2,2,n) - q(i,j,k3d,n))
              else
-                qyp(i,j,kc,n) = q(i,j,k3d,n) + HALF*xi*(Im(i,j,kc,2,2,n) - q(i,j,k3d,n))
+                qyp(i,j,kc,n) = q(i,j,k3d,n) + HALF*(Im(i,j,kc,2,2,n) - q(i,j,k3d,n))
              endif
           enddo
           
@@ -761,18 +663,12 @@ contains
           do j = ilo2-1, ihi2
              v = q(i,j,k3d,QV)
 
-             if (ppm_flatten_before_integrals == 0) then
-                xi = flatn(i,j,k3d)
-             else
-                xi = ONE
-             endif
-
              if (v .gt. ZERO) then
-                qym(i,j+1,kc,n) = q(i,j,k3d,n) + xi*(Ip(i,j,kc,2,2,n) - q(i,j,k3d,n))
+                qym(i,j+1,kc,n) = q(i,j,k3d,n) + (Ip(i,j,kc,2,2,n) - q(i,j,k3d,n))
              else if (v .lt. ZERO) then
                 qym(i,j+1,kc,n) = q(i,j,k3d,n)
              else
-                qym(i,j+1,kc,n) = q(i,j,k3d,n) + HALF*xi*(Ip(i,j,kc,2,2,n) - q(i,j,k3d,n))
+                qym(i,j+1,kc,n) = q(i,j,k3d,n) + HALF*(Ip(i,j,kc,2,2,n) - q(i,j,k3d,n))
              endif
           enddo
           
@@ -795,8 +691,7 @@ contains
     use amrex_fort_module, only : rt => amrex_real
     use meth_params_module, only : QVAR, QRHO, QU, QV, QW, QREINT, QPRES, &
                                    npassive, qpass_map, ppm_type, &
-                                   npassive, qpass_map, ppm_type, ppm_reference, &
-                                   ppm_flatten_before_integrals, &
+                                   npassive, qpass_map, ppm_type, &
                                    small_dens, small_pres, gamma_minus_1
     use amrex_constants_module
 
@@ -838,7 +733,6 @@ contains
     real(rt) apright, amright, azrright, azeright
     real(rt) apleft, amleft, azrleft, azeleft
     real(rt) halfdt
-    real(rt) xi, xi1
 
     integer, parameter :: igx = 1
     integer, parameter :: igy = 2
@@ -881,8 +775,7 @@ contains
           ! Plus state on face kc
 
           ! Set the reference state
-          if (ppm_reference == 0 .or. &
-             (ppm_reference == 1 .and. w - cc >= 0.0d0) ) then
+          if ( w - cc >= 0.0d0 ) then
               rho_ref = rho
                 u_ref = u
                 v_ref = v
@@ -972,19 +865,6 @@ contains
              qzp(i,j,kc,QV    ) = dv
           endif
 
-          ! We may have already dealt with flattening in the parabola
-          if (ppm_flatten_before_integrals == 0) then
-             xi  = flatn(i,j,k3d)
-             xi1 = ONE - flatn(i,j,k3d)
-
-             qzp(i,j,kc,QRHO  ) = xi1*rho  + xi*qzp(i,j,kc,QRHO  )
-             qzp(i,j,kc,QW    ) = xi1*w    + xi*qzp(i,j,kc,QW    )
-             qzp(i,j,kc,QU    ) = xi1*u    + xi*qzp(i,j,kc,QU    )
-             qzp(i,j,kc,QV    ) = xi1*v    + xi*qzp(i,j,kc,QV    )
-             qzp(i,j,kc,QREINT) = xi1*rhoe + xi*qzp(i,j,kc,QREINT)
-             qzp(i,j,kc,QPRES ) = xi1*p    + xi*qzp(i,j,kc,QPRES )
-          endif
-
           ! If rho or p too small, set all the slopes to zero
          if (qzp(i,j,kc,QRHO ) .lt. small_dens .or. &
              qzp(i,j,kc,QPRES) .lt. small_pres) then
@@ -1017,8 +897,7 @@ contains
           enth = ( (rhoe+p)/rho )/csq
 
           ! Set the reference state
-          if (ppm_reference == 0 .or. &
-             (ppm_reference == 1 .and. w + cc <= 0.0d0) ) then
+          if ( w + cc <= 0.0d0 ) then
               rho_ref = rho
                 u_ref = u
                 v_ref = v
@@ -1109,20 +988,6 @@ contains
              qzm(i,j,kc,QV    ) = dv
           endif
 
-          ! We may have already taken care of flattening in the parabola
-          if (ppm_flatten_before_integrals == 0) then
-             xi  = flatn(i,j,k3d-1)
-             xi1 = ONE - flatn(i,j,k3d-1)
- 
-             qzm(i,j,kc,QRHO  ) = xi1*rho  + xi*qzm(i,j,kc,QRHO  )
-             qzm(i,j,kc,QW    ) = xi1*w    + xi*qzm(i,j,kc,QW    )
-             qzm(i,j,kc,QU    ) = xi1*u    + xi*qzm(i,j,kc,QU    )
-             qzm(i,j,kc,QV    ) = xi1*v    + xi*qzm(i,j,kc,QV    )
-             qzm(i,j,kc,QREINT) = xi1*rhoe + xi*qzm(i,j,kc,QREINT)
-             qzm(i,j,kc,QPRES ) = xi1*p    + xi*qzm(i,j,kc,QPRES )
- 
-          endif
-
           ! If rho or p too small, set all the slopes to zero
           if (qzm(i,j,kc,QRHO ) .lt. small_dens .or. &
               qzm(i,j,kc,QPRES) .lt. small_pres) then
@@ -1149,35 +1014,23 @@ contains
                   ! Plus state on face kc
                   w = q(i,j,k3d,QW)
 
-                  if (ppm_flatten_before_integrals == 0) then
-                     xi = flatn(i,j,k3d)
-                  else
-                     xi = ONE
-                  endif
-
                   if (w .gt. ZERO) then
                      qzp(i,j,kc,n) = q(i,j,k3d,n)
                   else if (w .lt. ZERO) then
-                     qzp(i,j,kc,n) = q(i,j,k3d,n) + xi*(Im(i,j,kc,3,2,n) - q(i,j,k3d,n))
+                     qzp(i,j,kc,n) = q(i,j,k3d,n) + (Im(i,j,kc,3,2,n) - q(i,j,k3d,n))
                   else
-                     qzp(i,j,kc,n) = q(i,j,k3d,n) + HALF*xi*(Im(i,j,kc,3,2,n) - q(i,j,k3d,n))
+                     qzp(i,j,kc,n) = q(i,j,k3d,n) + HALF*(Im(i,j,kc,3,2,n) - q(i,j,k3d,n))
                   endif
 
                   ! Minus state on face k
                   w = q(i,j,k3d-1,QW)
-                  
-                  if (ppm_flatten_before_integrals == 0) then
-                     xi = flatn(i,j,k3d-1)
-                  else
-                     xi = ONE
-                  endif
 
                   if (w .gt. ZERO) then
-                     qzm(i,j,kc,n) = q(i,j,k3d-1,n) + xi*(Ip(i,j,km,3,2,n) - q(i,j,k3d-1,n))
+                     qzm(i,j,kc,n) = q(i,j,k3d-1,n) + (Ip(i,j,km,3,2,n) - q(i,j,k3d-1,n))
                   else if (w .lt. ZERO) then
                      qzm(i,j,kc,n) = q(i,j,k3d-1,n)
                   else
-                     qzm(i,j,kc,n) = q(i,j,k3d-1,n) + HALF*xi*(Ip(i,j,km,3,2,n) - q(i,j,k3d-1,n))
+                     qzm(i,j,kc,n) = q(i,j,k3d-1,n) + HALF*(Ip(i,j,km,3,2,n) - q(i,j,k3d-1,n))
                   endif
 
                enddo
