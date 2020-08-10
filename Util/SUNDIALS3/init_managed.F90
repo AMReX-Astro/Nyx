@@ -27,7 +27,7 @@ allocate(QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS, GDGAME, GDRHO, GDPRES, GDU, 
 
 allocate(difmag)
 !allocate(NGDNV, GDPRES, GDU, GDV, GDW,QVAR,use_pressure_law_pdivu,use_area_dt_scale_apply)
-allocate(ppm_type,ppm_reference,ppm_flatten_before_integrals,use_flattening,version_2,use_const_species,normalize_species,inhomo_reion,grav_source_type)
+allocate(ppm_type,ppm_reference,ppm_flatten_before_integrals,use_flattening,use_const_species,normalize_species,inhomo_reion,grav_source_type)
 allocate(cg_maxiter,cg_tol,cg_blend,fix_mass_flux,ppm_predict_gammae,ppm_temp_fix,ppm_reference_eigenvectors, &
      hybrid_riemann,riemann_solver,use_pslope,transverse_reset_density,transverse_reset_rhoe,use_pressure_law_pdivu, &
      use_analriem,use_srcQ_in_trace,use_csmall_gamma,use_reset_state,use_gamma_minus,use_area_dt_scale_apply)
@@ -184,7 +184,7 @@ deallocate(QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS, GDGAME, GDRHO, GDPRES, GDU
 
 deallocate(difmag)
 !deallocate(NGDNV, GDPRES, GDU, GDV, GDW, QVAR,use_pressure_law_pdivu,use_area_dt_scale_apply)
-deallocate(ppm_type,ppm_reference,ppm_flatten_before_integrals,use_flattening,version_2, &
+deallocate(ppm_type,ppm_reference,ppm_flatten_before_integrals,use_flattening,&
      use_const_species,normalize_species,inhomo_reion,grav_source_type)
 deallocate(cg_maxiter,cg_tol,cg_blend,fix_mass_flux,ppm_predict_gammae,ppm_temp_fix,ppm_reference_eigenvectors, &
      hybrid_riemann,riemann_solver,use_pslope,transverse_reset_density,transverse_reset_rhoe,use_pressure_law_pdivu, &
