@@ -128,14 +128,6 @@ contains
              ! Plus state on face i
 
              ! Set the reference state
-             if ( u - cc >= 0.0d0 ) then
-                 rho_ref = rho
-                   u_ref = u
-                   v_ref = v
-                   w_ref = w
-                   p_ref = p
-                rhoe_ref = rhoe
-             else
                  ! This will be the fastest moving state to the left
                  rho_ref = Im(i,j,kc,1,1,QRHO)
                    u_ref = Im(i,j,kc,1,1,QU)
@@ -143,7 +135,6 @@ contains
                    w_ref = Im(i,j,kc,1,1,QW)
                    p_ref = Im(i,j,kc,1,1,QPRES)
                 rhoe_ref = Im(i,j,kc,1,1,QREINT)
-             endif
 
              csqref = (1.d0+gamma_minus_1)*p_ref/rho_ref
              cref = sqrt(csqref)
@@ -252,14 +243,6 @@ contains
              ! Minus state on face i+1
 
              ! Set the reference state
-             if ( u + cc <= 0.0d0 ) then
-                 rho_ref = rho
-                   u_ref = u
-                   v_ref = v
-                   w_ref = w
-                   p_ref = p
-                rhoe_ref = rhoe
-             else
                  ! This will be the fastest moving state to the right
                  rho_ref = Ip(i,j,kc,1,3,QRHO)
                    u_ref = Ip(i,j,kc,1,3,QU)
@@ -267,7 +250,6 @@ contains
                    w_ref = Ip(i,j,kc,1,3,QW)
                    p_ref = Ip(i,j,kc,1,3,QPRES)
                 rhoe_ref = Ip(i,j,kc,1,3,QREINT)
-             endif
 
              csqref = (1.d0+gamma_minus_1)*p_ref/rho_ref
              cref = sqrt(csqref)
@@ -427,14 +409,6 @@ contains
              ! Plus state on face j
 
              ! Set the reference state
-             if ( v - cc >= 0.0d0 ) then
-                 rho_ref = rho
-                   u_ref = u
-                   v_ref = v
-                   w_ref = w
-                   p_ref = p
-                rhoe_ref = rhoe
-             else
                  ! This will be the fastest moving state to the left
                  rho_ref = Im(i,j,kc,2,1,QRHO)
                    u_ref = Im(i,j,kc,2,1,QU)
@@ -442,7 +416,6 @@ contains
                    w_ref = Im(i,j,kc,2,1,QW)
                    p_ref = Im(i,j,kc,2,1,QPRES)
                 rhoe_ref = Im(i,j,kc,2,1,QREINT)
-             endif
 
              csqref = (1.d0+gamma_minus_1)*p_ref/rho_ref
              cref = sqrt(csqref)
@@ -543,14 +516,6 @@ contains
              ! Minus state on face j+1
 
              ! Set the reference state
-             if ( v + cc <= 0.0d0 ) then
-                 rho_ref = rho
-                   u_ref = u
-                   v_ref = v
-                   w_ref = w
-                   p_ref = p
-                rhoe_ref = rhoe
-             else
                  ! This will be the fastest moving state to the right
                  rho_ref = Ip(i,j,kc,2,3,QRHO)
                    u_ref = Ip(i,j,kc,2,3,QU)
@@ -558,7 +523,6 @@ contains
                    w_ref = Ip(i,j,kc,2,3,QW)
                    p_ref = Ip(i,j,kc,2,3,QPRES)
                 rhoe_ref = Ip(i,j,kc,2,3,QREINT)
-             endif
 
              csqref = (1.d0+gamma_minus_1)*p_ref/rho_ref
              cref = sqrt(csqref)
@@ -750,6 +714,7 @@ contains
     real(rt) apright, amright, azrright, azeright
     real(rt) apleft, amleft, azrleft, azeleft
     real(rt) halfdt
+    real(rt) cref,csqref,enthref
 
     integer, parameter :: igx = 1
     integer, parameter :: igy = 2
@@ -792,14 +757,6 @@ contains
           ! Plus state on face kc
 
           ! Set the reference state
-          if ( w - cc >= 0.0d0 ) then
-              rho_ref = rho
-                u_ref = u
-                v_ref = v
-                w_ref = w
-                p_ref = p
-             rhoe_ref = rhoe
-          else
                  ! This will be the fastest moving state to the left
               rho_ref = Im(i,j,kc,3,1,QRHO)
                 u_ref = Im(i,j,kc,3,1,QU)
@@ -807,7 +764,6 @@ contains
                 w_ref = Im(i,j,kc,3,1,QW)
                 p_ref = Im(i,j,kc,3,1,QPRES)
              rhoe_ref = Im(i,j,kc,3,1,QREINT)
-          endif
 
              csqref = (1.d0+gamma_minus_1)*p_ref/rho_ref
              cref = sqrt(csqref)
@@ -918,14 +874,6 @@ contains
           enth = ( (rhoe+p)/rho )/csq
 
           ! Set the reference state
-          if ( w + cc <= 0.0d0 ) then
-              rho_ref = rho
-                u_ref = u
-                v_ref = v
-                w_ref = w
-                p_ref = p
-             rhoe_ref = rhoe
-          else
               ! This will be the fastest moving state to the right
               rho_ref = Ip(i,j,km,3,3,QRHO)
                 u_ref = Ip(i,j,km,3,3,QU)
@@ -933,7 +881,6 @@ contains
                 w_ref = Ip(i,j,km,3,3,QW)
                 p_ref = Ip(i,j,km,3,3,QPRES)
              rhoe_ref = Ip(i,j,km,3,3,QREINT)
-          endif
 
              csqref = (1.d0+gamma_minus_1)*p_ref/rho_ref
              cref = sqrt(csqref)

@@ -37,6 +37,8 @@ contains
 
     real(rt), intent(in   ) ::  dx,dy,dz,dt,a_old
 
+    integer :: n
+
     real(rt) :: dt_over_a
     integer          :: k3d,kc
 
