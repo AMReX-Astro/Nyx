@@ -55,7 +55,6 @@ contains
     use amrex_error_module, only: amrex_error
 #endif
     use prob_params_module, only : dim
-    use meth_params_module, only : ppm_flatten_before_integrals
     
     implicit none
 
@@ -179,10 +178,8 @@ contains
                    sp = min(sp, max(s(i+1,j,k,n),s(i,j,k,n)))
 
                    ! Flatten the parabola
-                   if(ppm_flatten_before_integrals .eq. 1) then
-                      sm = flatn(i,j,k)*sm + (ONE-flatn(i,j,k))*s(i,j,k,n)
-                      sp = flatn(i,j,k)*sp + (ONE-flatn(i,j,k))*s(i,j,k,n)
-                   endif
+                   sm = flatn(i,j,k)*sm + (ONE-flatn(i,j,k))*s(i,j,k,n)
+                   sp = flatn(i,j,k)*sp + (ONE-flatn(i,j,k))*s(i,j,k,n)
                       
                    ! Modify using quadratic limiters -- note this version of the limiting comes
                    ! from Colella and Sekora (2008), not the original PPM paper.
@@ -292,10 +289,8 @@ contains
                    sp = min(sp, max(s(i,j+1,k,n),s(i,j,k,n)))
 
                    ! Flatten the parabola
-                   if(ppm_flatten_before_integrals .eq. 1) then
-                      sm = flatn(i,j,k)*sm + (ONE-flatn(i,j,k))*s(i,j,k,n)
-                      sp = flatn(i,j,k)*sp + (ONE-flatn(i,j,k))*s(i,j,k,n)
-                   endif
+                   sm = flatn(i,j,k)*sm + (ONE-flatn(i,j,k))*s(i,j,k,n)
+                   sp = flatn(i,j,k)*sp + (ONE-flatn(i,j,k))*s(i,j,k,n)
                    
                    ! Modify using quadratic limiters
 
@@ -407,10 +402,9 @@ contains
 
                    ! Flatten the parabola
 
-                   if(ppm_flatten_before_integrals .eq. 1) then
-                      sm = flatn(i,j,k)*sm + (ONE-flatn(i,j,k))*s(i,j,k,n)
-                      sp = flatn(i,j,k)*sp + (ONE-flatn(i,j,k))*s(i,j,k,n)
-                   endif
+                   sm = flatn(i,j,k)*sm + (ONE-flatn(i,j,k))*s(i,j,k,n)
+                   sp = flatn(i,j,k)*sp + (ONE-flatn(i,j,k))*s(i,j,k,n)
+
                    ! Modify using quadratic limiters
 
                    if ((sp-s(i,j,k,n))*(s(i,j,k,n)-sm) .le. ZERO) then

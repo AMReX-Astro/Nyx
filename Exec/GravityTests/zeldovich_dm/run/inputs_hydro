@@ -17,9 +17,7 @@ vismf.usepersistentifstreams = 1
 vismf.usesynchronousreads    = 0
 vismf.usedynamicsetselection = 1
 
-
 nyx.ppm_type         = 1
-nyx.ppm_reference    = 1
 nyx.use_const_species = 1
 nyx.h_species = .76
 nyx.he_species = .24

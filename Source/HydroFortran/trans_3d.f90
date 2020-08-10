@@ -1213,8 +1213,7 @@ contains
                                      QPRES, QREINT, &
                                      URHO, UMX, UMY, UMZ, UEDEN, &
                                      small_pres, gamma_minus_1, &
-                                     npassive, upass_map, qpass_map
-                                     
+                                     npassive, upass_map, qpass_map, ppm_type
       implicit none
 
       integer qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3
@@ -1429,6 +1428,22 @@ contains
          enddo
       enddo
 
+      if (ppm_type .eq. 0) then
+         do j = jlo, jhi
+            do i = ilo, ihi
+               qpo(i,j,kc,QRHO) = qpo(i,j,kc,QRHO) + hdt*srcQ(i,j,k3d,QRHO) / a_old
+               qpo(i,j,kc,QU  ) = qpo(i,j,kc,QU  ) + hdt*srcQ(i,j,k3d,QU  ) / a_old
+               qpo(i,j,kc,QV  ) = qpo(i,j,kc,QV  ) + hdt*srcQ(i,j,k3d,QV  ) / a_old
+               qpo(i,j,kc,QW  ) = qpo(i,j,kc,QW  ) + hdt*srcQ(i,j,k3d,QW  ) / a_old
+
+               qmo(i,j,kc,QRHO) = qmo(i,j,kc,QRHO) + hdt*srcQ(i,j,k3d-1,QRHO) / a_old
+               qmo(i,j,kc,QU  ) = qmo(i,j,kc,QU  ) + hdt*srcQ(i,j,k3d-1,QU  ) / a_old
+               qmo(i,j,kc,QV  ) = qmo(i,j,kc,QV  ) + hdt*srcQ(i,j,k3d-1,QV  ) / a_old 
+               qmo(i,j,kc,QW  ) = qmo(i,j,kc,QW  ) + hdt*srcQ(i,j,k3d-1,QW  ) / a_old
+            enddo
+         enddo
+      endif
+
       end subroutine transxy
 
       subroutine transxz(qm,qmo,qp,qpo,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
@@ -1443,8 +1458,7 @@ contains
                                      QPRES, QREINT, &
                                      URHO, UMX, UMY, UMZ, UEDEN, &
                                      small_pres, gamma_minus_1, &
-                                     npassive, upass_map, qpass_map
-                                     
+                                     npassive, upass_map, qpass_map, ppm_type
       implicit none
 
       integer qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3
@@ -1656,6 +1670,26 @@ contains
          enddo
       enddo
 
+      if (ppm_type .eq. 0) then
+         do j = jlo, jhi
+            do i = ilo, ihi
+               if (j.ge.jlo+1) then
+                  qpo(i,j,km,QRHO) = qpo(i,j,km,QRHO) + hdt*srcQ(i,j,k3d,QRHO  ) / a_old
+                  qpo(i,j,km,QU  ) = qpo(i,j,km,QU  ) + hdt*srcQ(i,j,k3d,QU) / a_old
+                  qpo(i,j,km,QV  ) = qpo(i,j,km,QV  ) + hdt*srcQ(i,j,k3d,QV) / a_old
+                  qpo(i,j,km,QW  ) = qpo(i,j,km,QW  ) + hdt*srcQ(i,j,k3d,QW) / a_old
+               end if
+
+               if (j.le.jhi-1) then
+                  qmo(i,j+1,km,QRHO) = qmo(i,j+1,km,QRHO) + hdt*srcQ(i,j,k3d,QRHO  ) / a_old
+                  qmo(i,j+1,km,QU  ) = qmo(i,j+1,km,QU  ) + hdt*srcQ(i,j,k3d,QU) / a_old
+                  qmo(i,j+1,km,QV  ) = qmo(i,j+1,km,QV  ) + hdt*srcQ(i,j,k3d,QV) / a_old
+                  qmo(i,j+1,km,QW  ) = qmo(i,j+1,km,QW  ) + hdt*srcQ(i,j,k3d,QW) / a_old
+               end if
+            enddo
+         enddo
+      endif
+
       end subroutine transxz
 
       subroutine transyz(qm,qmo,qp,qpo,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
@@ -1670,8 +1704,7 @@ contains
                                      QPRES, QREINT, &
                                      URHO, UMX, UMY, UMZ, UEDEN, &
                                      small_pres, gamma_minus_1, &
-                                     npassive, upass_map, qpass_map
-                                     
+                                     npassive, upass_map, qpass_map, ppm_type
       implicit none
 
       integer :: qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3
@@ -1885,6 +1918,26 @@ contains
 
          enddo
       enddo
+
+      if (ppm_type .eq. 0) then
+         do j = jlo, jhi
+            do i = ilo, ihi
+               if (i.ge.ilo+1) then
+                  qpo(i,j,km,QRHO) = qpo(i,j,km,QRHO) + hdt*srcQ(i,j,k3d,QRHO  ) / a_old
+                  qpo(i,j,km,QU  ) = qpo(i,j,km,QU  ) + hdt*srcQ(i,j,k3d,QU) / a_old
+                  qpo(i,j,km,QV  ) = qpo(i,j,km,QV  ) + hdt*srcQ(i,j,k3d,QV) / a_old
+                  qpo(i,j,km,QW  ) = qpo(i,j,km,QW  ) + hdt*srcQ(i,j,k3d,QW) / a_old
+               end if
+   
+               if (i.le.ihi-1) then
+                  qmo(i+1,j,km,QRHO) = qmo(i+1,j,km,QRHO) + hdt*srcQ(i,j,k3d,QRHO  ) / a_old
+                  qmo(i+1,j,km,QU  ) = qmo(i+1,j,km,QU  ) + hdt*srcQ(i,j,k3d,QU) / a_old
+                  qmo(i+1,j,km,QV  ) = qmo(i+1,j,km,QV  ) + hdt*srcQ(i,j,k3d,QV) / a_old
+                  qmo(i+1,j,km,QW  ) = qmo(i+1,j,km,QW  ) + hdt*srcQ(i,j,k3d,QW) / a_old
+               end if
+            enddo
+         enddo
+      endif
 
       end subroutine transyz
 
