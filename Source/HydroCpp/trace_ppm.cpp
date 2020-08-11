@@ -43,6 +43,7 @@ trace_ppm(const Box& bx,
 
   Real hdt = 0.5_rt * dt;
   Real dtdx = dt / dx[idir];
+  Real dtdxovera = dtdx / aold;
 
   auto lo = bx.loVect3d();
   auto hi = bx.hiVect3d();
@@ -149,7 +150,7 @@ trace_ppm(const Box& bx,
       }
 
       ppm_reconstruct(s, flat, sm, sp);
-      ppm_int_profile(sm, sp, s[i0], un, cc, dtdx, Ip[n], Im[n]);
+      ppm_int_profile(sm, sp, s[i0], un, cc, dtdxovera, Ip[n], Im[n]);
 
     }
 
@@ -186,7 +187,7 @@ trace_ppm(const Box& bx,
         }
 
         ppm_reconstruct(s, flat, sm, sp);
-        ppm_int_profile(sm, sp, s[i0], un, cc, dtdx, Ip_src[n], Im_src[n]);
+        ppm_int_profile(sm, sp, s[i0], un, cc, dtdxovera, Ip_src[n], Im_src[n]);
 
       } else {
 
