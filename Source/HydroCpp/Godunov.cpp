@@ -131,17 +131,17 @@ pc_umeth_3D(
       // X slopes and interp
       for (int n = 0; n < nq; ++n)
         slope[n] = plm_slope(i, j, k, n, 0, use_flattening_loc, q);
-      pc_plm_x(i, j, k, qxmarr, qxparr, slope, q, c, a_old, dx, dt, NumSpec);
+      pc_plm_x(i, j, k, qxmarr, qxparr, srcQ, slope, q, c, a_old, dx, dt, NumSpec);
 
       // Y slopes and interp
       for (int n = 0; n < nq; n++)
         slope[n] = plm_slope(i, j, k, n, 1, use_flattening_loc, q);
-      pc_plm_y(i, j, k, qymarr, qyparr, slope, q, c, a_old, dy, dt, NumSpec);
+      pc_plm_y(i, j, k, qymarr, qyparr, srcQ, slope, q, c, a_old, dy, dt, NumSpec);
 
        // Z slopes and interp
        for (int n = 0; n < nq; ++n)
          slope[n] = plm_slope(i, j, k, n, 2, use_flattening_loc, q);
-       pc_plm_z(i, j, k, qzmarr, qzparr, slope, q, c, a_old, dz, dt, NumSpec);
+       pc_plm_z(i, j, k, qzmarr, qzparr, srcQ, slope, q, c, a_old, dz, dt, NumSpec);
 
      });
 
@@ -434,7 +434,7 @@ pc_umeth_3D(
   const amrex::Box& tyzbx = grow(bx, cdir, 1);
   amrex::ParallelFor(tyzbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_transyz(
-      i, j, k, qm, qp, qxmarr, qxparr, flyz, flzy, qyz, qzy, srcQ, hdt,
+      i, j, k, qm, qp, qxmarr, qxparr, flyz, flzy, qyz, qzy, hdt,
       hdtdy, hdtdz, NumSpec, gamma);
   });
 
@@ -457,7 +457,7 @@ pc_umeth_3D(
   const amrex::Box& txzbx = grow(bx, cdir, 1);
   amrex::ParallelFor(txzbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_transxz(
-      i, j, k, qm, qp, qymarr, qyparr, flxz, flzx, qxz, qzx, srcQ, hdt,
+      i, j, k, qm, qp, qymarr, qyparr, flxz, flzx, qxz, qzx, hdt,
       hdtdx, hdtdz, NumSpec, gamma);
   });
   
@@ -480,7 +480,7 @@ pc_umeth_3D(
   const amrex::Box& txybx = grow(bx, cdir, 1);
   amrex::ParallelFor(txybx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_transxy(
-      i, j, k, qm, qp, qzmarr, qzparr, flxy, flyx, qxy, qyx, srcQ, hdt,
+      i, j, k, qm, qp, qzmarr, qzparr, flxy, flyx, qxy, qyx, hdt,
       hdtdx, hdtdy, NumSpec, gamma);
   });
 

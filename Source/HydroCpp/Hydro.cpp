@@ -3,7 +3,7 @@
 
 /**
  *  Set up the source terms to go into the hydro.
- */
+*/
 void
 Nyx::construct_hydro_source(
   const amrex::MultiFab& S,
@@ -319,8 +319,7 @@ pc_umdrv(
   amrex::Array4<const amrex::Real> const& uin,
   amrex::Array4<amrex::Real> const& uout,
   amrex::Array4<const amrex::Real> const& q,
-  amrex::Array4<const amrex::Real> const&
-    src_q, // amrex::IArrayBox const& bcMask,
+  amrex::Array4<const amrex::Real> const& src_q, 
   const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
   const amrex::Real* dx,
   const amrex::Real dt,
@@ -362,7 +361,7 @@ pc_umdrv(
   pc_umeth_3D(
     bx, bclo, bchi, 
     domlo, domhi, 
-    q, nq, src_q, // bcMask,
+    q, nq, src_q,
     flx[0], flx[1], flx[2], 
     qec_arr[0], qec_arr[1], qec_arr[2], 
     pdivuarr, vol, dx, dt, a_old, a_new, NumSpec, gamma, gamma_minus_1,

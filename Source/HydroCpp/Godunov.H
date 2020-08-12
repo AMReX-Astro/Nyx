@@ -421,7 +421,7 @@ pc_transy1(
   renewr = rer - flxe;
 
   // Convert back to primitive
-  qp(i, j, k, QRHO) = rrnewr; // + hdt*srcr;
+  qp(i, j, k, QRHO) = rrnewr;
   qp(i, j, k, QU) = runewr / rrnewr;
   qp(i, j, k, QV) = rvnewr / rrnewr;
   qp(i, j, k, QW) = rwnewr / rrnewr;
@@ -791,7 +791,7 @@ pc_transz1(
   renewr = rer - flxe;
 
   // Convert back to primitive
-  qp(i, j, k, QRHO) = rrnewr; // + hdt*srcr;
+  qp(i, j, k, QRHO) = rrnewr;
   qp(i, j, k, QU) = runewr / rrnewr;
   qp(i, j, k, QV) = rvnewr / rrnewr;
   qp(i, j, k, QW) = rwnewr / rrnewr;
@@ -974,7 +974,6 @@ pc_transxy(
   amrex::Array4<const amrex::Real> const& flxy,
   amrex::Array4<const amrex::Real> const& qx,
   amrex::Array4<const amrex::Real> const& qy,
-  amrex::Array4<const amrex::Real> const& srcq,
   const amrex::Real hdt,
   const amrex::Real cdtdx,
   const amrex::Real cdtdy, 
@@ -990,7 +989,6 @@ pc_transxy(
   amrex::Real pggpy, pggmy, ugpy, ugmy;
   amrex::Real dAupy, pavy, dAuy;
   amrex::Real flxrho, flxu, flxv, flxw, flxe;
-  amrex::Real srcpass, srcrho, srcu, srcv, srcw, srce, srcp;
 
   flxrho = cdtdx * (flxx(i + 1, j, k, URHO) - flxx(i, j, k, URHO)) +
            cdtdy * (flxy(i, j + 1, k, URHO) - flxy(i, j, k, URHO));
@@ -1003,13 +1001,6 @@ pc_transxy(
   flxe = cdtdx * (flxx(i + 1, j, k, UEDEN) - flxx(i, j, k, UEDEN)) +
          cdtdy * (flxy(i, j + 1, k, UEDEN) - flxy(i, j, k, UEDEN));
 
-  srcrho = srcq(i, j, k, QRHO);
-  srcu = srcq(i, j, k, QU);
-  srcv = srcq(i, j, k, QV);
-  srcw = srcq(i, j, k, QW);
-  srce = srcq(i, j, k, QREINT);
-  srcp = srcq(i, j, k, QPRES);
-
   // Update passive variables
   rrr = qzp(i, j, k, QRHO);
   rrl = qzm(i, j, k + 1, QRHO);
@@ -1017,15 +1008,14 @@ pc_transxy(
   rrnewr = rrr - flxrho;
   for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
     int nqp = n;
-    srcpass = srcq(i, j, k, nqp);
     compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n)) +
             cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
     // qp
     compo = rrr * qzp(i, j, k, nqp) - compn;
-    qp(i, j, k, nqp) = compo / rrnewr + hdt * srcpass;
+    qp(i, j, k, nqp) = compo / rrnewr + hdt;
     // qm
     compo = rrl * qzm(i, j, k + 1, nqp) - compn;
-    qm(i, j, k + 1, nqp) = compo / rrnewl + hdt * srcpass;
+    qm(i, j, k + 1, nqp) = compo / rrnewl + hdt;
   }
 
   // Update hydro vars
@@ -1061,13 +1051,13 @@ pc_transxy(
   rwnewr = rwr - flxw;
   renewr = rer - flxe;
 
-  qp(i, j, k, QRHO) = rrnewr + hdt * srcrho;
-  qp(i, j, k, QU) = runewr / rrnewr + hdt * srcu;
-  qp(i, j, k, QV) = rvnewr / rrnewr + hdt * srcv;
-  qp(i, j, k, QW) = rwnewr / rrnewr + hdt * srcw;
+  qp(i, j, k, QRHO) = rrnewr;
+  qp(i, j, k, QU) = runewr / rrnewr;
+  qp(i, j, k, QV) = rvnewr / rrnewr;
+  qp(i, j, k, QW) = rwnewr / rrnewr;
   rhoekinr =
     0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
-  qp(i, j, k, QREINT) = renewr - rhoekinr + hdt * srce;
+  qp(i, j, k, QREINT) = renewr - rhoekinr;
   amrex::Real temppres = qp(i, j, k, QREINT) * (gamma - 1.0);
   qp(i, j, k, QPRES) = amrex::max(temppres, SMALL_PRES);
 
@@ -1083,13 +1073,13 @@ pc_transxy(
   rwnewl = rwl - flxw;
   renewl = rel - flxe;
 
-  qm(i, j, k + 1, QRHO) = rrnewl + hdt * srcrho;
-  qm(i, j, k + 1, QU) = runewl / rrnewl + hdt * srcu;
-  qm(i, j, k + 1, QV) = rvnewl / rrnewl + hdt * srcv;
-  qm(i, j, k + 1, QW) = rwnewl / rrnewl + hdt * srcw;
+  qm(i, j, k + 1, QRHO) = rrnewl;
+  qm(i, j, k + 1, QU) = runewl / rrnewl;
+  qm(i, j, k + 1, QV) = rvnewl / rrnewl;
+  qm(i, j, k + 1, QW) = rwnewl / rrnewl;
   rhoekinl =
     0.5 * (runewl * runewl + rvnewl * rvnewl + rwnewl * rwnewl) / rrnewl;
-  qm(i, j, k + 1, QREINT) = renewl - rhoekinl + hdt * srce;
+  qm(i, j, k + 1, QREINT) = renewl - rhoekinl;
   temppres = qm(i, j, k + 1, QREINT) * (gamma - 1.0);
   qm(i, j, k + 1, QPRES) = amrex::max(temppres, SMALL_PRES);
 }
@@ -1110,7 +1100,6 @@ pc_transxz(
   amrex::Array4<const amrex::Real> const& flxz,
   amrex::Array4<const amrex::Real> const& qx,
   amrex::Array4<const amrex::Real> const& qz,
-  amrex::Array4<const amrex::Real> const& srcq,
   const amrex::Real hdt,
   const amrex::Real cdtdx,
   const amrex::Real cdtdz, 
@@ -1126,7 +1115,6 @@ pc_transxz(
   amrex::Real pggpz, pggmz, ugpz, ugmz;
   amrex::Real dAupz, pavz, dAuz;
   amrex::Real flxrho, flxu, flxv, flxw, flxe;
-  amrex::Real srcpass, srcrho, srcu, srcv, srcw, srce, srcp;
 
   flxrho = cdtdx * (flxx(i + 1, j, k, URHO) - flxx(i, j, k, URHO)) +
            cdtdz * (flxz(i, j, k + 1, URHO) - flxz(i, j, k, URHO));
@@ -1139,13 +1127,6 @@ pc_transxz(
   flxe = cdtdx * (flxx(i + 1, j, k, UEDEN) - flxx(i, j, k, UEDEN)) +
          cdtdz * (flxz(i, j, k + 1, UEDEN) - flxz(i, j, k, UEDEN));
 
-  srcrho = srcq(i, j, k, QRHO);
-  srcu = srcq(i, j, k, QU);
-  srcv = srcq(i, j, k, QV);
-  srcw = srcq(i, j, k, QW);
-  srce = srcq(i, j, k, QREINT);
-  srcp = srcq(i, j, k, QPRES);
-
   // Update passive variables
   rrr = qyp(i, j, k, QRHO);
   rrl = qym(i, j + 1, k, QRHO);
@@ -1153,15 +1134,14 @@ pc_transxz(
   rrnewr = rrr - flxrho;
   for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
     int nqp = n;
-    srcpass = srcq(i, j, k, nqp);
     compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n)) +
             cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
     // qp
     compo = rrr * qyp(i, j, k, nqp) - compn;
-    qp(i, j, k, nqp) = compo / rrnewr + hdt * srcpass;
+    qp(i, j, k, nqp) = compo / rrnewr;
     // qm
     compo = rrl * qym(i, j + 1, k, nqp) - compn;
-    qm(i, j + 1, k, nqp) = compo / rrnewl + hdt * srcpass;
+    qm(i, j + 1, k, nqp) = compo / rrnewl;
   }
 
   // Update hydro vars
@@ -1197,13 +1177,13 @@ pc_transxz(
   rwnewr = rwr - flxw;
   renewr = rer - flxe;
 
-  qp(i, j, k, QRHO) = rrnewr + hdt * srcrho;
-  qp(i, j, k, QU) = runewr / rrnewr + hdt * srcu;
-  qp(i, j, k, QV) = rvnewr / rrnewr + hdt * srcv;
-  qp(i, j, k, QW) = rwnewr / rrnewr + hdt * srcw;
+  qp(i, j, k, QRHO) = rrnewr;
+  qp(i, j, k, QU) = runewr / rrnewr;
+  qp(i, j, k, QV) = rvnewr / rrnewr;
+  qp(i, j, k, QW) = rwnewr / rrnewr;
   rhoekinr =
     0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
-  qp(i, j, k, QREINT) = renewr - rhoekinr + hdt * srce;
+  qp(i, j, k, QREINT) = renewr - rhoekinr;
   amrex::Real temppres = qp(i, j, k, QREINT) * (gamma - 1.0);
   qp(i, j, k, QPRES) = amrex::max(temppres, SMALL_PRES);
 
@@ -1219,13 +1199,13 @@ pc_transxz(
   rwnewl = rwl - flxw;
   renewl = rel - flxe;
 
-  qm(i, j + 1, k, QRHO) = rrnewl + hdt * srcrho;
-  qm(i, j + 1, k, QU) = runewl / rrnewl + hdt * srcu;
-  qm(i, j + 1, k, QV) = rvnewl / rrnewl + hdt * srcv;
-  qm(i, j + 1, k, QW) = rwnewl / rrnewl + hdt * srcw;
+  qm(i, j + 1, k, QRHO) = rrnewl;
+  qm(i, j + 1, k, QU) = runewl / rrnewl;
+  qm(i, j + 1, k, QV) = rvnewl / rrnewl;
+  qm(i, j + 1, k, QW) = rwnewl / rrnewl;
   rhoekinl =
     0.5 * (runewl * runewl + rvnewl * rvnewl + rwnewl * rwnewl) / rrnewl;
-  qm(i, j + 1, k, QREINT) = renewl - rhoekinl + hdt * srce;
+  qm(i, j + 1, k, QREINT) = renewl - rhoekinl;
   temppres = qm(i, j + 1, k, QREINT) * (gamma - 1.0);
   qm(i, j + 1, k, QPRES) = amrex::max(temppres, SMALL_PRES);
 
@@ -1247,7 +1227,6 @@ pc_transyz(
   amrex::Array4<const amrex::Real> const& flxz,
   amrex::Array4<const amrex::Real> const& qy,
   amrex::Array4<const amrex::Real> const& qz,
-  amrex::Array4<const amrex::Real> const& srcq,
   const amrex::Real hdt,
   const amrex::Real cdtdy,
   const amrex::Real cdtdz, 
@@ -1263,7 +1242,6 @@ pc_transyz(
   amrex::Real pggpy, pggmy, ugpy, ugmy;
   amrex::Real dAupy, pavy, dAuy;
   amrex::Real flxrho, flxu, flxv, flxw, flxe;
-  amrex::Real srcpass, srcrho, srcu, srcv, srcw, srce, srcp;
 
   flxrho = cdtdy * (flxy(i, j + 1, k, URHO) - flxy(i, j, k, URHO)) +
            cdtdz * (flxz(i, j, k + 1, URHO) - flxz(i, j, k, URHO));
@@ -1276,13 +1254,6 @@ pc_transyz(
   flxe = cdtdy * (flxy(i, j + 1, k, UEDEN) - flxy(i, j, k, UEDEN)) +
          cdtdz * (flxz(i, j, k + 1, UEDEN) - flxz(i, j, k, UEDEN));
 
-  srcrho = srcq(i, j, k, QRHO);
-  srcu = srcq(i, j, k, QU);
-  srcv = srcq(i, j, k, QV);
-  srcw = srcq(i, j, k, QW);
-  srce = srcq(i, j, k, QREINT);
-  srcp = srcq(i, j, k, QPRES);
-
   // Update passive variables
   rrr = qxp(i, j, k, QRHO);
   rrl = qxm(i + 1, j, k, QRHO);
@@ -1291,15 +1262,14 @@ pc_transyz(
 
   for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
     int nqp = n;
-    srcpass = srcq(i, j, k, nqp);
     compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n)) +
             cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
     // qp
     compo = rrr * qxp(i, j, k, nqp) - compn;
-    qp(i, j, k, nqp) = compo / rrnewr + hdt * srcpass;
+    qp(i, j, k, nqp) = compo / rrnewr;
     // qm
     compo = rrl * qxm(i + 1, j, k, nqp) - compn;
-    qm(i + 1, j, k, nqp) = compo / rrnewl + hdt * srcpass;
+    qm(i + 1, j, k, nqp) = compo / rrnewl;
   }
 
   // Update hydro vars
@@ -1335,13 +1305,13 @@ pc_transyz(
   rwnewr = rwr - flxw;
   renewr = rer - flxe;
 
-  qp(i, j, k, QRHO) = rrnewr + hdt * srcrho;
-  qp(i, j, k, QU) = runewr / rrnewr + hdt * srcu;
-  qp(i, j, k, QV) = rvnewr / rrnewr + hdt * srcv;
-  qp(i, j, k, QW) = rwnewr / rrnewr + hdt * srcw;
+  qp(i, j, k, QRHO) = rrnewr;
+  qp(i, j, k, QU) = runewr / rrnewr;
+  qp(i, j, k, QV) = rvnewr / rrnewr;
+  qp(i, j, k, QW) = rwnewr / rrnewr;
   rhoekinr =
     0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
-  qp(i, j, k, QREINT) = renewr - rhoekinr + hdt * srce;
+  qp(i, j, k, QREINT) = renewr - rhoekinr;
   amrex::Real temppres = qp(i, j, k, QREINT) * (gamma - 1.0);
   qp(i, j, k, QPRES) = amrex::max(temppres, SMALL_PRES);
 
@@ -1357,13 +1327,13 @@ pc_transyz(
   rwnewl = rwl - flxw;
   renewl = rel - flxe;
 
-  qm(i + 1, j, k, QRHO) = rrnewl + hdt * srcrho;
-  qm(i + 1, j, k, QU) = runewl / rrnewl + hdt * srcu;
-  qm(i + 1, j, k, QV) = rvnewl / rrnewl + hdt * srcv;
-  qm(i + 1, j, k, QW) = rwnewl / rrnewl + hdt * srcw;
+  qm(i + 1, j, k, QRHO) = rrnewl;
+  qm(i + 1, j, k, QU) = runewl / rrnewl;
+  qm(i + 1, j, k, QV) = rvnewl / rrnewl;
+  qm(i + 1, j, k, QW) = rwnewl / rrnewl;
   rhoekinl =
     0.5 * (runewl * runewl + rvnewl * rvnewl + rwnewl * rwnewl) / rrnewl;
-  qm(i + 1, j, k, QREINT) = renewl - rhoekinl + hdt * srce;
+  qm(i + 1, j, k, QREINT) = renewl - rhoekinl;
   temppres = qm(i + 1, j, k, QREINT) * (gamma - 1.0);
   qm(i + 1, j, k, QPRES) = amrex::max(temppres, SMALL_PRES);
 }
