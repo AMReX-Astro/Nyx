@@ -95,58 +95,6 @@ enum DiagEOS_Type_Index {
 
 };
 
-// Relation of our code units & CGS 
-static constexpr amrex::Real  M_unit = 1.98848e33;    // M_sun
-static constexpr amrex::Real  L_unit = 3.0856776e24;  // Mpc
-static constexpr amrex::Real  V_unit = 1.e5;          // km/s
-static constexpr amrex::Real  T_unit = L_unit/V_unit; // time unit
-
-  
-//   Fundamental constants
-  
-   //   static constexpr amrex::Real  Gconst = 6.67408e-8       
-   //     * M_unit*T_unit**2/L_unit**3;// Newton [g^-1*s^-2*cm^3]
-  
-static constexpr amrex::Real  k_B    = 1.38064852e-16          
-  * T_unit*T_unit/(M_unit*L_unit*L_unit);// Boltzmann [g*cm^2/s^2*K]
-  
-//static constexpr amrex::Real  hbar   = 1.0545718e-27           
-  //  * T_unit/(M_unit*L_unit**2);// Planck/2pi [g*cm^2/s]
-  
-static constexpr amrex::Real  n_A    = 6.022140857e23          
-  * M_unit;// Avogadro's number [mol^-1]
-
-static constexpr amrex::Real  m_nucleon    = 1.0/n_A;
-  
-static constexpr amrex::Real  m_proton = 1.672621e-24          
-  / M_unit;// Proton mass [g]
-  
-//static constexpr amrex::Real  sigma_T =  6.6524587158e-25         
-//  / L_unit**2;// Thomson cross section [cm^2]
-  
-static constexpr amrex::Real  c_light = 2.99792458e10   
-  / V_unit;// Speed of light [cm/s] 
-
-static constexpr amrex::Real  Hubble_const = 100.;    //            Hubble constant / h
-
-  // Useful quantities and conversions
-  
-  static constexpr amrex::Real  mp_over_kb = m_proton/k_B;
-
-  static constexpr amrex::Real XHYDROGEN=.76;
-  static constexpr amrex::Real YHELIUM= 7.8947368421e-2;
-
-//static constexpr amrex::Real  density_to_cgs = M_unit / L_unit**3;
-
-// For internal energy
-//static constexpr amrex::Real  e_to_cgs = V_unit**2;
-
-// For source terms we convert [erg/(s*cm^3) = g/(s^3*cm)] into code units
-//static constexpr amrex::Real  heat_from_cgs = L_unit*(T_unit**3 / M_unit);
-
-// For AGN accretion rate
-//static constexpr amrex::Real  eddington_const = 4.00*pi * Gconst * m_proton / (sigma_T * c_light);
-
 //
 // AmrLevel-derived class for hyperbolic conservation equations for stellar
 // media

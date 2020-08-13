@@ -11,6 +11,14 @@ static constexpr int  NCOOLFILE = 301;    // TREECOOL_middle
 static constexpr int  NCOOLTAB  = 2000 + 1;
 static constexpr amrex::Real TCOOLMAX  = 9.0;
 static constexpr amrex::Real TCOOLMIN  = 0.0;
+static constexpr amrex::Real xacc  = 1e-6;
+//These are ~1e-5 rel diff from m_proton and k_B in constants_cosmo.H
+/*
+static constexpr amrex::Real MPROTON = 1.6726231e-24;
+static constexpr amrex::Real BOLTZMANN = 1.3806e-16;*/
+//Fortran added noise version:
+static constexpr amrex::Real MPROTON = 1.6726230999999999E-024;
+static constexpr amrex::Real BOLTZMANN = 1.3806000442045675E-016;
 
 extern AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLFILE> lzr;
 extern AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLFILE> rggh0;
