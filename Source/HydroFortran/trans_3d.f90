@@ -1283,8 +1283,8 @@ contains
                compnl = compl - hdtdx*(fxy(i+1,j,km,n) - fxy(i,j,km,n)) &
                               - hdtdy*(fyx(i,j+1,km,n) - fyx(i,j,km,n))
 
-               qpo(i,j,kc,nq) = compnr/rrnewr + hdt*srcQ(i,j,k3d  ,nq) / a_half
-               qmo(i,j,kc,nq) = compnl/rrnewl + hdt*srcQ(i,j,k3d-1,nq) / a_half
+               qpo(i,j,kc,nq) = compnr/rrnewr 
+               qmo(i,j,kc,nq) = compnl/rrnewl
 
             enddo
          enddo
@@ -1379,7 +1379,7 @@ contains
             qpo(i,j,kc,QV    ) = rvnewr/rrnewr
             qpo(i,j,kc,QW    ) = rwnewr/rrnewr
 
-            qpo(i,j,kc,QREINT) = renewr - rhoekenr + hdt* srcQ(i,j,k3d,QREINT) / a_old
+            qpo(i,j,kc,QREINT) = renewr - rhoekenr 
             qpo(i,j,kc,QPRES) = qpo(i,j,kc,QREINT) * gamma_minus_1
 
             if (qpo(i,j,kc,QPRES) .lt. small_pres) then
@@ -1394,7 +1394,7 @@ contains
                 pynew = hdtdy*(duyp + pyav*duy*gamma_minus_1)
 
                 pnewr = qp(i,j,kc,QPRES) - pxnew - pynew
-                qpo(i,j,kc,QPRES ) = pnewr + hdt* srcQ(i,j,k3d,QPRES ) / a_old
+                qpo(i,j,kc,QPRES ) = pnewr 
                 qpo(i,j,kc,QREINT) = qpo(i,j,kc,QPRES) / gamma_minus_1
             end if
 
@@ -1405,7 +1405,7 @@ contains
             qmo(i,j,kc,QV    ) = rvnewl/rrnewl
             qmo(i,j,kc,QW    ) = rwnewl/rrnewl
 
-            qmo(i,j,kc,QREINT) = renewl - rhoekenl + hdt* srcQ(i,j,k3d-1,QREINT) / a_old
+            qmo(i,j,kc,QREINT) = renewl - rhoekenl 
             qmo(i,j,kc,QPRES) = qmo(i,j,kc,QREINT) * gamma_minus_1
 
             if (qmo(i,j,kc,QPRES) .lt. small_pres) then
@@ -1421,7 +1421,7 @@ contains
                 pynewm = hdtdy*(duypm + pyavm*duym*gamma_minus_1)
 
                 pnewl = qm(i,j,kc,QPRES) - pxnewm - pynewm
-                qmo(i,j,kc,QPRES ) = pnewl + hdt* srcQ(i,j,k3d-1,QPRES ) / a_old
+                qmo(i,j,kc,QPRES ) = pnewl 
                 qmo(i,j,kc,QREINT) = qmo(i,j,kc,QPRES) / gamma_minus_1
             end if
             ! ************************************************************************* 
@@ -1431,15 +1431,15 @@ contains
       if (ppm_type .eq. 0) then
          do j = jlo, jhi
             do i = ilo, ihi
-               qpo(i,j,kc,QRHO) = qpo(i,j,kc,QRHO) + hdt*srcQ(i,j,k3d,QRHO) / a_old
-               qpo(i,j,kc,QU  ) = qpo(i,j,kc,QU  ) + hdt*srcQ(i,j,k3d,QU  ) / a_old
-               qpo(i,j,kc,QV  ) = qpo(i,j,kc,QV  ) + hdt*srcQ(i,j,k3d,QV  ) / a_old
-               qpo(i,j,kc,QW  ) = qpo(i,j,kc,QW  ) + hdt*srcQ(i,j,k3d,QW  ) / a_old
+               qpo(i,j,kc,QRHO) = qpo(i,j,kc,QRHO) 
+               qpo(i,j,kc,QU  ) = qpo(i,j,kc,QU  ) 
+               qpo(i,j,kc,QV  ) = qpo(i,j,kc,QV  ) 
+               qpo(i,j,kc,QW  ) = qpo(i,j,kc,QW  ) 
 
-               qmo(i,j,kc,QRHO) = qmo(i,j,kc,QRHO) + hdt*srcQ(i,j,k3d-1,QRHO) / a_old
-               qmo(i,j,kc,QU  ) = qmo(i,j,kc,QU  ) + hdt*srcQ(i,j,k3d-1,QU  ) / a_old
-               qmo(i,j,kc,QV  ) = qmo(i,j,kc,QV  ) + hdt*srcQ(i,j,k3d-1,QV  ) / a_old 
-               qmo(i,j,kc,QW  ) = qmo(i,j,kc,QW  ) + hdt*srcQ(i,j,k3d-1,QW  ) / a_old
+               qmo(i,j,kc,QRHO) = qmo(i,j,kc,QRHO) 
+               qmo(i,j,kc,QU  ) = qmo(i,j,kc,QU  ) 
+               qmo(i,j,kc,QV  ) = qmo(i,j,kc,QV  ) 
+               qmo(i,j,kc,QW  ) = qmo(i,j,kc,QW  ) 
             enddo
          enddo
       endif
@@ -1522,7 +1522,7 @@ contains
                   rrnewr = rrr   + drr
                   compnr = compr + dcompn
 
-                  qpo(i,j  ,km,nq) = compnr/rrnewr + hdt*srcQ(i,j,k3d,nq) / a_half
+                  qpo(i,j  ,km,nq) = compnr/rrnewr 
                end if
 
                if (j.le.jhi-1) then
@@ -1532,7 +1532,7 @@ contains
                   rrnewl = rrl   + drr
                   compnl = compl + dcompn
 
-                  qmo(i,j+1,km,nq) = compnl/rrnewl + hdt*srcQ(i,j,k3d,nq) / a_half
+                  qmo(i,j+1,km,nq) = compnl/rrnewl 
                end if
 
             enddo
@@ -1638,12 +1638,12 @@ contains
                qpo(i,j,km,QV    ) = rvnewr/rrnewr
                qpo(i,j,km,QW    ) = rwnewr/rrnewr
 
-               qpo(i,j,km,QREINT) = renewr - rhoekenr + hdt* srcQ(i,j,k3d,QREINT) / a_old
+               qpo(i,j,km,QREINT) = renewr - rhoekenr 
                qpo(i,j,km,QPRES) = qpo(i,j,km,QREINT) * gamma_minus_1
 
                if (qpo(i,j,km,QPRES) .lt. small_pres) then
                    pnewr = qp(i,j  ,km,QPRES) - pxnew - pznew
-                   qpo(i,j,km,QPRES ) = pnewr + hdt* srcQ(i,j,k3d,QPRES ) / a_old
+                   qpo(i,j,km,QPRES ) = pnewr 
                    qpo(i,j,km,QREINT) = qpo(i,j,km,QPRES) / gamma_minus_1
                end if
             end if
@@ -1655,12 +1655,12 @@ contains
                qmo(i,j+1,km,QV    ) = rvnewl/rrnewl
                qmo(i,j+1,km,QW    ) = rwnewl/rrnewl
 
-               qmo(i,j+1,km,QREINT) = renewl - rhoekenl + hdt* srcQ(i,j,k3d,QREINT) / a_old
+               qmo(i,j+1,km,QREINT) = renewl - rhoekenl 
                qmo(i,j+1,km,QPRES) = qmo(i,j+1,km,QREINT) * gamma_minus_1
 
                if (qmo(i,j+1,km,QPRES) .lt. small_pres) then
                    pnewl = qm(i,j+1,km,QPRES) - pxnew - pznew
-                   qmo(i,j+1,km,QPRES ) = pnewl + hdt* srcQ(i,j,k3d,QPRES ) / a_old
+                   qmo(i,j+1,km,QPRES ) = pnewl 
                    qmo(i,j+1,km,QREINT) = qmo(i,j+1,km,QPRES) / gamma_minus_1
                end if
 
@@ -1674,17 +1674,17 @@ contains
          do j = jlo, jhi
             do i = ilo, ihi
                if (j.ge.jlo+1) then
-                  qpo(i,j,km,QRHO) = qpo(i,j,km,QRHO) + hdt*srcQ(i,j,k3d,QRHO  ) / a_old
-                  qpo(i,j,km,QU  ) = qpo(i,j,km,QU  ) + hdt*srcQ(i,j,k3d,QU) / a_old
-                  qpo(i,j,km,QV  ) = qpo(i,j,km,QV  ) + hdt*srcQ(i,j,k3d,QV) / a_old
-                  qpo(i,j,km,QW  ) = qpo(i,j,km,QW  ) + hdt*srcQ(i,j,k3d,QW) / a_old
+                  qpo(i,j,km,QRHO) = qpo(i,j,km,QRHO) 
+                  qpo(i,j,km,QU  ) = qpo(i,j,km,QU  )
+                  qpo(i,j,km,QV  ) = qpo(i,j,km,QV  )
+                  qpo(i,j,km,QW  ) = qpo(i,j,km,QW  )
                end if
 
                if (j.le.jhi-1) then
-                  qmo(i,j+1,km,QRHO) = qmo(i,j+1,km,QRHO) + hdt*srcQ(i,j,k3d,QRHO  ) / a_old
-                  qmo(i,j+1,km,QU  ) = qmo(i,j+1,km,QU  ) + hdt*srcQ(i,j,k3d,QU) / a_old
-                  qmo(i,j+1,km,QV  ) = qmo(i,j+1,km,QV  ) + hdt*srcQ(i,j,k3d,QV) / a_old
-                  qmo(i,j+1,km,QW  ) = qmo(i,j+1,km,QW  ) + hdt*srcQ(i,j,k3d,QW) / a_old
+                  qmo(i,j+1,km,QRHO) = qmo(i,j+1,km,QRHO) 
+                  qmo(i,j+1,km,QU  ) = qmo(i,j+1,km,QU  )
+                  qmo(i,j+1,km,QV  ) = qmo(i,j+1,km,QV  )
+                  qmo(i,j+1,km,QW  ) = qmo(i,j+1,km,QW  )
                end if
             enddo
          enddo
@@ -1768,7 +1768,7 @@ contains
                   rrnewr = rrr   + drr
                   compnr = compr + dcompn
 
-                  qpo(i  ,j,km,nq) = compnr/rrnewr + hdt*srcQ(i,j,k3d,nq) / a_half
+                  qpo(i  ,j,km,nq) = compnr/rrnewr 
 
                end if
 
@@ -1779,7 +1779,7 @@ contains
                   rrnewl = rrl + drr
                   compnl = compl + dcompn
 
-                  qmo(i+1,j,km,nq) = compnl/rrnewl + hdt*srcQ(i,j,k3d,nq) / a_half
+                  qmo(i+1,j,km,nq) = compnl/rrnewl 
                end if
 
             enddo
@@ -1888,12 +1888,12 @@ contains
                qpo(i,j,km,QV    ) = rvnewr/rrnewr
                qpo(i,j,km,QW    ) = rwnewr/rrnewr
 
-               qpo(i,j,km,QREINT) = renewr - rhoekenr + hdt* srcQ(i,j,k3d,QREINT) / a_old
+               qpo(i,j,km,QREINT) = renewr - rhoekenr 
                qpo(i,j,km,QPRES) = qpo(i,j,km,QREINT) * gamma_minus_1
 
                if (qpo(i,j,km,QPRES) .lt. small_pres) then
                    pnewr = qp(i,j,km,QPRES) - pynew - pznew
-                   qpo(i,j,km,QPRES ) = pnewr + hdt* srcQ(i,j,k3d,QPRES ) / a_old
+                   qpo(i,j,km,QPRES ) = pnewr 
                    qpo(i,j,km,QREINT) = qpo(i,j,km,QPRES) / gamma_minus_1
                end if
             end if
@@ -1905,12 +1905,12 @@ contains
                qmo(i+1,j,km,QV    ) = rvnewl/rrnewl
                qmo(i+1,j,km,QW    ) = rwnewl/rrnewl
 
-               qmo(i+1,j,km,QREINT) = renewl - rhoekenl + hdt* srcQ(i,j,k3d,QREINT) / a_old
+               qmo(i+1,j,km,QREINT) = renewl - rhoekenl 
                qmo(i+1,j,km,QPRES) = qmo(i+1,j,km,QREINT) * gamma_minus_1
 
                if (qmo(i+1,j,km,QPRES) .lt. small_pres) then
                    pnewl = qm(i+1,j,km,QPRES) - pynew - pznew
-                   qmo(i+1,j,km,QPRES ) = pnewl + hdt* srcQ(i,j,k3d,QPRES ) / a_old
+                   qmo(i+1,j,km,QPRES ) = pnewl 
                    qmo(i+1,j,km,QREINT) = qmo(i+1,j,km,QPRES) / gamma_minus_1
                end if
             end if
@@ -1923,17 +1923,17 @@ contains
          do j = jlo, jhi
             do i = ilo, ihi
                if (i.ge.ilo+1) then
-                  qpo(i,j,km,QRHO) = qpo(i,j,km,QRHO) + hdt*srcQ(i,j,k3d,QRHO  ) / a_old
-                  qpo(i,j,km,QU  ) = qpo(i,j,km,QU  ) + hdt*srcQ(i,j,k3d,QU) / a_old
-                  qpo(i,j,km,QV  ) = qpo(i,j,km,QV  ) + hdt*srcQ(i,j,k3d,QV) / a_old
-                  qpo(i,j,km,QW  ) = qpo(i,j,km,QW  ) + hdt*srcQ(i,j,k3d,QW) / a_old
+                  qpo(i,j,km,QRHO) = qpo(i,j,km,QRHO) 
+                  qpo(i,j,km,QU  ) = qpo(i,j,km,QU  ) 
+                  qpo(i,j,km,QV  ) = qpo(i,j,km,QV  ) 
+                  qpo(i,j,km,QW  ) = qpo(i,j,km,QW  ) 
                end if
    
                if (i.le.ihi-1) then
-                  qmo(i+1,j,km,QRHO) = qmo(i+1,j,km,QRHO) + hdt*srcQ(i,j,k3d,QRHO  ) / a_old
-                  qmo(i+1,j,km,QU  ) = qmo(i+1,j,km,QU  ) + hdt*srcQ(i,j,k3d,QU) / a_old
-                  qmo(i+1,j,km,QV  ) = qmo(i+1,j,km,QV  ) + hdt*srcQ(i,j,k3d,QV) / a_old
-                  qmo(i+1,j,km,QW  ) = qmo(i+1,j,km,QW  ) + hdt*srcQ(i,j,k3d,QW) / a_old
+                  qmo(i+1,j,km,QRHO) = qmo(i+1,j,km,QRHO) 
+                  qmo(i+1,j,km,QU  ) = qmo(i+1,j,km,QU  )
+                  qmo(i+1,j,km,QV  ) = qmo(i+1,j,km,QV  ) 
+                  qmo(i+1,j,km,QW  ) = qmo(i+1,j,km,QW  )
                end if
             enddo
          enddo

@@ -4,6 +4,7 @@
       subroutine tracexy(q,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                          dqx,dqy,dq_l1,dq_l2,dq_l3,dq_h1,dq_h2,dq_h3, &
                          qxm,qxp,qym,qyp,qpd_l1,qpd_l2,qpd_l3,qpd_h1,qpd_h2,qpd_h3, &
+                         srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                          ilo1,ilo2,ihi1,ihi2,dx,dy,dt,kc,k3d,a_old)
 
       use amrex_error_module
@@ -18,6 +19,7 @@
       integer qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3
       integer dq_l1,dq_l2,dq_l3,dq_h1,dq_h2,dq_h3
       integer qpd_l1,qpd_l2,qpd_l3,qpd_h1,qpd_h2,qpd_h3
+      integer srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3
       integer ilo1,ilo2,ihi1,ihi2
       integer kc,k3d
 
@@ -31,6 +33,7 @@
       real(rt) qxp(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
       real(rt) qym(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
       real(rt) qyp(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
+      real(rt) srcQ(srcq_l1:srcq_h1,srcq_l2:srcq_h2,srcq_l3:srcq_h3,QVAR)
       real(rt) a_old
       real(rt) dx, dy, dt
 
@@ -131,8 +134,17 @@
 
                qxp(i,j,kc,QREINT) = qxp(i,j,kc,QPRES) / gamma_minus_1
 
-            end if
+               qxp(i,j,kc,QRHO  ) = qxp(i,j,kc,QRHO  ) + 0.5_rt*dt*srcQ(i,j,k3d,QRHO)/a_old
+               qxp(i,j,kc,QRHO  ) = max(small_dens, qxp(i,j,kc,QRHO))
+               qxp(i,j,kc,QU    ) = qxp(i,j,kc,QU    ) + 0.5_rt*dt*srcQ(i,j,k3d,QU)/a_old
+               qxp(i,j,kc,QV    ) = qxp(i,j,kc,QV    ) + 0.5_rt*dt*srcQ(i,j,k3d,QV)/a_old
+               qxp(i,j,kc,QW    ) = qxp(i,j,kc,QW    ) + 0.5_rt*dt*srcQ(i,j,k3d,QW)/a_old
+               qxp(i,j,kc,QREINT) = qxp(i,j,kc,QREINT) + 0.5_rt*dt*srcQ(i,j,k3d,QREINT)/a_old
+               qxp(i,j,kc,QPRES ) = qxp(i,j,kc,QPRES ) + 0.5_rt*dt*srcQ(i,j,k3d,QPRES)/a_old
 
+
+            end if
+      
             if (u-cc .ge. ZERO) then
                spminus = (u-cc)*dtdx
             else
@@ -174,6 +186,14 @@
  
                qxm(i+1,j,kc,QREINT) = qxm(i+1,j,kc,QPRES) / gamma_minus_1
 
+               qxm(i+1,j,kc,QRHO  ) = qxm(i+1,j,kc,QRHO  ) + 0.5_rt*dt*srcQ(i,j,k3d,QRHO)/a_old
+               qxm(i+1,j,kc,QRHO  ) = max(small_dens, qxm(i+1,j,kc,QRHO))
+               qxm(i+1,j,kc,QU    ) = qxm(i+1,j,kc,QU   ) + 0.5_rt*dt*srcQ(i,j,k3d,QU)/a_old
+               qxm(i+1,j,kc,QV    ) = qxm(i+1,j,kc,QV   ) + 0.5_rt*dt*srcQ(i,j,k3d,QV)/a_old
+               qxm(i+1,j,kc,QW    ) = qxm(i+1,j,kc,QW   ) + 0.5_rt*dt*srcQ(i,j,k3d,QW)/a_old
+               qxm(i+1,j,kc,QREINT) = qxm(i+1,j,kc,QREINT) + 0.5_rt*dt*srcQ(i,j,k3d,QREINT)/a_old
+               qxm(i+1,j,kc,QPRES ) = qxm(i+1,j,kc,QPRES ) + 0.5_rt*dt*srcQ(i,j,k3d,QPRES)/a_old
+
             endif
 
          enddo
@@ -193,6 +213,7 @@
                   spzero = u*dtdx
                endif
                qxp(i,j,kc,n) = q(i,j,k3d,n) + HALF*(-ONE - spzero )*dqx(i,j,kc,n)
+               qxp(i,j,kc,n ) = qxp(i,j,kc,n ) + 0.5_rt*dt*srcQ(i,j,k3d,n)/a_old
             enddo
 
             ! Left state
@@ -204,6 +225,7 @@
                   spzero = ONE
                endif
                qxm(i+1,j,kc,n) = q(i,j,k3d,n) + HALF*(ONE - spzero )*dqx(i,j,kc,n)
+               qxm(i+1,j,kc,n ) = qxm(i+1,j,kc,n ) + 0.5_rt*dt*srcQ(i,j,k3d,n)/a_old
             enddo
          enddo
       enddo
@@ -276,6 +298,14 @@
 
                qyp(i,j,kc,QREINT) = qyp(i,j,kc,QPRES) / gamma_minus_1
 
+               qyp(i,j,kc,QRHO  ) = qyp(i,j,kc,QRHO  ) + 0.5_rt*dt*srcQ(i,j,k3d,QRHO)/a_old
+               qyp(i,j,kc,QRHO  ) = max(small_dens, qyp(i,j,kc,QRHO))
+               qyp(i,j,kc,QU    ) = qyp(i,j,kc,QU    ) + 0.5_rt*dt*srcQ(i,j,k3d,QU)/a_old
+               qyp(i,j,kc,QV    ) = qyp(i,j,kc,QV    ) + 0.5_rt*dt*srcQ(i,j,k3d,QV)/a_old
+               qyp(i,j,kc,QW    ) = qyp(i,j,kc,QW    ) + 0.5_rt*dt*srcQ(i,j,k3d,QW)/a_old
+               qyp(i,j,kc,QREINT) = qyp(i,j,kc,QREINT) + 0.5_rt*dt*srcQ(i,j,k3d,QREINT)/a_old
+               qyp(i,j,kc,QPRES ) = qyp(i,j,kc,QPRES ) + 0.5_rt*dt*srcQ(i,j,k3d,QPRES)/a_old
+
             end if
 
             if (v-cc .ge. ZERO) then
@@ -319,6 +349,14 @@
 
                qym(i,j+1,kc,QREINT) = qym(i,j+1,kc,QPRES) / gamma_minus_1
 
+               qym(i,j+1,kc,QRHO  ) = qym(i,j+1,kc,QRHO  ) + 0.5_rt*dt*srcQ(i,j,k3d,QRHO)/a_old
+               qym(i,j+1,kc,QRHO  ) = max(small_dens, qym(i,j+1,kc,QRHO))
+               qym(i,j+1,kc,QU    ) = qym(i,j+1,kc,QU    ) + 0.5_rt*dt*srcQ(i,j,k3d,QU )/a_old
+               qym(i,j+1,kc,QV    ) = qym(i,j+1,kc,QV    ) + 0.5_rt*dt*srcQ(i,j,k3d,QV )/a_old
+               qym(i,j+1,kc,QW    ) = qym(i,j+1,kc,QW    ) + 0.5_rt*dt*srcQ(i,j,k3d,QW  )/a_old
+               qym(i,j+1,kc,QREINT) = qym(i,j+1,kc,QREINT) + 0.5_rt*dt*srcQ(i,j,k3d,QREINT)/a_old
+               qym(i,j+1,kc,QPRES ) = qym(i,j+1,kc,QPRES ) + 0.5_rt*dt*srcQ(i,j,k3d,QPRES)/a_old
+
             endif
 
          enddo
@@ -338,6 +376,7 @@
                   spzero = v*dtdy
                endif
                qyp(i,j,kc,n) = q(i,j,k3d,n) + HALF*(-ONE - spzero )*dqy(i,j,kc,n)
+               qyp(i,j,kc,n ) = qyp(i,j,kc,n ) + 0.5_rt*dt*srcQ(i,j,k3d,n)/a_old
             enddo
          end do
 
@@ -351,6 +390,7 @@
                   spzero = ONE
                endif
                qym(i,j+1,kc,n) = q(i,j,k3d,n) + HALF*(ONE - spzero )*dqy(i,j,kc,n)
+               qym(i,j+1,kc,n) = qym(i,j+1,kc,n) + 0.5_rt*dt*srcQ(i,j,k3d,n)/a_old
             enddo
          enddo
       enddo
@@ -364,6 +404,7 @@
       subroutine tracez(q,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
            dqz,dq_l1,dq_l2,dq_l3,dq_h1,dq_h2,dq_h3, &
            qzm,qzp,qpd_l1,qpd_l2,qpd_l3,qpd_h1,qpd_h2,qpd_h3, &
+           srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
            ilo1,ilo2,ihi1,ihi2,dz,dt,km,kc,k3d,a_old)
 
       use amrex_constants_module
@@ -379,6 +420,7 @@
       integer qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3
       integer dq_l1,dq_l2,dq_l3,dq_h1,dq_h2,dq_h3
       integer qpd_l1,qpd_l2,qpd_l3,qpd_h1,qpd_h2,qpd_h3
+      integer srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3
       integer ilo1,ilo2,ihi1,ihi2
       integer km,kc,k3d
 
@@ -388,6 +430,7 @@
       real(rt)  dqz(dq_l1:dq_h1,dq_l2:dq_h2,dq_l3:dq_h3,QVAR)
       real(rt) qzm(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
       real(rt) qzp(qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
+      real(rt) srcQ(srcq_l1:srcq_h1,srcq_l2:srcq_h2,srcq_l3:srcq_h3,QVAR)
       real(rt) a_old
       real(rt) dz, dt
 
@@ -487,6 +530,14 @@
  
             qzp(i,j,kc,QREINT) = qzp(i,j,kc,QPRES) / gamma_minus_1
 
+             qzp(i,j,kc,QRHO  ) = qzp(i,j,kc,QRHO  ) + 0.5_rt*dt*srcQ(i,j,k3d,QRHO)/a_old
+             qzp(i,j,kc,QRHO  ) = max(small_dens, qzp(i,j,kc,QRHO))
+             qzp(i,j,kc,QU    ) = qzp(i,j,kc,QU    ) + 0.5_rt*dt*srcQ(i,j,k3d,QU )/a_old
+             qzp(i,j,kc,QV    ) = qzp(i,j,kc,QV    ) + 0.5_rt*dt*srcQ(i,j,k3d,QV )/a_old
+             qzp(i,j,kc,QW    ) = qzp(i,j,kc,QW    ) + 0.5_rt*dt*srcQ(i,j,k3d,QW  )/a_old
+             qzp(i,j,kc,QREINT) = qzp(i,j,kc,QREINT) + 0.5_rt*dt*srcQ(i,j,k3d,QREINT)/a_old
+             qzp(i,j,kc,QPRES ) = qzp(i,j,kc,QPRES ) + 0.5_rt*dt*srcQ(i,j,k3d,QPRES)/a_old
+
             ! **************************************************************************
 
             ! repeat above with km (k3d-1) to get qzm at kc
@@ -554,6 +605,14 @@
  
             qzm(i,j,kc,QREINT) = qzm(i,j,kc,QPRES) / gamma_minus_1
 
+             qzm(i,j,kc,QRHO  ) = qzm(i,j,kc,QRHO  ) + 0.5_rt*dt*srcQ(i,j,k3d-1,QRHO)/a_old
+             qzm(i,j,kc,QRHO  ) = max(small_dens, qzm(i,j,kc,QRHO))
+             qzm(i,j,kc,QU    ) = qzm(i,j,kc,QU    ) + 0.5_rt*dt*srcQ(i,j,k3d-1,QU )/a_old
+             qzm(i,j,kc,QV    ) = qzm(i,j,kc,QV    ) + 0.5_rt*dt*srcQ(i,j,k3d-1,QV )/a_old
+             qzm(i,j,kc,QW    ) = qzm(i,j,kc,QW    ) + 0.5_rt*dt*srcQ(i,j,k3d-1,QW  )/a_old
+             qzm(i,j,kc,QREINT) = qzm(i,j,kc,QREINT) + 0.5_rt*dt*srcQ(i,j,k3d-1,QREINT)/a_old
+             qzm(i,j,kc,QPRES ) = qzm(i,j,kc,QPRES ) + 0.5_rt*dt*srcQ(i,j,k3d-1,QPRES)/a_old
+
          enddo
       enddo
 
@@ -572,6 +631,7 @@
                   spzero = w*dtdz
                endif
                qzp(i,j,kc,n) = q(i,j,k3d,n) + HALF*(-ONE - spzero )*dqz(i,j,kc,n)
+               qzp(i,j,kc,n ) = qzp(i,j,kc,n ) + 0.5_rt*dt*srcQ(i,j,k3d,QPRES)/a_old
 
                ! Bottom state
                w = q(i,j,k3d-1,QW)
@@ -581,6 +641,7 @@
                   spzero = ONE
                endif
                qzm(i,j,kc,n) = q(i,j,k3d-1,n) + HALF*(ONE - spzero )*dqz(i,j,km,n)
+               qzm(i,j,kc,n ) = qzm(i,j,kc,n ) + 0.5_rt*dt*srcQ(i,j,k3d-1,QPRES)/a_old
 
             enddo
          enddo

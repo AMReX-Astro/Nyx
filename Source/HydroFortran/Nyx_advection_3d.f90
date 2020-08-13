@@ -268,8 +268,9 @@
                         ilo1,ilo2,ihi1,ihi2,dx,dy,dz,dt,k3d,kc,a_old)
             end do
 
-            do n=1,3
-               call ppm(srcQ(:,:,:,QU+n-1),srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
+            do n=1,QVAR
+               !call ppm(srcQ(:,:,:,QU+n-1),srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
+               call ppm(srcQ(:,:,:,n),srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                         q(:,:,:,QU:),c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                         flatn,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                         Ip_g(:,:,:,:,:,n),Im_g(:,:,:,:,:,n), &
@@ -294,6 +295,7 @@
             call tracexy(q,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                          dqx,dqy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                          qxm,qxp,qym,qyp,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+                         srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                          ilo1,ilo2,ihi1,ihi2,dx,dy,dt,kc,k3d,a_old)
 
          else 
@@ -359,6 +361,7 @@
                call tracez(q,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                            dqz,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                            qzm,qzp,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+                           srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                            ilo1,ilo2,ihi1,ihi2,dz,dt,km,kc,k3d,a_old)
             else 
                print *,'>>> ... we only support ppm_type >= 0, not: ',ppm_type 
