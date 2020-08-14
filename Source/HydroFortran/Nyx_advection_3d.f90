@@ -226,8 +226,8 @@
       call amrex_allocate ( Ip,ilo1-1,ihi1+1,ilo2-1,ihi2+1,1,2,1,3,1,3,1,QVAR)
       call amrex_allocate ( Im,ilo1-1,ihi1+1,ilo2-1,ihi2+1,1,2,1,3,1,3,1,QVAR)
 
-      call amrex_allocate (Ip_g,ilo1-1,ihi1+1,ilo2-1,ihi2+1,1,2,1,3,1,3,1,3)
-      call amrex_allocate (Im_g,ilo1-1,ihi1+1,ilo2-1,ihi2+1,1,2,1,3,1,3,1,3)
+      call amrex_allocate (Ip_g,ilo1-1,ihi1+1,ilo2-1,ihi2+1,1,2,1,3,1,3,1,QVAR)
+      call amrex_allocate (Im_g,ilo1-1,ihi1+1,ilo2-1,ihi2+1,1,2,1,3,1,3,1,QVAR)
 
       a_half = HALF * (a_old + a_new)
 
@@ -281,7 +281,6 @@
             call tracexy_ppm(q,c,flatn,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                              Ip,Im,Ip_g,Im_g, &
                              qxm,qxp,qym,qyp,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
-                             srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                              ilo1,ilo2,ihi1,ihi2,dt,a_old,kc,k3d)
 
          else if (ppm_type .eq. 0) then
@@ -355,7 +354,6 @@
                call tracez_ppm(q,c,flatn,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                                Ip,Im,Ip_g,Im_g, &
                                qzm,qzp,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
-                               srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                                ilo1,ilo2,ihi1,ihi2,dt,a_old,km,kc,k3d)
             else if (ppm_type .eq. 0) then
                call tracez(q,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
