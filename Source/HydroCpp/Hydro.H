@@ -15,7 +15,7 @@ pc_srctoprim(
   amrex::Array4<const amrex::Real> const& q,
   amrex::Array4<const amrex::Real> const& grav,
   amrex::Array4<const amrex::Real> const& src,
-  amrex::Array4<amrex::Real> const& srcq,
+  amrex::Array4<amrex::Real> const& srcQ,
   const amrex::Real a_half, const amrex::Real a_dot,
   const int NumSpec, const amrex::Real gamma_minus_1)
 {
@@ -34,29 +34,29 @@ pc_srctoprim(
 
   // srcrho != rhoinv
   // SrcQ Calc
-  srcq(i, j, k, QRHO) = srcrho;
-  srcq(i, j, k, QU) = umx * rhoinv - a_dot * vx + gravx;
-  srcq(i, j, k, QV) = umy * rhoinv - a_dot * vy + gravy;
-  srcq(i, j, k, QW) = umz * rhoinv - a_dot * vz + gravz;
+  srcQ(i, j, k, QRHO) = srcrho;
+  srcQ(i, j, k, QU) = umx * rhoinv - a_dot * vx + gravx;
+  srcQ(i, j, k, QV) = umy * rhoinv - a_dot * vy + gravy;
+  srcQ(i, j, k, QW) = umz * rhoinv - a_dot * vz + gravz;
 
   //QREINT src depends on total and internal energy relationship
   /*
-  srcq(i, j, k, QREINT) = src(i, j, k, UEDEN) - vx * umx - vy * umy -
+  srcQ(i, j, k, QREINT) = src(i, j, k, UEDEN) - vx * umx - vy * umy -
                           vz * umz +
                           srcrho * (vx * vx + vy * vy + vz * vz);
   */
-  srcq(i, j, k, QREINT) = src(i, j, k, UEDEN) - vx * umx - vy * umy -
+  srcQ(i, j, k, QREINT) = src(i, j, k, UEDEN) - vx * umx - vy * umy -
                           vz * umz +
                           - a_dot * 3.0 * gamma_minus_1 * q(i , j, k, QREINT);
   
   const amrex::Real dpde = gamma_minus_1 * q(i,j,k,QRHO);
   const amrex::Real dpdr = gamma_minus_1 * q(i,j,k,QREINT)/q(i,j,k,QRHO);
-  srcq(i,j,k,QPRES ) = dpde * srcq(i,j,k,QREINT) * rhoinv
-          + dpdr * srcq(i,j,k,QRHO);
+
+  srcQ(i,j,k,QPRES ) = dpde * srcQ(i,j,k,QREINT) * rhoinv + dpdr * srcQ(i,j,k,QRHO);
 
   //Might not need correction from q
   for (int n = 0; n < NumSpec; ++n) {
-    srcq(i, j, k, FirstSpec + n) = (src(i, j, k, FirstSpec + n) - q(i, j, k, FirstSpec + n) * srcrho) * rhoinv;
+    srcQ(i, j, k, FirstSpec + n) = (src(i, j, k, FirstSpec + n) - q(i, j, k, FirstSpec + n) * srcrho) * rhoinv;
   }
 
 }
