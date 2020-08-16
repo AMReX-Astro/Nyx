@@ -65,8 +65,7 @@ Nyx::sum_integrated_quantities ()
 
         if (parent->NumDataLogs() >= num_global_data_logs + lev + 1)
         {
-            if (ParallelDescriptor::IOProcessor())
-                std::cout << "Computing statistics for level " << lev << " at time " << time << '\n';
+            amrex::Print << "Computing statistics for level " << lev << " at time " << time << '\n';
 
             rho_E_lev = nyx_lev.vol_weight_sum("rho_E", time, false);
             rho_e_lev = nyx_lev.vol_weight_sum("rho_e", time, false);
@@ -81,8 +80,7 @@ Nyx::sum_integrated_quantities ()
 
         if (ParallelDescriptor::IOProcessor() && parent->NumDataLogs() >= num_global_data_logs + lev + 1) 
         {
-
-            std::cout << "Writing level " << lev << " statistics to data log #" << num_global_data_logs + lev << '\n';
+            amrex::Print() << "Writing level " << lev << " statistics to data log #" << num_global_data_logs + lev << '\n';
             std::ostream& data_log_lev = parent->DataLog(num_global_data_logs + lev);
 
             if (time == 0)
@@ -121,19 +119,19 @@ Nyx::sum_integrated_quantities ()
     magvort /= box_vol;
     magvort = std::sqrt(magvort);
 
+    if (verbose > 0) 
+    {
+         amrex::Print()t << '\n';
+         amrex::Print()t << "BOX VOLUME= " << box_vol << '\n';
+         amrex::Print()t << "TIME= " << time << " MASS        = " << mass << '\n';
+         amrex::Print()t << "TIME= " << time << " XMOM        = " << xmom << '\n';
+         amrex::Print()t << "TIME= " << time << " YMOM        = " << ymom << '\n';
+         amrex::Print()t << "TIME= " << time << " ZMOM        = " << zmom << '\n';
+         amrex::Print()t << "TIME= " << time << " RHO*E       = " << rho_E << '\n';
+    }
+
     if (ParallelDescriptor::IOProcessor())
     {
-      if (verbose > 0) 
-      {
-          std::cout << '\n';
-          std::cout << "BOX VOLUME= " << box_vol << '\n';
-          std::cout << "TIME= " << time << " MASS        = " << mass << '\n';
-          std::cout << "TIME= " << time << " XMOM        = " << xmom << '\n';
-          std::cout << "TIME= " << time << " YMOM        = " << ymom << '\n';
-          std::cout << "TIME= " << time << " ZMOM        = " << zmom << '\n';
-          std::cout << "TIME= " << time << " RHO*E       = " << rho_E << '\n';
-      }
-
       if (parent->NumDataLogs() >= 2)
       {
         std::ostream& data_log1 = parent->DataLog(1);
@@ -290,11 +288,11 @@ Nyx::compute_average_temperature (Real& average_temperature)
         average_temperature += nyx_lev.vol_weight_sum("Temp",time,true);
 
         if (verbose > 1) {
-          std::cout << "Norm2 temperature" << D_new.norm2(Temp_comp)<<std::endl;
-          std::cout << "Norm0 temperature" << D_new.norm0(Temp_comp)<<std::endl;
+          amrex::Print() << "Norm2 temperature" << D_new.norm2(Temp_comp)<<std::endl;
+          amrex::Print() << "Norm0 temperature" << D_new.norm0(Temp_comp)<<std::endl;
 
-          std::cout << "Norm2 rho_e" << S_new.norm2(Eint)<<std::endl;
-          std::cout << "Norm0 rho_e" << S_new.norm0(Eint)<<std::endl;
+          amrex::Print() << "Norm2 rho_e" << S_new.norm2(Eint)<<std::endl;
+          amrex::Print() << "Norm0 rho_e" << S_new.norm0(Eint)<<std::endl;
 
         }
     }

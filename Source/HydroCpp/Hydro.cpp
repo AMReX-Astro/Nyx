@@ -180,12 +180,6 @@ Nyx::construct_hydro_source(
           });
         BL_PROFILE_VAR_STOP(srctop);
 
-        amrex::FArrayBox pradial(amrex::Box::TheUnitBox(), 1);
-        if (!amrex::DefaultGeometry().IsCartesian()) {
-          pradial.resize(amrex::surroundingNodes(bx, 0), 1);
-        }
-        amrex::Elixir pradial_eli = pradial.elixir();
-
 #ifdef AMREX_USE_GPU
         auto device = amrex::RunOn::Gpu;
 #else
@@ -194,7 +188,6 @@ Nyx::construct_hydro_source(
         BL_PROFILE_VAR("Nyx::umdrv()", purm);
         amrex::MultiFab             volume;
         amrex::MultiFab             area[3];
-        amrex::MultiFab             dLogArea[1];
         amrex::Vector< amrex::Vector<amrex::Real> > radius;
 
         volume.clear();
