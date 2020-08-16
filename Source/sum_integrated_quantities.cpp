@@ -65,7 +65,7 @@ Nyx::sum_integrated_quantities ()
 
         if (parent->NumDataLogs() >= num_global_data_logs + lev + 1)
         {
-            amrex::Print << "Computing statistics for level " << lev << " at time " << time << '\n';
+            amrex::Print() << "Computing statistics for level " << lev << " at time " << time << '\n';
 
             rho_E_lev = nyx_lev.vol_weight_sum("rho_E", time, false);
             rho_e_lev = nyx_lev.vol_weight_sum("rho_e", time, false);
@@ -121,13 +121,13 @@ Nyx::sum_integrated_quantities ()
 
     if (verbose > 0) 
     {
-         amrex::Print()t << '\n';
-         amrex::Print()t << "BOX VOLUME= " << box_vol << '\n';
-         amrex::Print()t << "TIME= " << time << " MASS        = " << mass << '\n';
-         amrex::Print()t << "TIME= " << time << " XMOM        = " << xmom << '\n';
-         amrex::Print()t << "TIME= " << time << " YMOM        = " << ymom << '\n';
-         amrex::Print()t << "TIME= " << time << " ZMOM        = " << zmom << '\n';
-         amrex::Print()t << "TIME= " << time << " RHO*E       = " << rho_E << '\n';
+         amrex::Print() << '\n';
+         amrex::Print() << "BOX VOLUME= " << box_vol << '\n';
+         amrex::Print() << "TIME= " << time << " MASS        = " << mass << '\n';
+         amrex::Print() << "TIME= " << time << " XMOM        = " << xmom << '\n';
+         amrex::Print() << "TIME= " << time << " YMOM        = " << ymom << '\n';
+         amrex::Print() << "TIME= " << time << " ZMOM        = " << zmom << '\n';
+         amrex::Print() << "TIME= " << time << " RHO*E       = " << rho_E << '\n';
     }
 
     if (ParallelDescriptor::IOProcessor())
@@ -288,11 +288,11 @@ Nyx::compute_average_temperature (Real& average_temperature)
         average_temperature += nyx_lev.vol_weight_sum("Temp",time,true);
 
         if (verbose > 1) {
-          amrex::Print() << "Norm2 temperature" << D_new.norm2(Temp_comp)<<std::endl;
-          amrex::Print() << "Norm0 temperature" << D_new.norm0(Temp_comp)<<std::endl;
+          amrex::Print() << "Norm2 temperature " << D_new.norm2(Temp_comp)<<std::endl;
+          amrex::Print() << "Norm0 temperature " << D_new.norm0(Temp_comp)<<std::endl;
 
-          amrex::Print() << "Norm2 rho_e" << S_new.norm2(Eint)<<std::endl;
-          amrex::Print() << "Norm0 rho_e" << S_new.norm0(Eint)<<std::endl;
+          amrex::Print() << "Norm2 rho_e " << S_new.norm2(Eint)<<std::endl;
+          amrex::Print() << "Norm0 rho_e " << S_new.norm0(Eint)<<std::endl;
 
         }
     }

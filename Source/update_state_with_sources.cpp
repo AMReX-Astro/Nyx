@@ -13,14 +13,17 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
                                 amrex::Real dt, amrex::Real a_old, amrex::Real a_new)
 {
     BL_PROFILE("Nyx::update_state_with_sources()");
-    if (verbose && ParallelDescriptor::IOProcessor())
-      std::cout << "Updating state with the hydro sources ... " << std::endl;
+
+    if (verbose)
+      amrex::Print() << "Updating state with the hydro sources ... " << std::endl;
+
     MultiFab::RegionTag amrhydro_tag("HydroUpdate_" + std::to_string(level));
+
     if(verbose>1) {
-        std::cout<<"hydro_src norm2(0)"<<hydro_source.norm2(0)<<std::endl;
-        std::cout<<"hydro_src norm2(Eint)"<<hydro_source.norm2(Eint)<<std::endl;
-        std::cout<<"hydro_src norm2(Eint)"<<hydro_source.norm2(Eden)<<std::endl;
-}
+        amrex::Print() << "hydro_src norm2(0)    " << hydro_source.norm2(0)    <<std::endl;
+        amrex::Print() << "hydro_src norm2(Eint) " << hydro_source.norm2(Eint) <<std::endl;
+        amrex::Print() << "hydro_src norm2(Eint) " << hydro_source.norm2(Eden) <<std::endl;
+    }
     const amrex::Real a_half = 0.5 * (a_old + a_new);
     const amrex::Real a_half_inv = 1 / a_half;
     const amrex::Real a_oldsq = a_old * a_old;
