@@ -100,10 +100,6 @@ subroutine integrate_state_force(lo, hi, &
  		state(i,j,k,UEINT) = max(rho_e_orig + delta_re, rho*small_eint)
                 state(i,j,k,UEDEN) = state(i,j,k,UEINT) + rho_K_res
 
-		!if ((i.eq.16).and.(j.eq.16)) then
-                !   print *, "temp: ", k, ne, temp0, T_orig, diag_eos(i,j,k,TEMP_COMP), delta
-                !   print *, "rhoe: ", k, rho, rho*eint0, rho_e_orig, state(i,j,k,UEINT), delta_re
-                !endif
             end do ! i
         end do ! j
     end do ! k
