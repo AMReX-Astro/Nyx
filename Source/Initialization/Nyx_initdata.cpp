@@ -26,6 +26,7 @@ namespace
 static int  do_santa_barbara = 0;
 static int  init_sb_vels     = 1;
 static int  do_readin_ics    = 0;
+static int  fix_random_seed  = 0;
 std::string readin_ics_fname;
 
 void
@@ -36,6 +37,12 @@ Nyx::read_init_params ()
 
     pp.query("do_santa_barbara", do_santa_barbara);
     pp.query("init_sb_vels", init_sb_vels);
+
+    pp.query("fix_random_seed", fix_random_seed);
+    // Note that the value of 1024UL is not significant -- the point here is just to set the
+    //      same seed for all MPI processes for the purpose of regression testing
+    if (fix_random_seed)
+        amrex::InitRandom(1024UL);
 
     if (do_hydro == 0 && do_santa_barbara == 1)
            amrex::Error("Nyx::cant have do_hydro == 0 and do_santa_barbara == 1");

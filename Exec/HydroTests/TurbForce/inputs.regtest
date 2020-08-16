@@ -2,6 +2,8 @@
 
 max_step = 50
 
+nyx.fix_random_seed = 1
+
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic =  1    1    1
 geometry.coord_sys   =  0            # 0 => cart

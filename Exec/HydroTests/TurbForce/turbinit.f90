@@ -36,20 +36,10 @@ contains
 
     twicePi = TWO*M_PI
 
-!   if (blrandseed.gt.0) then
-!      call init_genrand(20908)
-!      call blutilinitrand(blrandseed)
-!      rn = genrand_real1()
-!      call blutilinitrand(blrandseed)
-!      if (amrex_pd_ioprocessor()) then
-!         write (*,*) "blrandseed = ",blrandseed
-!         write (*,*) "first random number = ",rn
-!      endif
-!   else
-!      call init_genrand(111397)
-!      rn = genrand_real1()
-!   endif
-
+    ! Note that if nyx.fix_random_seed = true was set in the inputs file, the seed will be the 
+    !      same across MPI ranks
+    ! Note that if nyx.fix_random_seed = false (the default in Nyx_initdata.cpp), then the seed
+    !      will differ across MPI ranks
     rn = amrex_random()
 
     if (amrex_pd_ioprocessor()) then
