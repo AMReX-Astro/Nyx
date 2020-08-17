@@ -37,10 +37,10 @@ riemann(
   const amrex::Real& small_pres,
   const amrex::Real& small_vel,
   const amrex::Real& small_in,
+  const amrex::Real& csmall,
   const amrex::Real& gamma,
   const int NumSpec)
 {
-  const amrex::Real csmall = small_in * c;
   const amrex::Real wsmall = small_dens * csmall;
 
   amrex::Real gdnv_state_rho = rl;
@@ -151,7 +151,7 @@ riemann(
   reo = mask ? 0.5 * (rel + rer) : reo;
   gamco = mask ? 0.5 * (gamcl + gamcr) : gamco;
 
-  const amrex::Real co = std::sqrt(std::abs(gamco * po / ro));
+  const amrex::Real co = amrex::max(csmall,std::sqrt(std::abs(gamco * po / ro)));
 
   //Is a max or limiter similar to the mask above needed for co?
   const amrex::Real drho = (pstar - po) / (co * co);

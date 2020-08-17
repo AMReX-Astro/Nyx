@@ -118,7 +118,7 @@ pc_cmpflx(
   const int FirstSpec, const int NumSpec,
   const int dir)
 {
-  amrex::Real cav, ustar;
+  amrex::Real csmall, cav, ustar;
   amrex::Real ul, ur, vl, vr, v2l, v2r, rel, rer;
   int idx;
   int IU, IV, IV2;
@@ -132,6 +132,7 @@ pc_cmpflx(
     GU = GDU;
     GV = GDV;
     GV2 = GDW;
+    csmall = amrex::max(small, small * std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i-1,j,k,QREINT) / qprim(i-1,j,k,QRHO))), small * std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
     cav = 0.5 * ( std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i-1,j,k,QREINT) / qprim(i-1,j,k,QRHO)))
                   +std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i  ,j,k,QREINT) / qprim(i  ,j,k,QRHO))) );
     f_idx[0] = UMX;
@@ -144,6 +145,7 @@ pc_cmpflx(
     GU = GDV;
     GV = GDU;
     GV2 = GDW;
+    csmall = amrex::max(small, small * std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j-1,k,QREINT) / qprim(i,j-1,k,QRHO))), small * std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
     cav = 0.5 * ( std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j-1,k,QREINT) / qprim(i,j-1,k,QRHO)))
                                   +std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j  ,k,QREINT) / qprim(i,j  ,k,QRHO))) );
     f_idx[0] = UMY;
@@ -156,6 +158,7 @@ pc_cmpflx(
     GU = GDW;
     GV = GDU;
     GV2 = GDV;
+    csmall = amrex::max(small, small * std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j,k-1,QREINT) / qprim(i,j,k-1,QRHO))), small * std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
     cav = 0.5 * ( std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j,k-1,QREINT) / qprim(i,j,k-1,QRHO)))
                                   +std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
     f_idx[0] = UMZ;
@@ -204,7 +207,7 @@ pc_cmpflx(
     flx(i, j, k, f_idx[0]), flx(i, j, k, f_idx[1]), flx(i, j, k, f_idx[2]),
     flx(i, j, k, UEDEN), flx(i, j, k, UEINT), q(i, j, k, GU), q(i, j, k, GV),
     q(i, j, k, GV2), q(i, j, k, GDPRES), q(i, j, k, GDGAME), 
-    small_dens, small_pres, small_vel, small, gamma, NumSpec);
+    small_dens, small_pres, small_vel, small, csmall, gamma, NumSpec);
 
   amrex::Real flxrho = flx(i, j, k, URHO);
   for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
