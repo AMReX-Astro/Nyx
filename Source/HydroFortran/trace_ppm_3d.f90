@@ -205,13 +205,8 @@ contains
                 qxp(i,j,kc,QW    ) = dw
 !            endif
 
-             ! If rho or p too small, set all the slopes to zero
-              if (qxp(i,j,kc,QRHO ) .lt. small_dens .or. &
-                  qxp(i,j,kc,QPRES) .lt. small_pres) then
-                 qxp(i,j,kc,QPRES) = p
-                 qxp(i,j,kc,QRHO)  = rho
-                 qxp(i,j,kc,QU)    = u
-              end if
+             ! If p too small, use small_pres
+             qxp(i,j,kc,QPRES) = max(small_pres, qxp(i,j,kc,QPRES))
 
              qxp(i,j,kc,QREINT) = qxp(i,j,kc,QPRES) / gamma_minus_1
 
@@ -299,14 +294,8 @@ contains
                  qxm(i+1,j,kc,QV    ) = dv
                  qxm(i+1,j,kc,QW    ) = dw
 !             endif
- 
-             ! If rho or p too small, set all the slopes to zero
-             if (qxm(i+1,j,kc,QRHO ) .lt. small_dens .or. &
-                 qxm(i+1,j,kc,QPRES) .lt. small_pres) then
-                qxm(i+1,j,kc,QRHO)  = rho
-                qxm(i+1,j,kc,QPRES) = p
-                qxm(i+1,j,kc,QU)    = u
-             end if
+             ! If p too small, use small_pres
+             qxm(i+1,j,kc,QPRES) = max(small_pres, qxm(i+1,j,kc,QPRES))
 
              qxm(i+1,j,kc,QREINT) = qxm(i+1,j,kc,QPRES) / gamma_minus_1
           end if
@@ -441,13 +430,8 @@ contains
                  qyp(i,j,kc,QW    ) = dw
 !             endif
  
-             ! If rho or p too small, set all the slopes to zero
-             if (qyp(i,j,kc,QRHO ) .lt. small_dens .or. &
-                 qyp(i,j,kc,QPRES) .lt. small_pres) then
-                qyp(i,j,kc,QRHO)  = rho
-                qyp(i,j,kc,QPRES) = p
-                qyp(i,j,kc,QV)    = v
-             end if
+             ! If p too small, use small_pres
+             qyp(i,j,kc,QPRES) = max(small_pres, qyp(i,j,kc,QPRES))
 
              qyp(i,j,kc,QREINT) = qyp(i,j,kc,QPRES) / gamma_minus_1
           end if
@@ -538,13 +522,8 @@ contains
                  qym(i,j+1,kc,QW    ) = dw
 !             endif
 
-             ! If rho or p too small, set all the slopes to zero
-             if (qym(i,j+1,kc,QRHO ) .lt. small_dens .or. &
-                 qym(i,j+1,kc,QPRES) .lt. small_pres) then
-                qym(i,j+1,kc,QRHO)  = rho
-                qym(i,j+1,kc,QPRES) = p
-                qym(i,j+1,kc,QV)    = v
-             end if
+             ! If p too small, use small_pres
+             qym(i,j+1,kc,QPRES) = max(small_pres, qym(i,j+1,kc,QPRES))
 
              qym(i,j+1,kc,QREINT) = qym(i,j+1,kc,QPRES) / gamma_minus_1
           end if
@@ -748,13 +727,8 @@ contains
               qzp(i,j,kc,QV    ) = dv
 !          endif
 
-          ! If rho or p too small, set all the slopes to zero
-         if (qzp(i,j,kc,QRHO ) .lt. small_dens .or. &
-             qzp(i,j,kc,QPRES) .lt. small_pres) then
-             qzp(i,j,kc,QRHO)  = rho
-             qzp(i,j,kc,QPRES) = p
-             qzp(i,j,kc,QW)    = w
-          end if
+          ! If p too small, use small_pres
+          qzp(i,j,kc,QPRES) = max(small_pres, qzp(i,j,kc,QPRES))
 
           qzp(i,j,kc,QREINT) = qzp(i,j,kc,QPRES) / gamma_minus_1
 
@@ -857,13 +831,8 @@ contains
               qzm(i,j,kc,QV    ) = dv
 !          endif
 
-          ! If rho or p too small, set all the slopes to zero
-          if (qzm(i,j,kc,QRHO ) .lt. small_dens .or. &
-              qzm(i,j,kc,QPRES) .lt. small_pres) then
-             qzm(i,j,kc,QRHO)  = rho
-             qzm(i,j,kc,QPRES) = p
-             qzm(i,j,kc,QW)    = w
-          end if
+          ! If p too small, use small_pres
+          qzm(i,j,kc,QPRES) = max(small_pres, qzm(i,j,kc,QPRES))
 
           qzm(i,j,kc,QREINT) = qzm(i,j,kc,QPRES) / gamma_minus_1
 
