@@ -1015,10 +1015,10 @@ pc_transxy(
             cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
     // qp
     compo = rrr * qzp(i, j, k, nqp) - compn;
-    qp(i, j, k, nqp) = compo / rrnewr + hdt;
+    qp(i, j, k, nqp) = compo / rrnewr;
     // qm
     compo = rrl * qzm(i, j, k + 1, nqp) - compn;
-    qm(i, j, k + 1, nqp) = compo / rrnewl + hdt;
+    qm(i, j, k + 1, nqp) = compo / rrnewl;
   }
 
   // Update hydro vars
