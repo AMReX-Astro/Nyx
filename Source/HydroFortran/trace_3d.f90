@@ -121,27 +121,21 @@
                qxp(i,j,kc,QU    ) = u    + (apright - amright)*cc/rho
                qxp(i,j,kc,QV    ) = v    +  azv1rght
                qxp(i,j,kc,QW    ) = w    +  azw1rght
+               ! qxp(i,j,kc,QREINT) = rhoe + (apright + amright)*enth*csq + azeright
                qxp(i,j,kc,QPRES ) = p    + (apright + amright)*csq
-!              qxp(i,j,kc,QREINT) = rhoe + (apright + amright)*enth*csq + azeright
-
-               ! If rho or p too small, set all the slopes to zero
-               if (qxp(i,j,kc,QRHO ) .lt. small_dens .or. &
-                   qxp(i,j,kc,QPRES) .lt. small_pres) then
-                  qxp(i,j,kc,QPRES) = p
-                  qxp(i,j,kc,QRHO)  = rho
-                  qxp(i,j,kc,QU)    = u
-               end if
-
-               qxp(i,j,kc,QREINT) = qxp(i,j,kc,QPRES) / gamma_minus_1
 
                qxp(i,j,kc,QRHO  ) = qxp(i,j,kc,QRHO  ) + 0.5_rt*dt*srcQ(i,j,k3d,QRHO)/a_old
-               qxp(i,j,kc,QRHO  ) = max(small_dens, qxp(i,j,kc,QRHO))
                qxp(i,j,kc,QU    ) = qxp(i,j,kc,QU    ) + 0.5_rt*dt*srcQ(i,j,k3d,QU)/a_old
                qxp(i,j,kc,QV    ) = qxp(i,j,kc,QV    ) + 0.5_rt*dt*srcQ(i,j,k3d,QV)/a_old
                qxp(i,j,kc,QW    ) = qxp(i,j,kc,QW    ) + 0.5_rt*dt*srcQ(i,j,k3d,QW)/a_old
-               qxp(i,j,kc,QREINT) = qxp(i,j,kc,QREINT) + 0.5_rt*dt*srcQ(i,j,k3d,QREINT)/a_old
+               ! qxp(i,j,kc,QREINT) = qxp(i,j,kc,QREINT) + 0.5_rt*dt*srcQ(i,j,k3d,QREINT)/a_old
                qxp(i,j,kc,QPRES ) = qxp(i,j,kc,QPRES ) + 0.5_rt*dt*srcQ(i,j,k3d,QPRES)/a_old
 
+               qxp(i,j,kc,QRHO  ) = max(small_dens, qxp(i,j,kc,QRHO ))
+               qxp(i,j,kc,QPRES ) = max(small_pres, qxp(i,j,kc,QPRES))
+
+               ! This allows the (rho e) to take advantage of (pressure > small_pres)
+               qxp(i,j,kc,QREINT) = qxp(i,j,kc,QPRES) / gamma_minus_1
 
             end if
       
@@ -173,26 +167,21 @@
                qxm(i+1,j,kc,QU    ) = u    + (apleft - amleft)*cc/rho
                qxm(i+1,j,kc,QV    ) = v    +  azv1left
                qxm(i+1,j,kc,QW    ) = w    +  azw1left
+               ! qxm(i+1,j,kc,QREINT) = rhoe + (apleft + amleft)*enth*csq + azeleft
                qxm(i+1,j,kc,QPRES ) = p    + (apleft + amleft)*csq
-            !  qxm(i+1,j,kc,QREINT) = rhoe + (apleft + amleft)*enth*csq + azeleft
-
-               ! If rho or p too small, set all the slopes to zero
-               if (qxm(i+1,j,kc,QRHO ) .lt. small_dens .or. &
-                   qxm(i+1,j,kc,QPRES) .lt. small_pres) then
-                  qxm(i+1,j,kc,QRHO)  = rho
-                  qxm(i+1,j,kc,QPRES) = p
-                  qxm(i+1,j,kc,QU)    = u
-               end if
- 
-               qxm(i+1,j,kc,QREINT) = qxm(i+1,j,kc,QPRES) / gamma_minus_1
 
                qxm(i+1,j,kc,QRHO  ) = qxm(i+1,j,kc,QRHO  ) + 0.5_rt*dt*srcQ(i,j,k3d,QRHO)/a_old
-               qxm(i+1,j,kc,QRHO  ) = max(small_dens, qxm(i+1,j,kc,QRHO))
                qxm(i+1,j,kc,QU    ) = qxm(i+1,j,kc,QU   ) + 0.5_rt*dt*srcQ(i,j,k3d,QU)/a_old
                qxm(i+1,j,kc,QV    ) = qxm(i+1,j,kc,QV   ) + 0.5_rt*dt*srcQ(i,j,k3d,QV)/a_old
                qxm(i+1,j,kc,QW    ) = qxm(i+1,j,kc,QW   ) + 0.5_rt*dt*srcQ(i,j,k3d,QW)/a_old
-               qxm(i+1,j,kc,QREINT) = qxm(i+1,j,kc,QREINT) + 0.5_rt*dt*srcQ(i,j,k3d,QREINT)/a_old
+               ! qxm(i+1,j,kc,QREINT) = qxm(i+1,j,kc,QREINT) + 0.5_rt*dt*srcQ(i,j,k3d,QREINT)/a_old
                qxm(i+1,j,kc,QPRES ) = qxm(i+1,j,kc,QPRES ) + 0.5_rt*dt*srcQ(i,j,k3d,QPRES)/a_old
+
+               qxm(i+1,j,kc,QRHO  ) = max(small_dens, qxm(i+1,j,kc,QRHO ))
+               qxm(i+1,j,kc,QPRES ) = max(small_pres, qxm(i+1,j,kc,QPRES))
+
+               ! This allows the (rho e) to take advantage of (pressure > small_pres)
+               qxm(i+1,j,kc,QREINT) = qxm(i+1,j,kc,QPRES) / gamma_minus_1
 
             endif
 
@@ -285,26 +274,21 @@
                qyp(i,j,kc,QV) = v + (apright - amright)*cc/rho
                qyp(i,j,kc,QU) = u + azu1rght
                qyp(i,j,kc,QW) = w + azw1rght
+               ! qyp(i,j,kc,QREINT) = rhoe + (apright + amright)*enth*csq + azeright
                qyp(i,j,kc,QPRES) = p + (apright + amright)*csq
-!              qyp(i,j,kc,QREINT) = rhoe + (apright + amright)*enth*csq + azeright
-
-               ! If rho or p too small, set all the slopes to zero
-               if (qyp(i,j,kc,QRHO ) .lt. small_dens .or. &
-                   qyp(i,j,kc,QPRES) .lt. small_pres) then
-                  qyp(i,j,kc,QRHO)  = rho
-                  qyp(i,j,kc,QPRES) = p
-                  qyp(i,j,kc,QV)    = v
-               end if
-
-               qyp(i,j,kc,QREINT) = qyp(i,j,kc,QPRES) / gamma_minus_1
 
                qyp(i,j,kc,QRHO  ) = qyp(i,j,kc,QRHO  ) + 0.5_rt*dt*srcQ(i,j,k3d,QRHO)/a_old
-               qyp(i,j,kc,QRHO  ) = max(small_dens, qyp(i,j,kc,QRHO))
                qyp(i,j,kc,QU    ) = qyp(i,j,kc,QU    ) + 0.5_rt*dt*srcQ(i,j,k3d,QU)/a_old
                qyp(i,j,kc,QV    ) = qyp(i,j,kc,QV    ) + 0.5_rt*dt*srcQ(i,j,k3d,QV)/a_old
                qyp(i,j,kc,QW    ) = qyp(i,j,kc,QW    ) + 0.5_rt*dt*srcQ(i,j,k3d,QW)/a_old
-               qyp(i,j,kc,QREINT) = qyp(i,j,kc,QREINT) + 0.5_rt*dt*srcQ(i,j,k3d,QREINT)/a_old
+               ! qyp(i,j,kc,QREINT) = qyp(i,j,kc,QREINT) + 0.5_rt*dt*srcQ(i,j,k3d,QREINT)/a_old
                qyp(i,j,kc,QPRES ) = qyp(i,j,kc,QPRES ) + 0.5_rt*dt*srcQ(i,j,k3d,QPRES)/a_old
+
+               qyp(i,j,kc,QRHO  ) = max(small_dens, qyp(i,j,kc,QRHO ))
+               qyp(i,j,kc,QPRES ) = max(small_pres, qyp(i,j,kc,QPRES))
+
+               ! This allows the (rho e) to take advantage of (pressure > small_pres)
+               qyp(i,j,kc,QREINT) = qyp(i,j,kc,QPRES) / gamma_minus_1
 
             end if
 
@@ -336,26 +320,21 @@
                qym(i,j+1,kc,QV) = v + (apleft - amleft)*cc/rho
                qym(i,j+1,kc,QU) = u + azu1left
                qym(i,j+1,kc,QW) = w + azw1left
+               ! qym(i,j+1,kc,QREINT) = rhoe + (apleft + amleft)*enth*csq + azeleft
                qym(i,j+1,kc,QPRES) = p + (apleft + amleft)*csq
-!              qym(i,j+1,kc,QREINT) = rhoe + (apleft + amleft)*enth*csq + azeleft
-
-               ! If rho or p too small, set all the slopes to zero
-               if (qym(i,j+1,kc,QRHO ) .lt. small_dens .or. &
-                   qym(i,j+1,kc,QPRES) .lt. small_pres) then
-                  qym(i,j+1,kc,QRHO)  = rho
-                  qym(i,j+1,kc,QPRES) = p
-                  qym(i,j+1,kc,QV)    = v
-               end if
-
-               qym(i,j+1,kc,QREINT) = qym(i,j+1,kc,QPRES) / gamma_minus_1
 
                qym(i,j+1,kc,QRHO  ) = qym(i,j+1,kc,QRHO  ) + 0.5_rt*dt*srcQ(i,j,k3d,QRHO)/a_old
-               qym(i,j+1,kc,QRHO  ) = max(small_dens, qym(i,j+1,kc,QRHO))
                qym(i,j+1,kc,QU    ) = qym(i,j+1,kc,QU    ) + 0.5_rt*dt*srcQ(i,j,k3d,QU )/a_old
                qym(i,j+1,kc,QV    ) = qym(i,j+1,kc,QV    ) + 0.5_rt*dt*srcQ(i,j,k3d,QV )/a_old
                qym(i,j+1,kc,QW    ) = qym(i,j+1,kc,QW    ) + 0.5_rt*dt*srcQ(i,j,k3d,QW  )/a_old
                qym(i,j+1,kc,QREINT) = qym(i,j+1,kc,QREINT) + 0.5_rt*dt*srcQ(i,j,k3d,QREINT)/a_old
                qym(i,j+1,kc,QPRES ) = qym(i,j+1,kc,QPRES ) + 0.5_rt*dt*srcQ(i,j,k3d,QPRES)/a_old
+
+               qym(i,j+1,kc,QRHO  ) = max(small_dens, qym(i,j+1,kc,QRHO ))
+               qym(i,j+1,kc,QPRES ) = max(small_pres, qym(i,j+1,kc,QPRES))
+
+               ! This allows the (rho e) to take advantage of (pressure > small_pres)
+               qym(i,j+1,kc,QREINT) = qym(i,j+1,kc,QPRES) / gamma_minus_1
 
             endif
 
@@ -517,26 +496,21 @@
             qzp(i,j,kc,QW) = w + (apright - amright)*cc/rho
             qzp(i,j,kc,QU) = u + azu1rght
             qzp(i,j,kc,QV) = v + azv1rght
+            ! qzp(i,j,kc,QREINT) = rhoe + (apright + amright)*enth*csq + azeright
             qzp(i,j,kc,QPRES) = p + (apright + amright)*csq
-!           qzp(i,j,kc,QREINT) = rhoe + (apright + amright)*enth*csq + azeright
-
-            ! If rho or p too small, set all the slopes to zero
-            if (qzp(i,j,kc,QRHO ) .lt. small_dens .or. &
-                qzp(i,j,kc,QPRES) .lt. small_pres) then
-               qzp(i,j,kc,QRHO)  = rho
-               qzp(i,j,kc,QPRES) = p
-               qzp(i,j,kc,QW)    = w
-            end if
  
-            qzp(i,j,kc,QREINT) = qzp(i,j,kc,QPRES) / gamma_minus_1
+            qzp(i,j,kc,QRHO  ) = qzp(i,j,kc,QRHO  ) + 0.5_rt*dt*srcQ(i,j,k3d,QRHO)/a_old
+            qzp(i,j,kc,QU    ) = qzp(i,j,kc,QU    ) + 0.5_rt*dt*srcQ(i,j,k3d,QU )/a_old
+            qzp(i,j,kc,QV    ) = qzp(i,j,kc,QV    ) + 0.5_rt*dt*srcQ(i,j,k3d,QV )/a_old
+            qzp(i,j,kc,QW    ) = qzp(i,j,kc,QW    ) + 0.5_rt*dt*srcQ(i,j,k3d,QW  )/a_old
+            ! qzp(i,j,kc,QREINT) = qzp(i,j,kc,QREINT) + 0.5_rt*dt*srcQ(i,j,k3d,QREINT)/a_old
+            qzp(i,j,kc,QPRES ) = qzp(i,j,kc,QPRES ) + 0.5_rt*dt*srcQ(i,j,k3d,QPRES)/a_old
 
-             qzp(i,j,kc,QRHO  ) = qzp(i,j,kc,QRHO  ) + 0.5_rt*dt*srcQ(i,j,k3d,QRHO)/a_old
-             qzp(i,j,kc,QRHO  ) = max(small_dens, qzp(i,j,kc,QRHO))
-             qzp(i,j,kc,QU    ) = qzp(i,j,kc,QU    ) + 0.5_rt*dt*srcQ(i,j,k3d,QU )/a_old
-             qzp(i,j,kc,QV    ) = qzp(i,j,kc,QV    ) + 0.5_rt*dt*srcQ(i,j,k3d,QV )/a_old
-             qzp(i,j,kc,QW    ) = qzp(i,j,kc,QW    ) + 0.5_rt*dt*srcQ(i,j,k3d,QW  )/a_old
-             qzp(i,j,kc,QREINT) = qzp(i,j,kc,QREINT) + 0.5_rt*dt*srcQ(i,j,k3d,QREINT)/a_old
-             qzp(i,j,kc,QPRES ) = qzp(i,j,kc,QPRES ) + 0.5_rt*dt*srcQ(i,j,k3d,QPRES)/a_old
+            qzp(i,j,kc,QRHO  ) = max(small_dens, qzp(i,j,kc,QRHO))
+            qzp(i,j,kc,QPRES ) = max(small_pres, qzp(i,j,kc,QPRES))
+
+            ! This allows the (rho e) to take advantage of (pressure > small_pres)
+            qzp(i,j,kc,QREINT) = qzp(i,j,kc,QPRES) / gamma_minus_1
 
             ! **************************************************************************
 
@@ -592,26 +566,21 @@
             qzm(i,j,kc,QW) = w + (apleft - amleft)*cc/rho
             qzm(i,j,kc,QU) = u + azu1left
             qzm(i,j,kc,QV) = v + azv1left
+            ! qzm(i,j,kc,QREINT) = rhoe + (apleft + amleft)*enth*csq + azeleft
             qzm(i,j,kc,QPRES) = p + (apleft + amleft)*csq
-!           qzm(i,j,kc,QREINT) = rhoe + (apleft + amleft)*enth*csq + azeleft
 
-            ! If rho or p too small, set all the slopes to zero
-            if (qzm(i,j,kc,QRHO ) .lt. small_dens .or. &
-                qzm(i,j,kc,QPRES) .lt. small_pres) then
-               qzm(i,j,kc,QRHO)  = rho
-               qzm(i,j,kc,QPRES) = p
-               qzm(i,j,kc,QW)    = w
-            end if
+            qzm(i,j,kc,QRHO  ) = qzm(i,j,kc,QRHO  ) + 0.5_rt*dt*srcQ(i,j,k3d-1,QRHO)/a_old
+            qzm(i,j,kc,QU    ) = qzm(i,j,kc,QU    ) + 0.5_rt*dt*srcQ(i,j,k3d-1,QU )/a_old
+            qzm(i,j,kc,QV    ) = qzm(i,j,kc,QV    ) + 0.5_rt*dt*srcQ(i,j,k3d-1,QV )/a_old
+            qzm(i,j,kc,QW    ) = qzm(i,j,kc,QW    ) + 0.5_rt*dt*srcQ(i,j,k3d-1,QW  )/a_old
+            ! qzm(i,j,kc,QREINT) = qzm(i,j,kc,QREINT) + 0.5_rt*dt*srcQ(i,j,k3d-1,QREINT)/a_old
+            qzm(i,j,kc,QPRES ) = qzm(i,j,kc,QPRES ) + 0.5_rt*dt*srcQ(i,j,k3d-1,QPRES)/a_old
+
+            qzm(i,j,kc,QRHO  ) = max(small_dens, qzm(i,j,kc,QRHO ))
+            qzm(i,j,kc,QPRES ) = max(small_pres, qzm(i,j,kc,QPRES))
  
+            ! This allows the (rho e) to take advantage of (pressure > small_pres)
             qzm(i,j,kc,QREINT) = qzm(i,j,kc,QPRES) / gamma_minus_1
-
-             qzm(i,j,kc,QRHO  ) = qzm(i,j,kc,QRHO  ) + 0.5_rt*dt*srcQ(i,j,k3d-1,QRHO)/a_old
-             qzm(i,j,kc,QRHO  ) = max(small_dens, qzm(i,j,kc,QRHO))
-             qzm(i,j,kc,QU    ) = qzm(i,j,kc,QU    ) + 0.5_rt*dt*srcQ(i,j,k3d-1,QU )/a_old
-             qzm(i,j,kc,QV    ) = qzm(i,j,kc,QV    ) + 0.5_rt*dt*srcQ(i,j,k3d-1,QV )/a_old
-             qzm(i,j,kc,QW    ) = qzm(i,j,kc,QW    ) + 0.5_rt*dt*srcQ(i,j,k3d-1,QW  )/a_old
-             qzm(i,j,kc,QREINT) = qzm(i,j,kc,QREINT) + 0.5_rt*dt*srcQ(i,j,k3d-1,QREINT)/a_old
-             qzm(i,j,kc,QPRES ) = qzm(i,j,kc,QPRES ) + 0.5_rt*dt*srcQ(i,j,k3d-1,QPRES)/a_old
 
          enddo
       enddo

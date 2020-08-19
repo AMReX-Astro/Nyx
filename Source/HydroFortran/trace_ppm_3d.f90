@@ -182,10 +182,10 @@ contains
 
              ! The final interface states are just
              ! q_s = q_ref - sum(l . dq) r
-             qxp(i,j,kc,QRHO  ) =  rho_ref +  apright + amright + azrright
+             qxp(i,j,kc,QRHO  ) = max(small_dens,rho_ref +  apright + amright + azrright)
              qxp(i,j,kc,QU    ) =    u_ref + (apright - amright)*cref/rho_ref
              qxp(i,j,kc,QREINT) = rhoe_ref + (apright + amright)*enthref*csqref + azeright
-             qxp(i,j,kc,QPRES ) =    p_ref + (apright + amright)*csqref
+             qxp(i,j,kc,QPRES ) = max(small_pres, p_ref + (apright + amright)*csqref)
 
              ! Transverse velocities -- there's no projection here, so we don't
              ! need a reference state.  We only care about the state traced under
@@ -197,16 +197,8 @@ contains
              ! in the event that the wave is not moving toward the
              ! interface
 
-!            if (u > ZERO) then
-!               qxp(i,j,kc,QV    ) = v
-!               qxp(i,j,kc,QW    ) = w
-!            else ! wave moving toward the interface
-                qxp(i,j,kc,QV    ) = dv
-                qxp(i,j,kc,QW    ) = dw
-!            endif
-
-             ! If p too small, use small_pres
-             qxp(i,j,kc,QPRES) = max(small_pres, qxp(i,j,kc,QPRES))
+             qxp(i,j,kc,QV    ) = dv
+             qxp(i,j,kc,QW    ) = dw
 
              qxp(i,j,kc,QREINT) = qxp(i,j,kc,QPRES) / gamma_minus_1
 
@@ -278,24 +270,17 @@ contains
 
              ! The final interface states are just
              ! q_s = q_ref - sum (l . dq) r
-             qxm(i+1,j,kc,QRHO  ) =  rho_ref + apleft + amleft + azrleft
+             qxm(i+1,j,kc,QRHO  ) = max(small_dens, rho_ref + apleft + amleft + azrleft)
              qxm(i+1,j,kc,QU    ) =    u_ref + (apleft - amleft)*cref/rho_ref
              qxm(i+1,j,kc,QREINT) = rhoe_ref + (apleft + amleft)*enthref*csqref + azeleft
-             qxm(i+1,j,kc,QPRES ) =    p_ref + (apleft + amleft)*csqref
+             qxm(i+1,j,kc,QPRES ) = max(small_pres, p_ref + (apleft + amleft)*csqref)
 
              ! Transverse velocities
              dv    = Ip(i,j,kc,1,2,QV) + halfdt*Ip_g(i,j,kc,1,2,QV)/a_old
              dw    = Ip(i,j,kc,1,2,QW) + halfdt*Ip_g(i,j,kc,1,2,QW)/a_old
 
-!             if (u < ZERO) then
-!                qxm(i+1,j,kc,QV    ) = v
-!                qxm(i+1,j,kc,QW    ) = w
-!             else
-                 qxm(i+1,j,kc,QV    ) = dv
-                 qxm(i+1,j,kc,QW    ) = dw
-!             endif
-             ! If p too small, use small_pres
-             qxm(i+1,j,kc,QPRES) = max(small_pres, qxm(i+1,j,kc,QPRES))
+             qxm(i+1,j,kc,QV    ) = dv
+             qxm(i+1,j,kc,QW    ) = dw
 
              qxm(i+1,j,kc,QREINT) = qxm(i+1,j,kc,QPRES) / gamma_minus_1
           end if
@@ -410,10 +395,10 @@ contains
  
              ! The final interface states are just
              ! q_s = q_ref - sum (l . dq) r
-             qyp(i,j,kc,QRHO  ) =  rho_ref +  apright + amright + azrright
+             qyp(i,j,kc,QRHO  ) = max(small_dens, rho_ref +  apright + amright + azrright)
              qyp(i,j,kc,QV    ) =    v_ref + (apright - amright)*cref/rho_ref
              qyp(i,j,kc,QREINT) = rhoe_ref + (apright + amright)*enthref*csqref + azeright
-             qyp(i,j,kc,QPRES ) =    p_ref + (apright + amright)*csqref
+             qyp(i,j,kc,QPRES ) = max(small_pres, p_ref + (apright + amright)*csqref)
 
              ! Transverse velocities
              du    = Im(i,j,kc,2,2,QU)
@@ -422,16 +407,8 @@ contains
              du  = du  + halfdt*Im_g(i,j,kc,2,2,QU)/a_old
              dw  = dw  + halfdt*Im_g(i,j,kc,2,2,QW)/a_old
  
-!             if (v > ZERO) then
-!                qyp(i,j,kc,QU    ) = u
-!                qyp(i,j,kc,QW    ) = w
-!             else ! wave moving toward the interface
-                 qyp(i,j,kc,QU    ) = du
-                 qyp(i,j,kc,QW    ) = dw
-!             endif
- 
-             ! If p too small, use small_pres
-             qyp(i,j,kc,QPRES) = max(small_pres, qyp(i,j,kc,QPRES))
+             qyp(i,j,kc,QU    ) = du
+             qyp(i,j,kc,QW    ) = dw
 
              qyp(i,j,kc,QREINT) = qyp(i,j,kc,QPRES) / gamma_minus_1
           end if
@@ -502,10 +479,10 @@ contains
 
              ! The final interface states are just
              ! q_s = q_ref - sum (l . dq) r
-             qym(i,j+1,kc,QRHO  ) =  rho_ref +  apleft + amleft + azrleft
+             qym(i,j+1,kc,QRHO  ) = max(small_dens, rho_ref +  apleft + amleft + azrleft)
              qym(i,j+1,kc,QV    ) =    v_ref + (apleft - amleft)*cref/rho_ref
              qym(i,j+1,kc,QREINT) = rhoe_ref + (apleft + amleft)*enthref*csqref + azeleft
-             qym(i,j+1,kc,QPRES ) =    p_ref + (apleft + amleft)*csqref
+             qym(i,j+1,kc,QPRES ) = max(small_pres, p_ref + (apleft + amleft)*csqref)
 
              ! Transverse velocities
              du    = Ip(i,j,kc,2,2,QU)
@@ -514,16 +491,8 @@ contains
              du  = du  + halfdt*Ip_g(i,j,kc,2,2,QU)/a_old
              dw  = dw  + halfdt*Ip_g(i,j,kc,2,2,QW)/a_old
  
-!             if (v < ZERO) then
-!                qym(i,j+1,kc,QU    ) = u
-!                qym(i,j+1,kc,QW    ) = w
-!             else ! wave is moving toward the interface
-                 qym(i,j+1,kc,QU    ) = du
-                 qym(i,j+1,kc,QW    ) = dw
-!             endif
-
-             ! If p too small, use small_pres
-             qym(i,j+1,kc,QPRES) = max(small_pres, qym(i,j+1,kc,QPRES))
+             qym(i,j+1,kc,QU    ) = du
+             qym(i,j+1,kc,QW    ) = dw
 
              qym(i,j+1,kc,QREINT) = qym(i,j+1,kc,QPRES) / gamma_minus_1
           end if
@@ -707,10 +676,10 @@ contains
 
           ! The final interface states are just
           ! q_s = q_ref - sum (l . dq) r
-          qzp(i,j,kc,QRHO  ) =  rho_ref +  apright + amright + azrright
+          qzp(i,j,kc,QRHO  ) = max(small_dens, rho_ref +  apright + amright + azrright)
           qzp(i,j,kc,QW    ) =    w_ref + (apright - amright)*cref/rho_ref
           qzp(i,j,kc,QREINT) = rhoe_ref + (apright + amright)*enthref*csqref + azeright
-          qzp(i,j,kc,QPRES ) =    p_ref + (apright + amright)*csqref
+          qzp(i,j,kc,QPRES ) = max(small_pres, p_ref + (apright + amright)*csqref)
 
           ! Transverse velocities
           du    = Im(i,j,kc,3,2,QU)
@@ -719,16 +688,8 @@ contains
           du  = du  + halfdt*Im_g(i,j,kc,3,2,QU)/a_old
           dv  = dv  + halfdt*Im_g(i,j,kc,3,2,QV)/a_old
 
-!          if (w > ZERO) then 
-!             qzp(i,j,kc,QU    ) = u
-!             qzp(i,j,kc,QV    ) = v
-!          else ! wave moving toward the interface
-              qzp(i,j,kc,QU    ) = du
-              qzp(i,j,kc,QV    ) = dv
-!          endif
-
-          ! If p too small, use small_pres
-          qzp(i,j,kc,QPRES) = max(small_pres, qzp(i,j,kc,QPRES))
+          qzp(i,j,kc,QU    ) = du
+          qzp(i,j,kc,QV    ) = dv
 
           qzp(i,j,kc,QREINT) = qzp(i,j,kc,QPRES) / gamma_minus_1
 
@@ -811,10 +772,10 @@ contains
           
           ! The final interface states are just
           ! q_s = q_ref - sum (l . dq) r
-          qzm(i,j,kc,QRHO  ) =  rho_ref +  apleft + amleft + azrleft
+          qzm(i,j,kc,QRHO  ) = max(small_dens, rho_ref +  apleft + amleft + azrleft)
           qzm(i,j,kc,QW    ) =    w_ref + (apleft - amleft)*cref/rho_ref
           qzm(i,j,kc,QREINT) = rhoe_ref + (apleft + amleft)*enthref*csqref + azeleft
-          qzm(i,j,kc,QPRES ) =    p_ref + (apleft + amleft)*csqref
+          qzm(i,j,kc,QPRES ) = max(small_pres, p_ref + (apleft + amleft)*csqref)
 
           ! Transverse velocity
           du = Ip(i,j,km,3,2,QU)
@@ -823,16 +784,8 @@ contains
           du  = du  + halfdt*Ip_g(i,j,km,3,2,QU)/a_old
           dv  = dv  + halfdt*Ip_g(i,j,km,3,2,QV)/a_old
  
-!          if (w < ZERO) then
-!             qzm(i,j,kc,QU    ) = u
-!             qzm(i,j,kc,QV    ) = v
-!          else ! wave moving toward the interface
-              qzm(i,j,kc,QU    ) = du
-              qzm(i,j,kc,QV    ) = dv
-!          endif
-
-          ! If p too small, use small_pres
-          qzm(i,j,kc,QPRES) = max(small_pres, qzm(i,j,kc,QPRES))
+          qzm(i,j,kc,QU    ) = du
+          qzm(i,j,kc,QV    ) = dv
 
           qzm(i,j,kc,QREINT) = qzm(i,j,kc,QPRES) / gamma_minus_1
 
