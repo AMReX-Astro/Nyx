@@ -195,8 +195,6 @@ riemann(
   qint_gdpres = mask ? po : qint_gdpres;
   regd = mask ? reo : regd;
 
-  if (idir == 2 and i == 25 and j == 16 and k == 7) amrex::Print() << " QINT " << qint_iu << " " << ustar << std::endl;
-
   mask = (spin >= 0.0);
   rgd = mask ? rstar : rgd;
   qint_iu = mask ? ustar : qint_iu;
@@ -214,8 +212,6 @@ riemann(
   uflx_u = uflx_rho * qint_iu + qint_gdpres;
   uflx_v = uflx_rho * qint_iv1;
   uflx_w = uflx_rho * qint_iv2;
-
-  if (idir == 2 and i == 25 and j == 16 and k == 7) amrex::Print() << " UFLX " << uflx_u << " " << qint_gdpres << std::endl;
 
   const amrex::Real rhoetot =
     regd +

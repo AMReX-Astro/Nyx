@@ -234,13 +234,6 @@ pc_update(
                             +(flx[1](i, j, k, n) - flx[1](i, j + 1, k, n))
                             +(flx[2](i, j, k, n) - flx[2](i, j, k + 1, n)) ) *
                           volinv * a_fact[n];
-    if (n == 3 and i == 25 and j == 16 and k == 7) 
-    {
-       amrex::Print() << "ZMOM UPDATE " << update(i,j,k,n) << " " << 
-//                          (flx[0](i, j, k, n) -  flx[0](i + 1, j, k, n))*volinv << " " << 
-//                          (flx[1](i, j, k, n) -  flx[1](i, j + 1, k, n))*volinv << " " << 
-                             flx[2](i, j, k, n) << " " <<  flx[2](i, j, k + 1, n) << std::endl;
-    }
   }
 
   update(i, j, k, UEINT) += pdivu(i, j, k)*u(i,j,k,UEINT)*gamma_minus_1*dt*a_half;
