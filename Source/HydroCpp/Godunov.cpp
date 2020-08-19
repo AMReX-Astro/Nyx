@@ -156,7 +156,7 @@ pc_umeth_3D(
       // transverse terms here.
 
       int idir = 0;
-      trace_ppm(bxg1,
+      trace_ppm(bxg2,
                 idir,
                 q, srcQ, nq,
                 qxmarr, qxparr,
@@ -167,7 +167,7 @@ pc_umeth_3D(
                 use_flattening, a_old);
 
       idir = 1;
-      trace_ppm(bxg1,
+      trace_ppm(bxg2,
                 idir,
                 q, srcQ, nq,
                 qymarr, qyparr,
@@ -178,7 +178,7 @@ pc_umeth_3D(
                 use_flattening, a_old);
 
       idir = 2;
-      trace_ppm(bxg1,
+      trace_ppm(bxg2,
                 idir,
                 q, srcQ, nq,
                 qzmarr, qzparr,
