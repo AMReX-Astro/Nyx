@@ -327,7 +327,7 @@
                qym(i,j+1,kc,QU    ) = qym(i,j+1,kc,QU    ) + 0.5_rt*dt*srcQ(i,j,k3d,QU )/a_old
                qym(i,j+1,kc,QV    ) = qym(i,j+1,kc,QV    ) + 0.5_rt*dt*srcQ(i,j,k3d,QV )/a_old
                qym(i,j+1,kc,QW    ) = qym(i,j+1,kc,QW    ) + 0.5_rt*dt*srcQ(i,j,k3d,QW  )/a_old
-               qym(i,j+1,kc,QREINT) = qym(i,j+1,kc,QREINT) + 0.5_rt*dt*srcQ(i,j,k3d,QREINT)/a_old
+               ! qym(i,j+1,kc,QREINT) = qym(i,j+1,kc,QREINT) + 0.5_rt*dt*srcQ(i,j,k3d,QREINT)/a_old
                qym(i,j+1,kc,QPRES ) = qym(i,j+1,kc,QPRES ) + 0.5_rt*dt*srcQ(i,j,k3d,QPRES)/a_old
 
                qym(i,j+1,kc,QRHO  ) = max(small_dens, qym(i,j+1,kc,QRHO ))
