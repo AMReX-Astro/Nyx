@@ -63,7 +63,12 @@ riemann(
  
   const amrex::Real weakwv  = 1.e-3;
   const amrex::Real  small  = 1.e-6;
-
+    if(i==5&&j==23+1&&k==0&&idir==1)
+	  {
+		  //error in flx[1](5,23+1,0)
+		  int n=URHO;
+		  amrex::Print()<<"pl,rl,pr,rr"<<pl<<" "<<rl<<" "<<pr<<" "<<rr<<" "<<ul<<" "<<ur<<" "<<std::endl;
+	  }
   amrex::Real wl = amrex::Math::sqrt(amrex::Math::abs(gamma*amrex::max(pl,small_pres)*amrex::max(rl,small_dens)));
   amrex::Real wr = amrex::Math::sqrt(amrex::Math::abs(gamma*amrex::max(pr,small_pres)*amrex::max(rr,small_dens)));
 
@@ -127,10 +132,12 @@ riemann(
   amrex::Real po = mask ? amrex::max(pl,small_pres) : amrex::max(pr,small_pres);
   const amrex::Real  gamcr = gamma;
   const amrex::Real  gamcl = gamma;
+  const amrex::Real rel_loc = pl < small_pres ? small_pres / (gamcl - 1.0) : rel;
+  const amrex::Real rer_loc = pr < small_pres ? small_pres / (gamcr - 1.0) : rer;
   // Make data types/vars match:
   //             rel = ql(i,j,k,QREINT,comp)
   //             rer = qr(i,j,k,QREINT,comp)
-  amrex::Real reo = mask ? rel : rer;
+  amrex::Real reo = mask ? rel_loc : rer_loc;
   amrex::Real gamco = mask ? gamcl : gamcr;
 #if 1
   //0 case and also small ustar case
@@ -142,7 +149,7 @@ riemann(
   ro = mask ? 0.5 * (amrex::max(rl,small_dens) + amrex::max(rr,small_dens)) : ro;
   uo = mask ? 0.5 * (ul + ur) : uo;
   po = mask ? 0.5 * (amrex::max(pl,small_pres) + amrex::max(pr,small_pres)) : po;
-  reo = mask ? 0.5 * (rel + rer) : reo;
+  reo = mask ? 0.5 * (rel_loc + rer_loc) : reo;
   gamco = mask ? 0.5 * (gamcl + gamcr) : gamco;
 #else
   mask = ( ustar == 0.0 );
@@ -150,7 +157,7 @@ riemann(
   ro = mask ? 0.5 * (amrex::max(rl,small_dens) + amrex::max(rr,small_dens)) : ro;
   uo = mask ? 0.5 * (ul + ur) : uo;
   po = mask ? 0.5 * (amrex::max(pl,small_pres) + amrex::max(pr,small_pres)) : po;
-  reo = mask ? 0.5 * (rel + rer) : reo;
+  reo = mask ? 0.5 * (rel_loc + rer_loc) : reo;
   gamco = mask ? 0.5 * (gamcl + gamcr) : gamco;
   ro = amrex::max(ro,small_dens);
 #endif
@@ -229,6 +236,14 @@ riemann(
     0.5 * rgd * (qint_iu * qint_iu + qint_iv1 * qint_iv1 + qint_iv2 * qint_iv2);
   uflx_eden = qint_iu * (rhoetot + qint_gdpres);
   uflx_eint = qint_iu * regd;
+    if(i==5&&j==23+1&&k==0&&idir==1)
+	  {
+		  //error in flx[1](5,23+1,0)
+		  int n=URHO;
+		  amrex::Print()<<idir<<"\n"<<    uflx_rho << " "<<
+			  rgd<<" "<<qint_iu<<" "<<frac <<" "<< ustar <<" "<< (1.0 - frac)<<" "<< uo<<" "<<std::endl;
+		  //		  exit(0);
+	  }
 }
 
 #endif

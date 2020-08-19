@@ -475,6 +475,17 @@ pc_umeth_3D(
     pc_cmpflx(i, j, k, bcly, bchy, dly, dhy, qm, qp, flx2, q2, 
               q, small_dens, small_pres, small_vel, small, gamma,
               FirstSpec_loc, NumSpec_loc, cdir);
+	  if(i==5&&j==23+1&&k==0)
+	  {
+		  //error in flx[1](5,23+1,0)
+		  int n=QPRES;
+		  amrex::Print().SetPrecision(18)<<"~~~~~~~~~~~~~~~~~~~"<<flx2(i,j,k,n)<<" "
+										 <<qm(i,j,k,n)<<" "<<qm(i,j-1,k,n)<<" "
+										 <<qp(i,j,k,n)<<" "<<qp(i,j-1,k,n)<<" "
+										 <<" "<<std::endl;
+		  //		  exit(0);
+	  }
+
   });
 
   // Z | X&Y
