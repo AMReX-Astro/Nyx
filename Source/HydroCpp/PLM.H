@@ -530,7 +530,7 @@ pc_plm_z(
   qm(i, j, k + 1, QPRES ) = amrex::max(qm(i, j, k + 1, QPRES), small_pres);
 
   // This allows the (rho e) to take advantage of (pressure > small_pres)
-  qm(i, j, k + 1, QREINT ) = qp(i, j, k + 1, QPRES) / gamma_minus_1;
+  qm(i, j, k + 1, QREINT ) = qm(i, j, k + 1, QPRES) / gamma_minus_1;
 
   if (i == 25 and j == 16 and k == 7) std::cout << "QP " << qp(i,j,k  ,QW) << std::endl;
   if (i == 25 and j == 16 and k == 6) std::cout << "QM " << qm(i,j,k+1,QW) << std::endl;
