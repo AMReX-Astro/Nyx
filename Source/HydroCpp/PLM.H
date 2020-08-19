@@ -6,7 +6,6 @@
 #include <AMReX_FArrayBox.H>
 #include <AMReX_IArrayBox.H>
 
-#include "Constants.H"
 #include "IndexDefines.H"
 #include "Riemann.H"
 
@@ -94,7 +93,10 @@ pc_plm_x(
   amrex::Real const cc,
   amrex::Real const a_old,
   amrex::Real const dx,
-  amrex::Real const dt, const int NumSpec)
+  amrex::Real const dt, const int NumSpec,
+  amrex::Real const gamma_minus_1,
+  amrex::Real const small_dens,
+  amrex::Real const small_pres)
 {
   amrex::Real e[3];
   amrex::Real dtdx = dt / (a_old * dx);
@@ -155,18 +157,22 @@ pc_plm_x(
   qp(i, j, k, QU    ) = u + (apright - amright) * cc / rho;
   qp(i, j, k, QV    ) = v + azv1rght;
   qp(i, j, k, QW    ) = w + azw1rght;
+  // qp(i, j, k, QREINT) = rhoe + (apright + amright) * enth * cs + azeright;
   qp(i, j, k, QPRES ) = p + (apright + amright) * cs;
-  qp(i, j, k, QPRES ) = amrex::max(qp(i, j, k, QPRES), SMALL_PRES);
-  qp(i, j, k, QREINT) = rhoe + (apright + amright) * enth * cs + azeright;
 
   // add the source terms
   qp(i, j, k, QRHO  ) += 0.5*dt*srcQ(i, j, k, QRHO) / a_old;
-  qp(i, j, k, QRHO  ) = amrex::max(SMALL_DENS, qp(i, j, k, QRHO));
   qp(i, j, k, QU    ) += 0.5*dt*srcQ(i, j, k, QU) / a_old;
   qp(i, j, k, QV    ) += 0.5*dt*srcQ(i, j, k, QV) / a_old;
   qp(i, j, k, QW    ) += 0.5*dt*srcQ(i, j, k, QW) / a_old;
-  qp(i, j, k, QREINT) += 0.5*dt*srcQ(i, j, k, QREINT) / a_old;
+  // qp(i, j, k, QREINT) += 0.5*dt*srcQ(i, j, k, QREINT) / a_old;
   qp(i, j, k, QPRES ) += 0.5*dt*srcQ(i, j, k, QPRES) / a_old;
+
+  qp(i, j, k, QRHO  ) = amrex::max(qp(i, j, k, QRHO ), small_dens);
+  qp(i, j, k, QPRES ) = amrex::max(qp(i, j, k, QPRES), small_pres);
+
+  // This allows the (rho e) to take advantage of (pressure > small_pres)
+  qp(i, j, k, QREINT ) = qp(i, j, k, QPRES) / gamma_minus_1;
 
   //  Construct the left state on the i+1/2 interface
 
@@ -195,18 +201,22 @@ pc_plm_x(
   qm(i + 1, j, k, QU    ) = u   + (apleft - amleft) * cc / rho;
   qm(i + 1, j, k, QV    ) = v   +  azv1left;
   qm(i + 1, j, k, QW    ) = w   +  azw1left;
+  // qm(i + 1, j, k, QREINT) = rhoe + (apleft + amleft) * enth * cs + azeleft;
   qm(i + 1, j, k, QPRES ) = p   + (apleft + amleft) * cs;
-  qm(i + 1, j, k, QPRES ) = amrex::max(qm(i + 1, j, k, QPRES), SMALL_PRES);
-  qm(i + 1, j, k, QREINT) = rhoe + (apleft + amleft) * enth * cs + azeleft;
 
   // add the source terms
   qm(i + 1, j, k, QRHO  ) += 0.5*dt*srcQ(i, j, k, QRHO) / a_old;
-  qm(i + 1, j, k, QRHO  ) = amrex::max(SMALL_DENS, qm(i + 1, j, k, QRHO));
   qm(i + 1, j, k, QU    ) += 0.5*dt*srcQ(i, j, k, QU) / a_old;
   qm(i + 1, j, k, QV    ) += 0.5*dt*srcQ(i, j, k, QV) / a_old;
   qm(i + 1, j, k, QW    ) += 0.5*dt*srcQ(i, j, k, QW) / a_old;
-  qm(i + 1, j, k, QREINT) += 0.5*dt*srcQ(i, j, k, QREINT) / a_old;
+  // qm(i + 1, j, k, QREINT) += 0.5*dt*srcQ(i, j, k, QREINT) / a_old;
   qm(i + 1, j, k, QPRES ) += 0.5*dt*srcQ(i, j, k, QPRES) / a_old;
+
+  qm(i + 1, j, k, QRHO  ) = amrex::max(qm(i + 1, j, k, QRHO ), small_dens);
+  qm(i + 1, j, k, QPRES ) = amrex::max(qm(i + 1, j, k, QPRES), small_pres);
+
+  // This allows the (rho e) to take advantage of (pressure > small_pres)
+  qm(i + 1, j, k, QREINT ) = qm(i + 1, j, k, QPRES) / gamma_minus_1;
 
   // Upwind the passive variables
   for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
@@ -242,7 +252,10 @@ pc_plm_y(
   amrex::Real const cc,
   amrex::Real const a_old,
   amrex::Real const dy,
-  amrex::Real const dt, const int NumSpec)
+  amrex::Real const dt, const int NumSpec,
+  amrex::Real const gamma_minus_1,
+  amrex::Real const small_dens,
+  amrex::Real const small_pres)
 {
   amrex::Real e[3];
   amrex::Real dtdy = dt / (a_old * dy);
@@ -302,18 +315,22 @@ pc_plm_y(
   qp(i, j, k, QU    ) = u   +  azu1rght;
   qp(i, j, k, QV    ) = v   + (apright - amright) * cc / rho;
   qp(i, j, k, QW    ) = w   +  azw1rght;
+  // qp(i, j, k, QREINT) = rhoe + (apright + amright) * enth * cs + azeright;
   qp(i, j, k, QPRES ) = p   + (apright + amright) * cs;
-  qp(i, j, k, QPRES ) = amrex::max(qp(i, j, k, QPRES), SMALL_PRES);
-  qp(i, j, k, QREINT) = rhoe + (apright + amright) * enth * cs + azeright;
 
   // add the source terms
   qp(i, j, k, QRHO  ) += 0.5*dt*srcQ(i, j, k, QRHO) / a_old;
-  qp(i, j, k, QRHO  ) = amrex::max(SMALL_DENS, qp(i, j, k, QRHO));
   qp(i, j, k, QU    ) += 0.5*dt*srcQ(i, j, k, QU) / a_old;
   qp(i, j, k, QV    ) += 0.5*dt*srcQ(i, j, k, QV) / a_old;
   qp(i, j, k, QW    ) += 0.5*dt*srcQ(i, j, k, QW) / a_old;
-  qp(i, j, k, QREINT) += 0.5*dt*srcQ(i, j, k, QREINT) / a_old;
+  // qp(i, j, k, QREINT) += 0.5*dt*srcQ(i, j, k, QREINT) / a_old;
   qp(i, j, k, QPRES ) += 0.5*dt*srcQ(i, j, k, QPRES) / a_old;
+
+  qp(i, j, k, QRHO  ) = amrex::max(qp(i, j, k, QRHO ), small_dens);
+  qp(i, j, k, QPRES ) = amrex::max(qp(i, j, k, QPRES), small_pres);
+
+  // This allows the (rho e) to take advantage of (pressure > small_pres)
+  qp(i, j, k, QREINT ) = qp(i, j, k, QPRES) / gamma_minus_1;
 
   // Construct the "left" state on the j+1/2 interface
 
@@ -342,18 +359,22 @@ pc_plm_y(
   qm(i, j + 1, k, QU    ) = u   + azu1left;
   qm(i, j + 1, k, QV    ) = v   + (apleft - amleft) * cc / rho;
   qm(i, j + 1, k, QW    ) = w   + azw1left;
+  // qm(i, j + 1, k, QREINT) = rhoe + (apleft + amleft) * enth * cs + azeleft;
   qm(i, j + 1, k, QPRES ) = p   + (apleft + amleft) * cs;
-  qm(i, j + 1, k, QPRES ) = amrex::max(qm(i, j + 1, k, QPRES), SMALL_PRES);
-  qm(i, j + 1, k, QREINT) = rhoe + (apleft + amleft) * enth * cs + azeleft;
 
   // add the source terms
   qm(i, j + 1, k, QRHO  ) += 0.5*dt*srcQ(i, j, k, QRHO) / a_old;
-  qm(i, j + 1, k, QRHO  ) = amrex::max(SMALL_DENS, qm(i, j + 1, k, QRHO));
   qm(i, j + 1, k, QU    ) += 0.5*dt*srcQ(i, j, k, QU) / a_old;
   qm(i, j + 1, k, QV    ) += 0.5*dt*srcQ(i, j, k, QV) / a_old;
   qm(i, j + 1, k, QW    ) += 0.5*dt*srcQ(i, j, k, QW) / a_old;
-  qm(i, j + 1, k, QREINT) += 0.5*dt*srcQ(i, j, k, QREINT) / a_old;
+  // qm(i, j + 1, k, QREINT) += 0.5*dt*srcQ(i, j, k, QREINT) / a_old;
   qm(i, j + 1, k, QPRES ) += 0.5*dt*srcQ(i, j, k, QPRES) / a_old;
+
+  qm(i, j + 1, k, QRHO  ) = amrex::max(qm(i, j + 1, k, QRHO ), small_dens);
+  qm(i, j + 1, k, QPRES ) = amrex::max(qm(i, j + 1, k, QPRES), small_pres);
+
+  // This allows the (rho e) to take advantage of (pressure > small_pres)
+  qm(i, j + 1, k, QREINT ) = qm(i, j + 1, k, QPRES) / gamma_minus_1;
 
   // Upwind the passive variables
   for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
@@ -386,7 +407,10 @@ pc_plm_z(
   amrex::Real const cc,
   amrex::Real const a_old,
   amrex::Real const dz,
-  amrex::Real const dt, const int NumSpec)
+  amrex::Real const dt, const int NumSpec,
+  amrex::Real const gamma_minus_1,
+  amrex::Real const small_dens,
+  amrex::Real const small_pres)
 {
   amrex::Real e[3];
   amrex::Real dtdz = dt / (a_old*dz);
@@ -447,18 +471,22 @@ pc_plm_z(
   qp(i, j, k, QU    ) = u   + azu1rght;
   qp(i, j, k, QV    ) = v   + azv1rght;
   qp(i, j, k, QW    ) = w   + (apright - amright) * cc / rho;
+  // qp(i, j, k, QREINT) = rhoe + (apright + amright) * enth * cs + azeright;
   qp(i, j, k, QPRES ) = p   + (apright + amright) * cs;
-  qp(i, j, k, QPRES ) = amrex::max(qp(i, j, k, QPRES), SMALL_PRES);
-  qp(i, j, k, QREINT) = rhoe + (apright + amright) * enth * cs + azeright;
 
   // add the source terms
   qp(i, j, k, QRHO  ) += 0.5*dt*srcQ(i, j, k, QRHO) / a_old;
-  qp(i, j, k, QRHO  ) = amrex::max(SMALL_DENS, qp(i, j, k, QRHO));
   qp(i, j, k, QU    ) += 0.5*dt*srcQ(i, j, k, QU) / a_old;
   qp(i, j, k, QV    ) += 0.5*dt*srcQ(i, j, k, QV) / a_old;
   qp(i, j, k, QW    ) += 0.5*dt*srcQ(i, j, k, QW) / a_old;
-  qp(i, j, k, QREINT) += 0.5*dt*srcQ(i, j, k, QREINT) / a_old;
+  // qp(i, j, k, QREINT) += 0.5*dt*srcQ(i, j, k, QREINT) / a_old;
   qp(i, j, k, QPRES ) += 0.5*dt*srcQ(i, j, k, QPRES) / a_old;
+
+  qp(i, j, k, QRHO  ) = amrex::max(qp(i, j, k, QRHO ), small_dens);
+  qp(i, j, k, QPRES ) = amrex::max(qp(i, j, k, QPRES), small_pres);
+
+  // This allows the (rho e) to take advantage of (pressure > small_pres)
+  qp(i, j, k, QREINT ) = qp(i, j, k, QPRES) / gamma_minus_1;
 
    // Construct the "left" state on the j+1/2 interface
 
@@ -487,18 +515,25 @@ pc_plm_z(
   qm(i, j, k + 1, QU    ) = u   + azu1left;
   qm(i, j, k + 1, QV    ) = v   + azv1left;
   qm(i, j, k + 1, QW    ) = w   + (apleft - amleft) * cc / rho;
+  // qm(i, j, k + 1, QREINT) = rhoe + (apleft + amleft) * enth * cs + azeleft;
   qm(i, j, k + 1, QPRES ) = p   + (apleft + amleft) * cs;
-  qm(i, j, k + 1, QPRES ) = amrex::max(qm(i, j, k + 1, QPRES), SMALL_PRES);
-  qm(i, j, k + 1, QREINT) = rhoe + (apleft + amleft) * enth * cs + azeleft;
 
   // add the source terms
   qm(i, j, k + 1, QRHO  ) += 0.5*dt*srcQ(i, j, k, QRHO) / a_old;
-  qm(i, j, k + 1, QRHO  ) = amrex::max(SMALL_DENS, qm(i, j, k + 1, QRHO));
   qm(i, j, k + 1, QU    ) += 0.5*dt*srcQ(i, j, k, QU) / a_old;
   qm(i, j, k + 1, QV    ) += 0.5*dt*srcQ(i, j, k, QV) / a_old;
   qm(i, j, k + 1, QW    ) += 0.5*dt*srcQ(i, j, k, QW) / a_old;
-  qm(i, j, k + 1, QREINT) += 0.5*dt*srcQ(i, j, k, QREINT) / a_old;
+  // qm(i, j, k + 1, QREINT) += 0.5*dt*srcQ(i, j, k, QREINT) / a_old;
   qm(i, j, k + 1, QPRES ) += 0.5*dt*srcQ(i, j, k, QPRES) / a_old;
+
+  qm(i, j, k + 1, QRHO  ) = amrex::max(qm(i, j, k + 1, QRHO ), small_dens);
+  qm(i, j, k + 1, QPRES ) = amrex::max(qm(i, j, k + 1, QPRES), small_pres);
+
+  // This allows the (rho e) to take advantage of (pressure > small_pres)
+  qm(i, j, k + 1, QREINT ) = qp(i, j, k + 1, QPRES) / gamma_minus_1;
+
+  if (i == 25 and j == 16 and k == 7) std::cout << "QP " << qp(i,j,k  ,QW) << std::endl;
+  if (i == 25 and j == 16 and k == 6) std::cout << "QM " << qm(i,j,k+1,QW) << std::endl;
 
   // Upwind the passive variables
   for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {

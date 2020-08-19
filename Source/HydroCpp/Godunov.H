@@ -6,7 +6,6 @@
 #include <AMReX_FArrayBox.H>
 #include <AMReX_IArrayBox.H>
 
-#include "Constants.H"
 #include "IndexDefines.H"
 #include "Riemann.H"
 
@@ -176,34 +175,11 @@ pc_cmpflx(
   v2r = qr(i, j, k, IV2);
   rer = qr(i, j, k, QREINT);
 
-  // Outflow Hack
-  if (dir == 2)
-    idx = k;
-  else
-    idx = (dir == 0) ? i : j;
-  if (bclo == Outflow && idx == domlo) {
-    ul = ur;
-    vl = vr;
-    v2l = v2r;
-    rel = rer;
-  }
-  if (bchi == Outflow && idx == domhi + 1) {
-    ur = ul;
-    vr = vl;
-    v2r = v2l;
-    rer = rel;
-  }
-
-  const int bc_test_val = 1;
-
-  //    ql(i, j, k, QRHO), ul, vl, v2l, ql(i, j, k, QPRES), rel, spl, 
-  //    qr(i, j, k, QRHO), ur, vr, v2r, qr(i, j, k, QPRES), rer, spr, 
-
   amrex::Real c = std::sqrt((gamma) * qprim(i,j,k,QREINT)/qprim(i,j,k,QRHO)*(gamma - 1.0));//std::sqrt(std::abs(gamma * q(i,j,k,QPRES) / q(i,j,k,QRHO)));
-  riemann(
+  riemann(i, j, k, dir, 
     ql(i, j, k, QRHO), ul, vl, v2l, ql(i, j, k, QPRES), rel,
     qr(i, j, k, QRHO), ur, vr, v2r, qr(i, j, k, QPRES), rer,
-    bc_test_val, c, cav, ustar, flx(i, j, k, URHO),
+    c, cav, ustar, flx(i, j, k, URHO),
     flx(i, j, k, f_idx[0]), flx(i, j, k, f_idx[1]), flx(i, j, k, f_idx[2]),
     flx(i, j, k, UEDEN), flx(i, j, k, UEINT), q(i, j, k, GU), q(i, j, k, GV),
     q(i, j, k, GV2), q(i, j, k, GDPRES), q(i, j, k, GDGAME), 
@@ -236,7 +212,8 @@ pc_transx1(
   amrex::Array4<const amrex::Real> const& flxx,
   amrex::Array4<const amrex::Real> const& qint,
   const amrex::Real cdtdx, const int NumSpec,
-  const amrex::Real gamma) 
+  const amrex::Real gamma, 
+  const amrex::Real small_pres)
 {
   // Local variables to avoid reading from global memory too much
   amrex::Real compn, rr, rrnew, compo, rwr;
@@ -308,7 +285,7 @@ pc_transx1(
     0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
   qp(i, j, k, QREINT) = renewr - rhoekinr;
   amrex::Real pnewr = qp(i, j, k, QREINT) * (gamma - 1.0);
-  qp(i, j, k, QPRES) = amrex::max(pnewr, SMALL_PRES);
+  qp(i, j, k, QPRES) = amrex::max(pnewr, small_pres);
 
   // QM
 
@@ -339,7 +316,7 @@ pc_transx1(
 
   qm(i, j + 1, k, QREINT) = renewl - rhoekinl;
   amrex::Real pnewl = qm(i, j + 1, k, QREINT) * (gamma - 1.0);
-  qm(i, j + 1, k, QPRES) = amrex::max(pnewl, SMALL_PRES);
+  qm(i, j + 1, k, QPRES) = amrex::max(pnewl, small_pres);
 
 }
 
@@ -358,7 +335,8 @@ pc_transy1(
   amrex::Array4<const amrex::Real> const& flxy,
   amrex::Array4<const amrex::Real> const& qint,
   const amrex::Real cdtdy, const int NumSpec, 
-  const amrex::Real gamma)
+  const amrex::Real gamma, 
+  const amrex::Real small_pres)
 {
 
   amrex::Real compn, rr, rrnew, compo, rwr;
@@ -433,7 +411,7 @@ pc_transy1(
 
   qp(i, j, k, QREINT) = renewr - rhoekinr;
   pnewr = qp(i, j, k, QREINT) * (gamma-1.0);
-  qp(i, j, k, QPRES) = amrex::max(pnewr, SMALL_PRES);
+  qp(i, j, k, QPRES) = amrex::max(pnewr, small_pres);
 
   // QM
 
@@ -464,7 +442,7 @@ pc_transy1(
 
   qm(i + 1, j, k, QREINT) = renewl - rhoekinl;
   pnewl = qm(i + 1, j, k, QREINT) * (gamma-1.0);
-  qm(i + 1, j, k, QPRES) = amrex::max(pnewl, SMALL_PRES);
+  qm(i + 1, j, k, QPRES) = amrex::max(pnewl, small_pres);
 
 }
 
@@ -483,7 +461,8 @@ pc_transx2(
   amrex::Array4<const amrex::Real> const& flxx,
   amrex::Array4<const amrex::Real> const& qint,
   const amrex::Real cdtdx, const int NumSpec, 
-  const amrex::Real gamma)
+  const amrex::Real gamma, 
+  const amrex::Real small_pres)
 {
   // Local variables to avoid reading from global memory too much
   amrex::Real compn, rr, rrnew, compo, rwr;
@@ -556,7 +535,7 @@ pc_transx2(
   qp(i, j, k, QREINT) = renewr - rhoekinr;
   amrex::Real pnewr =
   qp(i, j, k, QREINT) * (gamma-1.0);
-  qp(i, j, k, QPRES) = amrex::max(pnewr, SMALL_PRES);
+  qp(i, j, k, QPRES) = amrex::max(pnewr, small_pres);
 
   // QM
 
@@ -588,7 +567,7 @@ pc_transx2(
   qm(i, j, k + 1, QREINT) = renewl - rhoekinl;
   amrex::Real pnewl =
     qm(i, j, k + 1, QREINT) * (gamma-1.0);
-  qm(i, j, k + 1, QPRES) = amrex::max(pnewl, SMALL_PRES);
+  qm(i, j, k + 1, QPRES) = amrex::max(pnewl, small_pres);
 }
 
 // Corrects the left and right z states with y flux
@@ -606,7 +585,8 @@ pc_transy2(
   amrex::Array4<const amrex::Real> const& flxy,
   amrex::Array4<const amrex::Real> const& qint,
   const amrex::Real cdtdy, const int NumSpec, 
-  const amrex::Real gamma)
+  const amrex::Real gamma, 
+  const amrex::Real small_pres)
 {
   // Local variables to avoid reading from global memory too much
   amrex::Real compn, rr, rrnew, compo, rwr;
@@ -679,7 +659,7 @@ pc_transy2(
   qp(i, j, k, QREINT) = renewr - rhoekinr;
   amrex::Real pnewr =
     qp(i, j, k, QREINT) * (gamma-1.0);
-  qp(i, j, k, QPRES) = amrex::max(pnewr, SMALL_PRES);
+  qp(i, j, k, QPRES) = amrex::max(pnewr, small_pres);
 
   // QM
 
@@ -711,7 +691,7 @@ pc_transy2(
   qm(i, j, k + 1, QREINT) = renewl - rhoekinl;
   amrex::Real pnewl =
     qm(i, j, k + 1, QREINT) * (gamma-1.0);
-  qm(i, j, k + 1, QPRES) = amrex::max(pnewl, SMALL_PRES);
+  qm(i, j, k + 1, QPRES) = amrex::max(pnewl, small_pres);
 }
 
 // Corrects the left and right x states with z flux
@@ -729,7 +709,8 @@ pc_transz1(
   amrex::Array4<const amrex::Real> const& flxz,
   amrex::Array4<const amrex::Real> const& qint,
   const amrex::Real cdtdz, const int NumSpec, 
-  const amrex::Real gamma)
+  const amrex::Real gamma, 
+  const amrex::Real small_pres)
 {
   amrex::Real compn, rr, rrnew, compo, rwr;
   amrex::Real rrr, rur, rvr, ekinr, rer, rrnewr;
@@ -803,7 +784,7 @@ pc_transz1(
 
   qp(i, j, k, QREINT) = renewr - rhoekinr;
   pnewr = qp(i, j, k, QREINT) * (gamma-1.0);
-  qp(i, j, k, QPRES) = amrex::max(pnewr, SMALL_PRES);
+  qp(i, j, k, QPRES) = amrex::max(pnewr, small_pres);
 
   // QM
 
@@ -834,7 +815,7 @@ pc_transz1(
 
   qm(i + 1, j, k, QREINT) = renewl - rhoekinl;
   pnewl = qm(i + 1, j, k, QREINT) * (gamma-1.0);
-  qm(i + 1, j, k, QPRES) = amrex::max(pnewl, SMALL_PRES);
+  qm(i + 1, j, k, QPRES) = amrex::max(pnewl, small_pres);
 
 }
 
@@ -853,7 +834,8 @@ pc_transz2(
   amrex::Array4<const amrex::Real> const& flxz,
   amrex::Array4<const amrex::Real> const& qint,
   const amrex::Real cdtdz, const int NumSpec, 
-  const amrex::Real gamma)
+  const amrex::Real gamma, 
+  const amrex::Real small_pres)
 {
   // Local variables to avoid reading from global memory too much
   amrex::Real compn, rr, rrnew, compo, rwr;
@@ -925,7 +907,7 @@ pc_transz2(
   qp(i, j, k, QREINT) = renewr - rhoekinr;
   amrex::Real pnewr =
     qp(i, j, k, QREINT) * (gamma-1.0);
-  qp(i, j, k, QPRES) = amrex::max(pnewr, SMALL_PRES);
+  qp(i, j, k, QPRES) = amrex::max(pnewr, small_pres);
 
 
   // QM
@@ -958,7 +940,7 @@ pc_transz2(
   qm(i, j + 1, k, QREINT) = renewl - rhoekinl;
   amrex::Real pnewl =
     qm(i, j + 1, k, QREINT) * (gamma-1.0);
-  qm(i, j + 1, k, QPRES) = amrex::max(pnewl, SMALL_PRES);
+  qm(i, j + 1, k, QPRES) = amrex::max(pnewl, small_pres);
 }
 
 // Z corrected from xy
@@ -980,7 +962,9 @@ pc_transxy(
   const amrex::Real hdt,
   const amrex::Real cdtdx,
   const amrex::Real cdtdy, 
-  const int NumSpec, const amrex::Real gamma)
+  const int NumSpec, 
+  const amrex::Real gamma, 
+  const amrex::Real small_pres)
 {
   amrex::Real compn, compo, rwr;
   amrex::Real rrr, rur, rvr, ekinr, rer, rrnewr;
@@ -1062,7 +1046,7 @@ pc_transxy(
     0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
   qp(i, j, k, QREINT) = renewr - rhoekinr;
   amrex::Real temppres = qp(i, j, k, QREINT) * (gamma - 1.0);
-  qp(i, j, k, QPRES) = amrex::max(temppres, SMALL_PRES);
+  qp(i, j, k, QPRES) = amrex::max(temppres, small_pres);
 
   // qm state
   rul = rrl * qzm(i, j, k + 1, QU);
@@ -1084,7 +1068,7 @@ pc_transxy(
     0.5 * (runewl * runewl + rvnewl * rvnewl + rwnewl * rwnewl) / rrnewl;
   qm(i, j, k + 1, QREINT) = renewl - rhoekinl;
   temppres = qm(i, j, k + 1, QREINT) * (gamma - 1.0);
-  qm(i, j, k + 1, QPRES) = amrex::max(temppres, SMALL_PRES);
+  qm(i, j, k + 1, QPRES) = amrex::max(temppres, small_pres);
 }
 
 // Y corrected by x and z
@@ -1106,7 +1090,9 @@ pc_transxz(
   const amrex::Real hdt,
   const amrex::Real cdtdx,
   const amrex::Real cdtdz, 
-  const int NumSpec, const amrex::Real gamma)
+  const int NumSpec, 
+  const amrex::Real gamma, 
+  const amrex::Real small_pres)
 {
   amrex::Real compn, compo, rwr;
   amrex::Real rrr, rur, rvr, ekinr, rer, rrnewr;
@@ -1188,7 +1174,7 @@ pc_transxz(
     0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
   qp(i, j, k, QREINT) = renewr - rhoekinr;
   amrex::Real temppres = qp(i, j, k, QREINT) * (gamma - 1.0);
-  qp(i, j, k, QPRES) = amrex::max(temppres, SMALL_PRES);
+  qp(i, j, k, QPRES) = amrex::max(temppres, small_pres);
 
   // qm state
   rul = rrl * qym(i, j + 1, k, QU);
@@ -1210,7 +1196,7 @@ pc_transxz(
     0.5 * (runewl * runewl + rvnewl * rvnewl + rwnewl * rwnewl) / rrnewl;
   qm(i, j + 1, k, QREINT) = renewl - rhoekinl;
   temppres = qm(i, j + 1, k, QREINT) * (gamma - 1.0);
-  qm(i, j + 1, k, QPRES) = amrex::max(temppres, SMALL_PRES);
+  qm(i, j + 1, k, QPRES) = amrex::max(temppres, small_pres);
 
 }
 
@@ -1233,7 +1219,9 @@ pc_transyz(
   const amrex::Real hdt,
   const amrex::Real cdtdy,
   const amrex::Real cdtdz, 
-  const int NumSpec, const amrex::Real gamma)
+  const int NumSpec, 
+  const amrex::Real gamma, 
+  const amrex::Real small_pres)
 {
   amrex::Real compn, compo, rwr;
   amrex::Real rrr, rur, rvr, ekinr, rer, rrnewr;
@@ -1316,7 +1304,7 @@ pc_transyz(
     0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
   qp(i, j, k, QREINT) = renewr - rhoekinr;
   amrex::Real temppres = qp(i, j, k, QREINT) * (gamma - 1.0);
-  qp(i, j, k, QPRES) = amrex::max(temppres, SMALL_PRES);
+  qp(i, j, k, QPRES) = amrex::max(temppres, small_pres);
 
   // qm state
   rul = rrl * qxm(i + 1, j, k, QU);
@@ -1338,7 +1326,7 @@ pc_transyz(
     0.5 * (runewl * runewl + rvnewl * rvnewl + rwnewl * rwnewl) / rrnewl;
   qm(i + 1, j, k, QREINT) = renewl - rhoekinl;
   temppres = qm(i + 1, j, k, QREINT) * (gamma - 1.0);
-  qm(i + 1, j, k, QPRES) = amrex::max(temppres, SMALL_PRES);
+  qm(i + 1, j, k, QPRES) = amrex::max(temppres, small_pres);
 }
 
 // Use interface states from Riemann solver for pdivu.

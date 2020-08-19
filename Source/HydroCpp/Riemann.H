@@ -6,6 +6,7 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 riemann(
+  int i, int j, int k, int idir,
   const amrex::Real rl,
   const amrex::Real ul,
   const amrex::Real vl,
@@ -18,7 +19,6 @@ riemann(
   const amrex::Real v2r,
   const amrex::Real pr,
   const amrex::Real rer,
-  const int bc_test_val,
   const amrex::Real c,
   const amrex::Real cav,
   amrex::Real& ustar,
@@ -43,15 +43,11 @@ riemann(
 {
   const amrex::Real wsmall = small_dens * csmall;
 
-  amrex::Real gdnv_state_rho = rl;
-  amrex::Real gdnv_state_p = pl;
+   amrex::Print() << " I J K " << i << "  " << j << " " << k << std::endl;
 
+  amrex::Real gdnv_state_rho;
+  amrex::Real gdnv_state_p;
   amrex::Real gdnv_state_cs;
-
-  gdnv_state_rho = rr;
-  gdnv_state_p = pr;
-
-  amrex::Real pstar;
 
 #if 0
   const amrex::Real wl =
@@ -66,33 +62,33 @@ riemann(
     small_pres, ((wr * pl + wl * pr) + wl * wr * (ul - ur)) / (wl + wr));
   ustar = ((wl * ul + wr * ur) + (pl - pr)) / (wl + wr);
 #else
-{
-      const amrex::Real weakwv  = 1.e-3;
-      const amrex::Real  small  = 1.e-6;
+ 
+  const amrex::Real weakwv  = 1.e-3;
+  const amrex::Real  small  = 1.e-6;
 
-      amrex::Real wl = amrex::Math::sqrt(amrex::Math::abs(gamma*pl*amrex::max(rl,small_dens)));
-      amrex::Real wr = amrex::Math::sqrt(amrex::Math::abs(gamma*pr*amrex::max(rr,small_dens)));
+  amrex::Real wl = amrex::Math::sqrt(amrex::Math::abs(gamma*pl*amrex::max(rl,small_dens)));
+  amrex::Real wr = amrex::Math::sqrt(amrex::Math::abs(gamma*pr*amrex::max(rr,small_dens)));
 
-      amrex::Real cleft  = wl/amrex::max(rl,small_dens);
-      amrex::Real cright = wr/amrex::max(rr,small_dens);
+  amrex::Real cleft  = wl/amrex::max(rl,small_dens);
+  amrex::Real cright = wr/amrex::max(rr,small_dens);
 
-      pstar = amrex::max( (wl*pr+wr*pl-wr*wl*(ur-ul))/(wl+wr), small_pres );
+  amrex::Real pstar = amrex::max( (wl*pr+wr*pl-wr*wl*(ur-ul))/(wl+wr), small_pres );
 
-      amrex::Real pstnm1 = pstar;
+  amrex::Real pstnm1 = pstar;
 
-      amrex::Real wlsq = (.5*(gamma-1.0)*(pstar+pl)+pstar) * amrex::max(rl,small_dens);
-      amrex::Real wrsq = (.5*(gamma-1.0)*(pstar+pr)+pstar) * amrex::max(rr,small_dens);
+  amrex::Real wlsq = (.5*(gamma-1.0)*(pstar+pl)+pstar) * amrex::max(rl,small_dens);
+  amrex::Real wrsq = (.5*(gamma-1.0)*(pstar+pr)+pstar) * amrex::max(rr,small_dens);
 
-      wl = amrex::Math::sqrt(amrex::Math::abs(wlsq));
-      wr = amrex::Math::sqrt(amrex::Math::abs(wrsq));
+  wl = amrex::Math::sqrt(amrex::Math::abs(wlsq));
+  wr = amrex::Math::sqrt(amrex::Math::abs(wrsq));
 
-      amrex::Real ustarp = ul - (pstar-pl)/wl;
-      amrex::Real ustarm = ur + (pstar-pr)/wr;
+  amrex::Real ustarp = ul - (pstar-pl)/wl;
+  amrex::Real ustarm = ur + (pstar-pr)/wr;
 
-      pstar = amrex::max( (wl*pr+wr*pl-wr*wl*(ur-ul))/(wl+wr), small_pres );
+  pstar = amrex::max( (wl*pr+wr*pl-wr*wl*(ur-ul))/(wl+wr), small_pres );
 
-      for (int iter = 0; iter < 3; iter++)
-      {
+  for (int iter = 0; iter < 3; iter++)
+  {
         wlsq = (.5*(gamma-1.0)*(pstar+pl)+pstar) * amrex::max(rl,small_dens);
         wrsq = (.5*(gamma-1.0)*(pstar+pr)+pstar) * amrex::max(rr,small_dens);
 
@@ -124,8 +120,7 @@ riemann(
         pstar = amrex::max(pstar,small_pres);
 
         ustar = 0.5*(ustarm+ustarp);
-     }
-}
+  }
 #endif
 
   bool mask = ustar > 0.0;
@@ -202,6 +197,8 @@ riemann(
   qint_gdpres = mask ? po : qint_gdpres;
   regd = mask ? reo : regd;
 
+  if (idir == 2 and i == 25 and j == 16 and k == 7) amrex::Print() << " QINT " << qint_iu << " " << ustar << std::endl;
+
   mask = (spin >= 0.0);
   rgd = mask ? rstar : rgd;
   qint_iu = mask ? ustar : qint_iu;
@@ -215,11 +212,13 @@ riemann(
   regd = gdnv_state_p / (gamma - 1.0);
 
   qint_gdgame = qint_gdpres / regd + 1.0;
-  qint_iu = bc_test_val * qint_iu;
   uflx_rho = rgd * qint_iu;
   uflx_u = uflx_rho * qint_iu + qint_gdpres;
   uflx_v = uflx_rho * qint_iv1;
   uflx_w = uflx_rho * qint_iv2;
+
+  if (idir == 2 and i == 25 and j == 16 and k == 7) amrex::Print() << " UFLX " << uflx_u << " " << qint_gdpres << std::endl;
+
   const amrex::Real rhoetot =
     regd +
     0.5 * rgd * (qint_iu * qint_iu + qint_iv1 * qint_iv1 + qint_iv2 * qint_iv2);

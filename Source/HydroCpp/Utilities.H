@@ -2,7 +2,6 @@
 #define _UTILITIES_H_
 
 #include <AMReX_FArrayBox.H>
-#include "Constants.H"
 #include "IndexDefines.H"
 
 /*

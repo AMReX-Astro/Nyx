@@ -5,7 +5,6 @@ CEXE_sources += trace_ppm.cpp
 CEXE_sources += Utilities.cpp
 
 #C++ headers
-CEXE_headers += Constants.H
 CEXE_headers += Godunov.H
 CEXE_headers += Hydro.H
 CEXE_headers += PLM.H

@@ -32,6 +32,7 @@ pc_srctoprim(
   const amrex::Real gravy = grav(i, j, k, 1);
   const amrex::Real gravz = grav(i, j, k, 2);
 
+#if 0
   // srcrho != rhoinv
   // SrcQ Calc
   srcQ(i, j, k, QRHO) = srcrho;
@@ -40,11 +41,6 @@ pc_srctoprim(
   srcQ(i, j, k, QW) = umz * rhoinv - a_dot * vz + gravz;
 
   //QREINT src depends on total and internal energy relationship
-  /*
-  srcQ(i, j, k, QREINT) = src(i, j, k, UEDEN) - vx * umx - vy * umy -
-                          vz * umz +
-                          srcrho * (vx * vx + vy * vy + vz * vz);
-  */
   srcQ(i, j, k, QREINT) = src(i, j, k, UEDEN) - vx * umx - vy * umy -
                           vz * umz +
                           - a_dot * 3.0 * gamma_minus_1 * q(i , j, k, QREINT);
@@ -58,6 +54,17 @@ pc_srctoprim(
   for (int n = 0; n < NumSpec; ++n) {
     srcQ(i, j, k, FirstSpec + n) = (src(i, j, k, FirstSpec + n) - q(i, j, k, FirstSpec + n) * srcrho) * rhoinv;
   }
+#else
+  srcQ(i, j, k, QRHO) = 0.;
+  srcQ(i, j, k, QU)   = 0.;
+  srcQ(i, j, k, QV)   = 0.;
+  srcQ(i, j, k, QW)   = 0.;
+  srcQ(i, j, k, QPRES)   = 0.;
+  srcQ(i, j, k, QREINT)   = 0.;
+  for (int n = 0; n < NumSpec; ++n) {
+    srcQ(i, j, k, FirstSpec + n) = 0.;
+  }
+#endif
 
 }
 
@@ -223,11 +230,17 @@ pc_update(
   //Store all 8 factors
   const amrex::Real a_fact[8] = {a_half_inv,1.0,1.0,1.0,a_half,a_half,a_half_inv,a_half_inv};
   for (int n = 0; n < update.nComp(); ++n) {
-    update(i, j, k, n) += (AMREX_D_TERM(
-                            flx[0](i, j, k, n) - flx[0](i + 1, j, k, n),
-                            +flx[1](i, j, k, n) - flx[1](i, j + 1, k, n),
-                            +flx[2](i, j, k, n) - flx[2](i, j, k + 1, n))) *
+    update(i, j, k, n) += (  (flx[0](i, j, k, n) - flx[0](i + 1, j, k, n))
+                            +(flx[1](i, j, k, n) - flx[1](i, j + 1, k, n))
+                            +(flx[2](i, j, k, n) - flx[2](i, j, k + 1, n)) ) *
                           volinv * a_fact[n];
+    if (n == 3 and i == 25 and j == 16 and k == 7) 
+    {
+       amrex::Print() << "ZMOM UPDATE " << update(i,j,k,n) << " " << 
+//                          (flx[0](i, j, k, n) -  flx[0](i + 1, j, k, n))*volinv << " " << 
+//                          (flx[1](i, j, k, n) -  flx[1](i, j + 1, k, n))*volinv << " " << 
+                             flx[2](i, j, k, n) << " " <<  flx[2](i, j, k + 1, n) << std::endl;
+    }
   }
 
   update(i, j, k, UEINT) += pdivu(i, j, k)*u(i,j,k,UEINT)*gamma_minus_1*dt*a_half;

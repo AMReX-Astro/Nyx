@@ -123,7 +123,7 @@ pc_umeth_3D(
   
   if(ppm_type == 0 )
   {
-      amrex::ParallelFor(bxg1, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      amrex::ParallelFor(bxg2, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       amrex::Real slope[8];
 
       const amrex::Real c = std::sqrt((gamma_minus_1+1.0) * q(i,j,k,QREINT)/q(i,j,k,QRHO)*gamma_minus_1);
@@ -131,17 +131,20 @@ pc_umeth_3D(
       // X slopes and interp
       for (int n = 0; n < nq; ++n)
         slope[n] = plm_slope(i, j, k, n, 0, use_flattening_loc, q);
-      pc_plm_x(i, j, k, qxmarr, qxparr, srcQ, slope, q, c, a_old, dx, dt, NumSpec);
+      pc_plm_x(i, j, k, qxmarr, qxparr, srcQ, slope, q, c, a_old, dx, dt, NumSpec, 
+               gamma_minus_1, small_dens, small_pres);
 
       // Y slopes and interp
       for (int n = 0; n < nq; n++)
         slope[n] = plm_slope(i, j, k, n, 1, use_flattening_loc, q);
-      pc_plm_y(i, j, k, qymarr, qyparr, srcQ, slope, q, c, a_old, dy, dt, NumSpec);
+      pc_plm_y(i, j, k, qymarr, qyparr, srcQ, slope, q, c, a_old, dy, dt, NumSpec,
+               gamma_minus_1, small_dens, small_pres);
 
-       // Z slopes and interp
-       for (int n = 0; n < nq; ++n)
-         slope[n] = plm_slope(i, j, k, n, 2, use_flattening_loc, q);
-       pc_plm_z(i, j, k, qzmarr, qzparr, srcQ, slope, q, c, a_old, dz, dt, NumSpec);
+      // Z slopes and interp
+      for (int n = 0; n < nq; ++n)
+        slope[n] = plm_slope(i, j, k, n, 2, use_flattening_loc, q);
+      pc_plm_z(i, j, k, qzmarr, qzparr, srcQ, slope, q, c, a_old, dz, dt, NumSpec,
+               gamma_minus_1, small_dens, small_pres);
 
      });
 
@@ -258,10 +261,10 @@ pc_umeth_3D(
   amrex::ParallelFor(txbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     // X|Y
     pc_transy1(
-      i, j, k, qmxy, qpxy, qxmarr, qxparr, fyarr, gdtempy, cdtdy, NumSpec, gamma);
+      i, j, k, qmxy, qpxy, qxmarr, qxparr, fyarr, gdtempy, cdtdy, NumSpec, gamma, small_pres);
     // X|Z
     pc_transz1(
-      i, j, k, qmxz, qpxz, qxmarr, qxparr, fzarr, gdtempz, cdtdz, NumSpec, gamma);
+      i, j, k, qmxz, qpxz, qxmarr, qxparr, fzarr, gdtempz, cdtdz, NumSpec, gamma, small_pres);
   });
 
   const amrex::Box& txfxbx = surroundingNodes(bxg1, cdir);
@@ -315,10 +318,10 @@ pc_umeth_3D(
   amrex::ParallelFor(tybx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     // Y|X
     pc_transx1(
-      i, j, k, qmyx, qpyx, qymarr, qyparr, fxarr, gdtempx, cdtdx, NumSpec, gamma);
+      i, j, k, qmyx, qpyx, qymarr, qyparr, fxarr, gdtempx, cdtdx, NumSpec, gamma, small_pres);
     // Y|Z
     pc_transz2(
-      i, j, k, qmyz, qpyz, qymarr, qyparr, fzarr, gdtempz, cdtdz, NumSpec, gamma);
+      i, j, k, qmyz, qpyz, qymarr, qyparr, fzarr, gdtempz, cdtdz, NumSpec, gamma, small_pres);
   });
 
   fzeli.clear();
@@ -376,10 +379,10 @@ pc_umeth_3D(
   amrex::ParallelFor(tzbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     // Z|X
     pc_transx2(
-      i, j, k, qmzx, qpzx, qzmarr, qzparr, fxarr, gdtempx, cdtdx, NumSpec, gamma);
+      i, j, k, qmzx, qpzx, qzmarr, qzparr, fxarr, gdtempx, cdtdx, NumSpec, gamma, small_pres);
     // Z|Y
     pc_transy2(
-      i, j, k, qmzy, qpzy, qzmarr, qzparr, fyarr, gdtempy, cdtdy, NumSpec, gamma);
+      i, j, k, qmzy, qpzy, qzmarr, qzparr, fyarr, gdtempy, cdtdy, NumSpec, gamma, small_pres);
   });
 
   fxeli.clear();
@@ -435,7 +438,7 @@ pc_umeth_3D(
   amrex::ParallelFor(tyzbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_transyz(
       i, j, k, qm, qp, qxmarr, qxparr, flyz, flzy, qyz, qzy, hdt,
-      hdtdy, hdtdz, NumSpec, gamma);
+      hdtdy, hdtdz, NumSpec, gamma, small_pres);
   });
 
   fluxzyeli.clear();
@@ -458,7 +461,7 @@ pc_umeth_3D(
   amrex::ParallelFor(txzbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_transxz(
       i, j, k, qm, qp, qymarr, qyparr, flxz, flzx, qxz, qzx, hdt,
-      hdtdx, hdtdz, NumSpec, gamma);
+      hdtdx, hdtdz, NumSpec, gamma, small_pres);
   });
   
   fluxzxeli.clear();
@@ -481,7 +484,7 @@ pc_umeth_3D(
   amrex::ParallelFor(txybx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_transxy(
       i, j, k, qm, qp, qzmarr, qzparr, flxy, flyx, qxy, qyx, hdt,
-      hdtdx, hdtdy, NumSpec, gamma);
+      hdtdx, hdtdy, NumSpec, gamma, small_pres);
   });
 
   gdvyxeli.clear();
