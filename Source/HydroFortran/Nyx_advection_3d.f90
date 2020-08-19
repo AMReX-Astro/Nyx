@@ -487,6 +487,7 @@
                             srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                             hdt,hdtdx,hdtdz,ilo1,ihi1,ilo2-1,ihi2+1,km,kc,k3d-1,a_old,a_new)
 
+
                ! On x-edges -- choose state flux1 based on qxl, qxr
                call cmpflx(qxl,qxr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                            flux1,fd1_l1,fd1_l2,fd1_l3,fd1_h1,fd1_h2,fd1_h3, &
@@ -506,7 +507,16 @@
                            ugdnvyf,pgdnvyf,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                            csml,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                            2,ilo1,ihi1,ilo2,ihi2+1,km,k3d-1,k3d-1,print_fortran_warnings)
-
+        do j = ilo2-1, ihi2+1
+            do i = ilo1-1, ihi1+2
+!print*,i,j,k3d
+               if(i.eq.5.and.j.eq.23+1.and.k3d.eq.1) then
+                  print*, flux2(i,j,k3d-1,1)!, flux2(i,j-1,k3d-1,1)
+                  print*, flux2(i,j,k3d,1)!, flux2(i,j-1,k3d,1)
+!                         STOP
+                      endif
+            enddo
+         enddo
                do j=ilo2-1,ihi2+2
                   do i=ilo1-1,ihi1+1
                      ugdnvy_out(i,j,k3d-1) = ugdnvyf(i,j,km)
@@ -993,6 +1003,13 @@
                           ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
                           + flux2(i,j,k,n) - flux2(i,j+1,k,n) &
                           + flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * volinv * a_half_inv
+                      if(i.eq.5.and.j.eq.23.and.k.eq.0) then
+                         print*,                      hydro_src(i,j,k,n), &
+                           flux1(i,j,k,n) - flux1(i+1,j,k,n), &
+                          flux2(i,j,k,n) , flux2(i,j+1,k,n), &
+                          flux3(i,j,k,n) - flux3(i,j,k+1,n), volinv * a_half_inv
+!                         STOP
+                      endif
 
                   ! Momentum
                   else if (n .ge. UMX .and. n .le. UMZ) then
@@ -1480,7 +1497,14 @@
 !                    pstar2(ilo:ihi), &
 !                    ustar2(ilo:ihi))
          else
-         ! Call analytic Riemann solver
+            ! Call analytic Riemann solver
+            do i = ilo, ihi
+            if(i.eq.5.and.j.eq.23+1.and.kflux.eq.0.and.idir.eq.2) then
+               print*,idir
+              print*,"pl,rl,pr,ur", pl(i), rl(i),pr(i),rr(i),ul(i),ur(i)
+!                  STOP
+           endif
+           enddo
             call analriem(ilo,ihi, &
                  gamma_const, &
                  pl(ilo:ihi), &
@@ -1534,7 +1558,9 @@
          end do
 
          co = sqrt(abs(gamma_const*po/ro))
-         co = max(csmall,co)
+         do i = ilo, ihi
+            co(i) = max(co(i),csmall(i))
+         enddo
          entho = ((reo + po)/ro)/(co*co)
 
          rstar = ro  + (pstar - po)/(co*co)
@@ -1554,7 +1580,9 @@
          end do
 
          cstar = sqrt(abs(gamma_const*pstar/rstar))
-         cstar = max(cstar,csmall)
+         do i = ilo, ihi
+            cstar(i) = max(cstar(i),csmall(i))
+         enddo
 
          sgnm = sign(ONE,ustar)
          spout = co - sgnm*uo
@@ -1574,8 +1602,9 @@
          end do
 
          frac = (ONE + (spout + spin)/scr)*HALF
-         frac = max(ZERO,min(ONE,frac))
-
+         do i = ilo, ihi
+            frac(i) = max(ZERO,min(ONE,frac(i)))
+         enddo
          do i = ilo, ihi
             if (ustar(i) .gt. ZERO) then
                v1gdnv(i) = v1l(i)
@@ -1639,7 +1668,9 @@
             end if
          end do
 
-         pgdnv(ilo:ihi,j,kc) = max(pgdnv(ilo:ihi,j,kc),small_pres)
+         do i = ilo, ihi
+            pgdnv(i,j,kc) = max(pgdnv(i,j,kc),small_pres)
+         enddo
 
          ! NOTE: Here we assume constant gamma.
          regdnv        = pgdnv(ilo:ihi,j,kc) / gamma_minus_1
@@ -1675,7 +1706,13 @@
 
          uflx(ilo:ihi,j,kflux,UEDEN) = ugdnv(ilo:ihi,j,kc)*(rhoetot + pgdnv(ilo:ihi,j,kc))
          uflx(ilo:ihi,j,kflux,UEINT) = ugdnv(ilo:ihi,j,kc)*regdnv
-
+         do i = ilo, ihi
+            if(i.eq.5.and.j.eq.23+1.and.kflux.eq.0.and.idir.eq.2) then
+               print*,idir
+              print*, uflx(i,j,kflux,URHO),rgdnv(i),ugdnv(i,j,kc),frac(i),ustar(i) , (ONE - frac(i)),uo(i)
+!                  STOP
+           endif
+           enddo
          do iadv = 1, nadv
             n  = UFA + iadv - 1
             nq = QFA + iadv - 1
