@@ -32,7 +32,7 @@ pc_srctoprim(
   const amrex::Real gravy = grav(i, j, k, 1);
   const amrex::Real gravz = grav(i, j, k, 2);
 
-#if 0
+#if 1
   // srcrho != rhoinv
   // SrcQ Calc
   srcQ(i, j, k, QRHO) = srcrho;

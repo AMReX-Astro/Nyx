@@ -43,8 +43,6 @@ riemann(
 {
   const amrex::Real wsmall = small_dens * csmall;
 
-   amrex::Print() << " I J K " << i << "  " << j << " " << k << std::endl;
-
   amrex::Real gdnv_state_rho;
   amrex::Real gdnv_state_p;
   amrex::Real gdnv_state_cs;
