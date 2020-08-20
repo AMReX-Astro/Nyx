@@ -463,7 +463,7 @@ pc_umeth_3D(
       i, j, k, qm, qp, qymarr, qyparr, flxz, flzx, qxz, qzx, hdt,
       hdtdx, hdtdz, NumSpec, gamma, small_pres);
   });
-  
+  amrex::Print()<<"after transxz"<<std::endl;
   fluxzxeli.clear();
   gdvzxeli.clear();
   gdvxzeli.clear();
@@ -475,7 +475,7 @@ pc_umeth_3D(
     pc_cmpflx(i, j, k, bcly, bchy, dly, dhy, qm, qp, flx2, q2, 
               q, small_dens, small_pres, small_vel, small, gamma,
               FirstSpec_loc, NumSpec_loc, cdir);
-	  if(i==5&&j==23+1&&k==0)
+	/*	  if(i==5&&j==23+1&&k==0)
 	  {
 		  //error in flx[1](5,23+1,0)
 		  int n=QPRES;
@@ -484,7 +484,7 @@ pc_umeth_3D(
 										 <<qp(i,j,k,n)<<" "<<qp(i,j-1,k,n)<<" "
 										 <<" "<<std::endl;
 		  //		  exit(0);
-	  }
+		  }*/
 
   });
 
