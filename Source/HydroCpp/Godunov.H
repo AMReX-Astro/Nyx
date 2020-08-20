@@ -311,6 +311,7 @@ pc_transx1(
   qp(i, j, k, QREINT) = renewr - rhoekinr;
   amrex::Real pnewr = qp(i, j, k, QREINT) * (gamma - 1.0);
   qp(i, j, k, QPRES) = amrex::max(pnewr, small_pres);
+  qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - 1.0);
 
   // QM
 
@@ -350,6 +351,7 @@ pc_transx1(
   qm(i, j + 1, k, QREINT) = renewl - rhoekinl;
   amrex::Real pnewl = qm(i, j + 1, k, QREINT) * (gamma - 1.0);
   qm(i, j + 1, k, QPRES) = amrex::max(pnewl, small_pres);
+  qm(i, j + 1, k, QREINT) = qm(i, j + 1, k, QPRES) / (gamma - 1.0);
 
 }
 
@@ -453,6 +455,7 @@ pc_transy1(
   qp(i, j, k, QREINT) = renewr - rhoekinr;
   pnewr = qp(i, j, k, QREINT) * (gamma-1.0);
   qp(i, j, k, QPRES) = amrex::max(pnewr, small_pres);
+  qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - 1.0);
 
   // QM
 
@@ -492,6 +495,7 @@ pc_transy1(
   qm(i + 1, j, k, QREINT) = renewl - rhoekinl;
   pnewl = qm(i + 1, j, k, QREINT) * (gamma-1.0);
   qm(i + 1, j, k, QPRES) = amrex::max(pnewl, small_pres);
+  qm(i + 1, j, k, QREINT) = qm(i + 1, j, k, QPRES) / (gamma - 1.0);
 
 }
 
@@ -593,6 +597,7 @@ pc_transx2(
   amrex::Real pnewr =
   qp(i, j, k, QREINT) * (gamma-1.0);
   qp(i, j, k, QPRES) = amrex::max(pnewr, small_pres);
+  qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - 1.0);
 
   // QM
 
@@ -633,6 +638,8 @@ pc_transx2(
   amrex::Real pnewl =
     qm(i, j, k + 1, QREINT) * (gamma-1.0);
   qm(i, j, k + 1, QPRES) = amrex::max(pnewl, small_pres);
+  qm(i, j, k + 1, QREINT) = qm(i, j, k + 1, QPRES) / (gamma - 1.0);
+
 }
 
 // Corrects the left and right z states with y flux
@@ -733,6 +740,7 @@ pc_transy2(
   amrex::Real pnewr =
     qp(i, j, k, QREINT) * (gamma-1.0);
   qp(i, j, k, QPRES) = amrex::max(pnewr, small_pres);
+  qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - 1.0);
 
   // QM
 
@@ -773,6 +781,8 @@ pc_transy2(
   amrex::Real pnewl =
     qm(i, j, k + 1, QREINT) * (gamma-1.0);
   qm(i, j, k + 1, QPRES) = amrex::max(pnewl, small_pres);
+  qm(i, j, k + 1, QREINT) = qm(i, j, k + 1, QPRES) / (gamma - 1.0);
+
 }
 
 // Corrects the left and right x states with z flux
@@ -874,6 +884,7 @@ pc_transz1(
   qp(i, j, k, QREINT) = renewr - rhoekinr;
   pnewr = qp(i, j, k, QREINT) * (gamma-1.0);
   qp(i, j, k, QPRES) = amrex::max(pnewr, small_pres);
+  qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - 1.0);
 
   // QM
 
@@ -913,6 +924,7 @@ pc_transz1(
   qm(i + 1, j, k, QREINT) = renewl - rhoekinl;
   pnewl = qm(i + 1, j, k, QREINT) * (gamma-1.0);
   qm(i + 1, j, k, QPRES) = amrex::max(pnewl, small_pres);
+  qm(i + 1, j, k, QREINT) = qm(i + 1, j, k, QPRES) / (gamma - 1.0);
 
 }
 
@@ -1013,7 +1025,7 @@ pc_transz2(
   amrex::Real pnewr =
     qp(i, j, k, QREINT) * (gamma-1.0);
   qp(i, j, k, QPRES) = amrex::max(pnewr, small_pres);
-
+  qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - 1.0);
 
   // QM
 
@@ -1054,6 +1066,7 @@ pc_transz2(
   amrex::Real pnewl =
     qm(i, j + 1, k, QREINT) * (gamma-1.0);
   qm(i, j + 1, k, QPRES) = amrex::max(pnewl, small_pres);
+  qm(i, j + 1, k, QREINT) = qm(i, j + 1, k, QPRES) / (gamma - 1.0);
 }
 
 // Z corrected from xy
@@ -1168,6 +1181,7 @@ pc_transxy(
   qp(i, j, k, QREINT) = renewr - rhoekinr;
   amrex::Real temppres = qp(i, j, k, QREINT) * (gamma - 1.0);
   qp(i, j, k, QPRES) = amrex::max(temppres, small_pres);
+  qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - 1.0);
 
   // qm state
   rul = rrl * qzm(i, j, k + 1, QU);
@@ -1198,6 +1212,8 @@ pc_transxy(
   qm(i, j, k + 1, QREINT) = renewl - rhoekinl;
   temppres = qm(i, j, k + 1, QREINT) * (gamma - 1.0);
   qm(i, j, k + 1, QPRES) = amrex::max(temppres, small_pres);
+  qm(i, j, k + 1, QREINT) = qm(i, j, k + 1, QPRES) / (gamma - 1.0);
+
 }
 
 // Y corrected by x and z
@@ -1283,7 +1299,7 @@ pc_transxz(
   amrex::Real pxnew = cdtdx * (dAupx + pavx * dAux * (gamma-1.0));
   amrex::Real pznew = cdtdz * (dAupz + pavz * dAuz * (gamma-1.0));
 
-  // qp state
+  // QP
   rur = rrr * qyp(i, j, k, QU);
   rvr = rrr * qyp(i, j, k, QV);
   rwr = rrr * qyp(i, j, k, QW);
@@ -1311,8 +1327,9 @@ pc_transxz(
   qp(i, j, k, QREINT) = renewr - rhoekinr;
   amrex::Real temppres = qp(i, j, k, QREINT) * (gamma - 1.0);
   qp(i, j, k, QPRES) = amrex::max(temppres, small_pres);
+  qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - 1.0);
 
-  // qm state
+  // QM
   rul = rrl * qym(i, j + 1, k, QU);
   rvl = rrl * qym(i, j + 1, k, QV);
   rwl = rrl * qym(i, j + 1, k, QW);
@@ -1341,6 +1358,7 @@ pc_transxz(
   qm(i, j + 1, k, QREINT) = renewl - rhoekinl;
   temppres = qm(i, j + 1, k, QREINT) * (gamma - 1.0);
   qm(i, j + 1, k, QPRES) = amrex::max(temppres, small_pres);
+  qm(i, j + 1, k, QREINT) = qm(i, j + 1, k, QPRES) / (gamma - 1.0);
 
 }
 
@@ -1428,7 +1446,7 @@ pc_transyz(
   amrex::Real pznew = cdtdz * (dAupz + pavz * dAuz * (gamma-1.0));
   amrex::Real pynew = cdtdy * (dAupy + pavy * dAuy * (gamma-1.0));
 
-  // qp state
+  // QP
   rur = rrr * qxp(i, j, k, QU);
   rvr = rrr * qxp(i, j, k, QV);
   rwr = rrr * qxp(i, j, k, QW);
@@ -1457,8 +1475,9 @@ pc_transyz(
   qp(i, j, k, QREINT) = renewr - rhoekinr;
   amrex::Real temppres = qp(i, j, k, QREINT) * (gamma - 1.0);
   qp(i, j, k, QPRES) = amrex::max(temppres, small_pres);
+  qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - 1.0);
 
-  // qm state
+  // QM
   rul = rrl * qxm(i + 1, j, k, QU);
   rvl = rrl * qxm(i + 1, j, k, QV);
   rwl = rrl * qxm(i + 1, j, k, QW);
@@ -1487,7 +1506,7 @@ pc_transyz(
   qm(i + 1, j, k, QREINT) = renewl - rhoekinl;
   temppres = qm(i + 1, j, k, QREINT) * (gamma - 1.0);
   qm(i + 1, j, k, QPRES) = amrex::max(temppres, small_pres);
-
+  qm(i + 1, j, k, QREINT) = qm(i + 1, j, k, QPRES) / (gamma - 1.0);
 }
 
 // Use interface states from Riemann solver for pdivu.
