@@ -331,6 +331,10 @@ Nyx::initData ()
     // Add partially redundant setup for small_dens
     Real average_gas_density = -1e200;
     Real average_temperature = -1e200;
+
+    // Make sure small values give non-negative small_pres
+    Real small_dens_loc = amrex::max(1e-2,small_dens);
+    Real small_temp_loc = amrex::max(1e-2,small_temp);
     Real a = get_comoving_a(cur_time);
     Real small_pres = -1e200;
 
@@ -338,7 +342,7 @@ Nyx::initData ()
 
     fort_set_small_values
       (&average_gas_density, &average_temperature,
-       &a,  &small_dens, &small_temp, &small_pres);
+       &a,  &small_dens_loc, &small_temp_loc, &small_pres);
 
     amrex::Gpu::Device::synchronize();
 
