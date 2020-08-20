@@ -293,6 +293,14 @@ pc_transx1(
   rwnewr = rwr - flxw;
   renewr = rer - flxe;
 
+  // Reset to original value if adding transverse terms made density negative
+  bool mask = rrnewr < 0.0;
+  rrnewr = mask ? rrr : rrnewr;
+  runewr = mask ? rur : runewr;
+  rvnewr = mask ? rvr : rvnewr;
+  rwnewr = mask ? rwr : rwnewr;
+  renewr = mask ? rer : renewr;
+
   // Convert back to primitive
   qp(i, j, k, QRHO) = rrnewr;
   qp(i, j, k, QU) = runewr / rrnewr;
@@ -323,6 +331,14 @@ pc_transx1(
   rvnewl = rvl - flxv;
   rwnewl = rwl - flxw;
   renewl = rel - flxe;
+
+  // Reset to original value if adding transverse terms made density negative
+  mask = rrnewl < 0.0;
+  rrnewl = mask ? rrl : rrnewl;
+  runewl = mask ? rul : runewl;
+  rvnewl = mask ? rvl : rvnewl;
+  rwnewl = mask ? rwl : rwnewl;
+  renewl = mask ? rel : renewl;
 
   qm(i, j + 1, k, QRHO) = rrnewl;
   qm(i, j + 1, k, QU) = runewl / rrnewl;
@@ -418,6 +434,14 @@ pc_transy1(
   rwnewr = rwr - flxw;
   renewr = rer - flxe;
 
+  // Reset to original value if adding transverse terms made density negative
+  bool mask = rrnewr < 0.0;
+  rrnewr = mask ? rrr : rrnewr;
+  runewr = mask ? rur : runewr;
+  rvnewr = mask ? rvr : rvnewr;
+  rwnewr = mask ? rwr : rwnewr;
+  renewr = mask ? rer : renewr;
+
   // Convert back to primitive
   qp(i, j, k, QRHO) = rrnewr;
   qp(i, j, k, QU) = runewr / rrnewr;
@@ -449,6 +473,14 @@ pc_transy1(
   rvnewl = rvl - flxv;
   rwnewl = rwl - flxw;
   renewl = rel - flxe;
+
+  // Reset to original value if adding transverse terms made density negative
+  mask = rrnewl < 0.0;
+  rrnewl = mask ? rrl : rrnewl;
+  runewl = mask ? rul : runewl;
+  rvnewl = mask ? rvl : rvnewl;
+  rwnewl = mask ? rwl : rwnewl;
+  renewl = mask ? rel : renewl;
 
   qm(i + 1, j, k, QRHO) = rrnewl;
   qm(i + 1, j, k, QU) = runewl / rrnewl;
@@ -542,6 +574,14 @@ pc_transx2(
   rwnewr = rwr - flxw;
   renewr = rer - flxe;
 
+  // Reset to original value if adding transverse terms made density negative
+  bool mask = rrnewr < 0.0;
+  rrnewr = mask ? rrr : rrnewr;
+  runewr = mask ? rur : runewr;
+  rvnewr = mask ? rvr : rvnewr;
+  rwnewr = mask ? rwr : rwnewr;
+  renewr = mask ? rer : renewr;
+
   // Convert back to primitive
   qp(i, j, k, QRHO) = rrnewr;
   qp(i, j, k, QU) = runewr / rrnewr;
@@ -573,6 +613,14 @@ pc_transx2(
   rvnewl = rvl - flxv;
   rwnewl = rwl - flxw;
   renewl = rel - flxe;
+
+  // Reset to original value if adding transverse terms made density negative
+  mask = rrnewl < 0.0;
+  rrnewl = mask ? rrl : rrnewl;
+  runewl = mask ? rul : runewl;
+  rvnewl = mask ? rvl : rvnewl;
+  rwnewl = mask ? rwl : rwnewl;
+  renewl = mask ? rel : renewl;
 
   qm(i, j, k + 1, QRHO) = rrnewl;
   qm(i, j, k + 1, QU) = runewl / rrnewl;
@@ -666,6 +714,14 @@ pc_transy2(
   rwnewr = rwr - flxw;
   renewr = rer - flxe;
 
+  // Reset to original value if adding transverse terms made density negative
+  bool mask = rrnewr < 0.0;
+  rrnewr = mask ? rrr : rrnewr;
+  runewr = mask ? rur : runewr;
+  rvnewr = mask ? rvr : rvnewr;
+  rwnewr = mask ? rwr : rwnewr;
+  renewr = mask ? rer : renewr;
+
   // Convert back to primitive
   qp(i, j, k, QRHO) = rrnewr;
   qp(i, j, k, QU) = runewr / rrnewr;
@@ -697,6 +753,14 @@ pc_transy2(
   rvnewl = rvl - flxv;
   rwnewl = rwl - flxw;
   renewl = rel - flxe;
+
+  // Reset to original value if adding transverse terms made density negative
+  mask = rrnewl < 0.0;
+  rrnewl = mask ? rrl : rrnewl;
+  runewl = mask ? rul : runewl;
+  rvnewl = mask ? rvl : rvnewl;
+  rwnewl = mask ? rwl : rwnewl;
+  renewl = mask ? rel : renewl;
 
   qm(i, j, k + 1, QRHO) = rrnewl;
   qm(i, j, k + 1, QU) = runewl / rrnewl;
@@ -791,6 +855,14 @@ pc_transz1(
   rwnewr = rwr - flxw;
   renewr = rer - flxe;
 
+  // Reset to original value if adding transverse terms made density negative
+  bool mask = rrnewr < 0.0;
+  rrnewr = mask ? rrr : rrnewr;
+  runewr = mask ? rur : runewr;
+  rvnewr = mask ? rvr : rvnewr;
+  rwnewr = mask ? rwr : rwnewr;
+  renewr = mask ? rer : renewr;
+
   // Convert back to primitive
   qp(i, j, k, QRHO) = rrnewr;
   qp(i, j, k, QU) = runewr / rrnewr;
@@ -822,6 +894,14 @@ pc_transz1(
   rvnewl = rvl - flxv;
   rwnewl = rwl - flxw;
   renewl = rel - flxe;
+
+  // Reset to original value if adding transverse terms made density negative
+  mask = rrnewl < 0.0;
+  rrnewl = mask ? rrl : rrnewl;
+  runewl = mask ? rul : runewl;
+  rvnewl = mask ? rvl : rvnewl;
+  rwnewl = mask ? rwl : rwnewl;
+  renewl = mask ? rel : renewl;
 
   qm(i + 1, j, k, QRHO) = rrnewl;
   qm(i + 1, j, k, QU) = runewl / rrnewl;
@@ -914,6 +994,14 @@ pc_transz2(
   rwnewr = rwr - flxw;
   renewr = rer - flxe;
 
+  // Reset to original value if adding transverse terms made density negative
+  bool mask = rrnewr < 0.0;
+  rrnewr = mask ? rrr : rrnewr;
+  runewr = mask ? rur : runewr;
+  rvnewr = mask ? rvr : rvnewr;
+  rwnewr = mask ? rwr : rwnewr;
+  renewr = mask ? rer : renewr;
+
   // Convert back to primitive
   qp(i, j, k, QRHO) = rrnewr;
   qp(i, j, k, QU) = runewr / rrnewr;
@@ -946,6 +1034,14 @@ pc_transz2(
   rvnewl = rvl - flxv;
   rwnewl = rwl - flxw;
   renewl = rel - flxe;
+
+  // Reset to original value if adding transverse terms made density negative
+  mask = rrnewl < 0.0;
+  rrnewl = mask ? rrl : rrnewl;
+  runewl = mask ? rul : runewl;
+  rvnewl = mask ? rvl : rvnewl;
+  rwnewl = mask ? rwl : rwnewl;
+  renewl = mask ? rel : renewl;
 
   qm(i, j + 1, k, QRHO) = rrnewl;
   qm(i, j + 1, k, QU) = runewl / rrnewl;
@@ -1183,6 +1279,13 @@ pc_transxz(
   rwnewr = rwr - flxw;
   renewr = rer - flxe;
 
+  bool mask = rrnewr < 0.0;
+  rrnewr = mask ? rrr : rrnewr;
+  runewr = mask ? rur : runewr;
+  rvnewr = mask ? rvr : rvnewr;
+  rwnewr = mask ? rwr : rwnewr;
+  renewr = mask ? rer : renewr;
+
   qp(i, j, k, QRHO) = rrnewr;
   qp(i, j, k, QU) = runewr / rrnewr;
   qp(i, j, k, QV) = rvnewr / rrnewr;
@@ -1205,6 +1308,14 @@ pc_transxz(
   rwnewl = rwl - flxw;
   renewl = rel - flxe;
 
+  // Reset to original value if adding transverse terms made density negative
+  mask = rrnewl < 0.0;
+  rrnewl = mask ? rrl : rrnewl;
+  runewl = mask ? rul : runewl;
+  rvnewl = mask ? rvl : rvnewl;
+  rwnewl = mask ? rwl : rwnewl;
+  renewl = mask ? rel : renewl;
+
   qm(i, j + 1, k, QRHO) = rrnewl;
   qm(i, j + 1, k, QU) = runewl / rrnewl;
   qm(i, j + 1, k, QV) = rvnewl / rrnewl;
@@ -1215,6 +1326,9 @@ pc_transxz(
   temppres = qm(i, j + 1, k, QREINT) * (gamma - 1.0);
   qm(i, j + 1, k, QPRES) = amrex::max(temppres, small_pres);
 
+  if(i==8&&j+1==16&&k==18)
+	  amrex::Print()<<"qm "<<qm(i,j+1,k,QPRES)<<" "<<qm(i, j + 1, k, QREINT) <<" "<< (gamma - 1.0)<<" "<<
+		  renewl<<" "<<rhoekinl<<" "<<rrnewl<<std::endl;
 }
 
 // x corrected by y and z
