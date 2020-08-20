@@ -130,19 +130,19 @@ pc_umeth_3D(
 
       // X slopes and interp
       for (int n = 0; n < nq; ++n)
-        slope[n] = plm_slope(i, j, k, n, 0, use_flattening_loc, q);
+          slope[n] = plm_slope(i, j, k, n, 0, use_flattening_loc, q, small_pres);
       pc_plm_x(i, j, k, qxmarr, qxparr, srcQ, slope, q, c, a_old, dx, dt, NumSpec, 
                gamma_minus_1, small_dens, small_pres);
 
       // Y slopes and interp
       for (int n = 0; n < nq; n++)
-        slope[n] = plm_slope(i, j, k, n, 1, use_flattening_loc, q);
+          slope[n] = plm_slope(i, j, k, n, 1, use_flattening_loc, q, small_pres);
       pc_plm_y(i, j, k, qymarr, qyparr, srcQ, slope, q, c, a_old, dy, dt, NumSpec,
                gamma_minus_1, small_dens, small_pres);
 
       // Z slopes and interp
       for (int n = 0; n < nq; ++n)
-        slope[n] = plm_slope(i, j, k, n, 2, use_flattening_loc, q);
+          slope[n] = plm_slope(i, j, k, n, 2, use_flattening_loc, q, small_pres);
       pc_plm_z(i, j, k, qzmarr, qzparr, srcQ, slope, q, c, a_old, dz, dt, NumSpec,
                gamma_minus_1, small_dens, small_pres);
 

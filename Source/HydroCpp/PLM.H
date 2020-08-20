@@ -23,7 +23,8 @@ plm_slope(
   const int n,
   const int dir,
   const int use_flattening,
-  amrex::Array4<const amrex::Real> const& q)
+  amrex::Array4<const amrex::Real> const& q,
+  const amrex::Real small_pres)
 {
   const int bdim[3] = {dir == 0, dir == 1, dir == 2};
 
@@ -72,7 +73,7 @@ plm_slope(
   if (use_flattening == 1)
   {
     for (int dir_flat = 0; dir_flat < AMREX_SPACEDIM; dir_flat++)
-      flatn = amrex::min(flatn,flatten(i, j, k, dir_flat, q));
+        flatn = amrex::min(flatn,flatten(i, j, k, dir_flat, q, small_pres));
   }
 
   return flatn * dsgn * amrex::min(dlim, amrex::Math::abs(dtemp));
