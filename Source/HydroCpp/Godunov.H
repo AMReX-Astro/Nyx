@@ -1487,9 +1487,6 @@ pc_transyz(
   qm(i + 1, j, k, QREINT) = renewl - rhoekinl;
   temppres = qm(i + 1, j, k, QREINT) * (gamma - 1.0);
   qm(i + 1, j, k, QPRES) = amrex::max(temppres, small_pres);
-    if(i==14&&j==0&&k==3)
-	  amrex::Print()<<"qm "<<qm(i+1,j,k,QPRES)<<" "<<qm(i+1, j , k, QREINT) <<" "<< (gamma - 1.0)<<" "<<
-		  renewl<<" "<<rhoekinl<<" "<<rrnewl<<std::endl;
 
 }
 
