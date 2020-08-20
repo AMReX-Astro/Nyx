@@ -557,7 +557,7 @@ contains
                qxmo(i+1,j,kc,QREINT)= renewlx - rhoekenlx
                qxmo(i+1,j,kc,QPRES) = qxmo(i+1,j,kc,QREINT) * gamma_minus_1
 
-               qxpo(i+1,j,kc,QPRES) = max(qxpo(i+1,j,kc,QPRES), small_pres)
+               qxmo(i+1,j,kc,QPRES) = max(qxmo(i+1,j,kc,QPRES), small_pres)
                if (qxmo(i+1,j,kc,QPRES) .lt. small_pres) then
                    pnewlx = qxm(i+1,j,kc,QPRES) - cdtdy*(dup + pav*du*gamma_minus_1)
                    qxmo(i+1,j,kc,QPRES ) = pnewlx
@@ -1699,9 +1699,8 @@ contains
                   qmo(i,j+1,km,QV  ) = qmo(i,j+1,km,QV  )
                   qmo(i,j+1,km,QW  ) = qmo(i,j+1,km,QW  )
                end if
-                                     if(i.eq.5.and.j.eq.23+1.and.k3d.eq.0) then
-                         print*, qmo(i,j,km,QPRES), qmo(i,j-1,km,QPRES), &
-                          qpo(i,j,km,QPRES), qpo(i,j-1,km,QPRES)
+               if(i.eq.8.and.j+1.eq.16.and.k3d.eq.18) then
+                         print*, "qm",qmo(i,j+1,km,QPRES), qmo(i,j+1,km,QREINT) , gamma_minus_1, renewl,rhoekenl,rrnewl
 !                         STOP
                       endif
             enddo

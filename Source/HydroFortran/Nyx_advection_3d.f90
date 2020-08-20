@@ -487,7 +487,8 @@
                             srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                             hdt,hdtdx,hdtdz,ilo1,ihi1,ilo2-1,ihi2+1,km,kc,k3d-1,a_old,a_new)
 
-
+               if(k3d-1.eq.18) &
+                    print*, "after transxz"
                ! On x-edges -- choose state flux1 based on qxl, qxr
                call cmpflx(qxl,qxr,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                            flux1,fd1_l1,fd1_l2,fd1_l3,fd1_h1,fd1_h2,fd1_h3, &
@@ -512,7 +513,7 @@
 !print*,i,j,k3d
                if(i.eq.5.and.j.eq.23+1.and.k3d.eq.1) then
                   print*, flux2(i,j,k3d-1,1)!, flux2(i,j-1,k3d-1,1)
-                  print*, flux2(i,j,k3d,1)!, flux2(i,j-1,k3d,1)
+!                  print*, flux2(i,j,k3d,1)!, flux2(i,j-1,k3d,1)
 !                         STOP
                       endif
             enddo
@@ -1003,12 +1004,12 @@
                           ( flux1(i,j,k,n) - flux1(i+1,j,k,n) &
                           + flux2(i,j,k,n) - flux2(i,j+1,k,n) &
                           + flux3(i,j,k,n) - flux3(i,j,k+1,n) ) * volinv * a_half_inv
-                      if(i.eq.5.and.j.eq.23.and.k.eq.0) then
+                      if(i.eq.8.and.j.eq.16.and.k.eq.18) then
                          print*,                      hydro_src(i,j,k,n), &
                            flux1(i,j,k,n) - flux1(i+1,j,k,n), &
                           flux2(i,j,k,n) , flux2(i,j+1,k,n), &
                           flux3(i,j,k,n) - flux3(i,j,k+1,n), volinv * a_half_inv
-!                         STOP
+                         STOP
                       endif
 
                   ! Momentum
@@ -1499,7 +1500,7 @@
          else
             ! Call analytic Riemann solver
             do i = ilo, ihi
-            if(i.eq.5.and.j.eq.23+1.and.kflux.eq.0.and.idir.eq.2) then
+            if(i.eq.8.and.j.eq.16.and.kflux.eq.18.and.idir.eq.2) then
                print*,idir
               print*,"pl,rl,pr,ur", pl(i), rl(i),pr(i),rr(i),ul(i),ur(i)
 !                  STOP
@@ -1707,7 +1708,7 @@
          uflx(ilo:ihi,j,kflux,UEDEN) = ugdnv(ilo:ihi,j,kc)*(rhoetot + pgdnv(ilo:ihi,j,kc))
          uflx(ilo:ihi,j,kflux,UEINT) = ugdnv(ilo:ihi,j,kc)*regdnv
          do i = ilo, ihi
-            if(i.eq.5.and.j.eq.23+1.and.kflux.eq.0.and.idir.eq.2) then
+            if(i.eq.8.and.j.eq.16.and.kflux.eq.18.and.idir.eq.2) then
                print*,idir
               print*, uflx(i,j,kflux,URHO),rgdnv(i),ugdnv(i,j,kc),frac(i),ustar(i) , (ONE - frac(i)),uo(i)
 !                  STOP
