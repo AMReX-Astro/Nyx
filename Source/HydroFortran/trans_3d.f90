@@ -1949,10 +1949,6 @@ contains
                   qmo(i+1,j,km,QV  ) = qmo(i+1,j,km,QV  ) 
                   qmo(i+1,j,km,QW  ) = qmo(i+1,j,km,QW  )
                end if
-               if(i+1.eq.13.and.j.eq.0.and.k3d.eq.3) then
-                         print*, "qm",qmo(i+1,j,km,QPRES), qmo(i+1,j,km,QREINT) , gamma_minus_1, renewl,rhoekenl,rrnewl
-!                         STOP
-                      endif
             enddo
          enddo
       endif
