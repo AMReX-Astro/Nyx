@@ -235,16 +235,16 @@ pc_update(
                             +(flx[2](i, j, k, n) - flx[2](i, j, k + 1, n)) ) *
                           volinv * a_fact[n];
   }
-  if(i==8&&j==16&&k==18)
+  if(i==13&&j==0&&k==3)
 	  {
-		  //error in flx[1](8,16,18)
+		  //error in flx[0](14,0,3)
 		  int n=URHO;
 		  amrex::Print()<<    update(i, j, k, n) << " "<<
-			    (flx[0](i, j, k, n) - flx[0](i + 1, j, k, n))<< " "<<
+			  (flx[0](i, j, k, n))<<" "<<( flx[0](i + 1, j, k, n))<< " "<<
 			  (flx[1](i, j, k, n))<<" "<<( flx[1](i, j + 1, k, n))<< " "<<
 			  (flx[2](i, j, k, n) - flx[2](i, j, k + 1, n)) << " "<<
 			  volinv * a_fact[n]<<std::endl;
-	  exit(0);
+		  //		  	  exit(0);
 	  }
 
   update(i, j, k, UEINT) += pdivu(i, j, k)*u(i,j,k,UEINT)*gamma_minus_1*dt*a_half;

@@ -440,7 +440,7 @@ pc_umeth_3D(
       i, j, k, qm, qp, qxmarr, qxparr, flyz, flzy, qyz, qzy, hdt,
       hdtdy, hdtdz, NumSpec, gamma, small_pres);
   });
-
+  amrex::Print()<<"after transyz"<<std::endl;
   fluxzyeli.clear();
   gdvzyeli.clear();
   gdvyzeli.clear();

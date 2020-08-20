@@ -63,9 +63,9 @@ riemann(
  
   const amrex::Real weakwv  = 1.e-3;
   const amrex::Real  small  = 1.e-6;
-    if(i==8&&j==16&&k==18&&idir==1)
+    if(i==14&&j==0&&k==3&&idir==0)
 	  {
-		  //error in flx[1](8,16,18)
+		  //error in flx[0](14,0,3)
 		  int n=URHO;
 		  amrex::Print()<<"pl,rl,pr,rr"<<pl<<" "<<rl<<" "<<pr<<" "<<rr<<" "<<ul<<" "<<ur<<" "<<std::endl;
 	  }
@@ -236,9 +236,9 @@ riemann(
     0.5 * rgd * (qint_iu * qint_iu + qint_iv1 * qint_iv1 + qint_iv2 * qint_iv2);
   uflx_eden = qint_iu * (rhoetot + qint_gdpres);
   uflx_eint = qint_iu * regd;
-    if(i==8&&j==16&&k==18&&idir==1)
+    if(i==14&&j==0&&k==3&&idir==0)
 	  {
-		  //error in flx[1](8,16,18)
+		  //error in flx[0](14,0,3)
 		  int n=URHO;
 		  amrex::Print()<<idir<<"\n"<<    uflx_rho << " "<<
 			  rgd<<" "<<qint_iu<<" "<<frac <<" "<< ustar <<" "<< (1.0 - frac)<<" "<< uo<<" "<<std::endl;

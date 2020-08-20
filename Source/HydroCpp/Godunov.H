@@ -1151,6 +1151,14 @@ pc_transxy(
   rwnewr = rwr - flxw;
   renewr = rer - flxe;
 
+  // Reset to original value if adding transverse terms made density negative
+  bool mask = rrnewr < 0.0;
+  rrnewr = mask ? rrr : rrnewr;
+  runewr = mask ? rur : runewr;
+  rvnewr = mask ? rvr : rvnewr;
+  rwnewr = mask ? rwr : rwnewr;
+  renewr = mask ? rer : renewr;
+
   qp(i, j, k, QRHO) = rrnewr;
   qp(i, j, k, QU) = runewr / rrnewr;
   qp(i, j, k, QV) = rvnewr / rrnewr;
@@ -1172,6 +1180,14 @@ pc_transxy(
   rvnewl = rvl - flxv;
   rwnewl = rwl - flxw;
   renewl = rel - flxe;
+
+  // Reset to original value if adding transverse terms made density negative
+  mask = rrnewl < 0.0;
+  rrnewl = mask ? rrl : rrnewl;
+  runewl = mask ? rul : runewl;
+  rvnewl = mask ? rvl : rvnewl;
+  rwnewl = mask ? rwl : rwnewl;
+  renewl = mask ? rel : renewl;
 
   qm(i, j, k + 1, QRHO) = rrnewl;
   qm(i, j, k + 1, QU) = runewl / rrnewl;
@@ -1326,9 +1342,6 @@ pc_transxz(
   temppres = qm(i, j + 1, k, QREINT) * (gamma - 1.0);
   qm(i, j + 1, k, QPRES) = amrex::max(temppres, small_pres);
 
-  if(i==8&&j+1==16&&k==18)
-	  amrex::Print()<<"qm "<<qm(i,j+1,k,QPRES)<<" "<<qm(i, j + 1, k, QREINT) <<" "<< (gamma - 1.0)<<" "<<
-		  renewl<<" "<<rhoekinl<<" "<<rrnewl<<std::endl;
 }
 
 // x corrected by y and z
@@ -1427,6 +1440,14 @@ pc_transyz(
   rwnewr = rwr - flxw;
   renewr = rer - flxe;
 
+  // Reset to original value if adding transverse terms made density negative
+  bool mask = rrnewr < 0.0;
+  rrnewr = mask ? rrr : rrnewr;
+  runewr = mask ? rur : runewr;
+  rvnewr = mask ? rvr : rvnewr;
+  rwnewr = mask ? rwr : rwnewr;
+  renewr = mask ? rer : renewr;
+
   qp(i, j, k, QRHO) = rrnewr;
   qp(i, j, k, QU) = runewr / rrnewr;
   qp(i, j, k, QV) = rvnewr / rrnewr;
@@ -1449,6 +1470,14 @@ pc_transyz(
   rwnewl = rwl - flxw;
   renewl = rel - flxe;
 
+  // Reset to original value if adding transverse terms made density negative
+  mask = rrnewl < 0.0;
+  rrnewl = mask ? rrl : rrnewl;
+  runewl = mask ? rul : runewl;
+  rvnewl = mask ? rvl : rvnewl;
+  rwnewl = mask ? rwl : rwnewl;
+  renewl = mask ? rel : renewl;
+
   qm(i + 1, j, k, QRHO) = rrnewl;
   qm(i + 1, j, k, QU) = runewl / rrnewl;
   qm(i + 1, j, k, QV) = rvnewl / rrnewl;
@@ -1458,6 +1487,10 @@ pc_transyz(
   qm(i + 1, j, k, QREINT) = renewl - rhoekinl;
   temppres = qm(i + 1, j, k, QREINT) * (gamma - 1.0);
   qm(i + 1, j, k, QPRES) = amrex::max(temppres, small_pres);
+    if(i==14&&j==0&&k==3)
+	  amrex::Print()<<"qm "<<qm(i+1,j,k,QPRES)<<" "<<qm(i+1, j , k, QREINT) <<" "<< (gamma - 1.0)<<" "<<
+		  renewl<<" "<<rhoekinl<<" "<<rrnewl<<std::endl;
+
 }
 
 // Use interface states from Riemann solver for pdivu.
