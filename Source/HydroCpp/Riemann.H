@@ -64,8 +64,8 @@ riemann(
   const amrex::Real weakwv  = 1.e-3;
   const amrex::Real  small  = 1.e-6;
 
-  amrex::Real wl = amrex::Math::sqrt(amrex::Math::abs(gamma*amrex::max(pl,small_pres)*amrex::max(rl,small_dens)));
-  amrex::Real wr = amrex::Math::sqrt(amrex::Math::abs(gamma*amrex::max(pr,small_pres)*amrex::max(rr,small_dens)));
+  amrex::Real wl = std::sqrt(amrex::Math::abs(gamma*amrex::max(pl,small_pres)*amrex::max(rl,small_dens)));
+  amrex::Real wr = std::sqrt(amrex::Math::abs(gamma*amrex::max(pr,small_pres)*amrex::max(rr,small_dens)));
 
   amrex::Real cleft  = wl/amrex::max(rl,small_dens);
   amrex::Real cright = wr/amrex::max(rr,small_dens);
@@ -77,8 +77,8 @@ riemann(
   amrex::Real wlsq = (.5*(gamma-1.0)*(pstar+amrex::max(pl,small_pres))+pstar) * amrex::max(rl,small_dens);
   amrex::Real wrsq = (.5*(gamma-1.0)*(pstar+amrex::max(pr,small_pres))+pstar) * amrex::max(rr,small_dens);
 
-  wl = amrex::Math::sqrt(amrex::Math::abs(wlsq));
-  wr = amrex::Math::sqrt(amrex::Math::abs(wrsq));
+  wl = std::sqrt(amrex::Math::abs(wlsq));
+  wr = std::sqrt(amrex::Math::abs(wrsq));
 
   amrex::Real ustarp = ul - (pstar-amrex::max(pl,small_pres))/wl;
   amrex::Real ustarm = ur + (pstar-amrex::max(pr,small_pres))/wr;
