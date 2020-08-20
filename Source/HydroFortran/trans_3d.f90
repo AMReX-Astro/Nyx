@@ -1699,10 +1699,7 @@ contains
                   qmo(i,j+1,km,QV  ) = qmo(i,j+1,km,QV  )
                   qmo(i,j+1,km,QW  ) = qmo(i,j+1,km,QW  )
                end if
-               if(i.eq.8.and.j+1.eq.16.and.k3d.eq.18) then
-                         print*, "qm",qmo(i,j+1,km,QPRES), qmo(i,j+1,km,QREINT) , gamma_minus_1, renewl,rhoekenl,rrnewl
-!                         STOP
-                      endif
+
             enddo
          enddo
       endif
@@ -1952,6 +1949,10 @@ contains
                   qmo(i+1,j,km,QV  ) = qmo(i+1,j,km,QV  ) 
                   qmo(i+1,j,km,QW  ) = qmo(i+1,j,km,QW  )
                end if
+               if(i+1.eq.13.and.j.eq.0.and.k3d.eq.3) then
+                         print*, "qm",qmo(i+1,j,km,QPRES), qmo(i+1,j,km,QREINT) , gamma_minus_1, renewl,rhoekenl,rrnewl
+!                         STOP
+                      endif
             enddo
          enddo
       endif
