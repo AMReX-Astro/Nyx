@@ -37,7 +37,6 @@ flatten(
   const amrex::Real zcut2 = 0.85e0;
   const amrex::Real dzcut = 1.0/(zcut2-zcut1);
 
-  amrex::Real dlft, drgt, dcen, dfm, dfp, dlim, dsgn, dtemp, drgtm1, dlftp1, slop;
   const amrex::Real qc = q(i, j, k, n);
   const amrex::Real qm =
     q(i - 1 * bdim[0], j - 1 * bdim[1], k - 1 * bdim[2], n);
@@ -124,7 +123,6 @@ pc_cmpflx(
 {
   amrex::Real csmall, cav, ustar;
   amrex::Real ul, ur, vl, vr, v2l, v2r, rel, rer;
-  int idx;
   int IU, IV, IV2;
   int GU, GV, GV2;
   int f_idx[3];
@@ -512,7 +510,6 @@ pc_transx2(
   amrex::Real rrl, rul, rvl, ekinl, rel, rrnewl, runewl, rvnewl, rwnewl, renewl;
   amrex::Real rhoekinl, rwl;
   amrex::Real pggp, pggm, ugp, ugm;
-  amrex::Real dAup, pav, dAu;
   amrex::Real flxrho, flxu, flxv, flxw, flxe;
 
   flxrho = cdtdx * (flxx(i + 1, j, k, URHO) - flxx(i, j, k, URHO));
@@ -541,10 +538,6 @@ pc_transx2(
   pggm = qint(i, j, k, GDPRES);
   ugp = qint(i + 1, j, k, GDU);
   ugm = qint(i, j, k, GDU);
-
-  dAup = pggp * ugp - pggm * ugm;
-  pav = 0.5 * (pggp + pggm);
-  dAu = ugp - ugm;
 
   // QP
 
@@ -655,7 +648,6 @@ pc_transy2(
   amrex::Real rrl, rul, rvl, ekinl, rel, rrnewl, runewl, rvnewl, rwnewl, renewl;
   amrex::Real rhoekinl, rwl;
   amrex::Real pggp, pggm, ugp, ugm;
-  amrex::Real dAup, pav, dAu;
   amrex::Real flxrho, flxu, flxv, flxw, flxe;
 
   flxrho = cdtdy * (flxy(i, j + 1, k, URHO) - flxy(i, j, k, URHO));
@@ -684,10 +676,6 @@ pc_transy2(
   pggm = qint(i, j, k, GDPRES);
   ugp = qint(i, j + 1, k, GDV);
   ugm = qint(i, j, k, GDV);
-
-  dAup = pggp * ugp - pggm * ugm;
-  pav = 0.5 * (pggp + pggm);
-  dAu = ugp - ugm;
 
   // QP
 
@@ -941,7 +929,6 @@ pc_transz2(
   amrex::Real rrl, rul, rvl, ekinl, rel, rrnewl, runewl, rvnewl, rwnewl, renewl;
   amrex::Real rhoekinl, rwl;
   amrex::Real pggp, pggm, ugp, ugm;
-  amrex::Real dAup, pav, dAu;
   amrex::Real flxrho, flxu, flxv, flxw, flxe;
 
   flxrho = cdtdz * (flxz(i, j, k + 1, URHO) - flxz(i, j, k, URHO));
@@ -970,10 +957,6 @@ pc_transz2(
   pggm = qint(i, j, k, GDPRES);
   ugp = qint(i, j, k + 1, GDW);
   ugm = qint(i, j, k, GDW);
-
-  dAup = pggp * ugp - pggm * ugm;
-  pav = 0.5 * (pggp + pggm);
-  dAu = ugp - ugm;
 
   // QP
 
@@ -1086,9 +1069,7 @@ pc_transxy(
   amrex::Real rrl, rul, rvl, ekinl, rel, rrnewl, runewl, rvnewl, rwnewl, renewl;
   amrex::Real rhoekinl, rwl;
   amrex::Real pggpx, pggmx, ugpx, ugmx;
-  amrex::Real dAupx, pavx, dAux;
   amrex::Real pggpy, pggmy, ugpy, ugmy;
-  amrex::Real dAupy, pavy, dAuy;
   amrex::Real flxrho, flxu, flxv, flxw, flxe;
 
   flxrho = cdtdx * (flxx(i + 1, j, k, URHO) - flxx(i, j, k, URHO)) +
@@ -1125,20 +1106,10 @@ pc_transxy(
   ugpx = qx(i + 1, j, k, GDU);
   ugmx = qx(i, j, k, GDU);
 
-  dAupx = pggpx * ugpx - pggmx * ugmx;
-  pavx = 0.5 * (pggpx + pggmx);
-  dAux = ugpx - ugmx;
-
   pggpy = qy(i, j + 1, k, GDPRES);
   pggmy = qy(i, j, k, GDPRES);
   ugpy = qy(i, j + 1, k, GDV);
   ugmy = qy(i, j, k, GDV);
-
-  dAupy = pggpy * ugpy - pggmy * ugmy;
-  pavy = 0.5 * (pggpy + pggmy);
-  dAuy = ugpy - ugmy;
-  amrex::Real pxnew = cdtdx * (dAupx + pavx * dAux * (gamma-1.0));
-  amrex::Real pynew = cdtdy * (dAupy + pavy * dAuy * (gamma-1.0));
 
   // qp state
   rur = rrr * qzp(i, j, k, QU);
@@ -1284,8 +1255,6 @@ pc_transxz(
   dAupz = pggpz * ugpz - pggmz * ugmz;
   pavz = 0.5 * (pggpz + pggmz);
   dAuz = ugpz - ugmz;
-  amrex::Real pxnew = cdtdx * (dAupx + pavx * dAux * (gamma-1.0));
-  amrex::Real pznew = cdtdz * (dAupz + pavz * dAuz * (gamma-1.0));
 
   // QP
   rur = rrr * qyp(i, j, k, QU);
@@ -1431,8 +1400,6 @@ pc_transyz(
   dAupy = pggpy * ugpy - pggmy * ugmy;
   pavy = 0.5 * (pggpy + pggmy);
   dAuy = ugpy - ugmy;
-  amrex::Real pznew = cdtdz * (dAupz + pavz * dAuz * (gamma-1.0));
-  amrex::Real pynew = cdtdy * (dAupy + pavy * dAuy * (gamma-1.0));
 
   // QP
   rur = rrr * qxp(i, j, k, QU);

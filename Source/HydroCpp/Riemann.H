@@ -41,13 +41,12 @@ riemann(
   const amrex::Real& gamma,
   const int NumSpec)
 {
-  const amrex::Real wsmall = small_dens * csmall;
 
-  amrex::Real gdnv_state_rho;
   amrex::Real gdnv_state_p;
   amrex::Real gdnv_state_cs;
 
 #if 0
+  const amrex::Real wsmall = small_dens * csmall;
   const amrex::Real wl =
     amrex::max(wsmall, std::sqrt(amrex::Math::abs(gamma * pl * rl)));
   const amrex::Real wr =
@@ -195,7 +194,6 @@ riemann(
   amrex::Real rgd = frac * rstar + (1.0 - frac) * ro;
   qint_iu = frac * ustar + (1.0 - frac) * uo;
   qint_gdpres = frac * pstar + (1.0 - frac) * po;
-  gdnv_state_rho = rgd;
   gdnv_state_p = qint_gdpres;
 
   //Might need this here and/or below:
@@ -215,7 +213,6 @@ riemann(
   qint_iu = mask ? ustar : qint_iu;
   qint_gdpres = mask ? pstar : qint_gdpres;
   regd = mask ? estar : regd;
-  gdnv_state_rho = rgd;
   gdnv_state_p = amrex::max(qint_gdpres, small_pres);
 
   // Might need rho factor
