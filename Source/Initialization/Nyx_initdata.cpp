@@ -26,6 +26,7 @@ namespace
 static int  do_santa_barbara = 0;
 static int  init_sb_vels     = 1;
 static int  do_readin_ics    = 0;
+static int  fix_random_seed  = 0;
 std::string readin_ics_fname;
 
 void
@@ -36,6 +37,12 @@ Nyx::read_init_params ()
 
     pp.query("do_santa_barbara", do_santa_barbara);
     pp.query("init_sb_vels", init_sb_vels);
+
+    pp.query("fix_random_seed", fix_random_seed);
+    // Note that the value of 1024UL is not significant -- the point here is just to set the
+    //      same seed for all MPI processes for the purpose of regression testing
+    if (fix_random_seed)
+        amrex::InitRandom(1024UL);
 
     if (do_hydro == 0 && do_santa_barbara == 1)
            amrex::Error("Nyx::cant have do_hydro == 0 and do_santa_barbara == 1");
@@ -324,6 +331,10 @@ Nyx::initData ()
     // Add partially redundant setup for small_dens
     Real average_gas_density = -1e200;
     Real average_temperature = -1e200;
+
+    // Make sure small values give non-negative small_pres
+    Real small_dens_loc = amrex::max(1e-2,small_dens);
+    Real small_temp_loc = amrex::max(1e-2,small_temp);
     Real a = get_comoving_a(cur_time);
     Real small_pres = -1e200;
 
@@ -331,7 +342,7 @@ Nyx::initData ()
 
     fort_set_small_values
       (&average_gas_density, &average_temperature,
-       &a,  &small_dens, &small_temp, &small_pres);
+       &a,  &small_dens_loc, &small_temp_loc, &small_pres);
 
     amrex::Gpu::Device::synchronize();
 

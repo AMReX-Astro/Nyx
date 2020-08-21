@@ -11,7 +11,6 @@ contains
     subroutine tracexy_ppm(q,c,flatn,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                            Ip,Im,Ip_g,Im_g, &
                            qxm,qxp,qym,qyp,qpd_l1,qpd_l2,qpd_l3,qpd_h1,qpd_h2,qpd_h3, &
-                           srcQ,src_l1,src_l2,src_l3,src_h1,src_h2,src_h3, &
                            ilo1,ilo2,ihi1,ihi2,dt,a_old,kc,k3d)
 
     use amrex_error_module
@@ -36,14 +35,13 @@ contains
     real(rt)   Ip(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3,QVAR)
     real(rt)   Im(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3,QVAR)
 
-    real(rt) Ip_g(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3,3)
-    real(rt) Im_g(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3,3)
+    real(rt) Ip_g(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3,QVAR)
+    real(rt) Im_g(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3,QVAR)
 
     real(rt) qxm (qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
     real(rt) qxp (qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
     real(rt) qym (qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
     real(rt) qyp (qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
-    real(rt) srcQ(src_l1:src_h1,src_l2:src_h2,src_l3:src_h3,QVAR)
 
     real(rt) dt, a_old
 
@@ -63,10 +61,6 @@ contains
     real(rt) apleft, amleft, azrleft, azeleft
     real(rt) halfdt
     real(rt) csqref,cref,enthref
-
-    integer, parameter :: igx = 1
-    integer, parameter :: igy = 2
-    integer, parameter :: igz = 3
 
     if (ppm_type .eq. 0) then
        print *,'Oops -- shouldnt be in tracexy_ppm with ppm_type = 0'
@@ -146,20 +140,16 @@ contains
              ! Note: for the transverse velocities, the jump is carried
              !       only by the u wave (the contact)
    
-             dum   =   u_ref - Im(i,j,kc,1,1,QU)
-             dpm   =   p_ref - Im(i,j,kc,1,1,QPRES)
+             dum   =   u_ref - Im(i,j,kc,1,1,QU)    - halfdt*Im_g(i,j,kc,1,1,QU)/a_old
+             dpm   =   p_ref - Im(i,j,kc,1,1,QPRES) - halfdt*Im_g(i,j,kc,1,1,QPRES)/a_old
    
-             drho  =  rho_ref - Im(i,j,kc,1,2,QRHO)
-             dv    =    v_ref - Im(i,j,kc,1,2,QV)
-             dw    =    w_ref - Im(i,j,kc,1,2,QW)
-             dp    =    p_ref - Im(i,j,kc,1,2,QPRES)
-             drhoe = rhoe_ref - Im(i,j,kc,1,2,QREINT)
+             drho  =  rho_ref - Im(i,j,kc,1,2,QRHO)   - halfdt*Im_g(i,j,kc,1,2,QRHO)/a_old
+             dp    =    p_ref - Im(i,j,kc,1,2,QPRES)  - halfdt*Im_g(i,j,kc,1,2,QPRES)/a_old
+             drhoe = rhoe_ref - Im(i,j,kc,1,2,QREINT) - halfdt*Im_g(i,j,kc,1,2,QREINT)/a_old
    
-             dup   =    u_ref - Im(i,j,kc,1,3,QU)
-             dpp   =    p_ref - Im(i,j,kc,1,3,QPRES)
+             dup   =    u_ref - Im(i,j,kc,1,3,QU)     - halfdt*Im_g(i,j,kc,1,3,QU)/a_old
+             dpp   =    p_ref - Im(i,j,kc,1,3,QPRES)  - halfdt*Im_g(i,j,kc,1,3,QPRES)/a_old
    
-             dum = dum - halfdt*Im_g(i,j,kc,1,1,igx)/a_old
-             dup = dup - halfdt*Im_g(i,j,kc,1,3,igx)/a_old
 
             ! These are analogous to the beta's from the original PPM
             ! paper (except we work with rho instead of tau).  This is
@@ -172,65 +162,43 @@ contains
 
              if (u-cc .gt. ZERO) then
                 amright = ZERO
-             else if (u-cc .lt. ZERO) then
-                amright = -alpham
              else
-                amright = -HALF*alpham
+                amright = -alpham
              endif
 
              if (u+cc .gt. ZERO) then
                 apright = ZERO
-             else if (u+cc .lt. ZERO) then
-                apright = -alphap
              else
-                apright = -HALF*alphap
+                apright = -alphap
              endif
 
              if (u .gt. ZERO) then
                 azrright = ZERO
                 azeright = ZERO
-             else if (u .lt. ZERO) then
+             else
                 azrright = -alpha0r
                 azeright = -alpha0e
-             else
-                azrright = -HALF*alpha0r
-                azeright = -HALF*alpha0e
              endif
 
              ! The final interface states are just
              ! q_s = q_ref - sum(l . dq) r
-             qxp(i,j,kc,QRHO  ) =  rho_ref +  apright + amright + azrright
+             qxp(i,j,kc,QRHO  ) = max(small_dens,rho_ref +  apright + amright + azrright)
              qxp(i,j,kc,QU    ) =    u_ref + (apright - amright)*cref/rho_ref
              qxp(i,j,kc,QREINT) = rhoe_ref + (apright + amright)*enthref*csqref + azeright
-             qxp(i,j,kc,QPRES ) =    p_ref + (apright + amright)*csqref
+             qxp(i,j,kc,QPRES ) = max(small_pres, p_ref + (apright + amright)*csqref)
 
              ! Transverse velocities -- there's no projection here, so we don't
              ! need a reference state.  We only care about the state traced under
              ! the middle wave
-             dv = Im(i,j,kc,1,2,QV)
-             dw = Im(i,j,kc,1,2,QW)
-   
-             dv  = dv  - halfdt*Im_g(i,j,kc,1,2,igy)/a_old
-             dw  = dw  - halfdt*Im_g(i,j,kc,1,2,igz)/a_old
+             dv = Im(i,j,kc,1,2,QV) + halfdt*Im_g(i,j,kc,1,2,QV)/a_old
+             dw = Im(i,j,kc,1,2,QW) + halfdt*Im_g(i,j,kc,1,2,QW)/a_old
 
              ! Recall that I already takes the limit of the parabola
              ! in the event that the wave is not moving toward the
              ! interface
-             if (u > ZERO) then
-                qxp(i,j,kc,QV    ) = v
-                qxp(i,j,kc,QW    ) = w
-             else ! wave moving toward the interface
-                qxp(i,j,kc,QV    ) = dv
-                qxp(i,j,kc,QW    ) = dw
-             endif
 
-             ! If rho or p too small, set all the slopes to zero
-             if (qxp(i,j,kc,QRHO ) .lt. small_dens .or. &
-                 qxp(i,j,kc,QPRES) .lt. small_pres) then
-                qxp(i,j,kc,QPRES) = p
-                qxp(i,j,kc,QRHO)  = rho
-                qxp(i,j,kc,QU)    = u
-             end if
+             qxp(i,j,kc,QV    ) = dv
+             qxp(i,j,kc,QW    ) = dw
 
              qxp(i,j,kc,QREINT) = qxp(i,j,kc,QPRES) / gamma_minus_1
 
@@ -261,19 +229,16 @@ contains
              ! Note: for the transverse velocities, the jump is carried
              !       only by the u wave (the contact)
 
-             dum   =    u_ref - Ip(i,j,kc,1,1,QU)
-             dpm   =    p_ref - Ip(i,j,kc,1,1,QPRES)
+             dum   =    u_ref - Ip(i,j,kc,1,1,QU   ) - halfdt*Ip_g(i,j,kc,1,1,QU   )/a_old
+             dpm   =    p_ref - Ip(i,j,kc,1,1,QPRES) - halfdt*Ip_g(i,j,kc,1,1,QPRES)/a_old
    
-             drho  =  rho_ref - Ip(i,j,kc,1,2,QRHO)
-             dp    =    p_ref - Ip(i,j,kc,1,2,QPRES)
-             drhoe = rhoe_ref - Ip(i,j,kc,1,2,QREINT)
+             drho  =  rho_ref - Ip(i,j,kc,1,2,QRHO  ) - halfdt*Ip_g(i,j,kc,1,2,QRHO)/a_old
+             dp    =    p_ref - Ip(i,j,kc,1,2,QPRES ) - halfdt*Ip_g(i,j,kc,1,2,QPRES)/a_old
+             drhoe = rhoe_ref - Ip(i,j,kc,1,2,QREINT) - halfdt*Ip_g(i,j,kc,1,2,QREINT)/a_old
 
-             dup   =    u_ref - Ip(i,j,kc,1,3,QU)
-             dpp   =    p_ref - Ip(i,j,kc,1,3,QPRES)
+             dup   =    u_ref - Ip(i,j,kc,1,3,QU   ) - halfdt*Ip_g(i,j,kc,1,3,QU)/a_old
+             dpp   =    p_ref - Ip(i,j,kc,1,3,QPRES) - halfdt*Ip_g(i,j,kc,1,3,QPRES)/a_old
    
-             dum = dum - halfdt*Ip_g(i,j,kc,1,1,igx)/a_old
-             dup = dup - halfdt*Ip_g(i,j,kc,1,3,igx)/a_old
-
              ! These are analogous to the beta's from the original PPM
              ! paper (except we work with rho instead of tau).  This is
              ! simply (l . dq), where dq = qref - I(q)
@@ -285,60 +250,37 @@ contains
 
              if (u-cc .gt. ZERO) then
                 amleft = -alpham
-             else if (u-cc .lt. ZERO) then
-                amleft = ZERO
              else
-                amleft = -HALF*alpham
+                amleft = ZERO
              endif
 
              if (u+cc .gt. ZERO) then
                 apleft = -alphap
-             else if (u+cc .lt. ZERO) then
-                apleft = ZERO 
              else
-                apleft = -HALF*alphap
+                apleft = ZERO 
              endif
    
              if (u .gt. ZERO) then
                 azrleft = -alpha0r
                 azeleft = -alpha0e
-             else if (u .lt. ZERO) then
+             else
                 azrleft = ZERO
                 azeleft = ZERO
-             else
-                azrleft = -HALF*alpha0r
-                azeleft = -HALF*alpha0e
              endif
 
              ! The final interface states are just
              ! q_s = q_ref - sum (l . dq) r
-             qxm(i+1,j,kc,QRHO  ) =  rho_ref + apleft + amleft + azrleft
+             qxm(i+1,j,kc,QRHO  ) = max(small_dens, rho_ref + apleft + amleft + azrleft)
              qxm(i+1,j,kc,QU    ) =    u_ref + (apleft - amleft)*cref/rho_ref
              qxm(i+1,j,kc,QREINT) = rhoe_ref + (apleft + amleft)*enthref*csqref + azeleft
-             qxm(i+1,j,kc,QPRES ) =    p_ref + (apleft + amleft)*csqref
+             qxm(i+1,j,kc,QPRES ) = max(small_pres, p_ref + (apleft + amleft)*csqref)
 
              ! Transverse velocities
-             dv    = Ip(i,j,kc,1,2,QV)
-             dw    = Ip(i,j,kc,1,2,QW)
-   
-             dv  = dv  - halfdt*Ip_g(i,j,kc,1,2,igy)/a_old
-             dw  = dw  - halfdt*Ip_g(i,j,kc,1,2,igz)/a_old
+             dv    = Ip(i,j,kc,1,2,QV) + halfdt*Ip_g(i,j,kc,1,2,QV)/a_old
+             dw    = Ip(i,j,kc,1,2,QW) + halfdt*Ip_g(i,j,kc,1,2,QW)/a_old
 
-             if (u < ZERO) then
-                qxm(i+1,j,kc,QV    ) = v
-                qxm(i+1,j,kc,QW    ) = w
-             else
-                qxm(i+1,j,kc,QV    ) = dv
-                qxm(i+1,j,kc,QW    ) = dw
-             endif
- 
-             ! If rho or p too small, set all the slopes to zero
-             if (qxm(i+1,j,kc,QRHO ) .lt. small_dens .or. &
-                 qxm(i+1,j,kc,QPRES) .lt. small_pres) then
-                qxm(i+1,j,kc,QRHO)  = rho
-                qxm(i+1,j,kc,QPRES) = p
-                qxm(i+1,j,kc,QU)    = u
-             end if
+             qxm(i+1,j,kc,QV    ) = dv
+             qxm(i+1,j,kc,QW    ) = dw
 
              qxm(i+1,j,kc,QREINT) = qxm(i+1,j,kc,QPRES) / gamma_minus_1
           end if
@@ -357,29 +299,13 @@ contains
 
           ! Plus state on face i
           do i = ilo1, ihi1+1
-             u = q(i,j,k3d,QU)
  
-             if (u .gt. ZERO) then
-                qxp(i,j,kc,n) = q(i,j,k3d,n)
-             else if (u .lt. ZERO) then
-                qxp(i,j,kc,n) = q(i,j,k3d,n) + (Im(i,j,kc,1,2,n) - q(i,j,k3d,n))
-             else
-                qxp(i,j,kc,n) = q(i,j,k3d,n) + HALF*(Im(i,j,kc,1,2,n) - q(i,j,k3d,n))
-             endif
-
+                qxp(i,j,kc,n) = Im(i,j,kc,1,2,n) + halfdt*Im_g(i,j,kc,1,2,n)/a_old
           enddo
 
           ! Minus state on face i+1
           do i = ilo1-1, ihi1
-             u = q(i,j,k3d,QU)
- 
-             if (u .gt. ZERO) then
-                qxm(i+1,j,kc,n) = q(i,j,k3d,n) + (Ip(i,j,kc,1,2,n) - q(i,j,k3d,n))
-             else if (u .lt. ZERO) then
-                qxm(i+1,j,kc,n) = q(i,j,k3d,n)
-             else
-                qxm(i+1,j,kc,n) = q(i,j,k3d,n) + HALF*(Ip(i,j,kc,1,2,n) - q(i,j,k3d,n))
-             endif
+                qxm(i+1,j,kc,n) = Ip(i,j,kc,1,2,n) + halfdt*Ip_g(i,j,kc,1,2,n)/a_old 
           enddo
 
        enddo
@@ -427,18 +353,16 @@ contains
              ! Note: for the transverse velocities, the jump is carried
              !       only by the v wave (the contact)
 
-             dvm   =    v_ref - Im(i,j,kc,2,1,QV)
-             dpm   =    p_ref - Im(i,j,kc,2,1,QPRES)
+             dvm   =    v_ref - Im(i,j,kc,2,1,QV) - halfdt*Im_g(i,j,kc,2,1,QV)/a_old
+             dpm   =    p_ref - Im(i,j,kc,2,1,QPRES) - halfdt*Im_g(i,j,kc,2,1,QPRES)/a_old
    
-             drho  =  rho_ref - Im(i,j,kc,2,2,QRHO)
-             dp    =    p_ref - Im(i,j,kc,2,2,QPRES)
-             drhoe = rhoe_ref - Im(i,j,kc,2,2,QREINT)
+             drho  =  rho_ref - Im(i,j,kc,2,2,QRHO) - halfdt*Im_g(i,j,kc,2,2,QRHO)/a_old
+             dp    =    p_ref - Im(i,j,kc,2,2,QPRES) - halfdt*Im_g(i,j,kc,2,2,QPRES)/a_old
+             drhoe = rhoe_ref - Im(i,j,kc,2,2,QREINT) - halfdt*Im_g(i,j,kc,2,2,QREINT)/a_old
 
-             dvp   =    v_ref - Im(i,j,kc,2,3,QV)
-             dpp   =    p_ref - Im(i,j,kc,2,3,QPRES)
+             dvp   =    v_ref - Im(i,j,kc,2,3,QV) - halfdt*Im_g(i,j,kc,2,3,QV)/a_old
+             dpp   =    p_ref - Im(i,j,kc,2,3,QPRES) - halfdt*Im_g(i,j,kc,2,3,QPRES)/a_old
    
-             dvm = dvm - halfdt*Im_g(i,j,kc,2,1,igy)/a_old
-             dvp = dvp - halfdt*Im_g(i,j,kc,2,3,igy)/a_old
 
              ! These are analogous to the beta's from the original PPM
              ! paper (except we work with rho instead of tau).  This
@@ -451,60 +375,40 @@ contains
  
              if (v-cc .gt. ZERO) then
                 amright = ZERO
-             else if (v-cc .lt. ZERO) then
-                amright = -alpham
              else
-                amright = -HALF*alpham
+                amright = -alpham
              endif
  
              if (v+cc .gt. ZERO) then
                 apright = ZERO
-             else if (v+cc .lt. ZERO) then
-                apright = -alphap
              else
-                apright = -HALF*alphap
+                apright = -alphap
              endif
  
              if (v .gt. ZERO) then
                 azrright = ZERO
                 azeright = ZERO
-             else if (v .lt. ZERO) then
+             else
                 azrright = -alpha0r
                 azeright = -alpha0e
-             else
-                azrright = -HALF*alpha0r
-                azeright = -HALF*alpha0e
              endif
  
              ! The final interface states are just
              ! q_s = q_ref - sum (l . dq) r
-             qyp(i,j,kc,QRHO  ) =  rho_ref +  apright + amright + azrright
+             qyp(i,j,kc,QRHO  ) = max(small_dens, rho_ref +  apright + amright + azrright)
              qyp(i,j,kc,QV    ) =    v_ref + (apright - amright)*cref/rho_ref
              qyp(i,j,kc,QREINT) = rhoe_ref + (apright + amright)*enthref*csqref + azeright
-             qyp(i,j,kc,QPRES ) =    p_ref + (apright + amright)*csqref
+             qyp(i,j,kc,QPRES ) = max(small_pres, p_ref + (apright + amright)*csqref)
 
              ! Transverse velocities
              du    = Im(i,j,kc,2,2,QU)
              dw    = Im(i,j,kc,2,2,QW)
    
-             du  = du  - halfdt*Im_g(i,j,kc,2,2,igx)/a_old
-             dw  = dw  - halfdt*Im_g(i,j,kc,2,2,igz)/a_old
+             du  = du  + halfdt*Im_g(i,j,kc,2,2,QU)/a_old
+             dw  = dw  + halfdt*Im_g(i,j,kc,2,2,QW)/a_old
  
-             if (v > ZERO) then
-                qyp(i,j,kc,QU    ) = u
-                qyp(i,j,kc,QW    ) = w
-             else ! wave moving toward the interface
-                qyp(i,j,kc,QU    ) = du
-                qyp(i,j,kc,QW    ) = dw
-             endif
- 
-             ! If rho or p too small, set all the slopes to zero
-             if (qyp(i,j,kc,QRHO ) .lt. small_dens .or. &
-                 qyp(i,j,kc,QPRES) .lt. small_pres) then
-                qyp(i,j,kc,QRHO)  = rho
-                qyp(i,j,kc,QPRES) = p
-                qyp(i,j,kc,QV)    = v
-             end if
+             qyp(i,j,kc,QU    ) = du
+             qyp(i,j,kc,QW    ) = dw
 
              qyp(i,j,kc,QREINT) = qyp(i,j,kc,QPRES) / gamma_minus_1
           end if
@@ -534,18 +438,16 @@ contains
              ! Note: for the transverse velocities, the jump is carried
              !       only by the v wave (the contact)
 
-             dvm   =    v_ref - Ip(i,j,kc,2,1,QV)
-             dpm   =    p_ref - Ip(i,j,kc,2,1,QPRES)
+             dvm   =    v_ref - Ip(i,j,kc,2,1,QV) - halfdt*Ip_g(i,j,kc,2,1,QV)/a_old
+             dpm   =    p_ref - Ip(i,j,kc,2,1,QPRES) - halfdt*Ip_g(i,j,kc,2,1,QPRES)/a_old
    
-             drho  =  rho_ref - Ip(i,j,kc,2,2,QRHO)
-             dp    =    p_ref - Ip(i,j,kc,2,2,QPRES)
-             drhoe = rhoe_ref - Ip(i,j,kc,2,2,QREINT)
+             drho  =  rho_ref - Ip(i,j,kc,2,2,QRHO) - halfdt*Ip_g(i,j,kc,2,2,QRHO)/a_old
+             dp    =    p_ref - Ip(i,j,kc,2,2,QPRES) - halfdt*Ip_g(i,j,kc,2,2,QPRES)/a_old
+             drhoe = rhoe_ref - Ip(i,j,kc,2,2,QREINT) - halfdt*Ip_g(i,j,kc,2,2,QREINT)/a_old
 
-             dvp   =    v_ref - Ip(i,j,kc,2,3,QV)
-             dpp   =    p_ref - Ip(i,j,kc,2,3,QPRES)
+             dvp   =    v_ref - Ip(i,j,kc,2,3,QV) - halfdt*Ip_g(i,j,kc,2,3,QV)/a_old
+             dpp   =    p_ref - Ip(i,j,kc,2,3,QPRES) - halfdt*Ip_g(i,j,kc,2,3,QPRES)/a_old
 
-             dvm = dvm - halfdt*Ip_g(i,j,kc,2,1,igy)/a_old
-             dvp = dvp - halfdt*Ip_g(i,j,kc,2,3,igy)/a_old
 
              ! These are analogous to the beta's from the original PPM
              ! paper.  This is simply (l . dq), where dq = qref - I(q)
@@ -557,60 +459,40 @@ contains
  
              if (v-cc .gt. ZERO) then
                 amleft = -alpham
-             else if (v-cc .lt. ZERO) then
-                amleft = ZERO
              else
-                amleft = -HALF*alpham
+                amleft = ZERO
              endif
 
              if (v+cc .gt. ZERO) then
                 apleft = -alphap
-             else if (v+cc .lt. ZERO) then
-                apleft = ZERO
              else
-                apleft = -HALF*alphap
+                apleft = ZERO
              endif
 
              if (v .gt. ZERO) then
                 azrleft = -alpha0r
                 azeleft = -alpha0e
-             else if (v .lt. ZERO) then
+             else
                 azrleft = ZERO
                 azeleft = ZERO
-             else
-                azrleft = -HALF*alpha0r
-                azeleft = -HALF*alpha0e
              endif
 
              ! The final interface states are just
              ! q_s = q_ref - sum (l . dq) r
-             qym(i,j+1,kc,QRHO  ) =  rho_ref +  apleft + amleft + azrleft
+             qym(i,j+1,kc,QRHO  ) = max(small_dens, rho_ref +  apleft + amleft + azrleft)
              qym(i,j+1,kc,QV    ) =    v_ref + (apleft - amleft)*cref/rho_ref
              qym(i,j+1,kc,QREINT) = rhoe_ref + (apleft + amleft)*enthref*csqref + azeleft
-             qym(i,j+1,kc,QPRES ) =    p_ref + (apleft + amleft)*csqref
+             qym(i,j+1,kc,QPRES ) = max(small_pres, p_ref + (apleft + amleft)*csqref)
 
              ! Transverse velocities
              du    = Ip(i,j,kc,2,2,QU)
              dw    = Ip(i,j,kc,2,2,QW)
 
-             du  = du  - halfdt*Ip_g(i,j,kc,2,2,igx)/a_old
-             dw  = dw  - halfdt*Ip_g(i,j,kc,2,2,igz)/a_old
+             du  = du  + halfdt*Ip_g(i,j,kc,2,2,QU)/a_old
+             dw  = dw  + halfdt*Ip_g(i,j,kc,2,2,QW)/a_old
  
-             if (v < ZERO) then
-                qym(i,j+1,kc,QU    ) = u
-                qym(i,j+1,kc,QW    ) = w
-             else ! wave is moving toward the interface
-                qym(i,j+1,kc,QU    ) = du
-                qym(i,j+1,kc,QW    ) = dw
-             endif
-
-             ! If rho or p too small, set all the slopes to zero
-             if (qym(i,j+1,kc,QRHO ) .lt. small_dens .or. &
-                 qym(i,j+1,kc,QPRES) .lt. small_pres) then
-                qym(i,j+1,kc,QRHO)  = rho
-                qym(i,j+1,kc,QPRES) = p
-                qym(i,j+1,kc,QV)    = v
-             end if
+             qym(i,j+1,kc,QU    ) = du
+             qym(i,j+1,kc,QW    ) = dw
 
              qym(i,j+1,kc,QREINT) = qym(i,j+1,kc,QPRES) / gamma_minus_1
           end if
@@ -629,28 +511,12 @@ contains
 
           ! Plus state on face j
           do j = ilo2, ihi2+1
-             v = q(i,j,k3d,QV)
-
-             if (v .gt. ZERO) then
-                qyp(i,j,kc,n) = q(i,j,k3d,n)
-             else if (v .lt. ZERO) then
-                qyp(i,j,kc,n) = q(i,j,k3d,n) + (Im(i,j,kc,2,2,n) - q(i,j,k3d,n))
-             else
-                qyp(i,j,kc,n) = q(i,j,k3d,n) + HALF*(Im(i,j,kc,2,2,n) - q(i,j,k3d,n))
-             endif
+                qyp(i,j,kc,n) = Im(i,j,kc,2,2,n) + halfdt*Im_g(i,j,kc,2,2,n)/a_old
           enddo
           
           ! Minus state on face j+1
           do j = ilo2-1, ihi2
-             v = q(i,j,k3d,QV)
-
-             if (v .gt. ZERO) then
-                qym(i,j+1,kc,n) = q(i,j,k3d,n) + (Ip(i,j,kc,2,2,n) - q(i,j,k3d,n))
-             else if (v .lt. ZERO) then
-                qym(i,j+1,kc,n) = q(i,j,k3d,n)
-             else
-                qym(i,j+1,kc,n) = q(i,j,k3d,n) + HALF*(Ip(i,j,kc,2,2,n) - q(i,j,k3d,n))
-             endif
+                qym(i,j+1,kc,n) = Ip(i,j,kc,2,2,n) + halfdt*Ip_g(i,j,kc,2,2,n)/a_old
           enddo
           
        enddo
@@ -665,7 +531,6 @@ contains
     subroutine tracez_ppm(q,c,flatn,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                           Ip,Im,Ip_g,Im_g, &
                           qzm,qzp,qpd_l1,qpd_l2,qpd_l3,qpd_h1,qpd_h2,qpd_h3, &
-                          srcQ,src_l1,src_l2,src_l3,src_h1,src_h2,src_h3, &
                           ilo1,ilo2,ihi1,ihi2,dt,a_old,km,kc,k3d)
 
     use amrex_error_module
@@ -691,12 +556,11 @@ contains
     real(rt)   Ip(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3,QVAR)
     real(rt)   Im(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3,QVAR)
 
-    real(rt) Ip_g(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3,3)
-    real(rt) Im_g(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3,3)
+    real(rt) Ip_g(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3,QVAR)
+    real(rt) Im_g(ilo1-1:ihi1+1,ilo2-1:ihi2+1,1:2,1:3,1:3,QVAR)
 
     real(rt) qzm (qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
     real(rt) qzp (qpd_l1:qpd_h1,qpd_l2:qpd_h2,qpd_l3:qpd_h3,QVAR)
-    real(rt) srcQ(src_l1:src_h1,src_l2:src_h2,src_l3:src_h3,QVAR)
     real(rt) dt, a_old
 
     !     Local variables
@@ -775,18 +639,15 @@ contains
           ! Note: for the transverse velocities, the jump is carried
           !       only by the w wave (the contact)
 
-          dwm   =    w_ref - Im(i,j,kc,3,1,QW)
-          dpm   =    p_ref - Im(i,j,kc,3,1,QPRES)
+          dwm   =    w_ref - Im(i,j,kc,3,1,QW) - halfdt*Im_g(i,j,kc,3,1,QW)/a_old
+          dpm   =    p_ref - Im(i,j,kc,3,1,QPRES) - halfdt*Im_g(i,j,kc,3,1,QPRES)/a_old
 
-          drho  =  rho_ref - Im(i,j,kc,3,2,QRHO)
-          dp    =    p_ref - Im(i,j,kc,3,2,QPRES)
-          drhoe = rhoe_ref - Im(i,j,kc,3,2,QREINT)
+          drho  =  rho_ref - Im(i,j,kc,3,2,QRHO) - halfdt*Im_g(i,j,kc,3,2,QRHO)/a_old
+          dp    =    p_ref - Im(i,j,kc,3,2,QPRES) - halfdt*Im_g(i,j,kc,3,2,QPRES)/a_old
+          drhoe = rhoe_ref - Im(i,j,kc,3,2,QREINT) - halfdt*Im_g(i,j,kc,3,2,QREINT)/a_old
 
-          dwp   =    w_ref - Im(i,j,kc,3,3,QW)
-          dpp   =    p_ref - Im(i,j,kc,3,3,QPRES)
-
-          dwm = dwm - halfdt*Im_g(i,j,kc,3,1,igz)/a_old
-          dwp = dwp - halfdt*Im_g(i,j,kc,3,3,igz)/a_old
+          dwp   =    w_ref - Im(i,j,kc,3,3,QW) - halfdt*Im_g(i,j,kc,3,3,QW)/a_old
+          dpp   =    p_ref - Im(i,j,kc,3,3,QPRES) - halfdt*Im_g(i,j,kc,3,3,QPRES)/a_old
 
           ! These are analogous to the beta's from the original PPM
           ! paper.  This is simply (l . dq), where dq = qref - I(q)
@@ -797,58 +658,38 @@ contains
 
           if (w-cc .gt. ZERO) then
              amright = ZERO
-          else if (w-cc .lt. ZERO) then
-             amright = -alpham
           else
-             amright = -HALF*alpham
+             amright = -alpham
           endif
           if (w+cc .gt. ZERO) then
              apright = ZERO
-          else if (w+cc .lt. ZERO) then
-             apright = -alphap
           else
-             apright = -HALF*alphap
+             apright = -alphap
           endif
           if (w .gt. ZERO) then
              azrright = ZERO
              azeright = ZERO
-          else if (w .lt. ZERO) then
+          else
              azrright = -alpha0r
              azeright = -alpha0e
-          else
-             azrright = -HALF*alpha0r
-             azeright = -HALF*alpha0e
           endif
 
           ! The final interface states are just
           ! q_s = q_ref - sum (l . dq) r
-          qzp(i,j,kc,QRHO  ) =  rho_ref +  apright + amright + azrright
+          qzp(i,j,kc,QRHO  ) = max(small_dens, rho_ref +  apright + amright + azrright)
           qzp(i,j,kc,QW    ) =    w_ref + (apright - amright)*cref/rho_ref
           qzp(i,j,kc,QREINT) = rhoe_ref + (apright + amright)*enthref*csqref + azeright
-          qzp(i,j,kc,QPRES ) =    p_ref + (apright + amright)*csqref
+          qzp(i,j,kc,QPRES ) = max(small_pres, p_ref + (apright + amright)*csqref)
 
           ! Transverse velocities
           du    = Im(i,j,kc,3,2,QU)
           dv    = Im(i,j,kc,3,2,QV)
 
-          du  = du  - halfdt*Im_g(i,j,kc,3,2,igx)/a_old
-          dv  = dv  - halfdt*Im_g(i,j,kc,3,2,igy)/a_old
+          du  = du  + halfdt*Im_g(i,j,kc,3,2,QU)/a_old
+          dv  = dv  + halfdt*Im_g(i,j,kc,3,2,QV)/a_old
 
-          if (w > ZERO) then 
-             qzp(i,j,kc,QU    ) = u
-             qzp(i,j,kc,QV    ) = v
-          else ! wave moving toward the interface
-             qzp(i,j,kc,QU    ) = du
-             qzp(i,j,kc,QV    ) = dv
-          endif
-
-          ! If rho or p too small, set all the slopes to zero
-         if (qzp(i,j,kc,QRHO ) .lt. small_dens .or. &
-             qzp(i,j,kc,QPRES) .lt. small_pres) then
-             qzp(i,j,kc,QRHO)  = rho
-             qzp(i,j,kc,QPRES) = p
-             qzp(i,j,kc,QW)    = w
-          end if
+          qzp(i,j,kc,QU    ) = du
+          qzp(i,j,kc,QV    ) = dv
 
           qzp(i,j,kc,QREINT) = qzp(i,j,kc,QPRES) / gamma_minus_1
 
@@ -892,18 +733,16 @@ contains
           ! Note: for the transverse velocities, the jump is carried
           !       only by the w wave (the contact)
 
-          dwm   = (   w_ref - Ip(i,j,km,3,1,QW))
-          dpm   = (   p_ref - Ip(i,j,km,3,1,QPRES))
+          dwm   = (   w_ref - Ip(i,j,km,3,1,QW)) - halfdt*Ip_g(i,j,km,3,1,QW)/a_old
+          dpm   = (   p_ref - Ip(i,j,km,3,1,QPRES)) - halfdt*Ip_g(i,j,km,3,1,QPRES)/a_old
 
-          drho  = ( rho_ref - Ip(i,j,km,3,2,QRHO))
-          dp    = (   p_ref - Ip(i,j,km,3,2,QPRES))
-          drhoe = (rhoe_ref - Ip(i,j,km,3,2,QREINT))
+          drho  = ( rho_ref - Ip(i,j,km,3,2,QRHO)) - halfdt*Ip_g(i,j,km,3,2,QRHO)/a_old
+          dp    = (   p_ref - Ip(i,j,km,3,2,QPRES)) - halfdt*Ip_g(i,j,km,3,2,QPRES)/a_old
+          drhoe = (rhoe_ref - Ip(i,j,km,3,2,QREINT)) - halfdt*Ip_g(i,j,km,3,2,QREINT)/a_old
 
-          dwp   = (   w_ref - Ip(i,j,km,3,3,QW))
-          dpp   = (   p_ref - Ip(i,j,km,3,3,QPRES))
+          dwp   = (   w_ref - Ip(i,j,km,3,3,QW)) - halfdt*Ip_g(i,j,km,3,3,QW)/a_old
+          dpp   = (   p_ref - Ip(i,j,km,3,3,QPRES)) - halfdt*Ip_g(i,j,km,3,3,QPRES)/a_old
 
-          dwm = dwm - halfdt*Ip_g(i,j,km,3,1,igz)/a_old
-          dwp = dwp - halfdt*Ip_g(i,j,km,3,3,igz)/a_old
 
           ! These are analogous to the beta's from the original PPM
           ! paper.  This is simply (l . dq), where dq = qref - I(q)
@@ -915,58 +754,38 @@ contains
              
           if (w-cc .gt. ZERO) then
              amleft = -alpham
-          else if (w-cc .lt. ZERO) then
-             amleft = ZERO
           else
-             amleft = -HALF*alpham
+             amleft = ZERO
           endif
           if (w+cc .gt. ZERO) then
              apleft = -alphap
-          else if (w+cc .lt. ZERO) then
-             apleft = ZERO
           else
-             apleft = -HALF*alphap
+             apleft = ZERO
           endif
           if (w .gt. ZERO) then
              azrleft = -alpha0r
              azeleft = -alpha0e
-          else if (w .lt. ZERO) then
+          else
              azrleft = ZERO
              azeleft = ZERO
-          else
-             azrleft = -HALF*alpha0r
-             azeleft = -HALF*alpha0e
           endif
           
           ! The final interface states are just
           ! q_s = q_ref - sum (l . dq) r
-          qzm(i,j,kc,QRHO  ) =  rho_ref +  apleft + amleft + azrleft
+          qzm(i,j,kc,QRHO  ) = max(small_dens, rho_ref +  apleft + amleft + azrleft)
           qzm(i,j,kc,QW    ) =    w_ref + (apleft - amleft)*cref/rho_ref
           qzm(i,j,kc,QREINT) = rhoe_ref + (apleft + amleft)*enthref*csqref + azeleft
-          qzm(i,j,kc,QPRES ) =    p_ref + (apleft + amleft)*csqref
+          qzm(i,j,kc,QPRES ) = max(small_pres, p_ref + (apleft + amleft)*csqref)
 
           ! Transverse velocity
           du = Ip(i,j,km,3,2,QU)
           dv = Ip(i,j,km,3,2,QV)
 
-          du  = du  - halfdt*Ip_g(i,j,km,3,2,igx)/a_old
-          dv  = dv  - halfdt*Ip_g(i,j,km,3,2,igy)/a_old
+          du  = du  + halfdt*Ip_g(i,j,km,3,2,QU)/a_old
+          dv  = dv  + halfdt*Ip_g(i,j,km,3,2,QV)/a_old
  
-          if (w < ZERO) then
-             qzm(i,j,kc,QU    ) = u
-             qzm(i,j,kc,QV    ) = v
-          else ! wave moving toward the interface
-             qzm(i,j,kc,QU    ) = du
-             qzm(i,j,kc,QV    ) = dv
-          endif
-
-          ! If rho or p too small, set all the slopes to zero
-          if (qzm(i,j,kc,QRHO ) .lt. small_dens .or. &
-              qzm(i,j,kc,QPRES) .lt. small_pres) then
-             qzm(i,j,kc,QRHO)  = rho
-             qzm(i,j,kc,QPRES) = p
-             qzm(i,j,kc,QW)    = w
-          end if
+          qzm(i,j,kc,QU    ) = du
+          qzm(i,j,kc,QV    ) = dv
 
           qzm(i,j,kc,QREINT) = qzm(i,j,kc,QPRES) / gamma_minus_1
 
@@ -984,26 +803,8 @@ contains
                do i = ilo1-1, ihi1+1
 
                   ! Plus state on face kc
-                  w = q(i,j,k3d,QW)
-
-                  if (w .gt. ZERO) then
-                     qzp(i,j,kc,n) = q(i,j,k3d,n)
-                  else if (w .lt. ZERO) then
-                     qzp(i,j,kc,n) = q(i,j,k3d,n) + (Im(i,j,kc,3,2,n) - q(i,j,k3d,n))
-                  else
-                     qzp(i,j,kc,n) = q(i,j,k3d,n) + HALF*(Im(i,j,kc,3,2,n) - q(i,j,k3d,n))
-                  endif
-
-                  ! Minus state on face k
-                  w = q(i,j,k3d-1,QW)
-
-                  if (w .gt. ZERO) then
-                     qzm(i,j,kc,n) = q(i,j,k3d-1,n) + (Ip(i,j,km,3,2,n) - q(i,j,k3d-1,n))
-                  else if (w .lt. ZERO) then
-                     qzm(i,j,kc,n) = q(i,j,k3d-1,n)
-                  else
-                     qzm(i,j,kc,n) = q(i,j,k3d-1,n) + HALF*(Ip(i,j,km,3,2,n) - q(i,j,k3d-1,n))
-                  endif
+                     qzp(i,j,kc,n) = Im(i,j,kc,3,2,n) + halfdt*Im_g(i,j,kc,3,2,n)/a_old 
+                     qzm(i,j,kc,n) = Ip(i,j,km,3,2,n) + halfdt*Ip_g(i,j,km,3,2,n)/a_old 
 
                enddo
          enddo

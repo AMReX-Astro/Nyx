@@ -226,8 +226,8 @@
       call amrex_allocate ( Ip,ilo1-1,ihi1+1,ilo2-1,ihi2+1,1,2,1,3,1,3,1,QVAR)
       call amrex_allocate ( Im,ilo1-1,ihi1+1,ilo2-1,ihi2+1,1,2,1,3,1,3,1,QVAR)
 
-      call amrex_allocate (Ip_g,ilo1-1,ihi1+1,ilo2-1,ihi2+1,1,2,1,3,1,3,1,3)
-      call amrex_allocate (Im_g,ilo1-1,ihi1+1,ilo2-1,ihi2+1,1,2,1,3,1,3,1,3)
+      call amrex_allocate (Ip_g,ilo1-1,ihi1+1,ilo2-1,ihi2+1,1,2,1,3,1,3,1,QVAR)
+      call amrex_allocate (Im_g,ilo1-1,ihi1+1,ilo2-1,ihi2+1,1,2,1,3,1,3,1,QVAR)
 
       a_half = HALF * (a_old + a_new)
 
@@ -268,8 +268,9 @@
                         ilo1,ilo2,ihi1,ihi2,dx,dy,dz,dt,k3d,kc,a_old)
             end do
 
-            do n=1,3
-               call ppm(srcQ(:,:,:,QU+n-1),srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
+            do n=1,QVAR
+               !call ppm(srcQ(:,:,:,QU+n-1),srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
+               call ppm(srcQ(:,:,:,n),srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                         q(:,:,:,QU:),c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                         flatn,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                         Ip_g(:,:,:,:,:,n),Im_g(:,:,:,:,:,n), &
@@ -280,7 +281,6 @@
             call tracexy_ppm(q,c,flatn,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                              Ip,Im,Ip_g,Im_g, &
                              qxm,qxp,qym,qyp,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
-                             srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                              ilo1,ilo2,ihi1,ihi2,dt,a_old,kc,k3d)
 
          else if (ppm_type .eq. 0) then
@@ -294,6 +294,7 @@
             call tracexy(q,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                          dqx,dqy,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                          qxm,qxp,qym,qyp,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+                         srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                          ilo1,ilo2,ihi1,ihi2,dx,dy,dt,kc,k3d,a_old)
 
          else 
@@ -353,12 +354,12 @@
                call tracez_ppm(q,c,flatn,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                                Ip,Im,Ip_g,Im_g, &
                                qzm,qzp,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
-                               srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                                ilo1,ilo2,ihi1,ihi2,dt,a_old,km,kc,k3d)
             else if (ppm_type .eq. 0) then
                call tracez(q,c,qd_l1,qd_l2,qd_l3,qd_h1,qd_h2,qd_h3, &
                            dqz,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
                            qzm,qzp,ilo1-1,ilo2-1,1,ihi1+2,ihi2+2,2, &
+                           srcQ,srcq_l1,srcq_l2,srcq_l3,srcq_h1,srcq_h2,srcq_h3, &
                            ilo1,ilo2,ihi1,ihi2,dz,dt,km,kc,k3d,a_old)
             else 
                print *,'>>> ... we only support ppm_type >= 0, not: ',ppm_type 
@@ -1203,6 +1204,9 @@
 
       real(rt), pointer :: smallc(:,:),cavg(:,:)
 
+! jbb added parameter. perhaps should  be global.  used 1.d-6 for compatibility in analriem
+      real(rt), parameter:: small = 1.d-6
+
       integer :: c_lo(2), c_hi(2)
 
       c_lo = [ilo-1, jlo-1]
@@ -1214,21 +1218,24 @@
       if(idir.eq.1) then
          do j = jlo, jhi
             do i = ilo, ihi
-               smallc(i,j) = max( csml(i,j,k3d), csml(i-1,j,k3d) )
+!              smallc(i,j) = max( csml(i,j,k3d), csml(i-1,j,k3d) )
+               smallc(i,j) = small* max( c(i,j,k3d) , c(i-1,j,k3d) , ONE )
                cavg(i,j) = HALF*( c(i,j,k3d) + c(i-1,j,k3d) )
             enddo
          enddo
       elseif(idir.eq.2) then
          do j = jlo, jhi
             do i = ilo, ihi
-               smallc(i,j) = max( csml(i,j,k3d), csml(i,j-1,k3d) )
+!              smallc(i,j) = max( csml(i,j,k3d), csml(i,j-1,k3d) )
+               smallc(i,j) = small* max( c(i,j,k3d) , c(i,j-1,k3d) , ONE )
                cavg(i,j) = HALF*( c(i,j,k3d) + c(i,j-1,k3d) )
             enddo
          enddo
       else
          do j = jlo, jhi
             do i = ilo, ihi
-               smallc(i,j) = max( csml(i,j,k3d), csml(i,j,k3d-1) )
+!              smallc(i,j) = max( csml(i,j,k3d), csml(i,j,k3d-1) )
+               smallc(i,j) = small* max( c(i,j,k3d) , c(i,j,k3d-1) , ONE )
                cavg(i,j) = HALF*( c(i,j,k3d) + c(i,j,k3d-1) )
             enddo
          enddo
@@ -1479,7 +1486,7 @@
 !                    pstar2(ilo:ihi), &
 !                    ustar2(ilo:ihi))
          else
-         ! Call analytic Riemann solver
+            ! Call analytic Riemann solver
             call analriem(ilo,ihi, &
                  gamma_const, &
                  pl(ilo:ihi), &
@@ -1533,7 +1540,9 @@
          end do
 
          co = sqrt(abs(gamma_const*po/ro))
-         co = max(csmall,co)
+         do i = ilo, ihi
+            co(i) = max(co(i),csmall(i))
+         enddo
          entho = ((reo + po)/ro)/(co*co)
 
          rstar = ro  + (pstar - po)/(co*co)
@@ -1553,7 +1562,9 @@
          end do
 
          cstar = sqrt(abs(gamma_const*pstar/rstar))
-         cstar = max(cstar,csmall)
+         do i = ilo, ihi
+            cstar(i) = max(cstar(i),csmall(i))
+         enddo
 
          sgnm = sign(ONE,ustar)
          spout = co - sgnm*uo
@@ -1573,8 +1584,9 @@
          end do
 
          frac = (ONE + (spout + spin)/scr)*HALF
-         frac = max(ZERO,min(ONE,frac))
-
+         do i = ilo, ihi
+            frac(i) = max(ZERO,min(ONE,frac(i)))
+         enddo
          do i = ilo, ihi
             if (ustar(i) .gt. ZERO) then
                v1gdnv(i) = v1l(i)
@@ -1638,7 +1650,9 @@
             end if
          end do
 
-         pgdnv(ilo:ihi,j,kc) = max(pgdnv(ilo:ihi,j,kc),small_pres)
+         do i = ilo, ihi
+            pgdnv(i,j,kc) = max(pgdnv(i,j,kc),small_pres)
+         enddo
 
          ! NOTE: Here we assume constant gamma.
          regdnv        = pgdnv(ilo:ihi,j,kc) / gamma_minus_1
