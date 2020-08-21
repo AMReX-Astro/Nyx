@@ -1,6 +1,8 @@
 
 #include "Nyx.H"
 #include "Nyx_F.H"
+#include <atomic_rates_data.H>
+#include <constants_cosmo.H>
 
 using namespace amrex;
 /*
