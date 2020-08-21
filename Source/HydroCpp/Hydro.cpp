@@ -10,7 +10,6 @@ Nyx::construct_hydro_source(
         amrex::MultiFab& sources_for_hydro,
   amrex::MultiFab& hydro_source,
   amrex::MultiFab& grav_vector, 
-  amrex::Real time,
   amrex::Real a_old,
   amrex::Real a_new,
   amrex::Real dt,
@@ -62,9 +61,6 @@ Nyx::construct_hydro_source(
       dx1 *= dx[dir];
     }
 
-    std::array<amrex::Real, AMREX_SPACEDIM> dxD = {dx1, dx1, dx1};
-    const amrex::Real* dxDp = &(dxD[0]);
-
     amrex::Real courno = -1.0e+200;
 
     amrex::MultiFab& S_new = get_new_data(State_Type);
@@ -74,14 +70,6 @@ Nyx::construct_hydro_source(
     amrex::Real xmom_added_flux = 0.;
     amrex::Real ymom_added_flux = 0.;
     amrex::Real zmom_added_flux = 0.;
-    amrex::Real mass_lost = 0.;
-    amrex::Real xmom_lost = 0.;
-    amrex::Real ymom_lost = 0.;
-    amrex::Real zmom_lost = 0.;
-    amrex::Real eden_lost = 0.;
-    amrex::Real xang_lost = 0.;
-    amrex::Real yang_lost = 0.;
-    amrex::Real zang_lost = 0.;
 
     BL_PROFILE_VAR("Nyx::advance_hydro_pc_umdrv()", PC_UMDRV);
 
@@ -89,36 +77,14 @@ Nyx::construct_hydro_source(
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())               \
     reduction(+:E_added_flux,mass_added_flux)                           \
     reduction(+:xmom_added_flux,ymom_added_flux,zmom_added_flux)    \
-    reduction(+:mass_lost,xmom_lost,ymom_lost,zmom_lost)        \
-    reduction(+:eden_lost,xang_lost,yang_lost,zang_lost)        \
     reduction(max:courno)
 #endif
     {
       // amrex::IArrayBox bcMask[AMREX_SPACEDIM];
       amrex::Real cflLoc = -1.0e+200;
-      int is_finest_level = (level == finest_level) ? 1 : 0;
-      int flag_nscbc_isAnyPerio = (geom.isAnyPeriodic()) ? 1 : 0;
-      int flag_nscbc_perio[AMREX_SPACEDIM]; // For 3D, we will know which
-                                            // corners have a periodicity
-      for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
-        flag_nscbc_perio[dir] =
-          (amrex::DefaultGeometry().isPeriodic(dir)) ? 1 : 0;
-      }
 
-      const int* domain_lo = geom.Domain().loVect();
-      const int* domain_hi = geom.Domain().hiVect();
-
-      const amrex::Real hdt = 0.5*dt;
-      const amrex::Real a_half = 0.5 * (a_old + a_new);
       const amrex::Real a_dot = (a_new - a_old) / dt;
 
-      const amrex::Real hdtdx = 0.5*dt/dx[0]/a_half;
-      const amrex::Real hdtdy = 0.5*dt/dx[1]/a_half;
-      const amrex::Real hdtdz = 0.5*dt/dx[2]/a_half;
-
-      const amrex::Real cdtdx = dt/dx[0]/3.0/a_half;
-      const amrex::Real cdtdy = dt/dx[1]/3.0/a_half;
-      const amrex::Real cdtdz = dt/dx[2]/3.0/a_half;
       NumSpec = S.nComp() - 6;
       const int NumSpec_loc = NumSpec;
       const amrex::Real gamma_minus_1_loc = gamma-1.0;
@@ -130,8 +96,6 @@ Nyx::construct_hydro_source(
         const amrex::Box& bx = mfi.tilebox();
         const amrex::Box& qbx = amrex::grow(bx, NUM_GROW + nGrowF);
         const amrex::Box& fbx = amrex::grow(bx, nGrowF);
-        const int* lo = bx.loVect();
-        const int* hi = bx.hiVect();
 
         amrex::GpuArray<amrex::FArrayBox, AMREX_SPACEDIM> flux;
         amrex::Elixir flux_eli[AMREX_SPACEDIM];
@@ -176,7 +140,7 @@ Nyx::construct_hydro_source(
         amrex::ParallelFor(
           qbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
             pc_srctoprim(i, j, k, qarr, grav_in, src_in, srcqarr,
-            a_half, a_dot, NumSpec_loc, gamma_minus_1_loc);
+            a_dot, NumSpec_loc, gamma_minus_1_loc);
           });
         BL_PROFILE_VAR_STOP(srctop);
 
@@ -208,8 +172,7 @@ Nyx::construct_hydro_source(
           a{area[0].array(mfi), area[1].array(mfi), area[2].array(mfi)};
 
         pc_umdrv(
-          is_finest_level, time, bx, domain_lo, domain_hi, phys_bc.lo(),
-          phys_bc.hi(), s, hyd_src, qarr, srcqarr, flx_arr, dx, dt, a_old, a_new,
+          bx, s, hyd_src, qarr, srcqarr, flx_arr, dx, dt, a_old, a_new,
           gamma, gamma_minus_1_loc, NumSpec,
           small_dens, small_pres, small_vel, small, 
           cflLoc, ppm_type, use_flattening, a, volume.array(mfi));
@@ -302,13 +265,7 @@ Nyx::construct_hydro_source(
 
 void
 pc_umdrv(
-  const int is_finest_level,
-  const amrex::Real time,
   amrex::Box const& bx,
-  const int* domlo,
-  const int* domhi,
-  const int* bclo,
-  const int* bchi,
   amrex::Array4<const amrex::Real> const& uin,
   amrex::Array4<amrex::Real> const& uout,
   amrex::Array4<const amrex::Real> const& q,
@@ -352,12 +309,11 @@ pc_umdrv(
 
   BL_PROFILE_VAR("Nyx::umeth()", umeth);
   pc_umeth_3D(
-    bx, bclo, bchi, 
-    domlo, domhi, 
+    bx, 
     q, nq, src_q,
     flx[0], flx[1], flx[2], 
     qec_arr[0], qec_arr[1], qec_arr[2], 
-    pdivuarr, vol, dx, dt, a_old, a_new, NumSpec, gamma, gamma_minus_1,
+    pdivuarr, dx, dt, a_old, a_new, NumSpec, gamma, gamma_minus_1,
     small_dens, small_pres, small_vel, small, ppm_type, use_flattening);
   BL_PROFILE_VAR_STOP(umeth);
 
@@ -416,10 +372,9 @@ pc_consup(
 
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
     amrex::Box const& fbx = surroundingNodes(bx, dir);
-    const amrex::Real dx = del[dir];
     amrex::ParallelFor(fbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
         // Change scaling for flux registers
-        pc_ext_flx_dt(i, j, k, flx[dir], a_old, a_new, dt);
+        pc_ext_flx_dt(i, j, k, flx[dir], a_old, a_new);
     });
   }
 }

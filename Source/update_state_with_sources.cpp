@@ -31,12 +31,9 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
     const amrex::Real a_new_inv = 1.0 / a_new;
     const amrex::Real a_newsq_inv = 1.0 / a_newsq;
     const amrex::Real dt_a_new    = dt / a_new;
-        /*
-    int ng = 0;
-    const amrex::Real a_fact[8] = {a_half_inv,a_new_inv,a_new_inv,a_new_inv,a_new_sq_inv,a_new_sq_inv,1.0,1.0};
-    amrex::MultiFab::Copy(S_new, S_old, 0, 0, S_new.nComp(), ng);
-    amrex::MultiFab::Saxpy(S_new, 1.0, hydro_src, 0, 0, S_new.nComp(), ng);
-        */
+
+    int lnum_spec    = NumSpec;
+    Real lsmall_dens = small_dens;
 
         ////This set of dt should be used for Saxpy dt like setup
     for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
@@ -78,7 +75,7 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
 
            //Unclear whether this should be part of previous ParallelFor
            amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-				   do_enforce_minimum_density(i, j, k, uout, NumSpec, small_dens);
+				   do_enforce_minimum_density(i, j, k, uout, lnum_spec, lsmall_dens);
 		   });
 
         }
@@ -92,19 +89,21 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
         const amrex::Box& bx = mfi.tilebox();
         auto const& uin = S_old.array(mfi);
         auto const& uout = S_new.array(mfi);
-        auto const& hydro_src = hydro_source.array(mfi);
-        auto const& src = ext_src_old.array(mfi);
         auto const& grav = grav_vector.array(mfi);
         amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+
+
                 const amrex::Real rhoInv = 1.0 / uout(i,j,k,URHO);
                 const amrex::Real vx = uout(i, j, k, UMX);
                 const amrex::Real vy = uout(i, j, k, UMY);
                 const amrex::Real vz = uout(i, j, k, UMZ);
+
                 // **** Start Diagnostics ****
                 //Multiplies by rhoInv
                 const amrex::Real old_ke = 0.5 * rhoInv * (vx * vx + vy * vy + vz * vz);
                 const amrex::Real old_rhoeint = uout(i,j,k,UEDEN) - old_ke;
                 // ****   End Diagnostics ****
+
                 const amrex::Real rho = uin(i, j, k, URHO);
 
                 const amrex::Real SrU = rho * grav(i,j,k,0);
@@ -127,9 +126,6 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
                 }
                 else if (grav_source_type == 3)
                 {
-                    const amrex::Real vx = uout(i, j, k, UMX);
-                    const amrex::Real vy = uout(i, j, k, UMY);
-                    const amrex::Real vz = uout(i, j, k, UMZ);
                     //Multiplies by rhoInv
                     const amrex::Real new_ke = 0.5 * rhoInv * (vx * vx + vy * vy + vz * vz);
                     uout(i,j,k,UEDEN) = old_rhoeint + new_ke;

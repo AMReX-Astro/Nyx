@@ -25,10 +25,6 @@ trace_ppm(const Box& bx,
 void
 pc_umeth_3D(
   Box const& bx,
-  const int* bclo,
-  const int* bchi,
-  const int* domlo,
-  const int* domhi,
   Array4<const Real> const& q,
   const int nq,
   Array4<const Real> const& srcQ, 
@@ -39,7 +35,6 @@ pc_umeth_3D(
   Array4<Real> const& q2,
   Array4<Real> const& q3,
   Array4<Real> const& pdivu,
-  Array4<const Real> const& vol,
   const Real* del,
   const Real dt,
   const Real a_old,
@@ -65,22 +60,7 @@ pc_umeth_3D(
   Real const cdtdx = 1.0 / 3.0 * dt / dx / a_half;
   Real const cdtdy = 1.0 / 3.0 * dt / dy / a_half;
   Real const cdtdz = 1.0 / 3.0 * dt / dz / a_half;
-  Real const hdt = 0.5 * dt / a_old;
 
-  const int bclx = bclo[0];
-  const int bcly = bclo[1];
-  const int bclz = bclo[2];
-  const int bchx = bchi[0];
-  const int bchy = bchi[1];
-  const int bchz = bchi[2];
-  const int dlx = domlo[0];
-  const int dly = domlo[1];
-  const int dlz = domlo[2];
-  const int dhx = domhi[0];
-  const int dhy = domhi[1];
-  const int dhz = domhi[2];
-
-  // auto const& bcMaskarr = bcMask.array();
   const amrex::Box& bxg1 = grow(bx, 1);
   const amrex::Box& bxg2 = grow(bx, 2);
 
@@ -203,7 +183,7 @@ pc_umeth_3D(
   amrex::ParallelFor(
     xflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       pc_cmpflx(
-        i, j, k, bclx, bchx, dlx, dhx, qxmarr, qxparr, fxarr, gdtempx, 
+        i, j, k, qxmarr, qxparr, fxarr, gdtempx, 
         q, small_dens, small_pres, small_vel, small, gamma, 
         FirstSpec_loc, NumSpec_loc, cdir);
     });
@@ -219,7 +199,7 @@ pc_umeth_3D(
   amrex::ParallelFor(
     yflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       pc_cmpflx(
-        i, j, k, bcly, bchy, dly, dhy, qymarr, qyparr, fyarr, gdtempy, 
+        i, j, k, qymarr, qyparr, fyarr, gdtempy, 
         q, small_dens, small_pres, small_vel, small, gamma, 
         FirstSpec_loc, NumSpec_loc, cdir);
     });
@@ -235,7 +215,7 @@ pc_umeth_3D(
   amrex::ParallelFor(
     zflxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       pc_cmpflx(
-        i, j, k, bclz, bchz, dlz, dhz, qzmarr, qzparr, fzarr, gdtempz, 
+        i, j, k, qzmarr, qzparr, fzarr, gdtempz, 
         q, small_dens, small_pres, small_vel, small, gamma, 
         FirstSpec_loc, NumSpec_loc, cdir);
     });
@@ -285,12 +265,12 @@ pc_umeth_3D(
     txfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       // X|Y
       pc_cmpflx(
-        i, j, k, bclx, bchx, dlx, dhx, qmxy, qpxy, flxy, qxy, 
+        i, j, k, qmxy, qpxy, flxy, qxy, 
         q, small_dens, small_pres, small_vel, small, gamma, 
         FirstSpec_loc, NumSpec_loc, cdir);
       // X|Z
       pc_cmpflx(
-        i, j, k, bclx, bchx, dlx, dhx, qmxz, qpxz, flxz, qxz, 
+        i, j, k, qmxz, qpxz, flxz, qxz, 
         q, small_dens, small_pres, small_vel, small, gamma, 
         FirstSpec_loc, NumSpec_loc, cdir);
     });
@@ -345,12 +325,12 @@ pc_umeth_3D(
     tyfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       // Y|X
       pc_cmpflx(
-        i, j, k, bcly, bchy, dly, dhy, qmyx, qpyx, flyx, qyx, 
+        i, j, k, qmyx, qpyx, flyx, qyx, 
         q, small_dens, small_pres, small_vel, small, gamma, 
         FirstSpec_loc, NumSpec_loc, cdir);
       // Y|Z
       pc_cmpflx(
-        i, j, k, bcly, bchy, dly, dhy, qmyz, qpyz, flyz, qyz, 
+        i, j, k, qmyz, qpyz, flyz, qyz, 
         q, small_dens, small_pres, small_vel, small, gamma, 
         FirstSpec_loc, NumSpec_loc, cdir);
     });
@@ -408,12 +388,12 @@ pc_umeth_3D(
     tzfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       // Z|X
       pc_cmpflx(
-        i, j, k, bclz, bchz, dlz, dhz, qmzx, qpzx, flzx, qzx, 
+        i, j, k, qmzx, qpzx, flzx, qzx, 
         q, small_dens, small_pres, small_vel, small, gamma, 
         FirstSpec_loc, NumSpec_loc, cdir);
       // Z|Y
       pc_cmpflx(
-        i, j, k, bclz, bchz, dlz, dhz, qmzy, qpzy, flzy, qzy, 
+        i, j, k, qmzy, qpzy, flzy, qzy, 
         q, small_dens, small_pres, small_vel, small, gamma, 
         FirstSpec_loc, NumSpec_loc, cdir);
     });
@@ -437,7 +417,7 @@ pc_umeth_3D(
   const amrex::Box& tyzbx = grow(bx, cdir, 1);
   amrex::ParallelFor(tyzbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_transyz(
-      i, j, k, qm, qp, qxmarr, qxparr, flyz, flzy, qyz, qzy, hdt,
+      i, j, k, qm, qp, qxmarr, qxparr, flyz, flzy, qyz, qzy,
       hdtdy, hdtdz, NumSpec, gamma, small_pres);
   });
 
@@ -449,7 +429,7 @@ pc_umeth_3D(
   qxpeli.clear();
   // Final X flux
   amrex::ParallelFor(xfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_cmpflx(i, j, k, bclx, bchx, dlx, dhx, qm, qp, flx1, q1, 
+    pc_cmpflx(i, j, k, qm, qp, flx1, q1, 
               q, small_dens, small_pres, small_vel, small, gamma, 
               FirstSpec_loc, NumSpec_loc, cdir);
   });
@@ -460,7 +440,7 @@ pc_umeth_3D(
   const amrex::Box& txzbx = grow(bx, cdir, 1);
   amrex::ParallelFor(txzbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_transxz(
-      i, j, k, qm, qp, qymarr, qyparr, flxz, flzx, qxz, qzx, hdt,
+      i, j, k, qm, qp, qymarr, qyparr, flxz, flzx, qxz, qzx,
       hdtdx, hdtdz, NumSpec, gamma, small_pres);
   });
 
@@ -472,7 +452,7 @@ pc_umeth_3D(
   qypeli.clear();
   // Final Y flux
   amrex::ParallelFor(yfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_cmpflx(i, j, k, bcly, bchy, dly, dhy, qm, qp, flx2, q2, 
+    pc_cmpflx(i, j, k, qm, qp, flx2, q2, 
               q, small_dens, small_pres, small_vel, small, gamma,
               FirstSpec_loc, NumSpec_loc, cdir);
   });
@@ -483,7 +463,7 @@ pc_umeth_3D(
   const amrex::Box& txybx = grow(bx, cdir, 1);
   amrex::ParallelFor(txybx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_transxy(
-      i, j, k, qm, qp, qzmarr, qzparr, flxy, flyx, qxy, qyx, hdt,
+      i, j, k, qm, qp, qzmarr, qzparr, flxy, flyx, qxy, qyx, 
       hdtdx, hdtdy, NumSpec, gamma, small_pres);
   });
 
@@ -495,7 +475,7 @@ pc_umeth_3D(
   qzpeli.clear();
   // Final Z flux
   amrex::ParallelFor(zfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-    pc_cmpflx(i, j, k, bclz, bchz, dlz, dhz, qm, qp, flx3, q3, 
+    pc_cmpflx(i, j, k, qm, qp, flx3, q3, 
               q, small_dens, small_pres, small_vel, small, gamma,
               FirstSpec_loc, NumSpec_loc, cdir);
   });

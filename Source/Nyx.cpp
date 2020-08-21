@@ -3012,8 +3012,6 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
     for (MFIter mfi(S_new,Gpu::notInLaunchRegion()); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
-        const auto lo = amrex::lbound(bx);
-        const auto hi = amrex::ubound(bx);
         const auto state    = S_new.array(mfi);
         const auto diag_eos = D_new.array(mfi);
         Real vol = dx[0]*dx[1]*dx[2];

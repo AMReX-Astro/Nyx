@@ -14,7 +14,8 @@ Nyx::compute_hydro_sources(amrex::Real time, amrex::Real dt, amrex::Real a_old, 
 {
     amrex::Print() << "Computing the hydro sources ... " << std::endl;
 
-    Nyx::construct_hydro_source(S_border, ext_src_old, hydro_src, grav_vector, time, a_old, a_new, dt,
+    Nyx::construct_hydro_source(S_border, ext_src_old, hydro_src, grav_vector, 
+                                a_old, a_new, dt,
                                 init_flux_register,
                                 add_to_flux_register);
 }
