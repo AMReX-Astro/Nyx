@@ -1073,6 +1073,7 @@
       use amrex_constants_module
       use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UFS, &
                                      gamma_minus_1, normalize_species
+      use enforce_density_module, only : ca_enforce_minimum_density_1cell
       use enforce_module, only : enforce_nonnegative_species
 
       implicit none
@@ -1095,6 +1096,13 @@
       real(rt) :: a_half, a_oldsq, a_newsq
       real(rt) :: a_new_inv, a_newsq_inv, a_half_inv, dt_a_new
       integer  :: i, j, k, n
+      integer  :: u_lo(3), u_hi(3)
+      u_lo(1)=uout_l1
+      u_lo(2)=uout_l2
+      u_lo(3)=uout_l3
+      u_hi(1)=uout_h1
+      u_hi(2)=uout_h2
+      u_hi(3)=uout_h3      
 
       a_half     = HALF * (a_old + a_new)
       a_oldsq = a_old * a_old
@@ -1153,9 +1161,9 @@
       enddo
 
       ! Enforce the density >= small_dens.  Make sure we do this immediately after consup.
-      call enforce_minimum_density(uin, uin_l1, uin_l2, uin_l3, uin_h1, uin_h2, uin_h3, &
-                                   uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
-                                   lo,hi,print_fortran_warnings)
+      call ca_enforce_minimum_density_1cell(lo, hi, &
+                                   uout, u_lo, u_hi, &
+                                   print_fortran_warnings)
       
       ! Enforce species >= 0
       call enforce_nonnegative_species(uout,uout_l1,uout_l2,uout_l3, &
