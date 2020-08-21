@@ -34,9 +34,11 @@ module analriem_module
       cright = wr/rr
 
       pstar=(wl*pr+wr*pl-wr*wl*(ur-ul))/(wl+wr)
+      do i = ilo, ihi
+         pstar(i) = max(pstar(i),smallp)
+      enddo
 
-      pstar=max(pstar,smallp)
-      pstnm1 = pstar
+     pstnm1 = pstar
 
       wlsq = (.5d0*(gamma-1.d0)*(pstar+pl)+pstar) * rl
       wrsq = (.5d0*(gamma-1.d0)*(pstar+pr)+pstar) * rr
@@ -48,8 +50,9 @@ module analriem_module
       ustarm = ur + (pstar-pr)/wr
 
       pstar = (wl*pr+wr*pl-wr*wl*(ur-ul))/(wl+wr)
-
-      pstar=max(pstar,smallp)
+      do i = ilo, ihi
+         pstar(i) = max(pstar(i),smallp)
+      enddo
 
       do iter = 1,3
 
@@ -86,9 +89,9 @@ module analriem_module
         pstnm1 = pstar
 
         pstar = pstar - denom*(ustarm-ustarp)
-
-        pstar = max(pstar,smallp)
-
+        do i = ilo, ihi
+           pstar(i) = max(pstar(i),smallp)
+        enddo
         ustar = 0.5d0*(ustarm+ustarp)
 
      end do

@@ -1204,6 +1204,9 @@
 
       real(rt), pointer :: smallc(:,:),cavg(:,:)
 
+! jbb added parameter. perhaps should  be global.  used 1.d-6 for compatibility in analriem
+      real(rt), parameter:: small = 1.d-6
+
       integer :: c_lo(2), c_hi(2)
 
       c_lo = [ilo-1, jlo-1]
@@ -1215,21 +1218,24 @@
       if(idir.eq.1) then
          do j = jlo, jhi
             do i = ilo, ihi
-               smallc(i,j) = max( csml(i,j,k3d), csml(i-1,j,k3d) )
+!              smallc(i,j) = max( csml(i,j,k3d), csml(i-1,j,k3d) )
+               smallc(i,j) = small* max( c(i,j,k3d) , c(i-1,j,k3d) , ONE )
                cavg(i,j) = HALF*( c(i,j,k3d) + c(i-1,j,k3d) )
             enddo
          enddo
       elseif(idir.eq.2) then
          do j = jlo, jhi
             do i = ilo, ihi
-               smallc(i,j) = max( csml(i,j,k3d), csml(i,j-1,k3d) )
+!              smallc(i,j) = max( csml(i,j,k3d), csml(i,j-1,k3d) )
+               smallc(i,j) = small* max( c(i,j,k3d) , c(i,j-1,k3d) , ONE )
                cavg(i,j) = HALF*( c(i,j,k3d) + c(i,j-1,k3d) )
             enddo
          enddo
       else
          do j = jlo, jhi
             do i = ilo, ihi
-               smallc(i,j) = max( csml(i,j,k3d), csml(i,j,k3d-1) )
+!              smallc(i,j) = max( csml(i,j,k3d), csml(i,j,k3d-1) )
+               smallc(i,j) = small* max( c(i,j,k3d) , c(i,j,k3d-1) , ONE )
                cavg(i,j) = HALF*( c(i,j,k3d) + c(i,j,k3d-1) )
             enddo
          enddo
@@ -1480,7 +1486,7 @@
 !                    pstar2(ilo:ihi), &
 !                    ustar2(ilo:ihi))
          else
-         ! Call analytic Riemann solver
+            ! Call analytic Riemann solver
             call analriem(ilo,ihi, &
                  gamma_const, &
                  pl(ilo:ihi), &
@@ -1534,7 +1540,9 @@
          end do
 
          co = sqrt(abs(gamma_const*po/ro))
-         co = max(csmall,co)
+         do i = ilo, ihi
+            co(i) = max(co(i),csmall(i))
+         enddo
          entho = ((reo + po)/ro)/(co*co)
 
          rstar = ro  + (pstar - po)/(co*co)
@@ -1554,7 +1562,9 @@
          end do
 
          cstar = sqrt(abs(gamma_const*pstar/rstar))
-         cstar = max(cstar,csmall)
+         do i = ilo, ihi
+            cstar(i) = max(cstar(i),csmall(i))
+         enddo
 
          sgnm = sign(ONE,ustar)
          spout = co - sgnm*uo
@@ -1574,8 +1584,9 @@
          end do
 
          frac = (ONE + (spout + spin)/scr)*HALF
-         frac = max(ZERO,min(ONE,frac))
-
+         do i = ilo, ihi
+            frac(i) = max(ZERO,min(ONE,frac(i)))
+         enddo
          do i = ilo, ihi
             if (ustar(i) .gt. ZERO) then
                v1gdnv(i) = v1l(i)
@@ -1639,7 +1650,9 @@
             end if
          end do
 
-         pgdnv(ilo:ihi,j,kc) = max(pgdnv(ilo:ihi,j,kc),small_pres)
+         do i = ilo, ihi
+            pgdnv(i,j,kc) = max(pgdnv(i,j,kc),small_pres)
+         enddo
 
          ! NOTE: Here we assume constant gamma.
          regdnv        = pgdnv(ilo:ihi,j,kc) / gamma_minus_1
