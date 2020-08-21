@@ -1204,6 +1204,9 @@
 
       real(rt), pointer :: smallc(:,:),cavg(:,:)
 
+! jbb added parameter. perhaps should  be global.  used 1.d-6 for compatibility in analriem
+      real(rt), parameter:: small = 1.d-6
+
       integer :: c_lo(2), c_hi(2)
 
       c_lo = [ilo-1, jlo-1]
@@ -1215,21 +1218,24 @@
       if(idir.eq.1) then
          do j = jlo, jhi
             do i = ilo, ihi
-               smallc(i,j) = max( csml(i,j,k3d), csml(i-1,j,k3d) )
+!              smallc(i,j) = max( csml(i,j,k3d), csml(i-1,j,k3d) )
+               smallc(i,j) = small* max( c(i,j,k3d) , c(i-1,j,k3d) )
                cavg(i,j) = HALF*( c(i,j,k3d) + c(i-1,j,k3d) )
             enddo
          enddo
       elseif(idir.eq.2) then
          do j = jlo, jhi
             do i = ilo, ihi
-               smallc(i,j) = max( csml(i,j,k3d), csml(i,j-1,k3d) )
+!              smallc(i,j) = max( csml(i,j,k3d), csml(i,j-1,k3d) )
+               smallc(i,j) = small* max( c(i,j,k3d) , c(i,j-1,k3d) )
                cavg(i,j) = HALF*( c(i,j,k3d) + c(i,j-1,k3d) )
             enddo
          enddo
       else
          do j = jlo, jhi
             do i = ilo, ihi
-               smallc(i,j) = max( csml(i,j,k3d), csml(i,j,k3d-1) )
+!              smallc(i,j) = max( csml(i,j,k3d), csml(i,j,k3d-1) )
+               smallc(i,j) = small* max( c(i,j,k3d) , c(i,j,k3d-1) )
                cavg(i,j) = HALF*( c(i,j,k3d) + c(i,j,k3d-1) )
             enddo
          enddo
