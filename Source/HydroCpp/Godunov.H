@@ -1383,7 +1383,6 @@ pc_transxz(
                                 - cdtdz * ( dupz - pavz*duz*(gamma - 1.));
   }
   qp(i, j, k, QPRES) = amrex::max(temppres, small_pres);
-  qp(i, j, k, QPRES) = amrex::max(temppres, small_pres);
   qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - 1.0);
 
   // QM
