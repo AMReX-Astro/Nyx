@@ -123,6 +123,7 @@ pc_cmpflx(
 {
   amrex::Real csmall, cav, ustar;
   amrex::Real ul, ur, vl, vr, v2l, v2r, rel, rer;
+  int idx;
   int IU, IV, IV2;
   int GU, GV, GV2;
   int f_idx[3];
@@ -224,6 +225,8 @@ pc_transx1(
   amrex::Real runewr, rvnewr, rwnewr, renewr, rhoekinr;
   amrex::Real rrl, rul, rvl, ekinl, rel, rrnewl, runewl, rvnewl, rwnewl, renewl;
   amrex::Real rhoekinl, rwl;
+  amrex::Real pggp, pggm, ugp, ugm;
+  amrex::Real dup, pav, du;
   amrex::Real flxrho, flxu, flxv, flxw, flxe;
 
   flxrho = cdtdx * (flxx(i + 1, j, k, URHO) - flxx(i, j, k, URHO));
@@ -246,6 +249,16 @@ pc_transx1(
     compo = rr * qym(i, j + 1, k, nqp) - compn;
     qm(i, j + 1, k, nqp) = compo / rrnew;
   }
+  // Update hydro vars
+
+  pggp = qint(i + 1, j, k, GDPRES);
+  pggm = qint(i, j, k, GDPRES);
+  ugp = qint(i + 1, j, k, GDU);
+  ugm = qint(i, j, k, GDU);
+
+  dup = pggp * ugp - pggm * ugm;
+  pav = 0.5 * (pggp + pggm);
+  du = ugp - ugm;
 
   // QP
 
@@ -286,7 +299,7 @@ pc_transx1(
   amrex::Real pnewr = qp(i, j, k, QREINT) * (gamma - 1.0);
   if(pnewr < small_pres)
   {
-       pnewr = qyp(i,j,k,QPRES) - cdtdx * ( dAup - pav*dAu*(gamma - 1.));
+       pnewr = qyp(i,j,k,QPRES) - cdtdx * ( dup - pav*du*(gamma - 1.));
   }
   qp(i, j, k, QPRES) = amrex::max(pnewr, small_pres);
   qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - 1.0);
@@ -330,7 +343,7 @@ pc_transx1(
   amrex::Real pnewl = qm(i, j + 1, k, QREINT) * (gamma - 1.0);
   if(pnewl < small_pres)
   {
-       pnewl = qym(i,j+1,k,QPRES) - cdtdx * ( dAup - pav*dAu*(gamma - 1.));
+       pnewl = qym(i,j+1,k,QPRES) - cdtdx * ( dup - pav*du*(gamma - 1.));
   }
   qm(i, j + 1, k, QPRES) = amrex::max(pnewl, small_pres);
   qm(i, j + 1, k, QREINT) = qm(i, j + 1, k, QPRES) / (gamma - 1.0);
@@ -361,8 +374,9 @@ pc_transy1(
   amrex::Real runewr, rvnewr, rwnewr, renewr, rhoekinr;
   amrex::Real rrl, rul, rvl, ekinl, rel, rrnewl, runewl, rvnewl, rwnewl, renewl;
   amrex::Real rhoekinl, rwl;
+  amrex::Real pggp, pggm, ugp, ugm;
   // Local variables to avoid reading from global memory too much
-  amrex::Real pnewr, pnewl;
+  amrex::Real dup, pav, du, pnewr, pnewl;
   amrex::Real flxrho, flxu, flxv, flxw, flxe;
 
   flxrho = cdtdy * (flxy(i, j + 1, k, URHO) - flxy(i, j, k, URHO));
@@ -385,6 +399,17 @@ pc_transy1(
     compo = rr * qxm(i + 1, j, k, nqp) - compn;
     qm(i + 1, j, k, nqp) = compo / rrnew;
   }
+
+  //- Update hydro vars -
+  // pressure divergence and such.
+  pggp = qint(i, j + 1, k, GDPRES);
+  pggm = qint(i, j, k, GDPRES);
+  ugp = qint(i, j + 1, k, GDV);
+  ugm = qint(i, j, k, GDV);
+
+  dup = pggp * ugp - pggm * ugm;
+  pav = 0.5 * (pggp + pggm);
+  du = ugp - ugm;
 
   // QP
 
@@ -525,6 +550,12 @@ pc_transx2(
     compo = rr * qzm(i, j, k + 1, nqp) - compn;
     qm(i, j, k + 1, nqp) = compo / rrnew;
   }
+  //- Update hydro vars -
+
+  pggp = qint(i + 1, j, k, GDPRES);
+  pggm = qint(i, j, k, GDPRES);
+  ugp = qint(i + 1, j, k, GDU);
+  ugm = qint(i, j, k, GDU);
 
   dup = pggp * ugp - pggm * ugm;
   pav = 0.5 * (pggp + pggm);
@@ -644,11 +675,8 @@ pc_transy2(
   amrex::Real runewr, rvnewr, rwnewr, renewr, rhoekinr;
   amrex::Real rrl, rul, rvl, ekinl, rel, rrnewl, runewl, rvnewl, rwnewl, renewl;
   amrex::Real rhoekinl, rwl;
-<<<<<<< HEAD
   amrex::Real pggp, pggm, ugp, ugm;
   amrex::Real dup, pav, du;
-=======
->>>>>>> d32801238527bc5cf62c9d814a31e44bcb8335bb
   amrex::Real flxrho, flxu, flxv, flxw, flxe;
 
   flxrho = cdtdy * (flxy(i, j + 1, k, URHO) - flxy(i, j, k, URHO));
@@ -671,6 +699,12 @@ pc_transy2(
     compo = rr * qzm(i, j, k + 1, nqp) - compn;
     qm(i, j, k + 1, nqp) = compo / rrnew;
   }
+  //- Update hydro vars -
+
+  pggp = qint(i, j + 1, k, GDPRES);
+  pggm = qint(i, j, k, GDPRES);
+  ugp = qint(i, j + 1, k, GDV);
+  ugm = qint(i, j, k, GDV);
 
   dup = pggp * ugp - pggm * ugm;
   pav = 0.5 * (pggp + pggm);
@@ -791,8 +825,9 @@ pc_transz1(
   amrex::Real runewr, rvnewr, rwnewr, renewr, rhoekinr;
   amrex::Real rrl, rul, rvl, ekinl, rel, rrnewl, runewl, rvnewl, rwnewl, renewl;
   amrex::Real rhoekinl, rwl;
+  amrex::Real pggp, pggm, ugp, ugm;
   // Local variables to avoid reading from global memory too much
-  amrex::Real pnewr, pnewl;
+  amrex::Real dup, pav, du, pnewr, pnewl;
   amrex::Real flxrho, flxu, flxv, flxw, flxe;
 
   flxrho = cdtdz * (flxz(i, j, k + 1, URHO) - flxz(i, j, k, URHO));
@@ -815,6 +850,17 @@ pc_transz1(
     compo = rr * qxm(i + 1, j, k, nqp) - compn;
     qm(i + 1, j, k, nqp) = compo / rrnew;
   }
+
+  //- Update hydro vars -
+  // pressure divergence and such.
+  pggp = qint(i, j, k + 1, GDPRES);
+  pggm = qint(i, j, k, GDPRES);
+  ugp = qint(i, j, k + 1, GDW);
+  ugm = qint(i, j, k, GDW);
+
+  dup = pggp * ugp - pggm * ugm;
+  pav = 0.5 * (pggp + pggm);
+  du = ugp - ugm;
 
   // QP
 
@@ -931,11 +977,8 @@ pc_transz2(
   amrex::Real runewr, rvnewr, rwnewr, renewr, rhoekinr;
   amrex::Real rrl, rul, rvl, ekinl, rel, rrnewl, runewl, rvnewl, rwnewl, renewl;
   amrex::Real rhoekinl, rwl;
-<<<<<<< HEAD
   amrex::Real pggp, pggm, ugp, ugm;
   amrex::Real dup, pav, du;
-=======
->>>>>>> d32801238527bc5cf62c9d814a31e44bcb8335bb
   amrex::Real flxrho, flxu, flxv, flxw, flxe;
 
   flxrho = cdtdz * (flxz(i, j, k + 1, URHO) - flxz(i, j, k, URHO));
@@ -959,7 +1002,6 @@ pc_transz2(
     qm(i, j + 1, k, nqp) = compo / rrnew;
   }
 
-<<<<<<< HEAD
   // Update hydro vars
   pggp = qint(i, j, k + 1, GDPRES);
   pggm = qint(i, j, k, GDPRES);
@@ -969,9 +1011,6 @@ pc_transz2(
   dup = pggp * ugp - pggm * ugm;
   pav = 0.5 * (pggp + pggm);
   du = ugp - ugm;
-
-=======
->>>>>>> d32801238527bc5cf62c9d814a31e44bcb8335bb
   // QP
 
   // Convert to conservative
@@ -1090,6 +1129,8 @@ pc_transxy(
   amrex::Real runewr, rvnewr, rwnewr, renewr, rhoekinr;
   amrex::Real rrl, rul, rvl, ekinl, rel, rrnewl, runewl, rvnewl, rwnewl, renewl;
   amrex::Real rhoekinl, rwl;
+  amrex::Real pggpx, pggmx, ugpx, ugmx;
+  amrex::Real pggpy, pggmy, ugpy, ugmy;
   amrex::Real flxrho, flxu, flxv, flxw, flxe;
 
   flxrho = cdtdx * (flxx(i + 1, j, k, URHO) - flxx(i, j, k, URHO)) +
@@ -1119,6 +1160,20 @@ pc_transxy(
     compo = rrl * qzm(i, j, k + 1, nqp) - compn;
     qm(i, j, k + 1, nqp) = compo / rrnewl;
   }
+
+  // Update hydro vars
+  pggpx = qx(i + 1, j, k, GDPRES);
+  pggmx = qx(i, j, k, GDPRES);
+  ugpx = qx(i + 1, j, k, GDU);
+  ugmx = qx(i, j, k, GDU);
+
+  pggpy = qy(i, j + 1, k, GDPRES);
+  pggmy = qy(i, j, k, GDPRES);
+  ugpy = qy(i, j + 1, k, GDV);
+  ugmy = qy(i, j, k, GDV);
+
+//  amrex::Real pxnew = cdtdx * (dAupx + pavx * dAux * (gamma-1.0));
+//  amrex::Real pynew = cdtdy * (dAupy + pavy * dAuy * (gamma-1.0));
 
   // qp state
   rur = rrr * qzp(i, j, k, QU);
@@ -1240,6 +1295,8 @@ pc_transxz(
   amrex::Real runewr, rvnewr, rwnewr, renewr, rhoekinr;
   amrex::Real rrl, rul, rvl, ekinl, rel, rrnewl, runewl, rvnewl, rwnewl, renewl;
   amrex::Real rhoekinl, rwl;
+  amrex::Real pggpx, pggmx, ugpx, ugmx;
+  amrex::Real pggpz, pggmz, ugpz, ugmz;
   amrex::Real flxrho, flxu, flxv, flxw, flxe;
 
   flxrho = cdtdx * (flxx(i + 1, j, k, URHO) - flxx(i, j, k, URHO)) +
@@ -1269,6 +1326,20 @@ pc_transxz(
     compo = rrl * qym(i, j + 1, k, nqp) - compn;
     qm(i, j + 1, k, nqp) = compo / rrnewl;
   }
+
+  // Update hydro vars
+  pggpx = qx(i + 1, j, k, GDPRES);
+  pggmx = qx(i, j, k, GDPRES);
+  ugpx = qx(i + 1, j, k, GDU);
+  ugmx = qx(i, j, k, GDU);
+
+  pggpz = qz(i, j, k + 1, GDPRES);
+  pggmz = qz(i, j, k, GDPRES);
+  ugpz = qz(i, j, k + 1, GDW);
+  ugmz = qz(i, j, k, GDW);
+
+//  amrex::Real pxnew = cdtdx * (dAupx + pavx * dAux * (gamma-1.0));
+//  amrex::Real pznew = cdtdz * (dAupz + pavz * dAuz * (gamma-1.0));
 
   // QP
   rur = rrr * qyp(i, j, k, QU);
@@ -1390,6 +1461,8 @@ pc_transyz(
   amrex::Real runewr, rvnewr, rwnewr, renewr, rhoekinr;
   amrex::Real rrl, rul, rvl, ekinl, rel, rrnewl, runewl, rvnewl, rwnewl, renewl;
   amrex::Real rhoekinl, rwl;
+  amrex::Real pggpz, pggmz, ugpz, ugmz;
+  amrex::Real pggpy, pggmy, ugpy, ugmy;
   amrex::Real flxrho, flxu, flxv, flxw, flxe;
 
   flxrho = cdtdy * (flxy(i, j + 1, k, URHO) - flxy(i, j, k, URHO)) +
@@ -1420,6 +1493,20 @@ pc_transyz(
     compo = rrl * qxm(i + 1, j, k, nqp) - compn;
     qm(i + 1, j, k, nqp) = compo / rrnewl;
   }
+
+  // Update hydro vars
+  pggpz = qz(i, j, k + 1, GDPRES);
+  pggmz = qz(i, j, k, GDPRES);
+  ugpz = qz(i, j, k + 1, GDW);
+  ugmz = qz(i, j, k, GDW);
+
+  pggpy = qy(i, j + 1, k, GDPRES);
+  pggmy = qy(i, j, k, GDPRES);
+  ugpy = qy(i, j + 1, k, GDV);
+  ugmy = qy(i, j, k, GDV);
+
+  //amrex::Real pznew = cdtdz * (dAupz + pavz * dAuz * (gamma-1.0));
+  //amrex::Real pynew = cdtdy * (dAupy + pavy * dAuy * (gamma-1.0));
 
   // QP
   rur = rrr * qxp(i, j, k, QU);
