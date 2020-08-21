@@ -166,6 +166,11 @@ contains
 
                qypo(i,j,kc,QREINT) = renewry - rhoekenry
                qypo(i,j,kc,QPRES) = qypo(i,j,kc,QREINT) * gamma_minus_1
+               if (qypo(i,j,kc,QPRES) .lt. small_pres) then
+                   pnewry = qyp(i,j  ,kc,QPRES) - cdtdx*(dup + pav*du*gamma_minus_1)
+                   qypo(i,j,kc,QPRES ) = pnewry
+             !     qypo(i,j,kc,QREINT) = qypo(i,j,kc,QPRES) / gamma_minus_1
+               end if
                qypo(i,j,kc,QPRES) = max(qypo(i,j,kc,QPRES), small_pres)
                qypo(i,j,kc,QREINT) = qypo(i,j,kc,QPRES) / gamma_minus_1
             end if
@@ -180,6 +185,10 @@ contains
                qymo(i,j+1,kc,QREINT) = renewly - rhoekenly
                qymo(i,j+1,kc,QPRES) = qymo(i,j+1,kc,QREINT) * gamma_minus_1
 
+               if (qymo(i,j+1,kc,QPRES) .lt. small_pres) then
+                   pnewly = qym(i,j+1,kc,QPRES) - cdtdx*(dup + pav*du*gamma_minus_1)
+                   qymo(i,j+1,kc,QPRES ) = pnewly
+               end if
                qymo(i,j+1,kc,QPRES) = max(qymo(i,j+1,kc,QPRES), small_pres)
                qymo(i,j+1,kc,QREINT) = qymo(i,j+1,kc,QPRES) / gamma_minus_1
             end if
@@ -303,6 +312,17 @@ contains
              qzpo(i,j,kc,QREINT) = renewrz - rhoekenrz
              qzpo(i,j,kc,QPRES) = qzpo(i,j,kc,QREINT) * gamma_minus_1
 
+             if (qzpo(i,j,kc,QPRES) .lt. small_pres) then
+                 pgp = pgdnvx(i+1,j,kc)
+                 pgm = pgdnvx(i,j,kc)
+                 ugp = ugdnvx(i+1,j,kc)
+                 ugm = ugdnvx(i,j,kc)
+                 dup = pgp*ugp - pgm*ugm
+                 pav = HALF*(pgp+pgm)
+                 du = ugp-ugm
+                 pnewrz = qzp(i,j,kc,QPRES) - cdtdx*(dup + pav*du*gamma_minus_1)
+                 qzpo(i,j,kc,QPRES ) = pnewrz
+             end if
              qzpo(i,j,kc,QPRES) = max(qzpo(i,j,kc,QPRES), small_pres)
              qzpo(i,j,kc,QREINT) = qzpo(i,j,kc,QPRES) / gamma_minus_1
              ! ************************************************************************
@@ -342,6 +362,17 @@ contains
              qzmo(i,j,kc,QREINT) = renewlz - rhoekenlz
              qzmo(i,j,kc,QPRES) = qzmo(i,j,kc,QREINT) * gamma_minus_1
 
+             if (qzmo(i,j,kc,QPRES) .lt. small_pres) then
+                 pgp = pgdnvx(i+1,j,km)
+                 pgm = pgdnvx(i,j,km)
+                 ugp = ugdnvx(i+1,j,km)
+                 ugm = ugdnvx(i,j,km)
+                 dup = pgp*ugp - pgm*ugm
+                 pav = HALF*(pgp+pgm)
+                 du = ugp-ugm
+                 pnewlz = qzm(i,j,kc,QPRES) - cdtdx*(dup + pav*du*gamma_minus_1)
+                 qzmo(i,j,kc,QPRES ) = pnewlz
+             end if
              qzmo(i,j,kc,QPRES) = max(qzmo(i,j,kc,QPRES), small_pres)
              qzmo(i,j,kc,QREINT) = qzmo(i,j,kc,QPRES) / gamma_minus_1
              ! ************************************************************************
@@ -507,6 +538,10 @@ contains
                qxpo(i,j,kc,QREINT)= renewrx - rhoekenrx
                qxpo(i,j,kc,QPRES) = qxpo(i,j,kc,QREINT) * gamma_minus_1
 
+               if (qxpo(i,j,kc,QPRES) .lt. small_pres) then
+                   pnewrx = qxp(i  ,j,kc,QPRES) - cdtdy*(dup + pav*du*gamma_minus_1)
+                   qxpo(i,j,kc,QPRES) = pnewrx
+               end if
                qxpo(i,j,kc,QPRES) = max(qxpo(i,j,kc,QPRES), small_pres)
                qxpo(i,j,kc,QREINT) = qxpo(i,j,kc,QPRES) / gamma_minus_1
             end if
@@ -523,6 +558,10 @@ contains
                qxmo(i+1,j,kc,QREINT)= renewlx - rhoekenlx
                qxmo(i+1,j,kc,QPRES) = qxmo(i+1,j,kc,QREINT) * gamma_minus_1
 
+               if (qxmo(i+1,j,kc,QPRES) .lt. small_pres) then
+                   pnewlx = qxm(i+1,j,kc,QPRES) - cdtdy*(dup + pav*du*gamma_minus_1)
+                   qxmo(i+1,j,kc,QPRES ) = pnewlx
+               end if
                qxmo(i+1,j,kc,QPRES) = max(qxmo(i+1,j,kc,QPRES), small_pres)
                qxmo(i+1,j,kc,QREINT) = qxmo(i+1,j,kc,QPRES) / gamma_minus_1
             end if
@@ -648,6 +687,17 @@ contains
             qzpo(i,j,kc,QREINT)= renewrz - rhoekenrz
             qzpo(i,j,kc,QPRES) = qzpo(i,j,kc,QREINT) * gamma_minus_1
 
+            if (qzpo(i,j,kc,QPRES) .lt. small_pres) then
+                pgp = pgdnvy(i,j+1,kc)
+                pgm = pgdnvy(i,j,kc)
+                ugp = ugdnvy(i,j+1,kc)
+                ugm = ugdnvy(i,j,kc)
+                dup = pgp*ugp - pgm*ugm
+                pav = HALF*(pgp+pgm)
+                du = ugp-ugm
+                pnewrz = qzp(i,j,kc,QPRES) - cdtdy*(dup + pav*du*gamma_minus_1)
+                qzpo(i,j,kc,QPRES ) = pnewrz
+            end if
             qzpo(i,j,kc,QPRES) = max(qzpo(i,j,kc,QPRES), small_pres)
             qzpo(i,j,kc,QREINT) = qzpo(i,j,kc,QPRES) / gamma_minus_1
 
@@ -687,6 +737,17 @@ contains
             qzmo(i,j,kc,QREINT)= renewlz - rhoekenlz
             qzmo(i,j,kc,QPRES) = qzmo(i,j,kc,QREINT) * gamma_minus_1
 
+            if (qzmo(i,j,kc,QPRES) .lt. small_pres) then
+                pgp = pgdnvy(i,j+1,km)
+                pgm = pgdnvy(i,j,km)
+                ugp = ugdnvy(i,j+1,km)
+                ugm = ugdnvy(i,j,km)
+                dup = pgp*ugp - pgm*ugm
+                pav = HALF*(pgp+pgm)
+                du = ugp-ugm
+                pnewlz = qzm(i,j,kc,QPRES) - cdtdy*(dup + pav*du*gamma_minus_1)
+                qzmo(i,j,kc,QPRES ) = pnewlz
+            end if
             qzmo(i,j,kc,QPRES) = max(qzmo(i,j,kc,QPRES), small_pres)
             qzmo(i,j,kc,QREINT) = qzmo(i,j,kc,QPRES) / gamma_minus_1
             ! ************************************************************************
@@ -998,6 +1059,10 @@ contains
           do i = ilo, ihi
 
               if (i.ge.ilo+1) then
+                 if (qxpo(i,j,km,QPRES) .lt. small_pres) then
+                     pnewrx = qxp(i  ,j,km,QPRES) - cdtdz*(dup(i,j) + pav(i,j)*du(i,j)*gamma_minus_1)
+                     qxpo(i,j,km,QPRES ) = pnewrx(i,j)
+                 end if
                  qxpo(i,j,km,QPRES) = max(qxpo(i,j,km,QPRES), small_pres)
                  qxpo(i,j,km,QREINT) = qxpo(i,j,km,QPRES) / gamma_minus_1
               end if
@@ -1021,6 +1086,10 @@ contains
           do i = ilo, ihi
 
               if (j.ge.jlo+1) then
+                 if (qypo(i,j,km,QPRES) .lt. small_pres) then
+                     pnewry(i,j) = qyp(i,j  ,km,QPRES) - cdtdz*(dup(i,j) + pav(i,j)*du(i,j)*gamma_minus_1)
+                     qypo(i,j,km,QPRES ) = pnewry(i,j)
+                 end if
                  qypo(i,j,km,QPRES) = max(qypo(i,j,km,QPRES), small_pres)
                  qypo(i,j,km,QREINT) = qypo(i,j,km,QPRES) / gamma_minus_1
               end if
@@ -1044,6 +1113,10 @@ contains
           do i = ilo, ihi
 
               if (i.le.ihi-1) then
+                 if (qxmo(i+1,j,km,QPRES) .lt. small_pres) then
+                     pnewlx(i,j) = qxm(i+1,j,km,QPRES) - cdtdz*(dup(i,j) + pav(i,j)*du(i,j)*gamma_minus_1)
+                     qxmo(i+1,j,km,QPRES ) = pnewlx(i,j)
+                 end if
                  qxmo(i+1,j,km,QPRES) = max(qxmo(i+1,j,km,QPRES), small_pres)
                  qxmo(i+1,j,km,QREINT) = qxmo(i+1,j,km,QPRES)  / gamma_minus_1
               end if
@@ -1067,6 +1140,10 @@ contains
           do i = ilo, ihi
 
               if (j.le.jhi-1) then
+                 if (qymo(i,j+1,km,QPRES) .lt. small_pres) then
+                     pnewly(i,j) = qym(i,j+1,km,QPRES) - cdtdz*(dup(i,j) + pav(i,j)*du(i,j)*gamma_minus_1)
+                     qymo(i,j+1,km,QPRES ) = pnewly(i,j)
+                 endif
                  qymo(i,j+1,km,QPRES) = max(qymo(i,j+1,km,QPRES), small_pres)
                  qymo(i,j+1,km,QREINT) = qymo(i,j+1,km,QPRES) / gamma_minus_1
               end if
@@ -1317,6 +1394,20 @@ contains
             qpo(i,j,kc,QREINT) = renewr - rhoekenr 
             qpo(i,j,kc,QPRES) = qpo(i,j,kc,QREINT) * gamma_minus_1
                 
+            if (qpo(i,j,kc,QPRES) .lt. small_pres) then
+                duxp = pgxp*ugxp - pgxm*ugxm
+                pxav = HALF*(pgxp+pgxm)
+                dux = ugxp-ugxm
+                pxnew = hdtdx*(duxp + pxav*dux*gamma_minus_1)
+
+                duyp = pgyp*ugyp - pgym*ugym
+                pyav = HALF*(pgyp+pgym)
+                duy = ugyp-ugym
+                pynew = hdtdy*(duyp + pyav*duy*gamma_minus_1)
+
+                pnewr = qp(i,j,kc,QPRES) - pxnew - pynew
+                qpo(i,j,kc,QPRES ) = pnewr 
+            end if
             qpo(i,j,kc,QPRES) = max(qpo(i,j,kc,QPRES), small_pres)
             qpo(i,j,kc,QREINT) = qpo(i,j,kc,QPRES) / gamma_minus_1
 
@@ -1330,6 +1421,21 @@ contains
             qmo(i,j,kc,QREINT) = renewl - rhoekenl 
             qmo(i,j,kc,QPRES) = qmo(i,j,kc,QREINT) * gamma_minus_1
 
+            if (qmo(i,j,kc,QPRES) .lt. small_pres) then
+
+                duxpm = pgxpm*ugxpm - pgxmm*ugxmm
+                pxavm = HALF*(pgxpm+pgxmm)
+                duxm = ugxpm-ugxmm
+                pxnewm = hdtdx*(duxpm + pxavm*duxm*gamma_minus_1)
+
+                duypm = pgypm*ugypm - pgymm*ugymm
+                pyavm = HALF*(pgypm+pgymm)
+                duym = ugypm-ugymm
+                pynewm = hdtdy*(duypm + pyavm*duym*gamma_minus_1)
+
+                pnewl = qm(i,j,kc,QPRES) - pxnewm - pynewm
+                qmo(i,j,kc,QPRES ) = pnewl 
+            end if
             qmo(i,j,kc,QPRES) = max(qmo(i,j,kc,QPRES), small_pres)
             qmo(i,j,kc,QREINT) = qmo(i,j,kc,QPRES) / gamma_minus_1
             ! ************************************************************************* 
@@ -1548,6 +1654,10 @@ contains
 
                qpo(i,j,km,QREINT) = renewr - rhoekenr 
                qpo(i,j,km,QPRES) = qpo(i,j,km,QREINT) * gamma_minus_1
+               if (qpo(i,j,km,QPRES) .lt. small_pres) then
+                   pnewr = qp(i,j  ,km,QPRES) - pxnew - pznew
+                   qpo(i,j,km,QPRES ) = pnewr 
+               end if
                qpo(i,j,km,QPRES) = max(qpo(i,j,km,QPRES), small_pres)
                qpo(i,j,km,QREINT) = qpo(i,j,km,QPRES) / gamma_minus_1
             end if
@@ -1561,6 +1671,10 @@ contains
 
                qmo(i,j+1,km,QREINT) = renewl - rhoekenl 
                qmo(i,j+1,km,QPRES) = qmo(i,j+1,km,QREINT) * gamma_minus_1
+               if (qmo(i,j+1,km,QPRES) .lt. small_pres) then
+                   pnewl = qm(i,j+1,km,QPRES) - pxnew - pznew
+                   qmo(i,j+1,km,QPRES ) = pnewl 
+               end if
                qmo(i,j+1,km,QPRES) = max(qmo(i,j+1,km,QPRES), small_pres)
                qmo(i,j+1,km,QREINT) = qmo(i,j+1,km,QPRES) / gamma_minus_1
 
@@ -1791,6 +1905,10 @@ contains
 
                qpo(i,j,km,QREINT) = renewr - rhoekenr 
                qpo(i,j,km,QPRES) = qpo(i,j,km,QREINT) * gamma_minus_1
+               if (qpo(i,j,km,QPRES) .lt. small_pres) then
+                   pnewr = qp(i,j,km,QPRES) - pynew - pznew
+                   qpo(i,j,km,QPRES ) = pnewr 
+               end if
                qpo(i,j,km,QPRES) = max(qpo(i,j,km,QPRES), small_pres)
                qpo(i,j,km,QREINT) = qpo(i,j,km,QPRES) / gamma_minus_1
             end if
@@ -1804,6 +1922,10 @@ contains
 
                qmo(i+1,j,km,QREINT) = renewl - rhoekenl 
                qmo(i+1,j,km,QPRES) = qmo(i+1,j,km,QREINT) * gamma_minus_1
+               if (qmo(i+1,j,km,QPRES) .lt. small_pres) then
+                   pnewl = qm(i+1,j,km,QPRES) - pynew - pznew
+                   qmo(i+1,j,km,QPRES ) = pnewl 
+               end if
                qmo(i+1,j,km,QPRES) = max(qmo(i+1,j,km,QPRES), small_pres)
                qmo(i+1,j,km,QREINT) = qmo(i+1,j,km,QPRES) / gamma_minus_1
             end if
