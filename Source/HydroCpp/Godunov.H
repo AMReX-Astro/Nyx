@@ -136,11 +136,7 @@ pc_cmpflx(
     GU = GDU;
     GV = GDV;
     GV2 = GDW;
-#if 0
     csmall = amrex::max(small, small * std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i-1,j,k,QREINT) / qprim(i-1,j,k,QRHO))), small * std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
-#else
-    csmall = std::sqrt(gamma * small_pres / small_dens);
-#endif
     cav = 0.5 * ( std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i-1,j,k,QREINT) / qprim(i-1,j,k,QRHO)))
                   +std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i  ,j,k,QREINT) / qprim(i  ,j,k,QRHO))) );
     f_idx[0] = UMX;
@@ -153,11 +149,7 @@ pc_cmpflx(
     GU = GDV;
     GV = GDU;
     GV2 = GDW;
-#if 0
     csmall = amrex::max(small, small * std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j-1,k,QREINT) / qprim(i,j-1,k,QRHO))), small * std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
-#else
-    csmall = std::sqrt(gamma * small_pres / small_dens);
-#endif
     cav = 0.5 * ( std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j-1,k,QREINT) / qprim(i,j-1,k,QRHO)))
                                   +std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j  ,k,QREINT) / qprim(i,j  ,k,QRHO))) );
     f_idx[0] = UMY;
@@ -170,11 +162,7 @@ pc_cmpflx(
     GU = GDW;
     GV = GDU;
     GV2 = GDV;
-#if 0
     csmall = amrex::max(small, small * std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j,k-1,QREINT) / qprim(i,j,k-1,QRHO))), small * std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
-#else
-    csmall = std::sqrt(gamma * small_pres / small_dens);
-#endif
     cav = 0.5 * ( std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j,k-1,QREINT) / qprim(i,j,k-1,QRHO)))
                                   +std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
     f_idx[0] = UMZ;

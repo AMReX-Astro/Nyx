@@ -105,7 +105,7 @@ Real Nyx::small_dens = -1.e200;
 Real Nyx::small_temp = -1.e200;
 Real Nyx::small_pres = -1.e200;
 Real Nyx::small_vel  =  1.e-12;
-Real Nyx::small      =  1.e-8;
+Real Nyx::small      =  1.e-6;
 Real Nyx::large_temp =  1.e9;
 Real Nyx::gamma      =  5.0/3.0;
 
@@ -270,6 +270,8 @@ Nyx::read_params ()
     pp_nyx.query("small_temp", small_temp);
     pp_nyx.query("large_temp", large_temp);
     pp_nyx.query("gamma", gamma);
+    //Set small factor for csmall
+    pp_nyx.query("small", small);
 
     pp_nyx.query("strict_subcycling",strict_subcycling);
 

@@ -62,6 +62,7 @@ riemann(
 #else
  
   const amrex::Real weakwv  = 1.e-3;
+  //Consider using small_in=Nyx::small for consistency
   const amrex::Real  small  = 1.e-6;
 
   amrex::Real wl = std::sqrt(amrex::Math::abs(gamma*amrex::max(pl,small_pres)*amrex::max(rl,small_dens)));
