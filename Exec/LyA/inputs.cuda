@@ -204,5 +204,5 @@ insitu.start            = 0     # USE_ASCENT_INSITU=TRUE and/or REEBER=TRUE
 insitu.reeber_int       = 100   # REEBER=TRUE
 
 #PROBIN FILENAME
-amr.probin_file = probin
+amr.probin_file = ""
 

@@ -128,5 +128,5 @@ amr.plot_vars        = density
 #amr.derive_plot_vars = particle_mass_density
 
 #PROBIN FILENAME
-amr.probin_file = probin
+amr.probin_file = ""
 
