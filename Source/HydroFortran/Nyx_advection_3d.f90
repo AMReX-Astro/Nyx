@@ -1219,7 +1219,7 @@
          do j = jlo, jhi
             do i = ilo, ihi
 !              smallc(i,j) = max( csml(i,j,k3d), csml(i-1,j,k3d) )
-               smallc(i,j) = small* max( c(i,j,k3d) , c(i-1,j,k3d) )
+               smallc(i,j) = small* max( c(i,j,k3d) , c(i-1,j,k3d) , ONE )
                cavg(i,j) = HALF*( c(i,j,k3d) + c(i-1,j,k3d) )
             enddo
          enddo
@@ -1227,7 +1227,7 @@
          do j = jlo, jhi
             do i = ilo, ihi
 !              smallc(i,j) = max( csml(i,j,k3d), csml(i,j-1,k3d) )
-               smallc(i,j) = small* max( c(i,j,k3d) , c(i,j-1,k3d) )
+               smallc(i,j) = small* max( c(i,j,k3d) , c(i,j-1,k3d) , ONE )
                cavg(i,j) = HALF*( c(i,j,k3d) + c(i,j-1,k3d) )
             enddo
          enddo
@@ -1235,7 +1235,7 @@
          do j = jlo, jhi
             do i = ilo, ihi
 !              smallc(i,j) = max( csml(i,j,k3d), csml(i,j,k3d-1) )
-               smallc(i,j) = small* max( c(i,j,k3d) , c(i,j,k3d-1) )
+               smallc(i,j) = small* max( c(i,j,k3d) , c(i,j,k3d-1) , ONE )
                cavg(i,j) = HALF*( c(i,j,k3d) + c(i,j,k3d-1) )
             enddo
          enddo
