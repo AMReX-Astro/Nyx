@@ -740,7 +740,7 @@ contains
 
              rho_ref = max(rho_ref,small_dens)
                p_ref = max(  p_ref,small_pres)
-k
+ 
              csqref = (1.d0+gamma_minus_1)*p_ref/rho_ref
              cref = sqrt(csqref)
              enthref = (rhoe_ref+p_ref)/(rho_ref*csqref)
