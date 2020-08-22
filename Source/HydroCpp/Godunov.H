@@ -118,6 +118,7 @@ pc_cmpflx(
 {
   amrex::Real csmall, cav, ustar;
   amrex::Real ul, ur, vl, vr, v2l, v2r, rel, rer;
+  amrex::Real rl, rr, pl, pr;
   int IU, IV, IV2;
   int GU, GV, GV2;
   int f_idx[3];
@@ -163,19 +164,23 @@ pc_cmpflx(
     f_idx[2] = UMY;
   }
 
+  rl = ql(i,j,k,QRHO);
   ul = ql(i, j, k, IU);
   vl = ql(i, j, k, IV);
   v2l = ql(i, j, k, IV2);
   rel = ql(i, j, k, QREINT);
+  pl = ql(i,j,k,QPRES);
 
+  rr = qr(i,j,k,QRHO);
   ur = qr(i, j, k, IU);
   vr = qr(i, j, k, IV);
   v2r = qr(i, j, k, IV2);
   rer = qr(i, j, k, QREINT);
+  pr = qr(i,j,k,QPRES);
 
   riemann(
-    ql(i, j, k, QRHO), ul, vl, v2l, ql(i, j, k, QPRES), rel,
-    qr(i, j, k, QRHO), ur, vr, v2r, qr(i, j, k, QPRES), rer,
+    rl, ul, vl, v2l, pl, rel,
+    rr, ur, vr, v2r, pr, rer,
     cav, ustar, flx(i, j, k, URHO),
     flx(i, j, k, f_idx[0]), flx(i, j, k, f_idx[1]), flx(i, j, k, f_idx[2]),
     flx(i, j, k, UEDEN), flx(i, j, k, UEINT), q(i, j, k, GU), q(i, j, k, GV),
