@@ -210,6 +210,7 @@ riemann(
   qint_gdpres = mask ? pstar : qint_gdpres;
   regd = mask ? estar : regd;
   gdnv_state_p = amrex::max(qint_gdpres, small_pres);
+  qint_gdpres = amrex::max(qint_gdpres, small_pres);
 
   // Might need rho factor
   regd = gdnv_state_p / (gamma - 1.0);
@@ -223,7 +224,7 @@ riemann(
   const amrex::Real rhoetot =
     regd +
     0.5 * rgd * (qint_iu * qint_iu + qint_iv1 * qint_iv1 + qint_iv2 * qint_iv2);
-  uflx_eden = qint_iu * (rhoetot + qint_gdpres);
+  uflx_eden = qint_iu * (rhoetot + gdnv_state_p);
   uflx_eint = qint_iu * regd;
 }
 
