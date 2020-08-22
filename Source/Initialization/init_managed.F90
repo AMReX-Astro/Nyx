@@ -21,7 +21,7 @@ allocate(URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX)
 allocate(TEMP_COMP, NE_COMP, ZHI_COMP, NTHERM, NVAR, NDIAG, small_temp, heat_cool_type)
 
 allocate(nadv, small_pres, small_dens)
-allocate(QTHERM, NQAUX, QVAR, QC, NQSRC, NQ, UTEMP, QGAME, QGAMC, QTEMP, QFX,  QGC)
+allocate(QTHERM, NQAUX, QVAR, QC, NQSRC, NQ, UTEMP, QGAMC, QTEMP, QFX,  QGC)
 allocate(QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS)
 
 allocate(difmag)
@@ -157,7 +157,7 @@ deallocate(URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX)
 deallocate(TEMP_COMP, NE_COMP, ZHI_COMP, NTHERM, NVAR, NDIAG, small_temp, heat_cool_type)
 
 deallocate(nadv, small_pres, small_dens)
-deallocate(QTHERM, NQAUX, QVAR, QC, NQSRC, NQ, UTEMP, QGAME, QGAMC, QTEMP, QFX,  QGC)
+deallocate(QTHERM, NQAUX, QVAR, QC, NQSRC, NQ, UTEMP, QGAMC, QTEMP, QFX,  QGC)
 deallocate(QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS)
 
 deallocate(difmag)

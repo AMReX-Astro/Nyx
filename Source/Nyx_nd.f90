@@ -329,7 +329,6 @@
            NQSRC = QVAR
            NQ = QVAR
            UTEMP = -1
-           QGAME = -1
            QGAMC = -1
            
            ! We use these to index into the state "Q"
