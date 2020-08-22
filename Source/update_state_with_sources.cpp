@@ -19,11 +19,6 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
 
     MultiFab::RegionTag amrhydro_tag("HydroUpdate_" + std::to_string(level));
 
-    if(verbose>1) {
-        amrex::Print() << "hydro_src norm2(0)    " << hydro_source.norm2(0)    <<std::endl;
-        amrex::Print() << "hydro_src norm2(Eint) " << hydro_source.norm2(Eint) <<std::endl;
-        amrex::Print() << "hydro_src norm2(Eint) " << hydro_source.norm2(Eden) <<std::endl;
-    }
     const amrex::Real a_half = 0.5 * (a_old + a_new);
     const amrex::Real a_half_inv = 1 / a_half;
     const amrex::Real a_oldsq = a_old * a_old;
@@ -36,16 +31,18 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
     Real lsmall_dens = small_dens;
 
         ////This set of dt should be used for Saxpy dt like setup
-    for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
-           ++mfi) {
+    for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) 
+    {
 
         const amrex::Box& bx = mfi.tilebox();
         auto const& uin = S_old.array(mfi);
         auto const& uout = S_new.array(mfi);
         auto const& hydro_src = hydro_source.array(mfi);
         auto const& src = ext_src_old.array(mfi);
-        amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-                  for (int n = 0; n < uout.nComp(); ++n) {
+        amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept 
+        {
+            for (int n = 0; n < uout.nComp(); ++n) 
+            {
                         if(n==URHO)
                         {
                                 uout(i,j,k,n) = uin(i,j,k,n) + hydro_src(i,j,k,n) 
@@ -70,27 +67,29 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
                         {
                                 uout(i,j,k,n) = uin(i,j,k,n) + hydro_src(i,j,k,n) + dt * src(i,j,k,n) * a_half_inv;
                         }
-                  }
-           });
+            }
+        });
 
-           //Unclear whether this should be part of previous ParallelFor
-           amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-				   do_enforce_minimum_density(i, j, k, uout, lnum_spec, lsmall_dens);
-		   });
+        //Unclear whether this should be part of previous ParallelFor
+        amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept 
+        {
+                           do_enforce_minimum_density(i, j, k, uout, lnum_spec, lsmall_dens);
+        });
 
-        }
+    }
 
     enforce_nonnegative_species(S_new);
 
     const int grav_source_type = 1;
-    for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid();
-           ++mfi) {
-
+    for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) 
+    {
         const amrex::Box& bx = mfi.tilebox();
         auto const& uin = S_old.array(mfi);
         auto const& uout = S_new.array(mfi);
         auto const& grav = grav_vector.array(mfi);
-        amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+
+        amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept 
+        {
 
 
                 const amrex::Real rhoInv = 1.0 / uout(i,j,k,URHO);
@@ -132,12 +131,8 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
                                 }
                 else
                     amrex::Abort("Error:: Nyx_advection_3d.f90 :: bogus grav_source_type");
-            });
-    }
-    if(verbose>1) {
-        std::cout<<"S_new norm2(0)"<<S_new.norm2(0)<<std::endl;
-        std::cout<<"S_new norm2(Eint)"<<S_new.norm2(Eint)<<std::endl;
-        std::cout<<"S_new norm2(Eint)"<<S_new.norm2(Eden)<<std::endl;
-}
 
+
+        });
+    }
 }

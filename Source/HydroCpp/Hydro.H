@@ -181,29 +181,24 @@ do_enforce_minimum_density(
         state(i,j,k,UMY) = 0.0;
         state(i,j,k,UMZ) = 0.0;
 
-    /*
-    Consider resetting UEINT here as well, like negative e in reset_internal_energy:
-    Real rhoInv = 1.0 / u(i,j,k,URHO);
-    Real Up     = u(i,j,k,UMX) * rhoInv;
-    Real Vp     = u(i,j,k,UMY) * rhoInv;
-    Real Wp     = u(i,j,k,UMZ) * rhoInv;
-    Real ke     = 0.5 * u(i,j,k,URHO) * (Up*Up + Vp*Vp + Wp*Wp);
+        amrex::Real dummy_pres = 1e200;
+        amrex::Real eint_new = -1e200;
 
-    Real rho_eint = u(i,j,k,UEDEN) - ke;
-    Real dummy_pres = 1e200;
-    Real eint_new = -1e200;
-    nyx_eos_given_RT(gamma_minus_1, h_species, &eint_new, &dummy_pres, u(i,j,k,URHO), small_temp, 
-                     d(i,j,k,Ne_comp),comoving_a);
+        // HACK HACK -- we can't yet do this call
+        // Re-create "e" from {small_dens, small_temp}
+        // nyx_eos_given_RT(gamma_minus_1, h_species, &eint_new, &dummy_pres, u(i,j,k,URHO), small_temp, 
+        //                  d(i,j,k,Ne_comp),comoving_a);
 
-    // Create reset source so u(i,j,k,UEINT) = u(i,j,k,UEINT) + r(i,j,k) = u(i,j,k,URHO) * eint_new
-    r(i,j,k) = u(i,j,k,URHO) *  eint_new - u(i,j,k,UEINT);
-    u(i,j,k,UEINT) = u(i,j,k,URHO) *  eint_new;
+        // Create reset source so u(i,j,k,UEINT) = u(i,j,k,UEINT) + r(i,j,k) = u(i,j,k,URHO) * eint_new
+        // r(i,j,k) = u(i,j,k,URHO) *  eint_new - u(i,j,k,UEINT);
 
-    u(i,j,k,UEDEN) = u(i,j,k,UEINT) + ke;
-    //  state(i,j,k,UEINT) = state(i,j,k,UEINT);
-    //  state(i,j,k,UEDEN) = state(i,j,k,UEINT);
-        */
-	}
+        // Define (rho e) with small_dens and the new "e" 
+        // HACK HACK -- we can't yet do this call
+        // state(i,j,k,UEINT) = state(i,j,k,URHO) *  eint_new;
+
+        // Here we effectively zero the KE so set (rho E) = (rho e)
+        state(i,j,k,UEDEN) = state(i,j,k,UEINT);
+    }
 }
 
 AMREX_GPU_DEVICE
@@ -234,6 +229,9 @@ pc_update(
                             +(flx[2](i, j, k, n) - flx[2](i, j, k + 1, n)) ) *
                           volinv * a_fact[n];
   }
+
+  update(i, j, k, UEINT) += a_half * (a_new - a_old) * ( 2.0 - 3.0 * gamma_minus_1) * u(i,j,k,UEINT);
+  update(i, j, k, UEDEN) += a_half * (a_new - a_old) * ( 2.0 - 3.0 * gamma_minus_1) * u(i,j,k,UEINT);
 
   update(i, j, k, UEINT) += pdivu(i, j, k)*u(i,j,k,UEINT)*gamma_minus_1*dt*a_half;
 }
