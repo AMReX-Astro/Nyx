@@ -159,51 +159,6 @@ pc_ext_flx_dt(
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
-do_enforce_minimum_density(
-  const int i,
-  const int j,
-  const int k,
-  amrex::Array4<amrex::Real> const& state,
-  const int NumSpec,
-  const amrex::Real small_dens)
-{
-    //Reset negative density to small_dens and zero out momenta:
-    if(state(i,j,k,URHO) < small_dens)
-    {
-        for (int n = 0; n < NumSpec; ++n)
-        {
-            state(i,j,k,FirstSpec+n) *= small_dens / state(i,j,k,URHO);
-        }
-
-        state(i,j,k,URHO ) = small_dens;
-
-        state(i,j,k,UMX) = 0.0;
-        state(i,j,k,UMY) = 0.0;
-        state(i,j,k,UMZ) = 0.0;
-
-        amrex::Real dummy_pres = 1e200;
-        amrex::Real eint_new = -1e200;
-
-        // HACK HACK -- we can't yet do this call
-        // Re-create "e" from {small_dens, small_temp}
-        // nyx_eos_given_RT(gamma_minus_1, h_species, &eint_new, &dummy_pres, u(i,j,k,URHO), small_temp, 
-        //                  d(i,j,k,Ne_comp),comoving_a);
-
-        // Create reset source so u(i,j,k,UEINT) = u(i,j,k,UEINT) + r(i,j,k) = u(i,j,k,URHO) * eint_new
-        // r(i,j,k) = u(i,j,k,URHO) *  eint_new - u(i,j,k,UEINT);
-
-        // Define (rho e) with small_dens and the new "e" 
-        // HACK HACK -- we can't yet do this call
-        // state(i,j,k,UEINT) = state(i,j,k,URHO) *  eint_new;
-
-        // Here we effectively zero the KE so set (rho E) = (rho e)
-        state(i,j,k,UEDEN) = state(i,j,k,UEINT);
-    }
-}
-
-AMREX_GPU_DEVICE
-AMREX_FORCE_INLINE
-void
 pc_update(
   const int i,
   const int j,
