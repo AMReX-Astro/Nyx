@@ -21,12 +21,10 @@ allocate(URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX)
 allocate(TEMP_COMP, NE_COMP, ZHI_COMP, NTHERM, NVAR, NDIAG, small_temp, heat_cool_type)
 
 allocate(nadv, small_pres, small_dens)
-allocate(npassive)
-allocate(QTHERM, NQAUX, QVAR, QC, NQSRC, NQ, UTEMP, QGAME, QGAMC, NGDNV, QTEMP, QFX,  QGC)
-allocate(QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS, GDGAME, GDRHO, GDPRES, GDU, GDV, GDW)
+allocate(QTHERM, NQAUX, QVAR, QC, NQSRC, NQ, UTEMP, QGAME, QGAMC, QTEMP, QFX,  QGC)
+allocate(QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS)
 
 allocate(difmag)
-!allocate(NGDNV, GDPRES, GDU, GDV, GDW,QVAR)
 allocate(ppm_type,use_flattening,use_const_species,normalize_species,inhomo_reion,grav_source_type)
 allocate(cg_maxiter,cg_tol,cg_blend,fix_mass_flux,use_analriem,use_srcQ_in_trace,use_reset_state)
 cg_maxiter=12
@@ -159,12 +157,10 @@ deallocate(URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX)
 deallocate(TEMP_COMP, NE_COMP, ZHI_COMP, NTHERM, NVAR, NDIAG, small_temp, heat_cool_type)
 
 deallocate(nadv, small_pres, small_dens)
-deallocate(npassive)
-deallocate(QTHERM, NQAUX, QVAR, QC, NQSRC, NQ, UTEMP, QGAME, QGAMC, NGDNV, QTEMP, QFX,  QGC)
-deallocate(QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS, GDGAME, GDRHO, GDPRES, GDU, GDV, GDW)
+deallocate(QTHERM, NQAUX, QVAR, QC, NQSRC, NQ, UTEMP, QGAME, QGAMC, QTEMP, QFX,  QGC)
+deallocate(QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS)
 
 deallocate(difmag)
-!deallocate(NGDNV, GDPRES, GDU, GDV, GDW, QVAR)
 deallocate(ppm_type,use_flattening,&
      use_const_species,normalize_species,inhomo_reion,grav_source_type)
 deallocate(cg_maxiter,cg_tol,cg_blend,fix_mass_flux,&

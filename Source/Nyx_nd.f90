@@ -333,16 +333,6 @@
            QGAMC = -1
            
            ! We use these to index into the state "Q"
-           GDRHO = 1;
-           GDU = 2;
-           GDV = 3;
-           GDW = 4;
-           GDPRES = 5;
-           GDGAME = 6;
-           
-           NGDNV = 6
-           
-           ! We use these to index into the state "Q"
            QRHO   = 1   ! rho
            QU     = 2   ! u
            QV     = 3   ! v
@@ -378,25 +368,6 @@
 
            heat_cool_type               = heat_cool_in
            inhomo_reion                 = inhomo_reion_in
-
-           ! Easy indexing for the passively advected quantities.  
-           ! This lets us loop over all four groups (advected, species, aux)
-           ! in a single loop.
-           allocate(qpass_map(QVAR))
-           allocate(upass_map(NVAR))
-           npassive = 0
-           do iadv = 1, nadv
-              upass_map(npassive + iadv) = UFA + iadv - 1
-              qpass_map(npassive + iadv) = QFA + iadv - 1
-           enddo
-           npassive = npassive + nadv
-           if(QFS > -1) then
-              do ispec = 1, nspec+naux
-                 upass_map(npassive + ispec) = UFS + ispec - 1
-                 qpass_map(npassive + ispec) = QFS + ispec - 1
-              enddo
-              npassive = npassive + nspec + naux
-           endif
 
         end if
 
