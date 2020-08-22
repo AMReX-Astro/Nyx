@@ -42,9 +42,6 @@ extern "C"
 
   void fort_set_method_params
     (const int& dm, const int& NumAdv, const int& Ndiag, const int& do_hydro,
-     const int& ppm_type, 
-     const int& use_flattening,
-     const int& use_analriem,
      const int& use_const_species,
      const amrex::Real& gamma_in, const int& normalize_species,
      const int& heat_cool_type, const int& inhomo_reion);

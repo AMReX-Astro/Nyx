@@ -186,8 +186,7 @@
 ! :::
 
       subroutine fort_set_method_params( &
-                 dm, numadv, ndiag_in, do_hydro, ppm_type_in, &
-                 use_flattening_in, use_analriem_in, &
+                 dm, numadv, ndiag_in, do_hydro, &
                  use_const_species_in, gamma_in, normalize_species_in, &
                  heat_cool_in, inhomo_reion_in) &
                  bind(C, name = "fort_set_method_params")
@@ -209,9 +208,6 @@
         integer,  intent(in) :: numadv
         integer,  intent(in) :: ndiag_in
         integer,  intent(in) :: do_hydro
-        integer,  intent(in) :: ppm_type_in
-        integer,  intent(in) :: use_flattening_in
-        integer,  intent(in) :: use_analriem_in
         real(rt), intent(in) :: gamma_in
         integer,  intent(in) :: use_const_species_in
         integer,  intent(in) :: normalize_species_in
@@ -226,7 +222,6 @@
         use_const_species = use_const_species_in
 
         iorder = 2
-        difmag = 0.1d0
 
         grav_source_type = 1
         ! We may want to default to 3 when using SDC because then the gravity updates
@@ -312,27 +307,6 @@
            QGC = -1
            UTEMP = -1
            
-           ! We use these to index into the state "Q"
-           ! QRHO   = 1   ! rho
-           ! QU     = 2   ! u
-           ! QV     = 3   ! v
-           ! QW     = 4   ! w
-           ! QPRES  = 5   ! p
-           ! QREINT = 6   ! (rho e)
-
-           ! QNEXT  = QREINT+1
-   
-           ! QFS = -1
-           ! if (numadv .ge. 1) then
-           !   QFA = QNEXT
-           !   if (use_const_species .eq. 0) &
-           !       QFS = QFA + numadv
-           ! else
-           !   QFA = -1
-           !   if (use_const_species .eq. 0) &
-           !       QFS = QNEXT
-           ! end if
-
            ! constant ratio of specific heats
            if (gamma_in .gt. 0.d0) then
               gamma_const = gamma_in
@@ -341,9 +315,6 @@
            end if
            gamma_minus_1 = gamma_const - 1.d0
 
-           ppm_type                     = ppm_type_in
-           use_analriem                 = use_analriem_in
-           use_flattening               = use_flattening_in
            normalize_species            = normalize_species_in
 
            heat_cool_type               = heat_cool_in
