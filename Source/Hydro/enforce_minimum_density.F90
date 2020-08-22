@@ -291,10 +291,11 @@ contains
 
     AMREX_CUDA_FORT_DEVICE subroutine ca_enforce_minimum_density_1cell(lo, hi, &
                                         state, s_lo, s_hi, &
-                                        verbose)
+                                        verbose, comoving_a)
 
     use network, only: nspec, naux
     use meth_params_module, only: NVAR, URHO, UMX, UMY, UMZ, UTEMP, UEINT, UEDEN, UFS, small_temp, small_dens, npassive, upass_map
+    use eos_module
     use amrex_constants_module, only: ZERO
     use amrex_error_module, only: amrex_error
     use amrex_fort_module, only: rt => amrex_real
@@ -305,9 +306,11 @@ contains
     integer,  intent(in   ) :: s_lo(3), s_hi(3)
     real(rt), intent(inout) :: state(s_lo(1):s_hi(1),s_lo(2):s_hi(2),s_lo(3):s_hi(3),NVAR)
     integer,  intent(in   ), value :: verbose
-
+    real(rt), intent(in   ), value :: comoving_a
     ! Local variables
     integer  :: i, j, k
+    real(rt) :: Up, Vp, Wp, ke, rho_eint, eint_new
+    real(rt) :: dummy_pres, rhoInv, Ne
 
     integer          :: n, ipassive
 
@@ -342,8 +345,20 @@ contains
                 state(i,j,k,UMY  ) = ZERO
                 state(i,j,k,UMZ  ) = ZERO
 
-                state(i,j,k,UEINT) = state(i,j,k,UEINT)
+!                rhoInv = 1.0d0 / state(i,j,k,URHO)
+!                Up     = state(i,j,k,UMX) * rhoInv
+!                Vp     = state(i,j,k,UMY) * rhoInv
+!                Wp     = state(i,j,k,UMZ) * rhoInv
+!                ke     = 0.5d0 * state(i,j,k,URHO) * (Up*Up + Vp*Vp + Wp*Wp)
+
+!                rho_eint = u(i,j,k,UEDEN) - ke
+                Ne = 0.d0
+                call nyx_eos_given_RT(eint_new, dummy_pres, state(i,j,k,URHO), small_temp, &
+                     Ne,comoving_a)
+
+                state(i,j,k,UEINT) = state(i,j,k,URHO) * eint_new
                 state(i,j,k,UEDEN) = state(i,j,k,UEINT)
+!                state(i,j,k,UEDEN) = state(i,j,k,UEINT) + ke
 
 
              end if

@@ -1163,7 +1163,7 @@
       ! Enforce the density >= small_dens.  Make sure we do this immediately after consup.
       call ca_enforce_minimum_density_1cell(lo, hi, &
                                    uout, u_lo, u_hi, &
-                                   print_fortran_warnings)
+                                   print_fortran_warnings, a_new)
       
       ! Enforce species >= 0
       call enforce_nonnegative_species(uout,uout_l1,uout_l2,uout_l3, &
@@ -1618,7 +1618,7 @@
                print *,'SMALL RGDNV IN RIEMANN ',idir,i,j,k3d,rgdnv(i)
                print *,'LEFT ',ul(i),rl(i),pl(i)
                print *,'RGHT ',ur(i),rr(i),pr(i)
-               call amrex_error("Error:: Nyx_advection_3d.f90 :: riemannus")
+!               call amrex_error("Error:: Nyx_advection_3d.f90 :: riemannus")
             end if
          end do
 
@@ -1654,7 +1654,7 @@
                print *,'FRAC ',frac
                print *,'LEFT ',ul(i),rl(i),pl(i)
                print *,'RGHT ',ur(i),rr(i),pr(i)
-               call amrex_error("Error:: Nyx_advection_3d.f90 :: riemannus")
+!               call amrex_error("Error:: Nyx_advection_3d.f90 :: riemannus")
             end if
          end do
 
