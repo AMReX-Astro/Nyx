@@ -18,11 +18,11 @@ allocate(this_z)
 !! meth_params
 allocate(gamma_minus_1,iorder)!,gamma_const)
 allocate(URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX)
-allocate(TEMP_COMP, NE_COMP, ZHI_COMP, NTHERM, NVAR, NDIAG, small_temp, heat_cool_type)
+allocate(TEMP_COMP, NE_COMP, ZHI_COMP, NVAR, NDIAG, small_temp, heat_cool_type)
 
 allocate(nadv, small_pres, small_dens)
-allocate(QTHERM, NQAUX, QVAR, QC, NQSRC, NQ, UTEMP, QGAMC, QTEMP, QFX,  QGC)
-allocate(QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS)
+allocate(QC, NQ, UTEMP, QTEMP, QFX,  QGC)
+! allocate(QU, QV, QW, QPRES, QREINT, QFA, QFS)
 
 allocate(difmag)
 allocate(ppm_type,use_flattening,use_const_species,normalize_species,inhomo_reion,grav_source_type)
@@ -154,11 +154,11 @@ deallocate(this_z)
 #endif
 deallocate(gamma_minus_1,iorder)!, gamma_const)
 deallocate(URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX)
-deallocate(TEMP_COMP, NE_COMP, ZHI_COMP, NTHERM, NVAR, NDIAG, small_temp, heat_cool_type)
+deallocate(TEMP_COMP, NE_COMP, ZHI_COMP, NVAR, NDIAG, small_temp, heat_cool_type)
 
 deallocate(nadv, small_pres, small_dens)
-deallocate(QTHERM, NQAUX, QVAR, QC, NQSRC, NQ, UTEMP, QGAMC, QTEMP, QFX,  QGC)
-deallocate(QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS)
+deallocate(QC, NQ, UTEMP, QTEMP, QFX,  QGC)
+! deallocate(QU, QV, QW, QPRES, QREINT, QFA, QFS)
 
 deallocate(difmag)
 deallocate(ppm_type,use_flattening,&

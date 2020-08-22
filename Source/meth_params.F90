@@ -18,14 +18,12 @@ module meth_params_module
   integer, parameter     :: NHYP    = 4
   integer, parameter     :: MAXADV  = 5
 
-  ! NTHERM: number of thermodynamic variables
-  integer         , allocatable :: NTHERM, NVAR, NDIAG
+  integer         , allocatable :: NVAR, NDIAG
   integer         , allocatable :: URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX
   integer         , allocatable :: TEMP_COMP, NE_COMP, ZHI_COMP
 
-  ! QTHERM: number of primitive variables
-  integer         , allocatable :: QTHERM, NQAUX, QVAR, QC, NQSRC, NQ, UTEMP, QGAMC, QTEMP, QFX,  QGC
-  integer         , allocatable :: QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS
+  integer         , allocatable :: QC, NQ, UTEMP, QTEMP, QFX,  QGC
+!   integer         , allocatable :: QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS
   
   integer         , allocatable :: nadv
 
@@ -50,10 +48,10 @@ module meth_params_module
 #ifdef AMREX_USE_CUDA_FORTRAN
   attributes(managed) :: gamma_minus_1, iorder!, gamma_const
   attributes(managed) :: URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX
-  attributes(managed) :: TEMP_COMP, NE_COMP, ZHI_COMP, NTHERM, NVAR, NDIAG, small_temp, heat_cool_type
-  attributes(managed) ::  nadv, small_pres, small_dens
-  attributes(managed) ::  QTHERM, NQAUX, QVAR, QC, NQSRC, NQ, UTEMP, QGAMC, QTEMP, QFX,  QGC
-  attributes(managed) :: QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS
+  attributes(managed) :: TEMP_COMP, NE_COMP, ZHI_COMP, NVAR, NDIAG, small_temp, heat_cool_type
+  attributes(managed) :: nadv, small_pres, small_dens
+  attributes(managed) :: QC, NQ, UTEMP, QTEMP, QFX,  QGC
+!  attributes(managed) :: QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS
   attributes(managed) :: difmag
  attributes(managed) :: ppm_type,use_flattening,use_const_species,normalize_species,inhomo_reion,grav_source_type
  attributes(managed) :: cg_maxiter,cg_tol,cg_blend,fix_mass_flux,use_analriem,use_srcQ_in_trace,use_reset_state

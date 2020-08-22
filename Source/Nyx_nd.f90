@@ -267,18 +267,13 @@
            ! conserved state components
            !---------------------------------------------------------------------
     
-           ! NTHERM: number of thermodynamic variables
-           ! NVAR  : number of total variables in initial system
-           ! dm refers to momentum components, '3' refers to (rho, rhoE, rhoe)
-           NTHERM = dm + 3
-
            if (use_const_species .eq. 1) then
               if (nspec .ne. 2 .or. naux .ne. 0) then
                   call amrex_error("Bad nspec or naux in set_method_params")
               end if
-              NVAR = NTHERM + numadv
+              NVAR = 6 + numadv
            else
-              NVAR = NTHERM + nspec + naux + numadv
+              NVAR = 6 + nspec + naux + numadv
            end if
 
            nadv = numadv
@@ -313,44 +308,30 @@
            !   the auxiliary quantities immediately follow the species
            !   so we can loop over species and auxiliary quantities.
    
-           ! QTHERM: number of primitive variables, which includes pressure (+1) 
-           !         but not big E (-1) 
-           ! QVAR  : number of total variables in primitive form
-
-           QTHERM = NTHERM
-           if (use_const_species .eq. 1) then
-              QVAR = QTHERM + numadv
-           else
-              QVAR = QTHERM + nspec + naux + numadv
-           end if
-           NQAUX = 1
            QC = 1
            QGC = -1
-           NQSRC = QVAR
-           NQ = QVAR
            UTEMP = -1
-           QGAMC = -1
            
            ! We use these to index into the state "Q"
-           QRHO   = 1   ! rho
-           QU     = 2   ! u
-           QV     = 3   ! v
-           QW     = 4   ! w
-           QPRES  = 5   ! p
-           QREINT = 6   ! (rho e)
+           ! QRHO   = 1   ! rho
+           ! QU     = 2   ! u
+           ! QV     = 3   ! v
+           ! QW     = 4   ! w
+           ! QPRES  = 5   ! p
+           ! QREINT = 6   ! (rho e)
 
-           QNEXT  = QREINT+1
+           ! QNEXT  = QREINT+1
    
-           QFS = -1
-           if (numadv .ge. 1) then
-             QFA = QNEXT
-             if (use_const_species .eq. 0) &
-                 QFS = QFA + numadv
-           else
-             QFA = -1
-             if (use_const_species .eq. 0) &
-                 QFS = QNEXT
-           end if
+           ! QFS = -1
+           ! if (numadv .ge. 1) then
+           !   QFA = QNEXT
+           !   if (use_const_species .eq. 0) &
+           !       QFS = QFA + numadv
+           ! else
+           !   QFA = -1
+           !   if (use_const_species .eq. 0) &
+           !       QFS = QNEXT
+           ! end if
 
            ! constant ratio of specific heats
            if (gamma_in .gt. 0.d0) then
