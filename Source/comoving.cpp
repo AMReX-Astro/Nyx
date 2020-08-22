@@ -67,7 +67,7 @@ Nyx::read_comoving_params ()
 }
 
 void
-Nyx::integrate_comoving_a_to_a(const Real old_a, const Real a_value, Real& dt)
+Nyx::integrate_comoving_a_to_a(const Real old_a_local, const Real a_value, Real& dt)
 {
     const Real xacc = 1.0e-8;
     Real H_0, OmL;
@@ -91,7 +91,7 @@ Nyx::integrate_comoving_a_to_a(const Real old_a, const Real a_value, Real& dt)
 
     // We integrate a, but stop when a = a_value (or close enough)
     Delta_t = dt/nsteps;
-    end_a = old_a;
+    end_a = old_a_local;
     for(j = 1; j <= nsteps; j++)
     {
         // This uses RK2 to integrate the ODE:
@@ -128,7 +128,7 @@ Nyx::integrate_comoving_a_to_a(const Real old_a, const Real a_value, Real& dt)
 }
 
 void
-Nyx::est_maxdt_comoving_a(const Real old_a, Real & dt)
+Nyx::est_maxdt_comoving_a(const Real old_a_local, Real & dt)
 {
     Real H_0, OmL;
     Real max_dt;
@@ -144,7 +144,8 @@ Nyx::est_maxdt_comoving_a(const Real old_a, Real & dt)
     if (H_0 != 0.0)
     {
         if (comoving_type > 0)
-            max_dt = (0.05) / H_0 / std::sqrt(comoving_OmM/(old_a*old_a*old_a) + comoving_OmR/(old_a*old_a*old_a*old_a) + OmL);
+            max_dt = (0.05) / H_0 / std::sqrt( comoving_OmM/(old_a_local * old_a_local *old_a_local) 
+                                              +comoving_OmR/(old_a_local * old_a_local *old_a_local * old_a_local) + OmL);
         else
             max_dt = (0.05) / std::abs(comoving_h);
         dt = amrex::min(dt,max_dt);
@@ -153,7 +154,7 @@ Nyx::est_maxdt_comoving_a(const Real old_a, Real & dt)
 
 // This might only work for t=0=> a=.00625, although constant canceled
 void
-Nyx::est_lindt_comoving_a(const Real old_a, const Real new_a, Real& dt)
+Nyx::est_lindt_comoving_a(const Real old_a_local, const Real new_a_local, Real& dt)
 {
     Real H_0, OmL;
     Real lin_dt;
@@ -169,14 +170,16 @@ Nyx::est_lindt_comoving_a(const Real old_a, const Real new_a, Real& dt)
     // Could definately be optimized better
     if (H_0 != 0.0)
     {
-        lin_dt= (   pow((new_a/(pow(.75,(2_rt/3_rt)))),(.75))
-                    - pow((old_a/(pow(.75,(2_rt/3_rt)))),(.75))  ) / H_0;
+        lin_dt= ( pow((new_a_local/(pow(.75,(2_rt/3_rt)))),(.75))
+                 -pow((old_a_local/(pow(.75,(2_rt/3_rt)))),(.75))  ) / H_0;
         dt=lin_dt;
     }
 }
 
 void
-Nyx::estdt_comoving_a(const Real old_a,Real& new_a,Real& dt,const Real change_allowed,const Real fixed_da,const Real final_a,int& dt_modified)
+Nyx::estdt_comoving_a(const Real old_a_local, Real& new_a_local, 
+                      Real& dt, const Real change_allowed, 
+                      const Real fixed_da, const Real final_a, int& dt_modified)
 {
     Real a_value;
     Real max_dt;
@@ -187,28 +190,28 @@ Nyx::estdt_comoving_a(const Real old_a,Real& new_a,Real& dt,const Real change_al
         if( fixed_da <= 0.0e0)
         {
             // First call this to make sure dt that we send to integration routine isnt outrageous
-            est_maxdt_comoving_a(old_a,dt);
+            est_maxdt_comoving_a(old_a_local,dt);
 
             // Initial call to see if existing dt will work
-            integrate_comoving_a(old_a,new_a,dt);
+            integrate_comoving_a(old_a_local,new_a_local,dt);
 
             // Make sure a isn't growing too fast
-            enforce_percent_change(old_a,new_a,dt,change_allowed);
+            enforce_percent_change(old_a_local,new_a_local,dt,change_allowed);
         }
         else
         {
             // First call this to make sure dt that we send to integration routine isnt outrageous
-            new_a = (old_a +  fixed_da);
-            est_lindt_comoving_a(old_a,new_a,dt);
-            est_maxdt_comoving_a(old_a,dt);
+            new_a_local = (old_a_local +  fixed_da);
+            est_lindt_comoving_a(old_a_local,new_a_local,dt);
+            est_maxdt_comoving_a(old_a_local,dt);
 
-            // Then integrate old_a to a_value using dt as a guess for the maximum dt
+            // Then integrate old_a_local to a_value using dt as a guess for the maximum dt
             // output dt is based on a fraction of the input dt
-            integrate_comoving_a_to_a(old_a,new_a,dt);
+            integrate_comoving_a_to_a(old_a_local,new_a_local,dt);
         }
         // Make sure we don't go past final_a (if final_a is set)
         if (final_a > 0.0e0)
-            enforce_final_a(old_a,new_a,dt,final_a);
+            enforce_final_a(old_a_local,new_a_local,dt,final_a);
 
         dt_modified = 1;
     }
@@ -221,11 +224,12 @@ Nyx::estdt_comoving_a(const Real old_a,Real& new_a,Real& dt,const Real change_al
 }
 
 void
-Nyx::enforce_percent_change(const Real old_a,Real& new_a, Real& dt,const Real change_allowed)
+Nyx::enforce_percent_change(const Real old_a_local, Real& new_a_local, 
+                            Real& dt,const Real change_allowed)
 {
 
     int i;
-    Real factor = ( (new_a - old_a) / old_a ) / change_allowed;
+    Real factor = ( (new_a_local - old_a_local) / old_a_local ) / change_allowed;
 
     // Only go into this process if percent change exceeds change_allowed
 
@@ -233,17 +237,17 @@ Nyx::enforce_percent_change(const Real old_a,Real& new_a, Real& dt,const Real ch
     {
         for(i = 1; i <= 100; i++)
         {
-            factor = ( (new_a - old_a) / old_a ) / change_allowed;
+            factor = ( (new_a_local - old_a_local) / old_a_local ) / change_allowed;
 
             // Note: 0.99 is just a fudge factor so we don't get bogged down.
             if(factor > 1.0)
             {
                 dt = (1.0 / factor) * dt * 0.99;
-                integrate_comoving_a(old_a,new_a,dt);
+                integrate_comoving_a(old_a_local,new_a_local,dt);
             }
             else if (i < 100)
             {
-                integrate_comoving_a(old_a,new_a,dt);
+                integrate_comoving_a(old_a_local,new_a_local,dt);
                 // We're done
                 return;
             }
@@ -257,25 +261,26 @@ Nyx::enforce_percent_change(const Real old_a,Real& new_a, Real& dt,const Real ch
 }
 
 void
-Nyx::enforce_final_a(const Real old_a,Real& new_a,Real& dt,const Real final_a)
+Nyx::enforce_final_a(const Real old_a_local, Real& new_a_local,
+                     Real& dt, const Real final_a)
 {
     int i;
     Real factor;
     const Real eps = 1.e-10;
 
-    if (old_a > final_a)
+    if (old_a_local > final_a)
         amrex::Abort("Oops -- old_a > final_a");
 
     // Only go into this process if new_a is past final_a
-    if (new_a > final_a)
+    if (new_a_local > final_a)
     {
         for(i = 1; i <= 100; i++)
         {
-            if ( (new_a > (final_a+eps)) || (new_a < final_a) )
+            if ( (new_a_local > (final_a+eps)) || (new_a_local < final_a) )
             {
-                factor = (final_a - old_a) / (new_a - old_a);
+                factor = (final_a - old_a_local) / (new_a_local - old_a_local);
                 dt = dt * factor;
-                integrate_comoving_a(old_a,new_a,dt);
+                integrate_comoving_a(old_a_local,new_a_local,dt);
             }
             else if (i<100)
                 return;
@@ -568,7 +573,7 @@ Nyx::integrate_time_given_a(const Real a0, const Real a1, Real& dt)
 }
 
 void
-Nyx::integrate_comoving_a (const Real old_a, Real& new_a, const Real dt)
+Nyx::integrate_comoving_a (const Real old_a_local, Real& new_a_local, const Real dt)
 {
 
     const Real xacc = 1.0e-8;
@@ -578,7 +583,7 @@ Nyx::integrate_comoving_a (const Real old_a, Real& new_a, const Real dt)
 
     if (comoving_h == 0.0)
     {
-        new_a = old_a;
+        new_a_local = old_a_local;
         return;
     }
 
@@ -591,7 +596,7 @@ Nyx::integrate_comoving_a (const Real old_a, Real& new_a, const Real dt)
         nsteps  = std::pow(2,iter-1);
 
         Delta_t = dt/nsteps;
-        end_a = old_a;
+        end_a = old_a_local;
 
         for(j = 1; j <= nsteps; j++)
         {
@@ -619,11 +624,11 @@ Nyx::integrate_comoving_a (const Real old_a, Real& new_a, const Real dt)
 
         }
 
-        new_a  = end_a;
+        new_a_local  = end_a;
 
-        if (std::abs(1.0e0-new_a/prev_soln) <= xacc)
+        if (std::abs(1.0e0-new_a_local/prev_soln) <= xacc)
               return;
-        prev_soln = new_a;
+        prev_soln = new_a_local;
 
     }
 }

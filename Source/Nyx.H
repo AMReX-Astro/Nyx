@@ -575,7 +575,6 @@ public:
                                       amrex::MultiFab& sources_for_hydro,
                                       amrex::MultiFab& hydro_source,
                                       amrex::MultiFab& grav, 
-                                      amrex::Real time,
                                       amrex::Real a_old,
                                       amrex::Real a_new,
                                       amrex::Real dt,

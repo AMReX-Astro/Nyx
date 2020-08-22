@@ -16,7 +16,7 @@ pc_srctoprim(
   amrex::Array4<const amrex::Real> const& grav,
   amrex::Array4<const amrex::Real> const& src,
   amrex::Array4<amrex::Real> const& srcQ,
-  const amrex::Real a_half, const amrex::Real a_dot,
+  const amrex::Real a_dot,
   const int NumSpec, const amrex::Real gamma_minus_1)
 {
   // Local loading Vars ==> Load once from global memory use multiple times
@@ -144,8 +144,7 @@ pc_ext_flx_dt(
   const int k,
   amrex::Array4<amrex::Real> const& flx,
   amrex::Real const a_old,
-  amrex::Real const a_new,
-  amrex::Real const dt)
+  amrex::Real const a_new)
 {
   const amrex::Real a_half = 0.5*(a_old + a_new);
   const amrex::Real a_half_inv = 1.0 / a_half;
@@ -241,18 +240,11 @@ pc_update(
 
 // Host functions
 void pc_umdrv(
-  const int is_finest_level,
-  const amrex::Real time,
   amrex::Box const& bx,
-  const int* dlo,
-  const int* dhi,
-  const int* bclo,
-  const int* bchi,
   amrex::Array4<const amrex::Real> const& uin,
   amrex::Array4<amrex::Real> const& uout,
   amrex::Array4<const amrex::Real> const& q,
-  amrex::Array4<const amrex::Real> const&
-    src_q, // amrex::IArrayBox const& bcMask,
+  amrex::Array4<const amrex::Real> const& src_q, 
   const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
   const amrex::Real* dx,
   const amrex::Real dt,

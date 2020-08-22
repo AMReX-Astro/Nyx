@@ -28,7 +28,7 @@ plm_slope(
 {
   const int bdim[3] = {dir == 0, dir == 1, dir == 2};
 
-  amrex::Real dlft, drgt, dcen, dfm, dfp, dlim, dsgn, dtemp, drgtm1, dlftp1, slop;
+  amrex::Real dlft, drgt, dcen, dfm, dfp, dlim, dsgn, dtemp, drgtm1, dlftp1;
   const amrex::Real qc = q(i, j, k, n);
   const amrex::Real qm =
     q(i - 1 * bdim[0], j - 1 * bdim[1], k - 1 * bdim[2], n);
@@ -99,7 +99,6 @@ pc_plm_x(
   amrex::Real const small_dens,
   amrex::Real const small_pres)
 {
-  amrex::Real e[3];
   amrex::Real dtdx = dt / (a_old * dx);
   amrex::Real cs = cc * cc;
   amrex::Real rho = q(i, j, k, QRHO);
@@ -107,24 +106,20 @@ pc_plm_x(
   amrex::Real v = q(i, j, k, QV);
   amrex::Real w = q(i, j, k, QW);
   amrex::Real p = q(i, j, k, QPRES);
-  amrex::Real rhoe = q(i, j, k, QREINT);
-  amrex::Real enth = ((rhoe + p) / rho) / cs;
+  // amrex::Real rhoe = q(i, j, k, QREINT);
+  // amrex::Real enth = ((rhoe + p) / rho) / cs;
   amrex::Real drho = slope[QRHO];
   amrex::Real du = slope[QU];
   amrex::Real dv = slope[QV];
   amrex::Real dw = slope[QW];
   amrex::Real dp = slope[QPRES];
-  amrex::Real drhoe = slope[QREINT];
+  // amrex::Real drhoe = slope[QREINT];
   amrex::Real alpham = 0.5 * (dp / (rho * cc) - du) * rho / cc;
   amrex::Real alphap = 0.5 * (dp / (rho * cc) + du) * rho / cc;
   amrex::Real alpha0r = drho - dp / cs;
-  amrex::Real alpha0e = drhoe - dp * enth;
+  // amrex::Real alpha0e = drhoe - dp * enth;
   amrex::Real alpha0v = dv;
   amrex::Real alpha0w = dw;
-
-  e[0] = u - cc;
-  e[1] = u;
-  e[2] = u + cc;
 
   //  Construct the right state on the i-1/2 interface
 
@@ -150,7 +145,7 @@ pc_plm_x(
   amrex::Real apright  = 0.5*(-1.0 - spplus )*alphap;
   amrex::Real amright  = 0.5*(-1.0 - spminus )*alpham;
   amrex::Real azrright = 0.5*(-1.0 - spzero )*alpha0r;
-  amrex::Real azeright = 0.5*(-1.0 - spzero )*alpha0e;
+  // amrex::Real azeright = 0.5*(-1.0 - spzero )*alpha0e;
   amrex::Real azv1rght = 0.5*(-1.0 - spzero )*alpha0v;
   amrex::Real azw1rght = 0.5*(-1.0 - spzero )*alpha0w;
   
@@ -194,7 +189,7 @@ pc_plm_x(
   amrex::Real apleft   = 0.5*(1.0 - spplus )*alphap;
   amrex::Real amleft   = 0.5*(1.0 - spminus)*alpham;
   amrex::Real azrleft  = 0.5*(1.0 - spzero )*alpha0r;
-  amrex::Real azeleft  = 0.5*(1.0 - spzero )*alpha0e;
+  // amrex::Real azeleft  = 0.5*(1.0 - spzero )*alpha0e;
   amrex::Real azv1left = 0.5*(1.0 - spzero )*alpha0v;
   amrex::Real azw1left = 0.5*(1.0 - spzero )*alpha0w;
 
@@ -258,7 +253,6 @@ pc_plm_y(
   amrex::Real const small_dens,
   amrex::Real const small_pres)
 {
-  amrex::Real e[3];
   amrex::Real dtdy = dt / (a_old * dy);
   amrex::Real cs = cc * cc;
   amrex::Real rho = q(i, j, k, QRHO);
@@ -266,24 +260,20 @@ pc_plm_y(
   amrex::Real v = q(i, j, k, QV);
   amrex::Real w = q(i, j, k, QW);
   amrex::Real p = q(i, j, k, QPRES);
-  amrex::Real rhoe = q(i, j, k, QREINT);
-  amrex::Real enth = ((rhoe + p) / rho) / cs;
+  // amrex::Real rhoe = q(i, j, k, QREINT);
+  // amrex::Real enth = ((rhoe + p) / rho) / cs;
   amrex::Real drho = slope[QRHO];
   amrex::Real du = slope[QU];
   amrex::Real dv = slope[QV];
   amrex::Real dw = slope[QW];
   amrex::Real dp = slope[QPRES];
-  amrex::Real drhoe = slope[QREINT];
+  // amrex::Real drhoe = slope[QREINT];
   amrex::Real alpham = 0.5 * (dp / (rho * cc) - dv) * rho / cc;
   amrex::Real alphap = 0.5 * (dp / (rho * cc) + dv) * rho / cc;
   amrex::Real alpha0r = drho - dp / cs;
-  amrex::Real alpha0e = drhoe - dp * enth;
+  // amrex::Real alpha0e = drhoe - dp * enth;
   amrex::Real alpha0u = du;
   amrex::Real alpha0w = dw;
-
-  e[0] = v - cc;
-  e[1] = v;
-  e[2] = v + cc;
 
   // Construct the "right" state on the j-1/2 interface
   amrex::Real spminus;
@@ -308,7 +298,7 @@ pc_plm_y(
   amrex::Real apright = 0.5*(-1.0 - spplus )*alphap;
   amrex::Real amright = 0.5*(-1.0 - spminus )*alpham;
   amrex::Real azrright = 0.5*(-1.0 - spzero )*alpha0r;
-  amrex::Real azeright = 0.5*(-1.0 - spzero )*alpha0e;
+  // amrex::Real azeright = 0.5*(-1.0 - spzero )*alpha0e;
   amrex::Real azu1rght = 0.5*(-1.0 - spzero )*alpha0u;
   amrex::Real azw1rght = 0.5*(-1.0 - spzero )*alpha0w;
 
@@ -352,7 +342,7 @@ pc_plm_y(
   amrex::Real apleft = 0.5*(1.0 - spplus )*alphap;
   amrex::Real amleft = 0.5*(1.0 - spminus )*alpham;
   amrex::Real azrleft = 0.5*(1.0 - spzero )*alpha0r;
-  amrex::Real azeleft = 0.5*(1.0 - spzero )*alpha0e;
+  // amrex::Real azeleft = 0.5*(1.0 - spzero )*alpha0e;
   amrex::Real azu1left = 0.5*(1.0 - spzero )*alpha0u;
   amrex::Real azw1left = 0.5*(1.0 - spzero )*alpha0w;
 
@@ -382,13 +372,12 @@ pc_plm_y(
 
     // Right state
     v = q(i, j, k, QV);
-    amrex::Real spzero;
-    spzero = v > 0 ? -1.0 : v * dtdy;
-    amrex::Real acmptop = 0.5 * (-1.0 - spzero) * slope[n];
+    amrex::Real spzerot = v > 0 ? -1.0 : v * dtdy;
+    amrex::Real acmptop = 0.5 * (-1.0 - spzerot) * slope[n];
     qp(i, j, k, n) = q(i, j, k, n) + acmptop + 0.5 * dt * srcQ(i, j, k, n) / a_old;
 
-    spzero = v >= 0 ? v * dtdy : 1.0;
-    amrex::Real acmpbot = 0.5 * (1.0 - spzero) * slope[n];
+    amrex::Real spzerob = v >= 0 ? v * dtdy : 1.0;
+    amrex::Real acmpbot = 0.5 * (1.0 - spzerob) * slope[n];
     qm(i, j + 1, k, n) = q(i, j, k, n) + acmpbot + 0.5 * dt * srcQ(i, j, k, n) / a_old;
   }
 }
@@ -413,7 +402,6 @@ pc_plm_z(
   amrex::Real const small_dens,
   amrex::Real const small_pres)
 {
-  amrex::Real e[3];
   amrex::Real dtdz = dt / (a_old*dz);
   amrex::Real cs = cc * cc;
   amrex::Real rho = q(i, j, k, QRHO);
@@ -421,24 +409,20 @@ pc_plm_z(
   amrex::Real v = q(i, j, k, QV);
   amrex::Real w = q(i, j, k, QW);
   amrex::Real p = q(i, j, k, QPRES);
-  amrex::Real rhoe = q(i, j, k, QREINT);
-  amrex::Real enth = ((rhoe + p) / rho) / cs;
+  // amrex::Real rhoe = q(i, j, k, QREINT);
+  // amrex::Real enth = ((rhoe + p) / rho) / cs;
   amrex::Real drho = slope[QRHO];
   amrex::Real du = slope[QU];
   amrex::Real dv = slope[QV];
   amrex::Real dw = slope[QW];
   amrex::Real dp = slope[QPRES];
-  amrex::Real drhoe = slope[QREINT];
+  // amrex::Real drhoe = slope[QREINT];
   amrex::Real alpham = 0.5 * (dp / (rho * cc) - dw) * rho / cc;
   amrex::Real alphap = 0.5 * (dp / (rho * cc) + dw) * rho / cc;
   amrex::Real alpha0r = drho - dp / cs;
-  amrex::Real alpha0e = drhoe - dp * enth;
+  // amrex::Real alpha0e = drhoe - dp * enth;
   amrex::Real alpha0u = du;
   amrex::Real alpha0v = dv;
-
-  e[0] = w - cc;
-  e[1] = w;
-  e[2] = w + cc;
 
   // Construct the "right" state on the k-1/2 interface
 
@@ -464,7 +448,7 @@ pc_plm_z(
   amrex::Real apright = 0.5*(-1.0 - spplus )*alphap;
   amrex::Real amright = 0.5*(-1.0 - spminus )*alpham;
   amrex::Real azrright = 0.5*(-1.0 - spzero )*alpha0r;
-  amrex::Real azeright = 0.5*(-1.0 - spzero )*alpha0e;
+  // amrex::Real azeright = 0.5*(-1.0 - spzero )*alpha0e;
   amrex::Real azu1rght = 0.5*(-1.0 - spzero )*alpha0u;
   amrex::Real azv1rght = 0.5*(-1.0 - spzero )*alpha0v;
 
@@ -508,7 +492,7 @@ pc_plm_z(
   amrex::Real apleft = 0.5*(1.0 - spplus )*alphap;
   amrex::Real amleft = 0.5*(1.0 - spminus )*alpham;
   amrex::Real azrleft = 0.5*(1.0 - spzero )*alpha0r;
-  amrex::Real azeleft = 0.5*(1.0 - spzero )*alpha0e;
+  // amrex::Real azeleft = 0.5*(1.0 - spzero )*alpha0e;
   amrex::Real azu1left = 0.5*(1.0 - spzero )*alpha0u;
   amrex::Real azv1left = 0.5*(1.0 - spzero )*alpha0v;
 
@@ -538,13 +522,12 @@ pc_plm_z(
 
     // Right state
     w = q(i, j, k, QW);
-    amrex::Real spzero;
-    spzero = w > 0 ? -1.0 : w * dtdz;
-    amrex::Real acmptop = 0.5 * (-1.0 - spzero) * slope[n];
+    amrex::Real spzerot = w > 0 ? -1.0 : w * dtdz;
+    amrex::Real acmptop = 0.5 * (-1.0 - spzerot) * slope[n];
     qp(i, j, k, n) = q(i, j, k, n) + acmptop + 0.5 * dt * srcQ(i, j, k, n) / a_old;
 
-    spzero = w >= 0 ? w * dtdz : 1.0;
-    amrex::Real acmpbot = 0.5 * (1.0 - spzero) * slope[n];
+    amrex::Real spzerob = w >= 0 ? w * dtdz : 1.0;
+    amrex::Real acmpbot = 0.5 * (1.0 - spzerob) * slope[n];
     qm(i, j, k + 1, n) = q(i, j, k, n) + acmpbot + 0.5 * dt * srcQ(i, j, k, n) / a_old;
   }
 }

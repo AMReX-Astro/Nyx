@@ -6,7 +6,6 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 riemann(
-  int i, int j, int k, int idir,
   const amrex::Real rl,
   const amrex::Real ul,
   const amrex::Real vl,
@@ -19,7 +18,6 @@ riemann(
   const amrex::Real v2r,
   const amrex::Real pr,
   const amrex::Real rer,
-  const amrex::Real c,
   const amrex::Real cav,
   amrex::Real& ustar,
   amrex::Real& uflx_rho,
@@ -38,16 +36,13 @@ riemann(
   const amrex::Real& small_vel,
   const amrex::Real& small_in,
   const amrex::Real& csmall,
-  const amrex::Real& gamma,
-  const int NumSpec)
+  const amrex::Real& gamma)
 {
-  const amrex::Real wsmall = small_dens * csmall;
 
-  amrex::Real gdnv_state_rho;
   amrex::Real gdnv_state_p;
-  amrex::Real gdnv_state_cs;
 
 #if 0
+  const amrex::Real wsmall = small_dens * csmall;
   const amrex::Real wl =
     amrex::max(wsmall, std::sqrt(amrex::Math::abs(gamma * pl * rl)));
   const amrex::Real wr =
@@ -195,7 +190,6 @@ riemann(
   amrex::Real rgd = frac * rstar + (1.0 - frac) * ro;
   qint_iu = frac * ustar + (1.0 - frac) * uo;
   qint_gdpres = frac * pstar + (1.0 - frac) * po;
-  gdnv_state_rho = rgd;
   gdnv_state_p = qint_gdpres;
 
   //Might need this here and/or below:
@@ -215,7 +209,6 @@ riemann(
   qint_iu = mask ? ustar : qint_iu;
   qint_gdpres = mask ? pstar : qint_gdpres;
   regd = mask ? estar : regd;
-  gdnv_state_rho = rgd;
   gdnv_state_p = amrex::max(qint_gdpres, small_pres);
 
   // Might need rho factor
@@ -232,7 +225,6 @@ riemann(
     0.5 * rgd * (qint_iu * qint_iu + qint_iv1 * qint_iv1 + qint_iv2 * qint_iv2);
   uflx_eden = qint_iu * (rhoetot + qint_gdpres);
   uflx_eint = qint_iu * regd;
-
 }
 
 #endif

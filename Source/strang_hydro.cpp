@@ -25,9 +25,6 @@ Nyx::strang_hydro (Real time,
 
     const Real prev_time    = state[State_Type].prevTime();
     const Real cur_time     = state[State_Type].curTime();
-    const int  finest_level = parent->finestLevel();
-    bool use_grav_zero = false;
-    bool use_evolving_a = true;
     
     MultiFab&  S_old        = get_old_data(State_Type);
     MultiFab&  S_new        = get_new_data(State_Type);
@@ -267,9 +264,6 @@ Nyx::strang_hydro_ghost_state (Real time,
     amrex::Gpu::setLaunchRegion(true);
     const Real prev_time    = state[State_Type].prevTime();
     const Real cur_time     = state[State_Type].curTime();
-    const int  finest_level = parent->finestLevel();
-    bool use_grav_zero = false;
-    bool use_evolving_a = true;
     
     MultiFab&  S_old        = get_old_data(State_Type);
     MultiFab&  S_new        = get_new_data(State_Type);
