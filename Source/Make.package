@@ -40,7 +40,6 @@ f90EXE_sources += Nyx_nd.f90
 f90EXE_sources +=  eos_params.f90
 F90EXE_sources += meth_params.F90
 f90EXE_sources += misc_params.f90
-f90EXE_sources += prob_params.f90
 f90EXE_sources += comoving_params.f90
 f90EXE_sources += comoving_nd.f90
 

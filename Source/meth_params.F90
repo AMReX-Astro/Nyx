@@ -22,7 +22,6 @@ module meth_params_module
   integer         , allocatable :: TEMP_COMP, NE_COMP, ZHI_COMP
 
   integer         , allocatable :: QC, NQ, UTEMP, QTEMP, QFX,  QGC
-!   integer         , allocatable :: QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS
   
   integer         , allocatable :: nadv
 

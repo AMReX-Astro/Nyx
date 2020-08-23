@@ -349,36 +349,6 @@
 ! ::: ----------------------------------------------------------------
 ! :::
 
-      subroutine fort_set_problem_params( &
-        dm,physbc_lo_in,physbc_hi_in,Outflow_in,Symmetry_in,coord_type_in) &
-        bind(C, name="fort_set_problem_params")
-
-        ! Passing data from C++ into f90
-
-        use prob_params_module
-
-        implicit none
-
-        integer, intent(in) :: dm
-        integer, intent(in) :: physbc_lo_in(dm),physbc_hi_in(dm)
-        integer, intent(in) :: Outflow_in
-        integer, intent(in) :: Symmetry_in
-        integer, intent(in) :: coord_type_in
-
-        physbc_lo(1:dm) = physbc_lo_in(1:dm)
-        physbc_hi(1:dm) = physbc_hi_in(1:dm)
-
-        Outflow  = Outflow_in
-        Symmetry = Symmetry_in
-
-        coord_type = coord_type_in
-
-      end subroutine fort_set_problem_params
-
-! :::
-! ::: ----------------------------------------------------------------
-! :::
-
       subroutine fort_init_zhi(lo, hi, &
            nd, diag_eos,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3, &
            ratio, zhi, z_l1, z_l2, z_l3, z_h1, z_h2, z_h3) &
