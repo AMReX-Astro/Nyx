@@ -159,56 +159,6 @@ pc_ext_flx_dt(
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
-do_enforce_minimum_density(
-  const int i,
-  const int j,
-  const int k,
-  amrex::Array4<amrex::Real> const& state,
-  const int NumSpec,
-  const amrex::Real small_dens)
-{
-    //Reset negative density to small_dens and zero out momenta:
-    if(state(i,j,k,URHO) < small_dens)
-    {
-        for (int n = 0; n < NumSpec; ++n)
-        {
-            state(i,j,k,FirstSpec+n) *= small_dens / state(i,j,k,URHO);
-        }
-
-        state(i,j,k,URHO ) = small_dens;
-
-        state(i,j,k,UMX) = 0.0;
-        state(i,j,k,UMY) = 0.0;
-        state(i,j,k,UMZ) = 0.0;
-
-    /*
-    Consider resetting UEINT here as well, like negative e in reset_internal_energy:
-    Real rhoInv = 1.0 / u(i,j,k,URHO);
-    Real Up     = u(i,j,k,UMX) * rhoInv;
-    Real Vp     = u(i,j,k,UMY) * rhoInv;
-    Real Wp     = u(i,j,k,UMZ) * rhoInv;
-    Real ke     = 0.5 * u(i,j,k,URHO) * (Up*Up + Vp*Vp + Wp*Wp);
-
-    Real rho_eint = u(i,j,k,UEDEN) - ke;
-    Real dummy_pres = 1e200;
-    Real eint_new = -1e200;
-    nyx_eos_given_RT(gamma_minus_1, h_species, &eint_new, &dummy_pres, u(i,j,k,URHO), small_temp, 
-                     d(i,j,k,Ne_comp),comoving_a);
-
-    // Create reset source so u(i,j,k,UEINT) = u(i,j,k,UEINT) + r(i,j,k) = u(i,j,k,URHO) * eint_new
-    r(i,j,k) = u(i,j,k,URHO) *  eint_new - u(i,j,k,UEINT);
-    u(i,j,k,UEINT) = u(i,j,k,URHO) *  eint_new;
-
-    u(i,j,k,UEDEN) = u(i,j,k,UEINT) + ke;
-    //  state(i,j,k,UEINT) = state(i,j,k,UEINT);
-    //  state(i,j,k,UEDEN) = state(i,j,k,UEINT);
-        */
-	}
-}
-
-AMREX_GPU_DEVICE
-AMREX_FORCE_INLINE
-void
 pc_update(
   const int i,
   const int j,
@@ -234,6 +184,9 @@ pc_update(
                             +(flx[2](i, j, k, n) - flx[2](i, j, k + 1, n)) ) *
                           volinv * a_fact[n];
   }
+
+  update(i, j, k, UEINT) += a_half * (a_new - a_old) * ( 2.0 - 3.0 * gamma_minus_1) * u(i,j,k,UEINT);
+  update(i, j, k, UEDEN) += a_half * (a_new - a_old) * ( 2.0 - 3.0 * gamma_minus_1) * u(i,j,k,UEINT);
 
   update(i, j, k, UEINT) += pdivu(i, j, k)*u(i,j,k,UEINT)*gamma_minus_1*dt*a_half;
 }

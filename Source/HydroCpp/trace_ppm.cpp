@@ -226,17 +226,17 @@ trace_ppm(const Box& bx,
       // this is the method that Miller & Colella and Colella &
       // Woodward use
       Real rho_ref = Im[QRHO][0];
-      Real un_ref = Im[QUN][0];
+      Real un_ref  = Im[QUN][0];
 
-      Real p_ref = Im[QPRES][0];
+      Real p_ref      = Im[QPRES][0];
       Real rhoe_g_ref = Im[QREINT][0];
 
       Real gam_g_ref = gamma;
 
       rho_ref = amrex::max(rho_ref, lsmall_dens);
+        p_ref = amrex::max(  p_ref, lsmall_pres);
 
       Real rho_ref_inv = 1.0_rt/rho_ref;
-      p_ref = amrex::max(p_ref, lsmall_pres);
 
       // For tracing
       Real csq_ref = gam_g_ref*p_ref*rho_ref_inv;
@@ -284,6 +284,7 @@ trace_ppm(const Box& bx,
       qp(i,j,k,QRHO) = amrex::max(lsmall_dens, rho_ref +  alphap + alpham + alpha0r);
       qp(i,j,k,QUN) = un_ref + (alphap - alpham)*cc_ref*rho_ref_inv;
       // qp(i,j,k,QREINT) = rhoe_g_ref + (alphap + alpham)*h_g_ref + alpha0e_g;
+
       qp(i,j,k,QPRES) = amrex::max(lsmall_pres, p_ref + (alphap + alpham)*csq_ref);
 
       // Transverse velocities -- there's no projection here, so we
@@ -317,8 +318,9 @@ trace_ppm(const Box& bx,
       Real gam_g_ref = gamma;
 
       rho_ref = amrex::max(rho_ref, lsmall_dens);
+        p_ref = amrex::max(  p_ref, lsmall_pres);
+
       Real rho_ref_inv = 1.0_rt/rho_ref;
-      p_ref = amrex::max(p_ref, lsmall_pres);
 
       // For tracing
       Real csq_ref = gam_g_ref*p_ref*rho_ref_inv;

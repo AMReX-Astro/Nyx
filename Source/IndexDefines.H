@@ -25,15 +25,13 @@ enum State_Type_UIndex {
 
 };
 
-enum State_Type_QIndex {
-  QRHO     = 0,
-  QU       = 1,
-  QV       = 2,
-  QW       = 3,
-  QPRES    = 4,
-  QREINT   = 5
-
-};
+#define QRHO   0
+#define QU     1
+#define QV     2
+#define QW     3
+#define QPRES  4
+#define QREINT 5
+#define NGDNV  6
 
 enum DiagEOS_Type_Index {
   Temp_comp = 0,
@@ -41,14 +39,6 @@ enum DiagEOS_Type_Index {
   Zhi_comp  = 2
 
 };
-
-#define GDRHO 0
-#define GDU 1
-#define GDV 2
-#define GDW 3
-#define GDPRES 4
-#define GDGAME 5
-#define NGDNV 6
 
 #define NUM_GROW 4
 

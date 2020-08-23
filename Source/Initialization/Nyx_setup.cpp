@@ -181,8 +181,7 @@ Nyx::hydro_setup()
     // Note that we must set NDIAG_C before we call set_method_params because
     // we use the C++ value to set the Fortran value
     fort_set_method_params
-        (dm, 0, NDIAG_C, do_hydro, ppm_type, 
-         use_flattening, use_analriem, 
+        (dm, 0, NDIAG_C, do_hydro, 
          use_const_species, gamma, normalize_species,
          heat_cool_type, inhomo_reion);
 
@@ -590,8 +589,7 @@ Nyx::no_hydro_setup()
     int NDIAG_C = -1;
 
     fort_set_method_params
-        (dm, 0, NDIAG_C, do_hydro, ppm_type, 
-         use_flattening, use_analriem, 
+        (dm, 0, NDIAG_C, do_hydro, 
          use_const_species, gamma, normalize_species,
          heat_cool_type, inhomo_reion);
 

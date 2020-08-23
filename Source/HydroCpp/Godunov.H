@@ -127,9 +127,9 @@ pc_cmpflx(
     IU = QU;
     IV = QV;
     IV2 = QW;
-    GU = GDU;
-    GV = GDV;
-    GV2 = GDW;
+    GU = QU;
+    GV = QV;
+    GV2 = QW;
     csmall = amrex::max(small, small * std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i-1,j,k,QREINT) / qprim(i-1,j,k,QRHO))), small * std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
     cav = 0.5 * ( std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i-1,j,k,QREINT) / qprim(i-1,j,k,QRHO)))
                   +std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i  ,j,k,QREINT) / qprim(i  ,j,k,QRHO))) );
@@ -140,9 +140,9 @@ pc_cmpflx(
     IU = QV;
     IV = QU;
     IV2 = QW;
-    GU = GDV;
-    GV = GDU;
-    GV2 = GDW;
+    GU = QV;
+    GV = QU;
+    GV2 = QW;
     csmall = amrex::max(small, small * std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j-1,k,QREINT) / qprim(i,j-1,k,QRHO))), small * std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
     cav = 0.5 * ( std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j-1,k,QREINT) / qprim(i,j-1,k,QRHO)))
                                   +std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j  ,k,QREINT) / qprim(i,j  ,k,QRHO))) );
@@ -153,9 +153,9 @@ pc_cmpflx(
     IU = QW;
     IV = QU;
     IV2 = QV;
-    GU = GDW;
-    GV = GDU;
-    GV2 = GDV;
+    GU = QW;
+    GV = QU;
+    GV2 = QV;
     csmall = amrex::max(small, small * std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j,k-1,QREINT) / qprim(i,j,k-1,QRHO))), small * std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
     cav = 0.5 * ( std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j,k-1,QREINT) / qprim(i,j,k-1,QRHO)))
                                   +std::sqrt(std::abs(gamma * (gamma - 1.0) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
@@ -184,7 +184,7 @@ pc_cmpflx(
     cav, ustar, flx(i, j, k, URHO),
     flx(i, j, k, f_idx[0]), flx(i, j, k, f_idx[1]), flx(i, j, k, f_idx[2]),
     flx(i, j, k, UEDEN), flx(i, j, k, UEINT), q(i, j, k, GU), q(i, j, k, GV),
-    q(i, j, k, GV2), q(i, j, k, GDPRES), q(i, j, k, GDGAME), 
+    q(i, j, k, GV2), q(i, j, k, QPRES), q(i, j, k, QREINT), 
     small_dens, small_pres, small_vel, small, csmall, gamma);
 
   amrex::Real flxrho = flx(i, j, k, URHO);
@@ -249,10 +249,10 @@ pc_transx1(
   }
   // Update hydro vars
 
-  pggp = qint(i + 1, j, k, GDPRES);
-  pggm = qint(i, j, k, GDPRES);
-  ugp = qint(i + 1, j, k, GDU);
-  ugm = qint(i, j, k, GDU);
+  pggp = qint(i + 1, j, k, QPRES);
+  pggm = qint(i, j, k, QPRES);
+  ugp = qint(i + 1, j, k, QU);
+  ugm = qint(i, j, k, QU);
 
   dup = pggp * ugp - pggm * ugm;
   pav = 0.5 * (pggp + pggm);
@@ -402,10 +402,10 @@ pc_transy1(
 
   //- Update hydro vars -
   // pressure divergence and such.
-  pggp = qint(i, j + 1, k, GDPRES);
-  pggm = qint(i, j, k, GDPRES);
-  ugp = qint(i, j + 1, k, GDV);
-  ugm = qint(i, j, k, GDV);
+  pggp = qint(i, j + 1, k, QPRES);
+  pggm = qint(i, j, k, QPRES);
+  ugp = qint(i, j + 1, k, QV);
+  ugm = qint(i, j, k, QV);
 
   dup = pggp * ugp - pggm * ugm;
   pav = 0.5 * (pggp + pggm);
@@ -552,10 +552,10 @@ pc_transx2(
   }
   //- Update hydro vars -
 
-  pggp = qint(i + 1, j, k, GDPRES);
-  pggm = qint(i, j, k, GDPRES);
-  ugp = qint(i + 1, j, k, GDU);
-  ugm = qint(i, j, k, GDU);
+  pggp = qint(i + 1, j, k, QPRES);
+  pggm = qint(i, j, k, QPRES);
+  ugp = qint(i + 1, j, k, QU);
+  ugm = qint(i, j, k, QU);
 
   dup = pggp * ugp - pggm * ugm;
   pav = 0.5 * (pggp + pggm);
@@ -701,10 +701,10 @@ pc_transy2(
   }
   //- Update hydro vars -
 
-  pggp = qint(i, j + 1, k, GDPRES);
-  pggm = qint(i, j, k, GDPRES);
-  ugp = qint(i, j + 1, k, GDV);
-  ugm = qint(i, j, k, GDV);
+  pggp = qint(i, j + 1, k, QPRES);
+  pggm = qint(i, j, k, QPRES);
+  ugp = qint(i, j + 1, k, QV);
+  ugm = qint(i, j, k, QV);
 
   dup = pggp * ugp - pggm * ugm;
   pav = 0.5 * (pggp + pggm);
@@ -853,10 +853,10 @@ pc_transz1(
 
   //- Update hydro vars -
   // pressure divergence and such.
-  pggp = qint(i, j, k + 1, GDPRES);
-  pggm = qint(i, j, k, GDPRES);
-  ugp = qint(i, j, k + 1, GDW);
-  ugm = qint(i, j, k, GDW);
+  pggp = qint(i, j, k + 1, QPRES);
+  pggm = qint(i, j, k, QPRES);
+  ugp = qint(i, j, k + 1, QW);
+  ugm = qint(i, j, k, QW);
 
   dup = pggp * ugp - pggm * ugm;
   pav = 0.5 * (pggp + pggm);
@@ -1003,10 +1003,10 @@ pc_transz2(
   }
 
   // Update hydro vars
-  pggp = qint(i, j, k + 1, GDPRES);
-  pggm = qint(i, j, k, GDPRES);
-  ugp = qint(i, j, k + 1, GDW);
-  ugm = qint(i, j, k, GDW);
+  pggp = qint(i, j, k + 1, QPRES);
+  pggm = qint(i, j, k, QPRES);
+  ugp = qint(i, j, k + 1, QW);
+  ugm = qint(i, j, k, QW);
 
   dup = pggp * ugp - pggm * ugm;
   pav = 0.5 * (pggp + pggm);
@@ -1162,15 +1162,15 @@ pc_transxy(
   }
 
   // Update hydro vars
-  pggpx = qx(i + 1, j, k, GDPRES);
-  pggmx = qx(i, j, k, GDPRES);
-  ugpx = qx(i + 1, j, k, GDU);
-  ugmx = qx(i, j, k, GDU);
+  pggpx = qx(i + 1, j, k, QPRES);
+  pggmx = qx(i, j, k, QPRES);
+  ugpx = qx(i + 1, j, k, QU);
+  ugmx = qx(i, j, k, QU);
 
-  pggpy = qy(i, j + 1, k, GDPRES);
-  pggmy = qy(i, j, k, GDPRES);
-  ugpy = qy(i, j + 1, k, GDV);
-  ugmy = qy(i, j, k, GDV);
+  pggpy = qy(i, j + 1, k, QPRES);
+  pggmy = qy(i, j, k, QPRES);
+  ugpy = qy(i, j + 1, k, QV);
+  ugmy = qy(i, j, k, QV);
 
   // qp state
   rur = rrr * qzp(i, j, k, QU);
@@ -1324,15 +1324,15 @@ pc_transxz(
   }
 
   // Update hydro vars
-  pggpx = qx(i + 1, j, k, GDPRES);
-  pggmx = qx(i, j, k, GDPRES);
-  ugpx = qx(i + 1, j, k, GDU);
-  ugmx = qx(i, j, k, GDU);
+  pggpx = qx(i + 1, j, k, QPRES);
+  pggmx = qx(i, j, k, QPRES);
+  ugpx = qx(i + 1, j, k, QU);
+  ugmx = qx(i, j, k, QU);
 
-  pggpz = qz(i, j, k + 1, GDPRES);
-  pggmz = qz(i, j, k, GDPRES);
-  ugpz = qz(i, j, k + 1, GDW);
-  ugmz = qz(i, j, k, GDW);
+  pggpz = qz(i, j, k + 1, QPRES);
+  pggmz = qz(i, j, k, QPRES);
+  ugpz = qz(i, j, k + 1, QW);
+  ugmz = qz(i, j, k, QW);
 
   // QP
   rur = rrr * qyp(i, j, k, QU);
@@ -1486,15 +1486,15 @@ pc_transyz(
   }
 
   // Update hydro vars
-  pggpz = qz(i, j, k + 1, GDPRES);
-  pggmz = qz(i, j, k, GDPRES);
-  ugpz = qz(i, j, k + 1, GDW);
-  ugmz = qz(i, j, k, GDW);
+  pggpz = qz(i, j, k + 1, QPRES);
+  pggmz = qz(i, j, k, QPRES);
+  ugpz = qz(i, j, k + 1, QW);
+  ugmz = qz(i, j, k, QW);
 
-  pggpy = qy(i, j + 1, k, GDPRES);
-  pggmy = qy(i, j, k, GDPRES);
-  ugpy = qy(i, j + 1, k, GDV);
-  ugmy = qy(i, j, k, GDV);
+  pggpy = qy(i, j + 1, k, QPRES);
+  pggmy = qy(i, j, k, QPRES);
+  ugpy = qy(i, j + 1, k, QV);
+  ugmy = qy(i, j, k, QV);
 
   // QP
   rur = rrr * qxp(i, j, k, QU);
@@ -1602,9 +1602,9 @@ pc_pdivu(
   const amrex::Real dx, const amrex::Real dy, const amrex::Real dz)
 {
         pdivu(i,j,k) = -(
-                                  (q1(i+1,j,k,GDU) - q1(i,j,k,GDU))/dx +
-                                  (q2(i,j+1,k,GDV) - q2(i,j,k,GDV))/dy +
-                                  (q3(i,j,k+1,GDW) - q3(i,j,k,GDW))/dz);
+                                  (q1(i+1,j,k,QU) - q1(i,j,k,QU))/dx +
+                                  (q2(i,j+1,k,QV) - q2(i,j,k,QV))/dy +
+                                  (q3(i,j,k+1,QW) - q3(i,j,k,QW))/dz);
 }
 
 // Consup Support Functions

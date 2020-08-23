@@ -186,8 +186,7 @@
 ! :::
 
       subroutine fort_set_method_params( &
-                 dm, numadv, ndiag_in, do_hydro, ppm_type_in, &
-                 use_flattening_in, use_analriem_in, &
+                 dm, numadv, ndiag_in, do_hydro, &
                  use_const_species_in, gamma_in, normalize_species_in, &
                  heat_cool_in, inhomo_reion_in) &
                  bind(C, name = "fort_set_method_params")
@@ -209,9 +208,6 @@
         integer,  intent(in) :: numadv
         integer,  intent(in) :: ndiag_in
         integer,  intent(in) :: do_hydro
-        integer,  intent(in) :: ppm_type_in
-        integer,  intent(in) :: use_flattening_in
-        integer,  intent(in) :: use_analriem_in
         real(rt), intent(in) :: gamma_in
         integer,  intent(in) :: use_const_species_in
         integer,  intent(in) :: normalize_species_in
@@ -226,7 +222,6 @@
         use_const_species = use_const_species_in
 
         iorder = 2
-        difmag = 0.1d0
 
         grav_source_type = 1
         ! We may want to default to 3 when using SDC because then the gravity updates
@@ -267,18 +262,13 @@
            ! conserved state components
            !---------------------------------------------------------------------
     
-           ! NTHERM: number of thermodynamic variables
-           ! NVAR  : number of total variables in initial system
-           ! dm refers to momentum components, '3' refers to (rho, rhoE, rhoe)
-           NTHERM = dm + 3
-
            if (use_const_species .eq. 1) then
               if (nspec .ne. 2 .or. naux .ne. 0) then
                   call amrex_error("Bad nspec or naux in set_method_params")
               end if
-              NVAR = NTHERM + numadv
+              NVAR = 6 + numadv
            else
-              NVAR = NTHERM + nspec + naux + numadv
+              NVAR = 6 + nspec + naux + numadv
            end if
 
            nadv = numadv
@@ -313,56 +303,10 @@
            !   the auxiliary quantities immediately follow the species
            !   so we can loop over species and auxiliary quantities.
    
-           ! QTHERM: number of primitive variables, which includes pressure (+1) 
-           !         but not big E (-1) 
-           ! QVAR  : number of total variables in primitive form
-
-           QTHERM = NTHERM
-           if (use_const_species .eq. 1) then
-              QVAR = QTHERM + numadv
-           else
-              QVAR = QTHERM + nspec + naux + numadv
-           end if
-           NQAUX = 1
            QC = 1
            QGC = -1
-           NQSRC = QVAR
-           NQ = QVAR
            UTEMP = -1
-           QGAME = -1
-           QGAMC = -1
            
-           ! We use these to index into the state "Q"
-           GDRHO = 1;
-           GDU = 2;
-           GDV = 3;
-           GDW = 4;
-           GDPRES = 5;
-           GDGAME = 6;
-           
-           NGDNV = 6
-           
-           ! We use these to index into the state "Q"
-           QRHO   = 1   ! rho
-           QU     = 2   ! u
-           QV     = 3   ! v
-           QW     = 4   ! w
-           QPRES  = 5   ! p
-           QREINT = 6   ! (rho e)
-
-           QNEXT  = QREINT+1
-   
-           QFS = -1
-           if (numadv .ge. 1) then
-             QFA = QNEXT
-             if (use_const_species .eq. 0) &
-                 QFS = QFA + numadv
-           else
-             QFA = -1
-             if (use_const_species .eq. 0) &
-                 QFS = QNEXT
-           end if
-
            ! constant ratio of specific heats
            if (gamma_in .gt. 0.d0) then
               gamma_const = gamma_in
@@ -371,32 +315,10 @@
            end if
            gamma_minus_1 = gamma_const - 1.d0
 
-           ppm_type                     = ppm_type_in
-           use_analriem                 = use_analriem_in
-           use_flattening               = use_flattening_in
            normalize_species            = normalize_species_in
 
            heat_cool_type               = heat_cool_in
            inhomo_reion                 = inhomo_reion_in
-
-           ! Easy indexing for the passively advected quantities.  
-           ! This lets us loop over all four groups (advected, species, aux)
-           ! in a single loop.
-           allocate(qpass_map(QVAR))
-           allocate(upass_map(NVAR))
-           npassive = 0
-           do iadv = 1, nadv
-              upass_map(npassive + iadv) = UFA + iadv - 1
-              qpass_map(npassive + iadv) = QFA + iadv - 1
-           enddo
-           npassive = npassive + nadv
-           if(QFS > -1) then
-              do ispec = 1, nspec+naux
-                 upass_map(npassive + ispec) = UFS + ispec - 1
-                 qpass_map(npassive + ispec) = QFS + ispec - 1
-              enddo
-              npassive = npassive + nspec + naux
-           endif
 
         end if
 

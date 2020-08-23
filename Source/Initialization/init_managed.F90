@@ -18,23 +18,17 @@ allocate(this_z)
 !! meth_params
 allocate(gamma_minus_1,iorder)!,gamma_const)
 allocate(URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX)
-allocate(TEMP_COMP, NE_COMP, ZHI_COMP, NTHERM, NVAR, NDIAG, small_temp, heat_cool_type)
+allocate(TEMP_COMP, NE_COMP, ZHI_COMP, NVAR, NDIAG, small_temp, heat_cool_type)
 
 allocate(nadv, small_pres, small_dens)
-allocate(npassive)
-allocate(QTHERM, NQAUX, QVAR, QC, NQSRC, NQ, UTEMP, QGAME, QGAMC, NGDNV, QTEMP, QFX,  QGC)
-allocate(QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS, GDGAME, GDRHO, GDPRES, GDU, GDV, GDW)
+allocate(QC, NQ, UTEMP, QTEMP, QFX,  QGC)
 
-allocate(difmag)
-!allocate(NGDNV, GDPRES, GDU, GDV, GDW,QVAR)
-allocate(ppm_type,use_flattening,use_const_species,normalize_species,inhomo_reion,grav_source_type)
-allocate(cg_maxiter,cg_tol,cg_blend,fix_mass_flux,use_analriem,use_srcQ_in_trace,use_reset_state)
+allocate(use_const_species,normalize_species,inhomo_reion,grav_source_type)
+allocate(cg_maxiter,cg_tol,cg_blend,fix_mass_flux,use_reset_state)
 cg_maxiter=12
 cg_tol=1.0d-5
 cg_blend=0
 fix_mass_flux=0
-use_analriem=1
-use_srcQ_in_trace=0
 use_reset_state=0
 !!eos
 allocate(XHYDROGEN, YHELIUM)
@@ -156,19 +150,13 @@ deallocate(this_z)
 #endif
 deallocate(gamma_minus_1,iorder)!, gamma_const)
 deallocate(URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX)
-deallocate(TEMP_COMP, NE_COMP, ZHI_COMP, NTHERM, NVAR, NDIAG, small_temp, heat_cool_type)
+deallocate(TEMP_COMP, NE_COMP, ZHI_COMP, NVAR, NDIAG, small_temp, heat_cool_type)
 
 deallocate(nadv, small_pres, small_dens)
-deallocate(npassive)
-deallocate(QTHERM, NQAUX, QVAR, QC, NQSRC, NQ, UTEMP, QGAME, QGAMC, NGDNV, QTEMP, QFX,  QGC)
-deallocate(QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS, GDGAME, GDRHO, GDPRES, GDU, GDV, GDW)
+deallocate(QC, NQ, UTEMP, QTEMP, QFX,  QGC)
 
-deallocate(difmag)
-!deallocate(NGDNV, GDPRES, GDU, GDV, GDW, QVAR)
-deallocate(ppm_type,use_flattening,&
-     use_const_species,normalize_species,inhomo_reion,grav_source_type)
-deallocate(cg_maxiter,cg_tol,cg_blend,fix_mass_flux,&
-     use_analriem,use_srcQ_in_trace,use_reset_state)
+deallocate(use_const_species,normalize_species,inhomo_reion,grav_source_type)
+deallocate(cg_maxiter,cg_tol,cg_blend,fix_mass_flux,use_reset_state)
 #ifdef HEATCOOL
 deallocate(XHYDROGEN,YHELIUM)
 deallocate(TCOOLMIN, TCOOLMAX, TCOOLMAX_R, TCOOLMIN_R, deltaT)

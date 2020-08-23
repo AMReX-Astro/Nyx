@@ -9,7 +9,6 @@ module meth_params_module
 
   implicit none
 
-  real(rt), allocatable :: difmag        ! used only in consup to weight the divu contributin
   integer , allocatable :: iorder        ! used only in uslope and uflaten
 
   real(rt), save, public :: gamma_const
@@ -18,23 +17,18 @@ module meth_params_module
   integer, parameter     :: NHYP    = 4
   integer, parameter     :: MAXADV  = 5
 
-  ! NTHERM: number of thermodynamic variables
-  integer         , allocatable :: NTHERM, NVAR, NDIAG
+  integer         , allocatable :: NVAR, NDIAG
   integer         , allocatable :: URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX
   integer         , allocatable :: TEMP_COMP, NE_COMP, ZHI_COMP
-!  integer         , allocatable :: NGDNV, GDPRES, GDU, GDV, GDW, QVAR
 
-  ! QTHERM: number of primitive variables
-  integer         , allocatable :: QTHERM, NQAUX, QVAR, QC, NQSRC, NQ, UTEMP, QGAME, QGAMC, NGDNV, QTEMP, QFX,  QGC
-  integer         , allocatable :: QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS, GDGAME, GDRHO, GDPRES, GDU, GDV, GDW
+  integer         , allocatable :: QC, NQ, UTEMP, QTEMP, QFX,  QGC
+!   integer         , allocatable :: QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS
   
   integer         , allocatable :: nadv
 
   real(rt)        , allocatable :: small_dens, small_pres  
   real(rt)        , allocatable :: small_temp
 
-  integer,allocatable::ppm_type
-  integer,allocatable::use_flattening
   integer,allocatable::use_const_species
   integer,allocatable::normalize_species
   integer,allocatable::heat_cool_type
@@ -44,26 +38,17 @@ module meth_params_module
   integer,allocatable::cg_tol
   integer,allocatable::cg_blend
   integer,allocatable::fix_mass_flux
-  integer,allocatable::use_analriem
-  integer,allocatable::use_srcQ_in_trace
   integer,allocatable::use_reset_state
   
-  integer, allocatable :: npassive
-  integer, save, allocatable :: qpass_map(:), upass_map(:)
-
 #ifdef AMREX_USE_CUDA_FORTRAN
-  attributes(managed) :: gamma_minus_1, iorder!, gamma_const
+  attributes(managed) :: gamma_minus_1, iorder
   attributes(managed) :: URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX
-  attributes(managed) :: TEMP_COMP, NE_COMP, ZHI_COMP, NTHERM, NVAR, NDIAG, small_temp, heat_cool_type
-!  attributes(managed) :: NGDNV, GDPRES, GDU, GDV, GDW, QVAR
-  attributes(managed) ::  nadv, small_pres, small_dens
-  attributes(managed) ::  npassive, qpass_map, upass_map
-  attributes(managed) ::  QTHERM, NQAUX, QVAR, QC, NQSRC, NQ, UTEMP, QGAME, QGAMC, NGDNV, QTEMP, QFX,  QGC
-  attributes(managed) :: QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS, GDGAME, GDRHO, GDPRES, GDU, GDV, GDW
-  attributes(managed) :: difmag
- attributes(managed) :: ppm_type,use_flattening,use_const_species,normalize_species,inhomo_reion,grav_source_type
- attributes(managed) :: cg_maxiter,cg_tol,cg_blend,fix_mass_flux,use_analriem,use_srcQ_in_trace,use_reset_state
- attributes(managed) :: use_srcQ_in_trace, use_reset_state
+  attributes(managed) :: TEMP_COMP, NE_COMP, ZHI_COMP, NVAR, NDIAG, small_temp, heat_cool_type
+  attributes(managed) :: nadv, small_pres, small_dens
+  attributes(managed) :: QC, NQ, UTEMP, QTEMP, QFX,  QGC
+  attributes(managed) :: use_const_species,normalize_species,inhomo_reion,grav_source_type
+  attributes(managed) :: cg_maxiter,cg_tol,cg_blend,fix_mass_flux,use_reset_state
+  attributes(managed) :: use_reset_state
 #endif
 
 end module meth_params_module
