@@ -8,7 +8,6 @@ trace_ppm(const Box& bx,
           const int idir,
           Array4<Real const> const& q_arr,
           Array4<Real const> const& srcQ,
-          const int nq,
           Array4<Real> const& qm,
           Array4<Real> const& qp,
           const Box& vbx,
@@ -119,10 +118,10 @@ trace_ppm(const Box& bx,
     Real sm;
     Real sp;
 
-    Real Ip[nq][3];
-    Real Im[nq][3];
+    Real Ip[QVAR][3];
+    Real Im[QVAR][3];
 
-    for (int n = 0; n < nq; n++) {
+    for (int n = 0; n < QVAR; n++) {
 
       if (idir == 0) {
         s[im2] = q_arr(i-2,j,k,n);
@@ -153,10 +152,10 @@ trace_ppm(const Box& bx,
     }
 
     // source terms
-    Real Ip_src[nq][3];
-    Real Im_src[nq][3];
+    Real Ip_src[QVAR][3];
+    Real Im_src[QVAR][3];
 
-    for (int n = 0; n < nq; n++) 
+    for (int n = 0; n < QVAR; n++) 
     {
         if (idir == 0) {
           s[im2] = srcQ(i-2,j,k,n);

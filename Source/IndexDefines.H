@@ -12,7 +12,6 @@ enum State_Type_Index {
   Eden      = 4,
   Eint      = 5,
   FirstSpec = 6
-
 };
 
 enum State_Type_UIndex {
@@ -22,7 +21,6 @@ enum State_Type_UIndex {
   UMZ      = 3,
   UEDEN    = 4,
   UEINT    = 5,
-
 };
 
 #define QRHO   0
@@ -31,13 +29,13 @@ enum State_Type_UIndex {
 #define QW     3
 #define QPRES  4
 #define QREINT 5
-#define NGDNV  6
+#define NGDNV  6 // Note this never includes the species 
+#define QVAR   8 // This should be equal to the number of components of U
 
 enum DiagEOS_Type_Index {
   Temp_comp = 0,
   Ne_comp   = 1,
   Zhi_comp  = 2
-
 };
 
 #define NUM_GROW 4
