@@ -85,14 +85,14 @@ Nyx::construct_hydro_source(
 
       const amrex::Real a_dot = (a_new - a_old) / dt;
 
-      NumSpec = S.nComp() - 6;
-      const int NumSpec_loc = NumSpec;
+      const int NumSpec_loc = QVAR - NGDNV;
       const amrex::Real gamma_minus_1_loc = gamma-1.0;
+
+      AMREX_ALWAYS_ASSERT(S.nComp() == QVAR);
 
       // Temporary Fabs needed for Hydro Computation
       for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) 
       {
-
         const amrex::Box& bx = mfi.tilebox();
         const amrex::Box& qbx = amrex::grow(bx, NUM_GROW + nGrowF);
         const amrex::Box& fbx = amrex::grow(bx, nGrowF);
@@ -109,39 +109,33 @@ Nyx::construct_hydro_source(
         auto const& hyd_src = hydro_source.array(mfi);
 
         // Resize Temporary Fabs
-        amrex::FArrayBox q(qbx, S.nComp()), src_q(qbx, S.nComp());
+        amrex::FArrayBox     q(qbx, QVAR);
+        amrex::FArrayBox src_q(qbx, QVAR);
+
         // Use Elixir Construct to steal the Fabs metadata
-        amrex::Elixir qeli = q.elixir();
+        amrex::Elixir     qeli = q.elixir();
         amrex::Elixir src_qeli = src_q.elixir();
 
         // Get Arrays to pass to the gpu.
-        auto const& qarr = q.array();
+        auto const&    qarr =     q.array();
         auto const& srcqarr = src_q.array();
 
         BL_PROFILE_VAR("Nyx::ctoprim()", ctop);
-        amrex::ParallelFor(
-          qbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+        amrex::ParallelFor(qbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept 
+        {
             pc_ctoprim(i, j, k, s, qarr, NumSpec_loc, gamma_minus_1_loc);
-          });
+        });
         BL_PROFILE_VAR_STOP(ctop);
 
-        // TODO GPUize NCSCBC
-        // Imposing Ghost-Cells Navier-Stokes Characteristic BCs if "UserBC" are
-        // used For the theory, see Motheau et al. AIAA J. Vol. 55, No. 10 : pp.
-        // 3399-3408, 2017.
-        //
-        // The user should provide a bcnormal routine in bc_fill_module with
-        // additional optional arguments to temporary fill ghost-cells for
-        // EXT_DIR and to provide target BC values. See the examples.
-
         BL_PROFILE_VAR("Nyx::srctoprim()", srctop);
-        const auto& src_in = sources_for_hydro.array(mfi);
+        const auto&  src_in = sources_for_hydro.array(mfi);
         const auto& grav_in = grav_vector.array(mfi);
-        amrex::ParallelFor(
-          qbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+
+        amrex::ParallelFor(qbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept 
+        {
             pc_srctoprim(i, j, k, qarr, grav_in, src_in, srcqarr,
-            a_dot, NumSpec_loc, gamma_minus_1_loc);
-          });
+                         a_dot, NumSpec_loc, gamma_minus_1_loc);
+        });
         BL_PROFILE_VAR_STOP(srctop);
 
 #ifdef AMREX_USE_GPU
@@ -305,12 +299,10 @@ pc_umdrv(
   auto const& divarr = divu.array();
   auto const& pdivuarr = pdivu.array();
 
-  const int nq    = q.nComp();
-
   BL_PROFILE_VAR("Nyx::umeth()", umeth);
   pc_umeth_3D(
     bx, 
-    q, nq, src_q,
+    q, src_q,
     flx[0], flx[1], flx[2], 
     qec_arr[0], qec_arr[1], qec_arr[2], 
     pdivuarr, dx, dt, a_old, a_new, NumSpec, gamma, gamma_minus_1,

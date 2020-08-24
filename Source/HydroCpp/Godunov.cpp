@@ -25,7 +25,6 @@ void
 pc_umeth_3D(
   Box const& bx,
   Array4<const Real> const& q,
-  const int nq,
   Array4<const Real> const& srcQ, 
   Array4<Real> const& flx1,
   Array4<Real> const& flx2,
@@ -67,8 +66,8 @@ pc_umeth_3D(
   int cdir = 0;
   const amrex::Box& xmbx = growHi(bxg2, cdir, 1);
   const amrex::Box& xflxbx = surroundingNodes(grow(bxg2, cdir, -1), cdir);
-  amrex::FArrayBox qxm(xmbx, nq);
-  amrex::FArrayBox qxp(bxg2, nq);
+  amrex::FArrayBox qxm(xmbx, QVAR);
+  amrex::FArrayBox qxp(bxg2, QVAR);
   amrex::Elixir qxmeli = qxm.elixir();
   amrex::Elixir qxpeli = qxp.elixir();
   auto const& qxmarr = qxm.array();
@@ -78,8 +77,8 @@ pc_umeth_3D(
   cdir = 1;
   const amrex::Box& yflxbx = surroundingNodes(grow(bxg2, cdir, -1), cdir);
   const amrex::Box& ymbx = growHi(bxg2, cdir, 1);
-  amrex::FArrayBox qym(ymbx, nq);
-  amrex::FArrayBox qyp(bxg2, nq);
+  amrex::FArrayBox qym(ymbx, QVAR);
+  amrex::FArrayBox qyp(bxg2, QVAR);
   amrex::Elixir qymeli = qym.elixir();
   amrex::Elixir qypeli = qyp.elixir();
   auto const& qymarr = qym.array();
@@ -89,8 +88,8 @@ pc_umeth_3D(
   cdir = 2;
   const amrex::Box& zmbx = growHi(bxg2, cdir, 1);
   const amrex::Box& zflxbx = surroundingNodes(grow(bxg2, cdir, -1), cdir);
-  amrex::FArrayBox qzm(zmbx, nq);
-  amrex::FArrayBox qzp(bxg2, nq);
+  amrex::FArrayBox qzm(zmbx, QVAR);
+  amrex::FArrayBox qzp(bxg2, QVAR);
   amrex::Elixir qzmeli = qzm.elixir();
   amrex::Elixir qzpeli = qzp.elixir();
   auto const& qzmarr = qzm.array();
@@ -108,19 +107,19 @@ pc_umeth_3D(
       const amrex::Real c = std::sqrt((gamma_minus_1+1.0) * q(i,j,k,QPRES)/q(i,j,k,QRHO));
 
       // X slopes and interp
-      for (int n = 0; n < nq; ++n)
+      for (int n = 0; n < QVAR; ++n)
           slope[n] = plm_slope(i, j, k, n, 0, use_flattening_loc, q, small_pres);
       pc_plm_x(i, j, k, qxmarr, qxparr, srcQ, slope, q, c, a_old, dx, dt, NumSpec, 
                gamma_minus_1, small_dens, small_pres);
 
       // Y slopes and interp
-      for (int n = 0; n < nq; n++)
+      for (int n = 0; n < QVAR; n++)
           slope[n] = plm_slope(i, j, k, n, 1, use_flattening_loc, q, small_pres);
       pc_plm_y(i, j, k, qymarr, qyparr, srcQ, slope, q, c, a_old, dy, dt, NumSpec,
                gamma_minus_1, small_dens, small_pres);
 
       // Z slopes and interp
-      for (int n = 0; n < nq; ++n)
+      for (int n = 0; n < QVAR; ++n)
           slope[n] = plm_slope(i, j, k, n, 2, use_flattening_loc, q, small_pres);
       pc_plm_z(i, j, k, qzmarr, qzparr, srcQ, slope, q, c, a_old, dz, dt, NumSpec,
                gamma_minus_1, small_dens, small_pres);
@@ -137,7 +136,7 @@ pc_umeth_3D(
       int idir = 0;
       trace_ppm(bxg2,
                 idir,
-                q, srcQ, // nq,
+                q, srcQ, 
                 qxmarr, qxparr,
                 bxg2, dt, del, gamma,
                 small_dens, small_pres,
@@ -148,7 +147,7 @@ pc_umeth_3D(
       idir = 1;
       trace_ppm(bxg2,
                 idir,
-                q, srcQ, // nq,
+                q, srcQ,
                 qymarr, qyparr,
                 bxg2, dt, del, gamma,
                 small_dens, small_pres,
@@ -159,7 +158,7 @@ pc_umeth_3D(
       idir = 2;
       trace_ppm(bxg2,
                 idir,
-                q, srcQ, // nq,
+                q, srcQ,
                 qzmarr, qzparr,
                 bxg2, dt, del, gamma,
                 small_dens, small_pres,
@@ -223,16 +222,16 @@ pc_umeth_3D(
   cdir = 0;
   const amrex::Box& txbx = grow(bxg1, cdir, 1);
   const amrex::Box& txbxm = growHi(txbx, cdir, 1);
-  amrex::FArrayBox qxym(txbxm, nq);
+  amrex::FArrayBox qxym(txbxm, QVAR);
   amrex::Elixir qxymeli = qxym.elixir();
-  amrex::FArrayBox qxyp(txbx, nq);
+  amrex::FArrayBox qxyp(txbx, QVAR);
   amrex::Elixir qxypeli = qxyp.elixir();
   auto const& qmxy = qxym.array();
   auto const& qpxy = qxyp.array();
 
-  amrex::FArrayBox qxzm(txbxm, nq);
+  amrex::FArrayBox qxzm(txbxm, QVAR);
   amrex::Elixir qxzmeli = qxzm.elixir();
-  amrex::FArrayBox qxzp(txbx, nq);
+  amrex::FArrayBox qxzp(txbx, QVAR);
   amrex::Elixir qxzpeli = qxzp.elixir();
   auto const& qmxz = qxzm.array();
   auto const& qpxz = qxzp.array();
@@ -283,10 +282,10 @@ pc_umeth_3D(
   cdir = 1;
   const amrex::Box& tybx = grow(bxg1, cdir, 1);
   const amrex::Box& tybxm = growHi(tybx, cdir, 1);
-  amrex::FArrayBox qyxm(tybxm, nq);
-  amrex::FArrayBox qyxp(tybx, nq);
-  amrex::FArrayBox qyzm(tybxm, nq);
-  amrex::FArrayBox qyzp(tybx, nq);
+  amrex::FArrayBox qyxm(tybxm, QVAR);
+  amrex::FArrayBox qyxp(tybx, QVAR);
+  amrex::FArrayBox qyzm(tybxm, QVAR);
+  amrex::FArrayBox qyzp(tybx, QVAR);
   amrex::Elixir qyxmeli = qyxm.elixir(), qyxpeli = qyxp.elixir();
   amrex::Elixir qyzmeli = qyzm.elixir(), qyzpeli = qyzp.elixir();
   auto const& qmyx = qyxm.array();
@@ -343,10 +342,10 @@ pc_umeth_3D(
   cdir = 2;
   const amrex::Box& tzbx = grow(bxg1, cdir, 1);
   const amrex::Box& tzbxm = growHi(tzbx, cdir, 1);
-  amrex::FArrayBox qzxm(tzbxm, nq);
-  amrex::FArrayBox qzxp(tzbx, nq);
-  amrex::FArrayBox qzym(tzbxm, nq);
-  amrex::FArrayBox qzyp(tzbx, nq);
+  amrex::FArrayBox qzxm(tzbxm, QVAR);
+  amrex::FArrayBox qzxp(tzbx, QVAR);
+  amrex::FArrayBox qzym(tzbxm, QVAR);
+  amrex::FArrayBox qzyp(tzbx, QVAR);
   amrex::Elixir qzxmeli = qzxm.elixir(), qzxpeli = qzxp.elixir();
   amrex::Elixir qzymeli = qzym.elixir(), qzypeli = qzyp.elixir();
 
@@ -403,8 +402,8 @@ pc_umeth_3D(
   qzypeli.clear();
 
   // Temp Fabs for Final Fluxes
-  amrex::FArrayBox qmfab(bxg2, nq);
-  amrex::FArrayBox qpfab(bxg1, nq);
+  amrex::FArrayBox qmfab(bxg2, QVAR);
+  amrex::FArrayBox qpfab(bxg1, QVAR);
   amrex::Elixir qmeli = qmfab.elixir();
   amrex::Elixir qpeli = qpfab.elixir();
   auto const& qm = qmfab.array();

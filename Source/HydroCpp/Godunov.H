@@ -189,13 +189,12 @@ pc_cmpflx(
 
   amrex::Real flxrho = flx(i, j, k, URHO);
   for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
-    int nqp = n;
     if (ustar > 0.0)
-      flx(i, j, k, n) = flxrho * ql(i, j, k, nqp);
+      flx(i, j, k, n) = flxrho * ql(i, j, k, n);
     else if (ustar < 0.0)
-      flx(i, j, k, n) = flxrho * qr(i, j, k, nqp);
+      flx(i, j, k, n) = flxrho * qr(i, j, k, n);
     else
-      flx(i, j, k, n) = flxrho * 0.50 * (ql(i, j, k, nqp) + qr(i, j, k, nqp));
+      flx(i, j, k, n) = flxrho * 0.50 * (ql(i, j, k, n) + qr(i, j, k, n));
   }
 }
 
@@ -235,17 +234,16 @@ pc_transx1(
 
   // Update passive variables
   for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
-    int nqp = n;
     compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n));
     rr = qyp(i, j, k, QRHO);
     rrnew = rr - flxrho;
-    compo = rr * qyp(i, j, k, nqp) - compn;
-    qp(i, j, k, nqp) = compo / rrnew;
+    compo = rr * qyp(i, j, k, n) - compn;
+    qp(i, j, k, n) = compo / rrnew;
 
     rr = qym(i, j + 1, k, QRHO);
     rrnew = rr - flxrho;
-    compo = rr * qym(i, j + 1, k, nqp) - compn;
-    qm(i, j + 1, k, nqp) = compo / rrnew;
+    compo = rr * qym(i, j + 1, k, n) - compn;
+    qm(i, j + 1, k, n) = compo / rrnew;
   }
   // Update hydro vars
 
@@ -387,17 +385,16 @@ pc_transy1(
 
   // -  Update Passive Variables
   for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
-    int nqp = n;
     compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
     rr = qxp(i, j, k, QRHO);
     rrnew = rr - flxrho;
-    compo = rr * qxp(i, j, k, nqp) - compn;
-    qp(i, j, k, nqp) = compo / rrnew;
+    compo = rr * qxp(i, j, k, n) - compn;
+    qp(i, j, k, n) = compo / rrnew;
 
     rr = qxm(i + 1, j, k, QRHO);
     rrnew = rr - flxrho;
-    compo = rr * qxm(i + 1, j, k, nqp) - compn;
-    qm(i + 1, j, k, nqp) = compo / rrnew;
+    compo = rr * qxm(i + 1, j, k, n) - compn;
+    qm(i + 1, j, k, n) = compo / rrnew;
   }
 
   //- Update hydro vars -
@@ -538,17 +535,16 @@ pc_transx2(
 
   // -  Update Passive Variables
   for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
-    int nqp = n;
     compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n));
     rr = qzp(i, j, k, QRHO);
     rrnew = rr - flxrho;
-    compo = rr * qzp(i, j, k, nqp) - compn;
-    qp(i, j, k, nqp) = compo / rrnew;
+    compo = rr * qzp(i, j, k, n) - compn;
+    qp(i, j, k, n) = compo / rrnew;
 
     rr = qzm(i, j, k + 1, QRHO);
     rrnew = rr - flxrho;
-    compo = rr * qzm(i, j, k + 1, nqp) - compn;
-    qm(i, j, k + 1, nqp) = compo / rrnew;
+    compo = rr * qzm(i, j, k + 1, n) - compn;
+    qm(i, j, k + 1, n) = compo / rrnew;
   }
   //- Update hydro vars -
 
@@ -687,17 +683,16 @@ pc_transy2(
 
   // -  Update Passive Variables
   for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
-    int nqp = n;
     compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
     rr = qzp(i, j, k, QRHO);
     rrnew = rr - flxrho;
-    compo = rr * qzp(i, j, k, nqp) - compn;
-    qp(i, j, k, nqp) = compo / rrnew;
+    compo = rr * qzp(i, j, k, n) - compn;
+    qp(i, j, k, n) = compo / rrnew;
 
     rr = qzm(i, j, k + 1, QRHO);
     rrnew = rr - flxrho;
-    compo = rr * qzm(i, j, k + 1, nqp) - compn;
-    qm(i, j, k + 1, nqp) = compo / rrnew;
+    compo = rr * qzm(i, j, k + 1, n) - compn;
+    qm(i, j, k + 1, n) = compo / rrnew;
   }
   //- Update hydro vars -
 
@@ -838,17 +833,16 @@ pc_transz1(
 
   // -  Update Passive Variables
   for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
-    int nqp = n;
     compn = cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
     rr = qxp(i, j, k, QRHO);
     rrnew = rr - flxrho;
-    compo = rr * qxp(i, j, k, nqp) - compn;
-    qp(i, j, k, nqp) = compo / rrnew;
+    compo = rr * qxp(i, j, k, n) - compn;
+    qp(i, j, k, n) = compo / rrnew;
 
     rr = qxm(i + 1, j, k, QRHO);
     rrnew = rr - flxrho;
-    compo = rr * qxm(i + 1, j, k, nqp) - compn;
-    qm(i + 1, j, k, nqp) = compo / rrnew;
+    compo = rr * qxm(i + 1, j, k, n) - compn;
+    qm(i + 1, j, k, n) = compo / rrnew;
   }
 
   //- Update hydro vars -
@@ -989,17 +983,16 @@ pc_transz2(
 
   // Update passive variables
   for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
-    int nqp = n;
     compn = cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
     rr = qyp(i, j, k, QRHO);
     rrnew = rr - flxrho;
-    compo = rr * qyp(i, j, k, nqp) - compn;
-    qp(i, j, k, nqp) = compo / rrnew;
+    compo = rr * qyp(i, j, k, n) - compn;
+    qp(i, j, k, n) = compo / rrnew;
 
     rr = qym(i, j + 1, k, QRHO);
     rrnew = rr - flxrho;
-    compo = rr * qym(i, j + 1, k, nqp) - compn;
-    qm(i, j + 1, k, nqp) = compo / rrnew;
+    compo = rr * qym(i, j + 1, k, n) - compn;
+    qm(i, j + 1, k, n) = compo / rrnew;
   }
 
   // Update hydro vars
@@ -1150,15 +1143,14 @@ pc_transxy(
   rrnewl = rrl - flxrho;
   rrnewr = rrr - flxrho;
   for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
-    int nqp = n;
     compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n)) +
             cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
     // qp
-    compo = rrr * qzp(i, j, k, nqp) - compn;
-    qp(i, j, k, nqp) = compo / rrnewr;
+    compo = rrr * qzp(i, j, k, n) - compn;
+    qp(i, j, k, n) = compo / rrnewr;
     // qm
-    compo = rrl * qzm(i, j, k + 1, nqp) - compn;
-    qm(i, j, k + 1, nqp) = compo / rrnewl;
+    compo = rrl * qzm(i, j, k + 1, n) - compn;
+    qm(i, j, k + 1, n) = compo / rrnewl;
   }
 
   // Update hydro vars
@@ -1312,15 +1304,14 @@ pc_transxz(
   rrnewl = rrl - flxrho;
   rrnewr = rrr - flxrho;
   for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
-    int nqp = n;
     compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n)) +
             cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
     // qp
-    compo = rrr * qyp(i, j, k, nqp) - compn;
-    qp(i, j, k, nqp) = compo / rrnewr;
+    compo = rrr * qyp(i, j, k, n) - compn;
+    qp(i, j, k, n) = compo / rrnewr;
     // qm
-    compo = rrl * qym(i, j + 1, k, nqp) - compn;
-    qm(i, j + 1, k, nqp) = compo / rrnewl;
+    compo = rrl * qym(i, j + 1, k, n) - compn;
+    qm(i, j + 1, k, n) = compo / rrnewl;
   }
 
   // Update hydro vars
@@ -1474,15 +1465,14 @@ pc_transyz(
   rrnewr = rrr - flxrho;
 
   for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
-    int nqp = n;
     compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n)) +
             cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
     // qp
-    compo = rrr * qxp(i, j, k, nqp) - compn;
-    qp(i, j, k, nqp) = compo / rrnewr;
+    compo = rrr * qxp(i, j, k, n) - compn;
+    qp(i, j, k, n) = compo / rrnewr;
     // qm
-    compo = rrl * qxm(i + 1, j, k, nqp) - compn;
-    qm(i + 1, j, k, nqp) = compo / rrnewl;
+    compo = rrl * qxm(i + 1, j, k, n) - compn;
+    qm(i + 1, j, k, n) = compo / rrnewl;
   }
 
   // Update hydro vars
@@ -1658,7 +1648,6 @@ pc_artif_visc(
 void pc_umeth_3D(
   amrex::Box const& bx,
   amrex::Array4<const amrex::Real> const& q,
-  const int nq,
   amrex::Array4<const amrex::Real> const& srcQ,
   amrex::Array4<amrex::Real> const& flx1,
   amrex::Array4<amrex::Real> const& flx2,
