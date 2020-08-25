@@ -1,3 +1,4 @@
+CEXE_headers += Prob.H
 F90EXE_sources += Prob_${DIM}d.F90
 f90EXE_sources += bc_fill_${DIM}d.f90
 f90EXE_sources += probdata.f90
