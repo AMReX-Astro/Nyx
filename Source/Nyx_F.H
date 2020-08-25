@@ -41,8 +41,7 @@ extern "C"
      const amrex::Real* dx, amrex::Real* dt, amrex::Real comoving_a);
 
   void fort_set_method_params
-    (const int& dm, const int& NumAdv, const int& Ndiag, const int& do_hydro,
-     const int& use_const_species,
+    (const int& Ndiag, const int& do_hydro, const int& use_const_species,
      const amrex::Real& gamma_in, const int& normalize_species,
      const int& heat_cool_type, const int& inhomo_reion);
 
@@ -67,8 +66,6 @@ extern "C"
   void fort_get_spec_names(int* spec_names, int* ispec, int* len);
 
   void fort_get_aux_names(int* aux_names, int* iaux, int* len);
-
-  void fort_get_UFS(int* ufs);
 
   void fort_set_eos_params(const amrex::Real& h_species_in, const amrex::Real& he_species_in);
 

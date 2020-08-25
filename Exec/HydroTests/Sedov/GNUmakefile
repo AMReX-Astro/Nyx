@@ -23,6 +23,8 @@ DEBUG     = FALSE
 DIM      = 3
 USE_GRAV = FALSE
 
+USE_CONST_SPECIES = TRUE
+
 USE_OWN_BCS = TRUE
 
 Bpack := ./Make.package

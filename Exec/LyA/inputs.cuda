@@ -8,8 +8,7 @@ amrex.regtest_reduction = 1
 
 nyx.add_ext_src      = 0
 
-# Didn't exhaustively test limiters for species
-nyx.use_const_species=1
+# Note we now set USE_CONST_SPECIES = TRUE in the GNUmakefile
 nyx.h_species=.76
 nyx.he_species=.24
 

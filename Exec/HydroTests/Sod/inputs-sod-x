@@ -4,6 +4,10 @@ stop_time =  0.2
 
 amr.checkpoint_files_output = 0
 
+# Note we now set USE_CONST_SPECIES = TRUE in the GNUmakefile
+nyx.h_species=.76
+nyx.he_species=.24
+
 nyx.small_temp = 1.e-4
 nyx.small_dens = 1.e-6
 

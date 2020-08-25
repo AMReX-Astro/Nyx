@@ -405,11 +405,6 @@ void Nyx::initcosmo()
         S_new.mult(vel_fac[2], Zmom, 1, S_new.nGrow());
         MultiFab::Multiply(S_new, S_new, Density, Zmom, 1, S_new.nGrow());
 
-        // Convert (rho X)_i to X_i before calling init_e_from_T
-//      if (use_const_species == 0)
-//          for (int i = 0; i < NumSpec; i++) 
-//              MultiFab::Divide(S_new, S_new, Density, FirstSpec+i, 1, 0);
-
         Real tempInit = 0.021*(1.0+redshift)*(1.0+redshift);
 
         int ns = S_new.nComp();
@@ -422,8 +417,8 @@ void Nyx::initcosmo()
 
         init_e_from_T(old_a);
 
+#ifndef CONST_SPECIES
         // Convert X_i to (rho X)_i
-        if (use_const_species == 0)
         {
            S_new.setVal(0.75, FirstSpec);
            S_new.setVal(0.25, FirstSpec+1);
@@ -433,7 +428,7 @@ void Nyx::initcosmo()
               MultiFab::Multiply(S_new, S_new, Density, FirstSpec+i, 1, 0);
            }
         }
-
+#endif
     }
     else
     {

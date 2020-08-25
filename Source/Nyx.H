@@ -726,7 +726,9 @@ public:
 
     static int Do_Hydro();
 
+#ifndef CONST_SPECIES
     void enforce_nonnegative_species(amrex::MultiFab& S_new);
+#endif
     void enforce_consistent_e(amrex::MultiFab& S);
 
     // Synchronize (rho e) and (rho E) so they are consistent with each other
@@ -893,7 +895,6 @@ protected:
 
     static int nghost_state;
     static int allow_untagging;
-    static int use_const_species;
     static int normalize_species;
     static int do_special_tagging;
     static int ppm_type;

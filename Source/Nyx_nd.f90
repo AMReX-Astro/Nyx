@@ -186,8 +186,8 @@
 ! :::
 
       subroutine fort_set_method_params( &
-                 dm, numadv, ndiag_in, do_hydro, &
-                 use_const_species_in, gamma_in, normalize_species_in, &
+                 ndiag_in, do_hydro, use_const_species, &
+                 gamma_in, normalize_species_in, &
                  heat_cool_in, inhomo_reion_in) &
                  bind(C, name = "fort_set_method_params")
 
@@ -204,12 +204,10 @@
 
         implicit none
 
-        integer,  intent(in) :: dm
-        integer,  intent(in) :: numadv
         integer,  intent(in) :: ndiag_in
         integer,  intent(in) :: do_hydro
+        integer,  intent(in) :: use_const_species
         real(rt), intent(in) :: gamma_in
-        integer,  intent(in) :: use_const_species_in
         integer,  intent(in) :: normalize_species_in
         integer,  intent(in) :: heat_cool_in
         integer,  intent(in) :: inhomo_reion_in
@@ -218,8 +216,6 @@
         integer             :: UNEXT
 
         integer             :: iadv, ispec
-
-        use_const_species = use_const_species_in
 
         iorder = 2
 
@@ -241,8 +237,6 @@
            UMZ   = -1
            UEDEN = -1
            UEINT = -1
-           UFA   = -1
-           UFS   = -1
 
            TEMP_COMP = -1
              NE_COMP = -1
@@ -266,12 +260,10 @@
               if (nspec .ne. 2 .or. naux .ne. 0) then
                   call amrex_error("Bad nspec or naux in set_method_params")
               end if
-              NVAR = 6 + numadv
+              NVAR = 6
            else
-              NVAR = 6 + nspec + naux + numadv
+              NVAR = 6 + nspec
            end if
-
-           nadv = numadv
 
            ! We use these to index into the state "U"
            URHO  = 1
@@ -282,31 +274,10 @@
            UEINT = 6
            UNEXT = 7
 
-           UFA   = -1
-           UFS   = -1
-           if (numadv .ge. 1) then
-               UFA = UNEXT 
-               if (use_const_species .eq. 0) then
-                   UFS = UFA + numadv
-               end if
-           else
-             if (use_const_species .eq. 0) then
-                 UFS = UNEXT
-             end if
-           end if
-
            !---------------------------------------------------------------------
            ! primitive state components
            !---------------------------------------------------------------------
 
-           ! IMPORTANT: if use_const_species = 0, then we assume that 
-           !   the auxiliary quantities immediately follow the species
-           !   so we can loop over species and auxiliary quantities.
-   
-           QC = 1
-           QGC = -1
-           UTEMP = -1
-           
            ! constant ratio of specific heats
            if (gamma_in .gt. 0.d0) then
               gamma_const = gamma_in

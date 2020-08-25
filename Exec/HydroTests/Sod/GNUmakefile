@@ -19,6 +19,8 @@ DEBUG     = FALSE
 DIM      = 3
 USE_GRAV = FALSE
 
+USE_CONST_SPECIES = TRUE
+
 Bpack := ./Make.package
 Blocs := .
 

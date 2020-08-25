@@ -17,6 +17,8 @@ DIM      = 3
 USE_GRAV = FALSE
 USE_HEATCOOL = FALSE
 
+USE_CONST_SPECIES = TRUE
+
 #USE_CGS = TRUE
 
 Bpack := ./Make.package

@@ -17,13 +17,12 @@ use reion_aux_module
 allocate(this_z)
 !! meth_params
 allocate(gamma_minus_1,iorder)!,gamma_const)
-allocate(URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX)
+allocate(URHO, UMX, UMY, UMZ, UEDEN, UEINT)
 allocate(TEMP_COMP, NE_COMP, ZHI_COMP, NVAR, NDIAG, small_temp, heat_cool_type)
 
-allocate(nadv, small_pres, small_dens)
-allocate(QC, NQ, UTEMP, QTEMP, QFX,  QGC)
+allocate(small_pres, small_dens)
 
-allocate(use_const_species,normalize_species,inhomo_reion,grav_source_type)
+allocate(normalize_species,inhomo_reion,grav_source_type)
 allocate(cg_maxiter,cg_tol,cg_blend,fix_mass_flux,use_reset_state)
 cg_maxiter=12
 cg_tol=1.0d-5
@@ -149,13 +148,12 @@ deallocate(xacc,vode_rtol,vode_atol_scaled)
 deallocate(this_z)
 #endif
 deallocate(gamma_minus_1,iorder)!, gamma_const)
-deallocate(URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFA, UFS, UFX)
+deallocate(URHO, UMX, UMY, UMZ, UEDEN, UEINT)
 deallocate(TEMP_COMP, NE_COMP, ZHI_COMP, NVAR, NDIAG, small_temp, heat_cool_type)
 
-deallocate(nadv, small_pres, small_dens)
-deallocate(QC, NQ, UTEMP, QTEMP, QFX,  QGC)
+deallocate(small_pres, small_dens)
 
-deallocate(use_const_species,normalize_species,inhomo_reion,grav_source_type)
+deallocate(normalize_species,inhomo_reion,grav_source_type)
 deallocate(cg_maxiter,cg_tol,cg_blend,fix_mass_flux,use_reset_state)
 #ifdef HEATCOOL
 deallocate(XHYDROGEN,YHELIUM)

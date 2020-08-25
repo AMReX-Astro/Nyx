@@ -88,6 +88,7 @@ Nyx::construct_hydro_source(
       const int NumSpec_loc = QVAR - NGDNV;
       const amrex::Real gamma_minus_1_loc = gamma-1.0;
 
+      if (S.nComp() != QVAR) amrex::Print() << "NCOMP QVAR " << S.nComp() << " " << QVAR << std::endl;
       AMREX_ALWAYS_ASSERT(S.nComp() == QVAR);
 
       // Temporary Fabs needed for Hydro Computation

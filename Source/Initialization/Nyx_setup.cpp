@@ -160,29 +160,27 @@ Nyx::hydro_setup()
         NDIAG_C  = 2;
     }
 
-    int dm = BL_SPACEDIM;
-
-    if (use_const_species == 0)
-    {
-        // Get the number of species from the network model.
-        fort_get_num_spec(&NumSpec);
-        if (NumSpec > 0)
-        {
-            cnt += NumSpec;
-        }
-    }
-    else
-    {
-        NumSpec = 0;
-    }
+#ifdef CONST_SPECIES
+    NumSpec = 0;
+#else
+    // Get the number of species from the network model.
+    fort_get_num_spec(&NumSpec);
+    if (NumSpec > 0)
+        cnt += NumSpec;
+#endif
 
     NUM_STATE = cnt;
 
     // Note that we must set NDIAG_C before we call set_method_params because
     // we use the C++ value to set the Fortran value
+    int use_const_species;
+#ifdef CONST_SPECIES
+    use_const_species = 1;
+#else
+    use_const_species = 0;
+#endif
     fort_set_method_params
-        (dm, 0, NDIAG_C, do_hydro, 
-         use_const_species, gamma, normalize_species,
+        (NDIAG_C, do_hydro, use_const_species, gamma, normalize_species,
          heat_cool_type, inhomo_reion);
 
 #ifdef HEATCOOL
@@ -190,8 +188,9 @@ Nyx::hydro_setup()
     amrex::Gpu::streamSynchronize();
 #endif
 
-    if (use_const_species == 1)
-        fort_set_eos_params(h_species, he_species);
+#ifdef CONST_SPECIES
+    fort_set_eos_params(h_species, he_species);
+#endif
 
     Interpolater* interp = &cell_cons_interp;
 
@@ -275,16 +274,15 @@ Nyx::hydro_setup()
         std::cout << '\n';
     }
 
-    if (use_const_species == 0)
+#ifndef CONST_SPECIES
+    for (int i = 0; i < NumSpec; ++i)
     {
-        for (int i = 0; i < NumSpec; ++i)
-        {
-            cnt++;
-            set_scalar_bc(bc,phys_bc);
-            bcs[cnt] = bc;
-            name[cnt] = "rho_" + spec_names[i];
-         }
-    }
+        cnt++;
+        set_scalar_bc(bc,phys_bc);
+        bcs[cnt] = bc;
+        name[cnt] = "rho_" + spec_names[i];
+     }
+#endif
 
     desc_lst.setComponent(State_Type, Density, name, bcs,
                           BndryFunc(denfill,hypfill));
@@ -402,25 +400,25 @@ Nyx::hydro_setup()
                    grow_box_by_one);
     derive_lst.addComponent("StateErr", desc_lst,   State_Type, Density, 1);
     derive_lst.addComponent("StateErr", desc_lst, DiagEOS_Type, Temp_comp, 1);
-    if (use_const_species == 0)
-        derive_lst.addComponent("StateErr", desc_lst, State_Type, FirstSpec, 1);
+#ifndef CONST_SPECIES  
+    derive_lst.addComponent("StateErr", desc_lst, State_Type, FirstSpec, 1);
+#endif
 
     //
     // X from rhoX
     //
-    if (use_const_species == 0)
+#ifndef CONST_SPECIES  
+    for (int i = 0; i < NumSpec; i++)
     {
-        for (int i = 0; i < NumSpec; i++)
-        {
-            string spec_string = "X(" + spec_names[i] + ")";
+        string spec_string = "X(" + spec_names[i] + ")";
 
-            derive_lst.add(spec_string, IndexType::TheCellType(), 1,
-                           derspec, the_same_box);
-            derive_lst.addComponent(spec_string, desc_lst, State_Type, Density, 1);
-            derive_lst.addComponent(spec_string, desc_lst, State_Type,
-                                    FirstSpec + i, 1);
-        }
+        derive_lst.add(spec_string, IndexType::TheCellType(), 1,
+                       derspec, the_same_box);
+        derive_lst.addComponent(spec_string, desc_lst, State_Type, Density, 1);
+        derive_lst.addComponent(spec_string, desc_lst, State_Type,
+                                FirstSpec + i, 1);
     }
+#endif
 
     derive_lst.add("forcex", IndexType::TheCellType(), 1,
                    derforcex, the_same_box);
@@ -560,17 +558,16 @@ Nyx::hydro_setup()
     derive_lst.add("Rank", IndexType::TheCellType(), 1,
                    dernull, grow_box_by_one);
 
-    if (use_const_species == 0)
+#ifndef CONST_SPECIES  
+    for (int i = 0; i < NumSpec; i++)
     {
-        for (int i = 0; i < NumSpec; i++)
-        {
-            derive_lst.add(spec_names[i], IndexType::TheCellType(), 1,
-                           derspec, the_same_box);
-            derive_lst.addComponent(spec_names[i], desc_lst, State_Type, Density, 1);
-            derive_lst.addComponent(spec_names[i], desc_lst, State_Type,
-                                    FirstSpec + i, 1);
-        }
+        derive_lst.add(spec_names[i], IndexType::TheCellType(), 1,
+                       derspec, the_same_box);
+        derive_lst.addComponent(spec_names[i], desc_lst, State_Type, Density, 1);
+        derive_lst.addComponent(spec_names[i], desc_lst, State_Type,
+                                FirstSpec + i, 1);
     }
+#endif
 }
 #endif
 
@@ -578,16 +575,18 @@ Nyx::hydro_setup()
 void
 Nyx::no_hydro_setup()
 {
-    int dm = BL_SPACEDIM;
-
     NUM_STATE = 1;
 
     int NDIAG_C = -1;
 
-    fort_set_method_params
-        (dm, 0, NDIAG_C, do_hydro, 
-         use_const_species, gamma, normalize_species,
-         heat_cool_type, inhomo_reion);
+    int use_const_species;
+#ifdef CONST_SPECIES
+    use_const_species = 1;
+#else
+    use_const_species = 0;
+#endif
+    fort_set_method_params (NDIAG_C, do_hydro, use_const_species,
+                            gamma, normalize_species, heat_cool_type, inhomo_reion);
 
 #ifdef HEATCOOL
     fort_tabulate_rates();

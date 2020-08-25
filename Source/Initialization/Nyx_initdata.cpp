@@ -9,6 +9,7 @@
 #ifdef CXX_PROB
 #include <Prob.H>
 #endif
+
 using namespace amrex;
 
 namespace
@@ -442,10 +443,6 @@ Nyx::init_from_plotfile ()
     comoving_a_post_restart(parent->theRestartPlotFile());
 
 #ifndef NO_HYDRO
-    // Sanity check
-    //if (use_const_species == 0)
-    //    amrex::Error("init_from_plotfile assumes we are using constant species");
-
     for (int lev = 0; lev <= parent->finestLevel(); ++lev)
     {
         Nyx& nyx_lev = get_level(lev);
@@ -485,15 +482,19 @@ Nyx::check_initial_species ()
     MultiFab&   S_new    = get_new_data(State_Type);
 
     int iden  = Density;
-    int iufs  = FirstSpec;
-    int nspec = NumSpec;
 
     ReduceOps<ReduceOpMax> reduce_op;
     ReduceData<Real> reduce_data(reduce_op);
     using ReduceTuple = typename decltype(reduce_data)::Type;
 
-    if (use_const_species != 1 && iufs > 0)
+#ifdef CONST_SPECIES
+    if (amrex::Math::abs(1.0 - h_species - he_species) > 1.e-8)
+        amrex::Abort("Error:: Failed check of initial species summing to 1");
+#else
+    if (FirstSpec > 0)
     {
+        int iufs = FirstSpec;
+        int nspec = NumSpec;
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
@@ -522,11 +523,8 @@ Nyx::check_initial_species ()
         ParallelDescriptor::ReduceRealMax(amrex::get<0>(hv));
         if (get<0>(hv) > 1.e-8)
             amrex::Abort("Error:: Failed check of initial species summing to 1");
-
-    } else {
-      if (amrex::Math::abs(1.0 - h_species - he_species) > 1.e-8)
-          amrex::Abort("Error:: Failed check of initial species summing to 1");
     }
+#endif
 }
 
 void

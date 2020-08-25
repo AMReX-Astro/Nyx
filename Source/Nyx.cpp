@@ -167,7 +167,6 @@ int Nyx::do_forcing =  0;
 
 int Nyx::nghost_state       = 1;
 int Nyx::allow_untagging    = 0;
-int Nyx::use_const_species  = 0;
 int Nyx::normalize_species  = 0;
 int Nyx::do_special_tagging = 0;
 int Nyx::ppm_type           = 1;
@@ -512,7 +511,6 @@ Nyx::read_params ()
     pp_nyx.query("shrink_to_fit", shrink_to_fit);
     pp_nyx.query("use_typical_steps", use_typical_steps);
     pp_nyx.query("allow_untagging", allow_untagging);
-    pp_nyx.query("use_const_species", use_const_species);
     pp_nyx.query("normalize_species", normalize_species);
     pp_nyx.query("ppm_type", ppm_type);
     pp_nyx.query("use_analriem", use_analriem);
@@ -525,18 +523,15 @@ Nyx::read_params ()
    
     if (do_hydro == 1)
     {
-        if (do_hydro == 1 && use_const_species == 1)
-        {
-           pp_nyx.get("h_species" ,  h_species);
-           pp_nyx.get("he_species", he_species);
-           fort_set_xhydrogen(h_species);
-           if (ParallelDescriptor::IOProcessor())
-           {
-               std::cout << "Nyx::setting species concentrations to "
-                         << h_species << " and " << he_species
-                         << " in the hydro and in the EOS " << std::endl;
-           }
-        }
+#ifdef CONST_SPECIES
+        pp_nyx.get("h_species" ,  h_species);
+        pp_nyx.get("he_species", he_species);
+        fort_set_xhydrogen(h_species);
+
+        amrex::Print() << "Nyx::setting species concentrations to "
+                       << h_species << " and " << he_species
+                       << " in the hydro and in the EOS " << std::endl;
+#endif
 
         // Make sure ppm_type is set correctly.
         if (ppm_type != 0 && ppm_type != 1)
@@ -1513,7 +1508,9 @@ Nyx::post_timestep (int iteration)
             average_down();
         
         // This needs to be done after any changes to the state from refluxing.
+#ifndef CONST_SPECIES
         enforce_nonnegative_species(S_new_crse);
+#endif
 
 #ifdef GRAVITY
 #ifdef CGRAV
@@ -1831,7 +1828,9 @@ Nyx::set_small_values ()
        //
        // Get the number of species from the network model.
        //
+#ifndef CONST_SPECIES
        fort_get_num_spec(&NumSpec);
+#endif
 
        fort_set_small_values
             (&average_gas_density, &average_temperature,
@@ -2295,14 +2294,15 @@ Nyx::average_down ()
 }
 
 #ifndef NO_HYDRO
-
+#ifndef CONST_SPECIES
 void
 Nyx::enforce_nonnegative_species (MultiFab& S_new)
 {
     BL_PROFILE("Nyx::enforce_nonnegative_species()");
     Real eps = -1.0e-16;
     int NumSpec = S_new.nComp()-FirstSpec;
-    if (use_const_species != 1 && NumSpec > 0)
+
+    if (NumSpec > 0)
     {
 #ifdef _OPENMP
 #pragma omp parallel
@@ -2375,6 +2375,7 @@ Nyx::enforce_nonnegative_species (MultiFab& S_new)
         }
     }
 }
+#endif
 
 void
 Nyx::enforce_consistent_e (MultiFab& S)

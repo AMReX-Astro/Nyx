@@ -121,12 +121,14 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
         //Unclear whether this should be part of previous ParallelFor
         amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept 
         {
-			do_enforce_minimum_density(i, j, k, uout, lnum_spec, a_new, lgamma_minus_1, lsmall_dens, lsmall_temp);
+            do_enforce_minimum_density(i, j, k, uout, lnum_spec, a_new, lgamma_minus_1, lsmall_dens, lsmall_temp);
         });
 
     }
 
+#ifndef CONST_SPECIES
     enforce_nonnegative_species(S_new);
+#endif
 
     const int grav_source_type = 1;
     for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) 

@@ -61,7 +61,9 @@ Nyx::strang_hydro (Real time,
     // It's possible for interpolation to create very small negative values for
     // species so we make sure here that all species are non-negative after this
     // point
+#ifndef CONST_SPECIES
     enforce_nonnegative_species(S_old);
+#endif
 
     MultiFab ext_src_old(grids, dmap, NUM_STATE, NUM_GROW);
     ext_src_old.setVal(0.);
@@ -300,7 +302,9 @@ Nyx::strang_hydro_ghost_state (Real time,
     // It's possible for interpolation to create very small negative values for
     // species so we make sure here that all species are non-negative after this
     // point
+#ifndef CONST_SPECIES
     enforce_nonnegative_species(S_old);
+#endif
 
     MultiFab ext_src_old(grids, dmap, NUM_STATE, NUM_GROW);
         //    std::unique_ptr<MultiFab> ext_src_old;

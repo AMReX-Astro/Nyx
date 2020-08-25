@@ -1084,11 +1084,10 @@ Nyx::blueprint_check_point ()
     varnames.push_back("Eden");
     varnames.push_back("Eint");
 
-    if(!use_const_species)
-    {
-        varnames.push_back("H");
-        varnames.push_back("He");
-    }
+#ifndef CONST_SPECIES
+    varnames.push_back("H");
+    varnames.push_back("He");
+#endif
 
     ///////////////////////////////////////////////////////////////////////////
     // Wrap our AMReX Mesh into a Conduit Mesh Blueprint Tree

@@ -26,20 +26,12 @@ nyx.comoving_OmM = 1.0
 nyx.comoving_OmB = 1.0
 nyx.comoving_h   = 0.0
 
+# Note we now set USE_CONST_SPECIES = TRUE in the GNUmakefile
+nyx.h_species=.76
+nyx.he_species=.24
+
 nyx.ppm_type = 0
 nyx.gamma = 1.4
-
-#Nyx version of constant:
-nyx.use_const_species=1
-nyx.h_species=.76
-nyx.he_species=.24 
-
-#Castro version of constant:
-#requires assume_neutral and e_to_cgs hack
-#match requires meth_params hack
-#nyx.use_const_species=1
-#nyx.h_species=1
-#nyx.he_species=0 
 
 nyx.initial_z = 0.
 

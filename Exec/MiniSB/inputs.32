@@ -2,7 +2,6 @@
 max_step = 2000
 max_step = 10
 
-nyx.use_const_species = 1
 nyx.h_species         = 0.75
 nyx.he_species        = 0.25
 
@@ -122,5 +121,5 @@ amr.plot_vars        = ALL
 amr.derive_plot_vars = particle_count particle_mass_density pressure magvel 
 
 #PROBIN FILENAME
-amr.probin_file = probin
+amr.probin_file = ""
 

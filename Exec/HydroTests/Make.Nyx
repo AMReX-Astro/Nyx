@@ -40,6 +40,10 @@ ifeq ($(USE_GRAV), TRUE)
   DEFINES += -DGRAVITY
 endif
 
+ifeq ($(USE_CONST_SPECIES), TRUE)
+  DEFINES += -DCONST_SPECIES
+endif
+
 ifeq ($(NO_HYDRO), TRUE)
   DEFINES += -DNO_HYDRO
 else

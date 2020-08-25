@@ -6,7 +6,6 @@ nyx.final_z   = 2.0
 
 nyx.plot_z_values  = 60.0 50.0 40.0 30.0 20.0 10.0 5.0 4.0 3.0 2.0
 
-nyx.use_const_species = 1
 nyx.h_species         = 0.75
 nyx.he_species        = 0.25
 

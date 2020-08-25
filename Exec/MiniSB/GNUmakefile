@@ -5,7 +5,7 @@ AMREX_HOME ?= ../../../amrex
 TOP = ../..
 
 # compilation options
-COMP    = intel  # gnu
+COMP    =  gnu
 
 USE_MPI = TRUE
 USE_OMP = FALSE
@@ -19,6 +19,10 @@ DEBUG     = FALSE
 # physics
 DIM      = 3
 USE_GRAV = TRUE
+USE_CONST_SPECIES = TRUE
+
+
+USE_CXX_PROB = TRUE
 
 Bpack := ./Make.package
 Blocs := .

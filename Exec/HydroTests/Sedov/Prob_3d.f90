@@ -94,8 +94,7 @@
       use probdata_module
       use amrex_constants_module, only: M_PI, FOUR3RD
       use atomic_rates_module, only: XHYDROGEN
-      use meth_params_module , only: NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS, &
-                                     gamma_minus_1
+      use meth_params_module , only: NVAR, URHO, UMX, UMY, UMZ, UEDEN, UEINT, gamma_minus_1
 
       implicit none
       integer level, ns, nd
@@ -167,7 +166,6 @@
                            state(i,j,k,UMZ)**2/state(i,j,k,URHO))
 
                state(i,j,k,UEINT) = eint
-
             enddo
          enddo
         enddo
@@ -228,12 +226,6 @@
                            state(i,j,k,UMZ)**2/state(i,j,k,URHO))
 
                state(i,j,k,UEINT) = eint
- 
-               if (UFS .gt. -1) then
-                   state(i,j,k,UFS  ) =         XHYDROGEN  * state(i,j,k,URHO)
-                   state(i,j,k,UFS+1) = (1.d0 - XHYDROGEN) * state(i,j,k,URHO)
-               end if
-
             enddo
          enddo
         enddo

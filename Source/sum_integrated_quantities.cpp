@@ -312,7 +312,7 @@ Nyx::compute_average_species (int          nspec,
                               Vector<Real>& average_species)
 {
     amrex::Gpu::LaunchSafeGuard lsg(true);
-    if (use_const_species == 1)
+#ifdef CONST_SPECIES
     {
        average_species[0] = h_species;
        average_species[1] = he_species;
@@ -322,10 +322,13 @@ Nyx::compute_average_species (int          nspec,
            std::cout << "Average species " << 1 << ": " << average_species[1] << '\n';
        }
     }
-    else
+#else
     {
         Real                 time = state[State_Type].curTime();
         const Geometry& crse_geom = parent->Geom(0);
+
+        AMREX_ALWAYS_ASSERT (nspec == 2);
+        AMREX_ALWAYS_ASSERT (naux  == 0);
         //
         // Get the species names from the network model.
         //
@@ -378,7 +381,8 @@ Nyx::compute_average_species (int          nspec,
            if (verbose > 0 && ParallelDescriptor::IOProcessor())
                std::cout << "Average species " << i << ": " << average_species[i] << '\n';
         }
-    } // end if not use_const_species
+    } 
+#endif
     amrex::Gpu::synchronize();
 }
 #endif

@@ -4,7 +4,6 @@ max_step = 10
 
 amr.regrid_file = fixed_grids
 
-nyx.use_const_species = 1
 nyx.h_species         = 0.75
 nyx.he_species        = 0.25
 

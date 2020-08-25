@@ -105,7 +105,7 @@
      use amrex_fort_module, only : rt => amrex_real
      use probdata_module
      use atomic_rates_module, only: XHYDROGEN
-     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEDEN, UEINT, UFS
+     use meth_params_module, only : URHO, UMX, UMY, UMZ, UEDEN, UEINT
      implicit none
 
      integer level, ns, nd
@@ -184,11 +184,6 @@
                   call bl_abort('invalid idir')
                endif
  
-               if (UFS .gt. -1) then
-                   state(i,j,k,UFS  ) =         XHYDROGEN  * state(i,j,k,URHO)
-                   state(i,j,k,UFS+1) = (1.d0 - XHYDROGEN) * state(i,j,k,URHO)
-               end if
-
             enddo
          enddo
       enddo

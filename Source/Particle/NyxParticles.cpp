@@ -824,6 +824,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
                                    (i, j ,k, fab_S_new, fab_D_new, dx,z_in);
                                });
         }
+
         amrex::Gpu::Device::streamSynchronize();
 #else
         int ns = S_new.nComp();
@@ -893,12 +894,11 @@ Nyx::init_santa_barbara (int init_sb_vels)
         MultiFab& Phi_new = get_new_data(PhiGrav_Type);
         FillCoarsePatch(Phi_new, 0, cur_time, PhiGrav_Type, 0, Phi_new.nComp());
 
+#ifndef CONST_SPECIES
        // Convert (rho X)_i to X_i before calling init_e_from_T
-       if (use_const_species == 0) {
-           for (int i = 0; i < NumSpec; ++i) {
-               MultiFab::Divide(S_new, S_new, Density, FirstSpec+i, 1, 0);
-           }
-       }
+       for (int i = 0; i < NumSpec; ++i) 
+           MultiFab::Divide(S_new, S_new, Density, FirstSpec+i, 1, 0);
+#endif
     }
 
     // Make sure we've finished initializing the density before calling this.
@@ -909,12 +909,11 @@ Nyx::init_santa_barbara (int init_sb_vels)
 
     init_e_from_T(a);
 
+#ifndef CONST_SPECIES
     // Convert X_i to (rho X)_i
-    if (use_const_species == 0) {
-        for (int i = 0; i < NumSpec; ++i) {
-            MultiFab::Multiply(S_new, S_new, Density, FirstSpec+i, 1, 0);
-        }
-    }
+    for (int i = 0; i < NumSpec; ++i) 
+        MultiFab::Multiply(S_new, S_new, Density, FirstSpec+i, 1, 0);
+#endif
 }
 #endif
 #endif
