@@ -505,21 +505,18 @@ Nyx::read_params ()
       std::cout << std::endl;
     }
 
-#ifndef AMREX_USE_CVODE
-    #ifndef AMREX_USE_SUNDIALS_3x4x
+    #ifndef AMREX_USE_SUNDIALS
     if (heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 10 || heat_cool_type == 11 || heat_cool_type == 12)
-        amrex::Error("Nyx:: cannot set heat_cool_type = 5 or 7 or 10 or 11 or 12 unless USE_CVODE=TRUE or USE_SUNDIALS_3x4x=TRUE");
+        amrex::Error("Nyx:: cannot set heat_cool_type = 5 or 7 or 10 or 11 or 12 unless USE_SUNDIALS=TRUE");
     #ifndef AMREX_USE_ARKODE_LIBS
     if (heat_cool_type == 9)
-        amrex::Error("Nyx:: cannot set heat_cool_type = 9 unless USE_SUNDIALS_3x4x=TRUE, and USE_ARKODE_LIBS=TRUE");
+        amrex::Error("Nyx:: cannot set heat_cool_type = 9 unless USE_SUNDIALS=TRUE, and USE_ARKODE_LIBS=TRUE");
     #endif
     #endif
-#else
     #ifdef SDC
     if (heat_cool_type == 7 && sdc_split == 1)
         amrex::Error("Nyx:: cannot set heat_cool_type = 7 with sdc_split = 1");
     #endif
-#endif
 
 #else
     if (heat_cool_type > 0)
