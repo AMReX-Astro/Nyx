@@ -61,11 +61,13 @@ Nyx::strang_hydro_fuse (Real time,
             }*/
     }
 #endif
-    
+
+#ifndef CONST_SPECIES
     // It's possible for interpolation to create very small negative values for
     // species so we make sure here that all species are non-negative after this
     // point
     enforce_nonnegative_species(S_old);
+#endif
 
     //assume user-provided source is not CUDA
     if (add_ext_src)

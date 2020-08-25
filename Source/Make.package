@@ -18,9 +18,6 @@ ifneq ($(NO_HYDRO), TRUE)
 CEXE_sources += compute_hydro_sources.cpp
 CEXE_sources += update_state_with_sources.cpp
 CEXE_sources += strang_hydro.cpp
-ifeq ($(USE_CVODE_LIBS), TRUE)   
-     CEXE_sources += strang_hydro_fuse.cpp
-endif
 CEXE_sources += strang_reactions.cpp
 
 ifeq ($(USE_SDC), TRUE)
