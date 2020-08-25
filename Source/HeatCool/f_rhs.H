@@ -8,7 +8,7 @@
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 int
-f_rhs_rpar(amrex::Real const time, amrex::Real e_in, amrex::Real energy, amrex::Real* rpar)
+f_rhs_rpar(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, amrex::Real* rpar)
 {
 
     const amrex::Real compt_c = 1.01765467e-37;
@@ -61,7 +61,7 @@ f_rhs_rpar(amrex::Real const time, amrex::Real e_in, amrex::Real energy, amrex::
     rho_vode=rpar[2];
     z_vode=rpar[3];
 
-    if(e_in<=0) e_in=std::numeric_limits<amrex::Real>::lowest();
+    if(e_in<=0 || std::isnan(e_in)) e_in=std::numeric_limits<amrex::Real>::min();
 
     // Converts from code units to CGS
     rho = rho_vode * density_to_cgs * (1.0e0+amrex::Math::abs(z_vode))*(1.0e0+amrex::Math::abs(z_vode))*(1.0e0+amrex::Math::abs(z_vode));
@@ -71,7 +71,6 @@ f_rhs_rpar(amrex::Real const time, amrex::Real e_in, amrex::Real energy, amrex::
     // Get gas temperature and individual ionization species
     // testing different memory structures
     iterate_ne_device(JH_vode, JHe_vode, z_vode, U, &T_vode, nh, &ne_vode, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1);
-
     // Convert species to CGS units: 
     ne_vode = nh * ne_vode;
     nh0   = nh * nh0;
