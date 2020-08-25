@@ -6,7 +6,7 @@
 
 using namespace amrex;
 
-AMREX_GPU_HOST_DEVICE
+AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE
 void interp_to_this_z(const amrex::Real z, amrex::Real ggh0, amrex::Real gghe0, amrex::Real gghep,
                       amrex::Real eh0, amrex::Real ehe0, amrex::Real ehep)
 {
@@ -48,7 +48,7 @@ void interp_to_this_z(const amrex::Real z, amrex::Real ggh0, amrex::Real gghe0, 
     return;
 }
 
-AMREX_GPU_HOST_DEVICE void ion_n_device(const int JH, const int JHe, const amrex::Real U,
+AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void ion_n_device(const int JH, const int JHe, const amrex::Real U,
                                         const amrex::Real nh, const amrex::Real* ne,
                                         amrex::Real& nhp, amrex::Real& nhep, amrex::Real& nhepp,
                                         amrex::Real* t, const amrex::Real gamma_minus_1,
@@ -131,7 +131,7 @@ AMREX_GPU_HOST_DEVICE void ion_n_device(const int JH, const int JHe, const amrex
         nhepp = 0.0e0;
 }
 
-AMREX_GPU_HOST_DEVICE
+AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE
 void iterate_ne_device(const int JH, const int JHe, const amrex::Real z,
                        const amrex::Real U, amrex::Real* t, const amrex::Real nh,
                        amrex::Real* ne, amrex::Real& nh0, amrex::Real& nhp,

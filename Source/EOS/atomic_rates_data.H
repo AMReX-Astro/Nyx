@@ -20,6 +20,7 @@ static constexpr amrex::Real BOLTZMANN = 1.3806e-16;*/
 static constexpr amrex::Real MPROTON = 1.6726230999999999E-024;
 static constexpr amrex::Real BOLTZMANN = 1.3806000442045675E-016;
 
+extern AMREX_GPU_MANAGED amrex::Real mean_rhob;
 extern AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLFILE> lzr;
 extern AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLFILE> rggh0;
 extern AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLFILE> rgghe0;

@@ -7,7 +7,7 @@
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
-amrex::Real
+int
 f_rhs_rpar(amrex::Real const time, amrex::Real e_in, amrex::Real energy, amrex::Real* rpar)
 {
 
@@ -24,6 +24,37 @@ f_rhs_rpar(amrex::Real const time, amrex::Real e_in, amrex::Real energy, amrex::
     amrex::Real nh, nh0, nhp, nhe0, nhep, nhepp;
     int j;
     amrex::Real z_vode, rho_vode, T_vode, ne_vode;
+    amrex::Real uvb_density_A, uvb_density_B, mean_rhob, JH_vode, JHe_vode, gamma_minus_1;
+    uvb_density_A=1.0;
+	uvb_density_B=0.0;
+	gamma_minus_1=2.0/3.0;
+	/*
+    ! Flash reionization?
+    if ((flash_h .eqv. .true.) .and. (z .gt. zhi_flash)) then
+       JH_vode = 0
+    else
+       JH_vode = 1
+    endif
+    if ((flash_he .eqv. .true.) .and. (z .gt. zheii_flash)) then
+       JHe_vode = 0
+    else
+       JHe_vode = 1
+    endif
+
+    if (flash_h ) H_reion_z  = zhi_flash
+    if (flash_he) He_reion_z = zheii_flash
+
+    if (inhomogeneous_on) then
+       STOP "Do not currently support inhomogenous_on with box"
+       !H_reion_z = diag_eos(i,j,k,ZHI_COMP)
+       if (z .gt. H_reion_z) then
+          JH_vode = 0
+       else
+          JH_vode = 1
+       endif
+    endif*/
+    JH_vode = 1.0;
+	JHe_vode = 1.0;
 
     T_vode=rpar[0];
     ne_vode=rpar[1];
@@ -39,7 +70,7 @@ f_rhs_rpar(amrex::Real const time, amrex::Real e_in, amrex::Real energy, amrex::
 
     // Get gas temperature and individual ionization species
     // testing different memory structures
-    iterate_ne_device(JH_vode, JHe_vode, z_vode, U, &T_vode, nh, &ne_vode, nh0, nhp, nhe0, nhep, nhepp);
+    iterate_ne_device(JH_vode, JHe_vode, z_vode, U, &T_vode, nh, &ne_vode, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1);
 
     // Convert species to CGS units: 
     ne_vode = nh * ne_vode;
@@ -64,7 +95,7 @@ f_rhs_rpar(amrex::Real const time, amrex::Real e_in, amrex::Real energy, amrex::
         rpar[0]=T_vode;
         rpar[1]=ne_vode;
         rpar[2]=rho_vode;
-        return;
+        return 0;
     }
 
     // Temperature floor
@@ -99,7 +130,7 @@ f_rhs_rpar(amrex::Real const time, amrex::Real e_in, amrex::Real energy, amrex::
     // Heating terms
     heat = JH_vode*nh0*eh0 + JH_vode*nhe0*ehe0 + JHe_vode*nhep*ehep;
     
-    rho_heat = uvb_density_A * (rho_vode/mean_rhob)**uvb_density_B;
+    rho_heat = uvb_density_A * std::pow((rho_vode/mean_rhob),uvb_density_B);
     heat = rho_heat*heat;
 
     // Convert back to code units
@@ -112,5 +143,6 @@ f_rhs_rpar(amrex::Real const time, amrex::Real e_in, amrex::Real energy, amrex::
     rpar[0]=T_vode;
     rpar[1]=ne_vode;
     rpar[2]=rho_vode;
+	return 0;
 }
 #endif

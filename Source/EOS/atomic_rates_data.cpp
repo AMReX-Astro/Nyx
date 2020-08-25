@@ -1,5 +1,6 @@
 #include <atomic_rates_data.H>
 
+AMREX_GPU_MANAGED amrex::Real mean_rhob;
 AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLFILE> lzr;
 AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLFILE> rggh0;
 AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLFILE> rgghe0;

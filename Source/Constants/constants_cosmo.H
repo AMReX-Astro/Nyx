@@ -10,8 +10,8 @@ static constexpr amrex::Real  T_unit = L_unit/V_unit; // time unit
   
 //   Fundamental constants
   
-   //   static constexpr amrex::Real  Gconst = 6.67408e-8       
-   //     * M_unit*T_unit**2/L_unit**3;// Newton [g^-1*s^-2*cm^3]
+   static constexpr amrex::Real  Gconst = 6.67408e-8
+	   * M_unit*T_unit*T_unit/(L_unit*L_unit*L_unit);// Newton [g^-1*s^-2*cm^3]
   
 static constexpr amrex::Real  k_B    = 1.38064852e-16          
   * T_unit*T_unit/(M_unit*L_unit*L_unit);// Boltzmann [g*cm^2/s^2*K]
@@ -48,7 +48,7 @@ static constexpr amrex::Real  density_to_cgs = M_unit / (L_unit*L_unit*L_unit);
   static constexpr amrex::Real  e_to_cgs = V_unit * V_unit;
 
 // For source terms we convert [erg/(s*cm^3) = g/(s^3*cm)] into code units
-//static constexpr amrex::Real  heat_from_cgs = L_unit*(T_unit**3 / M_unit);
+static constexpr amrex::Real  heat_from_cgs = L_unit*(T_unit*T_unit*T_unit / M_unit);
 
 // For AGN accretion rate
 //static constexpr amrex::Real  eddington_const = 4.00*pi * Gconst * m_proton / (sigma_T * c_light);
