@@ -368,5 +368,85 @@ contains
     end do
 
   end subroutine ca_enforce_minimum_density_1cell
+
+    subroutine ca_enforce_minimum_density_1cell_host(lo, hi, &
+                                        state, s_lo, s_hi, &
+                                        verbose, comoving_a)
+
+    use network, only: nspec, naux
+    use meth_params_module, only: NVAR, URHO, UMX, UMY, UMZ, UTEMP, UEINT, UEDEN, UFS, small_temp, small_dens, npassive, upass_map
+    use eos_module
+    use amrex_constants_module, only: ZERO
+    use amrex_error_module, only: amrex_error
+    use amrex_fort_module, only: rt => amrex_real
+
+    implicit none
+
+    integer,  intent(in   ) :: lo(3), hi(3)
+    integer,  intent(in   ) :: s_lo(3), s_hi(3)
+    real(rt), intent(inout) :: state(s_lo(1):s_hi(1),s_lo(2):s_hi(2),s_lo(3):s_hi(3),NVAR)
+    integer,  intent(in   ), value :: verbose
+    real(rt), intent(in   ), value :: comoving_a
+    ! Local variables
+    integer  :: i, j, k
+    real(rt) :: Up, Vp, Wp, ke, rho_eint, eint_new
+    real(rt) :: dummy_pres, rhoInv, Ne
+
+    integer          :: n, ipassive
+
+    do k = lo(3), hi(3)
+       do j = lo(2), hi(2)
+          do i = lo(1), hi(1)
+
+             if (state(i,j,k,URHO) < small_dens) then
+
+#ifndef AMREX_USE_CUDA
+                if (verbose .gt. 0) then
+                   print *,'   '
+                   if (state(i,j,k,URHO) < ZERO) then
+                      print *,'>>> RESETTING NEG.  DENSITY AT ', i, j, k
+                   else
+                      print *,'>>> RESETTING SMALL DENSITY AT ', i, j, k
+                   endif
+                   print *,'>>> FROM ', state(i,j,k,URHO), ' TO ', small_dens
+                   print *,'>>> IN GRID ', lo(1), lo(2), lo(3), hi(1), hi(2), hi(3)
+                   print *,'   '
+                end if
+#endif
+
+                do ipassive = 1, npassive
+                   n = upass_map(ipassive)
+                   state(i,j,k,n) = state(i,j,k,n) * (small_dens / state(i,j,k,URHO))
+                end do
+
+                state(i,j,k,URHO ) = small_dens
+
+                state(i,j,k,UMX  ) = ZERO
+                state(i,j,k,UMY  ) = ZERO
+                state(i,j,k,UMZ  ) = ZERO
+
+!                rhoInv = 1.0d0 / state(i,j,k,URHO)
+!                Up     = state(i,j,k,UMX) * rhoInv
+!                Vp     = state(i,j,k,UMY) * rhoInv
+!                Wp     = state(i,j,k,UMZ) * rhoInv
+!                ke     = 0.5d0 * state(i,j,k,URHO) * (Up*Up + Vp*Vp + Wp*Wp)
+
+!                rho_eint = u(i,j,k,UEDEN) - ke
+                Ne = 0.d0
+                call nyx_eos_given_RT_host(eint_new, dummy_pres, state(i,j,k,URHO), small_temp, &
+                     Ne,comoving_a)
+
+                state(i,j,k,UEINT) = state(i,j,k,URHO) * eint_new
+                state(i,j,k,UEDEN) = state(i,j,k,UEINT)
+!                state(i,j,k,UEDEN) = state(i,j,k,UEINT) + ke
+
+
+             end if
+
+          end do
+       end do
+    end do
+
+  end subroutine ca_enforce_minimum_density_1cell_host
   
 end module enforce_density_module

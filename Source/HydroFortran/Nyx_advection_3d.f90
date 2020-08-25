@@ -1073,7 +1073,7 @@
       use amrex_constants_module
       use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UFS, &
                                      gamma_minus_1, normalize_species
-      use enforce_density_module, only : ca_enforce_minimum_density_1cell
+      use enforce_density_module, only : ca_enforce_minimum_density_1cell_host
       use enforce_module, only : enforce_nonnegative_species
 
       implicit none
@@ -1161,7 +1161,7 @@
       enddo
 
       ! Enforce the density >= small_dens.  Make sure we do this immediately after consup.
-      call ca_enforce_minimum_density_1cell(lo, hi, &
+      call ca_enforce_minimum_density_1cell_host(lo, hi, &
                                    uout, u_lo, u_hi, &
                                    print_fortran_warnings, a_new)
       
