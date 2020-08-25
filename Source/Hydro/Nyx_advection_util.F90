@@ -110,7 +110,7 @@ contains
 
 !      call ca_enforce_minimum_density_1cell(lo, hi, &
 !                                   uout,s_lo, s_hi, &
-!                                   print_fortran_warnings)
+!                                   print_fortran_warnings, a_new)
 
       ! Enforce species >= 0
       call ca_enforce_nonnegative_species(uout,uout_l1,uout_l2,uout_l3, &

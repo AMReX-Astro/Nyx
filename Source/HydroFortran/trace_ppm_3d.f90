@@ -130,6 +130,9 @@ contains
                    p_ref = Im(i,j,kc,1,1,QPRES)
                 rhoe_ref = Im(i,j,kc,1,1,QREINT)
 
+             rho_ref = max(rho_ref,small_dens)
+               p_ref = max(  p_ref,small_pres)
+
              csqref = (1.d0+gamma_minus_1)*p_ref/rho_ref
              cref = sqrt(csqref)
              enthref = (rhoe_ref+p_ref)/(rho_ref*csqref)
@@ -218,6 +221,9 @@ contains
                    w_ref = Ip(i,j,kc,1,3,QW)
                    p_ref = Ip(i,j,kc,1,3,QPRES)
                 rhoe_ref = Ip(i,j,kc,1,3,QREINT)
+
+             rho_ref = max(rho_ref,small_dens)
+               p_ref = max(  p_ref,small_pres)
 
              csqref = (1.d0+gamma_minus_1)*p_ref/rho_ref
              cref = sqrt(csqref)
@@ -343,6 +349,9 @@ contains
                    p_ref = Im(i,j,kc,2,1,QPRES)
                 rhoe_ref = Im(i,j,kc,2,1,QREINT)
 
+             rho_ref = max(rho_ref,small_dens)
+               p_ref = max(  p_ref,small_pres)
+
              csqref = (1.d0+gamma_minus_1)*p_ref/rho_ref
              cref = sqrt(csqref)
              enthref = (rhoe_ref+p_ref)/(rho_ref*csqref)
@@ -427,6 +436,9 @@ contains
                    w_ref = Ip(i,j,kc,2,3,QW)
                    p_ref = Ip(i,j,kc,2,3,QPRES)
                 rhoe_ref = Ip(i,j,kc,2,3,QREINT)
+
+             rho_ref = max(rho_ref,small_dens)
+               p_ref = max(  p_ref,small_pres)
 
              csqref = (1.d0+gamma_minus_1)*p_ref/rho_ref
              cref = sqrt(csqref)
@@ -629,6 +641,9 @@ contains
                 p_ref = Im(i,j,kc,3,1,QPRES)
              rhoe_ref = Im(i,j,kc,3,1,QREINT)
 
+             rho_ref = max(rho_ref,small_dens)
+               p_ref = max(  p_ref,small_pres)
+
              csqref = (1.d0+gamma_minus_1)*p_ref/rho_ref
              cref = sqrt(csqref)
              enthref = (rhoe_ref+p_ref)/(rho_ref*csqref)
@@ -723,6 +738,9 @@ contains
                 p_ref = Ip(i,j,km,3,3,QPRES)
              rhoe_ref = Ip(i,j,km,3,3,QREINT)
 
+             rho_ref = max(rho_ref,small_dens)
+               p_ref = max(  p_ref,small_pres)
+ 
              csqref = (1.d0+gamma_minus_1)*p_ref/rho_ref
              cref = sqrt(csqref)
              enthref = (rhoe_ref+p_ref)/(rho_ref*csqref)
