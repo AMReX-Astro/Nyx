@@ -122,5 +122,5 @@ amr.plot_vars        = ALL
 amr.derive_plot_vars = particle_count particle_mass_density pressure magvel 
 
 #PROBIN FILENAME
-amr.probin_file = probin
+amr.probin_file = ""
 
