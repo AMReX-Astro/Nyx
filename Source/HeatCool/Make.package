@@ -34,6 +34,7 @@ f90EXE_sources += integrate_state_fcvode_with_source_3d_stubs.f90
 endif
 F90EXE_sources += vode_aux.F90
 F90EXE_sources += f_rhs.F90
+CEXE_headers += f_rhs.H
 ifeq ($(USE_CVODE_LIBS), TRUE)
   F90EXE_sources += cvode_extras.F90
   CEXE_sources += integrate_state_box_3d.cpp

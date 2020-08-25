@@ -10,6 +10,7 @@
 #include <AMReX_BLFort.H>
 #include <Nyx.H>
 #include <Nyx_F.H>
+#include <f_rhs.H>
 
 #include <cvode/cvode.h>               /* prototypes for CVODE fcts., consts. */
 #include <cvode/cvode_diag.h>          /* access to CVDiag interface */
