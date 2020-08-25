@@ -3,6 +3,7 @@
 
 #include <atomic_rates_data.H>
 #include <constants_cosmo.H>
+#include <eos_hc.H>
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
@@ -12,6 +13,7 @@ f_rhs_rpar(amrex::Real const time, amrex::Real e_in, amrex::Real energy, amrex::
 
     const amrex::Real compt_c = 1.01765467e-37;
     const amrex::Real T_cmb = 2.725e0;
+    amrex::Real deltaT = (TCOOLMAX - TCOOLMIN)/NCOOLTAB;
 
     amrex::Real logT, tmp, fhi, flo;
     amrex::Real ggh0, gghe0, gghep, eh0, ehe0, ehep;

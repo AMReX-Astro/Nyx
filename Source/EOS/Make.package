@@ -1,6 +1,7 @@
 ifeq ($(USE_HEATCOOL), TRUE)
 F90EXE_sources += eos_hc_nd.F90
 CEXE_sources += eos_hc.cpp
+CEXE_headers += eos_hc.H
 CEXE_headers += atomic_rates.H
 else
 F90EXE_sources += eos_stuff.F90
