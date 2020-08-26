@@ -134,7 +134,7 @@ f_rhs_rpar(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, amrex
 
     // Convert back to code units
     ne_vode     = ne_vode / nh;
-    energy  = (heat - lambda)*heat_from_cgs* (1.0e0+amrex::Math::abs(z_vode));
+    energy  = (heat - lambda)*heat_from_cgs / ((1.0e0+amrex::Math::abs(z_vode))*(1.0e0+amrex::Math::abs(z_vode))*(1.0e0+amrex::Math::abs(z_vode))*(1.0e0+amrex::Math::abs(z_vode)));
 
     // Convert to the actual term to be used in e_out = e_in + dt*energy
     a = 1.e0 / (1.e0 + amrex::Math::abs(z_vode));
