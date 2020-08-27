@@ -1168,13 +1168,6 @@ Nyx::particle_redistribute (int lbase, bool my_init)
             int finest_level = parent->finestLevel();
             for (int i = 0; i < theActiveParticles().size(); i++)
               {
-#ifdef AMREX_USE_CUDA
-                if(finest_level == 0)
-                  theActiveParticles()[i]->RedistributeLocal(lbase,
-                                                  theActiveParticles()[i]->finestLevel(),
-                                                  iteration);
-                else
-#endif
                   theActiveParticles()[i]->Redistribute(lbase,
                                                   theActiveParticles()[i]->finestLevel(),
                                                   iteration);
