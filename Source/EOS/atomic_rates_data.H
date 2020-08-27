@@ -8,7 +8,7 @@
 #include <AMReX_REAL.H>
 
 static constexpr int  NCOOLFILE = 301;    // TREECOOL_middle
-static constexpr int  NCOOLTAB  = 2000 + 1;
+static constexpr int  NCOOLTAB  = 2000;
 static constexpr amrex::Real TCOOLMAX  = 9.0;
 static constexpr amrex::Real TCOOLMIN  = 0.0;
 static constexpr amrex::Real xacc  = 1e-6;
