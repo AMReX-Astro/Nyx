@@ -246,28 +246,29 @@ module atomic_rates_module
                ! Recombination rates
                ! Alphad: dielectronic recombination rate of singly ioniozed helium
                Alphad(i)    = 1.90d-03/(t*sqrt_t) * dexp(-4.7d5/t) * (1.0d0+0.3d0*dexp(-9.4d4/t))
-               AlphaHp(i)   = 7.982d-11 / (dsqrt(t/3.148d0)* (1.0d0+dsqrt(t/3.148d0))**0.252 * &
-                                           (1.0d0+dsqrt(t/7.036d5))**1.748)
+               AlphaHp(i)   = 7.982d-11 / (dsqrt(t/3.148d0)* (1.0d0+dsqrt(t/3.148d0))**0.252d0 * &
+                                           (1.0d0+dsqrt(t/7.036d5))**1.748d0)
+
                if (t .le. 1.0d6) then
-                  AlphaHep(i)  = 3.294d-11 / (dsqrt(t/15.54d0)* (1.0d0+dsqrt(t/15.54d0))**0.309 * &
-                                              (1.0d0+dsqrt(t/3.676d7))**1.691)
+                  AlphaHep(i)  = 3.294d-11 / (dsqrt(t/15.54d0)* (1.0d0+dsqrt(t/15.54d0))**0.309d0 * &
+                                              (1.0d0+dsqrt(t/3.676d7))**1.691d0)
                else
-                  AlphaHep(i)  = 9.356d-10 / (dsqrt(t/4.266d-2)* (1.0d0+dsqrt(t/4.266d-2))**0.2108 * &
-                                              (1.0d0+dsqrt(t/4.677d6))**1.7892)
+                  AlphaHep(i)  = 9.356d-10 / (dsqrt(t/4.266d-2)* (1.0d0+dsqrt(t/4.266d-2))**0.2108d0 * &
+                                              (1.0d0+dsqrt(t/4.677d6))**1.7892d0)
                endif
-               AlphaHepp(i) = 1.891d-10 / (dsqrt(t/9.37d0)* (1.0d0+dsqrt(t/9.37d0))**0.2476 * &
-                                           (1.0d0+dsqrt(t/2.774d6))**1.7524)
+               AlphaHepp(i) = 1.891d-10 / (dsqrt(t/9.37d0)* (1.0d0+dsqrt(t/9.37d0))**0.2476d0 * &
+                                           (1.0d0+dsqrt(t/2.774d6))**1.7524d0)
 
                ! Collisional ionization rates
                E = 13.6d0
                U = 1.16045d4*E/t
-               GammaeH0(i)  = 2.91d-8*U**0.39*dexp(-U) / (0.232d0+U)
+               GammaeH0(i)  = 2.91d-8*U**0.39d0*dexp(-U) / (0.232d0+U)
                E = 24.6d0
                U = 1.16045d4*E/t
-               GammaeHe0(i) = 1.75d-8*U**0.35*dexp(-U) / (0.18d0+U)
+               GammaeHe0(i) = 1.75d-8*U**0.35d0*dexp(-U) / (0.18d0+U)
                E = 54.4d0
                U = 1.16045d4*E/t
-               GammaeHep(i) = 2.05d-9*(1.0d0+dsqrt(U))*U**0.25*dexp(-U) / (0.265d0+U)
+               GammaeHep(i) = 2.05d-9*(1.0d0+dsqrt(U))*U**0.25d0*dexp(-U) / (0.265d0+U)
 
                ! Collisional ionization & excitation cooling rates
                corr_term = 1.d0 / (1.0d0 + sqrt_t/dsqrt(5.0d7))
@@ -287,7 +288,7 @@ module atomic_rates_module
 
                ! Recombination cooling rates
                RecHp(i)   = 2.851d-27 * sqrt_t * (5.914d0-0.5d0*dlog(t)+1.184d-2*t**(1.0d0/3.0d0))
-               RecHep(i)  = 1.55d-26 * t**0.3647 + 1.24d-13/(t*sqrt_t) * dexp(-4.7d5/t) * & 
+               RecHep(i)  = 1.55d-26 * t**0.3647d0 + 1.24d-13/(t*sqrt_t) * dexp(-4.7d5/t) * & 
                                                                          (1.0d0+0.3d0*dexp(-9.4d4/t))
                RecHepp(i) = 1.14d-26 * sqrt_t * (6.607d0-0.5d0*dlog(t)+7.459d-3*t**(1.0d0/3.0d0))
 
