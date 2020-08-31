@@ -7,8 +7,8 @@
 using namespace amrex;
 
 AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE
-void interp_to_this_z(const amrex::Real z, amrex::Real ggh0, amrex::Real gghe0, amrex::Real gghep,
-                      amrex::Real eh0, amrex::Real ehe0, amrex::Real ehep)
+void interp_to_this_z(const amrex::Real z, amrex::Real & ggh0, amrex::Real& gghe0, amrex::Real& gghep,
+                      amrex::Real& eh0, amrex::Real& ehe0, amrex::Real& ehep)
 {
     amrex::Real lopz, fact;
     int i, j;
@@ -71,6 +71,7 @@ AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void ion_n_device(const int JH, const i
     *t  = gamma_minus_1*MPROTON/BOLTZMANN * U * mu;
 
     logT = std::log10(*t);
+
     if (logT >= TCOOLMAX) // Fully ionized plasma
     {
         nhp   = 1.0e0;
@@ -99,7 +100,7 @@ AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void ion_n_device(const int JH, const i
 
     interp_to_this_z(z, ggh0, gghe0, gghep, eh0, ehe0, ehep);
 
-    if (*ne > 0.0e0)
+    if ((*ne) > 0.0)
     {
         ggh0ne   = JH  * ggh0  / (*ne*nh);
         gghe0ne  = JH  * gghe0 / (*ne*nh);
