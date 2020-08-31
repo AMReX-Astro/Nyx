@@ -21,7 +21,6 @@ void tabulate_rates(std::string file_in)
 	//    while ( !input_stream.eof() )
     for(i = 1; i <= NCOOLFILE; i++)
     {
-        amrex::Print()<<i<<std::endl;
         input_stream >> lzr(i);
 		input_stream >> rggh0(i);
 		input_stream >> rgghe0(i);
