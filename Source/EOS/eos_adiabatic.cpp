@@ -1,6 +1,8 @@
 
 #include "Nyx.H"
 #include "Nyx_F.H"
+#include <atomic_rates_data.H>
+#include <constants_cosmo.H>
 
 using namespace amrex;
 /*
@@ -20,7 +22,6 @@ extern "C"
 AMREX_GPU_DEVICE void nyx_eos_T_given_Re_device(Real gamma_minus_1, Real h_species, int JH, int JHe, Real* T, Real* Ne, Real R,Real e,Real comoving_a)
 {
 
-#ifndef HEATCOOL
   Real comoving_a_cubed= (comoving_a*comoving_a*comoving_a);
 
   // Density is the only variable we convert from comoving to proper coordinates
@@ -79,19 +80,11 @@ AMREX_GPU_DEVICE void nyx_eos_T_given_Re_device(Real gamma_minus_1, Real h_speci
 
    *Ne = 1.0;
 
-#else
-   
-   //   Real species[5];
-   //   Real* species_ptr=&species[0];
-   fort_nyx_eos_T_given_Re_device(JH,JHe,T,Ne,R,e,comoving_a);//,species_ptr);
-#endif
-
 }
 
 AMREX_GPU_DEVICE void nyx_eos_given_RT(Real gamma_minus_1, Real h_species, Real* e, Real* P, Real R, Real T, Real Ne,Real comoving_a)
 {
   
-#ifndef HEATCOOL
   Real comoving_a_cubed= (comoving_a*comoving_a*comoving_a);
 
   // Density is the only variable we convert from comoving to proper coordinates
@@ -152,9 +145,5 @@ AMREX_GPU_DEVICE void nyx_eos_given_RT(Real gamma_minus_1, Real h_species, Real*
   // Compute the pressure from the ideal gas law -- 
   //    note it must be converted from proper to comoving coordinates
   *P = ( gamma_minus_1 * den_eos * (*e) ) * comoving_a_cubed;;
-
-#else
-  fort_nyx_eos_given_RT(e,P,R,T,Ne,comoving_a);
-#endif
 
 }

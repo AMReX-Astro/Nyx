@@ -22,7 +22,6 @@ nyx.h_species = .76
 nyx.he_species = .24
 
 nyx.ppm_type         = 0
-nyx.ppm_reference    = 1
 
 nyx.strang_split     = 1
 nyx.add_ext_src      = 0

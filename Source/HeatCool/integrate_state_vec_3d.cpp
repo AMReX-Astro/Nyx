@@ -10,6 +10,7 @@
 #include <AMReX_BLFort.H>
 #include <Nyx.H>
 #include <Nyx_F.H>
+#include <f_rhs.H>
 
 #include <cvode/cvode.h>               /* prototypes for CVODE fcts., consts. */
 #include <cvode/cvode_diag.h>          /* access to CVDiag interface */
@@ -436,7 +437,7 @@ static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
   #pragma omp parallel for
   for(int tid=0;tid<neq;tid++)
     {
-      RhsFnReal(t,&(u_ptr[tid]),&(udot_ptr[tid]),&(rpar[4*tid]),1);
+        f_rhs_rpar(t, (u_ptr[tid]),(udot_ptr[tid]),&(rpar[4*tid]));
     }
 
   return 0;

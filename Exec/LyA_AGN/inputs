@@ -7,7 +7,6 @@ reeber.halo_int = 1
 #nyx.mass_seed = 1.e6
 
 nyx.ppm_type         = 1
-nyx.ppm_reference    = 1
 
 nyx.strang_split     = 1
 nyx.add_ext_src      = 1
