@@ -908,7 +908,6 @@ protected:
 
     static amrex::Real small_dens;
     static amrex::Real small_pres;
-    static amrex::Real small_vel;
     static amrex::Real small_temp;
     static amrex::Real small;
 

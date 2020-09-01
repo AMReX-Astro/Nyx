@@ -104,7 +104,6 @@ int Nyx::NumSpec  = 0;
 Real Nyx::small_dens = -1.e200;
 Real Nyx::small_temp = -1.e200;
 Real Nyx::small_pres = -1.e200;
-Real Nyx::small_vel  =  1.e-12;
 Real Nyx::small      =  1.e-6;
 Real Nyx::large_temp =  1.e9;
 Real Nyx::gamma      =  5.0/3.0;
