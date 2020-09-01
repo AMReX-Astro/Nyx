@@ -4,6 +4,7 @@
 
 #include "Nyx.H"
 #include "Nyx_F.H"
+#include "atomic_rates.H"
 #include "Derive.H"
 #ifdef FORCING
 #include "Forcing.H"
@@ -207,6 +208,10 @@ Nyx::hydro_setup()
 
 #ifdef HEATCOOL
     fort_tabulate_rates();
+    ParmParse pp("nyx");
+    std::string file_in;
+    pp.query("uvb_rates_file", file_in);
+    tabulate_rates(file_in);
     amrex::Gpu::streamSynchronize();
 #endif
 
@@ -670,6 +675,10 @@ Nyx::no_hydro_setup()
 
 #ifdef HEATCOOL
     fort_tabulate_rates();
+    ParmParse pp("nyx");
+    std::string file_in;
+    pp.query("uvb_rates_file", file_in);
+    tabulate_rates(file_in);
 #endif
 
     int coord_type = DefaultGeometry().Coord();

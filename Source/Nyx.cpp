@@ -16,6 +16,8 @@ using std::string;
 #include <AMReX_CONSTANTS.H>
 #include <Nyx.H>
 #include <Nyx_F.H>
+#include <atomic_rates_data.H>
+#include <constants_cosmo.H>
 #include <Derive.H>
 #include <AMReX_VisMF.H>
 #include <AMReX_TagBox.H>
@@ -386,6 +388,7 @@ Nyx::read_params ()
     fort_set_omr(comoving_OmR);
     fort_set_hubble(comoving_h);
 
+    mean_rhob = comoving_OmB * 3.e0*(comoving_h*100.e0)*(comoving_h*100.e0)	/ (8.e0*M_PI*Gconst);
     pp_nyx.get("do_hydro", do_hydro);
 #ifdef NO_HYDRO
     if (do_hydro == 1)
