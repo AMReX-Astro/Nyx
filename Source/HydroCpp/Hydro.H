@@ -206,7 +206,7 @@ void pc_umdrv(
   const amrex::Real gamma, const amrex::Real gamma_minus_1, 
   const int NumSpec,
   const amrex::Real small_dens, const amrex::Real small_pres, 
-  const amrex::Real small_vel , const amrex::Real small, 
+  const amrex::Real small, 
   amrex::Real cflLoc,
   const int ppm_type,
   const int use_flattening,

@@ -169,7 +169,7 @@ Nyx::construct_hydro_source(
         pc_umdrv(
           bx, s, hyd_src, qarr, srcqarr, flx_arr, dx, dt, a_old, a_new,
           gamma, gamma_minus_1_loc, NumSpec,
-          small_dens, small_pres, small_vel, small, 
+          small_dens, small_pres, small, 
           cflLoc, ppm_type, use_flattening, a, volume.array(mfi));
         BL_PROFILE_VAR_STOP(purm);
 
@@ -273,7 +273,7 @@ pc_umdrv(
   const amrex::Real gamma, const amrex::Real gamma_minus_1, 
   const int NumSpec,
   const amrex::Real small_dens, const amrex::Real small_pres, 
-  const amrex::Real small_vel , const amrex::Real small, 
+  const amrex::Real small, 
   amrex::Real cflLoc,
   const int ppm_type, const int use_flattening,
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
@@ -307,7 +307,7 @@ pc_umdrv(
     flx[0], flx[1], flx[2], 
     qec_arr[0], qec_arr[1], qec_arr[2], 
     pdivuarr, dx, dt, a_old, a_new, NumSpec, gamma, gamma_minus_1,
-    small_dens, small_pres, small_vel, small, ppm_type, use_flattening);
+    small_dens, small_pres, small, ppm_type, use_flattening);
   BL_PROFILE_VAR_STOP(umeth);
 
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {

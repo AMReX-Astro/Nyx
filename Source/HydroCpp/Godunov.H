@@ -110,7 +110,6 @@ pc_cmpflx(
   amrex::Array4<const amrex::Real> const& qprim,
   const amrex::Real small_dens,
   const amrex::Real small_pres,
-  const amrex::Real small_vel,
   const amrex::Real small,
   const amrex::Real gamma,
   const int FirstSpec, const int NumSpec,
@@ -185,7 +184,7 @@ pc_cmpflx(
     flx(i, j, k, f_idx[0]), flx(i, j, k, f_idx[1]), flx(i, j, k, f_idx[2]),
     flx(i, j, k, UEDEN), flx(i, j, k, UEINT), q(i, j, k, GU), q(i, j, k, GV),
     q(i, j, k, GV2), q(i, j, k, QPRES), q(i, j, k, QREINT), 
-    small_dens, small_pres, small_vel, small, csmall, gamma);
+    small_dens, small_pres, small, csmall, gamma);
 
   amrex::Real flxrho = flx(i, j, k, URHO);
   for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
@@ -1663,6 +1662,6 @@ void pc_umeth_3D(
   const int NumSpec,
   const amrex::Real gamma, const amrex::Real gamma_minus_1,
   const amrex::Real small_dens, const amrex::Real small_pres, 
-  const amrex::Real small_vel , const amrex::Real small,
+  const amrex::Real small,
   const int ppm_type, const int use_flattening);
 #endif

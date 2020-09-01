@@ -15,7 +15,7 @@ trace_ppm(const Box& bx,
           const Real* dx,
           const Real gamma,
           const Real small_dens, const Real small_pres,
-          const Real small_vel , const Real small,
+          const Real small,
           const int FirstSpec, const int NumSpec,
           const int use_flattening,
           const Real a_old)
