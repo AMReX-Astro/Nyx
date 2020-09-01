@@ -1,7 +1,7 @@
 # AMREX_HOME defines the directory in which we will find all the AMReX code
 AMREX_HOME ?= ../../../amrex
 
-CVODE_LIB_DIR ?= $(CVODE_LIB)
+SUNDIALS_ROOT ?= $(CVODE_LIB)
 
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ../..
@@ -34,8 +34,7 @@ DIM      = 3
 USE_GRAV = TRUE
 USE_HEATCOOL = TRUE
 USE_AGN = FALSE
-USE_CVODE = FALSE
-USE_SUNDIALS_3x4x = FALSE
+USE_SUNDIALS = FALSE
 
 Bpack := ./Make.package
 Blocs := .

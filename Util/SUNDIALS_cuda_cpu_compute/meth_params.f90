@@ -30,10 +30,7 @@ module meth_params_module
   real(rt)        , save :: small_dens, small_temp, small_pres  
 
   integer         , save :: ppm_type
-  integer         , save :: ppm_reference
-  integer         , save :: ppm_flatten_before_integrals
   integer         , save :: use_flattening
-  integer         , save :: version_2
   integer         , save :: use_const_species
   integer         , save :: normalize_species
   integer         , save :: heat_cool_type

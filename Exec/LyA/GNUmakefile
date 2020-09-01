@@ -12,6 +12,7 @@ INSTALL_PREFIX ?= /gpfs/alpine/world-shared/ast160/software/sundials/instdir
 endif
 #CVODE_LIB_DIR ?= $(CVODE_LIB)
 CVODE_LIB_DIR ?= $(INSTALL_PREFIX)/lib64/
+SUNDIALS_ROOT ?= $(CVODE_LIB_DIR)/../
 BOOST_INLUDE_DIR ?= ${OLCF_BOOST_ROOT}/include/boost
 HDF5_HOME ?= ${OLCF_HDF5_ROOT}
 
