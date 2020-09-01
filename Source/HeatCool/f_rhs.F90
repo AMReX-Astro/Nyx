@@ -172,7 +172,7 @@ subroutine f_rhs_rpar(num_eq, time, e_in, energy, rpar, ipar)
       CHARACTER(LEN=80) :: FMT
 !      real(rt) :: z_vode, rho_vode, T_vode, ne_vode                                                                                                                                                                
       real(rt) :: rho_vode, T_vode, ne_vode
-#ifdef AMREX_USE_CUDA
+#ifdef AMREX_USE_CUDA_FORTRAN
      attributes(managed) :: nh, nh0, nhp, nhe0, nhep, nhepp, T_vode, ne_vode
 #endif
       T_vode=rpar(1)
@@ -328,7 +328,7 @@ subroutine f_rhs_split(num_eq, time, y_in, yp_out, rpar, ipar)
       real(rt) :: lambda_c, lambda_ff, lambda, heat
       real(rt) :: rho, U, a, rho_heat
       real(rt) :: nh, nh0, nhp, nhe0, nhep, nhepp
-#ifdef AMREX_USE_CUDA
+#ifdef AMREX_USE_CUDA_FORTRAN
      attributes(managed) :: nh, nh0, nhp, nhe0, nhep, nhepp
 #endif
       integer :: j
@@ -460,7 +460,7 @@ subroutine f_rhs(num_eq, time, e_in, energy, rpar, ipar)
       real(rt) :: lambda_c, lambda_ff, lambda, heat
       real(rt) :: rho, U, a, rho_heat
       real(rt) :: nh, nh0, nhp, nhe0, nhep, nhepp
-#ifdef AMREX_USE_CUDA
+#ifdef AMREX_USE_CUDA_FORTRAN
      attributes(managed) :: nh, nh0, nhp, nhe0, nhep, nhepp
 #endif
       integer :: j
