@@ -530,6 +530,7 @@ Gravity::get_crse_phi (int       level,
         const Box& gtbx = mfi.growntilebox();
 
         phi_crse_temp.resize(gtbx,1);
+	Elixir phi_crse_tmp_eli = phi_crse_temp.elixir();
 
         if (fabs(alpha-1.0) < 1.e-15)
         {
