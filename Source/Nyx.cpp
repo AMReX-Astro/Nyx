@@ -1013,9 +1013,9 @@ Nyx::est_time_step (Real dt_old)
                                                     else
                                                       c = 0.0;
 
-                                                    Real dt1 = dx[0]/(c + std::abs(ux));
-                                                    Real dt2 = dx[1]/(c + std::abs(uy));
-                                                    Real dt3 = dx[2]/(c + std::abs(uz));
+                                                    Real dt1 = dx[0]/(c + amrex::Math::abs(ux));
+                                                    Real dt2 = dx[1]/(c + amrex::Math::abs(uy));
+                                                    Real dt3 = dx[2]/(c + amrex::Math::abs(uz));
                                                     dt_gpu = amrex::min(dt_gpu,amrex::min(dt1,amrex::min(dt2,dt3)));
 
                                                   }

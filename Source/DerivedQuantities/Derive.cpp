@@ -92,9 +92,9 @@ extern "C"
         Real wx = (dat(i+1,j,k,3) - dat(i-1,j,k,3)) / dx[0];
         Real wy = (dat(i,j+1,k,3) - dat(i,j-1,k,3)) / dx[1];
  
-        Real v1 = 0.5 * std::abs(wy - vz);
-        Real v2 = 0.5 * std::abs(uz - wx);
-        Real v3 = 0.5 * std::abs(vx - uy);
+        Real v1 = 0.5 * amrex::Math::abs(wy - vz);
+        Real v2 = 0.5 * amrex::Math::abs(uz - wx);
+        Real v3 = 0.5 * amrex::Math::abs(vx - uy);
 
         der(i,j,k,0) = std::sqrt(v1*v1 + v2*v2 + v3*v3); 
       });

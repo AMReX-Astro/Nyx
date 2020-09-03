@@ -85,7 +85,7 @@ AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void ion_n_device(const int JH, const i
 
     // Interpolate rates
     tmp = (logT-TCOOLMIN)/deltaT;
-    j = std::floor(tmp); // replacing int(tmp)
+    j = amrex::Math::floor(tmp); // replacing int(tmp)
     fhi = tmp - j;
     flo = 1.0e0 - fhi;
     j = j + 1; // F90 arrays start with 1, using Array1D<Real,1,size>

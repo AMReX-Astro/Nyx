@@ -404,19 +404,19 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
                 if (p.id() > 0)
                 {
                     /*      amrex::IntVect cell{
-                            AMREX_D_DECL(static_cast<int>(floor((p.m_rdata.pos[0]-plo[0])*dxi[0])),
-                            static_cast<int>(floor((p.m_rdata.pos[1]-plo[1])*dxi[1])),
-                            static_cast<int>(floor((p.m_rdata.pos[2]-plo[2])*dxi[2])))};
+                            AMREX_D_DECL(static_cast<int>(amrex::Math::floor((p.m_rdata.pos[0]-plo[0])*dxi[0])),
+                            static_cast<int>(amrex::Math::floor((p.m_rdata.pos[1]-plo[1])*dxi[1])),
+                            static_cast<int>(amrex::Math::floor((p.m_rdata.pos[2]-plo[2])*dxi[2])))};
                     */
                     amrex::IntVect cell;
-                    cell[0]= static_cast<int>(floor((p.pos(0)-plo[0])*dxi[0]));
-                    cell[1]= static_cast<int>(floor((p.pos(1)-plo[1])*dxi[1]));
-                    cell[2]= static_cast<int>(floor((p.pos(2)-plo[2])*dxi[2]));
+                    cell[0]= static_cast<int>(amrex::Math::floor((p.pos(0)-plo[0])*dxi[0]));
+                    cell[1]= static_cast<int>(amrex::Math::floor((p.pos(1)-plo[1])*dxi[1]));
+                    cell[2]= static_cast<int>(amrex::Math::floor((p.pos(2)-plo[2])*dxi[2]));
                     cell += base;
                     
-                    const amrex::Real mag_vel_over_dx = std::abs(p.rdata(1))*adxi[0];
-                    const amrex::Real mag_vel_over_dy = std::abs(p.rdata(2))*adxi[1];
-                    const amrex::Real mag_vel_over_dz = std::abs(p.rdata(3))*adxi[2];
+                    const amrex::Real mag_vel_over_dx = amrex::Math::abs(p.rdata(1))*adxi[0];
+                    const amrex::Real mag_vel_over_dy = amrex::Math::abs(p.rdata(2))*adxi[1];
+                    const amrex::Real mag_vel_over_dz = amrex::Math::abs(p.rdata(3))*adxi[2];
                     
                     amrex::Real max_mag_vel_over_dx = amrex::max(mag_vel_over_dx,mag_vel_over_dy,mag_vel_over_dz);
                     amrex::Real dt_part = (max_mag_vel_over_dx > 0) ? (cfl / max_mag_vel_over_dx) : 1e50;

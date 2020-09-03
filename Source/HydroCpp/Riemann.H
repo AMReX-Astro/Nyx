@@ -123,7 +123,7 @@ riemann(
   po = mask ? 0.5 * (pl+pr) : po;
   reo = mask ? 0.5 * (rel + rer) : reo;
   ro = amrex::max(ro,small_dens);
-  const amrex::Real co = amrex::max(csmall,std::sqrt(std::abs(gamma * po / ro)));
+  const amrex::Real co = amrex::max(csmall,std::sqrt(std::Math::abs(gamma * po / ro)));
 
   //Is a max or limiter similar to the mask above needed for co?
   const amrex::Real drho = (pstar - po) / (co * co);
