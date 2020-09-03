@@ -245,7 +245,7 @@ Nyx::hydro_setup()
     set_scalar_bc(bc, phys_bc);  bcs[cnt] = bc;  name[cnt] = "rho_e";
 
     // Get the species names from the network model.
-    Vector<std::string> spec_names(NumSpec);
+    Vector<std::string> spec_names(2);
     spec_names[0] = "H";
     spec_names[1] = "He";
 
@@ -256,6 +256,7 @@ Nyx::hydro_setup()
            std::cout << spec_names[i] << ' ' << ' ';
         std::cout << '\n';
     }
+
 
 #ifndef CONST_SPECIES
     for (int i = 0; i < NumSpec; ++i)

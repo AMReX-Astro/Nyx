@@ -268,6 +268,7 @@ Nyx::read_params ()
 
     pp_nyx.query("small_dens", small_dens);
     pp_nyx.query("small_temp", small_temp);
+    pp_nyx.query("small_pres", small_pres);
     pp_nyx.query("large_temp", large_temp);
     pp_nyx.query("gamma", gamma);
     //Set small factor for csmall

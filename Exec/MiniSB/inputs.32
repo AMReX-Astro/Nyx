@@ -14,6 +14,8 @@ nyx.print_fortran_warnings = 0
 
 nyx.ppm_type = 0
 
+nyx.small_dens = 1e-2
+nyx.small_temp = 1e-2
 nyx.small_pres = 1.4030651016194482e-06
 
 nyx.do_santa_barbara = 1
