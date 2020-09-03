@@ -989,21 +989,7 @@ protected:
 
 };
 
-  AMREX_GPU_DEVICE void nyx_eos_T_given_Re_device(amrex::Real, amrex::Real, int JH, int JHe, amrex::Real* T, amrex::Real* Ne, amrex::Real R,amrex::Real e,amrex::Real comoving_a);
-  AMREX_GPU_DEVICE void nyx_eos_given_RT(amrex::Real, amrex::Real, amrex::Real* e, amrex::Real* P, amrex::Real R, amrex::Real T, amrex::Real Ne,amrex::Real comoving_a);
-
-  AMREX_GPU_DEVICE AMREX_FORCE_INLINE
-  void reset_internal_e (const int i,
-                         const int j,
-                         const int k,
-                         amrex::Array4<amrex::Real> const& u,
-                         amrex::Array4<amrex::Real> const& d,
-                         amrex::Array4<amrex::Real> const& r,
-                         const amrex::Real comoving_a,
-                         const amrex::Real gamma_minus_1,
-                         const amrex::Real h_species,
-                         const amrex::Real small_temp,
-                         const int interp);     
+#include <reset_internal_e.H>
 
 // time step interval for finding halos
 extern int reeber_int;

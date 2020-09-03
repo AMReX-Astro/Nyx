@@ -4,7 +4,9 @@
 
 #include "Nyx.H"
 #include "Nyx_F.H"
+#ifdef HEATCOOL
 #include "atomic_rates.H"
+#endif
 #include "Derive.H"
 #ifdef FORCING
 #include "Forcing.H"
