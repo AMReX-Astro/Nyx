@@ -1,5 +1,6 @@
 #F90EXE_sources += compute_temp_3d.F90
 
 ifneq ($(USE_OWN_BCS), TRUE)
-f90EXE_sources += bc_fill_3d.f90
+CEXE_sources += bc_fill.cpp
+#f90EXE_sources += bc_fill_3d.f90
 endif

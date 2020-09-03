@@ -270,24 +270,30 @@ Nyx::hydro_setup()
      }
 #endif
 
-    desc_lst.setComponent(State_Type, Density, name, bcs,
-                          BndryFunc(denfill,hypfill));
+    StateDescriptor::BndryFunc bndryfunc(nyx_bcfill);
+    bndryfunc.setRunOnGPU(true);  // I promise the bc function will launch gpu kernels.
+
+    desc_lst.setComponent(State_Type,
+                          Density,
+                          name,
+                          bcs,
+                          bndryfunc);
 
     set_scalar_bc(bc, phys_bc);
     desc_lst.setComponent(DiagEOS_Type, 0, "Temp", bc,
-                          BndryFunc(generic_fill));
+                          bndryfunc);
     desc_lst.setComponent(DiagEOS_Type, 1, "Ne", bc,
-                          BndryFunc(generic_fill));
+                          bndryfunc);
 
     if (inhomo_reion > 0) {
        desc_lst.setComponent(DiagEOS_Type, 2, "Z_HI", bc,
-                             BndryFunc(generic_fill));
+                             bndryfunc);
     }
 
 #ifdef SDC
     set_scalar_bc(bc, phys_bc);
     desc_lst.setComponent(SDC_IR_Type, 0, "I_R", bc,
-                          BndryFunc(generic_fill));
+                          bndryfunc);
 #endif
 
 #ifdef GRAVITY
@@ -295,16 +301,19 @@ Nyx::hydro_setup()
     {
         set_scalar_bc(bc, phys_bc);
         desc_lst.setComponent(PhiGrav_Type, 0, "phi_grav", bc,
-                              BndryFunc(generic_fill));
+                              bndryfunc);                          
+
         set_x_vel_bc(bc, phys_bc);
         desc_lst.setComponent(Gravity_Type, 0, "grav_x", bc,
-                              BndryFunc(generic_fill));
-       set_y_vel_bc(bc, phys_bc);
-       desc_lst.setComponent(Gravity_Type, 1, "grav_y", bc,
-                             BndryFunc(generic_fill));
-       set_z_vel_bc(bc, phys_bc);
-       desc_lst.setComponent(Gravity_Type, 2, "grav_z", bc,
-                             BndryFunc(generic_fill));
+                             bndryfunc);
+
+        set_y_vel_bc(bc, phys_bc);
+        desc_lst.setComponent(Gravity_Type, 1, "grav_y", bc,
+                              bndryfunc);
+
+        set_z_vel_bc(bc, phys_bc);
+        desc_lst.setComponent(Gravity_Type, 2, "grav_z", bc,
+                              bndryfunc);
     }
 #endif
 
@@ -588,6 +597,9 @@ Nyx::no_hydro_setup()
 
     BCRec bc;
 
+    StateDescriptor::BndryFunc bndryfunc(nyx_bcfill);
+    bndryfunc.setRunOnGPU(true);  // I promise the bc function will launch gpu kernels.
+
 #ifndef NO_HYDRO
     // We have to create these anyway because the StateTypes are defined at compile time.
     // However, we define them with only one component each because we don't actually use them.
@@ -599,7 +611,7 @@ Nyx::no_hydro_setup()
 
     set_scalar_bc(bc, phys_bc);
     desc_lst.setComponent(State_Type, 0, "density", bc,
-                          BndryFunc(generic_fill));
+                          bndryfunc);
 
     // This has only one dummy components
     store_in_checkpoint = false;
@@ -609,7 +621,7 @@ Nyx::no_hydro_setup()
 
     set_scalar_bc(bc, phys_bc);
     desc_lst.setComponent(DiagEOS_Type, 0, "Temp", bc,
-                          BndryFunc(generic_fill));
+                          bndryfunc);
 #endif
 
     store_in_checkpoint = true;
@@ -628,16 +640,16 @@ Nyx::no_hydro_setup()
     {
        set_scalar_bc(bc, phys_bc);
        desc_lst.setComponent(PhiGrav_Type, 0, "phi_grav", bc,
-                             BndryFunc(generic_fill));
+                             bndryfunc);
        set_x_vel_bc(bc, phys_bc);
        desc_lst.setComponent(Gravity_Type, 0, "grav_x", bc,
-                             BndryFunc(generic_fill));
+                             bndryfunc);
        set_y_vel_bc(bc, phys_bc);
        desc_lst.setComponent(Gravity_Type, 1, "grav_y", bc,
-                             BndryFunc(generic_fill));
+                             bndryfunc);
        set_z_vel_bc(bc, phys_bc);
        desc_lst.setComponent(Gravity_Type, 2, "grav_z", bc,
-                             BndryFunc(generic_fill));
+                             bndryfunc);
 
        derive_lst.add("maggrav", IndexType::TheCellType(), 1,
                       dermaggrav,
