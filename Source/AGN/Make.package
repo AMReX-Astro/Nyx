@@ -2,6 +2,6 @@ ifeq ($(USE_AGN), TRUE)
 CEXE_sources   += AGN_sources.cpp
 CEXE_sources   += AGN_halos.cpp
 FEXE_headers   += agn_F.H
-f90EXE_sources += agn_3d.f90
+#f90EXE_sources += agn_3d.f90
 endif
-f90EXE_sources += agn_params.f90
+#f90EXE_sources += agn_params.f90

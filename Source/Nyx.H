@@ -259,6 +259,7 @@ public:
     // Time step control based on "a" not growing too fast
     //
     void integrate_comoving_a_to_a(const amrex::Real old_a, const amrex::Real a_value, amrex::Real& dt);
+    void integrate_comoving_a_to_z(const amrex::Real old_a, const amrex::Real z_value, amrex::Real& dt);
     void est_maxdt_comoving_a(const amrex::Real old_a, amrex::Real & dt);
     void est_lindt_comoving_a(const amrex::Real old_a, const amrex::Real new_a, amrex::Real& dt);
     void estdt_comoving_a(const amrex::Real old_a,amrex::Real& new_a,amrex::Real& dt,const amrex::Real change_allowed,const amrex::Real fixed_da,const amrex::Real final_a,int& dt_modified);
@@ -766,9 +767,6 @@ public:
     static void InitErrorList();
     static void InitDeriveList();
 
-    static void alloc_cuda_managed();
-    static void dealloc_cuda_managed();
-
     static void set_simd_width(const int simd_width);
     static void alloc_simd_vec();
     static void dealloc_simd_vec();
@@ -783,11 +781,6 @@ public:
 
 
 protected:
-
-    //
-    // Initialize the network.
-    //
-    static void network_init();
 
     static void read_params();
 

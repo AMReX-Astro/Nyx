@@ -8,8 +8,8 @@ ifneq ($(NO_HYDRO), TRUE)
 CEXE_sources += Nyx_time_center_sources.cpp
 endif
 
-f90EXE_sources += ext_src_3d.f90
+#f90EXE_sources += ext_src_3d.f90
 
 ifneq ($(USE_SSM), TRUE)
-f90EXE_sources += ext_src_add_3d.f90
+#f90EXE_sources += ext_src_add_3d.f90
 endif

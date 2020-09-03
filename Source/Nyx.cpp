@@ -355,11 +355,6 @@ Nyx::read_params ()
     pp_nyx.get("comoving_h", comoving_h);
     pp_nyx.query("comoving_type", comoving_type);
 
-    fort_set_omb(comoving_OmB);
-    fort_set_omm(comoving_OmM);
-    fort_set_omr(comoving_OmR);
-    fort_set_hubble(comoving_h);
-
     mean_rhob = comoving_OmB * 3.e0*(comoving_h*100.e0)*(comoving_h*100.e0)	/ (8.e0*M_PI*Gconst);
     pp_nyx.get("do_hydro", do_hydro);
 #ifdef NO_HYDRO
@@ -525,7 +520,6 @@ Nyx::read_params ()
 #ifdef CONST_SPECIES
         pp_nyx.get("h_species" ,  h_species);
         pp_nyx.get("he_species", he_species);
-        fort_set_xhydrogen(h_species);
 
         amrex::Print() << "Nyx::setting species concentrations to "
                        << h_species << " and " << he_species
@@ -709,12 +703,12 @@ Nyx::Nyx (Amr&            papa,
        old_a = 1.0 / (1.0 + initial_z);
        new_a = old_a;
     }
-
+	/*
 #ifdef HEATCOOL
      // Initialize "this_z" in the atomic_rates_module
     if (heat_cool_type == 3 || heat_cool_type == 4 || heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 9 || heat_cool_type == 10 || heat_cool_type == 11 || heat_cool_type == 12)
-         fort_interp_to_this_z(&initial_z);
 #endif
+		*/
 }
 
 Nyx::~Nyx ()
@@ -1607,20 +1601,6 @@ Nyx::post_timestep (int iteration)
                            s_fab(i,j,k,ieden ) += SrE * a_new_inv * 0.5 * dt_lev;
                        });
 
-//                  const auto fab_grad_phi_cc = grad_phi_cc.array(mfi);
-//                  const auto fab_grad_delta_phi_cc=(*grad_delta_phi_cc[lev-level]).array(mfi);
-//                  const auto fab_S_new_lev = S_new_lev.array(mfi);
-//                  AMREX_LAUNCH_DEVICE_LAMBDA(bx,tbx,
-//                  fort_syncgsrc
-//                      (tbx.loVect(), tbx.hiVect(), BL_ARR4_TO_FORTRAN(fab_grad_phi_cc),
-//                       BL_ARR4_TO_FORTRAN(fab_grad_delta_phi_cc),
-//                       BL_ARR4_TO_FORTRAN(fab_S_new_lev), BL_ARR4_TO_FORTRAN(fab_dstate),
-//                       BL_ARR4_TO_FORTRAN(fab_sync_src), a_new, dt_lev);
-//                                          });
-
-//                  sync_src.mult<RunOn::Device>(0.5 * dt_lev);
-//                  S_new_lev[mfi].plus<RunOn::Device>(sync_src, 0, Xmom, BL_SPACEDIM);
-//                  S_new_lev[mfi].plus<RunOn::Device>(sync_src, BL_SPACEDIM, Eden, 1);
                   }
                 }
             }
@@ -1828,12 +1808,8 @@ Nyx::set_small_values ()
        // Get the number of species from the network model.
        //
 #ifndef CONST_SPECIES
-       fort_get_num_spec(&NumSpec);
+       NumSpec = 2;
 #endif
-
-       fort_set_small_values
-            (&average_gas_density, &average_temperature,
-             &a,  &small_dens, &small_temp, &small_pres);
 
        if (verbose && ParallelDescriptor::IOProcessor())
        {
@@ -2634,12 +2610,6 @@ Nyx::derive (const std::string& name,
     }
 }
 
-void
-Nyx::network_init ()
-{
-    fort_network_init();
-}
-
 #ifndef NO_HYDRO
 void
 Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new, MultiFab& reset_e_src)
@@ -2809,18 +2779,20 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 
     Real cur_time  = state[State_Type].curTime();
     Real a        = get_comoving_a(cur_time);
-
+	/*
 #ifdef HEATCOOL 
     if (heat_cool_type == 3 || heat_cool_type == 4 || heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 9 || heat_cool_type == 10 || heat_cool_type == 11 || heat_cool_type == 12)
     {
        const Real z = 1.0/a - 1.0;
-       fort_interp_to_this_z(&z);
     }
 #endif
-
+	*/
     amrex::Gpu::synchronize();
     amrex::Gpu::LaunchSafeGuard lsg(true);
     if (heat_cool_type == 7) {
+#ifdef CXX_PROB
+        amrex::Abort("No vectorized CVODE with C++ f_rhs");
+#else
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
@@ -2834,6 +2806,7 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
                BL_TO_FORTRAN(D_new[mfi]), &a,
                &print_fortran_warnings);
         }
+#endif
     }
     else
       {
@@ -3073,7 +3046,6 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
 }
 #endif
 
-#ifdef AMREX_USE_GPU
 #ifndef NO_HYDRO
 void
 Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
@@ -3206,49 +3178,6 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
     }
 
 }
-#endif
-#else
-
-
-#ifndef NO_HYDRO
-void
-Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
-                            Real& whim_mass_frac, Real& whim_vol_frac,
-                            Real& hh_mass_frac,   Real& hh_vol_frac,
-                            Real& igm_mass_frac,  Real& igm_vol_frac)
-{
-  BL_PROFILE("Nyx::compute_gas_fractions()");
-  MultiFab& S_new = get_new_data(State_Type);
-  MultiFab& D_new = get_new_data(DiagEOS_Type);
-
-  Real whim_mass=0.0, whim_vol=0.0, hh_mass=0.0, hh_vol=0.0, igm_mass=0.0, igm_vol=0.0;
-  Real mass_sum=0.0, vol_sum=0.0;
-
-  #ifdef _OPENMP
-#pragma omp parallel reduction(+:whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum)
-  #endif
-  for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
-    {
-      const Box& bx = mfi.tilebox();
-
-              fort_compute_gas_frac
-                (bx.loVect(), bx.hiVect(), geom.CellSize(),
-                 BL_TO_FORTRAN(S_new[mfi]),
-                 BL_TO_FORTRAN(D_new[mfi]), &average_gas_density, &T_cut, &rho_cut,
-                 &whim_mass, &whim_vol, &hh_mass, &hh_vol, &igm_mass, &igm_vol, &mass_sum, &vol_sum);
-    }
-  Real sums[8] = {whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum};
-  ParallelDescriptor::ReduceRealSum(sums,8);
-
-  whim_mass_frac = sums[0] / sums[6];
-  whim_vol_frac  = sums[1] / sums[7];
-  hh_mass_frac   = sums[2] / sums[6];
-  hh_vol_frac    = sums[3] / sums[7];
-  igm_mass_frac  = sums[4] / sums[6];
-  igm_vol_frac   = sums[5] / sums[7];
-}
-#endif
-
 #endif
 
 Real

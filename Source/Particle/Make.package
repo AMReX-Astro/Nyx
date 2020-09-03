@@ -1,4 +1,4 @@
-f90EXE_sources += particle_mod.f90
+#f90EXE_sources += particle_mod.f90
 
 CEXE_headers += NyxParticleContainer.H
 CEXE_headers += DarkMatterParticleContainer.H

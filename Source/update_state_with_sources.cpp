@@ -1,6 +1,7 @@
 #include "Nyx.H"
 #include "Nyx_F.H"
 #include "Hydro.H"
+#include "constants_cosmo.H"
 
 using namespace amrex;
 
@@ -130,7 +131,6 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
     enforce_nonnegative_species(S_new);
 #endif
 
-    const int grav_source_type = 1;
     for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) 
     {
         const amrex::Box& bx = mfi.tilebox();

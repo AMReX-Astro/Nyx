@@ -115,9 +115,6 @@ Nyx::variable_setup()
           std::cout << "\n" << "Nyx git describe:   " << nyx_hash << "\n";
     }
 
-    // Initialize the network
-    network_init();
-
     // Get options, set phys_bc
     read_params();
 
@@ -165,7 +162,7 @@ Nyx::hydro_setup()
     NumSpec = 0;
 #else
     // Get the number of species from the network model.
-    fort_get_num_spec(&NumSpec);
+    NumSpec = 2;
     if (NumSpec > 0)
         cnt += NumSpec;
 #endif
@@ -180,21 +177,13 @@ Nyx::hydro_setup()
 #else
     use_const_species = 0;
 #endif
-    fort_set_method_params
-        (NDIAG_C, do_hydro, use_const_species, gamma, normalize_species,
-         heat_cool_type, inhomo_reion);
 
 #ifdef HEATCOOL
-    fort_tabulate_rates();
     ParmParse pp("nyx");
     std::string file_in;
     pp.query("uvb_rates_file", file_in);
     tabulate_rates(file_in);
     amrex::Gpu::streamSynchronize();
-#endif
-
-#ifdef CONST_SPECIES
-    fort_set_eos_params(h_species, he_species);
 #endif
 
     Interpolater* interp = &cell_cons_interp;
@@ -257,19 +246,8 @@ Nyx::hydro_setup()
 
     // Get the species names from the network model.
     Vector<std::string> spec_names(NumSpec);
-
-    for (int i = 0; i < NumSpec; i++)
-    {
-        int len = 20;
-        Vector<int> int_spec_names(len);
-
-        // This call return the actual length of each string in "len"
-        fort_get_spec_names
-            (int_spec_names.dataPtr(), &i, &len);
-
-        for (int j = 0; j < len; j++)
-            spec_names[i].push_back(int_spec_names[j]);
-    }
+    spec_names[0] = "H";
+    spec_names[1] = "He";
 
     if (ParallelDescriptor::IOProcessor())
     {
@@ -590,11 +568,8 @@ Nyx::no_hydro_setup()
 #else
     use_const_species = 0;
 #endif
-    fort_set_method_params (NDIAG_C, do_hydro, use_const_species,
-                            gamma, normalize_species, heat_cool_type, inhomo_reion);
 
 #ifdef HEATCOOL
-    fort_tabulate_rates();
     ParmParse pp("nyx");
     std::string file_in;
     pp.query("uvb_rates_file", file_in);
@@ -767,18 +742,6 @@ Nyx::no_hydro_setup()
 #endif
 }
 #endif
-
-void
-Nyx::alloc_cuda_managed()
-{
-    fort_alloc_cuda_managed();
-}
-
-void
-Nyx::dealloc_cuda_managed()
-{
-    fort_dealloc_cuda_managed();
-}
 
 #ifdef AMREX_USE_CVODE
 void

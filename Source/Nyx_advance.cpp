@@ -1,6 +1,7 @@
 
 #include "Nyx.H"
 #include "Nyx_F.H"
+#include "constants_cosmo.H"
 
 #ifdef GRAVITY
 #include "Gravity.H"
@@ -570,8 +571,7 @@ Nyx::correct_gsrc(int lev, Real time, Real prev_time, Real cur_time, Real dt)
 {
       
     // For now we have to grab grav_source_type from the Fortran
-    int l_type;
-    get_grav_source_type(&l_type);
+    int l_type = grav_source_type;
     AMREX_ALWAYS_ASSERT(l_type == 1 or l_type == 3);
 
     const auto& ba = get_level(lev).get_new_data(State_Type).boxArray();

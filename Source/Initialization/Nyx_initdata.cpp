@@ -123,21 +123,6 @@ Nyx::read_init_params ()
         amrex::Error();
     }
 #endif
-
-#ifdef HEATCOOL
-    Real eos_nr_eps = 1.0e-6;
-    Real vode_rtol = 1.0e-4;
-    Real vode_atol_scaled = 1.0e-4;
-
-    // Tolerance for Newton-Raphson iteration of iterate_ne() in the EOS
-    pp.query("eos_nr_eps", eos_nr_eps);
-    // Relative tolerance of VODE integration
-    pp.query("vode_rtol", vode_rtol);
-    // Absolute tolerance of VODE integration (scaled by initial value of ODE)
-    pp.query("vode_atol_scaled", vode_atol_scaled);
-
-    fort_setup_eos_params(&eos_nr_eps, &vode_rtol, &vode_atol_scaled);
-#endif
 }
 
 void
@@ -168,15 +153,20 @@ Nyx::init_zhi ()
     MultiFab zhi_from_file;
     VisMF::Read(zhi_from_file, inhomo_zhi_file);
     zhi.copy(zhi_from_file, geom.periodicity());
+	if(D_new.nComp()>2)
+	{
+            for (MFIter mfi(D_new,true); mfi.isValid(); ++mfi)
+            {
+                const Box& bx = mfi.tilebox();
+                const auto fab_zhi=zhi.array(mfi);
+                const auto fab_D_new=D_new.array(mfi);
 
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
-    for (MFIter mfi(D_new); mfi.isValid(); ++mfi) {
-        const Box& tbx = mfi.tilebox();
-        fort_init_zhi(tbx.loVect(), tbx.hiVect(),
-                      nd, BL_TO_FORTRAN(D_new[mfi]),
-                      ratio, BL_TO_FORTRAN(zhi[mfi]));
+                amrex::ParallelFor(
+                               bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+								   fab_D_new(i, j ,k, Zhi_comp) = fab_zhi(i/ratio,j/ratio,k/ratio);
+                               });
+
+            }
     }
 #endif
     if (ParallelDescriptor::IOProcessor()) std::cout << "done.\n";
@@ -354,21 +344,6 @@ Nyx::initData ()
     }
 #endif
     
-
-    // Add partially redundant setup for small_dens
-    Real average_gas_density = -1e200;
-    Real average_temperature = -1e200;
-    // Make sure small values give non-negative small_pres
-    Real small_dens_loc = amrex::max(1e-2,small_dens);
-    Real small_temp_loc = amrex::max(1e-2,small_temp);
-    Real a = get_comoving_a(cur_time);
-
-    amrex::Gpu::Device::synchronize();
-
-    fort_set_small_values
-      (&average_gas_density, &average_temperature,
-       &a,  &small_dens_loc, &small_temp_loc, &small_pres);
-
     amrex::Gpu::Device::synchronize();
 
     if (level == 0)

@@ -3,6 +3,7 @@
 #include <AMReX_ParmParse.H>
 #include "Gravity.H"
 #include "Nyx.H"
+#include "constants_cosmo.H"
 #include <Gravity_F.H>
 #include <Nyx_F.H>
 
@@ -31,16 +32,10 @@ Real Gravity::ml_tol        = 1.e-12;
 Real Gravity::delta_tol     = 1.e-12;
 Real Gravity::mass_offset   = 0;
 
-extern "C"
-{void fort_get_grav_const(Real* Gconst);}
-
 // ************************************************************************** //
 
 // Ggravity is defined as -4 * pi * G, where G is the gravitational constant.
-// G is defined as Gconst in `fParallel/extern/constants/nyx_constants.f90` if
-// NYX is defined in the GNUmakefile. G is defined as Gconst in
-// `fParallel/extern/constants/constants.f90` if NYX is not defined in the
-// GNUmakefile
+// G is defined as Gconst in `Nyx/Source/Constants/constants_cosmo.H` if
 
 // In CGS, this constant is currently
 //      Gconst   =  6.67428e-8           cm^3/g/s^2 , which results in
@@ -125,8 +120,6 @@ Gravity::read_params ()
         pp.query("sl_tol", sl_tol);
         pp.query("delta_tol", delta_tol);
 
-        Real Gconst;
-        fort_get_grav_const(&Gconst);
         Ggravity = -4.0 * M_PI * Gconst;
         if (verbose > 0)
         {
