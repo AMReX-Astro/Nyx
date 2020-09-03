@@ -3009,7 +3009,7 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
 
     Real whim_mass=0.0, whim_vol=0.0, hh_mass=0.0, hh_vol=0.0, igm_mass=0.0, igm_vol=0.0, mass_sum=0.0, vol_sum=0.0;
 
-#ifdef AMREX_USE_CUDA
+#ifdef AMREX_USE_GPU
     Gpu::DeviceScalar<Real> whim_mass_gpu( whim_mass);
     Gpu::DeviceScalar<Real> whim_vol_gpu( whim_vol);
     Gpu::DeviceScalar<Real> hh_mass_gpu( hh_mass);
@@ -3037,7 +3037,7 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
         const auto diag_eos = D_new.array(mfi);
         Real vol = dx[0]*dx[1]*dx[2];
 
-#ifdef AMREX_USE_CUDA
+#ifdef AMREX_USE_GPU
     Real* pwhim_mass= whim_mass_gpu.dataPtr();
     Real* pwhim_vol= whim_vol_gpu.dataPtr();
     Real* phh_mass= hh_mass_gpu.dataPtr();
@@ -3085,7 +3085,7 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
 
     }
 
-#ifdef AMREX_USE_CUDA
+#ifdef AMREX_USE_GPU
     amrex::Gpu::Device::streamSynchronize();
 
     whim_mass= whim_mass_gpu.dataValue();
