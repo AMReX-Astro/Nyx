@@ -3,12 +3,12 @@ ifeq ($(USE_HEATCOOL), TRUE)
 CEXE_sources += eos_hc.cpp
 CEXE_headers += eos_hc.H
 CEXE_headers += atomic_rates.H
+CEXE_headers += atomic_rates_data.H
+CEXE_sources += atomic_rates_data.cpp
 else
 #F90EXE_sources += eos_stuff.F90
 CEXE_sources += eos_adiabatic.cpp
 endif
 
 #F90EXE_sources += atomic_rates.F90
-CEXE_headers += atomic_rates_data.H
-CEXE_sources += atomic_rates_data.cpp
 #F90EXE_sources += reion_aux_module.F90

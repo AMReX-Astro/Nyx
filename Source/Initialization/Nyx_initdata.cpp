@@ -153,9 +153,10 @@ Nyx::init_zhi ()
     MultiFab zhi_from_file;
     VisMF::Read(zhi_from_file, inhomo_zhi_file);
     zhi.copy(zhi_from_file, geom.periodicity());
-	if(D_new.nComp()>2)
-	{
-            for (MFIter mfi(D_new,true); mfi.isValid(); ++mfi)
+    if(D_new.nComp()>2)
+    {
+        int l_Zhi_comp = Zhi_comp;
+        for (MFIter mfi(D_new,true); mfi.isValid(); ++mfi)
             {
                 const Box& bx = mfi.tilebox();
                 const auto fab_zhi=zhi.array(mfi);
@@ -163,7 +164,7 @@ Nyx::init_zhi ()
 
                 amrex::ParallelFor(
                                bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-								   fab_D_new(i, j ,k, Zhi_comp) = fab_zhi(i/ratio,j/ratio,k/ratio);
+                                   fab_D_new(i, j ,k, l_Zhi_comp) = fab_zhi(i/ratio,j/ratio,k/ratio);
                                });
 
             }
