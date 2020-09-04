@@ -134,6 +134,11 @@ int Nyx::strang_grown_box = 1;
 int Nyx::sdc_split    = 0;
 #endif
 
+Real Nyx::average_gas_density = 0;
+Real Nyx::average_dm_density = 0;
+Real Nyx::average_neutr_density = 0;
+Real Nyx::average_total_density = 0;
+
 long int Nyx::old_max_sundials_steps = 3;
 long int Nyx::new_max_sundials_steps = 3;
 

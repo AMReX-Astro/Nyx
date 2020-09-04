@@ -755,6 +755,12 @@ public:
 
     static std::string particle_plotfile_format;
 
+    // Average value of gas, dark matter, neutrino and total density, computed every coarse timestep
+    static amrex::Real average_gas_density;
+    static amrex::Real average_dm_density;
+    static amrex::Real average_neutr_density;
+    static amrex::Real average_total_density;
+
     //
     // This amrex::MultiFab is used for the level coarser than this level to mask out
     // this level.  We only build this when it is needed.
@@ -983,13 +989,6 @@ protected:
   static amrex::Real getCPUTime();
 
 };
-
-    // Average value of gas, dark matter, neutrino and total density, computed every coarse timestep
-    static amrex::Real average_gas_density;
-    static amrex::Real average_dm_density;
-    static amrex::Real average_neutr_density;
-    static amrex::Real average_total_density;
-
 
 void nyx_bcfill (amrex::Box const& bx, amrex::FArrayBox& data,
                  const int dcomp, const int numcomp,
