@@ -184,7 +184,7 @@ void iterate_ne_device(const int JH, const int JHe, const amrex::Real z,
     nhe0  = YHELIUM - (nhep + nhepp);
 }
 
-AMREX_FORCE_INLINE AMREX_GPU_DEVICE void nyx_eos_T_given_Re_device(Real gamma_minus_1, Real h_species, int JH, int JHe, Real* T, Real* Ne, Real R,Real e,Real comoving_a)
+AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_T_given_Re_device(Real gamma_minus_1, Real h_species, int JH, int JHe, Real* T, Real* Ne, Real R,Real e,Real comoving_a)
 {
 
     amrex::Real z, rho, U, nh, nh0, nhep, nhp, nhe0, nhepp;
@@ -201,7 +201,7 @@ AMREX_FORCE_INLINE AMREX_GPU_DEVICE void nyx_eos_T_given_Re_device(Real gamma_mi
 
 }
 
-AMREX_FORCE_INLINE AMREX_GPU_DEVICE void nyx_eos_given_RT(Real gamma_minus_1, Real h_species, Real* e, Real* P, Real R, Real T, Real Ne,Real comoving_a)
+AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_given_RT(Real gamma_minus_1, Real h_species, Real* e, Real* P, Real R, Real T, Real Ne,Real comoving_a)
 {
   
   Real mu = (1.0+4.0*YHELIUM) / (1.0+YHELIUM+Ne);
