@@ -1,6 +1,11 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 max_step = 20
 
+# We set this to 1 so that we eliminate the OpenMP-induced variability
+# in the MultiFab and Nyx sums that was making the solution to the gravity solve
+# have sufficient variability that this failed the regression test using OpenMP.
+amrex.regtest_reduction = 1
+
 #stop_time = 0.1
 
 nyx.initial_z = 0.0
@@ -39,6 +44,11 @@ amr.regrid_file = fixed_grids.mass
 amr.regrid_int      = 2
 amr.use_efficient_regrid = 1
 #amr.grid_log        = grdlog
+
+amr.refinement_indicators = density
+#amr.density.max_level = 0
+amr.density.value_greater = 1
+amr.density.field_name = total_particle_count
 
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
 # 0 = Interior           3 = Symmetry
@@ -110,5 +120,5 @@ amr.derive_plot_vars = particle_count particle_mass_density
 
 
 #PROBIN FILENAME
-amr.probin_file = probin
+amr.probin_file = ""
 
