@@ -833,6 +833,7 @@ protected:
     static amrex::Real change_max;
     static int do_reflux;
     static amrex::ErrorList err_list;
+    static amrex::Vector<amrex::AMRErrorTag> errtags;
     static amrex::BCRec phys_bc;
 
     static int nsteps_from_plotfile;
@@ -988,6 +989,8 @@ protected:
   static amrex::Real getCPUTime();
 
 };
+
+#include <Tagging.H>
 
 void nyx_bcfill (amrex::Box const& bx, amrex::FArrayBox& data,
                  const int dcomp, const int numcomp,
