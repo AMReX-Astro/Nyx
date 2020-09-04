@@ -182,7 +182,11 @@ Nyx::initData ()
     // Here we initialize the grid data and the particles from a plotfile.
     if (!parent->theRestartPlotFile().empty())
     {
+#ifdef CXX_PROB
+        amrex::Abort("AmrData requires fortran");
+#else
         init_from_plotfile();
+#endif
         return;
     }
 
@@ -389,6 +393,7 @@ Nyx::initData ()
         std::cout << "Done initializing the level " << level << " data\n";
 }
 
+#ifndef CXX_PROB
 void
 Nyx::init_from_plotfile ()
 {
@@ -448,6 +453,7 @@ Nyx::init_from_plotfile ()
         std::cout << " " << std::endl; 
     }
 }
+#endif
 
 #ifndef NO_HYDRO
 void

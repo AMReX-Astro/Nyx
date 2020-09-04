@@ -135,7 +135,12 @@ VPATH_LOCATIONS   += $(Blocs)
 
 #These are the directories in AMReX
 
+ifeq ($(USE_CXX_PROB),TRUE)
+Pdirs   := Base AmrCore Amr Boundary Particle
+else
 Pdirs   := Base AmrCore Amr Boundary Particle Extern/amrdata 
+endif
+
 ifeq ($(USE_SENSEI_INSITU),TRUE)
     Pdirs += Extern/SENSEI
 endif
