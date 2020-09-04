@@ -971,12 +971,6 @@ protected:
   static amrex::Real mass_seed;
 #endif
 
-    // Average value of gas, dark matter, neutrino and total density, computed every coarse timestep
-    static amrex::Real average_gas_density;
-    static amrex::Real average_dm_density;
-    static amrex::Real average_neutr_density;
-    static amrex::Real average_total_density;
-
   // Previous maximum number of steps for sundials
   static long int old_max_sundials_steps;
   static long int new_max_sundials_steps;
@@ -989,6 +983,13 @@ protected:
   static amrex::Real getCPUTime();
 
 };
+
+    // Average value of gas, dark matter, neutrino and total density, computed every coarse timestep
+    static amrex::Real average_gas_density;
+    static amrex::Real average_dm_density;
+    static amrex::Real average_neutr_density;
+    static amrex::Real average_total_density;
+
 
 void nyx_bcfill (amrex::Box const& bx, amrex::FArrayBox& data,
                  const int dcomp, const int numcomp,

@@ -329,6 +329,13 @@ Nyx::hydro_setup()
     derive_lst.addComponent("denvol", desc_lst, State_Type, Density, 1);
 
     //
+    // Density / (avg_gas_density * 8^(level+1))
+    //
+    derive_lst.add("overden", IndexType::TheCellType(), 1,
+                   deroverden, grow_box_by_one);
+    derive_lst.addComponent("overden", desc_lst, State_Type, Density, 1);
+
+    //
     // Pressure
     //
     derive_lst.add("pressure", IndexType::TheCellType(), 1,
