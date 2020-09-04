@@ -990,8 +990,6 @@ protected:
 
 };
 
-#include <Tagging.H>
-
 void nyx_bcfill (amrex::Box const& bx, amrex::FArrayBox& data,
                  const int dcomp, const int numcomp,
                  amrex::Geometry const& geom, const amrex::Real time,

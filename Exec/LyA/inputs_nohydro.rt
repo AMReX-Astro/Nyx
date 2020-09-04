@@ -115,6 +115,11 @@ amr.max_level          = 0        # maximum level number allowed
 #amr.regrid_on_restart  = 1
 #amr.blocking_factor    = 32
 
+amr.refinement_indicators = density
+amr.density.max_level = 0
+amr.density.value_greater = 3.5e9
+amr.density.field_name = denvol
+
 # CHECKPOINT FILES
 amr.checkpoint_files_output = 0
 amr.check_file      = chk
