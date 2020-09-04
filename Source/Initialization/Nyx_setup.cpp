@@ -320,6 +320,15 @@ Nyx::hydro_setup()
     //
     // DEFINE DERIVED QUANTITIES
     //
+
+    //
+    // Density * Volume
+    //
+    derive_lst.add("denvol", IndexType::TheCellType(), 1,
+                   derdenvol, grow_box_by_one);
+    derive_lst.addComponent("denvol", desc_lst, State_Type, Density, 1);
+
+    //
     // Pressure
     //
     derive_lst.add("pressure", IndexType::TheCellType(), 1,

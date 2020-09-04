@@ -414,6 +414,28 @@ extern "C"
 
       });
     }
+
+    void derdenvol(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
+                   const FArrayBox& datfab, const Geometry& geomdata,
+                   Real /*time*/, const int* /*bcrec*/, int /*level*/)
+    {
+
+      auto const dat = datfab.array();
+      auto const der = derfab.array();
+
+      auto const dx = geomdata.CellSizeArray();
+
+      // Here dat contains (Density, Xmom, Ymom, Zmom)
+      const Real V_cell = dx[0] * dx[1] * dx[2];
+      amrex::ParallelFor(bx,
+      [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
+      {
+
+        der(i,j,k,0) = V_cell * dat(i,j,k,Density);
+
+      });
+    }
+
 #ifdef __cplusplus
 }
 #endif

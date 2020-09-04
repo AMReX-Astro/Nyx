@@ -115,6 +115,20 @@ amr.n_error_buf     = 2 2 2 2
 amr.grid_eff        = 0.7     
 amr.blocking_factor = 8
 
+amr.refinement_indicators = density
+#amr.refinement_indicators = density lo_temp gradT magvort
+amr.density.max_level = 1
+amr.density.value_greater = 3.5e9
+amr.density.field_name = denvol
+#amr.lo_temp.max_level = 2
+#amr.lo_temp.value_less = 500
+#amr.lo_temp.field_name = temp
+#amr.gradT.max_level = 2
+#amr.gradT.adjacent_difference_greater = 300
+#amr.gradT.field_name = temp
+#amr.magvort.max_level = 3
+#amr.magvort.vorticity_greater = 300
+
 # CHECKPOINT FILES
 amr.check_file      = chk
 amr.check_int       = 100
