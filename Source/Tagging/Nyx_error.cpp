@@ -8,6 +8,69 @@ using std::string;
 void
 Nyx::error_setup()
 {
+
+#ifdef CXX_PROB
+    std::string amr_prefix = "amr";
+    ParmParse ppamr(amr_prefix);
+    Vector<std::string> refinement_indicators;
+    ppamr.queryarr("refinement_indicators",refinement_indicators,0,ppamr.countval("refinement_indicators"));
+    for (int i=0; i<refinement_indicators.size(); ++i)
+      {
+	std::string ref_prefix = amr_prefix + "." + refinement_indicators[i];
+	ParmParse ppr(ref_prefix);
+	RealBox realbox;
+	if (ppr.countval("in_box_lo")) {
+	  std::vector<Real> box_lo(BL_SPACEDIM), box_hi(BL_SPACEDIM);
+	  ppr.getarr("in_box_lo",box_lo,0,box_lo.size());
+	  ppr.getarr("in_box_hi",box_hi,0,box_hi.size());
+	  realbox = RealBox(&(box_lo[0]),&(box_hi[0]));
+	}
+	AMRErrorTagInfo info;
+	if (realbox.ok()) {
+	  info.SetRealBox(realbox);
+	}
+	if (ppr.countval("start_time") > 0) {
+	  Real min_time; ppr.get("start_time",min_time);
+	  info.SetMinTime(min_time);
+	}
+	if (ppr.countval("end_time") > 0) {
+	  Real max_time; ppr.get("end_time",max_time);
+	  info.SetMaxTime(max_time);
+	}
+	if (ppr.countval("max_level") > 0) {
+	  int max_level; ppr.get("max_level",max_level);
+	  info.SetMaxLevel(max_level);
+	}
+	if (ppr.countval("value_greater")) {
+	  Real value; ppr.get("value_greater",value);
+	  std::string field; ppr.get("field_name",field);
+	  errtags.push_back(AMRErrorTag(value,AMRErrorTag::GREATER,field,info));
+	}
+	else if (ppr.countval("value_less")) {
+	  Real value; ppr.get("value_less",value);
+	  std::string field; ppr.get("field_name",field);
+	  errtags.push_back(AMRErrorTag(value,AMRErrorTag::LESS,field,info));
+	}
+	else if (ppr.countval("vorticity_greater")) {
+	  Real value; ppr.get("vorticity_greater",value);
+	  const std::string field="mag_vort";
+	  errtags.push_back(AMRErrorTag(value,AMRErrorTag::VORT,field,info));
+	}
+	else if (ppr.countval("adjacent_difference_greater")) {
+	  Real value; ppr.get("adjacent_difference_greater",value);
+	  std::string field; ppr.get("field_name",field);
+	  errtags.push_back(AMRErrorTag(value,AMRErrorTag::GRAD,field,info));
+	}
+	else if (realbox.ok())
+	  {
+	    errtags.push_back(AMRErrorTag(info));
+	  }
+	else {
+	  Abort(std::string("Unrecognized refinement indicator for " + refinement_indicators[i]).c_str());
+	}
+      }
+
+#else
     // The lines below define routines to be called to tag cells for error
     // estimation -- the arguments of each "add" call are:
     //   1. Name of variable (state variable or derived quantity) which will be
@@ -53,6 +116,7 @@ Nyx::error_setup()
     err_list.add("total_density",1,ErrorRec::UseAverage,
                  BL_FORT_PROC_CALL(TAG_OVERDENSITY, tag_overdensity));
 
+#endif
 }
 
 void
