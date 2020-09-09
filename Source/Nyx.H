@@ -10,15 +10,15 @@
 #include <AMReX_ErrorList.H>
 #include <AMReX_FluxRegister.H>
 
-#include "IndexDefines.H"
+#include <IndexDefines.H>
 
-#include "NyxParticleContainer.H"
-#include "DarkMatterParticleContainer.H"
+#include <NyxParticleContainer.H>
+#include <DarkMatterParticleContainer.H>
 #ifdef AGN
-#include "AGNParticleContainer.H"
+#include <AGNParticleContainer.H>
 #endif
 #ifdef NEUTRINO_PARTICLES
-#include "NeutrinoParticleContainer.H"
+#include <NeutrinoParticleContainer.H>
 #endif
 
 #ifdef REEBER

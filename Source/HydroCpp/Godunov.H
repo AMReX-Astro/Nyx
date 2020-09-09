@@ -6,8 +6,8 @@
 #include <AMReX_FArrayBox.H>
 #include <AMReX_IArrayBox.H>
 
-#include "IndexDefines.H"
-#include "Riemann.H"
+#include <IndexDefines.H>
+#include <Riemann.H>
 
 /*This header file contains functions and declarations for the 3D hydro portion
   of PeleC cuda. As per the convention of AMReX, inlined functions are defined

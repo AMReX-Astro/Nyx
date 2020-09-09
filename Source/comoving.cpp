@@ -1,6 +1,6 @@
 #include <iomanip>
-#include "Nyx.H"
-#include "Nyx_F.H"
+#include <Nyx.H>
+#include <Nyx_F.H>
 #include <constants_cosmo.H>
 
 using namespace amrex;

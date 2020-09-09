@@ -25,7 +25,7 @@
 
 #include <AMReX_ParallelDescriptor.H>
 
-#include "MemInfo.H"
+#include <MemInfo.H>
 
 using namespace amrex;
 

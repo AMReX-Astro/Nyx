@@ -2,7 +2,7 @@
 #ifndef _DarkMatterParticleContainer_H_
 #define _DarkMatterParticleContainer_H_
 
-#include "NyxParticleContainer.H"
+#include <NyxParticleContainer.H>
 
 class DarkMatterParticleContainer
     : public NyxParticleContainer<1+BL_SPACEDIM>

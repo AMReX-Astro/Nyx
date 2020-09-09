@@ -1,10 +1,10 @@
 #ifndef _NyxParticleContainer_H_
 #define _NyxParticleContainer_H_
 
-#include "AMReX_Amr.H"
-#include "AMReX_AmrLevel.H"
-#include "AMReX_NeighborParticles.H"
-#include "AMReX_AmrParticles.H"
+#include <AMReX_Amr.H>
+#include <AMReX_AmrLevel.H>
+#include <AMReX_NeighborParticles.H>
+#include <AMReX_AmrParticles.H>
 
 class NyxParticleContainerBase
 {

@@ -1,8 +1,8 @@
 #ifndef NEUTRINO_PARTICLES_K_H_
 #define NEUTRINO_PARTICLES_K_H_
 
-#include "NeutrinoParticleContainer.H"
-#include "AMReX_REAL.H"
+#include <NeutrinoParticleContainer.H>
+#include <AMReX_REAL.H>
 
 AMREX_GPU_HOST_DEVICE AMREX_FORCE_INLINE
 void neutrino_deposit_relativistic_cic (NeutrinoParticleContainer::ParticleType const& p,

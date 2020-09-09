@@ -1,8 +1,8 @@
 #include <cmath>
 
 #include <AMReX_ParmParse.H>
-#include "Gravity.H"
-#include "Nyx.H"
+#include <Gravity.H>
+#include <Nyx.H>
 #include <Gravity_F.H>
 #include <Nyx_F.H>
 

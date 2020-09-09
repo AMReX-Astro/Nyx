@@ -1,5 +1,5 @@
 #include <iomanip>
-#include "Nyx.H"
+#include <Nyx.H>
 
 using namespace amrex;
 

@@ -1,6 +1,5 @@
-#include "AMReX_REAL.H"
-
-#include "Derive.H"
+#include <AMReX_REAL.H>
+#include <Derive.H>
 #include <Nyx.H>
 
 using namespace amrex;

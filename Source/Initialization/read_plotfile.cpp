@@ -15,10 +15,10 @@
 #include <unistd.h>
 #endif
 
-#include "Nyx.H"
-#include "Nyx_F.H"
-#include "AMReX_DataServices.H"
-#include "AMReX_Utility.H"
+#include <Nyx.H>
+#include <Nyx_F.H>
+#include <AMReX_DataServices.H>
+#include <AMReX_Utility.H>
 
 using namespace amrex;
 

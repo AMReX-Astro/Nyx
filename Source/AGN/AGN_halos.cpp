@@ -20,10 +20,10 @@ using std::string;
 #include <Nyx_F.H>
 #include <Derive.H>
 
-#include "AGNParticleContainer.H"
+#include <AGNParticleContainer.H>
 
 #if BL_USE_MPI
-#include "MemInfo.H"
+#include <MemInfo.H>
 #endif
 
 #ifdef REEBER

@@ -25,15 +25,15 @@ using std::string;
 #include <AMReX_Print.H>
 
 #if BL_USE_MPI
-#include "MemInfo.H"
+#include <MemInfo.H>
 #endif
 
 #ifdef GRAVITY
-#include "Gravity.H"
+#include <Gravity.H>
 #endif
 
 #ifdef FORCING
-#include "Forcing.H"
+#include <Forcing.H>
 #endif
 
 #ifdef GIMLET
@@ -42,7 +42,7 @@ using std::string;
 #endif
 
 #ifdef AGN
-#include "agn_F.H"
+#include <agn_F.H>
 #endif
 
 #define BL_ARR4_TO_FORTRAN_3D(a) a.p,&((a).begin.x),amrex::GpuArray<int,3>{(a).end.x-1,(a).end.y-1,(a).end.z-1}.data()

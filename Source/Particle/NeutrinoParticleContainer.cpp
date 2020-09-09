@@ -1,7 +1,7 @@
 #ifdef NEUTRINO_PARTICLES
 
-#include "NeutrinoParticleContainer.H"
-#include "NeutrinoParticles_K.H"
+#include <NeutrinoParticleContainer.H>
+#include <NeutrinoParticles_K.H>
 
 using namespace amrex;
 

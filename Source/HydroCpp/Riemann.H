@@ -1,6 +1,6 @@
 #ifndef _RIEMANN_H_
 #define _RIEMANN_H_
-#include "IndexDefines.H"
+#include <IndexDefines.H>
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE

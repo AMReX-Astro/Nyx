@@ -29,7 +29,7 @@
 #endif
 #endif
 
-#include "Nyx_output.H"
+#include <Nyx_output.H>
 
 std::string inputs_name = "";
 

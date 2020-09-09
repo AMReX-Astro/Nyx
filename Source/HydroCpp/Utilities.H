@@ -2,7 +2,7 @@
 #define _UTILITIES_H_
 
 #include <AMReX_FArrayBox.H>
-#include "IndexDefines.H"
+#include <IndexDefines.H>
 
 /*
 AMREX_GPU_DEVICE

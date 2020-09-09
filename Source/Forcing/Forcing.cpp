@@ -1,7 +1,7 @@
 #include <Nyx.H>
 #include <Nyx_F.H>
 
-#include "Forcing.H"
+#include <Forcing.H>
 
 using namespace amrex;
 

@@ -2,7 +2,7 @@
 #ifndef _NeutrinoParticleContainer_H_
 #define _NeutrinoParticleContainer_H_
 
-#include "NyxParticleContainer.H"
+#include <NyxParticleContainer.H>
 
 class NeutrinoParticleContainer
     : public NyxParticleContainer<2+BL_SPACEDIM>

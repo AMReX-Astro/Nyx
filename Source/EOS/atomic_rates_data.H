@@ -1,7 +1,6 @@
 #ifndef _Atomic_Rates_H_
 #define _Atomic_Rates_H_
 
-
 #include <AMReX.H>
 #include <AMReX_Array.H>
 #include <AMReX_Vector.H>

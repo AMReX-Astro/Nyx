@@ -3,12 +3,12 @@
 #include <Nyx.H>
 #include <Nyx_F.H>
 #include <AMReX_PlotFileUtil.H>
-#include "Nyx_output.H"
+#include <Nyx_output.H>
 
-#include "AMReX_buildInfo.H"
+#include <AMReX_buildInfo.H>
 
 #ifdef FORCING
-#include "Forcing.H"
+#include <Forcing.H>
 
 void mt_write(std::ofstream& output);
 #endif

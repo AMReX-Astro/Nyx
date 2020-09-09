@@ -7,7 +7,7 @@
 #include <AMReX_Particles.H>
 #include <AMReX_NeighborParticles.H>
 
-#include "NyxParticleContainer.H"
+#include <NyxParticleContainer.H>
 
 class AGNParticleContainer
     : public NyxParticleContainer<3+BL_SPACEDIM, 0, 0, 0>
