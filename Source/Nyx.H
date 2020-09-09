@@ -259,6 +259,7 @@ public:
     // Time step control based on "a" not growing too fast
     //
     void integrate_comoving_a_to_a(const amrex::Real old_a, const amrex::Real a_value, amrex::Real& dt);
+    void integrate_comoving_a_to_z(const amrex::Real old_a, const amrex::Real z_value, amrex::Real& dt);
     void est_maxdt_comoving_a(const amrex::Real old_a, amrex::Real & dt);
     void est_lindt_comoving_a(const amrex::Real old_a, const amrex::Real new_a, amrex::Real& dt);
     void estdt_comoving_a(const amrex::Real old_a,amrex::Real& new_a,amrex::Real& dt,const amrex::Real change_allowed,const amrex::Real fixed_da,const amrex::Real final_a,int& dt_modified);
@@ -754,6 +755,12 @@ public:
 
     static std::string particle_plotfile_format;
 
+    // Average value of gas, dark matter, neutrino and total density, computed every coarse timestep
+    static amrex::Real average_gas_density;
+    static amrex::Real average_dm_density;
+    static amrex::Real average_neutr_density;
+    static amrex::Real average_total_density;
+
     //
     // This amrex::MultiFab is used for the level coarser than this level to mask out
     // this level.  We only build this when it is needed.
@@ -765,9 +772,6 @@ public:
 
     static void InitErrorList();
     static void InitDeriveList();
-
-    static void alloc_cuda_managed();
-    static void dealloc_cuda_managed();
 
     static void set_simd_width(const int simd_width);
     static void alloc_simd_vec();
@@ -783,11 +787,6 @@ public:
 
 
 protected:
-
-    //
-    // Initialize the network.
-    //
-    static void network_init();
 
     static void read_params();
 
@@ -822,6 +821,11 @@ protected:
     void compute_average_species(int nspec, int naux, amrex::Vector<amrex::Real>& average_species);
 
     void set_small_values();
+
+    void set_small_values_given_average (amrex::Real average_dens, amrex::Real average_temp, amrex::Real a,
+                                         amrex::Real & small_dens_inout, amrex::Real & small_temp_inout, 
+                                         amrex::Real &small_pres_inout, amrex::Real gamma_minus_1, 
+                                         amrex::Real h_species, amrex::Real He_species);
 #endif
 
     void write_info();
@@ -840,6 +844,7 @@ protected:
     static amrex::Real change_max;
     static int do_reflux;
     static amrex::ErrorList err_list;
+    static amrex::Vector<amrex::AMRErrorTag> errtags;
     static amrex::BCRec phys_bc;
 
     static int nsteps_from_plotfile;
@@ -977,12 +982,6 @@ protected:
   static amrex::Real mass_seed;
 #endif
 
-    // Average value of gas, dark matter, neutrino and total density, computed every coarse timestep
-    static amrex::Real average_gas_density;
-    static amrex::Real average_dm_density;
-    static amrex::Real average_neutr_density;
-    static amrex::Real average_total_density;
-
   // Previous maximum number of steps for sundials
   static long int old_max_sundials_steps;
   static long int new_max_sundials_steps;
@@ -996,21 +995,13 @@ protected:
 
 };
 
-  AMREX_GPU_DEVICE void nyx_eos_T_given_Re_device(amrex::Real, amrex::Real, int JH, int JHe, amrex::Real* T, amrex::Real* Ne, amrex::Real R,amrex::Real e,amrex::Real comoving_a);
-  AMREX_GPU_DEVICE void nyx_eos_given_RT(amrex::Real, amrex::Real, amrex::Real* e, amrex::Real* P, amrex::Real R, amrex::Real T, amrex::Real Ne,amrex::Real comoving_a);
+void nyx_bcfill (amrex::Box const& bx, amrex::FArrayBox& data,
+                 const int dcomp, const int numcomp,
+                 amrex::Geometry const& geom, const amrex::Real time,
+                 const amrex::Vector<amrex::BCRec>& bcr, const int bcomp,
+                 const int scomp);
 
-  AMREX_GPU_DEVICE AMREX_FORCE_INLINE
-  void reset_internal_e (const int i,
-                         const int j,
-                         const int k,
-                         amrex::Array4<amrex::Real> const& u,
-                         amrex::Array4<amrex::Real> const& d,
-                         amrex::Array4<amrex::Real> const& r,
-                         const amrex::Real comoving_a,
-                         const amrex::Real gamma_minus_1,
-                         const amrex::Real h_species,
-                         const amrex::Real small_temp,
-                         const int interp);     
+#include <reset_internal_e.H>
 
 // time step interval for finding halos
 extern int reeber_int;

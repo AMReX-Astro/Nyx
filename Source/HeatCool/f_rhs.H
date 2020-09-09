@@ -103,7 +103,7 @@ f_rhs_rpar(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, amrex
     // Interpolate rates
     // Interpolate rates
     tmp = (logT-TCOOLMIN)/deltaT;
-    j = std::floor(tmp); // replacing int(tmp)
+    j = amrex::Math::floor(tmp); // replacing int(tmp)
     fhi = tmp - j;
     flo = 1.0e0 - fhi;
     j = j + 1; // F90 arrays start with 1, using Array1D<Real,1,size>

@@ -5,7 +5,6 @@
                          domlo,domhi,delta,xlo,time,bc) bind(C, name="hypfill")
  
       use amrex_fort_module, only : rt => amrex_real
-      use meth_params_module
  
       implicit none
       include 'AMReX_bc_types.fi'
@@ -13,9 +12,13 @@
       integer bc(3,2,*)
       integer domlo(3), domhi(3)
       real(rt) delta(3), xlo(3), time
-      real(rt) adv(adv_l1:adv_h1,adv_l2:adv_h2,adv_l3:adv_h3,NVAR)
+      ! Assume USE_CONST_SPECIES = TRUE => NVAR=6
+      real(rt) adv(adv_l1:adv_h1,adv_l2:adv_h2,adv_l3:adv_h3,6)
  
-      integer n
+      integer n, NVAR
+
+      ! Assume USE_CONST_SPECIES = TRUE => NVAR=6
+      NVAR = 6
  
       do n = 1,NVAR
           call filcc(adv(adv_l1,adv_l2,adv_l3,n), &

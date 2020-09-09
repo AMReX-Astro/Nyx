@@ -10,8 +10,11 @@ Nyx::error_setup()
 //    err_list.add("total_particle_count", 1, ErrorRec::Standard,
 //                 BL_FORT_PROC_CALL(TAG_PART_CNT_ERR, tag_part_cnt_err));
 
+#ifndef CXX_PROB
     err_list.add("density",1,ErrorRec::UseAverage,
                  BL_FORT_PROC_CALL(TAG_OVERDENSITY, tag_overdensity));
+#endif
+
 }
 
 void

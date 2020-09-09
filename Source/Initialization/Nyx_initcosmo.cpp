@@ -2,8 +2,6 @@
 
 #ifdef GRAVITY
 #include <Gravity.H>
-extern "C"
-{ void fort_get_grav_const(amrex::Real* Gconst); }
 #endif
 
 #include <Nyx.H>
@@ -149,7 +147,7 @@ void Nyx::initcosmo()
     // fort_get_omm(&comoving_OmM );
     // fort_get_omb(&comoving_OmB );
     // fort_get_hubble(&comoving_h);
-    fort_get_grav_const(&Gconst);
+    // fort_get_grav_const(&Gconst);
 
     // We now define this here instead of reading it.
     comoving_OmL = 1. - comoving_OmM;

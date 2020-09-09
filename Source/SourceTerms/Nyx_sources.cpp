@@ -34,7 +34,10 @@ Nyx::get_old_source (Real      old_time,
 #endif
     for (MFIter mfi(S_old, MFItInfo().SetDynamic(true).EnableTiling()); mfi.isValid(); ++mfi)
     {
-        // We explicitly want to fill the ghost regions of the ext_src array
+#ifdef CXX_PROB
+        amrex::Abort("C++ interface for external source not written");
+#else
+		// We explicitly want to fill the ghost regions of the ext_src array
         const Box& bx = mfi.growntilebox(ext_src.nGrow());
         fort_ext_src
             (bx.loVect(), bx.hiVect(), 
@@ -42,7 +45,7 @@ Nyx::get_old_source (Real      old_time,
              BL_TO_FORTRAN(Dborder[mfi]), BL_TO_FORTRAN(Dborder[mfi]),
              BL_TO_FORTRAN(ext_src[mfi]),
              prob_lo, dx, &old_time, &z, &dt);
-
+#endif
         // The formulae in subroutine ctoprim assume that the source term for density is zero
         // Here we abort if it is non-zero.
         Real norm_density = ext_src[mfi].norm<RunOn::Device>(0,Density,1);
@@ -94,6 +97,9 @@ Nyx::get_new_source (Real      old_time,
 #endif
     for (MFIter mfi(S_old, MFItInfo().SetDynamic(true).EnableTiling()); mfi.isValid(); ++mfi)
     {
+#ifdef CXX_PROB
+        amrex::Abort("C++ interface for external source not written");
+#else
         // We explicitly only want to fill the valid region
         const Box& bx = mfi.tilebox();
         fort_ext_src
@@ -102,6 +108,7 @@ Nyx::get_new_source (Real      old_time,
              BL_TO_FORTRAN(Dborder_old[mfi]), BL_TO_FORTRAN(Dborder_new[mfi]),
              BL_TO_FORTRAN(ext_src[mfi]),
              prob_lo, dx, &new_time, &z, &dt);
+#endif
     }
 
     ext_src.EnforcePeriodicity(0, NUM_STATE, geom.periodicity());

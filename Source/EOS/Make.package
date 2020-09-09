@@ -1,14 +1,14 @@
 ifeq ($(USE_HEATCOOL), TRUE)
-F90EXE_sources += eos_hc_nd.F90
-CEXE_sources += eos_hc.cpp
+#F90EXE_sources += eos_hc_nd.F90
 CEXE_headers += eos_hc.H
 CEXE_headers += atomic_rates.H
-else
-F90EXE_sources += eos_stuff.F90
-CEXE_sources += eos_adiabatic.cpp
-endif
-
-F90EXE_sources += atomic_rates.F90
 CEXE_headers += atomic_rates_data.H
 CEXE_sources += atomic_rates_data.cpp
-F90EXE_sources += reion_aux_module.F90
+else
+#F90EXE_sources += eos_stuff.F90
+CEXE_headers += eos_adiabatic.H
+endif
+
+CEXE_headers += reset_internal_e.H
+#F90EXE_sources += atomic_rates.F90
+#F90EXE_sources += reion_aux_module.F90

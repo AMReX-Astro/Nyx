@@ -98,6 +98,7 @@ int Nyx::NUM_STATE = -1;
 int Nyx::nsteps_from_plotfile = -1;
 
 ErrorList Nyx::err_list;
+Vector<AMRErrorTag> Nyx::errtags;
 
 int Nyx:: Zhi_comp = -1;
 
@@ -268,6 +269,7 @@ Nyx::read_params ()
 
     pp_nyx.query("small_dens", small_dens);
     pp_nyx.query("small_temp", small_temp);
+    pp_nyx.query("small_pres", small_pres);
     pp_nyx.query("large_temp", large_temp);
     pp_nyx.query("gamma", gamma);
     //Set small factor for csmall
@@ -355,12 +357,10 @@ Nyx::read_params ()
     pp_nyx.get("comoving_h", comoving_h);
     pp_nyx.query("comoving_type", comoving_type);
 
-    fort_set_omb(comoving_OmB);
-    fort_set_omm(comoving_OmM);
-    fort_set_omr(comoving_OmR);
-    fort_set_hubble(comoving_h);
-
+#ifdef HEATCOOL
     mean_rhob = comoving_OmB * 3.e0*(comoving_h*100.e0)*(comoving_h*100.e0)	/ (8.e0*M_PI*Gconst);
+#endif
+
     pp_nyx.get("do_hydro", do_hydro);
 #ifdef NO_HYDRO
     if (do_hydro == 1)
@@ -525,7 +525,6 @@ Nyx::read_params ()
 #ifdef CONST_SPECIES
         pp_nyx.get("h_species" ,  h_species);
         pp_nyx.get("he_species", he_species);
-        fort_set_xhydrogen(h_species);
 
         amrex::Print() << "Nyx::setting species concentrations to "
                        << h_species << " and " << he_species
@@ -615,6 +614,67 @@ Nyx::read_params ()
             amrex::Warning(msg.c_str());
         }
     }
+
+    std::string amr_prefix = "amr";
+    ParmParse ppamr(amr_prefix);
+    Vector<std::string> refinement_indicators;
+    ppamr.queryarr("refinement_indicators",refinement_indicators,0,ppamr.countval("refinement_indicators"));
+    for (int i=0; i<refinement_indicators.size(); ++i)
+      {
+	std::string ref_prefix = amr_prefix + "." + refinement_indicators[i];
+	ParmParse ppr(ref_prefix);
+	RealBox realbox;
+	if (ppr.countval("in_box_lo")) {
+	  std::vector<Real> box_lo(BL_SPACEDIM), box_hi(BL_SPACEDIM);
+	  ppr.getarr("in_box_lo",box_lo,0,box_lo.size());
+	  ppr.getarr("in_box_hi",box_hi,0,box_hi.size());
+	  realbox = RealBox(&(box_lo[0]),&(box_hi[0]));
+	}
+	AMRErrorTagInfo info;
+	if (realbox.ok()) {
+	  info.SetRealBox(realbox);
+	}
+	if (ppr.countval("start_time") > 0) {
+	  Real min_time; ppr.get("start_time",min_time);
+	  info.SetMinTime(min_time);
+	}
+	if (ppr.countval("end_time") > 0) {
+	  Real max_time; ppr.get("end_time",max_time);
+	  info.SetMaxTime(max_time);
+	}
+	if (ppr.countval("max_level") > 0) {
+	  int max_level; ppr.get("max_level",max_level);
+	  info.SetMaxLevel(max_level);
+	}
+	if (ppr.countval("value_greater")) {
+	  Real value; ppr.get("value_greater",value);
+	  std::string field; ppr.get("field_name",field);
+	  errtags.push_back(AMRErrorTag(value,AMRErrorTag::GREATER,field,info));
+	}
+	else if (ppr.countval("value_less")) {
+	  Real value; ppr.get("value_less",value);
+	  std::string field; ppr.get("field_name",field);
+	  errtags.push_back(AMRErrorTag(value,AMRErrorTag::LESS,field,info));
+	}
+	else if (ppr.countval("vorticity_greater")) {
+	  Real value; ppr.get("vorticity_greater",value);
+	  const std::string field="mag_vort";
+	  errtags.push_back(AMRErrorTag(value,AMRErrorTag::VORT,field,info));
+	}
+	else if (ppr.countval("adjacent_difference_greater")) {
+	  Real value; ppr.get("adjacent_difference_greater",value);
+	  std::string field; ppr.get("field_name",field);
+	  errtags.push_back(AMRErrorTag(value,AMRErrorTag::GRAD,field,info));
+	}
+	else if (realbox.ok())
+	  {
+	    errtags.push_back(AMRErrorTag(info));
+	  }
+	else {
+	  Abort(std::string("Unrecognized refinement indicator for " + refinement_indicators[i]).c_str());
+	}
+      }
+
 
     // How often do we want to write x,y,z 2-d slices of S_new
     pp_nyx.query("slice_int",    slice_int);
@@ -709,12 +769,12 @@ Nyx::Nyx (Amr&            papa,
        old_a = 1.0 / (1.0 + initial_z);
        new_a = old_a;
     }
-
+	/*
 #ifdef HEATCOOL
      // Initialize "this_z" in the atomic_rates_module
     if (heat_cool_type == 3 || heat_cool_type == 4 || heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 9 || heat_cool_type == 10 || heat_cool_type == 11 || heat_cool_type == 12)
-         fort_interp_to_this_z(&initial_z);
 #endif
+		*/
 }
 
 Nyx::~Nyx ()
@@ -1015,9 +1075,9 @@ Nyx::est_time_step (Real dt_old)
                                                     else
                                                       c = 0.0;
 
-                                                    Real dt1 = dx[0]/(c + std::abs(ux));
-                                                    Real dt2 = dx[1]/(c + std::abs(uy));
-                                                    Real dt3 = dx[2]/(c + std::abs(uz));
+                                                    Real dt1 = dx[0]/(c + amrex::Math::abs(ux));
+                                                    Real dt2 = dx[1]/(c + amrex::Math::abs(uy));
+                                                    Real dt3 = dx[2]/(c + amrex::Math::abs(uz));
                                                     dt_gpu = amrex::min(dt_gpu,amrex::min(dt1,amrex::min(dt2,dt3)));
 
                                                   }
@@ -1607,20 +1667,6 @@ Nyx::post_timestep (int iteration)
                            s_fab(i,j,k,ieden ) += SrE * a_new_inv * 0.5 * dt_lev;
                        });
 
-//                  const auto fab_grad_phi_cc = grad_phi_cc.array(mfi);
-//                  const auto fab_grad_delta_phi_cc=(*grad_delta_phi_cc[lev-level]).array(mfi);
-//                  const auto fab_S_new_lev = S_new_lev.array(mfi);
-//                  AMREX_LAUNCH_DEVICE_LAMBDA(bx,tbx,
-//                  fort_syncgsrc
-//                      (tbx.loVect(), tbx.hiVect(), BL_ARR4_TO_FORTRAN(fab_grad_phi_cc),
-//                       BL_ARR4_TO_FORTRAN(fab_grad_delta_phi_cc),
-//                       BL_ARR4_TO_FORTRAN(fab_S_new_lev), BL_ARR4_TO_FORTRAN(fab_dstate),
-//                       BL_ARR4_TO_FORTRAN(fab_sync_src), a_new, dt_lev);
-//                                          });
-
-//                  sync_src.mult<RunOn::Device>(0.5 * dt_lev);
-//                  S_new_lev[mfi].plus<RunOn::Device>(sync_src, 0, Xmom, BL_SPACEDIM);
-//                  S_new_lev[mfi].plus<RunOn::Device>(sync_src, BL_SPACEDIM, Eden, 1);
                   }
                 }
             }
@@ -1828,12 +1874,12 @@ Nyx::set_small_values ()
        // Get the number of species from the network model.
        //
 #ifndef CONST_SPECIES
-       fort_get_num_spec(&NumSpec);
+       NumSpec = 2;
 #endif
-
-       fort_set_small_values
-            (&average_gas_density, &average_temperature,
-             &a,  &small_dens, &small_temp, &small_pres);
+       Real gamma_minus_1 = gamma - 1.0;
+       set_small_values_given_average
+       (average_gas_density, average_temperature,
+       a,  small_dens, small_temp, small_pres, gamma_minus_1, h_species, he_species);
 
        if (verbose && ParallelDescriptor::IOProcessor())
        {
@@ -2464,6 +2510,17 @@ Nyx::errorEst (TagBoxArray& tags,
 
     Real avg;
 
+#ifdef CXX_PROB
+    
+    for (int j=0; j<errtags.size(); ++j) {
+      std::unique_ptr<MultiFab> mf;
+      if (errtags[0].Field() != std::string()) {
+	mf = std::unique_ptr<MultiFab>(derive(errtags[j].Field(), time, errtags[j].NGrow()));
+      }
+      errtags[j](tags,mf.get(),clearval,tagval,time,level,geom);
+    }
+    
+#else
     for (int j = 0; j < err_list.size(); j++)
     {
         auto mf = derive(err_list[j].name(), time, err_list[j].nGrow());
@@ -2579,6 +2636,8 @@ Nyx::errorEst (TagBoxArray& tags,
             }
         }
     }
+#endif
+
 }
 
 std::unique_ptr<MultiFab>
@@ -2632,12 +2691,6 @@ Nyx::derive (const std::string& name,
         const auto& derive_dat = particle_derive(name, time, mf.nGrow());
         MultiFab::Copy(mf, *derive_dat, 0, dcomp, 1, mf.nGrow());
     }
-}
-
-void
-Nyx::network_init ()
-{
-    fort_network_init();
 }
 
 #ifndef NO_HYDRO
@@ -2743,62 +2796,6 @@ Nyx::reset_internal_energy_nostore (MultiFab& S_new, MultiFab& D_new)
     */
 
 }
-
-AMREX_GPU_DEVICE
-AMREX_FORCE_INLINE
-void reset_internal_e (const int i,
-                       const int j,
-                       const int k,
-                       amrex::Array4<amrex::Real> const& u,
-                       amrex::Array4<amrex::Real> const& d,
-                       amrex::Array4<amrex::Real> const& r,
-                       const amrex::Real comoving_a,
-                       const amrex::Real gamma_minus_1,
-                       const amrex::Real h_species,
-                       const amrex::Real small_temp,
-                       const int interp)
-{
-    Real rhoInv = 1.0 / u(i,j,k,URHO);
-    Real Up     = u(i,j,k,UMX) * rhoInv;
-    Real Vp     = u(i,j,k,UMY) * rhoInv;
-    Real Wp     = u(i,j,k,UMZ) * rhoInv;
-    Real ke     = 0.5 * u(i,j,k,URHO) * (Up*Up + Vp*Vp + Wp*Wp);
-
-    Real rho_eint = u(i,j,k,UEDEN) - ke;
-    Real dummy_pres = 1e200;
-    Real eint_new = -1e200;
-
-    // Reset (e from e) if it's greater than 0.01% of big E.
-    if (rho_eint > 0.0 && rho_eint / u(i,j,k,UEDEN) > 1.0e-6 && interp == 0)
-    {
-        // Create reset source so u(i,j,k,UEINT) = u(i,j,k,UEINT) + r(i,j,k) = rho_eint
-        r(i,j,k) = rho_eint - u(i,j,k,UEINT);
-        u(i,j,k,UEINT) = rho_eint;
-    }
-    // If (e from E) < 0 or (e from E) < .0001*E but (e from e) > 0.
-    else if (u(i,j,k,UEINT) > 0.0)
-    {
-        // e is not updated, so reset source is zero
-        r(i,j,k) = 0.0;
-        u(i,j,k,UEDEN) = u(i,j,k,UEINT) + ke;
-    }
-    // If not resetting and little e is negative ...
-    else if (u(i,j,k,UEINT) <= 0.0)
-    {
-        nyx_eos_given_RT(gamma_minus_1, h_species, &eint_new, &dummy_pres, u(i,j,k,URHO), small_temp, 
-                         d(i,j,k,Ne_comp),comoving_a);
-
-        // Create reset source so u(i,j,k,UEINT) = u(i,j,k,UEINT) + r(i,j,k) = u(i,j,k,URHO) * eint_new
-        r(i,j,k) = u(i,j,k,URHO) *  eint_new - u(i,j,k,UEINT);
-        u(i,j,k,UEINT) = u(i,j,k,URHO) *  eint_new;
-
-        u(i,j,k,UEDEN) = u(i,j,k,UEINT) + ke;
-    }
-
-    // Scale reset source by 1/rho so src is in terms of e
-    //           r(i,j,k) = r(i,j,k) / u(i,j,k,URHO)
-}
-
 #endif
 
 #ifndef NO_HYDRO
@@ -2809,18 +2806,20 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 
     Real cur_time  = state[State_Type].curTime();
     Real a        = get_comoving_a(cur_time);
-
+	/*
 #ifdef HEATCOOL 
     if (heat_cool_type == 3 || heat_cool_type == 4 || heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 9 || heat_cool_type == 10 || heat_cool_type == 11 || heat_cool_type == 12)
     {
        const Real z = 1.0/a - 1.0;
-       fort_interp_to_this_z(&z);
     }
 #endif
-
+	*/
     amrex::Gpu::synchronize();
     amrex::Gpu::LaunchSafeGuard lsg(true);
     if (heat_cool_type == 7) {
+#ifdef CXX_PROB
+        amrex::Abort("No vectorized CVODE with C++ f_rhs");
+#else
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
@@ -2834,6 +2833,7 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
                BL_TO_FORTRAN(D_new[mfi]), &a,
                &print_fortran_warnings);
         }
+#endif
     }
     else
       {
@@ -3073,7 +3073,6 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
 }
 #endif
 
-#ifdef AMREX_USE_GPU
 #ifndef NO_HYDRO
 void
 Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
@@ -3089,7 +3088,7 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
 
     Real whim_mass=0.0, whim_vol=0.0, hh_mass=0.0, hh_vol=0.0, igm_mass=0.0, igm_vol=0.0, mass_sum=0.0, vol_sum=0.0;
 
-#ifdef AMREX_USE_CUDA
+#ifdef AMREX_USE_GPU
     Gpu::DeviceScalar<Real> whim_mass_gpu( whim_mass);
     Gpu::DeviceScalar<Real> whim_vol_gpu( whim_vol);
     Gpu::DeviceScalar<Real> hh_mass_gpu( hh_mass);
@@ -3117,7 +3116,7 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
         const auto diag_eos = D_new.array(mfi);
         Real vol = dx[0]*dx[1]*dx[2];
 
-#ifdef AMREX_USE_CUDA
+#ifdef AMREX_USE_GPU
     Real* pwhim_mass= whim_mass_gpu.dataPtr();
     Real* pwhim_vol= whim_vol_gpu.dataPtr();
     Real* phh_mass= hh_mass_gpu.dataPtr();
@@ -3165,7 +3164,7 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
 
     }
 
-#ifdef AMREX_USE_CUDA
+#ifdef AMREX_USE_GPU
     amrex::Gpu::Device::streamSynchronize();
 
     whim_mass= whim_mass_gpu.dataValue();
@@ -3206,49 +3205,6 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
     }
 
 }
-#endif
-#else
-
-
-#ifndef NO_HYDRO
-void
-Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
-                            Real& whim_mass_frac, Real& whim_vol_frac,
-                            Real& hh_mass_frac,   Real& hh_vol_frac,
-                            Real& igm_mass_frac,  Real& igm_vol_frac)
-{
-  BL_PROFILE("Nyx::compute_gas_fractions()");
-  MultiFab& S_new = get_new_data(State_Type);
-  MultiFab& D_new = get_new_data(DiagEOS_Type);
-
-  Real whim_mass=0.0, whim_vol=0.0, hh_mass=0.0, hh_vol=0.0, igm_mass=0.0, igm_vol=0.0;
-  Real mass_sum=0.0, vol_sum=0.0;
-
-  #ifdef _OPENMP
-#pragma omp parallel reduction(+:whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum)
-  #endif
-  for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
-    {
-      const Box& bx = mfi.tilebox();
-
-              fort_compute_gas_frac
-                (bx.loVect(), bx.hiVect(), geom.CellSize(),
-                 BL_TO_FORTRAN(S_new[mfi]),
-                 BL_TO_FORTRAN(D_new[mfi]), &average_gas_density, &T_cut, &rho_cut,
-                 &whim_mass, &whim_vol, &hh_mass, &hh_vol, &igm_mass, &igm_vol, &mass_sum, &vol_sum);
-    }
-  Real sums[8] = {whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum};
-  ParallelDescriptor::ReduceRealSum(sums,8);
-
-  whim_mass_frac = sums[0] / sums[6];
-  whim_vol_frac  = sums[1] / sums[7];
-  hh_mass_frac   = sums[2] / sums[6];
-  hh_vol_frac    = sums[3] / sums[7];
-  igm_mass_frac  = sums[4] / sums[6];
-  igm_vol_frac   = sums[5] / sums[7];
-}
-#endif
-
 #endif
 
 Real

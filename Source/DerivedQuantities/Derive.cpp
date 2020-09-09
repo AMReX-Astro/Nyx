@@ -92,9 +92,9 @@ extern "C"
         Real wx = (dat(i+1,j,k,3) - dat(i-1,j,k,3)) / dx[0];
         Real wy = (dat(i,j+1,k,3) - dat(i,j-1,k,3)) / dx[1];
  
-        Real v1 = 0.5 * std::abs(wy - vz);
-        Real v2 = 0.5 * std::abs(uz - wx);
-        Real v3 = 0.5 * std::abs(vx - uy);
+        Real v1 = 0.5 * amrex::Math::abs(wy - vz);
+        Real v2 = 0.5 * amrex::Math::abs(uz - wx);
+        Real v3 = 0.5 * amrex::Math::abs(vx - uy);
 
         der(i,j,k,0) = std::sqrt(v1*v1 + v2*v2 + v3*v3); 
       });
@@ -414,6 +414,50 @@ extern "C"
 
       });
     }
+
+    void derdenvol(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
+                   const FArrayBox& datfab, const Geometry& geomdata,
+                   Real /*time*/, const int* /*bcrec*/, int /*level*/)
+    {
+
+      auto const dat = datfab.array();
+      auto const der = derfab.array();
+
+      auto const dx = geomdata.CellSizeArray();
+
+      // Here dat contains (Density, Xmom, Ymom, Zmom)
+      const Real V_cell = dx[0] * dx[1] * dx[2];
+      amrex::ParallelFor(bx,
+      [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
+      {
+
+        der(i,j,k,0) = V_cell * dat(i,j,k,Density);
+
+      });
+    }
+
+    void deroverden(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
+                    const FArrayBox& datfab, const Geometry& geomdata,
+                    Real /*time*/, const int* /*bcrec*/, int level)
+    {
+
+      auto const dat = datfab.array();
+      auto const der = derfab.array();
+
+      auto const dx = geomdata.CellSizeArray();
+
+      // Here dat contains (Density, Xmom, Ymom, Zmom)
+      const Real over_den = Nyx::average_total_density * std::pow(8,level+1);
+
+      amrex::ParallelFor(bx,
+      [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
+      {
+
+        der(i,j,k,0) = dat(i,j,k,Density) / over_den;
+
+      });
+    }
+
 #ifdef __cplusplus
 }
 #endif

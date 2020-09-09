@@ -80,34 +80,8 @@ Nyx::setPlotVariables ()
     {
         if (plot_X)
         {
-            //
-            // Get the number of species from the network model.
-            //
-            fort_get_num_spec(&NumSpec);
-            //
-            // Get the species names from the network model.
-            //
-            for (int i = 0; i < NumSpec; i++)
-            {
-                int len = 20;
-                Vector<int> int_spec_names(len);
-                //
-                // This call return the actual length of each string in "len"
-                //
-                fort_get_spec_names(int_spec_names.dataPtr(), &i, &len);
-                char* spec_name = new char[len+1];
-
-                for (int j = 0; j < len; j++)
-                    spec_name[j] = int_spec_names[j];
-                spec_name[len] = '\0';
-
-                // @todo: better string ops
-                std::string spec_string = "X(";
-                spec_string += spec_name;
-                spec_string += ')';
-                parent->addDerivePlotVar(spec_string);
-                delete [] spec_name;
-            }
+            parent->addDerivePlotVar("X(H)");
+            parent->addDerivePlotVar("X(He)");
         }
     }
 }

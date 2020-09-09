@@ -14,9 +14,13 @@ nyx.strang_split     = 1
 nyx.add_ext_src      = 0
 nyx.heat_cool_type   = 3
 #nyx.simd_width       = 8
+ 
+nyx.h_species = .76
+nyx.he_species = .24
 
 nyx.small_dens = 1.e-2
 nyx.small_temp = 1.e-2
+nyx.small_pres = 1.4134581764462589E-006
 
 nyx.do_santa_barbara = 1
 nyx.init_sb_vels     = 1
@@ -118,6 +122,20 @@ amr.refine_grid_layout = 1
 amr.regrid_on_restart  = 1
 amr.blocking_factor    = 16
 #amr.nosub              = 1
+
+amr.refinement_indicators = density
+#amr.refinement_indicators = density lo_temp gradT magvort
+#amr.density.max_level = 2
+amr.density.value_greater = 1
+amr.density.field_name = overden
+#amr.lo_temp.max_level = 2
+#amr.lo_temp.value_less = 500
+#amr.lo_temp.field_name = temp
+#amr.gradT.max_level = 2
+#amr.gradT.adjacent_difference_greater = 300
+#amr.gradT.field_name = temp
+#amr.magvort.max_level = 3
+#amr.magvort.vorticity_greater = 300
 
 # CHECKPOINT FILES
 amr.checkpoint_files_output = 0

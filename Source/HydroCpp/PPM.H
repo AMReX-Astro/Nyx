@@ -35,7 +35,7 @@ ppm_reconstruct(const Real* s,
   Real dsvl_l = 0.0_rt;
   if (dsl*dsr > 0.0_rt) {
     Real dsc = 0.5_rt * (s[i0] - s[im2]);
-    dsvl_l = std::copysign(1.0_rt, dsc) * amrex::min(std::abs(dsc),amrex::min(std::abs(dsl),std::abs(dsr)));
+    dsvl_l = amrex::Math::copysign(1.0_rt, dsc) * amrex::min(amrex::Math::abs(dsc),amrex::min(amrex::Math::abs(dsl),amrex::Math::abs(dsr)));
   }
 
   dsl = 2.0_rt * (s[i0] - s[im1]);
@@ -44,7 +44,7 @@ ppm_reconstruct(const Real* s,
   Real dsvl_r = 0.0_rt;
   if (dsl*dsr > 0.0_rt) {
     Real dsc = 0.5_rt * (s[ip1] - s[im1]);
-    dsvl_r = std::copysign(1.0_rt, dsc) * amrex::min(std::abs(dsc),amrex::min(std::abs(dsl),std::abs(dsr)));
+    dsvl_r = amrex::Math::copysign(1.0_rt, dsc) * amrex::min(amrex::Math::abs(dsc),amrex::min(amrex::Math::abs(dsl),amrex::Math::abs(dsr)));
   }
 
   // Interpolate s to edges
@@ -65,7 +65,7 @@ ppm_reconstruct(const Real* s,
   dsvl_l = 0.0_rt;
   if (dsl*dsr > 0.0_rt) {
     Real dsc = 0.5_rt * (s[ip1] - s[im1]);
-    dsvl_l = std::copysign(1.0_rt, dsc) * amrex::min(std::abs(dsc), amrex::min(std::abs(dsl),std::abs(dsr)));
+    dsvl_l = amrex::Math::copysign(1.0_rt, dsc) * amrex::min(amrex::Math::abs(dsc), amrex::min(amrex::Math::abs(dsl),amrex::Math::abs(dsr)));
   }
 
   dsl = 2.0_rt * (s[ip1] - s[i0]);
@@ -74,7 +74,7 @@ ppm_reconstruct(const Real* s,
   dsvl_r = 0.0_rt;
   if (dsl*dsr > 0.0_rt) {
     Real dsc = 0.5_rt * (s[ip2] - s[i0]);
-    dsvl_r = std::copysign(1.0_rt, dsc) * amrex::min(std::abs(dsc), amrex::min(std::abs(dsl),std::abs(dsr)));
+    dsvl_r = amrex::Math::copysign(1.0_rt, dsc) * amrex::min(amrex::Math::abs(dsc), amrex::min(amrex::Math::abs(dsl),amrex::Math::abs(dsr)));
   }
 
   // Interpolate s to edges
@@ -99,10 +99,10 @@ ppm_reconstruct(const Real* s,
     sp = s[i0];
     sm = s[i0];
 
-  } else if (std::abs(sp - s[i0]) >= 2.0_rt * std::abs(sm - s[i0])) {
+  } else if (amrex::Math::abs(sp - s[i0]) >= 2.0_rt * amrex::Math::abs(sm - s[i0])) {
     sp = 3.0_rt * s[i0] - 2.0_rt * sm;
 
-  } else if (std::abs(sm - s[i0]) >= 2.0_rt * std::abs(sp - s[i0])) {
+  } else if (amrex::Math::abs(sm - s[i0]) >= 2.0_rt * amrex::Math::abs(sp - s[i0])) {
     sm = 3.0_rt * s[i0] - 2.0_rt * sp;
   }
 
@@ -143,7 +143,7 @@ ppm_int_profile(const Real sm, const Real sp, const Real sc,
 
   // u-c wave
   Real speed = u - c;
-  Real sigma = std::abs(speed) * dtdx;
+  Real sigma = amrex::Math::abs(speed) * dtdx;
 
   // if speed == ZERO, then either branch is the same
   if (speed <= 0.0_rt) {
@@ -156,7 +156,7 @@ ppm_int_profile(const Real sm, const Real sp, const Real sc,
 
   // u wave
   speed = u;
-  sigma = std::abs(speed) * dtdx;
+  sigma = amrex::Math::abs(speed) * dtdx;
 
   if (speed <= 0.0_rt) {
     Ip[1] = sp;
@@ -168,7 +168,7 @@ ppm_int_profile(const Real sm, const Real sp, const Real sc,
 
   // u+c wave
   speed = u + c;
-  sigma = std::abs(speed) * dtdx;
+  sigma = amrex::Math::abs(speed) * dtdx;
 
   if (speed <= 0.0_rt) {
     Ip[2] = sp;
@@ -210,7 +210,7 @@ ppm_int_profile_single(const Real sm, const Real sp, const Real sc,
   // Ip integrates to the right edge of a cell
   // Im integrates to the left edge of a cell
 
-  Real sigma = std::abs(lam) * dtdx;
+  Real sigma = amrex::Math::abs(lam) * dtdx;
 
   if (lam <= 0.0_rt) {
     Ip = sp;

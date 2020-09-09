@@ -4,8 +4,12 @@
 
 #include <Nyx.H>
 #include <Nyx_F.H>
-#include <atomic_rates.H>
 #include <Derive.H>
+
+#ifdef HEATCOOL
+#include <atomic_rates.H>
+#endif
+
 #ifdef FORCING
 #include <Forcing.H>
 #endif
@@ -115,9 +119,6 @@ Nyx::variable_setup()
           std::cout << "\n" << "Nyx git describe:   " << nyx_hash << "\n";
     }
 
-    // Initialize the network
-    network_init();
-
     // Get options, set phys_bc
     read_params();
 
@@ -165,7 +166,7 @@ Nyx::hydro_setup()
     NumSpec = 0;
 #else
     // Get the number of species from the network model.
-    fort_get_num_spec(&NumSpec);
+    NumSpec = 2;
     if (NumSpec > 0)
         cnt += NumSpec;
 #endif
@@ -180,21 +181,13 @@ Nyx::hydro_setup()
 #else
     use_const_species = 0;
 #endif
-    fort_set_method_params
-        (NDIAG_C, do_hydro, use_const_species, gamma, normalize_species,
-         heat_cool_type, inhomo_reion);
 
 #ifdef HEATCOOL
-    fort_tabulate_rates();
     ParmParse pp("nyx");
     std::string file_in;
     pp.query("uvb_rates_file", file_in);
     tabulate_rates(file_in);
     amrex::Gpu::streamSynchronize();
-#endif
-
-#ifdef CONST_SPECIES
-    fort_set_eos_params(h_species, he_species);
 #endif
 
     Interpolater* interp = &cell_cons_interp;
@@ -256,20 +249,9 @@ Nyx::hydro_setup()
     set_scalar_bc(bc, phys_bc);  bcs[cnt] = bc;  name[cnt] = "rho_e";
 
     // Get the species names from the network model.
-    Vector<std::string> spec_names(NumSpec);
-
-    for (int i = 0; i < NumSpec; i++)
-    {
-        int len = 20;
-        Vector<int> int_spec_names(len);
-
-        // This call return the actual length of each string in "len"
-        fort_get_spec_names
-            (int_spec_names.dataPtr(), &i, &len);
-
-        for (int j = 0; j < len; j++)
-            spec_names[i].push_back(int_spec_names[j]);
-    }
+    Vector<std::string> spec_names(2);
+    spec_names[0] = "H";
+    spec_names[1] = "He";
 
     if (ParallelDescriptor::IOProcessor())
     {
@@ -278,6 +260,7 @@ Nyx::hydro_setup()
            std::cout << spec_names[i] << ' ' << ' ';
         std::cout << '\n';
     }
+
 
 #ifndef CONST_SPECIES
     for (int i = 0; i < NumSpec; ++i)
@@ -289,24 +272,30 @@ Nyx::hydro_setup()
      }
 #endif
 
-    desc_lst.setComponent(State_Type, Density, name, bcs,
-                          BndryFunc(denfill,hypfill));
+    StateDescriptor::BndryFunc bndryfunc(nyx_bcfill);
+    bndryfunc.setRunOnGPU(true);  // I promise the bc function will launch gpu kernels.
+
+    desc_lst.setComponent(State_Type,
+                          Density,
+                          name,
+                          bcs,
+                          bndryfunc);
 
     set_scalar_bc(bc, phys_bc);
     desc_lst.setComponent(DiagEOS_Type, 0, "Temp", bc,
-                          BndryFunc(generic_fill));
+                          bndryfunc);
     desc_lst.setComponent(DiagEOS_Type, 1, "Ne", bc,
-                          BndryFunc(generic_fill));
+                          bndryfunc);
 
     if (inhomo_reion > 0) {
        desc_lst.setComponent(DiagEOS_Type, 2, "Z_HI", bc,
-                             BndryFunc(generic_fill));
+                             bndryfunc);
     }
 
 #ifdef SDC
     set_scalar_bc(bc, phys_bc);
     desc_lst.setComponent(SDC_IR_Type, 0, "I_R", bc,
-                          BndryFunc(generic_fill));
+                          bndryfunc);
 #endif
 
 #ifdef GRAVITY
@@ -314,21 +303,40 @@ Nyx::hydro_setup()
     {
         set_scalar_bc(bc, phys_bc);
         desc_lst.setComponent(PhiGrav_Type, 0, "phi_grav", bc,
-                              BndryFunc(generic_fill));
+                              bndryfunc);                          
+
         set_x_vel_bc(bc, phys_bc);
         desc_lst.setComponent(Gravity_Type, 0, "grav_x", bc,
-                              BndryFunc(generic_fill));
-       set_y_vel_bc(bc, phys_bc);
-       desc_lst.setComponent(Gravity_Type, 1, "grav_y", bc,
-                             BndryFunc(generic_fill));
-       set_z_vel_bc(bc, phys_bc);
-       desc_lst.setComponent(Gravity_Type, 2, "grav_z", bc,
-                             BndryFunc(generic_fill));
+                             bndryfunc);
+
+        set_y_vel_bc(bc, phys_bc);
+        desc_lst.setComponent(Gravity_Type, 1, "grav_y", bc,
+                              bndryfunc);
+
+        set_z_vel_bc(bc, phys_bc);
+        desc_lst.setComponent(Gravity_Type, 2, "grav_z", bc,
+                              bndryfunc);
     }
 #endif
 
     //
     // DEFINE DERIVED QUANTITIES
+    //
+
+    //
+    // Density * Volume
+    //
+    derive_lst.add("denvol", IndexType::TheCellType(), 1,
+                   derdenvol, grow_box_by_one);
+    derive_lst.addComponent("denvol", desc_lst, State_Type, Density, 1);
+
+    //
+    // Density / (avg_gas_density * 8^(level+1))
+    //
+    derive_lst.add("overden", IndexType::TheCellType(), 1,
+                   deroverden, grow_box_by_one);
+    derive_lst.addComponent("overden", desc_lst, State_Type, Density, 1);
+
     //
     // Pressure
     //
@@ -590,11 +598,8 @@ Nyx::no_hydro_setup()
 #else
     use_const_species = 0;
 #endif
-    fort_set_method_params (NDIAG_C, do_hydro, use_const_species,
-                            gamma, normalize_species, heat_cool_type, inhomo_reion);
 
 #ifdef HEATCOOL
-    fort_tabulate_rates();
     ParmParse pp("nyx");
     std::string file_in;
     pp.query("uvb_rates_file", file_in);
@@ -610,6 +615,9 @@ Nyx::no_hydro_setup()
 
     BCRec bc;
 
+    StateDescriptor::BndryFunc bndryfunc(nyx_bcfill);
+    bndryfunc.setRunOnGPU(true);  // I promise the bc function will launch gpu kernels.
+
 #ifndef NO_HYDRO
     // We have to create these anyway because the StateTypes are defined at compile time.
     // However, we define them with only one component each because we don't actually use them.
@@ -621,7 +629,7 @@ Nyx::no_hydro_setup()
 
     set_scalar_bc(bc, phys_bc);
     desc_lst.setComponent(State_Type, 0, "density", bc,
-                          BndryFunc(generic_fill));
+                          bndryfunc);
 
     // This has only one dummy components
     store_in_checkpoint = false;
@@ -631,7 +639,7 @@ Nyx::no_hydro_setup()
 
     set_scalar_bc(bc, phys_bc);
     desc_lst.setComponent(DiagEOS_Type, 0, "Temp", bc,
-                          BndryFunc(generic_fill));
+                          bndryfunc);
 #endif
 
     store_in_checkpoint = true;
@@ -650,16 +658,16 @@ Nyx::no_hydro_setup()
     {
        set_scalar_bc(bc, phys_bc);
        desc_lst.setComponent(PhiGrav_Type, 0, "phi_grav", bc,
-                             BndryFunc(generic_fill));
+                             bndryfunc);
        set_x_vel_bc(bc, phys_bc);
        desc_lst.setComponent(Gravity_Type, 0, "grav_x", bc,
-                             BndryFunc(generic_fill));
+                             bndryfunc);
        set_y_vel_bc(bc, phys_bc);
        desc_lst.setComponent(Gravity_Type, 1, "grav_y", bc,
-                             BndryFunc(generic_fill));
+                             bndryfunc);
        set_z_vel_bc(bc, phys_bc);
        desc_lst.setComponent(Gravity_Type, 2, "grav_z", bc,
-                             BndryFunc(generic_fill));
+                             bndryfunc);
 
        derive_lst.add("maggrav", IndexType::TheCellType(), 1,
                       dermaggrav,
@@ -767,18 +775,6 @@ Nyx::no_hydro_setup()
 #endif
 }
 #endif
-
-void
-Nyx::alloc_cuda_managed()
-{
-    fort_alloc_cuda_managed();
-}
-
-void
-Nyx::dealloc_cuda_managed()
-{
-    fort_dealloc_cuda_managed();
-}
 
 #ifdef AMREX_USE_CVODE
 void

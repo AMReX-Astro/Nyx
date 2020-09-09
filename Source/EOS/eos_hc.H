@@ -85,7 +85,7 @@ AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void ion_n_device(const int JH, const i
 
     // Interpolate rates
     tmp = (logT-TCOOLMIN)/deltaT;
-    j = std::floor(tmp); // replacing int(tmp)
+    j = amrex::Math::floor(tmp); // replacing int(tmp)
     fhi = tmp - j;
     flo = 1.0e0 - fhi;
     j = j + 1; // F90 arrays start with 1, using Array1D<Real,1,size>
@@ -182,4 +182,30 @@ void iterate_ne_device(const int JH, const int JHe, const amrex::Real z,
     // Neutral fractions:
     nh0   = 1.0e0 - nhp;
     nhe0  = YHELIUM - (nhep + nhepp);
+}
+
+AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_T_given_Re_device(Real gamma_minus_1, Real h_species, int JH, int JHe, Real* T, Real* Ne, Real R,Real e,Real comoving_a)
+{
+
+    amrex::Real z, rho, U, nh, nh0, nhep, nhp, nhe0, nhepp;
+    // This converts from code units to CGS
+    rho = R * density_to_cgs / (comoving_a*comoving_a*comoving_a);
+    U = e * e_to_cgs;
+    nh  = rho*XHYDROGEN/MPROTON;
+
+    z   = 1.e0/comoving_a - 1.e0;
+
+    amrex::Real T_in = *T;
+    amrex::Real Ne_in = *Ne;
+    iterate_ne_device(JH, JHe, z, U, T, nh, Ne, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1);
+
+}
+
+AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_given_RT(Real gamma_minus_1, Real h_species, Real* e, Real* P, Real R, Real T, Real Ne,Real comoving_a)
+{
+  
+  Real mu = (1.0+4.0*YHELIUM) / (1.0+YHELIUM+Ne);
+  *e = T / (gamma_minus_1 * mp_over_kb * mu);
+  *P  = gamma_minus_1 * (R) * (*e);
+
 }

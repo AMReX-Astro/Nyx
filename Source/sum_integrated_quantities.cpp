@@ -329,42 +329,28 @@ Nyx::compute_average_species (int          nspec,
 
         AMREX_ALWAYS_ASSERT (nspec == 2);
         AMREX_ALWAYS_ASSERT (naux  == 0);
+	// Get the species names from the network model.
+        Vector<std::string> spec_names(nspec);
+	spec_names[0] = "H";
+	spec_names[1] = "He";
+
         //
         // Get the species names from the network model.
         //
         for (int i = 0; i < nspec+naux; i++)
         {
-            int len = 20;
-            Vector<int> int_names(len);
-            //
-            // This call return the actual length of each string in "len"
-            //
-            char* name = new char[len+1];
-
-            if (i < nspec)
-            {
-               fort_get_spec_names(int_names.dataPtr(), &i, &len);
-            }
-            else
-            {
-               fort_get_aux_names(int_names.dataPtr(), &i, &len);
-            }
-    
-            for (int j = 0; j < len; j++)
-                name[j] = int_names[j];
-            name[len] = '\0';
 
             std::string spec_string;
 
             if (i < nspec)
             {
                spec_string = "X(";
-               spec_string += name;
+               spec_string += spec_names[i];
                spec_string += ')';
             }
             else
             {
-               spec_string = name;
+               spec_string = spec_names[i];
             }
 
             // Add up the species -- this is just volume-weighted, not mass-weighted
@@ -373,7 +359,6 @@ Nyx::compute_average_species (int          nspec,
                 Nyx& nyx_lev = get_level(lev);
                 average_species[i] += nyx_lev.vol_weight_sum(spec_string, time, true);
             }
-            delete [] name;
  
            // Divide by physical volume of domain.
            average_species[i] = average_species[i] / crse_geom.ProbSize();

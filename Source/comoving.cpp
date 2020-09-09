@@ -129,6 +129,68 @@ Nyx::integrate_comoving_a_to_a(const Real old_a_local, const Real a_value, Real&
 }
 
 void
+Nyx::integrate_comoving_a_to_z(const Real old_a_local, const Real z_value, Real& dt)
+{
+    const Real xacc = 1.0e-8;
+    Real H_0, OmL;
+    Real Delta_t;
+    Real start_a, end_a, start_slope, end_slope;
+	Real a_value;
+    int j, nsteps;
+
+    Real max_dt;
+
+    if (comoving_h == 0.0)
+        amrex::Abort("fort_integrate_comoving_a_to_z: Shouldn't be setting plot_z_values if not evolving a");
+
+    H_0 = comoving_h * Hubble_const;
+    OmL = 1.e0 - comoving_OmM - comoving_OmR;
+
+    // Translate the target "z" into a target "a"
+    a_value = 1.e0 / (1.e0 + z_value);
+
+    // Use lots of steps if we want to nail the z_value
+    nsteps = 1024;
+
+    // We integrate a, but stop when a = a_value (or close enough)
+    Delta_t = dt/nsteps;
+    end_a = old_a_local;
+    for(j = 1; j <= nsteps; j++)
+    {
+        // This uses RK2 to integrate the ODE:
+        //   da / dt = H_0 * sqrt(OmM/a + OmR/a^2 + OmL*a^2)
+        start_a = end_a;
+
+        // Compute the slope at the old time
+        if (comoving_type > 0)
+            start_slope = H_0*std::sqrt(comoving_OmM/start_a + comoving_OmR/(start_a*start_a) + OmL*start_a*start_a);
+        else
+            start_slope = comoving_h;
+
+        // Compute a provisional value of ln(a) at the new time
+        end_a = start_a + start_slope * Delta_t;
+
+        // Compute the slope at the new time
+        if (comoving_type > 0)
+            end_slope = H_0*std::sqrt(comoving_OmM/end_a + comoving_OmR/(end_a*end_a) + OmL*end_a*end_a);
+        else
+            end_slope = comoving_h;
+
+        // Now recompute a at the new time using the average of the two slopes
+        end_a = start_a + 0.5e0 * (start_slope + end_slope) * Delta_t;
+
+        // We have crossed from a too small to a too big in this step
+        if ( (end_a - a_value) * (start_a - a_value) < 0)
+        {
+            dt = ( (  end_a - a_value) * double(j  ) +
+                   (a_value - start_a) * double(j+1) ) / (end_a - start_a) * Delta_t;
+            break;
+        }
+
+     }
+}
+
+void
 Nyx::est_maxdt_comoving_a(const Real old_a_local, Real & dt)
 {
     Real H_0, OmL;
@@ -715,7 +777,7 @@ Nyx::plot_z_est_time_step (Real& dt_0, bool& dt_changed)
     // we must figure out what value of dt < dt_0 makes us exactly reach z_value
     if (found_one)
     {
-        fort_integrate_comoving_a_to_z(&old_a, &z_value, &dt);
+        integrate_comoving_a_to_z(old_a, z_value, dt);
                 
 
         if (verbose && ParallelDescriptor::IOProcessor())
@@ -762,7 +824,7 @@ Nyx::plot_z_est_time_step (Real& dt_0, bool& dt_changed)
     if (found_one)
     {
         Real two_dt = 2.0*dt_0;
-        fort_integrate_comoving_a_to_z(&old_a, &z_value, &two_dt);
+        integrate_comoving_a_to_z(old_a, z_value, two_dt);
                 
 
         if (verbose && ParallelDescriptor::IOProcessor())
@@ -824,7 +886,7 @@ Nyx::analysis_z_est_time_step (Real& dt_0, bool& dt_changed)
     // we must figure out what value of dt < dt_0 makes us exactly reach z_value
     if (found_one)
     {
-        fort_integrate_comoving_a_to_z(&old_a, &z_value, &dt);
+        integrate_comoving_a_to_z(old_a, z_value, dt);
 
         if (verbose && ParallelDescriptor::IOProcessor())
         {
@@ -869,7 +931,7 @@ Nyx::analysis_z_est_time_step (Real& dt_0, bool& dt_changed)
     if (found_one)
     {
         Real two_dt = 2.0*dt_0;
-        fort_integrate_comoving_a_to_z(&old_a, &z_value, &two_dt);
+        integrate_comoving_a_to_z(old_a, z_value, two_dt);
 
         if (verbose && ParallelDescriptor::IOProcessor())
         {

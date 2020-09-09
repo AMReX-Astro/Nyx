@@ -9,7 +9,7 @@ void
 Nyx::strang_first_step (Real time, Real dt, MultiFab& S_old, MultiFab& D_old)
 {
     BL_PROFILE("Nyx::strang_first_step()");
-    
+#ifdef HEATCOOL    
     Gpu::LaunchSafeGuard lsg(true);
     const Real strt_time = ParallelDescriptor::second();
     Real half_dt = 0.5*dt;
@@ -146,6 +146,7 @@ Nyx::strang_first_step (Real time, Real dt, MultiFab& S_old, MultiFab& D_old)
         });
 #endif
     }
+#endif
 
 }
 
@@ -153,7 +154,7 @@ void
 Nyx::strang_second_step (Real time, Real dt, MultiFab& S_new, MultiFab& D_new)
 {
     BL_PROFILE("Nyx::strang_second_step()");
-
+#ifdef HEATCOOL
     Gpu::LaunchSafeGuard lsg(true);
     const Real strt_time = ParallelDescriptor::second();
     Real half_dt = 0.5*dt;
@@ -278,4 +279,5 @@ Nyx::strang_second_step (Real time, Real dt, MultiFab& S_new, MultiFab& D_new)
         });
 #endif
     }
+#endif
 }

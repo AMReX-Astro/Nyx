@@ -18,9 +18,10 @@ Nyx::error_setup()
     //      currently restricted to `ErrorRec::Standard` and
     //      `ErrorRec::UseAverage`.
     //   4. Name of Fortran subroutine.
-
+#ifndef CXX_PROB
     err_list.add("total_particle_count", 1, ErrorRec::Standard,
                  BL_FORT_PROC_CALL(TAG_PART_CNT_ERR, tag_part_cnt_err));
+#endif
 }
 
 void
