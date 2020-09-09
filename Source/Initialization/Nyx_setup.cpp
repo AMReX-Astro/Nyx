@@ -675,7 +675,6 @@ Nyx::no_hydro_setup()
        derive_lst.addComponent("maggrav", desc_lst, Gravity_Type, 0, BL_SPACEDIM);
     }
 
-    //
     // We want a derived type that corresponds to the number of particles in
     // each cell. We only intend to use it in plotfiles for debugging purposes.
     // We'll just use the DERNULL since don't do anything in fortran for now.
@@ -701,6 +700,20 @@ Nyx::no_hydro_setup()
                    dernull, grow_box_by_one);
     derive_lst.addComponent("particle_z_velocity", desc_lst, State_Type,
                             Density, 1);
+    //
+    // Density * Volume
+    //
+    derive_lst.add("denvol", IndexType::TheCellType(), 1,
+                   derdenvol, grow_box_by_one);
+    derive_lst.addComponent("denvol", desc_lst, State_Type, Density, 1);
+
+    //
+    // Density / (avg_gas_density * 8^(level+1))
+    //
+    derive_lst.add("overden", IndexType::TheCellType(), 1,
+                   deroverden, grow_box_by_one);
+    derive_lst.addComponent("overden", desc_lst, State_Type, Density, 1);
+
 #else
     derive_lst.add("particle_x_velocity", IndexType::TheCellType(), 1,
                    dernull, grow_box_by_one);
@@ -714,6 +727,20 @@ Nyx::no_hydro_setup()
                    dernull, grow_box_by_one);
     derive_lst.addComponent("particle_z_velocity", desc_lst, PhiGrav_Type,
                             Density, 1);
+    //
+    // Density * Volume
+    //
+    derive_lst.add("denvol", IndexType::TheCellType(), 1,
+                   derdenvol, grow_box_by_one);
+    derive_lst.addComponent("denvol", desc_lst, PhiGrav_Type, 0, 1);
+
+    //
+    // Density / (avg_gas_density * 8^(level+1))
+    //
+    derive_lst.add("overden", IndexType::TheCellType(), 1,
+                   deroverden, grow_box_by_one);
+    derive_lst.addComponent("overden", desc_lst, PhiGrav_Type, 0, 1);
+
 #endif
     derive_lst.add("total_particle_count", IndexType::TheCellType(), 1,
                    dernull, grow_box_by_one);
