@@ -28,6 +28,10 @@ ifeq ($(USE_HENSON), TRUE)
   LIBRARIES += $(HENSON_LIBRARY) $(HENSON_LIBPMPI)
 endif
 
+ifeq ($(USE_CXX_PROB),TRUE)
+  DEFINES += -DCXX_PROB
+endif
+
 #ifeq ($(USE_SUNDIALS_3x4x), TRUE)
 #      libraries := $(subst -lsundials_nvecopenmp, -lsundials_nvecserial,$(libraries))
 #endif
@@ -131,7 +135,12 @@ VPATH_LOCATIONS   += $(Blocs)
 
 #These are the directories in AMReX
 
-Pdirs   := Base AmrCore Amr Boundary Particle Extern/amrdata # F_Interfaces/Base
+ifeq ($(USE_CXX_PROB),TRUE)
+Pdirs   := Base AmrCore Amr Boundary Particle
+else
+Pdirs   := Base AmrCore Amr Boundary Particle Extern/amrdata 
+endif
+
 ifeq ($(USE_SENSEI_INSITU),TRUE)
     Pdirs += Extern/SENSEI
 endif

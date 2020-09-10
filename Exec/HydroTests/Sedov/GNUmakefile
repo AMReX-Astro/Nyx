@@ -25,6 +25,8 @@ USE_GRAV = FALSE
 
 USE_CONST_SPECIES = TRUE
 
+USE_CXX_PROB = TRUE
+
 USE_OWN_BCS = TRUE
 
 Bpack := ./Make.package
