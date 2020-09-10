@@ -798,6 +798,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
 
         BL_PROFILE_VAR("Nyx::init_santa_barbara()::init", CA_init);
         const auto dx = geom.CellSizeArray();
+        const auto geomdata = geom.data();
         MultiFab& S_new = get_new_data(State_Type);
         MultiFab& D_new = get_new_data(DiagEOS_Type);
 
@@ -823,7 +824,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
             amrex::ParallelFor(
                                bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
                                prob_initdata
-                                   (i, j ,k, fab_S_new, fab_D_new, dx,prob_param);
+                                   (i, j ,k, fab_S_new, fab_D_new, geomdata,prob_param);
                                });
         }
 

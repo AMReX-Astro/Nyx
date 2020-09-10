@@ -17,7 +17,7 @@ void prob_initdata_state(const int i,
                          const int j,
                          const int k,
                          amrex::Array4<amrex::Real> const& state,
-                         const amrex::GpuArray<amrex::Real,AMREX_SPACEDIM>& dx,
+                         amrex::GeometryData const& geomdata,
                          const amrex::GpuArray<amrex::Real,max_prob_param>& prob_param)
 {
   // This is the case where we have compiled with states defined 
@@ -55,11 +55,11 @@ void prob_initdata(const int i,
                    const int k,
                    amrex::Array4<amrex::Real> const& state,
                    amrex::Array4<amrex::Real> const& diag_eos,
-                   const amrex::GpuArray<amrex::Real,AMREX_SPACEDIM>& dx,
+                   amrex::GeometryData const& geomdata,
                    const amrex::GpuArray<amrex::Real,max_prob_param>& prob_param)
 {
 
-  prob_initdata_state(i, j ,k, state, dx,prob_param);
+  prob_initdata_state(i, j ,k, state, geomdata, prob_param);
 
   // This is the case where we have compiled with states defined 
   //  but they have only one component each so we fill them this way.

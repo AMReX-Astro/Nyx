@@ -1,15 +1,24 @@
 #ifndef _Prob_H_
 #define _Prob_H_
 
-// #include "Nyx.H"
+#include "Nyx.H"
+
+enum Prob_Type_Index {
+  z_in_comp = 0,
+};
+
+static void prob_param_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_param, const amrex::Real initial_z)
+{
+    prob_param[z_in_comp] = initial_z;
+}
 
 AMREX_GPU_DEVICE AMREX_FORCE_INLINE
 void prob_initdata_state(const int i,
                          const int j,
                          const int k,
                          amrex::Array4<amrex::Real> const& state,
-                         amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> dx,
-                         amrex::Real z_in)
+                           amrex::GeometryData const& geomdata,
+                         const amrex::GpuArray<amrex::Real,max_prob_param>& prob_param)
 {
     // HACK HACK HACK -- we need to get this from the ParmParse ....
     amrex::Real h_species = 0.75;
@@ -37,10 +46,10 @@ void prob_initdata(const int i,
                    const int k,
                    amrex::Array4<amrex::Real> const& state,
                    amrex::Array4<amrex::Real> const& diag_eos,
-                   amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> dx,
-                   amrex::Real z_in)
+                     amrex::GeometryData const& geomdata,
+                   const amrex::GpuArray<amrex::Real,max_prob_param>& prob_param)
 {
-  prob_initdata_state(i, j ,k, state, dx,z_in);
+  prob_initdata_state(i, j ,k, state, geomdata, prob_param);
 
   // This is the regular case with NO_HYDRO = FALSE
   {

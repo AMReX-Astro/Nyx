@@ -236,6 +236,7 @@ Nyx::initData ()
         std::cout << "Initializing the data at level " << level << '\n';
 
     const auto dx = geom.CellSizeArray();
+    const auto geomdata = geom.data();
 
     // Make sure dx = dy = dz -- that's all we guarantee to support
     const Real SMALL = 1.e-13;
@@ -266,7 +267,7 @@ Nyx::initData ()
                 amrex::ParallelFor(
                                    bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
                                    prob_initdata
-                                       (i, j ,k, fab_S_new, fab_D_new, dx,prob_param);
+                                       (i, j ,k, fab_S_new, fab_D_new, geomdata, prob_param);
                                });
 #else
                 int         ns       = S_new.nComp();
@@ -306,7 +307,7 @@ Nyx::initData ()
                 amrex::ParallelFor(
                                    bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
                                    prob_initdata_state
-                                      (i, j ,k, fab_S_new, dx,prob_param);
+                                      (i, j ,k, fab_S_new, geomdata, prob_param);
                                });
 #else
                 int         ns       = S_new.nComp();
