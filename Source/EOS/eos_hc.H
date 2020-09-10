@@ -1,4 +1,5 @@
-
+#ifndef _eos_hc_H_
+#define _eos_hc_H_
 #include <Nyx.H>
 #include <Nyx_F.H>
 #include <atomic_rates_data.H>
@@ -209,3 +210,4 @@ AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_given_RT(Real gamma_minus_
   *P  = gamma_minus_1 * (R) * (*e);
 
 }
+#endif

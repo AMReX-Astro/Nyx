@@ -1,7 +1,7 @@
 ifeq ($(USE_HEATCOOL), TRUE)
 #f90EXE_sources += integrate_state_3d.f90
 #f90EXE_sources += integrate_state_vode_3d.f90
-CEXE_sources += integrate_state_exact_3d.cpp
+#CEXE_sources += integrate_state_exact_3d.cpp
 #f90EXE_sources += update.f90
 
 ifeq ($(USE_SDC), TRUE)
@@ -37,9 +37,9 @@ endif
 CEXE_headers += f_rhs.H
 ifeq ($(USE_CVODE_LIBS), TRUE)
   #F90EXE_sources += cvode_extras.F90
-  CEXE_sources += integrate_state_box_3d.cpp
+#  CEXE_sources += integrate_state_box_3d.cpp
   CEXE_sources += integrate_state_vec_3d.cpp
-  CEXE_sources += integrate_state_cell_3d.cpp
+#  CEXE_sources += integrate_state_cell_3d.cpp
 else
 CEXE_sources += integrate_state_box_3d_stubs.cpp
 endif

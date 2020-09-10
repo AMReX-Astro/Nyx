@@ -68,7 +68,8 @@ int Nyx::integrate_state_vec
     // time = starting time in the simulation
 
   amrex::Gpu::LaunchSafeGuard lsg(true);
-  fort_ode_eos_setup(a,delta_time);
+  //Skip setup since parameters are hard-coded
+  //  fort_ode_eos_setup(a,delta_time);
   long int store_steps=new_max_sundials_steps;
   
   //#ifdef _OPENMP
@@ -227,7 +228,8 @@ int Nyx::integrate_state_vec_mfin
       for (int k = lo.z; k <= hi.z; ++k) {
         for (int j = lo.y; j <= hi.y; ++j) {
             for (int i = lo.x; i <= hi.x; ++i) {
-              fort_ode_eos_setup(a,delta_time);
+                //Skip setup since parameters are hard-coded
+                //fort_ode_eos_setup(a,delta_time);
 #else
                                 AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
                                 {                                 
@@ -317,7 +319,7 @@ int Nyx::integrate_state_vec_mfin
 #endif
                                   int  idx= i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
                                 //                              for (int i= 0;i < neq; ++i) {
-                                  fort_ode_eos_finalize(&(dptr[idx*loop]), &(rparh[4*idx*loop]), one_in);
+                                  ode_eos_finalize((dptr[idx*loop]), &(rparh[4*idx*loop]), one_in);
                                   diag_eos4(i,j,k,Temp_comp)=rparh[4*idx*loop+0];   //rpar(1)=T_vode
                                   diag_eos4(i,j,k,Ne_comp)=rparh[4*idx*loop+1];//    rpar(2)=ne_vode
                                 
@@ -369,7 +371,8 @@ int Nyx::integrate_state_grownvec
    const Real& a, const Real& delta_time)
 {
 
-  fort_ode_eos_setup(a,delta_time);
+  //Skip setup since parameters are hard-coded
+  //  fort_ode_eos_setup(a,delta_time);
   amrex::Gpu::LaunchSafeGuard lsg(true);
   long int store_steps=old_max_sundials_steps;
   

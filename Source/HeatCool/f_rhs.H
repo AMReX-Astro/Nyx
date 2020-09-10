@@ -7,6 +7,87 @@
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
+void
+ode_eos_finalize(amrex::Real& e_out, amrex::Real* rpar, int neq)
+{
+    amrex::Real z_vode, rho_vode, T_vode, ne_vode;
+    amrex::Real rho, U, a, mu;
+    amrex::Real uvb_density_A, uvb_density_B, mean_rhob, JH_vode, JHe_vode, gamma_minus_1;
+    const amrex::Real h_species_in=.76;
+    uvb_density_A=1.0;
+	uvb_density_B=0.0;
+	gamma_minus_1=2.0/3.0;
+	/*
+    ! Flash reionization?
+    if ((flash_h .eqv. .true.) .and. (z .gt. zhi_flash)) then
+       JH_vode = 0
+    else
+       JH_vode = 1
+    endif
+    if ((flash_he .eqv. .true.) .and. (z .gt. zheii_flash)) then
+       JHe_vode = 0
+    else
+       JHe_vode = 1
+    endif
+
+    if (flash_h ) H_reion_z  = zhi_flash
+    if (flash_he) He_reion_z = zheii_flash
+
+    if (inhomogeneous_on) then
+       STOP "Do not currently support inhomogenous_on with box"
+       !H_reion_z = diag_eos(i,j,k,ZHI_COMP)
+       if (z .gt. H_reion_z) then
+          JH_vode = 0
+       else
+          JH_vode = 1
+       endif
+    endif*/
+    JH_vode = 1.0;
+	JHe_vode = 1.0;
+
+    T_vode=rpar[0];
+    ne_vode=rpar[1];
+    rho_vode=rpar[2];
+    z_vode=rpar[3];
+	a=1/(z_vode+1.0);
+	if(e_out < 0.e0)
+	{
+		T_vode  = 10.0;
+		ne_vode = 0.0;
+		mu     = (1.0e0+4.0e0*YHELIUM) / (1.0e0+YHELIUM+ne_vode);
+		e_out  = T_vode / (gamma_minus_1 * mp_over_kb * mu);
+	}
+
+    nyx_eos_T_given_Re_device(gamma_minus_1, h_species_in, JH_vode, JHe_vode, &T_vode, &ne_vode,
+                                               rho_vode, e_out, a);
+	/*
+      ! Instanteneous heating from reionization:
+      T_H = 0.0d0
+      if (inhomogeneous_on .or. flash_h) then
+         if ((H_reion_z  .lt. z) .and. (H_reion_z  .ge. z_end)) T_H  = (1.0d0 - species(2))*max((T_zhi-T_vode), 0.0d0)
+      endif
+
+      T_He = 0.0d0
+      if (flash_he) then
+         if ((He_reion_z .lt. z) .and. (He_reion_z .ge. z_end)) T_He = (1.0d0 - species(5))*max((T_zheii-T_vode), 0.0d0)
+      endif
+
+      if ((T_H .gt. 0.0d0) .or. (T_He .gt. 0.0d0)) then
+         T_vode = T_vode + T_H + T_He                            ! For simplicity, we assume
+         ne_vode = 1.0d0 + YHELIUM                              !    completely ionized medium at
+         if (T_He .gt. 0.0d0) ne_vode = ne_vode + YHELIUM        !    this point.  It's a very minor
+         mu = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+ne_vode)   !    detail compared to the overall approximation.
+         e_out  = T_vode / (gamma_minus_1 * mp_over_kB * mu)
+         call nyx_eos_T_given_Re_device(JH_vode, JHe_vode, T_vode, ne_vode, rho_vode, e_out(1), a, species)
+      endif
+    */
+    rpar[0]=T_vode;
+    rpar[1]=ne_vode;
+    rpar[2]=rho_vode;
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
 int
 f_rhs_rpar(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, amrex::Real* rpar)
 {
