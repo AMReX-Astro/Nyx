@@ -97,8 +97,7 @@ void prob_initdata_state(const int i,
     static_cast<amrex::Real>(prob_param[nsub_comp] * prob_param[nsub_comp] * prob_param[nsub_comp]);
 
   amrex::Real eint = p_zone / (prob_param[gamma_comp] - 1.0);
-  if(i==15&&j==15&&k==15)
-      amrex::Print()<<eint<<" "<<p_zone<<" "<<prob_param[gamma_comp]-1.0<<" "<<npert<<" "<<p_exp<<" "<<n_amb<<" "<<prob_param[p_ambient_comp]<<" "<<    static_cast<amrex::Real>(prob_param[nsub_comp] * prob_param[nsub_comp] * prob_param[nsub_comp])<<std::endl;
+
   state(i, j, k, URHO) = prob_param[dens_ambient_comp];
   state(i, j, k, UMX) = 0.0;
   state(i, j, k, UMY) = 0.0;
