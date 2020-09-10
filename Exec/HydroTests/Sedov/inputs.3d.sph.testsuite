@@ -63,6 +63,7 @@ amr.plot_file        = plt
 amr.plot_int         = 200
 amr.derive_plot_vars = pressure
 
+amr.probin_file = ""
 # PROBLEM PARAMETERS
 prob.r_init = 0.01
 prob.p_ambient = 1.e-5
