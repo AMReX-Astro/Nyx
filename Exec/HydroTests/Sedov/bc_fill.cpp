@@ -133,21 +133,6 @@ void nyx_bcfill (Box const& bx, FArrayBox& data,
                  const Vector<BCRec>& bcr, const int bcomp,
                  const int scomp)
 {
-    GpuBndryFuncFab<NyxFillExtDir> gpu_bndry_func(NyxFillExtDir{});
-    gpu_bndry_func(bx,data,dcomp,numcomp,geom,time,bcr,bcomp,scomp);
-}
-
-// bx                  : Cells outside physical domain and inside bx are filled.
-// data, dcomp, numcomp: Fill numcomp components of data starting from dcomp.
-// bcr, bcomp          : bcr[bcomp] specifies BC for component dcomp and so on.
-// scomp               : component index for dcomp as in the desciptor set up in CNS::variableSetUp.
-
-void nyx_hypfill (Box const& bx, FArrayBox& data,
-                 const int dcomp, const int numcomp,
-                 Geometry const& geom, const Real time,
-                 const Vector<BCRec>& bcr, const int bcomp,
-                 const int scomp)
-{
     GpuBndryFuncFab<NyxHypFillExtDir> gpu_bndry_func(NyxHypFillExtDir{});
     gpu_bndry_func(bx,data,dcomp,numcomp,geom,time,bcr,bcomp,scomp);
 }

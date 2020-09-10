@@ -18,13 +18,13 @@ static void prob_param_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_pa
     prob_param[z_in_comp] = initial_z;
     //Duplicate gamma-filling logic from Nyx.cpp
     prob_param[gamma_comp] = 5.0/3.0;;
-	amrex::ParmParse pp("prob");
-	pp.query("p_ambient", prob_param[p_ambient_comp]);
-	pp.query("dens_ambient", prob_param[dens_ambient_comp]);
-	pp.query("exp_energy", prob_param[exp_energy_comp]);
-	pp.query("r_init", prob_param[r_init_comp]);
-	pp.query("nsub", prob_param[nsub_comp]);
-	amrex::ParmParse pp_nyx("nyx");
+    amrex::ParmParse pp("prob");
+    pp.query("p_ambient", prob_param[p_ambient_comp]);
+    pp.query("dens_ambient", prob_param[dens_ambient_comp]);
+    pp.query("exp_energy", prob_param[exp_energy_comp]);
+    pp.query("r_init", prob_param[r_init_comp]);
+    pp.query("nsub", prob_param[nsub_comp]);
+    amrex::ParmParse pp_nyx("nyx");
     pp_nyx.query("gamma", prob_param[gamma_comp]);
 }
 
@@ -46,9 +46,13 @@ void prob_initdata_state(const int i,
   const amrex::Real* prob_lo = geomdata.ProbLo();
   const amrex::Real* prob_hi = geomdata.ProbHi();
   const amrex::Real* dx = geomdata.CellSize();
-  AMREX_D_TERM(const amrex::Real xmin = prob_lo[0] + (i + 0.5) * dx[0];
-               , const amrex::Real ymin = prob_lo[1] + (j + 0.5) * dx[1];
-               , const amrex::Real zmin = prob_lo[2] + (k + 0.5) * dx[2];)
+
+  //Use left edge for min, and assume lo[0]=0:
+  //      prob_lo[0] + (i) * dx[0] != prob_lo[0] + (i + 0.5) * dx[0]
+  //      prob_lo[0] + (i) * dx[0] != prob_lo[0] + (i - lo[0]) * dx[0]
+  AMREX_D_TERM(const amrex::Real xmin = prob_lo[0] + (i) * dx[0];
+               , const amrex::Real ymin = prob_lo[1] + (j) * dx[1];
+               , const amrex::Real zmin = prob_lo[2] + (k) * dx[2];)
 
   AMREX_D_TERM(
     amrex::Real dx_sub = dx[0] / static_cast<amrex::Real>(prob_param[nsub_comp]);
@@ -72,7 +76,6 @@ void prob_initdata_state(const int i,
 #endif
       for (int ii = 0; ii < prob_param[nsub_comp]; ii++) {
         const amrex::Real x = xmin + (ii + 0.5) * dx_sub - ctr_x;
-
         amrex::Real dist = AMREX_D_TERM(x * x, +y * y, +z * z);
 
         if (dist <= prob_param[r_init_comp] * prob_param[r_init_comp]) {
@@ -94,7 +97,8 @@ void prob_initdata_state(const int i,
     static_cast<amrex::Real>(prob_param[nsub_comp] * prob_param[nsub_comp] * prob_param[nsub_comp]);
 
   amrex::Real eint = p_zone / (prob_param[gamma_comp] - 1.0);
-
+  if(i==15&&j==15&&k==15)
+      amrex::Print()<<eint<<" "<<p_zone<<" "<<prob_param[gamma_comp]-1.0<<" "<<npert<<" "<<p_exp<<" "<<n_amb<<" "<<prob_param[p_ambient_comp]<<" "<<    static_cast<amrex::Real>(prob_param[nsub_comp] * prob_param[nsub_comp] * prob_param[nsub_comp])<<std::endl;
   state(i, j, k, URHO) = prob_param[dens_ambient_comp];
   state(i, j, k, UMX) = 0.0;
   state(i, j, k, UMY) = 0.0;
@@ -113,8 +117,8 @@ void prob_initdata_state(const int i,
     if (state.nComp() > FirstSpec)
     {
       //XHYDROGEN hardcoded to .76 init_managed
-		state(i,j,k,FirstSpec  ) = .76 * state(i,j,k,URHO);
-		state(i,j,k,FirstSpec+1) = (1.0 - .76) * state(i,j,k,URHO);
+        state(i,j,k,FirstSpec  ) = .76 * state(i,j,k,URHO);
+        state(i,j,k,FirstSpec+1) = (1.0 - .76) * state(i,j,k,URHO);
     }
 }
 
