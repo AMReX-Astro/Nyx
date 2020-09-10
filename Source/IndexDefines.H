@@ -47,4 +47,6 @@ enum DiagEOS_Type_Index {
 
 #define NUM_GROW 4
 
+static constexpr int max_prob_param = 10;
+
 #endif

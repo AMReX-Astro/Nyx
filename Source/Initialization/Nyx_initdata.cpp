@@ -260,11 +260,13 @@ Nyx::initData ()
                 const auto fab_S_new=S_new.array(mfi);
                 const auto fab_D_new=D_new.array(mfi);
 
-                Real z_in=initial_z;
+                GpuArray<amrex::Real,max_prob_param> prob_param;
+                prob_param_fill(prob_param, initial_z);
+
                 amrex::ParallelFor(
-                               bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-                                 prob_initdata
-                                   (i, j ,k, fab_S_new, fab_D_new, dx,z_in);
+                                   bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+                                   prob_initdata
+                                       (i, j ,k, fab_S_new, fab_D_new, dx,prob_param);
                                });
 #else
                 int         ns       = S_new.nComp();
@@ -299,11 +301,12 @@ Nyx::initData ()
 #ifdef CXX_PROB
                 const auto fab_S_new=S_new.array(mfi);                
 
-                Real z_in=initial_z;
+                GpuArray<amrex::Real,max_prob_param> prob_param;
+                prob_param_fill(prob_param, initial_z);
                 amrex::ParallelFor(
-                               bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-                                 prob_initdata_state
-                                   (i, j ,k, fab_S_new, dx,z_in);
+                                   bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+                                   prob_initdata_state
+                                      (i, j ,k, fab_S_new, dx,prob_param);
                                });
 #else
                 int         ns       = S_new.nComp();

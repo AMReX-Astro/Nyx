@@ -813,15 +813,17 @@ Nyx::init_santa_barbara (int init_sb_vels)
 #endif
         for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
         {
-            const Box& box = mfi.validbox();
+            const Box& bx = mfi.validbox();
             const auto fab_S_new=S_new.array(mfi);
             const auto fab_D_new=D_new.array(mfi);
 
-            Real z_in=initial_z;
+            GpuArray<amrex::Real,max_prob_param> prob_param;
+            prob_param_fill(prob_param, initial_z);
+
             amrex::ParallelFor(
-                               box, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-                                 prob_initdata
-                                   (i, j ,k, fab_S_new, fab_D_new, dx,z_in);
+                               bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+                               prob_initdata
+                                   (i, j ,k, fab_S_new, fab_D_new, dx,prob_param);
                                });
         }
 

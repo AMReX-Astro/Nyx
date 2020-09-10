@@ -3,13 +3,22 @@
 
 #include "Nyx.H"
 
+enum Prob_Type_Index {
+  z_in_comp = 0,
+};
+
+static void prob_param_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_param, const amrex::Real initial_z)
+{
+    prob_param[z_in_comp] = initial_z;
+}
+
 AMREX_GPU_DEVICE AMREX_FORCE_INLINE
 void prob_initdata_state(const int i,
                          const int j,
                          const int k,
                          amrex::Array4<amrex::Real> const& state,
-                         amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> dx,
-                         amrex::Real z_in)
+                         const amrex::GpuArray<amrex::Real,AMREX_SPACEDIM>& dx,
+                         const amrex::GpuArray<amrex::Real,max_prob_param>& prob_param)
 {
   // This is the case where we have compiled with states defined 
   //  but they have only one component each so we fill them this way.
@@ -46,11 +55,11 @@ void prob_initdata(const int i,
                    const int k,
                    amrex::Array4<amrex::Real> const& state,
                    amrex::Array4<amrex::Real> const& diag_eos,
-                   amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> dx,
-                   amrex::Real z_in)
+                   const amrex::GpuArray<amrex::Real,AMREX_SPACEDIM>& dx,
+                   const amrex::GpuArray<amrex::Real,max_prob_param>& prob_param)
 {
 
-  prob_initdata_state(i, j ,k, state, dx,z_in);
+  prob_initdata_state(i, j ,k, state, dx,prob_param);
 
   // This is the case where we have compiled with states defined 
   //  but they have only one component each so we fill them this way.
@@ -62,7 +71,7 @@ void prob_initdata(const int i,
   // This is the regular case with NO_HYDRO = FALSE
   else if (state.nComp() > 1 && diag_eos.nComp() >= 2)
   {
-    diag_eos(i,j,k,Temp_comp) = 0.0210*(1.00 + z_in)*(1.00 + z_in);
+    diag_eos(i,j,k,Temp_comp) = 0.0210*(1.00 + prob_param[z_in_comp])*(1.00 + prob_param[z_in_comp]);
     diag_eos(i,j,k,  Ne_comp) = 0.0;
 
     //Should be equivalent to inhomo_reion > 0 Nyx_setup.cpp
