@@ -8,8 +8,11 @@ amr.prereadFAHeaders     = 1
 #amr.plot_headerversion = 1
 amr.checkpoint_headerversion = 2
 
-nyx.ppm_type         = 1
+# Note we now set USE_CONST_SPECIES = TRUE in the GNUmakefile
+nyx.h_species=.76
+nyx.he_species=.24
 
+nyx.ppm_type         = 1
 nyx.strang_split     = 1
 nyx.add_ext_src      = 0
 nyx.heat_cool_type   = 3

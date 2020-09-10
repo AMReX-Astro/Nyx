@@ -24,6 +24,10 @@ nyx.add_ext_src      = 0
 nyx.heat_cool_type   = 11
 #nyx.simd_width       = 8
 
+# Note we now set USE_CONST_SPECIES = TRUE in the GNUmakefile
+nyx.h_species=.76
+nyx.he_species=.24
+
 nyx.small_dens = 1.e-2
 nyx.small_temp = 1.e-2
 

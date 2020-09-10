@@ -30,6 +30,7 @@ USE_GRAV = TRUE
 USE_HEATCOOL = TRUE
 USE_AGN = TRUE
 USE_CVODE = FALSE
+USE_CONST_SPECIES = TRUE
 
 Bpack := ./Make.package
 Blocs := .
