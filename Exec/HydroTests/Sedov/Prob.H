@@ -32,20 +32,16 @@ static void prob_param_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_pa
     amrex::ParmParse pp_nyx("nyx");
     pp_nyx.query("gamma", prob_param[gamma_comp]);
 
-    std::string amr_prefix = "amr";
-    ParmParse ppamr(amr_prefix);
-    Vector<std::string> refinement_indicators;
-    ppamr.queryarr("refinement_indicators",refinement_indicators,0,ppamr.countval("refinement_indicators"));
-    if(refinement_indicators.size()==0)
-    {
-        AMRErrorTagInfo info;
-        info.SetMaxLevel(3);
-        errtags.push_back(AMRErrorTag(3,AMRErrorTag::GREATER,"density",info));
-        errtags.push_back(AMRErrorTag(0.01,AMRErrorTag::GRAD,"density",info));
-        errtags.push_back(AMRErrorTag(3,AMRErrorTag::GREATER,"pressure",info));
-        errtags.push_back(AMRErrorTag(0.01,AMRErrorTag::GRAD,"pressure",info));
-    }
+}
 
+static void prob_errtags_default(amrex::Vector<amrex::AMRErrorTag> errtags)
+{
+    AMRErrorTagInfo info;
+    info.SetMaxLevel(3);
+    errtags.push_back(AMRErrorTag(3,AMRErrorTag::GREATER,"density",info));
+    errtags.push_back(AMRErrorTag(0.01,AMRErrorTag::GRAD,"density",info));
+    errtags.push_back(AMRErrorTag(3,AMRErrorTag::GREATER,"pressure",info));
+    errtags.push_back(AMRErrorTag(0.01,AMRErrorTag::GRAD,"pressure",info));
 }
 
 AMREX_GPU_DEVICE AMREX_FORCE_INLINE

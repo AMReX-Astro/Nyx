@@ -144,18 +144,8 @@ amr.regrid_on_restart  = 1
 #amr.nosub              = 1
 
 amr.refinement_indicators = density
-#amr.refinement_indicators = density lo_temp gradT magvort
-amr.density.max_level = 0
 amr.density.value_greater = 3.5e9
 amr.density.field_name = denvol
-#amr.lo_temp.max_level = 2
-#amr.lo_temp.value_less = 500
-#amr.lo_temp.field_name = temp
-#amr.gradT.max_level = 2
-#amr.gradT.adjacent_difference_greater = 300
-#amr.gradT.field_name = temp
-#amr.magvort.max_level = 3
-#amr.magvort.vorticity_greater = 300
 
 # CHECKPOINT FILES
 amr.checkpoint_files_output = 1

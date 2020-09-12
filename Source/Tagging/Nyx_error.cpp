@@ -1,5 +1,6 @@
 
 #include "Nyx.H"
+#include "Prob.H"
 #include "Nyx_error_F.H"
 
 using namespace amrex;
@@ -14,9 +15,13 @@ Nyx::error_setup()
     ParmParse ppamr(amr_prefix);
     Vector<std::string> refinement_indicators;
     ppamr.queryarr("refinement_indicators",refinement_indicators,0,ppamr.countval("refinement_indicators"));
+    if(refinement_indicators.size()==0)
+        prob_errtags_default(errtags);
+    else
+    {
     for (int i=0; i<refinement_indicators.size(); ++i)
-      {
-	std::string ref_prefix = amr_prefix + "." + refinement_indicators[i];
+    {
+    std::string ref_prefix = amr_prefix + "." + refinement_indicators[i];
 	ParmParse ppr(ref_prefix);
 	RealBox realbox;
 	if (ppr.countval("in_box_lo")) {
@@ -68,7 +73,8 @@ Nyx::error_setup()
 	else {
 	  Abort(std::string("Unrecognized refinement indicator for " + refinement_indicators[i]).c_str());
 	}
-      }
+	}
+	}
 
 #else
     // The lines below define routines to be called to tag cells for error

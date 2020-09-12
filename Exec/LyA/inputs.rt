@@ -119,7 +119,6 @@ amr.max_level          = 0        # maximum level number allowed
 #amr.blocking_factor    = 32
 
 amr.refinement_indicators = density
-amr.density.max_level = 0
 amr.density.value_greater = 3.5e9
 amr.density.field_name = denvol
 
