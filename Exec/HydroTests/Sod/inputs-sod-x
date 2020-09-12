@@ -73,4 +73,7 @@ amr.plot_vars        = density
 amr.derive_plot_vars = pressure eint_E x_velocity # these variables appear in the plotfile
 
 #PROBIN FILENAME
-amr.probin_file = probin-sod-x
+amr.probin_file = ""
+
+# PROBLEM PARAMETERS
+prob.idir = 1

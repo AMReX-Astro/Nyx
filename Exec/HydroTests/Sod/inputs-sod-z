@@ -74,3 +74,6 @@ amr.derive_plot_vars = pressure eint_E z_velocity # these variables appear in th
 
 #PROBIN FILENAME
 amr.probin_file = probin-sod-z
+
+# PROBLEM PARAMETERS
+prob.idir = 2
