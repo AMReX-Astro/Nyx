@@ -296,24 +296,13 @@ void update_dm_particle_single (amrex::ParticleContainer<4, 0>::SuperParticleTyp
             {
                 for (int ii = 0; ii <= 1; ++ii)
                 {
-                  //                    val += sx[ii]*sy[jj]*sz[kk]*acc(i+ii,j+jj,k+kk,d);
                     val += sx[amrex::Math::abs(ii-1)]*
                            sy[amrex::Math::abs(jj-1)]*
                            sz[amrex::Math::abs(kk-1)]*acc(i-ii,j-jj,k-kk,d);
-                  //              amrex::Print()<<sx[abs(ii-1)]*sy[abs(jj-1)]*sz[abs(kk-1)]<<"\t"<<acc(i-ii,j-jj,k-kk,d)<<std::endl;
                 }
             }
         }
 
-        /*      amrex::Real val2= sx[1]*sy[1]*sz[1]*acc(i,j,k,d) + 
-          sx[1]*sy[1]*sz[0]*acc(i,j,k-1,d) + 
-          sx[1]*sy[0]*sz[1]*acc(i,j-1,k,d) + 
-          sx[1]*sy[0]*sz[0]*acc(i,j-1,k-1,d) + 
-          sx[0]*sy[1]*sz[1]*acc(i-1,j,k,d) + 
-          sx[0]*sy[1]*sz[0]*acc(i-1,j,k-1,d) + 
-          sx[0]*sy[0]*sz[1]*acc(i-1,j-1,k,d) + 
-          sx[0]*sy[0]*sz[0]*acc(i-1,j-1,k-1,d);
-        */
 
         p.rdata(d+1)=a_prev*p.rdata(d+1)+half_dt * val;
         p.rdata(d+1)*=a_cur_inv;
