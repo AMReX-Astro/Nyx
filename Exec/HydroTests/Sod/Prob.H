@@ -90,8 +90,8 @@ void prob_initdata_state(const int i,
 
   AMREX_D_TERM(
     amrex::Real ctr_x = prob_param[frac_comp] * (prob_lo[0] + prob_hi[0]);
-    , amrex::Real ctr_y = prob_param[frac_comp] * (prob_lo[1] + prob_hi[2]);
-    , amrex::Real ctr_z = prob_param[frac_comp] * (prob_lo[1] + prob_hi[2]);)
+    , amrex::Real ctr_y = prob_param[frac_comp] * (prob_lo[1] + prob_hi[1]);
+    , amrex::Real ctr_z = prob_param[frac_comp] * (prob_lo[2] + prob_hi[2]);)
 
   // Set the states
   if (int(prob_param[idir_comp]) == 1) {
