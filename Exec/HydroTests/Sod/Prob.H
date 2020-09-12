@@ -59,7 +59,7 @@ static void prob_param_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_pa
 
 }
 
-static void prob_errtags_default(amrex::Vector<amrex::AMRErrorTag> errtags)
+static void prob_errtags_default(amrex::Vector<amrex::AMRErrorTag>& errtags)
 {
     AMRErrorTagInfo info;
     info.SetMaxLevel(3);
