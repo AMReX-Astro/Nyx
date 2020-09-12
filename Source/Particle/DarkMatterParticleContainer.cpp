@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-#include "DarkMatterParticleContainer.H"
+#include <DarkMatterParticleContainer.H>
 
 using namespace amrex;
 
@@ -245,27 +245,16 @@ DarkMatterParticleContainer::moveKick (MultiFab&       acceleration,
     if (ac_ptr != &acceleration) delete ac_ptr;
 }
 
-//template <typename P>
-AMREX_GPU_HOST_DEVICE AMREX_INLINE void DarkMatterParticleContainer::update_dm_particle_single (ParticleType&  p,
+AMREX_GPU_HOST_DEVICE AMREX_INLINE 
+void DarkMatterParticleContainer::update_dm_particle_single (ParticleType&  p,
                                      const int nc,
                                      amrex::Array4<amrex::Real const> const& acc,
                                      amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& plo,
                                      amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& dxi,
-                                     const amrex::Real& dt, const amrex::Real& a_prev, 
+                                     const amrex::Real& dt, const amrex::Real& a_prev,
                                      const amrex::Real& a_cur, const int& do_move)
-{
 
-                                                        /*ParticleType const& p, 
-                                                        const int nc,
-                                     amrex::Array4<amrex::Real const> const& acc,
-                                     amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& plo,
-                                     amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& dxi,
-                                     const amrex::Real& dt, const amrex::Real& a_prev, 
-                                     const amrex::Real& a_cur, const int* do_move)
 {
-  void DarkMatterParticleContainer::update_dm_particle_single(amrex::Particle<4, 0> *, int, const amrex::Array4<const amrex::Real> &, const amrex::GpuArray<amrex::Real, 3UL> &, const amrex::GpuArray<amrex::Real, 3UL> &, const amrex::Real &, const amrex::Real &, const amrex::Real &, const int *)
-  num_particles_at_level += n;*/
-
     amrex::Real half_dt       = 0.5 * dt;
     amrex::Real a_cur_inv    = 1.0 / a_cur;
     amrex::Real dt_a_cur_inv = dt * a_cur_inv;
@@ -274,9 +263,9 @@ AMREX_GPU_HOST_DEVICE AMREX_INLINE void DarkMatterParticleContainer::update_dm_p
     amrex::Real ly = (p.pos(1) - plo[1]) * dxi[1] + 0.5;
     amrex::Real lz = (p.pos(2) - plo[2]) * dxi[2] + 0.5;
     
-    int i = std::floor(lx);
-    int j = std::floor(ly);
-    int k = std::floor(lz);
+    int i = amrex::Math::floor(lx);
+    int j = amrex::Math::floor(ly);
+    int k = amrex::Math::floor(lz);
     
     amrex::Real xint = lx - i;
     amrex::Real yint = ly - j;
@@ -295,24 +284,13 @@ AMREX_GPU_HOST_DEVICE AMREX_INLINE void DarkMatterParticleContainer::update_dm_p
             {
                 for (int ii = 0; ii <= 1; ++ii)
                 {
-                  //                    val += sx[ii]*sy[jj]*sz[kk]*acc(i+ii,j+jj,k+kk,d);
                     val += sx[amrex::Math::abs(ii-1)]*
                            sy[amrex::Math::abs(jj-1)]*
                            sz[amrex::Math::abs(kk-1)]*acc(i-ii,j-jj,k-kk,d);
-                  //              amrex::Print()<<sx[abs(ii-1)]*sy[abs(jj-1)]*sz[abs(kk-1)]<<"\t"<<acc(i-ii,j-jj,k-kk,d)<<std::endl;
                 }
             }
         }
 
-        /*      amrex::Real val2= sx[1]*sy[1]*sz[1]*acc(i,j,k,d) + 
-          sx[1]*sy[1]*sz[0]*acc(i,j,k-1,d) + 
-          sx[1]*sy[0]*sz[1]*acc(i,j-1,k,d) + 
-          sx[1]*sy[0]*sz[0]*acc(i,j-1,k-1,d) + 
-          sx[0]*sy[1]*sz[1]*acc(i-1,j,k,d) + 
-          sx[0]*sy[1]*sz[0]*acc(i-1,j,k-1,d) + 
-          sx[0]*sy[0]*sz[1]*acc(i-1,j-1,k,d) + 
-          sx[0]*sy[0]*sz[0]*acc(i-1,j-1,k-1,d);
-        */
 
         p.rdata(d+1)=a_prev*p.rdata(d+1)+half_dt * val;
         p.rdata(d+1)*=a_cur_inv;

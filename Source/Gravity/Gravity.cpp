@@ -1,8 +1,6 @@
-#include <cmath>
-
 #include <AMReX_ParmParse.H>
-#include "Gravity.H"
-#include "Nyx.H"
+#include <Gravity.H>
+#include <Nyx.H>
 #include <Gravity_F.H>
 #include <Nyx_F.H>
 
@@ -1300,16 +1298,19 @@ Gravity::AddGhostParticlesToRhs (int               level,
 
     amrex::Gpu::LaunchSafeGuard lsg(true);
 
+    int ncomp = 1;
+    int ngrow = 2;
+
     if (level > 0)
     {
         // If we have ghost particles, add their density to the single level solve
-        MultiFab ghost_mf(grids[level], dmap[level], 1, 1);
+        MultiFab ghost_mf(grids[level], dmap[level], ncomp, ngrow);
 
         for (int i = 0; i < Nyx::theGhostParticles().size(); i++)
         {
             ghost_mf.setVal(0.);
-            Nyx::theGhostParticles()[i]->AssignDensitySingleLevel(ghost_mf, level, 1, -1);
-            MultiFab::Add(Rhs, ghost_mf, 0, 0, 1, 0);
+            Nyx::theGhostParticles()[i]->AssignDensitySingleLevel(ghost_mf, level, ncomp, -1);
+            MultiFab::Add(Rhs, ghost_mf, 0, 0, ncomp, 0);
         }
     }
     amrex::Gpu::Device::streamSynchronize();
@@ -1322,12 +1323,15 @@ Gravity::AddGhostParticlesToRhs(int level, const Vector<MultiFab*>& Rhs_particle
 
     amrex::Gpu::LaunchSafeGuard lsg(true);
 
+    int ncomp = 1;
+    int ngrow = 2;
+
     if (level > 0)
     {
         // We require one ghost cell in GhostPartMF because that's how we handle
         // particles near fine-fine boundaries.  However we don't add any ghost
         // cells from GhostPartMF to the RHS.
-        MultiFab GhostPartMF(grids[level], dmap[level], 1, 1);
+        MultiFab GhostPartMF(grids[level], dmap[level], ncomp, ngrow);
         GhostPartMF.setVal(0.0);
 
         // Get the Ghost particle mass function. Note that Ghost particles should
@@ -1336,7 +1340,7 @@ Gravity::AddGhostParticlesToRhs(int level, const Vector<MultiFab*>& Rhs_particle
         // of the coarse, not fine, dx.
         for (int i = 0; i < Nyx::theGhostParticles().size(); i++)
         {
-            Nyx::theGhostParticles()[i]->AssignDensitySingleLevel(GhostPartMF, level, 1, -1);
+            Nyx::theGhostParticles()[i]->AssignDensitySingleLevel(GhostPartMF, level, ncomp, -1);
             MultiFab::Add(*Rhs_particles[0], GhostPartMF, 0, 0, 1, 0);
         }
     }
