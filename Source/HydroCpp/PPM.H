@@ -1,6 +1,4 @@
 
-#include <cmath>
-
 #ifndef _ppm_H_
 #define _ppm_H_
 

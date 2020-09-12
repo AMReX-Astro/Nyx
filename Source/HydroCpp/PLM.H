@@ -1,8 +1,6 @@
 #ifndef _PLM_H_
 #define _PLM_H_
 
-#include <cmath>
-
 #include <AMReX_FArrayBox.H>
 #include <AMReX_IArrayBox.H>
 

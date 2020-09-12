@@ -1,8 +1,6 @@
 #ifndef _Godunov_H_
 #define _Godunov_H_
 
-#include <cmath>
-
 #include <AMReX_FArrayBox.H>
 #include <AMReX_IArrayBox.H>
 
