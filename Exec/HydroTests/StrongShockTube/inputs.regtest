@@ -72,4 +72,24 @@ amr.plot_vars= density
 amr.derive_plot_vars= pressure eint_E Temp x_velocity
 
 #PROBIN FILENAME
-amr.probin_file = probin-test3-x
+amr.probin_file = ""
+
+prob.idir = 1
+prob.p_l = 1000.0
+prob.p_r = 0.01
+prob.rho_r = 1.0
+
+amr.refinement_indicators = denerr dengrad presserr pressgrad
+amr.denerr.max_level = -1
+amr.denerr.value_greater = 3
+amr.denerr.field_name = density
+amr.dengrad.max_level = 3
+amr.dengrad.adjacent_difference_greater = 0.01
+amr.dengrad.field_name = density
+
+amr.presserr.max_level = -1
+amr.presserr.value_greater = 3
+amr.presserr.field_name = pressure
+amr.pressgrad.max_level = 3
+amr.pressgrad.adjacent_difference_greater = 0.01
+amr.pressgrad.field_name = pressure
