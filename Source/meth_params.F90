@@ -24,7 +24,6 @@ module meth_params_module
   real(rt)        , allocatable :: small_dens, small_pres  
   real(rt)        , allocatable :: small_temp
 
-  integer,allocatable::normalize_species
   integer,allocatable::heat_cool_type
   integer,allocatable::inhomo_reion
   integer,allocatable::grav_source_type
@@ -39,7 +38,7 @@ module meth_params_module
   attributes(managed) :: URHO, UMX, UMY, UMZ, UEDEN, UEINT
   attributes(managed) :: TEMP_COMP, NE_COMP, ZHI_COMP, NVAR, NDIAG, small_temp, heat_cool_type
   attributes(managed) :: small_pres, small_dens
-  attributes(managed) :: normalize_species,inhomo_reion,grav_source_type
+  attributes(managed) :: inhomo_reion,grav_source_type
   attributes(managed) :: cg_maxiter,cg_tol,cg_blend,fix_mass_flux,use_reset_state
   attributes(managed) :: use_reset_state
 #endif

@@ -1,9 +1,11 @@
 #include <Hydro.H>
+#include <Utilities.H>
 #include <Nyx.H>
 
 /**
  *  Set up the source terms to go into the hydro.
 */
+
 void
 Nyx::construct_hydro_source(
   const amrex::MultiFab& S,
@@ -12,6 +14,7 @@ Nyx::construct_hydro_source(
   amrex::MultiFab& grav_vector, 
   amrex::Real a_old,
   amrex::Real a_new,
+  amrex::Real cfl,
   amrex::Real dt,
   bool init_flux_register, bool add_to_flux_register)
 {
@@ -167,7 +170,7 @@ Nyx::construct_hydro_source(
           a{area[0].array(mfi), area[1].array(mfi), area[2].array(mfi)};
 
         pc_umdrv(
-          bx, s, hyd_src, qarr, srcqarr, flx_arr, dx, dt, a_old, a_new,
+          bx, s, hyd_src, qarr, srcqarr, flx_arr, dx, dt, a_old, a_new, cfl,
           gamma, gamma_minus_1_loc, NumSpec,
           small_dens, small_pres, small, 
           cflLoc, ppm_type, use_flattening, a, volume.array(mfi));
@@ -270,6 +273,7 @@ pc_umdrv(
   const amrex::Real dt,
   const amrex::Real a_old,
   const amrex::Real a_new,
+  const amrex::Real cfl,
   const amrex::Real gamma, const amrex::Real gamma_minus_1, 
   const int NumSpec,
   const amrex::Real small_dens, const amrex::Real small_pres, 
@@ -279,6 +283,7 @@ pc_umdrv(
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
     a,
   amrex::Array4<amrex::Real> const& vol)
+
 {
   //  Set Up for Hydro Flux Calculations
   auto const& bxg2 = grow(bx, 2);
@@ -289,6 +294,7 @@ pc_umdrv(
     qec[dir].resize(eboxes, NGDNV);
     qec_eli[dir] = qec[dir].elixir();
   }
+
   amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> qec_arr
     {qec[0].array(), qec[1].array(), qec[2].array()};
 
@@ -314,10 +320,25 @@ pc_umdrv(
     qec_eli[dir].clear();
   }
 
+#if 0
+  // if (limit_fluxes_on_small_dens == 1) 
+  {
+      for (int idir = 0; idir < AMREX_SPACEDIM; ++idir) 
+      {
+          const Box& nbx = amrex::surroundingNodes(bx, idir);
+          const Real& dx_dir = dx[idir];
+          const Real& lcfl   = cfl;
+          limit_hydro_fluxes_on_small_dens (nbx, idir, uin, q, flx[idir], small_dens, lcfl, dx_dir, dt);
+      }
+  }
+#endif
+
   // divu
-  AMREX_D_TERM(const amrex::Real dx0 = dx[0];, const amrex::Real dx1 = dx[1];
-               , const amrex::Real dx2 = dx[2];);
-  amrex::ParallelFor(bxg2, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+  const amrex::Real dx0 = dx[0]; 
+  const amrex::Real dx1 = dx[1];
+  const amrex::Real dx2 = dx[2];
+  amrex::ParallelFor(bxg2, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept 
+  {
     pc_divu(i, j, k, q, dx0, dx1, dx2, divarr);
   });
 
@@ -351,8 +372,10 @@ pc_consup(
     const amrex::Real dx = del[dir];
     amrex::ParallelFor(fbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
       pc_artif_visc(i, j, k, flx[dir], div, u, dx, difmag, dir);
+
       // Normalize Species Flux
-      pc_norm_spec_flx(i, j, k, flx[dir], NumSpec);
+      normalize_species_fluxes(i, j, k, flx[dir], NumSpec);
+
       // Make flux extensive
       pc_ext_flx(i, j, k, flx[dir], a[dir], dt);
     });

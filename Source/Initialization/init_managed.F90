@@ -22,7 +22,7 @@ allocate(TEMP_COMP, NE_COMP, ZHI_COMP, NVAR, NDIAG, small_temp, heat_cool_type)
 
 allocate(small_pres, small_dens)
 
-allocate(normalize_species,inhomo_reion,grav_source_type)
+allocate(inhomo_reion,grav_source_type)
 allocate(cg_maxiter,cg_tol,cg_blend,fix_mass_flux,use_reset_state)
 cg_maxiter=12
 cg_tol=1.0d-5
@@ -153,7 +153,7 @@ deallocate(TEMP_COMP, NE_COMP, ZHI_COMP, NVAR, NDIAG, small_temp, heat_cool_type
 
 deallocate(small_pres, small_dens)
 
-deallocate(normalize_species,inhomo_reion,grav_source_type)
+deallocate(inhomo_reion,grav_source_type)
 deallocate(cg_maxiter,cg_tol,cg_blend,fix_mass_flux,use_reset_state)
 #ifdef HEATCOOL
 deallocate(XHYDROGEN,YHELIUM)

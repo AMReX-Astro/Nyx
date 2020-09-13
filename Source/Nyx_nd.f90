@@ -187,7 +187,7 @@
 
       subroutine fort_set_method_params( &
                  ndiag_in, do_hydro, use_const_species, &
-                 gamma_in, normalize_species_in, &
+                 gamma_in, &
                  heat_cool_in, inhomo_reion_in) &
                  bind(C, name = "fort_set_method_params")
 
@@ -208,7 +208,6 @@
         integer,  intent(in) :: do_hydro
         integer,  intent(in) :: use_const_species
         real(rt), intent(in) :: gamma_in
-        integer,  intent(in) :: normalize_species_in
         integer,  intent(in) :: heat_cool_in
         integer,  intent(in) :: inhomo_reion_in
 
@@ -285,8 +284,6 @@
               gamma_const = 5.d0/3.d0
            end if
            gamma_minus_1 = gamma_const - 1.d0
-
-           normalize_species            = normalize_species_in
 
            heat_cool_type               = heat_cool_in
            inhomo_reion                 = inhomo_reion_in

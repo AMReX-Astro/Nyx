@@ -106,8 +106,7 @@ pc_divu(
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
-pc_norm_spec_flx(
-                                 const int i, const int j, const int k, amrex::Array4<amrex::Real> const& flx, const int NumSpec)
+normalize_species_fluxes(const int i, const int j, const int k, amrex::Array4<amrex::Real> const& flx, const int NumSpec)
 {
   amrex::Real summ, fac;
   summ = 0.0;
@@ -203,6 +202,7 @@ void pc_umdrv(
   const amrex::Real dt,
   const amrex::Real a_old,
   const amrex::Real a_new,
+  const amrex::Real cfl,
   const amrex::Real gamma, const amrex::Real gamma_minus_1, 
   const int NumSpec,
   const amrex::Real small_dens, const amrex::Real small_pres, 

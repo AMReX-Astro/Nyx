@@ -42,7 +42,7 @@ extern "C"
 
   void fort_set_method_params
     (const int& Ndiag, const int& do_hydro, const int& use_const_species,
-     const amrex::Real& gamma_in, const int& normalize_species,
+     const amrex::Real& gamma_in, 
      const int& heat_cool_type, const int& inhomo_reion);
 
   void fort_tabulate_rates();
@@ -130,10 +130,6 @@ extern "C"
      BL_FORT_FAB_ARG_3D(flux), 
      const int idir, const amrex::Real* dx, 
      const amrex::Real dt);
-
-  AMREX_GPU_DEVICE void normalize_species_fluxes
-    (const int* lo, const int* hi,
-     BL_FORT_FAB_ARG_3D(flux));
 
   void ca_fourth_single_stage
     (const int* lo, const int* hi,

@@ -529,6 +529,7 @@ public:
                                       amrex::MultiFab& grav, 
                                       amrex::Real a_old,
                                       amrex::Real a_new,
+                                      amrex::Real cfl,
                                       amrex::Real dt,
                                       bool init_flux_register, bool add_to_flux_register);
 
@@ -851,7 +852,6 @@ protected:
 
     static int nghost_state;
     static int allow_untagging;
-    static int normalize_species;
     static int do_special_tagging;
     static int ppm_type;
     static int use_flattening;
