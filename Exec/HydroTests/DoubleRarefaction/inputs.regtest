@@ -74,5 +74,33 @@ amr.plot_int        = 1000            # number of timesteps between plotfiles
 amr.plot_vars       = density 
 amr.derive_plot_vars= x_velocity eint_E pressure Temp # these variables appear in the plotfile
 
-# PROBIN FILENAME
-amr.probin_file = probin-test2-x
+#PROBIN FILENAME
+amr.probin_file = ""
+
+prob.idir = 1
+prob.frac = 0.5
+prob.p_l = 0.4
+prob.u_l = -2.0
+prob.rho_l = 1.0
+prob.p_r = 0.4
+prob.u_r = 2.0
+prob.rho_r = 1.0
+
+amr.refinement_indicators = denerr dengrad presserr pressgrad velgrad
+amr.denerr.max_level = 3
+amr.denerr.value_greater = 3
+amr.denerr.field_name = density
+amr.dengrad.max_level = 3
+amr.dengrad.adjacent_difference_greater = 0.01
+amr.dengrad.field_name = density
+
+amr.presserr.max_level = 3
+amr.presserr.value_greater = 3
+amr.presserr.field_name = pressure
+amr.pressgrad.max_level = 3
+amr.pressgrad.adjacent_difference_greater = 0.01
+amr.pressgrad.field_name = pressure
+
+amr.velgrad.max_level = 3
+amr.velgrad.adjacent_difference_greater = 0.01
+amr.velgrad.field_name = x_velocity
