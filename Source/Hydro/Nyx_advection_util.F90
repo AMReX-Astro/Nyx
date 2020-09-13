@@ -14,8 +14,7 @@ contains
  
       use amrex_fort_module, only : rt => amrex_real
       use amrex_constants_module
-      use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UFS, &
-                                     gamma_minus_1, normalize_species
+      use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UFS, gamma_minus_1
       use ca_enforce_module, only : ca_enforce_nonnegative_species
       use enforce_density_module, only : ca_enforce_minimum_density, ca_enforce_minimum_density_1cell
       use amrex_error_module, only : amrex_error
@@ -117,10 +116,7 @@ contains
                                        uout_h1,uout_h2,uout_h3,lo,hi,noprint)
 
       ! Re-normalize the species
-      if (normalize_species .eq. 1) then
-         call ca_normalize_new_species(uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
-                                    lo,hi)
-      end if
+      call ca_normalize_new_species(uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3,lo,hi)
 
     end subroutine update_state
 
@@ -618,7 +614,8 @@ AMREX_CUDA_FORT_DEVICE subroutine ca_ctoprim(lo, hi, &
   !! they sum to 0.  This is essentially the CMA procedure that is
   !! defined in Plewa & Muller, 1999, A&A, 342, 179.
   !!
-  AMREX_CUDA_FORT_DEVICE subroutine ca_normalize_species_fluxes(lo, hi, flux, f_lo, f_hi) bind(c, name="normalize_species_fluxes")
+  AMREX_CUDA_FORT_DEVICE subroutine ca_normalize_species_fluxes(lo, hi, flux, f_lo, f_hi) &
+    bind(c, name="normalize_species_fluxes")
 
     use amrex_constants_module, only: ZERO, ONE
     use amrex_fort_module, only: rt => amrex_real

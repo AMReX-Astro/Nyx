@@ -897,8 +897,7 @@
 
       use amrex_fort_module, only : rt => amrex_real
       use amrex_constants_module
-      use meth_params_module, only : difmag, NVAR, URHO, UMX, UMZ, &
-           UEDEN, UEINT, UFS, normalize_species, gamma_minus_1
+      use meth_params_module, only : difmag, NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UFS, gamma_minus_1
 
       implicit none
 
@@ -970,12 +969,13 @@
 
       enddo
 
-      if (UFS .gt. 0 .and. normalize_species .eq. 1) &
+      if (UFS .gt. 0) then
          call normalize_species_fluxes( &
                   flux1,flux1_l1,flux1_l2,flux1_l3,flux1_h1,flux1_h2,flux1_h3, &
                   flux2,flux2_l1,flux2_l2,flux2_l3,flux2_h1,flux2_h2,flux2_h3, &
                   flux3,flux3_l1,flux3_l2,flux3_l3,flux3_h1,flux3_h2,flux3_h3, &
                   lo,hi)
+      endif
 
       a_half_inv  = ONE / a_half
       a_new_inv   = ONE / a_new
@@ -1071,8 +1071,7 @@
  
       use amrex_fort_module, only : rt => amrex_real
       use amrex_constants_module
-      use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UFS, &
-                                     gamma_minus_1, normalize_species
+      use meth_params_module, only : NVAR, URHO, UMX, UMZ, UEDEN, UEINT, UFS, gamma_minus_1
       use enforce_density_module, only : ca_enforce_minimum_density_1cell_host
       use enforce_module, only : enforce_nonnegative_species
 
@@ -1170,10 +1169,7 @@
                                        uout_h1,uout_h2,uout_h3,lo,hi,0)
 
       ! Re-normalize the species
-      if (normalize_species .eq. 1) then
-         call normalize_new_species(uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3, &
-                                    lo,hi)
-      end if
+      call normalize_new_species(uout,uout_l1,uout_l2,uout_l3,uout_h1,uout_h2,uout_h3,lo,hi)
 
       end subroutine update_state
 

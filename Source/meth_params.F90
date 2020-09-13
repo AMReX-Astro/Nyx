@@ -36,7 +36,6 @@ module meth_params_module
   integer,allocatable::ppm_type
   integer,allocatable::use_flattening
   integer,allocatable::use_const_species
-  integer,allocatable::normalize_species
   integer,allocatable::heat_cool_type
   integer,allocatable::inhomo_reion
   integer,allocatable::grav_source_type
@@ -72,7 +71,7 @@ module meth_params_module
   attributes(managed) ::  QTHERM, NQAUX, QVAR, QC, NQSRC, NQ, UTEMP, QGAME, QGAMC, NGDNV, QTEMP, QFX,  QGC
   attributes(managed) :: QRHO, QU, QV, QW, QPRES, QREINT, QFA, QFS, GDGAME, GDRHO, GDPRES, GDU, GDV, GDW
   attributes(managed) :: difmag
- attributes(managed) :: ppm_type,use_flattening,use_const_species,normalize_species,inhomo_reion,grav_source_type
+ attributes(managed) :: ppm_type,use_flattening,use_const_species,inhomo_reion,grav_source_type
  attributes(managed) :: cg_maxiter,cg_tol,cg_blend,fix_mass_flux,ppm_predict_gammae,ppm_temp_fix,&
       hybrid_riemann,riemann_solver,use_pslope,transverse_reset_density,transverse_reset_rhoe,use_pressure_law_pdivu, &
       use_analriem,use_srcQ_in_trace,use_csmall_gamma,use_reset_state,use_gamma_minus, use_area_dt_scale_apply

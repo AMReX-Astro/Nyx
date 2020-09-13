@@ -871,7 +871,6 @@ protected:
     static int hydro_convert;
     static int allow_untagging;
     static int use_const_species;
-    static int normalize_species;
     static int do_special_tagging;
     static int ppm_type;
     static int use_flattening;

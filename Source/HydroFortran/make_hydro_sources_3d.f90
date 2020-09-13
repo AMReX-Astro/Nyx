@@ -21,7 +21,7 @@
 
       use amrex_fort_module, only : rt => amrex_real
       use amrex_mempool_module, only : amrex_allocate, amrex_deallocate
-      use meth_params_module, only : QVAR, NVAR, NHYP, normalize_species
+      use meth_params_module, only : QVAR, NVAR, NHYP
       use amrex_constants_module
 
       implicit none

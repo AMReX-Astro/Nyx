@@ -48,7 +48,7 @@ extern "C"
      const int& use_flattening,
      const int& use_analriem,
      const int& use_const_species,
-     const amrex::Real& gamma_in, const int& normalize_species,
+     const amrex::Real& gamma_in, 
      const int& heat_cool_type, const int& inhomo_reion);
 
   void fort_tabulate_rates();

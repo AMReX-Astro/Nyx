@@ -203,7 +203,7 @@ Nyx::hydro_setup()
     fort_set_method_params
         (dm, NumAdv, NDIAG_C, do_hydro, ppm_type, 
          use_flattening, use_analriem, 
-         use_const_species, gamma, normalize_species,
+         use_const_species, gamma, 
          heat_cool_type, inhomo_reion);
 
 #ifdef HEATCOOL
@@ -670,7 +670,7 @@ Nyx::no_hydro_setup()
     fort_set_method_params
         (dm, NumAdv, NDIAG_C, do_hydro, ppm_type, 
          use_flattening, use_analriem, 
-         use_const_species, gamma, normalize_species,
+         use_const_species, gamma, 
          heat_cool_type, inhomo_reion);
 
 #ifdef HEATCOOL
