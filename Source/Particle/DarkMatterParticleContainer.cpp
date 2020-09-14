@@ -863,14 +863,14 @@ DarkMatterParticleContainer::InitFromBinaryMortonFile(const std::string& particl
       ifs.read((char*)&fextra[0], NX*sizeof(float));
       
       if ( (i - start) % skip_factor == 0 ) {
-        AMREX_D_TERM(p.m_rdata.pos[0] = fpos[0];,
-                     p.m_rdata.pos[1] = fpos[1];,
-                     p.m_rdata.pos[2] = fpos[2];);
+        AMREX_D_TERM(p.pos(0) = fpos[0];,
+                     p.pos(1) = fpos[1];,
+                     p.pos(2) = fpos[2];);
         
         for (int comp = 0; comp < NX; comp++)
-          p.m_rdata.arr[BL_SPACEDIM+comp] = fextra[comp];
+          p.rdata(BL_SPACEDIM+comp) = fextra[comp];
         
-        p.m_rdata.arr[BL_SPACEDIM] *= skip_factor;
+        p.rdata(BL_SPACEDIM) *= skip_factor;
         
         p.id()  = ParticleType::NextID();
         p.cpu() = ParallelDescriptor::MyProc();
