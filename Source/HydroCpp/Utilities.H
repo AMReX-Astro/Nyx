@@ -13,7 +13,10 @@ void pc_cmpTemp(
 */
 
 AMREX_GPU_DEVICE
-void limit_hydro_fluxes_on_small_dens(const amrex::Box& bx,
+AMREX_FORCE_INLINE
+void limit_hydro_fluxes_on_small_dens(const int i,
+                                      const int j,
+                                      const int k,
                                       int idir,
                                       amrex::Array4<amrex::Real const> const& u,
                                       amrex::Array4<amrex::Real const> const& q,

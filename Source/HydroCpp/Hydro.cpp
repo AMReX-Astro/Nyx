@@ -328,7 +328,9 @@ pc_umdrv(
           const Box& nbx = amrex::surroundingNodes(bx, idir);
           const Real& dx_dir = dx[idir];
           const Real& lcfl   = cfl;
-          limit_hydro_fluxes_on_small_dens (nbx, idir, uin, q, flx[idir], small_dens, lcfl, dx_dir, dt);
+          amrex::ParallelFor(nbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+              limit_hydro_fluxes_on_small_dens (i, j, k, idir, uin, q, flx[idir], small_dens, lcfl, dx_dir, dt);
+	  };
       }
   }
 #endif

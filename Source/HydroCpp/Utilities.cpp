@@ -158,7 +158,10 @@ locate(const amrex::Real* xtable, const int n, amrex::Real& x, int& idxlo)
 using namespace amrex;
 
 AMREX_GPU_DEVICE
-void limit_hydro_fluxes_on_small_dens(const Box& bx,
+AMREX_FORCE_INLINE
+void limit_hydro_fluxes_on_small_dens(const int i,
+                                      const int j,
+                                      const int k,
                                       int idir,
                                       Array4<Real const> const& u,
                                       Array4<Real const> const& q,
@@ -201,150 +204,145 @@ void limit_hydro_fluxes_on_small_dens(const Box& bx,
     Real dtdx = dt / dx_dir;
     Real alpha = 1.0 / AMREX_SPACEDIM;
 
-    amrex::ParallelFor(bx,
-    [=] AMREX_GPU_HOST_DEVICE (int i, int j, int k)
-    {
-        // Grab the states on either side of the interface we are working with,
-        // depending on which dimension we're currently calling this with.
+    // Grab the states on either side of the interface we are working with,
+    // depending on which dimension we're currently calling this with.
 
-        GpuArray<Real, QVAR> uR;
-        GpuArray<Real, QVAR> uL;
-        GpuArray<Real, QVAR> qR;
-        GpuArray<Real, QVAR> qL;
-        GpuArray<int, 3> idxR = {i,j,k};
-        GpuArray<int, 3> idxL;
+    GpuArray<Real, QVAR> uR;
+    GpuArray<Real, QVAR> uL;
+    GpuArray<Real, QVAR> qR;
+    GpuArray<Real, QVAR> qL;
+    GpuArray<int, 3> idxR = {i,j,k};
+    GpuArray<int, 3> idxL;
 
-        if (idir == 0) {
-            idxL = {i-1,j,k};
-        } else if (idir == 1) {
-            idxL = {i,j-1,k};
-        } else {
-            idxL = {i,j,k-1};
-        }
+    if (idir == 0) {
+        idxL = {i-1,j,k};
+    } else if (idir == 1) {
+        idxL = {i,j-1,k};
+    } else {
+        idxL = {i,j,k-1};
+    }
+
+    for (int n = 0; n < QVAR; ++n) {
+        uR[n] = u(i,j,k,n);
+        qR[n] = q(i,j,k,n);
+        uL[n] = u(idxL[0],idxL[1],idxL[2]);
+        qL[n] = q(idxL[0],idxL[1],idxL[2]);
+    }
+
+    // If an adjacent zone has a floor-violating density, set the flux to zero and move on.
+    // At that point, the only thing to do is wait for a reset at a later point.
+
+    if (uR[URHO] < density_floor || uL[URHO] < density_floor) {
 
         for (int n = 0; n < QVAR; ++n) {
-            uR[n] = u(i,j,k,n);
-            qR[n] = q(i,j,k,n);
-            uL[n] = u(idxl[0],idxl[1],idxL[2]);
-            qL[n] = q(idxl[0],idxl[1],idxL[2]);
+            flux(i,j,k,n) = 0.0;
         }
 
-        // If an adjacent zone has a floor-violating density, set the flux to zero and move on.
-        // At that point, the only thing to do is wait for a reset at a later point.
+        return;
+    }
 
-        if (uR[URHO] < density_floor || uL[URHO] < density_floor) {
+    // Construct cell-centered fluxes.
+    GpuArray<Real, QVAR> fluxL;
+    GpuArray<Real, QVAR> fluxR;
 
-            for (int n = 0; n < NGDNV; ++n) {
-                flux(i,j,k,n) = 0.0;
-            }
+    for (int n = 0; n < QVAR; ++n) {
+        fluxL[n] = 0.0;
+        fluxR[n] = 0.0;
+    }
 
-            return;
-        }
+    fluxL[URHO]      = uL[URHO] * qL[QU + idir];
+    fluxL[UMX]       = uL[UMX]  * qL[QU + idir];
+    fluxL[UMY]       = uL[UMY]  * qL[QU + idir];
+    fluxL[UMZ]       = uL[UMZ]  * qL[QU + idir];
+    fluxL[UEDEN]     = (uL[UEDEN] + qL[QPRES]) * qL[QU + idir];
+    fluxL[UEINT]     = uL[UEINT]  * qL[QU + idir];
 
-        // Construct cell-centered fluxes.
-        GpuArray<Real, NGDNV> fluxL;
-        GpuArray<Real, NGDNV> fluxR;
+    fluxR[URHO]      = uR[URHO] * qR[QU + idir];
+    fluxR[UMX]       = uR[UMX]  * qR[QU + idir];
+    fluxR[UMY]       = uR[UMY]  * qR[QU + idir];
+    fluxR[UMZ]       = uR[UMZ]  * qR[QU + idir];
+    fluxR[UEDEN]     = (uR[UEDEN] + qR[QPRES]) * qR[QU + idir];
+    fluxR[UEINT]     = uR[UEINT] * qR[QU + idir];
 
-        for (int n = 0; n < NGDNV; ++n) {
-            fluxL[n] = 0.0;
-            fluxR[n] = 0.0;
-        }
-
-        fluxL[URHO]      = uL[URHO] * qL[QU + idir];
-        fluxL[UMX]       = uL[UMX]  * qL[QU + idir];
-        fluxL[UMY]       = uL[UMY]  * qL[QU + idir];
-        fluxL[UMZ]       = uL[UMZ]  * qL[QU + idir];
-        fluxL[UEDEN]     = (uL[UEDEN] + qL[QPRES]) * qL[QU + idir];
-        fluxL[UEINT]     = uL[UEINT]  * qL[QU + idir];
-
-        fluxR[URHO]      = uR[URHO] * qR[QU + idir];
-        fluxR[UMX]       = uR[UMX]  * qR[QU + idir];
-        fluxR[UMY]       = uR[UMY]  * qR[QU + idir];
-        fluxR[UMZ]       = uR[UMZ]  * qR[QU + idir];
-        fluxR[UEDEN]     = (uR[UEDEN] + qR[QPRES]) * qR[QU + idir];
-        fluxR[UEINT]     = uR[UEINT] * qR[QU + idir];
-
-        fluxL[UMX + idir] = fluxL[UMX + idir] + qL[QPRES];
-        fluxR[UMX + idir] = fluxR[UMX + idir] + qR[QPRES];
+    fluxL[UMX + idir] = fluxL[UMX + idir] + qL[QPRES];
+    fluxR[UMX + idir] = fluxR[UMX + idir] + qR[QPRES];
 
         // Construct the Lax-Friedrichs flux on the interface (Equation 12).
-        // Note that we are using the information from Equation 9 to obtain the
-        // effective maximum wave speed, (|u| + c)_max = CFL / lambda where
-        // lambda = dt/(dx * alpha); alpha = 1 in 1D and may be chosen somewhat
-        // freely in multi-D as long as alpha_x + alpha_y + alpha_z = 1.
+    // Note that we are using the information from Equation 9 to obtain the
+    // effective maximum wave speed, (|u| + c)_max = CFL / lambda where
+    // lambda = dt/(dx * alpha); alpha = 1 in 1D and may be chosen somewhat
+    // freely in multi-D as long as alpha_x + alpha_y + alpha_z = 1.
 
-        GpuArray<Real, NGDNV> fluxLF;
-        for (int n = 0; n < NGDNV; ++n) {
-            fluxLF[n] = 0.5 * (fluxL[n] + fluxR[n] + (lcfl / dtdx / alpha) * (uL[n] - uR[n]));
+    GpuArray<Real, QVAR> fluxLF;
+    for (int n = 0; n < QVAR; ++n) {
+        fluxLF[n] = 0.5 * (fluxL[n] + fluxR[n] + (lcfl / dtdx / alpha) * (uL[n] - uR[n]));
+    }
+
+    // Coefficients of fluxes on either side of the interface.
+
+    Real flux_coefR = 2.0 * (dtdx / alpha);
+    Real flux_coefL = 2.0 * (dtdx / alpha);
+
+    // Obtain the one-sided update to the density, based on Hu et al., Eq. 11.
+    // If we would violate the floor, then we need to limit the flux. Since the
+    // flux adds to the density on one side and subtracts from the other, the floor
+    // can only be violated in at most one direction, so we'll do an if-else test
+    // below. This means that we can simplify the approach of Hu et al. -- whereas
+    // they constructed two thetas for each interface (corresponding to either side)
+    // we can complete the operation in one step with a single theta.
+
+    Real drhoL = flux_coefL * flux(i,j,k,URHO);
+    Real rhoL = uL[URHO] - drhoL;
+
+    Real drhoR = flux_coefR * flux(i,j,k,URHO);
+    Real rhoR = uR[URHO] + drhoR;
+
+    Real theta = 1.0;
+
+    if (rhoL < density_floor) {
+
+        // Obtain the final density corresponding to the LF flux.
+
+        Real drhoLF = flux_coefL * fluxLF[URHO];
+        Real rhoLF = uL[URHO] - drhoLF;
+
+        // Solve for theta from (1 - theta) * rhoLF + theta * rho = density_floor.
+
+        theta = amrex::min(theta, (density_floor - rhoLF) / (rhoL - rhoLF));
+
+    }
+    else if (rhoR < density_floor) {
+
+        Real drhoLF = flux_coefR * fluxLF[URHO];
+        Real rhoLF = uR[URHO] + drhoLF;
+
+        theta = amrex::min(theta, (density_floor - rhoLF) / (rhoR - rhoLF));
+
+    }
+
+    // Limit theta to the valid range (this will deal with roundoff issues).
+
+    theta = amrex::min(1.0, amrex::max(theta, 0.0));
+
+    // Assemble the limited flux (Equation 16).
+
+    for (int n = 0; n < QVAR; ++n) {
+        flux(i,j,k,n) = (1.0 - theta) * fluxLF[n] + theta * flux(i,j,k,n);
+    }
+
+    // Now, apply our requirement that the final flux cannot violate the density floor.
+
+    drhoR = flux_coefR * flux(i,j,k,URHO);
+    drhoL = flux_coefL * flux(i,j,k,URHO);
+
+    if (uR[URHO] + drhoR < density_floor) {
+        for (int n = 0; n < QVAR; ++n) {
+            flux(i,j,k,n) = flux(i,j,k,n) * std::abs((density_floor - uR[URHO]) / drhoR);
         }
-
-        // Coefficients of fluxes on either side of the interface.
-
-        Real flux_coefR = 2.0 * (dtdx / alpha);
-        Real flux_coefL = 2.0 * (dtdx / alpha);
-
-        // Obtain the one-sided update to the density, based on Hu et al., Eq. 11.
-        // If we would violate the floor, then we need to limit the flux. Since the
-        // flux adds to the density on one side and subtracts from the other, the floor
-        // can only be violated in at most one direction, so we'll do an if-else test
-        // below. This means that we can simplify the approach of Hu et al. -- whereas
-        // they constructed two thetas for each interface (corresponding to either side)
-        // we can complete the operation in one step with a single theta.
-
-        Real drhoL = flux_coefL * flux(i,j,k,URHO);
-        Real rhoL = uL[URHO] - drhoL;
-
-        Real drhoR = flux_coefR * flux(i,j,k,URHO);
-        Real rhoR = uR[URHO] + drhoR;
-
-        Real theta = 1.0;
-
-        if (rhoL < density_floor) {
-
-            // Obtain the final density corresponding to the LF flux.
-
-            Real drhoLF = flux_coefL * fluxLF[URHO];
-            Real rhoLF = uL[URHO] - drhoLF;
-
-            // Solve for theta from (1 - theta) * rhoLF + theta * rho = density_floor.
-
-            theta = amrex::min(theta, (density_floor - rhoLF) / (rhoL - rhoLF));
-
+    }
+    else if (uL[URHO] - drhoL < density_floor) {
+        for (int n = 0; n < QVAR; ++n) {
+            flux(i,j,k,n) = flux(i,j,k,n) * std::abs((density_floor - uL[URHO]) / drhoL);
         }
-        else if (rhoR < density_floor) {
-
-            Real drhoLF = flux_coefR * fluxLF[URHO];
-            Real rhoLF = uR[URHO] + drhoLF;
-
-            theta = amrex::min(theta, (density_floor - rhoLF) / (rhoR - rhoLF));
-
-        }
-
-        // Limit theta to the valid range (this will deal with roundoff issues).
-
-        theta = amrex::min(1.0, amrex::max(theta, 0.0));
-
-        // Assemble the limited flux (Equation 16).
-
-        for (int n = 0; n < NGDNV; ++n) {
-            flux(i,j,k,n) = (1.0 - theta) * fluxLF[n] + theta * flux(i,j,k,n);
-        }
-
-        // Now, apply our requirement that the final flux cannot violate the density floor.
-
-        drhoR = flux_coefR * flux(i,j,k,URHO);
-        drhoL = flux_coefL * flux(i,j,k,URHO);
-
-        if (uR[URHO] + drhoR < density_floor) {
-            for (int n = 0; n < NGDNV; ++n) {
-                flux(i,j,k,n) = flux(i,j,k,n) * std::abs((density_floor - uR[URHO]) / drhoR);
-            }
-        }
-        else if (uL[URHO] - drhoL < density_floor) {
-            for (int n = 0; n < NGDNV; ++n) {
-                flux(i,j,k,n) = flux(i,j,k,n) * std::abs((density_floor - uL[URHO]) / drhoL);
-            }
-        }
-
-    });
+    }
 }
