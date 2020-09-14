@@ -158,7 +158,10 @@ locate(const amrex::Real* xtable, const int n, amrex::Real& x, int& idxlo)
 using namespace amrex;
 
 AMREX_GPU_DEVICE
-void limit_hydro_fluxes_on_small_dens(const Box& bx,
+AMREX_FORCE_INLINE
+void limit_hydro_fluxes_on_small_dens(const int i,
+                                      const int j,
+                                      const int k,
                                       int idir,
                                       Array4<Real const> const& u,
                                       Array4<Real const> const& q,
@@ -200,10 +203,6 @@ void limit_hydro_fluxes_on_small_dens(const Box& bx,
 
     Real dtdx = dt / dx_dir;
     Real alpha = 1.0 / AMREX_SPACEDIM;
-
-    amrex::ParallelFor(bx,
-    [=] AMREX_GPU_HOST_DEVICE (int i, int j, int k)
-    {
 
         // Grab the states on either side of the interface we are working with,
         // depending on which dimension we're currently calling this with.
@@ -382,5 +381,4 @@ void limit_hydro_fluxes_on_small_dens(const Box& bx,
             }
         }
 
-    });
 }
