@@ -1,14 +1,13 @@
 # AMREX_HOME defines the directory in which we will find all the AMReX code
-AMREX_HOME ?= ../../../../amrex
+AMREX_HOME ?= ../../../amrex
 
 # TOP defines the directory in which we will find Source, Exec, etc
-TOP = ../../..
+TOP = ../..
 
 # compilation options
 COMP    = gcc
-
-USE_MPI = FALSE
-USE_OMP = FALSE
+USE_MPI = TRUE
+USE_OMP = TRUE
 
 PRECISION = DOUBLE
 DEBUG     = FALSE
@@ -16,8 +15,11 @@ DEBUG     = FALSE
 # physics
 DIM      = 3
 USE_GRAV = FALSE
+USE_HEATCOOL = FALSE
 
 USE_CONST_SPECIES = TRUE
+
+#USE_CGS = TRUE
 
 Bpack := ./Make.package
 Blocs := .
