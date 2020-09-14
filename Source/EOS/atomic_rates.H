@@ -21,13 +21,13 @@ void tabulate_rates(std::string file_in)
 	//    while ( !input_stream.eof() )
     for(i = 1; i <= NCOOLFILE; i++)
     {
-        input_stream >> lzr(i);
-		input_stream >> rggh0(i);
-		input_stream >> rgghe0(i);
-		input_stream >> rgghep(i);
-		input_stream >> reh0(i);
-		input_stream >> rehe0(i);
-		input_stream >> rehep(i);
+        input_stream >> atomic_rates->lzr(i);
+		input_stream >> atomic_rates->rggh0(i);
+		input_stream >> atomic_rates->rgghe0(i);
+		input_stream >> atomic_rates->rgghep(i);
+		input_stream >> atomic_rates->reh0(i);
+		input_stream >> atomic_rates->rehe0(i);
+		input_stream >> atomic_rates->rehep(i);
     }
 
     // Initialize cooling tables
@@ -42,29 +42,29 @@ void tabulate_rates(std::string file_in)
 
             // Recombination rates
             // Alphad: dielectronic recombination rate of singly ioniozed helium
-            Alphad(i)    = 1.90e-03/(t*sqrt_t) * std::exp(-4.7e5/t) * (1.0e0+0.3e0*std::exp(-9.4e4/t));
-            AlphaHp(i)   = 8.40e-11/sqrt_t * std::pow((t/t3),(-0.2e0)) / (1.0e0 + std::pow((t/t6),0.7e0));
-            AlphaHep(i)  = 1.50e-10 * std::pow(t,(-0.6353e0));
-            AlphaHepp(i) = 3.36e-10/sqrt_t * std::pow((t/t3),(-0.2e0)) / (1.0e0 + std::pow((t/t6),0.7e0));
+            atomic_rates->Alphad(i)    = 1.90e-03/(t*sqrt_t) * std::exp(-4.7e5/t) * (1.0e0+0.3e0*std::exp(-9.4e4/t));
+            atomic_rates->AlphaHp(i)   = 8.40e-11/sqrt_t * std::pow((t/t3),(-0.2e0)) / (1.0e0 + std::pow((t/t6),0.7e0));
+            atomic_rates->AlphaHep(i)  = 1.50e-10 * std::pow(t,(-0.6353e0));
+            atomic_rates->AlphaHepp(i) = 3.36e-10/sqrt_t * std::pow((t/t3),(-0.2e0)) / (1.0e0 + std::pow((t/t6),0.7e0));
 
             // Collisional ionization rates
-            GammaeH0(i)  = 5.85e-11*sqrt_t * std::exp(-157809.1e0/t) * corr_term;
-            GammaeHe0(i) = 2.38e-11*sqrt_t * std::exp(-285335.4e0/t) * corr_term;
-            GammaeHep(i) = 5.68e-12*sqrt_t * std::exp(-631515.0e0/t) * corr_term;
+            atomic_rates->GammaeH0(i)  = 5.85e-11*sqrt_t * std::exp(-157809.1e0/t) * corr_term;
+            atomic_rates->GammaeHe0(i) = 2.38e-11*sqrt_t * std::exp(-285335.4e0/t) * corr_term;
+            atomic_rates->GammaeHep(i) = 5.68e-12*sqrt_t * std::exp(-631515.0e0/t) * corr_term;
 
             // Collisional ionization & excitation cooling rates
-            BetaH0(i)  = 7.5e-19 * std::exp(-118348.0e0/t) * corr_term + 2.171e-11*GammaeH0(i);
-            BetaHe0(i) = 3.941e-11 * GammaeHe0(i);
-            BetaHep(i) = 5.54e-17 * std::pow(t,(-0.397e0)) * std::exp(-473638.0e0/t) * corr_term + 0.715e-11 * GammaeHep(i);
+            atomic_rates->BetaH0(i)  = 7.5e-19 * std::exp(-118348.0e0/t) * corr_term + 2.171e-11*atomic_rates->GammaeH0(i);
+            atomic_rates->BetaHe0(i) = 3.941e-11 * atomic_rates->GammaeHe0(i);
+            atomic_rates->BetaHep(i) = 5.54e-17 * std::pow(t,(-0.397e0)) * std::exp(-473638.0e0/t) * corr_term + 0.715e-11 * atomic_rates->GammaeHep(i);
 
             // Recombination cooling rates
-            RecHp(i)   = 1.036e-16 * t * AlphaHp(i);
-            RecHep(i)  = 1.036e-16 * t * AlphaHep(i) + 6.526e-11 * Alphad(i);
-            RecHepp(i) = 1.036e-16 * t * AlphaHepp(i);
+            atomic_rates->RecHp(i)   = 1.036e-16 * t * atomic_rates->AlphaHp(i);
+            atomic_rates->RecHep(i)  = 1.036e-16 * t * atomic_rates->AlphaHep(i) + 6.526e-11 * atomic_rates->Alphad(i);
+            atomic_rates->RecHepp(i) = 1.036e-16 * t * atomic_rates->AlphaHepp(i);
 
             // Free-free cooling rate
-            Betaff1(i) = 1.42e-27 * sqrt_t * (1.1e0 + 0.34e0*std::exp(-(5.5e0 - std::log10(t)) * (5.5e0 - std::log10(t)) / 3.0e0));
-            Betaff4(i) = Betaff1(i);
+            atomic_rates->Betaff1(i) = 1.42e-27 * sqrt_t * (1.1e0 + 0.34e0*std::exp(-(5.5e0 - std::log10(t)) * (5.5e0 - std::log10(t)) / 3.0e0));
+            atomic_rates->Betaff4(i) = atomic_rates->Betaff1(i);
 
             t = t*std::pow(10,deltaT);
         }
@@ -78,61 +78,61 @@ void tabulate_rates(std::string file_in)
 
             // Recombination rates
             // Alphad: dielectronic recombination rate of singly ioniozed helium
-            Alphad(i)    = 1.90e-03/(t*sqrt_t) * std::exp(-4.7e5/t) * (1.0e0+0.3e0*std::exp(-9.4e4/t));
-            AlphaHp(i)   = 7.982e-11 / (std::sqrt(t/3.148e0)* std::pow((1.0e0+std::sqrt(t/3.148e0)),0.252) * 
+            atomic_rates->Alphad(i)    = 1.90e-03/(t*sqrt_t) * std::exp(-4.7e5/t) * (1.0e0+0.3e0*std::exp(-9.4e4/t));
+            atomic_rates->AlphaHp(i)   = 7.982e-11 / (std::sqrt(t/3.148e0)* std::pow((1.0e0+std::sqrt(t/3.148e0)),0.252) * 
                                         std::pow((1.0e0+std::sqrt(t/7.036e5)),1.748));
                if (t <= 1.0e6)
-                   AlphaHep(i)  = 3.294e-11 / (std::sqrt(t/15.54e0)* std::pow((1.0e0+std::sqrt(t/15.54e0)),0.309) * 
+                   atomic_rates->AlphaHep(i)  = 3.294e-11 / (std::sqrt(t/15.54e0)* std::pow((1.0e0+std::sqrt(t/15.54e0)),0.309) * 
                                                std::pow((1.0e0+std::sqrt(t/3.676e7)),1.691));
                else
-                   AlphaHep(i)  = 9.356e-10 / (std::sqrt(t/4.266e-2)* std::pow((1.0e0+std::sqrt(t/4.266e-2)),0.2108) * 
+                   atomic_rates->AlphaHep(i)  = 9.356e-10 / (std::sqrt(t/4.266e-2)* std::pow((1.0e0+std::sqrt(t/4.266e-2)),0.2108) * 
                                                std::pow((1.0e0+std::sqrt(t/4.677e6)),1.7892));
 
-               AlphaHepp(i) = 1.891e-10 / (std::sqrt(t/9.37e0)* std::pow((1.0e0+std::sqrt(t/9.37e0)),0.2476) * 
+               atomic_rates->AlphaHepp(i) = 1.891e-10 / (std::sqrt(t/9.37e0)* std::pow((1.0e0+std::sqrt(t/9.37e0)),0.2476) * 
                                            std::pow((1.0e0+std::sqrt(t/2.774e6)),1.7524));
 
                // Collisional ionization rates
                E = 13.6e0;
                U = 1.16045e4*E/t;
-               GammaeH0(i)  = 2.91e-8*std::pow(U,0.39)*std::exp(-U) / (0.232e0+U);
+               atomic_rates->GammaeH0(i)  = 2.91e-8*std::pow(U,0.39)*std::exp(-U) / (0.232e0+U);
                E = 24.6e0;
                U = 1.16045e4*E/t;
-               GammaeHe0(i) = 1.75e-8*std::pow(U,0.35)*std::exp(-U) / (0.18e0+U);
+               atomic_rates->GammaeHe0(i) = 1.75e-8*std::pow(U,0.35)*std::exp(-U) / (0.18e0+U);
                E = 54.4e0;
                U = 1.16045e4*E/t;
-               GammaeHep(i) = 2.05e-9*(1.0e0+std::sqrt(U))*std::pow(U,0.25)*std::exp(-U) / (0.265e0+U);
+               atomic_rates->GammaeHep(i) = 2.05e-9*(1.0e0+std::sqrt(U))*std::pow(U,0.25)*std::exp(-U) / (0.265e0+U);
 
                // Collisional ionization & excitation cooling rates
                corr_term = 1.e0 / (1.0e0 + sqrt_t/std::sqrt(5.0e7));
                y = std::log(t);
                if (t <= 1.0e5)
-                  BetaH0(i)  = 1.0e-20 * std::exp( 2.137913e2 - 1.139492e2*y + 2.506062e1*y*y - 
+                  atomic_rates->BetaH0(i)  = 1.0e-20 * std::exp( 2.137913e2 - 1.139492e2*y + 2.506062e1*y*y - 
                                                2.762755e0*y*y*y + 1.515352e-1*y*y*y*y - 
                                                3.290382e-3*y*y*y*y*y - 1.18415e5/t );
                else
-                  BetaH0(i)  = 1.0e-20 * std::exp( 2.7125446e2 - 9.8019455e1*y + 1.400728e1*y*y - 
+                  atomic_rates->BetaH0(i)  = 1.0e-20 * std::exp( 2.7125446e2 - 9.8019455e1*y + 1.400728e1*y*y - 
                                                9.780842e-1*y*y*y + 3.356289e-2*y*y*y*y - 
                                                4.553323e-4*y*y*y*y*y - 1.18415e5/t );
 
-               BetaHe0(i) = 9.38e-22 * sqrt_t * std::exp(-285335.4e0/t) * corr_term;
-               BetaHep(i) = (5.54e-17 * std::pow(t,(-0.397e0)) * std::exp(-473638.0e0/t) +
+               atomic_rates->BetaHe0(i) = 9.38e-22 * sqrt_t * std::exp(-285335.4e0/t) * corr_term;
+               atomic_rates->BetaHep(i) = (5.54e-17 * std::pow(t,(-0.397e0)) * std::exp(-473638.0e0/t) +
                              4.95e-22 * sqrt_t * std::exp(-631515.0e0/t) )*corr_term;
 
                // Recombination cooling rates
-               RecHp(i)   = 2.851e-27 * sqrt_t * (5.914e0-0.5e0*std::log(t)+1.184e-2*std::pow(t,(1.0e0/3.0e0)));
-               RecHep(i)  = 1.55e-26 * std::pow(t,0.3647) + 1.24e-13/(t*sqrt_t) * std::exp(-4.7e5/t) * (1.0e0+0.3e0*std::exp(-9.4e4/t));
-               RecHepp(i) = 1.14e-26 * sqrt_t * (6.607e0-0.5e0*std::log(t)+7.459e-3*std::pow(t,(1.0e0/3.0e0)));
+               atomic_rates->RecHp(i)   = 2.851e-27 * sqrt_t * (5.914e0-0.5e0*std::log(t)+1.184e-2*std::pow(t,(1.0e0/3.0e0)));
+               atomic_rates->RecHep(i)  = 1.55e-26 * std::pow(t,0.3647) + 1.24e-13/(t*sqrt_t) * std::exp(-4.7e5/t) * (1.0e0+0.3e0*std::exp(-9.4e4/t));
+               atomic_rates->RecHepp(i) = 1.14e-26 * sqrt_t * (6.607e0-0.5e0*std::log(t)+7.459e-3*std::pow(t,(1.0e0/3.0e0)));
 
                // Free-free cooling rate
                if (t <= 3.2e5)
-                   Betaff1(i) = 1.426e-27 * sqrt_t * (0.79464e0 + 0.1243e0*std::log10(t));
+                   atomic_rates->Betaff1(i) = 1.426e-27 * sqrt_t * (0.79464e0 + 0.1243e0*std::log10(t));
                else
-                   Betaff1(i) = 1.426e-27 * sqrt_t * (2.13164e0 - 0.1240e0*std::log10(t));
+                   atomic_rates->Betaff1(i) = 1.426e-27 * sqrt_t * (2.13164e0 - 0.1240e0*std::log10(t));
 
                if (t/4.0e0 <= 3.2e5)
-                   Betaff4(i) = 1.426e-27 * sqrt_t * 4.0e0*(0.79464e0 + 0.1243e0*std::log10(t/4.0e0));
+                   atomic_rates->Betaff4(i) = 1.426e-27 * sqrt_t * 4.0e0*(0.79464e0 + 0.1243e0*std::log10(t/4.0e0));
                else
-                   Betaff4(i) = 1.426e-27 * sqrt_t * 4.0e0*(2.13164e0 - 0.1240e0*std::log10(t/4.0e0));
+                   atomic_rates->Betaff4(i) = 1.426e-27 * sqrt_t * 4.0e0*(2.13164e0 - 0.1240e0*std::log10(t/4.0e0));
 
                t = t*std::pow(10,deltaT);
         }
