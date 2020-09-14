@@ -1288,11 +1288,11 @@ Gravity::AddGhostParticlesToRhs (int               level,
 
     amrex::Gpu::LaunchSafeGuard lsg(true);
 
-    int ncomp = 1;
-    int ngrow = 2;
-
     if (level > 0)
     {
+        int ncomp = 1;
+        IntVect ngrow = parent->refRatio(level-1);
+
         // If we have ghost particles, add their density to the single level solve
         MultiFab ghost_mf(grids[level], dmap[level], ncomp, ngrow);
 
@@ -1313,11 +1313,11 @@ Gravity::AddGhostParticlesToRhs(int level, const Vector<MultiFab*>& Rhs_particle
 
     amrex::Gpu::LaunchSafeGuard lsg(true);
 
-    int ncomp = 1;
-    int ngrow = 2;
-
     if (level > 0)
     {
+        int ncomp = 1;
+        IntVect ngrow = parent->refRatio(level-1);
+
         // We require one ghost cell in GhostPartMF because that's how we handle
         // particles near fine-fine boundaries.  However we don't add any ghost
         // cells from GhostPartMF to the RHS.
