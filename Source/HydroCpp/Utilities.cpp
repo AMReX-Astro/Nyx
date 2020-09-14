@@ -204,64 +204,29 @@ void limit_hydro_fluxes_on_small_dens(const Box& bx,
     amrex::ParallelFor(bx,
     [=] AMREX_GPU_HOST_DEVICE (int i, int j, int k)
     {
-
         // Grab the states on either side of the interface we are working with,
         // depending on which dimension we're currently calling this with.
 
-        GpuArray<Real, NGDNV> uR;
-        for (int n = 0; n < NGDNV; ++n) {
-            uR[n] = u(i,j,k,n);
-        }
-
+        GpuArray<Real, QVAR> uR;
+        GpuArray<Real, QVAR> uL;
         GpuArray<Real, QVAR> qR;
-        for (int n = 0; n < QVAR; ++n) {
-            qR[n] = q(i,j,k,n);
-        }
-
-        GpuArray<int, 3> idxR = {i,j,k};
-
-        GpuArray<Real, NGDNV> uL;
         GpuArray<Real, QVAR> qL;
+        GpuArray<int, 3> idxR = {i,j,k};
         GpuArray<int, 3> idxL;
 
         if (idir == 0) {
-
-            for (int n = 0; n < NGDNV; ++n) {
-                uL[n] = u(i-1,j,k,n);
-            }
-
-            for (int n = 0; n < QVAR; ++n) {
-                qL[n] = q(i-1,j,k,n);
-            }
-
             idxL = {i-1,j,k};
-
-        }
-        else if (idir == 1) {
-
-            for (int n = 0; n < NGDNV; ++n) {
-                uL[n] = u(i,j-1,k,n);
-            }
-
-            for (int n = 0; n < QVAR; ++n) {
-                qL[n] = q(i,j-1,k,n);
-            }
-
+        } else if (idir == 1) {
             idxL = {i,j-1,k};
-
-        }
-        else {
-
-            for (int n = 0; n < NGDNV; ++n) {
-                uL[n] = u(i,j,k-1,n);
-            }
-
-            for (int n = 0; n < QVAR; ++n) {
-                qL[n] = q(i,j,k-1,n);
-            }
-
+        } else {
             idxL = {i,j,k-1};
+        }
 
+        for (int n = 0; n < QVAR; ++n) {
+            uR[n] = u(i,j,k,n);
+            qR[n] = q(i,j,k,n);
+            uL[n] = u(idxl[0],idxl[1],idxL[2]);
+            qL[n] = q(idxl[0],idxl[1],idxL[2]);
         }
 
         // If an adjacent zone has a floor-violating density, set the flux to zero and move on.
@@ -291,7 +256,6 @@ void limit_hydro_fluxes_on_small_dens(const Box& bx,
         fluxL[UMZ]       = uL[UMZ]  * qL[QU + idir];
         fluxL[UEDEN]     = (uL[UEDEN] + qL[QPRES]) * qL[QU + idir];
         fluxL[UEINT]     = uL[UEINT]  * qL[QU + idir];
-
 
         fluxR[URHO]      = uR[URHO] * qR[QU + idir];
         fluxR[UMX]       = uR[UMX]  * qR[QU + idir];
