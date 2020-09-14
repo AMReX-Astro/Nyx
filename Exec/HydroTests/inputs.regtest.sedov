@@ -1,5 +1,6 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 max_step = 5000
+max_step = 1
 stop_time = 0.01
 
 # PROBLEM SIZE & GEOMETRY
@@ -8,6 +9,7 @@ geometry.coord_sys   =  0            # 0 => cart
 geometry.prob_lo     =  0    0    0
 geometry.prob_hi     =  1    1    1
 amr.n_cell           = 32   32   32
+#fabarray.mfiter_tile_size = 1024000 1024 1024
 
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
 # 0 = Interior           3 = Symmetry
@@ -21,7 +23,7 @@ nyx.hi_bc       =  2   2   2
 nyx.do_hydro = 1
 nyx.do_react = 0
 
-#COMOVING
+# COMOVING
 nyx.comoving_OmM = 1.0
 nyx.comoving_OmB = 1.0
 nyx.comoving_h   = 0.0
@@ -31,7 +33,6 @@ nyx.h_species=.76
 nyx.he_species=.24
 
 nyx.ppm_type = 0
-nyx.gamma = 1.4
 
 nyx.initial_z = 0.
 
@@ -48,25 +49,30 @@ amr.v                 = 1       # verbosity in Amr.cpp
 #amr.grid_log         = grdlog  # name of grid logging file
 
 # REFINEMENT / REGRIDDING
-amr.max_level       = 3       # maximum level number allowed
+amr.max_level       = 0       # maximum level number allowed
 amr.ref_ratio       = 2 2 2 2 # refinement ratio
 amr.regrid_int      = 2       # how often to regrid
-amr.blocking_factor = 8       # block factor in grid generation
-amr.max_grid_size   = 64
+amr.blocking_factor = 4       # block factor in grid generation
+amr.max_grid_size   = 32
 
 # CHECKPOINT FILES
 amr.check_file      = chk     # root name of checkpoint file
 amr.check_int       = 200       # number of timesteps between checkpoints
 
 # PLOTFILES
-amr.plot_file        = plt
-amr.plot_int         = 200
-amr.derive_plot_vars = pressure
+amr.plot_file       = plt
+amr.plot_int        = 200
+
+amr.plot_vars        = density xmom ymom rho_E rho_e Temp
+amr.derive_plot_vars = pressure 
 
 amr.probin_file = ""
 # PROBLEM PARAMETERS
+prob.prob_type = 33
 prob.r_init = 0.01
 prob.p_ambient = 1.e-5
 prob.dens_ambient = 1.0
 prob.exp_energy = 1.0
 prob.nsub = 10
+
+amr.checkpoint_files_output = 0
