@@ -189,14 +189,14 @@ f_rhs_rpar(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, amrex
     flo = 1.0e0 - fhi;
     j = j + 1; // F90 arrays start with 1, using Array1D<Real,1,size>
 
-    bh0   = flo*BetaH0   (j) + fhi*BetaH0   (j+1);
-    bhe0  = flo*BetaHe0  (j) + fhi*BetaHe0  (j+1);
-    bhep  = flo*BetaHep  (j) + fhi*BetaHep  (j+1);
-    bff1  = flo*Betaff1  (j) + fhi*Betaff1  (j+1);
-    bff4  = flo*Betaff4  (j) + fhi*Betaff4  (j+1);
-    rhp   = flo*RecHp    (j) + fhi*RecHp    (j+1);
-    rhep  = flo*RecHep   (j) + fhi*RecHep   (j+1);
-    rhepp = flo*RecHepp  (j) + fhi*RecHepp  (j+1);
+    bh0   = flo*atomic_rates->BetaH0   (j) + fhi*atomic_rates->BetaH0   (j+1);
+    bhe0  = flo*atomic_rates->BetaHe0  (j) + fhi*atomic_rates->BetaHe0  (j+1);
+    bhep  = flo*atomic_rates->BetaHep  (j) + fhi*atomic_rates->BetaHep  (j+1);
+    bff1  = flo*atomic_rates->Betaff1  (j) + fhi*atomic_rates->Betaff1  (j+1);
+    bff4  = flo*atomic_rates->Betaff4  (j) + fhi*atomic_rates->Betaff4  (j+1);
+    rhp   = flo*atomic_rates->RecHp    (j) + fhi*atomic_rates->RecHp    (j+1);
+    rhep  = flo*atomic_rates->RecHep   (j) + fhi*atomic_rates->RecHep   (j+1);
+    rhepp = flo*atomic_rates->RecHepp  (j) + fhi*atomic_rates->RecHepp  (j+1);
 
     // Cooling: 
     lambda = ( bh0*nh0 + bhe0*nhe0 + bhep*nhep + 

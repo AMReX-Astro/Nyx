@@ -19,30 +19,35 @@ static constexpr amrex::Real BOLTZMANN = 1.3806e-16;*/
 static constexpr amrex::Real MPROTON = 1.6726230999999999E-024;
 static constexpr amrex::Real BOLTZMANN = 1.3806000442045675E-016;
 
-extern AMREX_GPU_MANAGED amrex::Real mean_rhob;
-extern AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLFILE> lzr;
-extern AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLFILE> rggh0;
-extern AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLFILE> rgghe0;
-extern AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLFILE> rgghep;
-extern AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLFILE> reh0;
-extern AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLFILE> rehe0;
-extern AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLFILE> rehep;
+struct AtomicRates {
 
-extern AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLTAB+1> AlphaHp;
-extern AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLTAB+1> AlphaHep;
-extern AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLTAB+1> AlphaHepp;
-extern AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLTAB+1> Alphad;
-extern AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLTAB+1> GammaeH0;
-extern AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLTAB+1> GammaeHe0;
-extern AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLTAB+1> GammaeHep;
-extern AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLTAB+1> BetaH0;
-extern AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLTAB+1> BetaHe0;
-extern AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLTAB+1> BetaHep;
-extern AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLTAB+1> Betaff1;
-extern AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLTAB+1> Betaff4;
-extern AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLTAB+1> RecHp;
-extern AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLTAB+1> RecHep;
-extern AMREX_GPU_MANAGED amrex::Array1D<amrex::Real,1,NCOOLTAB+1> RecHepp;
+amrex::Real mean_rhob;
+amrex::Array1D<amrex::Real,1,NCOOLFILE> lzr;
+amrex::Array1D<amrex::Real,1,NCOOLFILE> rggh0;
+amrex::Array1D<amrex::Real,1,NCOOLFILE> rgghe0;
+amrex::Array1D<amrex::Real,1,NCOOLFILE> rgghep;
+amrex::Array1D<amrex::Real,1,NCOOLFILE> reh0;
+amrex::Array1D<amrex::Real,1,NCOOLFILE> rehe0;
+amrex::Array1D<amrex::Real,1,NCOOLFILE> rehep;
 
+amrex::Array1D<amrex::Real,1,NCOOLTAB+1> AlphaHp;
+amrex::Array1D<amrex::Real,1,NCOOLTAB+1> AlphaHep;
+amrex::Array1D<amrex::Real,1,NCOOLTAB+1> AlphaHepp;
+amrex::Array1D<amrex::Real,1,NCOOLTAB+1> Alphad;
+amrex::Array1D<amrex::Real,1,NCOOLTAB+1> GammaeH0;
+amrex::Array1D<amrex::Real,1,NCOOLTAB+1> GammaeHe0;
+amrex::Array1D<amrex::Real,1,NCOOLTAB+1> GammaeHep;
+amrex::Array1D<amrex::Real,1,NCOOLTAB+1> BetaH0;
+amrex::Array1D<amrex::Real,1,NCOOLTAB+1> BetaHe0;
+amrex::Array1D<amrex::Real,1,NCOOLTAB+1> BetaHep;
+amrex::Array1D<amrex::Real,1,NCOOLTAB+1> Betaff1;
+amrex::Array1D<amrex::Real,1,NCOOLTAB+1> Betaff4;
+amrex::Array1D<amrex::Real,1,NCOOLTAB+1> RecHp;
+amrex::Array1D<amrex::Real,1,NCOOLTAB+1> RecHep;
+amrex::Array1D<amrex::Real,1,NCOOLTAB+1> RecHepp;
+
+};
+
+extern AtomicRates* atomic_rates;
 
 #endif

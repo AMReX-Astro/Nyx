@@ -15,7 +15,7 @@ void interp_to_this_z(const amrex::Real z, amrex::Real & ggh0, amrex::Real& gghe
     int i, j;
     lopz   = std::log10(1.0e0 + z);
 
-    if (lopz >= lzr(NCOOLFILE))
+    if (lopz >= atomic_rates->lzr(NCOOLFILE))
     {
         ggh0  = 0.0e0;
         gghe0 = 0.0e0;
@@ -26,26 +26,26 @@ void interp_to_this_z(const amrex::Real z, amrex::Real & ggh0, amrex::Real& gghe
         return;
     }
 
-    if (lopz <= lzr(1))
+    if (lopz <= atomic_rates->lzr(1))
         j = 1;
     else
         for(i = 2; i<= NCOOLFILE; i++)
         {
-            if (lopz < lzr(i))
+            if (lopz < atomic_rates->lzr(i))
             {
                 j = i-1;
                 break;
             }
         }
 
-    fact  = (lopz-lzr(j))/(lzr(j+1)-lzr(j));
+    fact  = (lopz-atomic_rates->lzr(j))/(atomic_rates->lzr(j+1)-atomic_rates->lzr(j));
 
-    ggh0  = rggh0(j)  + (rggh0(j+1)-rggh0(j))*fact;
-    gghe0 = rgghe0(j) + (rgghe0(j+1)-rgghe0(j))*fact;
-    gghep = rgghep(j) + (rgghep(j+1)-rgghep(j))*fact;
-    eh0   = reh0(j)   + (reh0(j+1)-reh0(j))*fact;
-    ehe0  = rehe0(j)  + (rehe0(j+1)-rehe0(j))*fact;
-    ehep  = rehep(j)  + (rehep(j+1)-rehep(j))*fact;
+    ggh0  = atomic_rates->rggh0(j)  + (atomic_rates->rggh0(j+1)-atomic_rates->rggh0(j))*fact;
+    gghe0 = atomic_rates->rgghe0(j) + (atomic_rates->rgghe0(j+1)-atomic_rates->rgghe0(j))*fact;
+    gghep = atomic_rates->rgghep(j) + (atomic_rates->rgghep(j+1)-atomic_rates->rgghep(j))*fact;
+    eh0   = atomic_rates->reh0(j)   + (atomic_rates->reh0(j+1)-atomic_rates->reh0(j))*fact;
+    ehe0  = atomic_rates->rehe0(j)  + (atomic_rates->rehe0(j+1)-atomic_rates->rehe0(j))*fact;
+    ehep  = atomic_rates->rehep(j)  + (atomic_rates->rehep(j+1)-atomic_rates->rehep(j))*fact;
     return;
 }
 
@@ -91,13 +91,13 @@ AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void ion_n_device(const int JH, const i
     flo = 1.0e0 - fhi;
     j = j + 1; // F90 arrays start with 1, using Array1D<Real,1,size>
 
-    ahp   = flo*AlphaHp  (j) + fhi*AlphaHp  (j+1);
-    ahep  = flo*AlphaHep (j) + fhi*AlphaHep (j+1);
-    ahepp = flo*AlphaHepp(j) + fhi*AlphaHepp(j+1);
-    ad    = flo*Alphad   (j) + fhi*Alphad   (j+1);
-    geh0  = flo*GammaeH0 (j) + fhi*GammaeH0 (j+1);
-    gehe0 = flo*GammaeHe0(j) + fhi*GammaeHe0(j+1);
-    gehep = flo*GammaeHep(j) + fhi*GammaeHep(j+1);
+    ahp   = flo*atomic_rates->AlphaHp  (j) + fhi*atomic_rates->AlphaHp  (j+1);
+    ahep  = flo*atomic_rates->AlphaHep (j) + fhi*atomic_rates->AlphaHep (j+1);
+    ahepp = flo*atomic_rates->AlphaHepp(j) + fhi*atomic_rates->AlphaHepp(j+1);
+    ad    = flo*atomic_rates->Alphad   (j) + fhi*atomic_rates->Alphad   (j+1);
+    geh0  = flo*atomic_rates->GammaeH0 (j) + fhi*atomic_rates->GammaeH0 (j+1);
+    gehe0 = flo*atomic_rates->GammaeHe0(j) + fhi*atomic_rates->GammaeHe0(j+1);
+    gehep = flo*atomic_rates->GammaeHep(j) + fhi*atomic_rates->GammaeHep(j+1);
 
     interp_to_this_z(z, ggh0, gghe0, gghep, eh0, ehe0, ehep);
 
