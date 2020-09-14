@@ -71,4 +71,4 @@ amr.plot_vars       = density
 amr.derive_plot_vars= pressure eint_E y_velocity
 
 # PROBIN FILENAME
-amr.probin_file = probin-test2-y
+amr.probin_file = ""
