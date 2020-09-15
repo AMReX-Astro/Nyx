@@ -11,7 +11,7 @@ Nyx::sdc_reactions (MultiFab& S_old, MultiFab& S_new, MultiFab& D_new,
                     Real delta_time, Real a_old, Real a_new, int sdc_iter)
 {
     BL_PROFILE("Nyx::sdc_reactions()");
-
+#ifdef HEATCOOL
     const Real* dx = geom.CellSize();
 
     // First reset internal energy before call to compute_temp
@@ -21,77 +21,37 @@ Nyx::sdc_reactions (MultiFab& S_old, MultiFab& S_new, MultiFab& D_new,
     reset_internal_energy(S_new,D_new,reset_e_src);
     compute_new_temp     (S_new,D_new);
     
-#ifndef FORCING
-    {
-      const Real z = 1.0/a_old - 1.0;
-      fort_interp_to_this_z(&z);
-    }
-#endif
+    Gpu::LaunchSafeGuard lsg(true);
+    const Real strt_time = ParallelDescriptor::second();
+    Real half_dt = 0.5*dt;
 
-    int  min_iter = 100000;
-    int  max_iter =      0;
+    const Real z = 1.0/a_old - 1.0;
 
-    int  min_iter_grid, max_iter_grid;
+    if(heat_cool_type != 11)
+        amrex::Abort("Invalid heating cooling type");
 
-    /////////////////////Consider adding ifdefs for whether CVODE is compiled in for these statements
-    if(heat_cool_type == 3)
-      {
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
-    for (MFIter mfi(S_old,true); mfi.isValid(); ++mfi)
-    {
-        // Note that this "bx" is only the valid region (unlike for Strang)
-      const Box& bx = mfi.tilebox();
-
-        min_iter_grid = 100000;
-        max_iter_grid =      0;
-
-        integrate_state_with_source
-                (bx.loVect(), bx.hiVect(), 
-                 BL_TO_FORTRAN(S_old[mfi]),
-                 BL_TO_FORTRAN(S_new[mfi]),
-                 BL_TO_FORTRAN(D_new[mfi]),
-                 BL_TO_FORTRAN(hydro_src[mfi]),
-                 BL_TO_FORTRAN(reset_e_src[mfi]),
-                 BL_TO_FORTRAN(IR[mfi]),
-                 &a_old, &delta_time, &min_iter_grid, &max_iter_grid);
-
-        min_iter = std::min(min_iter,min_iter_grid);
-        max_iter = std::max(max_iter,max_iter_grid);
-    }
-      }
-    else if(heat_cool_type == 5)
-      {
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
-    for (MFIter mfi(S_old,true); mfi.isValid(); ++mfi)
-    {
-        // Note that this "bx" is only the valid region (unlike for Strang)
-      const Box& bx = mfi.tilebox();
-
-        min_iter_grid = 100000;
-        max_iter_grid =      0;
-        
-        integrate_state_fcvode_with_source
-                (bx.loVect(), bx.hiVect(), 
-                 BL_TO_FORTRAN(S_old[mfi]),
-                 BL_TO_FORTRAN(S_new[mfi]),
-                 BL_TO_FORTRAN(D_new[mfi]),
-                 BL_TO_FORTRAN(hydro_src[mfi]),
-                 BL_TO_FORTRAN(reset_e_src[mfi]),
-                 BL_TO_FORTRAN(IR[mfi]),
-                 &a_old, &delta_time, &min_iter_grid, &max_iter_grid);
-
-        min_iter = std::min(min_iter,min_iter_grid);
-        max_iter = std::max(max_iter,max_iter_grid);
-    }
-
+	if(use_typical_steps)
+		amrex::ParallelDescriptor::ReduceLongMax(new_max_sundials_steps);
+	int ierr=integrate_state_vec(S_old,       D_old,       a_old, half_dt);
+	if(ierr)
+		amrex::Abort("error out of integrate_state_vec");
       }
 
-    ParallelDescriptor::ReduceIntMax(max_iter);
-    ParallelDescriptor::ReduceIntMin(min_iter);
+    if (verbose > 0)
+    {
+        const int IOProc   = ParallelDescriptor::IOProcessorNumber();
+        Real      run_time = ParallelDescriptor::second() - strt_time;
 
-    amrex::Print() << "Min/Max Number of Iterations in SDC: " << min_iter << " " << max_iter << std::endl;
+#ifdef BL_LAZY
+        Lazy::QueueReduction( [=] () mutable {
+#endif
+        ParallelDescriptor::ReduceRealMax(run_time,IOProc);
+
+        if (ParallelDescriptor::IOProcessor())
+          std::cout << "Nyx::strang_first_step() time = " << run_time << "\n" << "\n";
+#ifdef BL_LAZY
+        });
+#endif
+    }
+#endif
 }
