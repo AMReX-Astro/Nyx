@@ -1,13 +1,205 @@
+#ifndef __f_rhs_struct__
+#define __f_rhs_struct__
+
+
+#include <atomic_rates_data.H>
+#include <constants_cosmo.H>
+#include <eos_hc.H>
 
 struct RhsData {
+	// Set once in init
+	amrex::Real	uvb_density_A;
+	amrex::Real	uvb_density_B;
+	int         flash_h;
+	int         flash_he;
+	amrex::Real zhi_flash;
+	amrex::Real zheii_flash;
+	amrex::Real T_zhii;
+	amrex::Real T_zheii;
+	amrex::Real H_reion_z;
+	amrex::Real He_reion_z;
+	int         inhomogeneous_on;
 
-};
+	// Filled from Nyx.cpp
+	amrex::Real gamma_minus_1;
+	amrex::Real h_species;
 
-struct RhsData {
-
+	// Change at most twice per Nyx coarse time-step
+	amrex::Real a;
+    int         JH_vode;
+    int         JHe_vode;
+	amrex::Real* T_vode;
+	amrex::Real* ne_vode;
+	amrex::Real* rho_vode;
+	amrex::Real* rho_init_vode;
+	amrex::Real* rho_src_vode;
+	amrex::Real* rhoe_src_vode;
+	amrex::Real* e_src_vode;
 };
 
 extern RhsData* f_rhs_data;
+
+void
+ode_eos_setup(RhsData* f_rhs_data, amrex::Real gamma_minus_1, amrex::Real h_species)
+{
+
+	f_rhs_data->gamma_minus_1 = gamma_minus_1;
+	f_rhs_data->h_species = h_species;
+	ParmParse pp_nyx("nyx");
+	pp_nyx.query("inhomo_reion", inhomogeneous_on);
+
+    f_rhs_data->uvb_density_A=1.0;
+	f_rhs_data->uvb_density_B=0.0;
+	f_rhs_data->zhi_flash=-1.0;
+	f_rhs_data->zheii_flash=-1.0;
+	f_rhs_data->T_zhi=0.0;
+	f_rhs_data->T_zheii=0.0;
+	f_rhs_data->flash_h=0;
+	f_rhs_data->flash_he=0;
+	f_rhs_data->inhomogeneous_on=0;
+	pp_nyx.query("uvb_density_A"            , f_rhs_data->uvb_density_A);
+	pp_nyx.query("uvb_density_B"            , f_rhs_data->uvb_density_B);
+	pp_nyx.query("reionization_zHI_flash"   , f_rhs_data->zhi_flash);
+	pp_nyx.query("reionization_zHeII_flash" , f_rhs_data->zheii_flash);
+	pp_nyx.query("reionization_T_zHI"       , f_rhs_data->T_zhi);
+	pp_nyx.query("reionization_T_zHeII"     , f_rhs_data->T_zheii);
+
+	// Set options in reion_aux_module
+    //   Hydrogen reionization
+    if (f_rhs_data->zhi_flash > 0.0)
+	{
+        if (f_rhs_data->inhomogeneous_on > 0)
+		{
+			f_rhs_data->flash_h = 0;
+		}
+		else
+		{
+			f_rhs_data->flash_h = 1;
+		}
+	}
+    else
+	{
+        f_rhs_data->flash_h = 0;
+	}
+
+	//   Helium reionization
+	if (f_rhs_data->zheii_flash > 0.0)
+		f_rhs_data->flash_he = 1;
+	else
+		f_rhs_data->flash_he = 0;
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+ode_eos_initialize(/*Add ijk, idx*/,/*Add Array4 for state4, diag_eos4*/)
+{
+
+    // Flash reionization?
+    if ((flash_h == 1) && (z > zhi_flash))
+	   JH_vode = 0;
+    else
+		JH_vode = 1;
+
+    if ((flash_he == 1) && (z > zheii_flash))
+		JHe_vode = 0;
+    else
+		JHe_vode = 1;
+
+    if (flash_h ) H_reion_z  = zhi_flash;
+    if (flash_he) He_reion_z = zheii_flash;
+	/*
+    if (inhomogeneous_on)
+	{
+	   H_reion_z = diag_eos(i,j,k,ZHI_COMP);
+       if (z > H_reion_z)
+		   JH_vode = 0;
+       else
+		   JH_vode = 1;
+	}
+	*/
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+ode_eos_finalize(amrex::Real& e_out, RhsData* f_rhs_data/*Add ijk, idx*/,/*Add Array4 for state4, diag_eos4*/)
+{
+    amrex::Real z_vode, rho_vode, T_vode, ne_vode;
+    amrex::Real rho, U, a, mu;
+    amrex::Real uvb_density_A, uvb_density_B, mean_rhob, JH_vode, JHe_vode, gamma_minus_1;
+    const amrex::Real h_species_in=.76;
+    uvb_density_A=1.0;
+	uvb_density_B=0.0;
+	gamma_minus_1=2.0/3.0;
+	/*
+    ! Flash reionization?
+    if ((flash_h .eqv. .true.) .and. (z .gt. zhi_flash)) then
+       JH_vode = 0
+    else
+       JH_vode = 1
+    endif
+    if ((flash_he .eqv. .true.) .and. (z .gt. zheii_flash)) then
+       JHe_vode = 0
+    else
+       JHe_vode = 1
+    endif
+
+    if (flash_h ) H_reion_z  = zhi_flash
+    if (flash_he) He_reion_z = zheii_flash
+
+    if (inhomogeneous_on) then
+       STOP "Do not currently support inhomogenous_on with box"
+       !H_reion_z = diag_eos(i,j,k,ZHI_COMP)
+       if (z .gt. H_reion_z) then
+          JH_vode = 0
+       else
+          JH_vode = 1
+       endif
+    endif*/
+    JH_vode = 1.0;
+	JHe_vode = 1.0;
+
+    T_vode=rpar[0];
+    ne_vode=rpar[1];
+    rho_vode=rpar[2];
+    z_vode=rpar[3];
+	a=1/(z_vode+1.0);
+	if(e_out < 0.e0)
+	{
+		T_vode  = 10.0;
+		ne_vode = 0.0;
+		mu     = (1.0e0+4.0e0*YHELIUM) / (1.0e0+YHELIUM+ne_vode);
+		e_out  = T_vode / (gamma_minus_1 * mp_over_kb * mu);
+	}
+
+    nyx_eos_T_given_Re_device(gamma_minus_1, h_species_in, JH_vode, JHe_vode, &T_vode, &ne_vode,
+                                               rho_vode, e_out, a);
+	/*
+      ! Instanteneous heating from reionization:
+      T_H = 0.0d0
+      if (inhomogeneous_on .or. flash_h) then
+         if ((H_reion_z  .lt. z) .and. (H_reion_z  .ge. z_end)) T_H  = (1.0d0 - species(2))*max((T_zhi-T_vode), 0.0d0)
+      endif
+
+      T_He = 0.0d0
+      if (flash_he) then
+         if ((He_reion_z .lt. z) .and. (He_reion_z .ge. z_end)) T_He = (1.0d0 - species(5))*max((T_zheii-T_vode), 0.0d0)
+      endif
+
+      if ((T_H .gt. 0.0d0) .or. (T_He .gt. 0.0d0)) then
+         T_vode = T_vode + T_H + T_He                            ! For simplicity, we assume
+         ne_vode = 1.0d0 + YHELIUM                              !    completely ionized medium at
+         if (T_He .gt. 0.0d0) ne_vode = ne_vode + YHELIUM        !    this point.  It's a very minor
+         mu = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+ne_vode)   !    detail compared to the overall approximation.
+         e_out  = T_vode / (gamma_minus_1 * mp_over_kB * mu)
+         call nyx_eos_T_given_Re_device(JH_vode, JHe_vode, T_vode, ne_vode, rho_vode, e_out(1), a, species)
+      endif
+    */
+    rpar[0]=T_vode;
+    rpar[1]=ne_vode;
+    rpar[2]=rho_vode;
+}
 
 subroutine f_rhs_split(num_eq, time, y_in, yp_out, rpar, ipar)
 
@@ -144,3 +336,4 @@ subroutine f_rhs_split(num_eq, time, y_in, yp_out, rpar, ipar)
 
 
 end subroutine f_rhs_split
+#endif
