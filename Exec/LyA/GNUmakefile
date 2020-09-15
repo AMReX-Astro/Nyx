@@ -83,7 +83,8 @@ ifeq ($(NO_HYDRO),TRUE)
 else
 	USE_SUNDIALS_3x4x ?= TRUE
 	USE_SUNDIALS      ?= TRUE
-	COMP       	  = pgi
+	USE_FUSED ?= USE_SUNDIALS
+    COMP       	  = pgi
 endif
 	USE_OMP = FALSE
 ifeq ($(REEBER), TRUE)
