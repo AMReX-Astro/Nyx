@@ -32,10 +32,6 @@ ifeq ($(USE_CXX_PROB),TRUE)
   DEFINES += -DCXX_PROB
 endif
 
-#ifeq ($(USE_SUNDIALS_3x4x), TRUE)
-#      libraries := $(subst -lsundials_nvecopenmp, -lsundials_nvecserial,$(libraries))
-#endif
-
 ifeq ($(USE_CUDA), TRUE)
       F90FLAGS := $(subst -gopt, ,$(F90FLAGS))
 endif
@@ -78,33 +74,8 @@ ifeq ($(USE_FORCING), TRUE)
   DEFINES += -DFORCING
 endif
 
-DEFINES += -DBL_NOLINEVALUES
-
-GIMLET_DIR ?= /home/vince/Development/gimlet
-# Gimlet needs FFTW MPI.
-FFTW_INC ?= /usr/include
-FFTW_DIR ?= /usr/lib/x86_64-linux-gnu
-
 ifeq ($(DEBUG), TRUE)
   DEFINES += -DDEBUG
-endif
-
-ifeq ($(GIMLET), TRUE)
-
-  ifneq ($(USE_OMP), TRUE)
-    $(error Gimlet requires compiling with OpenMP)
-  endif
-
-  ifneq ($(USE_MPI), TRUE)
-    $(error Gimlet requires compiling with MPI)
-  endif
-
-  DEFINES += -DGIMLET
-  INCLUDE_LOCATIONS += $(GIMLET_DIR)
-  VPATH_LOCATIONS += $(GIMLET_DIR)
-  INCLUDE_LOCATIONS += $(FFTW_INC)
-  LIBRARIES += -L$(FFTW_DIR) -lfftw3_mpi -lfftw3_omp -lfftw3
-
 endif
 
 #These are the directories in Nyx 
@@ -112,6 +83,7 @@ endif
 Bdirs 	:= Source Source/Src_3d Source/HydroCpp Source/Tagging Source/Initialization
 Bdirs 	+= Source/EOS Source/Network Source/HeatCool Source/IO
 Bdirs 	+= Source/SourceTerms Source/DerivedQuantities Source/Particle
+
 ifeq ($(USE_MPI), TRUE)
 Bdirs 	+= Source/Monitors
 endif
@@ -121,9 +93,6 @@ ifeq ($(USE_GRAV), TRUE)
 endif
 ifeq ($(USE_FORCING), TRUE)
    Bdirs 	+= Source/Forcing
-endif
-ifeq ($(USE_AGN), TRUE)
-   Bdirs 	+= Source/AGN
 endif
 
 Bpack	+= $(foreach dir, $(Bdirs), $(TOP)/$(dir)/Make.package)
@@ -165,11 +134,6 @@ ifeq ($(USE_MG), TRUE)
   INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/LinearSolvers/MLMG
   VPATH_LOCATIONS   += $(AMREX_HOME)/Src/LinearSolvers/MLMG
 endif
-
-#INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/F_Interfaces
-#VPATH_LOCATIONS   += $(AMREX_HOME)/Src/F_Interfaces
-#INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/F_Interfaces/Base
-#VPATH_LOCATIONS   += $(AMREX_HOME)/Src/F_Interfaces/Base
 
 ifeq ($(REEBER), TRUE)
      REEBER_NYX_HOME ?= $(TOP)/Util/reeber

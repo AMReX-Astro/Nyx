@@ -18,8 +18,6 @@ DEBUG     = FALSE
 
 DIM      = 3
 
-DEFINES += -DBL_NOLINEVALUES
-
 include $(AMREX_HOME)/Tools/GNUMake/Make.defs
 
 Bpack := ./Make.package

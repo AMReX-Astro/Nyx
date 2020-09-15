@@ -10,7 +10,6 @@ PROFILE   = TRUE
 COMP      = intel
 
 PRECISION = DOUBLE
-DEFINES += -DBL_NOLINEVALUES
 
 DIM       = 3
 EBASE     = convert

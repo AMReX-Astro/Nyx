@@ -78,8 +78,6 @@ ifeq ($(USE_FORCING), TRUE)
   DEFINES += -DFORCING
 endif
 
-DEFINES += -DBL_NOLINEVALUES
-
 GIMLET_DIR ?= /home/vince/Development/gimlet
 # Gimlet needs FFTW MPI.
 FFTW_INC ?= /usr/include
