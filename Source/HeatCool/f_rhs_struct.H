@@ -38,8 +38,8 @@ struct RhsData {
     amrex::Real* rhoe_src_vode;
     amrex::Real* e_src_vode;
     amrex::Real* IR;
-	Dim3 lo;
-	Dim3 len;
+    Dim3 lo;
+    Dim3 len;
 };
 
 extern RhsData* f_rhs_data;
@@ -47,7 +47,6 @@ extern RhsData* f_rhs_data;
 void
 ode_eos_setup(RhsData* f_rhs_data, amrex::Real gamma_minus_1, amrex::Real h_species)
 {
-
     f_rhs_data->gamma_minus_1 = gamma_minus_1;
     f_rhs_data->h_species = h_species;
     ParmParse pp_nyx("nyx");
@@ -97,9 +96,17 @@ ode_eos_setup(RhsData* f_rhs_data, amrex::Real gamma_minus_1, amrex::Real h_spec
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
-ode_eos_initialize_single(const int i, const int j, const int k, const int idx, RhsData* f_rhs_data,
-                          amrex::Dim3 lo, amrex::Dim3 len,
-						  amrex::Real* dptr, amrex::Real* eptr,
+ode_get_idx(RhsData* f_rhs_data, const int i, const int j, const int k, long int& idx)
+{
+    idx = i+j*f_rhs_data->len.x+k*f_rhs_data->len.x*f_rhs_data->len.y-(f_rhs_data->lo.x+f_rhs_data->lo.y*f_rhs_data->len.x+f_rhs_data->lo.z*f_rhs_data->len.x*f_rhs_data->len.y);
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
+ode_eos_initialize_single(RhsData* f_rhs_data,
+                          const amrex::Real a,
+                          amrex::Real* dptr, amrex::Real* eptr,
                           amrex::Real* T_vode,
                           amrex::Real* ne_vode,
                           amrex::Real* rho_vode,
@@ -110,6 +117,7 @@ ode_eos_initialize_single(const int i, const int j, const int k, const int idx, 
                           amrex::Real* IR)
 {
 
+    f_rhs_data->a = a;
     amrex::Real z = 1/(f_rhs_data->a)-1.0;
     // Flash reionization?
     if ((f_rhs_data->flash_h == 1) && (z > f_rhs_data->zhi_flash))
@@ -125,39 +133,39 @@ ode_eos_initialize_single(const int i, const int j, const int k, const int idx, 
     if (f_rhs_data->flash_h ) f_rhs_data->H_reion_z  = f_rhs_data->zhi_flash;
     if (f_rhs_data->flash_he) f_rhs_data->He_reion_z = f_rhs_data->zheii_flash;
 
-	f_rhs_data->lo = lo;
-	f_rhs_data->len = len;
-	f_rhs_data->T_vode = T_vode;
-	f_rhs_data->ne_vode = ne_vode;
-	f_rhs_data->rho_vode = rho_vode;
-	f_rhs_data->rho_init_vode = rho_init_vode;
-	f_rhs_data->rho_src_vode = rho_src_vode;
-	f_rhs_data->rhoe_src_vode = rhoe_src_vode;
-	f_rhs_data->e_src_vode = e_src_vode;
-	f_rhs_data->IR = IR;	
+    f_rhs_data->T_vode = T_vode;
+    f_rhs_data->ne_vode = ne_vode;
+    f_rhs_data->rho_vode = rho_vode;
+    f_rhs_data->rho_init_vode = rho_init_vode;
+    f_rhs_data->rho_src_vode = rho_src_vode;
+    f_rhs_data->rhoe_src_vode = rhoe_src_vode;
+    f_rhs_data->e_src_vode = e_src_vode;
+    f_rhs_data->IR = IR;    
 }
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 ode_eos_initialize_arrays(const int i, const int j, const int k, const int idx, RhsData* f_rhs_data,
+                          const amrex::Real a_end, amrex::Dim3 lo, amrex::Dim3 len,
                           amrex::Array4<Real> const& state4,
                           amrex::Array4<Real> const& diag_eos4,
-						  amrex::Array4<Real> const& hydro_src,
-						  amrex::Array4<Real> const& reset_src,
-						  amrex::Real* dptr, amrex::Real* eptr, amrex::Real* abstol_ptr,
+                          amrex::Array4<Real> const& hydro_src,
+                          amrex::Array4<Real> const& reset_src,
+                          amrex::Real* dptr, amrex::Real* eptr, amrex::Real* abstol_ptr,
                           const int sdc_iter, const amrex::Real delta_time)
 {
-	amrex::Real a, a_end, asq, aendsq, z, z_end;
+    amrex::Real a, asq, aendsq, z, z_end;
     const amrex::Real abstol = 1e-4;
 
     z = 1.0/(f_rhs_data->a) - 1.0;
-	amrex::Abort("Need integrate_comoving_a from namespace Nyx, or to pass in a_end");
-	//    integrate_comoving_a(f_rhs_data->a, a_end, delta_time);
     z_end = 1.0/a_end - 1.0;
  
     asq = a*a;
     aendsq = a_end*a_end;
+
+    f_rhs_data->lo = lo;
+    f_rhs_data->len = len;
 
     //  int idx = i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
     dptr[idx]=state4(i,j,k,Eint)/state4(i,j,k,Density);
@@ -182,9 +190,9 @@ ode_eos_initialize_arrays(const int i, const int j, const int k, const int idx, 
     f_rhs_data->rho_init_vode=NULL;
     }
 
-	if (f_rhs_data->inhomogeneous_on)
+    if (f_rhs_data->inhomogeneous_on)
     {
-		amrex::Abort("Haven't implemented using array version of JH logic yet");
+        amrex::Abort("Haven't implemented using array version of JH logic yet");
         f_rhs_data->H_reion_z = diag_eos4(i,j,k,Zhi_comp);
         if (z > f_rhs_data->H_reion_z)
             f_rhs_data->JH_vode_arr[idx] = 0;
@@ -198,7 +206,7 @@ AMREX_FORCE_INLINE
 void
 ode_eos_finalize_struct(const int i, const int j, const int k, const int idx, RhsData* f_rhs_data,amrex::Array4<Real> const& state4,
                         amrex::Array4<Real> const& diag_eos4, amrex::Array4<Real> const& I_R,
-						amrex::Real* dptr, amrex::Real* eptr)
+                        amrex::Real* dptr, amrex::Real* eptr)
 {
     amrex::Real z_vode, rho_vode, T_vode, ne_vode;
     amrex::Real rho, U, a, mu, e_out;

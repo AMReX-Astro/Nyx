@@ -445,6 +445,7 @@ Nyx::read_params ()
         pp_nyx.get("inhomo_grid", inhomo_grid);
     }
 
+
 #ifdef HEATCOOL
     if (heat_cool_type != 3 && heat_cool_type !=4 && heat_cool_type != 5 && heat_cool_type != 7 && heat_cool_type != 9 && heat_cool_type != 10 && heat_cool_type != 11 &&  heat_cool_type != 12)
        amrex::Error("Nyx:: nonzero heat_cool_type must equal 3 or 4 or 5 or 7 or 9 or 10 or 11 or 12");

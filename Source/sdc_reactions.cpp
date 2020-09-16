@@ -29,11 +29,11 @@ Nyx::sdc_reactions (MultiFab& S_old, MultiFab& S_new, MultiFab& D_new,
     if(heat_cool_type != 11)
         amrex::Abort("Invalid heating cooling type");
 
-	if(use_typical_steps)
-		amrex::ParallelDescriptor::ReduceLongMax(new_max_sundials_steps);
-	int ierr=integrate_state_vec(S_old,       D_new,       a_old, delta_time);
-	if(ierr)
-		amrex::Abort("error out of integrate_state_vec");
+    if(use_typical_steps)
+        amrex::ParallelDescriptor::ReduceLongMax(new_max_sundials_steps);
+    int ierr=integrate_state_struct(S_old,S_new, D_new, hydro_src, IR, reset_e_src,  a_old, a_new, delta_time, sdc_iter);
+    if(ierr)
+        amrex::Abort("error out of integrate_state_vec");
 
     if (verbose > 0)
     {

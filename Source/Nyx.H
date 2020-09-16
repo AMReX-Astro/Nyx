@@ -571,7 +571,8 @@ int integrate_state_struct
    amrex::MultiFab &hydro_src,
    amrex::MultiFab &IR,
    amrex::MultiFab &reset_src,
-   const amrex::Real& a, const amrex::Real& delta_time,
+   const amrex::Real& a, const amrex::Real& a_end,
+   const amrex::Real& delta_time,
    const int sdc_iter);
 
   int integrate_state_struct_mfin
@@ -582,7 +583,8 @@ int integrate_state_struct
    amrex::Array4<amrex::Real> const& reset_src4,
    amrex::Array4<amrex::Real> const& IR4,
    const amrex::Box& tbx,
-   const amrex::Real& a, const amrex::Real& delta_time,
+   const amrex::Real& a, const amrex::Real& a_end,
+   const amrex::Real& delta_time,
    long int& old_max_steps, long int& new_max_steps,
    const int sdc_iter);
 

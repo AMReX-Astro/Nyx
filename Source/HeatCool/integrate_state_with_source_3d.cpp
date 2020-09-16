@@ -560,16 +560,18 @@ int Nyx::integrate_state_struct
    amrex::MultiFab &hydro_src,
    amrex::MultiFab &IR,
    amrex::MultiFab &reset_src,
-   const Real& a, const Real& delta_time,
+   const Real& a, const amrex::Real& a_end,
+   const Real& delta_time,
    const int sdc_iter)
 {
     // time = starting time in the simulation
+    f_rhs_data = (RhsData*)The_Arena()->alloc(sizeof(RhsData));
+    Real gamma_minus_1 = gamma - 1.0;
+    ode_eos_setup(f_rhs_data, gamma_minus_1, h_species);
 
   amrex::Gpu::LaunchSafeGuard lsg(true);
-  //Skip setup since parameters are hard-coded
-  //  fort_ode_eos_setup(a,delta_time);
   long int store_steps=new_max_sundials_steps;
-  
+
   //#ifdef _OPENMP
   //#pragma omp parallel if (Gpu::notInLaunchRegion())
   //#endif
@@ -596,7 +598,7 @@ int Nyx::integrate_state_struct
       Array4<Real> const& reset_src4 = reset_src.array(mfi);
       Array4<Real> const& IR4 = IR.array(mfi);
 
-      integrate_state_struct_mfin(state4,diag_eos4,state_n4,hydro_src4,reset_src4,IR4,tbx,a,delta_time,store_steps,new_max_sundials_steps,sdc_iter);
+      integrate_state_struct_mfin(state4,diag_eos4,state_n4,hydro_src4,reset_src4,IR4,tbx,a,a_end,delta_time,store_steps,new_max_sundials_steps,sdc_iter);
     }
       return 0;
 }
@@ -609,7 +611,7 @@ int Nyx::integrate_state_struct_mfin
    amrex::Array4<Real> const& reset_src4,
    amrex::Array4<Real> const& IR4,
    const Box& tbx,
-   const Real& a, const Real& delta_time,
+   const Real& a, const amrex::Real& a_end, const Real& delta_time,
    long int& old_max_steps, long int& new_max_steps,
    const int sdc_iter)
 {
@@ -630,6 +632,14 @@ int Nyx::integrate_state_struct_mfin
       N_Vector e_orig;
       N_Vector Data;
       N_Vector abstol_vec;
+      N_Vector T_vec;
+      N_Vector ne_vec;
+      N_Vector rho_vec;
+      N_Vector rho_init_vec;
+      N_Vector rho_src_vec;
+      N_Vector rhoe_src_vec;
+      N_Vector e_src_vec;
+      N_Vector IR_vec;
 
       void *cvode_mem;
       double *dptr, *eptr, *rpar, *rparh, *abstol_ptr;
@@ -729,23 +739,43 @@ int Nyx::integrate_state_struct_mfin
                         rparh=N_VGetArrayPointer_Serial(Data);
                         abstol_vec = N_VNew_Serial(neq);
                         abstol_ptr=N_VGetArrayPointer_Serial(abstol_vec);
+                        T_vec = N_VNew_Serial(neq);
+                        ne_vec = N_VNew_Serial(neq);
+                        rho_vec = N_VNew_Serial(neq);
+                        rho_init_vec = N_VNew_Serial(neq);
+                        rho_src_vec = N_VNew_Serial(neq);
+                        rhoe_src_vec = N_VNew_Serial(neq);
+                        e_src_vec = N_VNew_Serial(neq);
+                        IR_vec = N_VNew_Serial(neq);
+                        amrex::Real* T_vode=N_VGetArrayPointer_Serial(T_vec);
+                        amrex::Real* ne_vode=N_VGetArrayPointer_Serial(ne_vec);
+                        amrex::Real* rho_vode=N_VGetArrayPointer_Serial(rho_vec);
+                        amrex::Real* rho_init_vode=N_VGetArrayPointer_Serial(rho_init_vec);
+                        amrex::Real* rho_src_vode=N_VGetArrayPointer_Serial(rho_src_vec);
+                        amrex::Real* rhoe_src_vode=N_VGetArrayPointer_Serial(rhoe_src_vec);
+                        amrex::Real* e_src_vode=N_VGetArrayPointer_Serial(e_src_vec);
+                        amrex::Real* IR_vode=N_VGetArrayPointer_Serial(IR_vec);
 #endif
 #endif
+    ode_eos_initialize_single(f_rhs_data, a, dptr, eptr, T_vode, ne_vode, rho_vode, rho_init_vode, rho_src_vode, rhoe_src_vode, e_src_vode, IR_vode);
 
 #ifdef _OPENMP
       const Dim3 hi = amrex::ubound(tbx);
-
 #pragma omp parallel for collapse(3)
       for (int k = lo.z; k <= hi.z; ++k) {
         for (int j = lo.y; j <= hi.y; ++j) {
             for (int i = lo.x; i <= hi.x; ++i) {
                 //Skip setup since parameters are hard-coded
-                //fort_ode_eos_setup(a,delta_time);
 #else
                                 AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
                                 {                                 
 #endif
                                   int idx = i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
+                                  ode_eos_initialize_arrays(i, j, k, idx, f_rhs_data,
+                                                            a_end, lo, len, state4, diag_eos4,
+                                                            hydro_src4, reset_src4, dptr, eptr,
+                                                            abstol_ptr, sdc_iter, delta_time);
+
                                   dptr[idx]=state4(i,j,k,Eint)/state4(i,j,k,Density);
                                   eptr[idx]=state4(i,j,k,Eint)/state4(i,j,k,Density);
                                   rparh[4*idx+0]= diag_eos4(i,j,k,Temp_comp);   //rpar(1)=T_vode
