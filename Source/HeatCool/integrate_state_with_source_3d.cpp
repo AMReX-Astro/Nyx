@@ -29,7 +29,7 @@
 using namespace amrex;
 
 RhsData* f_rhs_data;
-
+/*
 amrex::Vector<void*> ptr_lst;
 //static amrex::Arena* Managed_Arena;
 
@@ -50,6 +50,9 @@ void sunfree(void* ptr)
   amrex::MultiFab::updateMemUsage ("Sunalloc", -mem_size, nullptr);
   amrex::MultiFab::updateMemUsage ("All", -mem_size, nullptr);
 }
+*/
+/* Functions Called by the Solver */
+static int f(realtype t, N_Vector u, N_Vector udot, void *user_data);
 /*
 subroutine integrate_state_with_source(lo, hi, &
                                 state   , s_l1, s_l2, s_l3, s_h1, s_h2, s_h3, &
@@ -589,12 +592,12 @@ int Nyx::integrate_state_struct
       Array4<Real> const& state4 = S_old.array(mfi);
       Array4<Real> const& diag_eos4 = D_old.array(mfi);
       Array4<Real> const& state_n4 = S_new.array(mfi);
-	  Array4<Real> const& hydro_src4 = hydro_src.array(mfi);
-	  Array4<Real> const& reset_src4 = reset_src.array(mfi);
-	  Array4<Real> const& IR4 = IR.array(mfi);
+      Array4<Real> const& hydro_src4 = hydro_src.array(mfi);
+      Array4<Real> const& reset_src4 = reset_src.array(mfi);
+      Array4<Real> const& IR4 = IR.array(mfi);
 
       integrate_state_struct_mfin(state4,diag_eos4,state_n4,hydro_src4,reset_src4,IR4,tbx,a,delta_time,store_steps,new_max_sundials_steps,sdc_iter);
-}
+    }
       return 0;
 }
 
@@ -760,7 +763,7 @@ int Nyx::integrate_state_struct_mfin
                                 });
       amrex::Gpu::Device::streamSynchronize();
 #endif
-
+                        
 #ifdef CV_NEWTON
                                 cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
 #else
@@ -872,3 +875,40 @@ int Nyx::integrate_state_struct_mfin
         }*/
                                 return 0;
 }
+
+#ifdef AMREX_USE_CUDA
+static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
+{
+  Real* udot_ptr=N_VGetDeviceArrayPointer_Cuda(udot);
+  Real* u_ptr=N_VGetDeviceArrayPointer_Cuda(u);
+  int neq=N_VGetLength_Cuda(udot);
+  double*  rpar=N_VGetDeviceArrayPointer_Cuda(*(static_cast<N_Vector*>(user_data)));
+  
+  cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();
+  AMREX_LAUNCH_DEVICE_LAMBDA ( neq, idx, {
+      //  f_rhs_test(t,u_ptr,udot_ptr, rpar, neq);
+        f_rhs_rpar(t, (u_ptr[idx]),(udot_ptr[idx]),&(rpar[4*idx]));
+  });
+  cudaStreamSynchronize(currentStream);
+
+  return 0;
+}
+
+#else
+static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
+{
+
+  Real* udot_ptr=N_VGetArrayPointer_Serial(udot);
+  Real* u_ptr=N_VGetArrayPointer_Serial(u);
+  int neq=N_VGetLength_Serial(udot);
+  double*  rpar=N_VGetArrayPointer_Serial(*(static_cast<N_Vector*>(user_data)));
+
+  #pragma omp parallel for
+  for(int tid=0;tid<neq;tid++)
+    {
+        f_rhs_rpar(t, (u_ptr[tid]),(udot_ptr[tid]),&(rpar[4*tid]));
+    }
+
+  return 0;
+}
+#endif

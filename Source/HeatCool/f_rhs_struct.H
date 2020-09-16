@@ -182,7 +182,7 @@ ode_eos_initialize_arrays(const int i, const int j, const int k, const int idx, 
     f_rhs_data->rho_init_vode=NULL;
     }
 
-	if (inhomogeneous_on)
+	if (f_rhs_data->inhomogeneous_on)
     {
 		amrex::Abort("Haven't implemented using array version of JH logic yet");
         f_rhs_data->H_reion_z = diag_eos4(i,j,k,Zhi_comp);
@@ -197,7 +197,8 @@ AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
 ode_eos_finalize_struct(const int i, const int j, const int k, const int idx, RhsData* f_rhs_data,amrex::Array4<Real> const& state4,
-                        amrex::Array4<Real> const& diag_eos4, amrex::Array4<Real> const& I_R)
+                        amrex::Array4<Real> const& diag_eos4, amrex::Array4<Real> const& I_R,
+						amrex::Real* dptr, amrex::Real* eptr)
 {
     amrex::Real z_vode, rho_vode, T_vode, ne_vode;
     amrex::Real rho, U, a, mu, e_out;
@@ -259,7 +260,7 @@ ode_eos_finalize_struct(const int i, const int j, const int k, const int idx, Rh
     */
     dptr[idx] = e_out;
     diag_eos4(i,j,k,Temp_comp)=f_rhs_data->T_vode[idx];
-    diag_eos4(i,j,k,ne_comp)=f_rhs_data->ne_vode[idx];
+    diag_eos4(i,j,k,Ne_comp)=f_rhs_data->ne_vode[idx];
     //    state4(i,j,k,Density)=f_rhs_data->rho_vode[idx];
     if(f_rhs_data->e_src_vode!=NULL)
     {
@@ -483,7 +484,7 @@ f_rhs_struct(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, Ato
 
         // Convert to the actual term to be used in e_out = e_in + dt*energy
         if(f_rhs_data->e_src_vode!=NULL)
-               energy  = energy / rho_vode * (1.0e0+amrex::Math::abs(z_vode)) + f_rhs_data->e_src_vode[idx];;
+               energy  = energy / rho_vode * (1.0e0+amrex::Math::abs(z_vode)) + f_rhs_data->e_src_vode[idx];
         else
                energy  = energy / rho_vode * (1.0e0+amrex::Math::abs(z_vode));
         ne_vode = ne_vode / nh;
@@ -535,7 +536,7 @@ f_rhs_struct(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, Ato
     // Convert to the actual term to be used in e_out = e_in + dt*energy
     a = 1.e0 / (1.e0 + amrex::Math::abs(z_vode));
     if(f_rhs_data->e_src_vode!=NULL)
-        energy  = energy / rho_vode / a + f_rhs_data->e_src_vode[idx];;
+        energy  = energy / rho_vode / a + f_rhs_data->e_src_vode[idx];
     else
         energy = energy / rho_vode / a;
     f_rhs_data->T_vode[idx]=T_vode;

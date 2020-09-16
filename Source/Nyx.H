@@ -564,6 +564,28 @@ public:
    int integrate_state_grownvec(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
   int integrate_state_vec_mfin(amrex::Array4<amrex::Real>const& state4,   amrex::Array4<amrex::Real>const& diag_eos4,const  amrex::Box& tbx,  const amrex::Real& a, const amrex::Real& delta_time, long int& old_max_steps, long int& new_max_steps);
 
+int integrate_state_struct
+  (amrex::MultiFab &S_old,
+   amrex::MultiFab &S_new,
+   amrex::MultiFab &D_old,
+   amrex::MultiFab &hydro_src,
+   amrex::MultiFab &IR,
+   amrex::MultiFab &reset_src,
+   const amrex::Real& a, const amrex::Real& delta_time,
+   const int sdc_iter);
+
+  int integrate_state_struct_mfin
+  (amrex::Array4<amrex::Real> const& state4,
+   amrex::Array4<amrex::Real> const& diag_eos4,
+   amrex::Array4<amrex::Real> const& state_n4,
+   amrex::Array4<amrex::Real> const& hydro_src4,
+   amrex::Array4<amrex::Real> const& reset_src4,
+   amrex::Array4<amrex::Real> const& IR4,
+   const amrex::Box& tbx,
+   const amrex::Real& a, const amrex::Real& delta_time,
+   long int& old_max_steps, long int& new_max_steps,
+   const int sdc_iter);
+
   int integrate_state_cell(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
    int integrate_state_growncell(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
 
