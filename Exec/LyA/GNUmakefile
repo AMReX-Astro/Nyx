@@ -86,6 +86,7 @@ else
 	USE_FUSED ?= USE_SUNDIALS
     COMP       	  = pgi
 endif
+	USE_FORT_ODE = FALSE
 	USE_OMP = FALSE
 ifeq ($(REEBER), TRUE)
 #6.4.0
