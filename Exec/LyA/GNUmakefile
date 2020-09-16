@@ -3,16 +3,6 @@ AMREX_HOME  ?= ../../../amrex
 #ASCENT_HOME ?=/project/projectdirs/alpine/software/ascent/gnu/7.3.0/ascent-install/
 ASCENT_HOME ?=/gpfs/alpine/world-shared/csc340/software/ascent/0.5.2-pre/summit/cuda/gnu/ascent-install
 
-#This install location assumes modules: pgi/19.10 cuda/10.1.243
-USE_FUSED = TRUE
-ifeq ($(USE_FUSED),TRUE)
-INSTALL_PREFIX ?= /gpfs/alpine/world-shared/ast160/software/sundials-5.3.0-fused-lasterror/instdir
-else
-INSTALL_PREFIX ?= /gpfs/alpine/world-shared/ast160/software/sundials/instdir
-endif
-#CVODE_LIB_DIR ?= $(CVODE_LIB)
-CVODE_LIB_DIR ?= $(INSTALL_PREFIX)/lib64/
-SUNDIALS_ROOT ?= $(CVODE_LIB_DIR)/../
 BOOST_INLUDE_DIR ?= ${OLCF_BOOST_ROOT}/include/boost
 HDF5_HOME ?= ${OLCF_HDF5_ROOT}
 
@@ -83,7 +73,7 @@ ifeq ($(NO_HYDRO),TRUE)
 else
 	USE_SUNDIALS_3x4x ?= TRUE
 	USE_SUNDIALS      ?= TRUE
-	USE_FUSED ?= USE_SUNDIALS
+	USE_FUSED ?= $(USE_SUNDIALS)
     COMP       	  = pgi
 endif
 	USE_FORT_ODE = FALSE
@@ -107,6 +97,16 @@ ifeq ($(USE_ASCENT_INSITU), TRUE)
         LIBRARIES += -Wl,-rpath,/sw/summit/gcc/6.4.0/lib64/
 endif
 endif
+
+#This install location assumes modules: pgi/19.10 cuda/10.1.243
+ifeq ($(USE_FUSED),TRUE)
+INSTALL_PREFIX ?= /gpfs/alpine/world-shared/ast160/software/sundials-5.3.0-fused-lasterror/instdir
+else
+INSTALL_PREFIX ?= /gpfs/alpine/world-shared/ast160/software/sundials/instdir
+endif
+#CVODE_LIB_DIR ?= $(CVODE_LIB)
+CVODE_LIB_DIR ?= $(INSTALL_PREFIX)/lib64/
+SUNDIALS_ROOT ?= $(CVODE_LIB_DIR)/../
 
 USE_OWN_BCS = FALSE
 
