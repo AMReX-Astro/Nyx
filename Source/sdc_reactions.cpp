@@ -23,7 +23,6 @@ Nyx::sdc_reactions (MultiFab& S_old, MultiFab& S_new, MultiFab& D_new,
     
     Gpu::LaunchSafeGuard lsg(true);
     const Real strt_time = ParallelDescriptor::second();
-    Real half_dt = 0.5*dt;
 
     const Real z = 1.0/a_old - 1.0;
 
@@ -32,10 +31,9 @@ Nyx::sdc_reactions (MultiFab& S_old, MultiFab& S_new, MultiFab& D_new,
 
 	if(use_typical_steps)
 		amrex::ParallelDescriptor::ReduceLongMax(new_max_sundials_steps);
-	int ierr=integrate_state_vec(S_old,       D_old,       a_old, half_dt);
+	int ierr=integrate_state_vec(S_old,       D_new,       a_old, delta_time);
 	if(ierr)
 		amrex::Abort("error out of integrate_state_vec");
-      }
 
     if (verbose > 0)
     {
