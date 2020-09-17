@@ -48,6 +48,6 @@ amrex::Array1D<amrex::Real,1,NCOOLTAB+1> RecHepp;
 
 };
 
-extern AtomicRates* atomic_rates;
+extern AtomicRates* atomic_rates_glob;
 
 #endif

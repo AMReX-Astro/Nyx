@@ -285,7 +285,7 @@ int Nyx::integrate_state_vec_mfin
 #ifdef AMREX_DEBUG
                                 PrintFinalStats(cvode_mem);
 #endif
-
+  auto atomic_rates = atomic_rates_glob;
 #ifdef _OPENMP
 #pragma omp parallel for collapse(3)
       for (int k = lo.z; k <= hi.z; ++k) {
@@ -297,7 +297,7 @@ int Nyx::integrate_state_vec_mfin
 #endif
                                   int  idx= i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
                                 //                              for (int i= 0;i < neq; ++i) {
-                                  ode_eos_finalize((dptr[idx*loop]), &(rparh[4*idx*loop]), one_in);
+                                  ode_eos_finalize((dptr[idx*loop]), &(rparh[4*idx*loop]), one_in, atomic_rates);
                                   diag_eos4(i,j,k,Temp_comp)=rparh[4*idx*loop+0];   //rpar(1)=T_vode
                                   diag_eos4(i,j,k,Ne_comp)=rparh[4*idx*loop+1];//    rpar(2)=ne_vode
                                 
@@ -390,9 +390,10 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
   double*  rpar=N_VGetDeviceArrayPointer_Cuda(*(static_cast<N_Vector*>(user_data)));
   
   cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();
+  auto atomic_rates = atomic_rates_glob;
   AMREX_LAUNCH_DEVICE_LAMBDA ( neq, idx, {
       //  f_rhs_test(t,u_ptr,udot_ptr, rpar, neq);
-      f_rhs_rpar(t,*(u_ptr+idx),*(udot_ptr+idx), (rpar+4*idx));
+      f_rhs_rpar(t,*(u_ptr+idx),*(udot_ptr+idx), (rpar+4*idx), atomic_rates);
   });
   cudaStreamSynchronize(currentStream);
 

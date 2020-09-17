@@ -357,7 +357,7 @@ Nyx::read_params ()
     pp_nyx.query("comoving_type", comoving_type);
 
 #ifdef HEATCOOL
-    atomic_rates = (AtomicRates*)The_Arena()->alloc(sizeof(AtomicRates));
+    atomic_rates_glob = (AtomicRates*)The_Arena()->alloc(sizeof(AtomicRates));
 #endif
 
     pp_nyx.get("do_hydro", do_hydro);
@@ -2642,6 +2642,7 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new, MultiFab& reset_e_
     Real        a        = get_comoving_a(cur_time);
     int interp=false;
     Real gamma_minus_1 = gamma - 1.0;
+    auto atomic_rates = atomic_rates_glob;
 
 #ifdef _OPENMP
 #pragma omp parallel
@@ -2673,7 +2674,8 @@ Nyx::reset_internal_energy_interp (MultiFab& S_new, MultiFab& D_new, MultiFab& r
     const Real  cur_time = state[State_Type].curTime();
     Real        a        = get_comoving_a(cur_time);
     int interp=true;
-        Real gamma_minus_1 = gamma - 1.0;
+    Real gamma_minus_1 = gamma - 1.0;
+    auto atomic_rates = atomic_rates_glob;
 
     amrex::Gpu::LaunchSafeGuard lsg(true);
 
@@ -2807,6 +2809,7 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
             int  dummy_max_temp_dt=max_temp_dt;
             Real h_species_in=h_species;
             Real gamma_minus_1_in=gamma - 1.0;
+	    auto atomic_rates = atomic_rates_glob;
             AMREX_PARALLEL_FOR_3D(bx, i, j ,k,
             {
 

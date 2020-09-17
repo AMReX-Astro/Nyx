@@ -873,7 +873,7 @@ int Nyx::integrate_state_struct_mfin
 #ifdef AMREX_DEBUG
                                 PrintFinalStats(cvode_mem);
 #endif
-
+    auto atomic_rates = atomic_rates_glob;
 #ifdef _OPENMP
 #pragma omp parallel for collapse(3)
       for (int k = lo.z; k <= hi.z; ++k) {
@@ -948,7 +948,9 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
   Real* u_ptr=N_VGetDeviceArrayPointer_Cuda(u);
   int neq=N_VGetLength_Cuda(udot);
   double*  rpar=N_VGetDeviceArrayPointer_Cuda(*(static_cast<N_Vector*>(user_data)));
-  
+
+  auto atomic_rates = atomic_rates_glob;
+  //  auto f_rhs_data = f_rhs_data_glob;
   cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();
   AMREX_LAUNCH_DEVICE_LAMBDA ( neq, idx, {
       //  f_rhs_test(t,u_ptr,udot_ptr, rpar, neq);

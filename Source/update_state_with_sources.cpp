@@ -15,6 +15,7 @@ do_enforce_minimum_density(
   const int j,
   const int k,
   amrex::Array4<amrex::Real> const& state,
+  AtomicRates* atomic_rates,
   const int NumSpec,
   amrex::Real const a_new,
   const amrex::Real gamma_minus_1,
@@ -76,8 +77,9 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
 
     int lnum_spec    = NumSpec;
     Real lsmall_dens = small_dens;
-	Real lgamma_minus_1 = gamma - 1.0;
-	Real lsmall_temp = small_temp;
+    Real lgamma_minus_1 = gamma - 1.0;
+    Real lsmall_temp = small_temp;
+    auto atomic_rates = atomic_rates_glob;
 
         ////This set of dt should be used for Saxpy dt like setup
     for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) 
@@ -122,7 +124,7 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
         //Unclear whether this should be part of previous ParallelFor
         amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept 
         {
-            do_enforce_minimum_density(i, j, k, uout, lnum_spec, a_new, lgamma_minus_1, lsmall_dens, lsmall_temp);
+          do_enforce_minimum_density(i, j, k, uout, atomic_rates, lnum_spec, a_new, lgamma_minus_1, lsmall_dens, lsmall_temp);
         });
 
     }

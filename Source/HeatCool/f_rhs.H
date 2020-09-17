@@ -30,7 +30,7 @@ static void sunfree(void* ptr)
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
-ode_eos_finalize(amrex::Real& e_out, amrex::Real* rpar, int neq)
+ode_eos_finalize(amrex::Real& e_out, amrex::Real* rpar, int neq, AtomicRates* atomic_rates)
 {
     amrex::Real z_vode, rho_vode, T_vode, ne_vode;
     amrex::Real rho, U, a, mu;
@@ -111,7 +111,7 @@ ode_eos_finalize(amrex::Real& e_out, amrex::Real* rpar, int neq)
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 int
-f_rhs_rpar(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, amrex::Real* rpar)
+f_rhs_rpar(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, amrex::Real* rpar, AtomicRates* atomic_rates)
 {
 
     const amrex::Real compt_c = 1.01765467e-37;
