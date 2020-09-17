@@ -739,6 +739,8 @@ int Nyx::integrate_state_struct_mfin
                         rparh=N_VGetArrayPointer_Serial(Data);
                         abstol_vec = N_VNew_Serial(neq);
                         abstol_ptr=N_VGetArrayPointer_Serial(abstol_vec);
+                        if(sdc_iter>=0||true)
+                        {
                         T_vec = N_VNew_Serial(neq);
                         ne_vec = N_VNew_Serial(neq);
                         rho_vec = N_VNew_Serial(neq);
@@ -747,7 +749,8 @@ int Nyx::integrate_state_struct_mfin
                         rhoe_src_vec = N_VNew_Serial(neq);
                         e_src_vec = N_VNew_Serial(neq);
                         IR_vec = N_VNew_Serial(neq);
-                        amrex::Real* T_vode=N_VGetArrayPointer_Serial(T_vec);
+                        }
+                        amrex::Real* T_vode= N_VGetArrayPointer_Serial(T_vec);
                         amrex::Real* ne_vode=N_VGetArrayPointer_Serial(ne_vec);
                         amrex::Real* rho_vode=N_VGetArrayPointer_Serial(rho_vec);
                         amrex::Real* rho_init_vode=N_VGetArrayPointer_Serial(rho_init_vec);
@@ -861,11 +864,13 @@ int Nyx::integrate_state_struct_mfin
                                   int  idx= i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
                                 //                              for (int i= 0;i < neq; ++i) {
                                   ode_eos_finalize((dptr[idx*loop]), &(rparh[4*idx*loop]), one_in);
+                                  ode_eos_finalize_struct(i,j,k,idx,f_rhs_data,a_end,state4,state_n4,reset_src4,diag_eos4,IR4,dptr,eptr,delta_time);
+                                  /*
                                   diag_eos4(i,j,k,Temp_comp)=rparh[4*idx*loop+0];   //rpar(1)=T_vode
                                   diag_eos4(i,j,k,Ne_comp)=rparh[4*idx*loop+1];//    rpar(2)=ne_vode
                                 
                                   state4(i,j,k,Eint)  += state4(i,j,k,Density) * (dptr[idx*loop]-eptr[idx]);
-                                  state4(i,j,k,Eden)  += state4(i,j,k,Density) * (dptr[idx*loop]-eptr[idx]);
+                                  state4(i,j,k,Eden)  += state4(i,j,k,Density) * (dptr[idx*loop]-eptr[idx]);*/
                                   //                            }
                                 //PrintFinalStats(cvode_mem);
 #ifdef _OPENMP
@@ -897,6 +902,7 @@ int Nyx::integrate_state_struct_mfin
                                   N_VDestroy(constrain);          /* Free the constrain vector */
                                 N_VDestroy(abstol_vec);          /* Free the u vector */
                                 N_VDestroy(Data);          /* Free the userdata vector */
+                                //////////////////Need to delete new vectors
                                 CVodeFree(&cvode_mem);  /* Free the integrator memory */
                               //);
                                 /*                          }

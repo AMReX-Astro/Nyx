@@ -204,24 +204,32 @@ ode_eos_initialize_arrays(const int i, const int j, const int k, const int idx, 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
-ode_eos_finalize_struct(const int i, const int j, const int k, const int idx, RhsData* f_rhs_data,amrex::Array4<Real> const& state4,
-                        amrex::Array4<Real> const& diag_eos4, amrex::Array4<Real> const& I_R,
-                        amrex::Real* dptr, amrex::Real* eptr)
+ode_eos_finalize_struct(const int i, const int j, const int k, const int idx, RhsData* f_rhs_data,
+                        const amrex::Real a_end, amrex::Array4<Real> const& state4, amrex::Array4<Real> const& state_n4,
+                        amrex::Array4<Real> const& reset_src, amrex::Array4<Real> const& diag_eos4, amrex::Array4<Real> const& I_R,
+                        amrex::Real* dptr, amrex::Real* eptr, const amrex::Real delta_time)
 {
     amrex::Real z_vode, rho_vode, T_vode, ne_vode;
-    amrex::Real rho, U, a, mu, e_out;
+    amrex::Real rho, U, a, mu, e_out, e_orig, rho_out, rho_orig, asq, aendsq, ahalf, ahalf_inv;
     e_out = dptr[idx];
+    e_orig = eptr[idx];
+    rho_out = state_n4(i,j,k,Density);
     //  int  idx= i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
     /////////////////   //update nyx_eos_T_given_Re
     diag_eos4(i,j,k,Temp_comp)=f_rhs_data->T_vode[idx];   //rpar(1)=T_vode
     diag_eos4(i,j,k,Ne_comp)=f_rhs_data->ne_vode[idx];//    rpar(2)=ne_vode
     if(f_rhs_data->e_src_vode!=NULL)
     {
-        amrex::Abort("Add I_R update here");
-    //                             
-    // I_R satisfies the equation anewsq * (rho_out  e_out ) = 
-    //                            aoldsq * (rho_orig e_orig) + dt * a_half * I_R + dt * H_{rho e} + anewsq * reset_src
-    //  I_R(i,j,k) = ( aendsq * rho_out *e_out - ( (asq*rho_orig* e_orig + delta_time*rhoe_src) ) ) / (delta_time * ahalf) - aendsq * reset_src(i,j,k,1) / (delta_time * ahalf);
+        a = f_rhs_data->a;
+        asq = a*a;
+        aendsq = a_end*a_end;
+        ahalf     = 0.5 * (a + a_end);
+        ahalf_inv  = 1.0 / ahalf;
+        rho_orig = f_rhs_data->rho_init_vode[idx];
+        //                             
+        // I_R satisfies the equation anewsq * (rho_out  e_out ) = 
+        //                            AOLDSQ * (rho_orig e_orig) + dt * a_half * I_R + dt * H_{rho e} + anewsq * reset_src
+        I_R(i,j,k) = ( aendsq * rho_out *e_out - ( (asq*rho_orig* e_orig + delta_time*f_rhs_data->rhoe_src_vode[idx]) ) ) / (delta_time * ahalf) - aendsq * reset_src(i,j,k,0) / (delta_time * ahalf);
     }
 
     T_vode=f_rhs_data->T_vode[idx];
@@ -231,7 +239,14 @@ ode_eos_finalize_struct(const int i, const int j, const int k, const int idx, Rh
 
     if(f_rhs_data->e_src_vode!=NULL)
     {
-        amrex::Abort("Add IR negative energy hack update here");
+        if ((state_n4(i,j,k,UEINT) + delta_time * ahalf * I_R(i,j,k) / aendsq) / state_n4(i,j,k,URHO) < 0.e0)
+        {
+            f_rhs_data->T_vode[idx]  = 10.0;
+            f_rhs_data->ne_vode[idx] = 0.0;
+            mu     = (1.0e0+4.0e0*YHELIUM) / (1.0e0+YHELIUM+f_rhs_data->ne_vode[idx]);
+            e_out  = f_rhs_data->T_vode[idx] / (f_rhs_data->gamma_minus_1 * mp_over_kb * mu);
+            I_R(i,j,k) = ( aendsq * rho_out *e_out - ( (asq*rho_orig* e_orig + delta_time*f_rhs_data->rhoe_src_vode[idx]) ) ) / (delta_time * ahalf) - aendsq * reset_src(i,j,k,0) / (delta_time * ahalf);
+        }
     }
     else
     {
@@ -272,7 +287,10 @@ ode_eos_finalize_struct(const int i, const int j, const int k, const int idx, Rh
     //    state4(i,j,k,Density)=f_rhs_data->rho_vode[idx];
     if(f_rhs_data->e_src_vode!=NULL)
     {
-        amrex::Abort("Add final IR update here");
+        // Update (rho e) and (rho E)
+        // Note that we add to state_n because those already have hydro_source in them
+        state_n4(i,j,k,UEINT) = state_n4(i,j,k,UEINT) + delta_time * ahalf * I_R(i,j,k) / aendsq;
+        state_n4(i,j,k,UEDEN) = state_n4(i,j,k,UEDEN) + delta_time * ahalf * I_R(i,j,k) / aendsq;
     }
     else
     {
