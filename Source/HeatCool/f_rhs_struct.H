@@ -43,6 +43,7 @@ struct RhsData {
 };
 
 extern RhsData* f_rhs_data;
+extern AMREX_GPU_DEVICE RhsData* f_rhs_data_device;
 
 void
 ode_eos_setup(RhsData* f_rhs_data, amrex::Real gamma_minus_1, amrex::Real h_species)
@@ -204,7 +205,7 @@ ode_eos_initialize_arrays(const int i, const int j, const int k, const int idx, 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
-ode_eos_finalize_struct(const int i, const int j, const int k, const int idx, RhsData* f_rhs_data,
+ode_eos_finalize_struct(const int i, const int j, const int k, const int idx, AtomicRates* atomic_rates, RhsData* f_rhs_data,
                         const amrex::Real a_end, amrex::Array4<Real> const& state4, amrex::Array4<Real> const& state_n4,
                         amrex::Array4<Real> const& reset_src, amrex::Array4<Real> const& diag_eos4, amrex::Array4<Real> const& I_R,
                         amrex::Real* dptr, amrex::Real* eptr, const amrex::Real delta_time)
@@ -259,7 +260,7 @@ ode_eos_finalize_struct(const int i, const int j, const int k, const int idx, Rh
     }
     }
     /////////////////   //update nyx_eos_T_given_Re
-    nyx_eos_T_given_Re_device(f_rhs_data->gamma_minus_1, f_rhs_data->h_species, f_rhs_data->JH_vode, f_rhs_data->JHe_vode, &(f_rhs_data->T_vode[idx]), &(f_rhs_data->ne_vode[idx]), f_rhs_data->rho_vode[idx], e_out, f_rhs_data->a);
+    nyx_eos_T_given_Re_device(atomic_rates, f_rhs_data->gamma_minus_1, f_rhs_data->h_species, f_rhs_data->JH_vode, f_rhs_data->JHe_vode, &(f_rhs_data->T_vode[idx]), &(f_rhs_data->ne_vode[idx]), f_rhs_data->rho_vode[idx], e_out, f_rhs_data->a);
     /*
       ! Instanteneous heating from reionization:
       T_H = 0.0d0
@@ -490,7 +491,7 @@ f_rhs_struct(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, Ato
 
     // Get gas temperature and individual ionization species
     // testing different memory structures
-    iterate_ne_device(JH_vode, JHe_vode, z_vode, U, &T_vode, nh, &ne_vode, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1);
+    iterate_ne_device(atomic_rates, JH_vode, JHe_vode, z_vode, U, &T_vode, nh, &ne_vode, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1);
     // Convert species to CGS units: 
     ne_vode = nh * ne_vode;
     nh0   = nh * nh0;
@@ -548,7 +549,7 @@ f_rhs_struct(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, Ato
     lambda_c  = compt_c*T_cmb*T_cmb*T_cmb*T_cmb * ne_vode * (T_vode - T_cmb*(1.0e0+amrex::Math::abs(z_vode)))*(1.0e0 + amrex::Math::abs(z_vode))*(1.0e0 + amrex::Math::abs(z_vode))*(1.0e0 + amrex::Math::abs(z_vode))*(1.0e0 + amrex::Math::abs(z_vode));
     lambda = lambda + lambda_c;
 
-    interp_to_this_z(z_vode, ggh0, gghe0, gghep, eh0, ehe0, ehep);
+    interp_to_this_z(atomic_rates, z_vode, ggh0, gghe0, gghep, eh0, ehe0, ehep);
     // Heating terms
     heat = JH_vode*nh0*eh0 + JH_vode*nhe0*ehe0 + JHe_vode*nhep*ehep;
     

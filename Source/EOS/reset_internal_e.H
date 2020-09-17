@@ -19,7 +19,8 @@ void reset_internal_e (const int i,
                        amrex::Array4<amrex::Real> const& u,
                        amrex::Array4<amrex::Real> const& d,
                        amrex::Array4<amrex::Real> const& r,
-                       const amrex::Real comoving_a,
+                       AtomicRates* atomic_rates,
+		       const amrex::Real comoving_a,
                        const amrex::Real gamma_minus_1,
                        const amrex::Real h_species,
                        const amrex::Real small_temp,
@@ -52,7 +53,7 @@ void reset_internal_e (const int i,
     // If not resetting and little e is negative ...
     else if (u(i,j,k,UEINT) <= 0.0)
     {
-        nyx_eos_given_RT(gamma_minus_1, h_species, &eint_new, &dummy_pres, u(i,j,k,URHO), small_temp, 
+        nyx_eos_given_RT(atomic_rates, gamma_minus_1, h_species, &eint_new, &dummy_pres, u(i,j,k,URHO), small_temp, 
                          d(i,j,k,Ne_comp),comoving_a);
 
         // Create reset source so u(i,j,k,UEINT) = u(i,j,k,UEINT) + r(i,j,k) = u(i,j,k,URHO) * eint_new

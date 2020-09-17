@@ -58,7 +58,7 @@ void Nyx::set_small_values_given_average (amrex::Real average_dens, amrex::Real 
     Real dummy_small_pres=0.0;
     Real eint=0.0;
     if (!(pp_nyx.query("small_pres", dummy_small_pres)))
-        nyx_eos_given_RT(gamma_minus_1_in, h_species_in, &eint, &small_pres, small_dens, small_temp, typical_Ne, a);
+        nyx_eos_given_RT(atomic_rates, gamma_minus_1_in, h_species_in, &eint, &small_pres, small_dens, small_temp, typical_Ne, a);
     else
         small_pres = small_pres_inout;
 
@@ -595,7 +595,7 @@ Nyx::init_e_from_T (const Real& a)
              // Call EOS to get the internal energy
              Real dummy_pres=0.0;
              // Set temp to small_temp and compute corresponding internal energy
-             nyx_eos_given_RT(gamma_minus_1_in, h_species_in, &eint, &dummy_pres, rho, T, ne, a);
+             nyx_eos_given_RT(atomic_rates, gamma_minus_1_in, h_species_in, &eint, &dummy_pres, rho, T, ne, a);
 
              state(i,j,k,Eint) = state(i,j,k,Density) * eint;
 

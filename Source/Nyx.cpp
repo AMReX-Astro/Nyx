@@ -358,6 +358,7 @@ Nyx::read_params ()
 
 #ifdef HEATCOOL
     atomic_rates = (AtomicRates*)The_Arena()->alloc(sizeof(AtomicRates));
+    atomic_rates_device = (AtomicRates*)The_Arena()->alloc(sizeof(AtomicRates));
     atomic_rates->mean_rhob = comoving_OmB * 3.e0*(comoving_h*100.e0)*(comoving_h*100.e0)	/ (8.e0*M_PI*Gconst);
 #endif
 
@@ -2660,7 +2661,7 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new, MultiFab& reset_e_
         amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
         reset_internal_e
             (i,j,k,fab,fab_diag,fab_reset,
-             a, gamma_minus_1,h_species_in, small_temp_in, interp);
+             atomic_rates_device, a, gamma_minus_1,h_species_in, small_temp_in, interp);
           });
     }
 }
@@ -2693,7 +2694,7 @@ Nyx::reset_internal_energy_interp (MultiFab& S_new, MultiFab& D_new, MultiFab& r
           amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
         reset_internal_e
             (i,j,k,fab,fab_diag,fab_reset,
-             a, gamma_minus_1,h_species_in, small_temp_in, interp);
+             atomic_rates_device, a, gamma_minus_1,h_species_in, small_temp_in, interp);
           });
     }
 
@@ -2822,7 +2823,7 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
                 int JH = 1;
                 int JHe = 1;
 
-                nyx_eos_T_given_Re_device(gamma_minus_1_in, h_species_in, JH, JHe, &diag_eos(i,j,k,Temp_comp), &diag_eos(i,j,k,Ne_comp), 
+                nyx_eos_T_given_Re_device(atomic_rates_device, gamma_minus_1_in, h_species_in, JH, JHe, &diag_eos(i,j,k,Temp_comp), &diag_eos(i,j,k,Ne_comp), 
                                                state(i,j,k,Density), eint, a);
                 if(diag_eos(i,j,k,Temp_comp)>=dummy_large_temp && dummy_max_temp_dt == 1)
                 {
@@ -2830,7 +2831,7 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 
                   Real dummy_pres=0.0;
                   // Set temp to small_temp and compute corresponding internal energy
-                  nyx_eos_given_RT(gamma_minus_1_in, h_species_in, &eint, &dummy_pres, state(i,j,k,Density), diag_eos(i,j,k,Temp_comp),
+                  nyx_eos_given_RT(atomic_rates_device, gamma_minus_1_in, h_species_in, &eint, &dummy_pres, state(i,j,k,Density), diag_eos(i,j,k,Temp_comp),
                                     diag_eos(i,j,k,Ne_comp), a);
 
                    Real ke = 0.5e0 * (state(i,j,k,Xmom) * state(i,j,k,Xmom) +
@@ -2846,7 +2847,7 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
               {
                 Real dummy_pres=0.0;
                 // Set temp to small_temp and compute corresponding internal energy
-                nyx_eos_given_RT(gamma_minus_1_in, h_species_in, &eint, &dummy_pres, state(i,j,k,Density), dummy_small_temp, 
+                nyx_eos_given_RT(atomic_rates_device, gamma_minus_1_in, h_species_in, &eint, &dummy_pres, state(i,j,k,Density), dummy_small_temp, 
                                     diag_eos(i,j,k,Ne_comp), a);
 
                 Real ke = 0.5e0 * (state(i,j,k,Xmom) * state(i,j,k,Xmom) + 

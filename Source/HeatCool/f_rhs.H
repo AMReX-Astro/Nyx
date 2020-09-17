@@ -4,6 +4,28 @@
 #include <atomic_rates_data.H>
 #include <constants_cosmo.H>
 #include <eos_hc.H>
+#include <AMReX_MultiFab.H>
+
+static amrex::Vector<void*> ptr_lst;
+//static amrex::Arena* Managed_Arena;
+
+static void* sunalloc(size_t mem_size)
+{
+  amrex::MultiFab::updateMemUsage ("Sunalloc", mem_size, nullptr);
+  amrex::MultiFab::updateMemUsage ("All", mem_size, nullptr);
+  void * ptr = (void*) The_Arena()->alloc(mem_size);
+  ptr_lst.push_back(ptr);
+  return ptr;
+}
+
+static void sunfree(void* ptr)
+{
+  size_t mem_size = dynamic_cast<CArena*>(The_Arena())->sizeOf(ptr);
+  ptr_lst.erase(std::remove_if(ptr_lst.begin(), ptr_lst.end(), [ptr](void* x) { return x == ptr; }));
+  The_Arena()->free(ptr);
+  amrex::MultiFab::updateMemUsage ("Sunalloc", -mem_size, nullptr);
+  amrex::MultiFab::updateMemUsage ("All", -mem_size, nullptr);
+}
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
@@ -58,7 +80,7 @@ ode_eos_finalize(amrex::Real& e_out, amrex::Real* rpar, int neq)
 		e_out  = T_vode / (gamma_minus_1 * mp_over_kb * mu);
 	}
 
-    nyx_eos_T_given_Re_device(gamma_minus_1, h_species_in, JH_vode, JHe_vode, &T_vode, &ne_vode,
+    nyx_eos_T_given_Re_device(atomic_rates_device, gamma_minus_1, h_species_in, JH_vode, JHe_vode, &T_vode, &ne_vode,
                                                rho_vode, e_out, a);
 	/*
       ! Instanteneous heating from reionization:
@@ -151,7 +173,7 @@ f_rhs_rpar(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, amrex
 
     // Get gas temperature and individual ionization species
     // testing different memory structures
-    iterate_ne_device(JH_vode, JHe_vode, z_vode, U, &T_vode, nh, &ne_vode, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1);
+    iterate_ne_device(atomic_rates_device, JH_vode, JHe_vode, z_vode, U, &T_vode, nh, &ne_vode, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1);
     // Convert species to CGS units: 
     ne_vode = nh * ne_vode;
     nh0   = nh * nh0;
@@ -189,14 +211,14 @@ f_rhs_rpar(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, amrex
     flo = 1.0e0 - fhi;
     j = j + 1; // F90 arrays start with 1, using Array1D<Real,1,size>
 
-    bh0   = flo*atomic_rates->BetaH0   (j) + fhi*atomic_rates->BetaH0   (j+1);
-    bhe0  = flo*atomic_rates->BetaHe0  (j) + fhi*atomic_rates->BetaHe0  (j+1);
-    bhep  = flo*atomic_rates->BetaHep  (j) + fhi*atomic_rates->BetaHep  (j+1);
-    bff1  = flo*atomic_rates->Betaff1  (j) + fhi*atomic_rates->Betaff1  (j+1);
-    bff4  = flo*atomic_rates->Betaff4  (j) + fhi*atomic_rates->Betaff4  (j+1);
-    rhp   = flo*atomic_rates->RecHp    (j) + fhi*atomic_rates->RecHp    (j+1);
-    rhep  = flo*atomic_rates->RecHep   (j) + fhi*atomic_rates->RecHep   (j+1);
-    rhepp = flo*atomic_rates->RecHepp  (j) + fhi*atomic_rates->RecHepp  (j+1);
+    bh0   = flo*atomic_rates_device->BetaH0   (j) + fhi*atomic_rates_device->BetaH0   (j+1);
+    bhe0  = flo*atomic_rates_device->BetaHe0  (j) + fhi*atomic_rates_device->BetaHe0  (j+1);
+    bhep  = flo*atomic_rates_device->BetaHep  (j) + fhi*atomic_rates_device->BetaHep  (j+1);
+    bff1  = flo*atomic_rates_device->Betaff1  (j) + fhi*atomic_rates_device->Betaff1  (j+1);
+    bff4  = flo*atomic_rates_device->Betaff4  (j) + fhi*atomic_rates_device->Betaff4  (j+1);
+    rhp   = flo*atomic_rates_device->RecHp    (j) + fhi*atomic_rates_device->RecHp    (j+1);
+    rhep  = flo*atomic_rates_device->RecHep   (j) + fhi*atomic_rates_device->RecHep   (j+1);
+    rhepp = flo*atomic_rates_device->RecHepp  (j) + fhi*atomic_rates_device->RecHepp  (j+1);
 
     // Cooling: 
     lambda = ( bh0*nh0 + bhe0*nhe0 + bhep*nhep + 
@@ -206,7 +228,7 @@ f_rhs_rpar(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, amrex
     lambda_c  = compt_c*T_cmb*T_cmb*T_cmb*T_cmb * ne_vode * (T_vode - T_cmb*(1.0e0+amrex::Math::abs(z_vode)))*(1.0e0 + amrex::Math::abs(z_vode))*(1.0e0 + amrex::Math::abs(z_vode))*(1.0e0 + amrex::Math::abs(z_vode))*(1.0e0 + amrex::Math::abs(z_vode));
     lambda = lambda + lambda_c;
 
-    interp_to_this_z(z_vode, ggh0, gghe0, gghep, eh0, ehe0, ehep);
+    interp_to_this_z(atomic_rates_device, z_vode, ggh0, gghe0, gghep, eh0, ehe0, ehep);
     // Heating terms
     heat = JH_vode*nh0*eh0 + JH_vode*nhe0*ehe0 + JHe_vode*nhep*ehep;
     

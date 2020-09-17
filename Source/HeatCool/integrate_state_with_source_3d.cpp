@@ -29,6 +29,7 @@
 using namespace amrex;
 
 RhsData* f_rhs_data;
+AMREX_GPU_DEVICE RhsData* f_rhs_data_device;
 /*
 amrex::Vector<void*> ptr_lst;
 //static amrex::Arena* Managed_Arena;
@@ -615,7 +616,7 @@ int Nyx::integrate_state_struct_mfin
    long int& old_max_steps, long int& new_max_steps,
    const int sdc_iter)
 {
-
+  f_rhs_data_device = f_rhs_data;
   realtype reltol, abstol;
   int flag;
     
@@ -714,6 +715,25 @@ int Nyx::integrate_state_struct_mfin
                           N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
                           amrex::Gpu::streamSynchronize();
                         }
+                        if(sdc_iter>=0||true)
+                        {
+                        T_vec = N_VMakeWithManagedAllocator_Cuda(neq,sunalloc,sunfree);
+                        ne_vec = N_VMakeWithManagedAllocator_Cuda(neq,sunalloc,sunfree);
+                        rho_vec = N_VMakeWithManagedAllocator_Cuda(neq,sunalloc,sunfree);
+                        rho_init_vec = N_VMakeWithManagedAllocator_Cuda(neq,sunalloc,sunfree);
+                        rho_src_vec = N_VMakeWithManagedAllocator_Cuda(neq,sunalloc,sunfree);
+                        rhoe_src_vec = N_VMakeWithManagedAllocator_Cuda(neq,sunalloc,sunfree);
+                        e_src_vec = N_VMakeWithManagedAllocator_Cuda(neq,sunalloc,sunfree);
+                        IR_vec = N_VMakeWithManagedAllocator_Cuda(neq,sunalloc,sunfree);
+                        }
+                        amrex::Real* T_vode= N_VGetDeviceArrayPointer_Cuda(T_vec);
+                        amrex::Real* ne_vode=N_VGetDeviceArrayPointer_Cuda(ne_vec);
+                        amrex::Real* rho_vode=N_VGetDeviceArrayPointer_Cuda(rho_vec);
+                        amrex::Real* rho_init_vode=N_VGetDeviceArrayPointer_Cuda(rho_init_vec);
+                        amrex::Real* rho_src_vode=N_VGetDeviceArrayPointer_Cuda(rho_src_vec);
+                        amrex::Real* rhoe_src_vode=N_VGetDeviceArrayPointer_Cuda(rhoe_src_vec);
+                        amrex::Real* e_src_vode=N_VGetDeviceArrayPointer_Cuda(e_src_vec);
+                        amrex::Real* IR_vode=N_VGetDeviceArrayPointer_Cuda(IR_vec);
 
 #else
 #ifdef _OPENMP
@@ -760,8 +780,10 @@ int Nyx::integrate_state_struct_mfin
                         amrex::Real* IR_vode=N_VGetArrayPointer_Serial(IR_vec);
 #endif
 #endif
-    ode_eos_initialize_single(f_rhs_data, a, dptr, eptr, T_vode, ne_vode, rho_vode, rho_init_vode, rho_src_vode, rhoe_src_vode, e_src_vode, IR_vode);
-
+      AMREX_PARALLEL_FOR_1D ( 1, i,
+      {
+          ode_eos_initialize_single(f_rhs_data_device, a, dptr, eptr, T_vode, ne_vode, rho_vode, rho_init_vode, rho_src_vode, rhoe_src_vode, e_src_vode, IR_vode);
+      });
 #ifdef _OPENMP
       const Dim3 hi = amrex::ubound(tbx);
 #pragma omp parallel for collapse(3)
@@ -771,10 +793,10 @@ int Nyx::integrate_state_struct_mfin
                 //Skip setup since parameters are hard-coded
 #else
                                 AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
-                                {                                 
+                                {
 #endif
                                   int idx = i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
-                                  ode_eos_initialize_arrays(i, j, k, idx, f_rhs_data,
+                                  ode_eos_initialize_arrays(i, j, k, idx, f_rhs_data_device,
                                                             a_end, lo, len, state4, diag_eos4,
                                                             hydro_src4, reset_src4, dptr, eptr,
                                                             abstol_ptr, sdc_iter, delta_time);
@@ -864,7 +886,7 @@ int Nyx::integrate_state_struct_mfin
                                   int  idx= i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
                                 //                              for (int i= 0;i < neq; ++i) {
                                   ode_eos_finalize((dptr[idx*loop]), &(rparh[4*idx*loop]), one_in);
-                                  ode_eos_finalize_struct(i,j,k,idx,f_rhs_data,a_end,state4,state_n4,reset_src4,diag_eos4,IR4,dptr,eptr,delta_time);
+                                  ode_eos_finalize_struct(i,j,k,idx,atomic_rates_device,f_rhs_data_device,a_end,state4,state_n4,reset_src4,diag_eos4,IR4,dptr,eptr,delta_time);
                                   /*
                                   diag_eos4(i,j,k,Temp_comp)=rparh[4*idx*loop+0];   //rpar(1)=T_vode
                                   diag_eos4(i,j,k,Ne_comp)=rparh[4*idx*loop+1];//    rpar(2)=ne_vode
@@ -902,7 +924,14 @@ int Nyx::integrate_state_struct_mfin
                                   N_VDestroy(constrain);          /* Free the constrain vector */
                                 N_VDestroy(abstol_vec);          /* Free the u vector */
                                 N_VDestroy(Data);          /* Free the userdata vector */
-                                //////////////////Need to delete new vectors
+				N_VDestroy(T_vec);
+				N_VDestroy(ne_vec);
+				N_VDestroy(rho_vec);
+				N_VDestroy(rho_init_vec);
+				N_VDestroy(rho_src_vec);
+				N_VDestroy(rhoe_src_vec);
+				N_VDestroy(e_src_vec);
+				N_VDestroy(IR_vec);
                                 CVodeFree(&cvode_mem);  /* Free the integrator memory */
                               //);
                                 /*                          }

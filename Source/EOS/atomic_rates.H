@@ -137,6 +137,7 @@ void tabulate_rates(std::string file_in)
                t = t*std::pow(10,deltaT);
         }
     }
+    amrex::Gpu::htod_memcpy(atomic_rates_device,atomic_rates,sizeof(AtomicRates));
     return;
 }
 
