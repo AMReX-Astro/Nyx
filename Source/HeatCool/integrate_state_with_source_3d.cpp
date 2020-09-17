@@ -29,7 +29,7 @@
 using namespace amrex;
 
 RhsData* f_rhs_data;
-AMREX_GPU_DEVICE RhsData* f_rhs_data_device;
+
 /*
 amrex::Vector<void*> ptr_lst;
 //static amrex::Arena* Managed_Arena;
@@ -616,7 +616,7 @@ int Nyx::integrate_state_struct_mfin
    long int& old_max_steps, long int& new_max_steps,
    const int sdc_iter)
 {
-  f_rhs_data_device = f_rhs_data;
+
   realtype reltol, abstol;
   int flag;
     
@@ -782,7 +782,7 @@ int Nyx::integrate_state_struct_mfin
 #endif
       AMREX_PARALLEL_FOR_1D ( 1, i,
       {
-          ode_eos_initialize_single(f_rhs_data_device, a, dptr, eptr, T_vode, ne_vode, rho_vode, rho_init_vode, rho_src_vode, rhoe_src_vode, e_src_vode, IR_vode);
+          ode_eos_initialize_single(f_rhs_data, a, dptr, eptr, T_vode, ne_vode, rho_vode, rho_init_vode, rho_src_vode, rhoe_src_vode, e_src_vode, IR_vode);
       });
 #ifdef _OPENMP
       const Dim3 hi = amrex::ubound(tbx);
@@ -796,7 +796,7 @@ int Nyx::integrate_state_struct_mfin
                                 {
 #endif
                                   int idx = i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
-                                  ode_eos_initialize_arrays(i, j, k, idx, f_rhs_data_device,
+                                  ode_eos_initialize_arrays(i, j, k, idx, f_rhs_data,
                                                             a_end, lo, len, state4, diag_eos4,
                                                             hydro_src4, reset_src4, dptr, eptr,
                                                             abstol_ptr, sdc_iter, delta_time);
@@ -886,7 +886,7 @@ int Nyx::integrate_state_struct_mfin
                                   int  idx= i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
                                 //                              for (int i= 0;i < neq; ++i) {
                                   ode_eos_finalize((dptr[idx*loop]), &(rparh[4*idx*loop]), one_in);
-                                  ode_eos_finalize_struct(i,j,k,idx,atomic_rates_device,f_rhs_data_device,a_end,state4,state_n4,reset_src4,diag_eos4,IR4,dptr,eptr,delta_time);
+                                  ode_eos_finalize_struct(i,j,k,idx,atomic_rates,f_rhs_data,a_end,state4,state_n4,reset_src4,diag_eos4,IR4,dptr,eptr,delta_time);
                                   /*
                                   diag_eos4(i,j,k,Temp_comp)=rparh[4*idx*loop+0];   //rpar(1)=T_vode
                                   diag_eos4(i,j,k,Ne_comp)=rparh[4*idx*loop+1];//    rpar(2)=ne_vode

@@ -43,7 +43,6 @@ struct RhsData {
 };
 
 extern RhsData* f_rhs_data;
-extern AMREX_GPU_DEVICE RhsData* f_rhs_data_device;
 
 void
 ode_eos_setup(RhsData* f_rhs_data, amrex::Real gamma_minus_1, amrex::Real h_species)

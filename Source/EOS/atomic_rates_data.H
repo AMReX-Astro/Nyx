@@ -49,6 +49,5 @@ amrex::Array1D<amrex::Real,1,NCOOLTAB+1> RecHepp;
 };
 
 extern AtomicRates* atomic_rates;
-extern AMREX_GPU_DEVICE AtomicRates* atomic_rates_device;
 
 #endif
