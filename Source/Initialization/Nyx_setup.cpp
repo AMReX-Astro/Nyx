@@ -186,7 +186,8 @@ Nyx::hydro_setup()
     ParmParse pp("nyx");
     std::string file_in;
     pp.query("uvb_rates_file", file_in);
-    tabulate_rates(file_in);
+    amrex::Real mean_rhob = comoving_OmB * 3.e0*(comoving_h*100.e0)*(comoving_h*100.e0) / (8.e0*M_PI*Gconst);
+    tabulate_rates(file_in, mean_rhob);
     amrex::Gpu::streamSynchronize();
 #endif
 
@@ -603,7 +604,8 @@ Nyx::no_hydro_setup()
     ParmParse pp("nyx");
     std::string file_in;
     pp.query("uvb_rates_file", file_in);
-    tabulate_rates(file_in);
+    amrex::Real mean_rhob = comoving_OmB * 3.e0*(comoving_h*100.e0)*(comoving_h*100.e0) / (8.e0*M_PI*Gconst);
+    tabulate_rates(file_in, mean_rhob);
 #endif
 
     // Note that the default is state_data_extrap = false,

@@ -139,7 +139,11 @@ void tabulate_rates(std::string file_in, amrex::Real mean_rhob)
                t = t*std::pow(10,deltaT);
         }
     }
+#ifdef AMREX_USE_GPU
     amrex::Gpu::htod_memcpy(atomic_rates,&atomic_rates_host,sizeof(AtomicRates));
+#else
+    std::memcpy(atomic_rates,&atomic_rates_host,sizeof(AtomicRates));
+#endif
     return;
 }
 

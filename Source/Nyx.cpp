@@ -358,8 +358,6 @@ Nyx::read_params ()
 
 #ifdef HEATCOOL
     atomic_rates = (AtomicRates*)The_Arena()->alloc(sizeof(AtomicRates));
-    atomic_rates = (AtomicRates*)The_Arena()->alloc(sizeof(AtomicRates));
-    atomic_rates->mean_rhob = comoving_OmB * 3.e0*(comoving_h*100.e0)*(comoving_h*100.e0)	/ (8.e0*M_PI*Gconst);
 #endif
 
     pp_nyx.get("do_hydro", do_hydro);
