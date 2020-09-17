@@ -180,12 +180,6 @@ ode_eos_initialize_arrays(const int i, const int j, const int k, const int idx, 
     f_rhs_data->rhoe_src_vode[idx]= hydro_src(i,j,k,Eint) / delta_time;
     f_rhs_data->e_src_vode[idx] = ( ((asq*state4(i,j,k,UEINT) + delta_time * f_rhs_data->rhoe_src_vode[idx] ) / aendsq + reset_src(i,j,k,0))/ 
                           (      state4(i,j,k,URHO ) + delta_time * f_rhs_data->rho_src_vode[idx]  ) - eptr[idx]) / delta_time;
-	if(i==27&&j==17&&k==19)
-		{
-			amrex::Print().SetPrecision(18)<<f_rhs_data->e_src_vode[idx]<<
-				" "<< asq*state4(i,j,k,UEINT) <<" "<< delta_time * f_rhs_data->rhoe_src_vode[idx] <<" "<< aendsq <<" "<<reset_src(i,j,k,0)<<" "<< state4(i,j,k,URHO ) + delta_time * f_rhs_data->rho_src_vode[idx] <<" "<< - eptr[idx] <<" "<< delta_time<<std::endl;
-			//			exit(0);
-		}
     f_rhs_data->rho_init_vode[idx]= state4(i,j,k,Density); //    rpar(3)=rho_vode
     }
     else
