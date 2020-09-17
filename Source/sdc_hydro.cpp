@@ -114,7 +114,7 @@ Nyx::sdc_hydro (Real time,
        // This step needs to do the update of (rho),  (rho e) and (rho E)
        //      AND  needs to return an updated value of I_R in the old SDC_IR statedata.
        BL_PROFILE_VAR("sdc_reactions", sdc_reactions);
-       sdc_reactions(S_old_tmp, S_new, D_new, hydro_src, IR_old, dt, a_old, a_new, -1);
+       sdc_reactions(S_old_tmp, S_new, D_new, hydro_src, IR_old, dt, a_old, a_new, sdc_iter);
        BL_PROFILE_VAR_STOP(sdc_reactions);
 
 #if 0
