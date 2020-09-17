@@ -408,11 +408,11 @@ static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
   Real* u_ptr=N_VGetArrayPointer_Serial(u);
   int neq=N_VGetLength_Serial(udot);
   double*  rpar=N_VGetArrayPointer_Serial(*(static_cast<N_Vector*>(user_data)));
-
+  auto atomic_rates = atomic_rates_glob;
   #pragma omp parallel for
   for(int tid=0;tid<neq;tid++)
     {
-        f_rhs_rpar(t, (u_ptr[tid]),(udot_ptr[tid]),&(rpar[4*tid]));
+        f_rhs_rpar(t, (u_ptr[tid]),(udot_ptr[tid]),&(rpar[4*tid]), atomic_rates);
     }
 
   return 0;

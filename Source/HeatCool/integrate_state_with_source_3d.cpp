@@ -817,7 +817,8 @@ int Nyx::integrate_state_struct_mfin
 #pragma omp barrier
 #else
                                 });
-      amrex::Gpu::Device::streamSynchronize();
+                                AMREX_GPU_ERROR_CHECK();
+                                amrex::Gpu::Device::streamSynchronize();
 #endif
                         
 #ifdef CV_NEWTON
@@ -953,8 +954,9 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
   auto atomic_rates = atomic_rates_glob;
   auto f_rhs_data = f_rhs_data_glob;
   cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();
-  AMREX_LAUNCH_DEVICE_LAMBDA ( neq, tid, {
-      f_rhs_struct(t, (u_ptr[tid]),(udot_ptr[tid]),atomic_rates,f_rhs_data,tid);
+  AMREX_PARALLEL_FOR_1D ( neq, idx,
+  {
+      f_rhs_struct(t, (u_ptr[idx]),(udot_ptr[idx]),atomic_rates,f_rhs_data,idx);
   });
   cudaStreamSynchronize(currentStream);
 
