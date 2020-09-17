@@ -42,55 +42,64 @@ struct RhsData {
     Dim3 len;
 };
 
-extern RhsData* f_rhs_data;
+extern RhsData* f_rhs_data_glob;
 
 void
-ode_eos_setup(RhsData* f_rhs_data, amrex::Real gamma_minus_1, amrex::Real h_species)
+ode_eos_setup(amrex::Real gamma_minus_1, amrex::Real h_species)
 {
-    f_rhs_data->gamma_minus_1 = gamma_minus_1;
-    f_rhs_data->h_species = h_species;
+
+    RhsData f_rhs_data_host;
+    f_rhs_data_host.gamma_minus_1 = gamma_minus_1;
+    f_rhs_data_host.h_species = h_species;
     ParmParse pp_nyx("nyx");
-    pp_nyx.query("inhomo_reion", f_rhs_data->inhomogeneous_on);
+    pp_nyx.query("inhomo_reion", f_rhs_data_host.inhomogeneous_on);
 
-    f_rhs_data->uvb_density_A=1.0;
-    f_rhs_data->uvb_density_B=0.0;
-    f_rhs_data->zhi_flash=-1.0;
-    f_rhs_data->zheii_flash=-1.0;
-    f_rhs_data->T_zhii=0.0;
-    f_rhs_data->T_zheii=0.0;
-    f_rhs_data->flash_h=0;
-    f_rhs_data->flash_he=0;
-    f_rhs_data->inhomogeneous_on=0;
-    pp_nyx.query("uvb_density_A"            , f_rhs_data->uvb_density_A);
-    pp_nyx.query("uvb_density_B"            , f_rhs_data->uvb_density_B);
-    pp_nyx.query("reionization_zHI_flash"   , f_rhs_data->zhi_flash);
-    pp_nyx.query("reionization_zHeII_flash" , f_rhs_data->zheii_flash);
-    pp_nyx.query("reionization_T_zHI"       , f_rhs_data->T_zhii);
-    pp_nyx.query("reionization_T_zHeII"     , f_rhs_data->T_zheii);
+    f_rhs_data_host.uvb_density_A=1.0;
+    f_rhs_data_host.uvb_density_B=0.0;
+    f_rhs_data_host.zhi_flash=-1.0;
+    f_rhs_data_host.zheii_flash=-1.0;
+    f_rhs_data_host.T_zhii=0.0;
+    f_rhs_data_host.T_zheii=0.0;
+    f_rhs_data_host.flash_h=0;
+    f_rhs_data_host.flash_he=0;
+    f_rhs_data_host.inhomogeneous_on=0;
+    pp_nyx.query("uvb_density_A"            , f_rhs_data_host.uvb_density_A);
+    pp_nyx.query("uvb_density_B"            , f_rhs_data_host.uvb_density_B);
+    pp_nyx.query("reionization_zHI_flash"   , f_rhs_data_host.zhi_flash);
+    pp_nyx.query("reionization_zHeII_flash" , f_rhs_data_host.zheii_flash);
+    pp_nyx.query("reionization_T_zHI"       , f_rhs_data_host.T_zhii);
+    pp_nyx.query("reionization_T_zHeII"     , f_rhs_data_host.T_zheii);
 
-    // Set options in reion_aux_module
-    //   Hydrogen reionization
-    if (f_rhs_data->zhi_flash > 0.0)
+    // Set options in reion_aux_module                                                                                                                                                                                                        
+    //   Hydrogen reionization                                                                                                                                                                                                                
+    if (f_rhs_data_host.zhi_flash > 0.0)
     {
-        if (f_rhs_data->inhomogeneous_on > 0)
+        if (f_rhs_data_host.inhomogeneous_on > 0)
         {
-            f_rhs_data->flash_h = 0;
+            f_rhs_data_host.flash_h = 0;
         }
         else
         {
-            f_rhs_data->flash_h = 1;
+            f_rhs_data_host.flash_h = 1;
         }
     }
     else
     {
-        f_rhs_data->flash_h = 0;
+        f_rhs_data_host.flash_h = 0;
     }
 
-    //   Helium reionization
-    if (f_rhs_data->zheii_flash > 0.0)
-        f_rhs_data->flash_he = 1;
+    //   Helium reionization                                                                                                                                                                                                                  
+    if (f_rhs_data_host.zheii_flash > 0.0)
+        f_rhs_data_host.flash_he = 1;
     else
-        f_rhs_data->flash_he = 0;
+        f_rhs_data_host.flash_he = 0;
+
+#ifdef AMREX_USE_GPU
+    amrex::Gpu::htod_memcpy(f_rhs_data_glob,&f_rhs_data_host,sizeof(RhsData));
+#else
+    std::memcpy(f_rhs_data_glob,&f_rhs_data_host,sizeof(RhsData));
+#endif
+
 }
 
 AMREX_GPU_DEVICE

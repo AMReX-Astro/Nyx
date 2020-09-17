@@ -28,7 +28,7 @@
 //#define MAKE_MANAGED 1
 using namespace amrex;
 
-RhsData* f_rhs_data;
+RhsData* f_rhs_data_glob;
 
 /*
 amrex::Vector<void*> ptr_lst;
@@ -566,9 +566,9 @@ int Nyx::integrate_state_struct
    const int sdc_iter)
 {
     // time = starting time in the simulation
-    f_rhs_data = (RhsData*)The_Arena()->alloc(sizeof(RhsData));
+    f_rhs_data_glob = (RhsData*)The_Arena()->alloc(sizeof(RhsData));
     Real gamma_minus_1 = gamma - 1.0;
-    ode_eos_setup(f_rhs_data, gamma_minus_1, h_species);
+    ode_eos_setup(gamma_minus_1, h_species);
 
   amrex::Gpu::LaunchSafeGuard lsg(true);
   long int store_steps=new_max_sundials_steps;
@@ -617,14 +617,15 @@ int Nyx::integrate_state_struct_mfin
    const int sdc_iter)
 {
 
-  realtype reltol, abstol;
-  int flag;
+    auto atomic_rates = atomic_rates_glob;
+    auto f_rhs_data = f_rhs_data_glob;
+    realtype reltol, abstol;
+    int flag;
     
-  reltol = 1e-4;  /* Set the tolerances */
-  abstol = 1e-4;
+    reltol = 1e-4;  /* Set the tolerances */
+    abstol = 1e-4;
 
-  int one_in = 1;
-  
+    int one_in = 1;
 
       const auto len = amrex::length(tbx);  // length of box
       const auto lo  = amrex::lbound(tbx);  // lower bound of box
@@ -873,7 +874,7 @@ int Nyx::integrate_state_struct_mfin
 #ifdef AMREX_DEBUG
                                 PrintFinalStats(cvode_mem);
 #endif
-    auto atomic_rates = atomic_rates_glob;
+
 #ifdef _OPENMP
 #pragma omp parallel for collapse(3)
       for (int k = lo.z; k <= hi.z; ++k) {
@@ -885,7 +886,7 @@ int Nyx::integrate_state_struct_mfin
 #endif
                                   int  idx= i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
                                 //                              for (int i= 0;i < neq; ++i) {
-                                  ode_eos_finalize((dptr[idx*loop]), &(rparh[4*idx*loop]), one_in);
+                                  ode_eos_finalize((dptr[idx*loop]), &(rparh[4*idx*loop]), one_in, atomic_rates);
                                   ode_eos_finalize_struct(i,j,k,idx,atomic_rates,f_rhs_data,a_end,state4,state_n4,reset_src4,diag_eos4,IR4,dptr,eptr,delta_time);
                                   /*
                                   diag_eos4(i,j,k,Temp_comp)=rparh[4*idx*loop+0];   //rpar(1)=T_vode
@@ -950,11 +951,10 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
   double*  rpar=N_VGetDeviceArrayPointer_Cuda(*(static_cast<N_Vector*>(user_data)));
 
   auto atomic_rates = atomic_rates_glob;
-  //  auto f_rhs_data = f_rhs_data_glob;
+  auto f_rhs_data = f_rhs_data_glob;
   cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();
-  AMREX_LAUNCH_DEVICE_LAMBDA ( neq, idx, {
-      //  f_rhs_test(t,u_ptr,udot_ptr, rpar, neq);
-        f_rhs_rpar(t, (u_ptr[idx]),(udot_ptr[idx]),&(rpar[4*idx]));
+  AMREX_LAUNCH_DEVICE_LAMBDA ( neq, tid, {
+      f_rhs_struct(t, (u_ptr[tid]),(udot_ptr[tid]),atomic_rates,f_rhs_data,tid);
   });
   cudaStreamSynchronize(currentStream);
 
@@ -970,6 +970,8 @@ static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
   int neq=N_VGetLength_Serial(udot);
   double*  rpar=N_VGetArrayPointer_Serial(*(static_cast<N_Vector*>(user_data)));
 
+  auto atomic_rates = atomic_rates_glob;
+  auto f_rhs_data = f_rhs_data_glob;
   #pragma omp parallel for
   for(int tid=0;tid<neq;tid++)
     {
