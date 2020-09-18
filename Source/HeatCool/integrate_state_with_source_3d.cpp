@@ -579,7 +579,11 @@ int Nyx::integrate_state_struct
 #ifdef _OPENMP
   for ( MFIter mfi(S_old, false); mfi.isValid(); ++mfi )
 #else
-  for ( MFIter mfi(S_old, TilingIfNotGPU()); mfi.isValid(); ++mfi )
+#ifdef AMREX_USE_GPU
+  for ( MFIter mfi(S_old, MFItInfo().UseDefaultStream()); mfi.isValid(); ++mfi )
+#else
+  for ( MFIter mfi(S_old, true); mfi.isValid(); ++mfi )
+#endif
 #endif
     {
 
@@ -601,7 +605,8 @@ int Nyx::integrate_state_struct
 
       integrate_state_struct_mfin(state4,diag_eos4,state_n4,hydro_src4,reset_src4,IR4,tbx,a,a_end,delta_time,store_steps,new_max_sundials_steps,sdc_iter);
     }
-      return 0;
+    The_Arena()->free(f_rhs_data_glob);
+    return 0;
 }
 
 int Nyx::integrate_state_struct_mfin

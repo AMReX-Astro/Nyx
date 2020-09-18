@@ -1,4 +1,3 @@
-
 #include <Nyx.H>
 #include <Nyx_F.H>
 
@@ -21,6 +20,7 @@ Nyx::sdc_hydro (Real time,
 
     BL_ASSERT(NUM_GROW == 4);
 
+    Gpu::LaunchSafeGuard lsg(true);
     int sdc_iter;
     Real IR_fac;
     const Real prev_time    = state[State_Type].prevTime();
@@ -61,6 +61,7 @@ Nyx::sdc_hydro (Real time,
     grav_vector.FillBoundary(geom.periodicity());
 #endif
 
+    amrex::Gpu::Device::streamSynchronize();
     // Create FAB for extended grid values (including boundaries) and fill.
     MultiFab S_old_tmp(S_old.boxArray(), S_old.DistributionMap(), NUM_STATE, NUM_GROW);
     FillPatch(*this, S_old_tmp, NUM_GROW, time, State_Type, 0, NUM_STATE);
