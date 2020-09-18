@@ -300,7 +300,7 @@ void prob_initdata(const int i,
   const amrex::Real a=1.0/(prob_param[z_in_comp]+1.0);
   const amrex::Real rhoInv = 1.e0 / state(i,j,k,Density);
   const amrex::Real eint = state(i,j,k,Eint) * rhoInv;
-  nyx_eos_T_given_Re_device(gamma_minus_1_in, h_species_in, JH, JHe, &diag_eos(i,j,k,Temp_comp), &diag_eos(i,j,k,Ne_comp), state(i,j,k,Density), eint, a);
+  nyx_eos_T_given_Re_device(NULL,gamma_minus_1_in, h_species_in, JH, JHe, &diag_eos(i,j,k,Temp_comp), &diag_eos(i,j,k,Ne_comp), state(i,j,k,Density), eint, a);
   }
   else
   {

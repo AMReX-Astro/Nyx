@@ -5,6 +5,8 @@
 #include <constants_cosmo.H>
 
 using namespace amrex;
+
+extern AtomicRates* atomic_rates_glob;
 /*
 #ifdef __cplusplus
 extern "C"
@@ -19,7 +21,7 @@ extern "C"
 #endif
 */
 
-AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_T_given_Re_device(Real gamma_minus_1, Real h_species, int JH, int JHe, Real* T, Real* Ne, Real R,Real e,Real comoving_a)
+AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_T_given_Re_device(AtomicRates* atomic_rates, Real gamma_minus_1, Real h_species, int JH, int JHe, Real* T, Real* Ne, Real R,Real e,Real comoving_a)
 {
 
   Real comoving_a_cubed= (comoving_a*comoving_a*comoving_a);
@@ -82,7 +84,7 @@ AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_T_given_Re_device(Real gam
 
 }
 
-AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_given_RT(Real gamma_minus_1, Real h_species, Real* e, Real* P, Real R, Real T, Real Ne,Real comoving_a)
+AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_given_RT(AtomicRates* atomic_rates, Real gamma_minus_1, Real h_species, Real* e, Real* P, Real R, Real T, Real Ne,Real comoving_a)
 {
   
   Real comoving_a_cubed= (comoving_a*comoving_a*comoving_a);

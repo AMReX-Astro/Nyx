@@ -206,6 +206,10 @@ std::string Nyx::particle_plotfile_format = "IEEE32";
 std::string Nyx::particle_plotfile_format = "NATIVE";
 #endif
 
+#ifndef HEATCOOL
+AtomicRates* atomic_rates_glob;
+#endif
+
 // this will be reset upon restart
 Real         Nyx::previousCPUTimeUsed = 0.0;
 
@@ -358,6 +362,8 @@ Nyx::read_params ()
 
 #ifdef HEATCOOL
     atomic_rates_glob = (AtomicRates*)The_Arena()->alloc(sizeof(AtomicRates));
+#else
+    atomic_rates_glob = NULL;
 #endif
 
     pp_nyx.get("do_hydro", do_hydro);
