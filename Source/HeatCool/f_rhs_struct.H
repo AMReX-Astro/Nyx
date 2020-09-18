@@ -42,10 +42,8 @@ struct RhsData {
     Dim3 len;
 };
 
-extern RhsData* f_rhs_data_glob;
-
 void
-ode_eos_setup(amrex::Real gamma_minus_1, amrex::Real h_species)
+ode_eos_setup(RhsData* f_rhs_data, amrex::Real gamma_minus_1, amrex::Real h_species)
 {
 
     RhsData f_rhs_data_host;
@@ -95,9 +93,9 @@ ode_eos_setup(amrex::Real gamma_minus_1, amrex::Real h_species)
         f_rhs_data_host.flash_he = 0;
 
 #ifdef AMREX_USE_GPU
-    amrex::Gpu::htod_memcpy(f_rhs_data_glob,&f_rhs_data_host,sizeof(RhsData));
+    amrex::Gpu::htod_memcpy(f_rhs_data,&f_rhs_data_host,sizeof(RhsData));
 #else
-    std::memcpy(f_rhs_data_glob,&f_rhs_data_host,sizeof(RhsData));
+    std::memcpy(f_rhs_data,&f_rhs_data_host,sizeof(RhsData));
 #endif
 
 }

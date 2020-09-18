@@ -28,8 +28,6 @@
 //#define MAKE_MANAGED 1
 using namespace amrex;
 
-RhsData* f_rhs_data_glob;
-
 /* Functions Called by the Solver */
 static int f(realtype t, N_Vector u, N_Vector udot, void *user_data);
 
@@ -45,9 +43,6 @@ int Nyx::integrate_state_struct
    const int sdc_iter)
 {
     // time = starting time in the simulation
-    f_rhs_data_glob = (RhsData*)The_Arena()->alloc(sizeof(RhsData));
-    Real gamma_minus_1 = gamma - 1.0;
-    ode_eos_setup(gamma_minus_1, h_species);
 
   amrex::Gpu::LaunchSafeGuard lsg(true);
   long int store_steps=new_max_sundials_steps;
@@ -59,7 +54,7 @@ int Nyx::integrate_state_struct
   for ( MFIter mfi(S_old, false); mfi.isValid(); ++mfi )
 #else
 #ifdef AMREX_USE_GPU
-  for ( MFIter mfi(S_old, MFItInfo().UseDefaultStream()); mfi.isValid(); ++mfi )
+  for ( MFIter mfi(S_old, MFItInfo()); mfi.isValid(); ++mfi )
 #else
   for ( MFIter mfi(S_old, true); mfi.isValid(); ++mfi )
 #endif
@@ -84,7 +79,6 @@ int Nyx::integrate_state_struct
 
       integrate_state_struct_mfin(state4,diag_eos4,state_n4,hydro_src4,reset_src4,IR4,tbx,a,a_end,delta_time,store_steps,new_max_sundials_steps,sdc_iter);
     }
-    The_Arena()->free(f_rhs_data_glob);
     return 0;
 }
 
@@ -102,7 +96,10 @@ int Nyx::integrate_state_struct_mfin
 {
 
     auto atomic_rates = atomic_rates_glob;
-    auto f_rhs_data = f_rhs_data_glob;
+    auto f_rhs_data = (RhsData*)The_Arena()->alloc(sizeof(RhsData));
+    Real gamma_minus_1 = gamma - 1.0;
+    ode_eos_setup(f_rhs_data, gamma_minus_1, h_species);
+
     realtype reltol, abstol;
     int flag;
     
@@ -312,7 +309,7 @@ int Nyx::integrate_state_struct_mfin
 #endif
 #endif
 #endif
-                                CVodeSetUserData(cvode_mem, &Data);
+                                CVodeSetUserData(cvode_mem, f_rhs_data);
                                 //                              CVodeSetMaxStep(cvode_mem, delta_time/10);
                                 //                              BL_PROFILE_VAR("Nyx::strang_second_cvode",cvode_timer2);
                                 flag = CVode(cvode_mem, delta_time, u, &t, CV_NORMAL);
@@ -352,7 +349,7 @@ int Nyx::integrate_state_struct_mfin
       amrex::Gpu::Device::streamSynchronize();
 #endif
 
-
+    The_Arena()->free(f_rhs_data);
 #ifdef AMREX_USE_CUDA
       if(sundials_alloc_type%2!=0)
       {
@@ -394,7 +391,7 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
   int neq=N_VGetLength_Cuda(udot);
 
   auto atomic_rates = atomic_rates_glob;
-  auto f_rhs_data = f_rhs_data_glob;
+  auto f_rhs_data = static_cast<RhsData*>(user_data);
   cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();
   AMREX_PARALLEL_FOR_1D ( neq, idx,
   {
@@ -414,7 +411,7 @@ static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
   int neq=N_VGetLength_Serial(udot);
 
   auto atomic_rates = atomic_rates_glob;
-  auto f_rhs_data = f_rhs_data_glob;
+  auto f_rhs_data = static_cast<RhsData*>(user_data);
   #pragma omp parallel for
   for(int tid=0;tid<neq;tid++)
     {
