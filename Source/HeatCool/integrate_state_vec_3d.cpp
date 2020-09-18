@@ -153,20 +153,20 @@ int Nyx::integrate_state_vec_mfin
                         }
                         else
                         {
-                          dptr=(double*) The_Managed_Arena()->alloc(neq*sizeof(double));
+                          dptr=(double*) The_Arena()->alloc(neq*sizeof(double));
                           u = N_VMakeManaged_Cuda(neq,dptr);  /* Allocate u vector */
-                          eptr= (double*) The_Managed_Arena()->alloc(neq*sizeof(double));
+                          eptr= (double*) The_Arena()->alloc(neq*sizeof(double));
                           e_orig = N_VMakeManaged_Cuda(neq,eptr);  /* Allocate u vector */
                           N_VSetCudaStream_Cuda(e_orig, &currentStream);
                           N_VSetCudaStream_Cuda(u, &currentStream);
 
-                          rparh = (double*) The_Managed_Arena()->alloc(4*neq*sizeof(double));
+                          rparh = (double*) The_Arena()->alloc(4*neq*sizeof(double));
                           Data = N_VMakeManaged_Cuda(4*neq,rparh);  // Allocate u vector 
                           N_VSetCudaStream_Cuda(Data, &currentStream);
                           // shouldn't need to initialize 
                           //N_VConst(0.0,Data);
 
-                          abstol_ptr = (double*) The_Managed_Arena()->alloc(neq*sizeof(double));
+                          abstol_ptr = (double*) The_Arena()->alloc(neq*sizeof(double));
                           abstol_vec = N_VMakeManaged_Cuda(neq,abstol_ptr);
                           N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
                           amrex::Gpu::streamSynchronize();
@@ -319,12 +319,12 @@ int Nyx::integrate_state_vec_mfin
 #ifdef AMREX_USE_CUDA
       if(sundials_alloc_type%2!=0)
       {
-        The_Managed_Arena()->free(dptr);
-        The_Managed_Arena()->free(eptr);
+        The_Arena()->free(dptr);
+        The_Arena()->free(eptr);
         if(use_sundials_constraint)
-          The_Managed_Arena()->free(constrain);
-        The_Managed_Arena()->free(rparh);
-        The_Managed_Arena()->free(abstol_ptr);
+          The_Arena()->free(constrain);
+        The_Arena()->free(rparh);
+        The_Arena()->free(abstol_ptr);
       }
 #endif
 
