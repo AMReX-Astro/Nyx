@@ -158,7 +158,6 @@ locate(const amrex::Real* xtable, const int n, amrex::Real& x, int& idxlo)
 using namespace amrex;
 
 AMREX_GPU_DEVICE
-AMREX_FORCE_INLINE
 void limit_hydro_fluxes_on_small_dens(const int i,
                                       const int j,
                                       const int k,

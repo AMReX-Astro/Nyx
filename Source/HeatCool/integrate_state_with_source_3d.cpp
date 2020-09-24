@@ -54,7 +54,7 @@ int Nyx::integrate_state_struct
   for ( MFIter mfi(S_old, false); mfi.isValid(); ++mfi )
 #else
 #ifdef AMREX_USE_GPU
-  for ( MFIter mfi(S_old, MFItInfo()); mfi.isValid(); ++mfi )
+    for ( MFIter mfi(S_old, false); mfi.isValid(); ++mfi, Nyx::minimize_memory!=0 ? amrex::Gpu::synchronize() : amrex::Gpu::streamSynchronize())
 #else
   for ( MFIter mfi(S_old, true); mfi.isValid(); ++mfi )
 #endif
@@ -240,9 +240,12 @@ int Nyx::integrate_state_struct_mfin
                         amrex::Real* IR_vode=N_VGetArrayPointer_Serial(IR_vec);
 #endif
 #endif
+      int* JH_vode_arr=NULL;
+      if(inhomo_reion == 1)
+          JH_vode_arr = (int*) The_Arena()->alloc(neq*sizeof(int));
       AMREX_PARALLEL_FOR_1D ( 1, i,
       {
-          ode_eos_initialize_single(f_rhs_data, a, dptr, eptr, T_vode, ne_vode, rho_vode, rho_init_vode, rho_src_vode, rhoe_src_vode, e_src_vode, IR_vode);
+	ode_eos_initialize_single(f_rhs_data, a, dptr, eptr, T_vode, ne_vode, rho_vode, rho_init_vode, rho_src_vode, rhoe_src_vode, e_src_vode, IR_vode, JH_vode_arr);
       });
 #ifdef _OPENMP
       const Dim3 hi = amrex::ubound(tbx);
@@ -374,6 +377,8 @@ int Nyx::integrate_state_struct_mfin
 				N_VDestroy(rhoe_src_vec);
 				N_VDestroy(e_src_vec);
 				N_VDestroy(IR_vec);
+                                if(inhomo_reion == 1)
+				  The_Arena()->free(JH_vode_arr);
                                 CVodeFree(&cvode_mem);  /* Free the integrator memory */
                               //);
                                 /*                          }

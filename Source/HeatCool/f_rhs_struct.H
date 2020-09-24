@@ -121,7 +121,8 @@ ode_eos_initialize_single(RhsData* f_rhs_data,
                           amrex::Real* rho_src_vode,
                           amrex::Real* rhoe_src_vode,
                           amrex::Real* e_src_vode,
-                          amrex::Real* IR)
+                          amrex::Real* IR,
+                          int*         JH_vode_arr)
 {
 
     f_rhs_data->a = a;
@@ -147,7 +148,8 @@ ode_eos_initialize_single(RhsData* f_rhs_data,
     f_rhs_data->rho_src_vode = rho_src_vode;
     f_rhs_data->rhoe_src_vode = rhoe_src_vode;
     f_rhs_data->e_src_vode = e_src_vode;
-    f_rhs_data->IR = IR;    
+    f_rhs_data->IR = IR;
+    f_rhs_data->JH_vode_arr = JH_vode_arr;
 }
 
 AMREX_GPU_DEVICE

@@ -11,9 +11,7 @@ void pc_cmpTemp(
   const int FirstSpec, const int NumSpec,
   amrex::Array4<amrex::Real> const& S);
 */
-
 AMREX_GPU_DEVICE
-AMREX_FORCE_INLINE
 void limit_hydro_fluxes_on_small_dens(const int i,
                                       const int j,
                                       const int k,
