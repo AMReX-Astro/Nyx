@@ -116,6 +116,8 @@ Blocs := .
 ifeq ($(USE_FUSED),TRUE)
 ifeq ($(USE_CUDA),TRUE)
      LIBRARIES += -L$(CVODE_LIB_DIR) -lsundials_cvode_fused_cuda
+else
+     LIBRARIES += -L$(CVODE_LIB_DIR) -lsundials_cvode_fused_stubs
 endif
 endif
 
