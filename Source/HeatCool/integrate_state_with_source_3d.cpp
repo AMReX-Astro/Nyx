@@ -54,7 +54,7 @@ int Nyx::integrate_state_struct
   for ( MFIter mfi(S_old, false); mfi.isValid(); ++mfi )
 #else
 #ifdef AMREX_USE_GPU
-    for ( MFIter mfi(S_old, MFItInfo().UseDefaultStream()); mfi.isValid(); ++mfi, Nyx::minimize_memory!=0 ? amrex::Gpu::synchronize() : amrex::Gpu::streamSynchronize())
+    for ( MFIter mfi(S_old, MFItInfo()); mfi.isValid(); ++mfi)
 #else
   for ( MFIter mfi(S_old, true); mfi.isValid(); ++mfi )
 #endif
