@@ -929,6 +929,7 @@ protected:
     static int insitu_start;
 
     static int load_balance_int;
+    static amrex::Real load_balance_start_z;
     static int load_balance_wgt_strategy;
     static int load_balance_wgt_nmax;
     static int load_balance_strategy;

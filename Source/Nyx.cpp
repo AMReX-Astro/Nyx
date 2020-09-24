@@ -80,6 +80,7 @@ int Nyx::insitu_start = 0;
 int Nyx::insitu_int = 0;
 
 int Nyx::load_balance_int = -1;
+amrex::Real Nyx::load_balance_start_z = 15;
 int Nyx::load_balance_wgt_strategy = 0;
 int Nyx::load_balance_wgt_nmax = -1;
 int Nyx::load_balance_strategy = DistributionMapping::SFC;
@@ -592,6 +593,7 @@ Nyx::read_params ()
     pp_insitu.query("reeber_int", reeber_int);
 
     pp_nyx.query("load_balance_int",          load_balance_int);
+    pp_nyx.query("load_balance_start_z",          load_balance_start_z);
     pp_nyx.query("load_balance_wgt_strategy", load_balance_wgt_strategy);
     load_balance_wgt_nmax = amrex::ParallelDescriptor::NProcs();
     pp_nyx.query("load_balance_wgt_nmax",     load_balance_wgt_nmax);
@@ -1447,7 +1449,7 @@ Nyx::post_timestep (int iteration)
     BL_PROFILE_VAR_STOP(rm);
     BL_PROFILE_VAR("Nyx::post_timestep()::redist",redist);
 
-    if(load_balance_int < 0 || !(nStep() % load_balance_int == 0 && level == 0))
+    if(load_balance_int < 0 || !(nStep() % load_balance_int == 0 && level == 0 && (new_a >= 1.0/(load_balance_start_z + 1.0))))
     {
 
     //
@@ -1840,7 +1842,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
    BL_PROFILE("Nyx::postCoarseTimeStep()");
    MultiFab::RegionTag amrPost_tag("Post_" + std::to_string(level));
 
-    if(load_balance_int >= 0 && nStep() % load_balance_int == 0)
+    if(load_balance_int >= 0 && nStep() % load_balance_int == 0 && (new_a >= 1.0/(load_balance_start_z + 1.0)))
     {
       if(verbose>0)
         amrex::Print()<<"Load balancing since "<<nStep()<<" mod "<<load_balance_int<<" == 0"<<std::endl;
