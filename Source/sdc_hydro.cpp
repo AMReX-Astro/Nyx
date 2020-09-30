@@ -5,6 +5,10 @@
 #include <Gravity.H>
 #endif
 
+#ifdef GRAVITY
+#include "Gravity.H"
+#endif
+
 using namespace amrex;
 
 using std::string;

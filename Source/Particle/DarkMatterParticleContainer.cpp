@@ -245,7 +245,6 @@ DarkMatterParticleContainer::moveKick (MultiFab&       acceleration,
     if (ac_ptr != &acceleration) delete ac_ptr;
 }
 
-//template <typename P>
 AMREX_GPU_HOST_DEVICE AMREX_INLINE
 void update_dm_particle_single (amrex::ParticleContainer<4, 0>::SuperParticleType&  p,
                                 const int nc,
@@ -255,18 +254,6 @@ void update_dm_particle_single (amrex::ParticleContainer<4, 0>::SuperParticleTyp
                                 const amrex::Real& dt, const amrex::Real& a_prev,
                                 const amrex::Real& a_cur, const int& do_move)
 {
-
-                                                        /*ParticleType const& p, 
-                                                        const int nc,
-                                     amrex::Array4<amrex::Real const> const& acc,
-                                     amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& plo,
-                                     amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& dxi,
-                                     const amrex::Real& dt, const amrex::Real& a_prev, 
-                                     const amrex::Real& a_cur, const int* do_move)
-{
-  void DarkMatterParticleContainer::update_dm_particle_single(amrex::Particle<4, 0> *, int, const amrex::Array4<const amrex::Real> &, const amrex::GpuArray<amrex::Real, 3UL> &, const amrex::GpuArray<amrex::Real, 3UL> &, const amrex::Real &, const amrex::Real &, const amrex::Real &, const int *)
-  num_particles_at_level += n;*/
-
     amrex::Real half_dt       = 0.5 * dt;
     amrex::Real a_cur_inv    = 1.0 / a_cur;
     amrex::Real dt_a_cur_inv = dt * a_cur_inv;

@@ -518,7 +518,7 @@ Gravity::get_crse_phi (int       level,
         const Box& gtbx = mfi.growntilebox();
 
         phi_crse_temp.resize(gtbx,1);
-	Elixir phi_crse_tmp_eli = phi_crse_temp.elixir();
+        Elixir phi_crse_tmp_eli = phi_crse_temp.elixir();
 
         if (fabs(alpha-1.0) < 1.e-15)
         {
@@ -1289,6 +1289,9 @@ Gravity::AddGhostParticlesToRhs (int               level,
 
     amrex::Gpu::LaunchSafeGuard lsg(true);
 
+    int ncomp = 1;
+    int ngrow = 2;
+
     if (level > 0)
     {
         int ncomp = 1;
@@ -1313,6 +1316,9 @@ Gravity::AddGhostParticlesToRhs(int level, const Vector<MultiFab*>& Rhs_particle
     BL_PROFILE("Gravity::AddGhostParticlesToRhsML()");
 
     amrex::Gpu::LaunchSafeGuard lsg(true);
+
+    int ncomp = 1;
+    int ngrow = 2;
 
     if (level > 0)
     {

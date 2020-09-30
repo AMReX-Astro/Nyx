@@ -403,11 +403,7 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
 
                 if (p.id() > 0)
                 {
-                    /*      amrex::IntVect cell{
-                            AMREX_D_DECL(static_cast<int>(amrex::Math::floor((p.m_rdata.pos[0]-plo[0])*dxi[0])),
-                            static_cast<int>(amrex::Math::floor((p.m_rdata.pos[1]-plo[1])*dxi[1])),
-                            static_cast<int>(amrex::Math::floor((p.m_rdata.pos[2]-plo[2])*dxi[2])))};
-                    */
+
                     amrex::IntVect cell;
                     cell[0]= static_cast<int>(amrex::Math::floor((p.pos(0)-plo[0])*dxi[0]));
                     cell[1]= static_cast<int>(amrex::Math::floor((p.pos(1)-plo[1])*dxi[1]));
