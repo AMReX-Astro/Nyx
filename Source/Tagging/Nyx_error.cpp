@@ -44,7 +44,10 @@ Nyx::error_setup()
 	}
 	if (ppr.countval("max_level") > 0) {
 	  int max_level; ppr.get("max_level",max_level);
-	  info.SetMaxLevel(max_level);
+          if(max_level >= 0)
+            info.SetMaxLevel(max_level);
+          else
+            info.SetMaxLevel(0);
 	}
 	if (ppr.countval("value_greater")) {
 	  Real value; ppr.get("value_greater",value);
