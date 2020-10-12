@@ -143,18 +143,6 @@ ifeq ($(REEBER), TRUE)
      include $(REEBER_NYX_HOME)/Make.package
 endif
 
-VODE_dir    := $(TOP)/Util/VODE
-include $(VODE_dir)/Make.package
-
-BLAS_dir    := $(TOP)/Util/BLAS
-include $(BLAS_dir)/Make.package
-
-INCLUDE_LOCATIONS += $(VODE_dir)
-INCLUDE_LOCATIONS += $(BLAS_dir)
-
-VPATH_LOCATIONS   += $(VODE_dir)
-VPATH_LOCATIONS   += $(BLAS_dir)
-
 all: $(executable) 
 	$(SILENT) $(RM) AMReX_buildInfo.cpp
 	@echo SUCCESS
