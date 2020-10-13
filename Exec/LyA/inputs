@@ -22,7 +22,8 @@ nyx.ppm_type         = 1
 nyx.use_colglaz      = 0
 nyx.corner_coupling  = 1
 
-nyx.strang_split     = 1
+nyx.strang_split     = 0
+nyx.sdc_split        = 1
 nyx.add_ext_src      = 0
 nyx.heat_cool_type   = 3
 #nyx.simd_width       = 8
