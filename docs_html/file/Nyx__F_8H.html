@@ -323,13 +323,8 @@
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="_CPPv422fort_get_method_paramsPi">
-<span class="target" id="Nyx__F_8H_1af5c04ad345ecbf41e5c736ebfad32968"></span>void <code class="descname">fort_get_method_params</code><span class="sig-paren">(</span>int *<em>HYP_GROW</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv422fort_get_method_paramsPi" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv422fort_set_method_paramsRKiRKiRKiRKiRKiRKiRKiRKiRKN5amrex4RealERKiRKi">
-<span class="target" id="Nyx__F_8H_1aac4a1424ebe77c946272ed1c72488960"></span>void <code class="descname">fort_set_method_params</code><span class="sig-paren">(</span><em class="property">const</em> int &amp;<em>dm</em>, <em class="property">const</em> int &amp;<em>NumAdv</em>, <em class="property">const</em> int &amp;<em>Ndiag</em>, <em class="property">const</em> int &amp;<em>do_hydro</em>, <em class="property">const</em> int &amp;<em>ppm_type</em>, <em class="property">const</em> int &amp;<em>use_flattening</em>, <em class="property">const</em> int &amp;<em>use_analriem</em>, <em class="property">const</em> int &amp;<em>use_const_species</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>gamma_in</em>, <em class="property">const</em> int &amp;<em>heat_cool_type</em>, <em class="property">const</em> int &amp;<em>inhomo_reion</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv422fort_set_method_paramsRKiRKiRKiRKiRKiRKiRKiRKiRKN5amrex4RealERKiRKi" title="Permalink to this definition">¶</a><br /></dt>
+<dt id="_CPPv422fort_set_method_paramsRKiRKiRKiRKN5amrex4RealERKiRKi">
+<span class="target" id="Nyx__F_8H_1a7b3830e9221b3fa0968460d43475ab99"></span>void <code class="descname">fort_set_method_params</code><span class="sig-paren">(</span><em class="property">const</em> int &amp;<em>Ndiag</em>, <em class="property">const</em> int &amp;<em>do_hydro</em>, <em class="property">const</em> int &amp;<em>use_const_species</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>gamma_in</em>, <em class="property">const</em> int &amp;<em>heat_cool_type</em>, <em class="property">const</em> int &amp;<em>inhomo_reion</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv422fort_set_method_paramsRKiRKiRKiRKN5amrex4RealERKiRKi" title="Permalink to this definition">¶</a><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -378,11 +373,6 @@
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="_CPPv412fort_get_UFSPi">
-<span class="target" id="Nyx__F_8H_1a1a4ee68bfa757b4c9870b061a2c77a89"></span>void <code class="descname">fort_get_UFS</code><span class="sig-paren">(</span>int *<em>ufs</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv412fort_get_UFSPi" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
 <dt id="_CPPv419fort_set_eos_paramsRKN5amrex4RealERKN5amrex4RealE">
 <span class="target" id="Nyx__F_8H_1a63b8b760df6b57e4aac7c49ca8afc0c2"></span>void <code class="descname">fort_set_eos_params</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>h_species_in</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>he_species_in</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv419fort_set_eos_paramsRKN5amrex4RealERKN5amrex4RealE" title="Permalink to this definition">¶</a><br /></dt>
 <dd></dd></dl>
@@ -423,16 +413,6 @@
 <dd></dd></dl>
 
 <dl class="function">
-<dt>
-<span class="target" id="Nyx__F_8H_1aff075a4ebd2d19c9827b630343df4ff6"></span><code class="descname">AMREX_GPU_DEVICE void reset_internal_e(const int lo[], const int hi[], BL_FORT_FAB_ARG(S_new), BL_FORT_FAB_ARG(D_new), BL_FORT_FAB_ARG(reset_e_src), const int * print_fortran_warnings, const amrex::Real * comoving_a, const int * interp)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Nyx__F_8H_1a435569a7ea3b02680752656843f287d1"></span><code class="descname">AMREX_GPU_DEVICE void reset_internal_e_nostore(const int * lo, const int * hi, amrex::Real * S_new, const int, const int, const int, const int, const int, const int, amrex::Real * D_new, const int, const int, const int, const int, const int, const int, const int print_fortran_warnings, const amrex::Real comoving_a)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
 <dt id="_CPPv47hypfillF15BL_FORT_FAB_ARG5stateEA_KiA_KiA_KN5amrex4RealEA_KN5amrex4RealEPKN5amrex4RealEA_Ki">
 <span class="target" id="Nyx__F_8H_1a80b19faf7cf276db8cfde4b0c0b58100"></span>void <code class="descname">hypfill</code><span class="sig-paren">(</span><a class="reference internal" href="Nyx__error__F_8H.html#_CPPv415BL_FORT_FAB_ARG5state" title="BL_FORT_FAB_ARG">BL_FORT_FAB_ARG</a><span class="sig-paren">(</span>state<span class="sig-paren">)</span>, <em class="property">const</em> int <em>dlo</em>[], <em class="property">const</em> int <em>dhi</em>[], <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dx</em>[], <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>glo</em>[], <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>time</em>, <em class="property">const</em> int <em>bc</em>[], <span class="sig-paren">)</span><a class="headerlink" href="#_CPPv47hypfillF15BL_FORT_FAB_ARG5stateEA_KiA_KiA_KN5amrex4RealEA_KN5amrex4RealEPKN5amrex4RealEA_Ki" title="Permalink to this definition">¶</a><br /></dt>
 <dd></dd></dl>
@@ -448,148 +428,8 @@
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="_CPPv423fort_make_hydro_sourcesPKN5amrex4RealEA_KiA_KiK20BL_FORT_FAB_ARGstateK21BL_FORT_FAB_ARGugdnvxK21BL_FORT_FAB_ARGugdnvyK21BL_FORT_FAB_ARGugdnvzK18BL_FORT_FAB_ARGsrcF15BL_FORT_FAB_ARG9hydro_srcEF15BL_FORT_FAB_ARG7divu_ccEK19BL_FORT_FAB_ARGgravA_KN5amrex4RealEPKN5amrex4RealEF6D_DECLFK15BL_FORT_FAB_ARG5xfluxEFK15BL_FORT_FAB_ARG5yfluxEFK15BL_FORT_FAB_ARG5zfluxEEPKN5amrex4RealEPKN5amrex4RealEPKi">
-<span class="target" id="Nyx__F_8H_1a60b9fc16c328b79b1f4a8c9b0b113337"></span>void <code class="descname">fort_make_hydro_sources</code><span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>time</em>, <em class="property">const</em> int <em>lo</em>[], <em class="property">const</em> int <em>hi</em>[], <em class="property">const</em> BL_FORT_FAB_ARGstate, <em class="property">const</em> BL_FORT_FAB_ARGugdnvx, <em class="property">const</em> BL_FORT_FAB_ARGugdnvy, <em class="property">const</em> BL_FORT_FAB_ARGugdnvz, <em class="property">const</em> BL_FORT_FAB_ARGsrc, <a class="reference internal" href="Nyx__error__F_8H.html#_CPPv415BL_FORT_FAB_ARG5state" title="BL_FORT_FAB_ARG">BL_FORT_FAB_ARG</a><span class="sig-paren">(</span>hydro_src<span class="sig-paren">)</span>, <a class="reference internal" href="Nyx__error__F_8H.html#_CPPv415BL_FORT_FAB_ARG5state" title="BL_FORT_FAB_ARG">BL_FORT_FAB_ARG</a><span class="sig-paren">(</span>divu_cc<span class="sig-paren">)</span>, <em class="property">const</em> BL_FORT_FAB_ARGgrav, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dx</em>[], <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>dt</em>, D_DECL<span class="sig-paren">(</span><em class="property">const</em> <a class="reference internal" href="Nyx__error__F_8H.html#_CPPv415BL_FORT_FAB_ARG5state" title="BL_FORT_FAB_ARG">BL_FORT_FAB_ARG</a><span class="sig-paren">(</span>xflux<span class="sig-paren">)</span>, <em class="property">const</em> <a class="reference internal" href="Nyx__error__F_8H.html#_CPPv415BL_FORT_FAB_ARG5state" title="BL_FORT_FAB_ARG">BL_FORT_FAB_ARG</a><span class="sig-paren">(</span>yflux<span class="sig-paren">)</span>, <em class="property">const</em> <a class="reference internal" href="Nyx__error__F_8H.html#_CPPv415BL_FORT_FAB_ARG5state" title="BL_FORT_FAB_ARG">BL_FORT_FAB_ARG</a><span class="sig-paren">(</span>zflux<span class="sig-paren">)</span><span class="sig-paren">)</span>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>a_old</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>a_new</em>, <em class="property">const</em> int *<em>print_fortran_warnings</em>, <span class="sig-paren">)</span><a class="headerlink" href="#_CPPv423fort_make_hydro_sourcesPKN5amrex4RealEA_KiA_KiK20BL_FORT_FAB_ARGstateK21BL_FORT_FAB_ARGugdnvxK21BL_FORT_FAB_ARGugdnvyK21BL_FORT_FAB_ARGugdnvzK18BL_FORT_FAB_ARGsrcF15BL_FORT_FAB_ARG9hydro_srcEF15BL_FORT_FAB_ARG7divu_ccEK19BL_FORT_FAB_ARGgravA_KN5amrex4RealEPKN5amrex4RealEF6D_DECLFK15BL_FORT_FAB_ARG5xfluxEFK15BL_FORT_FAB_ARG5yfluxEFK15BL_FORT_FAB_ARG5zfluxEEPKN5amrex4RealEPKN5amrex4RealEPKi" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Nyx__F_8H_1a70886ebd23eb5ab6cbe394bd99c3dd53"></span><code class="descname">AMREX_GPU_DEVICE void ca_ctoprim(const int * lo, const int * hi, const amrex::Real * u, const int * u_lo, const int * u_hi, amrex::Real * q, const int * q_lo, const int * q_hi, amrex::Real * qaux, const int * qa_lo, const int * qa_hi)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Nyx__F_8H_1af3769d7876b6644f0d117aae5ab96330"></span><code class="descname">AMREX_GPU_DEVICE void ca_srctoprim(const int * lo, const int * hi, const amrex::Real * q, const int * q_lo, const int * q_hi, const amrex::Real * qaux, const int * qa_lo, const int * qa_hi, const amrex::Real * grav, const int * ga_lo, const int * ga_hi, const amrex::Real * src, const int * src_lo, const int * src_hi, amrex::Real * srQ, const int * srQ_lo, const int * srQ_hi, const amrex::Real a_old, const amrex::Real a_new, const amrex::Real dt)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv414ca_compute_cflPKiPKiK21BL_FORT_FAB_ARG_ANYDqK24BL_FORT_FAB_ARG_ANYDqauxKN5amrex4RealEPKN5amrex4RealEPN5amrex4RealEKi">
-<span class="target" id="Nyx__F_8H_1a9302c5f096555e10de909d473bfedd8c"></span>void <code class="descname">ca_compute_cfl</code><span class="sig-paren">(</span><em class="property">const</em> int *<em>lo</em>, <em class="property">const</em> int *<em>hi</em>, <em class="property">const</em> BL_FORT_FAB_ARG_ANYDq, <em class="property">const</em> BL_FORT_FAB_ARG_ANYDqaux, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>dx</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>courno</em>, <em class="property">const</em> int <em>verbose</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv414ca_compute_cflPKiPKiK21BL_FORT_FAB_ARG_ANYDqK24BL_FORT_FAB_ARG_ANYDqauxKN5amrex4RealEPKN5amrex4RealEPN5amrex4RealEKi" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Nyx__F_8H_1a67da58562af3195582811bd19dcde69b"></span><code class="descname">AMREX_GPU_DEVICE void divu(const int * lo, const int * hi, BL_FORT_FAB_ARG_3D(q), const amrex::Real * dx, BL_FORT_FAB_ARG_3D(div))</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Nyx__F_8H_1ab9b7067c196611260094fff6afdadac3"></span><code class="descname">AMREX_GPU_DEVICE void ca_uflatten(const int * lo, const int * hi, const  BL_FORT_FAB_ARG_3Dq, BL_FORT_FAB_ARG_3D(flatn), int pres_comp)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv414ca_rad_flattenPKiPKiK19BL_FORT_FAB_ARG_3DqF18BL_FORT_FAB_ARG_3D5flatnEF18BL_FORT_FAB_ARG_3D5flatgE">
-<span class="target" id="Nyx__F_8H_1a9a65aa20d1f1daecd355e7f658364ec6"></span>void <code class="descname">ca_rad_flatten</code><span class="sig-paren">(</span><em class="property">const</em> int *<em>lo</em>, <em class="property">const</em> int *<em>hi</em>, <em class="property">const</em> BL_FORT_FAB_ARG_3Dq, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>flatn<span class="sig-paren">)</span>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>flatg<span class="sig-paren">)</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv414ca_rad_flattenPKiPKiK19BL_FORT_FAB_ARG_3DqF18BL_FORT_FAB_ARG_3D5flatnEF18BL_FORT_FAB_ARG_3D5flatgE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Nyx__F_8H_1a69baccd545db87c02816d03379d967a1"></span><code class="descname">AMREX_GPU_DEVICE void ca_consup(const int * lo, const int * hi, const  BL_FORT_FAB_ARGSborder, BL_FORT_FAB_ARG(hydro_source), D_DECL(const BL_FORT_FAB_ARG(xflux), const BL_FORT_FAB_ARG(yflux), const BL_FORT_FAB_ARG(zflux)), const  BL_FORT_FAB_ARG_3Dxqe, const  BL_FORT_FAB_ARG_3Dyqe, const  BL_FORT_FAB_ARG_3Dzqe, const  BL_FORT_FAB_ARG_3Ddivu_cc, const amrex::Real * dx, const amrex::Real dt, const amrex::Real a_old, const amrex::Real a_new)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv410ctu_consupPKiPKiK25BL_FORT_FAB_ARG_3DSborderK19BL_FORT_FAB_ARG_3DqK21BL_FORT_FAB_ARG_3DshkF18BL_FORT_FAB_ARG_3D5S_newEF18BL_FORT_FAB_ARG_3D12hydro_sourceEK23BL_FORT_FAB_ARG_3Dflux0K21BL_FORT_FAB_ARG_3Dqe0K23BL_FORT_FAB_ARG_3Darea0K24BL_FORT_FAB_ARG_3DvolumeK23BL_FORT_FAB_ARG_3DpdivuPKN5amrex4RealEKN5amrex4RealE">
-<span class="target" id="Nyx__F_8H_1a1c610242187641162063c5fd5ee63536"></span>void <code class="descname">ctu_consup</code><span class="sig-paren">(</span><em class="property">const</em> int *<em>lo</em>, <em class="property">const</em> int *<em>hi</em>, <em class="property">const</em> BL_FORT_FAB_ARG_3DSborder, <em class="property">const</em> BL_FORT_FAB_ARG_3Dq, <em class="property">const</em> BL_FORT_FAB_ARG_3Dshk, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>S_new<span class="sig-paren">)</span>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>hydro_source<span class="sig-paren">)</span>, <em class="property">const</em> BL_FORT_FAB_ARG_3Dflux0, <em class="property">const</em> BL_FORT_FAB_ARG_3Dqe0, <em class="property">const</em> BL_FORT_FAB_ARG_3Darea0, <em class="property">const</em> BL_FORT_FAB_ARG_3Dvolume, <em class="property">const</em> BL_FORT_FAB_ARG_3Dpdivu, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>dx</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em>, <span class="sig-paren">)</span><a class="headerlink" href="#_CPPv410ctu_consupPKiPKiK25BL_FORT_FAB_ARG_3DSborderK19BL_FORT_FAB_ARG_3DqK21BL_FORT_FAB_ARG_3DshkF18BL_FORT_FAB_ARG_3D5S_newEF18BL_FORT_FAB_ARG_3D12hydro_sourceEK23BL_FORT_FAB_ARG_3Dflux0K21BL_FORT_FAB_ARG_3Dqe0K23BL_FORT_FAB_ARG_3Darea0K24BL_FORT_FAB_ARG_3DvolumeK23BL_FORT_FAB_ARG_3DpdivuPKN5amrex4RealEKN5amrex4RealE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Nyx__F_8H_1a17cc0ac9b2417d54068ba17819537bf2"></span><code class="descname">AMREX_GPU_DEVICE void scale_flux(const int * lo, const int * hi, BL_FORT_FAB_ARG_3D(flux), const amrex::Real area, const amrex::Real dt, const amrex::Real a_old, const amrex::Real a_new)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv414scale_rad_fluxPKiPKiF18BL_FORT_FAB_ARG_3D8rad_fluxEF18BL_FORT_FAB_ARG_3D4areaEKN5amrex4RealE">
-<span class="target" id="Nyx__F_8H_1a3594ffebb17bd20da2c25e1caf11681e"></span>void <code class="descname">scale_rad_flux</code><span class="sig-paren">(</span><em class="property">const</em> int *<em>lo</em>, <em class="property">const</em> int *<em>hi</em>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>rad_flux<span class="sig-paren">)</span>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>area<span class="sig-paren">)</span>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em>, <span class="sig-paren">)</span><a class="headerlink" href="#_CPPv414scale_rad_fluxPKiPKiF18BL_FORT_FAB_ARG_3D8rad_fluxEF18BL_FORT_FAB_ARG_3D4areaEKN5amrex4RealE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv420ca_track_grid_lossesPKiPKiK23BL_FORT_FAB_ARG_3Dflux0PN5amrex4RealEPN5amrex4RealEPN5amrex4RealEPN5amrex4RealEPN5amrex4RealEPN5amrex4RealEPN5amrex4RealEPN5amrex4RealE">
-<span class="target" id="Nyx__F_8H_1ada276e41f5f91926ef210873451d1054"></span>void <code class="descname">ca_track_grid_losses</code><span class="sig-paren">(</span><em class="property">const</em> int *<em>lo</em>, <em class="property">const</em> int *<em>hi</em>, <em class="property">const</em> BL_FORT_FAB_ARG_3Dflux0, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>mass_lost</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>xmom_lost</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>ymom_lost</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>zmom_lost</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>eden_lost</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>xang_lost</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>yang_lost</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>zang_lost</em><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv420ca_track_grid_lossesPKiPKiK23BL_FORT_FAB_ARG_3Dflux0PN5amrex4RealEPN5amrex4RealEPN5amrex4RealEPN5amrex4RealEPN5amrex4RealEPN5amrex4RealEPN5amrex4RealEPN5amrex4RealE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Nyx__F_8H_1ab1ee4ca2fee9d98de306dc3912c1eec1"></span><code class="descname">AMREX_GPU_DEVICE void cmpflx_plus_godunov(const int * lo, const int * hi, const  BL_FORT_FAB_ARG_3Dql, const  BL_FORT_FAB_ARG_3Dqr, const int nc, const int comp, BL_FORT_FAB_ARG_3D(flux), BL_FORT_FAB_ARG_3D(q_int), BL_FORT_FAB_ARG_3D(qe), const  BL_FORT_FAB_ARG_3Dqaux, const  BL_FORT_FAB_ARG_3Dshk, const int idir, const int * domlo, const int * domhi)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
 <dt>
 <span class="target" id="Nyx__F_8H_1aa4935f33dc8c00acd8dddc92cf44fe16"></span><code class="descname">AMREX_GPU_DEVICE void apply_av(const int * lo, const int * hi, const  BL_FORT_FAB_ARG_3Ddiv, const  BL_FORT_FAB_ARG_3DSborder, BL_FORT_FAB_ARG_3D(flux), const int idir, const amrex::Real * dx, const amrex::Real dt)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv432limit_hydro_fluxes_on_small_densPKiPKiKiF18BL_FORT_FAB_ARG_3D7SborderEF18BL_FORT_FAB_ARG_3D1qEF18BL_FORT_FAB_ARG_3D6volumeEF18BL_FORT_FAB_ARG_3D4fluxEF18BL_FORT_FAB_ARG_3D4areaEKN5amrex4RealEPKN5amrex4RealE">
-<span class="target" id="Nyx__F_8H_1a817a77a95ace73377f62880b9c521c94"></span>void <code class="descname">limit_hydro_fluxes_on_small_dens</code><span class="sig-paren">(</span><em class="property">const</em> int *<em>lo</em>, <em class="property">const</em> int *<em>hi</em>, <em class="property">const</em> int <em>idir</em>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>Sborder<span class="sig-paren">)</span>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>q<span class="sig-paren">)</span>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>volume<span class="sig-paren">)</span>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>flux<span class="sig-paren">)</span>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>area<span class="sig-paren">)</span>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>dx</em>, <span class="sig-paren">)</span><a class="headerlink" href="#_CPPv432limit_hydro_fluxes_on_small_densPKiPKiKiF18BL_FORT_FAB_ARG_3D7SborderEF18BL_FORT_FAB_ARG_3D1qEF18BL_FORT_FAB_ARG_3D6volumeEF18BL_FORT_FAB_ARG_3D4fluxEF18BL_FORT_FAB_ARG_3D4areaEKN5amrex4RealEPKN5amrex4RealE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Nyx__F_8H_1ac3dd6a27ffbc061cbd743b9106bc5a72"></span><code class="descname">AMREX_GPU_DEVICE void normalize_species_fluxes(const int * lo, const int * hi, BL_FORT_FAB_ARG_3D(flux))</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv413ca_ctu_updatePKiPKiPKiKN5amrex4RealEPKiPKiK23BL_FORT_FAB_ARG_3DstateF18BL_FORT_FAB_ARG_3D8stateoutEF18BL_FORT_FAB_ARG_3D1qEK22BL_FORT_FAB_ARG_3DqauxK23BL_FORT_FAB_ARG_3Dsrc_qF18BL_FORT_FAB_ARG_3D6updateEPKN5amrex4RealEKN5amrex4RealEF18BL_FORT_FAB_ARG_3D5xfluxEK23BL_FORT_FAB_ARG_3DxareaF18BL_FORT_FAB_ARG_3D7pradialEK23BL_FORT_FAB_ARG_3DdlogaK24BL_FORT_FAB_ARG_3DvolumeRN5amrex4RealERN5amrex4RealERN5amrex4RealERN5amrex4RealERN5amrex4RealERN5amrex4RealERN5amrex4RealERN5amrex4RealE">
-<span class="target" id="Nyx__F_8H_1a025e6d65f14e80d42ceb6d832f6bcff8"></span>void <code class="descname">ca_ctu_update</code><span class="sig-paren">(</span><em class="property">const</em> int *<em>lo</em>, <em class="property">const</em> int *<em>hi</em>, <em class="property">const</em> int *<em>is_finest_level</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em>, <em class="property">const</em> int *<em>domlo</em>, <em class="property">const</em> int *<em>domhi</em>, <em class="property">const</em> BL_FORT_FAB_ARG_3Dstate, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>stateout<span class="sig-paren">)</span>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>q<span class="sig-paren">)</span>, <em class="property">const</em> BL_FORT_FAB_ARG_3Dqaux, <em class="property">const</em> BL_FORT_FAB_ARG_3Dsrc_q, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>update<span class="sig-paren">)</span>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>dx</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>xflux<span class="sig-paren">)</span>, <em class="property">const</em> BL_FORT_FAB_ARG_3Dxarea, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>pradial<span class="sig-paren">)</span>, <em class="property">const</em> BL_FORT_FAB_ARG_3Ddloga, <em class="property">const</em> BL_FORT_FAB_ARG_3Dvolume, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>mass_lost</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>xmom_lost</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>ymom_lost</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>zmom_lost</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>eden_lost</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>xang_lost</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>yang_lost</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>zang_lost</em>, <span class="sig-paren">)</span><a class="headerlink" href="#_CPPv413ca_ctu_updatePKiPKiPKiKN5amrex4RealEPKiPKiK23BL_FORT_FAB_ARG_3DstateF18BL_FORT_FAB_ARG_3D8stateoutEF18BL_FORT_FAB_ARG_3D1qEK22BL_FORT_FAB_ARG_3DqauxK23BL_FORT_FAB_ARG_3Dsrc_qF18BL_FORT_FAB_ARG_3D6updateEPKN5amrex4RealEKN5amrex4RealEF18BL_FORT_FAB_ARG_3D5xfluxEK23BL_FORT_FAB_ARG_3DxareaF18BL_FORT_FAB_ARG_3D7pradialEK23BL_FORT_FAB_ARG_3DdlogaK24BL_FORT_FAB_ARG_3DvolumeRN5amrex4RealERN5amrex4RealERN5amrex4RealERN5amrex4RealERN5amrex4RealERN5amrex4RealERN5amrex4RealERN5amrex4RealE" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv414ctu_ppm_statesPKiPKiPKiPKiK19BL_FORT_FAB_ARG_3DqK23BL_FORT_FAB_ARG_3DflatnK22BL_FORT_FAB_ARG_3DqauxK22BL_FORT_FAB_ARG_3DsrcQK21BL_FORT_FAB_ARG_3DshkF18BL_FORT_FAB_ARG_3D2IpEF18BL_FORT_FAB_ARG_3D2ImEF18BL_FORT_FAB_ARG_3D6Ip_srcEF18BL_FORT_FAB_ARG_3D6Im_srcEF18BL_FORT_FAB_ARG_3D5Ip_gcEF18BL_FORT_FAB_ARG_3D5Im_gcEF18BL_FORT_FAB_ARG_3D2smEF18BL_FORT_FAB_ARG_3D2spEF18BL_FORT_FAB_ARG_3D3qxmEF18BL_FORT_FAB_ARG_3D3qxpEPKN5amrex4RealEKN5amrex4RealEK23BL_FORT_FAB_ARG_3DdlogaPKiPKi">
-<span class="target" id="Nyx__F_8H_1a53937bc9fb6ca6de95ecf40bcf1cb85f"></span>void <code class="descname">ctu_ppm_states</code><span class="sig-paren">(</span><em class="property">const</em> int *<em>lo</em>, <em class="property">const</em> int *<em>hi</em>, <em class="property">const</em> int *<em>vlo</em>, <em class="property">const</em> int *<em>vhi</em>, <em class="property">const</em> BL_FORT_FAB_ARG_3Dq, <em class="property">const</em> BL_FORT_FAB_ARG_3Dflatn, <em class="property">const</em> BL_FORT_FAB_ARG_3Dqaux, <em class="property">const</em> BL_FORT_FAB_ARG_3DsrcQ, <em class="property">const</em> BL_FORT_FAB_ARG_3Dshk, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>Ip<span class="sig-paren">)</span>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>Im<span class="sig-paren">)</span>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>Ip_src<span class="sig-paren">)</span>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>Im_src<span class="sig-paren">)</span>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>Ip_gc<span class="sig-paren">)</span>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>Im_gc<span class="sig-paren">)</span>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>sm<span class="sig-paren">)</span>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>sp<span class="sig-paren">)</span>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>qxm<span class="sig-paren">)</span>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>qxp<span class="sig-paren">)</span>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>dx</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em>, <em class="property">const</em> BL_FORT_FAB_ARG_3Ddloga, <em class="property">const</em> int *<em>domlo</em>, <em class="property">const</em> int *<em>domhi</em>, <span class="sig-paren">)</span><a class="headerlink" href="#_CPPv414ctu_ppm_statesPKiPKiPKiPKiK19BL_FORT_FAB_ARG_3DqK23BL_FORT_FAB_ARG_3DflatnK22BL_FORT_FAB_ARG_3DqauxK22BL_FORT_FAB_ARG_3DsrcQK21BL_FORT_FAB_ARG_3DshkF18BL_FORT_FAB_ARG_3D2IpEF18BL_FORT_FAB_ARG_3D2ImEF18BL_FORT_FAB_ARG_3D6Ip_srcEF18BL_FORT_FAB_ARG_3D6Im_srcEF18BL_FORT_FAB_ARG_3D5Ip_gcEF18BL_FORT_FAB_ARG_3D5Im_gcEF18BL_FORT_FAB_ARG_3D2smEF18BL_FORT_FAB_ARG_3D2spEF18BL_FORT_FAB_ARG_3D3qxmEF18BL_FORT_FAB_ARG_3D3qxpEPKN5amrex4RealEKN5amrex4RealEK23BL_FORT_FAB_ARG_3DdlogaPKiPKi" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Nyx__F_8H_1ab1e910d2b59f5bc7b00c3a5d9ad51c78"></span><code class="descname">AMREX_GPU_DEVICE void ctu_plm_states(const int * lo, const int * hi, const int idir, const int * vlo, const int * vhi, const  BL_FORT_FAB_ARG_3Dq, const  BL_FORT_FAB_ARG_3Dflatn, const  BL_FORT_FAB_ARG_3Dqaux, const  BL_FORT_FAB_ARG_3DsrcQ, BL_FORT_FAB_ARG_3D(shk), BL_FORT_FAB_ARG_3D(dq), BL_FORT_FAB_ARG_3D(qm), BL_FORT_FAB_ARG_3D(qp), const amrex::Real * dx, const amrex::Real dt, const amrex::Real a_old, const amrex::Real a_new, const  BL_FORT_FAB_ARG_3Ddloga, const int * domlo, const int * domhi)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Nyx__F_8H_1a42284aa5cd36d28d45027cd834121a98"></span><code class="descname">AMREX_GPU_DEVICE void transx_on_ystates(const int * lo, const int * hi, const  BL_FORT_FAB_ARG_3Dqym, BL_FORT_FAB_ARG_3D(qymo), const  BL_FORT_FAB_ARG_3Dqyp, BL_FORT_FAB_ARG_3D(qypo), const  BL_FORT_FAB_ARG_3Dqaux, const  BL_FORT_FAB_ARG_3Dfx, const  BL_FORT_FAB_ARG_3Dqx, const amrex::Real hdt, const amrex::Real cdtdx)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Nyx__F_8H_1a2ab4433452931b457cb52d9c2062f3c5"></span><code class="descname">AMREX_GPU_DEVICE void transx_on_zstates(const int * lo, const int * hi, const  BL_FORT_FAB_ARG_3Dqzm, BL_FORT_FAB_ARG_3D(qzmo), const  BL_FORT_FAB_ARG_3Dqzp, BL_FORT_FAB_ARG_3D(qzpo), const  BL_FORT_FAB_ARG_3Dqaux, const  BL_FORT_FAB_ARG_3Dfx, const  BL_FORT_FAB_ARG_3Dqx, const amrex::Real hdt, const amrex::Real cdtdx)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Nyx__F_8H_1aa8dfbbe2c20d8161d2589e61a47d9b4d"></span><code class="descname">AMREX_GPU_DEVICE void transy_on_xstates(const int * lo, const int * hi, const  BL_FORT_FAB_ARG_3Dqxm, BL_FORT_FAB_ARG_3D(qxmo), const  BL_FORT_FAB_ARG_3Dqxp, BL_FORT_FAB_ARG_3D(qxpo), const  BL_FORT_FAB_ARG_3Dqaux, const  BL_FORT_FAB_ARG_3Dfy, const  BL_FORT_FAB_ARG_3Dqy, const amrex::Real cdtdy)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Nyx__F_8H_1a48eed6ed4d75f5b11748a79e5d73ad6f"></span><code class="descname">AMREX_GPU_DEVICE void transy_on_zstates(const int * lo, const int * hi, const  BL_FORT_FAB_ARG_3Dqzm, BL_FORT_FAB_ARG_3D(qzmo), const  BL_FORT_FAB_ARG_3Dqzp, BL_FORT_FAB_ARG_3D(qzpo), const  BL_FORT_FAB_ARG_3Dqaux, const  BL_FORT_FAB_ARG_3Dfy, const  BL_FORT_FAB_ARG_3Dqy, const amrex::Real cdtdy)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Nyx__F_8H_1a6b66602ea786bdc413d6c834d417b9a0"></span><code class="descname">AMREX_GPU_DEVICE void transz_on_xstates(const int * lo, const int * hi, const  BL_FORT_FAB_ARG_3Dqxm, BL_FORT_FAB_ARG_3D(qxmo), const  BL_FORT_FAB_ARG_3Dqxp, BL_FORT_FAB_ARG_3D(qxpo), const  BL_FORT_FAB_ARG_3Dqaux, const  BL_FORT_FAB_ARG_3Dfz, const  BL_FORT_FAB_ARG_3Dqz, const amrex::Real cdtdz)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Nyx__F_8H_1aadfdec997ef8d606612f317b69077f74"></span><code class="descname">AMREX_GPU_DEVICE void transz_on_ystates(const int * lo, const int * hi, const  BL_FORT_FAB_ARG_3Dqym, BL_FORT_FAB_ARG_3D(qymo), const  BL_FORT_FAB_ARG_3Dqyp, BL_FORT_FAB_ARG_3D(qypo), const  BL_FORT_FAB_ARG_3Dqaux, const  BL_FORT_FAB_ARG_3Dfz, const  BL_FORT_FAB_ARG_3Dqz, const amrex::Real cdtdz)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Nyx__F_8H_1ae9791e6f34ab42147983b2dd9090599e"></span><code class="descname">AMREX_GPU_DEVICE void transyz(const int * lo, const int * hi, const  BL_FORT_FAB_ARG_3Dqm, BL_FORT_FAB_ARG_3D(qmo), const  BL_FORT_FAB_ARG_3Dqp, BL_FORT_FAB_ARG_3D(qpo), const  BL_FORT_FAB_ARG_3Dqaux, const  BL_FORT_FAB_ARG_3Dfyz, const  BL_FORT_FAB_ARG_3Dfzy, const  BL_FORT_FAB_ARG_3Dqy, const  BL_FORT_FAB_ARG_3Dqz, const  BL_FORT_FAB_ARG_3DsrcQ, const amrex::Real hdt, const amrex::Real cdtdy, const amrex::Real cdtdz, const amrex::Real a_old, const amrex::Real a_new)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Nyx__F_8H_1a954b040a88eb016629e823d34edaa312"></span><code class="descname">AMREX_GPU_DEVICE void transxz(const int * lo, const int * hi, const  BL_FORT_FAB_ARG_3Dqm, BL_FORT_FAB_ARG_3D(qmo), const  BL_FORT_FAB_ARG_3Dqp, BL_FORT_FAB_ARG_3D(qpo), const  BL_FORT_FAB_ARG_3Dqaux, const  BL_FORT_FAB_ARG_3Dfxz, const  BL_FORT_FAB_ARG_3Dfzx, const  BL_FORT_FAB_ARG_3Dqx, const  BL_FORT_FAB_ARG_3Dqz, const  BL_FORT_FAB_ARG_3DsrcQ, const amrex::Real hdt, const amrex::Real cdtdx, const amrex::Real cdtdz, const amrex::Real a_old, const amrex::Real a_new)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Nyx__F_8H_1a9ce0c62eb06c27791fa4e8ccdd59f235"></span><code class="descname">AMREX_GPU_DEVICE void transxy(const int * lo, const int * hi, const  BL_FORT_FAB_ARG_3Dqm, BL_FORT_FAB_ARG_3D(qmo), const  BL_FORT_FAB_ARG_3Dqp, BL_FORT_FAB_ARG_3D(qpo), const  BL_FORT_FAB_ARG_3Dqaux, const  BL_FORT_FAB_ARG_3Dfxy, const  BL_FORT_FAB_ARG_3Dfyx, const  BL_FORT_FAB_ARG_3Dqx, const  BL_FORT_FAB_ARG_3Dqy, const  BL_FORT_FAB_ARG_3DsrcQ, const amrex::Real hdt, const amrex::Real cdtdx, const amrex::Real cdtdy, const amrex::Real a_old, const amrex::Real a_new)</code></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv419ca_mol_single_stagePKiPKiPKN5amrex4RealEPKiPKiPKN5amrex4RealEK25BL_FORT_FAB_ARG_3DstateinF18BL_FORT_FAB_ARG_3D8stateoutEF18BL_FORT_FAB_ARG_3D1qEF18BL_FORT_FAB_ARG_3D4qauxEK22BL_FORT_FAB_ARG_3DsrcUF18BL_FORT_FAB_ARG_3D6updateEF18BL_FORT_FAB_ARG_3D11update_fluxEPKN5amrex4RealEPKN5amrex4RealEF18BL_FORT_FAB_ARG_3D5flux1EF18BL_FORT_FAB_ARG_3D7pradialEK23BL_FORT_FAB_ARG_3Darea1F18BL_FORT_FAB_ARG_3D5dlogaEK24BL_FORT_FAB_ARG_3DvolumeRKi">
-<span class="target" id="Nyx__F_8H_1a1c686458d279039c4a6cf7a46631f556"></span>void <code class="descname">ca_mol_single_stage</code><span class="sig-paren">(</span><em class="property">const</em> int *<em>lo</em>, <em class="property">const</em> int *<em>hi</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>time</em>, <em class="property">const</em> int *<em>domlo</em>, <em class="property">const</em> int *<em>domhi</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>stage_weight</em>, <em class="property">const</em> BL_FORT_FAB_ARG_3Dstatein, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>stateout<span class="sig-paren">)</span>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>q<span class="sig-paren">)</span>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>qaux<span class="sig-paren">)</span>, <em class="property">const</em> BL_FORT_FAB_ARG_3DsrcU, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>update<span class="sig-paren">)</span>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>update_flux<span class="sig-paren">)</span>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>dx</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>dt</em>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>flux1<span class="sig-paren">)</span>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>pradial<span class="sig-paren">)</span>, <em class="property">const</em> BL_FORT_FAB_ARG_3Darea1, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>dloga<span class="sig-paren">)</span>, <em class="property">const</em> BL_FORT_FAB_ARG_3Dvolume, <em class="property">const</em> int &amp;<em>verbose</em>, <span class="sig-paren">)</span><a class="headerlink" href="#_CPPv419ca_mol_single_stagePKiPKiPKN5amrex4RealEPKiPKiPKN5amrex4RealEK25BL_FORT_FAB_ARG_3DstateinF18BL_FORT_FAB_ARG_3D8stateoutEF18BL_FORT_FAB_ARG_3D1qEF18BL_FORT_FAB_ARG_3D4qauxEK22BL_FORT_FAB_ARG_3DsrcUF18BL_FORT_FAB_ARG_3D6updateEF18BL_FORT_FAB_ARG_3D11update_fluxEPKN5amrex4RealEPKN5amrex4RealEF18BL_FORT_FAB_ARG_3D5flux1EF18BL_FORT_FAB_ARG_3D7pradialEK23BL_FORT_FAB_ARG_3Darea1F18BL_FORT_FAB_ARG_3D5dlogaEK24BL_FORT_FAB_ARG_3DvolumeRKi" title="Permalink to this definition">¶</a><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -605,11 +445,6 @@
 <dl class="function">
 <dt id="_CPPv426ca_sdc_update_advection_o4PKiPKiPKN5amrex4RealEK21BL_FORT_FAB_ARG_3Dk_mF18BL_FORT_FAB_ARG_3D3k_nEF18BL_FORT_FAB_ARG_3D3A_mEF18BL_FORT_FAB_ARG_3D7A_0_oldEF18BL_FORT_FAB_ARG_3D7A_1_oldEF18BL_FORT_FAB_ARG_3D7A_2_oldEPKi">
 <span class="target" id="Nyx__F_8H_1aaa43d1eb9969061b38091584a134f93f"></span>void <code class="descname">ca_sdc_update_advection_o4</code><span class="sig-paren">(</span><em class="property">const</em> int *<em>lo</em>, <em class="property">const</em> int *<em>hi</em>, <em class="property">const</em> <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<em>time</em>, <em class="property">const</em> BL_FORT_FAB_ARG_3Dk_m, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>k_n<span class="sig-paren">)</span>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>A_m<span class="sig-paren">)</span>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>A_0_old<span class="sig-paren">)</span>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>A_1_old<span class="sig-paren">)</span>, BL_FORT_FAB_ARG_3D<span class="sig-paren">(</span>A_2_old<span class="sig-paren">)</span>, <em class="property">const</em> int *<em>m_start</em>, <span class="sig-paren">)</span><a class="headerlink" href="#_CPPv426ca_sdc_update_advection_o4PKiPKiPKN5amrex4RealEK21BL_FORT_FAB_ARG_3Dk_mF18BL_FORT_FAB_ARG_3D3k_nEF18BL_FORT_FAB_ARG_3D3A_mEF18BL_FORT_FAB_ARG_3D7A_0_oldEF18BL_FORT_FAB_ARG_3D7A_1_oldEF18BL_FORT_FAB_ARG_3D7A_2_oldEPKi" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt>
-<span class="target" id="Nyx__F_8H_1aca3ba368f06179ac44e0c0196cc0df19"></span><code class="descname">AMREX_GPU_DEVICE void ca_fort_update_state(const int * lo, const int * hi, const  BL_FORT_FAB_ARGu_in, BL_FORT_FAB_ARG(u_out), const  BL_FORT_FAB_ARGsrc, const  BL_FORT_FAB_ARGhydro_src, const  BL_FORT_FAB_ARGdivu_cc, BL_FORT_FAB_ARG_3D(sum_state), const amrex::Real * dt, const amrex::Real * a_old, const amrex::Real * a_new, const int * print_fortran_warnings)</code></dt>
 <dd></dd></dl>
 
 <dl class="function">
