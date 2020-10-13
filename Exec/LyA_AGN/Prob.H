@@ -12,6 +12,12 @@ static void prob_param_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_pa
     prob_param[z_in_comp] = initial_z;
 }
 
+static void prob_errtags_default(amrex::Vector<amrex::AMRErrorTag>& errtags)
+{
+    AMRErrorTagInfo info;
+    errtags.push_back(AMRErrorTag(3.5e9,AMRErrorTag::GREATER,"denvol",info));
+}
+
 AMREX_GPU_DEVICE AMREX_FORCE_INLINE
 void prob_initdata_state(const int i,
                          const int j,

@@ -1,132 +1,89 @@
+#ifndef _Prob_H_
+#define _Prob_H_
 
-      subroutine amrex_probinit (init,name,namlen,problo,probhi) bind(c)
+#include "Nyx.H"
 
-      use amrex_fort_module, only : rt => amrex_real
-      use probdata_module
-      implicit none
+enum Prob_Type_Index {
+  z_in_comp = 0,
+};
 
-      integer init, namlen
-      integer name(namlen)
-      real(rt) problo(3), probhi(3)
+static void prob_param_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_param, const amrex::Real initial_z)
+{
+    prob_param[z_in_comp] = initial_z;
+}
 
-      integer untin,i
+static void prob_errtags_default(amrex::Vector<amrex::AMRErrorTag>& errtags)
+{
+    AMRErrorTagInfo info;
+    errtags.push_back(AMRErrorTag(3.5e9,AMRErrorTag::GREATER,"denvol",info));
+}
 
-      namelist /fortin/ max_num_part
+AMREX_GPU_DEVICE AMREX_FORCE_INLINE
+void prob_initdata_state(const int i,
+                         const int j,
+                         const int k,
+                         amrex::Array4<amrex::Real> const& state,
+                         amrex::GeometryData const& geomdata,
+                         const amrex::GpuArray<amrex::Real,max_prob_param>& prob_param)
+{
+  // This is the case where we have compiled with states defined 
+  //  but they have only one component each so we fill them this way.
+  if (state.nComp() == 1)
+  {
+    //Could be replaced with setVal
+    state(i,j,k,1)    = 0.00;
+  }
+  // This is the regular case with NO_HYDRO = FALSE
+  else if (state.nComp() > 1)
+  {
+    state(i,j,k,Density)    = 0.00; //1.5d0 * small_dens
+    state(i,j,k,Xmom) = 0.00;
+    state(i,j,k,Ymom) = 0.00;
+    state(i,j,k,Zmom) = 0.00;
 
-!
-!     Build "probin" filename -- the name of file containing fortin namelist.
-!     
-      integer maxlen
-      parameter (maxlen=256)
-      character probin*(maxlen)
+    // These will both be set later in the call to init_e.
+    state(i,j,k,Eint) = 0.0;
+    state(i,j,k,Eden) = 0.0;
 
-      if (namlen .gt. maxlen) then
-         write(6,*) 'probin file name too long'
-         stop
-      end if
+    amrex::Real FirstSpec = Eint + 1;   
+    if (state.nComp() > FirstSpec)
+    {
+      //XHYDROGEN hardcoded to .76 init_managed
+      state(i,j,k,FirstSpec  ) = .76;
+      state(i,j,k,FirstSpec+1) = (1.0 - .76);
+    }
+  }
+}
 
-      do i = 1, namlen
-         probin(i:i) = char(name(i))
-      end do
+AMREX_GPU_DEVICE AMREX_FORCE_INLINE
+void prob_initdata(const int i,
+                   const int j,
+                   const int k,
+                   amrex::Array4<amrex::Real> const& state,
+                   amrex::Array4<amrex::Real> const& diag_eos,
+                   amrex::GeometryData const& geomdata,
+                   const amrex::GpuArray<amrex::Real,max_prob_param>& prob_param)
+{
 
-!     Read namelists
-      untin = 9
-      open(untin,file=probin(1:namlen),form='formatted',status='old')
-      read(untin,fortin)
-      close(unit=untin)
+  prob_initdata_state(i, j ,k, state, geomdata, prob_param);
 
-      end
+  // This is the case where we have compiled with states defined 
+  //  but they have only one component each so we fill them this way.
+  if (state.nComp() == 1 && diag_eos.nComp() == 1)
+  {
+    //Could be replaced with setVal
+    diag_eos(i,j,k,1)    = 0.00;
+  }
+  // This is the regular case with NO_HYDRO = FALSE
+  else if (state.nComp() > 1 && diag_eos.nComp() >= 2)
+  {
+    diag_eos(i,j,k,Temp_comp) = 0.0210*(1.00 + prob_param[z_in_comp])*(1.00 + prob_param[z_in_comp]);
+    diag_eos(i,j,k,  Ne_comp) = 0.0;
 
-! ::: -----------------------------------------------------------
-! ::: This routine is called at problem setup time and is used
-! ::: to initialize data on each grid.  
-! ::: 
-! ::: NOTE:  all arrays have one cell of ghost zones surrounding
-! :::        the grid interior.  Values in these cells need not
-! :::        be set here.
-! ::: 
-! ::: INPUTS/OUTPUTS:
-! ::: 
-! ::: level     => amr level of grid
-! ::: time      => time at which to init data             
-! ::: lo,hi     => index limits of grid interior (cell centered)
-! ::: nstate    => number of state components.  You should know
-! :::		   this already!
-! ::: state     <=  Scalar array
-! ::: delta     => cell size
-! ::: xlo,xhi   => physical locations of lower left and upper
-! :::              right hand corner of grid.  (does not include
-! :::		   ghost region).
-! ::: -----------------------------------------------------------
-      subroutine fort_initdata(level,time,lo,hi, &
-                               ns, state   ,s_l1,s_l2,s_l3,s_h1,s_h2,s_h3, &
-                               nd, diag_eos,d_l1,d_l2,d_l3,d_h1,d_h2,d_h3, &
-                               delta,xlo,xhi)  &
-                               bind(C, name="fort_initdata")
+    //Should be equivalent to inhomo_reion > 0 Nyx_setup.cpp
+    if (diag_eos.nComp() > 2)
+      diag_eos(i,j,k, Zhi_comp) = 7.5;
+  }
+}
 
-      use amrex_fort_module, only : rt => amrex_real
-      use amrex_parmparse_module
-      use probdata_module
-      use atomic_rates_module, only : XHYDROGEN
-      use meth_params_module, only : URHO, UMX, UMZ, UEDEN, UEINT, UFS, &
-                                     small_dens, TEMP_COMP, NE_COMP, ZHI_COMP
- 
-      implicit none
- 
-      integer level, ns, nd
-      integer lo(3), hi(3)
-      integer s_l1,s_l2,s_l3,s_h1,s_h2,s_h3
-      integer d_l1,d_l2,d_l3,d_h1,d_h2,d_h3
-      real(rt) xlo(3), xhi(3), time, delta(3)
-      real(rt)    state(s_l1:s_h1,s_l2:s_h2,s_l3:s_h3,ns)
-      real(rt) diag_eos(d_l1:d_h1,d_l2:d_h2,d_l3:d_h3,nd)
-
-      integer i,j,k
-      real(rt) z_in
-
-      type(amrex_parmparse) :: pp
-
-      call amrex_parmparse_build(pp, "nyx")
-      call pp%query("initial_z", z_in)
-      call amrex_parmparse_destroy(pp)
-
-      ! This is the case where we have compiled with states defined 
-      !  but they have only one component each so we fill them this way.
-      if (ns.eq.1 .and. nd.eq.1) then
-
-            state(:,:,:,1)    = 0.0d0
-         diag_eos(:,:,:,1)    = 0.0d0
-
-      ! This is the regular case with NO_HYDRO = FALSE
-      else if (ns.gt.1 .and. nd.ge.2) then
-
-         do k = lo(3), hi(3)
-         do j = lo(2), hi(2)
-         do i = lo(1), hi(1)
-
-            state(i,j,k,URHO)    = 1.5d0 * small_dens
-            state(i,j,k,UMX:UMZ) = 0.0d0
-
-            ! These will both be set later in the call to init_e.
-            state(i,j,k,UEINT) = 0.d0
-            state(i,j,k,UEDEN) = 0.d0
-   
-            if (UFS .gt. -1) then
-               state(i,j,k,UFS  ) = XHYDROGEN
-               state(i,j,k,UFS+1) = (1.d0 - XHYDROGEN)
-            end if
-
-            diag_eos(i,j,k,TEMP_COMP) = 0.021d0*(1.0d0 + z_in)**2
-            diag_eos(i,j,k,  NE_COMP) = 0.d0
-
-            if (ZHI_COMP .gt. -1) then
-               diag_eos(i,j,k, ZHI_COMP) = 7.5d0
-            endif
-
-         enddo
-         enddo
-         enddo
-
-      end if
-
-      end subroutine fort_initdata
+#endif
