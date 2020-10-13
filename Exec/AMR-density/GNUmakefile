@@ -7,38 +7,52 @@ SUNDIALS_ROOT ?= $(CVODE_LIB)
 TOP = ../..
 
 # compilation options
-COMP    = intel  # gnu
+COMP    = gnu
 USE_MPI = TRUE
+# Use with Async IO
+MPI_THREAD_MULTIPLE = FALSE
 USE_OMP = TRUE
 USE_CUDA = FALSE
 USE_CXX_PROB = TRUE
 
-ifeq ($(USE_CXX_PROB),TRUE)
-  DEFINES += -DCXX_PROB
-endif
+USE_SUNDIALS      = TRUE
+USE_FUSED = $(USE_SUNDIALS)
+USE_FORT_ODE = FALSE
+SUNDIALS_ROOT ?= $(TOP)/../sundials/instdir
 
-PROFILE       = TRUE
+PROFILE       = FALSE
 TRACE_PROFILE = FALSE
 COMM_PROFILE  = FALSE
-TINY_PROFILE  = FALSE
+TINY_PROFILE  = TRUE
 
 PRECISION = DOUBLE
 USE_SINGLE_PRECISION_PARTICLES = TRUE
 DEBUG     = FALSE
-
-GIMLET = FALSE
-REEBER = FALSE
 
 # physics
 DIM      = 3
 USE_GRAV = TRUE
 USE_HEATCOOL = TRUE
 USE_AGN = FALSE
+ifeq ($(NO_HYDRO),TRUE)
+USE_SDC = FALSE
 USE_SUNDIALS = FALSE
+else
+USE_SDC = TRUE
+USE_SUNDIALS = TRUE
+endif
 USE_CONST_SPECIES = TRUE
 
 Bpack := ./Make.package
 Blocs := .
+
+ifeq ($(USE_FUSED),TRUE)
+ifeq ($(USE_CUDA),TRUE)
+     LIBRARIES += -L$(CVODE_LIB_DIR) -lsundials_cvode_fused_cuda
+else
+     LIBRARIES += -L$(CVODE_LIB_DIR) -lsundials_cvode_fused_stubs
+endif
+endif
 
 include $(TOP)/Exec/Make.Nyx
 
