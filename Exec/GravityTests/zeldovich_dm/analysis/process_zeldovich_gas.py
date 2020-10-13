@@ -42,8 +42,7 @@ params = reader.__next__()
 initial_z = float(params["initial_z"])
 caustic_z = float(params["caustic_z"])
 initial_a = get_scale_factor(initial_z)
-box_length = float(params["box_length_long"])
-box_length_short = float(params["box_length_short"])
+box_length = float(params["box_length"])
 k = float(params["k"])
 offset = float(params["offset"])
 H_0 = float(params["H_0"])
@@ -51,9 +50,9 @@ sheet_normal = np.array((params["normal_x"], params["normal_y"],
                                     params["normal_z"])).astype(float)
 
 normal_length = min(box_length / sheet_normal[0],
-                    box_length_short / sheet_normal[1],
-                    box_length_short / sheet_normal[2])
-q_array = np.linspace(0, normal_length, 100 * box_length * k)
+                    box_length / sheet_normal[1],
+                    box_length / sheet_normal[2])
+q_array = np.linspace(0, normal_length, int(100 * box_length * k))
 
 print("")
 print("Analyzing Zeldovich outputs.")
@@ -177,11 +176,11 @@ for pf_path in pf_paths:
     ax.set_zlabel("z (Mpc)")
     ax.view_init(20, -85)
     ax.plot(xs, ys, zs, '.', alpha=0.015)
-    ax.text(box_length, 0.0, box_length_short*1.25, r"$z_c =$ {:.2f}".format(caustic_z))
-    ax.text(box_length, 0.0, box_length_short*1.1, r"$z =$ {:.2f}".format(current_z))
+    ax.text(box_length, 0.0, box_length*1.25, r"$z_c =$ {:.2f}".format(caustic_z))
+    ax.text(box_length, 0.0, box_length*1.1, r"$z =$ {:.2f}".format(current_z))
     ax.set_xlim3d(0, box_length)
-    ax.set_ylim3d(0, box_length_short)
-    ax.set_zlim3d(0, box_length_short)
+    ax.set_ylim3d(0, box_length)
+    ax.set_zlim3d(0, box_length)
 
     fig.savefig("positions_{:05d}.png".format(plt_num))
     plt.close()

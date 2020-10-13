@@ -50,7 +50,7 @@ sheet_normal = np.array((params["normal_x"], params["normal_y"],
 normal_length = min(box_length / sheet_normal[0],
                     box_length / sheet_normal[1],
                     box_length / sheet_normal[2])
-q_array = np.linspace(0, normal_length, 100 * box_length * k)
+q_array = np.linspace(0, normal_length, int(100 * box_length * k))
 
 print("")
 print("Analyzing Zeldovich outputs.")

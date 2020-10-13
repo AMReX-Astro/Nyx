@@ -155,4 +155,4 @@ amr.derive_plot_vars = particle_count
 #amr.plot_vars = NONE
 
 #PROBIN FILENAME
-amr.probin_file = probin
+amr.probin_file = ""
