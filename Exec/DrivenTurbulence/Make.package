@@ -1,7 +1,1 @@
-f90EXE_sources += Prob_${DIM}d.f90
-f90EXE_sources += bc_fill_$(DIM)d.f90
-f90EXE_sources += probdata.f90
-f90EXE_sources += ext_src_3d.f90
-f90EXE_sources += Derive_prob_3d.f90
-
-
+CEXE_headers += Prob.H
