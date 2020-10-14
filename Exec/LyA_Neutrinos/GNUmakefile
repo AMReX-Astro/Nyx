@@ -14,9 +14,9 @@ USE_CUDA = FALSE
 USE_CXX_PROB = TRUE
 
 USE_SUNDIALS      = TRUE
-USE_FUSED = $(USE_SUNDIALS)
+USE_FUSED ?= $(USE_CUDA)
 USE_FORT_ODE = FALSE
-SUNDIALS_ROOT ?= $(TOP)/../sundials/instdir
+SUNDIALS_ROOT ?=  ${CURDIR}/$(TOP)/../sundials/instdir
 
 PROFILE       = FALSE
 TRACE_PROFILE = FALSE
@@ -50,9 +50,9 @@ Blocs := .
 
 ifeq ($(USE_FUSED),TRUE)
 ifeq ($(USE_CUDA),TRUE)
-     LIBRARIES += -L$(CVODE_LIB_DIR) -lsundials_cvode_fused_cuda
+     LIBRARIES += -L$(SUNDIALS_ROOT)/lib -lsundials_cvode_fused_cuda
 else
-     LIBRARIES += -L$(CVODE_LIB_DIR) -lsundials_cvode_fused_stubs
+     LIBRARIES += -L$(SUNDIALS_ROOT)/lib -lsundials_cvode_fused_stubs
 endif
 endif
 
