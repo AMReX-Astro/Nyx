@@ -1,8 +1,6 @@
 # AMREX_HOME defines the directory in which we will find all the AMReX code
 AMREX_HOME ?= ../../../amrex
 
-SUNDIALS_ROOT ?= $(CVODE_LIB)
-
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ../..
 

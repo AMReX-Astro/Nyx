@@ -1,6 +1,6 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 max_step = 310
-amr.restart = chk00300_for_rt
+#amr.restart = chk00300_sdc_for_rt
 
 amr.mffile_nstreams      = 4
 amr.precreateDirectories = 1
