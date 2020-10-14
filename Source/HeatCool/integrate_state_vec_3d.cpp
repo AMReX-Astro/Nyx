@@ -259,15 +259,11 @@ int Nyx::integrate_state_vec_mfin
                                     flag =CVodeSetConstraints(cvode_mem,constrain);
                                   }
 
-#ifdef SUNDIALS_VERSION_MAJOR
-#if SUNDIALS_VERSION_MAJOR >= 5
-#if SUNDIALS_VERSION_MINOR >= 3
+#ifdef SUNDIALS_BUILD_PACKAGE_FUSED_KERNELS
                                 if(use_sundials_fused)
                                 {
                                      flag = CVodeSetUseIntegratorFusedKernels(cvode_mem, SUNTRUE);
                                 }
-#endif
-#endif
 #endif
                                 CVodeSetUserData(cvode_mem, &Data);
                                 //                              CVodeSetMaxStep(cvode_mem, delta_time/10);
