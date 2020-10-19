@@ -19,10 +19,15 @@ vismf.usedynamicsetselection = 1
 
 nyx.ppm_type         = 1
 
-nyx.strang_split     = 1
+nyx.strang_split     = 0
+nyx.sdc_split        = 1
 nyx.add_ext_src      = 0
-nyx.heat_cool_type   = 3
+nyx.heat_cool_type   = 11
 #nyx.simd_width       = 8
+
+# Note we now set USE_CONST_SPECIES = TRUE in the GNUmakefile
+nyx.h_species=.76
+nyx.he_species=.24
 
 nyx.small_dens = 1.e-2
 nyx.small_temp = 1.e-2
@@ -154,4 +159,4 @@ amr.plot_vars        = density xmom ymom zmom rho_e Temp phi_grav
 amr.derive_plot_vars = particle_mass_density
 
 #PROBIN FILENAME
-amr.probin_file = probin
+amr.probin_file = ""

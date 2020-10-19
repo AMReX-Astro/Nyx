@@ -339,6 +339,13 @@ Nyx::hydro_setup()
     derive_lst.addComponent("overden", desc_lst, State_Type, Density, 1);
 
     //
+    // Cell in center refined area
+    //
+    derive_lst.add("overdenzoom", IndexType::TheCellType(), 1,
+                   deroverden, grow_box_by_one);
+    derive_lst.addComponent("overdenzoom", desc_lst, State_Type, Density, 1);
+
+    //
     // Pressure
     //
     derive_lst.add("pressure", IndexType::TheCellType(), 1,
@@ -716,6 +723,13 @@ Nyx::no_hydro_setup()
                    deroverden, grow_box_by_one);
     derive_lst.addComponent("overden", desc_lst, State_Type, Density, 1);
 
+    //
+    // Cell in center refined area
+    //
+    derive_lst.add("overdenzoom", IndexType::TheCellType(), 1,
+                   deroverden, grow_box_by_one);
+    derive_lst.addComponent("overdenzoom", desc_lst, State_Type, Density, 1);
+
 #else
     derive_lst.add("particle_x_velocity", IndexType::TheCellType(), 1,
                    dernull, grow_box_by_one);
@@ -742,6 +756,13 @@ Nyx::no_hydro_setup()
     derive_lst.add("overden", IndexType::TheCellType(), 1,
                    deroverden, grow_box_by_one);
     derive_lst.addComponent("overden", desc_lst, PhiGrav_Type, 0, 1);
+
+    //
+    // Cell in center refined area
+    //
+    derive_lst.add("overdenzoom", IndexType::TheCellType(), 1,
+                   deroverden, grow_box_by_one);
+    derive_lst.addComponent("overdenzoom", desc_lst, State_Type, Density, 1);
 
 #endif
     derive_lst.add("total_particle_count", IndexType::TheCellType(), 1,

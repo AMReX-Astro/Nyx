@@ -458,6 +458,49 @@ extern "C"
       });
     }
 
+    void deroverdenzoom(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
+                        const FArrayBox& datfab, const Geometry& geomdata,
+                        Real /*time*/, const int* /*bcrec*/, int level)
+    {
+
+      auto const dat = datfab.array();
+      auto const der = derfab.array();
+
+      auto const dx = geomdata.CellSizeArray();
+
+      //Assume Domain is a cube
+      int idim = 0;
+      int domlo = geomdata.Domain().smallEnd(idim);
+      int domhi = geomdata.Domain().bigEnd(idim);
+
+      int ref_size = domhi / (2*std::pow(2,(level+1)));
+      int center   = (domhi-domlo+1) / 2;
+
+      int ilo      = amrex::max(center-ref_size+1, bx.smallEnd(idim));
+      int ihi      = amrex::min(center+ref_size,   bx.bigEnd(idim));
+      auto const bx_ref = Box(IntVect(AMREX_D_DECL(amrex::max(center-ref_size+1, bx.smallEnd(0)),
+                                                   amrex::max(center-ref_size+1, bx.smallEnd(1)),
+                                                   amrex::max(center-ref_size+1, bx.smallEnd(2)))),
+                              IntVect(AMREX_D_DECL(amrex::min(center+ref_size,   bx.bigEnd(0)),
+                                                   amrex::min(center+ref_size,   bx.bigEnd(1)),
+                                                   amrex::min(center+ref_size,   bx.bigEnd(2))) ));
+      amrex::ParallelFor(bx,
+      [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
+      {
+
+        der(i,j,k,0) = 0.0;
+
+      });
+      amrex::ParallelFor(bx_ref,
+      [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
+      {
+
+        der(i,j,k,0) = 1.0;
+
+      });
+      
+    }
+
 #ifdef __cplusplus
 }
 #endif
