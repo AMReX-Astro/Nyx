@@ -804,11 +804,11 @@ int main(int argc, char **argv) {
 
     if (ParallelDescriptor::IOProcessor()) {
         std::cout << "Writing to file." << std::endl;
-        output_create_field(output_path, field_path, "km/s",
+        output_create_field(output_path, field_path, "cm/s",
                             grid_nx, grid_ny, grid_nz);
     }
     // Fix units, km/s -> cm/s.
-    //mf1.mult(1.0e5);
+    mf1.mult(1.0e5);
     ParallelDescriptor::Barrier();
     output_write_field(output_path, field_path, mf1);
     ParallelDescriptor::Barrier();
@@ -826,11 +826,11 @@ int main(int argc, char **argv) {
 
     if (ParallelDescriptor::IOProcessor()) {
         std::cout << "Writing to file." << std::endl;
-        output_create_field(output_path, field_path, "km/s",
+        output_create_field(output_path, field_path, "cm/s",
                             grid_nx, grid_ny, grid_nz);
     }
     // Fix units, km/s -> cm/s.
-    //mf1.mult(1.0e5);
+    mf1.mult(1.0e5);
     ParallelDescriptor::Barrier();
     output_write_field(output_path, field_path, mf1);
     ParallelDescriptor::Barrier();
@@ -848,11 +848,11 @@ int main(int argc, char **argv) {
 
     if (ParallelDescriptor::IOProcessor()) {
         std::cout << "Writing to file." << std::endl;
-        output_create_field(output_path, field_path, "km/s",
+        output_create_field(output_path, field_path, "cm/s",
                             grid_nx, grid_ny, grid_nz);
     }
     // Fix units, km/s -> cm/s.
-    //mf1.mult(1.0e5);
+    mf1.mult(1.0e5);
     ParallelDescriptor::Barrier();
     output_write_field(output_path, field_path, mf1);
     ParallelDescriptor::Barrier();
@@ -933,17 +933,16 @@ int main(int argc, char **argv) {
 
     amrData.FillVar(mf1, level, "xmom", comp_start);
     amrData.FlushGrids(amrData.StateNumber("xmom"));
-    // Divide out density to get velocity.
-    mf1.divide(mf2,comp_start,num_comps,ng);
-    // Fix units, km/s -> cm/s.
-//    mf1.mult(1.0e5);
-
 
     if (ParallelDescriptor::IOProcessor()) {
         std::cout << "Writing to file." << std::endl;
-        output_create_field(output_path, field_path, "km/s",
+        output_create_field(output_path, field_path, "cm/s",
                             grid_nx, grid_ny, grid_nz);
     }
+    // Divide out density to get velocity.
+    mf1.divide(mf2,comp_start,num_comps,ng);
+    // Fix units, km/s -> cm/s.
+    mf1.mult(1.0e5);
     ParallelDescriptor::Barrier();
     output_write_field(output_path, field_path, mf1);
     ParallelDescriptor::Barrier();
@@ -959,13 +958,13 @@ int main(int argc, char **argv) {
 
     if (ParallelDescriptor::IOProcessor()) {
         std::cout << "Writing to file." << std::endl;
-        output_create_field(output_path, field_path, "km/s",
+        output_create_field(output_path, field_path, "cm/s",
                             grid_nx, grid_ny, grid_nz);
     }
     // Divide out density to get velocity.
     mf1.divide(mf2,comp_start,num_comps,ng);
     // Fix units, km/s -> cm/s.
-   // mf1.mult(1.0e5);
+    mf1.mult(1.0e5);
     ParallelDescriptor::Barrier();
     output_write_field(output_path, field_path, mf1);
     ParallelDescriptor::Barrier();
@@ -981,13 +980,13 @@ int main(int argc, char **argv) {
 
     if (ParallelDescriptor::IOProcessor()) {
         std::cout << "Writing to file." << std::endl;
-        output_create_field(output_path, field_path, "km/s",
+        output_create_field(output_path, field_path, "cm/s",
                             grid_nx, grid_ny, grid_nz);
     }
     // Divide out density to get velocity.
     mf1.divide(mf2,comp_start,num_comps,ng);
     // Fix units, km/s -> cm/s.
-    //mf1.mult(1.0e5);
+    mf1.mult(1.0e5);
     ParallelDescriptor::Barrier();
     output_write_field(output_path, field_path, mf1);
     ParallelDescriptor::Barrier();
