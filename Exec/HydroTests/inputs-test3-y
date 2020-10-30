@@ -16,7 +16,7 @@ nyx.gamma = 1.4
 nyx.initial_z = 0.
 
 # PROBLEM SIZE & GEOMETRY
-geometry.is_periodic = 0 0 0
+geometry.is_periodic = 1 0 1
 geometry.coord_sys   = 0  # 0 => cart, 1 => RZ
 geometry.prob_lo     =  0     0     0
 geometry.prob_hi     =  0.125 1     0.125
@@ -27,8 +27,8 @@ amr.n_cell           =  4     32    4
 # 1 = Inflow             4 = SlipWall
 # 2 = Outflow            5 = NoSlipWall
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
-nyx.lo_bc       =  4   2   4
-nyx.hi_bc       =  4   2   4
+nyx.lo_bc       =  0   2   0
+nyx.hi_bc       =  0   2   0
 
 # WHICH PHYSICS
 nyx.do_hydro = 1
