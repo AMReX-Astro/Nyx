@@ -2,11 +2,11 @@
 
 [![AMReX](https://amrex-codes.github.io/badges/powered%20by-AMReX-red.svg)](https://amrex-codes.github.io)
 
-*an adaptive mesh, massively-parallel, cosmological simulation code*
+*An adaptive mesh, massively-parallel, cosmological simulation code*
 
 ******
 
-## About
+### About
 
 Nyx code solves equations of compressible hydrodynamics on an adaptive grid
 hierarchy coupled with an N-body treatment of dark matter. The gasdynamics in
@@ -20,40 +20,52 @@ ionization equilibrium, the code calculates heating and cooling processes of the
 primordial-composition gas in an ionizing ultraviolet background radiation field.
 Additional physics capabilities are under development.
 
-Nyx is parallelized with MPI + OpenMP, and has been run at parallel concurrency
-of up to 2,097,152 (on NERSC's Cori).
+While Nyx can run on any Linux system in general, we particularly focus on supercomputer systems.
+Nyx is parallelized with MPI + X, where "X" can be OpenMP, Cuda, or HIP (DPC++ implementation
+is ongoing). In the OpenMP regime, Nyx and has been successfully run at parallel concurrency
+of up to 2,097,152 (on NERSC's Cori-KNL). With Cuda implementation, it was ran on up to
+13,824 GPUs (on OLCF's Summit).
 
 More information on Nyx can be found at 
 http://amrex-astro.github.io/Nyx/
 
-## Getting Started
 
-To compile the code, we require Fortran 2003 and C++11 compliant compilers that
-support (if parallelism is sought) OpenMP 4.5 or better, and/or MPI-2 or higher
-implementation.
+### Standards and dependencies
+
+To compile the code we require C++11 compliant compilers that support MPI-2 or
+higher implementation.  If threads or accelerators are used, we require 
+OpenMP 4.5 or higher, Cuda 9 or higher, or HIP-Clang.
 
 To use Nyx, you also need AMReX:
 https://github.com/AMReX-codes/amrex
+
+For axample, this is what we currently do to compile Lyman alpha executable on Summit:
+```sh
+$ module load gcc/6.4.0 cuda/11.0.3
+
+$ git clone https://github.com/AMReX-Codes/amrex.git
+$ git clone https://github.com/AMReX-astro/Nyx.git
+
+$ cd Nyx/Exec/LyA
+$ make -j 12 USE_CUDA=TRUE
+```
+
 
 There is a User's Guide in `Nyx/UsersGuide/` (type `make` to build
 from LaTeX source) that will guide you through running your first
 problem.
 
 
-## Development Model
+### Development model
 
-New features are committed to the `development` branch.  We use nightly
+The `development` branch in also the main branch.  We use nightly
 regression testing to ensure that no answers change (or if they do, that
-the changes were expected).  No changes should be pushed directly into
-`master`. Approximately once a month, we perform a merge of `development`
-into `master`.
-
-Contributions are welcomed and should be done via pull requests.
+the changes were expected). Contributions are welcomed and should be done via pull requests.
 A pull request should be generated from your fork of Nyx and should target
 the `development` branch.
 
 
-## Physics
+### Physics
 
 For the description of the N-body and adiabatic hydro algorithms in Nyx, see
 Almgren, Bell, Lijewski, Lukic & Van Andel (2013), ApJ, 765, 39:
@@ -72,7 +84,8 @@ http://adsabs.harvard.edu/abs/2017ApJ...837..106O
 We have also implemented non-radiative transfer methods to model inhomogeneous reionization,
 the paper is in preparation.
 
-## Output
+
+### Output
 
 Nyx outputs certain global diagnostics at each timestep and plot files at regular
 intervals, or at user-specified redshifts. Visualization packages
@@ -88,11 +101,11 @@ related to the Lyman-alpha forest science. These suites are fully MPI-parallel a
 be run either "in situ" or "in-transit", or with a combination of both.
 
 
-## License
+### License
 Nyx is released under the LBL's modified BSD license, see the [license.txt](license.txt) file for details.
 
 
-## Contact
+### Contact
 
 For questions, comments, suggestions, contact Ann Almgren at ASAlmgren@lbl.gov
 or Zarija Lukic at zarija@lbl.gov .
