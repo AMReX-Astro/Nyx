@@ -133,7 +133,7 @@ amr.plot_file       = plt
 amr.plot_int        = 10000
 
 amr.plot_vars        = ALL
-amr.derive_plot_vars = particle_count particle_mass_density pressure magvel
+amr.derive_plot_vars = particle_count particle_mass_density pressure
 
 #PROBIN FILENAME
 amr.probin_file = ""
