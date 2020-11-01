@@ -9,7 +9,7 @@
 ### About
 
 Nyx code solves equations of compressible hydrodynamics on an adaptive grid
-hierarchy coupled with an N-body treatment of dark matter. The gasdynamics in
+hierarchy coupled with an N-body treatment of dark matter. The gas dynamics in
 Nyx uses a finite volume methodology on an adaptive set of 3-D Eulerian grids;
 dark matter is represented as discrete particles moving under the influence of
 gravity. Particles are evolved via a particle-mesh method, using Cloud-in-Cell
@@ -21,14 +21,13 @@ primordial-composition gas in an ionizing ultraviolet background radiation field
 Additional physics capabilities are under development.
 
 While Nyx can run on any Linux system in general, we particularly focus on supercomputer systems.
-Nyx is parallelized with MPI + X, where "X" can be OpenMP, Cuda, or HIP (DPC++ implementation
+Nyx is parallelized with MPI + X, where "X" can be OpenMP, CUDA, or HIP (DPC++ implementation
 is ongoing). In the OpenMP regime, Nyx and has been successfully run at parallel concurrency
 of up to 2,097,152 (on NERSC's Cori-KNL). With Cuda implementation, it was ran on up to
 13,824 GPUs (on OLCF's Summit).
 
 More information on Nyx can be found at 
 http://amrex-astro.github.io/Nyx/
-
 
 ### Standards and dependencies
 
@@ -39,7 +38,7 @@ OpenMP 4.5 or higher, Cuda 9 or higher, or HIP-Clang.
 To use Nyx, you also need AMReX:
 https://github.com/AMReX-codes/amrex
 
-For axample, this is what we currently do to compile Lyman alpha executable on Summit:
+For example, to compile the Lyman alpha (LyA) executable on Summit:
 ```sh
 $ module load gcc/6.4.0 cuda/11.0.3
 
