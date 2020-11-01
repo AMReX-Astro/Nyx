@@ -2898,117 +2898,108 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
 {
     BL_PROFILE("Nyx::compute_gas_fractions()");
     amrex::Gpu::LaunchSafeGuard lsg(true);
-    {
+
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
 
     Real whim_mass=0.0, whim_vol=0.0, hh_mass=0.0, hh_vol=0.0, igm_mass=0.0, igm_vol=0.0, mass_sum=0.0, vol_sum=0.0;
 
-#ifdef AMREX_USE_GPU
-    Gpu::DeviceScalar<Real> whim_mass_gpu( whim_mass);
-    Gpu::DeviceScalar<Real> whim_vol_gpu( whim_vol);
-    Gpu::DeviceScalar<Real> hh_mass_gpu( hh_mass);
-    Gpu::DeviceScalar<Real> hh_vol_gpu( hh_vol);
-    Gpu::DeviceScalar<Real> igm_mass_gpu( igm_mass);
-    Gpu::DeviceScalar<Real> igm_vol_gpu( igm_vol);
-    Gpu::DeviceScalar<Real> mass_sum_gpu( mass_sum);
-    Gpu::DeviceScalar<Real> vol_sum_gpu( vol_sum);
-    
-#endif
     Real rho_hi = 1.1*average_gas_density;
     Real rho_lo = 0.9*average_gas_density;
     const auto dx= geom.CellSizeArray();
     int average_gas_density=average_gas_density;
 
+#ifdef AMREX_USE_GPU
+    if (Gpu::inLaunchRegion())
+    {
+        ReduceOps<ReduceOpSum,ReduceOpSum,ReduceOpSum,ReduceOpSum,
+                  ReduceOpSum,ReduceOpSum,ReduceOpSum,ReduceOpSum> reduce_op;
+        ReduceData<Real,Real,Real,Real,Real,Real,Real,Real> reduce_data(reduce_op);
+        using ReduceTuple = typename decltype(reduce_data)::Type;
+
+        for (MFIter mfi(S_new); mfi.isValid(); ++mfi)
+        {
+            const Box& bx = mfi.tilebox();
+            const auto state    = S_new.const_array(mfi);
+            const auto diag_eos = D_new.const_array(mfi);
+            Real vol = dx[0]*dx[1]*dx[2];
+            reduce_op.eval(bx, reduce_data,
+            [=] AMREX_GPU_DEVICE (int i, int j, int k) -> ReduceTuple
+            {
+                Real T = diag_eos(i,j,k,Temp_comp);
+                Real R = state(i,j,k,Density) / average_gas_density;
+                Real rho_vol = state(i,j,k,Density)*vol;
+                Real l_whim_mass = 0._rt;
+                Real l_whim_vol = 0._rt;
+                Real l_hh_mass = 0._rt;
+                Real l_hh_vol = 0._rt;
+                Real l_igm_mass = 0._rt;
+                Real l_igm_vol = 0._rt;
+                if ( (T > T_cut) && (R <= rho_cut) ) {
+                    l_whim_mass = rho_vol;
+                    l_whim_vol = vol;
+                }
+                else if ( (T > T_cut) && (R > rho_cut) ) {
+                    l_hh_mass = rho_vol;
+                    l_hh_vol = vol;
+                }
+                else if ( (T <= T_cut) && (R <= rho_cut) ) {
+                    l_igm_mass = rho_vol;
+                    l_igm_vol = vol;
+                }
+                Real l_mass_sum = rho_vol;
+                Real l_vol_sum = vol;
+                return {l_whim_mass, l_whim_vol, l_hh_mass, l_hh_vol,
+                        l_igm_mass, l_igm_vol, l_mass_sum, l_vol_sum};
+            });
+        }
+
+        ReduceTuple hv = reduce_data.value();
+        whim_mass = amrex::get<0>(hv);
+        whim_vol  = amrex::get<1>(hv);
+        hh_mass   = amrex::get<2>(hv);
+        hh_vol    = amrex::get<3>(hv);
+        igm_mass  = amrex::get<4>(hv);
+        igm_vol   = amrex::get<5>(hv);
+        mass_sum  = amrex::get<6>(hv);
+        vol_sum   = amrex::get<7>(hv);
+    }
+    else
+#endif
+    {
 #ifdef _OPENMP
 #pragma omp parallel reduction(+:whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum)
 #endif
-    for (MFIter mfi(S_new,!amrex::Gpu::inLaunchRegion()); mfi.isValid(); ++mfi)
-    {
-        const Box& bx = mfi.tilebox();
-        const auto lo = amrex::lbound(bx);
-        const auto hi = amrex::ubound(bx);
-        const auto state    = S_new.array(mfi);
-        const auto diag_eos = D_new.array(mfi);
-        Real vol = dx[0]*dx[1]*dx[2];
-
-#ifdef AMREX_USE_GPU
-    Real* pwhim_mass= whim_mass_gpu.dataPtr();
-    Real* pwhim_vol= whim_vol_gpu.dataPtr();
-    Real* phh_mass= hh_mass_gpu.dataPtr();
-    Real* phh_vol= hh_vol_gpu.dataPtr();
-    Real* pigm_mass= igm_mass_gpu.dataPtr();
-    Real* pigm_vol= igm_vol_gpu.dataPtr();
-    Real* pmass_sum= mass_sum_gpu.dataPtr();
-    Real* pvol_sum= vol_sum_gpu.dataPtr();
-#else
-    Real* pwhim_mass = &whim_mass;
-    Real* pwhim_vol = &whim_vol;
-    Real* phh_mass = &hh_mass;
-    Real* phh_vol = &hh_vol;
-    Real* pigm_mass = &igm_mass;
-    Real* pigm_vol = &igm_vol;
-    Real* pmass_sum = &mass_sum;
-    Real* pvol_sum = &vol_sum;
-#endif
-
-        amrex::ParallelFor(bx,
-                      [=] AMREX_GPU_HOST_DEVICE (int i, int j, int k)
-           {
-
-             Real T, R, rho_vol;
-
-              T = diag_eos(i,j,k,Temp_comp);
-              R = state(i,j,k,Density) / average_gas_density;
-              rho_vol = state(i,j,k,Density)*vol;
-              if ( (T > T_cut) && (R <= rho_cut) ) {
-                amrex::Gpu::Atomic::Add(pwhim_mass,rho_vol);
-                amrex::Gpu::Atomic::Add(pwhim_vol,vol);
-              }
-              else if ( (T > T_cut) && (R > rho_cut) ) {
-                amrex::Gpu::Atomic::Add(phh_mass, rho_vol);
-                amrex::Gpu::Atomic::Add(phh_vol, vol);
-              }
-              else if ( (T <= T_cut) && (R <= rho_cut) ) {
-                amrex::Gpu::Atomic::Add(pigm_mass, rho_vol);
-                amrex::Gpu::Atomic::Add(pigm_vol,  vol);
-              }
-              amrex::Gpu::Atomic::Add(pmass_sum, rho_vol);
-              amrex::Gpu::Atomic::Add(pvol_sum, vol);
-           });
-
-
+        for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
+        {
+            const Box& bx = mfi.tilebox();
+            const auto state    = S_new.const_array(mfi);
+            const auto diag_eos = D_new.const_array(mfi);
+            Real vol = dx[0]*dx[1]*dx[2];
+            AMREX_LOOP_3D(bx, i, j, k,
+            {
+                Real T = diag_eos(i,j,k,Temp_comp);
+                Real R = state(i,j,k,Density) / average_gas_density;
+                Real rho_vol = state(i,j,k,Density)*vol;
+                if ( (T > T_cut) && (R <= rho_cut) ) {
+                    whim_mass += rho_vol;
+                    whim_vol += vol;
+                }
+                else if ( (T > T_cut) && (R > rho_cut) ) {
+                    hh_mass += rho_vol;
+                    hh_vol += vol;
+                }
+                else if ( (T <= T_cut) && (R <= rho_cut) ) {
+                    igm_mass += rho_vol;
+                    igm_vol += vol;
+                }
+                mass_sum += rho_vol;
+                vol_sum += vol;
+            });
+        }
     }
 
-#ifdef AMREX_USE_GPU
-    amrex::Gpu::Device::streamSynchronize();
-
-    whim_mass= whim_mass_gpu.dataValue();
-    whim_vol= whim_vol_gpu.dataValue();
-    hh_mass= hh_mass_gpu.dataValue();
-    hh_vol= hh_vol_gpu.dataValue();
-    igm_mass= igm_mass_gpu.dataValue();
-    igm_vol= igm_vol_gpu.dataValue();
-    mass_sum= mass_sum_gpu.dataValue();
-    vol_sum= vol_sum_gpu.dataValue();
-    
-/*    whim_mass = whim_mass_gpu.dataValue();
-    whim_vol = whim_vol_gpu.dataValue();
     Real sums[8] = {whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum};
-    //,whim_vol_gpu.dataValue(),hh_mass_gpu.dataValue(),hh_vol_gpu.dataValue(),igm_mass_gpu.dataValue(), igm_vol_gpu.dataValue(),mass_sum_gpu.dataValue(),vol_sum_gpu.dataValue()};*/
-    Real sums[8];
-    sums[0] = whim_mass;
-    sums[1] = whim_vol;
-    sums[2] = hh_mass;
-    sums[3] = hh_vol;
-    sums[4] = igm_mass;
-    sums[5] = igm_vol;
-    sums[6] = mass_sum;
-    sums[7] = vol_sum;
-    //    Real sums[8] = {whim_mass_gpu.dataValue(),whim_vol_gpu.dataValue(),hh_mass_gpu.dataValue(),hh_vol_gpu.dataValue(),igm_mass_gpu.dataValue(), igm_vol_gpu.dataValue(),mass_sum_gpu.dataValue(),vol_sum_gpu.dataValue()};
-#else
-    Real sums[8] = {whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum};
-#endif
 
     ParallelDescriptor::ReduceRealSum(sums,8);
 
@@ -3018,8 +3009,6 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
     hh_vol_frac    = sums[3] / sums[7];
     igm_mass_frac  = sums[4] / sums[6];
     igm_vol_frac   = sums[5] / sums[7];
-    }
-
 }
 #endif
 
