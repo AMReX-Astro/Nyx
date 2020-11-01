@@ -145,6 +145,8 @@ public:
     static int write_skip_prepost;
     static int write_hdf5;
 
+    static int runlog_precision;
+
     //
     // If true then print the warnings from the Fortran routines
     //

@@ -9,6 +9,8 @@ Nyx::write_info ()
     int ndatalogs = parent->NumDataLogs();
     Real time_unit = 3.0856776e19 / 31557600.0; // conversion to Julian years
 
+    int rlp = Nyx::runlog_precision;
+
     if (ndatalogs > 0)
     {
 #ifndef NO_HYDRO
@@ -70,25 +72,25 @@ Nyx::write_info ()
 
                 Real old_z = (1. / old_a) - 1.;
                 data_loga << std::setw( 8) <<  nstep;
-                data_loga << std::setw(14) <<  std::setprecision(6) <<  (initial_time+time) * time_unit;
-                data_loga << std::setw(14) <<  std::setprecision(6) <<    dt * time_unit;
-                data_loga << std::setw(14) <<  std::setprecision(6) << old_z;
-                data_loga << std::setw(14) <<  std::setprecision(6) << old_a;
+                data_loga << std::setw(14) <<  std::setprecision(rlp) <<  (initial_time+time) * time_unit;
+                data_loga << std::setw(14) <<  std::setprecision(rlp) <<    dt * time_unit;
+                data_loga << std::setw(14) <<  std::setprecision(rlp) << old_z;
+                data_loga << std::setw(14) <<  std::setprecision(rlp) << old_a;
 #ifndef NO_HYDRO
                 if (do_hydro == 1)
                 {
-                   data_loga << std::setw(14) <<  std::setprecision(6) << max_t;
-                   data_loga << std::setw(14) <<  std::setprecision(6) << rho_T_avg;
-                   data_loga << std::setw(14) <<  std::setprecision(6) << T_avg;
-                   data_loga << std::setw(14) <<  std::setprecision(6) << T_meanrho;
-                   data_loga << std::setw(14) <<  std::setprecision(6) << 1.0/Tinv_avg;
-                   data_loga << std::setw(14) <<  std::setprecision(6) << 0.021*(1.0+old_z)*(1.0+old_z);
-                   data_loga << std::setw(14) <<  std::setprecision(6) << whim_mass_frac;
-                   data_loga << std::setw(14) <<  std::setprecision(6) << whim_vol_frac;
-                   data_loga << std::setw(14) <<  std::setprecision(6) << hh_mass_frac;
-                   data_loga << std::setw(14) <<  std::setprecision(6) << hh_vol_frac;
-                   data_loga << std::setw(14) <<  std::setprecision(6) << igm_mass_frac;
-                   data_loga << std::setw(14) <<  std::setprecision(6) << igm_vol_frac;
+                   data_loga << std::setw(14) <<  std::setprecision(rlp) << max_t;
+                   data_loga << std::setw(14) <<  std::setprecision(rlp) << rho_T_avg;
+                   data_loga << std::setw(14) <<  std::setprecision(rlp) << T_avg;
+                   data_loga << std::setw(14) <<  std::setprecision(rlp) << T_meanrho;
+                   data_loga << std::setw(14) <<  std::setprecision(rlp) << 1.0/Tinv_avg;
+                   data_loga << std::setw(14) <<  std::setprecision(rlp) << 0.021*(1.0+old_z)*(1.0+old_z);
+                   data_loga << std::setw(14) <<  std::setprecision(rlp) << whim_mass_frac;
+                   data_loga << std::setw(14) <<  std::setprecision(rlp) << whim_vol_frac;
+                   data_loga << std::setw(14) <<  std::setprecision(rlp) << hh_mass_frac;
+                   data_loga << std::setw(14) <<  std::setprecision(rlp) << hh_vol_frac;
+                   data_loga << std::setw(14) <<  std::setprecision(rlp) << igm_mass_frac;
+                   data_loga << std::setw(14) <<  std::setprecision(rlp) << igm_vol_frac;
                 }
 #endif
                 data_loga << '\n';
@@ -97,25 +99,25 @@ Nyx::write_info ()
             {
                 const Real new_z = (1. / new_a) - 1.;
                 data_loga << std::setw( 8) <<  nstep;
-                data_loga << std::setw(14) <<  std::setprecision(6) <<  (initial_time+time) * time_unit;
-                data_loga << std::setw(14) <<  std::setprecision(6) <<    dt * time_unit;
-                data_loga << std::setw(14) <<  std::setprecision(6) << new_z;
-                data_loga << std::setw(14) <<  std::setprecision(6) << new_a;
+                data_loga << std::setw(14) <<  std::setprecision(rlp) <<  (initial_time+time) * time_unit;
+                data_loga << std::setw(14) <<  std::setprecision(rlp) <<    dt * time_unit;
+                data_loga << std::setw(14) <<  std::setprecision(rlp) << new_z;
+                data_loga << std::setw(14) <<  std::setprecision(rlp) << new_a;
 #ifndef NO_HYDRO
                 if (do_hydro == 1)
                 {
-                   data_loga << std::setw(14) <<  std::setprecision(6) << max_t;
-                   data_loga << std::setw(14) <<  std::setprecision(6) << rho_T_avg;
-                   data_loga << std::setw(14) <<  std::setprecision(6) << T_avg;
-                   data_loga << std::setw(14) <<  std::setprecision(6) << T_meanrho;
-                   data_loga << std::setw(14) <<  std::setprecision(6) << 1.0/Tinv_avg;
-                   data_loga << std::setw(14) <<  std::setprecision(6) << 0.021*(1.0+new_z)*(1.0+new_z);
-                   data_loga << std::setw(14) <<  std::setprecision(6) << whim_mass_frac;
-                   data_loga << std::setw(14) <<  std::setprecision(6) << whim_vol_frac;
-                   data_loga << std::setw(14) <<  std::setprecision(6) << hh_mass_frac;
-                   data_loga << std::setw(14) <<  std::setprecision(6) << hh_vol_frac;
-                   data_loga << std::setw(14) <<  std::setprecision(6) << igm_mass_frac;
-                   data_loga << std::setw(14) <<  std::setprecision(6) << igm_vol_frac;
+                   data_loga << std::setw(14) <<  std::setprecision(rlp) << max_t;
+                   data_loga << std::setw(14) <<  std::setprecision(rlp) << rho_T_avg;
+                   data_loga << std::setw(14) <<  std::setprecision(rlp) << T_avg;
+                   data_loga << std::setw(14) <<  std::setprecision(rlp) << T_meanrho;
+                   data_loga << std::setw(14) <<  std::setprecision(rlp) << 1.0/Tinv_avg;
+                   data_loga << std::setw(14) <<  std::setprecision(rlp) << 0.021*(1.0+new_z)*(1.0+new_z);
+                   data_loga << std::setw(14) <<  std::setprecision(rlp) << whim_mass_frac;
+                   data_loga << std::setw(14) <<  std::setprecision(rlp) << whim_vol_frac;
+                   data_loga << std::setw(14) <<  std::setprecision(rlp) << hh_mass_frac;
+                   data_loga << std::setw(14) <<  std::setprecision(rlp) << hh_vol_frac;
+                   data_loga << std::setw(14) <<  std::setprecision(rlp) << igm_mass_frac;
+                   data_loga << std::setw(14) <<  std::setprecision(rlp) << igm_vol_frac;
                 }
 #endif
                 data_loga << std::endl;

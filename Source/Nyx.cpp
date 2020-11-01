@@ -190,6 +190,9 @@ Real Nyx::mass_seed         = 1.e5;
 #include <omp.h>
 #endif
 
+// The default for how many digits to use for each column in the runlog
+int Nyx::runlog_precision = 6;
+
 int Nyx::write_parameters_in_plotfile = true;
 int Nyx::write_skip_prepost = 0;
 int Nyx::write_hdf5 = 0;
@@ -552,6 +555,8 @@ Nyx::read_params ()
     read_particle_params();
 
     read_init_params();
+
+    pp_nyx.query("runlog_precision",runlog_precision);
 
     pp_nyx.query("write_parameter_file",write_parameters_in_plotfile);
     if(pp_nyx.query("write_hdf5",write_hdf5))
