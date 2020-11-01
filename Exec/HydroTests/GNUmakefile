@@ -21,8 +21,6 @@ USE_GRAV = FALSE
 
 USE_CONST_SPECIES = TRUE
 
-USE_CXX_PROB = TRUE
-
 Bpack := ./Make.package
 Blocs := .
 

@@ -2461,8 +2461,6 @@ Nyx::errorEst (TagBoxArray& tags,
 
     Real avg;
 
-#ifdef CXX_PROB
-    
     for (int j=0; j<errtags.size(); ++j) {
       std::unique_ptr<MultiFab> mf;
       if (errtags[0].Field() != std::string()) {
@@ -2470,125 +2468,6 @@ Nyx::errorEst (TagBoxArray& tags,
       }
       errtags[j](tags,mf.get(),clearval,tagval,time,level,geom);
     }
-    
-#else
-    for (int j = 0; j < err_list.size(); j++)
-    {
-        auto mf = derive(err_list[j].name(), time, err_list[j].nGrow());
-
-        BL_ASSERT(!(mf == 0));
-
-        if (err_list[j].errType() == ErrorRec::UseAverage)
-        {
-            if (err_list[j].name() == "density")
-            {
-                avg = average_gas_density;
-            }
-            else if (err_list[j].name() == "particle_mass_density")
-            {
-                avg = average_dm_density;
-#ifdef NEUTRINO_PARTICLES
-                avg += average_neutr_density;
-#endif
-            }
-            else if (err_list[j].name() == "total_density")
-            {
-                avg = average_total_density;
-            }
-#if 0
-            else if (err_list[j].name() == "magvort")
-            {
-                avg = std::fabs(ave_lev_vorticity[level]);
-                stddev = std_lev_vorticity[level];
-                thresh = avg + std::max(stddev,avg);
-                //std::cout << "errorEst, level " << level << ": magvort avg " << avg << ", stddev " << stddev
-                //        << ", max " << std::max(stddev,avg) << ", thresh " << thresh << std::endl;
-                thresh = std::max(thresh, 500.0);
-                //std::cout << "errorEst, level " << level << ": thresh cut " << thresh << std::endl;
-                avg = thresh;
-            }
-#endif
-            else
-            {
-                if (ParallelDescriptor::IOProcessor())
-                    std::cout << "Dont know the average of this variable "
-                              << err_list[j].name() << '\n';
-                avg = 0;
-            }
-        }
-
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
-        {
-            Vector<int> itags;
-
-            for (MFIter mfi(*mf,true); mfi.isValid(); ++mfi)
-            {
-                // FABs
-                FArrayBox&  datfab  = (*mf)[mfi];
-                TagBox&     tagfab  = tags[mfi];
-
-                // Box in physical space
-                int         idx     = mfi.index();
-                RealBox     gridloc = RealBox(grids[idx],geom.CellSize(),geom.ProbLo());
-
-                // tile box
-                const Box&  tilebx  = mfi.tilebox();
-
-                //fab box
-                const Box&  datbox  = datfab.box();
-
-                // We cannot pass tagfab to Fortran becuase it is BaseFab<char>.
-                // So we are going to get a temporary integer array.
-                tagfab.get_itags(itags, tilebx);
-
-                // data pointer and index space
-                int*        tptr    = itags.dataPtr();
-                const int*  tlo     = tilebx.loVect();
-                const int*  thi     = tilebx.hiVect();
-                //
-                const int*  lo      = tlo;
-                const int*  hi      = thi;
-                //
-                const Real* xlo     = gridloc.lo();
-                //
-                Real*       dat     = datfab.dataPtr();
-                const int*  dlo     = datbox.loVect();
-                const int*  dhi     = datbox.hiVect();
-                const int   ncomp   = datfab.nComp();
-
-                if (err_list[j].errType() == ErrorRec::Standard)
-                {
-                    err_list[j].errFunc()(tptr, ARLIM(tlo), ARLIM(thi), &tagval,
-                                          &clearval, dat, ARLIM(dlo), ARLIM(dhi),
-                                          lo, hi, &ncomp, domain_lo, domain_hi,
-                                          dx, xlo, prob_lo, &time, &level);
-                }
-                else if (err_list[j].errType() == ErrorRec::UseAverage)
-                {
-                   err_list[j].errFunc2()(tptr, ARLIM(tlo), ARLIM(thi), &tagval,
-                                          &clearval, dat, ARLIM(dlo), ARLIM(dhi),
-                                          lo, hi, &ncomp, domain_lo, domain_hi,
-                                          dx, &level, &avg);
-                }
-
-                //
-                // Don't forget to set the tags in the TagBox.
-                //
-                if (allow_untagging == 1)
-                {
-                    tagfab.tags_and_untags(itags, tilebx);
-                }
-                else
-                {
-                   tagfab.tags(itags, tilebx);
-                }
-            }
-        }
-    }
-#endif
-
 }
 
 std::unique_ptr<MultiFab>
@@ -2770,28 +2649,11 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
     amrex::Gpu::synchronize();
     amrex::Gpu::LaunchSafeGuard lsg(true);
     if (heat_cool_type == 7) {
-#ifdef CXX_PROB
         amrex::Abort("No vectorized CVODE with C++ f_rhs");
-#else
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
-      for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
-        {
-          const Box& bx = mfi.tilebox();
 
-          fort_compute_temp_vec
-              (bx.loVect(), bx.hiVect(),
-               BL_TO_FORTRAN(S_new[mfi]),
-               BL_TO_FORTRAN(D_new[mfi]), &a,
-               &print_fortran_warnings);
-        }
-#endif
-    }
-    else
-      {
-            FArrayBox test, test_d;
-            int print_warn=0;
+    } else {
+        FArrayBox test, test_d;
+        int print_warn=0;
 
 #ifdef _OPENMP
 #pragma omp parallel

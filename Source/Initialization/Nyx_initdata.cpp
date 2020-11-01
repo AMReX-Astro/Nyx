@@ -1,13 +1,10 @@
 #include <iomanip>
 #include <Nyx.H>
 #include <Nyx_F.H>
+#include <Prob.H>
 
 #ifdef GRAVITY
 #include <Gravity.H>
-#endif
-
-#ifdef CXX_PROB
-#include <Prob.H>
 #endif
 
 using namespace amrex;
@@ -217,11 +214,7 @@ Nyx::initData ()
     // Here we initialize the grid data and the particles from a plotfile.
     if (!parent->theRestartPlotFile().empty())
     {
-#ifdef CXX_PROB
         amrex::Abort("AmrData requires fortran");
-#else
-        init_from_plotfile();
-#endif
         return;
     }
 
@@ -259,7 +252,6 @@ Nyx::initData ()
             for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
             {
                 const Box& bx = mfi.tilebox();
-#ifdef CXX_PROB
                 const auto fab_S_new=S_new.array(mfi);
                 const auto fab_D_new=D_new.array(mfi);
 
@@ -271,17 +263,6 @@ Nyx::initData ()
                                    prob_initdata
                                        (i, j ,k, fab_S_new, fab_D_new, geomdata, prob_param);
                                });
-#else
-                int         ns       = S_new.nComp();
-                int         nd       = D_new.nComp();
-                RealBox gridloc = RealBox(bx, geom.CellSize(), geom.ProbLo());
-
-                fort_initdata
-                    (level, cur_time, bx.loVect(), bx.hiVect(), 
-                     ns, BL_TO_FORTRAN(S_new[mfi]), 
-                     nd, BL_TO_FORTRAN(D_new[mfi]), 
-                     dx.data(), gridloc.lo(), gridloc.hi());
-#endif
             }
 
             if (inhomo_reion) init_zhi();
@@ -301,7 +282,6 @@ Nyx::initData ()
             for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
             {
                 const Box& bx = mfi.tilebox();
-#ifdef CXX_PROB
                 const auto fab_S_new=S_new.array(mfi);                
 
                 GpuArray<amrex::Real,max_prob_param> prob_param;
@@ -311,16 +291,6 @@ Nyx::initData ()
                                    prob_initdata_state
                                       (i, j ,k, fab_S_new, geomdata, prob_param);
                                });
-#else
-                int         ns       = S_new.nComp();
-                RealBox gridloc = RealBox(bx, geom.CellSize(), geom.ProbLo());
-    
-                fort_initdata
-                    (level, cur_time, bx.loVect(), bx.hiVect(), 
-                     ns, BL_TO_FORTRAN(S_new[mfi]), 
-                     ns, BL_TO_FORTRAN(S_new[mfi]), 
-                     dx.data(), gridloc.lo(), gridloc.hi());
-#endif
             }
         }
     }
@@ -450,7 +420,7 @@ Nyx::initData ()
         std::cout << "Done initializing the level " << level << " data\n";
 }
 
-#ifndef CXX_PROB
+#if 0
 void
 Nyx::init_from_plotfile ()
 {

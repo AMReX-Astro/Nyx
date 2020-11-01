@@ -9,7 +9,6 @@ COMP    = gcc
 USE_MPI = TRUE
 USE_OMP = TRUE
 USE_CUDA = FALSE
-USE_CXX_PROB = TRUE
 
 PRECISION = DOUBLE
 DEBUG     = FALSE
@@ -17,7 +16,6 @@ DEBUG     = FALSE
 # physics
 DIM      = 3
 USE_GRAV = TRUE
-
 
 Bpack := ./Make.package
 Blocs := .
