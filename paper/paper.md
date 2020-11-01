@@ -8,7 +8,7 @@ tags:
   - N-body
 authors:
   - name: Jean Sexton
-    orcid: 
+    orcid: 0000-0003-2551-1678
     affiliation: 1
   - name: Zarija Lukic
     orcid: 
