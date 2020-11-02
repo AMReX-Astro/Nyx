@@ -1,6 +1,5 @@
 #include <iomanip>
 #include <Nyx.H>
-#include <Nyx_F.H>
 #include <Prob.H>
 
 #ifdef GRAVITY

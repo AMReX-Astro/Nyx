@@ -9,7 +9,6 @@
 
 #include <AMReX_BLFort.H>
 #include <Nyx.H>
-#include <Nyx_F.H>
 #include <f_rhs.H>
 #include <f_rhs_struct.H>
 

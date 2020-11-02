@@ -1,9 +1,4 @@
 #include <Nyx.H>
-#include <Nyx_F.H>
-
-#ifdef GRAVITY
-#include <Gravity.H>
-#endif
 
 #ifdef GRAVITY
 #include "Gravity.H"

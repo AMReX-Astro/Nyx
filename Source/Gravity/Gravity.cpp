@@ -2,8 +2,6 @@
 #include <Gravity.H>
 #include <Nyx.H>
 #include <constants_cosmo.H>
-#include <Gravity_F.H>
-#include <Nyx_F.H>
 
 #include <AMReX_MLMG.H>
 #include <AMReX_MLPoisson.H>
@@ -62,12 +60,7 @@ Gravity::Gravity (Amr*   Parent,
      density = _density;
      read_params();
      finest_level_allocated = -1;
-#ifdef CGRAV
-     if (gravity_type == "PoissonGrav" || gravity_type == "CompositeGrav" || gravity_type == "StaticGrav")
-          make_mg_bc();
-#else
      if(gravity_type == "PoissonGrav") make_mg_bc();
-#endif
 }
 
 
@@ -86,19 +79,11 @@ Gravity::read_params ()
         ParmParse pp("gravity");
         pp.get("gravity_type", gravity_type);
 
-#ifdef CGRAV
-        if (gravity_type != "PoissonGrav" && gravity_type != "CompositeGrav" && gravity_type != "StaticGrav")
-        {
-            std::cout << "Sorry -- dont know this gravity type" << std::endl;
-            amrex::Abort("Options are PoissonGrav, CompositeGrav and StaticGrav");
-        }
-#else
         if (gravity_type != "PoissonGrav")
         {
             std::cout << "Sorry -- dont know this gravity type" << std::endl;
             amrex::Abort("Options are PoissonGrav");
         }
-#endif
 
         pp.query("v", verbose);
         pp.query("no_sync", no_sync);
@@ -138,11 +123,6 @@ Gravity::install_level (int       level,
 
     level_solver_resnorm[level] = 0;
 
-#ifdef CGRAV
-    if (gravity_type != "StaticGrav")
-    {
-#endif
-
     const auto& dm = level_data_to_install->DistributionMap();
 
     grad_phi_prev[level].resize(BL_SPACEDIM);
@@ -165,10 +145,6 @@ Gravity::install_level (int       level,
         phi_flux_reg[level].reset(new FluxRegister(level_data_to_install->boxArray(),
                                                    dm, crse_ratio, level, 1));
     }
-
-#ifdef CGRAV
-    }
-#endif
 
     finest_level_allocated = level;
 }
@@ -214,11 +190,7 @@ void
 Gravity::swap_time_levels (int level)
 {
 
-#ifdef CGRAV
-    if (gravity_type == "PoissonGrav" || gravity_type == "CompositeGrav")
-#else
     if (gravity_type == "PoissonGrav")
-#endif
     {
         for (int n=0; n < BL_SPACEDIM; n++)
         {
@@ -233,11 +205,6 @@ Gravity::swap_time_levels (int level)
 void
 Gravity::zero_phi_flux_reg (int level)
 {
-#ifdef CGRAV
-    if (gravity_type == "StaticGrav")
-        return;
-#endif
-
     phi_flux_reg[level]->setVal(0);
 }
 
@@ -250,10 +217,6 @@ Gravity::solve_for_old_phi (int               level,
 {
     BL_PROFILE("Gravity::solve_for_old_phi()");
     amrex::Gpu::LaunchSafeGuard lsg(true);
-#ifdef CGRAV
-    if (gravity_type == "StaticGrav")
-        return;
-#endif
 
     if (verbose)
         amrex::Print() << "Gravity ... single level solve for old phi at level "
@@ -288,10 +251,6 @@ Gravity::solve_for_new_phi (int               level,
 {
     BL_PROFILE("Gravity::solve_for_new_phi()");
     amrex::Gpu::LaunchSafeGuard lsg(true);
-#ifdef CGRAV
-    if (gravity_type == "StaticGrav")
-        return;
-#endif
 
     if (verbose)
         amrex::Print() << "Gravity ... single level solve for new phi at level "
@@ -838,16 +797,6 @@ Gravity::get_old_grav_vector (int       level,
     // Set to zero to fill ghost cells.
     grav_vector.setVal(0);
 
-#ifdef CGRAV
-    if (gravity_type == "StaticGrav")
-    {
-        make_prescribed_grav(level,time,grav_vector,0);
-        grav_vector.FillBoundary();
-    }
-    else
-    {
-#endif
-
     const Geometry& geom = parent->Geom(level);
 
     // Fill boundary values at the current level
@@ -859,18 +808,7 @@ Gravity::get_old_grav_vector (int       level,
                                       amrex::GetVecOfConstPtrs(grad_phi_prev[level]),
                                       geom);
 
-#ifdef CGRAV
-    if (gravity_type == "CompositeGrav")
-    {
-        make_prescribed_grav(level,time,grav_vector,1);
-    }
-#endif
-
     grav_vector.FillBoundary(geom.periodicity());
-
-#ifdef CGRAV
-    }
-#endif
 
     // Fill G_old from grav_vector
     MultiFab::Copy(G_old, grav_vector, 0, 0, BL_SPACEDIM, 0);
@@ -891,11 +829,7 @@ Gravity::get_new_grav_vector (int       level,
 
     amrex::Gpu::LaunchSafeGuard lsg(true);
 
-#ifdef CGRAV
-    if (gravity_type == "PoissonGrav" || gravity_type == "CompositeGrav")
-#else
     if (gravity_type == "PoissonGrav")
-#endif
     {
         // Set to zero to fill ghost cells
         grav_vector.setVal(0);
@@ -910,23 +844,8 @@ Gravity::get_new_grav_vector (int       level,
                                            amrex::GetVecOfConstPtrs(grad_phi_curr[level]),
                                            geom);
 
-#ifdef CGRAV
-        if (gravity_type == "CompositeGrav")
-        {
-          make_prescribed_grav(level,time,grav_vector,1);
-        }
-#endif
-
         grav_vector.FillBoundary(geom.periodicity());
     }
-
-#ifdef CGRAV
-    else if ( gravity_type == "StaticGrav")
-    {
-      make_prescribed_grav(level,time,grav_vector,0);
-      grav_vector.FillBoundary();
-    }
-#endif
 
     MultiFab& G_new = LevelData[level]->get_new_data(Gravity_Type);
 
@@ -953,11 +872,6 @@ Gravity::add_to_fluxes(int level, int iteration, int ncycle)
     const Geometry& geom              = parent->Geom(level);
     const Real*     dx                = geom.CellSize();
     const GpuArray<Real,BL_SPACEDIM>  area{ dx[1]*dx[2], dx[0]*dx[2], dx[0]*dx[1] };
-
-#ifdef CGRAV
-    if (gravity_type == "StaticGrav")
-        return;
-#endif
 
     if (phi_fine)
     {
@@ -1144,36 +1058,6 @@ Gravity::set_dirichlet_bcs (int       level,
     //     to provide homogeneous Dirichlet bcs
     phi->setVal(0.0,0,1,phi->nGrow());
 }
-
-#ifdef CGRAV
-void
-Gravity::make_prescribed_grav (int       level,
-                               Real      time,
-                               MultiFab& grav_vector,
-                               int       addToExisting)
-{
-    BL_PROFILE("Gravity::make_prescribed_grav()");
-
-    amrex::Gpu::Device::synchronize();
-    amrex::Gpu::LaunchSafeGuard lsg(false);
-
-    const Geometry& geom = parent->Geom(level);
-    const Real*     dx   = geom.CellSize();
-
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
-    for (MFIter mfi(grav_vector,true); mfi.isValid(); ++mfi)
-    {
-       const Box& bx = mfi.tilebox();
-
-       BL_FORT_PROC_CALL(FORT_PRESCRIBE_GRAV,fort_prescribe_grav)
-           (bx.loVect(), bx.hiVect(), dx,
-            BL_TO_FORTRAN(grav_vector[mfi]),
-            geom.ProbLo(), &addToExisting);
-    }
-}
-#endif
 
 void
 Gravity::AddParticlesToRhs (int               level,

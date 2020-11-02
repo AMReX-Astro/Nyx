@@ -3,10 +3,8 @@
 
 #ifdef GRAVITY
 #include <Gravity.H>
-#include <Gravity_F.H> //needed for get_grav_constant, but there might be a better way
 #endif
 
-#include <Nyx_F.H>
 #include <Prob.H>
 
 using namespace amrex;

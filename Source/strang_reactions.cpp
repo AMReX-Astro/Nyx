@@ -1,6 +1,5 @@
 
 #include <Nyx.H>
-#include <Nyx_F.H>
 
 using namespace amrex;
 using std::string;

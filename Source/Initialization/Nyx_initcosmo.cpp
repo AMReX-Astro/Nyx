@@ -5,7 +5,6 @@
 #endif
 
 #include <Nyx.H>
-#include <Nyx_F.H>
 #include <NyxParticleContainer.H>
 
 using namespace amrex;

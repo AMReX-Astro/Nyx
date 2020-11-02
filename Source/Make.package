@@ -31,7 +31,6 @@ CEXE_sources += sum_utils.cpp
 
 CEXE_headers += Nyx.H
 CEXE_headers += IndexDefines.H
-FEXE_headers += Nyx_F.H
 
 #f90EXE_sources += Nyx_nd.f90
 #f90EXE_sources +=  eos_params.f90

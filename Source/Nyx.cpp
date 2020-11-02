@@ -15,7 +15,6 @@ using std::string;
 
 #include <AMReX_CONSTANTS.H>
 #include <Nyx.H>
-#include <Nyx_F.H>
 #include <atomic_rates_data.H>
 #include <constants_cosmo.H>
 #include <Derive.H>
@@ -1491,12 +1490,7 @@ Nyx::post_timestep (int iteration)
         MultiFab& S_new_crse = get_new_data(State_Type);
 #ifdef GRAVITY
         MultiFab drho_and_drhoU;
-#ifdef CGRAV
-        if (do_grav &&
-            (gravity->get_gravity_type() == "PoissonGrav"||gravity->get_gravity_type() == "CompositeGrav"))
-#else
         if (do_grav && gravity->get_gravity_type() == "PoissonGrav")
-#endif
         {
             // Define the update to rho and rhoU due to refluxing.
             drho_and_drhoU.define(grids, dmap, BL_SPACEDIM + 1, 0);
@@ -1523,13 +1517,7 @@ Nyx::post_timestep (int iteration)
 #endif
 
 #ifdef GRAVITY
-#ifdef CGRAV
-        if (do_grav &&
-            (gravity->get_gravity_type() == "PoissonGrav"||gravity->get_gravity_type() == "CompositeGrav")
-            && gravity->get_no_sync() == 0)
-#else
         if (do_grav && gravity->get_gravity_type() == "PoissonGrav" && gravity->get_no_sync() == 0)
-#endif
         {
             MultiFab::Add(drho_and_drhoU, S_new_crse, Density, 0, BL_SPACEDIM+1, 0);
 
@@ -1759,13 +1747,7 @@ Nyx::post_restart ()
 
             gravity->set_mass_offset(cur_time);
 
-            if (
-#ifdef CGRAV
-            (gravity->get_gravity_type() == "PoissonGrav"||gravity->get_gravity_type() == "CompositeGrav")
-#else
-            gravity->get_gravity_type() == "PoissonGrav"
-#endif
-)
+            if (gravity->get_gravity_type() == "PoissonGrav")
             {
                 // Do multilevel solve here.  We now store phi in the checkpoint file so we can use it
                 //  at restart.
@@ -2103,11 +2085,7 @@ Nyx::post_regrid (int lbase,
     const Real cur_time = state[PhiGrav_Type].curTime();
     if (do_grav && (cur_time > 0) && do_grav_solve_here)
     {
-#ifdef CGRAV
-        if (gravity->get_gravity_type() == "PoissonGrav" || gravity->get_gravity_type() == "CompositeGrav")
-#else
         if (gravity->get_gravity_type() == "PoissonGrav")
-#endif
         {
             int ngrow_for_solve = parent->levelCount(level) + 1;
             int use_previous_phi_as_guess = 1;
@@ -2146,13 +2124,7 @@ Nyx::post_init (Real stop_time)
     if (do_grav)
     {
         const Real cur_time = state[PhiGrav_Type].curTime();
-        if
-#ifdef CGRAV
-            (gravity->get_gravity_type() == "PoissonGrav" ||
-             gravity->get_gravity_type() == "CompositeGrav")
-#else
-            (gravity->get_gravity_type() == "PoissonGrav")
-#endif
+        if (gravity->get_gravity_type() == "PoissonGrav")
         {
             //
             // Calculate offset before first multilevel solve.

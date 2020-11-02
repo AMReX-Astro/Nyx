@@ -1,7 +1,6 @@
 #include <unistd.h>
 #include <iomanip>
 #include <Nyx.H>
-#include <Nyx_F.H>
 #include <AMReX_PlotFileUtil.H>
 #include <Nyx_output.H>
 

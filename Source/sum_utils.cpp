@@ -2,7 +2,6 @@
 #include <iomanip>
 
 #include <Nyx.H>
-#include <Nyx_F.H>
 
 using namespace amrex;
 

@@ -4,7 +4,6 @@
 
 #include <AMReX_ParmParse.H>
 #include <Nyx.H>
-#include <Nyx_F.H>
 
 #include <Forcing.H>
 

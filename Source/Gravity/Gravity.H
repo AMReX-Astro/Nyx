@@ -96,10 +96,6 @@ public:
 
     void set_dirichlet_bcs(int level, amrex::MultiFab* phi);
 
-#ifdef CGRAV
-    void make_prescribed_grav(int level, amrex::Real time, amrex::MultiFab& grav, int addToExisting);
-#endif
-
 protected:
     //
     // Pointers to amr,amrlevel.

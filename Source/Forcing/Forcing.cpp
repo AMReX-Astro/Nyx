@@ -1,5 +1,4 @@
 #include <Nyx.H>
-#include <Nyx_F.H>
 
 #include <Forcing.H>
 

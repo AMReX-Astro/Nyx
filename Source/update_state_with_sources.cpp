@@ -1,5 +1,4 @@
 #include <Nyx.H>
-#include <Nyx_F.H>
 #include <Hydro.H>
 #include <constants_cosmo.H>
 

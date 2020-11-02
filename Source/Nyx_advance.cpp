@@ -1,6 +1,5 @@
 
 #include <Nyx.H>
-#include <Nyx_F.H>
 #include <constants_cosmo.H>
 
 #ifdef GRAVITY

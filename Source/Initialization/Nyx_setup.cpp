@@ -3,7 +3,6 @@
 #include <AMReX_buildInfo.H>
 
 #include <Nyx.H>
-#include <Nyx_F.H>
 #include <Derive.H>
 
 #ifdef HEATCOOL
