@@ -1155,9 +1155,6 @@ Nyx::blueprint_check_point ()
 
     Ascent ascent;
     conduit::Node open_opts;
-    // tell ascent to use the ghost_indicator field to exclude ghosts
-
-    open_opts["ghost_field_name"] = "ghost_indicator";
     
 #ifdef BL_USE_MPI
     // if mpi, we need to provide the mpi comm to ascent

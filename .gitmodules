@@ -1,0 +1,6 @@
+[submodule "subprojects/amrex"]
+	path = subprojects/amrex
+	url = https://github.com/AMReX-Codes/amrex.git
+[submodule "subprojects/sundials"]
+	path = subprojects/sundials
+	url = https://github.com/LLNL/sundials.git
