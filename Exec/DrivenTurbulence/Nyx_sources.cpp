@@ -24,15 +24,45 @@ void ext_src_force(
   amrex::Array4<const amrex::Real> const& old_state,
   amrex::Array4<const amrex::Real> const& new_state,
   amrex::Array4<const amrex::Real> const& old_diag,
-  amrex::Array4<const amrex::Real> const& new_diag,
-  amrex::Array4<const amrex::Real> const& src,
+  amrex::Array4<amrex::Real> const& new_diag,
+  amrex::Array4<amrex::Real> const& src,
   const amrex::Real* problo,
   const amrex::Real* dx,
   const amrex::Real time,
   const amrex::Real z,
   const amrex::Real dt)
 {
-	
+	// Make a copy of the state so we can evolve it then throw it away
+    amrex::FArrayBox tmp_state_fab(bx, QVAR);
+    amrex::Elixir tmp_state_eli = tmp_state_fab.elixir();
+	auto const& tmp_state = tmp_state_fab.array();
+
+	//	tmp_state_fab.copy<RunOn::Device>(new_state);
+    amrex::ParallelFor(bx, QVAR, [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
+			tmp_state(i,j,k,n) = new_state(i,j,k,n);
+		});
+	amrex::Real a = 1.0 / (1.0+z);
+
+    // Note that when we call this routine to compute the "old" source,
+    //      both "old_state" and "new_state" are acutally the "old" state.
+    // When we call this routine to compute the "new" source,
+    //      both "old_state" is in fact the "old" state and
+    //           "new_state" is in fact the "new" state
+
+	amrex::Real half_dt = 0.5 * dt;
+    integrate_state_force(bx, tmp_state, new_diag,
+						  dx, time, a, half_dt);
+
+	// Recall that this routine is called from a tiled MFIter 
+	//  !   For old source: lo(:), hi(:) are the bounds of the growntilebox(src.nGrow9))
+    //   For new source: lo(:), hi(:) are the bounds of the      tilebox, e.g. valid region only
+    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+			src(i,j,k,UMX)   = (tmp_state(i,j,k,UMX)   - new_state(i,j,k,UMX)) * a / half_dt;
+			src(i,j,k,UMY)   = (tmp_state(i,j,k,UMY)   - new_state(i,j,k,UMY)) * a / half_dt;
+			src(i,j,k,UMZ)   = (tmp_state(i,j,k,UMZ)   - new_state(i,j,k,UMZ)) * a / half_dt;
+			src(i,j,k,UEINT) = (tmp_state(i,j,k,UEINT) - new_state(i,j,k,UEINT)) * a / half_dt;
+			src(i,j,k,UEDEN) = (tmp_state(i,j,k,UEDEN) - new_state(i,j,k,UEDEN)) * a / half_dt;
+	 });
 }
 
 void
