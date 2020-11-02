@@ -10,12 +10,8 @@
 #include <vector>
 #include <string>
 
-#ifndef WIN32
 #include <unistd.h>
-#endif
-
 #include <Nyx.H>
-#include <Nyx_F.H>
 #include <AMReX_DataServices.H>
 #include <AMReX_Utility.H>
 

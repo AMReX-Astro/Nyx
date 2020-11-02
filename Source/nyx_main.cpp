@@ -3,10 +3,7 @@
 #include <iomanip>
 #include <sstream>
 
-#ifndef WIN32
 #include <unistd.h>
-#endif
-
 #include <AMReX_CArena.H>
 #include <AMReX_REAL.H>
 #include <AMReX_Utility.H>
