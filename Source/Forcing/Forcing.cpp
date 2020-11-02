@@ -46,6 +46,9 @@ StochasticForcing::StochasticForcing()
         InjectionOdd[dim]  = NULL;
         SpectrumEven[dim]  = NULL;
         SpectrumOdd[dim]   = NULL;
+        wavevectors[dim]   = NULL;
+        modes_even[dim]    = NULL;
+        modes_odd[dim]     = NULL;
     }
     mask = NULL;
 }
@@ -61,6 +64,9 @@ StochasticForcing::~StochasticForcing()
         delete [] InjectionOdd[dim];
         delete [] SpectrumEven[dim];
         delete [] SpectrumOdd[dim];
+        delete [] wavevectors[dim];
+        delete [] modes_even[dim];
+        delete [] modes_odd[dim];
     }
     delete [] mask;
 }
@@ -257,7 +263,10 @@ void StochasticForcing::distribute(void)
     /* copy sepctrum to forcing_spect_module */
 
     for (int dim = 0; dim < SpectralRank; dim++)
-        fort_set_modes(SpectrumEven[dim], SpectrumOdd[dim], &NumNonZeroModes, &dim);
+        for (int l = 0; l < NumNonZeroModes; l++) {
+            modes_even[l,dim]=SpectrumEven[l,dim];
+            modes_odd[l,dim]=SpectrumOdd[l,dim];
+        }
 }
 
 //

@@ -79,7 +79,7 @@ amr.plot_int        = 50
 amr.derive_plot_vars = forcex forcey forcez magvort MachNumber
 
 # PROBIN FILENAME
-amr.probin_file    = probin
+amr.probin_file    = ""
 
 # DIAGNOSTICS & VERBOSITY
 nyx.sum_interval   = 1       # timesteps between computing mass

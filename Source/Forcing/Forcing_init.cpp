@@ -393,8 +393,22 @@ void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
     }
 
     /* set wave vectors and copy sepctrum to forcing_spect_module */
+    int num_modes = NumNonZeroModes;
 
-    fort_alloc_spect(&NumNonZeroModes);
+	int num_modes_ext = 0;
+    // determine extend array length as integer multiple of 4 
+    // to support vectorization of loops over all modes
+    int modvec = NumNonZeroModes % LENVEC;
+    if (modvec > 0)
+        num_modes_ext = num_modes + LENVEC - modvec;
+    else
+        num_modes_ext = num_modes;
+
+    for (int dim = 0; dim < SpectralRank; dim++) {
+        wavevectors[dim]  = new int[num_modes_ext];
+        modes_even[dim]  = new Real[num_modes_ext];
+        modes_odd[dim]  = new Real[num_modes_ext];
+    }
 
     int kvect[SpectralRank];
  
@@ -402,7 +416,9 @@ void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
     for (i = 1; i <= i2; i++)
         if (mask[i-1]) {
            kvect[0] = i; kvect[1] = 0; kvect[2] = 0;
-           fort_set_wavevector(kvect, &m);
+           for (int l = 0; l < num_modes_ext; l++) {
+               wavevectors[l][m]=kvect[l];
+           }
            ++m;
     }
     if (SpectralRank > 1) {
@@ -412,7 +428,9 @@ void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
            for (i = i1; i <= i2; i++)
                if (mask[n++]) {
                   kvect[0] = i; kvect[1] = j; kvect[2] = 0;
-                  fort_set_wavevector(kvect, &m);
+                  for (int l = 0; l < num_modes_ext; l++) {
+                      wavevectors[l][m]=kvect[l];
+                  }
                   ++m;
                }
 
@@ -423,14 +441,19 @@ void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
                   for (i = i1; i <= i2; i++)
                       if (mask[n++]) {
                          kvect[0] = i; kvect[1] = j; kvect[2] = k;
-                         fort_set_wavevector(kvect, &m);
+                         for (int l = 0; l < num_modes_ext; l++) {
+                             wavevectors[l][m]=kvect[l];
+                         }
                          ++m;
                       }
        }
     }
 
     for (int dim = 0; dim < SpectralRank; dim++)
-        fort_set_modes(SpectrumEven[dim], SpectrumOdd[dim], &NumNonZeroModes, &dim);
+        for (int l = 0; l < NumNonZeroModes; l++) {
+            modes_even[l][dim]=SpectrumEven[l][dim];
+            modes_odd[l][dim]=SpectrumOdd[l][dim];
+        }
 
     return;
 }

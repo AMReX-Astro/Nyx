@@ -15,6 +15,8 @@ const spect_profile_type
   Band       = 2,
   Parabolic  = 3;
 
+constexpr int LENVEC = 4;  // assumed minimal vector length
+
 /**************************************************************************
  *
  *  STOCHASTIC FORCING CLASS
@@ -64,6 +66,9 @@ class StochasticForcing {
     amrex::Real *InjectionOdd[MAX_DIMENSION];  // random increments (sin modes)
     amrex::Real *SpectrumEven[MAX_DIMENSION];  // forcing cos modes
     amrex::Real *SpectrumOdd[MAX_DIMENSION];   // forcing sin modes
+	int         *wavevectors[MAX_DIMENSION];
+    amrex::Real *modes_even[MAX_DIMENSION];
+	amrex::Real *modes_odd[MAX_DIMENSION];
 
   public:
 
