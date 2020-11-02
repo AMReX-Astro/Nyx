@@ -15,8 +15,9 @@ static void prob_param_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_pa
 static void prob_errtags_default(amrex::Vector<amrex::AMRErrorTag>& errtags)
 {
     AMRErrorTagInfo info;
-    errtags.push_back(AMRErrorTag(1.e20,AMRErrorTag::GREATER,"denerr",info));
-    errtags.push_back(AMRErrorTag(1.e20,AMRErrorTag::GREATER,"dengrad",info));
+    info.SetMaxLevel(0);
+    errtags.push_back(AMRErrorTag(1.e18,AMRErrorTag::GREATER,"denerr",info));
+    errtags.push_back(AMRErrorTag(2.e8,AMRErrorTag::GREATER,"dengrad",info));
 }
 
 AMREX_GPU_DEVICE AMREX_FORCE_INLINE
