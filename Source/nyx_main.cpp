@@ -3,7 +3,6 @@
 #include <iomanip>
 #include <sstream>
 
-#include <unistd.h>
 #include <AMReX_CArena.H>
 #include <AMReX_REAL.H>
 #include <AMReX_Utility.H>

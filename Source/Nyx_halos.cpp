@@ -3,7 +3,6 @@
 #include <vector>
 #include <iostream>
 #include <string>
-#include <unistd.h>
 #include <math.h>
 
 using std::cout;

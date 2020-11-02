@@ -10,7 +10,6 @@
 #include <vector>
 #include <string>
 
-#include <unistd.h>
 #include <Nyx.H>
 #include <AMReX_DataServices.H>
 #include <AMReX_Utility.H>
