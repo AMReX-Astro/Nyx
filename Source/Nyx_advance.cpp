@@ -137,10 +137,12 @@ Nyx::advance_hydro_plus_particles (Real time,
     if (!do_grav)
         amrex::Abort("In `advance_hydro_plus_particles` but `do_grav` not true");
 #endif
+	/*
 #ifdef FORCING
     if (do_forcing)
         amrex::Abort("Forcing in `advance_hydro_plus_particles` not admissible");
 #endif
+	*/
 
     const int finest_level = parent->finestLevel();
     int finest_level_to_advance;
@@ -480,11 +482,12 @@ Nyx::advance_hydro (Real time,
     if (!do_grav)
         amrex::Abort("In `advance_hydro` with GRAVITY defined but `do_grav` is false");
 #endif
+	/*
 #ifdef FORCING
     if (!do_forcing)
         amrex::Abort("In `advance_hydro` with FORCING defined but `do_forcing` is false");
 #endif
-
+	*/
     for (int k = 0; k < NUM_STATE_TYPE; k++)
     {
         state[k].allocOldData();

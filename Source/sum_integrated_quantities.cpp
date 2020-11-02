@@ -155,7 +155,10 @@ Nyx::sum_integrated_quantities ()
         // Write the quantities at this time                                                                                            
         data_log1 << std::setw(14) << time;
 #ifdef FORCING
-        data_log1 << std::setw(14) << std::setprecision(6) << forcing->rms();
+        if(do_forcing)
+            data_log1 << std::setw(14) << std::setprecision(6) << forcing->rms();
+        else
+            data_log1 << std::setw(14) << std::setprecision(6) << 0.0;
 #endif
         data_log1 << std::setw(14) << std::setprecision(6) << xmom;
         data_log1 << std::setw(14) << std::setprecision(6) << ymom;

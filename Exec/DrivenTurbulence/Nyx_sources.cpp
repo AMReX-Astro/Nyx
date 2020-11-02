@@ -32,7 +32,7 @@ void ext_src_force(
   const amrex::Real z,
   const amrex::Real dt)
 {
-
+	
 }
 
 void
@@ -71,6 +71,7 @@ Nyx::get_old_source (Real      old_time,
              Dborder.array(mfi), Dborder.array(mfi),
              ext_src.array(mfi),
              prob_lo, dx, old_time, z, dt);
+		ext_src[mfi].setVal(0.0);
 
         // The formulae in subroutine ctoprim assume that the source term for density is zero
         // Here we abort if it is non-zero.
@@ -131,6 +132,7 @@ Nyx::get_new_source (Real      old_time,
              Dborder_old.array(mfi), Dborder_new.array(mfi),
              ext_src.array(mfi),
              prob_lo, dx, new_time, z, dt);
+		ext_src[mfi].setVal(0.0);
     }
 
     ext_src.EnforcePeriodicity(0, NUM_STATE, geom.periodicity());

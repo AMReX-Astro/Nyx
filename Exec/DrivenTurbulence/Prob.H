@@ -5,11 +5,16 @@
 
 enum Prob_Type_Index {
   z_in_comp = 0,
+  gamma_comp = 1
 };
 
 static void prob_param_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_param, const amrex::Real initial_z)
 {
     prob_param[z_in_comp] = initial_z;
+    prob_param[gamma_comp] = 5.0/3.0;
+
+    amrex::ParmParse pp_nyx("nyx");
+    pp_nyx.query("gamma", prob_param[gamma_comp]);
 }
 
 static void prob_errtags_default(amrex::Vector<amrex::AMRErrorTag>& errtags)
@@ -28,33 +33,40 @@ void prob_initdata_state(const int i,
                          amrex::GeometryData const& geomdata,
                          const amrex::GpuArray<amrex::Real,max_prob_param>& prob_param)
 {
-  // This is the case where we have compiled with states defined 
-  //  but they have only one component each so we fill them this way.
-  if (state.nComp() == 1)
-  {
-    //Could be replaced with setVal
-    state(i,j,k,1)    = 0.00;
-  }
-  // This is the regular case with NO_HYDRO = FALSE
-  else if (state.nComp() > 1)
-  {
-    state(i,j,k,Density)    = 0.00; //1.5d0 * small_dens
+
+  amrex::Real alpha=100.0;
+  amrex::Real rho0=1.0;
+  amrex::Real temp0=10.0;
+  amrex::Real ne0=1.0;
+
+  const amrex::Real h_species_in=1;
+  const amrex::Real gamma_minus_1_in=prob_param[gamma_comp] - 1.0;
+  const amrex::Real a=1.0/(prob_param[z_in_comp]+1.0);
+  amrex::Real eint, dummy_pres;
+  
+  nyx_eos_given_RT(NULL,gamma_minus_1_in, h_species_in, &eint, &dummy_pres, state(i,j,k,Density), temp0, ne0, a);
+  amrex::Real rhoe0 = rho0 * eint;
+
+    state(i,j,k,Density)    = rho0; //1.5d0 * small_dens
     state(i,j,k,Xmom) = 0.00;
     state(i,j,k,Ymom) = 0.00;
     state(i,j,k,Zmom) = 0.00;
 
     // These will both be set later in the call to init_e.
-    state(i,j,k,Eint) = 0.0;
-    state(i,j,k,Eden) = 0.0;
+    state(i,j,k,Eint) = rhoe0;
+    state(i,j,k,Eden) = rhoe0 + 0.5 *
+                                   (state(i, j, k, UMX) * state(i, j, k, UMX) +
+                                    state(i, j, k, UMY) * state(i, j, k, UMY) +
+                                    state(i, j, k, UMZ) * state(i, j, k, UMZ)) /
+                                   state(i, j, k, URHO);
 
-    amrex::Real FirstSpec = Eint + 1;   
+    amrex::Real FirstSpec = Eint + 1;
     if (state.nComp() > FirstSpec)
     {
       //XHYDROGEN hardcoded to .76 init_managed
       state(i,j,k,FirstSpec  ) = .76;
       state(i,j,k,FirstSpec+1) = (1.0 - .76);
     }
-  }
 }
 
 AMREX_GPU_DEVICE AMREX_FORCE_INLINE
@@ -67,25 +79,16 @@ void prob_initdata(const int i,
                    const amrex::GpuArray<amrex::Real,max_prob_param>& prob_param)
 {
 
+  amrex::Real alpha=100.0;
+  amrex::Real rho0=1.0;
+  amrex::Real temp0=10.0;
+  amrex::Real ne0=1.0;
+  
+  diag_eos(i,j,k,Temp_comp) = temp0;
+  diag_eos(i,j,k,  Ne_comp) = ne0;
+  
   prob_initdata_state(i, j ,k, state, geomdata, prob_param);
 
-  // This is the case where we have compiled with states defined 
-  //  but they have only one component each so we fill them this way.
-  if (state.nComp() == 1 && diag_eos.nComp() == 1)
-  {
-    //Could be replaced with setVal
-    diag_eos(i,j,k,1)    = 0.00;
-  }
-  // This is the regular case with NO_HYDRO = FALSE
-  else if (state.nComp() > 1 && diag_eos.nComp() >= 2)
-  {
-    diag_eos(i,j,k,Temp_comp) = 0.0210*(1.00 + prob_param[z_in_comp])*(1.00 + prob_param[z_in_comp]);
-    diag_eos(i,j,k,  Ne_comp) = 0.0;
-
-    //Should be equivalent to inhomo_reion > 0 Nyx_setup.cpp
-    if (diag_eos.nComp() > 2)
-      diag_eos(i,j,k, Zhi_comp) = 7.5;
-  }
 }
 
 #endif
