@@ -264,8 +264,8 @@ void StochasticForcing::distribute(void)
 
     for (int dim = 0; dim < SpectralRank; dim++)
         for (int l = 0; l < NumNonZeroModes; l++) {
-            modes_even[l,dim]=SpectrumEven[l,dim];
-            modes_odd[l,dim]=SpectrumOdd[l,dim];
+            modes_even[dim][l]=SpectrumEven[dim][l];
+            modes_odd[dim][l]=SpectrumOdd[dim][l];
         }
 }
 

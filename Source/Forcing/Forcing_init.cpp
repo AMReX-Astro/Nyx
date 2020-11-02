@@ -416,7 +416,7 @@ void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
     for (i = 1; i <= i2; i++)
         if (mask[i-1]) {
            kvect[0] = i; kvect[1] = 0; kvect[2] = 0;
-           for (int l = 0; l < num_modes_ext; l++) {
+           for (int l = 0; l < SpectralRank; l++) {
                wavevectors[l][m]=kvect[l];
            }
            ++m;
@@ -428,7 +428,7 @@ void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
            for (i = i1; i <= i2; i++)
                if (mask[n++]) {
                   kvect[0] = i; kvect[1] = j; kvect[2] = 0;
-                  for (int l = 0; l < num_modes_ext; l++) {
+                  for (int l = 0; l < SpectralRank; l++) {
                       wavevectors[l][m]=kvect[l];
                   }
                   ++m;
@@ -441,7 +441,7 @@ void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
                   for (i = i1; i <= i2; i++)
                       if (mask[n++]) {
                          kvect[0] = i; kvect[1] = j; kvect[2] = k;
-                         for (int l = 0; l < num_modes_ext; l++) {
+                         for (int l = 0; l < SpectralRank; l++) {
                              wavevectors[l][m]=kvect[l];
                          }
                          ++m;
@@ -451,8 +451,8 @@ void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
 
     for (int dim = 0; dim < SpectralRank; dim++)
         for (int l = 0; l < NumNonZeroModes; l++) {
-            modes_even[l][dim]=SpectrumEven[l][dim];
-            modes_odd[l][dim]=SpectrumOdd[l][dim];
+            modes_even[dim][l]=SpectrumEven[dim][l];
+            modes_odd[dim][l]=SpectrumOdd[dim][l];
         }
 
     return;
