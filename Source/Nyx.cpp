@@ -44,9 +44,6 @@ using std::string;
 #include <agn_F.H>
 #endif
 
-#define BL_ARR4_TO_FORTRAN_3D(a) a.p,&((a).begin.x),amrex::GpuArray<int,3>{(a).end.x-1,(a).end.y-1,(a).end.z-1}.data()
-#define BL_ARR4_TO_FORTRAN(a) (a).p, AMREX_ARLIM(&((a).begin.x)), (a).end.x-1,(a).end.y-1,(a).end.z-1
-
 using namespace amrex;
 
 extern "C" {
@@ -2574,31 +2571,6 @@ Nyx::reset_internal_energy_nostore (MultiFab& S_new, MultiFab& D_new)
     reset_e_src.setVal(0.0);
 
     reset_internal_energy (S_new, D_new,  reset_e_src);
-    /*
-    const Real  cur_time = state[State_Type].curTime();
-    Real        a        = get_comoving_a(cur_time);
-
-    amrex::Gpu::LaunchSafeGuard lsg(true);
-
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
-    for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
-    {
-        const Box& bx = mfi.tilebox();
-          const auto fab = S_new.array(mfi);
-          const auto fab_diag = D_new.array(mfi);
-          int print_warn=0;       
-          AMREX_LAUNCH_DEVICE_LAMBDA(bx, tbx,
-          {
-        reset_internal_e_nostore
-            (tbx.loVect(), tbx.hiVect(),
-             BL_ARR4_TO_FORTRAN(fab), BL_ARR4_TO_FORTRAN(fab_diag),
-             print_warn, a);
-          });
-    }
-    */
-
 }
 #endif
 
@@ -2708,21 +2680,6 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
               }
 
             });
-            amrex::Gpu::synchronize();
-            /*
-            fort_compute_temp_host
-              (bx.loVect(), bx.hiVect(),
-              BL_ARR4_TO_FORTRAN(fab),
-              BL_ARR4_TO_FORTRAN(fab_diag), &a,
-               &print_warn);
-
-            amrex::Print()<<"2-norm of test: "<<test_d.norm(bx,2,1)<<std::endl;
-            amrex::Print()<<"2-norm of compare: "<<(D_new[mfi]).norm(bx,2,1)<<std::endl;
-            amrex::Print()<<"infnorm of test: "<<test_d.norm(bx,0,1)<<std::endl;
-            amrex::Print()<<"infnorm of compare: "<<(D_new[mfi]).norm(bx,0,1)<<std::endl;
-            amrex::Print()<<"1-norm of test: "<<test_d.norm(bx,1,1)<<std::endl;
-            amrex::Print()<<"1-norm of compare: "<<(D_new[mfi]).norm(bx,1,1)<<std::endl;
-            */
             amrex::Gpu::synchronize();
           }
       }
