@@ -1,5 +1,4 @@
 #include <Nyx.H>
-#include <Nyx_F.H>
 
 using namespace amrex;
 
@@ -7,7 +6,7 @@ using namespace amrex;
 
 #ifndef AGN
 
-void integrate_state_force(
+void Nyx::integrate_state_force(
   amrex::Box const& bx,
   amrex::Array4<amrex::Real> const& state,
   amrex::Array4<amrex::Real> const& diag_eos,
@@ -17,9 +16,55 @@ void integrate_state_force(
   const amrex::Real half_dt)
 {
 
+  Real xn_eos[2];
+
+  xn_eos[0] = h_species;
+  xn_eos[1] = (1.e0 - h_species);
+
+  const int nspecd = 2;
+
+  Real aiond[nspecd];
+  
+  aiond[0] = 1.0;
+  aiond[1] = 4.0;
+
+  Real ziond[nspecd];
+  
+  ziond[0] = 1.0;
+  ziond[1] = 2.0;
+    
+  //    !-------------------------------------------------------------------------
+  //    ! compute mu -- the mean molecular weight
+  //    !-------------------------------------------------------------------------
+
+  Real sum_y  = 0.0;
+  Real ymass[nspecd];
+
+  // assume completely ionized species
+  for(int n=0;n< nspecd; n++)
+    {
+      ymass[n] = xn_eos[n]*(1.e0 + ziond[n])/aiond[n];
+      sum_y = sum_y + ymass[n];
+    }
+
+  Real mu = 1.0/sum_y;
+
+  //    !-------------------------------------------------------------------------
+  //    ! for all EOS input modes EXCEPT eos_input_rt, first compute dens
+  //    ! and temp as needed from the inputs
+  //    !-------------------------------------------------------------------------
+
+  //    ! These are both very large numbers so we pre-divide
+  Real  m_nucleon_over_kB = m_nucleon / k_B;
+  Real  small_eint = small_temp / (mu * m_nucleon_over_kB * (gamma - 1.0));
+  /*
+      small_dens = 1.d-9*rhoe0
+      small_temp = 1.d-3*temp0
+      small_pres = 1.d-12*pres0*/
+
 }
 
-void ext_src_force(
+void Nyx::ext_src_force(
   amrex::Box const& bx,
   amrex::Array4<const amrex::Real> const& old_state,
   amrex::Array4<const amrex::Real> const& new_state,

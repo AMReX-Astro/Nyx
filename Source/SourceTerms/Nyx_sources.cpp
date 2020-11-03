@@ -6,6 +6,37 @@ using namespace amrex;
 #ifndef NO_HYDRO
 
 #ifndef AGN
+
+#ifdef FORCING
+void Nyx::integrate_state_force(
+  amrex::Box const& bx,
+  amrex::Array4<amrex::Real> const& state,
+  amrex::Array4<amrex::Real> const& diag_eos,
+  const amrex::Real* dx,
+  const amrex::Real time,
+  const amrex::Real a,
+  const amrex::Real half_dt)
+{
+
+}
+
+void Nyx::ext_src_force(
+  amrex::Box const& bx,
+  amrex::Array4<const amrex::Real> const& old_state,
+  amrex::Array4<const amrex::Real> const& new_state,
+  amrex::Array4<const amrex::Real> const& old_diag,
+  amrex::Array4<amrex::Real> const& new_diag,
+  amrex::Array4<amrex::Real> const& src,
+  const amrex::Real* problo,
+  const amrex::Real* dx,
+  const amrex::Real time,
+  const amrex::Real z,
+  const amrex::Real dt)
+{
+
+}
+#endif
+
 void
 Nyx::get_old_source (Real      old_time,
                      Real      dt,
