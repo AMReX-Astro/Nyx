@@ -287,3 +287,33 @@ Real StochasticForcing::rms(void)
     return sqrt(sum_even + sum_odd);
 }
 
+void StochasticForcing::integrate_state_force(
+  amrex::Box const& bx,
+  amrex::Array4<amrex::Real> const& state,
+  amrex::Array4<amrex::Real> const& diag_eos,
+  amrex::GeometryData const& geomdata,
+  amrex::Real small_eint, amrex::Real small_temp)
+{
+	int num_modes_ext = 0;
+    // determine extend array length as integer multiple of 4 
+    // to support vectorization of loops over all modes
+    int modvec = NumNonZeroModes % LENVEC;
+    if (modvec > 0)
+        num_modes_ext = NumModes + LENVEC - modvec;
+    else
+        num_modes_ext = NumModes;
+
+	int num_phases[3];
+    Real delta_phase[3];
+	Real phase_lo[3];
+	Real accel[3];
+	Real buf[num_modes_ext];
+	Real phasefct_init_even[num_modes_ext];
+	Real phasefct_init_odd[num_modes_ext];
+    Real phasefct_mult_even[3][num_modes_ext];
+    Real phasefct_mult_odd[3][num_modes_ext];
+    Real phasefct_yz[2][num_modes_ext];
+    Real *phasefct_even_x, *phasefct_even_y, *phasefct_even_z;
+    Real *phasefct_odd_x, *phasefct_odd_y, *phasefct_odd_z;
+	
+}

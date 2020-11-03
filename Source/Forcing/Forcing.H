@@ -96,6 +96,14 @@ class StochasticForcing {
 // Calculate the instantaneous RMS force
 //
     amrex::Real rms(void);
+
+void integrate_state_force(
+  amrex::Box const& bx,
+  amrex::Array4<amrex::Real> const& state,
+  amrex::Array4<amrex::Real> const& diag_eos,
+  amrex::GeometryData const& geomdata,
+  amrex::Real small_eint, amrex::Real small_temp);
+
 //
 // Write/read forcing spectrum to/from output file
 //

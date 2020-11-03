@@ -1,5 +1,9 @@
 #include <Nyx.H>
 
+#ifdef FORCING
+#include <Forcing.H>
+#endif
+
 using namespace amrex;
 
 #ifndef NO_HYDRO
@@ -57,6 +61,9 @@ void Nyx::integrate_state_force(
   //    ! These are both very large numbers so we pre-divide
   Real  m_nucleon_over_kB = m_nucleon / k_B;
   Real  small_eint = small_temp / (mu * m_nucleon_over_kB * (gamma - 1.0));
+
+  const auto geomdata = geom.data();
+  forcing->integrate_state_force(bx, state, diag_eos, geomdata, small_eint, small_temp);
   /*
       small_dens = 1.d-9*rhoe0
       small_temp = 1.d-3*temp0
