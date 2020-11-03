@@ -106,7 +106,7 @@ endif
 #These are the directories in Nyx 
 
 Bdirs 	:= Source Source/Src_3d Source/HydroCpp Source/Tagging Source/Initialization
-Bdirs 	+= Source/EOS Source/Network Source/HeatCool Source/IO
+Bdirs 	+= Source/EOS Source/HeatCool Source/IO
 Bdirs 	+= Source/SourceTerms Source/DerivedQuantities Source/Particle
 ifeq ($(USE_MPI), TRUE)
 Bdirs 	+= Source/Monitors
