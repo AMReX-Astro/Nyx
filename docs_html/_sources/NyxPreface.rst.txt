@@ -29,8 +29,11 @@ For Nyx-related Papers:
 		  
 The development of AMReX library is led by the
 Center for Computational Sciences and Engineering / Lawrence Berkeley
-National Laboratory. Nyx development is done collaboratively,
-including the Computational Cosmology Center and CCSE. All of Nyx's development is done in the public github repository—anyone can see the updates as they are done.  We are always happy to have new developers as part of the Nyx team. Fork the Nyx git repository on github, make your changes, and issue a pull request against the master github repo. Any level of changes are welcomed: documentation, bug fixes, new test problems, new solvers, ...
+National Laboratory. Nyx development is done collaboratively, including the Computational Cosmology Center and CCSE. 
+All of Nyx's development is done in the public github repository—anyone can see the updates as they are done.  
+We are always happy to have new developers as part of the Nyx team. 
+Fork the Nyx git repository on github, make your changes, and issue a pull request against the development branch 
+of the github repo. Any level of changes are welcome, including documentation, bug fixes, new test problems, and new solvers.
 
  .. todo::
     Describe developer/contributor/author list
