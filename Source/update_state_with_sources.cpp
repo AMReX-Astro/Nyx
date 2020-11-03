@@ -181,8 +181,7 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
                     uout(i,j,k,UEDEN) = old_rhoeint + new_ke;
                                 }
                 else
-                    amrex::Abort("Error:: Nyx_advection_3d.f90 :: bogus grav_source_type");
-
+                    amrex::Abort("Error:: update_state_with_sources :: bogus grav_source_type");
 
         });
     }
