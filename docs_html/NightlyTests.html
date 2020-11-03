@@ -209,6 +209,160 @@ These tests are also run on an NVIDIA GPU and those results can be found at <a c
 <p>Below nx,ny,nz are the number of cells in each coordinate direction at the coarsest level;
 Npa = number of particles, Np = number of MPI ranks / number of OMP threads per rank.
 (If just a single number then pure MPI.)</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="32%" />
+<col width="14%" />
+<col width="6%" />
+<col width="12%" />
+<col width="0%" />
+<col width="6%" />
+<col width="0%" />
+<col width="30%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Test</th>
+<th class="head">nx ny nz</th>
+<th class="head">Nl</th>
+<th class="head">Npa</th>
+<th class="head" colspan="2">Np</th>
+<th class="head" colspan="2">What does this test?</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>AMR-density</td>
+<td>64 64 64</td>
+<td>3</td>
+<td>262144</td>
+<td colspan="2">4</td>
+<td colspan="2">Start from chk00300</td>
+</tr>
+<tr class="row-odd"><td>DR_restart</td>
+<td>32  4  4</td>
+<td>3</td>
+<td>0</td>
+<td colspan="2">2/2</td>
+<td colspan="2">Hydro only - restart</td>
+</tr>
+<tr class="row-even"><td>DoubleRarefaction</td>
+<td>32  4  4</td>
+<td>3</td>
+<td>0</td>
+<td colspan="2">2/2</td>
+<td colspan="2">Hydro only</td>
+</tr>
+<tr class="row-odd"><td>DrivenTurbulence</td>
+<td>32 32 32</td>
+<td>1</td>
+<td>0</td>
+<td colspan="2">1/4</td>
+<td colspan="2">Turbulent forcing</td>
+</tr>
+<tr class="row-even"><td>DrivenTurbulence-OMP</td>
+<td>32 32 32</td>
+<td>1</td>
+<td>0</td>
+<td colspan="2">1/4</td>
+<td colspan="2">Forcing with OMP</td>
+</tr>
+<tr class="row-odd"><td>LyA</td>
+<td>32 32 32</td>
+<td>1</td>
+<td>32768</td>
+<td colspan="2">4</td>
+<td colspan="2">Includes h/c</td>
+</tr>
+<tr class="row-even"><td>Lya-OMP</td>
+<td>32 32 32</td>
+<td>1</td>
+<td>32768</td>
+<td colspan="2">1</td>
+<td colspan="2">Mixed MI/PO + Per</td>
+</tr>
+<tr class="row-odd"><td>MiniSB</td>
+<td>32 32 32</td>
+<td>1</td>
+<td>2500</td>
+<td colspan="2">2</td>
+<td colspan="2">Mixed MI/PO + Per</td>
+</tr>
+<tr class="row-even"><td>MiniSB-ref</td>
+<td>32 32 32</td>
+<td>2</td>
+<td>2500</td>
+<td colspan="2">2</td>
+<td colspan="2">Mixed MI/PO + Per</td>
+</tr>
+<tr class="row-odd"><td>Part-2line</td>
+<td>16 16 16</td>
+<td>3</td>
+<td>16</td>
+<td colspan="2">2</td>
+<td colspan="2">Particle-only</td>
+</tr>
+<tr class="row-even"><td>Part-2line_restart</td>
+<td>16 16 16</td>
+<td>3</td>
+<td>16</td>
+<td colspan="2">2</td>
+<td colspan="2">Particle-only</td>
+</tr>
+<tr class="row-odd"><td>Part-mass.nosub</td>
+<td>16 16 16</td>
+<td>3</td>
+<td>8</td>
+<td colspan="2">2</td>
+<td colspan="2">Particle-only</td>
+</tr>
+<tr class="row-even"><td>Part-mass.sub</td>
+<td>16 16 16</td>
+<td>3</td>
+<td>8</td>
+<td colspan="2">2</td>
+<td colspan="2">Particle-only</td>
+</tr>
+<tr class="row-odd"><td>SantaBarbara</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td colspan="2">&#160;</td>
+<td colspan="2">Compile-only</td>
+</tr>
+<tr class="row-even"><td>Sedov</td>
+<td>32 32 32</td>
+<td>1</td>
+<td>0</td>
+<td colspan="2">1</td>
+<td colspan="2">Hydro only</td>
+</tr>
+<tr class="row-odd"><td>Sod</td>
+<td>4  32 4</td>
+<td>3</td>
+<td>0</td>
+<td colspan="2">1</td>
+<td colspan="2">Hydro only</td>
+</tr>
+<tr class="row-even"><td>StrongShockTurb</td>
+<td>32 4  4</td>
+<td>3</td>
+<td>0</td>
+<td colspan="2">1</td>
+<td colspan="2">Hydro only</td>
+</tr>
+<tr class="row-odd"><td>TurbForce</td>
+<td>32 32 32</td>
+<td>1</td>
+<td>0</td>
+<td colspan="2">4</td>
+<td colspan="2">Turbulent forcing</td>
+</tr>
+<tr class="row-even"><td>TurbForce-OMP</td>
+<td>32 32 32</td>
+<td>1</td>
+<td colspan="5">0      | 1/4 | Forcing with OMP</td>
+</tr>
+</tbody>
+</table>
 </div>
 
 
