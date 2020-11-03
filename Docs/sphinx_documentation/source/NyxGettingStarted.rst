@@ -32,13 +32,10 @@ First, make sure that git is installed on your machine—we recommend version 1.
 
    in the ``amrex/`` directory.
 
-   Note: when you check out AMReX (and Nyx), you will get the master
-   branch. The ``master`` branch is guaranteed to be compatible
-   with the ``master`` branch.
-   Active development is done on the ``development`` branch
-   in each repo, and merged into the master branch monthly.
-   If you wish to use the Nyx ``development`` branch, then you
-   should also switch to the ``development`` branch for AMReX.
+   Note: when you check out AMReX (and Nyx), you will get the development
+   branch.  Active development is done on this branch; monthly
+   tags are made of this version that are compatible with the same
+   monthly tag of AMReX itself.
 
 #. Set the environment variable, ``AMREX_HOME``, on your
    machine to point to the path name where you have put .

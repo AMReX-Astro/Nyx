@@ -7,7 +7,8 @@ The following regression tests are run nightly with Nyx.   The plotfiles generat
 are compared with the benchmark plotfiles using the AMReX :cpp:`fcompare` utility to compare the mesh data
 and :cpp:`particle_compare` to compare the particle data.
 
-The results of these tests can be found at https://ccse.lbl.gov/pub/RegressionTesting/Nyx
+The results of these tests can be found at https://ccse.lbl.gov/pub/RegressionTesting/Nyx.
+These tests are also run on an NVIDIA GPU and those results can be found at https://ccse.lbl.gov/pub/GpuRegressionTesting/Nyx.
 
 Below nx,ny,nz are the number of cells in each coordinate direction at the coarsest level;
 Npa = number of particles, Np = number of MPI ranks / number of OMP threads per rank.
