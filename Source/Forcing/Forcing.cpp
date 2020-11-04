@@ -300,9 +300,9 @@ void StochasticForcing::integrate_state_force(
     // to support vectorization of loops over all modes
     int modvec = NumNonZeroModes % LENVEC;
     if (modvec > 0)
-        num_modes_ext = NumModes + LENVEC - modvec;
+        num_modes_ext = NumNonZeroModes + LENVEC - modvec;
     else
-        num_modes_ext = NumModes;
+        num_modes_ext = NumNonZeroModes;
 
 	int mi, mj, mk;
 	int num_phases[3];

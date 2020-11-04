@@ -450,7 +450,7 @@ void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
     }
 
     for (int dim = 0; dim < SpectralRank; dim++)
-        for (int l = 0; l < NumNonZeroModes; l++) {
+        for (int l = 0; l < num_modes_ext; l++) {
             modes_even[dim][l]=SpectrumEven[dim][l];
             modes_odd[dim][l]=SpectrumOdd[dim][l];
         }
