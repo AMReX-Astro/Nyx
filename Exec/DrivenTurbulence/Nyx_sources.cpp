@@ -63,7 +63,7 @@ void Nyx::integrate_state_force(
   Real  small_eint = small_temp / (mu * m_nucleon_over_kB * (gamma - 1.0));
 
   const auto geomdata = geom.data();
-  forcing->integrate_state_force(bx, state, diag_eos, geomdata, small_eint, small_temp);
+  forcing->integrate_state_force(bx, state, diag_eos, geomdata, a, half_dt, small_eint, small_temp);
   /*
       small_dens = 1.d-9*rhoe0
       small_temp = 1.d-3*temp0
@@ -109,6 +109,7 @@ void Nyx::ext_src_force(
 	//  !   For old source: lo(:), hi(:) are the bounds of the growntilebox(src.nGrow9))
     //   For new source: lo(:), hi(:) are the bounds of the      tilebox, e.g. valid region only
     amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+			src(i,j,k,0)   = 0.0;
 			src(i,j,k,UMX)   = (tmp_state(i,j,k,UMX)   - new_state(i,j,k,UMX)) * a / half_dt;
 			src(i,j,k,UMY)   = (tmp_state(i,j,k,UMY)   - new_state(i,j,k,UMY)) * a / half_dt;
 			src(i,j,k,UMZ)   = (tmp_state(i,j,k,UMZ)   - new_state(i,j,k,UMZ)) * a / half_dt;
@@ -139,7 +140,14 @@ Nyx::get_old_source (Real      old_time,
 
     FillPatch(*this, Sborder, 4, old_time, State_Type, Density, Sborder.nComp());
     FillPatch(*this, Dborder, 4, old_time, DiagEOS_Type, 0, D_old.nComp());
-
+#ifdef AMREX_DEBUG
+    Real min_rhoe = Sborder.min(Eint);
+    if (min_rhoe < 0)
+    {
+        std::cout << "The state internal energy is negative" << std::endl;
+        amrex::Error();
+    }	
+#endif
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
@@ -153,7 +161,6 @@ Nyx::get_old_source (Real      old_time,
              Dborder.array(mfi), Dborder.array(mfi),
              ext_src.array(mfi),
              prob_lo, dx, old_time, z, dt);
-		ext_src[mfi].setVal(0.0);
 
         // The formulae in subroutine ctoprim assume that the source term for density is zero
         // Here we abort if it is non-zero.
@@ -214,7 +221,6 @@ Nyx::get_new_source (Real      old_time,
              Dborder_old.array(mfi), Dborder_new.array(mfi),
              ext_src.array(mfi),
              prob_lo, dx, new_time, z, dt);
-		ext_src[mfi].setVal(0.0);
     }
 
     ext_src.EnforcePeriodicity(0, NUM_STATE, geom.periodicity());

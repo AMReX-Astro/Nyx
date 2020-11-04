@@ -102,6 +102,7 @@ void integrate_state_force(
   amrex::Array4<amrex::Real> const& state,
   amrex::Array4<amrex::Real> const& diag_eos,
   amrex::GeometryData const& geomdata,
+  amrex::Real a, amrex::Real half_dt,
   amrex::Real small_eint, amrex::Real small_temp);
 
 //
