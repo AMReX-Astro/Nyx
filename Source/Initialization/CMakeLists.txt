@@ -1,4 +1,4 @@
-target_sources( nyx
+target_sources( ${EXE_NAME}
    PRIVATE
    Nyx_setup.cpp
    Nyx_initdata.cpp

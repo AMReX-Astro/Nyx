@@ -1,10 +1,10 @@
-target_include_directories(nyx
+target_include_directories(${EXE_NAME}
    PUBLIC
    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}> )
 
 
 if (Nyx_HEATCOOL)
-   target_sources( nyx
+   target_sources( ${EXE_NAME}
       PRIVATE
       eos_hc.H
       atomic_rates.H
@@ -12,10 +12,10 @@ if (Nyx_HEATCOOL)
       atomic_rates_data.cpp
       )
 else()
-   target_sources( nyx
+   target_sources( ${EXE_NAME}
       PRIVATE
       eos_adiabatic.H
       )
 endif()
 
-target_sources( nyx PRIVATE reset_internal_e.H )
+target_sources( ${EXE_NAME} PRIVATE reset_internal_e.H )

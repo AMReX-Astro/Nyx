@@ -1,13 +1,52 @@
-#
-# The main file MUST NOT be included amnong the sources on nyx !!!
-#
-set(NYX_DEFAULT_MAIN ${CMAKE_CURRENT_LIST_DIR}/main.cpp CACHE INTERNAL "Defualt main file")
+##############################################################################
+#                                                                            #
+#                                Nyx defines                                 #
+#                                                                            #
+##############################################################################
+if (NOT Nyx_HYDRO)
+   target_compile_definitions( ${EXE_NAME} PUBLIC $<BUILD_INTERFACE:NO_HYDRO>)
+endif()
 
-target_include_directories(nyx
+if (Nyx_HEATCOOL)
+   target_compile_definitions( ${EXE_NAME} PUBLIC $<BUILD_INTERFACE:HEATCOOL>)
+endif()
+
+# if (NOT Nyx_CONST_SPECIES)
+#    target_compile_definitions(${EXE_NAME} PUBLIC $<BUILD_INTERFACE:CONST_SPECIES>)
+# endif()
+
+if (Nyx_NEUTRINO_PARTICLES)
+   target_compile_definitions( ${EXE_NAME} PUBLIC $<BUILD_INTERFACE:NEUTRINO_PARTICLES>)
+endif()
+
+# if (NOT Nyx_NEUTRINO_DARK_PARTICLES)
+#    target_compile_definitions(${EXE_NAME} PUBLIC $<BUILD_INTERFACE:NEUTRINO_DARK_PARTICLES>)
+# endif()
+
+if (Nyx_SDC)
+   target_compile_definitions( ${EXE_NAME} PUBLIC $<BUILD_INTERFACE:SDC>)
+endif()
+
+
+##############################################################################
+#                                                                            #
+#                          Nyx third party libraries                         #
+#                                                                            #
+##############################################################################
+target_link_libraries(${EXE_NAME} PRIVATE AMReX::amrex)
+
+message("================================= EXE_NAME = ${EXE_NAME} ==================")
+
+if (DEFAULT_MAIN)
+   target_sources( ${EXE_NAME} PRIVATE main.cpp)
+endif ()
+
+
+target_include_directories(${EXE_NAME}
    PUBLIC
    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}> )
 
-target_sources( nyx
+target_sources( ${EXE_NAME}
    PRIVATE
    nyx_main.cpp
    advance_particles.cpp
@@ -21,13 +60,13 @@ target_sources( nyx
    )
 
 if (Nyx_REBEER)
-   target_sources( nyx PRIVATE Nyx_halos.cpp )
+   target_sources( ${EXE_NAME} PRIVATE Nyx_halos.cpp )
 endif ()
 
 
 if (Nyx_HYDRO)
 
-   target_sources( nyx
+   target_sources( ${EXE_NAME}
       PRIVATE
       compute_hydro_sources.cpp
       update_state_with_sources.cpp
@@ -37,7 +76,7 @@ if (Nyx_HYDRO)
       )
 
    if (Nyx_SDC)
-      target_sources( nyx
+      target_sources( ${EXE_NAME}
          PRIVATE
          sdc_hydro.cpp
          sdc_reactions.cpp
@@ -47,7 +86,7 @@ if (Nyx_HYDRO)
 endif ()
 
 if (Nyx_GIMLET)
-   target_sources( nyx
+   target_sources( ${EXE_NAME}
       PRIVATE
       DoGimletAnalysis.cpp
       postprocess_tau_fields.cpp

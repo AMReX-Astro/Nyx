@@ -71,44 +71,6 @@ include(NyxSetupAMReX)
 
 ##############################################################################
 #                                                                            #
-#                                Nyx target                                  #
-#                                                                            #
-##############################################################################
-add_library(nyx OBJECT)
-add_subdirectory(Source)
-target_link_libraries(nyx PRIVATE AMReX::amrex)
-
-##############################################################################
-#                                                                            #
-#                                Nyx defines                                 #
-#                                                                            #
-##############################################################################
-if (NOT Nyx_HYDRO)
-   target_compile_definitions(nyx PUBLIC $<BUILD_INTERFACE:NO_HYDRO>)
-endif()
-
-if (NOT Nyx_HEATCOOL)
-   target_compile_definitions(nyx PUBLIC $<BUILD_INTERFACE:HEATCOOL>)
-endif()
-
-# if (NOT Nyx_CONST_SPECIES)
-#    target_compile_definitions(nyx PUBLIC $<BUILD_INTERFACE:CONST_SPECIES>)
-# endif()
-
-if (NOT Nyx_NEUTRINO_PARTICLES)
-   target_compile_definitions(nyx PUBLIC $<BUILD_INTERFACE:NEUTRINO_PARTICLES>)
-endif()
-
-# if (NOT Nyx_NEUTRINO_DARK_PARTICLES)
-#    target_compile_definitions(nyx PUBLIC $<BUILD_INTERFACE:NEUTRINO_DARK_PARTICLES>)
-# endif()
-
-if (NOT Nyx_SDC)
-   target_compile_definitions(nyx PUBLIC $<BUILD_INTERFACE:SDC>)
-endif()
-
-##############################################################################
-#                                                                            #
 #                                Nyx executables                             #
 #                                                                            #
 ##############################################################################
