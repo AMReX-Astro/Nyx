@@ -402,7 +402,7 @@ void StochasticForcing::integrate_state_force(
        phasefct_odd_x[m]  = 0.0;
     }
 	for (int i = bx.smallEnd(0)+1; i <= bx.bigEnd(0); i++) {
-       mi = (i-bx.smallEnd(0))*num_modes_ext + 1;
+       mi = (i-bx.smallEnd(0))*num_modes_ext;
     for (int m = 0; m < num_modes_ext; m++) {
             buf[m] = phasefct_even_x[mi-num_modes_ext];
             phasefct_even_x[mi] = phasefct_mult_even[0][m] * phasefct_even_x[mi-num_modes_ext] -
@@ -418,7 +418,7 @@ void StochasticForcing::integrate_state_force(
        phasefct_odd_y[m]  = 0.0;
     }
     for (int j = bx.smallEnd(1)+1; j <= bx.bigEnd(1); j++) {
-       mj = (j-bx.smallEnd(1))*num_modes_ext + 1;
+       mj = (j-bx.smallEnd(1))*num_modes_ext;
     for (int m = 0; m < num_modes_ext; m++) {
             buf[m] = phasefct_even_y[mj-num_modes_ext];
             phasefct_even_y[mj] = phasefct_mult_even[1][m] * phasefct_even_y[mj-num_modes_ext] -
@@ -434,7 +434,7 @@ void StochasticForcing::integrate_state_force(
        phasefct_odd_z[m]  = phasefct_init_odd[m];
     }
     for (int k = bx.smallEnd(2)+1; k <= bx.bigEnd(2); k++) {
-       mk = (k-bx.smallEnd(2))*num_modes_ext + 1;
+       mk = (k-bx.smallEnd(2))*num_modes_ext;
     for (int m = 0; m < num_modes_ext; m++) {
             buf[m] = phasefct_even_z[mk-num_modes_ext];
             phasefct_even_z[mk] = phasefct_mult_even[2][m] * phasefct_even_z[mk-num_modes_ext] -
@@ -448,8 +448,8 @@ void StochasticForcing::integrate_state_force(
     // apply forcing in physical space
     for (int k = bx.smallEnd(2); k <= bx.bigEnd(2); k++) {
     for (int j = bx.smallEnd(1); j <= bx.bigEnd(1); j++) {
-       mj = (j-bx.smallEnd(1))*num_modes_ext + 1;
-       mk = (k-bx.smallEnd(2))*num_modes_ext + 1;
+       mj = (j-bx.smallEnd(1))*num_modes_ext;
+       mk = (k-bx.smallEnd(2))*num_modes_ext;
 
           // pre-compute products of phase factors depending on y- and z-coordinates
     for (int m = 0; m < num_modes_ext; m++) {
@@ -467,7 +467,7 @@ void StochasticForcing::integrate_state_force(
 
              // compute components of acceleration via inverse FT
 	for (int n = 0; n < SpectralRank; n++) {
-       mi = (i-bx.smallEnd(0))*num_modes_ext + 1;
+       mi = (i-bx.smallEnd(0))*num_modes_ext;
 
     for (int m = 0; m < num_modes_ext; m++) {
                    // sum up even modes
