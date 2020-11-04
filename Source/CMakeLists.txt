@@ -1,11 +1,15 @@
+#
+# The main file MUST NOT be included amnong the sources on nyx !!!
+#
+set(NYX_DEFAULT_MAIN ${CMAKE_CURRENT_LIST_DIR}/main.cpp CACHE INTERNAL "Defualt main file")
+
 target_include_directories(nyx
    PUBLIC
    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}> )
 
 target_sources( nyx
    PRIVATE
-   main.cpp       # should I include these two here???
-   nyx_main.cpp   #
+   nyx_main.cpp
    advance_particles.cpp
    Nyx.cpp
    Nyx_advance.cpp

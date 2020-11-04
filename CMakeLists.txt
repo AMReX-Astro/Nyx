@@ -74,10 +74,9 @@ include(NyxSetupAMReX)
 #                                Nyx target                                  #
 #                                                                            #
 ##############################################################################
-add_executable(nyx)
+add_library(nyx OBJECT)
 add_subdirectory(Source)
 target_link_libraries(nyx PRIVATE AMReX::amrex)
-
 
 ##############################################################################
 #                                                                            #
@@ -108,7 +107,12 @@ if (NOT Nyx_SDC)
    target_compile_definitions(nyx PUBLIC $<BUILD_INTERFACE:SDC>)
 endif()
 
-
+##############################################################################
+#                                                                            #
+#                                Nyx executables                             #
+#                                                                            #
+##############################################################################
+add_subdirectory(Exec)
 
 # get_git_info( )
 
