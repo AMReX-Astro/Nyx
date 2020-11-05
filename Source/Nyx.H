@@ -319,6 +319,28 @@ public:
     // Restore spectrum at restart
     //
     void forcing_post_restart(const std::string& restart_file);
+
+    void integrate_state_force(
+  amrex::Box const& bx,
+  amrex::Array4<amrex::Real> const& state,
+  amrex::Array4<amrex::Real> const& diag_eos,
+  const amrex::Real* dx,
+  const amrex::Real time,
+  const amrex::Real a,
+  const amrex::Real half_dt);
+
+	void ext_src_force(
+  amrex::Box const& bx,
+  amrex::Array4<const amrex::Real> const& old_state,
+  amrex::Array4<const amrex::Real> const& new_state,
+  amrex::Array4<const amrex::Real> const& old_diag,
+  amrex::Array4<amrex::Real> const& new_diag,
+  amrex::Array4<amrex::Real> const& src,
+  const amrex::Real* problo,
+  const amrex::Real* dx,
+  const amrex::Real time,
+  const amrex::Real z,
+  const amrex::Real dt);
 #endif
 
     //

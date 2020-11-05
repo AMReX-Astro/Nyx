@@ -946,7 +946,7 @@ Nyx::checkPointPost (const std::string& dir,
 void
 Nyx::forcing_check_point (const std::string& dir)
 {
-    if (level == 0)
+    if (level == 0 && do_forcing)
     {
         if (ParallelDescriptor::IOProcessor())
         {
