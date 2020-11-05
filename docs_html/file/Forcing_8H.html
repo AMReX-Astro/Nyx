@@ -294,6 +294,11 @@
 <span class="target" id="Forcing_8H_1a451c16e0978a6b377c109d7fd8e24444"></span><em class="property">const</em> <a class="reference internal" href="#_CPPv418spect_profile_type" title="spect_profile_type">spect_profile_type</a> <code class="descname">Parabolic</code> = 3<a class="headerlink" href="#_CPPv49Parabolic" title="Permalink to this definition">¶</a><br /></dt>
 <dd></dd></dl>
 
+<dl class="member">
+<dt id="_CPPv46LENVEC">
+<span class="target" id="Forcing_8H_1af8fc2f237857ca4c461f2baa6ded20ee"></span><em class="property">constexpr</em> int <code class="descname">LENVEC</code> = 4<a class="headerlink" href="#_CPPv46LENVEC" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
 </div>
 <dl class="class">
 <dt id="_CPPv417StochasticForcing">
@@ -328,6 +333,11 @@
 <dl class="function">
 <dt id="_CPPv4N17StochasticForcing3rmsEv">
 <span class="target" id="classStochasticForcing_1a0cd9a0fa1dc945cdc0715139da1cd9d5"></span>Real <code class="descname">rms</code><span class="sig-paren">(</span>void<span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N17StochasticForcing21integrate_state_forceERKN5amrex3BoxERKN5amrex6Array4IN5amrex4RealEEERKN5amrex6Array4IN5amrex4RealEEERKN5amrex12GeometryDataEN5amrex4RealEN5amrex4RealEN5amrex4RealEN5amrex4RealE">
+<span class="target" id="classStochasticForcing_1a0f83b215d669d7964b779bd48df83b4e"></span>void <code class="descname">integrate_state_force</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Box <em class="property">const</em> &amp;<em>bx</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Array4&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real&gt; <em class="property">const</em> &amp;<em>state</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Array4&lt;<a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real&gt; <em class="property">const</em> &amp;<em>diag_eos</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::GeometryData <em class="property">const</em> &amp;<em>geomdata</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>a</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>half_dt</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>small_eint</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>small_temp</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -584,6 +594,21 @@
 <dl class="member">
 <dt id="_CPPv4N17StochasticForcing11SpectrumOddE">
 <span class="target" id="classStochasticForcing_1a11dd33b6e67035ef14ffa987507fe0d6"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<code class="descname">SpectrumOdd</code>[<code class="descname">MAX_DIMENSION</code>]<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing11wavevectorsE">
+<span class="target" id="classStochasticForcing_1aaf717036e6b633b45c21a68549194394"></span>int *<code class="descname">wavevectors</code>[<code class="descname">MAX_DIMENSION</code>]<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing10modes_evenE">
+<span class="target" id="classStochasticForcing_1a59fc78852edb7a809c610da6e78f26e5"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<code class="descname">modes_even</code>[<code class="descname">MAX_DIMENSION</code>]<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N17StochasticForcing9modes_oddE">
+<span class="target" id="classStochasticForcing_1a18968eb53b87b023a7f52f8ad730533b"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real *<code class="descname">modes_odd</code>[<code class="descname">MAX_DIMENSION</code>]<br /></dt>
 <dd></dd></dl>
 
 </div>
