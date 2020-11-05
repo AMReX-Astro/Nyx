@@ -46,10 +46,10 @@ void Nyx::integrate_state_force(
 
   // assume completely ionized species
   for(int n=0;n< nspecd; n++)
-    {
+  {
       ymass[n] = xn_eos[n]*(1.e0 + ziond[n])/aiond[n];
       sum_y = sum_y + ymass[n];
-    }
+  }
 
   Real mu = 1.0/sum_y;
 

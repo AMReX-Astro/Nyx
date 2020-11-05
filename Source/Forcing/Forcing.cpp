@@ -294,7 +294,7 @@ void StochasticForcing::integrate_state_force(
   amrex::Real half_dt,
   amrex::Real small_eint, amrex::Real small_temp)
 {
-	int num_modes_ext = 0;
+    int num_modes_ext = 0;
     // determine extend array length as integer multiple of 4 
     // to support vectorization of loops over all modes
     int modvec = NumNonZeroModes % LENVEC;
@@ -303,94 +303,94 @@ void StochasticForcing::integrate_state_force(
     else
         num_modes_ext = NumNonZeroModes;
 
-	int mi, mj, mk;
-	int num_phases[3];
+    int mi, mj, mk;
+    int num_phases[3];
     Real delta_phase[3];
-	Real phase_lo[3];
-	Real accel[3];
-	Real buf[num_modes_ext];
-	Real phasefct_init_even[num_modes_ext];
-	Real phasefct_init_odd[num_modes_ext];
+    Real phase_lo[3];
+    Real accel[3];
+    Real buf[num_modes_ext];
+    Real phasefct_init_even[num_modes_ext];
+    Real phasefct_init_odd[num_modes_ext];
     Real phasefct_mult_even[3][num_modes_ext];
     Real phasefct_mult_odd[3][num_modes_ext];
     Real phasefct_yz[2][num_modes_ext];
     Real *phasefct_even_x, *phasefct_even_y, *phasefct_even_z;
     Real *phasefct_odd_x, *phasefct_odd_y, *phasefct_odd_z;
-	//    int neg_e_count = 0;
+    //    int neg_e_count = 0;
 
-	amrex::Real alpha=100.0;
-	amrex::Real rho0=1.0;
+    amrex::Real alpha=100.0;
+    amrex::Real rho0=1.0;
     amrex::Real temp0=10.0;
     amrex::Real ne0=1.0;
     // Note that (lo,hi) define the region of the box containing the grow cells
     // Do *not* assume this is just the valid region
     // apply heating-cooling to UEDEN and UEINT
     amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-			// Original values
+            // Original values
             Real rho        = state(i,j,k,URHO);
             Real rho_e_orig = state(i,j,k,UEINT);
-		    Real rho_K_res  = state(i,j,k,UEDEN) - state(i,j,k,UEINT);
-			Real T_orig     = diag_eos(i,j,k,Temp_comp);
+            Real rho_K_res  = state(i,j,k,UEDEN) - state(i,j,k,UEINT);
+            Real T_orig     = diag_eos(i,j,k,Temp_comp);
                 //ne         = diag_eos(i,j,k,  NE_COMP)
 
-				//                if (rho_e_orig < 0.0) neg_e_count = neg_e_count + 1
+                //                if (rho_e_orig < 0.0) neg_e_count = neg_e_count + 1
 
              // Compute temperature increment and ensure that new temperature is positive
              Real delta = half_dt * alpha * (temp0 - T_orig) / a;
-			diag_eos(i,j,k,Temp_comp) = amrex::max(T_orig + delta, small_temp);
+            diag_eos(i,j,k,Temp_comp) = amrex::max(T_orig + delta, small_temp);
 
-			// Call EOS to get internal energy for constant equilibrium temperature
-			Real eint0 = temp0 / (small_temp / small_eint);
-			Real delta_re = half_dt * alpha * (rho*eint0 - rho_e_orig) / a;
+            // Call EOS to get internal energy for constant equilibrium temperature
+            Real eint0 = temp0 / (small_temp / small_eint);
+            Real delta_re = half_dt * alpha * (rho*eint0 - rho_e_orig) / a;
 
             // Call EOS to get the internal energy floor
 
-			// Update cell quantities
-			state(i,j,k,UEINT) = amrex::max(rho_e_orig + delta_re, rho*small_eint);
-			state(i,j,k,UEDEN) = state(i,j,k,UEINT) + rho_K_res;
-		});
+            // Update cell quantities
+            state(i,j,k,UEINT) = amrex::max(rho_e_orig + delta_re, rho*small_eint);
+            state(i,j,k,UEDEN) = state(i,j,k,UEINT) + rho_K_res;
+        });
 
-	const auto prob_hi = geomdata.ProbHi();
-	const auto prob_lo = geomdata.ProbLo();
-	const auto dx = geomdata.CellSize();
-	for (int dim = 0; dim < SpectralRank; dim++) {
-		delta_phase[dim] = 2.0*M_PI * dx[dim] / (prob_hi[dim] - prob_lo[dim]); // phase increment per cell
-		phase_lo[dim] = (double(bx.smallEnd(dim)) + 0.5) * delta_phase[dim];           // phase of low corner
-		num_phases[dim] = (bx.bigEnd(dim)-bx.smallEnd(dim)+1)*num_modes_ext;
-	}
+    const auto prob_hi = geomdata.ProbHi();
+    const auto prob_lo = geomdata.ProbLo();
+    const auto dx = geomdata.CellSize();
+    for (int dim = 0; dim < SpectralRank; dim++) {
+        delta_phase[dim] = 2.0*M_PI * dx[dim] / (prob_hi[dim] - prob_lo[dim]); // phase increment per cell
+        phase_lo[dim] = (double(bx.smallEnd(dim)) + 0.5) * delta_phase[dim];           // phase of low corner
+        num_phases[dim] = (bx.bigEnd(dim)-bx.smallEnd(dim)+1)*num_modes_ext;
+    }
 
-	phasefct_even_x = new Real[num_phases[0]];
-	phasefct_even_y = new Real[num_phases[1]];
-	phasefct_even_z = new Real[num_phases[2]];
-	phasefct_odd_x  = new Real[num_phases[0]];
-	phasefct_odd_y  = new Real[num_phases[1]];
-	phasefct_odd_z  = new Real[num_phases[2]];
+    phasefct_even_x = new Real[num_phases[0]];
+    phasefct_even_y = new Real[num_phases[1]];
+    phasefct_even_z = new Real[num_phases[2]];
+    phasefct_odd_x  = new Real[num_phases[0]];
+    phasefct_odd_y  = new Real[num_phases[1]];
+    phasefct_odd_z  = new Real[num_phases[2]];
 
     for (int m = 0; m < num_modes_ext; m++) {
-         int i = wavevectors[0][m];
-		 int j = wavevectors[1][m];
-		 int k = wavevectors[2][m];
+        int i = wavevectors[0][m];
+        int j = wavevectors[1][m];
+        int k = wavevectors[2][m];
         phasefct_init_even[m] =
-			(cos(i*phase_lo[0]) * cos(j*phase_lo[1]) -
-			 sin(i*phase_lo[0]) * sin(j*phase_lo[1])) * cos(k*phase_lo[2]) -
-			(cos(i*phase_lo[0]) * sin(j*phase_lo[1]) +
-			 sin(i*phase_lo[0]) * cos(j*phase_lo[1])) * sin(k*phase_lo[2]);
+            (cos(i*phase_lo[0]) * cos(j*phase_lo[1]) -
+             sin(i*phase_lo[0]) * sin(j*phase_lo[1])) * cos(k*phase_lo[2]) -
+            (cos(i*phase_lo[0]) * sin(j*phase_lo[1]) +
+             sin(i*phase_lo[0]) * cos(j*phase_lo[1])) * sin(k*phase_lo[2]);
 
-		phasefct_init_odd[m] =
-			(cos(i*phase_lo[0]) * cos(j*phase_lo[1]) -
-			 sin(i*phase_lo[0]) * sin(j*phase_lo[1])) * sin(k*phase_lo[2]) +
-			(cos(i*phase_lo[0]) * sin(j*phase_lo[1]) +
-			 sin(i*phase_lo[0]) * cos(j*phase_lo[1])) * cos(k*phase_lo[2]);
+        phasefct_init_odd[m] =
+            (cos(i*phase_lo[0]) * cos(j*phase_lo[1]) -
+             sin(i*phase_lo[0]) * sin(j*phase_lo[1])) * sin(k*phase_lo[2]) +
+            (cos(i*phase_lo[0]) * sin(j*phase_lo[1]) +
+             sin(i*phase_lo[0]) * cos(j*phase_lo[1])) * cos(k*phase_lo[2]);
 
-		phasefct_mult_even[0][m] = cos(i*delta_phase[0]);
-		phasefct_mult_odd [0][m] = sin(i*delta_phase[0]);
+        phasefct_mult_even[0][m] = cos(i*delta_phase[0]);
+        phasefct_mult_odd [0][m] = sin(i*delta_phase[0]);
 
-		phasefct_mult_even[1][m] = cos(j*delta_phase[1]);
-		phasefct_mult_odd [1][m] = sin(j*delta_phase[1]);
+        phasefct_mult_even[1][m] = cos(j*delta_phase[1]);
+        phasefct_mult_odd [1][m] = sin(j*delta_phase[1]);
 
-		phasefct_mult_even[2][m] = cos(k*delta_phase[2]);
-		phasefct_mult_odd [2][m] = sin(k*delta_phase[2]);
-	}
+        phasefct_mult_even[2][m] = cos(k*delta_phase[2]);
+        phasefct_mult_odd [2][m] = sin(k*delta_phase[2]);
+    }
 
     // initialize phase factors for each coordinate axis:
     // since phase factors for inverse FT are given by
@@ -400,17 +400,17 @@ void StochasticForcing::integrate_state_force(
        phasefct_even_x[m] = 1.0;
        phasefct_odd_x[m]  = 0.0;
     }
-	for (int i = bx.smallEnd(0)+1; i <= bx.bigEnd(0); i++) {
+    for (int i = bx.smallEnd(0)+1; i <= bx.bigEnd(0); i++) {
        mi = (i-bx.smallEnd(0))*num_modes_ext;
-    for (int m = 0; m < num_modes_ext; m++) {
-            buf[m] = phasefct_even_x[mi-num_modes_ext];
-            phasefct_even_x[mi] = phasefct_mult_even[0][m] * phasefct_even_x[mi-num_modes_ext] -
-                                  phasefct_mult_odd [0][m] * phasefct_odd_x[mi-num_modes_ext];
-            phasefct_odd_x[mi]  = phasefct_mult_even[0][m] * phasefct_odd_x[mi-num_modes_ext] +
-                                  phasefct_mult_odd [0][m] * buf[m];
-            mi = mi + 1;
-}
-}
+       for (int m = 0; m < num_modes_ext; m++) {
+           buf[m] = phasefct_even_x[mi-num_modes_ext];
+           phasefct_even_x[mi] = phasefct_mult_even[0][m] * phasefct_even_x[mi-num_modes_ext] -
+                                 phasefct_mult_odd [0][m] * phasefct_odd_x[mi-num_modes_ext];
+           phasefct_odd_x[mi]  = phasefct_mult_even[0][m] * phasefct_odd_x[mi-num_modes_ext] +
+                                 phasefct_mult_odd [0][m] * buf[m];
+           mi = mi + 1;
+       }
+    }
 
     for (int m = 0; m < num_modes_ext; m++) {
        phasefct_even_y[m] = 1.0;
@@ -418,15 +418,15 @@ void StochasticForcing::integrate_state_force(
     }
     for (int j = bx.smallEnd(1)+1; j <= bx.bigEnd(1); j++) {
        mj = (j-bx.smallEnd(1))*num_modes_ext;
-    for (int m = 0; m < num_modes_ext; m++) {
-            buf[m] = phasefct_even_y[mj-num_modes_ext];
-            phasefct_even_y[mj] = phasefct_mult_even[1][m] * phasefct_even_y[mj-num_modes_ext] -
-                                  phasefct_mult_odd [1][m] * phasefct_odd_y[mj-num_modes_ext];
-            phasefct_odd_y[mj]  = phasefct_mult_even[1][m] * phasefct_odd_y[mj-num_modes_ext] +
-                                  phasefct_mult_odd [1][m] * buf[m];
-            mj = mj + 1;
-}
-}
+       for (int m = 0; m < num_modes_ext; m++) {
+           buf[m] = phasefct_even_y[mj-num_modes_ext];
+           phasefct_even_y[mj] = phasefct_mult_even[1][m] * phasefct_even_y[mj-num_modes_ext] -
+                                 phasefct_mult_odd [1][m] * phasefct_odd_y[mj-num_modes_ext];
+           phasefct_odd_y[mj]  = phasefct_mult_even[1][m] * phasefct_odd_y[mj-num_modes_ext] +
+                                 phasefct_mult_odd [1][m] * buf[m];
+           mj = mj + 1;
+       }
+    }
 
     for (int m = 0; m < num_modes_ext; m++) {
        phasefct_even_z[m] = phasefct_init_even[m];
@@ -434,66 +434,65 @@ void StochasticForcing::integrate_state_force(
     }
     for (int k = bx.smallEnd(2)+1; k <= bx.bigEnd(2); k++) {
        mk = (k-bx.smallEnd(2))*num_modes_ext;
-    for (int m = 0; m < num_modes_ext; m++) {
-            buf[m] = phasefct_even_z[mk-num_modes_ext];
-            phasefct_even_z[mk] = phasefct_mult_even[2][m] * phasefct_even_z[mk-num_modes_ext] -
-                                  phasefct_mult_odd [2][m] * phasefct_odd_z[mk-num_modes_ext];
-            phasefct_odd_z[mk]  = phasefct_mult_even[2][m] * phasefct_odd_z[mk-num_modes_ext] +
-                                  phasefct_mult_odd [2][m] * buf[m];
-            mk = mk + 1;
-}
-}
+       for (int m = 0; m < num_modes_ext; m++) {
+           buf[m] = phasefct_even_z[mk-num_modes_ext];
+           phasefct_even_z[mk] = phasefct_mult_even[2][m] * phasefct_even_z[mk-num_modes_ext] -
+                                 phasefct_mult_odd [2][m] * phasefct_odd_z[mk-num_modes_ext];
+           phasefct_odd_z[mk]  = phasefct_mult_even[2][m] * phasefct_odd_z[mk-num_modes_ext] +
+                                 phasefct_mult_odd [2][m] * buf[m];
+           mk = mk + 1;
+       }
+    }
 
     // apply forcing in physical space
     for (int k = bx.smallEnd(2); k <= bx.bigEnd(2); k++) {
-    for (int j = bx.smallEnd(1); j <= bx.bigEnd(1); j++) {
-       mj = (j-bx.smallEnd(1))*num_modes_ext;
-       mk = (k-bx.smallEnd(2))*num_modes_ext;
+        for (int j = bx.smallEnd(1); j <= bx.bigEnd(1); j++) {
+            mj = (j-bx.smallEnd(1))*num_modes_ext;
+            mk = (k-bx.smallEnd(2))*num_modes_ext;
 
-          // pre-compute products of phase factors depending on y- and z-coordinates
-    for (int m = 0; m < num_modes_ext; m++) {
-             phasefct_yz[0][m] = phasefct_even_y[mj] * phasefct_even_z[mk] - phasefct_odd_y[mj]  * phasefct_odd_z[mk];
-             phasefct_yz[1][m] = phasefct_odd_y[mj]  * phasefct_even_z[mk] + phasefct_even_y[mj] * phasefct_odd_z[mk];
-             mj = mj + 1;
-             mk = mk + 1;
-}
+            // pre-compute products of phase factors depending on y- and z-coordinates
+            for (int m = 0; m < num_modes_ext; m++) {
+                phasefct_yz[0][m] = phasefct_even_y[mj] * phasefct_even_z[mk] - phasefct_odd_y[mj]  * phasefct_odd_z[mk];
+                phasefct_yz[1][m] = phasefct_odd_y[mj]  * phasefct_even_z[mk] + phasefct_even_y[mj] * phasefct_odd_z[mk];
+                mj = mj + 1;
+                mk = mk + 1;
+            }
 
-    for (int i = bx.smallEnd(1); i <= bx.bigEnd(1); i++) {
+            for (int i = bx.smallEnd(1); i <= bx.bigEnd(1); i++) {
 
-             accel[0] = 0.0;
-             accel[1] = 0.0;
-             accel[2] = 0.0;
+                accel[0] = 0.0;
+                accel[1] = 0.0;
+                accel[2] = 0.0;
 
-             // compute components of acceleration via inverse FT
-	for (int n = 0; n < SpectralRank; n++) {
-       mi = (i-bx.smallEnd(0))*num_modes_ext;
+                // compute components of acceleration via inverse FT
+                for (int n = 0; n < SpectralRank; n++) {
+                    mi = (i-bx.smallEnd(0))*num_modes_ext;
 
-    for (int m = 0; m < num_modes_ext; m++) {
-                   // sum up even modes
-                   accel[n] = accel[n] + (phasefct_even_x[mi] * phasefct_yz[0][m] -
-                                          phasefct_odd_x[mi]  * phasefct_yz[1][m]) * modes_even[n][m];
-                   // sum up odd modes
-                   accel[n] = accel[n] - (phasefct_even_x[mi] * phasefct_yz[1][m] +
-                                          phasefct_odd_x[mi]  * phasefct_yz[0][m]) * modes_odd[n][m];
-                   mi = mi + 1;
-}
+                    for (int m = 0; m < num_modes_ext; m++) {
+                        // sum up even modes
+                        accel[n] = accel[n] + (phasefct_even_x[mi] * phasefct_yz[0][m] -
+                                               phasefct_odd_x[mi]  * phasefct_yz[1][m]) * modes_even[n][m];
+                        // sum up odd modes
+                        accel[n] = accel[n] - (phasefct_even_x[mi] * phasefct_yz[1][m] +
+                                               phasefct_odd_x[mi]  * phasefct_yz[0][m]) * modes_odd[n][m];
+                        mi = mi + 1;
+                    }
 
-
-             accel[n] = M_SQRT2 * accel[n];
-}
-             // add forcing to state		
-             state(i,j,k,UMX) = state(i,j,k,UMX) + half_dt * state(i,j,k,URHO)*accel[0] / a;
-             state(i,j,k,UMY) = state(i,j,k,UMY) + half_dt * state(i,j,k,URHO)*accel[1] / a;
-             state(i,j,k,UMZ) = state(i,j,k,UMZ) + half_dt * state(i,j,k,URHO)*accel[2] / a;
-}
-}
-}
+                    accel[n] = M_SQRT2 * accel[n];
+                }
+                // add forcing to state     
+                state(i,j,k,UMX) = state(i,j,k,UMX) + half_dt * state(i,j,k,URHO)*accel[0] / a;
+                state(i,j,k,UMY) = state(i,j,k,UMY) + half_dt * state(i,j,k,URHO)*accel[1] / a;
+                state(i,j,k,UMZ) = state(i,j,k,UMZ) + half_dt * state(i,j,k,URHO)*accel[2] / a;
+            }
+        }
+    }
 
     // update total energy
     amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
              state(i,j,k,UEDEN) = state(i,j,k,UEINT) + 0.5  *(state(i,j,k,UMX)*state(i,j,k,UMX) +
                                                               state(i,j,k,UMY)*state(i,j,k,UMY) +
                                                               state(i,j,k,UMZ)*state(i,j,k,UMZ))/state(i,j,k,URHO);
-});
+        });
 
 }
