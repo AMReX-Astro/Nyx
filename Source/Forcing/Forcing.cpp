@@ -458,7 +458,7 @@ void StochasticForcing::integrate_state_force(
                 mk = mk + 1;
             }
 
-            for (int i = bx.smallEnd(1); i <= bx.bigEnd(1); i++) {
+            for (int i = bx.smallEnd(0); i <= bx.bigEnd(0); i++) {
 
                 accel[0] = 0.0;
                 accel[1] = 0.0;
