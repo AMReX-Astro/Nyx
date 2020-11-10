@@ -16,9 +16,9 @@ if (AMReX_FOUND)
 
    # We are in this branch because an AMReX installation has been found.
    # In this scenario, we don't know how AMReX has been built. We only know
-   # that some AMReX components, namely 3D, DP, PARTICLES
+   # that some AMReX components, namely 3D, DOUBLE, PARTICLES
    # MUST be present in the installation.
-   set(AMREX_REQUIRED_COMPONENTS 3D DP PARTICLES)
+   set(AMREX_REQUIRED_COMPONENTS 3D DOUBLE PARTICLES)
 
    if (Nyx_MPI)
       list(APPEND AMREX_REQUIRED_COMPONENTS MPI)
@@ -91,14 +91,14 @@ else ()
    endif ()
 
    # Set build options for subproject
-   set(DIM       3)
-   set(ENABLE_DP ON)
-   set(ENABLE_FORTRAN ${Nyx_FORTRAN})
-   set(ENABLE_MPI  ${Nyx_MPI})
-   set(ENABLE_OMP  ${Nyx_OMP})
-   set(ENABLE_CUDA ${Nyx_CUDA})
-   set(ENABLE_LINEAR_SOLVERS  ${Nyx_GRAVITY})
-   set(ENABLE_PARTICLES ON)
+   set(AMReX_SPACEDIM        3)
+   set(AMReX_PRECISION       DOUBLE)
+   set(AMReX_FORTRAN         ${Nyx_FORTRAN})
+   set(AMReX_MPI             ${Nyx_MPI})
+   set(AMReX_OMP             ${Nyx_OMP})
+   set(AMReX_CUDA            ${Nyx_CUDA})
+   set(AMReX_LINEAR_SOLVERS  ${Nyx_GRAVITY})
+   set(AMReX_PARTICLES       ON)
    set(AMReX_BUILD_TUTORIALS OFF)
 
    list(APPEND CMAKE_MODULE_PATH ${AMREX_SRC_DIR}/Tools/CMake)

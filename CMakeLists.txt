@@ -37,12 +37,12 @@ endif()
 #                         Nyx options                                        #
 #                                                                            #
 ##############################################################################
-option( Nyx_Fortran    "Enable Fortran" OFF)   # This will go
+option( Nyx_Fortran    "Enable Fortran" OFF)   # This will go away
 option( Nyx_MPI        "Enable MPI"     YES)
 option( Nyx_OMP        "Enable OpenMP"  NO)
 option( Nyx_CUDA       "Enable CUDA"    NO)
 option( Nyx_PARTICLES  "Enable particles support" OFF)
-
+# option( Nyx_PARTICLES  "Enable particles support" OFF)
 option( Nyx_REEBER             "" OFF)
 option( Nyx_HYDRO              "" ON)
 option( Nyx_SDC                "" OFF)
