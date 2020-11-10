@@ -27,7 +27,7 @@ StochasticForcing::StochasticForcing()
 
     SpectProfile = Parabolic;
 
-    AmpltThresh = 1.0e-4;
+    AmpltThresh = 1.051250e-1;
     SolenoidalWeight = 1.0;
     DecayInitTime = 0.0;
 
