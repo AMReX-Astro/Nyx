@@ -1,7 +1,6 @@
 
 #include "Nyx.H"
 #include "Prob.H"
-#include "Nyx_error_F.H"
 
 using namespace amrex;
 using std::string;
@@ -84,4 +83,3 @@ Nyx::manual_tags_placement (TagBoxArray&    tags,
                             const Vector<IntVect>& bf_lev)
 {
 }
-

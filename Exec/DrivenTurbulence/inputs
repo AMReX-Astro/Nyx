@@ -80,7 +80,7 @@ amr.plot_per        = 0.1
 amr.derive_plot_vars = magvort divu MachNumber
 
 # PROBIN FILENAME
-amr.probin_file    = probin
+amr.probin_file    = ""
 
 # DIAGNOSTICS & VERBOSITY
 nyx.sum_interval   = 1       # timesteps between computing mass
