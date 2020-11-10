@@ -972,9 +972,6 @@ Nyx::est_time_step (Real dt_old)
         Real a = get_comoving_a(cur_time);
         const auto dx = geom.CellSizeArray();
 
-#ifdef _OPENMP
-#pragma omp parallel reduction(min:est_dt)
-#endif
         {
           Real dt = 1.e200;
           //Doesn't seem to be used:
@@ -2734,75 +2731,85 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
     Real rho_lo = 0.9*average_gas_density;
     const auto dx= geom.CellSizeArray();
 
+#ifdef AMREX_USE_GPU
+    if (Gpu::inLaunchRegion())
+    {
+        ReduceOps<ReduceOpSum,ReduceOpSum,ReduceOpSum,ReduceOpSum,
+                  ReduceOpSum,ReduceOpSum,ReduceOpSum> reduce_op;
+        ReduceData<Real,Real,Real,Real,Real,Real,Real> reduce_data(reduce_op);
+        using ReduceTuple = typename decltype(reduce_data)::Type;
+        for (MFIter mfi(S_new); mfi.isValid(); ++mfi)
+        {
+            const Box& bx = mfi.tilebox();
+            const auto state    = S_new.const_array(mfi);
+            const auto diag_eos = D_new.const_array(mfi);
+            Real vol = dx[0]*dx[1]*dx[2];
+            reduce_op.eval(bx, reduce_data,
+            [=] AMREX_GPU_DEVICE (int i, int j, int k) -> ReduceTuple
+            {
+                Real T_tmp = diag_eos(i,j,k,Temp_comp);
+                Real rho_tmp = state(i,j,k,Density);
+                Real l_rho_T_sum = 0._rt;
+                Real l_rho_sum = 0._rt;
+                Real l_T_sum = 0._rt;
+                Real l_Tinv_sum = 0._rt;
+                Real l_T_meanrho_sum = 0._rt;
+                Real l_vol_sum = 0._rt;
+                Real l_vol_mn_sum = 0._rt;
+                l_T_sum = vol*T_tmp;
+                l_Tinv_sum = rho_tmp/T_tmp;
+                l_rho_T_sum = rho_tmp*T_tmp;
+                l_rho_sum = rho_tmp;
+                if ( (rho_tmp < rho_hi) &&  (rho_tmp > rho_lo) && (T_tmp <= 1.0e5) ) {
+                    l_T_meanrho_sum = vol*log10(T_tmp);
+                    l_vol_mn_sum = vol;
+                }
+                l_vol_sum = vol;
+                return {l_rho_T_sum, l_rho_sum, l_T_sum, l_Tinv_sum, l_T_meanrho_sum, l_vol_sum, l_vol_mn_sum};
+            });
+        }
+
+        ReduceTuple hv = reduce_data.value();
+        rho_T_sum = amrex::get<0>(hv);
+        rho_sum  = amrex::get<1>(hv);
+        T_sum   = amrex::get<2>(hv);
+        Tinv_sum    = amrex::get<3>(hv);
+        T_meanrho_sum  = amrex::get<4>(hv);
+        vol_sum   = amrex::get<5>(hv);
+        vol_mn_sum  = amrex::get<6>(hv);
+
+    }
+    else
+#endif
+    {
 #ifdef _OPENMP
 #pragma omp parallel  reduction(+:rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum)
 #endif
     {
-    Gpu::DeviceScalar<Real> rho_T_sum_gpu(rho_T_sum);
-    Gpu::DeviceScalar<Real> rho_sum_gpu(rho_sum);
-    Gpu::DeviceScalar<Real> T_sum_gpu(T_sum);
-    Gpu::DeviceScalar<Real> Tinv_sum_gpu(Tinv_sum);
-    Gpu::DeviceScalar<Real> T_meanrho_sum_gpu(T_meanrho_sum);
-    Gpu::DeviceScalar<Real> vol_sum_gpu(vol_sum);
-    Gpu::DeviceScalar<Real> vol_mn_sum_gpu(vol_mn_sum);
-
-    Real rho_hi = 1.1*average_gas_density;
-    Real rho_lo = 0.9*average_gas_density;
-    const auto dx= geom.CellSizeArray();
-
-#ifdef _OPENMP
-#pragma omp parallel reduction(+:rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum)
-#endif
-    for (MFIter mfi(S_new,Gpu::notInLaunchRegion()); mfi.isValid(); ++mfi)
-    {
-        const Box& bx = mfi.tilebox();
-        const auto state    = S_new.array(mfi);
-        const auto diag_eos = D_new.array(mfi);
-        Real vol = dx[0]*dx[1]*dx[2];
-
-        Real* prho_T_sum = rho_T_sum_gpu.dataPtr();
-        Real* prho_sum = rho_sum_gpu.dataPtr();
-        Real* pT_sum = T_sum_gpu.dataPtr();
-        Real* pTinv_sum = Tinv_sum_gpu.dataPtr();
-        Real* pT_meanrho_sum = T_meanrho_sum_gpu.dataPtr();
-        Real* pvol_sum = vol_sum_gpu.dataPtr();
-        Real* pvol_mn_sum = vol_mn_sum_gpu.dataPtr();
-
-        AMREX_HOST_DEVICE_FOR_3D(bx,i,j,k,
-           {
-
-             Real T_tmp;
-              Real rho_tmp;
-              T_tmp=diag_eos(i,j,k,Temp_comp);
-              rho_tmp=state(i,j,k,Density);
-              amrex::Gpu::Atomic::Add(pT_sum, vol*T_tmp);
-              amrex::Gpu::Atomic::Add(pTinv_sum, rho_tmp/T_tmp);
-              amrex::Gpu::Atomic::Add(prho_T_sum, rho_tmp*T_tmp);
-              amrex::Gpu::Atomic::Add(prho_sum, rho_tmp);
-              if ( (rho_tmp < rho_hi) &&  (rho_tmp > rho_lo) && (T_tmp <= 1.0e5) ) {
-                amrex::Gpu::Atomic::Add(pT_meanrho_sum, vol*log10(T_tmp));
-                amrex::Gpu::Atomic::Add(pvol_mn_sum, vol);
-              }
-              amrex::Gpu::Atomic::Add(pvol_sum, vol);
-           });
-
+        for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
+        {
+            const Box& bx = mfi.tilebox();
+            const auto state    = S_new.const_array(mfi);
+            const auto diag_eos = D_new.const_array(mfi);
+            Real vol = dx[0]*dx[1]*dx[2];
+            AMREX_LOOP_3D(bx, i, j, k,
+            {
+                Real T_tmp = diag_eos(i,j,k,Temp_comp);
+                Real rho_tmp = state(i,j,k,Density);
+                T_sum += vol*T_tmp;
+                Tinv_sum += rho_tmp/T_tmp;
+                rho_T_sum += rho_tmp*T_tmp;
+                rho_sum += rho_tmp;
+                if ( (rho_tmp < rho_hi) &&  (rho_tmp > rho_lo) && (T_tmp <= 1.0e5) ) {
+                    T_meanrho_sum += vol*log10(T_tmp);
+                    vol_mn_sum += vol;
+                }
+                vol_sum += vol;
+            });
+        }
     }
-
-    
-
-    amrex::Gpu::Device::streamSynchronize();
-
-    rho_T_sum = rho_T_sum_gpu.dataValue();
-    rho_sum = rho_sum_gpu.dataValue();
-    T_sum = T_sum_gpu.dataValue();
-    Tinv_sum = Tinv_sum_gpu.dataValue();
-    T_meanrho_sum = T_meanrho_sum_gpu.dataValue();
-    vol_sum = vol_sum_gpu.dataValue();
-    vol_mn_sum = vol_mn_sum_gpu.dataValue();
-
     }
-
-    Real sums[7] = {rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum};
+	Real sums[7] = {rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum};
     ParallelDescriptor::ReduceRealSum(sums,7);
 
     rho_T_avg = sums[0] / sums[1];  // density weighted T
