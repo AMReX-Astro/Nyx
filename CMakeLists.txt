@@ -101,6 +101,9 @@ endif ()
 #                         Nyx third party libraries                          #
 #                                                                            #
 ##############################################################################
+if (Nyx_SUNDIALS)
+   include(NyxSetupSUNDIALS)
+endif ()
 include(NyxSetupAMReX)
 
 
