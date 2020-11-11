@@ -78,9 +78,9 @@ endif
 
 #These are the directories in Nyx 
 
-Bdirs 	:= Source Source/Src_3d Source/HydroCpp Source/Tagging Source/Initialization
-Bdirs 	+= Source/EOS Source/HeatCool Source/IO
-Bdirs 	+= Source/SourceTerms Source/DerivedQuantities Source/Particle
+Bdirs 	:= Source/Driver Source/TimeStep Source/Hydro
+Bdirs 	+= Source/EOS Source/HeatCool Source/IO Source/Initialization
+Bdirs 	+= Source/DerivedQuantities Source/Particle
 
 ifeq ($(USE_MPI), TRUE)
 Bdirs 	+= Source/Monitors
@@ -113,10 +113,6 @@ Plocs	+= $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir))
 include $(Ppack)
 INCLUDE_LOCATIONS += $(Plocs)
 VPATH_LOCATIONS   += $(Plocs)
-
-include $(TOP)/Source/Constants/Make.package
-INCLUDE_LOCATIONS += $(TOP)/Source/Constants
-VPATH_LOCATIONS   += $(TOP)/Source/Constants
 
 USE_MG = FALSE
 ifeq ($(USE_GRAV), TRUE)

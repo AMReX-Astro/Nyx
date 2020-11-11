@@ -56,7 +56,7 @@ do_enforce_minimum_density(
 void
 Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
                                 MultiFab& ext_src_old, MultiFab& hydro_source,
-                                MultiFab& grav_vector, MultiFab& divu_cc,
+                                MultiFab& grav_vector, 
                                 amrex::Real dt, amrex::Real a_old, amrex::Real a_new)
 {
     BL_PROFILE("Nyx::update_state_with_sources()");

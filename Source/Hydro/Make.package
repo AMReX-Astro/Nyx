@@ -5,9 +5,16 @@ CEXE_sources += Hydro.cpp
 CEXE_sources += trace_ppm.cpp
 CEXE_sources += Utilities.cpp
 
+ifeq ($(USE_SDC), TRUE)
+CEXE_sources += sdc_hydro.cpp
+else
+CEXE_sources += strang_hydro.cpp
+endif
+
 #C++ headers
 CEXE_headers += Godunov.H
 CEXE_headers += Hydro.H
+CEXE_headers += IndexDefines.H
 CEXE_headers += PLM.H
 CEXE_headers += PPM.H
 CEXE_headers += Utilities.H

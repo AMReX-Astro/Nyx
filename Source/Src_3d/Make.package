@@ -1,4 +1,0 @@
-#F90EXE_sources += compute_temp_3d.F90
-
-CEXE_sources += bc_fill.cpp
-CEXE_headers += bc_fill.H

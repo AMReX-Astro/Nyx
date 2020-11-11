@@ -50,6 +50,7 @@ enum StateType {
     Gravity_Type,
     NUM_STATE_TYPE
 };
+static int State_for_Time = PhiGrav_Type;
 #endif
 
 #ifndef NO_HYDRO
@@ -65,6 +66,7 @@ enum StateType {
 #endif
     NUM_STATE_TYPE
 };
+static int State_for_Time = State_Type;
 #endif
 
 //
@@ -143,11 +145,6 @@ public:
     static int write_hdf5;
 
     static int runlog_precision;
-
-    //
-    // If true then print the warnings from the Fortran routines
-    //
-    static int print_fortran_warnings;
 
     //
     //Define data descriptors.
@@ -354,6 +351,13 @@ public:
     static void read_init_params();
 
     //
+    // Read hydro-related inputs
+    //
+#ifndef NO_HYDRO
+    static void read_hydro_params();
+#endif
+
+    //
     // Write particles in checkpoint directories
     //
     void particle_check_point(const std::string& dir);
@@ -550,19 +554,12 @@ public:
                                       amrex::MultiFab& grav, 
                                       amrex::Real a_old,
                                       amrex::Real a_new,
-                                      amrex::Real cfl,
                                       amrex::Real dt,
                                       bool init_flux_register, bool add_to_flux_register);
 
-    void compute_hydro_sources(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
-                               amrex::MultiFab& S_border, amrex::MultiFab& D_border,
-                               amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src,
-                               amrex::MultiFab& grav, amrex::MultiFab& divu_cc,
-                               bool init_flux_register, bool add_to_flux_register);
-
     void update_state_with_sources( amrex::MultiFab& S_old      , amrex::MultiFab& S_new,
                                     amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src,
-                                    amrex::MultiFab& grav       , amrex::MultiFab& divu_cc,
+                                    amrex::MultiFab& grav       ,
                                     amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
 
     void strang_first_step  (amrex::Real time, amrex::Real dt,  amrex::MultiFab& state, amrex::MultiFab&  dstate);

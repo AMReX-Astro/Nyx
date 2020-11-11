@@ -1,3 +1,10 @@
+ifneq ($(NO_HYDRO), TRUE)
+CEXE_sources += strang_reactions.cpp
+
+ifeq ($(USE_SDC), TRUE)
+CEXE_sources += sdc_reactions.cpp
+endif
+
 ifeq ($(USE_HEATCOOL), TRUE)
 #f90EXE_sources += integrate_state_3d.f90
 #f90EXE_sources += integrate_state_vode_3d.f90
@@ -52,4 +59,6 @@ CEXE_sources += integrate_state_exact_3d_stubs.cpp
 #f90EXE_sources += integrate_state_fcvode_3d_stubs.f90
 #f90EXE_sources += integrate_state_fcvode_vec_3d_stubs.f90
 #f90EXE_sources += integrate_state_fcvode_with_source_3d_stubs.f90
+endif
+
 endif
