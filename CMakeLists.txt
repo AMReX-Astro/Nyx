@@ -37,25 +37,60 @@ endif()
 #                         Nyx options                                        #
 #                                                                            #
 ##############################################################################
-option( Nyx_Fortran    "Enable Fortran" OFF)   # This will go away
-option( Nyx_MPI        "Enable MPI"     YES)
-option( Nyx_OMP        "Enable OpenMP"  NO)
-option( Nyx_CUDA       "Enable CUDA"    NO)
-option( Nyx_PARTICLES  "Enable particles support" OFF)
-# option( Nyx_PARTICLES  "Enable particles support" OFF)
-option( Nyx_REEBER             "" OFF)
-option( Nyx_HYDRO              "" ON)
-option( Nyx_SDC                "" OFF)
-option( Nyx_GIMLET             "" OFF)
-option( Nyx_AGN                "" OFF)
-option( Nyx_CGS                "" OFF)
-option( Nyx_HEATCOOL           "" OFF)
-option( Nyx_FORCING            "" OFF)
-option( Nyx_GRAVITY            "" OFF)
-option( Nyx_CVODE              "" OFF)
-option( Nyx_NEUTRINO_PARTICLES "" OFF)
+include(CMakeDependentOption)
 
-# option( Nyx_FPE    "Enable Floating Point Exceptions checks" NO )
+option( Nyx_Fortran    "Enable Fortran" NO)   # This will go away
+option( Nyx_MPI        "Enable MPI"     YES)
+
+cmake_dependent_option(Nyx_MPI_THREAD_MULTIPLE
+   "Concurrent MPI calls from multiple threads"
+   NO "Nyx_MPI" NO)
+
+option( Nyx_OMP        "Enable OpenMP"  YES)
+option( Nyx_CUDA       "Enable CUDA"    NO)
+option( Nyx_PARTICLES  "Enable particles support" YES)
+
+cmake_dependent_option(Nyx_SINGLE_PRECISION_PARTICLES
+   "Use single precision particle data structures"
+   YES "Nyx_PARTICLES" NO)
+message(" ================================ Nyx_SINGLE_PRECISION_PARTICLES = ${Nyx_SINGLE_PRECISION_PARTICLES}")
+option( Nyx_HEATCOOL   "" NO)
+
+cmake_dependent_option(Nyx_HYDRO "" YES "NOT Nyx_HEATCOOL" YES)
+
+# Define normal variables to overwrite values of some options define below
+# if necessary
+if (NOT Nyx_HYDRO)
+   message(STATUS "Nyx_HYDRO set to ${Nyx_HYDRO}:"
+      " disabling Nyx_SDC, Nyx_SUNDIALS, and Nyx_FUSED")
+   set(Nyx_SDC NO)
+   set(Nyx_SUNDIALS NO)
+   set(Nyx_FUSED NO)
+endif ()
+
+if (Nyx_HEATCOOL)
+   message(STATUS "Nyx_HEATCOOL set to ${Nyx_HEATCOOL}:"
+      " enabling Nyx_SDC and Nyx_SUNDIALS")
+   set(Nyx_SDC YES)
+   set(Nyx_SUNDIALS YES)
+   ###set(Nyx_FUSED NO)
+endif ()
+
+# option( Nyx_AGN                "" NO)
+option( Nyx_SDC                "" NO)
+message(" ================================ Nyx_SDC = ${Nyx_SDC}")
+option( Nyx_SUNDIALS           "" NO)
+option( Nyx_FUSED              "" NO)
+
+option( Nyx_CONST_SPECIES      "" ON)
+option( Nyx_REEBER             "" NO)
+option( Nyx_GIMLET             "" NO)
+option( Nyx_CGS                "" NO)
+option( Nyx_FORCING            "" NO)
+option( Nyx_GRAVITY            "" YES)
+option( Nyx_CVODE              "" NO)
+# option( Nyx_NEUTRINO_PARTICLES "" NO)
+# option( Nyx_NEUTRINO_DARK_PARTICLES "" OFF)
 
 if (Nyx_CUDA)
     enable_language(CUDA)

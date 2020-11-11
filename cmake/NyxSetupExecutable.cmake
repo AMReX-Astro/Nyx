@@ -26,8 +26,6 @@ macro (nyx_setup_executable _srcs _inputs)
 
    set( _exe_name  ${_base_name} )
 
-
-   message("++++++++++++++++++++++++ _exe_name = ${_exe_name}")
    add_executable( ${_exe_name} )
    target_sources( ${_exe_name} PRIVATE ${${_srcs}} )
 

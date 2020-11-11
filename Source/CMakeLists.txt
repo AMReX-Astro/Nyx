@@ -3,6 +3,16 @@
 #                                Nyx defines                                 #
 #                                                                            #
 ##############################################################################
+target_compile_definitions( ${EXE_NAME} PUBLIC $<BUILD_INTERFACE:CRSEGRNDOMP>) # Coarse grid OMP approach
+
+if (Nyx_HENSON)
+   target_compile_definitions( ${EXE_NAME} PUBLIC $<BUILD_INTERFACE:HENSON>)
+endif ()
+
+if (Nyx_GRAVITY)
+   target_compile_definitions( ${EXE_NAME} PUBLIC $<BUILD_INTERFACE:GRAVITY>)
+endif ()
+
 if (NOT Nyx_HYDRO)
    target_compile_definitions( ${EXE_NAME} PUBLIC $<BUILD_INTERFACE:NO_HYDRO>)
 endif()
@@ -11,22 +21,25 @@ if (Nyx_HEATCOOL)
    target_compile_definitions( ${EXE_NAME} PUBLIC $<BUILD_INTERFACE:HEATCOOL>)
 endif()
 
-# if (NOT Nyx_CONST_SPECIES)
-#    target_compile_definitions(${EXE_NAME} PUBLIC $<BUILD_INTERFACE:CONST_SPECIES>)
-# endif()
+if (Nyx_CONST_SPECIES)
+   target_compile_definitions(${EXE_NAME} PUBLIC $<BUILD_INTERFACE:CONST_SPECIES>)
+endif()
 
 if (Nyx_NEUTRINO_PARTICLES)
    target_compile_definitions( ${EXE_NAME} PUBLIC $<BUILD_INTERFACE:NEUTRINO_PARTICLES>)
 endif()
 
-# if (NOT Nyx_NEUTRINO_DARK_PARTICLES)
-#    target_compile_definitions(${EXE_NAME} PUBLIC $<BUILD_INTERFACE:NEUTRINO_DARK_PARTICLES>)
-# endif()
+if (Nyx_NEUTRINO_DARK_PARTICLES)
+   target_compile_definitions( ${EXE_NAME} PUBLIC $<BUILD_INTERFACE:NEUTRINO_DARK_PARTICLES>)
+endif()
 
 if (Nyx_SDC)
    target_compile_definitions( ${EXE_NAME} PUBLIC $<BUILD_INTERFACE:SDC>)
 endif()
 
+if (Nyx_FORCING)
+   target_compile_definitions(${EXE_NAME} PUBLIC $<BUILD_INTERFACE:FORCING>)
+endif ()
 
 ##############################################################################
 #                                                                            #
@@ -34,8 +47,6 @@ endif()
 #                                                                            #
 ##############################################################################
 target_link_libraries(${EXE_NAME} PRIVATE AMReX::amrex)
-
-message("================================= EXE_NAME = ${EXE_NAME} ==================")
 
 if (DEFAULT_MAIN)
    target_sources( ${EXE_NAME} PRIVATE main.cpp)
