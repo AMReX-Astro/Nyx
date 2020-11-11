@@ -2,13 +2,12 @@ ifneq ($(NO_HYDRO), TRUE)
 #C++ files
 CEXE_sources += Godunov.cpp
 CEXE_sources += Hydro.cpp
+CEXE_sources += strang_hydro.cpp
 CEXE_sources += trace_ppm.cpp
 CEXE_sources += Utilities.cpp
 
 ifeq ($(USE_SDC), TRUE)
 CEXE_sources += sdc_hydro.cpp
-else
-CEXE_sources += strang_hydro.cpp
 endif
 
 #C++ headers
