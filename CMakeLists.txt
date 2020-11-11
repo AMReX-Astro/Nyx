@@ -53,7 +53,7 @@ option( Nyx_PARTICLES  "Enable particles support" YES)
 cmake_dependent_option(Nyx_SINGLE_PRECISION_PARTICLES
    "Use single precision particle data structures"
    YES "Nyx_PARTICLES" NO)
-message(" ================================ Nyx_SINGLE_PRECISION_PARTICLES = ${Nyx_SINGLE_PRECISION_PARTICLES}")
+
 option( Nyx_HEATCOOL   "" NO)
 
 cmake_dependent_option(Nyx_HYDRO "" YES "NOT Nyx_HEATCOOL" YES)
@@ -76,10 +76,13 @@ if (Nyx_HEATCOOL)
    ###set(Nyx_FUSED NO)
 endif ()
 
+option( BUILD_SHARED_LIBS "Build AMReX and SUNDIALS as shared libraries" OFF )
+
 # option( Nyx_AGN                "" NO)
 option( Nyx_SDC                "" NO)
-message(" ================================ Nyx_SDC = ${Nyx_SDC}")
 option( Nyx_SUNDIALS           "" NO)
+cmake_dependent_option(Nyx_ARKODE  "Use SUNDIALS ARKODE libs" YES "Nyx_SUNDIALS" NO)
+
 option( Nyx_FUSED              "" NO)
 
 option( Nyx_CONST_SPECIES      "" ON)

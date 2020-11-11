@@ -2,7 +2,7 @@
 # This module
 #
 
-set(SUNDIALS_MINIMUM_VERSION 19.05.1 CACHE INTERNAL "Minimum required SUNDIALS version")
+set(SUNDIALS_MINIMUM_VERSION 5.5.0 CACHE INTERNAL "Minimum required SUNDIALS version")
 
 # We first check if we can find an AMReX installation.
 # If so, we proceed with STANDALONE mode
@@ -72,7 +72,7 @@ set(SUNDIALS_MINIMUM_VERSION 19.05.1 CACHE INTERNAL "Minimum required SUNDIALS v
 # # ~~~~~~~~~~~~~~~~~~~~~~~ SUPERBUILD MODE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # #
 
-   message(STATUS "No SUNDIALS installation found: cloning AMReX repo")
+   message(STATUS "No SUNDIALS installation found: cloning SUNDIALS repo")
 
    if (NOT EXISTS  "${PROJECT_SOURCE_DIR}/.git")
       message(FATAL_ERROR
@@ -88,7 +88,7 @@ set(SUNDIALS_MINIMUM_VERSION 19.05.1 CACHE INTERNAL "Minimum required SUNDIALS v
       find_package(Git REQUIRED)
 
       execute_process(
-         COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive subprojects/amrex
+         COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive subprojects/sundials
          WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
          RESULT_VARIABLE GIT_SUBMOD_RESULT
          )
@@ -100,44 +100,28 @@ set(SUNDIALS_MINIMUM_VERSION 19.05.1 CACHE INTERNAL "Minimum required SUNDIALS v
       unset(GIT_SUBMOD_RESULT)
 
    endif ()
+   message("Nyx_ARKODE=${Nyx_ARKODE}")
 
    # Set build options for subproject
    set(EXAMPLES_ENABLE_C            OFF                        CACHE INTERNAL "" )
    set(EXAMPLES_ENABLE_CXX          OFF                        CACHE INTERNAL "" )
+   set(ENABLE_MPI                   ${Nyx_MPI}                 CACHE INTERNAL "" )
+   set(ENABLE_OPENMP                ${Nyx_OMP}                 CACHE INTERNAL "" )
+   set(ENABLE_CUDA                  ${Nyx_CUDA}                CACHE INTERNAL "" )
+   set(BUILD_ARKODE                 ${Nyx_ARKODE}              CACHE INTERNAL "" )
    set(BUILD_KINSOL                 OFF                        CACHE INTERNAL "" )
    set(BUILD_IDA                    OFF                        CACHE INTERNAL "" )
    set(BUILD_IDAS                   OFF                        CACHE INTERNAL "" )
+   set(BUILD_CVODES                 OFF                        CACHE INTERNAL "" )
    set(BUILD_TESTING OFF)
-   # set(AMReX_SPACEDIM             3                          CACHE INTERNAL "" )
-   # set(AMReX_PRECISION            DOUBLE                     CACHE INTERNAL "" )
-   # set(AMReX_FORTRAN              ${Nyx_Fortran}             CACHE INTERNAL "" )
-   # set(AMReX_MPI                  ${Nyx_MPI}                 CACHE INTERNAL "" )
-   # set(AMReX_MPI_THREAD_MULTIPLE  ${Nyx_MPI_THREAD_MULTIPLE} CACHE INTERNAL "" )
-   # set(AMReX_OMP                  ${Nyx_OMP}                 CACHE INTERNAL "" )
-   # set(AMReX_CUDA                 ${Nyx_CUDA}                CACHE INTERNAL "" )
-   # set(AMReX_LINEAR_SOLVERS       ${Nyx_GRAVITY}             CACHE INTERNAL "" )
-   # set(AMReX_PARTICLES            ON                         CACHE INTERNAL "" )
-   # set(AMReX_SUNDIALS             ${Nyx_SUNDIALS}            CACHE INTERNAL "" )
-   # set(AMReX_BUILD_TUTORIALS      OFF                        CACHE INTERNAL "" )
-   # if (Nyx_SINGLE_PRECISION_PARTICLES)
-   #    set(AMReX_PARTICLES_PRECISION SINGLE CACHE INTERNAL "" )
-   # else ()
-   #    set(AMReX_PARTICLES_PRECISION DOUBLE CACHE INTERNAL "" )
-   # endif ()
 
-   # list(APPEND CMAKE_MODULE_PATH ${AMREX_SRC_DIR}/Tools/CMake)
 
-   # # If CUDA is required, enable the language BEFORE adding the AMReX directory
-   # # Since AMReX_SetupCUDA has an include guard, it will be included only once here.
-   # # The reason for enabling CUDA before adding the AMReX subdirectory is that
-   # # the top-most directory needs to setup the CUDA language before a CUDA-enabled target
-   # # from a sub-project is included via add_subdirectory.
-   # # IMPORTANT: if you don't do this, AMReX will perform this step in a sub-scope and therefore
-   # # it will not setup CUDA here!
-   # if(Nyx_CUDA)
-   #    include(AMReX_SetupCUDA)
-   # endif ()
 
    add_subdirectory(${SUNDIALS_SRC_DIR})
 
+   add_library(SUNDIALS::cvode ALIAS sundials_cvode_static)
+
+   if (Nyx_ARKODE)
+      add_library(SUNDIALS::arkode ALIAS sundials_arkode_static)
+   endif ()
 # endif ()
