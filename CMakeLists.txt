@@ -54,9 +54,9 @@ cmake_dependent_option(Nyx_SINGLE_PRECISION_PARTICLES
    "Use single precision particle data structures"
    YES "Nyx_PARTICLES" NO)
 
-option( Nyx_HEATCOOL   "" NO)
 
-cmake_dependent_option(Nyx_HYDRO "" YES "NOT Nyx_HEATCOOL" YES)
+option( Nyx_HYDRO NO "")
+cmake_dependent_option(Nyx_HEATCOOL "" NO "Nyx_HYDRO" NO)
 
 # Define normal variables to overwrite values of some options define below
 # if necessary
