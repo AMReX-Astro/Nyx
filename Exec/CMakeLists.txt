@@ -4,5 +4,13 @@ add_subdirectory(AMR-density)
 add_subdirectory(AMR-zoom)
 add_subdirectory(LyA)
 add_subdirectory(LyA_AGN)
-message("======================= HEATCOOL OUT = ${Nyx_HEATCOOL} =================")
 add_subdirectory(LyA_Neutrinos)
+add_subdirectory(DrivenTurbulence)
+
+if (Nyx_HYDRO)
+   add_subdirectory(HydroTests)
+endif ()
+
+add_subdirectory(MiniSB)
+
+add_subdirectory(RegressionTest)
