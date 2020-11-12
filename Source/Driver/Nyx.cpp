@@ -113,7 +113,7 @@ Real Nyx::comoving_OmR = 0.0;
 Real Nyx::comoving_h;
 int  Nyx::comoving_type = 1;
 
-int Nyx::do_hydro = -1;
+int Nyx::do_hydro = 0;
 int Nyx::add_ext_src = 0;
 int Nyx::heat_cool_type = 0;
 int Nyx::use_sundials_constraint = 0;
@@ -328,6 +328,10 @@ Nyx::read_params ()
     read_particle_params();
 
     read_init_params();
+
+#ifdef GRAVITY
+    pp_nyx.get("do_grav", do_grav);
+#endif
 
 #ifndef NO_HYDRO
     read_hydro_params();
@@ -609,10 +613,6 @@ Nyx::read_hydro_params ()
 
     // Make sure not to call refluxing if we're not actually doing any hydro.
     if (do_hydro == 0) do_reflux = 0;
-
-#ifdef GRAVITY
-    pp_nyx.get("do_grav", do_grav);
-#endif
 }
 #endif //NO_HYDRO
 
