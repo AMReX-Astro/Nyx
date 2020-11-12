@@ -1,7 +1,3 @@
-#
-# This module
-#
-
 set(AMREX_MINIMUM_VERSION 19.05.1 CACHE INTERNAL "Minimum required AMReX version")
 
 # We first check if we can find an AMReX installation.

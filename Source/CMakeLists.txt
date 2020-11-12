@@ -44,10 +44,6 @@ endif ()
 if (Nyx_SUNDIALS)
    target_compile_definitions(${EXE_NAME}
       PUBLIC $<BUILD_INTERFACE:AMREX_USE_SUNDIALS_3x4x;AMREX_USE_SUNDIALS>)
-   if (Nyx_ARKODE)
-      target_compile_definitions(${EXE_NAME}
-         PUBLIC $<BUILD_INTERFACE:AMREX_USE_ARKODE_LIBS>)
-   endif ()
 endif ()
 
 ##############################################################################
@@ -59,11 +55,14 @@ target_link_libraries(${EXE_NAME} PRIVATE AMReX::amrex)
 
 if (Nyx_SUNDIALS)
    target_link_libraries(${EXE_NAME} PRIVATE SUNDIALS::cvode)
-   if (Nyx_ARKODE)
-      target_link_libraries(${EXE_NAME} PRIVATE SUNDIALS::arkode)
-   endif ()
 endif ()
 
+
+##############################################################################
+#                                                                            #
+#                               Nyx sources                                  #
+#                                                                            #
+##############################################################################
 if (DEFAULT_MAIN)
    target_sources( ${EXE_NAME} PRIVATE main.cpp)
 endif ()
