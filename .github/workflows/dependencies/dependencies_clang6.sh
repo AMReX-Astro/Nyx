@@ -11,4 +11,6 @@ sudo apt-get update
 
 sudo apt-get install -y  \
     build-essential      \
-    clang gfortran
+    clang gfortran       \
+    libopenmpi-dev       \
+    openmpi-bin
