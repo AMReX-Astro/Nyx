@@ -34,11 +34,6 @@ Nyx::time_center_source_terms (MultiFab& S_new,
         const auto src_old = ext_src_old.array(mfi);
         const auto src_new = ext_src_new.array(mfi);
 
-        // time_center_sources
-        //     (bx.loVect(), bx.hiVect(), BL_TO_FORTRAN(S_new[mfi]),
-        //      BL_TO_FORTRAN(ext_src_old[mfi]), BL_TO_FORTRAN(ext_src_new[mfi]),
-        //      &a_old, &a_new, &dt, &print_fortran_warnings);
-
         amrex::ParallelFor(bx, ncomp,
           [state,src_old,src_new,a_old,a_new,iden,ieint,ieden,dt]
           AMREX_GPU_DEVICE (int i, int j, int k, int n) noexcept

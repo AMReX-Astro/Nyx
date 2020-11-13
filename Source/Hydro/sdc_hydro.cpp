@@ -71,9 +71,6 @@ Nyx::sdc_hydro (Real time,
     MultiFab hydro_src(grids, dmap, NUM_STATE, 0);
     hydro_src.setVal(0.);
 
-    MultiFab divu_cc(grids, dmap, 1, 0);
-    divu_cc.setVal(0.);
-
     //Begin loop over SDC iterations
     int sdc_iter_max = 1;
 
@@ -93,9 +90,9 @@ Nyx::sdc_hydro (Real time,
 
        bool   init_flux_register = (sdc_iter == 0);
        bool add_to_flux_register = (sdc_iter == sdc_iter_max-1);
-       compute_hydro_sources(time,dt,a_old,a_new,S_old_tmp,D_old_tmp,
-                             ext_src_old,hydro_src,grav_vector,divu_cc,
-                             init_flux_register, add_to_flux_register);
+       construct_hydro_source(S_old_tmp, ext_src_old, hydro_src, grav_vector,
+                              a_old, a_new, dt,
+                              init_flux_register, add_to_flux_register);
 
        // We subtract IR_tmp before we add the rest of the source term to (rho e) and (rho E)
        MultiFab::Subtract(ext_src_old,IR_tmp,0,Eden,1,0);
@@ -104,7 +101,7 @@ Nyx::sdc_hydro (Real time,
        ext_src_old.FillBoundary(geom.periodicity());
               
        update_state_with_sources(S_old_tmp,S_new,
-                                 ext_src_old,hydro_src,grav_vector,divu_cc,
+                                 ext_src_old,hydro_src,grav_vector,
                                  dt,a_old,a_new);
 
        // We copy old Temp and Ne to new Temp and Ne so that they can be used

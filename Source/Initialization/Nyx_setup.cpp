@@ -761,7 +761,7 @@ Nyx::no_hydro_setup()
     //
     derive_lst.add("overdenzoom", IndexType::TheCellType(), 1,
                    deroverden, grow_box_by_one);
-    derive_lst.addComponent("overdenzoom", desc_lst, State_Type, Density, 1);
+    derive_lst.addComponent("overdenzoom", desc_lst, PhiGrav_Type, Density, 1);
 
 #endif
     derive_lst.add("total_particle_count", IndexType::TheCellType(), 1,

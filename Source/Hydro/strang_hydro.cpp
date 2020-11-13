@@ -100,8 +100,6 @@ Nyx::strang_hydro (Real time,
 
     BL_PROFILE_VAR_STOP(old_tmp);
 
-    std::unique_ptr<MultiFab> divu_cc;
-
 #ifdef AMREX_DEBUG
     {
         amrex::Gpu::Device::streamSynchronize();
@@ -133,16 +131,14 @@ Nyx::strang_hydro (Real time,
     MultiFab hydro_src(grids, dmap, NUM_STATE, 0);
     hydro_src.setVal(0.);
 
-    divu_cc.reset(new MultiFab(grids, dmap, 1, 0));
-    divu_cc->setVal(0.);
-    compute_hydro_sources(time,dt,a_old,a_new,S_old_tmp,D_old_tmp,
-                          ext_src_old,hydro_src,grav_vector,*divu_cc,
-                          init_flux_register, add_to_flux_register);
+    construct_hydro_source(S_old_tmp, ext_src_old, hydro_src, grav_vector,
+                           a_old, a_new, dt,
+                           init_flux_register, add_to_flux_register);
         
     D_old_tmp.clear();
 
     update_state_with_sources(S_old_tmp,S_new,
-                              ext_src_old,hydro_src,grav_vector,*divu_cc,
+                              ext_src_old,hydro_src,grav_vector,
                               dt,a_old,a_new);  
 
     S_old_tmp.clear();
@@ -348,8 +344,6 @@ Nyx::strang_hydro_ghost_state (Real time,
     MultiFab::Copy(D_new,D_old,0,0,D_old.nComp(),NUM_GROW);
     FillPatch(*this, D_new, NUM_GROW, prev_time, DiagEOS_Type, 0, D_old.nComp());*/
 
-    std::unique_ptr<MultiFab> divu_cc;
-
 #ifdef HEATCOOL
     if(verbose) {
       amrex::Print()<<"Before first strang:"<<std::endl;
@@ -369,15 +363,14 @@ Nyx::strang_hydro_ghost_state (Real time,
 
     MultiFab hydro_src(grids, dmap, NUM_STATE, 0);
 
-    divu_cc.reset(new MultiFab(grids, dmap, 1, 0));
-    compute_hydro_sources(time,dt,a_old,a_new,S_new,D_old_tmp,
-                          ext_src_old,hydro_src,grav_vector,*divu_cc,
-                          init_flux_register, add_to_flux_register);
+    construct_hydro_source(S_new, ext_src_old, hydro_src, grav_vector,
+                           a_old, a_new, dt,
+                           init_flux_register, add_to_flux_register);
         
     D_old_tmp.clear();
 
     update_state_with_sources(S_new,S_new,
-                              ext_src_old,hydro_src,grav_vector,*divu_cc,
+                              ext_src_old,hydro_src,grav_vector,
                               dt,a_old,a_new);  
 
     hydro_src.clear();

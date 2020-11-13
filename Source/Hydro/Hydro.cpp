@@ -14,7 +14,6 @@ Nyx::construct_hydro_source(
   amrex::MultiFab& grav_vector, 
   amrex::Real a_old,
   amrex::Real a_new,
-  amrex::Real cfl,
   amrex::Real dt,
   bool init_flux_register, bool add_to_flux_register)
 {

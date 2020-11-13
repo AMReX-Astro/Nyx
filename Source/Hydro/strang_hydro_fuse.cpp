@@ -105,7 +105,6 @@ Nyx::strang_hydro_fuse (Real time,
       }
     BL_PROFILE_VAR_STOP(old_tmp);
 
-    std::unique_ptr<MultiFab> divu_cc;
     std::unique_ptr<MultiFab> hydro_src;
     std::unique_ptr<MultiFab> ext_src_old;
 

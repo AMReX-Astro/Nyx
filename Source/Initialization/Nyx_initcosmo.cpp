@@ -143,10 +143,6 @@ void Nyx::initcosmo()
     Real comoving_OmNu;
     fort_get_omnu(&comoving_OmNu);
 #endif
-    // fort_get_omm(&comoving_OmM );
-    // fort_get_omb(&comoving_OmB );
-    // fort_get_hubble(&comoving_h);
-    // fort_get_grav_const(&Gconst);
 
     // We now define this here instead of reading it.
     comoving_OmL = 1. - comoving_OmM;
