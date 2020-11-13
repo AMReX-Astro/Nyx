@@ -1,6 +1,6 @@
 ifneq ($(NO_HYDRO), TRUE)
 CEXE_sources += strang_reactions.cpp
-CEXE_source += sdc_reactions.cpp
+CEXE_sources += sdc_reactions.cpp
 
 ifeq ($(USE_HEATCOOL), TRUE)
 #f90EXE_sources += integrate_state_3d.f90
