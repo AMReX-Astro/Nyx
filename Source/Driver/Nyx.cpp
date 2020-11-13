@@ -327,8 +327,6 @@ Nyx::read_params ()
 
     read_particle_params();
 
-    read_init_params();
-
 #ifdef GRAVITY
     pp_nyx.get("do_grav", do_grav);
 #endif
@@ -340,6 +338,8 @@ Nyx::read_params ()
         amrex::Error("Dont know what to do with both hydro and gravity off");
 #endif
 #endif
+
+    read_init_params();
 
     pp_nyx.query("use_exact_gravity", use_exact_gravity);
 
