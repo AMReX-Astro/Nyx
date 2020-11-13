@@ -13,4 +13,6 @@ sudo apt-get install -y  \
     build-essential      \
     clang gfortran       \
     libopenmpi-dev       \
-    openmpi-bin
+    openmpi-bin          \
+    libomp5              \
+    libomp-dev
