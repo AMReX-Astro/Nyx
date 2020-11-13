@@ -7,8 +7,6 @@
 #include <AMReX_ErrorList.H>
 #include <AMReX_FluxRegister.H>
 
-#include <IndexDefines.H>
-
 #include <NyxParticleContainer.H>
 #include <DarkMatterParticleContainer.H>
 #ifdef AGN

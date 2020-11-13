@@ -1,3 +1,5 @@
+#include "IndexDefines.H"
+
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void

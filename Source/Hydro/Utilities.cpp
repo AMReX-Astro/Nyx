@@ -210,7 +210,6 @@ void limit_hydro_fluxes_on_small_dens(const int i,
     GpuArray<Real, QVAR> uL;
     GpuArray<Real, QVAR> qR;
     GpuArray<Real, QVAR> qL;
-    GpuArray<int, 3> idxR = {i,j,k};
     GpuArray<int, 3> idxL;
 
     if (idir == 0) {
