@@ -1,4 +1,5 @@
 #include "Nyx.H"
+#include "IndexDefines.H"
 #include <constants_cosmo.H>
 #ifdef HEATCOOL
 #include <eos_hc.H>
