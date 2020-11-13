@@ -7,7 +7,7 @@ jobs:
   nyx_gnu:
     name: GNU@7.5 Release
     runs-on: ubuntu-latest
-    env: {CXXFLAGS: "-Werror -Wshadow -Woverloaded-virtual -Wunreachable-code"}
+    env: {CXXFLAGS: "-Werror -Woverloaded-virtual -Wunreachable-code"}
     steps:
     - uses: actions/checkout@v2
     - name: Dependencies
@@ -25,7 +25,7 @@ jobs:
   nyx_clang:
     name: Clang@6.0 Debug
     runs-on: ubuntu-latest
-    env: {CXXFLAGS: "-Werror -Wshadow -Woverloaded-virtual -Wextra-semi -Wunreachable-code"}
+    env: {CXXFLAGS: "-Werror -Woverloaded-virtual -Wextra-semi -Wunreachable-code"}
     steps:
     - uses: actions/checkout@v2
     - name: Dependencies
