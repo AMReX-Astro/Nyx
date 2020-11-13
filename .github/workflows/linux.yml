@@ -19,7 +19,7 @@ jobs:
         cmake ..                                  \
             -DNyx_HEATCOOL=yes                    \
             -DNyx_SUNDIALS=yes                    \
-            -DNyx_HYDRO=yes                       \
+            -DNyx_HYDRO=yes
         make -j 2
 
   nyx_clang:
@@ -60,7 +60,7 @@ jobs:
             -DNyx_HEATCOOL=yes                               \
             -DNyx_SUNDIALS=yes                               \
             -DNyx_HYDRO=yes                                  \
-            -DAMReX_GPU_BACKEND=CUDA                         \
+            -DNyx_CUDA=ON                                    \
             -DCMAKE_C_COMPILER=$(which gcc-4.8)              \
             -DCMAKE_CXX_COMPILER=$(which g++-4.8)            \
             -DCMAKE_CUDA_HOST_COMPILER=$(which g++-4.8)      \
