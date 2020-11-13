@@ -60,7 +60,7 @@ jobs:
             -DNyx_HEATCOOL=yes                               \
             -DNyx_SUNDIALS=yes                               \
             -DNyx_HYDRO=yes                                  \
-            -DNyx_CUDA=ON                                    \
+            -DNyx_GPU_BACKEND=CUDA                           \
             -DCMAKE_C_COMPILER=$(which gcc-4.8)              \
             -DCMAKE_CXX_COMPILER=$(which g++-4.8)            \
             -DCMAKE_CUDA_HOST_COMPILER=$(which g++-4.8)      \
@@ -86,7 +86,7 @@ jobs:
             -DNyx_HEATCOOL=yes                             \
             -DNyx_SUNDIALS=yes                             \
             -DNyx_HYDRO=yes                                \
-            -DAMReX_GPU_BACKEND=SYCL                       \
+            -DNyx_GPU_BACKEND=SYCL                         \
             -DCMAKE_C_COMPILER=$(which clang)              \
             -DCMAKE_CXX_COMPILER=$(which dpcpp)            \
             -DCMAKE_Fortran_COMPILER=$(which gfortran)
@@ -109,7 +109,7 @@ jobs:
             -DNyx_HEATCOOL=yes                             \
             -DNyx_SUNDIALS=yes                             \
             -DNyx_HYDRO=yes                                \
-            -DAMReX_GPU_BACKEND=HIP                        \
+            -DNyx_GPU_BACKEND=HIP                          \
             -DAMReX_AMD_ARCH=gfx900                        \
             -DCMAKE_C_COMPILER=$(which hipcc)              \
             -DCMAKE_CXX_COMPILER=$(which hipcc)            \
