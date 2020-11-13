@@ -565,12 +565,10 @@ public:
     void strang_first_step  (amrex::Real time, amrex::Real dt,  amrex::MultiFab& state, amrex::MultiFab&  dstate);
     void strang_second_step (amrex::Real time, amrex::Real dt,  amrex::MultiFab& state, amrex::MultiFab&  dstate);
 
-#ifdef SDC
     void sdc_reactions ( amrex::MultiFab& state_old, amrex::MultiFab& state_new, amrex::MultiFab&  dstate,
                          amrex::MultiFab& hydro_src, amrex::MultiFab& IR,
                          amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
                          int sdc_iter);
-#endif
 
   int integrate_state_exact(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
   int integrate_state_grownexact(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
