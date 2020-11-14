@@ -123,7 +123,6 @@ Nyx::variable_setup()
 
 #ifdef NO_HYDRO
     no_hydro_setup();
-
 #else
     if (do_hydro == 1)
     {
