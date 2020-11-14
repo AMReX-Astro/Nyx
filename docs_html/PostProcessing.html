@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>&lt;no title&gt; &mdash; Nyx 20.10
+  <title>PostProcessing &mdash; Nyx 20.10
  documentation</title>
   
 
@@ -40,7 +40,9 @@
 
     
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="File list" href="filelist.html" />
+    <link rel="prev" title="Visualization" href="Visualization.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -91,7 +93,7 @@
             
             
               <p class="caption"><span class="caption-text">Nyx basics</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="NyxPreface.html">Preface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxIntroduction.html">Introduction to Nyx</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxGettingStarted.html">Getting Started</a></li>
@@ -103,7 +105,12 @@
 <li class="toctree-l1"><a class="reference internal" href="InputsMultigrid.html">Multigrid Inputs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NightlyTests.html">Nightly Regression Tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Visualization.html">Visualization</a></li>
-<li class="toctree-l1"><a class="reference internal" href="PostProcessing.html">PostProcessing</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">PostProcessing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#reeber">Reeber</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#gimlet">Gimlet</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
+</ul>
+</li>
 </ul>
 <p class="caption"><span class="caption-text">API</span></p>
 <ul>
@@ -156,13 +163,13 @@
     
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>&lt;no title&gt;</li>
+      <li>PostProcessing</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/runtime_parameters.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/PostProcessing.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -199,12 +206,60 @@
     text-align: unset;
 }
 </style>
+<div class="section" id="postprocessing">
+<span id="id1"></span><h1>PostProcessing<a class="headerlink" href="#postprocessing" title="Permalink to this headline">¶</a></h1>
+<p>Nyx interfaces with two post-processing suites, Reeber and Gimlet.</p>
+<div class="section" id="reeber">
+<h2>Reeber<a class="headerlink" href="#reeber" title="Permalink to this headline">¶</a></h2>
+<p>Reeber uses topological methods to construct merge trees of scalar fields.
+These trees are effectively parameter-independent and contain a complete
+description of the field topology. In the context of Nyx, the field of interest
+is the dark matter density. Nyx then queries the merge tree with user-defined
+runtime parameters in order to locate the volume-averaged center of dark matter
+halos. The same tree can be queried with any number of such parameters to find
+halos with different mass/density thresholds.</p>
+</div>
+<div class="section" id="gimlet">
+<h2>Gimlet<a class="headerlink" href="#gimlet" title="Permalink to this headline">¶</a></h2>
+<p>Gimlet computes a variety of quantities about the simulation, including optical
+depths, Lyman-alpha fluxes, power spectra (both 1-D <a href="#id2"><span class="problematic" id="id3">``</span></a>line-of-sight’’ as well as
+fully 3-D), and probability distribution functions. These suites are fully
+MPI-parallel and can be run either <a href="#id4"><span class="problematic" id="id5">``</span></a>in situ’’ or <a href="#id6"><span class="problematic" id="id7">``</span></a>in-transit,’’ or with a
+combination of both. A detailed description of their usage is provided in the
+Nyx User Guide.</p>
+</div>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<p>Nyx can post-process with Gimlet alone, with Reeber alone, or with both
+simultaneously.</p>
+<p>To compile with Gimlet,</p>
+<p>GIMLET = TRUE</p>
+<p>to the GNUMakefile</p>
+<p>To compile with Reeber, add</p>
+<p>REEBER = TRUE</p>
+<p>Note that these codes are in separate repositories and are not included with Nyx.</p>
+<p>Nyx and AMReX provide the capability for the user to execute an arbitrary
+post-processing workflow in situ. An in situ workflow is one in which all
+MPI processes evolving the simulation stop at specified time steps and perform
+the post-processing before continuing with
+the simulation.</p>
+</div>
+</div>
 
 
            </div>
            
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="filelist.html" class="btn btn-neutral float-right" title="File list" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="Visualization.html" class="btn btn-neutral float-left" title="Visualization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>
