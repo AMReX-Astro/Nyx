@@ -21,6 +21,7 @@ Welcome to Nyx's documentation!
    InputsMultigrid 
    NightlyTests
    Visualization
+   PostProcessing
 
 .. toctree::
    :maxdepth: 1
