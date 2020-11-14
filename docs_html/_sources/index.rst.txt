@@ -20,6 +20,7 @@ Welcome to Nyx's documentation!
    NyxGravity
    InputsMultigrid 
    NightlyTests
+   Visualization
 
 .. toctree::
    :maxdepth: 1
