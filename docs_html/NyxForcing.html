@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Preface &mdash; Nyx  documentation</title>
+  <title>Stochastic Forcing &mdash; Nyx  documentation</title>
   
 
   
@@ -40,8 +40,8 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Introduction to Nyx" href="NyxIntroduction.html" />
-    <link rel="prev" title="Welcome to Nyx’s documentation!" href="index.html" /> 
+    <link rel="next" title="Nightly Regression Tests" href="NightlyTests.html" />
+    <link rel="prev" title="Multigrid Inputs" href="InputsMultigrid.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -88,7 +88,7 @@
             
               <p class="caption"><span class="caption-text">Nyx basics</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Preface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxPreface.html">Preface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxIntroduction.html">Introduction to Nyx</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxGettingStarted.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxInputs.html">Inputs</a></li>
@@ -98,7 +98,10 @@
 <li class="toctree-l1"><a class="reference internal" href="NyxHeatCool.html">Radiative Heating and Cooling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxGravity.html">Gravity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="InputsMultigrid.html">Multigrid Inputs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="NyxForcing.html">Stochastic Forcing</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Stochastic Forcing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#list-of-parameters">List of Parameters</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="NightlyTests.html">Nightly Regression Tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Visualization.html">Visualization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="PostProcessing.html">PostProcessing</a></li>
@@ -157,13 +160,13 @@
     
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>Preface</li>
+      <li>Stochastic Forcing</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/NyxPreface.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/NyxForcing.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -200,73 +203,153 @@
     text-align: unset;
 }
 </style>
-<div class="section" id="preface">
-<h1>Preface<a class="headerlink" href="#preface" title="Permalink to this headline">¶</a></h1>
-<p>Welcome to Nyx’s User’s Guide!</p>
-<p>In this User’s Guide we describe how to download and run Nyx, a massively parallel code
-that couples the compressible hydrodynamic equations on a grid with a particle represenation
-of dark matter.
-Nyx uses an Eulerian grid for the hydrodynamics solver and incorporates adaptive mesh refinement (AMR).Our approach to AMR uses a nested hierarchy of logically-rectangular grids with simultaneous
-refinement in both space and time, utilizing the
-AMReX library.</p>
-<dl class="docutils">
-<dt>For the first paper describing the Nbody, adiabatic hydro and gravity algorithms:</dt>
-<dd><ul class="first last simple">
-<li><ol class="first upperalpha">
-<li><ol class="first upperalpha" start="19">
-<li>Almgren, J. B. Bell, M.J. Lijewski, Z. Lukic, E. Van Andel, <strong>“Nyx: A Massively Parallel AMR Code for Computational Cosmology”</strong> Astrophysical Journal, <strong>765</strong>, 39, 2013. [[arxiv]](<a class="reference external" href="https://arxiv.org/abs/1301.4498">https://arxiv.org/abs/1301.4498</a>)</li>
-</ol>
-</li>
-</ol>
-</li>
-</ul>
-</dd>
-<dt>For the reaction and thermal rates of the primordial chemical composition gas (and convergence tests in the context of the Lymanalpha forest), see:</dt>
-<dd><ul class="first last simple">
-<li>Zarija Lukic, Casey Stark, Peter Nugent, Martin White, Avery Meiksin, Ann Almgren, <strong>“The Lymanalpha forest in opticallythin hydrodynamical simulations,”</strong> Monthly Notices of the Royal Astronomical Society, <strong>446</strong>, 36973724, 2015 [[arxiv]](<a class="reference external" href="http://arxiv.org/abs/1406.6361">http://arxiv.org/abs/1406.6361</a>).</li>
-</ul>
-</dd>
-<dt>For the synthesis model of the UV background, which provides the photoionization and photoheating rates, see:</dt>
-<dd><ul class="first last simple">
-<li>Jose Onorbe, Joseph F Hennawi, Zarija Lukic, <strong>“SelfConsistent Modeling of Reionization in Cosmological Hydrodynamical Simulations,”</strong> Astrophysical Journal, <strong>837</strong>, 106, 2017. [[arxiv]](<a class="reference external" href="http://arxiv.org/abs/1607.04218">http://arxiv.org/abs/1607.04218</a>)</li>
-</ul>
-</dd>
-<dt>For Nyx-related Papers:</dt>
-<dd><ul class="first last simple">
-<li><ol class="first upperalpha" start="23">
-<li>Schmidt, C. Byrohl, J. F. Engels, C. Behrens, J. C. Niemeyer, <strong>Viscosity, pressure and support of the gas in simulations of merging coolcore clusters</strong> Monthly Notices of the Royal Astronomical Society, <strong>470(1)</strong>, pp. 142156, 2017 [[arxiv]](<a class="reference external" href="http://arxiv.org/abs/1705.06933">http://arxiv.org/abs/1705.06933</a>).</li>
-</ol>
-</li>
-<li>Daniele Sorini, Jose Onorbe, Zarija Lukic, Joseph F Hennawi, <strong>“Modeling the Lymanalpha Forest in Collisionless Simulations,”</strong> Astrophysical Journal, <strong>827</strong>, 97, 2016. [[arxiv]](<a class="reference external" href="http://arxiv.org/abs/1602.08099">http://arxiv.org/abs/1602.08099</a>).</li>
-<li>Brian Friesen, Ann Almgren, Zarija Lukic, Gunther Weber, Dmitriy Morozov, Vincent Beckner, Marcus Day, <strong>“In situ and intransit analysis of cosmological simulations,”</strong>, Computational Astrophysics and Cosmology, <strong>3</strong>, 4, 2016 [[arxiv]](<a class="reference external" href="http://arxiv.org/abs/1705.06933">http://arxiv.org/abs/1705.06933</a>).</li>
-<li><ol class="first upperalpha" start="23">
-<li>Schmidt, J.F. Engels, J.C. Niemeyer, A.S. Almgren, <strong>“Hot and Turbulent Gas in Clusters”,</strong> Monthly Notices of the Royal Astronomical Society, <strong>459(1)</strong>, pp. 701719, 2016 [[arxiv]](<a class="reference external" href="http://arxiv.org/abs/1603.04711">http://arxiv.org/abs/1603.04711</a>).</li>
-</ol>
-</li>
-<li><ol class="first upperalpha" start="8">
-<li>Braun, W. Schmidt, J.C. Niemeyer, A.S. Almgren, <strong>“Largeeddy simulations of isolated disk galaxies with thermal and turbulent feedback,”</strong> Monthly Notices of the Royal Astronomical Society, <strong>442(4)</strong>, pp. 34073426, 2014. [[arxiv]](<a class="reference external" href="http://arxiv.org/pdf/1405.6245">http://arxiv.org/pdf/1405.6245</a>)</li>
-</ol>
-</li>
-<li><ol class="first upperalpha" start="23">
-<li>Schmidt, A.S. Almgren, H. Braun, J.F. Engels, J.C. Niemeyer, R.R. Mekuria, A.J. Aspden, J.B. Bell, <strong>“Cosmological Fluid Mechanics with Adaptively Refined Large Eddy Simulations,”</strong> Monthly Notices of the Royal Astronomical Society, <strong>440</strong>, pp. 30513077, 2014. [[arxiv]](<a class="reference external" href="http://arxiv.org/pdf/1309.3996v1.pdf">http://arxiv.org/pdf/1309.3996v1.pdf</a>)</li>
-</ol>
-</li>
-<li><ol class="first upperalpha" start="23">
-<li>Schmidt, J. Schulz, L. Iapichino, A.S. Almgren, <strong>” Influence of adaptive mesh refinement and the hydro solver on shearinduced mass stripping in a minor merger scenario,”</strong> Astronomy and Computing, <strong>9</strong>, pp. 4964, March 2015 [[arxiv]](<a class="reference external" href="http://arxiv.org/abs/1411.7275">http://arxiv.org/abs/1411.7275</a>).</li>
-</ol>
-</li>
-</ul>
-</dd>
-</dl>
-<p>The development of AMReX library is led by the
-Center for Computational Sciences and Engineering / Lawrence Berkeley
-National Laboratory. Nyx development is done collaboratively, including the Computational Cosmology Center and CCSE.
-All of Nyx’s development is done in the public github repository—anyone can see the updates as they are done.
-We are always happy to have new developers as part of the Nyx team.
-Fork the Nyx git repository on github, make your changes, and issue a pull request against the development branch
-of the github repo. Any level of changes are welcome, including documentation, bug fixes, new test problems, and new solvers.</p>
+<div class="section" id="stochastic-forcing">
+<h1>Stochastic Forcing<a class="headerlink" href="#stochastic-forcing" title="Permalink to this headline">¶</a></h1>
+<div class="line-block">
+<div class="line">In Nyx a stochastic force field can be applied. To make sure this
+option is chosen correctly, we must always set</div>
+<div class="line">in the GNUmakefile and</div>
+<div class="line">= 1</div>
+<div class="line">in the inputs file.</div>
+<div class="line">The external forcing term in the momentum
+equation&nbsp;(<a class="reference external" href="#eq:momt">[eq:momt]</a>) is then given by</div>
+</div>
 <blockquote>
-<div></div></blockquote>
+<div><div class="math notranslate nohighlight">
+\[{\bf S}_{\rho \Ub} = \rho_b \fb\]</div>
+<p>where the acceleration field <span class="math notranslate nohighlight">\(\mathbf{f}(\mathbf{x},t)\)</span> is
+computed as inverse Fourier transform of the forcing spectrum
+<span class="math notranslate nohighlight">\(\widehat{\mathbf{f}}(\mathbf{k},t\)</span>). The time evolution of each
+wave mode is given by an Ornstein-Uhlenbeck process (see
+<a href="#id1"><span class="problematic" id="id2">:raw-latex:`\cite{SchmHille06,Schmidt14}`</span></a> for details). Since the real
+space forcing acts on large scales <span class="math notranslate nohighlight">\(L\)</span>, non-zero modes are
+confined to a narrow window of small wave numbers with a prescribed
+shape (the forcing profile). The resulting flow reaches a
+statistically stationary and isotropic state with a root-mean-square
+velocity of the order <span class="math notranslate nohighlight">\(V=L/T\)</span>, where the integral time scale
+<span class="math notranslate nohighlight">\(T\)</span> (also known as large-eddy turn-over time) is usually set
+equal to the autocorrelation time of the forcing. It is possible to
+vary the force field from solenoidal (divergence-free) if the weight
+parameter <span class="math notranslate nohighlight">\(\zeta=1\)</span> to dilational (rotation-free) if
+<span class="math notranslate nohighlight">\(\zeta=0\)</span>.</p>
+</div></blockquote>
+<p>To maintain a nearly constant root-mean-square Mach number, a simple
+model for radiative heating and cooling around a given equilibrium
+temperature <span class="math notranslate nohighlight">\(T_0\)</span> is applied in the energy
+equation&nbsp;(<a class="reference external" href="#eq:energy">[eq:energy]</a>):</p>
+<div class="math notranslate nohighlight">
+\[S_{\rho E} = S_{\rho e} + \Ub \cdot {\bf S}_{\rho \Ub} = -\frac{\alpha k_{\rm B}(T-T_0)}{\mu m_{\rm H}(\gamma-1)} + \rho_b\Ub\cdot\fb\]</div>
+<p>The parameters <span class="math notranslate nohighlight">\(T_0\)</span> and <span class="math notranslate nohighlight">\(\alpha\)</span> correspond to temp0 and
+alpha, respectively, in the probin file (along with rho0 for the mean
+density, which is unity by default). While the gas is adiabatic for
+<span class="math notranslate nohighlight">\(\alpha=0\)</span>, it becomes nearly isothermal if the cooling time scale
+given by <span class="math notranslate nohighlight">\(1/\alpha\)</span> is chosen sufficiently short compared to
+<span class="math notranslate nohighlight">\(T\)</span>. For performance reasons, a constant composition
+(corresponding to constant molecular weight <span class="math notranslate nohighlight">\(\mu\)</span>) is assumed.</p>
+<div class="section" id="list-of-parameters">
+<h2>List of Parameters<a class="headerlink" href="#list-of-parameters" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<colgroup>
+<col width="27%" />
+<col width="27%" />
+<col width="27%" />
+<col width="20%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Definition</th>
+<th class="head">Acceptable
+Values</th>
+<th class="head">Default</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><ul class="first simple">
+<li></li>
+</ul>
+<p class="last"><em>forcing.seed*</em></p>
+</td>
+<td>seed of the
+random number
+generator</td>
+<td>Integer
+<span class="math notranslate nohighlight">\(&gt;0\)</span></td>
+<td>27011974</td>
+</tr>
+<tr class="row-odd"><td><strong>fo
+rcing.profile</strong></td>
+<td>shape of
+forcing
+spectrum</td>
+<td>1 (plane), 2
+(band), 3
+(parabolic)</td>
+<td>3</td>
+</tr>
+<tr class="row-even"><td>**
+forcing.alpha**</td>
+<td>ratio of domain
+size <span class="math notranslate nohighlight">\(X\)</span>
+to integral
+length
+:ma
+th:<cite>L=X/alpha</cite></td>
+<td>Integer
+<span class="math notranslate nohighlight">\(&gt;0\)</span></td>
+<td>2 2 2</td>
+</tr>
+<tr class="row-odd"><td><strong>forci
+ng.band_width</strong></td>
+<td>band width of
+the forcing
+spectrum
+relative to
+alpha</td>
+<td>Real
+<span class="math notranslate nohighlight">\(\ge 0\)</span>
+and
+<span class="math notranslate nohighlight">\(\le 1\)</span></td>
+<td>1.0 1.0 1.0</td>
+</tr>
+<tr class="row-even"><td><strong>forc
+ing.intgr_vel</strong></td>
+<td>characteristic
+velocity
+<span class="math notranslate nohighlight">\(V\)</span></td>
+<td>Real
+<span class="math notranslate nohighlight">\(&gt; 0\)</span></td>
+<td>must be set</td>
+</tr>
+<tr class="row-odd"><td><strong>forci
+ng.auto_corrl</strong></td>
+<td>autocorrelation
+time in units
+of
+<span class="math notranslate nohighlight">\(T=L/V\)</span></td>
+<td>Real
+<span class="math notranslate nohighlight">\(&gt; 0\)</span></td>
+<td>1.0 1.0 1.0</td>
+</tr>
+<tr class="row-even"><td><strong>forcin
+g.soln_weight</strong></td>
+<td>weight
+<span class="math notranslate nohighlight">\(\zeta\)</span>
+of solenoidal
+relative to
+dilatational
+modes</td>
+<td>Real
+<span class="math notranslate nohighlight">\(\ge 0\)</span>
+and
+<span class="math notranslate nohighlight">\(\le 1\)</span></td>
+<td>1.0</td>
+</tr>
+</tbody>
+</table>
+<p>[Table:Geometry]</p>
+<p>Triples for forcing.alpha, forcing.band_width, forcing.intgr_vel, and
+forcing.auto_corrl correspond to the three spatial dimensions.</p>
+</div>
 </div>
 
 
@@ -277,10 +360,10 @@ of the github repo. Any level of changes are welcome, including documentation, b
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="NyxIntroduction.html" class="btn btn-neutral float-right" title="Introduction to Nyx" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="NightlyTests.html" class="btn btn-neutral float-right" title="Nightly Regression Tests" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to Nyx’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="InputsMultigrid.html" class="btn btn-neutral float-left" title="Multigrid Inputs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
