@@ -6,10 +6,6 @@ CEXE_sources += NyxBld.cpp
 CEXE_sources += comoving.cpp
 CEXE_sources += Nyx_error.cpp
 
-ifneq ($(NO_HYDRO), TRUE)
-CEXE_sources += update_state_with_sources.cpp
-endif
-
 CEXE_sources += sum_integrated_quantities.cpp
 CEXE_sources += sum_utils.cpp
 
