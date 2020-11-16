@@ -8,8 +8,6 @@ CEXE_sources += Nyx_error.cpp
 
 ifneq ($(NO_HYDRO), TRUE)
 CEXE_sources += update_state_with_sources.cpp
-CEXE_sources += bc_fill.cpp
-CEXE_headers += bc_fill.H
 endif
 
 CEXE_sources += sum_integrated_quantities.cpp
