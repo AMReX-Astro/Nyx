@@ -42,7 +42,6 @@ jobs:
             -DCMAKE_CXX_COMPILER=$(which clang++)     \
             -DCMAKE_Fortran_COMPILER=$(which gfortran)
         make -j 2
-        make install
 
   nyx-cuda:
     name: CUDA@9.1.85 GNU@4.8.5 C++11 Release
