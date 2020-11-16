@@ -1,5 +1,9 @@
 
 CEXE_sources += ParticleDerive.cpp
+CEXE_headers += Derive_nohydro.H
+CEXE_sources += Derive_nohydro.cpp
+ifneq ($(NO_HYDRO), TRUE)
 CEXE_headers += Derive.H
 CEXE_sources += Derive.cpp
+endif
 CEXE_sources += Derive_forcing.cpp

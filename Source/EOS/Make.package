@@ -1,3 +1,4 @@
+ifneq ($(NO_HYDRO), TRUE)
 ifeq ($(USE_HEATCOOL), TRUE)
 #F90EXE_sources += eos_hc_nd.F90
 CEXE_headers += eos_hc.H
@@ -12,3 +13,4 @@ endif
 CEXE_headers += reset_internal_e.H
 #F90EXE_sources += atomic_rates.F90
 #F90EXE_sources += reion_aux_module.F90
+endif

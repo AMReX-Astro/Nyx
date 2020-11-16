@@ -44,11 +44,6 @@ extern "C"
      const amrex::FArrayBox& datfab, const amrex::Geometry& geomdata,
      amrex::Real /*time*/, const int* /*bcrec*/, int /*level*/);
 
-  void dermaggrav
-    (const amrex::Box& bx, amrex::FArrayBox& derfab, int dcomp, int /*ncomp*/,
-     const amrex::FArrayBox& datfab, const amrex::Geometry& geomdata,
-     amrex::Real /*time*/, const int* /*bcrec*/, int /*level*/);
-
   void dermagmom
     (const amrex::Box& bx, amrex::FArrayBox& derfab, int dcomp, int /*ncomp*/,
      const amrex::FArrayBox& datfab, const amrex::Geometry& geomdata,
@@ -74,11 +69,6 @@ extern "C"
      amrex::Real /*time*/, const int* /*bcrec*/, int /*level*/);
 
   void derentropy
-    (const amrex::Box& bx, amrex::FArrayBox& derfab, int dcomp, int /*ncomp*/,
-     const amrex::FArrayBox& datfab, const amrex::Geometry& geomdata,
-     amrex::Real /*time*/, const int* /*bcrec*/, int /*level*/);
-
-  void dernull
     (const amrex::Box& bx, amrex::FArrayBox& derfab, int dcomp, int /*ncomp*/,
      const amrex::FArrayBox& datfab, const amrex::Geometry& geomdata,
      amrex::Real /*time*/, const int* /*bcrec*/, int /*level*/);
@@ -112,21 +102,6 @@ extern "C"
     (const amrex::Box& bx, amrex::FArrayBox& derfab, int dcomp, int /*ncomp*/,
      const amrex::FArrayBox& datfab, const amrex::Geometry& geomdata,
      amrex::Real /*time*/, const int* /*bcrec*/, int /*level*/);
-
-  void derdenvol
-    (const amrex::Box& bx, amrex::FArrayBox& derfab, int dcomp, int /*ncomp*/,
-     const amrex::FArrayBox& datfab, const amrex::Geometry& geomdata,
-     amrex::Real /*time*/, const int* /*bcrec*/, int /*level*/);
-
-  void deroverden
-    (const amrex::Box& bx, amrex::FArrayBox& derfab, int dcomp, int /*ncomp*/,
-     const amrex::FArrayBox& datfab, const amrex::Geometry& geomdata,
-     amrex::Real /*time*/, const int* /*bcrec*/, int level);
-
-  void deroverdenzoom
-    (const amrex::Box& bx, amrex::FArrayBox& derfab, int dcomp, int /*ncomp*/,
-     const amrex::FArrayBox& datfab, const amrex::Geometry& geomdata,
-     amrex::Real /*time*/, const int* /*bcrec*/, int level);
 
 #ifdef __cplusplus
 }
