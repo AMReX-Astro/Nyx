@@ -25,7 +25,6 @@ jobs:
   nyx_clang:
     name: Clang@6.0 Debug
     runs-on: ubuntu-latest
-    env: {CXXFLAGS: "-Werror -Wunreachable-code"}
     steps:
     - uses: actions/checkout@v2
     - name: Dependencies
