@@ -6,7 +6,7 @@
 #ifndef NO_HYDRO
 #include <Derive.H>
 #endif
-#include <Derive_nohydro.H>
+#include <ParticleDerive.H>
 #include <bc_fill.H>
 
 #ifdef HEATCOOL
