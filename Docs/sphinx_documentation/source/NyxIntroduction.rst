@@ -1,20 +1,3 @@
-**********************
-Introduction to Nyx
-**********************
-
-Nyx is a adaptive mesh, hydrodynamics code that is
-designed to model astrophysical reacting flows on massively parallel
-computers.
-
-The major capabilities:
-
-  * 3-dimensional unsplit, 2nd-order hydrodynamics
-
-  * adaptive mesh refinement with subcycling; jumps of 2x and 4x between levels
-
-  * full Poisson gravity (with isolated boundary conditions)
-
-  * parallelization via MPI + OpenMP
 
 Units and Conventions
 =====================
@@ -53,9 +36,6 @@ throughout the code documentation and papers.
    +-----------------------+-----------------------+-----------------------+
 
 words
-
-Inputs and Outputs
-===================
 
 We support two different systems of units in : CGS and Cosmological.
 All inputs and problem initialization should be specified consistently with one of these sets of units.

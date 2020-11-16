@@ -6,13 +6,8 @@ Inputs
 .. toctree::
    :maxdepth: 1
 
-| The  executable reads run-time information from an “inputs” file
-  (which you put on the command line) and from a “probin” file, the name
-  of which is usually defined in the inputs file, but which defaults to
-  “``probin``”. To set the “probin” file name in the inputs file:
-| **amr.probin_file** = *my_special_probin*
-| for example, has the Fortran code read a file called
-  *my_special_probin*.
+  The  executable reads run-time information from an “inputs” file
+   which you put on the command line. 
 
 Problem Geometry
 ================
@@ -20,46 +15,44 @@ Problem Geometry
 List of Parameters
 ------------------
 
-+-----------------+-----------------+-----------------+-------------+
-| Parameter       | Definition      | Acceptable      | Default     |
-|                 |                 | Values          |             |
-+=================+=================+=================+=============+
-| **geo           | physical        | Real            | must be set |
-| metry.prob_lo** | location of low |                 |             |
-|                 | corner of the   |                 |             |
-|                 | domain          |                 |             |
-+-----------------+-----------------+-----------------+-------------+
-| **geo           | physical        | Real            | must be set |
-| metry.prob_hi** | location of     |                 |             |
-|                 | high corner of  |                 |             |
-|                 | the domain      |                 |             |
-+-----------------+-----------------+-----------------+-------------+
-| **geome         | coordinate      | 0 = Cartesian,  | must be set |
-| try.coord_sys** | system          | 1 = r-z, 2 =    |             |
-|                 |                 | spherical       |             |
-+-----------------+-----------------+-----------------+-------------+
-| **geometr       | is the domain   | 0 if false, 1   | 0 0 0       |
-| y.is_periodic** | periodic in     | if true         |             |
-|                 | this direction  |                 |             |
-+-----------------+-----------------+-----------------+-------------+
-
-[Table:Geometry]
++--------------------------+-----------------+-----------------+-------------+
+| Parameter                | Definition      | Acceptable      | Default     |
+|                          |                 | Values          |             |
++==========================+=================+=================+=============+
+| **geometry.prob_lo**     | physical        | Real            | must be set |
+|                          | location of low |                 |             |
+|                          | corner of the   |                 |             |
+|                          | domain          |                 |             |
++--------------------------+-----------------+-----------------+-------------+
+| **geometry.prob_hi**     | physical        | Real            | must be set |
+|                          | location of     |                 |             |
+|                          | high corner of  |                 |             |
+|                          | the domain      |                 |             |
++--------------------------+-----------------+-----------------+-------------+
+| **geometry.coord_sys**   | coordinate      | 0 = Cartesian,  | must be set |
+|                          | system          | 1 = r-z, 2 =    |             |
+|                          |                 | spherical       |             |
++--------------------------+-----------------+-----------------+-------------+
+| **geometry.is_periodic** | is the domain   | 0 if false, 1   | 0 0 0       |
+|                          | periodic in     | if true         |             |
+|                          | this direction  |                 |             |
++--------------------------+-----------------+-----------------+-------------+
 
 Examples of Usage
 -----------------
 
--  | **geometry.prob_lo** = 0 0 0
-   | defines the low corner of the domain at (0,0,0) in physical space.
+-  **geometry.prob_lo** = 0 0 0
+   defines the low corner of the domain at (0,0,0) in physical space.
 
--  | **geometry.prob_hi** = 1.e8 2.e8 2.e8
-   | defines the high corner of the domain at (1.e8,2.e8,2.e8) in
+-  **geometry.prob_hi** = 1.e8 2.e8 2.e8
+   defines the high corner of the domain at (1.e8,2.e8,2.e8) in
      physical space.
 
--  | **geometry.coord_sys** = 0
-   | defines the coordinate system as Cartesian
+-  **geometry.coord_sys** = 0
+   defines the coordinate system as Cartesian
 
--  | **geometry.is_periodic** = 0 1 0
-   | says the domain is periodic in the y-direction only.
+-  **geometry.is_periodic** = 0 1 0
+   says the domain is periodic in the y-direction only.
 
 Domain Boundary Conditions
 ==========================
