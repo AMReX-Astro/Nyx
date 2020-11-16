@@ -97,12 +97,9 @@
 <li class="toctree-l1"><a class="reference internal" href="Particles.html">Dark matter particles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxHeatCool.html">Radiative Heating and Cooling</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Gravity</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#integration-strategy">Integration Strategy</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#controls">Controls</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="#introduction">Introduction</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#poisson-approximation">Poisson Approximation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#time-integration-strategy">Time Integration Strategy</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#hydrodynamics-source-terms">Hydrodynamics Source Terms</a></li>
 </ul>
 </li>
@@ -213,8 +210,32 @@
 <h1>Gravity<a class="headerlink" href="#gravity" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="integration-strategy">
-<h3>Integration Strategy<a class="headerlink" href="#integration-strategy" title="Permalink to this headline">¶</a></h3>
+<p>In order to use gravity, we must always set:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">USE_GRAV</span><span class="o">=</span><span class="n">TRUE</span>
+</pre></div>
+</div>
+<p>in the GNUmakefile and</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">do_grav</span><span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>in the inputs file.</p>
+</div>
+<div class="section" id="poisson-approximation">
+<h2>Poisson Approximation<a class="headerlink" href="#poisson-approximation" title="Permalink to this headline">¶</a></h2>
+<p>In Nyx we always compute gravity by solving a Poisson equation on the mesh hierarchy.
+To define the gravitational vector we set</p>
+<blockquote>
+<div><div class="math notranslate nohighlight">
+\[\mathbf{g}(\mathbf{x},t) = -\nabla \phi\]</div>
+<p>where</p>
+<div class="math notranslate nohighlight">
+\[\mathbf{\Delta} \phi = \frac{4 \pi G}{a} (\rho - \overline{\rho}) \label{eq:Self Gravity}\]</div>
+</div></blockquote>
+<p>where <span class="math notranslate nohighlight">\(\overline{\rho}\)</span> is the average of <span class="math notranslate nohighlight">\(\rho\)</span> over the entire domain if we assume triply periodic boundary conditions,
+and <span class="math notranslate nohighlight">\(a(t)\)</span> is the scale of the universe as a function of time.</p>
+</div>
+<div class="section" id="time-integration-strategy">
+<h2>Time Integration Strategy<a class="headerlink" href="#time-integration-strategy" title="Permalink to this headline">¶</a></h2>
 <p>Nyx uses subcycling to integrate levels at different timesteps.
 The gravity algorithm needs to respect this. Self-gravity is computed
 via multigrid. At coarse-fine interfaces, the stencil used in the
@@ -267,33 +288,6 @@ multilevel solve, and the gravity on any level is defined only by the
 solve on that level. The only time this would be appropriate is if
 the fine level(s) cover essentially all of the mass on the grid for
 all time.</p>
-</div>
-<div class="section" id="controls">
-<h3>Controls<a class="headerlink" href="#controls" title="Permalink to this headline">¶</a></h3>
-<p>In order to use gravity, we must always set:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">USE_GRAV</span><span class="o">=</span><span class="n">TRUE</span>
-</pre></div>
-</div>
-<p>in the GNUmakefile and</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">do_grav</span><span class="o">=</span> <span class="mi">1</span>
-</pre></div>
-</div>
-<p>in the inputs file.</p>
-</div>
-</div>
-<div class="section" id="poisson-approximation">
-<h2>Poisson Approximation<a class="headerlink" href="#poisson-approximation" title="Permalink to this headline">¶</a></h2>
-<p>In Nyx we always compute gravity by solving a Poisson equation on the mesh hierarchy.
-To define the gravitational vector we set</p>
-<blockquote>
-<div><div class="math notranslate nohighlight">
-\[\mathbf{g}(\mathbf{x},t) = -\nabla \phi\]</div>
-<p>where</p>
-<div class="math notranslate nohighlight">
-\[\mathbf{\Delta} \phi = \frac{4 \pi G}{a} (\rho - \overline{\rho}) \label{eq:Self Gravity}\]</div>
-</div></blockquote>
-<p>where <span class="math notranslate nohighlight">\(\overline{\rho}\)</span> is the average of <span class="math notranslate nohighlight">\(\rho\)</span> over the entire domain if we assume triply periodic boundary conditions,
-and <span class="math notranslate nohighlight">\(a(t)\)</span> is the scale of the universe as a function of time.</p>
 </div>
 <div class="section" id="hydrodynamics-source-terms">
 <h2>Hydrodynamics Source Terms<a class="headerlink" href="#hydrodynamics-source-terms" title="Permalink to this headline">¶</a></h2>
