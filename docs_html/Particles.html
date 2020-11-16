@@ -123,10 +123,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#output-format">Output Format</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#checkpoint-files">Checkpoint Files</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#plot-files">Plot Files</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ascii-particle-files">ASCII Particle Files</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#run-time-data-logs">Run-time Data Logs</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#run-time-screen-output">Run-time Screen Output</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#particle-data-in-plot-files">Particle Data in Plot Files</a></li>
 </ul>
 </li>
 </ul>
@@ -238,19 +235,32 @@
 </style>
 <div class="section" id="dark-matter-particles">
 <h1>Dark matter particles<a class="headerlink" href="#dark-matter-particles" title="Permalink to this headline">¶</a></h1>
-<p>For the moment, assume that we are running in comoving coordinates,
-with dark matter particles only (no hydro) and that the particles all exist at level 0. These assumptions are
-encapsulated in the following lines in the inputs file:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">do_hydro</span><span class="o">=</span><span class="mi">0</span>
-<span class="n">nyx</span><span class="o">.</span><span class="n">do_santa_barbara</span><span class="o">=</span><span class="mi">0</span>
-<span class="n">nyx</span><span class="o">.</span><span class="n">init_sb_vels</span><span class="o">=</span><span class="mi">0</span>
-
-<span class="n">nyx</span><span class="o">.</span><span class="n">do_grav</span><span class="o">=</span><span class="mi">1</span>
-<span class="n">nyx</span><span class="o">.</span><span class="n">do_dm_particles</span><span class="o">=</span><span class="mi">1</span>
+<p>Dark matter particles are included in the simulation by setting:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">USE_PARTICLES</span> <span class="o">=</span> <span class="n">TRUE</span>
 </pre></div>
 </div>
-<p>This setup can be selected at compile time using the make flags:</p>
+<p>and:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">do_dm_paricles</span> <span class="o">=</span> <span class="n">true</span>
+</pre></div>
+</div>
+<p>in the inputs file.</p>
+<p>When dark matter particles are present, one has the option to run with or without the baryons;
+to build with no hydro capability set:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">NO_HYDRO</span><span class="o">=</span><span class="n">TRUE</span>
+</pre></div>
+</div>
+<p>It is also possible to build with</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">NO_HYDRO</span><span class="o">=</span><span class="n">FALSE</span>
+</pre></div>
+</div>
+<p>but turn off hydro at run-time by setting</p>
+<blockquote>
+<div>nyx.do_hydro = 0</div></blockquote>
+<p>in the inputs file.</p>
+<p>Our default is to use double precision for the mesh data and single precision for the particles; this is set in the
+GNUMakefile by:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PRECISION</span> <span class="o">=</span> <span class="n">DOUBLE</span>
+<span class="n">USE_SINGLE_PRECISION_PARTICLES</span> <span class="o">=</span> <span class="n">TRUE</span>
 </pre></div>
 </div>
 <div class="section" id="equations">
@@ -266,18 +276,8 @@ to solve</p>
 </div>
 <div class="section" id="initializing-the-particles">
 <h2>Initializing the Particles<a class="headerlink" href="#initializing-the-particles" title="Permalink to this headline">¶</a></h2>
-<p>There are several different ways in which particles can currently be initialized:</p>
-<p>One must include the dark matter particles in the <code class="docutils literal notranslate"><span class="pre">GNUmakefile</span></code> by setting:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">USE_PARTICLES</span> <span class="o">=</span> <span class="n">TRUE</span>
-<span class="n">nyx</span><span class="o">.</span><span class="n">do_dm_particles</span><span class="o">=</span><span class="mi">1</span>
-</pre></div>
-</div>
-<p>And the particles can be initialized via ascii file, binary file, or other means.
-The standard precision to use for the mesh is double precision and for the particles is single precision, set with the make flags:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PRECISION</span> <span class="o">=</span> <span class="n">DOUBLE</span>
-<span class="n">USE_SINGLE_PRECISION_PARTICLES</span> <span class="o">=</span> <span class="n">TRUE</span>
-</pre></div>
-</div>
+<p>There are several different ways in which particles can currently be initialized:
+read from an ASCII file, read from a binary file, or created in a run-time initialization procedure</p>
 <div class="section" id="read-from-an-ascii-file">
 <h3>Read from an ASCII file<a class="headerlink" href="#read-from-an-ascii-file" title="Permalink to this headline">¶</a></h3>
 <p>To enable this option, set:</p>
@@ -393,7 +393,7 @@ and total mass fixed, the mass per particle must decrease proportionally.</p>
 <div class="section" id="generating-a-transfer-function">
 <h4>Generating a transfer function<a class="headerlink" href="#generating-a-transfer-function" title="Permalink to this headline">¶</a></h4>
 <p>The transfer function is used in <code class="docutils literal notranslate"><span class="pre">nyx-ic</span></code> to generate the power
-spectrum. The usual way is to use <code class="docutils literal notranslate"><span class="pre">camb</span></code> <a class="footnote-reference" href="#id2" id="id1">[1]</a>
+spectrum. The usual way is to use <code class="docutils literal notranslate"><span class="pre">camb</span></code> <a href="#id2"><span class="problematic" id="id1">[1]_</span></a>
 to calculate it for the desired universe. A sample <code class="docutils literal notranslate"><span class="pre">camb.ini</span></code> is
 provided with <code class="docutils literal notranslate"><span class="pre">nyx-ic</span></code>. The important options are:</p>
 <ul class="simple">
@@ -516,19 +516,19 @@ that cell. Velocities are calculated in the Zel’dovich approximation by</p>
 <p>There are currently two different ways in which particles can be moved:</p>
 <div class="section" id="random">
 <h3>Random<a class="headerlink" href="#random" title="Permalink to this headline">¶</a></h3>
-<div class="line-block">
-<div class="line">To enable this option, set::
-nyx.particle_move_type = Random</div>
-<div class="line">Update the particle positions at the end of each coarse time step using a
-random number between 0 and 1 multiplied by 0.25 dx.</div>
-</div>
+<blockquote>
+<div><p>To enable this option, set:</p>
+<p>nyx.particle_move_type = Random</p>
+<p>This updates the particle positions at the end of each coarse time step using a
+random number between 0 and 1 multiplied by 0.25 dx.</p>
+</div></blockquote>
 </div>
 <div class="section" id="motion-by-self-gravity">
 <h3>Motion by Self-Gravity<a class="headerlink" href="#motion-by-self-gravity" title="Permalink to this headline">¶</a></h3>
-<div class="line-block">
-<div class="line">To enable this option, set::
-nyx.particle_move_type = Gravitational</div>
-</div>
+<blockquote>
+<div><p>To enable this option, set:</p>
+<p>nyx.particle_move_type = Gravitational</p>
+</div></blockquote>
 <div class="section" id="move-kick-drift-algorithm">
 <h4>Move-Kick-Drift Algorithm<a class="headerlink" href="#move-kick-drift-algorithm" title="Permalink to this headline">¶</a></h4>
 <p>In each time step:</p>
@@ -571,93 +571,37 @@ linear interpolation in the normal direction.</li>
 <h2>Output Format<a class="headerlink" href="#output-format" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="checkpoint-files">
 <h3>Checkpoint Files<a class="headerlink" href="#checkpoint-files" title="Permalink to this headline">¶</a></h3>
-<div class="line-block">
-<div class="line">The particle positions and velocities are stored in a binary file in each checkpoint directory.
-This format is designed for being read by the code at restart rather than for diagnostics.</div>
-<div class="line">We note that the value of <span class="math notranslate nohighlight">\(a\)</span> is also written in each checkpoint directory,
-in a separate ASCII file called <em>comoving_a</em>, containing only the single value.</div>
+<blockquote>
+<div>The particle positions and velocities are stored in a binary file in each checkpoint directory.
+This format is designed for being read by the code at restart rather than for diagnostics.
+We note that the value of <span class="math notranslate nohighlight">\(a\)</span> is also written in each checkpoint directory,
+in a separate ASCII file called <em>comoving_a</em>, containing only the single value.</div></blockquote>
 </div>
-</div>
-<div class="section" id="plot-files">
-<h3>Plot Files<a class="headerlink" href="#plot-files" title="Permalink to this headline">¶</a></h3>
-<p>The particle positions and velocities will be written in a binary file in each plotfile directory.
+<div class="section" id="particle-data-in-plot-files">
+<h3>Particle Data in Plot Files<a class="headerlink" href="#particle-data-in-plot-files" title="Permalink to this headline">¶</a></h3>
+<p>The particle positions and velocities will be written in binary files in each plotfile directory.
 Dark matter particles will be in DM, active galactic nuclei particles will be in AGN,
 neutrino particles will be in NPC.</p>
-<div class="line-block">
-<div class="line">In addition, we can also
+<blockquote>
+<div><p>In addition, we can also
 visualize the particle locations as represented on the grid. There are multiple “derived quantities”
 which represent the particles. Including particle variables in the derived variables will make them
-be written as plotfile fields on the grid, i.e. ::</div>
-</div>
-<blockquote>
-<div>amr.derive_plot_vars = particle_count particle_mass_density</div></blockquote>
-<div class="line-block">
-<div class="line">in the inputs file will generate plotfiles with only two variables.
-<strong>particle_count</strong> represents the number of particles in a grid cell;
-<strong>particle_mass_density</strong> is the density on the grid resulting from the particles.</div>
-</div>
-<div class="line-block">
-<div class="line">The same naming convention follows for particle velocities on the grid: <strong>particle_x_velocity</strong>,
-<strong>particle_y_velocity</strong>, <strong>particle_z_velocity</strong></div>
-</div>
-<div class="line-block">
-<div class="line">Derived variables with <strong>particle_</strong> represent quantities from the Dark Matter Particle Container.
-Similar variables from the AGN particle container, and the Neutrino Particle Container
-are named <strong>agn_</strong> and <strong>neutrino_</strong>. Note these are particle fields written to the grid,
-which are distinct from the <strong>density</strong> field in the plotfile, which is baryonic density on the grid.</div>
-</div>
-<div class="line-block">
-<div class="line">We note that the value of <span class="math notranslate nohighlight">\(a\)</span> is also written in each plotfile directory,
-in a separate ASCII file called <em>comoving_a</em>, containing only the single value.</div>
-</div>
-</div>
-<div class="section" id="ascii-particle-files">
-<h3>ASCII Particle Files<a class="headerlink" href="#ascii-particle-files" title="Permalink to this headline">¶</a></h3>
-<div class="line-block">
-<div class="line">To generate an ASCII file containing the particle positions and velocities,
-one needs to restart from a checkpoint
-file but doesn’t need to run any steps. For example, if <em>chk00350</em> exists, then one can set:</div>
-<div class="line">= <em>chk00350</em></div>
-<div class="line">= 350</div>
-<div class="line">= <em>particle_output</em></div>
-<div class="line">which would tell the code to restart from <em>chk00350</em>, not to take any further time steps, and to write an ASCII-format
-file called <em>particle_output</em>.</div>
-<div class="line">This file has the same format as the ASCII input file:</div>
-<div class="line">number of particles</div>
-<div class="line">x y z mass xdot ydot zdot</div>
-</div>
-</div>
-<div class="section" id="run-time-data-logs">
-<h3>Run-time Data Logs<a class="headerlink" href="#run-time-data-logs" title="Permalink to this headline">¶</a></h3>
-<div class="line-block">
-<div class="line">If you set</div>
-<div class="line">in the inputs file, then at run-time the code will write out file
-<em>log_file</em> with entries every coarse
-grid time step, containing</div>
-<div class="line">nstep time dt redshift a</div>
-</div>
-<p>and if <strong>nyx.do_hydro</strong> then also</p>
-<p>max temp, rho-wgted temp, V-wgted temp, T &#64; <span class="math notranslate nohighlight">\(\langle\)</span> rho <span class="math notranslate nohighlight">\(\rangle\)</span></p>
-</div>
-<div class="section" id="run-time-screen-output">
-<h3>Run-time Screen Output<a class="headerlink" href="#run-time-screen-output" title="Permalink to this headline">¶</a></h3>
-<p>There are a number of flags that control the verbosity written to the screen at run-time. These are:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span> amr.v
- nyx.v
- gravity.v
- mg.v
- particles.v
-
-These control printing about the state of the calculation (time, value of :math:`a`, etc) as well as
- timing information.
+be written as plotfile fields on the grid, i.e.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">amr</span><span class="o">.</span><span class="n">derive_plot_vars</span> <span class="o">=</span> <span class="n">particle_count</span> <span class="n">particle_mass_density</span>
 </pre></div>
 </div>
-<table class="docutils footnote" frame="void" id="id2" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>See <a class="reference external" href="http://camb.info/">http://camb.info/</a></td></tr>
-</tbody>
-</table>
+<p>in the inputs file will generate plotfiles with only two variables.
+<strong>particle_count</strong> represents the number of particles in a grid cell;
+<strong>particle_mass_density</strong> is the density on the grid resulting from the particles.</p>
+<p>The same naming convention follows for particle velocities on the grid: <strong>particle_x_velocity</strong>,
+<strong>particle_y_velocity</strong>, <strong>particle_z_velocity</strong></p>
+<p>Derived variables with <strong>particle_</strong> represent quantities from the Dark Matter Particle Container.
+Similar variables from the AGN particle container, and the Neutrino Particle Container
+are named <strong>agn_</strong> and <strong>neutrino_</strong>. Note these are particle fields written to the grid,
+which are distinct from the <strong>density</strong> field in the plotfile, which is baryonic density on the grid.</p>
+<p>We note that the value of <span class="math notranslate nohighlight">\(a\)</span> is also written in each plotfile directory,
+in a separate ASCII file called <em>comoving_a</em>, containing only the single value.</p>
+</div></blockquote>
 </div>
 </div>
 </div>
