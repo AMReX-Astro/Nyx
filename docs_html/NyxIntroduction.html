@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Introduction to Nyx &mdash; Nyx  documentation</title>
+  <title>Units and Conventions &mdash; Nyx  documentation</title>
   
 
   
@@ -89,11 +89,7 @@
               <p class="caption"><span class="caption-text">Nyx basics</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="NyxPreface.html">Preface</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Introduction to Nyx</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#units-and-conventions">Units and Conventions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#inputs-and-outputs">Inputs and Outputs</a></li>
-</ul>
-</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Units and Conventions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxGettingStarted.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxInputs.html">Inputs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ManagingGridHierarchy_Chapter.html">Gridding and Load Balancing</a></li>
@@ -161,7 +157,7 @@
     
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>Introduction to Nyx</li>
+      <li>Units and Conventions</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -204,22 +200,8 @@
     text-align: unset;
 }
 </style>
-<div class="section" id="introduction-to-nyx">
-<h1>Introduction to Nyx<a class="headerlink" href="#introduction-to-nyx" title="Permalink to this headline">¶</a></h1>
-<p>Nyx is a adaptive mesh, hydrodynamics code that is
-designed to model astrophysical reacting flows on massively parallel
-computers.</p>
-<p>The major capabilities:</p>
-<blockquote>
-<div><ul class="simple">
-<li>3-dimensional unsplit, 2nd-order hydrodynamics</li>
-<li>adaptive mesh refinement with subcycling; jumps of 2x and 4x between levels</li>
-<li>full Poisson gravity (with isolated boundary conditions)</li>
-<li>parallelization via MPI + OpenMP</li>
-</ul>
-</div></blockquote>
 <div class="section" id="units-and-conventions">
-<h2>Units and Conventions<a class="headerlink" href="#units-and-conventions" title="Permalink to this headline">¶</a></h2>
+<h1>Units and Conventions<a class="headerlink" href="#units-and-conventions" title="Permalink to this headline">¶</a></h1>
 <p>Nyx supports both CGS and Cosmological units. In the equation of state calls,
 conversions must be made between CGS units and code units.
 Table <a class="reference external" href="#table:units">[table:units]</a> shows some of the common symbols / names used
@@ -283,9 +265,6 @@ energy</td>
 </tbody>
 </table>
 <p>words</p>
-</div>
-<div class="section" id="inputs-and-outputs">
-<h2>Inputs and Outputs<a class="headerlink" href="#inputs-and-outputs" title="Permalink to this headline">¶</a></h2>
 <p>We support two different systems of units in : CGS and Cosmological.
 All inputs and problem initialization should be specified consistently with one of these sets of units.
 No internal conversions of units occur within the code, so the output must be interpreted appropriately.
@@ -816,7 +795,6 @@ minimum value of the 26 neighbors. This also modifies momenta, <span class="math
 </ul>
 </li>
 </ul>
-</div>
 </div>
 
 

@@ -40,7 +40,7 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Introduction to Nyx" href="NyxIntroduction.html" />
+    <link rel="next" title="Units and Conventions" href="NyxIntroduction.html" />
     <link rel="prev" title="Welcome to Nyx’s documentation!" href="index.html" /> 
 </head>
 
@@ -89,7 +89,7 @@
               <p class="caption"><span class="caption-text">Nyx basics</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Preface</a></li>
-<li class="toctree-l1"><a class="reference internal" href="NyxIntroduction.html">Introduction to Nyx</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxIntroduction.html">Units and Conventions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxGettingStarted.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxInputs.html">Inputs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ManagingGridHierarchy_Chapter.html">Gridding and Load Balancing</a></li>
@@ -202,13 +202,22 @@
 </style>
 <div class="section" id="preface">
 <h1>Preface<a class="headerlink" href="#preface" title="Permalink to this headline">¶</a></h1>
-<p>Welcome to Nyx’s User’s Guide!</p>
-<p>In this User’s Guide we describe how to download and run Nyx, a massively parallel code
-that couples the compressible hydrodynamic equations on a grid with a particle represenation
-of dark matter.
-Nyx uses an Eulerian grid for the hydrodynamics solver and incorporates adaptive mesh refinement (AMR).Our approach to AMR uses a nested hierarchy of logically-rectangular grids with simultaneous
-refinement in both space and time, utilizing the
-AMReX library.</p>
+<p>Nyx is a adaptive mesh, N-body/hydro code for cosmological simulation on massively parallel
+computers.  It couples the compressible hydrodynamic equations on a grid with a particle represenation
+of dark matter.</p>
+<p>The major capabilities:</p>
+<blockquote>
+<div><ul class="simple">
+<li>3-dimensional unsplit, 2nd-order hydrodynamics</li>
+<li>adaptive mesh refinement with subcycling; jumps of 2x and 4x between levels</li>
+<li>full Poisson gravity (with isolated boundary conditions)</li>
+<li>hybrid parallelization strategy with MPI + X, where X = OpenMP on multicore architectures</li>
+</ul>
+</div></blockquote>
+<p>and CUDA/HIP/DPC++ on hybrid CPU/GPU architectures.</p>
+<p>Nyx uses an Eulerian grid for the hydrodynamics solver and incorporates adaptive mesh refinement (AMR).
+Our approach to AMR uses a nested hierarchy of logically-rectangular grids with simultaneous
+refinement in both space and time, utilizing the AMReX library.</p>
 <dl class="docutils">
 <dt>For the first paper describing the Nbody, adiabatic hydro and gravity algorithms:</dt>
 <dd><ul class="first last simple">
@@ -277,7 +286,7 @@ of the github repo. Any level of changes are welcome, including documentation, b
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="NyxIntroduction.html" class="btn btn-neutral float-right" title="Introduction to Nyx" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="NyxIntroduction.html" class="btn btn-neutral float-right" title="Units and Conventions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="index.html" class="btn btn-neutral float-left" title="Welcome to Nyx’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

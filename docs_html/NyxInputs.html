@@ -89,7 +89,7 @@
               <p class="caption"><span class="caption-text">Nyx basics</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="NyxPreface.html">Preface</a></li>
-<li class="toctree-l1"><a class="reference internal" href="NyxIntroduction.html">Introduction to Nyx</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxIntroduction.html">Units and Conventions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxGettingStarted.html">Getting Started</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Inputs</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#problem-geometry">Problem Geometry</a><ul>
@@ -278,25 +278,16 @@
 <h1>Inputs<a class="headerlink" href="#inputs" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
-<div class="line-block">
-<div class="line">The &nbsp;executable reads run-time information from an “inputs” file
-(which you put on the command line) and from a “probin” file, the name
-of which is usually defined in the inputs file, but which defaults to
-“<code class="docutils literal notranslate"><span class="pre">probin</span></code>”. To set the “probin” file name in the inputs file:</div>
-<div class="line"><strong>amr.probin_file</strong> = <em>my_special_probin</em></div>
-<div class="line">for example, has the Fortran code read a file called
-<em>my_special_probin</em>.</div>
-</div>
 <div class="section" id="problem-geometry">
 <h2>Problem Geometry<a class="headerlink" href="#problem-geometry" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="list-of-parameters">
 <h3>List of Parameters<a class="headerlink" href="#list-of-parameters" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
-<col width="27%" />
-<col width="27%" />
-<col width="27%" />
-<col width="20%" />
+<col width="36%" />
+<col width="23%" />
+<col width="23%" />
+<col width="18%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Parameter</th>
@@ -307,8 +298,7 @@ Values</th>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><strong>geo
-metry.prob_lo</strong></td>
+<tr class="row-even"><td><strong>geometry.prob_lo</strong></td>
 <td>physical
 location of low
 corner of the
@@ -316,8 +306,7 @@ domain</td>
 <td>Real</td>
 <td>must be set</td>
 </tr>
-<tr class="row-odd"><td><strong>geo
-metry.prob_hi</strong></td>
+<tr class="row-odd"><td><strong>geometry.prob_hi</strong></td>
 <td>physical
 location of
 high corner of
@@ -325,8 +314,7 @@ the domain</td>
 <td>Real</td>
 <td>must be set</td>
 </tr>
-<tr class="row-even"><td><strong>geome
-try.coord_sys</strong></td>
+<tr class="row-even"><td><strong>geometry.coord_sys</strong></td>
 <td>coordinate
 system</td>
 <td>0 = Cartesian,
@@ -334,8 +322,7 @@ system</td>
 spherical</td>
 <td>must be set</td>
 </tr>
-<tr class="row-odd"><td><strong>geometr
-y.is_periodic</strong></td>
+<tr class="row-odd"><td><strong>geometry.is_periodic</strong></td>
 <td>is the domain
 periodic in
 this direction</td>
@@ -345,31 +332,24 @@ if true</td>
 </tr>
 </tbody>
 </table>
-<p>[Table:Geometry]</p>
 </div>
 <div class="section" id="examples-of-usage">
 <h3>Examples of Usage<a class="headerlink" href="#examples-of-usage" title="Permalink to this headline">¶</a></h3>
 <ul>
-<li><div class="first line-block">
-<div class="line"><strong>geometry.prob_lo</strong> = 0 0 0</div>
-<div class="line">defines the low corner of the domain at (0,0,0) in physical space.</div>
-</div>
+<li><p class="first"><strong>geometry.prob_lo</strong> = 0 0 0
+defines the low corner of the domain at (0,0,0) in physical space.</p>
 </li>
-<li><div class="first line-block">
-<div class="line"><strong>geometry.prob_hi</strong> = 1.e8 2.e8 2.e8</div>
-<div class="line">defines the high corner of the domain at (1.e8,2.e8,2.e8) in
-physical space.</div>
-</div>
+<li><p class="first"><strong>geometry.prob_hi</strong> = 1.e8 2.e8 2.e8
+defines the high corner of the domain at (1.e8,2.e8,2.e8) in</p>
+<blockquote>
+<div><p>physical space.</p>
+</div></blockquote>
 </li>
-<li><div class="first line-block">
-<div class="line"><strong>geometry.coord_sys</strong> = 0</div>
-<div class="line">defines the coordinate system as Cartesian</div>
-</div>
+<li><p class="first"><strong>geometry.coord_sys</strong> = 0
+defines the coordinate system as Cartesian</p>
 </li>
-<li><div class="first line-block">
-<div class="line"><strong>geometry.is_periodic</strong> = 0 1 0</div>
-<div class="line">says the domain is periodic in the y-direction only.</div>
-</div>
+<li><p class="first"><strong>geometry.is_periodic</strong> = 0 1 0
+says the domain is periodic in the y-direction only.</p>
 </li>
 </ul>
 </div>
