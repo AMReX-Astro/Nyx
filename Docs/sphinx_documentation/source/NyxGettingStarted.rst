@@ -71,12 +71,12 @@ Building the Code
 
    ::
 
-       cd Nyx/Exec/LyA
+       cd Nyx/Exec/MiniSB
 
    This will put you into a directory in which you can run a small
-   version of the Santa Barbara test problem.
+   version of the Santa Barbara problem.
 
-#. In Nyx/Exec/LyA, edit the GNUmakefile, and set
+#. In Nyx/Exec/MiniSB, edit the GNUmakefile, and set
 
    COMP = your favorite compiler (e.g, gnu, Intel)
 
@@ -88,6 +88,9 @@ Building the Code
    “Nyx3d.Linux.gnu.ex”, which means this is a 3-d version of the code,
    made on a Linux machine, with COMP = gnu.
 
+   Note that if you build with MPI = TRUE in the GNUMakefile, then the
+   name of the code will be something like “Nyx3d.Linux.gnu.MPI.ex”
+
 Running the Code
 ================
 
@@ -95,7 +98,7 @@ Running the Code
 
    ::
 
-       Nyx3d.Linux.gnu.ex inputs
+       Nyx3d.Linux.gnu.ex inputs.32
 
 #. You will notice that running the code generates directories that look like
    plt00000, plt00020, etc.,
@@ -103,14 +106,5 @@ Running the Code
    “checkpoint” files. The plotfiles are used for visualization,
    and the checkpoint files for restarting the code.
 
-Visualization
-=============
+See the Visualization chapter for how to visualize these plotfiles.
 
-There are several visualization tools that can be used for plotfiles. The standard tool used within the
-AMReX community is Amrvis, a package developed and supported
-by CCSE that is designed specifically for highly efficient visualization
-of block-structured hierarchical AMR data.
-Plotfiles can also be viewed using the VisIt, ParaView, and yt packages. Particle data can be viewed using ParaView.
-
-Please see the Visualization chapter in the AMReX User’s Guide (available in amrex/Docs)
-for more detail about using all of these visualization packages. The webpage details are available at :: https://amrex-codes.github.io/amrex/docs_html/Visualization.html

@@ -14,8 +14,8 @@ static void prob_param_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_pa
 
 static void prob_errtags_default(amrex::Vector<amrex::AMRErrorTag>& errtags)
 {
-    AMRErrorTagInfo info;
-    errtags.push_back(AMRErrorTag(1,AMRErrorTag::GREATER,"total_particle_count",info));
+    amrex::AMRErrorTagInfo info;
+    errtags.push_back(amrex::AMRErrorTag(1,amrex::AMRErrorTag::GREATER,"total_particle_count",info));
 }
 
 AMREX_GPU_DEVICE AMREX_FORCE_INLINE
@@ -31,8 +31,9 @@ void prob_initdata_state(const int i,
   if (state.nComp() == 1)
   {
     //Could be replaced with setVal
-    state(i,j,k,URHO)    = 1.00;
+    state(i,j,k,0)    = 1.00;
   }
+#ifndef NO_HYDRO
   // This is the regular case with NO_HYDRO = FALSE
   else if (state.nComp() > 1)
   {
@@ -52,6 +53,7 @@ void prob_initdata_state(const int i,
       state(i,j,k,FirstSpec+1) = (1.0 - .76);
 #endif
   }
+#endif
 }
 
 AMREX_GPU_DEVICE AMREX_FORCE_INLINE
@@ -73,6 +75,7 @@ void prob_initdata(const int i,
     //Could be replaced with setVal
     diag_eos(i,j,k,0)    = 0.00;
   }
+#ifndef NO_HYDRO
   // This is the regular case with NO_HYDRO = FALSE
   else if (state.nComp() > 1 && diag_eos.nComp() >= 2)
   {
@@ -83,6 +86,7 @@ void prob_initdata(const int i,
     if (diag_eos.nComp() > 2)
       diag_eos(i,j,k, Zhi_comp) = 7.5;
   }
+#endif
 }
 
 #endif

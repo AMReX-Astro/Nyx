@@ -662,7 +662,7 @@ Nyx::Nyx (Amr&            papa,
     {
         // gravity is a static object, only alloc if not already there
         if (gravity == 0) {
-          gravity = new Gravity(parent, parent->finestLevel(), &phys_bc, Density);
+          gravity = new Gravity(parent, parent->finestLevel(), &phys_bc, 0);
         }
 
         gravity->install_level(level, this);
@@ -753,7 +753,7 @@ Nyx::restart (Amr&     papa,
     if (do_grav && level == 0)
     {
         BL_ASSERT(gravity == 0);
-        gravity = new Gravity(parent, parent->finestLevel(), &phys_bc, Density);
+        gravity = new Gravity(parent, parent->finestLevel(), &phys_bc, 0);
     }
 #endif
 

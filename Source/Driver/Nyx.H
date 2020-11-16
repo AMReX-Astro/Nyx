@@ -49,6 +49,7 @@ enum StateType {
     NUM_STATE_TYPE
 };
 static int State_for_Time = PhiGrav_Type;
+static constexpr int max_prob_param = 1;
 #endif
 
 #ifndef NO_HYDRO
@@ -65,6 +66,7 @@ enum StateType {
     NUM_STATE_TYPE
 };
 static int State_for_Time = State_Type;
+static constexpr int max_prob_param = 20;
 #endif
 
 //
@@ -1035,7 +1037,9 @@ protected:
 
 };
 
+#ifndef NO_HYDRO
 #include <reset_internal_e.H>
+#endif
 
 // time step interval for finding halos
 extern int reeber_int;

@@ -14,8 +14,11 @@ static void prob_param_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_pa
 
 static void prob_errtags_default(amrex::Vector<amrex::AMRErrorTag>& errtags)
 {
+    //Only include default tagging if NO_HYDRO=FALSE
+#ifndef NO_HYDRO
     AMRErrorTagInfo info;
     errtags.push_back(AMRErrorTag(1,AMRErrorTag::GREATER,"overden",info));
+#endif
 }
 
 AMREX_GPU_DEVICE AMREX_FORCE_INLINE
@@ -23,7 +26,7 @@ void prob_initdata_state(const int i,
                          const int j,
                          const int k,
                          amrex::Array4<amrex::Real> const& state,
-                           amrex::GeometryData const& geomdata,
+                         amrex::GeometryData const& geomdata,
                          const amrex::GpuArray<amrex::Real,max_prob_param>& prob_param)
 {
   // This is the case where we have compiled with states defined 
@@ -31,8 +34,9 @@ void prob_initdata_state(const int i,
   if (state.nComp() == 1)
   {
     //Could be replaced with setVal
-    state(i,j,k,1)    = 0.00;
+    state(i,j,k,0)    = 0.00;
   }
+#ifndef NO_HYDRO
   // This is the regular case with NO_HYDRO = FALSE
   else if (state.nComp() > 1)
   {
@@ -53,6 +57,7 @@ void prob_initdata_state(const int i,
       state(i,j,k,FirstSpec+1) = (1.0 - .76);
     }
   }
+#endif
 }
 
 AMREX_GPU_DEVICE AMREX_FORCE_INLINE
@@ -61,7 +66,7 @@ void prob_initdata(const int i,
                    const int k,
                    amrex::Array4<amrex::Real> const& state,
                    amrex::Array4<amrex::Real> const& diag_eos,
-                     amrex::GeometryData const& geomdata,
+                   amrex::GeometryData const& geomdata,
                    const amrex::GpuArray<amrex::Real,max_prob_param>& prob_param)
 {
 
@@ -72,8 +77,9 @@ void prob_initdata(const int i,
   if (state.nComp() == 1 && diag_eos.nComp() == 1)
   {
     //Could be replaced with setVal
-    diag_eos(i,j,k,1)    = 0.00;
+    diag_eos(i,j,k,0)    = 0.00;
   }
+#ifndef NO_HYDRO
   // This is the regular case with NO_HYDRO = FALSE
   else if (state.nComp() > 1 && diag_eos.nComp() >= 2)
   {
@@ -84,6 +90,7 @@ void prob_initdata(const int i,
     if (diag_eos.nComp() > 2)
       diag_eos(i,j,k, Zhi_comp) = 7.5;
   }
+#endif
 }
 
 #endif
