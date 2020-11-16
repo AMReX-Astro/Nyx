@@ -4,6 +4,7 @@
 
 #include <Nyx.H>
 #include <Derive.H>
+#include <bc_fill.H>
 
 #ifdef HEATCOOL
 #include <atomic_rates.H>
