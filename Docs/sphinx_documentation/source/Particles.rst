@@ -2,20 +2,36 @@
 Dark matter particles
 *********************
 
-For the moment, assume that we are running in comoving coordinates,
-with dark matter particles only (no hydro) and that the particles all exist at level 0. These assumptions are
-encapsulated in the following lines in the inputs file::
+Dark matter particles are included in the simulation by setting::
 
-  nyx.do_hydro=0
-  nyx.do_santa_barbara=0
-  nyx.init_sb_vels=0
+    USE_PARTICLES = TRUE
 
-  nyx.do_grav=1
-  nyx.do_dm_particles=1
+and::
 
-This setup can be selected at compile time using the make flags::
+    nyx.do_dm_paricles = true
+
+in the inputs file.
+
+When dark matter particles are present, one has the option to run with or without the baryons; 
+to build with no hydro capability set::
 
     NO_HYDRO=TRUE
+
+It is also possible to build with ::
+
+    NO_HYDRO=FALSE
+
+but turn off hydro at run-time by setting 
+
+  nyx.do_hydro = 0
+
+in the inputs file.
+
+Our default is to use double precision for the mesh data and single precision for the particles; this is set in the 
+GNUMakefile by::
+
+  PRECISION = DOUBLE
+  USE_SINGLE_PRECISION_PARTICLES = TRUE
 
 Equations
 =========
@@ -36,17 +52,7 @@ Initializing the Particles
 ==========================
 
 There are several different ways in which particles can currently be initialized:
-
-One must include the dark matter particles in the ``GNUmakefile`` by setting::
-
-   USE_PARTICLES = TRUE
-   nyx.do_dm_particles=1
-
-And the particles can be initialized via ascii file, binary file, or other means.
-The standard precision to use for the mesh is double precision and for the particles is single precision, set with the make flags::
-
-  PRECISION = DOUBLE
-  USE_SINGLE_PRECISION_PARTICLES = TRUE
+read from an ASCII file, read from a binary file, or created in a run-time initialization procedure
 
 Read from an ASCII file
 -----------------------
@@ -292,15 +298,18 @@ There are currently two different ways in which particles can be moved:
 Random
 ------
 
-| To enable this option, set::
+  To enable this option, set::
+
   nyx.particle_move_type = Random
-| Update the particle positions at the end of each coarse time step using a
+
+  This updates the particle positions at the end of each coarse time step using a
   random number between 0 and 1 multiplied by 0.25 dx.
 
 Motion by Self-Gravity
 ----------------------
 
-| To enable this option, set::
+  To enable this option, set::
+
   nyx.particle_move_type = Gravitational
 
 Move-Kick-Drift Algorithm
@@ -353,82 +362,37 @@ Output Format
 Checkpoint Files
 ----------------
 
-| The particle positions and velocities are stored in a binary file in each checkpoint directory.
+  The particle positions and velocities are stored in a binary file in each checkpoint directory.
   This format is designed for being read by the code at restart rather than for diagnostics.
-| We note that the value of :math:`a` is also written in each checkpoint directory,
+  We note that the value of :math:`a` is also written in each checkpoint directory,
   in a separate ASCII file called *comoving_a*, containing only the single value.
 
-Plot Files
-----------
+Particle Data in Plot Files
+----------------------------
 
-The particle positions and velocities will be written in a binary file in each plotfile directory.
+The particle positions and velocities will be written in binary files in each plotfile directory.
 Dark matter particles will be in DM, active galactic nuclei particles will be in AGN,
 neutrino particles will be in NPC.
 
-| In addition, we can also
+  In addition, we can also
   visualize the particle locations as represented on the grid. There are multiple “derived quantities”
   which represent the particles. Including particle variables in the derived variables will make them
-  be written as plotfile fields on the grid, i.e. ::
+  be written as plotfile fields on the grid, i.e.::
   
     amr.derive_plot_vars = particle_count particle_mass_density 
 
-| in the inputs file will generate plotfiles with only two variables.
+  in the inputs file will generate plotfiles with only two variables.
   **particle_count** represents the number of particles in a grid cell;
   **particle_mass_density** is the density on the grid resulting from the particles.
 
-| The same naming convention follows for particle velocities on the grid: **particle_x_velocity**,
+  The same naming convention follows for particle velocities on the grid: **particle_x_velocity**,
   **particle_y_velocity**, **particle_z_velocity**
 
-| Derived variables with **particle_** represent quantities from the Dark Matter Particle Container.
+  Derived variables with **particle_** represent quantities from the Dark Matter Particle Container.
   Similar variables from the AGN particle container, and the Neutrino Particle Container
   are named **agn_** and **neutrino_**. Note these are particle fields written to the grid,
   which are distinct from the **density** field in the plotfile, which is baryonic density on the grid.
 
-| We note that the value of :math:`a` is also written in each plotfile directory,
+  We note that the value of :math:`a` is also written in each plotfile directory,
   in a separate ASCII file called *comoving_a*, containing only the single value.
 
-ASCII Particle Files
---------------------
-
-| To generate an ASCII file containing the particle positions and velocities,
-  one needs to restart from a checkpoint
-  file but doesn’t need to run any steps. For example, if *chk00350* exists, then one can set:
-| = *chk00350*
-| = 350
-| = *particle_output*
-| which would tell the code to restart from *chk00350*, not to take any further time steps, and to write an ASCII-format
-  file called *particle_output*.
-| This file has the same format as the ASCII input file:
-| number of particles
-| x y z mass xdot ydot zdot
-
-Run-time Data Logs
-------------------
-
-| If you set
-| in the inputs file, then at run-time the code will write out file
-  *log_file* with entries every coarse
-  grid time step, containing
-| nstep time dt redshift a
-
-and if **nyx.do_hydro** then also
-
-max temp, rho-wgted temp, V-wgted temp, T @ :math:`\langle` rho :math:`\rangle`
-
-Run-time Screen Output
-----------------------
-
-There are a number of flags that control the verbosity written to the screen at run-time. These are::
-
-  amr.v
-  nyx.v
-  gravity.v
-  mg.v
-  particles.v
- 
- These control printing about the state of the calculation (time, value of :math:`a`, etc) as well as
-  timing information.
-
-
-.. [1]
-   See http://camb.info/
