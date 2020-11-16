@@ -14,9 +14,7 @@ using std::string;
 
 #include <AMReX_CONSTANTS.H>
 #include <Nyx.H>
-#include <atomic_rates_data.H>
 #include <constants_cosmo.H>
-#include <Derive.H>
 #include <AMReX_VisMF.H>
 #include <AMReX_TagBox.H>
 #include <AMReX_Utility.H>
@@ -24,6 +22,11 @@ using std::string;
 
 #if BL_USE_MPI
 #include <MemInfo.H>
+#endif
+
+#ifndef NO_HYDRO
+#include <atomic_rates_data.H>
+#include <Derive.H>
 #endif
 
 #ifdef GRAVITY
@@ -204,8 +207,10 @@ std::string Nyx::particle_plotfile_format = "IEEE32";
 std::string Nyx::particle_plotfile_format = "NATIVE";
 #endif
 
+#ifndef NO_HYDRO
 #ifndef HEATCOOL
 AtomicRates* atomic_rates_glob;
+#endif
 #endif
 
 // this will be reset upon restart
@@ -455,10 +460,12 @@ Nyx::read_hydro_params ()
         << simd_width << std::endl;
 #endif
 
+#ifndef NO_HYDRO
 #ifdef HEATCOOL
     atomic_rates_glob = (AtomicRates*)The_Arena()->alloc(sizeof(AtomicRates));
 #else
     atomic_rates_glob = NULL;
+#endif
 #endif
 
     pp_nyx.query("add_ext_src", add_ext_src);
