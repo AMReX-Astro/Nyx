@@ -1035,7 +1035,6 @@ protected:
 
 };
 
-#include <bc_fill.H>
 #include <reset_internal_e.H>
 
 // time step interval for finding halos
