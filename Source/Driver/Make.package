@@ -1,0 +1,56 @@
+
+CEXE_sources += nyx_main.cpp
+
+CEXE_sources += Nyx.cpp
+CEXE_sources += NyxBld.cpp
+CEXE_sources += comoving.cpp
+CEXE_sources += Nyx_error.cpp
+
+CEXE_sources += sum_integrated_quantities.cpp
+CEXE_sources += sum_utils.cpp
+
+CEXE_headers += Nyx.H
+
+ifeq ($(USE_CGS), TRUE)
+#f90EXE_sources += constants_cgs.f90
+else
+#f90EXE_sources += constants_cosmo.f90
+CEXE_headers += constants_cosmo.H
+endif
+
+#ifneq ($(USE_HENSON), TRUE)
+CEXE_sources += main.cpp
+#endif
+
+ifeq ($(REEBER), TRUE)
+CEXE_sources += Nyx_halos.cpp
+endif
+
+ifeq ($(GIMLET), TRUE)
+  #f90EXE_sources += calc_tau.f90
+  #f90EXE_sources += calc_flux.f90
+  #f90EXE_sources += calc_pdf.f90
+  #f90EXE_sources += calc_pdf2d.f90
+  #f90EXE_sources += calc_overdensity.f90
+  #f90EXE_sources += fftw3.f90
+  #f90EXE_sources += fftw3_mpi.f90
+  #f90EXE_sources += calc_pencil_fft.f90
+  #f90EXE_sources += calc_ps1d.f90
+  #f90EXE_sources += calc_ps3d.f90
+  #f90EXE_sources += calc_k_mu_ps1d.f90
+  #f90EXE_sources += fft_3d.f90
+  #f90EXE_sources += fft_3d_backward.f90
+  #f90EXE_sources += get_fftw_box_sizes.f90
+  #f90EXE_sources += cic_deconvolve.f90
+  #f90EXE_sources += calc_rho_m.f90
+  #f90EXE_sources += calc_abs_v.f90
+  #f90EXE_sources += calc_abs_vz.f90
+  #f90EXE_sources += calc_n_hi.f90
+  CEXE_sources += DoGimletAnalysis.cpp
+  CEXE_sources += postprocess_tau_fields.cpp
+  CEXE_sources += MakePencilBoxes.cpp
+  CEXE_sources += MakeFFTWBoxes.cpp
+  CEXE_sources += temperature_density_pdf2d.cpp
+  CEXE_sources += pdf.cpp
+  CEXE_sources += ps3d.cpp
+endif

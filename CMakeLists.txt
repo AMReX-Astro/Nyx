@@ -41,11 +41,25 @@ include(CMakeDependentOption)
 
 option( Nyx_Fortran    "Enable Fortran" NO)   # This will go away
 option( Nyx_OMP        "Enable OpenMP"  YES)
-option( Nyx_CUDA       "Enable CUDA"    NO)
 option( Nyx_MPI        "Enable MPI"     YES)
 cmake_dependent_option(Nyx_MPI_THREAD_MULTIPLE
    "Concurrent MPI calls from multiple threads" NO "Nyx_MPI" NO)
 
+
+#
+# GPU backends    =============================================================
+#
+set(Nyx_GPU_BACKEND_VALUES NONE SYCL CUDA HIP)
+set(Nyx_GPU_BACKEND NONE CACHE STRING "On-node, accelerated GPU backend: <NONE,SYCL,CUDA,HIP>")
+set_property(CACHE Nyx_GPU_BACKEND PROPERTY STRINGS ${Nyx_GPU_BACKEND_VALUES})
+if (NOT Nyx_GPU_BACKEND IN_LIST Nyx_GPU_BACKEND_VALUES)
+   message(FATAL_ERROR "Nyx_GPU_BACKEND=${Nyx_GPU_BACKEND} is not allowed."
+      " Must be one of ${Nyx_GPU_BACKEND_VALUES}")
+endif ()
+
+if (NOT Nyx_GPU_BACKEND STREQUAL NONE)
+   message( STATUS "   Nyx_GPU_BACKEND = ${Nyx_GPU_BACKEND}")
+endif ()
 
 option( Nyx_PARTICLES  "Enable particles support" YES)
 
@@ -55,7 +69,8 @@ cmake_dependent_option(Nyx_SINGLE_PRECISION_PARTICLES
 
 
 option( Nyx_HYDRO NO "")
-cmake_dependent_option(Nyx_HEATCOOL "" NO "Nyx_HYDRO" NO)
+cmake_dependent_option(Nyx_HEATCOOL "" NO
+   "Nyx_HYDRO; NOT Nyx_GPU_BACKEND STREQUAL SYCL; NOT Nyx_GPU_BACKEND STREQUAL HIP" NO)
 
 # Define normal variables to overwrite values of some options define below
 # if necessary
@@ -81,7 +96,8 @@ option( BUILD_SHARED_LIBS "Build AMReX and SUNDIALS as shared libraries" OFF )
 option( Nyx_SDC                "" NO)
 
 # Sundials options
-option( Nyx_SUNDIALS  "Use SUNDIALS CVODE libs" NO)
+cmake_dependent_option(Nyx_SUNDIALS "Use SUNDIALS CVODE libs" NO
+   "NOT Nyx_GPU_BACKEND STREQUAL SYCL; NOT Nyx_GPU_BACKEND STREQUAL HIP" NO)
 cmake_dependent_option(Nyx_SUNDIALS_FUSED "Use SUNDIALS FUSED libs" NO
    "Nyx_SUNDIALS" NO)
 
@@ -96,7 +112,8 @@ option( Nyx_GRAVITY            "" YES)
 # option( Nyx_NEUTRINO_PARTICLES "" NO)
 # option( Nyx_NEUTRINO_DARK_PARTICLES "" OFF)
 
-if (Nyx_CUDA)
+
+if (Nyx_GPU_BACKEND STREQUAL CUDA)
     enable_language(CUDA)
 endif ()
 

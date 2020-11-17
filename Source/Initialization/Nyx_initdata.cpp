@@ -29,6 +29,7 @@ static int  do_readin_ics    = 0;
 static int  fix_random_seed  = 0;
 std::string readin_ics_fname;
 
+#ifndef NO_HYDRO
 void Nyx::set_small_values_given_average (amrex::Real average_dens, amrex::Real average_temp, amrex::Real a,
                                           amrex::Real & small_dens_inout, amrex::Real & small_temp_inout, 
                                           amrex::Real &small_pres_inout, Real gamma_minus_1_in, 
@@ -63,6 +64,7 @@ void Nyx::set_small_values_given_average (amrex::Real average_dens, amrex::Real 
     small_temp_inout = small_temp;
     small_pres_inout = small_pres;
 }
+#endif
 
 void
 Nyx::read_init_params ()
@@ -370,10 +372,11 @@ Nyx::initData ()
 
     amrex::Gpu::Device::synchronize();
 
+#ifndef NO_HYDRO
     set_small_values_given_average
       (average_gas_density, average_temperature,
        a,  small_dens_loc, small_temp_loc, small_pres, gamma_minus_1, h_species, he_species);
-
+#endif
 
     amrex::Gpu::Device::synchronize();
 

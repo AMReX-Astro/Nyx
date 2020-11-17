@@ -1,16 +1,23 @@
+target_sources( ${EXE_NAME}
+   PRIVATE
+   strang_reactions.cpp
+   sdc_reactions.cpp
+   )
+
 if (Nyx_HEATCOOL)   # Nyx_HEATCOOL=ON
 
    target_include_directories(${EXE_NAME}
       PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}> )
 
-   target_sources( ${EXE_NAME}  PRIVATE f_rhs.H )
-
    if (Nyx_SDC)
       target_sources( ${EXE_NAME}  PRIVATE f_rhs_struct.H )
    endif()
 
-   if (Nyx_CVODE)
+   target_sources( ${EXE_NAME}  PRIVATE f_rhs.H )
+
+
+   if (Nyx_SUNDIALS)
          target_sources( ${EXE_NAME}
             PRIVATE
             integrate_state_vec_3d.cpp

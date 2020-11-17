@@ -12,5 +12,3 @@ if (Nyx_HYDRO)
 endif ()
 
 add_subdirectory(MiniSB)
-
-add_subdirectory(RegressionTest)

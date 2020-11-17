@@ -1,0 +1,14 @@
+CEXE_sources += Nyx_advance.cpp
+
+ifneq ($(NO_HYDRO), TRUE)
+  CEXE_sources += Nyx_time_center_sources.cpp
+  CEXE_sources += update_state_with_sources.cpp
+ifeq ($(USE_GRAV), TRUE)
+  CEXE_sources += Nyx_correct_gsrc.cpp
+endif
+ifneq ($(USE_AGN), TRUE)
+  CEXE_sources += Nyx_sources.cpp
+endif
+endif
+
+CEXE_sources += advance_particles.cpp

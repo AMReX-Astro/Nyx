@@ -13,13 +13,17 @@ Welcome to Nyx's documentation!
    NyxPreface
    NyxIntroduction
    NyxGettingStarted
+   NyxInputs
    ManagingGridHierarchy_Chapter
    NyxEquations
    Particles
    NyxHeatCool
    NyxGravity
    InputsMultigrid 
+   NyxForcing
    NightlyTests
+   Visualization
+   PostProcessing
 
 .. toctree::
    :maxdepth: 1
@@ -31,7 +35,7 @@ Welcome to Nyx's documentation!
 
 .. toctree::
 
-   references
+   zreferences
    
 .. toctree::      
    :maxdepth: 2

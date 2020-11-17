@@ -3,7 +3,11 @@
 #include <AMReX_buildInfo.H>
 
 #include <Nyx.H>
+#ifndef NO_HYDRO
 #include <Derive.H>
+#endif
+#include <ParticleDerive.H>
+#include <bc_fill.H>
 
 #ifdef HEATCOOL
 #include <atomic_rates.H>
@@ -123,7 +127,6 @@ Nyx::variable_setup()
 
 #ifdef NO_HYDRO
     no_hydro_setup();
-
 #else
     if (do_hydro == 1)
     {
@@ -733,15 +736,15 @@ Nyx::no_hydro_setup()
     derive_lst.add("particle_x_velocity", IndexType::TheCellType(), 1,
                    dernull, grow_box_by_one);
     derive_lst.addComponent("particle_x_velocity", desc_lst, PhiGrav_Type,
-                            Density, 1);
+                            0, 1);
     derive_lst.add("particle_y_velocity", IndexType::TheCellType(), 1,
                    dernull, grow_box_by_one);
     derive_lst.addComponent("particle_y_velocity", desc_lst, PhiGrav_Type,
-                            Density, 1);
+                            0, 1);
     derive_lst.add("particle_z_velocity", IndexType::TheCellType(), 1,
                    dernull, grow_box_by_one);
     derive_lst.addComponent("particle_z_velocity", desc_lst, PhiGrav_Type,
-                            Density, 1);
+                            0, 1);
     //
     // Density * Volume
     //
@@ -761,7 +764,7 @@ Nyx::no_hydro_setup()
     //
     derive_lst.add("overdenzoom", IndexType::TheCellType(), 1,
                    deroverden, grow_box_by_one);
-    derive_lst.addComponent("overdenzoom", desc_lst, State_Type, Density, 1);
+    derive_lst.addComponent("overdenzoom", desc_lst, PhiGrav_Type, 0, 1);
 
 #endif
     derive_lst.add("total_particle_count", IndexType::TheCellType(), 1,

@@ -4,8 +4,15 @@ target_include_directories(${EXE_NAME}
 
 target_sources( ${EXE_NAME}
    PRIVATE
-   Derive.cpp
-   Derive_forcing.cpp
-   Derive.H
    ParticleDerive.cpp
+   ParticleDerive.H
+   Derive_forcing.cpp
    )
+
+if  (Nyx_HYDRO)
+   target_sources( ${EXE_NAME}
+      PRIVATE
+      Derive.cpp
+      Derive.H
+      )
+endif ()

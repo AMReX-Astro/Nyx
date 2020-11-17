@@ -55,6 +55,12 @@ target_link_libraries(${EXE_NAME} PRIVATE AMReX::amrex)
 
 if (Nyx_SUNDIALS)
    target_link_libraries(${EXE_NAME} PRIVATE SUNDIALS::cvode)
+   if (Nyx_OMP)
+      target_link_libraries(${EXE_NAME} PRIVATE SUNDIALS::nvecopenmp)
+   endif ()
+   if (Nyx_GPU_BACKEND STREQUAL CUDA)
+      target_link_libraries(${EXE_NAME} PRIVATE SUNDIALS::nveccuda)
+   endif ()
 endif ()
 
 
@@ -63,83 +69,13 @@ endif ()
 #                               Nyx sources                                  #
 #                                                                            #
 ##############################################################################
-if (DEFAULT_MAIN)
-   target_sources( ${EXE_NAME} PRIVATE main.cpp)
-endif ()
-
-
-target_include_directories(${EXE_NAME}
-   PUBLIC
-   $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}> )
-
-target_sources( ${EXE_NAME}
-   PRIVATE
-   nyx_main.cpp
-   advance_particles.cpp
-   Nyx.cpp
-   Nyx_advance.cpp
-   NyxBld.cpp
-   comoving.cpp
-   sum_utils.cpp
-   Nyx.H
-   IndexDefines.H
-   )
-
-if (Nyx_REBEER)
-   target_sources( ${EXE_NAME} PRIVATE Nyx_halos.cpp )
-endif ()
-
-
-if (Nyx_HYDRO)
-
-   target_sources( ${EXE_NAME}
-      PRIVATE
-      compute_hydro_sources.cpp
-      update_state_with_sources.cpp
-      strang_hydro.cpp
-      strang_reactions.cpp
-      sum_integrated_quantities.cpp
-      )
-
-   if (Nyx_SDC)
-      target_sources( ${EXE_NAME}
-         PRIVATE
-         sdc_hydro.cpp
-         sdc_reactions.cpp
-         )
-   endif ()
-
-endif ()
-
-if (Nyx_GIMLET)
-   target_sources( ${EXE_NAME}
-      PRIVATE
-      DoGimletAnalysis.cpp
-      postprocess_tau_fields.cpp
-      MakePencilBoxes.cpp
-      MakeFFTWBoxes.cpp
-      temperature_density_pdf2d.cpp
-      pdf.cpp
-      ps3d.cpp
-      )
-endif ()
-
-
-
-#
-#  Add sources and header from current dir and all sub dirs
-#
 if (Nyx_AGN)
    add_subdirectory(AGN)
 endif ()
 
-if (NOT Nyx_CGS)
-   add_subdirectory(Constants)
-endif ()
-
 add_subdirectory(DerivedQuantities)
 
-add_subdirectory(EOS)
+add_subdirectory(Driver)
 
 if (Nyx_FORCING)
    add_subdirectory(Forcing)
@@ -149,9 +85,11 @@ if (Nyx_GRAVITY)
    add_subdirectory(Gravity)
 endif ()
 
-add_subdirectory(HeatCool)
-
-add_subdirectory(HydroCpp)
+if (Nyx_HYDRO)
+   add_subdirectory(HeatCool)
+   add_subdirectory(Hydro)
+   add_subdirectory(EOS)
+endif ()
 
 add_subdirectory(Initialization)
 
@@ -163,11 +101,4 @@ endif ()
 
 add_subdirectory(Particle)
 
-if (Nyx_HYDRO)
-   add_subdirectory(SourceTerms)
-endif ()
-
-
-add_subdirectory(Src_3d)
-
-add_subdirectory(Tagging)
+add_subdirectory(TimeStep)

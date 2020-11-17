@@ -94,7 +94,7 @@ void Nyx::ext_src_force(
 			tmp_state(i,j,k,n) = new_state(i,j,k,n);
 		});
 	amrex::Real a = 1.0 / (1.0+z);
-
+	amrex::Gpu::streamSynchronize();
     // Note that when we call this routine to compute the "old" source,
     //      both "old_state" and "new_state" are acutally the "old" state.
     // When we call this routine to compute the "new" source,
