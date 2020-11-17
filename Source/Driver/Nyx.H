@@ -487,7 +487,7 @@ public:
 
 #ifdef GRAVITY
     void correct_gsrc(int lev, amrex::Real time, amrex::Real prev_time, amrex::Real cur_time,
-                               amrex::Real dt); 
+                               amrex::Real dt);
 #endif
 
 
@@ -499,7 +499,7 @@ public:
 /// @param qaux     MultiFab of auxiliary variables
 /// @param time     Current time
 ///
-  void cons_to_prim(amrex::MultiFab& u, amrex::MultiFab& q, amrex::MultiFab& qaux, 
+  void cons_to_prim(amrex::MultiFab& u, amrex::MultiFab& q, amrex::MultiFab& qaux,
                     amrex::MultiFab& grav, amrex::MultiFab& hydro_src, amrex::MultiFab& src_q,
                     const amrex::Real a_old, const amrex::Real a_new,
                     const amrex::Real dt);
@@ -513,15 +513,15 @@ public:
 /// @param dt       timestep
 ///
     void construct_ctu_hydro_source(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
-                               amrex::MultiFab& S_border, amrex::MultiFab& D_border, 
-                               amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src, 
-                               amrex::MultiFab& grav, 
+                               amrex::MultiFab& S_border, amrex::MultiFab& D_border,
+                               amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src,
+                               amrex::MultiFab& grav,
                                bool init_flux_register, bool add_to_flux_register);
 
     void ctu_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
-                        amrex::MultiFab& S_border, amrex::MultiFab& D_border, 
-                        amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src, 
-                        amrex::MultiFab& grav, 
+                        amrex::MultiFab& S_border, amrex::MultiFab& D_border,
+                        amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src,
+                        amrex::MultiFab& grav,
                         bool init_flux_register, bool add_to_flux_register);
 
 ///
@@ -545,13 +545,13 @@ public:
 /// @param dir  direction in which to find the fluxes along
 ///
     amrex::MultiFab& Fluxes (int dir);
-  
+
     amrex::Vector<std::unique_ptr<amrex::MultiFab> > mass_fluxes;
 
     void construct_hydro_source(const amrex::MultiFab& S,
                                       amrex::MultiFab& sources_for_hydro,
                                       amrex::MultiFab& hydro_source,
-                                      amrex::MultiFab& grav, 
+                                      amrex::MultiFab& grav,
                                       amrex::Real a_old,
                                       amrex::Real a_new,
                                       amrex::Real dt,
@@ -866,8 +866,8 @@ protected:
 #endif
 
     void set_small_values_given_average (amrex::Real average_dens, amrex::Real average_temp, amrex::Real a,
-                                         amrex::Real & small_dens_inout, amrex::Real & small_temp_inout, 
-                                         amrex::Real &small_pres_inout, amrex::Real gamma_minus_1, 
+                                         amrex::Real & small_dens_inout, amrex::Real & small_temp_inout,
+                                         amrex::Real &small_pres_inout, amrex::Real gamma_minus_1,
                                          amrex::Real h_species, amrex::Real He_species);
 
     void write_info();

@@ -70,6 +70,12 @@ else ()
    add_subdirectory(${SUNDIALS_SRC_DIR})
 
    # This is to use the same target name uses by the sundials exported targets
-   add_library(SUNDIALS::cvode ALIAS sundials_cvode_static)
+   add_library(SUNDIALS::cvode      ALIAS sundials_cvode_static)
+   if (Nyx_OMP)
+      add_library(SUNDIALS::nvecopenmp ALIAS sundials_nvecopenmp_static)
+   endif ()
+   if (Nyx_GPU_BACKEND STREQUAL CUDA)
+      add_library(SUNDIALS::nveccuda ALIAS sundials_nveccuda_static)
+   endif ()
 
 endif ()
