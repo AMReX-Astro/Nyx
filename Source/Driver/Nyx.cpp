@@ -169,6 +169,7 @@ int Nyx::do_forcing =  0;
 int Nyx::nghost_state       = 1;
 int Nyx::allow_untagging    = 0;
 int Nyx::do_special_tagging = 0;
+Real Nyx::tagging_base       = 8.0;
 int Nyx::ppm_type           = 1;
 
 int Nyx::use_flattening     = 1;
@@ -593,6 +594,7 @@ Nyx::read_hydro_params ()
     pp_nyx.query("shrink_to_fit", shrink_to_fit);
     pp_nyx.query("use_typical_steps", use_typical_steps);
     pp_nyx.query("allow_untagging", allow_untagging);
+    pp_nyx.query("tagging_base", tagging_base);
     pp_nyx.query("ppm_type", ppm_type);
     pp_nyx.query("use_analriem", use_analriem);
     pp_nyx.query("use_flattening", use_flattening);
