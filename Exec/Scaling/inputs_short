@@ -35,8 +35,6 @@ gravity.no_composite = 1
 gravity.solve_with_mlmg = 1
 gravity.solve_with_hpgmg = 0
 
-mg.bottom_solver = 4
-
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic =  1     1     1
 geometry.coord_sys   =  0

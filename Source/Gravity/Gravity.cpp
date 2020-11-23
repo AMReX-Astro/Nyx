@@ -13,7 +13,11 @@ using namespace amrex;
 
 // Give this a bogus default value to force user to define in inputs file
 std::string Gravity::gravity_type = "fill_me_please";
-int  Gravity::verbose       = 0;
+int  Gravity::verbose          = 0;
+int  Gravity::mg_verbose       = 0;
+
+std::string Gravity::mg_bottom_solver = "bicg";
+
 int  Gravity::no_sync       = 0;
 int  Gravity::no_composite  = 0;
 int  Gravity::dirichlet_bcs = 0;
@@ -99,6 +103,10 @@ Gravity::read_params ()
         pp.query("ml_tol", ml_tol);
         pp.query("sl_tol", sl_tol);
         pp.query("delta_tol", delta_tol);
+
+        ParmParse pp_mg("mg");
+        pp_mg.query("v", mg_verbose);
+        pp_mg.query("bottom_solver", mg_bottom_solver);
 
         Ggravity = -4.0 * M_PI * Gconst;
         if (verbose > 0)
@@ -1357,7 +1365,38 @@ Gravity::solve_with_MLMG (int crse_level, int fine_level,
     }
 
     MLMG mlmg(mlpoisson);
-    mlmg.setVerbose(verbose);
+    mlmg.setVerbose(mg_verbose);
+
+    // The default bottom solver is BiCG
+    if (mg_bottom_solver == "bicg")
+    {
+        mlmg.setBottomSolver(MLMG::BottomSolver::bicgstab);
+    }
+    else if (mg_bottom_solver == "smoother")
+    {
+        mlmg.setBottomSolver(MLMG::BottomSolver::smoother);
+    }
+    else if (mg_bottom_solver == "cg")
+    {
+        mlmg.setBottomSolver(MLMG::BottomSolver::cg);
+    }
+    else if (mg_bottom_solver == "bicgcg")
+    {
+        mlmg.setBottomSolver(MLMG::BottomSolver::bicgcg);
+    }
+    else if (mg_bottom_solver == "cgbicg")
+    {
+        mlmg.setBottomSolver(MLMG::BottomSolver::cgbicg);
+    }
+    else if (mg_bottom_solver == "hypre")
+    {
+        mlmg.setBottomSolver(MLMG::BottomSolver::hypre);
+    }
+    else if (mg_bottom_solver == "petsc")
+    {
+        mlmg.setBottomSolver(MLMG::BottomSolver::petsc);
+    }
+
     if (crse_level == 0) {
         mlmg.setMaxFmgIter(mlmg_max_fmg_iter);
     } else {

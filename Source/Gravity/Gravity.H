@@ -127,6 +127,10 @@ protected:
     amrex::BCRec* phys_bc;
 
     static int verbose;
+    static int mg_verbose;
+
+    static std::string mg_bottom_solver;
+
     static int no_sync;
     static int no_composite;
     static int dirichlet_bcs;

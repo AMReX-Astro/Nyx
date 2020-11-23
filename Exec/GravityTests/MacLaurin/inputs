@@ -33,8 +33,6 @@ gravity.no_composite = 1
 
 gravity.dirichlet_bcs = 1
 
-mg.bottom_solver = 4
-
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic =  0     0     0
 geometry.coord_sys   =  0

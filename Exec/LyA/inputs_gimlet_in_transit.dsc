@@ -35,7 +35,6 @@ amr.data_log = runlog
 gravity.gravity_type = PoissonGrav
 gravity.no_sync      = 1
 gravity.no_composite = 1
-mg.bottom_solver = 4
 
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic =  1     1     1
