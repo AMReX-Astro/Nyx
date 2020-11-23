@@ -129,6 +129,7 @@ VPATH_LOCATIONS   += $(Blocs)
 #These are the directories in AMReX
 Pdirs   := Base AmrCore Amr Boundary Particle
 
+ifeq ($(USE_SUNDIALS),TRUE)
 SUNDIALS_ROOT ?= $(TOP)/../sundials/instdir
 SUNDIALS_LIB_DIR ?= $(SUNDIALS_ROOT)/lib
 
@@ -165,6 +166,7 @@ endif
 endif
 
 LIBRARIES += -Wl,-rpath,${SUNDIALS_LIB_DIR}
+endif
 
 ifeq ($(USE_SENSEI_INSITU),TRUE)
     Pdirs += Extern/SENSEI
