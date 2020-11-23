@@ -111,37 +111,37 @@ Resolution
 List of Parameters
 ------------------
 
-+--------------------------+-----------------+-----------------+-------------+
-| Parameter                | Definition      | Acceptable      | Default     |
-|                          |                 | Values          |             |
-+==========================+=================+=================+=============+
-| **amr.n_cell**           | number of cells | Integer > 0     | must be set |
-|                          | in each         |                 |             |
-|                          | direction at    |                 |             |
-|                          | the coarsest    |                 |             |
-|                          | level           |                 |             |
-+--------------------------+-----------------+-----------------+-------------+
-| **amr.max_level**        | number of       | Integer >= 0    | must be set |
-|                          | levels of       |                 |             |
-|                          | refinement      |                 |             |
-|                          | above the       |                 |             |
-|                          | coarsest level  |                 |             |
-+--------------------------+-----------------+-----------------+-------------+
-| **amr.ref_ratio**        | ratio of coarse | 2 or 4          | must be set |
-|                          | to fine grid    |                 |             |
-|                          | spacing between |                 |             |
-|                          | subsequent      |                 |             |
-|                          | levels          |                 |             |
-+--------------------------+-----------------+-----------------+-------------+
-| **amr.regrid_int**       | how often to    | Integer > 0     | must be set |
-|                          | regrid          |                 |             |
-+--------------------------+-----------------+-----------------+-------------+
-| **amr.regrid_on_restart  | should we       | 0 or 1          | 0           |
-|                          | regrid          |                 |             |
-|                          | immediately     |                 |             |
-|                          | after           |                 |             |
-|                          | restarting      |                 |             |
-+--------------------------+-----------------+-----------------+-------------+
++---------------------------+-----------------+-----------------+-------------+
+| Parameter                 | Definition      | Acceptable      | Default     |
+|                           |                 | Values          |             |
++===========================+=================+=================+=============+
+| **amr.n_cell**            | number of cells | Integer > 0     | must be set |
+|                           | in each         |                 |             |
+|                           | direction at    |                 |             |
+|                           | the coarsest    |                 |             |
+|                           | level           |                 |             |
++---------------------------+-----------------+-----------------+-------------+
+| **amr.max_level**         | number of       | Integer >= 0    | must be set |
+|                           | levels of       |                 |             |
+|                           | refinement      |                 |             |
+|                           | above the       |                 |             |
+|                           | coarsest level  |                 |             |
++---------------------------+-----------------+-----------------+-------------+
+| **amr.ref_ratio**         | ratio of coarse | 2 or 4          | must be set |
+|                           | to fine grid    |                 |             |
+|                           | spacing between |                 |             |
+|                           | subsequent      |                 |             |
+|                           | levels          |                 |             |
++---------------------------+-----------------+-----------------+-------------+
+| **amr.regrid_int**        | how often to    | Integer > 0     | must be set |
+|                           | regrid          |                 |             |
++---------------------------+-----------------+-----------------+-------------+
+| **amr.regrid_on_restart** | should we       | 0 or 1          | 0           |
+|                           | regrid          |                 |             |
+|                           | immediately     |                 |             |
+|                           | after           |                 |             |
+|                           | restarting      |                 |             |
++---------------------------+-----------------+-----------------+-------------+
 
 [Table:ResInputs]
 
