@@ -55,11 +55,3 @@ Bpack := ./Make.package
 Blocs := .
 
 include $(TOP)/Exec/Make.Nyx
-
-ifeq ($(USE_FUSED),TRUE)
-ifeq ($(USE_CUDA),TRUE)
-     LIBRARIES += -L$(SUNDIALS_ROOT)/lib -lsundials_cvode_fused_cuda
-else
-     LIBRARIES += -L$(SUNDIALS_ROOT)/lib -lsundials_cvode_fused_stubs
-endif
-endif

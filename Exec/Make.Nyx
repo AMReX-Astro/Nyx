@@ -30,10 +30,6 @@ ifeq ($(USE_HENSON), TRUE)
   LIBRARIES += $(HENSON_LIBRARY) $(HENSON_LIBPMPI)
 endif
 
-#ifeq ($(USE_SUNDIALS_3x4x), TRUE)
-#      libraries := $(subst -lsundials_nvecopenmp, -lsundials_nvecserial,$(libraries))
-#endif
-
 ifeq ($(USE_CUDA), TRUE)
       F90FLAGS := $(subst -gopt, ,$(F90FLAGS))
 endif
@@ -132,6 +128,67 @@ VPATH_LOCATIONS   += $(Blocs)
 
 #These are the directories in AMReX
 Pdirs   := Base AmrCore Amr Boundary Particle
+
+SUNDIALS_ROOT ?= $(TOP)/../sundials/instdir
+SUNDIALS_LIB_DIR ?= $(SUNDIALS_ROOT)/lib
+
+USE_CVODE_LIBS ?= TRUE
+USE_ARKODE_LIBS ?= TRUE
+
+CPPFLAGS += -DAMREX_USE_SUNDIALS
+INCLUDE_LOCATIONS += $(SUNDIALS_ROOT)/include
+
+ifeq ($(USE_CVODE_LIBS),TRUE)
+  LIBRARIES += -L$(SUNDIALS_LIB_DIR) -lsundials_cvode
+endif
+
+ifeq ($(USE_ARKODE_LIBS),TRUE)
+  LIBRARIES += -L$(SUNDIALS_LIB_DIR) -lsundials_arkode
+endif
+
+LIBRARIES += -L$(SUNDIALS_LIB_DIR) -lsundials_nvecserial
+
+ifeq ($(USE_CUDA),TRUE)
+  LIBRARIES += -L$(SUNDIALS_LIB_DIR) -lsundials_nveccuda
+endif
+
+ifeq ($(USE_OMP),TRUE)
+  LIBRARIES += -L$(SUNDIALS_LIB_DIR) -lsundials_nvecopenmp
+endif
+
+ifeq ($(lowercase_comp),pgi)
+   USE_FORT_ODE = FALSE
+else
+   USE_FORT_ODE ?= TRUE
+endif
+
+ifeq (${USE_FORT_ODE},TRUE)
+  include $(AMREX_HOME)/Src/Extern/SUNDIALS/Make.package
+  INCLUDE_LOCATIONS += $(AMREX_HOME)/Src/Extern/SUNDIALS
+  INCLUDE_LOCATIONS += $(SUNDIALS_ROOT)/include $(SUNDIALS_ROOT)/fortran
+  VPATH_LOCATIONS += $(SUNDIALS_ROOT)/include $(SUNDIALS_ROOT)/fortran
+  VPATH_LOCATIONS += $(AMREX_HOME)/Src/Extern/SUNDIALS
+
+  ifeq ($(USE_CVODE_LIBS),TRUE)
+    LIBRARIES += -L$(SUNDIALS_LIB_DIR) -lsundials_fcvode_mod
+  endif
+  
+  ifeq ($(USE_ARKODE_LIBS),TRUE)
+    LIBRARIES += -L$(SUNDIALS_LIB_DIR) -lsundials_farkode_mod
+  endif
+ 
+  LIBRARIES += -L$(SUNDIALS_LIB_DIR) -lsundials_fnvecserial_mod
+endif
+
+ifeq ($(USE_FUSED),TRUE)
+ifeq ($(USE_CUDA),TRUE)
+     LIBRARIES += -L$(SUNDIALS_LIB_DIR) -lsundials_cvode_fused_cuda
+else
+     LIBRARIES += -L$(SUNDIALS_LIB_DIR) -lsundials_cvode_fused_stubs
+endif
+endif
+
+LIBRARIES += -Wl,-rpath,${SUNDIALS_LIB_DIR}
 
 ifeq ($(USE_SENSEI_INSITU),TRUE)
     Pdirs += Extern/SENSEI
