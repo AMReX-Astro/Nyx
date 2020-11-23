@@ -791,8 +791,7 @@ Notes
 -  If you are doing a scaling study then set **amr.plot_files_output** =
    0 so you can test scaling of the algorithm without I/O.
 
--  **nyx.plot_phiGrav** is only relevant if **nyx.do_grav** = 1 and
-   **gravity.gravity_type** = PoissonGrav
+-  **nyx.plot_phiGrav** is only relevant if **nyx.do_grav** = 1 
 
 -  By default, plotfiles are written in double precision (NATIVE
    format). If you want to save space by writing them in single
@@ -941,42 +940,23 @@ Gravity
 List of Parameters
 ------------------
 
-+----------------+----------------+----------------+----------------+
-| Parameter      | Definition     | Acceptable     | Default        |
-|                |                | Values         |                |
-+================+================+================+================+
-| *              | Include        | 0 if false, 1  | must be set if |
-| *nyx.do_grav** | gravity as a   | if true        | USE_GRAV =     |
-|                | forcing term   |                | TRUE           |
-+----------------+----------------+----------------+----------------+
-| **gravity.     | if             | CompositeGrav, |                |
-| gravity_type** | *              |                |                |
-|                | *nyx.do_grav** |                |                |
-|                | = 1,           |                |                |
-+----------------+----------------+----------------+----------------+
-|                |                | how shall      | PoissonGrav    |
-|                |                | gravity be     |                |
-|                |                | calculated     |                |
-+----------------+----------------+----------------+----------------+
-| **gra          | if             |                |                |
-| vity.no_sync** | **gravity.     |                |                |
-|                | gravity_type** |                |                |
-|                | = PoissonGrav, |                |                |
-+----------------+----------------+----------------+----------------+
-|                |                | whether to     |                |
-|                |                | perform the    |                |
-|                |                | “sync solve”   |                |
-+----------------+----------------+----------------+----------------+
-| **gravity.     | if             |                |                |
-| no_composite** | **gravity.     |                |                |
-|                | gravity_type** |                |                |
-|                | = PoissonGrav, |                |                |
-+----------------+----------------+----------------+----------------+
-|                |                | whether to     |                |
-|                |                | perform a      |                |
-|                |                | composite      |                |
-|                |                | solve          |                |
-+----------------+----------------+----------------+----------------+
++--------------------------+------------------+----------------+------------------+
+| Parameter                | Definition       | Acceptable     | Default          |
+|                          |                  | Values         |                  |
++==========================+==================+================+==================+
+| **nyx.do_grav**          | Include          | 0 if false     | must be set if   |
+|                          | gravity as a     | 1 if true      | USE_GRAV = TRUE  |
+|                          | forcing term     |                | TRUE             |
++--------------------------+------------------+----------------+------------------+
+| **gravity.no_sync**      | whether to       | 0 if false     |  0               |
+|                          | perform the      | 1 if true      |                  |
+|                          | “sync solve”     |                |                  |
++--------------------------+------------------+----------------+------------------+
+| **gravity.no_composite** | whether to       | 0 if false     |  0               |
+|                          | perform a        | 1 if true      |                  |
+|                          | composite        |                |                  |
+|                          | solve            |                |                  |
++--------------------------+------------------+----------------+------------------+
 
 [Table:Gravity]
 
@@ -985,20 +965,14 @@ List of Parameters
 Notes
 -----
 
-Gravity types are CompositeGrav or PoissonGrav. See Chapter
-`[chap:Gravity] <#chap:Gravity>`__ on Gravity for more detail.
-
 -  To include gravity you must set
 
    -  USE_GRAV = TRUE in the GNUmakefile
 
    -  **nyx.do_grav** = 1 in the inputs file
 
--  **gravity.gravity_type** is only relevant if **nyx.do_grav** = 1
-
 -  **gravity.no_sync** and **gravity.no_composite** are only relevant if
-   **gravity.gravity_type** = PoissonGrav, i.e., the code does a full
-   Poisson solve for self-gravity.
+   USE_GRAV = TRUE; they both default to 0.
 
 Physics
 =======
@@ -1008,32 +982,32 @@ Physics
 List of Parameters
 ------------------
 
-+-----------------+-----------------+-----------------+-------------+
-| Parameter       | Definition      | Acceptable      | Default     |
-|                 |                 | Values          |             |
-+=================+=================+=================+=============+
-| *               | Time-advance    | 0 if false, 1   | must be set |
-| *nyx.do_hydro** | the fluid       | if true         |             |
-|                 | dynamical       |                 |             |
-|                 | equations       |                 |             |
-+-----------------+-----------------+-----------------+-------------+
-| *               | Include         | 0 if false, 1   | must be set |
-| *nyx.do_react** | reactions       | if true         |             |
-+-----------------+-----------------+-----------------+-------------+
-| **ny            | Include         | 0 if false, 1   | 0           |
-| x.add_ext_src** | additional      | if true         |             |
-|                 | user-specified  |                 |             |
-|                 | source term     |                 |             |
-+-----------------+-----------------+-----------------+-------------+
-| **nyx.use_      | If 1 then read  | 0 or 1          | 0           |
-| const_species** | h_species and   |                 |             |
-|                 | he_species      |                 |             |
-+-----------------+-----------------+-----------------+-------------+
-| **              | Concentration   | 0 :math:`<` X   | 0           |
-| nyx.h_species** | of H            | :math:`<` 1     |             |
-+-----------------+-----------------+-----------------+-------------+
-| **n             | Concentration   | 0 :math:`<` X   | 0           |
-| yx.he_species** | of He           | :math:`<` 1     |             |
-+-----------------+-----------------+-----------------+-------------+
++---------------------------+-----------------+-----------------+-------------+
+| Parameter                 | Definition      | Acceptable      | Default     |
+|                           |                 | Values          |             |
++===========================+=================+=================+=============+
+| **nyx.do_hydro**          | Time-advance    | 0 if false, 1   | must be set |
+|                           | the fluid       | if true         |             |
+|                           | dynamical       |                 |             |
+|                           | equations       |                 |             |
++---------------------------+-----------------+-----------------+-------------+
+| **nyx.do_react**          | Include         | 0 if false, 1   | must be set |
+|                           | reactions       | if true         |             |
++---------------------------+-----------------+-----------------+-------------+
+| **nyx.add_ext_src**       | Include         | 0 if false, 1   | 0           |
+|                           | additional      | if true         |             |
+|                           | user-specified  |                 |             |
+|                           | source term     |                 |             |
++---------------------------+-----------------+-----------------+-------------+
+| **nyx.use_const_species** | If 1 then read  | 0 or 1          | 0           |
+|                           | h_species and   |                 |             |
+|                           | he_species      |                 |             |
++---------------------------+-----------------+-----------------+-------------+
+| **nyx.h_species**         | Concentration   | 0 :math:`<` X   | 0           |
+|                           | of H            | :math:`<` 1     |             |
++---------------------------+-----------------+-----------------+-------------+
+| **nyx.he_species**        | Concentration   | 0 :math:`<` X   | 0           |
+|                           | of He           | :math:`<` 1     |             |
++---------------------------+-----------------+-----------------+-------------+
 
 [Table:Physics]
