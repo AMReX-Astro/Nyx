@@ -219,25 +219,15 @@
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td>v</td>
-<td>Verbosity of multigrid solver</td>
-<td>Int</td>
-<td>0</td>
-</tr>
-<tr class="row-odd"><td>ml_tol</td>
+<tr class="row-even"><td>ml_tol</td>
 <td>Relative tolerance for multilevel solves</td>
 <td>Real</td>
 <td>1.e-12</td>
 </tr>
-<tr class="row-even"><td>sl_tol</td>
+<tr class="row-odd"><td>sl_tol</td>
 <td>Relative tolerance for single-level solves</td>
 <td>Real</td>
 <td>1.e-12</td>
-</tr>
-<tr class="row-odd"><td>mlmg_max_fmg_iter</td>
-<td>Maximum number of FMG cycles before starting V-cycles</td>
-<td>Int</td>
-<td>0</td>
 </tr>
 <tr class="row-even"><td>mlmg_agglomeration</td>
 <td>Should we agglomerate deep in the V-cycle</td>
@@ -246,6 +236,40 @@
 </tr>
 <tr class="row-odd"><td>mlmg_consolidation</td>
 <td>Should we consolidate deep in the V-cycle</td>
+<td>Int</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>These must be preceded by “mg” in the inputs file:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="59%" />
+<col width="11%" />
+<col width="12%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">&#160;</th>
+<th class="head">Description</th>
+<th class="head">Type</th>
+<th class="head">Default</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>v</td>
+<td>Verbosity of multigrid solver</td>
+<td>Int</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>bottom_solver</td>
+<td>What is the bottom solver?
+Options include “bicg”, “smoother”, “hypre”, etc …</td>
+<td>String</td>
+<td>“bicg”</td>
+</tr>
+<tr class="row-even"><td>max_fmg_iter</td>
+<td>Maximum number of FMG cycles before starting V-cycles</td>
 <td>Int</td>
 <td>0</td>
 </tr>
