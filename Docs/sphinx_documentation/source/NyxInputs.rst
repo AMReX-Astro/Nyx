@@ -111,37 +111,37 @@ Resolution
 List of Parameters
 ------------------
 
-+-----------------+-----------------+-----------------+-------------+
-| Parameter       | Definition      | Acceptable      | Default     |
-|                 |                 | Values          |             |
-+=================+=================+=================+=============+
-| **amr.n_cell**  | number of cells | Integer         | must be set |
-|                 | in each         | :math:`> 0`     |             |
-|                 | direction at    |                 |             |
-|                 | the coarsest    |                 |             |
-|                 | level           |                 |             |
-+-----------------+-----------------+-----------------+-------------+
-| **              | number of       | Integer         | must be set |
-| amr.max_level** | levels of       | :math:`\geq 0`  |             |
-|                 | refinement      |                 |             |
-|                 | above the       |                 |             |
-|                 | coarsest level  |                 |             |
-+-----------------+-----------------+-----------------+-------------+
-| **              | ratio of coarse | 2 or 4          | must be set |
-| amr.ref_ratio** | to fine grid    |                 |             |
-|                 | spacing between |                 |             |
-|                 | subsequent      |                 |             |
-|                 | levels          |                 |             |
-+-----------------+-----------------+-----------------+-------------+
-| **a             | how often to    | Integer         | must be set |
-| mr.regrid_int** | regrid          | :math:`> 0`     |             |
-+-----------------+-----------------+-----------------+-------------+
-| **amr.regr      | should we       | 0 or 1          | 0           |
-| id_on_restart** | regrid          |                 |             |
-|                 | immediately     |                 |             |
-|                 | after           |                 |             |
-|                 | restarting      |                 |             |
-+-----------------+-----------------+-----------------+-------------+
++--------------------------+-----------------+-----------------+-------------+
+| Parameter                | Definition      | Acceptable      | Default     |
+|                          |                 | Values          |             |
++==========================+=================+=================+=============+
+| **amr.n_cell**           | number of cells | Integer > 0     | must be set |
+|                          | in each         |                 |             |
+|                          | direction at    |                 |             |
+|                          | the coarsest    |                 |             |
+|                          | level           |                 |             |
++--------------------------+-----------------+-----------------+-------------+
+| **amr.max_level**        | number of       | Integer >= 0    | must be set |
+|                          | levels of       |                 |             |
+|                          | refinement      |                 |             |
+|                          | above the       |                 |             |
+|                          | coarsest level  |                 |             |
++--------------------------+-----------------+-----------------+-------------+
+| **amr.ref_ratio**        | ratio of coarse | 2 or 4          | must be set |
+|                          | to fine grid    |                 |             |
+|                          | spacing between |                 |             |
+|                          | subsequent      |                 |             |
+|                          | levels          |                 |             |
++--------------------------+-----------------+-----------------+-------------+
+| **amr.regrid_int**       | how often to    | Integer > 0     | must be set |
+|                          | regrid          |                 |             |
++--------------------------+-----------------+-----------------+-------------+
+| **amr.regrid_on_restart  | should we       | 0 or 1          | 0           |
+|                          | regrid          |                 |             |
+|                          | immediately     |                 |             |
+|                          | after           |                 |             |
+|                          | restarting      |                 |             |
++--------------------------+-----------------+-----------------+-------------+
 
 [Table:ResInputs]
 
@@ -171,7 +171,7 @@ Examples of Usage
 -  | **amr.ref_ratio** = 2 4
    | would set factor 2 refinement between levels 0 and 1, and factor 4
      refinement between levels 1 and 2. Note that you must have at least
-     **amr.max_level** values of **amr.ref_ratio** (Additional values
+     **amr.>ax_level** values of **amr.ref_ratio** (Additional values
      may appear in that line and they will be ignored).
 
 -  | **amr.regrid_int** = 2 2
@@ -187,14 +187,14 @@ Tagging
 List of Parameters
 ------------------
 
-+------------------+------------------+------------------+---------+
-| Parameter        | Definition       | Acceptable       | Default |
-|                  |                  | Values           |         |
-+==================+==================+==================+=========+
-| **nyx.a          | are cells        | 0 or 1           | 0       |
-| llow_untagging** | allowed to be    |                  |         |
-|                  | “untagged”       |                  |         |
-+------------------+------------------+------------------+---------+
++-------------------------+------------------+------------------+---------+
+| Parameter               | Definition       | Acceptable       | Default |
+|                         |                  | Values           |         |
++=========================+==================+==================+=========+
+| **nyx.allow_untagging** | are cells        | 0 or 1           | 0       |
+|                         | allowed to be    |                  |         |
+|                         | “untagged”       |                  |         |
++-------------------------+------------------+------------------+---------+
 
 [Table:Tagging]
 
@@ -230,40 +230,42 @@ tagged cells.
 List of Parameters
 ------------------
 
-+----------------+----------------+----------------+----------------+
-| Parameter      | Definition     | Acceptable     | Default        |
-|                |                | Values         |                |
-+================+================+================+================+
-| **amr          | name of file   | text           | no file        |
-| .regrid_file** | from which to  |                |                |
-|                | read the grids |                |                |
-+----------------+----------------+----------------+----------------+
-| **             | grid           | Real           | 0.7            |
-| amr.grid_eff** | efficiency at  | :math:`>0` and |                |
-|                | coarse level   | :math:`<1`     |                |
-|                | at which grids |                |                |
-|                | are created    |                |                |
-+----------------+----------------+----------------+----------------+
-| **amr          | radius of      | Integer        | 1              |
-| .n_error_buf** | additional     | :math:`\geq 0` |                |
-|                | tagging around |                |                |
-|                | already tagged |                |                |
-|                | cells          |                |                |
-+----------------+----------------+----------------+----------------+
-| **amr.m        | maximum size   | Integer        | 128 in 2D, 32  |
-| ax_grid_size** | of a grid in   | :math:`> 0`    | in 3D          |
-|                | any direction  |                |                |
-+----------------+----------------+----------------+----------------+
-| **amr.blo      | grid size must | Integer        | 2              |
-| cking_factor** | be a multiple  | :math:`> 0`    |                |
-|                | of this        |                |                |
-+----------------+----------------+----------------+----------------+
-| **amr.refine   | refine grids   | 0 if false, 1  | 1              |
-| _grid_layout** | more if # of   | if true        |                |
-|                | processors     |                |                |
-|                | :math:`>` # of |                |                |
-|                | grids          |                |                |
-+----------------+----------------+----------------+----------------+
++----------------------------+----------------+----------------+----------------+
+| Parameter                  | Definition     | Acceptable     | Default        |
+|                            |                | Values         |                |
++============================+================+================+================+
+| **amr.regrid_file**        | name of file   | text           | no file        |
+|                            | from which to  |                |                |
+|                            | read the grids |                |                |
++----------------------------+----------------+----------------+----------------+
+| **amr.grid_eff**           | grid           | Real > 0, < 1  | 0.7            |
+|                            | efficiency at  |                |                |
+|                            | coarse level   |                |                |
+|                            | at which grids |                |                |
+|                            | are created    |                |                |
++----------------------------+----------------+----------------+----------------+
+| **amr.n_error_buf**        | radius of      | Integer >= 0   | 1              |
+|                            | additional     |                |                |
+|                            | tagging around |                |                |
+|                            | already tagged |                |                |
+|                            | cells          |                |                |
++----------------------------+----------------+----------------+----------------+
+| **amr.max_grid_size**      | maximum size   | Integer > 0    | 128 in 2D, 32  |
+|                            | of a grid in   |                | in 3D          |
+|                            | any direction  |                |                |
++----------------------------+----------------+----------------+----------------+
+| **amr.max_grid_size**      | maximum size   | Integer        | 128 in 2D, 32  |
++----------------------------+----------------+----------------+----------------+
+| **amr.blocking_factor**    | grid size must | Integer > 0    | 2              |
+|                            | be a multiple  |                |                |
+|                            | of this        |                |                |
++----------------------------+----------------+----------------+----------------+
+| **amr.refine_grid_layout** | refine grids   | 0 if false, 1  | 1              |
+|                            | more if # of   | if true        |                |
+|                            | processors     |                |                |
+|                            | :math:`>` # of |                |                |
+|                            | grids          |                |                |
++----------------------------+----------------+----------------+----------------+
 
 [Table:GriddingInputs]
 
@@ -371,35 +373,29 @@ Simulation Time
 List of Parameters
 ------------------
 
-+-----------------+------------------+------------------+---------+
-| Parameter       | Definition       | Acceptable       | Default |
-|                 |                  | Values           |         |
-+=================+==================+==================+=========+
-| **max_step**    | maximum number   | Integer          | -1      |
-|                 | of level-0 time  | :math:`\geq 0`   |         |
-|                 | steps            |                  |         |
-+-----------------+------------------+------------------+---------+
-| **stop_time**   | final simulation | Real             | -1.0    |
-|                 | time             | :math:`\geq 0`   |         |
-+-----------------+------------------+------------------+---------+
-| **nyx.final_a** | if               | Real :math:`> 0` | -1.0    |
-|                 | **               |                  |         |
-|                 | nyx.use_comoving |                  |         |
-|                 | = t** and        |                  |         |
-|                 | positive value   |                  |         |
-|                 | then this is     |                  |         |
-|                 | final value of   |                  |         |
-|                 | :math:`a`        |                  |         |
-+-----------------+------------------+------------------+---------+
-| **nyx.final_z** | if               | Real :math:`> 0` | -1.0    |
-|                 | **               |                  |         |
-|                 | nyx.use_comoving |                  |         |
-|                 | = t** and        |                  |         |
-|                 | positive value   |                  |         |
-|                 | then this is     |                  |         |
-|                 | final value of   |                  |         |
-|                 | :math:`z`        |                  |         |
-+-----------------+------------------+------------------+---------+
++-----------------+--------------------------+--------------+---------+
+| Parameter       | Definition               | Acceptable   | Default |
+|                 |                          | Values       |         |
++=================+==========================+==============+=========+
+| **max_step**    | maximum number           | Integer >= 0 | -1      |
+|                 | of level-0 time          |              |         |
+|                 | steps                    |              |         |
++-----------------+--------------------------+--------------+---------+
+| **stop_time**   | final simulation         | Real >= 0    | -1.0    |
+|                 | time                     |              |         |
++-----------------+--------------------------+--------------+---------+
+| **nyx.final_a** | if                       | Real > 0     | -1.0    |
+|                 | **nyx.use_comoving = t** |              |         |
+|                 | and positive value       |              |         |
+|                 | then this is             |              |         |
+|                 | final value of a         |              |         |
++-----------------+--------------------------+--------------+---------+
+| **nyx.final_z** | if                       | Real > 0     | -1.0    |
+|                 | **nyx.use_comoving = t** |              |         |
+|                 | and positive value       |              |         |
+|                 | then this is             |              |         |
+|                 | final value of z         |              |         |
++-----------------+--------------------------+--------------+---------+
 
 [Table:TimeInputs]
 

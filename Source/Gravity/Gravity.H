@@ -134,7 +134,7 @@ protected:
     static int no_sync;
     static int no_composite;
     static int dirichlet_bcs;
-    static int mlmg_max_fmg_iter;
+    static int mg_max_fmg_iter;
     static int mlmg_agglomeration;
     static int mlmg_consolidation;
     static amrex::Real mass_offset;

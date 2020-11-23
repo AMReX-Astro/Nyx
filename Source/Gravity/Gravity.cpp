@@ -14,20 +14,22 @@ using namespace amrex;
 // Give this a bogus default value to force user to define in inputs file
 std::string Gravity::gravity_type = "fill_me_please";
 int  Gravity::verbose          = 0;
-int  Gravity::mg_verbose       = 0;
-
-std::string Gravity::mg_bottom_solver = "bicg";
 
 int  Gravity::no_sync       = 0;
 int  Gravity::no_composite  = 0;
 int  Gravity::dirichlet_bcs = 0;
-int  Gravity::mlmg_max_fmg_iter = 0;
 int  Gravity::mlmg_agglomeration = 0;
 int  Gravity::mlmg_consolidation = 0;
 Real Gravity::sl_tol        = 1.e-12;
 Real Gravity::ml_tol        = 1.e-12;
 Real Gravity::delta_tol     = 1.e-12;
 Real Gravity::mass_offset   = 0;
+
+// These control the multigrid solver itself
+int  Gravity::mg_verbose       = 0;
+int  Gravity::mg_max_fmg_iter  = 0;
+
+std::string Gravity::mg_bottom_solver = "bicg";
 
 // ************************************************************************** //
 
@@ -95,7 +97,6 @@ Gravity::read_params ()
 
         pp.query("dirichlet_bcs", dirichlet_bcs);
 
-        pp.query("mlmg_max_fmg_iter", mlmg_max_fmg_iter);
         pp.query("mlmg_agglomeration", mlmg_agglomeration);
         pp.query("mlmg_consolidation", mlmg_consolidation);
 
@@ -107,6 +108,7 @@ Gravity::read_params ()
         ParmParse pp_mg("mg");
         pp_mg.query("v", mg_verbose);
         pp_mg.query("bottom_solver", mg_bottom_solver);
+        pp_mg.query("max_fmg_iter", mg_max_fmg_iter);
 
         Ggravity = -4.0 * M_PI * Gconst;
         if (verbose > 0)
@@ -1398,7 +1400,7 @@ Gravity::solve_with_MLMG (int crse_level, int fine_level,
     }
 
     if (crse_level == 0) {
-        mlmg.setMaxFmgIter(mlmg_max_fmg_iter);
+        mlmg.setMaxFmgIter(mg_max_fmg_iter);
     } else {
         mlmg.setMaxFmgIter(0); // Vcycle
     }
