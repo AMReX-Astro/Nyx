@@ -34,21 +34,21 @@ In order to use SUNDIALS:
       -DCMAKE_CUDA_HOST_COMPILER=$(which g++)    \
       -DEXAMPLES_INSTALL_PATH=${INSTALL_PREFIX}/examples \
       -DCMAKE_BUILD_TYPE=Release \
-	  -DCMAKE_CUDA_FLAGS="-DSUNDIALS_DEBUG_CUDA_LASTERROR" \
-	  -DSUNDIALS_BUILD_PACKAGE_FUSED_KERNELS=ON \
-	  -DCMAKE_C_FLAGS_RELEASE="-O3 -DNDEBUG" \
+      -DCMAKE_CUDA_FLAGS="-DSUNDIALS_DEBUG_CUDA_LASTERROR" \
+      -DSUNDIALS_BUILD_PACKAGE_FUSED_KERNELS=ON \
+      -DCMAKE_C_FLAGS_RELEASE="-O3 -DNDEBUG" \
       -DCMAKE_CXX_FLAGS_RELEASE="-O3 -DNDEBUG"  \
       -DCUDA_ENABLE=ON  \
       -DMPI_ENABLE=OFF  \
       -DOPENMP_ENABLE=ON   \
       -DF2003_INTERFACE_ENABLE=OFF   \
-	  -DSUNDIALS_INDEX_SIZE:INT=32   \
+      -DSUNDIALS_INDEX_SIZE:INT=32   \
       -DCUDA_ARCH=sm_70 ../
       make -j8
       make install -j8
 
 #. To install without cuda support:
-		 
+         
    ::
 
       #!/bin/bash
@@ -72,8 +72,8 @@ In order to use SUNDIALS:
       -DCUDA_ENABLE=OFF  \
       -DMPI_ENABLE=OFF  \
       -DOPENMP_ENABLE=ON   \
-	  -DF2003_INTERFACE_ENABLE=OFF   \
-   	  -DSUNDIALS_INDEX_SIZE:INT=32 ../
+      -DF2003_INTERFACE_ENABLE=OFF   \
+      -DSUNDIALS_INDEX_SIZE:INT=32 ../
       make -j8
       make install -j8
 
@@ -95,12 +95,9 @@ In order to use SUNDIALS:
    If the application used the SUNDIALS ARKode time integrator package, then the variable
    ``USE_ARKODE_LIBS = TRUE`` should be added.
 
-#. Fortran 2003 interfaces for the pgi compilers are currently not supported.
-
-
 Note that SUNDIALS can also be installed via Spack:
 
    ::
       
-      spack install sundials+cuda+f2003+openmp
+      spack install sundials+cuda+openmp
   
