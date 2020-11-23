@@ -450,49 +450,49 @@ Time Step
 List of Parameters
 ------------------
 
-+----------------+----------------+----------------+----------------+
-| Parameter      | Definition     | Acceptable     | Default        |
-|                |                | Values         |                |
-+================+================+================+================+
-| **nyx.cfl**    | CFL number for | Real           | 0.8            |
-|                | hydro          | :math:`> 0`    |                |
-|                |                | and            |                |
-|                |                | :math:`\leq 1` |                |
-+----------------+----------------+----------------+----------------+
-| **p            | CFL number for | Real           | 0.5            |
-| articles.cfl** | particles      | :math:`> 0`    |                |
-|                |                | and            |                |
-|                |                | :math:`\leq 1` |                |
-+----------------+----------------+----------------+----------------+
-| **nyx          | factor by      | Real           | 1.0            |
-| .init_shrink** | which to       | :math:`> 0`    |                |
-|                | shrink the     | and            |                |
-|                | initial time   | :math:`\leq 1` |                |
-|                | step           |                |                |
-+----------------+----------------+----------------+----------------+
-| **ny           | factor by      | Real           | 1.1            |
-| x.change_max** | which the time | :math:`\geq 1` |                |
-|                | step can grow  |                |                |
-|                | in subsequent  |                |                |
-|                | steps          |                |                |
-+----------------+----------------+----------------+----------------+
-| **             | level-0 time   | Real           | unused if not  |
-| nyx.fixed_dt** | step           | :math:`> 0`    | set            |
-|                | regardless of  |                |                |
-|                | cfl or other   |                |                |
-|                | settings       |                |                |
-+----------------+----------------+----------------+----------------+
-| **ny           | initial        | Real           | unused if not  |
-| x.initial_dt** | level-0 time   | :math:`> 0`    | set            |
-|                | step           |                |                |
-|                | regardless of  |                |                |
-|                | other settings |                |                |
-+----------------+----------------+----------------+----------------+
-| **n            | time step      | Real           | 0.0            |
-| yx.dt_cutoff** | below which    | :math:`> 0`    |                |
-|                | calculation    |                |                |
-|                | will abort     |                |                |
-+----------------+----------------+----------------+----------------+
++---------------------+----------------+----------------+----------------+
+| Parameter           | Definition     | Acceptable     | Default        |
+|                     |                | Values         |                |
++=====================+================+================+================+
+| **nyx.cfl**         | CFL number for | Real > 0 and   | 0.8            |
+|                     | hydro          | <= 1           |                |
+|                     |                |                |                |
+|                     |                |                |                |
++---------------------+----------------+----------------+----------------+
+| **particles.cfl**   | CFL number for | Real > 0 and   | 0.5            |
+|                     | particles      | <= 1           |
+|                     |                |                |                |
+|                     |                |              ` |                |
++---------------------+----------------+----------------+----------------+
+| **nyx.init_shrink** | factor by      | Real > 0 and   | 1.0            |
+|                     | which to       | <= 1           |                |
+|                     | shrink the     |                |                |
+|                     | initial time   |                |                |
+|                     | step           |                |                |
++---------------------+----------------+----------------+----------------+
+| **nyx.change_max**  | factor by      | Real >= 1      | 1.1            |
+|                     | which the time |                |                |
+|                     | step can grow  |                |                |
+|                     | in subsequent  |                |                |
+|                     | steps          |                |                |
++---------------------+----------------+----------------+----------------+
+| **nyx.fixed_dt**    | level-0 time   | Real > 0       | unused if not  |
+|                     | step           |                | set            |
+|                     | regardless of  |                |                |
+|                     | cfl or other   |                |                |
+|                     | settings       |                |                |
++---------------------+----------------+----------------+----------------+
+| **nyx.initial_dt**  | initial        | Real > 0       | unused if not  |
+|                     | level-0 time   |                | set            |
+|                     | step           |                |                |
+|                     | regardless of  |                |                |
+|                     | other settings |                |                |
++---------------------+----------------+----------------+----------------+
+| **nyx.dt_cutoff**   | time step      | Real > 0       | 0.0            |
+|                     | below which    |                |                |
+|                     | calculation    |                |                |
+|                     | will abort     |                |                |
++---------------------+----------------+----------------+----------------+
 
 [Table:TimeStepInputs]
 
