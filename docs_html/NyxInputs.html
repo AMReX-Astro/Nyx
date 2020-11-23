@@ -1297,8 +1297,7 @@ your results ever so slightly than if you didn’t set this flag.</li>
 <strong>amr.plot_nfiles</strong> parameter.</li>
 <li>If you are doing a scaling study then set <strong>amr.plot_files_output</strong> =
 0 so you can test scaling of the algorithm without I/O.</li>
-<li><strong>nyx.plot_phiGrav</strong> is only relevant if <strong>nyx.do_grav</strong> = 1 and
-<strong>gravity.gravity_type</strong> = PoissonGrav</li>
+<li><strong>nyx.plot_phiGrav</strong> is only relevant if <strong>nyx.do_grav</strong> = 1</li>
 <li>By default, plotfiles are written in double precision (NATIVE
 format). If you want to save space by writing them in single
 precision, set the fab.format flag to IEEE32.</li>
@@ -1510,10 +1509,10 @@ and print these quanitities.</div>
 <span id="id26"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-11" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
-<col width="25%" />
-<col width="25%" />
-<col width="25%" />
-<col width="25%" />
+<col width="33%" />
+<col width="23%" />
+<col width="21%" />
+<col width="23%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Parameter</th>
@@ -1524,68 +1523,32 @@ Values</th>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><ul class="first simple">
-<li></li>
-</ul>
-<p class="last"><em>nyx.do_grav*</em></p>
-</td>
+<tr class="row-even"><td><strong>nyx.do_grav</strong></td>
 <td>Include
 gravity as a
 forcing term</td>
-<td>0 if false, 1
-if true</td>
+<td>0 if false
+1 if true</td>
 <td>must be set if
-USE_GRAV =
+USE_GRAV = TRUE
 TRUE</td>
 </tr>
-<tr class="row-odd"><td><strong>gravity.
-gravity_type</strong></td>
-<td>if
-*
-<em>nyx.do_grav*</em>
-= 1,</td>
-<td>CompositeGrav,</td>
-<td>&#160;</td>
-</tr>
-<tr class="row-even"><td>&#160;</td>
-<td>&#160;</td>
-<td>how shall
-gravity be
-calculated</td>
-<td>PoissonGrav</td>
-</tr>
-<tr class="row-odd"><td><strong>gra
-vity.no_sync</strong></td>
-<td>if
-<strong>gravity.
-gravity_type</strong>
-= PoissonGrav,</td>
-<td>&#160;</td>
-<td>&#160;</td>
-</tr>
-<tr class="row-even"><td>&#160;</td>
-<td>&#160;</td>
+<tr class="row-odd"><td><strong>gravity.no_sync</strong></td>
 <td>whether to
 perform the
 “sync solve”</td>
-<td>&#160;</td>
+<td>0 if false
+1 if true</td>
+<td>0</td>
 </tr>
-<tr class="row-odd"><td><strong>gravity.
-no_composite</strong></td>
-<td>if
-<strong>gravity.
-gravity_type</strong>
-= PoissonGrav,</td>
-<td>&#160;</td>
-<td>&#160;</td>
-</tr>
-<tr class="row-even"><td>&#160;</td>
-<td>&#160;</td>
+<tr class="row-even"><td><strong>gravity.no_composite</strong></td>
 <td>whether to
 perform a
 composite
 solve</td>
-<td>&#160;</td>
+<td>0 if false
+1 if true</td>
+<td>0</td>
 </tr>
 </tbody>
 </table>
@@ -1593,18 +1556,14 @@ solve</td>
 </div>
 <div class="section" id="notes-7">
 <span id="id27"></span><h3>Notes<a class="headerlink" href="#notes-7" title="Permalink to this headline">¶</a></h3>
-<p>Gravity types are CompositeGrav or PoissonGrav. See Chapter
-<a class="reference external" href="#chap:Gravity">[chap:Gravity]</a> on Gravity for more detail.</p>
 <ul class="simple">
 <li>To include gravity you must set<ul>
 <li>USE_GRAV = TRUE in the GNUmakefile</li>
 <li><strong>nyx.do_grav</strong> = 1 in the inputs file</li>
 </ul>
 </li>
-<li><strong>gravity.gravity_type</strong> is only relevant if <strong>nyx.do_grav</strong> = 1</li>
 <li><strong>gravity.no_sync</strong> and <strong>gravity.no_composite</strong> are only relevant if
-<strong>gravity.gravity_type</strong> = PoissonGrav, i.e., the code does a full
-Poisson solve for self-gravity.</li>
+USE_GRAV = TRUE; they both default to 0.</li>
 </ul>
 </div>
 </div>
@@ -1614,10 +1573,10 @@ Poisson solve for self-gravity.</li>
 <span id="id28"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-12" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
-<col width="27%" />
-<col width="27%" />
-<col width="27%" />
-<col width="20%" />
+<col width="36%" />
+<col width="23%" />
+<col width="23%" />
+<col width="18%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Parameter</th>
@@ -1628,11 +1587,7 @@ Values</th>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><ul class="first simple">
-<li></li>
-</ul>
-<p class="last"><em>nyx.do_hydro*</em></p>
-</td>
+<tr class="row-even"><td><strong>nyx.do_hydro</strong></td>
 <td>Time-advance
 the fluid
 dynamical
@@ -1641,19 +1596,14 @@ equations</td>
 if true</td>
 <td>must be set</td>
 </tr>
-<tr class="row-odd"><td><ul class="first simple">
-<li></li>
-</ul>
-<p class="last"><em>nyx.do_react*</em></p>
-</td>
+<tr class="row-odd"><td><strong>nyx.do_react</strong></td>
 <td>Include
 reactions</td>
 <td>0 if false, 1
 if true</td>
 <td>must be set</td>
 </tr>
-<tr class="row-even"><td><strong>ny
-x.add_ext_src</strong></td>
+<tr class="row-even"><td><strong>nyx.add_ext_src</strong></td>
 <td>Include
 additional
 user-specified
@@ -1662,24 +1612,21 @@ source term</td>
 if true</td>
 <td>0</td>
 </tr>
-<tr class="row-odd"><td><strong>nyx.use_
-const_species</strong></td>
+<tr class="row-odd"><td><strong>nyx.use_const_species</strong></td>
 <td>If 1 then read
 h_species and
 he_species</td>
 <td>0 or 1</td>
 <td>0</td>
 </tr>
-<tr class="row-even"><td>**
-nyx.h_species**</td>
+<tr class="row-even"><td><strong>nyx.h_species</strong></td>
 <td>Concentration
 of H</td>
 <td>0 <span class="math notranslate nohighlight">\(&lt;\)</span> X
 <span class="math notranslate nohighlight">\(&lt;\)</span> 1</td>
 <td>0</td>
 </tr>
-<tr class="row-odd"><td><strong>n
-yx.he_species</strong></td>
+<tr class="row-odd"><td><strong>nyx.he_species</strong></td>
 <td>Concentration
 of He</td>
 <td>0 <span class="math notranslate nohighlight">\(&lt;\)</span> X
