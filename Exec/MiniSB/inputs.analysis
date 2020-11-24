@@ -25,7 +25,6 @@ amr.data_log = runlog
 #particles.particle_output_file = particle_output
 #particles.write_in_plotfile = 1
 
-gravity.gravity_type = PoissonGrav
 gravity.no_sync      = 1
 gravity.no_composite = 1
 

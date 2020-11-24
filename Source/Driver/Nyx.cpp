@@ -675,11 +675,6 @@ Nyx::Nyx (Amr&            papa,
         }
 
         gravity->install_level(level, this);
-
-        if (verbose && level == 0 && ParallelDescriptor::IOProcessor()) {
-            std::cout << "Setting the gravity type to "
-                      << gravity->get_gravity_type() << '\n';
-        }
    }
 #endif
 
@@ -1446,7 +1441,7 @@ Nyx::post_timestep (int iteration)
         MultiFab& S_new_crse = get_new_data(State_Type);
 #ifdef GRAVITY
         MultiFab drho_and_drhoU;
-        if (do_grav && gravity->get_gravity_type() == "PoissonGrav")
+        if (do_grav)
         {
             // Define the update to rho and rhoU due to refluxing.
             drho_and_drhoU.define(grids, dmap, BL_SPACEDIM + 1, 0);
@@ -1473,7 +1468,7 @@ Nyx::post_timestep (int iteration)
 #endif
 
 #ifdef GRAVITY
-        if (do_grav && gravity->get_gravity_type() == "PoissonGrav" && gravity->get_no_sync() == 0)
+        if (do_grav && gravity->get_no_sync() == 0)
         {
             MultiFab::Add(drho_and_drhoU, S_new_crse, Density, 0, BL_SPACEDIM+1, 0);
 
@@ -1699,25 +1694,22 @@ Nyx::post_restart ()
 
             gravity->set_mass_offset(cur_time);
 
-            if (gravity->get_gravity_type() == "PoissonGrav")
-            {
-                // Do multilevel solve here.  We now store phi in the checkpoint file so we can use it
-                //  at restart.
-                int ngrow_for_solve = 1;
-                int use_previous_phi_as_guess = 1;
-                gravity->multilevel_solve_for_new_phi(0,parent->finestLevel(),ngrow_for_solve,use_previous_phi_as_guess);
+            // Do multilevel solve here.  We now store phi in the checkpoint file so we can use it
+            //  at restart.
+            int ngrow_for_solve = 1;
+            int use_previous_phi_as_guess = 1;
+            gravity->multilevel_solve_for_new_phi(0,parent->finestLevel(),ngrow_for_solve,use_previous_phi_as_guess);
 
 #ifndef AGN
-                if (do_dm_particles)
+            if (do_dm_particles)
 #endif
+            {
+                for (int k = 0; k <= parent->finestLevel(); k++)
                 {
-                    for (int k = 0; k <= parent->finestLevel(); k++)
-                    {
-                        const auto& ba = get_level(k).boxArray();
-                        const auto& dm = get_level(k).DistributionMap();
-                        MultiFab grav_vec_new(ba, dm, BL_SPACEDIM, 0);
-                        gravity->get_new_grav_vector(k, grav_vec_new, cur_time);
-                    }
+                    const auto& ba = get_level(k).boxArray();
+                    const auto& dm = get_level(k).DistributionMap();
+                    MultiFab grav_vec_new(ba, dm, BL_SPACEDIM, 0);
+                    gravity->get_new_grav_vector(k, grav_vec_new, cur_time);
                 }
             }
         }
@@ -2032,12 +2024,9 @@ Nyx::post_regrid (int lbase,
     const Real cur_time = state[State_for_Time].curTime();
     if (do_grav && (cur_time > 0) && do_grav_solve_here)
     {
-        if (gravity->get_gravity_type() == "PoissonGrav")
-        {
-            int ngrow_for_solve = parent->levelCount(level) + 1;
-            int use_previous_phi_as_guess = 1;
-            gravity->multilevel_solve_for_new_phi(level, new_finest, ngrow_for_solve, use_previous_phi_as_guess);
-        }
+        int ngrow_for_solve = parent->levelCount(level) + 1;
+        int use_previous_phi_as_guess = 1;
+        gravity->multilevel_solve_for_new_phi(level, new_finest, ngrow_for_solve, use_previous_phi_as_guess);
     }
 #endif
     delete fine_mask;
@@ -2071,19 +2060,17 @@ Nyx::post_init (Real stop_time)
     if (do_grav)
     {
         const Real cur_time = state[State_for_Time].curTime();
-        if (gravity->get_gravity_type() == "PoissonGrav")
-        {
-            //
-            // Calculate offset before first multilevel solve.
-            //
-            gravity->set_mass_offset(cur_time);
 
-            //
-            // Solve on full multilevel hierarchy
-            //
-            int ngrow_for_solve = 1;
-            gravity->multilevel_solve_for_new_phi(0, finest_level, ngrow_for_solve);
-        }
+        //
+        // Calculate offset before first multilevel solve.
+        //
+        gravity->set_mass_offset(cur_time);
+
+        //
+        // Solve on full multilevel hierarchy
+        //
+        int ngrow_for_solve = 1;
+        gravity->multilevel_solve_for_new_phi(0, finest_level, ngrow_for_solve);
 
         // Make this call just to fill the initial state data.
         for (int k = 0; k <= finest_level; k++)

@@ -11,8 +11,6 @@ using namespace amrex;
 // MAX_LEV defines the maximum number of AMR levels allowed by the parent "Amr" object
 #define MAX_LEV 15
 
-// Give this a bogus default value to force user to define in inputs file
-std::string Gravity::gravity_type = "fill_me_please";
 int  Gravity::verbose          = 0;
 
 int  Gravity::no_sync       = 0;
@@ -66,7 +64,7 @@ Gravity::Gravity (Amr*   Parent,
      density = _density;
      read_params();
      finest_level_allocated = -1;
-     if(gravity_type == "PoissonGrav") make_mg_bc();
+     make_mg_bc();
 }
 
 
@@ -83,13 +81,6 @@ Gravity::read_params ()
     if (!done)
     {
         ParmParse pp("gravity");
-        pp.get("gravity_type", gravity_type);
-
-        if (gravity_type != "PoissonGrav")
-        {
-            std::cout << "Sorry -- dont know this gravity type" << std::endl;
-            amrex::Abort("Options are PoissonGrav");
-        }
 
         pp.query("v", verbose);
         pp.query("no_sync", no_sync);
@@ -159,12 +150,6 @@ Gravity::install_level (int       level,
     finest_level_allocated = level;
 }
 
-std::string
-Gravity::get_gravity_type ()
-{
-    return gravity_type;
-}
-
 int
 Gravity::get_no_sync ()
 {
@@ -199,16 +184,12 @@ Gravity::plus_grad_phi_curr (int level, const Vector<MultiFab*>& addend)
 void
 Gravity::swap_time_levels (int level)
 {
-
-    if (gravity_type == "PoissonGrav")
+    for (int n=0; n < BL_SPACEDIM; n++)
     {
-        for (int n=0; n < BL_SPACEDIM; n++)
-        {
-            std::swap(grad_phi_prev[level][n], grad_phi_curr[level][n]);
-            grad_phi_curr[level][n].reset(new MultiFab(BoxArray(grids[level]).surroundingNodes(n), 
-                                                       dmap[level], 1, 1));
-            grad_phi_curr[level][n]->setVal(1.e50);
-        }
+        std::swap(grad_phi_prev[level][n], grad_phi_curr[level][n]);
+        grad_phi_curr[level][n].reset(new MultiFab(BoxArray(grids[level]).surroundingNodes(n), 
+                                                   dmap[level], 1, 1));
+        grad_phi_curr[level][n]->setVal(1.e50);
     }
 }
 
@@ -839,23 +820,20 @@ Gravity::get_new_grav_vector (int       level,
 
     amrex::Gpu::LaunchSafeGuard lsg(true);
 
-    if (gravity_type == "PoissonGrav")
-    {
-        // Set to zero to fill ghost cells
-        grav_vector.setVal(0);
+    // Set to zero to fill ghost cells
+    grav_vector.setVal(0);
 
-        const Geometry& geom = parent->Geom(level);
+    const Geometry& geom = parent->Geom(level);
 
-        for (int i = 0; i < BL_SPACEDIM ; i++)
-            grad_phi_curr[level][i]->FillBoundary(geom.periodicity());
+    for (int i = 0; i < BL_SPACEDIM ; i++)
+        grad_phi_curr[level][i]->FillBoundary(geom.periodicity());
 
-        // Average edge-centered gradients to cell centers, excluding grow cells
-        amrex::average_face_to_cellcenter(grav_vector,
-                                           amrex::GetVecOfConstPtrs(grad_phi_curr[level]),
-                                           geom);
+    // Average edge-centered gradients to cell centers, excluding grow cells
+    amrex::average_face_to_cellcenter(grav_vector,
+                                       amrex::GetVecOfConstPtrs(grad_phi_curr[level]),
+                                       geom);
 
-        grav_vector.FillBoundary(geom.periodicity());
-    }
+    grav_vector.FillBoundary(geom.periodicity());
 
     MultiFab& G_new = LevelData[level]->get_new_data(Gravity_Type);
 

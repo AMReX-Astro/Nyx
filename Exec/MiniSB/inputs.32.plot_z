@@ -26,7 +26,6 @@ gravity.sl_tol = 1.e-12
 #File written during the run: nstep | time | dt | redshift | a
 amr.data_log = runlog
 
-gravity.gravity_type = PoissonGrav
 gravity.no_sync      = 1
 gravity.no_composite = 1
 

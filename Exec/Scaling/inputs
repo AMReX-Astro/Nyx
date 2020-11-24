@@ -33,7 +33,6 @@ amr.data_log = runlog
 #max_step = 4
 #particles.particle_output_file = particle_output
 
-gravity.gravity_type = PoissonGrav
 gravity.no_sync      = 1
 gravity.no_composite = 1
 

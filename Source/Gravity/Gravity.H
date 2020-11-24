@@ -19,8 +19,6 @@ public:
 
     void install_level(int level, amrex::AmrLevel* level_data_to_install);
 
-    std::string get_gravity_type();
-    amrex::Real get_const_grav ();
     int get_no_sync();
     int get_no_composite();
 
@@ -141,7 +139,6 @@ protected:
     static amrex::Real sl_tol;
     static amrex::Real ml_tol;
     static amrex::Real delta_tol;
-    static std::string gravity_type;
 
     void AddParticlesToRhs(int level, amrex::MultiFab& Rhs, int ngrow);
     void AddGhostParticlesToRhs(int level, amrex::MultiFab& Rhs);
