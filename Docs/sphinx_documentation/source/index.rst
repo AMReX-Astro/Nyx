@@ -18,6 +18,7 @@ Welcome to Nyx's documentation!
    NyxEquations
    Particles
    NyxHeatCool
+   NyxSundials
    NyxGravity
    InputsMultigrid 
    NyxForcing

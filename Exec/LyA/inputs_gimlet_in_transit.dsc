@@ -32,10 +32,8 @@ amr.data_log = runlog
 #max_step = 4
 #particles.particle_output_file = particle_output
 
-gravity.gravity_type = PoissonGrav
 gravity.no_sync      = 1
 gravity.no_composite = 1
-mg.bottom_solver = 4
 
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic =  1     1     1
@@ -92,7 +90,6 @@ nyx.change_max            = 1.1     # factor by which timestep can change
 nyx.dt_cutoff             = 5.e-20  # level 0 timestep below which we halt
 
 # DIAGNOSTICS & VERBOSITY
-nyx.print_fortran_warnings = 0
 nyx.sum_interval      = -1      # timesteps between computing mass
 nyx.v                 = 1       # verbosity in Nyx.cpp
 gravity.v             = 1       # verbosity in Gravity.cpp

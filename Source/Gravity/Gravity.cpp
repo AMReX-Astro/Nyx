@@ -11,19 +11,23 @@ using namespace amrex;
 // MAX_LEV defines the maximum number of AMR levels allowed by the parent "Amr" object
 #define MAX_LEV 15
 
-// Give this a bogus default value to force user to define in inputs file
-std::string Gravity::gravity_type = "fill_me_please";
-int  Gravity::verbose       = 0;
+int  Gravity::verbose          = 0;
+
 int  Gravity::no_sync       = 0;
 int  Gravity::no_composite  = 0;
 int  Gravity::dirichlet_bcs = 0;
-int  Gravity::mlmg_max_fmg_iter = 0;
 int  Gravity::mlmg_agglomeration = 0;
 int  Gravity::mlmg_consolidation = 0;
 Real Gravity::sl_tol        = 1.e-12;
 Real Gravity::ml_tol        = 1.e-12;
 Real Gravity::delta_tol     = 1.e-12;
 Real Gravity::mass_offset   = 0;
+
+// These control the multigrid solver itself
+int  Gravity::mg_verbose       = 0;
+int  Gravity::mg_max_fmg_iter  = 0;
+
+std::string Gravity::mg_bottom_solver = "bicg";
 
 // ************************************************************************** //
 
@@ -60,7 +64,7 @@ Gravity::Gravity (Amr*   Parent,
      density = _density;
      read_params();
      finest_level_allocated = -1;
-     if(gravity_type == "PoissonGrav") make_mg_bc();
+     make_mg_bc();
 }
 
 
@@ -77,13 +81,6 @@ Gravity::read_params ()
     if (!done)
     {
         ParmParse pp("gravity");
-        pp.get("gravity_type", gravity_type);
-
-        if (gravity_type != "PoissonGrav")
-        {
-            std::cout << "Sorry -- dont know this gravity type" << std::endl;
-            amrex::Abort("Options are PoissonGrav");
-        }
 
         pp.query("v", verbose);
         pp.query("no_sync", no_sync);
@@ -91,7 +88,6 @@ Gravity::read_params ()
 
         pp.query("dirichlet_bcs", dirichlet_bcs);
 
-        pp.query("mlmg_max_fmg_iter", mlmg_max_fmg_iter);
         pp.query("mlmg_agglomeration", mlmg_agglomeration);
         pp.query("mlmg_consolidation", mlmg_consolidation);
 
@@ -99,6 +95,11 @@ Gravity::read_params ()
         pp.query("ml_tol", ml_tol);
         pp.query("sl_tol", sl_tol);
         pp.query("delta_tol", delta_tol);
+
+        ParmParse pp_mg("mg");
+        pp_mg.query("v", mg_verbose);
+        pp_mg.query("bottom_solver", mg_bottom_solver);
+        pp_mg.query("max_fmg_iter", mg_max_fmg_iter);
 
         Ggravity = -4.0 * M_PI * Gconst;
         if (verbose > 0)
@@ -149,12 +150,6 @@ Gravity::install_level (int       level,
     finest_level_allocated = level;
 }
 
-std::string
-Gravity::get_gravity_type ()
-{
-    return gravity_type;
-}
-
 int
 Gravity::get_no_sync ()
 {
@@ -189,16 +184,12 @@ Gravity::plus_grad_phi_curr (int level, const Vector<MultiFab*>& addend)
 void
 Gravity::swap_time_levels (int level)
 {
-
-    if (gravity_type == "PoissonGrav")
+    for (int n=0; n < BL_SPACEDIM; n++)
     {
-        for (int n=0; n < BL_SPACEDIM; n++)
-        {
-            std::swap(grad_phi_prev[level][n], grad_phi_curr[level][n]);
-            grad_phi_curr[level][n].reset(new MultiFab(BoxArray(grids[level]).surroundingNodes(n), 
-                                                       dmap[level], 1, 1));
-            grad_phi_curr[level][n]->setVal(1.e50);
-        }
+        std::swap(grad_phi_prev[level][n], grad_phi_curr[level][n]);
+        grad_phi_curr[level][n].reset(new MultiFab(BoxArray(grids[level]).surroundingNodes(n), 
+                                                   dmap[level], 1, 1));
+        grad_phi_curr[level][n]->setVal(1.e50);
     }
 }
 
@@ -829,23 +820,20 @@ Gravity::get_new_grav_vector (int       level,
 
     amrex::Gpu::LaunchSafeGuard lsg(true);
 
-    if (gravity_type == "PoissonGrav")
-    {
-        // Set to zero to fill ghost cells
-        grav_vector.setVal(0);
+    // Set to zero to fill ghost cells
+    grav_vector.setVal(0);
 
-        const Geometry& geom = parent->Geom(level);
+    const Geometry& geom = parent->Geom(level);
 
-        for (int i = 0; i < BL_SPACEDIM ; i++)
-            grad_phi_curr[level][i]->FillBoundary(geom.periodicity());
+    for (int i = 0; i < BL_SPACEDIM ; i++)
+        grad_phi_curr[level][i]->FillBoundary(geom.periodicity());
 
-        // Average edge-centered gradients to cell centers, excluding grow cells
-        amrex::average_face_to_cellcenter(grav_vector,
-                                           amrex::GetVecOfConstPtrs(grad_phi_curr[level]),
-                                           geom);
+    // Average edge-centered gradients to cell centers, excluding grow cells
+    amrex::average_face_to_cellcenter(grav_vector,
+                                       amrex::GetVecOfConstPtrs(grad_phi_curr[level]),
+                                       geom);
 
-        grav_vector.FillBoundary(geom.periodicity());
-    }
+    grav_vector.FillBoundary(geom.periodicity());
 
     MultiFab& G_new = LevelData[level]->get_new_data(Gravity_Type);
 
@@ -1357,9 +1345,40 @@ Gravity::solve_with_MLMG (int crse_level, int fine_level,
     }
 
     MLMG mlmg(mlpoisson);
-    mlmg.setVerbose(verbose);
+    mlmg.setVerbose(mg_verbose);
+
+    // The default bottom solver is BiCG
+    if (mg_bottom_solver == "bicg")
+    {
+        mlmg.setBottomSolver(MLMG::BottomSolver::bicgstab);
+    }
+    else if (mg_bottom_solver == "smoother")
+    {
+        mlmg.setBottomSolver(MLMG::BottomSolver::smoother);
+    }
+    else if (mg_bottom_solver == "cg")
+    {
+        mlmg.setBottomSolver(MLMG::BottomSolver::cg);
+    }
+    else if (mg_bottom_solver == "bicgcg")
+    {
+        mlmg.setBottomSolver(MLMG::BottomSolver::bicgcg);
+    }
+    else if (mg_bottom_solver == "cgbicg")
+    {
+        mlmg.setBottomSolver(MLMG::BottomSolver::cgbicg);
+    }
+    else if (mg_bottom_solver == "hypre")
+    {
+        mlmg.setBottomSolver(MLMG::BottomSolver::hypre);
+    }
+    else if (mg_bottom_solver == "petsc")
+    {
+        mlmg.setBottomSolver(MLMG::BottomSolver::petsc);
+    }
+
     if (crse_level == 0) {
-        mlmg.setMaxFmgIter(mlmg_max_fmg_iter);
+        mlmg.setMaxFmgIter(mg_max_fmg_iter);
     } else {
         mlmg.setMaxFmgIter(0); // Vcycle
     }

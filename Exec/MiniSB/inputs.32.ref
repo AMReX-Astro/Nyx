@@ -12,8 +12,6 @@ amr.refine_grid_layout = 0
 amr.checkpoint_files_output = 1
 amr.plot_files_output = 1
 
-nyx.print_fortran_warnings = 0
-
 nyx.ppm_type = 0
 
 nyx.small_dens = 6921.0511053125001
@@ -29,11 +27,8 @@ nyx.final_a = 1.0
 #File written during the run: nstep | time | dt | redshift | a
 amr.data_log = runlog
 
-gravity.gravity_type = PoissonGrav
 gravity.no_sync      = 1
 gravity.no_composite = 1
-
-mg.bottom_solver = 1
 
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic =  1     1     1

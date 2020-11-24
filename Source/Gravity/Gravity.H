@@ -19,8 +19,6 @@ public:
 
     void install_level(int level, amrex::AmrLevel* level_data_to_install);
 
-    std::string get_gravity_type();
-    amrex::Real get_const_grav ();
     int get_no_sync();
     int get_no_composite();
 
@@ -127,17 +125,20 @@ protected:
     amrex::BCRec* phys_bc;
 
     static int verbose;
+    static int mg_verbose;
+
+    static std::string mg_bottom_solver;
+
     static int no_sync;
     static int no_composite;
     static int dirichlet_bcs;
-    static int mlmg_max_fmg_iter;
+    static int mg_max_fmg_iter;
     static int mlmg_agglomeration;
     static int mlmg_consolidation;
     static amrex::Real mass_offset;
     static amrex::Real sl_tol;
     static amrex::Real ml_tol;
     static amrex::Real delta_tol;
-    static std::string gravity_type;
 
     void AddParticlesToRhs(int level, amrex::MultiFab& Rhs, int ngrow);
     void AddGhostParticlesToRhs(int level, amrex::MultiFab& Rhs);

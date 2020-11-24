@@ -802,6 +802,8 @@ int integrate_state_struct
     static amrex::Real average_neutr_density;
     static amrex::Real average_total_density;
 
+    static amrex::Real tagging_base;
+
     //
     // This amrex::MultiFab is used for the level coarser than this level to mask out
     // this level.  We only build this when it is needed.

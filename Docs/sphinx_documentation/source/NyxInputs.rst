@@ -6,13 +6,8 @@ Inputs
 .. toctree::
    :maxdepth: 1
 
-| The  executable reads run-time information from an “inputs” file
-  (which you put on the command line) and from a “probin” file, the name
-  of which is usually defined in the inputs file, but which defaults to
-  “``probin``”. To set the “probin” file name in the inputs file:
-| **amr.probin_file** = *my_special_probin*
-| for example, has the Fortran code read a file called
-  *my_special_probin*.
+  The  executable reads run-time information from an “inputs” file
+   which you put on the command line. 
 
 Problem Geometry
 ================
@@ -20,46 +15,44 @@ Problem Geometry
 List of Parameters
 ------------------
 
-+-----------------+-----------------+-----------------+-------------+
-| Parameter       | Definition      | Acceptable      | Default     |
-|                 |                 | Values          |             |
-+=================+=================+=================+=============+
-| **geo           | physical        | Real            | must be set |
-| metry.prob_lo** | location of low |                 |             |
-|                 | corner of the   |                 |             |
-|                 | domain          |                 |             |
-+-----------------+-----------------+-----------------+-------------+
-| **geo           | physical        | Real            | must be set |
-| metry.prob_hi** | location of     |                 |             |
-|                 | high corner of  |                 |             |
-|                 | the domain      |                 |             |
-+-----------------+-----------------+-----------------+-------------+
-| **geome         | coordinate      | 0 = Cartesian,  | must be set |
-| try.coord_sys** | system          | 1 = r-z, 2 =    |             |
-|                 |                 | spherical       |             |
-+-----------------+-----------------+-----------------+-------------+
-| **geometr       | is the domain   | 0 if false, 1   | 0 0 0       |
-| y.is_periodic** | periodic in     | if true         |             |
-|                 | this direction  |                 |             |
-+-----------------+-----------------+-----------------+-------------+
-
-[Table:Geometry]
++--------------------------+-----------------+-----------------+-------------+
+| Parameter                | Definition      | Acceptable      | Default     |
+|                          |                 | Values          |             |
++==========================+=================+=================+=============+
+| **geometry.prob_lo**     | physical        | Real            | must be set |
+|                          | location of low |                 |             |
+|                          | corner of the   |                 |             |
+|                          | domain          |                 |             |
++--------------------------+-----------------+-----------------+-------------+
+| **geometry.prob_hi**     | physical        | Real            | must be set |
+|                          | location of     |                 |             |
+|                          | high corner of  |                 |             |
+|                          | the domain      |                 |             |
++--------------------------+-----------------+-----------------+-------------+
+| **geometry.coord_sys**   | coordinate      | 0 = Cartesian,  | must be set |
+|                          | system          | 1 = r-z, 2 =    |             |
+|                          |                 | spherical       |             |
++--------------------------+-----------------+-----------------+-------------+
+| **geometry.is_periodic** | is the domain   | 0 if false, 1   | 0 0 0       |
+|                          | periodic in     | if true         |             |
+|                          | this direction  |                 |             |
++--------------------------+-----------------+-----------------+-------------+
 
 Examples of Usage
 -----------------
 
--  | **geometry.prob_lo** = 0 0 0
-   | defines the low corner of the domain at (0,0,0) in physical space.
+-  **geometry.prob_lo** = 0 0 0
+   defines the low corner of the domain at (0,0,0) in physical space.
 
--  | **geometry.prob_hi** = 1.e8 2.e8 2.e8
-   | defines the high corner of the domain at (1.e8,2.e8,2.e8) in
+-  **geometry.prob_hi** = 1.e8 2.e8 2.e8
+   defines the high corner of the domain at (1.e8,2.e8,2.e8) in
      physical space.
 
--  | **geometry.coord_sys** = 0
-   | defines the coordinate system as Cartesian
+-  **geometry.coord_sys** = 0
+   defines the coordinate system as Cartesian
 
--  | **geometry.is_periodic** = 0 1 0
-   | says the domain is periodic in the y-direction only.
+-  **geometry.is_periodic** = 0 1 0
+   says the domain is periodic in the y-direction only.
 
 Domain Boundary Conditions
 ==========================
@@ -118,37 +111,37 @@ Resolution
 List of Parameters
 ------------------
 
-+-----------------+-----------------+-----------------+-------------+
-| Parameter       | Definition      | Acceptable      | Default     |
-|                 |                 | Values          |             |
-+=================+=================+=================+=============+
-| **amr.n_cell**  | number of cells | Integer         | must be set |
-|                 | in each         | :math:`> 0`     |             |
-|                 | direction at    |                 |             |
-|                 | the coarsest    |                 |             |
-|                 | level           |                 |             |
-+-----------------+-----------------+-----------------+-------------+
-| **              | number of       | Integer         | must be set |
-| amr.max_level** | levels of       | :math:`\geq 0`  |             |
-|                 | refinement      |                 |             |
-|                 | above the       |                 |             |
-|                 | coarsest level  |                 |             |
-+-----------------+-----------------+-----------------+-------------+
-| **              | ratio of coarse | 2 or 4          | must be set |
-| amr.ref_ratio** | to fine grid    |                 |             |
-|                 | spacing between |                 |             |
-|                 | subsequent      |                 |             |
-|                 | levels          |                 |             |
-+-----------------+-----------------+-----------------+-------------+
-| **a             | how often to    | Integer         | must be set |
-| mr.regrid_int** | regrid          | :math:`> 0`     |             |
-+-----------------+-----------------+-----------------+-------------+
-| **amr.regr      | should we       | 0 or 1          | 0           |
-| id_on_restart** | regrid          |                 |             |
-|                 | immediately     |                 |             |
-|                 | after           |                 |             |
-|                 | restarting      |                 |             |
-+-----------------+-----------------+-----------------+-------------+
++---------------------------+-----------------+-----------------+-------------+
+| Parameter                 | Definition      | Acceptable      | Default     |
+|                           |                 | Values          |             |
++===========================+=================+=================+=============+
+| **amr.n_cell**            | number of cells | Integer > 0     | must be set |
+|                           | in each         |                 |             |
+|                           | direction at    |                 |             |
+|                           | the coarsest    |                 |             |
+|                           | level           |                 |             |
++---------------------------+-----------------+-----------------+-------------+
+| **amr.max_level**         | number of       | Integer >= 0    | must be set |
+|                           | levels of       |                 |             |
+|                           | refinement      |                 |             |
+|                           | above the       |                 |             |
+|                           | coarsest level  |                 |             |
++---------------------------+-----------------+-----------------+-------------+
+| **amr.ref_ratio**         | ratio of coarse | 2 or 4          | must be set |
+|                           | to fine grid    |                 |             |
+|                           | spacing between |                 |             |
+|                           | subsequent      |                 |             |
+|                           | levels          |                 |             |
++---------------------------+-----------------+-----------------+-------------+
+| **amr.regrid_int**        | how often to    | Integer > 0     | must be set |
+|                           | regrid          |                 |             |
++---------------------------+-----------------+-----------------+-------------+
+| **amr.regrid_on_restart** | should we       | 0 or 1          | 0           |
+|                           | regrid          |                 |             |
+|                           | immediately     |                 |             |
+|                           | after           |                 |             |
+|                           | restarting      |                 |             |
++---------------------------+-----------------+-----------------+-------------+
 
 [Table:ResInputs]
 
@@ -178,7 +171,7 @@ Examples of Usage
 -  | **amr.ref_ratio** = 2 4
    | would set factor 2 refinement between levels 0 and 1, and factor 4
      refinement between levels 1 and 2. Note that you must have at least
-     **amr.max_level** values of **amr.ref_ratio** (Additional values
+     **amr.>ax_level** values of **amr.ref_ratio** (Additional values
      may appear in that line and they will be ignored).
 
 -  | **amr.regrid_int** = 2 2
@@ -194,14 +187,14 @@ Tagging
 List of Parameters
 ------------------
 
-+------------------+------------------+------------------+---------+
-| Parameter        | Definition       | Acceptable       | Default |
-|                  |                  | Values           |         |
-+==================+==================+==================+=========+
-| **nyx.a          | are cells        | 0 or 1           | 0       |
-| llow_untagging** | allowed to be    |                  |         |
-|                  | “untagged”       |                  |         |
-+------------------+------------------+------------------+---------+
++-------------------------+------------------+------------------+---------+
+| Parameter               | Definition       | Acceptable       | Default |
+|                         |                  | Values           |         |
++=========================+==================+==================+=========+
+| **nyx.allow_untagging** | are cells        | 0 or 1           | 0       |
+|                         | allowed to be    |                  |         |
+|                         | “untagged”       |                  |         |
++-------------------------+------------------+------------------+---------+
 
 [Table:Tagging]
 
@@ -237,40 +230,42 @@ tagged cells.
 List of Parameters
 ------------------
 
-+----------------+----------------+----------------+----------------+
-| Parameter      | Definition     | Acceptable     | Default        |
-|                |                | Values         |                |
-+================+================+================+================+
-| **amr          | name of file   | text           | no file        |
-| .regrid_file** | from which to  |                |                |
-|                | read the grids |                |                |
-+----------------+----------------+----------------+----------------+
-| **             | grid           | Real           | 0.7            |
-| amr.grid_eff** | efficiency at  | :math:`>0` and |                |
-|                | coarse level   | :math:`<1`     |                |
-|                | at which grids |                |                |
-|                | are created    |                |                |
-+----------------+----------------+----------------+----------------+
-| **amr          | radius of      | Integer        | 1              |
-| .n_error_buf** | additional     | :math:`\geq 0` |                |
-|                | tagging around |                |                |
-|                | already tagged |                |                |
-|                | cells          |                |                |
-+----------------+----------------+----------------+----------------+
-| **amr.m        | maximum size   | Integer        | 128 in 2D, 32  |
-| ax_grid_size** | of a grid in   | :math:`> 0`    | in 3D          |
-|                | any direction  |                |                |
-+----------------+----------------+----------------+----------------+
-| **amr.blo      | grid size must | Integer        | 2              |
-| cking_factor** | be a multiple  | :math:`> 0`    |                |
-|                | of this        |                |                |
-+----------------+----------------+----------------+----------------+
-| **amr.refine   | refine grids   | 0 if false, 1  | 1              |
-| _grid_layout** | more if # of   | if true        |                |
-|                | processors     |                |                |
-|                | :math:`>` # of |                |                |
-|                | grids          |                |                |
-+----------------+----------------+----------------+----------------+
++----------------------------+----------------+----------------+----------------+
+| Parameter                  | Definition     | Acceptable     | Default        |
+|                            |                | Values         |                |
++============================+================+================+================+
+| **amr.regrid_file**        | name of file   | text           | no file        |
+|                            | from which to  |                |                |
+|                            | read the grids |                |                |
++----------------------------+----------------+----------------+----------------+
+| **amr.grid_eff**           | grid           | Real > 0, < 1  | 0.7            |
+|                            | efficiency at  |                |                |
+|                            | coarse level   |                |                |
+|                            | at which grids |                |                |
+|                            | are created    |                |                |
++----------------------------+----------------+----------------+----------------+
+| **amr.n_error_buf**        | radius of      | Integer >= 0   | 1              |
+|                            | additional     |                |                |
+|                            | tagging around |                |                |
+|                            | already tagged |                |                |
+|                            | cells          |                |                |
++----------------------------+----------------+----------------+----------------+
+| **amr.max_grid_size**      | maximum size   | Integer > 0    | 128 in 2D, 32  |
+|                            | of a grid in   |                | in 3D          |
+|                            | any direction  |                |                |
++----------------------------+----------------+----------------+----------------+
+| **amr.max_grid_size**      | maximum size   | Integer        | 128 in 2D, 32  |
++----------------------------+----------------+----------------+----------------+
+| **amr.blocking_factor**    | grid size must | Integer > 0    | 2              |
+|                            | be a multiple  |                |                |
+|                            | of this        |                |                |
++----------------------------+----------------+----------------+----------------+
+| **amr.refine_grid_layout** | refine grids   | 0 if false, 1  | 1              |
+|                            | more if # of   | if true        |                |
+|                            | processors     |                |                |
+|                            | :math:`>` # of |                |                |
+|                            | grids          |                |                |
++----------------------------+----------------+----------------+----------------+
 
 [Table:GriddingInputs]
 
@@ -378,35 +373,29 @@ Simulation Time
 List of Parameters
 ------------------
 
-+-----------------+------------------+------------------+---------+
-| Parameter       | Definition       | Acceptable       | Default |
-|                 |                  | Values           |         |
-+=================+==================+==================+=========+
-| **max_step**    | maximum number   | Integer          | -1      |
-|                 | of level-0 time  | :math:`\geq 0`   |         |
-|                 | steps            |                  |         |
-+-----------------+------------------+------------------+---------+
-| **stop_time**   | final simulation | Real             | -1.0    |
-|                 | time             | :math:`\geq 0`   |         |
-+-----------------+------------------+------------------+---------+
-| **nyx.final_a** | if               | Real :math:`> 0` | -1.0    |
-|                 | **               |                  |         |
-|                 | nyx.use_comoving |                  |         |
-|                 | = t** and        |                  |         |
-|                 | positive value   |                  |         |
-|                 | then this is     |                  |         |
-|                 | final value of   |                  |         |
-|                 | :math:`a`        |                  |         |
-+-----------------+------------------+------------------+---------+
-| **nyx.final_z** | if               | Real :math:`> 0` | -1.0    |
-|                 | **               |                  |         |
-|                 | nyx.use_comoving |                  |         |
-|                 | = t** and        |                  |         |
-|                 | positive value   |                  |         |
-|                 | then this is     |                  |         |
-|                 | final value of   |                  |         |
-|                 | :math:`z`        |                  |         |
-+-----------------+------------------+------------------+---------+
++-----------------+--------------------------+--------------+---------+
+| Parameter       | Definition               | Acceptable   | Default |
+|                 |                          | Values       |         |
++=================+==========================+==============+=========+
+| **max_step**    | maximum number           | Integer >= 0 | -1      |
+|                 | of level-0 time          |              |         |
+|                 | steps                    |              |         |
++-----------------+--------------------------+--------------+---------+
+| **stop_time**   | final simulation         | Real >= 0    | -1.0    |
+|                 | time                     |              |         |
++-----------------+--------------------------+--------------+---------+
+| **nyx.final_a** | if                       | Real > 0     | -1.0    |
+|                 | **nyx.use_comoving = t** |              |         |
+|                 | and positive value       |              |         |
+|                 | then this is             |              |         |
+|                 | final value of a         |              |         |
++-----------------+--------------------------+--------------+---------+
+| **nyx.final_z** | if                       | Real > 0     | -1.0    |
+|                 | **nyx.use_comoving = t** |              |         |
+|                 | and positive value       |              |         |
+|                 | then this is             |              |         |
+|                 | final value of z         |              |         |
++-----------------+--------------------------+--------------+---------+
 
 [Table:TimeInputs]
 
@@ -461,49 +450,49 @@ Time Step
 List of Parameters
 ------------------
 
-+----------------+----------------+----------------+----------------+
-| Parameter      | Definition     | Acceptable     | Default        |
-|                |                | Values         |                |
-+================+================+================+================+
-| **nyx.cfl**    | CFL number for | Real           | 0.8            |
-|                | hydro          | :math:`> 0`    |                |
-|                |                | and            |                |
-|                |                | :math:`\leq 1` |                |
-+----------------+----------------+----------------+----------------+
-| **p            | CFL number for | Real           | 0.5            |
-| articles.cfl** | particles      | :math:`> 0`    |                |
-|                |                | and            |                |
-|                |                | :math:`\leq 1` |                |
-+----------------+----------------+----------------+----------------+
-| **nyx          | factor by      | Real           | 1.0            |
-| .init_shrink** | which to       | :math:`> 0`    |                |
-|                | shrink the     | and            |                |
-|                | initial time   | :math:`\leq 1` |                |
-|                | step           |                |                |
-+----------------+----------------+----------------+----------------+
-| **ny           | factor by      | Real           | 1.1            |
-| x.change_max** | which the time | :math:`\geq 1` |                |
-|                | step can grow  |                |                |
-|                | in subsequent  |                |                |
-|                | steps          |                |                |
-+----------------+----------------+----------------+----------------+
-| **             | level-0 time   | Real           | unused if not  |
-| nyx.fixed_dt** | step           | :math:`> 0`    | set            |
-|                | regardless of  |                |                |
-|                | cfl or other   |                |                |
-|                | settings       |                |                |
-+----------------+----------------+----------------+----------------+
-| **ny           | initial        | Real           | unused if not  |
-| x.initial_dt** | level-0 time   | :math:`> 0`    | set            |
-|                | step           |                |                |
-|                | regardless of  |                |                |
-|                | other settings |                |                |
-+----------------+----------------+----------------+----------------+
-| **n            | time step      | Real           | 0.0            |
-| yx.dt_cutoff** | below which    | :math:`> 0`    |                |
-|                | calculation    |                |                |
-|                | will abort     |                |                |
-+----------------+----------------+----------------+----------------+
++---------------------+----------------+----------------+----------------+
+| Parameter           | Definition     | Acceptable     | Default        |
+|                     |                | Values         |                |
++=====================+================+================+================+
+| **nyx.cfl**         | CFL number for | Real > 0 and   | 0.8            |
+|                     | hydro          | <= 1           |                |
+|                     |                |                |                |
+|                     |                |                |                |
++---------------------+----------------+----------------+----------------+
+| **particles.cfl**   | CFL number for | Real > 0 and   | 0.5            |
+|                     | particles      | <= 1           |
+|                     |                |                |                |
+|                     |                |              ` |                |
++---------------------+----------------+----------------+----------------+
+| **nyx.init_shrink** | factor by      | Real > 0 and   | 1.0            |
+|                     | which to       | <= 1           |                |
+|                     | shrink the     |                |                |
+|                     | initial time   |                |                |
+|                     | step           |                |                |
++---------------------+----------------+----------------+----------------+
+| **nyx.change_max**  | factor by      | Real >= 1      | 1.1            |
+|                     | which the time |                |                |
+|                     | step can grow  |                |                |
+|                     | in subsequent  |                |                |
+|                     | steps          |                |                |
++---------------------+----------------+----------------+----------------+
+| **nyx.fixed_dt**    | level-0 time   | Real > 0       | unused if not  |
+|                     | step           |                | set            |
+|                     | regardless of  |                |                |
+|                     | cfl or other   |                |                |
+|                     | settings       |                |                |
++---------------------+----------------+----------------+----------------+
+| **nyx.initial_dt**  | initial        | Real > 0       | unused if not  |
+|                     | level-0 time   |                | set            |
+|                     | step           |                |                |
+|                     | regardless of  |                |                |
+|                     | other settings |                |                |
++---------------------+----------------+----------------+----------------+
+| **nyx.dt_cutoff**   | time step      | Real > 0       | 0.0            |
+|                     | below which    |                |                |
+|                     | calculation    |                |                |
+|                     | will abort     |                |                |
++---------------------+----------------+----------------+----------------+
 
 [Table:TimeStepInputs]
 
@@ -802,8 +791,7 @@ Notes
 -  If you are doing a scaling study then set **amr.plot_files_output** =
    0 so you can test scaling of the algorithm without I/O.
 
--  **nyx.plot_phiGrav** is only relevant if **nyx.do_grav** = 1 and
-   **gravity.gravity_type** = PoissonGrav
+-  **nyx.plot_phiGrav** is only relevant if **nyx.do_grav** = 1 
 
 -  By default, plotfiles are written in double precision (NATIVE
    format). If you want to save space by writing them in single
@@ -952,42 +940,23 @@ Gravity
 List of Parameters
 ------------------
 
-+----------------+----------------+----------------+----------------+
-| Parameter      | Definition     | Acceptable     | Default        |
-|                |                | Values         |                |
-+================+================+================+================+
-| *              | Include        | 0 if false, 1  | must be set if |
-| *nyx.do_grav** | gravity as a   | if true        | USE_GRAV =     |
-|                | forcing term   |                | TRUE           |
-+----------------+----------------+----------------+----------------+
-| **gravity.     | if             | CompositeGrav, |                |
-| gravity_type** | *              |                |                |
-|                | *nyx.do_grav** |                |                |
-|                | = 1,           |                |                |
-+----------------+----------------+----------------+----------------+
-|                |                | how shall      | PoissonGrav    |
-|                |                | gravity be     |                |
-|                |                | calculated     |                |
-+----------------+----------------+----------------+----------------+
-| **gra          | if             |                |                |
-| vity.no_sync** | **gravity.     |                |                |
-|                | gravity_type** |                |                |
-|                | = PoissonGrav, |                |                |
-+----------------+----------------+----------------+----------------+
-|                |                | whether to     |                |
-|                |                | perform the    |                |
-|                |                | “sync solve”   |                |
-+----------------+----------------+----------------+----------------+
-| **gravity.     | if             |                |                |
-| no_composite** | **gravity.     |                |                |
-|                | gravity_type** |                |                |
-|                | = PoissonGrav, |                |                |
-+----------------+----------------+----------------+----------------+
-|                |                | whether to     |                |
-|                |                | perform a      |                |
-|                |                | composite      |                |
-|                |                | solve          |                |
-+----------------+----------------+----------------+----------------+
++--------------------------+------------------+----------------+------------------+
+| Parameter                | Definition       | Acceptable     | Default          |
+|                          |                  | Values         |                  |
++==========================+==================+================+==================+
+| **nyx.do_grav**          | Include          | 0 if false     | must be set if   |
+|                          | gravity as a     | 1 if true      | USE_GRAV = TRUE  |
+|                          | forcing term     |                | TRUE             |
++--------------------------+------------------+----------------+------------------+
+| **gravity.no_sync**      | whether to       | 0 if false     |  0               |
+|                          | perform the      | 1 if true      |                  |
+|                          | “sync solve”     |                |                  |
++--------------------------+------------------+----------------+------------------+
+| **gravity.no_composite** | whether to       | 0 if false     |  0               |
+|                          | perform a        | 1 if true      |                  |
+|                          | composite        |                |                  |
+|                          | solve            |                |                  |
++--------------------------+------------------+----------------+------------------+
 
 [Table:Gravity]
 
@@ -996,20 +965,14 @@ List of Parameters
 Notes
 -----
 
-Gravity types are CompositeGrav or PoissonGrav. See Chapter
-`[chap:Gravity] <#chap:Gravity>`__ on Gravity for more detail.
-
 -  To include gravity you must set
 
    -  USE_GRAV = TRUE in the GNUmakefile
 
    -  **nyx.do_grav** = 1 in the inputs file
 
--  **gravity.gravity_type** is only relevant if **nyx.do_grav** = 1
-
 -  **gravity.no_sync** and **gravity.no_composite** are only relevant if
-   **gravity.gravity_type** = PoissonGrav, i.e., the code does a full
-   Poisson solve for self-gravity.
+   USE_GRAV = TRUE; they both default to 0.
 
 Physics
 =======
@@ -1019,32 +982,32 @@ Physics
 List of Parameters
 ------------------
 
-+-----------------+-----------------+-----------------+-------------+
-| Parameter       | Definition      | Acceptable      | Default     |
-|                 |                 | Values          |             |
-+=================+=================+=================+=============+
-| *               | Time-advance    | 0 if false, 1   | must be set |
-| *nyx.do_hydro** | the fluid       | if true         |             |
-|                 | dynamical       |                 |             |
-|                 | equations       |                 |             |
-+-----------------+-----------------+-----------------+-------------+
-| *               | Include         | 0 if false, 1   | must be set |
-| *nyx.do_react** | reactions       | if true         |             |
-+-----------------+-----------------+-----------------+-------------+
-| **ny            | Include         | 0 if false, 1   | 0           |
-| x.add_ext_src** | additional      | if true         |             |
-|                 | user-specified  |                 |             |
-|                 | source term     |                 |             |
-+-----------------+-----------------+-----------------+-------------+
-| **nyx.use_      | If 1 then read  | 0 or 1          | 0           |
-| const_species** | h_species and   |                 |             |
-|                 | he_species      |                 |             |
-+-----------------+-----------------+-----------------+-------------+
-| **              | Concentration   | 0 :math:`<` X   | 0           |
-| nyx.h_species** | of H            | :math:`<` 1     |             |
-+-----------------+-----------------+-----------------+-------------+
-| **n             | Concentration   | 0 :math:`<` X   | 0           |
-| yx.he_species** | of He           | :math:`<` 1     |             |
-+-----------------+-----------------+-----------------+-------------+
++---------------------------+-----------------+-----------------+-------------+
+| Parameter                 | Definition      | Acceptable      | Default     |
+|                           |                 | Values          |             |
++===========================+=================+=================+=============+
+| **nyx.do_hydro**          | Time-advance    | 0 if false, 1   | must be set |
+|                           | the fluid       | if true         |             |
+|                           | dynamical       |                 |             |
+|                           | equations       |                 |             |
++---------------------------+-----------------+-----------------+-------------+
+| **nyx.do_react**          | Include         | 0 if false, 1   | must be set |
+|                           | reactions       | if true         |             |
++---------------------------+-----------------+-----------------+-------------+
+| **nyx.add_ext_src**       | Include         | 0 if false, 1   | 0           |
+|                           | additional      | if true         |             |
+|                           | user-specified  |                 |             |
+|                           | source term     |                 |             |
++---------------------------+-----------------+-----------------+-------------+
+| **nyx.use_const_species** | If 1 then read  | 0 or 1          | 0           |
+|                           | h_species and   |                 |             |
+|                           | he_species      |                 |             |
++---------------------------+-----------------+-----------------+-------------+
+| **nyx.h_species**         | Concentration   | 0 :math:`<` X   | 0           |
+|                           | of H            | :math:`<` 1     |             |
++---------------------------+-----------------+-----------------+-------------+
+| **nyx.he_species**        | Concentration   | 0 :math:`<` X   | 0           |
+|                           | of He           | :math:`<` 1     |             |
++---------------------------+-----------------+-----------------+-------------+
 
 [Table:Physics]

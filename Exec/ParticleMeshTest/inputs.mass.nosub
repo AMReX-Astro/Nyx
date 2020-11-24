@@ -13,11 +13,8 @@ nyx.final_a = 1.01
 
 amr.data_log = runlog
 
-gravity.gravity_type = PoissonGrav
 gravity.no_sync      = 1
 gravity.no_composite = 1
-
-mg.bottom_solver = 1
 
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic =  1     1     1

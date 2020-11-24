@@ -113,7 +113,16 @@ normalize_species_fluxes(const int i, const int j, const int k, amrex::Array4<am
   for (int n = 0; n < NumSpec; ++n)
     summ += flx(i, j, k, FirstSpec + n);
 
-  fac = (summ != 0.0) ? flx(i, j, k, URHO) / summ : 1.0;
+  // We skip the normalization if the sum is zero or within epsilon.
+  // There can be numerical problems here if the density flux is
+  // approximately zero at the interface but not exactly, resulting in
+  // division by a small number and/or resulting in one of the species
+  // fluxes being negative because of roundoff error. There are also other
+  // terms like artificial viscosity which can cause these problems.
+  // So checking that sum is sufficiently large helps avoid this.
+
+
+  fac = (std::abs(summ) > std::numeric_limits<amrex::Real>::epsilon() * std::abs(flx(i, j, k, URHO))) ? flx(i, j, k, URHO) / summ : 1.0;
   for (int n = 0; n < NumSpec; ++n)
     flx(i, j, k, FirstSpec + n) *= fac;
 }
