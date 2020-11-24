@@ -99,35 +99,6 @@ ifeq ($(GIMLET), TRUE)
 
 endif
 
-#These are the directories in Nyx 
-
-Bdirs   := Source/Driver Source/TimeStep Source/Hydro
-Bdirs   += Source/EOS Source/HeatCool Source/IO Source/Initialization
-Bdirs   += Source/DerivedQuantities Source/Particle
-
-ifeq ($(USE_MPI), TRUE)
-Bdirs 	+= Source/Monitors
-endif
-
-ifeq ($(USE_GRAV), TRUE)
-   Bdirs 	+= Source/Gravity
-endif
-ifeq ($(USE_FORCING), TRUE)
-   Bdirs 	+= Source/Forcing
-endif
-#ifeq ($(USE_AGN), TRUE)
-   Bdirs 	+= Source/AGN
-#endif
-
-Bpack	+= $(foreach dir, $(Bdirs), $(TOP)/$(dir)/Make.package)
-Blocs	+= $(foreach dir, $(Bdirs), $(TOP)/$(dir))
-
-include $(Bpack)
-INCLUDE_LOCATIONS += $(Blocs)
-VPATH_LOCATIONS   += $(Blocs)
-
-#These are the directories in AMReX
-Pdirs   := Base AmrCore Amr Boundary Particle
 
 ifeq ($(USE_SUNDIALS),TRUE)
 SUNDIALS_ROOT ?= $(TOP)/../sundials/instdir
@@ -167,6 +138,36 @@ endif
 
 LIBRARIES += -Wl,-rpath,${SUNDIALS_LIB_DIR}
 endif
+
+#These are the directories in Nyx 
+
+Bdirs   := Source/Driver Source/TimeStep Source/Hydro
+Bdirs   += Source/EOS Source/HeatCool Source/IO Source/Initialization
+Bdirs   += Source/DerivedQuantities Source/Particle
+
+ifeq ($(USE_MPI), TRUE)
+Bdirs 	+= Source/Monitors
+endif
+
+ifeq ($(USE_GRAV), TRUE)
+   Bdirs 	+= Source/Gravity
+endif
+ifeq ($(USE_FORCING), TRUE)
+   Bdirs 	+= Source/Forcing
+endif
+#ifeq ($(USE_AGN), TRUE)
+   Bdirs 	+= Source/AGN
+#endif
+
+Bpack	+= $(foreach dir, $(Bdirs), $(TOP)/$(dir)/Make.package)
+Blocs	+= $(foreach dir, $(Bdirs), $(TOP)/$(dir))
+
+include $(Bpack)
+INCLUDE_LOCATIONS += $(Blocs)
+VPATH_LOCATIONS   += $(Blocs)
+
+#These are the directories in AMReX
+Pdirs   := Base AmrCore Amr Boundary Particle
 
 ifeq ($(USE_SENSEI_INSITU),TRUE)
     Pdirs += Extern/SENSEI
