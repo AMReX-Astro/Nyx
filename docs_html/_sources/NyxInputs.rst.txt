@@ -991,9 +991,6 @@ List of Parameters
 |                           | dynamical       |                 |             |
 |                           | equations       |                 |             |
 +---------------------------+-----------------+-----------------+-------------+
-| **nyx.do_react**          | Include         | 0 if false, 1   | must be set |
-|                           | reactions       | if true         |             |
-+---------------------------+-----------------+-----------------+-------------+
 | **nyx.add_ext_src**       | Include         | 0 if false, 1   | 0           |
 |                           | additional      | if true         |             |
 |                           | user-specified  |                 |             |
