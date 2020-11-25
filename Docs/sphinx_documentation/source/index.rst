@@ -18,7 +18,6 @@ Welcome to Nyx's documentation!
    NyxEquations
    Particles
    NyxHeatCool
-   NyxSundials
    NyxGravity
    InputsMultigrid 
    NyxForcing
@@ -32,7 +31,6 @@ Welcome to Nyx's documentation!
 
    filelist
    classlist
-   namespacelist
 
 .. toctree::
 
