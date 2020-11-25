@@ -108,3 +108,4 @@ Running the Code
 
 See the Visualization chapter for how to visualize these plotfiles.
 
+.. include:: NyxSundials.rst

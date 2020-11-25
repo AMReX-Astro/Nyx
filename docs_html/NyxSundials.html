@@ -39,9 +39,7 @@
 
     
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Gravity" href="NyxGravity.html" />
-    <link rel="prev" title="Radiative Heating and Cooling" href="NyxHeatCool.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -87,7 +85,7 @@
             
             
               <p class="caption"><span class="caption-text">Nyx basics</span></p>
-<ul class="current">
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="NyxPreface.html">Preface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxIntroduction.html">Units and Conventions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxGettingStarted.html">Getting Started</a></li>
@@ -96,7 +94,6 @@
 <li class="toctree-l1"><a class="reference internal" href="NyxEquations.html">Hydrodynamic Equations in Comoving Coordinates</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Particles.html">Dark matter particles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxHeatCool.html">Radiative Heating and Cooling</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Compiling Nyx with SUNDIALS 5</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxGravity.html">Gravity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="InputsMultigrid.html">Multigrid Inputs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxForcing.html">Stochastic Forcing</a></li>
@@ -108,7 +105,6 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="filelist.html">File list</a></li>
 <li class="toctree-l1"><a class="reference internal" href="classlist.html">Class list</a></li>
-<li class="toctree-l1"><a class="reference internal" href="namespacelist.html">Namespace list</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="zreferences.html">References</a></li>
@@ -204,7 +200,9 @@
 <div class="section" id="compiling-nyx-with-sundials-5">
 <h1>Compiling Nyx with SUNDIALS 5<a class="headerlink" href="#compiling-nyx-with-sundials-5" title="Permalink to this headline">¶</a></h1>
 <p>The following steps describe how to compile Nyx with
-SUNDIALS 5 support.</p>
+SUNDIALS 5 support. This library is necessary for non-adiabatic
+heating-cooling Nyx runs, where <code class="docutils literal notranslate"><span class="pre">USE_HEATCOOL=TRUE</span></code>, such as
+the <code class="docutils literal notranslate"><span class="pre">Nyx/Exec/LyA</span></code> directory.</p>
 <p>In order to use SUNDIALS:</p>
 <ol class="arabic">
 <li><p class="first">Nyx suggests using the Github mirror:
@@ -301,15 +299,6 @@ If the application used the SUNDIALS ARKode time integrator package, then the va
            
           </div>
           <footer>
-  
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-      
-        <a href="NyxGravity.html" class="btn btn-neutral float-right" title="Gravity" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
-      
-      
-        <a href="NyxHeatCool.html" class="btn btn-neutral float-left" title="Radiative Heating and Cooling" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
-      
-    </div>
   
 
   <hr/>
