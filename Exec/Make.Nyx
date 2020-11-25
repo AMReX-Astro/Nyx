@@ -1,6 +1,10 @@
 EBASE     ?= Nyx
 
+ifeq ($(USE_GRAV), TRUE)
 USE_PARTICLES = TRUE
+else
+USE_PARTICLES = FALSE
+endif
 
 BL_NO_FORT = TRUE
 
@@ -143,7 +147,10 @@ endif
 
 Bdirs   := Source/Driver Source/TimeStep Source/Hydro
 Bdirs   += Source/EOS Source/HeatCool Source/IO Source/Initialization
-Bdirs   += Source/DerivedQuantities Source/Particle
+Bdirs   += Source/DerivedQuantities
+ifeq ($(USE_GRAV), TRUE)
+Bdirs   += Source/Particle
+endif
 
 ifeq ($(USE_MPI), TRUE)
 Bdirs 	+= Source/Monitors
@@ -167,7 +174,11 @@ INCLUDE_LOCATIONS += $(Blocs)
 VPATH_LOCATIONS   += $(Blocs)
 
 #These are the directories in AMReX
-Pdirs   := Base AmrCore Amr Boundary Particle
+Pdirs   := Base AmrCore Amr Boundary
+
+ifeq ($(USE_GRAV), TRUE)
+Pdirs   += Particle
+endif
 
 ifeq ($(USE_SENSEI_INSITU),TRUE)
     Pdirs += Extern/SENSEI

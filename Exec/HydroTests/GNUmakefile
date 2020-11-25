@@ -24,4 +24,4 @@ USE_CONST_SPECIES = TRUE
 Bpack := ./Make.package
 Blocs := .
 
-include $(TOP)/Exec/HydroTests/Make.Nyx
+include $(TOP)/Exec/Make.Nyx
