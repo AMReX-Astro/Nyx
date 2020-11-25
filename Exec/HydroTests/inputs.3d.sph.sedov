@@ -19,7 +19,6 @@ nyx.hi_bc       =  2   2   2
 
 # WHICH PHYSICS
 nyx.do_hydro = 1
-nyx.do_react = 0
 
 # Note we now set USE_CONST_SPECIES = TRUE in the GNUmakefile
 nyx.h_species=.76
