@@ -9,7 +9,9 @@ Compiling Nyx with SUNDIALS 5
 ===============================
 
 The following steps describe how to compile Nyx with
-SUNDIALS 5 support.
+SUNDIALS 5 support. This library is necessary for non-adiabatic
+heating-cooling Nyx runs, where ``USE_HEATCOOL=TRUE``, such as
+the ``Nyx/Exec/LyA`` directory.
 
 In order to use SUNDIALS:
 
