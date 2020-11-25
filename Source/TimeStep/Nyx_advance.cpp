@@ -37,6 +37,7 @@ Nyx::advance (Real time,
 #ifndef NO_HYDRO
     if (do_hydro)
     {
+#ifdef AMREX_PARTICLES
         if (Nyx::theActiveParticles().size() > 0)
         {
 #ifndef AGN
@@ -47,6 +48,7 @@ Nyx::advance (Real time,
            } 
         }
         else
+#endif
         {
            return advance_hydro(time, dt, iteration, ncycle);
         }
@@ -78,6 +80,7 @@ Nyx::advance (Real time,
 //      then this will only be a single level advance.
 //
 #ifndef NO_HYDRO
+#ifdef AMREX_PARTICLES
 Real
 Nyx::advance_hydro_plus_particles (Real time,
                                    Real dt,
@@ -463,6 +466,7 @@ Nyx::advance_hydro_plus_particles (Real time,
     // Redistribution happens in post_timestep
     return dt;
 }
+#endif
 
 Real
 Nyx::advance_hydro (Real time,

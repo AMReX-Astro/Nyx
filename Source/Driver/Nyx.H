@@ -7,6 +7,7 @@
 #include <AMReX_ErrorList.H>
 #include <AMReX_FluxRegister.H>
 
+#ifdef AMREX_PARTICLES
 #include <NyxParticleContainer.H>
 #include <DarkMatterParticleContainer.H>
 #ifdef AGN
@@ -14,6 +15,9 @@
 #endif
 #ifdef NEUTRINO_PARTICLES
 #include <NeutrinoParticleContainer.H>
+#endif
+#else
+#include <AMReX_ParmParse.H>
 #endif
 
 #ifdef REEBER
@@ -39,9 +43,9 @@ using namespace ascent;
 
 using std::istream;
 using std::ostream;
-
+#ifdef AMREX_PARTICLES
 typedef NyxParticleContainer<1+BL_SPACEDIM+3> StellarParticleContainer;
-
+#endif
 #ifdef NO_HYDRO
 enum StateType {
     PhiGrav_Type = 0,
@@ -362,6 +366,7 @@ public:
     //
     void particle_check_point(const std::string& dir);
 
+#ifdef AMREX_PARTICLES
     //
     // Write particles in plotfile directories
     //
@@ -412,11 +417,6 @@ public:
     void particle_est_time_step(amrex::Real& est_dt);
 
     //
-    // Derived quantities associated with particles
-    //
-    std::unique_ptr<amrex::MultiFab> particle_derive (const std::string& name, amrex::Real time, int ngrow);
-
-    //
     // Default verbosity of Particle class
     //
     static int particle_verbose;
@@ -434,6 +434,12 @@ public:
     //   called "ParticleDensity"?
     //
     static int write_particle_density_at_init;
+#endif
+
+    //
+    // Derived quantities associated with particles
+    //
+    std::unique_ptr<amrex::MultiFab> particle_derive (const std::string& name, amrex::Real time, int ngrow);
 
     //
     //Set time levels of state data.
@@ -759,7 +765,7 @@ int integrate_state_struct
 #ifdef AUX_UPDATE
     void advance_aux(amrex::Real time, amrex::Real dt);
 #endif
-
+#ifdef AMREX_PARTICLES
     static amrex::Vector<NyxParticleContainerBase*>& theActiveParticles();
     static amrex::Vector<NyxParticleContainerBase*>& theVirtualParticles();
     static amrex::Vector<NyxParticleContainerBase*>& theGhostParticles();
@@ -789,7 +795,7 @@ int integrate_state_struct
     static NeutrinoParticleContainer* theGhostNPC();
   #endif
 #endif
-
+#endif
     static int NUM_STATE;
 
     static int Zhi_comp;

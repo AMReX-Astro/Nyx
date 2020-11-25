@@ -329,7 +329,9 @@ Nyx::read_params ()
 
     read_comoving_params();
 
+#ifdef AMREX_PARTICLES
     read_particle_params();
+#endif
 
 #ifdef GRAVITY
     pp_nyx.get("do_grav", do_grav);
@@ -1383,7 +1385,7 @@ Nyx::post_timestep (int iteration)
     //
     int finest_level = parent->finestLevel();
     const int ncycle = parent->nCycle(level);
-
+#ifdef AMREX_PARTICLES
     BL_PROFILE_VAR("Nyx::post_timestep()::remove_virt_ghost",rm);
     //
     // Remove virtual particles at this level if we have any.
@@ -1428,6 +1430,7 @@ Nyx::post_timestep (int iteration)
     }
     amrex::Gpu::streamSynchronize();
     BL_PROFILE_VAR_STOP(redist);
+#endif
     BL_PROFILE_VAR("Nyx::post_timestep()::do_reflux",do_reflux);
 
 #ifndef NO_HYDRO
@@ -1652,9 +1655,10 @@ void
 Nyx::post_restart ()
 {
     BL_PROFILE("Nyx::post_restart()");
+#ifdef AMREX_PARTICLES
     if (level == 0)
         particle_post_restart(parent->theRestartFile());
-
+#endif
     if (level == 0)
         comoving_a_post_restart(parent->theRestartFile());
 
@@ -1768,6 +1772,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
    BL_PROFILE("Nyx::postCoarseTimeStep()");
    MultiFab::RegionTag amrPost_tag("Post_" + std::to_string(level));
 
+#ifdef AMREX_PARTICLES
     if(load_balance_int >= 0 && nStep() % load_balance_int == 0 && (new_a >= 1.0/(load_balance_start_z + 1.0)))
     {
       if(verbose>0)
@@ -1833,8 +1838,8 @@ Nyx::postCoarseTimeStep (Real cumtime)
     amrex::Gpu::streamSynchronize();
     }
 
-    }
-
+   }
+#endif
    AmrLevel::postCoarseTimeStep(cumtime);
 
 #ifdef AGN
@@ -1848,12 +1853,13 @@ Nyx::postCoarseTimeStep (Real cumtime)
    LyA_statistics();
 #endif
 
+#ifdef AMREX_PARTICLES
     //
     // postCoarseTimeStep() is only called by level 0.
     //
     if (Nyx::theDMPC() && particle_move_type == "Random")
         particle_move_random();
-
+#endif
    int nstep = parent->levelSteps(0);
 
 #ifndef NO_HYDRO
@@ -1995,12 +2001,13 @@ Nyx::post_regrid (int lbase,
      fort_set_finest_level(&new_finest);
 #endif
 #endif
+#ifdef AMREX_PARTICLES
     if (level == lbase) {
         amrex::Gpu::LaunchSafeGuard lsg(true);
         particle_redistribute(lbase, false);
     }
     amrex::Gpu::Device::streamSynchronize();
-
+#endif
 #ifdef GRAVITY
 
     int which_level_being_advanced = parent->level_being_advanced();
@@ -2926,7 +2933,7 @@ void
 Nyx::CreateLevelDirectory (const std::string &dir)
 {
     AmrLevel::CreateLevelDirectory(dir);  // ---- this sets levelDirectoryCreated = true
-
+#ifdef AMREX_PARTICLES
     std::string dm(dir + "/" + Nyx::retrieveDM());
     if(ParallelDescriptor::IOProcessor()) {
       if( ! amrex::UtilCreateDirectory(dm, 0755)) {
@@ -2984,7 +2991,7 @@ Nyx::CreateLevelDirectory (const std::string &dir)
       }
 #endif
     }
-
+#endif
 }
 
 

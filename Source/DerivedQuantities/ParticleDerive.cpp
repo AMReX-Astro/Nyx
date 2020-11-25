@@ -8,6 +8,7 @@ using namespace amrex;
 std::unique_ptr<MultiFab>
 Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 {
+#ifdef AMREX_PARTICLES
     if (Nyx::theDMPC() && name == "particle_count")
     {
         std::unique_ptr<MultiFab> derive_dat(new MultiFab(grids, dmap, 1, 0));
@@ -349,6 +350,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 #endif
     }
     else
+#endif
     {
         return AmrLevel::derive(name, time, ngrow);
     }

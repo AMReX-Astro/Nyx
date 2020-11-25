@@ -94,6 +94,7 @@ Nyx::read_init_params ()
 
     pp.query("do_readin_ics",       do_readin_ics);
     pp.query("readin_ics_fname", readin_ics_fname);
+#ifdef AMREX_PARTICLES	
     pp.query("particle_launch_ics",       particle_launch_ics);
     pp.query("ascii_particle_file", ascii_particle_file);
 
@@ -155,6 +156,7 @@ Nyx::read_init_params ()
             std::cerr << "ERROR::particle_init_type is not AsciiFile or BinaryFile but you specified neutrino_particle_file" << std::endl;
         amrex::Error();
     }
+#endif
 #endif
 }
 
@@ -241,8 +243,11 @@ Nyx::initData ()
 
 #ifndef NO_HYDRO    
     Real  cur_time = state[State_Type].curTime();
-
+#ifdef AMREX_PARTICLES
     if ( (do_santa_barbara == 0) && (do_readin_ics == 0) && (particle_init_type != "Cosmological") )
+#else
+    if ( (do_santa_barbara == 0) && (do_readin_ics == 0) )
+#endif
     {
         if (do_hydro == 1) 
         {
@@ -380,6 +385,7 @@ Nyx::initData ()
 
     amrex::Gpu::Device::synchronize();
 
+#ifdef AMREX_PARTICLES
     if (level == 0)
         init_particles();
 
@@ -395,6 +401,7 @@ Nyx::initData ()
     //
     if (level > 0)
         particle_redistribute();
+#endif
 
     //
     // With this call we define the initial data on the current level but we
