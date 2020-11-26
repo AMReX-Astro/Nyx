@@ -61,7 +61,11 @@ if (NOT Nyx_GPU_BACKEND STREQUAL NONE)
    message( STATUS "   Nyx_GPU_BACKEND = ${Nyx_GPU_BACKEND}")
 endif ()
 
-option( Nyx_PARTICLES  "Enable particles support" YES)
+
+option( Nyx_GRAVITY            "" YES)
+cmake_dependent_option( Nyx_PARTICLES
+   "Enable particles support" YES
+   "Nyx_GRAVITY" NO)
 
 cmake_dependent_option(Nyx_SINGLE_PRECISION_PARTICLES
    "Use single precision particle data structures"
@@ -108,7 +112,6 @@ option( Nyx_CONST_SPECIES      "" ON)
 option( Nyx_REEBER             "" NO)
 option( Nyx_CGS                "" NO)
 option( Nyx_FORCING            "" NO)
-option( Nyx_GRAVITY            "" YES)
 # option( Nyx_NEUTRINO_PARTICLES "" NO)
 # option( Nyx_NEUTRINO_DARK_PARTICLES "" OFF)
 
