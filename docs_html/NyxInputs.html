@@ -1572,10 +1572,10 @@ USE_GRAV = TRUE; they both default to 0.</li>
 <span id="id28"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-12" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
-<col width="36%" />
-<col width="23%" />
-<col width="23%" />
-<col width="18%" />
+<col width="41%" />
+<col width="22%" />
+<col width="21%" />
+<col width="16%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Parameter</th>
@@ -1594,6 +1594,22 @@ equations</td>
 <td>0 if false, 1
 if true</td>
 <td>must be set</td>
+</tr>
+<tr class="row-odd"><td><strong>nyx.ppm_type</strong></td>
+<td>Use PPM or
+PLM for hydro
+advance</td>
+<td>0 for PLM
+1 for PPM</td>
+<td>1 (PPM)</td>
+</tr>
+<tr class="row-even"><td><strong>nyx.enforce_min_density_type</strong></td>
+<td>how to enforce
+rho greater than
+small_dens</td>
+<td>“floor”
+“cons”</td>
+<td>“floor”</td>
 </tr>
 <tr class="row-odd"><td><strong>nyx.add_ext_src</strong></td>
 <td>Include
