@@ -727,8 +727,10 @@ Each of these can be specified in the inputs file.</p>
 <li><p class="first"><strong>small_dens</strong></p>
 <ul>
 <li><div class="first line-block">
-<div class="line"><strong>subroutine enforce_minimum_density</strong> (called after subroutine consup) – if <span class="math notranslate nohighlight">\(\rho &lt;\)</span> small_dens then <span class="math notranslate nohighlight">\(\rho\)</span> is set to the
-minimum value of the 26 neighbors. This also modifies momenta, <span class="math notranslate nohighlight">\(\rho E\)</span> and <span class="math notranslate nohighlight">\(\rho e\)</span> so that velocties, <span class="math notranslate nohighlight">\(E\)</span> and <span class="math notranslate nohighlight">\(e\)</span> remain unchanged.</div>
+<div class="line"><strong>subroutine enforce_minimum_density</strong> (called after subroutine consup) – there are two choices for this. In the flooring routine,</div>
+<div class="line"><strong>subroutine enforce_minimum_density_floor</strong> – density is set to small_dens, (rho e) and (rho E) are computed from small_temp,</div>
+<div class="line">and momenta are set to zero.  In the conservative routine, <strong>subroutine enforce_minimum_density_cons</strong>, an iterative procedure</div>
+<div class="line">is used to create diffusive fluxes that adjusts all the variables conservatively until density is greater than small_dens.</div>
 </div>
 </li>
 <li><div class="first line-block">

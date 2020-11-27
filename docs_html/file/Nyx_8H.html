@@ -715,6 +715,16 @@
 <dd></dd></dl>
 
 <dl class="function">
+<dt id="_CPPv4N3Nyx28enforce_minimum_density_consERN5amrex8MultiFabERN5amrex8MultiFabEN5amrex4RealEN5amrex4RealEN5amrex4RealE">
+<span class="target" id="classNyx_1abd691d4bf7f3067c8ffe858ad149cc51"></span>void <code class="descname">enforce_minimum_density_cons</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>S_old</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>S_new</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>a_old</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>a_new</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx29enforce_minimum_density_floorERN5amrex8MultiFabERN5amrex8MultiFabEN5amrex4RealEN5amrex4RealEN5amrex4RealE">
+<span class="target" id="classNyx_1a2c864325303319f6cb9b5de4fdfd14a2"></span>void <code class="descname">enforce_minimum_density_floor</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>S_old</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>S_new</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>a_old</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>a_new</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="_CPPv4N3Nyx17strang_first_stepEN5amrex4RealEN5amrex4RealERN5amrex8MultiFabERN5amrex8MultiFabE">
 <span class="target" id="classNyx_1a8f22b909b1f0bbb6fc909006bccbec6e"></span>void <code class="descname">strang_first_step</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>state</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>dstate</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
@@ -1519,8 +1529,8 @@
 <dd></dd></dl>
 
 <dl class="member">
-<dt id="_CPPv4N3Nyx17use_exact_gravityE">
-<span class="target" id="classNyx_1aa08236ac4ac1d560f2108a65d9d89d50"></span>int <code class="descname">use_exact_gravity</code> = 0<br /></dt>
+<dt id="_CPPv4N3Nyx24enforce_min_density_typeE">
+<span class="target" id="classNyx_1a511bf7638b1184efe750b43cd3decb30"></span>std::string <code class="descname">enforce_min_density_type</code> = &quot;floor&quot;<br /></dt>
 <dd></dd></dl>
 
 <dl class="member">
