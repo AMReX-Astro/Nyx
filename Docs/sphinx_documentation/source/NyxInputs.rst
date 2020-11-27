@@ -881,8 +881,6 @@ List of Parameters
 |                            | quantities       |                |                |
 +----------------------------+------------------+----------------+----------------+
 
-.. _notes-6:
-
 .. _examples-of-usage-9:
 
 Examples of Usage
@@ -946,7 +944,7 @@ List of Parameters
 
 [Table:Gravity]
 
-.. _notes-7:
+.. _notes-6:
 
 Notes
 -----
