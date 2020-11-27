@@ -23,6 +23,7 @@ Welcome to Nyx's documentation!
    NightlyTests
    Visualization
    PostProcessing
+   Debugging
 
 .. toctree::
    :maxdepth: 1
