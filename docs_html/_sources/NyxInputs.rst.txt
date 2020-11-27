@@ -6,8 +6,9 @@ Inputs
 .. toctree::
    :maxdepth: 1
 
-  The  executable reads run-time information from an “inputs” file
-   which you put on the command line. 
+The Nyx executable reads run-time information from an “inputs” file which you put on the command line. 
+This section describes the inputs which can be specified either in the inputs file or on the command line.
+If a value is specified on the command line, that value will override a value specified in the inputs file.
 
 Problem Geometry
 ================
