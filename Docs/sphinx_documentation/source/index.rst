@@ -11,8 +11,9 @@ Welcome to Nyx's documentation!
    :caption: Nyx basics
 
    NyxPreface
-   NyxIntroduction
+   NyxPapers
    NyxGettingStarted
+   NyxUnits
    NyxInputs
    ManagingGridHierarchy_Chapter
    NyxEquations
