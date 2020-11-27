@@ -900,11 +900,10 @@ protected:
     static int allow_untagging;
     static int do_special_tagging;
     static int ppm_type;
+    static int enforce_min_density_type;
     static int use_flattening;
     static int use_analriem;
     static int strang_grown_box;
-
-    static int use_exact_gravity;
 
     static int num_particle_ghosts;
 

@@ -178,8 +178,6 @@ int Nyx::use_analriem       = 1;
 Real Nyx:: h_species        = 0.76;
 Real Nyx::he_species        = 0.24;
 
-int Nyx::use_exact_gravity  = 0;
-
 #ifdef REEBER
 Real Nyx::mass_halo_min     = 1.e10;
 Real Nyx::mass_seed         = 1.e5;
@@ -346,8 +344,6 @@ Nyx::read_params ()
 #endif
 
     read_init_params();
-
-    pp_nyx.query("use_exact_gravity", use_exact_gravity);
 
     pp_nyx.query("strict_subcycling",strict_subcycling);
 
