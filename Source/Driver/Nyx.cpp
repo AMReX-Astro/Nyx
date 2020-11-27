@@ -172,6 +172,9 @@ int Nyx::do_special_tagging = 0;
 Real Nyx::tagging_base       = 8.0;
 int Nyx::ppm_type           = 1;
 
+// Options are "floor" or "conservative"
+std::string Nyx::enforce_min_density_type = "floor";
+
 int Nyx::use_flattening     = 1;
 int Nyx::use_analriem       = 1;
 
@@ -592,6 +595,7 @@ Nyx::read_hydro_params ()
     pp_nyx.query("allow_untagging", allow_untagging);
     pp_nyx.query("tagging_base", tagging_base);
     pp_nyx.query("ppm_type", ppm_type);
+    pp_nyx.query("enforce_min_density_type", enforce_min_density_type);
     pp_nyx.query("use_analriem", use_analriem);
     pp_nyx.query("use_flattening", use_flattening);
 

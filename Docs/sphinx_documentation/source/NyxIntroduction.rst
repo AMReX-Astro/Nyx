@@ -308,8 +308,10 @@ These are the places that each is used in the code:
 
 -  **small_dens**
 
-   -  | **subroutine enforce_minimum_density** (called after subroutine consup) – if :math:`\rho <` small_dens then :math:`\rho` is set to the
-        minimum value of the 26 neighbors. This also modifies momenta, :math:`\rho E` and :math:`\rho e` so that velocties, :math:`E` and :math:`e` remain unchanged.
+   -  | **subroutine enforce_minimum_density** (called after subroutine consup) – there are two choices for this. In the flooring routine, 
+      | **subroutine enforce_minimum_density_floor** – density is set to small_dens, (rho e) and (rho E) are computed from small_temp,
+      | and momenta are set to zero.  In the conservative routine, **subroutine enforce_minimum_density_cons**, an iterative procedure 
+      | is used to create diffusive fluxes that adjusts all the variables conservatively until density is greater than small_dens.
 
    -  | **subroutine tracexy / tracez / tracexy_ppm / tracez_ppm**:
       | qxp = max(qxp,small_dens)

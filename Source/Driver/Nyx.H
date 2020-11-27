@@ -564,6 +564,10 @@ public:
 
     void enforce_minimum_density  ( amrex::MultiFab& S_old      , amrex::MultiFab& S_new,
                                     amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
+    void enforce_minimum_density_cons  ( amrex::MultiFab& S_old      , amrex::MultiFab& S_new,
+                                         amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
+    void enforce_minimum_density_floor ( amrex::MultiFab& S_old      , amrex::MultiFab& S_new,
+                                         amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
 
     void strang_first_step  (amrex::Real time, amrex::Real dt,  amrex::MultiFab& state, amrex::MultiFab&  dstate);
     void strang_second_step (amrex::Real time, amrex::Real dt,  amrex::MultiFab& state, amrex::MultiFab&  dstate);
@@ -900,10 +904,11 @@ protected:
     static int allow_untagging;
     static int do_special_tagging;
     static int ppm_type;
-    static int enforce_min_density_type;
     static int use_flattening;
     static int use_analriem;
     static int strang_grown_box;
+
+    static std::string enforce_min_density_type;
 
     static int num_particle_ghosts;
 
