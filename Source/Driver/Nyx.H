@@ -902,7 +902,6 @@ protected:
 
     static int nghost_state;
     static int allow_untagging;
-    static int do_special_tagging;
     static int ppm_type;
     static int use_flattening;
     static int use_analriem;

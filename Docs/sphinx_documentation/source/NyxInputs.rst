@@ -858,7 +858,7 @@ List of Parameters
 |                            | the grids are    |                |                |
 |                            | written          |                |                |
 +----------------------------+------------------+----------------+----------------+
-| *amr.run_log**             | name of the      | String         | not used if    |
+| **amr.run_log**            | name of the      | String         | not used if    |
 |                            | file to which    |                | not set        |
 |                            | certain output   |                |                |
 |                            | is written       |                |                |
@@ -880,21 +880,8 @@ List of Parameters
 |                            | print integral   |                |                |
 |                            | quantities       |                |                |
 +----------------------------+------------------+----------------+----------------+
-| **nyx.do_special_tagging** |                  | 0 or 1         | 1              |
-|                            |                  |                |                |
-+----------------------------+------------------+----------------+----------------+
 
 .. _notes-6:
-
-Notes
------
-
--  **nyx.do_special_tagging** = 1 allows the user to set a special flag
-   based on user-specified criteria. This can be used, for example, to
-   calculate the bounce time in a core collapse simulation; the bounce
-   time is defined as the first time at which the maximum density in the
-   domain exceeds a user-specified value. This time can then be printed
-   into a special file as a useful diagnostic.
 
 .. _examples-of-usage-9:
 

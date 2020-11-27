@@ -168,7 +168,6 @@ int Nyx::do_forcing =  0;
 
 int Nyx::nghost_state       = 1;
 int Nyx::allow_untagging    = 0;
-int Nyx::do_special_tagging = 0;
 Real Nyx::tagging_base       = 8.0;
 int Nyx::ppm_type           = 1;
 
