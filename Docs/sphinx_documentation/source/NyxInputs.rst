@@ -179,36 +179,6 @@ Examples of Usage
      level-1 grids will be created every 2 level-0 time steps, and new
      level-2 grids will be created every 2 level-1 time steps.
 
-Tagging
-=======
-
-.. _list-of-parameters-3:
-
-List of Parameters
-------------------
-
-+-------------------------+------------------+------------------+---------+
-| Parameter               | Definition       | Acceptable       | Default |
-|                         |                  | Values           |         |
-+=========================+==================+==================+=========+
-| **nyx.allow_untagging** | are cells        | 0 or 1           | 0       |
-|                         | allowed to be    |                  |         |
-|                         | “untagged”       |                  |         |
-+-------------------------+------------------+------------------+---------+
-
-[Table:Tagging]
-
-.. _notes-1:
-
-Notes
------
-
--  Typically cells at a given level can be tagged as needing refinement
-   by any of a number of criteria, but cannot be “untagged”. That is,
-   once tagged, no other criteria can untag them. If we set
-   **nyx.allow_untagging** = 1 then the user is allowed to “untag” cells
-   in the Fortran tagging routines.
-
 Regridding
 ==========
 

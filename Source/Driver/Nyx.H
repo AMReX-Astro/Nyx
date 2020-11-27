@@ -901,7 +901,6 @@ protected:
     static int nsteps_from_plotfile;
 
     static int nghost_state;
-    static int allow_untagging;
     static int ppm_type;
     static int use_analriem;
     static int strang_grown_box;
