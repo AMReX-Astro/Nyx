@@ -1,54 +1,61 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html4" lang="en" >
 <head>
   <meta charset="utf-8">
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>&lt;no title&gt; &mdash; Nyx 18.05
- documentation</title>
+  <title>Units and Conventions &mdash; Nyx  documentation</title>
   
 
   
-  
-  
-  
-
-  
-
-  
-  
-    
-
-  
-
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/theme_overrides.css" type="text/css" />
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
 
   
-  <script src="_static/js/modernizr.min.js"></script>
+  
+  
+  
 
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"TeX": {"Macros": {"kth": "{{k_\\mathrm{th}}}", "gcc": "{\\mathrm{g~cm^{-3}}}", "cms": "{\\mathrm{cm~s^{-1}}}", "presunit": "{\\mathrm{dyn~cm^{-2}}}", "accelunit": "{\\mathrm{cm~s^{-2}}}", "ergg": "{\\mathrm{erg~g^{-1}}}", "Ab": "{{\\bf A}}", "eb": "{{\\bf e}}", "Fb": "{{\\bf F}}", "gb": "{{\\bf g}}", "Hb": "{{\\bf H}}", "ib": "{{\\bf i}}", "Ib": "{{\\bf I}}", "Kb": "{{\\bf K}}", "lb": "{{\\bf l}}", "Lb": "{{\\bf L}}", "nb": "{{\\bf n}}", "Pb": "{{\\bf P}}", "Qb": "{{\\bf Q}}", "rb": "{{\\bf r}}", "Rb": "{{\\bf R}}", "Sb": "{{\\bf S}}", "ub": "{{\\bf u}}", "Ub": "{{\\bf U}}", "xb": "{{\\bf x}}", "dt": "{\\Delta t}", "omegadot": "{\\dot\\omega}", "inp": "{{\\rm in}}", "outp": "{{\\rm out}}", "sync": "{{\\rm sync}}", "half": "{\\frac{1}{2}}", "myhalf": "{\\half}", "nph": "{{n+\\myhalf}}", "kpp": "{\\ensuremath{\\kappa_{\\mathrm{P}}}}", "kpr": "{\\ensuremath{\\kappa_{\\mathrm{R}}}}", "kpf": "{\\ensuremath{\\kappa_{\\mathrm{F}}}}", "vb": "{\\boldsymbol{v}}", "vbt": "{\\widetilde{\\vb}}", "rbt": "{\\widetilde{\\rb}}", "ob": "{\\boldsymbol{\\omega}}", "nablab": "{\\boldsymbol{\\nabla}}"}}, "tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Inputs" href="NyxInputs.html" />
+    <link rel="prev" title="Getting Started" href="NyxGettingStarted.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
 
    
   <div class="wy-grid-for-nav">
-
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
-        <div class="wy-side-nav-search">
+        <div class="wy-side-nav-search" >
           
 
           
-            <a href="index.html" class="icon icon-home"> Nyx
+            <a href="index.html" class="icon icon-home" alt="Documentation Home"> Nyx
           
 
           
@@ -56,11 +63,6 @@
 
           
             
-            
-              <div class="version">
-                18.05
-
-              </div>
             
           
 
@@ -76,6 +78,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -84,25 +87,38 @@
             
             
               <p class="caption"><span class="caption-text">Nyx basics</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="NyxPreface.html">Preface</a></li>
-<li class="toctree-l1"><a class="reference internal" href="NyxIntroduction.html">Introduction to Nyx</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxPapers.html">Nyx Papers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxGettingStarted.html">Getting Started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="NyxGravity.html">Gravity</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Units and Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxInputs.html">Inputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ManagingGridHierarchy_Chapter.html">Gridding and Load Balancing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxEquations.html">Hydrodynamic Equations in Comoving Coordinates</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Particles.html">Dark matter particles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxHeatCool.html">Radiative Heating and Cooling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxGravity.html">Gravity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxForcing.html">Stochastic Forcing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Particles.html">Dark matter particles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AGN.html">The AGN Model in Nyx</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AGN.html#the-reeber-package">The Reeber Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NightlyTests.html">Nightly Regression Tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Visualization.html">Visualization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PostProcessing.html">PostProcessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Debugging.html">Debugging</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="filelist.html">File list</a></li>
 <li class="toctree-l1"><a class="reference internal" href="classlist.html">Class list</a></li>
-<li class="toctree-l1"><a class="reference internal" href="namespacelist.html">Namespace list</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="zreferences.html">References</a></li>
 </ul>
 
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -141,9 +157,9 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="index.html">Docs</a> &raquo;</li>
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>&lt;no title&gt;</li>
+      <li>Units and Conventions</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -167,20 +183,622 @@
 /* CSS overrides for sphinx_rtd_theme */
 
 /* 24px margin */
-.nbinput.nblast,
-.nboutput.nblast {
+.nbinput.nblast.container,
+.nboutput.nblast.container {
     margin-bottom: 19px;  /* padding has already 5px */
 }
 
 /* ... except between code cells! */
-.nblast + .nbinput {
+.nblast.container + .nbinput.container {
     margin-top: -19px;
 }
 
 .admonition > p:before {
     margin-right: 4px;  /* make room for the exclamation icon */
 }
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
 </style>
+<div class="section" id="units-and-conventions">
+<h1>Units and Conventions<a class="headerlink" href="#units-and-conventions" title="Permalink to this headline">¶</a></h1>
+<p>Nyx supports both CGS and Cosmological units.</p>
+<p>All inputs and problem initialization should be specified consistently with one of these sets of units.
+No internal conversions of units occur within the code, so the output must be interpreted appropriately.
+The default is cosmological units.</p>
+<p>If you want to use CGS units instead, then set</p>
+<p><strong>USE_CGS = TRUE</strong></p>
+<p>in your GNUmakefile. This will select the file constants_cgs.f90 instead of constants_cosmo.f90 from the
+Nyx/constants directory.</p>
+<p>In the equation of state calls,
+conversions must be made between CGS units and code units.
+Table <a class="reference external" href="#table:units">[table:units]</a> shows some of the common symbols / names used
+throughout the code documentation and papers.</p>
+<table border="1" class="docutils" id="id3">
+<caption><span class="caption-text">[table:units] Common quantities and units.</span><a class="headerlink" href="#id3" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="33%" />
+<col width="33%" />
+<col width="33%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">name</th>
+<th class="head">units</th>
+<th class="head">description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><span class="math notranslate nohighlight">\(t\)</span></td>
+<td>s</td>
+<td>time</td>
+</tr>
+<tr class="row-odd"><td><span class="math notranslate nohighlight">\(\rho\)</span></td>
+<td><span class="math notranslate nohighlight">\(\gcc\)</span></td>
+<td>mass density</td>
+</tr>
+<tr class="row-even"><td><span class="math notranslate nohighlight">\(\ub\)</span></td>
+<td><span class="math notranslate nohighlight">\(\cms\)</span></td>
+<td>velocity vector</td>
+</tr>
+<tr class="row-odd"><td><span class="math notranslate nohighlight">\(p\)</span></td>
+<td><span class="math notranslate nohighlight">\(\presunit\)</span></td>
+<td>pressure</td>
+</tr>
+<tr class="row-even"><td><span class="math notranslate nohighlight">\(\gb\)</span></td>
+<td><span class="math notranslate nohighlight">\(\accelunit\)</span></td>
+<td>gravitational
+acceleration</td>
+</tr>
+<tr class="row-odd"><td><span class="math notranslate nohighlight">\(\Sb\)</span></td>
+<td>varies</td>
+<td>source term</td>
+</tr>
+<tr class="row-even"><td><span class="math notranslate nohighlight">\(S_{\Lambda}\)</span></td>
+<td>varies</td>
+<td>source term</td>
+</tr>
+<tr class="row-odd"><td><span class="math notranslate nohighlight">\(E\)</span></td>
+<td><span class="math notranslate nohighlight">\(\ergg\)</span></td>
+<td>specific total energy</td>
+</tr>
+<tr class="row-even"><td><span class="math notranslate nohighlight">\(e\)</span></td>
+<td><span class="math notranslate nohighlight">\(\ergg\)</span></td>
+<td>specific internal
+energy</td>
+</tr>
+<tr class="row-odd"><td><span class="math notranslate nohighlight">\(T\)</span></td>
+<td><span class="math notranslate nohighlight">\(K\)</span></td>
+<td>temperature</td>
+</tr>
+</tbody>
+</table>
+<p>words</p>
+<table border="1" class="docutils" id="id4">
+<caption><span class="caption-text">[table:inputs]
+        Units expected for inputs and outputs.</span><a class="headerlink" href="#id4" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="20%" />
+<col width="20%" />
+<col width="20%" />
+<col width="20%" />
+<col width="20%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>Location</td>
+<td>Variable</td>
+<td>CGS</td>
+<td>Cosmologica
+l</td>
+<td>Conversion
+Data</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>inputs file</td>
+<td><strong>geometry.
+prob_lo</strong></td>
+<td>cm</td>
+<td>Mpc</td>
+<td>1Mpc =
+3.08568025e
+24
+cm</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td><strong>geometry.
+prob_hi</strong></td>
+<td>cm</td>
+<td>Mpc</td>
+<td>1Mpc =
+3.08568025e
+24
+cm</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>Hydro
+Initializat
+ion</td>
+<td>density</td>
+<td>g /
+cm:math:`
+^3`</td>
+<td>M<span class="math notranslate nohighlight">\(_
+\odot\)</span>
+/
+Mpc:math:
+<cite>^3</cite></td>
+<td>1
+(M:math:<cite>_odot</cite>
+/
+Mpc:math:
+<cite>^3</cite>)
+=
+.06769624e-
+39
+(g/cm:math:
+<cite>^3</cite>)</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>Hydro
+Initializat
+ion</td>
+<td>velocities</td>
+<td>cm/s</td>
+<td>km/s</td>
+<td>1km = 1.e5
+cm</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>Hydro
+Initializat
+ion</td>
+<td>momenta</td>
+<td>(g/cm:math:
+<cite>^3</cite>)
+(cm/s)</td>
+<td>(M:math:<cite>_odot</cite>/Mpc:m
+ath:<cite>^3</cite>)
+(km/s)</td>
+<td>1km = 1.e5
+cm</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>1
+(M:math:<cite>_odot</cite>
+/
+Mpc:math:
+<cite>^3</cite>)
+=
+.06769624e-
+39
+g/cm:math
+:<cite>^3</cite></td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>Hydro
+Initializat
+ion</td>
+<td>temperature</td>
+<td>K</td>
+<td>K</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>Hydro
+Initializat
+ion</td>
+<td>specific
+energy
+(<span class="math notranslate nohighlight">\(e\)</span>
+or
+<span class="math notranslate nohighlight">\(E\)</span>)</td>
+<td>erg/g=
+(cm/s):math
+:<cite>^2</cite></td>
+<td>(km/s):math
+:<cite>^2</cite></td>
+<td>1
+(km/s):math
+:<cite>^2</cite>
+= 1.e10
+(cm/s):math
+:<cite>^2</cite></td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>Hydro
+Initializat
+ion</td>
+<td><p class="first">energy
+(<span class="math notranslate nohighlight">\(\rh
+o e\)</span>
+or
+:math:<a href="#id1"><span class="problematic" id="id2">`</span></a>rho</p>
+<blockquote class="last">
+<div>E`)</div></blockquote>
+</td>
+<td>erg /
+cm:math:`
+^3 =`</td>
+<td>(M:math:<cite>_odot</cite>/Mpc:m
+ath:<cite>^3</cite>)
+(km/s):math
+:<cite>^2</cite></td>
+<td>1
+(km/s):math
+:<cite>^2</cite>
+= 1.e10
+(cm/s):math
+:<cite>^2</cite></td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td>&#160;</td>
+<td>(g/cm:math:
+<cite>^3</cite>)
+(cm/s):math
+:<cite>^2</cite></td>
+<td>&#160;</td>
+<td>1
+(M:math:<cite>_odot</cite>
+/
+Mpc:math:
+<cite>^3</cite>)
+=
+.06769624e-
+39
+g/cm:math
+:<cite>^3</cite></td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>Particle
+Initializat
+ion</td>
+<td>particle
+mass</td>
+<td>g</td>
+<td>M<span class="math notranslate nohighlight">\(_
+\odot\)</span></td>
+<td>1
+M<span class="math notranslate nohighlight">\(_
+\odot\)</span>
+=
+1.98892e33
+g</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>Particle
+Initializat
+ion</td>
+<td>particle
+locations</td>
+<td>cm</td>
+<td>Mpc</td>
+<td>1 Mpc =
+3.08568025e
+24
+cm</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>Particle
+Initializat
+ion</td>
+<td>particle
+velocities</td>
+<td>cm/s</td>
+<td>km/s</td>
+<td>1 km = 1e5
+cm</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>Output</td>
+<td>Pressure</td>
+<td>g
+(cm/s):math
+:<cite>^2</cite>
+/
+cm:math:`
+^3`</td>
+<td>M<span class="math notranslate nohighlight">\(_
+\odot\)</span>
+(km/s):math
+:<cite>^2</cite>
+/
+Mpc:math:
+<cite>^3</cite></td>
+<td>1
+M<span class="math notranslate nohighlight">\(_
+\odot\)</span>
+(km/s):math
+:<cite>^2</cite>
+/
+Mpc:math:
+<cite>^3</cite>
+=</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>.06769624e-
+29
+g
+(cm/s):math
+:<cite>^2</cite>
+/
+cm:math:`
+^3`</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>Output</td>
+<td>Gravity</td>
+<td>(cm/s) / s</td>
+<td>(km/s):math
+:<cite>^2</cite>
+/ Mpc</td>
+<td>1
+M<span class="math notranslate nohighlight">\(_
+\odot\)</span>
+(km/s):math
+:<cite>^2</cite>
+/
+Mpc:math:
+<cite>^3</cite>
+=</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>Output</td>
+<td>Time</td>
+<td>s</td>
+<td>(Mpc/km) s</td>
+<td>1 Mpc =
+3.08568025e
+19
+km</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+</tbody>
+</table>
+<p>[Table:Inputs]</p>
+<p>The only other place that dimensional numbers are used in the code is in the tracing and Riemann solve.
+We set three <em>small</em> numbers which need to be consistent with the data specified.
+Each of these can be specified in the inputs file.</p>
+<ul class="simple">
+<li>small_dens – small value for density</li>
+<li>small_p – small value for pressure</li>
+<li>small_T – small value for temperature</li>
+</ul>
+<p>These are the places that each is used in the code:</p>
+<ul>
+<li><p class="first"><strong>small_dens</strong></p>
+<ul>
+<li><div class="first line-block">
+<div class="line"><strong>subroutine enforce_minimum_density</strong> (called after subroutine consup) – there are two choices for this. In the flooring routine,</div>
+<div class="line"><strong>subroutine enforce_minimum_density_floor</strong> – density is set to small_dens, (rho e) and (rho E) are computed from small_temp,</div>
+<div class="line">and momenta are set to zero.  In the conservative routine, <strong>subroutine enforce_minimum_density_cons</strong>, an iterative procedure</div>
+<div class="line">is used to create diffusive fluxes that adjusts all the variables conservatively until density is greater than small_dens.</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line"><strong>subroutine tracexy / tracez / tracexy_ppm / tracez_ppm</strong>:</div>
+<div class="line">qxp = max(qxp,small_dens)</div>
+<div class="line">qxm = max(qxm,small_dens)</div>
+<div class="line">and analogously for qyp/qym and qzp/qzm. This only modifies density inside the tracing, not the other variables</div>
+</div>
+</li>
+<li><p class="first"><strong>subroutine riemannus</strong> – we set</p>
+<p>wsmall = small_dens * csmall</p>
+<p>and then</p>
+<div class="line-block">
+<div class="line">wl = max(wsmall, sqrt(gaml * pl * rl))</div>
+<div class="line">wr = max(wsmall, sqrt(gamr * pr * rr))</div>
+</div>
+<p>Also, we set</p>
+<p>ro = max(small_dens,ro)</p>
+<p>where ro = 0.5 * (rl + rr) – this state is only chosen when ustar = 0, and</p>
+<p>rstar = max(small_dens,rstar)</p>
+<p>where rstar = ro + (pstar-po)/co:math:<cite>^2</cite></p>
+</li>
+<li><p class="first"><strong>subroutine react_state</strong> – only compute reaction if <span class="math notranslate nohighlight">\(\rho &gt;\)</span> small_dens</p>
+</li>
+</ul>
+</li>
+<li><p class="first"><strong>small_temp</strong>:</p>
+<ul>
+<li><div class="first line-block">
+<div class="line"><strong>subroutine ctoprim</strong>: if <span class="math notranslate nohighlight">\(\rho e &lt; 0\)</span>, then</div>
+<div class="line">call subroutine nyx_eos_given_RTX (e,…,small_temp,…) in order to compute a new energy, <span class="math notranslate nohighlight">\(e\)</span>.</div>
+<div class="line">This energy is then used to</div>
+<div class="line">call subroutine nyx_eos_given_ReX in order to compute the sound speed, <span class="math notranslate nohighlight">\(c.\)</span></div>
+<div class="line">Coming out of this the temperature is equal to small_temp and the energy <span class="math notranslate nohighlight">\(e\)</span> has been reset.</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line"><strong>subroutine react_state</strong>: if <span class="math notranslate nohighlight">\(\rho e &lt; 0\)</span>, then</div>
+<div class="line">call subroutine nyx_eos_given_RTX (e,…,small_temp,…) in order to compute a new energy, <span class="math notranslate nohighlight">\(e\)</span>.</div>
+<div class="line">This energy is then used to proceed with the burner routine.</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line"><strong>subroutine reset_internal_energy</strong>: if <span class="math notranslate nohighlight">\(e &lt; 0\)</span> and <span class="math notranslate nohighlight">\(E - ke &lt; 0\)</span> then</div>
+<div class="line">call subroutine nyx_eos_given_RTX (e,…,small_temp,…) in order to compute a new energy, <span class="math notranslate nohighlight">\(e\)</span>. This energy is also used to</div>
+<div class="line">define a new <span class="math notranslate nohighlight">\(E = e + ke\)</span></div>
+</div>
+</li>
+</ul>
+</li>
+<li><p class="first"><strong>small_pres</strong>:</p>
+<ul>
+<li><p class="first"><strong>subroutine riemannus</strong> – we set</p>
+<div class="line-block">
+<div class="line">pstar = max(small_pres,pstar)</div>
+<div class="line">pgdnv = max(small_pres,pgdnv). Note that pgdnv is the pressure explicitly used in the fluxes.</div>
+</div>
+</li>
+<li><p class="first"><strong>subroutine uflaten</strong> – small_pres is used to keep the denominator away from zero</p>
+</li>
+<li><p class="first">Everywhere we define values of pressure on a face, we set that value to be at least small_pres.</p>
+</li>
+</ul>
+</li>
+</ul>
+</div>
 
 
            </div>
@@ -188,16 +806,33 @@
           </div>
           <footer>
   
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="NyxInputs.html" class="btn btn-neutral float-right" title="Inputs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="NyxGettingStarted.html" class="btn btn-neutral float-left" title="Getting Started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
 
   <hr/>
 
   <div role="contentinfo">
     <p>
-        &copy; Copyright 2018, Nyx development team.
+        
+        &copy; Copyright 2018, Nyx development team
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -209,35 +844,16 @@
   </div>
   
 
-
-  
-
-    <script type="text/javascript">
-        var DOCUMENTATION_OPTIONS = {
-            URL_ROOT:'./',
-            VERSION:'18.05',
-            LANGUAGE:'None',
-            COLLAPSE_INDEX:false,
-            FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
-        };
-    </script>
-      <script type="text/javascript" src="_static/jquery.js"></script>
-      <script type="text/javascript" src="_static/underscore.js"></script>
-      <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-      <script type="text/javascript" src="None"></script>
-
-  
-
-  <script type="text/javascript" src="_static/js/theme.js"></script>
-
   <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

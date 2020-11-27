@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>PostProcessing &mdash; Nyx  documentation</title>
+  <title>Debugging &mdash; Nyx  documentation</title>
   
 
   
@@ -40,8 +40,8 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Debugging" href="Debugging.html" />
-    <link rel="prev" title="Visualization" href="Visualization.html" /> 
+    <link rel="next" title="File list" href="filelist.html" />
+    <link rel="prev" title="PostProcessing" href="PostProcessing.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -103,13 +103,8 @@
 <li class="toctree-l1"><a class="reference internal" href="AGN.html#the-reeber-package">The Reeber Package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NightlyTests.html">Nightly Regression Tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Visualization.html">Visualization</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">PostProcessing</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#reeber">Reeber</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#gimlet">Gimlet</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="Debugging.html">Debugging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PostProcessing.html">PostProcessing</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Debugging</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API</span></p>
 <ul>
@@ -164,13 +159,13 @@
     
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>PostProcessing</li>
+      <li>Debugging</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/PostProcessing.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/Debugging.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -207,43 +202,48 @@
     text-align: unset;
 }
 </style>
-<div class="section" id="postprocessing">
-<span id="id1"></span><h1>PostProcessing<a class="headerlink" href="#postprocessing" title="Permalink to this headline">¶</a></h1>
-<p>Nyx interfaces with two post-processing suites, Reeber and Gimlet.</p>
-<div class="section" id="reeber">
-<h2>Reeber<a class="headerlink" href="#reeber" title="Permalink to this headline">¶</a></h2>
-<p>Reeber uses topological methods to construct merge trees of scalar fields.
-These trees are effectively parameter-independent and contain a complete
-description of the field topology. In the context of Nyx, the field of interest
-is the dark matter density. Nyx then queries the merge tree with user-defined
-runtime parameters in order to locate the volume-averaged center of dark matter
-halos. The same tree can be queried with any number of such parameters to find
-halos with different mass/density thresholds.</p>
+<div class="section" id="debugging">
+<span id="chap-debugging"></span><h1>Debugging<a class="headerlink" href="#debugging" title="Permalink to this headline">¶</a></h1>
+<p>Debugging is an art.  Everyone has their own favorite method.  Here we
+offer a few tips we have found to be useful.</p>
+<p>Compiling in debug mode (e.g., <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">make</span></span> <span class="name"><span class="pre">DEBUG</span></span><span class="operator"><span class="pre">=</span></span><span class="name"><span class="pre">TRUE</span></span></code> for gmake users;
+<code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">cmake</span></span> <span class="operator"><span class="pre">-</span></span><span class="name"><span class="pre">DDEBUG</span></span></code> for cmake users) and running with
+<code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">amrex</span></span><span class="punctuation"><span class="pre">.</span></span><span class="name"><span class="pre">fpe_trap_invalid</span></span><span class="operator"><span class="pre">=</span></span><span class="literal number integer"><span class="pre">1</span></span></code> in the inputs file can be helpful.
+In debug mode, many compiler debugging flags are turned on and all
+<code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">MultiFab</span></span></code> s are initialized to signaling NaNs.  The
+<code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">amrex</span></span><span class="punctuation"><span class="pre">.</span></span><span class="name"><span class="pre">fpe_trap_invalid</span></span></code> parameter will result in backtrace files
+when a floating point exception occurs.  One can then examine those
+files to track down the origin of the issue.</p>
+<p>Several other ways to look at the data include:</p>
+<ol class="arabic simple">
+<li>Writing a <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">MultiFab</span></span></code> to disk with</li>
+</ol>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">VisMF</span><span class="o">::</span><span class="n">Write</span><span class="p">(</span><span class="k">const</span> <span class="n">FabArray</span><span class="o">&lt;</span><span class="n">FArrayBox</span><span class="o">&gt;&amp;</span> <span class="n">mf</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">name</span><span class="p">);</span>
+</pre></div>
 </div>
-<div class="section" id="gimlet">
-<h2>Gimlet<a class="headerlink" href="#gimlet" title="Permalink to this headline">¶</a></h2>
-<p>Gimlet computes a variety of quantities about the simulation, including optical
-depths, Lyman-alpha fluxes, power spectra (both 1-D <a href="#id2"><span class="problematic" id="id3">``</span></a>line-of-sight’’ as well as
-fully 3-D), and probability distribution functions. These suites are fully
-MPI-parallel and can be run either <a href="#id4"><span class="problematic" id="id5">``</span></a>in situ’’ or <a href="#id6"><span class="problematic" id="id7">``</span></a>in-transit,’’ or with a
-combination of both. A detailed description of their usage is provided in the
-Nyx User Guide.</p>
+<p>and examining it with <code class="docutils literal notranslate"><span class="pre">Amrvis</span></code> (section <span class="xref std std-ref">sec:amrvis</span> in the AMReX documentation).</p>
+<ol class="arabic simple" start="2">
+<li>You can also use the <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">print_state</span></span></code> routine:</li>
+</ol>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">print_state</span><span class="p">(</span><span class="k">const</span> <span class="n">MultiFab</span><span class="o">&amp;</span> <span class="n">mf</span><span class="p">,</span> <span class="k">const</span> <span class="n">IntVect</span><span class="o">&amp;</span> <span class="n">cell</span><span class="p">,</span> <span class="k">const</span> <span class="kt">int</span> <span class="n">n</span><span class="o">=</span><span class="mi">-1</span><span class="p">);</span>
+</pre></div>
 </div>
-<div class="section" id="usage">
-<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
-<p>Nyx can post-process with Gimlet alone, with Reeber alone, or with both
-simultaneously.</p>
-<p>To compile with Gimlet,</p>
-<p>GIMLET = TRUE</p>
-<p>to the GNUMakefile</p>
-<p>To compile with Reeber, add</p>
-<p>REEBER = TRUE</p>
-<p>Note that these codes are in separate repositories and are not included with Nyx.</p>
-<p>Nyx and AMReX provide the capability for the user to execute an arbitrary
-post-processing workflow in situ. An in situ workflow is one in which all
-MPI processes evolving the simulation stop at specified time steps and perform
-the post-processing before continuing with
-the simulation.</p>
+<p>which outputs the data for a single cell.</p>
+<ol class="arabic simple" start="3">
+<li>If you want to compare old and new plotfiles,</li>
+</ol>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">fcompare</span> <span class="o">--</span><span class="n">infile1</span> <span class="n">plt00000_run1</span> <span class="o">--</span><span class="n">infile2</span> <span class="n">plt00000_run2</span> <span class="o">--</span><span class="n">diffvar</span> <span class="n">u_g</span>
+</pre></div>
+</div>
+<p>will print out the maximum absolute and relative differences between the two plotfiles
+for each variable and will also create a new plotfile “diffs” that contains the difference
+in u_g (in this case) between the two plotfiles.</p>
+<p>The <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">fcompare</span></span></code> executable can be built in AMReX (go to amrex/Tools/Plotfile and type “make”).</p>
+<p>4) Valgrind is another useful debugging tool.  Note that for runs using
+more than one MPI process, one can tell valgrind to output to different
+files for different processes.  For example,</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">mpiexec -n 4 valgrind --leak-check=yes --track-origins=yes --log-file=vallog.%p ./Nyx3d.exe ...</span>
+</pre></div>
 </div>
 </div>
 
@@ -255,10 +255,10 @@ the simulation.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="Debugging.html" class="btn btn-neutral float-right" title="Debugging" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="filelist.html" class="btn btn-neutral float-right" title="File list" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="Visualization.html" class="btn btn-neutral float-left" title="Visualization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="PostProcessing.html" class="btn btn-neutral float-left" title="PostProcessing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

@@ -94,6 +94,12 @@ Building the Code
 Running the Code
 ================
 
+The Nyx executable reads run-time information from an “inputs” file which you designate on the command line.
+Values can be specified either in the inputs file or on the command line.
+If a value is specified on the command line, that value will override a value specified in the inputs file.
+
+See the Inputs section for more detail about what parameters can be specified at run-time.
+
 #. Type:
 
    ::

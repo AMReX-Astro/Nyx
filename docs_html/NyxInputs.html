@@ -41,7 +41,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Gridding and Load Balancing" href="ManagingGridHierarchy_Chapter.html" />
-    <link rel="prev" title="Getting Started" href="NyxGettingStarted.html" /> 
+    <link rel="prev" title="Units and Conventions" href="NyxUnits.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -89,8 +89,9 @@
               <p class="caption"><span class="caption-text">Nyx basics</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="NyxPreface.html">Preface</a></li>
-<li class="toctree-l1"><a class="reference internal" href="NyxIntroduction.html">Units and Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxPapers.html">Nyx Papers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxGettingStarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxUnits.html">Units and Conventions</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Inputs</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#problem-geometry">Problem Geometry</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#list-of-parameters">List of Parameters</a></li>
@@ -106,11 +107,6 @@
 <li class="toctree-l2"><a class="reference internal" href="#resolution">Resolution</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#list-of-parameters-2">List of Parameters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#examples-of-usage-2">Examples of Usage</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#tagging">Tagging</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#list-of-parameters-3">List of Parameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#notes-1">Notes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#regridding">Regridding</a><ul>
@@ -151,31 +147,33 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#screen-output">Screen Output</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#list-of-parameters-10">List of Parameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#notes-6">Notes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#examples-of-usage-9">Examples of Usage</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#gravity">Gravity</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#list-of-parameters-11">List of Parameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#notes-7">Notes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#notes-6">Notes</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#physics">Physics</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#list-of-parameters-12">List of Parameters</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#multigrid-inputs">Multigrid Inputs</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ManagingGridHierarchy_Chapter.html">Gridding and Load Balancing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxEquations.html">Hydrodynamic Equations in Comoving Coordinates</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Particles.html">Dark matter particles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxHeatCool.html">Radiative Heating and Cooling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxGravity.html">Gravity</a></li>
-<li class="toctree-l1"><a class="reference internal" href="InputsMultigrid.html">Multigrid Inputs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxForcing.html">Stochastic Forcing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Particles.html">Dark matter particles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AGN.html">The AGN Model in Nyx</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AGN.html#the-reeber-package">The Reeber Package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NightlyTests.html">Nightly Regression Tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Visualization.html">Visualization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="PostProcessing.html">PostProcessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Debugging.html">Debugging</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API</span></p>
 <ul>
@@ -277,6 +275,9 @@
 <h1>Inputs<a class="headerlink" href="#inputs" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
+<p>The Nyx&nbsp;executable reads run-time information from an “inputs” file which you put on the command line.
+This section describes the inputs which can be specified either in the inputs file or on the command line.
+If a value is specified on the command line, that value will override a value specified in the inputs file.</p>
 <div class="section" id="problem-geometry">
 <h2>Problem Geometry<a class="headerlink" href="#problem-geometry" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="list-of-parameters">
@@ -528,48 +529,6 @@ level-2 grids will be created every 2 level-1 time steps.</div>
 </ul>
 </div>
 </div>
-<div class="section" id="tagging">
-<h2>Tagging<a class="headerlink" href="#tagging" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="list-of-parameters-3">
-<span id="id5"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-3" title="Permalink to this headline">¶</a></h3>
-<table border="1" class="docutils">
-<colgroup>
-<col width="36%" />
-<col width="26%" />
-<col width="26%" />
-<col width="13%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Parameter</th>
-<th class="head">Definition</th>
-<th class="head">Acceptable
-Values</th>
-<th class="head">Default</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td><strong>nyx.allow_untagging</strong></td>
-<td>are cells
-allowed to be
-“untagged”</td>
-<td>0 or 1</td>
-<td>0</td>
-</tr>
-</tbody>
-</table>
-<p>[Table:Tagging]</p>
-</div>
-<div class="section" id="notes-1">
-<span id="id6"></span><h3>Notes<a class="headerlink" href="#notes-1" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li>Typically cells at a given level can be tagged as needing refinement
-by any of a number of criteria, but cannot be “untagged”. That is,
-once tagged, no other criteria can untag them. If we set
-<strong>nyx.allow_untagging</strong> = 1 then the user is allowed to “untag” cells
-in the Fortran tagging routines.</li>
-</ul>
-</div>
-</div>
 <div class="section" id="regridding">
 <h2>Regridding<a class="headerlink" href="#regridding" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="overview">
@@ -584,7 +543,7 @@ Berger–Rigoutsos algorithm to create rectangular grids that contain the
 tagged cells.</p>
 </div>
 <div class="section" id="list-of-parameters-4">
-<span id="id7"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-4" title="Permalink to this headline">¶</a></h3>
+<span id="id5"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-4" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="37%" />
@@ -661,7 +620,7 @@ if true</td>
 <p>[Table:GriddingInputs]</p>
 </div>
 <div class="section" id="notes-2">
-<span id="id8"></span><h3>Notes<a class="headerlink" href="#notes-2" title="Permalink to this headline">¶</a></h3>
+<span id="id6"></span><h3>Notes<a class="headerlink" href="#notes-2" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><strong>amr.n_error_buf</strong>, <strong>amr.max_grid_size</strong> and
 <strong>amr.blocking_factor</strong> can be read in as a single value which is
@@ -675,7 +634,7 @@ at every level</li>
 </ul>
 </div>
 <div class="section" id="examples-of-usage-3">
-<span id="id9"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-3" title="Permalink to this headline">¶</a></h3>
+<span id="id7"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-3" title="Permalink to this headline">¶</a></h3>
 <ul>
 <li><div class="first line-block">
 <div class="line"><strong>amr.regrid_file</strong> = <em>fixed_grids</em></div>
@@ -761,7 +720,7 @@ repeat the steps above with <strong>max_grid_size / 4</strong>.</li>
 <div class="section" id="simulation-time">
 <h2>Simulation Time<a class="headerlink" href="#simulation-time" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="list-of-parameters-5">
-<span id="id10"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-5" title="Permalink to this headline">¶</a></h3>
+<span id="id8"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-5" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="26%" />
@@ -814,7 +773,7 @@ final value of z</td>
 <p>[Table:TimeInputs]</p>
 </div>
 <div class="section" id="notes-3">
-<span id="id11"></span><h3>Notes<a class="headerlink" href="#notes-3" title="Permalink to this headline">¶</a></h3>
+<span id="id9"></span><h3>Notes<a class="headerlink" href="#notes-3" title="Permalink to this headline">¶</a></h3>
 <p>To control the number of time steps, you can limit by the maximum number
 of level-0 time steps (<strong>max_step</strong>), or the final simulation time
 (<strong>stop_time</strong>), or both. The code will stop at whichever criterion
@@ -831,7 +790,7 @@ rather it stops once <span class="math notranslate nohighlight">\(a\)</span> is 
 than) this value.)</p>
 </div>
 <div class="section" id="examples-of-usage-4">
-<span id="id12"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-4" title="Permalink to this headline">¶</a></h3>
+<span id="id10"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-4" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><strong>max_step</strong> = 1000</li>
 <li><strong>stop_time</strong> = 1.0</li>
@@ -853,11 +812,11 @@ further than <span class="math notranslate nohighlight">\(f \Delta t\)</span> in
 hard-wired in Particles.H, but it will become an inputs parameter.</li>
 </ul>
 <div class="section" id="list-of-parameters-6">
-<span id="id13"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-6" title="Permalink to this headline">¶</a></h3>
+<span id="id11"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-6" title="Permalink to this headline">¶</a></h3>
 <p>[Table:TimeStepInputs]</p>
 </div>
 <div class="section" id="examples-of-usage-5">
-<span id="id14"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-5" title="Permalink to this headline">¶</a></h3>
+<span id="id12"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-5" title="Permalink to this headline">¶</a></h3>
 <ul>
 <li><div class="first line-block">
 <div class="line"><strong>nyx.cfl</strong> = 0.9</div>
@@ -927,7 +886,7 @@ subcycle according to the values supplied by
 <strong>subcycling_iterations</strong>.</li>
 </ul>
 <div class="section" id="list-of-parameters-7">
-<span id="id15"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-7" title="Permalink to this headline">¶</a></h3>
+<span id="id13"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-7" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="25%" />
@@ -970,7 +929,7 @@ Manual mode</td>
 </table>
 </div>
 <div class="section" id="examples-of-usage-6">
-<span id="id16"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-6" title="Permalink to this headline">¶</a></h3>
+<span id="id14"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-6" title="Permalink to this headline">¶</a></h3>
 <ul>
 <li><div class="first line-block">
 <div class="line"><strong>amr.subcycling_mode</strong><span class="math notranslate nohighlight">\(=\)</span>Manual</div>
@@ -1001,13 +960,13 @@ the inputs file, the following options control the generation of
 checkpoint files (which are really directories):</div>
 </div>
 <div class="section" id="list-of-parameters-8">
-<span id="id17"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-8" title="Permalink to this headline">¶</a></h3>
+<span id="id15"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-8" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
-<col width="25%" />
-<col width="25%" />
-<col width="25%" />
-<col width="25%" />
+<col width="41%" />
+<col width="20%" />
+<col width="20%" />
+<col width="20%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Parameter</th>
@@ -1018,15 +977,13 @@ Values</th>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><strong>am
-r.check_file</strong></td>
+<tr class="row-even"><td><strong>amr.check_file</strong></td>
 <td>prefix for
 restart files</td>
-<td>Text</td>
+<td>String</td>
 <td>“<em>chk</em>”</td>
 </tr>
-<tr class="row-odd"><td><strong>a
-mr.check_int</strong></td>
+<tr class="row-odd"><td><strong>amr.check_int</strong></td>
 <td>how often (by
 level-0 time
 steps) to
@@ -1036,8 +993,7 @@ files</td>
 <span class="math notranslate nohighlight">\(&gt; 0\)</span></td>
 <td>-1</td>
 </tr>
-<tr class="row-even"><td><strong>a
-mr.check_per</strong></td>
+<tr class="row-even"><td><strong>amr.check_per</strong></td>
 <td>how often (by
 simulation
 time) to write
@@ -1046,23 +1002,17 @@ restart files</td>
 <span class="math notranslate nohighlight">\(&gt; 0\)</span></td>
 <td>-1.0</td>
 </tr>
-<tr class="row-odd"><td><ul class="first simple">
-<li></li>
-</ul>
-<p class="last"><em>amr.restart*</em></p>
-</td>
+<tr class="row-odd"><td><strong>amr.restart</strong></td>
 <td>name of the
 file
 (directory)
 from which to
 restart</td>
-<td>Text</td>
+<td>String</td>
 <td>not used if
 not set</td>
 </tr>
-<tr class="row-even"><td><strong>a
-mr.checkpoint_
-files_output</strong></td>
+<tr class="row-even"><td><strong>amr.checkpoint_files_output</strong></td>
 <td>should we
 write
 checkpoint
@@ -1070,8 +1020,7 @@ files</td>
 <td>0 or 1</td>
 <td>1</td>
 </tr>
-<tr class="row-odd"><td><strong>amr.
-check_nfiles</strong></td>
+<tr class="row-odd"><td><strong>amr.check_nfiles</strong></td>
 <td>how parallel
 is the writing
 of the
@@ -1081,12 +1030,7 @@ files</td>
 <span class="math notranslate nohighlight">\(\geq 1\)</span></td>
 <td>64</td>
 </tr>
-<tr class="row-even"><td><ul class="first simple">
-<li></li>
-</ul>
-<p class="last"><em>amr.checkpoin
-t_on_restart*</em></p>
-</td>
+<tr class="row-even"><td><strong>amr.checkpoint_on_restart</strong></td>
 <td>should we
 write a
 checkpoint
@@ -1100,7 +1044,7 @@ restarting</td>
 </table>
 </div>
 <div class="section" id="notes-4">
-<span id="id18"></span><h3>Notes<a class="headerlink" href="#notes-4" title="Permalink to this headline">¶</a></h3>
+<span id="id16"></span><h3>Notes<a class="headerlink" href="#notes-4" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>You should specify either <strong>amr.check_int</strong> or <strong>amr.check_per</strong>. Do
 not try to specify both.</li>
@@ -1119,7 +1063,7 @@ algorithm without I/O.</li>
 </ul>
 </div>
 <div class="section" id="examples-of-usage-7">
-<span id="id19"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-7" title="Permalink to this headline">¶</a></h3>
+<span id="id17"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-7" title="Permalink to this headline">¶</a></h3>
 <ul>
 <li><p class="first"><strong>amr.check_file</strong> = <em>chk_run</em></p>
 </li>
@@ -1154,13 +1098,13 @@ directory names will be <em>chk_run00000</em>, <em>chk_run00043</em>,
 directories). The following options in the inputs file control the
 generation of plotfiles</p>
 <div class="section" id="list-of-parameters-9">
-<span id="id20"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-9" title="Permalink to this headline">¶</a></h3>
+<span id="id18"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-9" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
-<col width="29%" />
-<col width="29%" />
-<col width="29%" />
-<col width="14%" />
+<col width="39%" />
+<col width="24%" />
+<col width="24%" />
+<col width="12%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Parameter</th>
@@ -1171,14 +1115,10 @@ Values</th>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><ul class="first simple">
-<li></li>
-</ul>
-<p class="last"><em>amr.plot_file*</em></p>
-</td>
+<tr class="row-even"><td><strong>amr.plot_file</strong></td>
 <td>prefix for
 plotfiles</td>
-<td>Text</td>
+<td>String</td>
 <td>“<em>plt</em>”</td>
 </tr>
 <tr class="row-odd"><td><strong>amr.plot_int</strong></td>
@@ -1198,11 +1138,7 @@ files</td>
 <td>Real <span class="math notranslate nohighlight">\(&gt; 0\)</span></td>
 <td>-1.0</td>
 </tr>
-<tr class="row-odd"><td><ul class="first simple">
-<li></li>
-</ul>
-<p class="last"><em>amr.plot_vars*</em></p>
-</td>
+<tr class="row-odd"><td><strong>amr.plot_vars</strong></td>
 <td>name of state
 variables to
 include in
@@ -1211,8 +1147,7 @@ plotfiles</td>
 list</td>
 <td>ALL</td>
 </tr>
-<tr class="row-even"><td><strong>amr.de
-rive_plot_vars</strong></td>
+<tr class="row-even"><td><strong>amr.derive_plot_vars</strong></td>
 <td>name of derived
 variables to
 include in
@@ -1221,15 +1156,13 @@ plotfiles</td>
 list</td>
 <td>NONE</td>
 </tr>
-<tr class="row-odd"><td><strong>amr.plo
-t_files_output</strong></td>
+<tr class="row-odd"><td><strong>amr.plot_files_output</strong></td>
 <td>should we write
 plot files</td>
 <td>0 or 1</td>
 <td>1</td>
 </tr>
-<tr class="row-even"><td><strong>amr.plotf
-ile_on_restart</strong></td>
+<tr class="row-even"><td><strong>amr.plotfile_on_restart</strong></td>
 <td>should we write
 a plotfile
 immediately
@@ -1237,8 +1170,7 @@ after restarting</td>
 <td>0 or 1</td>
 <td>0</td>
 </tr>
-<tr class="row-odd"><td><strong>a
-mr.plot_nfiles</strong></td>
+<tr class="row-odd"><td><strong>amr.plot_nfiles</strong></td>
 <td>how parallel is
 the writing of
 the plotfiles</td>
@@ -1246,32 +1178,7 @@ the plotfiles</td>
 <span class="math notranslate nohighlight">\(\geq 1\)</span></td>
 <td>64</td>
 </tr>
-<tr class="row-even"><td><strong>ny
-x.plot_phiGrav</strong></td>
-<td>Should we plot
-the
-gravitational
-potential</td>
-<td>0 or 1</td>
-<td>0</td>
-</tr>
-<tr class="row-odd"><td>&#160;</td>
-<td>plot the
-gravitational
-potential</td>
-<td>0 or 1</td>
-<td>0</td>
-</tr>
-<tr class="row-even"><td><strong>particles.wri
-te_in_plotfile</strong></td>
-<td>Should we write
-the particles in
-a file within
-the plotfile</td>
-<td>0 or 1</td>
-<td>0</td>
-</tr>
-<tr class="row-odd"><td><strong>fab.format</strong></td>
+<tr class="row-even"><td><strong>fab.format</strong></td>
 <td>Should we write
 the plotfile in
 double or single
@@ -1285,7 +1192,7 @@ precision</td>
 in <code class="docutils literal notranslate"><span class="pre">Nyx_setup.cpp</span></code>. Feel free to look at it and see what’s there.</p>
 </div>
 <div class="section" id="notes-5">
-<span id="id21"></span><h3>Notes<a class="headerlink" href="#notes-5" title="Permalink to this headline">¶</a></h3>
+<span id="id19"></span><h3>Notes<a class="headerlink" href="#notes-5" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>You should specify either <strong>amr.plot_int</strong> or <strong>amr.plot_per</strong>. Do
 not try to specify both.</li>
@@ -1296,14 +1203,13 @@ your results ever so slightly than if you didn’t set this flag.</li>
 <strong>amr.plot_nfiles</strong> parameter.</li>
 <li>If you are doing a scaling study then set <strong>amr.plot_files_output</strong> =
 0 so you can test scaling of the algorithm without I/O.</li>
-<li><strong>nyx.plot_phiGrav</strong> is only relevant if <strong>nyx.do_grav</strong> = 1</li>
 <li>By default, plotfiles are written in double precision (NATIVE
 format). If you want to save space by writing them in single
 precision, set the fab.format flag to IEEE32.</li>
 </ul>
 </div>
 <div class="section" id="examples-of-usage-8">
-<span id="id22"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-8" title="Permalink to this headline">¶</a></h3>
+<span id="id20"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-8" title="Permalink to this headline">¶</a></h3>
 <ul>
 <li><p class="first"><strong>amr.plot_file</strong> = <em>plt_run</em></p>
 </li>
@@ -1331,13 +1237,13 @@ directory names will be <em>plt_run00000</em>, <em>plt_run00043</em>,
 <div class="section" id="screen-output">
 <h2>Screen Output<a class="headerlink" href="#screen-output" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="list-of-parameters-10">
-<span id="id23"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-10" title="Permalink to this headline">¶</a></h3>
+<span id="id21"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-10" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
-<col width="25%" />
-<col width="25%" />
-<col width="25%" />
-<col width="25%" />
+<col width="36%" />
+<col width="23%" />
+<col width="21%" />
+<col width="21%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Parameter</th>
@@ -1374,55 +1280,43 @@ gravity)</td>
 <td>0,1,2,3,4</td>
 <td>0</td>
 </tr>
-<tr class="row-even"><td><ul class="first simple">
-<li></li>
-</ul>
-<p class="last"><em>particles.v*</em></p>
-</td>
+<tr class="row-even"><td><strong>particles.v</strong></td>
 <td>verbosity of
-pa
-rticle-related
+particle-related
 processes</td>
 <td>0,1,2,3,4</td>
 <td>0</td>
 </tr>
-<tr class="row-odd"><td>**
-amr.grid_log**</td>
+<tr class="row-odd"><td><strong>amr.grid_log</strong></td>
 <td>name of the
 file to which
 the grids are
 written</td>
-<td>Text</td>
+<td>String</td>
 <td>not used if
 not set</td>
 </tr>
-<tr class="row-even"><td><ul class="first simple">
-<li></li>
-</ul>
-<p class="last"><em>amr.run_log*</em></p>
-</td>
+<tr class="row-even"><td><strong>amr.run_log</strong></td>
 <td>name of the
 file to which
 certain output
 is written</td>
-<td>Text</td>
+<td>String</td>
 <td>not used if
 not set</td>
 </tr>
-<tr class="row-odd"><td><strong>amr.r
-un_log_terse</strong></td>
+<tr class="row-odd"><td><strong>amr.run_log_terse</strong></td>
 <td>name of the
 file to which
 certain
 (terser)
 output is
 written</td>
-<td>Text</td>
+<td>String</td>
 <td>not used if
 not set</td>
 </tr>
-<tr class="row-even"><td><strong>amr.
-sum_interval</strong></td>
+<tr class="row-even"><td><strong>amr.sum_interval</strong></td>
 <td>if
 <span class="math notranslate nohighlight">\(&gt; 0,\)</span>
 how often (in
@@ -1438,28 +1332,11 @@ quantities</td>
 <td>Integer</td>
 <td>-1</td>
 </tr>
-<tr class="row-even"><td><strong>nyx.do_spe
-cial_tagging</strong></td>
-<td>&#160;</td>
-<td>0 or 1</td>
-<td>1</td>
-</tr>
 </tbody>
 </table>
 </div>
-<div class="section" id="notes-6">
-<span id="id24"></span><h3>Notes<a class="headerlink" href="#notes-6" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li><strong>nyx.do_special_tagging</strong> = 1 allows the user to set a special flag
-based on user-specified criteria. This can be used, for example, to
-calculate the bounce time in a core collapse simulation; the bounce
-time is defined as the first time at which the maximum density in the
-domain exceeds a user-specified value. This time can then be printed
-into a special file as a useful diagnostic.</li>
-</ul>
-</div>
 <div class="section" id="examples-of-usage-9">
-<span id="id25"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-9" title="Permalink to this headline">¶</a></h3>
+<span id="id22"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-9" title="Permalink to this headline">¶</a></h3>
 <ul>
 <li><div class="first line-block">
 <div class="line"><strong>amr.grid_log</strong> = <em>grdlog</em></div>
@@ -1505,7 +1382,7 @@ and print these quanitities.</div>
 <div class="section" id="gravity">
 <h2>Gravity<a class="headerlink" href="#gravity" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="list-of-parameters-11">
-<span id="id26"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-11" title="Permalink to this headline">¶</a></h3>
+<span id="id23"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-11" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="33%" />
@@ -1553,8 +1430,8 @@ solve</td>
 </table>
 <p>[Table:Gravity]</p>
 </div>
-<div class="section" id="notes-7">
-<span id="id27"></span><h3>Notes<a class="headerlink" href="#notes-7" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="notes-6">
+<span id="id24"></span><h3>Notes<a class="headerlink" href="#notes-6" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>To include gravity you must set<ul>
 <li>USE_GRAV = TRUE in the GNUmakefile</li>
@@ -1569,7 +1446,7 @@ USE_GRAV = TRUE; they both default to 0.</li>
 <div class="section" id="physics">
 <h2>Physics<a class="headerlink" href="#physics" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="list-of-parameters-12">
-<span id="id28"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-12" title="Permalink to this headline">¶</a></h3>
+<span id="id25"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-12" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="41%" />
@@ -1643,8 +1520,80 @@ of He</td>
 </tr>
 </tbody>
 </table>
-<p>[Table:Physics]</p>
 </div>
+</div>
+<div class="section" id="multigrid-inputs">
+<h2>Multigrid Inputs<a class="headerlink" href="#multigrid-inputs" title="Permalink to this headline">¶</a></h2>
+<p>The following inputs can be set directly in the AMReX solver classes but we set them via the Nyx gravity routines.</p>
+<p>These must be preceded by “gravity” in the inputs file:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="52%" />
+<col width="11%" />
+<col width="14%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">&#160;</th>
+<th class="head">Description</th>
+<th class="head">Type</th>
+<th class="head">Default</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>ml_tol</td>
+<td>Relative tolerance for multilevel solves</td>
+<td>Real</td>
+<td>1.e-12</td>
+</tr>
+<tr class="row-odd"><td>sl_tol</td>
+<td>Relative tolerance for single-level solves</td>
+<td>Real</td>
+<td>1.e-12</td>
+</tr>
+<tr class="row-even"><td>mlmg_agglomeration</td>
+<td>Should we agglomerate deep in the V-cycle</td>
+<td>Int</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>mlmg_consolidation</td>
+<td>Should we consolidate deep in the V-cycle</td>
+<td>Int</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>These must be preceded by “mg” in the inputs file:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="52%" />
+<col width="13%" />
+<col width="14%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">&#160;</th>
+<th class="head">Description</th>
+<th class="head">Type</th>
+<th class="head">Default</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>v</td>
+<td>Verbosity of multigrid solver</td>
+<td>Int</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>bottom_solver</td>
+<td>What is the bottom solver?
+Options include “bicg”, “smoother”, “hypre”, etc</td>
+<td>String</td>
+<td>“bicg”</td>
+</tr>
+</tbody>
+</table>
+<p>There are a number of additional inputs that can be used to control the multigrid solver.</p>
+<p>See the <a class="reference external" href="https://amrex-codes.github.io/amrex/docs_html/LinearSolvers_Chapter.html">AMReX Multigrid documentation</a> for more details.</p>
 </div>
 </div>
 
@@ -1659,7 +1608,7 @@ of He</td>
         <a href="ManagingGridHierarchy_Chapter.html" class="btn btn-neutral float-right" title="Gridding and Load Balancing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="NyxGettingStarted.html" class="btn btn-neutral float-left" title="Getting Started" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="NyxUnits.html" class="btn btn-neutral float-left" title="Units and Conventions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
