@@ -1015,4 +1015,37 @@ List of Parameters
 |                                  | of He            | :math:`<` 1     |             |
 +----------------------------------+------------------+-----------------+-------------+
 
-[Table:Physics]
+Multigrid Inputs
+================
+
+The following inputs can be set directly in the AMReX solver classes but we set them via the Nyx gravity routines.
+
+These must be preceded by "gravity" in the inputs file:
+
++----------------------+-----------------------------------------------------------------------+-------------+--------------+
+|                      | Description                                                           |   Type      | Default      |
++======================+=======================================================================+=============+==============+
+| ml_tol               |  Relative tolerance for multilevel solves                             |    Real     |   1.e-12     |
++----------------------+-----------------------------------------------------------------------+-------------+--------------+
+| sl_tol               |  Relative tolerance for single-level solves                           |    Real     |   1.e-12     |
++----------------------+-----------------------------------------------------------------------+-------------+--------------+
+| mlmg_agglomeration   |  Should we agglomerate deep in the V-cycle                            |    Int      |   0          |
++----------------------+-----------------------------------------------------------------------+-------------+--------------+
+| mlmg_consolidation   |  Should we consolidate deep in the V-cycle                            |    Int      |   0          |
++----------------------+-----------------------------------------------------------------------+-------------+--------------+
+
+These must be preceded by "mg" in the inputs file:
+
++----------------------+-----------------------------------------------------------------------+-------------+--------------+
+|                      | Description                                                           |   Type      | Default      |
++======================+=======================================================================+=============+==============+
+| v                    |  Verbosity of multigrid solver                                        |    Int      |   0          |
++----------------------+-----------------------------------------------------------------------+-------------+--------------+
+| bottom_solver        |  What is the bottom solver?                                           |  String     |   "bicg"     |
+|                      |  Options include "bicg", "smoother", "hypre", etc ...                 |             |              |
++----------------------+-----------------------------------------------------------------------+-------------+--------------+
+
+There are a number of additional inputs that can be used to control the multigrid solver.  
+ See the `AMReX Multigrid documentation`_ for more details.
+
+.. _AMReX Multigrid documentation: https://amrex-codes.github.io/amrex/docs_html/LinearSolvers_Chapter.html
