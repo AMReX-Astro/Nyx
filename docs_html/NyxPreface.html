@@ -40,7 +40,7 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Units and Conventions" href="NyxIntroduction.html" />
+    <link rel="next" title="Nyx Papers" href="NyxPapers.html" />
     <link rel="prev" title="Welcome to Nyx’s documentation!" href="index.html" /> 
 </head>
 
@@ -89,15 +89,18 @@
               <p class="caption"><span class="caption-text">Nyx basics</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Preface</a></li>
-<li class="toctree-l1"><a class="reference internal" href="NyxIntroduction.html">Units and Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxPapers.html">Nyx Papers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxGettingStarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxUnits.html">Units and Conventions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxInputs.html">Inputs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ManagingGridHierarchy_Chapter.html">Gridding and Load Balancing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxEquations.html">Hydrodynamic Equations in Comoving Coordinates</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Particles.html">Dark matter particles</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxHeatCool.html">Radiative Heating and Cooling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxGravity.html">Gravity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxForcing.html">Stochastic Forcing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Particles.html">Dark matter particles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AGN.html">The AGN Model in Nyx</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AGN.html#the-reeber-package">The Reeber Package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NightlyTests.html">Nightly Regression Tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Visualization.html">Visualization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="PostProcessing.html">PostProcessing</a></li>
@@ -209,7 +212,7 @@ of dark matter.</p>
 <div><ul class="simple">
 <li>3-dimensional unsplit, 2nd-order hydrodynamics</li>
 <li>adaptive mesh refinement with subcycling; jumps of 2x and 4x between levels</li>
-<li>full Poisson gravity (with isolated boundary conditions)</li>
+<li>full Poisson gravity (with triply periodic boundary conditions)</li>
 <li>hybrid parallelization strategy with MPI + X, where X = OpenMP on multicore architectures</li>
 </ul>
 </div></blockquote>
@@ -217,64 +220,6 @@ of dark matter.</p>
 <p>Nyx uses an Eulerian grid for the hydrodynamics solver and incorporates adaptive mesh refinement (AMR).
 Our approach to AMR uses a nested hierarchy of logically-rectangular grids with simultaneous
 refinement in both space and time, utilizing the AMReX library.</p>
-<dl class="docutils">
-<dt>For the first paper describing the Nbody, adiabatic hydro and gravity algorithms:</dt>
-<dd><ul class="first last simple">
-<li><ol class="first upperalpha">
-<li><ol class="first upperalpha" start="19">
-<li>Almgren, J. B. Bell, M.J. Lijewski, Z. Lukic, E. Van Andel, <strong>“Nyx: A Massively Parallel AMR Code for Computational Cosmology”</strong> Astrophysical Journal, <strong>765</strong>, 39, 2013. [[arxiv]](<a class="reference external" href="https://arxiv.org/abs/1301.4498">https://arxiv.org/abs/1301.4498</a>)</li>
-</ol>
-</li>
-</ol>
-</li>
-</ul>
-</dd>
-<dt>For the reaction and thermal rates of the primordial chemical composition gas (and convergence tests in the context of the Lymanalpha forest), see:</dt>
-<dd><ul class="first last simple">
-<li>Zarija Lukic, Casey Stark, Peter Nugent, Martin White, Avery Meiksin, Ann Almgren, <strong>“The Lymanalpha forest in opticallythin hydrodynamical simulations,”</strong> Monthly Notices of the Royal Astronomical Society, <strong>446</strong>, 36973724, 2015 [[arxiv]](<a class="reference external" href="http://arxiv.org/abs/1406.6361">http://arxiv.org/abs/1406.6361</a>).</li>
-</ul>
-</dd>
-<dt>For the synthesis model of the UV background, which provides the photoionization and photoheating rates, see:</dt>
-<dd><ul class="first last simple">
-<li>Jose Onorbe, Joseph F Hennawi, Zarija Lukic, <strong>“SelfConsistent Modeling of Reionization in Cosmological Hydrodynamical Simulations,”</strong> Astrophysical Journal, <strong>837</strong>, 106, 2017. [[arxiv]](<a class="reference external" href="http://arxiv.org/abs/1607.04218">http://arxiv.org/abs/1607.04218</a>)</li>
-</ul>
-</dd>
-<dt>For Nyx-related Papers:</dt>
-<dd><ul class="first last simple">
-<li><ol class="first upperalpha" start="23">
-<li>Schmidt, C. Byrohl, J. F. Engels, C. Behrens, J. C. Niemeyer, <strong>Viscosity, pressure and support of the gas in simulations of merging coolcore clusters</strong> Monthly Notices of the Royal Astronomical Society, <strong>470(1)</strong>, pp. 142156, 2017 [[arxiv]](<a class="reference external" href="http://arxiv.org/abs/1705.06933">http://arxiv.org/abs/1705.06933</a>).</li>
-</ol>
-</li>
-<li>Daniele Sorini, Jose Onorbe, Zarija Lukic, Joseph F Hennawi, <strong>“Modeling the Lymanalpha Forest in Collisionless Simulations,”</strong> Astrophysical Journal, <strong>827</strong>, 97, 2016. [[arxiv]](<a class="reference external" href="http://arxiv.org/abs/1602.08099">http://arxiv.org/abs/1602.08099</a>).</li>
-<li>Brian Friesen, Ann Almgren, Zarija Lukic, Gunther Weber, Dmitriy Morozov, Vincent Beckner, Marcus Day, <strong>“In situ and intransit analysis of cosmological simulations,”</strong>, Computational Astrophysics and Cosmology, <strong>3</strong>, 4, 2016 [[arxiv]](<a class="reference external" href="http://arxiv.org/abs/1705.06933">http://arxiv.org/abs/1705.06933</a>).</li>
-<li><ol class="first upperalpha" start="23">
-<li>Schmidt, J.F. Engels, J.C. Niemeyer, A.S. Almgren, <strong>“Hot and Turbulent Gas in Clusters”,</strong> Monthly Notices of the Royal Astronomical Society, <strong>459(1)</strong>, pp. 701719, 2016 [[arxiv]](<a class="reference external" href="http://arxiv.org/abs/1603.04711">http://arxiv.org/abs/1603.04711</a>).</li>
-</ol>
-</li>
-<li><ol class="first upperalpha" start="8">
-<li>Braun, W. Schmidt, J.C. Niemeyer, A.S. Almgren, <strong>“Largeeddy simulations of isolated disk galaxies with thermal and turbulent feedback,”</strong> Monthly Notices of the Royal Astronomical Society, <strong>442(4)</strong>, pp. 34073426, 2014. [[arxiv]](<a class="reference external" href="http://arxiv.org/pdf/1405.6245">http://arxiv.org/pdf/1405.6245</a>)</li>
-</ol>
-</li>
-<li><ol class="first upperalpha" start="23">
-<li>Schmidt, A.S. Almgren, H. Braun, J.F. Engels, J.C. Niemeyer, R.R. Mekuria, A.J. Aspden, J.B. Bell, <strong>“Cosmological Fluid Mechanics with Adaptively Refined Large Eddy Simulations,”</strong> Monthly Notices of the Royal Astronomical Society, <strong>440</strong>, pp. 30513077, 2014. [[arxiv]](<a class="reference external" href="http://arxiv.org/pdf/1309.3996v1.pdf">http://arxiv.org/pdf/1309.3996v1.pdf</a>)</li>
-</ol>
-</li>
-<li><ol class="first upperalpha" start="23">
-<li>Schmidt, J. Schulz, L. Iapichino, A.S. Almgren, <strong>” Influence of adaptive mesh refinement and the hydro solver on shearinduced mass stripping in a minor merger scenario,”</strong> Astronomy and Computing, <strong>9</strong>, pp. 4964, March 2015 [[arxiv]](<a class="reference external" href="http://arxiv.org/abs/1411.7275">http://arxiv.org/abs/1411.7275</a>).</li>
-</ol>
-</li>
-</ul>
-</dd>
-</dl>
-<p>The development of AMReX library is led by the
-Center for Computational Sciences and Engineering / Lawrence Berkeley
-National Laboratory. Nyx development is done collaboratively, including the Computational Cosmology Center and CCSE.
-All of Nyx’s development is done in the public github repository—anyone can see the updates as they are done.
-We are always happy to have new developers as part of the Nyx team.
-Fork the Nyx git repository on github, make your changes, and issue a pull request against the development branch
-of the github repo. Any level of changes are welcome, including documentation, bug fixes, new test problems, and new solvers.</p>
-<blockquote>
-<div></div></blockquote>
 </div>
 
 
@@ -285,7 +230,7 @@ of the github repo. Any level of changes are welcome, including documentation, b
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="NyxIntroduction.html" class="btn btn-neutral float-right" title="Units and Conventions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="NyxPapers.html" class="btn btn-neutral float-right" title="Nyx Papers" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="index.html" class="btn btn-neutral float-left" title="Welcome to Nyx’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

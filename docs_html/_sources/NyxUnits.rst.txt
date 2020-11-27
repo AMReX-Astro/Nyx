@@ -2,7 +2,20 @@
 Units and Conventions
 =====================
 
-Nyx supports both CGS and Cosmological units. In the equation of state calls,
+Nyx supports both CGS and Cosmological units. 
+
+All inputs and problem initialization should be specified consistently with one of these sets of units.
+No internal conversions of units occur within the code, so the output must be interpreted appropriately.
+The default is cosmological units.
+
+If you want to use CGS units instead, then set
+
+**USE_CGS = TRUE**
+
+in your GNUmakefile. This will select the file constants_cgs.f90 instead of constants_cosmo.f90 from the
+Nyx/constants directory.
+
+In the equation of state calls,
 conversions must be made between CGS units and code units.
 Table \ `[table:units] <#table:units>`__ shows some of the common symbols / names used
 throughout the code documentation and papers.
@@ -36,16 +49,6 @@ throughout the code documentation and papers.
    +-----------------------+-----------------------+-----------------------+
 
 words
-
-We support two different systems of units in : CGS and Cosmological.
-All inputs and problem initialization should be specified consistently with one of these sets of units.
-No internal conversions of units occur within the code, so the output must be interpreted appropriately.
-The default is cosmological units.
-If you want to use CGS units instead, then set
-USE_CGS = TRUE
-in your GNUmakefile. This will select the file
-constants_cgs.f90 instead of constants_cosmo.f90 from the
-Nyx/constants directory.
 
 .. table:: [table:inputs]
 	   Units expected for inputs and outputs.
