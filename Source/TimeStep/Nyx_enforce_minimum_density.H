@@ -44,7 +44,7 @@ floor_density(
 
         // Re-create "e" from {small_dens, small_temp}
         nyx_eos_given_RT(atomic_rates, gamma_minus_1, h_species, &eint_new, &dummy_pres, state(i,j,k,URHO),
-			 small_temp, Ne,a_new);
+                         small_temp, Ne,a_new);
 
         // Define (rho e) with small_dens and the new "e" 
         state(i,j,k,UEINT) = state(i,j,k,URHO) *  eint_new;

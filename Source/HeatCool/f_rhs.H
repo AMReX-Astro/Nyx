@@ -37,9 +37,9 @@ ode_eos_finalize(amrex::Real& e_out, amrex::Real* rpar, int neq, AtomicRates* at
     amrex::Real uvb_density_A, uvb_density_B, mean_rhob, JH_vode, JHe_vode, gamma_minus_1;
     const amrex::Real h_species_in=.76;
     uvb_density_A=1.0;
-	uvb_density_B=0.0;
-	gamma_minus_1=2.0/3.0;
-	/*
+        uvb_density_B=0.0;
+        gamma_minus_1=2.0/3.0;
+        /*
     ! Flash reionization?
     if ((flash_h .eqv. .true.) .and. (z .gt. zhi_flash)) then
        JH_vode = 0
@@ -65,24 +65,24 @@ ode_eos_finalize(amrex::Real& e_out, amrex::Real* rpar, int neq, AtomicRates* at
        endif
     endif*/
     JH_vode = 1.0;
-	JHe_vode = 1.0;
+        JHe_vode = 1.0;
 
     T_vode=rpar[0];
     ne_vode=rpar[1];
     rho_vode=rpar[2];
     z_vode=rpar[3];
-	a=1/(z_vode+1.0);
-	if(e_out < 0.e0)
-	{
-		T_vode  = 10.0;
-		ne_vode = 0.0;
-		mu     = (1.0e0+4.0e0*YHELIUM) / (1.0e0+YHELIUM+ne_vode);
-		e_out  = T_vode / (gamma_minus_1 * mp_over_kb * mu);
-	}
+        a=1/(z_vode+1.0);
+        if(e_out < 0.e0)
+        {
+                T_vode  = 10.0;
+                ne_vode = 0.0;
+                mu     = (1.0e0+4.0e0*YHELIUM) / (1.0e0+YHELIUM+ne_vode);
+                e_out  = T_vode / (gamma_minus_1 * mp_over_kb * mu);
+        }
 
     nyx_eos_T_given_Re_device(atomic_rates, gamma_minus_1, h_species_in, JH_vode, JHe_vode, &T_vode, &ne_vode,
                                                rho_vode, e_out, a);
-	/*
+        /*
       ! Instanteneous heating from reionization:
       T_H = 0.0d0
       if (inhomogeneous_on .or. flash_h) then
@@ -129,9 +129,9 @@ f_rhs_rpar(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, amrex
     amrex::Real z_vode, rho_vode, T_vode, ne_vode;
     amrex::Real uvb_density_A, uvb_density_B, mean_rhob, JH_vode, JHe_vode, gamma_minus_1;
     uvb_density_A=1.0;
-	uvb_density_B=0.0;
-	gamma_minus_1=2.0/3.0;
-	/*
+        uvb_density_B=0.0;
+        gamma_minus_1=2.0/3.0;
+        /*
     ! Flash reionization?
     if ((flash_h .eqv. .true.) .and. (z .gt. zhi_flash)) then
        JH_vode = 0
@@ -157,7 +157,7 @@ f_rhs_rpar(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, amrex
        endif
     endif*/
     JH_vode = 1.0;
-	JHe_vode = 1.0;
+        JHe_vode = 1.0;
 
     T_vode=rpar[0];
     ne_vode=rpar[1];
@@ -245,6 +245,6 @@ f_rhs_rpar(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, amrex
     rpar[0]=T_vode;
     rpar[1]=ne_vode;
     rpar[2]=rho_vode;
-	return 0;
+        return 0;
 }
 #endif

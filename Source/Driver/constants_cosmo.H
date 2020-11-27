@@ -14,7 +14,7 @@ static constexpr amrex::Real  T_unit = L_unit/V_unit; // time unit
 //   Fundamental constants
   
    static constexpr amrex::Real  Gconst = 6.67408e-8
-	   * M_unit*T_unit*T_unit/(L_unit*L_unit*L_unit);// Newton [g^-1*s^-2*cm^3]
+           * M_unit*T_unit*T_unit/(L_unit*L_unit*L_unit);// Newton [g^-1*s^-2*cm^3]
   
 static constexpr amrex::Real  k_B    = 1.38064852e-16          
   * T_unit*T_unit/(M_unit*L_unit*L_unit);// Boltzmann [g*cm^2/s^2*K]

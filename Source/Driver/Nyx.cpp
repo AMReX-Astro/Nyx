@@ -696,12 +696,12 @@ Nyx::Nyx (Amr&            papa,
        old_a = 1.0 / (1.0 + initial_z);
        new_a = old_a;
     }
-	/*
+        /*
 #ifdef HEATCOOL
      // Initialize "this_z" in the atomic_rates_module
     if (heat_cool_type == 3 || heat_cool_type == 4 || heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 9 || heat_cool_type == 10 || heat_cool_type == 11 || heat_cool_type == 12)
 #endif
-		*/
+                */
 }
 
 Nyx::~Nyx ()
@@ -2355,7 +2355,7 @@ Nyx::errorEst (TagBoxArray& tags,
     for (int j=0; j<errtags.size(); ++j) {
       std::unique_ptr<MultiFab> mf;
       if (errtags[0].Field() != std::string()) {
-	mf = std::unique_ptr<MultiFab>(derive(errtags[j].Field(), time, errtags[j].NGrow()));
+        mf = std::unique_ptr<MultiFab>(derive(errtags[j].Field(), time, errtags[j].NGrow()));
       }
       errtags[j](tags,mf.get(),clearval,tagval,time,level,geom);
     }
@@ -2504,14 +2504,14 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 
     Real cur_time  = state[State_Type].curTime();
     Real a        = get_comoving_a(cur_time);
-	/*
+        /*
 #ifdef HEATCOOL 
     if (heat_cool_type == 3 || heat_cool_type == 4 || heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 9 || heat_cool_type == 10 || heat_cool_type == 11 || heat_cool_type == 12)
     {
        const Real z = 1.0/a - 1.0;
     }
 #endif
-	*/
+        */
     amrex::Gpu::synchronize();
     amrex::Gpu::LaunchSafeGuard lsg(true);
     if (heat_cool_type == 7) {
@@ -2550,7 +2550,7 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
             int  dummy_max_temp_dt=max_temp_dt;
             Real h_species_in=h_species;
             Real gamma_minus_1_in=gamma - 1.0;
-	    auto atomic_rates = atomic_rates_glob;
+            auto atomic_rates = atomic_rates_glob;
             AMREX_PARALLEL_FOR_3D(bx, i, j ,k,
             {
 
@@ -2735,7 +2735,7 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
         }
     }
     }
-	Real sums[7] = {rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum};
+        Real sums[7] = {rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum};
     ParallelDescriptor::ReduceRealSum(sums,7);
 
     rho_T_avg = sums[0] / sums[1];  // density weighted T
