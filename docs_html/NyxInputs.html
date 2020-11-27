@@ -1022,7 +1022,7 @@ Values</th>
 r.check_file</strong></td>
 <td>prefix for
 restart files</td>
-<td>Text</td>
+<td>String</td>
 <td>“<em>chk</em>”</td>
 </tr>
 <tr class="row-odd"><td><strong>a
@@ -1056,7 +1056,7 @@ file
 (directory)
 from which to
 restart</td>
-<td>Text</td>
+<td>String</td>
 <td>not used if
 not set</td>
 </tr>
@@ -1178,7 +1178,7 @@ Values</th>
 </td>
 <td>prefix for
 plotfiles</td>
-<td>Text</td>
+<td>String</td>
 <td>“<em>plt</em>”</td>
 </tr>
 <tr class="row-odd"><td><strong>amr.plot_int</strong></td>
@@ -1334,10 +1334,10 @@ directory names will be <em>plt_run00000</em>, <em>plt_run00043</em>,
 <span id="id23"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-10" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
-<col width="25%" />
-<col width="25%" />
-<col width="25%" />
-<col width="25%" />
+<col width="36%" />
+<col width="23%" />
+<col width="21%" />
+<col width="21%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Parameter</th>
@@ -1374,55 +1374,43 @@ gravity)</td>
 <td>0,1,2,3,4</td>
 <td>0</td>
 </tr>
-<tr class="row-even"><td><ul class="first simple">
-<li></li>
-</ul>
-<p class="last"><em>particles.v*</em></p>
-</td>
+<tr class="row-even"><td><strong>particles.v</strong></td>
 <td>verbosity of
-pa
-rticle-related
+particle-related
 processes</td>
 <td>0,1,2,3,4</td>
 <td>0</td>
 </tr>
-<tr class="row-odd"><td>**
-amr.grid_log**</td>
+<tr class="row-odd"><td><strong>amr.grid_log</strong></td>
 <td>name of the
 file to which
 the grids are
 written</td>
-<td>Text</td>
+<td>String</td>
 <td>not used if
 not set</td>
 </tr>
-<tr class="row-even"><td><ul class="first simple">
-<li></li>
-</ul>
-<p class="last"><em>amr.run_log*</em></p>
-</td>
+<tr class="row-even"><td><em>amr.run_log*</em></td>
 <td>name of the
 file to which
 certain output
 is written</td>
-<td>Text</td>
+<td>String</td>
 <td>not used if
 not set</td>
 </tr>
-<tr class="row-odd"><td><strong>amr.r
-un_log_terse</strong></td>
+<tr class="row-odd"><td><strong>amr.run_log_terse</strong></td>
 <td>name of the
 file to which
 certain
 (terser)
 output is
 written</td>
-<td>Text</td>
+<td>String</td>
 <td>not used if
 not set</td>
 </tr>
-<tr class="row-even"><td><strong>amr.
-sum_interval</strong></td>
+<tr class="row-even"><td><strong>amr.sum_interval</strong></td>
 <td>if
 <span class="math notranslate nohighlight">\(&gt; 0,\)</span>
 how often (in
@@ -1438,8 +1426,7 @@ quantities</td>
 <td>Integer</td>
 <td>-1</td>
 </tr>
-<tr class="row-even"><td><strong>nyx.do_spe
-cial_tagging</strong></td>
+<tr class="row-even"><td><strong>nyx.do_special_tagging</strong></td>
 <td>&#160;</td>
 <td>0 or 1</td>
 <td>1</td>
