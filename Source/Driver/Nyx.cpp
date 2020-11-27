@@ -174,7 +174,6 @@ int Nyx::ppm_type           = 1;
 // Options are "floor" or "conservative"
 std::string Nyx::enforce_min_density_type = "floor";
 
-int Nyx::use_flattening     = 1;
 int Nyx::use_analriem       = 1;
 
 Real Nyx:: h_species        = 0.76;
@@ -596,7 +595,6 @@ Nyx::read_hydro_params ()
     pp_nyx.query("ppm_type", ppm_type);
     pp_nyx.query("enforce_min_density_type", enforce_min_density_type);
     pp_nyx.query("use_analriem", use_analriem);
-    pp_nyx.query("use_flattening", use_flattening);
 
     if (use_typical_steps != 0 && strang_grown_box == 0)
     { 

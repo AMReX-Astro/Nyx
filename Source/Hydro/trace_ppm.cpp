@@ -17,7 +17,6 @@ trace_ppm(const Box& bx,
           const Real small_dens, const Real small_pres,
           const Real small,
           const int FirstSpec, const int NumSpec,
-          const int use_flattening,
           const Real a_old)
 {
 
@@ -107,12 +106,9 @@ trace_ppm(const Box& bx,
 
     Real flat = 1.0;
     //Calculate flattening in-place
-    if (use_flattening == 1)
+    for(int dir_flat = 0; dir_flat < AMREX_SPACEDIM; dir_flat++)
     {
-        for(int dir_flat = 0; dir_flat < AMREX_SPACEDIM; dir_flat++)
-        {
-            flat = amrex::min(flat,flatten(i, j, k, dir_flat, q_arr, small_pres));
-        }
+        flat = amrex::min(flat,flatten(i, j, k, dir_flat, q_arr, small_pres));
     }
 
     Real sm;

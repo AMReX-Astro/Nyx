@@ -600,48 +600,48 @@ Restart Capability
 List of Parameters
 ------------------
 
-+----------------+----------------+----------------+----------------+
-| Parameter      | Definition     | Acceptable     | Default        |
-|                |                | Values         |                |
-+================+================+================+================+
-| **am           | prefix for     | String         | “*chk*”        |
-| r.check_file** | restart files  |                |                |
-+----------------+----------------+----------------+----------------+
-| **a            | how often (by  | Integer        | -1             |
-| mr.check_int** | level-0 time   | :math:`> 0`    |                |
-|                | steps) to      |                |                |
-|                | write restart  |                |                |
-|                | files          |                |                |
-+----------------+----------------+----------------+----------------+
-| **a            | how often (by  | Real           | -1.0           |
-| mr.check_per** | simulation     | :math:`> 0`    |                |
-|                | time) to write |                |                |
-|                | restart files  |                |                |
-+----------------+----------------+----------------+----------------+
-| *              | name of the    | String         | not used if    |
-| *amr.restart** | file           |                | not set        |
-|                | (directory)    |                |                |
-|                | from which to  |                |                |
-|                | restart        |                |                |
-+----------------+----------------+----------------+----------------+
-| **a            | should we      | 0 or 1         | 1              |
-| mr.checkpoint_ | write          |                |                |
-| files_output** | checkpoint     |                |                |
-|                | files          |                |                |
-+----------------+----------------+----------------+----------------+
-| **amr.         | how parallel   | Integer        | 64             |
-| check_nfiles** | is the writing | :math:`\geq 1` |                |
-|                | of the         |                |                |
-|                | checkpoint     |                |                |
-|                | files          |                |                |
-+----------------+----------------+----------------+----------------+
-| *              | should we      | 0 or 1         | 0              |
-| *amr.checkpoin | write a        |                |                |
-| t_on_restart** | checkpoint     |                |                |
-|                | immediately    |                |                |
-|                | after          |                |                |
-|                | restarting     |                |                |
-+----------------+----------------+----------------+----------------+
++---------------------------------+----------------+----------------+----------------+
+| Parameter                       | Definition     | Acceptable     | Default        |
+|                                 |                | Values         |                |
++=================================+================+================+================+
+| **amr.check_file**              | prefix for     | String         | “*chk*”        |
+|                                 | restart files  |                |                |
++---------------------------------+----------------+----------------+----------------+
+| **amr.check_int**               | how often (by  | Integer        | -1             |
+|                                 | level-0 time   | :math:`> 0`    |                |
+|                                 | steps) to      |                |                |
+|                                 | write restart  |                |                |
+|                                 | files          |                |                |
++---------------------------------+----------------+----------------+----------------+
+| **amr.check_per**               | how often (by  | Real           | -1.0           |
+|                                 | simulation     | :math:`> 0`    |                |
+|                                 | time) to write |                |                |
+|                                 | restart files  |                |                |
++---------------------------------+----------------+----------------+----------------+
+| **amr.restart**                 | name of the    | String         | not used if    |
+|                                 | file           |                | not set        |
+|                                 | (directory)    |                |                |
+|                                 | from which to  |                |                |
+|                                 | restart        |                |                |
++---------------------------------+----------------+----------------+----------------+
+| **amr.checkpoint_files_output** | should we      | 0 or 1         | 1              |
+|                                 | write          |                |                |
+|                                 | checkpoint     |                |                |
+|                                 | files          |                |                |
++---------------------------------+----------------+----------------+----------------+
+| **amr.check_nfiles**            | how parallel   | Integer        | 64             |
+|                                 | is the writing | :math:`\geq 1` |                |
+|                                 | of the         |                |                |
+|                                 | checkpoint     |                |                |
+|                                 | files          |                |                |
++---------------------------------+----------------+----------------+----------------+
+| *amr.checkpoint_on_restart**    | should we      | 0 or 1         | 0              |
+|                                 | write a        |                |                |
+|                                 | checkpoint     |                |                |
+|                                 | immediately    |                |                |
+|                                 | after          |                |                |
+|                                 | restarting     |                |                |
++---------------------------------+----------------+----------------+----------------+
 
 .. _notes-4:
 
@@ -711,64 +711,50 @@ generation of plotfiles
 List of Parameters
 ------------------
 
-+------------------+------------------+------------------+---------+
-| Parameter        | Definition       | Acceptable       | Default |
-|                  |                  | Values           |         |
-+==================+==================+==================+=========+
-| *                | prefix for       | String           | “*plt*” |
-| *amr.plot_file** | plotfiles        |                  |         |
-+------------------+------------------+------------------+---------+
-| **amr.plot_int** | how often (by    | Integer          | -1      |
-|                  | level-0 time     | :math:`> 0`      |         |
-|                  | steps) to write  |                  |         |
-|                  | plot files       |                  |         |
-+------------------+------------------+------------------+---------+
-| **amr.plot_per** | how often (by    | Real :math:`> 0` | -1.0    |
-|                  | simulation time) |                  |         |
-|                  | to write plot    |                  |         |
-|                  | files            |                  |         |
-+------------------+------------------+------------------+---------+
-| *                | name of state    | ALL, NONE or     | ALL     |
-| *amr.plot_vars** | variables to     | list             |         |
-|                  | include in       |                  |         |
-|                  | plotfiles        |                  |         |
-+------------------+------------------+------------------+---------+
-| **amr.de         | name of derived  | ALL, NONE or     | NONE    |
-| rive_plot_vars** | variables to     | list             |         |
-|                  | include in       |                  |         |
-|                  | plotfiles        |                  |         |
-+------------------+------------------+------------------+---------+
-| **amr.plo        | should we write  | 0 or 1           | 1       |
-| t_files_output** | plot files       |                  |         |
-+------------------+------------------+------------------+---------+
-| **amr.plotf      | should we write  | 0 or 1           | 0       |
-| ile_on_restart** | a plotfile       |                  |         |
-|                  | immediately      |                  |         |
-|                  | after restarting |                  |         |
-+------------------+------------------+------------------+---------+
-| **a              | how parallel is  | Integer          | 64      |
-| mr.plot_nfiles** | the writing of   | :math:`\geq 1`   |         |
-|                  | the plotfiles    |                  |         |
-+------------------+------------------+------------------+---------+
-| **ny             | Should we plot   | 0 or 1           | 0       |
-| x.plot_phiGrav** | the              |                  |         |
-|                  | gravitational    |                  |         |
-|                  | potential        |                  |         |
-+------------------+------------------+------------------+---------+
-|                  | plot the         | 0 or 1           | 0       |
-|                  | gravitational    |                  |         |
-|                  | potential        |                  |         |
-+------------------+------------------+------------------+---------+
-| **particles.wri  | Should we write  | 0 or 1           | 0       |
-| te_in_plotfile** | the particles in |                  |         |
-|                  | a file within    |                  |         |
-|                  | the plotfile     |                  |         |
-+------------------+------------------+------------------+---------+
-| **fab.format**   | Should we write  | NATIVE or IEEE32 | NATIVE  |
-|                  | the plotfile in  |                  |         |
-|                  | double or single |                  |         |
-|                  | precision        |                  |         |
-+------------------+------------------+------------------+---------+
++-----------------------------+------------------+------------------+---------+
+| Parameter                   | Definition       | Acceptable       | Default |
+|                             |                  | Values           |         |
++=============================+==================+==================+=========+
+| **amr.plot_file**           | prefix for       | String           | “*plt*” |
+|                             | plotfiles        |                  |         |
++-----------------------------+------------------+------------------+---------+
+| **amr.plot_int**            | how often (by    | Integer          | -1      |
+|                             | level-0 time     | :math:`> 0`      |         |
+|                             | steps) to write  |                  |         |
+|                             | plot files       |                  |         |
++-----------------------------+------------------+------------------+---------+
+| **amr.plot_per**            | how often (by    | Real :math:`> 0` | -1.0    |
+|                             | simulation time) |                  |         |
+|                             | to write plot    |                  |         |
+|                             | files            |                  |         |
++-----------------------------+------------------+------------------+---------+
+| **amr.plot_vars**           | name of state    | ALL, NONE or     | ALL     |
+|                             | variables to     | list             |         |
+|                             | include in       |                  |         |
+|                             | plotfiles        |                  |         |
++-----------------------------+------------------+------------------+---------+
+| **amr.derive_plot_vars**    | name of derived  | ALL, NONE or     | NONE    |
+|                             | variables to     | list             |         |
+|                             | include in       |                  |         |
+|                             | plotfiles        |                  |         |
++-----------------------------+------------------+------------------+---------+
+| **amr.plot_files_output**   | should we write  | 0 or 1           | 1       |
+|                             | plot files       |                  |         |
++-----------------------------+------------------+------------------+---------+
+| **amr.plotfile_on_restart** | should we write  | 0 or 1           | 0       |
+|                             | a plotfile       |                  |         |
+|                             | immediately      |                  |         |
+|                             | after restarting |                  |         |
++-----------------------------+------------------+------------------+---------+
+| **amr.plot_nfiles**         | how parallel is  | Integer          | 64      |
+|                             | the writing of   | :math:`\geq 1`   |         |
+|                             | the plotfiles    |                  |         |
++-----------------------------+------------------+------------------+---------+
+| **fab.format**              | Should we write  | NATIVE or IEEE32 | NATIVE  |
+|                             | the plotfile in  |                  |         |
+|                             | double or single |                  |         |
+|                             | precision        |                  |         |
++-----------------------------+------------------+------------------+---------+
 
 All the options for **amr.derive_plot_vars** are kept in ``derive_lst``
 in ``Nyx_setup.cpp``. Feel free to look at it and see what’s there.
@@ -790,8 +776,6 @@ Notes
 
 -  If you are doing a scaling study then set **amr.plot_files_output** =
    0 so you can test scaling of the algorithm without I/O.
-
--  **nyx.plot_phiGrav** is only relevant if **nyx.do_grav** = 1 
 
 -  By default, plotfiles are written in double precision (NATIVE
    format). If you want to save space by writing them in single

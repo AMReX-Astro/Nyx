@@ -218,7 +218,6 @@ void pc_umdrv(
   const amrex::Real small, 
   amrex::Real cflLoc,
   const int ppm_type,
-  const int use_flattening,
   const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
     a,
   amrex::Array4<amrex::Real> const& vol);
