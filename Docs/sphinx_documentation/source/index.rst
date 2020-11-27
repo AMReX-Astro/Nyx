@@ -16,10 +16,11 @@ Welcome to Nyx's documentation!
    NyxInputs
    ManagingGridHierarchy_Chapter
    NyxEquations
-   Particles
    NyxHeatCool
    NyxGravity
    NyxForcing
+   Particles
+   AGN
    NightlyTests
    Visualization
    PostProcessing
