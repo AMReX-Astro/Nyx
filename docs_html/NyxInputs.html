@@ -1003,10 +1003,10 @@ checkpoint files (which are really directories):</div>
 <span id="id17"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-8" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
-<col width="25%" />
-<col width="25%" />
-<col width="25%" />
-<col width="25%" />
+<col width="41%" />
+<col width="20%" />
+<col width="20%" />
+<col width="20%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Parameter</th>
@@ -1017,15 +1017,13 @@ Values</th>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><strong>am
-r.check_file</strong></td>
+<tr class="row-even"><td><strong>amr.check_file</strong></td>
 <td>prefix for
 restart files</td>
 <td>String</td>
 <td>“<em>chk</em>”</td>
 </tr>
-<tr class="row-odd"><td><strong>a
-mr.check_int</strong></td>
+<tr class="row-odd"><td><strong>amr.check_int</strong></td>
 <td>how often (by
 level-0 time
 steps) to
@@ -1035,8 +1033,7 @@ files</td>
 <span class="math notranslate nohighlight">\(&gt; 0\)</span></td>
 <td>-1</td>
 </tr>
-<tr class="row-even"><td><strong>a
-mr.check_per</strong></td>
+<tr class="row-even"><td><strong>amr.check_per</strong></td>
 <td>how often (by
 simulation
 time) to write
@@ -1045,11 +1042,7 @@ restart files</td>
 <span class="math notranslate nohighlight">\(&gt; 0\)</span></td>
 <td>-1.0</td>
 </tr>
-<tr class="row-odd"><td><ul class="first simple">
-<li></li>
-</ul>
-<p class="last"><em>amr.restart*</em></p>
-</td>
+<tr class="row-odd"><td><strong>amr.restart</strong></td>
 <td>name of the
 file
 (directory)
@@ -1059,9 +1052,7 @@ restart</td>
 <td>not used if
 not set</td>
 </tr>
-<tr class="row-even"><td><strong>a
-mr.checkpoint_
-files_output</strong></td>
+<tr class="row-even"><td><strong>amr.checkpoint_files_output</strong></td>
 <td>should we
 write
 checkpoint
@@ -1069,8 +1060,7 @@ files</td>
 <td>0 or 1</td>
 <td>1</td>
 </tr>
-<tr class="row-odd"><td><strong>amr.
-check_nfiles</strong></td>
+<tr class="row-odd"><td><strong>amr.check_nfiles</strong></td>
 <td>how parallel
 is the writing
 of the
@@ -1080,12 +1070,7 @@ files</td>
 <span class="math notranslate nohighlight">\(\geq 1\)</span></td>
 <td>64</td>
 </tr>
-<tr class="row-even"><td><ul class="first simple">
-<li></li>
-</ul>
-<p class="last"><em>amr.checkpoin
-t_on_restart*</em></p>
-</td>
+<tr class="row-even"><td><em>amr.checkpoint_on_restart*</em></td>
 <td>should we
 write a
 checkpoint
@@ -1156,10 +1141,10 @@ generation of plotfiles</p>
 <span id="id20"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-9" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
-<col width="29%" />
-<col width="29%" />
-<col width="29%" />
-<col width="14%" />
+<col width="39%" />
+<col width="24%" />
+<col width="24%" />
+<col width="12%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Parameter</th>
@@ -1170,11 +1155,7 @@ Values</th>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><ul class="first simple">
-<li></li>
-</ul>
-<p class="last"><em>amr.plot_file*</em></p>
-</td>
+<tr class="row-even"><td><strong>amr.plot_file</strong></td>
 <td>prefix for
 plotfiles</td>
 <td>String</td>
@@ -1197,11 +1178,7 @@ files</td>
 <td>Real <span class="math notranslate nohighlight">\(&gt; 0\)</span></td>
 <td>-1.0</td>
 </tr>
-<tr class="row-odd"><td><ul class="first simple">
-<li></li>
-</ul>
-<p class="last"><em>amr.plot_vars*</em></p>
-</td>
+<tr class="row-odd"><td><strong>amr.plot_vars</strong></td>
 <td>name of state
 variables to
 include in
@@ -1210,8 +1187,7 @@ plotfiles</td>
 list</td>
 <td>ALL</td>
 </tr>
-<tr class="row-even"><td><strong>amr.de
-rive_plot_vars</strong></td>
+<tr class="row-even"><td><strong>amr.derive_plot_vars</strong></td>
 <td>name of derived
 variables to
 include in
@@ -1220,15 +1196,13 @@ plotfiles</td>
 list</td>
 <td>NONE</td>
 </tr>
-<tr class="row-odd"><td><strong>amr.plo
-t_files_output</strong></td>
+<tr class="row-odd"><td><strong>amr.plot_files_output</strong></td>
 <td>should we write
 plot files</td>
 <td>0 or 1</td>
 <td>1</td>
 </tr>
-<tr class="row-even"><td><strong>amr.plotf
-ile_on_restart</strong></td>
+<tr class="row-even"><td><strong>amr.plotfile_on_restart</strong></td>
 <td>should we write
 a plotfile
 immediately
@@ -1236,8 +1210,7 @@ after restarting</td>
 <td>0 or 1</td>
 <td>0</td>
 </tr>
-<tr class="row-odd"><td><strong>a
-mr.plot_nfiles</strong></td>
+<tr class="row-odd"><td><strong>amr.plot_nfiles</strong></td>
 <td>how parallel is
 the writing of
 the plotfiles</td>
@@ -1245,32 +1218,7 @@ the plotfiles</td>
 <span class="math notranslate nohighlight">\(\geq 1\)</span></td>
 <td>64</td>
 </tr>
-<tr class="row-even"><td><strong>ny
-x.plot_phiGrav</strong></td>
-<td>Should we plot
-the
-gravitational
-potential</td>
-<td>0 or 1</td>
-<td>0</td>
-</tr>
-<tr class="row-odd"><td>&#160;</td>
-<td>plot the
-gravitational
-potential</td>
-<td>0 or 1</td>
-<td>0</td>
-</tr>
-<tr class="row-even"><td><strong>particles.wri
-te_in_plotfile</strong></td>
-<td>Should we write
-the particles in
-a file within
-the plotfile</td>
-<td>0 or 1</td>
-<td>0</td>
-</tr>
-<tr class="row-odd"><td><strong>fab.format</strong></td>
+<tr class="row-even"><td><strong>fab.format</strong></td>
 <td>Should we write
 the plotfile in
 double or single
@@ -1295,7 +1243,6 @@ your results ever so slightly than if you didn’t set this flag.</li>
 <strong>amr.plot_nfiles</strong> parameter.</li>
 <li>If you are doing a scaling study then set <strong>amr.plot_files_output</strong> =
 0 so you can test scaling of the algorithm without I/O.</li>
-<li><strong>nyx.plot_phiGrav</strong> is only relevant if <strong>nyx.do_grav</strong> = 1</li>
 <li>By default, plotfiles are written in double precision (NATIVE
 format). If you want to save space by writing them in single
 precision, set the fab.format flag to IEEE32.</li>
