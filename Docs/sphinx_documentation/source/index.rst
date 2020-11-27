@@ -19,7 +19,6 @@ Welcome to Nyx's documentation!
    Particles
    NyxHeatCool
    NyxGravity
-   InputsMultigrid 
    NyxForcing
    NightlyTests
    Visualization
