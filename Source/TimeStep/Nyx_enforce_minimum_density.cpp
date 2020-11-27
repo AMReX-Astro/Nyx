@@ -118,6 +118,7 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new,
     while (too_low and iter < 10)
     {
         // First make sure that all ghost cells are updated because we use them in defining fluxes
+        // Note that below we update S_new, not Sborder, so we must FillPatch each time.
         FillPatch(*this, Sborder, 2, cur_time, State_Type, Density, Sborder.nComp());
 
         // Initialize to zero; these will only be non-zero at a face across which density is passed...
@@ -169,15 +170,16 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new,
            amrex::Abort("   and finding NaN in enforce_minimum_density");
         }
 
+        // This is used to decide whether to continue the iteration
         rho_new_min_after = S_new.min(URHO);
-         ru_new_min_after = S_new.min(UMX);
-         rv_new_min_after = S_new.min(UMY);
-         rw_new_min_after = S_new.min(UMZ);
-         re_new_min_after = S_new.min(UEINT);
-         rE_new_min_after = S_new.min(UEDEN);
 
         if (debug) 
         {
+             ru_new_min_after = S_new.min(UMX);
+             rv_new_min_after = S_new.min(UMY);
+             rw_new_min_after = S_new.min(UMZ);
+             re_new_min_after = S_new.min(UEINT);
+             rE_new_min_after = S_new.min(UEDEN);
             amrex::Print() << "After " << iter+1 << " iterations " << std::endl;
             amrex::Print() << "  MIN OF rho: old / new / new new " << 
                 rho_old_min_before << " " << rho_new_min_before << " " << rho_new_min_after << std::endl;
