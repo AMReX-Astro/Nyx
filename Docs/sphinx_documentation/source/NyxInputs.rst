@@ -604,7 +604,7 @@ List of Parameters
 | Parameter      | Definition     | Acceptable     | Default        |
 |                |                | Values         |                |
 +================+================+================+================+
-| **am           | prefix for     | Text           | “*chk*”        |
+| **am           | prefix for     | String         | “*chk*”        |
 | r.check_file** | restart files  |                |                |
 +----------------+----------------+----------------+----------------+
 | **a            | how often (by  | Integer        | -1             |
@@ -618,7 +618,7 @@ List of Parameters
 |                | time) to write |                |                |
 |                | restart files  |                |                |
 +----------------+----------------+----------------+----------------+
-| *              | name of the    | Text           | not used if    |
+| *              | name of the    | String         | not used if    |
 | *amr.restart** | file           |                | not set        |
 |                | (directory)    |                |                |
 |                | from which to  |                |                |
@@ -715,7 +715,7 @@ List of Parameters
 | Parameter        | Definition       | Acceptable       | Default |
 |                  |                  | Values           |         |
 +==================+==================+==================+=========+
-| *                | prefix for       | Text             | “*plt*” |
+| *                | prefix for       | String           | “*plt*” |
 | *amr.plot_file** | plotfiles        |                  |         |
 +------------------+------------------+------------------+---------+
 | **amr.plot_int** | how often (by    | Integer          | -1      |
@@ -831,59 +831,58 @@ Screen Output
 List of Parameters
 ------------------
 
-+----------------+----------------+----------------+----------------+
-| Parameter      | Definition     | Acceptable     | Default        |
-|                |                | Values         |                |
-+================+================+================+================+
-| **amr.v**      | verbosity of   | 0 or 1         | 0              |
-|                | Amr.cpp        |                |                |
-+----------------+----------------+----------------+----------------+
-| **nyx.v**      | verbosity of   | 0 or 1         | 0              |
-|                | Nyx.cpp        |                |                |
-+----------------+----------------+----------------+----------------+
-| **gravity.v**  | verbosity of   | 0 or 1         | 0              |
-|                | Gravity.cpp    |                |                |
-+----------------+----------------+----------------+----------------+
-| **mg.v**       | verbosity of   | 0,1,2,3,4      | 0              |
-|                | multigrid      |                |                |
-|                | solver (for    |                |                |
-|                | gravity)       |                |                |
-+----------------+----------------+----------------+----------------+
-| *              | verbosity of   | 0,1,2,3,4      | 0              |
-| *particles.v** | pa             |                |                |
-|                | rticle-related |                |                |
-|                | processes      |                |                |
-+----------------+----------------+----------------+----------------+
-| **             | name of the    | Text           | not used if    |
-| amr.grid_log** | file to which  |                | not set        |
-|                | the grids are  |                |                |
-|                | written        |                |                |
-+----------------+----------------+----------------+----------------+
-| *              | name of the    | Text           | not used if    |
-| *amr.run_log** | file to which  |                | not set        |
-|                | certain output |                |                |
-|                | is written     |                |                |
-+----------------+----------------+----------------+----------------+
-| **amr.r        | name of the    | Text           | not used if    |
-| un_log_terse** | file to which  |                | not set        |
-|                | certain        |                |                |
-|                | (terser)       |                |                |
-|                | output is      |                |                |
-|                | written        |                |                |
-+----------------+----------------+----------------+----------------+
-| **amr.         | if             |                |                |
-| sum_interval** | :math:`> 0,`   |                |                |
-|                | how often (in  |                |                |
-|                | level-0 time   |                |                |
-|                | steps)         |                |                |
-+----------------+----------------+----------------+----------------+
-|                | to compute and | Integer        | -1             |
-|                | print integral |                |                |
-|                | quantities     |                |                |
-+----------------+----------------+----------------+----------------+
-| **nyx.do_spe   |                | 0 or 1         | 1              |
-| cial_tagging** |                |                |                |
-+----------------+----------------+----------------+----------------+
++----------------------------+------------------+----------------+----------------+
+| Parameter                  | Definition       | Acceptable     | Default        |
+|                            |                  | Values         |                |
++============================+==================+================+================+
+| **amr.v**                  | verbosity of     | 0 or 1         | 0              |
+|                            | Amr.cpp          |                |                |
++----------------------------+------------------+----------------+----------------+
+| **nyx.v**                  | verbosity of     | 0 or 1         | 0              |
+|                            | Nyx.cpp          |                |                |
++----------------------------+------------------+----------------+----------------+
+| **gravity.v**              | verbosity of     | 0 or 1         | 0              |
+|                            | Gravity.cpp      |                |                |
++----------------------------+------------------+----------------+----------------+
+| **mg.v**                   | verbosity of     | 0,1,2,3,4      | 0              |
+|                            | multigrid        |                |                |
+|                            | solver (for      |                |                |
+|                            | gravity)         |                |                |
++----------------------------+------------------+----------------+----------------+
+| **particles.v**            | verbosity of     | 0,1,2,3,4      | 0              |
+|                            | particle-related |                |                |
+|                            | processes        |                |                |
++----------------------------+------------------+----------------+----------------+
+| **amr.grid_log**           | name of the      | String         | not used if    |
+|                            | file to which    |                | not set        |
+|                            | the grids are    |                |                |
+|                            | written          |                |                |
++----------------------------+------------------+----------------+----------------+
+| *amr.run_log**             | name of the      | String         | not used if    |
+|                            | file to which    |                | not set        |
+|                            | certain output   |                |                |
+|                            | is written       |                |                |
++----------------------------+------------------+----------------+----------------+
+| **amr.run_log_terse**      | name of the      | String         | not used if    |
+|                            | file to which    |                | not set        |
+|                            | certain          |                |                |
+|                            | (terser)         |                |                |
+|                            | output is        |                |                |
+|                            | written          |                |                |
++----------------------------+------------------+----------------+----------------+
+| **amr.sum_interval**       | if               |                |                |
+|                            | :math:`> 0,`     |                |                |
+|                            | how often (in    |                |                |
+|                            | level-0 time     |                |                |
+|                            | steps)           |                |                |
++----------------------------+------------------+----------------+----------------+
+|                            | to compute and   | Integer        | -1             |
+|                            | print integral   |                |                |
+|                            | quantities       |                |                |
++----------------------------+------------------+----------------+----------------+
+| **nyx.do_special_tagging** |                  | 0 or 1         | 1              |
+|                            |                  |                |                |
++----------------------------+------------------+----------------+----------------+
 
 .. _notes-6:
 
