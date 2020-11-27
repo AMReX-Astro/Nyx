@@ -605,7 +605,7 @@ List of Parameters
 |                                 | checkpoint     |                |                |
 |                                 | files          |                |                |
 +---------------------------------+----------------+----------------+----------------+
-| *amr.checkpoint_on_restart**    | should we      | 0 or 1         | 0              |
+| **amr.checkpoint_on_restart**   | should we      | 0 or 1         | 0              |
 |                                 | write a        |                |                |
 |                                 | checkpoint     |                |                |
 |                                 | immediately    |                |                |
