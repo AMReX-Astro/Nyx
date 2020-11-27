@@ -108,11 +108,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#examples-of-usage-2">Examples of Usage</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#tagging">Tagging</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#list-of-parameters-3">List of Parameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#notes-1">Notes</a></li>
-</ul>
-</li>
 <li class="toctree-l2"><a class="reference internal" href="#regridding">Regridding</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#list-of-parameters-4">List of Parameters</a></li>
@@ -527,48 +522,6 @@ level-2 grids will be created every 2 level-1 time steps.</div>
 </ul>
 </div>
 </div>
-<div class="section" id="tagging">
-<h2>Tagging<a class="headerlink" href="#tagging" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="list-of-parameters-3">
-<span id="id5"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-3" title="Permalink to this headline">¶</a></h3>
-<table border="1" class="docutils">
-<colgroup>
-<col width="36%" />
-<col width="26%" />
-<col width="26%" />
-<col width="13%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Parameter</th>
-<th class="head">Definition</th>
-<th class="head">Acceptable
-Values</th>
-<th class="head">Default</th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td><strong>nyx.allow_untagging</strong></td>
-<td>are cells
-allowed to be
-“untagged”</td>
-<td>0 or 1</td>
-<td>0</td>
-</tr>
-</tbody>
-</table>
-<p>[Table:Tagging]</p>
-</div>
-<div class="section" id="notes-1">
-<span id="id6"></span><h3>Notes<a class="headerlink" href="#notes-1" title="Permalink to this headline">¶</a></h3>
-<ul class="simple">
-<li>Typically cells at a given level can be tagged as needing refinement
-by any of a number of criteria, but cannot be “untagged”. That is,
-once tagged, no other criteria can untag them. If we set
-<strong>nyx.allow_untagging</strong> = 1 then the user is allowed to “untag” cells
-in the Fortran tagging routines.</li>
-</ul>
-</div>
-</div>
 <div class="section" id="regridding">
 <h2>Regridding<a class="headerlink" href="#regridding" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="overview">
@@ -583,7 +536,7 @@ Berger–Rigoutsos algorithm to create rectangular grids that contain the
 tagged cells.</p>
 </div>
 <div class="section" id="list-of-parameters-4">
-<span id="id7"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-4" title="Permalink to this headline">¶</a></h3>
+<span id="id5"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-4" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="37%" />
@@ -660,7 +613,7 @@ if true</td>
 <p>[Table:GriddingInputs]</p>
 </div>
 <div class="section" id="notes-2">
-<span id="id8"></span><h3>Notes<a class="headerlink" href="#notes-2" title="Permalink to this headline">¶</a></h3>
+<span id="id6"></span><h3>Notes<a class="headerlink" href="#notes-2" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><strong>amr.n_error_buf</strong>, <strong>amr.max_grid_size</strong> and
 <strong>amr.blocking_factor</strong> can be read in as a single value which is
@@ -674,7 +627,7 @@ at every level</li>
 </ul>
 </div>
 <div class="section" id="examples-of-usage-3">
-<span id="id9"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-3" title="Permalink to this headline">¶</a></h3>
+<span id="id7"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-3" title="Permalink to this headline">¶</a></h3>
 <ul>
 <li><div class="first line-block">
 <div class="line"><strong>amr.regrid_file</strong> = <em>fixed_grids</em></div>
@@ -760,7 +713,7 @@ repeat the steps above with <strong>max_grid_size / 4</strong>.</li>
 <div class="section" id="simulation-time">
 <h2>Simulation Time<a class="headerlink" href="#simulation-time" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="list-of-parameters-5">
-<span id="id10"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-5" title="Permalink to this headline">¶</a></h3>
+<span id="id8"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-5" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="26%" />
@@ -813,7 +766,7 @@ final value of z</td>
 <p>[Table:TimeInputs]</p>
 </div>
 <div class="section" id="notes-3">
-<span id="id11"></span><h3>Notes<a class="headerlink" href="#notes-3" title="Permalink to this headline">¶</a></h3>
+<span id="id9"></span><h3>Notes<a class="headerlink" href="#notes-3" title="Permalink to this headline">¶</a></h3>
 <p>To control the number of time steps, you can limit by the maximum number
 of level-0 time steps (<strong>max_step</strong>), or the final simulation time
 (<strong>stop_time</strong>), or both. The code will stop at whichever criterion
@@ -830,7 +783,7 @@ rather it stops once <span class="math notranslate nohighlight">\(a\)</span> is 
 than) this value.)</p>
 </div>
 <div class="section" id="examples-of-usage-4">
-<span id="id12"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-4" title="Permalink to this headline">¶</a></h3>
+<span id="id10"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-4" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li><strong>max_step</strong> = 1000</li>
 <li><strong>stop_time</strong> = 1.0</li>
@@ -852,11 +805,11 @@ further than <span class="math notranslate nohighlight">\(f \Delta t\)</span> in
 hard-wired in Particles.H, but it will become an inputs parameter.</li>
 </ul>
 <div class="section" id="list-of-parameters-6">
-<span id="id13"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-6" title="Permalink to this headline">¶</a></h3>
+<span id="id11"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-6" title="Permalink to this headline">¶</a></h3>
 <p>[Table:TimeStepInputs]</p>
 </div>
 <div class="section" id="examples-of-usage-5">
-<span id="id14"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-5" title="Permalink to this headline">¶</a></h3>
+<span id="id12"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-5" title="Permalink to this headline">¶</a></h3>
 <ul>
 <li><div class="first line-block">
 <div class="line"><strong>nyx.cfl</strong> = 0.9</div>
@@ -926,7 +879,7 @@ subcycle according to the values supplied by
 <strong>subcycling_iterations</strong>.</li>
 </ul>
 <div class="section" id="list-of-parameters-7">
-<span id="id15"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-7" title="Permalink to this headline">¶</a></h3>
+<span id="id13"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-7" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="25%" />
@@ -969,7 +922,7 @@ Manual mode</td>
 </table>
 </div>
 <div class="section" id="examples-of-usage-6">
-<span id="id16"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-6" title="Permalink to this headline">¶</a></h3>
+<span id="id14"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-6" title="Permalink to this headline">¶</a></h3>
 <ul>
 <li><div class="first line-block">
 <div class="line"><strong>amr.subcycling_mode</strong><span class="math notranslate nohighlight">\(=\)</span>Manual</div>
@@ -1000,7 +953,7 @@ the inputs file, the following options control the generation of
 checkpoint files (which are really directories):</div>
 </div>
 <div class="section" id="list-of-parameters-8">
-<span id="id17"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-8" title="Permalink to this headline">¶</a></h3>
+<span id="id15"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-8" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="41%" />
@@ -1084,7 +1037,7 @@ restarting</td>
 </table>
 </div>
 <div class="section" id="notes-4">
-<span id="id18"></span><h3>Notes<a class="headerlink" href="#notes-4" title="Permalink to this headline">¶</a></h3>
+<span id="id16"></span><h3>Notes<a class="headerlink" href="#notes-4" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>You should specify either <strong>amr.check_int</strong> or <strong>amr.check_per</strong>. Do
 not try to specify both.</li>
@@ -1103,7 +1056,7 @@ algorithm without I/O.</li>
 </ul>
 </div>
 <div class="section" id="examples-of-usage-7">
-<span id="id19"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-7" title="Permalink to this headline">¶</a></h3>
+<span id="id17"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-7" title="Permalink to this headline">¶</a></h3>
 <ul>
 <li><p class="first"><strong>amr.check_file</strong> = <em>chk_run</em></p>
 </li>
@@ -1138,7 +1091,7 @@ directory names will be <em>chk_run00000</em>, <em>chk_run00043</em>,
 directories). The following options in the inputs file control the
 generation of plotfiles</p>
 <div class="section" id="list-of-parameters-9">
-<span id="id20"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-9" title="Permalink to this headline">¶</a></h3>
+<span id="id18"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-9" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="39%" />
@@ -1232,7 +1185,7 @@ precision</td>
 in <code class="docutils literal notranslate"><span class="pre">Nyx_setup.cpp</span></code>. Feel free to look at it and see what’s there.</p>
 </div>
 <div class="section" id="notes-5">
-<span id="id21"></span><h3>Notes<a class="headerlink" href="#notes-5" title="Permalink to this headline">¶</a></h3>
+<span id="id19"></span><h3>Notes<a class="headerlink" href="#notes-5" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>You should specify either <strong>amr.plot_int</strong> or <strong>amr.plot_per</strong>. Do
 not try to specify both.</li>
@@ -1249,7 +1202,7 @@ precision, set the fab.format flag to IEEE32.</li>
 </ul>
 </div>
 <div class="section" id="examples-of-usage-8">
-<span id="id22"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-8" title="Permalink to this headline">¶</a></h3>
+<span id="id20"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-8" title="Permalink to this headline">¶</a></h3>
 <ul>
 <li><p class="first"><strong>amr.plot_file</strong> = <em>plt_run</em></p>
 </li>
@@ -1277,7 +1230,7 @@ directory names will be <em>plt_run00000</em>, <em>plt_run00043</em>,
 <div class="section" id="screen-output">
 <h2>Screen Output<a class="headerlink" href="#screen-output" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="list-of-parameters-10">
-<span id="id23"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-10" title="Permalink to this headline">¶</a></h3>
+<span id="id21"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-10" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="36%" />
@@ -1376,7 +1329,7 @@ quantities</td>
 </table>
 </div>
 <div class="section" id="examples-of-usage-9">
-<span id="id24"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-9" title="Permalink to this headline">¶</a></h3>
+<span id="id22"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-9" title="Permalink to this headline">¶</a></h3>
 <ul>
 <li><div class="first line-block">
 <div class="line"><strong>amr.grid_log</strong> = <em>grdlog</em></div>
@@ -1422,7 +1375,7 @@ and print these quanitities.</div>
 <div class="section" id="gravity">
 <h2>Gravity<a class="headerlink" href="#gravity" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="list-of-parameters-11">
-<span id="id25"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-11" title="Permalink to this headline">¶</a></h3>
+<span id="id23"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-11" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="33%" />
@@ -1471,7 +1424,7 @@ solve</td>
 <p>[Table:Gravity]</p>
 </div>
 <div class="section" id="notes-6">
-<span id="id26"></span><h3>Notes<a class="headerlink" href="#notes-6" title="Permalink to this headline">¶</a></h3>
+<span id="id24"></span><h3>Notes<a class="headerlink" href="#notes-6" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>To include gravity you must set<ul>
 <li>USE_GRAV = TRUE in the GNUmakefile</li>
@@ -1486,7 +1439,7 @@ USE_GRAV = TRUE; they both default to 0.</li>
 <div class="section" id="physics">
 <h2>Physics<a class="headerlink" href="#physics" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="list-of-parameters-12">
-<span id="id27"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-12" title="Permalink to this headline">¶</a></h3>
+<span id="id25"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-12" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="41%" />
