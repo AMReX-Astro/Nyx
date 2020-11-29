@@ -48,7 +48,7 @@ Nyx::correct_gsrc(int lev, Real time, Real prev_time, Real cur_time, Real dt)
         int  iden = Density; 
         int ieden = Eden; 
 
-        amrex::ParallelFor(bx, [g_old,g_new,s_old,s_new,a_old,a_new,iden,ieden,l_type,dt]
+        amrex::ParallelFor(bx, [g_old,g_new,s_old,s_new,a_old,a_new,iden,ieden,dt]
         AMREX_GPU_DEVICE (int i, int j, int k) noexcept
         {
             Real a_half    = 0.50 * (a_old + a_new);
