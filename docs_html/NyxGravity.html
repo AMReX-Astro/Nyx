@@ -293,31 +293,15 @@ all time.</p>
 </div>
 <div class="section" id="hydrodynamics-source-terms">
 <h2>Hydrodynamics Source Terms<a class="headerlink" href="#hydrodynamics-source-terms" title="Permalink to this headline">¶</a></h2>
-<p>There are several options to incorporate the effects of gravity into
-the hydrodynamics system. The main parameter here is
-<code class="docutils literal notranslate"><span class="pre">Nyx.grav_source_type</span></code>.</p>
-<ul class="simple">
-<li><code class="docutils literal notranslate"><span class="pre">Nyx.grav_source_type</span></code> = 1 : we use a standard
-predictor-corrector formalism for updating the momentum and
+<blockquote>
+<div>We use a standard predictor-corrector formalism for updating the momentum and
 energy. Specifically, our first update is equal to <span class="math notranslate nohighlight">\(\Delta t
 \times \mathbf{S}^n\)</span> , where <span class="math notranslate nohighlight">\(\mathbf{S}^n\)</span> is the value of
 the source terms at the old-time (which is usually called time-level
 <span class="math notranslate nohighlight">\(n\)</span>). At the end of the timestep, we do a corrector step where
 we subtract off <span class="math notranslate nohighlight">\(\Delta t / 2 \times \mathbf{S}^n\)</span> and add on
 <span class="math notranslate nohighlight">\(\Delta t / 2 \times \mathbf{S}^{n+1}\)</span>, so that at the end of
-the timestep the source term is properly time centered.</li>
-</ul>
-<ul class="simple">
-<li><code class="docutils literal notranslate"><span class="pre">Nyx.grav_source_type</span></code> = 3 : we do the same momentum update as
-the previous, but for the energy update, we put all of the work
-into updating the kinetic energy alone. In particular, we explicitly
-ensure that <span class="math notranslate nohighlight">\((rho e)\)</span> maintains the same, and update
-<span class="math notranslate nohighlight">\((rho K)\)</span> with the work due to gravity, adding the new kinetic
-energy to the old internal energy to determine the final total gas
-energy. The physical motivation is that work should be done on the
-velocity, and should not directly update the temperature—only
-indirectly through things like shocks.</li>
-</ul>
+the timestep the source term is properly time centered.</div></blockquote>
 </div>
 </div>
 
