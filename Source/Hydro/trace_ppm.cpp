@@ -245,8 +245,7 @@ trace_ppm(const Box& bx,
       // Note: for the transverse velocities, the jump is carried
       //       only by the u wave (the contact)
 
-
-      // we also add the sources here so they participate in the tracing
+      // we add the sources here so they participate in the tracing
       Real dum    = un_ref - Im[QUN][0]   - hdt*Im_src[QUN][0] / a_old;
       Real dptotm =  p_ref - Im[QPRES][0] - hdt*Im_src[QPRES][0] / a_old;
 
@@ -262,24 +261,53 @@ trace_ppm(const Box& bx,
       // These are analogous to the beta's from the original PPM
       // paper (except we work with rho instead of tau).  This is
       // simply (l . dq), where dq = qref - I(q)
-
+      
       Real alpham = 0.5_rt*(dptotm*rho_ref_inv*cc_ref_inv - dum)*rho_ref*cc_ref_inv;
       Real alphap = 0.5_rt*(dptotp*rho_ref_inv*cc_ref_inv + dup)*rho_ref*cc_ref_inv;
       Real alpha0r = drho - dptot/csq_ref;
       Real alpha0e_g = drhoe_g - dptot*h_g_ref/csq_ref;
 
-      alpham = un-cc > 0.0_rt ? 0.0_rt : -alpham;
-      alphap = un+cc > 0.0_rt ? 0.0_rt : -alphap;
-      alpha0r = un > 0.0_rt ? 0.0_rt : -alpha0r;
-      alpha0e_g = un > 0.0_rt ? 0.0_rt : -alpha0e_g;
+      alpham    = un-cc > 0.0_rt ? 0.0_rt : -alpham;
+      alphap    = un+cc > 0.0_rt ? 0.0_rt : -alphap;
+      alpha0r   = un    > 0.0_rt ? 0.0_rt : -alpha0r;
+      alpha0e_g = un    > 0.0_rt ? 0.0_rt : -alpha0e_g;
 
       // The final interface states are just
       // q_s = q_ref - sum(l . dq) r
       // note that the a{mpz}right as defined above have the minus already
-      qp(i,j,k,QRHO) = amrex::max(lsmall_dens, rho_ref +  alphap + alpham + alpha0r);
-      qp(i,j,k,QUN) = un_ref + (alphap - alpham)*cc_ref*rho_ref_inv;
-      // qp(i,j,k,QREINT) = rhoe_g_ref + (alphap + alpham)*h_g_ref + alpha0e_g;
 
+      if ( (rho_ref +  alphap + alpham + alpha0r) < 0.5 * rho_ref)
+      {
+#if 0
+          std::cout << "QP GOING LOW IN DIR " << idir << " BEFORE FIX AT " << IntVect(i,j,k) << " " << rho_ref << std::endl;
+          std::cout << "OLD PREDICTED RHO AT " << IntVect(i,j,k) << " " << 
+                        (rho_ref +  alphap + alpham + alpha0r) << std::endl;
+          std::cout << "OLD PREDICTED UN  AT " << IntVect(i,j,k) << " " << 
+                        un_ref + (alphap - alpham)*cc_ref*rho_ref_inv << std::endl;;
+#endif
+
+          alpham = 0.5_rt*(dptotm*rho_ref_inv*cc_ref_inv - dum)*rho_ref*cc_ref_inv;
+          alphap = 0.5_rt*(dptotp*rho_ref_inv*cc_ref_inv + dup)*rho_ref*cc_ref_inv;
+
+          Real dum_grav = -hdt*Im_src[QUN][0] / a_old;
+          Real dup_grav = -hdt*Im_src[QUN][2] / a_old;
+
+          Real alpham_grav = 0.5_rt*(-dum_grav)*rho_ref*cc_ref_inv;
+          Real alphap_grav = 0.5_rt*( dup_grav)*rho_ref*cc_ref_inv;
+          
+          alpham    = un-cc > 0.0_rt ? -alpham_grav : -alpham;
+          alphap    = un+cc > 0.0_rt ? -alphap_grav : -alphap;
+
+#if 0
+          std::cout << "NEW PREDICTED RHO AT " << IntVect(i,j,k) << " " << 
+                        (rho_ref +  alphap + alpham + alpha0r) << std::endl;
+          std::cout << "NEW PREDICTED UN  AT " << IntVect(i,j,k) << " " << 
+                        un_ref + (alphap - alpham)*cc_ref*rho_ref_inv << std::endl;;
+#endif
+      }
+
+      qp(i,j,k,QRHO ) = amrex::max(lsmall_dens, rho_ref +  alphap + alpham + alpha0r);
+      qp(i,j,k,QUN  ) = un_ref + (alphap - alpham)*cc_ref*rho_ref_inv;
       qp(i,j,k,QPRES) = amrex::max(lsmall_pres, p_ref + (alphap + alpham)*csq_ref);
 
       // Transverse velocities -- there's no projection here, so we
@@ -355,10 +383,41 @@ trace_ppm(const Box& bx,
       // The final interface states are just
       // q_s = q_ref - sum (l . dq) r
       // note that the a{mpz}left as defined above have the minus already
+
+      if ( (rho_ref +  alphap + alpham + alpha0r) < 0.5 * rho_ref)
+      {
+#if 0
+           std::cout << "QM GOING LOW IN DIR " << idir << " BEFORE FIX AT " << IntVect(i,j,k) << " " << rho_ref << std::endl;
+           std::cout << "OLD PREDICTED RHO AT " << IntVect(i,j,k) << " " << 
+                            (rho_ref +  alphap + alpham + alpha0r) << std::endl;
+           std::cout << "OLD PREDICTED UN  AT " << IntVect(i,j,k) << " " << 
+                            un_ref + (alphap - alpham)*cc_ref*rho_ref_inv << std::endl;;
+#endif
+
+           alpham = 0.5_rt*(dptotm*rho_ref_inv*cc_ref_inv - dum)*rho_ref*cc_ref_inv;
+           alphap = 0.5_rt*(dptotp*rho_ref_inv*cc_ref_inv + dup)*rho_ref*cc_ref_inv;
+
+           Real dum_grav = -hdt*Ip_src[QUN][0] / a_old;
+           Real dup_grav = -hdt*Ip_src[QUN][2] / a_old;
+
+           Real alpham_grav = 0.5_rt*(-dum_grav)*rho_ref*cc_ref_inv;
+           Real alphap_grav = 0.5_rt*( dup_grav)*rho_ref*cc_ref_inv;
+           
+           alpham    = un-cc > 0.0_rt ? -alpham_grav : -alpham;
+           alphap    = un+cc > 0.0_rt ? -alphap_grav : -alphap;
+
+#if 0
+           std::cout << "NEW PREDICTED RHO AT " << IntVect(i,j,k) << " " << 
+                            (rho_ref +  alphap + alpham + alpha0r) << std::endl;
+           std::cout << "NEW PREDICTED UN  AT " << IntVect(i,j,k) << " " << 
+                            un_ref + (alphap - alpham)*cc_ref*rho_ref_inv << std::endl;;
+#endif
+      }
+
       if (idir == 0) {
-        qm(i+1,j,k,QRHO) = amrex::max(lsmall_dens, rho_ref +  alphap + alpham + alpha0r);
-        qm(i+1,j,k,QUN) = un_ref + (alphap - alpham)*cc_ref*rho_ref_inv;
-        // qm(i+1,j,k,QREINT) = rhoe_g_ref + (alphap + alpham)*h_g_ref + alpha0e_g;
+
+        qm(i+1,j,k,QRHO ) = amrex::max(lsmall_dens, rho_ref +  alphap + alpham + alpha0r);
+        qm(i+1,j,k,QUN  ) = un_ref + (alphap - alpham)*cc_ref*rho_ref_inv;
         qm(i+1,j,k,QPRES) = amrex::max(lsmall_pres, p_ref + (alphap + alpham)*csq_ref);
 
         // transverse velocities
@@ -369,9 +428,9 @@ trace_ppm(const Box& bx,
         qm(i+1,j,k,QREINT) = qm(i+1,j,k,QPRES) / (gamma - 1.0);
 
       } else if (idir == 1) {
-        qm(i,j+1,k,QRHO) = amrex::max(lsmall_dens, rho_ref +  alphap + alpham + alpha0r);
-        qm(i,j+1,k,QUN) = un_ref + (alphap - alpham)*cc_ref*rho_ref_inv;
-        // qm(i,j+1,k,QREINT) = rhoe_g_ref + (alphap + alpham)*h_g_ref + alpha0e_g;
+
+        qm(i,j+1,k,QRHO ) = amrex::max(lsmall_dens, rho_ref +  alphap + alpham + alpha0r);
+        qm(i,j+1,k,QUN  ) = un_ref + (alphap - alpham)*cc_ref*rho_ref_inv;
         qm(i,j+1,k,QPRES) = amrex::max(lsmall_pres, p_ref + (alphap + alpham)*csq_ref);
 
         // transverse velocities
@@ -382,9 +441,9 @@ trace_ppm(const Box& bx,
         qm(i,j+1,k,QREINT) = qm(i,j+1,k,QPRES) / (gamma - 1.0);
 
       } else if (idir == 2) {
-        qm(i,j,k+1,QRHO) = amrex::max(lsmall_dens, rho_ref +  alphap + alpham + alpha0r);
-        qm(i,j,k+1,QUN) = un_ref + (alphap - alpham)*cc_ref*rho_ref_inv;
-        // qm(i,j,k+1,QREINT) = rhoe_g_ref + (alphap + alpham)*h_g_ref + alpha0e_g;
+
+        qm(i,j,k+1,QRHO ) = amrex::max(lsmall_dens, rho_ref +  alphap + alpham + alpha0r);
+        qm(i,j,k+1,QUN  ) = un_ref + (alphap - alpham)*cc_ref*rho_ref_inv;
         qm(i,j,k+1,QPRES) = amrex::max(lsmall_pres, p_ref + (alphap + alpham)*csq_ref);
 
         // transverse velocities
@@ -396,7 +455,7 @@ trace_ppm(const Box& bx,
       }
     }
   });
-
 }
+
 
 
