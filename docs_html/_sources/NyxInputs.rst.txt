@@ -968,9 +968,9 @@ These must be preceded by "gravity" in the inputs file:
 +----------------------+---------------------------------------------------+-----------+--------------+
 | sl_tol               |  Relative tolerance for single-level solves       |  Real     |   1.e-12     |
 +----------------------+---------------------------------------------------+-----------+--------------+
-| mlmg_agglomeration   |  Should we agglomerate deep in the V-cycle        |  Int      |   0          |
+| mlmg_agglomeration   |  Should we agglomerate deep in the V-cycle        |  Int      |   1          |
 +----------------------+---------------------------------------------------+-----------+--------------+
-| mlmg_consolidation   |  Should we consolidate deep in the V-cycle        |  Int      |   0          |
+| mlmg_consolidation   |  Should we consolidate deep in the V-cycle        |  Int      |   1          |
 +----------------------+---------------------------------------------------+-----------+--------------+
 
 These must be preceded by "mg" in the inputs file:
