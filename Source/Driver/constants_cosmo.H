@@ -1,9 +1,6 @@
 #ifndef _constants_cosmo_
 #define _constants_cosmo_
 
-// Hard-code gravity source type
-static constexpr int grav_source_type = 1;
-
 // Relation of our code units & CGS 
 static constexpr amrex::Real  M_unit = 1.98848e33;    // M_sun
 static constexpr amrex::Real  L_unit = 3.0856776e24;  // Mpc

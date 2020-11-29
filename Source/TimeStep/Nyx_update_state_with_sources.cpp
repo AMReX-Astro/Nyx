@@ -106,24 +106,11 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
                 uout(i,j,k,UMY)   += SrV * dt_a_new;
                 uout(i,j,k,UMZ)   += SrW * dt_a_new;
 
-                if (grav_source_type == 1)
-                {
-                    // This does work (in 1-d)
-                    // Src = rho u dot g, evaluated with all quantities at t^n
-                    const amrex::Real SrE = uin(i,j,k,UMX) * grav(i,j,k,0) +
-                        uin(i,j,k,UMY) * grav(i,j,k,1) +
-                        uin(i,j,k,UMZ) * grav(i,j,k,2);
-                    uout(i,j,k,UEDEN) = (a_newsq*uout(i,j,k,UEDEN) + SrE * (dt*a_half)) * a_newsq_inv;
-                }
-                else if (grav_source_type == 3)
-                {
-                    //Multiplies by rhoInv
-                    const amrex::Real new_ke = 0.5 * rhoInv * (vx * vx + vy * vy + vz * vz);
-                    uout(i,j,k,UEDEN) = old_rhoeint + new_ke;
-                                }
-                else
-                    amrex::Abort("Error:: update_state_with_sources :: bogus grav_source_type");
-
+                // Src = rho u dot g, evaluated with all quantities at t^n
+                const amrex::Real SrE = uin(i,j,k,UMX) * grav(i,j,k,0) +
+                                        uin(i,j,k,UMY) * grav(i,j,k,1) +
+                                        uin(i,j,k,UMZ) * grav(i,j,k,2);
+                uout(i,j,k,UEDEN) = (a_newsq*uout(i,j,k,UEDEN) + SrE * (dt*a_half)) * a_newsq_inv;
         });
     }
 }
