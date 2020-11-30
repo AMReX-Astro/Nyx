@@ -2,7 +2,6 @@ CEXE_sources += Nyx_advance.cpp
 CEXE_sources += Nyx_advance_particles.cpp
 
 ifneq ($(NO_HYDRO), TRUE)
-  CEXE_sources += Nyx_sources.cpp
   CEXE_sources += Nyx_enforce_minimum_density.cpp
   CEXE_sources += Nyx_time_center_sources.cpp
   CEXE_sources += Nyx_update_state_with_sources.cpp
