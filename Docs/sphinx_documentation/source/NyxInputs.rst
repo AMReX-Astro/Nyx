@@ -883,9 +883,9 @@ List of Parameters
 | Parameter                | Definition       | Acceptable     | Default          |
 |                          |                  | Values         |                  |
 +==========================+==================+================+==================+
-| **nyx.do_grav**          | Include          | 0 if false     | must be set if   |
-|                          | gravity as a     | 1 if true      | USE_GRAV = TRUE  |
-|                          | forcing term     |                | TRUE             |
+| **nyx.do_grav**          | Include          | 0 if false     | must be set      |
+|                          | gravity as a     | 1 if true      |                  |
+|                          | forcing term     |                |                  |
 +--------------------------+------------------+----------------+------------------+
 | **gravity.no_sync**      | whether to       | 0 if false     |  0               |
 |                          | perform the      | 1 if true      |                  |
@@ -904,14 +904,7 @@ List of Parameters
 Notes
 -----
 
--  To include gravity you must set
-
-   -  USE_GRAV = TRUE in the GNUmakefile
-
-   -  **nyx.do_grav** = 1 in the inputs file
-
--  **gravity.no_sync** and **gravity.no_composite** are only relevant if
-   USE_GRAV = TRUE; they both default to 0.
+-  To include gravity you must set **nyx.do_grav** = 1 in the inputs file
 
 Physics
 =======
