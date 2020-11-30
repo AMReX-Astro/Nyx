@@ -16,7 +16,6 @@ DEBUG     = TRUE
 
 # physics
 DIM      = 3
-USE_GRAV = TRUE
 
 Bpack := ./Make.package
 Blocs := .

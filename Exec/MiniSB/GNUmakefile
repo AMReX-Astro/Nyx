@@ -18,7 +18,6 @@ DEBUG     = FALSE
 
 # physics
 DIM      = 3
-USE_GRAV = TRUE
 USE_CONST_SPECIES = TRUE
 
 Bpack := ./Make.package

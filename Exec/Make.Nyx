@@ -1,9 +1,17 @@
 EBASE     ?= Nyx
 
+ifndef USE_PARTICLES
 ifeq ($(USE_GRAV), TRUE)
 USE_PARTICLES = TRUE
 else
 USE_PARTICLES = FALSE
+endif
+else
+USE_GRAV=$(USE_PARTICLES)
+endif
+
+ifndef USE_GRAV
+USE_GRAV = TRUE
 endif
 
 BL_NO_FORT = TRUE
@@ -148,7 +156,7 @@ endif
 Bdirs   := Source/Driver Source/TimeStep Source/Hydro
 Bdirs   += Source/EOS Source/HeatCool Source/IO Source/Initialization
 Bdirs   += Source/DerivedQuantities
-ifeq ($(USE_GRAV), TRUE)
+ifeq ($(USE_PARTICLES), TRUE)
 Bdirs   += Source/Particle
 endif
 
@@ -176,7 +184,7 @@ VPATH_LOCATIONS   += $(Blocs)
 #These are the directories in AMReX
 Pdirs   := Base AmrCore Amr Boundary
 
-ifeq ($(USE_GRAV), TRUE)
+ifeq ($(USE_PARTICLES), TRUE)
 Pdirs   += Particle
 endif
 

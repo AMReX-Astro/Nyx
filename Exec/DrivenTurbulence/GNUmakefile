@@ -16,7 +16,6 @@ DEBUG     = FALSE
 
 # physics
 DIM      = 3
-USE_GRAV = FALSE
 
 USE_HEATCOOL = FALSE
 
