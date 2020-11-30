@@ -260,14 +260,6 @@
 <div class="section" id="file-nyx-h">
 <h1>File Nyx.H<a class="headerlink" href="#file-nyx-h" title="Permalink to this headline">¶</a></h1>
 <div class="breathe-sectiondef docutils container">
-<p class="breathe-sectiondef-title rubric">Typedefs</p>
-<dl class="type">
-<dt id="_CPPv424StellarParticleContainer">
-<span class="target" id="Nyx_8H_1a6ca7d7ca6fba173aa4bfbda0928c1377"></span><em class="property">typedef </em>NyxParticleContainer&lt;1 + BL_SPACEDIM + 3&gt; <code class="descname">StellarParticleContainer</code><a class="headerlink" href="#_CPPv424StellarParticleContainer" title="Permalink to this definition">¶</a><br /></dt>
-<dd></dd></dl>
-
-</div>
-<div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric">Enums</p>
 <dl class="enum">
 <dt id="_CPPv49StateType">
@@ -510,56 +502,6 @@
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="_CPPv4N3Nyx18particle_plot_fileERKNSt6stringE">
-<span class="target" id="classNyx_1aebb56de5bdf1731f314ab6db8f80e85e"></span>void <code class="descname">particle_plot_file</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>dir</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N3Nyx21particle_post_restartERKNSt6stringEb">
-<span class="target" id="classNyx_1a6a806f894e09adca21646722a7004714"></span>void <code class="descname">particle_post_restart</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>restart_file</em>, bool <em>is_checkpoint</em> = true<span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N3Nyx21particle_redistributeEib">
-<span class="target" id="classNyx_1aec29907e34841d53752851351b1e7ca7"></span>void <code class="descname">particle_redistribute</code><span class="sig-paren">(</span>int <em>lbase</em> = 0, bool <em>init</em> = false<span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N3Nyx20particle_move_randomEv">
-<span class="target" id="classNyx_1a3364eb3d59db71227889ee71bd5b2405"></span>void <code class="descname">particle_move_random</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N3Nyx14init_particlesEv">
-<span class="target" id="classNyx_1aa61226628cd5b456d1f78b77d104f173"></span>void <code class="descname">init_particles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N3Nyx23setup_virtual_particlesEv">
-<span class="target" id="classNyx_1a764ad145efbedeec7a1c18704695d217"></span>void <code class="descname">setup_virtual_particles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N3Nyx24remove_virtual_particlesEv">
-<span class="target" id="classNyx_1a59c1e6d05b5b4d4b391ea4f66e0531cb"></span>void <code class="descname">remove_virtual_particles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N3Nyx21setup_ghost_particlesEi">
-<span class="target" id="classNyx_1a2bb2adf45e74a9fa3bb03a1c6ef92b33"></span>void <code class="descname">setup_ghost_particles</code><span class="sig-paren">(</span>int <em>ngrow</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N3Nyx22remove_ghost_particlesEv">
-<span class="target" id="classNyx_1a46fde5fd341927abed46e2168320d013"></span>void <code class="descname">remove_ghost_particles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N3Nyx22particle_est_time_stepERN5amrex4RealE">
-<span class="target" id="classNyx_1a17a1e0a23488cdc1968b9b562838c807"></span>void <code class="descname">particle_est_time_step</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real &amp;<em>est_dt</em><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
 <dt id="_CPPv4N3Nyx15particle_deriveERKNSt6stringEN5amrex4RealEi">
 <span class="target" id="classNyx_1a0a2776458f3eae6347712a89de2c0630"></span>std::unique_ptr&lt;MultiFab&gt; <code class="descname">particle_derive</code><span class="sig-paren">(</span><em class="property">const</em> std::string &amp;<em>name</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em>, int <em>ngrow</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
@@ -616,7 +558,7 @@
 
 <dl class="function">
 <dt id="_CPPv4N3Nyx28advance_hydro_plus_particlesEN5amrex4RealEN5amrex4RealEii">
-<span class="target" id="classNyx_1af92a02bced74514187bb615f734b5d71"></span>Real <code class="descname">advance_hydro_plus_particles</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em>, int <em>iteration</em>, int <em>ncycle</em><span class="sig-paren">)</span><br /></dt>
+<span class="target" id="classNyx_1a22dbe38512ee09c7b305e8f86f2a4198"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <code class="descname">advance_hydro_plus_particles</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em>, int <em>iteration</em>, int <em>ncycle</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -1087,51 +1029,6 @@
 <dd></dd></dl>
 
 <dl class="function">
-<dt id="_CPPv4N3Nyx18theActiveParticlesEv">
-<span class="target" id="classNyx_1ab6531d353c1e2108d493397bb5c61dff"></span>Vector&lt;<a class="reference internal" href="../class/classNyxParticleContainerBase.html#_CPPv424NyxParticleContainerBase" title="NyxParticleContainerBase">NyxParticleContainerBase</a> *&gt; &amp;<code class="descname">theActiveParticles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N3Nyx19theVirtualParticlesEv">
-<span class="target" id="classNyx_1a0b49fa519232bc762778c17b951a991e"></span>Vector&lt;<a class="reference internal" href="../class/classNyxParticleContainerBase.html#_CPPv424NyxParticleContainerBase" title="NyxParticleContainerBase">NyxParticleContainerBase</a> *&gt; &amp;<code class="descname">theVirtualParticles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N3Nyx17theGhostParticlesEv">
-<span class="target" id="classNyx_1a2d33c7787facee64f6b0cb608a5810dc"></span>Vector&lt;<a class="reference internal" href="../class/classNyxParticleContainerBase.html#_CPPv424NyxParticleContainerBase" title="NyxParticleContainerBase">NyxParticleContainerBase</a> *&gt; &amp;<code class="descname">theGhostParticles</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N3Nyx7theDMPCEv">
-<span class="target" id="classNyx_1ab4cb59de85a75f2f19ad02b275668f1c"></span><a class="reference internal" href="../class/classDarkMatterParticleContainer.html#_CPPv427DarkMatterParticleContainer" title="DarkMatterParticleContainer">DarkMatterParticleContainer</a> *<code class="descname">theDMPC</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N3Nyx9theVirtPCEv">
-<span class="target" id="classNyx_1ab03fdd52324e444bc26aa6ccdcc8ef38"></span><a class="reference internal" href="../class/classDarkMatterParticleContainer.html#_CPPv427DarkMatterParticleContainer" title="DarkMatterParticleContainer">DarkMatterParticleContainer</a> *<code class="descname">theVirtPC</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N3Nyx10theGhostPCEv">
-<span class="target" id="classNyx_1a0f06968a9aed8d858dab32eb54adb326"></span><a class="reference internal" href="../class/classDarkMatterParticleContainer.html#_CPPv427DarkMatterParticleContainer" title="DarkMatterParticleContainer">DarkMatterParticleContainer</a> *<code class="descname">theGhostPC</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N3Nyx6theSPCEv">
-<span class="target" id="classNyx_1afe933c4b5a63c1867362c934af5125b9"></span><a class="reference internal" href="#_CPPv424StellarParticleContainer" title="StellarParticleContainer">StellarParticleContainer</a> *<code class="descname">theSPC</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N3Nyx10theVirtSPCEv">
-<span class="target" id="classNyx_1a1a339d3ff092efef31ed6c8adc0ef630"></span><a class="reference internal" href="#_CPPv424StellarParticleContainer" title="StellarParticleContainer">StellarParticleContainer</a> *<code class="descname">theVirtSPC</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="_CPPv4N3Nyx11theGhostSPCEv">
-<span class="target" id="classNyx_1a19d1d4254c6cf8e2db2cc2100b7b3f7b"></span><a class="reference internal" href="#_CPPv424StellarParticleContainer" title="StellarParticleContainer">StellarParticleContainer</a> *<code class="descname">theGhostSPC</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
-<dd></dd></dl>
-
-<dl class="function">
 <dt id="_CPPv4N3Nyx13InitErrorListEv">
 <span class="target" id="classNyx_1a825b6224d2d9c3e04398ab63579740ec"></span>void <code class="descname">InitErrorList</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
@@ -1262,21 +1159,6 @@
 <dl class="member">
 <dt id="_CPPv4N3Nyx13comoving_typeE">
 <span class="target" id="classNyx_1a3153abd3a9cee0d57796f7ffa0e72c24"></span>int <code class="descname">comoving_type</code> = 1<br /></dt>
-<dd></dd></dl>
-
-<dl class="member">
-<dt id="_CPPv4N3Nyx16particle_verboseE">
-<span class="target" id="classNyx_1ac6307e09133474e0478bb3df926df635"></span>int <code class="descname">particle_verbose</code> = 1<br /></dt>
-<dd></dd></dl>
-
-<dl class="member">
-<dt id="_CPPv4N3Nyx12particle_cflE">
-<span class="target" id="classNyx_1a7152f0d367428a19aa371ceebf40312b"></span>Real <code class="descname">particle_cfl</code> = 0.5<br /></dt>
-<dd></dd></dl>
-
-<dl class="member">
-<dt id="_CPPv4N3Nyx30write_particle_density_at_initE">
-<span class="target" id="classNyx_1ae9111080165bad7566e7a0b1297cf30f"></span>int <code class="descname">write_particle_density_at_init</code> = 0<br /></dt>
 <dd></dd></dl>
 
 <dl class="member">
