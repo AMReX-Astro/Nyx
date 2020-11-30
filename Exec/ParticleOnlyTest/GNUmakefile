@@ -15,7 +15,6 @@ DEBUG     = FALSE
 
 # physics
 DIM      = 3
-USE_GRAV = TRUE
 NO_HYDRO = TRUE
 
 Bpack := ./Make.package
