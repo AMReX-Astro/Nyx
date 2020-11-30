@@ -4,11 +4,7 @@ Gravity
 Introduction
 ============
 
-In order to use gravity, we must always set::
-
-   USE_GRAV=TRUE
-   
-in the GNUmakefile and ::
+In order to use gravity, one must set
   
   nyx.do_grav= 1
   

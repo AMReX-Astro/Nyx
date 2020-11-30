@@ -1405,9 +1405,7 @@ gravity as a
 forcing term</td>
 <td>0 if false
 1 if true</td>
-<td>must be set if
-USE_GRAV = TRUE
-TRUE</td>
+<td>must be set</td>
 </tr>
 <tr class="row-odd"><td><strong>gravity.no_sync</strong></td>
 <td>whether to
@@ -1433,13 +1431,7 @@ solve</td>
 <div class="section" id="notes-6">
 <span id="id24"></span><h3>Notes<a class="headerlink" href="#notes-6" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
-<li>To include gravity you must set<ul>
-<li>USE_GRAV = TRUE in the GNUmakefile</li>
-<li><strong>nyx.do_grav</strong> = 1 in the inputs file</li>
-</ul>
-</li>
-<li><strong>gravity.no_sync</strong> and <strong>gravity.no_composite</strong> are only relevant if
-USE_GRAV = TRUE; they both default to 0.</li>
+<li>To include gravity you must set <strong>nyx.do_grav</strong> = 1 in the inputs file</li>
 </ul>
 </div>
 </div>
