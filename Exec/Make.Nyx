@@ -1,5 +1,9 @@
 EBASE     ?= Nyx
 
+ifndef USE_GRAV
+USE_GRAV = TRUE
+endif
+
 ifndef USE_PARTICLES
 ifeq ($(USE_GRAV), TRUE)
 USE_PARTICLES = TRUE
@@ -8,10 +12,6 @@ USE_PARTICLES = FALSE
 endif
 else
 USE_GRAV=$(USE_PARTICLES)
-endif
-
-ifndef USE_GRAV
-USE_GRAV = TRUE
 endif
 
 BL_NO_FORT = TRUE
