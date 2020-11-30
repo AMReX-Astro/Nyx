@@ -15,6 +15,7 @@ Welcome to Nyx's documentation!
    NyxGettingStarted
    NyxUnits
    NyxInputs
+   Refinement
    ManagingGridHierarchy_Chapter
    NyxEquations
    NyxHeatCool
