@@ -26,28 +26,41 @@ data.  The following example portion of a ParmParse'd input file demonstrates th
 
 ::
 
-      amr.refinement_indicators = flame_tracer lo_temp gradT
+   amr.refinement_indicators = denerr dengrad velgrad
 
-      amr.flame_tracer.max_level = 3
-      amr.flame_tracer.value_greater = 1.e-6
-      amr.flame_tracer.field_name = Y(H)
+   amr.denerr.max_level = 3
+   amr.denerr.value_greater = 3
+   amr.denerr.field_name = density
+   amr.dengrad.max_level = 1
+   amr.dengrad.adjacent_difference_greater = 0.01
+   amr.dengrad.field_name = density
 
-      amr.lo_temp.max_level = 1
-      amr.lo_temp.value_less = 450
-      amr.lo_temp.field_name = temp
+   amr.velgrad.max_level = 2
+   amr.velgrad.adjacent_difference_greater = 0.01
+   amr.velgrad.field_name = x_velocity
 
-      amr.gradT.max_level = 2
-      amr.gradT.adjacent_difference_greater = 20
-      amr.gradT.field_name = temp
-      amr.gradT.start_time = 0.001
-      amr.gradT.end_name = 0.002
+Here, we have added five new custom-named criteria -- ``denerr``: cells with the density defined on the mesh greater than 3; ``dengrad``: cells having a density difference of 0.01 from that of their
+immediate neighbor and ``velgrad``: cells having a x_velocity difference of 0.01 from that of their
+immediate neighbor. 
+The first will trigger up to Amr level 3, the second only to level 1, and the third to level 2.
 
-Here, we have added three new custom-named criteria -- ``flame_tracer``: cells with the mass fraction of H greater than 1 ppm;
-``lo_temp``: cells with T less than 450K, and ``gradT``: cells having a temperature difference of 20K from that of their
-immediate neighbor.  The first will trigger up to Amr level 3, the second only to level 1, and the third to level 2.
-The third will be active only when the problem time is between 0.001 and 0.002 seconds.
+An example of a more specific derived type is overden, a rescaling of the baryonic gas density divided by the average total density:
 
-Note that these additional user-created criteria operate in addition to those defined as defaults.  Also note that
+.. math::
+
+   \begin{aligned}
+   \mathtt{overden} &=&\frac{\rho_b}{ \overline{\rho} * \mathtt{tagging\_base}^{\mathtt{level+1}}} .\cr\cr \end{aligned}
+
+where :math:`\overline{\rho}` is the average of :math:`\rho=\rho_b+\rho_{dm}` over the entire domain.
+
+::
+
+   amr.refinement_indicators = density
+   amr.density.value_greater = 1
+   amr.density.field_name = overden
+   nyx.tagging_base = 1.1
+
+Note that these additional user-created criteria operate in place of those defined as defaults.  Also note that
 these can be modified between restarts of the code.  By default, the new criteria will take effect at the next
 scheduled regrid operation.  Alternatively, the user may restart with ``amr.regrid_on_restart = 1`` in order to
 do a full (all-levels) regrid after reading the checkpoint data and before advancing any cells.
