@@ -277,6 +277,16 @@
 <dd></dd></dl>
 
 <dl class="enumerator">
+<dt id="_CPPv412PhiGrav_Type">
+<span class="target" id="Nyx_8H_1a1615968a92950438f6e67a28e9d56e5ca71b3671e0d118c8ea3e259fa4867de41"></span><code class="descname">PhiGrav_Type</code><a class="headerlink" href="#_CPPv412PhiGrav_Type" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="enumerator">
+<dt id="_CPPv412Gravity_Type">
+<span class="target" id="Nyx_8H_1a1615968a92950438f6e67a28e9d56e5ca03f715536b435ff65017492ec0cd2394"></span><code class="descname">Gravity_Type</code><a class="headerlink" href="#_CPPv412Gravity_Type" title="Permalink to this definition">¶</a><br /></dt>
+<dd></dd></dl>
+
+<dl class="enumerator">
 <dt id="_CPPv414NUM_STATE_TYPE">
 <span class="target" id="Nyx_8H_1a1615968a92950438f6e67a28e9d56e5ca355baaecd829874ac38a8753212a747e"></span><code class="descname">NUM_STATE_TYPE</code><a class="headerlink" href="#_CPPv414NUM_STATE_TYPE" title="Permalink to this definition">¶</a><br /></dt>
 <dd></dd></dl>
@@ -483,6 +493,11 @@
 <dd></dd></dl>
 
 <dl class="function">
+<dt id="_CPPv4N3Nyx18init_santa_barbaraEi">
+<span class="target" id="classNyx_1a00c2cc56664d5b94f462be73f1969e38"></span>void <code class="descname">init_santa_barbara</code><span class="sig-paren">(</span>int <em>init_sb_vels</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="_CPPv4N3Nyx21check_initial_speciesEv">
 <span class="target" id="classNyx_1a9ac4801acf6fe98b6ebb2e0bbc32f80f"></span>void <code class="descname">check_initial_species</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
@@ -495,6 +510,11 @@
 <dl class="function">
 <dt id="_CPPv4N3Nyx9initcosmoEv">
 <span class="target" id="classNyx_1a807c717e6223f42d59ea48128aa2b756"></span>void <code class="descname">initcosmo</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx19icReadAndPrepareFabENSt6stringEiRN5amrex8MultiFabE">
+<span class="target" id="classNyx_1a2f792e0a1842b0eba40e8a3d0dd24a26"></span>void <code class="descname">icReadAndPrepareFab</code><span class="sig-paren">(</span>std::string <em>mfDirName</em>, int <em>nghost</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::MultiFab &amp;<em>mf</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -575,6 +595,11 @@
 <dl class="function">
 <dt id="_CPPv4N3Nyx17strang_hydro_fuseEN5amrex4RealEN5amrex4RealEN5amrex4RealEN5amrex4RealE">
 <span class="target" id="classNyx_1a8b56f3fce2e33af7a999b754b81ad755"></span>void <code class="descname">strang_hydro_fuse</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>a_old</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>a_new</em><span class="sig-paren">)</span><br /></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="_CPPv4N3Nyx12correct_gsrcEiN5amrex4RealEN5amrex4RealEN5amrex4RealEN5amrex4RealE">
+<span class="target" id="classNyx_1a01d04cb0afc2937c5ff34e8095ecb4cb"></span>void <code class="descname">correct_gsrc</code><span class="sig-paren">(</span>int <em>lev</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>prev_time</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>cur_time</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -742,7 +767,7 @@
 
 <dl class="function">
 <dt id="_CPPv4N3Nyx22advance_particles_onlyEN5amrex4RealEN5amrex4RealEii">
-<span class="target" id="classNyx_1ab7fbca811ab644ff3e2cf236c68f85a6"></span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <code class="descname">advance_particles_only</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em>, int <em>iteration</em>, int <em>ncycle</em><span class="sig-paren">)</span><br /></dt>
+<span class="target" id="classNyx_1aea3d6de0e2caa136fc0f96271508bf64"></span>Real <code class="descname">advance_particles_only</code><span class="sig-paren">(</span><a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>time</em>, <a class="reference internal" href="../namespace/namespaceamrex.html#_CPPv45amrex" title="amrex">amrex</a>::Real <em>dt</em>, int <em>iteration</em>, int <em>ncycle</em><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -986,7 +1011,7 @@
 
 <dl class="function">
 <dt id="_CPPv4N3Nyx14no_hydro_setupEv">
-<span class="target" id="classNyx_1a02c31161625effd64d7d78b0f0aa8a9e"></span><em class="property">static</em> void <code class="descname">no_hydro_setup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
+<span class="target" id="classNyx_1a7b872c1914f06d07125d6209385f8223"></span>void <code class="descname">no_hydro_setup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><br /></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -1571,7 +1596,7 @@
 
 <dl class="member">
 <dt id="_CPPv4N3Nyx7do_gravE">
-<span class="target" id="classNyx_1a9434d46d865de27bdddb09d5896f67fc"></span>int <code class="descname">do_grav</code> = 0<br /></dt>
+<span class="target" id="classNyx_1a9434d46d865de27bdddb09d5896f67fc"></span>int <code class="descname">do_grav</code> = -1<br /></dt>
 <dd></dd></dl>
 
 <dl class="member">
@@ -1642,6 +1667,11 @@
 <dl class="member">
 <dt id="_CPPv4N3Nyx11strang_fuseE">
 <span class="target" id="classNyx_1af7b316a910dab1d6462ef6b2fdf9adfc"></span>int <code class="descname">strang_fuse</code> = 0<br /></dt>
+<dd></dd></dl>
+
+<dl class="member">
+<dt id="_CPPv4N3Nyx7gravityE">
+<span class="target" id="classNyx_1ac0697f218d105e6c39bbfc82aadc19fc"></span><a class="reference internal" href="../class/classGravity.html#_CPPv47Gravity" title="Gravity">Gravity</a> *<code class="descname">gravity</code> = 0<br /></dt>
 <dd></dd></dl>
 
 <dl class="member">
