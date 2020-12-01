@@ -472,6 +472,7 @@ Nyx::read_hydro_params ()
     pp_nyx.query("strang_fuse", strang_fuse);
     pp_nyx.query("strang_grown_box", strang_grown_box);
 
+#ifdef USE_HEATCOOL
 #ifdef SDC
     pp_nyx.query("sdc_split", sdc_split);
     if (sdc_split == 1 && strang_split == 1)
@@ -484,6 +485,7 @@ Nyx::read_hydro_params ()
     if (strang_split != 1)
         amrex::Error("Cant have strang_split != 1 with USE_SDC != TRUE");
 #endif
+#endif
 
 #ifdef FORCING
     pp_nyx.get("do_forcing", do_forcing);
@@ -495,33 +497,6 @@ Nyx::read_hydro_params ()
 #endif
 
     pp_nyx.query("heat_cool_type", heat_cool_type);
-    if (heat_cool_type == 7)
-    {
-      amrex::Print() << "----- WARNING WARNING WARNING WARNING WARNING -----" << std::endl;
-      amrex::Print() << "                                                   " << std::endl;
-      amrex::Print() << "      SIMD CVODE is currently EXPERIMENTAL.        " << std::endl;
-      amrex::Print() << "      Use at your own risk.                        " << std::endl;
-      amrex::Print() << "                                                   " << std::endl;
-      amrex::Print() << "----- WARNING WARNING WARNING WARNING WARNING -----" << std::endl;
-      Vector<int> n_cell(BL_SPACEDIM);
-
-      ParmParse pp_amr("amr");
-      pp_amr.getarr("n_cell", n_cell, 0, BL_SPACEDIM);
-      if (n_cell[0] % simd_width) {
-        const std::string errmsg = "Currently the SIMD CVODE solver requires that n_cell[0] % simd_width = 0";
-        amrex::Abort(errmsg);
-      }
-    }
-    if (heat_cool_type == 9)
-    {
-      amrex::Print() << "----- WARNING WARNING WARNING WARNING WARNING -----" << std::endl;
-      amrex::Print() << "                                                   " << std::endl;
-      amrex::Print() << "      ARKODE interface is currently EXPERIMENTAL.  " << std::endl;
-      amrex::Print() << "      Use at your own risk.                        " << std::endl;
-      amrex::Print() << "                                                   " << std::endl;
-      amrex::Print() << "----- WARNING WARNING WARNING WARNING WARNING -----" << std::endl;
-    }
-
     pp_nyx.query("inhomo_reion", inhomo_reion);
 
     if (inhomo_reion) {
@@ -530,33 +505,10 @@ Nyx::read_hydro_params ()
     }
 
 #ifdef HEATCOOL
-    if (heat_cool_type != 3 && heat_cool_type !=4 && heat_cool_type != 5 && heat_cool_type != 7 && heat_cool_type != 9 && heat_cool_type != 10 && heat_cool_type != 11 &&  heat_cool_type != 12)
-       amrex::Error("Nyx:: nonzero heat_cool_type must equal 3 or 4 or 5 or 7 or 9 or 10 or 11 or 12");
-    if (heat_cool_type == 0)
-       amrex::Error("Nyx::contradiction -- HEATCOOL is defined but heat_cool_type == 0");
-
     if (ParallelDescriptor::IOProcessor()) {
       std::cout << "Integrating heating/cooling method with the following method: ";
       switch (heat_cool_type)
         {
-        case 3:
-          std::cout << "VODE";
-          break;
-        case 4:
-          std::cout << "Exact";
-          break;
-        case 5:
-          std::cout << "CVODE";
-          break;
-        case 7:
-          std::cout << "SIMD CVODE";
-        break;
-        case 9:
-          std::cout << "ARKODE";
-        break;
-        case 10:
-          std::cout << "Vectorized copytomem CVODE";
-          break;
         case 11:
           std::cout << "Vectorized CVODE";
           break;
@@ -564,22 +516,7 @@ Nyx::read_hydro_params ()
       std::cout << std::endl;
     }
 
-    #ifndef AMREX_USE_SUNDIALS
-    if (heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 10 || heat_cool_type == 11 || heat_cool_type == 12)
-        amrex::Error("Nyx:: cannot set heat_cool_type = 5 or 7 or 10 or 11 or 12 unless USE_SUNDIALS=TRUE");
-    #ifndef AMREX_USE_ARKODE_LIBS
-    if (heat_cool_type == 9)
-        amrex::Error("Nyx:: cannot set heat_cool_type = 9 unless USE_SUNDIALS=TRUE, and USE_ARKODE_LIBS=TRUE");
-    #endif
-    #endif
-    #ifdef SDC
-    if (heat_cool_type == 7 && sdc_split == 1)
-        amrex::Error("Nyx:: cannot set heat_cool_type = 7 with sdc_split = 1");
-    #endif
-
 #else
-    if (heat_cool_type > 0)
-       amrex::Error("Nyx::you set heat_cool_type > 0 but forgot to set USE_HEATCOOL = TRUE");
     if (inhomo_reion > 0)
        amrex::Error("Nyx::you set inhomo_reion > 0 but forgot to set USE_HEATCOOL = TRUE");
 #endif  // HEATCOOL
@@ -698,12 +635,6 @@ Nyx::Nyx (Amr&            papa,
        old_a = 1.0 / (1.0 + initial_z);
        new_a = old_a;
     }
-        /*
-#ifdef HEATCOOL
-     // Initialize "this_z" in the atomic_rates_module
-    if (heat_cool_type == 3 || heat_cool_type == 4 || heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 9 || heat_cool_type == 10 || heat_cool_type == 11 || heat_cool_type == 12)
-#endif
-                */
 }
 
 Nyx::~Nyx ()
@@ -2516,20 +2447,9 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 
     Real cur_time  = state[State_Type].curTime();
     Real a        = get_comoving_a(cur_time);
-        /*
-#ifdef HEATCOOL 
-    if (heat_cool_type == 3 || heat_cool_type == 4 || heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 9 || heat_cool_type == 10 || heat_cool_type == 11 || heat_cool_type == 12)
-    {
-       const Real z = 1.0/a - 1.0;
-    }
-#endif
-        */
+
     amrex::Gpu::synchronize();
     amrex::Gpu::LaunchSafeGuard lsg(true);
-    if (heat_cool_type == 7) {
-        amrex::Abort("No vectorized CVODE with C++ f_rhs");
-
-    } else {
         FArrayBox test, test_d;
         int print_warn=0;
 
@@ -2616,7 +2536,6 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
             });
             amrex::Gpu::synchronize();
           }
-      }
 
     // Find the cell which has the maximum temp -- but only if not the first
     // time step because in the first time step too many points have the same

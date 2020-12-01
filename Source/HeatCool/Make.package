@@ -12,11 +12,12 @@ ifeq ($(USE_CVODE_LIBS), TRUE)
   CEXE_sources += integrate_state_vec_3d.cpp
   CEXE_sources += integrate_state_with_source_3d.cpp
 else
-CEXE_sources += integrate_state_vec_3d_stubs.cpp
-CEXE_sources += integrate_state_with_source_3d_stubs.cpp
+  CEXE_sources += integrate_state_vec_3d_stubs.cpp
+  CEXE_sources += integrate_state_with_source_3d_stubs.cpp
 endif
+
 else
 CEXE_sources += integrate_state_vec_3d_stubs.cpp
 endif
 endif
-
+endif
