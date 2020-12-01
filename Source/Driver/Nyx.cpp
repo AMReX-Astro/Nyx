@@ -465,7 +465,7 @@ Nyx::read_hydro_params ()
     pp_nyx.query("strang_fuse", strang_fuse);
     pp_nyx.query("strang_grown_box", strang_grown_box);
 
-#ifdef USE_HEATCOOL
+#ifdef HEATCOOL
 #ifdef SDC
     pp_nyx.query("sdc_split", sdc_split);
     if (sdc_split == 1 && strang_split == 1)
