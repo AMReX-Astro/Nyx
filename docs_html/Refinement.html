@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Debugging &mdash; Nyx  documentation</title>
+  <title>Refinement Criteria &mdash; Nyx  documentation</title>
   
 
   
@@ -40,8 +40,8 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="File list" href="filelist.html" />
-    <link rel="prev" title="PostProcessing" href="PostProcessing.html" /> 
+    <link rel="next" title="Gridding and Load Balancing" href="ManagingGridHierarchy_Chapter.html" />
+    <link rel="prev" title="Inputs" href="NyxInputs.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -93,7 +93,7 @@
 <li class="toctree-l1"><a class="reference internal" href="NyxGettingStarted.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxUnits.html">Units and Conventions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxInputs.html">Inputs</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Refinement.html">Refinement Criteria</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Refinement Criteria</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ManagingGridHierarchy_Chapter.html">Gridding and Load Balancing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxEquations.html">Hydrodynamic Equations in Comoving Coordinates</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxHeatCool.html">Radiative Heating and Cooling</a></li>
@@ -105,7 +105,7 @@
 <li class="toctree-l1"><a class="reference internal" href="NightlyTests.html">Nightly Regression Tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Visualization.html">Visualization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="PostProcessing.html">PostProcessing</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Debugging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Debugging.html">Debugging</a></li>
 </ul>
 <p class="caption"><span class="caption-text">API</span></p>
 <ul>
@@ -160,13 +160,13 @@
     
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>Debugging</li>
+      <li>Refinement Criteria</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/Debugging.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/Refinement.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -203,49 +203,52 @@
     text-align: unset;
 }
 </style>
-<div class="section" id="debugging">
-<span id="chap-debugging"></span><h1>Debugging<a class="headerlink" href="#debugging" title="Permalink to this headline">¶</a></h1>
-<p>Debugging is an art.  Everyone has their own favorite method.  Here we
-offer a few tips we have found to be useful.</p>
-<p>Compiling in debug mode (e.g., <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">make</span></span> <span class="name"><span class="pre">DEBUG</span></span><span class="operator"><span class="pre">=</span></span><span class="name"><span class="pre">TRUE</span></span></code> for gmake users;
-<code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">cmake</span></span> <span class="operator"><span class="pre">-</span></span><span class="name"><span class="pre">DDEBUG</span></span></code> for cmake users) and running with
-<code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">amrex</span></span><span class="punctuation"><span class="pre">.</span></span><span class="name"><span class="pre">fpe_trap_invalid</span></span><span class="operator"><span class="pre">=</span></span><span class="literal number integer"><span class="pre">1</span></span></code> in the inputs file can be helpful.
-In debug mode, many compiler debugging flags are turned on and all
-<code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">MultiFab</span></span></code> s are initialized to signaling NaNs.  The
-<code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">amrex</span></span><span class="punctuation"><span class="pre">.</span></span><span class="name"><span class="pre">fpe_trap_invalid</span></span></code> parameter will result in backtrace files
-when a floating point exception occurs.  One can then examine those
-files to track down the origin of the issue.</p>
-<p>Several other ways to look at the data include:</p>
-<ol class="arabic simple">
-<li>Writing a <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">MultiFab</span></span></code> to disk with</li>
-</ol>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">VisMF</span><span class="o">::</span><span class="n">Write</span><span class="p">(</span><span class="k">const</span> <span class="n">FabArray</span><span class="o">&lt;</span><span class="n">FArrayBox</span><span class="o">&gt;&amp;</span> <span class="n">mf</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span> <span class="n">name</span><span class="p">);</span>
+<div class="section" id="refinement-criteria">
+<h1>Refinement Criteria<a class="headerlink" href="#refinement-criteria" title="Permalink to this headline">¶</a></h1>
+<p>The dynamic creation and destruction of grid levels is a fundamental part of <cite>Nyx</cite>’s capabilities. The
+process for this is described in some detail in the <cite>AMReX</cite> documentation, but we summarize the key points
+here.</p>
+<p>At regular intervals (set by the user), each Amr level that is not the finest allowed for the run
+will invoke a “regrid” operation.  When invoked, a list of error tagging functions is traversed. For each,
+a field specific to that function is derived from the state over the level, and passed through a kernel
+that “set“‘s or “clear“‘s a flag on each cell.  The field and function for each error tagging quantity is
+identified in the setup phase of the code where the state descriptors are defined (i.e., in <cite>Nyx_setup.cpp</cite>).
+Each function in the list adds or removes to the list of cells tagged for refinement. This final list of tagged
+cells is sent to a grid generation routine, which uses the Berger-Rigoutsos algorithm to create rectangular grids
+which will define a new finer level (or set of levels).  State data is filled over these new grids, copying where
+possible, and interpolating from coarser level when no fine data is available.  Once this process is complete,
+the existing Amr level(s) is removed, the new one is inserted into the hierarchy, and the time integration
+continues.</p>
+<p>The traditional <cite>AMReX</cite> approach to setting up and controlling the regrid process involves explicitly
+creating (“hard coding”) a number of functions directly into <cite>Nyx</cite>’s setup code. (Consult the source code
+and <cite>AMReX</cite> documentation for precisely how this is done).  <cite>Nyx</cite> provides a limited capability to augment
+the standard set of error functions that is based entirely on runtime data specified in the inputs (ParmParse)
+data.  The following example portion of a ParmParse’d input file demonstrates the usage of this feature:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">amr</span><span class="o">.</span><span class="n">refinement_indicators</span> <span class="o">=</span> <span class="n">flame_tracer</span> <span class="n">lo_temp</span> <span class="n">gradT</span>
+
+<span class="n">amr</span><span class="o">.</span><span class="n">flame_tracer</span><span class="o">.</span><span class="n">max_level</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">amr</span><span class="o">.</span><span class="n">flame_tracer</span><span class="o">.</span><span class="n">value_greater</span> <span class="o">=</span> <span class="mf">1.e-6</span>
+<span class="n">amr</span><span class="o">.</span><span class="n">flame_tracer</span><span class="o">.</span><span class="n">field_name</span> <span class="o">=</span> <span class="n">Y</span><span class="p">(</span><span class="n">H</span><span class="p">)</span>
+
+<span class="n">amr</span><span class="o">.</span><span class="n">lo_temp</span><span class="o">.</span><span class="n">max_level</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">amr</span><span class="o">.</span><span class="n">lo_temp</span><span class="o">.</span><span class="n">value_less</span> <span class="o">=</span> <span class="mi">450</span>
+<span class="n">amr</span><span class="o">.</span><span class="n">lo_temp</span><span class="o">.</span><span class="n">field_name</span> <span class="o">=</span> <span class="n">temp</span>
+
+<span class="n">amr</span><span class="o">.</span><span class="n">gradT</span><span class="o">.</span><span class="n">max_level</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">amr</span><span class="o">.</span><span class="n">gradT</span><span class="o">.</span><span class="n">adjacent_difference_greater</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">amr</span><span class="o">.</span><span class="n">gradT</span><span class="o">.</span><span class="n">field_name</span> <span class="o">=</span> <span class="n">temp</span>
+<span class="n">amr</span><span class="o">.</span><span class="n">gradT</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="mf">0.001</span>
+<span class="n">amr</span><span class="o">.</span><span class="n">gradT</span><span class="o">.</span><span class="n">end_name</span> <span class="o">=</span> <span class="mf">0.002</span>
 </pre></div>
 </div>
-<p>and examining it with <code class="docutils literal notranslate"><span class="pre">Amrvis</span></code> (section <span class="xref std std-ref">sec:amrvis</span> in the AMReX documentation).</p>
-<ol class="arabic simple" start="2">
-<li>You can also use the <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">print_state</span></span></code> routine:</li>
-</ol>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span> <span class="nf">print_state</span><span class="p">(</span><span class="k">const</span> <span class="n">MultiFab</span><span class="o">&amp;</span> <span class="n">mf</span><span class="p">,</span> <span class="k">const</span> <span class="n">IntVect</span><span class="o">&amp;</span> <span class="n">cell</span><span class="p">,</span> <span class="k">const</span> <span class="kt">int</span> <span class="n">n</span><span class="o">=</span><span class="mi">-1</span><span class="p">);</span>
-</pre></div>
-</div>
-<p>which outputs the data for a single cell.</p>
-<ol class="arabic simple" start="3">
-<li>If you want to compare old and new plotfiles,</li>
-</ol>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">fcompare</span> <span class="o">--</span><span class="n">infile1</span> <span class="n">plt00000_run1</span> <span class="o">--</span><span class="n">infile2</span> <span class="n">plt00000_run2</span> <span class="o">--</span><span class="n">diffvar</span> <span class="n">u_g</span>
-</pre></div>
-</div>
-<p>will print out the maximum absolute and relative differences between the two plotfiles
-for each variable and will also create a new plotfile “diffs” that contains the difference
-in u_g (in this case) between the two plotfiles.</p>
-<p>The <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">fcompare</span></span></code> executable can be built in AMReX (go to amrex/Tools/Plotfile and type “make”).</p>
-<p>4) Valgrind is another useful debugging tool.  Note that for runs using
-more than one MPI process, one can tell valgrind to output to different
-files for different processes.  For example,</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">mpiexec -n 4 valgrind --leak-check=yes --track-origins=yes --log-file=vallog.%p ./Nyx3d.exe ...</span>
-</pre></div>
-</div>
+<p>Here, we have added three new custom-named criteria – <code class="docutils literal notranslate"><span class="pre">flame_tracer</span></code>: cells with the mass fraction of H greater than 1 ppm;
+<code class="docutils literal notranslate"><span class="pre">lo_temp</span></code>: cells with T less than 450K, and <code class="docutils literal notranslate"><span class="pre">gradT</span></code>: cells having a temperature difference of 20K from that of their
+immediate neighbor.  The first will trigger up to Amr level 3, the second only to level 1, and the third to level 2.
+The third will be active only when the problem time is between 0.001 and 0.002 seconds.</p>
+<p>Note that these additional user-created criteria operate in addition to those defined as defaults.  Also note that
+these can be modified between restarts of the code.  By default, the new criteria will take effect at the next
+scheduled regrid operation.  Alternatively, the user may restart with <code class="docutils literal notranslate"><span class="pre">amr.regrid_on_restart</span> <span class="pre">=</span> <span class="pre">1</span></code> in order to
+do a full (all-levels) regrid after reading the checkpoint data and before advancing any cells.</p>
 </div>
 
 
@@ -256,10 +259,10 @@ files for different processes.  For example,</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="filelist.html" class="btn btn-neutral float-right" title="File list" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="ManagingGridHierarchy_Chapter.html" class="btn btn-neutral float-right" title="Gridding and Load Balancing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="PostProcessing.html" class="btn btn-neutral float-left" title="PostProcessing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="NyxInputs.html" class="btn btn-neutral float-left" title="Inputs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
