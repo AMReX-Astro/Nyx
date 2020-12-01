@@ -16,9 +16,6 @@ if (AMReX_FOUND)
    # MUST be present in the installation.
    set(AMREX_REQUIRED_COMPONENTS 3D DOUBLE PARTICLES)
 
-   if (Nyx_Fortran)
-      list(APPEND AMREX_REQUIRED_COMPONENTS FORTRAN)
-   endif ()
    if (Nyx_MPI)
       list(APPEND AMREX_REQUIRED_COMPONENTS MPI)
       if (Nyx_MPI_THREAD_MULTIPLE)
@@ -101,7 +98,7 @@ else ()
    # Set build options for subproject
    set(AMReX_SPACEDIM             3                          CACHE INTERNAL "" )
    set(AMReX_PRECISION            DOUBLE                     CACHE INTERNAL "" )
-   set(AMReX_FORTRAN              ${Nyx_Fortran}             CACHE INTERNAL "" )
+   set(AMReX_FORTRAN              OFF                        CACHE INTERNAL "" )
    set(AMReX_MPI                  ${Nyx_MPI}                 CACHE INTERNAL "" )
    set(AMReX_MPI_THREAD_MULTIPLE  ${Nyx_MPI_THREAD_MULTIPLE} CACHE INTERNAL "" )
    set(AMReX_OMP                  ${Nyx_OMP}                 CACHE INTERNAL "" )
