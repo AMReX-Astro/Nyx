@@ -1,8 +1,13 @@
 CEXE_sources += Nyx_advance.cpp
+CEXE_sources += Nyx_advance_particles.cpp
 
 ifneq ($(NO_HYDRO), TRUE)
+  CEXE_sources += Nyx_enforce_minimum_density.cpp
   CEXE_sources += Nyx_time_center_sources.cpp
-  CEXE_sources += update_state_with_sources.cpp
+  CEXE_sources += Nyx_update_state_with_sources.cpp
+
+  CEXE_headers += Nyx_enforce_minimum_density.H
+
 ifeq ($(USE_GRAV), TRUE)
   CEXE_sources += Nyx_correct_gsrc.cpp
 endif
@@ -11,4 +16,3 @@ ifneq ($(USE_AGN), TRUE)
 endif
 endif
 
-CEXE_sources += advance_particles.cpp

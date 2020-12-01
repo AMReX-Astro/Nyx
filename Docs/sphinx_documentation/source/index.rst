@@ -11,20 +11,22 @@ Welcome to Nyx's documentation!
    :caption: Nyx basics
 
    NyxPreface
-   NyxIntroduction
+   NyxPapers
    NyxGettingStarted
+   NyxUnits
    NyxInputs
+   Refinement
    ManagingGridHierarchy_Chapter
    NyxEquations
-   Particles
    NyxHeatCool
-   NyxSundials
    NyxGravity
-   InputsMultigrid 
    NyxForcing
+   Particles
+   AGN
    NightlyTests
    Visualization
    PostProcessing
+   Debugging
 
 .. toctree::
    :maxdepth: 1
@@ -32,7 +34,6 @@ Welcome to Nyx's documentation!
 
    filelist
    classlist
-   namespacelist
 
 .. toctree::
 

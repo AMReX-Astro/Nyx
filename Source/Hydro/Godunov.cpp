@@ -17,7 +17,6 @@ trace_ppm(const Box& bx,
           const Real small_dens, const Real small_pres, 
           const Real small,
           const int FirstSpec, const int NumSpec,
-          const int use_flattening,
           const Real a_old);
 
 // Host function to call gpu hydro functions
@@ -41,11 +40,10 @@ pc_umeth_3D(
   const Real gamma, const Real gamma_minus_1,
   const Real small_dens, const Real small_pres, 
   const Real small,
-  const int ppm_type, const int use_flattening)
+  const int ppm_type)
 {
   const int FirstSpec_loc = FirstSpec;
   const int NumSpec_loc   = NumSpec;
-  const int use_flattening_loc   = use_flattening;
 
   const Real a_half = 0.5 * (a_old + a_new);
   Real const dx = del[0];
@@ -108,19 +106,19 @@ pc_umeth_3D(
 
       // X slopes and interp
       for (int n = 0; n < QVAR; ++n)
-          slope[n] = plm_slope(i, j, k, n, 0, use_flattening_loc, q, small_pres);
+          slope[n] = plm_slope(i, j, k, n, 0, q, small_pres);
       pc_plm_x(i, j, k, qxmarr, qxparr, srcQ, slope, q, c, a_old, dx, dt, NumSpec, 
                gamma_minus_1, small_dens, small_pres);
 
       // Y slopes and interp
       for (int n = 0; n < QVAR; n++)
-          slope[n] = plm_slope(i, j, k, n, 1, use_flattening_loc, q, small_pres);
+          slope[n] = plm_slope(i, j, k, n, 1, q, small_pres);
       pc_plm_y(i, j, k, qymarr, qyparr, srcQ, slope, q, c, a_old, dy, dt, NumSpec,
                gamma_minus_1, small_dens, small_pres);
 
       // Z slopes and interp
       for (int n = 0; n < QVAR; ++n)
-          slope[n] = plm_slope(i, j, k, n, 2, use_flattening_loc, q, small_pres);
+          slope[n] = plm_slope(i, j, k, n, 2, q, small_pres);
       pc_plm_z(i, j, k, qzmarr, qzparr, srcQ, slope, q, c, a_old, dz, dt, NumSpec,
                gamma_minus_1, small_dens, small_pres);
 
@@ -142,7 +140,7 @@ pc_umeth_3D(
                 small_dens, small_pres,
                 small,
                 FirstSpec, NumSpec,
-                use_flattening, a_old);
+                a_old);
 
       idir = 1;
       trace_ppm(bxg2,
@@ -153,7 +151,7 @@ pc_umeth_3D(
                 small_dens, small_pres,
                 small,
                 FirstSpec, NumSpec,
-                use_flattening, a_old);
+                a_old);
 
       idir = 2;
       trace_ppm(bxg2,
@@ -164,7 +162,7 @@ pc_umeth_3D(
                 small_dens, small_pres,
                 small,
                 FirstSpec, NumSpec,
-                use_flattening, a_old);
+                a_old);
 
   }
 

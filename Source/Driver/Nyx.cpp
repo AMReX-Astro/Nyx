@@ -167,18 +167,16 @@ int Nyx::do_forcing =  0;
 #endif
 
 int Nyx::nghost_state       = 1;
-int Nyx::allow_untagging    = 0;
-int Nyx::do_special_tagging = 0;
 Real Nyx::tagging_base       = 8.0;
 int Nyx::ppm_type           = 1;
 
-int Nyx::use_flattening     = 1;
+// Options are "floor" or "conservative"
+std::string Nyx::enforce_min_density_type = "floor";
+
 int Nyx::use_analriem       = 1;
 
 Real Nyx:: h_species        = 0.76;
 Real Nyx::he_species        = 0.24;
-
-int Nyx::use_exact_gravity  = 0;
 
 #ifdef REEBER
 Real Nyx::mass_halo_min     = 1.e10;
@@ -331,7 +329,9 @@ Nyx::read_params ()
 
     read_comoving_params();
 
+#ifdef AMREX_PARTICLES
     read_particle_params();
+#endif
 
 #ifdef GRAVITY
     pp_nyx.get("do_grav", do_grav);
@@ -346,8 +346,6 @@ Nyx::read_params ()
 #endif
 
     read_init_params();
-
-    pp_nyx.query("use_exact_gravity", use_exact_gravity);
 
     pp_nyx.query("strict_subcycling",strict_subcycling);
 
@@ -593,11 +591,10 @@ Nyx::read_hydro_params ()
     pp_nyx.query("minimize_memory", minimize_memory);
     pp_nyx.query("shrink_to_fit", shrink_to_fit);
     pp_nyx.query("use_typical_steps", use_typical_steps);
-    pp_nyx.query("allow_untagging", allow_untagging);
     pp_nyx.query("tagging_base", tagging_base);
     pp_nyx.query("ppm_type", ppm_type);
+    pp_nyx.query("enforce_min_density_type", enforce_min_density_type);
     pp_nyx.query("use_analriem", use_analriem);
-    pp_nyx.query("use_flattening", use_flattening);
 
     if (use_typical_steps != 0 && strang_grown_box == 0)
     { 
@@ -701,12 +698,12 @@ Nyx::Nyx (Amr&            papa,
        old_a = 1.0 / (1.0 + initial_z);
        new_a = old_a;
     }
-	/*
+        /*
 #ifdef HEATCOOL
      // Initialize "this_z" in the atomic_rates_module
     if (heat_cool_type == 3 || heat_cool_type == 4 || heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 9 || heat_cool_type == 10 || heat_cool_type == 11 || heat_cool_type == 12)
 #endif
-		*/
+                */
 }
 
 Nyx::~Nyx ()
@@ -1388,7 +1385,7 @@ Nyx::post_timestep (int iteration)
     //
     int finest_level = parent->finestLevel();
     const int ncycle = parent->nCycle(level);
-
+#ifdef AMREX_PARTICLES
     BL_PROFILE_VAR("Nyx::post_timestep()::remove_virt_ghost",rm);
     //
     // Remove virtual particles at this level if we have any.
@@ -1433,6 +1430,7 @@ Nyx::post_timestep (int iteration)
     }
     amrex::Gpu::streamSynchronize();
     BL_PROFILE_VAR_STOP(redist);
+#endif
     BL_PROFILE_VAR("Nyx::post_timestep()::do_reflux",do_reflux);
 
 #ifndef NO_HYDRO
@@ -1657,9 +1655,10 @@ void
 Nyx::post_restart ()
 {
     BL_PROFILE("Nyx::post_restart()");
+#ifdef AMREX_PARTICLES
     if (level == 0)
         particle_post_restart(parent->theRestartFile());
-
+#endif
     if (level == 0)
         comoving_a_post_restart(parent->theRestartFile());
 
@@ -1773,6 +1772,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
    BL_PROFILE("Nyx::postCoarseTimeStep()");
    MultiFab::RegionTag amrPost_tag("Post_" + std::to_string(level));
 
+#ifdef AMREX_PARTICLES
     if(load_balance_int >= 0 && nStep() % load_balance_int == 0 && (new_a >= 1.0/(load_balance_start_z + 1.0)))
     {
       if(verbose>0)
@@ -1838,8 +1838,8 @@ Nyx::postCoarseTimeStep (Real cumtime)
     amrex::Gpu::streamSynchronize();
     }
 
-    }
-
+   }
+#endif
    AmrLevel::postCoarseTimeStep(cumtime);
 
 #ifdef AGN
@@ -1853,12 +1853,13 @@ Nyx::postCoarseTimeStep (Real cumtime)
    LyA_statistics();
 #endif
 
+#ifdef AMREX_PARTICLES
     //
     // postCoarseTimeStep() is only called by level 0.
     //
     if (Nyx::theDMPC() && particle_move_type == "Random")
         particle_move_random();
-
+#endif
    int nstep = parent->levelSteps(0);
 
 #ifndef NO_HYDRO
@@ -2000,12 +2001,13 @@ Nyx::post_regrid (int lbase,
      fort_set_finest_level(&new_finest);
 #endif
 #endif
+#ifdef AMREX_PARTICLES
     if (level == lbase) {
         amrex::Gpu::LaunchSafeGuard lsg(true);
         particle_redistribute(lbase, false);
     }
     amrex::Gpu::Device::streamSynchronize();
-
+#endif
 #ifdef GRAVITY
 
     int which_level_being_advanced = parent->level_being_advanced();
@@ -2360,7 +2362,7 @@ Nyx::errorEst (TagBoxArray& tags,
     for (int j=0; j<errtags.size(); ++j) {
       std::unique_ptr<MultiFab> mf;
       if (errtags[0].Field() != std::string()) {
-	mf = std::unique_ptr<MultiFab>(derive(errtags[j].Field(), time, errtags[j].NGrow()));
+        mf = std::unique_ptr<MultiFab>(derive(errtags[j].Field(), time, errtags[j].NGrow()));
       }
       errtags[j](tags,mf.get(),clearval,tagval,time,level,geom);
     }
@@ -2509,14 +2511,14 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 
     Real cur_time  = state[State_Type].curTime();
     Real a        = get_comoving_a(cur_time);
-	/*
+        /*
 #ifdef HEATCOOL 
     if (heat_cool_type == 3 || heat_cool_type == 4 || heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 9 || heat_cool_type == 10 || heat_cool_type == 11 || heat_cool_type == 12)
     {
        const Real z = 1.0/a - 1.0;
     }
 #endif
-	*/
+        */
     amrex::Gpu::synchronize();
     amrex::Gpu::LaunchSafeGuard lsg(true);
     if (heat_cool_type == 7) {
@@ -2555,7 +2557,7 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
             int  dummy_max_temp_dt=max_temp_dt;
             Real h_species_in=h_species;
             Real gamma_minus_1_in=gamma - 1.0;
-	    auto atomic_rates = atomic_rates_glob;
+            auto atomic_rates = atomic_rates_glob;
             AMREX_PARALLEL_FOR_3D(bx, i, j ,k,
             {
 
@@ -2740,7 +2742,7 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
         }
     }
     }
-	Real sums[7] = {rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum};
+        Real sums[7] = {rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum};
     ParallelDescriptor::ReduceRealSum(sums,7);
 
     rho_T_avg = sums[0] / sums[1];  // density weighted T
@@ -2931,7 +2933,7 @@ void
 Nyx::CreateLevelDirectory (const std::string &dir)
 {
     AmrLevel::CreateLevelDirectory(dir);  // ---- this sets levelDirectoryCreated = true
-
+#ifdef AMREX_PARTICLES
     std::string dm(dir + "/" + Nyx::retrieveDM());
     if(ParallelDescriptor::IOProcessor()) {
       if( ! amrex::UtilCreateDirectory(dm, 0755)) {
@@ -2989,7 +2991,7 @@ Nyx::CreateLevelDirectory (const std::string &dir)
       }
 #endif
     }
-
+#endif
 }
 
 

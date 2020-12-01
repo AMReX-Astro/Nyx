@@ -20,16 +20,16 @@ void tabulate_rates(std::string file_in, amrex::Real mean_rhob)
     int i = 1;
 
     std::ifstream input_stream(file_in);
-	//    while ( !input_stream.eof() )
+        //    while ( !input_stream.eof() )
     for(i = 1; i <= NCOOLFILE; i++)
     {
         input_stream >> atomic_rates_host.lzr(i);
-		input_stream >> atomic_rates_host.rggh0(i);
-		input_stream >> atomic_rates_host.rgghe0(i);
-		input_stream >> atomic_rates_host.rgghep(i);
-		input_stream >> atomic_rates_host.reh0(i);
-		input_stream >> atomic_rates_host.rehe0(i);
-		input_stream >> atomic_rates_host.rehep(i);
+                input_stream >> atomic_rates_host.rggh0(i);
+                input_stream >> atomic_rates_host.rgghe0(i);
+                input_stream >> atomic_rates_host.rgghep(i);
+                input_stream >> atomic_rates_host.reh0(i);
+                input_stream >> atomic_rates_host.rehe0(i);
+                input_stream >> atomic_rates_host.rehep(i);
     }
 
     // Initialize cooling tables

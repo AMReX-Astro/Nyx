@@ -1,28 +1,36 @@
 target_sources( ${EXE_NAME}
    PRIVATE
    Nyx_advance.cpp
-   advance_particles.cpp
+   Nyx_advance_particles.cpp
    )
 
 if (Nyx_HYDRO)
-  target_sources( ${EXE_NAME}
-     PRIVATE
-     Nyx_time_center_sources.cpp
-     update_state_with_sources.cpp
-     )
+   target_include_directories(${EXE_NAME}
+      PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
+      )
 
-  if (Nyx_GRAVITY)
-     target_sources( ${EXE_NAME}
-        PRIVATE
-        Nyx_correct_gsrc.cpp
-        )
-  endif ()
+   target_sources( ${EXE_NAME}
+      PRIVATE
+      Nyx_enforce_minimum_density.cpp
+      Nyx_enforce_minimum_density.H
+      Nyx_time_center_sources.cpp
+      Nyx_update_state_with_sources.cpp
+      )
 
-  if (NOT Nyx_AGN)
-     target_sources( ${EXE_NAME}
-        PRIVATE
-        Nyx_sources.cpp
-        )
-  endif ()
+
+   if (Nyx_GRAVITY)
+      target_sources( ${EXE_NAME}
+         PRIVATE
+         Nyx_correct_gsrc.cpp
+         )
+   endif ()
+
+   if (NOT Nyx_AGN)
+      target_sources( ${EXE_NAME}
+         PRIVATE
+         Nyx_sources.cpp
+         )
+   endif ()
 
 endif ()

@@ -49,11 +49,7 @@ $ cd Nyx/Exec/LyA
 $ make -j 12 USE_CUDA=TRUE
 ```
 
-
-There is a User's Guide in `Nyx/UsersGuide/` (type `make` to build
-from LaTeX source) that will guide you through running your first
-problem.
-
+See the online documenation for further information.
 
 ### Development model
 
@@ -83,7 +79,6 @@ http://adsabs.harvard.edu/abs/2017ApJ...837..106O
 We have also implemented non-radiative transfer methods to model inhomogeneous reionization,
 the paper is in preparation.
 
-
 ### Output
 
 Nyx outputs certain global diagnostics at each timestep and plot files at regular
@@ -106,5 +101,5 @@ Nyx is released under the LBL's modified BSD license, see the [license.txt](lice
 
 ### Contact
 
-For questions, comments, suggestions, contact Ann Almgren at ASAlmgren@lbl.gov
+For questions, comments, suggestions, contact Jean Sexton at JMSexton@lbl.gov
 or Zarija Lukic at zarija@lbl.gov .

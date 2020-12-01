@@ -62,14 +62,19 @@ if (NOT Nyx_GPU_BACKEND STREQUAL NONE)
 endif ()
 
 
-option( Nyx_GRAVITY            "" YES)
-cmake_dependent_option( Nyx_PARTICLES
-   "Enable particles support" YES
-   "Nyx_GRAVITY" NO)
+#
+# These used to be options but now they are set to true and should not
+# be set by the user. We keep them around for legacy for the time being
+#
+set(Nyx_GRAVITY   YES CACHE INTERNAL "Enable gravity (should always be on)")
+set(Nyx_PARTICLES YES CACHE INTERNAL "Enable particles (should always be on)")
 
-cmake_dependent_option(Nyx_SINGLE_PRECISION_PARTICLES
-   "Use single precision particle data structures"
-   YES "Nyx_PARTICLES" NO)
+
+#
+#
+#
+option(Nyx_SINGLE_PRECISION_PARTICLES
+   "Use single precision particle data structures" YES )
 
 
 option( Nyx_HYDRO NO "")

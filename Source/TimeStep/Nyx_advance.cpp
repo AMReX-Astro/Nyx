@@ -37,6 +37,7 @@ Nyx::advance (Real time,
 #ifndef NO_HYDRO
     if (do_hydro)
     {
+#ifdef AMREX_PARTICLES
         if (Nyx::theActiveParticles().size() > 0)
         {
 #ifndef AGN
@@ -47,6 +48,7 @@ Nyx::advance (Real time,
            } 
         }
         else
+#endif
         {
            return advance_hydro(time, dt, iteration, ncycle);
         }
@@ -78,6 +80,7 @@ Nyx::advance (Real time,
 //      then this will only be a single level advance.
 //
 #ifndef NO_HYDRO
+#ifdef AMREX_PARTICLES
 Real
 Nyx::advance_hydro_plus_particles (Real time,
                                    Real dt,
@@ -136,12 +139,12 @@ Nyx::advance_hydro_plus_particles (Real time,
     if (!do_grav)
         amrex::Abort("In `advance_hydro_plus_particles` but `do_grav` not true");
 #endif
-	/*
+        /*
 #ifdef FORCING
     if (do_forcing)
         amrex::Abort("Forcing in `advance_hydro_plus_particles` not admissible");
 #endif
-	*/
+        */
 
     const int finest_level = parent->finestLevel();
     int finest_level_to_advance;
@@ -311,7 +314,7 @@ Nyx::advance_hydro_plus_particles (Real time,
            get_level(lev).strang_hydro(time, dt, a_old, a_new);
         } 
 #else
-	get_level(lev).strang_hydro(time, dt, a_old, a_new);
+        get_level(lev).strang_hydro(time, dt, a_old, a_new);
 #endif
     }
     }
@@ -463,6 +466,7 @@ Nyx::advance_hydro_plus_particles (Real time,
     // Redistribution happens in post_timestep
     return dt;
 }
+#endif
 
 Real
 Nyx::advance_hydro (Real time,
@@ -480,12 +484,12 @@ Nyx::advance_hydro (Real time,
     if (!do_grav)
         amrex::Abort("In `advance_hydro` with GRAVITY defined but `do_grav` is false");
 #endif
-	/*
+        /*
 #ifdef FORCING
     if (!do_forcing)
         amrex::Abort("In `advance_hydro` with FORCING defined but `do_forcing` is false");
 #endif
-	*/
+        */
     for (int k = 0; k < NUM_STATE_TYPE; k++)
     {
         state[k].allocOldData();

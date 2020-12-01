@@ -140,7 +140,7 @@ Nyx::integrate_comoving_a_to_z(const Real old_a_local, const Real z_value, Real&
     Real H_0, OmL;
     Real Delta_t;
     Real start_a, end_a, start_slope, end_slope;
-	Real a_value;
+        Real a_value;
     int j, nsteps;
 
     Real max_dt;

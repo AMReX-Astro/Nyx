@@ -1,9 +1,6 @@
 #ifndef _constants_cosmo_
 #define _constants_cosmo_
 
-// Hard-code gravity source type
-static constexpr int grav_source_type = 1;
-
 // Relation of our code units & CGS 
 static constexpr amrex::Real  M_unit = 1.98848e33;    // M_sun
 static constexpr amrex::Real  L_unit = 3.0856776e24;  // Mpc
@@ -14,7 +11,7 @@ static constexpr amrex::Real  T_unit = L_unit/V_unit; // time unit
 //   Fundamental constants
   
    static constexpr amrex::Real  Gconst = 6.67408e-8
-	   * M_unit*T_unit*T_unit/(L_unit*L_unit*L_unit);// Newton [g^-1*s^-2*cm^3]
+           * M_unit*T_unit*T_unit/(L_unit*L_unit*L_unit);// Newton [g^-1*s^-2*cm^3]
   
 static constexpr amrex::Real  k_B    = 1.38064852e-16          
   * T_unit*T_unit/(M_unit*L_unit*L_unit);// Boltzmann [g*cm^2/s^2*K]

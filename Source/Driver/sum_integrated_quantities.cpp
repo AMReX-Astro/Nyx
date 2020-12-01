@@ -331,10 +331,10 @@ Nyx::compute_average_species (int          nspec,
 
         AMREX_ALWAYS_ASSERT (nspec == 2);
         AMREX_ALWAYS_ASSERT (naux  == 0);
-	// Get the species names from the network model.
+        // Get the species names from the network model.
         Vector<std::string> spec_names(nspec);
-	spec_names[0] = "H";
-	spec_names[1] = "He";
+        spec_names[0] = "H";
+        spec_names[1] = "He";
 
         //
         // Get the species names from the network model.

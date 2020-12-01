@@ -6,8 +6,9 @@ Inputs
 .. toctree::
    :maxdepth: 1
 
-  The  executable reads run-time information from an “inputs” file
-   which you put on the command line. 
+The Nyx executable reads run-time information from an “inputs” file which you put on the command line. 
+This section describes the inputs which can be specified either in the inputs file or on the command line.
+If a value is specified on the command line, that value will override a value specified in the inputs file.
 
 Problem Geometry
 ================
@@ -178,36 +179,6 @@ Examples of Usage
    | tells the code to regrid every 2 steps. Thus in this example, new
      level-1 grids will be created every 2 level-0 time steps, and new
      level-2 grids will be created every 2 level-1 time steps.
-
-Tagging
-=======
-
-.. _list-of-parameters-3:
-
-List of Parameters
-------------------
-
-+-------------------------+------------------+------------------+---------+
-| Parameter               | Definition       | Acceptable       | Default |
-|                         |                  | Values           |         |
-+=========================+==================+==================+=========+
-| **nyx.allow_untagging** | are cells        | 0 or 1           | 0       |
-|                         | allowed to be    |                  |         |
-|                         | “untagged”       |                  |         |
-+-------------------------+------------------+------------------+---------+
-
-[Table:Tagging]
-
-.. _notes-1:
-
-Notes
------
-
--  Typically cells at a given level can be tagged as needing refinement
-   by any of a number of criteria, but cannot be “untagged”. That is,
-   once tagged, no other criteria can untag them. If we set
-   **nyx.allow_untagging** = 1 then the user is allowed to “untag” cells
-   in the Fortran tagging routines.
 
 Regridding
 ==========
@@ -600,48 +571,48 @@ Restart Capability
 List of Parameters
 ------------------
 
-+----------------+----------------+----------------+----------------+
-| Parameter      | Definition     | Acceptable     | Default        |
-|                |                | Values         |                |
-+================+================+================+================+
-| **am           | prefix for     | Text           | “*chk*”        |
-| r.check_file** | restart files  |                |                |
-+----------------+----------------+----------------+----------------+
-| **a            | how often (by  | Integer        | -1             |
-| mr.check_int** | level-0 time   | :math:`> 0`    |                |
-|                | steps) to      |                |                |
-|                | write restart  |                |                |
-|                | files          |                |                |
-+----------------+----------------+----------------+----------------+
-| **a            | how often (by  | Real           | -1.0           |
-| mr.check_per** | simulation     | :math:`> 0`    |                |
-|                | time) to write |                |                |
-|                | restart files  |                |                |
-+----------------+----------------+----------------+----------------+
-| *              | name of the    | Text           | not used if    |
-| *amr.restart** | file           |                | not set        |
-|                | (directory)    |                |                |
-|                | from which to  |                |                |
-|                | restart        |                |                |
-+----------------+----------------+----------------+----------------+
-| **a            | should we      | 0 or 1         | 1              |
-| mr.checkpoint_ | write          |                |                |
-| files_output** | checkpoint     |                |                |
-|                | files          |                |                |
-+----------------+----------------+----------------+----------------+
-| **amr.         | how parallel   | Integer        | 64             |
-| check_nfiles** | is the writing | :math:`\geq 1` |                |
-|                | of the         |                |                |
-|                | checkpoint     |                |                |
-|                | files          |                |                |
-+----------------+----------------+----------------+----------------+
-| *              | should we      | 0 or 1         | 0              |
-| *amr.checkpoin | write a        |                |                |
-| t_on_restart** | checkpoint     |                |                |
-|                | immediately    |                |                |
-|                | after          |                |                |
-|                | restarting     |                |                |
-+----------------+----------------+----------------+----------------+
++---------------------------------+----------------+----------------+----------------+
+| Parameter                       | Definition     | Acceptable     | Default        |
+|                                 |                | Values         |                |
++=================================+================+================+================+
+| **amr.check_file**              | prefix for     | String         | “*chk*”        |
+|                                 | restart files  |                |                |
++---------------------------------+----------------+----------------+----------------+
+| **amr.check_int**               | how often (by  | Integer        | -1             |
+|                                 | level-0 time   | :math:`> 0`    |                |
+|                                 | steps) to      |                |                |
+|                                 | write restart  |                |                |
+|                                 | files          |                |                |
++---------------------------------+----------------+----------------+----------------+
+| **amr.check_per**               | how often (by  | Real           | -1.0           |
+|                                 | simulation     | :math:`> 0`    |                |
+|                                 | time) to write |                |                |
+|                                 | restart files  |                |                |
++---------------------------------+----------------+----------------+----------------+
+| **amr.restart**                 | name of the    | String         | not used if    |
+|                                 | file           |                | not set        |
+|                                 | (directory)    |                |                |
+|                                 | from which to  |                |                |
+|                                 | restart        |                |                |
++---------------------------------+----------------+----------------+----------------+
+| **amr.checkpoint_files_output** | should we      | 0 or 1         | 1              |
+|                                 | write          |                |                |
+|                                 | checkpoint     |                |                |
+|                                 | files          |                |                |
++---------------------------------+----------------+----------------+----------------+
+| **amr.check_nfiles**            | how parallel   | Integer        | 64             |
+|                                 | is the writing | :math:`\geq 1` |                |
+|                                 | of the         |                |                |
+|                                 | checkpoint     |                |                |
+|                                 | files          |                |                |
++---------------------------------+----------------+----------------+----------------+
+| **amr.checkpoint_on_restart**   | should we      | 0 or 1         | 0              |
+|                                 | write a        |                |                |
+|                                 | checkpoint     |                |                |
+|                                 | immediately    |                |                |
+|                                 | after          |                |                |
+|                                 | restarting     |                |                |
++---------------------------------+----------------+----------------+----------------+
 
 .. _notes-4:
 
@@ -711,64 +682,50 @@ generation of plotfiles
 List of Parameters
 ------------------
 
-+------------------+------------------+------------------+---------+
-| Parameter        | Definition       | Acceptable       | Default |
-|                  |                  | Values           |         |
-+==================+==================+==================+=========+
-| *                | prefix for       | Text             | “*plt*” |
-| *amr.plot_file** | plotfiles        |                  |         |
-+------------------+------------------+------------------+---------+
-| **amr.plot_int** | how often (by    | Integer          | -1      |
-|                  | level-0 time     | :math:`> 0`      |         |
-|                  | steps) to write  |                  |         |
-|                  | plot files       |                  |         |
-+------------------+------------------+------------------+---------+
-| **amr.plot_per** | how often (by    | Real :math:`> 0` | -1.0    |
-|                  | simulation time) |                  |         |
-|                  | to write plot    |                  |         |
-|                  | files            |                  |         |
-+------------------+------------------+------------------+---------+
-| *                | name of state    | ALL, NONE or     | ALL     |
-| *amr.plot_vars** | variables to     | list             |         |
-|                  | include in       |                  |         |
-|                  | plotfiles        |                  |         |
-+------------------+------------------+------------------+---------+
-| **amr.de         | name of derived  | ALL, NONE or     | NONE    |
-| rive_plot_vars** | variables to     | list             |         |
-|                  | include in       |                  |         |
-|                  | plotfiles        |                  |         |
-+------------------+------------------+------------------+---------+
-| **amr.plo        | should we write  | 0 or 1           | 1       |
-| t_files_output** | plot files       |                  |         |
-+------------------+------------------+------------------+---------+
-| **amr.plotf      | should we write  | 0 or 1           | 0       |
-| ile_on_restart** | a plotfile       |                  |         |
-|                  | immediately      |                  |         |
-|                  | after restarting |                  |         |
-+------------------+------------------+------------------+---------+
-| **a              | how parallel is  | Integer          | 64      |
-| mr.plot_nfiles** | the writing of   | :math:`\geq 1`   |         |
-|                  | the plotfiles    |                  |         |
-+------------------+------------------+------------------+---------+
-| **ny             | Should we plot   | 0 or 1           | 0       |
-| x.plot_phiGrav** | the              |                  |         |
-|                  | gravitational    |                  |         |
-|                  | potential        |                  |         |
-+------------------+------------------+------------------+---------+
-|                  | plot the         | 0 or 1           | 0       |
-|                  | gravitational    |                  |         |
-|                  | potential        |                  |         |
-+------------------+------------------+------------------+---------+
-| **particles.wri  | Should we write  | 0 or 1           | 0       |
-| te_in_plotfile** | the particles in |                  |         |
-|                  | a file within    |                  |         |
-|                  | the plotfile     |                  |         |
-+------------------+------------------+------------------+---------+
-| **fab.format**   | Should we write  | NATIVE or IEEE32 | NATIVE  |
-|                  | the plotfile in  |                  |         |
-|                  | double or single |                  |         |
-|                  | precision        |                  |         |
-+------------------+------------------+------------------+---------+
++-----------------------------+------------------+------------------+---------+
+| Parameter                   | Definition       | Acceptable       | Default |
+|                             |                  | Values           |         |
++=============================+==================+==================+=========+
+| **amr.plot_file**           | prefix for       | String           | “*plt*” |
+|                             | plotfiles        |                  |         |
++-----------------------------+------------------+------------------+---------+
+| **amr.plot_int**            | how often (by    | Integer          | -1      |
+|                             | level-0 time     | :math:`> 0`      |         |
+|                             | steps) to write  |                  |         |
+|                             | plot files       |                  |         |
++-----------------------------+------------------+------------------+---------+
+| **amr.plot_per**            | how often (by    | Real :math:`> 0` | -1.0    |
+|                             | simulation time) |                  |         |
+|                             | to write plot    |                  |         |
+|                             | files            |                  |         |
++-----------------------------+------------------+------------------+---------+
+| **amr.plot_vars**           | name of state    | ALL, NONE or     | ALL     |
+|                             | variables to     | list             |         |
+|                             | include in       |                  |         |
+|                             | plotfiles        |                  |         |
++-----------------------------+------------------+------------------+---------+
+| **amr.derive_plot_vars**    | name of derived  | ALL, NONE or     | NONE    |
+|                             | variables to     | list             |         |
+|                             | include in       |                  |         |
+|                             | plotfiles        |                  |         |
++-----------------------------+------------------+------------------+---------+
+| **amr.plot_files_output**   | should we write  | 0 or 1           | 1       |
+|                             | plot files       |                  |         |
++-----------------------------+------------------+------------------+---------+
+| **amr.plotfile_on_restart** | should we write  | 0 or 1           | 0       |
+|                             | a plotfile       |                  |         |
+|                             | immediately      |                  |         |
+|                             | after restarting |                  |         |
++-----------------------------+------------------+------------------+---------+
+| **amr.plot_nfiles**         | how parallel is  | Integer          | 64      |
+|                             | the writing of   | :math:`\geq 1`   |         |
+|                             | the plotfiles    |                  |         |
++-----------------------------+------------------+------------------+---------+
+| **fab.format**              | Should we write  | NATIVE or IEEE32 | NATIVE  |
+|                             | the plotfile in  |                  |         |
+|                             | double or single |                  |         |
+|                             | precision        |                  |         |
++-----------------------------+------------------+------------------+---------+
 
 All the options for **amr.derive_plot_vars** are kept in ``derive_lst``
 in ``Nyx_setup.cpp``. Feel free to look at it and see what’s there.
@@ -790,8 +747,6 @@ Notes
 
 -  If you are doing a scaling study then set **amr.plot_files_output** =
    0 so you can test scaling of the algorithm without I/O.
-
--  **nyx.plot_phiGrav** is only relevant if **nyx.do_grav** = 1 
 
 -  By default, plotfiles are written in double precision (NATIVE
    format). If you want to save space by writing them in single
@@ -831,71 +786,55 @@ Screen Output
 List of Parameters
 ------------------
 
-+----------------+----------------+----------------+----------------+
-| Parameter      | Definition     | Acceptable     | Default        |
-|                |                | Values         |                |
-+================+================+================+================+
-| **amr.v**      | verbosity of   | 0 or 1         | 0              |
-|                | Amr.cpp        |                |                |
-+----------------+----------------+----------------+----------------+
-| **nyx.v**      | verbosity of   | 0 or 1         | 0              |
-|                | Nyx.cpp        |                |                |
-+----------------+----------------+----------------+----------------+
-| **gravity.v**  | verbosity of   | 0 or 1         | 0              |
-|                | Gravity.cpp    |                |                |
-+----------------+----------------+----------------+----------------+
-| **mg.v**       | verbosity of   | 0,1,2,3,4      | 0              |
-|                | multigrid      |                |                |
-|                | solver (for    |                |                |
-|                | gravity)       |                |                |
-+----------------+----------------+----------------+----------------+
-| *              | verbosity of   | 0,1,2,3,4      | 0              |
-| *particles.v** | pa             |                |                |
-|                | rticle-related |                |                |
-|                | processes      |                |                |
-+----------------+----------------+----------------+----------------+
-| **             | name of the    | Text           | not used if    |
-| amr.grid_log** | file to which  |                | not set        |
-|                | the grids are  |                |                |
-|                | written        |                |                |
-+----------------+----------------+----------------+----------------+
-| *              | name of the    | Text           | not used if    |
-| *amr.run_log** | file to which  |                | not set        |
-|                | certain output |                |                |
-|                | is written     |                |                |
-+----------------+----------------+----------------+----------------+
-| **amr.r        | name of the    | Text           | not used if    |
-| un_log_terse** | file to which  |                | not set        |
-|                | certain        |                |                |
-|                | (terser)       |                |                |
-|                | output is      |                |                |
-|                | written        |                |                |
-+----------------+----------------+----------------+----------------+
-| **amr.         | if             |                |                |
-| sum_interval** | :math:`> 0,`   |                |                |
-|                | how often (in  |                |                |
-|                | level-0 time   |                |                |
-|                | steps)         |                |                |
-+----------------+----------------+----------------+----------------+
-|                | to compute and | Integer        | -1             |
-|                | print integral |                |                |
-|                | quantities     |                |                |
-+----------------+----------------+----------------+----------------+
-| **nyx.do_spe   |                | 0 or 1         | 1              |
-| cial_tagging** |                |                |                |
-+----------------+----------------+----------------+----------------+
-
-.. _notes-6:
-
-Notes
------
-
--  **nyx.do_special_tagging** = 1 allows the user to set a special flag
-   based on user-specified criteria. This can be used, for example, to
-   calculate the bounce time in a core collapse simulation; the bounce
-   time is defined as the first time at which the maximum density in the
-   domain exceeds a user-specified value. This time can then be printed
-   into a special file as a useful diagnostic.
++----------------------------+------------------+----------------+----------------+
+| Parameter                  | Definition       | Acceptable     | Default        |
+|                            |                  | Values         |                |
++============================+==================+================+================+
+| **amr.v**                  | verbosity of     | 0 or 1         | 0              |
+|                            | Amr.cpp          |                |                |
++----------------------------+------------------+----------------+----------------+
+| **nyx.v**                  | verbosity of     | 0 or 1         | 0              |
+|                            | Nyx.cpp          |                |                |
++----------------------------+------------------+----------------+----------------+
+| **gravity.v**              | verbosity of     | 0 or 1         | 0              |
+|                            | Gravity.cpp      |                |                |
++----------------------------+------------------+----------------+----------------+
+| **mg.v**                   | verbosity of     | 0,1,2,3,4      | 0              |
+|                            | multigrid        |                |                |
+|                            | solver (for      |                |                |
+|                            | gravity)         |                |                |
++----------------------------+------------------+----------------+----------------+
+| **particles.v**            | verbosity of     | 0,1,2,3,4      | 0              |
+|                            | particle-related |                |                |
+|                            | processes        |                |                |
++----------------------------+------------------+----------------+----------------+
+| **amr.grid_log**           | name of the      | String         | not used if    |
+|                            | file to which    |                | not set        |
+|                            | the grids are    |                |                |
+|                            | written          |                |                |
++----------------------------+------------------+----------------+----------------+
+| **amr.run_log**            | name of the      | String         | not used if    |
+|                            | file to which    |                | not set        |
+|                            | certain output   |                |                |
+|                            | is written       |                |                |
++----------------------------+------------------+----------------+----------------+
+| **amr.run_log_terse**      | name of the      | String         | not used if    |
+|                            | file to which    |                | not set        |
+|                            | certain          |                |                |
+|                            | (terser)         |                |                |
+|                            | output is        |                |                |
+|                            | written          |                |                |
++----------------------------+------------------+----------------+----------------+
+| **amr.sum_interval**       | if               |                |                |
+|                            | :math:`> 0,`     |                |                |
+|                            | how often (in    |                |                |
+|                            | level-0 time     |                |                |
+|                            | steps)           |                |                |
++----------------------------+------------------+----------------+----------------+
+|                            | to compute and   | Integer        | -1             |
+|                            | print integral   |                |                |
+|                            | quantities       |                |                |
++----------------------------+------------------+----------------+----------------+
 
 .. _examples-of-usage-9:
 
@@ -944,9 +883,9 @@ List of Parameters
 | Parameter                | Definition       | Acceptable     | Default          |
 |                          |                  | Values         |                  |
 +==========================+==================+================+==================+
-| **nyx.do_grav**          | Include          | 0 if false     | must be set if   |
-|                          | gravity as a     | 1 if true      | USE_GRAV = TRUE  |
-|                          | forcing term     |                | TRUE             |
+| **nyx.do_grav**          | Include          | 0 if false     | must be set      |
+|                          | gravity as a     | 1 if true      |                  |
+|                          | forcing term     |                |                  |
 +--------------------------+------------------+----------------+------------------+
 | **gravity.no_sync**      | whether to       | 0 if false     |  0               |
 |                          | perform the      | 1 if true      |                  |
@@ -960,19 +899,12 @@ List of Parameters
 
 [Table:Gravity]
 
-.. _notes-7:
+.. _notes-6:
 
 Notes
 -----
 
--  To include gravity you must set
-
-   -  USE_GRAV = TRUE in the GNUmakefile
-
-   -  **nyx.do_grav** = 1 in the inputs file
-
--  **gravity.no_sync** and **gravity.no_composite** are only relevant if
-   USE_GRAV = TRUE; they both default to 0.
+-  To include gravity you must set **nyx.do_grav** = 1 in the inputs file
 
 Physics
 =======
@@ -982,32 +914,71 @@ Physics
 List of Parameters
 ------------------
 
-+---------------------------+-----------------+-----------------+-------------+
-| Parameter                 | Definition      | Acceptable      | Default     |
-|                           |                 | Values          |             |
-+===========================+=================+=================+=============+
-| **nyx.do_hydro**          | Time-advance    | 0 if false, 1   | must be set |
-|                           | the fluid       | if true         |             |
-|                           | dynamical       |                 |             |
-|                           | equations       |                 |             |
-+---------------------------+-----------------+-----------------+-------------+
-| **nyx.do_react**          | Include         | 0 if false, 1   | must be set |
-|                           | reactions       | if true         |             |
-+---------------------------+-----------------+-----------------+-------------+
-| **nyx.add_ext_src**       | Include         | 0 if false, 1   | 0           |
-|                           | additional      | if true         |             |
-|                           | user-specified  |                 |             |
-|                           | source term     |                 |             |
-+---------------------------+-----------------+-----------------+-------------+
-| **nyx.use_const_species** | If 1 then read  | 0 or 1          | 0           |
-|                           | h_species and   |                 |             |
-|                           | he_species      |                 |             |
-+---------------------------+-----------------+-----------------+-------------+
-| **nyx.h_species**         | Concentration   | 0 :math:`<` X   | 0           |
-|                           | of H            | :math:`<` 1     |             |
-+---------------------------+-----------------+-----------------+-------------+
-| **nyx.he_species**        | Concentration   | 0 :math:`<` X   | 0           |
-|                           | of He           | :math:`<` 1     |             |
-+---------------------------+-----------------+-----------------+-------------+
++----------------------------------+------------------+-----------------+-------------+
+| Parameter                        | Definition       | Acceptable      | Default     |
+|                                  |                  | Values          |             |
++==================================+==================+=================+=============+
+| **nyx.do_hydro**                 | Time-advance     | 0 if false, 1   | must be set |
+|                                  | the fluid        | if true         |             |
+|                                  | dynamical        |                 |             |
+|                                  | equations        |                 |             |
++----------------------------------+------------------+-----------------+-------------+
+| **nyx.ppm_type**                 | Use PPM or       | 0 for PLM       | 1 (PPM)     |
+|                                  | PLM for hydro    | 1 for PPM       |             |
+|                                  | advance          |                 |             |
++----------------------------------+------------------+-----------------+-------------+
+| **nyx.enforce_min_density_type** | how to enforce   | "floor"         | "floor"     |
+|                                  | rho greater than | "cons"          |             |
+|                                  | small_dens       |                 |             |
++----------------------------------+------------------+-----------------+-------------+
+| **nyx.add_ext_src**              | Include          | 0 if false, 1   | 0           |
+|                                  | additional       | if true         |             |
+|                                  | user-specified   |                 |             |
+|                                  | source term      |                 |             |
++----------------------------------+------------------+-----------------+-------------+
+| **nyx.use_const_species**        | If 1 then read   | 0 or 1          | 0           |
+|                                  | h_species and    |                 |             |
+|                                  | he_species       |                 |             |
++----------------------------------+------------------+-----------------+-------------+
+| **nyx.h_species**                | Concentration    | 0 :math:`<` X   | 0           |
+|                                  | of H             | :math:`<` 1     |             |
++----------------------------------+------------------+-----------------+-------------+
+| **nyx.he_species**               | Concentration    | 0 :math:`<` X   | 0           |
+|                                  | of He            | :math:`<` 1     |             |
++----------------------------------+------------------+-----------------+-------------+
 
-[Table:Physics]
+Multigrid Inputs
+================
+
+The following inputs can be set directly in the AMReX solver classes but we set them via the Nyx gravity routines.
+
+These must be preceded by "gravity" in the inputs file:
+
++----------------------+---------------------------------------------------+-----------+--------------+
+|                      | Description                                       | Type      | Default      |
++======================+===================================================+===========+==============+
+| ml_tol               |  Relative tolerance for multilevel solves         |  Real     |   1.e-12     |
++----------------------+---------------------------------------------------+-----------+--------------+
+| sl_tol               |  Relative tolerance for single-level solves       |  Real     |   1.e-12     |
++----------------------+---------------------------------------------------+-----------+--------------+
+| mlmg_agglomeration   |  Should we agglomerate deep in the V-cycle        |  Int      |   1          |
++----------------------+---------------------------------------------------+-----------+--------------+
+| mlmg_consolidation   |  Should we consolidate deep in the V-cycle        |  Int      |   1          |
++----------------------+---------------------------------------------------+-----------+--------------+
+
+These must be preceded by "mg" in the inputs file:
+
++----------------------+-----------------------------------------------------+-------------+--------------+
+|                      | Description                                         |  Type       | Default      |
++======================+=====================================================+=============+==============+
+| v                    |  Verbosity of multigrid solver                      |  Int        |   0          |
++----------------------+-----------------------------------------------------+-------------+--------------+
+| bottom_solver        |  What is the bottom solver?                         |  String     |   "bicg"     |
+|                      |  Options include "bicg", "smoother", "hypre", etc   |             |              |
++----------------------+-----------------------------------------------------+-------------+--------------+
+
+There are a number of additional inputs that can be used to control the multigrid solver.  
+
+See the `AMReX Multigrid documentation`_ for more details.
+
+.. _AMReX Multigrid documentation: https://amrex-codes.github.io/amrex/docs_html/LinearSolvers_Chapter.html

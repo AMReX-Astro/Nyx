@@ -211,24 +211,24 @@ int Nyx::integrate_state_struct_mfin
                         abstol_vec = N_VNew_OpenMP(neq,nthreads);
                         abstol_ptr=N_VGetArrayPointer_OpenMP(abstol_vec);
                         if(sdc_iter>=0||true)
-			  {
-			    T_vec = N_VNew_OpenMP(neq,nthreads);
-			    ne_vec = N_VNew_OpenMP(neq,nthreads);
-			    rho_vec = N_VNew_OpenMP(neq,nthreads);
-			    rho_init_vec = N_VNew_OpenMP(neq,nthreads);
-			    rho_src_vec = N_VNew_OpenMP(neq,nthreads);
-			    rhoe_src_vec = N_VNew_OpenMP(neq,nthreads);
-			    e_src_vec = N_VNew_OpenMP(neq,nthreads);
-			    IR_vec = N_VNew_OpenMP(neq,nthreads);
-			  }
-			amrex::Real* T_vode= N_VGetArrayPointer_OpenMP(T_vec);
-			amrex::Real* ne_vode=N_VGetArrayPointer_OpenMP(ne_vec);
-			amrex::Real* rho_vode=N_VGetArrayPointer_OpenMP(rho_vec);
-			amrex::Real* rho_init_vode=N_VGetArrayPointer_OpenMP(rho_init_vec);
-			amrex::Real* rho_src_vode=N_VGetArrayPointer_OpenMP(rho_src_vec);
-			amrex::Real* rhoe_src_vode=N_VGetArrayPointer_OpenMP(rhoe_src_vec);
-			amrex::Real* e_src_vode=N_VGetArrayPointer_OpenMP(e_src_vec);
-			amrex::Real* IR_vode=N_VGetArrayPointer_OpenMP(IR_vec);
+                          {
+                            T_vec = N_VNew_OpenMP(neq,nthreads);
+                            ne_vec = N_VNew_OpenMP(neq,nthreads);
+                            rho_vec = N_VNew_OpenMP(neq,nthreads);
+                            rho_init_vec = N_VNew_OpenMP(neq,nthreads);
+                            rho_src_vec = N_VNew_OpenMP(neq,nthreads);
+                            rhoe_src_vec = N_VNew_OpenMP(neq,nthreads);
+                            e_src_vec = N_VNew_OpenMP(neq,nthreads);
+                            IR_vec = N_VNew_OpenMP(neq,nthreads);
+                          }
+                        amrex::Real* T_vode= N_VGetArrayPointer_OpenMP(T_vec);
+                        amrex::Real* ne_vode=N_VGetArrayPointer_OpenMP(ne_vec);
+                        amrex::Real* rho_vode=N_VGetArrayPointer_OpenMP(rho_vec);
+                        amrex::Real* rho_init_vode=N_VGetArrayPointer_OpenMP(rho_init_vec);
+                        amrex::Real* rho_src_vode=N_VGetArrayPointer_OpenMP(rho_src_vec);
+                        amrex::Real* rhoe_src_vode=N_VGetArrayPointer_OpenMP(rhoe_src_vec);
+                        amrex::Real* e_src_vode=N_VGetArrayPointer_OpenMP(e_src_vec);
+                        amrex::Real* IR_vode=N_VGetArrayPointer_OpenMP(IR_vec);
 #else
                         u = N_VNew_Serial(neq);  /* Allocate u vector */
                         e_orig = N_VNew_Serial(neq);  /* Allocate u vector */
@@ -263,7 +263,7 @@ int Nyx::integrate_state_struct_mfin
           JH_vode_arr = (int*) The_Arena()->alloc(neq*sizeof(int));
       AMREX_PARALLEL_FOR_1D ( 1, i,
       {
-	ode_eos_initialize_single(f_rhs_data, a, dptr, eptr, T_vode, ne_vode, rho_vode, rho_init_vode, rho_src_vode, rhoe_src_vode, e_src_vode, IR_vode, JH_vode_arr);
+        ode_eos_initialize_single(f_rhs_data, a, dptr, eptr, T_vode, ne_vode, rho_vode, rho_init_vode, rho_src_vode, rhoe_src_vode, e_src_vode, IR_vode, JH_vode_arr);
       });
 #ifdef _OPENMP
       const Dim3 hi = amrex::ubound(tbx);
@@ -383,16 +383,16 @@ int Nyx::integrate_state_struct_mfin
                                 if(use_sundials_constraint)
                                   N_VDestroy(constrain);          /* Free the constrain vector */
                                 N_VDestroy(abstol_vec);          /* Free the u vector */
-				N_VDestroy(T_vec);
-				N_VDestroy(ne_vec);
-				N_VDestroy(rho_vec);
-				N_VDestroy(rho_init_vec);
-				N_VDestroy(rho_src_vec);
-				N_VDestroy(rhoe_src_vec);
-				N_VDestroy(e_src_vec);
-				N_VDestroy(IR_vec);
+                                N_VDestroy(T_vec);
+                                N_VDestroy(ne_vec);
+                                N_VDestroy(rho_vec);
+                                N_VDestroy(rho_init_vec);
+                                N_VDestroy(rho_src_vec);
+                                N_VDestroy(rhoe_src_vec);
+                                N_VDestroy(e_src_vec);
+                                N_VDestroy(IR_vec);
                                 if(inhomo_reion == 1)
-				  The_Arena()->free(JH_vode_arr);
+                                  The_Arena()->free(JH_vode_arr);
                                 CVodeFree(&cvode_mem);  /* Free the integrator memory */
                               //);
                                 /*                          }
@@ -434,8 +434,8 @@ static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
   #pragma omp parallel for
   for(int tid=0;tid<neq;tid++)
     {
-		//        f_rhs_rpar(t, (u_ptr[tid]),(udot_ptr[tid]),&(rpar[4*tid]));
-		f_rhs_struct(t, (u_ptr[tid]),(udot_ptr[tid]),atomic_rates,f_rhs_data,tid);
+                //        f_rhs_rpar(t, (u_ptr[tid]),(udot_ptr[tid]),&(rpar[4*tid]));
+                f_rhs_struct(t, (u_ptr[tid]),(udot_ptr[tid]),atomic_rates,f_rhs_data,tid);
     }
 
   return 0;

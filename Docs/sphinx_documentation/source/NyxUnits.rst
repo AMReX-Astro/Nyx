@@ -2,7 +2,20 @@
 Units and Conventions
 =====================
 
-Nyx supports both CGS and Cosmological units. In the equation of state calls,
+Nyx supports both CGS and Cosmological units. 
+
+All inputs and problem initialization should be specified consistently with one of these sets of units.
+No internal conversions of units occur within the code, so the output must be interpreted appropriately.
+The default is cosmological units.
+
+If you want to use CGS units instead, then set
+
+**USE_CGS = TRUE**
+
+in your GNUmakefile. This will select the file constants_cgs.f90 instead of constants_cosmo.f90 from the
+Nyx/constants directory.
+
+In the equation of state calls,
 conversions must be made between CGS units and code units.
 Table \ `[table:units] <#table:units>`__ shows some of the common symbols / names used
 throughout the code documentation and papers.
@@ -36,16 +49,6 @@ throughout the code documentation and papers.
    +-----------------------+-----------------------+-----------------------+
 
 words
-
-We support two different systems of units in : CGS and Cosmological.
-All inputs and problem initialization should be specified consistently with one of these sets of units.
-No internal conversions of units occur within the code, so the output must be interpreted appropriately.
-The default is cosmological units.
-If you want to use CGS units instead, then set
-USE_CGS = TRUE
-in your GNUmakefile. This will select the file
-constants_cgs.f90 instead of constants_cosmo.f90 from the
-Nyx/constants directory.
 
 .. table:: [table:inputs]
 	   Units expected for inputs and outputs.
@@ -308,8 +311,10 @@ These are the places that each is used in the code:
 
 -  **small_dens**
 
-   -  | **subroutine enforce_minimum_density** (called after subroutine consup) – if :math:`\rho <` small_dens then :math:`\rho` is set to the
-        minimum value of the 26 neighbors. This also modifies momenta, :math:`\rho E` and :math:`\rho e` so that velocties, :math:`E` and :math:`e` remain unchanged.
+   -  | **subroutine enforce_minimum_density** (called after subroutine consup) – there are two choices for this. In the flooring routine, 
+      | **subroutine enforce_minimum_density_floor** – density is set to small_dens, (rho e) and (rho E) are computed from small_temp,
+      | and momenta are set to zero.  In the conservative routine, **subroutine enforce_minimum_density_cons**, an iterative procedure 
+      | is used to create diffusive fluxes that adjusts all the variables conservatively until density is greater than small_dens.
 
    -  | **subroutine tracexy / tracez / tracexy_ppm / tracez_ppm**:
       | qxp = max(qxp,small_dens)

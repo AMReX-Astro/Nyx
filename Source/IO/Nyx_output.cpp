@@ -95,6 +95,7 @@ Nyx::writePlotFilePre (const std::string& dir, ostream& os)
     {
         amrex::Print()<<"Skip writePlotFilePre"<<std::endl;
     }
+#ifdef AMREX_PARTICLES
     else
     {
   if(Nyx::theDMPC()) {
@@ -112,6 +113,7 @@ Nyx::writePlotFilePre (const std::string& dir, ostream& os)
   }
 #endif
     }
+#endif
 }
 
 void
@@ -164,6 +166,7 @@ Nyx::writePlotFile (const std::string& dir,
     {
         if (parent->isDerivePlotVar(it->name()))
         {
+#ifdef AMREX_PARTICLES
             if (it->name() == "particle_count" ||
                 it->name() == "total_particle_count" ||
                 it->name() == "particle_mass_density" ||
@@ -200,7 +203,9 @@ Nyx::writePlotFile (const std::string& dir,
                     num_derive++;
                 }
 #endif
-            } else if (it->name() == "Rank") {
+            } else
+#endif
+			if (it->name() == "Rank") {
                 derive_names.push_back(it->name());
                 num_derive++;
             } else {
@@ -329,16 +334,18 @@ Nyx::writePlotFilePost (const std::string& dir, ostream& os)
       writeJobInfo(dir);
     }
 
+#ifdef AMREX_PARTICLES
     //
     // Write the particles and `comoving_a` in a plotfile directory. 
     //
     particle_plot_file(dir);
+#endif
 
     // Write out all parameters into the plotfile
     if (write_parameters_in_plotfile) {
         write_parameter_file(dir);
     }
-
+#ifdef AMREX_PARTICLES
     if(Nyx::theDMPC()) {
       Nyx::theDMPC()->SetLevelDirectoriesCreated(false);
     }
@@ -367,7 +374,8 @@ Nyx::writePlotFilePost (const std::string& dir, ostream& os)
     Nyx::theNPC()->WritePlotFilePost();
   }
 #endif
-    }
+#endif
+	}
   if(verbose) {
 
     if (level == 0)
@@ -549,6 +557,7 @@ Nyx::writeJobInfo (const std::string& dir)
         jobInfoFile.close();
 }
 
+#ifdef AMREX_PARTICLES
 void
 Nyx::particle_plot_file (const std::string& dir)
 {
@@ -634,15 +643,17 @@ Nyx::particle_plot_file (const std::string& dir)
 #endif
     }
 }
-
+#endif
 void
 Nyx::particle_check_point (const std::string& dir)
 {
   BL_PROFILE("Nyx::particle_check_point");
   amrex::Gpu::LaunchSafeGuard lsg(true);
+
   if (level == 0)
     {
-      if (Nyx::theDMPC())
+#ifdef AMREX_PARTICLES
+		if (Nyx::theDMPC())
         {
           Nyx::theDMPC()->NyxCheckpoint(dir, dm_chk_particle_file);
         }
@@ -658,7 +669,7 @@ Nyx::particle_check_point (const std::string& dir)
           Nyx::theNPC()->NyxCheckpoint(dir, npc_chk_particle_file);
         }
 #endif
-
+#endif
 #ifdef NO_HYDRO
         Real cur_time = state[PhiGrav_Type].curTime();
 #else
@@ -884,7 +895,7 @@ Nyx::checkPoint (const std::string& dir,
         CPUFile.close();
       }
     }
-
+#ifdef AMREX_PARTICLES
     if(Nyx::theDMPC()) {
       Nyx::theDMPC()->SetLevelDirectoriesCreated(false);
     }
@@ -898,6 +909,7 @@ Nyx::checkPoint (const std::string& dir,
       Nyx::theNPC()->SetLevelDirectoriesCreated(false);
     }
 #endif
+#endif
 
 }
 
@@ -905,6 +917,7 @@ void
 Nyx::checkPointPre (const std::string& dir,
                     std::ostream&      os)
 {
+#ifdef AMREX_PARTICLES
   if(Nyx::theDMPC()) {
     Nyx::theDMPC()->CheckpointPre();
   }
@@ -918,7 +931,7 @@ Nyx::checkPointPre (const std::string& dir,
     Nyx::theNPC()->CheckpointPre();
   }
 #endif
-
+#endif
 }
 
 
@@ -926,6 +939,7 @@ void
 Nyx::checkPointPost (const std::string& dir,
                  std::ostream&      os)
 {
+#ifdef AMREX_PARTICLES
   if(Nyx::theDMPC()) {
     Nyx::theDMPC()->CheckpointPost();
   }
@@ -938,6 +952,7 @@ Nyx::checkPointPost (const std::string& dir,
   if(Nyx::theNPC()) {
     Nyx::theNPC()->CheckpointPost();
   }
+#endif
 #endif
 }
 
@@ -1095,7 +1110,7 @@ Nyx::blueprint_check_point ()
                            bp_mesh);
 #endif
     //conduit::Node bp_particles;
-    
+#ifdef AMREX_PARTICLES    
     Vector<std::string> particle_varnames;
     particle_varnames.push_back("particle_mass");
     particle_varnames.push_back("particle_xvel");
@@ -1124,7 +1139,7 @@ Nyx::blueprint_check_point ()
                                         bp_mesh,npc_plt_particle_file);
 #endif
 #endif
-    
+#endif
     // very helpful for debugging when we actual try
     // to pull the varnames list from amrex, vs hand initing
     //

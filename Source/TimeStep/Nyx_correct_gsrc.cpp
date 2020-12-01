@@ -10,11 +10,6 @@ using namespace amrex;
 void
 Nyx::correct_gsrc(int lev, Real time, Real prev_time, Real cur_time, Real dt)
 {
-      
-    // For now we have to grab grav_source_type from the Fortran
-    int l_type = grav_source_type;
-    AMREX_ALWAYS_ASSERT(l_type == 1 or l_type == 3);
-
     const auto& ba = get_level(lev).get_new_data(State_Type).boxArray();
     const auto& dm = get_level(lev).get_new_data(State_Type).DistributionMap();
 
@@ -53,29 +48,16 @@ Nyx::correct_gsrc(int lev, Real time, Real prev_time, Real cur_time, Real dt)
         int  iden = Density; 
         int ieden = Eden; 
 
-        amrex::ParallelFor(bx, [g_old,g_new,s_old,s_new,a_old,a_new,iden,ieden,l_type,dt]
+        amrex::ParallelFor(bx, [g_old,g_new,s_old,s_new,a_old,a_new,iden,ieden,dt]
         AMREX_GPU_DEVICE (int i, int j, int k) noexcept
         {
             Real a_half    = 0.50 * (a_old + a_new);
             Real a_newsq   = a_new*a_new;
             Real a_new_inv = 1.00 / a_new;
 
-            // Gravitational source options for how to add the work to (rho E):
-            // l_type (grav_source_type) = 
-            // 1: Original version ("does work")
-            // 3: Puts all gravitational work into KE, not (rho e)
-
             int ixmom = iden+1; 
             int iymom = iden+2; 
             int izmom = iden+3; 
-
-            // **** Start Diagnostics ****
-            Real old_ke = 0.5 * ( s_new(i,j,k,ixmom)*s_new(i,j,k,ixmom) +
-                                  s_new(i,j,k,iymom)*s_new(i,j,k,iymom) +
-                                  s_new(i,j,k,izmom)*s_new(i,j,k,izmom) ) / s_new(i,j,k,iden);
-
-            Real old_rhoeint = s_new(i,j,k,ieden) - old_ke;
-            // ****   End Diagnostics ****
 
             Real rhoo    = s_old(i,j,k,iden);
             Real rhooinv = 1.0 / rhoo;
@@ -109,21 +91,10 @@ Nyx::correct_gsrc(int lev, Real time, Real prev_time, Real cur_time, Real dt)
             s_new(i,j,k,iymom) += SrVcorr*dt * a_new_inv;
             s_new(i,j,k,izmom) += SrWcorr*dt * a_new_inv;
 
-            if (l_type == 1) 
-            {
-                // This does work (in 1-d)
-                Real SrEcorr =  0.5 * ( (SrU_new * Upn - SrU_old * Upo) +
-                                        (SrV_new * Vpn - SrV_old * Vpo) +
-                                        (SrW_new * Wpn - SrW_old * Wpo) );
-                s_new(i,j,k,ieden) += SrEcorr * dt * (a_half / a_newsq);
-            }
-            else if (l_type == 3) 
-            {
-                Real new_ke = 0.5 * ( s_new(i,j,k,ixmom)*s_new(i,j,k,ixmom) +
-                                      s_new(i,j,k,iymom)*s_new(i,j,k,iymom) +
-                                      s_new(i,j,k,izmom)*s_new(i,j,k,izmom) ) / s_new(i,j,k,iden);
-                s_new(i,j,k,ieden) = old_rhoeint + new_ke;
-            }
+            Real SrEcorr =  0.5 * ( (SrU_new * Upn - SrU_old * Upo) +
+                                    (SrV_new * Vpn - SrV_old * Vpo) +
+                                    (SrW_new * Wpn - SrW_old * Wpo) );
+            s_new(i,j,k,ieden) += SrEcorr * dt * (a_half / a_newsq);
          });
     }
 }

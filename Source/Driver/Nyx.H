@@ -7,6 +7,7 @@
 #include <AMReX_ErrorList.H>
 #include <AMReX_FluxRegister.H>
 
+#ifdef AMREX_PARTICLES
 #include <NyxParticleContainer.H>
 #include <DarkMatterParticleContainer.H>
 #ifdef AGN
@@ -14,6 +15,9 @@
 #endif
 #ifdef NEUTRINO_PARTICLES
 #include <NeutrinoParticleContainer.H>
+#endif
+#else
+#include <AMReX_ParmParse.H>
 #endif
 
 #ifdef REEBER
@@ -39,9 +43,9 @@ using namespace ascent;
 
 using std::istream;
 using std::ostream;
-
+#ifdef AMREX_PARTICLES
 typedef NyxParticleContainer<1+BL_SPACEDIM+3> StellarParticleContainer;
-
+#endif
 #ifdef NO_HYDRO
 enum StateType {
     PhiGrav_Type = 0,
@@ -326,7 +330,7 @@ public:
   const amrex::Real a,
   const amrex::Real half_dt);
 
-	void ext_src_force(
+        void ext_src_force(
   amrex::Box const& bx,
   amrex::Array4<const amrex::Real> const& old_state,
   amrex::Array4<const amrex::Real> const& new_state,
@@ -362,6 +366,7 @@ public:
     //
     void particle_check_point(const std::string& dir);
 
+#ifdef AMREX_PARTICLES
     //
     // Write particles in plotfile directories
     //
@@ -412,11 +417,6 @@ public:
     void particle_est_time_step(amrex::Real& est_dt);
 
     //
-    // Derived quantities associated with particles
-    //
-    std::unique_ptr<amrex::MultiFab> particle_derive (const std::string& name, amrex::Real time, int ngrow);
-
-    //
     // Default verbosity of Particle class
     //
     static int particle_verbose;
@@ -434,6 +434,12 @@ public:
     //   called "ParticleDensity"?
     //
     static int write_particle_density_at_init;
+#endif
+
+    //
+    // Derived quantities associated with particles
+    //
+    std::unique_ptr<amrex::MultiFab> particle_derive (const std::string& name, amrex::Real time, int ngrow);
 
     //
     //Set time levels of state data.
@@ -561,6 +567,13 @@ public:
                                     amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src,
                                     amrex::MultiFab& grav       ,
                                     amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
+
+    void enforce_minimum_density  ( amrex::MultiFab& S_old      , amrex::MultiFab& S_new,
+                                    amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
+    void enforce_minimum_density_cons  ( amrex::MultiFab& S_old      , amrex::MultiFab& S_new,
+                                         amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
+    void enforce_minimum_density_floor ( amrex::MultiFab& S_old      , amrex::MultiFab& S_new,
+                                         amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
 
     void strang_first_step  (amrex::Real time, amrex::Real dt,  amrex::MultiFab& state, amrex::MultiFab&  dstate);
     void strang_second_step (amrex::Real time, amrex::Real dt,  amrex::MultiFab& state, amrex::MultiFab&  dstate);
@@ -752,7 +765,7 @@ int integrate_state_struct
 #ifdef AUX_UPDATE
     void advance_aux(amrex::Real time, amrex::Real dt);
 #endif
-
+#ifdef AMREX_PARTICLES
     static amrex::Vector<NyxParticleContainerBase*>& theActiveParticles();
     static amrex::Vector<NyxParticleContainerBase*>& theVirtualParticles();
     static amrex::Vector<NyxParticleContainerBase*>& theGhostParticles();
@@ -782,7 +795,7 @@ int integrate_state_struct
     static NeutrinoParticleContainer* theGhostNPC();
   #endif
 #endif
-
+#endif
     static int NUM_STATE;
 
     static int Zhi_comp;
@@ -894,14 +907,11 @@ protected:
     static int nsteps_from_plotfile;
 
     static int nghost_state;
-    static int allow_untagging;
-    static int do_special_tagging;
     static int ppm_type;
-    static int use_flattening;
     static int use_analriem;
     static int strang_grown_box;
 
-    static int use_exact_gravity;
+    static std::string enforce_min_density_type;
 
     static int num_particle_ghosts;
 
