@@ -59,7 +59,10 @@ endif ()
 # Other options   =============================================================
 #
 option( Nyx_OMP        "Enable OpenMP"  YES)
-option( Nyx_MPI        "Enable MPI"     YES)
+
+cmake_dependent_option( Nyx_MPI  "Enable MPI"  ON
+   "NOT Nyx_GPU_BACKEND STREQUAL SYCL" OFF)
+
 cmake_dependent_option(Nyx_MPI_THREAD_MULTIPLE
    "Concurrent MPI calls from multiple threads" NO "Nyx_MPI" NO)
 
