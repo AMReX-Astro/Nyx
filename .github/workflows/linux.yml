@@ -78,7 +78,7 @@ jobs:
         mkdir build
         cd build
         cmake ..                                           \
-            -DNyx_HEATCOOL=yes                             \
+            -DNyx_HEATCOOL=no                              \
             -DNyx_HYDRO=yes                                \
             -DNyx_GPU_BACKEND=SYCL                         \
             -DCMAKE_C_COMPILER=$(which clang)              \
@@ -100,7 +100,7 @@ jobs:
         mkdir build
         cd build
         cmake ..                                           \
-            -DNyx_HEATCOOL=yes                             \
+            -DNyx_HEATCOOL=no                              \
             -DNyx_HYDRO=yes                                \
             -DNyx_GPU_BACKEND=HIP                          \
             -DAMReX_AMD_ARCH=gfx900                        \

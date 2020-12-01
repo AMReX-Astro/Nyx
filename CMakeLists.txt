@@ -39,6 +39,25 @@ endif()
 ##############################################################################
 include(CMakeDependentOption)
 
+#
+# GPU backends    =============================================================
+#
+set(Nyx_GPU_BACKEND_VALUES NONE SYCL CUDA HIP)
+set(Nyx_GPU_BACKEND NONE CACHE STRING "On-node, accelerated GPU backend: <NONE,SYCL,CUDA,HIP>")
+set_property(CACHE Nyx_GPU_BACKEND PROPERTY STRINGS ${Nyx_GPU_BACKEND_VALUES})
+if (NOT Nyx_GPU_BACKEND IN_LIST Nyx_GPU_BACKEND_VALUES)
+   message(FATAL_ERROR "Nyx_GPU_BACKEND=${Nyx_GPU_BACKEND} is not allowed."
+      " Must be one of ${Nyx_GPU_BACKEND_VALUES}")
+endif ()
+
+if (NOT Nyx_GPU_BACKEND STREQUAL NONE)
+   message( STATUS "   Nyx_GPU_BACKEND = ${Nyx_GPU_BACKEND}")
+endif ()
+
+
+#
+# Other options   =============================================================
+#
 option( Nyx_OMP        "Enable OpenMP"  YES)
 option( Nyx_MPI        "Enable MPI"     YES)
 cmake_dependent_option(Nyx_MPI_THREAD_MULTIPLE
@@ -58,21 +77,6 @@ cmake_dependent_option(Nyx_GIMLET "" NO "Nyx_MPI;Nyx_OMP" NO)
 option( Nyx_CONST_SPECIES "Don't evolve H and He, treat them as constant" ON)
 option( Nyx_CGS   "Evolve quantities in CGS units instead of code units" NO)
 option( Nyx_REEBER             "" NO)
-
-#
-# GPU backends    =============================================================
-#
-set(Nyx_GPU_BACKEND_VALUES NONE SYCL CUDA HIP)
-set(Nyx_GPU_BACKEND NONE CACHE STRING "On-node, accelerated GPU backend: <NONE,SYCL,CUDA,HIP>")
-set_property(CACHE Nyx_GPU_BACKEND PROPERTY STRINGS ${Nyx_GPU_BACKEND_VALUES})
-if (NOT Nyx_GPU_BACKEND IN_LIST Nyx_GPU_BACKEND_VALUES)
-   message(FATAL_ERROR "Nyx_GPU_BACKEND=${Nyx_GPU_BACKEND} is not allowed."
-      " Must be one of ${Nyx_GPU_BACKEND_VALUES}")
-endif ()
-
-if (NOT Nyx_GPU_BACKEND STREQUAL NONE)
-   message( STATUS "   Nyx_GPU_BACKEND = ${Nyx_GPU_BACKEND}")
-endif ()
 
 
 #
