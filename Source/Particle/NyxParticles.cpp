@@ -1,9 +1,6 @@
 #include <iomanip>
 #include <Nyx.H>
-
-#ifdef GRAVITY
 #include <Gravity.H>
-#endif
 
 #include <Prob.H>
 
@@ -281,14 +278,12 @@ Nyx::read_particle_params ()
     }
 #endif
 
-#ifdef GRAVITY
     if (!do_grav && particle_move_type == "Gravitational")
     {
         if (ParallelDescriptor::IOProcessor())
             std::cerr << "ERROR:: doesnt make sense to have do_grav=false but move_type = Gravitational" << std::endl;
         amrex::Error();
     }
-#endif
 
     pp.query("particle_initrandom_serialize", particle_initrandom_serialize);
     pp.query("particle_initrandom_count", particle_initrandom_count);
@@ -722,7 +717,6 @@ Nyx::init_particles ()
 #endif    
 }
 
-#ifdef GRAVITY
 #ifndef NO_HYDRO
 void
 Nyx::init_santa_barbara (int init_sb_vels)
@@ -876,7 +870,6 @@ Nyx::init_santa_barbara (int init_sb_vels)
 #endif
 }
 #endif
-#endif
 
 void
 Nyx::particle_post_restart (const std::string& restart_file, bool is_checkpoint)
@@ -1008,7 +1001,6 @@ Nyx::particle_post_restart (const std::string& restart_file, bool is_checkpoint)
 #endif
 }
 
-#ifdef GRAVITY
 void
 Nyx::particle_est_time_step (Real& est_dt)
 {
@@ -1053,7 +1045,6 @@ Nyx::particle_est_time_step (Real& est_dt)
         }
     }
 }
-#endif
 
 void
 Nyx::particle_redistribute (int lbase, bool my_init)

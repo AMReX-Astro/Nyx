@@ -1,5 +1,4 @@
 #ifndef NO_HYDRO
-#ifdef GRAVITY
 #include <Nyx.H>
 #include <constants_cosmo.H>
 
@@ -98,5 +97,4 @@ Nyx::correct_gsrc(int lev, Real time, Real prev_time, Real cur_time, Real dt)
          });
     }
 }
-#endif
 #endif

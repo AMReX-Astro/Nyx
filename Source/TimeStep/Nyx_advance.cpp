@@ -1,10 +1,7 @@
 
 #include <Nyx.H>
-#include <constants_cosmo.H>
-
-#ifdef GRAVITY
 #include <Gravity.H>
-#endif
+#include <constants_cosmo.H>
 
 #ifdef FORCING
 #include <Forcing.H>
@@ -34,10 +31,13 @@ Nyx::advance (Real time,
 
   MultiFab::RegionTag amrlevel_tag("AmrLevel_Level_" + std::to_string(level));
 
-#ifndef NO_HYDRO
+#ifdef NO_HYDRO
+
+    return advance_particles_only(time, dt, iteration, ncycle);
+
+#else
     if (do_hydro)
     {
-#ifdef AMREX_PARTICLES
         if (Nyx::theActiveParticles().size() > 0)
         {
 #ifndef AGN
@@ -48,22 +48,9 @@ Nyx::advance (Real time,
            } 
         }
         else
-#endif
         {
            return advance_hydro(time, dt, iteration, ncycle);
         }
-    }
-#endif
-
-#ifdef GRAVITY
-    if (!do_hydro)
-    {
-        return advance_particles_only(time, dt, iteration, ncycle);
-    }
-    else
-#else
-    {
-        amrex::Abort("Nyx::advance -- do_hydro is false but no gravity -- dont know what to do");
     }
 #endif
     return 0;
@@ -132,19 +119,8 @@ Nyx::advance_hydro_plus_particles (Real time,
     if (!do_hydro)
         amrex::Abort("In `advance_hydro_plus_particles` but `do_hydro` not true");
 
-   if (Nyx::theActiveParticles().size() <= 0)
+    if (Nyx::theActiveParticles().size() <= 0)
         amrex::Abort("In `advance_hydro_plus_particles` but no active particles");
-
-#ifdef GRAVITY
-    if (!do_grav)
-        amrex::Abort("In `advance_hydro_plus_particles` but `do_grav` not true");
-#endif
-        /*
-#ifdef FORCING
-    if (do_forcing)
-        amrex::Abort("Forcing in `advance_hydro_plus_particles` not admissible");
-#endif
-        */
 
     const int finest_level = parent->finestLevel();
     int finest_level_to_advance;
@@ -217,7 +193,7 @@ Nyx::advance_hydro_plus_particles (Real time,
     const Real a_old     = get_comoving_a(prev_time);
     const Real a_new     = get_comoving_a(cur_time);
 
-#ifdef GRAVITY
+    if (do_grav) {
     //
     // We now do a multilevel solve for old Gravity. This goes to the 
     // finest level regardless of subcycling behavior. Consequentially,
@@ -292,10 +268,9 @@ Nyx::advance_hydro_plus_particles (Real time,
                    Nyx::theGhostParticles()[i]->moveKickDrift(grav_vec_old, lev, dt, a_old, a_half, where_width);
             }
         }
-    }
-    }
-
-#endif
+    } // if active particles
+    } // lsg
+    } // if (do_grav)
 
     //
     // Call the hydro advance at each level to be advanced
@@ -340,112 +315,112 @@ Nyx::advance_hydro_plus_particles (Real time,
         get_level(lev).average_down(DiagEOS_Type);
     }
 
-#ifdef GRAVITY
-
     //
     // Here we use the "old" phi from the current time step as a guess for this
     // solve
     //
-    for (int lev = level; lev <= finest_level_to_advance; lev++)
+    if (do_grav) 
     {
-        MultiFab::Copy(parent->getLevel(lev).get_new_data(PhiGrav_Type),
-                       parent->getLevel(lev).get_old_data(PhiGrav_Type),
-                       0, 0, 1, 0);
-    }
-
-    // Solve for new Gravity
-    BL_PROFILE_VAR("solve_for_new_phi", solve_for_new_phi);
-    int use_previous_phi_as_guess = 1;
-    if (finest_level_to_advance > level)
-    {
-        MultiFab::RegionTag amrGrav_tag("Gravity_" + std::to_string(level));
-        // The particle may be as many as "iteration" ghost cells out
-        int ngrow_for_solve = iteration + stencil_deposition_width;
-        gravity->multilevel_solve_for_new_phi(level, finest_level_to_advance, 
-                                              ngrow_for_solve,
-                                              use_previous_phi_as_guess);
-    }
-    else
-    {
-        MultiFab::RegionTag amrGrav_tag("Gravity_" + std::to_string(level));
-        int fill_interior = 0;
-        gravity->solve_for_new_phi(level,get_new_data(PhiGrav_Type),
-                               gravity->get_grad_phi_curr(level),
-                               fill_interior, grav_n_grow);
-    }
-    BL_PROFILE_VAR_STOP(solve_for_new_phi);
-
-    // Reflux
-    if (do_reflux)
-    {
-        MultiFab::RegionTag amrGrav_tag("Gravity_" + std::to_string(level));
         for (int lev = level; lev <= finest_level_to_advance; lev++)
         {
-            gravity->add_to_fluxes(lev, iteration, ncycle);
+            MultiFab::Copy(parent->getLevel(lev).get_new_data(PhiGrav_Type),
+                           parent->getLevel(lev).get_old_data(PhiGrav_Type),
+                           0, 0, 1, 0);
         }
-    }
 
-    //
-    // Now do corrector part of source term update
-    //
-    for (int lev = level; lev <= finest_level_to_advance; lev++)
-    {
-        MultiFab::RegionTag amrGrav_tag("Gravity_" + std::to_string(lev));
-        amrex::Gpu::LaunchSafeGuard lsg(true);
-
-        // Now do corrector part of source term update
-        correct_gsrc(lev,time,prev_time,cur_time,dt);
-
-        MultiFab& S_new = get_level(lev).get_new_data(State_Type);
-        MultiFab& D_new = get_level(lev).get_new_data(DiagEOS_Type);
-
-        // First reset internal energy before call to compute_temp
-        MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
-        reset_e_src.setVal(0.0);
-        get_level(lev).reset_internal_energy(S_new,D_new,reset_e_src);
-
-        get_level(lev).compute_new_temp(S_new,D_new);
-    }
-
-    // Must average down again after doing the gravity correction;
-    //      always average down from finer to coarser.
-    // Here we average down both the new state and phi and gravity.
-    for (int lev = finest_level_to_advance-1; lev >= level; lev--)
-        get_level(lev).average_down();
-
-    if (Nyx::theActiveParticles().size() > 0)
-    {
-        // Advance the particle velocities by dt/2 to the new time. We use the
-        // cell-centered gravity to correctly interpolate onto particle
-        // locations.
-        if (particle_move_type == "Gravitational")
+        // Solve for new Gravity
+        BL_PROFILE_VAR("solve_for_new_phi", solve_for_new_phi);
+        int use_previous_phi_as_guess = 1;
+        if (finest_level_to_advance > level)
         {
-            MultiFab::RegionTag amrMoveKickDrift_tag("MoveKick_" + std::to_string(level));
-            const Real a_half = 0.5 * (a_old + a_new);
+            MultiFab::RegionTag amrGrav_tag("Gravity_" + std::to_string(level));
+            // The particle may be as many as "iteration" ghost cells out
+            int ngrow_for_solve = iteration + stencil_deposition_width;
+            gravity->multilevel_solve_for_new_phi(level, finest_level_to_advance, 
+                                                  ngrow_for_solve,
+                                                  use_previous_phi_as_guess);
+        }
+        else
+        {
+            MultiFab::RegionTag amrGrav_tag("Gravity_" + std::to_string(level));
+            int fill_interior = 0;
+            gravity->solve_for_new_phi(level,get_new_data(PhiGrav_Type),
+                                   gravity->get_grad_phi_curr(level),
+                                   fill_interior, grav_n_grow);
+        }
+        BL_PROFILE_VAR_STOP(solve_for_new_phi);
 
-            if (particle_verbose && ParallelDescriptor::IOProcessor())
-                std::cout << "moveKick ... updating velocity only\n";
-
+        // Reflux
+        if (do_reflux)
+        {
+            MultiFab::RegionTag amrGrav_tag("Gravity_" + std::to_string(level));
             for (int lev = level; lev <= finest_level_to_advance; lev++)
             {
-                const auto& ba = get_level(lev).get_new_data(State_Type).boxArray();
-                const auto& dm = get_level(lev).get_new_data(State_Type).DistributionMap();
-                MultiFab grav_vec_new(ba, dm, BL_SPACEDIM, grav_n_grow);
-                get_level(lev).gravity->get_new_grav_vector(lev, grav_vec_new, cur_time);
-
-                for (int i = 0; i < Nyx::theActiveParticles().size(); i++)
-                    Nyx::theActiveParticles()[i]->moveKick(grav_vec_new, lev, dt, a_new, a_half);
-
-                // Virtual particles will be recreated, so we need not kick them.
-
-                // Ghost particles need to be kicked except during the final iteration.
-                if (iteration != ncycle)
-                    for (int i = 0; i < Nyx::theGhostParticles().size(); i++)
-                        Nyx::theGhostParticles()[i]->moveKick(grav_vec_new, lev, dt, a_new, a_half);
+                gravity->add_to_fluxes(lev, iteration, ncycle);
             }
         }
-    }
-#endif
+
+        //
+        // Now do corrector part of source term update
+        //
+        for (int lev = level; lev <= finest_level_to_advance; lev++)
+        {
+            MultiFab::RegionTag amrGrav_tag("Gravity_" + std::to_string(lev));
+            amrex::Gpu::LaunchSafeGuard lsg(true);
+
+            // Now do corrector part of source term update
+            correct_gsrc(lev,time,prev_time,cur_time,dt);
+
+            MultiFab& S_new = get_level(lev).get_new_data(State_Type);
+            MultiFab& D_new = get_level(lev).get_new_data(DiagEOS_Type);
+
+            // First reset internal energy before call to compute_temp
+            MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
+            reset_e_src.setVal(0.0);
+            get_level(lev).reset_internal_energy(S_new,D_new,reset_e_src);
+    
+            get_level(lev).compute_new_temp(S_new,D_new);
+        }
+
+        // Must average down again after doing the gravity correction;
+        //      always average down from finer to coarser.
+        // Here we average down both the new state and phi and gravity.
+        for (int lev = finest_level_to_advance-1; lev >= level; lev--)
+            get_level(lev).average_down();
+
+        if (Nyx::theActiveParticles().size() > 0)
+        {
+            // Advance the particle velocities by dt/2 to the new time. We use the
+            // cell-centered gravity to correctly interpolate onto particle
+            // locations.
+            if (particle_move_type == "Gravitational")
+            {
+                MultiFab::RegionTag amrMoveKickDrift_tag("MoveKick_" + std::to_string(level));
+                const Real a_half = 0.5 * (a_old + a_new);
+    
+                if (particle_verbose && ParallelDescriptor::IOProcessor())
+                    std::cout << "moveKick ... updating velocity only\n";
+
+                for (int lev = level; lev <= finest_level_to_advance; lev++)
+                {
+                    const auto& ba = get_level(lev).get_new_data(State_Type).boxArray();
+                    const auto& dm = get_level(lev).get_new_data(State_Type).DistributionMap();
+                    MultiFab grav_vec_new(ba, dm, BL_SPACEDIM, grav_n_grow);
+                    get_level(lev).gravity->get_new_grav_vector(lev, grav_vec_new, cur_time);
+    
+                    for (int i = 0; i < Nyx::theActiveParticles().size(); i++)
+                        Nyx::theActiveParticles()[i]->moveKick(grav_vec_new, lev, dt, a_new, a_half);
+
+                    // Virtual particles will be recreated, so we need not kick them.
+    
+                    // Ghost particles need to be kicked except during the final iteration.
+                    if (iteration != ncycle)
+                        for (int i = 0; i < Nyx::theGhostParticles().size(); i++)
+                            Nyx::theGhostParticles()[i]->moveKick(grav_vec_new, lev, dt, a_new, a_half);
+                }
+            }
+        }
+    } // do_grav
 
     //
     // Synchronize Energies
@@ -476,20 +451,12 @@ Nyx::advance_hydro (Real time,
 {
     BL_PROFILE("Nyx::advance_hydro()");
     amrex::Gpu::LaunchSafeGuard lsg(true);
-    // sanity checks
-    if (!do_hydro)
-        amrex::Abort("In `advance_hydro` but `do_hydro` not true");
 
-#ifdef GRAVITY
-    if (!do_grav)
-        amrex::Abort("In `advance_hydro` with GRAVITY defined but `do_grav` is false");
-#endif
-        /*
 #ifdef FORCING
     if (!do_forcing)
         amrex::Abort("In `advance_hydro` with FORCING defined but `do_forcing` is false");
 #endif
-        */
+        
     for (int k = 0; k < NUM_STATE_TYPE; k++)
     {
         state[k].allocOldData();
@@ -501,17 +468,13 @@ Nyx::advance_hydro (Real time,
     const Real a_old     = get_comoving_a(prev_time);
     const Real a_new     = get_comoving_a(cur_time);
 
-#ifdef GRAVITY
-    const int finest_level = parent->finestLevel();
-
-    if (do_reflux && level < finest_level)
+    if (do_grav)
     {
-        gravity->zero_phi_flux_reg(level + 1);
+        const int finest_level = parent->finestLevel();
+        if (do_reflux && level < finest_level)
+            gravity->zero_phi_flux_reg(level + 1);
+        gravity->swap_time_levels(level);
     }
-
-    gravity->swap_time_levels(level);
-
-#endif
 
 #ifdef FORCING
     if (do_forcing) 
@@ -534,7 +497,7 @@ Nyx::advance_hydro (Real time,
 #endif
     BL_PROFILE_VAR_STOP(just_the_hydro);
 
-#ifdef GRAVITY
+    if (do_grav)
     {
        amrex::Gpu::LaunchSafeGuard lsg(true);
 
@@ -555,7 +518,6 @@ Nyx::advance_hydro (Real time,
        // Now do corrector part of source term update
        correct_gsrc(level,time,prev_time,cur_time,dt);
     }
-#endif
 
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
