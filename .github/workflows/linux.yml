@@ -55,6 +55,7 @@ jobs:
         cmake ..                                             \
             -DNyx_HEATCOOL=yes                               \
             -DNyx_HYDRO=yes                                  \
+            -DNyx_OMP=no                                     \
             -DNyx_GPU_BACKEND=CUDA                           \
             -DCMAKE_C_COMPILER=$(which gcc-4.8)              \
             -DCMAKE_CXX_COMPILER=$(which g++-4.8)            \
@@ -80,6 +81,7 @@ jobs:
         cmake ..                                           \
             -DNyx_HEATCOOL=no                              \
             -DNyx_HYDRO=yes                                \
+            -DNyx_OMP=no                                   \
             -DNyx_GPU_BACKEND=SYCL                         \
             -DCMAKE_C_COMPILER=$(which clang)              \
             -DCMAKE_CXX_COMPILER=$(which dpcpp)            \
@@ -102,6 +104,7 @@ jobs:
         cmake ..                                           \
             -DNyx_HEATCOOL=no                              \
             -DNyx_HYDRO=yes                                \
+            -DNyx_OMP=no                                   \
             -DNyx_GPU_BACKEND=HIP                          \
             -DAMReX_AMD_ARCH=gfx900                        \
             -DCMAKE_C_COMPILER=$(which hipcc)              \
