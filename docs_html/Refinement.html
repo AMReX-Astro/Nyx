@@ -224,28 +224,36 @@ creating (“hard coding”) a number of functions directly into <cite>Nyx</cite
 and <cite>AMReX</cite> documentation for precisely how this is done).  <cite>Nyx</cite> provides a limited capability to augment
 the standard set of error functions that is based entirely on runtime data specified in the inputs (ParmParse)
 data.  The following example portion of a ParmParse’d input file demonstrates the usage of this feature:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">amr</span><span class="o">.</span><span class="n">refinement_indicators</span> <span class="o">=</span> <span class="n">flame_tracer</span> <span class="n">lo_temp</span> <span class="n">gradT</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">amr</span><span class="o">.</span><span class="n">refinement_indicators</span> <span class="o">=</span> <span class="n">denerr</span> <span class="n">dengrad</span> <span class="n">velgrad</span>
 
-<span class="n">amr</span><span class="o">.</span><span class="n">flame_tracer</span><span class="o">.</span><span class="n">max_level</span> <span class="o">=</span> <span class="mi">3</span>
-<span class="n">amr</span><span class="o">.</span><span class="n">flame_tracer</span><span class="o">.</span><span class="n">value_greater</span> <span class="o">=</span> <span class="mf">1.e-6</span>
-<span class="n">amr</span><span class="o">.</span><span class="n">flame_tracer</span><span class="o">.</span><span class="n">field_name</span> <span class="o">=</span> <span class="n">Y</span><span class="p">(</span><span class="n">H</span><span class="p">)</span>
+<span class="n">amr</span><span class="o">.</span><span class="n">denerr</span><span class="o">.</span><span class="n">max_level</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">amr</span><span class="o">.</span><span class="n">denerr</span><span class="o">.</span><span class="n">value_greater</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">amr</span><span class="o">.</span><span class="n">denerr</span><span class="o">.</span><span class="n">field_name</span> <span class="o">=</span> <span class="n">density</span>
+<span class="n">amr</span><span class="o">.</span><span class="n">dengrad</span><span class="o">.</span><span class="n">max_level</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">amr</span><span class="o">.</span><span class="n">dengrad</span><span class="o">.</span><span class="n">adjacent_difference_greater</span> <span class="o">=</span> <span class="mf">0.01</span>
+<span class="n">amr</span><span class="o">.</span><span class="n">dengrad</span><span class="o">.</span><span class="n">field_name</span> <span class="o">=</span> <span class="n">density</span>
 
-<span class="n">amr</span><span class="o">.</span><span class="n">lo_temp</span><span class="o">.</span><span class="n">max_level</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="n">amr</span><span class="o">.</span><span class="n">lo_temp</span><span class="o">.</span><span class="n">value_less</span> <span class="o">=</span> <span class="mi">450</span>
-<span class="n">amr</span><span class="o">.</span><span class="n">lo_temp</span><span class="o">.</span><span class="n">field_name</span> <span class="o">=</span> <span class="n">temp</span>
-
-<span class="n">amr</span><span class="o">.</span><span class="n">gradT</span><span class="o">.</span><span class="n">max_level</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="n">amr</span><span class="o">.</span><span class="n">gradT</span><span class="o">.</span><span class="n">adjacent_difference_greater</span> <span class="o">=</span> <span class="mi">20</span>
-<span class="n">amr</span><span class="o">.</span><span class="n">gradT</span><span class="o">.</span><span class="n">field_name</span> <span class="o">=</span> <span class="n">temp</span>
-<span class="n">amr</span><span class="o">.</span><span class="n">gradT</span><span class="o">.</span><span class="n">start_time</span> <span class="o">=</span> <span class="mf">0.001</span>
-<span class="n">amr</span><span class="o">.</span><span class="n">gradT</span><span class="o">.</span><span class="n">end_name</span> <span class="o">=</span> <span class="mf">0.002</span>
+<span class="n">amr</span><span class="o">.</span><span class="n">velgrad</span><span class="o">.</span><span class="n">max_level</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">amr</span><span class="o">.</span><span class="n">velgrad</span><span class="o">.</span><span class="n">adjacent_difference_greater</span> <span class="o">=</span> <span class="mf">0.01</span>
+<span class="n">amr</span><span class="o">.</span><span class="n">velgrad</span><span class="o">.</span><span class="n">field_name</span> <span class="o">=</span> <span class="n">x_velocity</span>
 </pre></div>
 </div>
-<p>Here, we have added three new custom-named criteria – <code class="docutils literal notranslate"><span class="pre">flame_tracer</span></code>: cells with the mass fraction of H greater than 1 ppm;
-<code class="docutils literal notranslate"><span class="pre">lo_temp</span></code>: cells with T less than 450K, and <code class="docutils literal notranslate"><span class="pre">gradT</span></code>: cells having a temperature difference of 20K from that of their
-immediate neighbor.  The first will trigger up to Amr level 3, the second only to level 1, and the third to level 2.
-The third will be active only when the problem time is between 0.001 and 0.002 seconds.</p>
-<p>Note that these additional user-created criteria operate in addition to those defined as defaults.  Also note that
+<p>Here, we have added five new custom-named criteria – <code class="docutils literal notranslate"><span class="pre">denerr</span></code>: cells with the density defined on the mesh greater than 3; <code class="docutils literal notranslate"><span class="pre">dengrad</span></code>: cells having a density difference of 0.01 from that of their
+immediate neighbor and <code class="docutils literal notranslate"><span class="pre">velgrad</span></code>: cells having a x_velocity difference of 0.01 from that of their
+immediate neighbor.
+The first will trigger up to Amr level 3, the second only to level 1, and the third to level 2.</p>
+<p>An example of a more specific derived type is overden, a rescaling of the baryonic gas density divided by the average total density:</p>
+<div class="math notranslate nohighlight">
+\[\begin{aligned}
+\mathtt{overden} &amp;=&amp;\frac{\rho_b}{ \overline{\rho} * \mathtt{tagging\_base}^{\mathtt{level+1}}} .\cr\cr \end{aligned}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\overline{\rho}\)</span> is the average of <span class="math notranslate nohighlight">\(\rho=\rho_b+\rho_{dm}\)</span> over the entire domain.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">amr</span><span class="o">.</span><span class="n">refinement_indicators</span> <span class="o">=</span> <span class="n">density</span>
+<span class="n">amr</span><span class="o">.</span><span class="n">density</span><span class="o">.</span><span class="n">value_greater</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">amr</span><span class="o">.</span><span class="n">density</span><span class="o">.</span><span class="n">field_name</span> <span class="o">=</span> <span class="n">overden</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">tagging_base</span> <span class="o">=</span> <span class="mf">1.1</span>
+</pre></div>
+</div>
+<p>Note that these additional user-created criteria operate in place of those defined as defaults.  Also note that
 these can be modified between restarts of the code.  By default, the new criteria will take effect at the next
 scheduled regrid operation.  Alternatively, the user may restart with <code class="docutils literal notranslate"><span class="pre">amr.regrid_on_restart</span> <span class="pre">=</span> <span class="pre">1</span></code> in order to
 do a full (all-levels) regrid after reading the checkpoint data and before advancing any cells.</p>
