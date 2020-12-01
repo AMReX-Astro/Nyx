@@ -15,7 +15,7 @@ using namespace amrex;
 /* Private function to check function return values */
 static int check_retval(void *flagvalue, const char *funcname, int opt);
 
-int Nyx::integrate_state_exact
+int Nyx::integrate_state_vec
   (amrex::MultiFab &S_old,
    amrex::MultiFab &D_old,
    const Real& a, const Real& delta_time)
@@ -25,7 +25,7 @@ int Nyx::integrate_state_exact
   return 0;
 }
 
-int Nyx::integrate_state_grownexact
+int Nyx::integrate_state_grownvec
   (amrex::MultiFab &S_old,
    amrex::MultiFab &D_old,
    const Real& a, const Real& delta_time)

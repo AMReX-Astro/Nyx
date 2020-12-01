@@ -1,19 +1,7 @@
 EBASE     ?= Nyx
 
-ifndef USE_GRAV
-USE_GRAV = TRUE
-endif
-
-ifndef USE_PARTICLES
-ifeq ($(USE_GRAV), TRUE)
 USE_PARTICLES = TRUE
-else
-USE_PARTICLES = FALSE
-endif
-else
-USE_GRAV=$(USE_PARTICLES)
-endif
-
+USE_GRAV = TRUE
 BL_NO_FORT = TRUE
 
 include $(AMREX_HOME)/Tools/GNUMake/Make.defs

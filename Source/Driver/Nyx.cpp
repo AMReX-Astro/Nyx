@@ -14,6 +14,7 @@ using std::string;
 
 #include <AMReX_CONSTANTS.H>
 #include <Nyx.H>
+#include <Gravity.H>
 #include <constants_cosmo.H>
 #include <AMReX_VisMF.H>
 #include <AMReX_TagBox.H>
@@ -29,9 +30,6 @@ using std::string;
 #include <Derive.H>
 #endif
 
-#ifdef GRAVITY
-#include <Gravity.H>
-#endif
 
 #ifdef FORCING
 #include <Forcing.H>
@@ -152,12 +150,8 @@ static int  slice_nfiles = 128;
 // Real Nyx::ave_lev_vorticity[10];
 // Real Nyx::std_lev_vorticity[10];
 
-#ifdef GRAVITY
 Gravity* Nyx::gravity  =  0;
 int Nyx::do_grav       = -1;
-#else
-int Nyx::do_grav       =  0;
-#endif
 
 #ifdef FORCING
 StochasticForcing* Nyx::forcing = 0;
@@ -224,7 +218,8 @@ int gimlet_int(0);
 void
 Nyx::variable_cleanup ()
 {
-#ifdef GRAVITY
+if (do_grav)
+{
     if (gravity != 0)
     {
         if (verbose > 1 && ParallelDescriptor::IOProcessor())
@@ -232,7 +227,7 @@ Nyx::variable_cleanup ()
         delete gravity;
         gravity = 0;
     }
-#endif
+}
 #ifdef FORCING
     if (forcing != 0)
     {
@@ -333,16 +328,14 @@ Nyx::read_params ()
     read_particle_params();
 #endif
 
-#ifdef GRAVITY
-    pp_nyx.get("do_grav", do_grav);
-#endif
+    if (do_grav)
+       pp_nyx.get("do_grav", do_grav);
 
 #ifndef NO_HYDRO
     read_hydro_params();
 #else
-#ifndef GRAVITY
+    if (!do_grav)
         amrex::Error("Dont know what to do with both hydro and gravity off");
-#endif
 #endif
 
     read_init_params();
@@ -472,6 +465,7 @@ Nyx::read_hydro_params ()
     pp_nyx.query("strang_fuse", strang_fuse);
     pp_nyx.query("strang_grown_box", strang_grown_box);
 
+#ifdef USE_HEATCOOL
 #ifdef SDC
     pp_nyx.query("sdc_split", sdc_split);
     if (sdc_split == 1 && strang_split == 1)
@@ -484,6 +478,7 @@ Nyx::read_hydro_params ()
     if (strang_split != 1)
         amrex::Error("Cant have strang_split != 1 with USE_SDC != TRUE");
 #endif
+#endif
 
 #ifdef FORCING
     pp_nyx.get("do_forcing", do_forcing);
@@ -495,33 +490,6 @@ Nyx::read_hydro_params ()
 #endif
 
     pp_nyx.query("heat_cool_type", heat_cool_type);
-    if (heat_cool_type == 7)
-    {
-      amrex::Print() << "----- WARNING WARNING WARNING WARNING WARNING -----" << std::endl;
-      amrex::Print() << "                                                   " << std::endl;
-      amrex::Print() << "      SIMD CVODE is currently EXPERIMENTAL.        " << std::endl;
-      amrex::Print() << "      Use at your own risk.                        " << std::endl;
-      amrex::Print() << "                                                   " << std::endl;
-      amrex::Print() << "----- WARNING WARNING WARNING WARNING WARNING -----" << std::endl;
-      Vector<int> n_cell(BL_SPACEDIM);
-
-      ParmParse pp_amr("amr");
-      pp_amr.getarr("n_cell", n_cell, 0, BL_SPACEDIM);
-      if (n_cell[0] % simd_width) {
-        const std::string errmsg = "Currently the SIMD CVODE solver requires that n_cell[0] % simd_width = 0";
-        amrex::Abort(errmsg);
-      }
-    }
-    if (heat_cool_type == 9)
-    {
-      amrex::Print() << "----- WARNING WARNING WARNING WARNING WARNING -----" << std::endl;
-      amrex::Print() << "                                                   " << std::endl;
-      amrex::Print() << "      ARKODE interface is currently EXPERIMENTAL.  " << std::endl;
-      amrex::Print() << "      Use at your own risk.                        " << std::endl;
-      amrex::Print() << "                                                   " << std::endl;
-      amrex::Print() << "----- WARNING WARNING WARNING WARNING WARNING -----" << std::endl;
-    }
-
     pp_nyx.query("inhomo_reion", inhomo_reion);
 
     if (inhomo_reion) {
@@ -530,33 +498,10 @@ Nyx::read_hydro_params ()
     }
 
 #ifdef HEATCOOL
-    if (heat_cool_type != 3 && heat_cool_type !=4 && heat_cool_type != 5 && heat_cool_type != 7 && heat_cool_type != 9 && heat_cool_type != 10 && heat_cool_type != 11 &&  heat_cool_type != 12)
-       amrex::Error("Nyx:: nonzero heat_cool_type must equal 3 or 4 or 5 or 7 or 9 or 10 or 11 or 12");
-    if (heat_cool_type == 0)
-       amrex::Error("Nyx::contradiction -- HEATCOOL is defined but heat_cool_type == 0");
-
     if (ParallelDescriptor::IOProcessor()) {
       std::cout << "Integrating heating/cooling method with the following method: ";
       switch (heat_cool_type)
         {
-        case 3:
-          std::cout << "VODE";
-          break;
-        case 4:
-          std::cout << "Exact";
-          break;
-        case 5:
-          std::cout << "CVODE";
-          break;
-        case 7:
-          std::cout << "SIMD CVODE";
-        break;
-        case 9:
-          std::cout << "ARKODE";
-        break;
-        case 10:
-          std::cout << "Vectorized copytomem CVODE";
-          break;
         case 11:
           std::cout << "Vectorized CVODE";
           break;
@@ -564,22 +509,7 @@ Nyx::read_hydro_params ()
       std::cout << std::endl;
     }
 
-    #ifndef AMREX_USE_SUNDIALS
-    if (heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 10 || heat_cool_type == 11 || heat_cool_type == 12)
-        amrex::Error("Nyx:: cannot set heat_cool_type = 5 or 7 or 10 or 11 or 12 unless USE_SUNDIALS=TRUE");
-    #ifndef AMREX_USE_ARKODE_LIBS
-    if (heat_cool_type == 9)
-        amrex::Error("Nyx:: cannot set heat_cool_type = 9 unless USE_SUNDIALS=TRUE, and USE_ARKODE_LIBS=TRUE");
-    #endif
-    #endif
-    #ifdef SDC
-    if (heat_cool_type == 7 && sdc_split == 1)
-        amrex::Error("Nyx:: cannot set heat_cool_type = 7 with sdc_split = 1");
-    #endif
-
 #else
-    if (heat_cool_type > 0)
-       amrex::Error("Nyx::you set heat_cool_type > 0 but forgot to set USE_HEATCOOL = TRUE");
     if (inhomo_reion > 0)
        amrex::Error("Nyx::you set inhomo_reion > 0 but forgot to set USE_HEATCOOL = TRUE");
 #endif  // HEATCOOL
@@ -659,13 +589,11 @@ Nyx::Nyx (Amr&            papa,
     }
 #endif
 
-#ifdef GRAVITY
-    // Initialize to zero here in case we run with do_grav = false.
-    MultiFab& new_grav_mf = get_new_data(Gravity_Type);
-    new_grav_mf.setVal(0);
-
     if (do_grav)
     {
+        // Initialize to zero here in case we run with do_grav = false.
+        MultiFab& new_grav_mf = get_new_data(Gravity_Type);
+        new_grav_mf.setVal(0);
         // gravity is a static object, only alloc if not already there
         if (gravity == 0) {
           gravity = new Gravity(parent, parent->finestLevel(), &phys_bc, 0);
@@ -673,7 +601,6 @@ Nyx::Nyx (Amr&            papa,
 
         gravity->install_level(level, this);
    }
-#endif
 
 #ifdef FORCING
     const Real* prob_lo = geom.ProbLo();
@@ -698,12 +625,6 @@ Nyx::Nyx (Amr&            papa,
        old_a = 1.0 / (1.0 + initial_z);
        new_a = old_a;
     }
-        /*
-#ifdef HEATCOOL
-     // Initialize "this_z" in the atomic_rates_module
-    if (heat_cool_type == 3 || heat_cool_type == 4 || heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 9 || heat_cool_type == 10 || heat_cool_type == 11 || heat_cool_type == 12)
-#endif
-                */
 }
 
 Nyx::~Nyx ()
@@ -750,13 +671,11 @@ Nyx::restart (Amr&     papa,
     }
 #endif
 
-#ifdef GRAVITY
     if (do_grav && level == 0)
     {
         BL_ASSERT(gravity == 0);
         gravity = new Gravity(parent, parent->finestLevel(), &phys_bc, 0);
     }
-#endif
 
 #ifdef FORCING
     const Real* prob_lo = geom.ProbLo();
@@ -825,10 +744,11 @@ Nyx::init (AmrLevel& old)
     }
 #endif
 
-#ifdef GRAVITY
-    MultiFab& Phi_new = get_new_data(PhiGrav_Type);
-    FillPatch(old, Phi_new, 0, cur_time, PhiGrav_Type, 0, 1);
-#endif
+    if (do_grav)
+    {
+        MultiFab& Phi_new = get_new_data(PhiGrav_Type);
+        FillPatch(old, Phi_new, 0, cur_time, PhiGrav_Type, 0, 1);
+    }
 
 #ifdef SDC
     MultiFab& IR_new = get_new_data(SDC_IR_Type);
@@ -886,9 +806,15 @@ Nyx::init ()
     }
 #endif
 
-#ifdef GRAVITY
-    MultiFab& Phi_new = get_new_data(PhiGrav_Type);
-    FillCoarsePatch(Phi_new, 0, cur_time, PhiGrav_Type, 0, Phi_new.nComp());
+    if (do_grav)
+    {
+        MultiFab& Phi_new = get_new_data(PhiGrav_Type);
+        FillCoarsePatch(Phi_new, 0, cur_time, PhiGrav_Type, 0, Phi_new.nComp());
+    }
+
+#ifdef SDC
+    MultiFab& IR_new = get_new_data(SDC_IR_Type);
+    FillCoarsePatch(IR_new, 0, cur_time, SDC_IR_Type, 0, IR_new.nComp());
 #endif
 
     // We set dt to be large for this new level to avoid screwing up
@@ -1017,9 +943,8 @@ Nyx::est_time_step (Real dt_old)
     }
 #endif
 
-#ifdef GRAVITY
-    particle_est_time_step(est_dt);
-#endif
+    if (do_grav)
+        particle_est_time_step(est_dt);
 
     if (level==0)
         comoving_est_time_step(cur_time,est_dt);
@@ -1437,7 +1362,6 @@ Nyx::post_timestep (int iteration)
     if (do_reflux && level < finest_level)
     {
         MultiFab& S_new_crse = get_new_data(State_Type);
-#ifdef GRAVITY
         MultiFab drho_and_drhoU;
         if (do_grav)
         {
@@ -1447,7 +1371,6 @@ Nyx::post_timestep (int iteration)
                            BL_SPACEDIM + 1, 0);
             drho_and_drhoU.mult(-1.0);
         }
-#endif // GRAVITY
 
         //We must reflux if the next finer level is subcycled relative to this level;
         //   otherwise the reflux was done as part of the multilevel advance
@@ -1465,7 +1388,6 @@ Nyx::post_timestep (int iteration)
         enforce_nonnegative_species(S_new_crse);
 #endif
 
-#ifdef GRAVITY
         if (do_grav && gravity->get_no_sync() == 0)
         {
             MultiFab::Add(drho_and_drhoU, S_new_crse, Density, 0, BL_SPACEDIM+1, 0);
@@ -1559,7 +1481,6 @@ Nyx::post_timestep (int iteration)
                 }
             }
         }
-#endif
     }
 #endif // end ifndef NO_HYDRO
 
@@ -1679,8 +1600,6 @@ Nyx::post_restart ()
      fort_set_finest_level(&blub);
 #endif
 
-#ifdef GRAVITY
-
     if (do_grav)
     {
         if (level == 0)
@@ -1713,7 +1632,6 @@ Nyx::post_restart ()
             }
         }
     }
-#endif
 
 #ifdef FORCING
     if (do_forcing)
@@ -2008,29 +1926,29 @@ Nyx::post_regrid (int lbase,
     }
     amrex::Gpu::Device::streamSynchronize();
 #endif
-#ifdef GRAVITY
 
-    int which_level_being_advanced = parent->level_being_advanced();
-
-    bool do_grav_solve_here;
-
-    if (which_level_being_advanced >= 0)
+    if (do_grav)
     {
-        do_grav_solve_here = (level == which_level_being_advanced) && (lbase == which_level_being_advanced);
-    } else {
-        do_grav_solve_here = (level == lbase);
-    }
+        int which_level_being_advanced = parent->level_being_advanced();
+        bool do_grav_solve_here;
 
-    // Only do solve here if we will be using it in the timestep right after without re-solving,
-    //      or if this is called from somewhere other than Amr::timeStep
-    const Real cur_time = state[State_for_Time].curTime();
-    if (do_grav && (cur_time > 0) && do_grav_solve_here)
-    {
-        int ngrow_for_solve = parent->levelCount(level) + 1;
-        int use_previous_phi_as_guess = 1;
+        if (which_level_being_advanced >= 0)
+        {
+            do_grav_solve_here = (level == which_level_being_advanced) && (lbase == which_level_being_advanced);
+        } else {
+            do_grav_solve_here = (level == lbase);
+        }
+
+        // Only do solve here if we will be using it in the timestep right after without re-solving,
+        //      or if this is called from somewhere other than Amr::timeStep
+        const Real cur_time = state[State_for_Time].curTime();
+        if ((cur_time > 0) && do_grav_solve_here)
+        {
+            int ngrow_for_solve = parent->levelCount(level) + 1;
+            int use_previous_phi_as_guess = 1;
         gravity->multilevel_solve_for_new_phi(level, new_finest, ngrow_for_solve, use_previous_phi_as_guess);
+        }
     }
-#endif
     delete fine_mask;
     fine_mask = 0;
 }
@@ -2058,7 +1976,6 @@ Nyx::post_init (Real stop_time)
         get_level(k).average_down();
     }
 
-#ifdef GRAVITY
     if (do_grav)
     {
         const Real cur_time = state[State_for_Time].curTime();
@@ -2083,7 +2000,6 @@ Nyx::post_init (Real stop_time)
             gravity->get_new_grav_vector(k, grav_vec_new, cur_time);
         }
     }
-#endif
 
 #ifndef NO_HYDRO
     if ( (do_hydro == 1) && (sum_interval > 0) && (parent->levelSteps(0) % sum_interval == 0) )
@@ -2187,10 +2103,11 @@ Nyx::average_down ()
     average_down(State_Type);
 #endif
 
-#ifdef GRAVITY
-    average_down(PhiGrav_Type);
-    average_down(Gravity_Type);
-#endif
+    if (do_grav) 
+    {
+        average_down(PhiGrav_Type);
+        average_down(Gravity_Type);
+    }
 }
 
 #ifndef NO_HYDRO
@@ -2511,20 +2428,9 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 
     Real cur_time  = state[State_Type].curTime();
     Real a        = get_comoving_a(cur_time);
-        /*
-#ifdef HEATCOOL 
-    if (heat_cool_type == 3 || heat_cool_type == 4 || heat_cool_type == 5 || heat_cool_type == 7 || heat_cool_type == 9 || heat_cool_type == 10 || heat_cool_type == 11 || heat_cool_type == 12)
-    {
-       const Real z = 1.0/a - 1.0;
-    }
-#endif
-        */
+
     amrex::Gpu::synchronize();
     amrex::Gpu::LaunchSafeGuard lsg(true);
-    if (heat_cool_type == 7) {
-        amrex::Abort("No vectorized CVODE with C++ f_rhs");
-
-    } else {
         FArrayBox test, test_d;
         int print_warn=0;
 
@@ -2611,7 +2517,6 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
             });
             amrex::Gpu::synchronize();
           }
-      }
 
     // Find the cell which has the maximum temp -- but only if not the first
     // time step because in the first time step too many points have the same

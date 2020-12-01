@@ -78,20 +78,5 @@ Nyx::time_center_source_terms (MultiFab& S_new,
           });
     }
 
-#if 0
-    if (heat_cool_type == 1)  
-    {
-        MultiFab& S_old = get_old_data(State_Type);
-        for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
-        {
-            const Box& bx = mfi.tilebox();
-            adjust_heat_cool
-                (bx.loVect(), bx.hiVect(), 
-                 BL_TO_FORTRAN(S_old[mfi]), BL_TO_FORTRAN(S_new[mfi]),
-                 BL_TO_FORTRAN(ext_src_old[mfi]), BL_TO_FORTRAN(ext_src_new[mfi]),
-                 &a_old, &a_new, &dt);
-        }
-    }
-#endif
 }
 #endif

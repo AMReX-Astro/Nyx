@@ -132,12 +132,10 @@ Nyx::variable_setup()
     {
        hydro_setup();
     }
-#ifdef GRAVITY
     else
     {
        no_hydro_setup();
     }
-#endif
 #endif
 
     //
@@ -220,7 +218,6 @@ Nyx::hydro_setup()
                            state_data_extrap, store_in_checkpoint);
 #endif
 
-#ifdef GRAVITY
     store_in_checkpoint = true;
     desc_lst.addDescriptor(PhiGrav_Type, IndexType::TheCellType(),
                            StateDescriptor::Point, 1, 1,
@@ -232,7 +229,6 @@ Nyx::hydro_setup()
                            StateDescriptor::Point, 1, BL_SPACEDIM,
                            &cell_cons_interp, state_data_extrap,
                            store_in_checkpoint);
-#endif
 
     Vector<BCRec> bcs(NUM_STATE);
     Vector<std::string> name(NUM_STATE);
@@ -301,7 +297,6 @@ Nyx::hydro_setup()
                           bndryfunc);
 #endif
 
-#ifdef GRAVITY
     if (do_grav)
     {
         set_scalar_bc(bc, phys_bc);
@@ -320,7 +315,6 @@ Nyx::hydro_setup()
         desc_lst.setComponent(Gravity_Type, 2, "grav_z", bc,
                               bndryfunc);
     }
-#endif
 
     //
     // DEFINE DERIVED QUANTITIES
@@ -382,12 +376,13 @@ Nyx::hydro_setup()
     //
     // Gravitational forcing
     //
-#ifdef GRAVITY
+    //if (do_grav)  
+    //{
     //derive_lst.add("rhog",IndexType::TheCellType(),1,
     //               rhog,the_same_box);
     //derive_lst.addComponent("rhog",desc_lst,State_Type,Density,1);
     //derive_lst.addComponent("rhog",desc_lst,Gravity_Type,0,BL_SPACEDIM);
-#endif
+    //}
 
     //
     // Div(u)
@@ -499,12 +494,13 @@ Nyx::hydro_setup()
                    dermagmom, the_same_box);
     derive_lst.addComponent("magmom", desc_lst, State_Type, Xmom, BL_SPACEDIM);
 
-#ifdef GRAVITY
-    derive_lst.add("maggrav", IndexType::TheCellType(), 1,
-                   dermaggrav,
-                   the_same_box);
-    derive_lst.addComponent("maggrav", desc_lst, Gravity_Type, 0, BL_SPACEDIM);
-#endif
+    if (do_grav)  
+    {
+         derive_lst.add("maggrav", IndexType::TheCellType(), 1,
+                        dermaggrav,
+                        the_same_box);
+         derive_lst.addComponent("maggrav", desc_lst, Gravity_Type, 0, BL_SPACEDIM);
+    }
 
     //
     // We want a derived type that corresponds to the number of particles in
@@ -594,7 +590,6 @@ Nyx::hydro_setup()
 }
 #endif
 
-#ifdef GRAVITY
 void
 Nyx::no_hydro_setup()
 {
@@ -826,7 +821,6 @@ Nyx::no_hydro_setup()
 #endif
 #endif
 }
-#endif
 
 #ifdef AMREX_USE_CVODE
 void

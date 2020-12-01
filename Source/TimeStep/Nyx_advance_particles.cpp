@@ -1,5 +1,3 @@
-#ifdef GRAVITY
- 
 #include <AMReX_BLProfiler.H>
 #include <Nyx.H>
 #include <Gravity.H>
@@ -282,4 +280,3 @@ Nyx::advance_particles_only (Real time,
     // Redistribution happens in post_timestep
     return dt;
 }
-#endif

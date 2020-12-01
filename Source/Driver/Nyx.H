@@ -60,10 +60,8 @@ static constexpr int max_prob_param = 1;
 enum StateType {
     State_Type = 0,
     DiagEOS_Type,
-#ifdef GRAVITY
     PhiGrav_Type,
     Gravity_Type,
-#endif
 #ifdef SDC
     SDC_IR_Type,
 #endif
@@ -292,12 +290,10 @@ public:
     //
     void init_zhi ();
 
-#ifdef GRAVITY
     //
     // Initialize the Santa Barbara problem
     //
     void init_santa_barbara(int init_sb_vels);
-#endif
 
     void check_initial_species();
     void init_e_from_T(const amrex::Real& a);
@@ -306,9 +302,7 @@ public:
     // Initialize from MUSIC
     //
     void initcosmo();
-#ifdef GRAVITY
     void icReadAndPrepareFab(std::string mfDirName, int nghost, amrex::MultiFab &mf);
-#endif
 
 #ifdef FORCING
     //
@@ -491,11 +485,8 @@ public:
     void    sdc_hydro(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
 #endif
 
-#ifdef GRAVITY
     void correct_gsrc(int lev, amrex::Real time, amrex::Real prev_time, amrex::Real cur_time,
                                amrex::Real dt);
-#endif
-
 
 ///
 /// Calculate primitive variables from given conserved variables
@@ -1014,10 +1005,8 @@ protected:
     static int sdc_split;
 #endif
 
-#ifdef GRAVITY
     // There can be only one Gravity object, it covers all levels:
     static class Gravity *gravity;
-#endif
 
 #ifdef FORCING
     // There can be only one forcing object (Fourier space):

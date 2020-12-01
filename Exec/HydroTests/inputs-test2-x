@@ -36,6 +36,7 @@ nyx.hi_bc       =  2   0   0
 
 # WHICH PHYSICS
 nyx.do_hydro = 1
+nyx.do_grav  = 0
 
 # COMOVING
 nyx.comoving_OmM = 1.0e0
