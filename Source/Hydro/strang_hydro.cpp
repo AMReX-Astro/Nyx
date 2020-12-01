@@ -1,9 +1,6 @@
 
 #include <Nyx.H>
-
-#ifdef GRAVITY
 #include <Gravity.H>
-#endif
 
 using namespace amrex;
 
@@ -84,10 +81,12 @@ Nyx::strang_hydro (Real time,
     //in case do_grav==0
     grav_vector.setVal(0);
 
-#ifdef GRAVITY
-    gravity->get_old_grav_vector(level, grav_vector, time);
-    grav_vector.FillBoundary(geom.periodicity());
-#endif
+    if (do_grav)
+    {
+        gravity->get_old_grav_vector(level, grav_vector, time);
+        grav_vector.FillBoundary(geom.periodicity());
+    }
+
     amrex::Gpu::Device::streamSynchronize();
 
     BL_PROFILE_VAR("Nyx::strang_hydro()::old_tmp_patch",old_tmp);
@@ -320,10 +319,11 @@ Nyx::strang_hydro_ghost_state (Real time,
 
     //Not sure if amrex::average_face_to_cellcenter, looks like it launches
     //    amrex::Gpu::setLaunchRegion(false);
-#ifdef GRAVITY
-    gravity->get_old_grav_vector(level, grav_vector, time);
-    grav_vector.FillBoundary(geom.periodicity());
-#endif
+    if (do_grav)
+    {
+       gravity->get_old_grav_vector(level, grav_vector, time);
+       grav_vector.FillBoundary(geom.periodicity());
+    }
     amrex::Gpu::Device::streamSynchronize();
 
     BL_PROFILE_VAR("Nyx::strang_hydro()::old_tmp_patch",old_tmp);

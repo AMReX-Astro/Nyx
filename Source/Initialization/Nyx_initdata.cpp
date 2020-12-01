@@ -1,10 +1,7 @@
 #include <iomanip>
 #include <Nyx.H>
 #include <Prob.H>
-
-#ifdef GRAVITY
 #include <Gravity.H>
-#endif
 
 using namespace amrex;
 
@@ -304,8 +301,6 @@ Nyx::initData ()
         Real  cur_time = state[PhiGrav_Type].curTime();
 #endif // end NO_HYDRO
 
-#ifdef GRAVITY
-
     if (!do_grav)
     {
         //
@@ -322,8 +317,6 @@ Nyx::initData ()
         MultiFab& Phi_new = get_new_data(PhiGrav_Type);
         Phi_new.setVal(0.);
     }
-
-#endif
 
 #ifdef SDC
     //
@@ -410,10 +403,8 @@ Nyx::initData ()
     // distribute their mass differently.
     //
 #ifndef NO_HYDRO
-#ifdef GRAVITY
     if (do_santa_barbara == 1)
         init_santa_barbara(init_sb_vels);
-#endif
 
     if (do_hydro)
         check_initial_species();

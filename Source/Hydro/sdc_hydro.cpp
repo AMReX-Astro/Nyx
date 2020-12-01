@@ -1,8 +1,5 @@
 #include <Nyx.H>
-
-#ifdef GRAVITY
 #include "Gravity.H"
-#endif
 
 using namespace amrex;
 
@@ -55,10 +52,11 @@ Nyx::sdc_hydro (Real time,
     MultiFab grav_vector(grids, dmap, BL_SPACEDIM, NUM_GROW);
     grav_vector.setVal(0.);
 
-#ifdef GRAVITY
-    gravity->get_old_grav_vector(level, grav_vector, time);
-    grav_vector.FillBoundary(geom.periodicity());
-#endif
+    if (do_grav)
+    {
+        gravity->get_old_grav_vector(level, grav_vector, time);
+        grav_vector.FillBoundary(geom.periodicity());
+    }
 
     amrex::Gpu::Device::streamSynchronize();
     // Create FAB for extended grid values (including boundaries) and fill.

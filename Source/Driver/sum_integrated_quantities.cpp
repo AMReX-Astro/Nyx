@@ -2,10 +2,7 @@
 #include <iomanip>
 
 #include <Nyx.H>
-
-#ifdef GRAVITY
 #include <Gravity.H>
-#endif
 
 #ifdef FORCING
 #include <Forcing.H>
@@ -197,10 +194,10 @@ Nyx::compute_average_density ()
         }
     }
  
-#ifdef GRAVITY
     // Define the dark matter density on all levels.
-    if (Nyx::theDMPC())
-    {
+    if (do_grav)
+      if (Nyx::theDMPC())
+      {
         Vector<std::unique_ptr<MultiFab> > particle_mf;
         Nyx::theDMPC()->AssignDensity(particle_mf);
 
@@ -214,7 +211,7 @@ Nyx::compute_average_density ()
             Nyx& nyx_lev = get_level(lev);
             average_dm_density += nyx_lev.vol_weight_sum(*particle_mf[lev],true);
         }
-    }
+      }
 #ifdef NEUTRINO_PARTICLES
     if (Nyx::theNPC())
     {
@@ -231,7 +228,6 @@ Nyx::compute_average_density ()
             average_neutr_density += nyx_lev.vol_weight_sum(*particle_mf[lev],true);
         }
     }
-#endif
 #endif
 
     // Divide by physical volume of domain.

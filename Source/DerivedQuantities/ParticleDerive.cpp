@@ -1,7 +1,5 @@
 #include <Nyx.H>
-#ifdef GRAVITY
 #include <Gravity.H>
-#endif
 
 using namespace amrex;
 
@@ -92,7 +90,6 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 
         return derive_dat;
     }
-#ifdef GRAVITY
     else if (Nyx::theDMPC() && name == "particle_mass_density")
     {
         std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids,dmap,1,0));
@@ -312,10 +309,8 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
     //////////////////////////////////////////////////////////
 #endif
 #endif
-#endif
     else if (name == "total_density")
     {
-#ifdef GRAVITY
       if (Nyx::theDMPC())
       {
         std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids,dmap,1,0));
@@ -345,9 +340,6 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
       {
         return derive("density",time,0);
       }
-#else
-        return derive("density",time,0);
-#endif
     }
     else
 #endif
