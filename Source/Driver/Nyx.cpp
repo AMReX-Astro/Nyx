@@ -891,6 +891,11 @@ Nyx::init ()
     FillCoarsePatch(Phi_new, 0, cur_time, PhiGrav_Type, 0, Phi_new.nComp());
 #endif
 
+#ifdef SDC
+    MultiFab& IR_new = get_new_data(SDC_IR_Type);
+    FillCoarsePatch(IR_new, 0, cur_time, SDC_IR_Type, 0, IR_new.nComp());
+#endif
+
     // We set dt to be large for this new level to avoid screwing up
     // computeNewDt.
     parent->setDtLevel(1.e100, level);
