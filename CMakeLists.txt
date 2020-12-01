@@ -45,6 +45,15 @@ option( Nyx_MPI        "Enable MPI"     YES)
 cmake_dependent_option(Nyx_MPI_THREAD_MULTIPLE
    "Concurrent MPI calls from multiple threads" NO "Nyx_MPI" NO)
 
+option(Nyx_SINGLE_PRECISION_PARTICLES
+   "Use single precision particle data structures" YES )
+
+option( Nyx_HYDRO NO "")
+cmake_dependent_option(Nyx_HEATCOOL "" NO
+   "Nyx_HYDRO; NOT Nyx_GPU_BACKEND STREQUAL SYCL; NOT Nyx_GPU_BACKEND STREQUAL HIP" NO)
+
+option( BUILD_SHARED_LIBS "Build AMReX and SUNDIALS as shared libraries" OFF )
+
 
 #
 # GPU backends    =============================================================
@@ -63,6 +72,24 @@ endif ()
 
 
 #
+# Internal options   ==========================================================
+#
+#
+if (NOT Nyx_HEATCOOL )
+   set(Nyx_SDC             NO CACHE INTERNAL "")
+   set(Nyx_SUNDIALS        NO CACHE INTERNAL "")
+   set(Nyx_SUNDIALS_FUSED  NO CACHE INTERNAL "")
+else ()
+   set(Nyx_SDC      YES CACHE INTERNAL "")
+   set(Nyx_SUNDIALS YES CACHE INTERNAL "")
+   if (Nyx_GPU_BACKEND STREQUAL "CUDA")
+      set(Nyx_SUNDIALS_FUSED    YES CACHE INTERNAL "")
+   else ()
+      set(Nyx_SUNDIALS_FUSED    NO  CACHE INTERNAL "")
+   endif ()
+endif ()
+
+#
 # These used to be options but now they are set to true and should not
 # be set by the user. We keep them around for legacy for the time being
 #
@@ -70,45 +97,11 @@ set(Nyx_GRAVITY   YES CACHE INTERNAL "Enable gravity (should always be on)")
 set(Nyx_PARTICLES YES CACHE INTERNAL "Enable particles (should always be on)")
 
 
-#
-#
-#
-option(Nyx_SINGLE_PRECISION_PARTICLES
-   "Use single precision particle data structures" YES )
 
 
-option( Nyx_HYDRO NO "")
-cmake_dependent_option(Nyx_HEATCOOL "" NO
-   "Nyx_HYDRO; NOT Nyx_GPU_BACKEND STREQUAL SYCL; NOT Nyx_GPU_BACKEND STREQUAL HIP" NO)
-
-# Define normal variables to overwrite values of some options define below
-# if necessary
-if (NOT Nyx_HYDRO)
-   message(STATUS "Nyx_HYDRO set to ${Nyx_HYDRO}:"
-      " disabling Nyx_SDC, Nyx_SUNDIALS, and Nyx_FUSED")
-   set(Nyx_SDC NO)
-   set(Nyx_SUNDIALS NO)
-   set(Nyx_FUSED NO)
-endif ()
-
-if (Nyx_HEATCOOL)
-   message(STATUS "Nyx_HEATCOOL set to ${Nyx_HEATCOOL}:"
-      " enabling Nyx_SDC and Nyx_SUNDIALS")
-   set(Nyx_SDC YES)
-   set(Nyx_SUNDIALS YES)
-   ###set(Nyx_FUSED NO)
-endif ()
-
-option( BUILD_SHARED_LIBS "Build AMReX and SUNDIALS as shared libraries" OFF )
 
 # option( Nyx_AGN                "" NO)
-option( Nyx_SDC                "" NO)
 
-# Sundials options
-cmake_dependent_option(Nyx_SUNDIALS "Use SUNDIALS CVODE libs" NO
-   "NOT Nyx_GPU_BACKEND STREQUAL SYCL; NOT Nyx_GPU_BACKEND STREQUAL HIP" NO)
-cmake_dependent_option(Nyx_SUNDIALS_FUSED "Use SUNDIALS FUSED libs" NO
-   "Nyx_SUNDIALS" NO)
 
 cmake_dependent_option(Nyx_GIMLET "" NO "Nyx_MPI;Nyx_OMP" NO)
 
