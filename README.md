@@ -26,17 +26,16 @@ is ongoing). In the OpenMP regime, Nyx and has been successfully run at parallel
 of up to 2,097,152 (on NERSC's Cori-KNL). With Cuda implementation, it was ran on up to
 13,824 GPUs (on OLCF's Summit).
 
-More information on Nyx can be found at 
-http://amrex-astro.github.io/Nyx/
+More information on Nyx can be found at the [main web page](http://amrex-astro.github.io/Nyx/) and
+the [documentation section](https://amrex-astro.github.io/Nyx/docs_html/).
+
 
 ### Standards and dependencies
 
 To compile the code we require C++11 compliant compilers that support MPI-2 or
 higher implementation.  If threads or accelerators are used, we require 
 OpenMP 4.5 or higher, Cuda 9 or higher, or HIP-Clang.
-
-To use Nyx, you also need AMReX:
-https://github.com/AMReX-codes/amrex
+To use Nyx, you also need [AMReX](https://github.com/AMReX-codes/amrex).
 
 For example, to compile the Lyman alpha (LyA) executable on Summit:
 ```sh
@@ -51,6 +50,7 @@ $ make -j 12 USE_CUDA=TRUE
 
 See the online documenation for further information.
 
+
 ### Development model
 
 The `development` branch in also the main branch.  We use nightly
@@ -60,26 +60,7 @@ A pull request should be generated from your fork of Nyx and should target
 the `development` branch.
 
 
-### Physics
-
-For the description of the N-body and adiabatic hydro algorithms in Nyx, see
-Almgren, Bell, Lijewski, Lukic & Van Andel (2013), ApJ, 765, 39:
-http://adsabs.harvard.edu/abs/2013ApJ...765...39A
-
-For the reaction and thermal rates of the primordial chemical composition gas 
-(and convergence tests in the context of the Lyman-alpha forest), see
-Lukic, Stark, Nugent, White, Meiksin & Almgren (2015), MNRAS, 446, 3697:
-http://adsabs.harvard.edu/abs/2015MNRAS.446.3697L
-
-For considerations regarding the spatially uniform synthesis model of the UV background, 
-which provides the photo-ionization and photo-heating rates, see Onorbe,
-Hennawi & Lukic (2017), ApJ, 837, 106:
-http://adsabs.harvard.edu/abs/2017ApJ...837..106O
-
-We have also implemented non-radiative transfer methods to model inhomogeneous reionization,
-the paper is in preparation.
-
-### Output
+### Outputs
 
 Nyx outputs certain global diagnostics at each timestep and plot files at regular
 intervals, or at user-specified redshifts. Visualization packages
@@ -89,10 +70,11 @@ and [yt](http://yt-project.org/)
 have built-in support for the AMReX file format used by Nyx.
 
 In addition, Nyx interfaces with two post-processing suites, Reeber and Gimlet. Reeber
-uses topological methods to construct merge trees of scalar fields, which Nyx in
-turn uses to find halos. Gimlet computes a variety of quantities
-related to the Lyman-alpha forest science. These suites are fully MPI-parallel and can
-be run either "in situ" or "in-transit", or with a combination of both.
+uses topological methods to construct merge trees of scalar fields, which is in
+turn used to find halos.  Gimlet computes a variety of quantities
+related to the Lyman-alpha forest science.  These suites are fully MPI-parallel and can
+be run either "in situ" or "in-transit", or with a combination of both
+(see [Friesen et al. 2016](https://comp-astrophys-cosmol.springeropen.com/articles/10.1186/s40668-016-0017-2)).
 
 
 ### License
@@ -101,5 +83,5 @@ Nyx is released under the LBL's modified BSD license, see the [license.txt](lice
 
 ### Contact
 
-For questions, comments, suggestions, contact Jean Sexton at JMSexton@lbl.gov
-or Zarija Lukic at zarija@lbl.gov .
+For questions, comments, suggestions, contact Jean Sexton (JMSexton@lbl.gov)
+or Zarija Lukic (zarija@lbl.gov).
