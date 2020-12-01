@@ -23,7 +23,7 @@ Additional physics capabilities are under development.
 While Nyx can run on any Linux system in general, we particularly focus on supercomputer systems.
 Nyx is parallelized with MPI + X, where "X" can be OpenMP, CUDA, or HIP (DPC++ implementation
 is ongoing). In the OpenMP regime, Nyx and has been successfully run at parallel concurrency
-of up to 2,097,152 (on NERSC's Cori-KNL). With Cuda implementation, it was ran on up to
+of up to 2,097,152 (on NERSC's Cori-KNL). With Cuda implementation, it was run on up to
 13,824 GPUs (on OLCF's Summit).
 
 More information on Nyx can be found at the [main web page](http://amrex-astro.github.io/Nyx/) and
