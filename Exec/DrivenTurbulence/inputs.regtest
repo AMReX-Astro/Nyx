@@ -75,7 +75,7 @@ amr.check_int       = 50
 # PLOTFILES
 amr.plot_file       = plt
 amr.plot_int        = 50
-amr.plot_vars = density xmom ymom zmom rho_e rho_E
+amr.plot_vars = density xmom ymom zmom rho_e rho_E Temp Ne
 amr.derive_plot_vars = magvort MachNumber
 
 # PROBIN FILENAME
