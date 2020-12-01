@@ -117,8 +117,6 @@ option( Nyx_CONST_SPECIES      "" ON)
 option( Nyx_REEBER             "" NO)
 option( Nyx_CGS                "" NO)
 option( Nyx_FORCING            "" NO)
-# option( Nyx_NEUTRINO_PARTICLES "" NO)
-# option( Nyx_NEUTRINO_DARK_PARTICLES "" OFF)
 
 
 if (Nyx_GPU_BACKEND STREQUAL CUDA)
