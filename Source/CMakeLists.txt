@@ -43,7 +43,7 @@ endif ()
 
 if (Nyx_SUNDIALS)
    target_compile_definitions(${EXE_NAME}
-      PUBLIC $<BUILD_INTERFACE:AMREX_USE_SUNDIALS_3x4x;AMREX_USE_SUNDIALS>)
+      PUBLIC $<BUILD_INTERFACE:AMREX_USE_SUNDIALS>)
 endif ()
 
 ##############################################################################
