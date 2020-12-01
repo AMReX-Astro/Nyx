@@ -60,8 +60,8 @@ Nyx::advance (Real time,
     {
         return advance_particles_only(time, dt, iteration, ncycle);
     }
-#else
     else
+#else
     {
         amrex::Abort("Nyx::advance -- do_hydro is false but no gravity -- dont know what to do");
     }
