@@ -1,23 +1,28 @@
 ifneq ($(NO_HYDRO), TRUE)
 CEXE_sources += strang_reactions.cpp
-CEXE_sources += sdc_reactions.cpp
 
 ifeq ($(USE_HEATCOOL), TRUE)
+CEXE_headers += f_rhs.H
 
 ifeq ($(USE_SDC), TRUE)
 CEXE_headers += f_rhs_struct.H
-CEXE_headers += f_rhs.H
+CEXE_sources += sdc_reactions.cpp
+
+ifeq ($(USE_CVODE_LIBS), TRUE)
+  CEXE_sources += integrate_state_with_source_3d.cpp
+else
+  CEXE_sources += integrate_state_with_source_3d_stubs.cpp
+endif
+endif
 
 ifeq ($(USE_CVODE_LIBS), TRUE)
   CEXE_sources += integrate_state_vec_3d.cpp
-  CEXE_sources += integrate_state_with_source_3d.cpp
 else
   CEXE_sources += integrate_state_vec_3d_stubs.cpp
-  CEXE_sources += integrate_state_with_source_3d_stubs.cpp
 endif
 
 else
 CEXE_sources += integrate_state_vec_3d_stubs.cpp
 endif
 endif
-endif
+
