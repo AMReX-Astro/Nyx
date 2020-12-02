@@ -1,0 +1,113 @@
+name: linux
+
+on: [push, pull_request]
+
+jobs:
+
+  nyx_gnu:
+    name: GNU@7.5 Release
+    runs-on: ubuntu-latest
+    env: {CXXFLAGS: "-Werror -Woverloaded-virtual -Wunreachable-code"}
+    steps:
+    - uses: actions/checkout@v2
+    - name: Dependencies
+      run: .github/workflows/dependencies/dependencies.sh
+    - name: Build & Install
+      run: |
+        mkdir build
+        cd build
+        cmake ..                                  \
+            -DNyx_HEATCOOL=yes                    \
+            -DNyx_HYDRO=yes
+        make -j 2
+
+  nyx_clang:
+    name: Clang@6.0 Debug
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Dependencies
+      run: .github/workflows/dependencies/dependencies_clang6.sh
+    - name: Build & Install
+      run: |
+        mkdir build
+        cd build
+        cmake ..                                      \
+            -DCMAKE_BUILD_TYPE=Debug                  \
+            -DNyx_HEATCOOL=yes                        \
+            -DNyx_HYDRO=yes                           \
+            -DCMAKE_C_COMPILER=$(which clang)         \
+            -DCMAKE_CXX_COMPILER=$(which clang++)     \
+            -DCMAKE_Fortran_COMPILER=$(which gfortran)
+        make -j 2
+
+  nyx-cuda:
+    name: CUDA@9.1.85 GNU@4.8.5 C++11 Release
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Dependencies
+      run: .github/workflows/dependencies/dependencies_nvcc.sh
+    - name: Build & Install
+      run: |
+        mkdir build
+        cd build
+        cmake ..                                             \
+            -DNyx_HEATCOOL=yes                               \
+            -DNyx_HYDRO=yes                                  \
+            -DNyx_OMP=no                                     \
+            -DNyx_GPU_BACKEND=CUDA                           \
+            -DCMAKE_C_COMPILER=$(which gcc-4.8)              \
+            -DCMAKE_CXX_COMPILER=$(which g++-4.8)            \
+            -DCMAKE_CUDA_HOST_COMPILER=$(which g++-4.8)      \
+            -DCMAKE_Fortran_COMPILER=$(which gfortran-4.8)   \
+            -DAMReX_CUDA_ARCH=6.0
+        make -j 2
+
+  nyx-dpcpp:
+    name: DPCPP@PubBeta GFortran@7.5 C++17
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Dependencies
+      run: .github/workflows/dependencies/dependencies_dpcpp.sh
+    - name: Build & Install
+      run: |
+        set +e
+        source /opt/intel/oneapi/setvars.sh
+        set -e
+        mkdir build
+        cd build
+        cmake ..                                           \
+            -DNyx_HEATCOOL=no                              \
+            -DNyx_HYDRO=yes                                \
+            -DNyx_OMP=no                                   \
+            -DNyx_GPU_BACKEND=SYCL                         \
+            -DCMAKE_C_COMPILER=$(which clang)              \
+            -DCMAKE_CXX_COMPILER=$(which dpcpp)            \
+            -DCMAKE_Fortran_COMPILER=$(which gfortran)
+        make -j 2
+
+  nyx-hip:
+    name: HIP ROCm@3.8 GFortran@9.3 C++17
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - name: Dependencies
+      run: .github/workflows/dependencies/dependencies_hip.sh
+    - name: Build & Install
+      run: |
+        source /etc/profile.d/rocm.sh
+        hipcc --version
+        mkdir build
+        cd build
+        cmake ..                                           \
+            -DNyx_HEATCOOL=no                              \
+            -DNyx_HYDRO=yes                                \
+            -DNyx_OMP=no                                   \
+            -DNyx_GPU_BACKEND=HIP                          \
+            -DAMReX_AMD_ARCH=gfx900                        \
+            -DCMAKE_C_COMPILER=$(which hipcc)              \
+            -DCMAKE_CXX_COMPILER=$(which hipcc)            \
+            -DCMAKE_Fortran_COMPILER=$(which gfortran)
+        make -j 2

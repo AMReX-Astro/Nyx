@@ -301,7 +301,7 @@ Nyx::hydro_setup()
     {
         set_scalar_bc(bc, phys_bc);
         desc_lst.setComponent(PhiGrav_Type, 0, "phi_grav", bc,
-                              bndryfunc);                          
+                              bndryfunc);
 
         set_x_vel_bc(bc, phys_bc);
         desc_lst.setComponent(Gravity_Type, 0, "grav_x", bc,
@@ -418,14 +418,14 @@ Nyx::hydro_setup()
                    grow_box_by_one);
     derive_lst.addComponent("StateErr", desc_lst,   State_Type, Density, 1);
     derive_lst.addComponent("StateErr", desc_lst, DiagEOS_Type, Temp_comp, 1);
-#ifndef CONST_SPECIES  
+#ifndef CONST_SPECIES
     derive_lst.addComponent("StateErr", desc_lst, State_Type, FirstSpec, 1);
 #endif
 
     //
     // X from rhoX
     //
-#ifndef CONST_SPECIES  
+#ifndef CONST_SPECIES
     for (int i = 0; i < NumSpec; i++)
     {
         string spec_string = "X(" + spec_names[i] + ")";
@@ -577,7 +577,7 @@ Nyx::hydro_setup()
     derive_lst.add("Rank", IndexType::TheCellType(), 1,
                    dernull, grow_box_by_one);
 
-#ifndef CONST_SPECIES  
+#ifndef CONST_SPECIES
     for (int i = 0; i < NumSpec; i++)
     {
         derive_lst.add(spec_names[i], IndexType::TheCellType(), 1,
@@ -800,24 +800,24 @@ Nyx::no_hydro_setup()
 #else
     derive_lst.add("neutrino_particle_count", IndexType::TheCellType(), 1,
                    dernull, grow_box_by_one);
-    derive_lst.addComponent("neutrino_particle_count", desc_lst, PhiGrav_Type, Density, 1);
+    derive_lst.addComponent("neutrino_particle_count", desc_lst, PhiGrav_Type, 0, 1);
 
     derive_lst.add("neutrino_mass_density", IndexType::TheCellType(), 1,
                    dernull, grow_box_by_one);
     derive_lst.addComponent("neutrino_mass_density", desc_lst, PhiGrav_Type,
-                            Density, 1);
+                            0, 1);
     derive_lst.add("neutrino_x_velocity", IndexType::TheCellType(), 1,
                    dernull, grow_box_by_one);
     derive_lst.addComponent("neutrino_x_velocity", desc_lst, PhiGrav_Type,
-                            Density, 1);
+                            0, 1);
     derive_lst.add("neutrino_y_velocity", IndexType::TheCellType(), 1,
                    dernull, grow_box_by_one);
     derive_lst.addComponent("neutrino_y_velocity", desc_lst, PhiGrav_Type,
-                            Density, 1);
+                            0, 1);
     derive_lst.add("neutrino_z_velocity", IndexType::TheCellType(), 1,
                    dernull, grow_box_by_one);
     derive_lst.addComponent("neutrino_z_velocity", desc_lst, PhiGrav_Type,
-                            Density, 1);
+                            0, 1);
 #endif
 #endif
 }
