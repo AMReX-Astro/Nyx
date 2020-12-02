@@ -47,7 +47,7 @@ static void prob_param_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_pa
     amrex::ParmParse pp("prob");
     pp.query("prob_type",prob_param[prob_type_comp]);
 
-    if(int(prob_param[prob_type_comp]) == 0)
+    if(amrex::Math::round(prob_param[prob_type_comp]) == 0)
     {
     prob_param[p_l_comp] = 1.0;  // left pressure (erg/cc)
     prob_param[u_l_comp] = 0.0; // left velocity (cm/s)
@@ -116,7 +116,7 @@ void prob_initdata_state(const int i,
   const amrex::Real* prob_hi = geomdata.ProbHi();
   const amrex::Real* dx = geomdata.CellSize();
 
-    if(int(prob_param[prob_type_comp]) == 0)
+    if(amrex::Math::round(prob_param[prob_type_comp]) == 0)
     {
   //Use middle for comparison, and assume lo[0]=0:
   //      prob_lo[0] + (i+0.5) * dx[0] != prob_lo[0] + (float(i - lo[0])+0.5) * dx[0]
@@ -130,7 +130,7 @@ void prob_initdata_state(const int i,
     , amrex::Real ctr_z = prob_param[frac_comp] * (prob_lo[2] + prob_hi[2]);)
 
   // Set the states
-  if (int(prob_param[idir_comp]) == 1) {
+  if (amrex::Math::round(prob_param[idir_comp]) == 1) {
     if (x <= ctr_x) {
       state(i, j, k, URHO) = prob_param[rho_l_comp];
       state(i, j, k, UMX) = prob_param[rho_l_comp] * prob_param[u_l_comp];
@@ -150,7 +150,7 @@ void prob_initdata_state(const int i,
                                                    prob_param[u_r_comp];
       state(i, j, k, UEINT) = prob_param[rhoe_r_comp];
     }
-  } else if (int(prob_param[idir_comp]) == 2) {
+  } else if (amrex::Math::round(prob_param[idir_comp]) == 2) {
     if (y <= ctr_y) {
       state(i, j, k, URHO) = prob_param[rho_l_comp];
       state(i, j, k, UMX) = 0.0;
@@ -170,7 +170,7 @@ void prob_initdata_state(const int i,
                                                    prob_param[u_r_comp];
       state(i, j, k, UEINT) = prob_param[rhoe_r_comp];
     }
-      } else if (int(prob_param[idir_comp]) == 3) {
+      } else if (amrex::Math::round(prob_param[idir_comp]) == 3) {
     if (z <= ctr_z) {
       state(i, j, k, URHO) = prob_param[rho_l_comp];
       state(i, j, k, UMX) = 0.0;
@@ -289,7 +289,7 @@ void prob_initdata(const int i,
 
   prob_initdata_state(i, j ,k, state, geomdata, prob_param);
 
-  if(int(prob_param[prob_type_comp]) == 0 || (int(prob_param[prob_type_comp]) != 0 && int(prob_param[use_Tinit_comp])==0))
+  if(amrex::Math::round(prob_param[prob_type_comp]) == 0 || (amrex::Math::round(prob_param[prob_type_comp]) != 0 && amrex::Math::round(prob_param[use_Tinit_comp])==0))
   {
 
   const int JH = 1;
@@ -321,19 +321,19 @@ void prob_initdata(const int i,
     , amrex::Real ctr_z = prob_param[frac_comp] * (prob_lo[1] + prob_hi[2]);)
 
   // Set the states
-  if (int(prob_param[idir_comp]) == 1) {
+  if (amrex::Math::round(prob_param[idir_comp]) == 1) {
     if (x <= ctr_x) {
       diag_eos(i,j,k,Temp_comp) = prob_param[T_l_comp];
     } else {
       diag_eos(i,j,k,Temp_comp) = prob_param[T_r_comp];
     }
-  } else if (int(prob_param[idir_comp]) == 2) {
+  } else if (amrex::Math::round(prob_param[idir_comp]) == 2) {
     if (y <= ctr_y) {
       diag_eos(i,j,k,Temp_comp) = prob_param[T_l_comp];
     } else {
       diag_eos(i,j,k,Temp_comp) = prob_param[T_r_comp];
     }
-      } else if (int(prob_param[idir_comp]) == 3) {
+      } else if (amrex::Math::round(prob_param[idir_comp]) == 3) {
     if (z <= ctr_z) {
       diag_eos(i,j,k,Temp_comp) = prob_param[T_l_comp];
     } else {
