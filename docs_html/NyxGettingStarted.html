@@ -306,7 +306,7 @@ heating-cooling Nyx runs, where <code class="docutils literal notranslate"><span
 the <code class="docutils literal notranslate"><span class="pre">Nyx/Exec/LyA</span></code> directory.</p>
 <p>In order to use SUNDIALS:</p>
 <ol class="arabic">
-<li><p class="first">Nyx suggests using the Github mirror:
+<li><p class="first">We suggest using the Github mirror:
 <a class="reference external" href="https://github.com/LLNL/sundials">https://github.com/LLNL/sundials</a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>#!/bin/bash
 set -e
@@ -319,9 +319,9 @@ cmake \
 -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}  \
 -DCMAKE_INSTALL_LIBDIR=lib \
 -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
--DCMAKE_C_COMPILER=$(which gcc)  \
--DCMAKE_CXX_COMPILER=$(which g++)   \
--DCMAKE_CUDA_HOST_COMPILER=$(which g++)    \
+-DCMAKE_C_COMPILER=$(which cc)  \
+-DCMAKE_CXX_COMPILER=$(which CC)   \
+-DCMAKE_CUDA_HOST_COMPILER=$(which CC)    \
 -DEXAMPLES_INSTALL_PATH=${INSTALL_PREFIX}/examples \
 -DCMAKE_BUILD_TYPE=Release \
 -DCMAKE_CUDA_FLAGS=&quot;-DSUNDIALS_DEBUG_CUDA_LASTERROR&quot; \
@@ -351,9 +351,9 @@ cmake \
 -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}  \
 -DCMAKE_INSTALL_LIBDIR=lib \
 -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
--DCMAKE_C_COMPILER=$(which gcc)  \
--DCMAKE_CXX_COMPILER=$(which g++)   \
--DCMAKE_CUDA_HOST_COMPILER=$(which g++)    \
+-DCMAKE_C_COMPILER=$(which cc)  \
+-DCMAKE_CXX_COMPILER=$(which CC)   \
+-DCMAKE_CUDA_HOST_COMPILER=$(which CC)    \
 -DEXAMPLES_INSTALL_PATH=${INSTALL_PREFIX}/examples \
 -DCMAKE_BUILD_TYPE=Release \
 -DCMAKE_C_FLAGS_RELEASE=&quot;-O3 -DNDEBUG&quot; \
@@ -368,8 +368,8 @@ make install -j8
 </pre></div>
 </div>
 </li>
-<li><p class="first">Note that <code class="docutils literal notranslate"><span class="pre">CMAKE_C_COMPILER</span></code> and <code class="docutils literal notranslate"><span class="pre">CMAKE_CXX_COMPILER</span></code> need to be consistent with the AMReX
-make variable COMP to ensure matching OMP runtime libraries for use with the OpenMP NVector.</p>
+<li><p class="first">Note that we use <code class="docutils literal notranslate"><span class="pre">cc</span></code> and <code class="docutils literal notranslate"><span class="pre">CC</span></code> compiler wrappers, which need to be consistent with the Nyx’s GNUMakefile
+variable COMP to ensure matching OMP runtime libraries for use with the OpenMP NVector.</p>
 </li>
 <li><p class="first"><code class="docutils literal notranslate"><span class="pre">CUDA_ARCH</span></code> must be set to the appropriate value for the GPU being targeted</p>
 </li>
