@@ -11,7 +11,7 @@ Welcome to Nyx's documentation!
    :caption: Nyx basics
 
    NyxPreface
-   NyxPapers
+   NyxCitation
    NyxGettingStarted
    NyxUnits
    NyxInputs

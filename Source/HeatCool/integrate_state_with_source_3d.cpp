@@ -339,10 +339,6 @@ int Nyx::integrate_state_struct_mfin
                                 //                              amrex::Gpu::Device::streamSynchronize();
                                 //                              BL_PROFILE_VAR_STOP(cvode_timer2);
 
-#ifdef AMREX_DEBUG
-                                PrintFinalStats(cvode_mem);
-#endif
-
 #ifdef _OPENMP
 #pragma omp parallel for collapse(3)
       for (int k = lo.z; k <= hi.z; ++k) {
