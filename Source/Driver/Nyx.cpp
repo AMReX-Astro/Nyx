@@ -589,11 +589,12 @@ Nyx::Nyx (Amr&            papa,
     }
 #endif
 
+    // Initialize to zero here in case we run with do_grav = false.
+    MultiFab& new_grav_mf = get_new_data(Gravity_Type);
+    new_grav_mf.setVal(0);
+
     if (do_grav)
     {
-        // Initialize to zero here in case we run with do_grav = false.
-        MultiFab& new_grav_mf = get_new_data(Gravity_Type);
-        new_grav_mf.setVal(0);
         // gravity is a static object, only alloc if not already there
         if (gravity == 0) {
           gravity = new Gravity(parent, parent->finestLevel(), &phys_bc, 0);

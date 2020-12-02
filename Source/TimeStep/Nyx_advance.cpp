@@ -52,6 +52,8 @@ Nyx::advance (Real time,
            return advance_hydro(time, dt, iteration, ncycle);
         }
     }
+	else
+        return advance_particles_only(time, dt, iteration, ncycle);
 #endif
     return 0;
 }
