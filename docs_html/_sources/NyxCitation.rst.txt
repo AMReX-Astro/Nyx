@@ -3,8 +3,10 @@ Citation
 **********
 
 If you use Nyx, we appreciate you citing the main code paper:
-  * A. S. Almgren, J. B. Bell, M.J. Lijewski, Z. Lukic, E. Van Andel, **"Nyx: A Massively Parallel AMR Code for Computational Cosmology"** Astrophysical Journal, **765**, 39, 2013. [[arxiv]](https://arxiv.org/abs/1301.4498)
-  ``  @ARTICLE{Nyx,
+  * A. S. Almgren, J. B. Bell, M.J. Lijewski, Z. Lukic, E. Van Andel, **"Nyx: A Massively Parallel AMR Code for Computational Cosmology"** Astrophysical Journal, **765**, 39, 2013. [[Journal]](https://iopscience.iop.org/article/10.1088/0004-637X/765/1/39) [[PDF]](https://iopscience.iop.org/article/10.1088/0004-637X/765/1/39/pdf)
+
+  In BibTeX::
+  @ARTICLE{Nyx,
                author = {{Almgren}, A.~S. and {Bell}, J.~B. and {Lijewski}, M.~J. and {Luki{\'c}}, Z. and {Van Andel}, E.},
                title = "{Nyx: A Massively Parallel AMR Code for Computational Cosmology}",
                journal = {The Astrophysical Journal},
@@ -17,7 +19,7 @@ If you use Nyx, we appreciate you citing the main code paper:
                eid = {39},
                pages = {39},
                doi = {10.1088/0004-637X/765/1/39}
-              } ``
+  }
 
 The development of AMReX library is led by the
 Center for Computational Sciences and Engineering / Lawrence Berkeley
