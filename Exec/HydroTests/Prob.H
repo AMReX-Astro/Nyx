@@ -289,7 +289,7 @@ void prob_initdata(const int i,
 
   prob_initdata_state(i, j ,k, state, geomdata, prob_param);
 
-  if(amrex::Math::round(prob_param[prob_type_comp]) == 0 || (amrex::Math::round(prob_param[prob_type_comp]) != 0 && amrex::Math::round(prob_param[use_Tinit_comp])==0))
+  if(amrex::Math::round(prob_param[prob_type_comp]) != 0 || (amrex::Math::round(prob_param[prob_type_comp]) == 0 && amrex::Math::round(prob_param[use_Tinit_comp])==0))
   {
 
   const int JH = 1;
