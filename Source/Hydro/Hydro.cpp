@@ -75,19 +75,12 @@ Nyx::construct_hydro_source(
 
     BL_PROFILE_VAR("Nyx::advance_hydro_pc_umdrv()", PC_UMDRV);
         amrex::MultiFab             volume;
-        amrex::MultiFab             area[3];
         amrex::Vector< amrex::Vector<amrex::Real> > radius;
 
         volume.clear();
         volume.define(grids,dmap,1,NUM_GROW);
         geom.GetVolume(volume);
 
-        for (int dir = 0; dir < AMREX_SPACEDIM; dir++)
-        {
-            area[dir].clear();
-            area[dir].define(getEdgeBoxArray(dir),dmap,1,NUM_GROW);
-            geom.GetFaceArea(area[dir],dir);
-        }
 #ifdef _OPENMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())               \
     reduction(+:E_added_flux,mass_added_flux)                           \
@@ -159,15 +152,13 @@ Nyx::construct_hydro_source(
         const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>
           flx_arr{flux[0].array(), flux[1].array(), flux[2].array()};
 
-        const amrex::GpuArray<
-          const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
-          a{area[0].array(mfi), area[1].array(mfi), area[2].array(mfi)};
+        const GpuArray<Real,BL_SPACEDIM>  area{ dx[1]*dx[2], dx[0]*dx[2], dx[0]*dx[1] };
 
         pc_umdrv(
           bx, s, hyd_src, qarr, srcqarr, flx_arr, dx, dt, a_old, a_new, cfl,
           gamma, gamma_minus_1_loc, NumSpec,
           small_dens, small_pres, small, 
-          cflLoc, ppm_type, a, volume.array(mfi));
+          cflLoc, ppm_type, volume.array(mfi));
         BL_PROFILE_VAR_STOP(purm);
 
         BL_PROFILE_VAR("courno", crno);
@@ -274,8 +265,6 @@ pc_umdrv(
   const amrex::Real small, 
   amrex::Real cflLoc,
   const int ppm_type, 
-  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
-    a,
   amrex::Array4<amrex::Real> const& vol)
 
 {
@@ -340,7 +329,7 @@ pc_umdrv(
 
   // consup
   amrex::Real difmag = 0.1;
-  pc_consup(bx, uin, uout, flx, a, vol, divarr, pdivuarr, a_old, a_new, dx, dt, NumSpec, gamma_minus_1, difmag);
+  pc_consup(bx, uin, uout, flx, vol, divarr, pdivuarr, a_old, a_new, dx, dt, NumSpec, gamma_minus_1, difmag);
 }
 
 void
@@ -349,8 +338,6 @@ pc_consup(
   amrex::Array4<const amrex::Real> const& u,
   amrex::Array4<amrex::Real> const& update,
   const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
-  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
-    a,
   amrex::Array4<const amrex::Real> const& vol,
   amrex::Array4<const amrex::Real> const& div,
   amrex::Array4<const amrex::Real> const& pdivu,
@@ -368,12 +355,17 @@ pc_consup(
     amrex::Box const& fbx = surroundingNodes(bx, dir);
     const amrex::Real dx = del[dir];
 
+    const GpuArray<Real,BL_SPACEDIM>  area{ del[1]*del[2], del[0]*del[2], del[0]*del[1] };
+
     amrex::ParallelFor(fbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-      pc_artif_visc(i, j, k, flx[dir], div, u, dx, difmag, dir);
-      // Normalize Species Flux
-      normalize_species_fluxes(i, j, k, flx[dir], NumSpec);
-      // Make flux extensive
-      pc_ext_flx(i, j, k, flx[dir], a[dir], dt);
+
+         pc_artif_visc(i, j, k, flx[dir], div, u, dx, difmag, dir);
+
+         // Normalize Species Flux
+         normalize_species_fluxes(i, j, k, flx[dir], NumSpec);
+
+         // Make flux extensive
+         pc_ext_flx(i, j, k, flx[dir], area[dir], dt);
       });
   }
 

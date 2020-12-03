@@ -135,12 +135,11 @@ pc_ext_flx(
   const int j,
   const int k,
   amrex::Array4<amrex::Real> const& flx,
-  amrex::Array4<const amrex::Real> const& a,
+  amrex::Real const area,
   amrex::Real const dt)
 {
-  amrex::Real area = a(i, j, k); // avoid reading from global memory flx1.nComp() times
-  for (int n = 0; n < flx.nComp(); ++n)
-          flx(i,j,k,n)*=area*dt;
+    for (int n = 0; n < flx.nComp(); ++n)
+        flx(i,j,k,n) *= area*dt;
 }
 
 AMREX_GPU_DEVICE
@@ -160,6 +159,7 @@ pc_ext_flx_dt(
   const amrex::Real a_newsq_inv = 1.0 / (a_new * a_new);
   //Store all 8 factors
   const amrex::Real a_fact[8] = {a_half_inv,a_new_inv,a_new_inv,a_new_inv,a_half*a_newsq_inv,a_half*a_newsq_inv,a_half_inv,a_half_inv};
+
   for (int n = 0; n < flx.nComp(); ++n)
      flx(i,j,k,n)*=a_fact[n];
 }
@@ -218,8 +218,6 @@ void pc_umdrv(
   const amrex::Real small, 
   amrex::Real cflLoc,
   const int ppm_type,
-  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
-    a,
   amrex::Array4<amrex::Real> const& vol);
 
 void pc_consup(
@@ -227,8 +225,6 @@ void pc_consup(
   amrex::Array4<const amrex::Real> const& u,
   amrex::Array4<amrex::Real> const& update,
   const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
-  const amrex::GpuArray<const amrex::Array4<const amrex::Real>, AMREX_SPACEDIM>
-    a,
   amrex::Array4<const amrex::Real> const& vol,
   amrex::Array4<const amrex::Real> const& div,
   amrex::Array4<const amrex::Real> const& pdivu,
