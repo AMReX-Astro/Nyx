@@ -5,7 +5,7 @@ max_step = 400
 nyx.ppm_type         = 1
 
 nyx.add_ext_src      = 0
-nyx.heat_cool_type   = 3
+nyx.heat_cool_type   = 11
 nyx.strang_split     = 1
 
 #This is 1e-8 times the lowest density in plt00000
