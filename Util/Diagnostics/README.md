@@ -12,7 +12,7 @@ in the non-*dir* directions.   This can work with multiple components at one tim
 
 ## Usage
 
-This is a stand-alone application built on top of AMReX.  Set the compiler value in 'GNUMakefile (`COMP` variable)
+This is a stand-alone application built on top of AMReX.  Set the compiler value in the `GNUmakefile` (variable `COMP`)
 and make an executable with:
 ```sh
 $ make -j 8
