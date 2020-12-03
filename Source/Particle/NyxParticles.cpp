@@ -517,7 +517,6 @@ Nyx::init_particles ()
             //
             amrex::Gpu::LaunchSafeGuard lsg(particle_launch_ics);
             DMPC->InitFromBinaryFile(binary_particle_file, BL_SPACEDIM + 1);
-            AMREX_ASSERT(!sph_particle_file.empty());
             if (init_with_sph_particles == 1)
               SPHPC->InitFromBinaryFile(sph_particle_file, BL_SPACEDIM + 1);
 
