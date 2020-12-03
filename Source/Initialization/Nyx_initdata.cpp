@@ -91,7 +91,7 @@ Nyx::read_init_params ()
 
     pp.query("do_readin_ics",       do_readin_ics);
     pp.query("readin_ics_fname", readin_ics_fname);
-#ifdef AMREX_PARTICLES	
+#ifdef AMREX_PARTICLES  
     pp.query("particle_launch_ics",       particle_launch_ics);
     pp.query("ascii_particle_file", ascii_particle_file);
 

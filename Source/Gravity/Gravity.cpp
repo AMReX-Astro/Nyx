@@ -1402,7 +1402,7 @@ Gravity::set_boundary(BndryData& bd, MultiFab& rhs, const Real* dx)
 #ifdef _OPENMP
 #pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif
-	  for (MFIter mfi(rhs,TilingIfNotGPU()); mfi.isValid(); ++mfi ) {
+          for (MFIter mfi(rhs,TilingIfNotGPU()); mfi.isValid(); ++mfi ) {
       int i = mfi.index();
 
       // Our default will be that the face of this grid is either touching another grid
