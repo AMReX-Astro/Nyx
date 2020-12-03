@@ -463,9 +463,6 @@ Gravity::get_crse_phi (int       level,
     // Note that we must do these cases separately because it's possible to do a
     //   new solve after a regrid when the old data on the coarse grid may not yet
     //   be defined.
-#ifdef _OPENMP
-#pragma omp parallel if (Gpu::notInLaunchRegion())
-#endif
     for (MFIter mfi(phi_crse,true); mfi.isValid(); ++mfi)
     {
         const Box& gtbx = mfi.growntilebox();
