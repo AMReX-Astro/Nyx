@@ -174,14 +174,14 @@ pc_update(
   amrex::Array4<const amrex::Real> const& u,
   amrex::Array4<amrex::Real> const& update,
   const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
-  amrex::Array4<const amrex::Real> const& vol,
+  amrex::Real const vol,
   amrex::Array4<const amrex::Real> const& pdivu,
   amrex::Real const a_old,
   amrex::Real const a_new,
   amrex::Real const dt,
   const amrex::Real gamma_minus_1)
 {
-  const amrex::Real volinv = 1 / vol(i, j, k);
+  const amrex::Real volinv = 1 / vol;
   const amrex::Real a_half = 0.5*(a_old + a_new);
   const amrex::Real a_half_inv = 1.0 / a_half;
   //Store all 8 factors
@@ -217,15 +217,13 @@ void pc_umdrv(
   const amrex::Real small_dens, const amrex::Real small_pres, 
   const amrex::Real small, 
   amrex::Real cflLoc,
-  const int ppm_type,
-  amrex::Array4<amrex::Real> const& vol);
+  const int ppm_type);
 
 void pc_consup(
   amrex::Box const& bx,
   amrex::Array4<const amrex::Real> const& u,
   amrex::Array4<amrex::Real> const& update,
   const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
-  amrex::Array4<const amrex::Real> const& vol,
   amrex::Array4<const amrex::Real> const& div,
   amrex::Array4<const amrex::Real> const& pdivu,
   amrex::Real const a_old,

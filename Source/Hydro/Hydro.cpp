@@ -74,12 +74,6 @@ Nyx::construct_hydro_source(
     amrex::Real zmom_added_flux = 0.;
 
     BL_PROFILE_VAR("Nyx::advance_hydro_pc_umdrv()", PC_UMDRV);
-        amrex::MultiFab             volume;
-        amrex::Vector< amrex::Vector<amrex::Real> > radius;
-
-        volume.clear();
-        volume.define(grids,dmap,1,NUM_GROW);
-        geom.GetVolume(volume);
 
 #ifdef _OPENMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())               \
@@ -157,8 +151,7 @@ Nyx::construct_hydro_source(
         pc_umdrv(
           bx, s, hyd_src, qarr, srcqarr, flx_arr, dx, dt, a_old, a_new, cfl,
           gamma, gamma_minus_1_loc, NumSpec,
-          small_dens, small_pres, small, 
-          cflLoc, ppm_type, volume.array(mfi));
+          small_dens, small_pres, small, cflLoc, ppm_type);
         BL_PROFILE_VAR_STOP(purm);
 
         BL_PROFILE_VAR("courno", crno);
@@ -264,8 +257,7 @@ pc_umdrv(
   const amrex::Real small_dens, const amrex::Real small_pres, 
   const amrex::Real small, 
   amrex::Real cflLoc,
-  const int ppm_type, 
-  amrex::Array4<amrex::Real> const& vol)
+  const int ppm_type) 
 
 {
   //  Set Up for Hydro Flux Calculations
@@ -329,7 +321,7 @@ pc_umdrv(
 
   // consup
   amrex::Real difmag = 0.1;
-  pc_consup(bx, uin, uout, flx, vol, divarr, pdivuarr, a_old, a_new, dx, dt, NumSpec, gamma_minus_1, difmag);
+  pc_consup(bx, uin, uout, flx, divarr, pdivuarr, a_old, a_new, dx, dt, NumSpec, gamma_minus_1, difmag);
 }
 
 void
@@ -338,7 +330,6 @@ pc_consup(
   amrex::Array4<const amrex::Real> const& u,
   amrex::Array4<amrex::Real> const& update,
   const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM> flx,
-  amrex::Array4<const amrex::Real> const& vol,
   amrex::Array4<const amrex::Real> const& div,
   amrex::Array4<const amrex::Real> const& pdivu,
   amrex::Real const a_old,
@@ -369,9 +360,11 @@ pc_consup(
       });
   }
 
+  amrex::Real vol = del[0] * del[1] * del[2];
+
   // Combine for Hydro Sources
   amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-         pc_update(i, j, k, u, update, flx, vol, pdivu, a_old, a_new, dt, gamma_minus_1);
+      pc_update(i, j, k, u, update, flx, vol, pdivu, a_old, a_new, dt, gamma_minus_1);
   });
 
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
