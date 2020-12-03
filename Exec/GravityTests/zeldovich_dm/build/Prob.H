@@ -45,7 +45,7 @@ void prob_initdata_state(const int i,
     state(i,j,k,Eint) = 0.0;
     state(i,j,k,Eden) = 0.0;
 
-    amrex::Real FirstSpec = Eint + 1;   
+    int FirstSpec = Eint + 1;   
     if (state.nComp() > FirstSpec)
     {
       //XHYDROGEN hardcoded to .76 init_managed

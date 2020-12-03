@@ -267,14 +267,15 @@ void prob_initdata_state(const int i,
   state(i, j, k, UEINT) = eint;
 
   }
+
   //This uses 2 species, rather than just 1 (Doesn't set state(i, j, k, UFS) = state(i, j, k, URHO);)
-    amrex::Real FirstSpec = Eint + 1;
-    if (state.nComp() > FirstSpec)
-    {
+  int FirstSpec = Eint + 1;   
+  if (state.nComp() > FirstSpec)
+  {
       //XHYDROGEN hardcoded to .76 init_managed
         state(i,j,k,FirstSpec  ) = .76 * state(i,j,k,URHO);
         state(i,j,k,FirstSpec+1) = (1.0 - .76) * state(i,j,k,URHO);
-    }
+  }
 }
 
 AMREX_GPU_DEVICE AMREX_FORCE_INLINE
