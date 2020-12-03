@@ -172,7 +172,6 @@ Nyx::init_zhi ()
     
 #ifndef NO_HYDRO
     MultiFab& D_new = get_new_data(DiagEOS_Type);
-    int nd = D_new.nComp();
 
     const BoxArray& my_ba = D_new.boxArray();
     const DistributionMapping& my_dmap = D_new.DistributionMap();
@@ -497,10 +496,6 @@ Nyx::check_initial_species ()
 {
     // Verify that the sum of (rho X)_i = rho at every cell.
 
-    MultiFab&   S_new    = get_new_data(State_Type);
-
-    int iden  = Density;
-
     ReduceOps<ReduceOpMax> reduce_op;
     ReduceData<Real> reduce_data(reduce_op);
     using ReduceTuple = typename decltype(reduce_data)::Type;
@@ -509,10 +504,12 @@ Nyx::check_initial_species ()
     if (amrex::Math::abs(1.0 - h_species - he_species) > 1.e-8)
         amrex::Abort("Error:: Failed check of initial species summing to 1");
 #else
+    int iden  = Density;
     if (FirstSpec > 0)
     {
         int iufs = FirstSpec;
         int nspec = NumSpec;
+        MultiFab&   S_new    = get_new_data(State_Type);
 #ifdef _OPENMP
 #pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif
@@ -561,14 +558,14 @@ Nyx::init_e_from_T (const Real& a)
     {
         const Box& bx = mfi.tilebox();
 
-        const auto state    = S_new.array(mfi);
-        const auto diag_eos = D_new.array(mfi);
+        const auto s_arr    = S_new.array(mfi);
+        const auto d_arr = D_new.array(mfi);
 
         amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
         {
-             Real rho =  state(i,j,k,Density);
-             Real T   = diag_eos(i,j,k,Temp_comp);
-             Real ne  = diag_eos(i,j,k,  Ne_comp);
+             Real rho = s_arr(i,j,k,Density);
+             Real T   = d_arr(i,j,k,Temp_comp);
+             Real ne  = d_arr(i,j,k,  Ne_comp);
 
              Real eint;
 
@@ -577,12 +574,12 @@ Nyx::init_e_from_T (const Real& a)
              // Set temp to small_temp and compute corresponding internal energy
              nyx_eos_given_RT(atomic_rates, gamma_minus_1_in, h_species_in, &eint, &dummy_pres, rho, T, ne, a);
 
-             state(i,j,k,Eint) = state(i,j,k,Density) * eint;
+             s_arr(i,j,k,Eint) = s_arr(i,j,k,Density) * eint;
 
-             state(i,j,k,Eden) = state(i,j,k,Eint) + 0.5 * ( 
-                state(i,j,k,Xmom)*state(i,j,k,Xmom) +
-                state(i,j,k,Ymom)*state(i,j,k,Ymom) +
-                state(i,j,k,Zmom)*state(i,j,k,Zmom) ) / state(i,j,k,Density);
+             s_arr(i,j,k,Eden) = s_arr(i,j,k,Eint) + 0.5 * ( 
+                                 s_arr(i,j,k,Xmom)*s_arr(i,j,k,Xmom) +
+                                 s_arr(i,j,k,Ymom)*s_arr(i,j,k,Ymom) +
+                                 s_arr(i,j,k,Zmom)*s_arr(i,j,k,Zmom) ) / s_arr(i,j,k,Density);
         });
         amrex::Gpu::Device::streamSynchronize();
     }

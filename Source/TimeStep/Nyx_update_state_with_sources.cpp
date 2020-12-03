@@ -82,35 +82,22 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
 
         amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept 
         {
+            const amrex::Real rho = uin(i, j, k, URHO);
 
+            const amrex::Real SrU = rho * grav(i,j,k,0);
+            const amrex::Real SrV = rho * grav(i,j,k,1);
+            const amrex::Real SrW = rho * grav(i,j,k,2);
 
-                const amrex::Real rhoInv = 1.0 / uout(i,j,k,URHO);
-                const amrex::Real vx = uout(i, j, k, UMX);
-                const amrex::Real vy = uout(i, j, k, UMY);
-                const amrex::Real vz = uout(i, j, k, UMZ);
+            // We use a_new here because we think of d/dt(a rho u) = ... + (rho g)
+            uout(i,j,k,UMX)   += SrU * dt_a_new;
+            uout(i,j,k,UMY)   += SrV * dt_a_new;
+            uout(i,j,k,UMZ)   += SrW * dt_a_new;
 
-                // **** Start Diagnostics ****
-                //Multiplies by rhoInv
-                const amrex::Real old_ke = 0.5 * rhoInv * (vx * vx + vy * vy + vz * vz);
-                const amrex::Real old_rhoeint = uout(i,j,k,UEDEN) - old_ke;
-                // ****   End Diagnostics ****
-
-                const amrex::Real rho = uin(i, j, k, URHO);
-
-                const amrex::Real SrU = rho * grav(i,j,k,0);
-                const amrex::Real SrV = rho * grav(i,j,k,1);
-                const amrex::Real SrW = rho * grav(i,j,k,2);
-
-                // We use a_new here because we think of d/dt(a rho u) = ... + (rho g)
-                uout(i,j,k,UMX)   += SrU * dt_a_new;
-                uout(i,j,k,UMY)   += SrV * dt_a_new;
-                uout(i,j,k,UMZ)   += SrW * dt_a_new;
-
-                // Src = rho u dot g, evaluated with all quantities at t^n
-                const amrex::Real SrE = uin(i,j,k,UMX) * grav(i,j,k,0) +
-                                        uin(i,j,k,UMY) * grav(i,j,k,1) +
-                                        uin(i,j,k,UMZ) * grav(i,j,k,2);
-                uout(i,j,k,UEDEN) = (a_newsq*uout(i,j,k,UEDEN) + SrE * (dt*a_half)) * a_newsq_inv;
+            // Src = rho u dot g, evaluated with all quantities at t^n
+            const amrex::Real SrE = uin(i,j,k,UMX) * grav(i,j,k,0) +
+                                    uin(i,j,k,UMY) * grav(i,j,k,1) +
+                                    uin(i,j,k,UMZ) * grav(i,j,k,2);
+            uout(i,j,k,UEDEN) = (a_newsq*uout(i,j,k,UEDEN) + SrE * (dt*a_half)) * a_newsq_inv;
         });
     }
 }

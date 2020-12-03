@@ -837,7 +837,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
             MultiFab::Add(S_new, *particle_mf[level], 1, Xmom, BL_SPACEDIM, S_new.nGrow());
         }
 
-        enforce_minimum_density_floor(S_new, S_new, -1e200, new_a, new_a);
+        enforce_minimum_density_floor(S_new, -1e200, new_a, new_a);
     } else {
 
         MultiFab& S_new = get_new_data(State_Type);

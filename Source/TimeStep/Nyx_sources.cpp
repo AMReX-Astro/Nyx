@@ -42,10 +42,10 @@ Nyx::get_old_source (Real      old_time,
                      MultiFab& ext_src)
 {
     BL_PROFILE("Nyx::get_old_source()");
-    const Real* dx      = geom.CellSize();
-    const Real* prob_lo = geom.ProbLo();
-    const Real a        = get_comoving_a(old_time);
-    const Real z        = 1 / a - 1;
+    //const Real* dx      = geom.CellSize();
+    //const Real* prob_lo = geom.ProbLo();
+    //const Real a        = get_comoving_a(old_time);
+    //const Real z        = 1 / a - 1;
 
     MultiFab& S_old = get_old_data(State_Type);
     MultiFab& D_old = get_old_data(DiagEOS_Type);
@@ -87,10 +87,10 @@ Nyx::get_new_source (Real      old_time,
                      MultiFab& ext_src)
 {
     BL_PROFILE("Nyx::get_new_source()");
-    const Real* dx      = geom.CellSize();
-    const Real* prob_lo = geom.ProbLo();
-    const Real a        = get_comoving_a(new_time);
-    const Real z        = 1 / a - 1;
+    //const Real* dx      = geom.CellSize();
+    //const Real* prob_lo = geom.ProbLo();
+    //const Real a        = get_comoving_a(new_time);
+    //const Real z        = 1 / a - 1;
 
     MultiFab& S_old = get_old_data(State_Type);
     MultiFab& D_old = get_old_data(DiagEOS_Type);

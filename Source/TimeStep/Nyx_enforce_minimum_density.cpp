@@ -19,7 +19,7 @@ Nyx::enforce_minimum_density( MultiFab& S_old, MultiFab& S_new,
     {
         if (enforce_min_density_type == "floor")
         {
-            enforce_minimum_density_floor(S_old, S_new, dt, a_old, a_new);
+            enforce_minimum_density_floor(S_new, dt, a_old, a_new);
 
         } else if (enforce_min_density_type == "conservative") {
             enforce_minimum_density_cons(S_old, S_new, dt, a_old, a_new);
@@ -31,7 +31,7 @@ Nyx::enforce_minimum_density( MultiFab& S_old, MultiFab& S_new,
 }
 
 void
-Nyx::enforce_minimum_density_floor( MultiFab& S_old, MultiFab& S_new,
+Nyx::enforce_minimum_density_floor( MultiFab& S_new,
                                     Real dt, Real a_old, Real a_new )
 {
     int lnum_spec    = NumSpec;

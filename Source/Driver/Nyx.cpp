@@ -769,7 +769,6 @@ Nyx::init ()
 {
     BL_PROFILE("Nyx::init()");
     Real dt        = parent->dtLevel(level);
-    int finest_level = parent->finestLevel();
 
     Real cur_time  = get_level(level-1).state[State_for_Time].curTime();
     Real prev_time = get_level(level-1).state[State_for_Time].prevTime();
@@ -2208,15 +2207,15 @@ Nyx::enforce_consistent_e (MultiFab& S)
   for (MFIter mfi(S,TilingIfNotGPU()); mfi.isValid(); ++mfi)
   {
         const Box& bx = mfi.tilebox();
-        auto const state = S.array(mfi);
+        auto const s_arr = S.array(mfi);
 
         amrex::ParallelFor(bx,
         [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
         {
-             state(i,j,k,Eden) = state(i,j,k,Eint) + 0.5 * (
-                state(i,j,k,Xmom)*state(i,j,k,Xmom) +
-                state(i,j,k,Ymom)*state(i,j,k,Ymom) +
-                state(i,j,k,Zmom)*state(i,j,k,Zmom) ) / state(i,j,k,Density);
+            s_arr(i,j,k,Eden) = s_arr(i,j,k,Eint) + 0.5 * (
+                                s_arr(i,j,k,Xmom)*s_arr(i,j,k,Xmom) +
+                                s_arr(i,j,k,Ymom)*s_arr(i,j,k,Ymom) +
+                                s_arr(i,j,k,Zmom)*s_arr(i,j,k,Zmom) ) / s_arr(i,j,k,Density);
         });
   }
 }
@@ -2368,7 +2367,6 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new, MultiFab& reset_e_
         const auto fab = S_new.array(mfi);
         const auto fab_diag = D_new.array(mfi);
         const auto fab_reset = reset_e_src.array(mfi);
-        int print_warn=0;
         Real h_species_in=h_species;
         Real small_temp_in=small_temp;
         amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -2402,7 +2400,6 @@ Nyx::reset_internal_energy_interp (MultiFab& S_new, MultiFab& D_new, MultiFab& r
           const auto fab = S_new.array(mfi);
           const auto fab_diag = D_new.array(mfi);
           const auto fab_reset = reset_e_src.array(mfi);
-          int print_warn=0;
           Real h_species_in=h_species;
           Real small_temp_in=small_temp;
           amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -2438,8 +2435,7 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 
     amrex::Gpu::synchronize();
     amrex::Gpu::LaunchSafeGuard lsg(true);
-        FArrayBox test, test_d;
-        int print_warn=0;
+    FArrayBox test, test_d;
 
 #ifdef _OPENMP
 #pragma omp parallel if (Gpu::notInLaunchRegion())
@@ -2638,13 +2634,13 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
         for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
         {
             const Box& bx = mfi.tilebox();
-            const auto state    = S_new.const_array(mfi);
-            const auto diag_eos = D_new.const_array(mfi);
+            const auto s_arr = S_new.const_array(mfi);
+            const auto d_arr = D_new.const_array(mfi);
             Real vol = dx[0]*dx[1]*dx[2];
             AMREX_LOOP_3D(bx, i, j, k,
             {
-                Real T_tmp = diag_eos(i,j,k,Temp_comp);
-                Real rho_tmp = state(i,j,k,Density);
+                Real T_tmp   = d_arr(i,j,k,Temp_comp);
+                Real rho_tmp = s_arr(i,j,k,Density);
                 T_sum += vol*T_tmp;
                 Tinv_sum += rho_tmp/T_tmp;
                 rho_T_sum += rho_tmp*T_tmp;
@@ -2686,10 +2682,9 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
 
-    Real whim_mass=0.0, whim_vol=0.0, hh_mass=0.0, hh_vol=0.0, igm_mass=0.0, igm_vol=0.0, mass_sum=0.0, vol_sum=0.0;
+    Real whim_mass=0.0, whim_vol=0.0, hh_mass=0.0, hh_vol=0.0; 
+    Real igm_mass=0.0, igm_vol=0.0, mass_sum=0.0, vol_sum=0.0;
 
-    Real rho_hi = 1.1*average_gas_density;
-    Real rho_lo = 0.9*average_gas_density;
     const auto dx= geom.CellSizeArray();
     int average_gas_density=average_gas_density;
 
@@ -2758,14 +2753,14 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
         for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
         {
             const Box& bx = mfi.tilebox();
-            const auto state    = S_new.const_array(mfi);
+            const auto s_arr    = S_new.const_array(mfi);
             const auto diag_eos = D_new.const_array(mfi);
             Real vol = dx[0]*dx[1]*dx[2];
             AMREX_LOOP_3D(bx, i, j, k,
             {
                 Real T = diag_eos(i,j,k,Temp_comp);
-                Real R = state(i,j,k,Density) / average_gas_density;
-                Real rho_vol = state(i,j,k,Density)*vol;
+                Real R = s_arr(i,j,k,Density) / average_gas_density;
+                Real rho_vol = s_arr(i,j,k,Density)*vol;
                 if ( (T > T_cut) && (R <= rho_cut) ) {
                     whim_mass += rho_vol;
                     whim_vol += vol;

@@ -26,7 +26,7 @@ Nyx::construct_hydro_source(
 
     int nGrowF = 0;
     // Compute_hydro_sources style
-    amrex::MultiFab fluxes[AMREX_SPACEDIM];
+    amrex::MultiFab hydro_fluxes[AMREX_SPACEDIM];
     int finest_level = parent->finestLevel();
 
     //
@@ -39,8 +39,8 @@ Nyx::construct_hydro_source(
     {
         for (int j = 0; j < AMREX_SPACEDIM; j++)
         {
-            fluxes[j].define(getEdgeBoxArray(j), dmap, NUM_STATE, 0);
-            fluxes[j].setVal(0.0);
+            hydro_fluxes[j].define(getEdgeBoxArray(j), dmap, NUM_STATE, 0);
+            hydro_fluxes[j].setVal(0.0);
         }
         if (do_reflux)
         {
@@ -146,8 +146,6 @@ Nyx::construct_hydro_source(
         const amrex::GpuArray<const amrex::Array4<amrex::Real>, AMREX_SPACEDIM>
           flx_arr{flux[0].array(), flux[1].array(), flux[2].array()};
 
-        const GpuArray<Real,BL_SPACEDIM>  area{ dx[1]*dx[2], dx[0]*dx[2], dx[0]*dx[1] };
-
         pc_umdrv(
           bx, s, hyd_src, qarr, srcqarr, flx_arr, dx, dt, a_old, a_new, cfl,
           gamma, gamma_minus_1_loc, NumSpec,
@@ -163,9 +161,9 @@ Nyx::construct_hydro_source(
         {
             for (int idir = 0; idir < AMREX_SPACEDIM; ++idir) {
                 amrex::Array4<amrex::Real> const flux_fab = (flux[idir]).array();
-                amrex::Array4<amrex::Real> fluxes_fab = (fluxes[idir]).array(mfi);
+                amrex::Array4<amrex::Real> fluxes_fab = (hydro_fluxes[idir]).array(mfi);
                 const int numcomp = NUM_STATE;
-                fluxes[idir][mfi].prefetchToDevice();
+                hydro_fluxes[idir][mfi].prefetchToDevice();
                 flux[idir].prefetchToDevice();
 
                 AMREX_HOST_DEVICE_FOR_4D(mfi.nodaltilebox(idir), numcomp, i, j, k, n,
@@ -184,12 +182,12 @@ Nyx::construct_hydro_source(
       if (do_reflux) {
         if (current) {
           for (int i = 0; i < AMREX_SPACEDIM ; i++) {
-            current->FineAdd(fluxes[i], i, 0, 0, NUM_STATE, 1);
+            current->FineAdd(hydro_fluxes[i], i, 0, 0, NUM_STATE, 1);
           }
         }
         if (fine) { // HACK
           for (int i = 0; i < AMREX_SPACEDIM ; i++) {
-            fine->CrseInit(fluxes[i],i,0,0,NUM_STATE,-1.,amrex::FluxRegister::ADD);
+            fine->CrseInit(hydro_fluxes[i],i,0,0,NUM_STATE,-1.,amrex::FluxRegister::ADD);
           }
         }
       }
