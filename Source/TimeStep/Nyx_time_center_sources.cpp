@@ -25,6 +25,9 @@ Nyx::time_center_source_terms (MultiFab& S_new,
 
     int ncomp = S_new.nComp();
 
+#ifdef _OPENMP
+#pragma omp parallel if (Gpu::notInLaunchRegion())
+#endif
     for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();

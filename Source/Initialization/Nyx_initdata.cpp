@@ -188,7 +188,10 @@ Nyx::init_zhi ()
     if(D_new.nComp()>2)
     {
         int l_Zhi_comp = Zhi_comp;
-        for (MFIter mfi(D_new,true); mfi.isValid(); ++mfi)
+#ifdef _OPENMP
+#pragma omp parallel if (Gpu::notInLaunchRegion())
+#endif
+            for (MFIter mfi(D_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
             {
                 const Box& bx = mfi.tilebox();
                 const auto fab_zhi=zhi.array(mfi);
@@ -252,7 +255,10 @@ Nyx::initData ()
             D_new.setVal(0., Temp_comp);
             D_new.setVal(0.,   Ne_comp);
 
-            for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
+#ifdef _OPENMP
+#pragma omp parallel if (Gpu::notInLaunchRegion())
+#endif
+            for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
             {
                 const Box& bx = mfi.tilebox();
                 const auto fab_S_new=S_new.array(mfi);
@@ -282,7 +288,10 @@ Nyx::initData ()
         }
         else
         {
-            for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
+#ifdef _OPENMP
+#pragma omp parallel if (Gpu::notInLaunchRegion())
+#endif
+            for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
             {
                 const Box& bx = mfi.tilebox();
                 const auto fab_S_new=S_new.array(mfi);                
@@ -505,7 +514,7 @@ Nyx::check_initial_species ()
         int iufs = FirstSpec;
         int nspec = NumSpec;
 #ifdef _OPENMP
-#pragma omp parallel
+#pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif
         for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
         {
@@ -546,7 +555,7 @@ Nyx::init_e_from_T (const Real& a)
     Real gamma_minus_1_in=gamma - 1.0;
     auto atomic_rates = atomic_rates_glob;
 #ifdef _OPENMP
-#pragma omp parallel
+#pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif
     for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {

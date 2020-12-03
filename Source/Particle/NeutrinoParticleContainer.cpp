@@ -205,7 +205,10 @@ NeutrinoParticleContainer::AssignRelativisticDensitySingleLevel (MultiFab& mf_to
             );
     }
 
-    for (MFIter mfi(*mf_pointer); mfi.isValid(); ++mfi) {
+#ifdef _OPENMP
+#pragma omp parallel if (Gpu::notInLaunchRegion())
+#endif
+    for (MFIter mfi(*mf_pointer,TilingIfNotGPU()); mfi.isValid(); ++mfi)
         (*mf_pointer)[mfi].setVal(0);
     }
 
@@ -282,7 +285,10 @@ NeutrinoParticleContainer::AssignRelativisticDensitySingleLevel (MultiFab& mf_to
     // Be careful not to divide by zero.
     for (int n = 1; n < ncomp; n++)
     {
-        for (MFIter mfi(*mf_pointer); mfi.isValid(); ++mfi)
+#ifdef _OPENMP
+#pragma omp parallel if (Gpu::notInLaunchRegion())
+#endif
+        for (MFIter mfi(*mf_pointer,TilingIfNotGPU()); mfi.isValid(); ++mfi)
         {
             (*mf_pointer)[mfi].protected_divide((*mf_pointer)[mfi],0,n,1);
         }

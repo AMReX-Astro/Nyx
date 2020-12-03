@@ -29,7 +29,10 @@ Nyx::correct_gsrc(int lev, Real time, Real prev_time, Real cur_time, Real dt)
     const Real a_old     = get_comoving_a(prev_time);
     const Real a_new     = get_comoving_a(cur_time);
 
-    for (MFIter mfi(S_new,Gpu::notInLaunchRegion()); mfi.isValid(); ++mfi)
+#ifdef _OPENMP
+#pragma omp parallel if (Gpu::notInLaunchRegion())
+#endif
+    for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
 

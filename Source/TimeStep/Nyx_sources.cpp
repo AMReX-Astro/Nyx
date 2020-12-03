@@ -60,9 +60,9 @@ Nyx::get_old_source (Real      old_time,
     FillPatch(*this, Dborder, 4, old_time, DiagEOS_Type, 0, D_old.nComp());
 
 #ifdef _OPENMP
-#pragma omp parallel
+#pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif
-    for (MFIter mfi(S_old, MFItInfo().SetDynamic(true).EnableTiling()); mfi.isValid(); ++mfi)
+    for (MFIter mfi(S_old,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
         amrex::Abort("C++ interface for external source not written");
 
@@ -113,9 +113,9 @@ Nyx::get_new_source (Real      old_time,
     FillPatch(*this, Dborder_new, 4, new_time, DiagEOS_Type, 0      , Dborder_new.nComp());
 
 #ifdef _OPENMP
-#pragma omp parallel
+#pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif
-    for (MFIter mfi(S_old, MFItInfo().SetDynamic(true).EnableTiling()); mfi.isValid(); ++mfi)
+    for (MFIter mfi(S_old,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
         amrex::Abort("C++ interface for external source not written");
     }

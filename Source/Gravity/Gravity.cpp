@@ -463,6 +463,9 @@ Gravity::get_crse_phi (int       level,
     // Note that we must do these cases separately because it's possible to do a
     //   new solve after a regrid when the old data on the coarse grid may not yet
     //   be defined.
+#ifdef _OPENMP
+#pragma omp parallel if (Gpu::notInLaunchRegion())
+#endif
     for (MFIter mfi(phi_crse,true); mfi.isValid(); ++mfi)
     {
         const Box& gtbx = mfi.growntilebox();
@@ -1399,7 +1402,10 @@ Gravity::set_boundary(BndryData& bd, MultiFab& rhs, const Real* dx)
 {
   BL_PROFILE("Gravity::set_boundary()");
   for (int n=0; n<BL_SPACEDIM; ++n) {
-    for (MFIter mfi(rhs); mfi.isValid(); ++mfi ) {
+#ifdef _OPENMP
+#pragma omp parallel if (Gpu::notInLaunchRegion())
+#endif
+	  for (MFIter mfi(rhs,TilingIfNotGPU()); mfi.isValid(); ++mfi ) {
       int i = mfi.index();
 
       // Our default will be that the face of this grid is either touching another grid

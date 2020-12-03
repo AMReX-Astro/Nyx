@@ -227,9 +227,9 @@ Nyx::build_fine_mask()
     fine_mask->setVal(1.0);
 
 #ifdef _OPENMP
-#pragma omp parallel
+#pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif
-    for (MFIter mfi(*fine_mask); mfi.isValid(); ++mfi)
+    for (MFIter mfi(*fine_mask,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
         FArrayBox& fab = (*fine_mask)[mfi];
 

@@ -43,7 +43,10 @@ Nyx::enforce_minimum_density_floor( MultiFab& S_old, MultiFab& S_new,
     //
     //  Reset negative density to small_dens, set (rho e) and (rho E) from small_temp  and zero out momenta
     //
-    for (amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) 
+#ifdef _OPENMP
+#pragma omp parallel if (Gpu::notInLaunchRegion())
+#endif
+    for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
         // Only update on valid cells
         const amrex::Box& bx = mfi.tilebox();
@@ -130,7 +133,10 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new,
         MultiFab update(grids , dmap, Sborder.nComp(), 0);
         update.setVal(0.);
 
-        for (amrex::MFIter mfi(Sborder, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) 
+#ifdef _OPENMP
+#pragma omp parallel if (Gpu::notInLaunchRegion())
+#endif
+        for (MFIter mfi(Sborder,TilingIfNotGPU()); mfi.isValid(); ++mfi)
         {
             const amrex::Box& gbx = mfi.growntilebox(1);
             auto const& sbord = Sborder.array(mfi);
@@ -144,7 +150,10 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new,
             });
         }
 
-        for (amrex::MFIter mfi(Sborder, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi) 
+#ifdef _OPENMP
+#pragma omp parallel if (Gpu::notInLaunchRegion())
+#endif
+        for (MFIter mfi(Sborder,TilingIfNotGPU()); mfi.isValid(); ++mfi)
         {
             // Only update on valid cells
             const amrex::Box& bx = mfi.tilebox();

@@ -343,7 +343,10 @@ DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
     long outcount[3]={0,0,0};
     long outcountminus[3]={0,0,0};
     long totalcount=0;
-    for (MFIter mfi(mf); mfi.isValid(); ++mfi)
+#ifdef _OPENMP
+#pragma omp parallel if (Gpu::notInLaunchRegion())
+#endif
+    for (MFIter mfi(mf,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
         FArrayBox&  myFab  = mf[mfi];
         const Box&  vbx    = mfi.validbox();
@@ -473,7 +476,10 @@ DarkMatterParticleContainer::InitCosmo1ppc(MultiFab& mf, const Real vel_fac[], c
     //
     // The grid should be initialized according to the ics...
     //
-    for (MFIter mfi(mf); mfi.isValid(); ++mfi)
+#ifdef _OPENMP
+#pragma omp parallel if (Gpu::notInLaunchRegion())
+#endif
+    for (MFIter mfi(mf,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
         FArrayBox&  myFab  = mf[mfi];
         const Box&  vbx    = mfi.validbox();
@@ -564,7 +570,10 @@ DarkMatterParticleContainer::InitCosmo(
     //
     // Print the grids as a sanity check.
     //
-    for (MFIter mfi(mf); mfi.isValid(); ++mfi)
+#ifdef _OPENMP
+#pragma omp parallel if (Gpu::notInLaunchRegion())
+#endif
+    for (MFIter mfi(mf,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
         const Box&  vbx    = mfi.validbox();
         const int  *fab_lo = vbx.loVect();
@@ -602,7 +611,10 @@ DarkMatterParticleContainer::InitCosmo(
     Real         pos[BL_SPACEDIM];
     ParticleType p;
 
-    for (MFIter mfi(mf); mfi.isValid(); ++mfi)
+#ifdef _OPENMP
+#pragma omp parallel if (Gpu::notInLaunchRegion())
+#endif
+    for (MFIter mfi(mf,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
         const Box&  box     = mfi.validbox();
         RealBox     gridloc = RealBox(box, geom.CellSize(), geom.ProbLo());

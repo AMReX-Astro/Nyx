@@ -1426,12 +1426,12 @@ Nyx::post_timestep (int iteration)
                 gravity->get_new_grav_vector(lev, grad_phi_cc, cur_time);
 
 #ifdef _OPENMP
-#pragma omp parallel
+#pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif
-                {
+                  {
                   FArrayBox dstate;
 
-                  for (MFIter mfi(S_new_lev,Gpu::notInLaunchRegion()); mfi.isValid(); ++mfi)
+                  for (MFIter mfi(S_new_lev,TilingIfNotGPU()); mfi.isValid(); ++mfi)
                   {
                     const Box& bx = mfi.tilebox();
 
@@ -2066,9 +2066,9 @@ Nyx::advance_aux (Real time,
     MultiFab& S_new = get_new_data(State_Type);
 
 #ifdef _OPENMP
-#pragma omp parallel
+#pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif
-    for (MFIter mfi(S_old,true); mfi.isValid(); ++mfi)
+    for (MFIter mfi(S_old,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
         const Box& box = mfi.tilebox();
         FArrayBox& old_fab = S_old[mfi];
@@ -2123,7 +2123,7 @@ Nyx::enforce_nonnegative_species (MultiFab& S_new)
     if (NumSpec > 0)
     {
 #ifdef _OPENMP
-#pragma omp parallel
+#pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif
         for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
         {
@@ -2203,7 +2203,7 @@ Nyx::enforce_consistent_e (MultiFab& S)
   //  Set (rho E) = (rho e) + 1/2 rho (u^2 +_ v^2 + w^2)
 
 #ifdef _OPENMP
-#pragma omp parallel
+#pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif
   for (MFIter mfi(S,TilingIfNotGPU()); mfi.isValid(); ++mfi)
   {
@@ -2298,7 +2298,10 @@ Nyx::derive (const std::string& name,
     if (name == "Rank")
     {
         std::unique_ptr<MultiFab> derive_dat (new MultiFab(grids, dmap, 1, 0));
-        for (MFIter mfi(*derive_dat); mfi.isValid(); ++mfi)
+#ifdef _OPENMP
+#pragma omp parallel if (Gpu::notInLaunchRegion())
+#endif
+        for (MFIter mfi(*derive_dat,TilingIfNotGPU()); mfi.isValid(); ++mfi)
         {
           const auto fab_derive_dat=derive_dat->array(mfi);
           const Box& bx = mfi.tilebox();
@@ -2323,7 +2326,10 @@ Nyx::derive (const std::string& name,
     BL_PROFILE("Nyx::derive(mf)");
     if (name == "Rank")
     {
-        for (MFIter mfi(mf); mfi.isValid(); ++mfi)
+#ifdef _OPENMP
+#pragma omp parallel if (Gpu::notInLaunchRegion())
+#endif
+        for (MFIter mfi(mf,TilingIfNotGPU()); mfi.isValid(); ++mfi)
         {
           const auto fab_derive_dat=mf.array(mfi);
           const Box& bx = mfi.tilebox();
@@ -2353,9 +2359,9 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new, MultiFab& reset_e_
     auto atomic_rates = atomic_rates_glob;
 
 #ifdef _OPENMP
-#pragma omp parallel
+#pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif
-    for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
+    for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
         const Box& bx = mfi.tilebox();
 
@@ -2388,7 +2394,7 @@ Nyx::reset_internal_energy_interp (MultiFab& S_new, MultiFab& D_new, MultiFab& r
     amrex::Gpu::LaunchSafeGuard lsg(true);
 
 #ifdef _OPENMP
-#pragma omp parallel
+#pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif
     for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
@@ -2436,9 +2442,9 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
         int print_warn=0;
 
 #ifdef _OPENMP
-#pragma omp parallel
+#pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif
-        for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
+          for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
           {
             const Box& bx = mfi.tilebox();
 
@@ -2533,7 +2539,10 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
             Real max_temp = D_new.norm0(Temp_comp);
             IntVect max_temp_loc = D_new.maxIndex(Temp_comp);
 
-            for (MFIter mfi(S_new); mfi.isValid(); ++mfi)
+#ifdef _OPENMP
+#pragma omp parallel if (Gpu::notInLaunchRegion())
+#endif
+              for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
               {
                 const Box& bx = mfi.validbox();
                 if(bx.contains(max_temp_loc))
@@ -2622,7 +2631,8 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
 #endif
     {
 #ifdef _OPENMP
-#pragma omp parallel  reduction(+:rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum)
+#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())               \
+    reduction(+:rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum)
 #endif
     {
         for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
@@ -2742,7 +2752,8 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
 #endif
     {
 #ifdef _OPENMP
-#pragma omp parallel reduction(+:whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum)
+#pragma omp parallel  if (amrex::Gpu::notInLaunchRegion())               \
+    reduction(+:whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum)
 #endif
         for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
         {
