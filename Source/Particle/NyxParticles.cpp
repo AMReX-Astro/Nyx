@@ -498,7 +498,7 @@ Nyx::init_particles ()
             //
             DMPC->InitFromAsciiFile(ascii_particle_file, BL_SPACEDIM + 1, &Nrep);
             if (init_with_sph_particles == 1)
-                SPHPC->InitFromAsciiFile(ascii_particle_file, BL_SPACEDIM + 1, &Nrep);
+                SPHPC->InitFromAsciiFile(sph_particle_file, BL_SPACEDIM + 1, &Nrep);
         }
         else if (particle_init_type == "BinaryFile")
         {
@@ -517,8 +517,9 @@ Nyx::init_particles ()
             //
             amrex::Gpu::LaunchSafeGuard lsg(particle_launch_ics);
             DMPC->InitFromBinaryFile(binary_particle_file, BL_SPACEDIM + 1);
+            AMREX_ASSERT(!sph_particle_file.empty());
             if (init_with_sph_particles == 1)
-                SPHPC->InitFromBinaryFile(ascii_particle_file, BL_SPACEDIM + 1);
+              SPHPC->InitFromBinaryFile(sph_particle_file, BL_SPACEDIM + 1);
 
         }
         else if (particle_init_type == "BinaryMetaFile")
