@@ -261,6 +261,7 @@ Nyx::strang_hydro_ghost_state (Real time,
     const Real prev_time    = state[State_Type].prevTime();
     const Real cur_time     = state[State_Type].curTime();
     
+    MultiFab&  S_old        = get_old_data(State_Type);
     MultiFab&  S_new        = get_new_data(State_Type);
 
     MultiFab&  D_old        = get_old_data(DiagEOS_Type);
@@ -280,7 +281,6 @@ Nyx::strang_hydro_ghost_state (Real time,
     amrex::Gpu::Device::streamSynchronize();
     amrex::Gpu::setLaunchRegion(false);
     /*    
-    MultiFab&  S_old        = get_old_data(State_Type);
     if (S_old.contains_nan(Density, S_old.nComp(), 0))
     {
         for (int i = 0; i < S_old.nComp(); i++)
