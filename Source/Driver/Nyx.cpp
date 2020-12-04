@@ -2505,11 +2505,7 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
               {
                 Real dummy_pres=0.0;
                 // Set temp to small_temp and compute corresponding internal energy
-<<<<<<< HEAD
-                nyx_eos_given_RT(atomic_rates, gamma_minus_1_in, h_species_in, &eint, &dummy_pres, state(i,j,k,Density), dummy_small_temp,
-=======
                 nyx_eos_given_RT(atomic_rates, gamma_minus_1_in, h_species_in, &eint, &dummy_pres, state(i,j,k,Density), local_small_temp,
->>>>>>> upstream/development
                                     diag_eos(i,j,k,Ne_comp), a);
 
                 Real ke = 0.5e0 * (state(i,j,k,Xmom) * state(i,j,k,Xmom) +
