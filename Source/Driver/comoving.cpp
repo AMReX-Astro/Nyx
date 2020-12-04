@@ -690,7 +690,7 @@ Nyx::integrate_comoving_a (const Real old_a_local, Real& new_a_local, const Real
 
         new_a_local  = end_a;
 
-        if (std::abs(1.0-new_a_local) <= small_a_fac*prev_soln)
+        if (std::abs(1.0e0-new_a_local/prev_soln) <= small_a_fac)
               return;
         prev_soln = new_a_local;
 
