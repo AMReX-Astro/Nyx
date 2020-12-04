@@ -563,7 +563,7 @@ public:
                                     amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
     void enforce_minimum_density_cons  ( amrex::MultiFab& S_old      , amrex::MultiFab& S_new,
                                          amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
-    void enforce_minimum_density_floor ( amrex::MultiFab& S_old      , amrex::MultiFab& S_new,
+    void enforce_minimum_density_floor (                               amrex::MultiFab& S_new,
                                          amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
 
     void strang_first_step  (amrex::Real time, amrex::Real dt,  amrex::MultiFab& state, amrex::MultiFab&  dstate);
@@ -865,7 +865,7 @@ protected:
 
     void compute_average_density();
     void compute_average_temperature(amrex::Real& average_temperature);
-    void compute_average_species(int nspec, int naux, amrex::Vector<amrex::Real>& average_species);
+    void compute_average_species(amrex::Vector<amrex::Real>& average_species);
 
     void set_small_values();
 

@@ -1,15 +1,15 @@
 # AMREX_HOME defines the directory in which we will find all the AMReX code
-AMREX_HOME ?= /project/projectdirs/nyx/src/amrex
+AMREX_HOME ?= ../../../amrex
 
 # TOP defines the directory in which we will find Source, Exec, etc
-TOP = ..
+TOP = ../../
 
 EBASE     = AmrDerive
 
 # compilation options
-COMP    = gcc
+COMP    = intel
 
-USE_MPI = TRUE
+USE_MPI = FALSE
 USE_OMP = FALSE
 
 PRECISION = DOUBLE

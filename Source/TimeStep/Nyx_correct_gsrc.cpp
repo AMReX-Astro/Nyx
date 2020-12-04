@@ -20,11 +20,8 @@ Nyx::correct_gsrc(int lev, Real time, Real prev_time, Real cur_time, Real dt)
     get_level(lev).gravity->get_old_grav_vector(lev, grav_vec_old, time);
     get_level(lev).gravity->get_new_grav_vector(lev, grav_vec_new, cur_time);
 
-    const Real* dx = get_level(lev).Geom().CellSize();
-
     MultiFab& S_old = get_level(lev).get_old_data(State_Type);
     MultiFab& S_new = get_level(lev).get_new_data(State_Type);
-    MultiFab& D_new = get_level(lev).get_new_data(DiagEOS_Type);
 
     const Real a_old     = get_comoving_a(prev_time);
     const Real a_new     = get_comoving_a(cur_time);

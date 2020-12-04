@@ -75,7 +75,6 @@ Nyx::read_comoving_params ()
 void
 Nyx::integrate_comoving_a_to_a(const Real old_a_local, const Real a_value, Real& dt)
 {
-    const Real xacc = 1.0e-8;
     Real H_0, OmL;
     Real Delta_t;
     Real start_a, end_a, start_slope, end_slope;
@@ -136,7 +135,6 @@ Nyx::integrate_comoving_a_to_a(const Real old_a_local, const Real a_value, Real&
 void
 Nyx::integrate_comoving_a_to_z(const Real old_a_local, const Real z_value, Real& dt)
 {
-    const Real xacc = 1.0e-8;
     Real H_0, OmL;
     Real Delta_t;
     Real start_a, end_a, start_slope, end_slope;
@@ -224,13 +222,12 @@ Nyx::est_maxdt_comoving_a(const Real old_a_local, Real & dt)
 void
 Nyx::est_lindt_comoving_a(const Real old_a_local, const Real new_a_local, Real& dt)
 {
-    Real H_0, OmL;
+    Real H_0;
     Real lin_dt;
-
-    OmL = 1.e0 - comoving_OmM - comoving_OmR;
 
     // This subroutine computes dt based on not changing a by more than 5%
     // if we use forward Euler integration
+    // OmL = 1.e0 - comoving_OmM - comoving_OmR;
     //   d(ln(a)) / dt = H_0 * sqrt(OmM/a^3 + OmR/a^4 + OmL)
 
     H_0 = comoving_h * Hubble_const;
@@ -604,8 +601,7 @@ Real invEz(Real H0, Real Om, Real Or, Real a)
 void
 Nyx::integrate_time_given_a(const Real a0, const Real a1, Real& dt)
 {
-
-    const Real xacc = 1.0e-6;
+    const Real small_dt_fac = 1.0e-6;
     Real H0, OmM, OmR, prev_soln, h;
     int iter, n, j;
 
@@ -633,7 +629,7 @@ Nyx::integrate_time_given_a(const Real a0, const Real a1, Real& dt)
         dt = dt*h;
 
         if (iter > 4)
-            if (std::abs(dt-prev_soln) < xacc*std::abs(prev_soln))
+            if (std::abs(dt-prev_soln) < small_dt_fac*std::abs(prev_soln))
                 return;
 
         prev_soln = dt;
@@ -644,7 +640,7 @@ void
 Nyx::integrate_comoving_a (const Real old_a_local, Real& new_a_local, const Real dt)
 {
 
-    const Real xacc = 1.0e-8;
+    const Real small_a_fac = 1.0e-8;
     Real H_0, OmL, Delta_t, prev_soln;
     Real start_a, end_a, start_slope, end_slope;
     int iter, j, nsteps;
@@ -694,7 +690,7 @@ Nyx::integrate_comoving_a (const Real old_a_local, Real& new_a_local, const Real
 
         new_a_local  = end_a;
 
-        if (std::abs(1.0e0-new_a_local/prev_soln) <= xacc)
+        if (std::abs(1.0e0-new_a_local/prev_soln) <= small_a_fac)
               return;
         prev_soln = new_a_local;
 
@@ -738,6 +734,7 @@ Nyx::plot_z_est_time_step (Real& dt_0, bool& dt_changed)
 {
     Real dt = dt_0;
     Real a_old, z_old, a_new, z_new;
+    Real z_value;
 
     // This is where we are now
 #ifdef NO_HYDRO
@@ -759,7 +756,6 @@ Nyx::plot_z_est_time_step (Real& dt_0, bool& dt_changed)
     z_new = (1. / a_new) - 1.;
 
     // Find the relevant entry of the plot_z_values array
-    Real z_value;
     bool found_one = false;
     for (int i = 0; i < plot_z_values.size(); i++)
     {
@@ -805,8 +801,7 @@ Nyx::plot_z_est_time_step (Real& dt_0, bool& dt_changed)
     z_new = (1. / a_new) - 1.;
 
     // Find the relevant entry of the plot_z_values array
-    Real z_value;
-    bool found_one = false;
+    found_one = false;
     for (int i = 0; i < plot_z_values.size(); i++)
     {
         // We have gone from before to after one of the specified values
@@ -821,7 +816,6 @@ Nyx::plot_z_est_time_step (Real& dt_0, bool& dt_changed)
     // as half the interval to reach that z_value
     if (found_one)
     {
-        Real two_dt = 2.0*dt_0;
         integrate_comoving_a_to_z(old_a, z_value, two_dt);
                 
 

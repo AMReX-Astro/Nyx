@@ -305,67 +305,52 @@ Nyx::compute_average_temperature (Real& average_temperature)
 }
 
 void
-Nyx::compute_average_species (int          nspec,
-                              int          naux,
-                              Vector<Real>& average_species)
+Nyx::compute_average_species (Vector<Real>& average_species)
 {
     amrex::Gpu::LaunchSafeGuard lsg(true);
 #ifdef CONST_SPECIES
     {
        average_species[0] = h_species;
        average_species[1] = he_species;
-       if (verbose > 0 && ParallelDescriptor::IOProcessor())
-       {
-           std::cout << "Average species " << 0 << ": " << average_species[0] << '\n';
-           std::cout << "Average species " << 1 << ": " << average_species[1] << '\n';
-       }
     }
 #else
     {
         Real                 time = state[State_Type].curTime();
         const Geometry& crse_geom = parent->Geom(0);
 
-        AMREX_ALWAYS_ASSERT (nspec == 2);
-        AMREX_ALWAYS_ASSERT (naux  == 0);
-        // Get the species names from the network model.
+        int nspec = 2;
+
         Vector<std::string> spec_names(nspec);
+        Vector<std::string> spec_string(nspec);
+
         spec_names[0] = "H";
         spec_names[1] = "He";
 
+        spec_string[0] = "X(H)";
+        spec_string[1] = "X(He)";
+
         //
         // Get the species names from the network model.
         //
-        for (int i = 0; i < nspec+naux; i++)
+        // Add up the species -- this is just volume-weighted, not mass-weighted
+        for (int lev = 0; lev <= parent->finestLevel(); lev++)
         {
-
-            std::string spec_string;
-
-            if (i < nspec)
-            {
-               spec_string = "X(";
-               spec_string += spec_names[i];
-               spec_string += ')';
-            }
-            else
-            {
-               spec_string = spec_names[i];
-            }
-
-            // Add up the species -- this is just volume-weighted, not mass-weighted
-            for (int lev = 0; lev <= parent->finestLevel(); lev++)
-            {
-                Nyx& nyx_lev = get_level(lev);
-                average_species[i] += nyx_lev.vol_weight_sum(spec_string, time, true);
-            }
- 
-           // Divide by physical volume of domain.
-           average_species[i] = average_species[i] / crse_geom.ProbSize();
-
-           if (verbose > 0 && ParallelDescriptor::IOProcessor())
-               std::cout << "Average species " << i << ": " << average_species[i] << '\n';
+            Nyx& nyx_lev = get_level(lev);
+            average_species[0] += nyx_lev.vol_weight_sum(spec_string[0], time, true);
+            average_species[1] += nyx_lev.vol_weight_sum(spec_string[1], time, true);
         }
-    } 
+ 
+       // Divide by physical volume of domain.
+       average_species[0] = average_species[0] / crse_geom.ProbSize();
+       average_species[1] = average_species[1] / crse_geom.ProbSize();
+       amrex::Gpu::synchronize();
+    }
 #endif
-    amrex::Gpu::synchronize();
+
+    if (verbose > 0 && ParallelDescriptor::IOProcessor())
+    {
+        std::cout << "Average species 0 : " << average_species[0] << '\n';
+        std::cout << "Average species 1 : " << average_species[1] << '\n';
+    }
 }
 #endif

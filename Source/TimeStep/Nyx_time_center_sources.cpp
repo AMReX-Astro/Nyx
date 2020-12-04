@@ -32,13 +32,13 @@ Nyx::time_center_source_terms (MultiFab& S_new,
     {
         const Box& bx = mfi.tilebox();
 
-        const auto state = S_new.array(mfi);
+        const auto s_arr = S_new.array(mfi);
 
         const auto src_old = ext_src_old.array(mfi);
         const auto src_new = ext_src_new.array(mfi);
 
         amrex::ParallelFor(bx, ncomp,
-          [state,src_old,src_new,a_old,a_new,iden,ieint,ieden,dt]
+          [s_arr,src_old,src_new,a_old,a_new,iden,ieint,ieden,dt]
           AMREX_GPU_DEVICE (int i, int j, int k, int n) noexcept
           {
               Real a_half    = 0.5 * (a_old + a_new);
@@ -47,25 +47,24 @@ Nyx::time_center_source_terms (MultiFab& S_new,
               Real a_new_inv  = 1.0 / a_new;
 
               int ixmom = iden+1;
-              int iymom = iden+2;
               int izmom = iden+3;
 
               // Density
               if (n == iden) 
               {
-                  state(i,j,k,n) += 0.5 * dt * (src_new(i,j,k,n) - src_old(i,j,k,n)) * a_half_inv;
+                  s_arr(i,j,k,n) += 0.5 * dt * (src_new(i,j,k,n) - src_old(i,j,k,n)) * a_half_inv;
               }
               // Momentum
               else if (n >= ixmom and n <= izmom) 
               {
-                  state(i,j,k,n) += 0.5 * dt * (src_new(i,j,k,n) - src_old(i,j,k,n)) * a_new_inv;
+                  s_arr(i,j,k,n) += 0.5 * dt * (src_new(i,j,k,n) - src_old(i,j,k,n)) * a_new_inv;
               }
 
               // (rho e) and (rho E)
               else if (n == ieint) 
               {
-                  state(i,j,k,ieint) += 0.5 * dt * a_half * (src_new(i,j,k,ieint) - src_old(i,j,k,ieint)) * a_newsq_inv;
-                  state(i,j,k,ieden) += 0.5 * dt * a_half * (src_new(i,j,k,ieden) - src_old(i,j,k,ieden)) * a_newsq_inv;
+                  s_arr(i,j,k,ieint) += 0.5 * dt * a_half * (src_new(i,j,k,ieint) - src_old(i,j,k,ieint)) * a_newsq_inv;
+                  s_arr(i,j,k,ieden) += 0.5 * dt * a_half * (src_new(i,j,k,ieden) - src_old(i,j,k,ieden)) * a_newsq_inv;
               }
 
               // Don't do anything here because we did this when we did eint
@@ -76,7 +75,7 @@ Nyx::time_center_source_terms (MultiFab& S_new,
               // (rho X_i) and (rho adv_i) and (rho aux_i)
               else
               {
-                state(i,j,k,n) += 0.50 * dt * (src_new(i,j,k,n) - src_old(i,j,k,n)) * a_half_inv;
+                s_arr(i,j,k,n) += 0.50 * dt * (src_new(i,j,k,n) - src_old(i,j,k,n)) * a_half_inv;
               }
           });
     }

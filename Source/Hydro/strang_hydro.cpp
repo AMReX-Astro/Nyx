@@ -280,7 +280,8 @@ Nyx::strang_hydro_ghost_state (Real time,
 
     amrex::Gpu::Device::streamSynchronize();
     amrex::Gpu::setLaunchRegion(false);
-    /*    if (S_old.contains_nan(Density, S_old.nComp(), 0))
+    /*    
+    if (S_old.contains_nan(Density, S_old.nComp(), 0))
     {
         for (int i = 0; i < S_old.nComp(); i++)
         {

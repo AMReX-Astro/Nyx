@@ -56,9 +56,10 @@ const int NyxHaloFinderSignal = 42;
 const int GimletSignal = 55;
 
 static int sum_interval = -1;
+static int  max_temp_dt = -1;
+
 static Real fixed_dt    = -1.0;
 static Real initial_dt  = -1.0;
-static Real max_temp_dt = -1.0;
 static Real dt_cutoff   =  0;
 
 int simd_width = 1;
@@ -131,10 +132,10 @@ int Nyx::strang_grown_box = 1;
 int Nyx::sdc_split    = 0;
 #endif
 
-Real Nyx::average_gas_density = 0;
-Real Nyx::average_dm_density = 0;
-Real Nyx::average_neutr_density = 0;
-Real Nyx::average_total_density = 0;
+Real Nyx::average_gas_density = 0.;
+Real Nyx::average_dm_density = 0.;
+Real Nyx::average_neutr_density = 0.;
+Real Nyx::average_total_density = 0.;
 
 long int Nyx::old_max_sundials_steps = 3;
 long int Nyx::new_max_sundials_steps = 3;
@@ -769,7 +770,6 @@ Nyx::init ()
 {
     BL_PROFILE("Nyx::init()");
     Real dt        = parent->dtLevel(level);
-    int finest_level = parent->finestLevel();
 
     Real cur_time  = get_level(level-1).state[State_for_Time].curTime();
     Real prev_time = get_level(level-1).state[State_for_Time].prevTime();
@@ -873,60 +873,58 @@ Nyx::est_time_step (Real dt_old)
 
         {
           Real dt = 1.e200;
-          //Doesn't seem to be used:
-          //      Real grid_scl = std::cbrt(dx[0]*dx[1]*dx[2]);
           Real sound_speed_factor=sqrt(gamma*(gamma-1));
-          Real dummy_small_dens=small_dens;
-          int  dummy_max_temp_dt=max_temp_dt;
+
+          Real local_small_dens  = small_dens;
+          int  local_max_temp_dt = max_temp_dt;
 
           amrex::Gpu::LaunchSafeGuard lsg(true);
           dt = amrex::ReduceMin(stateMF, 0,
-                                [=] AMREX_GPU_HOST_DEVICE (Box const& bx, Array4<Real const> const& u) noexcept -> Real
-                                            {
-                                              const auto lo = amrex::lbound(bx);
-                                              const auto hi = amrex::ubound(bx);
+              [=] AMREX_GPU_HOST_DEVICE (Box const& bx, Array4<Real const> const& u) noexcept -> Real
+              {
+                  const auto lo = amrex::lbound(bx);
+                  const auto hi = amrex::ubound(bx);
 #if !defined(__CUDACC__) || (__CUDACC_VER_MAJOR__ != 9) || (__CUDACC_VER_MINOR__ != 2)
-                                              amrex::Real dt_gpu = std::numeric_limits<amrex::Real>::max();
+                  amrex::Real dt_gpu = std::numeric_limits<amrex::Real>::max();
 #else
-                                              amrex::Real dt_gpu = 1.e37;
+                  amrex::Real dt_gpu = 1.e37;
 #endif
 
-                                              for         (int k = lo.z; k <= hi.z; ++k) {
-                                                for     (int j = lo.y; j <= hi.y; ++j) {
-                                                  for (int i = lo.x; i <= hi.x; ++i) {
-                                                    if(u(i,j,k,Density)<=1.1*dummy_small_dens && dummy_max_temp_dt==1)
-                                                      continue;
+                  for         (int k = lo.z; k <= hi.z; ++k) {
+                    for     (int j = lo.y; j <= hi.y; ++j) {
+                      for (int i = lo.x; i <= hi.x; ++i) {
+                        if(u(i,j,k,Density)<=1.1*local_small_dens && local_max_temp_dt==1)
+                          continue;
 
-                                                    Real rhoInv = 1.0 / u(i,j,k,Density);
-                                                    Real ux     = u(i,j,k,Xmom)*rhoInv;
-                                                    Real uy     = u(i,j,k,Ymom)*rhoInv;
-                                                    Real uz     = u(i,j,k,Zmom)*rhoInv;
+                            Real rhoInv = 1.0 / u(i,j,k,Density);
+                            Real ux     = u(i,j,k,Xmom)*rhoInv;
+                            Real uy     = u(i,j,k,Ymom)*rhoInv;
+                            Real uz     = u(i,j,k,Zmom)*rhoInv;
 
-                                                    // Use internal energy for calculating dt
-                                                    Real e  = u(i,j,k,Eint)*rhoInv;
+                            // Use internal energy for calculating dt
+                            Real e  = u(i,j,k,Eint)*rhoInv;
 
-                                                    Real c;
-                                                    // Protect against negative e
+                            Real c;
+                            // Protect against negative e
 #ifdef HEATCOOL
-                                                    if (e > 0.0)
-                                                      c=sound_speed_factor*std::sqrt(e);
+                            if (e > 0.0)
+                              c=sound_speed_factor*std::sqrt(e);
 #else
-                                                    if (e > 0.0)
-                                                      c=sound_speed_factor*std::sqrt(u(i,j,k,Density)*e/u(i,j,k,Density));
+                            if (e > 0.0)
+                              c=sound_speed_factor*std::sqrt(u(i,j,k,Density)*e/u(i,j,k,Density));
 #endif
-                                                    else
-                                                      c = 0.0;
+                            else
+                              c = 0.0;
 
-                                                    Real dt1 = dx[0]/(c + amrex::Math::abs(ux));
-                                                    Real dt2 = dx[1]/(c + amrex::Math::abs(uy));
-                                                    Real dt3 = dx[2]/(c + amrex::Math::abs(uz));
-                                                    dt_gpu = amrex::min(dt_gpu,amrex::min(dt1,amrex::min(dt2,dt3)));
-
-                                                  }
-                                                }
-                                              }
-                                              return dt_gpu;
-                                            });
+                            Real dt1 = dx[0]/(c + amrex::Math::abs(ux));
+                            Real dt2 = dx[1]/(c + amrex::Math::abs(uy));
+                            Real dt3 = dx[2]/(c + amrex::Math::abs(uz));
+                            dt_gpu = amrex::min(dt_gpu,amrex::min(dt1,amrex::min(dt2,dt3)));
+                       }
+                    }
+                  }
+                  return dt_gpu;
+              });
 
           est_dt = std::min(est_dt, dt);
 
@@ -1673,8 +1671,8 @@ Nyx::set_small_values ()
 #endif
        Real gamma_minus_1 = gamma - 1.0;
        set_small_values_given_average
-       (average_gas_density, average_temperature,
-       a,  small_dens, small_temp, small_pres, gamma_minus_1, h_species, he_species);
+           (average_gas_density, average_temperature,
+           a, small_dens, small_temp, small_pres, gamma_minus_1, h_species, he_species);
 
        if (verbose && ParallelDescriptor::IOProcessor())
        {
@@ -2208,15 +2206,15 @@ Nyx::enforce_consistent_e (MultiFab& S)
   for (MFIter mfi(S,TilingIfNotGPU()); mfi.isValid(); ++mfi)
   {
         const Box& bx = mfi.tilebox();
-        auto const state = S.array(mfi);
+        auto const s_arr = S.array(mfi);
 
         amrex::ParallelFor(bx,
         [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
         {
-             state(i,j,k,Eden) = state(i,j,k,Eint) + 0.5 * (
-                state(i,j,k,Xmom)*state(i,j,k,Xmom) +
-                state(i,j,k,Ymom)*state(i,j,k,Ymom) +
-                state(i,j,k,Zmom)*state(i,j,k,Zmom) ) / state(i,j,k,Density);
+            s_arr(i,j,k,Eden) = s_arr(i,j,k,Eint) + 0.5 * (
+                                s_arr(i,j,k,Xmom)*s_arr(i,j,k,Xmom) +
+                                s_arr(i,j,k,Ymom)*s_arr(i,j,k,Ymom) +
+                                s_arr(i,j,k,Zmom)*s_arr(i,j,k,Zmom) ) / s_arr(i,j,k,Density);
         });
   }
 }
@@ -2368,7 +2366,6 @@ Nyx::reset_internal_energy (MultiFab& S_new, MultiFab& D_new, MultiFab& reset_e_
         const auto fab = S_new.array(mfi);
         const auto fab_diag = D_new.array(mfi);
         const auto fab_reset = reset_e_src.array(mfi);
-        int print_warn=0;
         Real h_species_in=h_species;
         Real small_temp_in=small_temp;
         amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -2402,7 +2399,6 @@ Nyx::reset_internal_energy_interp (MultiFab& S_new, MultiFab& D_new, MultiFab& r
           const auto fab = S_new.array(mfi);
           const auto fab_diag = D_new.array(mfi);
           const auto fab_reset = reset_e_src.array(mfi);
-          int print_warn=0;
           Real h_species_in=h_species;
           Real small_temp_in=small_temp;
           amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
@@ -2438,8 +2434,7 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 
     amrex::Gpu::synchronize();
     amrex::Gpu::LaunchSafeGuard lsg(true);
-        FArrayBox test, test_d;
-        int print_warn=0;
+    FArrayBox test, test_d;
 
 #ifdef _OPENMP
 #pragma omp parallel if (Gpu::notInLaunchRegion())
@@ -2465,9 +2460,10 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
             //      AMREX_LAUNCH_DEVICE_LAMBDA
 
 
-            Real dummy_small_temp=small_temp;
-            Real dummy_large_temp=large_temp;
-            int  dummy_max_temp_dt=max_temp_dt;
+            Real local_small_temp  = small_temp;
+            Real local_large_temp  = large_temp;
+            int  local_max_temp_dt = max_temp_dt;
+
             Real h_species_in=h_species;
             Real gamma_minus_1_in=gamma - 1.0;
             auto atomic_rates = atomic_rates_glob;
@@ -2487,9 +2483,9 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 
                 nyx_eos_T_given_Re_device(atomic_rates, gamma_minus_1_in, h_species_in, JH, JHe, &diag_eos(i,j,k,Temp_comp), &diag_eos(i,j,k,Ne_comp),
                                                state(i,j,k,Density), eint, a);
-                if(diag_eos(i,j,k,Temp_comp)>=dummy_large_temp && dummy_max_temp_dt == 1)
+                if(diag_eos(i,j,k,Temp_comp)>=local_large_temp && local_max_temp_dt == 1)
                 {
-                  diag_eos(i,j,k,Temp_comp)=dummy_large_temp;
+                  diag_eos(i,j,k,Temp_comp) = local_large_temp;
 
                   Real dummy_pres=0.0;
                   // Set temp to small_temp and compute corresponding internal energy
@@ -2509,14 +2505,18 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
               {
                 Real dummy_pres=0.0;
                 // Set temp to small_temp and compute corresponding internal energy
+<<<<<<< HEAD
                 nyx_eos_given_RT(atomic_rates, gamma_minus_1_in, h_species_in, &eint, &dummy_pres, state(i,j,k,Density), dummy_small_temp,
+=======
+                nyx_eos_given_RT(atomic_rates, gamma_minus_1_in, h_species_in, &eint, &dummy_pres, state(i,j,k,Density), local_small_temp,
+>>>>>>> upstream/development
                                     diag_eos(i,j,k,Ne_comp), a);
 
                 Real ke = 0.5e0 * (state(i,j,k,Xmom) * state(i,j,k,Xmom) +
                               state(i,j,k,Ymom) * state(i,j,k,Ymom) +
                               state(i,j,k,Zmom) * state(i,j,k,Zmom)) * rhoInv;
 
-                diag_eos(i,j,k,Temp_comp) = dummy_small_temp;
+                diag_eos(i,j,k,Temp_comp) = local_small_temp;
                 state(i,j,k,Eint) = state(i,j,k,Density) * eint;
                 state(i,j,k,Eden) = state(i,j,k,Eint) + ke;
               }
@@ -2638,13 +2638,13 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
         for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
         {
             const Box& bx = mfi.tilebox();
-            const auto state    = S_new.const_array(mfi);
-            const auto diag_eos = D_new.const_array(mfi);
+            const auto s_arr = S_new.const_array(mfi);
+            const auto d_arr = D_new.const_array(mfi);
             Real vol = dx[0]*dx[1]*dx[2];
             AMREX_LOOP_3D(bx, i, j, k,
             {
-                Real T_tmp = diag_eos(i,j,k,Temp_comp);
-                Real rho_tmp = state(i,j,k,Density);
+                Real T_tmp   = d_arr(i,j,k,Temp_comp);
+                Real rho_tmp = s_arr(i,j,k,Density);
                 T_sum += vol*T_tmp;
                 Tinv_sum += rho_tmp/T_tmp;
                 rho_T_sum += rho_tmp*T_tmp;
@@ -2686,12 +2686,11 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
 
-    Real whim_mass=0.0, whim_vol=0.0, hh_mass=0.0, hh_vol=0.0, igm_mass=0.0, igm_vol=0.0, mass_sum=0.0, vol_sum=0.0;
+    Real whim_mass=0.0, whim_vol=0.0, hh_mass=0.0, hh_vol=0.0;
+    Real igm_mass=0.0, igm_vol=0.0, mass_sum=0.0, vol_sum=0.0;
 
-    Real rho_hi = 1.1*average_gas_density;
-    Real rho_lo = 0.9*average_gas_density;
     const auto dx= geom.CellSizeArray();
-    int average_gas_density=average_gas_density;
+    Real local_average_gas_density = average_gas_density;
 
 #ifdef AMREX_USE_GPU
     if (Gpu::inLaunchRegion())
@@ -2711,7 +2710,7 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
             [=] AMREX_GPU_DEVICE (int i, int j, int k) -> ReduceTuple
             {
                 Real T = diag_eos(i,j,k,Temp_comp);
-                Real R = state(i,j,k,Density) / average_gas_density;
+                Real R = state(i,j,k,Density) / local_average_gas_density;
                 Real rho_vol = state(i,j,k,Density)*vol;
                 Real l_whim_mass = 0._rt;
                 Real l_whim_vol = 0._rt;
@@ -2758,14 +2757,14 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
         for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
         {
             const Box& bx = mfi.tilebox();
-            const auto state    = S_new.const_array(mfi);
+            const auto s_arr    = S_new.const_array(mfi);
             const auto diag_eos = D_new.const_array(mfi);
             Real vol = dx[0]*dx[1]*dx[2];
             AMREX_LOOP_3D(bx, i, j, k,
             {
                 Real T = diag_eos(i,j,k,Temp_comp);
-                Real R = state(i,j,k,Density) / average_gas_density;
-                Real rho_vol = state(i,j,k,Density)*vol;
+                Real R = s_arr(i,j,k,Density) / average_gas_density;
+                Real rho_vol = s_arr(i,j,k,Density)*vol;
                 if ( (T > T_cut) && (R <= rho_cut) ) {
                     whim_mass += rho_vol;
                     whim_vol += vol;

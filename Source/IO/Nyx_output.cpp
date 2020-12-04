@@ -205,7 +205,7 @@ Nyx::writePlotFile (const std::string& dir,
 #endif
             } else
 #endif
-			if (it->name() == "Rank") {
+                        if (it->name() == "Rank") {
                 derive_names.push_back(it->name());
                 num_derive++;
             } else {
@@ -375,7 +375,7 @@ Nyx::writePlotFilePost (const std::string& dir, ostream& os)
   }
 #endif
 #endif
-	}
+        }
   if(verbose) {
 
     if (level == 0)
@@ -653,7 +653,7 @@ Nyx::particle_check_point (const std::string& dir)
   if (level == 0)
     {
 #ifdef AMREX_PARTICLES
-		if (Nyx::theDMPC())
+                if (Nyx::theDMPC())
         {
           Nyx::theDMPC()->NyxCheckpoint(dir, dm_chk_particle_file);
         }

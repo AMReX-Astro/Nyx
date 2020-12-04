@@ -29,12 +29,12 @@ nyx.strang_grown_box=1
 ###a
 #old comparison
 nyx.strang_fuse=0
-nyx.heat_cool_type=3
+nyx.heat_cool_type=11
 
 ###b
 #old comparison
 nyx.strang_fuse=0
-nyx.heat_cool_type=3
+nyx.heat_cool_type=11
 
 ###c
 #cuda
