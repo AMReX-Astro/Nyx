@@ -601,8 +601,7 @@ Real invEz(Real H0, Real Om, Real Or, Real a)
 void
 Nyx::integrate_time_given_a(const Real a0, const Real a1, Real& dt)
 {
-
-    const Real xacc = 1.0e-6;
+    const Real small_dt_fac = 1.0e-6;
     Real H0, OmM, OmR, prev_soln, h;
     int iter, n, j;
 
@@ -630,7 +629,7 @@ Nyx::integrate_time_given_a(const Real a0, const Real a1, Real& dt)
         dt = dt*h;
 
         if (iter > 4)
-            if (std::abs(dt-prev_soln) < xacc*std::abs(prev_soln))
+            if (std::abs(dt-prev_soln) < small_dt_fac*std::abs(prev_soln))
                 return;
 
         prev_soln = dt;
@@ -641,7 +640,7 @@ void
 Nyx::integrate_comoving_a (const Real old_a_local, Real& new_a_local, const Real dt)
 {
 
-    const Real xacc = 1.0e-8;
+    const Real small_a_fac = 1.0e-8;
     Real H_0, OmL, Delta_t, prev_soln;
     Real start_a, end_a, start_slope, end_slope;
     int iter, j, nsteps;
@@ -691,7 +690,7 @@ Nyx::integrate_comoving_a (const Real old_a_local, Real& new_a_local, const Real
 
         new_a_local  = end_a;
 
-        if (std::abs(1.0e0-new_a_local/prev_soln) <= xacc)
+        if (std::abs(1.0-new_a_local) <= small_a_fac*prev_soln)
               return;
         prev_soln = new_a_local;
 
