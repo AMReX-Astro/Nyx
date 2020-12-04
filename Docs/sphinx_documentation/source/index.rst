@@ -28,17 +28,6 @@ Welcome to Nyx's documentation!
    PostProcessing
    Debugging
 
-.. toctree::
-   :maxdepth: 1
-   :caption: API
-
-   filelist
-   classlist
-
-.. toctree::
-
-   zreferences
-   
 .. toctree::      
    :maxdepth: 2
    :caption: Contents:

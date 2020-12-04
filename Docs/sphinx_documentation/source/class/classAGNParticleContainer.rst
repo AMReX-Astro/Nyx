@@ -1,4 +1,0 @@
-Class AGNParticleContainer
-==========================
-
-.. doxygenclass:: AGNParticleContainer
