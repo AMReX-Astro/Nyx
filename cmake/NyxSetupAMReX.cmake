@@ -1,4 +1,4 @@
-set(AMREX_MINIMUM_VERSION 19.05.1 CACHE INTERNAL "Minimum required AMReX version")
+set(AMREX_MINIMUM_VERSION 20.11 CACHE INTERNAL "Minimum required AMReX version")
 
 # We first check if we can find an AMReX installation.
 # If so, we proceed with STANDALONE mode

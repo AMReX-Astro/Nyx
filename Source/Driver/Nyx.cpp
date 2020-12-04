@@ -21,7 +21,7 @@ using std::string;
 #include <AMReX_Utility.H>
 #include <AMReX_Print.H>
 
-#if BL_USE_MPI
+#ifdef BL_USE_MPI
 #include <MemInfo.H>
 #endif
 
@@ -528,10 +528,10 @@ Nyx::read_hydro_params ()
     pp_nyx.query("use_analriem", use_analriem);
 
     if (use_typical_steps != 0 && strang_grown_box == 0)
-    { 
+    {
           amrex::Error("Nyx::use_typical_steps must be 0 with strang_grown_box = 0");
     }
-   
+
     if (do_hydro == 1)
     {
 #ifdef CONST_SPECIES
@@ -742,7 +742,7 @@ Nyx::init (AmrLevel& old)
         MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
         reset_e_src.setVal(0.0);
         reset_internal_energy_interp(S_new,D_new,reset_e_src);
-    
+
     }
 #endif
 
@@ -901,7 +901,7 @@ Nyx::est_time_step (Real dt_old)
                             Real uy     = u(i,j,k,Ymom)*rhoInv;
                             Real uz     = u(i,j,k,Zmom)*rhoInv;
 
-                            // Use internal energy for calculating dt 
+                            // Use internal energy for calculating dt
                             Real e  = u(i,j,k,Eint)*rhoInv;
 
                             Real c;
@@ -1111,7 +1111,7 @@ Nyx::computeNewDt (int                   finest_level,
     {
         bool dt_changed_plot     = false;
         bool dt_changed_analysis = false;
-   
+
         if (plot_z_values.size() > 0)
            plot_z_est_time_step(dt_0,dt_changed_plot);
 
@@ -1124,11 +1124,11 @@ Nyx::computeNewDt (int                   finest_level,
         if (dt_changed_plot || dt_changed_analysis)
             integrate_comoving_a(cur_time,dt_0);
     }
-    else 
+    else
     {
         integrate_comoving_a(cur_time,dt_0);
     }
-     
+
     n_factor = 1;
     for (i = 0; i <= finest_level; i++)
     {
@@ -1381,7 +1381,7 @@ Nyx::post_timestep (int iteration)
         // they'll be over-written by averaging down
         if (level < finest_level)
             average_down();
-        
+
         // This needs to be done after any changes to the state from refluxing.
 #ifndef CONST_SPECIES
         enforce_nonnegative_species(S_new_crse);
@@ -1507,7 +1507,7 @@ Nyx::post_timestep (int iteration)
 
         write_info();
 
-#if BL_USE_MPI
+#ifdef BL_USE_MPI
         // Memory monitoring:
         MemInfo* mInfo = MemInfo::GetInstance();
         char info[32];
@@ -1697,7 +1697,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
 
     for (int lev = 0; lev <= parent->finestLevel(); lev++)
     {
-    
+
         Vector<long> wgts(grids.size());
         DistributionMapping dm;
 
@@ -1743,7 +1743,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
 
         amrex::Gpu::Device::streamSynchronize();
         const DistributionMapping& newdmap = dm;
-        
+
         for (int i = 0; i < theActiveParticles().size(); i++)
         {
              theActiveParticles()[i]->Regrid(newdmap, grids, lev);
@@ -2102,7 +2102,7 @@ Nyx::average_down ()
     average_down(State_Type);
 #endif
 
-    if (do_grav) 
+    if (do_grav)
     {
         average_down(PhiGrav_Type);
         average_down(Gravity_Type);
@@ -2473,15 +2473,15 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
               Real rhoInv = 1.e0 / state(i,j,k,Density);
               Real eint = state(i,j,k,Eint) * rhoInv;
 
-            if (state(i,j,k,Eint) > 0.0) 
+            if (state(i,j,k,Eint) > 0.0)
               {
 
                 eint = state(i,j,k,Eint) * rhoInv;
-                
+
                 int JH = 1;
                 int JHe = 1;
 
-                nyx_eos_T_given_Re_device(atomic_rates, gamma_minus_1_in, h_species_in, JH, JHe, &diag_eos(i,j,k,Temp_comp), &diag_eos(i,j,k,Ne_comp), 
+                nyx_eos_T_given_Re_device(atomic_rates, gamma_minus_1_in, h_species_in, JH, JHe, &diag_eos(i,j,k,Temp_comp), &diag_eos(i,j,k,Ne_comp),
                                                state(i,j,k,Density), eint, a);
                 if(diag_eos(i,j,k,Temp_comp)>=local_large_temp && local_max_temp_dt == 1)
                 {
@@ -2505,11 +2505,15 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
               {
                 Real dummy_pres=0.0;
                 // Set temp to small_temp and compute corresponding internal energy
-                nyx_eos_given_RT(atomic_rates, gamma_minus_1_in, h_species_in, &eint, &dummy_pres, state(i,j,k,Density), local_small_temp, 
+<<<<<<< HEAD
+                nyx_eos_given_RT(atomic_rates, gamma_minus_1_in, h_species_in, &eint, &dummy_pres, state(i,j,k,Density), dummy_small_temp,
+=======
+                nyx_eos_given_RT(atomic_rates, gamma_minus_1_in, h_species_in, &eint, &dummy_pres, state(i,j,k,Density), local_small_temp,
+>>>>>>> upstream/development
                                     diag_eos(i,j,k,Ne_comp), a);
 
-                Real ke = 0.5e0 * (state(i,j,k,Xmom) * state(i,j,k,Xmom) + 
-                              state(i,j,k,Ymom) * state(i,j,k,Ymom) + 
+                Real ke = 0.5e0 * (state(i,j,k,Xmom) * state(i,j,k,Xmom) +
+                              state(i,j,k,Ymom) * state(i,j,k,Ymom) +
                               state(i,j,k,Zmom) * state(i,j,k,Zmom)) * rhoInv;
 
                 diag_eos(i,j,k,Temp_comp) = local_small_temp;
@@ -2682,7 +2686,7 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);
 
-    Real whim_mass=0.0, whim_vol=0.0, hh_mass=0.0, hh_vol=0.0; 
+    Real whim_mass=0.0, whim_vol=0.0, hh_mass=0.0, hh_vol=0.0;
     Real igm_mass=0.0, igm_vol=0.0, mass_sum=0.0, vol_sum=0.0;
 
     const auto dx= geom.CellSizeArray();
@@ -2905,5 +2909,3 @@ Nyx::CreateLevelDirectory (const std::string &dir)
     }
 #endif
 }
-
-

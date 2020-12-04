@@ -5,7 +5,7 @@ include(AMReXBuildInfo)
 #
 macro (nyx_setup_executable _srcs _inputs)
 
-   cmake_parse_arguments( "" "HAS_FORTRAN_MODULES"
+   cmake_parse_arguments( "" ""
       "BASE_NAME;RUNTIME_SUBDIR;EXTRA_DEFINITIONS;MAIN" "" ${ARGN} )
 
    if (_BASE_NAME)
@@ -59,18 +59,6 @@ macro (nyx_setup_executable _srcs _inputs)
    endforeach()
 
    generate_buildinfo(${_exe_name} ${CMAKE_SOURCE_DIR} REQUIRED)
-
-   # if (_HAS_FORTRAN_MODULES)
-   #    target_include_directories(${_exe_name}
-   #       PRIVATE
-   #       ${CMAKE_CURRENT_BINARY_DIR}/mod_files)
-   #    set_target_properties( ${_exe_name}
-   #       PROPERTIES
-   #       Fortran_MODULE_DIRECTORY
-   #       ${CMAKE_CURRENT_BINARY_DIR}/mod_files )
-   # endif ()
-
-   # target_link_libraries( ${_exe_name}  )
 
    if (AMReX_CUDA)
       setup_target_for_cuda_compilation( ${_exe_name} )

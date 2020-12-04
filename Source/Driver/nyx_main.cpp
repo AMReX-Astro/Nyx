@@ -111,7 +111,7 @@ nyx_main (int argc, char* argv[])
     Amr *amrptr = new Amr;
     amrptr->init(strt_time,stop_time);
 
-#if BL_USE_MPI
+#ifdef BL_USE_MPI
     // ---- initialize nyx memory monitoring
     MemInfo *mInfo = MemInfo::GetInstance();
     mInfo->LogSummary("MemInit  ");
@@ -128,7 +128,7 @@ nyx_main (int argc, char* argv[])
 
     BL_PROFILE_REGION("R::Nyx::coarseTimeStep");
 
-    while ( ! finished) 
+    while ( ! finished)
     {
      // If we set the regrid_on_restart flag and if we are *not* going to take
      // a time step then we want to go ahead and regrid here.
@@ -196,7 +196,7 @@ nyx_main (int argc, char* argv[])
     BL_PROFILE_VAR_STOP(pmain);
     BL_PROFILE_REGION_STOP("main()");
     BL_PROFILE_SET_RUN_TIME(dRunTime2);
-    
+
     }
     amrex::Finalize();
 }
