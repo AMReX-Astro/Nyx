@@ -132,10 +132,10 @@ int Nyx::strang_grown_box = 1;
 int Nyx::sdc_split    = 0;
 #endif
 
-Real Nyx::average_gas_density = 0;
-Real Nyx::average_dm_density = 0;
-Real Nyx::average_neutr_density = 0;
-Real Nyx::average_total_density = 0;
+Real Nyx::average_gas_density = 0.;
+Real Nyx::average_dm_density = 0.;
+Real Nyx::average_neutr_density = 0.;
+Real Nyx::average_total_density = 0.;
 
 long int Nyx::old_max_sundials_steps = 3;
 long int Nyx::new_max_sundials_steps = 3;
@@ -1671,8 +1671,8 @@ Nyx::set_small_values ()
 #endif
        Real gamma_minus_1 = gamma - 1.0;
        set_small_values_given_average
-       (average_gas_density, average_temperature,
-       a,  small_dens, small_temp, small_pres, gamma_minus_1, h_species, he_species);
+           (average_gas_density, average_temperature,
+           a, small_dens, small_temp, small_pres, gamma_minus_1, h_species, he_species);
 
        if (verbose && ParallelDescriptor::IOProcessor())
        {
@@ -2686,7 +2686,7 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
     Real igm_mass=0.0, igm_vol=0.0, mass_sum=0.0, vol_sum=0.0;
 
     const auto dx= geom.CellSizeArray();
-    int average_gas_density=average_gas_density;
+    Real local_average_gas_density = average_gas_density;
 
 #ifdef AMREX_USE_GPU
     if (Gpu::inLaunchRegion())
@@ -2706,7 +2706,7 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
             [=] AMREX_GPU_DEVICE (int i, int j, int k) -> ReduceTuple
             {
                 Real T = diag_eos(i,j,k,Temp_comp);
-                Real R = state(i,j,k,Density) / average_gas_density;
+                Real R = state(i,j,k,Density) / local_average_gas_density;
                 Real rho_vol = state(i,j,k,Density)*vol;
                 Real l_whim_mass = 0._rt;
                 Real l_whim_vol = 0._rt;
