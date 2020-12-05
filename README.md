@@ -30,7 +30,6 @@ of up to 2,097,152 on NERSC's Cori-KNL. With Cuda implementation, it was run on 
 More information on Nyx can be found at the [main web page](http://amrex-astro.github.io/Nyx/) and
 the [online documentation](https://amrex-astro.github.io/Nyx/docs_html/).
 
-
 ## Standards and dependencies
 
 To compile the code we require C++11 compliant compilers that support MPI-2 or
@@ -51,15 +50,9 @@ $ make -j 12 USE_CUDA=TRUE
 
 See the [Getting Started section](https://amrex-astro.github.io/Nyx/docs_html/NyxGettingStarted.html) for more information.
 
-
 ## Development model
 
-The `development` branch in also the main branch.  We use nightly
-regression testing to ensure that no answers change (or if they do, that
-the changes were expected). Contributions are welcomed and should be done via pull requests.
-A pull request should be generated from your fork of Nyx and should target
-the `development` branch.
-
+Please see CONTRIBUTING.md for details on how to contribute to AMReX.
 
 ## Outputs
 
@@ -78,10 +71,17 @@ related to the Lyman-alpha forest science.  These suites are fully MPI-parallel 
 be run either *in situ* or in-transit, or with a combination of both
 (see [Friesen et al. 2016](https://comp-astrophys-cosmol.springeropen.com/articles/10.1186/s40668-016-0017-2)).
 
-
 ## License
-Nyx is released under the LBL's modified BSD license, see the [license.txt](license.txt) file for details.
 
+Nyx Copyright (c) 2017, The Regents of the University of California,
+through Lawrence Berkeley National Laboratory (subject to receipt of
+any required approvals from the U.S. Dept. of Energy).  All rights
+reserved.
+
+Details of the license can be found in [license.txt](license.txt) file.
+
+If you have questions about your rights to use or distribute this software, 
+please contact Berkeley Lab's Innovation & Partnerships Office at IPO@lbl.gov.
 
 ## Contact
 
