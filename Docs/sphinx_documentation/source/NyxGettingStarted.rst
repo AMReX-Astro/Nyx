@@ -64,8 +64,8 @@ First, make sure that git is installed on your machine—we recommend version 1.
    ``development`` branch, so you should work there if you want
    the latest source.
 
-Building the Code
-=================
+Building the Code with GMake
+============================
 
 #. From the directory in which you checked out Nyx, type
 
@@ -90,6 +90,12 @@ Building the Code
 
    Note that if you build with MPI = TRUE in the GNUMakefile, then the
    name of the code will be something like “Nyx3d.Linux.gnu.MPI.ex”
+
+
+Building the Code with CMake
+============================
+
+<NyxBuildingCMake>
 
 Running the Code
 ================
