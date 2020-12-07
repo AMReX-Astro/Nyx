@@ -220,10 +220,10 @@ CMake will try to determine which GPU is supported by the system.
 
 
 Building Nyx for Cori (NERSC)
------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Standard build
-~~~~~~~~~~~~~~
+--------------
 
 For the Cori cluster at NERSC, you first need to load/unload modules required to build Nyx.
 
@@ -253,7 +253,7 @@ Now Nyx can be built.
 
 
 GPU build
-~~~~~~~~~~~~~~~~~~~
+---------
 
 To compile on the GPU nodes in Cori, you first need to purge your modules, most of which won't work on the GPU nodes
 
@@ -290,7 +290,7 @@ Finally, navigate to the base of the Nyx repository and compile in GPU mode:
 For more information about GPU nodes in Cori -- `<https://docs-dev.nersc.gov/cgpu/>`_
 
 Building Nyx for Summit (OLCF)
------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For the Summit cluster at OLCF, you first need to load/unload modules required to build Nyx.
 

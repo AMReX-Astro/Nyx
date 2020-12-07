@@ -24,4 +24,4 @@ See the Inputs section for more detail about what parameters can be specified at
 
 See the Visualization chapter for how to visualize these plotfiles.
 
-.. include:: NyxSundials.rst
+.. include:: ../NyxSundials.rst

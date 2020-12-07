@@ -13,7 +13,6 @@ Welcome to Nyx's documentation!
    NyxPreface
    NyxCitation
    NyxGettingStarted
-   NyxGettingStarted_new
    NyxUnits
    NyxInputs
    Refinement
