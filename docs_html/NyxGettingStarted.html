@@ -40,7 +40,7 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Units and Conventions" href="NyxUnits.html" />
+    <link rel="next" title="Directory overview" href="getting_started/Structure.html" />
     <link rel="prev" title="Citation" href="NyxCitation.html" /> 
 </head>
 
@@ -91,10 +91,11 @@
 <li class="toctree-l1"><a class="reference internal" href="NyxPreface.html">Preface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxCitation.html">Citation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Getting Started</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#downloading-the-code">Downloading the Code</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#building-the-code">Building the Code</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#running-the-code">Running the Code</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#compiling-nyx-with-sundials-5">Compiling Nyx with SUNDIALS 5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started/Structure.html">Source directory overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started/BuildingGMake.html">Building Nyx with GNU Make</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started/BuildingCMake.html">Building Nyx with CMake</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started/RunningTheCode.html">Running the Code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started/RunningTheCode.html#compiling-nyx-with-sundials-5">Compiling Nyx with SUNDIALS 5</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="NyxUnits.html">Units and Conventions</a></li>
@@ -202,189 +203,28 @@
 }
 </style>
 <div class="section" id="getting-started">
-<h1>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="downloading-the-code">
-<h2>Downloading the Code<a class="headerlink" href="#downloading-the-code" title="Permalink to this headline">¶</a></h2>
-<p>Nyx is built on top of the AMReX&nbsp;framework. In order to run
-Nyx, you must download two separate git modules.</p>
-<p>First, make sure that git is installed on your machine—we recommend version 1.7.x or higher.</p>
-<ol class="arabic">
-<li><p class="first">Clone/fork the &nbsp;repository:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">AMReX</span><span class="o">-</span><span class="n">Codes</span><span class="o">/</span><span class="n">amrex</span>
+<span id="chap-gettingstartednew"></span><h1>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
+<p>The Nyx source code currently lives in a
+<a class="reference external" href="https://github.com/AMReX-Astro/Nyx.git">github repository</a> that
+can be cloned by using git:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; git clone https://github.com/AMReX-Astro/Nyx.git
 </pre></div>
 </div>
-<p>You will want to periodically update AMReX by typing</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">pull</span>
-</pre></div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">We recommend Git version 1.7.x or higher.</p>
 </div>
-<p>in the <code class="docutils literal notranslate"><span class="pre">amrex/</span></code> directory.</p>
-<p>Note: when you check out AMReX (and Nyx), you will get the development
-branch.  Active development is done on this branch; monthly
-tags are made of this version that are compatible with the same
-monthly tag of AMReX itself.</p>
-</li>
-<li><p class="first">Set the environment variable, <code class="docutils literal notranslate"><span class="pre">AMREX_HOME</span></code>, on your
-machine to point to the path name where you have put .
-You can add this to your <code class="docutils literal notranslate"><span class="pre">.bashrc</span></code> as:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">AMREX_HOME</span><span class="o">=</span><span class="p">{</span>\<span class="n">em</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">amrex</span><span class="o">/</span><span class="p">}</span>
-</pre></div>
-</div>
-<p>or to your <code class="docutils literal notranslate"><span class="pre">.cshrc</span></code> as:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">setenv</span> <span class="n">AMREX_HOME</span> <span class="p">{</span>\<span class="n">em</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">amrex</span><span class="o">/</span><span class="p">}</span>
-</pre></div>
-</div>
-<p>where you replace <code class="docutils literal notranslate"><span class="pre">/path/to/amrex/</span></code> will the full path to the
-amrex/ directory.</p>
-</li>
-<li><p class="first">Clone/fork the Nyx repository:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">AMReX</span><span class="o">-</span><span class="n">Astro</span><span class="o">/</span><span class="n">Nyx</span>
-</pre></div>
-</div>
-<p>As with AMReX development on Nyx is done in the
-<code class="docutils literal notranslate"><span class="pre">development</span></code> branch, so you should work there if you want
-the latest source.</p>
-</li>
-</ol>
-</div>
-<div class="section" id="building-the-code">
-<h2>Building the Code<a class="headerlink" href="#building-the-code" title="Permalink to this headline">¶</a></h2>
-<ol class="arabic">
-<li><p class="first">From the directory in which you checked out Nyx, type</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">Nyx</span><span class="o">/</span><span class="n">Exec</span><span class="o">/</span><span class="n">MiniSB</span>
-</pre></div>
-</div>
-<p>This will put you into a directory in which you can run a small
-version of the Santa Barbara problem.</p>
-</li>
-<li><p class="first">In Nyx/Exec/MiniSB, edit the GNUmakefile, and set</p>
-<p>COMP = your favorite compiler (e.g, gnu, Intel)</p>
-<p>DEBUG = FALSE</p>
-<p>We like COMP = gnu.</p>
-</li>
-<li><p class="first">Now type “make”. The resulting executable will look something like
-“Nyx3d.Linux.gnu.ex”, which means this is a 3-d version of the code,
-made on a Linux machine, with COMP = gnu.</p>
-<p>Note that if you build with MPI = TRUE in the GNUMakefile, then the
-name of the code will be something like “Nyx3d.Linux.gnu.MPI.ex”</p>
-</li>
-</ol>
-</div>
-<div class="section" id="running-the-code">
-<h2>Running the Code<a class="headerlink" href="#running-the-code" title="Permalink to this headline">¶</a></h2>
-<p>The Nyx&nbsp;executable reads run-time information from an “inputs” file which you designate on the command line.
-Values can be specified either in the inputs file or on the command line.
-If a value is specified on the command line, that value will override a value specified in the inputs file.</p>
-<p>See the Inputs section for more detail about what parameters can be specified at run-time.</p>
-<ol class="arabic">
-<li><p class="first">Type:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Nyx3d</span><span class="o">.</span><span class="n">Linux</span><span class="o">.</span><span class="n">gnu</span><span class="o">.</span><span class="n">ex</span> <span class="n">inputs</span><span class="o">.</span><span class="mi">32</span>
-</pre></div>
-</div>
-</li>
-<li><p class="first">You will notice that running the code generates directories that look like
-plt00000, plt00020, etc.,
-and chk00000, chk00020, etc. These are “plotfiles” and
-“checkpoint” files. The plotfiles are used for visualization,
-and the checkpoint files for restarting the code.</p>
-</li>
-</ol>
-<p>See the Visualization chapter for how to visualize these plotfiles.</p>
-</div>
-<div class="section" id="compiling-nyx-with-sundials-5">
-<h2>Compiling Nyx with SUNDIALS 5<a class="headerlink" href="#compiling-nyx-with-sundials-5" title="Permalink to this headline">¶</a></h2>
-<p>The following steps describe how to compile Nyx with
-SUNDIALS 5 support. This library is necessary for non-adiabatic
-heating-cooling Nyx runs, where <code class="docutils literal notranslate"><span class="pre">USE_HEATCOOL=TRUE</span></code>, such as
-the <code class="docutils literal notranslate"><span class="pre">Nyx/Exec/LyA</span></code> directory.</p>
-<p>In order to use SUNDIALS:</p>
-<ol class="arabic">
-<li><p class="first">We suggest using the Github mirror:
-<a class="reference external" href="https://github.com/LLNL/sundials">https://github.com/LLNL/sundials</a></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>#!/bin/bash
-set -e
-git clone https://github.com/LLNL/sundials
-cd sundials
-mkdir builddir instdir
-INSTALL_PREFIX=$(pwd)/instdir
-cd builddir
-cmake \
--DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}  \
--DCMAKE_INSTALL_LIBDIR=lib \
--DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
--DCMAKE_C_COMPILER=$(which cc)  \
--DCMAKE_CXX_COMPILER=$(which CC)   \
--DCMAKE_CUDA_HOST_COMPILER=$(which CC)    \
--DEXAMPLES_INSTALL_PATH=${INSTALL_PREFIX}/examples \
--DCMAKE_BUILD_TYPE=Release \
--DCMAKE_CUDA_FLAGS=&quot;-DSUNDIALS_DEBUG_CUDA_LASTERROR&quot; \
--DSUNDIALS_BUILD_PACKAGE_FUSED_KERNELS=ON \
--DCMAKE_C_FLAGS_RELEASE=&quot;-O3 -DNDEBUG&quot; \
--DCMAKE_CXX_FLAGS_RELEASE=&quot;-O3 -DNDEBUG&quot;  \
--DCUDA_ENABLE=ON  \
--DMPI_ENABLE=OFF  \
--DOPENMP_ENABLE=ON   \
--DF2003_INTERFACE_ENABLE=OFF   \
--DSUNDIALS_INDEX_SIZE:INT=32   \
--DCUDA_ARCH=sm_70 ../
-make -j8
-make install -j8
-</pre></div>
-</div>
-</li>
-<li><p class="first">To install without cuda support:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>#!/bin/bash
-set -e
-git clone https://github.com/LLNL/sundials
-cd sundials
-mkdir builddir instdir
-INSTALL_PREFIX=$(pwd)/instdir
-cd builddir
-cmake \
--DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}  \
--DCMAKE_INSTALL_LIBDIR=lib \
--DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
--DCMAKE_C_COMPILER=$(which cc)  \
--DCMAKE_CXX_COMPILER=$(which CC)   \
--DCMAKE_CUDA_HOST_COMPILER=$(which CC)    \
--DEXAMPLES_INSTALL_PATH=${INSTALL_PREFIX}/examples \
--DCMAKE_BUILD_TYPE=Release \
--DCMAKE_C_FLAGS_RELEASE=&quot;-O3 -DNDEBUG&quot; \
--DCMAKE_CXX_FLAGS_RELEASE=&quot;-O3 -DNDEBUG&quot;  \
--DCUDA_ENABLE=OFF  \
--DMPI_ENABLE=OFF  \
--DOPENMP_ENABLE=ON   \
--DF2003_INTERFACE_ENABLE=OFF   \
--DSUNDIALS_INDEX_SIZE:INT=32 ../
-make -j8
-make install -j8
-</pre></div>
-</div>
-</li>
-<li><p class="first">Note that we use <code class="docutils literal notranslate"><span class="pre">cc</span></code> and <code class="docutils literal notranslate"><span class="pre">CC</span></code> compiler wrappers, which need to be consistent with the Nyx’s GNUMakefile
-variable COMP to ensure matching OMP runtime libraries for use with the OpenMP NVector.</p>
-</li>
-<li><p class="first"><code class="docutils literal notranslate"><span class="pre">CUDA_ARCH</span></code> must be set to the appropriate value for the GPU being targeted</p>
-</li>
-<li><p class="first">For more detailed instructions for installing SUNDIALS with different flags and versions see
-the <a class="reference external" href="https://computing.llnl.gov/projects/sundials/sundials-software">SUNDIALS documentation</a>.</p>
-</li>
-<li><p class="first">In the <code class="docutils literal notranslate"><span class="pre">GNUmakefile</span></code> for the application which uses the interface to SUNDIALS, add
-<code class="docutils literal notranslate"><span class="pre">USE_SUNDIALS</span> <span class="pre">=</span> <span class="pre">TRUE</span></code> and <code class="docutils literal notranslate"><span class="pre">SUNDIALS_ROOT=${INSTALL_PREFIX}</span></code>. Note that one must define the
-<code class="docutils literal notranslate"><span class="pre">SUNDIALS_LIB_DIR</span></code> make variable to point to the location where the libraries are installed
-if they are not installed in the default location which is <code class="docutils literal notranslate"><span class="pre">${INSTALL_PREFIX}/lib64</span></code>.</p>
-</li>
-<li><p class="first">If the application uses the SUNDIALS CVODE time integrator package, then the variable
-<code class="docutils literal notranslate"><span class="pre">USE_CVODE_LIBS</span> <span class="pre">=</span> <span class="pre">TRUE</span></code> should also be added in the <code class="docutils literal notranslate"><span class="pre">GNUmakefile</span></code> for the application.
-If the application used the SUNDIALS ARKode time integrator package, then the variable
-<code class="docutils literal notranslate"><span class="pre">USE_ARKODE_LIBS</span> <span class="pre">=</span> <span class="pre">TRUE</span></code> should be added.</p>
-</li>
-</ol>
-<p>Note that SUNDIALS can also be installed via Spack:</p>
-<blockquote>
-<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">spack</span> <span class="n">install</span> <span class="n">sundials</span><span class="o">+</span><span class="n">cuda</span><span class="o">+</span><span class="n">openmp</span>
-</pre></div>
-</div>
-</div></blockquote>
+<p>Once you have obtained the source code, the following sections describe the
+source code contents, compiling, running a simple simulation, and visualizing
+the simulations results.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="getting_started/Structure.html">Source directory overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started/BuildingGMake.html">Building Nyx with GNU Make</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started/BuildingCMake.html">Building Nyx with CMake</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started/RunningTheCode.html">Running the Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started/RunningTheCode.html#compiling-nyx-with-sundials-5">Compiling Nyx with SUNDIALS 5</a></li>
+</ul>
 </div>
 </div>
 
@@ -396,7 +236,7 @@ If the application used the SUNDIALS ARKode time integrator package, then the va
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="NyxUnits.html" class="btn btn-neutral float-right" title="Units and Conventions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="getting_started/Structure.html" class="btn btn-neutral float-right" title="Directory overview" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="NyxCitation.html" class="btn btn-neutral float-left" title="Citation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

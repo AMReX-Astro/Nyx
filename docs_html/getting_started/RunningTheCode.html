@@ -1,0 +1,383 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Running the Code &mdash; Nyx  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"TeX": {"Macros": {"kth": "{{k_\\mathrm{th}}}", "gcc": "{\\mathrm{g~cm^{-3}}}", "cms": "{\\mathrm{cm~s^{-1}}}", "presunit": "{\\mathrm{dyn~cm^{-2}}}", "accelunit": "{\\mathrm{cm~s^{-2}}}", "ergg": "{\\mathrm{erg~g^{-1}}}", "Ab": "{{\\bf A}}", "eb": "{{\\bf e}}", "Fb": "{{\\bf F}}", "gb": "{{\\bf g}}", "Hb": "{{\\bf H}}", "ib": "{{\\bf i}}", "Ib": "{{\\bf I}}", "Kb": "{{\\bf K}}", "lb": "{{\\bf l}}", "Lb": "{{\\bf L}}", "nb": "{{\\bf n}}", "Pb": "{{\\bf P}}", "Qb": "{{\\bf Q}}", "rb": "{{\\bf r}}", "Rb": "{{\\bf R}}", "Sb": "{{\\bf S}}", "ub": "{{\\bf u}}", "Ub": "{{\\bf U}}", "xb": "{{\\bf x}}", "dt": "{\\Delta t}", "omegadot": "{\\dot\\omega}", "inp": "{{\\rm in}}", "outp": "{{\\rm out}}", "sync": "{{\\rm sync}}", "half": "{\\frac{1}{2}}", "myhalf": "{\\half}", "nph": "{{n+\\myhalf}}", "kpp": "{\\ensuremath{\\kappa_{\\mathrm{P}}}}", "kpr": "{\\ensuremath{\\kappa_{\\mathrm{R}}}}", "kpf": "{\\ensuremath{\\kappa_{\\mathrm{F}}}}", "vb": "{\\boldsymbol{v}}", "vbt": "{\\widetilde{\\vb}}", "rbt": "{\\widetilde{\\rb}}", "ob": "{\\boldsymbol{\\omega}}", "nablab": "{\\boldsymbol{\\nabla}}"}}, "tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Units and Conventions" href="../NyxUnits.html" />
+    <link rel="prev" title="Building Nyx with CMake" href="BuildingCMake.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> Nyx
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Nyx basics</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../NyxPreface.html">Preface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../NyxCitation.html">Citation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../NyxGettingStarted.html">Getting Started</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Structure.html">Source directory overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="BuildingGMake.html">Building Nyx with GNU Make</a></li>
+<li class="toctree-l2"><a class="reference internal" href="BuildingCMake.html">Building Nyx with CMake</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Running the Code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#compiling-nyx-with-sundials-5">Compiling Nyx with SUNDIALS 5</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../NyxUnits.html">Units and Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../NyxInputs.html">Inputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Refinement.html">Refinement Criteria</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ManagingGridHierarchy_Chapter.html">Gridding and Load Balancing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../NyxEquations.html">Hydrodynamic Equations in Comoving Coordinates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../NyxHeatCool.html">Radiative Heating and Cooling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../NyxGravity.html">Gravity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../NyxForcing.html">Stochastic Forcing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Particles.html">Dark matter particles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../AGN.html">The AGN Model in Nyx</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../AGN.html#the-reeber-package">The Reeber Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../NightlyTests.html">Nightly Regression Tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Visualization.html">Visualization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PostProcessing.html">PostProcessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Debugging.html">Debugging</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Nyx</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../NyxGettingStarted.html">Getting Started</a> &raquo;</li>
+        
+      <li>Running the Code</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/getting_started/RunningTheCode.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="running-the-code">
+<h1>Running the Code<a class="headerlink" href="#running-the-code" title="Permalink to this headline">¶</a></h1>
+<p>The Nyx&nbsp;executable reads run-time information from an “inputs” file which you designate on the command line.
+Values can be specified either in the inputs file or on the command line.
+If a value is specified on the command line, that value will override a value specified in the inputs file.</p>
+<p>See the Inputs section for more detail about what parameters can be specified at run-time.</p>
+<ol class="arabic">
+<li><p class="first">From within the build directory type:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">executable</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span> <span class="n">inputs</span><span class="o">.</span><span class="mi">32</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">&lt;executable-name&gt;</span></code> is  <code class="docutils literal notranslate"><span class="pre">Nyx3d.Linux.gnu.ex1</span></code> if you built Nyx with GNU Make, or
+<code class="docutils literal notranslate"><span class="pre">nyx_&lt;name-of-build-directory&gt;</span></code> if you built Nyx with CMake.</p>
+</li>
+<li><p class="first">You will notice that running the code generates directories that look like
+plt00000, plt00020, etc.,
+and chk00000, chk00020, etc. These are “plotfiles” and
+“checkpoint” files. The plotfiles are used for visualization,
+and the checkpoint files for restarting the code.</p>
+</li>
+</ol>
+<p>See the Visualization chapter for how to visualize these plotfiles.</p>
+</div>
+<div class="section" id="compiling-nyx-with-sundials-5">
+<h1>Compiling Nyx with SUNDIALS 5<a class="headerlink" href="#compiling-nyx-with-sundials-5" title="Permalink to this headline">¶</a></h1>
+<p>The following steps describe how to compile Nyx with
+SUNDIALS 5 support. This library is necessary for non-adiabatic
+heating-cooling Nyx runs, where <code class="docutils literal notranslate"><span class="pre">USE_HEATCOOL=TRUE</span></code>, such as
+the <code class="docutils literal notranslate"><span class="pre">Nyx/Exec/LyA</span></code> directory.</p>
+<p>In order to use SUNDIALS:</p>
+<ol class="arabic">
+<li><p class="first">We suggest using the Github mirror:
+<a class="reference external" href="https://github.com/LLNL/sundials">https://github.com/LLNL/sundials</a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>#!/bin/bash
+set -e
+git clone https://github.com/LLNL/sundials
+cd sundials
+mkdir builddir instdir
+INSTALL_PREFIX=$(pwd)/instdir
+cd builddir
+cmake \
+-DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}  \
+-DCMAKE_INSTALL_LIBDIR=lib \
+-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
+-DCMAKE_C_COMPILER=$(which cc)  \
+-DCMAKE_CXX_COMPILER=$(which CC)   \
+-DCMAKE_CUDA_HOST_COMPILER=$(which CC)    \
+-DEXAMPLES_INSTALL_PATH=${INSTALL_PREFIX}/examples \
+-DCMAKE_BUILD_TYPE=Release \
+-DCMAKE_CUDA_FLAGS=&quot;-DSUNDIALS_DEBUG_CUDA_LASTERROR&quot; \
+-DSUNDIALS_BUILD_PACKAGE_FUSED_KERNELS=ON \
+-DCMAKE_C_FLAGS_RELEASE=&quot;-O3 -DNDEBUG&quot; \
+-DCMAKE_CXX_FLAGS_RELEASE=&quot;-O3 -DNDEBUG&quot;  \
+-DCUDA_ENABLE=ON  \
+-DMPI_ENABLE=OFF  \
+-DOPENMP_ENABLE=ON   \
+-DF2003_INTERFACE_ENABLE=OFF   \
+-DSUNDIALS_INDEX_SIZE:INT=32   \
+-DCUDA_ARCH=sm_70 ../
+make -j8
+make install -j8
+</pre></div>
+</div>
+</li>
+<li><p class="first">To install without cuda support:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>#!/bin/bash
+set -e
+git clone https://github.com/LLNL/sundials
+cd sundials
+mkdir builddir instdir
+INSTALL_PREFIX=$(pwd)/instdir
+cd builddir
+cmake \
+-DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}  \
+-DCMAKE_INSTALL_LIBDIR=lib \
+-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
+-DCMAKE_C_COMPILER=$(which cc)  \
+-DCMAKE_CXX_COMPILER=$(which CC)   \
+-DCMAKE_CUDA_HOST_COMPILER=$(which CC)    \
+-DEXAMPLES_INSTALL_PATH=${INSTALL_PREFIX}/examples \
+-DCMAKE_BUILD_TYPE=Release \
+-DCMAKE_C_FLAGS_RELEASE=&quot;-O3 -DNDEBUG&quot; \
+-DCMAKE_CXX_FLAGS_RELEASE=&quot;-O3 -DNDEBUG&quot;  \
+-DCUDA_ENABLE=OFF  \
+-DMPI_ENABLE=OFF  \
+-DOPENMP_ENABLE=ON   \
+-DF2003_INTERFACE_ENABLE=OFF   \
+-DSUNDIALS_INDEX_SIZE:INT=32 ../
+make -j8
+make install -j8
+</pre></div>
+</div>
+</li>
+<li><p class="first">Note that we use <code class="docutils literal notranslate"><span class="pre">cc</span></code> and <code class="docutils literal notranslate"><span class="pre">CC</span></code> compiler wrappers, which need to be consistent with the Nyx’s GNUMakefile
+variable COMP to ensure matching OMP runtime libraries for use with the OpenMP NVector.</p>
+</li>
+<li><p class="first"><code class="docutils literal notranslate"><span class="pre">CUDA_ARCH</span></code> must be set to the appropriate value for the GPU being targeted</p>
+</li>
+<li><p class="first">For more detailed instructions for installing SUNDIALS with different flags and versions see
+the <a class="reference external" href="https://computing.llnl.gov/projects/sundials/sundials-software">SUNDIALS documentation</a>.</p>
+</li>
+<li><p class="first">In the <code class="docutils literal notranslate"><span class="pre">GNUmakefile</span></code> for the application which uses the interface to SUNDIALS, add
+<code class="docutils literal notranslate"><span class="pre">USE_SUNDIALS</span> <span class="pre">=</span> <span class="pre">TRUE</span></code> and <code class="docutils literal notranslate"><span class="pre">SUNDIALS_ROOT=${INSTALL_PREFIX}</span></code>. Note that one must define the
+<code class="docutils literal notranslate"><span class="pre">SUNDIALS_LIB_DIR</span></code> make variable to point to the location where the libraries are installed
+if they are not installed in the default location which is <code class="docutils literal notranslate"><span class="pre">${INSTALL_PREFIX}/lib64</span></code>.</p>
+</li>
+<li><p class="first">If the application uses the SUNDIALS CVODE time integrator package, then the variable
+<code class="docutils literal notranslate"><span class="pre">USE_CVODE_LIBS</span> <span class="pre">=</span> <span class="pre">TRUE</span></code> should also be added in the <code class="docutils literal notranslate"><span class="pre">GNUmakefile</span></code> for the application.
+If the application used the SUNDIALS ARKode time integrator package, then the variable
+<code class="docutils literal notranslate"><span class="pre">USE_ARKODE_LIBS</span> <span class="pre">=</span> <span class="pre">TRUE</span></code> should be added.</p>
+</li>
+</ol>
+<p>Note that SUNDIALS can also be installed via Spack:</p>
+<blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">spack</span> <span class="n">install</span> <span class="n">sundials</span><span class="o">+</span><span class="n">cuda</span><span class="o">+</span><span class="n">openmp</span>
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../NyxUnits.html" class="btn btn-neutral float-right" title="Units and Conventions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="BuildingCMake.html" class="btn btn-neutral float-left" title="Building Nyx with CMake" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2018, Nyx development team
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

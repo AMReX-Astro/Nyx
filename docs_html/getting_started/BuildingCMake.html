@@ -1,0 +1,566 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Building Nyx with CMake &mdash; Nyx  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"TeX": {"Macros": {"kth": "{{k_\\mathrm{th}}}", "gcc": "{\\mathrm{g~cm^{-3}}}", "cms": "{\\mathrm{cm~s^{-1}}}", "presunit": "{\\mathrm{dyn~cm^{-2}}}", "accelunit": "{\\mathrm{cm~s^{-2}}}", "ergg": "{\\mathrm{erg~g^{-1}}}", "Ab": "{{\\bf A}}", "eb": "{{\\bf e}}", "Fb": "{{\\bf F}}", "gb": "{{\\bf g}}", "Hb": "{{\\bf H}}", "ib": "{{\\bf i}}", "Ib": "{{\\bf I}}", "Kb": "{{\\bf K}}", "lb": "{{\\bf l}}", "Lb": "{{\\bf L}}", "nb": "{{\\bf n}}", "Pb": "{{\\bf P}}", "Qb": "{{\\bf Q}}", "rb": "{{\\bf r}}", "Rb": "{{\\bf R}}", "Sb": "{{\\bf S}}", "ub": "{{\\bf u}}", "Ub": "{{\\bf U}}", "xb": "{{\\bf x}}", "dt": "{\\Delta t}", "omegadot": "{\\dot\\omega}", "inp": "{{\\rm in}}", "outp": "{{\\rm out}}", "sync": "{{\\rm sync}}", "half": "{\\frac{1}{2}}", "myhalf": "{\\half}", "nph": "{{n+\\myhalf}}", "kpp": "{\\ensuremath{\\kappa_{\\mathrm{P}}}}", "kpr": "{\\ensuremath{\\kappa_{\\mathrm{R}}}}", "kpf": "{\\ensuremath{\\kappa_{\\mathrm{F}}}}", "vb": "{\\boldsymbol{v}}", "vbt": "{\\widetilde{\\vb}}", "rbt": "{\\widetilde{\\rb}}", "ob": "{\\boldsymbol{\\omega}}", "nablab": "{\\boldsymbol{\\nabla}}"}}, "tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Running the Code" href="RunningTheCode.html" />
+    <link rel="prev" title="Building Nyx with GNU Make" href="BuildingGMake.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home" alt="Documentation Home"> Nyx
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Nyx basics</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../NyxPreface.html">Preface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../NyxCitation.html">Citation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../NyxGettingStarted.html">Getting Started</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Structure.html">Source directory overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="BuildingGMake.html">Building Nyx with GNU Make</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Building Nyx with CMake</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#working-with-git-submodules">Working with Git submodules</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#using-existing-installations-of-required-dependencies">Using existing installations of required dependencies</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#few-more-notes-on-building-nyx">Few more notes on building Nyx</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#building-nyx-for-cori-nersc">Building Nyx for Cori (NERSC)</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#standard-build">Standard build</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gpu-build">GPU build</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#building-nyx-for-summit-olcf">Building Nyx for Summit (OLCF)</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="RunningTheCode.html">Running the Code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RunningTheCode.html#compiling-nyx-with-sundials-5">Compiling Nyx with SUNDIALS 5</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../NyxUnits.html">Units and Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../NyxInputs.html">Inputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Refinement.html">Refinement Criteria</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ManagingGridHierarchy_Chapter.html">Gridding and Load Balancing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../NyxEquations.html">Hydrodynamic Equations in Comoving Coordinates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../NyxHeatCool.html">Radiative Heating and Cooling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../NyxGravity.html">Gravity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../NyxForcing.html">Stochastic Forcing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Particles.html">Dark matter particles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../AGN.html">The AGN Model in Nyx</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../AGN.html#the-reeber-package">The Reeber Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../NightlyTests.html">Nightly Regression Tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Visualization.html">Visualization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PostProcessing.html">PostProcessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Debugging.html">Debugging</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Nyx</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../NyxGettingStarted.html">Getting Started</a> &raquo;</li>
+        
+      <li>Building Nyx with CMake</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/getting_started/BuildingCMake.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="building-nyx-with-cmake">
+<h1>Building Nyx with CMake<a class="headerlink" href="#building-nyx-with-cmake" title="Permalink to this headline">¶</a></h1>
+<p>CMake build is a two-step process. First <code class="docutils literal notranslate"><span class="pre">cmake</span></code> is invoked to create
+configuration files and makefiles in a chosen directory (<code class="docutils literal notranslate"><span class="pre">builddir</span></code>).
+Next, the actual build is performed by invoking <code class="docutils literal notranslate"><span class="pre">make</span></code> from within <code class="docutils literal notranslate"><span class="pre">builddir</span></code>.
+If you are new to CMake, <a class="reference external" href="https://hsf-training.github.io/hsf-training-cmake-webpage/">this short tutorial</a>
+from the HEP Software foundation is the perfect place to get started with it.</p>
+<p>The CMake build process for Nyx is summarized as follows:</p>
+<ol class="arabic">
+<li><p class="first">Create and enter the build directory:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">mkdir /path/to/builddir</span>
+<span class="go">cd    /path/to/builddir</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Perform the configuration step:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">cmake [nyx options] [dependencies options] -DCMAKE_BUILD_TYPE=[Debug|Release|RelWithDebInfo|MinSizeRel] /path/to/Nyx/repo</span>
+</pre></div>
+</div>
+<p>In the above snippet, <code class="docutils literal notranslate"><span class="pre">[nyx</span> <span class="pre">options]</span></code> indicates one or more of the options
+for the customization of the build listed in the <a class="reference internal" href="#tab-nyxcmakeoptions"><span class="std std-ref">table</span></a> below,
+whereas <code class="docutils literal notranslate"><span class="pre">[dependecies</span> <span class="pre">options]</span></code> are one or more of the CMake configuration options for the Nyx dependencies,
+i.e. <a class="reference external" href="https://amrex-codes.github.io/amrex/docs_html/BuildingAMReX.html#building-with-cmake">AMReX CMake options</a>,
+and SUNDIALS. If the option <code class="docutils literal notranslate"><span class="pre">CMAKE_BUILD_TYPE</span></code> is omitted, <code class="docutils literal notranslate"><span class="pre">CMAKE_BUILD_TYPE=Release</span></code> is assumed.
+For example, to enable AMReX profiling capabilities in Nyx, configure as follows:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; cmake <span class="o">[</span>nyx options<span class="o">]</span> -DAMReX_TINY_PROFILE<span class="o">=</span>yes -DCMAKE_BUILD_TYPE<span class="o">=[</span>Debug<span class="p">|</span>Release<span class="p">|</span>RelWithDebInfo<span class="p">|</span>MinSizeRel<span class="o">]</span> ..
+</pre></div>
+</div>
+</li>
+<li><p class="first">Build the executable you are interested in (a small
+version of the Santa Barbara problem in this example):</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">cd /path/to/builddir/Nyx/Exec/MiniSB</span>
+<span class="go">make</span>
+</pre></div>
+</div>
+<p>The resulting executable is <code class="docutils literal notranslate"><span class="pre">nyx_MiniSB</span></code>.</p>
+</li>
+</ol>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last"><strong>Nyx requires CMake 3.14 or higher.</strong></p>
+</div>
+<span id="tab-nyxcmakeoptions"></span><table border="1" class="docutils" id="id1">
+<caption><span class="caption-text">Nyx configuration options</span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="22%" />
+<col width="38%" />
+<col width="23%" />
+<col width="17%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Option name</th>
+<th class="head">Description</th>
+<th class="head">Possible values</th>
+<th class="head">Default
+value</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>CMAKE_CXX_FLAGS</td>
+<td>User-defined C++ flags</td>
+<td>valid C++
+compiler flags</td>
+<td>None</td>
+</tr>
+<tr class="row-odd"><td>CMAKE_CUDA_FLAGS</td>
+<td>User-defined CUDA flags</td>
+<td>valid CUDA
+compiler flags</td>
+<td>None</td>
+</tr>
+<tr class="row-even"><td>BUILD_SHARED_LIBS</td>
+<td>Build dependencies as shared
+libraries</td>
+<td>no/yes</td>
+<td>no</td>
+</tr>
+<tr class="row-odd"><td>Nyx_MPI</td>
+<td>Enable build with MPI</td>
+<td>no/yes</td>
+<td>yes</td>
+</tr>
+<tr class="row-even"><td>Nyx_MPI_THREAD
+_MULTIPLE</td>
+<td>Concurrent MPI calls from
+multiple threads</td>
+<td>no/yes</td>
+<td>yes</td>
+</tr>
+<tr class="row-odd"><td>Nyx_OMP</td>
+<td>Enable build with OpenMP</td>
+<td>no/yes</td>
+<td>no</td>
+</tr>
+<tr class="row-even"><td>Nyx_GPU_
+BACKEND</td>
+<td>On-node, accelerated GPU backend</td>
+<td>NONE</td>
+<td>NONE,SYCL,CUDA,HIP</td>
+</tr>
+<tr class="row-odd"><td>Nyx_HYDRO</td>
+<td>Run with baryon hydro solve
+and fields</td>
+<td>no/yes</td>
+<td>no</td>
+</tr>
+<tr class="row-even"><td>Nyx_HEATCOOL</td>
+<td>Run with H and He heating-
+cooling effects</td>
+<td>no/yes</td>
+<td>no</td>
+</tr>
+<tr class="row-odd"><td>Nyx_CONST_
+SPECIES</td>
+<td>Don’t evolve H and He, treat
+them as constant</td>
+<td>no/yes</td>
+<td>no</td>
+</tr>
+<tr class="row-even"><td>Nyx_CGS</td>
+<td>Evolve quantities in CGS
+units instead of code units</td>
+<td>no/yes</td>
+<td>no</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="working-with-git-submodules">
+<h2>Working with Git submodules<a class="headerlink" href="#working-with-git-submodules" title="Permalink to this headline">¶</a></h2>
+<p>By default Nyx CMake search the system for existing installations of the required dependencies
+(AMReX is always required, SUNDIALS may be required depending on the configuration options).
+If the required dependencies are not found on the system, Nyx CMake will automatically checkout
+and build those dependencies as part of its build process. To this end, Nyx CMake relies on git
+submodules to checkout the AMReX and/or SUNDIALS git repositories. In what follows, we will
+focus on the AMReX git submodule only, but the same concepts applies unchanged to the
+SUNDIAL submodule as well.</p>
+<p>If the AMReX submodule is not initialized, Nyx CMake will initialize it and checkout
+the commit the submodule is pointing to. If instead the AMReX  submodule has already
+been manually initialized and a custom commit has been checked out, that commit will
+be used. For Nyx development or testing, you may need to build with a different
+branch or release of AMReX.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">subprojects/amrex</span></code> directory is a Git repo, so use all standard Git
+commands. Either <code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">subprojects/amrex</span></code> to run Git commands in the <code class="docutils literal notranslate"><span class="pre">amrex</span></code>
+directory, or use <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">-C</span> <span class="pre">subprojects/amrex</span></code> in the Nyx repo. For
+instance, to build with the <code class="docutils literal notranslate"><span class="pre">my-amrex-branch</span></code> branch of the AMReX repo:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; git -C subprojects/amrex checkout my-amrex-branch
+&gt; git status
+...
+modified:   subprojects/amrex <span class="o">(</span>new commits<span class="o">)</span>
+</pre></div>
+</div>
+<p>The branch <code class="docutils literal notranslate"><span class="pre">my-amrex-branch</span></code> will then be used when building Nyx.</p>
+<p>To revert to the default version of the AMReX submodule, run <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">submodule</span>
+<span class="pre">update</span></code>:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; git submodule update
+&gt; git status
+...
+nothing to commit, working tree clean
+</pre></div>
+</div>
+<p>You can edit, commit, pull, and push AMReX changes from <code class="docutils literal notranslate"><span class="pre">subprojects/amrex</span></code>.
+AMReX development is outside the scope of this document. Run <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">status</span></code> in
+the top-level Nyx repo to see whether the AMReX submodule has new commits,
+modified files, or untracked files.</p>
+<p>To update the AMReX submodule referenced by Nyx:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; git -C subprojects/amrex checkout UPDATED_AMREX_COMMIT_SHA1
+&gt; git add subprojects/amrex
+&gt; git commit -m <span class="s1">&#39;Updating AMReX version&#39;</span>
+</pre></div>
+</div>
+<p>This will only update the AMReX SHA-1 referenced by Nyx. Uncommitted AMReX
+changes and untracked AMReX files under <code class="docutils literal notranslate"><span class="pre">subprojects/amrex</span></code> are not added by
+<code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">add</span> <span class="pre">subprojects/amrex</span></code>. (To commit to the AMReX repo, change directories
+to <code class="docutils literal notranslate"><span class="pre">subprojects/amrex</span></code> and run Git commands there, before <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">add</span>
+<span class="pre">subprojects/amrex</span></code>.)</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Only update the AMReX submodule reference in coordination with the other
+Nyx developers!</p>
+</div>
+<div class="section" id="using-existing-installations-of-required-dependencies">
+<span id="sec-build-external"></span><h3>Using existing installations of required dependencies<a class="headerlink" href="#using-existing-installations-of-required-dependencies" title="Permalink to this headline">¶</a></h3>
+<p>You may prefer to build Nyx against an AMReX and/or SUNDIALS installation already
+present on your system. Unless these installations are located in standard system
+paths, you need to tell Nyx CMake where to look for them.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; cmake -DCMAKE_BUILD_TYPE<span class="o">=[</span>Debug<span class="p">|</span>Release<span class="p">|</span>RelWithDebInfo<span class="p">|</span>MinSizeRel<span class="o">]</span> <span class="o">[</span>nyx options<span class="o">]</span> -DAMReX_ROOT<span class="o">=</span>/absolute/path/to/amrex/installdir /path/to/Nyx/repo
+</pre></div>
+</div>
+<p>In the example above, <code class="docutils literal notranslate"><span class="pre">-DAMReX_ROOT=/absolute/path/to/amrex/installdir</span></code> instructs CMake to search
+<code class="docutils literal notranslate"><span class="pre">/absolute/path/to/amrex/installdir</span></code> before searching system paths for an available AMReX installation.
+<code class="docutils literal notranslate"><span class="pre">AMReX_ROOT</span></code> can also be set as an environmental variable instead of passing it as a command line option.
+Similarly, you can define a <code class="docutils literal notranslate"><span class="pre">SUNDIALS_ROOT</span></code> variable, either via command line or the environment, to
+teach CMake where to look for SUNDIALS.</p>
+</div>
+<div class="section" id="few-more-notes-on-building-nyx">
+<h3>Few more notes on building Nyx<a class="headerlink" href="#few-more-notes-on-building-nyx" title="Permalink to this headline">¶</a></h3>
+<p>The system defaults compilers can be overwritten as follows:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; cmake -DCMAKE_CXX_COMPILER<span class="o">=</span>&lt;c++-compiler&gt; -DCMAKE_Fortran_COMPILER<span class="o">=</span>&lt;f90-compiler&gt; <span class="o">[</span>options<span class="o">]</span>  ..
+</pre></div>
+</div>
+<p>When building on a platform that uses the <code class="docutils literal notranslate"><span class="pre">module</span></code> utility, use either
+the above command (with full path to the compilers) or the following:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; cmake -DCMAKE_CXX_COMPILER<span class="o">=</span>CC -DCMAKE_Fortran_COMPILER<span class="o">=</span>ftn <span class="o">[</span>options<span class="o">]</span> ..
+</pre></div>
+</div>
+<p>Nyx uses the same compiler flags used to build AMReX, unless
+<code class="docutils literal notranslate"><span class="pre">CMAKE_Fortran_FLAGS</span></code>/<code class="docutils literal notranslate"><span class="pre">CMAKE_CXX_FLAGS</span></code> is explicitly provided, or
+the environmental variables <code class="docutils literal notranslate"><span class="pre">FFLAGS</span></code>/<code class="docutils literal notranslate"><span class="pre">CXXFLAGS</span></code> are set.</p>
+<p>For GPU builds, Nyx relies on the <a class="reference external" href="https://amrex-codes.github.io/amrex/docs_html/GPU.html#building-with-cmake">AMReX GPU build infrastructure</a>
+. The target architecture to build for can be specified via the AMReX configuration option <code class="docutils literal notranslate"><span class="pre">-DAMReX_CUDA_ARCH=&lt;target-architecture&gt;</span></code>,
+or by defining the <em>environmental variable</em> <code class="docutils literal notranslate"><span class="pre">AMREX_CUDA_ARCH</span></code> (all caps). If no GPU architecture is specified,
+CMake will try to determine which GPU is supported by the system.</p>
+</div>
+</div>
+<div class="section" id="building-nyx-for-cori-nersc">
+<h2>Building Nyx for Cori (NERSC)<a class="headerlink" href="#building-nyx-for-cori-nersc" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="standard-build">
+<h3>Standard build<a class="headerlink" href="#standard-build" title="Permalink to this headline">¶</a></h3>
+<p>For the Cori cluster at NERSC, you first need to load/unload modules required to build Nyx.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; module unload altd
+&gt; module unload darshan
+&gt; module load cmake/3.14.0
+</pre></div>
+</div>
+<p>The default options for Cori are the <strong>Haswell</strong> architecture and <strong>Intel</strong> compiler, if you want to compile with the <strong>Knight’s Landing (KNL)</strong> architecture:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; module swap craype-haswell craype-mic-knl
+</pre></div>
+</div>
+<p>Or use the <strong>GNU</strong> compiler:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; module swap PrgEnv-intel PrgEnv-gnu
+</pre></div>
+</div>
+<p>Now Nyx can be built.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The load/unload modules options could be saved in the <cite>~/.bash_profile.ext</cite></p>
+</div>
+</div>
+<div class="section" id="gpu-build">
+<h3>GPU build<a class="headerlink" href="#gpu-build" title="Permalink to this headline">¶</a></h3>
+<p>To compile on the GPU nodes in Cori, you first need to purge your modules, most of which won’t work on the GPU nodes</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; module purge
+</pre></div>
+</div>
+<p>Then, you need to load the following modules:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; module load modules esslurm gcc cuda openmpi/3.1.0-ucx cmake/3.14.0
+</pre></div>
+</div>
+<p>Currently, you need to use OpenMPI; mvapich2 seems not to work.</p>
+<p>Then, you need to use slurm to request access to a GPU node:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; salloc -N <span class="m">1</span> -t <span class="m">02</span>:00:00 -c <span class="m">80</span> -C gpu -A m1759 --gres<span class="o">=</span>gpu:8 --exclusive
+</pre></div>
+</div>
+<p>This reservers an entire GPU node for your job. Note that you can’t cross-compile for the GPU nodes - you have to log on to one and then build your software.</p>
+<p>Finally, navigate to the base of the Nyx repository and compile in GPU mode:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; <span class="nb">cd</span> mfix
+&gt; mdkir build
+&gt; <span class="nb">cd</span> build
+&gt; cmake -DNyx_GPU_BACKEND<span class="o">=</span>CUDA -DAMReX_CUDA_ARCH<span class="o">=</span>Volta -DCMAKE_CXX_COMPILER<span class="o">=</span>g++ -DCMAKE_Fortran_COMPILER<span class="o">=</span>gfortran ..
+&gt; make -j
+</pre></div>
+</div>
+<p>For more information about GPU nodes in Cori – <a class="reference external" href="https://docs-dev.nersc.gov/cgpu/">https://docs-dev.nersc.gov/cgpu/</a></p>
+</div>
+</div>
+<div class="section" id="building-nyx-for-summit-olcf">
+<h2>Building Nyx for Summit (OLCF)<a class="headerlink" href="#building-nyx-for-summit-olcf" title="Permalink to this headline">¶</a></h2>
+<p>For the Summit cluster at OLCF, you first need to load/unload modules required to build Nyx.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; module unload xalt
+&gt; module unload darshan
+&gt; module load gcc
+&gt; module load cmake/3.14.0
+</pre></div>
+</div>
+<p>To build Nyx for GPUs, you need to load cuda module:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; module load cuda/10.1.105
+</pre></div>
+</div>
+<p>To compile:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; <span class="nb">cd</span> mfix
+&gt; mdkir build
+&gt; <span class="nb">cd</span> build
+&gt; cmake -DCMAKE_CXX_COMPILER<span class="o">=</span>g++ -DCMAKE_Fortran_COMPILER<span class="o">=</span>gfortran -DNyx_GPU_BACKEND<span class="o">=[</span>NONE<span class="p">|</span>CUDA<span class="o">]</span>
+&gt; make -j
+</pre></div>
+</div>
+<p>For more information about Summit cluster: <a class="reference external" href="https://www.olcf.ornl.gov/for-users/system-user-guides/summit/">https://www.olcf.ornl.gov/for-users/system-user-guides/summit/</a></p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="RunningTheCode.html" class="btn btn-neutral float-right" title="Running the Code" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="BuildingGMake.html" class="btn btn-neutral float-left" title="Building Nyx with GNU Make" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2018, Nyx development team
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
