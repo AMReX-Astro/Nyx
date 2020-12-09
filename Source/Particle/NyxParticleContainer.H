@@ -381,6 +381,7 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
         else
         {
             ac_pointer->ParallelCopy(acceleration,0,0,BL_SPACEDIM,acceleration.nGrowVect(),acceleration.nGrowVect());
+            ac_pointer->FillBoundary(geom.periodicity()); // DO WE NEED GHOST CELLS FILLED ???
         }
     }
 

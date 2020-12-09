@@ -108,7 +108,7 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
         else
         {
             ac_ptr->ParallelCopy(acceleration,0,0,acceleration.nComp(),ng,ng);
-
+            ac_ptr->FillBoundary();
         }
 	}
 
@@ -219,7 +219,7 @@ DarkMatterParticleContainer::moveKick (MultiFab&       acceleration,
         else
         {
             ac_ptr->ParallelCopy(acceleration,0,0,acceleration.nComp(),ng,ng);
-
+            ac_ptr->FillBoundary();
         }
     }
 
