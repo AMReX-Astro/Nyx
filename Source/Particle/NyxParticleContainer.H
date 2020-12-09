@@ -373,9 +373,15 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
         ac_pointer.reset(new amrex::MultiFab(this->m_gdb->ParticleBoxArray(lev),
                                              this->m_gdb->ParticleDistributionMap(lev),
                                              acceleration.nComp(), acceleration.nGrow()));
-
-        ac_pointer->Redistribute(acceleration,0,0,BL_SPACEDIM,acceleration.nGrowVect());
-        ac_pointer->FillBoundary(geom.periodicity()); // DO WE NEED GHOST CELLS FILLED ???
+        if(acceleration.boxArray() == ac_pointer->boxArray())//this->finestLevel() == 0)
+        {
+            ac_pointer->Redistribute(acceleration,0,0,BL_SPACEDIM,acceleration.nGrowVect());
+            ac_pointer->FillBoundary(geom.periodicity()); // DO WE NEED GHOST CELLS FILLED ???
+        }
+        else
+        {
+            ac_pointer->ParallelCopy(acceleration,0,0,BL_SPACEDIM,acceleration.nGrowVect(),acceleration.nGrowVect());
+        }
     }
 
 

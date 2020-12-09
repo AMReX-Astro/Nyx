@@ -685,8 +685,13 @@ Gravity::actual_multilevel_solve (int                       level,
             }
         }
 #endif
-        MultiFab::Add(*Rhs_p[lev], *Rhs_particles[lev], 0, 0, 1, 0);
-    }
+
+        if ((*Rhs_p[lev]).DistributionMap() == (*Rhs_particles[lev]).DistributionMap() &&
+            (*Rhs_p[lev]).boxArray().CellEqual((*Rhs_particles[lev]).boxArray()))
+            MultiFab::Add(*Rhs_p[lev], *Rhs_particles[lev], 0, 0, 1, 0);
+        else
+            Rhs_p[lev]->ParallelAdd(*Rhs_particles[lev]);
+	}
 
     // Average phi from fine to coarse level before the solve.
     for (int lev = num_levels-1; lev > 0; lev--)
@@ -1100,7 +1105,11 @@ Gravity::AddParticlesToRhs(int base_level, int finest_level, int ngrow, const Ve
 
         for (int lev = 0; lev < num_levels; lev++)
         {
+        if ((*PartMF[lev]).DistributionMap() == (*Rhs_particles[lev]).DistributionMap() &&
+            (*PartMF[lev]).boxArray().CellEqual((*Rhs_particles[lev]).boxArray()))
             MultiFab::Add(*Rhs_particles[lev], *PartMF[lev], 0, 0, 1, 0);
+        else
+            Rhs_particles[lev]->ParallelAdd(*PartMF[lev]);
         }
     }
     amrex::Gpu::Device::streamSynchronize();
