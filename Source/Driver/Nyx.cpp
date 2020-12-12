@@ -1943,7 +1943,9 @@ Nyx::post_regrid (int lbase,
         const Real cur_time = state[State_for_Time].curTime();
         if ((cur_time > 0) && do_grav_solve_here)
         {
-            int ngrow_for_solve = parent->levelCount(level) + 1;
+            // We have done a particle redistribute above so we shouldn't need to grow by more than 1
+            // to capture the effect of all particles on this level
+            int ngrow_for_solve = 1;
             int use_previous_phi_as_guess = 1;
         gravity->multilevel_solve_for_new_phi(level, new_finest, ngrow_for_solve, use_previous_phi_as_guess);
         }
