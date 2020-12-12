@@ -1727,14 +1727,14 @@ Nyx::postCoarseTimeStep (Real cumtime)
         }
         else if(load_balance_wgt_strategy == 2)
         {
-            MultiFab particle_mf(grids,theDMPC()->ParticleDistributionMap(level),1,1);
-            theDMPC()->Increment(particle_mf, level);
+            MultiFab particle_mf(grids,theDMPC()->ParticleDistributionMap(lev),1,1);
+            theDMPC()->Increment(particle_mf, lev);
             if(load_balance_strategy==DistributionMapping::Strategy::KNAPSACK)
-                dm.KnapSackProcessorMap(wgts, load_balance_wgt_nmax);
+                dm = DistributionMapping::makeKnapSack(particle_mf, load_balance_wgt_nmax);
             else if(load_balance_strategy==DistributionMapping::Strategy::SFC)
-                dm.SFCProcessorMap(grids, wgts, load_balance_wgt_nmax);
+                dm = DistributionMapping::makeSFC(particle_mf, load_balance_wgt_nmax);
             else if(load_balance_strategy==DistributionMapping::Strategy::ROUNDROBIN)
-                dm.RoundRobinProcessorMap(wgts, load_balance_wgt_nmax);
+                dm = DistributionMapping::makeRoundRobin(particle_mf);
         }
         else
         {

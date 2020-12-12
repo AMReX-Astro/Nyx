@@ -107,7 +107,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
                                  parent->refRatio(lev));
         }
 
-        MultiFab::Copy(*derive_dat, *particle_mf[level], 0, 0, 1, 0);
+        derive_dat->ParallelCopy(*particle_mf[level], 0, 0, 1, 0, 0);
 
         return derive_dat;
     }
@@ -128,7 +128,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
                                  parent->refRatio(lev));
         }
 
-        MultiFab::Copy(*derive_dat, *particle_mf[level], 1, 0, 1, 0);
+        derive_dat->ParallelCopy(*particle_mf[level], 1, 0, 1, 0, 0);
 
         return derive_dat;
     }
@@ -149,7 +149,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
                                  parent->refRatio(lev));
         }
 
-        MultiFab::Copy(*derive_dat, *particle_mf[level], 2, 0, 1, 0);
+        derive_dat->ParallelCopy(*particle_mf[level], 2, 0, 1, 0, 0);
 
         return derive_dat;
     }
@@ -170,7 +170,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
                                  parent->refRatio(lev));
         }
 
-        MultiFab::Copy(*derive_dat, *particle_mf[level], 3, 0, 1, 0);
+        derive_dat->ParallelCopy(*particle_mf[level], 3, 0, 1, 0, 0);
 
         return derive_dat;
     }
@@ -192,7 +192,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
                                  parent->refRatio(lev));
         }
 
-        MultiFab::Copy(*derive_dat, *particle_mf[level], 0, 0, 1, 0);
+        derive_dat->ParallelCopy(*particle_mf[level], 0, 0, 1, 0, 0);
 
         return derive_dat;
     }
@@ -215,7 +215,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
                                  parent->refRatio(lev));
         }
 
-        MultiFab::Copy(*derive_dat, *particle_mf[level], 0, 0, 1, 0);
+        derive_dat->ParallelCopy(*particle_mf[level], 0, 0, 1, 0, 0);
 
         return derive_dat;
     }
@@ -237,7 +237,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
                                  parent->refRatio(lev));
         }
 
-        MultiFab::Copy(*derive_dat, *particle_mf[level], 1, 0, 1, 0);
+        derive_dat->ParallelCopy(*particle_mf[level], 1, 0, 1, 0, 0);
 
         return derive_dat;
     }
@@ -258,7 +258,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
                                  parent->refRatio(lev));
         }
 
-        MultiFab::Copy(*derive_dat, *particle_mf[level], 2, 0, 1, 0);
+        derive_dat->ParallelCopy(*particle_mf[level], 2, 0, 1, 0, 0);
 
         return derive_dat;
     }
@@ -279,7 +279,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
                                  parent->refRatio(lev));
         }
 
-        MultiFab::Copy(*derive_dat, *particle_mf[level], 3, 0, 1, 0);
+        derive_dat->ParallelCopy(*particle_mf[level], 3, 0, 1, 0, 0);
 
         return derive_dat;
     }
@@ -302,7 +302,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
                                  parent->refRatio(lev));
         }
 
-        MultiFab::Copy(*derive_dat, *particle_mf[level], 0, 0, 1, 0);
+        derive_dat->ParallelCopy(*particle_mf[level], 0, 0, 1, 0, 0);
 
         return derive_dat;
     }
@@ -328,7 +328,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
                                  parent->refRatio(lev));
         }
 
-        MultiFab::Copy(*derive_dat, *particle_mf[level], 0, 0, 1, 0);
+        derive_dat->ParallelCopy(*particle_mf[level], 0, 0, 1, 0, 0);
 
 #ifndef NO_HYDRO
         std::unique_ptr<MultiFab> gas_density = derive("density",time,0);
