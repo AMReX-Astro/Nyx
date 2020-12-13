@@ -17,10 +17,6 @@ Nyx::enforce_minimum_density( MultiFab& S_old, MultiFab& S_new,
 
     if (S_new.min(Density) < small_dens)
     {
-#ifdef SDC
-        MultiFab&  IR_new       = get_new_data(SDC_IR_Type);
-        IR_new.plus(S_new,Eint,1,IR_new.nGrow());
-#endif
         if (enforce_min_density_type == "floor")
         {
             enforce_minimum_density_floor(S_new, dt, a_old, a_new);
@@ -31,9 +27,6 @@ Nyx::enforce_minimum_density( MultiFab& S_old, MultiFab& S_new,
         } else {
             amrex::Abort("Don't know this enforce_min_density_type");
         }
-#ifdef SDC
-        IR_new.minus(S_new,Eint,1,IR_new.nGrow());
-#endif
     }
 }
 

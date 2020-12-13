@@ -276,6 +276,7 @@ trace_ppm(const Box& bx,
       // q_s = q_ref - sum(l . dq) r
       // note that the a{mpz}right as defined above have the minus already
 
+      if ( (rho_ref +  alphap + alpham + alpha0r) < 0.5 * rho_ref)
       {
 #if 0
           std::cout << "QP GOING LOW IN DIR " << idir << " BEFORE FIX AT " << IntVect(i,j,k) << " " << rho_ref << std::endl;
@@ -383,6 +384,7 @@ trace_ppm(const Box& bx,
       // q_s = q_ref - sum (l . dq) r
       // note that the a{mpz}left as defined above have the minus already
 
+      if ( (rho_ref +  alphap + alpham + alpha0r) < 0.5 * rho_ref)
       {
 #if 0
            std::cout << "QM GOING LOW IN DIR " << idir << " BEFORE FIX AT " << IntVect(i,j,k) << " " << rho_ref << std::endl;
