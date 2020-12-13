@@ -6,16 +6,12 @@ using std::string;
 
 void
 Nyx::sdc_reactions (MultiFab& S_old, MultiFab& S_new, MultiFab& D_new, 
-                    MultiFab& hydro_src, MultiFab& IR,
+                    MultiFab& hydro_src, MultiFab& IR, MultiFab& reset_e_src,
                     Real delta_time, Real a_old, Real a_new, int sdc_iter)
 {
     BL_PROFILE("Nyx::sdc_reactions()");
 #ifdef HEATCOOL
     const Real* dx = geom.CellSize();
-
-    // First reset internal energy before call to compute_temp
-    MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
-    reset_e_src.setVal(0.0);
 
     reset_internal_energy(S_new,D_new,reset_e_src);
     compute_new_temp     (S_new,D_new);

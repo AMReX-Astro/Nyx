@@ -5,7 +5,7 @@
 using namespace amrex;
 
 void
-Nyx::enforce_minimum_density( MultiFab& S_old, MultiFab& S_new,
+Nyx::enforce_minimum_density( MultiFab& S_old, MultiFab& S_new, MultiFab& reset_e_src,
                               Real dt, Real a_old, Real a_new)
 {
     BL_PROFILE("Nyx::enforce_minimum_density()");
@@ -22,7 +22,7 @@ Nyx::enforce_minimum_density( MultiFab& S_old, MultiFab& S_new,
             enforce_minimum_density_floor(S_new, dt, a_old, a_new);
 
         } else if (enforce_min_density_type == "conservative") {
-            enforce_minimum_density_cons(S_old, S_new, dt, a_old, a_new);
+            enforce_minimum_density_cons(S_old, S_new, reset_e_src, dt, a_old, a_new);
 
         } else {
             amrex::Abort("Don't know this enforce_min_density_type");
@@ -60,7 +60,7 @@ Nyx::enforce_minimum_density_floor( MultiFab& S_new,
 }
 
 void
-Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new,
+Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& reset_e_src,
                                     Real dt, Real a_old, Real a_new )
 {
     bool debug = false;
@@ -172,6 +172,10 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new,
         }
 
         S_new.plus(update,0,S_new.nComp(),0);
+
+#ifdef SDC
+	MultiFab::Copy(reset_e_src,update,Eint,0,1,0);
+#endif
 
         if (S_new.contains_nan())
         {

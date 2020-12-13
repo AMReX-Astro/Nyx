@@ -40,14 +40,14 @@ void reset_internal_e (const int i,
     if (rho_eint > 0.0 && rho_eint / u(i,j,k,UEDEN) > 1.0e-6 && interp == 0)
     {
         // Create reset source so u(i,j,k,UEINT) = u(i,j,k,UEINT) + r(i,j,k) = rho_eint
-        r(i,j,k) = rho_eint - u(i,j,k,UEINT);
+        r(i,j,k) += rho_eint - u(i,j,k,UEINT);
         u(i,j,k,UEINT) = rho_eint;
     }
     // If (e from E) < 0 or (e from E) < .0001*E but (e from e) > 0.
     else if (u(i,j,k,UEINT) > 0.0)
     {
         // e is not updated, so reset source is zero
-        r(i,j,k) = 0.0;
+        r(i,j,k) += 0.0;
         u(i,j,k,UEDEN) = u(i,j,k,UEINT) + ke;
     }
     // If not resetting and little e is negative ...
@@ -57,7 +57,7 @@ void reset_internal_e (const int i,
                          d(i,j,k,Ne_comp),comoving_a);
 
         // Create reset source so u(i,j,k,UEINT) = u(i,j,k,UEINT) + r(i,j,k) = u(i,j,k,URHO) * eint_new
-        r(i,j,k) = u(i,j,k,URHO) *  eint_new - u(i,j,k,UEINT);
+        r(i,j,k) += u(i,j,k,URHO) *  eint_new - u(i,j,k,UEINT);
         u(i,j,k,UEINT) = u(i,j,k,URHO) *  eint_new;
 
         u(i,j,k,UEDEN) = u(i,j,k,UEINT) + ke;

@@ -9,7 +9,7 @@ using std::string;
 void
 Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
                                 MultiFab& ext_src_old, MultiFab& hydro_source,
-                                MultiFab& grav_vector, 
+                                MultiFab& grav_vector, MultiFab& reset_e_src,
                                 amrex::Real dt, amrex::Real a_old, amrex::Real a_new)
 {
     BL_PROFILE("Nyx::update_state_with_sources()");
@@ -34,6 +34,7 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
         auto const& uout = S_new.array(mfi);
         auto const& hydro_src = hydro_source.array(mfi);
         auto const& src = ext_src_old.array(mfi);
+        auto const& reset_src = reset_e_src.array(mfi);
         amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept 
         {
             for (int n = 0; n < uout.nComp(); ++n) 
@@ -57,6 +58,7 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
                 {
                         uout(i,j,k,n) =  a_oldsq*uin(i,j,k,n) + hydro_src(i,j,k,n) + a_half * dt * src(i,j,k,n) ;
                         uout(i,j,k,n) = uout(i,j,k,n) * a_newsq_inv;
+//                        reset_src(i,j,k) = uout(i,j,k,n);
                 }
                 else
                 {
@@ -67,7 +69,7 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
     }
 
     // Enforce minimum density over the whole MultiFab
-    enforce_minimum_density(S_old, S_new, dt, a_old, a_new);
+    enforce_minimum_density(S_old, S_new, reset_e_src, dt, a_old, a_new);
 
 #ifndef CONST_SPECIES
     enforce_nonnegative_species(S_new);

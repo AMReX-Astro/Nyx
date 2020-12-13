@@ -556,12 +556,12 @@ public:
 
     void update_state_with_sources( amrex::MultiFab& S_old      , amrex::MultiFab& S_new,
                                     amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src,
-                                    amrex::MultiFab& grav       ,
+                                    amrex::MultiFab& grav       , amrex::MultiFab& reset_e_src,
                                     amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
 
-    void enforce_minimum_density  ( amrex::MultiFab& S_old      , amrex::MultiFab& S_new,
+    void enforce_minimum_density  ( amrex::MultiFab& S_old      , amrex::MultiFab& S_new, amrex::MultiFab& reset_e_src,
                                     amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
-    void enforce_minimum_density_cons  ( amrex::MultiFab& S_old      , amrex::MultiFab& S_new,
+    void enforce_minimum_density_cons  ( amrex::MultiFab& S_old      , amrex::MultiFab& S_new, amrex::MultiFab& reset_e_src,
                                          amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
     void enforce_minimum_density_floor (                               amrex::MultiFab& S_new,
                                          amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
@@ -570,7 +570,7 @@ public:
     void strang_second_step (amrex::Real time, amrex::Real dt,  amrex::MultiFab& state, amrex::MultiFab&  dstate);
 
     void sdc_reactions ( amrex::MultiFab& state_old, amrex::MultiFab& state_new, amrex::MultiFab&  dstate,
-                         amrex::MultiFab& hydro_src, amrex::MultiFab& IR,
+                         amrex::MultiFab& hydro_src, amrex::MultiFab& IR, amrex::MultiFab& reset_e_src,
                          amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
                          int sdc_iter);
 
