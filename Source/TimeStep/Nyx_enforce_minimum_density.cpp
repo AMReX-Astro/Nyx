@@ -229,7 +229,7 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& 
 
     // If (rho e) is still too small after making rho larger, do iterations to make (rho e) larger
     if (re_new_min_after < small_rhoe)
-        enforce_minimum_density_cons ( S_old, S_new, reset_e_src, dt, a_old, a_new);
+        enforce_minimum_energy_cons ( S_old, S_new, reset_e_src, dt, a_old, a_new);
 }
 
 void
