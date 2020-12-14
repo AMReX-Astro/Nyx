@@ -186,12 +186,14 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& 
         // This is used to decide whether to continue the iteration
         rho_new_min_after = S_new.min(URHO);
 
+        // This is used to decide whether to call enforce_min_energy_cons at the end of this routine
+        re_new_min_after = S_new.min(UEINT);
+
         if (debug) 
         {
              ru_new_min_after = S_new.min(UMX);
              rv_new_min_after = S_new.min(UMY);
              rw_new_min_after = S_new.min(UMZ);
-             re_new_min_after = S_new.min(UEINT);
              rE_new_min_after = S_new.min(UEDEN);
             amrex::Print() << "After " << iter+1 << " iterations " << std::endl;
             amrex::Print() << "  MIN OF rho: old / new / new new " << 
@@ -221,6 +223,13 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& 
 
     if (rho_new_min_after < small_dens)
        amrex::Abort("Not able to enforce small_dens this way after all");
+
+    // Define a minimum value based on small_pres
+    Real small_rhoe = small_pres / (gamma - 1.0);
+
+    // If (rho e) is still too small after making rho larger, do iterations to make (rho e) larger
+    if (re_new_min_after < small_rhoe)
+        enforce_minimum_density_cons ( S_old, S_new, reset_e_src, dt, a_old, a_new);
 }
 
 void
@@ -239,7 +248,7 @@ Nyx::enforce_minimum_energy_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& r
     MultiFab Sborder;
     Sborder.define(grids, S_new.DistributionMap(), S_new.nComp(), 2);
 
-    // Define face-based coefficients to be defined when enforcing minimum density 
+    // Define face-based coefficients to be defined when enforcing minimum (rho e)
     //     then used to enjoy the updates of all the other variables
     // The ghost face space is only needed as temp space; we only use "valid" faces...
     MultiFab mu_x(amrex::convert(grids,IntVect(1,0,0)), dmap, 1, 1);
@@ -296,7 +305,7 @@ Nyx::enforce_minimum_energy_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& r
         mu_y.setVal(0.);
         mu_z.setVal(0.);
 
-        // This will hold the update to each cell due to enforcing minimum density in a conservative way
+        // This will hold the update to each cell due to enforcing minimum (rho e) in a conservative way
         MultiFab update(grids , dmap, Sborder.nComp(), 0);
         update.setVal(0.);
 
