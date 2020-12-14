@@ -109,34 +109,36 @@ USE_ARKODE_LIBS ?= TRUE
 
 CPPFLAGS += -DAMREX_USE_SUNDIALS
 INCLUDE_LOCATIONS += $(SUNDIALS_ROOT)/include
+LIBRARY_LOCATIONS += $(SUNDIALS_LIB_DIR)
 
 ifeq ($(USE_CVODE_LIBS),TRUE)
-  LIBRARIES += -L$(SUNDIALS_LIB_DIR) -lsundials_cvode
+  libraries += -L$(SUNDIALS_LIB_DIR) -lsundials_cvode
 endif
 
 ifeq ($(USE_ARKODE_LIBS),TRUE)
-  LIBRARIES += -L$(SUNDIALS_LIB_DIR) -lsundials_arkode
+  libraries += -L$(SUNDIALS_LIB_DIR) -lsundials_arkode
 endif
 
 LIBRARIES += -L$(SUNDIALS_LIB_DIR) -lsundials_nvecserial
 
 ifeq ($(USE_CUDA),TRUE)
-  LIBRARIES += -L$(SUNDIALS_LIB_DIR) -lsundials_nveccuda
+  libraries += -L$(SUNDIALS_LIB_DIR) -lsundials_nveccuda
 endif
 
 ifeq ($(USE_OMP),TRUE)
-  LIBRARIES += -L$(SUNDIALS_LIB_DIR) -lsundials_nvecopenmp
+  libraries += -L$(SUNDIALS_LIB_DIR) -lsundials_nvecopenmp
 endif
 
 ifeq ($(USE_FUSED),TRUE)
 ifeq ($(USE_CUDA),TRUE)
-     LIBRARIES += -L$(SUNDIALS_LIB_DIR) -lsundials_cvode_fused_cuda
+     libraries += -L$(SUNDIALS_LIB_DIR) -lsundials_cvode_fused_cuda
 else
-     LIBRARIES += -L$(SUNDIALS_LIB_DIR) -lsundials_cvode_fused_stubs
+     libraries += -L$(SUNDIALS_LIB_DIR) -lsundials_cvode_fused_stubs
 endif
 endif
 
-LIBRARIES += -Wl,-rpath,${SUNDIALS_LIB_DIR}
+USE_RPATH := TRUE
+#libraries += -Wl,-rpath,${SUNDIALS_LIB_DIR}
 endif
 
 #These are the directories in Nyx 
