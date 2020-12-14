@@ -146,7 +146,7 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& 
 
             amrex::ParallelFor(gbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept
             {
-              compute_mu_for_enforce_min_density(i, j, k, sbord, mu_x_arr, mu_y_arr, mu_z_arr, lsmall_dens);
+              compute_mu_for_enforce_min(i, j, k, Density, sbord, mu_x_arr, mu_y_arr, mu_z_arr, lsmall_dens);
             });
         }
 
@@ -165,9 +165,9 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& 
 
             amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept
             {
-              create_update_for_minimum_density(i, j, k, sbord_arr, 
-                                                mu_x_arr, mu_y_arr, mu_z_arr, upd_arr, 
-                                                lfirst_spec, lnum_spec);
+              create_update_for_minimum(i, j, k, Density, sbord_arr, 
+                                        mu_x_arr, mu_y_arr, mu_z_arr, upd_arr, 
+                                        lfirst_spec, lnum_spec);
             });
         }
 
@@ -221,4 +221,166 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& 
 
     if (rho_new_min_after < small_dens)
        amrex::Abort("Not able to enforce small_dens this way after all");
+}
+
+void
+Nyx::enforce_minimum_energy_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& reset_e_src,
+                                   Real dt, Real a_old, Real a_new )
+{
+    bool debug = false;
+
+    int lnum_spec    = NumSpec;
+    int lfirst_spec  = FirstSpec;
+    Real lsmall_dens = small_dens;
+  
+    Real cur_time = state[State_Type].curTime();
+
+    // We need to define this temporary because S_new only has one ghost cell and we need two.
+    MultiFab Sborder;
+    Sborder.define(grids, S_new.DistributionMap(), S_new.nComp(), 2);
+
+    // Define face-based coefficients to be defined when enforcing minimum density 
+    //     then used to enjoy the updates of all the other variables
+    // The ghost face space is only needed as temp space; we only use "valid" faces...
+    MultiFab mu_x(amrex::convert(grids,IntVect(1,0,0)), dmap, 1, 1);
+    MultiFab mu_y(amrex::convert(grids,IntVect(0,1,0)), dmap, 1, 1);
+    MultiFab mu_z(amrex::convert(grids,IntVect(0,0,1)), dmap, 1, 1);
+
+    Real rho_old_min_before = S_old.min(URHO);
+    Real  ru_old_min_before = S_old.min(UMX);
+    Real  rv_old_min_before = S_old.min(UMY);
+    Real  rw_old_min_before = S_old.min(UMZ);
+    Real  re_old_min_before = S_old.min(UEINT);
+    Real  rE_old_min_before = S_old.min(UEDEN);
+
+    Real rho_new_min_before = S_new.min(URHO);
+    Real  ru_new_min_before = S_new.min(UMX);
+    Real  rv_new_min_before = S_new.min(UMY);
+    Real  rw_new_min_before = S_new.min(UMZ);
+    Real  re_new_min_before = S_new.min(UEINT);
+    Real  rE_new_min_before = S_new.min(UEDEN);
+
+    Real rho_old_sum_before = S_old.sum(0);
+    Real rho_new_sum_before = S_new.sum(0);
+
+    Real rho_new_min_after;
+    Real  re_new_min_after;
+    Real  ru_new_min_after;
+    Real  rv_new_min_after;
+    Real  rw_new_min_after;
+    Real  rE_new_min_after;
+
+    Real rho_new_sum_after;
+
+    Real re_new_min = re_new_min_before;
+
+    // Define a minimum value based on small_pres
+    Real small_rhoe = small_pres / (gamma - 1.0);
+
+    bool too_low = (re_new_min < small_rhoe);
+
+    int iter = 0;
+
+    if (S_new.contains_nan())
+       amrex::Abort("NaN in enforce_minimum_energy_cons before we start iterations");
+
+    // 10 is an arbitrary limit here -- just to make sure we don't get stuck here somehow 
+    while (too_low and iter < 10)
+    {
+        // First make sure that all ghost cells are updated because we use them in defining fluxes
+        // Note that below we update S_new, not Sborder, so we must FillPatch each time.
+        FillPatch(*this, Sborder, 2, cur_time, State_Type, Density, Sborder.nComp());
+
+        // Initialize to zero; these will only be non-zero at a face across which (rho e) is passed...
+        mu_x.setVal(0.);
+        mu_y.setVal(0.);
+        mu_z.setVal(0.);
+
+        // This will hold the update to each cell due to enforcing minimum density in a conservative way
+        MultiFab update(grids , dmap, Sborder.nComp(), 0);
+        update.setVal(0.);
+
+#ifdef _OPENMP
+#pragma omp parallel if (Gpu::notInLaunchRegion())
+#endif
+        for (MFIter mfi(Sborder,TilingIfNotGPU()); mfi.isValid(); ++mfi)
+        {
+            const amrex::Box& gbx = mfi.growntilebox(1);
+            auto const& sbord = Sborder.array(mfi);
+            auto const& mu_x_arr = mu_x.array(mfi);
+            auto const& mu_y_arr = mu_y.array(mfi);
+            auto const& mu_z_arr = mu_z.array(mfi);
+
+            amrex::ParallelFor(gbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept
+            {
+              compute_mu_for_enforce_min(i, j, k, Eint, sbord, mu_x_arr, mu_y_arr, mu_z_arr, small_rhoe);
+            });
+        }
+
+#ifdef _OPENMP
+#pragma omp parallel if (Gpu::notInLaunchRegion())
+#endif
+        for (MFIter mfi(Sborder,TilingIfNotGPU()); mfi.isValid(); ++mfi)
+        {
+            // Only update on valid cells
+            const amrex::Box& bx = mfi.tilebox();
+            auto const& sbord_arr = Sborder.array(mfi);
+            auto const& mu_x_arr  = mu_x.array(mfi);
+            auto const& mu_y_arr  = mu_y.array(mfi);
+            auto const& mu_z_arr  = mu_z.array(mfi);
+            auto const& upd_arr   = update.array(mfi);
+
+            amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept
+            {
+              create_update_for_minimum(i, j, k, Eint, sbord_arr, 
+                                        mu_x_arr, mu_y_arr, mu_z_arr, upd_arr, 
+                                        lfirst_spec, lnum_spec);
+            });
+        }
+
+        S_new.plus(update,0,S_new.nComp(),0);
+
+#ifdef SDC
+	MultiFab::Copy(reset_e_src,update,Eint,0,1,0);
+#endif
+
+        if (S_new.contains_nan())
+        {
+           amrex::Print() << "Doing iteration iter " << std::endl; 
+           amrex::Abort("   and finding NaN in enforce_minimum_energy_cons");
+        }
+
+        // This is used to decide whether to continue the iteration
+        re_new_min_after = S_new.min(Eint);
+
+        if (debug) 
+        {
+            rho_new_min_after = S_new.min(URHO);
+             ru_new_min_after = S_new.min(UMX);
+             rv_new_min_after = S_new.min(UMY);
+             rw_new_min_after = S_new.min(UMZ);
+             re_new_min_after = S_new.min(UEINT);
+             rE_new_min_after = S_new.min(UEDEN);
+            amrex::Print() << "After " << iter+1 << " iterations " << std::endl;
+            amrex::Print() << "  MIN OF rho: old / new / new new " << 
+                rho_old_min_before << " " << rho_new_min_before << " " << rho_new_min_after << std::endl;
+            amrex::Print() << "  MIN OF  ru: old / new / new new " << 
+                ru_old_min_before << " " <<  ru_new_min_before << " " << ru_new_min_after << std::endl;
+            amrex::Print() << "  MIN OF  rv: old / new / new new " << 
+                rv_old_min_before << " " << rv_new_min_before << " " << rv_new_min_after << std::endl;
+            amrex::Print() << "  MIN OF  rw: old / new / new new " << 
+                rw_old_min_before << " " << rw_new_min_before << " " << rw_new_min_after << std::endl;
+            amrex::Print() << "  MIN OF  re: old / new / new new " << 
+                re_old_min_before << " " << re_new_min_before << " " << re_new_min_after << std::endl;
+            amrex::Print() << "  MIN OF  rE: old / new / new new " << 
+                rE_old_min_before << " " << rE_new_min_before << " " << rE_new_min_after << std::endl;
+        }
+
+        too_low = (re_new_min_after < small_rhoe);
+        iter++;
+
+    } // iter
+
+    if (re_new_min_after < small_rhoe)
+       amrex::Abort("Not able to enforce small_rhoe this way after all");
 }

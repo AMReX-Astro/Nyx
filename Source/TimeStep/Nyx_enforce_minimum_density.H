@@ -57,42 +57,43 @@ floor_density(
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
-compute_mu_for_enforce_min_density(
+compute_mu_for_enforce_min(
   const int i,
   const int j,
   const int k,
+  const int icomp,
   amrex::Array4<amrex::Real> const& state,
   amrex::Array4<amrex::Real> const& mu_x,
   amrex::Array4<amrex::Real> const& mu_y,
   amrex::Array4<amrex::Real> const& mu_z,
-  const amrex::Real small_dens)
+  const amrex::Real small_value)
 {
     // NOTE: This is called on a tile box grown by one, and we have already done a FillBoundary/FillPatch.
-    //       We include ghost cells in our tests for rho > small_dens so that we can create fluxes here
-    //       regardless of which side of the grid boundary has the cell needing fixing.
+    //       We include ghost cells in our tests for state(i,j,k,icomp) > small_value so that we can create 
+    //       fluxes here regardless of which side of the grid boundary has the cell needing fixing.
 
-    // NOTE: We trigger a correction when rho < small_dens, but if this is true, we adjust so that 
-    //       rho == 1.1 * small_dens ... just to give ourselves some breathing room 
-    Real target_density = 1.01 * small_dens;
+    // NOTE: We trigger a correction when state(i,j,k,icomp) < small_value, but if this is true, we adjust so that 
+    //       state(i,j,k,icomp) == 1.01 * small_value ... just to give ourselves some breathing room 
+    Real target = 1.01 * small_value;
 
-    if (state(i,j,k,URHO) < small_dens)
+    if (state(i,j,k,icomp) < small_value)
     {
-        // std::cout << "UPDATING " << IntVect(i,j,k) << " WITH INITIAL RHO " << state(i,j,k,URHO) << std::endl;
-        // std::cout << " and x neighbors " <<  state(i+1,j,k,URHO) << " " <<  state(i-1,j,k,URHO) << std::endl;
-        // std::cout << " and y neighbors " <<  state(i,j+1,k,URHO) << " " <<  state(i,j-1,k,URHO) << std::endl;
-        // std::cout << " and z neighbors " <<  state(i,j,k+1,URHO) << " " <<  state(i,j,k-1,URHO) << std::endl;
+        // std::cout << "UPDATING " << IntVect(i,j,k) << " WITH INITIAL VALUE " << state(i,j,k,icomp) << std::endl;
+        // std::cout << " and x neighbors " <<  state(i+1,j,k,icomp) << " " <<  state(i-1,j,k,icomp) << std::endl;
+        // std::cout << " and y neighbors " <<  state(i,j+1,k,icomp) << " " <<  state(i,j-1,k,icomp) << std::endl;
+        // std::cout << " and z neighbors " <<  state(i,j,k+1,icomp) << " " <<  state(i,j,k-1,icomp) << std::endl;
 
-        Real total_need  = target_density - state(i,j,k,URHO);
+        Real total_need  = target - state(i,j,k,icomp);
 
-        // We only let each cell contribute 1/6 of its difference from target_density;
-        //    this guarantees that the redistribution can't make a cell with (rho > target_density)
-        //    go under target_density
-        Real avail_from_ihi = amrex::max((state(i+1,j,k,URHO) - target_density) / 6.0, 0.0);
-        Real avail_from_ilo = amrex::max((state(i-1,j,k,URHO) - target_density) / 6.0, 0.0);
-        Real avail_from_jhi = amrex::max((state(i,j+1,k,URHO) - target_density) / 6.0, 0.0);
-        Real avail_from_jlo = amrex::max((state(i,j-1,k,URHO) - target_density) / 6.0, 0.0);
-        Real avail_from_khi = amrex::max((state(i,j,k+1,URHO) - target_density) / 6.0, 0.0);
-        Real avail_from_klo = amrex::max((state(i,j,k-1,URHO) - target_density) / 6.0, 0.0);
+        // We only let each cell contribute 1/6 of its difference from target;
+        //    this guarantees that the redistribution can't make a cell with (state > target)
+        //    go under target
+        Real avail_from_ihi = amrex::max((state(i+1,j,k,icomp) - target) / 6.0, 0.0);
+        Real avail_from_ilo = amrex::max((state(i-1,j,k,icomp) - target) / 6.0, 0.0);
+        Real avail_from_jhi = amrex::max((state(i,j+1,k,icomp) - target) / 6.0, 0.0);
+        Real avail_from_jlo = amrex::max((state(i,j-1,k,icomp) - target) / 6.0, 0.0);
+        Real avail_from_khi = amrex::max((state(i,j,k+1,icomp) - target) / 6.0, 0.0);
+        Real avail_from_klo = amrex::max((state(i,j,k-1,icomp) - target) / 6.0, 0.0);
 
         // std::cout << " avail x " << avail_from_ihi << " " << avail_from_ilo << std::endl;
         // std::cout << " avail y " << avail_from_jhi << " " << avail_from_jlo << std::endl;
@@ -121,32 +122,32 @@ compute_mu_for_enforce_min_density(
 
         if (from_ihi > 0)
         {
-            mu_x(i+1,j,k) =  from_ihi / (state(i+1,j,k,URHO) - state(i  ,j,k,URHO));
+            mu_x(i+1,j,k) =  from_ihi / (state(i+1,j,k,icomp) - state(i  ,j,k,icomp));
             if (mu_x(i+1,j,k) < 0.) amrex::Abort("mu_x(i+1,j,k) < 0");
         }
         if (from_ilo > 0)
         {
-            mu_x(i  ,j,k) = -from_ilo / (state(i  ,j,k,URHO) - state(i-1,j,k,URHO));
+            mu_x(i  ,j,k) = -from_ilo / (state(i  ,j,k,icomp) - state(i-1,j,k,icomp));
             if (mu_x(i  ,j,k) < 0.) amrex::Abort("mu_x(i  ,j,k) < 0");
         }
         if (from_jhi > 0)
         {
-            mu_y(i,j+1,k) =  from_jhi  / (state(i,j+1,k,URHO) - state(i,j  ,k,URHO));
+            mu_y(i,j+1,k) =  from_jhi  / (state(i,j+1,k,icomp) - state(i,j  ,k,icomp));
             if (mu_y(i,j+1,k) < 0.) amrex::Abort("mu_y(i,j+1,k) < 0");
         }
         if (from_jlo > 0)
         {
-            mu_y(i,j  ,k) = -from_jlo  / (state(i,j  ,k,URHO) - state(i,j-1,k,URHO));
+            mu_y(i,j  ,k) = -from_jlo  / (state(i,j  ,k,icomp) - state(i,j-1,k,icomp));
             if (mu_y(i,j  ,k) < 0.) amrex::Abort("mu_y(i,j  ,k) < 0");
         }
         if (from_khi > 0)
         {
-            mu_z(i,j,k+1) =  from_khi  / (state(i,j,k+1,URHO) - state(i,j,k  ,URHO));
+            mu_z(i,j,k+1) =  from_khi  / (state(i,j,k+1,icomp) - state(i,j,k  ,icomp));
             if (mu_z(i,j,k+1) < 0.) amrex::Abort("mu_z(i,j,k+1) < 0");
         }
         if (from_klo > 0)
         {
-            mu_z(i,j,k  ) = -from_klo  / (state(i,j,k  ,URHO) - state(i,j,k-1,URHO));
+            mu_z(i,j,k  ) = -from_klo  / (state(i,j,k  ,icomp) - state(i,j,k-1,icomp));
             if (mu_z(i,j,k  ) < 0.) amrex::Abort("mu_z(i,j,k  ) < 0");
         }
     }
@@ -155,10 +156,11 @@ compute_mu_for_enforce_min_density(
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
-create_update_for_minimum_density(
+create_update_for_minimum(
   const int i,
   const int j,
   const int k,
+  const int icomp,
   amrex::Array4<amrex::Real> const& state,
   amrex::Array4<amrex::Real> const& mu_x,
   amrex::Array4<amrex::Real> const& mu_y,
@@ -182,8 +184,9 @@ create_update_for_minimum_density(
     }
 
     // Enforce that X is unchanged with change in rho
-    for (int n = 0; n < NumSpec; ++n)
-    {
-        state(i,j,k,FirstSpec+n) *= (state(i,j,k,URHO) + update(i,j,k,URHO)) / state(i,j,k,URHO);
-    }
+    if (icomp == URHO)
+        for (int n = 0; n < NumSpec; ++n)
+        {
+            state(i,j,k,FirstSpec+n) *= (state(i,j,k,URHO) + update(i,j,k,URHO)) / state(i,j,k,URHO);
+        }
 }
