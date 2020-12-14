@@ -294,7 +294,6 @@ int Nyx::integrate_state_vec_mfin
                                 {
 #else
 #ifdef _OPENMP
-      const Dim3 hi = amrex::ubound(tbx);
 #pragma omp parallel for collapse(3)
       for (int k = lo.z; k <= hi.z; ++k) {
         for (int j = lo.y; j <= hi.y; ++j) {
