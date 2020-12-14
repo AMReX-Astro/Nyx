@@ -358,13 +358,6 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
     const ParticleLevel&   pmap             = this->GetParticles(lev);
     int             tnum             = 1;
 
-#ifdef _OPENMP
-    tnum = omp_get_max_threads();
-#ifdef AMREX_USE_GPU
-    amrex::Abort("Using both omp and gpu, fix device vs multiple thread implementation ins NyxParticleContainer::estTimeStep");
-#endif
-#endif
-
     long num_particles_at_level = 0;
 
     std::unique_ptr<amrex::MultiFab> ac_pointer;

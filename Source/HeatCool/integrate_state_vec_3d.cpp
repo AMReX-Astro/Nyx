@@ -198,18 +198,21 @@ int Nyx::integrate_state_vec_mfin
 #endif
 #endif
 
+#ifdef AMREX_USE_GPU
+                                AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
+                                {
+#else
 #ifdef _OPENMP
       const Dim3 hi = amrex::ubound(tbx);
-
 #pragma omp parallel for collapse(3)
       for (int k = lo.z; k <= hi.z; ++k) {
         for (int j = lo.y; j <= hi.y; ++j) {
             for (int i = lo.x; i <= hi.x; ++i) {
                 //Skip setup since parameters are hard-coded
-                //fort_ode_eos_setup(a,delta_time);
 #else
                                 AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
-                                {                                 
+                                {
+#endif
 #endif
                                   int idx = i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
                                   dptr[idx]=state4(i,j,k,Eint)/state4(i,j,k,Density);
@@ -220,6 +223,10 @@ int Nyx::integrate_state_vec_mfin
                                   rparh[4*idx+3]=1/a-1;    //    rpar(4)=z_vode
                                   abstol_ptr[idx]= state4(i,j,k,Eint)/state4(i,j,k,Density)*abstol;
                                   //                            }
+#ifdef AMREX_USE_GPU
+                                });
+                                amrex::Gpu::Device::streamSynchronize();
+#else
 #ifdef _OPENMP
                                 }
                                 }
@@ -227,7 +234,8 @@ int Nyx::integrate_state_vec_mfin
 #pragma omp barrier
 #else
                                 });
-      amrex::Gpu::Device::streamSynchronize();
+                                amrex::Gpu::Device::streamSynchronize();
+#endif
 #endif
 
 #ifdef CV_NEWTON
@@ -281,14 +289,21 @@ int Nyx::integrate_state_vec_mfin
                                 PrintFinalStats(cvode_mem);
 #endif
   auto atomic_rates = atomic_rates_glob;
+#ifdef AMREX_USE_GPU
+                                AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
+                                {
+#else
 #ifdef _OPENMP
+      const Dim3 hi = amrex::ubound(tbx);
 #pragma omp parallel for collapse(3)
       for (int k = lo.z; k <= hi.z; ++k) {
         for (int j = lo.y; j <= hi.y; ++j) {
             for (int i = lo.x; i <= hi.x; ++i) {
+                //Skip setup since parameters are hard-coded
 #else
                                 AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
-                                {                                 
+                                {
+#endif
 #endif
                                   int  idx= i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
                                 //                              for (int i= 0;i < neq; ++i) {
@@ -300,6 +315,11 @@ int Nyx::integrate_state_vec_mfin
                                   state4(i,j,k,Eden)  += state4(i,j,k,Density) * (dptr[idx*loop]-eptr[idx]);
                                   //                            }
                                 //PrintFinalStats(cvode_mem);
+
+#ifdef AMREX_USE_GPU
+                                });
+                                amrex::Gpu::Device::streamSynchronize();
+#else
 #ifdef _OPENMP
                                 }
                                 }
@@ -307,9 +327,9 @@ int Nyx::integrate_state_vec_mfin
 #pragma omp barrier
 #else
                                 });
-      amrex::Gpu::Device::streamSynchronize();
+                                amrex::Gpu::Device::streamSynchronize();
 #endif
-
+#endif
 
 #ifdef AMREX_USE_CUDA
       if(sundials_alloc_type%2!=0)

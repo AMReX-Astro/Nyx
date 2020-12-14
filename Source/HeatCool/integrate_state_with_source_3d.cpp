@@ -50,14 +50,16 @@ int Nyx::integrate_state_struct
   //#pragma omp parallel if (Gpu::notInLaunchRegion())
   //#endif
 #ifdef _OPENMP
-  for ( MFIter mfi(S_old, false); mfi.isValid(); ++mfi )
-#else
 #ifdef AMREX_USE_GPU
-    for ( MFIter mfi(S_old, MFItInfo()); mfi.isValid(); ++mfi)
+    const auto tiling = MFItInfo().SetDynamic(true);
+#pragma omp parallel
 #else
-  for ( MFIter mfi(S_old, true); mfi.isValid(); ++mfi )
+    const bool tiling = TilingIfNotGPU();
 #endif
+#else
+    const bool tiling = TilingIfNotGPU();
 #endif
+    for ( MFIter mfi(S_old, tiling); mfi.isValid(); ++mfi)
     {
 
       //check that copy contructor vs create constructor works??
@@ -265,6 +267,10 @@ int Nyx::integrate_state_struct_mfin
       {
         ode_eos_initialize_single(f_rhs_data, a, dptr, eptr, T_vode, ne_vode, rho_vode, rho_init_vode, rho_src_vode, rhoe_src_vode, e_src_vode, IR_vode, JH_vode_arr);
       });
+#ifdef AMREX_USE_GPU
+                                AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
+                                {
+#else
 #ifdef _OPENMP
       const Dim3 hi = amrex::ubound(tbx);
 #pragma omp parallel for collapse(3)
@@ -276,12 +282,16 @@ int Nyx::integrate_state_struct_mfin
                                 AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
                                 {
 #endif
+#endif
                                   int idx = i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
                                   ode_eos_initialize_arrays(i, j, k, idx, f_rhs_data,
                                                             a_end, lo, len, state4, diag_eos4,
                                                             hydro_src4, reset_src4, dptr, eptr,
                                                             abstol_ptr, sdc_iter, delta_time);
-
+#ifdef AMREX_USE_GPU
+                                });
+                                amrex::Gpu::Device::streamSynchronize();
+#else
 #ifdef _OPENMP
                                 }
                                 }
@@ -290,6 +300,7 @@ int Nyx::integrate_state_struct_mfin
 #else
                                 });
                                 amrex::Gpu::Device::streamSynchronize();
+#endif
 #endif
                         
 #ifdef CV_NEWTON
@@ -338,7 +349,10 @@ int Nyx::integrate_state_struct_mfin
                                   }
                                 //                              amrex::Gpu::Device::streamSynchronize();
                                 //                              BL_PROFILE_VAR_STOP(cvode_timer2);
-
+#ifdef AMREX_USE_GPU
+                                AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
+                                {                                 
+#else
 #ifdef _OPENMP
 #pragma omp parallel for collapse(3)
       for (int k = lo.z; k <= hi.z; ++k) {
@@ -348,10 +362,15 @@ int Nyx::integrate_state_struct_mfin
                                 AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
                                 {                                 
 #endif
+#endif
                                   int  idx= i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
                                 //                              for (int i= 0;i < neq; ++i) {
                                   ode_eos_finalize_struct(i,j,k,idx,atomic_rates,f_rhs_data,a_end,state4,state_n4,reset_src4,diag_eos4,IR4,dptr,eptr,delta_time);
                                 //PrintFinalStats(cvode_mem);
+#ifdef AMREX_USE_GPU
+                                });
+                                amrex::Gpu::Device::streamSynchronize();
+#else
 #ifdef _OPENMP
                                 }
                                 }
@@ -359,7 +378,8 @@ int Nyx::integrate_state_struct_mfin
 #pragma omp barrier
 #else
                                 });
-      amrex::Gpu::Device::streamSynchronize();
+                                amrex::Gpu::Device::streamSynchronize();
+#endif
 #endif
 
     The_Arena()->free(f_rhs_data);
@@ -413,6 +433,7 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
       f_rhs_struct(t, (u_ptr[idx]),(udot_ptr[idx]),atomic_rates,f_rhs_data,idx);
   });
   cudaStreamSynchronize(currentStream);
+#pragma omp barrier
 
   return 0;
 }
