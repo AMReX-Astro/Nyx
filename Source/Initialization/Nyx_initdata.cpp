@@ -254,14 +254,6 @@ Nyx::initData ()
             D_new.setVal(0., Temp_comp);
             D_new.setVal(0.,   Ne_comp);
 
-#ifdef SDC
-    //
-    // Initialize this to zero before we use it in advance
-    //
-    MultiFab& IR_new = get_new_data(SDC_IR_Type);
-    IR_new.setVal(0.0);
-#endif
-
 #ifdef _OPENMP
 #pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif
@@ -335,6 +327,17 @@ Nyx::initData ()
     }
 
 #ifndef NO_HYDRO
+
+#ifdef SDC
+    //
+    // Initialize this to zero before we use it in advance
+    //
+    if (do_hydro)
+    {
+        MultiFab& IR_new = get_new_data(SDC_IR_Type);
+        IR_new.setVal(0.0);
+    }
+#endif
 
     //
     // Read in initial conditions from a file.
