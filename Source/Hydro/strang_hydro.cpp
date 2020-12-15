@@ -138,9 +138,9 @@ Nyx::strang_hydro (Real time,
 
     // First reset internal energy before call to compute_temp
     MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
-   reset_e_src.setVal(0.0);
-    update_state_with_sources(S_old_tmp,S_new, reset_e_src,
-                              ext_src_old,hydro_src,grav_vector,
+    reset_e_src.setVal(0.0);
+    update_state_with_sources(S_old_tmp,S_new,
+                              ext_src_old,hydro_src,grav_vector, reset_e_src,
                               dt,a_old,a_new);  
 
     S_old_tmp.clear();
