@@ -3,6 +3,7 @@ EBASE     ?= Nyx
 USE_PARTICLES = TRUE
 USE_GRAV = TRUE
 BL_NO_FORT = TRUE
+USE_RPATH = TRUE
 
 include $(AMREX_HOME)/Tools/GNUMake/Make.defs
 
@@ -137,8 +138,6 @@ else
 endif
 endif
 
-USE_RPATH := TRUE
-LIBRARIES += -Wl,-rpath,${SUNDIALS_LIB_DIR}
 endif
 
 #These are the directories in Nyx 
