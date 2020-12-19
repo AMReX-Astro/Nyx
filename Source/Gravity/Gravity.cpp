@@ -1170,8 +1170,6 @@ Gravity::AddGhostParticlesToRhs (int               level,
 
     amrex::Gpu::LaunchSafeGuard lsg(true);
 
-    int ncomp = 1;
-
     if (level > 0)
     {
         int ncomp = 1;
@@ -1196,8 +1194,6 @@ Gravity::AddGhostParticlesToRhs(int level, const Vector<MultiFab*>& Rhs_particle
     BL_PROFILE("Gravity::AddGhostParticlesToRhsML()");
 
     amrex::Gpu::LaunchSafeGuard lsg(true);
-
-    int ncomp = 1;
 
     if (level > 0)
     {
