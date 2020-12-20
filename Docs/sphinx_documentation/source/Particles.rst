@@ -286,30 +286,8 @@ that cell. Velocities are calculated in the Zel’dovich approximation by
 
 where :math:`\Delta{\vec{x}}` is the displacement of the particle.
 
-Time Stepping
-=============
-
-There are currently two different ways in which particles can be moved:
-
-Random
-------
-
-  To enable this option, set::
-
-  nyx.particle_move_type = Random
-
-  This updates the particle positions at the end of each coarse time step using a
-  random number between 0 and 1 multiplied by 0.25 dx.
-
-Motion by Self-Gravity
-----------------------
-
-  To enable this option, set::
-
-  nyx.particle_move_type = Gravitational
-
-Move-Kick-Drift Algorithm
-~~~~~~~~~~~~~~~~~~~~~~~~~
+Particle Time Stepping: Move-Kick-Drift Algorithm
+=================================================
 
 In each time step:
 
