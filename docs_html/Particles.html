@@ -117,15 +117,7 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#time-stepping">Time Stepping</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#random">Random</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#motion-by-self-gravity">Motion by Self-Gravity</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#move-kick-drift-algorithm">Move-Kick-Drift Algorithm</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#computing-g">Computing <strong>g</strong></a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="#particle-time-stepping-move-kick-drift-algorithm">Particle Time Stepping: Move-Kick-Drift Algorithm</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#output-format">Output Format</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#checkpoint-files">Checkpoint Files</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#particle-data-in-plot-files">Particle Data in Plot Files</a></li>
@@ -502,26 +494,8 @@ that cell. Velocities are calculated in the Zel’dovich approximation by</p>
 </div>
 </div>
 </div>
-<div class="section" id="time-stepping">
-<h2>Time Stepping<a class="headerlink" href="#time-stepping" title="Permalink to this headline">¶</a></h2>
-<p>There are currently two different ways in which particles can be moved:</p>
-<div class="section" id="random">
-<h3>Random<a class="headerlink" href="#random" title="Permalink to this headline">¶</a></h3>
-<blockquote>
-<div><p>To enable this option, set:</p>
-<p>nyx.particle_move_type = Random</p>
-<p>This updates the particle positions at the end of each coarse time step using a
-random number between 0 and 1 multiplied by 0.25 dx.</p>
-</div></blockquote>
-</div>
-<div class="section" id="motion-by-self-gravity">
-<h3>Motion by Self-Gravity<a class="headerlink" href="#motion-by-self-gravity" title="Permalink to this headline">¶</a></h3>
-<blockquote>
-<div><p>To enable this option, set:</p>
-<p>nyx.particle_move_type = Gravitational</p>
-</div></blockquote>
-<div class="section" id="move-kick-drift-algorithm">
-<h4>Move-Kick-Drift Algorithm<a class="headerlink" href="#move-kick-drift-algorithm" title="Permalink to this headline">¶</a></h4>
+<div class="section" id="particle-time-stepping-move-kick-drift-algorithm">
+<h2>Particle Time Stepping: Move-Kick-Drift Algorithm<a class="headerlink" href="#particle-time-stepping-move-kick-drift-algorithm" title="Permalink to this headline">¶</a></h2>
 <p>In each time step:</p>
 <ul class="simple">
 <li>Solve for <span class="math notranslate nohighlight">\({\mathbf g}^n\)</span> (only if multilevel, otherwise use <span class="math notranslate nohighlight">\({\mathbf g}^{n+1}\)</span> from previous step)</li>
@@ -534,9 +508,6 @@ random number between 0 and 1 multiplied by 0.25 dx.</p>
 we have not advanced the positions after computing the new-time gravity. This has the benefit that
 we perform only one gravity solve per timestep (in a single-level calculation with no hydro) because
 the particles are only moved once.</p>
-</div>
-<div class="section" id="computing-g">
-<h4>Computing <strong>g</strong><a class="headerlink" href="#computing-g" title="Permalink to this headline">¶</a></h4>
 <p>We solve for the gravitational vector as follows:</p>
 <ul class="simple">
 <li>Assign the mass of the particles onto the grid in the form of density, <span class="math notranslate nohighlight">\(\rho_{DM}\)</span>.
@@ -555,8 +526,6 @@ e.g. if <span class="math notranslate nohighlight">\({\bf g} = (g_x, g_y, g_z),\
 <li>Interpolate each component of <span class="math notranslate nohighlight">\({\bf g}\)</span> from normal cell faces onto each particle position using
 linear interpolation in the normal direction.</li>
 </ul>
-</div>
-</div>
 </div>
 <div class="section" id="output-format">
 <h2>Output Format<a class="headerlink" href="#output-format" title="Permalink to this headline">¶</a></h2>
