@@ -49,15 +49,9 @@ int Nyx::integrate_state_vec
   //  fort_ode_eos_setup(a,delta_time);
   long int store_steps=new_max_sundials_steps;
   
-  //#ifdef _OPENMP
-  //#pragma omp parallel if (Gpu::notInLaunchRegion())
-  //#endif
-#ifdef _OPENMP
-  for ( MFIter mfi(S_old, false); mfi.isValid(); ++mfi )
-#else
-  for ( MFIter mfi(S_old, TilingIfNotGPU()); mfi.isValid(); ++mfi )
-#endif
-    {
+  bool tiling = (sundials_use_tiling && TilingIfNotGPU());
+  for ( MFIter mfi(S_old, tiling; mfi.isValid(); ++mfi )
+  {
 
       //check that copy contructor vs create constructor works??
       const Box& tbx = mfi.tilebox();
@@ -68,7 +62,7 @@ int Nyx::integrate_state_vec
       Array4<Real> const& diag_eos4 = D_old.array(mfi);
 
       integrate_state_vec_mfin(state4,diag_eos4,tbx,a,delta_time,store_steps,new_max_sundials_steps);
-}
+  }
       return 0;
 }
 
@@ -362,34 +356,28 @@ int Nyx::integrate_state_grownvec
    amrex::MultiFab &D_old,
    const Real& a, const Real& delta_time)
 {
+    //Skip setup since parameters are hard-coded
+    //  fort_ode_eos_setup(a,delta_time);
 
-  //Skip setup since parameters are hard-coded
-  //  fort_ode_eos_setup(a,delta_time);
-  amrex::Gpu::LaunchSafeGuard lsg(true);
-  long int store_steps=old_max_sundials_steps;
+    amrex::Gpu::LaunchSafeGuard lsg(true);
+
+    long int store_steps=old_max_sundials_steps;
   
-  const Real prev_time     = state[State_Type].prevTime();
+    const Real prev_time     = state[State_Type].prevTime();
   
-  //#ifdef _OPENMP
-  //#pragma omp parallel if (Gpu::notInLaunchRegion())
-  //#endif
-#ifdef _OPENMP
-  for ( MFIter mfi(S_old, false); mfi.isValid(); ++mfi )
-#else
-  for ( MFIter mfi(S_old, TilingIfNotGPU()); mfi.isValid(); ++mfi )
-#endif
+    bool tiling = (sundials_use_tiling && TilingIfNotGPU());
+    for ( MFIter mfi(S_old, tiling; mfi.isValid(); ++mfi )
     {
+        //check that copy contructor vs create constructor works??
+        const Box& tbx = mfi.growntilebox();
 
-      //check that copy contructor vs create constructor works??
-      const Box& tbx = mfi.growntilebox();
+        S_old[mfi].prefetchToDevice();
+        D_old[mfi].prefetchToDevice();
 
-      S_old[mfi].prefetchToDevice();
-      D_old[mfi].prefetchToDevice();
+        Array4<Real> const& state4 = S_old.array(mfi);
+        Array4<Real> const& diag_eos4 = D_old.array(mfi);
 
-      Array4<Real> const& state4 = S_old.array(mfi);
-      Array4<Real> const& diag_eos4 = D_old.array(mfi);
-
-      integrate_state_vec_mfin(state4,diag_eos4,tbx,a,delta_time,store_steps,old_max_sundials_steps);
+        integrate_state_vec_mfin(state4,diag_eos4,tbx,a,delta_time,store_steps,old_max_sundials_steps);
     }
 
     return 0;

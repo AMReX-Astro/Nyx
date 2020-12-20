@@ -51,13 +51,16 @@ int Nyx::integrate_state_struct
   //#endif
 #ifdef _OPENMP
 #ifdef AMREX_USE_GPU
-    const auto tiling = MFItInfo().SetDynamic(true);
+    if (sundials_use_tiling)
+       const auto tiling = MFItInfo().SetDynamic(true);
+    else
+       const bool tiling = false;
 #pragma omp parallel
 #else
-    const bool tiling = TilingIfNotGPU();
+    const bool tiling = (TilingIfNotGPU() && sundials_use_tiling);
 #endif
 #else
-    const bool tiling = TilingIfNotGPU();
+    const bool tiling = (TilingIfNotGPU() && sundials_use_tiling);
 #endif
 
     for ( MFIter mfi(S_old, tiling); mfi.isValid(); ++mfi)

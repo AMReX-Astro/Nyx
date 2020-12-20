@@ -973,6 +973,9 @@ protected:
     // if true, use non-negative constraint on energy
     static int use_sundials_fused;
 
+    // specifies whether we allow tiling when calling the SUNDIALS integrator
+    static int sundials_use_tiling;
+
     // specifies the memory priority
     static int minimize_memory;
 
