@@ -50,7 +50,7 @@ int Nyx::integrate_state_vec
   long int store_steps=new_max_sundials_steps;
   
   bool tiling = (sundials_use_tiling && TilingIfNotGPU());
-  for ( MFIter mfi(S_old, tiling; mfi.isValid(); ++mfi )
+  for ( MFIter mfi(S_old, tiling); mfi.isValid(); ++mfi )
   {
 
       //check that copy contructor vs create constructor works??
@@ -366,7 +366,7 @@ int Nyx::integrate_state_grownvec
     const Real prev_time     = state[State_Type].prevTime();
   
     bool tiling = (sundials_use_tiling && TilingIfNotGPU());
-    for ( MFIter mfi(S_old, tiling; mfi.isValid(); ++mfi )
+    for ( MFIter mfi(S_old, tiling); mfi.isValid(); ++mfi )
     {
         //check that copy contructor vs create constructor works??
         const Box& tbx = mfi.growntilebox();
