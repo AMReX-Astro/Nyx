@@ -87,12 +87,6 @@ nyx.do_dm_particles = 1
 # >>>>>>>>>>>>>  PARTICLE INIT OPTIONS <<<<<<<<<<<<<<<<
 nyx.particle_init_type = RandomPerCell
 
-# >>>>>>>>>>>>>  PARTICLE MOVE OPTIONS <<<<<<<<<<<<<<<<
-#  "Gravitational"    "Random"
-# >>>>>>>>>>>>>  PARTICLE MOVE OPTIONS <<<<<<<<<<<<<<<<
-nyx.particle_move_type = Gravitational
-
-
 # TIME STEP CONTROL
 nyx.relative_max_change_a = 0.01    # max change in scale factor
 particles.cfl             = 0.5     # 'cfl' for particles 

@@ -83,11 +83,6 @@ particles.particle_output_file = final_particles
 particles.aggregation_type = None
 particles.aggregation_buffer = 2
 
-# >>>>>>>>>>>>>  PARTICLE MOVE OPTIONS <<<<<<<<<<<<<<<<
-#  "Gravitational"    "Random"
-# >>>>>>>>>>>>>  PARTICLE MOVE OPTIONS <<<<<<<<<<<<<<<<
-nyx.particle_move_type = Gravitational
-
 # TIME STEP CONTROL
 nyx.cfl            = 0.9     # cfl number for hyperbolic system
 nyx.init_shrink    = 1.0     # scale back initial timestep
