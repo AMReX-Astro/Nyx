@@ -4,7 +4,7 @@ Dark matter particles
 
 Dark matter particles are included in the simulation by setting::
 
-    nyx.do_dm_paricles = true
+    nyx.do_dm_particles = true
 
 in the inputs file.
 
