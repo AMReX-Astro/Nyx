@@ -2,13 +2,12 @@
 Stochastic Forcing
 ******************
 
-| In Nyx a stochastic force field can be applied. To make sure this
-  option is chosen correctly, we must always set
-| in the GNUmakefile and
-| = 1
-| in the inputs file.
-| The external forcing term in the momentum
-  equation (`[eq:momt] <#eq:momt>`__) is then given by
+There is an option to apply a stochastic force field. 
+
+See Nyx/Exec/DrivenTurbulence for an example.
+
+The external forcing term in the momentum equation 
+(`[eq:momt] <#eq:momt>`__) is then given by
 
   .. math:: {\bf S}_{\rho \Ub} = \rho_b \fb
 
@@ -46,49 +45,47 @@ given by :math:`1/\alpha` is chosen sufficiently short compared to
 List of Parameters
 ==================
 
-+-----------------+-----------------+-----------------+-------------+
-| Parameter       | Definition      | Acceptable      | Default     |
-|                 |                 | Values          |             |
-+=================+=================+=================+=============+
-| *               | seed of the     | Integer         | 27011974    |
-| *forcing.seed** | random number   | :math:`>0`      |             |
-|                 | generator       |                 |             |
-+-----------------+-----------------+-----------------+-------------+
-| **fo            | shape of        | 1 (plane), 2    | 3           |
-| rcing.profile** | forcing         | (band), 3       |             |
-|                 | spectrum        | (parabolic)     |             |
-+-----------------+-----------------+-----------------+-------------+
-| **              | ratio of domain | Integer         | 2 2 2       |
-| forcing.alpha** | size :math:`X`  | :math:`>0`      |             |
-|                 | to integral     |                 |             |
-|                 | length          |                 |             |
-|                 | :ma             |                 |             |
-|                 | th:`L=X/\alpha` |                 |             |
-+-----------------+-----------------+-----------------+-------------+
-| **forci         | band width of   | Real            | 1.0 1.0 1.0 |
-| ng.band_width** | the forcing     | :math:`\ge 0`   |             |
-|                 | spectrum        | and             |             |
-|                 | relative to     | :math:`\le 1`   |             |
-|                 | alpha           |                 |             |
-+-----------------+-----------------+-----------------+-------------+
-| **forc          | characteristic  | Real            | must be set |
-| ing.intgr_vel** | velocity        | :math:`> 0`     |             |
-|                 | :math:`V`       |                 |             |
-+-----------------+-----------------+-----------------+-------------+
-| **forci         | autocorrelation | Real            | 1.0 1.0 1.0 |
-| ng.auto_corrl** | time in units   | :math:`> 0`     |             |
-|                 | of              |                 |             |
-|                 | :math:`T=L/V`   |                 |             |
-+-----------------+-----------------+-----------------+-------------+
-| **forcin        | weight          | Real            | 1.0         |
-| g.soln_weight** | :math:`\zeta`   | :math:`\ge 0`   |             |
-|                 | of solenoidal   | and             |             |
-|                 | relative to     | :math:`\le 1`   |             |
-|                 | dilatational    |                 |             |
-|                 | modes           |                 |             |
-+-----------------+-----------------+-----------------+-------------+
-
-[Table:Geometry]
++-------------------------+--------------------+-----------------+-------------+
+| Parameter               | Definition         | Acceptable      | Default     |
+|                         |                    | Values          |             |
++=========================+====================+=================+=============+
+| **forcing.seed**        | seed of the        | Integer         | 27011974    |
+|                         | random number      | :math:`>0`      |             |
+|                         | generator          |                 |             |
++-------------------------+--------------------+-----------------+-------------+
+| **forcing.profile**     | shape of           | 1 (plane), 2    | 3           |
+|                         | forcing            | (band), 3       |             |
+|                         | spectrum           | (parabolic)     |             |
++-------------------------+--------------------+-----------------+-------------+
+| **forcing.alpha**       | ratio of domain    | Integer         | 2 2 2       |
+|                         | size :math:`X`     | :math:`>0`      |             |
+|                         | to integral        |                 |             |
+|                         | length             |                 |             |
+|                         | :math:`L=X/\alpha` |                 |             |
+|                         |                    |                 |             |
++-------------------------+--------------------+-----------------+-------------+
+| **forcing.band_width**  | band width of      | Real            | 1.0 1.0 1.0 |
+|                         | the forcing        | :math:`\ge 0`   |             |
+|                         | spectrum           | and             |             |
+|                         | relative to        | :math:`\le 1`   |             |
+|                         | alpha              |                 |             |
++-------------------------+--------------------+-----------------+-------------+
+| **forcing.intgr_vel**   | characteristic     | Real            | must be set |
+|                         | velocity           | :math:`> 0`     |             |
+|                         | :math:`V`          |                 |             |
++-------------------------+--------------------+-----------------+-------------+
+| **forcing.auto_corrl**  | autocorrelation    | Real            | 1.0 1.0 1.0 |
+|                         | time in units      | :math:`> 0`     |             |
+|                         | of                 |                 |             |
+|                         | :math:`T=L/V`      |                 |             |
++-------------------------+--------------------+-----------------+-------------+
+| **forcing.soln_weight** | weight             | Real            | 1.0         |
+|                         | :math:`\zeta`      | :math:`\ge 0`   |             |
+|                         | of solenoidal      | and             |             |
+|                         | relative to        | :math:`\le 1`   |             |
+|                         | dilatational       |                 |             |
+|                         | modes              |                 |             |
++-------------------------+--------------------+-----------------+-------------+
 
 Triples for forcing.alpha, forcing.band_width, forcing.intgr_vel, and
 forcing.auto_corrl correspond to the three spatial dimensions.
