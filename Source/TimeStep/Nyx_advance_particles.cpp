@@ -184,33 +184,30 @@ Nyx::advance_particles_only (Real time,
     {
         // Advance the particle velocities to the half-time and the positions to the new time
         // We use the cell-centered gravity to correctly interpolate onto particle locations
-        if (particle_move_type == "Gravitational")
+        const Real a_half = 0.5 * (a_old + a_new);
+
+        if (particle_verbose && ParallelDescriptor::IOProcessor())
+            std::cout << "moveKickDrift ... updating particle positions and velocity\n";
+
+        for (int lev = level; lev <= finest_level_to_advance; lev++)
         {
-            const Real a_half = 0.5 * (a_old + a_new);
+            // We need grav_n_grow grow cells to track boundary particles
+            const auto& ba = get_level(lev).get_new_data(PhiGrav_Type).boxArray();
+            const auto& dm = get_level(lev).get_new_data(PhiGrav_Type).DistributionMap();
+            MultiFab grav_vec_old(ba, dm, BL_SPACEDIM, grav_n_grow);
+            get_level(lev).gravity->get_old_grav_vector(lev, grav_vec_old, time);
+            
+            for (int i = 0; i < Nyx::theActiveParticles().size(); i++)
+                Nyx::theActiveParticles()[i]->moveKickDrift(grav_vec_old, lev, dt, a_old, a_half, where_width);
 
-            if (particle_verbose && ParallelDescriptor::IOProcessor())
-                std::cout << "moveKickDrift ... updating particle positions and velocity\n";
+            // Only need the coarsest virtual particles here.
+            if (lev == level && level < finest_level)
+                for (int i = 0; i < Nyx::theVirtualParticles().size(); i++)
+                    Nyx::theVirtualParticles()[i]->moveKickDrift(grav_vec_old, level, dt, a_old, a_half, where_width);
 
-            for (int lev = level; lev <= finest_level_to_advance; lev++)
-            {
-                // We need grav_n_grow grow cells to track boundary particles
-                const auto& ba = get_level(lev).get_new_data(PhiGrav_Type).boxArray();
-                const auto& dm = get_level(lev).get_new_data(PhiGrav_Type).DistributionMap();
-                MultiFab grav_vec_old(ba, dm, BL_SPACEDIM, grav_n_grow);
-                get_level(lev).gravity->get_old_grav_vector(lev, grav_vec_old, time);
-                
-                for (int i = 0; i < Nyx::theActiveParticles().size(); i++)
-                    Nyx::theActiveParticles()[i]->moveKickDrift(grav_vec_old, lev, dt, a_old, a_half, where_width);
-
-                // Only need the coarsest virtual particles here.
-                if (lev == level && level < finest_level)
-                    for (int i = 0; i < Nyx::theVirtualParticles().size(); i++)
-                        Nyx::theVirtualParticles()[i]->moveKickDrift(grav_vec_old, level, dt, a_old, a_half, where_width);
-
-                // Miiiight need all Ghosts
-                for (int i = 0; i < Nyx::theGhostParticles().size(); i++)
-                    Nyx::theGhostParticles()[i]->moveKickDrift(grav_vec_old, lev, dt, a_new, a_half, where_width);
-            }
+            // Miiiight need all Ghosts
+            for (int i = 0; i < Nyx::theGhostParticles().size(); i++)
+                Nyx::theGhostParticles()[i]->moveKickDrift(grav_vec_old, lev, dt, a_new, a_half, where_width);
         }
     }
 
@@ -243,36 +240,33 @@ Nyx::advance_particles_only (Real time,
     }
 
     {
-      amrex::Gpu::LaunchSafeGuard lsg(true);
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     if (Nyx::theActiveParticles().size() > 0)
     {
         // Advance the particle velocities by dt/2 to the new time. We use the
         // cell-centered gravity to correctly interpolate onto particle
         // locations.
-        if (particle_move_type == "Gravitational")
+        const Real a_half = 0.5 * (a_old + a_new);
+
+        if (particle_verbose && ParallelDescriptor::IOProcessor())
+            std::cout << "moveKick ... updating velocity only\n";
+
+        for (int lev = level; lev <= finest_level_to_advance; lev++)
         {
-            const Real a_half = 0.5 * (a_old + a_new);
+            const auto& ba = get_level(lev).get_new_data(PhiGrav_Type).boxArray();
+            const auto& dm = get_level(lev).get_new_data(PhiGrav_Type).DistributionMap();
+            MultiFab grav_vec_new(ba, dm, BL_SPACEDIM, grav_n_grow);
+            get_level(lev).gravity->get_new_grav_vector(lev, grav_vec_new, cur_time);
 
-            if (particle_verbose && ParallelDescriptor::IOProcessor())
-                std::cout << "moveKick ... updating velocity only\n";
+            for (int i = 0; i < Nyx::theActiveParticles().size(); i++)
+                Nyx::theActiveParticles()[i]->moveKick(grav_vec_new, lev, dt, a_new, a_half);
 
-            for (int lev = level; lev <= finest_level_to_advance; lev++)
-            {
-                const auto& ba = get_level(lev).get_new_data(PhiGrav_Type).boxArray();
-                const auto& dm = get_level(lev).get_new_data(PhiGrav_Type).DistributionMap();
-                MultiFab grav_vec_new(ba, dm, BL_SPACEDIM, grav_n_grow);
-                get_level(lev).gravity->get_new_grav_vector(lev, grav_vec_new, cur_time);
+            // Virtual particles will be recreated, so we need not kick them.
 
-                for (int i = 0; i < Nyx::theActiveParticles().size(); i++)
-                    Nyx::theActiveParticles()[i]->moveKick(grav_vec_new, lev, dt, a_new, a_half);
-
-                // Virtual particles will be recreated, so we need not kick them.
-
-                // Ghost particles need to be kicked except during the final iteration.
-                if (iteration != ncycle)
-                    for (int i = 0; i < Nyx::theGhostParticles().size(); i++)
-                        Nyx::theGhostParticles()[i]->moveKick(grav_vec_new, lev, dt, a_new, a_half);
-            }
+            // Ghost particles need to be kicked except during the final iteration.
+            if (iteration != ncycle)
+                for (int i = 0; i < Nyx::theGhostParticles().size(); i++)
+                    Nyx::theGhostParticles()[i]->moveKick(grav_vec_new, lev, dt, a_new, a_half);
         }
     }
     }

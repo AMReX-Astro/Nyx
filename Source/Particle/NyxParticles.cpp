@@ -127,7 +127,6 @@ int Nyx::num_particle_ghosts = 1;
 int Nyx::particle_skip_factor = 1;
 
 std::string Nyx::particle_init_type = "";
-std::string Nyx::particle_move_type = "";
 
 // Allows us to output particles in the plotfile
 //   in either single (IEEE32) or double (NATIVE) precision.  
@@ -268,22 +267,13 @@ Nyx::read_particle_params ()
 
 #ifdef AGN
     pp.get("particle_init_type", particle_init_type);
-    pp.get("particle_move_type", particle_move_type);
 #else
     if (do_dm_particles)
     {
         pp.get("particle_init_type", particle_init_type);
-        pp.get("particle_move_type", particle_move_type);
         pp.query("init_with_sph_particles", init_with_sph_particles);
     }
 #endif
-
-    if (!do_grav && particle_move_type == "Gravitational")
-    {
-        if (ParallelDescriptor::IOProcessor())
-            std::cerr << "ERROR:: doesnt make sense to have do_grav=false but move_type = Gravitational" << std::endl;
-        amrex::Error();
-    }
 
     pp.query("particle_initrandom_serialize", particle_initrandom_serialize);
     pp.query("particle_initrandom_count", particle_initrandom_count);
@@ -1006,44 +996,41 @@ void
 Nyx::particle_est_time_step (Real& est_dt)
 {
     BL_PROFILE("Nyx::particle_est_time_step()");
-    if (DMPC && particle_move_type == "Gravitational")
+    const Real cur_time = state[PhiGrav_Type].curTime();
+    const Real a = get_comoving_a(cur_time);
+    MultiFab& grav = get_new_data(Gravity_Type);
+    const Real est_dt_particle = DMPC->estTimestep(grav, a, level, particle_cfl);
+
+    if (est_dt_particle > 0) {
+        est_dt = std::min(est_dt, est_dt_particle);
+    }
+
+#ifdef NEUTRINO_PARTICLES
+    const Real est_dt_neutrino = NPC->estTimestep(grav, a, level, neutrino_cfl);
+    if (est_dt_neutrino > 0) {
+        est_dt = std::min(est_dt, est_dt_neutrino);
+    }
+#endif
+
+    if (verbose)
     {
-        const Real cur_time = state[PhiGrav_Type].curTime();
-        const Real a = get_comoving_a(cur_time);
-        MultiFab& grav = get_new_data(Gravity_Type);
-        const Real est_dt_particle = DMPC->estTimestep(grav, a, level, particle_cfl);
-
-        if (est_dt_particle > 0) {
-            est_dt = std::min(est_dt, est_dt_particle);
-        }
-
-#ifdef NEUTRINO_PARTICLES
-        const Real est_dt_neutrino = NPC->estTimestep(grav, a, level, neutrino_cfl);
-        if (est_dt_neutrino > 0) {
-            est_dt = std::min(est_dt, est_dt_neutrino);
-        }
-#endif
-
-        if (verbose)
+        if (est_dt_particle > 0)
         {
-            if (est_dt_particle > 0)
-            {
-                amrex::Print() << "...estdt from particles at level "
-                          << level << ": " << est_dt_particle << '\n';
-            }
-            else
-            {
-                amrex::Print() << "...there are no particles at level "
-                          << level << '\n';
-            }
-#ifdef NEUTRINO_PARTICLES
-            if (est_dt_neutrino > 0)
-            {
-                amrex::Print() << "...estdt from neutrinos at level "
-                          << level << ": " << est_dt_neutrino << '\n';
-            }
-#endif
+            amrex::Print() << "...estdt from particles at level "
+                      << level << ": " << est_dt_particle << '\n';
         }
+        else
+            {
+            amrex::Print() << "...there are no particles at level "
+                      << level << '\n';
+        }
+#ifdef NEUTRINO_PARTICLES
+        if (est_dt_neutrino > 0)
+        {
+            amrex::Print() << "...estdt from neutrinos at level "
+                      << level << ": " << est_dt_neutrino << '\n';
+        }
+#endif
     }
 }
 
@@ -1161,18 +1148,6 @@ Nyx::particle_redistribute (int lbase, bool my_init)
             if (verbose)
                 amrex::Print() << "NOT calling redistribute because NOT changed " << '\n';
         }
-    }
-}
-
-void
-Nyx::particle_move_random ()
-{
-    BL_PROFILE("Nyx::particle_move_random()");
-    if (DMPC && particle_move_type == "Random")
-    {
-        BL_ASSERT(level == 0);
-
-        DMPC->MoveRandom();
     }
 }
 

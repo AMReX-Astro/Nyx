@@ -377,11 +377,6 @@ public:
     void particle_redistribute(int lbase = 0, bool init = false);
 
     //
-    // Move randomly
-    //
-    void particle_move_random();
-
-    //
     // Initialize particle locations and velocities (and strengths if relevant)
     //
     virtual void init_particles();
@@ -923,10 +918,6 @@ protected:
     // How do we want to initialize the particles?
     // Must be "Random", "Cosmological" or "AsciiFile"
     static std::string particle_init_type;
-
-    // How do we want to move the particles?
-    // Must be "Random" or "Gravitational"
-    static std::string particle_move_type;
 
     // These control random initialization
     static bool particle_initrandom_serialize;

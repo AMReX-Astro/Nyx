@@ -1770,13 +1770,6 @@ Nyx::postCoarseTimeStep (Real cumtime)
    LyA_statistics();
 #endif
 
-#ifdef AMREX_PARTICLES
-    //
-    // postCoarseTimeStep() is only called by level 0.
-    //
-    if (Nyx::theDMPC() && particle_move_type == "Random")
-        particle_move_random();
-#endif
    int nstep = parent->levelSteps(0);
 
 #ifndef NO_HYDRO
