@@ -179,7 +179,7 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& 
         S_new.plus(update,0,S_new.nComp(),0);
 
 #ifdef SDC
-	MultiFab::Copy(reset_e_src,update,Eint_comp,0,1,0);
+        MultiFab::Copy(reset_e_src,update,Eint_comp,0,1,0);
 #endif
 
         if (S_new.contains_nan())
@@ -360,7 +360,7 @@ Nyx::enforce_minimum_energy_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& r
         S_new.plus(update,0,S_new.nComp(),0);
 
 #ifdef SDC
-	MultiFab::Copy(reset_e_src,update,Eint_comp,0,1,0);
+        MultiFab::Copy(reset_e_src,update,Eint_comp,0,1,0);
 #endif
 
         if (S_new.contains_nan())

@@ -691,7 +691,7 @@ Gravity::actual_multilevel_solve (int                       level,
             MultiFab::Add(*Rhs_p[lev], *Rhs_particles[lev], 0, 0, 1, 0);
         else
             Rhs_p[lev]->ParallelAdd(*Rhs_particles[lev]);
-	}
+        }
 
     // Average phi from fine to coarse level before the solve.
     for (int lev = num_levels-1; lev > 0; lev--)
