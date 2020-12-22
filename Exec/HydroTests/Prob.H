@@ -133,62 +133,62 @@ void prob_initdata_state(const int i,
   if (amrex::Math::round(prob_param[idir_comp]) == 1) {
     if (x <= ctr_x) {
       state(i, j, k, Density_comp) = prob_param[rho_l_comp];
-      state(i, j, k, UMX) = prob_param[rho_l_comp] * prob_param[u_l_comp];
-      state(i, j, k, UMY) = 0.0;
-      state(i, j, k, UMZ) = 0.0;
-      state(i, j, k, UEDEN) = prob_param[rhoe_l_comp] + 0.5 * prob_param[rho_l_comp] *
+      state(i, j, k, Xmom_comp) = prob_param[rho_l_comp] * prob_param[u_l_comp];
+      state(i, j, k, Ymom_comp) = 0.0;
+      state(i, j, k, Zmom_comp) = 0.0;
+      state(i, j, k, Eden_comp) = prob_param[rhoe_l_comp] + 0.5 * prob_param[rho_l_comp] *
                                                    prob_param[u_l_comp] *
                                                    prob_param[u_l_comp];
-      state(i, j, k, UEINT) = prob_param[rhoe_l_comp];
+      state(i, j, k, Eint_comp) = prob_param[rhoe_l_comp];
     } else {
       state(i, j, k, Density_comp) = prob_param[rho_r_comp];
-      state(i, j, k, UMX) = prob_param[rho_r_comp] * prob_param[u_r_comp];
-      state(i, j, k, UMY) = 0.0;
-      state(i, j, k, UMZ) = 0.0;
-      state(i, j, k, UEDEN) = prob_param[rhoe_r_comp] + 0.5 * prob_param[rho_r_comp] *
+      state(i, j, k, Xmom_comp) = prob_param[rho_r_comp] * prob_param[u_r_comp];
+      state(i, j, k, Ymom_comp) = 0.0;
+      state(i, j, k, Zmom_comp) = 0.0;
+      state(i, j, k, Eden_comp) = prob_param[rhoe_r_comp] + 0.5 * prob_param[rho_r_comp] *
                                                    prob_param[u_r_comp] *
                                                    prob_param[u_r_comp];
-      state(i, j, k, UEINT) = prob_param[rhoe_r_comp];
+      state(i, j, k, Eint_comp) = prob_param[rhoe_r_comp];
     }
   } else if (amrex::Math::round(prob_param[idir_comp]) == 2) {
     if (y <= ctr_y) {
       state(i, j, k, Density_comp) = prob_param[rho_l_comp];
-      state(i, j, k, UMX) = 0.0;
-      state(i, j, k, UMY) = prob_param[rho_l_comp] * prob_param[u_l_comp];
-      state(i, j, k, UMZ) = 0.0;
-      state(i, j, k, UEDEN) = prob_param[rhoe_l_comp] + 0.5 * prob_param[rho_l_comp] *
+      state(i, j, k, Xmom_comp) = 0.0;
+      state(i, j, k, Ymom_comp) = prob_param[rho_l_comp] * prob_param[u_l_comp];
+      state(i, j, k, Zmom_comp) = 0.0;
+      state(i, j, k, Eden_comp) = prob_param[rhoe_l_comp] + 0.5 * prob_param[rho_l_comp] *
                                                    prob_param[u_l_comp] *
                                                    prob_param[u_l_comp];
-      state(i, j, k, UEINT) = prob_param[rhoe_l_comp];
+      state(i, j, k, Eint_comp) = prob_param[rhoe_l_comp];
     } else {
       state(i, j, k, Density_comp) = prob_param[rho_r_comp];
-      state(i, j, k, UMX) = 0.0;
-      state(i, j, k, UMY) = prob_param[rho_r_comp] * prob_param[u_r_comp];
-      state(i, j, k, UMZ) = 0.0;
-      state(i, j, k, UEDEN) = prob_param[rhoe_r_comp] + 0.5 * prob_param[rho_r_comp] *
+      state(i, j, k, Xmom_comp) = 0.0;
+      state(i, j, k, Ymom_comp) = prob_param[rho_r_comp] * prob_param[u_r_comp];
+      state(i, j, k, Zmom_comp) = 0.0;
+      state(i, j, k, Eden_comp) = prob_param[rhoe_r_comp] + 0.5 * prob_param[rho_r_comp] *
                                                    prob_param[u_r_comp] *
                                                    prob_param[u_r_comp];
-      state(i, j, k, UEINT) = prob_param[rhoe_r_comp];
+      state(i, j, k, Eint_comp) = prob_param[rhoe_r_comp];
     }
       } else if (amrex::Math::round(prob_param[idir_comp]) == 3) {
     if (z <= ctr_z) {
       state(i, j, k, Density_comp) = prob_param[rho_l_comp];
-      state(i, j, k, UMX) = 0.0;
-      state(i, j, k, UMY) = 0.0;
-      state(i, j, k, UMZ) = prob_param[rho_l_comp] * prob_param[u_l_comp];
-      state(i, j, k, UEDEN) = prob_param[rhoe_l_comp] + 0.5 * prob_param[rho_l_comp] *
+      state(i, j, k, Xmom_comp) = 0.0;
+      state(i, j, k, Ymom_comp) = 0.0;
+      state(i, j, k, Zmom_comp) = prob_param[rho_l_comp] * prob_param[u_l_comp];
+      state(i, j, k, Eden_comp) = prob_param[rhoe_l_comp] + 0.5 * prob_param[rho_l_comp] *
                                                    prob_param[u_l_comp] *
                                                    prob_param[u_l_comp];
-      state(i, j, k, UEINT) = prob_param[rhoe_l_comp];
+      state(i, j, k, Eint_comp) = prob_param[rhoe_l_comp];
     } else {
       state(i, j, k, Density_comp) = prob_param[rho_r_comp];
-      state(i, j, k, UMX) = 0.0;
-      state(i, j, k, UMY) = 0.0;
-      state(i, j, k, UMZ) = prob_param[rho_r_comp] * prob_param[u_r_comp];
-      state(i, j, k, UEDEN) = prob_param[rhoe_r_comp] + 0.5 * prob_param[rho_r_comp] *
+      state(i, j, k, Xmom_comp) = 0.0;
+      state(i, j, k, Ymom_comp) = 0.0;
+      state(i, j, k, Zmom_comp) = prob_param[rho_r_comp] * prob_param[u_r_comp];
+      state(i, j, k, Eden_comp) = prob_param[rhoe_r_comp] + 0.5 * prob_param[rho_r_comp] *
                                                    prob_param[u_r_comp] *
                                                    prob_param[u_r_comp];
-      state(i, j, k, UEINT) = prob_param[rhoe_r_comp];
+      state(i, j, k, Eint_comp) = prob_param[rhoe_r_comp];
     }
   } else {
     amrex::Abort("invalid idir");
@@ -254,17 +254,17 @@ void prob_initdata_state(const int i,
   amrex::Real eint = p_zone / (prob_param[gamma_comp] - 1.0);
 
   state(i, j, k, Density_comp) = prob_param[dens_ambient_comp];
-  state(i, j, k, UMX) = 0.0;
-  state(i, j, k, UMY) = 0.0;
-  state(i, j, k, UMZ) = 0.0;
+  state(i, j, k, Xmom_comp) = 0.0;
+  state(i, j, k, Ymom_comp) = 0.0;
+  state(i, j, k, Zmom_comp) = 0.0;
 
-  state(i, j, k, UEDEN) = eint + 0.5 *
-                                   (state(i, j, k, UMX) * state(i, j, k, UMX) +
-                                    state(i, j, k, UMY) * state(i, j, k, UMY) +
-                                    state(i, j, k, UMZ) * state(i, j, k, UMZ)) /
-                                   state(i, j, k, Density_comp);
+  state(i, j, k, Eden_comp) = eint + 0.5 *
+                                   (state(i, j, k, Xmom_comp) * state(i, j, k, Xmom_comp) +
+                                    state(i, j, k, Ymom_comp) * state(i, j, k, Ymom_comp) +
+                                    state(i, j, k, Zmom_comp) * state(i, j, k, Zmom_comp)) /
+                                    state(i, j, k, Density_comp);
 
-  state(i, j, k, UEINT) = eint;
+  state(i, j, k, Eint_comp) = eint;
 
   }
 
