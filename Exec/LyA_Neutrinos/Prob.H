@@ -49,7 +49,7 @@ void prob_initdata_state(const int i,
     state(i,j,k,Eint_comp) = 0.0;
     state(i,j,k,Eden_comp) = 0.0;
 
-#ifndef CONST_SPEC
+#ifndef CONST_SPECIES
       //XHYDROGEN hardcoded to .76 init_managed
       state(i,j,k,FirstSpec_comp  ) = .76;
       state(i,j,k,FirstSpec_comp+1) = (1.0 - .76);
