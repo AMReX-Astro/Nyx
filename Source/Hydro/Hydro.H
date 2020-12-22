@@ -50,10 +50,13 @@ pc_srctoprim(
 
   srcQ(i,j,k,QPRES ) = dpde * srcQ(i,j,k,QREINT) * rhoinv + dpdr * srcQ(i,j,k,QRHO);
 
+#ifndef CONST_SPECIES
   //Might not need correction from q
   for (int n = 0; n < NumSpec; ++n) {
     srcQ(i, j, k, FirstSpec_comp + n) = (src(i, j, k, FirstSpec_comp + n) - q(i, j, k, FirstSpec_comp + n) * srcrho) * rhoinv;
   }
+#endif
+
 #else
   srcQ(i, j, k, QRHO) = 0.;
   srcQ(i, j, k, QU)   = 0.;
@@ -61,9 +64,11 @@ pc_srctoprim(
   srcQ(i, j, k, QW)   = 0.;
   srcQ(i, j, k, QPRES)   = 0.;
   srcQ(i, j, k, QREINT)   = 0.;
+#ifndef CONST_SPECIES
   for (int n = 0; n < NumSpec; ++n) {
     srcQ(i, j, k, FirstSpec_comp + n) = 0.;
   }
+#endif
 #endif
 
 }
@@ -108,6 +113,7 @@ AMREX_FORCE_INLINE
 void
 normalize_species_fluxes(const int i, const int j, const int k, amrex::Array4<amrex::Real> const& flx, const int NumSpec)
 {
+#ifndef CONST_SPECIES
   amrex::Real summ, fac;
   summ = 0.0;
   for (int n = 0; n < NumSpec; ++n)
@@ -125,6 +131,7 @@ normalize_species_fluxes(const int i, const int j, const int k, amrex::Array4<am
   fac = (std::abs(summ) > std::numeric_limits<amrex::Real>::epsilon() * std::abs(flx(i, j, k, Density_comp))) ? flx(i, j, k, Density_comp) / summ : 1.0;
   for (int n = 0; n < NumSpec; ++n)
     flx(i, j, k, FirstSpec_comp + n) *= fac;
+#endif
 }
 
 AMREX_GPU_DEVICE

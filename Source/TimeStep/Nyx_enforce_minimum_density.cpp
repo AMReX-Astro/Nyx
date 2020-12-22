@@ -66,7 +66,9 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& 
     bool debug = false;
 
     int lnum_spec    = NumSpec;
+#ifndef CONST_SPECIES
     int lfirst_spec  = FirstSpec_comp;
+#endif
     Real lsmall_dens = small_dens;
   
     Real cur_time = state[State_Type].curTime();
@@ -166,8 +168,11 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& 
             amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept
             {
               create_update_for_minimum(i, j, k, Density_comp, sbord_arr, 
-                                        mu_x_arr, mu_y_arr, mu_z_arr, upd_arr, 
-                                        lfirst_spec, lnum_spec);
+                                        mu_x_arr, mu_y_arr, mu_z_arr, upd_arr
+#ifndef CONST_SPECIES
+                                       ,lfirst_spec, lnum_spec
+#endif
+                                                              );
             });
         }
 
@@ -239,7 +244,9 @@ Nyx::enforce_minimum_energy_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& r
     bool debug = false;
 
     int lnum_spec    = NumSpec;
+#ifndef CONST_SPECIES
     int lfirst_spec  = FirstSpec_comp;
+#endif
     Real lsmall_dens = small_dens;
   
     Real cur_time = state[State_Type].curTime();
@@ -342,8 +349,11 @@ Nyx::enforce_minimum_energy_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& r
             amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept
             {
               create_update_for_minimum(i, j, k, Eint_comp, sbord_arr, 
-                                        mu_x_arr, mu_y_arr, mu_z_arr, upd_arr, 
-                                        lfirst_spec, lnum_spec);
+                                        mu_x_arr, mu_y_arr, mu_z_arr, upd_arr
+#ifndef CONST_SPECIES
+                                       ,lfirst_spec, lnum_spec
+#endif
+                                                              );
             });
         }
 

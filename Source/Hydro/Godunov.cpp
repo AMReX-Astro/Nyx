@@ -16,7 +16,6 @@ trace_ppm(const Box& bx,
           const Real gamma,
           const Real small_dens, const Real small_pres, 
           const Real small,
-          const int FirstSpec_comp, const int NumSpec,
           const Real a_old);
 
 // Host function to call gpu hydro functions
@@ -42,8 +41,10 @@ pc_umeth_3D(
   const Real small,
   const int ppm_type)
 {
+#ifndef CONST_SPECIES
   const int FirstSpec_comp_loc = FirstSpec_comp;
   const int NumSpec_loc   = NumSpec;
+#endif
 
   const Real a_half = 0.5 * (a_old + a_new);
   Real const dx = del[0];
@@ -139,7 +140,6 @@ pc_umeth_3D(
                 bxg2, dt, del, gamma,
                 small_dens, small_pres,
                 small,
-                FirstSpec_comp, NumSpec,
                 a_old);
 
       idir = 1;
@@ -150,7 +150,6 @@ pc_umeth_3D(
                 bxg2, dt, del, gamma,
                 small_dens, small_pres,
                 small,
-                FirstSpec_comp, NumSpec,
                 a_old);
 
       idir = 2;
@@ -161,7 +160,6 @@ pc_umeth_3D(
                 bxg2, dt, del, gamma,
                 small_dens, small_pres,
                 small,
-                FirstSpec_comp, NumSpec,
                 a_old);
 
   }
@@ -181,7 +179,10 @@ pc_umeth_3D(
       pc_cmpflx(
         i, j, k, qxmarr, qxparr, fxarr, gdtempx, 
         q, small_dens, small_pres, small, gamma, 
-        FirstSpec_comp_loc, NumSpec_loc, cdir);
+#ifndef CONST_SPECIES
+        FirstSpec_comp_loc, NumSpec_loc,
+#endif
+        cdir);
     });
 
   // Y initial fluxes
@@ -197,7 +198,10 @@ pc_umeth_3D(
       pc_cmpflx(
         i, j, k, qymarr, qyparr, fyarr, gdtempy, 
         q, small_dens, small_pres, small, gamma, 
-        FirstSpec_comp_loc, NumSpec_loc, cdir);
+#ifndef CONST_SPECIES
+        FirstSpec_comp_loc, NumSpec_loc,
+#endif
+        cdir);
     });
 
   // Z initial fluxes
@@ -213,7 +217,10 @@ pc_umeth_3D(
       pc_cmpflx(
         i, j, k, qzmarr, qzparr, fzarr, gdtempz, 
         q, small_dens, small_pres, small, gamma, 
-        FirstSpec_comp_loc, NumSpec_loc, cdir);
+#ifndef CONST_SPECIES
+        FirstSpec_comp_loc, NumSpec_loc,
+#endif
+        cdir);
     });
 
   // X interface corrections
@@ -263,12 +270,18 @@ pc_umeth_3D(
       pc_cmpflx(
         i, j, k, qmxy, qpxy, flxy, qxy, 
         q, small_dens, small_pres, small, gamma, 
-        FirstSpec_comp_loc, NumSpec_loc, cdir);
+#ifndef CONST_SPECIES
+        FirstSpec_comp_loc, NumSpec_loc,
+#endif
+        cdir);
       // X|Z
       pc_cmpflx(
         i, j, k, qmxz, qpxz, flxz, qxz, 
         q, small_dens, small_pres, small, gamma, 
-        FirstSpec_comp_loc, NumSpec_loc, cdir);
+#ifndef CONST_SPECIES
+        FirstSpec_comp_loc, NumSpec_loc,
+#endif
+        cdir);
     });
 
   qxymeli.clear();
@@ -323,12 +336,18 @@ pc_umeth_3D(
       pc_cmpflx(
         i, j, k, qmyx, qpyx, flyx, qyx, 
         q, small_dens, small_pres, small, gamma, 
-        FirstSpec_comp_loc, NumSpec_loc, cdir);
+#ifndef CONST_SPECIES
+        FirstSpec_comp_loc, NumSpec_loc,
+#endif
+        cdir);
       // Y|Z
       pc_cmpflx(
         i, j, k, qmyz, qpyz, flyz, qyz, 
         q, small_dens, small_pres, small, gamma, 
-        FirstSpec_comp_loc, NumSpec_loc, cdir);
+#ifndef CONST_SPECIES
+        FirstSpec_comp_loc, NumSpec_loc,
+#endif
+        cdir);
     });
 
   qyxmeli.clear();
@@ -386,12 +405,18 @@ pc_umeth_3D(
       pc_cmpflx(
         i, j, k, qmzx, qpzx, flzx, qzx, 
         q, small_dens, small_pres, small, gamma, 
-        FirstSpec_comp_loc, NumSpec_loc, cdir);
+#ifndef CONST_SPECIES
+        FirstSpec_comp_loc, NumSpec_loc,
+#endif
+        cdir);
       // Z|Y
       pc_cmpflx(
         i, j, k, qmzy, qpzy, flzy, qzy, 
         q, small_dens, small_pres, small, gamma, 
-        FirstSpec_comp_loc, NumSpec_loc, cdir);
+#ifndef CONST_SPECIES
+        FirstSpec_comp_loc, NumSpec_loc,
+#endif
+        cdir);
     });
 
   qzxmeli.clear();
@@ -427,7 +452,10 @@ pc_umeth_3D(
   amrex::ParallelFor(xfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_cmpflx(i, j, k, qm, qp, flx1, q1, 
               q, small_dens, small_pres, small, gamma, 
-              FirstSpec_comp_loc, NumSpec_loc, cdir);
+#ifndef CONST_SPECIES
+              FirstSpec_comp_loc, NumSpec_loc,
+#endif
+              cdir);
   });
 
   // Y | X&Z
@@ -450,7 +478,10 @@ pc_umeth_3D(
   amrex::ParallelFor(yfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_cmpflx(i, j, k, qm, qp, flx2, q2, 
               q, small_dens, small_pres, small, gamma,
-              FirstSpec_comp_loc, NumSpec_loc, cdir);
+#ifndef CONST_SPECIES
+              FirstSpec_comp_loc, NumSpec_loc,
+#endif
+              cdir);
   });
 
   // Z | X&Y
@@ -473,7 +504,10 @@ pc_umeth_3D(
   amrex::ParallelFor(zfxbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
     pc_cmpflx(i, j, k, qm, qp, flx3, q3, 
               q, small_dens, small_pres, small, gamma,
-              FirstSpec_comp_loc, NumSpec_loc, cdir);
+#ifndef CONST_SPECIES
+              FirstSpec_comp_loc, NumSpec_loc,
+#endif
+              cdir);
   });
 
   qmeli.clear();

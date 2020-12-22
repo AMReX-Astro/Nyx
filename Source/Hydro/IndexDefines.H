@@ -11,7 +11,7 @@ enum State_Type_Index {
   Zmom_comp    = 3,
   Eden_comp    = 4,
   Eint_comp    = 5 
-#ifndef CONST_SPEC
+#ifndef CONST_SPECIES
  ,FirstSpec_comp = 6
 #endif
 };

@@ -110,7 +110,9 @@ pc_cmpflx(
   const amrex::Real small_pres,
   const amrex::Real small,
   const amrex::Real gamma,
+#ifndef CONST_SPECIES
   const int FirstSpec_comp, const int NumSpec,
+#endif
   const int dir)
 {
   amrex::Real csmall, cav, ustar;
@@ -185,6 +187,7 @@ pc_cmpflx(
     small_dens, small_pres, small, csmall, gamma);
 
   amrex::Real flxrho = flx(i, j, k, Density_comp);
+#ifndef CONST_SPECIES
   for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     if (ustar > 0.0)
       flx(i, j, k, n) = flxrho * ql(i, j, k, n);
@@ -193,6 +196,7 @@ pc_cmpflx(
     else
       flx(i, j, k, n) = flxrho * 0.50 * (ql(i, j, k, n) + qr(i, j, k, n));
   }
+#endif
 }
 
 // First Transverse Correction for Predicted Y-states, using X-Flux
@@ -230,6 +234,7 @@ pc_transx1(
   flxe = cdtdx * (flxx(i + 1, j, k, Eden_comp) - flxx(i, j, k, Eden_comp));
 
   // Update passive variables
+#ifndef CONST_SPECIES
   for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n));
     rr = qyp(i, j, k, QRHO);
@@ -242,8 +247,9 @@ pc_transx1(
     compo = rr * qym(i, j + 1, k, n) - compn;
     qm(i, j + 1, k, n) = compo / rrnew;
   }
-  // Update hydro vars
+#endif
 
+  // Update hydro vars
   pggp = qint(i + 1, j, k, QPRES);
   pggm = qint(i, j, k, QPRES);
   ugp = qint(i + 1, j, k, QU);
@@ -381,6 +387,7 @@ pc_transy1(
   flxe = cdtdy * (flxy(i, j + 1, k, Eden_comp) - flxy(i, j, k, Eden_comp));
 
   // -  Update Passive Variables
+#ifndef CONST_SPECIES
   for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
     rr = qxp(i, j, k, QRHO);
@@ -393,6 +400,7 @@ pc_transy1(
     compo = rr * qxm(i + 1, j, k, n) - compn;
     qm(i + 1, j, k, n) = compo / rrnew;
   }
+#endif
 
   //- Update hydro vars -
   // pressure divergence and such.
@@ -531,6 +539,7 @@ pc_transx2(
   flxe = cdtdx * (flxx(i + 1, j, k, Eden_comp) - flxx(i, j, k, Eden_comp));
 
   // -  Update Passive Variables
+#ifndef CONST_SPECIES
   for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n));
     rr = qzp(i, j, k, QRHO);
@@ -543,6 +552,7 @@ pc_transx2(
     compo = rr * qzm(i, j, k + 1, n) - compn;
     qm(i, j, k + 1, n) = compo / rrnew;
   }
+#endif
   //- Update hydro vars -
 
   pggp = qint(i + 1, j, k, QPRES);
@@ -679,6 +689,7 @@ pc_transy2(
   flxe = cdtdy * (flxy(i, j + 1, k, Eden_comp) - flxy(i, j, k, Eden_comp));
 
   // -  Update Passive Variables
+#ifndef CONST_SPECIES
   for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
     rr = qzp(i, j, k, QRHO);
@@ -691,8 +702,9 @@ pc_transy2(
     compo = rr * qzm(i, j, k + 1, n) - compn;
     qm(i, j, k + 1, n) = compo / rrnew;
   }
-  //- Update hydro vars -
+#endif
 
+  //- Update hydro vars -
   pggp = qint(i, j + 1, k, QPRES);
   pggm = qint(i, j, k, QPRES);
   ugp = qint(i, j + 1, k, QV);
@@ -828,6 +840,7 @@ pc_transz1(
   flxw = cdtdz * (flxz(i, j, k + 1, Zmom_comp) - flxz(i, j, k, Zmom_comp));
   flxe = cdtdz * (flxz(i, j, k + 1, Eden_comp) - flxz(i, j, k, Eden_comp));
 
+#ifndef CONST_SPECIES
   // -  Update Passive Variables
   for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     compn = cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
@@ -841,6 +854,7 @@ pc_transz1(
     compo = rr * qxm(i + 1, j, k, n) - compn;
     qm(i + 1, j, k, n) = compo / rrnew;
   }
+#endif
 
   //- Update hydro vars -
   // pressure divergence and such.
@@ -978,6 +992,7 @@ pc_transz2(
   flxw = cdtdz * (flxz(i, j, k + 1, Zmom_comp) - flxz(i, j, k, Zmom_comp));
   flxe = cdtdz * (flxz(i, j, k + 1, Eden_comp) - flxz(i, j, k, Eden_comp));
 
+#ifndef CONST_SPECIES
   // Update passive variables
   for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     compn = cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
@@ -991,6 +1006,7 @@ pc_transz2(
     compo = rr * qym(i, j + 1, k, n) - compn;
     qm(i, j + 1, k, n) = compo / rrnew;
   }
+#endif
 
   // Update hydro vars
   pggp = qint(i, j, k + 1, QPRES);
@@ -1139,6 +1155,8 @@ pc_transxy(
   rrl = qzm(i, j, k + 1, QRHO);
   rrnewl = rrl - flxrho;
   rrnewr = rrr - flxrho;
+
+#ifndef CONST_SPECIES
   for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n)) +
             cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
@@ -1149,6 +1167,7 @@ pc_transxy(
     compo = rrl * qzm(i, j, k + 1, n) - compn;
     qm(i, j, k + 1, n) = compo / rrnewl;
   }
+#endif
 
   // Update hydro vars
   pggpx = qx(i + 1, j, k, QPRES);
@@ -1300,6 +1319,8 @@ pc_transxz(
   rrl = qym(i, j + 1, k, QRHO);
   rrnewl = rrl - flxrho;
   rrnewr = rrr - flxrho;
+
+#ifndef CONST_SPECIES
   for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n)) +
             cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
@@ -1310,6 +1331,7 @@ pc_transxz(
     compo = rrl * qym(i, j + 1, k, n) - compn;
     qm(i, j + 1, k, n) = compo / rrnewl;
   }
+#endif
 
   // Update hydro vars
   pggpx = qx(i + 1, j, k, QPRES);
@@ -1461,6 +1483,7 @@ pc_transyz(
   rrnewl = rrl - flxrho;
   rrnewr = rrr - flxrho;
 
+#ifndef CONST_SPECIES
   for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n)) +
             cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
@@ -1471,6 +1494,7 @@ pc_transyz(
     compo = rrl * qxm(i + 1, j, k, n) - compn;
     qm(i + 1, j, k, n) = compo / rrnewl;
   }
+#endif
 
   // Update hydro vars
   pggpz = qz(i, j, k + 1, QPRES);

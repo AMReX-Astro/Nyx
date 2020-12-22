@@ -356,7 +356,9 @@ Nyx::initData ()
         MultiFab& S_new_crse = get_level(0).get_new_data(State_Type);
         
         S_new_crse.copy(mf, 0, 0, 6);
+#ifndef CONST_SPECIES
         S_new_crse.copy(mf, 0, FirstSpec_comp, 1);
+#endif
 
         if (do_hydro == 1) 
         {

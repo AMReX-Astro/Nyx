@@ -16,7 +16,6 @@ trace_ppm(const Box& bx,
           const Real gamma,
           const Real small_dens, const Real small_pres,
           const Real small,
-          const int FirstSpec_comp, const int NumSpec,
           const Real a_old)
 {
 
@@ -173,6 +172,7 @@ trace_ppm(const Box& bx,
         ppm_int_profile(sm, sp, s[i0], un, cc, dtdxovera, Ip_src[n], Im_src[n]);
     }
 
+#ifndef CONST_SPECIES
     for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
 
       // Plus state on face i
@@ -203,6 +203,7 @@ trace_ppm(const Box& bx,
         qm(i,j,k+1,n) = Ip[n][1];
       }
     }
+#endif
 
     // plus state on face i
 

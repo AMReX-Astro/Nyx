@@ -26,10 +26,10 @@ floor_density(
     //
     if (state(i,j,k,Density_comp) < small_dens)
     {
+#ifndef CONST_SPECIES
         for (int n = 0; n < NumSpec; ++n)
-        {
             state(i,j,k,FirstSpec_comp+n) *= small_dens / state(i,j,k,Density_comp);
-        }
+#endif
 
         state(i,j,k,Density_comp ) = small_dens;
 
@@ -165,8 +165,11 @@ create_update_for_minimum(
   amrex::Array4<amrex::Real> const& mu_x,
   amrex::Array4<amrex::Real> const& mu_y,
   amrex::Array4<amrex::Real> const& mu_z,
-  amrex::Array4<amrex::Real> const& update,
-  const int FirstSpec_comp, const int NumSpec)
+  amrex::Array4<amrex::Real> const& update 
+#ifndef CONST_SPECIES
+ ,const int FirstSpec_comp, const int NumSpec
+#endif
+                                             )
 {
     for (int n = 0; n < state.nComp(); n++)
     {
@@ -183,10 +186,12 @@ create_update_for_minimum(
         }
     }
 
+#ifndef CONST_SPECIES
     // Enforce that X is unchanged with change in rho
     if (icomp == Density_comp)
         for (int n = 0; n < NumSpec; ++n)
         {
             state(i,j,k,FirstSpec_comp+n) *= (state(i,j,k,Density_comp) + update(i,j,k,Density_comp)) / state(i,j,k,Density_comp);
         }
+#endif
 }

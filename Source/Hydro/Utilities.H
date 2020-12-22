@@ -4,13 +4,6 @@
 #include <AMReX_FArrayBox.H>
 #include <IndexDefines.H>
 
-/*
-AMREX_GPU_DEVICE
-void pc_cmpTemp(
-  const int i, const int j, const int k, 
-  const int FirstSpec_comp, const int NumSpec,
-  amrex::Array4<amrex::Real> const& S);
-*/
 AMREX_GPU_DEVICE
 void limit_hydro_fluxes_on_small_dens(const int i,
                                       const int j,
@@ -55,9 +48,11 @@ pc_ctoprim(
   // Pressure = (gamma - 1) * rho * e
   q(i,j,k,QPRES) = gamma_minus_1 * q(i,j,k,QREINT);
 
+#ifndef CONST_SPECIES
   for (int n = 0; n < NumSpec; ++n) {
     q(i, j, k, FirstSpec_comp + n) = u(i, j, k, FirstSpec_comp + n) / rho;
   }
+#endif
 }
 
 AMREX_GPU_DEVICE
