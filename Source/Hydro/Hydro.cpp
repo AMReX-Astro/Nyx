@@ -285,8 +285,12 @@ pc_umdrv(
     q, src_q,
     flx[0], flx[1], flx[2], 
     qec_arr[0], qec_arr[1], qec_arr[2], 
-    pdivuarr, dx, dt, a_old, a_new, NumSpec, gamma, gamma_minus_1,
-    small_dens, small_pres, small, ppm_type);
+    pdivuarr, dx, dt, a_old, a_new, gamma, gamma_minus_1,
+    small_dens, small_pres, small, 
+#ifndef CONST_SPECIES
+    NumSpec,
+#endif
+    ppm_type);
   BL_PROFILE_VAR_STOP(umeth);
 
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {

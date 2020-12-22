@@ -88,7 +88,10 @@ pc_plm_x(
   amrex::Real const cc,
   amrex::Real const a_old,
   amrex::Real const dx,
-  amrex::Real const dt, const int NumSpec,
+  amrex::Real const dt, 
+#ifndef CONST_SPECIES
+  const int NumSpec,
+#endif
   amrex::Real const gamma_minus_1,
   amrex::Real const small_dens,
   amrex::Real const small_pres)
@@ -244,7 +247,10 @@ pc_plm_y(
   amrex::Real const cc,
   amrex::Real const a_old,
   amrex::Real const dy,
-  amrex::Real const dt, const int NumSpec,
+  amrex::Real const dt,
+#ifndef CONST_SPECIES
+  const int NumSpec,
+#endif
   amrex::Real const gamma_minus_1,
   amrex::Real const small_dens,
   amrex::Real const small_pres)
@@ -395,7 +401,10 @@ pc_plm_z(
   amrex::Real const cc,
   amrex::Real const a_old,
   amrex::Real const dz,
-  amrex::Real const dt, const int NumSpec,
+  amrex::Real const dt,
+#ifndef CONST_SPECIES
+  const int NumSpec,
+#endif
   amrex::Real const gamma_minus_1,
   amrex::Real const small_dens,
   amrex::Real const small_pres)

@@ -510,7 +510,7 @@ Nyx::check_initial_species ()
     if (amrex::Math::abs(1.0 - h_species - he_species) > 1.e-8)
         amrex::Abort("Error:: Failed check of initial species summing to 1");
 #else
-    int iden  = Density;
+    int iden  = Density_comp;
     if (FirstSpec_comp > 0)
     {
         int iufs = FirstSpec_comp;

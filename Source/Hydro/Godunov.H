@@ -213,7 +213,10 @@ pc_transx1(
   amrex::Array4<const amrex::Real> const& qyp,
   amrex::Array4<const amrex::Real> const& flxx,
   amrex::Array4<const amrex::Real> const& qint,
-  const amrex::Real cdtdx, const int NumSpec,
+  const amrex::Real cdtdx, 
+#ifndef CONST_SPECIES
+  const int NumSpec,
+#endif
   const amrex::Real gamma, 
   const amrex::Real small_pres)
 {
@@ -365,7 +368,10 @@ pc_transy1(
   amrex::Array4<const amrex::Real> const& qxp,
   amrex::Array4<const amrex::Real> const& flxy,
   amrex::Array4<const amrex::Real> const& qint,
-  const amrex::Real cdtdy, const int NumSpec, 
+  const amrex::Real cdtdy, 
+#ifndef CONST_SPECIES
+  const int NumSpec,
+#endif
   const amrex::Real gamma, 
   const amrex::Real small_pres)
 {
@@ -518,7 +524,10 @@ pc_transx2(
   amrex::Array4<const amrex::Real> const& qzp,
   amrex::Array4<const amrex::Real> const& flxx,
   amrex::Array4<const amrex::Real> const& qint,
-  const amrex::Real cdtdx, const int NumSpec, 
+  const amrex::Real cdtdx, 
+#ifndef CONST_SPECIES
+  const int NumSpec,
+#endif
   const amrex::Real gamma, 
   const amrex::Real small_pres)
 {
@@ -668,7 +677,10 @@ pc_transy2(
   amrex::Array4<const amrex::Real> const& qzp,
   amrex::Array4<const amrex::Real> const& flxy,
   amrex::Array4<const amrex::Real> const& qint,
-  const amrex::Real cdtdy, const int NumSpec, 
+  const amrex::Real cdtdy,
+#ifndef CONST_SPECIES
+  const int NumSpec,
+#endif
   const amrex::Real gamma, 
   const amrex::Real small_pres)
 {
@@ -820,7 +832,10 @@ pc_transz1(
   amrex::Array4<const amrex::Real> const& qxp,
   amrex::Array4<const amrex::Real> const& flxz,
   amrex::Array4<const amrex::Real> const& qint,
-  const amrex::Real cdtdz, const int NumSpec, 
+  const amrex::Real cdtdz,
+#ifndef CONST_SPECIES
+  const int NumSpec,
+#endif
   const amrex::Real gamma, 
   const amrex::Real small_pres)
 {
@@ -972,7 +987,10 @@ pc_transz2(
   amrex::Array4<const amrex::Real> const& qyp,
   amrex::Array4<const amrex::Real> const& flxz,
   amrex::Array4<const amrex::Real> const& qint,
-  const amrex::Real cdtdz, const int NumSpec, 
+  const amrex::Real cdtdz,
+#ifndef CONST_SPECIES
+  const int NumSpec,
+#endif
   const amrex::Real gamma, 
   const amrex::Real small_pres)
 {
@@ -1126,7 +1144,9 @@ pc_transxy(
   amrex::Array4<const amrex::Real> const& qy,
   const amrex::Real cdtdx,
   const amrex::Real cdtdy, 
-  const int NumSpec, 
+#ifndef CONST_SPECIES
+  const int NumSpec,
+#endif
   const amrex::Real gamma, 
   const amrex::Real small_pres)
 {
@@ -1290,7 +1310,9 @@ pc_transxz(
   amrex::Array4<const amrex::Real> const& qz,
   const amrex::Real cdtdx,
   const amrex::Real cdtdz, 
-  const int NumSpec, 
+#ifndef CONST_SPECIES
+  const int NumSpec,
+#endif
   const amrex::Real gamma, 
   const amrex::Real small_pres)
 {
@@ -1453,7 +1475,9 @@ pc_transyz(
   amrex::Array4<const amrex::Real> const& qz,
   const amrex::Real cdtdy,
   const amrex::Real cdtdz, 
-  const int NumSpec, 
+#ifndef CONST_SPECIES
+  const int NumSpec,
+#endif
   const amrex::Real gamma, 
   const amrex::Real small_pres)
 {
@@ -1681,9 +1705,11 @@ void pc_umeth_3D(
   const amrex::Real dt,
   const amrex::Real a_old,
   const amrex::Real a_new, 
-  const int NumSpec,
   const amrex::Real gamma, const amrex::Real gamma_minus_1,
   const amrex::Real small_dens, const amrex::Real small_pres, 
   const amrex::Real small,
+#ifndef CONST_SPECIES
+  const int NumSpec,
+#endif
   const int ppm_type);
 #endif

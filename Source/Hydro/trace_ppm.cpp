@@ -16,6 +16,9 @@ trace_ppm(const Box& bx,
           const Real gamma,
           const Real small_dens, const Real small_pres,
           const Real small,
+#ifndef CONST_SPECIES
+          const int NumSpec,
+#endif
           const Real a_old)
 {
 
