@@ -177,19 +177,19 @@ ode_eos_initialize_arrays(const int i, const int j, const int k, const int idx, 
     f_rhs_data->len = len;
 
     //  int idx = i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
-    dptr[idx]=state4(i,j,k,Eint)/state4(i,j,k,Density);
-    eptr[idx]=state4(i,j,k,Eint)/state4(i,j,k,Density);
+    dptr[idx]=state4(i,j,k,Eint_comp)/state4(i,j,k,Density_comp);
+    eptr[idx]=state4(i,j,k,Eint_comp)/state4(i,j,k,Density_comp);
     f_rhs_data->T_vode[idx]= diag_eos4(i,j,k,Temp_comp);   //rpar(1)=T_vode
     f_rhs_data->ne_vode[idx]= diag_eos4(i,j,k,Ne_comp);//    rpar(2)=ne_vode
-    f_rhs_data->rho_vode[idx]= state4(i,j,k,Density); //    rpar(3)=rho_vode
-    abstol_ptr[idx]= state4(i,j,k,Eint)/state4(i,j,k,Density)*abstol;
+    f_rhs_data->rho_vode[idx]= state4(i,j,k,Density_comp); //    rpar(3)=rho_vode
+    abstol_ptr[idx]= state4(i,j,k,Eint_comp)/state4(i,j,k,Density_comp)*abstol;
     if(sdc_iter >=0)
     {
-    f_rhs_data->rho_src_vode[idx]= hydro_src(i,j,k,Density) / delta_time;
-    f_rhs_data->rhoe_src_vode[idx]= hydro_src(i,j,k,Eint) / delta_time;
-    f_rhs_data->e_src_vode[idx] = ( ((asq*state4(i,j,k,UEINT) + delta_time * f_rhs_data->rhoe_src_vode[idx] ) / aendsq + reset_src(i,j,k,0))/ 
-                          (      state4(i,j,k,URHO ) + delta_time * f_rhs_data->rho_src_vode[idx]  ) - eptr[idx]) / delta_time;
-    f_rhs_data->rho_init_vode[idx]= state4(i,j,k,Density); //    rpar(3)=rho_vode
+    f_rhs_data->rho_src_vode[idx]= hydro_src(i,j,k,Density_comp) / delta_time;
+    f_rhs_data->rhoe_src_vode[idx]= hydro_src(i,j,k,Eint_comp) / delta_time;
+    f_rhs_data->e_src_vode[idx] = ( ((asq*state4(i,j,k,Eint_comp) + delta_time * f_rhs_data->rhoe_src_vode[idx] ) / aendsq + reset_src(i,j,k,0))/ 
+                          (      state4(i,j,k,Density_comp ) + delta_time * f_rhs_data->rho_src_vode[idx]  ) - eptr[idx]) / delta_time;
+    f_rhs_data->rho_init_vode[idx]= state4(i,j,k,Density_comp); //    rpar(3)=rho_vode
     }
     else
     {
@@ -222,7 +222,7 @@ ode_eos_finalize_struct(const int i, const int j, const int k, const int idx, At
     amrex::Real rho, U, a, mu, e_out, e_orig, rho_out, rho_orig, asq, aendsq, ahalf, ahalf_inv;
     e_out = dptr[idx];
     e_orig = eptr[idx];
-    rho_out = state_n4(i,j,k,Density);
+    rho_out = state_n4(i,j,k,Density_comp);
     //  int  idx= i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
     /////////////////   //update nyx_eos_T_given_Re
     diag_eos4(i,j,k,Temp_comp)=f_rhs_data->T_vode[idx];   //rpar(1)=T_vode
@@ -248,7 +248,7 @@ ode_eos_finalize_struct(const int i, const int j, const int k, const int idx, At
 
     if(f_rhs_data->e_src_vode!=NULL)
     {
-        if ((state_n4(i,j,k,UEINT) + delta_time * ahalf * I_R(i,j,k) / aendsq) / state_n4(i,j,k,URHO) < 0.e0)
+        if ((state_n4(i,j,k,Eint_comp) + delta_time * ahalf * I_R(i,j,k) / aendsq) / state_n4(i,j,k,Density_comp) < 0.e0)
         {
             f_rhs_data->T_vode[idx]  = 10.0;
             f_rhs_data->ne_vode[idx] = 0.0;
@@ -293,18 +293,18 @@ ode_eos_finalize_struct(const int i, const int j, const int k, const int idx, At
     dptr[idx] = e_out;
     diag_eos4(i,j,k,Temp_comp)=f_rhs_data->T_vode[idx];
     diag_eos4(i,j,k,Ne_comp)=f_rhs_data->ne_vode[idx];
-    //    state4(i,j,k,Density)=f_rhs_data->rho_vode[idx];
+    //    state4(i,j,k,Density_comp)=f_rhs_data->rho_vode[idx];
     if(f_rhs_data->e_src_vode!=NULL)
     {
         // Update (rho e) and (rho E)
         // Note that we add to state_n because those already have hydro_source in them
-        state_n4(i,j,k,UEINT) = state_n4(i,j,k,UEINT) + delta_time * ahalf * I_R(i,j,k) / aendsq;
-        state_n4(i,j,k,UEDEN) = state_n4(i,j,k,UEDEN) + delta_time * ahalf * I_R(i,j,k) / aendsq;
+        state_n4(i,j,k,Eint_comp) = state_n4(i,j,k,Eint_comp) + delta_time * ahalf * I_R(i,j,k) / aendsq;
+        state_n4(i,j,k,Eden_comp) = state_n4(i,j,k,Eden_comp) + delta_time * ahalf * I_R(i,j,k) / aendsq;
     }
     else
     {
-        state4(i,j,k,Eint)  += state4(i,j,k,Density) * (dptr[idx]-eptr[idx]);
-        state4(i,j,k,Eden)  += state4(i,j,k,Density) * (dptr[idx]-eptr[idx]);
+        state4(i,j,k,Eint_comp)  += state4(i,j,k,Density_comp) * (dptr[idx]-eptr[idx]);
+        state4(i,j,k,Eden_comp)  += state4(i,j,k,Density_comp) * (dptr[idx]-eptr[idx]);
     }
 }
 /*

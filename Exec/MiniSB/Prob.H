@@ -43,21 +43,19 @@ void prob_initdata_state(const int i,
     // HACK HACK HACK -- we need to get this from the ParmParse ....
     amrex::Real h_species = 0.75;
 
-    state(i,j,k,Density)    = 0.00; //1.5d0 * small_dens
-    state(i,j,k,Xmom) = 0.00;
-    state(i,j,k,Ymom) = 0.00;
-    state(i,j,k,Zmom) = 0.00;
+    state(i,j,k,Density_comp)    = 0.00; //1.5d0 * small_dens
+    state(i,j,k,  Xmom_comp) = 0.00;
+    state(i,j,k,  Ymom_comp) = 0.00;
+    state(i,j,k,  Zmom_comp) = 0.00;
 
     // These will both be set later in the call to init_e.
-    state(i,j,k,Eint) = 0.0;
-    state(i,j,k,Eden) = 0.0;
+    state(i,j,k,Eint_comp) = 0.0;
+    state(i,j,k,Eden_comp) = 0.0;
 
-    int FirstSpec = Eint + 1;   
-    if (state.nComp() > FirstSpec)
-    {
-      state(i,j,k,FirstSpec  ) = h_species;
-      state(i,j,k,FirstSpec+1) = (1.0 - h_species);
-    }
+#ifndef CONST_SPEC
+      state(i,j,k,FirstSpec_comp  ) = h_species;
+      state(i,j,k,FirstSpec_comp+1) = (1.0 - h_species);
+#endif
   }
 #endif
 }

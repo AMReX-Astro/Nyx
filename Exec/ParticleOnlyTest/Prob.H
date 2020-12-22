@@ -37,20 +37,22 @@ void prob_initdata_state(const int i,
   // This is the regular case with NO_HYDRO = FALSE
   else if (state.nComp() > 1)
   {
-    state(i,j,k,Density)    = 1.00; //1.5d0 * small_dens
-    state(i,j,k,Xmom) = 0.00;
-    state(i,j,k,Ymom) = 0.00;
-    state(i,j,k,Zmom) = 0.00;
+    state(i,j,k,Density_comp)    = 1.00; //1.5d0 * small_dens
+    state(i,j,k,Xmom_comp) = 0.00;
+    state(i,j,k,Ymom_comp) = 0.00;
+    state(i,j,k,Zmom_comp) = 0.00;
 
     // These will both be set later in the call to init_e.
-    state(i,j,k,Eint) = 10.0;
-    state(i,j,k,Eden) = state(i,j,k,UEINT) + 0.5 / state(i,j,k,URHO) *
-      (state(i,j,k,UMX)*state(i,j,k,UMX) + state(i,j,k,UMY)*state(i,j,k,UMY) + state(i,j,k,UMZ)*state(i,j,k,UMZ));
+    state(i,j,k,Eint_comp) = 10.0;
+    state(i,j,k,Eden_comp) = state(i,j,k,Eint_comp) + 0.5 / state(i,j,k,Density_comp) *
+      (state(i,j,k,Xmom_comp)*state(i,j,k,Xmom_comp) + 
+       state(i,j,k,Ymom_comp)*state(i,j,k,Ymom_comp) + 
+       state(i,j,k,Zmom_comp)*state(i,j,k,Zmom_comp));
 
 #ifndef CONST_SPECIES
       //XHYDROGEN hardcoded to .76
-      state(i,j,k,FirstSpec  ) = .76;
-      state(i,j,k,FirstSpec+1) = (1.0 - .76);
+      state(i,j,k,FirstSpec_comp  ) = .76;
+      state(i,j,k,FirstSpec_comp+1) = (1.0 - .76);
 #endif
   }
 #endif

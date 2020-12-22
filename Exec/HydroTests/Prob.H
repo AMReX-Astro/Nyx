@@ -132,7 +132,7 @@ void prob_initdata_state(const int i,
   // Set the states
   if (amrex::Math::round(prob_param[idir_comp]) == 1) {
     if (x <= ctr_x) {
-      state(i, j, k, URHO) = prob_param[rho_l_comp];
+      state(i, j, k, Density_comp) = prob_param[rho_l_comp];
       state(i, j, k, UMX) = prob_param[rho_l_comp] * prob_param[u_l_comp];
       state(i, j, k, UMY) = 0.0;
       state(i, j, k, UMZ) = 0.0;
@@ -141,7 +141,7 @@ void prob_initdata_state(const int i,
                                                    prob_param[u_l_comp];
       state(i, j, k, UEINT) = prob_param[rhoe_l_comp];
     } else {
-      state(i, j, k, URHO) = prob_param[rho_r_comp];
+      state(i, j, k, Density_comp) = prob_param[rho_r_comp];
       state(i, j, k, UMX) = prob_param[rho_r_comp] * prob_param[u_r_comp];
       state(i, j, k, UMY) = 0.0;
       state(i, j, k, UMZ) = 0.0;
@@ -152,7 +152,7 @@ void prob_initdata_state(const int i,
     }
   } else if (amrex::Math::round(prob_param[idir_comp]) == 2) {
     if (y <= ctr_y) {
-      state(i, j, k, URHO) = prob_param[rho_l_comp];
+      state(i, j, k, Density_comp) = prob_param[rho_l_comp];
       state(i, j, k, UMX) = 0.0;
       state(i, j, k, UMY) = prob_param[rho_l_comp] * prob_param[u_l_comp];
       state(i, j, k, UMZ) = 0.0;
@@ -161,7 +161,7 @@ void prob_initdata_state(const int i,
                                                    prob_param[u_l_comp];
       state(i, j, k, UEINT) = prob_param[rhoe_l_comp];
     } else {
-      state(i, j, k, URHO) = prob_param[rho_r_comp];
+      state(i, j, k, Density_comp) = prob_param[rho_r_comp];
       state(i, j, k, UMX) = 0.0;
       state(i, j, k, UMY) = prob_param[rho_r_comp] * prob_param[u_r_comp];
       state(i, j, k, UMZ) = 0.0;
@@ -172,7 +172,7 @@ void prob_initdata_state(const int i,
     }
       } else if (amrex::Math::round(prob_param[idir_comp]) == 3) {
     if (z <= ctr_z) {
-      state(i, j, k, URHO) = prob_param[rho_l_comp];
+      state(i, j, k, Density_comp) = prob_param[rho_l_comp];
       state(i, j, k, UMX) = 0.0;
       state(i, j, k, UMY) = 0.0;
       state(i, j, k, UMZ) = prob_param[rho_l_comp] * prob_param[u_l_comp];
@@ -181,7 +181,7 @@ void prob_initdata_state(const int i,
                                                    prob_param[u_l_comp];
       state(i, j, k, UEINT) = prob_param[rhoe_l_comp];
     } else {
-      state(i, j, k, URHO) = prob_param[rho_r_comp];
+      state(i, j, k, Density_comp) = prob_param[rho_r_comp];
       state(i, j, k, UMX) = 0.0;
       state(i, j, k, UMY) = 0.0;
       state(i, j, k, UMZ) = prob_param[rho_r_comp] * prob_param[u_r_comp];
@@ -253,7 +253,7 @@ void prob_initdata_state(const int i,
 
   amrex::Real eint = p_zone / (prob_param[gamma_comp] - 1.0);
 
-  state(i, j, k, URHO) = prob_param[dens_ambient_comp];
+  state(i, j, k, Density_comp) = prob_param[dens_ambient_comp];
   state(i, j, k, UMX) = 0.0;
   state(i, j, k, UMY) = 0.0;
   state(i, j, k, UMZ) = 0.0;
@@ -262,20 +262,17 @@ void prob_initdata_state(const int i,
                                    (state(i, j, k, UMX) * state(i, j, k, UMX) +
                                     state(i, j, k, UMY) * state(i, j, k, UMY) +
                                     state(i, j, k, UMZ) * state(i, j, k, UMZ)) /
-                                   state(i, j, k, URHO);
+                                   state(i, j, k, Density_comp);
 
   state(i, j, k, UEINT) = eint;
 
   }
 
-  //This uses 2 species, rather than just 1 (Doesn't set state(i, j, k, UFS) = state(i, j, k, URHO);)
-  int FirstSpec = Eint + 1;   
-  if (state.nComp() > FirstSpec)
-  {
-      //XHYDROGEN hardcoded to .76 init_managed
-        state(i,j,k,FirstSpec  ) = .76 * state(i,j,k,URHO);
-        state(i,j,k,FirstSpec+1) = (1.0 - .76) * state(i,j,k,URHO);
-  }
+#ifndef CONST_SPEC
+     //XHYDROGEN hardcoded to .76 init_managed
+     state(i,j,k,FirstSpec_comp  ) = .76 * state(i,j,k,Density_comp);
+     state(i,j,k,FirstSpec_comp+1) = (1.0 - .76) * state(i,j,k,Density_comp);
+#endif
 }
 
 AMREX_GPU_DEVICE AMREX_FORCE_INLINE
@@ -299,9 +296,9 @@ void prob_initdata(const int i,
   const amrex::Real h_species_in=.76;
   const amrex::Real gamma_minus_1_in=prob_param[gamma_comp] - 1.0;
   const amrex::Real a=1.0/(prob_param[z_in_comp]+1.0);
-  const amrex::Real rhoInv = 1.e0 / state(i,j,k,Density);
-  const amrex::Real eint = state(i,j,k,Eint) * rhoInv;
-  nyx_eos_T_given_Re_device(NULL,gamma_minus_1_in, h_species_in, JH, JHe, &diag_eos(i,j,k,Temp_comp), &diag_eos(i,j,k,Ne_comp), state(i,j,k,Density), eint, a);
+  const amrex::Real rhoInv = 1.e0 / state(i,j,k,Density_comp);
+  const amrex::Real eint = state(i,j,k,Eint_comp) * rhoInv;
+  nyx_eos_T_given_Re_device(NULL,gamma_minus_1_in, h_species_in, JH, JHe, &diag_eos(i,j,k,Temp_comp), &diag_eos(i,j,k,Ne_comp), state(i,j,k,Density_comp), eint, a);
   }
   else
   {

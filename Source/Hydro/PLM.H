@@ -209,7 +209,7 @@ pc_plm_x(
   qm(i + 1, j, k, QREINT ) = qm(i + 1, j, k, QPRES) / gamma_minus_1;
 
   // Upwind the passive variables
-  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+  for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
 
     u = q(i, j, k, QU);
 
@@ -362,7 +362,7 @@ pc_plm_y(
   qm(i, j + 1, k, QREINT ) = qm(i, j + 1, k, QPRES) / gamma_minus_1;
 
   // Upwind the passive variables
-  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+  for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
 
     // Right state
     v = q(i, j, k, QV);
@@ -512,7 +512,7 @@ pc_plm_z(
   qm(i, j, k + 1, QREINT ) = qm(i, j, k + 1, QPRES) / gamma_minus_1;
 
   // Upwind the passive variables
-  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+  for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
 
     // Right state
     w = q(i, j, k, QW);

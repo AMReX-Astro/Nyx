@@ -356,7 +356,7 @@ Nyx::initData ()
         MultiFab& S_new_crse = get_level(0).get_new_data(State_Type);
         
         S_new_crse.copy(mf, 0, 0, 6);
-        S_new_crse.copy(mf, 0, FirstSpec, 1);
+        S_new_crse.copy(mf, 0, FirstSpec_comp, 1);
 
         if (do_hydro == 1) 
         {
@@ -509,9 +509,9 @@ Nyx::check_initial_species ()
         amrex::Abort("Error:: Failed check of initial species summing to 1");
 #else
     int iden  = Density;
-    if (FirstSpec > 0)
+    if (FirstSpec_comp > 0)
     {
-        int iufs = FirstSpec;
+        int iufs = FirstSpec_comp;
         int nspec = NumSpec;
         MultiFab&   S_new    = get_new_data(State_Type);
 #ifdef _OPENMP
@@ -567,7 +567,7 @@ Nyx::init_e_from_T (const Real& a)
 
         amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
         {
-             Real rho = s_arr(i,j,k,Density);
+             Real rho = s_arr(i,j,k,Density_comp);
              Real T   = d_arr(i,j,k,Temp_comp);
              Real ne  = d_arr(i,j,k,  Ne_comp);
 
@@ -578,12 +578,12 @@ Nyx::init_e_from_T (const Real& a)
              // Set temp to small_temp and compute corresponding internal energy
              nyx_eos_given_RT(atomic_rates, gamma_minus_1_in, h_species_in, &eint, &dummy_pres, rho, T, ne, a);
 
-             s_arr(i,j,k,Eint) = s_arr(i,j,k,Density) * eint;
+             s_arr(i,j,k,Eint_comp) = s_arr(i,j,k,Density_comp) * eint;
 
-             s_arr(i,j,k,Eden) = s_arr(i,j,k,Eint) + 0.5 * ( 
-                                 s_arr(i,j,k,Xmom)*s_arr(i,j,k,Xmom) +
-                                 s_arr(i,j,k,Ymom)*s_arr(i,j,k,Ymom) +
-                                 s_arr(i,j,k,Zmom)*s_arr(i,j,k,Zmom) ) / s_arr(i,j,k,Density);
+             s_arr(i,j,k,Eden_comp) = s_arr(i,j,k,Eint_comp) + 0.5 * ( 
+                                 s_arr(i,j,k,Xmom_comp)*s_arr(i,j,k,Xmom_comp) +
+                                 s_arr(i,j,k,Ymom_comp)*s_arr(i,j,k,Ymom_comp) +
+                                 s_arr(i,j,k,Zmom_comp)*s_arr(i,j,k,Zmom_comp) ) / s_arr(i,j,k,Density_comp);
         });
         amrex::Gpu::Device::streamSynchronize();
     }

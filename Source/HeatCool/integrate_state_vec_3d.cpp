@@ -209,13 +209,13 @@ int Nyx::integrate_state_vec_mfin
 #endif
 #endif
                                   int idx = i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
-                                  dptr[idx]=state4(i,j,k,Eint)/state4(i,j,k,Density);
-                                  eptr[idx]=state4(i,j,k,Eint)/state4(i,j,k,Density);
+                                  dptr[idx]=state4(i,j,k,Eint_comp)/state4(i,j,k,Density_comp);
+                                  eptr[idx]=state4(i,j,k,Eint_comp)/state4(i,j,k,Density_comp);
                                   rparh[4*idx+0]= diag_eos4(i,j,k,Temp_comp);   //rpar(1)=T_vode
                                   rparh[4*idx+1]= diag_eos4(i,j,k,Ne_comp);//    rpar(2)=ne_vode
-                                  rparh[4*idx+2]= state4(i,j,k,Density); //    rpar(3)=rho_vode
+                                  rparh[4*idx+2]= state4(i,j,k,Density_comp); //    rpar(3)=rho_vode
                                   rparh[4*idx+3]=1/a-1;    //    rpar(4)=z_vode
-                                  abstol_ptr[idx]= state4(i,j,k,Eint)/state4(i,j,k,Density)*abstol;
+                                  abstol_ptr[idx]= state4(i,j,k,Eint_comp)/state4(i,j,k,Density_comp)*abstol;
                                   //                            }
 #ifdef AMREX_USE_GPU
                                 });
@@ -304,8 +304,8 @@ int Nyx::integrate_state_vec_mfin
                                   diag_eos4(i,j,k,Temp_comp)=rparh[4*idx*loop+0];   //rpar(1)=T_vode
                                   diag_eos4(i,j,k,Ne_comp)=rparh[4*idx*loop+1];//    rpar(2)=ne_vode
                                 
-                                  state4(i,j,k,Eint)  += state4(i,j,k,Density) * (dptr[idx*loop]-eptr[idx]);
-                                  state4(i,j,k,Eden)  += state4(i,j,k,Density) * (dptr[idx*loop]-eptr[idx]);
+                                  state4(i,j,k,Eint_comp)  += state4(i,j,k,Density_comp) * (dptr[idx*loop]-eptr[idx]);
+                                  state4(i,j,k,Eden_comp)  += state4(i,j,k,Density_comp) * (dptr[idx*loop]-eptr[idx]);
                                   //                            }
                                 //PrintFinalStats(cvode_mem);
 

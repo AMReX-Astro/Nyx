@@ -19,9 +19,9 @@ Nyx::time_center_source_terms (MultiFab& S_new,
     Real a_old = get_comoving_a(prev_time);
     Real a_new = get_comoving_a(cur_time);
 
-    int iden  = Density;
-    int ieint = Eint;
-    int ieden = Eden;
+    int iden  = Density_comp;
+    int ieint = Eint_comp;
+    int ieden = Eden_comp;
 
     int ncomp = S_new.nComp();
 

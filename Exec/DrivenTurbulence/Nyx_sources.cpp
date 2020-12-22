@@ -141,7 +141,7 @@ Nyx::get_old_source (Real      old_time,
     FillPatch(*this, Sborder, 4, old_time, State_Type, Density, Sborder.nComp());
     FillPatch(*this, Dborder, 4, old_time, DiagEOS_Type, 0, D_old.nComp());
 #ifdef AMREX_DEBUG
-    Real min_rhoe = Sborder.min(Eint);
+    Real min_rhoe = Sborder.min(Eint_comp);
     if (min_rhoe < 0)
     {
         std::cout << "The state internal energy is negative" << std::endl;

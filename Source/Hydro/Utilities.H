@@ -8,7 +8,7 @@
 AMREX_GPU_DEVICE
 void pc_cmpTemp(
   const int i, const int j, const int k, 
-  const int FirstSpec, const int NumSpec,
+  const int FirstSpec_comp, const int NumSpec,
   amrex::Array4<amrex::Real> const& S);
 */
 AMREX_GPU_DEVICE
@@ -36,12 +36,12 @@ pc_ctoprim(
   amrex::Array4<amrex::Real> const& q,
   const int NumSpec, const amrex::Real gamma_minus_1)
 {
-  const amrex::Real rho = u(i, j, k, URHO);
+  const amrex::Real rho = u(i, j, k, Density_comp);
   const amrex::Real rhoinv = 1.0 / rho;
-  const amrex::Real vx = u(i, j, k, UMX) * rhoinv;
-  const amrex::Real vy = u(i, j, k, UMY) * rhoinv;
-  const amrex::Real vz = u(i, j, k, UMZ) * rhoinv;
-  const amrex::Real e = u(i, j, k, UEINT) * rhoinv;
+  const amrex::Real vx = u(i, j, k, Xmom_comp) * rhoinv;
+  const amrex::Real vy = u(i, j, k, Ymom_comp) * rhoinv;
+  const amrex::Real vz = u(i, j, k, Zmom_comp) * rhoinv;
+  const amrex::Real e = u(i, j, k, Eint_comp) * rhoinv;
   //  const amrex::Real kineng = 0.5 * rho * (vx * vx + vy * vy + vz * vz);
   q(i, j, k, QRHO) = rho;
   q(i, j, k, QU) = vx;
@@ -56,7 +56,7 @@ pc_ctoprim(
   q(i,j,k,QPRES) = gamma_minus_1 * q(i,j,k,QREINT);
 
   for (int n = 0; n < NumSpec; ++n) {
-    q(i, j, k, FirstSpec + n) = u(i, j, k, FirstSpec + n) / rho;
+    q(i, j, k, FirstSpec_comp + n) = u(i, j, k, FirstSpec_comp + n) / rho;
   }
 }
 

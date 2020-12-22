@@ -12,7 +12,7 @@ class Gravity {
 
 public:
 
-    Gravity(amrex::Amr* Parent, int _finest_level, amrex::BCRec* _phys_bc, int _Density);
+    Gravity(amrex::Amr* Parent, int _finest_level, amrex::BCRec* _phys_bc, int _Density_comp);
     virtual ~Gravity();
 
     void read_params();

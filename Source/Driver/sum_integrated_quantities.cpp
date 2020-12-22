@@ -289,8 +289,8 @@ Nyx::compute_average_temperature (Real& average_temperature)
           amrex::Print() << "Norm2 temperature " << D_new.norm2(Temp_comp)<<std::endl;
           amrex::Print() << "Norm0 temperature " << D_new.norm0(Temp_comp)<<std::endl;
 
-          amrex::Print() << "Norm2 rho_e " << S_new.norm2(Eint)<<std::endl;
-          amrex::Print() << "Norm0 rho_e " << S_new.norm0(Eint)<<std::endl;
+          amrex::Print() << "Norm2 rho_e " << S_new.norm2(Eint_comp)<<std::endl;
+          amrex::Print() << "Norm0 rho_e " << S_new.norm0(Eint_comp)<<std::endl;
 
         }
     }

@@ -24,18 +24,18 @@ floor_density(
     //
     //  Reset negative density to small_dens, set (rho e) and (rho E) from small_temp  and zero out momenta
     //
-    if (state(i,j,k,URHO) < small_dens)
+    if (state(i,j,k,Density_comp) < small_dens)
     {
         for (int n = 0; n < NumSpec; ++n)
         {
-            state(i,j,k,FirstSpec+n) *= small_dens / state(i,j,k,URHO);
+            state(i,j,k,FirstSpec_comp+n) *= small_dens / state(i,j,k,Density_comp);
         }
 
-        state(i,j,k,URHO ) = small_dens;
+        state(i,j,k,Density_comp ) = small_dens;
 
-        state(i,j,k,UMX) = 0.0;
-        state(i,j,k,UMY) = 0.0;
-        state(i,j,k,UMZ) = 0.0;
+        state(i,j,k,Xmom_comp) = 0.0;
+        state(i,j,k,Ymom_comp) = 0.0;
+        state(i,j,k,Zmom_comp) = 0.0;
 
         amrex::Real dummy_pres = 1e200;
         amrex::Real eint_new = -1e200;
@@ -43,14 +43,14 @@ floor_density(
         amrex::Real h_species = 0.76;
 
         // Re-create "e" from {small_dens, small_temp}
-        nyx_eos_given_RT(atomic_rates, gamma_minus_1, h_species, &eint_new, &dummy_pres, state(i,j,k,URHO),
+        nyx_eos_given_RT(atomic_rates, gamma_minus_1, h_species, &eint_new, &dummy_pres, state(i,j,k,Density_comp),
                          small_temp, Ne,a_new);
 
         // Define (rho e) with small_dens and the new "e" 
-        state(i,j,k,UEINT) = state(i,j,k,URHO) *  eint_new;
+        state(i,j,k,Eint_comp) = state(i,j,k,Density_comp) *  eint_new;
 
         // Here we effectively zero the KE so set (rho E) = (rho e)
-        state(i,j,k,UEDEN) = state(i,j,k,UEINT);
+        state(i,j,k,Eden_comp) = state(i,j,k,Eint_comp);
     }
 }
 
@@ -166,11 +166,11 @@ create_update_for_minimum(
   amrex::Array4<amrex::Real> const& mu_y,
   amrex::Array4<amrex::Real> const& mu_z,
   amrex::Array4<amrex::Real> const& update,
-  const int FirstSpec, const int NumSpec)
+  const int FirstSpec_comp, const int NumSpec)
 {
     for (int n = 0; n < state.nComp(); n++)
     {
-        if (n == URHO or n == UMX or n == UMY or n == UMZ or n == UEDEN or n == UEINT) 
+        if (n == Density_comp or n == Xmom_comp or n == Ymom_comp or n == Zmom_comp or n == Eden_comp or n == Eint_comp) 
         {
             update(i,j,k,n) = mu_x(i+1,j,k) * (state(i+1,j,k,n) - state(i  ,j,k,n))
                              -mu_x(i  ,j,k) * (state(i  ,j,k,n) - state(i-1,j,k,n))
@@ -184,9 +184,9 @@ create_update_for_minimum(
     }
 
     // Enforce that X is unchanged with change in rho
-    if (icomp == URHO)
+    if (icomp == Density_comp)
         for (int n = 0; n < NumSpec; ++n)
         {
-            state(i,j,k,FirstSpec+n) *= (state(i,j,k,URHO) + update(i,j,k,URHO)) / state(i,j,k,URHO);
+            state(i,j,k,FirstSpec_comp+n) *= (state(i,j,k,Density_comp) + update(i,j,k,Density_comp)) / state(i,j,k,Density_comp);
         }
 }

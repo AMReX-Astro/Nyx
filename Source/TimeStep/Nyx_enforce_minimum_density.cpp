@@ -15,7 +15,7 @@ Nyx::enforce_minimum_density( MultiFab& S_old, MultiFab& S_new, MultiFab& reset_
 
     MultiFab::RegionTag amrhydro_tag("HydroUpdate_" + std::to_string(level));
 
-    if (S_new.min(Density) < small_dens)
+    if (S_new.min(Density_comp) < small_dens)
     {
         if (enforce_min_density_type == "floor")
         {
@@ -66,7 +66,7 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& 
     bool debug = false;
 
     int lnum_spec    = NumSpec;
-    int lfirst_spec  = FirstSpec;
+    int lfirst_spec  = FirstSpec_comp;
     Real lsmall_dens = small_dens;
   
     Real cur_time = state[State_Type].curTime();
@@ -82,19 +82,19 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& 
     MultiFab mu_y(amrex::convert(grids,IntVect(0,1,0)), dmap, 1, 1);
     MultiFab mu_z(amrex::convert(grids,IntVect(0,0,1)), dmap, 1, 1);
 
-    Real rho_old_min_before = S_old.min(URHO);
-    Real  ru_old_min_before = S_old.min(UMX);
-    Real  rv_old_min_before = S_old.min(UMY);
-    Real  rw_old_min_before = S_old.min(UMZ);
-    Real  re_old_min_before = S_old.min(UEINT);
-    Real  rE_old_min_before = S_old.min(UEDEN);
+    Real rho_old_min_before = S_old.min(Density_comp);
+    Real  ru_old_min_before = S_old.min(Xmom_comp);
+    Real  rv_old_min_before = S_old.min(Ymom_comp);
+    Real  rw_old_min_before = S_old.min(Zmom_comp);
+    Real  re_old_min_before = S_old.min(Eint_comp);
+    Real  rE_old_min_before = S_old.min(Eden_comp);
 
-    Real rho_new_min_before = S_new.min(URHO);
-    Real  ru_new_min_before = S_new.min(UMX);
-    Real  rv_new_min_before = S_new.min(UMY);
-    Real  rw_new_min_before = S_new.min(UMZ);
-    Real  re_new_min_before = S_new.min(UEINT);
-    Real  rE_new_min_before = S_new.min(UEDEN);
+    Real rho_new_min_before = S_new.min(Density_comp);
+    Real  ru_new_min_before = S_new.min(Xmom_comp);
+    Real  rv_new_min_before = S_new.min(Ymom_comp);
+    Real  rw_new_min_before = S_new.min(Zmom_comp);
+    Real  re_new_min_before = S_new.min(Eint_comp);
+    Real  rE_new_min_before = S_new.min(Eden_comp);
 
     Real rho_old_sum_before = S_old.sum(0);
     Real rho_new_sum_before = S_new.sum(0);
@@ -122,7 +122,7 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& 
     {
         // First make sure that all ghost cells are updated because we use them in defining fluxes
         // Note that below we update S_new, not Sborder, so we must FillPatch each time.
-        FillPatch(*this, Sborder, 2, cur_time, State_Type, Density, Sborder.nComp());
+        FillPatch(*this, Sborder, 2, cur_time, State_Type, Density_comp, Sborder.nComp());
 
         // Initialize to zero; these will only be non-zero at a face across which density is passed...
         mu_x.setVal(0.);
@@ -146,7 +146,7 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& 
 
             amrex::ParallelFor(gbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept
             {
-              compute_mu_for_enforce_min(i, j, k, Density, sbord, mu_x_arr, mu_y_arr, mu_z_arr, lsmall_dens);
+              compute_mu_for_enforce_min(i, j, k, Density_comp, sbord, mu_x_arr, mu_y_arr, mu_z_arr, lsmall_dens);
             });
         }
 
@@ -165,7 +165,7 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& 
 
             amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept
             {
-              create_update_for_minimum(i, j, k, Density, sbord_arr, 
+              create_update_for_minimum(i, j, k, Density_comp, sbord_arr, 
                                         mu_x_arr, mu_y_arr, mu_z_arr, upd_arr, 
                                         lfirst_spec, lnum_spec);
             });
@@ -174,7 +174,7 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& 
         S_new.plus(update,0,S_new.nComp(),0);
 
 #ifdef SDC
-	MultiFab::Copy(reset_e_src,update,Eint,0,1,0);
+	MultiFab::Copy(reset_e_src,update,Eint_comp,0,1,0);
 #endif
 
         if (S_new.contains_nan())
@@ -184,17 +184,17 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& 
         }
 
         // This is used to decide whether to continue the iteration
-        rho_new_min_after = S_new.min(URHO);
+        rho_new_min_after = S_new.min(Density_comp);
 
         // This is used to decide whether to call enforce_min_energy_cons at the end of this routine
-        re_new_min_after = S_new.min(UEINT);
+        re_new_min_after = S_new.min(Eint_comp);
 
         if (debug) 
         {
-             ru_new_min_after = S_new.min(UMX);
-             rv_new_min_after = S_new.min(UMY);
-             rw_new_min_after = S_new.min(UMZ);
-             rE_new_min_after = S_new.min(UEDEN);
+             ru_new_min_after = S_new.min(Xmom_comp);
+             rv_new_min_after = S_new.min(Ymom_comp);
+             rw_new_min_after = S_new.min(Zmom_comp);
+             rE_new_min_after = S_new.min(Eden_comp);
             amrex::Print() << "After " << iter+1 << " iterations " << std::endl;
             amrex::Print() << "  MIN OF rho: old / new / new new " << 
                 rho_old_min_before << " " << rho_new_min_before << " " << rho_new_min_after << std::endl;
@@ -239,7 +239,7 @@ Nyx::enforce_minimum_energy_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& r
     bool debug = false;
 
     int lnum_spec    = NumSpec;
-    int lfirst_spec  = FirstSpec;
+    int lfirst_spec  = FirstSpec_comp;
     Real lsmall_dens = small_dens;
   
     Real cur_time = state[State_Type].curTime();
@@ -255,19 +255,19 @@ Nyx::enforce_minimum_energy_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& r
     MultiFab mu_y(amrex::convert(grids,IntVect(0,1,0)), dmap, 1, 1);
     MultiFab mu_z(amrex::convert(grids,IntVect(0,0,1)), dmap, 1, 1);
 
-    Real rho_old_min_before = S_old.min(URHO);
-    Real  ru_old_min_before = S_old.min(UMX);
-    Real  rv_old_min_before = S_old.min(UMY);
-    Real  rw_old_min_before = S_old.min(UMZ);
-    Real  re_old_min_before = S_old.min(UEINT);
-    Real  rE_old_min_before = S_old.min(UEDEN);
+    Real rho_old_min_before = S_old.min(Density_comp);
+    Real  ru_old_min_before = S_old.min(Xmom_comp);
+    Real  rv_old_min_before = S_old.min(Ymom_comp);
+    Real  rw_old_min_before = S_old.min(Zmom_comp);
+    Real  re_old_min_before = S_old.min(Eint_comp);
+    Real  rE_old_min_before = S_old.min(Eden_comp);
 
-    Real rho_new_min_before = S_new.min(URHO);
-    Real  ru_new_min_before = S_new.min(UMX);
-    Real  rv_new_min_before = S_new.min(UMY);
-    Real  rw_new_min_before = S_new.min(UMZ);
-    Real  re_new_min_before = S_new.min(UEINT);
-    Real  rE_new_min_before = S_new.min(UEDEN);
+    Real rho_new_min_before = S_new.min(Density_comp);
+    Real  ru_new_min_before = S_new.min(Xmom_comp);
+    Real  rv_new_min_before = S_new.min(Ymom_comp);
+    Real  rw_new_min_before = S_new.min(Zmom_comp);
+    Real  re_new_min_before = S_new.min(Eint_comp);
+    Real  rE_new_min_before = S_new.min(Eden_comp);
 
     Real rho_old_sum_before = S_old.sum(0);
     Real rho_new_sum_before = S_new.sum(0);
@@ -298,7 +298,7 @@ Nyx::enforce_minimum_energy_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& r
     {
         // First make sure that all ghost cells are updated because we use them in defining fluxes
         // Note that below we update S_new, not Sborder, so we must FillPatch each time.
-        FillPatch(*this, Sborder, 2, cur_time, State_Type, Density, Sborder.nComp());
+        FillPatch(*this, Sborder, 2, cur_time, State_Type, Density_comp, Sborder.nComp());
 
         // Initialize to zero; these will only be non-zero at a face across which (rho e) is passed...
         mu_x.setVal(0.);
@@ -322,7 +322,7 @@ Nyx::enforce_minimum_energy_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& r
 
             amrex::ParallelFor(gbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept
             {
-              compute_mu_for_enforce_min(i, j, k, Eint, sbord, mu_x_arr, mu_y_arr, mu_z_arr, small_rhoe);
+              compute_mu_for_enforce_min(i, j, k, Eint_comp, sbord, mu_x_arr, mu_y_arr, mu_z_arr, small_rhoe);
             });
         }
 
@@ -341,7 +341,7 @@ Nyx::enforce_minimum_energy_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& r
 
             amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept
             {
-              create_update_for_minimum(i, j, k, Eint, sbord_arr, 
+              create_update_for_minimum(i, j, k, Eint_comp, sbord_arr, 
                                         mu_x_arr, mu_y_arr, mu_z_arr, upd_arr, 
                                         lfirst_spec, lnum_spec);
             });
@@ -350,7 +350,7 @@ Nyx::enforce_minimum_energy_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& r
         S_new.plus(update,0,S_new.nComp(),0);
 
 #ifdef SDC
-	MultiFab::Copy(reset_e_src,update,Eint,0,1,0);
+	MultiFab::Copy(reset_e_src,update,Eint_comp,0,1,0);
 #endif
 
         if (S_new.contains_nan())
@@ -360,16 +360,16 @@ Nyx::enforce_minimum_energy_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& r
         }
 
         // This is used to decide whether to continue the iteration
-        re_new_min_after = S_new.min(Eint);
+        re_new_min_after = S_new.min(Eint_comp);
 
         if (debug) 
         {
-            rho_new_min_after = S_new.min(URHO);
-             ru_new_min_after = S_new.min(UMX);
-             rv_new_min_after = S_new.min(UMY);
-             rw_new_min_after = S_new.min(UMZ);
-             re_new_min_after = S_new.min(UEINT);
-             rE_new_min_after = S_new.min(UEDEN);
+            rho_new_min_after = S_new.min(Density_comp);
+             ru_new_min_after = S_new.min(Xmom_comp);
+             rv_new_min_after = S_new.min(Ymom_comp);
+             rw_new_min_after = S_new.min(Zmom_comp);
+             re_new_min_after = S_new.min(Eint_comp);
+             rE_new_min_after = S_new.min(Eden_comp);
             amrex::Print() << "After " << iter+1 << " iterations " << std::endl;
             amrex::Print() << "  MIN OF rho: old / new / new new " << 
                 rho_old_min_before << " " << rho_new_min_before << " " << rho_new_min_after << std::endl;

@@ -110,7 +110,7 @@ pc_cmpflx(
   const amrex::Real small_pres,
   const amrex::Real small,
   const amrex::Real gamma,
-  const int FirstSpec, const int NumSpec,
+  const int FirstSpec_comp, const int NumSpec,
   const int dir)
 {
   amrex::Real csmall, cav, ustar;
@@ -130,9 +130,9 @@ pc_cmpflx(
     csmall = amrex::max(small, small * std::sqrt(amrex::Math::abs(gamma * (gamma - 1.0) * qprim(i-1,j,k,QREINT) / qprim(i-1,j,k,QRHO))), small * std::sqrt(amrex::Math::abs(gamma * (gamma - 1.0) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
     cav = 0.5 * ( std::sqrt(amrex::Math::abs(gamma * (gamma - 1.0) * qprim(i-1,j,k,QREINT) / qprim(i-1,j,k,QRHO)))
                   +std::sqrt(amrex::Math::abs(gamma * (gamma - 1.0) * qprim(i  ,j,k,QREINT) / qprim(i  ,j,k,QRHO))) );
-    f_idx[0] = UMX;
-    f_idx[1] = UMY;
-    f_idx[2] = UMZ;
+    f_idx[0] = Xmom_comp;
+    f_idx[1] = Ymom_comp;
+    f_idx[2] = Zmom_comp;
   } else if (dir == 1) {
     IU = QV;
     IV = QU;
@@ -143,9 +143,9 @@ pc_cmpflx(
     csmall = amrex::max(small, small * std::sqrt(amrex::Math::abs(gamma * (gamma - 1.0) * qprim(i,j-1,k,QREINT) / qprim(i,j-1,k,QRHO))), small * std::sqrt(amrex::Math::abs(gamma * (gamma - 1.0) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
     cav = 0.5 * ( std::sqrt(amrex::Math::abs(gamma * (gamma - 1.0) * qprim(i,j-1,k,QREINT) / qprim(i,j-1,k,QRHO)))
                                   +std::sqrt(amrex::Math::abs(gamma * (gamma - 1.0) * qprim(i,j  ,k,QREINT) / qprim(i,j  ,k,QRHO))) );
-    f_idx[0] = UMY;
-    f_idx[1] = UMX;
-    f_idx[2] = UMZ;
+    f_idx[0] = Ymom_comp;
+    f_idx[1] = Xmom_comp;
+    f_idx[2] = Zmom_comp;
   } else {
     IU = QW;
     IV = QU;
@@ -156,9 +156,9 @@ pc_cmpflx(
     csmall = amrex::max(small, small * std::sqrt(amrex::Math::abs(gamma * (gamma - 1.0) * qprim(i,j,k-1,QREINT) / qprim(i,j,k-1,QRHO))), small * std::sqrt(amrex::Math::abs(gamma * (gamma - 1.0) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
     cav = 0.5 * ( std::sqrt(amrex::Math::abs(gamma * (gamma - 1.0) * qprim(i,j,k-1,QREINT) / qprim(i,j,k-1,QRHO)))
                                   +std::sqrt(amrex::Math::abs(gamma * (gamma - 1.0) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
-    f_idx[0] = UMZ;
-    f_idx[1] = UMX;
-    f_idx[2] = UMY;
+    f_idx[0] = Zmom_comp;
+    f_idx[1] = Xmom_comp;
+    f_idx[2] = Ymom_comp;
   }
 
   rl = ql(i,j,k,QRHO);
@@ -178,14 +178,14 @@ pc_cmpflx(
   riemann(
     rl, ul, vl, v2l, pl, rel,
     rr, ur, vr, v2r, pr, rer,
-    cav, ustar, flx(i, j, k, URHO),
+    cav, ustar, flx(i, j, k, Density_comp),
     flx(i, j, k, f_idx[0]), flx(i, j, k, f_idx[1]), flx(i, j, k, f_idx[2]),
-    flx(i, j, k, UEDEN), flx(i, j, k, UEINT), q(i, j, k, GU), q(i, j, k, GV),
+    flx(i, j, k, Eden_comp), flx(i, j, k, Eint_comp), q(i, j, k, GU), q(i, j, k, GV),
     q(i, j, k, GV2), q(i, j, k, QPRES), q(i, j, k, QREINT), 
     small_dens, small_pres, small, csmall, gamma);
 
-  amrex::Real flxrho = flx(i, j, k, URHO);
-  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+  amrex::Real flxrho = flx(i, j, k, Density_comp);
+  for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     if (ustar > 0.0)
       flx(i, j, k, n) = flxrho * ql(i, j, k, n);
     else if (ustar < 0.0)
@@ -223,14 +223,14 @@ pc_transx1(
   amrex::Real pggp, pggm, ugp, ugm;
   amrex::Real flxrho, flxu, flxv, flxw, flxe;
 
-  flxrho = cdtdx * (flxx(i + 1, j, k, URHO) - flxx(i, j, k, URHO));
-  flxu = cdtdx * (flxx(i + 1, j, k, UMX) - flxx(i, j, k, UMX));
-  flxv = cdtdx * (flxx(i + 1, j, k, UMY) - flxx(i, j, k, UMY));
-  flxw = cdtdx * (flxx(i + 1, j, k, UMZ) - flxx(i, j, k, UMZ));
-  flxe = cdtdx * (flxx(i + 1, j, k, UEDEN) - flxx(i, j, k, UEDEN));
+  flxrho = cdtdx * (flxx(i + 1, j, k, Density_comp) - flxx(i, j, k, Density_comp));
+  flxu = cdtdx * (flxx(i + 1, j, k, Xmom_comp) - flxx(i, j, k, Xmom_comp));
+  flxv = cdtdx * (flxx(i + 1, j, k, Ymom_comp) - flxx(i, j, k, Ymom_comp));
+  flxw = cdtdx * (flxx(i + 1, j, k, Zmom_comp) - flxx(i, j, k, Zmom_comp));
+  flxe = cdtdx * (flxx(i + 1, j, k, Eden_comp) - flxx(i, j, k, Eden_comp));
 
   // Update passive variables
-  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+  for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n));
     rr = qyp(i, j, k, QRHO);
     rrnew = rr - flxrho;
@@ -374,14 +374,14 @@ pc_transy1(
   amrex::Real dup, pav, du, pnewr, pnewl;
   amrex::Real flxrho, flxu, flxv, flxw, flxe;
 
-  flxrho = cdtdy * (flxy(i, j + 1, k, URHO) - flxy(i, j, k, URHO));
-  flxu = cdtdy * (flxy(i, j + 1, k, UMX) - flxy(i, j, k, UMX));
-  flxv = cdtdy * (flxy(i, j + 1, k, UMY) - flxy(i, j, k, UMY));
-  flxw = cdtdy * (flxy(i, j + 1, k, UMZ) - flxy(i, j, k, UMZ));
-  flxe = cdtdy * (flxy(i, j + 1, k, UEDEN) - flxy(i, j, k, UEDEN));
+  flxrho = cdtdy * (flxy(i, j + 1, k, Density_comp) - flxy(i, j, k, Density_comp));
+  flxu = cdtdy * (flxy(i, j + 1, k, Xmom_comp) - flxy(i, j, k, Xmom_comp));
+  flxv = cdtdy * (flxy(i, j + 1, k, Ymom_comp) - flxy(i, j, k, Ymom_comp));
+  flxw = cdtdy * (flxy(i, j + 1, k, Zmom_comp) - flxy(i, j, k, Zmom_comp));
+  flxe = cdtdy * (flxy(i, j + 1, k, Eden_comp) - flxy(i, j, k, Eden_comp));
 
   // -  Update Passive Variables
-  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+  for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
     rr = qxp(i, j, k, QRHO);
     rrnew = rr - flxrho;
@@ -524,14 +524,14 @@ pc_transx2(
   amrex::Real dup, pav, du;
   amrex::Real flxrho, flxu, flxv, flxw, flxe;
 
-  flxrho = cdtdx * (flxx(i + 1, j, k, URHO) - flxx(i, j, k, URHO));
-  flxu = cdtdx * (flxx(i + 1, j, k, UMX) - flxx(i, j, k, UMX));
-  flxv = cdtdx * (flxx(i + 1, j, k, UMY) - flxx(i, j, k, UMY));
-  flxw = cdtdx * (flxx(i + 1, j, k, UMZ) - flxx(i, j, k, UMZ));
-  flxe = cdtdx * (flxx(i + 1, j, k, UEDEN) - flxx(i, j, k, UEDEN));
+  flxrho = cdtdx * (flxx(i + 1, j, k, Density_comp) - flxx(i, j, k, Density_comp));
+  flxu = cdtdx * (flxx(i + 1, j, k, Xmom_comp) - flxx(i, j, k, Xmom_comp));
+  flxv = cdtdx * (flxx(i + 1, j, k, Ymom_comp) - flxx(i, j, k, Ymom_comp));
+  flxw = cdtdx * (flxx(i + 1, j, k, Zmom_comp) - flxx(i, j, k, Zmom_comp));
+  flxe = cdtdx * (flxx(i + 1, j, k, Eden_comp) - flxx(i, j, k, Eden_comp));
 
   // -  Update Passive Variables
-  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+  for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n));
     rr = qzp(i, j, k, QRHO);
     rrnew = rr - flxrho;
@@ -672,14 +672,14 @@ pc_transy2(
   amrex::Real dup, pav, du;
   amrex::Real flxrho, flxu, flxv, flxw, flxe;
 
-  flxrho = cdtdy * (flxy(i, j + 1, k, URHO) - flxy(i, j, k, URHO));
-  flxu = cdtdy * (flxy(i, j + 1, k, UMX) - flxy(i, j, k, UMX));
-  flxv = cdtdy * (flxy(i, j + 1, k, UMY) - flxy(i, j, k, UMY));
-  flxw = cdtdy * (flxy(i, j + 1, k, UMZ) - flxy(i, j, k, UMZ));
-  flxe = cdtdy * (flxy(i, j + 1, k, UEDEN) - flxy(i, j, k, UEDEN));
+  flxrho = cdtdy * (flxy(i, j + 1, k, Density_comp) - flxy(i, j, k, Density_comp));
+  flxu = cdtdy * (flxy(i, j + 1, k, Xmom_comp) - flxy(i, j, k, Xmom_comp));
+  flxv = cdtdy * (flxy(i, j + 1, k, Ymom_comp) - flxy(i, j, k, Ymom_comp));
+  flxw = cdtdy * (flxy(i, j + 1, k, Zmom_comp) - flxy(i, j, k, Zmom_comp));
+  flxe = cdtdy * (flxy(i, j + 1, k, Eden_comp) - flxy(i, j, k, Eden_comp));
 
   // -  Update Passive Variables
-  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+  for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
     rr = qzp(i, j, k, QRHO);
     rrnew = rr - flxrho;
@@ -822,14 +822,14 @@ pc_transz1(
   amrex::Real dup, pav, du, pnewr, pnewl;
   amrex::Real flxrho, flxu, flxv, flxw, flxe;
 
-  flxrho = cdtdz * (flxz(i, j, k + 1, URHO) - flxz(i, j, k, URHO));
-  flxu = cdtdz * (flxz(i, j, k + 1, UMX) - flxz(i, j, k, UMX));
-  flxv = cdtdz * (flxz(i, j, k + 1, UMY) - flxz(i, j, k, UMY));
-  flxw = cdtdz * (flxz(i, j, k + 1, UMZ) - flxz(i, j, k, UMZ));
-  flxe = cdtdz * (flxz(i, j, k + 1, UEDEN) - flxz(i, j, k, UEDEN));
+  flxrho = cdtdz * (flxz(i, j, k + 1, Density_comp) - flxz(i, j, k, Density_comp));
+  flxu = cdtdz * (flxz(i, j, k + 1, Xmom_comp) - flxz(i, j, k, Xmom_comp));
+  flxv = cdtdz * (flxz(i, j, k + 1, Ymom_comp) - flxz(i, j, k, Ymom_comp));
+  flxw = cdtdz * (flxz(i, j, k + 1, Zmom_comp) - flxz(i, j, k, Zmom_comp));
+  flxe = cdtdz * (flxz(i, j, k + 1, Eden_comp) - flxz(i, j, k, Eden_comp));
 
   // -  Update Passive Variables
-  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+  for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     compn = cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
     rr = qxp(i, j, k, QRHO);
     rrnew = rr - flxrho;
@@ -972,14 +972,14 @@ pc_transz2(
   amrex::Real dup, pav, du;
   amrex::Real flxrho, flxu, flxv, flxw, flxe;
 
-  flxrho = cdtdz * (flxz(i, j, k + 1, URHO) - flxz(i, j, k, URHO));
-  flxu = cdtdz * (flxz(i, j, k + 1, UMX) - flxz(i, j, k, UMX));
-  flxv = cdtdz * (flxz(i, j, k + 1, UMY) - flxz(i, j, k, UMY));
-  flxw = cdtdz * (flxz(i, j, k + 1, UMZ) - flxz(i, j, k, UMZ));
-  flxe = cdtdz * (flxz(i, j, k + 1, UEDEN) - flxz(i, j, k, UEDEN));
+  flxrho = cdtdz * (flxz(i, j, k + 1, Density_comp) - flxz(i, j, k, Density_comp));
+  flxu = cdtdz * (flxz(i, j, k + 1, Xmom_comp) - flxz(i, j, k, Xmom_comp));
+  flxv = cdtdz * (flxz(i, j, k + 1, Ymom_comp) - flxz(i, j, k, Ymom_comp));
+  flxw = cdtdz * (flxz(i, j, k + 1, Zmom_comp) - flxz(i, j, k, Zmom_comp));
+  flxe = cdtdz * (flxz(i, j, k + 1, Eden_comp) - flxz(i, j, k, Eden_comp));
 
   // Update passive variables
-  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+  for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     compn = cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
     rr = qyp(i, j, k, QRHO);
     rrnew = rr - flxrho;
@@ -1123,23 +1123,23 @@ pc_transxy(
   amrex::Real pggpy, pggmy, ugpy, ugmy;
   amrex::Real flxrho, flxu, flxv, flxw, flxe;
 
-  flxrho = cdtdx * (flxx(i + 1, j, k, URHO) - flxx(i, j, k, URHO)) +
-           cdtdy * (flxy(i, j + 1, k, URHO) - flxy(i, j, k, URHO));
-  flxu = cdtdx * (flxx(i + 1, j, k, UMX) - flxx(i, j, k, UMX)) +
-         cdtdy * (flxy(i, j + 1, k, UMX) - flxy(i, j, k, UMX));
-  flxv = cdtdx * (flxx(i + 1, j, k, UMY) - flxx(i, j, k, UMY)) +
-         cdtdy * (flxy(i, j + 1, k, UMY) - flxy(i, j, k, UMY));
-  flxw = cdtdx * (flxx(i + 1, j, k, UMZ) - flxx(i, j, k, UMZ)) +
-         cdtdy * (flxy(i, j + 1, k, UMZ) - flxy(i, j, k, UMZ));
-  flxe = cdtdx * (flxx(i + 1, j, k, UEDEN) - flxx(i, j, k, UEDEN)) +
-         cdtdy * (flxy(i, j + 1, k, UEDEN) - flxy(i, j, k, UEDEN));
+  flxrho = cdtdx * (flxx(i + 1, j, k, Density_comp) - flxx(i, j, k, Density_comp)) +
+           cdtdy * (flxy(i, j + 1, k, Density_comp) - flxy(i, j, k, Density_comp));
+  flxu = cdtdx * (flxx(i + 1, j, k, Xmom_comp) - flxx(i, j, k, Xmom_comp)) +
+         cdtdy * (flxy(i, j + 1, k, Xmom_comp) - flxy(i, j, k, Xmom_comp));
+  flxv = cdtdx * (flxx(i + 1, j, k, Ymom_comp) - flxx(i, j, k, Ymom_comp)) +
+         cdtdy * (flxy(i, j + 1, k, Ymom_comp) - flxy(i, j, k, Ymom_comp));
+  flxw = cdtdx * (flxx(i + 1, j, k, Zmom_comp) - flxx(i, j, k, Zmom_comp)) +
+         cdtdy * (flxy(i, j + 1, k, Zmom_comp) - flxy(i, j, k, Zmom_comp));
+  flxe = cdtdx * (flxx(i + 1, j, k, Eden_comp) - flxx(i, j, k, Eden_comp)) +
+         cdtdy * (flxy(i, j + 1, k, Eden_comp) - flxy(i, j, k, Eden_comp));
 
   // Update passive variables
   rrr = qzp(i, j, k, QRHO);
   rrl = qzm(i, j, k + 1, QRHO);
   rrnewl = rrl - flxrho;
   rrnewr = rrr - flxrho;
-  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+  for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n)) +
             cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
     // qp
@@ -1284,23 +1284,23 @@ pc_transxz(
   amrex::Real pggpz, pggmz, ugpz, ugmz;
   amrex::Real flxrho, flxu, flxv, flxw, flxe;
 
-  flxrho = cdtdx * (flxx(i + 1, j, k, URHO) - flxx(i, j, k, URHO)) +
-           cdtdz * (flxz(i, j, k + 1, URHO) - flxz(i, j, k, URHO));
-  flxu = cdtdx * (flxx(i + 1, j, k, UMX) - flxx(i, j, k, UMX)) +
-         cdtdz * (flxz(i, j, k + 1, UMX) - flxz(i, j, k, UMX));
-  flxv = cdtdx * (flxx(i + 1, j, k, UMY) - flxx(i, j, k, UMY)) +
-         cdtdz * (flxz(i, j, k + 1, UMY) - flxz(i, j, k, UMY));
-  flxw = cdtdx * (flxx(i + 1, j, k, UMZ) - flxx(i, j, k, UMZ)) +
-         cdtdz * (flxz(i, j, k + 1, UMZ) - flxz(i, j, k, UMZ));
-  flxe = cdtdx * (flxx(i + 1, j, k, UEDEN) - flxx(i, j, k, UEDEN)) +
-         cdtdz * (flxz(i, j, k + 1, UEDEN) - flxz(i, j, k, UEDEN));
+  flxrho = cdtdx * (flxx(i + 1, j, k, Density_comp) - flxx(i, j, k, Density_comp)) +
+           cdtdz * (flxz(i, j, k + 1, Density_comp) - flxz(i, j, k, Density_comp));
+  flxu = cdtdx * (flxx(i + 1, j, k, Xmom_comp) - flxx(i, j, k, Xmom_comp)) +
+         cdtdz * (flxz(i, j, k + 1, Xmom_comp) - flxz(i, j, k, Xmom_comp));
+  flxv = cdtdx * (flxx(i + 1, j, k, Ymom_comp) - flxx(i, j, k, Ymom_comp)) +
+         cdtdz * (flxz(i, j, k + 1, Ymom_comp) - flxz(i, j, k, Ymom_comp));
+  flxw = cdtdx * (flxx(i + 1, j, k, Zmom_comp) - flxx(i, j, k, Zmom_comp)) +
+         cdtdz * (flxz(i, j, k + 1, Zmom_comp) - flxz(i, j, k, Zmom_comp));
+  flxe = cdtdx * (flxx(i + 1, j, k, Eden_comp) - flxx(i, j, k, Eden_comp)) +
+         cdtdz * (flxz(i, j, k + 1, Eden_comp) - flxz(i, j, k, Eden_comp));
 
   // Update passive variables
   rrr = qyp(i, j, k, QRHO);
   rrl = qym(i, j + 1, k, QRHO);
   rrnewl = rrl - flxrho;
   rrnewr = rrr - flxrho;
-  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+  for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n)) +
             cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
     // qp
@@ -1444,16 +1444,16 @@ pc_transyz(
   amrex::Real pggpy, pggmy, ugpy, ugmy;
   amrex::Real flxrho, flxu, flxv, flxw, flxe;
 
-  flxrho = cdtdy * (flxy(i, j + 1, k, URHO) - flxy(i, j, k, URHO)) +
-           cdtdz * (flxz(i, j, k + 1, URHO) - flxz(i, j, k, URHO));
-  flxu = cdtdy * (flxy(i, j + 1, k, UMX) - flxy(i, j, k, UMX)) +
-         cdtdz * (flxz(i, j, k + 1, UMX) - flxz(i, j, k, UMX));
-  flxv = cdtdy * (flxy(i, j + 1, k, UMY) - flxy(i, j, k, UMY)) +
-         cdtdz * (flxz(i, j, k + 1, UMY) - flxz(i, j, k, UMY));
-  flxw = cdtdy * (flxy(i, j + 1, k, UMZ) - flxy(i, j, k, UMZ)) +
-         cdtdz * (flxz(i, j, k + 1, UMZ) - flxz(i, j, k, UMZ));
-  flxe = cdtdy * (flxy(i, j + 1, k, UEDEN) - flxy(i, j, k, UEDEN)) +
-         cdtdz * (flxz(i, j, k + 1, UEDEN) - flxz(i, j, k, UEDEN));
+  flxrho = cdtdy * (flxy(i, j + 1, k, Density_comp) - flxy(i, j, k, Density_comp)) +
+           cdtdz * (flxz(i, j, k + 1, Density_comp) - flxz(i, j, k, Density_comp));
+  flxu = cdtdy * (flxy(i, j + 1, k, Xmom_comp) - flxy(i, j, k, Xmom_comp)) +
+         cdtdz * (flxz(i, j, k + 1, Xmom_comp) - flxz(i, j, k, Xmom_comp));
+  flxv = cdtdy * (flxy(i, j + 1, k, Ymom_comp) - flxy(i, j, k, Ymom_comp)) +
+         cdtdz * (flxz(i, j, k + 1, Ymom_comp) - flxz(i, j, k, Ymom_comp));
+  flxw = cdtdy * (flxy(i, j + 1, k, Zmom_comp) - flxy(i, j, k, Zmom_comp)) +
+         cdtdz * (flxz(i, j, k + 1, Zmom_comp) - flxz(i, j, k, Zmom_comp));
+  flxe = cdtdy * (flxy(i, j + 1, k, Eden_comp) - flxy(i, j, k, Eden_comp)) +
+         cdtdz * (flxz(i, j, k + 1, Eden_comp) - flxz(i, j, k, Eden_comp));
 
   // Update passive variables
   rrr = qxp(i, j, k, QRHO);
@@ -1461,7 +1461,7 @@ pc_transyz(
   rrnewl = rrl - flxrho;
   rrnewr = rrr - flxrho;
 
-  for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+  for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n)) +
             cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
     // qp

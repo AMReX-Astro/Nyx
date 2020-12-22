@@ -897,16 +897,16 @@ Nyx::est_time_step (Real dt_old)
                   for         (int k = lo.z; k <= hi.z; ++k) {
                     for     (int j = lo.y; j <= hi.y; ++j) {
                       for (int i = lo.x; i <= hi.x; ++i) {
-                        if(u(i,j,k,Density)<=1.1*local_small_dens && local_max_temp_dt==1)
+                        if(u(i,j,k,Density_comp)<=1.1*local_small_dens && local_max_temp_dt==1)
                           continue;
 
-                            Real rhoInv = 1.0 / u(i,j,k,Density);
-                            Real ux     = u(i,j,k,Xmom)*rhoInv;
-                            Real uy     = u(i,j,k,Ymom)*rhoInv;
-                            Real uz     = u(i,j,k,Zmom)*rhoInv;
+                            Real rhoInv = 1.0 / u(i,j,k,Density_comp);
+                            Real ux     = u(i,j,k,Xmom_comp)*rhoInv;
+                            Real uy     = u(i,j,k,Ymom_comp)*rhoInv;
+                            Real uz     = u(i,j,k,Zmom_comp)*rhoInv;
 
                             // Use internal energy for calculating dt
-                            Real e  = u(i,j,k,Eint)*rhoInv;
+                            Real e  = u(i,j,k,Eint_comp)*rhoInv;
 
                             Real c;
                             // Protect against negative e
@@ -915,7 +915,7 @@ Nyx::est_time_step (Real dt_old)
                               c=sound_speed_factor*std::sqrt(e);
 #else
                             if (e > 0.0)
-                              c=sound_speed_factor*std::sqrt(u(i,j,k,Density)*e/u(i,j,k,Density));
+                              c=sound_speed_factor*std::sqrt(u(i,j,k,Density_comp)*e/u(i,j,k,Density_comp));
 #endif
                             else
                               c = 0.0;
@@ -1370,7 +1370,7 @@ Nyx::post_timestep (int iteration)
         {
             // Define the update to rho and rhoU due to refluxing.
             drho_and_drhoU.define(grids, dmap, BL_SPACEDIM + 1, 0);
-            MultiFab::Copy(drho_and_drhoU, S_new_crse, Density, 0,
+            MultiFab::Copy(drho_and_drhoU, S_new_crse, Density_comp, 0,
                            BL_SPACEDIM + 1, 0);
             drho_and_drhoU.mult(-1.0);
         }
@@ -1393,7 +1393,7 @@ Nyx::post_timestep (int iteration)
 
         if (do_grav && gravity->get_no_sync() == 0)
         {
-            MultiFab::Add(drho_and_drhoU, S_new_crse, Density, 0, BL_SPACEDIM+1, 0);
+            MultiFab::Add(drho_and_drhoU, S_new_crse, Density_comp, 0, BL_SPACEDIM+1, 0);
 
             MultiFab dphi(grids, dmap, 1, 0);
             dphi.setVal(0);
@@ -1453,8 +1453,8 @@ Nyx::post_timestep (int iteration)
                     Array4<Real const> const& gdphi = grad_delta_phi_cc[lev-level]->array(mfi);
                     Array4<Real      > const& s_fab = S_new_lev.array(mfi);
 
-                    int iden  = Density;
-                    int ieden = Eden;
+                    int iden  = Density_comp;
+                    int ieden = Eden_comp;
 
                     amrex::ParallelFor(bx, [s_fab,d_fab,gphi,gdphi,a_new,dt_lev,iden,ieden]
                        AMREX_GPU_DEVICE (int i, int j, int k) noexcept
@@ -2115,7 +2115,7 @@ Nyx::enforce_nonnegative_species (MultiFab& S_new)
 {
     BL_PROFILE("Nyx::enforce_nonnegative_species()");
     Real eps = -1.0e-16;
-    int NumSpec = S_new.nComp()-FirstSpec;
+    int NumSpec = S_new.nComp()-FirstSpec_comp;
 
     if (NumSpec > 0)
     {
@@ -2133,11 +2133,11 @@ Nyx::enforce_nonnegative_species (MultiFab& S_new)
                Real x;
                Real dom_spec;
                int int_dom_spec;
-               for (int n = FirstSpec; n < FirstSpec + NumSpec; n++)
+               for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; n++)
                {
                    if (uout(i,j,k,n) < 0.0)
                    {
-                       x = uout(i,j,k,n)/uout(i,j,k,URHO);
+                       x = uout(i,j,k,n)/uout(i,j,k,Density_comp);
                        if (x > eps)
                            uout(i,j,k,n) = 0.0;
                        else
@@ -2153,10 +2153,10 @@ Nyx::enforce_nonnegative_species (MultiFab& S_new)
                //
                // Find the dominant species.
                //
-                   int_dom_spec = FirstSpec;
+                   int_dom_spec = FirstSpec_comp;
                    dom_spec     = uout(i,j,k,int_dom_spec);
 
-                   for (int n = 0; n < FirstSpec + NumSpec; n++)
+                   for (int n = 0; n < FirstSpec_comp + NumSpec; n++)
                    {
                        if (uout(i,j,k,n) > dom_spec)
                        {
@@ -2167,11 +2167,11 @@ Nyx::enforce_nonnegative_species (MultiFab& S_new)
                    //
                    // Now take care of undershoots greater in magnitude than 1e-16.
                    //
-                   for (int n = 0; n < FirstSpec + NumSpec; n++)
+                   for (int n = 0; n < FirstSpec_comp + NumSpec; n++)
                    {
                        if (uout(i,j,k,n) < 0.0)
                        {
-                           x = uout(i,j,k,n)/uout(i,j,k,URHO);
+                           x = uout(i,j,k,n)/uout(i,j,k,Density_comp);
                            //
                            // Take enough from the dominant species to fill the negative one.
                            //
@@ -2210,10 +2210,10 @@ Nyx::enforce_consistent_e (MultiFab& S)
         amrex::ParallelFor(bx,
         [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
         {
-            s_arr(i,j,k,Eden) = s_arr(i,j,k,Eint) + 0.5 * (
-                                s_arr(i,j,k,Xmom)*s_arr(i,j,k,Xmom) +
-                                s_arr(i,j,k,Ymom)*s_arr(i,j,k,Ymom) +
-                                s_arr(i,j,k,Zmom)*s_arr(i,j,k,Zmom) ) / s_arr(i,j,k,Density);
+            s_arr(i,j,k,Eden_comp) = s_arr(i,j,k,Eint_comp) + 0.5 * (
+                                s_arr(i,j,k,Xmom_comp)*s_arr(i,j,k,Xmom_comp) +
+                                s_arr(i,j,k,Ymom_comp)*s_arr(i,j,k,Ymom_comp) +
+                                s_arr(i,j,k,Zmom_comp)*s_arr(i,j,k,Zmom_comp) ) / s_arr(i,j,k,Density_comp);
         });
   }
 }
@@ -2469,34 +2469,34 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
             AMREX_PARALLEL_FOR_3D(bx, i, j ,k,
             {
 
-              Real rhoInv = 1.e0 / state(i,j,k,Density);
-              Real eint = state(i,j,k,Eint) * rhoInv;
+              Real rhoInv = 1.e0 / state(i,j,k,Density_comp);
+              Real eint = state(i,j,k,Eint_comp) * rhoInv;
 
-            if (state(i,j,k,Eint) > 0.0)
+            if (state(i,j,k,Eint_comp) > 0.0)
               {
 
-                eint = state(i,j,k,Eint) * rhoInv;
+                eint = state(i,j,k,Eint_comp) * rhoInv;
 
                 int JH = 1;
                 int JHe = 1;
 
                 nyx_eos_T_given_Re_device(atomic_rates, gamma_minus_1_in, h_species_in, JH, JHe, &diag_eos(i,j,k,Temp_comp), &diag_eos(i,j,k,Ne_comp),
-                                               state(i,j,k,Density), eint, a);
+                                               state(i,j,k,Density_comp), eint, a);
                 if(diag_eos(i,j,k,Temp_comp)>=local_large_temp && local_max_temp_dt == 1)
                 {
                   diag_eos(i,j,k,Temp_comp) = local_large_temp;
 
                   Real dummy_pres=0.0;
                   // Set temp to small_temp and compute corresponding internal energy
-                  nyx_eos_given_RT(atomic_rates, gamma_minus_1_in, h_species_in, &eint, &dummy_pres, state(i,j,k,Density), diag_eos(i,j,k,Temp_comp),
+                  nyx_eos_given_RT(atomic_rates, gamma_minus_1_in, h_species_in, &eint, &dummy_pres, state(i,j,k,Density_comp), diag_eos(i,j,k,Temp_comp),
                                     diag_eos(i,j,k,Ne_comp), a);
 
-                   Real ke = 0.5e0 * (state(i,j,k,Xmom) * state(i,j,k,Xmom) +
-                              state(i,j,k,Ymom) * state(i,j,k,Ymom) +
-                              state(i,j,k,Zmom) * state(i,j,k,Zmom)) * rhoInv;
+                   Real ke = 0.5e0 * (state(i,j,k,Xmom_comp) * state(i,j,k,Xmom_comp) +
+                              state(i,j,k,Ymom_comp) * state(i,j,k,Ymom_comp) +
+                              state(i,j,k,Zmom_comp) * state(i,j,k,Zmom_comp)) * rhoInv;
 
-                   state(i,j,k,Eint) = state(i,j,k,Density) * eint;
-                   state(i,j,k,Eden) = state(i,j,k,Eint) + ke;
+                   state(i,j,k,Eint_comp) = state(i,j,k,Density_comp) * eint;
+                   state(i,j,k,Eden_comp) = state(i,j,k,Eint_comp) + ke;
 
                 }
               }
@@ -2504,16 +2504,16 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
               {
                 Real dummy_pres=0.0;
                 // Set temp to small_temp and compute corresponding internal energy
-                nyx_eos_given_RT(atomic_rates, gamma_minus_1_in, h_species_in, &eint, &dummy_pres, state(i,j,k,Density), local_small_temp,
+                nyx_eos_given_RT(atomic_rates, gamma_minus_1_in, h_species_in, &eint, &dummy_pres, state(i,j,k,Density_comp), local_small_temp,
                                     diag_eos(i,j,k,Ne_comp), a);
 
-                Real ke = 0.5e0 * (state(i,j,k,Xmom) * state(i,j,k,Xmom) +
-                              state(i,j,k,Ymom) * state(i,j,k,Ymom) +
-                              state(i,j,k,Zmom) * state(i,j,k,Zmom)) * rhoInv;
+                Real ke = 0.5e0 * (state(i,j,k,Xmom_comp) * state(i,j,k,Xmom_comp) +
+                                   state(i,j,k,Ymom_comp) * state(i,j,k,Ymom_comp) +
+                                   state(i,j,k,Zmom_comp) * state(i,j,k,Zmom_comp)) * rhoInv;
 
                 diag_eos(i,j,k,Temp_comp) = local_small_temp;
-                state(i,j,k,Eint) = state(i,j,k,Density) * eint;
-                state(i,j,k,Eden) = state(i,j,k,Eint) + ke;
+                state(i,j,k,Eint_comp) = state(i,j,k,Density_comp) * eint;
+                state(i,j,k,Eden_comp) = state(i,j,k,Eint_comp) + ke;
               }
 
             });
@@ -2543,7 +2543,7 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
                 if(bx.contains(max_temp_loc))
                   {
                     const auto fab_state = S_new.array(mfi);
-                    Real den_maxt=fab_state(max_temp_loc,Density);
+                    Real den_maxt=fab_state(max_temp_loc,Density_comp);
                     std::cout << "Maximum temp. at level " << level << " is " << max_temp
                                 << " at density " << den_maxt
                                 << " at (i,j,k) " << max_temp_loc << std::endl;
@@ -2591,7 +2591,7 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
             [=] AMREX_GPU_DEVICE (int i, int j, int k) -> ReduceTuple
             {
                 Real T_tmp = diag_eos(i,j,k,Temp_comp);
-                Real rho_tmp = state(i,j,k,Density);
+                Real rho_tmp = state(i,j,k,Density_comp);
                 Real l_rho_T_sum = 0._rt;
                 Real l_rho_sum = 0._rt;
                 Real l_T_sum = 0._rt;
@@ -2639,7 +2639,7 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
             AMREX_LOOP_3D(bx, i, j, k,
             {
                 Real T_tmp   = d_arr(i,j,k,Temp_comp);
-                Real rho_tmp = s_arr(i,j,k,Density);
+                Real rho_tmp = s_arr(i,j,k,Density_comp);
                 T_sum += vol*T_tmp;
                 Tinv_sum += rho_tmp/T_tmp;
                 rho_T_sum += rho_tmp*T_tmp;
@@ -2705,8 +2705,8 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
             [=] AMREX_GPU_DEVICE (int i, int j, int k) -> ReduceTuple
             {
                 Real T = diag_eos(i,j,k,Temp_comp);
-                Real R = state(i,j,k,Density) / local_average_gas_density;
-                Real rho_vol = state(i,j,k,Density)*vol;
+                Real R = state(i,j,k,Density_comp) / local_average_gas_density;
+                Real rho_vol = state(i,j,k,Density_comp)*vol;
                 Real l_whim_mass = 0._rt;
                 Real l_whim_vol = 0._rt;
                 Real l_hh_mass = 0._rt;
@@ -2758,8 +2758,8 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
             AMREX_LOOP_3D(bx, i, j, k,
             {
                 Real T = diag_eos(i,j,k,Temp_comp);
-                Real R = s_arr(i,j,k,Density) / average_gas_density;
-                Real rho_vol = s_arr(i,j,k,Density)*vol;
+                Real R = s_arr(i,j,k,Density_comp) / average_gas_density;
+                Real rho_vol = s_arr(i,j,k,Density_comp)*vol;
                 if ( (T > T_cut) && (R <= rho_cut) ) {
                     whim_mass += rho_vol;
                     whim_vol += vol;

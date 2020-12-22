@@ -56,7 +56,7 @@ Nyx::get_old_source (Real      old_time,
     Sborder.define(grids, S_old.DistributionMap(), S_old.nComp(), 4);
     Dborder.define(grids, D_old.DistributionMap(), D_old.nComp(), 4);
 
-    FillPatch(*this, Sborder, 4, old_time, State_Type, Density, Sborder.nComp());
+    FillPatch(*this, Sborder, 4, old_time, State_Type, Density_comp, Sborder.nComp());
     FillPatch(*this, Dborder, 4, old_time, DiagEOS_Type, 0, D_old.nComp());
 
 #ifdef _OPENMP
@@ -68,7 +68,7 @@ Nyx::get_old_source (Real      old_time,
 
         // The formulae in subroutine ctoprim assume that the source term for density is zero
         // Here we abort if it is non-zero.
-        Real norm_density = ext_src[mfi].norm<RunOn::Device>(0,Density,1);
+        Real norm_density = ext_src[mfi].norm<RunOn::Device>(0,Density_comp,1);
         amrex::Gpu::streamSynchronize();
         if (norm_density != 0)
         {
@@ -107,8 +107,8 @@ Nyx::get_new_source (Real      old_time,
     Sborder_new.define(grids, S_new.DistributionMap(), S_new.nComp(), 4);
     Dborder_new.define(grids, D_new.DistributionMap(), D_new.nComp(), 4);
 
-    FillPatch(*this, Sborder_old, 4, old_time, State_Type  , Density, Sborder_old.nComp());
-    FillPatch(*this, Sborder_new, 4, new_time, State_Type  , Density, Sborder_new.nComp());
+    FillPatch(*this, Sborder_old, 4, old_time, State_Type, Density_comp, Sborder_old.nComp());
+    FillPatch(*this, Sborder_new, 4, new_time, State_Type, Density_comp, Sborder_new.nComp());
     FillPatch(*this, Dborder_old, 4, old_time, DiagEOS_Type, 0      , Dborder_old.nComp());
     FillPatch(*this, Dborder_new, 4, new_time, DiagEOS_Type, 0      , Dborder_new.nComp());
 

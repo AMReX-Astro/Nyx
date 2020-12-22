@@ -16,7 +16,7 @@ trace_ppm(const Box& bx,
           const Real gamma,
           const Real small_dens, const Real small_pres,
           const Real small,
-          const int FirstSpec, const int NumSpec,
+          const int FirstSpec_comp, const int NumSpec,
           const Real a_old)
 {
 
@@ -42,9 +42,6 @@ trace_ppm(const Box& bx,
   Real hdt = 0.5_rt * dt;
   Real dtdx = dt / dx[idir];
   Real dtdxovera = dtdx / a_old;
-
-  auto lo = bx.loVect3d();
-  auto hi = bx.hiVect3d();
 
   auto vlo = vbx.loVect3d();
   auto vhi = vbx.hiVect3d();
@@ -93,9 +90,6 @@ trace_ppm(const Box& bx,
   amrex::ParallelFor(bx,
   [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
   {
-
-    Real rho = q_arr(i,j,k,QRHO);
-
     Real cc = std::sqrt(gamma * q_arr(i,j,k,QPRES)/q_arr(i,j,k,QRHO));
 
     Real un = q_arr(i,j,k,QUN);
@@ -179,7 +173,7 @@ trace_ppm(const Box& bx,
         ppm_int_profile(sm, sp, s[i0], un, cc, dtdxovera, Ip_src[n], Im_src[n]);
     }
 
-    for (int n = FirstSpec; n < FirstSpec + NumSpec; ++n) {
+    for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
 
       // Plus state on face i
       if ((idir == 0 && i >= vlo[0]) ||
@@ -276,15 +270,11 @@ trace_ppm(const Box& bx,
       // q_s = q_ref - sum(l . dq) r
       // note that the a{mpz}right as defined above have the minus already
 
-      if ( (rho_ref +  alphap + alpham + alpha0r) < 0.5 * rho_ref)
+      Real rho_pred = (rho_ref +  alphap + alpham + alpha0r);
+
+      if (rho_pred < 0.5 * rho_ref)
       {
-#if 0
-          std::cout << "QP GOING LOW IN DIR " << idir << " BEFORE FIX AT " << IntVect(i,j,k) << " " << rho_ref << std::endl;
-          std::cout << "OLD PREDICTED RHO AT " << IntVect(i,j,k) << " " << 
-                        (rho_ref +  alphap + alpham + alpha0r) << std::endl;
-          std::cout << "OLD PREDICTED UN  AT " << IntVect(i,j,k) << " " << 
-                        un_ref + (alphap - alpham)*cc_ref*rho_ref_inv << std::endl;;
-#endif
+          printf("QP GOING LOW IN IDIR %d,%d,%d,%d,%e,%e \n",idir,i,j,k,rho_ref,rho_pred);
 
           alpham = 0.5_rt*(dptotm*rho_ref_inv*cc_ref_inv - dum)*rho_ref*cc_ref_inv;
           alphap = 0.5_rt*(dptotp*rho_ref_inv*cc_ref_inv + dup)*rho_ref*cc_ref_inv;
@@ -298,12 +288,9 @@ trace_ppm(const Box& bx,
           alpham    = un-cc > 0.0_rt ? -alpham_grav : -alpham;
           alphap    = un+cc > 0.0_rt ? -alphap_grav : -alphap;
 
-#if 0
-          std::cout << "NEW PREDICTED RHO AT " << IntVect(i,j,k) << " " << 
-                        (rho_ref +  alphap + alpham + alpha0r) << std::endl;
-          std::cout << "NEW PREDICTED UN  AT " << IntVect(i,j,k) << " " << 
-                        un_ref + (alphap - alpham)*cc_ref*rho_ref_inv << std::endl;;
-#endif
+          rho_pred = (rho_ref +  alphap + alpham + alpha0r);
+
+          printf("QP FIXED OUT IN IDIR %d,%d,%d,%d,%e,%e \n",idir,i,j,k,rho_ref,rho_pred);
       }
 
       qp(i,j,k,QRHO ) = amrex::max(lsmall_dens, rho_ref +  alphap + alpham + alpha0r);
@@ -384,34 +371,27 @@ trace_ppm(const Box& bx,
       // q_s = q_ref - sum (l . dq) r
       // note that the a{mpz}left as defined above have the minus already
 
-      if ( (rho_ref +  alphap + alpham + alpha0r) < 0.5 * rho_ref)
+      Real rho_pred = (rho_ref +  alphap + alpham + alpha0r);
+
+      if (rho_pred < 0.5 * rho_ref)
       {
-#if 0
-           std::cout << "QM GOING LOW IN DIR " << idir << " BEFORE FIX AT " << IntVect(i,j,k) << " " << rho_ref << std::endl;
-           std::cout << "OLD PREDICTED RHO AT " << IntVect(i,j,k) << " " << 
-                            (rho_ref +  alphap + alpham + alpha0r) << std::endl;
-           std::cout << "OLD PREDICTED UN  AT " << IntVect(i,j,k) << " " << 
-                            un_ref + (alphap - alpham)*cc_ref*rho_ref_inv << std::endl;;
-#endif
+          printf("QP GOING LOW IN IDIR %d,%d,%d,%d,%e,%e \n",idir,i,j,k,rho_ref,rho_pred);
 
-           alpham = 0.5_rt*(dptotm*rho_ref_inv*cc_ref_inv - dum)*rho_ref*cc_ref_inv;
-           alphap = 0.5_rt*(dptotp*rho_ref_inv*cc_ref_inv + dup)*rho_ref*cc_ref_inv;
+          alpham = 0.5_rt*(dptotm*rho_ref_inv*cc_ref_inv - dum)*rho_ref*cc_ref_inv;
+          alphap = 0.5_rt*(dptotp*rho_ref_inv*cc_ref_inv + dup)*rho_ref*cc_ref_inv;
 
-           Real dum_grav = -hdt*Ip_src[QUN][0] / a_old;
-           Real dup_grav = -hdt*Ip_src[QUN][2] / a_old;
+          Real dum_grav = -hdt*Ip_src[QUN][0] / a_old;
+          Real dup_grav = -hdt*Ip_src[QUN][2] / a_old;
 
-           Real alpham_grav = 0.5_rt*(-dum_grav)*rho_ref*cc_ref_inv;
-           Real alphap_grav = 0.5_rt*( dup_grav)*rho_ref*cc_ref_inv;
+          Real alpham_grav = 0.5_rt*(-dum_grav)*rho_ref*cc_ref_inv;
+          Real alphap_grav = 0.5_rt*( dup_grav)*rho_ref*cc_ref_inv;
            
-           alpham    = un-cc > 0.0_rt ? -alpham_grav : -alpham;
-           alphap    = un+cc > 0.0_rt ? -alphap_grav : -alphap;
+          alpham    = un-cc > 0.0_rt ? -alpham_grav : -alpham;
+          alphap    = un+cc > 0.0_rt ? -alphap_grav : -alphap;
 
-#if 0
-           std::cout << "NEW PREDICTED RHO AT " << IntVect(i,j,k) << " " << 
-                            (rho_ref +  alphap + alpham + alpha0r) << std::endl;
-           std::cout << "NEW PREDICTED UN  AT " << IntVect(i,j,k) << " " << 
-                            un_ref + (alphap - alpham)*cc_ref*rho_ref_inv << std::endl;;
-#endif
+          rho_pred = (rho_ref +  alphap + alpham + alpha0r);
+
+          printf("QM FIXED OUT IN IDIR %d,%d,%d,%d,%e,%e \n",idir,i,j,k,rho_ref,rho_pred);
       }
 
       if (idir == 0) {

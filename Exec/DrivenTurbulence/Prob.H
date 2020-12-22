@@ -44,29 +44,27 @@ void prob_initdata_state(const int i,
   const amrex::Real a=1.0/(prob_param[z_in_comp]+1.0);
   amrex::Real eint, dummy_pres;
   
-  nyx_eos_given_RT(NULL,gamma_minus_1_in, h_species_in, &eint, &dummy_pres, state(i,j,k,Density), temp0, ne0, a);
+  nyx_eos_given_RT(NULL,gamma_minus_1_in, h_species_in, &eint, &dummy_pres, state(i,j,k,Density_comp), temp0, ne0, a);
   amrex::Real rhoe0 = rho0 * eint;
 
-    state(i,j,k,Density)    = rho0; //1.5d0 * small_dens
-    state(i,j,k,Xmom) = 0.00;
-    state(i,j,k,Ymom) = 0.00;
-    state(i,j,k,Zmom) = 0.00;
+    state(i,j,k,Density_comp)    = rho0; //1.5d0 * small_dens
+    state(i,j,k,Xmom_comp) = 0.00;
+    state(i,j,k,Ymom_comp) = 0.00;
+    state(i,j,k,Zmom_comp) = 0.00;
 
     // These will both be set later in the call to init_e.
-    state(i,j,k,Eint) = rhoe0;
-    state(i,j,k,Eden) = rhoe0 + 0.5 *
-                                   (state(i, j, k, UMX) * state(i, j, k, UMX) +
-                                    state(i, j, k, UMY) * state(i, j, k, UMY) +
-                                    state(i, j, k, UMZ) * state(i, j, k, UMZ)) /
-                                   state(i, j, k, URHO);
+    state(i,j,k,Eint_comp) = rhoe0;
+    state(i,j,k,Eden_comp) = rhoe0 + 0.5 *
+                                   (state(i, j, k, Xmom_comp) * state(i, j, k, Xmom_comp) +
+                                    state(i, j, k, Ymom_comp) * state(i, j, k, Ymom_comp) +
+                                    state(i, j, k, Zmom_comp) * state(i, j, k, Zmom_comp)) /
+                                   state(i, j, k, Density_comp);
 
-    int FirstSpec = Eint + 1;   
-    if (state.nComp() > FirstSpec)
-    {
+#ifndef CONST_SPECIES
       //XHYDROGEN hardcoded to .76 init_managed
-      state(i,j,k,FirstSpec  ) = .76;
-      state(i,j,k,FirstSpec+1) = (1.0 - .76);
-    }
+      state(i,j,k,FirstSpec_comp  ) = .76;
+      state(i,j,k,FirstSpec_comp+1) = (1.0 - .76);
+#endif
 }
 
 AMREX_GPU_DEVICE AMREX_FORCE_INLINE

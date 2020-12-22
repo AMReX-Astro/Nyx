@@ -814,7 +814,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
         BL_PROFILE_VAR_STOP(CA_init);
 
         // Add the particle density to the gas density 
-        MultiFab::Add(S_new, *particle_mf[level], 0, Density, 1, 1);
+        MultiFab::Add(S_new, *particle_mf[level], 0, Density_comp, 1, 1);
 
         if (init_sb_vels == 1)
         {
@@ -824,7 +824,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
             }
 
             // Add the particle momenta to the gas momenta (initially zero)
-            MultiFab::Add(S_new, *particle_mf[level], 1, Xmom, BL_SPACEDIM, S_new.nGrow());
+            MultiFab::Add(S_new, *particle_mf[level], 1, Xmom_comp, BL_SPACEDIM, S_new.nGrow());
         }
 
         enforce_minimum_density_floor(S_new, -1e200, new_a, new_a);
@@ -842,7 +842,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
 #ifndef CONST_SPECIES
        // Convert (rho X)_i to X_i before calling init_e_from_T
        for (int i = 0; i < NumSpec; ++i) 
-           MultiFab::Divide(S_new, S_new, Density, FirstSpec+i, 1, 0);
+           MultiFab::Divide(S_new, S_new, Density_comp, FirstSpec_comp+i, 1, 0);
 #endif
     }
 
@@ -857,7 +857,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
 #ifndef CONST_SPECIES
     // Convert X_i to (rho X)_i
     for (int i = 0; i < NumSpec; ++i) 
-        MultiFab::Multiply(S_new, S_new, Density, FirstSpec+i, 1, 0);
+        MultiFab::Multiply(S_new, S_new, Density_comp, FirstSpec_comp+i, 1, 0);
 #endif
 }
 #endif

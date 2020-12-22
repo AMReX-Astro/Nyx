@@ -4,15 +4,15 @@
 AMREX_GPU_DEVICE
 void
 pc_cmpTemp(
-           const int i, const int j, const int k, const int FirstSpec, const int NumSpec,
+           const int i, const int j, const int k, const int FirstSpec_comp, const int NumSpec,
            amrex::Array4<amrex::Real> const& S)
 {
-  amrex::Real rhoInv = 1.0 / S(i, j, k, URHO);
+  amrex::Real rhoInv = 1.0 / S(i, j, k, Density_comp);
   amrex::Real T = S(i, j, k, UTEMP);
-  amrex::Real e = S(i, j, k, UEINT) * rhoInv;
+  amrex::Real e = S(i, j, k, Eint_comp) * rhoInv;
   amrex::Real massfrac[NumSpec];
   for (int n = 0; n < NumSpec; ++n) {
-    massfrac[n] = S(i, j, k, FirstSpec + n) * rhoInv;
+    massfrac[n] = S(i, j, k, FirstSpec_comp + n) * rhoInv;
   }
   EOS::EY2T(e, massfrac, T);
   S(i, j, k, UTEMP) = T;
@@ -23,12 +23,12 @@ void
 pc_rst_int_e(
   const int i, const int j, const int k, amrex::Array4<amrex::Real> const& S)
 {
-  amrex::Real rho = S(i, j, k, URHO);
-  amrex::Real u = S(i, j, k, UMX) / rho;
-  amrex::Real v = S(i, j, k, UMY) / rho;
-  amrex::Real w = S(i, j, k, UMZ) / rho;
+  amrex::Real rho = S(i, j, k, Density_comp);
+  amrex::Real u = S(i, j, k, Xmom_comp) / rho;
+  amrex::Real v = S(i, j, k, Ymom_comp) / rho;
+  amrex::Real w = S(i, j, k, Zmom_comp) / rho;
   amrex::Real ke = 0.5 * (u * u + v * v + w * w);
-  S(i, j, k, UEINT) = S(i, j, k, UEDEN) - rho * ke;
+  S(i, j, k, Eint_comp) = S(i, j, k, Eden_comp) - rho * ke;
 }
 
 // -----------------------------------------------------------
@@ -230,7 +230,7 @@ void limit_hydro_fluxes_on_small_dens(const int i,
     // If an adjacent zone has a floor-violating density, set the flux to zero and move on.
     // At that point, the only thing to do is wait for a reset at a later point.
 
-    if (uR[URHO] < density_floor || uL[URHO] < density_floor) {
+    if (uR[Density_comp] < density_floor || uL[Density_comp] < density_floor) {
 
         for (int n = 0; n < QVAR; ++n) {
             flux(i,j,k,n) = 0.0;
@@ -248,22 +248,22 @@ void limit_hydro_fluxes_on_small_dens(const int i,
         fluxR[n] = 0.0;
     }
 
-    fluxL[URHO]      = uL[URHO] * qL[QU + idir];
-    fluxL[UMX]       = uL[UMX]  * qL[QU + idir];
-    fluxL[UMY]       = uL[UMY]  * qL[QU + idir];
-    fluxL[UMZ]       = uL[UMZ]  * qL[QU + idir];
-    fluxL[UEDEN]     = (uL[UEDEN] + qL[QPRES]) * qL[QU + idir];
-    fluxL[UEINT]     = uL[UEINT]  * qL[QU + idir];
+    fluxL[Density_comp]      = uL[Density_comp] * qL[QU + idir];
+    fluxL[Xmom_comp]       = uL[Xmom_comp]  * qL[QU + idir];
+    fluxL[Ymom_comp]       = uL[Ymom_comp]  * qL[QU + idir];
+    fluxL[Zmom_comp]       = uL[Zmom_comp]  * qL[QU + idir];
+    fluxL[Eden_comp]     = (uL[Eden_comp] + qL[QPRES]) * qL[QU + idir];
+    fluxL[Eint_comp]     = uL[Eint_comp]  * qL[QU + idir];
 
-    fluxR[URHO]      = uR[URHO] * qR[QU + idir];
-    fluxR[UMX]       = uR[UMX]  * qR[QU + idir];
-    fluxR[UMY]       = uR[UMY]  * qR[QU + idir];
-    fluxR[UMZ]       = uR[UMZ]  * qR[QU + idir];
-    fluxR[UEDEN]     = (uR[UEDEN] + qR[QPRES]) * qR[QU + idir];
-    fluxR[UEINT]     = uR[UEINT] * qR[QU + idir];
+    fluxR[Density_comp]      = uR[Density_comp] * qR[QU + idir];
+    fluxR[Xmom_comp]       = uR[Xmom_comp]  * qR[QU + idir];
+    fluxR[Ymom_comp]       = uR[Ymom_comp]  * qR[QU + idir];
+    fluxR[Zmom_comp]       = uR[Zmom_comp]  * qR[QU + idir];
+    fluxR[Eden_comp]     = (uR[Eden_comp] + qR[QPRES]) * qR[QU + idir];
+    fluxR[Eint_comp]     = uR[Eint_comp] * qR[QU + idir];
 
-    fluxL[UMX + idir] = fluxL[UMX + idir] + qL[QPRES];
-    fluxR[UMX + idir] = fluxR[UMX + idir] + qR[QPRES];
+    fluxL[Xmom_comp + idir] = fluxL[Xmom_comp + idir] + qL[QPRES];
+    fluxR[Xmom_comp + idir] = fluxR[Xmom_comp + idir] + qR[QPRES];
 
         // Construct the Lax-Friedrichs flux on the interface (Equation 12).
     // Note that we are using the information from Equation 9 to obtain the
@@ -289,11 +289,11 @@ void limit_hydro_fluxes_on_small_dens(const int i,
     // they constructed two thetas for each interface (corresponding to either side)
     // we can complete the operation in one step with a single theta.
 
-    Real drhoL = flux_coefL * flux(i,j,k,URHO);
-    Real rhoL = uL[URHO] - drhoL;
+    Real drhoL = flux_coefL * flux(i,j,k,Density_comp);
+    Real rhoL = uL[Density_comp] - drhoL;
 
-    Real drhoR = flux_coefR * flux(i,j,k,URHO);
-    Real rhoR = uR[URHO] + drhoR;
+    Real drhoR = flux_coefR * flux(i,j,k,Density_comp);
+    Real rhoR = uR[Density_comp] + drhoR;
 
     Real theta = 1.0;
 
@@ -301,8 +301,8 @@ void limit_hydro_fluxes_on_small_dens(const int i,
 
         // Obtain the final density corresponding to the LF flux.
 
-        Real drhoLF = flux_coefL * fluxLF[URHO];
-        Real rhoLF = uL[URHO] - drhoLF;
+        Real drhoLF = flux_coefL * fluxLF[Density_comp];
+        Real rhoLF = uL[Density_comp] - drhoLF;
 
         // Solve for theta from (1 - theta) * rhoLF + theta * rho = density_floor.
 
@@ -311,8 +311,8 @@ void limit_hydro_fluxes_on_small_dens(const int i,
     }
     else if (rhoR < density_floor) {
 
-        Real drhoLF = flux_coefR * fluxLF[URHO];
-        Real rhoLF = uR[URHO] + drhoLF;
+        Real drhoLF = flux_coefR * fluxLF[Density_comp];
+        Real rhoLF = uR[Density_comp] + drhoLF;
 
         theta = amrex::min(theta, (density_floor - rhoLF) / (rhoR - rhoLF));
 
@@ -330,17 +330,17 @@ void limit_hydro_fluxes_on_small_dens(const int i,
 
     // Now, apply our requirement that the final flux cannot violate the density floor.
 
-    drhoR = flux_coefR * flux(i,j,k,URHO);
-    drhoL = flux_coefL * flux(i,j,k,URHO);
+    drhoR = flux_coefR * flux(i,j,k,Density_comp);
+    drhoL = flux_coefL * flux(i,j,k,Density_comp);
 
-    if (uR[URHO] + drhoR < density_floor) {
+    if (uR[Density_comp] + drhoR < density_floor) {
         for (int n = 0; n < QVAR; ++n) {
-            flux(i,j,k,n) = flux(i,j,k,n) * std::abs((density_floor - uR[URHO]) / drhoR);
+            flux(i,j,k,n) = flux(i,j,k,n) * std::abs((density_floor - uR[Density_comp]) / drhoR);
         }
     }
-    else if (uL[URHO] - drhoL < density_floor) {
+    else if (uL[Density_comp] - drhoL < density_floor) {
         for (int n = 0; n < QVAR; ++n) {
-            flux(i,j,k,n) = flux(i,j,k,n) * std::abs((density_floor - uL[URHO]) / drhoL);
+            flux(i,j,k,n) = flux(i,j,k,n) * std::abs((density_floor - uL[Density_comp]) / drhoL);
         }
     }
 }

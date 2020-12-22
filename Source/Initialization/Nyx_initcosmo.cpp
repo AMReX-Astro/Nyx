@@ -379,26 +379,26 @@ void Nyx::initcosmo()
 
         //copy density 
         S_new.setVal(0.);
-        S_new.copy(mf, baryon_den, Density, 1);
-        S_new.plus(1,     Density, 1, S_new.nGrow());
-        S_new.mult(rhoB,  Density, 1, S_new.nGrow());
+        S_new.copy(mf, baryon_den, Density_comp, 1);
+        S_new.plus(1,     Density_comp, 1, S_new.nGrow());
+        S_new.mult(rhoB,  Density_comp, 1, S_new.nGrow());
 
 //      //This block assigns "the same" density for the baryons as for the dm.
 //      Vector<std::unique_ptr<MultiFab> > particle_mf;
 //      Nyx::theDMPC()->AssignDensity(particle_mf);
 //      particle_mf[0]->mult(comoving_OmB / comoving_OmD);
-//      S_new.copy(*particle_mf[0], 0, Density, 1);
+//      S_new.copy(*particle_mf[0], 0, Density_comp, 1);
 
         //copy velocities...
-        S_new.copy(mf, baryon_vx, Xmom, 3);
+        S_new.copy(mf, baryon_vx, Xmom_comp, 3);
 
         //...and "transform" to momentum
-        S_new.mult(vel_fac[0], Xmom, 1, S_new.nGrow());
-        MultiFab::Multiply(S_new, S_new, Density, Xmom, 1, S_new.nGrow());
-        S_new.mult(vel_fac[1], Ymom, 1, S_new.nGrow());
-        MultiFab::Multiply(S_new, S_new, Density, Ymom, 1, S_new.nGrow());
-        S_new.mult(vel_fac[2], Zmom, 1, S_new.nGrow());
-        MultiFab::Multiply(S_new, S_new, Density, Zmom, 1, S_new.nGrow());
+        S_new.mult(vel_fac[0], Xmom_comp, 1, S_new.nGrow());
+        MultiFab::Multiply(S_new, S_new, Density_comp, Xmom_comp, 1, S_new.nGrow());
+        S_new.mult(vel_fac[1], Ymom_comp, 1, S_new.nGrow());
+        MultiFab::Multiply(S_new, S_new, Density_comp, Ymom_comp, 1, S_new.nGrow());
+        S_new.mult(vel_fac[2], Zmom_comp, 1, S_new.nGrow());
+        MultiFab::Multiply(S_new, S_new, Density_comp, Zmom_comp, 1, S_new.nGrow());
 
         Real tempInit = 0.021*(1.0+redshift)*(1.0+redshift);
 
@@ -415,19 +415,19 @@ void Nyx::initcosmo()
 #ifndef CONST_SPECIES
         // Convert X_i to (rho X)_i
         {
-           S_new.setVal(0.75, FirstSpec);
-           S_new.setVal(0.25, FirstSpec+1);
+           S_new.setVal(0.75, FirstSpec_comp);
+           S_new.setVal(0.25, FirstSpec_comp+1);
 
            for (int i = 0; i < NumSpec; i++)
            {
-              MultiFab::Multiply(S_new, S_new, Density, FirstSpec+i, 1, 0);
+              MultiFab::Multiply(S_new, S_new, Density_comp, FirstSpec_comp+i, 1, 0);
            }
         }
 #endif
     }
     else
     {
-       S_new.setVal(0.0, Density);
+       S_new.setVal(0.0, Density_comp);
        D_new.setVal(-23, Temp_comp);
        D_new.setVal(-42, Ne_comp);
     }

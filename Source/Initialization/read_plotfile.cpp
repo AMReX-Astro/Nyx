@@ -73,25 +73,25 @@ Nyx::ReadPlotFile (bool               first,
     const int Nlev = parent->finestLevel() + 1;
 
 #ifndef NO_HYDRO
-    int iURHO = -1, iUMX = -1, iUMY = -1, iUMZ = -1, iTEMP = -1, iNE = -1, iURHOE = -1;
+    int iDensity_comp = -1, iXmom_comp = -1, iYmom_comp = -1, iZmom_comp = -1, iTEMP = -1, iNE = -1, iDensity_compE = -1;
 
     for (int i = 0; i < plotnames.size(); ++i)
     {
-        if (plotnames[i] == "density")                  iURHO  = i;
-        if (plotnames[i] == "xmom")                     iUMX   = i;
-        if (plotnames[i] == "ymom")                     iUMY   = i;
-        if (plotnames[i] == "zmom")                     iUMZ   = i;
-        if (plotnames[i] == "rho_e")                    iURHOE = i;
+        if (plotnames[i] == "density")                  iDensity_comp  = i;
+        if (plotnames[i] == "xmom")                     iXmom_comp   = i;
+        if (plotnames[i] == "ymom")                     iYmom_comp   = i;
+        if (plotnames[i] == "zmom")                     iZmom_comp   = i;
+        if (plotnames[i] == "rho_e")                    iDensity_compE = i;
         if (plotnames[i] == "Temp")                     iTEMP  = i;
         if (plotnames[i] == "Ne")                       iNE    = i;
     }
 
-    if ( iURHO < 0 ) amrex::Abort("\"density\" is not in the plotfile");
-    if ( iUMX  < 0 ) amrex::Abort("\"xmom\" is not in the plotfile");
-    if ( iUMY  < 0 ) amrex::Abort("\"ymom\" is not in the plotfile");
-    if ( iUMZ  < 0 ) amrex::Abort("\"zmom\" is not in the plotfile");
+    if ( iDensity_comp < 0 ) amrex::Abort("\"density\" is not in the plotfile");
+    if ( iXmom_comp  < 0 ) amrex::Abort("\"xmom\" is not in the plotfile");
+    if ( iYmom_comp  < 0 ) amrex::Abort("\"ymom\" is not in the plotfile");
+    if ( iZmom_comp  < 0 ) amrex::Abort("\"zmom\" is not in the plotfile");
 
-    if ( iURHOE < 0 )
+    if ( iDensity_compE < 0 )
     {
         if ( iTEMP < 0 ) amrex::Abort("\"rho_e\" nor \"Temp\" is in the plotfile");
         if ( iNE   < 0 ) amrex::Abort("\"rho_e\" nor \"Ne\" is in the plotfile");
@@ -115,22 +115,22 @@ Nyx::ReadPlotFile (bool               first,
         MultiFab& S_new = parent->getLevel(lev).get_new_data(State_Type);
         const Box bx = grids.minimalBox();
 
-        S_new.copy(amrData.GetGrids(lev,iURHO,bx),0,Density,1);
-        amrData.FlushGrids(iURHO);
+        S_new.copy(amrData.GetGrids(lev,iDensity_comp,bx),0,Density,1);
+        amrData.FlushGrids(iDensity_comp);
 
-        S_new.copy(amrData.GetGrids(lev,iUMX,bx),0,Xmom,1);
-        amrData.FlushGrids(iUMX);
+        S_new.copy(amrData.GetGrids(lev,iXmom_comp,bx),0,Xmom,1);
+        amrData.FlushGrids(iXmom_comp);
 
-        S_new.copy(amrData.GetGrids(lev,iUMY,bx),0,Ymom,1);
-        amrData.FlushGrids(iUMY);
+        S_new.copy(amrData.GetGrids(lev,iYmom_comp,bx),0,Ymom,1);
+        amrData.FlushGrids(iYmom_comp);
 
-        S_new.copy(amrData.GetGrids(lev,iUMZ,bx),0,Zmom,1);
-        amrData.FlushGrids(iUMZ);
+        S_new.copy(amrData.GetGrids(lev,iZmom_comp,bx),0,Zmom,1);
+        amrData.FlushGrids(iZmom_comp);
 
         if (rhoe_infile)
         {
-            S_new.copy(amrData.GetGrids(lev,iURHOE,bx),0,Eint,1);
-            amrData.FlushGrids(iURHOE);
+            S_new.copy(amrData.GetGrids(lev,iDensity_compE,bx),0,Eint_comp,1);
+            amrData.FlushGrids(iDensity_compE);
         }
     }
 

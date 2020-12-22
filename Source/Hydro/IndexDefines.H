@@ -5,24 +5,15 @@
 #include <AMReX_Arena.H>
 
 enum State_Type_Index {
-  Density   = 0,
-  Xmom      = 1,
-  Ymom      = 2,
-  Zmom      = 3,
-  Eden      = 4,
-  Eint      = 5,
+  Density_comp  = 0,
+  Xmom_comp    = 1,
+  Ymom_comp    = 2,
+  Zmom_comp    = 3,
+  Eden_comp    = 4,
+  Eint_comp    = 5 
 #ifndef CONST_SPEC
-  FirstSpec = 6
+ ,FirstSpec_comp = 6
 #endif
-};
-
-enum State_Type_UIndex {
-  URHO     = 0,
-  UMX      = 1,
-  UMY      = 2,
-  UMZ      = 3,
-  UEDEN    = 4,
-  UEINT    = 5 
 };
 
 #define QRHO   0

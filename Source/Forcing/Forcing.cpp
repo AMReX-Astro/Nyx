@@ -324,12 +324,12 @@ void StochasticForcing::integrate_state_force(
     amrex::Real ne0=1.0;
     // Note that (lo,hi) define the region of the box containing the grow cells
     // Do *not* assume this is just the valid region
-    // apply heating-cooling to UEDEN and UEINT
+    // apply heating-cooling to Eden_comp and Eint_comp
     amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
             // Original values
-            Real rho        = state(i,j,k,URHO);
-            Real rho_e_orig = state(i,j,k,UEINT);
-            Real rho_K_res  = state(i,j,k,UEDEN) - state(i,j,k,UEINT);
+            Real rho        = state(i,j,k,Density_comp);
+            Real rho_e_orig = state(i,j,k,Eint_comp);
+            Real rho_K_res  = state(i,j,k,Eden_comp) - state(i,j,k,Eint_comp);
             Real T_orig     = diag_eos(i,j,k,Temp_comp);
                 //ne         = diag_eos(i,j,k,  NE_COMP)
 
@@ -346,8 +346,8 @@ void StochasticForcing::integrate_state_force(
             // Call EOS to get the internal energy floor
 
             // Update cell quantities
-            state(i,j,k,UEINT) = amrex::max(rho_e_orig + delta_re, rho*small_eint);
-            state(i,j,k,UEDEN) = state(i,j,k,UEINT) + rho_K_res;
+            state(i,j,k,Eint_comp) = amrex::max(rho_e_orig + delta_re, rho*small_eint);
+            state(i,j,k,Eden_comp) = state(i,j,k,Eint_comp) + rho_K_res;
         });
 
     const auto prob_hi = geomdata.ProbHi();
@@ -481,18 +481,18 @@ void StochasticForcing::integrate_state_force(
                     accel[n] = M_SQRT2 * accel[n];
                 }
                 // add forcing to state     
-                state(i,j,k,UMX) = state(i,j,k,UMX) + half_dt * state(i,j,k,URHO)*accel[0] / a;
-                state(i,j,k,UMY) = state(i,j,k,UMY) + half_dt * state(i,j,k,URHO)*accel[1] / a;
-                state(i,j,k,UMZ) = state(i,j,k,UMZ) + half_dt * state(i,j,k,URHO)*accel[2] / a;
+                state(i,j,k,Xmom_comp) = state(i,j,k,Xmom_comp) + half_dt * state(i,j,k,Density_comp)*accel[0] / a;
+                state(i,j,k,Ymom_comp) = state(i,j,k,Ymom_comp) + half_dt * state(i,j,k,Density_comp)*accel[1] / a;
+                state(i,j,k,Zmom_comp) = state(i,j,k,Zmom_comp) + half_dt * state(i,j,k,Density_comp)*accel[2] / a;
             }
         }
     }
 
     // update total energy
     amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-             state(i,j,k,UEDEN) = state(i,j,k,UEINT) + 0.5  *(state(i,j,k,UMX)*state(i,j,k,UMX) +
-                                                              state(i,j,k,UMY)*state(i,j,k,UMY) +
-                                                              state(i,j,k,UMZ)*state(i,j,k,UMZ))/state(i,j,k,URHO);
+             state(i,j,k,Eden_comp) = state(i,j,k,Eint_comp) + 0.5  *(state(i,j,k,Xmom_comp)*state(i,j,k,Xmom_comp) +
+                                                              state(i,j,k,Ymom_comp)*state(i,j,k,Ymom_comp) +
+                                                              state(i,j,k,Zmom_comp)*state(i,j,k,Zmom_comp))/state(i,j,k,Density_comp);
         });
 
 }

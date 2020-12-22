@@ -20,14 +20,14 @@ pc_srctoprim(
   const int NumSpec, const amrex::Real gamma_minus_1)
 {
   // Local loading Vars ==> Load once from global memory use multiple times
-  const amrex::Real srcrho = src(i, j, k, URHO);
+  const amrex::Real srcrho = src(i, j, k, Density_comp);
   const amrex::Real rhoinv = 1.0 / q(i, j, k, QRHO);
   const amrex::Real vx = q(i, j, k, QU);
   const amrex::Real vy = q(i, j, k, QV);
   const amrex::Real vz = q(i, j, k, QW);
-  const amrex::Real umx = src(i, j, k, UMX);
-  const amrex::Real umy = src(i, j, k, UMY);
-  const amrex::Real umz = src(i, j, k, UMZ);
+  const amrex::Real umx = src(i, j, k, Xmom_comp);
+  const amrex::Real umy = src(i, j, k, Ymom_comp);
+  const amrex::Real umz = src(i, j, k, Zmom_comp);
   const amrex::Real gravx = grav(i, j, k, 0);
   const amrex::Real gravy = grav(i, j, k, 1);
   const amrex::Real gravz = grav(i, j, k, 2);
@@ -41,7 +41,7 @@ pc_srctoprim(
   srcQ(i, j, k, QW) = umz * rhoinv - a_dot * vz + gravz;
 
   //QREINT src depends on total and internal energy relationship
-  srcQ(i, j, k, QREINT) = src(i, j, k, UEDEN) - vx * umx - vy * umy -
+  srcQ(i, j, k, QREINT) = src(i, j, k, Eden_comp) - vx * umx - vy * umy -
                           vz * umz +
                           - a_dot * 3.0 * gamma_minus_1 * q(i , j, k, QREINT);
   
@@ -52,7 +52,7 @@ pc_srctoprim(
 
   //Might not need correction from q
   for (int n = 0; n < NumSpec; ++n) {
-    srcQ(i, j, k, FirstSpec + n) = (src(i, j, k, FirstSpec + n) - q(i, j, k, FirstSpec + n) * srcrho) * rhoinv;
+    srcQ(i, j, k, FirstSpec_comp + n) = (src(i, j, k, FirstSpec_comp + n) - q(i, j, k, FirstSpec_comp + n) * srcrho) * rhoinv;
   }
 #else
   srcQ(i, j, k, QRHO) = 0.;
@@ -62,7 +62,7 @@ pc_srctoprim(
   srcQ(i, j, k, QPRES)   = 0.;
   srcQ(i, j, k, QREINT)   = 0.;
   for (int n = 0; n < NumSpec; ++n) {
-    srcQ(i, j, k, FirstSpec + n) = 0.;
+    srcQ(i, j, k, FirstSpec_comp + n) = 0.;
   }
 #endif
 
@@ -111,7 +111,7 @@ normalize_species_fluxes(const int i, const int j, const int k, amrex::Array4<am
   amrex::Real summ, fac;
   summ = 0.0;
   for (int n = 0; n < NumSpec; ++n)
-    summ += flx(i, j, k, FirstSpec + n);
+    summ += flx(i, j, k, FirstSpec_comp + n);
 
   // We skip the normalization if the sum is zero or within epsilon.
   // There can be numerical problems here if the density flux is
@@ -122,9 +122,9 @@ normalize_species_fluxes(const int i, const int j, const int k, amrex::Array4<am
   // So checking that sum is sufficiently large helps avoid this.
 
 
-  fac = (std::abs(summ) > std::numeric_limits<amrex::Real>::epsilon() * std::abs(flx(i, j, k, URHO))) ? flx(i, j, k, URHO) / summ : 1.0;
+  fac = (std::abs(summ) > std::numeric_limits<amrex::Real>::epsilon() * std::abs(flx(i, j, k, Density_comp))) ? flx(i, j, k, Density_comp) / summ : 1.0;
   for (int n = 0; n < NumSpec; ++n)
-    flx(i, j, k, FirstSpec + n) *= fac;
+    flx(i, j, k, FirstSpec_comp + n) *= fac;
 }
 
 AMREX_GPU_DEVICE
@@ -193,10 +193,10 @@ pc_update(
                           volinv * a_fact[n];
   }
 
-  update(i, j, k, UEINT) += a_half * (a_new - a_old) * ( 2.0 - 3.0 * gamma_minus_1) * u(i,j,k,UEINT);
-  update(i, j, k, UEDEN) += a_half * (a_new - a_old) * ( 2.0 - 3.0 * gamma_minus_1) * u(i,j,k,UEINT);
+  update(i, j, k, Eint_comp) += a_half * (a_new - a_old) * ( 2.0 - 3.0 * gamma_minus_1) * u(i,j,k,Eint_comp);
+  update(i, j, k, Eden_comp) += a_half * (a_new - a_old) * ( 2.0 - 3.0 * gamma_minus_1) * u(i,j,k,Eint_comp);
 
-  update(i, j, k, UEINT) += pdivu(i, j, k)*u(i,j,k,UEINT)*gamma_minus_1*dt*a_half;
+  update(i, j, k, Eint_comp) += pdivu(i, j, k)*u(i,j,k,Eint_comp)*gamma_minus_1*dt*a_half;
 }
 
 // Host functions

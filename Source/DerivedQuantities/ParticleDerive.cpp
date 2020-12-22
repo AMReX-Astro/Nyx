@@ -391,7 +391,7 @@ extern "C"
 
       auto const dx = geomdata.CellSizeArray();
 
-      // Here dat contains (Density, Xmom, Ymom, Zmom)
+      // Here dat contains (Density, Xmom, Ymom, Zmom_comp)
       const Real V_cell = dx[0] * dx[1] * dx[2];
       amrex::ParallelFor(bx,
       [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
@@ -412,7 +412,7 @@ extern "C"
 
       auto const dx = geomdata.CellSizeArray();
 
-      // Here dat contains (Density, Xmom, Ymom, Zmom)
+      // Here dat contains (Density, Xmom, Ymom, Zmom_comp)
       const Real over_den = Nyx::average_total_density * std::pow(Nyx::tagging_base,level+1);
 
       amrex::ParallelFor(bx,

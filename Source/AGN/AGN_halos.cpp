@@ -47,7 +47,7 @@ Nyx::conserved_to_primitive(amrex::MultiFab& state)
   int nghost = state.nGrow();
   for (int comp = 0; comp < state.nComp(); comp++)
     {
-      if (comp != Density)
+      if (comp != Density_comp)
         {
           MultiFab::Divide(state, state, Density, comp, ncomp1, nghost);
         }
@@ -63,7 +63,7 @@ Nyx::primitive_to_conserved(amrex::MultiFab& state)
    // Multiply every component but Density by Density
    for (int comp = 0; comp < state.nComp(); comp++)
    {
-      if (comp != Density)
+      if (comp != Density_comp)
         {
           MultiFab::Multiply(state, state, Density, comp, ncomp1, nghost);
         }

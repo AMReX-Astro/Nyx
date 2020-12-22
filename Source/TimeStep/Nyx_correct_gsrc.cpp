@@ -44,8 +44,8 @@ Nyx::correct_gsrc(int lev, Real time, Real prev_time, Real cur_time, Real dt)
         const auto s_old = S_old.array(mfi);
         const auto s_new = S_new.array(mfi);
 
-        int  iden = Density; 
-        int ieden = Eden; 
+        int  iden = Density_comp; 
+        int ieden = Eden_comp; 
 
         amrex::ParallelFor(bx, [g_old,g_new,s_old,s_new,a_old,a_new,iden,ieden,dt]
         AMREX_GPU_DEVICE (int i, int j, int k) noexcept

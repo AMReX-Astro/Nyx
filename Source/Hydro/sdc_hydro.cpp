@@ -81,8 +81,8 @@ Nyx::sdc_hydro (Real time,
        MultiFab IR_tmp(grids, dmap, 1, NUM_GROW);
        FillPatch(*this, IR_tmp, NUM_GROW, time, SDC_IR_Type, 0, 1);
 
-       MultiFab::Add(ext_src_old,IR_tmp,0,Eden,1,0);
-       MultiFab::Add(ext_src_old,IR_tmp,0,Eint,1,0);
+       MultiFab::Add(ext_src_old,IR_tmp,0,Eden_comp,1,0);
+       MultiFab::Add(ext_src_old,IR_tmp,0,Eint_comp,1,0);
 
        ext_src_old.FillBoundary(geom.periodicity());
 
@@ -93,8 +93,8 @@ Nyx::sdc_hydro (Real time,
                               init_flux_register, add_to_flux_register);
 
        // We subtract IR_tmp before we add the rest of the source term to (rho e) and (rho E)
-       MultiFab::Subtract(ext_src_old,IR_tmp,0,Eden,1,0);
-       MultiFab::Subtract(ext_src_old,IR_tmp,0,Eint,1,0);
+       MultiFab::Subtract(ext_src_old,IR_tmp,0,Eden_comp,1,0);
+       MultiFab::Subtract(ext_src_old,IR_tmp,0,Eint_comp,1,0);
 
        ext_src_old.FillBoundary(geom.periodicity());
        // First reset internal energy before call to compute_temp
