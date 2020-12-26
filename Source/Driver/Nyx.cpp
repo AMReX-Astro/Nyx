@@ -2613,20 +2613,19 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
         }
 
         ReduceTuple hv = reduce_data.value();
-        rho_T_sum = amrex::get<0>(hv);
-        rho_sum  = amrex::get<1>(hv);
-        T_sum   = amrex::get<2>(hv);
-        Tinv_sum    = amrex::get<3>(hv);
+        rho_T_sum      = amrex::get<0>(hv);
+        rho_sum        = amrex::get<1>(hv);
+        T_sum          = amrex::get<2>(hv);
+        Tinv_sum       = amrex::get<3>(hv);
         T_meanrho_sum  = amrex::get<4>(hv);
-        vol_sum   = amrex::get<5>(hv);
-        vol_mn_sum  = amrex::get<6>(hv);
-
+        vol_sum        = amrex::get<5>(hv);
+        vol_mn_sum     = amrex::get<6>(hv);
     }
     else
 #endif
     {
 #ifdef _OPENMP
-#pragma omp parallel if (amrex::Gpu::notInLaunchRegion())               \
+#pragma omp parallel if (amrex::Gpu::notInLaunchRegion() && !system::regtest_reduction)               \
     reduction(+:rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum)
 #endif
     {
@@ -2640,10 +2639,12 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
             {
                 Real T_tmp   = d_arr(i,j,k,Temp_comp);
                 Real rho_tmp = s_arr(i,j,k,Density_comp);
-                T_sum += vol*T_tmp;
-                Tinv_sum += rho_tmp/T_tmp;
+
+                T_sum     += vol*T_tmp;
+                Tinv_sum  += rho_tmp/T_tmp;
                 rho_T_sum += rho_tmp*T_tmp;
-                rho_sum += rho_tmp;
+                rho_sum   += rho_tmp;
+
                 if ( (rho_tmp < rho_hi) &&  (rho_tmp > rho_lo) && (T_tmp <= 1.0e5) ) {
                     T_meanrho_sum += vol*log10(T_tmp);
                     vol_mn_sum += vol;
@@ -2653,18 +2654,20 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
         }
     }
     }
-        Real sums[7] = {rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum};
+
+    Real sums[7] = {rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum};
+
     ParallelDescriptor::ReduceRealSum(sums,7);
 
     rho_T_avg = sums[0] / sums[1];  // density weighted T
         T_avg = sums[2] / sums[5];  // volume weighted T
      Tinv_avg = sums[3] / sums[1];  // 21cm T
+
     if (sums[6] > 0) {
        T_meanrho = sums[4] / sums[6];  // T at mean density
        T_meanrho = pow(10.0, T_meanrho);
     }
     }
-
 }
 #endif
 
