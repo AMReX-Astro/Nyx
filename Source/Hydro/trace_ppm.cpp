@@ -92,6 +92,7 @@ trace_ppm(const Box& bx,
   amrex::ParallelFor(bx,
   [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
   {
+
     Real cc = std::sqrt(gamma * q_arr(i,j,k,QPRES)/q_arr(i,j,k,QRHO));
 
     Real un = q_arr(i,j,k,QUN);
@@ -247,12 +248,11 @@ trace_ppm(const Box& bx,
       Real dum    = un_ref - Im[QUN][0]   - hdt*Im_src[QUN][0] / a_old;
       Real dptotm =  p_ref - Im[QPRES][0] - hdt*Im_src[QPRES][0] / a_old;
 
-      Real drho = rho_ref - Im[QRHO][1]         - hdt*Im_src[QRHO][1] / a_old;
-      Real dptot = p_ref - Im[QPRES][1]         - hdt*Im_src[QPRES][1] / a_old;
-      Real drhoe_g = rhoe_g_ref - Im[QREINT][1] - hdt*Im_src[QREINT][1] / a_old;
+      Real drho    = rho_ref    - Im[QRHO][1]   - hdt*Im_src[QRHO][1] / a_old;
+      Real dptot   = p_ref      - Im[QPRES][1]  - hdt*Im_src[QPRES][1] / a_old;
 
-      Real dup = un_ref - Im[QUN][2]            - hdt*Im_src[QUN][2] / a_old;
-      Real dptotp = p_ref - Im[QPRES][2]        - hdt*Im_src[QPRES][2] / a_old;
+      Real dup     = un_ref     - Im[QUN][2]    - hdt*Im_src[QUN][2] / a_old;
+      Real dptotp  = p_ref      - Im[QPRES][2]  - hdt*Im_src[QPRES][2] / a_old;
 
       // {rho, u, p, (rho e)} eigensystem
 
@@ -263,41 +263,54 @@ trace_ppm(const Box& bx,
       Real alpham = 0.5_rt*(dptotm*rho_ref_inv*cc_ref_inv - dum)*rho_ref*cc_ref_inv;
       Real alphap = 0.5_rt*(dptotp*rho_ref_inv*cc_ref_inv + dup)*rho_ref*cc_ref_inv;
       Real alpha0r = drho - dptot/csq_ref;
-      Real alpha0e_g = drhoe_g - dptot*h_g_ref/csq_ref;
 
       alpham    = un-cc > 0.0_rt ? 0.0_rt : -alpham;
       alphap    = un+cc > 0.0_rt ? 0.0_rt : -alphap;
       alpha0r   = un    > 0.0_rt ? 0.0_rt : -alpha0r;
-      alpha0e_g = un    > 0.0_rt ? 0.0_rt : -alpha0e_g;
 
       // The final interface states are just
       // q_s = q_ref - sum(l . dq) r
       // note that the a{mpz}right as defined above have the minus already
+ 
+      Real rho_pred = rho_ref +  alphap + alpham + alpha0r;
 
-      Real rho_pred = (rho_ref +  alphap + alpham + alpha0r);
-
-      if (rho_pred < 0.5 * rho_ref)
+      // Correction for gravity source terms
+      if ( rho_pred < 0.5 * rho_ref)
       {
+#if 0
           printf("QP GOING LOW IN IDIR %d,%d,%d,%d,%e,%e \n",idir,i,j,k,rho_ref,rho_pred);
+#endif
 
+          // These are the original definitions
           alpham = 0.5_rt*(dptotm*rho_ref_inv*cc_ref_inv - dum)*rho_ref*cc_ref_inv;
           alphap = 0.5_rt*(dptotp*rho_ref_inv*cc_ref_inv + dup)*rho_ref*cc_ref_inv;
+          alpha0r = drho - dptot/csq_ref;
 
+          // These terms only have the gravity source terms
           Real dum_grav = -hdt*Im_src[QUN][0] / a_old;
           Real dup_grav = -hdt*Im_src[QUN][2] / a_old;
 
-          Real alpham_grav = 0.5_rt*(-dum_grav)*rho_ref*cc_ref_inv;
-          Real alphap_grav = 0.5_rt*( dup_grav)*rho_ref*cc_ref_inv;
+          // These terms only have the energy/pressure source terms
+          Real dptotm_ir = - hdt*Im_src[QPRES][0] / a_old;
+          Real dptot_ir  = - hdt*Im_src[QPRES][1] / a_old;
+          Real dptotp_ir = - hdt*Im_src[QPRES][2] / a_old;
+
+          // These are the definitions that will replace zero in the upwinding
+          Real alpham_src  = 0.5_rt*(dptotm_ir*rho_ref_inv*cc_ref_inv - dum_grav)*rho_ref*cc_ref_inv;
+          Real alphap_src  = 0.5_rt*(dptotp_ir*rho_ref_inv*cc_ref_inv + dup_grav)*rho_ref*cc_ref_inv;
+          Real alpha0r_src =       - dptot_ir/csq_ref;
           
-          alpham    = un-cc > 0.0_rt ? -alpham_grav : -alpham;
-          alphap    = un+cc > 0.0_rt ? -alphap_grav : -alphap;
+          alpham    = un-cc > 0.0_rt ? -alpham_src  : -alpham;
+          alphap    = un+cc > 0.0_rt ? -alphap_src  : -alphap;
+          alpha0r   = un    > 0.0_rt ? -alpha0r_src : -alpha0r;
 
-          rho_pred = (rho_ref +  alphap + alpham + alpha0r);
-
+          rho_pred = rho_ref +  alphap + alpham + alpha0r;
+#if 0
           printf("QP FIXED OUT IN IDIR %d,%d,%d,%d,%e,%e \n",idir,i,j,k,rho_ref,rho_pred);
+#endif
       }
 
-      qp(i,j,k,QRHO ) = amrex::max(lsmall_dens, rho_ref +  alphap + alpham + alpha0r);
+      qp(i,j,k,QRHO ) = amrex::max(lsmall_dens, rho_pred);
       qp(i,j,k,QUN  ) = un_ref + (alphap - alpham)*cc_ref*rho_ref_inv;
       qp(i,j,k,QPRES) = amrex::max(lsmall_pres, p_ref + (alphap + alpham)*csq_ref);
 
@@ -350,7 +363,6 @@ trace_ppm(const Box& bx,
 
       Real drho    = rho_ref -    Ip[QRHO][1]   - hdt*Ip_src[QRHO][1] / a_old;
       Real dptot   =   p_ref    - Ip[QPRES][1]  - hdt*Ip_src[QPRES][1] / a_old;
-      Real drhoe_g = rhoe_g_ref - Ip[QREINT][1] - hdt*Ip_src[QREINT][1] / a_old;
 
       Real dup    = un_ref - Ip[QUN][2]   - hdt*Ip_src[QUN][2] / a_old;
       Real dptotp =  p_ref - Ip[QPRES][2] - hdt*Ip_src[QPRES][2] / a_old;
@@ -364,43 +376,54 @@ trace_ppm(const Box& bx,
       Real alpham = 0.5_rt*(dptotm*rho_ref_inv*cc_ref_inv - dum)*rho_ref*cc_ref_inv;
       Real alphap = 0.5_rt*(dptotp*rho_ref_inv*cc_ref_inv + dup)*rho_ref*cc_ref_inv;
       Real alpha0r = drho - dptot/csq_ref;
-      Real alpha0e_g = drhoe_g - dptot*h_g_ref/csq_ref;
 
       alpham = un-cc > 0.0_rt ? -alpham : 0.0_rt;
       alphap = un+cc > 0.0_rt ? -alphap : 0.0_rt;
       alpha0r = un > 0.0_rt ? -alpha0r : 0.0_rt;
-      alpha0e_g = un > 0.0_rt ? -alpha0e_g : 0.0_rt;
 
       // The final interface states are just
       // q_s = q_ref - sum (l . dq) r
       // note that the a{mpz}left as defined above have the minus already
 
-      Real rho_pred = (rho_ref +  alphap + alpham + alpha0r);
+      Real rho_pred = rho_ref +  alphap + alpham + alpha0r;
 
-      if (rho_pred < 0.5 * rho_ref)
+      if ( rho_pred < 0.5 * rho_ref)
       {
-          printf("QP GOING LOW IN IDIR %d,%d,%d,%d,%e,%e \n",idir,i,j,k,rho_ref,rho_pred);
+#if 0
+          printf("QM GOING LOW IN IDIR %d,%d,%d,%d,%e,%e \n",idir,i,j,k,rho_ref,rho_pred);
+#endif
+           // These are the original definitions
+           alpham = 0.5_rt*(dptotm*rho_ref_inv*cc_ref_inv - dum)*rho_ref*cc_ref_inv;
+           alphap = 0.5_rt*(dptotp*rho_ref_inv*cc_ref_inv + dup)*rho_ref*cc_ref_inv;
+           alpha0r = drho - dptot/csq_ref;
 
-          alpham = 0.5_rt*(dptotm*rho_ref_inv*cc_ref_inv - dum)*rho_ref*cc_ref_inv;
-          alphap = 0.5_rt*(dptotp*rho_ref_inv*cc_ref_inv + dup)*rho_ref*cc_ref_inv;
+           // These terms only have the gravity source terms
+           Real dum_grav = -hdt*Ip_src[QUN][0] / a_old;
+           Real dup_grav = -hdt*Ip_src[QUN][2] / a_old;
 
-          Real dum_grav = -hdt*Ip_src[QUN][0] / a_old;
-          Real dup_grav = -hdt*Ip_src[QUN][2] / a_old;
+           // These terms only have the energy/pressure source terms
+           Real dptotm_ir = - hdt*Ip_src[QPRES][0] / a_old;
+           Real dptot_ir  = - hdt*Ip_src[QPRES][1] / a_old;
+           Real dptotp_ir = - hdt*Ip_src[QPRES][2] / a_old;
 
-          Real alpham_grav = 0.5_rt*(-dum_grav)*rho_ref*cc_ref_inv;
-          Real alphap_grav = 0.5_rt*( dup_grav)*rho_ref*cc_ref_inv;
-           
-          alpham    = un-cc > 0.0_rt ? -alpham_grav : -alpham;
-          alphap    = un+cc > 0.0_rt ? -alphap_grav : -alphap;
+           // These are the definitions that will replace zero in the upwinding
+           Real alpham_src  = 0.5_rt*(dptotm_ir*rho_ref_inv*cc_ref_inv - dum_grav)*rho_ref*cc_ref_inv;
+           Real alphap_src  = 0.5_rt*(dptotp_ir*rho_ref_inv*cc_ref_inv + dup_grav)*rho_ref*cc_ref_inv;
+           Real alpha0r_src =       - dptot_ir/csq_ref;
 
-          rho_pred = (rho_ref +  alphap + alpham + alpha0r);
+           alpham  = un-cc > 0.0_rt ? -alpham  : -alpham_src;
+           alphap  = un+cc > 0.0_rt ? -alphap  : -alphap_src;
+           alpha0r = un    > 0.0_rt ? -alpha0r : -alpha0r_src;
 
-          printf("QM FIXED OUT IN IDIR %d,%d,%d,%d,%e,%e \n",idir,i,j,k,rho_ref,rho_pred);
+           rho_pred = rho_ref +  alphap + alpham + alpha0r;
+#if 0
+           printf("QM FIXED OUT IN IDIR %d,%d,%d,%d,%e,%e \n",idir,i,j,k,rho_ref,rho_pred);
+#endif
       }
 
       if (idir == 0) {
 
-        qm(i+1,j,k,QRHO ) = amrex::max(lsmall_dens, rho_ref +  alphap + alpham + alpha0r);
+        qm(i+1,j,k,QRHO ) = amrex::max(lsmall_dens, rho_pred);
         qm(i+1,j,k,QUN  ) = un_ref + (alphap - alpham)*cc_ref*rho_ref_inv;
         qm(i+1,j,k,QPRES) = amrex::max(lsmall_pres, p_ref + (alphap + alpham)*csq_ref);
 
