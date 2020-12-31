@@ -358,7 +358,7 @@ trace_ppm(const Box& bx,
       // *m are the jumps carried by u-c
       // *p are the jumps carried by u+c
 
-      Real dum     = un_ref - Ip[QUN][0]   - hdoverat*Ip_src[QUN][0];
+      Real dum     = un_ref - Ip[QUN][0]   - hdtovera*Ip_src[QUN][0];
       Real dptotm  =  p_ref - Ip[QPRES][0] - hdtovera*Ip_src[QPRES][0];
 
       Real drho    = rho_ref -    Ip[QRHO][1]   - hdtovera*Ip_src[QRHO][1];
