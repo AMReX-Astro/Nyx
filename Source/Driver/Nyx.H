@@ -558,8 +558,6 @@ public:
                                     amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
     void enforce_minimum_density_cons  ( amrex::MultiFab& S_old      , amrex::MultiFab& S_new, amrex::MultiFab& reset_e_src,
                                          amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
-    void enforce_minimum_energy_cons  ( amrex::MultiFab& S_old      , amrex::MultiFab& S_new, amrex::MultiFab& reset_e_src,
-                                        amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
     void enforce_minimum_density_floor (                               amrex::MultiFab& S_new,
                                          amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
 
