@@ -1,8 +1,5 @@
-#ifndef _Prob_H_
-#define _Prob_H_
-
 #include "Nyx.H"
-#include "Prob_param.H"
+#include "Prob.H"
 
 enum Prob_Type_Index_Sod {
   p_l_comp = 5, // Note this must be one greater than the final index in Prob_param.H
@@ -28,7 +25,7 @@ enum Prob_Type_Index_Sedov {
   nsub_comp
 };
 
-static void prob_param_special_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_param)
+void prob_param_special_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_param)
 {
     if(amrex::Math::round(prob_param[prob_type_comp]) == 0)
     {
@@ -75,16 +72,6 @@ static void prob_param_special_fill(amrex::GpuArray<amrex::Real,max_prob_param>&
     pp.query("r_init", prob_param[r_init_comp]);
     pp.query("nsub", prob_param[nsub_comp]);
     }
-}
-
-static void prob_errtags_default(amrex::Vector<amrex::AMRErrorTag>& errtags)
-{
-    AMRErrorTagInfo info;
-    info.SetMaxLevel(3);
-    errtags.push_back(AMRErrorTag(3,AMRErrorTag::GREATER,"density",info));
-    errtags.push_back(AMRErrorTag(0.01,AMRErrorTag::GRAD,"density",info));
-    errtags.push_back(AMRErrorTag(3,AMRErrorTag::GREATER,"pressure",info));
-    errtags.push_back(AMRErrorTag(0.01,AMRErrorTag::GRAD,"pressure",info));
 }
 
 AMREX_GPU_DEVICE AMREX_FORCE_INLINE
@@ -336,4 +323,26 @@ void prob_initdata(const int i,
       diag_eos(i,j,k, Zhi_comp) = 7.5;
 }
 
-#endif
+void prob_initdata_on_box(const Box& bx,
+                          Array4<amrex::Real> const& state,
+                          Array4<amrex::Real> const& diag_eos,
+                          GeometryData const& geomdata,
+                          const GpuArray<Real,max_prob_param>& prob_param)
+{
+    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept 
+    {
+        prob_initdata_state(i, j ,k, state, geomdata, prob_param);
+        prob_initdata      (i, j ,k, state, diag_eos, geomdata, prob_param);
+    });
+}
+
+void prob_initdata_state_on_box(const Box& bx,
+                                Array4<amrex::Real> const& state,
+                                GeometryData const& geomdata,
+                                const GpuArray<Real,max_prob_param>& prob_param)
+{
+    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept 
+    {
+        prob_initdata_state(i, j ,k, state, geomdata, prob_param);
+    });
+}

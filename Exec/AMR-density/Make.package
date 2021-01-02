@@ -1,1 +1,2 @@
-CEXE_headers += Prob.H
+CEXE_sources += Prob.cpp
+CEXE_sources += Prob_error.cpp

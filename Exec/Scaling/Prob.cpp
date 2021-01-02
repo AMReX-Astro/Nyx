@@ -1,20 +1,8 @@
-#ifndef _Prob_H_
-#define _Prob_H_
-
 #include "Nyx.H"
-#include "Prob_param.H"
+#include "Prob.H"
 
-static void prob_param_special_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_param)
+void prob_param_special_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_param)
 {}
-
-static void prob_errtags_default(amrex::Vector<amrex::AMRErrorTag>& errtags)
-{
-    //Only include default tagging if NO_HYDRO=FALSE
-#ifndef NO_HYDRO
-    AMRErrorTagInfo info;
-    errtags.push_back(AMRErrorTag(3.5e9,AMRErrorTag::GREATER,"denvol",info));
-#endif
-}
 
 AMREX_GPU_DEVICE AMREX_FORCE_INLINE
 void prob_initdata_state(const int i,
@@ -45,7 +33,7 @@ void prob_initdata_state(const int i,
     state(i,j,k,Eden_comp) = 0.0;
 
 #ifndef CONST_SPECIES
-      state(i,j,k,FirstSpec_comp  ) = prob_param[ h_species_comp];
+      state(i,j,k,FirstSpec_comp  ) = prob_param[h_species_comp];
       state(i,j,k,FirstSpec_comp+1) = prob_param[he_species_comp];
 #endif
   }
@@ -85,4 +73,26 @@ void prob_initdata(const int i,
 #endif
 }
 
-#endif
+void prob_initdata_on_box(const Box& bx,
+                          Array4<amrex::Real> const& state,
+                          Array4<amrex::Real> const& diag_eos,
+                          GeometryData const& geomdata,
+                          const GpuArray<Real,max_prob_param>& prob_param)
+{
+    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept 
+    {
+        prob_initdata_state(i, j ,k, state, geomdata, prob_param);
+        prob_initdata      (i, j ,k, state, diag_eos, geomdata, prob_param);
+    });
+}
+
+void prob_initdata_state_on_box(const Box& bx,
+                                Array4<amrex::Real> const& state,
+                                GeometryData const& geomdata,
+                                const GpuArray<Real,max_prob_param>& prob_param)
+{
+    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept 
+    {
+        prob_initdata_state(i, j ,k, state, geomdata, prob_param);
+    });
+}

@@ -49,7 +49,7 @@ Nyx::conserved_to_primitive(amrex::MultiFab& state)
     {
       if (comp != Density_comp)
         {
-          MultiFab::Divide(state, state, Density, comp, ncomp1, nghost);
+          MultiFab::Divide(state, state, Density_comp, comp, ncomp1, nghost);
         }
     }
 }
@@ -65,7 +65,7 @@ Nyx::primitive_to_conserved(amrex::MultiFab& state)
    {
       if (comp != Density_comp)
         {
-          MultiFab::Multiply(state, state, Density, comp, ncomp1, nghost);
+          MultiFab::Multiply(state, state, Density_comp, comp, ncomp1, nghost);
         }
    }
 }
@@ -252,7 +252,7 @@ Nyx::agn_halo_find (Real dt)
        // This is from depositing mass of existing particles.
        // Later, we'll subtract the deposited mass of all particles, old & new.
        amrex::MultiFab::Add(new_state, agn_density_old,
-                            comp0, Density, ncomp1, nghost0);
+                            comp0, Density_comp, ncomp1, nghost0);
 
 #ifdef REEBER
        for (const Halo& h : reeber_halos)
@@ -334,7 +334,7 @@ Nyx::agn_halo_find (Real dt)
        // Take away the density from the gas that was added to the AGN particle:
        // density is in new_state, which holds primitive variables.
        amrex::MultiFab::Subtract(new_state, agn_density,
-                                 comp0, Density, ncomp1, nghost0);
+                                 comp0, Density_comp, ncomp1, nghost0);
 
        // Convert new_state to conserved variables: rho, momentum, energy.
        primitive_to_conserved(new_state);
@@ -417,7 +417,7 @@ Nyx::agn_halo_accrete (Real dt)
 
    // Take away the density from the gas that was added to the AGN particle.
    amrex::MultiFab::Subtract(new_state, agn_density_lost,
-                             comp0, Density, ncomp1, nghost0);
+                             comp0, Density_comp, ncomp1, nghost0);
 
    // Convert new_state to conserved variables: rho, momentum, energy.
    primitive_to_conserved(new_state);

@@ -5,7 +5,7 @@ AMREX_HOME ?= ../../../amrex
 TOP = ../..
 
 # compilation options
-COMP    = intel  # gnu
+COMP    = gnu
 USE_OMP = FALSE
 USE_MPI = TRUE
 
