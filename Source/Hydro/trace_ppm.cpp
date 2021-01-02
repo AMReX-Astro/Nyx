@@ -275,11 +275,8 @@ trace_ppm(const Box& bx,
       Real rho_pred = rho_ref +  alphap + alpham + alpha0r;
 
       // Correction for gravity source terms
-      if ( rho_pred < 0.5 * rho_ref)
+      // if ( rho_pred < 0.5 * rho_ref)
       {
-#if 0
-          printf("QP GOING LOW IN IDIR %d,%d,%d,%d,%e,%e \n",idir,i,j,k,rho_ref,rho_pred);
-#endif
 
           // These are the original definitions
           alpham = 0.5_rt*(dptotm*rho_ref_inv*cc_ref_inv - dum)*rho_ref*cc_ref_inv;
@@ -305,9 +302,6 @@ trace_ppm(const Box& bx,
           alpha0r   = un    > 0.0_rt ? -alpha0r_src : -alpha0r;
 
           rho_pred = rho_ref +  alphap + alpham + alpha0r;
-#if 0
-          printf("QP FIXED OUT IN IDIR %d,%d,%d,%d,%e,%e \n",idir,i,j,k,rho_ref,rho_pred);
-#endif
       }
 
       qp(i,j,k,QRHO ) = amrex::max(lsmall_dens, rho_pred);
@@ -387,11 +381,8 @@ trace_ppm(const Box& bx,
 
       Real rho_pred = rho_ref +  alphap + alpham + alpha0r;
 
-      if ( rho_pred < 0.5 * rho_ref)
+      // if ( rho_pred < 0.5 * rho_ref)
       {
-#if 0
-          printf("QM GOING LOW IN IDIR %d,%d,%d,%d,%e,%e \n",idir,i,j,k,rho_ref,rho_pred);
-#endif
            // These are the original definitions
            alpham = 0.5_rt*(dptotm*rho_ref_inv*cc_ref_inv - dum)*rho_ref*cc_ref_inv;
            alphap = 0.5_rt*(dptotp*rho_ref_inv*cc_ref_inv + dup)*rho_ref*cc_ref_inv;
@@ -416,9 +407,6 @@ trace_ppm(const Box& bx,
            alpha0r = un    > 0.0_rt ? -alpha0r : -alpha0r_src;
 
            rho_pred = rho_ref +  alphap + alpham + alpha0r;
-#if 0
-           printf("QM FIXED OUT IN IDIR %d,%d,%d,%d,%e,%e \n",idir,i,j,k,rho_ref,rho_pred);
-#endif
       }
 
       if (idir == 0) {
