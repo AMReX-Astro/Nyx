@@ -44,7 +44,7 @@ static void prob_param_special_fill(amrex::GpuArray<amrex::Real,max_prob_param>&
     prob_param[frac_comp] = 0.5;  // fraction of the domain for the interface
 
     // Parse params
-    amrex::ParmParse pp("nyx");
+    amrex::ParmParse pp("prob");
     pp.query("p_l",prob_param[p_l_comp]);
     pp.query("u_l",prob_param[u_l_comp]);
     pp.query("rho_l",prob_param[rho_l_comp]);
