@@ -800,11 +800,13 @@ Nyx::init_santa_barbara (int init_sb_vels)
             GpuArray<amrex::Real,max_prob_param> prob_param;
             prob_param_fill(prob_param);
 
-            amrex::ParallelFor(
-                               bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-                               prob_initdata
-                                   (i, j ,k, fab_S_new, fab_D_new, geomdata,prob_param);
-                               });
+            prob_initdata_on_box(bx, fab_S_new, fab_D_new, geomdata, prob_param);
+
+//          amrex::ParallelFor(
+//                             bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+//                             prob_initdata
+//                                 (i, j ,k, fab_S_new, fab_D_new, geomdata,prob_param);
+//                             });
         }
 
         amrex::Gpu::Device::streamSynchronize();
