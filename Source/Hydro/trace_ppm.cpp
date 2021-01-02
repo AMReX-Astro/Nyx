@@ -277,7 +277,7 @@ trace_ppm(const Box& bx,
       // Correction for gravity source terms
       if ( rho_pred < 0.5 * rho_ref)
       {
-#if 1
+#if 0
           printf("QP GOING LOW IN IDIR %d,%d,%d,%d,%e,%e \n",idir,i,j,k,rho_ref,rho_pred);
 #endif
 
@@ -305,7 +305,7 @@ trace_ppm(const Box& bx,
           alpha0r   = un    > 0.0_rt ? -alpha0r_src : -alpha0r;
 
           rho_pred = rho_ref +  alphap + alpham + alpha0r;
-#if 1
+#if 0
           printf("QP FIXED OUT IN IDIR %d,%d,%d,%d,%e,%e \n",idir,i,j,k,rho_ref,rho_pred);
 #endif
       }
@@ -389,7 +389,7 @@ trace_ppm(const Box& bx,
 
       if ( rho_pred < 0.5 * rho_ref)
       {
-#if 1
+#if 0
           printf("QM GOING LOW IN IDIR %d,%d,%d,%d,%e,%e \n",idir,i,j,k,rho_ref,rho_pred);
 #endif
            // These are the original definitions
@@ -416,7 +416,7 @@ trace_ppm(const Box& bx,
            alpha0r = un    > 0.0_rt ? -alpha0r : -alpha0r_src;
 
            rho_pred = rho_ref +  alphap + alpham + alpha0r;
-#if 1
+#if 0
            printf("QM FIXED OUT IN IDIR %d,%d,%d,%d,%e,%e \n",idir,i,j,k,rho_ref,rho_pred);
 #endif
       }
