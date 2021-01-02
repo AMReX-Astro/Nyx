@@ -259,50 +259,34 @@ trace_ppm(const Box& bx,
       // These are analogous to the beta's from the original PPM
       // paper (except we work with rho instead of tau).  This is
       // simply (l . dq), where dq = qref - I(q)
-      
+
       Real alpham = 0.5_rt*(dptotm*rho_ref_inv*cc_ref_inv - dum)*rho_ref*cc_ref_inv;
       Real alphap = 0.5_rt*(dptotp*rho_ref_inv*cc_ref_inv + dup)*rho_ref*cc_ref_inv;
       Real alpha0r = drho - dptot/csq_ref;
 
-      alpham    = un-cc > 0.0_rt ? 0.0_rt : -alpham;
-      alphap    = un+cc > 0.0_rt ? 0.0_rt : -alphap;
-      alpha0r   = un    > 0.0_rt ? 0.0_rt : -alpha0r;
+      // These terms only have the velocity source terms
+      Real dum_src = -hdtovera*Im_src[QUN][0];
+      Real dup_src = -hdtovera*Im_src[QUN][2];
 
+      // These terms only have the energy/pressure source terms
+      Real dptotm_src = - hdtovera*Im_src[QPRES][0];
+      Real dptot_src  = - hdtovera*Im_src[QPRES][1];
+      Real dptotp_src = - hdtovera*Im_src[QPRES][2];
+
+      // These are the definitions that will replace zero in the upwinding
+      Real alpham_src  = 0.5_rt*(dptotm_src*rho_ref_inv*cc_ref_inv - dum_src)*rho_ref*cc_ref_inv;
+      Real alphap_src  = 0.5_rt*(dptotp_src*rho_ref_inv*cc_ref_inv + dup_src)*rho_ref*cc_ref_inv;
+      Real alpha0r_src =       - dptot_src/csq_ref;
+          
+      alpham    = un-cc > 0.0_rt ? -alpham_src  : -alpham;
+      alphap    = un+cc > 0.0_rt ? -alphap_src  : -alphap;
+      alpha0r   = un    > 0.0_rt ? -alpha0r_src : -alpha0r;
+      
       // The final interface states are just
       // q_s = q_ref - sum(l . dq) r
       // note that the a{mpz}right as defined above have the minus already
- 
+
       Real rho_pred = rho_ref +  alphap + alpham + alpha0r;
-
-      // Correction for gravity source terms
-      // if ( rho_pred < 0.5 * rho_ref)
-      {
-
-          // These are the original definitions
-          alpham = 0.5_rt*(dptotm*rho_ref_inv*cc_ref_inv - dum)*rho_ref*cc_ref_inv;
-          alphap = 0.5_rt*(dptotp*rho_ref_inv*cc_ref_inv + dup)*rho_ref*cc_ref_inv;
-          alpha0r = drho - dptot/csq_ref;
-
-          // These terms only have the gravity source terms
-          Real dum_src = -hdtovera*Im_src[QUN][0];
-          Real dup_src = -hdtovera*Im_src[QUN][2];
-
-          // These terms only have the energy/pressure source terms
-          Real dptotm_src = - hdtovera*Im_src[QPRES][0];
-          Real dptot_src  = - hdtovera*Im_src[QPRES][1];
-          Real dptotp_src = - hdtovera*Im_src[QPRES][2];
-
-          // These are the definitions that will replace zero in the upwinding
-          Real alpham_src  = 0.5_rt*(dptotm_src*rho_ref_inv*cc_ref_inv - dum_src)*rho_ref*cc_ref_inv;
-          Real alphap_src  = 0.5_rt*(dptotp_src*rho_ref_inv*cc_ref_inv + dup_src)*rho_ref*cc_ref_inv;
-          Real alpha0r_src =       - dptot_src/csq_ref;
-          
-          alpham    = un-cc > 0.0_rt ? -alpham_src  : -alpham;
-          alphap    = un+cc > 0.0_rt ? -alphap_src  : -alphap;
-          alpha0r   = un    > 0.0_rt ? -alpha0r_src : -alpha0r;
-
-          rho_pred = rho_ref +  alphap + alpham + alpha0r;
-      }
 
       qp(i,j,k,QRHO ) = amrex::max(lsmall_dens, rho_pred);
       qp(i,j,k,QUN  ) = un_ref + (alphap - alpham)*cc_ref*rho_ref_inv;
@@ -371,43 +355,29 @@ trace_ppm(const Box& bx,
       Real alphap = 0.5_rt*(dptotp*rho_ref_inv*cc_ref_inv + dup)*rho_ref*cc_ref_inv;
       Real alpha0r = drho - dptot/csq_ref;
 
-      alpham  = un-cc > 0.0_rt ? -alpham : 0.0_rt;
-      alphap  = un+cc > 0.0_rt ? -alphap : 0.0_rt;
-      alpha0r = un    > 0.0_rt ? -alpha0r : 0.0_rt;
+      // These terms only have the velocity source terms
+      Real dum_src = -hdtovera*Ip_src[QUN][0];
+      Real dup_src = -hdtovera*Ip_src[QUN][2];
+
+      // These terms only have the energy/pressure source terms
+      Real dptotm_src = - hdtovera*Ip_src[QPRES][0];
+      Real dptot_src  = - hdtovera*Ip_src[QPRES][1];
+      Real dptotp_src = - hdtovera*Ip_src[QPRES][2];
+
+      // These are the definitions that will replace zero in the upwinding
+      Real alpham_src  = 0.5_rt*(dptotm_src*rho_ref_inv*cc_ref_inv - dum_src)*rho_ref*cc_ref_inv;
+      Real alphap_src  = 0.5_rt*(dptotp_src*rho_ref_inv*cc_ref_inv + dup_src)*rho_ref*cc_ref_inv;
+      Real alpha0r_src =       - dptot_src/csq_ref;
+
+      alpham  = un-cc > 0.0_rt ? -alpham  : -alpham_src;
+      alphap  = un+cc > 0.0_rt ? -alphap  : -alphap_src;
+      alpha0r = un    > 0.0_rt ? -alpha0r : -alpha0r_src;
+
+      Real rho_pred = rho_ref +  alphap + alpham + alpha0r;
 
       // The final interface states are just
       // q_s = q_ref - sum (l . dq) r
       // note that the a{mpz}left as defined above have the minus already
-
-      Real rho_pred = rho_ref +  alphap + alpham + alpha0r;
-
-      // if ( rho_pred < 0.5 * rho_ref)
-      {
-           // These are the original definitions
-           alpham = 0.5_rt*(dptotm*rho_ref_inv*cc_ref_inv - dum)*rho_ref*cc_ref_inv;
-           alphap = 0.5_rt*(dptotp*rho_ref_inv*cc_ref_inv + dup)*rho_ref*cc_ref_inv;
-           alpha0r = drho - dptot/csq_ref;
-
-           // These terms only have the gravity source terms
-           Real dum_src = -hdtovera*Ip_src[QUN][0];
-           Real dup_src = -hdtovera*Ip_src[QUN][2];
-
-           // These terms only have the energy/pressure source terms
-           Real dptotm_src = - hdtovera*Ip_src[QPRES][0];
-           Real dptot_src  = - hdtovera*Ip_src[QPRES][1];
-           Real dptotp_src = - hdtovera*Ip_src[QPRES][2];
-
-           // These are the definitions that will replace zero in the upwinding
-           Real alpham_src  = 0.5_rt*(dptotm_src*rho_ref_inv*cc_ref_inv - dum_src)*rho_ref*cc_ref_inv;
-           Real alphap_src  = 0.5_rt*(dptotp_src*rho_ref_inv*cc_ref_inv + dup_src)*rho_ref*cc_ref_inv;
-           Real alpha0r_src =       - dptot_src/csq_ref;
-
-           alpham  = un-cc > 0.0_rt ? -alpham  : -alpham_src;
-           alphap  = un+cc > 0.0_rt ? -alphap  : -alphap_src;
-           alpha0r = un    > 0.0_rt ? -alpha0r : -alpha0r_src;
-
-           rho_pred = rho_ref +  alphap + alpham + alpha0r;
-      }
 
       if (idir == 0) {
 
