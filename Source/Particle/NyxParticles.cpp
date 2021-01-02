@@ -798,7 +798,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
             const auto fab_D_new=D_new.array(mfi);
 
             GpuArray<amrex::Real,max_prob_param> prob_param;
-            prob_param_fill(prob_param, initial_z);
+            prob_param_fill(prob_param);
 
             amrex::ParallelFor(
                                bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {

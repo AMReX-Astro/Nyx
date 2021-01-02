@@ -145,6 +145,7 @@ endif
 Bdirs   := Source/Driver Source/TimeStep Source/Hydro
 Bdirs   += Source/EOS Source/HeatCool Source/IO Source/Initialization
 Bdirs   += Source/DerivedQuantities
+Bdirs   += Exec
 ifeq ($(USE_PARTICLES), TRUE)
 Bdirs   += Source/Particle
 endif

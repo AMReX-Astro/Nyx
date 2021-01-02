@@ -782,12 +782,15 @@ int integrate_state_struct
   #endif
 #endif
 #endif
+
     static int NUM_STATE;
 
     static int Zhi_comp;
 
     static int NumSpec;
     static amrex::Real gamma;
+    static amrex::Real h_species;
+    static amrex::Real he_species;
 
     static int strict_subcycling;
 
@@ -826,7 +829,6 @@ int integrate_state_struct
                               std::string &FullPath);
     //! Create the Level_ and other directories in checkpoint and plot files
     virtual void CreateLevelDirectory (const std::string &dir);
-
 
 protected:
 
@@ -869,7 +871,7 @@ protected:
     void set_small_values_given_average (amrex::Real average_dens, amrex::Real average_temp, amrex::Real a,
                                          amrex::Real & small_dens_inout, amrex::Real & small_temp_inout,
                                          amrex::Real &small_pres_inout, amrex::Real gamma_minus_1,
-                                         amrex::Real h_species, amrex::Real He_species);
+                                         amrex::Real h_species, amrex::Real he_species);
 
     void write_info();
 
@@ -907,9 +909,6 @@ protected:
     static amrex::Real small;
 
     static amrex::Real large_temp;
-
-    static amrex::Real  h_species;
-    static amrex::Real he_species;
 
     static bool do_dm_particles;
 

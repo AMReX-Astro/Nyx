@@ -7,10 +7,10 @@
 using namespace amrex;
 
 AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE
-void interp_to_this_z(AtomicRates* atomic_rates, const amrex::Real z, amrex::Real & ggh0, amrex::Real& gghe0, amrex::Real& gghep,
-                      amrex::Real& eh0, amrex::Real& ehe0, amrex::Real& ehep)
+void interp_to_this_z(AtomicRates* atomic_rates, const Real z, Real & ggh0, Real& gghe0, Real& gghep,
+                      Real& eh0, Real& ehe0, Real& ehep)
 {
-    amrex::Real lopz, fact;
+    Real lopz, fact;
     int i, j;
     lopz   = std::log10(1.0e0 + z);
 
@@ -48,25 +48,25 @@ void interp_to_this_z(AtomicRates* atomic_rates, const amrex::Real z, amrex::Rea
     return;
 }
 
-AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void ion_n_device(AtomicRates* atomic_rates, const int JH, const int JHe, const amrex::Real U,
-                                        const amrex::Real nh, const amrex::Real* ne,
-                                        amrex::Real& nhp, amrex::Real& nhep, amrex::Real& nhepp,
-                                        amrex::Real* t, const amrex::Real gamma_minus_1,
-                                        const amrex::Real z)
+AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void ion_n_device(AtomicRates* atomic_rates, const int JH, const int JHe, 
+                                        const Real U, const Real nh, const Real* ne,
+                                        Real& nhp, Real& nhep, Real& nhepp,
+                                        Real* t, const Real gamma_minus_1,
+                                        const Real z)
 {
 
-    amrex::Real ggh0, gghe0, gghep, eh0, ehe0, ehep;
-    amrex::Real ahp, ahep, ahepp, ad, geh0, gehe0, gehep;
-    amrex::Real ggh0ne, gghe0ne, gghepne;
-    amrex::Real mu, tmp, logT, flo, fhi;
-    const amrex::Real smallest_val=std::numeric_limits<amrex::Real>::min();
+    Real ggh0, gghe0, gghep, eh0, ehe0, ehep;
+    Real ahp, ahep, ahepp, ad, geh0, gehe0, gehep;
+    Real ggh0ne, gghe0ne, gghepne;
+    Real mu, tmp, logT, flo, fhi;
+    const Real smallest_val=std::numeric_limits<Real>::min();
     int j;
 
-    amrex::Real deltaT = (TCOOLMAX - TCOOLMIN)/NCOOLTAB;
+    Real deltaT = (TCOOLMAX - TCOOLMIN)/NCOOLTAB;
     mu = (1.0e0+4.0e0*YHELIUM) / (1.0e0+YHELIUM+*ne);
     /*
-    amrex::Real MPROTON = m_proton * M_unit;
-    amrex::Real BOLTZMANN = k_B / (T_unit*T_unit/(M_unit*L_unit*L_unit));*/
+    Real MPROTON = m_proton * M_unit;
+    Real BOLTZMANN = k_B / (T_unit*T_unit/(M_unit*L_unit*L_unit));*/
     //    t  = gamma_minus_1*mp_over_kb * U * mu;
     *t  = gamma_minus_1*MPROTON/BOLTZMANN * U * mu;
 
@@ -133,16 +133,16 @@ AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void ion_n_device(AtomicRates* atomic_r
 }
 
 AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE
-void iterate_ne_device(AtomicRates* atomic_rates, const int JH, const int JHe, const amrex::Real z,
-                       const amrex::Real U, amrex::Real* t, const amrex::Real nh,
-                       amrex::Real* ne, amrex::Real& nh0, amrex::Real& nhp,
-                       amrex::Real& nhe0, amrex::Real& nhep, amrex::Real& nhepp,
-                       const amrex::Real gamma_minus_1)
+void iterate_ne_device(AtomicRates* atomic_rates, const int JH, const int JHe, const Real z,
+                       const Real U, Real* t, const Real nh,
+                       Real* ne, Real& nh0, Real& nhp,
+                       Real& nhe0, Real& nhep, Real& nhepp,
+                       const Real gamma_minus_1)
 {
     int i;
-    amrex::Real f, df, eps, ne2;
-    amrex::Real nhp_plus, nhep_plus, nhepp_plus;
-    amrex::Real dnhp_dne, dnhep_dne, dnhepp_dne, dne;
+    Real f, df, eps, ne2;
+    Real nhp_plus, nhep_plus, nhepp_plus;
+    Real dnhp_dne, dnhep_dne, dnhepp_dne, dne;
 
     i = 0;
     *ne = 1.0e0; // 0 is a bad guess
@@ -184,10 +184,11 @@ void iterate_ne_device(AtomicRates* atomic_rates, const int JH, const int JHe, c
     nhe0  = YHELIUM - (nhep + nhepp);
 }
 
-AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_T_given_Re_device(AtomicRates* atomic_rates, Real gamma_minus_1, Real h_species, int JH, int JHe, Real* T, Real* Ne, Real R,Real e,Real comoving_a)
+AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_T_given_Re_device(
+    AtomicRates* atomic_rates, Real gamma_minus_1, 
+    Real h_species, int JH, int JHe, Real* T, Real* Ne, Real R,Real e,Real comoving_a)
 {
-
-    amrex::Real z, rho, U, nh, nh0, nhep, nhp, nhe0, nhepp;
+    Real z, rho, U, nh, nh0, nhep, nhp, nhe0, nhepp;
     // This converts from code units to CGS
     rho = R * density_to_cgs / (comoving_a*comoving_a*comoving_a);
     U = e * e_to_cgs;
@@ -195,18 +196,17 @@ AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_T_given_Re_device(AtomicRa
 
     z   = 1.e0/comoving_a - 1.e0;
 
-    amrex::Real T_in = *T;
-    amrex::Real Ne_in = *Ne;
+    Real T_in = *T;
+    Real Ne_in = *Ne;
     iterate_ne_device(atomic_rates, JH, JHe, z, U, T, nh, Ne, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1);
-
 }
 
-AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_given_RT(AtomicRates* atomic_rates, Real gamma_minus_1, Real h_species, Real* e, Real* P, Real R, Real T, Real Ne,Real comoving_a)
+AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_given_RT(
+    AtomicRates* atomic_rates, Real gamma_minus_1, 
+    Real h_species, Real* e, Real* P, Real R, Real T, Real Ne,Real comoving_a)
 {
-  
-  Real mu = (1.0+4.0*YHELIUM) / (1.0+YHELIUM+Ne);
-  *e = T / (gamma_minus_1 * mp_over_kb * mu);
-  *P  = gamma_minus_1 * (R) * (*e);
-
+    Real mu = (1.0+4.0*YHELIUM) / (1.0+YHELIUM+Ne);
+    *e = T / (gamma_minus_1 * mp_over_kb * mu);
+    *P  = gamma_minus_1 * (R) * (*e);
 }
 #endif

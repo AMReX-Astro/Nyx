@@ -2,15 +2,10 @@
 #define _Prob_H_
 
 #include "Nyx.H"
-
-enum Prob_Type_Index {
-  z_in_comp = 0,
-  gamma_comp,
-  prob_type_comp
-};
+#include "Prob_param.H"
 
 enum Prob_Type_Index_Sod {
-  p_l_comp = 3,
+  p_l_comp = 5, // Note this must be one greater than the final index in Prob_param.H
   u_l_comp,
   rho_l_comp,
   rhoe_l_comp,
@@ -26,27 +21,15 @@ enum Prob_Type_Index_Sod {
 };
 
 enum Prob_Type_Index_Sedov {
-  p_ambient_comp = 3,
+  p_ambient_comp = 5, // Note this must be one greater than the final index in Prob_param.H
   dens_ambient_comp,
   exp_energy_comp,
   r_init_comp,
   nsub_comp
 };
 
-static void prob_param_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_param, const amrex::Real initial_z)
+static void prob_param_special_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_param)
 {
-    prob_param[z_in_comp] = initial_z;
-    //Duplicate gamma-filling logic from Nyx.cpp
-    prob_param[gamma_comp] = 5.0/3.0;
-
-    amrex::ParmParse pp_nyx("nyx");
-    pp_nyx.query("gamma", prob_param[gamma_comp]);
-
-    prob_param[prob_type_comp] = 0;
-
-    amrex::ParmParse pp("prob");
-    pp.query("prob_type",prob_param[prob_type_comp]);
-
     if(amrex::Math::round(prob_param[prob_type_comp]) == 0)
     {
     prob_param[p_l_comp] = 1.0;  // left pressure (erg/cc)
@@ -61,6 +44,7 @@ static void prob_param_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_pa
     prob_param[frac_comp] = 0.5;  // fraction of the domain for the interface
 
     // Parse params
+    amrex::ParmParse pp("nyx");
     pp.query("p_l",prob_param[p_l_comp]);
     pp.query("u_l",prob_param[u_l_comp]);
     pp.query("rho_l",prob_param[rho_l_comp]);
@@ -116,18 +100,18 @@ void prob_initdata_state(const int i,
   const amrex::Real* prob_hi = geomdata.ProbHi();
   const amrex::Real* dx = geomdata.CellSize();
 
-    if(amrex::Math::round(prob_param[prob_type_comp]) == 0)
-    {
+  if(amrex::Math::round(prob_param[prob_type_comp]) == 0)
+  {
   //Use middle for comparison, and assume lo[0]=0:
   //      prob_lo[0] + (i+0.5) * dx[0] != prob_lo[0] + (float(i - lo[0])+0.5) * dx[0]
   AMREX_D_TERM(const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
-               , const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
-               , const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];)
+             , const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
+             , const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];)
 
   AMREX_D_TERM(
     amrex::Real ctr_x = prob_param[frac_comp] * (prob_lo[0] + prob_hi[0]);
-    , amrex::Real ctr_y = prob_param[frac_comp] * (prob_lo[1] + prob_hi[1]);
-    , amrex::Real ctr_z = prob_param[frac_comp] * (prob_lo[2] + prob_hi[2]);)
+  , amrex::Real ctr_y = prob_param[frac_comp] * (prob_lo[1] + prob_hi[1]);
+  , amrex::Real ctr_z = prob_param[frac_comp] * (prob_lo[2] + prob_hi[2]);)
 
   // Set the states
   if (amrex::Math::round(prob_param[idir_comp]) == 1) {
@@ -269,9 +253,8 @@ void prob_initdata_state(const int i,
   }
 
 #ifndef CONST_SPECIES
-     //XHYDROGEN hardcoded to .76 init_managed
-     state(i,j,k,FirstSpec_comp  ) = .76 * state(i,j,k,Density_comp);
-     state(i,j,k,FirstSpec_comp+1) = (1.0 - .76) * state(i,j,k,Density_comp);
+     state(i,j,k,FirstSpec_comp  ) = prob_param[ h_species_comp];
+     state(i,j,k,FirstSpec_comp+1) = prob_param[he_species_comp];
 #endif
 }
 
@@ -287,63 +270,69 @@ void prob_initdata(const int i,
 
   prob_initdata_state(i, j ,k, state, geomdata, prob_param);
 
-  if(amrex::Math::round(prob_param[prob_type_comp]) != 0 || (amrex::Math::round(prob_param[prob_type_comp]) == 0 && amrex::Math::round(prob_param[use_Tinit_comp])==0))
+  if ( amrex::Math::round(prob_param[prob_type_comp]) != 0 || 
+      (amrex::Math::round(prob_param[prob_type_comp]) == 0 && 
+       amrex::Math::round(prob_param[use_Tinit_comp]) == 0) )
   {
 
-  const int JH = 1;
-  const int JHe = 1;
+      const int JH = 1;
+      const int JHe = 1;
 
-  const amrex::Real h_species_in=.76;
-  const amrex::Real gamma_minus_1_in=prob_param[gamma_comp] - 1.0;
-  const amrex::Real a=1.0/(prob_param[z_in_comp]+1.0);
-  const amrex::Real rhoInv = 1.e0 / state(i,j,k,Density_comp);
-  const amrex::Real eint = state(i,j,k,Eint_comp) * rhoInv;
-  nyx_eos_T_given_Re_device(NULL,gamma_minus_1_in, h_species_in, JH, JHe, &diag_eos(i,j,k,Temp_comp), &diag_eos(i,j,k,Ne_comp), state(i,j,k,Density_comp), eint, a);
+      const amrex::Real h_species_in = prob_param[h_species_comp];
+      const amrex::Real gamma_minus_1_in = prob_param[gamma_comp] - 1.0;
+      const amrex::Real a = 1.0/(prob_param[z_in_comp]+1.0);
+      const amrex::Real rhoInv = 1.e0 / state(i,j,k,Density_comp);
+      const amrex::Real eint = state(i,j,k,Eint_comp) * rhoInv;
+    
+      nyx_eos_T_given_Re_device(NULL,gamma_minus_1_in, h_species_in, JH, JHe, 
+                               &diag_eos(i,j,k,Temp_comp), &diag_eos(i,j,k,Ne_comp), 
+                               state(i,j,k,Density_comp), eint, a);
   }
   else
   {
-  // Geometry
-  const amrex::Real* prob_lo = geomdata.ProbLo();
-  const amrex::Real* prob_hi = geomdata.ProbHi();
-  const amrex::Real* dx = geomdata.CellSize();
+      // Geometry
+      const amrex::Real* prob_lo = geomdata.ProbLo();
+      const amrex::Real* prob_hi = geomdata.ProbHi();
+      const amrex::Real* dx = geomdata.CellSize();
 
-  //Use middle for comparison, and assume lo[0]=0:
-  //      prob_lo[0] + (i+0.5) * dx[0] != prob_lo[0] + (float(i - lo[0])+0.5) * dx[0]
-  AMREX_D_TERM(const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
-               , const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
-               , const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];)
+      //Use middle for comparison, and assume lo[0]=0:
+      //      prob_lo[0] + (i+0.5) * dx[0] != prob_lo[0] + (float(i - lo[0])+0.5) * dx[0]
+      AMREX_D_TERM(const amrex::Real x = prob_lo[0] + (i + 0.5) * dx[0];
+                 , const amrex::Real y = prob_lo[1] + (j + 0.5) * dx[1];
+                 , const amrex::Real z = prob_lo[2] + (k + 0.5) * dx[2];)
 
-  AMREX_D_TERM(
-    amrex::Real ctr_x = prob_param[frac_comp] * (prob_lo[0] + prob_hi[0]);
-    , amrex::Real ctr_y = prob_param[frac_comp] * (prob_lo[1] + prob_hi[2]);
-    , amrex::Real ctr_z = prob_param[frac_comp] * (prob_lo[1] + prob_hi[2]);)
+      AMREX_D_TERM(
+                   amrex::Real ctr_x = prob_param[frac_comp] * (prob_lo[0] + prob_hi[0]);
+                 , amrex::Real ctr_y = prob_param[frac_comp] * (prob_lo[1] + prob_hi[1]);
+                 , amrex::Real ctr_z = prob_param[frac_comp] * (prob_lo[2] + prob_hi[2]);)
 
-  // Set the states
-  if (amrex::Math::round(prob_param[idir_comp]) == 1) {
-    if (x <= ctr_x) {
-      diag_eos(i,j,k,Temp_comp) = prob_param[T_l_comp];
-    } else {
-      diag_eos(i,j,k,Temp_comp) = prob_param[T_r_comp];
-    }
-  } else if (amrex::Math::round(prob_param[idir_comp]) == 2) {
-    if (y <= ctr_y) {
-      diag_eos(i,j,k,Temp_comp) = prob_param[T_l_comp];
-    } else {
-      diag_eos(i,j,k,Temp_comp) = prob_param[T_r_comp];
-    }
-      } else if (amrex::Math::round(prob_param[idir_comp]) == 3) {
-    if (z <= ctr_z) {
-      diag_eos(i,j,k,Temp_comp) = prob_param[T_l_comp];
-    } else {
-      diag_eos(i,j,k,Temp_comp) = prob_param[T_r_comp];
-    }
-  } else {
-    amrex::Abort("invalid idir");
-  }
+      // Set the states
+      if (amrex::Math::round(prob_param[idir_comp]) == 1) {
+        if (x <= ctr_x) {
+          diag_eos(i,j,k,Temp_comp) = prob_param[T_l_comp];
+        } else {
+          diag_eos(i,j,k,Temp_comp) = prob_param[T_r_comp];
+        }
+      } else if (amrex::Math::round(prob_param[idir_comp]) == 2) {
+        if (y <= ctr_y) {
+          diag_eos(i,j,k,Temp_comp) = prob_param[T_l_comp];
+        } else {
+          diag_eos(i,j,k,Temp_comp) = prob_param[T_r_comp];
+        }
+          } else if (amrex::Math::round(prob_param[idir_comp]) == 3) {
+        if (z <= ctr_z) {
+          diag_eos(i,j,k,Temp_comp) = prob_param[T_l_comp];
+        } else {
+          diag_eos(i,j,k,Temp_comp) = prob_param[T_r_comp];
+        }
+      } else {
+        amrex::Abort("invalid idir");
+      }
+
       diag_eos(i,j,k,Ne_comp) = 0.0;
   }
-    //Should be equivalent to inhomo_reion > 0 Nyx_setup.cpp
-    if (diag_eos.nComp() > 2)
+  //Should be equivalent to inhomo_reion > 0 Nyx_setup.cpp
+  if (diag_eos.nComp() > 2)
       diag_eos(i,j,k, Zhi_comp) = 7.5;
 }
 

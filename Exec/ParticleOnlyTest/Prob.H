@@ -3,15 +3,6 @@
 
 #include "Nyx.H"
 
-enum Prob_Type_Index {
-  z_in_comp = 0,
-};
-
-static void prob_param_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_param, const amrex::Real initial_z)
-{
-    prob_param[z_in_comp] = initial_z;
-}
-
 static void prob_errtags_default(amrex::Vector<amrex::AMRErrorTag>& errtags)
 {
     amrex::AMRErrorTagInfo info;
@@ -33,29 +24,6 @@ void prob_initdata_state(const int i,
     //Could be replaced with setVal
     state(i,j,k,0)    = 1.00;
   }
-#ifndef NO_HYDRO
-  // This is the regular case with NO_HYDRO = FALSE
-  else if (state.nComp() > 1)
-  {
-    state(i,j,k,Density_comp)    = 1.00; //1.5d0 * small_dens
-    state(i,j,k,Xmom_comp) = 0.00;
-    state(i,j,k,Ymom_comp) = 0.00;
-    state(i,j,k,Zmom_comp) = 0.00;
-
-    // These will both be set later in the call to init_e.
-    state(i,j,k,Eint_comp) = 10.0;
-    state(i,j,k,Eden_comp) = state(i,j,k,Eint_comp) + 0.5 / state(i,j,k,Density_comp) *
-      (state(i,j,k,Xmom_comp)*state(i,j,k,Xmom_comp) + 
-       state(i,j,k,Ymom_comp)*state(i,j,k,Ymom_comp) + 
-       state(i,j,k,Zmom_comp)*state(i,j,k,Zmom_comp));
-
-#ifndef CONST_SPECIES
-      //XHYDROGEN hardcoded to .76
-      state(i,j,k,FirstSpec_comp  ) = .76;
-      state(i,j,k,FirstSpec_comp+1) = (1.0 - .76);
-#endif
-  }
-#endif
 }
 
 AMREX_GPU_DEVICE AMREX_FORCE_INLINE
@@ -77,18 +45,5 @@ void prob_initdata(const int i,
     //Could be replaced with setVal
     diag_eos(i,j,k,0)    = 0.00;
   }
-#ifndef NO_HYDRO
-  // This is the regular case with NO_HYDRO = FALSE
-  else if (state.nComp() > 1 && diag_eos.nComp() >= 2)
-  {
-    diag_eos(i,j,k,Temp_comp) = 1000.0;
-    diag_eos(i,j,k,  Ne_comp) = 0.0;
-
-    //Should be equivalent to inhomo_reion > 0 Nyx_setup.cpp
-    if (diag_eos.nComp() > 2)
-      diag_eos(i,j,k, Zhi_comp) = 7.5;
-  }
-#endif
 }
-
 #endif

@@ -1,16 +1,11 @@
 #ifndef _Prob_H_
 #define _Prob_H_
 
+#include "Prob_param.H"
 #include "Nyx.H"
 
-enum Prob_Type_Index {
-  z_in_comp = 0,
-};
-
-static void prob_param_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_param, const amrex::Real initial_z)
-{
-    prob_param[z_in_comp] = initial_z;
-}
+static void prob_param_special_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_param)
+{}
 
 static void prob_errtags_default(amrex::Vector<amrex::AMRErrorTag>& errtags)
 {
@@ -50,9 +45,8 @@ void prob_initdata_state(const int i,
        state(i,j,k,Zmom_comp)*state(i,j,k,Zmom_comp));
 
 #ifndef CONST_SPECIES
-      //XHYDROGEN hardcoded to .76
-      state(i,j,k,FirstSpec_comp  ) = .76;
-      state(i,j,k,FirstSpec_comp+1) = (1.0 - .76);
+      state(i,j,k,FirstSpec_comp  ) = prob_param[h_species_comp];
+      state(i,j,k,FirstSpec_comp+1) = prob_param[he_species_comp];
 #endif
   }
 #endif

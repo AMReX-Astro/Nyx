@@ -2,15 +2,10 @@
 #define _Prob_H_
 
 #include "Nyx.H"
+#include "Prob_param.H"
 
-enum Prob_Type_Index {
-  z_in_comp = 0,
-};
-
-static void prob_param_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_param, const amrex::Real initial_z)
-{
-    prob_param[z_in_comp] = initial_z;
-}
+static void prob_param_special_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_param)
+{}
 
 static void prob_errtags_default(amrex::Vector<amrex::AMRErrorTag>& errtags)
 {
