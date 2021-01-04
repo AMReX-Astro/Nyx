@@ -57,7 +57,7 @@ macro (nyx_setup_executable _srcs _inputs)
       target_include_directories( ${_exe_name} PRIVATE  ${_include_dir} )
    endforeach()
 
-   if (AMReX_CUDA)
+   if (Nyx_GPU_BACKEND STREQUAL "CUDA")
       setup_target_for_cuda_compilation( ${_exe_name} )
    endif ()
 

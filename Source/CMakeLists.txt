@@ -127,7 +127,7 @@ add_subdirectory(TimeStep)
 #                               Nyx CUDA and buildInfo                       #
 #                                                                            #
 ##############################################################################
-if (AMReX_CUDA)
+if (Nyx_GPU_BACKEND STREQUAL "CUDA")
    setup_target_for_cuda_compilation( nyxcore )
 endif ()
 
