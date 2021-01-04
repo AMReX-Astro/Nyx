@@ -359,7 +359,7 @@ pc_consup(
 
          // Make flux extensive
          for (int n = 0; n < flx[dir].nComp(); ++n)
-             flx(i,j,k,n) *= area[dir]*dt;
+             flx[dir](i,j,k,n) *= area[dir]*dt;
       });
   }
 
