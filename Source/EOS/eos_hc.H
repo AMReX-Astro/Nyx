@@ -192,7 +192,8 @@ AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_T_given_Re_device(
     // This converts from code units to CGS
     rho = R * density_to_cgs / (comoving_a*comoving_a*comoving_a);
     U = e * e_to_cgs;
-    nh  = rho*XHYDROGEN/MPROTON;
+
+    nh  = rho*h_species/MPROTON;
 
     z   = 1.e0/comoving_a - 1.e0;
 
