@@ -1,16 +1,16 @@
-target_sources( ${EXE_NAME}
+target_sources( nyxcore
    PRIVATE
    Nyx_advance.cpp
    Nyx_advance_particles.cpp
    )
 
 if (Nyx_HYDRO)
-   target_include_directories(${EXE_NAME}
+   target_include_directories(nyxcore
       PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}>
       )
 
-   target_sources( ${EXE_NAME}
+   target_sources( nyxcore
       PRIVATE
       Nyx_enforce_minimum_density.cpp
       Nyx_enforce_minimum_density.H
@@ -20,14 +20,14 @@ if (Nyx_HYDRO)
 
 
    if (Nyx_GRAVITY)
-      target_sources( ${EXE_NAME}
+      target_sources( nyxcore
          PRIVATE
          Nyx_correct_gsrc.cpp
          )
    endif ()
 
    if (NOT Nyx_AGN)
-      target_sources( ${EXE_NAME}
+      target_sources( nyxcore
          PRIVATE
          Nyx_sources.cpp
          )

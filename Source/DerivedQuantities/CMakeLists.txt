@@ -1,8 +1,8 @@
-target_include_directories(${EXE_NAME}
+target_include_directories(nyxcore
    PUBLIC
    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}> )
 
-target_sources( ${EXE_NAME}
+target_sources( nyxcore
    PRIVATE
    ParticleDerive.cpp
    ParticleDerive.H
@@ -10,7 +10,7 @@ target_sources( ${EXE_NAME}
    )
 
 if  (Nyx_HYDRO)
-   target_sources( ${EXE_NAME}
+   target_sources( nyxcore
       PRIVATE
       Derive.cpp
       Derive.H
