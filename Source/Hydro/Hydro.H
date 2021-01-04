@@ -137,21 +137,6 @@ normalize_species_fluxes(const int i, const int j, const int k, amrex::Array4<am
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
-pc_ext_flx(
-  const int i,
-  const int j,
-  const int k,
-  amrex::Array4<amrex::Real> const& flx,
-  amrex::Real const area,
-  amrex::Real const dt)
-{
-    for (int n = 0; n < flx.nComp(); ++n)
-        flx(i,j,k,n) *= area*dt;
-}
-
-AMREX_GPU_DEVICE
-AMREX_FORCE_INLINE
-void
 pc_ext_flx_dt(
   const int i,
   const int j,

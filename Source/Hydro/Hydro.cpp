@@ -358,7 +358,8 @@ pc_consup(
          normalize_species_fluxes(i, j, k, flx[dir], NumSpec);
 
          // Make flux extensive
-         pc_ext_flx(i, j, k, flx[dir], area[dir], dt);
+         for (int n = 0; n < flx[dir].nComp(); ++n)
+             flx(i,j,k,n) *= area[dir]*dt;
       });
   }
 
