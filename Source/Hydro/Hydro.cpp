@@ -3,7 +3,7 @@
 #include <Nyx.H>
 
 /**
- *  Define the source terms resulting from the hydro flux difference
+ *  Set up the source terms to go into the hydro.
 */
 
 void
@@ -297,6 +297,21 @@ pc_umdrv(
     qec_eli[dir].clear();
   }
 
+#if 0
+  // if (limit_fluxes_on_small_dens == 1) 
+  {
+      for (int idir = 0; idir < AMREX_SPACEDIM; ++idir) 
+      {
+          const Box& nbx = amrex::surroundingNodes(bx, idir);
+          const Real& dx_dir = dx[idir];
+          const Real& lcfl   = cfl;
+          amrex::ParallelFor(nbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+              limit_hydro_fluxes_on_small_dens (i, j, k, idir, uin, q, flx[idir], small_dens, lcfl, dx_dir, dt);
+            });
+      }
+  }
+#endif
+
   // divu
   const amrex::Real dx0 = dx[0]; 
   const amrex::Real dx1 = dx[1];
@@ -327,51 +342,38 @@ pc_consup(
   amrex::Real const gamma_minus_1,
   amrex::Real const difmag)
 {
-  const GpuArray<Real,AMREX_SPACEDIM>  area{ del[1]*del[2], del[0]*del[2], del[0]*del[1] };
-  amrex::Real volinv = 1.0 / (del[0] * del[1] * del[2]);
 
-  const amrex::Real a_half = 0.5*(a_old + a_new);
-  const amrex::Real a_half_inv = 1.0 / a_half;
-  const amrex::Real a_new_inv = 1.0 / a_new;
-  const amrex::Real a_newsq_inv = 1.0 / (a_new * a_new);
+  // Flux alterations
+  for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
+    amrex::Box const& fbx = surroundingNodes(bx, dir);
+    const amrex::Real dx = del[dir];
 
-  //Store all 8 factors
-  const GpuArray<Real,8> a_fact = {a_half_inv        ,a_new_inv         ,a_new_inv , a_new_inv,
-                                   a_half*a_newsq_inv,a_half*a_newsq_inv,a_half_inv,a_half_inv};
+    const GpuArray<Real,BL_SPACEDIM>  area{ del[1]*del[2], del[0]*del[2], del[0]*del[1] };
 
-  // Re-scale the fluxes to include factors of area, dt and a
-  for (int dir = 0; dir < AMREX_SPACEDIM; dir++) 
-  {
-      amrex::Box const& fbx = surroundingNodes(bx, dir);
-      const amrex::Real dx = del[dir];
+    amrex::ParallelFor(fbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
 
-      amrex::ParallelFor(fbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept 
-      {
          pc_artif_visc(i, j, k, flx[dir], div, u, dx, difmag, dir);
 
-#ifndef CONST_SPECIES
          // Normalize Species Flux
          normalize_species_fluxes(i, j, k, flx[dir], NumSpec);
-#endif
 
          // Make flux extensive
-         for (int n = 0; n < flx[dir].nComp(); ++n)
-             flx[dir](i,j,k,n) *= area[dir] * dt * a_fact[n];
+         pc_ext_flx(i, j, k, flx[dir], area[dir], dt);
       });
   }
 
+  amrex::Real vol = del[0] * del[1] * del[2];
+
   // Combine for Hydro Sources
-  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept 
-  {
-      for (int n = 0; n < update.nComp(); ++n) {
-          update(i, j, k, n) += (  (flx[0](i, j, k, n) - flx[0](i + 1, j, k, n))
-                                  +(flx[1](i, j, k, n) - flx[1](i, j + 1, k, n))
-                                  +(flx[2](i, j, k, n) - flx[2](i, j, k + 1, n)) ) * volinv;
-      }
-
-      update(i, j, k, Eint_comp) += a_half * (a_new - a_old) * ( 2.0 - 3.0 * gamma_minus_1) * u(i,j,k,Eint_comp);
-      update(i, j, k, Eden_comp) += a_half * (a_new - a_old) * ( 2.0 - 3.0 * gamma_minus_1) * u(i,j,k,Eint_comp);
-
-      update(i, j, k, Eint_comp) += pdivu(i, j, k)*u(i,j,k,Eint_comp)*gamma_minus_1*dt*a_half;
+  amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+      pc_update(i, j, k, u, update, flx, vol, pdivu, a_old, a_new, dt, gamma_minus_1);
   });
+
+  for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
+    amrex::Box const& fbx = surroundingNodes(bx, dir);
+    amrex::ParallelFor(fbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+        // Change scaling for flux registers
+        pc_ext_flx_dt(i, j, k, flx[dir], a_old, a_new);
+    });
+  }
 }
