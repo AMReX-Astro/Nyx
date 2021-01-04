@@ -77,7 +77,7 @@ Nyx::strang_hydro (Real time,
       }
 
     // Define the gravity vector 
-    MultiFab grav_vector(grids, dmap, BL_SPACEDIM, NUM_GROW);
+    MultiFab grav_vector(grids, dmap, AMREX_SPACEDIM, NUM_GROW);
     //in case do_grav==0
     grav_vector.setVal(0);
 
@@ -319,7 +319,7 @@ Nyx::strang_hydro_ghost_state (Real time,
       }
 
     // Define the gravity vector 
-    MultiFab grav_vector(grids, dmap, BL_SPACEDIM, NUM_GROW);
+    MultiFab grav_vector(grids, dmap, AMREX_SPACEDIM, NUM_GROW);
 
     //Not sure if amrex::average_face_to_cellcenter, looks like it launches
     //    amrex::Gpu::setLaunchRegion(false);

@@ -5,11 +5,11 @@
 #include <NyxParticleContainer.H>
 
 class DarkMatterParticleContainer
-    : public NyxParticleContainer<1+BL_SPACEDIM>
+    : public NyxParticleContainer<1+AMREX_SPACEDIM>
 {
 public:
     DarkMatterParticleContainer (amrex::Amr* amr)
-        : NyxParticleContainer<1+BL_SPACEDIM>(amr)
+        : NyxParticleContainer<1+AMREX_SPACEDIM>(amr)
     {
       real_comp_names.clear();
       real_comp_names.push_back("mass");
@@ -18,8 +18,8 @@ public:
       real_comp_names.push_back("zvel");
     }
 
-    using MyParIter = amrex::ParIter<1+BL_SPACEDIM>;
-    using MyConstParIter = amrex::ParConstIter<1+BL_SPACEDIM>;
+    using MyParIter = amrex::ParIter<1+AMREX_SPACEDIM>;
+    using MyConstParIter = amrex::ParConstIter<1+AMREX_SPACEDIM>;
 
     virtual ~DarkMatterParticleContainer () {}
 

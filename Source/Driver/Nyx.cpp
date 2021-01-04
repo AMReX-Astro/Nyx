@@ -262,10 +262,10 @@ Nyx::read_params ()
     pp_nyx.get("dt_cutoff", dt_cutoff);
 
     // Get boundary conditions
-    Vector<int> lo_bc(BL_SPACEDIM), hi_bc(BL_SPACEDIM);
-    pp_nyx.getarr("lo_bc", lo_bc, 0, BL_SPACEDIM);
-    pp_nyx.getarr("hi_bc", hi_bc, 0, BL_SPACEDIM);
-    for (int i = 0; i < BL_SPACEDIM; i++)
+    Vector<int> lo_bc(AMREX_SPACEDIM), hi_bc(AMREX_SPACEDIM);
+    pp_nyx.getarr("lo_bc", lo_bc, 0, AMREX_SPACEDIM);
+    pp_nyx.getarr("hi_bc", hi_bc, 0, AMREX_SPACEDIM);
+    for (int i = 0; i < AMREX_SPACEDIM; i++)
     {
         phys_bc.setLo(i, lo_bc[i]);
         phys_bc.setHi(i, hi_bc[i]);
@@ -280,7 +280,7 @@ Nyx::read_params ()
         //
         // Do idiot check.  Periodic means interior in those directions.
         //
-        for (int dir = 0; dir < BL_SPACEDIM; dir++)
+        for (int dir = 0; dir < AMREX_SPACEDIM; dir++)
         {
             if (DefaultGeometry().isPeriodic(dir))
             {
@@ -306,7 +306,7 @@ Nyx::read_params ()
         //
         // Do idiot check.  If not periodic, should be no interior.
         //
-        for (int dir = 0; dir < BL_SPACEDIM; dir++)
+        for (int dir = 0; dir < AMREX_SPACEDIM; dir++)
         {
             if (lo_bc[dir] == Interior)
             {
@@ -618,7 +618,7 @@ Nyx::Nyx (Amr&            papa,
         if (forcing == 0)
            forcing = new StochasticForcing();
 
-        forcing->init(BL_SPACEDIM, prob_lo, prob_hi);
+        forcing->init(AMREX_SPACEDIM, prob_lo, prob_hi);
     }
 #endif
 
@@ -693,7 +693,7 @@ Nyx::restart (Amr&     papa,
         if (forcing == 0)
            forcing = new StochasticForcing();
 
-        forcing->init(BL_SPACEDIM, prob_lo, prob_hi);
+        forcing->init(AMREX_SPACEDIM, prob_lo, prob_hi);
     }
 #endif
 }
@@ -1369,9 +1369,9 @@ Nyx::post_timestep (int iteration)
         if (do_grav)
         {
             // Define the update to rho and rhoU due to refluxing.
-            drho_and_drhoU.define(grids, dmap, BL_SPACEDIM + 1, 0);
+            drho_and_drhoU.define(grids, dmap, AMREX_SPACEDIM + 1, 0);
             MultiFab::Copy(drho_and_drhoU, S_new_crse, Density_comp, 0,
-                           BL_SPACEDIM + 1, 0);
+                           AMREX_SPACEDIM + 1, 0);
             drho_and_drhoU.mult(-1.0);
         }
 
@@ -1393,7 +1393,7 @@ Nyx::post_timestep (int iteration)
 
         if (do_grav && gravity->get_no_sync() == 0)
         {
-            MultiFab::Add(drho_and_drhoU, S_new_crse, Density_comp, 0, BL_SPACEDIM+1, 0);
+            MultiFab::Add(drho_and_drhoU, S_new_crse, Density_comp, 0, AMREX_SPACEDIM+1, 0);
 
             MultiFab dphi(grids, dmap, 1, 0);
             dphi.setVal(0);
@@ -1407,7 +1407,7 @@ Nyx::post_timestep (int iteration)
                 grad_delta_phi_cc[lev-level].reset(
                                       new MultiFab(get_level(lev).boxArray(),
                                                    get_level(lev).DistributionMap(),
-                                                   BL_SPACEDIM, 0));
+                                                   AMREX_SPACEDIM, 0));
                 grad_delta_phi_cc[lev-level]->setVal(0);
             }
 
@@ -1424,7 +1424,7 @@ Nyx::post_timestep (int iteration)
 
                 const auto& ba = get_level(lev).boxArray();
                 const auto& dm = get_level(lev).DistributionMap();
-                MultiFab grad_phi_cc(ba, dm, BL_SPACEDIM, 0);
+                MultiFab grad_phi_cc(ba, dm, AMREX_SPACEDIM, 0);
                 gravity->get_new_grav_vector(lev, grad_phi_cc, cur_time);
 
 #ifdef _OPENMP
@@ -1437,7 +1437,7 @@ Nyx::post_timestep (int iteration)
                   {
                     const Box& bx = mfi.tilebox();
 
-                    dstate.resize(bx, BL_SPACEDIM + 1);
+                    dstate.resize(bx, AMREX_SPACEDIM + 1);
                     Array4<Real> d_fab = dstate.array();
 
                     if (lev == level)
@@ -1629,7 +1629,7 @@ Nyx::post_restart ()
                 {
                     const auto& ba = get_level(k).boxArray();
                     const auto& dm = get_level(k).DistributionMap();
-                    MultiFab grav_vec_new(ba, dm, BL_SPACEDIM, 0);
+                    MultiFab grav_vec_new(ba, dm, AMREX_SPACEDIM, 0);
                     gravity->get_new_grav_vector(k, grav_vec_new, cur_time);
                 }
             }
@@ -1994,7 +1994,7 @@ Nyx::post_init (Real stop_time)
         {
             const auto& ba = get_level(k).boxArray();
             const auto& dm = get_level(k).DistributionMap();
-            MultiFab grav_vec_new(ba, dm, BL_SPACEDIM, 0);
+            MultiFab grav_vec_new(ba, dm, AMREX_SPACEDIM, 0);
             gravity->get_new_grav_vector(k, grav_vec_new, cur_time);
         }
     }

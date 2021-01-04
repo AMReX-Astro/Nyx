@@ -207,8 +207,8 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::GetParticleVelocities (amrex::Vector<amre
     // This assumes that the mass/charge is stored in the first position
     //      in the particle data, followed by the velocity components
     int start_comp = 1;
-    int   num_comp = BL_SPACEDIM;
-    this->GetParticleData(part_data,1,BL_SPACEDIM);
+    int   num_comp = AMREX_SPACEDIM;
+    this->GetParticleData(part_data,1,AMREX_SPACEDIM);
 }
 
 template <int NSR,int NSI,int NAR,int NAI>
@@ -240,15 +240,15 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::SetParticleVelocities (amrex::Vector<amre
    for (int iproc = 0; iproc < amrex::ParallelDescriptor::MyProc(); iproc++)
        cnt += cnts[iproc];
 
-   // Each particle takes up (BL_SPACEDIM) Reals
-   cnt*= (BL_SPACEDIM);
+   // Each particle takes up (AMREX_SPACEDIM) Reals
+   cnt*= (AMREX_SPACEDIM);
 #endif
 
    // This is the total number of particles on *all* processors
    long npart = this->TotalNumberOfParticles(true,false);
 
    // Velocities
-   if (part_data.size() != npart*(BL_SPACEDIM))
+   if (part_data.size() != npart*(AMREX_SPACEDIM))
        amrex::Abort("Sending in wrong size part_data to SetParticleVelocities");
 
    for (int lev = 0; lev <= this->m_gdb->finestLevel(); lev++)
@@ -266,11 +266,11 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::SetParticleVelocities (amrex::Vector<amre
               if (p.id() > 0)
               {
                   // Load velocities
-                  for (int d=0; d < BL_SPACEDIM; d++)
+                  for (int d=0; d < AMREX_SPACEDIM; d++)
                       p.rdata(d+1) = part_data[cnt+d];
 
                   // Update counter
-                  cnt += BL_SPACEDIM;
+                  cnt += AMREX_SPACEDIM;
               }
            }
        }
@@ -288,7 +288,7 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::sumParticleMomentum (int          lev,
                                                             amrex::Real* mom) const
 {
     BL_PROFILE("NyxParticleContainer<NSR,NSI,NAR,NAI>::sumParticleMomentum()");
-    BL_ASSERT(NSR >= BL_SPACEDIM+1);
+    BL_ASSERT(NSR >= AMREX_SPACEDIM+1);
     BL_ASSERT(lev >= 0 && lev < this->GetParticles().size());
 
     const ParticleLevel& pmap = this->GetParticles(lev);
@@ -320,7 +320,7 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::sumParticleMomentum (int          lev,
         D_TERM(mom[0] += mom_0;, mom[1] += mom_1;, mom[2] += mom_2;);
     }
 
-    amrex::ParallelDescriptor::ReduceRealSum(mom,BL_SPACEDIM);
+    amrex::ParallelDescriptor::ReduceRealSum(mom,AMREX_SPACEDIM);
 }
 
 template <int NSR,int NSI,int NAR,int NAI>
@@ -341,7 +341,7 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
 {
     BL_PROFILE("NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep(lev)");
     amrex::Real            dt               = 1e50;
-    BL_ASSERT(NSR >= BL_SPACEDIM+1);
+    BL_ASSERT(NSR >= AMREX_SPACEDIM+1);
     BL_ASSERT(lev >= 0);
 
     if (this->GetParticles().size() == 0)
@@ -368,12 +368,12 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
                                              acceleration.nComp(), acceleration.nGrow()));
         if(acceleration.boxArray() == ac_pointer->boxArray())//this->finestLevel() == 0)
         {
-            ac_pointer->Redistribute(acceleration,0,0,BL_SPACEDIM,acceleration.nGrowVect());
+            ac_pointer->Redistribute(acceleration,0,0,AMREX_SPACEDIM,acceleration.nGrowVect());
             ac_pointer->FillBoundary(geom.periodicity()); // DO WE NEED GHOST CELLS FILLED ???
         }
         else
         {
-            ac_pointer->ParallelCopy(acceleration,0,0,BL_SPACEDIM,acceleration.nGrowVect(),acceleration.nGrowVect());
+            ac_pointer->ParallelCopy(acceleration,0,0,AMREX_SPACEDIM,acceleration.nGrowVect(),acceleration.nGrowVect());
             ac_pointer->FillBoundary(geom.periodicity()); // DO WE NEED GHOST CELLS FILLED ???
         }
     }

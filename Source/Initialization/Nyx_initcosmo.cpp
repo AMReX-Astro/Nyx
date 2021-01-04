@@ -108,13 +108,13 @@ void Nyx::initcosmo()
 #ifdef GRAVITY
     Real comoving_OmL;
     Real Gconst;
-    const Real len[BL_SPACEDIM] = {geom.ProbLength(0),geom.ProbLength(1),geom.ProbLength(2)};
+    const Real len[AMREX_SPACEDIM] = {geom.ProbLength(0),geom.ProbLength(1),geom.ProbLength(2)};
 
     Real particleMass;
     std::string mfDirName;
 
     Real redshift=-1;
-    Vector<int> n_part(BL_SPACEDIM);
+    Vector<int> n_part(AMREX_SPACEDIM);
 
     if (level > parent->useFixedUpToLevel())
     {
@@ -139,7 +139,7 @@ void Nyx::initcosmo()
 #endif
     ParmParse pp2("nyx");
     pp2.get("initial_z",redshift);
-    pp2.getarr("n_particles",n_part,0,BL_SPACEDIM);
+    pp2.getarr("n_particles",n_part,0,AMREX_SPACEDIM);
     
 #ifdef NUFLUID
     Real comoving_OmNu;
@@ -228,7 +228,7 @@ void Nyx::initcosmo()
     pp.get("ic-source", icSource);
     int baryon_den, baryon_vx;
     int part_dx, part_vx;
-    Real vel_fac[BL_SPACEDIM], dis_fac[BL_SPACEDIM];
+    Real vel_fac[AMREX_SPACEDIM], dis_fac[AMREX_SPACEDIM];
     const Real* dx = geom.CellSize();
 
 #ifdef NUFLUID
@@ -259,7 +259,7 @@ void Nyx::initcosmo()
           nu_vx = -1;
 #endif
        }
-       for (int n=0; n < BL_SPACEDIM; n++)
+       for (int n=0; n < AMREX_SPACEDIM; n++)
        {
           //vel_fac[n] = comoving_a * len[n]/comoving_h;
           //vel_fac[n] = len[n]/comoving_h;
@@ -286,7 +286,7 @@ void Nyx::initcosmo()
 #endif
        // Velocities are proportional to displacements by
        // LBox [MPc] * a * H [km/s/MPc]
-       for (int n=0;n<BL_SPACEDIM;n++)
+       for (int n=0;n<AMREX_SPACEDIM;n++)
        {
           vel_fac[n] = len[n]*comoving_a*std::sqrt(comoving_OmM/pow(comoving_a,3)+comoving_OmL)*comoving_h*100;
           dis_fac[n] = len[n];

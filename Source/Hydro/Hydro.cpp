@@ -348,7 +348,7 @@ pc_consup(
     amrex::Box const& fbx = surroundingNodes(bx, dir);
     const amrex::Real dx = del[dir];
 
-    const GpuArray<Real,BL_SPACEDIM>  area{ del[1]*del[2], del[0]*del[2], del[0]*del[1] };
+    const GpuArray<Real,AMREX_SPACEDIM>  area{ del[1]*del[2], del[0]*del[2], del[0]*del[1] };
 
     amrex::ParallelFor(fbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
 
@@ -370,11 +370,22 @@ pc_consup(
       pc_update(i, j, k, u, update, flx, vol, pdivu, a_old, a_new, dt, gamma_minus_1);
   });
 
-  for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
+  const Real a_half = 0.5*(a_old + a_new);
+  const Real a_half_inv = 1.0 / a_half;
+  const Real a_new_inv = 1.0 / a_new;
+  const Real a_newsq_inv = 1.0 / (a_new * a_new);
+
+  const GpuArray<Real,8> a_fact {a_half_inv,a_new_inv,a_new_inv,a_new_inv,
+                                 a_half*a_newsq_inv,a_half*a_newsq_inv,a_half_inv,a_half_inv};
+
+  // Change scaling for flux registers
+  for (int dir = 0; dir < AMREX_SPACEDIM; dir++) 
+  {
     amrex::Box const& fbx = surroundingNodes(bx, dir);
-    amrex::ParallelFor(fbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-        // Change scaling for flux registers
-        pc_ext_flx_dt(i, j, k, flx[dir], a_old, a_new);
+    amrex::ParallelFor(fbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept 
+    {
+        for (int n = 0; n < flx[dir].nComp(); ++n)
+            flx[dir](i,j,k,n) *= a_fact[n];
     });
   }
 }

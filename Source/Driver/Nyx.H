@@ -44,7 +44,7 @@ using namespace ascent;
 using std::istream;
 using std::ostream;
 #ifdef AMREX_PARTICLES
-typedef NyxParticleContainer<1+BL_SPACEDIM+3> StellarParticleContainer;
+typedef NyxParticleContainer<1+AMREX_SPACEDIM+3> StellarParticleContainer;
 #endif
 #ifdef NO_HYDRO
 enum StateType {

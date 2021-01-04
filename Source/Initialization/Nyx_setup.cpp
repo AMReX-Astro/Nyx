@@ -57,7 +57,7 @@ set_scalar_bc(BCRec& bc, const BCRec& phys_bc)
 {
     const int* lo_bc = phys_bc.lo();
     const int* hi_bc = phys_bc.hi();
-    for (int i = 0; i < BL_SPACEDIM; i++)
+    for (int i = 0; i < AMREX_SPACEDIM; i++)
     {
         bc.setLo(i, scalar_bc[lo_bc[i]]);
         bc.setHi(i, scalar_bc[hi_bc[i]]);
@@ -226,7 +226,7 @@ Nyx::hydro_setup()
 
     store_in_checkpoint = false;
     desc_lst.addDescriptor(Gravity_Type, IndexType::TheCellType(),
-                           StateDescriptor::Point, 1, BL_SPACEDIM,
+                           StateDescriptor::Point, 1, AMREX_SPACEDIM,
                            &cell_cons_interp, state_data_extrap,
                            store_in_checkpoint);
 
@@ -355,7 +355,7 @@ Nyx::hydro_setup()
     derive_lst.add("kineng", IndexType::TheCellType(), 1,
                    derkineng, the_same_box);
     derive_lst.addComponent("kineng", desc_lst, State_Type, Density_comp, 1);
-    derive_lst.addComponent("kineng", desc_lst, State_Type, Xmom_comp, BL_SPACEDIM);
+    derive_lst.addComponent("kineng", desc_lst, State_Type, Xmom_comp, AMREX_SPACEDIM);
 
     //
     // Sound speed (c)
@@ -381,7 +381,7 @@ Nyx::hydro_setup()
     //derive_lst.add("rhog",IndexType::TheCellType(),1,
     //               rhog,the_same_box);
     //derive_lst.addComponent("rhog",desc_lst,State_Type,Density_comp,1);
-    //derive_lst.addComponent("rhog",desc_lst,Gravity_Type,0,BL_SPACEDIM);
+    //derive_lst.addComponent("rhog",desc_lst,Gravity_Type,0,AMREX_SPACEDIM);
     //}
 
     //
@@ -390,7 +390,7 @@ Nyx::hydro_setup()
     derive_lst.add("divu", IndexType::TheCellType(), 1,
                    derdivu, grow_box_by_one);
     derive_lst.addComponent("divu", desc_lst, State_Type, Density_comp, 1);
-    derive_lst.addComponent("divu", desc_lst, State_Type, Xmom_comp, BL_SPACEDIM);
+    derive_lst.addComponent("divu", desc_lst, State_Type, Xmom_comp, AMREX_SPACEDIM);
 
     //
     // Internal energy as derived from rho*E, part of the state
@@ -474,7 +474,7 @@ Nyx::hydro_setup()
     derive_lst.add("magvel", IndexType::TheCellType(), 1,
                    dermagvel, the_same_box);
     derive_lst.addComponent("magvel", desc_lst, State_Type, Density_comp, 1);
-    derive_lst.addComponent("magvel", desc_lst, State_Type, Xmom_comp, BL_SPACEDIM);
+    derive_lst.addComponent("magvel", desc_lst, State_Type, Xmom_comp, AMREX_SPACEDIM);
 
     //
     // Magnitude of vorticity.
@@ -485,21 +485,21 @@ Nyx::hydro_setup()
     //   in order to use the correct interpolation.
     if (Xmom_comp != Density_comp+1)
        amrex::Error("We are assuming Xmom = Density + 1 in Nyx_setup.cpp");
-    derive_lst.addComponent("magvort",desc_lst,State_Type,Density_comp,BL_SPACEDIM+1);
+    derive_lst.addComponent("magvort",desc_lst,State_Type,Density_comp,AMREX_SPACEDIM+1);
 
     //
     // Magnitude of momentum.
     //
     derive_lst.add("magmom", IndexType::TheCellType(), 1,
                    dermagmom, the_same_box);
-    derive_lst.addComponent("magmom", desc_lst, State_Type, Xmom_comp, BL_SPACEDIM);
+    derive_lst.addComponent("magmom", desc_lst, State_Type, Xmom_comp, AMREX_SPACEDIM);
 
     if (do_grav)  
     {
          derive_lst.add("maggrav", IndexType::TheCellType(), 1,
                         dermaggrav,
                         the_same_box);
-         derive_lst.addComponent("maggrav", desc_lst, Gravity_Type, 0, BL_SPACEDIM);
+         derive_lst.addComponent("maggrav", desc_lst, Gravity_Type, 0, AMREX_SPACEDIM);
     }
 
     //
@@ -656,7 +656,7 @@ Nyx::no_hydro_setup()
 
     store_in_checkpoint = false;
     desc_lst.addDescriptor(Gravity_Type, IndexType::TheCellType(),
-                           StateDescriptor::Point, 1, BL_SPACEDIM,
+                           StateDescriptor::Point, 1, AMREX_SPACEDIM,
                            &cell_cons_interp, state_data_extrap,
                            store_in_checkpoint);
 
@@ -678,7 +678,7 @@ Nyx::no_hydro_setup()
        derive_lst.add("maggrav", IndexType::TheCellType(), 1,
                       dermaggrav,
                       the_same_box);
-       derive_lst.addComponent("maggrav", desc_lst, Gravity_Type, 0, BL_SPACEDIM);
+       derive_lst.addComponent("maggrav", desc_lst, Gravity_Type, 0, AMREX_SPACEDIM);
     }
 
     // We want a derived type that corresponds to the number of particles in

@@ -36,7 +36,7 @@ Nyx::ReadPlotFile (bool               first,
     const Vector<std::string> plotnames  = amrData.PlotVarNames();
 
     // Sanity checks
-    for (int i = 0; i < BL_SPACEDIM; i++)
+    for (int i = 0; i < AMREX_SPACEDIM; i++)
     {
         if (amrData.ProbLo()[i] != geom.ProbLo()[i])
         {
