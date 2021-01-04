@@ -16,6 +16,7 @@ target_sources( ${EXE_NAME}
    sum_integrated_quantities.cpp
    sum_utils.cpp
    Nyx.H
+   Prob.H
    )
 
 

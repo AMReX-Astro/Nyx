@@ -1,4 +1,4 @@
-set(_sources     Prob.H)
+set(_sources     Prob.cpp Prob_error.cpp)
 set(_input_files inputs inputs.regtest)
 
 # Internal option for this test

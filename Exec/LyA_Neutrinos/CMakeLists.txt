@@ -1,4 +1,4 @@
-set(_sources     Prob.H)
+set(_sources     Prob.cpp Prob_error.cpp)
 set(_input_files inputs inputs.no_hydro_64 inputs.rt ascent_actions.yaml )
 list(APPEND _input_files 32.nyx 64sssss_20mpc.nyx TREECOOL_middle)
 

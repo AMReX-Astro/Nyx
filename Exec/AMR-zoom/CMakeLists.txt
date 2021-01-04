@@ -1,4 +1,4 @@
-set(_sources     Prob.H)
+set(_sources     Prob.cpp Prob_error.cpp)
 set(_input_files inputs)
 
 # setup_nyx_executable(_sources _input_files)
