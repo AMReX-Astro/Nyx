@@ -80,7 +80,7 @@ Nyx::write_info ()
 #ifndef NO_HYDRO
                 if (do_hydro == 1)
                 {
-                   data_loga << std::setw(14) <<  std::setprecision(rlp) << max_t;
+                   data_loga << std::setw(14) <<  std::setprecision(rlpt) << max_t;
                    data_loga << std::setw(14) <<  std::setprecision(rlp) << rho_T_avg;
                    data_loga << std::setw(14) <<  std::setprecision(rlp) << T_avg;
                    data_loga << std::setw(14) <<  std::setprecision(rlpt) << T_meanrho;
