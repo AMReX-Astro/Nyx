@@ -10,7 +10,7 @@ Nyx::write_info ()
     Real time_unit = 3.0856776e19 / 31557600.0; // conversion to Julian years
 
     int rlp  = Nyx::runlog_precision;
-    int rlpt = Nyx::runlog_precision_terse;
+    int rlpt = amrex::min(rlp,Nyx::runlog_precision_terse);
 
     if (ndatalogs > 0)
     {
