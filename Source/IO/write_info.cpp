@@ -12,6 +12,8 @@ Nyx::write_info ()
     int rlp  = Nyx::runlog_precision;
     int rlpt = amrex::min(rlp,Nyx::runlog_precision_terse);
 
+    amrex::Print() << "PRECISION " << rlp << " " << rlpt << std::endl; 
+
     if (ndatalogs > 0)
     {
 #ifndef NO_HYDRO
@@ -107,11 +109,11 @@ Nyx::write_info ()
 #ifndef NO_HYDRO
                 if (do_hydro == 1)
                 {
-                   data_loga << std::setw(14) <<  std::setprecision(rlp) << max_t;
+                   data_loga << std::setw(14) <<  std::setprecision(rlpt) << max_t;
                    data_loga << std::setw(14) <<  std::setprecision(rlp) << rho_T_avg;
                    data_loga << std::setw(14) <<  std::setprecision(rlp) << T_avg;
-                   data_loga << std::setw(14) <<  std::setprecision(rlp) << T_meanrho;
-                   data_loga << std::setw(14) <<  std::setprecision(rlp) << 1.0/Tinv_avg;
+                   data_loga << std::setw(14) <<  std::setprecision(rlpt) << T_meanrho;
+                   data_loga << std::setw(14) <<  std::setprecision(rlpt) << 1.0/Tinv_avg;
                    data_loga << std::setw(14) <<  std::setprecision(rlp) << 0.021*(1.0+new_z)*(1.0+new_z);
                    data_loga << std::setw(14) <<  std::setprecision(rlp) << whim_mass_frac;
                    data_loga << std::setw(14) <<  std::setprecision(rlp) << whim_vol_frac;
