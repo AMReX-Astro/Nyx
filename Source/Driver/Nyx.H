@@ -147,6 +147,7 @@ public:
     static int write_hdf5;
 
     static int runlog_precision;
+    static int runlog_precision_terse;
 
     //
     //Define data descriptors.

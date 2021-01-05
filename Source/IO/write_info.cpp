@@ -9,7 +9,8 @@ Nyx::write_info ()
     int ndatalogs = parent->NumDataLogs();
     Real time_unit = 3.0856776e19 / 31557600.0; // conversion to Julian years
 
-    int rlp = Nyx::runlog_precision;
+    int rlp  = Nyx::runlog_precision;
+    int rlpt = Nyx::runlog_precision_terse;
 
     if (ndatalogs > 0)
     {
@@ -82,8 +83,8 @@ Nyx::write_info ()
                    data_loga << std::setw(14) <<  std::setprecision(rlp) << max_t;
                    data_loga << std::setw(14) <<  std::setprecision(rlp) << rho_T_avg;
                    data_loga << std::setw(14) <<  std::setprecision(rlp) << T_avg;
-                   data_loga << std::setw(14) <<  std::setprecision(rlp) << T_meanrho;
-                   data_loga << std::setw(14) <<  std::setprecision(rlp) << 1.0/Tinv_avg;
+                   data_loga << std::setw(14) <<  std::setprecision(rlpt) << T_meanrho;
+                   data_loga << std::setw(14) <<  std::setprecision(rlpt) << 1.0/Tinv_avg;
                    data_loga << std::setw(14) <<  std::setprecision(rlp) << 0.021*(1.0+old_z)*(1.0+old_z);
                    data_loga << std::setw(14) <<  std::setprecision(rlp) << whim_mass_frac;
                    data_loga << std::setw(14) <<  std::setprecision(rlp) << whim_vol_frac;

@@ -185,7 +185,10 @@ Real Nyx::mass_seed         = 1.e5;
 #endif
 
 // The default for how many digits to use for each column in the runlog
+// We have a second parameter (rlp_terse) for regression-testing those quantities 
+//    which show more variation than others
 int Nyx::runlog_precision = 6;
+int Nyx::runlog_precision_terse = 6;
 
 int Nyx::write_parameters_in_plotfile = true;
 int Nyx::write_skip_prepost = 0;
@@ -346,6 +349,7 @@ Nyx::read_params ()
     pp_nyx.query("strict_subcycling",strict_subcycling);
 
     pp_nyx.query("runlog_precision",runlog_precision);
+    pp_nyx.query("runlog_precision_terse",runlog_precision_terse);
 
     pp_nyx.query("write_parameter_file",write_parameters_in_plotfile);
     if(pp_nyx.query("write_hdf5",write_hdf5))
