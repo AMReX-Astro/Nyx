@@ -65,8 +65,9 @@ jobs:
         make -j 2
 
   nyx-dpcpp:
-    name: DPCPP@PubBeta GFortran@7.5 C++17
-    runs-on: ubuntu-latest
+    name: DPCPP GFortran@7.5 C++17
+    runs-on: ubuntu-20.04
+    env: {CXXFLAGS: "-fno-operator-names"}
     steps:
     - uses: actions/checkout@v2
     - name: Dependencies
@@ -76,10 +77,10 @@ jobs:
         set +e
         source /opt/intel/oneapi/setvars.sh
         set -e
-        mkdir build
-        cd build
-        cmake ..                                           \
+        cmake  -S . -B build                               \
             -DCMAKE_CXX_COMPILER_ID="Clang"                \
+            -DCMAKE_CXX_COMPILER_VERSION=12.0              \
+            -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT="17"     \
             -DNyx_HEATCOOL=no                              \
             -DNyx_HYDRO=yes                                \
             -DNyx_OMP=no                                   \
@@ -87,7 +88,10 @@ jobs:
             -DCMAKE_C_COMPILER=$(which clang)              \
             -DCMAKE_CXX_COMPILER=$(which dpcpp)            \
             -DCMAKE_Fortran_COMPILER=$(which gfortran)
-        make -j 2
+        cmake --build build --parallel 2
+    # note: setting the CXX compiler ID is a work-around for
+    # the 2021.1 DPC++ release / CMake 3.19.0-3.19.1
+    # https://gitlab.kitware.com/cmake/cmake/-/issues/21551#note_869580
 
   nyx-hip:
     name: HIP ROCm@3.8 GFortran@9.3 C++17
