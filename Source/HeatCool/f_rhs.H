@@ -9,6 +9,9 @@
 static amrex::Vector<void*> ptr_lst;
 //static amrex::Arena* Managed_Arena;
 
+  static constexpr amrex::Real XHYDROGEN=.76;
+  static constexpr amrex::Real YHELIUM= 7.8947368421e-2;
+
 static void* sunalloc(size_t mem_size)
 {
   amrex::MultiFab::updateMemUsage ("Sunalloc", mem_size, nullptr);
@@ -173,7 +176,7 @@ f_rhs_rpar(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, amrex
 
     // Get gas temperature and individual ionization species
     // testing different memory structures
-    iterate_ne_device(atomic_rates, JH_vode, JHe_vode, z_vode, U, &T_vode, nh, &ne_vode, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1);
+    iterate_ne_device(atomic_rates, JH_vode, JHe_vode, z_vode, U, &T_vode, nh, &ne_vode, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1, XHYDROGEN);
     // Convert species to CGS units: 
     ne_vode = nh * ne_vode;
     nh0   = nh * nh0;

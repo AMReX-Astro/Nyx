@@ -249,6 +249,7 @@ ode_eos_finalize_struct(const int i, const int j, const int k, const int idx, At
     {
         if ((state_n4(i,j,k,Eint_comp) + delta_time * ahalf * I_R(i,j,k) / aendsq) / state_n4(i,j,k,Density_comp) < 0.e0)
         {
+            Real YHELIUM = (1.0-f_rhs_data->h_species)/(4.0*f_rhs_data->h_species);
             f_rhs_data->T_vode[idx]  = 10.0;
             f_rhs_data->ne_vode[idx] = 0.0;
             mu     = (1.0e0+4.0e0*YHELIUM) / (1.0e0+YHELIUM+f_rhs_data->ne_vode[idx]);
@@ -260,6 +261,7 @@ ode_eos_finalize_struct(const int i, const int j, const int k, const int idx, At
     {
     if(e_out < 0.e0)
     {
+        Real YHELIUM = (1.0-f_rhs_data->h_species)/(4.0*f_rhs_data->h_species);
         f_rhs_data->T_vode[idx]  = 10.0;
         f_rhs_data->ne_vode[idx] = 0.0;
         mu     = (1.0e0+4.0e0*YHELIUM) / (1.0e0+YHELIUM+f_rhs_data->ne_vode[idx]);
@@ -325,14 +327,14 @@ f_rhs_struct(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, Ato
     // Converts from code units to CGS
     rho = rho_vode * density_to_cgs * (1.0e0+amrex::Math::abs(z_vode))*(1.0e0+amrex::Math::abs(z_vode))*(1.0e0+amrex::Math::abs(z_vode));
     U = e_in * e_to_cgs;
-    nh  = rho*XHYDROGEN/MPROTON;
+    nh  = rho*f_rhs_data->h_species/MPROTON;
 
     // Get gas temperature and individual ionization species
     // testing different memory structures
     if (f_rhs_data->inhomogeneous_on)
-        iterate_ne_device(atomic_rates, f_rhs_data->JH_vode_arr[idx], f_rhs_data->JHe_vode, z_vode, U, &T_vode, nh, &ne_vode, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1);
+        iterate_ne_device(atomic_rates, f_rhs_data->JH_vode_arr[idx], f_rhs_data->JHe_vode, z_vode, U, &T_vode, nh, &ne_vode, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1, f_rhs_data->h_species);
     else
-        iterate_ne_device(atomic_rates, f_rhs_data->JH_vode, f_rhs_data->JHe_vode, z_vode, U, &T_vode, nh, &ne_vode, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1);
+        iterate_ne_device(atomic_rates, f_rhs_data->JH_vode, f_rhs_data->JHe_vode, z_vode, U, &T_vode, nh, &ne_vode, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1, f_rhs_data->h_species);
     // Convert species to CGS units: 
     ne_vode = nh * ne_vode;
     nh0   = nh * nh0;

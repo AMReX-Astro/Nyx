@@ -51,7 +51,7 @@ void interp_to_this_z(AtomicRates* atomic_rates, const Real z, Real & ggh0, Real
 AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void ion_n_device(AtomicRates* atomic_rates, const int JH, const int JHe, 
                                         const Real U, const Real nh, const Real* ne,
                                         Real& nhp, Real& nhep, Real& nhepp,
-                                        Real* t, const Real gamma_minus_1,
+                                        Real* t, const Real gamma_minus_1, const Real h_species,
                                         const Real z)
 {
 
@@ -63,6 +63,7 @@ AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void ion_n_device(AtomicRates* atomic_r
     int j;
 
     Real deltaT = (TCOOLMAX - TCOOLMIN)/NCOOLTAB;
+    Real YHELIUM = (1.0-h_species)/(4.0*h_species);
     mu = (1.0e0+4.0e0*YHELIUM) / (1.0e0+YHELIUM+*ne);
     /*
     Real MPROTON = m_proton * M_unit;
@@ -137,12 +138,13 @@ void iterate_ne_device(AtomicRates* atomic_rates, const int JH, const int JHe, c
                        const Real U, Real* t, const Real nh,
                        Real* ne, Real& nh0, Real& nhp,
                        Real& nhe0, Real& nhep, Real& nhepp,
-                       const Real gamma_minus_1)
+                       const Real gamma_minus_1, const Real h_species)
 {
     int i;
     Real f, df, eps, ne2;
     Real nhp_plus, nhep_plus, nhepp_plus;
     Real dnhp_dne, dnhep_dne, dnhepp_dne, dne;
+    Real YHELIUM = (1.0-h_species)/(4.0*h_species);
 
     i = 0;
     *ne = 1.0e0; // 0 is a bad guess
@@ -150,7 +152,7 @@ void iterate_ne_device(AtomicRates* atomic_rates, const int JH, const int JHe, c
     for(i = i+1;i<=15;i++)  // Newton-Raphson solver
     {
         // Ion number densities
-        ion_n_device(atomic_rates, JH, JHe, U, nh, ne, nhp, nhep, nhepp, t, gamma_minus_1, z);
+        ion_n_device(atomic_rates, JH, JHe, U, nh, ne, nhp, nhep, nhepp, t, gamma_minus_1, h_species, z);
 
         // Forward difference derivatives
         if (*ne > 0.0e0)
@@ -159,7 +161,7 @@ void iterate_ne_device(AtomicRates* atomic_rates, const int JH, const int JHe, c
             eps = 1.0e-24;
 
         ne2 = *ne+eps;
-        ion_n_device(atomic_rates, JH, JHe, U, nh, &ne2, nhp_plus, nhep_plus, nhepp_plus, t, gamma_minus_1, z);
+        ion_n_device(atomic_rates, JH, JHe, U, nh, &ne2, nhp_plus, nhep_plus, nhepp_plus, t, gamma_minus_1, h_species, z);
 
         dnhp_dne   = (nhp_plus   - nhp)   / eps;
         dnhep_dne  = (nhep_plus  - nhep)  / eps;
@@ -177,7 +179,7 @@ void iterate_ne_device(AtomicRates* atomic_rates, const int JH, const int JHe, c
     }
 
     // Get rates for the final ne
-    ion_n_device(atomic_rates, JH, JHe, U, nh, ne, nhp, nhep, nhepp, t, gamma_minus_1, z);
+    ion_n_device(atomic_rates, JH, JHe, U, nh, ne, nhp, nhep, nhepp, t, gamma_minus_1, h_species, z);
 
     // Neutral fractions:
     nh0   = 1.0e0 - nhp;
@@ -199,13 +201,14 @@ AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_T_given_Re_device(
 
     Real T_in = *T;
     Real Ne_in = *Ne;
-    iterate_ne_device(atomic_rates, JH, JHe, z, U, T, nh, Ne, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1);
+    iterate_ne_device(atomic_rates, JH, JHe, z, U, T, nh, Ne, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1, h_species);
 }
 
 AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_given_RT(
     AtomicRates* atomic_rates, Real gamma_minus_1, 
     Real h_species, Real* e, Real* P, Real R, Real T, Real Ne,Real comoving_a)
 {
+    Real YHELIUM = (1.0-h_species)/(4.0*h_species);
     Real mu = (1.0+4.0*YHELIUM) / (1.0+YHELIUM+Ne);
     *e = T / (gamma_minus_1 * mp_over_kb * mu);
     *P  = gamma_minus_1 * (R) * (*e);
