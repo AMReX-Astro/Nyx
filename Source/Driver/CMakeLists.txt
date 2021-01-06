@@ -49,9 +49,7 @@ endif ()
 # the consuming target has property DEFAULT_TARGET turned on
 # Note that I need to provide the full path to the main file
 #
-set(_use_default_main $<BOOL:$<TARGET_PROPERTY:DEFAULT_MAIN>>)
 target_sources( nyxcore
    PUBLIC
    $<${_use_default_main}:${CMAKE_CURRENT_LIST_DIR}/main.cpp>
    )
-unset(_use_default_main)

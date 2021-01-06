@@ -28,7 +28,7 @@ if (Nyx_HYDRO)
 
    target_sources( nyxcore
       PUBLIC
-      $<$<NOT:${_has_agn}>:Nyx_sources.cpp>
+      $<$<NOT:${_has_agn}>:${CMAKE_CURRENT_LIST_DIR}/Nyx_sources.cpp>
       )
 
 endif ()
