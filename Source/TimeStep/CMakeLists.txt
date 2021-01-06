@@ -26,11 +26,9 @@ if (Nyx_HYDRO)
          )
    endif ()
 
-   if (NOT Nyx_AGN)
-      target_sources( nyxcore
-         PRIVATE
-         Nyx_sources.cpp
-         )
-   endif ()
+   target_sources( nyxcore
+      PUBLIC
+      $<$<NOT:${_has_agn}>:Nyx_sources.cpp>
+      )
 
 endif ()

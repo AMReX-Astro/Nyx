@@ -1,10 +1,12 @@
 target_include_directories(nyxcore
    PUBLIC
-   $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}> )
+   $<${_has_agn}:${CMAKE_CURRENT_LIST_DIR}> )
 
 target_sources( nyxcore
-   PRIVATE
-   AGN_sources.cpp
-   AGN_halos.cpp
-   agn_F.H
+   PUBLIC
+   $<${_has_agn}:
+   ${CMAKE_CURRENT_LIST_DIR}/AGN_sources.cpp
+   ${CMAKE_CURRENT_LIST_DIR}/AGN_halos.cpp
+   ${CMAKE_CURRENT_LIST_DIR}/agn_F.H
+   >
    )

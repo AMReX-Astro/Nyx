@@ -4,7 +4,7 @@
 macro (nyx_setup_executable _srcs _inputs)
 
    cmake_parse_arguments( "" ""
-      "BASE_NAME;RUNTIME_SUBDIR;EXTRA_DEFINITIONS;MAIN" "" ${ARGN} )
+      "BASE_NAME;RUNTIME_SUBDIR;EXTRA_DEFINITIONS;MAIN" "PROPERTIES" ${ARGN} )
 
    if (_BASE_NAME)
       set(_base_name ${_BASE_NAME})
@@ -41,6 +41,11 @@ macro (nyx_setup_executable _srcs _inputs)
       PROPERTIES
       DEFAULT_MAIN ${DEFAULT_MAIN}  # This is a custom property to turn on/off the default main in nyxcore
       RUNTIME_OUTPUT_DIRECTORY ${_exe_dir} )
+
+   # Set additional properties
+   foreach( _prop IN LISTS _PROPERTIES )
+         set_target_properties(${_exe_name} PROPERTIES ${_prop} ON)
+   endforeach ()
 
    if (_EXTRA_DEFINITIONS)
       target_compile_definitions(${_exe_name} PRIVATE ${_EXTRA_DEFINITIONS})

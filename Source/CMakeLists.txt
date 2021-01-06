@@ -5,52 +5,61 @@
 ##############################################################################
 add_library(nyxcore OBJECT)
 
+# Variables to store genex for conditional compilation based on
+# consuming target properties.
+# Properties that the consuming target can set are:
+#
+# DEFAULT_MAIN
+# AGN
+# NEUTRINO_PARTICLES
+# NEUTRINO_DARK_PARTICLES
+#
+set(_use_default_main  $<BOOL:$<TARGET_PROPERTY:DEFAULT_MAIN>>)
+set(_has_agn           $<BOOL:$<TARGET_PROPERTY:AGN>>)
+set(_has_neutrino      $<BOOL:$<TARGET_PROPERTY:NEUTRINO_PARTICLES>>)
+set(_has_neutrino_dark $<BOOL:$<TARGET_PROPERTY:NEUTRINO_DARK_PARTICLES>>)
+
+
 ##############################################################################
 #                                                                            #
 #                                Nyx defines                                 #
 #                                                                            #
 ##############################################################################
-target_compile_definitions( nyxcore PUBLIC $<BUILD_INTERFACE:CRSEGRNDOMP>) # Coarse grid OMP approach
+target_compile_definitions( nyxcore PUBLIC CRSEGRNDOMP) # Coarse grid OMP approach
 
 if (Nyx_HENSON)
-   target_compile_definitions( nyxcore PUBLIC $<BUILD_INTERFACE:HENSON>)
+   target_compile_definitions( nyxcore PUBLIC HENSON)
 endif ()
 
 if (Nyx_GRAVITY)
-   target_compile_definitions( nyxcore PUBLIC $<BUILD_INTERFACE:GRAVITY>)
+   target_compile_definitions( nyxcore PUBLIC GRAVITY)
 endif ()
 
 if (NOT Nyx_HYDRO)
-   target_compile_definitions( nyxcore PUBLIC $<BUILD_INTERFACE:NO_HYDRO>)
+   target_compile_definitions( nyxcore PUBLIC NO_HYDRO)
 endif()
 
 if (Nyx_HEATCOOL)
-   target_compile_definitions( nyxcore PUBLIC $<BUILD_INTERFACE:HEATCOOL>)
+   target_compile_definitions( nyxcore PUBLIC HEATCOOL)
 endif()
 
 if (Nyx_CONST_SPECIES)
-   target_compile_definitions(nyxcore PUBLIC $<BUILD_INTERFACE:CONST_SPECIES>)
+   target_compile_definitions(nyxcore PUBLIC CONST_SPECIES)
 endif()
 
-if (Nyx_NEUTRINO_PARTICLES)
-   target_compile_definitions( nyxcore PUBLIC $<BUILD_INTERFACE:NEUTRINO_PARTICLES>)
-endif()
-
-if (Nyx_NEUTRINO_DARK_PARTICLES)
-   target_compile_definitions( nyxcore PUBLIC $<BUILD_INTERFACE:NEUTRINO_DARK_PARTICLES>)
-endif()
+target_compile_definitions( nyxcore PUBLIC $<${_has_neutrino}:NEUTRINO_PARTICLES>)
+target_compile_definitions( nyxcore PUBLIC $<${_has_neutrino_dark}:NEUTRINO_DARK_PARTICLES>)
 
 if (Nyx_SDC)
-   target_compile_definitions( nyxcore PUBLIC $<BUILD_INTERFACE:SDC>)
+   target_compile_definitions( nyxcore PUBLIC SDC)
 endif()
 
 if (Nyx_FORCING)
-   target_compile_definitions( nyxcore PUBLIC $<BUILD_INTERFACE:FORCING>)
+   target_compile_definitions( nyxcore PUBLIC FORCING)
 endif ()
 
 if (Nyx_SUNDIALS)
-   target_compile_definitions( nyxcore
-      PUBLIC $<BUILD_INTERFACE:AMREX_USE_SUNDIALS>)
+   target_compile_definitions( nyxcore PUBLIC AMREX_USE_SUNDIALS)
 endif ()
 
 ##############################################################################
@@ -61,8 +70,6 @@ endif ()
 if (NOT CMAKE_CXX_FLAGS)
    target_link_libraries(nyxcore PUBLIC AMReX::Flags_CXX)
 endif ()
-
-
 
 ##############################################################################
 #                                                                            #
@@ -87,9 +94,7 @@ endif ()
 #                               Nyx sources                                  #
 #                                                                            #
 ##############################################################################
-if (Nyx_AGN)
-   add_subdirectory(AGN)
-endif ()
+add_subdirectory(AGN)
 
 add_subdirectory(DerivedQuantities)
 

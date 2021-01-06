@@ -47,7 +47,7 @@ endif ()
 #
 # At compile time, this will include main.cpp only if
 # the consuming target has property DEFAULT_TARGET turned on
-# Note that I need to provide the ful path to the main file
+# Note that I need to provide the full path to the main file
 #
 set(_use_default_main $<BOOL:$<TARGET_PROPERTY:DEFAULT_MAIN>>)
 target_sources( nyxcore

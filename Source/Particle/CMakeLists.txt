@@ -10,19 +10,21 @@ target_sources( nyxcore
    DarkMatterParticleContainer.cpp
    )
 
-if (Nyx_AGN)
-   target_sources( nyxcore
-      PRIVATE
-      AGNParticleContainer.H
-      AGNParticleContainer.cpp
-      )
-endif ()
 
-if (Nyx_NEUTRINO_PARTICLES)
-   target_sources( nyxcore
-      PRIVATE
-      NeutrinoParticleContainer.cpp
-      NeutrinoParticleContainer.H
-      NeutrinoParticles_K.H
-      )
-endif ()
+target_sources( nyxcore
+   PUBLIC
+   $<${_has_agn}:
+   ${CMAKE_CURRENT_LIST_DIR}/AGNParticleContainer.H
+   ${CMAKE_CURRENT_LIST_DIR}/AGNParticleContainer.cpp
+   >
+   )
+
+
+target_sources( nyxcore
+   PUBLIC
+   $<${_has_neutrino}:
+   ${CMAKE_CURRENT_LIST_DIR}/NeutrinoParticleContainer.cpp
+   ${CMAKE_CURRENT_LIST_DIR}/NeutrinoParticleContainer.H
+   ${CMAKE_CURRENT_LIST_DIR}/NeutrinoParticles_K.H
+   >
+   )
