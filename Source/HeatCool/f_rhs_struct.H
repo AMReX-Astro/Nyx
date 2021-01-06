@@ -448,7 +448,7 @@ f_rhs_struct(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, Ato
     amrex::Real nh, nh0, nhp, nhe0, nhep, nhepp;
     int j;
     amrex::Real z_vode, rho_vode, T_vode, ne_vode;
-    amrex::Real uvb_density_A, uvb_density_B, mean_rhob, JH_vode, JHe_vode, gamma_minus_1;
+    amrex::Real uvb_density_A, uvb_density_B, JH_vode, JHe_vode, gamma_minus_1;
     uvb_density_A=1.0;
     uvb_density_B=0.0;
     gamma_minus_1=2.0/3.0;
@@ -560,7 +560,7 @@ f_rhs_struct(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, Ato
     // Heating terms
     heat = JH_vode*nh0*eh0 + JH_vode*nhe0*ehe0 + JHe_vode*nhep*ehep;
     
-    rho_heat = uvb_density_A * std::pow((rho_vode/mean_rhob),uvb_density_B);
+    rho_heat = uvb_density_A * std::pow((rho_vode/atomic_rates->mean_rhob),uvb_density_B);
     heat = rho_heat*heat;
 
     // Convert back to code units

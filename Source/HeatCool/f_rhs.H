@@ -127,10 +127,10 @@ f_rhs_rpar(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, amrex
     amrex::Real nh, nh0, nhp, nhe0, nhep, nhepp;
     int j;
     amrex::Real z_vode, rho_vode, T_vode, ne_vode;
-    amrex::Real uvb_density_A, uvb_density_B, mean_rhob, JH_vode, JHe_vode, gamma_minus_1;
+    amrex::Real uvb_density_A, uvb_density_B, JH_vode, JHe_vode, gamma_minus_1;
     uvb_density_A=1.0;
-        uvb_density_B=0.0;
-        gamma_minus_1=2.0/3.0;
+    uvb_density_B=0.0;
+    gamma_minus_1=2.0/3.0;
         /*
     ! Flash reionization?
     if ((flash_h .eqv. .true.) .and. (z .gt. zhi_flash)) then
@@ -232,7 +232,7 @@ f_rhs_rpar(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, amrex
     // Heating terms
     heat = JH_vode*nh0*eh0 + JH_vode*nhe0*ehe0 + JHe_vode*nhep*ehep;
     
-    rho_heat = uvb_density_A * std::pow((rho_vode/mean_rhob),uvb_density_B);
+    rho_heat = uvb_density_A * std::pow((rho_vode/atomic_rates->mean_rhob),uvb_density_B);
     heat = rho_heat*heat;
 
     // Convert back to code units
@@ -245,6 +245,6 @@ f_rhs_rpar(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, amrex
     rpar[0]=T_vode;
     rpar[1]=ne_vode;
     rpar[2]=rho_vode;
-        return 0;
+    return 0;
 }
 #endif
