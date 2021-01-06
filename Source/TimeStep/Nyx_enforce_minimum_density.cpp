@@ -70,14 +70,14 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& 
     int lfirst_spec  = FirstSpec_comp;
 #endif
     Real lsmall_dens = small_dens;
-  
+
     Real cur_time = state[State_Type].curTime();
 
     // We need to define this temporary because S_new only has one ghost cell and we need two.
     MultiFab Sborder;
     Sborder.define(grids, S_new.DistributionMap(), S_new.nComp(), 2);
 
-    // Define face-based coefficients to be defined when enforcing minimum density 
+    // Define face-based coefficients to be defined when enforcing minimum density
     //     then used to enjoy the updates of all the other variables
     // The ghost face space is only needed as temp space; we only use "valid" faces...
     MultiFab mu_x(amrex::convert(grids,IntVect(1,0,0)), dmap, 1, 1);
@@ -119,8 +119,8 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& 
     if (S_new.contains_nan())
        amrex::Abort("NaN in enforce_minimum_density before we start iterations");
 
-    // 10 is an arbitrary limit here -- just to make sure we don't get stuck here somehow 
-    while (too_low and iter < 10)
+    // 10 is an arbitrary limit here -- just to make sure we don't get stuck here somehow
+    while (too_low && iter < 10)
     {
         // First make sure that all ghost cells are updated because we use them in defining fluxes
         // Note that below we update S_new, not Sborder, so we must FillPatch each time.
@@ -167,7 +167,7 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& 
 
             amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept
             {
-              create_update_for_minimum(i, j, k, Density_comp, sbord_arr, 
+              create_update_for_minimum(i, j, k, Density_comp, sbord_arr,
                                         mu_x_arr, mu_y_arr, mu_z_arr, upd_arr
 #ifndef CONST_SPECIES
                                        ,lfirst_spec, lnum_spec
@@ -184,7 +184,7 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& 
 
         if (S_new.contains_nan())
         {
-           amrex::Print() << "Doing iteration iter " << std::endl; 
+           amrex::Print() << "Doing iteration iter " << std::endl;
            amrex::Abort("   and finding NaN in enforce_minimum_density");
         }
 
@@ -194,24 +194,24 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& 
         // This is used to decide whether to call enforce_min_energy_cons at the end of this routine
         re_new_min_after = S_new.min(Eint_comp);
 
-        if (debug) 
+        if (debug)
         {
              ru_new_min_after = S_new.min(Xmom_comp);
              rv_new_min_after = S_new.min(Ymom_comp);
              rw_new_min_after = S_new.min(Zmom_comp);
              rE_new_min_after = S_new.min(Eden_comp);
             amrex::Print() << "After " << iter+1 << " iterations " << std::endl;
-            amrex::Print() << "  MIN OF rho: old / new / new new " << 
+            amrex::Print() << "  MIN OF rho: old / new / new new " <<
                 rho_old_min_before << " " << rho_new_min_before << " " << rho_new_min_after << std::endl;
-            amrex::Print() << "  MIN OF  ru: old / new / new new " << 
+            amrex::Print() << "  MIN OF  ru: old / new / new new " <<
                 ru_old_min_before << " " <<  ru_new_min_before << " " << ru_new_min_after << std::endl;
-            amrex::Print() << "  MIN OF  rv: old / new / new new " << 
+            amrex::Print() << "  MIN OF  rv: old / new / new new " <<
                 rv_old_min_before << " " << rv_new_min_before << " " << rv_new_min_after << std::endl;
-            amrex::Print() << "  MIN OF  rw: old / new / new new " << 
+            amrex::Print() << "  MIN OF  rw: old / new / new new " <<
                 rw_old_min_before << " " << rw_new_min_before << " " << rw_new_min_after << std::endl;
-            amrex::Print() << "  MIN OF  re: old / new / new new " << 
+            amrex::Print() << "  MIN OF  re: old / new / new new " <<
                 re_old_min_before << " " << re_new_min_before << " " << re_new_min_after << std::endl;
-            amrex::Print() << "  MIN OF  rE: old / new / new new " << 
+            amrex::Print() << "  MIN OF  rE: old / new / new new " <<
                 rE_old_min_before << " " << rE_new_min_before << " " << rE_new_min_after << std::endl;
         }
 
@@ -223,7 +223,7 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& 
     rho_new_sum_after = S_new.sum(0);
 
     amrex::Print() << "After " << iter << " iterations " << std::endl;
-    amrex::Print() << "  SUM OF rho_old / rho_new / new rho_new " << 
+    amrex::Print() << "  SUM OF rho_old / rho_new / new rho_new " <<
             rho_old_sum_before << " " << rho_new_sum_before << " " << rho_new_sum_after << std::endl;
 
     if (rho_new_min_after < small_dens)
