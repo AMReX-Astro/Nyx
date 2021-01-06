@@ -51,7 +51,7 @@ read_binary(
 {
 
   std::ifstream infile(iname, std::ios::in | std::ios::binary);
-  if (not infile.is_open()) {
+  if (!infile.is_open()) {
     amrex::Abort("Unable to open input file " + iname);
   }
 
@@ -59,7 +59,7 @@ read_binary(
     infile.read(reinterpret_cast<char*>(&data[i]), sizeof(data[i]));
   }
   infile.close();
-} 
+}
 
 // -----------------------------------------------------------
 // Read a csv file
@@ -80,7 +80,7 @@ read_csv(
 {
   std::ifstream infile(iname, std::ios::in);
   const std::string memfile = read_file(infile);
-  if (not infile.is_open()) {
+  if (!infile.is_open()) {
     amrex::Abort("Unable to open input file " + iname);
   }
   infile.close();
