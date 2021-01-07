@@ -399,7 +399,7 @@ f_rhs_struct(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, Ato
     else
         heat = f_rhs_data->JH_vode*nh0*eh0 + f_rhs_data->JH_vode*nhe0*ehe0 + f_rhs_data->JHe_vode*nhep*ehep;
 
-	rho_heat = f_rhs_data->uvb_density_A * std::pow((rho_vode/atomic_rates->mean_rhob),f_rhs_data->uvb_density_B);
+        rho_heat = f_rhs_data->uvb_density_A * std::pow((rho_vode/atomic_rates->mean_rhob),f_rhs_data->uvb_density_B);
     heat = rho_heat*heat;
 
     // Convert back to code units
