@@ -1340,7 +1340,7 @@ Nyx::post_timestep (int iteration)
     // Sync up if we're level 0 or if we have particles that may have moved
     // off the next finest level and need to be added to our own level.
     //
-    if ((iteration < ncycle and level < finest_level) || level == 0)
+    if ((iteration < ncycle && level < finest_level) || level == 0)
     {
         for (int i = 0; i < theActiveParticles().size(); i++)
         {

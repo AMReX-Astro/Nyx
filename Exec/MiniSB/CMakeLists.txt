@@ -1,4 +1,4 @@
-set(_sources     Prob.H)
+set(_sources     Prob.cpp Prob_error.cpp)
 set(_input_files
    inputs.32
    inputs.32.plot_z

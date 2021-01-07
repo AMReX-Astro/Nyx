@@ -9,7 +9,7 @@ CEXE_sources += Nyx_error.cpp
 CEXE_sources += sum_integrated_quantities.cpp
 CEXE_sources += sum_utils.cpp
 
-CEXE_headers += Nyx.H
+CEXE_headers += Nyx.H Prob.H
 
 ifeq ($(USE_CGS), TRUE)
 #f90EXE_sources += constants_cgs.f90

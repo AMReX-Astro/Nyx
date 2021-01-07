@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
     std::string file_name = "zhi.bin";
     std::ifstream ifs;
     ifs.open(file_name.c_str(), std::ios::in|std::ios::binary);
-    if ( not ifs ) {
+    if (!ifs ) {
         amrex::Print() << "Failed to open file " << file_name << " for reading. \n";
         amrex::Abort();
     }

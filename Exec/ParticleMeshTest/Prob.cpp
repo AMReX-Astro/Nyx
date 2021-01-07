@@ -4,6 +4,7 @@
 void prob_param_special_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_param)
 {}
 
+#ifndef NO_HYDRO
 AMREX_GPU_DEVICE AMREX_FORCE_INLINE
 void prob_initdata_state(const int i,
                          const int j,
@@ -12,7 +13,7 @@ void prob_initdata_state(const int i,
                            amrex::GeometryData const& geomdata,
                          const amrex::GpuArray<amrex::Real,max_prob_param>& prob_param)
 {
-  // This is the case where we have compiled with states defined 
+  // This is the case where we have compiled with states defined
   //  but they have only one component each so we fill them this way.
   if (state.nComp() == 1)
   {
@@ -31,8 +32,8 @@ void prob_initdata_state(const int i,
     // These will both be set later in the call to init_e.
     state(i,j,k,Eint_comp) = 10.0;
     state(i,j,k,Eden_comp) = state(i,j,k,Eint_comp) + 0.5 / state(i,j,k,Density_comp) *
-      (state(i,j,k,Xmom_comp)*state(i,j,k,Xmom_comp) + 
-       state(i,j,k,Ymom_comp)*state(i,j,k,Ymom_comp) + 
+      (state(i,j,k,Xmom_comp)*state(i,j,k,Xmom_comp) +
+       state(i,j,k,Ymom_comp)*state(i,j,k,Ymom_comp) +
        state(i,j,k,Zmom_comp)*state(i,j,k,Zmom_comp));
 
 #ifndef CONST_SPECIES
@@ -55,7 +56,7 @@ void prob_initdata(const int i,
 
   prob_initdata_state(i, j ,k, state, geomdata, prob_param);
 
-  // This is the case where we have compiled with states defined 
+  // This is the case where we have compiled with states defined
   //  but they have only one component each so we fill them this way.
   if (state.nComp() == 1 && diag_eos.nComp() == 1)
   {
@@ -82,7 +83,7 @@ void prob_initdata_on_box(const Box& bx,
                           GeometryData const& geomdata,
                           const GpuArray<Real,max_prob_param>& prob_param)
 {
-    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept 
+    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept
     {
         prob_initdata_state(i, j ,k, state, geomdata, prob_param);
         prob_initdata      (i, j ,k, state, diag_eos, geomdata, prob_param);
@@ -94,8 +95,9 @@ void prob_initdata_state_on_box(const Box& bx,
                                 GeometryData const& geomdata,
                                 const GpuArray<Real,max_prob_param>& prob_param)
 {
-    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept 
+    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept
     {
         prob_initdata_state(i, j ,k, state, geomdata, prob_param);
     });
 }
+#endif

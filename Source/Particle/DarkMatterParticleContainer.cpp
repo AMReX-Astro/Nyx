@@ -850,7 +850,7 @@ DarkMatterParticleContainer::InitFromBinaryMortonFile(const std::string& particl
     
     std::ifstream ifs;
     ifs.open(file_name.c_str(), std::ios::in|std::ios::binary);
-    if ( not ifs ) {
+    if (!ifs ) {
       amrex::Print() << "Failed to open file " << file_name << " for reading. \n";
       amrex::Abort();
     } 
@@ -864,7 +864,7 @@ DarkMatterParticleContainer::InitFromBinaryMortonFile(const std::string& particl
         file_name = file_names[file_num];
         ifs.close();
         ifs.open(file_name.c_str(), std::ios::in|std::ios::binary);
-        if ( not ifs ) {
+        if (!ifs ) {
           amrex::Print() << "Failed to open file " << file_name << " for reading. \n";
           amrex::Abort();
         }

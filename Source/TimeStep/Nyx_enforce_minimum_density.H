@@ -173,7 +173,7 @@ create_update_for_minimum(
 {
     for (int n = 0; n < state.nComp(); n++)
     {
-        if (n == Density_comp or n == Xmom_comp or n == Ymom_comp or n == Zmom_comp or n == Eden_comp or n == Eint_comp) 
+        if (n == Density_comp || n == Xmom_comp || n == Ymom_comp || n == Zmom_comp || n == Eden_comp || n == Eint_comp)
         {
             update(i,j,k,n) = mu_x(i+1,j,k) * (state(i+1,j,k,n) - state(i  ,j,k,n))
                              -mu_x(i  ,j,k) * (state(i  ,j,k,n) - state(i-1,j,k,n))

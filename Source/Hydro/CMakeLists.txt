@@ -1,8 +1,8 @@
-target_include_directories(${EXE_NAME}
+target_include_directories(nyxcore
    PUBLIC
    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}> )
 
-target_sources( ${EXE_NAME}
+target_sources( nyxcore
    PRIVATE
    Godunov.cpp
    Hydro.cpp
@@ -19,7 +19,7 @@ target_sources( ${EXE_NAME}
    )
 
 if (Nyx_SDC)
-   target_sources( ${EXE_NAME}
+   target_sources( nyxcore
       PRIVATE
       sdc_hydro.cpp
       )

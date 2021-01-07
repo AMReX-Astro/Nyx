@@ -50,25 +50,25 @@ Nyx::time_center_source_terms (MultiFab& S_new,
               int izmom = iden+3;
 
               // Density
-              if (n == iden) 
+              if (n == iden)
               {
                   s_arr(i,j,k,n) += 0.5 * dt * (src_new(i,j,k,n) - src_old(i,j,k,n)) * a_half_inv;
               }
               // Momentum
-              else if (n >= ixmom and n <= izmom) 
+              else if (n >= ixmom && n <= izmom)
               {
                   s_arr(i,j,k,n) += 0.5 * dt * (src_new(i,j,k,n) - src_old(i,j,k,n)) * a_new_inv;
               }
 
               // (rho e) and (rho E)
-              else if (n == ieint) 
+              else if (n == ieint)
               {
                   s_arr(i,j,k,ieint) += 0.5 * dt * a_half * (src_new(i,j,k,ieint) - src_old(i,j,k,ieint)) * a_newsq_inv;
                   s_arr(i,j,k,ieden) += 0.5 * dt * a_half * (src_new(i,j,k,ieden) - src_old(i,j,k,ieden)) * a_newsq_inv;
               }
 
               // Don't do anything here because we did this when we did eint
-              else if (n == ieden) 
+              else if (n == ieden)
               {
               }
 

@@ -469,7 +469,7 @@ Nyx::init_from_plotfile ()
         int nd = D_new.nComp();
 
         // Construct internal energy given density, temperature and species
-        if (not rhoe_infile)
+        if (! rhoe_infile)
            init_e_from_T(old_a);
 
         // Define (rho E) given (rho e) and the momenta
