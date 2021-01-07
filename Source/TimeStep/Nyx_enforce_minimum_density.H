@@ -19,7 +19,8 @@ floor_density(
   amrex::Real const a_new,
   const amrex::Real gamma_minus_1,
   const amrex::Real small_dens,
-  const amrex::Real small_temp)
+  const amrex::Real small_temp,
+  const amrex::Real h_species_in)
 {
     //
     //  Reset negative density to small_dens, set (rho e) and (rho E) from small_temp  and zero out momenta
@@ -40,10 +41,9 @@ floor_density(
         amrex::Real dummy_pres = 1e200;
         amrex::Real eint_new = -1e200;
         amrex::Real Ne = 0.0;
-        amrex::Real h_species = 0.76;
 
         // Re-create "e" from {small_dens, small_temp}
-        nyx_eos_given_RT(atomic_rates, gamma_minus_1, h_species, &eint_new, &dummy_pres, state(i,j,k,Density_comp),
+        nyx_eos_given_RT(atomic_rates, gamma_minus_1, h_species_in, &eint_new, &dummy_pres, state(i,j,k,Density_comp),
                          small_temp, Ne,a_new);
 
         // Define (rho e) with small_dens and the new "e" 
