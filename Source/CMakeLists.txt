@@ -5,6 +5,7 @@
 ##############################################################################
 add_library(nyxcore OBJECT)
 
+#
 # Variables to store genex for conditional compilation based on
 # consuming target properties.
 # Properties that the consuming target can set are:
@@ -18,6 +19,20 @@ set(_use_default_main  $<BOOL:$<TARGET_PROPERTY:DEFAULT_MAIN>>)
 set(_has_agn           $<BOOL:$<TARGET_PROPERTY:AGN>>)
 set(_has_neutrino      $<BOOL:$<TARGET_PROPERTY:NEUTRINO_PARTICLES>>)
 set(_has_neutrino_dark $<BOOL:$<TARGET_PROPERTY:NEUTRINO_DARK_PARTICLES>>)
+
+# Turn off all properties for nyxcore so that $<TARGET_PROPERTY:...>
+# will always expand to NO when evaluated for nyxcore.
+# This, and the fact that nyxcore is an object library, guarantees
+# that the consuming target alone determines what to include in the build
+# ( see how the above variables are used for better understanding )
+set_target_properties(nyxcore
+   PROPERTIES
+   DEFAULT_MAIN            NO
+   AGN                     NO
+   NEUTRINO_PARTICLE       NO
+   NEUTRINO_DARK_PARTICLES NO
+   IS_NYXCORE              YES # This is used to treat some corner cases
+   )
 
 
 ##############################################################################

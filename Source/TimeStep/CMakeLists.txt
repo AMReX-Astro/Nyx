@@ -26,9 +26,10 @@ if (Nyx_HYDRO)
          )
    endif ()
 
+   set(_is_nyxcore $<BOOL:$<TARGET_PROPERTY:IS_NYXCORE>>)
+   set(_cond $<AND:$<NOT:${_has_agn}>,$<NOT:${_is_nyxcore}>>)
    target_sources( nyxcore
       PUBLIC
-      $<$<NOT:${_has_agn}>:${CMAKE_CURRENT_LIST_DIR}/Nyx_sources.cpp>
+      $<${_cond}:${CMAKE_CURRENT_LIST_DIR}/Nyx_sources.cpp>
       )
-
 endif ()
