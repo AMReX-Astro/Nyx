@@ -125,9 +125,9 @@ public:
         //        amrex::Gpu::synchronize();
     }
 
-    virtual void RedistributeLocal (int lev_min              = 0,
-                                    int lev_max              =-1,
-                                    int nGrow                = 0) override
+    virtual void RedistributeLocal (int /* lev_min              = 0*/,
+                                    int /* lev_max              =-1*/,
+                                    int /* nGrow                = 0*/) override
     {
         AMREX_ASSERT(this->finestLevel() == 0);
 
@@ -155,9 +155,9 @@ public:
 
     }
 
-    virtual void RedistributeGPU   (int lev_min              = 0,
-                                    int lev_max              =-1,
-                                    int nGrow                = 0) override
+    virtual void RedistributeGPU   (int /*lev_min              = 0*/,
+                                    int /*lev_max              =-1*/,
+                                    int /*nGrow                = 0*/) override
     {
         AMREX_ASSERT(this->finestLevel() == 0);
 

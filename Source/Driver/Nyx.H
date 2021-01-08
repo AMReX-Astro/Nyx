@@ -52,7 +52,6 @@ enum StateType {
     Gravity_Type,
     NUM_STATE_TYPE
 };
-static int State_for_Time = PhiGrav_Type;
 static constexpr int max_prob_param = 1;
 #endif
 
@@ -67,7 +66,6 @@ enum StateType {
 #endif
     NUM_STATE_TYPE
 };
-static int State_for_Time = State_Type;
 static constexpr int max_prob_param = 20;
 #endif
 
