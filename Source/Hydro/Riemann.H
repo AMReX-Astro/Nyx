@@ -33,7 +33,7 @@ riemann(
   amrex::Real& qint_gdgame,
   const amrex::Real& small_dens,
   const amrex::Real& small_pres,
-  const amrex::Real& small_in,
+  const amrex::Real& /*small_in*/,
   const amrex::Real& csmall,
   const amrex::Real& gamma)
 {

@@ -9,8 +9,8 @@ using namespace amrex;
 #ifdef FORCING
 void Nyx::integrate_state_force(
   amrex::Box const& bx,
-  amrex::Array4<amrex::Real> const& state,
-  amrex::Array4<amrex::Real> const& diag_eos,
+  amrex::Array4<amrex::Real> const& state_arr,
+  amrex::Array4<amrex::Real> const& diag_eos_arr,
   const amrex::Real* dx,
   const amrex::Real time,
   const amrex::Real a,

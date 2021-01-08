@@ -550,15 +550,23 @@ public:
 
     void update_state_with_sources( amrex::MultiFab& S_old      , amrex::MultiFab& S_new,
                                     amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src,
-                                    amrex::MultiFab& grav       , amrex::MultiFab& reset_e_src,
+                                    amrex::MultiFab& grav       , 
+#ifdef SDC
+                                    amrex::MultiFab& reset_e_src,
+#endif
                                     amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
 
-    void enforce_minimum_density  ( amrex::MultiFab& S_old      , amrex::MultiFab& S_new, amrex::MultiFab& reset_e_src,
-                                    amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
-    void enforce_minimum_density_cons  ( amrex::MultiFab& S_old      , amrex::MultiFab& S_new, amrex::MultiFab& reset_e_src,
-                                         amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
-    void enforce_minimum_density_floor (                               amrex::MultiFab& S_new,
-                                         amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
+    void enforce_minimum_density  ( amrex::MultiFab& S_old      , amrex::MultiFab& S_new, 
+#ifdef SDC
+                                    amrex::MultiFab& reset_e_src,
+#endif
+                                    amrex::Real a_new);
+#ifdef SDC
+    void enforce_minimum_density_cons  ( amrex::MultiFab& S_old      , amrex::MultiFab& S_new, amrex::MultiFab& reset_e_src);
+#else
+    void enforce_minimum_density_cons  ( amrex::MultiFab& S_old      , amrex::MultiFab& S_new);
+#endif
+    void enforce_minimum_density_floor ( amrex::MultiFab& S_new, amrex::Real a_new);
 
     void strang_first_step  (amrex::Real time, amrex::Real dt,  amrex::MultiFab& state, amrex::MultiFab&  dstate);
     void strang_second_step (amrex::Real time, amrex::Real dt,  amrex::MultiFab& state, amrex::MultiFab&  dstate);

@@ -15,7 +15,9 @@ floor_density(
   const int k,
   amrex::Array4<amrex::Real> const& state,
   AtomicRates* atomic_rates,
+#ifndef CONST_SPECIES
   const int NumSpec,
+#endif
   amrex::Real const a_new,
   const amrex::Real gamma_minus_1,
   const amrex::Real small_dens,
@@ -160,7 +162,9 @@ create_update_for_minimum(
   const int i,
   const int j,
   const int k,
+#ifndef CONST_SPECIES
   const int icomp,
+#endif
   amrex::Array4<amrex::Real> const& state,
   amrex::Array4<amrex::Real> const& mu_x,
   amrex::Array4<amrex::Real> const& mu_y,

@@ -186,8 +186,8 @@ pc_cmpflx(
     q(i, j, k, GV2), q(i, j, k, QPRES), q(i, j, k, QREINT), 
     small_dens, small_pres, small, csmall, gamma);
 
-  amrex::Real flxrho = flx(i, j, k, Density_comp);
 #ifndef CONST_SPECIES
+  amrex::Real flxrho = flx(i, j, k, Density_comp);
   for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     if (ustar > 0.0)
       flx(i, j, k, n) = flxrho * ql(i, j, k, n);
@@ -221,8 +221,7 @@ pc_transx1(
   const amrex::Real small_pres)
 {
   // Local variables to avoid reading from global memory too much
-  amrex::Real compn, rr, rrnew, compo, rwr;
-  amrex::Real rrr, rur, rvr, ekinr, rer, rrnewr;
+  amrex::Real rrr, rur, rvr, rwr, ekinr, rer, rrnewr;
   amrex::Real runewr, rvnewr, rwnewr, renewr, rhoekinr;
   amrex::Real rrl, rul, rvl, ekinl, rel, rrnewl, runewl, rvnewl, rwnewl, renewl;
   amrex::Real rhoekinl, rwl;
@@ -238,6 +237,7 @@ pc_transx1(
 
   // Update passive variables
 #ifndef CONST_SPECIES
+  amrex::Real compn, rr, rrnew, compo;
   for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n));
     rr = qyp(i, j, k, QRHO);
@@ -376,8 +376,7 @@ pc_transy1(
   const amrex::Real small_pres)
 {
 
-  amrex::Real compn, rr, rrnew, compo, rwr;
-  amrex::Real rrr, rur, rvr, ekinr, rer, rrnewr;
+  amrex::Real rrr, rur, rvr, rwr, ekinr, rer, rrnewr;
   amrex::Real runewr, rvnewr, rwnewr, renewr, rhoekinr;
   amrex::Real rrl, rul, rvl, ekinl, rel, rrnewl, runewl, rvnewl, rwnewl, renewl;
   amrex::Real rhoekinl, rwl;
@@ -394,6 +393,7 @@ pc_transy1(
 
   // -  Update Passive Variables
 #ifndef CONST_SPECIES
+  amrex::Real compn, rr, rrnew, compo;
   for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
     rr = qxp(i, j, k, QRHO);
@@ -532,8 +532,7 @@ pc_transx2(
   const amrex::Real small_pres)
 {
   // Local variables to avoid reading from global memory too much
-  amrex::Real compn, rr, rrnew, compo, rwr;
-  amrex::Real rrr, rur, rvr, ekinr, rer, rrnewr;
+  amrex::Real rrr, rur, rvr, rwr, ekinr, rer, rrnewr;
   amrex::Real runewr, rvnewr, rwnewr, renewr, rhoekinr;
   amrex::Real rrl, rul, rvl, ekinl, rel, rrnewl, runewl, rvnewl, rwnewl, renewl;
   amrex::Real rhoekinl, rwl;
@@ -549,6 +548,7 @@ pc_transx2(
 
   // -  Update Passive Variables
 #ifndef CONST_SPECIES
+  amrex::Real compn, rr, rrnew, compo;
   for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n));
     rr = qzp(i, j, k, QRHO);
@@ -685,8 +685,7 @@ pc_transy2(
   const amrex::Real small_pres)
 {
   // Local variables to avoid reading from global memory too much
-  amrex::Real compn, rr, rrnew, compo, rwr;
-  amrex::Real rrr, rur, rvr, ekinr, rer, rrnewr;
+  amrex::Real rrr, rur, rvr, rwr, ekinr, rer, rrnewr;
   amrex::Real runewr, rvnewr, rwnewr, renewr, rhoekinr;
   amrex::Real rrl, rul, rvl, ekinl, rel, rrnewl, runewl, rvnewl, rwnewl, renewl;
   amrex::Real rhoekinl, rwl;
@@ -702,6 +701,7 @@ pc_transy2(
 
   // -  Update Passive Variables
 #ifndef CONST_SPECIES
+  amrex::Real compn, rr, rrnew, compo;
   for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
     rr = qzp(i, j, k, QRHO);
@@ -839,8 +839,7 @@ pc_transz1(
   const amrex::Real gamma, 
   const amrex::Real small_pres)
 {
-  amrex::Real compn, rr, rrnew, compo, rwr;
-  amrex::Real rrr, rur, rvr, ekinr, rer, rrnewr;
+  amrex::Real rrr, rur, rvr, rwr, ekinr, rer, rrnewr;
   amrex::Real runewr, rvnewr, rwnewr, renewr, rhoekinr;
   amrex::Real rrl, rul, rvl, ekinl, rel, rrnewl, runewl, rvnewl, rwnewl, renewl;
   amrex::Real rhoekinl, rwl;
@@ -856,7 +855,7 @@ pc_transz1(
   flxe = cdtdz * (flxz(i, j, k + 1, Eden_comp) - flxz(i, j, k, Eden_comp));
 
 #ifndef CONST_SPECIES
-  // -  Update Passive Variables
+  amrex::Real compn, rr, rrnew, compo;
   for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     compn = cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
     rr = qxp(i, j, k, QRHO);
@@ -995,8 +994,7 @@ pc_transz2(
   const amrex::Real small_pres)
 {
   // Local variables to avoid reading from global memory too much
-  amrex::Real compn, rr, rrnew, compo, rwr;
-  amrex::Real rrr, rur, rvr, ekinr, rer, rrnewr;
+  amrex::Real rrr, rur, rvr, rwr, ekinr, rer, rrnewr;
   amrex::Real runewr, rvnewr, rwnewr, renewr, rhoekinr;
   amrex::Real rrl, rul, rvl, ekinl, rel, rrnewl, runewl, rvnewl, rwnewl, renewl;
   amrex::Real rhoekinl, rwl;
@@ -1011,6 +1009,7 @@ pc_transz2(
   flxe = cdtdz * (flxz(i, j, k + 1, Eden_comp) - flxz(i, j, k, Eden_comp));
 
 #ifndef CONST_SPECIES
+  amrex::Real compn, rr, rrnew, compo;
   // Update passive variables
   for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     compn = cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
@@ -1150,8 +1149,7 @@ pc_transxy(
   const amrex::Real gamma, 
   const amrex::Real small_pres)
 {
-  amrex::Real compn, compo, rwr;
-  amrex::Real rrr, rur, rvr, ekinr, rer, rrnewr;
+  amrex::Real rrr, rur, rvr, rwr, ekinr, rer, rrnewr;
   amrex::Real runewr, rvnewr, rwnewr, renewr, rhoekinr;
   amrex::Real rrl, rul, rvl, ekinl, rel, rrnewl, runewl, rvnewl, rwnewl, renewl;
   amrex::Real rhoekinl, rwl;
@@ -1177,6 +1175,7 @@ pc_transxy(
   rrnewr = rrr - flxrho;
 
 #ifndef CONST_SPECIES
+  amrex::Real compn, compo;
   for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n)) +
             cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n));
@@ -1316,8 +1315,7 @@ pc_transxz(
   const amrex::Real gamma, 
   const amrex::Real small_pres)
 {
-  amrex::Real compn, compo, rwr;
-  amrex::Real rrr, rur, rvr, ekinr, rer, rrnewr;
+  amrex::Real rrr, rur, rvr, rwr, ekinr, rer, rrnewr;
   amrex::Real runewr, rvnewr, rwnewr, renewr, rhoekinr;
   amrex::Real rrl, rul, rvl, ekinl, rel, rrnewl, runewl, rvnewl, rwnewl, renewl;
   amrex::Real rhoekinl, rwl;
@@ -1343,6 +1341,7 @@ pc_transxz(
   rrnewr = rrr - flxrho;
 
 #ifndef CONST_SPECIES
+  amrex::Real compn, compo;
   for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     compn = cdtdx * (flxx(i + 1, j, k, n) - flxx(i, j, k, n)) +
             cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));
@@ -1481,8 +1480,7 @@ pc_transyz(
   const amrex::Real gamma, 
   const amrex::Real small_pres)
 {
-  amrex::Real compn, compo, rwr;
-  amrex::Real rrr, rur, rvr, ekinr, rer, rrnewr;
+  amrex::Real rrr, rur, rvr, rwr, ekinr, rer, rrnewr;
   amrex::Real runewr, rvnewr, rwnewr, renewr, rhoekinr;
   amrex::Real rrl, rul, rvl, ekinl, rel, rrnewl, runewl, rvnewl, rwnewl, renewl;
   amrex::Real rhoekinl, rwl;
@@ -1508,6 +1506,7 @@ pc_transyz(
   rrnewr = rrr - flxrho;
 
 #ifndef CONST_SPECIES
+  amrex::Real compn, compo;
   for (int n = FirstSpec_comp; n < FirstSpec_comp + NumSpec; ++n) {
     compn = cdtdy * (flxy(i, j + 1, k, n) - flxy(i, j, k, n)) +
             cdtdz * (flxz(i, j, k + 1, n) - flxz(i, j, k, n));

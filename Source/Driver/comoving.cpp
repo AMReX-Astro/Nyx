@@ -604,7 +604,7 @@ Nyx::integrate_time_given_a(const Real a0, const Real a1, Real& dt)
     // trapezoidal integration
     for(iter = 1; iter<= 20; iter++)
     {
-        n  = std::pow(2,iter);
+        n  = static_cast<int>(std::round(std::pow(2,iter)));
 
         h = (a1-a0)/(n-1);
 
@@ -648,7 +648,7 @@ Nyx::integrate_comoving_a (const Real old_a_local, Real& new_a_local, const Real
     prev_soln = 2.0e0; // 0<a<1 so a=2 will do as "wrong" solution
     for(iter = 1; iter<=11; iter++)//  ! max allowed iterations
     {
-        nsteps  = std::pow(2,iter-1);
+        nsteps  = static_cast<int>(std::round(std::pow(2,iter-1)));
 
         Delta_t = dt/nsteps;
         end_a = old_a_local;
