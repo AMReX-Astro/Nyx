@@ -177,7 +177,6 @@ Nyx::construct_hydro_source(
             }
         }
 
-        BL_PROFILE_VAR_STOP(crno);
       } // MFIter loop
     }   // end of OMP parallel region
 
