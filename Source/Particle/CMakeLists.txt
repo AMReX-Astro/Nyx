@@ -28,3 +28,8 @@ target_sources( nyxcore
    ${CMAKE_CURRENT_LIST_DIR}/NeutrinoParticles_K.H
    >
    )
+
+nyx_set_cuda_sources(
+   ${CMAKE_CURRENT_LIST_DIR}/AGNParticleContainer.cpp
+   ${CMAKE_CURRENT_LIST_DIR}/NeutrinoParticleContainer.cpp
+   )

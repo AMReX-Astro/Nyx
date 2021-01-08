@@ -34,6 +34,14 @@ set_target_properties(nyxcore
    IS_NYXCORE              YES # This is used to treat some corner cases
    )
 
+# Sources that are defined via a genex won't be affected by
+# setup_target_for_cuda_compilation() ( see below ).
+# Therefore we need to manually make them CUDA if necessary
+macro( nyx_set_cuda_sources )
+   if (Nyx_GPU_BACKEND STREQUAL "CUDA")
+      set_source_files_properties(${ARGV} PROPERTIES LANGUAGE CUDA )
+   endif ()
+endif()
 
 ##############################################################################
 #                                                                            #

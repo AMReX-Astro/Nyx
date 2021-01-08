@@ -10,3 +10,7 @@ target_sources( nyxcore
    ${CMAKE_CURRENT_LIST_DIR}/agn_F.H
    >
    )
+nyx_set_cuda_sources(
+   ${CMAKE_CURRENT_LIST_DIR}/AGN_sources.cpp
+   ${CMAKE_CURRENT_LIST_DIR}/AGN_halos.cpp
+   )

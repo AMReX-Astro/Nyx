@@ -32,4 +32,6 @@ if (Nyx_HYDRO)
       PUBLIC
       $<${_cond}:${CMAKE_CURRENT_LIST_DIR}/Nyx_sources.cpp>
       )
+   nyx_set_cuda_sources(${CMAKE_CURRENT_LIST_DIR}/Nyx_sources.cpp)
+
 endif ()
