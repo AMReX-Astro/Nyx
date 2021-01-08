@@ -41,7 +41,7 @@ macro( nyx_set_cuda_sources )
    if (Nyx_GPU_BACKEND STREQUAL "CUDA")
       set_source_files_properties(${ARGV} PROPERTIES LANGUAGE CUDA )
    endif ()
-endif()
+endmacro()
 
 ##############################################################################
 #                                                                            #
