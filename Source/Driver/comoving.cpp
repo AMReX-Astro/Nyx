@@ -80,8 +80,6 @@ Nyx::integrate_comoving_a_to_a(const Real old_a_local, const Real a_value, Real&
     Real start_a, end_a, start_slope, end_slope;
     int j, nsteps;
 
-    Real max_dt;
-
     if (comoving_h == 0.0)
         amrex::Abort("fort_integrate_comoving_a_to_z: Shouldn't be setting plot_z_values if not evolving a");
 
@@ -140,8 +138,6 @@ Nyx::integrate_comoving_a_to_z(const Real old_a_local, const Real z_value, Real&
     Real start_a, end_a, start_slope, end_slope;
         Real a_value;
     int j, nsteps;
-
-    Real max_dt;
 
     if (comoving_h == 0.0)
         amrex::Abort("fort_integrate_comoving_a_to_z: Shouldn't be setting plot_z_values if not evolving a");
@@ -244,12 +240,8 @@ Nyx::est_lindt_comoving_a(const Real old_a_local, const Real new_a_local, Real& 
 void
 Nyx::estdt_comoving_a(const Real old_a_local, Real& new_a_local, 
                       Real& dt, const Real change_allowed, 
-                      const Real fixed_da, const Real final_a, int& dt_modified)
+                      const Real fixed_da, const Real final_a_in, int& dt_modified)
 {
-    Real a_value;
-    Real max_dt;
-    max_dt = dt;
-
     if (comoving_h != 0.0e0)
     {
         if( fixed_da <= 0.0e0)
@@ -274,9 +266,9 @@ Nyx::estdt_comoving_a(const Real old_a_local, Real& new_a_local,
             // output dt is based on a fraction of the input dt
             integrate_comoving_a_to_a(old_a_local,new_a_local,dt);
         }
-        // Make sure we don't go past final_a (if final_a is set)
-        if (final_a > 0.0e0)
-            enforce_final_a(old_a_local,new_a_local,dt,final_a);
+        // Make sure we don't go past final_a_in (if final_a_in is set)
+        if (final_a_in > 0.0e0)
+            enforce_final_a(old_a_local,new_a_local,dt,final_a_in);
 
         dt_modified = 1;
     }
@@ -327,23 +319,23 @@ Nyx::enforce_percent_change(const Real old_a_local, Real& new_a_local,
 
 void
 Nyx::enforce_final_a(const Real old_a_local, Real& new_a_local,
-                     Real& dt, const Real final_a)
+                     Real& dt, const Real final_a_in)
 {
     int i;
     Real factor;
     const Real eps = 1.e-10;
 
-    if (old_a_local > final_a)
-        amrex::Abort("Oops -- old_a > final_a");
+    if (old_a_local > final_a_in)
+        amrex::Abort("Oops -- old_a > final_a_in");
 
-    // Only go into this process if new_a is past final_a
-    if (new_a_local > final_a)
+    // Only go into this process if new_a is past final_a_in
+    if (new_a_local > final_a_in)
     {
         for(i = 1; i <= 100; i++)
         {
-            if ( (new_a_local > (final_a+eps)) || (new_a_local < final_a) )
+            if ( (new_a_local > (final_a_in+eps)) || (new_a_local < final_a_in) )
             {
-                factor = (final_a - old_a_local) / (new_a_local - old_a_local);
+                factor = (final_a_in - old_a_local) / (new_a_local - old_a_local);
                 dt = dt * factor;
                 integrate_comoving_a(old_a_local,new_a_local,dt);
             }
@@ -569,7 +561,6 @@ Nyx::integrate_comoving_a (Real time,Real dt)
     {
         // Leave old_a and old_a_time alone -- we have already swapped them
         integrate_comoving_a(old_a, new_a, dt);
-            (&old_a, &new_a, &dt);
 
         // Update the new time only
         new_a_time = old_a_time + dt;
@@ -840,7 +831,7 @@ void
 Nyx::analysis_z_est_time_step (Real& dt_0, bool& dt_changed)
 {
     Real dt = dt_0;
-    Real a_old, z_old, a_new, z_new;
+    Real a_old, z_old, a_new, z_new, z_value;
 
     // This is where we are now
 #ifdef NO_HYDRO
@@ -862,7 +853,6 @@ Nyx::analysis_z_est_time_step (Real& dt_0, bool& dt_changed)
     z_new = (1. / a_new) - 1.;
 
     // Find the relevant entry of the analysis_z_values array
-    Real z_value;
     bool found_one = false;
     for (int i = 0; i < analysis_z_values.size(); i++)
     {
@@ -906,8 +896,7 @@ Nyx::analysis_z_est_time_step (Real& dt_0, bool& dt_changed)
     z_new = (1. / a_new) - 1.;
 
     // Find the relevant entry of the analysis_z_values array
-    Real z_value;
-    bool found_one = false;
+    found_one = false;
     for (int i = 0; i < analysis_z_values.size(); i++)
     {
         // We have gone from before to after one of the specified values
@@ -922,7 +911,7 @@ Nyx::analysis_z_est_time_step (Real& dt_0, bool& dt_changed)
     // as half the interval to reach that z_value
     if (found_one)
     {
-        Real two_dt = 2.0*dt_0;
+        two_dt = 2.0*dt_0;
         integrate_comoving_a_to_z(old_a, z_value, two_dt);
 
         if (verbose && ParallelDescriptor::IOProcessor())

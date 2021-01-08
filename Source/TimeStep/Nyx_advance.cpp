@@ -365,7 +365,6 @@ Nyx::advance_hydro_plus_particles (Real time,
         for (int lev = level; lev <= finest_level_to_advance; lev++)
         {
             MultiFab::RegionTag amrGrav_tag("Gravity_" + std::to_string(lev));
-            amrex::Gpu::LaunchSafeGuard lsg(true);
 
             // Now do corrector part of source term update
             correct_gsrc(lev,time,prev_time,cur_time,dt);
@@ -495,8 +494,6 @@ Nyx::advance_hydro (Real time,
 
     if (do_grav)
     {
-       amrex::Gpu::LaunchSafeGuard lsg(true);
-
        if (verbose && ParallelDescriptor::IOProcessor()) 
         std::cout << "\n... new-time level solve at level " << level << '\n';
 

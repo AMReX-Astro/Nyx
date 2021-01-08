@@ -79,7 +79,7 @@ Nyx::error_setup()
 }
 
 void
-Nyx::manual_tags_placement (TagBoxArray&    tags,
-                            const Vector<IntVect>& bf_lev)
+Nyx::manual_tags_placement (TagBoxArray&  /*tags*/,
+                            const Vector<IntVect>& /*bf_lev*/)
 {
 }

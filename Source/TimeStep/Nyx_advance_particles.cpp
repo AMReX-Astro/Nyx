@@ -217,7 +217,6 @@ Nyx::advance_particles_only (Real time,
     //
     for (int lev = level; lev <= finest_level_to_advance; lev++)
     {
-        amrex::Gpu::LaunchSafeGuard lsg(true);
         MultiFab::Copy(parent->getLevel(lev).get_new_data(PhiGrav_Type),
                        parent->getLevel(lev).get_old_data(PhiGrav_Type),
                        0, 0, 1, 0);
