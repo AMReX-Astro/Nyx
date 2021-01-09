@@ -12,8 +12,6 @@ Nyx::write_info ()
     int rlp  = Nyx::runlog_precision;
     int rlpt = amrex::min(rlp,Nyx::runlog_precision_terse);
 
-    amrex::Print() << "PRECISION " << rlp << " " << rlpt << std::endl; 
-
     if (ndatalogs > 0)
     {
 #ifndef NO_HYDRO
