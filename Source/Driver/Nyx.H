@@ -878,7 +878,7 @@ protected:
     void set_small_values_given_average (amrex::Real average_dens, amrex::Real average_temp, amrex::Real a,
                                          amrex::Real & small_dens_inout, amrex::Real & small_temp_inout,
                                          amrex::Real &small_pres_inout, amrex::Real gamma_minus_1,
-                                         amrex::Real h_species, amrex::Real he_species);
+                                         amrex::Real h_species);
 
     void write_info();
 

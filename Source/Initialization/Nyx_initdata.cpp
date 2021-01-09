@@ -30,7 +30,7 @@ std::string readin_ics_fname;
 void Nyx::set_small_values_given_average (amrex::Real average_dens, amrex::Real average_temp, amrex::Real a,
                                           amrex::Real & small_dens_inout, amrex::Real & small_temp_inout, 
                                           amrex::Real &small_pres_inout, Real gamma_minus_1_in, 
-                                          Real h_species_in, Real He_species_in)
+                                          Real h_species_in)
 {
 
     Real lsmall_dens, lsmall_temp, frac;

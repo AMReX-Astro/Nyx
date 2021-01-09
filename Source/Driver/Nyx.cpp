@@ -1729,7 +1729,7 @@ Nyx::set_small_values ()
        Real gamma_minus_1 = gamma - 1.0;
        set_small_values_given_average
            (average_gas_density, average_temperature,
-           a, small_dens, small_temp, small_pres, gamma_minus_1, h_species, he_species);
+           a, small_dens, small_temp, small_pres, gamma_minus_1, h_species);
 
        if (verbose && ParallelDescriptor::IOProcessor())
        {

@@ -47,7 +47,7 @@ std::string Gravity::mg_bottom_solver = "bicg";
 static Real Ggravity = 0;
 
 Gravity::Gravity (Amr*   Parent,
-                  int    _finest_level,
+                  int  /*_finest_level*/,
                   BCRec* _phys_bc,
                   int    _density)
   :
@@ -230,7 +230,6 @@ Gravity::solve_for_old_phi (int               level,
     const Real time  = LevelData[level]->get_state_data(PhiGrav_Type).prevTime();
     solve_for_phi(level, Rhs, phi, grad_phi, time, fill_interior);
     amrex::Gpu::Device::streamSynchronize();
-
 }
 
 void
@@ -273,7 +272,7 @@ Gravity::solve_for_phi (int               level,
                         MultiFab&         phi,
                         const Vector<MultiFab*>& grad_phi,
                         Real              time,
-                        int               fill_interior)
+                        int               /*fill_interior*/)
 {
     BL_PROFILE("Gravity::solve_for_phi()");
     if (verbose)
@@ -1042,8 +1041,6 @@ Gravity::set_dirichlet_bcs (int       level,
 
     amrex::Gpu::Device::synchronize();
     amrex::Gpu::LaunchSafeGuard lsg(false);
-
-    const Real* dx        = parent->Geom(level).CellSize();
 
     // Set phi to zero everywhere -- including ghost cells --
     //     to provide homogeneous Dirichlet bcs

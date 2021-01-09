@@ -119,7 +119,6 @@ protected:
     amrex::Vector<amrex::Real> level_solver_resnorm;
 
     int density;
-    int finest_level;
     int finest_level_allocated;
 
     amrex::BCRec* phys_bc;
