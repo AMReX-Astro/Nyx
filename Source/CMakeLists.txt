@@ -5,43 +5,6 @@
 ##############################################################################
 add_library(nyxcore OBJECT)
 
-#
-# Variables to store genex for conditional compilation based on
-# consuming target properties.
-# Properties that the consuming target can set are:
-#
-# DEFAULT_MAIN
-# AGN
-# NEUTRINO_PARTICLES
-# NEUTRINO_DARK_PARTICLES
-#
-set(_use_default_main  $<BOOL:$<TARGET_PROPERTY:DEFAULT_MAIN>>)
-set(_has_agn           $<BOOL:$<TARGET_PROPERTY:AGN>>)
-set(_has_neutrino      $<BOOL:$<TARGET_PROPERTY:NEUTRINO_PARTICLES>>)
-set(_has_neutrino_dark $<BOOL:$<TARGET_PROPERTY:NEUTRINO_DARK_PARTICLES>>)
-
-# Turn off all properties for nyxcore so that $<TARGET_PROPERTY:...>
-# will always expand to NO when evaluated for nyxcore.
-# This, and the fact that nyxcore is an object library, guarantees
-# that the consuming target alone determines what to include in the build
-# ( see how the above variables are used for better understanding )
-set_target_properties(nyxcore
-   PROPERTIES
-   DEFAULT_MAIN            NO
-   AGN                     NO
-   NEUTRINO_PARTICLE       NO
-   NEUTRINO_DARK_PARTICLES NO
-   IS_NYXCORE              YES # This is used to treat some corner cases
-   )
-
-# Sources that are defined via a genex won't be affected by
-# setup_target_for_cuda_compilation() ( see below ).
-# Therefore we need to manually make them CUDA if necessary
-macro( nyx_set_cuda_sources )
-   if (Nyx_GPU_BACKEND STREQUAL "CUDA")
-      set_source_files_properties(${ARGV} PROPERTIES LANGUAGE CUDA )
-   endif ()
-endmacro()
 
 ##############################################################################
 #                                                                            #
@@ -70,8 +33,13 @@ if (Nyx_CONST_SPECIES)
    target_compile_definitions(nyxcore PUBLIC CONST_SPECIES)
 endif()
 
-target_compile_definitions( nyxcore PUBLIC $<${_has_neutrino}:NEUTRINO_PARTICLES>)
-target_compile_definitions( nyxcore PUBLIC $<${_has_neutrino_dark}:NEUTRINO_DARK_PARTICLES>)
+if (Nyx_NEUTRINO_PARTICLES)
+   target_compile_definitions( nyxcore PUBLIC NEUTRINO_PARTICLES)
+endif ()
+
+if (Nyx_NEUTRINO_DARK_PARTICLES)
+   target_compile_definitions( nyxcore PUBLIC NEUTRINO_DARK_PARTICLES)
+endif ()
 
 if (Nyx_SDC)
    target_compile_definitions( nyxcore PUBLIC SDC)
@@ -117,7 +85,9 @@ endif ()
 #                               Nyx sources                                  #
 #                                                                            #
 ##############################################################################
-add_subdirectory(AGN)
+if (Nyx_AGN)
+   add_subdirectory(AGN)
+endif ()
 
 add_subdirectory(DerivedQuantities)
 

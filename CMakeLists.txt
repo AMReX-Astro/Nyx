@@ -82,8 +82,8 @@ option( Nyx_CGS   "Evolve quantities in CGS units instead of code units" NO)
 option( Nyx_REEBER             "" NO)
 
 #  These two are only really used by LyA_Neutrinos
-option( Nyx_NEUTRINO_PARTICLES "" YES)
-option( Nyx_NEUTRINO_DARK_PARTICLES "" YES)
+option( Nyx_NEUTRINO_PARTICLES "" NO)
+option( Nyx_NEUTRINO_DARK_PARTICLES "" no)
 
 
 #
@@ -103,6 +103,8 @@ else ()
       set(Nyx_SUNDIALS_FUSED    NO  CACHE INTERNAL "")
    endif ()
 endif ()
+
+set(Nyx_AGN  NO  CACHE INTERNAL "AGN is broken at the moment")
 
 #
 # These used to be options but now they are set to true and should not

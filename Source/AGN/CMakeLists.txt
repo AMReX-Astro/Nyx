@@ -1,16 +1,10 @@
 target_include_directories(nyxcore
    PUBLIC
-   $<${_has_agn}:${CMAKE_CURRENT_LIST_DIR}> )
+   ${CMAKE_CURRENT_LIST_DIR} )
 
 target_sources( nyxcore
    PUBLIC
-   $<${_has_agn}:
-   ${CMAKE_CURRENT_LIST_DIR}/AGN_sources.cpp
-   ${CMAKE_CURRENT_LIST_DIR}/AGN_halos.cpp
-   ${CMAKE_CURRENT_LIST_DIR}/agn_F.H
-   >
-   )
-nyx_set_cuda_sources(
-   ${CMAKE_CURRENT_LIST_DIR}/AGN_sources.cpp
-   ${CMAKE_CURRENT_LIST_DIR}/AGN_halos.cpp
+   AGN_sources.cpp
+   AGN_halos.cpp
+   agn_F.H
    )
