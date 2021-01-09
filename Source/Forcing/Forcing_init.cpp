@@ -395,19 +395,10 @@ void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
     /* set wave vectors and copy sepctrum to forcing_spect_module */
     int num_modes = NumNonZeroModes;
 
-    int num_modes_ext = 0;
-    // determine extend array length as integer multiple of 4 
-    // to support vectorization of loops over all modes
-    int modvec = NumNonZeroModes % LENVEC;
-    if (modvec > 0)
-        num_modes_ext = num_modes + LENVEC - modvec;
-    else
-        num_modes_ext = num_modes;
-
     for (int dim = 0; dim < SpectralRank; dim++) {
-        wavevectors[dim]  = new int[num_modes_ext];
-        modes_even[dim]  = new Real[num_modes_ext];
-        modes_odd[dim]  = new Real[num_modes_ext];
+        wavevectors[dim]  = new int[num_modes];
+        modes_even[dim]  = new Real[num_modes];
+        modes_odd[dim]  = new Real[num_modes];
     }
 
     Vector<int> kvect(SpectralRank);

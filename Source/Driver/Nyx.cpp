@@ -602,6 +602,9 @@ Nyx::Nyx (Amr&            papa,
     MultiFab& new_grav_mf = get_new_data(Gravity_Type);
     new_grav_mf.setVal(0);
 
+    MultiFab& new_phi_grav = get_new_data(PhiGrav_Type);
+    new_phi_grav.setVal(0);
+
     if (do_grav)
     {
         // gravity is a static object, only alloc if not already there
