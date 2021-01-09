@@ -86,7 +86,7 @@ Nyx::setPlotVariables ()
 }
 
 void
-Nyx::writePlotFilePre (const std::string& dir, ostream& os)
+Nyx::writePlotFilePre (const std::string& /*dir*/, ostream& /*os*/)
 {
     amrex::Gpu::LaunchSafeGuard lsg(true);
     if(write_hdf5 == 1 && (parent->maxLevel() > 0))
@@ -269,7 +269,7 @@ Nyx::writePlotFile (const std::string& dir,
 }
 
 void
-Nyx::writePlotFilePost (const std::string& dir, ostream& os)
+Nyx::writePlotFilePost (const std::string& dir, ostream& /*os*/)
 {
 
   amrex::Gpu::LaunchSafeGuard lsg(true);
@@ -511,7 +511,7 @@ Nyx::writeJobInfo (const std::string& dir)
             jobInfoFile << " level: " << i << "\n";
             jobInfoFile << "   number of boxes = " << parent->numGrids(i) << "\n";
             jobInfoFile << "   maximum zones   = ";
-            for (int n = 0; n < BL_SPACEDIM; n++)
+            for (int n = 0; n < AMREX_SPACEDIM; n++)
               {
                 jobInfoFile << parent->Geom(i).Domain().length(n) << " ";
                 //jobInfoFile << parent->Geom(i).ProbHi(n) << " ";
@@ -520,10 +520,10 @@ Nyx::writeJobInfo (const std::string& dir)
           }
 
         jobInfoFile << " Boundary conditions\n";
-        Vector<int> lo_bc_out(BL_SPACEDIM), hi_bc_out(BL_SPACEDIM);
+        Vector<int> lo_bc_out(AMREX_SPACEDIM), hi_bc_out(AMREX_SPACEDIM);
         ParmParse pp("nyx");
-        pp.getarr("lo_bc",lo_bc_out,0,BL_SPACEDIM);
-        pp.getarr("hi_bc",hi_bc_out,0,BL_SPACEDIM);
+        pp.getarr("lo_bc",lo_bc_out,0,AMREX_SPACEDIM);
+        pp.getarr("hi_bc",hi_bc_out,0,AMREX_SPACEDIM);
 
 
         // these names correspond to the integer flags setup in the
@@ -535,11 +535,11 @@ Nyx::writeJobInfo (const std::string& dir)
 
         jobInfoFile << "   -x: " << names_bc[lo_bc_out[0]] << "\n";
         jobInfoFile << "   +x: " << names_bc[hi_bc_out[0]] << "\n";
-        if (BL_SPACEDIM >= 2) {
+        if (AMREX_SPACEDIM >= 2) {
           jobInfoFile << "   -y: " << names_bc[lo_bc_out[1]] << "\n";
           jobInfoFile << "   +y: " << names_bc[hi_bc_out[1]] << "\n";
         }
-        if (BL_SPACEDIM == 3) {
+        if (AMREX_SPACEDIM == 3) {
           jobInfoFile << "   -z: " << names_bc[lo_bc_out[2]] << "\n";
           jobInfoFile << "   +z: " << names_bc[hi_bc_out[2]] << "\n";
         }
@@ -588,12 +588,6 @@ Nyx::particle_plot_file (const std::string& dir)
           {
             Nyx::theNPC()->WriteNyxPlotFile(dir, npc_plt_particle_file);
           }
-#endif
-
-#ifdef NO_HYDRO
-        Real cur_time = state[PhiGrav_Type].curTime();
-#else
-        Real cur_time = state[State_Type].curTime();
 #endif
 
         // Write particle_plotfile_format into its own file in the particle directory
@@ -759,15 +753,15 @@ Nyx::writeMultiFabAsPlotFile(const std::string& pltfile,
         // ... with name
         os << componentName << '\n';
         // Dimension
-        os << BL_SPACEDIM << '\n';
+        os << AMREX_SPACEDIM << '\n';
         // Time
         os << "0\n";
         // One level
         os << "0\n";
-        for (int i = 0; i < BL_SPACEDIM; i++)
+        for (int i = 0; i < AMREX_SPACEDIM; i++)
             os << Geom().ProbLo(i) << ' ';
         os << '\n';
-        for (int i = 0; i < BL_SPACEDIM; i++)
+        for (int i = 0; i < AMREX_SPACEDIM; i++)
             os << Geom().ProbHi(i) << ' ';
         os << '\n';
         // Only one level -> no refinement ratios
@@ -777,7 +771,7 @@ Nyx::writeMultiFabAsPlotFile(const std::string& pltfile,
         os << '\n';
         os << parent->levelSteps(0) << ' ';
         os << '\n';
-        for (int k = 0; k < BL_SPACEDIM; k++)
+        for (int k = 0; k < AMREX_SPACEDIM; k++)
             os << parent->Geom(0).CellSize()[k] << ' ';
         os << '\n';
         os << (int) Geom().Coord() << '\n';
@@ -822,7 +816,7 @@ Nyx::writeMultiFabAsPlotFile(const std::string& pltfile,
         for (int i = 0; i < grids.size(); ++i)
         {
             RealBox gridloc = RealBox(grids[i], geom.CellSize(), geom.ProbLo());
-            for (int n = 0; n < BL_SPACEDIM; n++)
+            for (int n = 0; n < AMREX_SPACEDIM; n++)
                 os << gridloc.lo(n) << ' ' << gridloc.hi(n) << '\n';
         }
         //
@@ -848,7 +842,7 @@ void
 Nyx::checkPoint (const std::string& dir,
                  std::ostream&      os,
                  VisMF::How         how,
-                 bool               dump_old_default)
+                 bool               /*dump_old_default*/)
 {
 
   for (int s = 0; s < desc_lst.size(); ++s) {
@@ -914,8 +908,8 @@ Nyx::checkPoint (const std::string& dir,
 }
 
 void
-Nyx::checkPointPre (const std::string& dir,
-                    std::ostream&      os)
+Nyx::checkPointPre (const std::string& /*dir*/,
+                    std::ostream&      /*os*/)
 {
 #ifdef AMREX_PARTICLES
   if(Nyx::theDMPC()) {
@@ -936,8 +930,8 @@ Nyx::checkPointPre (const std::string& dir,
 
 
 void
-Nyx::checkPointPost (const std::string& dir,
-                 std::ostream&      os)
+Nyx::checkPointPost (const std::string& /*dir*/,
+                     std::ostream&      /*os*/)
 {
 #ifdef AMREX_PARTICLES
   if(Nyx::theDMPC()) {

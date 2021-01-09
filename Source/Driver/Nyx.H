@@ -44,7 +44,7 @@ using namespace ascent;
 using std::istream;
 using std::ostream;
 #ifdef AMREX_PARTICLES
-typedef NyxParticleContainer<1+BL_SPACEDIM+3> StellarParticleContainer;
+typedef NyxParticleContainer<1+AMREX_SPACEDIM+3> StellarParticleContainer;
 #endif
 #ifdef NO_HYDRO
 enum StateType {
@@ -52,7 +52,6 @@ enum StateType {
     Gravity_Type,
     NUM_STATE_TYPE
 };
-static int State_for_Time = PhiGrav_Type;
 static constexpr int max_prob_param = 1;
 #endif
 
@@ -67,7 +66,6 @@ enum StateType {
 #endif
     NUM_STATE_TYPE
 };
-static int State_for_Time = State_Type;
 static constexpr int max_prob_param = 20;
 #endif
 
@@ -147,6 +145,7 @@ public:
     static int write_hdf5;
 
     static int runlog_precision;
+    static int runlog_precision_terse;
 
     //
     //Define data descriptors.
@@ -551,15 +550,23 @@ public:
 
     void update_state_with_sources( amrex::MultiFab& S_old      , amrex::MultiFab& S_new,
                                     amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src,
-                                    amrex::MultiFab& grav       , amrex::MultiFab& reset_e_src,
+                                    amrex::MultiFab& grav       , 
+#ifdef SDC
+                                    amrex::MultiFab& reset_e_src,
+#endif
                                     amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
 
-    void enforce_minimum_density  ( amrex::MultiFab& S_old      , amrex::MultiFab& S_new, amrex::MultiFab& reset_e_src,
-                                    amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
-    void enforce_minimum_density_cons  ( amrex::MultiFab& S_old      , amrex::MultiFab& S_new, amrex::MultiFab& reset_e_src,
-                                         amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
-    void enforce_minimum_density_floor (                               amrex::MultiFab& S_new,
-                                         amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
+    void enforce_minimum_density  ( amrex::MultiFab& S_old      , amrex::MultiFab& S_new, 
+#ifdef SDC
+                                    amrex::MultiFab& reset_e_src,
+#endif
+                                    amrex::Real a_new);
+#ifdef SDC
+    void enforce_minimum_density_cons  ( amrex::MultiFab& S_old      , amrex::MultiFab& S_new, amrex::MultiFab& reset_e_src);
+#else
+    void enforce_minimum_density_cons  ( amrex::MultiFab& S_old      , amrex::MultiFab& S_new);
+#endif
+    void enforce_minimum_density_floor ( amrex::MultiFab& S_new, amrex::Real a_new);
 
     void strang_first_step  (amrex::Real time, amrex::Real dt,  amrex::MultiFab& state, amrex::MultiFab&  dstate);
     void strang_second_step (amrex::Real time, amrex::Real dt,  amrex::MultiFab& state, amrex::MultiFab&  dstate);

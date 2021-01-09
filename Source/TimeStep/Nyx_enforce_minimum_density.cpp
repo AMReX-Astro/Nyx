@@ -5,8 +5,11 @@
 using namespace amrex;
 
 void
-Nyx::enforce_minimum_density( MultiFab& S_old, MultiFab& S_new, MultiFab& reset_e_src,
-                              Real dt, Real a_old, Real a_new)
+Nyx::enforce_minimum_density( MultiFab& S_old, MultiFab& S_new,
+#ifdef SDC
+                              MultiFab& reset_e_src,
+#endif
+                              Real a_new)
 {
     BL_PROFILE("Nyx::enforce_minimum_density()");
 
@@ -19,11 +22,14 @@ Nyx::enforce_minimum_density( MultiFab& S_old, MultiFab& S_new, MultiFab& reset_
     {
         if (enforce_min_density_type == "floor")
         {
-            enforce_minimum_density_floor(S_new, dt, a_old, a_new);
+            enforce_minimum_density_floor(S_new, a_new);
 
         } else if (enforce_min_density_type == "conservative") {
-            enforce_minimum_density_cons(S_old, S_new, reset_e_src, dt, a_old, a_new);
-
+#ifdef SDC
+            enforce_minimum_density_cons(S_old, S_new, reset_e_src);
+#else
+            enforce_minimum_density_cons(S_old, S_new);
+#endif
         } else {
             amrex::Abort("Don't know this enforce_min_density_type");
         }
@@ -31,14 +37,18 @@ Nyx::enforce_minimum_density( MultiFab& S_old, MultiFab& S_new, MultiFab& reset_
 }
 
 void
-Nyx::enforce_minimum_density_floor( MultiFab& S_new,
-                                    Real dt, Real a_old, Real a_new )
+Nyx::enforce_minimum_density_floor( MultiFab& S_new, Real a_new_in)
 {
-    int lnum_spec    = NumSpec;
     Real lsmall_dens = small_dens;
     Real lgamma_minus_1 = gamma - 1.0;
     Real lsmall_temp = small_temp;
     auto atomic_rates = atomic_rates_glob;
+
+#ifndef CONST_SPECIES
+    int lnum_spec    = NumSpec;
+#endif
+
+    Real l_h_species = h_species;
 
     //
     //  Reset negative density to small_dens, set (rho e) and (rho E) from small_temp  and zero out momenta
@@ -54,19 +64,26 @@ Nyx::enforce_minimum_density_floor( MultiFab& S_new,
 
          amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept
          {
-             floor_density(i, j, k, uout, atomic_rates, lnum_spec, a_new, lgamma_minus_1, lsmall_dens, lsmall_temp);
+             floor_density(i, j, k, uout, atomic_rates,
+#ifndef CONST_SPECIES
+                           lnum_spec,
+#endif
+                           a_new_in, lgamma_minus_1, lsmall_dens, lsmall_temp, l_h_species);
          });
     }
 }
 
 void
-Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& reset_e_src,
-                                    Real dt, Real a_old, Real a_new )
+#ifdef SDC
+Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& reset_e_src)
+#else
+Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new)
+#endif
 {
     bool debug = false;
 
-    int lnum_spec    = NumSpec;
 #ifndef CONST_SPECIES
+    int lnum_spec    = NumSpec;
     int lfirst_spec  = FirstSpec_comp;
 #endif
     Real lsmall_dens = small_dens;
@@ -167,8 +184,11 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new, MultiFab& 
 
             amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept
             {
-              create_update_for_minimum(i, j, k, Density_comp, sbord_arr,
-                                        mu_x_arr, mu_y_arr, mu_z_arr, upd_arr
+              create_update_for_minimum(i, j, k,
+#ifndef CONST_SPECIES
+                                        Density_comp,
+#endif
+                                        sbord_arr, mu_x_arr, mu_y_arr, mu_z_arr, upd_arr
 #ifndef CONST_SPECIES
                                        ,lfirst_spec, lnum_spec
 #endif

@@ -49,7 +49,7 @@ Nyx::sdc_hydro (Real time,
        get_old_source(prev_time, dt, ext_src_old);
 
     // Define the gravity vector
-    MultiFab grav_vector(grids, dmap, BL_SPACEDIM, NUM_GROW);
+    MultiFab grav_vector(grids, dmap, AMREX_SPACEDIM, NUM_GROW);
     grav_vector.setVal(0.);
 
     if (do_grav)
@@ -102,7 +102,10 @@ Nyx::sdc_hydro (Real time,
        reset_e_src.setVal(0.0);
 
        update_state_with_sources(S_old_tmp,S_new,
-                                 ext_src_old,hydro_src,grav_vector,reset_e_src,
+                                 ext_src_old,hydro_src,grav_vector,
+#ifdef SDC
+                                 reset_e_src,
+#endif
                                  dt,a_old,a_new);
 
        // We copy old Temp and Ne to new Temp and Ne so that they can be used

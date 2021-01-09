@@ -71,7 +71,7 @@ Nyx::strang_hydro_fuse (Real time,
       }
 
     // Define the gravity vector 
-    MultiFab grav_vector(grids, dmap, BL_SPACEDIM, NUM_GROW);
+    MultiFab grav_vector(grids, dmap, AMREX_SPACEDIM, NUM_GROW);
     //in case do_grav==0
     grav_vector.setVal(0);
 

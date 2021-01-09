@@ -15,7 +15,6 @@ trace_ppm(const Box& bx,
           const Real dt, const Real* del,
           const Real gamma,
           const Real small_dens, const Real small_pres, 
-          const Real small,
 #ifndef CONST_SPECIES
           const int NumSpec,
 #endif
@@ -153,7 +152,6 @@ pc_umeth_3D(
                 qxmarr, qxparr,
                 bxg2, dt, del, gamma,
                 small_dens, small_pres,
-                small,
 #ifndef CONST_SPECIES
                 NumSpec_loc,
 #endif
@@ -166,7 +164,6 @@ pc_umeth_3D(
                 qymarr, qyparr,
                 bxg2, dt, del, gamma,
                 small_dens, small_pres,
-                small,
 #ifndef CONST_SPECIES
                 NumSpec_loc,
 #endif
@@ -179,7 +176,6 @@ pc_umeth_3D(
                 qzmarr, qzparr,
                 bxg2, dt, del, gamma,
                 small_dens, small_pres,
-                small,
 #ifndef CONST_SPECIES
                 NumSpec_loc,
 #endif

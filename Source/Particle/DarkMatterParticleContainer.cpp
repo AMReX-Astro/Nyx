@@ -85,7 +85,6 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     //If there are no particles at this level
     if (lev >= this->GetParticles().size())
         return;
-    const GpuArray<Real,AMREX_SPACEDIM> dx = Geom(lev).CellSizeArray();
     const auto dxi              = Geom(lev).InvCellSizeArray();
 
     amrex::MultiFab* ac_ptr;
@@ -125,15 +124,10 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
         ParticleType* pstruct = particles().data();
         const long np = pti.numParticles();
         int grid    = pti.index();
-        auto& ptile = ParticlesAt(lev, pti);
-        auto& aos  = ptile.GetArrayOfStructs();
-        const int n = aos.size();
-        auto p_pbox = aos().data();
 
         const FArrayBox& accel_fab= ((*ac_ptr)[grid]);
         Array4<amrex::Real const> accel= accel_fab.array();
 
-        int Np = particles.size();
         int nc=AMREX_SPACEDIM;
         amrex::ParallelFor(np,
                            [=] AMREX_GPU_HOST_DEVICE ( long i)
@@ -196,7 +190,6 @@ DarkMatterParticleContainer::moveKick (MultiFab&       acceleration,
 {
     BL_PROFILE("DarkMatterParticleContainer::moveKick()");
 
-    const GpuArray<Real,AMREX_SPACEDIM> dx = Geom(lev).CellSizeArray();
     const auto dxi              = Geom(lev).InvCellSizeArray();
 
     MultiFab* ac_ptr;
@@ -235,12 +228,7 @@ DarkMatterParticleContainer::moveKick (MultiFab&       acceleration,
         AoS& particles = pti.GetArrayOfStructs();
         ParticleType* pstruct = particles().data();
         const long np = pti.numParticles();
-        int Np = particles.size();
         int grid    = pti.index();
-        auto& ptile = ParticlesAt(lev, pti);
-        auto& aos  = ptile.GetArrayOfStructs();
-        const int n = aos.size();
-        auto p_pbox = aos().data();
 
         const FArrayBox& accel_fab= ((*ac_ptr)[grid]);
         Array4<amrex::Real const> accel= accel_fab.array();
@@ -276,9 +264,9 @@ void update_dm_particle_single (amrex::ParticleContainer<4, 0>::SuperParticleTyp
     amrex::Real ly = (p.pos(1) - plo[1]) * dxi[1] + 0.5;
     amrex::Real lz = (p.pos(2) - plo[2]) * dxi[2] + 0.5;
     
-    int i = amrex::Math::floor(lx);
-    int j = amrex::Math::floor(ly);
-    int k = amrex::Math::floor(lz);
+    int i = static_cast<int>(amrex::Math::floor(lx));
+    int j = static_cast<int>(amrex::Math::floor(ly));
+    int k = static_cast<int>(amrex::Math::floor(lz));
     
     amrex::Real xint = lx - i;
     amrex::Real yint = ly - j;
@@ -344,10 +332,10 @@ DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
     particles.resize(nlevs);
 
     ParticleType p;
-    Real         disp[BL_SPACEDIM];
-    Real         vel[BL_SPACEDIM];
+    Real         disp[AMREX_SPACEDIM];
+    Real         vel[AMREX_SPACEDIM];
     
-    Real        mean_disp[BL_SPACEDIM]={D_DECL(0,0,0)};
+    Real        mean_disp[AMREX_SPACEDIM]={D_DECL(0,0,0)};
 
 
     //
@@ -380,7 +368,7 @@ DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
                        continue;
                     }
 
-                    for (int n = 0; n < BL_SPACEDIM; n++)
+                    for (int n = 0; n < AMREX_SPACEDIM; n++)
                     {
                         disp[n] = myFab(indices,disp_idx+n);
                         //
@@ -431,7 +419,7 @@ DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
                           newp[i].rdata(0)   = particleMass/8.0;
                           newp[i].id()       = ParticleType::NextID();
                           newp[i].cpu()      = MyProc;
-                          for (int dim=0;dim<BL_SPACEDIM;dim++)
+                          for (int dim=0;dim<AMREX_SPACEDIM;dim++)
                           {
                               newp[i].pos(dim)=p.pos(dim)+(2*((i/(1 << dim)) % 2)-1)*dx[dim]/4.0;
                               newp[i].rdata(dim+1)=p.rdata(dim+1);
@@ -483,8 +471,8 @@ DarkMatterParticleContainer::InitCosmo1ppc(MultiFab& mf, const Real vel_fac[], c
 
     ParticleType      p;
     ParticleLocData   pld;
-    Real              disp[BL_SPACEDIM];
-    const Real        len[BL_SPACEDIM] = { D_DECL(geom.ProbLength(0),
+    Real              disp[AMREX_SPACEDIM];
+    const Real        len[AMREX_SPACEDIM] = { D_DECL(geom.ProbLength(0),
                                                   geom.ProbLength(1),
                                                   geom.ProbLength(2)) };
     //
@@ -508,7 +496,7 @@ DarkMatterParticleContainer::InitCosmo1ppc(MultiFab& mf, const Real vel_fac[], c
                 {
                     IntVect indices(D_DECL(ix, jx, kx));
 
-                    for (int n = 0; n < BL_SPACEDIM; n++)
+                    for (int n = 0; n < AMREX_SPACEDIM; n++)
                     {
                         disp[n] = myFab(indices,n);
                         //
@@ -578,7 +566,7 @@ DarkMatterParticleContainer::InitCosmo(
         BL_ASSERT(particles[lev].empty());
     }
 
-    const Real len[BL_SPACEDIM] = { D_DECL(geom.ProbLength(0),
+    const Real len[AMREX_SPACEDIM] = { D_DECL(geom.ProbLength(0),
                                            geom.ProbLength(1),
                                            geom.ProbLength(2)) };
     //
@@ -622,7 +610,7 @@ DarkMatterParticleContainer::InitCosmo(
     // Place the particles evenly spaced in the problem domain.
     // Not perfectly fast - but easy
     //
-    Real         pos[BL_SPACEDIM];
+    Real         pos[AMREX_SPACEDIM];
     ParticleType p;
 
 #ifdef _OPENMP
@@ -645,7 +633,7 @@ DarkMatterParticleContainer::InitCosmo(
                     bool    isInValidBox = true;
                     IntVect indices(D_DECL(i, j, k));
 
-                    for (int n = 0; n < BL_SPACEDIM; n++)
+                    for (int n = 0; n < AMREX_SPACEDIM; n++)
                     {
                         pos[n] = geom.ProbLo(n)
                                + (indices[n] + Real(0.5))*len[n]/n_part[n]
@@ -725,11 +713,9 @@ DarkMatterParticleContainer::InitCosmo(
 #endif
         for (int i = 0; i < n; i++)
         {
-            ParticleType& p = pbox[i];
-
             if (p.id() <= 0) continue;
 
-            Real disp[BL_SPACEDIM];
+            Real disp[AMREX_SPACEDIM];
             //
             // Do CIC interpolation onto the particle positions.
             // For CIC we need one ghost cell!
@@ -788,12 +774,12 @@ void
 DarkMatterParticleContainer::AssignDensityAndVels (Vector<std::unique_ptr<MultiFab> >& mf, int lev_min) const
 {
      amrex::Gpu::LaunchSafeGuard lsg(true);
-     AssignDensity(mf, lev_min, BL_SPACEDIM+1);
+     AssignDensity(mf, lev_min, AMREX_SPACEDIM+1);
 }
 
 void 
 DarkMatterParticleContainer::InitFromBinaryMortonFile(const std::string& particle_directory,
-                                                      int nextra, int skip_factor) {
+                                                      int /*nextra*/, int skip_factor) {
   BL_PROFILE("DarkMatterParticleContainer::InitFromBinaryMortonFile");
   
   ParticleMortonFileHeader hdr;
@@ -836,7 +822,6 @@ DarkMatterParticleContainer::InitFromBinaryMortonFile(const std::string& particl
   
   ParticleType p;
   for (MFIter mfi = MakeMFIter(lev, false); mfi.isValid(); ++mfi) {  // no tiling
-    Box tile_box = mfi.tilebox();      
     const int grid = mfi.index();
     const int tile = mfi.LocalTileIndex();      
     auto& particles = GetParticles(lev);
@@ -870,8 +855,8 @@ DarkMatterParticleContainer::InitFromBinaryMortonFile(const std::string& particl
         }
       }
 
-      float fpos[DM];
-      float fextra[NX];
+      Vector<float> fpos(DM);
+      Vector<float> fextra(NX);
       ifs.read((char*)&fpos[0],   DM*sizeof(float));
       ifs.read((char*)&fextra[0], NX*sizeof(float));
       
@@ -881,9 +866,9 @@ DarkMatterParticleContainer::InitFromBinaryMortonFile(const std::string& particl
                      p.pos(2) = fpos[2];);
         
         for (int comp = 0; comp < NX; comp++)
-          p.rdata(BL_SPACEDIM+comp) = fextra[comp];
+          p.rdata(AMREX_SPACEDIM+comp) = fextra[comp];
         
-        p.rdata(BL_SPACEDIM) *= skip_factor;
+        p.rdata(AMREX_SPACEDIM) *= skip_factor;
         
         p.id()  = ParticleType::NextID();
         p.cpu() = ParallelDescriptor::MyProc();

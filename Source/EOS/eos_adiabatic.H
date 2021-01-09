@@ -20,7 +20,9 @@ extern "C"
 #endif
 */
 
-AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_T_given_Re_device(AtomicRates* atomic_rates, Real gamma_minus_1, Real h_species, int JH, int JHe, Real* T, Real* Ne, Real R,Real e,Real comoving_a)
+AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_T_given_Re_device(
+    AtomicRates* /*atomic_rates*/, Real gamma_minus_1, Real h_species, 
+    int /*JH*/, int /*JHe*/, Real* T, Real* Ne, Real /*R*/, Real e, Real /*comoving_a*/)
 {
   Real xn_eos[2];
 
@@ -74,7 +76,9 @@ AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_T_given_Re_device(AtomicRa
    *Ne = 1.0;
 }
 
-AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_given_RT(AtomicRates* atomic_rates, Real gamma_minus_1, Real h_species, Real* e, Real* P, Real R, Real T, Real Ne,Real comoving_a)
+AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_given_RT(
+     AtomicRates* /*atomic_rates*/, Real gamma_minus_1, Real h_species, 
+     Real* e, Real* P, Real R, Real T, Real /*Ne*/, Real comoving_a)
 {
   
   Real comoving_a_cubed= (comoving_a*comoving_a*comoving_a);

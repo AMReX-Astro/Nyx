@@ -252,7 +252,7 @@ Nyx::advance_hydro_plus_particles (Real time,
             // We need grav_n_grow grow cells to track boundary particles
                 const auto& ba = get_level(lev).get_new_data(State_Type).boxArray();
             const auto& dm = get_level(lev).get_new_data(State_Type).DistributionMap();
-            MultiFab grav_vec_old(ba, dm, BL_SPACEDIM, grav_n_grow);
+            MultiFab grav_vec_old(ba, dm, AMREX_SPACEDIM, grav_n_grow);
             get_level(lev).gravity->get_old_grav_vector(lev, grav_vec_old, time);
             
             for (int i = 0; i < Nyx::theActiveParticles().size(); i++)
@@ -365,7 +365,6 @@ Nyx::advance_hydro_plus_particles (Real time,
         for (int lev = level; lev <= finest_level_to_advance; lev++)
         {
             MultiFab::RegionTag amrGrav_tag("Gravity_" + std::to_string(lev));
-            amrex::Gpu::LaunchSafeGuard lsg(true);
 
             // Now do corrector part of source term update
             correct_gsrc(lev,time,prev_time,cur_time,dt);
@@ -402,7 +401,7 @@ Nyx::advance_hydro_plus_particles (Real time,
             {
                 const auto& ba = get_level(lev).get_new_data(State_Type).boxArray();
                 const auto& dm = get_level(lev).get_new_data(State_Type).DistributionMap();
-                MultiFab grav_vec_new(ba, dm, BL_SPACEDIM, grav_n_grow);
+                MultiFab grav_vec_new(ba, dm, AMREX_SPACEDIM, grav_n_grow);
                 get_level(lev).gravity->get_new_grav_vector(lev, grav_vec_new, cur_time);
 
                 for (int i = 0; i < Nyx::theActiveParticles().size(); i++)
@@ -495,8 +494,6 @@ Nyx::advance_hydro (Real time,
 
     if (do_grav)
     {
-       amrex::Gpu::LaunchSafeGuard lsg(true);
-
        if (verbose && ParallelDescriptor::IOProcessor()) 
         std::cout << "\n... new-time level solve at level " << level << '\n';
 

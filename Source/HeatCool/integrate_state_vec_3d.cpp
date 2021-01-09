@@ -283,6 +283,7 @@ int Nyx::integrate_state_vec_mfin
                                 PrintFinalStats(cvode_mem);
 #endif
   auto atomic_rates = atomic_rates_glob;
+  Real lh_species = Nyx::h_species;
 #ifdef AMREX_USE_GPU
                                 AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
                                 {
@@ -300,7 +301,7 @@ int Nyx::integrate_state_vec_mfin
 #endif
                                   int  idx= i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
                                 //                              for (int i= 0;i < neq; ++i) {
-                                  ode_eos_finalize((dptr[idx*loop]), &(rparh[4*idx*loop]), one_in, atomic_rates);
+                                  ode_eos_finalize((dptr[idx*loop]), &(rparh[4*idx*loop]), one_in, atomic_rates, lh_species);
                                   diag_eos4(i,j,k,Temp_comp)=rparh[4*idx*loop+0];   //rpar(1)=T_vode
                                   diag_eos4(i,j,k,Ne_comp)=rparh[4*idx*loop+1];//    rpar(2)=ne_vode
                                 
@@ -393,9 +394,10 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
   
   cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();
   auto atomic_rates = atomic_rates_glob;
+  Real lh_species = Nyx::h_species;
   AMREX_LAUNCH_DEVICE_LAMBDA ( neq, idx, {
       //  f_rhs_test(t,u_ptr,udot_ptr, rpar, neq);
-      f_rhs_rpar(t,*(u_ptr+idx),*(udot_ptr+idx), (rpar+4*idx), atomic_rates);
+      f_rhs_rpar(t,*(u_ptr+idx),*(udot_ptr+idx), (rpar+4*idx), atomic_rates, lh_species);
   });
   cudaStreamSynchronize(currentStream);
 
@@ -411,10 +413,11 @@ static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
   int neq=N_VGetLength_Serial(udot);
   double*  rpar=N_VGetArrayPointer_Serial(*(static_cast<N_Vector*>(user_data)));
   auto atomic_rates = atomic_rates_glob;
+  Real lh_species = Nyx::h_species;
   #pragma omp parallel for
   for(int tid=0;tid<neq;tid++)
     {
-        f_rhs_rpar(t, (u_ptr[tid]),(udot_ptr[tid]),&(rpar[4*tid]), atomic_rates);
+        f_rhs_rpar(t, (u_ptr[tid]),(udot_ptr[tid]),&(rpar[4*tid]), atomic_rates, lh_species);
     }
 
   return 0;

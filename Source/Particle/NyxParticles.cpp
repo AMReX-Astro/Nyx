@@ -354,7 +354,7 @@ Nyx::read_particle_params ()
     ParmParse ppp("particles");
     ppp.query("v", particle_verbose);
 
-    for (int i = 0; i < BL_SPACEDIM; i++) Nrep[i] = 1; // Initialize to one (no replication)
+    for (int i = 0; i < AMREX_SPACEDIM; i++) Nrep[i] = 1; // Initialize to one (no replication)
     ppp.query("replicate",Nrep);
     //
     // Set the cfl for particle motion (fraction of cell that a particle can
@@ -486,9 +486,9 @@ Nyx::init_particles ()
             // after reading in `m_pos[]`. Here we're reading in the particle
             // mass and velocity.
             //
-            DMPC->InitFromAsciiFile(ascii_particle_file, BL_SPACEDIM + 1, &Nrep);
+            DMPC->InitFromAsciiFile(ascii_particle_file, AMREX_SPACEDIM + 1, &Nrep);
             if (init_with_sph_particles == 1)
-                SPHPC->InitFromAsciiFile(sph_particle_file, BL_SPACEDIM + 1, &Nrep);
+                SPHPC->InitFromAsciiFile(sph_particle_file, AMREX_SPACEDIM + 1, &Nrep);
         }
         else if (particle_init_type == "BinaryFile")
         {
@@ -506,9 +506,9 @@ Nyx::init_particles ()
             // mass and velocity.
             //
             amrex::Gpu::LaunchSafeGuard lsg(particle_launch_ics);
-            DMPC->InitFromBinaryFile(binary_particle_file, BL_SPACEDIM + 1);
+            DMPC->InitFromBinaryFile(binary_particle_file, AMREX_SPACEDIM + 1);
             if (init_with_sph_particles == 1)
-              SPHPC->InitFromBinaryFile(sph_particle_file, BL_SPACEDIM + 1);
+              SPHPC->InitFromBinaryFile(sph_particle_file, AMREX_SPACEDIM + 1);
 
         }
         else if (particle_init_type == "BinaryMetaFile")
@@ -527,9 +527,9 @@ Nyx::init_particles ()
             // Here we're reading in the particle mass and velocity.
             //
             amrex::Gpu::LaunchSafeGuard lsg(particle_launch_ics);
-            DMPC->InitFromBinaryMetaFile(binary_particle_file, BL_SPACEDIM + 1);
+            DMPC->InitFromBinaryMetaFile(binary_particle_file, AMREX_SPACEDIM + 1);
             if (init_with_sph_particles == 1)
-                SPHPC->InitFromBinaryMetaFile(sph_particle_file, BL_SPACEDIM + 1);
+                SPHPC->InitFromBinaryMetaFile(sph_particle_file, AMREX_SPACEDIM + 1);
         }
         else if (particle_init_type == "BinaryMortonFile")
         {
@@ -546,7 +546,7 @@ Nyx::init_particles ()
             // Here we're reading in the particle mass and velocity.
             //
           DMPC->InitFromBinaryMortonFile(binary_particle_file,
-                                         BL_SPACEDIM + 1,
+                                         AMREX_SPACEDIM + 1,
                                          particle_skip_factor);
         }
         else
@@ -645,9 +645,9 @@ Nyx::init_particles ()
             // mass, velocity and angles.
             //
 #ifdef NEUTRINO_DARK_PARTICLES
-            NPC->InitFromAsciiFile(neutrino_particle_file, BL_SPACEDIM + 1, &Nrep);
+            NPC->InitFromAsciiFile(neutrino_particle_file, AMREX_SPACEDIM + 1, &Nrep);
 #else
-            NPC->InitFromAsciiFile(neutrino_particle_file, 2*BL_SPACEDIM + 1, &Nrep);
+            NPC->InitFromAsciiFile(neutrino_particle_file, 2*AMREX_SPACEDIM + 1, &Nrep);
 #endif
         }
         else if (particle_init_type == "BinaryFile")
@@ -662,7 +662,7 @@ Nyx::init_particles ()
             // after reading in `m_pos[]`. Here we're reading in the particle
             // mass and velocity.
             //
-            NPC->InitFromBinaryFile(neutrino_particle_file, BL_SPACEDIM + 1);
+            NPC->InitFromBinaryFile(neutrino_particle_file, AMREX_SPACEDIM + 1);
         }
         else if (particle_init_type == "BinaryMetaFile")
         {
@@ -676,7 +676,7 @@ Nyx::init_particles ()
             // after reading in `m_pos[]` in each of the binary particle files.
             // Here we're reading in the particle mass and velocity.
             //
-            NPC->InitFromBinaryMetaFile(neutrino_particle_file, BL_SPACEDIM + 1);
+            NPC->InitFromBinaryMetaFile(neutrino_particle_file, AMREX_SPACEDIM + 1);
         }
         else
         {
@@ -821,15 +821,15 @@ Nyx::init_santa_barbara (int init_sb_vels)
         if (init_sb_vels == 1)
         {
             // Convert velocity to momentum
-            for (int i = 0; i < BL_SPACEDIM; ++i) {
+            for (int i = 0; i < AMREX_SPACEDIM; ++i) {
                MultiFab::Multiply(*particle_mf[level], *particle_mf[level], 0, 1+i, 1, 0);
             }
 
             // Add the particle momenta to the gas momenta (initially zero)
-            MultiFab::Add(S_new, *particle_mf[level], 1, Xmom_comp, BL_SPACEDIM, S_new.nGrow());
+            MultiFab::Add(S_new, *particle_mf[level], 1, Xmom_comp, AMREX_SPACEDIM, S_new.nGrow());
         }
 
-        enforce_minimum_density_floor(S_new, -1e200, new_a, new_a);
+        enforce_minimum_density_floor(S_new, new_a);
     } else {
 
         MultiFab& S_new = get_new_data(State_Type);

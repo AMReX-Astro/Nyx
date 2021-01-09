@@ -15,7 +15,6 @@ trace_ppm(const Box& bx,
           const Real* dx,
           const Real gamma,
           const Real small_dens, const Real small_pres,
-          const Real small,
 #ifndef CONST_SPECIES
           const int NumSpec,
 #endif
@@ -31,15 +30,11 @@ trace_ppm(const Box& bx,
   // p : gas (hydro) pressure
   // ptot : total pressure (note for pure hydro, this is
   //        just the gas pressure)
-  // rhoe_g : gas specific internal energy
   // cgas : sound speed for just the gas contribution
   // cc : total sound speed 
-  // h_g : gas specific enthalpy / cc**2
-  // gam_g : the gas Gamma_1
-  // game : gas gamma_e
   //
   // for pure hydro, we will only consider:
-  //    rho, u, v, w, ptot, rhoe_g, cc, h_g
+  //    rho, u, v, w, ptot, cc
 
   Real hdtovera = 0.5_rt * dt / a_old;
   Real dtdx = dt / dx[idir];
@@ -223,7 +218,6 @@ trace_ppm(const Box& bx,
       Real un_ref  = Im[QUN][0];
 
       Real p_ref      = Im[QPRES][0];
-      Real rhoe_g_ref = Im[QREINT][0];
 
       Real gam_g_ref = gamma;
 
@@ -236,7 +230,6 @@ trace_ppm(const Box& bx,
       Real csq_ref = gam_g_ref*p_ref*rho_ref_inv;
       Real cc_ref = std::sqrt(csq_ref);
       Real cc_ref_inv = 1.0_rt/cc_ref;
-      Real h_g_ref = (p_ref + rhoe_g_ref)*rho_ref_inv;
 
       // *m are the jumps carried by un-c
       // *p are the jumps carried by un+c
@@ -318,7 +311,6 @@ trace_ppm(const Box& bx,
       Real un_ref = Ip[QUN][2];
 
       Real p_ref = Ip[QPRES][2];
-      Real rhoe_g_ref = Ip[QREINT][2];
 
       Real gam_g_ref = gamma;
 
@@ -331,7 +323,6 @@ trace_ppm(const Box& bx,
       Real csq_ref = gam_g_ref*p_ref*rho_ref_inv;
       Real cc_ref = std::sqrt(csq_ref);
       Real cc_ref_inv = 1.0_rt/cc_ref;
-      Real h_g_ref = (p_ref + rhoe_g_ref)*rho_ref_inv;
 
       // *m are the jumps carried by u-c
       // *p are the jumps carried by u+c

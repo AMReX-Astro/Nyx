@@ -5,7 +5,7 @@
 #include <NyxParticleContainer.H>
 
 class NeutrinoParticleContainer
-    : public NyxParticleContainer<2+BL_SPACEDIM>
+    : public NyxParticleContainer<2+AMREX_SPACEDIM>
 {
 
 private:
@@ -14,11 +14,11 @@ private:
 
 public:
     NeutrinoParticleContainer (amrex::Amr* amr)
-        : NyxParticleContainer<2+BL_SPACEDIM>(amr)
+        : NyxParticleContainer<2+AMREX_SPACEDIM>(amr)
     { }
 
-    using MyParIter = amrex::ParIter<2+BL_SPACEDIM>;
-    using MyConstParIter = amrex::ParConstIter<2+BL_SPACEDIM>;
+    using MyParIter = amrex::ParIter<2+AMREX_SPACEDIM>;
+    using MyConstParIter = amrex::ParConstIter<2+AMREX_SPACEDIM>;
 
     virtual ~NeutrinoParticleContainer () {}
 

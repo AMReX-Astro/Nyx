@@ -8,6 +8,46 @@
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
+pc_ctoprim(
+  const int i,
+  const int j,
+  const int k,
+  amrex::Array4<const amrex::Real> const& u,
+  amrex::Array4<amrex::Real> const& q,
+#ifndef CONST_SPECIES
+  const int NumSpec, 
+#endif
+  const amrex::Real gamma_minus_1)
+{
+  const amrex::Real rho = u(i, j, k, Density_comp);
+  const amrex::Real rhoinv = 1.0 / rho;
+  const amrex::Real vx = u(i, j, k, Xmom_comp) * rhoinv;
+  const amrex::Real vy = u(i, j, k, Ymom_comp) * rhoinv;
+  const amrex::Real vz = u(i, j, k, Zmom_comp) * rhoinv;
+  const amrex::Real e = u(i, j, k, Eint_comp) * rhoinv;
+  //  const amrex::Real kineng = 0.5 * rho * (vx * vx + vy * vy + vz * vz);
+  q(i, j, k, QRHO) = rho;
+  q(i, j, k, QU) = vx;
+  q(i, j, k, QV) = vy;
+  q(i, j, k, QW) = vz;
+  q(i,j,k,QREINT) = e;
+
+  // Convert "e" back to "rho e"
+  q(i,j,k,QREINT) = q(i,j,k,QREINT)*q(i,j,k,QRHO);
+  
+  // Pressure = (gamma - 1) * rho * e
+  q(i,j,k,QPRES) = gamma_minus_1 * q(i,j,k,QREINT);
+
+#ifndef CONST_SPECIES
+  for (int n = 0; n < NumSpec; ++n) {
+    q(i, j, k, FirstSpec_comp + n) = u(i, j, k, FirstSpec_comp + n) / rho;
+  }
+#endif
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
 pc_srctoprim(
   const int i,
   const int j,
@@ -17,7 +57,10 @@ pc_srctoprim(
   amrex::Array4<const amrex::Real> const& src,
   amrex::Array4<amrex::Real> const& srcQ,
   const amrex::Real a_dot,
-  const int NumSpec, const amrex::Real gamma_minus_1)
+#ifndef CONST_SPECIES
+  const int NumSpec, 
+#endif
+  const amrex::Real gamma_minus_1)
 {
   // Local loading Vars ==> Load once from global memory use multiple times
   const amrex::Real srcrho = src(i, j, k, Density_comp);
@@ -32,7 +75,6 @@ pc_srctoprim(
   const amrex::Real gravy = grav(i, j, k, 1);
   const amrex::Real gravz = grav(i, j, k, 2);
 
-#if 1
   // srcrho != rhoinv
   // SrcQ Calc
   srcQ(i, j, k, QRHO) = srcrho;
@@ -56,21 +98,6 @@ pc_srctoprim(
     srcQ(i, j, k, FirstSpec_comp + n) = (src(i, j, k, FirstSpec_comp + n) - q(i, j, k, FirstSpec_comp + n) * srcrho) * rhoinv;
   }
 #endif
-
-#else
-  srcQ(i, j, k, QRHO) = 0.;
-  srcQ(i, j, k, QU)   = 0.;
-  srcQ(i, j, k, QV)   = 0.;
-  srcQ(i, j, k, QW)   = 0.;
-  srcQ(i, j, k, QPRES)   = 0.;
-  srcQ(i, j, k, QREINT)   = 0.;
-#ifndef CONST_SPECIES
-  for (int n = 0; n < NumSpec; ++n) {
-    srcQ(i, j, k, FirstSpec_comp + n) = 0.;
-  }
-#endif
-#endif
-
 }
 
 AMREX_GPU_DEVICE
@@ -108,12 +135,13 @@ pc_divu(
   divu(i, j, k) = AMREX_D_TERM(ux, +vy, +wz);
 }
 
+#ifndef CONST_SPECIES
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
-normalize_species_fluxes(const int i, const int j, const int k, amrex::Array4<amrex::Real> const& flx, const int NumSpec)
+normalize_species_fluxes(const int i, const int j, const int k, 
+                         amrex::Array4<amrex::Real> const& flx, const int NumSpec)
 {
-#ifndef CONST_SPECIES
   amrex::Real summ, fac;
   summ = 0.0;
   for (int n = 0; n < NumSpec; ++n)
@@ -131,45 +159,8 @@ normalize_species_fluxes(const int i, const int j, const int k, amrex::Array4<am
   fac = (std::abs(summ) > std::numeric_limits<amrex::Real>::epsilon() * std::abs(flx(i, j, k, Density_comp))) ? flx(i, j, k, Density_comp) / summ : 1.0;
   for (int n = 0; n < NumSpec; ++n)
     flx(i, j, k, FirstSpec_comp + n) *= fac;
+}
 #endif
-}
-
-AMREX_GPU_DEVICE
-AMREX_FORCE_INLINE
-void
-pc_ext_flx(
-  const int i,
-  const int j,
-  const int k,
-  amrex::Array4<amrex::Real> const& flx,
-  amrex::Real const area,
-  amrex::Real const dt)
-{
-    for (int n = 0; n < flx.nComp(); ++n)
-        flx(i,j,k,n) *= area*dt;
-}
-
-AMREX_GPU_DEVICE
-AMREX_FORCE_INLINE
-void
-pc_ext_flx_dt(
-  const int i,
-  const int j,
-  const int k,
-  amrex::Array4<amrex::Real> const& flx,
-  amrex::Real const a_old,
-  amrex::Real const a_new)
-{
-  const amrex::Real a_half = 0.5*(a_old + a_new);
-  const amrex::Real a_half_inv = 1.0 / a_half;
-  const amrex::Real a_new_inv = 1.0 / a_new;
-  const amrex::Real a_newsq_inv = 1.0 / (a_new * a_new);
-  //Store all 8 factors
-  const amrex::Real a_fact[8] = {a_half_inv,a_new_inv,a_new_inv,a_new_inv,a_half*a_newsq_inv,a_half*a_newsq_inv,a_half_inv,a_half_inv};
-
-  for (int n = 0; n < flx.nComp(); ++n)
-     flx(i,j,k,n)*=a_fact[n];
-}
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
@@ -218,12 +209,12 @@ void pc_umdrv(
   const amrex::Real dt,
   const amrex::Real a_old,
   const amrex::Real a_new,
-  const amrex::Real cfl,
   const amrex::Real gamma, const amrex::Real gamma_minus_1, 
+#ifndef CONST_SPECIES
   const int NumSpec,
+#endif
   const amrex::Real small_dens, const amrex::Real small_pres, 
   const amrex::Real small, 
-  amrex::Real cflLoc,
   const int ppm_type);
 
 void pc_consup(
@@ -237,7 +228,9 @@ void pc_consup(
   amrex::Real const a_new,
   amrex::Real const* del,
   amrex::Real const dt,
+#ifndef CONST_SPECIES
   const int NumSpec,
+#endif
   amrex::Real const gamma_minus_1,
   amrex::Real const difmag);
 #endif

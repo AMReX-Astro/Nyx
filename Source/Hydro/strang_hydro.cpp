@@ -77,7 +77,7 @@ Nyx::strang_hydro (Real time,
       }
 
     // Define the gravity vector 
-    MultiFab grav_vector(grids, dmap, BL_SPACEDIM, NUM_GROW);
+    MultiFab grav_vector(grids, dmap, AMREX_SPACEDIM, NUM_GROW);
     //in case do_grav==0
     grav_vector.setVal(0);
 
@@ -140,7 +140,10 @@ Nyx::strang_hydro (Real time,
     MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
     reset_e_src.setVal(0.0);
     update_state_with_sources(S_old_tmp,S_new,
-                              ext_src_old,hydro_src,grav_vector, reset_e_src,
+                              ext_src_old,hydro_src,grav_vector,
+#ifdef SDC
+                              reset_e_src,
+#endif
                               dt,a_old,a_new);  
 
     S_old_tmp.clear();
@@ -264,7 +267,6 @@ Nyx::strang_hydro_ghost_state (Real time,
     const Real prev_time    = state[State_Type].prevTime();
     const Real cur_time     = state[State_Type].curTime();
     
-    MultiFab&  S_old        = get_old_data(State_Type);
     MultiFab&  S_new        = get_new_data(State_Type);
 
     MultiFab&  D_old        = get_old_data(DiagEOS_Type);
@@ -284,6 +286,7 @@ Nyx::strang_hydro_ghost_state (Real time,
     amrex::Gpu::Device::streamSynchronize();
     amrex::Gpu::setLaunchRegion(false);
     /*    
+    MultiFab&  S_old        = get_old_data(State_Type);
     if (S_old.contains_nan(Density, S_old.nComp(), 0))
     {
         for (int i = 0; i < S_old.nComp(); i++)
@@ -319,7 +322,7 @@ Nyx::strang_hydro_ghost_state (Real time,
       }
 
     // Define the gravity vector 
-    MultiFab grav_vector(grids, dmap, BL_SPACEDIM, NUM_GROW);
+    MultiFab grav_vector(grids, dmap, AMREX_SPACEDIM, NUM_GROW);
 
     //Not sure if amrex::average_face_to_cellcenter, looks like it launches
     //    amrex::Gpu::setLaunchRegion(false);
@@ -377,7 +380,10 @@ Nyx::strang_hydro_ghost_state (Real time,
     MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
     reset_e_src.setVal(0.0);
     update_state_with_sources(S_new,S_new,
-                              ext_src_old,hydro_src,grav_vector, reset_e_src,
+                              ext_src_old,hydro_src,grav_vector,
+#ifdef SDC
+                              reset_e_src,
+#endif
                               dt,a_old,a_new);  
 
     hydro_src.clear();

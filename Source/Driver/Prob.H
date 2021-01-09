@@ -5,7 +5,7 @@
 
 void prob_errtags_default(amrex::Vector<amrex::AMRErrorTag>& errtags);
 
-void prob_param_special_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_param);
+void prob_param_special_fill(amrex::GpuArray<amrex::Real,max_prob_param>& /*prob_param*/);
 
 #ifndef NO_HYDRO
 void prob_initdata(const int i,

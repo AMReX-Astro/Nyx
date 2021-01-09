@@ -52,8 +52,10 @@ void Nyx::set_small_values_given_average (amrex::Real average_dens, amrex::Real 
     Real dummy_small_pres=0.0;
     Real eint=0.0;
     auto atomic_rates = atomic_rates_glob;
+
     if (!(pp_nyx.query("small_pres", dummy_small_pres)))
-        nyx_eos_given_RT(atomic_rates, gamma_minus_1_in, h_species_in, &eint, &small_pres, small_dens, small_temp, typical_Ne, a);
+        nyx_eos_given_RT(atomic_rates, gamma_minus_1_in, h_species_in, &eint, 
+                         &small_pres, small_dens, small_temp, typical_Ne, a);
     else
         small_pres = small_pres_inout;
 

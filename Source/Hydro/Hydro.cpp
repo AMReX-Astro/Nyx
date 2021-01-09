@@ -63,8 +63,6 @@ Nyx::construct_hydro_source(
       dx1 *= dx[dir];
     }
 
-    amrex::Real courno = -1.0e+200;
-
     amrex::MultiFab& S_new = get_new_data(State_Type);
 
     amrex::Real E_added_flux = 0.;
@@ -78,16 +76,14 @@ Nyx::construct_hydro_source(
 #ifdef _OPENMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion())               \
     reduction(+:E_added_flux,mass_added_flux)                           \
-    reduction(+:xmom_added_flux,ymom_added_flux,zmom_added_flux)    \
-    reduction(max:courno)
+    reduction(+:xmom_added_flux,ymom_added_flux,zmom_added_flux) 
 #endif
     {
-      // amrex::IArrayBox bcMask[AMREX_SPACEDIM];
-      amrex::Real cflLoc = -1.0e+200;
-
       const amrex::Real a_dot = (a_new - a_old) / dt;
 
+#ifndef CONST_SPECIES
       const int NumSpec_loc = QVAR - NGDNV;
+#endif
       const amrex::Real gamma_minus_1_loc = gamma-1.0;
 
       if (S.nComp() != QVAR) amrex::Print() << "NCOMP QVAR " << S.nComp() << " " << QVAR << std::endl;
@@ -126,7 +122,11 @@ Nyx::construct_hydro_source(
         BL_PROFILE_VAR("Nyx::ctoprim()", ctop);
         amrex::ParallelFor(qbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept 
         {
-            pc_ctoprim(i, j, k, s, qarr, NumSpec_loc, gamma_minus_1_loc);
+            pc_ctoprim(i, j, k, s, qarr, 
+#ifndef CONST_SPECIES
+            NumSpec_loc, 
+#endif
+            gamma_minus_1_loc);
         });
         BL_PROFILE_VAR_STOP(ctop);
 
@@ -137,7 +137,11 @@ Nyx::construct_hydro_source(
         amrex::ParallelFor(qbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept 
         {
             pc_srctoprim(i, j, k, qarr, grav_in, src_in, srcqarr,
-                         a_dot, NumSpec_loc, gamma_minus_1_loc);
+                         a_dot, 
+#ifndef CONST_SPECIES
+                         NumSpec_loc, 
+#endif
+                         gamma_minus_1_loc);
         });
         BL_PROFILE_VAR_STOP(srctop);
 
@@ -147,13 +151,13 @@ Nyx::construct_hydro_source(
           flx_arr{flux[0].array(), flux[1].array(), flux[2].array()};
 
         pc_umdrv(
-          bx, s, hyd_src, qarr, srcqarr, flx_arr, dx, dt, a_old, a_new, cfl,
-          gamma, gamma_minus_1_loc, NumSpec,
-          small_dens, small_pres, small, cflLoc, ppm_type);
+          bx, s, hyd_src, qarr, srcqarr, flx_arr, dx, dt, a_old, a_new, 
+          gamma, gamma_minus_1_loc, 
+#ifndef CONST_SPECIES
+          NumSpec,
+#endif
+          small_dens, small_pres, small, ppm_type);
         BL_PROFILE_VAR_STOP(purm);
-
-        BL_PROFILE_VAR("courno", crno);
-        courno = amrex::max(courno, cflLoc);
 
         // Replacing YAFluxRegister or EBFluxRegister function with copy:
         //HostDevice::Atomic::Add(fluxes_fab(i,j,k,n),flux_fab(i,j,k,n));
@@ -173,7 +177,6 @@ Nyx::construct_hydro_source(
             }
         }
 
-        BL_PROFILE_VAR_STOP(crno);
       } // MFIter loop
     }   // end of OMP parallel region
 
@@ -230,11 +233,6 @@ Nyx::construct_hydro_source(
 #endif
     }
 #endif
-
-    if (courno > 1.0) {
-      amrex::Print() << "WARNING -- EFFECTIVE CFL AT THIS LEVEL " << level
-                     << " IS " << courno << '\n';
-    }
 }
 
 void
@@ -249,14 +247,13 @@ pc_umdrv(
   const amrex::Real dt,
   const amrex::Real a_old,
   const amrex::Real a_new,
-  const amrex::Real cfl,
   const amrex::Real gamma, const amrex::Real gamma_minus_1, 
+#ifndef CONST_SPECIES
   const int NumSpec,
+#endif
   const amrex::Real small_dens, const amrex::Real small_pres, 
   const amrex::Real small, 
-  amrex::Real cflLoc,
   const int ppm_type) 
-
 {
   //  Set Up for Hydro Flux Calculations
   auto const& bxg2 = grow(bx, 2);
@@ -297,21 +294,6 @@ pc_umdrv(
     qec_eli[dir].clear();
   }
 
-#if 0
-  // if (limit_fluxes_on_small_dens == 1) 
-  {
-      for (int idir = 0; idir < AMREX_SPACEDIM; ++idir) 
-      {
-          const Box& nbx = amrex::surroundingNodes(bx, idir);
-          const Real& dx_dir = dx[idir];
-          const Real& lcfl   = cfl;
-          amrex::ParallelFor(nbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-              limit_hydro_fluxes_on_small_dens (i, j, k, idir, uin, q, flx[idir], small_dens, lcfl, dx_dir, dt);
-            });
-      }
-  }
-#endif
-
   // divu
   const amrex::Real dx0 = dx[0]; 
   const amrex::Real dx1 = dx[1];
@@ -323,7 +305,11 @@ pc_umdrv(
 
   // consup
   amrex::Real difmag = 0.1;
-  pc_consup(bx, uin, uout, flx, divarr, pdivuarr, a_old, a_new, dx, dt, NumSpec, gamma_minus_1, difmag);
+  pc_consup(bx, uin, uout, flx, divarr, pdivuarr, a_old, a_new, dx, dt, 
+#ifndef CONST_SPECIES
+            NumSpec, 
+#endif
+            gamma_minus_1, difmag);
 }
 
 void
@@ -338,7 +324,9 @@ pc_consup(
   amrex::Real const a_new,
   amrex::Real const* del,
   amrex::Real const dt,
+#ifndef CONST_SPECIES
   const int NumSpec,
+#endif
   amrex::Real const gamma_minus_1,
   amrex::Real const difmag)
 {
@@ -348,17 +336,20 @@ pc_consup(
     amrex::Box const& fbx = surroundingNodes(bx, dir);
     const amrex::Real dx = del[dir];
 
-    const GpuArray<Real,BL_SPACEDIM>  area{ del[1]*del[2], del[0]*del[2], del[0]*del[1] };
+    const GpuArray<Real,AMREX_SPACEDIM>  area{ del[1]*del[2], del[0]*del[2], del[0]*del[1] };
 
     amrex::ParallelFor(fbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
 
          pc_artif_visc(i, j, k, flx[dir], div, u, dx, difmag, dir);
 
          // Normalize Species Flux
+#ifndef CONST_SPECIES
          normalize_species_fluxes(i, j, k, flx[dir], NumSpec);
+#endif
 
          // Make flux extensive
-         pc_ext_flx(i, j, k, flx[dir], area[dir], dt);
+         for (int n = 0; n < flx[dir].nComp(); ++n)
+             flx[dir](i,j,k,n) *= area[dir]*dt;
       });
   }
 
@@ -369,11 +360,22 @@ pc_consup(
       pc_update(i, j, k, u, update, flx, vol, pdivu, a_old, a_new, dt, gamma_minus_1);
   });
 
-  for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
+  const Real a_half = 0.5*(a_old + a_new);
+  const Real a_half_inv = 1.0 / a_half;
+  const Real a_new_inv = 1.0 / a_new;
+  const Real a_newsq_inv = 1.0 / (a_new * a_new);
+
+  const GpuArray<Real,8> a_fact {a_half_inv,a_new_inv,a_new_inv,a_new_inv,
+                                 a_half*a_newsq_inv,a_half*a_newsq_inv,a_half_inv,a_half_inv};
+
+  // Change scaling for flux registers
+  for (int dir = 0; dir < AMREX_SPACEDIM; dir++) 
+  {
     amrex::Box const& fbx = surroundingNodes(bx, dir);
-    amrex::ParallelFor(fbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-        // Change scaling for flux registers
-        pc_ext_flx_dt(i, j, k, flx[dir], a_old, a_new);
+    amrex::ParallelFor(fbx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept 
+    {
+        for (int n = 0; n < flx[dir].nComp(); ++n)
+            flx[dir](i,j,k,n) *= a_fact[n];
     });
   }
 }

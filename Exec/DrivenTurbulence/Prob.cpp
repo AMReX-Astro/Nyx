@@ -1,7 +1,7 @@
 #include "Nyx.H"
 #include "Prob.H"
 
-void prob_param_special_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_param)
+void prob_param_special_fill(amrex::GpuArray<amrex::Real,max_prob_param>& /*prob_param*/)
 {}
 
 #ifndef NO_HYDRO
@@ -10,11 +10,10 @@ void prob_initdata_state(const int i,
                          const int j,
                          const int k,
                          amrex::Array4<amrex::Real> const& state,
-                         amrex::GeometryData const& geomdata,
+                         amrex::GeometryData const& /*geomdata*/,
                          const amrex::GpuArray<amrex::Real,max_prob_param>& prob_param)
 {
 
-  amrex::Real alpha=100.0;
   amrex::Real rho0=1.0;
   amrex::Real temp0=10.0;
   amrex::Real ne0=1.0;
@@ -55,9 +54,6 @@ void prob_initdata(const int i,
                    amrex::GeometryData const& geomdata,
                    const amrex::GpuArray<amrex::Real,max_prob_param>& prob_param)
 {
-
-  amrex::Real alpha=100.0;
-  amrex::Real rho0=1.0;
   amrex::Real temp0=10.0;
   amrex::Real ne0=1.0;
 

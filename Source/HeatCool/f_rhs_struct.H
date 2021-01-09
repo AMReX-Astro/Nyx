@@ -201,7 +201,6 @@ ode_eos_initialize_arrays(const int i, const int j, const int k, const int idx, 
 
     if (f_rhs_data->inhomogeneous_on)
     {
-        amrex::Abort("Haven't implemented using array version of JH logic yet");
         f_rhs_data->H_reion_z = diag_eos4(i,j,k,Zhi_comp);
         if (z > f_rhs_data->H_reion_z)
             f_rhs_data->JH_vode_arr[idx] = 0;
@@ -250,6 +249,7 @@ ode_eos_finalize_struct(const int i, const int j, const int k, const int idx, At
     {
         if ((state_n4(i,j,k,Eint_comp) + delta_time * ahalf * I_R(i,j,k) / aendsq) / state_n4(i,j,k,Density_comp) < 0.e0)
         {
+            Real YHELIUM = (1.0-f_rhs_data->h_species)/(4.0*f_rhs_data->h_species);
             f_rhs_data->T_vode[idx]  = 10.0;
             f_rhs_data->ne_vode[idx] = 0.0;
             mu     = (1.0e0+4.0e0*YHELIUM) / (1.0e0+YHELIUM+f_rhs_data->ne_vode[idx]);
@@ -261,6 +261,7 @@ ode_eos_finalize_struct(const int i, const int j, const int k, const int idx, At
     {
     if(e_out < 0.e0)
     {
+        Real YHELIUM = (1.0-f_rhs_data->h_species)/(4.0*f_rhs_data->h_species);
         f_rhs_data->T_vode[idx]  = 10.0;
         f_rhs_data->ne_vode[idx] = 0.0;
         mu     = (1.0e0+4.0e0*YHELIUM) / (1.0e0+YHELIUM+f_rhs_data->ne_vode[idx]);
@@ -268,28 +269,11 @@ ode_eos_finalize_struct(const int i, const int j, const int k, const int idx, At
     }
     }
     /////////////////   //update nyx_eos_T_given_Re
-    nyx_eos_T_given_Re_device(atomic_rates, f_rhs_data->gamma_minus_1, f_rhs_data->h_species, f_rhs_data->JH_vode, f_rhs_data->JHe_vode, &(f_rhs_data->T_vode[idx]), &(f_rhs_data->ne_vode[idx]), f_rhs_data->rho_vode[idx], e_out, f_rhs_data->a);
-    /*
-      ! Instanteneous heating from reionization:
-      T_H = 0.0d0
-      if (inhomogeneous_on .or. flash_h) then
-         if ((H_reion_z  .lt. z) .and. (H_reion_z  .ge. z_end)) T_H  = (1.0d0 - species(2))*max((T_zhi-T_vode), 0.0d0)
-      endif
+    if (f_rhs_data->inhomogeneous_on)
+       nyx_eos_T_given_Re_device(atomic_rates, f_rhs_data->gamma_minus_1, f_rhs_data->h_species, f_rhs_data->JH_vode_arr[idx], f_rhs_data->JHe_vode, &(f_rhs_data->T_vode[idx]), &(f_rhs_data->ne_vode[idx]), f_rhs_data->rho_vode[idx], e_out, f_rhs_data->a);
+    else
+        nyx_eos_T_given_Re_device(atomic_rates, f_rhs_data->gamma_minus_1, f_rhs_data->h_species, f_rhs_data->JH_vode, f_rhs_data->JHe_vode, &(f_rhs_data->T_vode[idx]), &(f_rhs_data->ne_vode[idx]), f_rhs_data->rho_vode[idx], e_out, f_rhs_data->a);
 
-      T_He = 0.0d0
-      if (flash_he) then
-         if ((He_reion_z .lt. z) .and. (He_reion_z .ge. z_end)) T_He = (1.0d0 - species(5))*max((T_zheii-T_vode), 0.0d0)
-      endif
-
-      if ((T_H .gt. 0.0d0) .or. (T_He .gt. 0.0d0)) then
-         T_vode = T_vode + T_H + T_He                            ! For simplicity, we assume
-         ne_vode = 1.0d0 + YHELIUM                              !    completely ionized medium at
-         if (T_He .gt. 0.0d0) ne_vode = ne_vode + YHELIUM        !    this point.  It's a very minor
-         mu = (1.0d0+4.0d0*YHELIUM) / (1.0d0+YHELIUM+ne_vode)   !    detail compared to the overall approximation.
-         e_out  = T_vode / (gamma_minus_1 * mp_over_kB * mu)
-         call nyx_eos_T_given_Re_device(JH_vode, JHe_vode, T_vode, ne_vode, rho_vode, e_out(1), a, species)
-      endif
-    */
     dptr[idx] = e_out;
     diag_eos4(i,j,k,Temp_comp)=f_rhs_data->T_vode[idx];
     diag_eos4(i,j,k,Ne_comp)=f_rhs_data->ne_vode[idx];
@@ -307,127 +291,6 @@ ode_eos_finalize_struct(const int i, const int j, const int k, const int idx, At
         state4(i,j,k,Eden_comp)  += state4(i,j,k,Density_comp) * (dptr[idx]-eptr[idx]);
     }
 }
-/*
-f_rhs_split(num_eq, time, y_in, yp_out, rpar, ipar)
-{
-
-      integer, intent(in)             :: num_eq, ipar
-      real(rt), intent(inout) :: y_in(num_eq)
-      real(rt), intent(in   ) :: time
-      real(rt), intent(in   ) :: rpar
-      real(rt), intent(  out) :: yp_out(num_eq)
-
-      real(rt), parameter :: compt_c = 1.01765467d-37, T_cmb = 2.725d0
-
-      real(rt) :: e_in(1)
-      real(rt) :: energy
-      real(rt) :: rho_in
-      real(rt) :: logT, tmp, fhi, flo
-      real(rt) :: ahp, ahep, ahepp, ad, geh0, gehe0, gehep
-      real(rt) :: bh0, bhe0, bhep, bff1, bff4, rhp, rhep, rhepp
-      real(rt) :: lambda_c, lambda_ff, lambda, heat
-      real(rt) :: rho, U, a, rho_heat
-      real(rt) :: nh, nh0, nhp, nhe0, nhep, nhepp
-#ifdef AMREX_USE_CUDA_FORTRAN
-     attributes(managed) :: nh, nh0, nhp, nhe0, nhep, nhepp
-#endif
-      integer :: j
-
-      fn_vode=fn_vode+1;
-
-      e_in = y_in(1)
-      rho_vode = y_in(2)
-!      rho_vode = rho_init_vode + time * rho_src_vode
-
-      if (e_in(1) .lt. 0.d0) &
-         e_in(1) = tiny(e_in(1))
-
-     ! Converts from code units to CGS
-      rho = rho_vode * density_to_cgs * (1.0d0+z_vode)**3
-        U = e_in(1) * e_to_cgs
-      nh  = rho*XHYDROGEN/MPROTON
-
-      if (time .gt. 1) then
-         print *,'TIME INTO F_RHS ',time
-         print *,'AT              ',i_vode,j_vode,k_vode
-         call amrex_abort("TOO BIG TIME IN F_RHS")
-      end if
-
-      ! Get gas temperature and individual ionization species
-      ! testing different memory structures
-!      NR_vode=0
-      call iterate_ne(JH_vode, JHe_vode, z_vode, U, T_vode, nh, ne_vode, nh0, nhp, nhe0, nhep, nhepp)
-
-      ! Convert species to CGS units: 
-      ne_vode = nh * ne_vode
-      nh0   = nh * nh0
-      nhp   = nh * nhp
-      nhe0  = nh * nhe0
-      nhep  = nh * nhep
-      nhepp = nh * nhepp
-
-      logT = dlog10(T_vode)
-      if (logT .ge. TCOOLMAX) then ! Only free-free and Compton cooling are relevant
-         lambda_ff = 1.42d-27 * dsqrt(T_vode) * (1.1d0 + 0.34d0*dexp(-(5.5d0 - logT)**2 / 3.0d0)) &
-                              * (nhp + 4.0d0*nhepp)*ne_vode
-         lambda_c  = compt_c*T_cmb**4 * ne_vode * (T_vode - T_cmb*(1.0d0+z_vode))*(1.0d0 + z_vode)**4
-
-         energy  = (-lambda_ff -lambda_c) * heat_from_cgs/(1.0d0+z_vode)**4
-
-         ! Convert to the actual term to be used in e_out = e_in + dt*energy
-         energy  = energy / rho_vode * (1.0d0+z_vode)
-         ne_vode = ne_vode / nh
-         yp_out(1) = energy + e_src_vode
-         yp_out(2) = rho_src_vode
-         return
-      end if
-
-      ! Temperature floor
-      if (logT .le. TCOOLMIN)  logT = TCOOLMIN + 0.5d0*deltaT
-
-      ! Interpolate rates
-      tmp = (logT-TCOOLMIN)/deltaT
-      j = int(tmp)
-      fhi = tmp - j
-      flo = 1.0d0 - fhi
-      j = j + 1 ! F90 arrays start with 1
-
-      bh0   = flo*BetaH0   (j) + fhi*BetaH0   (j+1)
-      bhe0  = flo*BetaHe0  (j) + fhi*BetaHe0  (j+1)
-      bhep  = flo*BetaHep  (j) + fhi*BetaHep  (j+1)
-      bff1  = flo*Betaff1  (j) + fhi*Betaff1  (j+1)
-      bff4  = flo*Betaff4  (j) + fhi*Betaff4  (j+1)
-      rhp   = flo*RecHp    (j) + fhi*RecHp    (j+1)
-      rhep  = flo*RecHep   (j) + fhi*RecHep   (j+1)
-      rhepp = flo*RecHepp  (j) + fhi*RecHepp  (j+1)
-
-      ! Cooling: 
-      lambda = ( bh0*nh0 + bhe0*nhe0 + bhep*nhep + &
-                 rhp*nhp + rhep*nhep + rhepp*nhepp + &
-                 bff1*(nhp+nhep) + bff4*nhepp ) * ne_vode
-
-      lambda_c = compt_c*T_cmb**4*ne_vode*(T_vode - T_cmb*(1.0d0+z_vode))*(1.0d0 + z_vode)**4   ! Compton cooling
-      lambda = lambda + lambda_c
-
-      ! Heating terms
-      heat = JH_vode*nh0*eh0 + JH_vode*nhe0*ehe0 + JHe_vode*nhep*ehep
-      rho_heat = uvb_density_A * (rho_vode/mean_rhob)**uvb_density_B
-      heat = rho_heat*heat
-
-      ! Convert back to code units
-      ne_vode     = ne_vode / nh
-      energy = (heat - lambda)*heat_from_cgs/(1.0d0+z_vode)**4
-
-      ! Convert to the actual term to be used in e_out = e_in + dt*energy
-      a = 1.d0 / (1.d0 + z_vode)
-      energy = (energy) / rho_vode / a
-
-      yp_out(1) = energy + e_src_vode
-      yp_out(2) = rho_src_vode
-
-
-end subroutine f_rhs_split
-*/
 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
@@ -448,37 +311,7 @@ f_rhs_struct(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, Ato
     amrex::Real nh, nh0, nhp, nhe0, nhep, nhepp;
     int j;
     amrex::Real z_vode, rho_vode, T_vode, ne_vode;
-    amrex::Real uvb_density_A, uvb_density_B, mean_rhob, JH_vode, JHe_vode, gamma_minus_1;
-    uvb_density_A=1.0;
-    uvb_density_B=0.0;
-    gamma_minus_1=2.0/3.0;
-    /*
-    ! Flash reionization?
-    if ((flash_h .eqv. .true.) .and. (z .gt. zhi_flash)) then
-       JH_vode = 0
-    else
-       JH_vode = 1
-    endif
-    if ((flash_he .eqv. .true.) .and. (z .gt. zheii_flash)) then
-       JHe_vode = 0
-    else
-       JHe_vode = 1
-    endif
-
-    if (flash_h ) H_reion_z  = zhi_flash
-    if (flash_he) He_reion_z = zheii_flash
-
-    if (inhomogeneous_on) then
-       STOP "Do not currently support inhomogenous_on with box"
-       !H_reion_z = diag_eos(i,j,k,ZHI_COMP)
-       if (z .gt. H_reion_z) then
-          JH_vode = 0
-       else
-          JH_vode = 1
-       endif
-    endif*/
-    JH_vode = 1.0;
-    JHe_vode = 1.0;
+    amrex::Real gamma_minus_1;
 
     T_vode=f_rhs_data->T_vode[idx];
     ne_vode=f_rhs_data->ne_vode[idx];
@@ -494,11 +327,14 @@ f_rhs_struct(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, Ato
     // Converts from code units to CGS
     rho = rho_vode * density_to_cgs * (1.0e0+amrex::Math::abs(z_vode))*(1.0e0+amrex::Math::abs(z_vode))*(1.0e0+amrex::Math::abs(z_vode));
     U = e_in * e_to_cgs;
-    nh  = rho*XHYDROGEN/MPROTON;
+    nh  = rho*f_rhs_data->h_species/MPROTON;
 
     // Get gas temperature and individual ionization species
     // testing different memory structures
-    iterate_ne_device(atomic_rates, JH_vode, JHe_vode, z_vode, U, &T_vode, nh, &ne_vode, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1);
+    if (f_rhs_data->inhomogeneous_on)
+        iterate_ne_device(atomic_rates, f_rhs_data->JH_vode_arr[idx], f_rhs_data->JHe_vode, z_vode, U, &T_vode, nh, &ne_vode, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1, f_rhs_data->h_species);
+    else
+        iterate_ne_device(atomic_rates, f_rhs_data->JH_vode, f_rhs_data->JHe_vode, z_vode, U, &T_vode, nh, &ne_vode, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1, f_rhs_data->h_species);
     // Convert species to CGS units: 
     ne_vode = nh * ne_vode;
     nh0   = nh * nh0;
@@ -558,9 +394,12 @@ f_rhs_struct(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, Ato
 
     interp_to_this_z(atomic_rates, z_vode, ggh0, gghe0, gghep, eh0, ehe0, ehep);
     // Heating terms
-    heat = JH_vode*nh0*eh0 + JH_vode*nhe0*ehe0 + JHe_vode*nhep*ehep;
-    
-    rho_heat = uvb_density_A * std::pow((rho_vode/mean_rhob),uvb_density_B);
+    if (f_rhs_data->inhomogeneous_on)
+        heat = f_rhs_data->JH_vode_arr[idx]*nh0*eh0 + f_rhs_data->JH_vode_arr[idx]*nhe0*ehe0 + f_rhs_data->JHe_vode*nhep*ehep;
+    else
+        heat = f_rhs_data->JH_vode*nh0*eh0 + f_rhs_data->JH_vode*nhe0*ehe0 + f_rhs_data->JHe_vode*nhep*ehep;
+
+        rho_heat = f_rhs_data->uvb_density_A * std::pow((rho_vode/atomic_rates->mean_rhob),f_rhs_data->uvb_density_B);
     heat = rho_heat*heat;
 
     // Convert back to code units

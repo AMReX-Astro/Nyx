@@ -126,15 +126,15 @@ Gravity::install_level (int       level,
 
     const auto& dm = level_data_to_install->DistributionMap();
 
-    grad_phi_prev[level].resize(BL_SPACEDIM);
-    for (int n=0; n<BL_SPACEDIM; ++n)
+    grad_phi_prev[level].resize(AMREX_SPACEDIM);
+    for (int n=0; n<AMREX_SPACEDIM; ++n)
     {
         grad_phi_prev[level][n].reset(new MultiFab(level_data_to_install->getEdgeBoxArray(n),dm,1,1));
         grad_phi_prev[level][n]->setVal(0.);
     }
 
-    grad_phi_curr[level].resize(BL_SPACEDIM);
-    for (int n = 0; n < BL_SPACEDIM; ++n)
+    grad_phi_curr[level].resize(AMREX_SPACEDIM);
+    for (int n = 0; n < AMREX_SPACEDIM; ++n)
     {
         grad_phi_curr[level][n].reset(new MultiFab(level_data_to_install->getEdgeBoxArray(n),dm,1,1));
         grad_phi_curr[level][n]->setVal(0.);
@@ -177,14 +177,14 @@ Gravity::get_grad_phi_curr (int level)
 void
 Gravity::plus_grad_phi_curr (int level, const Vector<MultiFab*>& addend)
 {
-    for (int n = 0; n < BL_SPACEDIM; n++)
+    for (int n = 0; n < AMREX_SPACEDIM; n++)
         grad_phi_curr[level][n]->plus(*addend[n], 0, 1, 0);
 }
 
 void
 Gravity::swap_time_levels (int level)
 {
-    for (int n=0; n < BL_SPACEDIM; n++)
+    for (int n=0; n < AMREX_SPACEDIM; n++)
     {
         std::swap(grad_phi_prev[level][n], grad_phi_curr[level][n]);
         grad_phi_curr[level][n].reset(new MultiFab(BoxArray(grids[level]).surroundingNodes(n), 
@@ -370,8 +370,8 @@ Gravity::gravity_sync (int crse_level, int fine_level, int iteration, int ncycle
     Vector <Vector<std::unique_ptr<MultiFab> > > ec_gdPhi(fine_level - crse_level + 1);
     for (int lev = crse_level; lev <= fine_level; lev++) {
         Nyx* Nyx_lev = dynamic_cast<Nyx*>(&parent->getLevel(lev));
-        ec_gdPhi[lev-crse_level].resize(BL_SPACEDIM);
-        for (int n = 0; n < BL_SPACEDIM; ++n)
+        ec_gdPhi[lev-crse_level].resize(AMREX_SPACEDIM);
+        for (int n = 0; n < AMREX_SPACEDIM; ++n)
            ec_gdPhi[lev-crse_level][n].reset(new MultiFab(Nyx_lev->getEdgeBoxArray(n),
                                                           Nyx_lev->DistributionMap(),
                                                           1,0));
@@ -406,7 +406,7 @@ Gravity::gravity_sync (int crse_level, int fine_level, int iteration, int ncycle
     for (int lev = crse_level; lev <= fine_level; lev++)
     {
         LevelData[lev]->get_new_data(PhiGrav_Type).plus(*delta_phi[lev-crse_level], 0, 1, 0);
-        for (int n = 0; n < BL_SPACEDIM; n++)
+        for (int n = 0; n < AMREX_SPACEDIM; n++)
             grad_phi_curr[lev][n]->plus(*ec_gdPhi[lev-crse_level][n], 0, 1, 0);
     }
 
@@ -428,7 +428,7 @@ Gravity::gravity_sync (int crse_level, int fine_level, int iteration, int ncycle
     // Add the contribution of grad(delta_phi) to the flux register below if necessary.
     if (crse_level > 0 && iteration == ncycle)
     {
-        for (int n = 0; n < BL_SPACEDIM; ++n) {
+        for (int n = 0; n < AMREX_SPACEDIM; ++n) {
             phi_flux_reg[crse_level]->FineAdd(*ec_gdPhi[0][n], n, 0, 0, 1, 1.0);
         }
     }
@@ -509,9 +509,9 @@ Gravity::get_crse_grad_phi (int               level,
 
     Nyx* Nyx_crse_lev = dynamic_cast<Nyx*>(&parent->getLevel(level-1));
 
-    BL_ASSERT(grad_phi_crse.size() == BL_SPACEDIM);
+    BL_ASSERT(grad_phi_crse.size() == AMREX_SPACEDIM);
 
-    for (int i = 0; i < BL_SPACEDIM; ++i)
+    for (int i = 0; i < AMREX_SPACEDIM; ++i)
     {
         BL_ASSERT(!grad_phi_crse[i]);
         grad_phi_crse[i].reset(new MultiFab(Nyx_crse_lev->getEdgeBoxArray(i), 
@@ -554,8 +554,8 @@ Gravity::multilevel_solve_for_new_phi (int level,
 
     for (int lev = level; lev <= finest_level; lev++)
     {
-        BL_ASSERT(grad_phi_curr[lev].size()==BL_SPACEDIM);
-        for (int n = 0; n < BL_SPACEDIM; ++n)
+        BL_ASSERT(grad_phi_curr[lev].size()==AMREX_SPACEDIM);
+        for (int n = 0; n < AMREX_SPACEDIM; ++n)
         {
             const BoxArray eba = BoxArray(grids[lev]).surroundingNodes(n);
             grad_phi_curr[lev][n].reset(new MultiFab(eba, dmap[lev], 1, 1));
@@ -584,8 +584,8 @@ Gravity::multilevel_solve_for_old_phi (int level,
     
     for (int lev = level; lev <= finest_level; lev++)
     {
-        BL_ASSERT(grad_phi_prev[lev].size() == BL_SPACEDIM);
-        for (int n = 0; n < BL_SPACEDIM; ++n)
+        BL_ASSERT(grad_phi_prev[lev].size() == AMREX_SPACEDIM);
+        for (int n = 0; n < AMREX_SPACEDIM; ++n)
         {
             const BoxArray eba = BoxArray(grids[lev]).surroundingNodes(n);
             grad_phi_prev[lev][n].reset(new MultiFab(eba, dmap[lev], 1, 1));
@@ -796,7 +796,7 @@ Gravity::get_old_grav_vector (int       level,
     const Geometry& geom = parent->Geom(level);
 
     // Fill boundary values at the current level
-    for (int i = 0; i < BL_SPACEDIM ; i++)
+    for (int i = 0; i < AMREX_SPACEDIM ; i++)
        grad_phi_prev[level][i]->FillBoundary(geom.periodicity());
 
     // Average edge-centered gradients to cell centers.
@@ -807,13 +807,13 @@ Gravity::get_old_grav_vector (int       level,
     grav_vector.FillBoundary(geom.periodicity());
 
     // Fill G_old from grav_vector
-    MultiFab::Copy(G_old, grav_vector, 0, 0, BL_SPACEDIM, 0);
+    MultiFab::Copy(G_old, grav_vector, 0, 0, AMREX_SPACEDIM, 0);
 
     // This is a hack-y way to fill the ghost cell values of grav_vector
     //   before returning it
     AmrLevel* amrlev = &parent->getLevel(level);
     int ng = grav_vector.nGrow();
-    AmrLevel::FillPatch(*amrlev,grav_vector,ng,time,Gravity_Type,0,BL_SPACEDIM);
+    AmrLevel::FillPatch(*amrlev,grav_vector,ng,time,Gravity_Type,0,AMREX_SPACEDIM);
 }
 
 void
@@ -830,7 +830,7 @@ Gravity::get_new_grav_vector (int       level,
 
     const Geometry& geom = parent->Geom(level);
 
-    for (int i = 0; i < BL_SPACEDIM ; i++)
+    for (int i = 0; i < AMREX_SPACEDIM ; i++)
         grad_phi_curr[level][i]->FillBoundary(geom.periodicity());
 
     // Average edge-centered gradients to cell centers, excluding grow cells
@@ -843,13 +843,13 @@ Gravity::get_new_grav_vector (int       level,
     MultiFab& G_new = LevelData[level]->get_new_data(Gravity_Type);
 
     // Fill G_new from grav_vector
-    MultiFab::Copy(G_new, grav_vector, 0, 0, BL_SPACEDIM, 0);
+    MultiFab::Copy(G_new, grav_vector, 0, 0, AMREX_SPACEDIM, 0);
 
     // This is a hack-y way to fill the ghost cell values of grav_vector
     //   before returning it
     AmrLevel* amrlev = &parent->getLevel(level) ;
     int ng = grav_vector.nGrow();
-    AmrLevel::FillPatch(*amrlev,grav_vector,ng,time,Gravity_Type,0,BL_SPACEDIM);
+    AmrLevel::FillPatch(*amrlev,grav_vector,ng,time,Gravity_Type,0,AMREX_SPACEDIM);
 }
 
 void
@@ -864,11 +864,11 @@ Gravity::add_to_fluxes(int level, int iteration, int ncycle)
     FluxRegister*   phi_current       = (level>0 ? phi_flux_reg[level].get() : nullptr);
     const Geometry& geom              = parent->Geom(level);
     const Real*     dx                = geom.CellSize();
-    const GpuArray<Real,BL_SPACEDIM>  area{ dx[1]*dx[2], dx[0]*dx[2], dx[0]*dx[1] };
+    const GpuArray<Real,AMREX_SPACEDIM>  area{ dx[1]*dx[2], dx[0]*dx[2], dx[0]*dx[1] };
 
     if (phi_fine)
     {
-        for (int n = 0; n < BL_SPACEDIM; ++n)
+        for (int n = 0; n < AMREX_SPACEDIM; ++n)
         {
             BoxArray ba = grids[level];
             ba.surroundingNodes(n);
@@ -895,7 +895,7 @@ Gravity::add_to_fluxes(int level, int iteration, int ncycle)
 
     if (phi_current && (iteration == ncycle))
     {
-        for (int n=0; n<BL_SPACEDIM; ++n) {
+        for (int n=0; n<AMREX_SPACEDIM; ++n) {
             phi_current->FineAdd(*grad_phi_curr[level][n],n,0,0,1,area[n]);
         }
     }
@@ -921,8 +921,8 @@ Gravity::average_fine_ec_onto_crse_ec(int level, int is_new)
         crse_gphi_fine_BA.set(i, amrex::coarsen(grids[level+1][i],
                                                  fine_ratio));
 
-    Vector<std::unique_ptr<MultiFab> > crse_gphi_fine(BL_SPACEDIM);
-    for (int n = 0; n < BL_SPACEDIM; ++n)
+    Vector<std::unique_ptr<MultiFab> > crse_gphi_fine(AMREX_SPACEDIM);
+    for (int n = 0; n < AMREX_SPACEDIM; ++n)
     {
         const BoxArray eba = BoxArray(crse_gphi_fine_BA).surroundingNodes(n);
         crse_gphi_fine[n].reset(new MultiFab(eba, dmap[level+1], 1, 0));
@@ -935,7 +935,7 @@ Gravity::average_fine_ec_onto_crse_ec(int level, int is_new)
 
     const Geometry& cgeom = parent->Geom(level);
 
-    for (int n = 0; n < BL_SPACEDIM; ++n)
+    for (int n = 0; n < AMREX_SPACEDIM; ++n)
     {
         grad_phi[level][n]->copy(*crse_gphi_fine[n], cgeom.periodicity());
     }
@@ -1403,7 +1403,7 @@ void
 Gravity::set_boundary(BndryData& bd, MultiFab& rhs, const Real* dx)
 {
   BL_PROFILE("Gravity::set_boundary()");
-  for (int n=0; n<BL_SPACEDIM; ++n) {
+  for (int n=0; n<AMREX_SPACEDIM; ++n) {
 #ifdef _OPENMP
 #pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif

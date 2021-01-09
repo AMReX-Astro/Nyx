@@ -10,14 +10,14 @@
 #include <NyxParticleContainer.H>
 
 class AGNParticleContainer
-    : public NyxParticleContainer<3+BL_SPACEDIM, 0, 0, 0>
+    : public NyxParticleContainer<3+AMREX_SPACEDIM, 0, 0, 0>
 {
 public:
     
-    using MyParIter = amrex::ParIter<3+BL_SPACEDIM>;
+    using MyParIter = amrex::ParIter<3+AMREX_SPACEDIM>;
 
     AGNParticleContainer (amrex::Amr* amr, int nghost)
-        : NyxParticleContainer<3+BL_SPACEDIM>(amr, nghost)
+        : NyxParticleContainer<3+AMREX_SPACEDIM>(amr, nghost)
     {
         real_comp_names.clear();
         real_comp_names.push_back("mass");

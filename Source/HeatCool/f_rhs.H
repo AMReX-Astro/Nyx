@@ -30,12 +30,11 @@ static void sunfree(void* ptr)
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
-ode_eos_finalize(amrex::Real& e_out, amrex::Real* rpar, int neq, AtomicRates* atomic_rates)
+ode_eos_finalize(amrex::Real& e_out, amrex::Real* rpar, int neq, AtomicRates* atomic_rates, amrex::Real h_species_in)
 {
     amrex::Real z_vode, rho_vode, T_vode, ne_vode;
     amrex::Real rho, U, a, mu;
     amrex::Real uvb_density_A, uvb_density_B, mean_rhob, JH_vode, JHe_vode, gamma_minus_1;
-    const amrex::Real h_species_in=.76;
     uvb_density_A=1.0;
         uvb_density_B=0.0;
         gamma_minus_1=2.0/3.0;
@@ -74,6 +73,7 @@ ode_eos_finalize(amrex::Real& e_out, amrex::Real* rpar, int neq, AtomicRates* at
         a=1/(z_vode+1.0);
         if(e_out < 0.e0)
         {
+                Real YHELIUM = (1.0-h_species_in)/(4.0*h_species_in);
                 T_vode  = 10.0;
                 ne_vode = 0.0;
                 mu     = (1.0e0+4.0e0*YHELIUM) / (1.0e0+YHELIUM+ne_vode);
@@ -111,7 +111,7 @@ ode_eos_finalize(amrex::Real& e_out, amrex::Real* rpar, int neq, AtomicRates* at
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 int
-f_rhs_rpar(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, amrex::Real* rpar, AtomicRates* atomic_rates)
+f_rhs_rpar(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, amrex::Real* rpar, AtomicRates* atomic_rates, amrex::Real h_species_in)
 {
 
     const amrex::Real compt_c = 1.01765467e-37;
@@ -127,10 +127,10 @@ f_rhs_rpar(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, amrex
     amrex::Real nh, nh0, nhp, nhe0, nhep, nhepp;
     int j;
     amrex::Real z_vode, rho_vode, T_vode, ne_vode;
-    amrex::Real uvb_density_A, uvb_density_B, mean_rhob, JH_vode, JHe_vode, gamma_minus_1;
+    amrex::Real uvb_density_A, uvb_density_B, JH_vode, JHe_vode, gamma_minus_1;
     uvb_density_A=1.0;
-        uvb_density_B=0.0;
-        gamma_minus_1=2.0/3.0;
+    uvb_density_B=0.0;
+    gamma_minus_1=2.0/3.0;
         /*
     ! Flash reionization?
     if ((flash_h .eqv. .true.) .and. (z .gt. zhi_flash)) then
@@ -169,11 +169,11 @@ f_rhs_rpar(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, amrex
     // Converts from code units to CGS
     rho = rho_vode * density_to_cgs * (1.0e0+amrex::Math::abs(z_vode))*(1.0e0+amrex::Math::abs(z_vode))*(1.0e0+amrex::Math::abs(z_vode));
     U = e_in * e_to_cgs;
-    nh  = rho*XHYDROGEN/MPROTON;
+    nh  = rho*h_species_in/MPROTON;
 
     // Get gas temperature and individual ionization species
     // testing different memory structures
-    iterate_ne_device(atomic_rates, JH_vode, JHe_vode, z_vode, U, &T_vode, nh, &ne_vode, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1);
+    iterate_ne_device(atomic_rates, JH_vode, JHe_vode, z_vode, U, &T_vode, nh, &ne_vode, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1, h_species_in);
     // Convert species to CGS units: 
     ne_vode = nh * ne_vode;
     nh0   = nh * nh0;
@@ -232,7 +232,7 @@ f_rhs_rpar(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, amrex
     // Heating terms
     heat = JH_vode*nh0*eh0 + JH_vode*nhe0*ehe0 + JHe_vode*nhep*ehep;
     
-    rho_heat = uvb_density_A * std::pow((rho_vode/mean_rhob),uvb_density_B);
+    rho_heat = uvb_density_A * std::pow((rho_vode/atomic_rates->mean_rhob),uvb_density_B);
     heat = rho_heat*heat;
 
     // Convert back to code units
@@ -245,6 +245,6 @@ f_rhs_rpar(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, amrex
     rpar[0]=T_vode;
     rpar[1]=ne_vode;
     rpar[2]=rho_vode;
-        return 0;
+    return 0;
 }
 #endif
