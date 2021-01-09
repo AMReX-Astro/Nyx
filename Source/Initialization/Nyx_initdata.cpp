@@ -243,7 +243,6 @@ Nyx::initData ()
         amrex::Abort("We don't support dx != dy != dz");
 
 #ifndef NO_HYDRO    
-    Real  cur_time = state[State_Type].curTime();
 #ifdef AMREX_PARTICLES
     if ( (do_santa_barbara == 0) && (do_readin_ics == 0) && (particle_init_type != "Cosmological") )
 #else
@@ -302,8 +301,6 @@ Nyx::initData ()
             }
         }
     }
-#else
-        Real  cur_time = state[PhiGrav_Type].curTime();
 #endif // end NO_HYDRO
 
     if (!do_grav)
@@ -479,14 +476,14 @@ void
 Nyx::check_initial_species ()
 {
     // Verify that the sum of (rho X)_i = rho at every cell.
-
-    ReduceOps<ReduceOpMax> reduce_op;
-    ReduceData<Real> reduce_data(reduce_op);
-
 #ifdef CONST_SPECIES
     if (amrex::Math::abs(1.0 - h_species - he_species) > 1.e-8)
         amrex::Abort("Error:: Failed check of initial species summing to 1");
 #else
+    ReduceOps<ReduceOpMax> reduce_op;
+    ReduceData<Real> reduce_data(reduce_op);
+    using ReduceTuple = typename decltype(reduce_data)::Type;
+
     int iden  = Density_comp;
     if (FirstSpec_comp > 0)
     {
@@ -498,19 +495,18 @@ Nyx::check_initial_species ()
 #endif
         for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
         {
-          const auto state = S_new.array(mfi);
+          const auto state_fab = S_new.array(mfi);
 
           const Box& tbx = mfi.tilebox();
 
-          reduce_op.eval(tbx, reduce_data,
-          [state,nspec,iden,iufs]
+          reduce_op.eval(tbx, reduce_data, [state_fab,nspec,iden,iufs]
           AMREX_GPU_DEVICE (int i, int j, int k) -> ReduceTuple
           {
-               Real sum = state(i,j,k,iufs);
+               Real sum = state_fab(i,j,k,iufs);
                for (int n = 1; n < nspec; n++)
-                  sum += state(i,j,k,iufs+n);
+                  sum += state_fab(i,j,k,iufs+n);
 
-               sum /= state(i,j,k,iden);
+               sum /= state_fab(i,j,k,iden);
 
                Real x = amrex::Math::abs(amrex::Math::abs(sum) - 1.);
                return x;
