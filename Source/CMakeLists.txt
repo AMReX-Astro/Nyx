@@ -85,7 +85,9 @@ endif ()
 #                               Nyx sources                                  #
 #                                                                            #
 ##############################################################################
-add_subdirectory(AGN)
+if (Nyx_AGN)
+   add_subdirectory(AGN)
+endif ()
 
 add_subdirectory(DerivedQuantities)
 
