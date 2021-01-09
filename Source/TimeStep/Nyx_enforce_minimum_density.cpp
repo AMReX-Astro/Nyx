@@ -5,7 +5,7 @@
 using namespace amrex;
 
 void
-Nyx::enforce_minimum_density( MultiFab& S_old, MultiFab& S_new, 
+Nyx::enforce_minimum_density( MultiFab& S_old, MultiFab& S_new,
 #ifdef SDC
                               MultiFab& reset_e_src,
 #endif
@@ -28,7 +28,7 @@ Nyx::enforce_minimum_density( MultiFab& S_old, MultiFab& S_new,
 #ifdef SDC
             enforce_minimum_density_cons(S_old, S_new, reset_e_src);
 #else
-            enforce_minimum_density_cons(S_old, S_new); 
+            enforce_minimum_density_cons(S_old, S_new);
 #endif
         } else {
             amrex::Abort("Don't know this enforce_min_density_type");
@@ -64,9 +64,9 @@ Nyx::enforce_minimum_density_floor( MultiFab& S_new, Real a_new_in)
 
          amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept
          {
-             floor_density(i, j, k, uout, atomic_rates, 
+             floor_density(i, j, k, uout, atomic_rates,
 #ifndef CONST_SPECIES
-                           lnum_spec, 
+                           lnum_spec,
 #endif
                            a_new_in, lgamma_minus_1, lsmall_dens, lsmall_temp, l_h_species);
          });
@@ -184,9 +184,9 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new)
 
             amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept
             {
-              create_update_for_minimum(i, j, k, 
+              create_update_for_minimum(i, j, k,
 #ifndef CONST_SPECIES
-                                        Density_comp, 
+                                        Density_comp,
 #endif
                                         sbord_arr, mu_x_arr, mu_y_arr, mu_z_arr, upd_arr
 #ifndef CONST_SPECIES

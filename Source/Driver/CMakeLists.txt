@@ -45,11 +45,8 @@ endif ()
 
 
 #
-# At compile time, this will include main.cpp only if
-# the consuming target has property DEFAULT_TARGET turned on
-# Note that I need to provide the full path to the main file
+# Don't include this file in the source lists for nyxcore
+# Final executable will include it if necessary
 #
-target_sources( nyxcore
-   PUBLIC
-   $<${_use_default_main}:${CMAKE_CURRENT_LIST_DIR}/main.cpp>
-   )
+set( NYX_DEFAULT_MAIN ${CMAKE_CURRENT_LIST_DIR}/main.cpp
+   CACHE INTERNAL "Default main if none other is provided")
