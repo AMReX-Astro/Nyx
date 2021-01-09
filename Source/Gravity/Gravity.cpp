@@ -1044,8 +1044,6 @@ Gravity::set_dirichlet_bcs (int       level,
     amrex::Gpu::LaunchSafeGuard lsg(false);
 
     const Real* dx        = parent->Geom(level).CellSize();
-    const int*  domain_lo = parent->Geom(level).Domain().loVect();
-    const int*  domain_hi = parent->Geom(level).Domain().hiVect();
 
     // Set phi to zero everywhere -- including ghost cells --
     //     to provide homogeneous Dirichlet bcs
