@@ -308,24 +308,32 @@ void StochasticForcing::integrate_state_force(
     Real delta_phase[3];
     Real phase_lo[3];
     Real accel[3];
-    Real buf[num_modes_ext];
-    Real phasefct_init_even[num_modes_ext];
-    Real phasefct_init_odd[num_modes_ext];
-    Real phasefct_mult_even[3][num_modes_ext];
-    Real phasefct_mult_odd[3][num_modes_ext];
-    Real phasefct_yz[2][num_modes_ext];
+
+    Vector<Real> buf(num_modes_ext);
+    Vector<Real> phasefct_init_even(num_modes_ext);
+    Vector<Real> phasefct_init_odd(num_modes_ext);
+
+    Vector<Real> phasefct_mult_even_x(num_modes_ext);
+    Vector<Real> phasefct_mult_even_y(num_modes_ext);
+    Vector<Real> phasefct_mult_even_z(num_modes_ext);
+
+    Vector<Real> phasefct_mult_odd_x(num_modes_ext);
+    Vector<Real> phasefct_mult_odd_y(num_modes_ext);
+    Vector<Real> phasefct_mult_odd_z(num_modes_ext);
+    Vector<Real> phasefct_yz0(num_modes_ext);
+    Vector<Real> phasefct_yz1(num_modes_ext);
+
     Real *phasefct_even_x, *phasefct_even_y, *phasefct_even_z;
     Real *phasefct_odd_x, *phasefct_odd_y, *phasefct_odd_z;
-    //    int neg_e_count = 0;
 
-    amrex::Real alpha=100.0;
-    amrex::Real rho0=1.0;
-    amrex::Real temp0=10.0;
-    amrex::Real ne0=1.0;
+    amrex::Real alpha_const =100.0;
+    amrex::Real temp0_const =10.0;
+
     // Note that (lo,hi) define the region of the box containing the grow cells
     // Do *not* assume this is just the valid region
     // apply heating-cooling to Eden_comp and Eint_comp
-    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
+    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept 
+        {
             // Original values
             Real rho        = state(i,j,k,Density_comp);
             Real rho_e_orig = state(i,j,k,Eint_comp);
@@ -336,12 +344,12 @@ void StochasticForcing::integrate_state_force(
                 //                if (rho_e_orig < 0.0) neg_e_count = neg_e_count + 1
 
              // Compute temperature increment and ensure that new temperature is positive
-             Real delta = half_dt * alpha * (temp0 - T_orig) / a;
+             Real delta = half_dt * alpha_const * (temp0_const - T_orig) / a;
             diag_eos(i,j,k,Temp_comp) = amrex::max(T_orig + delta, small_temp);
 
             // Call EOS to get internal energy for constant equilibrium temperature
-            Real eint0 = temp0 / (small_temp / small_eint);
-            Real delta_re = half_dt * alpha * (rho*eint0 - rho_e_orig) / a;
+            Real eint0 = temp0_const / (small_temp / small_eint);
+            Real delta_re = half_dt * alpha_const * (rho*eint0 - rho_e_orig) / a;
 
             // Call EOS to get the internal energy floor
 
@@ -382,14 +390,14 @@ void StochasticForcing::integrate_state_force(
             (cos(i*phase_lo[0]) * sin(j*phase_lo[1]) +
              sin(i*phase_lo[0]) * cos(j*phase_lo[1])) * cos(k*phase_lo[2]);
 
-        phasefct_mult_even[0][m] = cos(i*delta_phase[0]);
-        phasefct_mult_odd [0][m] = sin(i*delta_phase[0]);
+        phasefct_mult_even_x[m] = cos(i*delta_phase[0]);
+        phasefct_mult_odd_x[m] = sin(i*delta_phase[0]);
 
-        phasefct_mult_even[1][m] = cos(j*delta_phase[1]);
-        phasefct_mult_odd [1][m] = sin(j*delta_phase[1]);
+        phasefct_mult_even_y[m] = cos(j*delta_phase[1]);
+        phasefct_mult_odd_y[m] = sin(j*delta_phase[1]);
 
-        phasefct_mult_even[2][m] = cos(k*delta_phase[2]);
-        phasefct_mult_odd [2][m] = sin(k*delta_phase[2]);
+        phasefct_mult_even_z[m] = cos(k*delta_phase[2]);
+        phasefct_mult_odd_z[m] = sin(k*delta_phase[2]);
     }
 
     // initialize phase factors for each coordinate axis:
@@ -404,10 +412,10 @@ void StochasticForcing::integrate_state_force(
        mi = (i-bx.smallEnd(0))*num_modes_ext;
        for (int m = 0; m < num_modes_ext; m++) {
            buf[m] = phasefct_even_x[mi-num_modes_ext];
-           phasefct_even_x[mi] = phasefct_mult_even[0][m] * phasefct_even_x[mi-num_modes_ext] -
-                                 phasefct_mult_odd [0][m] * phasefct_odd_x[mi-num_modes_ext];
-           phasefct_odd_x[mi]  = phasefct_mult_even[0][m] * phasefct_odd_x[mi-num_modes_ext] +
-                                 phasefct_mult_odd [0][m] * buf[m];
+           phasefct_even_x[mi] = phasefct_mult_even_x[m] * phasefct_even_x[mi-num_modes_ext] -
+                                 phasefct_mult_odd_x[m]  * phasefct_odd_x[mi-num_modes_ext];
+           phasefct_odd_x[mi]  = phasefct_mult_even_x[m] * phasefct_odd_x[mi-num_modes_ext] +
+                                 phasefct_mult_odd_x[m]  * buf[m];
            mi = mi + 1;
        }
     }
@@ -420,10 +428,10 @@ void StochasticForcing::integrate_state_force(
        mj = (j-bx.smallEnd(1))*num_modes_ext;
        for (int m = 0; m < num_modes_ext; m++) {
            buf[m] = phasefct_even_y[mj-num_modes_ext];
-           phasefct_even_y[mj] = phasefct_mult_even[1][m] * phasefct_even_y[mj-num_modes_ext] -
-                                 phasefct_mult_odd [1][m] * phasefct_odd_y[mj-num_modes_ext];
-           phasefct_odd_y[mj]  = phasefct_mult_even[1][m] * phasefct_odd_y[mj-num_modes_ext] +
-                                 phasefct_mult_odd [1][m] * buf[m];
+           phasefct_even_y[mj] = phasefct_mult_even_y[m] * phasefct_even_y[mj-num_modes_ext] -
+                                 phasefct_mult_odd_y[m]  * phasefct_odd_y[mj-num_modes_ext];
+           phasefct_odd_y[mj]  = phasefct_mult_even_y[m] * phasefct_odd_y[mj-num_modes_ext] +
+                                 phasefct_mult_odd_y[m]  * buf[m];
            mj = mj + 1;
        }
     }
@@ -436,10 +444,10 @@ void StochasticForcing::integrate_state_force(
        mk = (k-bx.smallEnd(2))*num_modes_ext;
        for (int m = 0; m < num_modes_ext; m++) {
            buf[m] = phasefct_even_z[mk-num_modes_ext];
-           phasefct_even_z[mk] = phasefct_mult_even[2][m] * phasefct_even_z[mk-num_modes_ext] -
-                                 phasefct_mult_odd [2][m] * phasefct_odd_z[mk-num_modes_ext];
-           phasefct_odd_z[mk]  = phasefct_mult_even[2][m] * phasefct_odd_z[mk-num_modes_ext] +
-                                 phasefct_mult_odd [2][m] * buf[m];
+           phasefct_even_z[mk] = phasefct_mult_even_z[m] * phasefct_even_z[mk-num_modes_ext] -
+                                 phasefct_mult_odd_z[m]  * phasefct_odd_z[mk-num_modes_ext];
+           phasefct_odd_z[mk]  = phasefct_mult_even_z[m] * phasefct_odd_z[mk-num_modes_ext] +
+                                 phasefct_mult_odd_z[m]  * buf[m];
            mk = mk + 1;
        }
     }
@@ -452,8 +460,8 @@ void StochasticForcing::integrate_state_force(
 
             // pre-compute products of phase factors depending on y- and z-coordinates
             for (int m = 0; m < num_modes_ext; m++) {
-                phasefct_yz[0][m] = phasefct_even_y[mj] * phasefct_even_z[mk] - phasefct_odd_y[mj]  * phasefct_odd_z[mk];
-                phasefct_yz[1][m] = phasefct_odd_y[mj]  * phasefct_even_z[mk] + phasefct_even_y[mj] * phasefct_odd_z[mk];
+                phasefct_yz0[m] = phasefct_even_y[mj] * phasefct_even_z[mk] - phasefct_odd_y[mj]  * phasefct_odd_z[mk];
+                phasefct_yz1[m] = phasefct_odd_y[mj]  * phasefct_even_z[mk] + phasefct_even_y[mj] * phasefct_odd_z[mk];
                 mj = mj + 1;
                 mk = mk + 1;
             }
@@ -470,11 +478,11 @@ void StochasticForcing::integrate_state_force(
 
                     for (int m = 0; m < num_modes_ext; m++) {
                         // sum up even modes
-                        accel[n] = accel[n] + (phasefct_even_x[mi] * phasefct_yz[0][m] -
-                                               phasefct_odd_x[mi]  * phasefct_yz[1][m]) * modes_even[n][m];
+                        accel[n] = accel[n] + (phasefct_even_x[mi] * phasefct_yz0[m] -
+                                               phasefct_odd_x[mi]  * phasefct_yz1[m]) * modes_even[n][m];
                         // sum up odd modes
-                        accel[n] = accel[n] - (phasefct_even_x[mi] * phasefct_yz[1][m] +
-                                               phasefct_odd_x[mi]  * phasefct_yz[0][m]) * modes_odd[n][m];
+                        accel[n] = accel[n] - (phasefct_even_x[mi] * phasefct_yz1[m] +
+                                               phasefct_odd_x[mi]  * phasefct_yz0[m]) * modes_odd[n][m];
                         mi = mi + 1;
                     }
 

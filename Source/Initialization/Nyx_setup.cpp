@@ -153,6 +153,7 @@ Nyx::hydro_setup()
     //
     int cnt = 6;
 
+    // Note that we must set NDIAG_C before we call set_method_params 
     int NDIAG_C;
     if (inhomo_reion > 0)
     {
@@ -173,14 +174,6 @@ Nyx::hydro_setup()
 
     NUM_STATE = cnt;
 
-    // Note that we must set NDIAG_C before we call set_method_params because
-    // we use the C++ value to set the Fortran value
-    int use_const_species;
-#ifdef CONST_SPECIES
-    use_const_species = 1;
-#else
-    use_const_species = 0;
-#endif
 
 #ifdef HEATCOOL
     ParmParse pp("nyx");
@@ -594,15 +587,6 @@ void
 Nyx::no_hydro_setup()
 {
     NUM_STATE = 1;
-
-    int NDIAG_C = -1;
-
-    int use_const_species;
-#ifdef CONST_SPECIES
-    use_const_species = 1;
-#else
-    use_const_species = 0;
-#endif
 
 #ifdef HEATCOOL
     ParmParse pp("nyx");

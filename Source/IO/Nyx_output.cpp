@@ -86,7 +86,7 @@ Nyx::setPlotVariables ()
 }
 
 void
-Nyx::writePlotFilePre (const std::string& dir, ostream& os)
+Nyx::writePlotFilePre (const std::string& /*dir*/, ostream& /*os*/)
 {
     amrex::Gpu::LaunchSafeGuard lsg(true);
     if(write_hdf5 == 1 && (parent->maxLevel() > 0))
@@ -269,7 +269,7 @@ Nyx::writePlotFile (const std::string& dir,
 }
 
 void
-Nyx::writePlotFilePost (const std::string& dir, ostream& os)
+Nyx::writePlotFilePost (const std::string& dir, ostream& /*os*/)
 {
 
   amrex::Gpu::LaunchSafeGuard lsg(true);
@@ -590,12 +590,6 @@ Nyx::particle_plot_file (const std::string& dir)
           }
 #endif
 
-#ifdef NO_HYDRO
-        Real cur_time = state[PhiGrav_Type].curTime();
-#else
-        Real cur_time = state[State_Type].curTime();
-#endif
-
         // Write particle_plotfile_format into its own file in the particle directory
         if (Nyx::theDMPC() && ParallelDescriptor::IOProcessor())
         {
@@ -848,7 +842,7 @@ void
 Nyx::checkPoint (const std::string& dir,
                  std::ostream&      os,
                  VisMF::How         how,
-                 bool               dump_old_default)
+                 bool               /*dump_old_default*/)
 {
 
   for (int s = 0; s < desc_lst.size(); ++s) {
@@ -914,8 +908,8 @@ Nyx::checkPoint (const std::string& dir,
 }
 
 void
-Nyx::checkPointPre (const std::string& dir,
-                    std::ostream&      os)
+Nyx::checkPointPre (const std::string& /*dir*/,
+                    std::ostream&      /*os*/)
 {
 #ifdef AMREX_PARTICLES
   if(Nyx::theDMPC()) {
@@ -936,8 +930,8 @@ Nyx::checkPointPre (const std::string& dir,
 
 
 void
-Nyx::checkPointPost (const std::string& dir,
-                 std::ostream&      os)
+Nyx::checkPointPost (const std::string& /*dir*/,
+                     std::ostream&      /*os*/)
 {
 #ifdef AMREX_PARTICLES
   if(Nyx::theDMPC()) {

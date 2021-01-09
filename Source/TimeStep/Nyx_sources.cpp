@@ -38,7 +38,7 @@ void Nyx::ext_src_force(
 
 void
 Nyx::get_old_source (Real      old_time,
-                     Real      dt,
+                     Real      /*dt*/,
                      MultiFab& ext_src)
 {
     BL_PROFILE("Nyx::get_old_source()");
@@ -83,7 +83,7 @@ Nyx::get_old_source (Real      old_time,
 void
 Nyx::get_new_source (Real      old_time,
                      Real      new_time,
-                     Real      dt,
+                     Real      /*dt*/,
                      MultiFab& ext_src)
 {
     BL_PROFILE("Nyx::get_new_source()");

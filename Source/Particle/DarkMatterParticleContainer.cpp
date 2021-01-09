@@ -85,7 +85,6 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     //If there are no particles at this level
     if (lev >= this->GetParticles().size())
         return;
-    const GpuArray<Real,AMREX_SPACEDIM> dx = Geom(lev).CellSizeArray();
     const auto dxi              = Geom(lev).InvCellSizeArray();
 
     amrex::MultiFab* ac_ptr;
@@ -125,15 +124,10 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
         ParticleType* pstruct = particles().data();
         const long np = pti.numParticles();
         int grid    = pti.index();
-        auto& ptile = ParticlesAt(lev, pti);
-        auto& aos  = ptile.GetArrayOfStructs();
-        const int n = aos.size();
-        auto p_pbox = aos().data();
 
         const FArrayBox& accel_fab= ((*ac_ptr)[grid]);
         Array4<amrex::Real const> accel= accel_fab.array();
 
-        int Np = particles.size();
         int nc=AMREX_SPACEDIM;
         amrex::ParallelFor(np,
                            [=] AMREX_GPU_HOST_DEVICE ( long i)
@@ -196,7 +190,6 @@ DarkMatterParticleContainer::moveKick (MultiFab&       acceleration,
 {
     BL_PROFILE("DarkMatterParticleContainer::moveKick()");
 
-    const GpuArray<Real,AMREX_SPACEDIM> dx = Geom(lev).CellSizeArray();
     const auto dxi              = Geom(lev).InvCellSizeArray();
 
     MultiFab* ac_ptr;
@@ -235,12 +228,7 @@ DarkMatterParticleContainer::moveKick (MultiFab&       acceleration,
         AoS& particles = pti.GetArrayOfStructs();
         ParticleType* pstruct = particles().data();
         const long np = pti.numParticles();
-        int Np = particles.size();
         int grid    = pti.index();
-        auto& ptile = ParticlesAt(lev, pti);
-        auto& aos  = ptile.GetArrayOfStructs();
-        const int n = aos.size();
-        auto p_pbox = aos().data();
 
         const FArrayBox& accel_fab= ((*ac_ptr)[grid]);
         Array4<amrex::Real const> accel= accel_fab.array();
@@ -276,9 +264,9 @@ void update_dm_particle_single (amrex::ParticleContainer<4, 0>::SuperParticleTyp
     amrex::Real ly = (p.pos(1) - plo[1]) * dxi[1] + 0.5;
     amrex::Real lz = (p.pos(2) - plo[2]) * dxi[2] + 0.5;
     
-    int i = amrex::Math::floor(lx);
-    int j = amrex::Math::floor(ly);
-    int k = amrex::Math::floor(lz);
+    int i = static_cast<int>(amrex::Math::floor(lx));
+    int j = static_cast<int>(amrex::Math::floor(ly));
+    int k = static_cast<int>(amrex::Math::floor(lz));
     
     amrex::Real xint = lx - i;
     amrex::Real yint = ly - j;
@@ -725,8 +713,6 @@ DarkMatterParticleContainer::InitCosmo(
 #endif
         for (int i = 0; i < n; i++)
         {
-            ParticleType& p = pbox[i];
-
             if (p.id() <= 0) continue;
 
             Real disp[AMREX_SPACEDIM];
@@ -793,7 +779,7 @@ DarkMatterParticleContainer::AssignDensityAndVels (Vector<std::unique_ptr<MultiF
 
 void 
 DarkMatterParticleContainer::InitFromBinaryMortonFile(const std::string& particle_directory,
-                                                      int nextra, int skip_factor) {
+                                                      int /*nextra*/, int skip_factor) {
   BL_PROFILE("DarkMatterParticleContainer::InitFromBinaryMortonFile");
   
   ParticleMortonFileHeader hdr;
@@ -836,7 +822,6 @@ DarkMatterParticleContainer::InitFromBinaryMortonFile(const std::string& particl
   
   ParticleType p;
   for (MFIter mfi = MakeMFIter(lev, false); mfi.isValid(); ++mfi) {  // no tiling
-    Box tile_box = mfi.tilebox();      
     const int grid = mfi.index();
     const int tile = mfi.LocalTileIndex();      
     auto& particles = GetParticles(lev);
@@ -870,8 +855,8 @@ DarkMatterParticleContainer::InitFromBinaryMortonFile(const std::string& particl
         }
       }
 
-      float fpos[DM];
-      float fextra[NX];
+      Vector<float> fpos(DM);
+      Vector<float> fextra(NX);
       ifs.read((char*)&fpos[0],   DM*sizeof(float));
       ifs.read((char*)&fextra[0], NX*sizeof(float));
       
