@@ -67,7 +67,7 @@ void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
 
     for (int is = 0; is < SpectralRank; is++) {
         domain_length[is] = prob_hi[is] - prob_lo[is];
-        IntgrLength = domain_length[is]; // store intermediate result
+        IntgrLength[is] = domain_length[is]; // store intermediate result
     }
 
     SpectralRank = rank;
