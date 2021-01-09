@@ -759,10 +759,13 @@ Nyx::init (AmrLevel& old)
     }
 #endif
 
+    MultiFab& Phi_new = get_new_data(PhiGrav_Type);
     if (do_grav)
     {
-        MultiFab& Phi_new = get_new_data(PhiGrav_Type);
         FillPatch(old, Phi_new, 0, cur_time, PhiGrav_Type, 0, 1);
+    } else {
+        // We need to initialize it otherwise we might write out NaNs in the checkpoint 
+        Phi_new.setVal(0.);
     }
 
 #ifdef SDC
@@ -825,10 +828,13 @@ Nyx::init ()
     }
 #endif
 
+    MultiFab& Phi_new = get_new_data(PhiGrav_Type);
     if (do_grav)
     {
-        MultiFab& Phi_new = get_new_data(PhiGrav_Type);
         FillCoarsePatch(Phi_new, 0, cur_time, PhiGrav_Type, 0, Phi_new.nComp());
+    } else {
+        // We need to initialize it otherwise we might write out NaNs in the checkpoint 
+        Phi_new.setVal(0.);
     }
 
 #ifdef SDC

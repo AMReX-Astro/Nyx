@@ -63,10 +63,11 @@ void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
 
     /* set parameters */
 
-    Real domain_length[SpectralRank];
-    for (int i = 0; i < SpectralRank; i++) {
-        domain_length[i] = prob_hi[i] - prob_lo[i];
-        IntgrLength[i] = domain_length[i]; // store intermediate result
+    Vector<Real> domain_length(SpectralRank);
+
+    for (int is = 0; is < SpectralRank; is++) {
+        domain_length[is] = prob_hi[is] - prob_lo[is];
+        IntgrLength = domain_length[is]; // store intermediate result
     }
 
     SpectralRank = rank;
@@ -409,7 +410,7 @@ void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
         modes_odd[dim]  = new Real[num_modes_ext];
     }
 
-    int kvect[SpectralRank];
+    Vector<int> kvect(SpectralRank);
  
     m = 0;
     for (i = 1; i <= i2; i++)
@@ -449,7 +450,7 @@ void StochasticForcing::init(int rank, const Real* prob_lo, const Real* prob_hi)
     }
 
     for (int dim = 0; dim < SpectralRank; dim++)
-        for (int l = 0; l < num_modes_ext; l++) {
+        for (int l = 0; l < num_modes; l++) {
             modes_even[dim][l]=SpectrumEven[dim][l];
             modes_odd[dim][l]=SpectrumOdd[dim][l];
         }
@@ -467,8 +468,6 @@ void StochasticForcing::read_params()
 
     if (!done)
     {
-        const Real strt = ParallelDescriptor::second();
-
         ParmParse pp("forcing");
  
         pp.query("v", verbose);
