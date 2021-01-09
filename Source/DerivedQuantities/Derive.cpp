@@ -9,9 +9,9 @@ extern "C"
 {
 #endif
 
-  void derstate(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
-                   const FArrayBox& datfab, const Geometry& geomdata,
-                   Real /*time*/, const int* /*bcrec*/, int /*level*/)
+  void derstate(const Box& bx, FArrayBox& derfab, int /*dcomp*/, int /*ncomp*/,
+                const FArrayBox& datfab, const Geometry& /*geomdata*/,
+                Real /*time*/, const int* /*bcrec*/, int /*level*/)
   {
 
       auto const dat = datfab.array();
@@ -37,9 +37,9 @@ extern "C"
 
     }
 
-    void dervel(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
-                   const FArrayBox& datfab, const Geometry& geomdata,
-                   Real /*time*/, const int* /*bcrec*/, int /*level*/)
+    void dervel(const Box& bx, FArrayBox& derfab, int /*dcomp*/, int /*ncomp*/,
+                const FArrayBox& datfab, const Geometry& /*geomdata*/,
+                Real /*time*/, const int* /*bcrec*/, int /*level*/)
     {
 
       auto const dat = datfab.array();
@@ -52,8 +52,8 @@ extern "C"
       });
     }
 
-    void dermagvel(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
-                   const FArrayBox& datfab, const Geometry& geomdata,
+    void dermagvel(const Box& bx, FArrayBox& derfab, int /*dcomp*/, int /*ncomp*/,
+                   const FArrayBox& datfab, const Geometry& /*geomdata*/,
                    Real /*time*/, const int* /*bcrec*/, int /*level*/)
     {
 
@@ -70,7 +70,7 @@ extern "C"
       });
     }
 
-    void dermagvort(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
+    void dermagvort(const Box& bx, FArrayBox& derfab, int /*dcomp*/, int /*ncomp*/,
                     const FArrayBox& datfab, const Geometry& geomdata,
                     Real /*time*/, const int* /*bcrec*/, int /*level*/)
     {
@@ -99,9 +99,9 @@ extern "C"
       });
     }
 
-  void dermagmom(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
-                    const FArrayBox& datfab, const Geometry& geomdata,
-                    Real /*time*/, const int* /*bcrec*/, int /*level*/)
+  void dermagmom(const Box& bx, FArrayBox& derfab, int /*dcomp*/, int /*ncomp*/,
+                 const FArrayBox& datfab, const Geometry& /*geomdata*/,
+                 Real /*time*/, const int* /*bcrec*/, int /*level*/)
   {
 
     auto const dat = datfab.array();
@@ -118,8 +118,8 @@ extern "C"
                        });
   }
 
-    void derpres(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
-                 const FArrayBox& datfab, const Geometry& geomdata,
+    void derpres(const Box& bx, FArrayBox& derfab, int /*dcomp*/, int /*ncomp*/,
+                 const FArrayBox& datfab, const Geometry& /*geomdata*/,
                  Real /*time*/, const int* /*bcrec*/, int /*level*/)
     {
 
@@ -137,8 +137,8 @@ extern "C"
       });
     }
 
-    void derlogden(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
-                   const FArrayBox& datfab, const Geometry& geomdata,
+    void derlogden(const Box& bx, FArrayBox& derfab, int /*dcomp*/, int /*ncomp*/,
+                   const FArrayBox& datfab, const Geometry& /*geomdata*/,
                    Real /*time*/, const int* /*bcrec*/, int /*level*/)
     {
 
@@ -152,8 +152,8 @@ extern "C"
       });
     }
 
-    void dereint1(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
-                  const FArrayBox& datfab, const Geometry& geomdata,
+    void dereint1(const Box& bx, FArrayBox& derfab, int /*dcomp*/, int /*ncomp*/,
+                  const FArrayBox& datfab, const Geometry& /*geomdata*/,
                   Real /*time*/, const int* /*bcrec*/, int /*level*/)
     {
 
@@ -174,8 +174,8 @@ extern "C"
       });
     }
 
-    void dereint2(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
-                  const FArrayBox& datfab, const Geometry& geomdata,
+    void dereint2(const Box& bx, FArrayBox& derfab, int /*dcomp*/, int /*ncomp*/,
+                  const FArrayBox& datfab, const Geometry& /*geomdata*/,
                   Real /*time*/, const int* /*bcrec*/, int /*level*/)
     {
 
@@ -191,8 +191,8 @@ extern "C"
     }
 
 
-    void dersoundspeed(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
-                       const FArrayBox& datfab, const Geometry& geomdata,
+    void dersoundspeed(const Box& bx, FArrayBox& derfab, int /*dcomp*/, int /*ncomp*/,
+                       const FArrayBox& datfab, const Geometry& /*geomdata*/,
                        Real /*time*/, const int* /*bcrec*/, int /*level*/)
     {
 
@@ -208,9 +208,6 @@ extern "C"
       {
 
         Real rhoInv = 1.0_rt/dat(i,j,k,Density_comp);
-        Real ux = dat(i,j,k,Xmom_comp)*rhoInv;
-        Real uy = dat(i,j,k,Ymom_comp)*rhoInv;
-        Real uz = dat(i,j,k,Zmom_comp)*rhoInv;
 
         // Use internal energy for calculating dt 
         Real e  = dat(i,j,k,Eint_comp)*rhoInv;
@@ -229,12 +226,12 @@ extern "C"
       });
     }
 
-    void derentropy(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
-                 const FArrayBox& datfab, const Geometry& geomdata,
+    void derentropy(const Box& bx, FArrayBox& derfab, int /*dcomp*/, int /*ncomp*/,
+                 const FArrayBox& /*datfab*/, const Geometry& /*geomdata*/,
                  Real /*time*/, const int* /*bcrec*/, int /*level*/)
     {
 
-      auto const dat = datfab.array();
+      // auto const dat = datfab.array();
       auto const der = derfab.array();
 
       //  Here dat contains (Density, Xmom, Ymom, Zmom, (rho E), (rho e), Temp, Ne)
@@ -242,8 +239,8 @@ extern "C"
       amrex::ParallelFor(bx,
       [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
       {
-           Real rhoInv = 1.0_rt/dat(i,j,k,Density_comp);
-           Real      e = dat(i,j,k,Eint_comp)*rhoInv;
+           // Real rhoInv = 1.0_rt/dat(i,j,k,Density_comp);
+           // Real      e = dat(i,j,k,Eint_comp)*rhoInv;
 
         // Protect against negative e
 #ifdef HEATCOOL
@@ -262,8 +259,8 @@ extern "C"
       });
     }
 
-    void dermachnumber(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
-                       const FArrayBox& datfab, const Geometry& geomdata,
+    void dermachnumber(const Box& bx, FArrayBox& derfab, int /*dcomp*/, int /*ncomp*/,
+                       const FArrayBox& datfab, const Geometry& /*geomdata*/,
                        Real /*time*/, const int* /*bcrec*/, int /*level*/)
     {
 
@@ -304,7 +301,7 @@ extern "C"
 
     }
 
-  void derkineng (const Box& bx, FArrayBox& kinengfab, int dcomp, int /*ncomp*/,
+  void derkineng (const Box& bx, FArrayBox& kinengfab, int /*dcomp*/, int /*ncomp*/,
                      const FArrayBox& datfab, const Geometry& /*geomdata*/,
                      Real /*time*/, const int* /*bcrec*/, int /*level*/)
   {
@@ -322,8 +319,8 @@ extern "C"
 
   }
 
-  void derspec(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
-               const FArrayBox& datfab, const Geometry& geomdata,
+  void derspec(const Box& bx, FArrayBox& derfab, int /*dcomp*/, int /*ncomp*/,
+               const FArrayBox& datfab, const Geometry& /*geomdata*/,
                Real /*time*/, const int* /*bcrec*/, int /*level*/)
     {
 
@@ -337,7 +334,7 @@ extern "C"
       });
     }
 
-    void derdivu(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
+    void derdivu(const Box& bx, FArrayBox& derfab, int /*dcomp*/, int /*ncomp*/,
                  const FArrayBox& datfab, const Geometry& geomdata,
                  Real /*time*/, const int* /*bcrec*/, int /*level*/)
     {
@@ -365,15 +362,13 @@ extern "C"
       });
     }
 
-    void dermomt(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
-                 const FArrayBox& datfab, const Geometry& geomdata,
+    void dermomt(const Box& bx, FArrayBox& derfab, int /*dcomp*/, int /*ncomp*/,
+                 const FArrayBox& datfab, const Geometry& /*geomdata*/,
                  Real /*time*/, const int* /*bcrec*/, int /*level*/)
     {
 
       auto const dat = datfab.array();
       auto const der = derfab.array();
-
-      auto const dx = geomdata.CellSizeArray();
 
       // Here dat contains (Density, Single Component of Momentum, Sdens)
 

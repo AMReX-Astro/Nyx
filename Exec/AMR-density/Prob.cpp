@@ -10,8 +10,12 @@ void prob_initdata_state(const int i,
                          const int j,
                          const int k,
                          amrex::Array4<amrex::Real> const& state,
-                         amrex::GeometryData const& geomdata,
-                         const amrex::GpuArray<amrex::Real,max_prob_param>& prob_param)
+                         amrex::GeometryData const& /*geomdata*/,
+#ifndef CONST_SPECIES
+                         const amrex::GpuArray<amrex::Real,max_prob_param>&   prob_param  )
+#else
+                         const amrex::GpuArray<amrex::Real,max_prob_param>& /*prob_param*/)
+#endif
 {
   // This is the case where we have compiled with states defined
   //  but they have only one component each so we fill them this way.

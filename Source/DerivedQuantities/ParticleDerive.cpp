@@ -353,8 +353,8 @@ extern "C"
 {
 #endif
 
-  void dernull(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
-               const FArrayBox& datfab, const Geometry& geomdata,
+  void dernull(const Box& /*bx*/, FArrayBox& /*derfab*/, int /*dcomp*/, int /*ncomp*/,
+               const FArrayBox& /*datfab*/, const Geometry& /*geomdata*/,
                Real /*time*/, const int* /*bcrec*/, int /*level*/)
   {
 
@@ -362,8 +362,8 @@ extern "C"
 
   }
 
-    void dermaggrav(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
-                    const FArrayBox& datfab, const Geometry& geomdata,
+    void dermaggrav(const Box& bx, FArrayBox& derfab, int /*dcomp*/, int /*ncomp*/,
+                    const FArrayBox& datfab, const Geometry& /*geomdata*/,
                     Real /*time*/, const int* /*bcrec*/, int /*level*/)
     {
 
@@ -381,7 +381,7 @@ extern "C"
       });
     }
 
-    void derdenvol(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
+    void derdenvol(const Box& bx, FArrayBox& derfab, int /*dcomp*/, int /*ncomp*/,
                    const FArrayBox& datfab, const Geometry& geomdata,
                    Real /*time*/, const int* /*bcrec*/, int /*level*/)
     {
@@ -402,8 +402,8 @@ extern "C"
       });
     }
 
-    void deroverden(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
-                    const FArrayBox& datfab, const Geometry& geomdata,
+    void deroverden(const Box& bx, FArrayBox& derfab, int /*dcomp*/, int /*ncomp*/,
+                    const FArrayBox& datfab, const Geometry& /*geomdata*/,
                     Real /*time*/, const int* /*bcrec*/, int level)
     {
 
@@ -422,8 +422,8 @@ extern "C"
       });
     }
 
-    void deroverdenzoom(const Box& bx, FArrayBox& derfab, int dcomp, int /*ncomp*/,
-                        const FArrayBox& datfab, const Geometry& geomdata,
+    void deroverdenzoom(const Box& bx, FArrayBox& derfab, int /*dcomp*/, int /*ncomp*/,
+                        const FArrayBox& /*datfab*/, const Geometry& geomdata,
                         Real /*time*/, const int* /*bcrec*/, int level)
     {
       auto const der = derfab.array();
@@ -433,7 +433,7 @@ extern "C"
       int domlo = geomdata.Domain().smallEnd(idim);
       int domhi = geomdata.Domain().bigEnd(idim);
 
-      int ref_size = domhi / (2*std::pow(2,(level+1)));
+      int ref_size = domhi / (2*static_cast<int>(std::round(std::pow(2,(level+1)))));
       int center   = (domhi-domlo+1) / 2;
 
       auto const bx_ref = Box(IntVect(AMREX_D_DECL(amrex::max(center-ref_size+1, bx.smallEnd(0)),

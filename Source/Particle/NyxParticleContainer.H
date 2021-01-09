@@ -355,7 +355,6 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
     const auto             dxi              = geom.InvCellSizeArray();
     amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> adxi{dxi[0]/a,dxi[1]/a,dxi[2]/a};
     const auto             plo              = geom.ProbLoArray();
-    const ParticleLevel&   pmap             = this->GetParticles(lev);
     int             tnum             = 1;
 
     long num_particles_at_level = 0;
@@ -443,7 +442,6 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
 
     if (this->m_verbose > 1)
     {
-      long local_num_particles_at_level = num_particles_at_level;
       long min_local_num_particles_at_level = num_particles_at_level;
       long max_local_num_particles_at_level = num_particles_at_level;
 

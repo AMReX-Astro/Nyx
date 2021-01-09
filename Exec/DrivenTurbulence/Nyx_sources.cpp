@@ -12,10 +12,10 @@ using namespace amrex;
 
 void Nyx::integrate_state_force(
   amrex::Box const& bx,
-  amrex::Array4<amrex::Real> const& state,
-  amrex::Array4<amrex::Real> const& diag_eos,
-  const amrex::Real* dx,
-  const amrex::Real time,
+  amrex::Array4<amrex::Real> const& state_arr,
+  amrex::Array4<amrex::Real> const& diag_eos_arr,
+  const amrex::Real* /*dx*/,
+  const amrex::Real  /*time*/,
   const amrex::Real a,
   const amrex::Real half_dt)
 {
@@ -63,7 +63,7 @@ void Nyx::integrate_state_force(
   Real  small_eint = small_temp / (mu * m_nucleon_over_kB * (gamma - 1.0));
 
   const auto geomdata = geom.data();
-  forcing->integrate_state_force(bx, state, diag_eos, geomdata, a, half_dt, small_eint, small_temp);
+  forcing->integrate_state_force(bx, state_arr, diag_eos_arr, geomdata, a, half_dt, small_eint, small_temp);
   /*
       small_dens = 1.d-9*rhoe0
       small_temp = 1.d-3*temp0
@@ -73,12 +73,12 @@ void Nyx::integrate_state_force(
 
 void Nyx::ext_src_force(
   amrex::Box const& bx,
-  amrex::Array4<const amrex::Real> const& old_state,
+  amrex::Array4<const amrex::Real> const& /*old_state*/,
   amrex::Array4<const amrex::Real> const& new_state,
-  amrex::Array4<const amrex::Real> const& old_diag,
+  amrex::Array4<const amrex::Real> const& /*old_diag*/,
   amrex::Array4<amrex::Real> const& new_diag,
   amrex::Array4<amrex::Real> const& src,
-  const amrex::Real* problo,
+  const amrex::Real* /*problo*/,
   const amrex::Real* dx,
   const amrex::Real time,
   const amrex::Real z,

@@ -9,11 +9,11 @@ using namespace amrex;
 struct NyxFillExtDir
 {
     AMREX_GPU_DEVICE
-    void operator() (const IntVect& iv, Array4<Real> const& dest,
-                     const int dcomp, const int numcomp,
-                     GeometryData const& geom, const Real time,
-                     const BCRec* bcr, const int bcomp,
-                     const int orig_comp) const
+    void operator() (const IntVect& /*iv*/, Array4<Real> const& /*dest*/,
+                     const int /*dcomp*/, const int /*numcomp*/,
+                     GeometryData const& /*geom*/, const Real /*time*/,
+                     const BCRec* /*bcr*/, const int /*bcomp*/,
+                     const int /*orig_comp*/) const
         {
             // do something for external Dirichlet (BCType::ext_dir)
         }
@@ -23,15 +23,13 @@ struct NyxHypFillExtDir
 {
   AMREX_GPU_DEVICE
   void operator()(
-    const amrex::IntVect& iv,
-    amrex::Array4<amrex::Real> const& dest,
-    const int dcomp,
-    const int numcomp,
-    amrex::GeometryData const& geom,
-    const amrex::Real time,
-    const amrex::BCRec* bcr,
-    const int bcomp,
-    const int orig_comp) const
+    const amrex::IntVect& /*iv*/,
+    amrex::Array4<amrex::Real> const& /*dest*/,
+    const int /*dcomp*/, const int /*numcomp*/,
+    amrex::GeometryData const& /*geom*/,
+    const amrex::Real /*time*/,
+    const amrex::BCRec* /*bcr*/, const int /*bcomp*/,
+    const int /*orig_comp*/) const
   {
   }
 };

@@ -778,7 +778,6 @@ Nyx::init_santa_barbara (int init_sb_vels)
         BL_PROFILE_VAR_STOP(CA_partmf);
 
         BL_PROFILE_VAR("Nyx::init_santa_barbara()::init", CA_init);
-        const auto dx = geom.CellSizeArray();
         const auto geomdata = geom.data();
         MultiFab& S_new = get_new_data(State_Type);
         MultiFab& D_new = get_new_data(DiagEOS_Type);
@@ -848,16 +847,11 @@ Nyx::init_santa_barbara (int init_sb_vels)
 #endif
     }
 
-    // Make sure we've finished initializing the density before calling this.
-    MultiFab& S_new = get_new_data(State_Type);
-    MultiFab& D_new = get_new_data(DiagEOS_Type);
-    int ns = S_new.nComp();
-    int nd = D_new.nComp();
-
     init_e_from_T(a);
 
 #ifndef CONST_SPECIES
     // Convert X_i to (rho X)_i
+    MultiFab& S_new = get_new_data(State_Type);
     for (int i = 0; i < NumSpec; ++i) 
         MultiFab::Multiply(S_new, S_new, Density_comp, FirstSpec_comp+i, 1, 0);
 #endif
@@ -1127,7 +1121,6 @@ Nyx::particle_redistribute (int lbase, bool my_init)
             }
 
             int iteration = 1;
-            int finest_level = parent->finestLevel();
             for (int i = 0; i < theActiveParticles().size(); i++)
               {
                   theActiveParticles()[i]->Redistribute(lbase,

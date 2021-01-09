@@ -107,7 +107,6 @@ void Nyx::initcosmo()
 
 #ifdef GRAVITY
     Real comoving_OmL;
-    Real Gconst;
     const Real len[AMREX_SPACEDIM] = {geom.ProbLength(0),geom.ProbLength(1),geom.ProbLength(2)};
 
     Real particleMass;
@@ -332,8 +331,6 @@ void Nyx::initcosmo()
                                   part_dx, part_vx,
                                   myBaWhereNot,
                                   level, parent->initialBaLevels()+1);
-//    Nyx::theDMPC()->InitCosmo(mf, vel_fac, n_part, particleMass);
-    //Nyx::theDMPC()->InitCosmo(mf, vel_fac, n_part, particleMass, part_dx, part_vx);
 
     MultiFab& S_new = get_level(level).get_new_data(State_Type);
     MultiFab& D_new = get_level(level).get_new_data(DiagEOS_Type);
@@ -365,9 +362,6 @@ void Nyx::initcosmo()
         {
             std::cout << "Do hydro initialization..." << '\n';
         }
-
-        MultiFab& S_new = get_level(level).get_new_data(State_Type);
-        MultiFab& D_new = get_level(level).get_new_data(DiagEOS_Type);
 
         //Fill everything with old data...should only affect ghostzones, but
         //seems to have no effect...
@@ -401,9 +395,6 @@ void Nyx::initcosmo()
         MultiFab::Multiply(S_new, S_new, Density_comp, Zmom_comp, 1, S_new.nGrow());
 
         Real tempInit = 0.021*(1.0+redshift)*(1.0+redshift);
-
-        int ns = S_new.nComp();
-        int nd = D_new.nComp();
 
         D_new.setVal(tempInit, Temp_comp);
         D_new.setVal(0.0, Ne_comp);
