@@ -2590,33 +2590,29 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
     // Find the cell which has the maximum temp -- but only if not the first
     // time step because in the first time step too many points have the same
     // value.
-    Real prev_time   = state[State_Type].prevTime();
-    if (prev_time > 0.0 && verbose > 0)
+    Real prev_time = state[State_Type].prevTime();
+    if (prev_time > 0.0 && verbose > 1)
     {
-
-      if (verbose > 1)
-        {
-            BL_PROFILE("Nyx::compute_new_temp()::max_temp");
-            // Compute the maximum temperature
-            Real max_temp = D_new.norm0(Temp_comp);
-            IntVect max_temp_loc = D_new.maxIndex(Temp_comp);
+        BL_PROFILE("Nyx::compute_new_temp()::max_temp");
+        // Compute the maximum temperature
+        Real max_temp = D_new.norm0(Temp_comp);
+        IntVect max_temp_loc = D_new.maxIndex(Temp_comp);
 
 #ifdef _OPENMP
 #pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif
-              for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
-              {
-                const Box& bx = mfi.validbox();
-                if(bx.contains(max_temp_loc))
-                  {
-                    const auto fab_state = S_new.array(mfi);
-                    Real den_maxt=fab_state(max_temp_loc,Density_comp);
-                    std::cout << "Maximum temp. at level " << level << " is " << max_temp
-                                << " at density " << den_maxt
-                                << " at (i,j,k) " << max_temp_loc << std::endl;
-                  }
-              }
-          }
+        for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
+        {
+            const Box& bx = mfi.validbox();
+            if (bx.contains(max_temp_loc))
+            {
+                const auto fab_state = S_new.array(mfi);
+                Real den_maxt=fab_state(max_temp_loc,Density_comp);
+                std::cout << "Maximum temp. at level " << level << " is " << max_temp
+                            << " at density " << den_maxt
+                            << " at (i,j,k) " << max_temp_loc << std::endl;
+            }
+        }
     }
     amrex::Gpu::synchronize();
 }
