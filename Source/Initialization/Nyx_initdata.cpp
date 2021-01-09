@@ -33,35 +33,35 @@ void Nyx::set_small_values_given_average (amrex::Real average_dens, amrex::Real 
                                           Real h_species_in, Real He_species_in)
 {
 
-    Real small_dens, small_temp, frac;
+    Real lsmall_dens, lsmall_temp, frac;
     frac = 1e-6;
     if (small_dens_inout <= 0.e0)
-        small_dens = frac * average_dens;
+        lsmall_dens = frac * average_dens;
     else
-        small_dens = small_dens_inout;
+        lsmall_dens = small_dens_inout;
 
     if (small_temp_inout <= 0.e0)
-        small_temp = frac * average_temp;
+        lsmall_temp = frac * average_temp;
     else
-        small_temp = small_temp_inout;
+        lsmall_temp = small_temp_inout;
 
     // HACK HACK HACK -- FIX ME!!!!!
     ParmParse pp_nyx("nyx");
     const amrex::Real typical_Ne = 1.e0;
-    Real small_pres=0.0;
+    Real lsmall_pres=0.0;
     Real dummy_small_pres=0.0;
     Real eint=0.0;
     auto atomic_rates = atomic_rates_glob;
 
     if (!(pp_nyx.query("small_pres", dummy_small_pres)))
         nyx_eos_given_RT(atomic_rates, gamma_minus_1_in, h_species_in, &eint, 
-                         &small_pres, small_dens, small_temp, typical_Ne, a);
+                         &lsmall_pres, lsmall_dens, lsmall_temp, typical_Ne, a);
     else
-        small_pres = small_pres_inout;
+        lsmall_pres = small_pres_inout;
 
-    small_dens_inout = small_dens;
-    small_temp_inout = small_temp;
-    small_pres_inout = small_pres;
+    small_dens_inout = lsmall_dens;
+    small_temp_inout = lsmall_temp;
+    small_pres_inout = lsmall_pres;
 }
 #endif
 
@@ -368,25 +368,6 @@ Nyx::initData ()
     }
 #endif
 
-
-    // Add partially redundant setup for small_dens
-    Real average_gas_density = -1e200;
-    Real average_temperature = -1e200;
-
-    // Make sure small values give non-negative small_pres                                                           
-    Real small_dens_loc = amrex::max(1e-2,small_dens);
-    Real small_temp_loc = amrex::max(1e-2,small_temp);
-    Real a = get_comoving_a(cur_time);
-    Real gamma_minus_1 = gamma - 1.0;
-
-    amrex::Gpu::Device::synchronize();
-
-#ifndef NO_HYDRO
-    set_small_values_given_average
-      (average_gas_density, average_temperature,
-       a,  small_dens_loc, small_temp_loc, small_pres, gamma_minus_1, h_species, he_species);
-#endif
-
     amrex::Gpu::Device::synchronize();
 
 #ifdef AMREX_PARTICLES
@@ -501,7 +482,6 @@ Nyx::check_initial_species ()
 
     ReduceOps<ReduceOpMax> reduce_op;
     ReduceData<Real> reduce_data(reduce_op);
-    using ReduceTuple = typename decltype(reduce_data)::Type;
 
 #ifdef CONST_SPECIES
     if (amrex::Math::abs(1.0 - h_species - he_species) > 1.e-8)
