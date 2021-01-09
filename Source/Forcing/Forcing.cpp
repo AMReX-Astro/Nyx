@@ -145,7 +145,7 @@ void StochasticForcing::inject(void)
     if (ParallelDescriptor::IOProcessor()) {
 
         int i, j, k, n, dim;
-        Real a, b, contr, div;
+        Real a, b, contr;
 
         /* compute Gaussian deviates */
 

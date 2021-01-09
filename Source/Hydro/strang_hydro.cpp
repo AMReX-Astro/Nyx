@@ -268,6 +268,7 @@ Nyx::strang_hydro_ghost_state (Real time,
     const Real cur_time     = state[State_Type].curTime();
     
     MultiFab&  S_new        = get_new_data(State_Type);
+    MultiFab&  S_old        = get_old_data(State_Type);
 
     MultiFab&  D_old        = get_old_data(DiagEOS_Type);
     MultiFab&  D_new        = get_new_data(DiagEOS_Type);
@@ -285,18 +286,7 @@ Nyx::strang_hydro_ghost_state (Real time,
 
     amrex::Gpu::Device::streamSynchronize();
     amrex::Gpu::setLaunchRegion(false);
-    /*    
-    MultiFab&  S_old        = get_old_data(State_Type);
-    if (S_old.contains_nan(Density, S_old.nComp(), 0))
-    {
-        for (int i = 0; i < S_old.nComp(); i++)
-        {
-            if (ParallelDescriptor::IOProcessor())
-                std::cout << "strang_hydro: testing component " << i << " for NaNs" << std::endl;
-            if (S_old.contains_nan(Density+i,1,0))
-                amrex::Abort("S_old has NaNs in this component");
-        }
-        }*/
+
     amrex::Gpu::setLaunchRegion(true);
 #endif
     
@@ -341,23 +331,11 @@ Nyx::strang_hydro_ghost_state (Real time,
 
     BL_PROFILE_VAR_STOP(old_tmp);
 
-    /*
-    S_new.setVal(1e999);
-    D_new.setVal(1e999);
-    
-    MultiFab::Copy(S_new,S_old,0,0,NUM_STATE,NUM_GROW);
-    FillPatch(*this, S_new, NUM_GROW, prev_time, State_Type, 0, NUM_STATE);
-
-    MultiFab::Copy(D_new,D_old,0,0,D_old.nComp(),NUM_GROW);
-    FillPatch(*this, D_new, NUM_GROW, prev_time, DiagEOS_Type, 0, D_old.nComp());*/
-
 #ifdef HEATCOOL
     if(verbose) {
       amrex::Print()<<"Before first strang:"<<std::endl;
       amrex::Arena::PrintUsage();
     }
-    /*    amrex::Print()<<S_old.nComp()<<S_old_tmp.nComp()<<S_new.nComp()<<std::endl;
-          amrex::Print()<<S_old.nGrow()<<S_old_tmp.nGrow()<<S_new.nGrow()<<std::endl;*/
     MultiFab::Copy(S_new,S_old,0,0,S_old.nComp(),0);//,S_old_tmp.nGrow());
     FillPatch(*this, S_new, S_new.nGrow(), prev_time, State_Type, 0, NUM_STATE);
     //    amrex::Gpu::synchronize();
