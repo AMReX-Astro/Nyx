@@ -22,6 +22,7 @@ Nyx::strang_hydro (Real time,
     const Real prev_time    = state[State_Type].prevTime();
     const Real cur_time     = state[State_Type].curTime();
     
+    // Note that we need S_old if and only if CONST_SPECIES or HEATCOOL...
     MultiFab&  S_old        = get_old_data(State_Type);
     MultiFab&  S_new        = get_new_data(State_Type);
 
