@@ -403,7 +403,7 @@ Nyx::init_particles ()
         //
         DMPC->SetVerbose(particle_verbose);
 
-        DarkMatterParticleContainer::ParticleInitData pdata = {particle_initrandom_mass};
+        DarkMatterParticleContainer::ParticleInitData pdata = {{particle_initrandom_mass}, {}, {}, {}};
 
         if (particle_init_type == "Random")
         {
@@ -468,7 +468,7 @@ Nyx::init_particles ()
                 amrex::Print() << "\nInitializing DM with 1 uniform particle per cell " << "\n";
 
             //            int n_per_cell = 1;
-            DarkMatterParticleContainer::ParticleInitData pdata_vel = {particle_inituniform_mass, particle_inituniform_vx, particle_inituniform_vy, particle_inituniform_vz };
+            DarkMatterParticleContainer::ParticleInitData pdata_vel = {{particle_inituniform_mass, particle_inituniform_vx, particle_inituniform_vy, particle_inituniform_vz},{},{},{}};
             DMPC->InitOnePerCell(0.5, 0.5, 0.5, pdata_vel);
         }
         else if (particle_init_type == "AsciiFile")
