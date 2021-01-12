@@ -207,7 +207,7 @@ Gravity::solve_for_old_phi (int               level,
                             int               fill_interior)
 {
     BL_PROFILE("Gravity::solve_for_old_phi()");
-    amrex::Gpu::LaunchSafeGuard lsg(true);
+
 
     if (verbose)
         amrex::Print() << "Gravity ... single level solve for old phi at level "
@@ -240,7 +240,7 @@ Gravity::solve_for_new_phi (int               level,
                             int               ngrow_for_solve)
 {
     BL_PROFILE("Gravity::solve_for_new_phi()");
-    amrex::Gpu::LaunchSafeGuard lsg(true);
+
 
     if (verbose)
         amrex::Print() << "Gravity ... single level solve for new phi at level "
@@ -546,7 +546,7 @@ Gravity::multilevel_solve_for_new_phi (int level,
 {
     BL_PROFILE("Gravity::multilevel_solve_for_new_phi()");
 
-    amrex::Gpu::LaunchSafeGuard lsg(true);
+
     if (verbose)
         amrex::Print() << "Gravity ... multilevel solve for new phi at base level " << level
                        << " to finest level " << finest_level << '\n';
@@ -575,7 +575,7 @@ Gravity::multilevel_solve_for_old_phi (int level,
 {
     BL_PROFILE("Gravity::multilevel_solve_for_old_phi()");
 
-    amrex::Gpu::LaunchSafeGuard lsg(true);
+
 
     if (verbose)
         amrex::Print() << "Gravity ... multilevel solve for old phi at base level " << level
@@ -608,7 +608,7 @@ Gravity::actual_multilevel_solve (int                       level,
 {
     BL_PROFILE("Gravity::actual_multilevel_solve()");
 
-    amrex::Gpu::LaunchSafeGuard lsg(true);
+
 
     const int num_levels = finest_level - level + 1;
 
@@ -785,7 +785,7 @@ Gravity::get_old_grav_vector (int       level,
 {
     BL_PROFILE("Gravity::get_old_grav_vector()");
 
-    amrex::Gpu::LaunchSafeGuard lsg(true);
+
 
     MultiFab& G_old = LevelData[level]->get_old_data(Gravity_Type);
 
@@ -822,7 +822,7 @@ Gravity::get_new_grav_vector (int       level,
 {
     BL_PROFILE("Gravity::get_new_grav_vector()");
 
-    amrex::Gpu::LaunchSafeGuard lsg(true);
+
 
     // Set to zero to fill ghost cells
     grav_vector.setVal(0);
@@ -856,7 +856,7 @@ Gravity::add_to_fluxes(int level, int iteration, int ncycle)
 {
     BL_PROFILE("Gravity::add_to_fluxes()");
 
-    amrex::Gpu::LaunchSafeGuard lsg(true);
+
 
     const int       finest_level      = parent->finestLevel();
     FluxRegister*   phi_fine          = (level<finest_level ? phi_flux_reg[level+1].get() : nullptr);
@@ -980,7 +980,7 @@ Gravity::set_mass_offset (Real time)
 {
     BL_PROFILE("Gravity::set_mass_offset()");
 
-    amrex::Gpu::LaunchSafeGuard lsg(true);
+
 
     Real old_mass_offset = 0;
 
@@ -1039,9 +1039,6 @@ Gravity::set_dirichlet_bcs (int       level,
 {
     BL_PROFILE("Gravity::set_dirichlet_bcs()");
 
-    amrex::Gpu::Device::synchronize();
-    amrex::Gpu::LaunchSafeGuard lsg(false);
-
     // Set phi to zero everywhere -- including ghost cells --
     //     to provide homogeneous Dirichlet bcs
     phi->setVal(0.0,0,1,phi->nGrow());
@@ -1054,7 +1051,7 @@ Gravity::AddParticlesToRhs (int               level,
 {
     BL_PROFILE("Gravity::AddParticlesToRhs()");
 
-    amrex::Gpu::LaunchSafeGuard lsg(true);
+
 
     // Use the same multifab for all particle types
     MultiFab particle_mf(grids[level], dmap[level], 1, ngrow);
@@ -1075,7 +1072,7 @@ Gravity::AddParticlesToRhs(int base_level, int finest_level, int ngrow, const Ve
 {
     BL_PROFILE("Gravity::AddParticlesToRhsML()");
 
-    amrex::Gpu::LaunchSafeGuard lsg(true);
+
     const int num_levels = finest_level - base_level + 1;
     for (int i = 0; i < Nyx::theActiveParticles().size(); i++)
     {
@@ -1118,7 +1115,7 @@ Gravity::AddVirtualParticlesToRhs (int               level,
 {
     BL_PROFILE("Gravity::AddVirtualParticlesToRhs()");
 
-    amrex::Gpu::LaunchSafeGuard lsg(true);
+
 
     if (level <  parent->finestLevel())
     {
@@ -1140,7 +1137,7 @@ void
 Gravity::AddVirtualParticlesToRhs(int finest_level, const Vector<MultiFab*>& Rhs_particles)
 {
     BL_PROFILE("Gravity::AddVirtualParticlesToRhsML()");
-    amrex::Gpu::LaunchSafeGuard lsg(true);
+
     if (finest_level < parent->finestLevel())
     {
         // Should only need ghost cells for virtual particles if they're near
@@ -1163,7 +1160,7 @@ Gravity::AddGhostParticlesToRhs (int               level,
 {
     BL_PROFILE("Gravity::AddGhostParticlesToRhs()");
 
-    amrex::Gpu::LaunchSafeGuard lsg(true);
+
 
     if (level > 0)
     {
@@ -1188,7 +1185,7 @@ Gravity::AddGhostParticlesToRhs(int level, const Vector<MultiFab*>& Rhs_particle
 {
     BL_PROFILE("Gravity::AddGhostParticlesToRhsML()");
 
-    amrex::Gpu::LaunchSafeGuard lsg(true);
+
 
     if (level > 0)
     {
@@ -1219,7 +1216,7 @@ Gravity::CorrectRhsUsingOffset(int level, MultiFab& Rhs)
 {
     BL_PROFILE("Gravity::CorrectRhsUsingOffset()");
 
-    amrex::Gpu::LaunchSafeGuard lsg(true);
+
     if (verbose)
         amrex::Print() << " ... subtracting average density from RHS in solve ... "
                        << mass_offset << '\n';

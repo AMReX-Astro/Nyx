@@ -173,7 +173,7 @@ Nyx::sum_integrated_quantities ()
 void
 Nyx::compute_average_density ()
 {
-    amrex::Gpu::LaunchSafeGuard lsg(true);
+
     int             finest_level = parent->finestLevel();
     Real            time         = state[State_Type].curTime();
     const Geometry& crse_geom    = parent->Geom(0);
@@ -264,7 +264,7 @@ Nyx::compute_average_density ()
 void
 Nyx::compute_average_temperature (Real& average_temperature)
 {
-    amrex::Gpu::LaunchSafeGuard lsg(true);
+
     int             finest_level = parent->finestLevel();
     Real            time         = state[State_Type].curTime();
     const Geometry& crse_geom    = parent->Geom(0);
@@ -307,7 +307,7 @@ Nyx::compute_average_temperature (Real& average_temperature)
 void
 Nyx::compute_average_species (Vector<Real>& average_species)
 {
-    amrex::Gpu::LaunchSafeGuard lsg(true);
+
 #ifdef CONST_SPECIES
     {
        average_species[0] = h_species;

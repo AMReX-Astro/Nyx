@@ -716,7 +716,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
     Real a = old_a;
 
     BL_PROFILE_VAR("Nyx::init_santa_barbara()::part", CA_part);
-    amrex::Gpu::LaunchSafeGuard lsg(true);
+
     amrex::Print() << "... time and comoving a when data is initialized at level " 
                    << level << " " << cur_time << " " << a << '\n';
 
@@ -892,7 +892,7 @@ Nyx::particle_post_restart (const std::string& restart_file, bool is_checkpoint)
         DMPC->SetVerbose(particle_verbose);
 
         {
-          amrex::Gpu::LaunchSafeGuard lsg(true);
+
           DMPC->Restart(restart_file, dm_chk_particle_file, is_checkpoint);
           amrex::Gpu::Device::streamSynchronize();
         }
@@ -1037,7 +1037,7 @@ Nyx::particle_redistribute (int lbase, bool my_init)
     if (DMPC)
     {
 
-      amrex::Gpu::LaunchSafeGuard lsg(true);
+
 
         //  
         // If we are calling with my_init = true, then we want to force the redistribute
@@ -1151,7 +1151,7 @@ Nyx::setup_virtual_particles()
 {
     BL_PROFILE("Nyx::setup_virtual_particles()");
 
-    amrex::Gpu::LaunchSafeGuard lsg(true);
+
     if(Nyx::theDMPC() != 0 && !virtual_particles_set)
     {
         DarkMatterParticleContainer::AoS virts;
@@ -1172,7 +1172,7 @@ Nyx::remove_virtual_particles()
 {
     BL_PROFILE("Nyx::remove_virtual_particles()");
 
-    amrex::Gpu::LaunchSafeGuard lsg(true);
+
     for (int i = 0; i < VirtualParticles.size(); i++)
     {
         if (VirtualParticles[i] != 0)
@@ -1187,7 +1187,7 @@ Nyx::setup_ghost_particles(int ngrow)
     BL_PROFILE("Nyx::setup_ghost_particles()");
     BL_ASSERT(level < parent->finestLevel());
 
-    amrex::Gpu::LaunchSafeGuard lsg(true);    
+    
     if(Nyx::theDMPC() != 0)
     {
         DarkMatterParticleContainer::AoS ghosts;
@@ -1222,7 +1222,7 @@ Nyx::remove_ghost_particles()
 {
     BL_PROFILE("Nyx::remove_ghost_particles()");
 
-    amrex::Gpu::LaunchSafeGuard lsg(true);    
+    
     for (int i = 0; i < GhostParticles.size(); i++)
     {
         if (GhostParticles[i] != 0)

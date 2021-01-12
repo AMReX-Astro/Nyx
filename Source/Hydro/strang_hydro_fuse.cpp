@@ -17,7 +17,7 @@ Nyx::strang_hydro_fuse (Real time,
 
     BL_ASSERT(NUM_GROW == 4);
 
-    Gpu::LaunchSafeGuard lsg(true);
+
 
     const Real prev_time    = state[State_Type].prevTime();
     const Real cur_time     = state[State_Type].curTime();

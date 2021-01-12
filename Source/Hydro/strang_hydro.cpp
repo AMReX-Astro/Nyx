@@ -17,7 +17,7 @@ Nyx::strang_hydro (Real time,
 
     BL_ASSERT(NUM_GROW == 4);
 
-    Gpu::LaunchSafeGuard lsg(true);
+
 
     const Real prev_time    = state[State_Type].prevTime();
     const Real cur_time     = state[State_Type].curTime();
@@ -70,10 +70,6 @@ Nyx::strang_hydro (Real time,
     if (add_ext_src)
       {
         //      ext_src_old.reset(new MultiFab(grids, dmap, NUM_STATE, NUM_GROW));
-#ifndef GPU_COMPATIBLE_PROBLEM
-        amrex::Gpu::Device::streamSynchronize();
-        Gpu::LaunchSafeGuard lsg(false);
-#endif
         get_old_source(prev_time, dt, ext_src_old);
       }
 
@@ -185,15 +181,7 @@ Nyx::strang_hydro (Real time,
 
     if (add_ext_src)
     {
-#ifndef GPU_COMPATIBLE_PROBLEM
-      {
-        amrex::Gpu::Device::streamSynchronize();
-        Gpu::LaunchSafeGuard lsg(false);
         get_old_source(prev_time, dt, ext_src_old);
-      }
-#else
-        get_old_source(prev_time, dt, ext_src_old);
-#endif
 
         // Must compute new temperature in case it is needed in the source term evaluation
         compute_new_temp(S_new,D_new);
@@ -202,15 +190,7 @@ Nyx::strang_hydro (Real time,
         MultiFab ext_src_new(grids, dmap, NUM_STATE, 0);
         ext_src_new.setVal(0);
 
-#ifndef GPU_COMPATIBLE_PROBLEM
-      {
-        amrex::Gpu::Device::streamSynchronize();
-        Gpu::LaunchSafeGuard lsg(false);
         get_new_source(prev_time, cur_time, dt, ext_src_new);
-      }
-#else
-        get_new_source(prev_time, cur_time, dt, ext_src_new);
-#endif
 
         time_center_source_terms(S_new, ext_src_old, ext_src_new, dt);
         ext_src_old.clear();

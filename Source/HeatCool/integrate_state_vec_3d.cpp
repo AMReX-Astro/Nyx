@@ -44,7 +44,7 @@ int Nyx::integrate_state_vec
 {
     // time = starting time in the simulation
 
-  amrex::Gpu::LaunchSafeGuard lsg(true);
+
   //Skip setup since parameters are hard-coded
   //  fort_ode_eos_setup(a,delta_time);
   long int store_steps=new_max_sundials_steps;
@@ -360,7 +360,7 @@ int Nyx::integrate_state_grownvec
     //Skip setup since parameters are hard-coded
     //  fort_ode_eos_setup(a,delta_time);
 
-    amrex::Gpu::LaunchSafeGuard lsg(true);
+
 
     long int store_steps=old_max_sundials_steps;
   
