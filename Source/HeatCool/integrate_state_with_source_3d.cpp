@@ -43,7 +43,7 @@ int Nyx::integrate_state_struct
 {
     // time = starting time in the simulation
 
-
+  amrex::Gpu::LaunchSafeGuard lsg(true);
   long int store_steps=new_max_sundials_steps;
 
   //#ifdef _OPENMP

@@ -214,7 +214,7 @@ Nyx::initData ()
 {
     BL_PROFILE("Nyx::initData()");
     
-
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     // Here we initialize the grid data and the particles from a plotfile.
     if (!parent->theRestartPlotFile().empty())
     {

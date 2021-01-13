@@ -53,6 +53,7 @@ nyx_main (int argc, char* argv[])
 {
     amrex::Initialize(argc, argv);
     {
+      amrex::Gpu::LaunchSafeGuard lsg(false);
 
     // save the inputs file name for later
     if (argc > 1) {

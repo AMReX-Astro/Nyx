@@ -122,7 +122,7 @@ Nyx::advance_particles_only (Real time,
     //
     if (level == 0 || iteration > 1)
     {
-
+        amrex::Gpu::LaunchSafeGuard lsg(true);
         for (int lev = level; lev <= finest_level; lev++)
         {
             dt_lev = parent->dtLevel(lev);
@@ -152,7 +152,7 @@ Nyx::advance_particles_only (Real time,
     // finer levels.
     if (level == 0 || iteration > 1)
     {
-
+        amrex::Gpu::LaunchSafeGuard lsg(true);
         // fix fluxes on finer grids
         if (do_reflux)
         {
@@ -176,7 +176,7 @@ Nyx::advance_particles_only (Real time,
     }
 
     {
-
+      amrex::Gpu::LaunchSafeGuard lsg(true);
     //
     // Advance Particles
     //
@@ -239,7 +239,7 @@ Nyx::advance_particles_only (Real time,
     }
 
     {
-
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     if (Nyx::theActiveParticles().size() > 0)
     {
         // Advance the particle velocities by dt/2 to the new time. We use the

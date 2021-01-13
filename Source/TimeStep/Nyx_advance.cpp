@@ -232,7 +232,7 @@ Nyx::advance_hydro_plus_particles (Real time,
     BL_PROFILE_VAR_STOP(solve_for_old_phi);
 
     {
-
+      amrex::Gpu::LaunchSafeGuard lsg(true);
     //
     // Advance Particles
     //
@@ -295,7 +295,7 @@ Nyx::advance_hydro_plus_particles (Real time,
     BL_PROFILE_VAR_STOP(just_the_hydro);
 
     {
-
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     //
     // We must reflux before doing the next gravity solve
     //
@@ -445,7 +445,7 @@ Nyx::advance_hydro (Real time,
                     int  ncycle)
 {
     BL_PROFILE("Nyx::advance_hydro()");
-
+    amrex::Gpu::LaunchSafeGuard lsg(true);
 
 #ifdef FORCING
     if (!do_forcing)

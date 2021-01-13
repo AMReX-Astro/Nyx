@@ -16,7 +16,7 @@ Nyx::sdc_hydro (Real time,
 
     BL_ASSERT(NUM_GROW == 4);
 
-
+    Gpu::LaunchSafeGuard lsg(true);
     int sdc_iter;
     Real IR_fac;
     const Real prev_time    = state[State_Type].prevTime();

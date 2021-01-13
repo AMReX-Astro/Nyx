@@ -79,24 +79,24 @@ public:
     }
 
     virtual void Regrid (const amrex::DistributionMapping& dmap, const amrex::BoxArray& ba, const int lev) override {
-
+          amrex::Gpu::LaunchSafeGuard lsg(true);
           amrex::NeighborParticleContainer<NSR,NSI>::Regrid(dmap, ba, lev);
     }
 
   virtual amrex::Vector<long> NumberOfParticlesInGrid (int lev, bool only_valid, bool only_local) override {
-
+          amrex::Gpu::LaunchSafeGuard lsg(true);
           return amrex::NeighborParticleContainer<NSR,NSI>::NumberOfParticlesInGrid(lev,only_valid,only_local);
   }
     void sumParticleMomentum (int lev, amrex::Real* mom) const;
 
     virtual void AssignDensitySingleLevel (amrex::MultiFab& mf, int level, int ncomp=1, int particle_lvl_offset = 0) const override
     {
-
+        amrex::Gpu::LaunchSafeGuard lsg(true);
         amrex::NeighborParticleContainer<NSR,NSI>::AssignCellDensitySingleLevel(0, mf, level, ncomp, particle_lvl_offset);
     }
     virtual void AssignDensity (amrex::Vector<std::unique_ptr<amrex::MultiFab> >& mf, int lev_min = 0, int ncomp = 1, int finest_level = -1, int ngrow = 1) const override
     {
-
+        amrex::Gpu::LaunchSafeGuard lsg(true);
         amrex::NeighborParticleContainer<NSR,NSI>::AssignDensity(0, mf, lev_min, ncomp, finest_level, ngrow);
     }
 
@@ -120,7 +120,7 @@ public:
                                int nGrow                = 0) override
     {
       //        amrex::Gpu::synchronize();
-
+        amrex::Gpu::LaunchSafeGuard lsg(true);
         amrex::NeighborParticleContainer<NSR,NSI>::Redistribute(lev_min, lev_max, nGrow);
         //        amrex::Gpu::synchronize();
     }
@@ -136,7 +136,7 @@ public:
         const int lev_maxal = 0;
         const int nGrowal = 0;
 
-
+        amrex::Gpu::LaunchSafeGuard lsg(true);
         amrex::NeighborParticleContainer<NSR,NSI>
             ::Redistribute(lev_minal, lev_maxal, nGrowal, local);
     }
@@ -146,7 +146,7 @@ public:
                                     int nGrow                = 0) override
     {
 
-
+        amrex::Gpu::LaunchSafeGuard lsg(true);
         const int local =         amrex::NeighborParticleContainer<NSR,NSI>
           ::OK(lev_min, lev_max);
         //      amrex::Print()<<"local flag is: "<<local<<std::endl;
@@ -167,7 +167,7 @@ public:
         const int nGrowal = 0;
 
         amrex::Gpu::synchronize();
-
+        amrex::Gpu::LaunchSafeGuard lsg(true);
         local =         amrex::NeighborParticleContainer<NSR,NSI>
           ::OK(lev_minal, lev_maxal);
         //      amrex::Print()<<"local flag is: "<<local<<std::endl;
@@ -346,7 +346,7 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
 
     if (this->GetParticles().size() == 0)
         return dt;
-
+    amrex::Gpu::LaunchSafeGuard lsg(true);
 
     const amrex::Real      strttime         = amrex::ParallelDescriptor::second();
 
@@ -512,7 +512,7 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::WriteNyxPlotFile (const std::string& dir,
 {
   BL_PROFILE("NyxParticleContainer<NSR,NSI,NAR,NAI>::WriteNyxPlotFile()");
 
-
+    amrex::Gpu::LaunchSafeGuard lsg(true);
   amrex::NeighborParticleContainer<NSR,NSI>::WritePlotFile(dir, name, real_comp_names);
 
 }
@@ -525,7 +525,7 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::NyxCheckpoint (const std::string& dir,
   BL_PROFILE("NyxParticleContainer<NSR,NSI,NAR,NAI>::NyxCheckpoint()");
 
   bool is_checkpoint = true;
-
+  amrex::Gpu::LaunchSafeGuard lsg(true);
   amrex::NeighborParticleContainer<NSR,NSI>::Checkpoint(dir, name, is_checkpoint, real_comp_names);
 }
 

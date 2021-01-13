@@ -727,7 +727,7 @@ Nyx::init (AmrLevel& old)
 {
     BL_PROFILE("Nyx::init(old)");
 
-
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     MultiFab::RegionTag amrInit_tag("Init_" + std::to_string(level));
     Nyx* old_level = (Nyx*) &old;
     //
@@ -909,7 +909,7 @@ Nyx::est_time_step (Real /*dt_old*/)
           Real local_small_dens  = small_dens;
           int  local_max_temp_dt = max_temp_dt;
 
-
+          amrex::Gpu::LaunchSafeGuard lsg(true);
           dt = amrex::ReduceMin(stateMF, 0,
               [=] AMREX_GPU_HOST_DEVICE (Box const& bx, Array4<Real const> const& u) noexcept -> Real
               {
@@ -1356,7 +1356,7 @@ Nyx::post_timestep (int iteration)
 {
     BL_PROFILE("Nyx::post_timestep()");
 
-
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     MultiFab::RegionTag amrPost_tag("Post_" + std::to_string(level));
 
     //
@@ -1974,7 +1974,7 @@ Nyx::post_regrid (int lbase,
 #endif
 #ifdef AMREX_PARTICLES
     if (level == lbase) {
-
+        amrex::Gpu::LaunchSafeGuard lsg(true);
         particle_redistribute(lbase, false);
     }
     amrex::Gpu::Device::streamSynchronize();
@@ -2025,7 +2025,7 @@ Nyx::post_init (Real /*stop_time*/)
         parent->setLevelSteps(0,nsteps_from_plotfile);
     }
 
-
+    Gpu::LaunchSafeGuard lsg(true);
     //
     // Average data down from finer levels
     // so that conserved data is consistent between levels.
@@ -2359,7 +2359,7 @@ Nyx::derive (const std::string& name,
 {
     BL_PROFILE("Nyx::derive()");
 
-
+    amrex::Gpu::LaunchSafeGuard lsg(true);
 
     if (name == "Rank")
     {
@@ -2456,7 +2456,7 @@ Nyx::reset_internal_energy_interp (MultiFab& S_new, MultiFab& D_new, MultiFab& r
     Real gamma_minus_1 = gamma - 1.0;
     auto atomic_rates = atomic_rates_glob;
 
-
+    amrex::Gpu::LaunchSafeGuard lsg(true);
 
 #ifdef _OPENMP
 #pragma omp parallel if (Gpu::notInLaunchRegion())
@@ -2501,7 +2501,7 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
     Real a        = get_comoving_a(cur_time);
 
     amrex::Gpu::synchronize();
-
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     FArrayBox test, test_d;
 
 #ifdef _OPENMP
@@ -2624,7 +2624,7 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
 {
     BL_PROFILE("Nyx::compute_rho_temp()");
 
-
+    amrex::Gpu::LaunchSafeGuard lsg(true);
     {
 
     MultiFab& S_new = get_new_data(State_Type);
@@ -2742,7 +2742,7 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
                             Real& igm_mass_frac,  Real& igm_vol_frac)
 {
     BL_PROFILE("Nyx::compute_gas_fractions()");
-
+    amrex::Gpu::LaunchSafeGuard lsg(true);
 
     MultiFab& S_new = get_new_data(State_Type);
     MultiFab& D_new = get_new_data(DiagEOS_Type);

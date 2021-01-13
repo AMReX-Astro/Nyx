@@ -16,7 +16,7 @@ Nyx::sdc_reactions (MultiFab& S_old, MultiFab& S_new, MultiFab& D_new,
     reset_internal_energy(S_new,D_new,reset_e_src);
     compute_new_temp     (S_new,D_new);
     
-
+    Gpu::LaunchSafeGuard lsg(true);
     const Real strt_time = ParallelDescriptor::second();
 
     const Real z = 1.0/a_old - 1.0;
