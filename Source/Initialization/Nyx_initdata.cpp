@@ -45,8 +45,9 @@ void Nyx::set_small_values_given_average (amrex::Real average_dens, amrex::Real 
     else
         lsmall_temp = small_temp_inout;
 
-    // HACK HACK HACK -- FIX ME!!!!!
     ParmParse pp_nyx("nyx");
+
+    // We approximate Ne = 1.0 for consistency with iterate_ne in EOS
     const amrex::Real typical_Ne = 1.e0;
     Real lsmall_pres=0.0;
     Real dummy_small_pres=0.0;

@@ -188,7 +188,7 @@ Nyx::construct_hydro_source(
             current->FineAdd(hydro_fluxes[i], i, 0, 0, NUM_STATE, 1);
           }
         }
-        if (fine) { // HACK
+        if (fine) { // Note we use ADD with CrseInit rather than CrseAdd since fine is not a YAFluxRegister
           for (int i = 0; i < AMREX_SPACEDIM ; i++) {
             fine->CrseInit(hydro_fluxes[i],i,0,0,NUM_STATE,-1.,amrex::FluxRegister::ADD);
           }
