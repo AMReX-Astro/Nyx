@@ -2006,6 +2006,19 @@ Nyx::post_regrid (int lbase,
             int ngrow_for_solve = 1;
             int use_previous_phi_as_guess = 1;
         gravity->multilevel_solve_for_new_phi(level, new_finest, ngrow_for_solve, use_previous_phi_as_guess);
+
+#ifndef AGN
+            if (do_dm_particles)
+#endif
+            {
+                for (int k = 0; k <= parent->finestLevel(); k++)
+                {
+                    const auto& ba = get_level(k).boxArray();
+                    const auto& dm = get_level(k).DistributionMap();
+                    MultiFab grav_vec_new(ba, dm, AMREX_SPACEDIM, 0);
+                    gravity->get_new_grav_vector(k, grav_vec_new, cur_time);
+                }
+            }
         }
     }
     delete fine_mask;

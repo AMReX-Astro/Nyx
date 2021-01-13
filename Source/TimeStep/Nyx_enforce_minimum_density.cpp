@@ -134,7 +134,26 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new)
     int iter = 0;
 
     if (S_new.contains_nan())
-       amrex::Abort("NaN in enforce_minimum_density before we start iterations");
+    {
+        for (MFIter mfi(S_new,MFItInfo().UseDefaultStream()); mfi.isValid(); ++mfi)
+        {
+
+            const Box& bx = mfi.growntilebox();
+            for (int i = 0; i < S_new[mfi].nComp(); i++)
+            {
+                IntVect p_nan(D_DECL(-10, -10, -10));
+		//                if (ParallelDescriptor::IOProcessor())
+		//                    std::cout << "enforce_minimum_density: testing component " << i << " for NaNs" << std::endl;
+		bool has_nan=S_new[mfi].contains_nan<RunOn::Device>(bx,Density_comp+i,1,p_nan);
+                if (has_nan)
+                {
+		  std::cout<<"nans in comp "<<i<<" at "<<p_nan<<std::flush<<std::endl;
+                }
+            }
+        }
+        if (S_new.contains_nan(Density_comp, S_new.nComp(), 0))
+            amrex::Abort("NaN in enforce_minimum_density before we start iterations");
+    }
 
     // 10 is an arbitrary limit here -- just to make sure we don't get stuck here somehow
     while (too_low && iter < 10)
