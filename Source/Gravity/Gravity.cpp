@@ -345,7 +345,7 @@ Gravity::gravity_sync (int crse_level, int fine_level, int iteration, int ncycle
 #pragma omp parallel if (!system::regtest_reduction) reduction(+:local_correction)
 #endif
         for (MFIter mfi(crse_rhs,true); mfi.isValid(); ++mfi)
-            local_correction += crse_rhs[mfi].sum<RunOn::Host>(mfi.tilebox(), 0, 1);
+            local_correction += crse_rhs[mfi].sum<RunOn::Device>(mfi.tilebox(), 0, 1);
         ParallelDescriptor::ReduceRealSum(local_correction);
 
         local_correction /= grids[crse_level].numPts();
@@ -388,7 +388,7 @@ Gravity::gravity_sync (int crse_level, int fine_level, int iteration, int ncycle
 #pragma omp parallel if (!system::regtest_reduction) reduction(+:local_correction)
 #endif
        for (MFIter mfi(*delta_phi[0],true); mfi.isValid(); ++mfi) {
-           local_correction += (*delta_phi[0])[mfi].sum<RunOn::Host>(mfi.tilebox(),0,1);
+           local_correction += (*delta_phi[0])[mfi].sum<RunOn::Device>(mfi.tilebox(),0,1);
        }
        ParallelDescriptor::ReduceRealSum(local_correction);
 
@@ -450,10 +450,15 @@ Gravity::get_crse_phi (int       level,
     const Real t_old = LevelData[level-1]->get_state_data(PhiGrav_Type).prevTime();
     const Real t_new = LevelData[level-1]->get_state_data(PhiGrav_Type).curTime();
     const Real alpha = (time - t_old) / (t_new - t_old);
+    const Real omalpha = 1.0 - alpha;
 
     phi_crse.clear();
     phi_crse.define(grids[level-1], dmap[level-1], 1, 1);
 
+#ifdef _OPENMP
+#pragma omp parallel
+#endif
+    {
     // BUT NOTE we don't trust phi's ghost cells.
     FArrayBox phi_crse_temp;
 
@@ -478,7 +483,6 @@ Gravity::get_crse_phi (int       level,
         else
         {
             phi_crse_temp.copy<RunOn::Device>(LevelData[level-1]->get_old_data(PhiGrav_Type)[mfi]);
-            Real omalpha = 1.0 - alpha;
             phi_crse_temp.mult<RunOn::Device>(omalpha);
 
             phi_crse[mfi].copy<RunOn::Device>(LevelData[level-1]->get_new_data(PhiGrav_Type)[mfi],gtbx);
@@ -486,7 +490,7 @@ Gravity::get_crse_phi (int       level,
             phi_crse[mfi].plus<RunOn::Device>(phi_crse_temp);
         }
     }
-
+    }
     const Geometry& geom = parent->Geom(level-1);
     phi_crse.FillBoundary(geom.periodicity());
 }
@@ -524,13 +528,14 @@ Gravity::get_crse_grad_phi (int               level,
             {
                 const Box& tbx = mfi.tilebox();
                 grad_phi_crse_temp.resize(tbx,1);
+                Elixir grad_phi_crse_tmp_eli = grad_phi_crse_temp.elixir();
 
-                grad_phi_crse_temp.copy<RunOn::Host>((*grad_phi_prev[level-1][i])[mfi]);
-                grad_phi_crse_temp.mult<RunOn::Host>(omalpha);
+                grad_phi_crse_temp.copy<RunOn::Device>((*grad_phi_prev[level-1][i])[mfi]);
+                grad_phi_crse_temp.mult<RunOn::Device>(omalpha);
 
-                (*grad_phi_crse[i])[mfi].copy<RunOn::Host>((*grad_phi_curr[level-1][i])[mfi],tbx);
-                (*grad_phi_crse[i])[mfi].mult<RunOn::Host>(alpha,tbx);
-                (*grad_phi_crse[i])[mfi].plus<RunOn::Host>(grad_phi_crse_temp);
+                (*grad_phi_crse[i])[mfi].copy<RunOn::Device>((*grad_phi_curr[level-1][i])[mfi],tbx);
+                (*grad_phi_crse[i])[mfi].mult<RunOn::Device>(alpha,tbx);
+                (*grad_phi_crse[i])[mfi].plus<RunOn::Device>(grad_phi_crse_temp);
             }
         }
     }
