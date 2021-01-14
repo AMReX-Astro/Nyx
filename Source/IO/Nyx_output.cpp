@@ -88,7 +88,6 @@ Nyx::setPlotVariables ()
 void
 Nyx::writePlotFilePre (const std::string& /*dir*/, ostream& /*os*/)
 {
-    amrex::Gpu::LaunchSafeGuard lsg(true);
     if(write_hdf5 == 1 && (parent->maxLevel() > 0))
         amrex::Error("Calling single-level hdf5 interface for multilevel code (max_level > 0)");
     if(write_skip_prepost == 1)
@@ -122,7 +121,6 @@ Nyx::writePlotFile (const std::string& dir,
                     VisMF::How         how)
 {
 
-    amrex::Gpu::LaunchSafeGuard lsg(true);
 #ifdef AMREX_USE_HDF5
     if(write_hdf5==1 && parent->finestLevel() == 0)
     {
@@ -272,7 +270,6 @@ void
 Nyx::writePlotFilePost (const std::string& dir, ostream& /*os*/)
 {
 
-  amrex::Gpu::LaunchSafeGuard lsg(true);
 #ifdef NO_HYDRO
     Real cur_time = state[PhiGrav_Type].curTime();
 #else
@@ -642,7 +639,6 @@ void
 Nyx::particle_check_point (const std::string& dir)
 {
   BL_PROFILE("Nyx::particle_check_point");
-  amrex::Gpu::LaunchSafeGuard lsg(true);
 
   if (level == 0)
     {

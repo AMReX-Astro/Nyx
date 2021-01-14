@@ -773,7 +773,6 @@ DarkMatterParticleContainer::InitCosmo(
 void
 DarkMatterParticleContainer::AssignDensityAndVels (Vector<std::unique_ptr<MultiFab> >& mf, int lev_min) const
 {
-     amrex::Gpu::LaunchSafeGuard lsg(true);
      AssignDensity(mf, lev_min, AMREX_SPACEDIM+1);
 }
 
