@@ -68,11 +68,6 @@ Nyx::strang_hydro (Real time,
     //assume user-provided source is not CUDA
     if (add_ext_src)
       {
-        //      ext_src_old.reset(new MultiFab(grids, dmap, NUM_STATE, NUM_GROW));
-#ifndef GPU_COMPATIBLE_PROBLEM
-        amrex::Gpu::Device::streamSynchronize();
-        Gpu::LaunchSafeGuard lsg(false);
-#endif
         get_old_source(prev_time, dt, ext_src_old);
       }
 
@@ -184,15 +179,7 @@ Nyx::strang_hydro (Real time,
 
     if (add_ext_src)
     {
-#ifndef GPU_COMPATIBLE_PROBLEM
-      {
-        amrex::Gpu::Device::streamSynchronize();
-        Gpu::LaunchSafeGuard lsg(false);
         get_old_source(prev_time, dt, ext_src_old);
-      }
-#else
-        get_old_source(prev_time, dt, ext_src_old);
-#endif
 
         // Must compute new temperature in case it is needed in the source term evaluation
         compute_new_temp(S_new,D_new);
@@ -201,15 +188,7 @@ Nyx::strang_hydro (Real time,
         MultiFab ext_src_new(grids, dmap, NUM_STATE, 0);
         ext_src_new.setVal(0);
 
-#ifndef GPU_COMPATIBLE_PROBLEM
-      {
-        amrex::Gpu::Device::streamSynchronize();
-        Gpu::LaunchSafeGuard lsg(false);
         get_new_source(prev_time, cur_time, dt, ext_src_new);
-      }
-#else
-        get_new_source(prev_time, cur_time, dt, ext_src_new);
-#endif
 
         time_center_source_terms(S_new, ext_src_old, ext_src_new, dt);
         ext_src_old.clear();
@@ -263,7 +242,6 @@ Nyx::strang_hydro_ghost_state (Real time,
     BL_PROFILE("Nyx::strang_hydro_ghost_state()");
 
     BL_ASSERT(NUM_GROW == 4);
-    amrex::Gpu::setLaunchRegion(true);
     const Real prev_time    = state[State_Type].prevTime();
     const Real cur_time     = state[State_Type].curTime();
     
@@ -285,9 +263,6 @@ Nyx::strang_hydro_ghost_state (Real time,
     }
 
     amrex::Gpu::Device::streamSynchronize();
-    amrex::Gpu::setLaunchRegion(false);
-
-    amrex::Gpu::setLaunchRegion(true);
 #endif
     
     // It's possible for interpolation to create very small negative values for
@@ -305,17 +280,14 @@ Nyx::strang_hydro_ghost_state (Real time,
       {
         //      ext_src_old.reset(new MultiFab(grids, dmap, NUM_STATE, NUM_GROW));
         amrex::Gpu::Device::streamSynchronize();
-        amrex::Gpu::setLaunchRegion(false);
         get_old_source(prev_time, dt, ext_src_old);
         amrex::Gpu::Device::streamSynchronize();
-        amrex::Gpu::setLaunchRegion(true);
       }
 
     // Define the gravity vector 
     MultiFab grav_vector(grids, dmap, AMREX_SPACEDIM, NUM_GROW);
 
     //Not sure if amrex::average_face_to_cellcenter, looks like it launches
-    //    amrex::Gpu::setLaunchRegion(false);
     if (do_grav)
     {
        gravity->get_old_grav_vector(level, grav_vector, time);
@@ -369,7 +341,6 @@ Nyx::strang_hydro_ghost_state (Real time,
 
 #ifdef AMREX_DEBUG
     amrex::Gpu::Device::streamSynchronize();
-    amrex::Gpu::setLaunchRegion(false);
     /*    if (S_new.contains_nan(Density, S_new.nComp(), 0))
       {
     for (MFIter mfi(S_new,TilingIfNotGPU()); mfi.isValid(); ++mfi)
@@ -390,7 +361,6 @@ Nyx::strang_hydro_ghost_state (Real time,
         amrex::Abort("S_new has NaNs before the second strang call");
     }
     }*/
-    amrex::Gpu::setLaunchRegion(true);
 #endif
 
     grav_vector.clear();
@@ -398,13 +368,10 @@ Nyx::strang_hydro_ghost_state (Real time,
     if (add_ext_src)
     {
       amrex::Gpu::Device::streamSynchronize();
-        amrex::Gpu::setLaunchRegion(false);
         get_old_source(prev_time, dt, ext_src_old);
-        amrex::Gpu::setLaunchRegion(true);
         // Must compute new temperature in case it is needed in the source term evaluation
         compute_new_temp(S_new,D_new);
         amrex::Gpu::Device::streamSynchronize();
-        amrex::Gpu::setLaunchRegion(false);
         // Compute source at new time (no ghost cells needed)
         MultiFab ext_src_new(grids, dmap, NUM_STATE, 0);
 
@@ -412,13 +379,11 @@ Nyx::strang_hydro_ghost_state (Real time,
 
         time_center_source_terms(S_new, ext_src_old, ext_src_new, dt);
         ext_src_old.clear();
-        amrex::Gpu::setLaunchRegion(true);
         compute_new_temp(S_new,D_new);
     } // end if (add_ext_src)
 
 
     amrex::Gpu::Device::streamSynchronize();
-    amrex::Gpu::setLaunchRegion(false);
 #ifdef AMREX_DEBUG
     /*    if (S_new.contains_nan(Density, S_new.nComp(), 0))
       {
@@ -435,7 +400,6 @@ Nyx::strang_hydro_ghost_state (Real time,
         }
         amrex::Abort("S_new has NaNs before the second strang call");
         }*/
-    amrex::Gpu::setLaunchRegion(true);
 #endif
 
 #ifdef HEATCOOL
@@ -448,15 +412,12 @@ Nyx::strang_hydro_ghost_state (Real time,
 #endif
 
     amrex::Gpu::Device::streamSynchronize();
-    amrex::Gpu::setLaunchRegion(false);
 #ifdef AMREX_DEBUG
     /*    if (S_new.contains_nan(Density, S_new.nComp(), 0))
           amrex::Abort("S_new has NaNs after the second strang call");*/
-    amrex::Gpu::setLaunchRegion(true);
 #endif
 
     amrex::Gpu::Device::streamSynchronize();
-    amrex::Gpu::setLaunchRegion(false);
 
 }
 #endif
