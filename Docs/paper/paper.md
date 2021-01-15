@@ -46,22 +46,30 @@ based on spectral deferred corrections (SDC), a method
 that aims to prevent the hydro and stiff source terms from becoming decoupled.  
 The simplified SDC method uses the CTU PPM hydro together with an
 iterative scheme to fully couple the source terms and hydro, still to
-second order [@simple_sdc].  
+second order [@simple_sdc].
+
+The evolution of baryonic gas coupled with an N-body treatment of the dark
+matter in an expanding universe. The mesh-based hydrodynamical baryonic gas
+evolution is coupled through gravity to the particle-based representation of
+dark matter. The dark matter particles are moved with a move-kick-drift algorithm
+[@movekickdrift]. The Poisson equation for self-gravity of the baryonic gas and dark
+matter is solved using geometric multigrid method. Nyx simulations can optionally
+model neutrino particle effects and active galactic nuclei feedback.
 
 Nyx is built on the AMReX [@AMReX] adaptive mesh refinement (AMR)
-library and is largely written in C++.
+library and is written in C++.
 AMR levels are advanced at their own timestep (subcycling)
 and jumps by factors of 2 and 4 are supported between levels.  We use
 MPI to distribute AMR grids across nodes and use logical tiling with
 OpenMP to divide a grid across threads for multi-core CPU machines
 (exposing coarse-grained parallelism) or CUDA/HIP/DPC++ to spread the work across
 GPU threads on GPU-based machines (fine-grained parallelism).  All of
-the core physics can run on GPUs and has been shown to scale well.
+the core physics can run on GPUs and have been shown to scale well.
 For performance portability, we use the same source code
 for both CPUs and GPUs, and implement our parallel loops in an abstraction
 layer provided by AMReX. An abstract parallel for loop accepts as arguments
 a range of indices and the body of the loop to execute for a given index,
-and the AMReX backend dispatches the work appropriately (e.g., one zone per
+and the AMReX backend dispatches the work appropriately (e.g., one cell per
 GPU thread). This strategy is similar to the way the Kokkos [@Kokkos] and
 RAJA [@RAJA] abstraction models provide performance portability in C++.
 
