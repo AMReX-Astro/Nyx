@@ -3,12 +3,11 @@ set -e # Exit with nonzero exit code if anything fails
 
 # Doxygen
 echo "Build the Doxygen documentation"
-cd Docs/Doxygen
-doxygen doxygen.conf &> doxygen.out
+cd Docs/sphinx_documentation
+doxygen Doxyfile
 cd ../..
 
 # sphinx
-cd Docs/sphinx_documentation
 
 echo "Build the Sphinx documentation for Nyx."
 make PYTHON="python3" latexpdf
