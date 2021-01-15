@@ -23,8 +23,8 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@3.7.1
         with:
           ACCESS_TOKEN: ${{ secrets.DEPLOY_DOCS }}
-          REPOSITORY_NAME: AMReX-Astro/AMReX-Astro.github.io
-          BRANCH: main # The branch the action should deploy to.
+          REPOSITORY_NAME: AMReX-Astro/Nyx
+          BRANCH: gh-pages # The branch the action should deploy to.
           FOLDER: build # The folder the action should deploy.
           TARGET_FOLDER: Nyx # The folder the action should deploy to.
           CLEAN: false # Do not remove existing files from the deploy target.
