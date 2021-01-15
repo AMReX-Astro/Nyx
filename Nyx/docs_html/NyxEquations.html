@@ -1,0 +1,341 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Hydrodynamic Equations in Comoving Coordinates &mdash; Nyx  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"TeX": {"Macros": {"kth": "{{k_\\mathrm{th}}}", "gcc": "{\\mathrm{g~cm^{-3}}}", "cms": "{\\mathrm{cm~s^{-1}}}", "presunit": "{\\mathrm{dyn~cm^{-2}}}", "accelunit": "{\\mathrm{cm~s^{-2}}}", "ergg": "{\\mathrm{erg~g^{-1}}}", "Ab": "{{\\bf A}}", "eb": "{{\\bf e}}", "Fb": "{{\\bf F}}", "gb": "{{\\bf g}}", "Hb": "{{\\bf H}}", "ib": "{{\\bf i}}", "Ib": "{{\\bf I}}", "Kb": "{{\\bf K}}", "lb": "{{\\bf l}}", "Lb": "{{\\bf L}}", "nb": "{{\\bf n}}", "Pb": "{{\\bf P}}", "Qb": "{{\\bf Q}}", "rb": "{{\\bf r}}", "Rb": "{{\\bf R}}", "Sb": "{{\\bf S}}", "ub": "{{\\bf u}}", "Ub": "{{\\bf U}}", "xb": "{{\\bf x}}", "dt": "{\\Delta t}", "omegadot": "{\\dot\\omega}", "inp": "{{\\rm in}}", "outp": "{{\\rm out}}", "sync": "{{\\rm sync}}", "half": "{\\frac{1}{2}}", "myhalf": "{\\half}", "nph": "{{n+\\myhalf}}", "kpp": "{\\ensuremath{\\kappa_{\\mathrm{P}}}}", "kpr": "{\\ensuremath{\\kappa_{\\mathrm{R}}}}", "kpf": "{\\ensuremath{\\kappa_{\\mathrm{F}}}}", "vb": "{\\boldsymbol{v}}", "vbt": "{\\widetilde{\\vb}}", "rbt": "{\\widetilde{\\rb}}", "ob": "{\\boldsymbol{\\omega}}", "nablab": "{\\boldsymbol{\\nabla}}"}}, "tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Radiative Heating and Cooling" href="NyxHeatCool.html" />
+    <link rel="prev" title="Load Balancing" href="LoadBalancing.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Nyx
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Nyx basics</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="NyxPreface.html">Preface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxCitation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxGettingStarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxUnits.html">Units and Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxInputs.html">Inputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Refinement.html">Refinement Criteria</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ManagingGridHierarchy_Chapter.html">Gridding and Load Balancing</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Hydrodynamic Equations in Comoving Coordinates</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#conservative-form">Conservative Form</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="NyxHeatCool.html">Radiative Heating and Cooling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxGravity.html">Gravity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxForcing.html">Stochastic Forcing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Particles.html">Dark matter particles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AGN.html">The AGN Model in Nyx</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AGN.html#the-reeber-package">The Reeber Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NightlyTests.html">Nightly Regression Tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Visualization.html">Visualization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PostProcessing.html">PostProcessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Debugging.html">Debugging</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Nyx</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Hydrodynamic Equations in Comoving Coordinates</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/NyxEquations.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="hydrodynamic-equations-in-comoving-coordinates">
+<h1>Hydrodynamic Equations in Comoving Coordinates<a class="headerlink" href="#hydrodynamic-equations-in-comoving-coordinates" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="conservative-form">
+<h2>Conservative Form<a class="headerlink" href="#conservative-form" title="Permalink to this headline">¶</a></h2>
+<p>We solve the equations of gas dynamics in a coordinate system that is comoving
+with the expanding universe, with expansion factor, <span class="math notranslate nohighlight">\(a,\)</span> related to the redshift, <span class="math notranslate nohighlight">\(z\)</span>, by <span class="math notranslate nohighlight">\(a = 1 / (1 + z).\)</span>
+The continuity equation is written,</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\label{eq:dens}
+\frac{\partial \rho_b}{\partial t} = - \frac{1}{a} \nabla \cdot (\rho_b {\bf U})  , \\\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\rho_b\)</span> is the comoving baryonic density, related to the proper density by <span class="math notranslate nohighlight">\(\rho_b = a^3 \rho_{proper},\)</span>
+and <span class="math notranslate nohighlight">\({\bf U}\)</span> is the proper peculiar baryonic velocity.</p>
+<p>The momentum evolution equation can be expressed as</p>
+<div class="math notranslate nohighlight">
+\[\begin{aligned}
+\frac{\partial (\rho_b {\bf U})}{\partial t} &amp;=&amp;  \frac{1}{a} \left(
+- \nabla \cdot (\rho_b {\bf U} {\bf U})
+- \nabla p
++ \rho_b {\bf g}
++ {\bf S}_{\rho {\bf U}}
+- \dot{a} \rho_b {\bf U} \right)  , \end{aligned}\]</div>
+<p>or equivalently,</p>
+<div class="math notranslate nohighlight">
+\[\begin{aligned}
+\label{eq:momt}
+\frac{\partial (a \rho_b {\bf U})}{\partial t} &amp;=&amp;
+-             \nabla \cdot (\rho_b {\bf U} {\bf U})
+-             \nabla p
++             \rho_b {\bf g}
++             {\bf S}_{\rho {\bf U}}  , \end{aligned}\]</div>
+<p>where the pressure, <span class="math notranslate nohighlight">\(p\)</span>, that appears in the
+evolution equations is related to the proper pressure, <span class="math notranslate nohighlight">\(p_{proper},\)</span> by <span class="math notranslate nohighlight">\(p = a^3 p_{proper}.\)</span>
+Here <span class="math notranslate nohighlight">\({\bf g} = - \nabla \phi\)</span> is the gravitational acceleration vector, and
+<span class="math notranslate nohighlight">\({\bf S}_{\rho {\bf U}}\)</span> represents any external forcing terms.</p>
+<p>The energy equation can be written,</p>
+<div class="math notranslate nohighlight">
+\[\begin{aligned}
+\frac{\partial (\rho_b E)}{\partial t} &amp;=&amp; \frac{1}{a} \left[
+- \nabla \cdot (\rho_b {\bf U} E + p {\bf U})
++ ( \rho_b {\bf U} \cdot {\bf g} +  S_{\rho E} )
+- \dot{a} ( 3 (\gamma - 1) \rho_b e + \rho_b ( {\bf U} \cdot {\bf U}) ) \right]  . \end{aligned}\]</div>
+<p>or equivalently,</p>
+<div class="math notranslate nohighlight">
+\[\begin{aligned}
+\label{eq:energy}
+\frac{\partial (a^2 \rho_b E)}{\partial t} &amp;=&amp; a \left[
+- \nabla \cdot (\rho_b {\bf U} E + p {\bf U})
++  \rho_b {\bf U} \cdot {\bf g}
++  S_{\rho E}
++  \dot{a} ( \; ( 2 - 3 (\gamma - 1) ) \; \rho_b e ) \right]  . \end{aligned}\]</div>
+<p>Here <span class="math notranslate nohighlight">\(E = e + {\bf U} \cdot {\bf U} / 2\)</span> is the total energy per unit mass,
+where <span class="math notranslate nohighlight">\(e\)</span> is the specific internal energy.
+<span class="math notranslate nohighlight">\(S_{\rho E} = S_{\rho e} + {\bf U} \cdot {\bf S}_{\rho {\bf U}}\)</span>
+where <span class="math notranslate nohighlight">\(S_{\rho e} = \Lambda^H - \Lambda^C\)</span> represents the heating and cooling terms, respectively.
+We can write the evolution equation for internal energy as</p>
+<div class="math notranslate nohighlight">
+\[\begin{aligned}
+\frac{\partial (\rho_b e)}{\partial t} &amp;=&amp; \frac{1}{a} \left[
+- \nabla \cdot (\rho_b {\bf U} e)
+- p \nabla \cdot {\bf U}
+- \dot{a} ( 3 (\gamma - 1) \rho_b e )
++ S_{\rho e}  \right]  . \end{aligned}\]</div>
+<p>or equivalently,</p>
+<div class="math notranslate nohighlight">
+\[\begin{aligned}
+\frac{\partial (a^2 \rho_b e)}{\partial t} &amp;=&amp;  a \left[
+- \nabla \cdot (\rho_b {\bf U} e)
+- p \nabla \cdot {\bf U}
++ S_{\rho e}
++ \dot{a} ( \; ( 2 - 3 (\gamma - 1) ) \; \rho_b e ) \right]  . \end{aligned}\]</div>
+<p>Note that for a gamma-law gas with <span class="math notranslate nohighlight">\(\gamma = 5/3,\)</span> we can write</p>
+<div class="math notranslate nohighlight">
+\[\begin{aligned}
+\frac{\partial (a^2 \rho_b E)}{\partial t} &amp;=&amp;  a \left[
+ -\nabla \cdot (\rho_b {\bf U} E + p {\bf U})
++  \rho_b {\bf U} \cdot {\bf g}
++  S_{\rho e}  \right]   . \end{aligned}\]</div>
+<p>and</p>
+<div class="math notranslate nohighlight">
+\[\begin{aligned}
+\frac{\partial (a^2 \rho_b e)}{\partial t} &amp;=&amp; a \left[
+- \nabla \cdot (\rho_b {\bf U} e)
+-  p \nabla \cdot {\bf U}
++  S_{\rho e}  \right]   . \end{aligned}\]</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="NyxHeatCool.html" class="btn btn-neutral float-right" title="Radiative Heating and Cooling" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="LoadBalancing.html" class="btn btn-neutral float-left" title="Load Balancing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2018, Nyx development team.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

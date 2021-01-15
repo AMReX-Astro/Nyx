@@ -1,0 +1,708 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Nightly Regression Tests &mdash; Nyx  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"TeX": {"Macros": {"kth": "{{k_\\mathrm{th}}}", "gcc": "{\\mathrm{g~cm^{-3}}}", "cms": "{\\mathrm{cm~s^{-1}}}", "presunit": "{\\mathrm{dyn~cm^{-2}}}", "accelunit": "{\\mathrm{cm~s^{-2}}}", "ergg": "{\\mathrm{erg~g^{-1}}}", "Ab": "{{\\bf A}}", "eb": "{{\\bf e}}", "Fb": "{{\\bf F}}", "gb": "{{\\bf g}}", "Hb": "{{\\bf H}}", "ib": "{{\\bf i}}", "Ib": "{{\\bf I}}", "Kb": "{{\\bf K}}", "lb": "{{\\bf l}}", "Lb": "{{\\bf L}}", "nb": "{{\\bf n}}", "Pb": "{{\\bf P}}", "Qb": "{{\\bf Q}}", "rb": "{{\\bf r}}", "Rb": "{{\\bf R}}", "Sb": "{{\\bf S}}", "ub": "{{\\bf u}}", "Ub": "{{\\bf U}}", "xb": "{{\\bf x}}", "dt": "{\\Delta t}", "omegadot": "{\\dot\\omega}", "inp": "{{\\rm in}}", "outp": "{{\\rm out}}", "sync": "{{\\rm sync}}", "half": "{\\frac{1}{2}}", "myhalf": "{\\half}", "nph": "{{n+\\myhalf}}", "kpp": "{\\ensuremath{\\kappa_{\\mathrm{P}}}}", "kpr": "{\\ensuremath{\\kappa_{\\mathrm{R}}}}", "kpf": "{\\ensuremath{\\kappa_{\\mathrm{F}}}}", "vb": "{\\boldsymbol{v}}", "vbt": "{\\widetilde{\\vb}}", "rbt": "{\\widetilde{\\rb}}", "ob": "{\\boldsymbol{\\omega}}", "nablab": "{\\boldsymbol{\\nabla}}"}}, "tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Visualization" href="Visualization.html" />
+    <link rel="prev" title="The AGN Model in Nyx" href="AGN.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Nyx
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Nyx basics</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="NyxPreface.html">Preface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxCitation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxGettingStarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxUnits.html">Units and Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxInputs.html">Inputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Refinement.html">Refinement Criteria</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ManagingGridHierarchy_Chapter.html">Gridding and Load Balancing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxEquations.html">Hydrodynamic Equations in Comoving Coordinates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxHeatCool.html">Radiative Heating and Cooling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxGravity.html">Gravity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxForcing.html">Stochastic Forcing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Particles.html">Dark matter particles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AGN.html">The AGN Model in Nyx</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AGN.html#the-reeber-package">The Reeber Package</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Nightly Regression Tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Visualization.html">Visualization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PostProcessing.html">PostProcessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Debugging.html">Debugging</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Nyx</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Nightly Regression Tests</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/NightlyTests.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="nightly-regression-tests">
+<span id="chap-nightlytesting"></span><h1>Nightly Regression Tests<a class="headerlink" href="#nightly-regression-tests" title="Permalink to this headline">¶</a></h1>
+<p>The following regression tests are run nightly with Nyx.   The plotfiles generated in each night’s test
+are compared with the benchmark plotfiles using the AMReX <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">fcompare</span></span></code> utility to compare the mesh data
+and <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">particle_compare</span></span></code> to compare the particle data.</p>
+<p>The results of these tests can be found at <a class="reference external" href="https://ccse.lbl.gov/pub/RegressionTesting/Nyx">https://ccse.lbl.gov/pub/RegressionTesting/Nyx</a>.
+These tests are also run on an NVIDIA GPU and those results can be found at <a class="reference external" href="https://ccse.lbl.gov/pub/GpuRegressionTesting/Nyx">https://ccse.lbl.gov/pub/GpuRegressionTesting/Nyx</a>.</p>
+<p>We have a number of compile-time options – this chart summarizes which regression tests
+test which compile-time options.  (Note that the USE_GRAV and AMREX_USE_PARTICLES macros
+which are used in the code source are both set to TRUE in the build system.)</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="41%" />
+<col width="15%" />
+<col width="21%" />
+<col width="23%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Test</th>
+<th class="head">NO_HYDRO</th>
+<th class="head">USE_HEATCOOL</th>
+<th class="head">USE_FORCING</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>AMR-density</td>
+<td>FALSE</td>
+<td>TRUE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-odd"><td>DR_restart</td>
+<td>FALSE</td>
+<td>FALSE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-even"><td>DoubleRarefaction</td>
+<td>FALSE</td>
+<td>FALSE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-odd"><td>DrivenTurbulence</td>
+<td>FALSE</td>
+<td>FALSE</td>
+<td>TRUE</td>
+</tr>
+<tr class="row-even"><td><dl class="first last docutils">
+<dt>DrivenTurbulence-OMP</dt>
+<dd>(CPU only)</dd>
+</dl>
+</td>
+<td>FALSE</td>
+<td>FALSE</td>
+<td>TRUE</td>
+</tr>
+<tr class="row-odd"><td>LyA</td>
+<td>FALSE</td>
+<td>TRUE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-even"><td>LyA-adiabatic</td>
+<td>FALSE</td>
+<td>FALSE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-odd"><td><dl class="first last docutils">
+<dt>LyA-OMP</dt>
+<dd>(CPU only)</dd>
+</dl>
+</td>
+<td>FALSE</td>
+<td>TRUE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-even"><td><dl class="first last docutils">
+<dt>LyA_Neutrinos</dt>
+<dd>(CPU only)</dd>
+</dl>
+</td>
+<td>FALSE</td>
+<td>TRUE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-odd"><td>MiniSB</td>
+<td>FALSE</td>
+<td>FALSE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-even"><td>MiniSB-ppm</td>
+<td>FALSE</td>
+<td>FALSE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-odd"><td>MiniSB-ref</td>
+<td>FALSE</td>
+<td>FALSE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-even"><td>MiniSB-ref-ppm</td>
+<td>FALSE</td>
+<td>FALSE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-odd"><td>Part-2line</td>
+<td>FALSE</td>
+<td>FALSE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-even"><td>Part-2line-nbody</td>
+<td>FALSE</td>
+<td>FALSE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-odd"><td>Part-2line-nomesh</td>
+<td>TRUE</td>
+<td>FALSE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-even"><td>Part-2line_restart</td>
+<td>FALSE</td>
+<td>FALSE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-odd"><td>Part-2line_restart-nbody</td>
+<td>FALSE</td>
+<td>FALSE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-even"><td>Part-2line_restart-nomesh</td>
+<td>TRUE</td>
+<td>FALSE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-odd"><td>Part-mass.nosub</td>
+<td>FALSE</td>
+<td>FALSE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-even"><td>Part-mass.nosub-nbody</td>
+<td>FALSE</td>
+<td>FALSE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-odd"><td>Part-mass.nosub-nomesh</td>
+<td>TRUE</td>
+<td>FALSE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-even"><td>Part-mass.sub</td>
+<td>FALSE</td>
+<td>FALSE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-odd"><td>Part-mass.sub-nbody</td>
+<td>FALSE</td>
+<td>FALSE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-even"><td>Part-mass.sub-nbody</td>
+<td>FALSE</td>
+<td>FALSE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-odd"><td>Part-mass.sub-nomesh</td>
+<td>TRUE</td>
+<td>FALSE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-even"><td>Sedov</td>
+<td>FALSE</td>
+<td>FALSE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-odd"><td>Sedov-ppm</td>
+<td>FALSE</td>
+<td>FALSE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-even"><td>Sod</td>
+<td>FALSE</td>
+<td>FALSE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-odd"><td>Sod-ppm</td>
+<td>FALSE</td>
+<td>FALSE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-even"><td>StrongShockTube</td>
+<td>FALSE</td>
+<td>FALSE</td>
+<td>FALSE</td>
+</tr>
+<tr class="row-odd"><td>StrongShockTube-ppm</td>
+<td>FALSE</td>
+<td>FALSE</td>
+<td>FALSE</td>
+</tr>
+</tbody>
+</table>
+<p>Below nx,ny,nz are the number of cells in each coordinate direction at the coarsest level;
+Npa = number of particles, Np = number of MPI ranks / number of OMP threads per rank.
+(If just a single number then pure MPI.)</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="36%" />
+<col width="13%" />
+<col width="5%" />
+<col width="11%" />
+<col width="7%" />
+<col width="29%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Test</th>
+<th class="head">nx ny nz</th>
+<th class="head">Nl</th>
+<th class="head">Npa</th>
+<th class="head">Np</th>
+<th class="head">What does this test?</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>AMR-density</td>
+<td>64 64 64</td>
+<td>3</td>
+<td>262144</td>
+<td>4</td>
+<td>Start from chk00300</td>
+</tr>
+<tr class="row-odd"><td>DR_restart</td>
+<td>32  4  4</td>
+<td>3</td>
+<td>0</td>
+<td>2/2</td>
+<td>Hydro only - restart</td>
+</tr>
+<tr class="row-even"><td>DoubleRarefaction</td>
+<td>32  4  4</td>
+<td>3</td>
+<td>0</td>
+<td>2/2</td>
+<td>Hydro only</td>
+</tr>
+<tr class="row-odd"><td>DrivenTurbulence</td>
+<td>32 32 32</td>
+<td>1</td>
+<td>0</td>
+<td>4</td>
+<td>Turbulent forcing</td>
+</tr>
+<tr class="row-even"><td><dl class="first last docutils">
+<dt>DrivenTurbulence-OMP</dt>
+<dd>(CPU only)</dd>
+</dl>
+</td>
+<td>32 32 32</td>
+<td>1</td>
+<td>0</td>
+<td>1/4</td>
+<td>Turbulent forcing
+with OMP</td>
+</tr>
+<tr class="row-odd"><td>LyA</td>
+<td>32 32 32</td>
+<td>1</td>
+<td>32768</td>
+<td>4</td>
+<td>Includes h/c</td>
+</tr>
+<tr class="row-even"><td><dl class="first last docutils">
+<dt>Lya-OMP</dt>
+<dd>(CPU only)</dd>
+</dl>
+</td>
+<td>32 32 32</td>
+<td>1</td>
+<td>32768</td>
+<td>1/4</td>
+<td>LyA with OMP</td>
+</tr>
+<tr class="row-odd"><td>LyA-adiabatic</td>
+<td>32 32 32</td>
+<td>1</td>
+<td>32768</td>
+<td>4</td>
+<td>No h/c</td>
+</tr>
+<tr class="row-even"><td><dl class="first last docutils">
+<dt>LyA_Neutrinos</dt>
+<dd>(CPU only)</dd>
+</dl>
+</td>
+<td>32 32 32</td>
+<td>1</td>
+<td>32768</td>
+<td>1</td>
+<td>LyA with OMP</td>
+</tr>
+<tr class="row-odd"><td>MiniSB</td>
+<td>32 32 32</td>
+<td>1</td>
+<td>2500</td>
+<td>2</td>
+<td>Small version of SB</td>
+</tr>
+<tr class="row-even"><td>MiniSB-ppm</td>
+<td>32 32 32</td>
+<td>1</td>
+<td>2500</td>
+<td>2</td>
+<td>Small version of SB</td>
+</tr>
+<tr class="row-odd"><td>MiniSB-ref</td>
+<td>32 32 32</td>
+<td>2</td>
+<td>2500</td>
+<td>2</td>
+<td>Small version of SB
+with refinement</td>
+</tr>
+<tr class="row-even"><td>MiniSB-ref-ppm</td>
+<td>32 32 32</td>
+<td>2</td>
+<td>2500</td>
+<td>2</td>
+<td>Small version of SB
+with refinement</td>
+</tr>
+<tr class="row-odd"><td>Part-2line</td>
+<td>16 16 16</td>
+<td>3</td>
+<td>16</td>
+<td>2/2</td>
+<td>Particle-only</td>
+</tr>
+<tr class="row-even"><td>Part-2line-nbody</td>
+<td>16 16 16</td>
+<td>3</td>
+<td>16</td>
+<td>2/2</td>
+<td>Particle-only</td>
+</tr>
+<tr class="row-odd"><td>Part-2line-nomesh</td>
+<td>16 16 16</td>
+<td>3</td>
+<td>16</td>
+<td>2/2</td>
+<td>Particle-only</td>
+</tr>
+<tr class="row-even"><td>Part-2line_restart</td>
+<td>16 16 16</td>
+<td>3</td>
+<td>16</td>
+<td>2/2</td>
+<td>Particle-only</td>
+</tr>
+<tr class="row-odd"><td>Part-2line_restart-nbody</td>
+<td>16 16 16</td>
+<td>3</td>
+<td>16</td>
+<td>2/2</td>
+<td>Particle-only</td>
+</tr>
+<tr class="row-even"><td>Part-2line_restart-nomesh</td>
+<td>16 16 16</td>
+<td>3</td>
+<td>16</td>
+<td>2/2</td>
+<td>Particle-only</td>
+</tr>
+<tr class="row-odd"><td>Part-mass.nosub</td>
+<td>16 16 16</td>
+<td>3</td>
+<td>8</td>
+<td>2/2</td>
+<td>Particle-only</td>
+</tr>
+<tr class="row-even"><td>Part-mass.nosub-nbody</td>
+<td>16 16 16</td>
+<td>3</td>
+<td>8</td>
+<td>2/2</td>
+<td>Particle-only</td>
+</tr>
+<tr class="row-odd"><td>Part-mass.nosub-nomesh</td>
+<td>16 16 16</td>
+<td>3</td>
+<td>8</td>
+<td>2/2</td>
+<td>Particle-only</td>
+</tr>
+<tr class="row-even"><td>Part-mass.sub</td>
+<td>16 16 16</td>
+<td>3</td>
+<td>8</td>
+<td>2/2</td>
+<td>Particle-only</td>
+</tr>
+<tr class="row-odd"><td>Part-mass.sub-nbody</td>
+<td>16 16 16</td>
+<td>3</td>
+<td>8</td>
+<td>2/2</td>
+<td>Particle-only</td>
+</tr>
+<tr class="row-even"><td>Part-mass.sub-nomesh</td>
+<td>16 16 16</td>
+<td>3</td>
+<td>8</td>
+<td>2/2</td>
+<td>Particle-only</td>
+</tr>
+<tr class="row-odd"><td>Sedov</td>
+<td>32 32 32</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>Hydro only (PLM)</td>
+</tr>
+<tr class="row-even"><td>Sedov-ppm</td>
+<td>32 32 32</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>Hydro only (PPM)</td>
+</tr>
+<tr class="row-odd"><td>Sod</td>
+<td>4  32 4</td>
+<td>3</td>
+<td>0</td>
+<td>1</td>
+<td>Hydro only (PLM)</td>
+</tr>
+<tr class="row-even"><td>Sod-ppm</td>
+<td>4  32 4</td>
+<td>3</td>
+<td>0</td>
+<td>1/2</td>
+<td>Hydro only (PPM)</td>
+</tr>
+<tr class="row-odd"><td>StrongShockTube</td>
+<td>32 4  4</td>
+<td>3</td>
+<td>0</td>
+<td>1/2</td>
+<td>Hydro only (PLM)</td>
+</tr>
+<tr class="row-even"><td>StrongShockTube-ppm</td>
+<td>32 4  4</td>
+<td>3</td>
+<td>0</td>
+<td>1</td>
+<td>Hydro only (PPM)</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="Visualization.html" class="btn btn-neutral float-right" title="Visualization" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="AGN.html" class="btn btn-neutral float-left" title="The AGN Model in Nyx" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2018, Nyx development team.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

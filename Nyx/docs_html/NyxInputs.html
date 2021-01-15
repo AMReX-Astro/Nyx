@@ -1,0 +1,1720 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Inputs &mdash; Nyx  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"TeX": {"Macros": {"kth": "{{k_\\mathrm{th}}}", "gcc": "{\\mathrm{g~cm^{-3}}}", "cms": "{\\mathrm{cm~s^{-1}}}", "presunit": "{\\mathrm{dyn~cm^{-2}}}", "accelunit": "{\\mathrm{cm~s^{-2}}}", "ergg": "{\\mathrm{erg~g^{-1}}}", "Ab": "{{\\bf A}}", "eb": "{{\\bf e}}", "Fb": "{{\\bf F}}", "gb": "{{\\bf g}}", "Hb": "{{\\bf H}}", "ib": "{{\\bf i}}", "Ib": "{{\\bf I}}", "Kb": "{{\\bf K}}", "lb": "{{\\bf l}}", "Lb": "{{\\bf L}}", "nb": "{{\\bf n}}", "Pb": "{{\\bf P}}", "Qb": "{{\\bf Q}}", "rb": "{{\\bf r}}", "Rb": "{{\\bf R}}", "Sb": "{{\\bf S}}", "ub": "{{\\bf u}}", "Ub": "{{\\bf U}}", "xb": "{{\\bf x}}", "dt": "{\\Delta t}", "omegadot": "{\\dot\\omega}", "inp": "{{\\rm in}}", "outp": "{{\\rm out}}", "sync": "{{\\rm sync}}", "half": "{\\frac{1}{2}}", "myhalf": "{\\half}", "nph": "{{n+\\myhalf}}", "kpp": "{\\ensuremath{\\kappa_{\\mathrm{P}}}}", "kpr": "{\\ensuremath{\\kappa_{\\mathrm{R}}}}", "kpf": "{\\ensuremath{\\kappa_{\\mathrm{F}}}}", "vb": "{\\boldsymbol{v}}", "vbt": "{\\widetilde{\\vb}}", "rbt": "{\\widetilde{\\rb}}", "ob": "{\\boldsymbol{\\omega}}", "nablab": "{\\boldsymbol{\\nabla}}"}}, "tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Refinement Criteria" href="Refinement.html" />
+    <link rel="prev" title="Units and Conventions" href="NyxUnits.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Nyx
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Nyx basics</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="NyxPreface.html">Preface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxCitation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxGettingStarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxUnits.html">Units and Conventions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Inputs</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#problem-geometry">Problem Geometry</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#list-of-parameters">List of Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#examples-of-usage">Examples of Usage</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#domain-boundary-conditions">Domain Boundary Conditions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#list-of-parameters-1">List of Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#notes">Notes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#examples-of-usage-1">Examples of Usage</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#resolution">Resolution</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#list-of-parameters-2">List of Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#examples-of-usage-2">Examples of Usage</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#regridding">Regridding</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#list-of-parameters-4">List of Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#notes-2">Notes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#examples-of-usage-3">Examples of Usage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#how-grids-are-created">How Grids are Created</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#simulation-time">Simulation Time</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#list-of-parameters-5">List of Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#notes-3">Notes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#examples-of-usage-4">Examples of Usage</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#time-step">Time Step</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#list-of-parameters-6">List of Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#examples-of-usage-5">Examples of Usage</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#subcycling">Subcycling</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#list-of-parameters-7">List of Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#examples-of-usage-6">Examples of Usage</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#restart-capability">Restart Capability</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#list-of-parameters-8">List of Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#notes-4">Notes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#examples-of-usage-7">Examples of Usage</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#controlling-plotfile-generation">Controlling PlotFile Generation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#list-of-parameters-9">List of Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#notes-5">Notes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#examples-of-usage-8">Examples of Usage</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#screen-output">Screen Output</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#list-of-parameters-10">List of Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#examples-of-usage-9">Examples of Usage</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#gravity">Gravity</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#list-of-parameters-11">List of Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#notes-6">Notes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#physics">Physics</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#list-of-parameters-12">List of Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#multigrid-inputs">Multigrid Inputs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Refinement.html">Refinement Criteria</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ManagingGridHierarchy_Chapter.html">Gridding and Load Balancing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxEquations.html">Hydrodynamic Equations in Comoving Coordinates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxHeatCool.html">Radiative Heating and Cooling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxGravity.html">Gravity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxForcing.html">Stochastic Forcing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Particles.html">Dark matter particles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AGN.html">The AGN Model in Nyx</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AGN.html#the-reeber-package">The Reeber Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NightlyTests.html">Nightly Regression Tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Visualization.html">Visualization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PostProcessing.html">PostProcessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Debugging.html">Debugging</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Nyx</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Inputs</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/NyxInputs.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="inputs">
+<h1>Inputs<a class="headerlink" href="#inputs" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+</div>
+<p>The Nyx&nbsp;executable reads run-time information from an “inputs” file which you put on the command line.
+This section describes the inputs which can be specified either in the inputs file or on the command line.
+If a value is specified on the command line, that value will override a value specified in the inputs file.</p>
+<div class="section" id="problem-geometry">
+<h2>Problem Geometry<a class="headerlink" href="#problem-geometry" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="list-of-parameters">
+<h3>List of Parameters<a class="headerlink" href="#list-of-parameters" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="36%" />
+<col width="23%" />
+<col width="23%" />
+<col width="18%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Definition</th>
+<th class="head">Acceptable
+Values</th>
+<th class="head">Default</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><strong>geometry.prob_lo</strong></td>
+<td>physical
+location of low
+corner of the
+domain</td>
+<td>Real</td>
+<td>must be set</td>
+</tr>
+<tr class="row-odd"><td><strong>geometry.prob_hi</strong></td>
+<td>physical
+location of
+high corner of
+the domain</td>
+<td>Real</td>
+<td>must be set</td>
+</tr>
+<tr class="row-even"><td><strong>geometry.coord_sys</strong></td>
+<td>coordinate
+system</td>
+<td>0 = Cartesian,
+1 = r-z, 2 =
+spherical</td>
+<td>must be set</td>
+</tr>
+<tr class="row-odd"><td><strong>geometry.is_periodic</strong></td>
+<td>is the domain
+periodic in
+this direction</td>
+<td>0 if false, 1
+if true</td>
+<td>0 0 0</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="examples-of-usage">
+<h3>Examples of Usage<a class="headerlink" href="#examples-of-usage" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first"><strong>geometry.prob_lo</strong> = 0 0 0
+defines the low corner of the domain at (0,0,0) in physical space.</p>
+</li>
+<li><p class="first"><strong>geometry.prob_hi</strong> = 1.e8 2.e8 2.e8
+defines the high corner of the domain at (1.e8,2.e8,2.e8) in</p>
+<blockquote>
+<div><p>physical space.</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>geometry.coord_sys</strong> = 0
+defines the coordinate system as Cartesian</p>
+</li>
+<li><p class="first"><strong>geometry.is_periodic</strong> = 0 1 0
+says the domain is periodic in the y-direction only.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="domain-boundary-conditions">
+<h2>Domain Boundary Conditions<a class="headerlink" href="#domain-boundary-conditions" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="list-of-parameters-1">
+<span id="id1"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-1" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="19%" />
+<col width="41%" />
+<col width="24%" />
+<col width="16%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Definition</th>
+<th class="head">Acceptable Values</th>
+<th class="head">Default</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><strong>nyx.lo_bc</strong></td>
+<td>boundary type of each low face</td>
+<td>0,1,2,3,4,5</td>
+<td>must be set</td>
+</tr>
+<tr class="row-odd"><td><strong>nyx.hi_bc</strong></td>
+<td>boundary type of each high face</td>
+<td>0,1,2,3,4,5</td>
+<td>must be set</td>
+</tr>
+</tbody>
+</table>
+<p>[Table:BC]</p>
+</div>
+<div class="section" id="notes">
+<h3>Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h3>
+<p>Boundary types are:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="59%" />
+<col width="41%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>0 – Interior / Periodic</td>
+<td>3 – Symmetry</td>
+</tr>
+<tr class="row-even"><td>1 – Inflow</td>
+<td>4 – Slip Wall</td>
+</tr>
+<tr class="row-odd"><td>2 – Outflow</td>
+<td>5 – No Slip Wall</td>
+</tr>
+</tbody>
+</table>
+<p>Note – <strong>nyx.lo_bc</strong> and <strong>nyx.hi_bc</strong> must be consistent with
+<strong>geometry.is_periodic</strong> – if the domain is periodic in a particular
+direction then the low and high bc’s must be set to 0 for that
+direction.</p>
+</div>
+<div class="section" id="examples-of-usage-1">
+<span id="id2"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-1" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><strong>nyx.lo_bc</strong> = 1 4 0</li>
+<li><strong>nyx.hi_bc</strong> = 2 4 0</li>
+<li><strong>geometry.is_periodic</strong> = 0 0 1</li>
+</ul>
+<p>would define a problem with inflow (1) in the low-x direction,
+outflow(2) in the high-x direction, slip wall (4) on the low and high
+y-faces, and periodic in the z-direction.</p>
+</div>
+</div>
+<div class="section" id="resolution">
+<h2>Resolution<a class="headerlink" href="#resolution" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="list-of-parameters-2">
+<span id="id3"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-2" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="36%" />
+<col width="23%" />
+<col width="23%" />
+<col width="18%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Definition</th>
+<th class="head">Acceptable
+Values</th>
+<th class="head">Default</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><strong>amr.n_cell</strong></td>
+<td>number of cells
+in each
+direction at
+the coarsest
+level</td>
+<td>Integer &gt; 0</td>
+<td>must be set</td>
+</tr>
+<tr class="row-odd"><td><strong>amr.max_level</strong></td>
+<td>number of
+levels of
+refinement
+above the
+coarsest level</td>
+<td>Integer &gt;= 0</td>
+<td>must be set</td>
+</tr>
+<tr class="row-even"><td><strong>amr.ref_ratio</strong></td>
+<td>ratio of coarse
+to fine grid
+spacing between
+subsequent
+levels</td>
+<td>2 or 4</td>
+<td>must be set</td>
+</tr>
+<tr class="row-odd"><td><strong>amr.regrid_int</strong></td>
+<td>how often to
+regrid</td>
+<td>Integer &gt; 0</td>
+<td>must be set</td>
+</tr>
+<tr class="row-even"><td><strong>amr.regrid_on_restart</strong></td>
+<td>should we
+regrid
+immediately
+after
+restarting</td>
+<td>0 or 1</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>[Table:ResInputs]</p>
+<p>Note: if <strong>amr.max_level</strong> = 0 then you do not need to set
+<strong>amr.ref_ratio</strong> or <strong>amr.regrid_int</strong>.</p>
+</div>
+<div class="section" id="examples-of-usage-2">
+<span id="id4"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-2" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first"><strong>amr.n_cell</strong> = 32 64 64</p>
+<p>would define the domain to have 32 cells in the x-direction, 64 cells
+in the y-direction, and 64 cells in the z-direction <em>at the coarsest
+level</em>. (If this line appears in a 2D inputs file then the final
+number will be ignored.)</p>
+</li>
+<li><div class="first line-block">
+<div class="line"><strong>amr.max_level</strong> = 2</div>
+<div class="line">would allow a maximum of 2 refined levels in addition to the coarse
+level. Note that these additional levels will only be created only
+if the tagging criteria are such that cells are flagged as needing
+refinement. The number of refined levels in a calculation must be
+<span class="math notranslate nohighlight">\(\leq\)</span> <strong>amr.max_level</strong>, but can change in time and need not
+always be equal to <strong>amr.max_level</strong>.</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line"><strong>amr.ref_ratio</strong> = 2 4</div>
+<div class="line">would set factor 2 refinement between levels 0 and 1, and factor 4
+refinement between levels 1 and 2. Note that you must have at least
+<strong>amr.&gt;ax_level</strong> values of <strong>amr.ref_ratio</strong> (Additional values
+may appear in that line and they will be ignored).</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line"><strong>amr.regrid_int</strong> = 2 2</div>
+<div class="line">tells the code to regrid every 2 steps. Thus in this example, new
+level-1 grids will be created every 2 level-0 time steps, and new
+level-2 grids will be created every 2 level-1 time steps.</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="regridding">
+<h2>Regridding<a class="headerlink" href="#regridding" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="overview">
+<h3>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h3>
+<p>The details of the regridding strategy are described in Section
+<a class="reference external" href="#subsec:grid-generation">5.5</a>, but first we cover how the input
+parameters can control the gridding.</p>
+<p>As described later, the user defines Fortran subroutines which tag
+individual cells at a given level if they need refinement. This list of
+tagged cells is sent to a grid generation routine, which uses the
+Berger–Rigoutsos algorithm to create rectangular grids that contain the
+tagged cells.</p>
+</div>
+<div class="section" id="list-of-parameters-4">
+<span id="id5"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-4" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="37%" />
+<col width="21%" />
+<col width="21%" />
+<col width="21%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Definition</th>
+<th class="head">Acceptable
+Values</th>
+<th class="head">Default</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><strong>amr.regrid_file</strong></td>
+<td>name of file
+from which to
+read the grids</td>
+<td>text</td>
+<td>no file</td>
+</tr>
+<tr class="row-odd"><td><strong>amr.grid_eff</strong></td>
+<td>grid
+efficiency at
+coarse level
+at which grids
+are created</td>
+<td>Real &gt; 0, &lt; 1</td>
+<td>0.7</td>
+</tr>
+<tr class="row-even"><td><strong>amr.n_error_buf</strong></td>
+<td>radius of
+additional
+tagging around
+already tagged
+cells</td>
+<td>Integer &gt;= 0</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td><strong>amr.max_grid_size</strong></td>
+<td>maximum size
+of a grid in
+any direction</td>
+<td>Integer &gt; 0</td>
+<td>128 in 2D, 32
+in 3D</td>
+</tr>
+<tr class="row-even"><td><strong>amr.max_grid_size</strong></td>
+<td>maximum size</td>
+<td>Integer</td>
+<td>128 in 2D, 32</td>
+</tr>
+<tr class="row-odd"><td><strong>amr.blocking_factor</strong></td>
+<td>grid size must
+be a multiple
+of this</td>
+<td>Integer &gt; 0</td>
+<td>2</td>
+</tr>
+<tr class="row-even"><td><strong>amr.refine_grid_layout</strong></td>
+<td>refine grids
+more if # of
+processors
+<span class="math notranslate nohighlight">\(&gt;\)</span> # of
+grids</td>
+<td>0 if false, 1
+if true</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p>[Table:GriddingInputs]</p>
+</div>
+<div class="section" id="notes-2">
+<span id="id6"></span><h3>Notes<a class="headerlink" href="#notes-2" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><strong>amr.n_error_buf</strong>, <strong>amr.max_grid_size</strong> and
+<strong>amr.blocking_factor</strong> can be read in as a single value which is
+assigned to every level, or as multiple values, one for each level</li>
+<li><strong>amr.max_grid_size</strong> at every level must be even</li>
+<li><strong>amr.blocking_factor</strong> at every level must be a power of 2</li>
+<li>the domain size <strong>amr.n_cell</strong> must be a multiple of
+<strong>amr.blocking_factor</strong> at level 0</li>
+<li><strong>amr.max_grid_size</strong> must be a multiple of <strong>amr.blocking_factor</strong>
+at every level</li>
+</ul>
+</div>
+<div class="section" id="examples-of-usage-3">
+<span id="id7"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-3" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><div class="first line-block">
+<div class="line"><strong>amr.regrid_file</strong> = <em>fixed_grids</em></div>
+<div class="line">In this case the list of grids at each fine level are contained in
+the file <em>fixed_grids</em>, which will be read during the gridding
+procedure. These grids must not violate the <strong>amr.max_grid_size</strong>
+criterion. The rest of the gridding procedure described below will
+not occur if <strong>amr.regrid_file</strong> is set.</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line"><strong>amr.grid_eff</strong> = 0.9</div>
+<div class="line">During the grid creation process, at least 90% of the cells in each
+grid at the level at which the grid creation occurs must be tagged
+cells. Note that this is applied at the coarsened level at which
+the grids are actually made, and before <strong>amr.max_grid_size</strong> is
+imposed.</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line"><strong>amr.max_grid_size</strong> = 64</div>
+<div class="line">The final grids will be no longer than 64 cells on a side at every
+level.</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line"><strong>amr.max_grid_size</strong> = 64 32 16</div>
+<div class="line">The final grids will be no longer than 64 cells on a side at level
+0, 32 cells on a side at level 1, and 16 cells on a side at level
+2.</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line"><strong>amr.blocking_factor</strong> = 32</div>
+<div class="line">The dimensions of all the final grids will be multiples of 32 at
+all levels.</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line"><strong>amr.blocking_factor</strong> = 32 16 8</div>
+<div class="line">The dimensions of all the final grids will be multiples of 32 at
+level 0, multiples of 16 at level 1, and multiples of 8 at level 2.</div>
+</div>
+<p>Having grids that are large enough to coarsen multiple levels in a
+V-cycle is essential for good multigrid performance in simulations
+that use self-gravity.</p>
+</li>
+</ul>
+</div>
+<div class="section" id="how-grids-are-created">
+<span id="subsec-grid-generation"></span><h3>How Grids are Created<a class="headerlink" href="#how-grids-are-created" title="Permalink to this headline">¶</a></h3>
+<p>The gridding algorithm proceeds in this order:</p>
+<ol class="arabic simple">
+<li>If at level 0, the domain is initially defined by <strong>n_cell</strong> as
+specified in the inputs file. If at level greater than 0, grids are
+created using the Berger–Rigoutsis clustering algorithm applied to
+the tagged cells, modified to ensure that the lengths of all new fine
+grids are divisible by <strong>blocking_factor</strong>.</li>
+<li>Next, the grid list is chopped up if any grids have length longer
+than <strong>max_grid_size</strong>. Note that because <strong>max_grid_size</strong> is a
+multiple of <strong>blocking_factor</strong> (as long as <strong>max_grid_size</strong> is
+greater than <strong>blocking_factor</strong>), the <strong>blocking_factor</strong> criterion
+is still satisfied.</li>
+<li>Next, if <strong>refine_grid_layout</strong> = 1 and there are more processors
+than grids at this level, then the grids at this level are further
+divided in order to ensure that no processor has fewer than one grid
+(at each level).<ul>
+<li>if <strong>max_grid_size</strong> / 2 in the <strong>BL_SPACEDIM</strong> direction is a
+multiple of <strong>blocking_factor</strong>, then chop the grids in the
+<strong>BL_SPACEDIM</strong> direction so that none of the grids are longer in
+that direction than <strong>max_grid_size / 2</strong></li>
+<li>If there are still fewer grids than processes, repeat the
+procedure in the <strong>BL_SPACEDIM-1</strong> direction, and again in the
+<strong>BL_SPACEDIM-2</strong> direction if necessary</li>
+<li>If after completing a sweep in all coordinate directions with
+<strong>max_grid_size / 2</strong>, there are still fewer grids than processes,
+repeat the steps above with <strong>max_grid_size / 4</strong>.</li>
+</ul>
+</li>
+</ol>
+</div>
+</div>
+<div class="section" id="simulation-time">
+<h2>Simulation Time<a class="headerlink" href="#simulation-time" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="list-of-parameters-5">
+<span id="id8"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-5" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="26%" />
+<col width="39%" />
+<col width="21%" />
+<col width="14%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Definition</th>
+<th class="head">Acceptable
+Values</th>
+<th class="head">Default</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><strong>max_step</strong></td>
+<td>maximum number
+of level-0 time
+steps</td>
+<td>Integer &gt;= 0</td>
+<td>-1</td>
+</tr>
+<tr class="row-odd"><td><strong>stop_time</strong></td>
+<td>final simulation
+time</td>
+<td>Real &gt;= 0</td>
+<td>-1.0</td>
+</tr>
+<tr class="row-even"><td><strong>nyx.final_a</strong></td>
+<td>if
+<strong>nyx.use_comoving = t</strong>
+and positive value
+then this is
+final value of a</td>
+<td>Real &gt; 0</td>
+<td>-1.0</td>
+</tr>
+<tr class="row-odd"><td><strong>nyx.final_z</strong></td>
+<td>if
+<strong>nyx.use_comoving = t</strong>
+and positive value
+then this is
+final value of z</td>
+<td>Real &gt; 0</td>
+<td>-1.0</td>
+</tr>
+</tbody>
+</table>
+<p>[Table:TimeInputs]</p>
+</div>
+<div class="section" id="notes-3">
+<span id="id9"></span><h3>Notes<a class="headerlink" href="#notes-3" title="Permalink to this headline">¶</a></h3>
+<p>To control the number of time steps, you can limit by the maximum number
+of level-0 time steps (<strong>max_step</strong>), or the final simulation time
+(<strong>stop_time</strong>), or both. The code will stop at whichever criterion
+comes first. Note that if the code reaches <strong>stop_time</strong> then the final
+time step will be shortened so as to end exactly at <strong>stop_time</strong>, not
+pass it.</p>
+<p>If running in comoving coordinates you can also set a final value of
+<span class="math notranslate nohighlight">\(a\)</span> by setting <strong>nyx.final_a</strong>, or a final value of <span class="math notranslate nohighlight">\(z\)</span> by
+setting <strong>nyx.final_z</strong>. You may only specify one or the other of these.
+Once this value of <span class="math notranslate nohighlight">\(a\)</span> or <span class="math notranslate nohighlight">\(z\)</span> is reached in a time step, the
+code will stop at the end of this full coarse time step. (Note it does
+not stop at <span class="math notranslate nohighlight">\(a\)</span> (or <span class="math notranslate nohighlight">\(z\)</span>) exactly equal to the final value,
+rather it stops once <span class="math notranslate nohighlight">\(a\)</span> is greater than (or <span class="math notranslate nohighlight">\(z\)</span> is less
+than) this value.)</p>
+</div>
+<div class="section" id="examples-of-usage-4">
+<span id="id10"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-4" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li><strong>max_step</strong> = 1000</li>
+<li><strong>stop_time</strong> = 1.0</li>
+</ul>
+<p>will end the calculation when either the simulation time reaches 1.0 or
+the number of level-0 steps taken equals 1000, whichever comes first.</p>
+</div>
+</div>
+<div class="section" id="time-step">
+<h2>Time Step<a class="headerlink" href="#time-step" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>If <strong>nyx.do_hydro</strong><span class="math notranslate nohighlight">\(= 1\)</span>, then typically the code chooses a
+time step based on the CFL number (dt = cfl * dx / max(u+c) ).</li>
+<li>If <strong>nyx.do_hydro</strong><span class="math notranslate nohighlight">\(= 0\)</span> and we are running with dark matter
+particles, then we use a time step based on the velocity of the
+particles, i.e., we set <span class="math notranslate nohighlight">\(\Delta t\)</span> so that the particle goes no
+further than <span class="math notranslate nohighlight">\(f \Delta t\)</span> in a coordinate direction where
+<span class="math notranslate nohighlight">\(0 \leq f \leq 1.\)</span> The value for <span class="math notranslate nohighlight">\(f\)</span> is currently
+hard-wired in Particles.H, but it will become an inputs parameter.</li>
+</ul>
+<div class="section" id="list-of-parameters-6">
+<span id="id11"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-6" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="30%" />
+<col width="23%" />
+<col width="23%" />
+<col width="23%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Definition</th>
+<th class="head">Acceptable
+Values</th>
+<th class="head">Default</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><strong>nyx.cfl</strong></td>
+<td>CFL number for
+hydro</td>
+<td>Real &gt; 0 and
+&lt;= 1</td>
+<td>0.8</td>
+</tr>
+<tr class="row-odd"><td><strong>particles.cfl</strong></td>
+<td>CFL number for
+particles</td>
+<td><p class="first">Real &gt; 0 and
+&lt;= 1</p>
+<blockquote class="last">
+<div><a href="#id12"><span class="problematic" id="id13">`</span></a></div></blockquote>
+</td>
+<td>0.5</td>
+</tr>
+<tr class="row-even"><td><strong>nyx.init_shrink</strong></td>
+<td>factor by
+which to
+shrink the
+initial time
+step</td>
+<td>Real &gt; 0 and
+&lt;= 1</td>
+<td>1.0</td>
+</tr>
+<tr class="row-odd"><td><strong>nyx.change_max</strong></td>
+<td>factor by
+which the time
+step can grow
+in subsequent
+steps</td>
+<td>Real &gt;= 1</td>
+<td>1.1</td>
+</tr>
+<tr class="row-even"><td><strong>nyx.fixed_dt</strong></td>
+<td>level-0 time
+step
+regardless of
+cfl or other
+settings</td>
+<td>Real &gt; 0</td>
+<td>unused if not
+set</td>
+</tr>
+<tr class="row-odd"><td><strong>nyx.initial_dt</strong></td>
+<td>initial
+level-0 time
+step
+regardless of
+other settings</td>
+<td>Real &gt; 0</td>
+<td>unused if not
+set</td>
+</tr>
+<tr class="row-even"><td><strong>nyx.dt_cutoff</strong></td>
+<td>time step
+below which
+calculation
+will abort</td>
+<td>Real &gt; 0</td>
+<td>0.0</td>
+</tr>
+</tbody>
+</table>
+<p>[Table:TimeStepInputs]</p>
+</div>
+<div class="section" id="examples-of-usage-5">
+<span id="id14"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-5" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><div class="first line-block">
+<div class="line"><strong>nyx.cfl</strong> = 0.9</div>
+<div class="line">defines the timestep as dt = cfl * dx / umax_hydro.</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line"><strong>particles.cfl</strong> = 0.9</div>
+<div class="line">defines the timestep as dt = cfl * dx / umax_particles where
+umax_particles is the maximum velocity of any particle in the
+domain.</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line"><strong>nyx.init_shrink</strong> = 0.01</div>
+<div class="line">sets the initial time step to 1% of what it would be otherwise.</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line"><strong>nyx.change_max</strong> = 1.1</div>
+<div class="line">allows the time step to increase by no more than 10% in this case.
+Note that the time step can shrink by any factor; this only
+controls the extent to which it can grow.</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line"><strong>nyx.fixed_dt</strong> = 1.e-4</div>
+<div class="line">sets the level-0 time step to be 1.e-4 for the entire simulation,
+ignoring the other timestep controls. Note that if
+<strong>nyx.init_shrink</strong> <span class="math notranslate nohighlight">\(\neq 1\)</span> then the first time step will in
+fact be <strong>nyx.init_shrink</strong> * <strong>nyx.fixed_dt</strong>.</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line"><strong>nyx.initial_dt</strong> = 1.e-4</div>
+<div class="line">sets the <em>initial</em> level-0 time step to be 1.e-4 regardless of
+<strong>nyx.cfl</strong> or <strong>nyx.fixed_dt</strong>. The time step can grow in
+subsequent steps by a factor of <strong>nyx.change_max</strong> each step.</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line"><strong>nyx.dt_cutoff</strong> = 1.e-20</div>
+<div class="line">tells the code to abort if the time step ever gets below 1.e-20.
+This is a safety mechanism so that if things go nuts you don’t burn
+through your entire computer allocation because you don’t realize
+the code is misbehaving.</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="subcycling">
+<h2>Subcycling<a class="headerlink" href="#subcycling" title="Permalink to this headline">¶</a></h2>
+<p>&nbsp;supports a number of different modes for subcycling in time.</p>
+<ul class="simple">
+<li>If <strong>amr.subcycling_mode</strong><span class="math notranslate nohighlight">\(=\)</span>Auto (default), then the code
+will run with equal refinement in space and time. In other words, if
+level <span class="math notranslate nohighlight">\(n+1\)</span> is a factor of 2 refinement above level <span class="math notranslate nohighlight">\(n\)</span>,
+then <span class="math notranslate nohighlight">\(n+1\)</span> will take 2 steps of half the duration for every
+level <span class="math notranslate nohighlight">\(n\)</span> step.</li>
+<li>If <strong>amr.subcycling_mode</strong><span class="math notranslate nohighlight">\(=\)</span>None, then the code will not
+refine in time. All levels will advance together with a timestep
+dictated by the level with the strictest <span class="math notranslate nohighlight">\(dt\)</span>. Note that this
+is identical to the deprecated command <strong>amr.nosub = 1</strong>.</li>
+<li>If <strong>amr.subcycling_mode</strong><span class="math notranslate nohighlight">\(=\)</span>Manual, then the code will
+subcycle according to the values supplied by
+<strong>subcycling_iterations</strong>.</li>
+</ul>
+<div class="section" id="list-of-parameters-7">
+<span id="id15"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-7" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Definition</th>
+<th class="head">Acceptable
+Values</th>
+<th class="head">Default</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><strong>amr.sub
+cycling_mode</strong></td>
+<td>How shall we
+subcycle</td>
+<td>Auto, None or
+Manual</td>
+<td>Auto</td>
+</tr>
+<tr class="row-odd"><td><ul class="first simple">
+<li></li>
+</ul>
+<p class="last"><em>amr.subcyclin
+g_iterations*</em></p>
+</td>
+<td>Number of
+cycles at each
+level</td>
+<td>1 or
+<code class="docutils literal notranslate"><span class="pre">ref_ratio</span></code></td>
+<td>must be set in
+Manual mode</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="examples-of-usage-6">
+<span id="id16"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-6" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><div class="first line-block">
+<div class="line"><strong>amr.subcycling_mode</strong><span class="math notranslate nohighlight">\(=\)</span>Manual</div>
+<div class="line">Subcycle in manual mode with largest allowable timestep.</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line"><strong>amr.subcycling_iterations</strong> = 1 2 1 2</div>
+<div class="line">Take 1 level-0 timestep at a time (required). Take 2 level-1
+timesteps for each level-0 step, 1 timestep at level 2 for each
+level-1 step, and take 2 timesteps at level 3 for each level 2
+step.</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line"><strong>amr.subcycling_iterations</strong> = 2</div>
+<div class="line">Alternative form. Subcycle twice at every level (except level 0).</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="restart-capability">
+<h2>Restart Capability<a class="headerlink" href="#restart-capability" title="Permalink to this headline">¶</a></h2>
+<div class="line-block">
+<div class="line">&nbsp;has a standard sort of checkpointing and restarting capability. In
+the inputs file, the following options control the generation of
+checkpoint files (which are really directories):</div>
+</div>
+<div class="section" id="list-of-parameters-8">
+<span id="id17"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-8" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="41%" />
+<col width="20%" />
+<col width="20%" />
+<col width="20%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Definition</th>
+<th class="head">Acceptable
+Values</th>
+<th class="head">Default</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><strong>amr.check_file</strong></td>
+<td>prefix for
+restart files</td>
+<td>String</td>
+<td>“<em>chk</em>”</td>
+</tr>
+<tr class="row-odd"><td><strong>amr.check_int</strong></td>
+<td>how often (by
+level-0 time
+steps) to
+write restart
+files</td>
+<td>Integer
+<span class="math notranslate nohighlight">\(&gt; 0\)</span></td>
+<td>-1</td>
+</tr>
+<tr class="row-even"><td><strong>amr.check_per</strong></td>
+<td>how often (by
+simulation
+time) to write
+restart files</td>
+<td>Real
+<span class="math notranslate nohighlight">\(&gt; 0\)</span></td>
+<td>-1.0</td>
+</tr>
+<tr class="row-odd"><td><strong>amr.restart</strong></td>
+<td>name of the
+file
+(directory)
+from which to
+restart</td>
+<td>String</td>
+<td>not used if
+not set</td>
+</tr>
+<tr class="row-even"><td><strong>amr.checkpoint_files_output</strong></td>
+<td>should we
+write
+checkpoint
+files</td>
+<td>0 or 1</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td><strong>amr.check_nfiles</strong></td>
+<td>how parallel
+is the writing
+of the
+checkpoint
+files</td>
+<td>Integer
+<span class="math notranslate nohighlight">\(\geq 1\)</span></td>
+<td>64</td>
+</tr>
+<tr class="row-even"><td><strong>amr.checkpoint_on_restart</strong></td>
+<td>should we
+write a
+checkpoint
+immediately
+after
+restarting</td>
+<td>0 or 1</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="notes-4">
+<span id="id18"></span><h3>Notes<a class="headerlink" href="#notes-4" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>You should specify either <strong>amr.check_int</strong> or <strong>amr.check_per</strong>. Do
+not try to specify both.</li>
+<li>Note that if <strong>amr.check_per</strong> is used then in order to hit that
+exact time the code may modify the time step slightly, which will
+change your results ever so slightly than if you didn’t set this
+flag.</li>
+<li>Note that <strong>amr.plotfile_on_restart</strong> and
+<strong>amr.checkpoint_on_restart</strong> only take effect if
+<strong>amr.regrid_on_restart</strong> is in effect.</li>
+<li>See the Software Section for more details on parallel I/O and the
+<strong>amr.check_nfiles</strong> parameter.</li>
+<li>If you are doing a scaling study then set
+<strong>amr.checkpoint_files_output</strong> = 0 so you can test scaling of the
+algorithm without I/O.</li>
+</ul>
+</div>
+<div class="section" id="examples-of-usage-7">
+<span id="id19"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-7" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first"><strong>amr.check_file</strong> = <em>chk_run</em></p>
+</li>
+<li><p class="first"><strong>amr.check_int</strong> = 10</p>
+<p>means that restart files (really directories) starting with the
+prefix “<em>chk_run</em>” will be generated every 10 level-0 time steps. The
+directory names will be <em>chk_run00000</em>, <em>chk_run00010</em>,
+<em>chk_run00020</em>, etc.</p>
+</li>
+</ul>
+<p>If instead you specify</p>
+<ul>
+<li><p class="first"><strong>amr.check_file</strong> = <em>chk_run</em></p>
+</li>
+<li><p class="first"><strong>amr.check_per</strong> = 0.5</p>
+<p>then restart files (really directories) starting with the prefix
+“<em>chk_run</em>” will be generated every 0.1 units of simulation time. The
+directory names will be <em>chk_run00000</em>, <em>chk_run00043</em>,
+<em>chk_run00061</em>, etc, where <span class="math notranslate nohighlight">\(t = 0.1\)</span> after 43 level-0 steps,
+<span class="math notranslate nohighlight">\(t = 0.2\)</span> after 61 level-0 steps, etc.</p>
+</li>
+</ul>
+<p>To restart from <em>chk_run00061</em>,for example, then set</p>
+<ul class="simple">
+<li><strong>amr.restart</strong> = <em>chk_run00061</em></li>
+</ul>
+</div>
+</div>
+<div class="section" id="controlling-plotfile-generation">
+<span id="sec-plotfiles"></span><h2>Controlling PlotFile Generation<a class="headerlink" href="#controlling-plotfile-generation" title="Permalink to this headline">¶</a></h2>
+<p>The main output from &nbsp;is in the form of plotfiles (which are really
+directories). The following options in the inputs file control the
+generation of plotfiles</p>
+<div class="section" id="list-of-parameters-9">
+<span id="id20"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-9" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="39%" />
+<col width="24%" />
+<col width="24%" />
+<col width="12%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Definition</th>
+<th class="head">Acceptable
+Values</th>
+<th class="head">Default</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><strong>amr.plot_file</strong></td>
+<td>prefix for
+plotfiles</td>
+<td>String</td>
+<td>“<em>plt</em>”</td>
+</tr>
+<tr class="row-odd"><td><strong>amr.plot_int</strong></td>
+<td>how often (by
+level-0 time
+steps) to write
+plot files</td>
+<td>Integer
+<span class="math notranslate nohighlight">\(&gt; 0\)</span></td>
+<td>-1</td>
+</tr>
+<tr class="row-even"><td><strong>amr.plot_per</strong></td>
+<td>how often (by
+simulation time)
+to write plot
+files</td>
+<td>Real <span class="math notranslate nohighlight">\(&gt; 0\)</span></td>
+<td>-1.0</td>
+</tr>
+<tr class="row-odd"><td><strong>amr.plot_vars</strong></td>
+<td>name of state
+variables to
+include in
+plotfiles</td>
+<td>ALL, NONE or
+list</td>
+<td>ALL</td>
+</tr>
+<tr class="row-even"><td><strong>amr.derive_plot_vars</strong></td>
+<td>name of derived
+variables to
+include in
+plotfiles</td>
+<td>ALL, NONE or
+list</td>
+<td>NONE</td>
+</tr>
+<tr class="row-odd"><td><strong>amr.plot_files_output</strong></td>
+<td>should we write
+plot files</td>
+<td>0 or 1</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td><strong>amr.plotfile_on_restart</strong></td>
+<td>should we write
+a plotfile
+immediately
+after restarting</td>
+<td>0 or 1</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td><strong>amr.plot_nfiles</strong></td>
+<td>how parallel is
+the writing of
+the plotfiles</td>
+<td>Integer
+<span class="math notranslate nohighlight">\(\geq 1\)</span></td>
+<td>64</td>
+</tr>
+<tr class="row-even"><td><strong>fab.format</strong></td>
+<td>Should we write
+the plotfile in
+double or single
+precision</td>
+<td>NATIVE or IEEE32</td>
+<td>NATIVE</td>
+</tr>
+</tbody>
+</table>
+<p>All the options for <strong>amr.derive_plot_vars</strong> are kept in <code class="docutils literal notranslate"><span class="pre">derive_lst</span></code>
+in <code class="docutils literal notranslate"><span class="pre">Nyx_setup.cpp</span></code>. Feel free to look at it and see what’s there.</p>
+</div>
+<div class="section" id="notes-5">
+<span id="id21"></span><h3>Notes<a class="headerlink" href="#notes-5" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>You should specify either <strong>amr.plot_int</strong> or <strong>amr.plot_per</strong>. Do
+not try to specify both.</li>
+<li>Note that if <strong>amr.plot_per</strong> is used then in order to hit that exact
+time the code may modify the time step slightly, which will change
+your results ever so slightly than if you didn’t set this flag.</li>
+<li>See the Software Section for more details on parallel I/O and the
+<strong>amr.plot_nfiles</strong> parameter.</li>
+<li>If you are doing a scaling study then set <strong>amr.plot_files_output</strong> =
+0 so you can test scaling of the algorithm without I/O.</li>
+<li>By default, plotfiles are written in double precision (NATIVE
+format). If you want to save space by writing them in single
+precision, set the fab.format flag to IEEE32.</li>
+</ul>
+</div>
+<div class="section" id="examples-of-usage-8">
+<span id="id22"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-8" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><p class="first"><strong>amr.plot_file</strong> = <em>plt_run</em></p>
+</li>
+<li><p class="first"><strong>amr.plot_int</strong> = 10</p>
+<p>means that plot files (really directories) starting with the prefix
+“<em>plt_run</em>” will be generated every 10 level-0 time steps. The
+directory names will be <em>plt_run00000</em>, <em>plt_run00010</em>,
+<em>plt_run00020</em>, etc.</p>
+</li>
+</ul>
+<p>If instead you specify</p>
+<ul>
+<li><p class="first"><strong>amr.plot_file</strong> = <em>plt_run</em></p>
+</li>
+<li><p class="first"><strong>amr.plot_per</strong> = 0.5</p>
+<p>then restart files (really directories) starting with the prefix
+“plt_run” will be generated every 0.1 units of simulation time. The
+directory names will be <em>plt_run00000</em>, <em>plt_run00043</em>,
+<em>plt_run00061</em>, etc, where <span class="math notranslate nohighlight">\(t = 0.1\)</span> after 43 level-0 steps,
+<span class="math notranslate nohighlight">\(t = 0.2\)</span> after 61 level-0 steps, etc.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="screen-output">
+<h2>Screen Output<a class="headerlink" href="#screen-output" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="list-of-parameters-10">
+<span id="id23"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-10" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="36%" />
+<col width="23%" />
+<col width="21%" />
+<col width="21%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Definition</th>
+<th class="head">Acceptable
+Values</th>
+<th class="head">Default</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><strong>amr.v</strong></td>
+<td>verbosity of
+Amr.cpp</td>
+<td>0 or 1</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td><strong>nyx.v</strong></td>
+<td>verbosity of
+Nyx.cpp</td>
+<td>0 or 1</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td><strong>gravity.v</strong></td>
+<td>verbosity of
+Gravity.cpp</td>
+<td>0 or 1</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td><strong>mg.v</strong></td>
+<td>verbosity of
+multigrid
+solver (for
+gravity)</td>
+<td>0,1,2,3,4</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td><strong>particles.v</strong></td>
+<td>verbosity of
+particle-related
+processes</td>
+<td>0,1,2,3,4</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td><strong>amr.grid_log</strong></td>
+<td>name of the
+file to which
+the grids are
+written</td>
+<td>String</td>
+<td>not used if
+not set</td>
+</tr>
+<tr class="row-even"><td><strong>amr.run_log</strong></td>
+<td>name of the
+file to which
+certain output
+is written</td>
+<td>String</td>
+<td>not used if
+not set</td>
+</tr>
+<tr class="row-odd"><td><strong>amr.run_log_terse</strong></td>
+<td>name of the
+file to which
+certain
+(terser)
+output is
+written</td>
+<td>String</td>
+<td>not used if
+not set</td>
+</tr>
+<tr class="row-even"><td><strong>amr.sum_interval</strong></td>
+<td>if
+<span class="math notranslate nohighlight">\(&gt; 0,\)</span>
+how often (in
+level-0 time
+steps)</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td>to compute and
+print integral
+quantities</td>
+<td>Integer</td>
+<td>-1</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="examples-of-usage-9">
+<span id="id24"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-9" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><div class="first line-block">
+<div class="line"><strong>amr.grid_log</strong> = <em>grdlog</em></div>
+<div class="line">Every time the code regrids it prints a list of grids at all
+relevant levels. Here the code will write these grids lists into
+the file <em>grdlog</em>.</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line"><strong>amr.run_log</strong> = <em>runlog</em></div>
+<div class="line">Every time step the code prints certain statements to the screen
+(if <strong>amr.v</strong> = 1), such as</div>
+<div class="line">STEP = 1 TIME = 1.91717746 DT = 1.91717746</div>
+<div class="line">PLOTFILE: file = plt00001</div>
+<div class="line">Here these statements will be written into <em>runlog</em> as well.</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line"><strong>amr.run_log_terse</strong> = <em>runlogterse</em></div>
+<div class="line">This file, <em>runlogterse</em>, differs from <em>runlog</em> in that it only
+contains lines of the form</div>
+<div class="line">10 0.2 0.005</div>
+<div class="line">in which “10” is the number of steps taken, “0.2” is the simulation
+time, and “0.005” is the level-0 time step. This file can be
+plotted very easily to monitor the time step.</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line"><strong>nyx.sum_interval</strong> = 2</div>
+<div class="line">if <strong>nyx.sum_interval</strong> <span class="math notranslate nohighlight">\(&gt; 0\)</span> then the code computes and
+prints certain integral quantities, such as total mass, momentum
+and energy in the domain every <strong>nyx.sum_interval</strong> level-0 steps.
+In this example the code will print these quantities every two
+coarse time steps. The print statements have the form</div>
+<div class="line">TIME= 1.91717746 MASS= 1.792410279e+34</div>
+<div class="line">for example. If this line is commented out then it will not compute
+and print these quanitities.</div>
+</div>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="gravity">
+<h2>Gravity<a class="headerlink" href="#gravity" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="list-of-parameters-11">
+<span id="id25"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-11" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="23%" />
+<col width="21%" />
+<col width="23%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Definition</th>
+<th class="head">Acceptable
+Values</th>
+<th class="head">Default</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><strong>nyx.do_grav</strong></td>
+<td>Include
+gravity as a
+forcing term</td>
+<td>0 if false
+1 if true</td>
+<td>must be set</td>
+</tr>
+<tr class="row-odd"><td><strong>gravity.no_sync</strong></td>
+<td>whether to
+perform the
+“sync solve”</td>
+<td>0 if false
+1 if true</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td><strong>gravity.no_composite</strong></td>
+<td>whether to
+perform a
+composite
+solve</td>
+<td>0 if false
+1 if true</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>[Table:Gravity]</p>
+</div>
+<div class="section" id="notes-6">
+<span id="id26"></span><h3>Notes<a class="headerlink" href="#notes-6" title="Permalink to this headline">¶</a></h3>
+<ul class="simple">
+<li>To include gravity you must set <strong>nyx.do_grav</strong> = 1 in the inputs file</li>
+</ul>
+</div>
+</div>
+<div class="section" id="physics">
+<h2>Physics<a class="headerlink" href="#physics" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="list-of-parameters-12">
+<span id="id27"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-12" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="41%" />
+<col width="22%" />
+<col width="21%" />
+<col width="16%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Definition</th>
+<th class="head">Acceptable
+Values</th>
+<th class="head">Default</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><strong>nyx.do_hydro</strong></td>
+<td>Time-advance
+the fluid
+dynamical
+equations</td>
+<td>0 if false, 1
+if true</td>
+<td>must be set</td>
+</tr>
+<tr class="row-odd"><td><strong>nyx.ppm_type</strong></td>
+<td>Use PPM or
+PLM for hydro
+advance</td>
+<td>0 for PLM
+1 for PPM</td>
+<td>1 (PPM)</td>
+</tr>
+<tr class="row-even"><td><strong>nyx.enforce_min_density_type</strong></td>
+<td>how to enforce
+rho greater than
+small_dens</td>
+<td>“floor”
+“cons”</td>
+<td>“floor”</td>
+</tr>
+<tr class="row-odd"><td><strong>nyx.add_ext_src</strong></td>
+<td>Include
+additional
+user-specified
+source term</td>
+<td>0 if false, 1
+if true</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td><strong>nyx.use_const_species</strong></td>
+<td>If 1 then read
+h_species and
+he_species</td>
+<td>0 or 1</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td><strong>nyx.h_species</strong></td>
+<td>Concentration
+of H</td>
+<td>0 <span class="math notranslate nohighlight">\(&lt;\)</span> X
+<span class="math notranslate nohighlight">\(&lt;\)</span> 1</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td><strong>nyx.he_species</strong></td>
+<td>Concentration
+of He</td>
+<td>0 <span class="math notranslate nohighlight">\(&lt;\)</span> X
+<span class="math notranslate nohighlight">\(&lt;\)</span> 1</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="multigrid-inputs">
+<h2>Multigrid Inputs<a class="headerlink" href="#multigrid-inputs" title="Permalink to this headline">¶</a></h2>
+<p>The following inputs can be set directly in the AMReX solver classes but we set them via the Nyx gravity routines.</p>
+<p>These must be preceded by “gravity” in the inputs file:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="52%" />
+<col width="11%" />
+<col width="14%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">&#160;</th>
+<th class="head">Description</th>
+<th class="head">Type</th>
+<th class="head">Default</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>ml_tol</td>
+<td>Relative tolerance for multilevel solves</td>
+<td>Real</td>
+<td>1.e-12</td>
+</tr>
+<tr class="row-odd"><td>sl_tol</td>
+<td>Relative tolerance for single-level solves</td>
+<td>Real</td>
+<td>1.e-12</td>
+</tr>
+<tr class="row-even"><td>mlmg_agglomeration</td>
+<td>Should we agglomerate deep in the V-cycle</td>
+<td>Int</td>
+<td>1</td>
+</tr>
+<tr class="row-odd"><td>mlmg_consolidation</td>
+<td>Should we consolidate deep in the V-cycle</td>
+<td>Int</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p>These must be preceded by “mg” in the inputs file:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="52%" />
+<col width="13%" />
+<col width="14%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">&#160;</th>
+<th class="head">Description</th>
+<th class="head">Type</th>
+<th class="head">Default</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>v</td>
+<td>Verbosity of multigrid solver</td>
+<td>Int</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>bottom_solver</td>
+<td>What is the bottom solver?
+Options include “bicg”, “smoother”, “hypre”, etc</td>
+<td>String</td>
+<td>“bicg”</td>
+</tr>
+</tbody>
+</table>
+<p>There are a number of additional inputs that can be used to control the multigrid solver.</p>
+<p>See the <a class="reference external" href="https://amrex-codes.github.io/amrex/docs_html/LinearSolvers_Chapter.html">AMReX Multigrid documentation</a> for more details.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="Refinement.html" class="btn btn-neutral float-right" title="Refinement Criteria" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="NyxUnits.html" class="btn btn-neutral float-left" title="Units and Conventions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2018, Nyx development team.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

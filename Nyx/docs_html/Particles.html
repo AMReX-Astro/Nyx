@@ -1,0 +1,622 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Dark matter particles &mdash; Nyx  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"TeX": {"Macros": {"kth": "{{k_\\mathrm{th}}}", "gcc": "{\\mathrm{g~cm^{-3}}}", "cms": "{\\mathrm{cm~s^{-1}}}", "presunit": "{\\mathrm{dyn~cm^{-2}}}", "accelunit": "{\\mathrm{cm~s^{-2}}}", "ergg": "{\\mathrm{erg~g^{-1}}}", "Ab": "{{\\bf A}}", "eb": "{{\\bf e}}", "Fb": "{{\\bf F}}", "gb": "{{\\bf g}}", "Hb": "{{\\bf H}}", "ib": "{{\\bf i}}", "Ib": "{{\\bf I}}", "Kb": "{{\\bf K}}", "lb": "{{\\bf l}}", "Lb": "{{\\bf L}}", "nb": "{{\\bf n}}", "Pb": "{{\\bf P}}", "Qb": "{{\\bf Q}}", "rb": "{{\\bf r}}", "Rb": "{{\\bf R}}", "Sb": "{{\\bf S}}", "ub": "{{\\bf u}}", "Ub": "{{\\bf U}}", "xb": "{{\\bf x}}", "dt": "{\\Delta t}", "omegadot": "{\\dot\\omega}", "inp": "{{\\rm in}}", "outp": "{{\\rm out}}", "sync": "{{\\rm sync}}", "half": "{\\frac{1}{2}}", "myhalf": "{\\half}", "nph": "{{n+\\myhalf}}", "kpp": "{\\ensuremath{\\kappa_{\\mathrm{P}}}}", "kpr": "{\\ensuremath{\\kappa_{\\mathrm{R}}}}", "kpf": "{\\ensuremath{\\kappa_{\\mathrm{F}}}}", "vb": "{\\boldsymbol{v}}", "vbt": "{\\widetilde{\\vb}}", "rbt": "{\\widetilde{\\rb}}", "ob": "{\\boldsymbol{\\omega}}", "nablab": "{\\boldsymbol{\\nabla}}"}}, "tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="The AGN Model in Nyx" href="AGN.html" />
+    <link rel="prev" title="Stochastic Forcing" href="NyxForcing.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Nyx
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Nyx basics</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="NyxPreface.html">Preface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxCitation.html">Citation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxGettingStarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxUnits.html">Units and Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxInputs.html">Inputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Refinement.html">Refinement Criteria</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ManagingGridHierarchy_Chapter.html">Gridding and Load Balancing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxEquations.html">Hydrodynamic Equations in Comoving Coordinates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxHeatCool.html">Radiative Heating and Cooling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxGravity.html">Gravity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxForcing.html">Stochastic Forcing</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Dark matter particles</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#equations">Equations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#initializing-the-particles">Initializing the Particles</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#read-from-an-ascii-file">Read from an ASCII file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#read-from-a-binary-file">Read from a binary file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#read-from-a-binary-meta-file">Read from a binary “meta” file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#reading-sph-particles">Reading SPH particles</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#random-placement">Random placement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#random-placement-1-particle-per-grid-cell">Random placement (1 particle per grid cell)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#uniform-placement">Uniform placement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#cosmological">Cosmological</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#generating-a-transfer-function">Generating a transfer function</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#setting-up-the-initial-displacements">Setting up the initial displacements</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#using-nyx-with-cosmological-initial-conditions">Using Nyx with cosmological initial conditions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#particle-time-stepping-move-kick-drift-algorithm">Particle Time Stepping: Move-Kick-Drift Algorithm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#output-format">Output Format</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#checkpoint-files">Checkpoint Files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#particle-data-in-plot-files">Particle Data in Plot Files</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="AGN.html">The AGN Model in Nyx</a></li>
+<li class="toctree-l1"><a class="reference internal" href="AGN.html#the-reeber-package">The Reeber Package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NightlyTests.html">Nightly Regression Tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Visualization.html">Visualization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PostProcessing.html">PostProcessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Debugging.html">Debugging</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Nyx</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Dark matter particles</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/Particles.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<div class="section" id="dark-matter-particles">
+<h1>Dark matter particles<a class="headerlink" href="#dark-matter-particles" title="Permalink to this headline">¶</a></h1>
+<p>Dark matter particles are included in the simulation by setting:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">do_dm_particles</span> <span class="o">=</span> <span class="n">true</span>
+</pre></div>
+</div>
+<p>in the inputs file.</p>
+<p>When dark matter particles are present, one has the option to run with or without the baryons;
+to build with no hydro capability set:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">NO_HYDRO</span><span class="o">=</span><span class="n">TRUE</span>
+</pre></div>
+</div>
+<p>It is also possible to build with</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">NO_HYDRO</span><span class="o">=</span><span class="n">FALSE</span>
+</pre></div>
+</div>
+<p>but turn off hydro at run-time by setting</p>
+<blockquote>
+<div>nyx.do_hydro = 0</div></blockquote>
+<p>in the inputs file.</p>
+<p>Our default is to use double precision for the mesh data and single precision for the particles; this is set in the
+GNUMakefile by:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PRECISION</span> <span class="o">=</span> <span class="n">DOUBLE</span>
+<span class="n">USE_SINGLE_PRECISION_PARTICLES</span> <span class="o">=</span> <span class="n">TRUE</span>
+</pre></div>
+</div>
+<div class="section" id="equations">
+<h2>Equations<a class="headerlink" href="#equations" title="Permalink to this headline">¶</a></h2>
+<p>If we define <span class="math notranslate nohighlight">\({\mathbf x}_i\)</span> and <span class="math notranslate nohighlight">\({\bf u}_i\)</span> as the location and velocity of particle <span class="math notranslate nohighlight">\(i\)</span>, respectively, then we wish
+to solve</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{aligned}
+\frac{d {\mathbf x}_i}{d t} &amp;=&amp; \frac{1}{a} {\mathbf u}_i \\
+\frac{d (a {\mathbf u}_i) }{d t} &amp;=&amp; {\mathbf g}_i\end{aligned}\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\({\mathbf g}_i\)</span> is the gravitational force evaluated at the location of particle <span class="math notranslate nohighlight">\(i\)</span>, i.e.,
+<span class="math notranslate nohighlight">\({\mathbf g}_i = {\mathbf g}({\mathbf x}_i,t).\)</span></p>
+</div>
+<div class="section" id="initializing-the-particles">
+<h2>Initializing the Particles<a class="headerlink" href="#initializing-the-particles" title="Permalink to this headline">¶</a></h2>
+<p>There are several different ways in which particles can currently be initialized:
+read from an ASCII file, read from a binary file, or created in a run-time initialization procedure</p>
+<div class="section" id="read-from-an-ascii-file">
+<h3>Read from an ASCII file<a class="headerlink" href="#read-from-an-ascii-file" title="Permalink to this headline">¶</a></h3>
+<p>To enable this option, set:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_init_type</span> <span class="o">=</span> <span class="n">AsciiFile</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">ascii_particle_file</span> <span class="o">=</span> <span class="o">*</span><span class="n">particle_file</span><span class="o">*</span>
+</pre></div>
+</div>
+<p>Here <em>particle_file</em> is the user-specified name of the file. The first line in this file is
+assumed to contain the number of particles. Each line after that contains
+x y z mass xdot ydot zdot
+Note that the variable that we call the particle velocity, <span class="math notranslate nohighlight">\({\mathbf u} = a {\bf \dot{x}}\)</span>,
+so we must multiply <span class="math notranslate nohighlight">\({\bf \dot{x}}\)</span>, by <span class="math notranslate nohighlight">\(a\)</span> when we initialize the particles.</p>
+</div>
+<div class="section" id="read-from-a-binary-file">
+<h3>Read from a binary file<a class="headerlink" href="#read-from-a-binary-file" title="Permalink to this headline">¶</a></h3>
+<p>To enable this option, set:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_init_type</span> <span class="o">=</span> <span class="n">BinaryFile</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">binary_particle_file</span> <span class="o">=</span> <span class="o">*</span><span class="n">particle_file</span><span class="o">*</span>
+</pre></div>
+</div>
+<div class="line-block">
+<div class="line">As with the ASCII read, the first line in <em>particle_file</em> is
+assumed to contain the number of particles. Each line after that contains</div>
+<div class="line">x y z mass xdot ydot zdot</div>
+<div class="line">Note that the variable that we call the particle velocity, <span class="math notranslate nohighlight">\({\mathbf u} = a {\bf \dot{x}}\)</span>,
+so we must multiply <span class="math notranslate nohighlight">\({\bf \dot{x}}\)</span>, by <span class="math notranslate nohighlight">\(a\)</span> when we initialize the particles.</div>
+</div>
+</div>
+<div class="section" id="read-from-a-binary-meta-file">
+<h3>Read from a binary “meta” file<a class="headerlink" href="#read-from-a-binary-meta-file" title="Permalink to this headline">¶</a></h3>
+<p>This option allows you to read particles from a series of files rather than
+just a single file. To enable this option, set:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_init_type</span> <span class="o">=</span> <span class="n">BinaryMetaFile</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">binary_particle_file</span> <span class="o">=*</span><span class="n">particle</span> <span class="n">file</span><span class="o">*</span>
+</pre></div>
+</div>
+<p>In this case the <em>particle_file</em> you specify is an ASCII file specifying a
+list of file names with full paths. Each of the files in this list is assumed
+to be binary and is read sequentially (individual files are read in parallel) in
+the order listed.</p>
+<p>Since individual files are read sequentially, more particles should be read before
+redistributing across MPI ranks. This is set by optimizing the maximum number of
+readers and increasing the number of particles per read:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">amr</span><span class="o">.</span><span class="n">nreaders</span>
+<span class="n">amr</span><span class="o">.</span><span class="n">nparts_per_read</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="reading-sph-particles">
+<h3>Reading SPH particles<a class="headerlink" href="#reading-sph-particles" title="Permalink to this headline">¶</a></h3>
+<p>For some applications it is useful to initialize the grid data with SPH-type
+particles. To enable this option, you must set:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">do_santa_barbara</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">init_with_sph_particles</span> <span class="o">=</span><span class="mi">1</span>
+</pre></div>
+</div>
+<p>The SPH-type particles can then be read in by setting
+where <em>sph_particle_file</em> is the user-specified name of the file
+containing the SPH particles. The type of <em>sph_particle_file</em>
+must be the same (Ascii, Binary or BinaryMeta) as the dark matter particle
+file as specified by
+The SPH particles will be discarded by the code once the grid data has been initialized.</p>
+</div>
+<div class="section" id="random-placement">
+<h3>Random placement<a class="headerlink" href="#random-placement" title="Permalink to this headline">¶</a></h3>
+<p>To enable this option, set:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_init_type</span> <span class="o">=</span> <span class="n">Random</span>
+</pre></div>
+</div>
+<p>There are then a number of parameters to set, for example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_initrandom_count</span> <span class="o">=</span> <span class="mi">100000</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">particle_initrandom_mass</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">particle_initrandom_iseed</span> <span class="o">=</span> <span class="mi">15</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="random-placement-1-particle-per-grid-cell">
+<h3>Random placement (1 particle per grid cell)<a class="headerlink" href="#random-placement-1-particle-per-grid-cell" title="Permalink to this headline">¶</a></h3>
+<p>To enable this option, set:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_init_type</span> <span class="o">=</span> <span class="n">RandomPerCell</span>
+</pre></div>
+</div>
+<p>Then only set the mass per particle:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_initrandom_mass</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>Note to increase the number of cells and keep the problem domain size
+and total mass fixed, the mass per particle must decrease proportionally.</p>
+</div>
+<div class="section" id="uniform-placement">
+<h3>Uniform placement<a class="headerlink" href="#uniform-placement" title="Permalink to this headline">¶</a></h3>
+<p>To enable this option, set:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_init_type</span> <span class="o">=</span> <span class="n">OnePerCell</span>
+</pre></div>
+</div>
+<p>There are then a number of parameters to set, for example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_inituniform_mass</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">particle_inituniform_vx</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">particle_inituniform_vy</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">particle_inituniform_vz</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="cosmological">
+<h3>Cosmological<a class="headerlink" href="#cosmological" title="Permalink to this headline">¶</a></h3>
+<p>Using cosmological initial conditions is a three step process:</p>
+<ol class="arabic simple">
+<li>Generating a transfer function (e.g. with <code class="docutils literal notranslate"><span class="pre">camb</span></code>)</li>
+<li>Generating an initial displacement field (with <code class="docutils literal notranslate"><span class="pre">nyx-ic</span></code>)</li>
+<li>Starting nyx</li>
+</ol>
+<p>In the following we will look at each step a bit closer.</p>
+<div class="section" id="generating-a-transfer-function">
+<h4>Generating a transfer function<a class="headerlink" href="#generating-a-transfer-function" title="Permalink to this headline">¶</a></h4>
+<p>The transfer function is used in <code class="docutils literal notranslate"><span class="pre">nyx-ic</span></code> to generate the power
+spectrum. The usual way is to use <code class="docutils literal notranslate"><span class="pre">camb</span></code> <a href="#id2"><span class="problematic" id="id1">[1]_</span></a>
+to calculate it for the desired universe. A sample <code class="docutils literal notranslate"><span class="pre">camb.ini</span></code> is
+provided with <code class="docutils literal notranslate"><span class="pre">nyx-ic</span></code>. The important options are:</p>
+<ul class="simple">
+<li><strong>transfer_redshift(1) = 50</strong></li>
+<li><strong>transfer_matterpower(1) = tf</strong></li>
+</ul>
+<p>which determine the initial time for the simulation. You should make sure
+that you catch all necessary wave numbers for the considered box length and
+resolution.</p>
+<p>From the <code class="docutils literal notranslate"><span class="pre">camb</span></code> output you have to note values for <code class="docutils literal notranslate"><span class="pre">sigma_8</span></code>
+for a redshift of zero and the initial redshift. We need this to compute
+the right normalization.</p>
+</div>
+<div class="section" id="setting-up-the-initial-displacements">
+<h4>Setting up the initial displacements<a class="headerlink" href="#setting-up-the-initial-displacements" title="Permalink to this headline">¶</a></h4>
+<div class="line-block">
+<div class="line">We calculate the initial displacements with a stand-alone program called
+<code class="docutils literal notranslate"><span class="pre">nyx-ic</span></code>. This takes a transfer function and some cosmological parameters
+as an argument and outputs an “init” directory which basically contains initial
+displacements for every grid point in an AMReX MultiFAB. Furthermore the mf
+contains a fourth field containing the density contrast as initial condition
+for the baryonic matter.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">nyx-ic</span></code> is started with an “inputs“
+file similar to the one from Nyx. A sample one is provided. The options are</div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1">#Omega_{Matter}</span>
+<span class="n">cosmo</span><span class="o">.</span><span class="n">omegam</span> <span class="o">=</span> <span class="mf">0.272</span>
+<span class="c1">#Omega_{Lambda}</span>
+<span class="n">cosmo</span><span class="o">.</span><span class="n">omegax</span> <span class="o">=</span> <span class="mf">0.728</span>
+
+<span class="c1">#equation of state paramater omega_{effective}</span>
+<span class="n">cosmo</span><span class="o">.</span><span class="n">weff</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.980</span>
+
+<span class="c1">#Omega_{baryon}*Hubble^2</span>
+<span class="n">cosmo</span><span class="o">.</span><span class="n">ombh2</span> <span class="o">=</span> <span class="mf">0.0226</span>
+<span class="c1">#Hubble/100km/s</span>
+<span class="n">cosmo</span><span class="o">.</span><span class="n">hubble</span> <span class="o">=</span> <span class="mf">0.704</span>
+<span class="c1">#scalar spectral index</span>
+<span class="n">cosmo</span><span class="o">.</span><span class="n">enn</span> <span class="o">=</span> <span class="mf">0.963</span>
+<span class="c1"># initial z</span>
+<span class="n">cosmo</span><span class="o">.</span><span class="n">z_init</span> <span class="o">=</span> <span class="mi">50</span>
+
+<span class="c1">#sidelength of the box (in Mpc)</span>
+<span class="n">cosmo</span><span class="o">.</span><span class="n">boxside</span> <span class="o">=</span> <span class="mf">90.14</span>
+<span class="c1">#seed of the rng</span>
+<span class="n">cosmo</span><span class="o">.</span><span class="n">isd</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="c1">#resolution of the box</span>
+<span class="n">cosmo</span><span class="o">.</span><span class="n">gridpoints</span> <span class="o">=</span> <span class="mi">256</span>
+<span class="c1">#the output file name</span>
+<span class="n">cosmo</span><span class="o">.</span><span class="n">initDirName</span> <span class="o">=</span> <span class="n">init</span>
+
+<span class="c1">#choose the source of the transferfunction</span>
+<span class="n">cosmo</span><span class="o">.</span><span class="n">transferfunction</span> <span class="o">=</span> <span class="n">CAMB</span>
+
+<span class="c1">#some tabulated transferfunction generated with camb (compare camb-ini-file)</span>
+<span class="n">cosmo</span><span class="o">.</span><span class="n">tabulatedTk</span> <span class="o">=</span> <span class="n">tf</span>
+<span class="c1"># sigma8 for the input tf at z=0 and initial z (to calc the growthfactor)</span>
+<span class="n">cosmo</span><span class="o">.</span><span class="n">init_sigma8_0</span> <span class="o">=</span> <span class="mf">0.7891368</span>
+<span class="n">cosmo</span><span class="o">.</span><span class="n">init_sigma8_init</span> <span class="o">=</span> <span class="mf">2.0463364E-02</span>
+</pre></div>
+</div>
+<p>The code solves the equation</p>
+<div class="math notranslate nohighlight">
+\[\begin{aligned}
+    P(k,a) = 2\pi^2\delta^2_H \frac{k^n}{H_0^{n+3}}T^2(k)\left( \frac{D(a)}{D(a=1)} \right)^2
+    \end{aligned}\]</div>
+<p>to calculate <span class="math notranslate nohighlight">\(P\)</span> and from that gaussian distributed density perturbations
+<span class="math notranslate nohighlight">\(\delta\)</span> following that spectrum. Particle displacements are then calculated
+as Zel’dovich displacements.</p>
+<p>Non-gaussian effects as well as neutrino contributions are planned for the
+future.</p>
+</div>
+<div class="section" id="using-nyx-with-cosmological-initial-conditions">
+<h4>Using Nyx with cosmological initial conditions<a class="headerlink" href="#using-nyx-with-cosmological-initial-conditions" title="Permalink to this headline">¶</a></h4>
+<ul>
+<li><div class="first line-block">
+<div class="line"><strong>nyx.particle_init_type = Cosmological</strong></div>
+<div class="line">set the <em>right</em> init type</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line"><strong>cosmo.initDirName = init</strong></div>
+<div class="line">set the name of the displacements directory (amrex format)</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line"><strong>cosmo.particle_mass = 0.19178304E+10</strong></div>
+<div class="line">sets the mass [<span class="math notranslate nohighlight">\(M_\odot\)</span>] of each particle</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line"><strong>cosmo.omegam = 0.272</strong></div>
+<div class="line">set <span class="math notranslate nohighlight">\(\Omega_{Matter}\)</span></div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line"><strong>cosmo.omegax = 0.728</strong></div>
+<div class="line">set <span class="math notranslate nohighlight">\(\Omega_\Lambda\)</span></div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line"><strong>cosmo.hubble = 0.704</strong></div>
+<div class="line">set the reduced hubble constant <span class="math notranslate nohighlight">\(h\)</span></div>
+</div>
+</li>
+</ul>
+<p>We will generate a particle of mass <strong>particle_mass</strong> in every grid cell
+displaced from the center by the value found in the <strong>initDirName</strong> for
+that cell. Velocities are calculated in the Zel’dovich approximation by</p>
+<div class="math notranslate nohighlight">
+\[\begin{aligned}
+        \vec{v} = \Delta{\vec{x}} \times 100 \text{km/s} \times a \sqrt{\Omega_M/a^3+\Omega_\Lambda} \times L_{\text{box}}
+    \end{aligned}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\Delta{\vec{x}}\)</span> is the displacement of the particle.</p>
+</div>
+</div>
+</div>
+<div class="section" id="particle-time-stepping-move-kick-drift-algorithm">
+<h2>Particle Time Stepping: Move-Kick-Drift Algorithm<a class="headerlink" href="#particle-time-stepping-move-kick-drift-algorithm" title="Permalink to this headline">¶</a></h2>
+<p>In each time step:</p>
+<ul class="simple">
+<li>Solve for <span class="math notranslate nohighlight">\({\mathbf g}^n\)</span> (only if multilevel, otherwise use <span class="math notranslate nohighlight">\({\mathbf g}^{n+1}\)</span> from previous step)</li>
+<li><span class="math notranslate nohighlight">\({\mathbf u}_i^{{n+\frac{1}{2}}} = \frac{1}{a^{{n+\frac{1}{2}}}} ( (a^n {\mathbf u}^n_i) + \frac{{\Delta t}}{2} \; {\mathbf g}^n_i )\)</span></li>
+<li><span class="math notranslate nohighlight">\({\mathbf x}_i^{n+1 } = {\mathbf x}^n_i +  \frac{{\Delta t}}{a^{{n+\frac{1}{2}}}}  {\mathbf u}_i^{{n+\frac{1}{2}}}\)</span></li>
+<li>Solve for <span class="math notranslate nohighlight">\({\mathbf g}^{n+1}\)</span> using <span class="math notranslate nohighlight">\({\mathbf x}_i^{n+1}\)</span></li>
+<li><span class="math notranslate nohighlight">\({\mathbf u}_i^{n+1} = \frac{1}{a^{n+1}} ( (a^{{n+\frac{1}{2}}} {\mathbf u}^{{n+\frac{1}{2}}}_i) + \frac{{\Delta t}}{2} \; {\mathbf g}^{n+1}_i )\)</span></li>
+</ul>
+<p>Note that at the end of the timestep <span class="math notranslate nohighlight">\({\bf x}_i^{n+1}\)</span> is consistent with <span class="math notranslate nohighlight">\({\bf g}^{n+1}\)</span> becasue
+we have not advanced the positions after computing the new-time gravity. This has the benefit that
+we perform only one gravity solve per timestep (in a single-level calculation with no hydro) because
+the particles are only moved once.</p>
+<p>We solve for the gravitational vector as follows:</p>
+<ul class="simple">
+<li>Assign the mass of the particles onto the grid in the form of density, <span class="math notranslate nohighlight">\(\rho_{DM}\)</span>.
+The mass of each particle is assumed to be uniformly distributed over a cube of side <span class="math notranslate nohighlight">\(\Delta x\)</span>,
+centered at what we call the position of the particle. We distribute the mass of each
+particle to the cells on the grid in proportion to the volume of the intersection of each cell
+with the particle’s cube. We then divide these cell values by <span class="math notranslate nohighlight">\(\Delta x^3\)</span> so that the
+right hand side of the Poisson solve will be in units of density rather than mass.
+Note that this is the <em>comoving</em> density.</li>
+<li>Solve <span class="math notranslate nohighlight">\(\nabla^2 \phi = \frac{4 \pi G}{a} \rho_{DM}\)</span>.
+We discretize with the standard 7-point Laplacian (5-point in 2D)
+and use multigrid with Gauss-Seidel red-black relaxation to solve the equation for <span class="math notranslate nohighlight">\(\phi\)</span> at cell centers.</li>
+<li>Compute the normal component of <span class="math notranslate nohighlight">\({\bf g} = -\nabla \phi\)</span> at cell faces by differencing the adjacent values of <span class="math notranslate nohighlight">\(\phi,\)</span>
+e.g. if <span class="math notranslate nohighlight">\({\bf g} = (g_x, g_y, g_z),\)</span> then we define <span class="math notranslate nohighlight">\(g_x\)</span> on cell faces with a normal in the x-direction by computing
+<span class="math notranslate nohighlight">\(g_{x,i-{\frac{1}{2}},j,k} = -(\phi_{i,j,k} - \phi_{i-1,j,k}) / \Delta x.\)</span></li>
+<li>Interpolate each component of <span class="math notranslate nohighlight">\({\bf g}\)</span> from normal cell faces onto each particle position using
+linear interpolation in the normal direction.</li>
+</ul>
+</div>
+<div class="section" id="output-format">
+<h2>Output Format<a class="headerlink" href="#output-format" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="checkpoint-files">
+<h3>Checkpoint Files<a class="headerlink" href="#checkpoint-files" title="Permalink to this headline">¶</a></h3>
+<blockquote>
+<div>The particle positions and velocities are stored in a binary file in each checkpoint directory.
+This format is designed for being read by the code at restart rather than for diagnostics.
+We note that the value of <span class="math notranslate nohighlight">\(a\)</span> is also written in each checkpoint directory,
+in a separate ASCII file called <em>comoving_a</em>, containing only the single value.</div></blockquote>
+</div>
+<div class="section" id="particle-data-in-plot-files">
+<h3>Particle Data in Plot Files<a class="headerlink" href="#particle-data-in-plot-files" title="Permalink to this headline">¶</a></h3>
+<p>The particle positions and velocities will be written in binary files in each plotfile directory.
+Dark matter particles will be in DM, active galactic nuclei particles will be in AGN,
+neutrino particles will be in NPC.</p>
+<blockquote>
+<div><p>In addition, we can also
+visualize the particle locations as represented on the grid. There are multiple “derived quantities”
+which represent the particles. Including particle variables in the derived variables will make them
+be written as plotfile fields on the grid, i.e.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">amr</span><span class="o">.</span><span class="n">derive_plot_vars</span> <span class="o">=</span> <span class="n">particle_count</span> <span class="n">particle_mass_density</span>
+</pre></div>
+</div>
+<p>in the inputs file will generate plotfiles with only two variables.
+<strong>particle_count</strong> represents the number of particles in a grid cell;
+<strong>particle_mass_density</strong> is the density on the grid resulting from the particles.</p>
+<p>The same naming convention follows for particle velocities on the grid: <strong>particle_x_velocity</strong>,
+<strong>particle_y_velocity</strong>, <strong>particle_z_velocity</strong></p>
+<p>Derived variables with <strong>particle_</strong> represent quantities from the Dark Matter Particle Container.
+Similar variables from the AGN particle container, and the Neutrino Particle Container
+are named <strong>agn_</strong> and <strong>neutrino_</strong>. Note these are particle fields written to the grid,
+which are distinct from the <strong>density</strong> field in the plotfile, which is baryonic density on the grid.</p>
+<p>We note that the value of <span class="math notranslate nohighlight">\(a\)</span> is also written in each plotfile directory,
+in a separate ASCII file called <em>comoving_a</em>, containing only the single value.</p>
+</div></blockquote>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="AGN.html" class="btn btn-neutral float-right" title="The AGN Model in Nyx" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="NyxForcing.html" class="btn btn-neutral float-left" title="Stochastic Forcing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2018, Nyx development team.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
