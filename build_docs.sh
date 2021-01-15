@@ -8,9 +8,10 @@ doxygen Doxyfile
 cd ../..
 
 # sphinx
-
+cd Docs/sphinx_documentation
 echo "Build the Sphinx documentation for Nyx."
-make PYTHON="python3" latexpdf
+#Skip latexpdf since it fails
+#make PYTHON="python3" latexpdf
 make PYTHON="python3" html &> make_source_html.out
 cd ../../
 
