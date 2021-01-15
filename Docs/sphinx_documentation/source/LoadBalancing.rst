@@ -1,9 +1,6 @@
 .. role:: cpp(code)
    :language: c++
 
-.. role:: fortran(code)
-   :language: fortran
-
 .. _sec:load_balancing:
 
 Load Balancing
