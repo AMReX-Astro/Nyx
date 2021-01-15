@@ -1,9 +1,6 @@
 .. role:: cpp(code)
    :language: c++
 
-.. role:: fortran(code)
-   :language: fortran
-
 .. _sec:grid_creation:
 
 Grid Creation

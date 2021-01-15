@@ -22,7 +22,7 @@ grids to MPI ranks, i.e. defining the :cpp:`DistributionMapping` with which
 When running on multicore machines with OpenMP, we can also control the distribution of 
 work by setting the size of grid tiles (by defining :cpp:`fabarray_mfiter.tile_size`).
 We can also specify the strategy for assigning tiles to OpenMP threads.  
-See :ref:`sec:basics:mfiter:tiling:` for more about tiling.
+See the AMReX documentation for more about tiling.
 
 .. toctree::
    :maxdepth: 1
