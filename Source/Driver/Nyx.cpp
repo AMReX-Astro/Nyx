@@ -2029,6 +2029,8 @@ Nyx::post_init (Real /*stop_time*/)
         return;
     }
 
+    nyx_set_index();
+
     // If we restarted from a plotfile, we need to reset the level_steps counter
     if ( ! parent->theRestartPlotFile().empty()) {
         parent->setLevelSteps(0,nsteps_from_plotfile);

@@ -40,6 +40,8 @@ extern "C"
 
   void init_uniform01_rng();
 
+  void nyx_set_index();
+
 #ifdef __cplusplus
 }
 #endif

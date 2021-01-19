@@ -1,3 +1,19 @@
+  subroutine nyx_set_index() bind(C,name='nyx_set_index')
+    use meth_params_module
+    ! We use these to index into the state "U"
+    URHO  = 1
+    UMX   = 2
+    UMY   = 3
+    UMZ   = 4
+    UEDEN = 5
+    UEINT = 6
+    NVAR  = 6
+    TEMP_COMP = 1
+    NE_COMP   = 2
+    NDIAG     = 2
+
+  end subroutine
+
   subroutine nyx_compute_overlap(np, particles, ng, ghosts, delta_x) &
        bind(c,name='nyx_compute_overlap')
 
