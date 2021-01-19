@@ -176,7 +176,7 @@ void AGNParticleContainer::ComputeOverlap(int lev)
         int Ng = neighbors[lev][index].size() / pdata_size;
 
         nyx_compute_overlap(&Np, particles.data(), 
-                            &Ng, neighbors[lev][index].dataPtr(), dx);
+                            &Ng, neighbors[lev][index].GetArrayOfStructs().dataPtr(), dx);
 
     }
 }
@@ -197,7 +197,7 @@ void AGNParticleContainer::Merge(int lev)
         int Ng = neighbors[lev][index].size() / pdata_size;
 
         agn_merge_particles(&Np, particles.data(), 
-                            &Ng, neighbors[lev][index].dataPtr(), dx);
+                            &Ng, neighbors[lev][index].GetArrayOfStructs().dataPtr(), dx);
     }
 }
 
