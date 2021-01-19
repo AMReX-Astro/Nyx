@@ -139,13 +139,13 @@ Nyx::agn_halo_find (Real dt)
        Nyx::theDMPC()->AssignDensity(particle_mf, 0, 4, -1, 0);
 
        runReeberAnalysis(state_levels, particle_mf, Geom(), level_refinements, nStep(), do_analysis, reeber_halos);
+       amrex::Print()<<"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"<<reeber_halos.size()<<std::endl;
 #else
 
    const auto& reeber_density_var_list = getReeberHaloDensityVars();
    bool do_analysis(doAnalysisNow());
 
    bool created_file = false;
-
    if (do_analysis || (reeber_int > 0 && nStep() % reeber_int == 0))
    {
 

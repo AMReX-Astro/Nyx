@@ -2,7 +2,7 @@ EBASE     ?= Nyx
 
 USE_PARTICLES = TRUE
 USE_GRAV = TRUE
-BL_NO_FORT = TRUE
+#BL_NO_FORT = TRUE
 USE_RPATH = TRUE
 
 include $(AMREX_HOME)/Tools/GNUMake/Make.defs

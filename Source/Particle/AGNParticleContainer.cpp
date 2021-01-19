@@ -1,6 +1,7 @@
 #include <AGNParticleContainer.H>
 #include <AMReX_RealVect.H>
 #include <agn_F.H>
+#include <constants_cosmo.H>
 
 using namespace amrex;
 
@@ -251,7 +252,7 @@ void AGNParticleContainer::AccreteMass(int lev,
                          state[pti].dataPtr(),
                          density_lost[pti].dataPtr(),
                          sbox.loVect(), sbox.hiVect(),
-                         &dt, dx);
+                         &dt, dx, Gconst, pi, eddington_const, c_light);
     }
 }
 

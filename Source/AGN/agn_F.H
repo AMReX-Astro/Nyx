@@ -4,10 +4,16 @@
 extern "C"
 {
 #endif
-    void nyx_compute_overlap(const int* np, void* particles,
+    void update_agn_particles(const int* np, void* particles,
+                              const amrex::Real* accel, const int* accel_lo, const int* accel_hi,
+                              const amrex::Real* prob_lo,
+                              const amrex::Real* dx, const amrex::Real& dt,
+                              const amrex::Real& a_prev, const amrex::Real& a_cur, const int* do_move);
+
+    void nyx_compute_overlap(const int* np, void* particles, 
                              const int* ng, void*    ghosts, const amrex::Real* dx);
 
-    void agn_merge_particles(const int* np, void* particles,
+    void agn_merge_particles(const int* np, void* particles, 
                              const int* ng, void*    ghosts, const amrex::Real* dx);
 
     void agn_particle_velocity(const int* np, void* particles,
@@ -18,7 +24,11 @@ extern "C"
   void agn_accrete_mass(const int* np, void* particles,
                         const amrex::Real* state, const amrex::Real* density_lost,
                         const int* s_lo, const int* s_hi,
-                        const amrex::Real* dt, const amrex::Real* dx);
+                        const amrex::Real* dt, const amrex::Real* dx,
+						const amrex::Real Gconst,
+						const amrex::Real pi,
+						const amrex::Real eddington_const,
+						const amrex::Real c_light);
 
   void agn_release_energy(const int* np, void* particles,
                           const amrex::Real* state,

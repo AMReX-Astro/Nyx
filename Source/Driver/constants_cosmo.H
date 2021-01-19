@@ -1,6 +1,9 @@
 #ifndef _constants_cosmo_
 #define _constants_cosmo_
 
+#include <cmath>
+static constexpr amrex::Real pi = M_PI;
+
 // Relation of our code units & CGS 
 static constexpr amrex::Real  M_unit = 1.98848e33;    // M_sun
 static constexpr amrex::Real  L_unit = 3.0856776e24;  // Mpc
@@ -27,8 +30,8 @@ static constexpr amrex::Real  m_nucleon    = 1.0/n_A;
 static constexpr amrex::Real  m_proton = 1.672621e-24          
   / M_unit;// Proton mass [g]
   
-//static constexpr amrex::Real  sigma_T =  6.6524587158e-25         
-//  / L_unit**2;// Thomson cross section [cm^2]
+static constexpr amrex::Real  sigma_T =  6.6524587158e-25         
+  / (L_unit*L_unit);// Thomson cross section [cm^2]
   
 static constexpr amrex::Real  c_light = 2.99792458e10   
   / V_unit;// Speed of light [cm/s] 
@@ -48,6 +51,6 @@ static constexpr amrex::Real  density_to_cgs = M_unit / (L_unit*L_unit*L_unit);
 static constexpr amrex::Real  heat_from_cgs = L_unit*(T_unit*T_unit*T_unit / M_unit);
 
 // For AGN accretion rate
-//static constexpr amrex::Real  eddington_const = 4.00*pi * Gconst * m_proton / (sigma_T * c_light);
+static constexpr amrex::Real  eddington_const = 4.00*pi * Gconst * m_proton / (sigma_T * c_light);
 
 #endif
