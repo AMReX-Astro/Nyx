@@ -210,33 +210,9 @@ int Nyx::integrate_state_struct_mfin
 #ifdef _OPENMP
               int nthreads=omp_get_max_threads();
               u = N_VNew_OpenMP(neq,nthreads);  /* Allocate u vector */
-              e_orig = N_VNew_OpenMP(neq,nthreads);  /* Allocate u vector */
-              eptr=N_VGetDeviceArrayPointer(e_orig);
-              dptr=N_VGetArrayPointer_OpenMP(u);
-
-              abstol_vec = N_VNew_OpenMP(neq,nthreads);
-              abstol_ptr=N_VGetArrayPointer_OpenMP(abstol_vec);
-              if(sdc_iter>=0||true)
-                {
-                  T_vec = N_VNew_OpenMP(neq,nthreads);
-                  ne_vec = N_VNew_OpenMP(neq,nthreads);
-                  rho_vec = N_VNew_OpenMP(neq,nthreads);
-                  rho_init_vec = N_VNew_OpenMP(neq,nthreads);
-                  rho_src_vec = N_VNew_OpenMP(neq,nthreads);
-                  rhoe_src_vec = N_VNew_OpenMP(neq,nthreads);
-                  e_src_vec = N_VNew_OpenMP(neq,nthreads);
-                  IR_vec = N_VNew_OpenMP(neq,nthreads);
-                }
-              amrex::Real* T_vode= N_VGetArrayPointer_OpenMP(T_vec);
-              amrex::Real* ne_vode=N_VGetArrayPointer_OpenMP(ne_vec);
-              amrex::Real* rho_vode=N_VGetArrayPointer_OpenMP(rho_vec);
-              amrex::Real* rho_init_vode=N_VGetArrayPointer_OpenMP(rho_init_vec);
-              amrex::Real* rho_src_vode=N_VGetArrayPointer_OpenMP(rho_src_vec);
-              amrex::Real* rhoe_src_vode=N_VGetArrayPointer_OpenMP(rhoe_src_vec);
-              amrex::Real* e_src_vode=N_VGetArrayPointer_OpenMP(e_src_vec);
-              amrex::Real* IR_vode=N_VGetArrayPointer_OpenMP(IR_vec);
 #else
               u = N_VNew_Serial(neq);  /* Allocate u vector */
+#endif
               e_orig = N_VClone(u);  /* Allocate u vector */
               eptr=N_VGetArrayPointer(e_orig);
               dptr=N_VGetArrayPointer(u);
@@ -273,7 +249,6 @@ int Nyx::integrate_state_struct_mfin
               amrex::Real* rhoe_src_vode=N_VGetArrayPointer(rhoe_src_vec);
               amrex::Real* e_src_vode=N_VGetArrayPointer(e_src_vec);
               amrex::Real* IR_vode=N_VGetArrayPointer(IR_vec);
-#endif
 #endif
       int* JH_vode_arr=NULL;
       if(inhomo_reion == 1)
