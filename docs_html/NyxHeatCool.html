@@ -207,31 +207,29 @@ The motivation and algorithm for the heating and cooling components is documente
 The code is activated through the <code class="docutils literal notranslate"><span class="pre">USE_HEATCOOL=TRUE</span></code> option in the <code class="docutils literal notranslate"><span class="pre">GNUmakefile</span></code>.
 Mathematically, the heating and cooling can be described by a single ODE in each cell, to be integrated per time step <span class="math notranslate nohighlight">\(\Delta t\)</span>.
 This ODE exhibits a sensitive relationship to quantities such as temperature and free electron density, and consequently it often requires sophisticated integration techniques to compute correctly.</p>
-<p>Nyx provides a few different techniques for solving this ODE, which are selected via the <code class="docutils literal notranslate"><span class="pre">nyx.heat_cool_type</span></code> input parameter.
-One method is to use the VODE ODE solver (selected with <code class="docutils literal notranslate"><span class="pre">nyx.heat_cool_type=3</span></code>).
-The source code for VODE is included in the <code class="docutils literal notranslate"><span class="pre">Util/VODE</span></code> subdirectory and is compiled automatically with the rest of .
-However, while VODE is sufficient for computing this ODE correctly, it is an old Fortran code which is no longer maintained, and consequently will not easily be adapted to future high-performance computing architectures.</p>
-<p>VODE’s successor is CVODE, which is a translation of the original VODE solver from Fortran to C.
-CVODE is actively developed and maintained, and is more likely to be adapted to future architectures.
-To use CVODE in , one may use the <code class="docutils literal notranslate"><span class="pre">nyx.heat_cool_type=5</span></code> input parameter.
-Currently the performance of VODE is slightly better because CVODE evaluates the ODE RHS one more time than VODE per coarse time step integration.
-Users should note that, while the VODE solver is compiled automatically in , CVODE must be compiled as a separate library; instructions for compiling CVODE are provided in the &nbsp;User Guide.
-To link the external CVODE solver into , one must set <code class="docutils literal notranslate"><span class="pre">USE_HEATCOOL=TRUE</span></code> as well as <code class="docutils literal notranslate"><span class="pre">USE_CVODE=TRUE</span></code> in the <code class="docutils literal notranslate"><span class="pre">GNUmakefile</span></code>.</p>
-<p>Finally, a third ODE integration option (which is new and <strong>*highly experimental*</strong>) consists of using CVODE while treating groups of ODEs in different cells as a single system of coupled ODEs.
-This option can be selected with the <code class="docutils literal notranslate"><span class="pre">nyx.heat_cool_type=7</span></code> option.
-The purpose of this approach is to enable the evaluation of multiple RHSs simultaneously, using SIMD instructions.
-SIMD parallelism comprises a large fraction of compute performance on modern HPC architectures, and consequently, this approach can lead to a significant performance gain in the ODE integration (which is the most expensive computational kernel in ).
-The number of ODEs (cells) which are computed simultaneously is chosen through the input parameter <code class="docutils literal notranslate"><span class="pre">nyx.simd_width</span></code>.
-On Intel Xeon Phi, with 512 bit-wide SIMD instructions, an appropriate value for this parameter might be 8 or 16, or perhaps larger; the value which yields the highest performance will vary by architecture.
-However, users are cautioned that this mode remains <strong>*experimental*</strong> and its results have not been subjected to the same level of verification as the other solver methods.
-In particular, the are three numerical tolerances, available as input parameters, which affect the convergence of the scalar vs SIMD ODE integration:</p>
-<ul class="simple">
-<li><code class="docutils literal notranslate"><span class="pre">nyx.eos_nr_eps</span></code>: this is the convergence criterion for the Newton-Raphson iteration which is used to evaluate the ODE RHS</li>
-<li><code class="docutils literal notranslate"><span class="pre">nyx.vode_rtol</span></code>: this is the relative tolerance required for the ODE integration in VODE or CVODE</li>
-<li><code class="docutils literal notranslate"><span class="pre">nyx.vode_atol_scaled</span></code>: this is the absolute tolerance required for the ODE integration in VODE or CVODE, scaled by the initial value of the independent variable in the ODE</li>
-</ul>
-<p>These variables, in particular <code class="docutils literal notranslate"><span class="pre">nyx.vode_rtol</span></code>, have different effects depending on whether one is integrating a single ODE at a time, or a system of ODEs simultaneously.
+<p>Nyx provides a few different parallelization strategies techniques for solving this ODE.</p>
+<p>For legacy reasons, the integration scheme is selected via the <code class="docutils literal notranslate"><span class="pre">nyx.heat_cool_type</span></code> input parameter.
+One method is to use <code class="docutils literal notranslate"><span class="pre">USE_HEATCOOL=FALSE</span></code> with no ODE solve (selected with <code class="docutils literal notranslate"><span class="pre">nyx.heat_cool_type=0</span></code>).
+The other method is to use <code class="docutils literal notranslate"><span class="pre">USE_HEATCOOL=TRUE</span></code> with a vectorized CVODE solve (selected with <code class="docutils literal notranslate"><span class="pre">nyx.heat_cool_type=11</span></code>).</p>
+<p>Users should note that, when compiling with GNUmake , CVODE must be compiled as a separate library; instructions for compiling CVODE are provided in Getting Started.
+To link the external CVODE solver into Nyx, one must set <code class="docutils literal notranslate"><span class="pre">USE_HEATCOOL=TRUE</span></code> as well as <code class="docutils literal notranslate"><span class="pre">USE_SUNDIALS=TRUE</span></code> in the <code class="docutils literal notranslate"><span class="pre">GNUmakefile</span></code>.</p>
+<p>This vectorized option uses CVODE while treating groups of ODEs in different cells as a single system of coupled ODEs.
+The purpose of this approach is to enable the evaluation of multiple RHSs simultaneously, for improved parallel performance.
+This approach can lead to a significant performance gain in the ODE integration (which is the among the most expensive computational kernels in Nyx).
+The group of cells integrated together is controlled by the tilesize used in the CVODE integration loop. If tiling is not used, the entire box of cells is integrated together.
+CVODE integrates this resulting system of ODEs with using adaptive time-step control which selects
+timesteps for the whole system. We set the absolute tolerance required for the ODE integration in CVODE to <code class="docutils literal notranslate"><span class="pre">1e-4</span></code>, scaled by the initial value of each cells independent variable in the ODE and
+the relative tolerance required for the ODE integration in CVODE to <code class="docutils literal notranslate"><span class="pre">1e-4</span></code>.
+These tolerances, in particular the relative tolerance, have different effects depending on whether one is integrating a single ODE at a time, or a system of ODEs simultaneously.
 One should be mindful of the numerical differences which arise from these, which can be observed with the <code class="docutils literal notranslate"><span class="pre">fcompare</span></code> tool in AMReX.</p>
+<p>Input flags with affect the CVODE integration include:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">nyx.use_sundials_constraint</span></code> which when non-zero requires that the internal energy (while the problem is evolved) is positive</li>
+<li><code class="docutils literal notranslate"><span class="pre">nyx.use_sundials_fused</span></code> which when non-zero uses Sundials’s GPU fused operations (which are mathematically equivalent, but reduces GPU kernel launch time overhead)</li>
+<li><code class="docutils literal notranslate"><span class="pre">nyx.sundials_alloc_type</span></code> which has 3 different vector memory allocation strategies and only affects executables built with CUDA</li>
+<li><code class="docutils literal notranslate"><span class="pre">nyx.use_typical_steps</span></code> which when non-zero sets CVODE’s adaptive step-size selection (which substeps the total CVODE integration time) to be <code class="docutils literal notranslate"><span class="pre">dt</span> <span class="pre">/</span> <span class="pre">old_max_steps</span></code>. This maximum was over the entire problem domain. (In the strang case, the old maximum is taken from the same phase in the previous time-step)</li>
+<li><code class="docutils literal notranslate"><span class="pre">nyx.sundials_use_tiling</span></code> which controls whether the MFIter loop that iterates over the CVODE integration uses tiling</li>
+</ul>
 </div>
 
 
