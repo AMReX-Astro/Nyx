@@ -211,7 +211,7 @@ int Nyx::integrate_state_struct_mfin
               int nthreads=omp_get_max_threads();
               u = N_VNew_OpenMP(neq,nthreads);  /* Allocate u vector */
               e_orig = N_VNew_OpenMP(neq,nthreads);  /* Allocate u vector */
-              eptr=N_VGetArrayPointer_Serial(e_orig);
+              eptr=N_VGetDeviceArrayPointer(e_orig);
               dptr=N_VGetArrayPointer_OpenMP(u);
 
               abstol_vec = N_VNew_OpenMP(neq,nthreads);
@@ -237,31 +237,42 @@ int Nyx::integrate_state_struct_mfin
               amrex::Real* IR_vode=N_VGetArrayPointer_OpenMP(IR_vec);
 #else
               u = N_VNew_Serial(neq);  /* Allocate u vector */
-              e_orig = N_VNew_Serial(neq);  /* Allocate u vector */
-              eptr=N_VGetArrayPointer_Serial(e_orig);
-              dptr=N_VGetArrayPointer_Serial(u);
+              e_orig = N_VClone(u);  /* Allocate u vector */
+              eptr=N_VGetArrayPointer(e_orig);
+              dptr=N_VGetArrayPointer(u);
 
-              abstol_vec = N_VNew_Serial(neq);
-              abstol_ptr=N_VGetArrayPointer_Serial(abstol_vec);
-              if(sdc_iter>=0||true)
+              abstol_vec = N_VClone(u);
+              abstol_ptr=N_VGetArrayPointer(abstol_vec);
+              if(sdc_iter>=0)
               {
-              T_vec = N_VNew_Serial(neq);
-              ne_vec = N_VNew_Serial(neq);
-              rho_vec = N_VNew_Serial(neq);
-              rho_init_vec = N_VNew_Serial(neq);
-              rho_src_vec = N_VNew_Serial(neq);
-              rhoe_src_vec = N_VNew_Serial(neq);
-              e_src_vec = N_VNew_Serial(neq);
-              IR_vec = N_VNew_Serial(neq);
+                  T_vec = N_VClone(u);
+                  ne_vec = N_VClone(u);
+                  rho_vec = N_VClone(u);
+                  rho_init_vec = N_VClone(u);
+                  rho_src_vec = N_VClone(u);
+                  rhoe_src_vec = N_VClone(u);
+                  e_src_vec = N_VClone(u);
+                  IR_vec = N_VClone(u);
               }
-              amrex::Real* T_vode= N_VGetArrayPointer_Serial(T_vec);
-              amrex::Real* ne_vode=N_VGetArrayPointer_Serial(ne_vec);
-              amrex::Real* rho_vode=N_VGetArrayPointer_Serial(rho_vec);
-              amrex::Real* rho_init_vode=N_VGetArrayPointer_Serial(rho_init_vec);
-              amrex::Real* rho_src_vode=N_VGetArrayPointer_Serial(rho_src_vec);
-              amrex::Real* rhoe_src_vode=N_VGetArrayPointer_Serial(rhoe_src_vec);
-              amrex::Real* e_src_vode=N_VGetArrayPointer_Serial(e_src_vec);
-              amrex::Real* IR_vode=N_VGetArrayPointer_Serial(IR_vec);
+              else
+              {
+                  T_vec = N_VCloneEmpty(u);
+                  ne_vec = N_VCloneEmpty(u);
+                  rho_vec = N_VCloneEmpty(u);
+                  rho_init_vec = N_VCloneEmpty(u);
+                  rho_src_vec = N_VCloneEmpty(u);
+                  rhoe_src_vec = N_VCloneEmpty(u);
+                  e_src_vec = N_VCloneEmpty(u);
+                  IR_vec = N_VCloneEmpty(u);
+              }
+              amrex::Real* T_vode= N_VGetArrayPointer(T_vec);
+              amrex::Real* ne_vode=N_VGetArrayPointer(ne_vec);
+              amrex::Real* rho_vode=N_VGetArrayPointer(rho_vec);
+              amrex::Real* rho_init_vode=N_VGetArrayPointer(rho_init_vec);
+              amrex::Real* rho_src_vode=N_VGetArrayPointer(rho_src_vec);
+              amrex::Real* rhoe_src_vode=N_VGetArrayPointer(rhoe_src_vec);
+              amrex::Real* e_src_vode=N_VGetArrayPointer(e_src_vec);
+              amrex::Real* IR_vode=N_VGetArrayPointer(IR_vec);
 #endif
 #endif
       int* JH_vode_arr=NULL;
@@ -448,8 +459,8 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
 static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
 {
 
-  Real* udot_ptr=N_VGetArrayPointer_Serial(udot);
-  Real* u_ptr=N_VGetArrayPointer_Serial(u);
+  Real* udot_ptr=N_VGetArrayPointer(udot);
+  Real* u_ptr=N_VGetArrayPointer(u);
   int neq=N_VGetLength_Serial(udot);
 
   auto atomic_rates = atomic_rates_glob;
