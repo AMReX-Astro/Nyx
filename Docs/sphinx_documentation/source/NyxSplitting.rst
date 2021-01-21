@@ -115,9 +115,8 @@ Step 5:
 
 .. math::
 
-      \begin{aligned}
-      ( e)^{n+1} &=& ( e)^{n+1,\ast } +  \int \Lambda_{HC} \; dt^\prime \enskip .%, \\
-      %(\rho E)^{n,\ast} &=& (\rho E)^n +  \int \Lambda_{HC} \; dt^\prime \enskip ,\end{aligned}
+        \begin{aligned}
+        ( e)^{n+1} &=& ( e)^{n+1,\ast } +  \int \Lambda_{HC} \; dt^\prime \enskip .\end{aligned}
 
      We update :math:`(\rho e)^{n+1}=(\rho e)^{n+1,\ast}+\rho^{n+1}\left((e)^{n+1}-(e)^{n+1,\ast}\right)`
    | We update :math:`(\rho E)^{n+1}=(\rho E)^{n+1,\ast}+\rho^{n+1}\left((e)^{n+1}-(e)^{n+1,\ast}\right)`
@@ -228,10 +227,7 @@ Step 3:
       A_{\rho E} & = & a\left[-\nabla\cdot(\rho{\bf U}E+p{\bf U})\right]\\%+\rho\Ub\cdot\gb
       A_{\rho e} & = & \frac{1}{a} \left[
       - \nabla \cdot (\rho_b {\bf U}e)
-      - p \nabla \cdot {\bf U}) \right]
-      %%%\dt A_{\rho e} & = & \left(\rho E+\dt A_{\rho E}-\frac{\left(\rho u+\dt A_{\rho u}\right)\cdot\left(\rho u+\dt A_{\rho u}\right)}{2\left(\rho+\dt A_{\rho}\right)}-\rho e\right)\\
-      %%%\dt A_{e}&=&\frac{\left(\rho e+\dt A_{\rho e}\right)}{\left(\rho+\dt A_{\rho}\right)}-\frac{\rho e}{\rho}
-      %%\\ Also discussed using \dt A_e = \frac{\left(\rho e\right)^{n+1}}{{\rho}^{n+1}}-\frac{\left(\rho e\right)^{n}}{{\rho}^n}\end{aligned}
+      - p \nabla \cdot {\bf U}) \right]\end{aligned}
 
 Step 4:
    *Update momentum and :math:`\rho E`*
@@ -263,8 +259,6 @@ Step 6:
    .. math::
 
       \begin{aligned}
-      %I_{R_{\rho}} & = & 0\\
-      %%%\dt I_{R_{\left(\rho e\right)}} & = & \left(\rho e\right)^{n+1,\ast}-\left[\left(\rho e\right)^{n}+\dt A_{\rho e}\right]\\
       I_{R_{\left(\rho e\right)}} & = & \left( \left[a^{n+1}\right]^{2}\rho^{n+1,\ast}e^{n+1,\ast}-\left(\left[a^{n}\right]^{2}\rho^{n}e^{n}+\Delta tA_{\rho e}\right)\right)/\left[\Delta t\left(\frac{a^{n}+a^{n+1}}{2}\right)\right]\\
       & & -\left[a^{n+1}\right]^{2}A_{reset}/\left[\Delta t\left(\frac{a^{n}+a^{n+1}}{2}\right)\right]\end{aligned}
 
