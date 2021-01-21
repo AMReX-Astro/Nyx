@@ -100,8 +100,8 @@
 <li class="toctree-l1"><a class="reference internal" href="ManagingGridHierarchy_Chapter.html">Gridding and Load Balancing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxEquations.html">Hydrodynamic Equations in Comoving Coordinates</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Hydrodynamical and Heating-Cooling Splitting</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#deferred-correction-splitting-algorithm">Deferred-Correction Splitting Algorithm</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#strang-splitting">Strang Splitting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#deferred-correction-splitting-algorithm">Deferred-Correction Splitting Algorithm</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="NyxHeatCool.html">Radiative Heating and Cooling</a></li>
@@ -228,9 +228,11 @@ corner coupling.</p>
 <p>We track derived variables such as temperature and electron fraction ne based on the internal energy. The concentrations
 of different isotopes of hydrogen and helium then depend on a Newton solve of the heating/cooling equations of state, which
 are closely tied to the internal energy.</p>
-<div class="section" id="deferred-correction-splitting-algorithm">
-<h2>Deferred-Correction Splitting Algorithm<a class="headerlink" href="#deferred-correction-splitting-algorithm" title="Permalink to this headline">¶</a></h2>
-<p>This algorithm is based on the version of SDC introduced by Nonaka et. al. <code class="docutils literal notranslate"><span class="pre">\cite{Nonaka2012}</span></code></p>
+<div class="section" id="strang-splitting">
+<h2>Strang Splitting<a class="headerlink" href="#strang-splitting" title="Permalink to this headline">¶</a></h2>
+<p>The original splitting used in Nyx is Strang splitting, where a half-step of the heating-cooling
+is evolved, then a full step of the hydrodynamical terms, followed by a half-step of the heating-cooling.
+This algorithm is the classical Strang splitting, adapted to include gravity and other forcing terms.</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\label{eq:dens}
 \frac{\partial \rho}{\partial t} = - \frac{1}{a} \nabla \cdot (\rho {\bf U}) , \\\end{split}\]</div>
@@ -258,213 +260,185 @@ and advancing <span class="math notranslate nohighlight">\(a\)</span> from <span
 then composed of the following steps:</p>
 <dl class="docutils">
 <dt>Step 1:</dt>
-<dd><p class="first"><em>Compute :math:`{phi}^n</em> and <span class="math notranslate nohighlight">\({\bf g}^n\)</span> using <span class="math notranslate nohighlight">\(\rho_b^n\)</span> and <span class="math notranslate nohighlight">\(\rho_{dm}^n\)</span>,
-where <span class="math notranslate nohighlight">\(\rho_{dm}^{n}\)</span> is computed from the particles at <span class="math notranslate nohighlight">\({\bf x}_i^{n}\)</span>.`</p>
+<dd><p class="first">Compute <span class="math notranslate nohighlight">\({\phi}^n\)</span> and <span class="math notranslate nohighlight">\({\bf g}^n\)</span> using <span class="math notranslate nohighlight">\(\rho_b^n\)</span> and <span class="math notranslate nohighlight">\(\rho_{dm}^n\)</span>,
+where <span class="math notranslate nohighlight">\(\rho_{dm}^{n}\)</span> is computed from the particles at <span class="math notranslate nohighlight">\({\bf x}_i^{n}\)</span>.</p>
 <p class="last">We note that in the single-level algorithm we can instead use <span class="math notranslate nohighlight">\({\bf g}\)</span> as computed at the
 end of the previous step because there have been no changes to <span class="math notranslate nohighlight">\({\bf x}_i\)</span>
 or <span class="math notranslate nohighlight">\(\rho\)</span> since then.</p>
 </dd>
 <dt>Step 2:</dt>
-<dd><p class="first"><em>Interpolate :math:`{bf g}^n</em> from the grid to the particle locations, then
-advance the particle velocities by <span class="math notranslate nohighlight">\(\Delta t/ 2\)</span> and particle positions by <span class="math notranslate nohighlight">\(\Delta t\)</span>.`
-.. math:</p>
-<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span>\<span class="n">begin</span><span class="p">{</span><span class="n">aligned</span><span class="p">}</span>
-     <span class="p">{</span>\<span class="n">bf</span> <span class="n">u</span><span class="p">}</span><span class="n">_i</span><span class="o">^</span><span class="p">{{</span><span class="n">n</span><span class="o">+</span>\<span class="n">frac</span><span class="p">{</span><span class="mi">1</span><span class="p">}{</span><span class="mi">2</span><span class="p">}}}</span> <span class="o">&amp;=&amp;</span> \<span class="n">frac</span><span class="p">{</span><span class="mi">1</span><span class="p">}{</span><span class="n">a</span><span class="o">^</span><span class="p">{{</span><span class="n">n</span><span class="o">+</span>\<span class="n">frac</span><span class="p">{</span><span class="mi">1</span><span class="p">}{</span><span class="mi">2</span><span class="p">}}}}</span> <span class="p">((</span><span class="n">a</span><span class="o">^</span><span class="n">n</span> <span class="p">{</span>\<span class="n">bf</span> <span class="n">u</span><span class="p">}</span><span class="o">^</span><span class="n">n_i</span><span class="p">)</span> <span class="o">+</span> \<span class="n">frac</span><span class="p">{</span>\<span class="n">Delta</span> <span class="n">t</span><span class="p">}{</span><span class="mi">2</span><span class="p">}</span> \<span class="p">;</span> <span class="p">{</span>\<span class="n">bf</span> <span class="n">g</span><span class="p">}</span><span class="o">^</span><span class="n">n_i</span><span class="p">)</span> \\
-     <span class="p">{</span>\<span class="n">bf</span> <span class="n">x</span><span class="p">}</span><span class="n">_i</span><span class="o">^</span><span class="p">{</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">}</span>  <span class="o">&amp;=&amp;</span> <span class="p">{</span>\<span class="n">bf</span> <span class="n">x</span><span class="p">}</span><span class="o">^</span><span class="n">n_i</span> <span class="o">+</span> \<span class="n">frac</span><span class="p">{</span>\<span class="n">Delta</span> <span class="n">t</span><span class="p">}{</span><span class="n">a</span><span class="o">^</span><span class="p">{{</span><span class="n">n</span><span class="o">+</span>\<span class="n">frac</span><span class="p">{</span><span class="mi">1</span><span class="p">}{</span><span class="mi">2</span><span class="p">}}}}</span> <span class="p">{</span>\<span class="n">bf</span> <span class="n">u</span><span class="p">}</span><span class="n">_i</span><span class="o">^</span><span class="p">{{</span><span class="n">n</span><span class="o">+</span>\<span class="n">frac</span><span class="p">{</span><span class="mi">1</span><span class="p">}{</span><span class="mi">2</span><span class="p">}}}</span>\<span class="n">end</span><span class="p">{</span><span class="n">aligned</span><span class="p">}</span>
-</pre></div>
-</div>
+<dd><p class="first">Interpolate <span class="math notranslate nohighlight">\({\bf g}^n\)</span> from the grid to the particle locations, then
+advance the particle velocities by <span class="math notranslate nohighlight">\(\Delta t/ 2\)</span> and particle positions by <span class="math notranslate nohighlight">\(\Delta t\)</span>.</p>
+<div class="last math notranslate nohighlight">
+\[\begin{split}\begin{aligned}
+     {\bf u}_i^{{n+\frac{1}{2}}} &amp;=&amp; \frac{1}{a^{{n+\frac{1}{2}}}} ((a^n {\bf u}^n_i) + \frac{\Delta t}{2} \; {\bf g}^n_i) \\
+     {\bf x}_i^{n+1}  &amp;=&amp; {\bf x}^n_i + \frac{\Delta t}{a^{{n+\frac{1}{2}}}} {\bf u}_i^{{n+\frac{1}{2}}}\end{aligned}\end{split}\]</div>
 </dd>
 <dt>Step 3:</dt>
-<dd><p class="first"><em>Advance :math:`{bf U}</em> by <span class="math notranslate nohighlight">\(\frac{1}{2}\Delta t\)</span> for first strang`
-| We advance <span class="math notranslate nohighlight">\(e\)</span> by integrating the source terms in time for <span class="math notranslate nohighlight">\(\frac{1}{2}\Delta t\)</span></p>
-<blockquote>
-<div><div class="math notranslate nohighlight">
-\[\begin{split}\begin{aligned}
-( e)^{n,\ast} &amp;=&amp; ( e)^n +  \int \Lambda_{HC} \; dt^\prime \enskip .%, \\
-%(\rho E)^{n,\ast} &amp;=&amp; (\rho E)^n +  \int \Lambda_{HC} \; dt^\prime \enskip ,\end{aligned}\end{split}\]</div>
-</div></blockquote>
-<div class="last line-block">
-<div class="line">We update <span class="math notranslate nohighlight">\((\rho E)^{n,\ast}=(\rho E)^{n,\ast}+\rho^{n}\left((e)^{n,\ast}-(e)^{n}\right)\)</span></div>
-</div>
+<dd><p class="first">Advance <span class="math notranslate nohighlight">\({\bf U}\)</span> by <span class="math notranslate nohighlight">\(\frac{1}{2}\Delta t\)</span> for first strang</p>
+<p>We advance <span class="math notranslate nohighlight">\(e\)</span> by integrating the source terms in time for <span class="math notranslate nohighlight">\(\frac{1}{2}\Delta t\)</span></p>
+<div class="math notranslate nohighlight">
+\[\begin{aligned}
+     ( e)^{n,\ast} &amp;=&amp; ( e)^n +  \int \Lambda_{HC} \; dt^\prime  .\end{aligned}\]</div>
+<p>We update <span class="math notranslate nohighlight">\((\rho e)^{n,\ast}=(\rho e)^{n,\ast}+\rho^{n}\left((e)^{n,\ast}-(e)^{n}\right)\)</span></p>
+<p class="last">We update <span class="math notranslate nohighlight">\((\rho E)^{n,\ast}=(\rho E)^{n,\ast}+\rho^{n}\left((e)^{n,\ast}-(e)^{n}\right)\)</span></p>
 </dd>
 <dt>Step 4:</dt>
-<dd><p class="first"><em>Advance :math:`{bf U}</em> by <span class="math notranslate nohighlight">\(\Delta t\)</span> for advective terms`
-Advance the solution using time-centered fluxes and <span class="math notranslate nohighlight">\(S_e\)</span>
+<dd><p class="first">Advance <span class="math notranslate nohighlight">\({\bf U}\)</span> by <span class="math notranslate nohighlight">\(\Delta t\)</span> for advective terms</p>
+<p>Advance the solution using time-centered fluxes and <span class="math notranslate nohighlight">\(S_e\)</span>
 and an explicit representation of <span class="math notranslate nohighlight">\(S_g\)</span> at time <span class="math notranslate nohighlight">\(t^n\)</span>:</p>
 <div class="math notranslate nohighlight">
 \[{\bf U}^{n+1,\ast} = {\bf U}^{n,\ast} + \Delta tA^{n+\frac{1}{2}}+ \Delta tS_g^n\]</div>
 <p class="last">where <span class="math notranslate nohighlight">\(A^{n+\frac{1}{2}}\)</span> is computed by predicting from the <span class="math notranslate nohighlight">\({\bf U}^{n,\ast}\)</span> states.</p>
 </dd>
 <dt>Step 5:</dt>
-<dd><p class="first"><em>Second Strang step</em>
-| We advance <span class="math notranslate nohighlight">\(e\)</span> by integrating the source terms in time for <span class="math notranslate nohighlight">\(\frac{1}{2}\Delta t\)</span></p>
-<blockquote>
-<div><div class="math notranslate nohighlight">
-\[\begin{split}\begin{aligned}
-( e)^{n+1} &amp;=&amp; ( e)^{n+1,\ast } +  \int \Lambda_{HC} \; dt^\prime \enskip .%, \\
-%(\rho E)^{n,\ast} &amp;=&amp; (\rho E)^n +  \int \Lambda_{HC} \; dt^\prime \enskip ,\end{aligned}\end{split}\]</div>
-</div></blockquote>
-<div class="line-block">
-<div class="line">We update <span class="math notranslate nohighlight">\((\rho E)^{n+1}=(\rho E)^{n+1,\ast}+\rho^{n+1}\left((e)^{n+1}-(e)^{n+1,\ast}\right)\)</span></div>
-</div>
+<dd><p class="first">Second Strang step</p>
+<p>We advance <span class="math notranslate nohighlight">\(e\)</span> by integrating the source terms in time for <span class="math notranslate nohighlight">\(\frac{1}{2}\Delta t\)</span></p>
+<div class="math notranslate nohighlight">
+\[\begin{aligned}
+( e)^{n+1} &amp;=&amp; ( e)^{n+1,\ast } +  \int \Lambda_{HC} \; dt^\prime .\end{aligned}\]</div>
+<p>We update <span class="math notranslate nohighlight">\((\rho e)^{n+1}=(\rho e)^{n+1,\ast}+\rho^{n+1}\left((e)^{n+1}-(e)^{n+1,\ast}\right)\)</span></p>
+<p>We update <span class="math notranslate nohighlight">\((\rho E)^{n+1}=(\rho E)^{n+1,\ast}+\rho^{n+1}\left((e)^{n+1}-(e)^{n+1,\ast}\right)\)</span></p>
 <p class="last">We store Ne and Temp based on eos_ hc updates from <span class="math notranslate nohighlight">\((e)^{n+1}\)</span></p>
 </dd>
 <dt>Step 6:</dt>
-<dd><em>Compute :math:`{phi}^{n+1}</em> and <span class="math notranslate nohighlight">\({\bf g}^{n+1}\)</span> using
+<dd><p class="first">Compute <span class="math notranslate nohighlight">\({\phi}^{n+1}\)</span> and <span class="math notranslate nohighlight">\({\bf g}^{n+1}\)</span> using
 <span class="math notranslate nohighlight">\(\rho^{n+1,*}\)</span> and <span class="math notranslate nohighlight">\(\rho_{dm}^{n+1}\)</span>, where <span class="math notranslate nohighlight">\(\rho_{dm}^{n+1}\)</span>
-is computed from the particles at <span class="math notranslate nohighlight">\({\bf x}_i^{n+1}\)</span>.`
-Here we can use <span class="math notranslate nohighlight">\({\phi}^n\)</span> as an initial guess for <span class="math notranslate nohighlight">\({\phi}^{n+1}\)</span> in order to reduce the time
-spent in multigrid to reach the specified tolerance.</dd>
+is computed from the particles at <span class="math notranslate nohighlight">\({\bf x}_i^{n+1}\)</span>.</p>
+<p class="last">Here we can use <span class="math notranslate nohighlight">\({\phi}^n\)</span> as an initial guess for <span class="math notranslate nohighlight">\({\phi}^{n+1}\)</span> in order to reduce the time
+spent in multigrid to reach the specified tolerance.</p>
+</dd>
 <dt>Step 7:</dt>
-<dd><p class="first"><em>Correct :math:`{bf U}</em> with time-centered source terms, and replace <span class="math notranslate nohighlight">\(e\)</span> by
-<span class="math notranslate nohighlight">\(E - \frac{1}{2}U^2\)</span> as appropriate.`
-We time-center the
+<dd><p class="first">Correct <span class="math notranslate nohighlight">\({\bf U}\)</span> with time-centered source terms, and replace <span class="math notranslate nohighlight">\(e\)</span> by
+<span class="math notranslate nohighlight">\(E - \frac{1}{2}U^2\)</span> as appropriate.</p>
+<p>We time-center the
 gravitational source terms only,</p>
 <div class="last math notranslate nohighlight">
 \[{\bf U}^{n+1} = {\bf U}^{n+1} + \frac{\Delta t}{2} (S_g^{n+1} - S_g^n)\]</div>
 </dd>
 <dt>Step 8:</dt>
-<dd><p class="first"><em>Interpolate :math:`{bf g}^{n+1}</em> from the grid to the particle locations, then
-update the particle velocities, <span class="math notranslate nohighlight">\({\bf u}_i^{n+1}\)</span>
-.. math:</p>
-<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span>\<span class="n">begin</span><span class="p">{</span><span class="n">aligned</span><span class="p">}</span>
-    <span class="p">{</span>\<span class="n">bf</span> <span class="n">u</span><span class="p">}</span><span class="n">_i</span><span class="o">^</span><span class="p">{</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">}</span> <span class="o">&amp;=&amp;</span> \<span class="n">frac</span><span class="p">{</span><span class="mi">1</span><span class="p">}{</span><span class="n">a</span><span class="o">^</span><span class="p">{</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">}}</span>
-                    \<span class="n">left</span><span class="p">(</span> \<span class="n">left</span><span class="p">(</span> <span class="n">a</span><span class="o">^</span><span class="p">{{</span><span class="n">n</span><span class="o">+</span>\<span class="n">frac</span><span class="p">{</span><span class="mi">1</span><span class="p">}{</span><span class="mi">2</span><span class="p">}}}</span> <span class="p">{</span>\<span class="n">bf</span> <span class="n">u</span><span class="p">}</span><span class="o">^</span><span class="p">{{</span><span class="n">n</span><span class="o">+</span>\<span class="n">frac</span><span class="p">{</span><span class="mi">1</span><span class="p">}{</span><span class="mi">2</span><span class="p">}}}</span><span class="n">_i</span> \<span class="n">right</span><span class="p">)</span>
-                         <span class="o">+</span> \<span class="n">frac</span><span class="p">{</span>\<span class="n">Delta</span> <span class="n">t</span><span class="p">}{</span><span class="mi">2</span><span class="p">}</span> \<span class="p">;</span> <span class="p">{</span>\<span class="n">bf</span> <span class="n">g</span><span class="p">}</span><span class="o">^</span><span class="p">{</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">}</span><span class="n">_i</span> \<span class="n">right</span><span class="p">)</span>  \<span class="n">end</span><span class="p">{</span><span class="n">aligned</span><span class="p">}</span>
-</pre></div>
-</div>
+<dd><p class="first">Interpolate <span class="math notranslate nohighlight">\({\bf g}^{n+1}\)</span> from the grid to the particle locations, then
+update the particle velocities, <span class="math notranslate nohighlight">\({\bf u}_i^{n+1}\)</span></p>
+<div class="last math notranslate nohighlight">
+\[\begin{aligned}
+    {\bf u}_i^{n+1} &amp;=&amp; \frac{1}{a^{n+1}}
+                    \left( \left( a^{{n+\frac{1}{2}}} {\bf u}^{{n+\frac{1}{2}}}_i \right)
+                         + \frac{\Delta t}{2} \; {\bf g}^{n+1}_i \right)  \end{aligned}\]</div>
 </dd>
 <dt>Step **:</dt>
 <dd>in post_ timestep, do a reset and compute_ new_ temp after syncing the gravity sources</dd>
 </dl>
 </div>
-<div class="section" id="strang-splitting">
-<h2>Strang Splitting<a class="headerlink" href="#strang-splitting" title="Permalink to this headline">¶</a></h2>
-<p>The original splitting used in Nyx is Strang splitting, where a half-step of the heating-cooling
-is evolved, then a full step of the hydrodynamical terms, followed by a half-step of the heating-cooling.</p>
+<div class="section" id="deferred-correction-splitting-algorithm">
+<h2>Deferred-Correction Splitting Algorithm<a class="headerlink" href="#deferred-correction-splitting-algorithm" title="Permalink to this headline">¶</a></h2>
+<p>This algorithm is based on the version of SDC introduced by Nonaka et. al. <code class="docutils literal notranslate"><span class="pre">\cite{Nonaka2012}</span></code></p>
 <div class="math notranslate nohighlight">
-\[\begin{split}\label{eq:dens}
-\frac{\partial \rho}{\partial t} = - \frac{1}{a} \nabla \cdot (\rho {\bf U}) \enskip , \\\end{split}\]</div>
+\[\begin{split}\frac{\partial \rho}{\partial t} = - \frac{1}{a} \nabla \cdot (\rho {\bf U}) , \\\end{split}\]</div>
 <div class="math notranslate nohighlight">
 \[\begin{aligned}
-\label{eq:momt}
 \frac{\partial (a \rho {\bf U})}{\partial t} &amp;=&amp;
 -             \nabla \cdot (\rho {\bf U}{\bf U})
 -             \nabla p
-+             \rho {\bf g}\enskip , \end{aligned}\]</div>
++             \rho {\bf g} , \end{aligned}\]</div>
 <div class="math notranslate nohighlight">
 \[\begin{aligned}
 \frac{\partial (a^2 \rho E)}{\partial t} &amp;=&amp;  a \left[
  -\nabla \cdot (\rho {\bf U}E + p {\bf U})
 +  \rho {\bf U}\cdot {\bf g}
-+  \rho \Lambda_{HC}  \right]  \enskip . \end{aligned}\]</div>
++  \rho \Lambda_{HC}  \right] . \end{aligned}\]</div>
 <div class="math notranslate nohighlight">
 \[\begin{aligned}
 \frac{\partial (a^2 \rho e)}{\partial t} &amp;=&amp; a \left[
 - \nabla \cdot (\rho {\bf U}e)
 -  p \nabla \cdot {\bf U}
-+  \rho \Lambda_{HC}  \right]  \enskip . \end{aligned}\]</div>
++  \rho \Lambda_{HC}  \right] . \end{aligned}\]</div>
 <p>The algorithm at a single level of refinement begins by computing the time step, <span class="math notranslate nohighlight">\(\Delta t,\)</span>
 and advancing <span class="math notranslate nohighlight">\(a\)</span> from <span class="math notranslate nohighlight">\(t^n\)</span> to <span class="math notranslate nohighlight">\(t^{n+1} = t^n + \Delta t\)</span>. The rest of the time step is
 then composed of the following steps:</p>
 <dl class="docutils">
 <dt>Step 1:</dt>
-<dd><em>Compute :math:`{phi}^n</em> and <span class="math notranslate nohighlight">\({\bf g}^n\)</span> using <span class="math notranslate nohighlight">\(\rho^n\)</span> and <span class="math notranslate nohighlight">\(\rho_{dm}^n\)</span>,
-where <span class="math notranslate nohighlight">\(\rho_{dm}^{n}\)</span> is computed from the particles at <span class="math notranslate nohighlight">\({\bf x}_i^{n}\)</span>.`
-We note that in the single-level algorithm we can instead use <span class="math notranslate nohighlight">\({\bf g}\)</span> as computed at the
+<dd><p class="first">Compute <span class="math notranslate nohighlight">\({\phi}^n\)</span> and <span class="math notranslate nohighlight">\({\bf g}^n\)</span> using <span class="math notranslate nohighlight">\(\rho^n\)</span> and <span class="math notranslate nohighlight">\(\rho_{dm}^n\)</span>,
+where <span class="math notranslate nohighlight">\(\rho_{dm}^{n}\)</span> is computed from the particles at <span class="math notranslate nohighlight">\({\bf x}_i^{n}\)</span>.</p>
+<p class="last">We note that in the single-level algorithm we can instead use <span class="math notranslate nohighlight">\({\bf g}\)</span> as computed at the
 end of the previous step because there have been no changes to <span class="math notranslate nohighlight">\({\bf x}_i\)</span>
-or <span class="math notranslate nohighlight">\(\rho\)</span> since then.</dd>
+or <span class="math notranslate nohighlight">\(\rho\)</span> since then.</p>
+</dd>
 <dt>Step 2:</dt>
-<dd><p class="first"><em>Interpolate :math:`{bf g}^n</em> from the grid to the particle locations, then
-advance the particle velocities by <span class="math notranslate nohighlight">\(\Delta t/ 2\)</span> and particle positions by <span class="math notranslate nohighlight">\(\Delta t\)</span>.`
-.. math:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>\<span class="n">begin</span><span class="p">{</span><span class="n">aligned</span><span class="p">}</span>
-     <span class="p">{</span>\<span class="n">bf</span> <span class="n">u</span><span class="p">}</span><span class="n">_i</span><span class="o">^</span><span class="p">{{</span><span class="n">n</span><span class="o">+</span>\<span class="n">frac</span><span class="p">{</span><span class="mi">1</span><span class="p">}{</span><span class="mi">2</span><span class="p">}}}</span> <span class="o">&amp;=&amp;</span> \<span class="n">frac</span><span class="p">{</span><span class="mi">1</span><span class="p">}{</span><span class="n">a</span><span class="o">^</span><span class="p">{{</span><span class="n">n</span><span class="o">+</span>\<span class="n">frac</span><span class="p">{</span><span class="mi">1</span><span class="p">}{</span><span class="mi">2</span><span class="p">}}}}</span> <span class="p">((</span><span class="n">a</span><span class="o">^</span><span class="n">n</span> <span class="p">{</span>\<span class="n">bf</span> <span class="n">u</span><span class="p">}</span><span class="o">^</span><span class="n">n_i</span><span class="p">)</span> <span class="o">+</span> \<span class="n">frac</span><span class="p">{</span>\<span class="n">Delta</span> <span class="n">t</span><span class="p">}{</span><span class="mi">2</span><span class="p">}</span> \<span class="p">;</span> <span class="p">{</span>\<span class="n">bf</span> <span class="n">g</span><span class="p">}</span><span class="o">^</span><span class="n">n_i</span><span class="p">)</span> \\
-     <span class="p">{</span>\<span class="n">bf</span> <span class="n">x</span><span class="p">}</span><span class="n">_i</span><span class="o">^</span><span class="p">{</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">}</span>  <span class="o">&amp;=&amp;</span> <span class="p">{</span>\<span class="n">bf</span> <span class="n">x</span><span class="p">}</span><span class="o">^</span><span class="n">n_i</span> <span class="o">+</span> \<span class="n">frac</span><span class="p">{</span>\<span class="n">Delta</span> <span class="n">t</span><span class="p">}{</span><span class="n">a</span><span class="o">^</span><span class="p">{{</span><span class="n">n</span><span class="o">+</span>\<span class="n">frac</span><span class="p">{</span><span class="mi">1</span><span class="p">}{</span><span class="mi">2</span><span class="p">}}}}</span> <span class="p">{</span>\<span class="n">bf</span> <span class="n">u</span><span class="p">}</span><span class="n">_i</span><span class="o">^</span><span class="p">{{</span><span class="n">n</span><span class="o">+</span>\<span class="n">frac</span><span class="p">{</span><span class="mi">1</span><span class="p">}{</span><span class="mi">2</span><span class="p">}}}</span>\<span class="n">end</span><span class="p">{</span><span class="n">aligned</span><span class="p">}</span>
-</pre></div>
-</div>
-<p class="last"><span class="math notranslate nohighlight">\(\begin{array}{c}
-\hline{\hspace{.9\textwidth}}
-\end{array}\)</span></p>
+<dd><p class="first">Interpolate <span class="math notranslate nohighlight">\({\bf g}^n\)</span> from the grid to the particle locations, then
+advance the particle velocities by <span class="math notranslate nohighlight">\(\Delta t/ 2\)</span> and particle positions by <span class="math notranslate nohighlight">\(\Delta t\)</span>.</p>
+<div class="last math notranslate nohighlight">
+\[\begin{split}\begin{aligned}
+     {\bf u}_i^{{n+\frac{1}{2}}} &amp;=&amp; \frac{1}{a^{{n+\frac{1}{2}}}} ((a^n {\bf u}^n_i) + \frac{\Delta t}{2} \; {\bf g}^n_i) \\
+     {\bf x}_i^{n+1}  &amp;=&amp; {\bf x}^n_i + \frac{\Delta t}{a^{{n+\frac{1}{2}}}} {\bf u}_i^{{n+\frac{1}{2}}}\end{aligned}\end{split}\]</div>
 </dd>
 <dt>Step 3:</dt>
-<dd><p class="first"><em>Construct advective update terms using :math:`I_R</em> from last timestep as source`
-.. math:</p>
-<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span>\<span class="n">begin</span><span class="p">{</span><span class="n">aligned</span><span class="p">}</span>
-<span class="n">A_</span><span class="p">{</span>\<span class="n">rho</span><span class="p">}</span> <span class="o">&amp;</span> <span class="o">=</span> <span class="o">&amp;</span> <span class="o">-</span>\<span class="n">frac</span><span class="p">{</span><span class="mi">1</span><span class="p">}{</span><span class="n">a</span><span class="p">}</span>\<span class="n">nabla</span>\<span class="n">cdot</span><span class="p">(</span>\<span class="n">rho</span><span class="p">{</span>\<span class="n">bf</span> <span class="n">U</span><span class="p">})</span>\\
-<span class="n">A_</span><span class="p">{</span>\<span class="n">rho</span> <span class="n">u</span><span class="p">}</span> <span class="o">&amp;</span> <span class="o">=</span> <span class="o">&amp;</span> <span class="o">-</span>\<span class="n">nabla</span>\<span class="n">cdot</span>\<span class="n">left</span><span class="p">(</span>\<span class="n">rho</span> <span class="n">uu</span>\<span class="n">right</span><span class="p">)</span><span class="o">-</span>\<span class="n">nabla</span> <span class="n">p</span>\\<span class="o">%+</span>\<span class="n">rho</span> <span class="n">g</span>
-<span class="n">A_</span><span class="p">{</span>\<span class="n">rho</span> <span class="n">E</span><span class="p">}</span> <span class="o">&amp;</span> <span class="o">=</span> <span class="o">&amp;</span> <span class="n">a</span>\<span class="n">left</span><span class="p">[</span><span class="o">-</span>\<span class="n">nabla</span>\<span class="n">cdot</span><span class="p">(</span>\<span class="n">rho</span><span class="p">{</span>\<span class="n">bf</span> <span class="n">U</span><span class="p">}</span><span class="n">E</span><span class="o">+</span><span class="n">p</span><span class="p">{</span>\<span class="n">bf</span> <span class="n">U</span><span class="p">})</span>\<span class="n">right</span><span class="p">]</span>\\<span class="o">%+</span>\<span class="n">rho</span>\<span class="n">Ub</span>\<span class="n">cdot</span>\<span class="n">gb</span>
-<span class="n">A_</span><span class="p">{</span>\<span class="n">rho</span> <span class="n">e</span><span class="p">}</span> <span class="o">&amp;</span> <span class="o">=</span> <span class="o">&amp;</span> \<span class="n">frac</span><span class="p">{</span><span class="mi">1</span><span class="p">}{</span><span class="n">a</span><span class="p">}</span> \<span class="n">left</span><span class="p">[</span>
-<span class="o">-</span> \<span class="n">nabla</span> \<span class="n">cdot</span> <span class="p">(</span>\<span class="n">rho_b</span> <span class="p">{</span>\<span class="n">bf</span> <span class="n">U</span><span class="p">}</span><span class="n">e</span><span class="p">)</span>
-<span class="o">-</span> <span class="n">p</span> \<span class="n">nabla</span> \<span class="n">cdot</span> <span class="p">{</span>\<span class="n">bf</span> <span class="n">U</span><span class="p">})</span> \<span class="n">right</span><span class="p">]</span>
-<span class="o">%%%</span>\<span class="n">dt</span> <span class="n">A_</span><span class="p">{</span>\<span class="n">rho</span> <span class="n">e</span><span class="p">}</span> <span class="o">&amp;</span> <span class="o">=</span> <span class="o">&amp;</span> \<span class="n">left</span><span class="p">(</span>\<span class="n">rho</span> <span class="n">E</span><span class="o">+</span>\<span class="n">dt</span> <span class="n">A_</span><span class="p">{</span>\<span class="n">rho</span> <span class="n">E</span><span class="p">}</span><span class="o">-</span>\<span class="n">frac</span><span class="p">{</span>\<span class="n">left</span><span class="p">(</span>\<span class="n">rho</span> <span class="n">u</span><span class="o">+</span>\<span class="n">dt</span> <span class="n">A_</span><span class="p">{</span>\<span class="n">rho</span> <span class="n">u</span><span class="p">}</span>\<span class="n">right</span><span class="p">)</span>\<span class="n">cdot</span>\<span class="n">left</span><span class="p">(</span>\<span class="n">rho</span> <span class="n">u</span><span class="o">+</span>\<span class="n">dt</span> <span class="n">A_</span><span class="p">{</span>\<span class="n">rho</span> <span class="n">u</span><span class="p">}</span>\<span class="n">right</span><span class="p">)}{</span><span class="mi">2</span>\<span class="n">left</span><span class="p">(</span>\<span class="n">rho</span><span class="o">+</span>\<span class="n">dt</span> <span class="n">A_</span><span class="p">{</span>\<span class="n">rho</span><span class="p">}</span>\<span class="n">right</span><span class="p">)}</span><span class="o">-</span>\<span class="n">rho</span> <span class="n">e</span>\<span class="n">right</span><span class="p">)</span>\\
-<span class="o">%%%</span>\<span class="n">dt</span> <span class="n">A_</span><span class="p">{</span><span class="n">e</span><span class="p">}</span><span class="o">&amp;=&amp;</span>\<span class="n">frac</span><span class="p">{</span>\<span class="n">left</span><span class="p">(</span>\<span class="n">rho</span> <span class="n">e</span><span class="o">+</span>\<span class="n">dt</span> <span class="n">A_</span><span class="p">{</span>\<span class="n">rho</span> <span class="n">e</span><span class="p">}</span>\<span class="n">right</span><span class="p">)}{</span>\<span class="n">left</span><span class="p">(</span>\<span class="n">rho</span><span class="o">+</span>\<span class="n">dt</span> <span class="n">A_</span><span class="p">{</span>\<span class="n">rho</span><span class="p">}</span>\<span class="n">right</span><span class="p">)}</span><span class="o">-</span>\<span class="n">frac</span><span class="p">{</span>\<span class="n">rho</span> <span class="n">e</span><span class="p">}{</span>\<span class="n">rho</span><span class="p">}</span>
-<span class="o">%%</span>\\ <span class="n">Also</span> <span class="n">discussed</span> <span class="n">using</span> \<span class="n">dt</span> <span class="n">A_e</span> <span class="o">=</span> \<span class="n">frac</span><span class="p">{</span>\<span class="n">left</span><span class="p">(</span>\<span class="n">rho</span> <span class="n">e</span>\<span class="n">right</span><span class="p">)</span><span class="o">^</span><span class="p">{</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">}}{{</span>\<span class="n">rho</span><span class="p">}</span><span class="o">^</span><span class="p">{</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">}}</span><span class="o">-</span>\<span class="n">frac</span><span class="p">{</span>\<span class="n">left</span><span class="p">(</span>\<span class="n">rho</span> <span class="n">e</span>\<span class="n">right</span><span class="p">)</span><span class="o">^</span><span class="p">{</span><span class="n">n</span><span class="p">}}{{</span>\<span class="n">rho</span><span class="p">}</span><span class="o">^</span><span class="n">n</span><span class="p">}</span>\<span class="n">end</span><span class="p">{</span><span class="n">aligned</span><span class="p">}</span>
-</pre></div>
-</div>
+<dd><p class="first">Construct advective update terms using <span class="math notranslate nohighlight">\(I_R\)</span> from last timestep as source</p>
+<div class="last math notranslate nohighlight">
+\[\begin{split}\begin{aligned}
+A_{\rho} &amp; = &amp; -\frac{1}{a}\nabla\cdot(\rho{\bf U})\\
+A_{\rho u} &amp; = &amp; -\nabla\cdot\left(\rho uu\right)-\nabla p\\
+A_{\rho E} &amp; = &amp; a\left[-\nabla\cdot(\rho{\bf U}E+p{\bf U})\right]\\
+A_{\rho e} &amp; = &amp; \frac{1}{a} \left[
+- \nabla \cdot (\rho_b {\bf U}e)
+- p \nabla \cdot {\bf U}) \right]\end{aligned}\end{split}\]</div>
 </dd>
 <dt>Step 4:</dt>
-<dd><p class="first"><em>Update momentum and :math:</em>rho E``
-.. math:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>\<span class="n">begin</span><span class="p">{</span><span class="n">aligned</span><span class="p">}</span>
-<span class="n">S_</span><span class="p">{</span><span class="n">g</span><span class="p">}</span> <span class="o">&amp;</span> <span class="o">=</span> <span class="o">&amp;</span> \<span class="n">rho</span> <span class="n">g</span>\\
-      <span class="o">&amp;</span>  <span class="o">&amp;</span> \<span class="n">rho</span><span class="p">{</span>\<span class="n">bf</span> <span class="n">U</span><span class="p">}</span>\<span class="n">cdot</span><span class="p">{</span>\<span class="n">bf</span> <span class="n">g</span><span class="p">}</span>\<span class="n">end</span><span class="p">{</span><span class="n">aligned</span><span class="p">}</span>
-</pre></div>
-</div>
+<dd><p class="first">Update momentum and <span class="math notranslate nohighlight">\(\rho E\)</span></p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{aligned}
+S_{g} &amp; = &amp; \rho g\\
+      &amp;  &amp; \rho{\bf U}\cdot{\bf g}\end{aligned}\end{split}\]</div>
 <div class="math notranslate nohighlight">
 \[u^{n+1,\ast} = u^{n} + \Delta tA^{n+\frac{1}{2}}+ \Delta tS_g^n\]</div>
 <div class="last math notranslate nohighlight">
 \[\left(\rho E\right)^{n+1,\ast }=\left(\rho E\right)^{n}+ \Delta tA_{\rho E}^{n+1/2} + \Delta tS_g\]</div>
 </dd>
 <dt>Step 5:</dt>
-<dd><p class="first"><em>Simultaneously solve heating-cooling:</em>
-.. math:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>\<span class="n">begin</span><span class="p">{</span><span class="n">aligned</span><span class="p">}</span>
-\<span class="n">rho</span><span class="o">^</span><span class="p">{</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span>\<span class="n">ast</span><span class="p">}</span> <span class="o">&amp;</span> <span class="o">=</span> <span class="o">&amp;</span> \<span class="n">rho</span><span class="o">^</span><span class="p">{</span><span class="n">n</span><span class="p">}</span><span class="o">+</span>\<span class="n">int_</span><span class="p">{</span><span class="n">t</span><span class="o">^</span><span class="p">{</span><span class="n">n</span><span class="p">}}</span><span class="o">^</span><span class="p">{</span><span class="n">t</span><span class="o">^</span><span class="p">{</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">}}</span><span class="n">A_</span><span class="p">{</span>\<span class="n">rho</span><span class="p">}</span><span class="n">dt</span><span class="o">^</span><span class="p">{</span>\<span class="n">prime</span><span class="p">}</span>\\
-<span class="n">e</span><span class="o">^</span><span class="p">{</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span>\<span class="n">ast</span><span class="p">}</span> <span class="o">&amp;</span> <span class="o">=</span> <span class="o">&amp;</span> <span class="n">e</span><span class="o">^</span><span class="p">{</span><span class="n">n</span><span class="p">}</span><span class="o">+</span>\<span class="n">int_</span><span class="p">{</span><span class="n">t</span><span class="o">^</span><span class="p">{</span><span class="n">n</span><span class="p">}}</span><span class="o">^</span><span class="p">{</span><span class="n">t</span><span class="o">^</span><span class="p">{</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">}}</span> \<span class="n">left</span><span class="p">(</span><span class="n">A_</span><span class="p">{</span><span class="n">e</span><span class="p">}</span><span class="o">+</span>\<span class="n">Lambda_</span><span class="p">{</span><span class="n">HC</span><span class="p">}</span>\<span class="n">right</span><span class="p">)</span> <span class="n">dt</span><span class="o">^</span><span class="p">{</span>\<span class="n">prime</span><span class="p">}</span>\<span class="n">end</span><span class="p">{</span><span class="n">aligned</span><span class="p">}</span>
-</pre></div>
-</div>
+<dd><p class="first">Simultaneously solve heating-cooling:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{aligned}
+\rho^{n+1,\ast} &amp; = &amp; \rho^{n}+\int_{t^{n}}^{t^{n+1}}A_{\rho}dt^{\prime}\\
+e^{n+1,\ast} &amp; = &amp; e^{n}+\int_{t^{n}}^{t^{n+1}} \left(A_{e}+\Lambda_{HC}\right) dt^{\prime}\end{aligned}\end{split}\]</div>
 <p class="last">where <span class="math notranslate nohighlight">\(A_{e}=\frac{1}{\Delta t}\left(\left(\left[\frac{1}{a^{n+1}}\right]^{2}\left(\left[a^{n}\right]^{2}\left(\rho e\right)^{n}+\Delta t*A_{\rho e}\right)+A_{reset}\right)/\left(\rho^{n}+\Delta tA_{\rho}\right)-e^{n}\right)\)</span></p>
 </dd>
 <dt>Step 6:</dt>
 <dd><p class="first">We define</p>
 <div class="last math notranslate nohighlight">
 \[\begin{split}\begin{aligned}
-%I_{R_{\rho}} &amp; = &amp; 0\\
-%%%\dt I_{R_{\left(\rho e\right)}} &amp; = &amp; \left(\rho e\right)^{n+1,\ast}-\left[\left(\rho e\right)^{n}+\dt A_{\rho e}\right]\\
 I_{R_{\left(\rho e\right)}} &amp; = &amp; \left( \left[a^{n+1}\right]^{2}\rho^{n+1,\ast}e^{n+1,\ast}-\left(\left[a^{n}\right]^{2}\rho^{n}e^{n}+\Delta tA_{\rho e}\right)\right)/\left[\Delta t\left(\frac{a^{n}+a^{n+1}}{2}\right)\right]\\
 &amp; &amp; -\left[a^{n+1}\right]^{2}A_{reset}/\left[\Delta t\left(\frac{a^{n}+a^{n+1}}{2}\right)\right]\end{aligned}\end{split}\]</div>
 </dd>
 <dt>Step 7:</dt>
-<dd><span class="math notranslate nohighlight">\(\left(\rho e\right)^{n+1,\ast}=\left(\rho e\right)^{n+1,\ast} + ahalf / aendsq \Delta tI_{R_{\rho e}}\)</span>
-<span class="math notranslate nohighlight">\(\left(\rho E\right)^{n+1,\ast}=\left(\rho E\right)^{n+1,\ast} + ahalf / aendsq \Delta tI_{R_{\rho e}}\)</span>
-We store Ne and Temp based on eos_ hc updates from <span class="math notranslate nohighlight">\((e)^{n+1}\)</span></dd>
+<dd><p class="first">We update internal and total energy using this forcing:
+<span class="math notranslate nohighlight">\(\left(\rho e\right)^{n+1,\ast}=\left(\rho e\right)^{n+1,\ast} + \left(\frac{a^{n}+a^{n+1}}{2}\right) \left(\frac{1}{a^{n+1}}\right)^2 \Delta tI_{R_{\rho e}}\)</span></p>
+<p><span class="math notranslate nohighlight">\(\left(\rho E\right)^{n+1,\ast}=\left(\rho E\right)^{n+1,\ast} + \left(\frac{a^{n}+a^{n+1}}{2}\right) \left(\frac{1}{a^{n+1}}\right)^2 \Delta tI_{R_{\rho e}}\)</span></p>
+<p class="last">We store Ne and Temp based on eos_ hc updates from <span class="math notranslate nohighlight">\((e)^{n+1}\)</span></p>
+</dd>
 <dt>Step 8:</dt>
 <dd>Repeat step 3-7</dd>
 <dt>Step 9:</dt>
-<dd><em>Compute :math:`{phi}^{n+1}</em> and <span class="math notranslate nohighlight">\({\bf g}^{n+1}\)</span> using
+<dd><p class="first">Compute <span class="math notranslate nohighlight">\({\phi}^{n+1}\)</span> and <span class="math notranslate nohighlight">\({\bf g}^{n+1}\)</span> using
 <span class="math notranslate nohighlight">\(\rho^{n+1,*}\)</span> and <span class="math notranslate nohighlight">\(\rho_{dm}^{n+1}\)</span>, where <span class="math notranslate nohighlight">\(\rho_{dm}^{n+1}\)</span>
-is computed from the particles at <span class="math notranslate nohighlight">\({\bf x}_i^{n+1}\)</span>.`
-Here we can use <span class="math notranslate nohighlight">\({\phi}^n\)</span> as an initial guess for <span class="math notranslate nohighlight">\({\phi}^{n+1}\)</span> in order to reduce the time
-spent in multigrid to reach the specified tolerance.</dd>
+is computed from the particles at <span class="math notranslate nohighlight">\({\bf x}_i^{n+1}\)</span>.</p>
+<p class="last">Here we can use <span class="math notranslate nohighlight">\({\phi}^n\)</span> as an initial guess for <span class="math notranslate nohighlight">\({\phi}^{n+1}\)</span> in order to reduce the time
+spent in multigrid to reach the specified tolerance.</p>
+</dd>
 <dt>Step 10:</dt>
-<dd><p class="first"><em>Correct :math:`{bf U}</em> with time-centered source terms, and replace <span class="math notranslate nohighlight">\(e\)</span> by
-<span class="math notranslate nohighlight">\(E - \frac{1}{2}U^2\)</span> as appropriate.`
-We time-center the
+<dd><p class="first">Correct <span class="math notranslate nohighlight">\({\bf U}\)</span> with time-centered source terms, and replace <span class="math notranslate nohighlight">\(e\)</span> by
+<span class="math notranslate nohighlight">\(E - \frac{1}{2}U^2\)</span> as appropriate.</p>
+<p>We time-center the
 gravitational source terms only,</p>
 <div class="last math notranslate nohighlight">
 \[{\bf U}^{n+1} = {\bf U}^{n+1} + \frac{\Delta t}{2} (S_g^{n+1} - S_g^n)\]</div>
 </dd>
 <dt>Step 11:</dt>
-<dd><p class="first"><em>Interpolate :math:`{bf g}^{n+1}</em> from the grid to the particle locations, then
-update the particle velocities, <span class="math notranslate nohighlight">\({\bf u}_i^{n+1}\)</span>
-.. math:</p>
-<div class="last highlight-default notranslate"><div class="highlight"><pre><span></span>\<span class="n">begin</span><span class="p">{</span><span class="n">aligned</span><span class="p">}</span>
-    <span class="p">{</span>\<span class="n">bf</span> <span class="n">u</span><span class="p">}</span><span class="n">_i</span><span class="o">^</span><span class="p">{</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">}</span> <span class="o">&amp;=&amp;</span> \<span class="n">frac</span><span class="p">{</span><span class="mi">1</span><span class="p">}{</span><span class="n">a</span><span class="o">^</span><span class="p">{</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">}}</span>
-                    \<span class="n">left</span><span class="p">(</span> \<span class="n">left</span><span class="p">(</span> <span class="n">a</span><span class="o">^</span><span class="p">{{</span><span class="n">n</span><span class="o">+</span>\<span class="n">frac</span><span class="p">{</span><span class="mi">1</span><span class="p">}{</span><span class="mi">2</span><span class="p">}}}</span> <span class="p">{</span>\<span class="n">bf</span> <span class="n">u</span><span class="p">}</span><span class="o">^</span><span class="p">{{</span><span class="n">n</span><span class="o">+</span>\<span class="n">frac</span><span class="p">{</span><span class="mi">1</span><span class="p">}{</span><span class="mi">2</span><span class="p">}}}</span><span class="n">_i</span> \<span class="n">right</span><span class="p">)</span>
-                         <span class="o">+</span> \<span class="n">frac</span><span class="p">{</span>\<span class="n">Delta</span> <span class="n">t</span><span class="p">}{</span><span class="mi">2</span><span class="p">}</span> \<span class="p">;</span> <span class="p">{</span>\<span class="n">bf</span> <span class="n">g</span><span class="p">}</span><span class="o">^</span><span class="p">{</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">}</span><span class="n">_i</span> \<span class="n">right</span><span class="p">)</span>  \<span class="n">end</span><span class="p">{</span><span class="n">aligned</span><span class="p">}</span>
-</pre></div>
-</div>
+<dd><p class="first">Interpolate <span class="math notranslate nohighlight">\({\bf g}^{n+1}\)</span> from the grid to the particle locations, then
+update the particle velocities, <span class="math notranslate nohighlight">\({\bf u}_i^{n+1}\)</span></p>
+<div class="last math notranslate nohighlight">
+\[\begin{aligned}
+    {\bf u}_i^{n+1} &amp;=&amp; \frac{1}{a^{n+1}}
+                    \left( \left( a^{{n+\frac{1}{2}}} {\bf u}^{{n+\frac{1}{2}}}_i \right)
+                         + \frac{\Delta t}{2} \; {\bf g}^{n+1}_i \right)  \end{aligned}\]</div>
 </dd>
 <dt>Step **:</dt>
 <dd>in post_ timestep, do a reset and compute_ new_ temp after syncing the gravity sources</dd>
