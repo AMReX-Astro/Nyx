@@ -196,16 +196,16 @@ and advancing :math:`a` from :math:`t^n` to :math:`t^{n+1} = t^n + \Delta t`. Th
 then composed of the following steps:
 
 Step 1:
-   *Compute :math:`{\phi}^n` and :math:`{\bf g}^n` using :math:`\rho^n` and :math:`\rho_{dm}^n`,
-   where :math:`\rho_{dm}^{n}` is computed from the particles at :math:`{\bf x}_i^{n}`.*
+   Compute :math:`{\phi}^n` and :math:`{\bf g}^n` using :math:`\rho^n` and :math:`\rho_{dm}^n`,
+   where :math:`\rho_{dm}^{n}` is computed from the particles at :math:`{\bf x}_i^{n}`.
 
    We note that in the single-level algorithm we can instead use :math:`{\bf g}` as computed at the
    end of the previous step because there have been no changes to :math:`{\bf x}_i`
    or :math:`\rho` since then.
 
 Step 2:
-   *Interpolate :math:`{\bf g}^n` from the grid to the particle locations, then
-   advance the particle velocities by :math:`\Delta t/ 2` and particle positions by :math:`\Delta t`.*
+   Interpolate :math:`{\bf g}^n` from the grid to the particle locations, then
+   advance the particle velocities by :math:`\Delta t/ 2` and particle positions by :math:`\Delta t`.
 
    .. math::
 
@@ -214,7 +214,7 @@ Step 2:
            {\bf x}_i^{n+1}  &=& {\bf x}^n_i + \frac{\Delta t}{a^{{n+\frac{1}{2}}}} {\bf u}_i^{{n+\frac{1}{2}}}\end{aligned}
 
 Step 3:
-   *Construct advective update terms using :math:`I_R` from last timestep as source*
+   Construct advective update terms using :math:`I_R` from last timestep as source
 
    .. math::
 
@@ -227,7 +227,7 @@ Step 3:
       - p \nabla \cdot {\bf U}) \right]\end{aligned}
 
 Step 4:
-   *Update momentum and :math:`\rho E`*
+   Update momentum and :math:`\rho E`
 
    .. math::
 
@@ -240,7 +240,7 @@ Step 4:
    .. math:: \left(\rho E\right)^{n+1,\ast }=\left(\rho E\right)^{n}+ \Delta tA_{\rho E}^{n+1/2} + \Delta tS_g
 
 Step 5:
-   *Simultaneously solve heating-cooling:*
+   Simultaneously solve heating-cooling:
 
    .. math::
 
@@ -260,24 +260,27 @@ Step 6:
       & & -\left[a^{n+1}\right]^{2}A_{reset}/\left[\Delta t\left(\frac{a^{n}+a^{n+1}}{2}\right)\right]\end{aligned}
 
 Step 7:
-   :math:`\left(\rho e\right)^{n+1,\ast}=\left(\rho e\right)^{n+1,\ast} + ahalf / aendsq \Delta tI_{R_{\rho e}}`
-   :math:`\left(\rho E\right)^{n+1,\ast}=\left(\rho E\right)^{n+1,\ast} + ahalf / aendsq \Delta tI_{R_{\rho e}}`
+   We update internal and total energy using this forcing:
+   :math:`\left(\rho e\right)^{n+1,\ast}=\left(\rho e\right)^{n+1,\ast} + \left(\frac{a^{n}+a^{n+1}}{2}\right) \left(\frac{1}{a^{n+1}}\right)^2 \Delta tI_{R_{\rho e}}`
+	  
+   :math:`\left(\rho E\right)^{n+1,\ast}=\left(\rho E\right)^{n+1,\ast} + \left(\frac{a^{n}+a^{n+1}}{2}\right) \left(\frac{1}{a^{n+1}}\right)^2 \Delta tI_{R_{\rho e}}`
+
    We store Ne and Temp based on eos\_ hc updates from :math:`(e)^{n+1}`
 
 Step 8:
    Repeat step 3-7
 
 Step 9:
-   *Compute :math:`{\phi}^{n+1}` and :math:`{\bf g}^{n+1}` using
+   Compute :math:`{\phi}^{n+1}` and :math:`{\bf g}^{n+1}` using
    :math:`\rho^{n+1,*}` and :math:`\rho_{dm}^{n+1}`, where :math:`\rho_{dm}^{n+1}`
-   is computed from the particles at :math:`{\bf x}_i^{n+1}`.*
+   is computed from the particles at :math:`{\bf x}_i^{n+1}`.
 
    Here we can use :math:`{\phi}^n` as an initial guess for :math:`{\phi}^{n+1}` in order to reduce the time
    spent in multigrid to reach the specified tolerance.
 
 Step 10:
-   *Correct :math:`{\bf U}` with time-centered source terms, and replace :math:`e` by
-   :math:`E - \frac{1}{2}U^2` as appropriate.*
+   Correct :math:`{\bf U}` with time-centered source terms, and replace :math:`e` by
+   :math:`E - \frac{1}{2}U^2` as appropriate.
 
    We time-center the
    gravitational source terms only,
@@ -285,8 +288,8 @@ Step 10:
    .. math:: {\bf U}^{n+1} = {\bf U}^{n+1} + \frac{\Delta t}{2} (S_g^{n+1} - S_g^n)
 
 Step 11:
-   *Interpolate :math:`{\bf g}^{n+1}` from the grid to the particle locations, then
-   update the particle velocities, :math:`{\bf u}_i^{n+1}`*
+   Interpolate :math:`{\bf g}^{n+1}` from the grid to the particle locations, then
+   update the particle velocities, :math:`{\bf u}_i^{n+1}`
 
    .. math::
 
