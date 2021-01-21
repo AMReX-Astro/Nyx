@@ -18,6 +18,7 @@ Welcome to Nyx's documentation!
    Refinement
    ManagingGridHierarchy_Chapter
    NyxEquations
+   NyxSplitting
    NyxHeatCool
    NyxGravity
    NyxForcing
