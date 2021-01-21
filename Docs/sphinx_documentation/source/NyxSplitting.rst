@@ -68,36 +68,39 @@ and advancing :math:`a` from :math:`t^n` to :math:`t^{n+1} = t^n + \Delta t`. Th
 then composed of the following steps:
 
 Step 1:
-   :emphasis:`Compute :math:`{\phi}^n` and :math:`{\bf g}^n` using :math:`\rho_b^n` and :math:`\rho_{dm}^n`,
-   where :math:`\rho_{dm}^{n}` is computed from the particles at :math:`{\bf x}_i^{n}`.`
+   Compute :math:`{\phi}^n` and :math:`{\bf g}^n` using :math:`\rho_b^n` and :math:`\rho_{dm}^n`,
+   where :math:`\rho_{dm}^{n}` is computed from the particles at :math:`{\bf x}_i^{n}`.
 
    We note that in the single-level algorithm we can instead use :math:`{\bf g}` as computed at the
    end of the previous step because there have been no changes to :math:`{\bf x}_i`
    or :math:`\rho` since then.
 
 Step 2:
-   :emphasis:`Interpolate :math:`{\bf g}^n` from the grid to the particle locations, then
-   advance the particle velocities by :math:`\Delta t/ 2` and particle positions by :math:`\Delta t`.`
-   .. math::
+   Interpolate :math:`{\bf g}^n` from the grid to the particle locations, then
+   advance the particle velocities by :math:`\Delta t/ 2` and particle positions by :math:`\Delta t`.
+
+.. math::
 
       \begin{aligned}
            {\bf u}_i^{{n+\frac{1}{2}}} &=& \frac{1}{a^{{n+\frac{1}{2}}}} ((a^n {\bf u}^n_i) + \frac{\Delta t}{2} \; {\bf g}^n_i) \\
            {\bf x}_i^{n+1}  &=& {\bf x}^n_i + \frac{\Delta t}{a^{{n+\frac{1}{2}}}} {\bf u}_i^{{n+\frac{1}{2}}}\end{aligned}
 
 Step 3:
-   :emphasis:`Advance :math:`{\bf U}` by :math:`\frac{1}{2}\Delta t` for first strang`
-   | We advance :math:`e` by integrating the source terms in time for :math:`\frac{1}{2}\Delta t`
+   Advance :math:`{\bf U}` by :math:`\frac{1}{2}\Delta t` for first strang
 
-     .. math::
+   We advance :math:`e` by integrating the source terms in time for :math:`\frac{1}{2}\Delta t`
 
-        \begin{aligned}
-        ( e)^{n,\ast} &=& ( e)^n +  \int \Lambda_{HC} \; dt^\prime \enskip .%, \\
-        %(\rho E)^{n,\ast} &=& (\rho E)^n +  \int \Lambda_{HC} \; dt^\prime \enskip ,\end{aligned}
+.. math::
 
+      \begin{aligned}
+           ( e)^{n,\ast} &=& ( e)^n +  \int \Lambda_{HC} \; dt^\prime  .\end{aligned}
+
+     We update :math:`(\rho e)^{n,\ast}=(\rho e)^{n,\ast}+\rho^{n}\left((e)^{n,\ast}-(e)^{n}\right)`
    | We update :math:`(\rho E)^{n,\ast}=(\rho E)^{n,\ast}+\rho^{n}\left((e)^{n,\ast}-(e)^{n}\right)`
 
 Step 4:
-   :emphasis:`Advance :math:`{\bf U}` by :math:`\Delta t` for advective terms`
+   Advance :math:`{\bf U}` by :math:`\Delta t` for advective terms
+
    Advance the solution using time-centered fluxes and :math:`S_e`
    and an explicit representation of :math:`S_g` at time :math:`t^n`:
 
@@ -106,38 +109,43 @@ Step 4:
    where :math:`A^{n+\frac{1}{2}}` is computed by predicting from the :math:`{\bf U}^{n,\ast}` states.
 
 Step 5: 
-   :emphasis:`Second Strang step`
-   | We advance :math:`e` by integrating the source terms in time for :math:`\frac{1}{2}\Delta t`
+   Second Strang step
 
-     .. math::
+   We advance :math:`e` by integrating the source terms in time for :math:`\frac{1}{2}\Delta t`
 
-        \begin{aligned}
-        ( e)^{n+1} &=& ( e)^{n+1,\ast } +  \int \Lambda_{HC} \; dt^\prime \enskip .%, \\
-        %(\rho E)^{n,\ast} &=& (\rho E)^n +  \int \Lambda_{HC} \; dt^\prime \enskip ,\end{aligned}
+.. math::
 
+      \begin{aligned}
+      ( e)^{n+1} &=& ( e)^{n+1,\ast } +  \int \Lambda_{HC} \; dt^\prime \enskip .%, \\
+      %(\rho E)^{n,\ast} &=& (\rho E)^n +  \int \Lambda_{HC} \; dt^\prime \enskip ,\end{aligned}
+
+     We update :math:`(\rho e)^{n+1}=(\rho e)^{n+1,\ast}+\rho^{n+1}\left((e)^{n+1}-(e)^{n+1,\ast}\right)`
    | We update :math:`(\rho E)^{n+1}=(\rho E)^{n+1,\ast}+\rho^{n+1}\left((e)^{n+1}-(e)^{n+1,\ast}\right)`
 
    We store Ne and Temp based on eos\_ hc updates from :math:`(e)^{n+1}`
 
 Step 6:
-   :emphasis:`Compute :math:`{\phi}^{n+1}` and :math:`{\bf g}^{n+1}` using
+   Compute :math:`{\phi}^{n+1}` and :math:`{\bf g}^{n+1}` using
    :math:`\rho^{n+1,*}` and :math:`\rho_{dm}^{n+1}`, where :math:`\rho_{dm}^{n+1}`
-   is computed from the particles at :math:`{\bf x}_i^{n+1}`.`
+   is computed from the particles at :math:`{\bf x}_i^{n+1}`.
+
    Here we can use :math:`{\phi}^n` as an initial guess for :math:`{\phi}^{n+1}` in order to reduce the time
    spent in multigrid to reach the specified tolerance.
 
 Step 7:
-   :emphasis:`Correct :math:`{\bf U}` with time-centered source terms, and replace :math:`e` by
-   :math:`E - \frac{1}{2}U^2` as appropriate.`
+   Correct :math:`{\bf U}` with time-centered source terms, and replace :math:`e` by
+   :math:`E - \frac{1}{2}U^2` as appropriate.
+
    We time-center the
    gravitational source terms only,
 
    .. math:: {\bf U}^{n+1} = {\bf U}^{n+1} + \frac{\Delta t}{2} (S_g^{n+1} - S_g^n)
 
 Step 8:
-   :emphasis:`Interpolate :math:`{\bf g}^{n+1}` from the grid to the particle locations, then
-   update the particle velocities, :math:`{\bf u}_i^{n+1}``
-   .. math::
+   Interpolate :math:`{\bf g}^{n+1}` from the grid to the particle locations, then
+   update the particle velocities, :math:`{\bf u}_i^{n+1}`
+
+.. math::
 
       \begin{aligned}
           {\bf u}_i^{n+1} &=& \frac{1}{a^{n+1}}
@@ -188,15 +196,17 @@ and advancing :math:`a` from :math:`t^n` to :math:`t^{n+1} = t^n + \Delta t`. Th
 then composed of the following steps:
 
 Step 1:
-   :emphasis:`Compute :math:`{\phi}^n` and :math:`{\bf g}^n` using :math:`\rho^n` and :math:`\rho_{dm}^n`,
-   where :math:`\rho_{dm}^{n}` is computed from the particles at :math:`{\bf x}_i^{n}`.`
+   *Compute :math:`{\phi}^n` and :math:`{\bf g}^n` using :math:`\rho^n` and :math:`\rho_{dm}^n`,
+   where :math:`\rho_{dm}^{n}` is computed from the particles at :math:`{\bf x}_i^{n}`.*
+
    We note that in the single-level algorithm we can instead use :math:`{\bf g}` as computed at the
    end of the previous step because there have been no changes to :math:`{\bf x}_i`
    or :math:`\rho` since then.
 
 Step 2:
-   :emphasis:`Interpolate :math:`{\bf g}^n` from the grid to the particle locations, then
-   advance the particle velocities by :math:`\Delta t/ 2` and particle positions by :math:`\Delta t`.`
+   *Interpolate :math:`{\bf g}^n` from the grid to the particle locations, then
+   advance the particle velocities by :math:`\Delta t/ 2` and particle positions by :math:`\Delta t`.*
+
    .. math::
 
       \begin{aligned}
@@ -208,7 +218,8 @@ Step 2:
    \end{array}`
 
 Step 3:
-   :emphasis:`Construct advective update terms using :math:`I_R` from last timestep as source`
+   *Construct advective update terms using :math:`I_R` from last timestep as source*
+
    .. math::
 
       \begin{aligned}
@@ -223,7 +234,8 @@ Step 3:
       %%\\ Also discussed using \dt A_e = \frac{\left(\rho e\right)^{n+1}}{{\rho}^{n+1}}-\frac{\left(\rho e\right)^{n}}{{\rho}^n}\end{aligned}
 
 Step 4:
-   :emphasis:`Update momentum and :math:`\rho E``
+   *Update momentum and :math:`\rho E`*
+
    .. math::
 
       \begin{aligned}
@@ -235,7 +247,8 @@ Step 4:
    .. math:: \left(\rho E\right)^{n+1,\ast }=\left(\rho E\right)^{n}+ \Delta tA_{\rho E}^{n+1/2} + \Delta tS_g
 
 Step 5:
-   :emphasis:`Simultaneously solve heating-cooling:`
+   *Simultaneously solve heating-cooling:*
+
    .. math::
 
       \begin{aligned}
@@ -264,23 +277,26 @@ Step 8:
    Repeat step 3-7
 
 Step 9:
-   :emphasis:`Compute :math:`{\phi}^{n+1}` and :math:`{\bf g}^{n+1}` using
+   *Compute :math:`{\phi}^{n+1}` and :math:`{\bf g}^{n+1}` using
    :math:`\rho^{n+1,*}` and :math:`\rho_{dm}^{n+1}`, where :math:`\rho_{dm}^{n+1}`
-   is computed from the particles at :math:`{\bf x}_i^{n+1}`.`
+   is computed from the particles at :math:`{\bf x}_i^{n+1}`.*
+
    Here we can use :math:`{\phi}^n` as an initial guess for :math:`{\phi}^{n+1}` in order to reduce the time
    spent in multigrid to reach the specified tolerance.
 
 Step 10:
-   :emphasis:`Correct :math:`{\bf U}` with time-centered source terms, and replace :math:`e` by
-   :math:`E - \frac{1}{2}U^2` as appropriate.`
+   *Correct :math:`{\bf U}` with time-centered source terms, and replace :math:`e` by
+   :math:`E - \frac{1}{2}U^2` as appropriate.*
+
    We time-center the
    gravitational source terms only,
 
    .. math:: {\bf U}^{n+1} = {\bf U}^{n+1} + \frac{\Delta t}{2} (S_g^{n+1} - S_g^n)
 
 Step 11:
-   :emphasis:`Interpolate :math:`{\bf g}^{n+1}` from the grid to the particle locations, then
-   update the particle velocities, :math:`{\bf u}_i^{n+1}``
+   *Interpolate :math:`{\bf g}^{n+1}` from the grid to the particle locations, then
+   update the particle velocities, :math:`{\bf u}_i^{n+1}`*
+
    .. math::
 
       \begin{aligned}
