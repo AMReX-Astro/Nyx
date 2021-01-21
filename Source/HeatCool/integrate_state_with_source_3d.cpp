@@ -15,7 +15,6 @@
 #include <cvode/cvode.h>               /* prototypes for CVODE fcts., consts. */
 #include <cvode/cvode_diag.h>          /* access to CVDiag interface */
 #include <sundials/sundials_types.h>   /* definition of type realtype */
-#include <sundials/sundials_math.h>    /* definition of ABS and EXP   */
 
 #include <nvector/nvector_serial.h>
 #ifdef _OPENMP
@@ -26,6 +25,9 @@
 #endif
 #ifdef AMREX_USE_HIP
 #include <nvector/nvector_hip.h>
+#endif
+#ifdef AMREX_USE_DPCPP
+#include <nvector/nvector_sycl.h>
 #endif
 //#define MAKE_MANAGED 1
 using namespace amrex;
@@ -214,8 +216,13 @@ int Nyx::integrate_state_struct_mfin
               int nthreads=omp_get_max_threads();
               u = N_VNew_OpenMP(neq,nthreads);  /* Allocate u vector */
 #else
+#ifdef AMREX_USE_GPU
 #ifdef AMREX_USE_HIP
               u = N_VNewManaged_Hip(neq);  /* Allocate u vector */
+#endif
+#ifdef AMREX_USE_DPCPP
+              u = N_VNewManaged_Sycl(neq,&amrex::Gpu::Device::streamQueue());  /* Allocate u vector */
+#endif
 #else
               u = N_VNew_Serial(neq);  /* Allocate u vector */
 #endif

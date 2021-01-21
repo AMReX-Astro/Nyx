@@ -130,6 +130,10 @@ ifeq ($(USE_HIP),TRUE)
   LIBRARIES += -L$(SUNDIALS_LIB_DIR) -lsundials_nvechip
 endif
 
+ifeq ($(USE_DPCPP),TRUE)
+  LIBRARIES += -L$(SUNDIALS_LIB_DIR) -lsundials_nvecsycl
+endif
+
 ifeq ($(USE_OMP),TRUE)
   LIBRARIES += -L$(SUNDIALS_LIB_DIR) -lsundials_nvecopenmp
 endif

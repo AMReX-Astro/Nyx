@@ -14,7 +14,6 @@
 #include <cvode/cvode.h>               /* prototypes for CVODE fcts., consts. */
 #include <cvode/cvode_diag.h>          /* access to CVDiag interface */
 #include <sundials/sundials_types.h>   /* definition of type realtype */
-#include <sundials/sundials_math.h>    /* definition of ABS and EXP   */
 
 #include <nvector/nvector_serial.h>
 #ifdef _OPENMP
