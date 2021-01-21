@@ -28,10 +28,12 @@ We track derived variables such as temperature and electron fraction ne based on
 of different isotopes of hydrogen and helium then depend on a Newton solve of the heating/cooling equations of state, which
 are closely tied to the internal energy.
 
-Deferred-Correction Splitting Algorithm
----------------------------------------
+Strang Splitting
+----------------
 
-This algorithm is based on the version of SDC introduced by Nonaka et. al. ``\cite{Nonaka2012}``
+The original splitting used in Nyx is Strang splitting, where a half-step of the heating-cooling
+is evolved, then a full step of the hydrodynamical terms, followed by a half-step of the heating-cooling.
+This algorithm is the classical Strang splitting, adapted to include gravity and other forcing terms.
 
 .. math::
 
@@ -79,7 +81,7 @@ Step 2:
    Interpolate :math:`{\bf g}^n` from the grid to the particle locations, then
    advance the particle velocities by :math:`\Delta t/ 2` and particle positions by :math:`\Delta t`.
 
-.. math::
+   .. math::
 
       \begin{aligned}
            {\bf u}_i^{{n+\frac{1}{2}}} &=& \frac{1}{a^{{n+\frac{1}{2}}}} ((a^n {\bf u}^n_i) + \frac{\Delta t}{2} \; {\bf g}^n_i) \\
@@ -90,13 +92,14 @@ Step 3:
 
    We advance :math:`e` by integrating the source terms in time for :math:`\frac{1}{2}\Delta t`
 
-.. math::
+   .. math::
 
       \begin{aligned}
            ( e)^{n,\ast} &=& ( e)^n +  \int \Lambda_{HC} \; dt^\prime  .\end{aligned}
 
-     We update :math:`(\rho e)^{n,\ast}=(\rho e)^{n,\ast}+\rho^{n}\left((e)^{n,\ast}-(e)^{n}\right)`
-   | We update :math:`(\rho E)^{n,\ast}=(\rho E)^{n,\ast}+\rho^{n}\left((e)^{n,\ast}-(e)^{n}\right)`
+   We update :math:`(\rho e)^{n,\ast}=(\rho e)^{n,\ast}+\rho^{n}\left((e)^{n,\ast}-(e)^{n}\right)`
+
+   We update :math:`(\rho E)^{n,\ast}=(\rho E)^{n,\ast}+\rho^{n}\left((e)^{n,\ast}-(e)^{n}\right)`
 
 Step 4:
    Advance :math:`{\bf U}` by :math:`\Delta t` for advective terms
@@ -113,13 +116,14 @@ Step 5:
 
    We advance :math:`e` by integrating the source terms in time for :math:`\frac{1}{2}\Delta t`
 
-.. math::
+   .. math::
 
         \begin{aligned}
-        ( e)^{n+1} &=& ( e)^{n+1,\ast } +  \int \Lambda_{HC} \; dt^\prime \enskip .\end{aligned}
+        ( e)^{n+1} &=& ( e)^{n+1,\ast } +  \int \Lambda_{HC} \; dt^\prime .\end{aligned}
 
-     We update :math:`(\rho e)^{n+1}=(\rho e)^{n+1,\ast}+\rho^{n+1}\left((e)^{n+1}-(e)^{n+1,\ast}\right)`
-   | We update :math:`(\rho E)^{n+1}=(\rho E)^{n+1,\ast}+\rho^{n+1}\left((e)^{n+1}-(e)^{n+1,\ast}\right)`
+   We update :math:`(\rho e)^{n+1}=(\rho e)^{n+1,\ast}+\rho^{n+1}\left((e)^{n+1}-(e)^{n+1,\ast}\right)`
+
+   We update :math:`(\rho E)^{n+1}=(\rho E)^{n+1,\ast}+\rho^{n+1}\left((e)^{n+1}-(e)^{n+1,\ast}\right)`
 
    We store Ne and Temp based on eos\_ hc updates from :math:`(e)^{n+1}`
 
@@ -144,7 +148,7 @@ Step 8:
    Interpolate :math:`{\bf g}^{n+1}` from the grid to the particle locations, then
    update the particle velocities, :math:`{\bf u}_i^{n+1}`
 
-.. math::
+   .. math::
 
       \begin{aligned}
           {\bf u}_i^{n+1} &=& \frac{1}{a^{n+1}}
@@ -154,25 +158,22 @@ Step 8:
 Step \**:
    in post\_ timestep, do a reset and compute\_ new\_ temp after syncing the gravity sources
 
-Strang Splitting
-----------------
+Deferred-Correction Splitting Algorithm
+---------------------------------------
 
-The original splitting used in Nyx is Strang splitting, where a half-step of the heating-cooling
-is evolved, then a full step of the hydrodynamical terms, followed by a half-step of the heating-cooling.
+This algorithm is based on the version of SDC introduced by Nonaka et. al. ``\cite{Nonaka2012}``
 
 .. math::
 
-   \label{eq:dens}
-   \frac{\partial \rho}{\partial t} = - \frac{1}{a} \nabla \cdot (\rho {\bf U}) \enskip , \\
+   \frac{\partial \rho}{\partial t} = - \frac{1}{a} \nabla \cdot (\rho {\bf U}) , \\
 
 .. math::
 
    \begin{aligned}
-   \label{eq:momt}
    \frac{\partial (a \rho {\bf U})}{\partial t} &=& 
    -             \nabla \cdot (\rho {\bf U}{\bf U}) 
    -             \nabla p 
-   +             \rho {\bf g}\enskip , \end{aligned}
+   +             \rho {\bf g} , \end{aligned}
 
 .. math::
 
@@ -180,7 +181,7 @@ is evolved, then a full step of the hydrodynamical terms, followed by a half-ste
    \frac{\partial (a^2 \rho E)}{\partial t} &=&  a \left[
     -\nabla \cdot (\rho {\bf U}E + p {\bf U})
    +  \rho {\bf U}\cdot {\bf g}
-   +  \rho \Lambda_{HC}  \right]  \enskip . \end{aligned}
+   +  \rho \Lambda_{HC}  \right] . \end{aligned}
 
 .. math::
 
@@ -188,7 +189,7 @@ is evolved, then a full step of the hydrodynamical terms, followed by a half-ste
    \frac{\partial (a^2 \rho e)}{\partial t} &=& a \left[ 
    - \nabla \cdot (\rho {\bf U}e)
    -  p \nabla \cdot {\bf U}
-   +  \rho \Lambda_{HC}  \right]  \enskip . \end{aligned}
+   +  \rho \Lambda_{HC}  \right] . \end{aligned}
 
 The algorithm at a single level of refinement begins by computing the time step, :math:`\Delta t,`
 and advancing :math:`a` from :math:`t^n` to :math:`t^{n+1} = t^n + \Delta t`. The rest of the time step is
@@ -212,10 +213,6 @@ Step 2:
            {\bf u}_i^{{n+\frac{1}{2}}} &=& \frac{1}{a^{{n+\frac{1}{2}}}} ((a^n {\bf u}^n_i) + \frac{\Delta t}{2} \; {\bf g}^n_i) \\
            {\bf x}_i^{n+1}  &=& {\bf x}^n_i + \frac{\Delta t}{a^{{n+\frac{1}{2}}}} {\bf u}_i^{{n+\frac{1}{2}}}\end{aligned}
 
-   :math:`\begin{array}{c}
-   \hline{\hspace{.9\textwidth}}
-   \end{array}`
-
 Step 3:
    *Construct advective update terms using :math:`I_R` from last timestep as source*
 
@@ -223,8 +220,8 @@ Step 3:
 
       \begin{aligned}
       A_{\rho} & = & -\frac{1}{a}\nabla\cdot(\rho{\bf U})\\
-      A_{\rho u} & = & -\nabla\cdot\left(\rho uu\right)-\nabla p\\%+\rho g
-      A_{\rho E} & = & a\left[-\nabla\cdot(\rho{\bf U}E+p{\bf U})\right]\\%+\rho\Ub\cdot\gb
+      A_{\rho u} & = & -\nabla\cdot\left(\rho uu\right)-\nabla p\\
+      A_{\rho E} & = & a\left[-\nabla\cdot(\rho{\bf U}E+p{\bf U})\right]\\
       A_{\rho e} & = & \frac{1}{a} \left[
       - \nabla \cdot (\rho_b {\bf U}e)
       - p \nabla \cdot {\bf U}) \right]\end{aligned}
