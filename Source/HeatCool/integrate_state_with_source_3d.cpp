@@ -24,6 +24,9 @@
 #ifdef AMREX_USE_CUDA
 #include <nvector/nvector_cuda.h>
 #endif
+#ifdef AMREX_USE_HIP
+#include <nvector/nvector_hip.h>
+#endif
 //#define MAKE_MANAGED 1
 using namespace amrex;
 
@@ -211,7 +214,11 @@ int Nyx::integrate_state_struct_mfin
               int nthreads=omp_get_max_threads();
               u = N_VNew_OpenMP(neq,nthreads);  /* Allocate u vector */
 #else
+#ifdef AMREX_USE_HIP
+              u = N_VNewManaged_Hip(neq);  /* Allocate u vector */
+#else
               u = N_VNew_Serial(neq);  /* Allocate u vector */
+#endif
 #endif
               e_orig = N_VClone(u);  /* Allocate u vector */
               eptr=N_VGetArrayPointer(e_orig);
@@ -410,21 +417,21 @@ int Nyx::integrate_state_struct_mfin
     return 0;
 }
 
-#ifdef AMREX_USE_CUDA
+#ifdef AMREX_USE_GPU
 static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
 {
-  Real* udot_ptr=N_VGetDeviceArrayPointer_Cuda(udot);
-  Real* u_ptr=N_VGetDeviceArrayPointer_Cuda(u);
-  int neq=N_VGetLength_Cuda(udot);
+  Real* udot_ptr=N_VGetDeviceArrayPointer(udot);
+  Real* u_ptr=N_VGetDeviceArrayPointer(u);
+  int neq=N_VGetLength(udot);
 
   auto atomic_rates = atomic_rates_glob;
   auto f_rhs_data = static_cast<RhsData*>(user_data);
-  cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();
+
   AMREX_PARALLEL_FOR_1D ( neq, idx,
   {
       f_rhs_struct(t, (u_ptr[idx]),(udot_ptr[idx]),atomic_rates,f_rhs_data,idx);
   });
-  cudaStreamSynchronize(currentStream);
+  amrex::Gpu::streamSynchronize();
 #pragma omp barrier
 
   return 0;

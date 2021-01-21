@@ -126,6 +126,10 @@ ifeq ($(USE_CUDA),TRUE)
   LIBRARIES += -L$(SUNDIALS_LIB_DIR) -lsundials_nveccuda
 endif
 
+ifeq ($(USE_HIP),TRUE)
+  LIBRARIES += -L$(SUNDIALS_LIB_DIR) -lsundials_nvechip
+endif
+
 ifeq ($(USE_OMP),TRUE)
   LIBRARIES += -L$(SUNDIALS_LIB_DIR) -lsundials_nvecopenmp
 endif

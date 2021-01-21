@@ -382,22 +382,21 @@ int Nyx::integrate_state_grownvec
     return 0;
 }
 
-#ifdef AMREX_USE_CUDA
+#ifdef AMREX_USE_GPU
 static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
 {
-  Real* udot_ptr=N_VGetDeviceArrayPointer_Cuda(udot);
-  Real* u_ptr=N_VGetDeviceArrayPointer_Cuda(u);
-  int neq=N_VGetLength_Cuda(udot);
-  double*  rpar=N_VGetDeviceArrayPointer_Cuda(*(static_cast<N_Vector*>(user_data)));
+  Real* udot_ptr=N_VGetDeviceArrayPointer(udot);
+  Real* u_ptr=N_VGetDeviceArrayPointer(u);
+  int neq=N_VGetLength(udot);
+  double*  rpar=N_VGetDeviceArrayPointer(*(static_cast<N_Vector*>(user_data)));
   
-  cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();
   auto atomic_rates = atomic_rates_glob;
   Real lh_species = Nyx::h_species;
   AMREX_LAUNCH_DEVICE_LAMBDA ( neq, idx, {
       //  f_rhs_test(t,u_ptr,udot_ptr, rpar, neq);
       f_rhs_rpar(t,*(u_ptr+idx),*(udot_ptr+idx), (rpar+4*idx), atomic_rates, lh_species);
   });
-  cudaStreamSynchronize(currentStream);
+  amrex::Gpu::streamSynchronize();
 
   return 0;
 }
