@@ -1802,12 +1802,18 @@ Nyx::postCoarseTimeStep (Real cumtime)
         amrex::Gpu::Device::streamSynchronize();
         const DistributionMapping& newdmap = dm;
 
+	if(verbose > 2)
+	  amrex::Print()<<"Using ba: "<<parent->boxArray(lev)<<"\nUsing dm: "<<newdmap<<std::endl; 	  
         for (int i = 0; i < theActiveParticles().size(); i++)
         {
+             if(lev > 0)
+	         amrex::Abort("Particle load balancing needs multilevel testing");
+	  /*
              cs->theActiveParticles()[i]->Redistribute(lev,
                                                        theActiveParticles()[i]->finestLevel(),
                                                        1);
-             cs->theActiveParticles()[i]->Regrid(newdmap, parent->boxArray(lev), lev);
+	  */
+	     cs->theActiveParticles()[i]->Regrid(newdmap, parent->boxArray(lev), lev);
 
              if(shrink_to_fit)
                  cs->theActiveParticles()[i]->ShrinkToFit();

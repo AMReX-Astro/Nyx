@@ -1,6 +1,7 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 max_step = 10000000
-amr.restart = Part-load-nbody_chk00400
+amr.restart = Part-load-nbody_chk00300
+max_step = 325
 
 # We set this to 1 so that we eliminate the OpenMP-induced variability
 # in the MultiFab and Nyx sums that was making the solution to the gravity solve
@@ -48,7 +49,7 @@ amr.max_grid_size    = 32
 #amr.subcycling_iterations = 1 2 2 2
 
 # REFINEMENT / REGRIDDING
-amr.max_level       = 2
+amr.max_level       = 0
 amr.ref_ratio       = 2 2
 amr.blocking_factor = 8
 
@@ -68,7 +69,8 @@ amr.density.field_name = overden
 nyx.tagging_base = 8
 
 nyx.load_balance_start_z = 7.0
-nyx.load_balance_int = 100
+#nyx.load_balance_int = 100
+nyx.load_balance_int = 5
 nyx.load_balance_wgt_strategy=1
 nyx.load_balance_strategy=KNAPSACK
 
