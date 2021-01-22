@@ -131,9 +131,12 @@ Nyx::advance_particles_only (Real time,
                 get_level(lev).state[k].swapTimeLevels(dt_lev);
             }
 #ifndef NO_HYDRO
-            MultiFab& S_old = get_level(lev).get_old_data(State_Type);
-            MultiFab& S_new = get_level(lev).get_new_data(State_Type);
-            MultiFab::Copy(S_new, S_old, 0, 0, S_old.nComp(), 0);
+            if(do_hydro)
+            {
+              MultiFab& S_old = get_level(lev).get_old_data(State_Type);
+              MultiFab& S_new = get_level(lev).get_new_data(State_Type);
+              MultiFab::Copy(S_new, S_old, 0, 0, S_old.nComp(), 0);
+            }
 #endif
         }
     }

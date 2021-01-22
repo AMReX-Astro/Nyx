@@ -1755,7 +1755,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
     for (int lev = 0; lev <= parent->finestLevel(); lev++)
     {
 
-        Vector<long> wgts(grids.size());
+        Vector<long> wgts(parent->boxArray(lev).size());
         DistributionMapping dm;
 
         //Should these weights be constructed based on level=0, or lev from for?
@@ -1763,28 +1763,28 @@ Nyx::postCoarseTimeStep (Real cumtime)
         {
             for (unsigned int i = 0; i < wgts.size(); i++)
             {
-                wgts[i] = grids[i].numPts();
+                wgts[i] = parent->boxArray(lev)[i].numPts();
             }
             if(load_balance_strategy==DistributionMapping::Strategy::KNAPSACK)
                 dm.KnapSackProcessorMap(wgts, load_balance_wgt_nmax);
             else if(load_balance_strategy==DistributionMapping::Strategy::SFC)
-                dm.SFCProcessorMap(grids, wgts, load_balance_wgt_nmax);
+                dm.SFCProcessorMap(parent->boxArray(lev), wgts, load_balance_wgt_nmax);
             else if(load_balance_strategy==DistributionMapping::Strategy::ROUNDROBIN)
                 dm.RoundRobinProcessorMap(wgts, load_balance_wgt_nmax);
         }
         else if(load_balance_wgt_strategy == 1)
         {
-            wgts = theDMPC()->NumberOfParticlesInGrid(level,false,false);
+            wgts = theDMPC()->NumberOfParticlesInGrid(lev,false,false);
             if(load_balance_strategy==DistributionMapping::Strategy::KNAPSACK)
                 dm.KnapSackProcessorMap(wgts, load_balance_wgt_nmax);
             else if(load_balance_strategy==DistributionMapping::Strategy::SFC)
-                dm.SFCProcessorMap(grids, wgts, load_balance_wgt_nmax);
+              dm.SFCProcessorMap(parent->boxArray(lev), wgts, load_balance_wgt_nmax);
             else if(load_balance_strategy==DistributionMapping::Strategy::ROUNDROBIN)
                 dm.RoundRobinProcessorMap(wgts, load_balance_wgt_nmax);
         }
         else if(load_balance_wgt_strategy == 2)
         {
-            MultiFab particle_mf(grids,theDMPC()->ParticleDistributionMap(lev),1,1);
+            MultiFab particle_mf(parent->boxArray(lev),theDMPC()->ParticleDistributionMap(lev),1,1);
             theDMPC()->Increment(particle_mf, lev);
             if(load_balance_strategy==DistributionMapping::Strategy::KNAPSACK)
                 dm = DistributionMapping::makeKnapSack(particle_mf, load_balance_wgt_nmax);
@@ -1803,13 +1803,26 @@ Nyx::postCoarseTimeStep (Real cumtime)
 
         for (int i = 0; i < theActiveParticles().size(); i++)
         {
-             theActiveParticles()[i]->Regrid(newdmap, grids, lev);
+             theActiveParticles()[i]->Redistribute(lev,
+                                                   theActiveParticles()[i]->finestLevel(),
+                                                   1);
+             theActiveParticles()[i]->Regrid(newdmap, parent->boxArray(lev), lev);
 
              if(shrink_to_fit)
                  theActiveParticles()[i]->ShrinkToFit();
         }
 
-    amrex::Gpu::streamSynchronize();
+        if(Nyx::theVirtPC() != 0)
+        {
+            Nyx::theVirtPC()->Regrid(newdmap, parent->boxArray(lev), lev);
+        }
+
+        if(Nyx::theGhostPC() != 0)
+        {
+            Nyx::theGhostPC()->Regrid(newdmap, parent->boxArray(lev), lev);
+        }
+
+        amrex::Gpu::streamSynchronize();
     }
 
    }
