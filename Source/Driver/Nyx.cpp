@@ -1755,6 +1755,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
     for (int lev = 0; lev <= parent->finestLevel(); lev++)
     {
 
+        Nyx* cs = dynamic_cast<Nyx*>(&parent->getLevel(lev));
         Vector<long> wgts(parent->boxArray(lev).size());
         DistributionMapping dm;
 
@@ -1774,7 +1775,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
         }
         else if(load_balance_wgt_strategy == 1)
         {
-            wgts = theDMPC()->NumberOfParticlesInGrid(lev,false,false);
+            wgts = cs->theDMPC()->NumberOfParticlesInGrid(lev,false,false);
             if(load_balance_strategy==DistributionMapping::Strategy::KNAPSACK)
                 dm.KnapSackProcessorMap(wgts, load_balance_wgt_nmax);
             else if(load_balance_strategy==DistributionMapping::Strategy::SFC)
@@ -1785,7 +1786,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
         else if(load_balance_wgt_strategy == 2)
         {
             MultiFab particle_mf(parent->boxArray(lev),theDMPC()->ParticleDistributionMap(lev),1,1);
-            theDMPC()->Increment(particle_mf, lev);
+            cs->theDMPC()->Increment(particle_mf, lev);
             if(load_balance_strategy==DistributionMapping::Strategy::KNAPSACK)
                 dm = DistributionMapping::makeKnapSack(particle_mf, load_balance_wgt_nmax);
             else if(load_balance_strategy==DistributionMapping::Strategy::SFC)
@@ -1803,23 +1804,23 @@ Nyx::postCoarseTimeStep (Real cumtime)
 
         for (int i = 0; i < theActiveParticles().size(); i++)
         {
-             theActiveParticles()[i]->Redistribute(lev,
-                                                   theActiveParticles()[i]->finestLevel(),
-                                                   1);
-             theActiveParticles()[i]->Regrid(newdmap, parent->boxArray(lev), lev);
+             cs->theActiveParticles()[i]->Redistribute(lev,
+                                                       theActiveParticles()[i]->finestLevel(),
+                                                       1);
+             cs->theActiveParticles()[i]->Regrid(newdmap, parent->boxArray(lev), lev);
 
              if(shrink_to_fit)
-                 theActiveParticles()[i]->ShrinkToFit();
+                 cs->theActiveParticles()[i]->ShrinkToFit();
         }
 
-        if(Nyx::theVirtPC() != 0)
+        if(cs->Nyx::theVirtPC() != 0)
         {
-            Nyx::theVirtPC()->Regrid(newdmap, parent->boxArray(lev), lev);
+            cs->Nyx::theVirtPC()->Regrid(newdmap, parent->boxArray(lev), lev);
         }
 
-        if(Nyx::theGhostPC() != 0)
+        if(cs->Nyx::theGhostPC() != 0)
         {
-            Nyx::theGhostPC()->Regrid(newdmap, parent->boxArray(lev), lev);
+            cs->Nyx::theGhostPC()->Regrid(newdmap, parent->boxArray(lev), lev);
         }
 
         amrex::Gpu::streamSynchronize();
