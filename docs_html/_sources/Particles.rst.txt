@@ -29,6 +29,10 @@ GNUMakefile by::
   PRECISION = DOUBLE
   USE_SINGLE_PRECISION_PARTICLES = TRUE
 
+We do not recommend using single precision for the mesh data, as this is not tested and will potentially degrade the quality of the hydrodynamical solve. To use single precision for the mesh use::
+
+  PRECISION = FLOAT
+
 Equations
 =========
 

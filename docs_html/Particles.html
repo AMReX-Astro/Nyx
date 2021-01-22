@@ -252,6 +252,10 @@ GNUMakefile by:</p>
 <span class="n">USE_SINGLE_PRECISION_PARTICLES</span> <span class="o">=</span> <span class="n">TRUE</span>
 </pre></div>
 </div>
+<p>We do not recommend using single precision for the mesh data, as this is not tested and will potentially degrade the quality of the hydrodynamical solve. To use single precision for the mesh use:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PRECISION</span> <span class="o">=</span> <span class="n">FLOAT</span>
+</pre></div>
+</div>
 <div class="section" id="equations">
 <h2>Equations<a class="headerlink" href="#equations" title="Permalink to this headline">¶</a></h2>
 <p>If we define <span class="math notranslate nohighlight">\({\mathbf x}_i\)</span> and <span class="math notranslate nohighlight">\({\bf u}_i\)</span> as the location and velocity of particle <span class="math notranslate nohighlight">\(i\)</span>, respectively, then we wish

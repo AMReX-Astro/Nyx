@@ -100,6 +100,8 @@
 <li class="toctree-l1 current"><a class="reference internal" href="ManagingGridHierarchy_Chapter.html">Gridding and Load Balancing</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="GridCreation.html">Grid Creation</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Load Balancing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#load-balancing-the-hydrodynamical-mesh">Load Balancing the Hydrodynamical Mesh</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#load-balancing-the-dark-matter-particles">Load Balancing the Dark Matter Particles</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="NyxEquations.html">Hydrodynamic Equations in Comoving Coordinates</a></li>
@@ -223,8 +225,35 @@ to pass in a MultiFab of weights per cell which is used to compute the weight pe
 <li>SFC: enumerate grids with a space-filling Z-morton curve, then partition the
 resulting ordering across ranks in a way that balances the load</li>
 <li>Round-robin: sort grids and assign them to ranks in round-robin fashion – specifically
-FAB <em>i</em> is owned by CPU <a href="#id1"><span class="problematic" id="id2">*</span></a>i*%N where N is the total number of MPI ranks.</li>
+FAB <em>i</em> is owned by CPU <em>i</em> %N where N is the total number of MPI ranks.</li>
 </ul>
+</div>
+<div class="section" id="load-balancing-the-hydrodynamical-mesh">
+<h1>Load Balancing the Hydrodynamical Mesh<a class="headerlink" href="#load-balancing-the-hydrodynamical-mesh" title="Permalink to this headline">¶</a></h1>
+<p>For Nyx, the DistributionMapping defaults to using a SFC strategy.
+Setting the DistributionMapping to use a different strategy is controlled
+by flags beginning with DistributionMapping:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">DistributionMapping</span><span class="o">.</span><span class="n">strategy</span> <span class="o">=</span> <span class="p">{</span><span class="n">KNAPSACK</span><span class="p">,</span> <span class="n">SFC</span><span class="p">,</span> <span class="n">ROUNDROBIN</span><span class="p">}</span>
+<span class="n">DistributionMapping</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>These flags take effect whenever the Regrid operation is called on the mesh,
+typically either when <code class="docutils literal notranslate"><span class="pre">amr.regrid_int</span></code> is reached in a multilevel simulation or if
+<code class="docutils literal notranslate"><span class="pre">amr.regrid_on_restart=1</span></code>.</p>
+</div>
+<div class="section" id="load-balancing-the-dark-matter-particles">
+<h1>Load Balancing the Dark Matter Particles<a class="headerlink" href="#load-balancing-the-dark-matter-particles" title="Permalink to this headline">¶</a></h1>
+<p>For Nyx, the flags which affect how the active particles get their DistributionMapping change are:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">load_balance_int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">load_balance_start_z</span> <span class="o">=</span> <span class="mi">15</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">load_balance_wgt_strategy</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">}</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">load_balance_wgt_nmax</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">load_balance_strategy</span> <span class="o">=</span> <span class="p">{</span><span class="n">KNAPSACK</span><span class="p">,</span> <span class="n">SFC</span><span class="p">,</span> <span class="n">ROUNDROBIN</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">wgt_strategy</span></code> uses either the 0=number of cells, 1=number of dark matter particles, or 2=total count of dark matter particles to determine the cost of each box. 1 and 2 should be equivalent, and 1 should be cheaper.</p>
+<p>This load balancing is not on by default, and has a flag to determine based on redshift z when to begin affecting the calculation because this introduces additional communication penalties when the particles interact with mesh data. This additional communication is a trade-off to balance the amount of particle memory and particle work between ranks.</p>
+<p>This strategy is not currently implemented to work for multilevel simulations.</p>
 </div>
 
 
