@@ -835,7 +835,7 @@ int integrate_state_struct
     void LevelDirectoryNames (const std::string &dir,
                               const std::string &secondDir,  // ---- probably DM or AGN
                               std::string &LevelDir,
-                              std::string &FullPath) override;
+                              std::string &FullPath);
     //! Create the Level_ and other directories in checkpoint and plot files
     virtual void CreateLevelDirectory (const std::string &dir) override;
 
