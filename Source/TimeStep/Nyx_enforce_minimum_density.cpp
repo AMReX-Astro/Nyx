@@ -51,7 +51,7 @@ Nyx::enforce_minimum_density( MultiFab& S_old, MultiFab& S_new,
 
             amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept
             {
-                hydro_source(i,j,k,Density_comp) = uout(i,j,k,Density_comp) - uin(i,j,k,Density_comp);
+                hydro_src(i,j,k,Density_comp) = uout(i,j,k,Density_comp) - uin(i,j,k,Density_comp);
             });
 
         }
