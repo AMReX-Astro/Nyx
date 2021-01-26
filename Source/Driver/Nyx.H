@@ -94,37 +94,37 @@ public:
     //
     //The destructor.
     //
-    virtual ~Nyx();
+    virtual ~Nyx() override;
 
     //
     //Restart from a checkpoint file.
     //
-    virtual void restart(amrex::Amr& papa, istream& is, bool b_read_special=false);
+    virtual void restart(amrex::Amr& papa, istream& is, bool b_read_special=false) override;
 
     //
     //Call amrex::AmrLevel::checkPoint and then add radiation info
     //
     virtual void checkPoint(const std::string& dir, std::ostream& os,
-                            amrex::VisMF::How how, bool dump_old);
-    virtual void checkPointPre(const std::string& dir, std::ostream& os);
-    virtual void checkPointPost(const std::string& dir, std::ostream& os);
+                            amrex::VisMF::How how, bool dump_old) override;
+    virtual void checkPointPre(const std::string& dir, std::ostream& os) override;
+    virtual void checkPointPost(const std::string& dir, std::ostream& os) override;
 
     // A string written as the first item in `write_plot_file()` at level zero.
     // It is so we can distinguish between different types of plot files. For
     // Nyx it has the form: Nyx-Vnnn.
-    virtual std::string thePlotFileType() const;
+    virtual std::string thePlotFileType() const override;
 
-    virtual void setPlotVariables();
+    virtual void setPlotVariables() override;
 
     //
     //Write a plotfile to specified directory.
     //
-    virtual void writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how);
+    virtual void writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how) override;
 #ifdef BL_HDF5
-    virtual void writePlotFileHDF5(const std::string& dir, ostream& os, amrex::VisMF::How how);
+    virtual void writePlotFileHDF5(const std::string& dir, ostream& os, amrex::VisMF::How how) override;
 #endif
-    virtual void writePlotFilePre(const std::string& dir, ostream& os);
-    virtual void writePlotFilePost(const std::string& dir, ostream& os);
+    virtual void writePlotFilePre(const std::string& dir, ostream& os) override;
+    virtual void writePlotFilePost(const std::string& dir, ostream& os) override;
 
     void writeJobInfo (const std::string& dir);
 
@@ -166,7 +166,7 @@ public:
     //
     //Initialize grid data at problem start-up.
     //
-    virtual void initData();
+    virtual void initData() override;
 
     //
     //Initialize grid data from a plotfile at problem start-up.
@@ -373,7 +373,8 @@ public:
     //
     // Redistribute
     //
-    void particle_redistribute(int lbase = 0, bool init = false);
+    // override for sanity
+    void particle_redistribute(int lbase = 0, bool init = false) override;
 
     //
     // Initialize particle locations and velocities (and strengths if relevant)
@@ -432,7 +433,7 @@ public:
     //
     //Set time levels of state data.
     //
-    virtual void setTimeLevel (amrex::Real time, amrex::Real dt_old, amrex::Real dt_new);
+    virtual void setTimeLevel (amrex::Real time, amrex::Real dt_old, amrex::Real dt_new) override;
 
     //
     //Initialize data on this level from another Nyx (during regrid).
@@ -443,17 +444,17 @@ public:
     // Initialize data on this level after regridding if old level did not
     // previously exist
     //
-    virtual void init();
+    virtual void init() override;
 
     //
     // Proceed with next timestep?
     //
-    virtual int okToContinue();
+    virtual int okToContinue() override;
 
     //
     // Tell amrex::Amr to write a plotfile now
     //
-    bool writePlotNow();
+    bool writePlotNow() override;
 
     //
     // Tell Nyx to do analysis now
@@ -465,7 +466,7 @@ public:
     //
     // Advance grids at this level in time.
     //
-    virtual amrex::Real advance(amrex::Real time, amrex::Real dt, int iteration, int ncycle);
+    virtual amrex::Real advance(amrex::Real time, amrex::Real dt, int iteration, int ncycle) override;
 
     amrex::Real advance_hydro(amrex::Real time, amrex::Real dt, int iteration, int ncycle);
     amrex::Real advance_no_hydro(amrex::Real time, amrex::Real dt, int iteration, int ncycle);
@@ -656,7 +657,7 @@ int integrate_state_struct
     virtual void computeInitialDt(int finest_level, int sub_cycle,
                                   amrex::Vector<int>& n_cycle,
                                   const amrex::Vector<amrex::IntVect>& ref_ratio,
-                                  amrex::Vector<amrex::Real>& dt_level, amrex::Real stop_time);
+                                  amrex::Vector<amrex::Real>& dt_level, amrex::Real stop_time) override;
     //
     // Compute new `dt'.
     //
@@ -664,7 +665,7 @@ int integrate_state_struct
                               amrex::Vector<int>& n_cycle,
                               const amrex::Vector<amrex::IntVect>& ref_ratio,
                               amrex::Vector<amrex::Real>& dt_min, amrex::Vector<amrex::Real>& dt_level,
-                              amrex::Real stop_time, int post_regrid_flag);
+                              amrex::Real stop_time, int post_regrid_flag) override;
 
     //
     // Print information about energy budget.
@@ -674,38 +675,38 @@ int integrate_state_struct
     //
     // Do work after timestep().
     //
-    virtual void post_timestep(int iteration);
+    virtual void post_timestep(int iteration) override;
 
     //
     // Contains operations to be done only after a full coarse timestep.
     //
-    virtual void postCoarseTimeStep(amrex::Real cumtime);
+    virtual void postCoarseTimeStep(amrex::Real cumtime) override;
 
     //
     // Do work after `regrid()`.
     //
-    virtual void post_regrid(int lbase, int new_finest);
+    virtual void post_regrid(int lbase, int new_finest) override;
 
     //
     // Do work after a `restart()`.
     //
-    virtual void post_restart();
+    virtual void post_restart() override;
 
     //
     // Do work after `init()`.
     //
-    virtual void post_init(amrex::Real stop_time);
+    virtual void post_init(amrex::Real stop_time) override;
 
     //
     // Error estimation for regridding.
     //
     virtual void errorEst(amrex::TagBoxArray& tb, int clearval, int tagval, amrex::Real time,
-                          int n_error_buf=0, int ngrow=0);
+                          int n_error_buf=0, int ngrow=0) override;
 
     //
     // Error estimation for regridding.
     //
-    virtual int WorkEstType () { return 0; }
+    virtual int WorkEstType () override { return 0; }
 
     //
     // Called in grid_places after other tagging routines to modify
@@ -717,11 +718,11 @@ int integrate_state_struct
     // Returns a amrex::MultiFab containing the derived data for this level. The user
     // is responsible for deleting this pointer when done with it. If
     // `ngrow` > 0 the amrex::MultiFab is built on the appropriately grown amrex::BoxArray.
-    std::unique_ptr<amrex::MultiFab> derive(const std::string& name, amrex::Real time, int ngrow);
+    std::unique_ptr<amrex::MultiFab> derive(const std::string& name, amrex::Real time, int ngrow) override;
 
     // This version of `derive()` fills the dcomp'th component of mf with the
     // derived quantity.
-    void derive(const std::string& name, amrex::Real time, amrex::MultiFab& mf, int dcomp);
+    void derive(const std::string& name, amrex::Real time, amrex::MultiFab& mf, int dcomp) override;
 
     static int Do_Hydro();
 
@@ -833,9 +834,9 @@ int integrate_state_struct
     void LevelDirectoryNames (const std::string &dir,
                               const std::string &secondDir,  // ---- probably DM or AGN
                               std::string &LevelDir,
-                              std::string &FullPath);
+                              std::string &FullPath) override;
     //! Create the Level_ and other directories in checkpoint and plot files
-    virtual void CreateLevelDirectory (const std::string &dir);
+    virtual void CreateLevelDirectory (const std::string &dir) override;
 
 protected:
 
