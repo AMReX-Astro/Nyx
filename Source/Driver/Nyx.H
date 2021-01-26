@@ -559,6 +559,7 @@ public:
 
     void enforce_minimum_density  ( amrex::MultiFab& S_old      , amrex::MultiFab& S_new, 
 #ifdef SDC
+                                    amrex::MultiFab& hydro_source,
                                     amrex::MultiFab& reset_e_src,
 #endif
                                     amrex::Real a_new);
