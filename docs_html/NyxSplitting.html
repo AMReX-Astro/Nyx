@@ -289,7 +289,8 @@ advance the particle velocities by <span class="math notranslate nohighlight">\(
 and an explicit representation of <span class="math notranslate nohighlight">\(S_g\)</span> at time <span class="math notranslate nohighlight">\(t^n\)</span>:</p>
 <div class="math notranslate nohighlight">
 \[{\bf U}^{n+1,\ast} = {\bf U}^{n,\ast} + \Delta tA^{n+\frac{1}{2}}+ \Delta tS_g^n\]</div>
-<p class="last">where <span class="math notranslate nohighlight">\(A^{n+\frac{1}{2}}\)</span> is computed by predicting from the <span class="math notranslate nohighlight">\({\bf U}^{n,\ast}\)</span> states.</p>
+<p>where <span class="math notranslate nohighlight">\(A^{n+\frac{1}{2}}\)</span> is computed by predicting from the <span class="math notranslate nohighlight">\({\bf U}^{n,\ast}\)</span> states.</p>
+<p class="last">After adding the advective update terms <span class="math notranslate nohighlight">\(A^{n+\frac{1}{2}}\)</span> and before calculating <span class="math notranslate nohighlight">\(S_{g}\)</span>, apply a correction to <span class="math notranslate nohighlight">\({\bf U}^{n+1,\ast}\)</span> to enforce <span class="math notranslate nohighlight">\(\rho &gt; 1.1 \times small_dense\)</span></p>
 </dd>
 <dt>Step 5:</dt>
 <dd><p class="first">Second Strang step</p>
@@ -390,8 +391,9 @@ S_{g} &amp; = &amp; \rho g\\
       &amp;  &amp; \rho{\bf U}\cdot{\bf g}\end{aligned}\end{split}\]</div>
 <div class="math notranslate nohighlight">
 \[u^{n+1,\ast} = u^{n} + \Delta tA^{n+\frac{1}{2}}+ \Delta tS_g^n\]</div>
-<div class="last math notranslate nohighlight">
+<div class="math notranslate nohighlight">
 \[\left(\rho E\right)^{n+1,\ast }=\left(\rho E\right)^{n}+ \Delta tA_{\rho E}^{n+1/2} + \Delta tS_g\]</div>
+<p class="last">After adding the advective update terms <span class="math notranslate nohighlight">\(A_\ast\)</span> to the appropriate components of <span class="math notranslate nohighlight">\({\bf U}^{n+1,\ast}\)</span> and before calculating <span class="math notranslate nohighlight">\(S_{g}\)</span>, apply a correction to <span class="math notranslate nohighlight">\({\bf U}^{n+1,\ast}\)</span> and <cite>A_{rho}</cite> to enforce <span class="math notranslate nohighlight">\(\rho &gt; 1.1 \times small_dens\)</span></p>
 </dd>
 <dt>Step 5:</dt>
 <dd><p class="first">Simultaneously solve heating-cooling:</p>
