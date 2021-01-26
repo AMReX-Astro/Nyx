@@ -111,6 +111,8 @@ Step 4:
 
    where :math:`A^{n+\frac{1}{2}}` is computed by predicting from the :math:`{\bf U}^{n,\ast}` states.
 
+   After adding the advective update terms :math:`A^{n+\frac{1}{2}}` and before calculating :math:`S_{g}`, apply a correction to :math:`{\bf U}^{n+1,\ast}` to enforce :math:`\rho > 1.1 \times small_dense`
+		 
 Step 5: 
    Second Strang step
 
@@ -238,6 +240,8 @@ Step 4:
    .. math:: u^{n+1,\ast} = u^{n} + \Delta tA^{n+\frac{1}{2}}+ \Delta tS_g^n
 
    .. math:: \left(\rho E\right)^{n+1,\ast }=\left(\rho E\right)^{n}+ \Delta tA_{\rho E}^{n+1/2} + \Delta tS_g
+
+   After adding the advective update terms :math:`A_\ast` to the appropriate components of :math:`{\bf U}^{n+1,\ast}` and before calculating :math:`S_{g}`, apply a correction to :math:`{\bf U}^{n+1,\ast}` and `A_{\rho}` to enforce :math:`\rho > 1.1 \times small_dens`
 
 Step 5:
    Simultaneously solve heating-cooling:
