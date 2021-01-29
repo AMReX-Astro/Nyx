@@ -69,8 +69,8 @@ AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void ion_n_device(AtomicRates* atomic_r
     Real MPROTON = m_proton * M_unit;
     Real BOLTZMANN = k_B / (T_unit*T_unit/(M_unit*L_unit*L_unit));*/
     //    *t  = gamma_minus_1*mp_over_kb/e_to_cgs * U * mu;
-    t = U / e_to_cgs * (gamma_minus_1 * mp_over_kb * mu);
-    //    *t  = gamma_minus_1*MPROTON/BOLTZMANN * U * mu;
+    //    t = U / e_to_cgs * (gamma_minus_1 * mp_over_kb * mu);
+    t  = gamma_minus_1*MPROTON/BOLTZMANN * U * mu;
 
     logT = std::log10(t);
 
@@ -196,7 +196,7 @@ AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_T_given_Re_device(
     rho = R * density_to_cgs / (comoving_a*comoving_a*comoving_a);
     U = e * e_to_cgs;
 
-    nh  = rho*h_species/m_proton*M_unit;
+    nh  = rho*h_species/MPROTON;
 
     z   = 1.e0/comoving_a - 1.e0;
 
