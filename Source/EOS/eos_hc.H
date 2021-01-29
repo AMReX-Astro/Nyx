@@ -73,14 +73,6 @@ AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void ion_n_device(AtomicRates* atomic_r
     //    *t  = gamma_minus_1*MPROTON/BOLTZMANN * U * mu;
 
     logT = std::log10(t);
-    if(U<72*e_to_cgs&&U>70*e_to_cgs)
-      {
-#ifdef AMREX_USE_GPU
-	AMREX_DEVICE_PRINTF("ion1 %25.25g %25.25g %25.25g %25.25g %25.25g %25.25g %25.25g\n", gamma_minus_1*MPROTON/BOLTZMANN* U * mu,t,YHELIUM,MPROTON/BOLTZMANN, mp_over_kb/e_to_cgs,mu,ne);
-#else
-       printf("ion1 %25.25g %25.25g %25.25g %25.25g %25.25g %25.25g %25.25g\n", gamma_minus_1*MPROTON/BOLTZMANN* U * mu,t,YHELIUM,MPROTON/BOLTZMANN, mp_over_kb/e_to_cgs,mu,ne);
-#endif
-      }
 
     if (logT >= TCOOLMAX) // Fully ionized plasma
     {
