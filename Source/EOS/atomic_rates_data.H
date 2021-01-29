@@ -5,12 +5,17 @@
 #include <AMReX_Array.H>
 #include <AMReX_Vector.H>
 #include <AMReX_REAL.H>
-
+/*
 static constexpr int  NCOOLFILE = 301;    // TREECOOL_middle
 static constexpr int  NCOOLTAB  = 2000;
 static constexpr amrex::Real TCOOLMAX  = 9.0;
 static constexpr amrex::Real TCOOLMIN  = 0.0;
-static constexpr amrex::Real xacc  = 1e-6;
+static constexpr amrex::Real xacc  = 1e-6;*/
+#define NCOOLFILE  301
+#define  NCOOLTAB  2000
+#define TCOOLMAX  9.0
+#define TCOOLMIN  0.0
+#define xacc  1e-6
 //These are ~1e-5 rel diff from m_proton and k_B in constants_cosmo.H
 /*
 static constexpr amrex::Real MPROTON = 1.6726231e-24;

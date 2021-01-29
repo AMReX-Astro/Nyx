@@ -2528,6 +2528,10 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
 
     amrex::Gpu::synchronize();
     FArrayBox test, test_d;
+    amrex::Print()<<"print_state start of comp_new_temp"<<std::endl;
+    const IntVect cell_diff(AMREX_D_DECL(14,27,9));
+    print_state(S_new,cell_diff);
+    print_state(D_new,cell_diff);
 
 #ifdef _OPENMP
 #pragma omp parallel if (Gpu::notInLaunchRegion())
@@ -2557,6 +2561,8 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
             Real h_species_in=h_species;
             Real gamma_minus_1_in=gamma - 1.0;
             auto atomic_rates = atomic_rates_glob;
+	    amrex::Print()<<"small temp"<<local_small_temp<<std::endl;
+	    amrex::Print()<<"large temp"<<local_large_temp<<std::endl;
             AMREX_PARALLEL_FOR_3D(bx, i, j ,k,
             {
               Real rhoInv = 1.0 / state_fab(i,j,k,Density_comp);
@@ -2569,9 +2575,17 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
                 int JH = 1;
                 int JHe = 1;
 
-                nyx_eos_T_given_Re_device(atomic_rates, gamma_minus_1_in, h_species_in, JH, JHe, 
+                nyx_eos_T_given_Re_device(atomic_rates, gamma_minus_1_in, h_species_in, 1, 1, 
                                           &diag_eos_fab(i,j,k,Temp_comp), &diag_eos_fab(i,j,k,Ne_comp),
-                                          state_fab(i,j,k,Density_comp), eint, a);
+                                          state_fab(i,j,k,Density_comp), state_fab(i,j,k,Eint_comp) * (1.0 / state_fab(i,j,k,Density_comp)), a);
+		if(i==14&&j==27&&k==9)
+		  {
+		    #ifdef AMREX_USE_GPU
+		    AMREX_DEVICE_PRINTF("%d %d %d %g %g",i,j,k,diag_eos_fab(i,j,k,Temp_comp),eint);
+		    #else
+		    printf("%d %d %d %g %g",i,j,k,diag_eos_fab(i,j,k,Temp_comp),eint);
+		    #endif
+		  }
                 if(diag_eos_fab(i,j,k,Temp_comp)>=local_large_temp && local_max_temp_dt == 1)
                 {
                   diag_eos_fab(i,j,k,Temp_comp) = local_large_temp;
@@ -2640,6 +2654,9 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
         }
     }
     amrex::Gpu::synchronize();
+    amrex::Print()<<"print_state end of comp_new_temp"<<std::endl;
+    print_state(S_new,cell_diff);
+    print_state(D_new,cell_diff);
 }
 #endif
 

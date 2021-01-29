@@ -332,9 +332,9 @@ f_rhs_struct(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, Ato
     // Get gas temperature and individual ionization species
     // testing different memory structures
     if (f_rhs_data->inhomogeneous_on)
-        iterate_ne_device(atomic_rates, f_rhs_data->JH_vode_arr[idx], f_rhs_data->JHe_vode, z_vode, U, &T_vode, nh, &ne_vode, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1, f_rhs_data->h_species);
+        iterate_ne_device(atomic_rates, f_rhs_data->JH_vode_arr[idx], f_rhs_data->JHe_vode, z_vode, U, T_vode, nh, ne_vode, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1, f_rhs_data->h_species);
     else
-        iterate_ne_device(atomic_rates, f_rhs_data->JH_vode, f_rhs_data->JHe_vode, z_vode, U, &T_vode, nh, &ne_vode, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1, f_rhs_data->h_species);
+        iterate_ne_device(atomic_rates, f_rhs_data->JH_vode, f_rhs_data->JHe_vode, z_vode, U, T_vode, nh, ne_vode, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1, f_rhs_data->h_species);
     // Convert species to CGS units: 
     ne_vode = nh * ne_vode;
     nh0   = nh * nh0;
