@@ -298,30 +298,33 @@ words
    \clearpage
 
 The only other place that dimensional numbers are used in the code is in the tracing and Riemann solve.
-We set three *small* numbers which need to be consistent with the data specified.
+We set three *small* numbers which need to be consistent with the data specified
+We set one *large* number which needs to be consistent with the data specified.
 Each of these can be specified in the inputs file.
 
 -  small_dens – small value for density
 
--  small_p – small value for pressure
+-  small_press – small value for pressure
 
--  small_T – small value for temperature
+-  small_temp – small value for temperature
+
+-  large_temp – large value for temperature
 
 These are the places that each is used in the code:
 
 -  **small_dens**
 
-   -  | **subroutine enforce_minimum_density** (called after subroutine consup) – there are two choices for this. In the flooring routine, 
-      | **subroutine enforce_minimum_density_floor** – density is set to small_dens, (rho e) and (rho E) are computed from small_temp,
-      | and momenta are set to zero.  In the conservative routine, **subroutine enforce_minimum_density_cons**, an iterative procedure 
+   -  | **enforce_minimum_density** (called after subroutine consup) – there are two choices for this. In the flooring routine, 
+      | **enforce_minimum_density_floor** – density is set to small_dens, (rho e) and (rho E) are computed from small_temp,
+      | and momenta are set to zero.  In the conservative routine, **enforce_minimum_density_cons**, an iterative procedure 
       | is used to create diffusive fluxes that adjusts all the variables conservatively until density is greater than small_dens.
 
-   -  | **subroutine tracexy / tracez / tracexy_ppm / tracez_ppm**:
+   -  | **tracexy / tracez / tracexy_ppm / tracez_ppm**:
       | qxp = max(qxp,small_dens)
       | qxm = max(qxm,small_dens)
-      | and analogously for qyp/qym and qzp/qzm. This only modifies density inside the tracing, not the other variables
+      | and analogously for qyp/qym and qzp/qzm. This modifies the primitive density and pressure inside the tracing, not the underlying state variables
 
-   -  **subroutine riemannus** – we set
+   -  **riemannus** – we set
 
       wsmall = small_dens \* csmall
 
@@ -340,31 +343,34 @@ These are the places that each is used in the code:
 
       where rstar = ro + (pstar-po)/co:math:`^2`
 
-   -  **subroutine react_state** – only compute reaction if :math:`\rho >` small_dens
-
 -  **small_temp**:
 
-   -  | **subroutine ctoprim**: if :math:`\rho e < 0`, then
-      | call subroutine nyx_eos_given_RTX (e,...,small_temp,...) in order to compute a new energy, :math:`e`.
-      | This energy is then used to
-      | call subroutine nyx_eos_given_ReX in order to compute the sound speed, :math:`c.`
+   -  | **compute_new_temp**: if :math:`\rho e < 0`, then
+      | call nyx_eos_given_RT (e,...,small_temp,...) in order to compute a new energy, :math:`e`.
+      | This energy is then used to define a new :math:`E = e + ke`
       | Coming out of this the temperature is equal to small_temp and the energy :math:`e` has been reset.
 
-   -  | **subroutine react_state**: if :math:`\rho e < 0`, then
-      | call subroutine nyx_eos_given_RTX (e,...,small_temp,...) in order to compute a new energy, :math:`e`.
-      | This energy is then used to proceed with the burner routine.
+   -  | **reset_internal_energy**: if :math:`e < 0` and :math:`E - ke < 0` then
+      | call nyx_eos_given_RT (e,...,small_temp,...) in order to compute a new energy, :math:`e`. This energy is also used to define a new :math:`E = e + ke`
 
-   -  | **subroutine reset_internal_energy**: if :math:`e < 0` and :math:`E - ke < 0` then
-      | call subroutine nyx_eos_given_RTX (e,...,small_temp,...) in order to compute a new energy, :math:`e`. This energy is also used to
-      | define a new :math:`E = e + ke`
+-  **large_temp**:
+
+   -  | **compute_new_temp**: if :math:`T > \mathrm{large\_temp}`, and the input flag ``nyx.local_max_temp_dt=1`` then
+      | set :math:`T = \mathrm{large\_temp}` and call nyx_eos_given_RT (e,...,large_temp,...) in order to compute a new energy, :math:`e`.
+      | This energy is then used to define a new :math:`E = e + ke`
+      | Coming out of this the temperature is equal to large_temp and the energy :math:`e` has been reset.
 
 -  **small_pres**:
 
-   -  **subroutine riemannus** – we set
+   -  | **tracexy / tracez / tracexy_ppm / tracez_ppm**:
+      | qpres = max(qpres,small_pres)
+      | for qxp/qyp, qyp/qym and qzp/qzm. This modifies the primitive density and pressure inside the tracing, not the underlying state variables
+
+   -  **riemannus** – we set
 
       | pstar = max(small_pres,pstar)
       | pgdnv = max(small_pres,pgdnv). Note that pgdnv is the pressure explicitly used in the fluxes.
 
-   -  **subroutine uflaten** – small_pres is used to keep the denominator away from zero
+   -  **uflatten** – small_pres is used to keep the denominator away from zero
 
    -  Everywhere we define values of pressure on a face, we set that value to be at least small_pres.
