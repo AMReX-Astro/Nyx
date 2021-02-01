@@ -14,8 +14,11 @@ the ``Nyx/Exec/LyA`` directory.
 In order to use SUNDIALS:
 
 #. We suggest using the Github mirror:
-   https://github.com/LLNL/sundials
+   https://github.com/LLNL/sundials and picking the type of
+   parallelism that is appropriate for your architecture.
 
+   To install with cuda and openmp support:
+   
    ::
 
       #!/bin/bash
@@ -29,9 +32,9 @@ In order to use SUNDIALS:
       -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}  \
       -DCMAKE_INSTALL_LIBDIR=lib \
       -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
-      -DCMAKE_C_COMPILER=$(which cc)  \
-      -DCMAKE_CXX_COMPILER=$(which CC)   \
-      -DCMAKE_CUDA_HOST_COMPILER=$(which CC)    \
+      -DCMAKE_C_COMPILER=$(which gcc)  \
+      -DCMAKE_CXX_COMPILER=$(which g++)   \
+      -DCMAKE_CUDA_HOST_COMPILER=$(which g++)    \
       -DEXAMPLES_INSTALL_PATH=${INSTALL_PREFIX}/examples \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_CUDA_FLAGS="-DSUNDIALS_DEBUG_CUDA_LASTERROR" \
@@ -47,7 +50,7 @@ In order to use SUNDIALS:
       make -j8
       make install -j8
 
-#. To install without cuda support:
+   To install with openmp and no cuda support:
          
    ::
 
@@ -62,9 +65,9 @@ In order to use SUNDIALS:
       -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}  \
       -DCMAKE_INSTALL_LIBDIR=lib \
       -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
-      -DCMAKE_C_COMPILER=$(which cc)  \
-      -DCMAKE_CXX_COMPILER=$(which CC)   \
-      -DCMAKE_CUDA_HOST_COMPILER=$(which CC)    \
+      -DCMAKE_C_COMPILER=$(which gcc)  \
+      -DCMAKE_CXX_COMPILER=$(which g++)   \
+      -DCMAKE_CUDA_HOST_COMPILER=$(which g++)    \
       -DEXAMPLES_INSTALL_PATH=${INSTALL_PREFIX}/examples \
       -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_C_FLAGS_RELEASE="-O3 -DNDEBUG" \
@@ -77,7 +80,65 @@ In order to use SUNDIALS:
       make -j8
       make install -j8
 
-#. Note that we use ``cc`` and ``CC`` compiler wrappers, which need to be consistent with the Nyx's GNUMakefile
+   To install with HIP support (with ROCm 4.0):
+
+   ::
+
+      #!/bin/bash
+      set -e
+      git clone https://github.com/LLNL/sundials
+      cd sundials
+      mkdir builddir instdir
+      cd builddir
+      cmake \
+      -DCMAKE_INSTALL_PREFIX=$(pwd)/../instdir  \
+      -DCMAKE_INSTALL_LIBDIR=lib \
+      -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
+      -DCMAKE_C_COMPILER=$(which hipcc) \
+      -DCMAKE_CXX_COMPILER=$(which hipcc) \
+      -DEXAMPLES_INSTALL_PATH=$(pwd)/../instdir/examples \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_C_FLAGS_RELEASE=-O3 \
+      -DCMAKE_CXX_FLAGS_RELEASE=-O3 \
+      -DCUDA_ENABLE=OFF  \
+      -DMPI_ENABLE=OFF  \
+      -DOPENMP_ENABLE=OFF   \
+      -DF2003_INTERFACE_ENABLE=OFF \
+      -DENABLE_HIP=ON \
+      -DEXAMPLES_INSTALL=OFF ../
+      make -j8
+      make install -j8
+
+
+   To install with SYCL support:
+
+   ::
+
+      #!/bin/bash
+      set -e
+      git clone https://github.com/LLNL/sundials
+      cd sundials
+      mkdir builddir instdir
+      cd builddir
+      cmake \
+      -DCMAKE_INSTALL_PREFIX=$(pwd)/../instdir  \
+      -DCMAKE_INSTALL_LIBDIR=lib \
+      -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
+      -DCMAKE_CXX_COMPILER=$(which dpcpp)  \
+      -DCMAKE_CXX_STANDARD=17 \
+      -DEXAMPLES_INSTALL_PATH=$(pwd)/../instdir/examples \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_CXX_FLAGS_RELEASE=-O3  \
+      -DCUDA_ENABLE=OFF  \
+      -DMPI_ENABLE=OFF  \
+      -DOPENMP_ENABLE=OFF   \
+      -DF2003_INTERFACE_ENABLE=OFF \
+      -DENABLE_SYCL=ON ../
+      make -j8
+      make install -j8
+
+#. Note that we give these examples for the gnu compiler or the appropriate parallel compiler.
+   The compiler chosen needs to be consistent with Nyx's GNUMakefile
    variable COMP to ensure matching OMP runtime libraries for use with the OpenMP NVector. 
 
 #. ``CUDA_ARCH`` must be set to the appropriate value for the GPU being targeted
@@ -88,7 +149,8 @@ In order to use SUNDIALS:
 #. In the ``GNUmakefile`` for the application which uses the interface to SUNDIALS, add
    ``USE_SUNDIALS = TRUE`` and ``SUNDIALS_ROOT=${INSTALL_PREFIX}``. Note that one must define the
    ``SUNDIALS_LIB_DIR`` make variable to point to the location where the libraries are installed
-   if they are not installed in the default location which is ``${INSTALL_PREFIX}/lib64``.
+   if they are not installed in ``${INSTALL_PREFIX}/lib``. Note the default location
+   for 64 is ``${INSTALL_PREFIX}/lib64``, which we override with ``-DCMAKE_INSTALL_LIBDIR=lib``.
 
 #. If the application uses the SUNDIALS CVODE time integrator package, then the variable
    ``USE_CVODE_LIBS = TRUE`` should also be added in the ``GNUmakefile`` for the application.
