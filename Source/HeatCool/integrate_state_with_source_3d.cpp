@@ -228,11 +228,7 @@ int Nyx::integrate_state_struct_mfin
 #endif
 #endif
               e_orig = N_VClone(u);  /* Allocate u vector */
-              eptr=N_VGetArrayPointer(e_orig);
-              dptr=N_VGetArrayPointer(u);
-
               abstol_vec = N_VClone(u);
-              abstol_ptr=N_VGetArrayPointer(abstol_vec);
               if(sdc_iter>=0)
               {
                   T_vec = N_VClone(u);
@@ -255,6 +251,22 @@ int Nyx::integrate_state_struct_mfin
                   e_src_vec = N_VCloneEmpty(u);
                   IR_vec = N_VCloneEmpty(u);
               }
+#ifdef AMREX_USE_GPU
+              eptr=N_VGetDeviceArrayPointer(e_orig);
+              dptr=N_VGetDeviceArrayPointer(u);
+              abstol_ptr=N_VGetDeviceArrayPointer(abstol_vec);
+              amrex::Real* T_vode= N_VGetDeviceArrayPointer(T_vec);
+              amrex::Real* ne_vode=N_VGetDeviceArrayPointer(ne_vec);
+              amrex::Real* rho_vode=N_VGetDeviceArrayPointer(rho_vec);
+              amrex::Real* rho_init_vode=N_VGetDeviceArrayPointer(rho_init_vec);
+              amrex::Real* rho_src_vode=N_VGetDeviceArrayPointer(rho_src_vec);
+              amrex::Real* rhoe_src_vode=N_VGetDeviceArrayPointer(rhoe_src_vec);
+              amrex::Real* e_src_vode=N_VGetDeviceArrayPointer(e_src_vec);
+              amrex::Real* IR_vode=N_VGetDeviceArrayPointer(IR_vec);
+#else
+              eptr=N_VGetArrayPointer(e_orig);
+              dptr=N_VGetArrayPointer(u);
+              abstol_ptr=N_VGetArrayPointer(abstol_vec);
               amrex::Real* T_vode= N_VGetArrayPointer(T_vec);
               amrex::Real* ne_vode=N_VGetArrayPointer(ne_vec);
               amrex::Real* rho_vode=N_VGetArrayPointer(rho_vec);
@@ -263,6 +275,8 @@ int Nyx::integrate_state_struct_mfin
               amrex::Real* rhoe_src_vode=N_VGetArrayPointer(rhoe_src_vec);
               amrex::Real* e_src_vode=N_VGetArrayPointer(e_src_vec);
               amrex::Real* IR_vode=N_VGetArrayPointer(IR_vec);
+#endif
+
 #endif
       int* JH_vode_arr=NULL;
       if(inhomo_reion == 1)
@@ -438,13 +452,13 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
   {
     if(idx==5)
     {
-      AMREX_DEVICE_PRINTF("in  %25.5g %25.25g %25.25g\n",t,u_ptr[idx],udot_ptr[idx]);
+      AMREX_DEVICE_PRINTF("in  %25.5g %25.25g %25.25g %25.25g %25.25g %25.25g\n",t,u_ptr[idx],udot_ptr[idx],f_rhs_data->T_vode[idx],f_rhs_data->ne_vode[idx],f_rhs_data->rho_vode[idx]);
       //      amrex::Abort("found idx=5");
     }
     f_rhs_struct(t, (u_ptr[idx]),(udot_ptr[idx]),atomic_rates,f_rhs_data,idx);
     if(idx==5)
     {
-      AMREX_DEVICE_PRINTF("out %25.5g %25.25g %25.25g\n",t,u_ptr[idx],udot_ptr[idx]);
+      AMREX_DEVICE_PRINTF("out %25.5g %25.25g %25.25g %25.25g %25.25g %25.25g\n",t,u_ptr[idx],udot_ptr[idx],f_rhs_data->T_vode[idx],f_rhs_data->ne_vode[idx],f_rhs_data->rho_vode[idx]);
       //      amrex::Abort("found idx=5");
     }
   });
@@ -469,14 +483,16 @@ static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
     {
       if(tid==5)
     {
-      printf("in  %25.5g %25.25g %25.25g\n",t,u_ptr[tid],udot_ptr[tid]);
+      int idx=tid;
+      printf("in  %25.5g %25.25g %25.25g %25.25g %25.25g %25.25g\n",t,u_ptr[idx],udot_ptr[idx],f_rhs_data->T_vode[idx],f_rhs_data->ne_vode[idx],f_rhs_data->rho_vode[idx]);
       //      amrex::Abort("found idx=5");
     }
                 //        f_rhs_rpar(t, (u_ptr[tid]),(udot_ptr[tid]),&(rpar[4*tid]));
                 f_rhs_struct(t, (u_ptr[tid]),(udot_ptr[tid]),atomic_rates,f_rhs_data,tid);
       if(tid==5)
     {
-      printf("out %25.5g %25.25g %25.25g\n",t,u_ptr[tid],udot_ptr[tid]);
+      int idx=tid;
+      printf("out %25.5g %25.25g %25.25g %25.25g %25.25g %25.25g\n",t,u_ptr[idx],udot_ptr[idx],f_rhs_data->T_vode[idx],f_rhs_data->ne_vode[idx],f_rhs_data->rho_vode[idx]);
       //      amrex::Abort("found idx=5");
     }
     }

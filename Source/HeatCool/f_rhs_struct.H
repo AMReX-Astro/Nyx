@@ -226,7 +226,7 @@ ode_eos_finalize_struct(const int i, const int j, const int k, const int idx, At
     /////////////////   //update nyx_eos_T_given_Re
     diag_eos4(i,j,k,Temp_comp)=f_rhs_data->T_vode[idx];   //rpar(1)=T_vode
     diag_eos4(i,j,k,Ne_comp)=f_rhs_data->ne_vode[idx];//    rpar(2)=ne_vode
-    if(f_rhs_data->e_src_vode!=NULL)
+    if((f_rhs_data->e_src_vode!=NULL)||true)
     {
         a = f_rhs_data->a;
         asq = a*a;
@@ -245,7 +245,7 @@ ode_eos_finalize_struct(const int i, const int j, const int k, const int idx, At
     rho_vode=f_rhs_data->rho_vode[idx];
     z_vode=1/(f_rhs_data->a)-1.0;
 
-    if(f_rhs_data->e_src_vode!=NULL)
+    if((f_rhs_data->e_src_vode!=NULL)||true)
     {
         if ((state_n4(i,j,k,Eint_comp) + delta_time * ahalf * I_R(i,j,k) / aendsq) / state_n4(i,j,k,Density_comp) < 0.e0)
         {
@@ -278,7 +278,7 @@ ode_eos_finalize_struct(const int i, const int j, const int k, const int idx, At
     diag_eos4(i,j,k,Temp_comp)=f_rhs_data->T_vode[idx];
     diag_eos4(i,j,k,Ne_comp)=f_rhs_data->ne_vode[idx];
     //    state4(i,j,k,Density_comp)=f_rhs_data->rho_vode[idx];
-    if(f_rhs_data->e_src_vode!=NULL)
+    if(f_rhs_data->e_src_vode!=NULL||true)
     {
         // Update (rho e) and (rho E)
         // Note that we add to state_n because those already have hydro_source in them
@@ -315,7 +315,7 @@ f_rhs_struct(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, Ato
 
     T_vode=f_rhs_data->T_vode[idx];
     ne_vode=f_rhs_data->ne_vode[idx];
-    if(f_rhs_data->rho_init_vode != NULL)
+    if(f_rhs_data->rho_init_vode != NULL||true)
         rho_vode=f_rhs_data->rho_init_vode[idx]+time*f_rhs_data->rho_src_vode[idx];
     else
         rho_vode=f_rhs_data->rho_vode[idx];
@@ -408,8 +408,17 @@ f_rhs_struct(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, Ato
 
     // Convert to the actual term to be used in e_out = e_in + dt*energy
     a = 1.e0 / (1.e0 + amrex::Math::abs(z_vode));
-    if(f_rhs_data->e_src_vode!=NULL)
-        energy  = energy / rho_vode / a + f_rhs_data->e_src_vode[idx];
+    if(idx==5)
+      {
+#ifdef AMREX_USE_GPU
+	AMREX_DEVICE_PRINTF("f_rhs%25.25g %25.25g %25.25g %25.25g %d\n",energy,rho_vode,a,f_rhs_data->e_src_vode[idx],f_rhs_data->e_src_vode!=NULL);
+#else
+	printf("f_rhs%25.25g %25.25g %25.25g %25.25g %d\n",energy,rho_vode,a,f_rhs_data->e_src_vode[idx],f_rhs_data->e_src_vode!=NULL);
+#endif
+      }
+
+    if((f_rhs_data->e_src_vode!=NULL)||true)
+      energy  = energy / rho_vode / a + f_rhs_data->e_src_vode[idx];
     else
         energy = energy / rho_vode / a;
     f_rhs_data->T_vode[idx]=T_vode;
