@@ -450,17 +450,7 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
 
   AMREX_PARALLEL_FOR_1D ( neq, idx,
   {
-    if(idx==5)
-    {
-      AMREX_DEVICE_PRINTF("in  %25.5g %25.25g %25.25g %25.25g %25.25g %25.25g\n",t,u_ptr[idx],udot_ptr[idx],f_rhs_data->T_vode[idx],f_rhs_data->ne_vode[idx],f_rhs_data->rho_vode[idx]);
-      //      amrex::Abort("found idx=5");
-    }
     f_rhs_struct(t, (u_ptr[idx]),(udot_ptr[idx]),atomic_rates,f_rhs_data,idx);
-    if(idx==5)
-    {
-      AMREX_DEVICE_PRINTF("out %25.5g %25.25g %25.25g %25.25g %25.25g %25.25g\n",t,u_ptr[idx],udot_ptr[idx],f_rhs_data->T_vode[idx],f_rhs_data->ne_vode[idx],f_rhs_data->rho_vode[idx]);
-      //      amrex::Abort("found idx=5");
-    }
   });
   amrex::Gpu::streamSynchronize();
 #pragma omp barrier
@@ -481,20 +471,8 @@ static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
   #pragma omp parallel for
   for(int tid=0;tid<neq;tid++)
     {
-      if(tid==5)
-    {
-      int idx=tid;
-      printf("in  %25.5g %25.25g %25.25g %25.25g %25.25g %25.25g\n",t,u_ptr[idx],udot_ptr[idx],f_rhs_data->T_vode[idx],f_rhs_data->ne_vode[idx],f_rhs_data->rho_vode[idx]);
-      //      amrex::Abort("found idx=5");
-    }
                 //        f_rhs_rpar(t, (u_ptr[tid]),(udot_ptr[tid]),&(rpar[4*tid]));
                 f_rhs_struct(t, (u_ptr[tid]),(udot_ptr[tid]),atomic_rates,f_rhs_data,tid);
-      if(tid==5)
-    {
-      int idx=tid;
-      printf("out %25.5g %25.25g %25.25g %25.25g %25.25g %25.25g\n",t,u_ptr[idx],udot_ptr[idx],f_rhs_data->T_vode[idx],f_rhs_data->ne_vode[idx],f_rhs_data->rho_vode[idx]);
-      //      amrex::Abort("found idx=5");
-    }
     }
 
   return 0;
