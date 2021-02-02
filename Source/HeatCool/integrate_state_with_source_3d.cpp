@@ -371,7 +371,7 @@ int Nyx::integrate_state_struct_mfin
 #endif
                 int  idx= i + j*len.x + k*len.x*len.y - (lo.x+lo.y*len.x+lo.z*len.x*len.y);
                 //                              for (int i= 0;i < neq; ++i) {
-                ode_eos_finalize_struct(i,j,k,idx,atomic_rates,f_rhs_data,a_end,state4,state_n4,reset_src4,diag_eos4,IR4,dptr,eptr,delta_time);
+		ode_eos_finalize_struct(i,j,k,idx,atomic_rates,f_rhs_data,a_end,state4,state_n4,reset_src4,diag_eos4,IR4,dptr,eptr,delta_time);
                 //PrintFinalStats(cvode_mem);
 #ifdef AMREX_USE_GPU
                 });
@@ -436,7 +436,17 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
 
   AMREX_PARALLEL_FOR_1D ( neq, idx,
   {
-      f_rhs_struct(t, (u_ptr[idx]),(udot_ptr[idx]),atomic_rates,f_rhs_data,idx);
+    if(idx==5)
+    {
+      AMREX_DEVICE_PRINTF("in  %25.5g %25.25g %25.25g\n",t,u_ptr[idx],udot_ptr[idx]);
+      //      amrex::Abort("found idx=5");
+    }
+    f_rhs_struct(t, (u_ptr[idx]),(udot_ptr[idx]),atomic_rates,f_rhs_data,idx);
+    if(idx==5)
+    {
+      AMREX_DEVICE_PRINTF("out %25.5g %25.25g %25.25g\n",t,u_ptr[idx],udot_ptr[idx]);
+      //      amrex::Abort("found idx=5");
+    }
   });
   amrex::Gpu::streamSynchronize();
 #pragma omp barrier
@@ -457,8 +467,18 @@ static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
   #pragma omp parallel for
   for(int tid=0;tid<neq;tid++)
     {
+      if(tid==5)
+    {
+      printf("in  %25.5g %25.25g %25.25g\n",t,u_ptr[tid],udot_ptr[tid]);
+      //      amrex::Abort("found idx=5");
+    }
                 //        f_rhs_rpar(t, (u_ptr[tid]),(udot_ptr[tid]),&(rpar[4*tid]));
                 f_rhs_struct(t, (u_ptr[tid]),(udot_ptr[tid]),atomic_rates,f_rhs_data,tid);
+      if(tid==5)
+    {
+      printf("out %25.5g %25.25g %25.25g\n",t,u_ptr[tid],udot_ptr[tid]);
+      //      amrex::Abort("found idx=5");
+    }
     }
 
   return 0;
