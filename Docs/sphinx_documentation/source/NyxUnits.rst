@@ -17,10 +17,11 @@ Nyx/constants directory.
 
 In the equation of state calls,
 conversions must be made between CGS units and code units.
-Table \ `[table:units] <#table:units>`__ shows some of the common symbols / names used
+:numref:`table:units` shows some of the common symbols / names used
 throughout the code documentation and papers.
 
-.. table:: [table:units] Common quantities and units.
+.. _table:units:
+.. table:: Common quantities and units.
 
    +-----------------------+-----------------------+-----------------------+
    | name                  | units                 | description           |
@@ -48,9 +49,10 @@ throughout the code documentation and papers.
    | :math:`T`             | :math:`K`             | temperature           |
    +-----------------------+-----------------------+-----------------------+
 
-words
+:numref:`table:inputs` associates the numerical input data with the corresponding unit scaling.
 
-.. table:: [table:inputs]
+.. _table:inputs:
+.. table:: 
 	   Units expected for inputs and outputs.
 	   
    ======================= ========================================= ===================================== ====================================================== ==========================================================================
@@ -75,7 +77,10 @@ words
    Output                  Time                                      s                                     (Mpc/km) s                                             1 Mpc = 3.08568025e19 km
    ======================= ========================================= ===================================== ====================================================== ==========================================================================
 
-.. table:: [table:constants]
+:numref:`table:constants` lists the values used for cosmological constants in the code with their associated units. Note that :math:`\Omega_m`, :math:`\Omega_b`, :math:`\Omega_r`  and :math:`h` are set in the inputs file.
+   
+.. _table:constants:
+.. table::
 	   Physical constant values
 
    ================================== ================================================= ========================================================== ========================================================================
