@@ -213,10 +213,10 @@ The default is cosmological units.</p>
 Nyx/constants directory.</p>
 <p>In the equation of state calls,
 conversions must be made between CGS units and code units.
-Table <a class="reference external" href="#table:units">[table:units]</a> shows some of the common symbols / names used
+<a class="reference internal" href="#table-units"><span class="std std-numref">Table 2</span></a> shows some of the common symbols / names used
 throughout the code documentation and papers.</p>
-<table border="1" class="docutils" id="id3">
-<caption><span class="caption-text">[table:units] Common quantities and units.</span><a class="headerlink" href="#id3" title="Permalink to this table">¶</a></caption>
+<span id="table-units"></span><table border="1" class="docutils" id="id1">
+<caption><span class="caption-number">Table 2 </span><span class="caption-text">Common quantities and units.</span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
 <colgroup>
 <col width="33%" />
 <col width="33%" />
@@ -273,448 +273,168 @@ energy</td>
 </tr>
 </tbody>
 </table>
-<p>words</p>
-<table border="1" class="docutils" id="id4">
-<caption><span class="caption-text">[table:inputs]
-        Units expected for inputs and outputs.</span><a class="headerlink" href="#id4" title="Permalink to this table">¶</a></caption>
+<p><a class="reference internal" href="#table-inputs"><span class="std std-numref">Table 3</span></a> associates the numerical input data with the corresponding unit scaling.</p>
+<span id="table-inputs"></span><table border="1" class="docutils" id="id2">
+<caption><span class="caption-number">Table 3 </span><span class="caption-text">Units expected for inputs and outputs.</span><a class="headerlink" href="#id2" title="Permalink to this table">¶</a></caption>
 <colgroup>
-<col width="20%" />
-<col width="20%" />
-<col width="20%" />
-<col width="20%" />
-<col width="20%" />
+<col width="10%" />
+<col width="18%" />
+<col width="16%" />
+<col width="24%" />
+<col width="32%" />
 </colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Location</th>
+<th class="head">Variable</th>
+<th class="head">CGS</th>
+<th class="head">Cosmological</th>
+<th class="head">Conversion Data</th>
+</tr>
+</thead>
 <tbody valign="top">
-<tr class="row-odd"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-</tr>
-<tr class="row-even"><td>Location</td>
-<td>Variable</td>
-<td>CGS</td>
-<td>Cosmologica
-l</td>
-<td>Conversion
-Data</td>
-</tr>
-<tr class="row-odd"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-</tr>
-<tr class="row-even"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-</tr>
-<tr class="row-odd"><td>inputs file</td>
-<td><strong>geometry.
-prob_lo</strong></td>
+<tr class="row-even"><td>inputs file</td>
+<td><strong>geometry.prob_lo</strong></td>
 <td>cm</td>
 <td>Mpc</td>
-<td>1Mpc =
-3.08568025e
-24
-cm</td>
+<td>1Mpc = 3.08568025e24 cm</td>
 </tr>
-<tr class="row-even"><td>&#160;</td>
-<td><strong>geometry.
-prob_hi</strong></td>
+<tr class="row-odd"><td></td>
+<td><strong>geometry.prob_hi</strong></td>
 <td>cm</td>
 <td>Mpc</td>
-<td>1Mpc =
-3.08568025e
-24
-cm</td>
+<td>1Mpc = 3.08568025e24 cm</td>
 </tr>
-<tr class="row-odd"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-</tr>
-<tr class="row-even"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-</tr>
-<tr class="row-odd"><td>Hydro
-Initializat
-ion</td>
+<tr class="row-even"><td>Hydro Initialization</td>
 <td>density</td>
-<td>g /
-cm:math:`
-^3`</td>
-<td>M<span class="math notranslate nohighlight">\(_
-\odot\)</span>
-/
-Mpc:math:
-<cite>^3</cite></td>
-<td>1
-(M:math:<cite>_odot</cite>
-/
-Mpc:math:
-<cite>^3</cite>)
-=
-.06769624e-
-39
-(g/cm:math:
-<cite>^3</cite>)</td>
+<td>g / cm<span class="math notranslate nohighlight">\(^3\)</span></td>
+<td>M<span class="math notranslate nohighlight">\(_\odot\)</span> / Mpc<span class="math notranslate nohighlight">\(^3\)</span></td>
+<td>1 (M<span class="math notranslate nohighlight">\(_\odot\)</span> / Mpc<span class="math notranslate nohighlight">\(^3\)</span>) = .06769624e-39 (g/cm<span class="math notranslate nohighlight">\(^3\)</span>)</td>
 </tr>
-<tr class="row-even"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-</tr>
-<tr class="row-odd"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-</tr>
-<tr class="row-even"><td>Hydro
-Initializat
-ion</td>
+<tr class="row-odd"><td>Hydro Initialization</td>
 <td>velocities</td>
 <td>cm/s</td>
 <td>km/s</td>
-<td>1km = 1.e5
-cm</td>
+<td>1km = 1.e5 cm</td>
 </tr>
-<tr class="row-odd"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-</tr>
-<tr class="row-even"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-</tr>
-<tr class="row-odd"><td>Hydro
-Initializat
-ion</td>
+<tr class="row-even"><td>Hydro Initialization</td>
 <td>momenta</td>
-<td>(g/cm:math:
-<cite>^3</cite>)
-(cm/s)</td>
-<td>(M:math:<cite>_odot</cite>/Mpc:m
-ath:<cite>^3</cite>)
-(km/s)</td>
-<td>1km = 1.e5
-cm</td>
+<td>(g/cm<span class="math notranslate nohighlight">\(^3\)</span>) (cm/s)</td>
+<td>(M<span class="math notranslate nohighlight">\(_\odot\)</span>/Mpc<span class="math notranslate nohighlight">\(^3\)</span>) (km/s)</td>
+<td>1km = 1.e5 cm</td>
 </tr>
-<tr class="row-even"><td>&#160;</td>
+<tr class="row-odd"><td></td>
 <td>&#160;</td>
 <td>&#160;</td>
 <td>&#160;</td>
-<td>1
-(M:math:<cite>_odot</cite>
-/
-Mpc:math:
-<cite>^3</cite>)
-=
-.06769624e-
-39
-g/cm:math
-:<cite>^3</cite></td>
+<td>1 (M<span class="math notranslate nohighlight">\(_\odot\)</span> / Mpc<span class="math notranslate nohighlight">\(^3\)</span>) = .06769624e-39 g/cm<span class="math notranslate nohighlight">\(^3\)</span></td>
 </tr>
-<tr class="row-odd"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-</tr>
-<tr class="row-even"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-</tr>
-<tr class="row-odd"><td>Hydro
-Initializat
-ion</td>
+<tr class="row-even"><td>Hydro Initialization</td>
 <td>temperature</td>
 <td>K</td>
 <td>K</td>
 <td>1</td>
 </tr>
-<tr class="row-even"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
+<tr class="row-odd"><td>Hydro Initialization</td>
+<td>specific energy (<span class="math notranslate nohighlight">\(e\)</span> or <span class="math notranslate nohighlight">\(E\)</span>)</td>
+<td>erg/g= (cm/s)<span class="math notranslate nohighlight">\(^2\)</span></td>
+<td>(km/s)<span class="math notranslate nohighlight">\(^2\)</span></td>
+<td>1 (km/s)<span class="math notranslate nohighlight">\(^2\)</span> = 1.e10 (cm/s)<span class="math notranslate nohighlight">\(^2\)</span></td>
 </tr>
-<tr class="row-odd"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
+<tr class="row-even"><td>Hydro Initialization</td>
+<td>energy (<span class="math notranslate nohighlight">\(\rho e\)</span> or <span class="math notranslate nohighlight">\(\rho E\)</span>)</td>
+<td>erg / cm<span class="math notranslate nohighlight">\(^3 =\)</span></td>
+<td>(M<span class="math notranslate nohighlight">\(_\odot\)</span>/Mpc<span class="math notranslate nohighlight">\(^3\)</span>) (km/s)<span class="math notranslate nohighlight">\(^2\)</span></td>
+<td>1 (km/s)<span class="math notranslate nohighlight">\(^2\)</span> = 1.e10 (cm/s)<span class="math notranslate nohighlight">\(^2\)</span></td>
 </tr>
-<tr class="row-even"><td>Hydro
-Initializat
-ion</td>
-<td>specific
-energy
-(<span class="math notranslate nohighlight">\(e\)</span>
-or
-<span class="math notranslate nohighlight">\(E\)</span>)</td>
-<td>erg/g=
-(cm/s):math
-:<cite>^2</cite></td>
-<td>(km/s):math
-:<cite>^2</cite></td>
-<td>1
-(km/s):math
-:<cite>^2</cite>
-= 1.e10
-(cm/s):math
-:<cite>^2</cite></td>
+<tr class="row-odd"><td></td>
+<td>&#160;</td>
+<td>(g/cm<span class="math notranslate nohighlight">\(^3\)</span>) (cm/s)<span class="math notranslate nohighlight">\(^2\)</span></td>
+<td>&#160;</td>
+<td>1 (M<span class="math notranslate nohighlight">\(_\odot\)</span> / Mpc<span class="math notranslate nohighlight">\(^3\)</span>) = .06769624e-39 g/cm<span class="math notranslate nohighlight">\(^3\)</span></td>
 </tr>
-<tr class="row-odd"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-</tr>
-<tr class="row-even"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-</tr>
-<tr class="row-odd"><td>Hydro
-Initializat
-ion</td>
-<td><p class="first">energy
-(<span class="math notranslate nohighlight">\(\rh
-o e\)</span>
-or
-:math:<a href="#id1"><span class="problematic" id="id2">`</span></a>rho</p>
-<blockquote class="last">
-<div>E`)</div></blockquote>
-</td>
-<td>erg /
-cm:math:`
-^3 =`</td>
-<td>(M:math:<cite>_odot</cite>/Mpc:m
-ath:<cite>^3</cite>)
-(km/s):math
-:<cite>^2</cite></td>
-<td>1
-(km/s):math
-:<cite>^2</cite>
-= 1.e10
-(cm/s):math
-:<cite>^2</cite></td>
-</tr>
-<tr class="row-even"><td>&#160;</td>
-<td>&#160;</td>
-<td>(g/cm:math:
-<cite>^3</cite>)
-(cm/s):math
-:<cite>^2</cite></td>
-<td>&#160;</td>
-<td>1
-(M:math:<cite>_odot</cite>
-/
-Mpc:math:
-<cite>^3</cite>)
-=
-.06769624e-
-39
-g/cm:math
-:<cite>^3</cite></td>
-</tr>
-<tr class="row-odd"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-</tr>
-<tr class="row-even"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-</tr>
-<tr class="row-odd"><td>Particle
-Initializat
-ion</td>
-<td>particle
-mass</td>
+<tr class="row-even"><td>Particle Initialization</td>
+<td>particle mass</td>
 <td>g</td>
-<td>M<span class="math notranslate nohighlight">\(_
-\odot\)</span></td>
-<td>1
-M<span class="math notranslate nohighlight">\(_
-\odot\)</span>
-=
-1.98892e33
-g</td>
+<td>M<span class="math notranslate nohighlight">\(_\odot\)</span></td>
+<td>1 M<span class="math notranslate nohighlight">\(_\odot\)</span> = 1.98892e33 g</td>
 </tr>
-<tr class="row-even"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-</tr>
-<tr class="row-odd"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-</tr>
-<tr class="row-even"><td>Particle
-Initializat
-ion</td>
-<td>particle
-locations</td>
+<tr class="row-odd"><td>Particle Initialization</td>
+<td>particle locations</td>
 <td>cm</td>
 <td>Mpc</td>
-<td>1 Mpc =
-3.08568025e
-24
-cm</td>
+<td>1 Mpc = 3.08568025e24 cm</td>
 </tr>
-<tr class="row-odd"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-</tr>
-<tr class="row-even"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-</tr>
-<tr class="row-odd"><td>Particle
-Initializat
-ion</td>
-<td>particle
-velocities</td>
+<tr class="row-even"><td>Particle Initialization</td>
+<td>particle velocities</td>
 <td>cm/s</td>
 <td>km/s</td>
-<td>1 km = 1e5
-cm</td>
-</tr>
-<tr class="row-even"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-</tr>
-<tr class="row-odd"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-</tr>
-<tr class="row-even"><td>Output</td>
-<td>Pressure</td>
-<td>g
-(cm/s):math
-:<cite>^2</cite>
-/
-cm:math:`
-^3`</td>
-<td>M<span class="math notranslate nohighlight">\(_
-\odot\)</span>
-(km/s):math
-:<cite>^2</cite>
-/
-Mpc:math:
-<cite>^3</cite></td>
-<td>1
-M<span class="math notranslate nohighlight">\(_
-\odot\)</span>
-(km/s):math
-:<cite>^2</cite>
-/
-Mpc:math:
-<cite>^3</cite>
-=</td>
-</tr>
-<tr class="row-odd"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>.06769624e-
-29
-g
-(cm/s):math
-:<cite>^2</cite>
-/
-cm:math:`
-^3`</td>
-</tr>
-<tr class="row-even"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-</tr>
-<tr class="row-odd"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-</tr>
-<tr class="row-even"><td>Output</td>
-<td>Gravity</td>
-<td>(cm/s) / s</td>
-<td>(km/s):math
-:<cite>^2</cite>
-/ Mpc</td>
-<td>1
-M<span class="math notranslate nohighlight">\(_
-\odot\)</span>
-(km/s):math
-:<cite>^2</cite>
-/
-Mpc:math:
-<cite>^3</cite>
-=</td>
-</tr>
-<tr class="row-odd"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-</tr>
-<tr class="row-even"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
+<td>1 km = 1e5 cm</td>
 </tr>
 <tr class="row-odd"><td>Output</td>
+<td>Pressure</td>
+<td>g (cm/s)<span class="math notranslate nohighlight">\(^2\)</span> / cm<span class="math notranslate nohighlight">\(^3\)</span></td>
+<td>M<span class="math notranslate nohighlight">\(_\odot\)</span> (km/s)<span class="math notranslate nohighlight">\(^2\)</span> / Mpc<span class="math notranslate nohighlight">\(^3\)</span></td>
+<td>1 M<span class="math notranslate nohighlight">\(_\odot\)</span> (km/s)<span class="math notranslate nohighlight">\(^2\)</span> / Mpc<span class="math notranslate nohighlight">\(^3\)</span> =</td>
+</tr>
+<tr class="row-even"><td></td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>.06769624e-29 g (cm/s)<span class="math notranslate nohighlight">\(^2\)</span> / cm<span class="math notranslate nohighlight">\(^3\)</span></td>
+</tr>
+<tr class="row-odd"><td>Output</td>
+<td>Gravity</td>
+<td>(cm/s) / s</td>
+<td>(km/s)<span class="math notranslate nohighlight">\(^2\)</span> / Mpc</td>
+<td>1 M<span class="math notranslate nohighlight">\(_\odot\)</span> (km/s)<span class="math notranslate nohighlight">\(^2\)</span> / Mpc<span class="math notranslate nohighlight">\(^3\)</span> =</td>
+</tr>
+<tr class="row-even"><td>Output</td>
 <td>Time</td>
 <td>s</td>
 <td>(Mpc/km) s</td>
-<td>1 Mpc =
-3.08568025e
-19
-km</td>
-</tr>
-<tr class="row-even"><td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
-<td>&#160;</td>
+<td>1 Mpc = 3.08568025e19 km</td>
 </tr>
 </tbody>
 </table>
-<p>[Table:Inputs]</p>
+<p><a class="reference internal" href="#table-constants"><span class="std std-numref">Table 4</span></a> lists the values used for cosmological constants in the code with their associated units. Note that <span class="math notranslate nohighlight">\(\Omega_m\)</span>, <span class="math notranslate nohighlight">\(\Omega_b\)</span>, <span class="math notranslate nohighlight">\(\Omega_r\)</span>  and <span class="math notranslate nohighlight">\(h\)</span> are set in the inputs file.</p>
+<span id="table-constants"></span><table border="1" class="docutils" id="id3">
+<caption><span class="caption-number">Table 4 </span><span class="caption-text">Physical constant values</span><a class="headerlink" href="#id3" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="16%" />
+<col width="23%" />
+<col width="27%" />
+<col width="34%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Constant</th>
+<th class="head">CGS</th>
+<th class="head">Cosmological</th>
+<th class="head">Conversion Data</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Gravitational constant (<span class="math notranslate nohighlight">\(G\)</span>)</td>
+<td>6.67428e-8 cm (cm/s)<span class="math notranslate nohighlight">\(^2\)</span> g<span class="math notranslate nohighlight">\(^{-1}\)</span></td>
+<td>4.3019425e-9 Mpc (km/s)<span class="math notranslate nohighlight">\(^2\)</span> M<span class="math notranslate nohighlight">\(_\odot^{-1}\)</span></td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>Avogadro’s number (<span class="math notranslate nohighlight">\(n_A\)</span>)</td>
+<td>6.02214129e23 g<span class="math notranslate nohighlight">\(^{-1}\)</span></td>
+<td>1.1977558e57 M<span class="math notranslate nohighlight">\(_\odot^{-1}\)</span></td>
+<td>1 M<span class="math notranslate nohighlight">\(_\odot\)</span> = 1.98892e33 g</td>
+</tr>
+<tr class="row-even"><td>Boltzmann’s constant (<span class="math notranslate nohighlight">\(k_B\)</span>)</td>
+<td>1.3806488e-16 erg / K</td>
+<td>0.6941701e-59 M<span class="math notranslate nohighlight">\(_\odot\)</span> (km/s)<span class="math notranslate nohighlight">\(^2\)</span> / K</td>
+<td>1 M<span class="math notranslate nohighlight">\(_\odot\)</span> (km/s)<span class="math notranslate nohighlight">\(^2\)</span> = 1.98892e43 g (cm/s)<span class="math notranslate nohighlight">\(^2\)</span></td>
+</tr>
+<tr class="row-odd"><td>Hubble constant (<span class="math notranslate nohighlight">\(H\)</span>)</td>
+<td>100 (km/s) / Mpc</td>
+<td>32.407764868e-19 s<span class="math notranslate nohighlight">\(^{-1}\)</span></td>
+<td>1 Mpc = 3.08568025e19 km</td>
+</tr>
+</tbody>
+</table>
 <p>The only other place that dimensional numbers are used in the code is in the tracing and Riemann solve.
 We set three <em>small</em> numbers which need to be consistent with the data specified
 We set one <em>large</em> number which needs to be consistent with the data specified.
