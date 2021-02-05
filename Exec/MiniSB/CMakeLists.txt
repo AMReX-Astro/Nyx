@@ -6,6 +6,7 @@ set(_input_files
    inputs.analysis
    particle_file.small
    fixed_grids
+   ic_sb_32.ascii
    )
 
 nyx_setup_executable(_sources _input_files)
