@@ -150,9 +150,6 @@ static int  slice_int    = -1;
 std::string slice_file   = "slice_";
 static int  slice_nfiles = 128;
 
-// Real Nyx::ave_lev_vorticity[10];
-// Real Nyx::std_lev_vorticity[10];
-
 Gravity* Nyx::gravity  =  0;
 int Nyx::do_grav       = -1;
 
@@ -1400,7 +1397,6 @@ Nyx::post_timestep (int iteration)
 
              if(shrink_to_fit)
                  theActiveParticles()[i]->ShrinkToFit();
-
         }
     }
 

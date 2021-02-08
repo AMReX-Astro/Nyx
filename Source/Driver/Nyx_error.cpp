@@ -57,11 +57,6 @@ Nyx::error_setup()
           std::string field; ppr.get("field_name",field);
           errtags.push_back(AMRErrorTag(value,AMRErrorTag::LESS,field,info));
         }
-        else if (ppr.countval("vorticity_greater")) {
-          Real value; ppr.get("vorticity_greater",value);
-          const std::string field="mag_vort";
-          errtags.push_back(AMRErrorTag(value,AMRErrorTag::VORT,field,info));
-        }
         else if (ppr.countval("adjacent_difference_greater")) {
           Real value; ppr.get("adjacent_difference_greater",value);
           std::string field; ppr.get("field_name",field);
