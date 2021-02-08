@@ -208,7 +208,11 @@
 <div class="section" id="stochastic-forcing">
 <h1>Stochastic Forcing<a class="headerlink" href="#stochastic-forcing" title="Permalink to this headline">¶</a></h1>
 <p>There is an option to apply a stochastic force field.</p>
-<p>See Nyx/Exec/DrivenTurbulence for an example.</p>
+<p>See Nyx/Exec/DrivenTurbulence for an example; note that</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">do_forcing</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>must be set in the inputs file.</p>
 <p>The external forcing term in the momentum equation
 (<a class="reference external" href="#eq:momt">[eq:momt]</a>) is then given by</p>
 <blockquote>

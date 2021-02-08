@@ -4,7 +4,11 @@ Stochastic Forcing
 
 There is an option to apply a stochastic force field. 
 
-See Nyx/Exec/DrivenTurbulence for an example.
+See Nyx/Exec/DrivenTurbulence for an example; note that ::
+
+    nyx.do_forcing = 1
+
+must be set in the inputs file.
 
 The external forcing term in the momentum equation 
 (`[eq:momt] <#eq:momt>`__) is then given by
