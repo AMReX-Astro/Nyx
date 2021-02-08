@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Hydrodynamic Equations in Comoving Coordinates &mdash; Nyx  documentation</title>
+  <title>In situ analysis &mdash; Nyx  documentation</title>
   
 
   
@@ -43,8 +43,8 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Hydrodynamical and Heating-Cooling Splitting" href="NyxSplitting.html" />
-    <link rel="prev" title="Load Balancing" href="LoadBalancing.html" /> 
+    <link rel="next" title="PostProcessing" href="PostProcessing.html" />
+    <link rel="prev" title="Nightly Regression Tests" href="NightlyTests.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -98,10 +98,7 @@
 <li class="toctree-l1"><a class="reference internal" href="NyxInputs.html">Inputs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Refinement.html">Refinement Criteria</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ManagingGridHierarchy_Chapter.html">Gridding and Load Balancing</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Hydrodynamic Equations in Comoving Coordinates</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#conservative-form">Conservative Form</a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="NyxEquations.html">Hydrodynamic Equations in Comoving Coordinates</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxSplitting.html">Hydrodynamical and Heating-Cooling Splitting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxHeatCool.html">Radiative Heating and Cooling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxGravity.html">Gravity</a></li>
@@ -110,7 +107,10 @@
 <li class="toctree-l1"><a class="reference internal" href="AGN.html">The AGN Model in Nyx</a></li>
 <li class="toctree-l1"><a class="reference internal" href="AGN.html#the-reeber-package">The Reeber Package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NightlyTests.html">Nightly Regression Tests</a></li>
-<li class="toctree-l1"><a class="reference internal" href="InSitu.html">In situ analysis</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">In situ analysis</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#halo-finding">Halo finding</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="PostProcessing.html">PostProcessing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="PostProcessing.html#visualization">Visualization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Debugging.html">Debugging</a></li>
@@ -162,13 +162,13 @@
     
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>Hydrodynamic Equations in Comoving Coordinates</li>
+      <li>In situ analysis</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="_sources/NyxEquations.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/InSitu.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -205,91 +205,16 @@
     text-align: unset;
 }
 </style>
-<div class="section" id="hydrodynamic-equations-in-comoving-coordinates">
-<h1>Hydrodynamic Equations in Comoving Coordinates<a class="headerlink" href="#hydrodynamic-equations-in-comoving-coordinates" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="conservative-form">
-<h2>Conservative Form<a class="headerlink" href="#conservative-form" title="Permalink to this headline">¶</a></h2>
-<p>We solve the equations of gas dynamics in a coordinate system that is comoving
-with the expanding universe, with expansion factor, <span class="math notranslate nohighlight">\(a,\)</span> related to the redshift, <span class="math notranslate nohighlight">\(z\)</span>, by <span class="math notranslate nohighlight">\(a = 1 / (1 + z).\)</span>
-The continuity equation is written,</p>
-<div class="math notranslate nohighlight">
-\[\begin{split}\label{eq:dens}
-\frac{\partial \rho_b}{\partial t} = - \frac{1}{a} \nabla \cdot (\rho_b {\bf U})  , \\\end{split}\]</div>
-<p>where <span class="math notranslate nohighlight">\(\rho_b\)</span> is the comoving baryonic density, related to the proper density by <span class="math notranslate nohighlight">\(\rho_b = a^3 \rho_{proper},\)</span>
-and <span class="math notranslate nohighlight">\({\bf U}\)</span> is the proper peculiar baryonic velocity.</p>
-<p>The momentum evolution equation can be expressed as</p>
-<div class="math notranslate nohighlight">
-\[\begin{aligned}
-\frac{\partial (\rho_b {\bf U})}{\partial t} &amp;=&amp;  \frac{1}{a} \left(
-- \nabla \cdot (\rho_b {\bf U} {\bf U})
-- \nabla p
-+ \rho_b {\bf g}
-+ {\bf S}_{\rho {\bf U}}
-- \dot{a} \rho_b {\bf U} \right)  , \end{aligned}\]</div>
-<p>or equivalently,</p>
-<div class="math notranslate nohighlight">
-\[\begin{aligned}
-\label{eq:momt}
-\frac{\partial (a \rho_b {\bf U})}{\partial t} &amp;=&amp;
--             \nabla \cdot (\rho_b {\bf U} {\bf U})
--             \nabla p
-+             \rho_b {\bf g}
-+             {\bf S}_{\rho {\bf U}}  , \end{aligned}\]</div>
-<p>where the pressure, <span class="math notranslate nohighlight">\(p\)</span>, that appears in the
-evolution equations is related to the proper pressure, <span class="math notranslate nohighlight">\(p_{proper},\)</span> by <span class="math notranslate nohighlight">\(p = a^3 p_{proper}.\)</span>
-Here <span class="math notranslate nohighlight">\({\bf g} = - \nabla \phi\)</span> is the gravitational acceleration vector, and
-<span class="math notranslate nohighlight">\({\bf S}_{\rho {\bf U}}\)</span> represents any external forcing terms.</p>
-<p>The energy equation can be written,</p>
-<div class="math notranslate nohighlight">
-\[\begin{aligned}
-\frac{\partial (\rho_b E)}{\partial t} &amp;=&amp; \frac{1}{a} \left[
-- \nabla \cdot (\rho_b {\bf U} E + p {\bf U})
-+ ( \rho_b {\bf U} \cdot {\bf g} +  S_{\rho E} )
-- \dot{a} ( 3 (\gamma - 1) \rho_b e + \rho_b ( {\bf U} \cdot {\bf U}) ) \right]  . \end{aligned}\]</div>
-<p>or equivalently,</p>
-<div class="math notranslate nohighlight">
-\[\begin{aligned}
-\label{eq:energy}
-\frac{\partial (a^2 \rho_b E)}{\partial t} &amp;=&amp; a \left[
-- \nabla \cdot (\rho_b {\bf U} E + p {\bf U})
-+  \rho_b {\bf U} \cdot {\bf g}
-+  S_{\rho E}
-+  \dot{a} ( \; ( 2 - 3 (\gamma - 1) ) \; \rho_b e ) \right]  . \end{aligned}\]</div>
-<p>Here <span class="math notranslate nohighlight">\(E = e + {\bf U} \cdot {\bf U} / 2\)</span> is the total energy per unit mass,
-where <span class="math notranslate nohighlight">\(e\)</span> is the specific internal energy.
-<span class="math notranslate nohighlight">\(S_{\rho E} = S_{\rho e} + {\bf U} \cdot {\bf S}_{\rho {\bf U}}\)</span>
-where <span class="math notranslate nohighlight">\(S_{\rho e} = \Lambda^H - \Lambda^C\)</span> represents the heating and cooling terms, respectively.
-Additionally, <span class="math notranslate nohighlight">\({\bf S}_{\rho {E}}\)</span> may include any external forcing terms on the total energy, for example as in the stochastic forcing application.
-We can write the evolution equation for internal energy as</p>
-<div class="math notranslate nohighlight">
-\[\begin{aligned}
-\frac{\partial (\rho_b e)}{\partial t} &amp;=&amp; \frac{1}{a} \left[
-- \nabla \cdot (\rho_b {\bf U} e)
-- p \nabla \cdot {\bf U}
-- \dot{a} ( 3 (\gamma - 1) \rho_b e )
-+ S_{\rho e}  \right]  . \end{aligned}\]</div>
-<p>or equivalently,</p>
-<div class="math notranslate nohighlight">
-\[\begin{aligned}
-\frac{\partial (a^2 \rho_b e)}{\partial t} &amp;=&amp;  a \left[
-- \nabla \cdot (\rho_b {\bf U} e)
-- p \nabla \cdot {\bf U}
-+ S_{\rho e}
-+ \dot{a} ( \; ( 2 - 3 (\gamma - 1) ) \; \rho_b e ) \right]  . \end{aligned}\]</div>
-<p>Note that for a gamma-law gas with <span class="math notranslate nohighlight">\(\gamma = 5/3,\)</span> we can write</p>
-<div class="math notranslate nohighlight">
-\[\begin{aligned}
-\frac{\partial (a^2 \rho_b E)}{\partial t} &amp;=&amp;  a \left[
- -\nabla \cdot (\rho_b {\bf U} E + p {\bf U})
-+  \rho_b {\bf U} \cdot {\bf g}
-+  S_{\rho e}  \right]   . \end{aligned}\]</div>
-<p>and</p>
-<div class="math notranslate nohighlight">
-\[\begin{aligned}
-\frac{\partial (a^2 \rho_b e)}{\partial t} &amp;=&amp; a \left[
-- \nabla \cdot (\rho_b {\bf U} e)
--  p \nabla \cdot {\bf U}
-+  S_{\rho e}  \right]   . \end{aligned}\]</div>
+<div class="section" id="in-situ-analysis">
+<span id="insitu"></span><h1>In situ analysis<a class="headerlink" href="#in-situ-analysis" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="halo-finding">
+<h2>Halo finding<a class="headerlink" href="#halo-finding" title="Permalink to this headline">¶</a></h2>
+<p>To find halos in situ while Nyx is running we use the Reeber package.
+To compile with Reeber, add in GNUmakefile</p>
+<p>REEBER = TRUE</p>
+<p>and set the location of Boost library</p>
+<p>BOOST_INLUDE_DIR := ${BOOST_ROOT}/include/boost</p>
+<p>Note that these codes are in separate repositories and are not included with Nyx.</p>
 </div>
 </div>
 
@@ -299,8 +224,8 @@ We can write the evolution equation for internal energy as</p>
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="NyxSplitting.html" class="btn btn-neutral float-right" title="Hydrodynamical and Heating-Cooling Splitting" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="LoadBalancing.html" class="btn btn-neutral float-left" title="Load Balancing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="PostProcessing.html" class="btn btn-neutral float-right" title="PostProcessing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="NightlyTests.html" class="btn btn-neutral float-left" title="Nightly Regression Tests" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

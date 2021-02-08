@@ -25,7 +25,7 @@ Welcome to Nyx's documentation!
    Particles
    AGN
    NightlyTests
-   Visualization
+   InSitu
    PostProcessing
    Debugging
 

@@ -44,7 +44,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Debugging" href="Debugging.html" />
-    <link rel="prev" title="Visualization" href="Visualization.html" /> 
+    <link rel="prev" title="In situ analysis" href="InSitu.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -107,11 +107,12 @@
 <li class="toctree-l1"><a class="reference internal" href="AGN.html">The AGN Model in Nyx</a></li>
 <li class="toctree-l1"><a class="reference internal" href="AGN.html#the-reeber-package">The Reeber Package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NightlyTests.html">Nightly Regression Tests</a></li>
-<li class="toctree-l1"><a class="reference internal" href="Visualization.html">Visualization</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">PostProcessing</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="InSitu.html">In situ analysis</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">PostProcessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#visualization">Visualization</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#reeber">Reeber</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#gimlet">Gimlet</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#do-it-yourself">Do It Yourself</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Debugging.html">Debugging</a></li>
@@ -208,13 +209,83 @@
 </style>
 <div class="section" id="postprocessing">
 <span id="id1"></span><h1>PostProcessing<a class="headerlink" href="#postprocessing" title="Permalink to this headline">¶</a></h1>
-<p>Nyx interfaces with two post-processing suites, Reeber and Gimlet.</p>
+</div>
+<div class="section" id="visualization">
+<h1>Visualization<a class="headerlink" href="#visualization" title="Permalink to this headline">¶</a></h1>
+<p>Nyx generates plotfile in the native AMReX format as well as HDF5.</p>
+<p>There are several visualization tools that can be used for AMReX plotfiles,
+specifically VisIt, ParaView, and yt.</p>
+<p>See the <a class="reference external" href="https://amrex-codes.github.io/amrex/docs_html/Visualization_Chapter.html">AMReX documentation</a> for
+guidance on how to use each of these tools.</p>
+<p>The following inputs control when plotfiles are written</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="59%" />
+<col width="11%" />
+<col width="9%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">&#160;</th>
+<th class="head">Description</th>
+<th class="head">Type</th>
+<th class="head">Default</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>amr.plot_int</td>
+<td>Frequency of plotfile output;
+if -1 then no plotfiles will be written</td>
+<td>Int</td>
+<td>-1</td>
+</tr>
+<tr class="row-odd"><td>amr.plotfile_on_restart</td>
+<td>Should we write a plotfile when we restart (only used if plot_int&gt;0)</td>
+<td>Bool</td>
+<td>False</td>
+</tr>
+<tr class="row-even"><td>amr.plot_file</td>
+<td>Prefix to use for plotfile output</td>
+<td>String</td>
+<td>plt</td>
+</tr>
+</tbody>
+</table>
+<p>and the following control which variables appear in the plotfile</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="27%" />
+<col width="50%" />
+<col width="12%" />
+<col width="11%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">&#160;</th>
+<th class="head">Description</th>
+<th class="head">Type</th>
+<th class="head">Default</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>amr.plot_vars</td>
+<td>Name of state variables to be in plotfiles</td>
+<td>Strings</td>
+<td>All</td>
+</tr>
+<tr class="row-odd"><td>amr.plot_dervive_plot_vars</td>
+<td>Name of derived variables to be in plotfiles</td>
+<td>Strings</td>
+<td>All</td>
+</tr>
+</tbody>
+</table>
+<p>Nyx also easily interfaces with two post-processing suites, Reeber and Gimlet.</p>
 <div class="section" id="reeber">
 <h2>Reeber<a class="headerlink" href="#reeber" title="Permalink to this headline">¶</a></h2>
 <p>Reeber uses topological methods to construct merge trees of scalar fields.
 These trees are effectively parameter-independent and contain a complete
 description of the field topology. In the context of Nyx, the field of interest
-is the dark matter density. Nyx then queries the merge tree with user-defined
+is the dark matter density. Nyx then queries the merge tree with us:qer-defined
 runtime parameters in order to locate the volume-averaged center of dark matter
 halos. The same tree can be queried with any number of such parameters to find
 halos with different mass/density thresholds.</p>
@@ -228,21 +299,12 @@ MPI-parallel and can be run either <a href="#id4"><span class="problematic" id="
 combination of both. A detailed description of their usage is provided in the
 Nyx User Guide.</p>
 </div>
-<div class="section" id="usage">
-<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
-<p>Nyx can post-process with Gimlet alone, with Reeber alone, or with both
-simultaneously.</p>
-<p>To compile with Gimlet,</p>
-<p>GIMLET = TRUE</p>
-<p>to the GNUMakefile</p>
-<p>To compile with Reeber, add</p>
-<p>REEBER = TRUE</p>
-<p>Note that these codes are in separate repositories and are not included with Nyx.</p>
+<div class="section" id="do-it-yourself">
+<h2>Do It Yourself<a class="headerlink" href="#do-it-yourself" title="Permalink to this headline">¶</a></h2>
 <p>Nyx and AMReX provide the capability for the user to execute an arbitrary
-post-processing workflow in situ. An in situ workflow is one in which all
-MPI processes evolving the simulation stop at specified time steps and perform
-the post-processing before continuing with
-the simulation.</p>
+post-processing workflow.  In <a href="#id8"><span class="problematic" id="id9">``</span></a>Util/Diagnostics/ `` we provide a simple example
+of opening an AMReX plotfile, reading and manipulating data in it.  That can be a
+starting place for building analysis tools for any specific need.</p>
 </div>
 </div>
 
@@ -253,7 +315,7 @@ the simulation.</p>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
         <a href="Debugging.html" class="btn btn-neutral float-right" title="Debugging" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="Visualization.html" class="btn btn-neutral float-left" title="Visualization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="InSitu.html" class="btn btn-neutral float-left" title="In situ analysis" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
