@@ -50,6 +50,10 @@ NEUTRINO_DARK_PARTICLES = FALSE
 
 USE_OWN_BCS = FALSE
 
+# Halo finder
+BOOST_INLUDE_DIR := ${OLCF_BOOST_ROOT}/include/boost
+REEBER = FALSE
+
 Bpack := ./Make.package
 Blocs := .
 

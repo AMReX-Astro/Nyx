@@ -137,6 +137,16 @@ nyx.plot_z_values   = 7.0 6.0 5.0 4.0 3.0 2.0
 amr.plot_vars        = density xmom ymom zmom rho_e Temp phi_grav
 amr.derive_plot_vars = particle_mass_density particle_count
 
+# Halo Finder
+#nyx.analysis_z_values = 150 10 5 4 3 2
+reeber.halo_int = 1
+reeber.negate = 1
+reeber.halo_density_vars = density particle_mass_density
+reeber.halo_extrema_threshold = 20
+reeber.halo_component_threshold = 10
+#nyx.mass_halo_min = 1.e11
+#nyx.mass_seed = 1.e6
+
 # ANALYSIS in situ
 nyx.analysis_z_values   = 7.0 6.0 5.0 4.0 3.0 2.0
 insitu.int              = 100
