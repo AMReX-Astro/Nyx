@@ -2,7 +2,7 @@
 Dark matter particles
 *********************
 
-Dark matter particles are included in the simulation by setting::
+Dark matter particles are included in the simulation by setting ::
 
     nyx.do_dm_particles = true
 
@@ -17,7 +17,7 @@ It is also possible to build with ::
 
     NO_HYDRO=FALSE
 
-but turn off hydro at run-time by setting 
+but turn off hydro at run-time by setting ::
 
   nyx.do_hydro = 0
 
