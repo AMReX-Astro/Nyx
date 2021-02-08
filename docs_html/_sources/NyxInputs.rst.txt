@@ -957,13 +957,20 @@ These must be preceded by "gravity" in the inputs file:
 +----------------------+---------------------------------------------------+-----------+--------------+
 |                      | Description                                       | Type      | Default      |
 +======================+===================================================+===========+==============+
+| v                    |  Verbosity of Gravity class                       |  Int      |   0          |
++----------------------+---------------------------------------------------+-----------+--------------+
 | ml_tol               |  Relative tolerance for multilevel solves         |  Real     |   1.e-12     |
 +----------------------+---------------------------------------------------+-----------+--------------+
 | sl_tol               |  Relative tolerance for single-level solves       |  Real     |   1.e-12     |
 +----------------------+---------------------------------------------------+-----------+--------------+
+| delta_tol            |  Relative tolerance for synchronization solves    |  Real     |   1.e-12     |
++----------------------+---------------------------------------------------+-----------+--------------+
 | mlmg_agglomeration   |  Should we agglomerate deep in the V-cycle        |  Int      |   1          |
 +----------------------+---------------------------------------------------+-----------+--------------+
 | mlmg_consolidation   |  Should we consolidate deep in the V-cycle        |  Int      |   1          |
++----------------------+---------------------------------------------------+-----------+--------------+
+| dirichlet_bcs        |  Should we use homogeneous Dirichlet bcs in the   |  Int      |   0          |
+|                      |  gravity solves (used for testing only)           |           |              |
 +----------------------+---------------------------------------------------+-----------+--------------+
 
 These must be preceded by "mg" in the inputs file:
@@ -975,6 +982,9 @@ These must be preceded by "mg" in the inputs file:
 +----------------------+-----------------------------------------------------+-------------+--------------+
 | bottom_solver        |  What is the bottom solver?                         |  String     |   "bicg"     |
 |                      |  Options include "bicg", "smoother", "hypre", etc   |             |              |
++----------------------+-----------------------------------------------------+-------------+--------------+
+| max_fmg_iter         |  Maximum number of F-cycles to do before            |  Int        |   0          |
+|                      |  continuing with V-cycles in a multigrid solve      |             |              |   
 +----------------------+-----------------------------------------------------+-------------+--------------+
 
 There are a number of additional inputs that can be used to control the multigrid solver.  

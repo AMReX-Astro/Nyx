@@ -1615,13 +1615,23 @@ of He</td>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td>ml_tol</td>
+<tr class="row-even"><td>v</td>
+<td>Verbosity of Gravity class</td>
+<td>Int</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td>ml_tol</td>
 <td>Relative tolerance for multilevel solves</td>
 <td>Real</td>
 <td>1.e-12</td>
 </tr>
-<tr class="row-odd"><td>sl_tol</td>
+<tr class="row-even"><td>sl_tol</td>
 <td>Relative tolerance for single-level solves</td>
+<td>Real</td>
+<td>1.e-12</td>
+</tr>
+<tr class="row-odd"><td>delta_tol</td>
+<td>Relative tolerance for synchronization solves</td>
 <td>Real</td>
 <td>1.e-12</td>
 </tr>
@@ -1634,6 +1644,12 @@ of He</td>
 <td>Should we consolidate deep in the V-cycle</td>
 <td>Int</td>
 <td>1</td>
+</tr>
+<tr class="row-even"><td>dirichlet_bcs</td>
+<td>Should we use homogeneous Dirichlet bcs in the
+gravity solves (used for testing only)</td>
+<td>Int</td>
+<td>0</td>
 </tr>
 </tbody>
 </table>
@@ -1663,6 +1679,12 @@ of He</td>
 Options include “bicg”, “smoother”, “hypre”, etc</td>
 <td>String</td>
 <td>“bicg”</td>
+</tr>
+<tr class="row-even"><td>max_fmg_iter</td>
+<td>Maximum number of F-cycles to do before
+continuing with V-cycles in a multigrid solve</td>
+<td>Int</td>
+<td>0</td>
 </tr>
 </tbody>
 </table>
