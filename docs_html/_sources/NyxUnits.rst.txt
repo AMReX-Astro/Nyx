@@ -2,21 +2,13 @@
 Units and Conventions
 =====================
 
-Nyx supports both CGS and Cosmological units. 
+Nyx uses cosmological system of units based on Mpc, M\ :math:`_\odot`, and km/s for lenght, mass, and velocity,
+respectively.  Temperature is given in Kelvin degrees.  The unit of time is derived from velocity and length units.
+All inputs and problem initialization should be specified consistently with these units,
+and the outputs should be interpreted with these units in mind.
 
-All inputs and problem initialization should be specified consistently with one of these sets of units.
-No internal conversions of units occur within the code, so the output must be interpreted appropriately.
-The default is cosmological units.
-
-If you want to use CGS units instead, then set
-
-**USE_CGS = TRUE**
-
-in your GNUmakefile. This will select the file constants_cgs.f90 instead of constants_cosmo.f90 from the
-Nyx/constants directory.
-
-In the equation of state calls,
-conversions must be made between CGS units and code units.
+In the equation of state calls, there is internal
+conversion between cosmological and CGS units.
 :numref:`table:units` shows some of the common symbols / names used
 throughout the code documentation and papers.
 
@@ -26,71 +18,42 @@ throughout the code documentation and papers.
    +-----------------------+-----------------------+-----------------------+
    | name                  | units                 | description           |
    +=======================+=======================+=======================+
-   | :math:`t`             | s                     | time                  |
+   | :math:`t`             | (Mpc/km) s            | time                  |
    +-----------------------+-----------------------+-----------------------+
-   | :math:`\rho`          | :math:`\gcc`          | mass density          |
+   | :math:`\rho`          | M\ :math:`_\odot` / Mpc\ :math:`^3`   | mass density          |
    +-----------------------+-----------------------+-----------------------+
-   | :math:`\ub`           | :math:`\cms`          | velocity vector       |
+   | :math:`\ub`           | km/s                  | velocity vector       |
    +-----------------------+-----------------------+-----------------------+
-   | :math:`p`             | :math:`\presunit`     | pressure              |
+   | :math:`p`             | M\ :math:`_\odot` (km/s)\ :math:`^2` / Mpc\ :math:`^3`     | pressure              |
    +-----------------------+-----------------------+-----------------------+
-   | :math:`\gb`           | :math:`\accelunit`    | gravitational         |
+   | :math:`\gb`           | (km/s)2 / Mpc         | gravitational         |
    |                       |                       | acceleration          |
+   +-----------------------+-----------------------+-----------------------
+   | :math:`E`             | (km/s)\ :math:`^2`    | specific total energy |
    +-----------------------+-----------------------+-----------------------+
-   | :math:`\Sb`           | varies                | source term           |
-   +-----------------------+-----------------------+-----------------------+
-   | :math:`S_{\Lambda}`   | varies                | source term           |
-   +-----------------------+-----------------------+-----------------------+
-   | :math:`E`             | :math:`\ergg`         | specific total energy |
-   +-----------------------+-----------------------+-----------------------+
-   | :math:`e`             | :math:`\ergg`         | specific internal     |
+   | :math:`e`             | (km/s)\ :math:`^2`    | specific internal     |
    |                       |                       | energy                |
    +-----------------------+-----------------------+-----------------------+
    | :math:`T`             | :math:`K`             | temperature           |
    +-----------------------+-----------------------+-----------------------+
 
-:numref:`table:inputs` associates the numerical input data with the corresponding unit scaling.
 
-.. _table:inputs:
-.. table:: 
-	   Units expected for inputs and outputs.
-	   
-   ======================= ========================================= ===================================== ====================================================== ==========================================================================
-   Location                Variable                                  CGS                                   Cosmological                                           Conversion Data
-   ======================= ========================================= ===================================== ====================================================== ==========================================================================
-   inputs file             **geometry.prob_lo**                      cm                                    Mpc                                                    1Mpc = 3.08568025e24 cm
-   \                       **geometry.prob_hi**                      cm                                    Mpc                                                    1Mpc = 3.08568025e24 cm
-   Hydro Initialization    density                                   g / cm\ :math:`^3`                    M\ :math:`_\odot` / Mpc\ :math:`^3`                    1 (M\ :math:`_\odot` / Mpc\ :math:`^3`) = .06769624e-39 (g/cm\ :math:`^3`)
-   Hydro Initialization    velocities                                cm/s                                  km/s                                                   1km = 1.e5 cm
-   Hydro Initialization    momenta                                   (g/cm\ :math:`^3`) (cm/s)             (M\ :math:`_\odot`/Mpc\ :math:`^3`) (km/s)             1km = 1.e5 cm
-   \                                                                                                                                                              1 (M\ :math:`_\odot` / Mpc\ :math:`^3`) = .06769624e-39 g/cm\ :math:`^3`
-   Hydro Initialization    temperature                               K                                     K                                                      1
-   Hydro Initialization    specific energy (:math:`e` or :math:`E`)  erg/g= (cm/s)\ :math:`^2`             (km/s)\ :math:`^2`                                     1 (km/s)\ :math:`^2` = 1.e10 (cm/s)\ :math:`^2`
-   Hydro Initialization    energy (:math:`\rho e` or :math:`\rho E`) erg / cm\ :math:`^3 =`                (M\ :math:`_\odot`/Mpc\ :math:`^3`) (km/s)\ :math:`^2` 1 (km/s)\ :math:`^2` = 1.e10 (cm/s)\ :math:`^2`
-   \                                                                 (g/cm\ :math:`^3`) (cm/s)\ :math:`^2`                                                        1 (M\ :math:`_\odot` / Mpc\ :math:`^3`) = .06769624e-39 g/cm\ :math:`^3`
-   Particle Initialization particle mass                             g                                     M\ :math:`_\odot`                                      1 M\ :math:`_\odot` = 1.98892e33 g
-   Particle Initialization particle locations                        cm                                    Mpc                                                    1 Mpc = 3.08568025e24 cm
-   Particle Initialization particle velocities                       cm/s                                  km/s                                                   1 km = 1e5 cm
-   Output                  Pressure                                  g (cm/s)\ :math:`^2` / cm\ :math:`^3` M\ :math:`_\odot` (km/s)\ :math:`^2` / Mpc\ :math:`^3` 1 M\ :math:`_\odot` (km/s)\ :math:`^2` / Mpc\ :math:`^3` =
-   \                                                                                                                                                              .06769624e-29 g (cm/s)\ :math:`^2` / cm\ :math:`^3`
-   Output                  Gravity                                   (cm/s) / s                            (km/s)\ :math:`^2` / Mpc                               1 M\ :math:`_\odot` (km/s)\ :math:`^2` / Mpc\ :math:`^3` =
-   Output                  Time                                      s                                     (Mpc/km) s                                             1 Mpc = 3.08568025e19 km
-   ======================= ========================================= ===================================== ====================================================== ==========================================================================
+In :numref:`table:constants` we list the values used for physical constants in cosmological units.
+Note that :math:`\Omega_m`, :math:`\Omega_b`, :math:`\Omega_r`  and :math:`h` are set in the inputs file.
+Full list of constants and conversion factors is set in constants_cosmo.f90.
 
-:numref:`table:constants` lists the values used for cosmological constants in the code with their associated units. Note that :math:`\Omega_m`, :math:`\Omega_b`, :math:`\Omega_r`  and :math:`h` are set in the inputs file.
-   
 .. _table:constants:
 .. table::
 	   Physical constant values
 
-   ================================== ================================================= ========================================================== ========================================================================
-   Constant                           CGS                                               Cosmological                                               Conversion Data
-   ================================== ================================================= ========================================================== ========================================================================
-   Gravitational constant (:math:`G`) 6.67428e-8 cm (cm/s)\ :math:`^2` g\ :math:`^{-1}` 4.3019425e-9 Mpc (km/s)\ :math:`^2` M\ :math:`_\odot^{-1}` 
-   Avogadro’s number (:math:`n_A`)    6.02214129e23 g\ :math:`^{-1}`                    1.1977558e57 M\ :math:`_\odot^{-1}`                        1 M\ :math:`_\odot` = 1.98892e33 g
-   Boltzmann’s constant (:math:`k_B`) 1.3806488e-16 erg / K                             0.6941701e-59 M\ :math:`_\odot` (km/s)\ :math:`^2` / K     1 M\ :math:`_\odot` (km/s)\ :math:`^2` = 1.98892e43 g (cm/s)\ :math:`^2`
-   Hubble constant (:math:`H`)        100 (km/s) / Mpc                                  32.407764868e-19 s\ :math:`^{-1}`                          1 Mpc = 3.08568025e19 km
-   ================================== ================================================= ========================================================== ========================================================================
+   ================================== ==========================================================
+   Constant                           Cosmological units                                             
+   ================================== ==========================================================
+   Gravitational constant (:math:`G`) 4.3019425e-9 Mpc (km/s)\ :math:`^2` M\ :math:`_\odot^{-1}`
+   Avogadro’s number (:math:`n_A`)    1.1977558e57 M\ :math:`_\odot^{-1}`                       
+   Boltzmann’s constant (:math:`k_B`) 0.6941701e-59 M\ :math:`_\odot` (km/s)\ :math:`^2` / K    
+   Hubble constant (:math:`H`)        100 (km/s) / Mpc                                  
+   ================================== =================================================
 
 The only other place that dimensional numbers are used in the code is in the tracing and Riemann solve.
 We set three *small* numbers which need to be consistent with the data specified
