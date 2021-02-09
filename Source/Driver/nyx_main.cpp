@@ -75,25 +75,17 @@ nyx_main (int argc, char* argv[])
     std::cout << std::setprecision(10);
 
     int max_step;
-    Real strt_time;
     Real stop_time;
     ParmParse pp;
 
     max_step  = -1;
-    strt_time =  0.0;
     stop_time = -1.0;
 
     pp.query("max_step",  max_step);
-    pp.query("strt_time", strt_time);
     pp.query("stop_time", stop_time);
 
     int how(-1);
     pp.query("how",how);
-
-    if (strt_time < 0.0)
-    {
-        amrex::Abort("MUST SPECIFY a non-negative strt_time");
-    }
 
     if (max_step < 0 && stop_time < 0.0)
     {
@@ -106,6 +98,9 @@ nyx_main (int argc, char* argv[])
     reeber_int = initReeberAnalysis();
 #endif
 #endif
+
+    // We hard-wire the initial time to 0
+    Real strt_time =  0.0;
 
     Amr *amrptr = new Amr;
     amrptr->init(strt_time,stop_time);
