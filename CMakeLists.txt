@@ -69,7 +69,7 @@ cmake_dependent_option(Nyx_MPI_THREAD_MULTIPLE
 option(Nyx_SINGLE_PRECISION_PARTICLES
    "Use single precision particle data structures" YES )
 
-option( Nyx_HYDRO NO "Run with baryon hydro solve and fields")
+option( Nyx_HYDRO "Run with baryon hydro solve and fields" YES)
 cmake_dependent_option(Nyx_HEATCOOL "Run with H and He heating-cooling effects" NO
    "Nyx_HYDRO; NOT Nyx_GPU_BACKEND STREQUAL SYCL; NOT Nyx_GPU_BACKEND STREQUAL HIP" NO)
 
@@ -83,7 +83,7 @@ option( Nyx_REEBER             "" NO)
 
 #  These two are only really used by LyA_Neutrinos
 option( Nyx_NEUTRINO_PARTICLES "" NO)
-option( Nyx_NEUTRINO_DARK_PARTICLES "" no)
+option( Nyx_NEUTRINO_DARK_PARTICLES "" NO)
 
 
 #
