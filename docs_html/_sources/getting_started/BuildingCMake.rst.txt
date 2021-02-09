@@ -88,7 +88,7 @@ The CMake build process for Nyx is summarized as follows:
    | Nyx\_GPU\_      | On-node, accelerated GPU \   | NONE             | NONE,SYCL,\ |
    | BACKEND         | backend                      |                  | CUDA,HIP    |
    +-----------------+------------------------------+------------------+-------------+
-   | Nyx\_HYDRO      | Run with baryon hydro solve  | no/yes           | no          |
+   | Nyx\_HYDRO      | Run with baryon hydro solve  | no/yes           | yes         |
    |                 | and fields                   |                  |             |
    +-----------------+------------------------------+------------------+-------------+
    | Nyx\_HEATCOOL   | Run with H and He heating-   | no/yes           | no          |
