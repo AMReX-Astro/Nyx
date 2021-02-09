@@ -431,8 +431,6 @@ Nyx::read_hydro_params ()
 
     pp_nyx.get("do_hydro", do_hydro);
 
-    pp_nyx.query("dump_old", dump_old);
-
     pp_nyx.query("small_dens", small_dens);
     pp_nyx.query("small_temp", small_temp);
     pp_nyx.query("small_pres", small_pres);
