@@ -26,3 +26,4 @@ the simulations results.
    Building Nyx with GNU Make <getting_started/BuildingGMake>
    Building Nyx with CMake <getting_started/BuildingCMake>
    Running the code <getting_started/RunningTheCode>
+   Compiling Nyx with SUNDIALS 5 <getting_started/NyxSundials>

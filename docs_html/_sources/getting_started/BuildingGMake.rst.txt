@@ -56,16 +56,27 @@ download AMReX in order to build Nyx with GNU Make.
    the latest source.
 
 
-#. From the directory in which you checked out Nyx, type
+#. Choose which executable to compile, for example MiniSB or LyA.
+
+   MiniSB is a small version of the Santa Barbara problem, and LyA is a Lyman-:math:`\alpha` 
+   forest simulation for investigating the large-scale structure formation of the universe.
+
+   For some executables, namely LyA, AMR-density, AMR-zoom, and LyA_Neutrinos, Nyx uses a more complicated model for the heating-cooling.
+   This requires you to also install a matching sundials installation to support the ODE solve. To install a stand-alone copy of Sundials, see :ref:`Compiling Nyx with SUNDIALS 5<sundials>`
+
+#. From the directory in which you checked out Nyx, change directory to your compile directory by typing for the small Santa-Barbara problem:
 
    ::
 
        cd Nyx/Exec/MiniSB
 
-   This will put you into a directory in which you can run a small
-   version of the Santa Barbara problem.
+   or for the Lyman-:math:`\alpha` problem:
 
-#. In Nyx/Exec/MiniSB, edit the GNUmakefile, and set
+   ::
+
+       cd Nyx/Exec/LyA
+
+#. In your compile directory, edit the GNUmakefile, and set
 
    ``COMP = your favorite compiler (e.g, gnu, Intel)``
 
@@ -76,6 +87,13 @@ download AMReX in order to build Nyx with GNU Make.
    More information on the AMReX GNU Make setup can be found
    `here <https://amrex-codes.github.io/amrex/docs_html/BuildingAMReX.html>`_.
 
+   All executables should work with MPI+CUDA by setting ``USE_MPI=TRUE USE_OMP=FALSE USE_CUDA=TRUE``.
+
+   HIP and DPC++ builds are under development and can be tested by compiling with ``USE_HIP=TRUE``  and ``USE_DPCPP=TRUE``  respectively.
+
+   .. note::
+      For executables with ``USE_HEATCOOL=TRUE`` in their GNUmakefile, a matching Sundials implementation is required. If Sundials is built with ``-DSUNDIALS_BUILD_PACKAGE_FUSED_KERNELS=ON``, Nyx should be built with ``USE_FUSED=TRUE``.
+      The flag ``USE_FUSED`` tells the Nyx compile whether you compiled Sundials with fused cuda kernels. The default assumption is that non-cuda Nyx compiles set ``USE_FUSED=FALSE`` to match Sundials being built without cuda. 
 
 #. Now type “make”. The resulting executable will look something like
    “Nyx3d.Linux.gnu.ex”, which means this is a 3-d version of the code,

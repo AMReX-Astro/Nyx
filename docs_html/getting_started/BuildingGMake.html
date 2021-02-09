@@ -97,8 +97,8 @@
 <li class="toctree-l2"><a class="reference internal" href="Structure.html">Source directory overview</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Building Nyx with GNU Make</a></li>
 <li class="toctree-l2"><a class="reference internal" href="BuildingCMake.html">Building Nyx with CMake</a></li>
-<li class="toctree-l2"><a class="reference internal" href="RunningTheCode.html">Running the Code</a></li>
-<li class="toctree-l2"><a class="reference internal" href="RunningTheCode.html#compiling-nyx-with-sundials-5">Compiling Nyx with SUNDIALS 5</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RunningTheCode.html">Running the code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="NyxSundials.html">Compiling Nyx with SUNDIALS 5</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../NyxUnits.html">Units and Conventions</a></li>
@@ -256,19 +256,34 @@ amrex directory.</p>
 <code class="docutils literal notranslate"><span class="pre">development</span></code> branch, so you should work there if you want
 the latest source.</p>
 </li>
-<li><p class="first">From the directory in which you checked out Nyx, type</p>
+<li><p class="first">Choose which executable to compile, for example MiniSB or LyA.</p>
+<p>MiniSB is a small version of the Santa Barbara problem, and LyA is a Lyman-<span class="math notranslate nohighlight">\(\alpha\)</span>
+forest simulation for investigating the large-scale structure formation of the universe.</p>
+<p>For some executables, namely LyA, AMR-density, AMR-zoom, and LyA_Neutrinos, Nyx uses a more complicated model for the heating-cooling.
+This requires you to also install a matching sundials installation to support the ODE solve. To install a stand-alone copy of Sundials, see <a class="reference internal" href="NyxSundials.html#sundials"><span class="std std-ref">Compiling Nyx with SUNDIALS 5</span></a></p>
+</li>
+<li><p class="first">From the directory in which you checked out Nyx, change directory to your compile directory by typing for the small Santa-Barbara problem:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">Nyx</span><span class="o">/</span><span class="n">Exec</span><span class="o">/</span><span class="n">MiniSB</span>
 </pre></div>
 </div>
-<p>This will put you into a directory in which you can run a small
-version of the Santa Barbara problem.</p>
+<p>or for the Lyman-<span class="math notranslate nohighlight">\(\alpha\)</span> problem:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">Nyx</span><span class="o">/</span><span class="n">Exec</span><span class="o">/</span><span class="n">LyA</span>
+</pre></div>
+</div>
 </li>
-<li><p class="first">In Nyx/Exec/MiniSB, edit the GNUmakefile, and set</p>
+<li><p class="first">In your compile directory, edit the GNUmakefile, and set</p>
 <p><code class="docutils literal notranslate"><span class="pre">COMP</span> <span class="pre">=</span> <span class="pre">your</span> <span class="pre">favorite</span> <span class="pre">compiler</span> <span class="pre">(e.g,</span> <span class="pre">gnu,</span> <span class="pre">Intel)</span></code></p>
 <p><code class="docutils literal notranslate"><span class="pre">DEBUG</span> <span class="pre">=</span> <span class="pre">FALSE</span></code></p>
 <p>We like <code class="docutils literal notranslate"><span class="pre">COMP</span> <span class="pre">=</span> <span class="pre">gnu</span></code>.</p>
 <p>More information on the AMReX GNU Make setup can be found
 <a class="reference external" href="https://amrex-codes.github.io/amrex/docs_html/BuildingAMReX.html">here</a>.</p>
+<p>All executables should work with MPI+CUDA by setting <code class="docutils literal notranslate"><span class="pre">USE_MPI=TRUE</span> <span class="pre">USE_OMP=FALSE</span> <span class="pre">USE_CUDA=TRUE</span></code>.</p>
+<p>HIP and DPC++ builds are under development and can be tested by compiling with <code class="docutils literal notranslate"><span class="pre">USE_HIP=TRUE</span></code>  and <code class="docutils literal notranslate"><span class="pre">USE_DPCPP=TRUE</span></code>  respectively.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">For executables with <code class="docutils literal notranslate"><span class="pre">USE_HEATCOOL=TRUE</span></code> in their GNUmakefile, a matching Sundials implementation is required. If Sundials is built with <code class="docutils literal notranslate"><span class="pre">-DSUNDIALS_BUILD_PACKAGE_FUSED_KERNELS=ON</span></code>, Nyx should be built with <code class="docutils literal notranslate"><span class="pre">USE_FUSED=TRUE</span></code>.
+The flag <code class="docutils literal notranslate"><span class="pre">USE_FUSED</span></code> tells the Nyx compile whether you compiled Sundials with fused cuda kernels. The default assumption is that non-cuda Nyx compiles set <code class="docutils literal notranslate"><span class="pre">USE_FUSED=FALSE</span></code> to match Sundials being built without cuda.</p>
+</div>
 </li>
 <li><p class="first">Now type “make”. The resulting executable will look something like
 “Nyx3d.Linux.gnu.ex”, which means this is a 3-d version of the code,
