@@ -10,13 +10,7 @@ CEXE_sources += sum_integrated_quantities.cpp
 CEXE_sources += sum_utils.cpp
 
 CEXE_headers += Nyx.H Prob.H
-
-ifeq ($(USE_CGS), TRUE)
-#f90EXE_sources += constants_cgs.f90
-else
-#f90EXE_sources += constants_cosmo.f90
 CEXE_headers += constants_cosmo.H
-endif
 
 #ifneq ($(USE_HENSON), TRUE)
 CEXE_sources += main.cpp
