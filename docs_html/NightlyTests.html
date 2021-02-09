@@ -214,38 +214,32 @@ test which compile-time options.  (Note that the USE_GRAV and AMREX_USE_PARTICLE
 which are used in the code source are both set to TRUE in the build system.)</p>
 <table border="1" class="docutils">
 <colgroup>
-<col width="41%" />
-<col width="15%" />
-<col width="21%" />
-<col width="23%" />
+<col width="53%" />
+<col width="20%" />
+<col width="27%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Test</th>
 <th class="head">NO_HYDRO</th>
 <th class="head">USE_HEATCOOL</th>
-<th class="head">USE_FORCING</th>
 </tr>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>AMR-density</td>
 <td>FALSE</td>
 <td>TRUE</td>
-<td>FALSE</td>
 </tr>
 <tr class="row-odd"><td>DR_restart</td>
-<td>FALSE</td>
 <td>FALSE</td>
 <td>FALSE</td>
 </tr>
 <tr class="row-even"><td>DoubleRarefaction</td>
 <td>FALSE</td>
 <td>FALSE</td>
-<td>FALSE</td>
 </tr>
 <tr class="row-odd"><td>DrivenTurbulence</td>
 <td>FALSE</td>
 <td>FALSE</td>
-<td>TRUE</td>
 </tr>
 <tr class="row-even"><td><dl class="first last docutils">
 <dt>DrivenTurbulence-OMP</dt>
@@ -254,15 +248,12 @@ which are used in the code source are both set to TRUE in the build system.)</p>
 </td>
 <td>FALSE</td>
 <td>FALSE</td>
-<td>TRUE</td>
 </tr>
 <tr class="row-odd"><td>LyA</td>
 <td>FALSE</td>
 <td>TRUE</td>
-<td>FALSE</td>
 </tr>
 <tr class="row-even"><td>LyA-adiabatic</td>
-<td>FALSE</td>
 <td>FALSE</td>
 <td>FALSE</td>
 </tr>
@@ -273,7 +264,6 @@ which are used in the code source are both set to TRUE in the build system.)</p>
 </td>
 <td>FALSE</td>
 <td>TRUE</td>
-<td>FALSE</td>
 </tr>
 <tr class="row-even"><td><dl class="first last docutils">
 <dt>LyA_Neutrinos</dt>
@@ -282,120 +272,96 @@ which are used in the code source are both set to TRUE in the build system.)</p>
 </td>
 <td>FALSE</td>
 <td>TRUE</td>
-<td>FALSE</td>
 </tr>
 <tr class="row-odd"><td>MiniSB</td>
-<td>FALSE</td>
 <td>FALSE</td>
 <td>FALSE</td>
 </tr>
 <tr class="row-even"><td>MiniSB-ppm</td>
 <td>FALSE</td>
 <td>FALSE</td>
-<td>FALSE</td>
 </tr>
 <tr class="row-odd"><td>MiniSB-ref</td>
-<td>FALSE</td>
 <td>FALSE</td>
 <td>FALSE</td>
 </tr>
 <tr class="row-even"><td>MiniSB-ref-ppm</td>
 <td>FALSE</td>
 <td>FALSE</td>
-<td>FALSE</td>
 </tr>
 <tr class="row-odd"><td>Part-2line</td>
-<td>FALSE</td>
 <td>FALSE</td>
 <td>FALSE</td>
 </tr>
 <tr class="row-even"><td>Part-2line-nbody</td>
 <td>FALSE</td>
 <td>FALSE</td>
-<td>FALSE</td>
 </tr>
 <tr class="row-odd"><td>Part-2line-nomesh</td>
 <td>TRUE</td>
 <td>FALSE</td>
-<td>FALSE</td>
 </tr>
 <tr class="row-even"><td>Part-2line_restart</td>
-<td>FALSE</td>
 <td>FALSE</td>
 <td>FALSE</td>
 </tr>
 <tr class="row-odd"><td>Part-2line_restart-nbody</td>
 <td>FALSE</td>
 <td>FALSE</td>
-<td>FALSE</td>
 </tr>
 <tr class="row-even"><td>Part-2line_restart-nomesh</td>
 <td>TRUE</td>
 <td>FALSE</td>
-<td>FALSE</td>
 </tr>
 <tr class="row-odd"><td>Part-mass.nosub</td>
-<td>FALSE</td>
 <td>FALSE</td>
 <td>FALSE</td>
 </tr>
 <tr class="row-even"><td>Part-mass.nosub-nbody</td>
 <td>FALSE</td>
 <td>FALSE</td>
-<td>FALSE</td>
 </tr>
 <tr class="row-odd"><td>Part-mass.nosub-nomesh</td>
 <td>TRUE</td>
 <td>FALSE</td>
-<td>FALSE</td>
 </tr>
 <tr class="row-even"><td>Part-mass.sub</td>
-<td>FALSE</td>
 <td>FALSE</td>
 <td>FALSE</td>
 </tr>
 <tr class="row-odd"><td>Part-mass.sub-nbody</td>
 <td>FALSE</td>
 <td>FALSE</td>
-<td>FALSE</td>
 </tr>
 <tr class="row-even"><td>Part-mass.sub-nbody</td>
-<td>FALSE</td>
 <td>FALSE</td>
 <td>FALSE</td>
 </tr>
 <tr class="row-odd"><td>Part-mass.sub-nomesh</td>
 <td>TRUE</td>
 <td>FALSE</td>
-<td>FALSE</td>
 </tr>
 <tr class="row-even"><td>Sedov</td>
-<td>FALSE</td>
 <td>FALSE</td>
 <td>FALSE</td>
 </tr>
 <tr class="row-odd"><td>Sedov-ppm</td>
 <td>FALSE</td>
 <td>FALSE</td>
-<td>FALSE</td>
 </tr>
 <tr class="row-even"><td>Sod</td>
-<td>FALSE</td>
 <td>FALSE</td>
 <td>FALSE</td>
 </tr>
 <tr class="row-odd"><td>Sod-ppm</td>
 <td>FALSE</td>
 <td>FALSE</td>
-<td>FALSE</td>
 </tr>
 <tr class="row-even"><td>StrongShockTube</td>
 <td>FALSE</td>
 <td>FALSE</td>
-<td>FALSE</td>
 </tr>
 <tr class="row-odd"><td>StrongShockTube-ppm</td>
-<td>FALSE</td>
 <td>FALSE</td>
 <td>FALSE</td>
 </tr>
