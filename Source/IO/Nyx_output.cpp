@@ -3,14 +3,10 @@
 #include <Nyx.H>
 #include <AMReX_PlotFileUtil.H>
 #include <Nyx_output.H>
-
 #include <AMReX_buildInfo.H>
-
-#ifdef FORCING
 #include <Forcing.H>
 
 void mt_write(std::ofstream& output);
-#endif
 
 using namespace amrex;
 
@@ -868,9 +864,8 @@ Nyx::checkPoint (const std::string& dir,
       writeJobInfo(dir);
   }
 
-#ifdef FORCING
-  forcing_check_point(dir);
-#endif
+  if (do_forcing)
+      forcing_check_point(dir);
 
   if (level == 0 && ParallelDescriptor::IOProcessor())
     {
@@ -946,8 +941,6 @@ Nyx::checkPointPost (const std::string& /*dir*/,
 #endif
 }
 
-
-#ifdef FORCING
 void
 Nyx::forcing_check_point (const std::string& dir)
 {
@@ -975,7 +968,6 @@ Nyx::forcing_check_point (const std::string& dir)
         }
     }
 }
-#endif
 
 int
 Nyx::updateInSitu ()

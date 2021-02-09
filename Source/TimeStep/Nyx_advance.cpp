@@ -2,10 +2,7 @@
 #include <Nyx.H>
 #include <Gravity.H>
 #include <constants_cosmo.H>
-
-#ifdef FORCING
 #include <Forcing.H>
-#endif
 
 using namespace amrex;
 
@@ -443,11 +440,6 @@ Nyx::advance_hydro (Real time,
                     int  ncycle)
 {
     BL_PROFILE("Nyx::advance_hydro()");
-
-#ifdef FORCING
-    if (!do_forcing)
-        amrex::Abort("In `advance_hydro` with FORCING defined but `do_forcing` is false");
-#endif
         
     for (int k = 0; k < NUM_STATE_TYPE; k++)
     {
@@ -468,12 +460,8 @@ Nyx::advance_hydro (Real time,
         gravity->swap_time_levels(level);
     }
 
-#ifdef FORCING
     if (do_forcing) 
-    {
         forcing->evolve(dt);
-    }
-#endif
 
     // Call the hydro advance itself
     BL_PROFILE_VAR("just_the_hydro", just_the_hydro);

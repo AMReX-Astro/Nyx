@@ -13,9 +13,7 @@
 #include <atomic_rates.H>
 #endif
 
-#ifdef FORCING
 #include <Forcing.H>
-#endif
 
 using namespace amrex;
 using std::string;

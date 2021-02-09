@@ -30,10 +30,7 @@ using std::string;
 #include <Derive.H>
 #endif
 
-
-#ifdef FORCING
 #include <Forcing.H>
-#endif
 
 #ifdef GIMLET
 #include <DoGimletAnalysis.H>
@@ -153,12 +150,8 @@ static int  slice_nfiles = 128;
 Gravity* Nyx::gravity  =  0;
 int Nyx::do_grav       = -1;
 
-#ifdef FORCING
 StochasticForcing* Nyx::forcing = 0;
-int Nyx::do_forcing = -1;
-#else
 int Nyx::do_forcing =  0;
-#endif
 
 int Nyx::nghost_state       = 1;
 Real Nyx::tagging_base       = 8.0;
@@ -229,7 +222,6 @@ if (do_grav)
         gravity = 0;
     }
 }
-#ifdef FORCING
     if (forcing != 0)
     {
         if (verbose > 1 && ParallelDescriptor::IOProcessor())
@@ -237,7 +229,6 @@ if (do_grav)
         delete forcing;
         forcing = 0;
     }
-#endif
 
     desc_lst.clear();
 }
@@ -477,14 +468,9 @@ Nyx::read_hydro_params ()
 #endif
 #endif
 
-#ifdef FORCING
-    pp_nyx.get("do_forcing", do_forcing);
+    pp_nyx.query("do_forcing", do_forcing);
     if (do_forcing == 1 && add_ext_src == 0)
        amrex::Error("Nyx::must set add_ext_src to 1 if do_forcing = 1 ");
-#else
-    if (do_forcing == 1)
-       amrex::Error("Nyx::you set do_forcing = 1 but forgot to set USE_FORCING = TRUE ");
-#endif
 
     pp_nyx.query("heat_cool_type", heat_cool_type);
     pp_nyx.query("inhomo_reion", inhomo_reion);
@@ -604,9 +590,6 @@ Nyx::Nyx (Amr&            papa,
         gravity->install_level(level, this);
    }
 
-#ifdef FORCING
-    const Real* prob_lo = geom.ProbLo();
-    const Real* prob_hi = geom.ProbHi();
 
     if (do_forcing)
     {
@@ -614,9 +597,11 @@ Nyx::Nyx (Amr&            papa,
         if (forcing == 0)
            forcing = new StochasticForcing();
 
+        const Real* prob_lo = geom.ProbLo();
+        const Real* prob_hi = geom.ProbHi();
+
         forcing->init(AMREX_SPACEDIM, prob_lo, prob_hi);
     }
-#endif
 
     // Initialize the "a" variable
     if (level == 0 && time == 0.0 && old_a_time < 0.)
@@ -679,19 +664,17 @@ Nyx::restart (Amr&     papa,
         gravity = new Gravity(parent, parent->finestLevel(), &phys_bc, 0);
     }
 
-#ifdef FORCING
-    const Real* prob_lo = geom.ProbLo();
-    const Real* prob_hi = geom.ProbHi();
-
     if (do_forcing)
     {
         // forcing is a static object, only alloc if not already there
         if (forcing == 0)
            forcing = new StochasticForcing();
 
+        const Real* prob_lo = geom.ProbLo();
+        const Real* prob_hi = geom.ProbHi();
+
         forcing->init(AMREX_SPACEDIM, prob_lo, prob_hi);
     }
-#endif
 }
 
 void
@@ -1677,13 +1660,11 @@ Nyx::post_restart ()
         }
     }
 
-#ifdef FORCING
     if (do_forcing)
     {
         if (level == 0)
            forcing_post_restart(parent->theRestartFile());
     }
-#endif
 
 #ifndef NO_HYDRO
     if (level == 0)

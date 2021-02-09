@@ -69,10 +69,6 @@ ifeq ($(USE_SDC), TRUE)
   DEFINES += -DSDC
 endif
 
-ifeq ($(USE_FORCING), TRUE)
-  DEFINES += -DFORCING
-endif
-
 GIMLET_DIR ?= /home/vince/Development/gimlet
 # Gimlet needs FFTW MPI.
 FFTW_INC ?= /usr/include
@@ -152,7 +148,7 @@ endif
 
 Bdirs   := Source/Driver Source/TimeStep Source/Hydro
 Bdirs   += Source/EOS Source/HeatCool Source/IO Source/Initialization
-Bdirs   += Source/DerivedQuantities
+Bdirs   += Source/DerivedQuantities Source/Forcing
 Bdirs   += Exec
 ifeq ($(USE_PARTICLES), TRUE)
 Bdirs   += Source/Particle
@@ -164,9 +160,6 @@ endif
 
 ifeq ($(USE_GRAV), TRUE)
    Bdirs 	+= Source/Gravity
-endif
-ifeq ($(USE_FORCING), TRUE)
-   Bdirs 	+= Source/Forcing
 endif
 #ifeq ($(USE_AGN), TRUE)
    Bdirs 	+= Source/AGN

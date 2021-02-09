@@ -1,8 +1,5 @@
 #include <Nyx.H>
-
-#ifdef FORCING
 #include <Forcing.H>
-#endif
 
 using namespace amrex;
 
