@@ -6,41 +6,41 @@ Nyx uses cosmological system of units based on Mpc, M\ :math:`_\odot`, and km/s 
 respectively.  Temperature is given in Kelvin degrees.  The unit of time is derived from velocity and length units.
 All inputs and problem initialization should be specified consistently with these units,
 and the outputs should be interpreted with these units in mind.
-
 In the equation of state calls, there is internal
 conversion between cosmological and CGS units.
+
 :numref:`table:units` shows some of the common symbols / names used
 throughout the code documentation and papers.
 
 .. _table:units:
 .. table:: Common quantities and units.
 
-   +-----------------------+-----------------------+-----------------------+
-   | name                  | units                 | description           |
-   +=======================+=======================+=======================+
-   | :math:`t`             | (Mpc/km) s            | time                  |
-   +-----------------------+-----------------------+-----------------------+
-   | :math:`\rho`          | M\ :math:`_\odot` / Mpc\ :math:`^3`   | mass density          |
-   +-----------------------+-----------------------+-----------------------+
-   | :math:`\ub`           | km/s                  | velocity vector       |
-   +-----------------------+-----------------------+-----------------------+
+   +-----------------------+------------------------------------------------------------+-----------------------+
+   | name                  | units                                                      | description           |
+   +=======================+============================================================+=======================+
+   | :math:`t`             | (Mpc/km) s                                                 | time                  |
+   +-----------------------+------------------------------------------------------------+-----------------------+
+   | :math:`\rho`          | M\ :math:`_\odot` / Mpc\ :math:`^3`                        | mass density          |
+   +-----------------------+------------------------------------------------------------+-----------------------+
+   | :math:`\ub`           | km/s                                                       | velocity vector       |
+   +-----------------------+------------------------------------------------------------+-----------------------+
    | :math:`p`             | M\ :math:`_\odot` (km/s)\ :math:`^2` / Mpc\ :math:`^3`     | pressure              |
-   +-----------------------+-----------------------+-----------------------+
-   | :math:`\gb`           | (km/s)2 / Mpc         | gravitational         |
-   |                       |                       | acceleration          |
-   +-----------------------+-----------------------+-----------------------
-   | :math:`E`             | (km/s)\ :math:`^2`    | specific total energy |
-   +-----------------------+-----------------------+-----------------------+
-   | :math:`e`             | (km/s)\ :math:`^2`    | specific internal     |
-   |                       |                       | energy                |
-   +-----------------------+-----------------------+-----------------------+
-   | :math:`T`             | :math:`K`             | temperature           |
-   +-----------------------+-----------------------+-----------------------+
+   +-----------------------+------------------------------------------------------------+-----------------------+
+   | :math:`\gb`           | (km/s)2 / Mpc                                              | gravitational         |
+   |                       |                                                            | acceleration          |
+   +-----------------------+------------------------------------------------------------+-----------------------+
+   | :math:`E`             | (km/s)\ :math:`^2`                                         | specific total energy |
+   +-----------------------+------------------------------------------------------------+-----------------------+
+   | :math:`e`             | (km/s)\ :math:`^2`                                         | specific internal     |
+   |                       |                                                            | energy                |
+   +-----------------------+------------------------------------------------------------+-----------------------+
+   | :math:`T`             | :math:`K`                                                  | temperature           |
+   +-----------------------+------------------------------------------------------------+-----------------------+
 
 
 In :numref:`table:constants` we list the values used for physical constants in cosmological units.
 Note that :math:`\Omega_m`, :math:`\Omega_b`, :math:`\Omega_r`  and :math:`h` are set in the inputs file.
-Full list of constants and conversion factors is set in constants_cosmo.f90.
+Full list of constants and conversion factors is set in Source/Driver/constants_cosmo.H.
 
 .. _table:constants:
 .. table::
