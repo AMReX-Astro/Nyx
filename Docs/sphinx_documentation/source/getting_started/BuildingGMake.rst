@@ -56,6 +56,12 @@ download AMReX in order to build Nyx with GNU Make.
    the latest source.
 
 
+#. Choose which executable to compile, for example MiniSB or LyA.
+
+   MiniSB is a small version of the Santa Barbara problem, and LyA is a Lyman-:math:`\alpha` 
+   forest simulation for investigating the large-scale structure formation of the universe.
+   For some executables, namely LyA, AMR-density, AMR-zoom, and LyA_Neutrinos Nyx requires you to also install a matching sundials installation. To install a stand-alone copy of Sundials, see :ref:`sundials`
+
 #. From the directory in which you checked out Nyx, type
 
    ::
@@ -63,9 +69,17 @@ download AMReX in order to build Nyx with GNU Make.
        cd Nyx/Exec/MiniSB
 
    This will put you into a directory in which you can run a small
-   version of the Santa Barbara problem.
+   version of the Santa Barbara problem. This will then be your compile directory.
 
-#. In Nyx/Exec/MiniSB, edit the GNUmakefile, and set
+   or
+
+   ::
+
+       cd Nyx/Exec/LyA
+
+   This will put you into a directory in which you can run the Lyman-:math:`\alpha` problem. This will then be your compile directory.
+
+#. In your compile directory, edit the GNUmakefile, and set
 
    ``COMP = your favorite compiler (e.g, gnu, Intel)``
 
