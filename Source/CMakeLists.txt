@@ -45,10 +45,6 @@ if (Nyx_SDC)
    target_compile_definitions( nyxcore PUBLIC SDC)
 endif()
 
-if (Nyx_FORCING)
-   target_compile_definitions( nyxcore PUBLIC FORCING)
-endif ()
-
 if (Nyx_SUNDIALS)
    target_compile_definitions( nyxcore PUBLIC AMREX_USE_SUNDIALS)
 endif ()
@@ -93,9 +89,7 @@ add_subdirectory(DerivedQuantities)
 
 add_subdirectory(Driver)
 
-if (Nyx_FORCING)
-   add_subdirectory(Forcing)
-endif ()
+add_subdirectory(Forcing)
 
 if (Nyx_GRAVITY)
    add_subdirectory(Gravity)
