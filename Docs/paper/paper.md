@@ -16,6 +16,9 @@ authors:
   - name: Ann Almgren
     orcid: 0000-0003-2103-312X
     affiliation: 1
+  - name: Andrew Myers
+    orcid: 0000-0001-8427-8330
+    affiliation: 1
 affiliations:
   - name: Center for Computational Sciences and Engineering, Lawrence Berkeley National Laboratory
     index: 1
