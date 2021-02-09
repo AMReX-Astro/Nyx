@@ -204,14 +204,63 @@
 </style>
 <div class="section" id="units-and-conventions">
 <h1>Units and Conventions<a class="headerlink" href="#units-and-conventions" title="Permalink to this headline">¶</a></h1>
-<p>Nyx uses cosmological system of units based on Mpc, M<span class="math notranslate nohighlight">\(_\odot\)</span>, and km/s for lenght, mass, and velocity,
-respectively.  Temperature is given in Kelvin degrees.  The unit of time is derived from velocity and length units.
+<p>Nyx uses a cosmological system of units based on Mpc, M<span class="math notranslate nohighlight">\(_\odot\)</span>, and km/s for length, mass, and velocity,
+respectively.  Temperature is given in degrees Kelvin.  The unit of time is derived from velocity and length units.
 All inputs and problem initialization should be specified consistently with these units,
 and the outputs should be interpreted with these units in mind.</p>
-<p>In the equation of state calls, there is internal
-conversion between cosmological and CGS units.
-<code class="xref std std-numref docutils literal notranslate"><span class="pre">table:units</span></code> shows some of the common symbols / names used
-throughout the code documentation and papers.</p>
+<p>In the equation of state calls, there is an internal
+conversion between cosmological and CGS units.  <a class="reference internal" href="#table-units"><span class="std std-numref">Table 2</span></a> shows
+some of the common symbols / names used throughout the code documentation and papers.</p>
+<span id="table-units"></span><table border="1" class="docutils" id="id1">
+<caption><span class="caption-number">Table 2 </span><span class="caption-text">Common quantities and units.</span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="23%" />
+<col width="55%" />
+<col width="23%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">name</th>
+<th class="head">units</th>
+<th class="head">description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><span class="math notranslate nohighlight">\(t\)</span></td>
+<td>(Mpc/km) s</td>
+<td>time</td>
+</tr>
+<tr class="row-odd"><td><span class="math notranslate nohighlight">\(\rho\)</span></td>
+<td>M<span class="math notranslate nohighlight">\(_\odot\)</span> / Mpc<span class="math notranslate nohighlight">\(^3\)</span></td>
+<td>mass density</td>
+</tr>
+<tr class="row-even"><td><span class="math notranslate nohighlight">\(\ub\)</span></td>
+<td>km/s</td>
+<td>velocity vector</td>
+</tr>
+<tr class="row-odd"><td><span class="math notranslate nohighlight">\(p\)</span></td>
+<td>M<span class="math notranslate nohighlight">\(_\odot\)</span> (km/s)<span class="math notranslate nohighlight">\(^2\)</span> / Mpc<span class="math notranslate nohighlight">\(^3\)</span></td>
+<td>pressure</td>
+</tr>
+<tr class="row-even"><td><span class="math notranslate nohighlight">\(\gb\)</span></td>
+<td>(km/s)2 / Mpc</td>
+<td>gravitational
+acceleration</td>
+</tr>
+<tr class="row-odd"><td><span class="math notranslate nohighlight">\(E\)</span></td>
+<td>(km/s)<span class="math notranslate nohighlight">\(^2\)</span></td>
+<td>specific total energy</td>
+</tr>
+<tr class="row-even"><td><span class="math notranslate nohighlight">\(e\)</span></td>
+<td>(km/s)<span class="math notranslate nohighlight">\(^2\)</span></td>
+<td>specific internal
+energy</td>
+</tr>
+<tr class="row-odd"><td><span class="math notranslate nohighlight">\(T\)</span></td>
+<td><span class="math notranslate nohighlight">\(K\)</span></td>
+<td>temperature</td>
+</tr>
+</tbody>
+</table>
 <p>In <code class="xref std std-numref docutils literal notranslate"><span class="pre">table:constants</span></code> we list the values used for physical constants in cosmological units.
 Note that <span class="math notranslate nohighlight">\(\Omega_m\)</span>, <span class="math notranslate nohighlight">\(\Omega_b\)</span>, <span class="math notranslate nohighlight">\(\Omega_r\)</span>  and <span class="math notranslate nohighlight">\(h\)</span> are set in the inputs file.
 Full list of constants and conversion factors is set in constants_cosmo.f90.</p>
