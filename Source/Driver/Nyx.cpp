@@ -167,8 +167,6 @@ int Nyx::ppm_type           = 1;
 // Options are "floor" or "conservative"
 std::string Nyx::enforce_min_density_type = "floor";
 
-int Nyx::use_analriem       = 1;
-
 Real Nyx:: h_species        = 0.76;
 Real Nyx::he_species        = 0.24;
 
@@ -433,9 +431,6 @@ Nyx::read_hydro_params ()
 
     pp_nyx.get("do_hydro", do_hydro);
 
-    pp_nyx.query("do_reflux", do_reflux);
-    do_reflux = (do_reflux ? 1 : 0);
-
     pp_nyx.query("dump_old", dump_old);
 
     pp_nyx.query("small_dens", small_dens);
@@ -528,7 +523,6 @@ Nyx::read_hydro_params ()
     pp_nyx.query("tagging_base", tagging_base);
     pp_nyx.query("ppm_type", ppm_type);
     pp_nyx.query("enforce_min_density_type", enforce_min_density_type);
-    pp_nyx.query("use_analriem", use_analriem);
 
     pp_nyx.query("sundials_use_tiling", sundials_use_tiling);
 
