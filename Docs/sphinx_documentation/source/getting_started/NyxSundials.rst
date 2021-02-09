@@ -1,7 +1,7 @@
 .. role:: cpp(code)
    :language: c++
 
-
+.. _SUNDIALS:
 
 Compiling Nyx with SUNDIALS 5
 ===============================
