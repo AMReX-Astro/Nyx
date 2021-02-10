@@ -2,40 +2,42 @@
 Units and Conventions
 =====================
 
-Nyx uses cosmological system of units based on Mpc, M\ :math:`_\odot`, and km/s for lenght, mass, and velocity,
-respectively.  Temperature is given in Kelvin degrees.  The unit of time is derived from velocity and length units.
+Nyx uses a cosmological system of units based on Mpc, M\ :math:`_\odot`, and km/s for length, mass, and velocity,
+respectively.  Temperature is given in degrees Kelvin.  The unit of time is derived from velocity and length units.
 All inputs and problem initialization should be specified consistently with these units,
 and the outputs should be interpreted with these units in mind.
-In the equation of state calls, there is internal
+In the equation of state calls, there is an internal
 conversion between cosmological and CGS units.
 
-:numref:`table:units` shows some of the common symbols / names used
-throughout the code documentation and papers.
+:numref:`table:units` shows 
+some of the common symbols / names used throughout the code documentation and papers.
 
 .. _table:units:
+
 .. table:: Common quantities and units.
 
-   +-----------------------+------------------------------------------------------------+-----------------------+
-   | name                  | units                                                      | description           |
-   +=======================+============================================================+=======================+
-   | :math:`t`             | (Mpc/km) s                                                 | time                  |
-   +-----------------------+------------------------------------------------------------+-----------------------+
-   | :math:`\rho`          | M\ :math:`_\odot` / Mpc\ :math:`^3`                        | mass density          |
-   +-----------------------+------------------------------------------------------------+-----------------------+
-   | :math:`\ub`           | km/s                                                       | velocity vector       |
-   +-----------------------+------------------------------------------------------------+-----------------------+
-   | :math:`p`             | M\ :math:`_\odot` (km/s)\ :math:`^2` / Mpc\ :math:`^3`     | pressure              |
-   +-----------------------+------------------------------------------------------------+-----------------------+
-   | :math:`\gb`           | (km/s)2 / Mpc                                              | gravitational         |
-   |                       |                                                            | acceleration          |
-   +-----------------------+------------------------------------------------------------+-----------------------+
-   | :math:`E`             | (km/s)\ :math:`^2`                                         | specific total energy |
-   +-----------------------+------------------------------------------------------------+-----------------------+
-   | :math:`e`             | (km/s)\ :math:`^2`                                         | specific internal     |
-   |                       |                                                            | energy                |
-   +-----------------------+------------------------------------------------------------+-----------------------+
-   | :math:`T`             | :math:`K`                                                  | temperature           |
-   +-----------------------+------------------------------------------------------------+-----------------------+
+   +-----------------------+--------------------------------------------------------+-----------------------+
+   | name                  | units                                                  | description           |
+   +=======================+========================================================+=======================+
+   | :math:`t`             | (Mpc/km) s                                             | time                  |
+   +-----------------------+--------------------------------------------------------+-----------------------+
+   | :math:`\rho`          | M\ :math:`_\odot` / Mpc\ :math:`^3`                    | mass density          |
+   +-----------------------+--------------------------------------------------------+-----------------------+
+   | :math:`\ub`           | km/s                                                   | velocity vector       |
+   +-----------------------+--------------------------------------------------------+-----------------------+
+   | :math:`p`             | M\ :math:`_\odot` (km/s)\ :math:`^2` / Mpc\ :math:`^3` | pressure              |
+   |                       |                                                        |                       |
+   +-----------------------+--------------------------------------------------------+-----------------------+
+   | :math:`\gb`           | (km/s)2 / Mpc                                          | gravitational         |
+   |                       |                                                        | acceleration          |
+   +-----------------------+--------------------------------------------------------+-----------------------+
+   | :math:`E`             | (km/s)\ :math:`^2`                                     | specific total energy |
+   +-----------------------+--------------------------------------------------------+-----------------------+
+   | :math:`e`             | (km/s)\ :math:`^2`                                     | specific internal     |
+   |                       |                                                        | energy                |
+   +-----------------------+--------------------------------------------------------+-----------------------+
+   | :math:`T`             | :math:`K`                                              | temperature           |
+   +-----------------------+--------------------------------------------------------+-----------------------+
 
 
 In :numref:`table:constants` we list the values used for physical constants in cosmological units.
@@ -46,14 +48,17 @@ Full list of constants and conversion factors is set in Source/Driver/constants_
 .. table::
 	   Physical constant values
 
-   ================================== ==========================================================
-   Constant                           Cosmological units                                             
-   ================================== ==========================================================
-   Gravitational constant (:math:`G`) 4.3019425e-9 Mpc (km/s)\ :math:`^2` M\ :math:`_\odot^{-1}`
-   Avogadro’s number (:math:`n_A`)    1.1977558e57 M\ :math:`_\odot^{-1}`                       
-   Boltzmann’s constant (:math:`k_B`) 0.6941701e-59 M\ :math:`_\odot` (km/s)\ :math:`^2` / K    
-   Hubble constant (:math:`H`)        100 (km/s) / Mpc                                  
-   ================================== =================================================
+   +-------------------------------------+-----------------------------------------------------------+
+   | Constant                            | Cosmological units                                        |       
+   +=====================================+===========================================================+
+   | Gravitational constant (:math:`G`)  | 4.3019425e-9 Mpc (km/s)\ :math:`^2` M\ :math:`_\odot^{-1}`|
+   +-------------------------------------+-----------------------------------------------------------+
+   | Avogadro’s number (:math:`n_A`)     | 1.1977558e57 M\ :math:`_\odot^{-1}`                       |
+   +-------------------------------------+-----------------------------------------------------------+
+   | Boltzmann’s constant (:math:`k_B`)  | 0.6941701e-59 M\ :math:`_\odot` (km/s)\ :math:`^2` / K    |
+   +-------------------------------------+-----------------------------------------------------------+
+   | Hubble constant (:math:`H`)         | 100 (km/s) / Mpc                                          |
+   +-------------------------------------+-----------------------------------------------------------+
 
 The only other place that dimensional numbers are used in the code is in the tracing and Riemann solve.
 We set three *small* numbers which need to be consistent with the data specified
