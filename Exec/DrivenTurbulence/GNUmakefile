@@ -23,8 +23,6 @@ USE_CONST_SPECIES = TRUE
 
 USE_SDC = FALSE
 
-#USE_CGS = TRUE
-
 Bpack := ./Make.package
 Blocs := .
 
