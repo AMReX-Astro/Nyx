@@ -2,13 +2,9 @@ Initial conditions
 ===================
 
 There are two main ways in which initial conditions can be set in Nyx:
-read from an ASCII file and read from a binary file(s). In both cases file should have 3 numbers
-in the header: int DIM=3 (number of dimensions), int NX=4 (number of "extra" fields), and long NP
-which is the total number of particles in the file.
-This header is then folloed by the NP lines where each is:
-x, y, z, mass, vx, vy, vz.
+read from an ASCII file and read from a binary file(s).
 As said in the Units section of the documentation, the units are: Mpc, M\ :math:`_\odot`, and km/s,
-and vx, vy, and vz are the components of the peculiar proper velocity.
+and particle velocities which should be provided in the initial conditions is the peculiar proper velocity.
 
 
 Read from an ASCII file
@@ -20,10 +16,11 @@ To enable this option, set::
   nyx.ascii_particle_file = *particle_file*
 
 Here *particle_file* is the user-specified name of the file. The first line in this file is
-assumed to contain the number of particles. Each line after that contains
-x y z mass xdot ydot zdot
-Note that the variable that we call the particle velocity, :math:`{\mathbf u} = a {\bf \dot{x}}`,
-so we must multiply :math:`{\bf \dot{x}}`, by :math:`a` when we initialize the particles.
+(long) assumed to contain the number of particles. Each line after that contains
+
+x y z mass vx vy vz
+
+
 
 Read from a binary file
 -----------------------
@@ -33,11 +30,15 @@ To enable this option, set::
   nyx.particle_init_type = BinaryFile
   nyx.binary_particle_file = *particle_file*
   
-| As with the ASCII read, the first line in *particle_file* is
-  assumed to contain the number of particles. Each line after that contains
-| x y z mass xdot ydot zdot
-| Note that the variable that we call the particle velocity, :math:`{\mathbf u} = a {\bf \dot{x}}`,
-  so we must multiply :math:`{\bf \dot{x}}`, by :math:`a` when we initialize the particles.
+With binary file, the header should have 3 numbers:
+in the header: int DIM=3 (number of dimensions), int NX=4 (number of "extra" fields), and long NP
+which is the total number of particles in the file. Following this small header, 7 float numbers should be
+listed for each particle:
+
+x y z mass vx vy vz
+
+The main difference between the ASCII and binary format thus amounts to a different header.
+
 
 Read from a binary "meta" file
 ------------------------------

@@ -218,13 +218,9 @@
 <div class="section" id="initial-conditions">
 <h1>Initial conditions<a class="headerlink" href="#initial-conditions" title="Permalink to this headline">¶</a></h1>
 <p>There are two main ways in which initial conditions can be set in Nyx:
-read from an ASCII file and read from a binary file(s). In both cases file should have 3 numbers
-in the header: int DIM=3 (number of dimensions), int NX=4 (number of “extra” fields), and long NP
-which is the total number of particles in the file.
-This header is then folloed by the NP lines where each is:
-x, y, z, mass, vx, vy, vz.
+read from an ASCII file and read from a binary file(s).
 As said in the Units section of the documentation, the units are: Mpc, M<span class="math notranslate nohighlight">\(_\odot\)</span>, and km/s,
-and vx, vy, and vz are the components of the peculiar proper velocity.</p>
+and particle velocities which should be provided in the initial conditions is the peculiar proper velocity.</p>
 <div class="section" id="read-from-an-ascii-file">
 <h2>Read from an ASCII file<a class="headerlink" href="#read-from-an-ascii-file" title="Permalink to this headline">¶</a></h2>
 <p>To enable this option, set:</p>
@@ -233,10 +229,8 @@ and vx, vy, and vz are the components of the peculiar proper velocity.</p>
 </pre></div>
 </div>
 <p>Here <em>particle_file</em> is the user-specified name of the file. The first line in this file is
-assumed to contain the number of particles. Each line after that contains
-x y z mass xdot ydot zdot
-Note that the variable that we call the particle velocity, <span class="math notranslate nohighlight">\({\mathbf u} = a {\bf \dot{x}}\)</span>,
-so we must multiply <span class="math notranslate nohighlight">\({\bf \dot{x}}\)</span>, by <span class="math notranslate nohighlight">\(a\)</span> when we initialize the particles.</p>
+(long) assumed to contain the number of particles. Each line after that contains</p>
+<p>x y z mass vx vy vz</p>
 </div>
 <div class="section" id="read-from-a-binary-file">
 <h2>Read from a binary file<a class="headerlink" href="#read-from-a-binary-file" title="Permalink to this headline">¶</a></h2>
@@ -245,13 +239,12 @@ so we must multiply <span class="math notranslate nohighlight">\({\bf \dot{x}}\)
 <span class="n">nyx</span><span class="o">.</span><span class="n">binary_particle_file</span> <span class="o">=</span> <span class="o">*</span><span class="n">particle_file</span><span class="o">*</span>
 </pre></div>
 </div>
-<div class="line-block">
-<div class="line">As with the ASCII read, the first line in <em>particle_file</em> is
-assumed to contain the number of particles. Each line after that contains</div>
-<div class="line">x y z mass xdot ydot zdot</div>
-<div class="line">Note that the variable that we call the particle velocity, <span class="math notranslate nohighlight">\({\mathbf u} = a {\bf \dot{x}}\)</span>,
-so we must multiply <span class="math notranslate nohighlight">\({\bf \dot{x}}\)</span>, by <span class="math notranslate nohighlight">\(a\)</span> when we initialize the particles.</div>
-</div>
+<p>With binary file, the header should have 3 numbers:
+in the header: int DIM=3 (number of dimensions), int NX=4 (number of “extra” fields), and long NP
+which is the total number of particles in the file. Following this small header, 7 float numbers should be
+listed for each particle:</p>
+<p>x y z mass vx vy vz</p>
+<p>The main difference between the ASCII and binary format thus amounts to a different header.</p>
 </div>
 <div class="section" id="read-from-a-binary-meta-file">
 <h2>Read from a binary “meta” file<a class="headerlink" href="#read-from-a-binary-meta-file" title="Permalink to this headline">¶</a></h2>
