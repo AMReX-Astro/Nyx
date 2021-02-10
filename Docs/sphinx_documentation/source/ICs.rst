@@ -31,13 +31,26 @@ To enable this option, set::
   nyx.binary_particle_file = *particle_file*
   
 With binary file, the header should have 3 numbers:
-in the header: int DIM=3 (number of dimensions), int NX=4 (number of "extra" fields), and long NP
-which is the total number of particles in the file. Following this small header, 7 float numbers should be
-listed for each particle:
-
-x y z mass vx vy vz
+(long) NP, which is the total number of particles in the file
+followed by the (int) DM=3 (number of dimensions), and (int) NX=4 (number of "extra" fields).
+Following this small header, 7 float numbers should be listed for each particle as before:
+x y z mass vx vy vz.
 
 The main difference between the ASCII and binary format thus amounts to a different header.
+Here is an example C++ code which writes a Nyx-readable binary file::
+
+      fwrite(&npart, sizeof(long), 1, outFile);
+      fwrite(&DM, sizeof(int), 1, outFile);
+      fwrite(&NX, sizeof(int), 1, outFile);
+      for(i=0; i<Npart; i++) {
+         fwrite(&x[i], sizeof(float), 1, outFile);
+         fwrite(&y[i], sizeof(float), 1, outFile);
+         fwrite(&z[i], sizeof(float), 1, outFile);
+         fwrite(&mass [i], sizeof(float), 1, outFile);
+         fwrite(&vx[i], sizeof(float), 1, outFile);
+         fwrite(&vy[i], sizeof(float), 1, outFile);
+         fwrite(&vz[i], sizeof(float), 1, outFile);
+      }
 
 
 Read from a binary "meta" file
