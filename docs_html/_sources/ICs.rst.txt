@@ -81,15 +81,13 @@ file as specified by
 The SPH particles will be discarded by the code once the grid data has been initialized.
 
 
-Test initial conditions
-=======================
+Initial conditions for testing purposes
+---------------------------------------
 
 The following are used for code testing purposes and will not result in a meaningful cosmological simulation.
 
 
-Random placement
-----------------
-
+**Random placement.**
 To enable this option, set::
 
   nyx.particle_init_type = Random
@@ -100,9 +98,8 @@ There are then a number of parameters to set, for example::
   nyx.particle_initrandom_mass = 1
   nyx.particle_initrandom_iseed = 15
 
-Random placement (1 particle per grid cell)
--------------------------------------------
 
+**Random placement (1 particle per grid cell).**
 To enable this option, set::
 
   nyx.particle_init_type = RandomPerCell
@@ -114,9 +111,7 @@ Then only set the mass per particle::
 Note to increase the number of cells and keep the problem domain size 
 and total mass fixed, the mass per particle must decrease proportionally.
 
-Uniform placement
------------------
-
+**Uniform placement.**
 To enable this option, set::
 
   nyx.particle_init_type = OnePerCell

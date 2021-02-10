@@ -101,12 +101,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#read-from-a-binary-file">Read from a binary file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#read-from-a-binary-meta-file">Read from a binary “meta” file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#reading-sph-particles">Reading SPH particles</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="#test-initial-conditions">Test initial conditions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#random-placement">Random placement</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#random-placement-1-particle-per-grid-cell">Random placement (1 particle per grid cell)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#uniform-placement">Uniform placement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#initial-conditions-for-testing-purposes">Initial conditions for testing purposes</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Refinement.html">Refinement Criteria</a></li>
@@ -117,13 +112,11 @@
 <li class="toctree-l1"><a class="reference internal" href="NyxGravity.html">Gravity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxForcing.html">Stochastic Forcing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Particles.html">Dark matter particles</a></li>
-<li class="toctree-l1"><a class="reference internal" href="AGN.html">The AGN Model in Nyx</a></li>
-<li class="toctree-l1"><a class="reference internal" href="AGN.html#the-reeber-package">The Reeber Package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NightlyTests.html">Nightly Regression Tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="InSitu.html">In situ analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="PostProcessing.html">PostProcessing</a></li>
-<li class="toctree-l1"><a class="reference internal" href="PostProcessing.html#visualization">Visualization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Debugging.html">Debugging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Development.html">Work in Progress</a></li>
 </ul>
 
             
@@ -284,13 +277,11 @@ must be the same (Ascii, Binary or BinaryMeta) as the dark matter particle
 file as specified by
 The SPH particles will be discarded by the code once the grid data has been initialized.</p>
 </div>
-</div>
-<div class="section" id="test-initial-conditions">
-<h1>Test initial conditions<a class="headerlink" href="#test-initial-conditions" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="initial-conditions-for-testing-purposes">
+<h2>Initial conditions for testing purposes<a class="headerlink" href="#initial-conditions-for-testing-purposes" title="Permalink to this headline">¶</a></h2>
 <p>The following are used for code testing purposes and will not result in a meaningful cosmological simulation.</p>
-<div class="section" id="random-placement">
-<h2>Random placement<a class="headerlink" href="#random-placement" title="Permalink to this headline">¶</a></h2>
-<p>To enable this option, set:</p>
+<p><strong>Random placement.</strong>
+To enable this option, set:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_init_type</span> <span class="o">=</span> <span class="n">Random</span>
 </pre></div>
 </div>
@@ -300,10 +291,8 @@ The SPH particles will be discarded by the code once the grid data has been init
 <span class="n">nyx</span><span class="o">.</span><span class="n">particle_initrandom_iseed</span> <span class="o">=</span> <span class="mi">15</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="random-placement-1-particle-per-grid-cell">
-<h2>Random placement (1 particle per grid cell)<a class="headerlink" href="#random-placement-1-particle-per-grid-cell" title="Permalink to this headline">¶</a></h2>
-<p>To enable this option, set:</p>
+<p><strong>Random placement (1 particle per grid cell).</strong>
+To enable this option, set:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_init_type</span> <span class="o">=</span> <span class="n">RandomPerCell</span>
 </pre></div>
 </div>
@@ -313,10 +302,8 @@ The SPH particles will be discarded by the code once the grid data has been init
 </div>
 <p>Note to increase the number of cells and keep the problem domain size
 and total mass fixed, the mass per particle must decrease proportionally.</p>
-</div>
-<div class="section" id="uniform-placement">
-<h2>Uniform placement<a class="headerlink" href="#uniform-placement" title="Permalink to this headline">¶</a></h2>
-<p>To enable this option, set:</p>
+<p><strong>Uniform placement.</strong>
+To enable this option, set:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_init_type</span> <span class="o">=</span> <span class="n">OnePerCell</span>
 </pre></div>
 </div>
@@ -344,7 +331,7 @@ and total mass fixed, the mass per particle must decrease proportionally.</p>
 
   <div role="contentinfo">
     <p>
-        &#169; Copyright 2018, Nyx development team.
+        &#169; Copyright 2021, Nyx development team.
 
     </p>
   </div>

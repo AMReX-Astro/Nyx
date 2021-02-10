@@ -11,8 +11,10 @@ PostProcessing
 ==============
 
 
+
+
 Visualization
-=============
+-------------
 
 Nyx generates plotfile in the native AMReX format as well as HDF5.
 
@@ -46,7 +48,9 @@ and the following control which variables appear in the plotfile
 +----------------------------+---------------------------------------------------+------------+-----------+
 
 
-Nyx also easily interfaces with two post-processing suites, Reeber and Gimlet.
+Nyx also easily interfaces with two post-processing suites, Reeber used for halo finding
+and Gimlet, used for calculating different summary statistics.
+
 
 Reeber
 ------
@@ -59,20 +63,22 @@ runtime parameters in order to locate the volume-averaged center of dark matter
 halos. The same tree can be queried with any number of such parameters to find
 halos with different mass/density thresholds.
 
+
 Gimlet
 ------
 
 Gimlet computes a variety of quantities about the simulation, including optical
-depths, Lyman-alpha fluxes, power spectra (both 1-D ``line-of-sight'' as well as
+depths, Lyman-alpha fluxes, power spectra (both 1-D "line-of-sight" as well as
 fully 3-D), and probability distribution functions. These suites are fully
-MPI-parallel and can be run either ``in situ'' or ``in-transit,'' or with a
+MPI-parallel and can be run either "in situ" or "in-transit", or with a
 combination of both. A detailed description of their usage is provided in the
 Nyx User Guide.
+
 
 Do It Yourself
 ------
 
 Nyx and AMReX provide the capability for the user to execute an arbitrary
-post-processing workflow.  In ``Util/Diagnostics/ `` we provide a simple example
+post-processing workflow.  In Util/Diagnostics/ we provide a simple example
 of opening an AMReX plotfile, reading and manipulating data in it.  That can be a
 starting place for building analysis tools for any specific need.
