@@ -24,11 +24,12 @@ Welcome to Nyx's documentation!
    NyxGravity
    NyxForcing
    Particles
-   AGN
    NightlyTests
    InSitu
    PostProcessing
    Debugging
+   Development
+
 
 .. toctree::      
    :maxdepth: 2
