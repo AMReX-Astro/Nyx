@@ -6,9 +6,10 @@ Nyx uses a cosmological system of units based on Mpc, M\ :math:`_\odot`, and km/
 respectively.  Temperature is given in degrees Kelvin.  The unit of time is derived from velocity and length units.
 All inputs and problem initialization should be specified consistently with these units,
 and the outputs should be interpreted with these units in mind.
-
 In the equation of state calls, there is an internal
-conversion between cosmological and CGS units.  :numref:`table:units` shows 
+conversion between cosmological and CGS units.
+
+:numref:`table:units` shows 
 some of the common symbols / names used throughout the code documentation and papers.
 
 .. _table:units:
@@ -41,20 +42,23 @@ some of the common symbols / names used throughout the code documentation and pa
 
 In :numref:`table:constants` we list the values used for physical constants in cosmological units.
 Note that :math:`\Omega_m`, :math:`\Omega_b`, :math:`\Omega_r`  and :math:`h` are set in the inputs file.
-Full list of constants and conversion factors is set in constants_cosmo.f90.
+Full list of constants and conversion factors is set in Source/Driver/constants_cosmo.H.
 
 .. _table:constants:
 .. table::
 	   Physical constant values
 
-   ================================== ==========================================================
-   Constant                           Cosmological units                                             
-   ================================== ==========================================================
-   Gravitational constant (:math:`G`) 4.3019425e-9 Mpc (km/s)\ :math:`^2` M\ :math:`_\odot^{-1}`
-   Avogadro’s number (:math:`n_A`)    1.1977558e57 M\ :math:`_\odot^{-1}`                       
-   Boltzmann’s constant (:math:`k_B`) 0.6941701e-59 M\ :math:`_\odot` (km/s)\ :math:`^2` / K    
-   Hubble constant (:math:`H`)        100 (km/s) / Mpc                                  
-   ================================== =================================================
+   +-------------------------------------+-----------------------------------------------------------+
+   | Constant                            | Cosmological units                                        |       
+   +=====================================+===========================================================+
+   | Gravitational constant (:math:`G`)  | 4.3019425e-9 Mpc (km/s)\ :math:`^2` M\ :math:`_\odot^{-1}`|
+   +-------------------------------------+-----------------------------------------------------------+
+   | Avogadro’s number (:math:`n_A`)     | 1.1977558e57 M\ :math:`_\odot^{-1}`                       |
+   +-------------------------------------+-----------------------------------------------------------+
+   | Boltzmann’s constant (:math:`k_B`)  | 0.6941701e-59 M\ :math:`_\odot` (km/s)\ :math:`^2` / K    |
+   +-------------------------------------+-----------------------------------------------------------+
+   | Hubble constant (:math:`H`)         | 100 (km/s) / Mpc                                          |
+   +-------------------------------------+-----------------------------------------------------------+
 
 The only other place that dimensional numbers are used in the code is in the tracing and Riemann solve.
 We set three *small* numbers which need to be consistent with the data specified

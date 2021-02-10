@@ -207,9 +207,10 @@
 <p>Nyx uses a cosmological system of units based on Mpc, M<span class="math notranslate nohighlight">\(_\odot\)</span>, and km/s for length, mass, and velocity,
 respectively.  Temperature is given in degrees Kelvin.  The unit of time is derived from velocity and length units.
 All inputs and problem initialization should be specified consistently with these units,
-and the outputs should be interpreted with these units in mind.</p>
-<p>In the equation of state calls, there is an internal
-conversion between cosmological and CGS units.  <a class="reference internal" href="#table-units"><span class="std std-numref">Table 2</span></a> shows
+and the outputs should be interpreted with these units in mind.
+In the equation of state calls, there is an internal
+conversion between cosmological and CGS units.</p>
+<p><a class="reference internal" href="#table-units"><span class="std std-numref">Table 2</span></a> shows
 some of the common symbols / names used throughout the code documentation and papers.</p>
 <span id="table-units"></span><table border="1" class="docutils" id="id1">
 <caption><span class="caption-number">Table 2 </span><span class="caption-text">Common quantities and units.</span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
@@ -261,9 +262,35 @@ energy</td>
 </tr>
 </tbody>
 </table>
-<p>In <code class="xref std std-numref docutils literal notranslate"><span class="pre">table:constants</span></code> we list the values used for physical constants in cosmological units.
+<p>In <a class="reference internal" href="#table-constants"><span class="std std-numref">Table 3</span></a> we list the values used for physical constants in cosmological units.
 Note that <span class="math notranslate nohighlight">\(\Omega_m\)</span>, <span class="math notranslate nohighlight">\(\Omega_b\)</span>, <span class="math notranslate nohighlight">\(\Omega_r\)</span>  and <span class="math notranslate nohighlight">\(h\)</span> are set in the inputs file.
-Full list of constants and conversion factors is set in constants_cosmo.f90.</p>
+Full list of constants and conversion factors is set in Source/Driver/constants_cosmo.H.</p>
+<span id="table-constants"></span><table border="1" class="docutils" id="id2">
+<caption><span class="caption-number">Table 3 </span><span class="caption-text">Physical constant values</span><a class="headerlink" href="#id2" title="Permalink to this table">¶</a></caption>
+<colgroup>
+<col width="39%" />
+<col width="61%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Constant</th>
+<th class="head">Cosmological units</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Gravitational constant (<span class="math notranslate nohighlight">\(G\)</span>)</td>
+<td>4.3019425e-9 Mpc (km/s)<span class="math notranslate nohighlight">\(^2\)</span> M<span class="math notranslate nohighlight">\(_\odot^{-1}\)</span></td>
+</tr>
+<tr class="row-odd"><td>Avogadro’s number (<span class="math notranslate nohighlight">\(n_A\)</span>)</td>
+<td>1.1977558e57 M<span class="math notranslate nohighlight">\(_\odot^{-1}\)</span></td>
+</tr>
+<tr class="row-even"><td>Boltzmann’s constant (<span class="math notranslate nohighlight">\(k_B\)</span>)</td>
+<td>0.6941701e-59 M<span class="math notranslate nohighlight">\(_\odot\)</span> (km/s)<span class="math notranslate nohighlight">\(^2\)</span> / K</td>
+</tr>
+<tr class="row-odd"><td>Hubble constant (<span class="math notranslate nohighlight">\(H\)</span>)</td>
+<td>100 (km/s) / Mpc</td>
+</tr>
+</tbody>
+</table>
 <p>The only other place that dimensional numbers are used in the code is in the tracing and Riemann solve.
 We set three <em>small</em> numbers which need to be consistent with the data specified
 We set one <em>large</em> number which needs to be consistent with the data specified.
