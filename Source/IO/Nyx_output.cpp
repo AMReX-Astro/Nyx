@@ -864,8 +864,10 @@ Nyx::checkPoint (const std::string& dir,
       writeJobInfo(dir);
   }
 
+#ifndef NO_HYDRO
   if (do_forcing)
       forcing_check_point(dir);
+#endif
 
   if (level == 0 && ParallelDescriptor::IOProcessor())
     {
@@ -941,6 +943,7 @@ Nyx::checkPointPost (const std::string& /*dir*/,
 #endif
 }
 
+#ifndef NO_HYDRO
 void
 Nyx::forcing_check_point (const std::string& dir)
 {
@@ -968,6 +971,7 @@ Nyx::forcing_check_point (const std::string& dir)
         }
     }
 }
+#endif
 
 int
 Nyx::updateInSitu ()

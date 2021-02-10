@@ -150,7 +150,9 @@ static int  slice_nfiles = 128;
 Gravity* Nyx::gravity  =  0;
 int Nyx::do_grav       = -1;
 
+#ifndef NO_HYDRO
 StochasticForcing* Nyx::forcing = 0;
+#endif
 int Nyx::do_forcing =  0;
 
 int Nyx::nghost_state       = 1;
@@ -222,6 +224,8 @@ if (do_grav)
         gravity = 0;
     }
 }
+
+#ifndef NO_HYDRO
     if (forcing != 0)
     {
         if (verbose > 1 && ParallelDescriptor::IOProcessor())
@@ -229,6 +233,7 @@ if (do_grav)
         delete forcing;
         forcing = 0;
     }
+#endif
 
     desc_lst.clear();
 }
@@ -590,7 +595,7 @@ Nyx::Nyx (Amr&            papa,
         gravity->install_level(level, this);
    }
 
-
+#ifndef NO_HYDRO
     if (do_forcing)
     {
         // forcing is a static object, only alloc if not already there
@@ -602,6 +607,7 @@ Nyx::Nyx (Amr&            papa,
 
         forcing->init(AMREX_SPACEDIM, prob_lo, prob_hi);
     }
+#endif
 
     // Initialize the "a" variable
     if (level == 0 && time == 0.0 && old_a_time < 0.)
@@ -664,6 +670,7 @@ Nyx::restart (Amr&     papa,
         gravity = new Gravity(parent, parent->finestLevel(), &phys_bc, 0);
     }
 
+#ifndef NO_HYDRO
     if (do_forcing)
     {
         // forcing is a static object, only alloc if not already there
@@ -675,6 +682,8 @@ Nyx::restart (Amr&     papa,
 
         forcing->init(AMREX_SPACEDIM, prob_lo, prob_hi);
     }
+#endif
+
 }
 
 void
@@ -1660,13 +1669,13 @@ Nyx::post_restart ()
         }
     }
 
+#ifndef NO_HYDRO
     if (do_forcing)
     {
         if (level == 0)
            forcing_post_restart(parent->theRestartFile());
     }
 
-#ifndef NO_HYDRO
     if (level == 0)
     {
        // Need to compute this *before* regridding in case this is needed

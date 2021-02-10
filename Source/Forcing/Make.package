@@ -1,3 +1,5 @@
+ifneq ($(NO_HYDRO), TRUE)
 CEXE_sources += MersenneTwister.cpp
 CEXE_sources += Forcing.cpp Forcing_init.cpp
 CEXE_headers += Forcing.H
+endif
