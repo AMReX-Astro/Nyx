@@ -1,5 +1,6 @@
 .. role:: cpp(code)
   :language: c++
+
 ******
 Inputs
 ******
@@ -47,7 +48,7 @@ Examples of Usage
 
 -  **geometry.prob_hi** = 1.e8 2.e8 2.e8
    defines the high corner of the domain at (1.e8,2.e8,2.e8) in
-     physical space.
+   physical space.
 
 -  **geometry.coord_sys** = 0
    defines the coordinate system as Cartesian
@@ -424,7 +425,7 @@ List of Parameters
 | **particles.cfl**   | CFL number for | Real > 0 and   | 0.5            |
 |                     | particles      | <= 1           |                |
 |                     |                |                |                |
-|                     |                |              ` |                |
+|                     |                |                |                |
 +---------------------+----------------+----------------+----------------+
 | **nyx.init_shrink** | factor by      | Real > 0 and   | 1.0            |
 |                     | which to       | <= 1           |                |
@@ -454,6 +455,13 @@ List of Parameters
 |                     | below which    |                |                |
 |                     | calculation    |                |                |
 |                     | will abort     |                |                |
++---------------------+----------------+----------------+----------------+
+| **nyx.dt_binpow**   | time step      | Real >=  0     | -1.0           |
+|                     | chosen to be   |                |                |
+|                     | a power of a   |                |                |
+|                     | half times the |                |                |
+|                     | comoving time  |                |                |
+|                     | step           |                |                |
 +---------------------+----------------+----------------+----------------+
 
 [Table:TimeStepInputs]
@@ -496,6 +504,14 @@ Examples of Usage
      through your entire computer allocation because you don’t realize
      the code is misbehaving.
 
+-  | **nyx.dt_binpow** = 1.0
+   | sets :math:`\mathrm{dt}=\left(\frac{1}{2}\right)^{n}\mathrm{dt}_{\mathrm{a}}|n:\mathrm{dt}_{\mathrm{cfl}}>\left(\frac{1}{2}\right)^{n}\mathrm{dt_{a}}`
+     where :math:`\mathrm{dt}_{\mathrm{cfl}}` is determined by the more
+     restrictive timestep of **nyx.cfl** and **particles.cfl**, and
+     where :math:`\mathrm{dt}_{\mathrm{a}}` is determined by the
+     **relative_max_change_a**, **absolute_max_change_a**, and the
+     evolution of :math:`\frac{da}{dt}`
+
 Subcycling
 ==========
 
@@ -528,9 +544,9 @@ List of Parameters
 | **amr.sub      | How shall we   | Auto, None or  | Auto           |
 | cycling_mode** | subcycle       | Manual         |                |
 +----------------+----------------+----------------+----------------+
-| *              | Number of      | 1 or           | must be set in |
-| *amr.subcyclin | cycles at each | ``ref_ratio``  | Manual mode    |
-| g_iterations** | level          |                |                |
+| **amr.subcycli | Number of      | 1 or           | must be set in |
+| g_iterations** | cycles at each | ``ref_ratio``  | Manual mode    |
+|                | level          |                |                |
 +----------------+----------------+----------------+----------------+
 
 .. _examples-of-usage-6:
@@ -888,8 +904,6 @@ List of Parameters
 |                          | solve            |                |                  |
 +--------------------------+------------------+----------------+------------------+
 
-[Table:Gravity]
-
 .. _notes-6:
 
 Notes
@@ -968,7 +982,7 @@ List of Parameters
 Reionization models
 ===================
 
-.. _list-of-parameters-13:
+.. _list-of-parameters-14:
 
 List of Parameters
 ------------------

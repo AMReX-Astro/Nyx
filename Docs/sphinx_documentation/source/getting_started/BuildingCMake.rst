@@ -108,12 +108,12 @@ The CMake build process for Nyx is summarized as follows:
 Working with Git submodules
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-By default Nyx CMake search the system for existing installations of the required dependencies
+By default Nyx CMake searches the system for existing installations of the required dependencies
 (AMReX is always required, SUNDIALS may be required depending on the configuration options).
 If the required dependencies are not found on the system, Nyx CMake will automatically checkout
 and build those dependencies as part of its build process. To this end, Nyx CMake relies on git
 submodules to checkout the AMReX and/or SUNDIALS git repositories. In what follows, we will
-focus on the AMReX git submodule only, but the same concepts applies unchanged to the
+focus on the AMReX git submodule only, but the same concepts apply unchanged to the
 SUNDIAL submodule as well.
 
 
@@ -189,7 +189,8 @@ In the example above, ``-DAMReX_ROOT=/absolute/path/to/amrex/installdir`` instru
 ``/absolute/path/to/amrex/installdir`` before searching system paths for an available AMReX installation.
 ``AMReX_ROOT`` can also be set as an environmental variable instead of passing it as a command line option.
 Similarly, you can define a ``SUNDIALS_ROOT`` variable, either via command line or the environment, to
-teach CMake where to look for SUNDIALS.
+teach CMake where to look for SUNDIALS. Choose one of the ``CMAKE_BUILD_TYPE`` to control the level of
+optimization, the option ``-DCMAKE_BUILD_TYPE=Release`` will give the same defaults as GMake.
 
 
 Few more notes on building Nyx
@@ -265,7 +266,7 @@ Then, you need to load the following modules:
 
 .. code:: shell
 
-    > module load modules esslurm gcc cuda openmpi/3.1.0-ucx cmake/3.14.0
+    > module load cgpu gcc/7.3.0 cuda/11.1.1 openmpi/4.0.3 cmake/3.14.4
 
 Currently, you need to use OpenMPI; mvapich2 seems not to work.
 
@@ -273,7 +274,7 @@ Then, you need to use slurm to request access to a GPU node:
 
 .. code:: shell
 
-    > salloc -N 1 -t 02:00:00 -c 80 -C gpu -A m1759 --gres=gpu:8 --exclusive
+    > salloc -N 1 -t 02:00:00 -c 10 -C gpu -A m1759 --gres=gpu:8 --exclusive
 
 This reservers an entire GPU node for your job. Note that you can’t cross-compile for the GPU nodes - you have to log on to one and then build your software.
 
@@ -281,8 +282,8 @@ Finally, navigate to the base of the Nyx repository and compile in GPU mode:
 
 .. code:: shell
 
-    > cd mfix
-    > mdkir build
+    > cd Nyx
+    > mkdir build
     > cd build
     > cmake -DNyx_GPU_BACKEND=CUDA -DAMReX_CUDA_ARCH=Volta -DCMAKE_CXX_COMPILER=g++ -DCMAKE_Fortran_COMPILER=gfortran ..
     > make -j
