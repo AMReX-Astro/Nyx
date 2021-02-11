@@ -19,6 +19,9 @@ authors:
   - name: Andrew Myers
     orcid: 0000-0001-8427-8330
     affiliation: 1
+  - name: Weiqun Zhang
+    orcid: 0000-0001-8092-1974
+    affiliation: 1
 affiliations:
   - name: Center for Computational Sciences and Engineering, Lawrence Berkeley National Laboratory
     index: 1
