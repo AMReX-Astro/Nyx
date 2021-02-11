@@ -64,7 +64,7 @@ download AMReX in order to build Nyx with GNU Make.
    For some executables, namely LyA, AMR-density, AMR-zoom, and LyA_Neutrinos, Nyx uses a more complicated model for the heating-cooling.
    This requires you to also install a matching sundials installation to support the ODE solve. To install a stand-alone copy of Sundials, see :ref:`Compiling Nyx with SUNDIALS 5<sundials>`
 
-#. From the directory in which you checked out Nyx, change directory to your compile directory by typing for the small Santa-Barbara problem:
+#. From the directory in which you checked out Nyx, change directory to your build directory by typing for the small Santa-Barbara problem:
 
    ::
 
@@ -76,7 +76,7 @@ download AMReX in order to build Nyx with GNU Make.
 
        cd Nyx/Exec/LyA
 
-#. In your compile directory, edit the GNUmakefile, and set
+#. In your build directory, edit the GNUmakefile, and set
 
    ``COMP = your favorite compiler (e.g, gnu, Intel)``
 
