@@ -125,7 +125,6 @@ int Nyx::shrink_to_fit = 0;
 bool Nyx::sundials_use_tiling = true;
 
 int Nyx::strang_split = 1;
-int Nyx::strang_fuse = 0;
 int Nyx::strang_grown_box = 1;
 #ifdef SDC
 int Nyx::sdc_split    = 0;
@@ -455,7 +454,6 @@ Nyx::read_hydro_params ()
 
     pp_nyx.query("add_ext_src", add_ext_src);
     pp_nyx.query("strang_split", strang_split);
-    pp_nyx.query("strang_fuse", strang_fuse);
     pp_nyx.query("strang_grown_box", strang_grown_box);
 
 #ifdef HEATCOOL

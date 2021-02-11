@@ -472,28 +472,12 @@ public:
                                       int ncycle);
 
     void strang_hydro(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
-    void strang_hydro_ghost_state(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
-    void strang_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
 #ifdef SDC
     void    sdc_hydro(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
 #endif
 
     void correct_gsrc(int lev, amrex::Real time, amrex::Real prev_time, amrex::Real cur_time,
                                amrex::Real dt);
-
-///
-/// Calculate primitive variables from given conserved variables
-///
-/// @param u        MultiFab of conserved variables
-/// @param q        MultiFab to save primitive variables to
-/// @param qaux     MultiFab of auxiliary variables
-/// @param time     Current time
-///
-  void cons_to_prim(amrex::MultiFab& u, amrex::MultiFab& q, amrex::MultiFab& qaux,
-                    amrex::MultiFab& grav, amrex::MultiFab& hydro_src, amrex::MultiFab& src_q,
-                    const amrex::Real a_old, const amrex::Real a_new,
-                    const amrex::Real dt);
-
 
 ///
 /// this constructs the hydrodynamic source (essentially the flux
@@ -508,24 +492,7 @@ public:
                                amrex::MultiFab& grav,
                                bool init_flux_register, bool add_to_flux_register);
 
-    void ctu_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
-                        amrex::MultiFab& S_border, amrex::MultiFab& D_border,
-                        amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src,
-                        amrex::MultiFab& grav,
-                        bool init_flux_register, bool add_to_flux_register);
-
 ///
-/// this constructs the hydrodynamic source (essentially the flux
-/// divergence) using method of lines integration.  The output, is the
-/// divergence of the fluxes, A = -div{F(U)}
-///
-/// @param time     current time
-/// @param dt   timestep
-/// @param A_update   divergence of the fluxes
-///
-    void construct_mol_hydro_source(amrex::Real time, amrex::Real dt, amrex::MultiFab& A_update);
-
-  ///
 /// Hydrodynamic (and radiation) fluxes.
 ///
     amrex::Vector<std::unique_ptr<amrex::MultiFab> > fluxes;
@@ -575,12 +542,6 @@ public:
                          amrex::MultiFab& hydro_src, amrex::MultiFab& IR, amrex::MultiFab& reset_e_src,
                          amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
                          int sdc_iter);
-
-  int integrate_state_exact(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
-  int integrate_state_grownexact(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
-
-   int integrate_state_box(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
-   int integrate_state_grownbox(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
 
   int integrate_state_vec(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
    int integrate_state_grownvec(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
@@ -995,9 +956,6 @@ protected:
 
     // if true , incorporate the source term through Strang-splitting
     static int strang_split;
-
-    // if true , fuse MFIter loops for new hydro with heat_cool_type=11
-    static int strang_fuse;
 
 #ifdef SDC
     // if true , use SDC to couple hydro and reactions
