@@ -891,6 +891,16 @@ will abort</td>
 <td>Real &gt; 0</td>
 <td>0.0</td>
 </tr>
+<tr class="row-odd"><td><strong>nyx.dt_binpow</strong></td>
+<td>time step
+chosen to be
+a power of a
+half times the
+comoving time
+step</td>
+<td>Real &gt;=  0</td>
+<td>-1.0</td>
+</tr>
 </tbody>
 </table>
 <p>[Table:TimeStepInputs]</p>
@@ -943,6 +953,16 @@ subsequent steps by a factor of <strong>nyx.change_max</strong> each step.</div>
 This is a safety mechanism so that if things go nuts you don’t burn
 through your entire computer allocation because you don’t realize
 the code is misbehaving.</div>
+</div>
+</li>
+<li><div class="first line-block">
+<div class="line"><strong>nyx.dt_binpow</strong> = 1.0</div>
+<div class="line">sets <span class="math notranslate nohighlight">\(\mathrm{dt}=\left(\frac{1}{2}\right)^{n}\mathrm{dt}_{\mathrm{a}}|n:\mathrm{dt}_{\mathrm{cfl}}&gt;\left(\frac{1}{2}\right)^{n}\mathrm{dt_{a}}\)</span>
+where <span class="math notranslate nohighlight">\(\mathrm{dt}_{\mathrm{cfl}}\)</span> is determined by the more
+restrictive timestep of <strong>nyx.cfl</strong> and <strong>particles.cfl</strong>, and
+where <span class="math notranslate nohighlight">\(\mathrm{dt}_{\mathrm{a}}\)</span> is determined by the
+<strong>relative_max_change_a</strong>, <strong>absolute_max_change_a</strong>, and the
+evolution of <span class="math notranslate nohighlight">\(\frac{da}{dt}\)</span></div>
 </div>
 </li>
 </ul>

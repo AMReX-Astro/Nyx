@@ -9,7 +9,7 @@ can be cloned by using git:
 
 .. code-block:: shell
 
-   > git clone https://github.com/AMReX-Astro/Nyx.git
+   > git clone https://github.com/AMReX-Astro/Nyx.git --recursive
 
 .. note::
 

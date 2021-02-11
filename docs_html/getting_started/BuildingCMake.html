@@ -352,12 +352,12 @@ units instead of code units</td>
 </table>
 <div class="section" id="working-with-git-submodules">
 <h2>Working with Git submodules<a class="headerlink" href="#working-with-git-submodules" title="Permalink to this headline">¶</a></h2>
-<p>By default Nyx CMake search the system for existing installations of the required dependencies
+<p>By default Nyx CMake searches the system for existing installations of the required dependencies
 (AMReX is always required, SUNDIALS may be required depending on the configuration options).
 If the required dependencies are not found on the system, Nyx CMake will automatically checkout
 and build those dependencies as part of its build process. To this end, Nyx CMake relies on git
 submodules to checkout the AMReX and/or SUNDIALS git repositories. In what follows, we will
-focus on the AMReX git submodule only, but the same concepts applies unchanged to the
+focus on the AMReX git submodule only, but the same concepts apply unchanged to the
 SUNDIAL submodule as well.</p>
 <p>If the AMReX submodule is not initialized, Nyx CMake will initialize it and checkout
 the commit the submodule is pointing to. If instead the AMReX  submodule has already
@@ -415,7 +415,8 @@ paths, you need to tell Nyx CMake where to look for them.</p>
 <code class="docutils literal notranslate"><span class="pre">/absolute/path/to/amrex/installdir</span></code> before searching system paths for an available AMReX installation.
 <code class="docutils literal notranslate"><span class="pre">AMReX_ROOT</span></code> can also be set as an environmental variable instead of passing it as a command line option.
 Similarly, you can define a <code class="docutils literal notranslate"><span class="pre">SUNDIALS_ROOT</span></code> variable, either via command line or the environment, to
-teach CMake where to look for SUNDIALS.</p>
+teach CMake where to look for SUNDIALS. Choose one of the <code class="docutils literal notranslate"><span class="pre">CMAKE_BUILD_TYPE</span></code> to control the level of
+optimization, the option <code class="docutils literal notranslate"><span class="pre">-DCMAKE_BUILD_TYPE=Release</span></code> will give the same defaults as GMake.</p>
 </div>
 <div class="section" id="few-more-notes-on-building-nyx">
 <h3>Few more notes on building Nyx<a class="headerlink" href="#few-more-notes-on-building-nyx" title="Permalink to this headline">¶</a></h3>
@@ -468,18 +469,18 @@ CMake will try to determine which GPU is supported by the system.</p>
 </pre></div>
 </div>
 <p>Then, you need to load the following modules:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; module load modules esslurm gcc cuda openmpi/3.1.0-ucx cmake/3.14.0
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; module load cgpu gcc/7.3.0 cuda/11.1.1 openmpi/4.0.3 cmake/3.14.4
 </pre></div>
 </div>
 <p>Currently, you need to use OpenMPI; mvapich2 seems not to work.</p>
 <p>Then, you need to use slurm to request access to a GPU node:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; salloc -N <span class="m">1</span> -t <span class="m">02</span>:00:00 -c <span class="m">80</span> -C gpu -A m1759 --gres<span class="o">=</span>gpu:8 --exclusive
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; salloc -N <span class="m">1</span> -t <span class="m">02</span>:00:00 -c <span class="m">10</span> -C gpu -A m1759 --gres<span class="o">=</span>gpu:8 --exclusive
 </pre></div>
 </div>
 <p>This reservers an entire GPU node for your job. Note that you can’t cross-compile for the GPU nodes - you have to log on to one and then build your software.</p>
 <p>Finally, navigate to the base of the Nyx repository and compile in GPU mode:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; <span class="nb">cd</span> mfix
-&gt; mdkir build
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; <span class="nb">cd</span> Nyx
+&gt; mkdir build
 &gt; <span class="nb">cd</span> build
 &gt; cmake -DNyx_GPU_BACKEND<span class="o">=</span>CUDA -DAMReX_CUDA_ARCH<span class="o">=</span>Volta -DCMAKE_CXX_COMPILER<span class="o">=</span>g++ -DCMAKE_Fortran_COMPILER<span class="o">=</span>gfortran ..
 &gt; make -j
