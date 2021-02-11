@@ -41,7 +41,7 @@ some of the common symbols / names used throughout the code documentation and pa
 
 
 In :numref:`table:constants` we list the values used for physical constants in cosmological units.
-Note that :math:`\Omega_m`, :math:`\Omega_b`, :math:`\Omega_r`  and :math:`h` are set in the inputs file.
+Note that :math:`\Omega_m`, :math:`\Omega_b`, :math:`\Omega_r`  and :math:`h` are set in the inputs file :ref:`Comoving: List of Parameters<list-of-parameters-13>`.
 Full list of constants and conversion factors is set in Source/Driver/constants_cosmo.H.
 
 .. _table:constants:
