@@ -465,6 +465,13 @@ List of Parameters
 |                     | calculation    |                |                |
 |                     | will abort     |                |                |
 +---------------------+----------------+----------------+----------------+
+| **nyx.dt_binpow**   | time step      | Real >=  0     | -1.0           |
+|                     | chosen to be   |                |                |
+|                     | a power of a   |                |                |
+|                     | half times the |                |                |
+|                     | comoving time  |                |                |
+|                     | step           |                |                |
++---------------------+----------------+----------------+----------------+
 
 [Table:TimeStepInputs]
 
@@ -505,6 +512,14 @@ Examples of Usage
      This is a safety mechanism so that if things go nuts you don’t burn
      through your entire computer allocation because you don’t realize
      the code is misbehaving.
+
+-  | **nyx.dt_binpow** = 1.0
+   | sets :math:`\mathrm{dt}=\left(\frac{1}{2}\right)^{n}\mathrm{dt}_{\mathrm{a}}|n:\mathrm{dt}_{\mathrm{cfl}}>\left(\frac{1}{2}\right)^{n}\mathrm{dt_{a}}`
+     where :math:`\mathrm{dt}_{\mathrm{cfl}}` is determined by the more
+     restrictive timestep of **nyx.cfl** and **particles.cfl**, and
+     where :math:`\mathrm{dt}_{\mathrm{a}}` is determined by the
+     **relative_max_change_a**, **absolute_max_change_a**, and the
+     evolution of :math:`\frac{da}{dt}`
 
 Subcycling
 ==========
