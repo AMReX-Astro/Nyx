@@ -728,6 +728,10 @@ List of Parameters
 |                             | the writing of   | :math:`\geq 1`   |         |
 |                             | the plotfiles    |                  |         |
 +-----------------------------+------------------+------------------+---------+
+| **nyx.plot_rank**           | should we plot   | True / False     | False   |
+|                             | the processor ID |                  |         |
+|                             | in the plotfiles |                  |         |
++-----------------------------+------------------+------------------+---------+
 | **fab.format**              | Should we write  | NATIVE or IEEE32 | NATIVE  |
 |                             | the plotfile in  |                  |         |
 |                             | double or single |                  |         |
