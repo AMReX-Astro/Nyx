@@ -62,7 +62,7 @@ is usually the total matter density. Nyx then queries the merge tree with user-d
 runtime parameters in order to locate the volume-averaged center of dark matter
 halos. The same tree can be queried with any number of such parameters to find
 halos with different mass/density thresholds.  Reeber is publicly available on
-`GitHub <https://github.com/mrzv/reeber>`.
+`GitHub <https://github.com/mrzv/reeber>`_.
 
 
 Gimlet

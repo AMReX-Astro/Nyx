@@ -162,6 +162,14 @@
 <li class="toctree-l3"><a class="reference internal" href="#list-of-parameters-12">List of Parameters</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#cosmology">Cosmology</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#list-of-parameters-13">List of Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#reionization-models">Reionization models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#id29">List of Parameters</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#multigrid-inputs">Multigrid Inputs</a></li>
 </ul>
 </li>
@@ -1590,6 +1598,139 @@ of He</td>
 <td>0 <span class="math notranslate nohighlight">\(&lt;\)</span> X
 <span class="math notranslate nohighlight">\(&lt;\)</span> 1</td>
 <td>0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="cosmology">
+<h2>Cosmology<a class="headerlink" href="#cosmology" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="list-of-parameters-13">
+<span id="id28"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-13" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="41%" />
+<col width="22%" />
+<col width="21%" />
+<col width="16%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Definition</th>
+<th class="head">Acceptable
+Values</th>
+<th class="head">Default</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><strong>nyx.comoving_Omm</strong></td>
+<td>Relative (total)
+mass density</td>
+<td>0 <span class="math notranslate nohighlight">\(&lt;\)</span> X
+<span class="math notranslate nohighlight">\(&lt;\)</span> 1</td>
+<td>must be set</td>
+</tr>
+<tr class="row-odd"><td><strong>nyx.comoving_Omb</strong></td>
+<td>Relative baryon
+density</td>
+<td>0 <span class="math notranslate nohighlight">\(&lt;\)</span> X
+<span class="math notranslate nohighlight">\(&lt;\)</span> 1</td>
+<td>must be set</td>
+</tr>
+<tr class="row-even"><td><strong>nyx.comoving_Omr</strong></td>
+<td>Relative
+radiation density</td>
+<td>0 <span class="math notranslate nohighlight">\(&lt;\)</span> X
+<span class="math notranslate nohighlight">\(&lt;\)</span> 1</td>
+<td>must be set</td>
+</tr>
+<tr class="row-odd"><td><strong>nyx.comoving_h</strong></td>
+<td>Dimensionless
+Hubble parameter</td>
+<td>0 <span class="math notranslate nohighlight">\(&lt;\)</span> X
+<span class="math notranslate nohighlight">\(&lt;\)</span> 1</td>
+<td>must be set</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="reionization-models">
+<h2>Reionization models<a class="headerlink" href="#reionization-models" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id29">
+<span id="id30"></span><h3>List of Parameters<a class="headerlink" href="#id29" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="41%" />
+<col width="22%" />
+<col width="21%" />
+<col width="16%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Definition</th>
+<th class="head">Acceptable
+Values</th>
+<th class="head">Default</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><strong>uvb_rates_file</strong></td>
+<td>Name of the UVB
+(TREECOOL) file</td>
+<td>string</td>
+<td>must be set</td>
+</tr>
+<tr class="row-odd"><td><strong>uvb_density_A</strong></td>
+<td>Density-dependent
+heating</td>
+<td>real</td>
+<td>1.0</td>
+</tr>
+<tr class="row-even"><td><strong>uvb_density_B</strong></td>
+<td>Density dependent
+heating</td>
+<td>real</td>
+<td>0.0</td>
+</tr>
+<tr class="row-odd"><td><strong>reionization_zHI_flash</strong></td>
+<td>Redshift of
+“flash” H reion.</td>
+<td>0 <span class="math notranslate nohighlight">\(&lt;\)</span> X
+or -1 if off</td>
+<td>-1.0</td>
+</tr>
+<tr class="row-even"><td><strong>reionization_zHeII_flash</strong></td>
+<td>Redshift of
+“flash” He reion.</td>
+<td>0 <span class="math notranslate nohighlight">\(&lt;\)</span> X
+of -1 if off</td>
+<td>-1.0</td>
+</tr>
+<tr class="row-odd"><td><strong>inhomo_reion</strong></td>
+<td>Inhomogeneous
+reionization</td>
+<td>0 or 1</td>
+<td>0</td>
+</tr>
+<tr class="row-even"><td><strong>inhomo_zhi_file</strong></td>
+<td>File with
+reionization map</td>
+<td>string</td>
+<td>must be set
+(if used)</td>
+</tr>
+<tr class="row-odd"><td><strong>reionization_T_zHI</strong></td>
+<td>H reionization
+heat input</td>
+<td>real</td>
+<td>2.0e4</td>
+</tr>
+<tr class="row-even"><td><strong>reionization_T_zHeII</strong></td>
+<td>He reionization
+heat input</td>
+<td>real</td>
+<td>1.5e4</td>
 </tr>
 </tbody>
 </table>
