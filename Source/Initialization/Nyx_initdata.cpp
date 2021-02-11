@@ -95,7 +95,6 @@ Nyx::read_init_params ()
     pp.query("do_readin_ics",       do_readin_ics);
     pp.query("readin_ics_fname", readin_ics_fname);
 #ifdef AMREX_PARTICLES  
-    pp.query("particle_launch_ics",       particle_launch_ics);
     pp.query("ascii_particle_file", ascii_particle_file);
 
     // Input error check
@@ -267,6 +266,7 @@ Nyx::initData ()
                 GpuArray<amrex::Real,max_prob_param> prob_param;
                 prob_param_fill(prob_param);
                 prob_param_special_fill(prob_param);
+		comoving_type=std::round(prob_param[comoving_type_comp]);
 
                 prob_initdata_on_box(bx, fab_S_new, fab_D_new, geomdata, prob_param);
             }
@@ -296,6 +296,7 @@ Nyx::initData ()
                 GpuArray<amrex::Real,max_prob_param> prob_param;
                 prob_param_fill(prob_param);
                 prob_param_special_fill(prob_param);
+		comoving_type=std::round(prob_param[comoving_type_comp]);
 
                 prob_initdata_state_on_box(bx, fab_S_new, geomdata, prob_param);
             }
