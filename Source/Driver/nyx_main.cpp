@@ -84,9 +84,6 @@ nyx_main (int argc, char* argv[])
     pp.query("max_step",  max_step);
     pp.query("stop_time", stop_time);
 
-    int how(-1);
-    pp.query("how",how);
-
     if (max_step < 0 && stop_time < 0.0)
     {
         amrex::Abort("**** Error: either max_step or stop_time has to be positive!");
