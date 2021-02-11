@@ -58,7 +58,8 @@ endif ()
 #
 # Other options   =============================================================
 #
-option( Nyx_OMP        "Enable OpenMP"  YES)
+cmake_dependent_option( Nyx_OMP  "Enable OpenMP"  ON
+   "Nyx_GPU_BACKEND STREQUAL NONE" OFF)
 
 cmake_dependent_option( Nyx_MPI  "Enable MPI"  ON
    "NOT Nyx_GPU_BACKEND STREQUAL SYCL" OFF)
