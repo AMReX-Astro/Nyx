@@ -344,29 +344,20 @@ Simulation Time
 List of Parameters
 ------------------
 
-+-----------------+--------------------------+--------------+---------+
-| Parameter       | Definition               | Acceptable   | Default |
-|                 |                          | Values       |         |
-+=================+==========================+==============+=========+
-| **max_step**    | maximum number           | Integer >= 0 | -1      |
-|                 | of level-0 time          |              |         |
-|                 | steps                    |              |         |
-+-----------------+--------------------------+--------------+---------+
-| **stop_time**   | final simulation         | Real >= 0    | -1.0    |
-|                 | time                     |              |         |
-+-----------------+--------------------------+--------------+---------+
-| **nyx.final_a** | if                       | Real > 0     | -1.0    |
-|                 | **nyx.use_comoving = t** |              |         |
-|                 | and positive value       |              |         |
-|                 | then this is             |              |         |
-|                 | final value of a         |              |         |
-+-----------------+--------------------------+--------------+---------+
-| **nyx.final_z** | if                       | Real > 0     | -1.0    |
-|                 | **nyx.use_comoving = t** |              |         |
-|                 | and positive value       |              |         |
-|                 | then this is             |              |         |
-|                 | final value of z         |              |         |
-+-----------------+--------------------------+--------------+---------+
++-----------------+---------------------------+--------------+---------+
+| Parameter       | Definition                | Acceptable   | Default |
+|                 |                           | Values       |         |
++=================+===========================+==============+=========+
+| **max_step**    | maximum number of level 0 | Integer >= 0 | -1      |
+|                 | time steps                |              |         |
++-----------------+---------------------------+--------------+---------+
+| **stop_time**   | final simulation          | Real >= 0    | -1.0    |
+|                 | time                      |              |         |
++-----------------+---------------------------+--------------+---------+
+| **nyx.final_a** | final value of a          | Real > 0     | -1.0    |
++-----------------+---------------------------+--------------+---------+
+| **nyx.final_z** | final value of z          | Real > 0     | -1.0    |
++-----------------+---------------------------+--------------+---------+
 
 [Table:TimeInputs]
 
@@ -960,13 +951,13 @@ List of Parameters
 | Parameter                        | Definition       | Acceptable      | Default     |
 |                                  |                  | Values          |             |
 +==================================+==================+=================+=============+
-| **nyx.comoving_Omm**             | Relative (total) |  0 :math:`<` X  | must be set |
+| **nyx.comoving_OmM**             | Relative (total) |  0 :math:`<` X  | must be set |
 |                                  | mass density     |  :math:`<` 1    |             |
 +----------------------------------+------------------+-----------------+-------------+
-| **nyx.comoving_Omb**             | Relative baryon  |  0 :math:`<` X  | must be set |
+| **nyx.comoving_OmB**             | Relative baryon  |  0 :math:`<` X  | must be set |
 |                                  | density          |  :math:`<` 1    |             |
 +----------------------------------+------------------+-----------------+-------------+
-| **nyx.comoving_Omr**             | Relative         |  0 :math:`<` X  | must be set |
+| **nyx.comoving_OmR**             | Relative         |  0 :math:`<` X  | must be set |
 |                                  | radiation density|  :math:`<` 1    |             |
 +----------------------------------+------------------+-----------------+-------------+
 | **nyx.comoving_h**               | Dimensionless    |  0 :math:`<` X  | must be set |
