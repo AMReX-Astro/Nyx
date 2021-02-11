@@ -724,10 +724,10 @@ repeat the steps above with <strong>max_grid_size / 4</strong>.</li>
 <span id="id8"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-5" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
-<col width="26%" />
-<col width="39%" />
+<col width="25%" />
+<col width="40%" />
 <col width="21%" />
-<col width="14%" />
+<col width="13%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Parameter</th>
@@ -739,9 +739,8 @@ Values</th>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td><strong>max_step</strong></td>
-<td>maximum number
-of level-0 time
-steps</td>
+<td>maximum number of level 0
+time steps</td>
 <td>Integer &gt;= 0</td>
 <td>-1</td>
 </tr>
@@ -752,20 +751,12 @@ time</td>
 <td>-1.0</td>
 </tr>
 <tr class="row-even"><td><strong>nyx.final_a</strong></td>
-<td>if
-<strong>nyx.use_comoving = t</strong>
-and positive value
-then this is
-final value of a</td>
+<td>final value of a</td>
 <td>Real &gt; 0</td>
 <td>-1.0</td>
 </tr>
 <tr class="row-odd"><td><strong>nyx.final_z</strong></td>
-<td>if
-<strong>nyx.use_comoving = t</strong>
-and positive value
-then this is
-final value of z</td>
+<td>final value of z</td>
 <td>Real &gt; 0</td>
 <td>-1.0</td>
 </tr>
@@ -1629,21 +1620,21 @@ Values</th>
 </tr>
 </thead>
 <tbody valign="top">
-<tr class="row-even"><td><strong>nyx.comoving_Omm</strong></td>
+<tr class="row-even"><td><strong>nyx.comoving_OmM</strong></td>
 <td>Relative (total)
 mass density</td>
 <td>0 <span class="math notranslate nohighlight">\(&lt;\)</span> X
 <span class="math notranslate nohighlight">\(&lt;\)</span> 1</td>
 <td>must be set</td>
 </tr>
-<tr class="row-odd"><td><strong>nyx.comoving_Omb</strong></td>
+<tr class="row-odd"><td><strong>nyx.comoving_OmB</strong></td>
 <td>Relative baryon
 density</td>
 <td>0 <span class="math notranslate nohighlight">\(&lt;\)</span> X
 <span class="math notranslate nohighlight">\(&lt;\)</span> 1</td>
 <td>must be set</td>
 </tr>
-<tr class="row-even"><td><strong>nyx.comoving_Omr</strong></td>
+<tr class="row-even"><td><strong>nyx.comoving_OmR</strong></td>
 <td>Relative
 radiation density</td>
 <td>0 <span class="math notranslate nohighlight">\(&lt;\)</span> X
