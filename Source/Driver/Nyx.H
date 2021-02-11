@@ -898,8 +898,6 @@ protected:
     // This controls the LaunchSafeGuard for particle initialization
     static int particle_launch_ics;
 
-    static amrex::IntVect Nrep;  // how many times the initial conditions are replicated in each direction
-
     static amrex::Vector<amrex::Real> plot_z_values;      // These are the value of "z" at which to dump plotfiles.
     static amrex::Vector<amrex::Real> analysis_z_values;  // These are the value of "z" at which to perform analysis
     static int insitu_int;

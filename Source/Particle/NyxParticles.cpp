@@ -152,8 +152,6 @@ Real Nyx::particle_cfl = 0.5;
 Real Nyx::neutrino_cfl = 0.5;
 #endif
 
-IntVect Nyx::Nrep;
-
 Vector<NyxParticleContainerBase*>&
 Nyx::theActiveParticles ()
 {
@@ -354,8 +352,6 @@ Nyx::read_particle_params ()
     ParmParse ppp("particles");
     ppp.query("v", particle_verbose);
 
-    for (int i = 0; i < AMREX_SPACEDIM; i++) Nrep[i] = 1; // Initialize to one (no replication)
-    ppp.query("replicate",Nrep);
     //
     // Set the cfl for particle motion (fraction of cell that a particle can
     // move in a timestep).
@@ -485,9 +481,9 @@ Nyx::init_particles ()
             // after reading in `m_pos[]`. Here we're reading in the particle
             // mass and velocity.
             //
-            DMPC->InitFromAsciiFile(ascii_particle_file, AMREX_SPACEDIM + 1, &Nrep);
+            DMPC->InitFromAsciiFile(ascii_particle_file, AMREX_SPACEDIM + 1);
             if (init_with_sph_particles == 1)
-                SPHPC->InitFromAsciiFile(sph_particle_file, AMREX_SPACEDIM + 1, &Nrep);
+                SPHPC->InitFromAsciiFile(sph_particle_file, AMREX_SPACEDIM + 1);
         }
         else if (particle_init_type == "BinaryFile")
         {
@@ -644,9 +640,9 @@ Nyx::init_particles ()
             // mass, velocity and angles.
             //
 #ifdef NEUTRINO_DARK_PARTICLES
-            NPC->InitFromAsciiFile(neutrino_particle_file, AMREX_SPACEDIM + 1, &Nrep);
+            NPC->InitFromAsciiFile(neutrino_particle_file, AMREX_SPACEDIM + 1);
 #else
-            NPC->InitFromAsciiFile(neutrino_particle_file, 2*AMREX_SPACEDIM + 1, &Nrep);
+            NPC->InitFromAsciiFile(neutrino_particle_file, 2*AMREX_SPACEDIM + 1);
 #endif
         }
         else if (particle_init_type == "BinaryFile")
