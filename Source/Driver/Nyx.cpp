@@ -142,10 +142,6 @@ int         Nyx::inhomo_reion = 0;
 std::string Nyx::inhomo_zhi_file = "";
 int         Nyx::inhomo_grid = -1;
 
-static int  slice_int    = -1;
-std::string slice_file   = "slice_";
-static int  slice_nfiles = 128;
-
 Gravity* Nyx::gravity  =  0;
 int Nyx::do_grav       = -1;
 
@@ -405,11 +401,6 @@ Nyx::read_params ()
             amrex::Warning(msg.c_str());
         }
     }
-
-    // How often do we want to write x,y,z 2-d slices of S_new
-    pp_nyx.query("slice_int",    slice_int);
-    pp_nyx.query("slice_file",   slice_file);
-    pp_nyx.query("slice_nfiles", slice_nfiles);
 
     pp_nyx.query("gimlet_int", gimlet_int);
 #ifdef REEBER
@@ -1825,134 +1816,12 @@ Nyx::postCoarseTimeStep (Real cumtime)
 
    int nstep = parent->levelSteps(0);
 
-#ifndef NO_HYDRO
-   if (slice_int > -1 && nstep%slice_int == 0)
+   if (verbose>1)
    {
-      BL_PROFILE("Nyx::postCoarseTimeStep: get_all_slice_data");
-
-    if(slice_int != 2) {
-      const Real* dx        = geom.CellSize();
-
-      MultiFab& S_new = get_new_data(State_Type);
-      MultiFab& D_new = get_new_data(DiagEOS_Type);
-
-      Real x_coord = (geom.ProbLo()[0] + geom.ProbHi()[0]) / 2 + dx[0]/2;
-      Real y_coord = (geom.ProbLo()[1] + geom.ProbHi()[1]) / 2 + dx[1]/2;
-      Real z_coord = (geom.ProbLo()[2] + geom.ProbHi()[2]) / 2 + dx[2]/2;
-
-      if (ParallelDescriptor::IOProcessor()) {
-         std::cout << "Outputting slices at x = " << x_coord << "; y = " << y_coord << "; z = " << z_coord << std::endl;
-      }
-
-      const std::string& slicefilename = amrex::Concatenate(slice_file, nstep);
-      UtilCreateCleanDirectory(slicefilename, true);
-
-      int nfiles_current = amrex::VisMF::GetNOutFiles();
-      amrex::VisMF::SetNOutFiles(slice_nfiles);
-
-      // Slice state data
-      std::unique_ptr<MultiFab> x_slice = amrex::get_slice_data(0, x_coord, S_new, geom, 0, S_new.nComp()-2);
-      std::unique_ptr<MultiFab> y_slice = amrex::get_slice_data(1, y_coord, S_new, geom, 0, S_new.nComp()-2);
-      std::unique_ptr<MultiFab> z_slice = amrex::get_slice_data(2, z_coord, S_new, geom, 0, S_new.nComp()-2);
-
-      std::string xs = slicefilename + "/State_x";
-      std::string ys = slicefilename + "/State_y";
-      std::string zs = slicefilename + "/State_z";
-
-      {
-        BL_PROFILE("Nyx::postCoarseTimeStep: writeXSlice");
-        amrex::VisMF::Write(*x_slice, xs);
-      }
-      {
-        BL_PROFILE("Nyx::postCoarseTimeStep: writeYSlice");
-        amrex::VisMF::Write(*y_slice, ys);
-      }
-      {
-        BL_PROFILE("Nyx::postCoarseTimeStep: writeZSlice");
-        amrex::VisMF::Write(*z_slice, zs);
-      }
-
-      // Slice diag_eos
-      x_slice = amrex::get_slice_data(0, x_coord, D_new, geom, 0, D_new.nComp());
-      y_slice = amrex::get_slice_data(1, y_coord, D_new, geom, 0, D_new.nComp());
-      z_slice = amrex::get_slice_data(2, z_coord, D_new, geom, 0, D_new.nComp());
-
-      xs = slicefilename + "/Diag_x";
-      ys = slicefilename + "/Diag_y";
-      zs = slicefilename + "/Diag_z";
-
-      {
-        BL_PROFILE("Nyx::postCoarseTimeStep: writeDiagSlices");
-        amrex::VisMF::Write(*x_slice, xs);
-        amrex::VisMF::Write(*y_slice, ys);
-        amrex::VisMF::Write(*z_slice, zs);
-      }
-
-      amrex::VisMF::SetNOutFiles(nfiles_current);
-
-      if (ParallelDescriptor::IOProcessor()) {
-         std::cout << "Done with slices." << std::endl;
-      }
-
-
-    } else {
-
-      MultiFab& S_new = get_new_data(State_Type);
-      MultiFab& D_new = get_new_data(DiagEOS_Type);
-
-      const std::string& slicefilename = amrex::Concatenate(slice_file, nstep);
-      UtilCreateCleanDirectory(slicefilename, true);
-
-      int nfiles_current = amrex::VisMF::GetNOutFiles();
-      amrex::VisMF::SetNOutFiles(slice_nfiles);
-
-      int maxBoxSize(64);
-      amrex::Vector<std::string> SMFNames(3);
-      SMFNames[0] = slicefilename + "/State_x";
-      SMFNames[1] = slicefilename + "/State_y";
-      SMFNames[2] = slicefilename + "/State_z";
-      amrex::Vector<std::string> DMFNames(3);
-      DMFNames[0] = slicefilename + "/Diag_x";
-      DMFNames[1] = slicefilename + "/Diag_y";
-      DMFNames[2] = slicefilename + "/Diag_z";
-
-      for(int dir(0); dir < 3; ++dir) 
-      {
-        Box sliceBox(geom.Domain());
-        int dir_coord = static_cast<int>(geom.ProbLo()[dir] + 0.5*geom.Domain().length(dir));
-        amrex::Print() << "Outputting slices at dir_coord[" << dir << "] = " << dir_coord << '\n';
-        sliceBox.setSmall(dir, dir_coord);
-        sliceBox.setBig(dir, dir_coord);
-        BoxArray sliceBA(sliceBox);
-        sliceBA.maxSize(maxBoxSize);
-        DistributionMapping sliceDM(sliceBA);
-
-        MultiFab SSliceMF(sliceBA, sliceDM, S_new.nComp()-2, 0);
-        SSliceMF.copy(S_new, 0, 0, SSliceMF.nComp());
-        amrex::VisMF::Write(SSliceMF, SMFNames[dir]);
-
-        MultiFab DSliceMF(sliceBA, sliceDM, D_new.nComp(), 0);
-        DSliceMF.copy(D_new, 0, 0, DSliceMF.nComp());
-        amrex::VisMF::Write(DSliceMF, DMFNames[dir]);
-      }
-
-      amrex::VisMF::SetNOutFiles(nfiles_current);
-
-      if (ParallelDescriptor::IOProcessor()) {
-         std::cout << "Done with slices." << std::endl;
-      }
-
-    }
-
+       amrex::Print() << "End of postCoarseTimeStep, printing:" <<std::endl;
+       MultiFab::printMemUsage();
+       amrex::Arena::PrintUsage();
    }
-#endif
-   if(verbose>1)
-   {
-   amrex::Print()<<"End of postCoarseTimeStep, printing:"<<std::endl;
-   MultiFab::printMemUsage();
-   amrex::Arena::PrintUsage();
-   }
-
 }
 
 void

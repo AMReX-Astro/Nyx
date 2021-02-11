@@ -58,7 +58,6 @@ Nyx::setPlotVariables ()
     AmrLevel::setPlotVariables();
 
     ParmParse pp("nyx");
-    bool plot_X = false;
     bool plot_rank = false;
     if (pp.query("plot_rank", plot_rank))
     {
@@ -69,14 +68,6 @@ Nyx::setPlotVariables ()
             //
             std::string proc_string = "Rank";
             parent->addDerivePlotVar(proc_string);
-        }
-    }
-    if (pp.query("plot_X", plot_X))
-    {
-        if (plot_X)
-        {
-            parent->addDerivePlotVar("X(H)");
-            parent->addDerivePlotVar("X(He)");
         }
     }
 }
