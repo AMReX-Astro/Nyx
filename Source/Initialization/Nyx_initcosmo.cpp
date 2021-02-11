@@ -219,9 +219,7 @@ void Nyx::initcosmo()
 
     // we have to calculate the initial a on our own
     // as there is no code path to get_comoving_a 
-    // (Castro.H sources Particles.H)
     Real comoving_a = 1/(1+redshift);
-
     
     std::string icSource;
     pp.get("ic-source", icSource);
@@ -302,7 +300,7 @@ void Nyx::initcosmo()
     }
     else
     {
-       std::cout << "No clue from which code the initial coniditions originate..." << std::endl
+       std::cout << "No clue from which code the initial conditions originate..." << std::endl
                  << "Aborting...!" << std::endl;
        amrex::Abort();
     }
