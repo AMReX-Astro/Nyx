@@ -1,5 +1,6 @@
 #include <iomanip>
 #include <Nyx.H>
+#include <Prob.H>
 #include <constants_cosmo.H>
 
 using namespace amrex;

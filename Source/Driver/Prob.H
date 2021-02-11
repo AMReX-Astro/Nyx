@@ -75,7 +75,7 @@ static void prob_param_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_pa
     amrex::ParmParse pp("prob");
     prob_param[prob_type_comp] = 0;
     prob_param[comoving_type_comp] = 1.0;
-    pp.query("comoving_type",prob_param[comoving_type_comp]);
+    //    pp.query("comoving_type",prob_param[comoving_type_comp]);
     pp.query("prob_type",prob_param[prob_type_comp]);
 }
 
