@@ -2,7 +2,7 @@
 #include "Prob.H"
 
 enum Prob_Type_Index_Sod {
-  p_l_comp = 5, // Note this must be one greater than the final index in Prob_param.H
+  p_l_comp = 6, // Note this must be one greater than the final index in Prob_param.H
   u_l_comp,
   rho_l_comp,
   rhoe_l_comp,
@@ -18,7 +18,7 @@ enum Prob_Type_Index_Sod {
 };
 
 enum Prob_Type_Index_Sedov {
-  p_ambient_comp = 5, // Note this must be one greater than the final index in Prob_param.H
+  p_ambient_comp = 6, // Note this must be one greater than the final index in Prob_param.H
   dens_ambient_comp,
   exp_energy_comp,
   r_init_comp,

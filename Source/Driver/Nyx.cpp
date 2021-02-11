@@ -111,7 +111,6 @@ Real Nyx::comoving_OmB;
 Real Nyx::comoving_OmM;
 Real Nyx::comoving_OmR = 0.0;
 Real Nyx::comoving_h;
-int  Nyx::comoving_type = 1;
 
 int Nyx::do_hydro = 0;
 int Nyx::add_ext_src = 0;

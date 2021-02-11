@@ -242,7 +242,6 @@ public:
     static amrex::Real comoving_OmM;
     static amrex::Real comoving_OmR;
     static amrex::Real comoving_h;
-    static int         comoving_type;
 
     //
     // Get the comoving coordinate "a"
