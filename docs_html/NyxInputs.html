@@ -167,7 +167,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#reionization-models">Reionization models</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id29">List of Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#list-of-parameters-14">List of Parameters</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#multigrid-inputs">Multigrid Inputs</a></li>
@@ -342,22 +342,16 @@ if true</td>
 </div>
 <div class="section" id="examples-of-usage">
 <h3>Examples of Usage<a class="headerlink" href="#examples-of-usage" title="Permalink to this headline">¶</a></h3>
-<ul>
-<li><p class="first"><strong>geometry.prob_lo</strong> = 0 0 0
-defines the low corner of the domain at (0,0,0) in physical space.</p>
-</li>
-<li><p class="first"><strong>geometry.prob_hi</strong> = 1.e8 2.e8 2.e8
-defines the high corner of the domain at (1.e8,2.e8,2.e8) in</p>
-<blockquote>
-<div><p>physical space.</p>
-</div></blockquote>
-</li>
-<li><p class="first"><strong>geometry.coord_sys</strong> = 0
-defines the coordinate system as Cartesian</p>
-</li>
-<li><p class="first"><strong>geometry.is_periodic</strong> = 0 1 0
-says the domain is periodic in the y-direction only.</p>
-</li>
+<ul class="simple">
+<li><strong>geometry.prob_lo</strong> = 0 0 0
+defines the low corner of the domain at (0,0,0) in physical space.</li>
+<li><strong>geometry.prob_hi</strong> = 1.e8 2.e8 2.e8
+defines the high corner of the domain at (1.e8,2.e8,2.e8) in
+physical space.</li>
+<li><strong>geometry.coord_sys</strong> = 0
+defines the coordinate system as Cartesian</li>
+<li><strong>geometry.is_periodic</strong> = 0 1 0
+says the domain is periodic in the y-direction only.</li>
 </ul>
 </div>
 </div>
@@ -846,11 +840,8 @@ hydro</td>
 <tr class="row-odd"><td><strong>particles.cfl</strong></td>
 <td>CFL number for
 particles</td>
-<td><p class="first">Real &gt; 0 and
-&lt;= 1</p>
-<blockquote class="last">
-<div><a href="#id12"><span class="problematic" id="id13">`</span></a></div></blockquote>
-</td>
+<td>Real &gt; 0 and
+&lt;= 1</td>
 <td>0.5</td>
 </tr>
 <tr class="row-even"><td><strong>nyx.init_shrink</strong></td>
@@ -905,7 +896,7 @@ will abort</td>
 <p>[Table:TimeStepInputs]</p>
 </div>
 <div class="section" id="examples-of-usage-5">
-<span id="id14"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-5" title="Permalink to this headline">¶</a></h3>
+<span id="id12"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-5" title="Permalink to this headline">¶</a></h3>
 <ul>
 <li><div class="first line-block">
 <div class="line"><strong>nyx.cfl</strong> = 0.9</div>
@@ -975,7 +966,7 @@ subcycle according to the values supplied by
 <strong>subcycling_iterations</strong>.</li>
 </ul>
 <div class="section" id="list-of-parameters-7">
-<span id="id15"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-7" title="Permalink to this headline">¶</a></h3>
+<span id="id13"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-7" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="25%" />
@@ -1000,12 +991,8 @@ subcycle</td>
 Manual</td>
 <td>Auto</td>
 </tr>
-<tr class="row-odd"><td><ul class="first simple">
-<li></li>
-</ul>
-<p class="last"><em>amr.subcyclin
-g_iterations*</em></p>
-</td>
+<tr class="row-odd"><td><strong>amr.subcycli
+g_iterations</strong></td>
 <td>Number of
 cycles at each
 level</td>
@@ -1018,7 +1005,7 @@ Manual mode</td>
 </table>
 </div>
 <div class="section" id="examples-of-usage-6">
-<span id="id16"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-6" title="Permalink to this headline">¶</a></h3>
+<span id="id14"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-6" title="Permalink to this headline">¶</a></h3>
 <ul>
 <li><div class="first line-block">
 <div class="line"><strong>amr.subcycling_mode</strong><span class="math notranslate nohighlight">\(=\)</span>Manual</div>
@@ -1049,7 +1036,7 @@ the inputs file, the following options control the generation of
 checkpoint files (which are really directories):</div>
 </div>
 <div class="section" id="list-of-parameters-8">
-<span id="id17"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-8" title="Permalink to this headline">¶</a></h3>
+<span id="id15"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-8" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="41%" />
@@ -1133,7 +1120,7 @@ restarting</td>
 </table>
 </div>
 <div class="section" id="notes-4">
-<span id="id18"></span><h3>Notes<a class="headerlink" href="#notes-4" title="Permalink to this headline">¶</a></h3>
+<span id="id16"></span><h3>Notes<a class="headerlink" href="#notes-4" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>You should specify either <strong>amr.check_int</strong> or <strong>amr.check_per</strong>. Do
 not try to specify both.</li>
@@ -1152,7 +1139,7 @@ algorithm without I/O.</li>
 </ul>
 </div>
 <div class="section" id="examples-of-usage-7">
-<span id="id19"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-7" title="Permalink to this headline">¶</a></h3>
+<span id="id17"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-7" title="Permalink to this headline">¶</a></h3>
 <ul>
 <li><p class="first"><strong>amr.check_file</strong> = <em>chk_run</em></p>
 </li>
@@ -1187,7 +1174,7 @@ directory names will be <em>chk_run00000</em>, <em>chk_run00043</em>,
 directories). The following options in the inputs file control the
 generation of plotfiles</p>
 <div class="section" id="list-of-parameters-9">
-<span id="id20"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-9" title="Permalink to this headline">¶</a></h3>
+<span id="id18"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-9" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="39%" />
@@ -1281,7 +1268,7 @@ precision</td>
 in <code class="docutils literal notranslate"><span class="pre">Nyx_setup.cpp</span></code>. Feel free to look at it and see what’s there.</p>
 </div>
 <div class="section" id="notes-5">
-<span id="id21"></span><h3>Notes<a class="headerlink" href="#notes-5" title="Permalink to this headline">¶</a></h3>
+<span id="id19"></span><h3>Notes<a class="headerlink" href="#notes-5" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>You should specify either <strong>amr.plot_int</strong> or <strong>amr.plot_per</strong>. Do
 not try to specify both.</li>
@@ -1298,7 +1285,7 @@ precision, set the fab.format flag to IEEE32.</li>
 </ul>
 </div>
 <div class="section" id="examples-of-usage-8">
-<span id="id22"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-8" title="Permalink to this headline">¶</a></h3>
+<span id="id20"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-8" title="Permalink to this headline">¶</a></h3>
 <ul>
 <li><p class="first"><strong>amr.plot_file</strong> = <em>plt_run</em></p>
 </li>
@@ -1326,7 +1313,7 @@ directory names will be <em>plt_run00000</em>, <em>plt_run00043</em>,
 <div class="section" id="screen-output">
 <h2>Screen Output<a class="headerlink" href="#screen-output" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="list-of-parameters-10">
-<span id="id23"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-10" title="Permalink to this headline">¶</a></h3>
+<span id="id21"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-10" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="36%" />
@@ -1425,7 +1412,7 @@ quantities</td>
 </table>
 </div>
 <div class="section" id="examples-of-usage-9">
-<span id="id24"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-9" title="Permalink to this headline">¶</a></h3>
+<span id="id22"></span><h3>Examples of Usage<a class="headerlink" href="#examples-of-usage-9" title="Permalink to this headline">¶</a></h3>
 <ul>
 <li><div class="first line-block">
 <div class="line"><strong>amr.grid_log</strong> = <em>grdlog</em></div>
@@ -1471,7 +1458,7 @@ and print these quanitities.</div>
 <div class="section" id="gravity">
 <h2>Gravity<a class="headerlink" href="#gravity" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="list-of-parameters-11">
-<span id="id25"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-11" title="Permalink to this headline">¶</a></h3>
+<span id="id23"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-11" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="33%" />
@@ -1515,10 +1502,9 @@ solve</td>
 </tr>
 </tbody>
 </table>
-<p>[Table:Gravity]</p>
 </div>
 <div class="section" id="notes-6">
-<span id="id26"></span><h3>Notes<a class="headerlink" href="#notes-6" title="Permalink to this headline">¶</a></h3>
+<span id="id24"></span><h3>Notes<a class="headerlink" href="#notes-6" title="Permalink to this headline">¶</a></h3>
 <ul class="simple">
 <li>To include gravity you must set <strong>nyx.do_grav</strong> = 1 in the inputs file</li>
 </ul>
@@ -1527,7 +1513,7 @@ solve</td>
 <div class="section" id="physics">
 <h2>Physics<a class="headerlink" href="#physics" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="list-of-parameters-12">
-<span id="id27"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-12" title="Permalink to this headline">¶</a></h3>
+<span id="id25"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-12" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="41%" />
@@ -1606,7 +1592,7 @@ of He</td>
 <div class="section" id="cosmology">
 <h2>Cosmology<a class="headerlink" href="#cosmology" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="list-of-parameters-13">
-<span id="id28"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-13" title="Permalink to this headline">¶</a></h3>
+<span id="id26"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-13" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="41%" />
@@ -1657,8 +1643,8 @@ Hubble parameter</td>
 </div>
 <div class="section" id="reionization-models">
 <h2>Reionization models<a class="headerlink" href="#reionization-models" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="id29">
-<span id="id30"></span><h3>List of Parameters<a class="headerlink" href="#id29" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="list-of-parameters-14">
+<span id="id27"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-14" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="41%" />
