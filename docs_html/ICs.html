@@ -97,24 +97,24 @@
 <li class="toctree-l1"><a class="reference internal" href="NyxUnits.html">Units and Conventions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxInputs.html">Inputs</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Initial conditions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#read-from-an-ascii-file">Read from an ASCII file</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#read-from-a-binary-file">Read from a binary file</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#read-from-a-binary-meta-file">Read from a binary “meta” file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#start-from-an-ascii-file">Start from an ASCII file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#start-from-a-binary-file">Start from a binary file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#start-from-a-binary-meta-file">Start from a binary “meta” file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#reading-sph-particles">Reading SPH particles</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#initial-conditions-for-testing-purposes">Initial conditions for testing purposes</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Refinement.html">Refinement Criteria</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ManagingGridHierarchy_Chapter.html">Gridding and Load Balancing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxGravity.html">Gravity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxEquations.html">Hydrodynamic Equations in Comoving Coordinates</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxSplitting.html">Hydrodynamical and Heating-Cooling Splitting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxHeatCool.html">Radiative Heating and Cooling</a></li>
-<li class="toctree-l1"><a class="reference internal" href="NyxGravity.html">Gravity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxForcing.html">Stochastic Forcing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Particles.html">Dark matter particles</a></li>
-<li class="toctree-l1"><a class="reference internal" href="NightlyTests.html">Nightly Regression Tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="InSitu.html">In situ analysis</a></li>
-<li class="toctree-l1"><a class="reference internal" href="PostProcessing.html">PostProcessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PostProcessing.html">Analyzing Outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NightlyTests.html">Nightly Regression Tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Debugging.html">Debugging</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Development.html">Work in Progress</a></li>
 </ul>
@@ -211,11 +211,11 @@
 <div class="section" id="initial-conditions">
 <h1>Initial conditions<a class="headerlink" href="#initial-conditions" title="Permalink to this headline">¶</a></h1>
 <p>There are two main ways in which initial conditions can be set in Nyx:
-read from an ASCII file and read from a binary file(s).
+using an ASCII file or using binary file(s).
 As said in the Units section of the documentation, the units are: Mpc, M<span class="math notranslate nohighlight">\(_\odot\)</span>, and km/s,
-and particle velocities which should be provided in the initial conditions is the peculiar proper velocity.</p>
-<div class="section" id="read-from-an-ascii-file">
-<h2>Read from an ASCII file<a class="headerlink" href="#read-from-an-ascii-file" title="Permalink to this headline">¶</a></h2>
+and particle velocities should be peculiar proper velocities.</p>
+<div class="section" id="start-from-an-ascii-file">
+<h2>Start from an ASCII file<a class="headerlink" href="#start-from-an-ascii-file" title="Permalink to this headline">¶</a></h2>
 <p>To enable this option, set:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_init_type</span> <span class="o">=</span> <span class="n">AsciiFile</span>
 <span class="n">nyx</span><span class="o">.</span><span class="n">ascii_particle_file</span> <span class="o">=</span> <span class="o">*</span><span class="n">particle_file</span><span class="o">*</span>
@@ -225,8 +225,8 @@ and particle velocities which should be provided in the initial conditions is th
 (long) assumed to contain the number of particles. Each line after that contains</p>
 <p>x y z mass vx vy vz</p>
 </div>
-<div class="section" id="read-from-a-binary-file">
-<h2>Read from a binary file<a class="headerlink" href="#read-from-a-binary-file" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="start-from-a-binary-file">
+<h2>Start from a binary file<a class="headerlink" href="#start-from-a-binary-file" title="Permalink to this headline">¶</a></h2>
 <p>To enable this option, set:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_init_type</span> <span class="o">=</span> <span class="n">BinaryFile</span>
 <span class="n">nyx</span><span class="o">.</span><span class="n">binary_particle_file</span> <span class="o">=</span> <span class="o">*</span><span class="n">particle_file</span><span class="o">*</span>
@@ -246,7 +246,7 @@ Here is an example C++ code which writes a Nyx-readable binary file:</p>
    <span class="n">fwrite</span><span class="p">(</span><span class="o">&amp;</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">sizeof</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">outFile</span><span class="p">);</span>
    <span class="n">fwrite</span><span class="p">(</span><span class="o">&amp;</span><span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">sizeof</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">outFile</span><span class="p">);</span>
    <span class="n">fwrite</span><span class="p">(</span><span class="o">&amp;</span><span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">sizeof</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">outFile</span><span class="p">);</span>
-   <span class="n">fwrite</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mass</span> <span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">sizeof</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">outFile</span><span class="p">);</span>
+   <span class="n">fwrite</span><span class="p">(</span><span class="o">&amp;</span><span class="n">mass</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">sizeof</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">outFile</span><span class="p">);</span>
    <span class="n">fwrite</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vx</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">sizeof</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">outFile</span><span class="p">);</span>
    <span class="n">fwrite</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vy</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">sizeof</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">outFile</span><span class="p">);</span>
    <span class="n">fwrite</span><span class="p">(</span><span class="o">&amp;</span><span class="n">vz</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">sizeof</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">outFile</span><span class="p">);</span>
@@ -254,8 +254,8 @@ Here is an example C++ code which writes a Nyx-readable binary file:</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="read-from-a-binary-meta-file">
-<h2>Read from a binary “meta” file<a class="headerlink" href="#read-from-a-binary-meta-file" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="start-from-a-binary-meta-file">
+<h2>Start from a binary “meta” file<a class="headerlink" href="#start-from-a-binary-meta-file" title="Permalink to this headline">¶</a></h2>
 <p>This option allows you to read particles from a series of files rather than
 just a single file. This is very convenient for large simulations.
 To enable this option, set:</p>

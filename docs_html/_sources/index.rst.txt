@@ -18,15 +18,15 @@ Welcome to Nyx's documentation!
    ICs
    Refinement
    ManagingGridHierarchy_Chapter
+   NyxGravity
    NyxEquations
    NyxSplitting
    NyxHeatCool
-   NyxGravity
    NyxForcing
    Particles
-   NightlyTests
    InSitu
    PostProcessing
+   NightlyTests
    Debugging
    Development
 

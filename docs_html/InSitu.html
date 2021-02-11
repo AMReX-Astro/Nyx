@@ -43,8 +43,8 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="PostProcessing" href="PostProcessing.html" />
-    <link rel="prev" title="Nightly Regression Tests" href="NightlyTests.html" /> 
+    <link rel="next" title="Analyzing Outputs" href="PostProcessing.html" />
+    <link rel="prev" title="Dark matter particles" href="Particles.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -99,18 +99,18 @@
 <li class="toctree-l1"><a class="reference internal" href="ICs.html">Initial conditions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Refinement.html">Refinement Criteria</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ManagingGridHierarchy_Chapter.html">Gridding and Load Balancing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NyxGravity.html">Gravity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxEquations.html">Hydrodynamic Equations in Comoving Coordinates</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxSplitting.html">Hydrodynamical and Heating-Cooling Splitting</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxHeatCool.html">Radiative Heating and Cooling</a></li>
-<li class="toctree-l1"><a class="reference internal" href="NyxGravity.html">Gravity</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxForcing.html">Stochastic Forcing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Particles.html">Dark matter particles</a></li>
-<li class="toctree-l1"><a class="reference internal" href="NightlyTests.html">Nightly Regression Tests</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">In situ analysis</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#halo-finding">Halo finding</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="PostProcessing.html">PostProcessing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PostProcessing.html">Analyzing Outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="NightlyTests.html">Nightly Regression Tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Debugging.html">Debugging</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Development.html">Work in Progress</a></li>
 </ul>
@@ -206,14 +206,29 @@
 </style>
 <div class="section" id="in-situ-analysis">
 <span id="insitu"></span><h1>In situ analysis<a class="headerlink" href="#in-situ-analysis" title="Permalink to this headline">¶</a></h1>
+<p>Currently, Nyx supports in situ halo finding. This is useful both as
+in situ analysis tool, and for subgrid models, like AGN (under development).</p>
 <div class="section" id="halo-finding">
 <h2>Halo finding<a class="headerlink" href="#halo-finding" title="Permalink to this headline">¶</a></h2>
 <p>To find halos in situ while Nyx is running we use the Reeber package.
-To compile with Reeber, add in GNUmakefile</p>
+To compile with Reeber, add in GNUmakefile:</p>
 <p>REEBER = TRUE</p>
-<p>and set the location of Boost library</p>
+<p>and set the location of Boost library:</p>
 <p>BOOST_INLUDE_DIR := ${BOOST_ROOT}/include/boost</p>
-<p>Note that these codes are in separate repositories and are not included with Nyx.</p>
+<p>Note that these codes are in separate repositories and are not included in Nyx distribution.
+If you intend to use in situ halo finding, you should clone Reeber from its
+<a class="reference external" href="https://github.com/mrzv/reeber">GitHub page</a> and follow the installation instructions provided there.</p>
+<p>In the Nyx inputs file, one should specify the time step interval for halo finder, fields which will be
+used (to use the total density, one should specify both (gas) <code class="docutils literal notranslate"><span class="pre">density</span></code> and <code class="docutils literal notranslate"><span class="pre">particle_mass_density</span></code>),
+and thresholds of the boundary and extrema values:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Halo Finder</span>
+<span class="n">reeber</span><span class="o">.</span><span class="n">halo_int</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">reeber</span><span class="o">.</span><span class="n">negate</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">reeber</span><span class="o">.</span><span class="n">halo_density_vars</span> <span class="o">=</span> <span class="n">density</span> <span class="n">particle_mass_density</span>
+<span class="n">reeber</span><span class="o">.</span><span class="n">halo_extrema_threshold</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">reeber</span><span class="o">.</span><span class="n">halo_component_threshold</span> <span class="o">=</span> <span class="mi">10</span>
+</pre></div>
+</div>
 </div>
 </div>
 
@@ -223,8 +238,8 @@ To compile with Reeber, add in GNUmakefile</p>
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="PostProcessing.html" class="btn btn-neutral float-right" title="PostProcessing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="NightlyTests.html" class="btn btn-neutral float-left" title="Nightly Regression Tests" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="PostProcessing.html" class="btn btn-neutral float-right" title="Analyzing Outputs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="Particles.html" class="btn btn-neutral float-left" title="Dark matter particles" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

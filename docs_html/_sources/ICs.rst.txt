@@ -2,12 +2,12 @@ Initial conditions
 ===================
 
 There are two main ways in which initial conditions can be set in Nyx:
-read from an ASCII file and read from a binary file(s).
+using an ASCII file or using binary file(s).
 As said in the Units section of the documentation, the units are: Mpc, M\ :math:`_\odot`, and km/s,
-and particle velocities which should be provided in the initial conditions is the peculiar proper velocity.
+and particle velocities should be peculiar proper velocities.
 
 
-Read from an ASCII file
+Start from an ASCII file
 -----------------------
 
 To enable this option, set::
@@ -22,8 +22,8 @@ x y z mass vx vy vz
 
 
 
-Read from a binary file
------------------------
+Start from a binary file
+------------------------
 
 To enable this option, set::
 
@@ -46,14 +46,14 @@ Here is an example C++ code which writes a Nyx-readable binary file::
          fwrite(&x[i], sizeof(float), 1, outFile);
          fwrite(&y[i], sizeof(float), 1, outFile);
          fwrite(&z[i], sizeof(float), 1, outFile);
-         fwrite(&mass [i], sizeof(float), 1, outFile);
+         fwrite(&mass[i], sizeof(float), 1, outFile);
          fwrite(&vx[i], sizeof(float), 1, outFile);
          fwrite(&vy[i], sizeof(float), 1, outFile);
          fwrite(&vz[i], sizeof(float), 1, outFile);
       }
 
 
-Read from a binary "meta" file
+Start from a binary "meta" file
 ------------------------------
 
 This option allows you to read particles from a series of files rather than
