@@ -102,9 +102,12 @@ int Nyx::NumSpec  = 0;
 Real Nyx::small_dens = -1.e200;
 Real Nyx::small_temp = -1.e200;
 Real Nyx::small_pres = -1.e200;
-Real Nyx::small      =  1.e-6;
 Real Nyx::large_temp =  1.e9;
 Real Nyx::gamma      =  5.0/3.0;
+
+// This is no longer an optional input;
+//   we use the value hard-wired here
+Real Nyx::small      =  1.e-6;
 
 Real Nyx::comoving_OmB;
 Real Nyx::comoving_OmM;
@@ -422,8 +425,6 @@ Nyx::read_hydro_params ()
     pp_nyx.query("small_pres", small_pres);
     pp_nyx.query("large_temp", large_temp);
     pp_nyx.query("gamma", gamma);
-    //Set small factor for csmall
-    pp_nyx.query("small", small);
 
 #ifdef AMREX_USE_CVODE
     pp_nyx.query("simd_width", simd_width);
