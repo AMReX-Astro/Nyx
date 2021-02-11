@@ -1,5 +1,6 @@
 .. role:: cpp(code)
   :language: c++
+
 ******
 Inputs
 ******
@@ -47,7 +48,7 @@ Examples of Usage
 
 -  **geometry.prob_hi** = 1.e8 2.e8 2.e8
    defines the high corner of the domain at (1.e8,2.e8,2.e8) in
-     physical space.
+   physical space.
 
 -  **geometry.coord_sys** = 0
    defines the coordinate system as Cartesian
@@ -433,7 +434,7 @@ List of Parameters
 | **particles.cfl**   | CFL number for | Real > 0 and   | 0.5            |
 |                     | particles      | <= 1           |                |
 |                     |                |                |                |
-|                     |                |              ` |                |
+|                     |                |                |                |
 +---------------------+----------------+----------------+----------------+
 | **nyx.init_shrink** | factor by      | Real > 0 and   | 1.0            |
 |                     | which to       | <= 1           |                |
@@ -537,9 +538,9 @@ List of Parameters
 | **amr.sub      | How shall we   | Auto, None or  | Auto           |
 | cycling_mode** | subcycle       | Manual         |                |
 +----------------+----------------+----------------+----------------+
-| *              | Number of      | 1 or           | must be set in |
-| *amr.subcyclin | cycles at each | ``ref_ratio``  | Manual mode    |
-| g_iterations** | level          |                |                |
+| **amr.subcycli | Number of      | 1 or           | must be set in |
+| g_iterations** | cycles at each | ``ref_ratio``  | Manual mode    |
+|                | level          |                |                |
 +----------------+----------------+----------------+----------------+
 
 .. _examples-of-usage-6:
@@ -897,8 +898,6 @@ List of Parameters
 |                          | solve            |                |                  |
 +--------------------------+------------------+----------------+------------------+
 
-[Table:Gravity]
-
 .. _notes-6:
 
 Notes
@@ -977,7 +976,7 @@ List of Parameters
 Reionization models
 ===================
 
-.. _list-of-parameters-13:
+.. _list-of-parameters-14:
 
 List of Parameters
 ------------------
