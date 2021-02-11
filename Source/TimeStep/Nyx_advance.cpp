@@ -134,22 +134,15 @@ Nyx::advance_hydro_plus_particles (Real time,
     }
     else
     {
-        if (strict_subcycling)
-        {
-            finest_level_to_advance = level;
-        }
-        else
-        {
-            // This level was advanced by a previous multilevel advance.
-            if (level > 0 && ncycle == 1)
-                return dt;
-            
-            // Find the finest level to advance
-            int lev = level;
-            while(lev < finest_level && parent->nCycle(lev+1) == 1)
-                lev++;
-            finest_level_to_advance = lev;
-        }
+        // This level was advanced by a previous multilevel advance.
+        if (level > 0 && ncycle == 1)
+            return dt;
+        
+        // Find the finest level to advance
+        int lev = level;
+        while(lev < finest_level && parent->nCycle(lev+1) == 1)
+            lev++;
+        finest_level_to_advance = lev;
 
         // We must setup virtual and Ghost Particles
         //

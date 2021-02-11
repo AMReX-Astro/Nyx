@@ -61,8 +61,6 @@ static Real dt_cutoff   =  0;
 
 int simd_width = 1;
 
-int Nyx::strict_subcycling = 0;
-
 Real Nyx::old_a      = -1.0;
 Real Nyx::new_a      = -1.0;
 Real Nyx::old_a_time = -1.0;
@@ -334,8 +332,6 @@ Nyx::read_params ()
 #endif
 
     read_init_params();
-
-    pp_nyx.query("strict_subcycling",strict_subcycling);
 
     pp_nyx.query("runlog_precision",runlog_precision);
     pp_nyx.query("runlog_precision_terse",runlog_precision_terse);

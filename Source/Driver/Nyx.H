@@ -760,8 +760,6 @@ int integrate_state_struct
     static amrex::Real h_species;
     static amrex::Real he_species;
 
-    static int strict_subcycling;
-
     static int init_with_sph_particles;
 
     static std::string particle_plotfile_format;

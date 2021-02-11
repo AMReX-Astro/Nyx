@@ -81,23 +81,16 @@ Nyx::advance_particles_only (Real time,
     }
     else
     {
+        // This level was advanced by a previous multilevel advance.
+        if (level > 0 && ncycle == 1)
+            return dt;
         
-        if (strict_subcycling)
-        {
-            finest_level_to_advance = level;
-        }
-        else
-        {
-            // This level was advanced by a previous multilevel advance.
-            if (level > 0 && ncycle == 1)
-                return dt;
-            
-            // Find the finest level to advance
-            int lev = level;
-            while(lev < finest_level && parent->nCycle(lev+1) == 1)
-                lev++;
-            finest_level_to_advance = lev;
-        }
+        // Find the finest level to advance
+        int lev = level;
+        while(lev < finest_level && parent->nCycle(lev+1) == 1)
+            lev++;
+        finest_level_to_advance = lev;
+
         // We must setup virtual and Ghost Particles
         //
         // Setup the virtual particles that represent finer level particles
