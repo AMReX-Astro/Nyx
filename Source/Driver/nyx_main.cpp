@@ -110,10 +110,6 @@ nyx_main (int argc, char* argv[])
 
     const Real time_before_main_loop = ParallelDescriptor::second();
 
-#ifdef AMREX_USE_CVODE
-    Nyx::alloc_simd_vec();
-#endif
-
     bool finished(false);
     {
 
@@ -152,10 +148,6 @@ nyx_main (int argc, char* argv[])
     }  // ---- end while( ! finished)
 
     }
-
-#ifdef AMREX_USE_CVODE
-    Nyx::dealloc_simd_vec();
-#endif
 
     const Real time_without_init = ParallelDescriptor::second() - time_before_main_loop;
     if (ParallelDescriptor::IOProcessor()) std::cout << "Time w/o init: " << time_without_init << std::endl;

@@ -59,8 +59,6 @@ static Real fixed_dt    = -1.0;
 static Real initial_dt  = -1.0;
 static Real dt_cutoff   =  0;
 
-int simd_width = 1;
-
 Real Nyx::old_a      = -1.0;
 Real Nyx::new_a      = -1.0;
 Real Nyx::old_a_time = -1.0;
@@ -421,16 +419,6 @@ Nyx::read_hydro_params ()
     pp_nyx.query("small_pres", small_pres);
     pp_nyx.query("large_temp", large_temp);
     pp_nyx.query("gamma", gamma);
-
-#ifdef AMREX_USE_CVODE
-    pp_nyx.query("simd_width", simd_width);
-    if (simd_width < 1) amrex::Abort("simd_width must be a positive integer");
-    set_simd_width(simd_width);
-
-    if (verbose > 1) amrex::Print()
-        << "SIMD width (# zones) for heating/cooling integration: "
-        << simd_width << std::endl;
-#endif
 
 #ifndef NO_HYDRO
 #ifdef HEATCOOL

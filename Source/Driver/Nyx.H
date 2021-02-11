@@ -784,10 +784,6 @@ int integrate_state_struct
     static void InitErrorList();
     static void InitDeriveList();
 
-    static void set_simd_width(const int simd_width);
-    static void alloc_simd_vec();
-    static void dealloc_simd_vec();
-
     //! Get the level directory names
     void LevelDirectoryNames (const std::string &dir,
                               const std::string &secondDir,  // ---- probably DM or AGN
