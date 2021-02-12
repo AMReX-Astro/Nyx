@@ -16,6 +16,9 @@ authors:
   - name: Ann Almgren
     orcid: 0000-0003-2103-312X
     affiliation: 1
+  - name: Christopher Daley
+    orcid: 
+    affiliation: 3
   - name: Brian Friesen
     orcid: 0000-0002-1572-1631
     affiliation: 3
