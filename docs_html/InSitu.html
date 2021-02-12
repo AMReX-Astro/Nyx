@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>In situ analysis &mdash; Nyx  documentation</title>
+  <title>In situ Analysis &mdash; Nyx  documentation</title>
   
 
   
@@ -105,7 +105,9 @@
 <li class="toctree-l1"><a class="reference internal" href="NyxHeatCool.html">Radiative Heating and Cooling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxForcing.html">Stochastic Forcing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Particles.html">Dark matter particles</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">In situ analysis</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">In situ Analysis</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#ascent-visualization">Ascent visualization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sensei-interface">Sensei interface</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#halo-finding">Halo finding</a></li>
 </ul>
 </li>
@@ -161,7 +163,7 @@
     
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
         
-      <li>In situ analysis</li>
+      <li>In situ Analysis</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -205,16 +207,47 @@
 }
 </style>
 <div class="section" id="in-situ-analysis">
-<span id="insitu"></span><h1>In situ analysis<a class="headerlink" href="#in-situ-analysis" title="Permalink to this headline">¶</a></h1>
-<p>Currently, Nyx supports in situ halo finding. This is useful both as
+<span id="insitu"></span><h1>In situ Analysis<a class="headerlink" href="#in-situ-analysis" title="Permalink to this headline">¶</a></h1>
+<p>Nyx supports in situ visualization using Ascent, and can leverage AMReX’s Sensei visualization pipeline. Additionally, Nyx supports in situ halo finding using Reeber2. This is useful both as
 in situ analysis tool, and for subgrid models, like AGN (under development).</p>
+<p>These insitu calls are controlled by input flags, in this example analysis happens starting after step 100, for step 199, 299, and so on and so forth:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">insitu</span><span class="o">.</span><span class="n">int</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">insitu</span><span class="o">.</span><span class="n">start</span> <span class="o">=</span> <span class="mi">100</span>
+</pre></div>
+</div>
+<p>Additionally, we can request analysis at specific redshifts, and Nyx will adjust the time-stepping to reach those red-shifts exactly:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">analysis_z_values</span> <span class="o">=</span> <span class="mf">7.0</span> <span class="mf">6.0</span> <span class="mf">5.0</span> <span class="mf">4.0</span> <span class="mf">3.0</span> <span class="mf">2.0</span>
+</pre></div>
+</div>
+<div class="section" id="ascent-visualization">
+<h2>Ascent visualization<a class="headerlink" href="#ascent-visualization" title="Permalink to this headline">¶</a></h2>
+<p>The primary example of this functionality is in <cite>Nyx/Exec/LyA</cite>. To compile with Ascent, add in GNUmakefile.summit:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">USE_ASCENT_INSITU</span> <span class="o">=</span> <span class="n">TRUE</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">ascent_actions.yaml</span></code> file will determine while the code is running what the Ascent publish action does. The <code class="docutils literal notranslate"><span class="pre">ascent_actions_slicefile.yaml</span></code> file gives an example of saving slice data, rather than an image file, while the simulation is running.</p>
+<p>To build Ascent with Conduit for other machines and configurations, see <a class="reference external" href="https://ascent.readthedocs.io/en/latest/BuildingAscent.html">Building Ascent</a>. For further information about using Ascent with AMReX-based applications, see <a class="reference external" href="https://amrex-codes.github.io/amrex/tutorials_html/Blueprint_Tutorial.html">AMReX Blueprint Tutorial</a> and <a class="reference external" href="https://warpx.readthedocs.io/en/latest/visualization/ascent.html">WarpX Ascent InSitu Documentation</a>.</p>
+</div>
+<div class="section" id="sensei-interface">
+<h2>Sensei interface<a class="headerlink" href="#sensei-interface" title="Permalink to this headline">¶</a></h2>
+<p>See AMReX documentation: <a class="reference external" href="https://amrex-codes.github.io/amrex/docs_html/Visualization.html#sensei">SENSEI</a></p>
+</div>
 <div class="section" id="halo-finding">
 <h2>Halo finding<a class="headerlink" href="#halo-finding" title="Permalink to this headline">¶</a></h2>
 <p>To find halos in situ while Nyx is running we use the Reeber package.
 To compile with Reeber, add in GNUmakefile:</p>
-<p>REEBER = TRUE</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">REEBER</span> <span class="o">=</span> <span class="n">TRUE</span>
+</pre></div>
+</div>
 <p>and set the location of Boost library:</p>
-<p>BOOST_INLUDE_DIR := ${BOOST_ROOT}/include/boost</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>BOOST_INLUDE_DIR := ${BOOST_ROOT}/include/boost
+</pre></div>
+</div>
+<p>GNUmake will default to:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>DIY_INCLUDE_DIR ?= ../../../diy/include
+REEBER_EXT_HOME ?= ../../../Reeber2
+</pre></div>
+</div>
 <p>Note that these codes are in separate repositories and are not included in Nyx distribution.
 If you intend to use in situ halo finding, you should clone Reeber from its
 <a class="reference external" href="https://github.com/mrzv/reeber">GitHub page</a> and follow the installation instructions provided there.</p>
@@ -227,6 +260,9 @@ and thresholds of the boundary and extrema values:</p>
 <span class="n">reeber</span><span class="o">.</span><span class="n">halo_density_vars</span> <span class="o">=</span> <span class="n">density</span> <span class="n">particle_mass_density</span>
 <span class="n">reeber</span><span class="o">.</span><span class="n">halo_extrema_threshold</span> <span class="o">=</span> <span class="mi">20</span>
 <span class="n">reeber</span><span class="o">.</span><span class="n">halo_component_threshold</span> <span class="o">=</span> <span class="mi">10</span>
+
+<span class="c1"># Call reeber insitu analysis</span>
+<span class="n">insitu</span><span class="o">.</span><span class="n">reeber_int</span> <span class="o">=</span> <span class="mi">100</span>
 </pre></div>
 </div>
 </div>

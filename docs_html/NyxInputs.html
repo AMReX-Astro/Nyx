@@ -171,6 +171,10 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#multigrid-inputs">Multigrid Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#memory-optimization">Memory Optimization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#list-of-parameters-15">List of Parameters</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ICs.html">Initial conditions</a></li>
@@ -182,7 +186,7 @@
 <li class="toctree-l1"><a class="reference internal" href="NyxHeatCool.html">Radiative Heating and Cooling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxForcing.html">Stochastic Forcing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Particles.html">Dark matter particles</a></li>
-<li class="toctree-l1"><a class="reference internal" href="InSitu.html">In situ analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="InSitu.html">In situ Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="PostProcessing.html">Analyzing Outputs</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NightlyTests.html">Nightly Regression Tests</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Debugging.html">Debugging</a></li>
@@ -1573,7 +1577,28 @@ small_dens</td>
 “cons”</td>
 <td>“floor”</td>
 </tr>
-<tr class="row-odd"><td><strong>nyx.add_ext_src</strong></td>
+<tr class="row-odd"><td><strong>nyx.strang_split</strong></td>
+<td>Use strang
+splitting</td>
+<td>0 if false, 1
+if true</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td><strong>nyx.sdc_split</strong></td>
+<td>Use sdc
+splitting</td>
+<td>0 if false, 1
+if true</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td><strong>nyx.strang_grown_box</strong></td>
+<td>Use growntilebox
+to avoid comms</td>
+<td>0 if false, 1
+if true</td>
+<td>1</td>
+</tr>
+<tr class="row-even"><td><strong>nyx.add_ext_src</strong></td>
 <td>Include
 additional
 user-specified
@@ -1582,21 +1607,21 @@ source term</td>
 if true</td>
 <td>0</td>
 </tr>
-<tr class="row-even"><td><strong>nyx.use_const_species</strong></td>
+<tr class="row-odd"><td><strong>nyx.use_const_species</strong></td>
 <td>If 1 then read
 h_species and
 he_species</td>
 <td>0 or 1</td>
 <td>0</td>
 </tr>
-<tr class="row-odd"><td><strong>nyx.h_species</strong></td>
+<tr class="row-even"><td><strong>nyx.h_species</strong></td>
 <td>Concentration
 of H</td>
 <td>0 <span class="math notranslate nohighlight">\(&lt;\)</span> X
 <span class="math notranslate nohighlight">\(&lt;\)</span> 1</td>
 <td>0</td>
 </tr>
-<tr class="row-even"><td><strong>nyx.he_species</strong></td>
+<tr class="row-odd"><td><strong>nyx.he_species</strong></td>
 <td>Concentration
 of He</td>
 <td>0 <span class="math notranslate nohighlight">\(&lt;\)</span> X
@@ -1841,6 +1866,87 @@ continuing with V-cycles in a multigrid solve</td>
 </table>
 <p>There are a number of additional inputs that can be used to control the multigrid solver.</p>
 <p>See the <a class="reference external" href="https://amrex-codes.github.io/amrex/docs_html/LinearSolvers_Chapter.html">AMReX Multigrid documentation</a> for more details.</p>
+</div>
+<div class="section" id="memory-optimization">
+<h2>Memory Optimization<a class="headerlink" href="#memory-optimization" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="list-of-parameters-15">
+<span id="id28"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-15" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="41%" />
+<col width="22%" />
+<col width="21%" />
+<col width="16%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Definition</th>
+<th class="head">Acceptable
+Values</th>
+<th class="head">Default</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><strong>nyx.shrink_to_fit</strong></td>
+<td>Shrink Particle
+vector to save
+memory</td>
+<td>0 if false, 1
+if true</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td><strong>nyx.minimize_memory</strong></td>
+<td>Use less
+temporary scratch
+memory in hydro</td>
+<td>0 if false, 1
+if true</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td><strong>nyx.load_balance_int</strong></td>
+<td>How often to
+load-balance
+particles</td>
+<td>Int &lt; 0 if never
+Int &gt; 0</td>
+<td>-1</td>
+</tr>
+<tr class="row-odd"><td><strong>nyx.load_balance_start_z</strong></td>
+<td>Redshift to start
+load-balancing
+particles</td>
+<td>Real &gt; 0</td>
+<td>7.0</td>
+</tr>
+<tr class="row-even"><td><strong>nyx.load_balance_wgt_stategy</strong></td>
+<td>Weight strategy
+to load-balance
+particles</td>
+<td>{0, 1, 2}</td>
+<td>0</td>
+</tr>
+<tr class="row-odd"><td><strong>nyx.load_balance_wgt_nmax</strong></td>
+<td>Max ranks to
+load-balance
+particles</td>
+<td>0 &lt; Int &lt; Ranks</td>
+<td>-1</td>
+</tr>
+<tr class="row-even"><td><strong>nyx.load_balance_stategy</strong></td>
+<td>Dmap strategy
+type for particle
+load-balancing</td>
+<td><dl class="first last docutils">
+<dt>{KNAPSACK,</dt>
+<dd>SFC,
+ROUNDROBIN</dd>
+</dl>
+</td>
+<td>SFC</td>
+</tr>
+</tbody>
+</table>
+</div>
 </div>
 </div>
 

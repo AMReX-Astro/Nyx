@@ -940,6 +940,15 @@ List of Parameters
 |                                  | rho greater than | "cons"          |             |
 |                                  | small_dens       |                 |             |
 +----------------------------------+------------------+-----------------+-------------+
+| **nyx.strang_split**             | Use strang       | 0 if false, 1   | 1           |
+|                                  | splitting        | if true         |             |
++----------------------------------+------------------+-----------------+-------------+
+| **nyx.sdc_split**                | Use sdc          | 0 if false, 1   | 0           |
+|                                  | splitting        | if true         |             |
++----------------------------------+------------------+-----------------+-------------+
+| **nyx.strang_grown_box**         | Use growntilebox | 0 if false, 1   | 1           |
+|                                  | to avoid comms   | if true         |             |
++----------------------------------+------------------+-----------------+-------------+
 | **nyx.add_ext_src**              | Include          | 0 if false, 1   | 0           |
 |                                  | additional       | if true         |             |
 |                                  | user-specified   |                 |             |
@@ -1073,3 +1082,44 @@ There are a number of additional inputs that can be used to control the multigri
 See the `AMReX Multigrid documentation`_ for more details.
 
 .. _AMReX Multigrid documentation: https://amrex-codes.github.io/amrex/docs_html/LinearSolvers_Chapter.html
+
+Memory Optimization
+===================
+
+.. _list-of-parameters-15:
+
+List of Parameters
+------------------
+
++----------------------------------+------------------+-----------------+-------------+
+| Parameter                        | Definition       | Acceptable      | Default     |
+|                                  |                  | Values          |             |
++==================================+==================+=================+=============+
+| **nyx.shrink_to_fit**            | Shrink Particle  | 0 if false, 1   |             |
+|                                  | vector to save   | if true         |             |
+|                                  | memory           |                 |             |
++----------------------------------+------------------+-----------------+-------------+
+| **nyx.minimize_memory**          | Use less         | 0 if false, 1   |             |
+|                                  | temporary scratch| if true         |             |
+|                                  | memory in hydro  |                 |             |
++----------------------------------+------------------+-----------------+-------------+
+| **nyx.load_balance_int**         | How often to     | Int < 0 if never| -1          |
+|                                  | load-balance     | Int > 0         |             |
+|                                  | particles        |                 |             |
++----------------------------------+------------------+-----------------+-------------+
+| **nyx.load_balance_start_z**     | Redshift to start| Real > 0        | 7.0         |
+|                                  | load-balancing   |                 |             |
+|                                  | particles        |                 |             |
++----------------------------------+------------------+-----------------+-------------+
+| **nyx.load_balance_wgt_stategy** | Weight strategy  | {0, 1, 2}       | 0           |
+|                                  | to load-balance  |                 |             |
+|                                  | particles        |                 |             |
++----------------------------------+------------------+-----------------+-------------+
+| **nyx.load_balance_wgt_nmax**    | Max ranks to     | 0 < Int < Ranks | -1          |
+|                                  | load-balance     |                 |             |
+|                                  | particles        |                 |             |
++----------------------------------+------------------+-----------------+-------------+
+| **nyx.load_balance_stategy**     | Dmap strategy    | {KNAPSACK,      | SFC         |
+|                                  | type for particle|  SFC,           |             |
+|                                  | load-balancing   |  ROUNDROBIN     |             |
++----------------------------------+------------------+-----------------+-------------+
