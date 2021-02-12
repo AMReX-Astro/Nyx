@@ -52,7 +52,7 @@ enum StateType {
     Gravity_Type,
     NUM_STATE_TYPE
 };
-static constexpr int max_prob_param = 1;
+static constexpr int max_prob_param = 5;
 #endif
 
 #ifndef NO_HYDRO
