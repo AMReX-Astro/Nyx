@@ -110,6 +110,7 @@ There are then a number of parameters to set, for example::
   nyx.particle_initrandom_count = 100000
   nyx.particle_initrandom_mass = 1
   nyx.particle_initrandom_iseed = 15
+  nyx.fix_random_seed = 0
 
 
 **Random placement (1 particle per grid cell).**
@@ -135,3 +136,14 @@ There are then a number of parameters to set, for example::
   nyx.particle_inituniform_vx = -1
   nyx.particle_inituniform_vy = 1
   nyx.particle_inituniform_vz = 1
+
+**Multifab-based setup.**
+To enable this option, set::
+
+  nyx.particle_init_type = Cosmological
+  nyx.do_readinics = 1
+
+Then set the directory name of the MultiFab to restart the state variables from::
+
+  nyx.readin_ics_fname = "mf"
+  
