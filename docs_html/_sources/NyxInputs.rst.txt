@@ -1016,6 +1016,9 @@ List of Parameters
 | **inhomo_zhi_file**              | File with        |  string         | must be set |
 |                                  | reionization map |                 | (if used)   |
 +----------------------------------+------------------+-----------------+-------------+
+| **inhomo_grid**                  | Size of the      |  integer        | must be set |
+|                                  | reionization grid|                 | (if used)   |
++----------------------------------+------------------+-----------------+-------------+
 | **reionization_T_zHI**           | H reionization   |  real           | 2.0e4       |
 |                                  | heat input       |                 |             |
 +----------------------------------+------------------+-----------------+-------------+
