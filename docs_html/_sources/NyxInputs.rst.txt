@@ -1044,6 +1044,10 @@ List of Parameters
 |                                  | user-specified   |                 |             |
 |                                  | source term      |                 |             |
 +----------------------------------+------------------+-----------------+-------------+
+| **nyx.nghost_state**             | Set number of    | {1,2,3,4}       | 1           |
+|                                  | ghost cells for  |                 |             |
+|                                  | state variables  |                 |             |
++----------------------------------+------------------+-----------------+-------------+
 | **nyx.use_const_species**        | If 1 then read   | 0 or 1          | 0           |
 |                                  | h_species and    |                 |             |
 |                                  | he_species       |                 |             |

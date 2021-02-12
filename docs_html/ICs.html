@@ -101,7 +101,14 @@
 <li class="toctree-l2"><a class="reference internal" href="#start-from-a-binary-file">Start from a binary file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#start-from-a-binary-meta-file">Start from a binary “meta” file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#reading-sph-particles">Reading SPH particles</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#initial-conditions-for-testing-purposes">Initial conditions for testing purposes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#initial-conditions-for-testing-purposes">Initial conditions for testing purposes</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#random-placement">Random placement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#random-placement-1-particle-per-grid-cell">Random placement (1 particle per grid cell)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#uniform-placement">Uniform placement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#initial-multifab-based-setup">Initial Multifab-based setup</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#initial-analytic-problem-setup">Initial Analytic Problem Setup</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="Refinement.html">Refinement Criteria</a></li>
@@ -210,8 +217,10 @@
 </style>
 <div class="section" id="initial-conditions">
 <h1>Initial conditions<a class="headerlink" href="#initial-conditions" title="Permalink to this headline">¶</a></h1>
-<p>There are two main ways in which initial conditions can be set in Nyx:
-using an ASCII file or using binary file(s).
+<p>There are a couple main ways in which initial conditions can be set in Nyx:
+using an ASCII particle file, using binary particle file(s), using
+a uniform particle setup, using a random particle setup, using a binary mesh file setup, or
+using an analytic setup.
 As said in the Units section of the documentation, the units are: Mpc, M<span class="math notranslate nohighlight">\(_\odot\)</span>, and km/s,
 and particle velocities should be peculiar proper velocities.</p>
 <div class="section" id="start-from-an-ascii-file">
@@ -295,8 +304,9 @@ The SPH particles will be discarded by the code once the grid data has been init
 <div class="section" id="initial-conditions-for-testing-purposes">
 <h2>Initial conditions for testing purposes<a class="headerlink" href="#initial-conditions-for-testing-purposes" title="Permalink to this headline">¶</a></h2>
 <p>The following are used for code testing purposes and will not result in a meaningful cosmological simulation.</p>
-<p><strong>Random placement.</strong>
-To enable this option, set:</p>
+<div class="section" id="random-placement">
+<h3>Random placement<a class="headerlink" href="#random-placement" title="Permalink to this headline">¶</a></h3>
+<p>To enable this option, set:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_init_type</span> <span class="o">=</span> <span class="n">Random</span>
 </pre></div>
 </div>
@@ -307,8 +317,10 @@ To enable this option, set:</p>
 <span class="n">nyx</span><span class="o">.</span><span class="n">fix_random_seed</span> <span class="o">=</span> <span class="mi">0</span>
 </pre></div>
 </div>
-<p><strong>Random placement (1 particle per grid cell).</strong>
-To enable this option, set:</p>
+</div>
+<div class="section" id="random-placement-1-particle-per-grid-cell">
+<h3>Random placement (1 particle per grid cell)<a class="headerlink" href="#random-placement-1-particle-per-grid-cell" title="Permalink to this headline">¶</a></h3>
+<p>To enable this option, set:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_init_type</span> <span class="o">=</span> <span class="n">RandomPerCell</span>
 </pre></div>
 </div>
@@ -318,8 +330,10 @@ To enable this option, set:</p>
 </div>
 <p>Note to increase the number of cells and keep the problem domain size
 and total mass fixed, the mass per particle must decrease proportionally.</p>
-<p><strong>Uniform placement.</strong>
-To enable this option, set:</p>
+</div>
+<div class="section" id="uniform-placement">
+<h3>Uniform placement<a class="headerlink" href="#uniform-placement" title="Permalink to this headline">¶</a></h3>
+<p>To enable this option, set:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_init_type</span> <span class="o">=</span> <span class="n">OnePerCell</span>
 </pre></div>
 </div>
@@ -330,8 +344,10 @@ To enable this option, set:</p>
 <span class="n">nyx</span><span class="o">.</span><span class="n">particle_inituniform_vz</span> <span class="o">=</span> <span class="mi">1</span>
 </pre></div>
 </div>
-<p><strong>Multifab-based setup.</strong>
-To enable this option, set:</p>
+</div>
+<div class="section" id="initial-multifab-based-setup">
+<h3>Initial Multifab-based setup<a class="headerlink" href="#initial-multifab-based-setup" title="Permalink to this headline">¶</a></h3>
+<p>To enable this option, set:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_init_type</span> <span class="o">=</span> <span class="n">Cosmological</span>
 <span class="n">nyx</span><span class="o">.</span><span class="n">do_readinics</span> <span class="o">=</span> <span class="mi">1</span>
 </pre></div>
@@ -339,6 +355,19 @@ To enable this option, set:</p>
 <p>Then set the directory name of the MultiFab to restart the state variables from:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">readin_ics_fname</span> <span class="o">=</span> <span class="s2">&quot;mf&quot;</span>
 </pre></div>
+</div>
+</div>
+<div class="section" id="initial-analytic-problem-setup">
+<h3>Initial Analytic Problem Setup<a class="headerlink" href="#initial-analytic-problem-setup" title="Permalink to this headline">¶</a></h3>
+<p>To enable this option, set:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">do_santa_barbara</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">init_sb_vels</span> <span class="o">=</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<p>For different executable directories, the <code class="docutils literal notranslate"><span class="pre">Prob.cpp</span></code> setup can be further customised
+with <code class="docutils literal notranslate"><span class="pre">prob.</span></code> input flags. For the HydroTests directory, <code class="docutils literal notranslate"><span class="pre">prob.prob_type=0</span></code> corresponds
+to Sod, StrongShockTube and DoubleRarefaction type tests, and <code class="docutils literal notranslate"><span class="pre">prob.prob_type!=0</span></code>
+corresponds to the Sedov type tests.</p>
 </div>
 </div>
 </div>
