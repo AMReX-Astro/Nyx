@@ -169,6 +169,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#cosmology">Cosmology</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#list-of-parameters-13">List of Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#id27">Examples of Usage</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#reionization-models">Reionization models</a><ul>
@@ -899,6 +900,18 @@ half times the
 comoving time
 step</td>
 <td>Real &gt;=  0</td>
+<td>-1.0</td>
+</tr>
+<tr class="row-even"><td><strong>nyx.relative_max</strong>
+<strong>_change_a</strong></td>
+<td>max da/dt</td>
+<td>Real &gt; 0</td>
+<td>0.01</td>
+</tr>
+<tr class="row-odd"><td><strong>nyx.absolute_max</strong>
+<strong>_change_a</strong></td>
+<td>a_new-a_old</td>
+<td>Real &gt; 0</td>
 <td>-1.0</td>
 </tr>
 </tbody>
@@ -1815,10 +1828,10 @@ of He</td>
 <span id="id26"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-13" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
-<col width="41%" />
-<col width="22%" />
-<col width="21%" />
-<col width="16%" />
+<col width="40%" />
+<col width="24%" />
+<col width="20%" />
+<col width="15%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Parameter</th>
@@ -1857,14 +1870,31 @@ Hubble parameter</td>
 <span class="math notranslate nohighlight">\(&lt;\)</span> 1</td>
 <td>must be set</td>
 </tr>
+<tr class="row-even"><td><strong>nyx.gamma</strong></td>
+<td>Dimensionless
+factor relating
+<span class="math notranslate nohighlight">\(p, \rho, e\)</span></td>
+<td>0 <span class="math notranslate nohighlight">\(&lt;\)</span> X
+<span class="math notranslate nohighlight">\(&lt;\)</span> 2</td>
+<td><span class="math notranslate nohighlight">\(5/3\)</span></td>
+</tr>
 </tbody>
 </table>
+</div>
+<div class="section" id="id27">
+<h3>Examples of Usage<a class="headerlink" href="#id27" title="Permalink to this headline">¶</a></h3>
+<ul>
+<li><div class="first line-block">
+<div class="line"><strong>nyx.gamma</strong> This changes <span class="math notranslate nohighlight">\(\gamma\)</span> in the <span class="math notranslate nohighlight">\(\gamma\)</span> law gas: <span class="math notranslate nohighlight">\(p = (\gamma - 1) \rho e.\)</span></div>
+</div>
+</li>
+</ul>
 </div>
 </div>
 <div class="section" id="reionization-models">
 <h2>Reionization models<a class="headerlink" href="#reionization-models" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="list-of-parameters-14">
-<span id="id27"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-14" title="Permalink to this headline">¶</a></h3>
+<span id="id28"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-14" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="41%" />
@@ -2047,7 +2077,7 @@ continuing with V-cycles in a multigrid solve</td>
 <div class="section" id="memory-optimization">
 <h2>Memory Optimization<a class="headerlink" href="#memory-optimization" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="list-of-parameters-15">
-<span id="id28"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-15" title="Permalink to this headline">¶</a></h3>
+<span id="id29"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-15" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="41%" />

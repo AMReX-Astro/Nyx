@@ -304,6 +304,7 @@ To enable this option, set:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_initrandom_count</span> <span class="o">=</span> <span class="mi">100000</span>
 <span class="n">nyx</span><span class="o">.</span><span class="n">particle_initrandom_mass</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="n">nyx</span><span class="o">.</span><span class="n">particle_initrandom_iseed</span> <span class="o">=</span> <span class="mi">15</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">fix_random_seed</span> <span class="o">=</span> <span class="mi">0</span>
 </pre></div>
 </div>
 <p><strong>Random placement (1 particle per grid cell).</strong>
@@ -327,6 +328,16 @@ To enable this option, set:</p>
 <span class="n">nyx</span><span class="o">.</span><span class="n">particle_inituniform_vx</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
 <span class="n">nyx</span><span class="o">.</span><span class="n">particle_inituniform_vy</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="n">nyx</span><span class="o">.</span><span class="n">particle_inituniform_vz</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p><strong>Multifab-based setup.</strong>
+To enable this option, set:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_init_type</span> <span class="o">=</span> <span class="n">Cosmological</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">do_readinics</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>Then set the directory name of the MultiFab to restart the state variables from:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">readin_ics_fname</span> <span class="o">=</span> <span class="s2">&quot;mf&quot;</span>
 </pre></div>
 </div>
 </div>

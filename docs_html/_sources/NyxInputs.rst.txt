@@ -463,6 +463,12 @@ List of Parameters
 |                     | comoving time  |                |                |
 |                     | step           |                |                |
 +---------------------+----------------+----------------+----------------+
+| **nyx.relative_max**| max da/dt      | Real > 0       | 0.01           |
+| **_change_a**       |                |                |                |
++---------------------+----------------+----------------+----------------+
+| **nyx.absolute_max**| a_new-a_old    | Real > 0       | -1.0           |
+| **_change_a**       |                |                |                |
++---------------------+----------------+----------------+----------------+
 
 [Table:TimeStepInputs]
 
@@ -1058,23 +1064,31 @@ Cosmology
 List of Parameters
 ------------------
 
-+----------------------------------+------------------+-----------------+-------------+
-| Parameter                        | Definition       | Acceptable      | Default     |
-|                                  |                  | Values          |             |
-+==================================+==================+=================+=============+
-| **nyx.comoving_OmM**             | Relative (total) |  0 :math:`<` X  | must be set |
-|                                  | mass density     |  :math:`<` 1    |             |
-+----------------------------------+------------------+-----------------+-------------+
-| **nyx.comoving_OmB**             | Relative baryon  |  0 :math:`<` X  | must be set |
-|                                  | density          |  :math:`<` 1    |             |
-+----------------------------------+------------------+-----------------+-------------+
-| **nyx.comoving_OmR**             | Relative         |  0 :math:`<` X  | must be set |
-|                                  | radiation density|  :math:`<` 1    |             |
-+----------------------------------+------------------+-----------------+-------------+
-| **nyx.comoving_h**               | Dimensionless    |  0 :math:`<` X  | must be set |
-|                                  | Hubble parameter |  :math:`<` 1    |             |
-+----------------------------------+------------------+-----------------+-------------+
++----------------------------------+--------------------+-----------------+-------------+
+| Parameter                        | Definition         | Acceptable      | Default     |
+|                                  |                    | Values          |             |
++==================================+====================+=================+=============+
+| **nyx.comoving_OmM**             | Relative (total)   |  0 :math:`<` X  | must be set |
+|                                  | mass density       |  :math:`<` 1    |             |
++----------------------------------+--------------------+-----------------+-------------+
+| **nyx.comoving_OmB**             | Relative baryon    |  0 :math:`<` X  | must be set |
+|                                  | density            |  :math:`<` 1    |             |
++----------------------------------+--------------------+-----------------+-------------+
+| **nyx.comoving_OmR**             | Relative           |  0 :math:`<` X  | must be set |
+|                                  | radiation density  |  :math:`<` 1    |             |
++----------------------------------+--------------------+-----------------+-------------+
+| **nyx.comoving_h**               | Dimensionless      |  0 :math:`<` X  | must be set |
+|                                  | Hubble parameter   |  :math:`<` 1    |             |
++----------------------------------+--------------------+-----------------+-------------+
+| **nyx.gamma**                    | Dimensionless      |  0 :math:`<` X  | :math:`5/3` |
+|                                  | factor relating    |  :math:`<` 2    |             |
+|                                  | :math:`p, \rho, e` |                 |             |
++----------------------------------+--------------------+-----------------+-------------+
 
+Examples of Usage
+-----------------
+
+-  | **nyx.gamma** This changes :math:`\gamma` in the :math:`\gamma` law gas: :math:`p = (\gamma - 1) \rho e.`
 
 Reionization models
 ===================
