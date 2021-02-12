@@ -793,7 +793,7 @@ Nyx::init_santa_barbara (int init_sb_vels)
             GpuArray<amrex::Real,max_prob_param> prob_param;
             prob_param_fill(prob_param);
             prob_param_special_fill(prob_param);
-            comoving_type=std::round(prob_param[comoving_type_comp]);
+            comoving_type=int(std::round(prob_param[comoving_type_comp]));
 
             prob_initdata_on_box(bx, fab_S_new, fab_D_new, geomdata, prob_param);
 
