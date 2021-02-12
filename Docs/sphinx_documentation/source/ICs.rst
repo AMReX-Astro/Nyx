@@ -1,14 +1,16 @@
 Initial conditions
 ===================
 
-There are two main ways in which initial conditions can be set in Nyx:
-using an ASCII file or using binary file(s).
+There are a couple main ways in which initial conditions can be set in Nyx:
+using an ASCII particle file, using binary particle file(s), using
+a uniform particle setup, using a random particle setup, using a binary mesh file setup, or
+using an analytic setup.
 As said in the Units section of the documentation, the units are: Mpc, M\ :math:`_\odot`, and km/s,
 and particle velocities should be peculiar proper velocities.
 
 
 Start from an ASCII file
------------------------
+------------------------
 
 To enable this option, set::
   
@@ -54,7 +56,7 @@ Here is an example C++ code which writes a Nyx-readable binary file::
 
 
 Start from a binary "meta" file
-------------------------------
+-------------------------------
 
 This option allows you to read particles from a series of files rather than
 just a single file. This is very convenient for large simulations.
@@ -100,7 +102,8 @@ Initial conditions for testing purposes
 The following are used for code testing purposes and will not result in a meaningful cosmological simulation.
 
 
-**Random placement.**
+Random placement
+^^^^^^^^^^^^^^^^
 To enable this option, set::
 
   nyx.particle_init_type = Random
@@ -113,7 +116,8 @@ There are then a number of parameters to set, for example::
   nyx.fix_random_seed = 0
 
 
-**Random placement (1 particle per grid cell).**
+Random placement (1 particle per grid cell)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 To enable this option, set::
 
   nyx.particle_init_type = RandomPerCell
@@ -125,7 +129,8 @@ Then only set the mass per particle::
 Note to increase the number of cells and keep the problem domain size 
 and total mass fixed, the mass per particle must decrease proportionally.
 
-**Uniform placement.**
+Uniform placement
+^^^^^^^^^^^^^^^^^
 To enable this option, set::
 
   nyx.particle_init_type = OnePerCell
@@ -137,7 +142,8 @@ There are then a number of parameters to set, for example::
   nyx.particle_inituniform_vy = 1
   nyx.particle_inituniform_vz = 1
 
-**Multifab-based setup.**
+Initial Multifab-based setup
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 To enable this option, set::
 
   nyx.particle_init_type = Cosmological
@@ -147,3 +153,14 @@ Then set the directory name of the MultiFab to restart the state variables from:
 
   nyx.readin_ics_fname = "mf"
   
+Initial Analytic Problem Setup
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To enable this option, set::
+
+  nyx.do_santa_barbara = 0
+  nyx.init_sb_vels = 0
+
+For different executable directories, the ``Prob.cpp`` setup can be further customised
+with ``prob.`` input flags. For the HydroTests directory, ``prob.prob_type=0`` corresponds
+to Sod, StrongShockTube and DoubleRarefaction type tests, and ``prob.prob_type!=0``
+corresponds to the Sedov type tests.
