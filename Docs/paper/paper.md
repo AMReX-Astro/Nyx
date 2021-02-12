@@ -16,6 +16,9 @@ authors:
   - name: Ann Almgren
     orcid: 0000-0003-2103-312X
     affiliation: 1
+  - name: Brian Friesen
+    orcid: 0000-0002-1572-1631
+    affiliation: 3
   - name: Andrew Myers
     orcid: 0000-0001-8427-8330
     affiliation: 1
@@ -27,6 +30,8 @@ affiliations:
     index: 1
   - name: Computational Cosmology Center, Lawrence Berkeley National Laboratory
     index: 2
+  - name: National Energy Research Scientific Computing Center (NERSC), Berkeley, CA, USA
+    index: 3
 date: November 2020
 bibliography: paper.bib
 ---
