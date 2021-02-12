@@ -41,7 +41,7 @@ and the low Mach number code MAESTROeX [@maestroex], make up the
 AMReX-Astrophysics Suite of open-source, adaptive mesh, performance-portable 
 astrophysical simulation codes.
 
-The core hydrodynamics solver in Nyx [@nyx] is based on the
+The core hydrodynamics solver in Nyx [@nyx-paper1] is based on the
 directionally unsplit corner transport upwind method of @ctu with
 piecewise parabolic reconstruction [@ppm].  In Nyx, we have
 several modes of coupling the stiff heating-cooling terms to the hydro.  
