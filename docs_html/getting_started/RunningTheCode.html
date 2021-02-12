@@ -218,11 +218,23 @@ If a value is specified on the command line, that value will override a value sp
 <p>See the Inputs section for more detail about what parameters can be specified at run-time.</p>
 <ol class="arabic">
 <li><p class="first">From within the build directory type:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">executable</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span> <span class="n">inputs</span><span class="o">.</span><span class="mi">32</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">executable</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">inputs</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<p>where <code class="docutils literal notranslate"><span class="pre">&lt;executable-name&gt;</span></code> is  <code class="docutils literal notranslate"><span class="pre">Nyx3d.Linux.gnu.ex1</span></code> if you built Nyx with GNU Make, or
+<p><code class="docutils literal notranslate"><span class="pre">&lt;executable-name&gt;</span></code> is  <code class="docutils literal notranslate"><span class="pre">Nyx3d.Linux.gnu.ex1</span></code> if you built Nyx with GNU Make, or
 <code class="docutils literal notranslate"><span class="pre">nyx_&lt;name-of-build-directory&gt;</span></code> if you built Nyx with CMake.</p>
+<p><code class="docutils literal notranslate"><span class="pre">&lt;inputs-name&gt;</span></code> for a small test problem is  <code class="docutils literal notranslate"><span class="pre">inputs.32</span></code> for the MiniSB example,
+and <code class="docutils literal notranslate"><span class="pre">inputs.rt</span></code> for the LyA example. Most executable directories have an <code class="docutils literal notranslate"><span class="pre">inputs</span></code>
+for a larger problem, and an <code class="docutils literal notranslate"><span class="pre">inputs.rt</span></code> or <code class="docutils literal notranslate"><span class="pre">inputs.regtest</span></code> for regression-test
+sized problems.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>For certain HPC systems, you may want to have a run directory separate from your compile / build directory.</p>
+<p class="last">In that case, copy the executable and inputs file from the build directory to your run directory on scratch.
+Runs starting from a <code class="docutils literal notranslate"><span class="pre">binary_particle_file</span></code> need an absolute path in &lt;inputs-name&gt; or a symlink in the run directory.
+Runs with heating-cooling must have access to the TREECOOL_middle file in the run directory, and ascent in-situ runs
+need access to ascent_actions.yaml.</p>
+</div>
 </li>
 <li><p class="first">You will notice that running the code generates directories that look like
 plt00000, plt00020, etc.,

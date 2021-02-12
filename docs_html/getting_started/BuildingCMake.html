@@ -482,7 +482,7 @@ CMake will try to determine which GPU is supported by the system.</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; <span class="nb">cd</span> Nyx
 &gt; mkdir build
 &gt; <span class="nb">cd</span> build
-&gt; cmake -DNyx_GPU_BACKEND<span class="o">=</span>CUDA -DAMReX_CUDA_ARCH<span class="o">=</span>Volta -DCMAKE_CXX_COMPILER<span class="o">=</span>g++ -DCMAKE_Fortran_COMPILER<span class="o">=</span>gfortran ..
+&gt; cmake -DNyx_GPU_BACKEND<span class="o">=</span>CUDA -DAMReX_CUDA_ARCH<span class="o">=</span>Volta -DCMAKE_CXX_COMPILER<span class="o">=</span>g++ ..
 &gt; make -j
 </pre></div>
 </div>
@@ -492,25 +492,27 @@ CMake will try to determine which GPU is supported by the system.</p>
 <div class="section" id="building-nyx-for-summit-olcf">
 <h2>Building Nyx for Summit (OLCF)<a class="headerlink" href="#building-nyx-for-summit-olcf" title="Permalink to this headline">¶</a></h2>
 <p>For the Summit cluster at OLCF, you first need to load/unload modules required to build Nyx.</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; module unload xalt
-&gt; module unload darshan
-&gt; module load gcc
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; module load gcc
 &gt; module load cmake/3.14.0
 </pre></div>
 </div>
 <p>To build Nyx for GPUs, you need to load cuda module:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; module load cuda/10.1.105
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; module load cuda/11.0.3
 </pre></div>
 </div>
 <p>To compile:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; <span class="nb">cd</span> mfix
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; <span class="nb">cd</span> Nyx
 &gt; mdkir build
 &gt; <span class="nb">cd</span> build
-&gt; cmake -DCMAKE_CXX_COMPILER<span class="o">=</span>g++ -DCMAKE_Fortran_COMPILER<span class="o">=</span>gfortran -DNyx_GPU_BACKEND<span class="o">=[</span>NONE<span class="p">|</span>CUDA<span class="o">]</span>
+&gt; cmake -DNyx_GPU_BACKEND<span class="o">=</span>CUDA -DAMReX_CUDA_ARCH<span class="o">=</span>Volta -DCMAKE_C_COMPILER<span class="o">=</span><span class="k">$(</span>which gcc<span class="k">)</span>  -DCMAKE_CXX_COMPILER<span class="o">=</span><span class="k">$(</span>which g++<span class="k">)</span>   -DCMAKE_CUDA_HOST_COMPILER<span class="o">=</span><span class="k">$(</span>which g++<span class="k">)</span>  -DCMAKE_CUDA_ARCHITECTURES<span class="o">=</span><span class="m">70</span> ..
 &gt; make -j
 </pre></div>
 </div>
-<p>For more information about Summit cluster: <a class="reference external" href="https://www.olcf.ornl.gov/for-users/system-user-guides/summit/">https://www.olcf.ornl.gov/for-users/system-user-guides/summit/</a></p>
+<p>For more information about the Summit cluster: <a class="reference external" href="https://www.olcf.ornl.gov/for-users/system-user-guides/summit/">https://www.olcf.ornl.gov/for-users/system-user-guides/summit/</a></p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The load/unload modules options could be saved in the <cite>~/.profile</cite></p>
+</div>
 </div>
 </div>
 

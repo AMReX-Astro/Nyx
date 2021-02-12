@@ -261,7 +261,7 @@ forest simulation for investigating the large-scale structure formation of the u
 <p>For some executables, namely LyA, AMR-density, AMR-zoom, and LyA_Neutrinos, Nyx uses a more complicated model for the heating-cooling.
 This requires you to also install a matching sundials installation to support the ODE solve. To install a stand-alone copy of Sundials, see <a class="reference internal" href="NyxSundials.html#sundials"><span class="std std-ref">Compiling Nyx with SUNDIALS 5</span></a></p>
 </li>
-<li><p class="first">From the directory in which you checked out Nyx, change directory to your compile directory by typing for the small Santa-Barbara problem:</p>
+<li><p class="first">From the directory in which you checked out Nyx, change directory to your build directory by typing for the small Santa-Barbara problem:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">Nyx</span><span class="o">/</span><span class="n">Exec</span><span class="o">/</span><span class="n">MiniSB</span>
 </pre></div>
 </div>
@@ -270,7 +270,7 @@ This requires you to also install a matching sundials installation to support th
 </pre></div>
 </div>
 </li>
-<li><p class="first">In your compile directory, edit the GNUmakefile, and set</p>
+<li><p class="first">In your build directory, edit the GNUmakefile, and set</p>
 <p><code class="docutils literal notranslate"><span class="pre">COMP</span> <span class="pre">=</span> <span class="pre">your</span> <span class="pre">favorite</span> <span class="pre">compiler</span> <span class="pre">(e.g,</span> <span class="pre">gnu,</span> <span class="pre">Intel)</span></code></p>
 <p><code class="docutils literal notranslate"><span class="pre">DEBUG</span> <span class="pre">=</span> <span class="pre">FALSE</span></code></p>
 <p>We like <code class="docutils literal notranslate"><span class="pre">COMP</span> <span class="pre">=</span> <span class="pre">gnu</span></code>.</p>

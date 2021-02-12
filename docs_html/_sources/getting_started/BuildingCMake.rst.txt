@@ -285,7 +285,7 @@ Finally, navigate to the base of the Nyx repository and compile in GPU mode:
     > cd Nyx
     > mkdir build
     > cd build
-    > cmake -DNyx_GPU_BACKEND=CUDA -DAMReX_CUDA_ARCH=Volta -DCMAKE_CXX_COMPILER=g++ -DCMAKE_Fortran_COMPILER=gfortran ..
+    > cmake -DNyx_GPU_BACKEND=CUDA -DAMReX_CUDA_ARCH=Volta -DCMAKE_CXX_COMPILER=g++ ..
     > make -j
 
 For more information about GPU nodes in Cori -- `<https://docs-dev.nersc.gov/cgpu/>`_
@@ -297,8 +297,6 @@ For the Summit cluster at OLCF, you first need to load/unload modules required t
 
 .. code:: shell
 
-    > module unload xalt
-    > module unload darshan
     > module load gcc
     > module load cmake/3.14.0
 
@@ -306,16 +304,20 @@ To build Nyx for GPUs, you need to load cuda module:
 
 .. code:: shell
 
-    > module load cuda/10.1.105
+    > module load cuda/11.0.3
 
 To compile:
 
 .. code:: shell
 
-    > cd mfix
+    > cd Nyx
     > mdkir build
     > cd build
-    > cmake -DCMAKE_CXX_COMPILER=g++ -DCMAKE_Fortran_COMPILER=gfortran -DNyx_GPU_BACKEND=[NONE|CUDA]
+    > cmake -DNyx_GPU_BACKEND=CUDA -DAMReX_CUDA_ARCH=Volta -DCMAKE_C_COMPILER=$(which gcc)  -DCMAKE_CXX_COMPILER=$(which g++)   -DCMAKE_CUDA_HOST_COMPILER=$(which g++)  -DCMAKE_CUDA_ARCHITECTURES=70 ..
     > make -j
 
-For more information about Summit cluster: `<https://www.olcf.ornl.gov/for-users/system-user-guides/summit/>`_
+For more information about the Summit cluster: `<https://www.olcf.ornl.gov/for-users/system-user-guides/summit/>`_
+
+.. note::
+
+    The load/unload modules options could be saved in the `~/.profile`
