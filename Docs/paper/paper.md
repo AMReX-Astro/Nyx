@@ -50,7 +50,7 @@ astrophysical simulation codes.
 The core hydrodynamics solver in Nyx [@nyx-paper1] is based on the
 directionally unsplit corner transport upwind method of @ctu with
 piecewise parabolic reconstruction [@ppm].  In Nyx, we have
-several modes of coupling the stiff heating-cooling terms to the hydro.  
+several modes of coupling the stiff heating-cooling source terms to the hydro.  
 The simplest method is the traditional operator splitting approach, 
 using Strang splitting to achieve second-order in time.  However, 
 this coupling can break down, and we have an alternative to Strang splitting
@@ -60,25 +60,26 @@ The simplified SDC method uses the CTU PPM hydro together with an
 iterative scheme to fully couple the source terms and hydro, still to
 second order [@simple_sdc].
 
-The evolution of baryonic gas coupled with an N-body treatment of the dark
+Nyx has a set of additional physics necessary to model the intergalactic medium
+using heating-cooling source terms.
+The code follows the abundance of six species: neutral andionized hydrogen,
+neutral, once and twice ionized helium, and free electrons. For these species,
+all relevant atomic processes - ionization, recombination, and free-free transitions are
+modeled in the code. Heating and cooling source terms are calculated using
+a sub-cycled approach in order to avoid running the whole code on a short, cooling timescale.
+Cosmological reionization is accounted for via a spatially uniform,
+but time-varying ultraviolet background (UVB) radiation field,
+inputed to the code as a list of photoionization and photoheating
+rates that vary with redshift. Nyx also has the capability to model flash reionization
+as well as inhomogeneous reionization [@onorbe2019].
+
+The evolution of baryonic gas is coupled with an N-body treatment of the dark
 matter in an expanding universe. The mesh-based hydrodynamical baryonic gas
 evolution is coupled through gravity to the particle-based representation of
 dark matter. The dark matter particles are moved with a move-kick-drift algorithm
 [@movekickdrift]. The Poisson equation for self-gravity of the baryonic gas and dark
 matter is solved using geometric multigrid method. Nyx simulations can optionally
 model neutrino particle effects and active galactic nuclei feedback.
-
-Nyx has a set of additional physics necessary to model the  intergalactic medium.
-The code follows the abundance of six species: neutral andionized hydrogen,
-neutral, once and twice ionized helium, and free electrons. For these species,
-all relevant atomic processes - ionization, recombination, and free-free transitions are
-modeled in the code. Heating and cooling are calculated using sub-cycled approach
-in order to avoid running whole code on ashort, cooling timescale.
-Cosmological reionization is accounted for via a spatially uniform,
-but time-varying ultraviolet background (UVB) radiation field,
-inputed to the code as a list of photoionization and photoheating
-rates that vary with redshift, but we also have capability to model flash reionization
-as well as inhomogeneous reionization [@onorbe2019].
 
 Nyx is built on the AMReX [@AMReX] adaptive mesh refinement (AMR)
 library and is written in C++.
