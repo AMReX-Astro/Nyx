@@ -11,11 +11,12 @@ authors:
     orcid: 0000-0003-2551-1678
     affiliation: 1
   - name: Zarija Lukic
-    orcid: 
     affiliation: 2
   - name: Ann Almgren
     orcid: 0000-0003-2103-312X
     affiliation: 1
+  - name: Chris Daley
+    affiliation: 3
   - name: Brian Friesen
     orcid: 0000-0002-1572-1631
     affiliation: 3
@@ -32,15 +33,15 @@ affiliations:
     index: 2
   - name: National Energy Research Scientific Computing Center (NERSC), Berkeley, CA, USA
     index: 3
-date: November 2020
+date: February 2021
 bibliography: paper.bib
 ---
 
 # Summary
 ``Nyx`` is a highly parallel, adaptive mesh, finite-volume 
-N-body compressible hydrodynamics solver for cosmological simulation.  
+N-body compressible hydrodynamics solver for cosmological simulations.  
 It has been used to simulate different cosmological scenarios with
-a recent focus on the Lyman Alpha forest.
+a recent focus on the integalactic medium and Lyman alpha forest.
 Together, Nyx, the compressible astrophysical simulation code, Castro [@castro], 
 and the low Mach number code MAESTROeX [@maestroex], make up the
 AMReX-Astrophysics Suite of open-source, adaptive mesh, performance-portable 
@@ -66,6 +67,18 @@ dark matter. The dark matter particles are moved with a move-kick-drift algorith
 [@movekickdrift]. The Poisson equation for self-gravity of the baryonic gas and dark
 matter is solved using geometric multigrid method. Nyx simulations can optionally
 model neutrino particle effects and active galactic nuclei feedback.
+
+Nyx has a set of additional physics necessary to model the  intergalactic medium.
+The code follows the abundance of six species: neutral andionized hydrogen,
+neutral, once and twice ionized helium, and free electrons. For these species,
+all relevant atomic processes - ionization, recombination, and free-free transitions are
+modeled in the code. Heating and cooling are calculated using sub-cycled approach
+in order to avoid running whole code on ashort, cooling timescale.
+Cosmological reionization is accounted for via a spatially uniform,
+but time-varying ultraviolet background (UVB) radiation field,
+inputed to the code as a list of photoionization and photoheating
+rates that vary with redshift, but we also have capability to model flash reionization
+as well as inhomogeneous reionization [@onorbe2019].
 
 Nyx is built on the AMReX [@AMReX] adaptive mesh refinement (AMR)
 library and is written in C++.
