@@ -1,35 +1,48 @@
 @ARTICLE{onorbe2019,
-       author = {{O{\~n}orbe}, Jose and {Davies}, F.~B. and {Luki{\'c}} and {}, Z. and {Hennawi}, J.~F. and {Sorini}, D.},
-        title = "{Inhomogeneous reionization models in cosmological hydrodynamical simulations}",
-      journal = {\mnras},
-     keywords = {methods: numerical, intergalactic medium, dark ages, reionization, first stars, early Universe, large-scale structure of Universe, Astrophysics - Cosmology and Nongalactic Astrophysics},
-         year = 2019,
-        month = jul,
-       volume = {486},
-       number = {3},
-        pages = {4075-4097},
-          doi = {10.1093/mnras/stz984},
-archivePrefix = {arXiv},
-       eprint = {1810.11683}
+    author = {{O{\~n}orbe}, Jose and {Davies}, F.~B. and {Luki{\'c}} and {}, Z. and {Hennawi}, J.~F. and {Sorini}, D.},
+    title = "{Inhomogeneous reionization models in cosmological hydrodynamical simulations}",
+    journal = {Monthly Notices of the Royal Astronomical Society},
+    volume = {486},
+    number = {3},
+    pages = {4075-4097},
+    year = {2019},
+    month = {05},
+    issn = {0035-8711},
+    doi = {10.1093/mnras/stz984},
+    url = {https://doi.org/10.1093/mnras/stz984},
+    eprint = {https://academic.oup.com/mnras/article-pdf/486/3/4075/28559361/stz984.pdf}
 }
 
 
 @article{nyx-paper1,
-  title={Nyx: A Massively Parallel AMR Code for Computational Cosmology},
-  author={A.S. Almgren adnd J.B. Bell and M.J. Lijewski and Z. Lukic and E. Van Andel},
-  journal={Astrophysical Journal},
-  volume={765},
-  number={39},
-  year={2013},
-  publisher={IOP Publishing}
+	doi = {10.1088/0004-637x/765/1/39},
+	url = {https://doi.org/10.1088/0004-637x/765/1/39},
+	year = 2013,
+	month = {feb},
+	publisher = {American Astronomical Society},
+	volume = {765},
+	number = {1},
+	pages = {39},
+	author = {Ann S. Almgren and John B. Bell and Mike J. Lijewski and Zarija Luki{\'{c}} and Ethan Van Andel},
+	title = {Nyx: A {MASSIVELY} {PARALLEL} {AMR} {CODE} {FOR} {COMPUTATIONAL} {COSMOLOGY}},
+	journal = {The Astrophysical Journal},
+	abstract = {We present a new N-body and gas dynamics code, called Nyx, for large-scale cosmological simulations. Nyx follows the temporal evolution of a system of discrete dark matter particles gravitationally coupled to an inviscid ideal fluid in an expanding universe. The gas is advanced in an Eulerian framework with block-structured adaptive mesh refinement; a particle-mesh scheme using the same grid hierarchy is used to solve for self-gravity and advance the particles. Computational results demonstrating the validation of Nyx on standard cosmological test problems, and the scaling behavior of Nyx to 50,000 cores, are presented.}
 }
 
 @article{maestroex,
-  title={MAESTROeX: A Massively Parallel Low Mach Number Astrophysical Solver},
-  author={D. Fan and A. Nonaka and A. S. Almgren and A. Harpole and M. Zingale},
-  journal={accepted for publication in The Astrophysical Journal},
-  year={2019},
-  url = {https://arxiv.org/abs/1908.03634}
+	doi = {10.3847/1538-4357/ab4f75},
+	url = {https://doi.org/10.3847/1538-4357/ab4f75},
+	year = 2019,
+	month = {dec},
+	publisher = {American Astronomical Society},
+	volume = {887},
+	number = {2},
+	pages = {212},
+	title = {{MAESTROeX}: A Massively Parallel Low Mach Number Astrophysical Solver},
+	journal = {The Astrophysical Journal},
+	abstract = {We present MAESTROeX, a massively parallel solver for low Mach number astrophysical flows. The underlying low Mach number equation set allows for efficient, long-time integration for highly subsonic flows compared to compressible approaches. MAESTROeX is suitable for modeling full spherical stars as well as well as planar simulations of dynamics within localized regions of a star, and can robustly handle several orders of magnitude of density and pressure stratification. Previously, we have described the development of the predecessor of MAESTROeX, called MAESTRO, in a series of papers. Here, we present a new, greatly simplified temporal integration scheme that retains the same order of accuracy as our previous approaches. We also explore the use of alternative spatial mapping of the one-dimensional base state onto the full Cartesian grid. The code leverages the new AMReX software framework for block-structured adaptive mesh refinement (AMR) applications, allowing for scalability to large fractions of leadership-class machines. Using our previous studies on the convective phase of single-degenerate progenitor models of SNe Ia as a guide, we characterize the performance of the code and validate the new algorithmic features. Like MAESTRO, MAESTROeX is fully open source.}
+},
+        author={D. Fan and A. Nonaka and A. S. Almgren and A. Harpole and M. Zingale}
 }
 
 @article{AMReX,
@@ -51,7 +64,7 @@ archivePrefix = {arXiv},
 
 @article{simple_sdc,
 	doi = {10.1088/1742-6596/1225/1/012005},
-	url = {https://doi.org/10.1088%2F1742-6596%2F1225%2F1%2F012005},
+	url = {https://doi.org/10.1088/1742-6596/1225/1/012005},
 	year = 2019,
 	month = {may},
 	publisher = {{IOP} Publishing},
@@ -119,8 +132,8 @@ number = "1",
 pages = "400 - 430",
 year = "2007",
 issn = "0021-9991",
-doi = "https://doi.org/10.1016/j.jcp.2007.07.035",
-url = "http://www.sciencedirect.com/science/article/pii/S0021999107003385",
+doi = "10.1016/j.jcp.2007.07.035",
+url = "https://doi.org/10.1016/j.jcp.2007.07.035",
 author = "Francesco Miniati and Phillip Colella",
 keywords = "Higher-order Godunov methods, Adaptive mesh refinement, Elliptic methods, Particle-in-cell methods",
 abstract = "We present a new numerical algorithm for the solution of coupled collisional and collisionless systems, based on the block structured adaptive mesh and time refinement strategy (AMR). We describe the issues associated with the discretization of the system equations and the synchronization of the numerical solution on the hierarchy of grid levels. We implement a code based on a higher order, conservative and directionally unsplit Godunov’s method for hydrodynamics; a symmetric, time centered modified symplectic scheme for collisionless component; and a multilevel, multigrid relaxation algorithm for the elliptic equation coupling the two components. Numerical results that illustrate the accuracy of the code and the relative merit of various implemented schemes are also presented."
@@ -135,8 +148,8 @@ journal = "Journal of Parallel and Distributed Computing ",
    year = "2014",
    note = "Domain-Specific Languages and High-Level Frameworks for High-Performance Computing ",
    issn = "0743-7315",
-    doi = "https://doi.org/10.1016/j.jpdc.2014.07.003",
-    url = "http://www.sciencedirect.com/science/article/pii/S0743731514001257",
+    doi = "10.1016/j.jpdc.2014.07.003",
+    url = "https://doi.org/10.1016/j.jpdc.2014.07.003",
  author = "H. Carter Edwards and Christian R. Trott and Daniel Sunderland"
 }
 
