@@ -952,6 +952,7 @@ protected:
 #ifdef SDC
     // if true , use SDC to couple hydro and reactions
     static int sdc_split;
+    static int strang_restart_from_sdc;
 #endif
 
     // There can be only one Gravity object, it covers all levels:

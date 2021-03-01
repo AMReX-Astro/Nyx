@@ -127,6 +127,7 @@ int Nyx::strang_split = 1;
 int Nyx::strang_grown_box = 1;
 #ifdef SDC
 int Nyx::sdc_split    = 0;
+int Nyx::strang_restart_from_sdc    = 0;
 #endif
 
 Real Nyx::average_gas_density = 0.;
@@ -435,6 +436,7 @@ Nyx::read_hydro_params ()
 #ifdef HEATCOOL
 #ifdef SDC
     pp_nyx.query("sdc_split", sdc_split);
+    pp_nyx.query("strang_restart_from_sdc", strang_restart_from_sdc);
     if (sdc_split == 1 && strang_split == 1)
         amrex::Error("Cant have strang_split == 1 and sdc_split == 1");
     if (sdc_split == 0 && strang_split == 0)

@@ -271,7 +271,7 @@ Nyx::advance_hydro_plus_particles (Real time,
     for (int lev = level; lev <= finest_level_to_advance; lev++)
     {
 #ifdef SDC
-        if (sdc_split > 0) { 
+      if (sdc_split > 0 && (strang_restart_from_sdc == 0)) { 
            get_level(lev).sdc_hydro(time, dt, a_old, a_new);
         } else {
            get_level(lev).strang_hydro(time, dt, a_old, a_new);
