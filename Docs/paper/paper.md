@@ -105,9 +105,24 @@ offers a few unique features.  The original motivation for developing
 Nyx was to build a simulation code based on a modern,
 well-supported AMR library (BoxLib which evolved to AMReX), using
 unsplit integration techniques.
+Nyx's target user base is researchers who are approaching large problems
+which require HPC resources, including new architectures.
 The large developer community contributing to AMReX
 (representing a large number of application codes across various domains)
 results in Nyx continually gaining optimizations for new architectures.  
+
+The science problem of interest Nyx is best suited to model is
+simulating the Lyman alpha forest to investigate the large-scale
+structure formation of the universe. Nyx includes significant
+heating-cooling methods for simulating the intergalactic medium.
+Nyx allows for both N-body and N-body + hydrodynamics simulations,
+which allows for comparison testing with other modelling approaches
+such as smootherd-particle hydrodynamics.
+Given Nyx's parallel performance, it can be used to perform many
+simulations to assess the impact of different initial conditions,
+parameters and modeled physics.
+These simulation models can also be used as data for machine learning
+emulators.
 
 # Acknowledgements
 
