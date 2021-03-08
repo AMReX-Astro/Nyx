@@ -106,8 +106,30 @@ Nyx was to build a simulation code based on a modern,
 well-supported AMR library (BoxLib which evolved to AMReX), using
 unsplit integration techniques.
 The large developer community contributing to AMReX
-(representing a large number of application codes across various domains)
-results in Nyx continually gaining optimizations for new architectures.  
+helps in Nyx continually gaining optimizations for new architectures.  
+
+At present, Nyx is mostly used to model the cosmological evolution of the
+intergalactic medium (IGM) - a reservoir of low density gas which fills the space
+between galaxies. Different physical effects, ranging from the nature of
+dark matter to different reionization scenarios related to the radiation
+from star-forming galaxies, set the observable
+properties of IGM, making it a powerful probe of cosmology and astrophysics.
+But in order to extract scientific insights, confronting observations of 
+the IGM (usually through the Lyman alpha forest) against simulated models is necessity, and that is where Nyx steps in.
+Incoming observations, for example Dark Energy Spectroscopic Instrument (DESI) or
+high-resolution spectrographs like the one mounted on the Keck telescope are noticeably 
+reducing the statistical errors of measurements; the community needs tools
+capable of producing model universes which are of the same or better accuracy as observations.
+Nyx's scalability allows modeling of
+representative cosmological volumes, while maintaining the resolution needed
+to resolve small fluctuations in the intergalactic gas. Physics of Nyx allows simulations
+of different cosmological and reionization scenarios, enabling users to produce
+mock universes for a variety of physically relevant models.
+
+While we do best effort to enable Nyx to efficiently run on any general Linux-type machine,
+our main targets are high-performance computer architectures, and massively parallel simulations 
+needed for cosmological and astrophysical research.
+
 
 # Acknowledgements
 
