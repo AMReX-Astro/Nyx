@@ -97,17 +97,23 @@ Nyx::construct_hydro_source(
         const amrex::Box& fbx = amrex::grow(bx, nGrowF);
 
         amrex::GpuArray<amrex::FArrayBox, AMREX_SPACEDIM> flux;
+        amrex::Elixir flux_eli[AMREX_SPACEDIM];
         for (int dir = 0; dir < AMREX_SPACEDIM; ++dir) {
           const amrex::Box& efbx = surroundingNodes(fbx, dir);
-          flux[dir].resize(efbx, S.nComp(), amrex::The_Async_Arena());
+          flux[dir].resize(efbx, S.nComp());
+          flux_eli[dir] = flux[dir].elixir();
         }
 
         auto const& s = S.array(mfi);
         auto const& hyd_src = hydro_source.array(mfi);
 
         // Resize Temporary Fabs
-        amrex::FArrayBox     q(qbx, QVAR, amrex::The_Async_Arena());
-        amrex::FArrayBox src_q(qbx, QVAR, amrex::The_Async_Arena());
+        amrex::FArrayBox     q(qbx, QVAR);
+        amrex::FArrayBox src_q(qbx, QVAR);
+
+        // Use Elixir Construct to steal the Fabs metadata
+        amrex::Elixir     qeli = q.elixir();
+        amrex::Elixir src_qeli = src_q.elixir();
 
         // Get Arrays to pass to the gpu.
         auto const&    qarr =     q.array();
@@ -252,17 +258,21 @@ pc_umdrv(
   //  Set Up for Hydro Flux Calculations
   auto const& bxg2 = grow(bx, 2);
   amrex::FArrayBox qec[AMREX_SPACEDIM];
+  amrex::Elixir qec_eli[AMREX_SPACEDIM];
   for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
     const amrex::Box eboxes = amrex::surroundingNodes(bxg2, dir);
-    qec[dir].resize(eboxes, NGDNV, amrex::The_Async_Arena());
+    qec[dir].resize(eboxes, NGDNV);
+    qec_eli[dir] = qec[dir].elixir();
   }
 
   amrex::GpuArray<amrex::Array4<amrex::Real>, AMREX_SPACEDIM> qec_arr
     {qec[0].array(), qec[1].array(), qec[2].array()};
 
   //  Temporary FArrayBoxes
-  amrex::FArrayBox divu(bxg2, 1, amrex::The_Async_Arena());
-  amrex::FArrayBox pdivu(bx, 1, amrex::The_Async_Arena());
+  amrex::FArrayBox divu(bxg2, 1);
+  amrex::FArrayBox pdivu(bx, 1);
+  amrex::Elixir divueli = divu.elixir();
+  amrex::Elixir pdiveli = pdivu.elixir();
   auto const& divarr = divu.array();
   auto const& pdivuarr = pdivu.array();
 
@@ -279,6 +289,10 @@ pc_umdrv(
 #endif
     ppm_type);
   BL_PROFILE_VAR_STOP(umeth);
+
+  for (int dir = 0; dir < AMREX_SPACEDIM; dir++) {
+    qec_eli[dir].clear();
+  }
 
   // divu
   const amrex::Real dx0 = dx[0]; 
