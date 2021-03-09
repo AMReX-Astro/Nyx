@@ -150,9 +150,14 @@ int Nyx::integrate_state_struct_mfin
       amrex::Gpu::streamSynchronize();
       int loop = 1;
 
+      if(verbose>1)
+        amrex::Arena::PrintUsage();
 #ifdef AMREX_USE_CUDA
-      cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();  
-      u = N_VNewWithMemHelp_Cuda(neq, /*use_managed_mem=*/true, *amrex::sundials::The_SUNMemory_Helper());
+      cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();
+      if(sundials_alloc_type==0)
+          u = N_VNewWithMemHelp_Cuda(neq, /*use_managed_mem=*/true, *amrex::sundials::The_SUNMemory_Helper());
+      else
+          u = N_VNewManaged_Cuda(neq);
       N_VSetCudaStream_Cuda(u, &currentStream);
 #else
 #ifdef _OPENMP
@@ -161,10 +166,16 @@ int Nyx::integrate_state_struct_mfin
 #else
 #ifdef AMREX_USE_GPU
 #ifdef AMREX_USE_HIP
-              u = N_VNewManaged_Hip(neq);  /* Allocate u vector */
+       if(sundials_alloc_type==0)
+              u = N_VNewWithMemHelp_Hip(neq, /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper());
+       else
+              u = N_VNewManaged_Hip(neq);
 #endif
 #ifdef AMREX_USE_DPCPP
-              u = N_VNewManaged_Sycl(neq,&amrex::Gpu::Device::streamQueue());  /* Allocate u vector */
+       if(sundials_alloc_type==0)
+              u = N_VNewWithMemHelp_Sycl(neq, &amrex::Gpu::Device::streamQueue(), /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper());
+       else
+              u = N_VNewManaged_Sycl(neq, &amrex::Gpu::Device::streamQueue());
 #endif
 #else
               u = N_VNew_Serial(neq);  /* Allocate u vector */
@@ -196,6 +207,19 @@ int Nyx::integrate_state_struct_mfin
                   e_src_vec = N_VCloneEmpty(u);
                   IR_vec = N_VCloneEmpty(u);
               }
+
+	      //   Directly providing MemHelp:
+	      //            e_orig = N_VNewWithMemHelp_Sycl(neq, &amrex::Gpu::Device::streamQueue(), /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper());
+	      //            abstol_vec = N_VNewWithMemHelp_Sycl(neq, &amrex::Gpu::Device::streamQueue(), /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper());
+	      //            T_vec = N_VNewWithMemHelp_Sycl(neq, &amrex::Gpu::Device::streamQueue(), /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper());
+	      //            ne_vec = N_VNewWithMemHelp_Sycl(neq, &amrex::Gpu::Device::streamQueue(), /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper());
+	      //            rho_vec = N_VNewWithMemHelp_Sycl(neq, &amrex::Gpu::Device::streamQueue(), /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper());
+	      //            rho_init_vec = N_VNewWithMemHelp_Sycl(neq, &amrex::Gpu::Device::streamQueue(), /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper());
+	      //            rho_src_vec = N_VNewWithMemHelp_Sycl(neq, &amrex::Gpu::Device::streamQueue(), /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper());
+	      //            rhoe_src_vec = N_VNewWithMemHelp_Sycl(neq, &amrex::Gpu::Device::streamQueue(), /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper());
+	      //            e_src_vec = N_VNewWithMemHelp_Sycl(neq, &amrex::Gpu::Device::streamQueue(), /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper());
+	      //            IR_vec = N_VNewWithMemHelp_Sycl(neq, &amrex::Gpu::Device::streamQueue(), /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper());
+
 #ifdef AMREX_USE_GPU
               eptr=N_VGetDeviceArrayPointer(e_orig);
               dptr=N_VGetDeviceArrayPointer(u);
