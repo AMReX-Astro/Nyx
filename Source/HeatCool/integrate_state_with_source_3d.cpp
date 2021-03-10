@@ -146,6 +146,7 @@ int Nyx::integrate_state_struct_mfin
       abstol_vec = NULL;
       cvode_mem = NULL;
 
+      SUNMemoryHelper S = SUNMemoryHelper_Sycl(&amrex::Gpu::Device::streamQueue());
       long int neq = len.x*len.y*len.z;
       amrex::Gpu::streamSynchronize();
       int loop = 1;
@@ -173,9 +174,10 @@ int Nyx::integrate_state_struct_mfin
 #endif
 #ifdef AMREX_USE_DPCPP
        if(sundials_alloc_type==0)
-              u = N_VNewWithMemHelp_Sycl(neq, &amrex::Gpu::Device::streamQueue(), /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper());
+	      u = N_VNewWithMemHelp_Sycl(neq, /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper(), &amrex::Gpu::Device::streamQueue());
+	 //       	 u = N_VNewWithMemHelp_Sycl(neq, /*use_managed_mem=*/false, S, &amrex::Gpu::Device::streamQueue());
        else
-              u = N_VNewManaged_Sycl(neq, &amrex::Gpu::Device::streamQueue());
+              u = N_VNew_Sycl(neq, &amrex::Gpu::Device::streamQueue());
 #endif
 #else
               u = N_VNew_Serial(neq);  /* Allocate u vector */
@@ -185,6 +187,7 @@ int Nyx::integrate_state_struct_mfin
 
               e_orig = N_VClone(u);  /* Allocate u vector */
               abstol_vec = N_VClone(u);
+
               if(sdc_iter>=0)
               {
                   T_vec = N_VClone(u);
@@ -300,7 +303,10 @@ int Nyx::integrate_state_struct_mfin
 
             N_VScale(abstol,u,abstol_vec);
             //                              N_VConst(N_VMin(abstol_vec),abstol_vec);
-
+#ifdef AMREX_DEBUG
+            N_VCopyFromDevice_Sycl(abstol_vec);
+            N_VPrint(abstol_vec);
+#endif
             flag = CVodeSVtolerances(cvode_mem, reltol, abstol_vec);
 
             //                              flag = CVodeSStolerances(cvode_mem, reltol, dptr[0]*abstol);
