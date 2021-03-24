@@ -1286,16 +1286,9 @@ Gravity::solve_for_delta_phi (int crse_level, int fine_level, MultiFab& CrseRhs,
     solve_with_MLMG(crse_level, fine_level, delta_phi, rhsp, grad, nullptr, rel_eps, abs_eps);
 }
 
-Real
-Gravity::solve_with_MLMG (int crse_level, int fine_level,
-                          const Vector<MultiFab*>& phi,
-                          const Vector<const MultiFab*>& rhs,
-                          const Vector<std::array<MultiFab*,AMREX_SPACEDIM> >& grad_phi,
-                          const MultiFab* const crse_bcdata,
-                          Real rel_eps, Real abs_eps)
+void 
+Gravity::setup_Poisson (int crse_level, int fine_level)
 {
-    BL_PROFILE("Gravity::solve_with_MLMG");
-
     const int nlevs = fine_level - crse_level + 1;
 
     Vector<Geometry> gmv;
@@ -1304,8 +1297,8 @@ Gravity::solve_with_MLMG (int crse_level, int fine_level,
     for (int ilev = 0; ilev < nlevs; ++ilev)
     {
         gmv.push_back(parent->Geom(ilev+crse_level));
-        bav.push_back(rhs[ilev]->boxArray());
-        dmv.push_back(rhs[ilev]->DistributionMap());
+        bav.push_back(grids[ilev]);
+        dmv.push_back(dmap[ilev]);
     }
 
     LPInfo info;
@@ -1318,22 +1311,60 @@ Gravity::solve_with_MLMG (int crse_level, int fine_level,
     if(mlmg_consolidation)
       info.setConsolidationGridSize(16);
 
-    MLPoisson mlpoisson(gmv, bav, dmv, info);
+    mlpoisson.reset(new MLPoisson(gmv, bav, dmv, info));
+
+}
+
+Real
+Gravity::solve_with_MLMG (int crse_level, int fine_level,
+                          const Vector<MultiFab*>& phi,
+                          const Vector<const MultiFab*>& rhs,
+                          const Vector<std::array<MultiFab*,AMREX_SPACEDIM> >& grad_phi,
+                          const MultiFab* const crse_bcdata,
+                          Real rel_eps, Real abs_eps)
+{
+    BL_PROFILE("Gravity::solve_with_MLMG");
+
+    const int nlevs = fine_level - crse_level + 1;
+
+    // should be redundant since setup_Poisson is called in post_regrid
+    if(nlevs>1)
+      {
+
+	Vector<Geometry> gmv;
+	Vector<BoxArray> bav;
+	Vector<DistributionMapping> dmv;
+	for (int ilev = 0; ilev < nlevs; ++ilev)
+	  {
+	    gmv.push_back(parent->Geom(ilev+crse_level));
+	    bav.push_back(rhs[ilev]->boxArray());
+	    dmv.push_back(rhs[ilev]->DistributionMap());
+	  }
+
+	LPInfo info;
+	info.setAgglomeration(mlmg_agglomeration);
+	info.setConsolidation(mlmg_consolidation);
+
+	mlpoisson.reset(new MLPoisson(gmv, bav, dmv, info));
+      }
+
+    if(!mlpoisson)
+      setup_Poisson(crse_level,fine_level);
 
     // BC
-    mlpoisson.setDomainBC(mlmg_lobc, mlmg_hibc);
+    mlpoisson->setDomainBC(mlmg_lobc, mlmg_hibc);
 
-    if (mlpoisson.needsCoarseDataForBC())
+    if (mlpoisson->needsCoarseDataForBC())
     {
-        mlpoisson.setCoarseFineBC(crse_bcdata, parent->refRatio(crse_level-1)[0]);
+        mlpoisson->setCoarseFineBC(crse_bcdata, parent->refRatio(crse_level-1)[0]);
     }
     
     for (int ilev = 0; ilev < nlevs; ++ilev)
     {
-        mlpoisson.setLevelBC(ilev, phi[ilev]);
+        mlpoisson->setLevelBC(ilev, phi[ilev]);
     }
 
-    MLMG mlmg(mlpoisson);
+    MLMG mlmg(*mlpoisson);
     mlmg.setVerbose(mg_verbose);
 
     // The default bottom solver is BiCG
