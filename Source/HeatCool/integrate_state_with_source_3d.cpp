@@ -146,7 +146,9 @@ int Nyx::integrate_state_struct_mfin
       abstol_vec = NULL;
       cvode_mem = NULL;
 
+#ifdef AMREX_USE_DPCPP
       SUNMemoryHelper S = SUNMemoryHelper_Sycl(&amrex::Gpu::Device::streamQueue());
+#endif
       long int neq = len.x*len.y*len.z;
       amrex::Gpu::streamSynchronize();
       int loop = 1;
@@ -168,9 +170,9 @@ int Nyx::integrate_state_struct_mfin
 #ifdef AMREX_USE_GPU
 #ifdef AMREX_USE_HIP
        if(sundials_alloc_type==0)
-              u = N_VNewWithMemHelp_Hip(neq, /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper());
+              u = N_VNewWithMemHelp_Hip(neq, /*use_managed_mem=*/true, *amrex::sundials::The_SUNMemory_Helper());
        else
-              u = N_VNewManaged_Hip(neq);
+              u = N_VNew_Hip(neq);
 #endif
 #ifdef AMREX_USE_DPCPP
        if(sundials_alloc_type==0)
