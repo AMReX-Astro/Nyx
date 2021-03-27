@@ -476,23 +476,21 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::MultiplyParticleMass (int lev, amrex::Rea
 
    for (typename ParticleLevel::iterator pmap_it = pmap.begin(), pmapEnd = pmap.end(); pmap_it != pmapEnd; ++pmap_it)
    {
-       AoS&       pbx = pmap_it->second.GetArrayOfStructs();
-       const int n    = pbx.size();
+        AoS&       pbx = pmap_it->second.GetArrayOfStructs();
+        ParticleType* pstruct = pbx().data();
+        const long np    = pbx.size();
 
-#ifdef _OPENMP
-#pragma omp parallel for
-#endif
-       for (int i = 0; i < n; i++)
-       {
-          ParticleType& p = pbx[i];
-          if (p.id() > 0)
-          {
-              //
-              // Note: rdata(0) is mass, ...
-              //
-              p.rdata(0) *= mult;
-          }
-       }
+        amrex::ParallelFor(np,
+                           [=] AMREX_GPU_HOST_DEVICE ( long i)
+                           {
+                               if (pstruct[i].id() > 0)
+                               {
+                                   //
+                                   // Note: rdata(0) is mass, ...
+                                   //
+                                   pstruct[i].rdata(0) *= mult;
+                               }
+                           });
    }
 }
 
