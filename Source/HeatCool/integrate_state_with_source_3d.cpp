@@ -218,7 +218,7 @@ int Nyx::integrate_state_struct_mfin
 #else
 #ifdef AMREX_USE_GPU
 #ifdef AMREX_USE_HIP
-              u = N_VNewManaged_Hip(neq);  /* Allocate u vector */
+              u = N_VNew_Hip(neq);  /* Allocate u vector */
 #endif
 #ifdef AMREX_USE_DPCPP
               u = N_VNewManaged_Sycl(neq,&amrex::Gpu::Device::streamQueue());  /* Allocate u vector */
