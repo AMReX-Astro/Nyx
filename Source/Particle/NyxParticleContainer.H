@@ -492,6 +492,7 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::MultiplyParticleMass (int lev, amrex::Rea
                                }
                            });
    }
+   amrex::Gpu::streamSynchronize();
 }
 
 template <int NSR,int NSI,int NAR,int NAI>

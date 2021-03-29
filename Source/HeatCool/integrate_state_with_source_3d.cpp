@@ -135,7 +135,7 @@ int Nyx::integrate_state_struct_mfin
       N_Vector IR_vec;
 
       void *cvode_mem;
-      double *dptr, *eptr, *rpar, *rparh, *abstol_ptr;
+      realtype *dptr, *eptr, *rpar, *rparh, *abstol_ptr;
       realtype t=0.0;
                                 
       u = NULL;
@@ -179,14 +179,14 @@ int Nyx::integrate_state_struct_mfin
       }
       else
       {
-                dptr=(double*) The_Arena()->alloc(neq*sizeof(double));
+                dptr=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
                 u = N_VMakeManaged_Cuda(neq,dptr);  /* Allocate u vector */
-                eptr= (double*) The_Arena()->alloc(neq*sizeof(double));
+                eptr= (realtype*) The_Arena()->alloc(neq*sizeof(realtype));
                 e_orig = N_VMakeManaged_Cuda(neq,eptr);  /* Allocate u vector */
                 N_VSetCudaStream_Cuda(e_orig, &currentStream);
                 N_VSetCudaStream_Cuda(u, &currentStream);
 
-                abstol_ptr = (double*) The_Arena()->alloc(neq*sizeof(double));
+                abstol_ptr = (realtype*) The_Arena()->alloc(neq*sizeof(realtype));
                 abstol_vec = N_VMakeManaged_Cuda(neq,abstol_ptr);
                 N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
                 amrex::Gpu::streamSynchronize();

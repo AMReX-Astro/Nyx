@@ -9,9 +9,6 @@ unsigned long int mt_random();
 int StochasticForcing::verbose      = 0;
 int StochasticForcing::SpectralRank = 3;
 
-extern "C"
-{void fort_get_grav_const(Real* Gconst);}
-
 //
 //  Default constructor
 //
