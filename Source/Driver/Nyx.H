@@ -772,6 +772,9 @@ int integrate_state_struct
 
     static amrex::Real tagging_base;
 
+    // specifies the memory priority
+    static int reuse_mlpoisson;
+  
     //
     // This amrex::MultiFab is used for the level coarser than this level to mask out
     // this level.  We only build this when it is needed.

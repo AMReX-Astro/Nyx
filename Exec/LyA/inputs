@@ -22,6 +22,9 @@ nyx.do_santa_barbara = 1
 nyx.init_sb_vels     = 1
 gravity.ml_tol = 1.e-10
 gravity.sl_tol = 1.e-10
+gravity.mlmg_agglomeration=1
+gravity.mlmg_consolidation=1
+nyx.resuse_mlpoisson = 1
 
 nyx.initial_z = 159.0
 nyx.final_z = 2.0

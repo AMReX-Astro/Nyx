@@ -151,6 +151,7 @@ int Nyx::do_forcing =  0;
 
 int Nyx::nghost_state       = 1;
 Real Nyx::tagging_base       = 8.0;
+int Nyx::reuse_mlpoisson     = 0;
 int Nyx::ppm_type           = 1;
 
 // Options are "floor" or "conservative"
@@ -484,6 +485,7 @@ Nyx::read_hydro_params ()
     pp_nyx.query("shrink_to_fit", shrink_to_fit);
     pp_nyx.query("use_typical_steps", use_typical_steps);
     pp_nyx.query("tagging_base", tagging_base);
+    pp_nyx.query("reuse_mlpoisson", reuse_mlpoisson);
     pp_nyx.query("ppm_type", ppm_type);
     pp_nyx.query("enforce_min_density_type", enforce_min_density_type);
 
@@ -1838,7 +1840,9 @@ Nyx::post_regrid (int lbase,
             do_grav_solve_here = (level == lbase);
         }
 
-	gravity->setup_Poisson(level,new_finest);
+	//        if(parent->maxLevel() == 0)
+        if(reuse_mlpoisson != 0)
+          gravity->setup_Poisson(level,new_finest);
 
         // Only do solve here if we will be using it in the timestep right after without re-solving,
         //      or if this is called from somewhere other than Amr::timeStep
