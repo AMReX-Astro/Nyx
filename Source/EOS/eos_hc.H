@@ -172,7 +172,7 @@ void iterate_ne_device(AtomicRates* atomic_rates, const int JH, const int JHe, c
         df  = 1.0e0 - dnhp_dne - dnhep_dne - 2.0e0*dnhepp_dne;
         dne = f/df;
 
-        ne = amrex::max((ne-dne), 0.0e0);
+        ne = amrex::max((ne-dne), 0.0e0_rt);
 
         if (amrex::Math::abs(dne) < xacc)
             break;

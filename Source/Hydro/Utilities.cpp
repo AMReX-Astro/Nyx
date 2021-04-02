@@ -320,7 +320,7 @@ void limit_hydro_fluxes_on_small_dens(const int i,
 
     // Limit theta to the valid range (this will deal with roundoff issues).
 
-    theta = amrex::min(1.0, amrex::max(theta, 0.0));
+    theta = amrex::min(1.0_rt, amrex::max(theta, 0.0_rt));
 
     // Assemble the limited flux (Equation 16).
 

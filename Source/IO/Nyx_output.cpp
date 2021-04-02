@@ -647,52 +647,6 @@ Nyx::particle_check_point (const std::string& dir)
         }
 #endif
 #endif
-#ifdef NO_HYDRO
-        Real cur_time = state[PhiGrav_Type].curTime();
-#else
-        Real cur_time = state[State_Type].curTime();
-#endif
-
-        if (ParallelDescriptor::IOProcessor())
-        {
-            std::string FileName = dir + "/comoving_a";
-            std::ofstream File;
-            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
-            if ( ! File.good()) {
-                amrex::FileOpenFailed(FileName);
-            }
-            File.precision(15);
-            if (cur_time == 0)
-            {
-               File << old_a << '\n';
-            } else {
-               File << new_a << '\n';
-            }
-        }
-
-        if (ParallelDescriptor::IOProcessor())
-        {
-            std::string FileName = dir + "/first_max_steps";
-            std::ofstream File;
-            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
-            if ( ! File.good()) {
-                amrex::FileOpenFailed(FileName);
-            }
-            File.precision(15);
-            File << old_max_sundials_steps << '\n';
-        }
-
-        if (ParallelDescriptor::IOProcessor())
-        {
-            std::string FileName = dir + "/second_max_steps";
-            std::ofstream File;
-            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
-            if ( ! File.good()) {
-                amrex::FileOpenFailed(FileName);
-            }
-            File.precision(15);
-            File << old_max_sundials_steps << '\n';
-        }
     }
 }
 
@@ -914,7 +868,7 @@ Nyx::checkPointPre (const std::string& /*dir*/,
 
 
 void
-Nyx::checkPointPost (const std::string& /*dir*/,
+Nyx::checkPointPost (const std::string& dir,
                      std::ostream&      /*os*/)
 {
 #ifdef AMREX_PARTICLES
@@ -932,6 +886,55 @@ Nyx::checkPointPost (const std::string& /*dir*/,
   }
 #endif
 #endif
+#ifdef NO_HYDRO
+        Real cur_time = state[PhiGrav_Type].curTime();
+#else
+        Real cur_time = state[State_Type].curTime();
+#endif
+  if(level==0)
+    {
+        if (ParallelDescriptor::IOProcessor())
+        {
+            std::string FileName = dir + "/comoving_a";
+            std::ofstream File;
+            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
+            if ( ! File.good()) {
+                amrex::FileOpenFailed(FileName);
+            }
+            File.precision(15);
+            if (cur_time == 0)
+            {
+               File << old_a << '\n';
+            } else {
+               File << new_a << '\n';
+            }
+        }
+
+        if (ParallelDescriptor::IOProcessor())
+        {
+            std::string FileName = dir + "/first_max_steps";
+            std::ofstream File;
+            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
+            if ( ! File.good()) {
+                amrex::FileOpenFailed(FileName);
+            }
+            File.precision(15);
+            File << old_max_sundials_steps << '\n';
+        }
+
+        if (ParallelDescriptor::IOProcessor())
+        {
+            std::string FileName = dir + "/second_max_steps";
+            std::ofstream File;
+            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
+            if ( ! File.good()) {
+                amrex::FileOpenFailed(FileName);
+            }
+            File.precision(15);
+            File << old_max_sundials_steps << '\n';
+        }
+    }
+
 }
 
 #ifndef NO_HYDRO

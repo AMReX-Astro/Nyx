@@ -2502,6 +2502,7 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
 #ifdef AMREX_USE_GPU
     if (Gpu::inLaunchRegion())
     {
+        BL_PROFILE("Nyx::compute_rho_temp()::ReduceOpsOnDevice");
         ReduceOps<ReduceOpSum,ReduceOpSum,ReduceOpSum,ReduceOpSum,
                   ReduceOpSum,ReduceOpSum,ReduceOpSum> reduce_op;
         ReduceData<Real,Real,Real,Real,Real,Real,Real> reduce_data(reduce_op);
@@ -2554,6 +2555,7 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
     reduction(+:rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum)
 #endif
     {
+        BL_PROFILE("Nyx::compute_rho_temp()::OnHost");
         for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
         {
             const Box& bx = mfi.tilebox();
@@ -2617,6 +2619,7 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
     Real local_average_gas_density = average_gas_density;
     if (Gpu::inLaunchRegion())
     {
+        BL_PROFILE("Nyx::compute_gas_fractions()::ReduceOpsOnDevice");
         ReduceOps<ReduceOpSum,ReduceOpSum,ReduceOpSum,ReduceOpSum,
                   ReduceOpSum,ReduceOpSum,ReduceOpSum,ReduceOpSum> reduce_op;
         ReduceData<Real,Real,Real,Real,Real,Real,Real,Real> reduce_data(reduce_op);
@@ -2672,6 +2675,7 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
     else
 #endif
     {
+    BL_PROFILE("Nyx::compute_gas_fractions()::OnHost");
 #ifdef _OPENMP
 #pragma omp parallel  if (amrex::Gpu::notInLaunchRegion())               \
     reduction(+:whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum)
