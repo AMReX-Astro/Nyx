@@ -55,7 +55,7 @@ flatten(
 
   amrex::Real denom = amrex::max(small_pres, amrex::Math::abs(qpp-qmm));
   amrex::Real zeta = amrex::Math::abs(dp) / denom;
-  const amrex::Real    z = amrex::min(1.0, amrex::max(0.0, dzcut * (zeta - zcut1)));
+  const amrex::Real    z = amrex::min(amrex::Real(1.0), amrex::max(amrex::Real(0.0), dzcut * (zeta - zcut1)));
 
   amrex::Real tst = (qmun-qpun >= 0.0) ? 1.0 : 0.0;
 
@@ -80,7 +80,7 @@ flatten(
 
   denom = amrex::max(small_pres, amrex::Math::abs(qppshft-qmmshft));
   zeta = amrex::Math::abs(dp) / denom;
-  const amrex::Real z2 = amrex::min(1.0, amrex::max(0.0, dzcut * (zeta - zcut1)));
+  const amrex::Real z2 = amrex::min(amrex::Real(1.0), amrex::max(amrex::Real(0.0), dzcut * (zeta - zcut1)));
 
   tst =  (qmunshft - qpunshft >= 0.0) ? 1.0 : 0.0;
 
@@ -129,9 +129,9 @@ pc_cmpflx(
     GU = QU;
     GV = QV;
     GV2 = QW;
-    csmall = amrex::max(small, small * std::sqrt(amrex::Math::abs(gamma * (gamma - 1.0) * qprim(i-1,j,k,QREINT) / qprim(i-1,j,k,QRHO))), small * std::sqrt(amrex::Math::abs(gamma * (gamma - 1.0) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
-    cav = 0.5 * ( std::sqrt(amrex::Math::abs(gamma * (gamma - 1.0) * qprim(i-1,j,k,QREINT) / qprim(i-1,j,k,QRHO)))
-                  +std::sqrt(amrex::Math::abs(gamma * (gamma - 1.0) * qprim(i  ,j,k,QREINT) / qprim(i  ,j,k,QRHO))) );
+    csmall = amrex::max(small, small * std::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i-1,j,k,QREINT) / qprim(i-1,j,k,QRHO))), small * std::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
+    cav = 0.5 * ( std::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i-1,j,k,QREINT) / qprim(i-1,j,k,QRHO)))
+                  +std::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i  ,j,k,QREINT) / qprim(i  ,j,k,QRHO))) );
     f_idx[0] = Xmom_comp;
     f_idx[1] = Ymom_comp;
     f_idx[2] = Zmom_comp;
@@ -142,9 +142,9 @@ pc_cmpflx(
     GU = QV;
     GV = QU;
     GV2 = QW;
-    csmall = amrex::max(small, small * std::sqrt(amrex::Math::abs(gamma * (gamma - 1.0) * qprim(i,j-1,k,QREINT) / qprim(i,j-1,k,QRHO))), small * std::sqrt(amrex::Math::abs(gamma * (gamma - 1.0) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
-    cav = 0.5 * ( std::sqrt(amrex::Math::abs(gamma * (gamma - 1.0) * qprim(i,j-1,k,QREINT) / qprim(i,j-1,k,QRHO)))
-                                  +std::sqrt(amrex::Math::abs(gamma * (gamma - 1.0) * qprim(i,j  ,k,QREINT) / qprim(i,j  ,k,QRHO))) );
+    csmall = amrex::max(small, small * std::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i,j-1,k,QREINT) / qprim(i,j-1,k,QRHO))), small * std::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
+    cav = 0.5 * ( std::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i,j-1,k,QREINT) / qprim(i,j-1,k,QRHO)))
+                                  +std::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i,j  ,k,QREINT) / qprim(i,j  ,k,QRHO))) );
     f_idx[0] = Ymom_comp;
     f_idx[1] = Xmom_comp;
     f_idx[2] = Zmom_comp;
@@ -155,9 +155,9 @@ pc_cmpflx(
     GU = QW;
     GV = QU;
     GV2 = QV;
-    csmall = amrex::max(small, small * std::sqrt(amrex::Math::abs(gamma * (gamma - 1.0) * qprim(i,j,k-1,QREINT) / qprim(i,j,k-1,QRHO))), small * std::sqrt(amrex::Math::abs(gamma * (gamma - 1.0) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
-    cav = 0.5 * ( std::sqrt(amrex::Math::abs(gamma * (gamma - 1.0) * qprim(i,j,k-1,QREINT) / qprim(i,j,k-1,QRHO)))
-                                  +std::sqrt(amrex::Math::abs(gamma * (gamma - 1.0) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
+    csmall = amrex::max(small, small * std::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i,j,k-1,QREINT) / qprim(i,j,k-1,QRHO))), small * std::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
+    cav = 0.5 * ( std::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i,j,k-1,QREINT) / qprim(i,j,k-1,QRHO)))
+                                  +std::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
     f_idx[0] = Zmom_comp;
     f_idx[1] = Xmom_comp;
     f_idx[2] = Ymom_comp;
@@ -300,14 +300,14 @@ pc_transx1(
 
   qp(i, j, k, QREINT) = renewr - rhoekinr;
 
-  amrex::Real pnewr = qp(i, j, k, QREINT) * (gamma - 1.0);
+  amrex::Real pnewr = qp(i, j, k, QREINT) * (gamma - amrex::Real(1.0));
 
   if (pnewr < small_pres)
   {
        pnewr = qyp(i,j,k,QPRES) - cdtdx * ( dup + pav*du*(gamma - 1.));
   }
   qp(i, j, k, QPRES) = amrex::max(pnewr, small_pres);
-  qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - 1.0);
+  qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - amrex::Real(1.0));
 
   // QM
 
@@ -345,13 +345,13 @@ pc_transx1(
     0.5 * (runewl * runewl + rvnewl * rvnewl + rwnewl * rwnewl) / rrnewl;
 
   qm(i, j + 1, k, QREINT) = renewl - rhoekinl;
-  amrex::Real pnewl = qm(i, j + 1, k, QREINT) * (gamma - 1.0);
+  amrex::Real pnewl = qm(i, j + 1, k, QREINT) * (gamma - amrex::Real(1.0));
   if(pnewl < small_pres)
   {
        pnewl = qym(i,j+1,k,QPRES) - cdtdx * ( dup + pav*du*(gamma - 1.));
   }
   qm(i, j + 1, k, QPRES) = amrex::max(pnewl, small_pres);
-  qm(i, j + 1, k, QREINT) = qm(i, j + 1, k, QPRES) / (gamma - 1.0);
+  qm(i, j + 1, k, QREINT) = qm(i, j + 1, k, QPRES) / (gamma - amrex::Real(1.0));
 }
 
 // Corrects the left and right x states with y flux
@@ -462,7 +462,7 @@ pc_transy1(
        pnewr = qxp(i,j,k,QPRES) - cdtdy * ( dup + pav*du*(gamma - 1.));
   }
   qp(i, j, k, QPRES) = amrex::max(pnewr, small_pres);
-  qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - 1.0);
+  qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - amrex::Real(1.0));
 
   // QM
 
@@ -506,7 +506,7 @@ pc_transy1(
        pnewl = qxm(i+1,j,k,QPRES) - cdtdy * ( dup + pav*du*(gamma - 1.));
   }
   qm(i + 1, j, k, QPRES) = amrex::max(pnewl, small_pres);
-  qm(i + 1, j, k, QREINT) = qm(i + 1, j, k, QPRES) / (gamma - 1.0);
+  qm(i + 1, j, k, QREINT) = qm(i + 1, j, k, QPRES) / (gamma - amrex::Real(1.0));
 
 }
 
@@ -615,7 +615,7 @@ pc_transx2(
        pnewr = qzp(i,j,k,QPRES) - cdtdx * ( dup + pav*du*(gamma - 1.));
   }
   qp(i, j, k, QPRES) = amrex::max(pnewr, small_pres);
-  qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - 1.0);
+  qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - amrex::Real(1.0));
 
   // QM
 
@@ -659,7 +659,7 @@ pc_transx2(
        pnewl = qzm(i,j,k+1,QPRES) - cdtdx * ( dup + pav*du*(gamma - 1.));
   }
   qm(i, j, k + 1, QPRES) = amrex::max(pnewl, small_pres);
-  qm(i, j, k + 1, QREINT) = qm(i, j, k + 1, QPRES) / (gamma - 1.0);
+  qm(i, j, k + 1, QREINT) = qm(i, j, k + 1, QPRES) / (gamma - amrex::Real(1.0));
 
 }
 
@@ -769,7 +769,7 @@ pc_transy2(
        pnewr = qzp(i,j,k,QPRES) - cdtdy * ( dup + pav*du*(gamma - 1.));
   }
   qp(i, j, k, QPRES) = amrex::max(pnewr, small_pres);
-  qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - 1.0);
+  qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - amrex::Real(1.0));
 
   // QM
 
@@ -814,7 +814,7 @@ pc_transy2(
        pnewl = qzm(i,j,k+1,QPRES) - cdtdy * ( dup + pav*du*(gamma - 1.));
   }
   qm(i, j, k + 1, QPRES) = amrex::max(pnewl, small_pres);
-  qm(i, j, k + 1, QREINT) = qm(i, j, k + 1, QPRES) / (gamma - 1.0);
+  qm(i, j, k + 1, QREINT) = qm(i, j, k + 1, QPRES) / (gamma - amrex::Real(1.0));
 
 }
 
@@ -924,7 +924,7 @@ pc_transz1(
        pnewr = qxp(i,j,k,QPRES) - cdtdz * ( dup + pav*du*(gamma - 1.));
   }
   qp(i, j, k, QPRES) = amrex::max(pnewr, small_pres);
-  qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - 1.0);
+  qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - amrex::Real(1.0));
 
   // QM
 
@@ -968,7 +968,7 @@ pc_transz1(
        pnewl = qxm(i+1,j,k,QPRES) - cdtdz * ( dup + pav*du*(gamma - 1.));
   }
   qm(i + 1, j, k, QPRES) = amrex::max(pnewl, small_pres);
-  qm(i + 1, j, k, QREINT) = qm(i + 1, j, k, QPRES) / (gamma - 1.0);
+  qm(i + 1, j, k, QREINT) = qm(i + 1, j, k, QPRES) / (gamma - amrex::Real(1.0));
 
 }
 
@@ -1077,7 +1077,7 @@ pc_transz2(
        pnewr = qyp(i,j,k,QPRES) - cdtdz * ( dup + pav*du*(gamma - 1.));
   }
   qp(i, j, k, QPRES) = amrex::max(pnewr, small_pres);
-  qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - 1.0);
+  qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - amrex::Real(1.0));
 
   // QM
 
@@ -1122,7 +1122,7 @@ pc_transz2(
        pnewl = qym(i,j+1,k,QPRES) - cdtdz * ( dup + pav*du*(gamma - 1.));
   }
   qm(i, j + 1, k, QPRES) = amrex::max(pnewl, small_pres);
-  qm(i, j + 1, k, QREINT) = qm(i, j + 1, k, QPRES) / (gamma - 1.0);
+  qm(i, j + 1, k, QREINT) = qm(i, j + 1, k, QPRES) / (gamma - amrex::Real(1.0));
 }
 
 // Z corrected from xy
@@ -1226,7 +1226,7 @@ pc_transxy(
   rhoekinr =
     0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
   qp(i, j, k, QREINT) = renewr - rhoekinr;
-  amrex::Real temppres = qp(i, j, k, QREINT) * (gamma - 1.0);
+  amrex::Real temppres = qp(i, j, k, QREINT) * (gamma - amrex::Real(1.0));
   if(temppres < small_pres)
   {
 
@@ -1242,7 +1242,7 @@ pc_transxy(
                                    - cdtdy * ( dupy + pavy*duy*(gamma - 1.));
   }
   qp(i, j, k, QPRES) = amrex::max(temppres, small_pres);
-  qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - 1.0);
+  qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - amrex::Real(1.0));
 
   // qm state
   rul = rrl * qzm(i, j, k + 1, QU);
@@ -1271,7 +1271,7 @@ pc_transxy(
   rhoekinl =
     0.5 * (runewl * runewl + rvnewl * rvnewl + rwnewl * rwnewl) / rrnewl;
   qm(i, j, k + 1, QREINT) = renewl - rhoekinl;
-  temppres = qm(i, j, k + 1, QREINT) * (gamma - 1.0);
+  temppres = qm(i, j, k + 1, QREINT) * (gamma - amrex::Real(1.0));
   if(temppres < small_pres)
   {
 
@@ -1287,7 +1287,7 @@ pc_transxy(
                                      - cdtdy * ( dupy + pavy*duy*(gamma - 1.));
   }
   qm(i, j, k + 1, QPRES) = amrex::max(temppres, small_pres);
-  qm(i, j, k + 1, QREINT) = qm(i, j, k + 1, QPRES) / (gamma - 1.0);
+  qm(i, j, k + 1, QREINT) = qm(i, j, k + 1, QPRES) / (gamma - amrex::Real(1.0));
 
 }
 
@@ -1391,7 +1391,7 @@ pc_transxz(
   rhoekinr =
     0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
   qp(i, j, k, QREINT) = renewr - rhoekinr;
-  amrex::Real temppres = qp(i, j, k, QREINT) * (gamma - 1.0);
+  amrex::Real temppres = qp(i, j, k, QREINT) * (gamma - amrex::Real(1.0));
   if(temppres < small_pres)
   {
 
@@ -1407,7 +1407,7 @@ pc_transxz(
                                    - cdtdz * ( dupz + pavz*duz*(gamma - 1.));
   }
   qp(i, j, k, QPRES) = amrex::max(temppres, small_pres);
-  qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - 1.0);
+  qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - amrex::Real(1.0));
 
   // QM
   rul = rrl * qym(i, j + 1, k, QU);
@@ -1436,7 +1436,7 @@ pc_transxz(
   rhoekinl =
     0.5 * (runewl * runewl + rvnewl * rvnewl + rwnewl * rwnewl) / rrnewl;
   qm(i, j + 1, k, QREINT) = renewl - rhoekinl;
-  temppres = qm(i, j + 1, k, QREINT) * (gamma - 1.0);
+  temppres = qm(i, j + 1, k, QREINT) * (gamma - amrex::Real(1.0));
   if(temppres < small_pres)
   {
 
@@ -1452,7 +1452,7 @@ pc_transxz(
                                      - cdtdz * ( dupz + pavz*duz*(gamma - 1.));
   }
   qm(i, j + 1, k, QPRES) = amrex::max(temppres, small_pres);
-  qm(i, j + 1, k, QREINT) = qm(i, j + 1, k, QPRES) / (gamma - 1.0);
+  qm(i, j + 1, k, QREINT) = qm(i, j + 1, k, QPRES) / (gamma - amrex::Real(1.0));
 
 }
 
@@ -1557,7 +1557,7 @@ pc_transyz(
   rhoekinr =
     0.5 * (runewr * runewr + rvnewr * rvnewr + rwnewr * rwnewr) / rrnewr;
   qp(i, j, k, QREINT) = renewr - rhoekinr;
-  amrex::Real temppres = qp(i, j, k, QREINT) * (gamma - 1.0);
+  amrex::Real temppres = qp(i, j, k, QREINT) * (gamma - amrex::Real(1.0));
   if(temppres < small_pres)
   {
 
@@ -1573,7 +1573,7 @@ pc_transyz(
                                    - cdtdz * ( dupz + pavz*duz*(gamma - 1.));
   }
   qp(i, j, k, QPRES) = amrex::max(temppres, small_pres);
-  qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - 1.0);
+  qp(i, j, k, QREINT) = qp(i, j, k, QPRES) / (gamma - amrex::Real(1.0));
 
   // QM
   rul = rrl * qxm(i + 1, j, k, QU);
@@ -1602,7 +1602,7 @@ pc_transyz(
   rhoekinl =
     0.5 * (runewl * runewl + rvnewl * rvnewl + rwnewl * rwnewl) / rrnewl;
   qm(i + 1, j, k, QREINT) = renewl - rhoekinl;
-  temppres = qm(i + 1, j, k, QREINT) * (gamma - 1.0);
+  temppres = qm(i + 1, j, k, QREINT) * (gamma - amrex::Real(1.0));
   if(temppres < small_pres)
   {
 
@@ -1618,7 +1618,7 @@ pc_transyz(
                                      - cdtdz * ( dupz + pavz*duz*(gamma - 1.));
   }
   qm(i + 1, j, k, QPRES) = amrex::max(temppres, small_pres);
-  qm(i + 1, j, k, QREINT) = qm(i + 1, j, k, QPRES) / (gamma - 1.0);
+  qm(i + 1, j, k, QREINT) = qm(i + 1, j, k, QPRES) / (gamma - amrex::Real(1.0));
 }
 
 // Use interface states from Riemann solver for pdivu.
@@ -1663,7 +1663,7 @@ pc_artif_visc(
                  , div1 = 0.5 * (div(i, j, k) + div(i, j + 1, k));
                  , div1 = 0.25 * (div(i, j, k) + div(i, j + 1, k) +
                                   div(i, j, k + 1) + div(i, j + 1, k + 1)););
-    div1 = difmag * amrex::min(0.0, div1);
+    div1 = difmag * amrex::min(amrex::Real(0.0), div1);
     for (int n = 0; n < flx.nComp(); ++n) {
         // Passing in difmag TODO not pass in.
         flx(i, j, k, n) += dx * div1 * (u(i, j, k, n) - u(i - 1, j, k, n));
@@ -1672,7 +1672,7 @@ pc_artif_visc(
     AMREX_D_PICK(, div1 = 0.5 * (div(i, j, k) + div(i + 1, j, k));
                  , div1 = 0.25 * (div(i, j, k) + div(i + 1, j, k) +
                                   div(i, j, k + 1) + div(i + 1, j, k + 1)););
-    div1 = difmag * amrex::min(0.0, div1);
+    div1 = difmag * amrex::min(amrex::Real(0.0), div1);
     for (int n = 0; n < flx.nComp(); ++n) {
         flx(i, j, k, n) +=
           dx * div1 * (u(i, j, k, n) - u(i, j - 1, k, n)); // Here dx is dy
@@ -1680,7 +1680,7 @@ pc_artif_visc(
   } else { // Z direction
     div1 = 0.25 * (div(i, j, k) + div(i + 1, j, k) + div(i, j + 1, k) +
                    div(i + 1, j + 1, k));
-    div1 = difmag * amrex::min(0.0, div1);
+    div1 = difmag * amrex::min(amrex::Real(0.0), div1);
     for (int n = 0; n < flx.nComp(); ++n) {
         flx(i, j, k, n) +=
           dx * div1 * (u(i, j, k, n) - u(i, j, k - 1, n)); // Here dx is dz

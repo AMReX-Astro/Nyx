@@ -48,6 +48,8 @@ const int resizeSignal(43);
 const int GimletSignal(55);
 const int quitSignal(-44);
 
+amrex::LevelBld* getLevelBld ();
+
 void
 nyx_main (int argc, char* argv[])
 {
@@ -99,7 +101,7 @@ nyx_main (int argc, char* argv[])
     // We hard-wire the initial time to 0
     Real strt_time =  0.0;
 
-    Amr *amrptr = new Amr;
+    Amr *amrptr = new Amr(getLevelBld());
     amrptr->init(strt_time,stop_time);
 
 #ifdef BL_USE_MPI

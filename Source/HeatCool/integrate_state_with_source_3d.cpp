@@ -137,7 +137,7 @@ int Nyx::integrate_state_struct_mfin
       N_Vector IR_vec;
 
       void *cvode_mem;
-      double *dptr, *eptr, *rpar, *rparh, *abstol_ptr;
+      realtype *dptr, *eptr, *rpar, *rparh, *abstol_ptr;
       realtype t=0.0;
                                 
       u = NULL;
@@ -170,7 +170,7 @@ int Nyx::integrate_state_struct_mfin
        if(sundials_alloc_type==0)
               u = N_VNewWithMemHelp_Hip(neq, /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper());
        else
-              u = N_VNewManaged_Hip(neq);
+              u = N_VNew_Hip(neq);
 #endif
 #ifdef AMREX_USE_DPCPP
        if(sundials_alloc_type==0)

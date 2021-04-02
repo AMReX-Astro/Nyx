@@ -478,8 +478,13 @@ Nyx::check_initial_species ()
 {
     // Verify that the sum of (rho X)_i = rho at every cell.
 #ifdef CONST_SPECIES
+#ifndef AMREX_USE_FLOAT
     if (amrex::Math::abs(1.0 - h_species - he_species) > 1.e-8)
         amrex::Abort("Error:: Failed check of initial species summing to 1");
+#else
+    if (amrex::Math::abs(1.0 - h_species - he_species) > 1.e-6)
+        amrex::Abort("Error:: Failed check of initial species summing to 1");
+#endif
 #else
     ReduceOps<ReduceOpMax> reduce_op;
     ReduceData<Real> reduce_data(reduce_op);
@@ -516,8 +521,13 @@ Nyx::check_initial_species ()
 
         ReduceTuple hv = reduce_data.value();
         ParallelDescriptor::ReduceRealMax(amrex::get<0>(hv));
+#ifndef AMREX_USE_FLOAT
         if (get<0>(hv) > 1.e-8)
             amrex::Abort("Error:: Failed check of initial species summing to 1");
+#else
+        if (get<0>(hv) > 1.e-6)
+            amrex::Abort("Error:: Failed check of initial species summing to 1");
+#endif
     }
 #endif
 }

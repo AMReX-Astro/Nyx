@@ -44,7 +44,7 @@ Nyx::vol_weight_sum (MultiFab& mf, bool masked)
 
     if ( !masked || (mask == 0) )
     {
-
+        BL_PROFILE("Nyx::vol_weight_sum()::ReduceOpsOnDevice");
 #ifdef _OPENMP
 #pragma omp parallel if (!system::regtest_reduction)
 #endif
@@ -63,7 +63,7 @@ Nyx::vol_weight_sum (MultiFab& mf, bool masked)
         }
 
     } else {
-
+        BL_PROFILE("Nyx::vol_weight_sum()::ReduceOpsOnDevice");
 #ifdef _OPENMP
 #pragma omp parallel if (!system::regtest_reduction)
 #endif
