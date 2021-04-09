@@ -45,8 +45,10 @@ Nyx::vol_weight_sum (MultiFab& mf, bool masked)
     if ( !masked || (mask == 0) )
     {
         BL_PROFILE("Nyx::vol_weight_sum()::ReduceOpsOnDevice");
+#ifndef AMREX_USE_GPU
 #ifdef _OPENMP
 #pragma omp parallel if (!system::regtest_reduction)
+#endif
 #endif
         for (MFIter mfi(mf,TilingIfNotGPU()); mfi.isValid(); ++mfi)
         {
@@ -64,8 +66,10 @@ Nyx::vol_weight_sum (MultiFab& mf, bool masked)
 
     } else {
         BL_PROFILE("Nyx::vol_weight_sum()::ReduceOpsOnDevice");
+#ifndef AMREX_USE_GPU
 #ifdef _OPENMP
 #pragma omp parallel if (!system::regtest_reduction)
+#endif
 #endif
         for (MFIter mfi(mf,TilingIfNotGPU()); mfi.isValid(); ++mfi)
         {
@@ -106,9 +110,10 @@ Nyx::vol_weight_squared_sum_level (const std::string& name,
     ReduceOps<ReduceOpSum> reduce_op;
     ReduceData<Real> reduce_data(reduce_op);
     using ReduceTuple = typename decltype(reduce_data)::Type;
-
+#ifndef AMREX_USE_GPU
 #ifdef _OPENMP
 #pragma omp parallel if (!system::regtest_reduction)
+#endif
 #endif
     for (MFIter mfi(*mf,TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
@@ -165,9 +170,10 @@ Nyx::vol_weight_squared_sum (const std::string& name,
 
     if ( !masked || (mask == 0) )
     {
-
+#ifndef AMREX_USE_GPU
 #ifdef _OPENMP
 #pragma omp parallel if (!system::regtest_reduction)
+#endif
 #endif
         for (MFIter mfi(*mf,TilingIfNotGPU()); mfi.isValid(); ++mfi)
         {
@@ -184,9 +190,10 @@ Nyx::vol_weight_squared_sum (const std::string& name,
         }
 
     } else {
-
+#ifndef AMREX_USE_GPU
 #ifdef _OPENMP
 #pragma omp parallel if (!system::regtest_reduction)
+#endif
 #endif
         for (MFIter mfi(*mf,TilingIfNotGPU()); mfi.isValid(); ++mfi)
         {
