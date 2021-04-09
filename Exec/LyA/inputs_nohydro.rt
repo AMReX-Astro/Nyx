@@ -24,7 +24,7 @@ nyx.small_temp = 1.e-2
 nyx.do_santa_barbara = 0
 nyx.init_sb_vels     = 0
 gravity.sl_tol = 1.e-12
-nyx.resuse_mlpoisson = 1
+nyx.reuse_mlpoisson = 1
 
 nyx.initial_z = 100.0
 nyx.final_z = 2.0
