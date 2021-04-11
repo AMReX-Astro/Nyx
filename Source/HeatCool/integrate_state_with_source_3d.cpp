@@ -107,6 +107,7 @@ int Nyx::integrate_state_struct_mfin
    long int& old_max_steps, long int& new_max_steps,
    const int sdc_iter)
 {
+    BL_PROFILE_VAR("Nyx::reactions_alloc",var1);
     auto atomic_rates = atomic_rates_glob;
     auto f_rhs_data = (RhsData*)The_Arena()->alloc(sizeof(RhsData));
     Real gamma_minus_1 = gamma - 1.0;
@@ -157,15 +158,17 @@ int Nyx::integrate_state_struct_mfin
       {
                 if(sundials_alloc_type==0)
                   u = N_VMakeWithManagedAllocator_Cuda(neq,sunalloc,sunfree);  /* Allocate u vector */
-                else
+                else if(sundials_alloc_type==2)
                   u = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
-		N_VSetCudaStream_Cuda(u, &currentStream);
+		else
+                  u = N_VNew_Cuda(neq);  /* Allocate u vector */
+                N_VSetCudaStream_Cuda(u, &currentStream);
                 amrex::Gpu::Device::streamSynchronize();
       }
       else
       {
-	if(sundials_alloc_type==1)
-	  {
+        if(sundials_alloc_type==1)
+          {
                 dptr=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
                 u = N_VMakeManaged_Cuda(neq,dptr);  /* Allocate u vector */
                 eptr= (realtype*) The_Arena()->alloc(neq*sizeof(realtype));
@@ -176,36 +179,41 @@ int Nyx::integrate_state_struct_mfin
                 abstol_ptr = (realtype*) The_Arena()->alloc(neq*sizeof(realtype));
                 abstol_vec = N_VMakeManaged_Cuda(neq,abstol_ptr);
                 N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
+                T_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
+                T_vec = N_VMakeManaged_Cuda(neq, T_vode);
+                ne_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
+                ne_vec = N_VMakeManaged_Cuda(neq, ne_vode);
+                rho_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
+                rho_vec = N_VMakeManaged_Cuda(neq, rho_vode);
+                rho_init_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
+                rho_init_vec = N_VMakeManaged_Cuda(neq, rho_init_vode);
+                rho_src_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
+                rho_src_vec = N_VMakeManaged_Cuda(neq, rho_src_vode);
+                rhoe_src_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
+                rhoe_src_vec = N_VMakeManaged_Cuda(neq, rhoe_src_vode);
+                e_src_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
+                e_src_vec = N_VMakeManaged_Cuda(neq, e_src_vode);
+                IR_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
+                IR_vec = N_VMakeManaged_Cuda(neq, IR_vode);
+                N_VSetCudaStream_Cuda(T_vec,&currentStream);
+                N_VSetCudaStream_Cuda(ne_vec,&currentStream);
+                N_VSetCudaStream_Cuda(rho_vec,&currentStream);
+                N_VSetCudaStream_Cuda(rho_init_vec,&currentStream);
+                N_VSetCudaStream_Cuda(rho_src_vec,&currentStream);
+                N_VSetCudaStream_Cuda(rhoe_src_vec,&currentStream);
+                N_VSetCudaStream_Cuda(e_src_vec,&currentStream);
+                N_VSetCudaStream_Cuda(IR_vec,&currentStream);
                 amrex::Gpu::streamSynchronize();
-		T_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
-		T_vec = N_VMakeManaged_Cuda(neq, T_vode);
-		ne_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
-		ne_vec = N_VMakeManaged_Cuda(neq, ne_vode);
-		rho_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
-		rho_vec = N_VMakeManaged_Cuda(neq, rho_vode);
-		rho_init_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
-		rho_init_vec = N_VMakeManaged_Cuda(neq, rho_init_vode);
-		rho_src_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
-		rho_src_vec = N_VMakeManaged_Cuda(neq, rho_src_vode);
-		rhoe_src_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
-		rhoe_src_vec = N_VMakeManaged_Cuda(neq, rhoe_src_vode);
-		e_src_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
-		e_src_vec = N_VMakeManaged_Cuda(neq, e_src_vode);
-		IR_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
-		IR_vec = N_VMakeManaged_Cuda(neq, IR_vode);
-		N_VSetCudaStream_Cuda(T_vec,&currentStream);
-		N_VSetCudaStream_Cuda(ne_vec,&currentStream);
-		N_VSetCudaStream_Cuda(rho_vec,&currentStream);
-		N_VSetCudaStream_Cuda(rho_init_vec,&currentStream);
-		N_VSetCudaStream_Cuda(rho_src_vec,&currentStream);
-		N_VSetCudaStream_Cuda(rhoe_src_vec,&currentStream);
-		N_VSetCudaStream_Cuda(e_src_vec,&currentStream);
-		N_VSetCudaStream_Cuda(IR_vec,&currentStream);
-	  }
-	else
-	  {
-	    u = N_VNewWithMemHelp_Cuda(neq, /*use_managed_mem=*/true, *amrex::sundials::The_SUNMemory_Helper());
-	    N_VSetCudaStream_Cuda(u, &currentStream);
+          }
+        else if(sundials_alloc_type==3)
+          {
+            u = N_VNewWithMemHelp_Cuda(neq, /*use_managed_mem=*/true, *amrex::sundials::The_SUNMemory_Helper());
+            N_VSetCudaStream_Cuda(u, &currentStream);
+          }
+	else if(sundials_alloc_type==5)
+          {
+	    u = N_VNewWithMemHelp_Cuda(neq, /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper());
+            N_VSetCudaStream_Cuda(u, &currentStream);
 	  }
       }
 
@@ -252,11 +260,13 @@ int Nyx::integrate_state_struct_mfin
                   e_src_vec = N_VCloneEmpty(u);
                   IR_vec = N_VCloneEmpty(u);
               }
+	      if(sundials_alloc_type!=1)
+	      {
 #ifdef AMREX_USE_GPU
               eptr=N_VGetDeviceArrayPointer(e_orig);
               dptr=N_VGetDeviceArrayPointer(u);
               abstol_ptr=N_VGetDeviceArrayPointer(abstol_vec);
-	      T_vode= N_VGetDeviceArrayPointer(T_vec);
+              T_vode= N_VGetDeviceArrayPointer(T_vec);
               ne_vode=N_VGetDeviceArrayPointer(ne_vec);
               rho_vode=N_VGetDeviceArrayPointer(rho_vec);
               rho_init_vode=N_VGetDeviceArrayPointer(rho_init_vec);
@@ -277,16 +287,21 @@ int Nyx::integrate_state_struct_mfin
               e_src_vode=N_VGetArrayPointer(e_src_vec);
               IR_vode=N_VGetArrayPointer(IR_vec);
 #endif
+	      }
 
       int* JH_vode_arr=NULL;
       if(inhomo_reion == 1)
           JH_vode_arr = (int*) The_Arena()->alloc(neq*sizeof(int));
       amrex::Gpu::streamSynchronize();
+      BL_PROFILE_VAR_STOP(var1);
+      BL_PROFILE_VAR("Nyx::reactions_single_copy",var2);
       AMREX_PARALLEL_FOR_1D ( 1, i,
       {
         ode_eos_initialize_single(f_rhs_data, a, dptr, eptr, T_vode, ne_vode, rho_vode, rho_init_vode, rho_src_vode, rhoe_src_vode, e_src_vode, IR_vode, JH_vode_arr);
       });
       amrex::Gpu::streamSynchronize();
+      BL_PROFILE_VAR_STOP(var2);
+      BL_PROFILE_VAR("Nyx::reactions_cells_initialize",var3);
 #ifdef AMREX_USE_GPU
       amrex::ParallelFor ( tbx, [=] AMREX_GPU_DEVICE (int i,int j,int k)
     {
@@ -322,7 +337,9 @@ int Nyx::integrate_state_struct_mfin
     amrex::Gpu::Device::streamSynchronize();
 #endif
 #endif
-                        
+      amrex::Gpu::streamSynchronize();
+      BL_PROFILE_VAR_STOP(var3);
+      BL_PROFILE_VAR("Nyx::reactions_cvsetup",var4);
 #ifdef CV_NEWTON
             cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
 #else
@@ -360,7 +377,13 @@ int Nyx::integrate_state_struct_mfin
             CVodeSetUserData(cvode_mem, f_rhs_data);
             //                              CVodeSetMaxStep(cvode_mem, delta_time/10);
             //                              BL_PROFILE_VAR("Nyx::strang_second_cvode",cvode_timer2);
+	    amrex::Gpu::streamSynchronize();
+	    BL_PROFILE_VAR_STOP(var4);
+	    BL_PROFILE_VAR("Nyx::reactions_cvode",var5);
             flag = CVode(cvode_mem, delta_time, u, &t, CV_NORMAL);
+	    amrex::Gpu::streamSynchronize();
+	    BL_PROFILE_VAR_STOP(var5);
+	    BL_PROFILE_VAR("Nyx::reactions_numsteps",varsteps);
             if(use_typical_steps)
               {
                 long int nst=0;
@@ -369,6 +392,9 @@ int Nyx::integrate_state_struct_mfin
               }
             //                              amrex::Gpu::Device::streamSynchronize();
             //                              BL_PROFILE_VAR_STOP(cvode_timer2);
+	    amrex::Gpu::streamSynchronize();
+	    BL_PROFILE_VAR_STOP(varsteps);
+	    BL_PROFILE_VAR("Nyx::reactions_cells_finalize",var6);
 #ifdef AMREX_USE_GPU
             AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
             {                          
@@ -385,7 +411,7 @@ int Nyx::integrate_state_struct_mfin
 #endif
                 int  idx= i + j*len.x + k*len.x*len.y - (lo.x+lo.y*len.x+lo.z*len.x*len.y);
                 //                              for (int i= 0;i < neq; ++i) {
-		ode_eos_finalize_struct(i,j,k,idx,atomic_rates,f_rhs_data,a_end,state4,state_n4,reset_src4,diag_eos4,IR4,dptr,eptr,delta_time);
+                ode_eos_finalize_struct(i,j,k,idx,atomic_rates,f_rhs_data,a_end,state4,state_n4,reset_src4,diag_eos4,IR4,dptr,eptr,delta_time);
                 //PrintFinalStats(cvode_mem);
 #ifdef AMREX_USE_GPU
                 });
@@ -402,6 +428,9 @@ int Nyx::integrate_state_struct_mfin
 #endif
 #endif
     amrex::Gpu::streamSynchronize();
+    BL_PROFILE_VAR_STOP(var6);
+    BL_PROFILE_VAR("Nyx::reactions_free",var7);
+
     The_Arena()->free(f_rhs_data);
 
 #ifdef AMREX_USE_CUDA
@@ -409,8 +438,8 @@ int Nyx::integrate_state_struct_mfin
       {
           The_Arena()->free(dptr);
           The_Arena()->free(eptr);
-	  /*
-	  // This defaults to clone, so we don't own it
+          /*
+          // This defaults to clone, so we don't own it
           if(use_sundials_constraint)
               The_Arena()->free(constrain);*/
           The_Arena()->free(abstol_ptr);
@@ -445,12 +474,16 @@ int Nyx::integrate_state_struct_mfin
     /* }
     }
     } */
+    amrex::Gpu::streamSynchronize();
+    BL_PROFILE_VAR_STOP(var7);
     return 0;
 }
 
 #ifdef AMREX_USE_GPU
 static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
 {
+  amrex::Gpu::streamSynchronize();
+  BL_PROFILE("Nyx::reactions_f");
   Real* udot_ptr=N_VGetDeviceArrayPointer(udot);
   Real* u_ptr=N_VGetDeviceArrayPointer(u);
   int neq=N_VGetLength(udot);
@@ -470,7 +503,7 @@ static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
 #else
 static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
 {
-
+  BL_PROFILE("Nyx::reactions_f");
   Real* udot_ptr=N_VGetArrayPointer(udot);
   Real* u_ptr=N_VGetArrayPointer(u);
   int neq=N_VGetLength_Serial(udot);
