@@ -1,17 +1,7 @@
 #include <fstream>
 #include <iomanip>
 
-#include <AMReX_ParmParse.H>
-#include <AMReX_Geometry.H>
-#include <AMReX_MultiFab.H>
-#include <AMReX_Print.H>
-#include <AMReX_PlotFileUtil.H>
-
-#include <AMReX_BLFort.H>
-#include <Nyx.H>
-#include <f_rhs.H>
-#include <f_rhs_struct.H>
-
+#include <AMReX_SUNMemory.H>
 #include <cvode/cvode.h>               /* prototypes for CVODE fcts., consts. */
 #include <cvode/cvode_diag.h>          /* access to CVDiag interface */
 #include <sundials/sundials_types.h>   /* definition of type realtype */
@@ -29,6 +19,18 @@
 #ifdef AMREX_USE_DPCPP
 #include <nvector/nvector_sycl.h>
 #endif
+
+#include <AMReX_ParmParse.H>
+#include <AMReX_Geometry.H>
+#include <AMReX_MultiFab.H>
+#include <AMReX_Print.H>
+#include <AMReX_PlotFileUtil.H>
+
+#include <AMReX_BLFort.H>
+#include <Nyx.H>
+#include <f_rhs.H>
+#include <f_rhs_struct.H>
+
 //#define MAKE_MANAGED 1
 using namespace amrex;
 
@@ -136,6 +138,7 @@ int Nyx::integrate_state_struct_mfin
 
       void *cvode_mem;
       realtype *dptr, *eptr, *rpar, *rparh, *abstol_ptr;
+      Real *T_vode, *ne_vode,*rho_vode,*rho_init_vode,*rho_src_vode,*rhoe_src_vode,*e_src_vode,*IR_vode;
       realtype t=0.0;
                                 
       u = NULL;
@@ -156,29 +159,13 @@ int Nyx::integrate_state_struct_mfin
                   u = N_VMakeWithManagedAllocator_Cuda(neq,sunalloc,sunfree);  /* Allocate u vector */
                 else
                   u = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
-
-                dptr=N_VGetDeviceArrayPointer_Cuda(u);
-
-                if(sundials_alloc_type==0)
-                  e_orig = N_VMakeWithManagedAllocator_Cuda(neq,sunalloc,sunfree);  /* Allocate u vector */
-                else
-                  e_orig = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
-
-                eptr=N_VGetDeviceArrayPointer_Cuda(e_orig);
-                N_VSetCudaStream_Cuda(e_orig, &currentStream);
-                N_VSetCudaStream_Cuda(u, &currentStream);
-
-                if(sundials_alloc_type==0)
-                  abstol_vec = N_VMakeWithManagedAllocator_Cuda(neq,sunalloc,sunfree);  
-                else
-                  abstol_vec = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
-
-                abstol_ptr = N_VGetDeviceArrayPointer_Cuda(abstol_vec);
-                N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
+		N_VSetCudaStream_Cuda(u, &currentStream);
                 amrex::Gpu::Device::streamSynchronize();
       }
       else
       {
+	if(sundials_alloc_type==1)
+	  {
                 dptr=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
                 u = N_VMakeManaged_Cuda(neq,dptr);  /* Allocate u vector */
                 eptr= (realtype*) The_Arena()->alloc(neq*sizeof(realtype));
@@ -190,32 +177,38 @@ int Nyx::integrate_state_struct_mfin
                 abstol_vec = N_VMakeManaged_Cuda(neq,abstol_ptr);
                 N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
                 amrex::Gpu::streamSynchronize();
-		
-              }
-      amrex::Real* T_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
-      T_vec = N_VMakeManaged_Cuda(neq, T_vode);
-      amrex::Real* ne_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
-      ne_vec = N_VMakeManaged_Cuda(neq, ne_vode);
-      amrex::Real* rho_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
-      rho_vec = N_VMakeManaged_Cuda(neq, rho_vode);
-      amrex::Real* rho_init_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
-      rho_init_vec = N_VMakeManaged_Cuda(neq, rho_init_vode);
-      amrex::Real* rho_src_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
-      rho_src_vec = N_VMakeManaged_Cuda(neq, rho_src_vode);
-      amrex::Real* rhoe_src_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
-      rhoe_src_vec = N_VMakeManaged_Cuda(neq, rhoe_src_vode);
-      amrex::Real* e_src_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
-      e_src_vec = N_VMakeManaged_Cuda(neq, e_src_vode);
-      amrex::Real* IR_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
-      IR_vec = N_VMakeManaged_Cuda(neq, IR_vode);
-      N_VSetCudaStream_Cuda(T_vec,&currentStream);
-      N_VSetCudaStream_Cuda(ne_vec,&currentStream);
-      N_VSetCudaStream_Cuda(rho_vec,&currentStream);
-      N_VSetCudaStream_Cuda(rho_init_vec,&currentStream);
-      N_VSetCudaStream_Cuda(rho_src_vec,&currentStream);
-      N_VSetCudaStream_Cuda(rhoe_src_vec,&currentStream);
-      N_VSetCudaStream_Cuda(e_src_vec,&currentStream);
-      N_VSetCudaStream_Cuda(IR_vec,&currentStream);
+		T_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
+		T_vec = N_VMakeManaged_Cuda(neq, T_vode);
+		ne_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
+		ne_vec = N_VMakeManaged_Cuda(neq, ne_vode);
+		rho_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
+		rho_vec = N_VMakeManaged_Cuda(neq, rho_vode);
+		rho_init_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
+		rho_init_vec = N_VMakeManaged_Cuda(neq, rho_init_vode);
+		rho_src_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
+		rho_src_vec = N_VMakeManaged_Cuda(neq, rho_src_vode);
+		rhoe_src_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
+		rhoe_src_vec = N_VMakeManaged_Cuda(neq, rhoe_src_vode);
+		e_src_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
+		e_src_vec = N_VMakeManaged_Cuda(neq, e_src_vode);
+		IR_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
+		IR_vec = N_VMakeManaged_Cuda(neq, IR_vode);
+		N_VSetCudaStream_Cuda(T_vec,&currentStream);
+		N_VSetCudaStream_Cuda(ne_vec,&currentStream);
+		N_VSetCudaStream_Cuda(rho_vec,&currentStream);
+		N_VSetCudaStream_Cuda(rho_init_vec,&currentStream);
+		N_VSetCudaStream_Cuda(rho_src_vec,&currentStream);
+		N_VSetCudaStream_Cuda(rhoe_src_vec,&currentStream);
+		N_VSetCudaStream_Cuda(e_src_vec,&currentStream);
+		N_VSetCudaStream_Cuda(IR_vec,&currentStream);
+	  }
+	else
+	  {
+	    u = N_VNewWithMemHelp_Cuda(neq, /*use_managed_mem=*/true, *amrex::sundials::The_SUNMemory_Helper());
+	    N_VSetCudaStream_Cuda(u, &currentStream);
+	  }
+      }
+
       amrex::Gpu::streamSynchronize();
 #else
 #ifdef _OPENMP
@@ -233,6 +226,8 @@ int Nyx::integrate_state_struct_mfin
               u = N_VNew_Serial(neq);  /* Allocate u vector */
 #endif
 #endif
+#endif
+
               e_orig = N_VClone(u);  /* Allocate u vector */
               abstol_vec = N_VClone(u);
               if(sdc_iter>=0)
@@ -261,29 +256,28 @@ int Nyx::integrate_state_struct_mfin
               eptr=N_VGetDeviceArrayPointer(e_orig);
               dptr=N_VGetDeviceArrayPointer(u);
               abstol_ptr=N_VGetDeviceArrayPointer(abstol_vec);
-              amrex::Real* T_vode= N_VGetDeviceArrayPointer(T_vec);
-              amrex::Real* ne_vode=N_VGetDeviceArrayPointer(ne_vec);
-              amrex::Real* rho_vode=N_VGetDeviceArrayPointer(rho_vec);
-              amrex::Real* rho_init_vode=N_VGetDeviceArrayPointer(rho_init_vec);
-              amrex::Real* rho_src_vode=N_VGetDeviceArrayPointer(rho_src_vec);
-              amrex::Real* rhoe_src_vode=N_VGetDeviceArrayPointer(rhoe_src_vec);
-              amrex::Real* e_src_vode=N_VGetDeviceArrayPointer(e_src_vec);
-              amrex::Real* IR_vode=N_VGetDeviceArrayPointer(IR_vec);
+	      T_vode= N_VGetDeviceArrayPointer(T_vec);
+              ne_vode=N_VGetDeviceArrayPointer(ne_vec);
+              rho_vode=N_VGetDeviceArrayPointer(rho_vec);
+              rho_init_vode=N_VGetDeviceArrayPointer(rho_init_vec);
+              rho_src_vode=N_VGetDeviceArrayPointer(rho_src_vec);
+              rhoe_src_vode=N_VGetDeviceArrayPointer(rhoe_src_vec);
+              e_src_vode=N_VGetDeviceArrayPointer(e_src_vec);
+              IR_vode=N_VGetDeviceArrayPointer(IR_vec);
 #else
               eptr=N_VGetArrayPointer(e_orig);
               dptr=N_VGetArrayPointer(u);
               abstol_ptr=N_VGetArrayPointer(abstol_vec);
-              amrex::Real* T_vode= N_VGetArrayPointer(T_vec);
-              amrex::Real* ne_vode=N_VGetArrayPointer(ne_vec);
-              amrex::Real* rho_vode=N_VGetArrayPointer(rho_vec);
-              amrex::Real* rho_init_vode=N_VGetArrayPointer(rho_init_vec);
-              amrex::Real* rho_src_vode=N_VGetArrayPointer(rho_src_vec);
-              amrex::Real* rhoe_src_vode=N_VGetArrayPointer(rhoe_src_vec);
-              amrex::Real* e_src_vode=N_VGetArrayPointer(e_src_vec);
-              amrex::Real* IR_vode=N_VGetArrayPointer(IR_vec);
+              T_vode= N_VGetArrayPointer(T_vec);
+              ne_vode=N_VGetArrayPointer(ne_vec);
+              rho_vode=N_VGetArrayPointer(rho_vec);
+              rho_init_vode=N_VGetArrayPointer(rho_init_vec);
+              rho_src_vode=N_VGetArrayPointer(rho_src_vec);
+              rhoe_src_vode=N_VGetArrayPointer(rhoe_src_vec);
+              e_src_vode=N_VGetArrayPointer(e_src_vec);
+              IR_vode=N_VGetArrayPointer(IR_vec);
 #endif
 
-#endif
       int* JH_vode_arr=NULL;
       if(inhomo_reion == 1)
           JH_vode_arr = (int*) The_Arena()->alloc(neq*sizeof(int));
@@ -411,12 +405,14 @@ int Nyx::integrate_state_struct_mfin
     The_Arena()->free(f_rhs_data);
 
 #ifdef AMREX_USE_CUDA
-      if(sundials_alloc_type%2!=0)
+      if(sundials_alloc_type%2!=0&&sundials_alloc_type==1)
       {
           The_Arena()->free(dptr);
           The_Arena()->free(eptr);
+	  /*
+	  // This defaults to clone, so we don't own it
           if(use_sundials_constraint)
-              The_Arena()->free(constrain);
+              The_Arena()->free(constrain);*/
           The_Arena()->free(abstol_ptr);
           The_Arena()->free(T_vode);
           The_Arena()->free(ne_vode);
