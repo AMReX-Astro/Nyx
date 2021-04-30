@@ -153,14 +153,14 @@ int Nyx::integrate_state_struct_mfin
       int loop = 1;
 
 #ifdef AMREX_USE_CUDA
-      cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();  
+      cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();
       if(sundials_alloc_type%2==0)
       {
                 if(sundials_alloc_type==0)
                   u = N_VMakeWithManagedAllocator_Cuda(neq,sunalloc,sunfree);  /* Allocate u vector */
                 else if(sundials_alloc_type==2)
                   u = N_VNewManaged_Cuda(neq);  /* Allocate u vector */
-		else
+                else
                   u = N_VNew_Cuda(neq);  /* Allocate u vector */
                 N_VSetCudaStream_Cuda(u, &currentStream);
                 amrex::Gpu::Device::streamSynchronize();
@@ -210,11 +210,11 @@ int Nyx::integrate_state_struct_mfin
             u = N_VNewWithMemHelp_Cuda(neq, /*use_managed_mem=*/true, *amrex::sundials::The_SUNMemory_Helper());
             N_VSetCudaStream_Cuda(u, &currentStream);
           }
-	else if(sundials_alloc_type==5)
+        else if(sundials_alloc_type==5)
           {
-	    u = N_VNewWithMemHelp_Cuda(neq, /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper());
+            u = N_VNewWithMemHelp_Cuda(neq, /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper());
             N_VSetCudaStream_Cuda(u, &currentStream);
-	  }
+          }
       }
 
       amrex::Gpu::streamSynchronize();
@@ -225,7 +225,46 @@ int Nyx::integrate_state_struct_mfin
 #else
 #ifdef AMREX_USE_GPU
 #ifdef AMREX_USE_HIP
-              u = N_VNew_Hip(neq);  /* Allocate u vector */
+      auto currentstream = amrex::Gpu::Device::gpuStream();
+      //Choosing 256 here since this mimics Sundials default
+      // Possibly attempt to match n_threads_and_blocks
+      //     long N = ((tbx.numPts()+AMREX_GPU_NCELLS_PER_THREAD-1)/AMREX_GPU_NCELLS_PER_THREAD);
+      //     SUNHipThreadDirectExecPolicy stream_exec_policy(AMREX_GPU_MAX_THREADS, currentstream);
+      //     SUNHipGridStrideExecPolicy grid_exec_policy(AMREX_GPU_MAX_THREADS, std::max((N + AMREX_GPU_MAX_THREADS - 1) / AMREX_GPU_MAX_THREADS, static_cast<Long>(1)), currentstream);
+      //     SUNHipBlockReduceExecPolicy reduce_exec_policy(AMREX_GPU_MAX_THREADS, std::max((N + AMREX_GPU_MAX_THREADS - 1) / AMREX_GPU_MAX_THREADS, static_cast<Long>(1)), currentstream);
+
+      SUNHipThreadDirectExecPolicy stream_exec_policy(256, currentstream);
+      SUNHipBlockReduceExecPolicy reduce_exec_policy(256, 0, currentstream);
+      if(sundials_alloc_type%2==0)
+      {
+                if(sundials_alloc_type==0)
+                  amrex::Abort("sundials_alloc_type=0 not implemented with Hip");
+                else if(sundials_alloc_type==2)
+                  u = N_VNewManaged_Hip(neq);  /* Allocate u vector */
+                else
+                  u = N_VNew_Hip(neq);  /* Allocate u vector */
+                // might need a cuda analog to setting exec policy
+                amrex::Gpu::Device::streamSynchronize();
+      }
+      else
+      {
+        if(sundials_alloc_type==1)
+          {
+                  amrex::Abort("sundials_alloc_type=1 not implemented with Hip");
+          }
+        else if(sundials_alloc_type==3)
+          {
+            u = N_VNewWithMemHelp_Hip(neq, /*use_managed_mem=*/true, *amrex::sundials::The_SUNMemory_Helper());
+          }
+        else if(sundials_alloc_type==5)
+          {
+            u = N_VNewWithMemHelp_Hip(neq, /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper());
+          }
+// might need a cuda analog to setting exec policy
+      }
+      N_VSetKernelExecPolicy_Hip(u, &stream_exec_policy, &reduce_exec_policy);
+
+      amrex::Gpu::Device::streamSynchronize();
 #endif
 #ifdef AMREX_USE_DPCPP
               u = N_VNewManaged_Sycl(neq,&amrex::Gpu::Device::streamQueue());  /* Allocate u vector */
@@ -260,8 +299,8 @@ int Nyx::integrate_state_struct_mfin
                   e_src_vec = N_VCloneEmpty(u);
                   IR_vec = N_VCloneEmpty(u);
               }
-	      if(sundials_alloc_type!=1)
-	      {
+              if(sundials_alloc_type!=1)
+              {
 #ifdef AMREX_USE_GPU
               eptr=N_VGetDeviceArrayPointer(e_orig);
               dptr=N_VGetDeviceArrayPointer(u);
@@ -287,7 +326,7 @@ int Nyx::integrate_state_struct_mfin
               e_src_vode=N_VGetArrayPointer(e_src_vec);
               IR_vode=N_VGetArrayPointer(IR_vec);
 #endif
-	      }
+              }
 
       int* JH_vode_arr=NULL;
       if(inhomo_reion == 1)
@@ -377,13 +416,13 @@ int Nyx::integrate_state_struct_mfin
             CVodeSetUserData(cvode_mem, f_rhs_data);
             //                              CVodeSetMaxStep(cvode_mem, delta_time/10);
             //                              BL_PROFILE_VAR("Nyx::strang_second_cvode",cvode_timer2);
-	    amrex::Gpu::streamSynchronize();
-	    BL_PROFILE_VAR_STOP(var4);
-	    BL_PROFILE_VAR("Nyx::reactions_cvode",var5);
+            amrex::Gpu::streamSynchronize();
+            BL_PROFILE_VAR_STOP(var4);
+            BL_PROFILE_VAR("Nyx::reactions_cvode",var5);
             flag = CVode(cvode_mem, delta_time, u, &t, CV_NORMAL);
-	    amrex::Gpu::streamSynchronize();
-	    BL_PROFILE_VAR_STOP(var5);
-	    BL_PROFILE_VAR("Nyx::reactions_numsteps",varsteps);
+            amrex::Gpu::streamSynchronize();
+            BL_PROFILE_VAR_STOP(var5);
+            BL_PROFILE_VAR("Nyx::reactions_numsteps",varsteps);
             if(use_typical_steps)
               {
                 long int nst=0;
@@ -392,9 +431,9 @@ int Nyx::integrate_state_struct_mfin
               }
             //                              amrex::Gpu::Device::streamSynchronize();
             //                              BL_PROFILE_VAR_STOP(cvode_timer2);
-	    amrex::Gpu::streamSynchronize();
-	    BL_PROFILE_VAR_STOP(varsteps);
-	    BL_PROFILE_VAR("Nyx::reactions_cells_finalize",var6);
+            amrex::Gpu::streamSynchronize();
+            BL_PROFILE_VAR_STOP(varsteps);
+            BL_PROFILE_VAR("Nyx::reactions_cells_finalize",var6);
 #ifdef AMREX_USE_GPU
             AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
             {                          

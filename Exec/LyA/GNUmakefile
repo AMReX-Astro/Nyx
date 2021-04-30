@@ -37,6 +37,9 @@ else
 ifeq ($(USE_HEATCOOL),TRUE)
 USE_SDC = TRUE
 USE_SUNDIALS = TRUE
+ifeq ($(USE_HIP),TRUE)
+USE_FUSED ?= $(USE_HIP)
+endif
 USE_FUSED ?= $(USE_CUDA)
 else
 USE_SDC = FALSE

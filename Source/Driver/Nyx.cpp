@@ -117,7 +117,11 @@ int Nyx::heat_cool_type = 0;
 int Nyx::use_sundials_constraint = 0;
 int Nyx::use_sundials_fused = 0;
 int Nyx::use_typical_steps = 0;
+#ifndef AMREX_USE_HIP
 int Nyx::sundials_alloc_type = 0;
+#else
+int Nyx::sundials_alloc_type = 5;
+#endif
 int Nyx::minimize_memory = 0;
 int Nyx::shrink_to_fit = 0;
 
