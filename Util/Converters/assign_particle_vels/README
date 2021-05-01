@@ -1,0 +1,16 @@
+Example usage:
+
+make
+cp /path/to/plt##### .
+./WriteVelsDMPC3d.gnu.ex inputs.rt nyx.restart_particle_file=plt##### max_step=##### nyx.do_santa_barbara=0 nyx.init_sb_vels=0
+
+#This version also creates and initializes all mesh data
+
+#Validated from inputs.rt for step=10 by 
+#cd Nyx/Exec/LyA
+#make
+#export OMP_NUM_THREADS=1; mpirun -n 1 ./Nyx3d.gnu.TPROF.MPI.OMP.ex inputs.rt max_step=10 amr.derive_plot_vars = particle_count particle_mass_density particle_x_velocity particle_y_velocity particle_z_velocity
+#cd ../../Util/Converters/assign_particle_vels
+#cp ../../../Exec/LyA/plt00010 .
+#./WriteVelsDMPC3d.gnu.ex inputs.rt nyx.restart_particle_file=plt00010 max_step=10 nyx.do_santa_barbara=0 nyx.init_sb_vels=0
+#fcompare plt00010_newvars plt00010
