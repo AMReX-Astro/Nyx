@@ -1328,7 +1328,9 @@ Gravity::solve_with_MLMG (int crse_level, int fine_level,
     const int nlevs = fine_level - crse_level + 1;
 
     // should be redundant since setup_Poisson is called in post_regrid
-    if(nlevs>1)
+    //    if(parent->finestLevel()>0)
+    //    if(parent->maxLevel() > 0)
+    if(Nyx::reuse_mlpoisson == 0)
       {
 
 	Vector<Geometry> gmv;
@@ -1347,7 +1349,6 @@ Gravity::solve_with_MLMG (int crse_level, int fine_level,
 
 	mlpoisson.reset(new MLPoisson(gmv, bav, dmv, info));
       }
-
     if(!mlpoisson)
       setup_Poisson(crse_level,fine_level);
 

@@ -137,7 +137,7 @@ int Nyx::integrate_state_struct_mfin
       N_Vector IR_vec;
 
       void *cvode_mem;
-      double *dptr, *eptr, *rpar, *rparh, *abstol_ptr;
+      realtype *dptr, *eptr, *rpar, *rparh, *abstol_ptr;
       realtype t=0.0;
                                 
       u = NULL;

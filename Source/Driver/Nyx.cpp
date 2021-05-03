@@ -152,6 +152,7 @@ int Nyx::do_forcing =  0;
 
 int Nyx::nghost_state       = 1;
 Real Nyx::tagging_base       = 8.0;
+int Nyx::reuse_mlpoisson     = 0;
 int Nyx::ppm_type           = 1;
 
 // Options are "floor" or "conservative"
@@ -486,6 +487,7 @@ Nyx::read_hydro_params ()
     pp_nyx.query("shrink_to_fit", shrink_to_fit);
     pp_nyx.query("use_typical_steps", use_typical_steps);
     pp_nyx.query("tagging_base", tagging_base);
+    pp_nyx.query("reuse_mlpoisson", reuse_mlpoisson);
     pp_nyx.query("ppm_type", ppm_type);
     pp_nyx.query("enforce_min_density_type", enforce_min_density_type);
 
@@ -1840,7 +1842,9 @@ Nyx::post_regrid (int lbase,
             do_grav_solve_here = (level == lbase);
         }
 
-	gravity->setup_Poisson(level,new_finest);
+	//        if(parent->maxLevel() == 0)
+        if(reuse_mlpoisson != 0)
+          gravity->setup_Poisson(level,new_finest);
 
         // Only do solve here if we will be using it in the timestep right after without re-solving,
         //      or if this is called from somewhere other than Amr::timeStep
@@ -2500,6 +2504,7 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
 #ifdef AMREX_USE_GPU
     if (Gpu::inLaunchRegion())
     {
+        BL_PROFILE("Nyx::compute_rho_temp()::ReduceOpsOnDevice");
         ReduceOps<ReduceOpSum,ReduceOpSum,ReduceOpSum,ReduceOpSum,
                   ReduceOpSum,ReduceOpSum,ReduceOpSum> reduce_op;
         ReduceData<Real,Real,Real,Real,Real,Real,Real> reduce_data(reduce_op);
@@ -2552,6 +2557,7 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
     reduction(+:rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum)
 #endif
     {
+        BL_PROFILE("Nyx::compute_rho_temp()::OnHost");
         for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
         {
             const Box& bx = mfi.tilebox();
@@ -2615,6 +2621,7 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
     Real local_average_gas_density = average_gas_density;
     if (Gpu::inLaunchRegion())
     {
+        BL_PROFILE("Nyx::compute_gas_fractions()::ReduceOpsOnDevice");
         ReduceOps<ReduceOpSum,ReduceOpSum,ReduceOpSum,ReduceOpSum,
                   ReduceOpSum,ReduceOpSum,ReduceOpSum,ReduceOpSum> reduce_op;
         ReduceData<Real,Real,Real,Real,Real,Real,Real,Real> reduce_data(reduce_op);
@@ -2670,6 +2677,7 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
     else
 #endif
     {
+    BL_PROFILE("Nyx::compute_gas_fractions()::OnHost");
 #ifdef _OPENMP
 #pragma omp parallel  if (amrex::Gpu::notInLaunchRegion())               \
     reduction(+:whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum)

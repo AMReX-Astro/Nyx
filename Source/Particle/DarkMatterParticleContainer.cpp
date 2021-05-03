@@ -272,9 +272,9 @@ void update_dm_particle_single (amrex::ParticleContainer<4, 0>::SuperParticleTyp
     amrex::Real yint = ly - j;
     amrex::Real zint = lz - k;
     
-    amrex::Real sx[] = {1.-xint, xint};
-    amrex::Real sy[] = {1.-yint, yint};
-    amrex::Real sz[] = {1.-zint, zint};
+    amrex::Real sx[] = {amrex::Real(1.)-xint, xint};
+    amrex::Real sy[] = {amrex::Real(1.)-yint, yint};
+    amrex::Real sz[] = {amrex::Real(1.)-zint, zint};
 
     for (int d=0; d < AMREX_SPACEDIM; ++d)
     {
