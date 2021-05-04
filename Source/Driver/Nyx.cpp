@@ -117,10 +117,21 @@ int Nyx::heat_cool_type = 0;
 int Nyx::use_sundials_constraint = 0;
 int Nyx::use_sundials_fused = 0;
 int Nyx::use_typical_steps = 0;
-#ifndef AMREX_USE_HIP
+#ifndef AMREX_USE_GPU
 int Nyx::sundials_alloc_type = 0;
 #else
+#ifdef AMREX_USE_CUDA
+#ifndef _OPENMP
+int Nyx::sundials_alloc_type = 0; //consider changing to 5
+#else
 int Nyx::sundials_alloc_type = 5;
+#endif
+#ifdef AMREX_USE_HIP
+int Nyx::sundials_alloc_type = 5;
+#endif
+#ifdef AMREX_USE_DPCPP
+int Nyx::sundials_alloc_type = 2;
+#endif
 #endif
 int Nyx::minimize_memory = 0;
 int Nyx::shrink_to_fit = 0;
