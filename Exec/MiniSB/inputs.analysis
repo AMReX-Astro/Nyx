@@ -38,7 +38,6 @@ geometry.prob_hi     =  64. 64. 64.
 
 amr.n_cell           = 32 32 32 
 amr.max_grid_size    = 16
-#amr.max_grid_size    = 32
 
 # >>>>>>>>>>>>>>>  SUBCYCLING CONTROLS <<<<<<<<<<<<<<<<
 #  "None"        "Auto"	        "Manual"    "Optimal"
