@@ -36,24 +36,85 @@ jobs:
             -DCMAKE_CXX_COMPILER=$(which clang++)
         cmake --build build --parallel 2
 
-  nyx-cuda:
-    name: CUDA@9.1.85 GNU@4.8.5 C++11 Release
-    runs-on: ubuntu-latest
+  nyx-cuda9:
+    name: CUDA@9.2 GNU@6.5.0 C++14 Release
+    runs-on: ubuntu-18.04
+    env: {CXXFLAGS: "-fno-operator-names"}
     steps:
     - uses: actions/checkout@v2
     - name: Dependencies
-      run: .github/workflows/dependencies/dependencies_nvcc.sh
+      run: .github/workflows/dependencies/dependencies_nvcc9.sh
     - name: Build & Install
       run: |
+        export PATH=$PATH:/usr/local/cuda/bin
+        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib
+        cmake  -S . -B build_adiabatic                       \
+            -DNyx_HEATCOOL=no                                \
+            -DNyx_HYDRO=yes                                  \
+            -DNyx_OMP=no                                     \
+            -DNyx_GPU_BACKEND=CUDA                           \
+            -DCMAKE_C_COMPILER=$(which gcc-6)                \
+            -DCMAKE_CXX_COMPILER=$(which g++-6)              \
+            -DCMAKE_CUDA_HOST_COMPILER=$(which g++-6)        \
+            -DCMAKE_CUDA_ARCHITECTURES=60                    \
+            -DAMReX_CUDA_ARCH=6.0
+        cmake --build build_adiabatic --parallel 2
+
         cmake  -S . -B build                                 \
             -DNyx_HEATCOOL=yes                               \
             -DNyx_HYDRO=yes                                  \
             -DNyx_OMP=no                                     \
             -DNyx_GPU_BACKEND=CUDA                           \
-            -DCMAKE_C_COMPILER=$(which gcc-4.8)              \
-            -DCMAKE_CXX_COMPILER=$(which g++-4.8)            \
-            -DCMAKE_CUDA_HOST_COMPILER=$(which g++-4.8)      \
+            -DCMAKE_C_COMPILER=$(which gcc-6)                \
+            -DCMAKE_CXX_COMPILER=$(which g++-6)              \
+            -DCMAKE_CUDA_HOST_COMPILER=$(which g++-6)        \
+            -DCMAKE_CUDA_ARCHITECTURES=60                    \
             -DAMReX_CUDA_ARCH=6.0
+        cmake --build build --parallel 2
+
+# Ref.:
+#   https://gitlab.com/nvidia/container-images/cuda/-/blob/master/dist/ubuntu18.04/10.1/base/Dockerfile
+#   https://github.com/ComputationalRadiationPhysics/picongpu/blob/0.5.0/share/picongpu/dockerfiles/ubuntu-1604/Dockerfile
+#   https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/
+  nyx-cuda11:
+    name: NVCC 11.2 SP [Linux]
+    runs-on: ubuntu-20.04
+    env: {CXXFLAGS: "-fno-operator-names"}
+    steps:
+    - uses: actions/checkout@v2
+    - name: install dependencies
+      run: .github/workflows/dependencies/dependencies_nvcc11.sh
+    - name: build Nyx
+      run: |
+        export PATH=/usr/local/nvidia/bin:/usr/local/cuda/bin:${PATH}
+        export LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/local/cuda/lib64:${LD_LIBRARY_PATH}
+        which nvcc || echo "nvcc not in PATH!"
+        cmake  -S . -B build_adiabatic                       \
+            -DNyx_HEATCOOL=no                                \
+            -DNyx_HYDRO=yes                                  \
+            -DNyx_OMP=no                                     \
+            -DNyx_GPU_BACKEND=CUDA                           \
+            -DCMAKE_C_COMPILER=$(which gcc)                  \
+            -DCMAKE_CXX_COMPILER=$(which g++)                \
+            -DCMAKE_CUDA_HOST_COMPILER=$(which g++)          \
+            -DCMAKE_CUDA_STANDARD=17                         \
+            -DCMAKE_CXX_STANDARD=17                          \
+            -DCMAKE_CUDA_ARCHITECTURES=80                    \
+            -DAMReX_CUDA_ARCH=8.0
+        cmake --build build_adiabatic --parallel 2
+
+        cmake  -S . -B build                                 \
+            -DNyx_HEATCOOL=yes                               \
+            -DNyx_HYDRO=yes                                  \
+            -DNyx_OMP=no                                     \
+            -DNyx_GPU_BACKEND=CUDA                           \
+            -DCMAKE_C_COMPILER=$(which gcc)                  \
+            -DCMAKE_CXX_COMPILER=$(which g++)                \
+            -DCMAKE_CUDA_HOST_COMPILER=$(which g++)          \
+            -DCMAKE_CUDA_STANDARD=17                         \
+            -DCMAKE_CXX_STANDARD=17                          \
+            -DCMAKE_CUDA_ARCHITECTURES=80                    \
+            -DAMReX_CUDA_ARCH=8.0
         cmake --build build --parallel 2
 
   nyx-dpcpp:
@@ -69,11 +130,23 @@ jobs:
         set +e
         source /opt/intel/oneapi/setvars.sh
         set -e
-        cmake  -S . -B build                               \
+        cmake  -S . -B build_adiabatic                     \
             -DCMAKE_CXX_COMPILER_ID="Clang"                \
             -DCMAKE_CXX_COMPILER_VERSION=12.0              \
             -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT="17"     \
             -DNyx_HEATCOOL=no                              \
+            -DNyx_HYDRO=yes                                \
+            -DNyx_OMP=no                                   \
+            -DNyx_GPU_BACKEND=SYCL                         \
+            -DCMAKE_C_COMPILER=$(which clang)              \
+            -DCMAKE_CXX_COMPILER=$(which dpcpp)
+        cmake --build build_adiabatic --parallel 2
+
+        cmake  -S . -B build                               \
+            -DCMAKE_CXX_COMPILER_ID="Clang"                \
+            -DCMAKE_CXX_COMPILER_VERSION=12.0              \
+            -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT="17"     \
+            -DNyx_HEATCOOL=yes                             \
             -DNyx_HYDRO=yes                                \
             -DNyx_OMP=no                                   \
             -DNyx_GPU_BACKEND=SYCL                         \
@@ -95,12 +168,22 @@ jobs:
       run: |
         source /etc/profile.d/rocm.sh
         hipcc --version
-        cmake  -S . -B build                               \
+        cmake  -S . -B build_adiabatic                     \
             -DNyx_HEATCOOL=no                              \
             -DNyx_HYDRO=yes                                \
             -DNyx_OMP=no                                   \
             -DNyx_GPU_BACKEND=HIP                          \
             -DAMReX_AMD_ARCH=gfx900                        \
-            -DCMAKE_C_COMPILER=$(which hipcc)              \
+            -DCMAKE_C_COMPILER=$(which clang)              \
+            -DCMAKE_CXX_COMPILER=$(which hipcc)
+        cmake --build build_adiabatic --parallel 2
+
+        cmake  -S . -B build                               \
+            -DNyx_HEATCOOL=yes                             \
+            -DNyx_HYDRO=yes                                \
+            -DNyx_OMP=no                                   \
+            -DNyx_GPU_BACKEND=HIP                          \
+            -DAMReX_AMD_ARCH=gfx900                        \
+            -DCMAKE_C_COMPILER=$(which clang)              \
             -DCMAKE_CXX_COMPILER=$(which hipcc)
         cmake --build build --parallel 2

@@ -63,7 +63,7 @@ gravity.ml_tol = 1.e-10
 gravity.sl_tol = 1.e-10
 gravity.mlmg_agglomeration=1
 gravity.mlmg_consolidation=1
-nyx.resuse_mlpoisson = 1
+nyx.reuse_mlpoisson = 1
 
 # 0.702 h
 nyx.initial_z = 159.0
