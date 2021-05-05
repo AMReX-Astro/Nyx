@@ -866,7 +866,7 @@ Nyx::est_time_step (Real /*dt_old*/)
           int  local_max_temp_dt = max_temp_dt;
 
           dt = amrex::ReduceMin(stateMF, 0,
-              [=] AMREX_GPU_HOST_DEVICE (Box const& bx, Array4<Real const> const& u) noexcept -> Real
+              [=] AMREX_GPU_HOST_DEVICE (Box const& bx, Array4<Real const> const& u) -> Real
               {
                   const auto lo = amrex::lbound(bx);
                   const auto hi = amrex::ubound(bx);
