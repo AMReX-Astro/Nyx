@@ -46,8 +46,6 @@ jobs:
       run: .github/workflows/dependencies/dependencies_nvcc9.sh
     - name: Build & Install
       run: |
-        echo $(which nvcc)
-        echo $(ls /usr/local/cuda/*)
         cmake  -S . -B build_adiabatic                       \
             -DNyx_HEATCOOL=no                                \
             -DNyx_HYDRO=yes                                  \
@@ -56,7 +54,7 @@ jobs:
             -DCMAKE_C_COMPILER=$(which gcc-6)                \
             -DCMAKE_CXX_COMPILER=$(which g++-6)              \
             -DCMAKE_CUDA_HOST_COMPILER=$(which g++-6)        \
-            -DCMAKE_CUDA_COMPILER=$(which nvcc)              \
+            -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc   \
             -DCMAKE_CUDA_ARCHITECTURES=60                    \
             -DAMReX_CUDA_ARCH=6.0
         cmake --build build_adiabatic --parallel 2
@@ -69,7 +67,7 @@ jobs:
             -DCMAKE_C_COMPILER=$(which gcc-6)                \
             -DCMAKE_CXX_COMPILER=$(which g++-6)              \
             -DCMAKE_CUDA_HOST_COMPILER=$(which g++-6)        \
-            -DCMAKE_CUDA_COMPILER=$(which nvcc)              \
+            -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc   \
             -DCMAKE_CUDA_ARCHITECTURES=60                    \
             -DAMReX_CUDA_ARCH=6.0
         cmake --build build --parallel 2
