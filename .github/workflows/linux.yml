@@ -50,10 +50,54 @@ jobs:
             -DNyx_HYDRO=yes                                  \
             -DNyx_OMP=no                                     \
             -DNyx_GPU_BACKEND=CUDA                           \
+            -DCMAKE_C_COMPILER=$(which gcc-6)                  \
+            -DCMAKE_CXX_COMPILER=$(which g++-6)                \
+            -DCMAKE_CUDA_HOST_COMPILER=$(which g++-6)          \
+            -DAMReX_CUDA_ARCH=6.0
+        cmake --build build_adiabatic --parallel 2
+
+        cmake  -S . -B build                                 \
+            -DNyx_HEATCOOL=yes                               \
+            -DNyx_HYDRO=yes                                  \
+            -DNyx_OMP=no                                     \
+            -DNyx_GPU_BACKEND=CUDA                           \
+            -DCMAKE_C_COMPILER=$(which gcc-6)                  \
+            -DCMAKE_CXX_COMPILER=$(which g++-6)                \
+            -DCMAKE_CUDA_HOST_COMPILER=$(which g++-6)          \
+            -DAMReX_CUDA_ARCH=6.0
+        cmake --build build --parallel 2
+
+# Ref.:
+#   https://gitlab.com/nvidia/container-images/cuda/-/blob/master/dist/ubuntu18.04/10.1/base/Dockerfile
+#   https://github.com/ComputationalRadiationPhysics/picongpu/blob/0.5.0/share/picongpu/dockerfiles/ubuntu-1604/Dockerfile
+#   https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/
+  build_nvcc:
+    name: NVCC 11.0.2 SP [Linux]
+    runs-on: ubuntu-20.04
+    env: {CXXFLAGS: "-fno-operator-names"}
+    steps:
+    - uses: actions/checkout@v2
+    - name: install dependencies
+      run: |
+        .github/workflows/dependencies/dependencies_nvcc11.sh
+        export CEI_SUDO="sudo"
+        cmake-easyinstall --prefix=/usr/local git+https://github.com/openPMD/openPMD-api.git@0.13.2 -DopenPMD_USE_PYTHON=OFF -DBUILD_TESTING=OFF -DBUILD_EXAMPLES=OFF -DBUILD_CLI_TOOLS=OFF
+    - name: build Nyx
+      run: |
+        export PATH=/usr/local/nvidia/bin:/usr/local/cuda/bin:${PATH}
+        export LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/local/cuda/lib64:${LD_LIBRARY_PATH}
+        which nvcc || echo "nvcc not in PATH!"
+        cmake  -S . -B build_adiabatic                       \
+            -DNyx_HEATCOOL=no                                \
+            -DNyx_HYDRO=yes                                  \
+            -DNyx_OMP=no                                     \
+            -DNyx_GPU_BACKEND=CUDA                           \
             -DCMAKE_C_COMPILER=$(which gcc)                  \
             -DCMAKE_CXX_COMPILER=$(which g++)                \
             -DCMAKE_CUDA_HOST_COMPILER=$(which g++)          \
-            -DAMReX_CUDA_ARCH=6.0
+            -DCMAKE_CUDA_STANDARD=17                         \
+            -DCMAKE_CXX_STANDARD=17                          \
+            -DAMReX_CUDA_ARCH=8.0
         cmake --build build_adiabatic --parallel 2
 
         cmake  -S . -B build                                 \
@@ -64,7 +108,9 @@ jobs:
             -DCMAKE_C_COMPILER=$(which gcc)                  \
             -DCMAKE_CXX_COMPILER=$(which g++)                \
             -DCMAKE_CUDA_HOST_COMPILER=$(which g++)          \
-            -DAMReX_CUDA_ARCH=6.0
+            -DCMAKE_CUDA_STANDARD=17                         \
+            -DCMAKE_CXX_STANDARD=17                          \
+            -DAMReX_CUDA_ARCH=8.0
         cmake --build build --parallel 2
 
   nyx-dpcpp:
