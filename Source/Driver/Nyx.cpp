@@ -126,6 +126,7 @@ int Nyx::sundials_alloc_type = 0; //consider changing to 5
 #else
 int Nyx::sundials_alloc_type = 5;
 #endif
+#endif
 #ifdef AMREX_USE_HIP
 int Nyx::sundials_alloc_type = 5;
 #endif
