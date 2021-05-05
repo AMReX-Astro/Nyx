@@ -105,6 +105,7 @@ else ()
    set(AMReX_GPU_BACKEND          ${Nyx_GPU_BACKEND}         CACHE INTERNAL "" )
    set(AMReX_LINEAR_SOLVERS       ${Nyx_GRAVITY}             CACHE INTERNAL "" )
    set(AMReX_PARTICLES            ON                         CACHE INTERNAL "" )
+   set(AMReX_SUNDIALS             ${Nyx_SUNDIALS}            CACHE INTERNAL "" )
    set(AMReX_BUILD_TUTORIALS      OFF                        CACHE INTERNAL "" )
    if (Nyx_SINGLE_PRECISION_PARTICLES)
       set(AMReX_PARTICLES_PRECISION SINGLE CACHE INTERNAL "" )
@@ -126,5 +127,7 @@ else ()
    endif ()
 
    add_subdirectory(${AMREX_SRC_DIR})
+#   include(AMReXGenerateConfigHeader)  # provides add_amrex_defines
+#   add_amrex_define(AMREX_USE_SUNDIALS NO_LEGACY IF AMReX_SUNDIALS)
 
 endif ()
