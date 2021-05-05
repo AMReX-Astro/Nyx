@@ -75,7 +75,7 @@ jobs:
 #   https://github.com/ComputationalRadiationPhysics/picongpu/blob/0.5.0/share/picongpu/dockerfiles/ubuntu-1604/Dockerfile
 #   https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/
   nyx-cuda11:
-    name: NVCC 11.0.2 SP [Linux]
+    name: NVCC 11.2 SP [Linux]
     runs-on: ubuntu-20.04
     env: {CXXFLAGS: "-fno-operator-names"}
     steps:
