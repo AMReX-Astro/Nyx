@@ -71,8 +71,7 @@ option(Nyx_SINGLE_PRECISION_PARTICLES
    "Use single precision particle data structures" YES )
 
 option( Nyx_HYDRO "Run with baryon hydro solve and fields" YES)
-cmake_dependent_option(Nyx_HEATCOOL "Run with H and He heating-cooling effects" NO
-   "Nyx_HYDRO; NOT Nyx_GPU_BACKEND STREQUAL SYCL; NOT Nyx_GPU_BACKEND STREQUAL HIP" NO)
+option(Nyx_HEATCOOL "Run with H and He heating-cooling effects" NO)
 
 option( BUILD_SHARED_LIBS "Build AMReX and SUNDIALS as shared libraries" OFF )
 cmake_dependent_option(Nyx_GIMLET "" NO "Nyx_MPI;Nyx_OMP" NO)

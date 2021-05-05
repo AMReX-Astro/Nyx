@@ -45,14 +45,25 @@ jobs:
       run: .github/workflows/dependencies/dependencies_nvcc.sh
     - name: Build & Install
       run: |
+        cmake  -S . -B build_adiabatic                       \
+            -DNyx_HEATCOOL=no                                \
+            -DNyx_HYDRO=yes                                  \
+            -DNyx_OMP=no                                     \
+            -DNyx_GPU_BACKEND=CUDA                           \
+            -DCMAKE_C_COMPILER=$(which gcc)                  \
+            -DCMAKE_CXX_COMPILER=$(which g++)                \
+            -DCMAKE_CUDA_HOST_COMPILER=$(which g++)          \
+            -DAMReX_CUDA_ARCH=6.0
+        cmake --build build_adiabatic --parallel 2
+	
         cmake  -S . -B build                                 \
             -DNyx_HEATCOOL=yes                               \
             -DNyx_HYDRO=yes                                  \
             -DNyx_OMP=no                                     \
             -DNyx_GPU_BACKEND=CUDA                           \
-            -DCMAKE_C_COMPILER=$(which gcc-4.8)              \
-            -DCMAKE_CXX_COMPILER=$(which g++-4.8)            \
-            -DCMAKE_CUDA_HOST_COMPILER=$(which g++-4.8)      \
+            -DCMAKE_C_COMPILER=$(which gcc)                  \
+            -DCMAKE_CXX_COMPILER=$(which g++)                \
+            -DCMAKE_CUDA_HOST_COMPILER=$(which g++)          \
             -DAMReX_CUDA_ARCH=6.0
         cmake --build build --parallel 2
 
@@ -69,11 +80,23 @@ jobs:
         set +e
         source /opt/intel/oneapi/setvars.sh
         set -e
-        cmake  -S . -B build                               \
+        cmake  -S . -B build_adiabatic                     \
             -DCMAKE_CXX_COMPILER_ID="Clang"                \
             -DCMAKE_CXX_COMPILER_VERSION=12.0              \
             -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT="17"     \
             -DNyx_HEATCOOL=no                              \
+            -DNyx_HYDRO=yes                                \
+            -DNyx_OMP=no                                   \
+            -DNyx_GPU_BACKEND=SYCL                         \
+            -DCMAKE_C_COMPILER=$(which clang)              \
+            -DCMAKE_CXX_COMPILER=$(which dpcpp)
+        cmake --build build_adiabatic --parallel 2
+
+        cmake  -S . -B build                               \
+            -DCMAKE_CXX_COMPILER_ID="Clang"                \
+            -DCMAKE_CXX_COMPILER_VERSION=12.0              \
+            -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT="17"     \
+            -DNyx_HEATCOOL=yes                             \
             -DNyx_HYDRO=yes                                \
             -DNyx_OMP=no                                   \
             -DNyx_GPU_BACKEND=SYCL                         \
@@ -95,12 +118,22 @@ jobs:
       run: |
         source /etc/profile.d/rocm.sh
         hipcc --version
-        cmake  -S . -B build                               \
+        cmake  -S . -B build_adiabatic                     \
             -DNyx_HEATCOOL=no                              \
             -DNyx_HYDRO=yes                                \
             -DNyx_OMP=no                                   \
             -DNyx_GPU_BACKEND=HIP                          \
             -DAMReX_AMD_ARCH=gfx900                        \
-            -DCMAKE_C_COMPILER=$(which hipcc)              \
+            -DCMAKE_C_COMPILER=$(which clang)              \
+            -DCMAKE_CXX_COMPILER=$(which hipcc)
+        cmake --build build_adiabatic --parallel 2
+
+        cmake  -S . -B build                               \
+            -DNyx_HEATCOOL=yes                             \
+            -DNyx_HYDRO=yes                                \
+            -DNyx_OMP=no                                   \
+            -DNyx_GPU_BACKEND=HIP                          \
+            -DAMReX_AMD_ARCH=gfx900                        \
+            -DCMAKE_C_COMPILER=$(which clang)              \
             -DCMAKE_CXX_COMPILER=$(which hipcc)
         cmake --build build --parallel 2
