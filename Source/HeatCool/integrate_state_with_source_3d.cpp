@@ -308,21 +308,6 @@ int Nyx::integrate_state_struct_mfin
               u = N_VNewWithMemHelp_Sycl(neq, /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper(), &amrex::Gpu::Device::streamQueue());
          //              u = N_VNewWithMemHelp_Sycl(neq, /*use_managed_mem=*/false, S, &amrex::Gpu::Device::streamQueue());
           }
-        else if(sundials_alloc_type==7)
-        {
-              //   Directly providing MemHelp:
-              e_orig = N_VNewWithMemHelp_Sycl(neq, /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper(), &amrex::Gpu::Device::streamQueue());
-              abstol_vec = N_VNewWithMemHelp_Sycl(neq, /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper(), &amrex::Gpu::Device::streamQueue());
-              T_vec = N_VNewWithMemHelp_Sycl(neq, /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper(), &amrex::Gpu::Device::streamQueue());
-              ne_vec = N_VNewWithMemHelp_Sycl(neq, /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper(), &amrex::Gpu::Device::streamQueue());
-              rho_vec = N_VNewWithMemHelp_Sycl(neq, /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper(), &amrex::Gpu::Device::streamQueue());
-              rho_init_vec = N_VNewWithMemHelp_Sycl(neq, /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper(), &amrex::Gpu::Device::streamQueue());
-              rho_src_vec = N_VNewWithMemHelp_Sycl(neq, /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper(), &amrex::Gpu::Device::streamQueue());
-              rhoe_src_vec = N_VNewWithMemHelp_Sycl(neq, /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper(), &amrex::Gpu::Device::streamQueue());
-              e_src_vec = N_VNewWithMemHelp_Sycl(neq, /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper(), &amrex::Gpu::Device::streamQueue());
-              IR_vec = N_VNewWithMemHelp_Sycl(neq, /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper(), &amrex::Gpu::Device::streamQueue());
-
-         }
 // might need a cuda analog to setting exec policy
       }
       N_VSetKernelExecPolicy_Sycl(u, &stream_exec_policy, &reduce_exec_policy);

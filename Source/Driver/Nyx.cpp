@@ -131,7 +131,7 @@ int Nyx::sundials_alloc_type = 5;
 int Nyx::sundials_alloc_type = 5;
 #endif
 #ifdef AMREX_USE_DPCPP
-int Nyx::sundials_alloc_type = 2;
+int Nyx::sundials_alloc_type = 5;
 #endif
 #endif
 int Nyx::minimize_memory = 0;
