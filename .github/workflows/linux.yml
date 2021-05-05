@@ -51,9 +51,10 @@ jobs:
             -DNyx_HYDRO=yes                                  \
             -DNyx_OMP=no                                     \
             -DNyx_GPU_BACKEND=CUDA                           \
-            -DCMAKE_C_COMPILER=$(which gcc-6)                  \
-            -DCMAKE_CXX_COMPILER=$(which g++-6)                \
-            -DCMAKE_CUDA_HOST_COMPILER=$(which g++-6)          \
+            -DCMAKE_C_COMPILER=$(which gcc-6)                \
+            -DCMAKE_CXX_COMPILER=$(which g++-6)              \
+            -DCMAKE_CUDA_HOST_COMPILER=$(which g++-6)        \
+            -DCMAKE_CUDA_COMPILER=$(which nvcc)              \
             -DAMReX_CUDA_ARCH=6.0
         cmake --build build_adiabatic --parallel 2
 
@@ -62,9 +63,10 @@ jobs:
             -DNyx_HYDRO=yes                                  \
             -DNyx_OMP=no                                     \
             -DNyx_GPU_BACKEND=CUDA                           \
-            -DCMAKE_C_COMPILER=$(which gcc-6)                  \
-            -DCMAKE_CXX_COMPILER=$(which g++-6)                \
-            -DCMAKE_CUDA_HOST_COMPILER=$(which g++-6)          \
+            -DCMAKE_C_COMPILER=$(which gcc-6)                \
+            -DCMAKE_CXX_COMPILER=$(which g++-6)              \
+            -DCMAKE_CUDA_HOST_COMPILER=$(which g++-6)        \
+            -DCMAKE_CUDA_COMPILER=$(which nvcc)              \
             -DAMReX_CUDA_ARCH=6.0
         cmake --build build --parallel 2
 
