@@ -47,7 +47,7 @@ jobs:
     - name: Build & Install
       run: |
         echo $(which nvcc)
-	echo $(ls /usr/local/cuda/bin/)
+        echo $(ls /usr/local/cuda/*)
         cmake  -S . -B build_adiabatic                       \
             -DNyx_HEATCOOL=no                                \
             -DNyx_HYDRO=yes                                  \
