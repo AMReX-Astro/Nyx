@@ -118,7 +118,7 @@ nyx_main (int argc, char* argv[])
     */
     ////    Nyx::theDMPC()->Restart(particle_plot_file, dm_chk_particle_file);
 
-    auto dir = restart_particle_file + "_newvars";
+    auto dir = restart_particle_file + "_gridDM";
 
     /*
 #ifdef NO_HYDRO
@@ -136,9 +136,9 @@ nyx_main (int argc, char* argv[])
     const int nGrow = 1;
     const int lev = 0;
     MultiFab plotMF(Nyx::theDMPC()->ParticleBoxArray(lev),
-		    Nyx::theDMPC()->ParticleDistributionMap(lev),
-		    n_data_items,
-		    nGrow);
+                    Nyx::theDMPC()->ParticleDistributionMap(lev),
+                    n_data_items,
+                    nGrow);
     varnames.push_back("particle_mass_density");
     varnames.push_back("particle_x_velocity");
     varnames.push_back("particle_y_velocity");
@@ -150,21 +150,114 @@ nyx_main (int argc, char* argv[])
     for(int cnt = 0; cnt < n_data_items; cnt++)
     {
         amrex::Print()<<"Getting derive type for: "<<varnames[cnt]<<std::endl;
-	amrex::Print()<<"with boxes and dmap "<<
-	  Nyx::theDMPC()->ParticleBoxArray(lev)<<"\n"<<
-	  Nyx::theDMPC()->ParticleDistributionMap(lev)<<"\n"
-	  //<<	  ((Nyx*) amrptr)->grids<<((Nyx*) amrptr)->dmap
-	  <<std::endl;
+        amrex::Print()<<"with boxes and dmap "<<
+          Nyx::theDMPC()->ParticleBoxArray(lev)<<"\n"<<
+          Nyx::theDMPC()->ParticleDistributionMap(lev)<<"\n"
+          //<<    ((Nyx*) amrptr)->grids<<((Nyx*) amrptr)->dmap
+          <<std::endl;
         const auto& derive_dat = ((Nyx*) amrptr)->particle_derive(varnames[cnt], cur_time, nGrow);
-	amrex::Print()<<"made derive"<<std::endl;
+        amrex::Print()<<"made derive"<<std::endl;
         MultiFab::Copy(plotMF, *derive_dat, 0, cnt, 1, nGrow);
     }*/
     WriteSingleLevelPlotfile(dir,
-			     plotMF,
-			     varnames,
-			     Nyx::theDMPC()->GetParGDB()->Geom(lev),
-			     cur_time,
-			     cycle);
+                             plotMF,
+                             varnames,
+                             Nyx::theDMPC()->GetParGDB()->Geom(lev),
+                             cur_time,
+                             cycle);
+
+    if (ParallelDescriptor::IOProcessor())
+      {
+          //Copy comoving_a file
+            std::string FileName = restart_particle_file + "/comoving_a";
+            std::ifstream FileIn;
+            std::string line;
+            FileIn.open(FileName.c_str(), std::ios::in);
+            if ( ! FileIn.good()) {
+                amrex::FileOpenFailed(FileName);
+            }
+            FileName = dir + "/comoving_a";
+            std::ofstream File;
+            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
+            if ( ! File.good()) {
+                amrex::FileOpenFailed(FileName);
+            }
+            File.precision(15);
+
+            while(getline(FileIn, line)){
+              File << line << std::endl;
+            }
+            File.close();
+            FileIn.close();
+
+      }
+
+    if (ParallelDescriptor::IOProcessor())
+      {
+        //        ((Nyx*) amrptr)->writeJobInfo(dir);
+        //        ((Nyx*) amrptr)->write_parameter_file(dir);
+      }
+
+    if (ParallelDescriptor::IOProcessor())
+      {
+        //Copy comoving_a file
+        std::string FileName = restart_particle_file + "/job_info";
+        std::ifstream FileIn;
+        std::string line;
+        FileIn.open(FileName.c_str(), std::ios::in);
+        if ( ! FileIn.good()) {
+          amrex::FileOpenFailed(FileName);
+        }
+        FileName = dir + "/job_info";
+        std::ofstream File;
+        File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
+        if ( ! File.good()) {
+          amrex::FileOpenFailed(FileName);
+        }
+        File.precision(15);
+
+        while(getline(FileIn, line)){
+          File << line << std::endl;
+        }
+        File << "nyx.particle_init_type = Restart" << std::endl;
+        File << "nyx.do_hydro = 0" << std::endl;
+        File.close();
+        FileIn.close();
+
+      }
+
+    if (ParallelDescriptor::IOProcessor())
+      {
+        //Copy comoving_a file
+        std::string FileName = restart_particle_file + "/the_parameters";
+        std::ifstream FileIn;
+        std::string line;
+        FileIn.open(FileName.c_str(), std::ios::in);
+        if ( ! FileIn.good()) {
+          amrex::FileOpenFailed(FileName);
+        }
+        FileName = dir + "/the_parameters";
+        std::ofstream File;
+        File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
+        if ( ! File.good()) {
+          amrex::FileOpenFailed(FileName);
+        }
+        File.precision(15);
+
+        std::string str2 ("particle_init_type");
+        std::string str3 ("do_hydro");
+        while(getline(FileIn, line)){
+          if(line.find(str2)!=std::string::npos)
+            File << "nyx.particle_init_type = Restart" << std::endl;
+          else if(line.find(str3)!=std::string::npos)
+            File << "nyx.do_hydro = 0" << std::endl;
+          else
+            File << line << std::endl;
+        }
+        File.close();
+        FileIn.close();
+      }
+
     BL_PROFILE_VAR_STOP(pmain);
     BL_PROFILE_REGION_STOP("main()");
 

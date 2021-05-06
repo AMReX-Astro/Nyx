@@ -64,6 +64,21 @@ static void print_usage(int argc, char **argv) {
     exit(1);
 }
 
+bool dmvars_on(std::string& fns) {
+    // Looks for nyx.do_hydro = 1 in the jobinfo file, if it is there, Hydro is on
+    std::ifstream fileInput;
+    std::string line;
+    bool dmvars = false;
+    char* search = "particle_x_velocity"; // test variable to search in file
+    // open file to search
+    fileInput.open(fns.c_str());
+    while(getline(fileInput, line)) {
+        if (line.find(search, 0) != string::npos) {
+            dmvars = true;
+        }
+    }
+    return dmvars;
+}
 
 bool neutrinos_on(std::string& fns) {
     // Looks for the directory NPC in the plotfile, if this exists neutrinos are on
@@ -96,6 +111,23 @@ bool hydro_on(std::string& fns) {
         }   
     }
     return hydro;
+}
+
+
+bool append_on(std::string& fns) {
+    // Looks for nyx.do_hydro = 1 in the jobinfo file, if it is there, Hydro is on
+    std::ifstream fileInput;
+    std::string line;
+    bool append = false;
+    char* search = "nyx.particle_init_type = Restart"; // test variable to search in file
+    // open file to search
+    fileInput.open(fns.c_str());
+    while(getline(fileInput, line)) {
+        if (line.find(search, 0) != string::npos) {
+            append = true;
+        }
+    }
+    return append;
 }
 
 
@@ -536,9 +568,17 @@ int main(int argc, char **argv) {
     bool neutrinos=neutrinos_on(fn);
 
     fn=input_path+"/job_info";
-    bool hydro=hydro_on(fn);
+    bool append=append_on(fn);
+    bool hydro=append ? false : hydro_on(fn);
+    neutrinos=append ? false : neutrinos;
+    bool dmvars=append ? true : dmvars_on(fn);
+
     const int nGhost = 0;
-    int nComp = 4;
+    int nComp = 0;
+    if (dmvars) {
+        Print() << "DMvars on" << endl;
+        nComp+=4;
+    }
 
     if (hydro) {
         Print() << "Hydro on" << endl;
@@ -550,7 +590,14 @@ int main(int argc, char **argv) {
         nComp+=1;
     }
 
+    if (append) {
+        Print() << "Append on" << endl;
+        nComp+=0;
+    }
+
     Vector<int> comps(nComp);
+    int val = -1;
+    if (dmvars) {
     //Dark matter fields
     Print() << "Converting (dm) particle quantities \n";
     int i_dm_density(amrData.StateNumber("particle_mass_density"));
@@ -566,7 +613,8 @@ int main(int argc, char **argv) {
     comps[3]= i_dm_vz;
     Print() << "   particle z velocity \n";
 
-    int val = 3;
+    val = 3;
+    }
 
     //Hydro fields
     if (hydro) {
@@ -693,7 +741,7 @@ int main(int argc, char **argv) {
     }
 
     // Create on master process.
-    if (ParallelDescriptor::IOProcessor()) {
+    if (ParallelDescriptor::IOProcessor() && !append) {
         // create the file.
         output_create(output_path.c_str());
 
@@ -711,10 +759,13 @@ int main(int argc, char **argv) {
     // Dark matter particles, always present
     //
 
-    if (hydro || neutrinos) {
-        std::string field_path = "native_fields/dm_density";
+    std::string field_path;
+    if (dmvars)
+    {
+    if (hydro || neutrinos || append) {
+        field_path = "native_fields/dm_density";
     } else {
-        std::string field_path = "native_fields/matter_density";
+        field_path = "native_fields/matter_density";
     }
 
     if (ParallelDescriptor::IOProcessor()) {
@@ -809,7 +860,7 @@ int main(int argc, char **argv) {
     ParallelDescriptor::Barrier();
     output_write_field(output_path, field_path, mf1);
     ParallelDescriptor::Barrier();
-
+    }
     //
     // Baryonic gas, optional
     //
@@ -831,7 +882,7 @@ int main(int argc, char **argv) {
         double mean_baryon_density = mf2.norm1() / num_cells;
 
         if (ParallelDescriptor::IOProcessor()) {
-            printf("Mean DM density: %.14e Msun/Mpc**3\n", mean_dm_density);
+            printf("Mean baryon density: %.14e Msun/Mpc**3\n", mean_baryon_density);
             fflush(stdout);
         }
 
@@ -962,7 +1013,7 @@ int main(int argc, char **argv) {
         double mean_neu_density = mf1.norm1() / num_cells;
 
         if (ParallelDescriptor::IOProcessor()) {
-            printf("Mean DM density: %.14e Msun/Mpc**3\n", mean_dm_density);
+            printf("Mean NPC density: %.14e Msun/Mpc**3\n", mean_neu_density);
             fflush(stdout);
         }
 
