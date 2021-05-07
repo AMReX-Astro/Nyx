@@ -48,6 +48,7 @@ jobs:
       run: |
         export PATH=$PATH:/usr/local/cuda/bin
         export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib
+        ls /usr/local/cuda/*
         cmake  -S . -B build_adiabatic                       \
             -DNyx_HEATCOOL=no                                \
             -DNyx_HYDRO=yes                                  \
@@ -65,6 +66,7 @@ jobs:
             -DNyx_HYDRO=yes                                  \
             -DNyx_OMP=no                                     \
             -DNyx_GPU_BACKEND=CUDA                           \
+            -DCMAKE_VERBOSE_MAKEFILE=ON                      \
             -DCMAKE_C_COMPILER=$(which gcc-6)                \
             -DCMAKE_CXX_COMPILER=$(which g++-6)              \
             -DCMAKE_CUDA_HOST_COMPILER=$(which g++-6)        \
@@ -88,6 +90,8 @@ jobs:
       run: |
         export PATH=/usr/local/nvidia/bin:/usr/local/cuda/bin:${PATH}
         export LD_LIBRARY_PATH=/usr/local/nvidia/lib:/usr/local/nvidia/lib64:/usr/local/cuda/lib64:${LD_LIBRARY_PATH}
+        ls /usr/local/cuda/*
+        ls /usr/local/nvidia/*
         which nvcc || echo "nvcc not in PATH!"
         cmake  -S . -B build_adiabatic                       \
             -DNyx_HEATCOOL=no                                \
