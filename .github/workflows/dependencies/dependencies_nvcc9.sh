@@ -31,7 +31,8 @@ sudo apt-get install -y \
     cuda-nvml-dev-9-2           \
     cuda-nvtx-9-2               \
     cuda-curand-dev-9-2         \
-    cuda-cusolver-dev-9-2         \
+    cuda-cusolver-dev-9-2       \
+    cuda-cublas-dev-9-2         \
     cuda-cusparse-dev-9-2
 
 sudo ln -s cuda-9.2 /usr/local/cuda
