@@ -131,7 +131,9 @@ ifeq ($(USE_DPCPP),TRUE)
 endif
 
 ifeq ($(USE_OMP),TRUE)
+ifneq ($(USE_HIP), TRUE)
   LIBRARIES += -L$(SUNDIALS_LIB_DIR) -lsundials_nvecopenmp
+endif
 endif
 
 ifeq ($(USE_FUSED),TRUE)
