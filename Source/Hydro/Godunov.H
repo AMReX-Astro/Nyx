@@ -129,9 +129,9 @@ pc_cmpflx(
     GU = QU;
     GV = QV;
     GV2 = QW;
-    csmall = amrex::max(small, small * std::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i-1,j,k,QREINT) / qprim(i-1,j,k,QRHO))), small * std::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
-    cav = 0.5 * ( std::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i-1,j,k,QREINT) / qprim(i-1,j,k,QRHO)))
-                  +std::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i  ,j,k,QREINT) / qprim(i  ,j,k,QRHO))) );
+    csmall = amrex::max(small, small * ::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i-1,j,k,QREINT) / qprim(i-1,j,k,QRHO))), small * ::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
+    cav = 0.5 * ( ::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i-1,j,k,QREINT) / qprim(i-1,j,k,QRHO)))
+                  +::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i  ,j,k,QREINT) / qprim(i  ,j,k,QRHO))) );
     f_idx[0] = Xmom_comp;
     f_idx[1] = Ymom_comp;
     f_idx[2] = Zmom_comp;
@@ -142,9 +142,9 @@ pc_cmpflx(
     GU = QV;
     GV = QU;
     GV2 = QW;
-    csmall = amrex::max(small, small * std::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i,j-1,k,QREINT) / qprim(i,j-1,k,QRHO))), small * std::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
-    cav = 0.5 * ( std::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i,j-1,k,QREINT) / qprim(i,j-1,k,QRHO)))
-                                  +std::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i,j  ,k,QREINT) / qprim(i,j  ,k,QRHO))) );
+    csmall = amrex::max(small, small * ::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i,j-1,k,QREINT) / qprim(i,j-1,k,QRHO))), small * ::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
+    cav = 0.5 * ( ::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i,j-1,k,QREINT) / qprim(i,j-1,k,QRHO)))
+                                  +::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i,j  ,k,QREINT) / qprim(i,j  ,k,QRHO))) );
     f_idx[0] = Ymom_comp;
     f_idx[1] = Xmom_comp;
     f_idx[2] = Zmom_comp;
@@ -155,9 +155,9 @@ pc_cmpflx(
     GU = QW;
     GV = QU;
     GV2 = QV;
-    csmall = amrex::max(small, small * std::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i,j,k-1,QREINT) / qprim(i,j,k-1,QRHO))), small * std::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
-    cav = 0.5 * ( std::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i,j,k-1,QREINT) / qprim(i,j,k-1,QRHO)))
-                                  +std::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
+    csmall = amrex::max(small, small * ::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i,j,k-1,QREINT) / qprim(i,j,k-1,QRHO))), small * ::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
+    cav = 0.5 * ( ::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i,j,k-1,QREINT) / qprim(i,j,k-1,QRHO)))
+                                  +::sqrt(amrex::Math::abs(gamma * (gamma - amrex::Real(1.0)) * qprim(i,j,k  ,QREINT) / qprim(i,j,k  ,QRHO))) );
     f_idx[0] = Zmom_comp;
     f_idx[1] = Xmom_comp;
     f_idx[2] = Ymom_comp;

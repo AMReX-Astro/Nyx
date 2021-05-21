@@ -21,7 +21,7 @@
 #include <sundials/sundials_types.h>   /* definition of type realtype */
 
 #include <nvector/nvector_serial.h>
-#ifdef _OPENMP
+#if (defined(_OPENMP) && !defined(AMREX_USE_GPU))
 #include <nvector/nvector_openmp.h>
 #endif
 #ifdef AMREX_USE_CUDA
@@ -58,10 +58,10 @@ int Nyx::integrate_state_struct
   //#ifdef _OPENMP
   //#pragma omp parallel if (Gpu::notInLaunchRegion())
   //#endif
-#ifdef _OPENMP
+#ifdef AMREX_USE_OMP
 #ifdef AMREX_USE_GPU
   //    if (sundials_use_tiling)
-       const auto tiling = MFItInfo().SetDynamic(true);
+     const auto tiling = MFItInfo().SetDynamic(true);
        //    else
        //       const bool tiling = false;
 #pragma omp parallel

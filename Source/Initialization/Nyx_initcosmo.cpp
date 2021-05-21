@@ -285,7 +285,7 @@ void Nyx::initcosmo()
        // LBox [MPc] * a * H [km/s/MPc]
        for (int n=0;n<AMREX_SPACEDIM;n++)
        {
-          vel_fac[n] = len[n]*comoving_a*std::sqrt(comoving_OmM/pow(comoving_a,3)+comoving_OmL)*comoving_h*100;
+          vel_fac[n] = len[n]*comoving_a*::sqrt(comoving_OmM/pow(comoving_a,3)+comoving_OmL)*comoving_h*100;
           dis_fac[n] = len[n];
        }
        //Compute particle mass

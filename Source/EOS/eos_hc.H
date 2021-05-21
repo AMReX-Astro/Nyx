@@ -12,7 +12,7 @@ void interp_to_this_z(AtomicRates* atomic_rates, const Real z, Real & ggh0, Real
 {
     Real lopz, fact;
     int i, j;
-    lopz   = std::log10(1.0e0 + z);
+    lopz   = ::log10(1.0e0 + z);
 
     if (lopz >= atomic_rates->lzr(NCOOLFILE))
     {
@@ -72,7 +72,7 @@ AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void ion_n_device(AtomicRates* atomic_r
     //    t = U / e_to_cgs * (gamma_minus_1 * mp_over_kb * mu);
     t  = gamma_minus_1*MPROTON/BOLTZMANN * U * mu;
 
-    logT = std::log10(t);
+    logT = ::log10(t);
 
     if (logT >= TCOOLMAX) // Fully ionized plasma
     {

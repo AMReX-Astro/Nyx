@@ -924,10 +924,10 @@ Nyx::est_time_step (Real /*dt_old*/)
                             // Protect against negative e
 #ifdef HEATCOOL
                             if (e > 0.0)
-                              c=sound_speed_factor*std::sqrt(e);
+                              c=sound_speed_factor*::sqrt(e);
 #else
                             if (e > 0.0)
-                              c=sound_speed_factor*std::sqrt(u(i,j,k,Density_comp)*e/u(i,j,k,Density_comp));
+                              c=sound_speed_factor*::sqrt(u(i,j,k,Density_comp)*e/u(i,j,k,Density_comp));
 #endif
                             else
                               c = 0.0;

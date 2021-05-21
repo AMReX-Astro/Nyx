@@ -16,8 +16,10 @@
 #include <sundials/sundials_types.h>   /* definition of type realtype */
 
 #include <nvector/nvector_serial.h>
+#ifndef AMREX_USE_GPU
 #ifdef _OPENMP
 #include <nvector/nvector_openmp.h>
+#endif
 #endif
 #ifdef AMREX_USE_CUDA
 #include <nvector/nvector_cuda.h>
@@ -164,7 +166,7 @@ int Nyx::integrate_state_vec_mfin
                         }
 
 #else
-#ifdef _OPENMP
+#if (defined(_OPENMP) && !defined(AMREX_USE_GPU))
                         int nthreads=omp_get_max_threads();
                         u = N_VNew_OpenMP(neq,nthreads);  /* Allocate u vector */
                         e_orig = N_VNew_OpenMP(neq,nthreads);  /* Allocate u vector */

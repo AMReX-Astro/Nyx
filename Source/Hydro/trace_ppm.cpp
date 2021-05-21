@@ -88,7 +88,7 @@ trace_ppm(const Box& bx,
   [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
   {
 
-    Real cc = std::sqrt(gamma * q_arr(i,j,k,QPRES)/q_arr(i,j,k,QRHO));
+    Real cc = ::sqrt(gamma * q_arr(i,j,k,QPRES)/q_arr(i,j,k,QRHO));
 
     Real un = q_arr(i,j,k,QUN);
 
@@ -228,7 +228,7 @@ trace_ppm(const Box& bx,
 
       // For tracing
       Real csq_ref = gam_g_ref*p_ref*rho_ref_inv;
-      Real cc_ref = std::sqrt(csq_ref);
+      Real cc_ref = ::sqrt(csq_ref);
       Real cc_ref_inv = 1.0_rt/cc_ref;
 
       // *m are the jumps carried by un-c
@@ -321,7 +321,7 @@ trace_ppm(const Box& bx,
 
       // For tracing
       Real csq_ref = gam_g_ref*p_ref*rho_ref_inv;
-      Real cc_ref = std::sqrt(csq_ref);
+      Real cc_ref = ::sqrt(csq_ref);
       Real cc_ref_inv = 1.0_rt/cc_ref;
 
       // *m are the jumps carried by u-c

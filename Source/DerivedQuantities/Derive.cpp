@@ -64,7 +64,7 @@ extern "C"
       [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
       {
 
-        der(i,j,k,0) = std::sqrt( (dat(i,j,k,1) / dat(i,j,k,0))*(dat(i,j,k,1) / dat(i,j,k,0)) +
+        der(i,j,k,0) = ::sqrt( (dat(i,j,k,1) / dat(i,j,k,0))*(dat(i,j,k,1) / dat(i,j,k,0)) +
                                   (dat(i,j,k,2) / dat(i,j,k,0))*(dat(i,j,k,2) / dat(i,j,k,0)) +
                                   (dat(i,j,k,3) / dat(i,j,k,0))*(dat(i,j,k,3) / dat(i,j,k,0)));
       });
@@ -95,7 +95,7 @@ extern "C"
         Real v2 = 0.5 * amrex::Math::abs(uz - wx);
         Real v3 = 0.5 * amrex::Math::abs(vx - uy);
 
-        der(i,j,k,0) = std::sqrt(v1*v1 + v2*v2 + v3*v3); 
+        der(i,j,k,0) = ::sqrt(v1*v1 + v2*v2 + v3*v3); 
       });
     }
 
@@ -111,7 +111,7 @@ extern "C"
                        [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
                        {
 
-                         der(i,j,k,0) = std::sqrt(dat(i,j,k,0)*dat(i,j,k,0) +
+                         der(i,j,k,0) = ::sqrt(dat(i,j,k,0)*dat(i,j,k,0) +
                                                   dat(i,j,k,1)*dat(i,j,k,1) +
                                                   dat(i,j,k,2)*dat(i,j,k,2));
 
@@ -148,7 +148,7 @@ extern "C"
       amrex::ParallelFor(bx,
       [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
       {
-             der(i,j,k,0) = std::log10(dat(i,j,k,0));
+             der(i,j,k,0) = ::log10(dat(i,j,k,0));
       });
     }
 
@@ -215,10 +215,10 @@ extern "C"
         // Protect against negative e
 #ifdef HEATCOOL
         if (e > 0.0)
-            der(i,j,k,0)=sound_speed_factor*std::sqrt(e);
+            der(i,j,k,0)=sound_speed_factor*::sqrt(e);
 #else
         if (e > 0.0)
-            der(i,j,k,0)=sound_speed_factor*std::sqrt(dat(i,j,k,Density_comp)*e/dat(i,j,k,Density_comp));
+            der(i,j,k,0)=sound_speed_factor*::sqrt(dat(i,j,k,Density_comp)*e/dat(i,j,k,Density_comp));
 #endif
         else
             der(i,j,k,0) = 0.0;
@@ -287,15 +287,15 @@ extern "C"
         // Protect against negative e
 #ifdef HEATCOOL
         if (e > 0.0)
-                c = sound_speed_factor*std::sqrt(e);
+                c = sound_speed_factor*::sqrt(e);
 #else
         if (e > 0.0)
-            c=sound_speed_factor*std::sqrt(dat(i,j,k,Density_comp)*e/dat(i,j,k,Density_comp));
+            c=sound_speed_factor*::sqrt(dat(i,j,k,Density_comp)*e/dat(i,j,k,Density_comp));
 #endif
         else
             c = 0.0;
 
-        der(i,j,k,0) = std::sqrt((ux*ux + uy*uy + uz*uz)) / c;
+        der(i,j,k,0) = ::sqrt((ux*ux + uy*uy + uz*uz)) / c;
 
       });
 

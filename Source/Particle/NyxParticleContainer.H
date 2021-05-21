@@ -367,7 +367,6 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
         }
     }
 
-
 #ifdef _OPENMP
 #pragma omp parallel if (amrex::Gpu::notInLaunchRegion()) reduction(min:dt)
 #endif
@@ -409,10 +408,10 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::estTimestep (amrex::MultiFab&       accel
                     const amrex::Real aval_x = gfab(cell[0],cell[1],cell[2],0);
                     const amrex::Real aval_y = gfab(cell[0],cell[1],cell[2],1);
                     const amrex::Real aval_z = gfab(cell[0],cell[1],cell[2],2);
-                    const amrex::Real mag_accel = std::sqrt(aval_x*aval_x+aval_y*aval_y+aval_z*aval_z);
+                    const amrex::Real mag_accel = ::sqrt(aval_x*aval_x+aval_y*aval_y+aval_z*aval_z);
 
                     if (mag_accel > 0) {
-                        dt_part = amrex::min( dt_part, 1/std::sqrt(mag_accel*dxi[0]) );
+                        dt_part = amrex::min( dt_part, 1/::sqrt(mag_accel*dxi[0]) );
                     }
 
                     return dt_part;
