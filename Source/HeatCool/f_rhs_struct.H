@@ -15,7 +15,7 @@ struct RhsData {
     int         flash_he;
     amrex::Real zhi_flash;
     amrex::Real zheii_flash;
-    amrex::Real T_zhii;
+    amrex::Real T_zhi;
     amrex::Real T_zheii;
     amrex::Real H_reion_z;
     amrex::Real He_reion_z;
@@ -56,7 +56,7 @@ ode_eos_setup(RhsData* f_rhs_data, amrex::Real gamma_minus_1, amrex::Real h_spec
     f_rhs_data_host.uvb_density_B=0.0;
     f_rhs_data_host.zhi_flash=-1.0;
     f_rhs_data_host.zheii_flash=-1.0;
-    f_rhs_data_host.T_zhii=0.0;
+    f_rhs_data_host.T_zhi=0.0;
     f_rhs_data_host.T_zheii=0.0;
     f_rhs_data_host.flash_h=0;
     f_rhs_data_host.flash_he=0;
@@ -65,7 +65,7 @@ ode_eos_setup(RhsData* f_rhs_data, amrex::Real gamma_minus_1, amrex::Real h_spec
     pp_nyx.query("uvb_density_B"            , f_rhs_data_host.uvb_density_B);
     pp_nyx.query("reionization_zHI_flash"   , f_rhs_data_host.zhi_flash);
     pp_nyx.query("reionization_zHeII_flash" , f_rhs_data_host.zheii_flash);
-    pp_nyx.query("reionization_T_zHI"       , f_rhs_data_host.T_zhii);
+    pp_nyx.query("reionization_T_zHI"       , f_rhs_data_host.T_zhi);
     pp_nyx.query("reionization_T_zHeII"     , f_rhs_data_host.T_zheii);
 
     // Set options in reion_aux_module                                                                                                                                                                                                        
@@ -276,16 +276,88 @@ ode_eos_finalize_struct(const int i, const int j, const int k, const int idx, At
         e_out  = f_rhs_data->T_vode[idx] / (f_rhs_data->gamma_minus_1 * mp_over_kb * mu);
     }
     }
+
+    Real nh0, nhep, nhp, nhe0, nhepp;
     /////////////////   //update nyx_eos_T_given_Re
     if (f_rhs_data->inhomogeneous_on)
-       nyx_eos_T_given_Re_device(atomic_rates, f_rhs_data->gamma_minus_1, f_rhs_data->h_species, f_rhs_data->JH_vode_arr[idx], f_rhs_data->JHe_vode, &(f_rhs_data->T_vode[idx]), &(f_rhs_data->ne_vode[idx]), f_rhs_data->rho_vode[idx], e_out, f_rhs_data->a);
+      nyx_eos_T_given_Re_device(atomic_rates, f_rhs_data->gamma_minus_1, f_rhs_data->h_species, f_rhs_data->JH_vode_arr[idx], f_rhs_data->JHe_vode, &(f_rhs_data->T_vode[idx]), &(f_rhs_data->ne_vode[idx]), f_rhs_data->rho_vode[idx], e_out, f_rhs_data->a, nh0, nhep, nhp, nhe0, nhepp);
     else
-        nyx_eos_T_given_Re_device(atomic_rates, f_rhs_data->gamma_minus_1, f_rhs_data->h_species, f_rhs_data->JH_vode, f_rhs_data->JHe_vode, &(f_rhs_data->T_vode[idx]), &(f_rhs_data->ne_vode[idx]), f_rhs_data->rho_vode[idx], e_out, f_rhs_data->a);
+      nyx_eos_T_given_Re_device(atomic_rates, f_rhs_data->gamma_minus_1, f_rhs_data->h_species, f_rhs_data->JH_vode, f_rhs_data->JHe_vode, &(f_rhs_data->T_vode[idx]), &(f_rhs_data->ne_vode[idx]), f_rhs_data->rho_vode[idx], e_out, f_rhs_data->a, nh0, nhep, nhp, nhe0, nhepp);
 
-    dptr[idx] = e_out;
-    diag_eos4(i,j,k,Temp_comp)=f_rhs_data->T_vode[idx];
-    diag_eos4(i,j,k,Ne_comp)=f_rhs_data->ne_vode[idx];
-    //    state4(i,j,k,Density_comp)=f_rhs_data->rho_vode[idx];
+    // Instanteneous heating from reionization:
+    Real z = 1/(f_rhs_data->a)-1.0;
+    Real z_end = 1/(a_end)-1.0;
+
+    Real T_H = 0.0e0;
+    if (f_rhs_data->inhomogeneous_on || f_rhs_data->flash_h)
+    {
+      if ((f_rhs_data->H_reion_z  < z) && (f_rhs_data->H_reion_z  >= z_end))
+        T_H  = (1.0e0 - nhp)*amrex::max((f_rhs_data->T_zhi-f_rhs_data->T_vode[idx]), 0.0e0);
+    }
+    Real T_He = 0.0e0;
+    if (f_rhs_data->flash_he)
+    {
+      if ((f_rhs_data->He_reion_z < z) && (f_rhs_data->He_reion_z >= z_end)) 
+        {
+        T_He = (1.0e0 - nhepp)*amrex::max((f_rhs_data->T_zheii-f_rhs_data->T_vode[idx]), 0.0e0);
+        }
+    }
+
+    if ((T_H > 0.0e0) || (T_He > 0.0e0))
+    {
+        Real YHELIUM = (1.0-f_rhs_data->h_species)/(4.0*f_rhs_data->h_species);
+        f_rhs_data->T_vode[idx] = f_rhs_data->T_vode[idx] + T_H + T_He;                     // For simplicity, we assume
+        f_rhs_data->ne_vode[idx] = 1.0e0 + YHELIUM;                                         //    completely ionized medium at
+        if (T_He > 0.0e0) f_rhs_data->ne_vode[idx] = f_rhs_data->ne_vode[idx] + YHELIUM;    //    this point.  It's a very minor
+        mu     = (1.0e0+4.0e0*YHELIUM) / (1.0e0+YHELIUM+f_rhs_data->ne_vode[idx]);          //    detail compared to the overall approximation.
+        e_out  = f_rhs_data->T_vode[idx] / (f_rhs_data->gamma_minus_1 * mp_over_kb * mu);
+#ifdef AMREX_USE_HIP
+    if((f_rhs_data->e_src_vode!=NULL)||true)
+#else
+    if((f_rhs_data->e_src_vode!=NULL))
+#endif
+    {
+        //
+        // I_R satisfies the equation anewsq * (rho_out  e_out ) =
+        //                            AOLDSQ * (rho_orig e_orig) + dt * a_half * I_R + dt * H_{rho e} + anewsq * reset_src
+        I_R(i,j,k) = ( aendsq * rho_out *e_out - ( (asq*rho_orig* e_orig + delta_time*f_rhs_data->rhoe_src_vode[idx]) ) ) / (delta_time * ahalf) - aendsq * reset_src(i,j,k,0) / (delta_time * ahalf);
+    }
+
+    //Check for negative e_out
+#ifdef AMREX_USE_HIP
+    if((f_rhs_data->e_src_vode!=NULL)||true)
+#else
+    if((f_rhs_data->e_src_vode!=NULL))
+#endif
+    {
+        if ((state_n4(i,j,k,Eint_comp) + delta_time * ahalf * I_R(i,j,k) / aendsq) / state_n4(i,j,k,Density_comp) < 0.e0)
+        {
+            Real YHELIUM = (1.0-f_rhs_data->h_species)/(4.0*f_rhs_data->h_species);
+            f_rhs_data->T_vode[idx]  = 10.0;
+            f_rhs_data->ne_vode[idx] = 0.0;
+            mu     = (1.0e0+4.0e0*YHELIUM) / (1.0e0+YHELIUM+f_rhs_data->ne_vode[idx]);
+            e_out  = f_rhs_data->T_vode[idx] / (f_rhs_data->gamma_minus_1 * mp_over_kb * mu);
+            I_R(i,j,k) = ( aendsq * rho_out *e_out - ( (asq*rho_orig* e_orig + delta_time*f_rhs_data->rhoe_src_vode[idx]) ) ) / (delta_time * ahalf) - aendsq * reset_src(i,j,k,0) / (delta_time * ahalf);
+        }
+    }
+    else
+    {
+    if(e_out < 0.e0)
+    {
+        Real YHELIUM = (1.0-f_rhs_data->h_species)/(4.0*f_rhs_data->h_species);
+        f_rhs_data->T_vode[idx]  = 10.0;
+        f_rhs_data->ne_vode[idx] = 0.0;
+        mu     = (1.0e0+4.0e0*YHELIUM) / (1.0e0+YHELIUM+f_rhs_data->ne_vode[idx]);
+        e_out  = f_rhs_data->T_vode[idx] / (f_rhs_data->gamma_minus_1 * mp_over_kb * mu);
+    }
+    }
+    if (f_rhs_data->inhomogeneous_on)
+      nyx_eos_T_given_Re_device(atomic_rates, f_rhs_data->gamma_minus_1, f_rhs_data->h_species, f_rhs_data->JH_vode_arr[idx], f_rhs_data->JHe_vode, &(f_rhs_data->T_vode[idx]), &(f_rhs_data->ne_vode[idx]), f_rhs_data->rho_vode[idx], e_out, f_rhs_data->a);
+    else
+      nyx_eos_T_given_Re_device(atomic_rates, f_rhs_data->gamma_minus_1, f_rhs_data->h_species, f_rhs_data->JH_vode, f_rhs_data->JHe_vode, &(f_rhs_data->T_vode[idx]), &(f_rhs_data->ne_vode[idx]), f_rhs_data->rho_vode[idx], e_out, f_rhs_data->a);
+    }
+
+
 #ifdef AMREX_USE_HIP
     if((f_rhs_data->e_src_vode!=NULL)||true)
 #else
@@ -299,8 +371,8 @@ ode_eos_finalize_struct(const int i, const int j, const int k, const int idx, At
     }
     else
     {
-        state4(i,j,k,Eint_comp)  += state4(i,j,k,Density_comp) * (dptr[idx]-eptr[idx]);
-        state4(i,j,k,Eden_comp)  += state4(i,j,k,Density_comp) * (dptr[idx]-eptr[idx]);
+        state4(i,j,k,Eint_comp)  += state4(i,j,k,Density_comp) * (e_out-e_orig);
+        state4(i,j,k,Eden_comp)  += state4(i,j,k,Density_comp) * (e_out-e_orig);
     }
 }
 
