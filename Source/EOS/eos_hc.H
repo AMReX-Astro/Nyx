@@ -48,7 +48,7 @@ void interp_to_this_z(AtomicRates* atomic_rates, const Real z, Real & ggh0, Real
     return;
 }
 
-AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void ion_n_device(AtomicRates* atomic_rates, const int JH, const int JHe, 
+AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void ion_n_device(AtomicRates* atomic_rates, const int JH, const int JHe,
                                         const Real U, const Real nh, const Real& ne,
                                         Real& nhp, Real& nhep, Real& nhepp,
                                         Real& t, const Real gamma_minus_1, const Real h_species,
@@ -188,7 +188,24 @@ void iterate_ne_device(AtomicRates* atomic_rates, const int JH, const int JHe, c
 }
 
 AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_T_given_Re_device(
-    AtomicRates* atomic_rates, Real gamma_minus_1, 
+    AtomicRates* atomic_rates, Real gamma_minus_1,
+    Real h_species, int JH, int JHe, Real* T, Real* Ne, Real R,Real e,Real comoving_a,
+    Real& nh0, Real& nhp, Real& nhe0, Real& nhep, Real& nhepp)
+{
+    Real z, rho, U, nh;
+    // This converts from code units to CGS
+    rho = R * density_to_cgs / (comoving_a*comoving_a*comoving_a);
+    U = e * e_to_cgs;
+
+    nh  = rho*h_species/MPROTON;
+
+    z   = 1.e0/comoving_a - 1.e0;
+
+    iterate_ne_device(atomic_rates, JH, JHe, z, U, *T, nh, *Ne, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1, h_species);
+}
+
+AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_T_given_Re_device(
+    AtomicRates* atomic_rates, Real gamma_minus_1,
     Real h_species, int JH, int JHe, Real* T, Real* Ne, Real R,Real e,Real comoving_a)
 {
     Real z, rho, U, nh, nh0, nhep, nhp, nhe0, nhepp;
@@ -204,7 +221,7 @@ AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_T_given_Re_device(
 }
 
 AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_given_RT(
-    AtomicRates* atomic_rates, Real gamma_minus_1, 
+    AtomicRates* atomic_rates, Real gamma_minus_1,
     Real h_species, Real* e, Real* P, Real R, Real T, Real Ne,Real comoving_a)
 {
     Real YHELIUM = (1.0-h_species)/(4.0*h_species);

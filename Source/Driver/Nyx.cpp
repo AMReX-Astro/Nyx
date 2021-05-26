@@ -117,7 +117,23 @@ int Nyx::heat_cool_type = 0;
 int Nyx::use_sundials_constraint = 0;
 int Nyx::use_sundials_fused = 0;
 int Nyx::use_typical_steps = 0;
+#ifndef AMREX_USE_GPU
 int Nyx::sundials_alloc_type = 0;
+#else
+#ifdef AMREX_USE_CUDA
+#ifndef _OPENMP
+int Nyx::sundials_alloc_type = 0; //consider changing to 5
+#else
+int Nyx::sundials_alloc_type = 5;
+#endif
+#endif
+#ifdef AMREX_USE_HIP
+int Nyx::sundials_alloc_type = 5;
+#endif
+#ifdef AMREX_USE_DPCPP
+int Nyx::sundials_alloc_type = 5;
+#endif
+#endif
 int Nyx::minimize_memory = 0;
 int Nyx::shrink_to_fit = 0;
 
@@ -127,6 +143,7 @@ int Nyx::strang_split = 1;
 int Nyx::strang_grown_box = 1;
 #ifdef SDC
 int Nyx::sdc_split    = 0;
+int Nyx::strang_restart_from_sdc    = 0;
 #endif
 
 Real Nyx::average_gas_density = 0.;
@@ -436,6 +453,7 @@ Nyx::read_hydro_params ()
 #ifdef HEATCOOL
 #ifdef SDC
     pp_nyx.query("sdc_split", sdc_split);
+    pp_nyx.query("strang_restart_from_sdc", strang_restart_from_sdc);
     if (sdc_split == 1 && strang_split == 1)
         amrex::Error("Cant have strang_split == 1 and sdc_split == 1");
     if (sdc_split == 0 && strang_split == 0)

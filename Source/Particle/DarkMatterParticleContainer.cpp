@@ -116,7 +116,7 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     int do_move = 1;
 
 #ifdef _OPENMP
-#pragma omp parallel
+#pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif
     for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
 
@@ -149,7 +149,7 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
             const int   n    = pbox.size();
 
 #ifdef _OPENMP
-#pragma omp parallel for private(pld)
+#pragma omp parallel for private(pld) if (Gpu::notInLaunchRegion())
 #endif
             for (int i = 0; i < n; i++)
             {
@@ -221,7 +221,7 @@ DarkMatterParticleContainer::moveKick (MultiFab&       acceleration,
     int do_move = 0;
 
 #ifdef _OPENMP
-#pragma omp parallel
+#pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif
     for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
 
