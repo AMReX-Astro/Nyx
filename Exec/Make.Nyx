@@ -186,7 +186,8 @@ ifeq ($(USE_SENSEI_INSITU),TRUE)
     Pdirs += Extern/SENSEI
 endif
 
-ifeq ($(USE_SUNDIALS),TRUE)
+ifeq ($(USE_SUNDIALS_SUNMEMORY),TRUE)
+    DEFINES += AMREX_USE_SUNDIALS_SUNMEMORY
     Pdirs += Extern/SUNDIALS
 endif
 Ppack	+= $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir)/Make.package)
