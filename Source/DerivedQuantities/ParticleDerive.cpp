@@ -83,7 +83,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 
             MultiFab dat(grids, dmap, 1, 0);
             dat.setVal(0);
-            MultiFab::Copy(dat, ctemp_dat, 0, 0, 1, 0);
+            dat.MultiFab::ParallelCopy(ctemp_dat, 0, 0, 1, 0, 0);
 
             MultiFab::Add(*derive_dat, dat, 0, 0, 1, 0);
         }
