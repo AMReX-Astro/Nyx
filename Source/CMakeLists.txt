@@ -49,6 +49,10 @@ if (Nyx_SUNDIALS)
    target_compile_definitions( nyxcore PUBLIC AMREX_USE_SUNDIALS)
 endif ()
 
+if (Nyx_SUNDIALS_SUNMEMORY)
+   target_compile_definitions( nyxcore PUBLIC AMREX_USE_SUNDIALS_SUNMEMORY)
+endif ()
+
 ##############################################################################
 #                                                                            #
 #                          Nyx  compile flags                                #
