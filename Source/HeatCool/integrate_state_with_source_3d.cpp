@@ -160,6 +160,7 @@ int Nyx::integrate_state_struct_mfin
       amrex::Gpu::streamSynchronize();
       int loop = 1;
 
+#ifdef AMREX_USE_GPU
 #ifdef AMREX_USE_CUDA
       cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();
       if(sundials_alloc_type%2==0)
@@ -228,13 +229,7 @@ int Nyx::integrate_state_struct_mfin
       }
 
       amrex::Gpu::streamSynchronize();
-#else
-#ifdef _OPENMP
-              int nthreads=omp_get_max_threads();
-              u = N_VNew_OpenMP(neq,nthreads);  /* Allocate u vector */
-#else
-#ifdef AMREX_USE_GPU
-#ifdef AMREX_USE_HIP
+#elif defined(AMREX_USE_HIP)
       auto currentstream = amrex::Gpu::Device::gpuStream();
       //Choosing 256 here since this mimics Sundials default
       // Possibly attempt to match n_threads_and_blocks
@@ -277,8 +272,7 @@ int Nyx::integrate_state_struct_mfin
       N_VSetKernelExecPolicy_Hip(u, &stream_exec_policy, &reduce_exec_policy);
 
       amrex::Gpu::Device::streamSynchronize();
-#endif
-#ifdef AMREX_USE_DPCPP
+#elif defined(AMREX_USE_DPCPP)
       auto currentstream = amrex::Gpu::Device::streamQueue();
       //Choosing 256 here since this mimics Sundials default
       // Possibly attempt to match n_threads_and_blocks
@@ -324,11 +318,14 @@ int Nyx::integrate_state_struct_mfin
       N_VSetKernelExecPolicy_Sycl(u, &stream_exec_policy, &reduce_exec_policy);
 
 #endif
+#else  /* else for ndef AMREX_USE_GPU */
+#ifdef _OPENMP
+              int nthreads=omp_get_max_threads();
+              u = N_VNew_OpenMP(neq,nthreads);  /* Allocate u vector */
 #else
               u = N_VNew_Serial(neq);  /* Allocate u vector */
 #endif
-#endif
-#endif
+#endif /* end AMREX_USE_GPU if */
 
               e_orig = N_VClone(u);  /* Allocate u vector */
               abstol_vec = N_VClone(u);
