@@ -124,14 +124,26 @@ int Nyx::sundials_alloc_type = 0;
 #ifndef _OPENMP
 int Nyx::sundials_alloc_type = 0; //consider changing to 5
 #else
+#ifdef AMREX_USE_SUNDIALS_SUNMEMORY
 int Nyx::sundials_alloc_type = 5;
+#else
+int Nyx::sundials_alloc_type = 2;
+#endif
 #endif
 #endif
 #ifdef AMREX_USE_HIP
+#ifdef AMREX_USE_SUNDIALS_SUNMEMORY
 int Nyx::sundials_alloc_type = 5;
+#else
+int Nyx::sundials_alloc_type = 4;
+#endif
 #endif
 #ifdef AMREX_USE_DPCPP
+#ifdef AMREX_USE_SUNDIALS_SUNMEMORY
 int Nyx::sundials_alloc_type = 5;
+#else
+int Nyx::sundials_alloc_type = 4;
+#endif
 #endif
 #endif
 int Nyx::minimize_memory = 0;
