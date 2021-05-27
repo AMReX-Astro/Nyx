@@ -4,6 +4,18 @@
 #ifdef AMREX_USE_SUNDIALS_SUNMEMORY
 #include <AMReX_SUNMemory.H>
 #endif
+
+#include <AMReX_ParmParse.H>
+#include <AMReX_Geometry.H>
+#include <AMReX_MultiFab.H>
+#include <AMReX_Print.H>
+#include <AMReX_PlotFileUtil.H>
+
+#include <AMReX_BLFort.H>
+#include <Nyx.H>
+#include <f_rhs.H>
+#include <f_rhs_struct.H>
+
 #include <cvode/cvode.h>               /* prototypes for CVODE fcts., consts. */
 #include <cvode/cvode_diag.h>          /* access to CVDiag interface */
 #include <sundials/sundials_types.h>   /* definition of type realtype */
@@ -21,17 +33,6 @@
 #ifdef AMREX_USE_DPCPP
 #include <nvector/nvector_sycl.h>
 #endif
-
-#include <AMReX_ParmParse.H>
-#include <AMReX_Geometry.H>
-#include <AMReX_MultiFab.H>
-#include <AMReX_Print.H>
-#include <AMReX_PlotFileUtil.H>
-
-#include <AMReX_BLFort.H>
-#include <Nyx.H>
-#include <f_rhs.H>
-#include <f_rhs_struct.H>
 
 //#define MAKE_MANAGED 1
 using namespace amrex;
