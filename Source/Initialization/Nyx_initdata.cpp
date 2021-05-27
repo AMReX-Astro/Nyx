@@ -185,7 +185,7 @@ Nyx::init_zhi ()
 
     MultiFab zhi_from_file;
     VisMF::Read(zhi_from_file, inhomo_zhi_file);
-    zhi.copy(zhi_from_file, geom.periodicity());
+    zhi.ParallelCopy(zhi_from_file, geom.periodicity());
     if(D_new.nComp()>2)
     {
         int l_Zhi_comp = Zhi_comp;
@@ -350,9 +350,9 @@ Nyx::initData ()
 
         MultiFab& S_new_crse = get_level(0).get_new_data(State_Type);
         
-        S_new_crse.copy(mf, 0, 0, 6);
+        S_new_crse.MultiFab::ParallelCopy(mf, 0, 0, 6, 0, 0);
 #ifndef CONST_SPECIES
-        S_new_crse.copy(mf, 0, FirstSpec_comp, 1);
+        S_new_crse.MultiFab::ParallelCopy(mf, 0, FirstSpec_comp, 1, 0, 0);
 #endif
 
         if (do_hydro == 1) 

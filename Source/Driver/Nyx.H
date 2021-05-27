@@ -436,7 +436,7 @@ public:
     //
     //Initialize data on this level from another Nyx (during regrid).
     //
-    virtual void init(amrex::AmrLevel& old);
+    virtual void init(amrex::AmrLevel& old) override;
 
     //
     // Initialize data on this level after regridding if old level did not

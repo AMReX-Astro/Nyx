@@ -109,7 +109,7 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
             ac_ptr->ParallelCopy(acceleration,0,0,acceleration.nComp(),ng,ng);
             ac_ptr->FillBoundary();
         }
-        }
+    }
 
     const GpuArray<Real,AMREX_SPACEDIM> plo = Geom(lev).ProbLoArray();
 

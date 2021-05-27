@@ -933,7 +933,7 @@ Gravity::average_fine_ec_onto_crse_ec(int level, int is_new)
 
     for (int n = 0; n < AMREX_SPACEDIM; ++n)
     {
-        grad_phi[level][n]->copy(*crse_gphi_fine[n], cgeom.periodicity());
+        grad_phi[level][n]->MultiFab::ParallelCopy(*crse_gphi_fine[n], cgeom.periodicity());
     }
 }
 

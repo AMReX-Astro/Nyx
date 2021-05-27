@@ -32,13 +32,21 @@ AGNParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     }
     else
     {
-        ac_ptr = new amrex::MultiFab(this->m_gdb->ParticleBoxArray(lev),
-                                         this->m_gdb->ParticleDistributionMap(lev),
-                                         acceleration.nComp(),acceleration.nGrow());
-        for (amrex::MFIter mfi(*ac_ptr); mfi.isValid(); ++mfi)
-            ac_ptr->setVal(0.);
-        ac_ptr->copy(acceleration,0,0,acceleration.nComp());
-        ac_ptr->FillBoundary(periodic);
+        const IntVect& ng = acceleration.nGrowVect();
+        ac_ptr = new amrex::MultiFab(this->ParticleBoxArray(lev),
+                                     this->ParticleDistributionMap(lev),
+                                     acceleration.nComp(),acceleration.nGrow());
+        ac_ptr->setVal(0.);
+        if(acceleration.boxArray() == ac_ptr->boxArray())//this->finestLevel() == 0)
+        {
+            ac_ptr->Redistribute(acceleration,0,0,acceleration.nComp(),ng);
+            ac_ptr->FillBoundary();
+        }
+        else
+        {
+            ac_ptr->ParallelCopy(acceleration,0,0,acceleration.nComp(),ng,ng);
+            ac_ptr->FillBoundary();
+        }
     }
 
     int do_move = 1;

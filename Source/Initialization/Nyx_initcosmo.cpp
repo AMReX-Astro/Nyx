@@ -58,7 +58,7 @@ void Nyx::icReadAndPrepareFab(std::string mfDirName, int nghost, MultiFab &mf)
     //for multilevel ICs we can't use ghostcells
     mf.define(ba, dm, nc, nghost);
 
-    mf.copy(mf_read,0,0,nc);
+    mf.MultiFab::ParallelCopy(mf_read,0,0,nc,0,0);
 
     mf_read.clear();
 
@@ -335,12 +335,12 @@ void Nyx::initcosmo()
 
 #ifdef NUFLUID
     //copy density 
-    S_new.copy(nuMf, nu_den, NuDens, 1);
+    S_new.MultiFab::ParallelCopy(nuMf, nu_den, NuDens, 1, 0, 0);
     S_new.plus(1,            NuDens, 1, S_new.nGrow());
     S_new.mult(rhoNu,        NuDens, 1, S_new.nGrow());
 
     //copy velocities...
-    S_new.copy(nuMf, nu_vx,  NuXMom, 3);
+    S_new.MultiFab::ParallelCopy(nuMf, nu_vx,  NuXMom, 3, 0, 0);
 
     //...and "transform" to momentum
     S_new.mult(vel_fac[0],   NuXMom, 1, S_new.nGrow());
@@ -371,7 +371,7 @@ void Nyx::initcosmo()
 
         //copy density 
         S_new.setVal(0.);
-        S_new.copy(mf, baryon_den, Density_comp, 1);
+	S_new.MultiFab::ParallelCopy(mf, baryon_den, Density_comp, 1, 0, 0);
         S_new.plus(1,     Density_comp, 1, S_new.nGrow());
         S_new.mult(rhoB,  Density_comp, 1, S_new.nGrow());
 
@@ -382,7 +382,7 @@ void Nyx::initcosmo()
 //      S_new.copy(*particle_mf[0], 0, Density_comp, 1);
 
         //copy velocities...
-        S_new.copy(mf, baryon_vx, Xmom_comp, 3);
+        S_new.MultiFab::ParallelCopy(mf, baryon_vx, Xmom_comp, 3, 0, 0);
 
         //...and "transform" to momentum
         S_new.mult(vel_fac[0], Xmom_comp, 1, S_new.nGrow());
