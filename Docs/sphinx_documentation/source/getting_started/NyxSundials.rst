@@ -94,7 +94,7 @@ In order to use SUNDIALS:
       -DCMAKE_INSTALL_PREFIX=$(pwd)/../instdir  \
       -DCMAKE_INSTALL_LIBDIR=lib \
       -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
-      -DCMAKE_C_COMPILER=$(which hipcc) \
+      -DCMAKE_C_COMPILER=$(which clang) \
       -DCMAKE_CXX_COMPILER=$(which hipcc) \
       -DEXAMPLES_INSTALL_PATH=$(pwd)/../instdir/examples \
       -DCMAKE_BUILD_TYPE=Release \
