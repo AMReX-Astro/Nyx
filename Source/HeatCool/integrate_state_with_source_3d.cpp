@@ -1,26 +1,6 @@
 #include <fstream>
 #include <iomanip>
 
-#ifndef AMREX_USE_DPCPP
-#include <cvode/cvode.h>               /* prototypes for CVODE fcts., consts. */
-#include <cvode/cvode_diag.h>          /* access to CVDiag interface */
-#include <sundials/sundials_types.h>   /* definition of type realtype */
-
-#include <nvector/nvector_serial.h>
-#ifdef _OPENMP
-#include <nvector/nvector_openmp.h>
-#endif
-#ifdef AMREX_USE_CUDA
-#include <nvector/nvector_cuda.h>
-#endif
-#ifdef AMREX_USE_HIP
-#include <nvector/nvector_hip.h>
-#endif
-#ifdef AMREX_USE_DPCPP
-#include <nvector/nvector_sycl.h>
-#endif
-#endif
-
 #ifdef AMREX_USE_SUNDIALS_SUNMEMORY
 #include <AMReX_SUNMemory.H>
 #endif
@@ -36,24 +16,27 @@
 #include <f_rhs.H>
 #include <f_rhs_struct.H>
 
-#ifdef AMREX_USE_DPCPP
 #include <cvode/cvode.h>               /* prototypes for CVODE fcts., consts. */
 #include <cvode/cvode_diag.h>          /* access to CVDiag interface */
 #include <sundials/sundials_types.h>   /* definition of type realtype */
+#include <sundials/sundials_memory.h>
+#include <sundials/sundials_config.h>
 
 #include <nvector/nvector_serial.h>
 #ifdef _OPENMP
 #include <nvector/nvector_openmp.h>
 #endif
 #ifdef AMREX_USE_CUDA
+#include <sundials/sundials_cuda_policies.hpp>
 #include <nvector/nvector_cuda.h>
 #endif
 #ifdef AMREX_USE_HIP
+#include <sundials/sundials_hip_policies.hpp>
 #include <nvector/nvector_hip.h>
 #endif
 #ifdef AMREX_USE_DPCPP
+#include <sundials/sundials_sycl_policies.hpp>
 #include <nvector/nvector_sycl.h>
-#endif
 #endif
 
 //#define MAKE_MANAGED 1
