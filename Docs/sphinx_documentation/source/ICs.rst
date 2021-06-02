@@ -77,6 +77,19 @@ readers and increasing the number of particles per read::
   amr.nreaders
   amr.nparts_per_read
 
+
+Start from a plotfile or checkpoint
+-----------------------------------
+
+To enable this option, set::
+
+  nyx.particle_init_type = Restart
+  nyx.restart_particle_file = *plot_file*
+
+In this case the *plot_file* should contain particles in directory *DM*. Testing of this
+functionality is mainly for the current default *Version_Two_Dot_Zero_single*.
+
+
 Reading SPH particles
 ---------------------
 
