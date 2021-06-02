@@ -36,7 +36,7 @@
         <script type="text/javascript" src="_static/language_data.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"TeX": {"Macros": {"kth": "{{k_\\mathrm{th}}}", "gcc": "{\\mathrm{g~cm^{-3}}}", "cms": "{\\mathrm{cm~s^{-1}}}", "presunit": "{\\mathrm{dyn~cm^{-2}}}", "accelunit": "{\\mathrm{cm~s^{-2}}}", "ergg": "{\\mathrm{erg~g^{-1}}}", "Ab": "{{\\bf A}}", "eb": "{{\\bf e}}", "Fb": "{{\\bf F}}", "gb": "{{\\bf g}}", "Hb": "{{\\bf H}}", "ib": "{{\\bf i}}", "Ib": "{{\\bf I}}", "Kb": "{{\\bf K}}", "lb": "{{\\bf l}}", "Lb": "{{\\bf L}}", "nb": "{{\\bf n}}", "Pb": "{{\\bf P}}", "Qb": "{{\\bf Q}}", "rb": "{{\\bf r}}", "Rb": "{{\\bf R}}", "Sb": "{{\\bf S}}", "ub": "{{\\bf u}}", "Ub": "{{\\bf U}}", "xb": "{{\\bf x}}", "dt": "{\\Delta t}", "omegadot": "{\\dot\\omega}", "inp": "{{\\rm in}}", "outp": "{{\\rm out}}", "sync": "{{\\rm sync}}", "half": "{\\frac{1}{2}}", "myhalf": "{\\half}", "nph": "{{n+\\myhalf}}", "kpp": "{\\ensuremath{\\kappa_{\\mathrm{P}}}}", "kpr": "{\\ensuremath{\\kappa_{\\mathrm{R}}}}", "kpf": "{\\ensuremath{\\kappa_{\\mathrm{F}}}}", "vb": "{\\boldsymbol{v}}", "vbt": "{\\widetilde{\\vb}}", "rbt": "{\\widetilde{\\rb}}", "ob": "{\\boldsymbol{\\omega}}", "nablab": "{\\boldsymbol{\\nabla}}"}}, "tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -100,6 +100,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#start-from-an-ascii-file">Start from an ASCII file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#start-from-a-binary-file">Start from a binary file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#start-from-a-binary-meta-file">Start from a binary “meta” file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#start-from-a-plotfile-or-checkpoint">Start from a plotfile or checkpoint</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#reading-sph-particles">Reading SPH particles</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#initial-conditions-for-testing-purposes">Initial conditions for testing purposes</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#random-placement">Random placement</a></li>
@@ -283,6 +284,16 @@ readers and increasing the number of particles per read:</p>
 <span class="n">amr</span><span class="o">.</span><span class="n">nparts_per_read</span>
 </pre></div>
 </div>
+</div>
+<div class="section" id="start-from-a-plotfile-or-checkpoint">
+<h2>Start from a plotfile or checkpoint<a class="headerlink" href="#start-from-a-plotfile-or-checkpoint" title="Permalink to this headline">¶</a></h2>
+<p>To enable this option, set:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_init_type</span> <span class="o">=</span> <span class="n">Restart</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">restart_particle_file</span> <span class="o">=</span> <span class="o">*</span><span class="n">plot_file</span><span class="o">*</span>
+</pre></div>
+</div>
+<p>In this case the <em>plot_file</em> should contain particles in directory <em>DM</em>. Testing of this
+functionality is mainly for the current default <em>Version_Two_Dot_Zero_single</em>.</p>
 </div>
 <div class="section" id="reading-sph-particles">
 <h2>Reading SPH particles<a class="headerlink" href="#reading-sph-particles" title="Permalink to this headline">¶</a></h2>
