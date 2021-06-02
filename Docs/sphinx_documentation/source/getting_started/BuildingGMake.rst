@@ -93,7 +93,7 @@ download AMReX in order to build Nyx with GNU Make.
 
    .. note::
       For executables with ``USE_HEATCOOL=TRUE`` in their GNUmakefile, a matching Sundials implementation is required. If Sundials is built with ``-DSUNDIALS_BUILD_PACKAGE_FUSED_KERNELS=ON``, Nyx should be built with ``USE_FUSED=TRUE``.
-      The flag ``USE_FUSED`` tells the Nyx compile whether you compiled Sundials with fused cuda kernels. The default assumption is that non-cuda Nyx compiles set ``USE_FUSED=FALSE`` to match Sundials being built without cuda. 
+      The flag ``USE_FUSED`` tells the Nyx compile whether you compiled Sundials with fused cuda kernels. The default assumption is that non-cuda Nyx compiles set ``USE_FUSED=FALSE`` to match Sundials being built without fused cuda kernels.
 
 #. Now type “make”. The resulting executable will look something like
    “Nyx3d.Linux.gnu.ex”, which means this is a 3-d version of the code,

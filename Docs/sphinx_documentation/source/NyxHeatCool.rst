@@ -29,8 +29,8 @@ One should be mindful of the numerical differences which arise from these, which
 
 Input flags with affect the CVODE integration include:
 
-- ``nyx.use_sundials_constraint`` which when non-zero requires that the internal energy (while the problem is evolved) is positive  
+- ``nyx.use_sundials_constraint`` which when non-zero requires that the internal energy (while the problem is evolved) is positive
 - ``nyx.use_sundials_fused`` which when non-zero uses Sundials's GPU fused operations (which are mathematically equivalent, but reduces GPU kernel launch time overhead)
-- ``nyx.sundials_alloc_type`` which has 3 different vector memory allocation strategies and only affects executables built with CUDA
+- ``nyx.sundials_alloc_type`` which has up to 5 different vector memory allocation strategies and only affects executables built for GPUs
 - ``nyx.use_typical_steps`` which when non-zero sets CVODE's adaptive step-size selection (which substeps the total CVODE integration time) to be ``dt / old_max_steps``. This maximum was over the entire problem domain. (In the strang case, the old maximum is taken from the same phase in the previous time-step)
 - ``nyx.sundials_use_tiling`` which controls whether the MFIter loop that iterates over the CVODE integration uses tiling
