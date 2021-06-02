@@ -127,9 +127,11 @@ nyx_main (int argc, char* argv[])
     const Real cur_time = ((Nyx*) amrptr)->state[State_Type].curTime();
 #endif
 */
-
+    /*
     const Real cur_time = ((Nyx*) amrptr)->initial_time;
-    int cycle = ((Nyx*) amrptr)->nStep();
+    int cycle = ((Nyx*) amrptr)->nStep();*/
+    const Real cur_time = 0.0;
+    int cycle = 0;
 
     Vector<std::string> varnames;
     const int n_data_items = 4;
@@ -194,12 +196,13 @@ nyx_main (int argc, char* argv[])
 
     if (ParallelDescriptor::IOProcessor())
       {
-        //        ((Nyx*) amrptr)->writeJobInfo(dir);
-        //        ((Nyx*) amrptr)->write_parameter_file(dir);
+        ((Nyx*) amrptr)->writeJobInfo(dir);
+        ((Nyx*) amrptr)->write_parameter_file(dir);
       }
 
     if (ParallelDescriptor::IOProcessor())
       {
+	/*
         //Copy comoving_a file
         std::string FileName = restart_particle_file + "/job_info";
         std::ifstream FileIn;
@@ -223,11 +226,12 @@ nyx_main (int argc, char* argv[])
         File << "nyx.do_hydro = 0" << std::endl;
         File.close();
         FileIn.close();
-
+	*/
       }
 
     if (ParallelDescriptor::IOProcessor())
       {
+	/*
         //Copy comoving_a file
         std::string FileName = restart_particle_file + "/the_parameters";
         std::ifstream FileIn;
@@ -256,6 +260,7 @@ nyx_main (int argc, char* argv[])
         }
         File.close();
         FileIn.close();
+	*/
       }
 
     BL_PROFILE_VAR_STOP(pmain);

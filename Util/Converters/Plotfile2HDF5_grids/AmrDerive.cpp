@@ -489,6 +489,8 @@ int main(int argc, char **argv) {
     pp.get("input_path", input_path);
     std::string output_path;
     pp.get("output_path", output_path);
+    std::string params_file = input_path + "/the_parameters";
+    pp.query("params_file", params_file);
 
     //
     // Open input plotfile
@@ -532,7 +534,6 @@ int main(int argc, char **argv) {
     double z = 1.0/comoving_a - 1.0;
 
     // Read the_parameters
-    std::string params_file = input_path + "/the_parameters";
     double h = parseByName(params_file, "nyx.comoving_h");
     double omega_b = parseByName(params_file, "nyx.comoving_OmB");
     double omega_m = parseByName(params_file, "nyx.comoving_OmM");
