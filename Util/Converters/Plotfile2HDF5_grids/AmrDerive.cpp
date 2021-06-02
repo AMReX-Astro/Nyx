@@ -472,7 +472,7 @@ int main(int argc, char **argv) {
     // Parameter parsing
     //
 
-    if (argc != 3) {
+    if (argc > 4 || argc < 3) {
         print_usage(argc, argv);
     }
 
@@ -540,14 +540,15 @@ int main(int argc, char **argv) {
     double omega_l = 1.0-omega_m;
     double domain_size = parseByName(params_file, "geometry.prob_hi") * h;
 
+    Print() << "Read file: " << params_file << std::endl;
+    Print() << "Parameters:  ";
+    Print() << "Om = " << omega_m << ";  " << "Ob = " << omega_b << ";  " 
+    << "h_0 = " << h << ";  " << "L = " << domain_size << std::endl;
+
     if (h < 0.0 || omega_b < 0.0 || omega_m < 0.0 || domain_size < 0.0) {
         Print() << "Error reading the_parameters file!" << std::endl;
         exit(-1);
     }
-
-    Print() << "Parameters:  ";
-    Print() << "Om = " << omega_m << ";  " << "Ob = " << omega_b << ";  " 
-    << "h_0 = " << h << ";  " << "L = " << domain_size << std::endl;
 
     // Parallel info... We might not need it.
     int MyPE = ParallelDescriptor::MyProc();
