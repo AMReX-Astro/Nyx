@@ -935,6 +935,16 @@ protected:
     // specifies whether we allow tiling when calling the SUNDIALS integrator
     static bool sundials_use_tiling;
 
+    // specifies tolerances when calling the SUNDIALS integrator
+    static amrex::Real sundials_reltol;
+    static amrex::Real sundials_abstol;
+
+    // specifies tile_size of advance_hydro for unsplit Godonuv hydro advance
+    static amrex::IntVect     hydro_tile_size;
+
+    // specifies tile_size of integrate_state for heating-cooling reactions
+    static amrex::IntVect      sundials_tile_size;
+
     // specifies the memory priority
     static int minimize_memory;
 

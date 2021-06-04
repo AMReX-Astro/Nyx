@@ -146,10 +146,30 @@ int Nyx::sundials_alloc_type = 4;
 #endif
 #endif
 #endif
+
+Real Nyx::sundials_reltol = 1e-4;
+Real Nyx::sundials_abstol = 1e-4;
+
 int Nyx::minimize_memory = 0;
 int Nyx::shrink_to_fit = 0;
 
 bool Nyx::sundials_use_tiling = true;
+
+#ifndef AMREX_USE_GPU
+IntVect      Nyx::hydro_tile_size(1024,16,16);
+#else
+IntVect      Nyx::hydro_tile_size(1048576,1048576,1048576);
+#endif
+
+#ifndef AMREX_USE_GPU
+IntVect      Nyx::sundials_tile_size(1024,16,16);
+#else
+#ifdef AMREX_USE_OMP
+IntVect      Nyx::sundials_tile_size(1024,16,16);
+#else
+IntVect      Nyx::sundials_tile_size(1048576,1048576,1048576);
+#endif
+#endif
 
 int Nyx::strang_split = 1;
 int Nyx::strang_grown_box = 1;
@@ -511,6 +531,8 @@ Nyx::read_hydro_params ()
     pp_nyx.query("use_sundials_fused", use_sundials_fused);
     pp_nyx.query("nghost_state", nghost_state);
     pp_nyx.query("sundials_alloc_type", sundials_alloc_type);
+    pp_nyx.query("sundials_reltol", sundials_reltol);
+    pp_nyx.query("sundials_abstol", sundials_abstol);
     pp_nyx.query("minimize_memory", minimize_memory);
     pp_nyx.query("shrink_to_fit", shrink_to_fit);
     pp_nyx.query("use_typical_steps", use_typical_steps);
@@ -520,6 +542,37 @@ Nyx::read_hydro_params ()
     pp_nyx.query("enforce_min_density_type", enforce_min_density_type);
 
     pp_nyx.query("sundials_use_tiling", sundials_use_tiling);
+
+    Vector<int> tilesize(AMREX_SPACEDIM);
+    if (pp_nyx.queryarr("hydro_tile_size", tilesize, 0, AMREX_SPACEDIM))
+    {
+        for (int i=0; i<AMREX_SPACEDIM; i++) {
+          hydro_tile_size[i] = tilesize[i];
+        }
+    }
+    else
+    {
+        amrex::Print()<<"Nyx::hydro_tile_size unset, using fabarray.mfiter_tile_size default: "<<
+            FabArrayBase::mfiter_tile_size<<
+            "\nSuggested default for currently compiled CPU / GPU: nyx.hydro_tile_size="<<
+            hydro_tile_size<<std::endl;
+        hydro_tile_size = FabArrayBase::mfiter_tile_size;
+    }
+
+    if (pp_nyx.queryarr("sundials_tile_size", tilesize, 0, AMREX_SPACEDIM))
+    {
+        for (int i=0; i<AMREX_SPACEDIM; i++) {
+          sundials_tile_size[i] = tilesize[i];
+        }
+    }
+    else
+    {
+        amrex::Print()<<"Nyx::sundials_tile_size unset, using fabarray.mfiter_tile_size default: "<<
+            FabArrayBase::mfiter_tile_size<<
+            "\nSuggested default for currently compiled CPU / GPU: nyx.sundials_tile_size="<<
+            sundials_tile_size<<std::endl;
+        sundials_tile_size = FabArrayBase::mfiter_tile_size;
+    }
 
     if (use_typical_steps != 0 && strang_grown_box == 0)
     {
@@ -1786,18 +1839,18 @@ Nyx::postCoarseTimeStep (Real cumtime)
         amrex::Gpu::Device::streamSynchronize();
         const DistributionMapping& newdmap = dm;
 
-	if(verbose > 2)
-	  amrex::Print()<<"Using ba: "<<parent->boxArray(lev)<<"\nUsing dm: "<<newdmap<<std::endl; 	  
+        if(verbose > 2)
+          amrex::Print()<<"Using ba: "<<parent->boxArray(lev)<<"\nUsing dm: "<<newdmap<<std::endl;        
         for (int i = 0; i < theActiveParticles().size(); i++)
         {
              if(lev > 0)
-	         amrex::Abort("Particle load balancing needs multilevel testing");
-	  /*
+                 amrex::Abort("Particle load balancing needs multilevel testing");
+          /*
              cs->theActiveParticles()[i]->Redistribute(lev,
                                                        theActiveParticles()[i]->finestLevel(),
                                                        1);
-	  */
-	     cs->theActiveParticles()[i]->Regrid(newdmap, parent->boxArray(lev), lev);
+          */
+             cs->theActiveParticles()[i]->Regrid(newdmap, parent->boxArray(lev), lev);
 
              if(shrink_to_fit)
                  cs->theActiveParticles()[i]->ShrinkToFit();
@@ -1870,7 +1923,7 @@ Nyx::post_regrid (int lbase,
             do_grav_solve_here = (level == lbase);
         }
 
-	//        if(parent->maxLevel() == 0)
+        //        if(parent->maxLevel() == 0)
         if(reuse_mlpoisson != 0)
           gravity->setup_Poisson(level,new_finest);
 

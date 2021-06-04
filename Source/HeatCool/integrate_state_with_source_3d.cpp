@@ -65,16 +65,16 @@ int Nyx::integrate_state_struct
   //#endif
 #ifdef _OPENMP
 #ifdef AMREX_USE_GPU
-  //    if (sundials_use_tiling)
-       const auto tiling = MFItInfo().SetDynamic(true);
-       //    else
-       //       const bool tiling = false;
+  if (sundials_use_tiling)
+      const auto tiling = (MFItInfo().SetDynamic(true)).EnableTiling(sundials_tile_size);
+  else
+      const auto tiling = MFItInfo().SetDynamic(true);
 #pragma omp parallel
 #else
-    const bool tiling = (TilingIfNotGPU() && sundials_use_tiling);
+  const auto tiling = (TilingIfNotGPU() && sundials_use_tiling) ? MFItInfo().EnableTiling(sundials_tile_size) : MFItInfo();
 #endif
 #else
-    const bool tiling = (TilingIfNotGPU() && sundials_use_tiling);
+  const auto tiling = (TilingIfNotGPU() && sundials_use_tiling) ? MFItInfo().EnableTiling(sundials_tile_size) : MFItInfo();
 #endif
 
     for ( MFIter mfi(S_old, tiling); mfi.isValid(); ++mfi)
@@ -124,8 +124,8 @@ int Nyx::integrate_state_struct_mfin
     realtype reltol, abstol;
     int flag;
     
-    reltol = 1e-4;  /* Set the tolerances */
-    abstol = 1e-4;
+    reltol = sundials_reltol;  /* Set the tolerances */
+    abstol = sundials_abstol;
 
     int one_in = 1;
 

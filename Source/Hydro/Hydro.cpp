@@ -89,8 +89,9 @@ Nyx::construct_hydro_source(
       if (S.nComp() != QVAR) amrex::Print() << "NCOMP QVAR " << S.nComp() << " " << QVAR << std::endl;
       AMREX_ALWAYS_ASSERT(S.nComp() == QVAR);
 
+      const auto hydro_MFItInfo = MFItInfo().EnableTiling(hydro_tile_size).SetNumStreams(Nyx::minimize_memory ? 1 : Gpu::numGpuStreams());
       // Temporary Fabs needed for Hydro Computation
-      for ( amrex::MFIter mfi(S_new, amrex::TilingIfNotGPU()); mfi.isValid(); ++mfi, Nyx::minimize_memory!=0 ? amrex::Gpu::synchronize() : amrex::Gpu::streamSynchronize())
+      for ( amrex::MFIter mfi(S_new, hydro_MFItInfo); mfi.isValid(); ++mfi)
       {
         const amrex::Box& bx = mfi.tilebox();
         const amrex::Box& qbx = amrex::grow(bx, NUM_GROW + nGrowF);

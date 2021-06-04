@@ -48,7 +48,7 @@ int Nyx::integrate_state_vec
   long int store_steps=new_max_sundials_steps;
   
   bool tiling = (sundials_use_tiling && TilingIfNotGPU());
-  for ( MFIter mfi(S_old, tiling); mfi.isValid(); ++mfi )
+  for ( MFIter mfi(S_old, tiling ? MFItInfo().EnableTiling(sundials_tile_size) : MFItInfo()); mfi.isValid(); ++mfi )
   {
 
       //check that copy contructor vs create constructor works??
@@ -75,8 +75,8 @@ int Nyx::integrate_state_vec_mfin
   realtype reltol, abstol;
   int flag;
     
-  reltol = 1e-4;  /* Set the tolerances */
-  abstol = 1e-4;
+  reltol = sundials_reltol;  /* Set the tolerances */
+  abstol = sundials_abstol;
 
   int one_in = 1;
   
