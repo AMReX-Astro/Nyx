@@ -1,5 +1,6 @@
 # AMREX_HOME defines the directory in which we will find all the AMReX code
-AMREX_HOME  ?= ../../../amrex
+AMREX_HOME ?= ../../subprojects/amrex
+
 ASCENT_HOME ?=/gpfs/alpine/world-shared/csc340/software/ascent/0.5.2-pre/summit/cuda/gnu/ascent-install
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ../..
