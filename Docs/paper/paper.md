@@ -52,7 +52,7 @@ directionally unsplit corner transport upwind method of @ctu with
 piecewise parabolic reconstruction [@ppm].  In Nyx, we have
 several modes of coupling the stiff heating-cooling source terms to the hydro.  
 The simplest method is the traditional operator splitting approach, 
-using Strang splitting to achieve second-order in time.  However, 
+using Strang splitting [@strang1968] to achieve second-order in time.  However, 
 this coupling can break down, and we have an alternative to Strang splitting
 based on spectral deferred corrections (SDC), a method
 that aims to prevent the hydro and stiff source terms from becoming decoupled.  
@@ -62,7 +62,7 @@ second order [@simple_sdc].
 
 Nyx has a set of additional physics necessary to model the intergalactic medium
 using heating-cooling source terms.
-The code follows the abundance of six species: neutral andionized hydrogen,
+The code follows the abundance of six species: neutral and ionized hydrogen,
 neutral, once and twice ionized helium, and free electrons. For these species,
 all relevant atomic processes - ionization, recombination, and free-free transitions are
 modeled in the code. Heating and cooling source terms are calculated using
@@ -78,7 +78,7 @@ matter in an expanding universe. The mesh-based hydrodynamical baryonic gas
 evolution is coupled through gravity to the particle-based representation of
 dark matter. The dark matter particles are moved with a move-kick-drift algorithm
 [@movekickdrift]. The Poisson equation for self-gravity of the baryonic gas and dark
-matter is solved using geometric multigrid method. Nyx simulations can optionally
+matter is solved using the geometric multigrid method. Nyx simulations can optionally
 model neutrino particle effects and active galactic nuclei feedback.
 
 Nyx is built on the AMReX [@AMReX] adaptive mesh refinement (AMR)
@@ -115,7 +115,7 @@ dark matter to different reionization scenarios related to the radiation
 from star-forming galaxies, set the observable
 properties of IGM, making it a powerful probe of cosmology and astrophysics.
 But in order to extract scientific insights, confronting observations of 
-the IGM (usually through the Lyman alpha forest) against simulated models is necessity, and that is where Nyx steps in.
+the IGM (usually through the Lyman alpha forest) against simulated models is a necessity, and that is where Nyx steps in.
 Incoming observations, for example Dark Energy Spectroscopic Instrument (DESI) or
 high-resolution spectrographs like the one mounted on the Keck telescope are noticeably 
 reducing the statistical errors of measurements; the community needs tools
@@ -126,9 +126,10 @@ to resolve small fluctuations in the intergalactic gas. Physics of Nyx allows si
 of different cosmological and reionization scenarios, enabling users to produce
 mock universes for a variety of physically relevant models.
 
-While we do best effort to enable Nyx to efficiently run on any general Linux-type machine,
-our main targets are high-performance computer architectures, and massively parallel simulations 
+Our main targets are high-performance computer architectures, and massively parallel simulations 
 needed for cosmological and astrophysical research.
+For that reason, we made a best effort to enable Nyx to efficiently run on any general Linux-type machine;
+we do not focus on iOS, but from the previous experience, Nyx fairly smoothly installs and runs on Mocs too.
 
 
 # Acknowledgements
