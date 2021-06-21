@@ -27,3 +27,9 @@ the simulations results.
    Building Nyx with CMake <getting_started/BuildingCMake>
    Running the code <getting_started/RunningTheCode>
    Compiling Nyx with SUNDIALS 5 <getting_started/NyxSundials>
+
+Additional details about compiling Nyx in different environments can be found
+in the `AMReX build documentation<https://amrex-codes.github.io/amrex/docs_html/BuildingAMReX_Chapter.html>`_.
+Containerized Ubuntu builds with CMake are run as 
+`GitHub Actions <https://github.com/AMReX-Astro/Nyx/actions/workflows/linux.yml>`_
+whose workflow files are stored in Nyx/.github/workflows .
