@@ -46,6 +46,8 @@ Together, Nyx, the compressible astrophysical simulation code, Castro [@castro],
 and the low Mach number code MAESTROeX [@maestroex], make up the
 AMReX-Astrophysics Suite of open-source, adaptive mesh, performance-portable 
 astrophysical simulation codes.
+Examples of cosmological simulation research codes include Enzo [@Bryan2014], Enzo-P/Cello [@Bordner2018],[@Norman2018], RAMSES [@Teyssier2002], ART [@Kravtsov1997],
+FLASH [@Fryxell2000], Cholla [@Villasenor2021], as well as Gadget [@Springel2020], Gasoline [@Wadsley2017], Arepo [@Weinberger2020], Gizmo [@Hopkins2014], and SWIFT [@Schaller2016].
 
 The core hydrodynamics solver in Nyx [@nyx-paper1] is based on the
 directionally unsplit corner transport upwind method of @ctu with
