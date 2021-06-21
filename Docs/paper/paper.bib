@@ -259,12 +259,8 @@ journal = "Journal of Parallel and Distributed Computing ",
    url = {http://arxiv.org/abs/1712.01294},
    year = {2017},
 }
-@web_page{,
-   title = {ASCL.net - GIZMO: Multi-method magneto-hydrodynamics+gravity code},
-   url = {http://ascl.net/1410.003},
-}
 @article{Weinberger2020,
-   author = {Rainer Weinberger and Volker Springel and Rüdiger Pakmor},
+   author = {Rainer Weinberger and Volker Springel and R{\"u}diger Pakmor},
    doi = {10.3847/1538-4365/ab908c},
    issn = {1538-4365},
    issue = {2},
@@ -318,15 +314,11 @@ substructure finding and tracking, as well as merger tree building, a simple
 model for radiative cooling and star formation, a high dynamic range power
 spectrum estimator, and an initial conditions generator based on second-order
 Lagrangian perturbation theory.},
-   author = {Volker Springel and Rüdiger Pakmor and Oliver Zier and Martin Reinecke},
+   author = {Volker Springel and R{\"u}diger Pakmor and Oliver Zier and Martin Reinecke},
    month = {10},
    title = {Simulating cosmic structure formation with the GADGET-4 code},
    url = {https://arxiv.org/abs/2010.03567},
    year = {2020},
-}
-@web_page{,
-   title = {ASCL.net - SWIFT: SPH With Inter-dependent Fine-grained Tasking},
-   url = {http://ascl.net/1805.020},
 }
 @article{Hopkins2014,
    abstract = {We present two new Lagrangian methods for hydrodynamics, in a systematic comparison with moving-mesh, SPH, and stationary (non-moving) grid methods. The new methods are designed to simultaneously capture advantages of both smoothed-particle hydrodynamics (SPH) and grid-based/adaptive mesh refinement (AMR) schemes. They are based on a kernel discretization of the volume coupled to a high-order matrix gradient estimator and a Riemann solver acting over the volume 'overlap.' We implement and test a parallel, second-order version of the method with self-gravity & cosmological integration, in the code GIZMO: this maintains exact mass, energy and momentum conservation; exhibits superior angular momentum conservation compared to all other methods we study; does not require 'artificial diffusion' terms; and allows the fluid elements to move with the flow so resolution is automatically adaptive. We consider a large suite of test problems, and find that on all problems the new methods appear competitive with moving-mesh schemes, with some advantages (particularly in angular momentum conservation), at the cost of enhanced noise. The new methods have many advantages vs. SPH: proper convergence, good capturing of fluid-mixing instabilities, dramatically reduced 'particle noise' & numerical viscosity, more accurate sub-sonic flow evolution, & sharp shock-capturing. Advantages vs. non-moving meshes include: automatic adaptivity, dramatically reduced advection errors & numerical overmixing, velocity-independent errors, accurate coupling to gravity, good angular momentum conservation and elimination of 'grid alignment' effects. We can, for example, follow hundreds of orbits of gaseous disks, while AMR and SPH methods break down in a few orbits. However, fixed meshes minimize 'grid noise.' These differences are important for a range of astrophysical problems.},
