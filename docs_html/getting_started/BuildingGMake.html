@@ -281,7 +281,8 @@ This requires you to also install a matching sundials installation to support th
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">For executables with <code class="docutils literal notranslate"><span class="pre">USE_HEATCOOL=TRUE</span></code> in their GNUmakefile, a matching Sundials implementation is required. If Sundials is built with <code class="docutils literal notranslate"><span class="pre">-DSUNDIALS_BUILD_PACKAGE_FUSED_KERNELS=ON</span></code>, Nyx should be built with <code class="docutils literal notranslate"><span class="pre">USE_FUSED=TRUE</span></code>.
-The flag <code class="docutils literal notranslate"><span class="pre">USE_FUSED</span></code> tells the Nyx compile whether you compiled Sundials with fused cuda kernels. The default assumption is that non-cuda Nyx compiles set <code class="docutils literal notranslate"><span class="pre">USE_FUSED=FALSE</span></code> to match Sundials being built without fused cuda kernels.</p>
+The flag <code class="docutils literal notranslate"><span class="pre">USE_FUSED</span></code> tells the Nyx compile whether you compiled Sundials with fused cuda kernels. The default assumption is that non-cuda Nyx compiles set <code class="docutils literal notranslate"><span class="pre">USE_FUSED=FALSE</span></code> to match Sundials being built without fused cuda kernels.
+Starting with Sundials version 5.7.0, set <code class="docutils literal notranslate"><span class="pre">USE_SUNDIALS_SUNMEMORY=TRUE</span></code> to compile the optional Sundials SunMemory to AMReX Arena interface for GPU memory reuse.</p>
 </div>
 </li>
 <li><p class="first">Now type “make”. The resulting executable will look something like
