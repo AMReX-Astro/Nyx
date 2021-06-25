@@ -38,26 +38,26 @@ bibliography: paper.bib
 ---
 
 # Summary
-``Nyx`` is a highly parallel, adaptive mesh, finite-volume 
-N-body compressible hydrodynamics solver for cosmological simulations.  
+Nyx is a highly parallel, adaptive mesh, finite-volume
+N-body compressible hydrodynamics solver for cosmological simulations.
 It has been used to simulate different cosmological scenarios with
 a recent focus on the intergalactic medium and Lyman alpha forest.
-Together, Nyx, the compressible astrophysical simulation code, Castro [@castro], 
+Together, Nyx, the compressible astrophysical simulation code, Castro [@castro],
 and the low Mach number code MAESTROeX [@maestroex], make up the
-AMReX-Astrophysics Suite of open-source, adaptive mesh, performance-portable 
+AMReX-Astrophysics Suite of open-source, adaptive mesh, performance-portable
 astrophysical simulation codes.
-Examples of cosmological simulation research codes include Enzo [@Bryan2014], Enzo-P/Cello [@Bordner2018],[@Norman2018], RAMSES [@Teyssier2002], ART [@Kravtsov1997],
+Other examples of cosmological simulation research codes include Enzo [@Bryan2014], Enzo-P/Cello [@Bordner2018; @Norman2018], RAMSES [@Teyssier2002], ART [@Kravtsov1997],
 FLASH [@Fryxell2000], Cholla [@Villasenor2021], as well as Gadget [@Springel2020], Gasoline [@Wadsley2017], Arepo [@Weinberger2020], Gizmo [@Hopkins2014], and SWIFT [@Schaller2016].
 
 The core hydrodynamics solver in Nyx [@nyx-paper1] is based on the
 directionally unsplit corner transport upwind method of @ctu with
 piecewise parabolic reconstruction [@ppm].  In Nyx, we have
-several modes of coupling the stiff heating-cooling source terms to the hydro.  
-The simplest method is the traditional operator splitting approach, 
+several modes of coupling the stiff heating-cooling source terms to the hydro.
+The simplest method is the traditional operator splitting approach,
 using Strang splitting [@strang1968] to achieve second-order accuracy in time. However,
 this coupling can break down, and we have an alternative to Strang splitting
 based on spectral deferred corrections (SDC), a method
-that aims to prevent the hydro and stiff source terms from becoming decoupled.  
+that aims to prevent the hydro and stiff source terms from becoming decoupled.
 The simplified SDC method uses the CTU PPM hydro together with an
 iterative scheme to fully couple the source terms and hydro, still to
 second-order accuracy in time [@simple_sdc].
@@ -118,7 +118,7 @@ between galaxies. Different physical effects, ranging from the nature of
 dark matter to different reionization scenarios related to the radiation
 from star-forming galaxies, set the observable
 properties of IGM, making it a powerful probe of cosmology and astrophysics.
-But in order to extract scientific insights, confronting observations of 
+But in order to extract scientific insights, confronting observations of
 the IGM (usually through the Lyman alpha forest) against simulated models is a necessity, and that is where Nyx steps in.
 Incoming observations, for example, Dark Energy Spectroscopic Instrument (DESI) or
 high-resolution spectrographs like the one mounted on the Keck telescope, are noticeably
@@ -130,7 +130,7 @@ to resolve small fluctuations in the intergalactic gas. Nyx includes physics to 
 of different cosmological and reionization scenarios, enabling users to produce
 mock universes for a variety of physically relevant models.
 
-Our main targets are high-performance computer architectures and massively parallel simulations 
+Our main targets are high-performance computer architectures and massively parallel simulations
 needed for cosmological and astrophysical research.
 Given these targets, Nyx's computational optimizations focus on large simulations on HPC systems,
 although smaller simulations can be run on Linux distributions and macOS using AMReX's
@@ -140,11 +140,11 @@ build system support.
 # Acknowledgements
 
 The work at LBNL was supported by the U.S. Department of Energy
-under contract No. DE-AC02-05CH11231.   
+under contract No. DE-AC02-05CH11231.
 Nyx development was further supported by
 the Exascale Computing Project (17-SC-20-SC), a collaborative effort
 of the U.S. Department of Energy Office of Science and the National
-Nuclear Security Administration.  
+Nuclear Security Administration.
 
 # References
 
