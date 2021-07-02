@@ -1,10 +1,6 @@
 #include <fstream>
 #include <iomanip>
 
-#ifdef AMREX_USE_SUNDIALS_SUNMEMORY
-#include <AMReX_SUNMemory.H>
-#endif
-
 #include <AMReX_ParmParse.H>
 #include <AMReX_Geometry.H>
 #include <AMReX_MultiFab.H>
@@ -23,8 +19,10 @@
 #include <sundials/sundials_config.h>
 
 #include <nvector/nvector_serial.h>
+#ifndef AMREX_USE_GPU
 #ifdef _OPENMP
 #include <nvector/nvector_openmp.h>
+#endif
 #endif
 #ifdef AMREX_USE_CUDA
 #include <sundials/sundials_cuda_policies.hpp>
@@ -37,6 +35,10 @@
 #ifdef AMREX_USE_DPCPP
 #include <sundials/sundials_sycl_policies.hpp>
 #include <nvector/nvector_sycl.h>
+#endif
+
+#ifdef AMREX_USE_SUNDIALS_SUNMEMORY
+#include <AMReX_SUNMemory.H>
 #endif
 
 //#define MAKE_MANAGED 1
@@ -65,10 +67,11 @@ int Nyx::integrate_state_struct
   //#endif
 #ifdef _OPENMP
 #ifdef AMREX_USE_GPU
+  MFItInfo tiling;
   if (sundials_use_tiling)
-      const auto tiling = (MFItInfo().SetDynamic(true)).EnableTiling(sundials_tile_size);
+      tiling = (MFItInfo().SetDynamic(true)).EnableTiling(sundials_tile_size);
   else
-      const auto tiling = MFItInfo().SetDynamic(true);
+      tiling = MFItInfo().SetDynamic(true);
 #pragma omp parallel
 #else
   const auto tiling = (TilingIfNotGPU() && sundials_use_tiling) ? MFItInfo().EnableTiling(sundials_tile_size) : MFItInfo();
