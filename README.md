@@ -2,6 +2,8 @@
 
 ![Nyx](https://github.com/AMReX-Astro/Nyx/blob/development/Util/banner.jpeg)
 
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.03068/status.svg)](https://doi.org/10.21105/joss.03068)
+
 *An adaptive mesh, massively-parallel, cosmological simulation code*
 
 ******
