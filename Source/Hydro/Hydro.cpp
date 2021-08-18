@@ -91,7 +91,7 @@ Nyx::construct_hydro_source(
 
       const auto hydro_MFItInfo = MFItInfo().EnableTiling(hydro_tile_size).SetNumStreams(Nyx::minimize_memory ? 1 : Gpu::numGpuStreams());
       // Temporary Fabs needed for Hydro Computation
-      for ( amrex::MFIter mfi(S_new, hydro_MFItInfo); mfi.isValid(); ++mfi)
+      for ( amrex::MFIter mfi(S_new, hydro_MFItInfo); mfi.isValid(); Nyx::minimize_memory ? Gpu::Device::streamSynchronize() : Gpu::Device::synchronize(), ++mfi)
       {
         const amrex::Box& bx = mfi.tilebox();
         const amrex::Box& qbx = amrex::grow(bx, NUM_GROW + nGrowF);
