@@ -48,10 +48,10 @@ void interp_to_this_z(AtomicRates* atomic_rates, const Real z, Real & ggh0, Real
     return;
 }
 
-AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void ion_n_device(AtomicRates* atomic_rates, const int JH, const int JHe, 
-                                        const Real U, const Real nh, const Real* ne,
+AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void ion_n_device(AtomicRates* atomic_rates, const int JH, const int JHe,
+                                        const Real U, const Real nh, const Real& ne,
                                         Real& nhp, Real& nhep, Real& nhepp,
-                                        Real* t, const Real gamma_minus_1, const Real h_species,
+                                        Real& t, const Real gamma_minus_1, const Real h_species,
                                         const Real z)
 {
 
@@ -63,15 +63,16 @@ AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void ion_n_device(AtomicRates* atomic_r
     int j;
 
     Real deltaT = (TCOOLMAX - TCOOLMIN)/NCOOLTAB;
-    Real YHELIUM = (1.0-h_species)/(4.0*h_species);
-    mu = (1.0e0+4.0e0*YHELIUM) / (1.0e0+YHELIUM+*ne);
+    Real YHELIUM = (Real(1.0)-h_species)/(Real(4.0)*h_species);
+    mu = (1.0e0+4.0e0*YHELIUM) / (1.0e0+YHELIUM+(ne));
     /*
     Real MPROTON = m_proton * M_unit;
     Real BOLTZMANN = k_B / (T_unit*T_unit/(M_unit*L_unit*L_unit));*/
-    //    t  = gamma_minus_1*mp_over_kb * U * mu;
-    *t  = gamma_minus_1*MPROTON/BOLTZMANN * U * mu;
+    //    *t  = gamma_minus_1*mp_over_kb/e_to_cgs * U * mu;
+    //    t = U / e_to_cgs * (gamma_minus_1 * mp_over_kb * mu);
+    t  = gamma_minus_1*MPROTON/BOLTZMANN * U * mu;
 
-    logT = std::log10(*t);
+    logT = std::log10(t);
 
     if (logT >= TCOOLMAX) // Fully ionized plasma
     {
@@ -101,11 +102,11 @@ AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void ion_n_device(AtomicRates* atomic_r
 
     interp_to_this_z(atomic_rates, z, ggh0, gghe0, gghep, eh0, ehe0, ehep);
 
-    if ((*ne) > 0.0)
+    if ((ne) > 0.0)
     {
-        ggh0ne   = JH  * ggh0  / (*ne*nh);
-        gghe0ne  = JH  * gghe0 / (*ne*nh);
-        gghepne  = JHe * gghep / (*ne*nh);
+        ggh0ne   = JH  * ggh0  / (ne*nh);
+        gghe0ne  = JH  * gghe0 / (ne*nh);
+        gghepne  = JHe * gghep / (ne*nh);
     }
     else
     {
@@ -135,8 +136,8 @@ AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void ion_n_device(AtomicRates* atomic_r
 
 AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE
 void iterate_ne_device(AtomicRates* atomic_rates, const int JH, const int JHe, const Real z,
-                       const Real U, Real* t, const Real nh,
-                       Real* ne, Real& nh0, Real& nhp,
+                       const Real U, Real& t, const Real nh,
+                       Real& ne, Real& nh0, Real& nhp,
                        Real& nhe0, Real& nhep, Real& nhepp,
                        const Real gamma_minus_1, const Real h_species)
 {
@@ -144,10 +145,10 @@ void iterate_ne_device(AtomicRates* atomic_rates, const int JH, const int JHe, c
     Real f, df, eps, ne2;
     Real nhp_plus, nhep_plus, nhepp_plus;
     Real dnhp_dne, dnhep_dne, dnhepp_dne, dne;
-    Real YHELIUM = (1.0-h_species)/(4.0*h_species);
+    Real YHELIUM = (Real(1.0)-h_species)/(Real(4.0)*h_species);
 
     i = 0;
-    *ne = 1.0e0; // 0 is a bad guess
+    ne = 1.0e0; // 0 is a bad guess
 
     for(i = i+1;i<=15;i++)  // Newton-Raphson solver
     {
@@ -155,23 +156,23 @@ void iterate_ne_device(AtomicRates* atomic_rates, const int JH, const int JHe, c
         ion_n_device(atomic_rates, JH, JHe, U, nh, ne, nhp, nhep, nhepp, t, gamma_minus_1, h_species, z);
 
         // Forward difference derivatives
-        if (*ne > 0.0e0)
-            eps = xacc*(*ne);
+        if (ne > 0.0e0)
+            eps = xacc*(ne);
         else
             eps = 1.0e-24;
 
-        ne2 = *ne+eps;
-        ion_n_device(atomic_rates, JH, JHe, U, nh, &ne2, nhp_plus, nhep_plus, nhepp_plus, t, gamma_minus_1, h_species, z);
+        ne2 = ne+eps;
+        ion_n_device(atomic_rates, JH, JHe, U, nh, ne2, nhp_plus, nhep_plus, nhepp_plus, t, gamma_minus_1, h_species, z);
 
         dnhp_dne   = (nhp_plus   - nhp)   / eps;
         dnhep_dne  = (nhep_plus  - nhep)  / eps;
         dnhepp_dne = (nhepp_plus - nhepp) / eps;
 
-        f   = *ne - nhp - nhep - 2.0e0*nhepp;
+        f   = ne - nhp - nhep - 2.0e0*nhepp;
         df  = 1.0e0 - dnhp_dne - dnhep_dne - 2.0e0*dnhepp_dne;
         dne = f/df;
 
-        *ne = amrex::max((*ne-dne), 0.0e0);
+        ne = amrex::max((ne-dne), 0.0e0_rt);
 
         if (amrex::Math::abs(dne) < xacc)
             break;
@@ -187,7 +188,24 @@ void iterate_ne_device(AtomicRates* atomic_rates, const int JH, const int JHe, c
 }
 
 AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_T_given_Re_device(
-    AtomicRates* atomic_rates, Real gamma_minus_1, 
+    AtomicRates* atomic_rates, Real gamma_minus_1,
+    Real h_species, int JH, int JHe, Real* T, Real* Ne, Real R,Real e,Real comoving_a,
+    Real& nh0, Real& nhp, Real& nhe0, Real& nhep, Real& nhepp)
+{
+    Real z, rho, U, nh;
+    // This converts from code units to CGS
+    rho = R * density_to_cgs / (comoving_a*comoving_a*comoving_a);
+    U = e * e_to_cgs;
+
+    nh  = rho*h_species/MPROTON;
+
+    z   = 1.e0/comoving_a - 1.e0;
+
+    iterate_ne_device(atomic_rates, JH, JHe, z, U, *T, nh, *Ne, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1, h_species);
+}
+
+AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_T_given_Re_device(
+    AtomicRates* atomic_rates, Real gamma_minus_1,
     Real h_species, int JH, int JHe, Real* T, Real* Ne, Real R,Real e,Real comoving_a)
 {
     Real z, rho, U, nh, nh0, nhep, nhp, nhe0, nhepp;
@@ -199,13 +217,11 @@ AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_T_given_Re_device(
 
     z   = 1.e0/comoving_a - 1.e0;
 
-    Real T_in = *T;
-    Real Ne_in = *Ne;
-    iterate_ne_device(atomic_rates, JH, JHe, z, U, T, nh, Ne, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1, h_species);
+    iterate_ne_device(atomic_rates, JH, JHe, z, U, *T, nh, *Ne, nh0, nhp, nhe0, nhep, nhepp, gamma_minus_1, h_species);
 }
 
 AMREX_FORCE_INLINE AMREX_GPU_HOST_DEVICE void nyx_eos_given_RT(
-    AtomicRates* atomic_rates, Real gamma_minus_1, 
+    AtomicRates* atomic_rates, Real gamma_minus_1,
     Real h_species, Real* e, Real* P, Real R, Real T, Real Ne,Real comoving_a)
 {
     Real YHELIUM = (1.0-h_species)/(4.0*h_species);

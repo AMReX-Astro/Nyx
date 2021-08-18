@@ -1,5 +1,6 @@
 .. role:: cpp(code)
   :language: c++
+
 ******
 Inputs
 ******
@@ -47,7 +48,7 @@ Examples of Usage
 
 -  **geometry.prob_hi** = 1.e8 2.e8 2.e8
    defines the high corner of the domain at (1.e8,2.e8,2.e8) in
-     physical space.
+   physical space.
 
 -  **geometry.coord_sys** = 0
    defines the coordinate system as Cartesian
@@ -344,29 +345,20 @@ Simulation Time
 List of Parameters
 ------------------
 
-+-----------------+--------------------------+--------------+---------+
-| Parameter       | Definition               | Acceptable   | Default |
-|                 |                          | Values       |         |
-+=================+==========================+==============+=========+
-| **max_step**    | maximum number           | Integer >= 0 | -1      |
-|                 | of level-0 time          |              |         |
-|                 | steps                    |              |         |
-+-----------------+--------------------------+--------------+---------+
-| **stop_time**   | final simulation         | Real >= 0    | -1.0    |
-|                 | time                     |              |         |
-+-----------------+--------------------------+--------------+---------+
-| **nyx.final_a** | if                       | Real > 0     | -1.0    |
-|                 | **nyx.use_comoving = t** |              |         |
-|                 | and positive value       |              |         |
-|                 | then this is             |              |         |
-|                 | final value of a         |              |         |
-+-----------------+--------------------------+--------------+---------+
-| **nyx.final_z** | if                       | Real > 0     | -1.0    |
-|                 | **nyx.use_comoving = t** |              |         |
-|                 | and positive value       |              |         |
-|                 | then this is             |              |         |
-|                 | final value of z         |              |         |
-+-----------------+--------------------------+--------------+---------+
++-----------------+---------------------------+--------------+---------+
+| Parameter       | Definition                | Acceptable   | Default |
+|                 |                           | Values       |         |
++=================+===========================+==============+=========+
+| **max_step**    | maximum number of level 0 | Integer >= 0 | -1      |
+|                 | time steps                |              |         |
++-----------------+---------------------------+--------------+---------+
+| **stop_time**   | final simulation          | Real >= 0    | -1.0    |
+|                 | time                      |              |         |
++-----------------+---------------------------+--------------+---------+
+| **nyx.final_a** | final value of a          | Real > 0     | -1.0    |
++-----------------+---------------------------+--------------+---------+
+| **nyx.final_z** | final value of z          | Real > 0     | -1.0    |
++-----------------+---------------------------+--------------+---------+
 
 [Table:TimeInputs]
 
@@ -433,7 +425,7 @@ List of Parameters
 | **particles.cfl**   | CFL number for | Real > 0 and   | 0.5            |
 |                     | particles      | <= 1           |                |
 |                     |                |                |                |
-|                     |                |              ` |                |
+|                     |                |                |                |
 +---------------------+----------------+----------------+----------------+
 | **nyx.init_shrink** | factor by      | Real > 0 and   | 1.0            |
 |                     | which to       | <= 1           |                |
@@ -463,6 +455,19 @@ List of Parameters
 |                     | below which    |                |                |
 |                     | calculation    |                |                |
 |                     | will abort     |                |                |
++---------------------+----------------+----------------+----------------+
+| **nyx.dt_binpow**   | time step      | Real >=  0     | -1.0           |
+|                     | chosen to be   |                |                |
+|                     | a power of a   |                |                |
+|                     | half times the |                |                |
+|                     | comoving time  |                |                |
+|                     | step           |                |                |
++---------------------+----------------+----------------+----------------+
+| **nyx.relative_max**| max da/dt      | Real > 0       | 0.01           |
+| **_change_a**       |                |                |                |
++---------------------+----------------+----------------+----------------+
+| **nyx.absolute_max**| a_new-a_old    | Real > 0       | -1.0           |
+| **_change_a**       |                |                |                |
 +---------------------+----------------+----------------+----------------+
 
 [Table:TimeStepInputs]
@@ -505,6 +510,14 @@ Examples of Usage
      through your entire computer allocation because you don’t realize
      the code is misbehaving.
 
+-  | **nyx.dt_binpow** = 1.0
+   | sets :math:`\mathrm{dt}=\left(\frac{1}{2}\right)^{n}\mathrm{dt}_{\mathrm{a}}|n:\mathrm{dt}_{\mathrm{cfl}}>\left(\frac{1}{2}\right)^{n}\mathrm{dt_{a}}`
+     where :math:`\mathrm{dt}_{\mathrm{cfl}}` is determined by the more
+     restrictive timestep of **nyx.cfl** and **particles.cfl**, and
+     where :math:`\mathrm{dt}_{\mathrm{a}}` is determined by the
+     **relative_max_change_a**, **absolute_max_change_a**, and the
+     evolution of :math:`\frac{da}{dt}`
+
 Subcycling
 ==========
 
@@ -537,9 +550,9 @@ List of Parameters
 | **amr.sub      | How shall we   | Auto, None or  | Auto           |
 | cycling_mode** | subcycle       | Manual         |                |
 +----------------+----------------+----------------+----------------+
-| *              | Number of      | 1 or           | must be set in |
-| *amr.subcyclin | cycles at each | ``ref_ratio``  | Manual mode    |
-| g_iterations** | level          |                |                |
+| **amr.subcycli | Number of      | 1 or           | must be set in |
+| g_iterations** | cycles at each | ``ref_ratio``  | Manual mode    |
+|                | level          |                |                |
 +----------------+----------------+----------------+----------------+
 
 .. _examples-of-usage-6:
@@ -721,6 +734,10 @@ List of Parameters
 |                             | the writing of   | :math:`\geq 1`   |         |
 |                             | the plotfiles    |                  |         |
 +-----------------------------+------------------+------------------+---------+
+| **nyx.plot_rank**           | should we plot   | True / False     | False   |
+|                             | the processor ID |                  |         |
+|                             | in the plotfiles |                  |         |
++-----------------------------+------------------+------------------+---------+
 | **fab.format**              | Should we write  | NATIVE or IEEE32 | NATIVE  |
 |                             | the plotfile in  |                  |         |
 |                             | double or single |                  |         |
@@ -778,6 +795,90 @@ If instead you specify
    *plt_run00061*, etc, where :math:`t = 0.1` after 43 level-0 steps,
    :math:`t = 0.2` after 61 level-0 steps, etc.
 
+Plotfile Variables
+------------------
+
+Native variables
+^^^^^^^^^^^^^^^^
+
+These variables come directly from the ``StateData``, either the
+``State_Type`` (for the hydrodynamic variables), ``DiagEOS_Type``
+(for the nuclear energy generation quantities). ``PhiGrav_Type`` and
+``Gravity_Type`` (for the gravity quantities)
+
++-----------------------------------+---------------------------------------------------+--------------------------------------+
+| variable name                     | description                                       | units                                |
++===================================+===================================================+======================================+
+| ``density``                       | Baryonic mass density, :math:`\rho`               | M\ :math:`_\odot` / Mpc\ :math:`^3`  |
++-----------------------------------+---------------------------------------------------+--------------------------------------+
+| ``xmom``                          | x-momentum, :math:`(\rho u)`                      | :math:`{\rm g~km^{-2}~s^{-1}}`       |
++-----------------------------------+---------------------------------------------------+--------------------------------------+
+| ``ymom``                          | y-momentum, :math:`(\rho v)`                      | :math:`{\rm g~km^{-2}~s^{-1}}`       |
++-----------------------------------+---------------------------------------------------+--------------------------------------+
+| ``zmom``                          | z-momentum, :math:`(\rho w)`                      | :math:`{\rm g~km^{-2}~s^{-1}}`       |
++-----------------------------------+---------------------------------------------------+--------------------------------------+
+| ``rho_E``                         | Total energy density                              | :math:`{\rm erg~km^{-3}}`            |
++-----------------------------------+---------------------------------------------------+--------------------------------------+
+| ``rho_e``                         | Internal energy density                           | :math:`{\rm erg~km^{-3}}`            |
++-----------------------------------+---------------------------------------------------+--------------------------------------+
+| ``Temp``                          | Temperature                                       | :math:`{\rm K}`                      |
++-----------------------------------+---------------------------------------------------+--------------------------------------+
+| ``Ne``                            | Number density of electrons                       | dimensionless                        |
++-----------------------------------+---------------------------------------------------+--------------------------------------+
+| ``rho_X``                         | Mass density of species X (only valid for non-    | dimensionless                        |
+| (where X is H or He, the species  | constant species)                                 |                                      |
+| defined in the network)           |                                                   |                                      |
++-----------------------------------+---------------------------------------------------+--------------------------------------+
+| ``phiGrav``                       | Gravitational potential                           | :math:`{\rm erg~g^{-1}}`             |
++-----------------------------------+---------------------------------------------------+--------------------------------------+
+| ``grav_x``, ``grav_y``,           | Gravitational acceleration                        | :math:`{\rm km~s^{-2}}`              |
+| ``grav_z``                        |                                                   |                                      |
++-----------------------------------+---------------------------------------------------+--------------------------------------+
+
+Derived variables
+^^^^^^^^^^^^^^^^^
+
++-----------------------------------+---------------------------------------------------+-----------------------------+-----------------------------------------+
+| variable name                     | description                                       | derive routine              | units                                   |
++===================================+===================================================+=============================+=========================================+
+| ``divu``                          | :math:`\nabla \cdot \ub`                          | ``derdivu``                 | :math:`{\rm s^{-1}}`                    |
++-----------------------------------+---------------------------------------------------+-----------------------------+-----------------------------------------+
+| ``eint_e``                        | Specific internal energy computed from the        | ``dereint2``                | :math:`{\rm erg~g^{-1}}`                |
+|                                   | conserved :math:`(\rho e)` state variable as      |                             |                                         |
+|                                   | :math:`e = (\rho e)/\rho`                         |                             |                                         |
++-----------------------------------+---------------------------------------------------+-----------------------------+-----------------------------------------+
+| ``eint_E``                        | Specific internal energy computed from the        | ``dereint1``                | :math:`{\rm erg~g^{-1}}`                |
+|                                   | total energy and momentum conserved state as      |                             |                                         |
+|                                   | :math:`e=[(\rho E)-\frac{1}{2}(\rho \ub^2)]/\rho` |                             |                                         |
++-----------------------------------+---------------------------------------------------+-----------------------------+-----------------------------------------+
+| ``kineng``                        | Kinetic energy density,                           | ``derkineng``               | :math:`{\rm erg~km^{-3}}`               |
+|                                   | :math:`K = \frac{1}{2} |(\rho \ub)|^2`            |                             |                                         |
++-----------------------------------+---------------------------------------------------+-----------------------------+-----------------------------------------+
+| ``logden``                        | :math:`\log_{10} \rho`                            | ``derlogden``               | M\ :math:`_\odot` / Mpc\ :math:`^3`     |
++-----------------------------------+---------------------------------------------------+-----------------------------+-----------------------------------------+
+| ``MachNumber``                    | Fluid Mach number, :math:`|\ub|/c_s`              | ``dermachnumber``           | --                                      |
++-----------------------------------+---------------------------------------------------+-----------------------------+-----------------------------------------+
+| ``maggrav``                       | Gravitational acceleration magnitude              | ``dermaggrav``              | :math:`{\rm km~s^{-2}}`                 |
++-----------------------------------+---------------------------------------------------+-----------------------------+-----------------------------------------+
+| ``magmom``                        | Momentum density magnitude,                       | ``dermagmom``               | :math:`{\rm g~km^{-2}~s^{-1}}`          |
+|                                   | :math:`|\rho \ub|`                                |                             |                                         |
++-----------------------------------+---------------------------------------------------+-----------------------------+-----------------------------------------+
+| ``magvel``                        | Velocity magnitude, :math:`|\ub|`                 | ``dermagvel``               | :math:`\mathrm{km~s^{-1}}`              |
++-----------------------------------+---------------------------------------------------+-----------------------------+-----------------------------------------+
+| ``magvort``                       | Vorticity magnitude, :math:`|\nabla\times\ub|`    | ``dermagvort``              | :math:`{\rm s^{-1}}`                    |
++-----------------------------------+---------------------------------------------------+-----------------------------+-----------------------------------------+
+| ``pressure``                      | Total pressure, including ions and electrons      | ``derpres``                 | :math:`{\rm dyn~km^{-2}}`               |
++-----------------------------------+---------------------------------------------------+-----------------------------+-----------------------------------------+
+| ``soundspeed``                    | Sound speed                                       | ``dersoundspeed``           | :math:`\mathrm{km~s^{-1}}`              |
++-----------------------------------+---------------------------------------------------+-----------------------------+-----------------------------------------+
+| ``H`` or ``He``                   | Mass fraction of species H or He                  | ``derspec``                 | --                                      |
+|                                   |                                                   |                             |                                         |
++-----------------------------------+---------------------------------------------------+-----------------------------+-----------------------------------------+
+| ``x_velocity``,                   | Fluid velocity,                                   | ``dervel``                  | :math:`\mathrm{km~s^{-1}}`              |
+| ``y_velocity``,                   | :math:`\ub = (\rho \ub)/\rho`                     |                             |                                         |
+| ``z_velocity``                    |                                                   |                             |                                         |
++-----------------------------------+---------------------------------------------------+-----------------------------+-----------------------------------------+
+	 
 Screen Output
 =============
 
@@ -897,8 +998,6 @@ List of Parameters
 |                          | solve            |                |                  |
 +--------------------------+------------------+----------------+------------------+
 
-[Table:Gravity]
-
 .. _notes-6:
 
 Notes
@@ -931,10 +1030,23 @@ List of Parameters
 |                                  | rho greater than | "cons"          |             |
 |                                  | small_dens       |                 |             |
 +----------------------------------+------------------+-----------------+-------------+
+| **nyx.strang_split**             | Use strang       | 0 if false, 1   | 1           |
+|                                  | splitting        | if true         |             |
++----------------------------------+------------------+-----------------+-------------+
+| **nyx.sdc_split**                | Use sdc          | 0 if false, 1   | 0           |
+|                                  | splitting        | if true         |             |
++----------------------------------+------------------+-----------------+-------------+
+| **nyx.strang_grown_box**         | Use growntilebox | 0 if false, 1   | 1           |
+|                                  | to avoid comms   | if true         |             |
++----------------------------------+------------------+-----------------+-------------+
 | **nyx.add_ext_src**              | Include          | 0 if false, 1   | 0           |
 |                                  | additional       | if true         |             |
 |                                  | user-specified   |                 |             |
 |                                  | source term      |                 |             |
++----------------------------------+------------------+-----------------+-------------+
+| **nyx.nghost_state**             | Set number of    | {1,2,3,4}       | 1           |
+|                                  | ghost cells for  |                 |             |
+|                                  | state variables  |                 |             |
 +----------------------------------+------------------+-----------------+-------------+
 | **nyx.use_const_species**        | If 1 then read   | 0 or 1          | 0           |
 |                                  | h_species and    |                 |             |
@@ -947,6 +1059,86 @@ List of Parameters
 |                                  | of He            | :math:`<` 1     |             |
 +----------------------------------+------------------+-----------------+-------------+
 
+
+Cosmology
+=========
+
+.. _list-of-parameters-13:
+
+List of Parameters
+------------------
+
++----------------------------------+--------------------+-----------------+-------------+
+| Parameter                        | Definition         | Acceptable      | Default     |
+|                                  |                    | Values          |             |
++==================================+====================+=================+=============+
+| **nyx.comoving_OmM**             | Relative (total)   |  0 :math:`<` X  | must be set |
+|                                  | mass density       |  :math:`<` 1    |             |
++----------------------------------+--------------------+-----------------+-------------+
+| **nyx.comoving_OmB**             | Relative baryon    |  0 :math:`<` X  | must be set |
+|                                  | density            |  :math:`<` 1    |             |
++----------------------------------+--------------------+-----------------+-------------+
+| **nyx.comoving_OmR**             | Relative           |  0 :math:`<` X  | must be set |
+|                                  | radiation density  |  :math:`<` 1    |             |
++----------------------------------+--------------------+-----------------+-------------+
+| **nyx.comoving_h**               | Dimensionless      |  0 :math:`<` X  | must be set |
+|                                  | Hubble parameter   |  :math:`<` 1    |             |
++----------------------------------+--------------------+-----------------+-------------+
+| **nyx.gamma**                    | Dimensionless      |  0 :math:`<` X  | :math:`5/3` |
+|                                  | factor relating    |  :math:`<` 2    |             |
+|                                  | :math:`p, \rho, e` |                 |             |
++----------------------------------+--------------------+-----------------+-------------+
+
+Examples of Usage
+-----------------
+
+-  | **nyx.gamma** This changes :math:`\gamma` in the :math:`\gamma` law gas: :math:`p = (\gamma - 1) \rho e.`
+
+Reionization models
+===================
+
+.. _list-of-parameters-14:
+
+List of Parameters
+------------------
+
++----------------------------------+------------------+-----------------+-------------+
+| Parameter                        | Definition       | Acceptable      | Default     |
+|                                  |                  | Values          |             |
++==================================+==================+=================+=============+
+| **uvb_rates_file**               | Name of the UVB  |  string         | must be set |
+|                                  | (TREECOOL) file  |                 |             |
++----------------------------------+------------------+-----------------+-------------+
+| **uvb_density_A**                | Density-dependent|  real           | 1.0         |
+|                                  | heating          |                 |             |
++----------------------------------+------------------+-----------------+-------------+
+| **uvb_density_B**                | Density dependent|  real           | 0.0         |
+|                                  | heating          |                 |             |
++----------------------------------+------------------+-----------------+-------------+
+| **reionization_zHI_flash**       | Redshift of      |  0 :math:`<` X  | -1.0        |
+|                                  | "flash" H reion. |  or -1 if off   |             |
++----------------------------------+------------------+-----------------+-------------+
+| **reionization_zHeII_flash**     | Redshift of      |  0 :math:`<` X  | -1.0        |
+|                                  | "flash" He reion.|  of -1 if off   |             |
++----------------------------------+------------------+-----------------+-------------+
+| **inhomo_reion**                 | Inhomogeneous    |  0 or 1         | 0           |
+|                                  | reionization     |                 |             |
++----------------------------------+------------------+-----------------+-------------+
+| **inhomo_zhi_file**              | File with        |  string         | must be set |
+|                                  | reionization map |                 | (if used)   |
++----------------------------------+------------------+-----------------+-------------+
+| **inhomo_grid**                  | Size of the      |  integer        | must be set |
+|                                  | reionization grid|                 | (if used)   |
++----------------------------------+------------------+-----------------+-------------+
+| **reionization_T_zHI**           | H reionization   |  real           | 2.0e4       |
+|                                  | heat input       |                 |             |
++----------------------------------+------------------+-----------------+-------------+
+| **reionization_T_zHeII**         | He reionization  |  real           | 1.5e4       |
+|                                  | heat input       |                 |             |
++----------------------------------+------------------+-----------------+-------------+
+
+
+
 Multigrid Inputs
 ================
 
@@ -957,13 +1149,20 @@ These must be preceded by "gravity" in the inputs file:
 +----------------------+---------------------------------------------------+-----------+--------------+
 |                      | Description                                       | Type      | Default      |
 +======================+===================================================+===========+==============+
+| v                    |  Verbosity of Gravity class                       |  Int      |   0          |
++----------------------+---------------------------------------------------+-----------+--------------+
 | ml_tol               |  Relative tolerance for multilevel solves         |  Real     |   1.e-12     |
 +----------------------+---------------------------------------------------+-----------+--------------+
 | sl_tol               |  Relative tolerance for single-level solves       |  Real     |   1.e-12     |
 +----------------------+---------------------------------------------------+-----------+--------------+
+| delta_tol            |  Relative tolerance for synchronization solves    |  Real     |   1.e-12     |
++----------------------+---------------------------------------------------+-----------+--------------+
 | mlmg_agglomeration   |  Should we agglomerate deep in the V-cycle        |  Int      |   1          |
 +----------------------+---------------------------------------------------+-----------+--------------+
 | mlmg_consolidation   |  Should we consolidate deep in the V-cycle        |  Int      |   1          |
++----------------------+---------------------------------------------------+-----------+--------------+
+| dirichlet_bcs        |  Should we use homogeneous Dirichlet bcs in the   |  Int      |   0          |
+|                      |  gravity solves (used for testing only)           |           |              |
 +----------------------+---------------------------------------------------+-----------+--------------+
 
 These must be preceded by "mg" in the inputs file:
@@ -976,9 +1175,53 @@ These must be preceded by "mg" in the inputs file:
 | bottom_solver        |  What is the bottom solver?                         |  String     |   "bicg"     |
 |                      |  Options include "bicg", "smoother", "hypre", etc   |             |              |
 +----------------------+-----------------------------------------------------+-------------+--------------+
+| max_fmg_iter         |  Maximum number of F-cycles to do before            |  Int        |   0          |
+|                      |  continuing with V-cycles in a multigrid solve      |             |              |   
++----------------------+-----------------------------------------------------+-------------+--------------+
 
 There are a number of additional inputs that can be used to control the multigrid solver.  
 
 See the `AMReX Multigrid documentation`_ for more details.
 
 .. _AMReX Multigrid documentation: https://amrex-codes.github.io/amrex/docs_html/LinearSolvers_Chapter.html
+
+Memory Optimization
+===================
+
+.. _list-of-parameters-15:
+
+List of Parameters
+------------------
+
++----------------------------------+------------------+-----------------+-------------+
+| Parameter                        | Definition       | Acceptable      | Default     |
+|                                  |                  | Values          |             |
++==================================+==================+=================+=============+
+| **nyx.shrink_to_fit**            | Shrink Particle  | 0 if false, 1   |             |
+|                                  | vector to save   | if true         |             |
+|                                  | memory           |                 |             |
++----------------------------------+------------------+-----------------+-------------+
+| **nyx.minimize_memory**          | Use less         | 0 if false, 1   |             |
+|                                  | temporary scratch| if true         |             |
+|                                  | memory in hydro  |                 |             |
++----------------------------------+------------------+-----------------+-------------+
+| **nyx.load_balance_int**         | How often to     | Int < 0 if never| -1          |
+|                                  | load-balance     | Int > 0         |             |
+|                                  | particles        |                 |             |
++----------------------------------+------------------+-----------------+-------------+
+| **nyx.load_balance_start_z**     | Redshift to start| Real > 0        | 7.0         |
+|                                  | load-balancing   |                 |             |
+|                                  | particles        |                 |             |
++----------------------------------+------------------+-----------------+-------------+
+| **nyx.load_balance_wgt_stategy** | Weight strategy  | {0, 1, 2}       | 0           |
+|                                  | to load-balance  |                 |             |
+|                                  | particles        |                 |             |
++----------------------------------+------------------+-----------------+-------------+
+| **nyx.load_balance_wgt_nmax**    | Max ranks to     | 0 < Int < Ranks | -1          |
+|                                  | load-balance     |                 |             |
+|                                  | particles        |                 |             |
++----------------------------------+------------------+-----------------+-------------+
+| **nyx.load_balance_stategy**     | Dmap strategy    | {KNAPSACK,      | SFC         |
+|                                  | type for particle|  SFC,           |             |
+|                                  | load-balancing   |  ROUNDROBIN     |             |
++----------------------------------+------------------+-----------------+-------------+

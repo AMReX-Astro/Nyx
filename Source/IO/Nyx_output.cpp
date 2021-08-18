@@ -3,14 +3,10 @@
 #include <Nyx.H>
 #include <AMReX_PlotFileUtil.H>
 #include <Nyx_output.H>
-
 #include <AMReX_buildInfo.H>
-
-#ifdef FORCING
 #include <Forcing.H>
 
 void mt_write(std::ofstream& output);
-#endif
 
 using namespace amrex;
 
@@ -62,7 +58,6 @@ Nyx::setPlotVariables ()
     AmrLevel::setPlotVariables();
 
     ParmParse pp("nyx");
-    bool plot_X = false;
     bool plot_rank = false;
     if (pp.query("plot_rank", plot_rank))
     {
@@ -73,14 +68,6 @@ Nyx::setPlotVariables ()
             //
             std::string proc_string = "Rank";
             parent->addDerivePlotVar(proc_string);
-        }
-    }
-    if (pp.query("plot_X", plot_X))
-    {
-        if (plot_X)
-        {
-            parent->addDerivePlotVar("X(H)");
-            parent->addDerivePlotVar("X(He)");
         }
     }
 }
@@ -660,52 +647,6 @@ Nyx::particle_check_point (const std::string& dir)
         }
 #endif
 #endif
-#ifdef NO_HYDRO
-        Real cur_time = state[PhiGrav_Type].curTime();
-#else
-        Real cur_time = state[State_Type].curTime();
-#endif
-
-        if (ParallelDescriptor::IOProcessor())
-        {
-            std::string FileName = dir + "/comoving_a";
-            std::ofstream File;
-            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
-            if ( ! File.good()) {
-                amrex::FileOpenFailed(FileName);
-            }
-            File.precision(15);
-            if (cur_time == 0)
-            {
-               File << old_a << '\n';
-            } else {
-               File << new_a << '\n';
-            }
-        }
-
-        if (ParallelDescriptor::IOProcessor())
-        {
-            std::string FileName = dir + "/first_max_steps";
-            std::ofstream File;
-            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
-            if ( ! File.good()) {
-                amrex::FileOpenFailed(FileName);
-            }
-            File.precision(15);
-            File << old_max_sundials_steps << '\n';
-        }
-
-        if (ParallelDescriptor::IOProcessor())
-        {
-            std::string FileName = dir + "/second_max_steps";
-            std::ofstream File;
-            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
-            if ( ! File.good()) {
-                amrex::FileOpenFailed(FileName);
-            }
-            File.precision(15);
-            File << old_max_sundials_steps << '\n';
-        }
     }
 }
 
@@ -868,8 +809,9 @@ Nyx::checkPoint (const std::string& dir,
       writeJobInfo(dir);
   }
 
-#ifdef FORCING
-  forcing_check_point(dir);
+#ifndef NO_HYDRO
+  if (do_forcing)
+      forcing_check_point(dir);
 #endif
 
   if (level == 0 && ParallelDescriptor::IOProcessor())
@@ -926,7 +868,7 @@ Nyx::checkPointPre (const std::string& /*dir*/,
 
 
 void
-Nyx::checkPointPost (const std::string& /*dir*/,
+Nyx::checkPointPost (const std::string& dir,
                      std::ostream&      /*os*/)
 {
 #ifdef AMREX_PARTICLES
@@ -944,10 +886,58 @@ Nyx::checkPointPost (const std::string& /*dir*/,
   }
 #endif
 #endif
+#ifdef NO_HYDRO
+        Real cur_time = state[PhiGrav_Type].curTime();
+#else
+        Real cur_time = state[State_Type].curTime();
+#endif
+  if(level==0)
+    {
+        if (ParallelDescriptor::IOProcessor())
+        {
+            std::string FileName = dir + "/comoving_a";
+            std::ofstream File;
+            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
+            if ( ! File.good()) {
+                amrex::FileOpenFailed(FileName);
+            }
+            File.precision(15);
+            if (cur_time == 0)
+            {
+               File << old_a << '\n';
+            } else {
+               File << new_a << '\n';
+            }
+        }
+
+        if (ParallelDescriptor::IOProcessor())
+        {
+            std::string FileName = dir + "/first_max_steps";
+            std::ofstream File;
+            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
+            if ( ! File.good()) {
+                amrex::FileOpenFailed(FileName);
+            }
+            File.precision(15);
+            File << old_max_sundials_steps << '\n';
+        }
+
+        if (ParallelDescriptor::IOProcessor())
+        {
+            std::string FileName = dir + "/second_max_steps";
+            std::ofstream File;
+            File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
+            if ( ! File.good()) {
+                amrex::FileOpenFailed(FileName);
+            }
+            File.precision(15);
+            File << old_max_sundials_steps << '\n';
+        }
+    }
+
 }
 
-
-#ifdef FORCING
+#ifndef NO_HYDRO
 void
 Nyx::forcing_check_point (const std::string& dir)
 {

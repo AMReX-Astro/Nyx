@@ -23,12 +23,8 @@ public:
 
     virtual ~DarkMatterParticleContainer () {}
 
-    void InitCosmo  (amrex::MultiFab& mf, const amrex::Real vel_fac[], const amrex::Vector<int> n_part, const amrex::Real particleMass);
-    void InitCosmo  (amrex::MultiFab& mf, const amrex::Real vel_fac[], const amrex::Vector<int> n_part,
-                     const amrex::Real particleMass, const amrex::Real shift[]);
-    void InitCosmo1ppc (amrex::MultiFab& mf, const amrex::Real vel_fac[], const amrex::Real particleMass);
-    void InitCosmo1ppcMultiLevel(amrex::MultiFab& mf, const amrex::Real disp_fac[], const amrex::Real vel_fac[], 
-                                 const amrex::Real particleMass, int disp_idx, int vel_idx, 
+    void InitCosmo1ppcMultiLevel(amrex::MultiFab& mf, const amrex::Real disp_fac[], const amrex::Real vel_fac[],
+                                 const amrex::Real particleMass, int disp_idx, int vel_idx,
                                  amrex::BoxArray &baWhereNot, int lev, int nlevs);
 
     void AssignDensityAndVels (amrex::Vector<std::unique_ptr<amrex::MultiFab> >& mf, int lev_min = 0) const;

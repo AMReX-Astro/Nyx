@@ -7,6 +7,7 @@ using namespace amrex;
 void
 Nyx::enforce_minimum_density( MultiFab& S_old, MultiFab& S_new,
 #ifdef SDC
+                              MultiFab& hydro_source,
                               MultiFab& reset_e_src,
 #endif
                               Real a_new)
@@ -33,6 +34,28 @@ Nyx::enforce_minimum_density( MultiFab& S_old, MultiFab& S_new,
         } else {
             amrex::Abort("Don't know this enforce_min_density_type");
         }
+#ifdef SDC
+    //
+    //  Reset hydro_src = A_rho for SDC solve (This assumes ext_src_old(rho)=0)
+    //
+#ifdef _OPENMP
+#pragma omp parallel if (Gpu::notInLaunchRegion())
+#endif
+        for (MFIter mfi(hydro_source,TilingIfNotGPU()); mfi.isValid(); ++mfi)
+        {
+            // Only update on valid cells
+            const amrex::Box& bx = mfi.tilebox();
+            auto const& hydro_src = hydro_source.array(mfi);
+            auto const& uin  = S_old.array(mfi);
+            auto const& uout = S_new.array(mfi);
+
+            amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept
+            {
+                hydro_src(i,j,k,Density_comp) = uout(i,j,k,Density_comp) - uin(i,j,k,Density_comp);
+            });
+
+        }
+#endif
     }
 }
 
@@ -142,12 +165,12 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new)
             for (int i = 0; i < S_new[mfi].nComp(); i++)
             {
                 IntVect p_nan(D_DECL(-10, -10, -10));
-		//                if (ParallelDescriptor::IOProcessor())
-		//                    std::cout << "enforce_minimum_density: testing component " << i << " for NaNs" << std::endl;
-		bool has_nan=S_new[mfi].contains_nan<RunOn::Device>(bx,Density_comp+i,1,p_nan);
+//                if (ParallelDescriptor::IOProcessor())
+//                    std::cout << "enforce_minimum_density: testing component " << i << " for NaNs" << std::endl;
+                bool has_nan=S_new[mfi].contains_nan<RunOn::Device>(bx,Density_comp+i,1,p_nan);
                 if (has_nan)
                 {
-		  std::cout<<"nans in comp "<<i<<" at "<<p_nan<<std::flush<<std::endl;
+                    std::cout<<"nans in comp "<<i<<" at "<<p_nan<<std::flush<<std::endl;
                 }
             }
         }

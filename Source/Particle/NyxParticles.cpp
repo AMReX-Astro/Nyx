@@ -13,6 +13,7 @@ namespace
     std::string ascii_particle_file;
     std::string binary_particle_file;
     std::string    sph_particle_file;
+    std::string restart_particle_file;
 
 #ifdef AGN
     std::string agn_particle_file;
@@ -152,8 +153,6 @@ Real Nyx::particle_cfl = 0.5;
 Real Nyx::neutrino_cfl = 0.5;
 #endif
 
-IntVect Nyx::Nrep;
-
 Vector<NyxParticleContainerBase*>&
 Nyx::theActiveParticles ()
 {
@@ -287,6 +286,8 @@ Nyx::read_particle_params ()
     pp.query("particle_inituniform_vy", particle_inituniform_vy);
     pp.query("particle_inituniform_vz", particle_inituniform_vz);
 
+    pp.query("restart_particle_file", restart_particle_file);
+
     // Input error check
     if (do_dm_particles && !ascii_particle_file.empty() && particle_init_type != "AsciiFile")
     {
@@ -354,8 +355,6 @@ Nyx::read_particle_params ()
     ParmParse ppp("particles");
     ppp.query("v", particle_verbose);
 
-    for (int i = 0; i < AMREX_SPACEDIM; i++) Nrep[i] = 1; // Initialize to one (no replication)
-    ppp.query("replicate",Nrep);
     //
     // Set the cfl for particle motion (fraction of cell that a particle can
     // move in a timestep).
@@ -485,9 +484,9 @@ Nyx::init_particles ()
             // after reading in `m_pos[]`. Here we're reading in the particle
             // mass and velocity.
             //
-            DMPC->InitFromAsciiFile(ascii_particle_file, AMREX_SPACEDIM + 1, &Nrep);
+            DMPC->InitFromAsciiFile(ascii_particle_file, AMREX_SPACEDIM + 1);
             if (init_with_sph_particles == 1)
-                SPHPC->InitFromAsciiFile(sph_particle_file, AMREX_SPACEDIM + 1, &Nrep);
+                SPHPC->InitFromAsciiFile(sph_particle_file, AMREX_SPACEDIM + 1);
         }
         else if (particle_init_type == "BinaryFile")
         {
@@ -548,7 +547,11 @@ Nyx::init_particles ()
                                          AMREX_SPACEDIM + 1,
                                          particle_skip_factor);
         }
-        else
+        else if (particle_init_type == "Restart")
+        {
+            DMPC->Restart(restart_particle_file, dm_chk_particle_file);
+        }
+	else
         {
             amrex::Error("not a valid input for nyx.particle_init_type");
         }
@@ -644,9 +647,9 @@ Nyx::init_particles ()
             // mass, velocity and angles.
             //
 #ifdef NEUTRINO_DARK_PARTICLES
-            NPC->InitFromAsciiFile(neutrino_particle_file, AMREX_SPACEDIM + 1, &Nrep);
+            NPC->InitFromAsciiFile(neutrino_particle_file, AMREX_SPACEDIM + 1);
 #else
-            NPC->InitFromAsciiFile(neutrino_particle_file, 2*AMREX_SPACEDIM + 1, &Nrep);
+            NPC->InitFromAsciiFile(neutrino_particle_file, 2*AMREX_SPACEDIM + 1);
 #endif
         }
         else if (particle_init_type == "BinaryFile")
@@ -796,6 +799,8 @@ Nyx::init_santa_barbara (int init_sb_vels)
 
             GpuArray<amrex::Real,max_prob_param> prob_param;
             prob_param_fill(prob_param);
+            prob_param_special_fill(prob_param);
+            comoving_type=int(std::round(prob_param[comoving_type_comp]));
 
             prob_initdata_on_box(bx, fab_S_new, fab_D_new, geomdata, prob_param);
 

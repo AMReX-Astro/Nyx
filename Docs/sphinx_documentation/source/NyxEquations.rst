@@ -72,6 +72,7 @@ Here :math:`E = e + {\bf U} \cdot {\bf U} / 2` is the total energy per unit mass
 where :math:`e` is the specific internal energy.
 :math:`S_{\rho E} = S_{\rho e} + {\bf U} \cdot {\bf S}_{\rho {\bf U}}`
 where :math:`S_{\rho e} = \Lambda^H - \Lambda^C` represents the heating and cooling terms, respectively.
+Additionally, :math:`{\bf S}_{\rho {E}}` may include any external forcing terms on the total energy, for example as in the stochastic forcing application.
 We can write the evolution equation for internal energy as
 
 .. math::

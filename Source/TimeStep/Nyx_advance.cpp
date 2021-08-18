@@ -2,10 +2,7 @@
 #include <Nyx.H>
 #include <Gravity.H>
 #include <constants_cosmo.H>
-
-#ifdef FORCING
 #include <Forcing.H>
-#endif
 
 using namespace amrex;
 
@@ -137,22 +134,15 @@ Nyx::advance_hydro_plus_particles (Real time,
     }
     else
     {
-        if (strict_subcycling)
-        {
-            finest_level_to_advance = level;
-        }
-        else
-        {
-            // This level was advanced by a previous multilevel advance.
-            if (level > 0 && ncycle == 1)
-                return dt;
-            
-            // Find the finest level to advance
-            int lev = level;
-            while(lev < finest_level && parent->nCycle(lev+1) == 1)
-                lev++;
-            finest_level_to_advance = lev;
-        }
+        // This level was advanced by a previous multilevel advance.
+        if (level > 0 && ncycle == 1)
+            return dt;
+        
+        // Find the finest level to advance
+        int lev = level;
+        while(lev < finest_level && parent->nCycle(lev+1) == 1)
+            lev++;
+        finest_level_to_advance = lev;
 
         // We must setup virtual and Ghost Particles
         //
@@ -281,7 +271,7 @@ Nyx::advance_hydro_plus_particles (Real time,
     for (int lev = level; lev <= finest_level_to_advance; lev++)
     {
 #ifdef SDC
-        if (sdc_split > 0) { 
+      if (sdc_split > 0 && (strang_restart_from_sdc == 0)) { 
            get_level(lev).sdc_hydro(time, dt, a_old, a_new);
         } else {
            get_level(lev).strang_hydro(time, dt, a_old, a_new);
@@ -443,11 +433,6 @@ Nyx::advance_hydro (Real time,
                     int  ncycle)
 {
     BL_PROFILE("Nyx::advance_hydro()");
-
-#ifdef FORCING
-    if (!do_forcing)
-        amrex::Abort("In `advance_hydro` with FORCING defined but `do_forcing` is false");
-#endif
         
     for (int k = 0; k < NUM_STATE_TYPE; k++)
     {
@@ -468,12 +453,8 @@ Nyx::advance_hydro (Real time,
         gravity->swap_time_levels(level);
     }
 
-#ifdef FORCING
     if (do_forcing) 
-    {
         forcing->evolve(dt);
-    }
-#endif
 
     // Call the hydro advance itself
     BL_PROFILE_VAR("just_the_hydro", just_the_hydro);

@@ -45,12 +45,12 @@ if (Nyx_SDC)
    target_compile_definitions( nyxcore PUBLIC SDC)
 endif()
 
-if (Nyx_FORCING)
-   target_compile_definitions( nyxcore PUBLIC FORCING)
-endif ()
-
 if (Nyx_SUNDIALS)
    target_compile_definitions( nyxcore PUBLIC AMREX_USE_SUNDIALS)
+endif ()
+
+if (Nyx_SUNDIALS_SUNMEMORY)
+   target_compile_definitions( nyxcore PUBLIC AMREX_USE_SUNDIALS_SUNMEMORY)
 endif ()
 
 ##############################################################################
@@ -75,7 +75,15 @@ if (Nyx_SUNDIALS)
       target_link_libraries(nyxcore PUBLIC SUNDIALS::nvecopenmp)
    endif ()
    if (Nyx_GPU_BACKEND STREQUAL CUDA)
-      target_link_libraries(nyxcore PUBLIC SUNDIALS::nveccuda)
+     target_link_libraries(nyxcore PUBLIC SUNDIALS::nveccuda)
+     target_link_libraries(nyxcore PUBLIC SUNDIALS::cvode_fused_cuda)
+    endif ()
+   if (Nyx_GPU_BACKEND STREQUAL HIP)
+      target_link_libraries(nyxcore PUBLIC SUNDIALS::nvechip)
+#      target_link_libraries(nyxcore PUBLIC SUNDIALS::cvode_fused_hip)
+   endif ()
+   if (Nyx_GPU_BACKEND STREQUAL SYCL)
+      target_link_libraries(nyxcore PUBLIC SUNDIALS::nvecsycl)
    endif ()
 endif ()
 
@@ -93,9 +101,7 @@ add_subdirectory(DerivedQuantities)
 
 add_subdirectory(Driver)
 
-if (Nyx_FORCING)
-   add_subdirectory(Forcing)
-endif ()
+add_subdirectory(Forcing)
 
 if (Nyx_GRAVITY)
    add_subdirectory(Gravity)

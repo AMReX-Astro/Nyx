@@ -8,7 +8,7 @@ In order to use gravity, one must set
   
   nyx.do_grav= 1
   
-in the inputs file.
+in the inputs file. See :ref:`Gravity: List of Parameters<list-of-parameters-11>` for relevant input flags.
 
 Poisson Approximation
 =====================

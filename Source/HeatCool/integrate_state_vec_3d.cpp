@@ -14,7 +14,6 @@
 #include <cvode/cvode.h>               /* prototypes for CVODE fcts., consts. */
 #include <cvode/cvode_diag.h>          /* access to CVDiag interface */
 #include <sundials/sundials_types.h>   /* definition of type realtype */
-#include <sundials/sundials_math.h>    /* definition of ABS and EXP   */
 
 #include <nvector/nvector_serial.h>
 #ifdef _OPENMP
@@ -49,7 +48,7 @@ int Nyx::integrate_state_vec
   long int store_steps=new_max_sundials_steps;
   
   bool tiling = (sundials_use_tiling && TilingIfNotGPU());
-  for ( MFIter mfi(S_old, tiling); mfi.isValid(); ++mfi )
+  for ( MFIter mfi(S_old, tiling ? MFItInfo().EnableTiling(sundials_tile_size) : MFItInfo()); mfi.isValid(); ++mfi )
   {
 
       //check that copy contructor vs create constructor works??
@@ -76,8 +75,8 @@ int Nyx::integrate_state_vec_mfin
   realtype reltol, abstol;
   int flag;
     
-  reltol = 1e-4;  /* Set the tolerances */
-  abstol = 1e-4;
+  reltol = sundials_reltol;  /* Set the tolerances */
+  abstol = sundials_abstol;
 
   int one_in = 1;
   
@@ -91,7 +90,7 @@ int Nyx::integrate_state_vec_mfin
       N_Vector abstol_vec;
 
       void *cvode_mem;
-      double *dptr, *eptr, *rpar, *rparh, *abstol_ptr;
+      realtype *dptr, *eptr, *rpar, *rparh, *abstol_ptr;
       realtype t=0.0;
                                 
       u = NULL;
@@ -145,20 +144,20 @@ int Nyx::integrate_state_vec_mfin
                         }
                         else
                         {
-                          dptr=(double*) The_Arena()->alloc(neq*sizeof(double));
+                          dptr=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
                           u = N_VMakeManaged_Cuda(neq,dptr);  /* Allocate u vector */
-                          eptr= (double*) The_Arena()->alloc(neq*sizeof(double));
+                          eptr= (realtype*) The_Arena()->alloc(neq*sizeof(realtype));
                           e_orig = N_VMakeManaged_Cuda(neq,eptr);  /* Allocate u vector */
                           N_VSetCudaStream_Cuda(e_orig, &currentStream);
                           N_VSetCudaStream_Cuda(u, &currentStream);
 
-                          rparh = (double*) The_Arena()->alloc(4*neq*sizeof(double));
+                          rparh = (realtype*) The_Arena()->alloc(4*neq*sizeof(realtype));
                           Data = N_VMakeManaged_Cuda(4*neq,rparh);  // Allocate u vector 
                           N_VSetCudaStream_Cuda(Data, &currentStream);
                           // shouldn't need to initialize 
                           //N_VConst(0.0,Data);
 
-                          abstol_ptr = (double*) The_Arena()->alloc(neq*sizeof(double));
+                          abstol_ptr = (realtype*) The_Arena()->alloc(neq*sizeof(realtype));
                           abstol_vec = N_VMakeManaged_Cuda(neq,abstol_ptr);
                           N_VSetCudaStream_Cuda(abstol_vec,&currentStream);
                           amrex::Gpu::streamSynchronize();
@@ -382,22 +381,21 @@ int Nyx::integrate_state_grownvec
     return 0;
 }
 
-#ifdef AMREX_USE_CUDA
+#ifdef AMREX_USE_GPU
 static int f(realtype t, N_Vector u, N_Vector udot, void *user_data)
 {
-  Real* udot_ptr=N_VGetDeviceArrayPointer_Cuda(udot);
-  Real* u_ptr=N_VGetDeviceArrayPointer_Cuda(u);
-  int neq=N_VGetLength_Cuda(udot);
-  double*  rpar=N_VGetDeviceArrayPointer_Cuda(*(static_cast<N_Vector*>(user_data)));
+  Real* udot_ptr=N_VGetDeviceArrayPointer(udot);
+  Real* u_ptr=N_VGetDeviceArrayPointer(u);
+  int neq=N_VGetLength(udot);
+  realtype*  rpar=N_VGetDeviceArrayPointer(*(static_cast<N_Vector*>(user_data)));
   
-  cudaStream_t currentStream = amrex::Gpu::Device::cudaStream();
   auto atomic_rates = atomic_rates_glob;
   Real lh_species = Nyx::h_species;
   AMREX_LAUNCH_DEVICE_LAMBDA ( neq, idx, {
       //  f_rhs_test(t,u_ptr,udot_ptr, rpar, neq);
       f_rhs_rpar(t,*(u_ptr+idx),*(udot_ptr+idx), (rpar+4*idx), atomic_rates, lh_species);
   });
-  cudaStreamSynchronize(currentStream);
+  amrex::Gpu::streamSynchronize();
 
   return 0;
 }
@@ -409,7 +407,7 @@ static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
   Real* udot_ptr=N_VGetArrayPointer_Serial(udot);
   Real* u_ptr=N_VGetArrayPointer_Serial(u);
   int neq=N_VGetLength_Serial(udot);
-  double*  rpar=N_VGetArrayPointer_Serial(*(static_cast<N_Vector*>(user_data)));
+  realtype*  rpar=N_VGetArrayPointer_Serial(*(static_cast<N_Vector*>(user_data)));
   auto atomic_rates = atomic_rates_glob;
   Real lh_species = Nyx::h_species;
   #pragma omp parallel for

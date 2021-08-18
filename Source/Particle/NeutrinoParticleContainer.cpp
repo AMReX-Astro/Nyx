@@ -75,7 +75,7 @@ NeutrinoParticleContainer::AssignRelativisticDensity (Vector<std::unique_ptr<Mul
         // I believe that we don't need any information in ghost cells so we don't copy those.
         //
         if ( ! all_grids_the_same) {
-            mf_to_be_filled[0]->copy(*mf[0],0,0,ncomp);
+            MultiFab::ParallelCopy(*mf_to_be_filled[0],*mf[0],0,0,ncomp,0,0);
         }
         return;
     }
@@ -141,7 +141,7 @@ NeutrinoParticleContainer::AssignRelativisticDensity (Vector<std::unique_ptr<Mul
     
     if (!all_grids_the_same) {
         for (int lev = lev_min; lev <= finest_level; lev++) {
-            mf_to_be_filled[lev]->copy(*mf_part[lev],0,0,1);
+            MultiFab::ParallelCopy(*mf_to_be_filled[lev],*mf_part[lev],0,0,1,0,0);
         }
     }
     if (lev_min > 0) {
@@ -306,7 +306,7 @@ NeutrinoParticleContainer::AssignRelativisticDensitySingleLevel (MultiFab& mf_to
     // need any information in ghost cells so we don't copy those.
     if (mf_pointer != &mf_to_be_filled)
     {
-        mf_to_be_filled.copy(*mf_pointer,0,0,ncomp);
+        MultiFab::ParallelCopy(mf_to_be_filled,*mf_pointer,0,0,ncomp,0,0);
         delete mf_pointer;
     }
 

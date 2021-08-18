@@ -76,6 +76,7 @@ Nyx::update_state_with_sources( MultiFab& S_old, MultiFab& S_new,
     // Enforce minimum density over the whole MultiFab
     enforce_minimum_density(S_old, S_new, 
 #ifdef SDC
+                            hydro_source,
                             reset_e_src, 
 #endif
                             a_new);

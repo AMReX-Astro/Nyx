@@ -39,8 +39,9 @@ enum Prob_Type_Index {
   h_species_comp = 0,
   he_species_comp = 1,
   z_in_comp = 2,
-  gamma_comp = 3, 
-  prob_type_comp = 4 // Note that if we add more components here, we must adjust the indices
+  gamma_comp = 3,
+  comoving_type_comp = 4,
+  prob_type_comp = 5 // Note that if we add more components here, we must adjust the indices
                      // in HydroTests/Prob.H
 };
 
@@ -73,6 +74,8 @@ static void prob_param_fill(amrex::GpuArray<amrex::Real,max_prob_param>& prob_pa
 
     amrex::ParmParse pp("prob");
     prob_param[prob_type_comp] = 0;
+    prob_param[comoving_type_comp] = 1.0;
+    //    pp.query("comoving_type",prob_param[comoving_type_comp]);
     pp.query("prob_type",prob_param[prob_type_comp]);
 }
 

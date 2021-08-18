@@ -1,5 +1,5 @@
 # AMREX_HOME defines the directory in which we will find all the AMReX code
-AMREX_HOME ?= ../../../amrex
+AMREX_HOME ?= ../../subprojects/amrex
 
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ../..
@@ -19,13 +19,9 @@ DIM      = 3
 
 USE_HEATCOOL = FALSE
 
-USE_FORCING = TRUE
-
 USE_CONST_SPECIES = TRUE
 
 USE_SDC = FALSE
-
-#USE_CGS = TRUE
 
 Bpack := ./Make.package
 Blocs := .

@@ -1,0 +1,142 @@
+# ------------------  INPUTS TO MAIN PROGRAM  -------------------
+max_step = 10000000
+amr.restart = Part-load-nbody_chk00300
+max_step = 325
+
+# We set this to 1 so that we eliminate the OpenMP-induced variability
+# in the MultiFab and Nyx sums that was making the solution to the gravity solve
+# have sufficient variability that this failed the regression test using OpenMP.
+amrex.regtest_reduction = 1
+
+#stop_time = 0.1
+
+nyx.initial_z = 159.0
+nyx.final_z = 2.0
+
+amr.data_log = runlog
+
+gravity.no_sync      = 1
+gravity.no_composite = 1
+gravity.ml_tol = 1.e-10
+gravity.sl_tol = 1.e-10
+gravity.mlmg_agglomeration=1
+gravity.mlmg_consolidation=1
+
+nyx.small_dens = 1.e-2
+nyx.small_temp = 1.e-2
+
+#nyx.use_sundials_fused = 1
+nyx.shrink_to_fit = 1
+nyx.minimize_memory = 1
+
+# PROBLEM SIZE & GEOMETRY
+geometry.is_periodic =  1     1     1
+geometry.coord_sys   =  0
+
+geometry.prob_lo     =  0     0     0
+
+#Domain size in Mpc
+# 0.702 h
+geometry.prob_hi     =  28.49002849  28.49002849  28.49002849
+amr.n_cell           =  64  64  64
+#Gpu runs should use 128 or 256 here
+amr.max_grid_size    = 32
+
+# >>>>>>>>>>>>>>>  SUBCYCLING CONTROLS <<<<<<<<<<<<<<<<
+#  "None"        "Auto"	        "Manual"    "Optimal"
+# >>>>>>>>>>>>>>>  SUBCYCLING CONTROLS <<<<<<<<<<<<<<<<
+#amr.subcycling_mode = Manual
+#amr.subcycling_iterations = 1 2 2 2
+
+# REFINEMENT / REGRIDDING
+amr.max_level       = 0
+amr.ref_ratio       = 2 2
+amr.blocking_factor = 8
+
+amr.regrid_int           = 10
+amr.regrid_on_restart    = 1
+amr.use_efficient_regrid = 1
+#amr.grid_log        = grdlog
+
+#amr.refinement_indicators = density
+##amr.density.max_level = 0
+#amr.density.value_greater = 1
+#amr.density.field_name = total_particle_count
+
+amr.refinement_indicators = density
+amr.density.value_greater = 1
+amr.density.field_name = overden
+nyx.tagging_base = 8
+
+nyx.load_balance_start_z = 7.0
+#nyx.load_balance_int = 100
+nyx.load_balance_int = 5
+nyx.load_balance_wgt_strategy=1
+nyx.load_balance_strategy=KNAPSACK
+
+# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
+# 0 = Interior           3 = Symmetry
+# 1 = Inflow             4 = SlipWall
+# 2 = Outflow
+# >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
+nyx.lo_bc       =  0   0   0
+nyx.hi_bc       =  0   0   0
+
+# WHICH PHYSICS
+nyx.do_hydro = 0
+nyx.do_grav  = 1
+
+# COMOVING 0.702 h
+nyx.comoving_OmM = 0.275
+nyx.comoving_OmB = 0.046
+nyx.comoving_h   = 0.702e0
+
+# PARTICLES
+nyx.do_dm_particles = 1
+
+particles.v = 3
+
+# >>>>>>>>>>>>>  PARTICLE INIT OPTIONS <<<<<<<<<<<<<<<<
+#  "AsciiFile"        "Random"	    "Cosmological"
+# >>>>>>>>>>>>>  PARTICLE INIT OPTIONS <<<<<<<<<<<<<<<<
+nyx.particle_init_type = BinaryFile
+nyx.binary_particle_file = 64sssss_20mpc.nyx
+particles.nparts_per_read = 2097152
+
+# TIME STEP CONTROL
+nyx.relative_max_change_a = 0.01    # max change in scale factor
+particles.cfl             = 0.5     # 'cfl' for particles 
+nyx.cfl                   = 0.5     # cfl number for hyperbolic system
+nyx.init_shrink           = 1.0     # scale back initial timestep
+nyx.change_max            = 2.0     # factor by which timestep can change
+nyx.dt_cutoff             = 5.e-20  # level 0 timestep below which we halt
+
+# DIAGNOSTICS & VERBOSITY
+nyx.sum_interval      = -1      # timesteps between computing mass
+nyx.v                 = 1       # verbosity in Castro.cpp
+gravity.v             = 1       # verbosity in Gravity.cpp
+amr.v                 = 1       # verbosity in Amr.cpp
+mg.v                  = 1       # verbosity in Amr.cpp
+particles.v           = 1       # verbosity in Amr.cpp
+#amr.grid_log         = grdlog  # name of grid logging file
+amrex.async_out       = 1
+
+# CHECKPOINT FILES
+amr.checkpoint_files_output = 0
+amr.check_file      = chk
+amr.check_int       = 100
+
+# PLOTFILES
+amr.plot_file       = plt
+amr.plot_int        = -1
+#Large runs should use 256 or larger here
+amr.plot_nfiles     = 64
+#nyx.plot_z_values   = 7.0 6.0 5.0 4.0 3.0 2.0
+#nyx.plot_z_values   = 8.0 7.5 7.0 6.6 6.3 6.0 5.8 5.6 5.4 5.2 5.0 4.8 4.6 4.4 4.2 4.0 3.8 3.6 3.4 3.2 3.0 2.8 2.6 2.4 2.2 2.0
+
+amr.plot_vars        = density xmom ymom zmom rho_E rho_e phi_grav grav_x grav_y grav_z
+amr.derive_plot_vars = particle_count particle_mass_density 
+
+#PROBIN FILENAME
+amr.probin_file = ""
+

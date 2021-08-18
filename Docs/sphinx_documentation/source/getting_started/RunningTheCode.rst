@@ -11,10 +11,24 @@ See the Inputs section for more detail about what parameters can be specified at
 
    ::
 
-      <executable-name> inputs.32
+      <executable-name> <inputs-name>
 
-   where ``<executable-name>`` is  ``Nyx3d.Linux.gnu.ex1`` if you built Nyx with GNU Make, or
+   ``<executable-name>`` is  ``Nyx3d.Linux.gnu.ex1`` if you built Nyx with GNU Make, or
    ``nyx_<name-of-build-directory>`` if you built Nyx with CMake.
+
+   ``<inputs-name>`` for a small test problem is  ``inputs.32`` for the MiniSB example,
+   and ``inputs.rt`` for the LyA example. Most executable directories have an ``inputs``
+   for a larger problem, and an ``inputs.rt`` or ``inputs.regtest`` for regression-test
+   sized problems.
+
+   .. note::
+      For certain HPC systems, you may want to have a run directory separate from your compile / build directory.
+
+      In that case, copy the executable and inputs file from the build directory to your run directory on scratch.
+      Runs starting from a ``binary_particle_file`` need an absolute path in <inputs-name> or a symlink in the run directory.
+      Runs with heating-cooling must have access to the TREECOOL_middle file in the run directory, and ascent in-situ runs
+      need access to ascent_actions.yaml.
+      
 
 #. You will notice that running the code generates directories that look like
    plt00000, plt00020, etc.,
@@ -23,5 +37,3 @@ See the Inputs section for more detail about what parameters can be specified at
    and the checkpoint files for restarting the code.
 
 See the Visualization chapter for how to visualize these plotfiles.
-
-.. include:: ../NyxSundials.rst

@@ -52,7 +52,7 @@ enum StateType {
     Gravity_Type,
     NUM_STATE_TYPE
 };
-static constexpr int max_prob_param = 1;
+static constexpr int max_prob_param = 5;
 #endif
 
 #ifndef NO_HYDRO
@@ -94,37 +94,37 @@ public:
     //
     //The destructor.
     //
-    virtual ~Nyx();
+    virtual ~Nyx() override;
 
     //
     //Restart from a checkpoint file.
     //
-    virtual void restart(amrex::Amr& papa, istream& is, bool b_read_special=false);
+    virtual void restart(amrex::Amr& papa, istream& is, bool b_read_special=false) override;
 
     //
     //Call amrex::AmrLevel::checkPoint and then add radiation info
     //
     virtual void checkPoint(const std::string& dir, std::ostream& os,
-                            amrex::VisMF::How how, bool dump_old);
-    virtual void checkPointPre(const std::string& dir, std::ostream& os);
-    virtual void checkPointPost(const std::string& dir, std::ostream& os);
+                            amrex::VisMF::How how, bool dump_old) override;
+    virtual void checkPointPre(const std::string& dir, std::ostream& os) override;
+    virtual void checkPointPost(const std::string& dir, std::ostream& os) override;
 
     // A string written as the first item in `write_plot_file()` at level zero.
     // It is so we can distinguish between different types of plot files. For
     // Nyx it has the form: Nyx-Vnnn.
-    virtual std::string thePlotFileType() const;
+    virtual std::string thePlotFileType() const override;
 
-    virtual void setPlotVariables();
+    virtual void setPlotVariables() override;
 
     //
     //Write a plotfile to specified directory.
     //
-    virtual void writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how);
+    virtual void writePlotFile(const std::string& dir, ostream& os, amrex::VisMF::How how) override;
 #ifdef BL_HDF5
-    virtual void writePlotFileHDF5(const std::string& dir, ostream& os, amrex::VisMF::How how);
+    virtual void writePlotFileHDF5(const std::string& dir, ostream& os, amrex::VisMF::How how) override;
 #endif
-    virtual void writePlotFilePre(const std::string& dir, ostream& os);
-    virtual void writePlotFilePost(const std::string& dir, ostream& os);
+    virtual void writePlotFilePre(const std::string& dir, ostream& os) override;
+    virtual void writePlotFilePost(const std::string& dir, ostream& os) override;
 
     void writeJobInfo (const std::string& dir);
 
@@ -166,7 +166,7 @@ public:
     //
     //Initialize grid data at problem start-up.
     //
-    virtual void initData();
+    virtual void initData() override;
 
     //
     //Initialize grid data from a plotfile at problem start-up.
@@ -242,7 +242,7 @@ public:
     static amrex::Real comoving_OmM;
     static amrex::Real comoving_OmR;
     static amrex::Real comoving_h;
-    static int         comoving_type;
+    static         int comoving_type;
 
     //
     // Get the comoving coordinate "a"
@@ -303,7 +303,6 @@ public:
     void initcosmo();
     void icReadAndPrepareFab(std::string mfDirName, int nghost, amrex::MultiFab &mf);
 
-#ifdef FORCING
     //
     // Write forcing spectrum in checkpoint directories
     //
@@ -315,27 +314,26 @@ public:
     void forcing_post_restart(const std::string& restart_file);
 
     void integrate_state_force(
-  amrex::Box const& bx,
-  amrex::Array4<amrex::Real> const& state,
-  amrex::Array4<amrex::Real> const& diag_eos,
-  const amrex::Real* dx,
-  const amrex::Real time,
-  const amrex::Real a,
-  const amrex::Real half_dt);
+            amrex::Box const& bx,
+            amrex::Array4<amrex::Real> const& state,
+            amrex::Array4<amrex::Real> const& diag_eos,
+            const amrex::Real* dx,
+            const amrex::Real time,
+            const amrex::Real a,
+            const amrex::Real half_dt);
 
         void ext_src_force(
-  amrex::Box const& bx,
-  amrex::Array4<const amrex::Real> const& old_state,
-  amrex::Array4<const amrex::Real> const& new_state,
-  amrex::Array4<const amrex::Real> const& old_diag,
-  amrex::Array4<amrex::Real> const& new_diag,
-  amrex::Array4<amrex::Real> const& src,
-  const amrex::Real* problo,
-  const amrex::Real* dx,
-  const amrex::Real time,
-  const amrex::Real z,
-  const amrex::Real dt);
-#endif
+            amrex::Box const& bx,
+            amrex::Array4<const amrex::Real> const& old_state,
+            amrex::Array4<const amrex::Real> const& new_state,
+            amrex::Array4<const amrex::Real> const& old_diag,
+            amrex::Array4<amrex::Real> const& new_diag,
+            amrex::Array4<amrex::Real> const& src,
+            const amrex::Real* problo,
+            const amrex::Real* dx,
+            const amrex::Real time,
+            const amrex::Real z,
+            const amrex::Real dt);
 
     //
     // Read particle-related inputs
@@ -373,7 +371,8 @@ public:
     //
     // Redistribute
     //
-    void particle_redistribute(int lbase = 0, bool init = false);
+    // override for sanity
+    void particle_redistribute(int lbase = 0, bool init = false) override;
 
     //
     // Initialize particle locations and velocities (and strengths if relevant)
@@ -432,28 +431,28 @@ public:
     //
     //Set time levels of state data.
     //
-    virtual void setTimeLevel (amrex::Real time, amrex::Real dt_old, amrex::Real dt_new);
+    virtual void setTimeLevel (amrex::Real time, amrex::Real dt_old, amrex::Real dt_new) override;
 
     //
     //Initialize data on this level from another Nyx (during regrid).
     //
-    virtual void init(amrex::AmrLevel& old);
+    virtual void init(amrex::AmrLevel& old) override;
 
     //
     // Initialize data on this level after regridding if old level did not
     // previously exist
     //
-    virtual void init();
+    virtual void init() override;
 
     //
     // Proceed with next timestep?
     //
-    virtual int okToContinue();
+    virtual int okToContinue() override;
 
     //
     // Tell amrex::Amr to write a plotfile now
     //
-    bool writePlotNow();
+    bool writePlotNow() override;
 
     //
     // Tell Nyx to do analysis now
@@ -465,7 +464,7 @@ public:
     //
     // Advance grids at this level in time.
     //
-    virtual amrex::Real advance(amrex::Real time, amrex::Real dt, int iteration, int ncycle);
+    virtual amrex::Real advance(amrex::Real time, amrex::Real dt, int iteration, int ncycle) override;
 
     amrex::Real advance_hydro(amrex::Real time, amrex::Real dt, int iteration, int ncycle);
     amrex::Real advance_no_hydro(amrex::Real time, amrex::Real dt, int iteration, int ncycle);
@@ -473,28 +472,12 @@ public:
                                       int ncycle);
 
     void strang_hydro(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
-    void strang_hydro_ghost_state(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
-    void strang_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
 #ifdef SDC
     void    sdc_hydro(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new);
 #endif
 
     void correct_gsrc(int lev, amrex::Real time, amrex::Real prev_time, amrex::Real cur_time,
                                amrex::Real dt);
-
-///
-/// Calculate primitive variables from given conserved variables
-///
-/// @param u        MultiFab of conserved variables
-/// @param q        MultiFab to save primitive variables to
-/// @param qaux     MultiFab of auxiliary variables
-/// @param time     Current time
-///
-  void cons_to_prim(amrex::MultiFab& u, amrex::MultiFab& q, amrex::MultiFab& qaux,
-                    amrex::MultiFab& grav, amrex::MultiFab& hydro_src, amrex::MultiFab& src_q,
-                    const amrex::Real a_old, const amrex::Real a_new,
-                    const amrex::Real dt);
-
 
 ///
 /// this constructs the hydrodynamic source (essentially the flux
@@ -509,24 +492,7 @@ public:
                                amrex::MultiFab& grav,
                                bool init_flux_register, bool add_to_flux_register);
 
-    void ctu_hydro_fuse(amrex::Real time, amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
-                        amrex::MultiFab& S_border, amrex::MultiFab& D_border,
-                        amrex::MultiFab& ext_src_old, amrex::MultiFab& hydro_src,
-                        amrex::MultiFab& grav,
-                        bool init_flux_register, bool add_to_flux_register);
-
 ///
-/// this constructs the hydrodynamic source (essentially the flux
-/// divergence) using method of lines integration.  The output, is the
-/// divergence of the fluxes, A = -div{F(U)}
-///
-/// @param time     current time
-/// @param dt   timestep
-/// @param A_update   divergence of the fluxes
-///
-    void construct_mol_hydro_source(amrex::Real time, amrex::Real dt, amrex::MultiFab& A_update);
-
-  ///
 /// Hydrodynamic (and radiation) fluxes.
 ///
     amrex::Vector<std::unique_ptr<amrex::MultiFab> > fluxes;
@@ -558,6 +524,7 @@ public:
 
     void enforce_minimum_density  ( amrex::MultiFab& S_old      , amrex::MultiFab& S_new, 
 #ifdef SDC
+                                    amrex::MultiFab& hydro_source,
                                     amrex::MultiFab& reset_e_src,
 #endif
                                     amrex::Real a_new);
@@ -575,12 +542,6 @@ public:
                          amrex::MultiFab& hydro_src, amrex::MultiFab& IR, amrex::MultiFab& reset_e_src,
                          amrex::Real dt, amrex::Real a_old, amrex::Real a_new,
                          int sdc_iter);
-
-  int integrate_state_exact(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
-  int integrate_state_grownexact(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
-
-   int integrate_state_box(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
-   int integrate_state_grownbox(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
 
   int integrate_state_vec(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
    int integrate_state_grownvec(amrex::MultiFab &state,   amrex::MultiFab &diag_eos, const amrex::Real& a, const amrex::Real& delta_time);
@@ -656,7 +617,7 @@ int integrate_state_struct
     virtual void computeInitialDt(int finest_level, int sub_cycle,
                                   amrex::Vector<int>& n_cycle,
                                   const amrex::Vector<amrex::IntVect>& ref_ratio,
-                                  amrex::Vector<amrex::Real>& dt_level, amrex::Real stop_time);
+                                  amrex::Vector<amrex::Real>& dt_level, amrex::Real stop_time) override;
     //
     // Compute new `dt'.
     //
@@ -664,7 +625,7 @@ int integrate_state_struct
                               amrex::Vector<int>& n_cycle,
                               const amrex::Vector<amrex::IntVect>& ref_ratio,
                               amrex::Vector<amrex::Real>& dt_min, amrex::Vector<amrex::Real>& dt_level,
-                              amrex::Real stop_time, int post_regrid_flag);
+                              amrex::Real stop_time, int post_regrid_flag) override;
 
     //
     // Print information about energy budget.
@@ -674,38 +635,38 @@ int integrate_state_struct
     //
     // Do work after timestep().
     //
-    virtual void post_timestep(int iteration);
+    virtual void post_timestep(int iteration) override;
 
     //
     // Contains operations to be done only after a full coarse timestep.
     //
-    virtual void postCoarseTimeStep(amrex::Real cumtime);
+    virtual void postCoarseTimeStep(amrex::Real cumtime) override;
 
     //
     // Do work after `regrid()`.
     //
-    virtual void post_regrid(int lbase, int new_finest);
+    virtual void post_regrid(int lbase, int new_finest) override;
 
     //
     // Do work after a `restart()`.
     //
-    virtual void post_restart();
+    virtual void post_restart() override;
 
     //
     // Do work after `init()`.
     //
-    virtual void post_init(amrex::Real stop_time);
+    virtual void post_init(amrex::Real stop_time) override;
 
     //
     // Error estimation for regridding.
     //
     virtual void errorEst(amrex::TagBoxArray& tb, int clearval, int tagval, amrex::Real time,
-                          int n_error_buf=0, int ngrow=0);
+                          int n_error_buf=0, int ngrow=0) override;
 
     //
     // Error estimation for regridding.
     //
-    virtual int WorkEstType () { return 0; }
+    virtual int WorkEstType () override { return 0; }
 
     //
     // Called in grid_places after other tagging routines to modify
@@ -717,11 +678,11 @@ int integrate_state_struct
     // Returns a amrex::MultiFab containing the derived data for this level. The user
     // is responsible for deleting this pointer when done with it. If
     // `ngrow` > 0 the amrex::MultiFab is built on the appropriately grown amrex::BoxArray.
-    std::unique_ptr<amrex::MultiFab> derive(const std::string& name, amrex::Real time, int ngrow);
+    std::unique_ptr<amrex::MultiFab> derive(const std::string& name, amrex::Real time, int ngrow) override;
 
     // This version of `derive()` fills the dcomp'th component of mf with the
     // derived quantity.
-    void derive(const std::string& name, amrex::Real time, amrex::MultiFab& mf, int dcomp);
+    void derive(const std::string& name, amrex::Real time, amrex::MultiFab& mf, int dcomp) override;
 
     static int Do_Hydro();
 
@@ -799,8 +760,6 @@ int integrate_state_struct
     static amrex::Real h_species;
     static amrex::Real he_species;
 
-    static int strict_subcycling;
-
     static int init_with_sph_particles;
 
     static std::string particle_plotfile_format;
@@ -813,6 +772,9 @@ int integrate_state_struct
 
     static amrex::Real tagging_base;
 
+    // specifies the memory priority
+    static int reuse_mlpoisson;
+  
     //
     // This amrex::MultiFab is used for the level coarser than this level to mask out
     // this level.  We only build this when it is needed.
@@ -825,17 +787,13 @@ int integrate_state_struct
     static void InitErrorList();
     static void InitDeriveList();
 
-    static void set_simd_width(const int simd_width);
-    static void alloc_simd_vec();
-    static void dealloc_simd_vec();
-
     //! Get the level directory names
     void LevelDirectoryNames (const std::string &dir,
                               const std::string &secondDir,  // ---- probably DM or AGN
                               std::string &LevelDir,
                               std::string &FullPath);
     //! Create the Level_ and other directories in checkpoint and plot files
-    virtual void CreateLevelDirectory (const std::string &dir);
+    virtual void CreateLevelDirectory (const std::string &dir) override;
 
 protected:
 
@@ -903,7 +861,6 @@ protected:
 
     static int nghost_state;
     static int ppm_type;
-    static int use_analriem;
     static int strang_grown_box;
 
     static std::string enforce_min_density_type;
@@ -937,8 +894,6 @@ protected:
 
     // This controls the LaunchSafeGuard for particle initialization
     static int particle_launch_ics;
-
-    static amrex::IntVect Nrep;  // how many times the initial conditions are replicated in each direction
 
     static amrex::Vector<amrex::Real> plot_z_values;      // These are the value of "z" at which to dump plotfiles.
     static amrex::Vector<amrex::Real> analysis_z_values;  // These are the value of "z" at which to perform analysis
@@ -980,6 +935,16 @@ protected:
     // specifies whether we allow tiling when calling the SUNDIALS integrator
     static bool sundials_use_tiling;
 
+    // specifies tolerances when calling the SUNDIALS integrator
+    static amrex::Real sundials_reltol;
+    static amrex::Real sundials_abstol;
+
+    // specifies tile_size of advance_hydro for unsplit Godonuv hydro advance
+    static amrex::IntVect     hydro_tile_size;
+
+    // specifies tile_size of integrate_state for heating-cooling reactions
+    static amrex::IntVect      sundials_tile_size;
+
     // specifies the memory priority
     static int minimize_memory;
 
@@ -997,21 +962,17 @@ protected:
     // if true , incorporate the source term through Strang-splitting
     static int strang_split;
 
-    // if true , fuse MFIter loops for new hydro with heat_cool_type=11
-    static int strang_fuse;
-
 #ifdef SDC
     // if true , use SDC to couple hydro and reactions
     static int sdc_split;
+    static int strang_restart_from_sdc;
 #endif
 
     // There can be only one Gravity object, it covers all levels:
     static class Gravity *gravity;
 
-#ifdef FORCING
     // There can be only one forcing object (Fourier space):
     static class StochasticForcing *forcing;
-#endif
 
 #ifdef REEBER
   //

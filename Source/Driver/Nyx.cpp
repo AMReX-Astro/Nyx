@@ -30,10 +30,7 @@ using std::string;
 #include <Derive.H>
 #endif
 
-
-#ifdef FORCING
 #include <Forcing.H>
-#endif
 
 #ifdef GIMLET
 #include <DoGimletAnalysis.H>
@@ -61,10 +58,6 @@ static int  max_temp_dt = -1;
 static Real fixed_dt    = -1.0;
 static Real initial_dt  = -1.0;
 static Real dt_cutoff   =  0;
-
-int simd_width = 1;
-
-int Nyx::strict_subcycling = 0;
 
 Real Nyx::old_a      = -1.0;
 Real Nyx::new_a      = -1.0;
@@ -105,9 +98,12 @@ int Nyx::NumSpec  = 0;
 Real Nyx::small_dens = -1.e200;
 Real Nyx::small_temp = -1.e200;
 Real Nyx::small_pres = -1.e200;
-Real Nyx::small      =  1.e-6;
 Real Nyx::large_temp =  1.e9;
 Real Nyx::gamma      =  5.0/3.0;
+
+// This is no longer an optional input;
+//   we use the value hard-wired here
+Real Nyx::small      =  1.e-6;
 
 Real Nyx::comoving_OmB;
 Real Nyx::comoving_OmM;
@@ -121,17 +117,65 @@ int Nyx::heat_cool_type = 0;
 int Nyx::use_sundials_constraint = 0;
 int Nyx::use_sundials_fused = 0;
 int Nyx::use_typical_steps = 0;
+#ifndef AMREX_USE_GPU
 int Nyx::sundials_alloc_type = 0;
+#else
+#ifdef AMREX_USE_CUDA
+#ifndef _OPENMP
+int Nyx::sundials_alloc_type = 0; //consider changing to 5
+#else
+#ifdef AMREX_USE_SUNDIALS_SUNMEMORY
+int Nyx::sundials_alloc_type = 5;
+#else
+int Nyx::sundials_alloc_type = 2;
+#endif
+#endif
+#endif
+#ifdef AMREX_USE_HIP
+#ifdef AMREX_USE_SUNDIALS_SUNMEMORY
+int Nyx::sundials_alloc_type = 5;
+#else
+int Nyx::sundials_alloc_type = 4;
+#endif
+#endif
+#ifdef AMREX_USE_DPCPP
+#ifdef AMREX_USE_SUNDIALS_SUNMEMORY
+int Nyx::sundials_alloc_type = 5;
+#else
+int Nyx::sundials_alloc_type = 4;
+#endif
+#endif
+#endif
+
+Real Nyx::sundials_reltol = 1e-4;
+Real Nyx::sundials_abstol = 1e-4;
+
 int Nyx::minimize_memory = 0;
 int Nyx::shrink_to_fit = 0;
 
 bool Nyx::sundials_use_tiling = true;
 
+#ifndef AMREX_USE_GPU
+IntVect      Nyx::hydro_tile_size(1024,16,16);
+#else
+IntVect      Nyx::hydro_tile_size(1048576,1048576,1048576);
+#endif
+
+#ifndef AMREX_USE_GPU
+IntVect      Nyx::sundials_tile_size(1024,16,16);
+#else
+#ifdef AMREX_USE_OMP
+IntVect      Nyx::sundials_tile_size(1024,16,16);
+#else
+IntVect      Nyx::sundials_tile_size(1048576,1048576,1048576);
+#endif
+#endif
+
 int Nyx::strang_split = 1;
-int Nyx::strang_fuse = 0;
 int Nyx::strang_grown_box = 1;
 #ifdef SDC
 int Nyx::sdc_split    = 0;
+int Nyx::strang_restart_from_sdc    = 0;
 #endif
 
 Real Nyx::average_gas_density = 0.;
@@ -146,31 +190,21 @@ int         Nyx::inhomo_reion = 0;
 std::string Nyx::inhomo_zhi_file = "";
 int         Nyx::inhomo_grid = -1;
 
-static int  slice_int    = -1;
-std::string slice_file   = "slice_";
-static int  slice_nfiles = 128;
-
-// Real Nyx::ave_lev_vorticity[10];
-// Real Nyx::std_lev_vorticity[10];
-
 Gravity* Nyx::gravity  =  0;
 int Nyx::do_grav       = -1;
 
-#ifdef FORCING
+#ifndef NO_HYDRO
 StochasticForcing* Nyx::forcing = 0;
-int Nyx::do_forcing = -1;
-#else
-int Nyx::do_forcing =  0;
 #endif
+int Nyx::do_forcing =  0;
 
 int Nyx::nghost_state       = 1;
 Real Nyx::tagging_base       = 8.0;
+int Nyx::reuse_mlpoisson     = 0;
 int Nyx::ppm_type           = 1;
 
 // Options are "floor" or "conservative"
 std::string Nyx::enforce_min_density_type = "floor";
-
-int Nyx::use_analriem       = 1;
 
 Real Nyx:: h_species        = 0.76;
 Real Nyx::he_species        = 0.24;
@@ -234,7 +268,8 @@ if (do_grav)
         gravity = 0;
     }
 }
-#ifdef FORCING
+
+#ifndef NO_HYDRO
     if (forcing != 0)
     {
         if (verbose > 1 && ParallelDescriptor::IOProcessor())
@@ -346,8 +381,6 @@ Nyx::read_params ()
 
     read_init_params();
 
-    pp_nyx.query("strict_subcycling",strict_subcycling);
-
     pp_nyx.query("runlog_precision",runlog_precision);
     pp_nyx.query("runlog_precision_terse",runlog_precision_terse);
 
@@ -416,11 +449,6 @@ Nyx::read_params ()
         }
     }
 
-    // How often do we want to write x,y,z 2-d slices of S_new
-    pp_nyx.query("slice_int",    slice_int);
-    pp_nyx.query("slice_file",   slice_file);
-    pp_nyx.query("slice_nfiles", slice_nfiles);
-
     pp_nyx.query("gimlet_int", gimlet_int);
 #ifdef REEBER
     pp_nyx.query("mass_halo_min", mass_halo_min);
@@ -436,28 +464,11 @@ Nyx::read_hydro_params ()
 
     pp_nyx.get("do_hydro", do_hydro);
 
-    pp_nyx.query("do_reflux", do_reflux);
-    do_reflux = (do_reflux ? 1 : 0);
-
-    pp_nyx.query("dump_old", dump_old);
-
     pp_nyx.query("small_dens", small_dens);
     pp_nyx.query("small_temp", small_temp);
     pp_nyx.query("small_pres", small_pres);
     pp_nyx.query("large_temp", large_temp);
     pp_nyx.query("gamma", gamma);
-    //Set small factor for csmall
-    pp_nyx.query("small", small);
-
-#ifdef AMREX_USE_CVODE
-    pp_nyx.query("simd_width", simd_width);
-    if (simd_width < 1) amrex::Abort("simd_width must be a positive integer");
-    set_simd_width(simd_width);
-
-    if (verbose > 1) amrex::Print()
-        << "SIMD width (# zones) for heating/cooling integration: "
-        << simd_width << std::endl;
-#endif
 
 #ifndef NO_HYDRO
 #ifdef HEATCOOL
@@ -469,12 +480,12 @@ Nyx::read_hydro_params ()
 
     pp_nyx.query("add_ext_src", add_ext_src);
     pp_nyx.query("strang_split", strang_split);
-    pp_nyx.query("strang_fuse", strang_fuse);
     pp_nyx.query("strang_grown_box", strang_grown_box);
 
 #ifdef HEATCOOL
 #ifdef SDC
     pp_nyx.query("sdc_split", sdc_split);
+    pp_nyx.query("strang_restart_from_sdc", strang_restart_from_sdc);
     if (sdc_split == 1 && strang_split == 1)
         amrex::Error("Cant have strang_split == 1 and sdc_split == 1");
     if (sdc_split == 0 && strang_split == 0)
@@ -487,14 +498,9 @@ Nyx::read_hydro_params ()
 #endif
 #endif
 
-#ifdef FORCING
-    pp_nyx.get("do_forcing", do_forcing);
+    pp_nyx.query("do_forcing", do_forcing);
     if (do_forcing == 1 && add_ext_src == 0)
        amrex::Error("Nyx::must set add_ext_src to 1 if do_forcing = 1 ");
-#else
-    if (do_forcing == 1)
-       amrex::Error("Nyx::you set do_forcing = 1 but forgot to set USE_FORCING = TRUE ");
-#endif
 
     pp_nyx.query("heat_cool_type", heat_cool_type);
     pp_nyx.query("inhomo_reion", inhomo_reion);
@@ -525,15 +531,48 @@ Nyx::read_hydro_params ()
     pp_nyx.query("use_sundials_fused", use_sundials_fused);
     pp_nyx.query("nghost_state", nghost_state);
     pp_nyx.query("sundials_alloc_type", sundials_alloc_type);
+    pp_nyx.query("sundials_reltol", sundials_reltol);
+    pp_nyx.query("sundials_abstol", sundials_abstol);
     pp_nyx.query("minimize_memory", minimize_memory);
     pp_nyx.query("shrink_to_fit", shrink_to_fit);
     pp_nyx.query("use_typical_steps", use_typical_steps);
     pp_nyx.query("tagging_base", tagging_base);
+    pp_nyx.query("reuse_mlpoisson", reuse_mlpoisson);
     pp_nyx.query("ppm_type", ppm_type);
     pp_nyx.query("enforce_min_density_type", enforce_min_density_type);
-    pp_nyx.query("use_analriem", use_analriem);
 
     pp_nyx.query("sundials_use_tiling", sundials_use_tiling);
+
+    Vector<int> tilesize(AMREX_SPACEDIM);
+    if (pp_nyx.queryarr("hydro_tile_size", tilesize, 0, AMREX_SPACEDIM))
+    {
+        for (int i=0; i<AMREX_SPACEDIM; i++) {
+          hydro_tile_size[i] = tilesize[i];
+        }
+    }
+    else
+    {
+        amrex::Print()<<"Nyx::hydro_tile_size unset, using fabarray.mfiter_tile_size default: "<<
+            FabArrayBase::mfiter_tile_size<<
+            "\nSuggested default for currently compiled CPU / GPU: nyx.hydro_tile_size="<<
+            hydro_tile_size<<std::endl;
+        hydro_tile_size = FabArrayBase::mfiter_tile_size;
+    }
+
+    if (pp_nyx.queryarr("sundials_tile_size", tilesize, 0, AMREX_SPACEDIM))
+    {
+        for (int i=0; i<AMREX_SPACEDIM; i++) {
+          sundials_tile_size[i] = tilesize[i];
+        }
+    }
+    else
+    {
+        amrex::Print()<<"Nyx::sundials_tile_size unset, using fabarray.mfiter_tile_size default: "<<
+            FabArrayBase::mfiter_tile_size<<
+            "\nSuggested default for currently compiled CPU / GPU: nyx.sundials_tile_size="<<
+            sundials_tile_size<<std::endl;
+        sundials_tile_size = FabArrayBase::mfiter_tile_size;
+    }
 
     if (use_typical_steps != 0 && strang_grown_box == 0)
     {
@@ -615,15 +654,15 @@ Nyx::Nyx (Amr&            papa,
         gravity->install_level(level, this);
    }
 
-#ifdef FORCING
-    const Real* prob_lo = geom.ProbLo();
-    const Real* prob_hi = geom.ProbHi();
-
+#ifndef NO_HYDRO
     if (do_forcing)
     {
         // forcing is a static object, only alloc if not already there
         if (forcing == 0)
            forcing = new StochasticForcing();
+
+        const Real* prob_lo = geom.ProbLo();
+        const Real* prob_hi = geom.ProbHi();
 
         forcing->init(AMREX_SPACEDIM, prob_lo, prob_hi);
     }
@@ -690,19 +729,20 @@ Nyx::restart (Amr&     papa,
         gravity = new Gravity(parent, parent->finestLevel(), &phys_bc, 0);
     }
 
-#ifdef FORCING
-    const Real* prob_lo = geom.ProbLo();
-    const Real* prob_hi = geom.ProbHi();
-
+#ifndef NO_HYDRO
     if (do_forcing)
     {
         // forcing is a static object, only alloc if not already there
         if (forcing == 0)
            forcing = new StochasticForcing();
 
+        const Real* prob_lo = geom.ProbLo();
+        const Real* prob_hi = geom.ProbHi();
+
         forcing->init(AMREX_SPACEDIM, prob_lo, prob_hi);
     }
 #endif
+
 }
 
 void
@@ -909,7 +949,7 @@ Nyx::est_time_step (Real /*dt_old*/)
           int  local_max_temp_dt = max_temp_dt;
 
           dt = amrex::ReduceMin(stateMF, 0,
-              [=] AMREX_GPU_HOST_DEVICE (Box const& bx, Array4<Real const> const& u) noexcept -> Real
+              [=] AMREX_GPU_HOST_DEVICE (Box const& bx, Array4<Real const> const& u) -> Real
               {
                   const auto lo = amrex::lbound(bx);
                   const auto hi = amrex::ubound(bx);
@@ -1400,7 +1440,6 @@ Nyx::post_timestep (int iteration)
 
              if(shrink_to_fit)
                  theActiveParticles()[i]->ShrinkToFit();
-
         }
     }
 
@@ -1689,15 +1728,13 @@ Nyx::post_restart ()
         }
     }
 
-#ifdef FORCING
+#ifndef NO_HYDRO
     if (do_forcing)
     {
         if (level == 0)
            forcing_post_restart(parent->theRestartFile());
     }
-#endif
 
-#ifndef NO_HYDRO
     if (level == 0)
     {
        // Need to compute this *before* regridding in case this is needed
@@ -1755,7 +1792,8 @@ Nyx::postCoarseTimeStep (Real cumtime)
     for (int lev = 0; lev <= parent->finestLevel(); lev++)
     {
 
-        Vector<long> wgts(grids.size());
+        Nyx* cs = dynamic_cast<Nyx*>(&parent->getLevel(lev));
+        Vector<long> wgts(parent->boxArray(lev).size());
         DistributionMapping dm;
 
         //Should these weights be constructed based on level=0, or lev from for?
@@ -1763,29 +1801,29 @@ Nyx::postCoarseTimeStep (Real cumtime)
         {
             for (unsigned int i = 0; i < wgts.size(); i++)
             {
-                wgts[i] = grids[i].numPts();
+                wgts[i] = parent->boxArray(lev)[i].numPts();
             }
             if(load_balance_strategy==DistributionMapping::Strategy::KNAPSACK)
                 dm.KnapSackProcessorMap(wgts, load_balance_wgt_nmax);
             else if(load_balance_strategy==DistributionMapping::Strategy::SFC)
-                dm.SFCProcessorMap(grids, wgts, load_balance_wgt_nmax);
+                dm.SFCProcessorMap(parent->boxArray(lev), wgts, load_balance_wgt_nmax);
             else if(load_balance_strategy==DistributionMapping::Strategy::ROUNDROBIN)
                 dm.RoundRobinProcessorMap(wgts, load_balance_wgt_nmax);
         }
         else if(load_balance_wgt_strategy == 1)
         {
-            wgts = theDMPC()->NumberOfParticlesInGrid(level,false,false);
+            wgts = cs->theDMPC()->NumberOfParticlesInGrid(lev,false,false);
             if(load_balance_strategy==DistributionMapping::Strategy::KNAPSACK)
                 dm.KnapSackProcessorMap(wgts, load_balance_wgt_nmax);
             else if(load_balance_strategy==DistributionMapping::Strategy::SFC)
-                dm.SFCProcessorMap(grids, wgts, load_balance_wgt_nmax);
+              dm.SFCProcessorMap(parent->boxArray(lev), wgts, load_balance_wgt_nmax);
             else if(load_balance_strategy==DistributionMapping::Strategy::ROUNDROBIN)
                 dm.RoundRobinProcessorMap(wgts, load_balance_wgt_nmax);
         }
         else if(load_balance_wgt_strategy == 2)
         {
-            MultiFab particle_mf(grids,theDMPC()->ParticleDistributionMap(lev),1,1);
-            theDMPC()->Increment(particle_mf, lev);
+            MultiFab particle_mf(parent->boxArray(lev),theDMPC()->ParticleDistributionMap(lev),1,1);
+            cs->theDMPC()->Increment(particle_mf, lev);
             if(load_balance_strategy==DistributionMapping::Strategy::KNAPSACK)
                 dm = DistributionMapping::makeKnapSack(particle_mf, load_balance_wgt_nmax);
             else if(load_balance_strategy==DistributionMapping::Strategy::SFC)
@@ -1801,15 +1839,34 @@ Nyx::postCoarseTimeStep (Real cumtime)
         amrex::Gpu::Device::streamSynchronize();
         const DistributionMapping& newdmap = dm;
 
+        if(verbose > 2)
+          amrex::Print()<<"Using ba: "<<parent->boxArray(lev)<<"\nUsing dm: "<<newdmap<<std::endl;        
         for (int i = 0; i < theActiveParticles().size(); i++)
         {
-             theActiveParticles()[i]->Regrid(newdmap, grids, lev);
+             if(lev > 0)
+                 amrex::Abort("Particle load balancing needs multilevel testing");
+          /*
+             cs->theActiveParticles()[i]->Redistribute(lev,
+                                                       theActiveParticles()[i]->finestLevel(),
+                                                       1);
+          */
+             cs->theActiveParticles()[i]->Regrid(newdmap, parent->boxArray(lev), lev);
 
              if(shrink_to_fit)
-                 theActiveParticles()[i]->ShrinkToFit();
+                 cs->theActiveParticles()[i]->ShrinkToFit();
         }
 
-    amrex::Gpu::streamSynchronize();
+        if(cs->Nyx::theVirtPC() != 0)
+        {
+            cs->Nyx::theVirtPC()->Regrid(newdmap, parent->boxArray(lev), lev);
+        }
+
+        if(cs->Nyx::theGhostPC() != 0)
+        {
+            cs->Nyx::theGhostPC()->Regrid(newdmap, parent->boxArray(lev), lev);
+        }
+
+        amrex::Gpu::streamSynchronize();
     }
 
    }
@@ -1829,134 +1886,12 @@ Nyx::postCoarseTimeStep (Real cumtime)
 
    int nstep = parent->levelSteps(0);
 
-#ifndef NO_HYDRO
-   if (slice_int > -1 && nstep%slice_int == 0)
+   if (verbose>1)
    {
-      BL_PROFILE("Nyx::postCoarseTimeStep: get_all_slice_data");
-
-    if(slice_int != 2) {
-      const Real* dx        = geom.CellSize();
-
-      MultiFab& S_new = get_new_data(State_Type);
-      MultiFab& D_new = get_new_data(DiagEOS_Type);
-
-      Real x_coord = (geom.ProbLo()[0] + geom.ProbHi()[0]) / 2 + dx[0]/2;
-      Real y_coord = (geom.ProbLo()[1] + geom.ProbHi()[1]) / 2 + dx[1]/2;
-      Real z_coord = (geom.ProbLo()[2] + geom.ProbHi()[2]) / 2 + dx[2]/2;
-
-      if (ParallelDescriptor::IOProcessor()) {
-         std::cout << "Outputting slices at x = " << x_coord << "; y = " << y_coord << "; z = " << z_coord << std::endl;
-      }
-
-      const std::string& slicefilename = amrex::Concatenate(slice_file, nstep);
-      UtilCreateCleanDirectory(slicefilename, true);
-
-      int nfiles_current = amrex::VisMF::GetNOutFiles();
-      amrex::VisMF::SetNOutFiles(slice_nfiles);
-
-      // Slice state data
-      std::unique_ptr<MultiFab> x_slice = amrex::get_slice_data(0, x_coord, S_new, geom, 0, S_new.nComp()-2);
-      std::unique_ptr<MultiFab> y_slice = amrex::get_slice_data(1, y_coord, S_new, geom, 0, S_new.nComp()-2);
-      std::unique_ptr<MultiFab> z_slice = amrex::get_slice_data(2, z_coord, S_new, geom, 0, S_new.nComp()-2);
-
-      std::string xs = slicefilename + "/State_x";
-      std::string ys = slicefilename + "/State_y";
-      std::string zs = slicefilename + "/State_z";
-
-      {
-        BL_PROFILE("Nyx::postCoarseTimeStep: writeXSlice");
-        amrex::VisMF::Write(*x_slice, xs);
-      }
-      {
-        BL_PROFILE("Nyx::postCoarseTimeStep: writeYSlice");
-        amrex::VisMF::Write(*y_slice, ys);
-      }
-      {
-        BL_PROFILE("Nyx::postCoarseTimeStep: writeZSlice");
-        amrex::VisMF::Write(*z_slice, zs);
-      }
-
-      // Slice diag_eos
-      x_slice = amrex::get_slice_data(0, x_coord, D_new, geom, 0, D_new.nComp());
-      y_slice = amrex::get_slice_data(1, y_coord, D_new, geom, 0, D_new.nComp());
-      z_slice = amrex::get_slice_data(2, z_coord, D_new, geom, 0, D_new.nComp());
-
-      xs = slicefilename + "/Diag_x";
-      ys = slicefilename + "/Diag_y";
-      zs = slicefilename + "/Diag_z";
-
-      {
-        BL_PROFILE("Nyx::postCoarseTimeStep: writeDiagSlices");
-        amrex::VisMF::Write(*x_slice, xs);
-        amrex::VisMF::Write(*y_slice, ys);
-        amrex::VisMF::Write(*z_slice, zs);
-      }
-
-      amrex::VisMF::SetNOutFiles(nfiles_current);
-
-      if (ParallelDescriptor::IOProcessor()) {
-         std::cout << "Done with slices." << std::endl;
-      }
-
-
-    } else {
-
-      MultiFab& S_new = get_new_data(State_Type);
-      MultiFab& D_new = get_new_data(DiagEOS_Type);
-
-      const std::string& slicefilename = amrex::Concatenate(slice_file, nstep);
-      UtilCreateCleanDirectory(slicefilename, true);
-
-      int nfiles_current = amrex::VisMF::GetNOutFiles();
-      amrex::VisMF::SetNOutFiles(slice_nfiles);
-
-      int maxBoxSize(64);
-      amrex::Vector<std::string> SMFNames(3);
-      SMFNames[0] = slicefilename + "/State_x";
-      SMFNames[1] = slicefilename + "/State_y";
-      SMFNames[2] = slicefilename + "/State_z";
-      amrex::Vector<std::string> DMFNames(3);
-      DMFNames[0] = slicefilename + "/Diag_x";
-      DMFNames[1] = slicefilename + "/Diag_y";
-      DMFNames[2] = slicefilename + "/Diag_z";
-
-      for(int dir(0); dir < 3; ++dir) 
-      {
-        Box sliceBox(geom.Domain());
-        int dir_coord = static_cast<int>(geom.ProbLo()[dir] + 0.5*geom.Domain().length(dir));
-        amrex::Print() << "Outputting slices at dir_coord[" << dir << "] = " << dir_coord << '\n';
-        sliceBox.setSmall(dir, dir_coord);
-        sliceBox.setBig(dir, dir_coord);
-        BoxArray sliceBA(sliceBox);
-        sliceBA.maxSize(maxBoxSize);
-        DistributionMapping sliceDM(sliceBA);
-
-        MultiFab SSliceMF(sliceBA, sliceDM, S_new.nComp()-2, 0);
-        SSliceMF.copy(S_new, 0, 0, SSliceMF.nComp());
-        amrex::VisMF::Write(SSliceMF, SMFNames[dir]);
-
-        MultiFab DSliceMF(sliceBA, sliceDM, D_new.nComp(), 0);
-        DSliceMF.copy(D_new, 0, 0, DSliceMF.nComp());
-        amrex::VisMF::Write(DSliceMF, DMFNames[dir]);
-      }
-
-      amrex::VisMF::SetNOutFiles(nfiles_current);
-
-      if (ParallelDescriptor::IOProcessor()) {
-         std::cout << "Done with slices." << std::endl;
-      }
-
-    }
-
+       amrex::Print() << "End of postCoarseTimeStep, printing:" <<std::endl;
+       MultiFab::printMemUsage();
+       amrex::Arena::PrintUsage();
    }
-#endif
-   if(verbose>1)
-   {
-   amrex::Print()<<"End of postCoarseTimeStep, printing:"<<std::endl;
-   MultiFab::printMemUsage();
-   amrex::Arena::PrintUsage();
-   }
-
 }
 
 void
@@ -1988,10 +1923,15 @@ Nyx::post_regrid (int lbase,
             do_grav_solve_here = (level == lbase);
         }
 
+        //        if(parent->maxLevel() == 0)
+        if(reuse_mlpoisson != 0)
+          gravity->setup_Poisson(level,new_finest);
+
         // Only do solve here if we will be using it in the timestep right after without re-solving,
         //      or if this is called from somewhere other than Amr::timeStep
 #ifndef NO_HYDRO
     const Real cur_time = state[State_Type].curTime();
+
 #else
     const Real cur_time = state[PhiGrav_Type].curTime();
 #endif
@@ -2551,9 +2491,10 @@ Nyx::compute_new_temp (MultiFab& S_new, MultiFab& D_new)
                 int JH = 1;
                 int JHe = 1;
 
-                nyx_eos_T_given_Re_device(atomic_rates, gamma_minus_1_in, h_species_in, JH, JHe, 
+                nyx_eos_T_given_Re_device(atomic_rates, gamma_minus_1_in, h_species_in, 1, 1, 
                                           &diag_eos_fab(i,j,k,Temp_comp), &diag_eos_fab(i,j,k,Ne_comp),
-                                          state_fab(i,j,k,Density_comp), eint, a);
+                                          state_fab(i,j,k,Density_comp), state_fab(i,j,k,Eint_comp) * (1.0 / state_fab(i,j,k,Density_comp)), a);
+
                 if(diag_eos_fab(i,j,k,Temp_comp)>=local_large_temp && local_max_temp_dt == 1)
                 {
                   diag_eos_fab(i,j,k,Temp_comp) = local_large_temp;
@@ -2646,6 +2587,7 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
 #ifdef AMREX_USE_GPU
     if (Gpu::inLaunchRegion())
     {
+        BL_PROFILE("Nyx::compute_rho_temp()::ReduceOpsOnDevice");
         ReduceOps<ReduceOpSum,ReduceOpSum,ReduceOpSum,ReduceOpSum,
                   ReduceOpSum,ReduceOpSum,ReduceOpSum> reduce_op;
         ReduceData<Real,Real,Real,Real,Real,Real,Real> reduce_data(reduce_op);
@@ -2698,6 +2640,7 @@ Nyx::compute_rho_temp (Real& rho_T_avg, Real& T_avg, Real& Tinv_avg, Real& T_mea
     reduction(+:rho_T_sum, rho_sum, T_sum, Tinv_sum, T_meanrho_sum, vol_sum, vol_mn_sum)
 #endif
     {
+        BL_PROFILE("Nyx::compute_rho_temp()::OnHost");
         for (MFIter mfi(S_new,true); mfi.isValid(); ++mfi)
         {
             const Box& bx = mfi.tilebox();
@@ -2761,6 +2704,7 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
     Real local_average_gas_density = average_gas_density;
     if (Gpu::inLaunchRegion())
     {
+        BL_PROFILE("Nyx::compute_gas_fractions()::ReduceOpsOnDevice");
         ReduceOps<ReduceOpSum,ReduceOpSum,ReduceOpSum,ReduceOpSum,
                   ReduceOpSum,ReduceOpSum,ReduceOpSum,ReduceOpSum> reduce_op;
         ReduceData<Real,Real,Real,Real,Real,Real,Real,Real> reduce_data(reduce_op);
@@ -2816,6 +2760,7 @@ Nyx::compute_gas_fractions (Real T_cut, Real rho_cut,
     else
 #endif
     {
+    BL_PROFILE("Nyx::compute_gas_fractions()::OnHost");
 #ifdef _OPENMP
 #pragma omp parallel  if (amrex::Gpu::notInLaunchRegion())               \
     reduction(+:whim_mass, whim_vol, hh_mass, hh_vol, igm_mass, igm_vol, mass_sum, vol_sum)

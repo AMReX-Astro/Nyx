@@ -2,7 +2,7 @@
 Dark matter particles
 *********************
 
-Dark matter particles are included in the simulation by setting::
+Dark matter particles are included in the simulation by setting ::
 
     nyx.do_dm_particles = true
 
@@ -17,7 +17,7 @@ It is also possible to build with ::
 
     NO_HYDRO=FALSE
 
-but turn off hydro at run-time by setting 
+but turn off hydro at run-time by setting ::
 
   nyx.do_hydro = 0
 
@@ -28,6 +28,10 @@ GNUMakefile by::
 
   PRECISION = DOUBLE
   USE_SINGLE_PRECISION_PARTICLES = TRUE
+
+We do not recommend using single precision for the mesh data, as this is not tested and will potentially degrade the quality of the hydrodynamical solve. To use single precision for the mesh use::
+
+  PRECISION = FLOAT
 
 Equations
 =========
@@ -44,247 +48,6 @@ to solve
 where :math:`{\mathbf g}_i` is the gravitational force evaluated at the location of particle :math:`i`, i.e.,
 :math:`{\mathbf g}_i = {\mathbf g}({\mathbf x}_i,t).`
 
-Initializing the Particles
-==========================
-
-There are several different ways in which particles can currently be initialized:
-read from an ASCII file, read from a binary file, or created in a run-time initialization procedure
-
-Read from an ASCII file
------------------------
-
-To enable this option, set::
-  
-  nyx.particle_init_type = AsciiFile
-  nyx.ascii_particle_file = *particle_file*
-
-Here *particle_file* is the user-specified name of the file. The first line in this file is
-assumed to contain the number of particles. Each line after that contains
-x y z mass xdot ydot zdot
-Note that the variable that we call the particle velocity, :math:`{\mathbf u} = a {\bf \dot{x}}`,
-so we must multiply :math:`{\bf \dot{x}}`, by :math:`a` when we initialize the particles.
-
-Read from a binary file
------------------------
-
-To enable this option, set::
-
-  nyx.particle_init_type = BinaryFile
-  nyx.binary_particle_file = *particle_file*
-  
-| As with the ASCII read, the first line in *particle_file* is
-  assumed to contain the number of particles. Each line after that contains
-| x y z mass xdot ydot zdot
-| Note that the variable that we call the particle velocity, :math:`{\mathbf u} = a {\bf \dot{x}}`,
-  so we must multiply :math:`{\bf \dot{x}}`, by :math:`a` when we initialize the particles.
-
-Read from a binary "meta" file
-------------------------------
-
-This option allows you to read particles from a series of files rather than
-just a single file. To enable this option, set::
-
-  nyx.particle_init_type = BinaryMetaFile
-  nyx.binary_particle_file =*particle file*
-
-In this case the *particle_file* you specify is an ASCII file specifying a
-list of file names with full paths. Each of the files in this list is assumed
-to be binary and is read sequentially (individual files are read in parallel) in
-the order listed.
-
-Since individual files are read sequentially, more particles should be read before
-redistributing across MPI ranks. This is set by optimizing the maximum number of
-readers and increasing the number of particles per read::
-
-  amr.nreaders
-  amr.nparts_per_read
-
-Reading SPH particles
----------------------
-
-For some applications it is useful to initialize the grid data with SPH-type
-particles. To enable this option, you must set::
-
-    nyx.do_santa_barbara = 1
-    nyx.init_with_sph_particles =1
-
-The SPH-type particles can then be read in by setting
-where *sph_particle_file* is the user-specified name of the file
-containing the SPH particles. The type of *sph_particle_file*
-must be the same (Ascii, Binary or BinaryMeta) as the dark matter particle
-file as specified by
-The SPH particles will be discarded by the code once the grid data has been initialized.
-
-Random placement
-----------------
-
-To enable this option, set::
-
-  nyx.particle_init_type = Random
-  
-There are then a number of parameters to set, for example::
-  
-  nyx.particle_initrandom_count = 100000
-  nyx.particle_initrandom_mass = 1
-  nyx.particle_initrandom_iseed = 15
-
-Random placement (1 particle per grid cell)
--------------------------------------------
-
-To enable this option, set::
-
-  nyx.particle_init_type = RandomPerCell
-  
-Then only set the mass per particle::
-
-  nyx.particle_initrandom_mass = 1
-
-Note to increase the number of cells and keep the problem domain size 
-and total mass fixed, the mass per particle must decrease proportionally.
-
-Uniform placement
------------------
-
-To enable this option, set::
-
-  nyx.particle_init_type = OnePerCell
-  
-There are then a number of parameters to set, for example::
-  
-  nyx.particle_inituniform_mass = 1
-  nyx.particle_inituniform_vx = -1
-  nyx.particle_inituniform_vy = 1
-  nyx.particle_inituniform_vz = 1
-
-Cosmological
-------------
-
-Using cosmological initial conditions is a three step process:
-
-#. Generating a transfer function (e.g. with ``camb``)
-
-#. Generating an initial displacement field (with ``nyx-ic``)
-
-#. Starting nyx
-
-In the following we will look at each step a bit closer.
-
-Generating a transfer function
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The transfer function is used in ``nyx-ic`` to generate the power
-spectrum. The usual way is to use ``camb``\  [1]_
-to calculate it for the desired universe. A sample ``camb.ini`` is
-provided with ``nyx-ic``. The important options are:
-
--  **transfer_redshift(1) = 50**
-
--  **transfer_matterpower(1) = tf**
-
-which determine the initial time for the simulation. You should make sure
-that you catch all necessary wave numbers for the considered box length and
-resolution.
-
-From the ``camb`` output you have to note values for ``sigma_8``
-for a redshift of zero and the initial redshift. We need this to compute
-the right normalization.
-
-Setting up the initial displacements
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-| We calculate the initial displacements with a stand-alone program called
-  ``nyx-ic``. This takes a transfer function and some cosmological parameters
-  as an argument and outputs an "init" directory which basically contains initial
-  displacements for every grid point in an AMReX MultiFAB. Furthermore the mf
-  contains a fourth field containing the density contrast as initial condition
-  for the baryonic matter.
-| ``nyx-ic`` is started with an “inputs“
-  file similar to the one from Nyx. A sample one is provided. The options are
-
-::
-
-    #Omega_{Matter}
-    cosmo.omegam = 0.272
-    #Omega_{Lambda}
-    cosmo.omegax = 0.728
-
-    #equation of state paramater omega_{effective}
-    cosmo.weff = -0.980
-
-    #Omega_{baryon}*Hubble^2 
-    cosmo.ombh2 = 0.0226
-    #Hubble/100km/s
-    cosmo.hubble = 0.704
-    #scalar spectral index
-    cosmo.enn = 0.963
-    # initial z
-    cosmo.z_init = 50
-
-    #sidelength of the box (in Mpc)
-    cosmo.boxside = 90.14
-    #seed of the rng
-    cosmo.isd = 100
-    #resolution of the box
-    cosmo.gridpoints = 256
-    #the output file name
-    cosmo.initDirName = init
-
-    #choose the source of the transferfunction
-    cosmo.transferfunction = CAMB
-
-    #some tabulated transferfunction generated with camb (compare camb-ini-file)
-    cosmo.tabulatedTk = tf
-    # sigma8 for the input tf at z=0 and initial z (to calc the growthfactor)
-    cosmo.init_sigma8_0 = 0.7891368
-    cosmo.init_sigma8_init = 2.0463364E-02
-
-The code solves the equation
-
-.. math::
-
-   \begin{aligned}
-       P(k,a) = 2\pi^2\delta^2_H \frac{k^n}{H_0^{n+3}}T^2(k)\left( \frac{D(a)}{D(a=1)} \right)^2
-       \end{aligned}
-
-to calculate :math:`P` and from that gaussian distributed density perturbations
-:math:`\delta` following that spectrum. Particle displacements are then calculated
-as Zel’dovich displacements.
-
-Non-gaussian effects as well as neutrino contributions are planned for the
-future.
-
-Using Nyx with cosmological initial conditions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
--  | **nyx.particle_init_type = Cosmological**
-   | set the *right* init type
-
--  | **cosmo.initDirName = init**
-   | set the name of the displacements directory (amrex format)
-
--  | **cosmo.particle_mass = 0.19178304E+10**
-   | sets the mass [:math:`M_\odot`] of each particle
-
--  | **cosmo.omegam = 0.272**
-   | set :math:`\Omega_{Matter}`
-
--  | **cosmo.omegax = 0.728**
-   | set :math:`\Omega_\Lambda`
-
--  | **cosmo.hubble = 0.704**
-   | set the reduced hubble constant :math:`h`
-
-We will generate a particle of mass **particle_mass** in every grid cell
-displaced from the center by the value found in the **initDirName** for
-that cell. Velocities are calculated in the Zel’dovich approximation by
-
-.. math::
-
-   \begin{aligned}
-           \vec{v} = \Delta{\vec{x}} \times 100 \text{km/s} \times a \sqrt{\Omega_M/a^3+\Omega_\Lambda} \times L_{\text{box}}
-       \end{aligned}
-
-where :math:`\Delta{\vec{x}}` is the displacement of the particle.
 
 Particle Time Stepping: Move-Kick-Drift Algorithm
 =================================================

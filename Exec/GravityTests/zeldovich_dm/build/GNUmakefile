@@ -1,5 +1,5 @@
 # AMREX_HOME defines the directory in which we will find all the AMReX code
-AMREX_HOME ?= /project/projectdirs/nyx/src/amrex
+AMREX_HOME ?= ../../../../subprojects/amrex
 
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ../../../..

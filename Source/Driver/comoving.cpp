@@ -22,7 +22,6 @@ Nyx::read_comoving_params ()
     pp.get("comoving_OmM"   , comoving_OmM);
     pp.get("comoving_h"     , comoving_h);
     pp.query("comoving_OmR" , comoving_OmR);
-    pp.query("comoving_type", comoving_type);
 
     pp.query("initial_z", initial_z);
     pp.query("final_a",   final_a);

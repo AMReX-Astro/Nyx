@@ -85,7 +85,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Nyx'
-copyright = '2018, Nyx development team'
+copyright = '2021, Nyx development team'
 author = 'Nyx development team'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -117,16 +117,16 @@ todo_include_todos = True
 
 # -- Options for MathJax
 #mathjax_path = 'MathJax/MathJax.js'
-mathjax_config = {'TeX': {'Macros': {}}}
+mathjax3_config = {'tex': {'macros': {}}}
 
 with open('mathsymbols.tex', 'r') as f:
     for line in f:
         macros = re.findall(r'\\newcommand{\\(.*?)}(\[(\d)\])?{(.+)}', line)
         for macro in macros:
             if len(macro[1]) == 0:
-                mathjax_config['TeX']['Macros'][macro[0]] = "{"+macro[3]+"}"
+                mathjax3_config['tex']['macros'][macro[0]] = "{"+macro[3]+"}"
             else:
-                mathjax_config['TeX']['Macros'][macro[0]] = ["{"+macro[3]+"}", int(macro[2])]
+                mathjax3_config['tex']['macros'][macro[0]] = ["{"+macro[3]+"}", int(macro[2])]
 
 # -- Options for HTML output ----------------------------------------------
 
@@ -261,3 +261,6 @@ epub_exclude_files = ['search.html']
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'https://docs.python.org/': None}
+
+# Enable numref
+numfig = True

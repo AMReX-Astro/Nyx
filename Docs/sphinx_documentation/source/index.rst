@@ -15,18 +15,21 @@ Welcome to Nyx's documentation!
    NyxGettingStarted
    NyxUnits
    NyxInputs
+   ICs
    Refinement
    ManagingGridHierarchy_Chapter
-   NyxEquations
-   NyxHeatCool
    NyxGravity
+   NyxEquations
+   NyxSplitting
+   NyxHeatCool
    NyxForcing
    Particles
-   AGN
-   NightlyTests
-   Visualization
+   InSitu
    PostProcessing
+   NightlyTests
    Debugging
+   Development
+
 
 .. toctree::      
    :maxdepth: 2

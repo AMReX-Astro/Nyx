@@ -1,5 +1,5 @@
 # AMREX_HOME defines the directory in which we will find all the AMReX code
-AMREX_HOME  ?= ../../../amrex
+AMREX_HOME ?= ../../subprojects/amrex
 
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ../..
@@ -37,6 +37,9 @@ else
 ifeq ($(USE_HEATCOOL),TRUE)
 USE_SDC = TRUE
 USE_SUNDIALS = TRUE
+#ifeq ($(USE_HIP),TRUE)
+#USE_FUSED ?= $(USE_HIP)
+#endif
 USE_FUSED ?= $(USE_CUDA)
 else
 USE_SDC = FALSE
@@ -49,6 +52,10 @@ NEUTRINO_PARTICLES = FALSE
 NEUTRINO_DARK_PARTICLES = FALSE
 
 USE_OWN_BCS = FALSE
+
+# Halo finder
+BOOST_INLUDE_DIR := ${OLCF_BOOST_ROOT}/include/boost
+REEBER = FALSE
 
 Bpack := ./Make.package
 Blocs := .

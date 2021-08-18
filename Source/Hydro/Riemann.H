@@ -33,7 +33,7 @@ riemann(
   amrex::Real& qint_gdgame,
   const amrex::Real& small_dens,
   const amrex::Real& small_pres,
-  const amrex::Real& /*small_in*/,
+  const amrex::Real& small,
   const amrex::Real& csmall,
   const amrex::Real& gamma)
 {
@@ -41,10 +41,7 @@ riemann(
   amrex::Real gdnv_state_p;
   amrex::Real wsmall = csmall*small_dens;
 
- 
   const amrex::Real weakwv  = 1.e-3;
-  //Consider using small_in=Nyx::small for consistency
-  const amrex::Real  small  = 1.e-6;
 
   rl = amrex::max(rl,small_dens);
   rr = amrex::max(rr,small_dens);

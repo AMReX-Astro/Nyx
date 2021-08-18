@@ -1,5 +1,5 @@
 # AMREX_HOME defines the directory in which we will find all the AMReX code
-AMREX_HOME ?= ../../../amrex
+AMREX_HOME ?= ../../subprojects/amrex
 
 CVODE_LIB_DIR ?= $(CVODE_LIB)
 BOOST_INLUDE_DIR := ${OLCF_BOOST_ROOT}/include/boost

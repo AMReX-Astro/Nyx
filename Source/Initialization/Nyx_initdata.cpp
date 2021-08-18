@@ -95,7 +95,6 @@ Nyx::read_init_params ()
     pp.query("do_readin_ics",       do_readin_ics);
     pp.query("readin_ics_fname", readin_ics_fname);
 #ifdef AMREX_PARTICLES  
-    pp.query("particle_launch_ics",       particle_launch_ics);
     pp.query("ascii_particle_file", ascii_particle_file);
 
     // Input error check
@@ -186,7 +185,7 @@ Nyx::init_zhi ()
 
     MultiFab zhi_from_file;
     VisMF::Read(zhi_from_file, inhomo_zhi_file);
-    zhi.copy(zhi_from_file, geom.periodicity());
+    zhi.ParallelCopy(zhi_from_file, geom.periodicity());
     if(D_new.nComp()>2)
     {
         int l_Zhi_comp = Zhi_comp;
@@ -267,6 +266,7 @@ Nyx::initData ()
                 GpuArray<amrex::Real,max_prob_param> prob_param;
                 prob_param_fill(prob_param);
                 prob_param_special_fill(prob_param);
+		comoving_type=int(std::round(prob_param[comoving_type_comp]));
 
                 prob_initdata_on_box(bx, fab_S_new, fab_D_new, geomdata, prob_param);
             }
@@ -296,6 +296,7 @@ Nyx::initData ()
                 GpuArray<amrex::Real,max_prob_param> prob_param;
                 prob_param_fill(prob_param);
                 prob_param_special_fill(prob_param);
+		comoving_type=int(std::round(prob_param[comoving_type_comp]));
 
                 prob_initdata_state_on_box(bx, fab_S_new, geomdata, prob_param);
             }
@@ -349,9 +350,9 @@ Nyx::initData ()
 
         MultiFab& S_new_crse = get_level(0).get_new_data(State_Type);
         
-        S_new_crse.copy(mf, 0, 0, 6);
+        S_new_crse.MultiFab::ParallelCopy(mf, 0, 0, 6, 0, 0);
 #ifndef CONST_SPECIES
-        S_new_crse.copy(mf, 0, FirstSpec_comp, 1);
+        S_new_crse.MultiFab::ParallelCopy(mf, 0, FirstSpec_comp, 1, 0, 0);
 #endif
 
         if (do_hydro == 1) 
@@ -477,8 +478,13 @@ Nyx::check_initial_species ()
 {
     // Verify that the sum of (rho X)_i = rho at every cell.
 #ifdef CONST_SPECIES
+#ifndef AMREX_USE_FLOAT
     if (amrex::Math::abs(1.0 - h_species - he_species) > 1.e-8)
         amrex::Abort("Error:: Failed check of initial species summing to 1");
+#else
+    if (amrex::Math::abs(1.0 - h_species - he_species) > 1.e-6)
+        amrex::Abort("Error:: Failed check of initial species summing to 1");
+#endif
 #else
     ReduceOps<ReduceOpMax> reduce_op;
     ReduceData<Real> reduce_data(reduce_op);
@@ -515,8 +521,13 @@ Nyx::check_initial_species ()
 
         ReduceTuple hv = reduce_data.value();
         ParallelDescriptor::ReduceRealMax(amrex::get<0>(hv));
+#ifndef AMREX_USE_FLOAT
         if (get<0>(hv) > 1.e-8)
             amrex::Abort("Error:: Failed check of initial species summing to 1");
+#else
+        if (get<0>(hv) > 1.e-6)
+            amrex::Abort("Error:: Failed check of initial species summing to 1");
+#endif
     }
 #endif
 }

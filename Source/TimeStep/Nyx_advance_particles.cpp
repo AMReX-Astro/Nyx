@@ -81,23 +81,16 @@ Nyx::advance_particles_only (Real time,
     }
     else
     {
+        // This level was advanced by a previous multilevel advance.
+        if (level > 0 && ncycle == 1)
+            return dt;
         
-        if (strict_subcycling)
-        {
-            finest_level_to_advance = level;
-        }
-        else
-        {
-            // This level was advanced by a previous multilevel advance.
-            if (level > 0 && ncycle == 1)
-                return dt;
-            
-            // Find the finest level to advance
-            int lev = level;
-            while(lev < finest_level && parent->nCycle(lev+1) == 1)
-                lev++;
-            finest_level_to_advance = lev;
-        }
+        // Find the finest level to advance
+        int lev = level;
+        while(lev < finest_level && parent->nCycle(lev+1) == 1)
+            lev++;
+        finest_level_to_advance = lev;
+
         // We must setup virtual and Ghost Particles
         //
         // Setup the virtual particles that represent finer level particles
@@ -131,9 +124,12 @@ Nyx::advance_particles_only (Real time,
                 get_level(lev).state[k].swapTimeLevels(dt_lev);
             }
 #ifndef NO_HYDRO
-            MultiFab& S_old = get_level(lev).get_old_data(State_Type);
-            MultiFab& S_new = get_level(lev).get_new_data(State_Type);
-            MultiFab::Copy(S_new, S_old, 0, 0, S_old.nComp(), 0);
+            if(do_hydro)
+            {
+              MultiFab& S_old = get_level(lev).get_old_data(State_Type);
+              MultiFab& S_new = get_level(lev).get_new_data(State_Type);
+              MultiFab::Copy(S_new, S_old, 0, 0, S_old.nComp(), 0);
+            }
 #endif
         }
     }

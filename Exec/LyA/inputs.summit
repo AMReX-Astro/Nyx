@@ -63,6 +63,7 @@ gravity.ml_tol = 1.e-10
 gravity.sl_tol = 1.e-10
 gravity.mlmg_agglomeration=1
 gravity.mlmg_consolidation=1
+nyx.reuse_mlpoisson = 1
 
 # 0.702 h
 nyx.initial_z = 159.0
@@ -169,14 +170,16 @@ amr.refinement_indicators = density
 amr.density.max_level = 0
 amr.density.value_greater = 3.5e9
 amr.density.field_name = denvol
-#amr.lo_temp.max_level = 2
-#amr.lo_temp.value_less = 500
-#amr.lo_temp.field_name = temp
-#amr.gradT.max_level = 2
-#amr.gradT.adjacent_difference_greater = 300
-#amr.gradT.field_name = temp
-#amr.magvort.max_level = 3
-#amr.magvort.vorticity_greater = 300
+
+nyx.load_balance_start_z = 7.0
+nyx.load_balance_int = 100
+nyx.load_balance_wgt_strategy=1
+nyx.load_balance_strategy=KNAPSACK
+
+# MEMORY OPTIMIZATIONS
+nyx.use_sundials_fused = 1
+nyx.shrink_to_fit = 1
+nyx.minimize_memory = 1
 
 # WRITING
 amrex.async_out        = 0     # MPI_THREAD_MULTIPLE=TRUE

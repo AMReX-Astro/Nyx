@@ -1,8 +1,15 @@
 # AMREX_HOME defines the directory in which we will find all the AMReX code
-AMREX_HOME  ?= ../../../amrex
+AMREX_HOME ?= ../../subprojects/amrex
+
 ASCENT_HOME ?=/gpfs/alpine/world-shared/csc340/software/ascent/0.5.2-pre/summit/cuda/gnu/ascent-install
 # TOP defines the directory in which we will find Source, Exec, etc
 TOP = ../..
+
+SUNDIALS_ROOT=${WORLDWORK}/ast160/software/sundials-cuda11.0.3/instdir
+SUNDIALS_ROOT = /gpfs/alpine/world-shared/ast160/software/sundials-5.6.0-cuda10.1.168/instdir/
+
+SUNDIALS_ROOT=${WORLDWORK}/csc308/software/sundials-cuda11.0.3-gcc6.4.0/instdir
+SUNDIALS_ROOT = /gpfs/alpine/world-shared/csc308/software/sundials-cuda10.1.168-gcc6.4.0/instdir/
 
 # compilation options
 COMP    = gnu
@@ -14,8 +21,7 @@ USE_CUDA = TRUE
 
 USE_SUNDIALS      = TRUE
 USE_FORT_ODE = FALSE
-#SUNDIALS_ROOT ?=  ${CURDIR}/$(TOP)/../sundials/instdir
-SUNDIALS_ROOT = /gpfs/alpine/world-shared/ast160/software/sundials-5.6.0-cuda10.1.168/instdir/
+SUNDIALS_ROOT ?=  ${CURDIR}/$(TOP)/../sundials/instdir
 
 PROFILE       = FALSE
 TRACE_PROFILE = FALSE
@@ -38,21 +44,20 @@ endif
 
 # physics
 DIM      = 3
-USE_GRAV = TRUE
 USE_HEATCOOL = TRUE
 USE_AGN = FALSE
 ifeq ($(NO_HYDRO),TRUE)
 USE_SDC = FALSE
-USE_SUNDIALS := FALSE
+USE_SUNDIALS = FALSE
 USE_FUSED = FALSE
 else
 ifeq ($(USE_HEATCOOL),TRUE)
 USE_SDC = TRUE
-USE_SUNDIALS := TRUE
+USE_SUNDIALS = TRUE
 USE_FUSED ?= $(USE_CUDA)
 else
 USE_SDC = FALSE
-USE_SUNDIALS := FALSE
+USE_SUNDIALS = FALSE
 USE_FUSED = FALSE
 endif
 endif
@@ -61,6 +66,10 @@ NEUTRINO_PARTICLES = FALSE
 NEUTRINO_DARK_PARTICLES = FALSE
 
 USE_OWN_BCS = FALSE
+
+# Halo finder
+BOOST_INLUDE_DIR := ${OLCF_BOOST_ROOT}/include/boost
+REEBER = FALSE
 
 Bpack := ./Make.package
 Blocs := .
@@ -76,6 +85,30 @@ ifeq ($(USE_ASCENT_INSITU),TRUE)
                        -lascent_lodepng \
                        -lrover_mpi $(DRAY_LINK_RPATH) $(DRAY_LIB_FLAGS) $(ASCENT_VTKH_MPI_LIB_FLAGS) $(ASCENT_VTKM_LIB_FLAGS) $(ASCENT_CONDUIT_MPI_LIB_FLAGS) $(ASCENT_MFEM_LIB_FLAGS) $(ASCENT_PYTHON_LIBS) $(ASCENT_OPENMP_LINK_FLAGS) -L $(ASCENT_CUDA_LIB_FLAGS)
 #endif
+endif
+
+USE_HDF5 = FALSE
+USE_HDF5_ASYNC = FALSE
+
+ifeq ($(USE_HDF5_ASYNC), TRUE)
+HDF5_HOME= /gpfs/alpine/world-shared/csc300/gnu_build/hdf5/async_threadsafe/hdf5/
+ABT_HOME = /gpfs/alpine/csc300/world-shared/gnu_build/argobots-1.0/install/
+ASYNC_HOME = /gpfs/alpine/world-shared/csc300/gnu_build/async/src 
+else
+HDF5_HOME=${OLCF_HDF5_ROOT}
+endif
+
+ifeq ($(USE_HDF5), TRUE)
+DEFINES += -DAMREX_USE_HDF5
+INCLUDE_LOCATIONS += $(HDF5_HOME)/include
+LIBRARIES         += -L$(HDF5_HOME)/lib -lhdf5 -lz -ldl -Wl,-rpath,$(HDF5_HOME)/lib
+endif
+
+# To use HDF5 asynchronous I/O VOL connector, follow the instructions at https://bitbucket.hdfgroup.org/projects/HDF5VOL/repos/async/browse
+ifeq ($(USE_HDF5_ASYNC), TRUE)
+DEFINES				   += -DAMREX_USE_HDF5_ASYNC -DAMREX_MPI_THREAD_MULTIPLE
+INCLUDE_LOCATIONS += $(ABT_HOME)/include $(ASYNC_HOME)
+LIBRARIES 	      += -L$(ABT_HOME)/lib -L$(ASYNC_HOME) -lh5async -labt -Wl,-rpath,$(ABT_HOME)/lib -Wl,-rpath,$(ASYNC_HOME)
 endif
 
 include $(TOP)/Exec/Make.Nyx

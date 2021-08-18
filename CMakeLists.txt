@@ -58,7 +58,8 @@ endif ()
 #
 # Other options   =============================================================
 #
-option( Nyx_OMP        "Enable OpenMP"  YES)
+cmake_dependent_option( Nyx_OMP  "Enable OpenMP"  ON
+   "Nyx_GPU_BACKEND STREQUAL NONE" OFF)
 
 cmake_dependent_option( Nyx_MPI  "Enable MPI"  ON
    "NOT Nyx_GPU_BACKEND STREQUAL SYCL" OFF)
@@ -69,9 +70,8 @@ cmake_dependent_option(Nyx_MPI_THREAD_MULTIPLE
 option(Nyx_SINGLE_PRECISION_PARTICLES
    "Use single precision particle data structures" YES )
 
-option( Nyx_HYDRO NO "Run with baryon hydro solve and fields")
-cmake_dependent_option(Nyx_HEATCOOL "Run with H and He heating-cooling effects" NO
-   "Nyx_HYDRO; NOT Nyx_GPU_BACKEND STREQUAL SYCL; NOT Nyx_GPU_BACKEND STREQUAL HIP" NO)
+option( Nyx_HYDRO "Run with baryon hydro solve and fields" YES)
+option(Nyx_HEATCOOL "Run with H and He heating-cooling effects" NO)
 
 option( BUILD_SHARED_LIBS "Build AMReX and SUNDIALS as shared libraries" OFF )
 cmake_dependent_option(Nyx_GIMLET "" NO "Nyx_MPI;Nyx_OMP" NO)
@@ -80,10 +80,11 @@ cmake_dependent_option(Nyx_GIMLET "" NO "Nyx_MPI;Nyx_OMP" NO)
 option( Nyx_CONST_SPECIES "Don't evolve H and He, treat them as constant" ON)
 option( Nyx_CGS   "Evolve quantities in CGS units instead of code units" NO)
 option( Nyx_REEBER             "" NO)
+option( Nyx_SUNDIALS_SUNMEMORY "Link AMReX SunMemoryHelper interface" OFF)
 
 #  These two are only really used by LyA_Neutrinos
 option( Nyx_NEUTRINO_PARTICLES "" NO)
-option( Nyx_NEUTRINO_DARK_PARTICLES "" no)
+option( Nyx_NEUTRINO_DARK_PARTICLES "" NO)
 
 
 #

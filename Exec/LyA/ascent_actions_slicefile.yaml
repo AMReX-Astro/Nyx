@@ -1,0 +1,35 @@
+--- 
+- 
+  action: add_pipelines
+  pipelines: 
+    slice: 
+      f1: 
+        params: 
+          normal: 
+            x: 0.0
+            ? "y"
+            : 0.0
+            z: 1.0
+          point: 
+            x: 0.0
+            ? "y"
+            : 0.0
+            z: 0.0
+          topology: topo
+        type: exaslice
+- 
+  action: add_extracts
+  extracts: 
+    e1: 
+      params: 
+        fields: 
+          - Density
+          - Xmom
+          - Ymom
+          - Zmom
+          - rho_E
+          - rho_e
+        path: the_slice
+        pipeline: slice
+        protocol: blueprint/mesh/hdf5
+        type: relay

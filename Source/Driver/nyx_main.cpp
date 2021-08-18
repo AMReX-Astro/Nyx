@@ -48,6 +48,8 @@ const int resizeSignal(43);
 const int GimletSignal(55);
 const int quitSignal(-44);
 
+amrex::LevelBld* getLevelBld ();
+
 void
 nyx_main (int argc, char* argv[])
 {
@@ -75,25 +77,14 @@ nyx_main (int argc, char* argv[])
     std::cout << std::setprecision(10);
 
     int max_step;
-    Real strt_time;
     Real stop_time;
     ParmParse pp;
 
     max_step  = -1;
-    strt_time =  0.0;
     stop_time = -1.0;
 
     pp.query("max_step",  max_step);
-    pp.query("strt_time", strt_time);
     pp.query("stop_time", stop_time);
-
-    int how(-1);
-    pp.query("how",how);
-
-    if (strt_time < 0.0)
-    {
-        amrex::Abort("MUST SPECIFY a non-negative strt_time");
-    }
 
     if (max_step < 0 && stop_time < 0.0)
     {
@@ -107,7 +98,10 @@ nyx_main (int argc, char* argv[])
 #endif
 #endif
 
-    Amr *amrptr = new Amr;
+    // We hard-wire the initial time to 0
+    Real strt_time =  0.0;
+
+    Amr *amrptr = new Amr(getLevelBld());
     amrptr->init(strt_time,stop_time);
 
 #ifdef BL_USE_MPI
@@ -117,10 +111,6 @@ nyx_main (int argc, char* argv[])
 #endif
 
     const Real time_before_main_loop = ParallelDescriptor::second();
-
-#ifdef AMREX_USE_CVODE
-    Nyx::alloc_simd_vec();
-#endif
 
     bool finished(false);
     {
@@ -160,10 +150,6 @@ nyx_main (int argc, char* argv[])
     }  // ---- end while( ! finished)
 
     }
-
-#ifdef AMREX_USE_CVODE
-    Nyx::dealloc_simd_vec();
-#endif
 
     const Real time_without_init = ParallelDescriptor::second() - time_before_main_loop;
     if (ParallelDescriptor::IOProcessor()) std::cout << "Time w/o init: " << time_without_init << std::endl;

@@ -4,12 +4,16 @@ Stochastic Forcing
 
 There is an option to apply a stochastic force field. 
 
-See Nyx/Exec/DrivenTurbulence for an example.
+See Nyx/Exec/DrivenTurbulence for an example; note that ::
+
+    nyx.do_forcing = 1
+
+must be set in the inputs file.
 
 The external forcing term in the momentum equation 
 (`[eq:momt] <#eq:momt>`__) is then given by
 
-  .. math:: {\bf S}_{\rho \Ub} = \rho_b \fb
+  .. math:: {\bf S}_{\rho \Ub} = \rho_b \mathbf{f}
 
   where the acceleration field :math:`\mathbf{f}(\mathbf{x},t)` is
   computed as inverse Fourier transform of the forcing spectrum
@@ -32,7 +36,7 @@ model for radiative heating and cooling around a given equilibrium
 temperature :math:`T_0` is applied in the energy
 equation (`[eq:energy] <#eq:energy>`__):
 
-.. math:: S_{\rho E} = S_{\rho e} + \Ub \cdot {\bf S}_{\rho \Ub} = -\frac{\alpha k_{\rm B}(T-T_0)}{\mu m_{\rm H}(\gamma-1)} + \rho_b\Ub\cdot\fb
+.. math:: S_{\rho E} = S_{\rho e} + \Ub \cdot {\bf S}_{\rho \Ub} = -\frac{\alpha k_{\rm B}(T-T_0)}{\mu m_{\rm H}(\gamma-1)} + \rho_b\Ub\cdot\mathbf{f}
 
 The parameters :math:`T_0` and :math:`\alpha` correspond to temp0 and
 alpha, respectively, in the probin file (along with rho0 for the mean
