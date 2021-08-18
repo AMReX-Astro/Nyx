@@ -36,7 +36,7 @@
         <script type="text/javascript" src="_static/language_data.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "tex2jax_ignore|mathjax_ignore|document", "processClass": "tex2jax_process|mathjax_process|math|output_area"}})</script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -241,8 +241,8 @@ integers as there are levels, the final value will be used for the remaining lev
 then <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">max_grid_size_x</span></span></code>, <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">max_grid_size_y</span></span></code> and <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">max_grid_size_z</span></span></code>
 (or <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">blocking_factor_x</span></span></code>, <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">blocking_factor_y</span></span></code> and <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">blocking_factor_z</span></span></code>) must be used.
 If you don’t specify as many integers as there are levels, the final value will be used for the remaining levels.</li>
-<li>note that <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">max_grid_size</span></span></code> is just an upper bound; with <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">n_cell</span></span> <span class="operator"><span class="pre">=</span></span> <span class="literal number integer"><span class="pre">48</span></span></code>
-and <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">max_grid_size</span></span> <span class="operator"><span class="pre">=</span></span> <span class="literal number integer"><span class="pre">32</span></span></code>, we will typically have one grid of length 32 and one of length 16.</li>
+<li>note that <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">max_grid_size</span></span></code> is just an upper bound; with <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">n_cell</span></span><span class="whitespace"> </span><span class="operator"><span class="pre">=</span></span><span class="whitespace"> </span><span class="literal number integer"><span class="pre">48</span></span></code>
+and <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">max_grid_size</span></span><span class="whitespace"> </span><span class="operator"><span class="pre">=</span></span><span class="whitespace"> </span><span class="literal number integer"><span class="pre">32</span></span></code>, we will typically have one grid of length 32 and one of length 16.</li>
 </ul>
 </div></blockquote>
 <p>The grid creation process at level 0 proceeds as follows (if not using the KD-tree approach):</p>
@@ -252,7 +252,7 @@ and <code class="code cpp c++ docutils literal notranslate"><span class="name"><
 each grid is no longer than  <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">max_grid_size</span></span></code> cells on each side.  The <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">blocking_factor</span></span></code> criterion
 (ie that the length of each side of each grid is divisible by <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">blocking_factor</span></span></code> in that direction)
 is satisfied during this process.</li>
-<li>Next, if <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">refine_grid_layout</span></span> <span class="operator"><span class="pre">=</span></span> <span class="name builtin"><span class="pre">true</span></span></code> and there are more processors than grids
+<li>Next, if <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">refine_grid_layout</span></span><span class="whitespace"> </span><span class="operator"><span class="pre">=</span></span><span class="whitespace"> </span><span class="name builtin"><span class="pre">true</span></span></code> and there are more processors than grids
 at this level, then the grids at this level are further divided until Ngrids &gt;= Nprocs
 (unless doing so would violate the <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">blocking_factor</span></span></code> criterion).</li>
 </ol>
