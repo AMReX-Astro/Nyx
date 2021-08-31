@@ -1,15 +1,13 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 max_step = 10000000
 
-#Number of time steps between calls to halo finder
-reeber.halo_int = 1
-#nyx.mass_halo_min = 1.e11
-#nyx.mass_seed = 1.e6
-
 nyx.ppm_type         = 1
+nyx.use_colglaz      = 0
+nyx.corner_coupling  = 1
 
-nyx.strang_split     = 1
-nyx.add_ext_src      = 1
+nyx.strang_split     = 0
+nyx.sdc_split        = 1
+nyx.add_ext_src      = 0
 nyx.heat_cool_type   = 11
 #nyx.simd_width       = 8
 
@@ -24,6 +22,9 @@ nyx.do_santa_barbara = 1
 nyx.init_sb_vels     = 1
 gravity.ml_tol = 1.e-10
 gravity.sl_tol = 1.e-10
+gravity.mlmg_agglomeration=1
+gravity.mlmg_consolidation=1
+nyx.reuse_mlpoisson = 1
 
 nyx.initial_z = 159.0
 nyx.final_z = 2.0
@@ -119,21 +120,10 @@ amr.max_level          = 0        # maximum level number allowed
 amr.regrid_on_restart  = 1
 #amr.blocking_factor    = 32
 #amr.nosub              = 1
-amr.precreateDirectories = 0
 
 amr.refinement_indicators = density
-#amr.refinement_indicators = density lo_temp gradT magvort
-amr.density.max_level = 0
 amr.density.value_greater = 3.5e9
 amr.density.field_name = denvol
-#amr.lo_temp.max_level = 2
-#amr.lo_temp.value_less = 500
-#amr.lo_temp.field_name = temp
-#amr.gradT.max_level = 2
-#amr.gradT.adjacent_difference_greater = 300
-#amr.gradT.field_name = temp
-#amr.magvort.max_level = 3
-#amr.magvort.vorticity_greater = 300
 
 # CHECKPOINT FILES
 amr.checkpoint_files_output = 1
@@ -142,23 +132,36 @@ amr.check_int         = 100
 amr.checkpoint_nfiles = 64
 
 # PLOTFILES
-fab.format          = NATIVE_32
 amr.plot_files_output = 1
 amr.plot_file       = plt
 amr.plot_int        = -1
-amr.plot_nfiles     = 64
 nyx.plot_z_values   = 7.0 6.0 5.0 4.0 3.0 2.0
 
 amr.plot_vars        = density xmom ymom zmom rho_e Temp phi_grav
-amr.derive_plot_vars = particle_mass_density
+amr.derive_plot_vars = particle_mass_density particle_count
 
-#HALO FINDER
+# Halo Finder
 #nyx.analysis_z_values = 150 10 5 4 3 2
-
+reeber.halo_int = 1
 reeber.negate = 1
 reeber.halo_density_vars = density particle_mass_density
 reeber.halo_extrema_threshold = 20
 reeber.halo_component_threshold = 10
+#nyx.mass_halo_min = 1.e11
+#nyx.mass_seed = 1.e6
+#nyx.agn_verbose = 2
+
+# ANALYSIS in situ
+nyx.analysis_z_values   = 7.0 6.0 5.0 4.0 3.0 2.0
+insitu.int              = 100
+insitu.start            = 0
+insitu.reeber_int       = 100
+
+# SENSEI in situ
+sensei.enabled = 0
+#sensei.config = write_vtk.xml
+sensei.config = render_iso_catalyst_3d.xml
+sensei.frequency = 2
 
 #PROBIN FILENAME
 amr.probin_file = ""
