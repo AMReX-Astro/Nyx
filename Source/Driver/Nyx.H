@@ -849,6 +849,9 @@ protected:
     //
     static bool dump_old;
     static int verbose;
+#ifdef AGN
+    static int agn_verbose;
+#endif
     static amrex::Real cfl;
     static amrex::Real init_shrink;
     static amrex::Real change_max;

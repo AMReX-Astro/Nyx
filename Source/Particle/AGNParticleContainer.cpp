@@ -182,12 +182,9 @@ void AGNParticleContainer::ComputeOverlap(int lev)
 
         PairIndex index(pti.index(), pti.LocalTileIndex());
         int Ng = neighbors[lev][index].size() / pdata_size;
-	if(Np>0)
-	  amrex::Print()<<"before overlap set: "<<particles.data()[0]<<std::endl;
+
         nyx_compute_overlap(&Np, particles.data(), 
-                            &Ng, neighbors[lev][index].GetArrayOfStructs().data(), dx);
-	if(Np>0)
-	  amrex::Print()<<"after  overlap set: "<<particles.data()[0]<<std::endl;
+                            &Ng, neighbors[lev][index].GetArrayOfStructs().dataPtr(), dx);
 
     }
 }
@@ -206,12 +203,9 @@ void AGNParticleContainer::Merge(int lev)
 
         PairIndex index(pti.index(), pti.LocalTileIndex());
         int Ng = neighbors[lev][index].size() / pdata_size;
-	if(Np>0)
-	  amrex::Print()<<"before merge set: "<<particles.data()[0]<<std::endl;
+
         agn_merge_particles(&Np, particles.data(), 
-                            &Ng, neighbors[lev][index].GetArrayOfStructs().data(), dx);
-	if(Np>0)
-	  amrex::Print()<<"after  merge set: "<<particles.data()[0]<<std::endl;
+                            &Ng, neighbors[lev][index].GetArrayOfStructs().dataPtr(), dx);
     }
 }
 
@@ -234,16 +228,13 @@ void AGNParticleContainer::ComputeParticleVelocity(int lev,
 
         const Box& soldbox = state_old[pti].box();
         const Box& snewbox = state_new[pti].box();
-	if(Np>0)
-	  amrex::Print()<<"before velocity set: "<<particles.data()[0]<<std::endl;
+
         agn_particle_velocity(&Np, particles.data(), 
                               state_old[pti].dataPtr(), 
                               soldbox.loVect(), soldbox.hiVect(),
                               state_new[pti].dataPtr(), 
                               snewbox.loVect(), snewbox.hiVect(),
                               dx, &add_energy);
-	if(Np>0)
-	  amrex::Print()<<"after  velocity set: "<<particles.data()[0]<<std::endl;
     }
 }
 

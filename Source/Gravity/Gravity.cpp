@@ -1056,12 +1056,6 @@ Gravity::AddParticlesToRhs (int               level,
 
     for (int i = 0; i < Nyx::theActiveParticles().size(); i++)
       {
-	auto particles = Nyx::theActiveParticles()[i]->NumberOfParticlesInGrid(0, false, false);
-	auto particles_valid = Nyx::theActiveParticles()[i]->NumberOfParticlesInGrid(0, false, false);
-	for(Real part : particles)
-	  amrex::Print()<<"all   particles number: "<<part<<std::endl;
-	for(Real part : particles_valid)
-	  amrex::Print()<<"valid  particles number: "<<part<<std::endl;
         Nyx::theActiveParticles()[i]->AssignDensitySingleLevel(particle_mf, level);
         amrex::Gpu::Device::streamSynchronize();
         MultiFab::Add(Rhs, particle_mf, 0, 0, 1, 0);

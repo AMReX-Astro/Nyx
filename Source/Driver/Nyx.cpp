@@ -77,6 +77,9 @@ int Nyx::load_balance_strategy = DistributionMapping::SFC;
 
 bool Nyx::dump_old = false;
 int Nyx::verbose      = 0;
+#ifdef AGN
+int Nyx::agn_verbose      = 0;
+#endif
 
 Real Nyx::cfl = 0.8;
 Real Nyx::init_shrink = 1.0;
@@ -453,6 +456,9 @@ Nyx::read_params ()
 #ifdef REEBER
     pp_nyx.query("mass_halo_min", mass_halo_min);
     pp_nyx.query("mass_seed", mass_seed);
+#endif
+#ifdef AGN
+    pp_nyx.query("agn_verbose", agn_verbose);
 #endif
 }
 

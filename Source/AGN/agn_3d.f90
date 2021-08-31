@@ -253,13 +253,13 @@
     vol = dx(1) * dx(2) * dx(3)
 
     do n = 1, np
-       print*,"start particle #",n,particles(n)%pos(1),particles(n)%pos(2),particles(n)%pos(3),particles(n)%rdata(1),particles(n)%rdata(2),particles(n)%rdata(3),particles(n)%rdata(4),particles(n)%rdata(5),particles(n)%rdata(6)
+
        call get_weights(weight, particles(n)%pos, dx)
-       print*,"diff1 particle #",n,particles(n)%pos(1),particles(n)%pos(2),particles(n)%pos(3),particles(n)%rdata(1),particles(n)%rdata(2),particles(n)%rdata(3),particles(n)%rdata(4),particles(n)%rdata(5),particles(n)%rdata(6)
+
        i = particles(n)%pos(1) / dx(1)
        j = particles(n)%pos(2) / dx(2)
        k = particles(n)%pos(3) / dx(3)
-       print*,"diff2 particle #",n,particles(n)%pos(1),particles(n)%pos(2),particles(n)%pos(3),particles(n)%rdata(1),particles(n)%rdata(2),particles(n)%rdata(3),particles(n)%rdata(4),particles(n)%rdata(5),particles(n)%rdata(6)
+
        ! momx, momy, momz: momentum = volume x change in momentum density.
        momx = sum((state_new(i-1:i+1, j-1:j+1, k-1:k+1, UMX) - &
                    state_old(i-1:i+1, j-1:j+1, k-1:k+1, UMX)) * weight) * vol
@@ -271,18 +271,13 @@
        update(2) = momy / particles(n)%rdata(1)
        update(3) = momz / particles(n)%rdata(1)
 
-       print*,"diff3 particle #",n,particles(n)%pos(1),particles(n)%pos(2),particles(n)%pos(3),particles(n)%rdata(1),particles(n)%rdata(2),particles(n)%rdata(3),particles(n)%rdata(4),particles(n)%rdata(5),particles(n)%rdata(6)
        !print *, "momentums", n, momx, momy, momz
        mass = particles(n)%rdata(1)
-       print*,"diff14particle #",n,particles(n)%pos(1),particles(n)%pos(2),particles(n)%pos(3),particles(n)%rdata(1),particles(n)%rdata(2),particles(n)%rdata(3),particles(n)%rdata(4),particles(n)%rdata(5),particles(n)%rdata(6)
        ! Update velocity of particle so as to reduce momentum in the amount
        ! of the difference between old and new state.
 !       particles(n)%rdata(2) = particles(n)%rdata(2) - momx / mass
-!       print*,"diff5 particle #",n,particles(n)%pos(1),particles(n)%pos(2),particles(n)%pos(3),particles(n)%rdata(1),particles(n)%rdata(2),particles(n)%rdata(3),particles(n)%rdata(4),particles(n)%rdata(5),particles(n)%rdata(6)
 !       particles(n)%rdata(3) = particles(n)%rdata(3) - momy / mass
-!       print*,"diff6 particle #",n,particles(n)%pos(1),particles(n)%pos(2),particles(n)%pos(3),particles(n)%rdata(1),particles(n)%rdata(2),particles(n)%rdata(3),particles(n)%rdata(4),particles(n)%rdata(5),particles(n)%rdata(6)
 !       particles(n)%rdata(4) = particles(n)%rdata(4) - momz / mass
-!       print*,"diff7 particle #",n,particles(n)%pos(1),particles(n)%pos(2),particles(n)%pos(3),particles(n)%rdata(1),particles(n)%rdata(2),particles(n)%rdata(3),particles(n)%rdata(4),particles(n)%rdata(5),particles(n)%rdata(6)
 
        particles(n)%rdata(2:4) = particles(n)%rdata(2:4) - update
 
@@ -294,10 +289,9 @@
           deltaEnergy = - E / mass
           frac = deltaEnergy / (particles(n)%rdata(5))
           print *, 'deltaEnergy =', deltaEnergy, 'fraction', frac
-          print*,"diff8 particle #",n,particles(n)%pos(1),particles(n)%pos(2),particles(n)%pos(3),particles(n)%rdata(1),particles(n)%rdata(2),particles(n)%rdata(3),particles(n)%rdata(4),particles(n)%rdata(5),particles(n)%rdata(6)
           particles(n)%rdata(5) = particles(n)%rdata(5) + deltaEnergy
        end if
-       print*,"end   particle #",n,particles(n)%pos(1),particles(n)%pos(2),particles(n)%pos(3),particles(n)%rdata(1),particles(n)%rdata(2),particles(n)%rdata(3),particles(n)%rdata(4),particles(n)%rdata(5),particles(n)%rdata(6)
+
     end do
 
   end subroutine agn_particle_velocity

@@ -75,7 +75,8 @@ Nyx::agn_halo_find (Real dt)
 {
    BL_PROFILE("Nyx::agn_halo_find()");
 
-   std::cerr << "ACHTUNG halo_find" << std::endl;
+   if(agn_verbose > 1)
+      std::cerr << "ACHTUNG halo_find" << std::endl;
 
    const Real * dx = geom.CellSize();
 
@@ -139,7 +140,8 @@ Nyx::agn_halo_find (Real dt)
        Nyx::theDMPC()->AssignDensity(particle_mf, 0, 4, -1, 0);
 
        runReeberAnalysis(state_levels, particle_mf, Geom(), level_refinements, nStep(), do_analysis, reeber_halos);
-       amrex::Print()<<"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"<<reeber_halos.size()<<std::endl;
+       if(agn_verbose > 1)
+	 std::cout<<"~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"<<reeber_halos.size()<<std::endl;
 #else
 
    const auto& reeber_density_var_list = getReeberHaloDensityVars();
@@ -294,7 +296,8 @@ Nyx::agn_halo_find (Real dt)
                 //      put it in the right place
 
                 Nyx::theAPC()->AddOneParticle(lev,grid,tile,mass,x,y,z); // ,u,v,w);
-                std::cout << "ADDED A PARTICLE AT " << x << " " << y << " " << z << " WITH MASS " << mass << std::endl;
+                if(agn_verbose > 0)
+                    std::cout << "ADDED A PARTICLE AT " << x << " " << y << " " << z << " WITH MASS " << mass << std::endl;
            }
        } // end of loop over creating new particles from halos
 
