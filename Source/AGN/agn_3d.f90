@@ -37,11 +37,11 @@
           r2 = sum((particles(i)%pos - particles(j)%pos)**2)
 
           if (r2 <= cutoff*cutoff) then
-	     print *, "found overlap particles", particles(i)%id, particles(j)%id
-	     ! If one of the particles is already invalidated, don't do anything
-	     if (particles(i)%id .eq. -1 .or. particles(j)%id .eq. -1) cycle
+             print *, "found overlap particles", particles(i)%id, particles(j)%id
+             ! If one of the particles is already invalidated, don't do anything
+             if (particles(i)%id .eq. -1 .or. particles(j)%id .eq. -1) cycle
              ! We only remove the newer (aka of lower mass) particle
-             if (particles(i)%mass .lt. particles(j)%mass)  then
+             if (particles(i)%rdata(1) .lt. particles(j)%rdata(1))  then
                 particles(i)%id = -1
              else
                 particles(j)%id = -1
@@ -59,7 +59,7 @@
           if (r2 <= cutoff*cutoff) then
              print *, "found overlap ghost particles", particles(i)%id, ghosts(j)%id
              ! We only remove a particle if it is both 1) valid 2) newer (aka of lower mass)
-             if (particles(i)%mass .lt. ghosts(j)%mass) then
+             if (particles(i)%rdata(1) .lt. ghosts(j)%rdata(1)) then
                 particles(i)%id = -1
              end if
              
@@ -106,33 +106,33 @@
 
           if (r2 <= cutoff*cutoff) then
 
-	     if (cutoff_vel .eqv. .true.) then
+             if (cutoff_vel .eqv. .true.) then
 
                  ! Relative velocity
-                 vrelsq = sum((particles(i)%vel - particles(j)%vel)**2)
-                 !larger_mass = max(particles(i)%mass, particles(j)%mass)
+                 vrelsq = sum((particles(i)%rdata(2:4) - particles(j)%rdata(2:4))**2)
+                 !larger_mass = max(particles(i)%rdata(1), particles(j)%rdata(1))
                  r = sqrt(r2)
                  !if ( (vrelsq * r) < Gconst * larger_mass) then
-	         if ( sqrt(vrelsq) * mergetime < r) then
+                 if ( sqrt(vrelsq) * mergetime < r) then
 
-		   ! If one of the particles is already invalidated, don't do anything
+                   ! If one of the particles is already invalidated, don't do anything
                     if (particles(i)%id .eq. -1 .or. particles(j)%id .eq. -1) cycle
                     ! Merge lighter particle into heavier one.
                     ! Set particle ID of lighter particle to -1
-                    if (particles(i)%mass >= particles(j)%mass) then
+                    if (particles(i)%rdata(1) >= particles(j)%rdata(1)) then
                         call agn_merge_pair(particles(i), particles(j))
                         particles(j)%id = -1
-		        merger_count = merger_count +1
+                        merger_count = merger_count +1
                     else
                        call agn_merge_pair(particles(j), particles(i))
                        particles(i)%id = -1
-		       merger_count = merger_count +1 
+                       merger_count = merger_count +1 
                     end if
                  end if
-	     else ! just merge
-		print *, "found merging particles", particles(i)%id, particles(j)%id
-		if (particles(i)%id .eq. -1 .or. particles(j)%id .eq. -1) cycle
-                if (particles(i)%mass >= particles(j)%mass) then
+             else ! just merge
+                print *, "found merging particles", particles(i)%id, particles(j)%id
+                if (particles(i)%id .eq. -1 .or. particles(j)%id .eq. -1) cycle
+                if (particles(i)%rdata(1) >= particles(j)%rdata(1)) then
                     call agn_merge_pair(particles(i), particles(j))
                     particles(j)%id = -1
                     merger_count = merger_count +1
@@ -144,7 +144,7 @@
 
             end if
 
-	  end if
+          end if
 
        end do
     end do
@@ -159,13 +159,13 @@
 
           if (r2 <= cutoff*cutoff) then
              if (cutoff_vel .eqv. .true.) then
-             	vrelsq = sum((particles(i)%vel - ghosts(j)%vel)**2)
-             	!larger_mass = max(particles(i)%mass, ghosts(j)%mass)
+                vrelsq = sum((particles(i)%rdata(2:4) - ghosts(j)%rdata(2:4))**2)
+                !larger_mass = max(particles(i)%rdata(1), ghosts(j)%rdata(1))
 
-             	!if ( (vrelsq * sqrt(r2)) < Gconst * larger_mass) then
-	        if ( sqrt(vrelsq) * mergetime <  sqrt(r2) ) then
-		    !print *, "found merging ghost particles", particles(i)%id, ghosts(j)%id
-                    if (particles(i)%mass > ghosts(j)%mass) then
+                !if ( (vrelsq * sqrt(r2)) < Gconst * larger_mass) then
+                if ( sqrt(vrelsq) * mergetime <  sqrt(r2) ) then
+                    !print *, "found merging ghost particles", particles(i)%id, ghosts(j)%id
+                    if (particles(i)%rdata(1) > ghosts(j)%rdata(1)) then
                        ! The bigger particle "i" is in the valid region,
                        ! so we put all the mass onto it.
                        call agn_merge_pair(particles(i), ghosts(j))
@@ -177,14 +177,14 @@
                    end if
                end if
 
-	   else
+           else
 
-	   	if (particles(i)%mass > ghosts(j)%mass) then
+                if (particles(i)%rdata(1) > ghosts(j)%rdata(1)) then
                     call agn_merge_pair(particles(i), ghosts(j))
                 else
                     particles(i)%id = -1
                 end if
-	   end if
+           end if
 
         end if
 
@@ -208,14 +208,14 @@
     real(amrex_real) :: mom(3)
 
     ! Calculate total momentum of both particles before merging.
-    mom = particle_stay%vel * particle_stay%mass + &
-         particle_remove%vel * particle_remove%mass
+    mom = particle_stay%rdata(2:4) * particle_stay%rdata(1) + &
+          particle_remove%rdata(2:4) * particle_remove%rdata(1)
 
     ! Combine masses.
-    particle_stay%mass = particle_stay%mass + particle_remove%mass
+    particle_stay%rdata(1) = particle_stay%rdata(1) + particle_remove%rdata(1)
 
     ! Put total momentum onto the one particle, and save new velocity.
-    particle_stay%vel = mom / particle_stay%mass
+    particle_stay%rdata(2:4) = mom / particle_stay%rdata(1)
    
   end subroutine agn_merge_pair
 
@@ -230,7 +230,7 @@
        bind(c,name='agn_particle_velocity')
 
     use iso_c_binding
-    use amrex_fort_module, only : amrex_real
+    use amrex_fort_module, only : amrex_real, amrex_particle_real
     use meth_params_module, only : NVAR, UMX, UMY, UMZ, UEDEN
     use particle_mod      , only: agn_particle_t
 
@@ -248,17 +248,18 @@
     integer          :: i, j, k, n
     real(amrex_real) :: vol, weight(-1:1, -1:1, -1:1)
     real(amrex_real) :: mass, momx, momy, momz, E, deltaEnergy, frac
+    real(amrex_real) :: update(3)
     
     vol = dx(1) * dx(2) * dx(3)
 
     do n = 1, np
-
+       print*,"start particle #",n,particles(n)%pos(1),particles(n)%pos(2),particles(n)%pos(3),particles(n)%rdata(1),particles(n)%rdata(2),particles(n)%rdata(3),particles(n)%rdata(4),particles(n)%rdata(5),particles(n)%rdata(6)
        call get_weights(weight, particles(n)%pos, dx)
-
+       print*,"diff1 particle #",n,particles(n)%pos(1),particles(n)%pos(2),particles(n)%pos(3),particles(n)%rdata(1),particles(n)%rdata(2),particles(n)%rdata(3),particles(n)%rdata(4),particles(n)%rdata(5),particles(n)%rdata(6)
        i = particles(n)%pos(1) / dx(1)
        j = particles(n)%pos(2) / dx(2)
        k = particles(n)%pos(3) / dx(3)
-
+       print*,"diff2 particle #",n,particles(n)%pos(1),particles(n)%pos(2),particles(n)%pos(3),particles(n)%rdata(1),particles(n)%rdata(2),particles(n)%rdata(3),particles(n)%rdata(4),particles(n)%rdata(5),particles(n)%rdata(6)
        ! momx, momy, momz: momentum = volume x change in momentum density.
        momx = sum((state_new(i-1:i+1, j-1:j+1, k-1:k+1, UMX) - &
                    state_old(i-1:i+1, j-1:j+1, k-1:k+1, UMX)) * weight) * vol
@@ -266,15 +267,24 @@
                    state_old(i-1:i+1, j-1:j+1, k-1:k+1, UMY)) * weight) * vol
        momz = sum((state_new(i-1:i+1, j-1:j+1, k-1:k+1, UMZ) - &
                    state_old(i-1:i+1, j-1:j+1, k-1:k+1, UMZ)) * weight) * vol
+       update(1) = momx / particles(n)%rdata(1)
+       update(2) = momy / particles(n)%rdata(1)
+       update(3) = momz / particles(n)%rdata(1)
 
+       print*,"diff3 particle #",n,particles(n)%pos(1),particles(n)%pos(2),particles(n)%pos(3),particles(n)%rdata(1),particles(n)%rdata(2),particles(n)%rdata(3),particles(n)%rdata(4),particles(n)%rdata(5),particles(n)%rdata(6)
        !print *, "momentums", n, momx, momy, momz
-       mass = particles(n)%mass
-
+       mass = particles(n)%rdata(1)
+       print*,"diff14particle #",n,particles(n)%pos(1),particles(n)%pos(2),particles(n)%pos(3),particles(n)%rdata(1),particles(n)%rdata(2),particles(n)%rdata(3),particles(n)%rdata(4),particles(n)%rdata(5),particles(n)%rdata(6)
        ! Update velocity of particle so as to reduce momentum in the amount
        ! of the difference between old and new state.
-       particles(n)%vel(1) = particles(n)%vel(1) - momx / mass
-       particles(n)%vel(2) = particles(n)%vel(2) - momy / mass
-       particles(n)%vel(3) = particles(n)%vel(3) - momz / mass
+!       particles(n)%rdata(2) = particles(n)%rdata(2) - momx / mass
+!       print*,"diff5 particle #",n,particles(n)%pos(1),particles(n)%pos(2),particles(n)%pos(3),particles(n)%rdata(1),particles(n)%rdata(2),particles(n)%rdata(3),particles(n)%rdata(4),particles(n)%rdata(5),particles(n)%rdata(6)
+!       particles(n)%rdata(3) = particles(n)%rdata(3) - momy / mass
+!       print*,"diff6 particle #",n,particles(n)%pos(1),particles(n)%pos(2),particles(n)%pos(3),particles(n)%rdata(1),particles(n)%rdata(2),particles(n)%rdata(3),particles(n)%rdata(4),particles(n)%rdata(5),particles(n)%rdata(6)
+!       particles(n)%rdata(4) = particles(n)%rdata(4) - momz / mass
+!       print*,"diff7 particle #",n,particles(n)%pos(1),particles(n)%pos(2),particles(n)%pos(3),particles(n)%rdata(1),particles(n)%rdata(2),particles(n)%rdata(3),particles(n)%rdata(4),particles(n)%rdata(5),particles(n)%rdata(6)
+
+       particles(n)%rdata(2:4) = particles(n)%rdata(2:4) - update
 
        ! Update particle energy if particle isn't brand new
        if (add_energy .gt. 0) then
@@ -282,11 +292,12 @@
           E = sum((state_new(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN) - &
                    state_old(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN)) * weight) * vol
           deltaEnergy = - E / mass
-          frac = deltaEnergy / (particles(n)%energy)
+          frac = deltaEnergy / (particles(n)%rdata(5))
           print *, 'deltaEnergy =', deltaEnergy, 'fraction', frac
-          particles(n)%energy = particles(n)%energy + deltaEnergy
+          print*,"diff8 particle #",n,particles(n)%pos(1),particles(n)%pos(2),particles(n)%pos(3),particles(n)%rdata(1),particles(n)%rdata(2),particles(n)%rdata(3),particles(n)%rdata(4),particles(n)%rdata(5),particles(n)%rdata(6)
+          particles(n)%rdata(5) = particles(n)%rdata(5) + deltaEnergy
        end if
-
+       print*,"end   particle #",n,particles(n)%pos(1),particles(n)%pos(2),particles(n)%pos(3),particles(n)%rdata(1),particles(n)%rdata(2),particles(n)%rdata(3),particles(n)%rdata(4),particles(n)%rdata(5),particles(n)%rdata(6)
     end do
 
   end subroutine agn_particle_velocity
@@ -374,7 +385,7 @@
 
        denom = (avg_speedsq + avg_csq)**1.5
 
-       mass = particles(n)%mass
+       mass = particles(n)%rdata(1)
  
        ! Bondi accretion 
        mdot = bondi_const * mass * mass * avg_rho / denom
@@ -398,24 +409,24 @@
             max_frac_removed * &
             MAXVAL(state(i-1:i+1, j-1:j+1, k-1:k+1, URHO) * vol / weight))
 
-       particles(n)%mdot = mass_change / dt
+       particles(n)%rdata(6) = mass_change / dt
 
        ! Increase the mass of the particle by mass_change
-       particles(n)%mass = particles(n)%mass + mass_change * ( 1.d0 - eps_rad)
+       particles(n)%rdata(1) = particles(n)%rdata(1) + mass_change * ( 1.d0 - eps_rad)
 
        density_lost(i-1:i+1, j-1:j+1, k-1:k+1) = &
             density_lost(i-1:i+1, j-1:j+1, k-1:k+1) + &
             mass_change * weight / vol
 
        ! Thermal feedback energy.
-       particles(n)%energy = particles(n)%energy + (1. - frac_kinetic) * &
+       particles(n)%rdata(5) = particles(n)%rdata(5) + (1. - frac_kinetic) * &
             (mass_change * c_light**2) * eps_coupling * eps_rad
 
        ! Kinetic feedback: energy as well as momentum (hence velocity).
        if (frac_kinetic > 0.) then
           ! Kinetic energy added to the particle.
           E_kinetic = frac_kinetic * (mass_change * c_light**2)
-          particles(n)%energy = particles(n)%energy + E_kinetic * eps_kinetic
+          particles(n)%rdata(5) = particles(n)%rdata(5) + E_kinetic * eps_kinetic
 
           ! Change momentum of gas.
           speed_jet = sqrt(2. * E_kinetic / (avg_rho * vol))
@@ -505,27 +516,27 @@
        pressure  = gamma_minus_1 * (avg_rho) * (e)
 
        print *, 'AGN particle at ', particles(n)%pos, ':', i, j, k
-       print 50, particles(n)%pos, i, j, k, particles(n)%mass, &
-            particles(n)%energy
+       print 50, particles(n)%pos, i, j, k, particles(n)%rdata(1), &
+            particles(n)%rdata(5)
 50     format (1x, 'AGN particle at ', 3F8.3, 3I4, ' m=', E12.5, ' e=', E12.5)
 
-       if (particles(n)%energy > m_g * e) then
+       if (particles(n)%rdata(5) > m_g * e) then
 
           print *, 'RELEASING ENERGY of particle at ', particles(n)%pos
           print *, 'neighborhood mass: ', m_g
           print *, 'e = ', e
-          print *, 'particle energy: ', particles(n)%energy
+          print *, 'particle energy: ', particles(n)%rdata(5)
           print *, 'm_g * e = ', (m_g * e)
 
           state(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN) = &
           state(i-1:i+1, j-1:j+1, k-1:k+1, UEDEN) + &
-          particles(n)%energy * weight
+          particles(n)%rdata(5) * weight
 
           state(i-1:i+1, j-1:j+1, k-1:k+1, UEINT) = &
           state(i-1:i+1, j-1:j+1, k-1:k+1, UEINT) + &
-          particles(n)%energy * weight
+          particles(n)%rdata(5) * weight
 
-          particles(n)%energy = 0.
+          particles(n)%rdata(5) = 0.
                
        end if
 

@@ -53,7 +53,7 @@ public:
                          amrex::Real y,
                          amrex::Real z)
     {
-        auto& particle_tile = this->GetParticles(lev)[std::make_pair(grid,tile)];
+        auto& particle_tile = DefineAndReturnParticleTile(lev,grid,tile);
         AddOneParticle(particle_tile, mass, x, y, z);
     }
 
