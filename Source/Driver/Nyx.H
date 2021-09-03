@@ -885,6 +885,7 @@ protected:
     static long particle_initrandom_count;
     static long particle_initrandom_count_per_box;
     static amrex::Real particle_initrandom_mass;
+    static amrex::Real particle_initrandom_mass_total;
     static int particle_initrandom_iseed;
     static int particle_skip_factor;
     static amrex::Real particle_inituniform_mass;

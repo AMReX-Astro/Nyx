@@ -135,7 +135,8 @@ std::string Nyx::particle_init_type = "";
 //   in the checkpoint files.
 
 bool Nyx::particle_initrandom_serialize = false;
-Real Nyx::particle_initrandom_mass;
+Real Nyx::particle_initrandom_mass = -1;
+Real Nyx::particle_initrandom_mass_total = 869658119634944.0;
 long Nyx::particle_initrandom_count;
 long Nyx::particle_initrandom_count_per_box;
 int  Nyx::particle_initrandom_iseed;
@@ -278,6 +279,7 @@ Nyx::read_particle_params ()
     pp.query("particle_initrandom_count", particle_initrandom_count);
     pp.query("particle_initrandom_count_per_box", particle_initrandom_count_per_box);
     pp.query("particle_initrandom_mass", particle_initrandom_mass);
+    pp.query("particle_initrandom_mass_total", particle_initrandom_mass_total);
     pp.query("particle_initrandom_iseed", particle_initrandom_iseed);
     pp.query("particle_skip_factor", particle_skip_factor);
     pp.query("ascii_particle_file", ascii_particle_file);
@@ -349,6 +351,13 @@ Nyx::read_particle_params ()
 #endif
 
     pp.query("write_particle_density_at_init", write_particle_density_at_init);
+
+    if((particle_initrandom_mass <= 0 && particle_initrandom_mass_total <= 0)
+                                     && (particle_init_type == "Random" ||
+                                         particle_init_type == "RandomPerBox" ||
+                                         particle_init_type == "RandomPerCell"  ))
+      amrex::Abort("Starting random intialization with particles of non-positive mass");
+
     //
     // Control the verbosity of the Particle class
     //
@@ -400,6 +409,26 @@ Nyx::init_particles ()
         // 2 gives more stuff than 1.
         //
         DMPC->SetVerbose(particle_verbose);
+
+        // Check particle mass for random setups
+#ifdef AMREX_USE_SINGLE_PRECISION_PARTICLES
+        Real tol = 1e-6;
+#else
+        Real tol = 1e-12;
+#endif
+
+        if(particle_initrandom_mass <= 0) {
+            particle_initrandom_mass = particle_initrandom_mass_total / amrex::Real(grids[level].numPts());
+            if(verbose)
+              amrex::Print()<<"... setting particle_initrandom_mass to "<<particle_initrandom_mass<<std::endl;
+        }
+
+        if(particle_initrandom_mass_total / amrex::Real(grids[level].numPts()) - particle_initrandom_mass > tol
+                                                               && (particle_init_type == "Random" ||
+                                                                   particle_init_type == "RandomPerBox" ||
+                                                                   particle_init_type == "RandomPerCell"  ))
+            amrex::Abort("Starting random intialization with particle_initrandom_mass_total / (n_cell)^3 != particle_initrandom_mass");
+
 
         DarkMatterParticleContainer::ParticleInitData pdata = {{particle_initrandom_mass}, {}, {}, {}};
 
@@ -551,7 +580,7 @@ Nyx::init_particles ()
         {
             DMPC->Restart(restart_particle_file, dm_chk_particle_file);
         }
-	else
+        else
         {
             amrex::Error("not a valid input for nyx.particle_init_type");
         }

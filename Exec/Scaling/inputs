@@ -73,8 +73,9 @@ amr.max_grid_size    = 64
 #fabarray.mfiter_tile_size = 128 8 8
 fabarray.mfiter_tile_size = 1024000 8 8
 
-# To increase problem size: 869658119634944.0 / n_cell^3
-nyx.particle_initrandom_mass  = 3.317482451E9
+# Set total mass instead of per-particle mass
+#nyx.particle_initrandom_mass  = 3.317482451E9
+nyx.particle_initrandom_mass_total  = 869658119634944.0
 
 # >>>>>>>>>>>>>  BC FLAGS <<<<<<<<<<<<<<<<
 # 0 = Interior           3 = Symmetry
