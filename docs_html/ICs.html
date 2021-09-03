@@ -323,7 +323,7 @@ The SPH particles will be discarded by the code once the grid data has been init
 </div>
 <p>There are then a number of parameters to set, for example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_initrandom_count</span> <span class="o">=</span> <span class="mi">100000</span>
-<span class="n">nyx</span><span class="o">.</span><span class="n">particle_initrandom_mass</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">particle_initrandom_mass_total</span> <span class="o">=</span> <span class="mi">100000</span>
 <span class="n">nyx</span><span class="o">.</span><span class="n">particle_initrandom_iseed</span> <span class="o">=</span> <span class="mi">15</span>
 <span class="n">nyx</span><span class="o">.</span><span class="n">fix_random_seed</span> <span class="o">=</span> <span class="mi">0</span>
 </pre></div>
@@ -340,7 +340,33 @@ The SPH particles will be discarded by the code once the grid data has been init
 </pre></div>
 </div>
 <p>Note to increase the number of cells and keep the problem domain size
-and total mass fixed, the mass per particle must decrease proportionally.</p>
+and total mass fixed, the mass per particle must decrease proportionally.
+An alternative is to set the total mass of all particles in the simulation.
+This will cause Nyx to scale the mass per particle to fit the number of cells.
+The following will all have the same total mass:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nyx</span><span class="o">.</span><span class="n">particle_initrandom_mass</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">amr</span><span class="o">.</span><span class="n">n_cell</span> <span class="o">=</span> <span class="mi">64</span> <span class="mi">64</span> <span class="mi">64</span>
+
+<span class="n">nyx</span><span class="o">.</span><span class="n">particle_initrandom_mass</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">particle_initrandom_mass_total</span> <span class="o">=</span> <span class="mi">262144</span>
+<span class="n">amr</span><span class="o">.</span><span class="n">n_cell</span> <span class="o">=</span> <span class="mi">64</span> <span class="mi">64</span> <span class="mi">64</span>
+
+<span class="n">nyx</span><span class="o">.</span><span class="n">particle_initrandom_mass</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">particle_initrandom_mass_total</span> <span class="o">=</span> <span class="mi">262144</span>
+<span class="n">amr</span><span class="o">.</span><span class="n">n_cell</span> <span class="o">=</span> <span class="mi">64</span> <span class="mi">64</span> <span class="mi">64</span>
+
+<span class="n">nyx</span><span class="o">.</span><span class="n">particle_initrandom_mass</span> <span class="o">=</span> <span class="mf">0.125</span>
+<span class="n">amr</span><span class="o">.</span><span class="n">n_cell</span> <span class="o">=</span> <span class="mi">128</span> <span class="mi">128</span> <span class="mi">128</span>
+
+<span class="n">nyx</span><span class="o">.</span><span class="n">particle_initrandom_mass</span> <span class="o">=</span> <span class="mf">0.125</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">particle_initrandom_mass_total</span> <span class="o">=</span> <span class="mi">262144</span>
+<span class="n">amr</span><span class="o">.</span><span class="n">n_cell</span> <span class="o">=</span> <span class="mi">128</span> <span class="mi">128</span> <span class="mi">128</span>
+
+<span class="n">nyx</span><span class="o">.</span><span class="n">particle_initrandom_mass</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+<span class="n">nyx</span><span class="o">.</span><span class="n">particle_initrandom_mass_total</span> <span class="o">=</span> <span class="mi">262144</span>
+<span class="n">amr</span><span class="o">.</span><span class="n">n_cell</span> <span class="o">=</span> <span class="mi">128</span> <span class="mi">128</span> <span class="mi">128</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="uniform-placement">
 <h3>Uniform placement<a class="headerlink" href="#uniform-placement" title="Permalink to this headline">¶</a></h3>
