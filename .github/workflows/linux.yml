@@ -172,14 +172,24 @@ jobs:
       run: |
         source /etc/profile.d/rocm.sh
         hipcc --version
+
+        # "mpic++ --showme" forgets open-pal in Ubuntu 20.04 + OpenMPI 4.0.3
+        #   https://bugs.launchpad.net/ubuntu/+source/openmpi/+bug/1941786
+        #   https://github.com/open-mpi/ompi/issues/9317
+        export LDFLAGS="-lopen-pal"
+
         cmake  -S . -B build_adiabatic                     \
             -DNyx_HEATCOOL=no                              \
             -DNyx_HYDRO=yes                                \
             -DNyx_OMP=no                                   \
             -DNyx_GPU_BACKEND=HIP                          \
-            -DAMReX_AMD_ARCH=gfx900                        \
+            -DAMReX_AMD_ARCH=gfx908                        \
             -DCMAKE_C_COMPILER=$(which clang)              \
-            -DCMAKE_CXX_COMPILER=$(which hipcc)
+            -DCMAKE_CXX_COMPILER=$(which hipcc)            \
+            -DCMAKE_CXX_COMPILER_ID="Clang"                \
+            -DCMAKE_CXX_COMPILER_VERSION=12.0              \
+            -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT="17"     \
+            -DCMAKE_CXX_STANDARD=17
         cmake --build build_adiabatic --parallel 2
 
         cmake  -S . -B build                               \
@@ -187,7 +197,11 @@ jobs:
             -DNyx_HYDRO=yes                                \
             -DNyx_OMP=no                                   \
             -DNyx_GPU_BACKEND=HIP                          \
-            -DAMReX_AMD_ARCH=gfx900                        \
+            -DAMReX_AMD_ARCH=gfx908                        \
             -DCMAKE_C_COMPILER=$(which clang)              \
-            -DCMAKE_CXX_COMPILER=$(which hipcc)
+            -DCMAKE_CXX_COMPILER=$(which hipcc)            \
+            -DCMAKE_CXX_COMPILER_ID="Clang"                \
+            -DCMAKE_CXX_COMPILER_VERSION=12.0              \
+            -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT="17"     \
+            -DCMAKE_CXX_STANDARD=17
         cmake --build build --parallel 2
