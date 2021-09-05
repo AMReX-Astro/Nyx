@@ -86,13 +86,14 @@ int Nyx::integrate_state_struct
       //check that copy contructor vs create constructor works??
       const Box& tbx = mfi.tilebox();
 
+      /*
       S_old[mfi].prefetchToDevice();
       D_old[mfi].prefetchToDevice();
       S_new[mfi].prefetchToDevice();
       hydro_src[mfi].prefetchToDevice();
       reset_src[mfi].prefetchToDevice();
       IR[mfi].prefetchToDevice();
-
+      */
       Array4<Real> const& state4 = S_old.array(mfi);
       Array4<Real> const& diag_eos4 = D_old.array(mfi);
       Array4<Real> const& state_n4 = S_new.array(mfi);
