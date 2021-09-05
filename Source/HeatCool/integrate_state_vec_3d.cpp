@@ -16,8 +16,10 @@
 #include <sundials/sundials_types.h>   /* definition of type realtype */
 
 #include <nvector/nvector_serial.h>
+#ifndef AMREX_USE_GPU
 #ifdef _OPENMP
 #include <nvector/nvector_openmp.h>
+#endif
 #endif
 #ifdef AMREX_USE_CUDA
 #include <nvector/nvector_cuda.h>
