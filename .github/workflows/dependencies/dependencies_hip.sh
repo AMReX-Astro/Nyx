@@ -16,8 +16,8 @@ set -eu -o pipefail
 wget -q -O - http://repo.radeon.com/rocm/rocm.gpg.key \
   | sudo apt-key add -
 #echo 'deb [arch=amd64] http://repo.radeon.com/rocm/apt/debian/ xenial main' \
-# Use 4.1.1 till the VOP bug in 4.2 is fixed
-echo 'deb [arch=amd64] http://repo.radeon.com/rocm/apt/4.1.1/ xenial main' \
+# Use 4.3 / debian
+echo 'deb [arch=amd64] http://repo.radeon.com/rocm/apt/debian/ xenial main' \
   | sudo tee /etc/apt/sources.list.d/rocm.list
 
 echo 'export PATH=$PATH:/opt/rocm/bin:/opt/rocm/profiler/bin:/opt/rocm/opencl/bin' \
@@ -44,6 +44,8 @@ sudo apt-get install -y --no-install-recommends \
 #
 source /etc/profile.d/rocm.sh
 hipcc --version
+which clang
+which clang++
 
 # cmake-easyinstall
 #

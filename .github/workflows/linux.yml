@@ -162,7 +162,7 @@ jobs:
     # https://gitlab.kitware.com/cmake/cmake/-/issues/21551#note_869580
 
   nyx-hip:
-    name: HIP ROCm@3.8 C++17
+    name: HIP ROCm@4.3 C++17
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
