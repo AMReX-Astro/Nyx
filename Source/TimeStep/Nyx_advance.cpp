@@ -26,6 +26,8 @@ Nyx::advance (Real time,
 
 {
 
+  const std::string region_name = nStep() > 1 ? "R::Nyx::advance" : "R::Nyx::advance::STEP1";
+  BL_PROFILE_REGION(region_name);
   MultiFab::RegionTag amrlevel_tag("AmrLevel_Level_" + std::to_string(level));
 
 #ifdef NO_HYDRO

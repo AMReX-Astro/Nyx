@@ -417,13 +417,17 @@ Nyx::init_particles ()
         Real tol = 1e-12;
 #endif
 
+        Real number_of_cells = Geom().ProbLength(0)/Geom().CellSize(0) *
+                               Geom().ProbLength(1)/Geom().CellSize(1) *
+                               Geom().ProbLength(2)/Geom().CellSize(2);
         if(particle_initrandom_mass <= 0) {
-            particle_initrandom_mass = particle_initrandom_mass_total / amrex::Real(grids[level].numPts());
+            particle_initrandom_mass = particle_initrandom_mass_total / number_of_cells;
             if(verbose)
-              amrex::Print()<<"... setting particle_initrandom_mass to "<<particle_initrandom_mass<<std::endl;
+              amrex::Print()<<"... setting particle_initrandom_mass to "<<particle_initrandom_mass<<
+                " by dividing "<<particle_initrandom_mass_total<<" by "<< number_of_cells<<std::endl;
         }
 
-        if(particle_initrandom_mass_total / amrex::Real(grids[level].numPts()) - particle_initrandom_mass > tol
+        if(particle_initrandom_mass_total / number_of_cells - particle_initrandom_mass > tol
                                                                && (particle_init_type == "Random" ||
                                                                    particle_init_type == "RandomPerBox" ||
                                                                    particle_init_type == "RandomPerCell"  ))
