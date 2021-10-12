@@ -79,21 +79,78 @@ int Nyx::integrate_state_struct
 #else
   const auto tiling = (TilingIfNotGPU() && sundials_use_tiling) ? MFItInfo().EnableTiling(sundials_tile_size) : MFItInfo();
 #endif
-
+    if(ParallelDescriptor::IOProcessor())
+	{
+	    {
+	    std::string filename_inputs ="DataInputs."+std::to_string(nStep());
+            std::ofstream ofs_inputs(filename_inputs.c_str());
+            ParmParse::dumpTable(ofs_inputs, true);
+	    ofs_inputs << "nyx.initial_a = "<<a<<std::endl;
+	    //   	    ofs_inputs << "nyx.final_a = "<<a_end<<std::endl;
+       	    ofs_inputs << "nyx.final_z = "<<1/a_end-1<<std::endl;
+    	    ofs_inputs << "nyx.fixed_dt = "<<delta_time<<std::endl;
+	    }
+	    /*
+FArrayBox scal(Box(IntVect(AMREX_D_DECL(0,0,0)),IntVect(AMREX_D_DECL(2,0,0))),1);
+	    auto scalarr=scal.array();
+	    scalarr(0,0,0)=a;
+	    scalarr(1,0,0)=a_end;
+    	    scalarr(2,0,0)=delta_time;
+	    amrex::Print()<<scal<<std::endl;
+	    scal.writeOn(ofs);*/
+            std::string filename ="Data."+std::to_string(nStep());
+	    {
+		std::ofstream ofs(filename.c_str());
+		grids.writeOn(ofs);
+		dmap.writeOn(ofs);
+	    }
+	    /*
+	    //removing const from these vars for testing purposes only
+	    a=0.0;
+	    a_end=0.0;
+	    delta_time=0.0;*/
+            std::ifstream ifs(filename.c_str());
+	    //   	    scal.readFrom(ifs);
+	    grids.readFrom(ifs);
+	    dmap.readFrom(ifs);
+	    /*
+	    a=scalarr(0,0,0);
+	    a_end=scalarr(1,0,0);
+    	    delta_time=scalarr(2,0,0);*/
+	}
     for ( MFIter mfi(S_old, tiling); mfi.isValid(); ++mfi)
     {
 
       //check that copy contructor vs create constructor works??
       const Box& tbx = mfi.tilebox();
 
-      /*
-      S_old[mfi].prefetchToDevice();
-      D_old[mfi].prefetchToDevice();
-      S_new[mfi].prefetchToDevice();
-      hydro_src[mfi].prefetchToDevice();
-      reset_src[mfi].prefetchToDevice();
-      IR[mfi].prefetchToDevice();
-      */
+      std::string filename ="DataChunk."+std::to_string(nStep())+"."+std::to_string(mfi.index());
+      std::ofstream ofs(filename.c_str());
+
+      S_old[mfi].writeOn(ofs);
+      D_old[mfi].writeOn(ofs);
+      S_new[mfi].writeOn(ofs);
+      hydro_src[mfi].writeOn(ofs);
+      reset_src[mfi].writeOn(ofs);
+      IR[mfi].writeOn(ofs);
+
+      S_old[mfi].setVal(0);                                                                           
+      D_old[mfi].setVal(0);                                                                           
+      S_new[mfi].setVal(0);                                                                           
+      hydro_src[mfi].setVal(0);                                                                       
+      reset_src[mfi].setVal(0);                                                                       
+      IR[mfi].setVal(0);
+
+      //      string filename ="DataChunk"+std::to_string(nStep())+"."+std::to_string(mfi.index());
+      std::ifstream ifs(filename.c_str());
+    
+      S_old[mfi].readFrom(ifs);
+      D_old[mfi].readFrom(ifs);
+      S_new[mfi].readFrom(ifs);
+      hydro_src[mfi].readFrom(ifs);
+      reset_src[mfi].readFrom(ifs);
+      IR[mfi].readFrom(ifs);
+      
       Array4<Real> const& state4 = S_old.array(mfi);
       Array4<Real> const& diag_eos4 = D_old.array(mfi);
       Array4<Real> const& state_n4 = S_new.array(mfi);
