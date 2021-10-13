@@ -152,6 +152,7 @@ public:
     //
     static void variable_setup();
     static void hydro_setup();
+    static void heatcool_setup();
     static void no_hydro_setup();
 
     //

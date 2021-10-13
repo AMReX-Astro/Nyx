@@ -85,7 +85,8 @@ int Nyx::integrate_state_struct
 	    std::string filename_inputs ="DataInputs."+std::to_string(nStep());
             std::ofstream ofs_inputs(filename_inputs.c_str());
             ParmParse::dumpTable(ofs_inputs, true);
-	    ofs_inputs << "nyx.initial_a = "<<a<<std::endl;
+	    //	    ofs_inputs << "nyx.initial_a = "<<a<<std::endl;
+   	    ofs_inputs << "nyx.initial_z = "<<1/a-1<<std::endl;
 	    //   	    ofs_inputs << "nyx.final_a = "<<a_end<<std::endl;
        	    ofs_inputs << "nyx.final_z = "<<1/a_end-1<<std::endl;
     	    ofs_inputs << "nyx.fixed_dt = "<<delta_time<<std::endl;
@@ -98,7 +99,7 @@ FArrayBox scal(Box(IntVect(AMREX_D_DECL(0,0,0)),IntVect(AMREX_D_DECL(2,0,0))),1)
     	    scalarr(2,0,0)=delta_time;
 	    amrex::Print()<<scal<<std::endl;
 	    scal.writeOn(ofs);*/
-            std::string filename ="Data."+std::to_string(nStep());
+            std::string filename ="DataBADMAP."+std::to_string(nStep());
 	    {
 		std::ofstream ofs(filename.c_str());
 		grids.writeOn(ofs);

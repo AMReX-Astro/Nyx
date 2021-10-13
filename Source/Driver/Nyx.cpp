@@ -313,7 +313,7 @@ Nyx::read_params ()
     // Check phys_bc against possible periodic geometry
     // if periodic, must have internal BC marked.
     //
-    if (DefaultGeometry().isAnyPeriodic())
+    if (DefaultGeometry().isAnyPeriodic() || (!do_dm_particles && !do_hydro))
     {
         //
         // Do idiot check.  Periodic means interior in those directions.
