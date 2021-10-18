@@ -79,10 +79,12 @@ int Nyx::integrate_state_struct
 #else
   const auto tiling = (TilingIfNotGPU() && sundials_use_tiling) ? MFItInfo().EnableTiling(sundials_tile_size) : MFItInfo();
 #endif
+    std::string filename_inputs ="DataInputs."+std::to_string(nStep());
+    std::string filename ="DataBADMAP."+std::to_string(nStep());
+    std::string filename_chunk_prefix ="DataChunk."+std::to_string(nStep())+".";
     if(ParallelDescriptor::IOProcessor())
 	{
 	    {
-	    std::string filename_inputs ="DataInputs."+std::to_string(nStep());
             std::ofstream ofs_inputs(filename_inputs.c_str());
             ParmParse::dumpTable(ofs_inputs, true);
 	    //	    ofs_inputs << "nyx.initial_a = "<<a<<std::endl;
@@ -90,6 +92,10 @@ int Nyx::integrate_state_struct
 	    //   	    ofs_inputs << "nyx.final_a = "<<a_end<<std::endl;
        	    ofs_inputs << "nyx.final_z = "<<1/a_end-1<<std::endl;
     	    ofs_inputs << "nyx.fixed_dt = "<<delta_time<<std::endl;
+       	    ofs_inputs << "nyx.hctest_filename_inputs = "<<filename_inputs<<std::endl;
+	    ofs_inputs << "nyx.hctest_filename_badmap = "<<filename<<std::endl;
+	    ofs_inputs << "nyx.hctest_filename_chunk = "<<filename_chunk_prefix<<std::endl;
+       	    ofs_inputs << "nyx.hctest_endIndex = "<<(MFIter(S_old,tiling).length())<<std::endl;
 	    }
 	    /*
 FArrayBox scal(Box(IntVect(AMREX_D_DECL(0,0,0)),IntVect(AMREX_D_DECL(2,0,0))),1);
@@ -99,7 +105,6 @@ FArrayBox scal(Box(IntVect(AMREX_D_DECL(0,0,0)),IntVect(AMREX_D_DECL(2,0,0))),1)
     	    scalarr(2,0,0)=delta_time;
 	    amrex::Print()<<scal<<std::endl;
 	    scal.writeOn(ofs);*/
-            std::string filename ="DataBADMAP."+std::to_string(nStep());
 	    {
 		std::ofstream ofs(filename.c_str());
 		grids.writeOn(ofs);
@@ -124,9 +129,8 @@ FArrayBox scal(Box(IntVect(AMREX_D_DECL(0,0,0)),IntVect(AMREX_D_DECL(2,0,0))),1)
 
       //check that copy contructor vs create constructor works??
       const Box& tbx = mfi.tilebox();
-
-      std::string filename ="DataChunk."+std::to_string(nStep())+"."+std::to_string(mfi.index());
-      std::ofstream ofs(filename.c_str());
+      std::string filename_chunk = filename_chunk_prefix + std::to_string(mfi.index());
+      std::ofstream ofs(filename_chunk.c_str());
 
       S_old[mfi].writeOn(ofs);
       D_old[mfi].writeOn(ofs);
