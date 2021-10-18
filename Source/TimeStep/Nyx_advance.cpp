@@ -26,7 +26,7 @@ Nyx::advance (Real time,
 
 {
 
-  const std::string region_name = nStep() > 1 ? "R::Nyx::advance" : "R::Nyx::advance::STEP1";
+  const std::string region_name = ncycle > 1 ? "R::Nyx::advance" : "R::Nyx::advance::STEP1";
   BL_PROFILE_REGION(region_name);
   MultiFab::RegionTag amrlevel_tag("AmrLevel_Level_" + std::to_string(level));
 
@@ -51,8 +51,10 @@ Nyx::advance (Real time,
            return advance_hydro(time, dt, iteration, ncycle);
         }
     }
-        else
+    else if(do_dm_particles)
         return advance_particles_only(time, dt, iteration, ncycle);
+    else
+	return advance_heatcool(time, dt, iteration, ncycle);
 #endif
     return 0;
 }
@@ -427,6 +429,69 @@ Nyx::advance_hydro_plus_particles (Real time,
     return dt;
 }
 #endif
+
+Real
+Nyx::advance_heatcool (Real time,
+                       Real dt,
+                       int  iteration,
+                       int  ncycle)
+{
+    BL_PROFILE("Nyx::advance_heatcool()");
+    /*      
+    for (int k = 0; k < NUM_STATE_TYPE; k++)
+    {
+        state[k].allocOldData();
+        state[k].swapTimeLevels(dt);
+    }
+    
+    const Real prev_time = state[State_Type].prevTime();
+    const Real cur_time  = state[State_Type].curTime();
+    const Real a_old     = get_comoving_a(prev_time);
+    const Real a_new     = get_comoving_a(cur_time);
+
+    MultiFab&  S_old        = get_old_data(State_Type);
+    MultiFab&  S_new        = get_new_data(State_Type);
+
+    MultiFab&  D_old        = get_old_data(DiagEOS_Type);
+    MultiFab&  D_new        = get_new_data(DiagEOS_Type);
+
+    MultiFab&  IR_old       = get_old_data(SDC_IR_Type);
+    MultiFab&  IR_new       = get_new_data(SDC_IR_Type);
+    */
+    MultiFab S_old(grids, dmap, NUM_STATE, NUM_GROW);
+    MultiFab S_new(grids, dmap, NUM_STATE, NUM_GROW);
+    MultiFab D_old(grids, dmap, 2, NUM_GROW);
+    MultiFab IR_old(grids, dmap, 1, 0);
+    
+    MultiFab S_old_tmp(S_old.boxArray(), S_old.DistributionMap(), NUM_STATE, NUM_GROW);
+    //    FillPatch(*this, S_old_tmp, NUM_GROW, time, State_Type, 0, NUM_STATE);
+    S_old_tmp.setVal(0.);
+
+    MultiFab D_old_tmp(D_old.boxArray(), D_old.DistributionMap(), D_old.nComp(), NUM_GROW);
+    D_old_tmp.setVal(0.);
+    //    FillPatch(*this, D_old_tmp, NUM_GROW, time, DiagEOS_Type, 0, D_old.nComp());
+
+    MultiFab hydro_src(S_old.boxArray(), S_old.DistributionMap(), NUM_STATE, 0);
+    hydro_src.setVal(0.);
+
+    MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
+    reset_e_src.setVal(0.0);
+
+    Real a_old     = old_a;
+    Real a_new     = new_a;
+    Real a = a_old;
+    Real a_end = a_new;
+    Real delta_time = dt;
+    int sdc_iter = 0;
+
+    integrate_state_struct(S_old_tmp, S_new,
+                           D_old, hydro_src,
+                           IR_old, reset_e_src,
+                           a, a_end,
+                           delta_time, sdc_iter);
+
+    return dt;
+}
 
 Real
 Nyx::advance_hydro (Real time,

@@ -264,7 +264,8 @@ Nyx::read_particle_params ()
 {
     ParmParse pp("nyx");
     pp.query("do_dm_particles", do_dm_particles);
-
+    if(!do_dm_particles)
+	return;
 #ifdef AGN
     pp.get("particle_init_type", particle_init_type);
 #else

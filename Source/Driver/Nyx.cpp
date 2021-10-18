@@ -378,8 +378,8 @@ Nyx::read_params ()
     if (!do_grav)
         amrex::Error("Dont know what to do with both hydro and gravity off");
 #endif
-
-    read_init_params();
+    if (do_dm_particles || do_hydro)
+        read_init_params();
 
     pp_nyx.query("runlog_precision",runlog_precision);
     pp_nyx.query("runlog_precision_terse",runlog_precision_terse);

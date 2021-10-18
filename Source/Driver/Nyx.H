@@ -468,6 +468,7 @@ public:
     virtual amrex::Real advance(amrex::Real time, amrex::Real dt, int iteration, int ncycle) override;
 
     amrex::Real advance_hydro(amrex::Real time, amrex::Real dt, int iteration, int ncycle);
+    amrex::Real advance_heatcool(amrex::Real time, amrex::Real dt, int iteration, int ncycle);
     amrex::Real advance_no_hydro(amrex::Real time, amrex::Real dt, int iteration, int ncycle);
     amrex::Real advance_hydro_plus_particles(amrex::Real time, amrex::Real dt, int iteration,
                                       int ncycle);

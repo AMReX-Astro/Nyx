@@ -147,7 +147,7 @@ FArrayBox scal(Box(IntVect(AMREX_D_DECL(0,0,0)),IntVect(AMREX_D_DECL(2,0,0))),1)
       IR[mfi].setVal(0);
 
       //      string filename ="DataChunk"+std::to_string(nStep())+"."+std::to_string(mfi.index());
-      std::ifstream ifs(filename.c_str());
+      std::ifstream ifs(filename_chunk.c_str());
     
       S_old[mfi].readFrom(ifs);
       D_old[mfi].readFrom(ifs);
