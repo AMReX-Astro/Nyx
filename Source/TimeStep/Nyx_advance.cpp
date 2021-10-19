@@ -458,6 +458,26 @@ Nyx::advance_heatcool (Real time,
     MultiFab&  IR_old       = get_old_data(SDC_IR_Type);
     MultiFab&  IR_new       = get_new_data(SDC_IR_Type);
     */
+    amrex::ParmParse pp_nyx("nyx");
+    long writeProc = ParallelDescriptor::IOProcessor() ? ParallelDescriptor::MyProc() : -1;
+    int hctest_example_write = 0;
+    int hctest_example_read = 0;
+    int hctest_example_index = 0;
+    pp_nyx.query("hctest_example_write",hctest_example_write);
+    pp_nyx.query("hctest_example_write_proc",writeProc);
+    pp_nyx.query("hctest_example_index",hctest_example_index);
+    pp_nyx.query("hctest_example_read",hctest_example_read);
+    int loc_nStep = hctest_example_index;
+
+    //Leave these hard-coded for now
+    std::string filename_inputs ="DataInputs."+std::to_string(loc_nStep);
+    std::string filename ="DataBADMAP."+std::to_string(loc_nStep);
+    std::string filename_chunk_prefix ="DataChunk."+std::to_string(loc_nStep)+".";
+    
+    std::ifstream ifs(filename.c_str());
+    grids.readFrom(ifs);
+    dmap.readFrom(ifs);
+
     MultiFab S_old(grids, dmap, NUM_STATE, NUM_GROW);
     MultiFab S_new(grids, dmap, NUM_STATE, NUM_GROW);
     MultiFab D_old(grids, dmap, 2, NUM_GROW);
@@ -477,13 +497,14 @@ Nyx::advance_heatcool (Real time,
     MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
     reset_e_src.setVal(0.0);
 
-    Real a_old     = old_a;
-    Real a_new     = new_a;
-    Real a = a_old;
-    Real a_end = a_new;
-    Real delta_time = dt;
+    Real fixed_dt = dt;
+    pp_nyx.query("initial_z",initial_z);
+    pp_nyx.query("final_z",final_z);
+    pp_nyx.query("fixed_dt",fixed_dt);
+    Real a = 1/(initial_z+1);
+    Real a_end = 1/(final_z+1);
+    Real delta_time = fixed_dt;
     int sdc_iter = 0;
-
     integrate_state_struct(S_old_tmp, S_new,
                            D_old, hydro_src,
                            IR_old, reset_e_src,

@@ -47,6 +47,11 @@ using namespace amrex;
 /* Functions Called by the Solver */
 static int f(realtype t, N_Vector u, N_Vector udot, void *user_data);
 
+static void PrintFinalStats(void *cvode_mem);
+
+/* Private function to check function return values */
+static int check_retval(void *flagvalue, const char *funcname, int opt);
+
 int Nyx::integrate_state_struct
   (amrex::MultiFab &S_old,
    amrex::MultiFab &S_new,
@@ -79,82 +84,29 @@ int Nyx::integrate_state_struct
 #else
   const auto tiling = (TilingIfNotGPU() && sundials_use_tiling) ? MFItInfo().EnableTiling(sundials_tile_size) : MFItInfo();
 #endif
-    std::string filename_inputs ="DataInputs."+std::to_string(nStep());
-    std::string filename ="DataBADMAP."+std::to_string(nStep());
-    std::string filename_chunk_prefix ="DataChunk."+std::to_string(nStep())+".";
-    if(ParallelDescriptor::IOProcessor())
-	{
-	    {
-            std::ofstream ofs_inputs(filename_inputs.c_str());
-            ParmParse::dumpTable(ofs_inputs, true);
-	    //	    ofs_inputs << "nyx.initial_a = "<<a<<std::endl;
-   	    ofs_inputs << "nyx.initial_z = "<<1/a-1<<std::endl;
-	    //   	    ofs_inputs << "nyx.final_a = "<<a_end<<std::endl;
-       	    ofs_inputs << "nyx.final_z = "<<1/a_end-1<<std::endl;
-    	    ofs_inputs << "nyx.fixed_dt = "<<delta_time<<std::endl;
-       	    ofs_inputs << "nyx.hctest_filename_inputs = "<<filename_inputs<<std::endl;
-	    ofs_inputs << "nyx.hctest_filename_badmap = "<<filename<<std::endl;
-	    ofs_inputs << "nyx.hctest_filename_chunk = "<<filename_chunk_prefix<<std::endl;
-       	    ofs_inputs << "nyx.hctest_endIndex = "<<(MFIter(S_old,tiling).length())<<std::endl;
-	    }
-	    /*
-FArrayBox scal(Box(IntVect(AMREX_D_DECL(0,0,0)),IntVect(AMREX_D_DECL(2,0,0))),1);
-	    auto scalarr=scal.array();
-	    scalarr(0,0,0)=a;
-	    scalarr(1,0,0)=a_end;
-    	    scalarr(2,0,0)=delta_time;
-	    amrex::Print()<<scal<<std::endl;
-	    scal.writeOn(ofs);*/
-	    {
-		std::ofstream ofs(filename.c_str());
-		grids.writeOn(ofs);
-		dmap.writeOn(ofs);
-	    }
-	    /*
-	    //removing const from these vars for testing purposes only
-	    a=0.0;
-	    a_end=0.0;
-	    delta_time=0.0;*/
-            std::ifstream ifs(filename.c_str());
-	    //   	    scal.readFrom(ifs);
-	    grids.readFrom(ifs);
-	    dmap.readFrom(ifs);
-	    /*
-	    a=scalarr(0,0,0);
-	    a_end=scalarr(1,0,0);
-    	    delta_time=scalarr(2,0,0);*/
-	}
+
+    amrex::ParmParse pp_nyx("nyx");
+    long writeProc = ParallelDescriptor::IOProcessor() ? ParallelDescriptor::MyProc() : -1;
+    int hctest_example_write = 0;
+    int hctest_example_read = 0;
+    int hctest_example_index = 0;
+    pp_nyx.query("hctest_example_write",hctest_example_write);
+    pp_nyx.query("hctest_example_write_proc",writeProc);
+    pp_nyx.query("hctest_example_index",hctest_example_index);
+    pp_nyx.query("hctest_example_read",hctest_example_read);
+    int loc_nStep = hctest_example_index;
+    std::cout<< ParallelDescriptor::MyProc()<<" test equals "<<writeProc <<"\t"<< hctest_example_write<<std::endl;
+    if(ParallelDescriptor::MyProc()==writeProc && hctest_example_write!=0)
+        sdc_writeOn(S_old,S_new, D_old, hydro_src, IR, reset_src, tiling, a, a_end, delta_time, store_steps, new_max_sundials_steps, sdc_iter, loc_nStep);
+    if(ParallelDescriptor::MyProc()==writeProc && hctest_example_read!=0)
+    {
+        sdc_readFrom(S_old,S_new, D_old, hydro_src, IR, reset_src, tiling, a, a_end, delta_time, store_steps, new_max_sundials_steps, sdc_iter, loc_nStep);
+    }
     for ( MFIter mfi(S_old, tiling); mfi.isValid(); ++mfi)
     {
 
       //check that copy contructor vs create constructor works??
       const Box& tbx = mfi.tilebox();
-      std::string filename_chunk = filename_chunk_prefix + std::to_string(mfi.index());
-      std::ofstream ofs(filename_chunk.c_str());
-
-      S_old[mfi].writeOn(ofs);
-      D_old[mfi].writeOn(ofs);
-      S_new[mfi].writeOn(ofs);
-      hydro_src[mfi].writeOn(ofs);
-      reset_src[mfi].writeOn(ofs);
-      IR[mfi].writeOn(ofs);
-
-      S_old[mfi].setVal(0);                                                                           
-      D_old[mfi].setVal(0);                                                                           
-      S_new[mfi].setVal(0);                                                                           
-      hydro_src[mfi].setVal(0);                                                                       
-      reset_src[mfi].setVal(0);                                                                       
-      IR[mfi].setVal(0);
-
-      //      string filename ="DataChunk"+std::to_string(nStep())+"."+std::to_string(mfi.index());
-      std::ifstream ifs(filename_chunk.c_str());
-    
-      S_old[mfi].readFrom(ifs);
-      D_old[mfi].readFrom(ifs);
-      S_new[mfi].readFrom(ifs);
-      hydro_src[mfi].readFrom(ifs);
-      reset_src[mfi].readFrom(ifs);
-      IR[mfi].readFrom(ifs);
       
       Array4<Real> const& state4 = S_old.array(mfi);
       Array4<Real> const& diag_eos4 = D_old.array(mfi);
@@ -557,6 +509,7 @@ int Nyx::integrate_state_struct_mfin
             amrex::Gpu::streamSynchronize();
             BL_PROFILE_VAR_STOP(varsteps);
             BL_PROFILE_VAR("Nyx::reactions_cells_finalize",var6);
+	    PrintFinalStats(cvode_mem);
 #ifdef AMREX_USE_GPU
             AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
             {                          
@@ -574,7 +527,6 @@ int Nyx::integrate_state_struct_mfin
                 int  idx= i + j*len.x + k*len.x*len.y - (lo.x+lo.y*len.x+lo.z*len.x*len.y);
                 //                              for (int i= 0;i < neq; ++i) {
                 ode_eos_finalize_struct(i,j,k,idx,atomic_rates,f_rhs_data,a_end,state4,state_n4,reset_src4,diag_eos4,IR4,dptr,eptr,delta_time);
-                //PrintFinalStats(cvode_mem);
 #ifdef AMREX_USE_GPU
                 });
             amrex::Gpu::Device::streamSynchronize();
@@ -682,3 +634,69 @@ static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
   return 0;
 }
 #endif
+
+/* Get and print some final statistics */
+
+static void PrintFinalStats(void *cvode_mem)
+{
+  long lenrw, leniw ;
+  long lenrwLS, leniwLS;
+  long int nst, nfe, nsetups, nni, ncfn, netf;
+  long int nli, npe, nps, ncfl, nfeLS;
+  int retval;
+
+  retval = CVodeGetWorkSpace(cvode_mem, &lenrw, &leniw);
+  check_retval(&retval, "CVodeGetWorkSpace", 1);
+  retval = CVodeGetNumSteps(cvode_mem, &nst);
+  check_retval(&retval, "CVodeGetNumSteps", 1);
+  retval = CVodeGetNumRhsEvals(cvode_mem, &nfe);
+  check_retval(&retval, "CVodeGetNumRhsEvals", 1);
+  retval = CVodeGetNumLinSolvSetups(cvode_mem, &nsetups);
+  check_retval(&retval, "CVodeGetNumLinSolvSetups", 1);
+  retval = CVodeGetNumErrTestFails(cvode_mem, &netf);
+  check_retval(&retval, "CVodeGetNumErrTestFails", 1);
+  retval = CVDiagGetNumRhsEvals(cvode_mem, &nfeLS);
+
+  if (ParallelDescriptor::IOProcessor())
+    {
+  printf("\nFinal Statistics.. \n\n");
+  printf("lenrw   = %5ld     leniw   = %5ld\n"  , lenrw, leniw);
+  printf("nst     = %5ld\n"                     , nst);
+  printf("nfe     = %5ld     nfeLS   = %5ld\n"  , nfe, nfeLS);
+  printf("nsetups = %5ld     netf    = %5ld\n"  , nsetups, netf);
+    }
+
+  return;
+}
+
+
+static int check_retval(void *flagvalue, const char *funcname, int opt)
+{
+  int *errflag;
+
+  /* Check if SUNDIALS function returned NULL pointer - no memory allocated */
+
+  if (opt == 0 && flagvalue == NULL) {
+    fprintf(stderr, "\nSUNDIALS_ERROR: %s() failed - returned NULL pointer\n\n",
+            funcname);
+    return(1); }
+
+  /* Check if flag < 0 */
+
+  else if (opt == 1) {
+    errflag = (int *) flagvalue;
+    if (*errflag < 0) {
+      fprintf(stderr, "\nSUNDIALS_ERROR: %s() failed with flag = %d\n\n",
+              funcname, *errflag);
+      return(1); }}
+
+  /* Check if function returned NULL pointer - no memory allocated */
+
+  else if (opt == 2 && flagvalue == NULL) {
+    fprintf(stderr, "\nMEMORY_ERROR: %s() failed - returned NULL pointer\n\n",
+            funcname);
+    return(1); }
+
+  return(0);
+}
+

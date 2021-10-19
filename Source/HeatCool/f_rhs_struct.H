@@ -531,7 +531,7 @@ void sdc_writeOn(amrex::MultiFab &S_old,
     std::string filename_inputs ="DataInputs."+std::to_string(loc_nStep);
     std::string filename ="DataBADMAP."+std::to_string(loc_nStep);
     std::string filename_chunk_prefix ="DataChunk."+std::to_string(loc_nStep)+".";
-    if(ParallelDescriptor::IOProcessor())
+    //    if(ParallelDescriptor::IOProcessor())
 	{
 	    {
             std::ofstream ofs_inputs(filename_inputs.c_str());
@@ -545,6 +545,10 @@ void sdc_writeOn(amrex::MultiFab &S_old,
 	    ofs_inputs << "nyx.hctest_filename_badmap = "<<filename<<std::endl;
 	    ofs_inputs << "nyx.hctest_filename_chunk = "<<filename_chunk_prefix<<std::endl;
        	    ofs_inputs << "nyx.hctest_endIndex = "<<(MFIter(S_old,tiling).length())<<std::endl;
+       	    ofs_inputs << "nyx.hctest_example_write = 0"<<std::endl;
+      	    ofs_inputs << "nyx.hctest_example_read = 1"<<std::endl;
+       	    ofs_inputs << "nyx.do_dm_particles = 0"<<std::endl;
+       	    ofs_inputs << "nyx.do_hydro = 0"<<std::endl;
 	    }
 	    {
 		std::ofstream ofs(filename.c_str());
@@ -599,6 +603,10 @@ void sdc_readFrom(amrex::MultiFab &S_old,
     grids.readFrom(ifs);
     dmap.readFrom(ifs);
 
+    std::cout<<S_old.boxArray()<<std::endl;
+    std::cout<<grids<<std::endl;
+    std::cout<<S_old.DistributionMap()<<std::endl;
+    std::cout<<dmap<<std::endl;
     //Sanity check that we're getting the same BoxArray and DistributionMapping
     AMREX_ALWAYS_ASSERT(S_old.boxArray().CellEqual(grids) && dmap == S_old.DistributionMap());
 
