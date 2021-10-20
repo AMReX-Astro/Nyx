@@ -603,10 +603,16 @@ void sdc_readFrom(amrex::MultiFab &S_old,
     grids.readFrom(ifs);
     dmap.readFrom(ifs);
 
+#ifdef AMREX_DEBUG
+    if(verbose > 1)
+    {
     std::cout<<S_old.boxArray()<<std::endl;
     std::cout<<grids<<std::endl;
     std::cout<<S_old.DistributionMap()<<std::endl;
     std::cout<<dmap<<std::endl;
+    }
+#endif
+
     //Sanity check that we're getting the same BoxArray and DistributionMapping
     AMREX_ALWAYS_ASSERT(S_old.boxArray().CellEqual(grids) && dmap == S_old.DistributionMap());
 

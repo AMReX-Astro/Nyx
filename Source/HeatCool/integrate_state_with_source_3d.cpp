@@ -90,15 +90,19 @@ int Nyx::integrate_state_struct
     int hctest_example_write = 0;
     int hctest_example_read = 0;
     int hctest_example_index = 0;
+    int hctest_example_proc = 0;
     pp_nyx.query("hctest_example_write",hctest_example_write);
-    pp_nyx.query("hctest_example_write_proc",writeProc);
+    if(pp_nyx.query("hctest_example_write_proc",writeProc))
+        hctest_example_proc = ParallelDescriptor::MyProc()==writeProc;
+    else
+	hctest_example_proc = 1;
     pp_nyx.query("hctest_example_index",hctest_example_index);
     pp_nyx.query("hctest_example_read",hctest_example_read);
     int loc_nStep = hctest_example_index;
-    std::cout<< ParallelDescriptor::MyProc()<<" test equals "<<writeProc <<"\t"<< hctest_example_write<<std::endl;
-    if(ParallelDescriptor::MyProc()==writeProc && hctest_example_write!=0)
+
+    if(hctest_example_proc && hctest_example_write!=0)
         sdc_writeOn(S_old,S_new, D_old, hydro_src, IR, reset_src, tiling, a, a_end, delta_time, store_steps, new_max_sundials_steps, sdc_iter, loc_nStep);
-    if(ParallelDescriptor::MyProc()==writeProc && hctest_example_read!=0)
+    if(hctest_example_proc && hctest_example_read!=0)
     {
         sdc_readFrom(S_old,S_new, D_old, hydro_src, IR, reset_src, tiling, a, a_end, delta_time, store_steps, new_max_sundials_steps, sdc_iter, loc_nStep);
     }
@@ -509,7 +513,8 @@ int Nyx::integrate_state_struct_mfin
             amrex::Gpu::streamSynchronize();
             BL_PROFILE_VAR_STOP(varsteps);
             BL_PROFILE_VAR("Nyx::reactions_cells_finalize",var6);
-	    PrintFinalStats(cvode_mem);
+	    if(verbose > 1)
+                PrintFinalStats(cvode_mem);
 #ifdef AMREX_USE_GPU
             AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
             {                          
