@@ -469,11 +469,15 @@ Nyx::advance_heatcool (Real time,
     pp_nyx.query("hctest_example_read",hctest_example_read);
     int loc_nStep = hctest_example_index;
 
-    //Leave these hard-coded for now
-    std::string filename_inputs ="DataInputs."+std::to_string(loc_nStep);
-    std::string filename ="DataBADMAP."+std::to_string(loc_nStep);
-    std::string filename_chunk_prefix ="DataChunk."+std::to_string(loc_nStep)+".";
-    
+    //Default to these hard-coded values
+    std::string filename_inputs ="hctest/inputs."+std::to_string(loc_nStep);
+    std::string filename ="hctest/BADMAP."+std::to_string(loc_nStep);
+    std::string filename_chunk_prefix ="hctest/Chunk."+std::to_string(loc_nStep)+".";
+
+    pp_nyx.query("hctest_filename_inputs",filename_inputs);
+    pp_nyx.query("hctest_filename_badmap",filename);
+    pp_nyx.query("hctest_filename_chunk",filename_chunk_prefix);
+
     std::ifstream ifs(filename.c_str());
     grids.readFrom(ifs);
     dmap.readFrom(ifs);

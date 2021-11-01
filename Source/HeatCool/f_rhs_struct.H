@@ -516,46 +516,44 @@ f_rhs_struct(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, Ato
 }
 
 void sdc_writeOn(amrex::MultiFab &S_old,
-		 amrex::MultiFab &S_new,
-		 amrex::MultiFab &D_old,
-		 amrex::MultiFab &hydro_src,
-		 amrex::MultiFab &IR,
-		 amrex::MultiFab &reset_src,
+                 amrex::MultiFab &S_new,
+                 amrex::MultiFab &D_old,
+                 amrex::MultiFab &hydro_src,
+                 amrex::MultiFab &IR,
+                 amrex::MultiFab &reset_src,
                  MFItInfo tiling,
-		 const Real& a, const amrex::Real& a_end, const Real& delta_time,
-		 long int& old_max_steps, long int& new_max_steps,
-		 const int sdc_iter, const int loc_nStep)
+                 const Real& a, const amrex::Real& a_end, const Real& delta_time,
+                 long int& old_max_steps, long int& new_max_steps,
+                 const int sdc_iter, const int loc_nStep,
+                 std::string filename_inputs, std::string filename, std::string filename_chunk_prefix)
 {
 
-    //Leave these hard-coded for now
-    std::string filename_inputs ="DataInputs."+std::to_string(loc_nStep);
-    std::string filename ="DataBADMAP."+std::to_string(loc_nStep);
-    std::string filename_chunk_prefix ="DataChunk."+std::to_string(loc_nStep)+".";
     //    if(ParallelDescriptor::IOProcessor())
-	{
-	    {
+        {
+            {
             std::ofstream ofs_inputs(filename_inputs.c_str());
             ParmParse::dumpTable(ofs_inputs, true);
-	    //	    ofs_inputs << "nyx.initial_a = "<<a<<std::endl;
-   	    ofs_inputs << "nyx.initial_z = "<<1/a-1<<std::endl;
-	    //   	    ofs_inputs << "nyx.final_a = "<<a_end<<std::endl;
-       	    ofs_inputs << "nyx.final_z = "<<1/a_end-1<<std::endl;
-    	    ofs_inputs << "nyx.fixed_dt = "<<delta_time<<std::endl;
-       	    ofs_inputs << "nyx.hctest_filename_inputs = "<<filename_inputs<<std::endl;
-	    ofs_inputs << "nyx.hctest_filename_badmap = "<<filename<<std::endl;
-	    ofs_inputs << "nyx.hctest_filename_chunk = "<<filename_chunk_prefix<<std::endl;
-       	    ofs_inputs << "nyx.hctest_endIndex = "<<(MFIter(S_old,tiling).length())<<std::endl;
-       	    ofs_inputs << "nyx.hctest_example_write = 0"<<std::endl;
-      	    ofs_inputs << "nyx.hctest_example_read = 1"<<std::endl;
-       	    ofs_inputs << "nyx.do_dm_particles = 0"<<std::endl;
-       	    ofs_inputs << "nyx.do_hydro = 0"<<std::endl;
-	    }
-	    {
-		std::ofstream ofs(filename.c_str());
-		(S_old.boxArray()).writeOn(ofs);
-		(S_old.DistributionMap()).writeOn(ofs);
-	    }
-	}
+            //      ofs_inputs << "nyx.initial_a = "<<a<<std::endl;
+            ofs_inputs << "nyx.initial_z = "<<1/a-1<<std::endl;
+            //              ofs_inputs << "nyx.final_a = "<<a_end<<std::endl;
+            ofs_inputs << "nyx.final_z = "<<1/a_end-1<<std::endl;
+            ofs_inputs << "nyx.fixed_dt = "<<delta_time<<std::endl;
+            ofs_inputs << "nyx.hctest_filename_inputs = "<<filename_inputs<<std::endl;
+            ofs_inputs << "nyx.hctest_filename_badmap = "<<filename<<std::endl;
+            ofs_inputs << "nyx.hctest_filename_chunk = "<<filename_chunk_prefix<<std::endl;
+            ofs_inputs << "nyx.hctest_endIndex = "<<(MFIter(S_old,tiling).length())<<std::endl;
+            ofs_inputs << "nyx.hctest_example_write = 0"<<std::endl;
+            ofs_inputs << "nyx.hctest_example_read = 1"<<std::endl;
+            ofs_inputs << "nyx.do_dm_particles = 0"<<std::endl;
+            ofs_inputs << "nyx.do_hydro = 0"<<std::endl;
+            ofs_inputs << "nyx.hctest_example_index = "<<loc_nStep<<std::endl;
+            }
+            {
+                std::ofstream ofs(filename.c_str());
+                (S_old.boxArray()).writeOn(ofs);
+                (S_old.DistributionMap()).writeOn(ofs);
+            }
+        }
     for ( MFIter mfi(S_old, tiling); mfi.isValid(); ++mfi)
     {
       std::string filename_chunk = filename_chunk_prefix + std::to_string(mfi.index());
@@ -580,25 +578,21 @@ void sdc_writeOn(amrex::MultiFab &S_old,
 }
 
 void sdc_readFrom(amrex::MultiFab &S_old,
-		  amrex::MultiFab &S_new,
-		  amrex::MultiFab &D_old,
-		  amrex::MultiFab &hydro_src,
-		  amrex::MultiFab &IR,
-		  amrex::MultiFab &reset_src,
-		  MFItInfo tiling,
-		  const Real& a, const amrex::Real& a_end, const Real& delta_time,
-		  long int& old_max_steps, long int& new_max_steps,
-		  const int sdc_iter, const int loc_nStep)
+                  amrex::MultiFab &S_new,
+                  amrex::MultiFab &D_old,
+                  amrex::MultiFab &hydro_src,
+                  amrex::MultiFab &IR,
+                  amrex::MultiFab &reset_src,
+                  MFItInfo tiling,
+                  const Real& a, const amrex::Real& a_end, const Real& delta_time,
+                  long int& old_max_steps, long int& new_max_steps,
+                  const int sdc_iter, const int loc_nStep,
+                  std::string filename_inputs, std::string filename, std::string filename_chunk_prefix)
 {
 
     BoxArray grids;
     DistributionMapping dmap;
 
-    //Leave these hard-coded for now
-    std::string filename_inputs ="DataInputs."+std::to_string(loc_nStep);
-    std::string filename ="DataBADMAP."+std::to_string(loc_nStep);
-    std::string filename_chunk_prefix ="DataChunk."+std::to_string(loc_nStep)+".";
-    
     std::ifstream ifs(filename.c_str());
     grids.readFrom(ifs);
     dmap.readFrom(ifs);
@@ -629,5 +623,5 @@ void sdc_readFrom(amrex::MultiFab &S_old,
       IR[mfi].readFrom(ifs);
     }
 }
-	
+        
 #endif

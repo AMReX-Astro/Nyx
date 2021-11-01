@@ -96,15 +96,37 @@ int Nyx::integrate_state_struct
         hctest_example_proc = ParallelDescriptor::MyProc()==writeProc;
     else
 	hctest_example_proc = 1;
+
+    if(hctest_example_write)
+	hctest_example_index = nStep();
+
     pp_nyx.query("hctest_example_index",hctest_example_index);
     pp_nyx.query("hctest_example_read",hctest_example_read);
     int loc_nStep = hctest_example_index;
 
+    //Default to these hard-coded values
+    std::string filename_inputs ="hctest/inputs."+std::to_string(loc_nStep);
+    std::string filename ="hctest/BADMAP."+std::to_string(loc_nStep);
+    std::string filename_chunk_prefix ="hctest/Chunk."+std::to_string(loc_nStep)+".";
+
+    int directory_overwrite = pp_nyx.query("hctest_filename_inputs",filename_inputs);
+    directory_overwrite += pp_nyx.query("hctest_filename_badmap",filename);
+    directory_overwrite += pp_nyx.query("hctest_filename_chunk",filename_chunk_prefix);
+
+    if(directory_overwrite == 0 && hctest_example_read==0)
+    {
+        amrex::UtilCreateCleanDirectory("hctest",true);
+    }
+    else
+	amrex::Print()<<"Using the following paths for hctest:\n"<<filename_inputs<<"\n"<<filename<<"\n"<<filename_chunk_prefix<<std::endl;
+
     if(hctest_example_proc && hctest_example_write!=0)
-        sdc_writeOn(S_old,S_new, D_old, hydro_src, IR, reset_src, tiling, a, a_end, delta_time, store_steps, new_max_sundials_steps, sdc_iter, loc_nStep);
+    {
+        sdc_writeOn(S_old,S_new, D_old, hydro_src, IR, reset_src, tiling, a, a_end, delta_time, store_steps, new_max_sundials_steps, sdc_iter, loc_nStep, filename_inputs, filename, filename_chunk_prefix);
+    }
     if(hctest_example_proc && hctest_example_read!=0)
     {
-        sdc_readFrom(S_old,S_new, D_old, hydro_src, IR, reset_src, tiling, a, a_end, delta_time, store_steps, new_max_sundials_steps, sdc_iter, loc_nStep);
+        sdc_readFrom(S_old,S_new, D_old, hydro_src, IR, reset_src, tiling, a, a_end, delta_time, store_steps, new_max_sundials_steps, sdc_iter, loc_nStep, filename_inputs, filename, filename_chunk_prefix);
     }
     for ( MFIter mfi(S_old, tiling); mfi.isValid(); ++mfi)
     {
