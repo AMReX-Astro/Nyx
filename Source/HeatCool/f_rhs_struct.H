@@ -598,6 +598,7 @@ void sdc_readFrom(amrex::MultiFab &S_old,
     dmap.readFrom(ifs);
 
 #ifdef AMREX_DEBUG
+#ifndef AMREX_USE_GPU
     if(verbose > 1)
     {
     std::cout<<S_old.boxArray()<<std::endl;
@@ -605,6 +606,7 @@ void sdc_readFrom(amrex::MultiFab &S_old,
     std::cout<<S_old.DistributionMap()<<std::endl;
     std::cout<<dmap<<std::endl;
     }
+#endif
 #endif
 
     //Sanity check that we're getting the same BoxArray and DistributionMapping

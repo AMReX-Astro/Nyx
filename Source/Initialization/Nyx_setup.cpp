@@ -151,12 +151,14 @@ Nyx::variable_setup()
 void
 Nyx::heatcool_setup ()
 {
+#ifdef HEATCOOL
     ParmParse pp_nyx("nyx");
     std::string file_in;
     pp_nyx.query("uvb_rates_file", file_in);
     amrex::Real mean_rhob = comoving_OmB * 3.e0*(comoving_h*100.e0)*(comoving_h*100.e0) / (8.e0*M_PI*Gconst);
     tabulate_rates(file_in, mean_rhob);
     amrex::Gpu::streamSynchronize();
+#endif
 }
 
 void
