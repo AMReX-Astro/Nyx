@@ -164,7 +164,7 @@ f_rhs_rpar(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, amrex
     rho_vode=rpar[2];
     z_vode=rpar[3];
 
-    if(e_in<=0 || std::isnan(e_in)) e_in=std::numeric_limits<amrex::Real>::min();
+    if(e_in<=0 || amrex::isnan(e_in)) e_in=std::numeric_limits<amrex::Real>::min();
 
     // Converts from code units to CGS
     rho = rho_vode * density_to_cgs * (1.0e0+amrex::Math::abs(z_vode))*(1.0e0+amrex::Math::abs(z_vode))*(1.0e0+amrex::Math::abs(z_vode));
