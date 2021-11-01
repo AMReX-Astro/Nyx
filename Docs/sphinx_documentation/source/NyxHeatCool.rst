@@ -34,3 +34,22 @@ Input flags with affect the CVODE integration include:
 - ``nyx.sundials_alloc_type`` which has up to 5 different vector memory allocation strategies and only affects executables built for GPUs
 - ``nyx.use_typical_steps`` which when non-zero sets CVODE's adaptive step-size selection (which substeps the total CVODE integration time) to be ``dt / old_max_steps``. This maximum was over the entire problem domain. (In the strang case, the old maximum is taken from the same phase in the previous time-step)
 - ``nyx.sundials_use_tiling`` which controls whether the MFIter loop that iterates over the CVODE integration uses tiling
+- ``nyx.sundials_tile_size`` which controls the tile size of the MFIter loop that iterates over the CVODE integration
+- ``nyx.hydro_tile_size`` which controls the tile size of the MFIter loop that iterates over the hydro advance that makes hydro_src for SDC integration
+- ``nyx.sundials_reltol`` which controls the relative tolerance given for the CVODE integration
+- ``nyx.sundials_abstol`` which controls the absolute tolerance factor which multiplies the local internal energy to set the absolute tolerance vector for the CVODE integration
+
+A ``HeatCoolTests`` directory allows for the testing of the CVODE integration alone, given data from a full step of the ``LyA`` executable.
+At present, it assumes the same tilesizes, boxarray, and distribution mapping between both runs. Note, if you supply your own filename paths
+you must ensure the directory structure exists. Some additional CVODE statistics will be displayed if ``nyx.v>1``
+
+Input flags to control these tests include:
+
+- ``hctest_example_write`` which when non-zero writes all relevant data for 1 step, including an inputs file (should be used with ``LyA`` or similar)
+- ``hctest_example_write_proc`` which when set will only write data for boxes owned by that processor number (which doesn't currently have a read mode that will take this smaller data set)
+- ``hctest_example_index`` which represents the part of the filename that should typically denote step number, if unset defaults to nStep()
+- ``hctest_example_read`` which when non-zero reads all relevant data for 1 step (should be used with ``HeatCoolTests``)
+
+- ``hctest_filename_inputs`` which sets the name of the inputs file to write, if unset, hctest/inputs.${hctest_example_index}
+- ``hctest_filename_badmap`` which sets the name of the BoxArray and DistributionMapping file to write, if unset, hctest/BADMAP.${hctest_example_index}
+- ``hctest_filename_chunk`` which sets the name of the Chunk data file prefix to use, if unset, hctest/Chunk.${hctest_example_index} (the mfi.index() is used to index the boxes for the full filepath)
