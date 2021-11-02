@@ -441,6 +441,8 @@ Nyx::advance_heatcool (Real time,
                        int  ncycle)
 {
     BL_PROFILE("Nyx::advance_heatcool()");
+#ifdef HEATCOOL
+    amrex::Print()<<"Using advance_heatcool since hydro and dm_particles are both off"<<std::endl;
     /*      
     for (int k = 0; k < NUM_STATE_TYPE; k++)
     {
@@ -518,7 +520,9 @@ Nyx::advance_heatcool (Real time,
                            IR_old, reset_e_src,
                            a, a_end,
                            delta_time, sdc_iter);
-
+#else
+    amrex::Abort("Need USE_HEATCOOL=TRUE for advance_heatcool");
+#endif
     return dt;
 }
 
