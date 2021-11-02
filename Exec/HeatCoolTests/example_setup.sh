@@ -1,4 +1,6 @@
 #!/bin/bash
+
+set -ex
 ##Use the same make options and input file as Nyx/Exec/LyA
 
 ##Example test:
@@ -7,18 +9,18 @@
 
 ##Do sundials install
 #Use existing documentation
-if [ ! -d "../../subproject/sundials/instdir" ]; then
-    cd ../../subproject/sundials
+if [ ! -d "../../subprojects/sundials/instdir" ]; then
+    cd ../../subprojects/sundials
     mkdir builddir instdir
     cd builddir
     cmake \
-	-DCMAKE_INSTALL_PREFIX=$(pwd)/../instdir  \
+	-DCMAKE_INSTALL_PREFIX="$(pwd)/../instdir"  \
 	-DCMAKE_INSTALL_LIBDIR=lib \
 	-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
-	-DCMAKE_C_COMPILER=$(which gcc)  \
-	-DCMAKE_CXX_COMPILER=$(which g++)   \
-	-DCMAKE_CUDA_HOST_COMPILER=$(which g++)    \
-	-DEXAMPLES_INSTALL_PATH=$(pwd)/../instdir/examples \
+	-DCMAKE_C_COMPILER="$(which gcc)"  \
+	-DCMAKE_CXX_COMPILER="$(which g++)"   \
+	-DCMAKE_CUDA_HOST_COMPILER="$(which g++)"    \
+	-DEXAMPLES_INSTALL_PATH="$(pwd)/../instdir/examples" \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DCMAKE_C_FLAGS_RELEASE="-O3 -DNDEBUG" \
 	-DCMAKE_CXX_FLAGS_RELEASE="-O3 -DNDEBUG"  \
@@ -32,14 +34,15 @@ if [ ! -d "../../subproject/sundials/instdir" ]; then
     cd ../../../Exec/HeatCoolTests
 fi
 
-export EXE="export OMP_NUM_THREADS=4;mpiexec -n 2 ./Nyx3d.gnu.TPROF.MPI.OMP.ex "
+export OMP_NUM_THREADS=4
+export EXE='mpiexec -n 2 ./Nyx3d.gnu.TPROF.MPI.OMP.ex '
 
-cd ../../../
-cd Nyx/Exec/LyA
-make -j8 SUNDIALS_ROOT=$(pwd)/../../subproject/sundials/instdir
+cd ../../
+cd Exec/LyA
+make -j8 SUNDIALS_ROOT=$(pwd)/../../subprojects/sundials/instdir
 ${EXE} inputs max_step=1 nyx.hctest_example_write=1 nyx.v=2
 
-cd ../../Nyx/Exec/HeatCoolTests
-ln -s $(pwd)/../../LyA/hctest .
-make -j8 SUNDIALS_ROOT=$(pwd)/../../subproject/sundials/instdir
+cd ../HeatCoolTests
+ln -s $(pwd)/../LyA/hctest .
+make -j8 SUNDIALS_ROOT=$(pwd)/../../subprojects/sundials/instdir
 ${EXE} hctest/inputs.0
