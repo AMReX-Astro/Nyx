@@ -126,8 +126,10 @@ Nyx::variable_setup()
 #ifdef NO_HYDRO
     if (do_dm_particles)
         no_hydro_setup();
+#ifdef HEATCOOL
     else
         heatcool_setup();
+#endif
 #else
     if (do_hydro == 1)
     {
@@ -137,8 +139,10 @@ Nyx::variable_setup()
     {
        no_hydro_setup();
     }
+#ifdef HEATCOOL
     else
         heatcool_setup();
+#endif
 #endif
 
     //
@@ -148,18 +152,18 @@ Nyx::variable_setup()
 }
 
 #ifndef NO_HYDRO
+#ifdef HEATCOOL
 void
 Nyx::heatcool_setup ()
 {
-#ifdef HEATCOOL
     ParmParse pp_nyx("nyx");
     std::string file_in;
     pp_nyx.query("uvb_rates_file", file_in);
     amrex::Real mean_rhob = comoving_OmB * 3.e0*(comoving_h*100.e0)*(comoving_h*100.e0) / (8.e0*M_PI*Gconst);
     tabulate_rates(file_in, mean_rhob);
     amrex::Gpu::streamSynchronize();
-#endif
 }
+#endif
 
 void
 Nyx::hydro_setup()

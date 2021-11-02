@@ -554,6 +554,11 @@ void sdc_writeOn(amrex::MultiFab &S_old,
                 (S_old.DistributionMap()).writeOn(ofs);
             }
         }
+#ifdef _OPENMP
+#ifdef AMREX_USE_GPU
+#pragma omp parallel
+#endif
+#endif
     for ( MFIter mfi(S_old, tiling); mfi.isValid(); ++mfi)
     {
       std::string filename_chunk = filename_chunk_prefix + std::to_string(mfi.index());
@@ -600,6 +605,11 @@ void sdc_readFrom(amrex::MultiFab &S_old,
     //Sanity check that we're getting the same BoxArray and DistributionMapping
     AMREX_ALWAYS_ASSERT(S_old.boxArray().CellEqual(grids) && dmap == S_old.DistributionMap());
 
+#ifdef _OPENMP
+#ifdef AMREX_USE_GPU
+#pragma omp parallel
+#endif
+#endif
     for ( MFIter mfi(S_old, tiling); mfi.isValid(); ++mfi)
     {
       std::string filename_chunk = filename_chunk_prefix + std::to_string(mfi.index());

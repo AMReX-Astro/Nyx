@@ -77,7 +77,6 @@ int Nyx::integrate_state_struct
       tiling = (MFItInfo().SetDynamic(true)).EnableTiling(sundials_tile_size);
   else
       tiling = MFItInfo().SetDynamic(true);
-#pragma omp parallel
 #else
   const auto tiling = (TilingIfNotGPU() && sundials_use_tiling) ? MFItInfo().EnableTiling(sundials_tile_size) : MFItInfo();
 #endif
@@ -128,6 +127,11 @@ int Nyx::integrate_state_struct
     {
         sdc_readFrom(S_old,S_new, D_old, hydro_src, IR, reset_src, tiling, a, a_end, delta_time, store_steps, new_max_sundials_steps, sdc_iter, loc_nStep, filename_inputs, filename, filename_chunk_prefix);
     }
+#ifdef _OPENMP
+#ifdef AMREX_USE_GPU
+#pragma omp parallel
+#endif
+#endif
     for ( MFIter mfi(S_old, tiling); mfi.isValid(); ++mfi)
     {
 
