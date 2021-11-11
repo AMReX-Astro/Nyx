@@ -73,7 +73,7 @@ bool dmvars_on(std::string& fns) {
     // open file to search
     fileInput.open(fns.c_str());
     while(getline(fileInput, line)) {
-        if (line.find(search, 0) != string::npos) {
+        if (line.find(search, 0) != std::string::npos) {
             dmvars = true;
         }
     }
@@ -106,7 +106,7 @@ bool hydro_on(std::string& fns) {
     // open file to search
     fileInput.open(fns.c_str());
     while(getline(fileInput, line)) {
-        if (line.find(search, 0) != string::npos) {
+        if (line.find(search, 0) != std::string::npos) {
             hydro = true;
         }   
     }
@@ -123,7 +123,7 @@ bool append_on(std::string& fns) {
     // open file to search
     fileInput.open(fns.c_str());
     while(getline(fileInput, line)) {
-        if (line.find(search, 0) != string::npos) {
+        if (line.find(search, 0) != std::string::npos) {
             append = true;
         }
     }
@@ -566,7 +566,7 @@ int main(int argc, char **argv) {
 
     // check if neutrinos are there:
     // NPC directory = neutrinos on
-    std:string fn=input_path+"/NPC";
+    std::string fn=input_path+"/NPC";
     bool neutrinos=neutrinos_on(fn);
 
     fn=input_path+"/job_info";
@@ -648,8 +648,8 @@ int main(int argc, char **argv) {
         val += 1;
     }
 
-    const Vector<string>& plotVarNames = amrData.PlotVarNames();
-    Vector<string> inVarNames(nComp);
+    const Vector<std::string>& plotVarNames = amrData.PlotVarNames();
+    Vector<std::string> inVarNames(nComp);
     Vector<int> destFillComps(nComp);
     if (ParallelDescriptor::IOProcessor()) {
         std::cout << std::endl << "Converting the following states: "
