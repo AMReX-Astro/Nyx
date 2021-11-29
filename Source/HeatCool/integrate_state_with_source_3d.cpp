@@ -112,7 +112,7 @@ int Nyx::integrate_state_struct
     directory_overwrite += pp_nyx.query("hctest_filename_badmap",filename);
     directory_overwrite += pp_nyx.query("hctest_filename_chunk",filename_chunk_prefix);
 
-    if(directory_overwrite == 0 && hctest_example_read==0)
+    if(directory_overwrite == 0 && hctest_example_read==0 && hctest_example_write!=0)
     {
         amrex::UtilCreateCleanDirectory("hctest",true);
     }
