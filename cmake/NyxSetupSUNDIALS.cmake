@@ -1,4 +1,4 @@
-set(SUNDIALS_MINIMUM_VERSION 5.5.0 CACHE INTERNAL "Minimum required SUNDIALS version")
+set(SUNDIALS_MINIMUM_VERSION 6.0.0 CACHE INTERNAL "Minimum required SUNDIALS version")
 
 # We first check if we can find an AMReX installation.
 # If so, we proceed with STANDALONE mode
@@ -81,19 +81,37 @@ else ()
 
    # This is to use the same target name uses by the sundials exported targets
    add_library(SUNDIALS::cvode      ALIAS sundials_cvode_static)
+   install(TARGETS sundials_cvode_static
+   EXPORT sundials)
    if (Nyx_OMP)
       add_library(SUNDIALS::nvecopenmp ALIAS sundials_nvecopenmp_static)
+      install(TARGETS sundials_nvecopenmp_static
+      EXPORT sundials)
    endif ()
    if (Nyx_GPU_BACKEND STREQUAL CUDA)
       add_library(SUNDIALS::nveccuda ALIAS sundials_nveccuda_static)
+      install(TARGETS sundials_nveccuda_static
+      EXPORT sundials)
       add_library(SUNDIALS::cvode_fused_cuda ALIAS sundials_cvode_fused_cuda_static)
+      install(TARGETS sundials_cvode_fused_cuda_static
+      EXPORT sundials)
    endif ()
    if (Nyx_GPU_BACKEND STREQUAL HIP)
      add_library(SUNDIALS::nvechip ALIAS sundials_nvechip_static)
-#     add_library(SUNDIALS::cvode_fused_hip ALIAS sundials_cvode_fused_hip_static)
+     install(TARGETS sundials_nvechip_static
+     EXPORT sundials)
+     add_library(SUNDIALS::cvode_fused_hip ALIAS sundials_cvode_fused_hip_static)
+     install(TARGETS sundials_cvode_fused_hip_static
+     EXPORT sundials)
    endif ()
    if (Nyx_GPU_BACKEND STREQUAL SYCL)
       add_library(SUNDIALS::nvecsycl ALIAS sundials_nvecsycl_static)
+      install(TARGETS sundials_nvecsycl_static
+      EXPORT sundials)
    endif ()
+
+   export(EXPORT sundials)
+   set(SUNDIALS_FOUND TRUE)
+
 
 endif ()
