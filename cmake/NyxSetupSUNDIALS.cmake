@@ -103,17 +103,16 @@ else ()
      add_library(SUNDIALS::cvode_fused_hip ALIAS sundials_cvode_fused_hip_static)
      install(TARGETS sundials_cvode_fused_hip_static
      EXPORT sundials)
+     get_target_property(SUNDIALS_INCLUDES sundials_nvechip_static SOURCES)
+     list(FILTER SUNDIALS_INCLUDES INCLUDE REGEX "\\.h")
+     set_target_properties(
+     sundials_nvechip_static PROPERTIES PUBLIC_HEADER "${SUNDIALS_INCLUDES}")
    endif ()
    if (Nyx_GPU_BACKEND STREQUAL SYCL)
       add_library(SUNDIALS::nvecsycl ALIAS sundials_nvecsycl_static)
       install(TARGETS sundials_nvecsycl_static
       EXPORT sundials)
    endif ()
-
-   get_target_property(SUNDIALS_INCLUDES sundials_nvechip_static SOURCES)
-   list(FILTER SUNDIALS_INCLUDES INCLUDE REGEX "\\.h")
-   set_target_properties(
-   sundials_nvechip_static PROPERTIES PUBLIC_HEADER "${SUNDIALS_INCLUDES}")
 
    export(EXPORT sundials)
    set(SUNDIALS_FOUND TRUE)
