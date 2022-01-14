@@ -62,7 +62,7 @@ else ()
       set(ENABLE_CUDA                  OFF                     CACHE INTERNAL "" )
       if (Nyx_GPU_BACKEND STREQUAL HIP)
 	set(ENABLE_HIP                   ON                      CACHE INTERNAL "" )
-#        set(SUNDIALS_BUILD_PACKAGE_FUSED_KERNELS     ON          CACHE INTERNAL "" )
+        set(SUNDIALS_BUILD_PACKAGE_FUSED_KERNELS     ON          CACHE INTERNAL "" )
       endif ()
       if (Nyx_GPU_BACKEND STREQUAL SYCL)
 	set(ENABLE_SYCL                  ON                      CACHE INTERNAL "" )
@@ -109,6 +109,11 @@ else ()
       install(TARGETS sundials_nvecsycl_static
       EXPORT sundials)
    endif ()
+
+   get_target_property(SUNDIALS_INCLUDES sundials_nvechip_static SOURCES)
+   list(FILTER SUNDIALS_INCLUDES INCLUDE REGEX "\\.h")
+   set_target_properties(
+   sundials_nvechip_static PROPERTIES PUBLIC_HEADER "${SUNDIALS_INCLUDES}")
 
    export(EXPORT sundials)
    set(SUNDIALS_FOUND TRUE)

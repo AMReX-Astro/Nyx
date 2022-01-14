@@ -14,15 +14,12 @@
 #endif
 #endif
 #ifdef AMREX_USE_CUDA
-// #include <sundials/sundials_cuda_policies.hpp>
 #include <nvector/nvector_cuda.h>
 #endif
 #ifdef AMREX_USE_HIP
-// #include <sundials/sundials_hip_policies.hpp>
 #include <nvector/nvector_hip.h>
 #endif
 #ifdef AMREX_USE_DPCPP
-// #include <sundials/sundials_sycl_policies.hpp>
 #include <nvector/nvector_sycl.h>
 #endif
 
