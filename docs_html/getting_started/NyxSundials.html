@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Compiling Nyx with SUNDIALS 5 &mdash; Nyx  documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <title>Compiling Nyx with SUNDIALS 6 &mdash; Nyx  documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
   <!--[if lt IE 9]>
@@ -84,7 +84,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
           <li><a href="../NyxGettingStarted.html">Getting Started</a> &raquo;</li>
-      <li>Compiling Nyx with SUNDIALS 5</li>
+      <li>Compiling Nyx with SUNDIALS 6</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/getting_started/NyxSundials.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -118,10 +118,10 @@
     text-align: unset;
 }
 </style>
-<div class="section" id="compiling-nyx-with-sundials-5">
-<span id="sundials"></span><h1>Compiling Nyx with SUNDIALS 5<a class="headerlink" href="#compiling-nyx-with-sundials-5" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="compiling-nyx-with-sundials-6">
+<span id="sundials"></span><h1>Compiling Nyx with SUNDIALS 6<a class="headerlink" href="#compiling-nyx-with-sundials-6" title="Permalink to this headline">¶</a></h1>
 <p>The following steps describe how to compile Nyx with
-SUNDIALS 5 support. This library is necessary for non-adiabatic
+SUNDIALS 6 support. This library is necessary for non-adiabatic
 heating-cooling Nyx runs, where <code class="docutils literal notranslate"><span class="pre">USE_HEATCOOL=TRUE</span></code>, such as
 the <code class="docutils literal notranslate"><span class="pre">Nyx/Exec/LyA</span></code> directory.</p>
 <p>In order to use SUNDIALS:</p>
@@ -188,7 +188,7 @@ make -j8
 make install -j8
 </pre></div>
 </div>
-<p>To install with HIP support (with ROCm 4.0):</p>
+<p>To install with HIP support (with ROCm 4.5):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>#!/bin/bash
 set -e
 git clone https://github.com/LLNL/sundials
