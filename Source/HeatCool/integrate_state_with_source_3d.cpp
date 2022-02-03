@@ -542,7 +542,7 @@ int Nyx::integrate_state_struct_mfin
             amrex::Gpu::streamSynchronize();
             BL_PROFILE_VAR_STOP(varsteps);
             BL_PROFILE_VAR("Nyx::reactions_cells_finalize",var6);
-	    if(verbose > 1)
+            if(verbose > 1)
                 PrintFinalStats(cvode_mem);
 #ifdef AMREX_USE_GPU
             AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
