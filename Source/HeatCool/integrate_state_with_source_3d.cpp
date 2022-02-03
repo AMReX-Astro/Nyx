@@ -678,32 +678,37 @@ static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
 
 static void PrintFinalStats(void *cvode_mem)
 {
-  long lenrw, leniw ;
-  long lenrwLS, leniwLS;
-  long int nst, nfe, nsetups, nni, ncfn, netf;
-  long int nli, npe, nps, ncfl, nfeLS;
+  long int nst, netf, nfe;
+  long int nni, ncfn;
+  long int nsetups, nje, ncfl, nfeLS;
   int retval;
 
-  retval = CVodeGetWorkSpace(cvode_mem, &lenrw, &leniw);
-  check_retval(&retval, "CVodeGetWorkSpace", 1);
+  // CVODE stats
   retval = CVodeGetNumSteps(cvode_mem, &nst);
   check_retval(&retval, "CVodeGetNumSteps", 1);
-  retval = CVodeGetNumRhsEvals(cvode_mem, &nfe);
-  check_retval(&retval, "CVodeGetNumRhsEvals", 1);
-  retval = CVodeGetNumLinSolvSetups(cvode_mem, &nsetups);
-  check_retval(&retval, "CVodeGetNumLinSolvSetups", 1);
   retval = CVodeGetNumErrTestFails(cvode_mem, &netf);
   check_retval(&retval, "CVodeGetNumErrTestFails", 1);
+  retval = CVodeGetNumRhsEvals(cvode_mem, &nfe);
+  check_retval(&retval, "CVodeGetNumRhsEvals", 1);
+  // Nonlinear solver stats
+  retval = CVodeGetNumNonlinSolvIters(cvode_mem, &nni);
+  check_retval(&retval, "CVodeGetNumNonlinSolvIters", 1);
+  retval = CVodeGetNumNonlinSolvConvFails(cvode_mem, &ncfn);
+  check_retval(&retval, "CVodeGetNumNonlinSolvConvFails", 1);
+  // Linear solver stats
+  retval = CVodeGetNumLinSolvSetups(cvode_mem, &nsetups);
+  check_retval(&retval, "CVodeGetNumLinSolvSetups", 1);
   retval = CVDiagGetNumRhsEvals(cvode_mem, &nfeLS);
+  check_retval(&retval, "CVodeGetNumLinRhsEvals", 1);
 
-  if (ParallelDescriptor::IOProcessor())
-    {
-  printf("\nFinal Statistics.. \n\n");
-  printf("lenrw   = %5ld     leniw   = %5ld\n"  , lenrw, leniw);
-  printf("nst     = %5ld\n"                     , nst);
-  printf("nfe     = %5ld     nfeLS   = %5ld\n"  , nfe, nfeLS);
-  printf("nsetups = %5ld     netf    = %5ld\n"  , nsetups, netf);
-    }
+  amrex::Print() << "\nFinal Statistics..\n";
+  amrex::Print() << "  Steps         = " << nst     << "\n";
+  amrex::Print() << "  Err test fail = " << netf    << "\n";
+  amrex::Print() << "  RHS evals     = " << nfe     << "\n";
+  amrex::Print() << "  NLS iters     = " << nni     << "\n";
+  amrex::Print() << "  NLS fails     = " << ncfn    << "\n";
+  amrex::Print() << "  LS setups     = " << nsetups << "\n";
+  amrex::Print() << "  LS RHS evals  = " << nfeLS   << "\n";
 
   return;
 }
