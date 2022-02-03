@@ -198,6 +198,13 @@ int Nyx::integrate_state_struct_mfin
       abstol_vec = NULL;
       cvode_mem = NULL;
 
+#ifdef SUNDIALS_BUILD_WITH_PROFILING
+      SUNProfiler sun_profiler = nullptr;
+      SUNContext_GetProfiler(*amrex::sundials::The_Sundials_Context(),
+                             &sun_profiler);
+      //SUNProfiler_Reset(sun_profiler);
+#endif
+
 #ifdef AMREX_USE_SUNDIALS_SUNMEMORY
 #ifdef AMREX_USE_DPCPP
       SUNMemoryHelper S = SUNMemoryHelper_Sycl(&amrex::Gpu::Device::streamQueue(), *amrex::sundials::The_Sundials_Context());
@@ -627,6 +634,11 @@ int Nyx::integrate_state_struct_mfin
     /* }
     }
     } */
+
+#ifdef SUNDIALS_BUILD_WITH_PROFILING
+              SUNProfiler_Print(sun_profiler, stdout);
+#endif
+
     amrex::Gpu::streamSynchronize();
     BL_PROFILE_VAR_STOP(var7);
     return 0;
