@@ -923,6 +923,9 @@ protected:
     // specifies the heating/cooling source term
     static int heat_cool_type;
 
+    // specifies the reduction type for snudials vectors
+    static int sundials_atomic_reductions;
+
     // specifies the allocation type for sundials vector
     static int sundials_alloc_type;
 

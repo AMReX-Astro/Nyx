@@ -292,8 +292,14 @@ int Nyx::integrate_state_struct_mfin
       //     SUNHipGridStrideExecPolicy grid_exec_policy(AMREX_GPU_MAX_THREADS, std::max((N + AMREX_GPU_MAX_THREADS - 1) / AMREX_GPU_MAX_THREADS, static_cast<Long>(1)), currentstream);
       //     SUNHipBlockReduceExecPolicy reduce_exec_policy(AMREX_GPU_MAX_THREADS, std::max((N + AMREX_GPU_MAX_THREADS - 1) / AMREX_GPU_MAX_THREADS, static_cast<Long>(1)), currentstream);
 
-      SUNHipThreadDirectExecPolicy stream_exec_policy(256, currentstream);
-      SUNHipBlockReduceExecPolicy reduce_exec_policy(256, 0, currentstream);
+      SUNHipExecPolicy* stream_exec_policy = new SUNHipThreadDirectExecPolicy(256, currentstream);
+      SUNHipExecPolicy* reduce_exec_policy;
+      if (sundials_atomic_reductions) {
+        reduce_exec_policy = new SUNHipBlockReduceAtomicExecPolicy(256, 0, currentstream);
+      } else {
+        reduce_exec_policy = new SUNHipBlockReduceExecPolicy(256, 0, currentstream);
+      }
+
       if(sundials_alloc_type%2==0)
       {
                 if(sundials_alloc_type==0)
@@ -323,7 +329,7 @@ int Nyx::integrate_state_struct_mfin
 #endif
 // might need a cuda analog to setting exec policy
       }
-      N_VSetKernelExecPolicy_Hip(u, &stream_exec_policy, &reduce_exec_policy);
+      N_VSetKernelExecPolicy_Hip(u, stream_exec_policy, reduce_exec_policy);
 
       amrex::Gpu::Device::streamSynchronize();
 #elif defined(AMREX_USE_DPCPP)
@@ -612,6 +618,11 @@ int Nyx::integrate_state_struct_mfin
                 The_Arena()->free(JH_vode_arr);
               CVodeFree(&cvode_mem);  /* Free the integrator memory */
             //);
+
+#if defined(AMREX_USE_HIP)
+              delete stream_exec_policy;
+              delete reduce_exec_policy;
+#endif
 
     /* }
     }
