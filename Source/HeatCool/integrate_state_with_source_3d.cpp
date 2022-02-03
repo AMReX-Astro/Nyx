@@ -225,8 +225,14 @@ int Nyx::integrate_state_struct_mfin
       //     SUNCudaGridStrideExecPolicy grid_exec_policy(AMREX_GPU_MAX_THREADS, std::max((N + AMREX_GPU_MAX_THREADS - 1) / AMREX_GPU_MAX_THREADS, static_cast<Long>(1)), currentstream);
       //     SUNCudaBlockReduceExecPolicy reduce_exec_policy(AMREX_GPU_MAX_THREADS, std::max((N + AMREX_GPU_MAX_THREADS - 1) / AMREX_GPU_MAX_THREADS, static_cast<Long>(1)), currentstream);
 
-      SUNCudaThreadDirectExecPolicy stream_exec_policy(256, currentstream);
-      SUNCudaBlockReduceExecPolicy reduce_exec_policy(256, 0, currentstream);
+      SUNCudaExecPolicy* stream_exec_policy = new SUNCudaThreadDirectExecPolicy(256, currentstream);
+      SUNCudaExecPolicy* reduce_exec_policy;
+      if (sundials_atomic_reductions) {
+        reduce_exec_policy = new SUNCudaBlockReduceAtomicExecPolicy(256, 0, currentstream);
+      } else {
+        reduce_exec_policy = new SUNCudaBlockReduceExecPolicy(256, 0, currentstream);
+      }
+
       if(sundials_alloc_type%2==0)
       {
                 if(sundials_alloc_type==0)
@@ -245,12 +251,12 @@ int Nyx::integrate_state_struct_mfin
                 u = N_VMakeManaged_Cuda(neq,dptr, *amrex::sundials::The_Sundials_Context());  /* Allocate u vector */
                 eptr= (realtype*) The_Arena()->alloc(neq*sizeof(realtype));
                 e_orig = N_VMakeManaged_Cuda(neq,eptr, *amrex::sundials::The_Sundials_Context());  /* Allocate u vector */
-                N_VSetKernelExecPolicy_Cuda(e_orig, &stream_exec_policy, &reduce_exec_policy);
-                N_VSetKernelExecPolicy_Cuda(u, &stream_exec_policy, &reduce_exec_policy);
+                N_VSetKernelExecPolicy_Cuda(e_orig, stream_exec_policy, reduce_exec_policy);
+                N_VSetKernelExecPolicy_Cuda(u, stream_exec_policy, reduce_exec_policy);
 
                 abstol_ptr = (realtype*) The_Arena()->alloc(neq*sizeof(realtype));
                 abstol_vec = N_VMakeManaged_Cuda(neq,abstol_ptr, *amrex::sundials::The_Sundials_Context());
-                N_VSetKernelExecPolicy_Cuda(abstol_vec, &stream_exec_policy, &reduce_exec_policy);
+                N_VSetKernelExecPolicy_Cuda(abstol_vec, stream_exec_policy, reduce_exec_policy);
                 T_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
                 T_vec = N_VMakeManaged_Cuda(neq, T_vode, *amrex::sundials::The_Sundials_Context());
                 ne_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
@@ -267,14 +273,14 @@ int Nyx::integrate_state_struct_mfin
                 e_src_vec = N_VMakeManaged_Cuda(neq, e_src_vode, *amrex::sundials::The_Sundials_Context());
                 IR_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
                 IR_vec = N_VMakeManaged_Cuda(neq, IR_vode, *amrex::sundials::The_Sundials_Context());
-                N_VSetKernelExecPolicy_Cuda(T_vec, &stream_exec_policy, &reduce_exec_policy);
-                N_VSetKernelExecPolicy_Cuda(ne_vec, &stream_exec_policy, &reduce_exec_policy);
-                N_VSetKernelExecPolicy_Cuda(rho_vec, &stream_exec_policy, &reduce_exec_policy);
-                N_VSetKernelExecPolicy_Cuda(rho_init_vec, &stream_exec_policy, &reduce_exec_policy);
-                N_VSetKernelExecPolicy_Cuda(rho_src_vec, &stream_exec_policy, &reduce_exec_policy);
-                N_VSetKernelExecPolicy_Cuda(rhoe_src_vec, &stream_exec_policy, &reduce_exec_policy);
-                N_VSetKernelExecPolicy_Cuda(e_src_vec, &stream_exec_policy, &reduce_exec_policy);
-                N_VSetKernelExecPolicy_Cuda(IR_vec, &stream_exec_policy, &reduce_exec_policy);
+                N_VSetKernelExecPolicy_Cuda(T_vec, stream_exec_policy, reduce_exec_policy);
+                N_VSetKernelExecPolicy_Cuda(ne_vec, stream_exec_policy, reduce_exec_policy);
+                N_VSetKernelExecPolicy_Cuda(rho_vec, stream_exec_policy, reduce_exec_policy);
+                N_VSetKernelExecPolicy_Cuda(rho_init_vec, stream_exec_policy, reduce_exec_policy);
+                N_VSetKernelExecPolicy_Cuda(rho_src_vec, stream_exec_policy, reduce_exec_policy);
+                N_VSetKernelExecPolicy_Cuda(rhoe_src_vec, stream_exec_policy, reduce_exec_policy);
+                N_VSetKernelExecPolicy_Cuda(e_src_vec, stream_exec_policy, reduce_exec_policy);
+                N_VSetKernelExecPolicy_Cuda(IR_vec, stream_exec_policy, reduce_exec_policy);
                 amrex::Gpu::streamSynchronize();
           }
 #ifdef AMREX_USE_SUNDIALS_SUNMEMORY
@@ -288,7 +294,7 @@ int Nyx::integrate_state_struct_mfin
           }
 #endif
       }
-      N_VSetKernelExecPolicy_Cuda(u, &stream_exec_policy, &reduce_exec_policy);
+      N_VSetKernelExecPolicy_Cuda(u, stream_exec_policy, reduce_exec_policy);
 
       amrex::Gpu::Device::streamSynchronize();
 #elif defined(AMREX_USE_HIP)
@@ -350,8 +356,8 @@ int Nyx::integrate_state_struct_mfin
       //     SUNSyclBlockReduceExecPolicy reduce_exec_policy(AMREX_GPU_MAX_THREADS, std::max((N + AMREX_GPU_MAX_THREADS - 1) / AMREX_GPU_MAX_THREADS, static_cast<Long>(1)));
 
       //Sycl version does not take a stream or queue
-      SUNSyclThreadDirectExecPolicy stream_exec_policy(256);
-      SUNSyclBlockReduceExecPolicy reduce_exec_policy(256, 0);
+      SUNSyclExecPolicy* stream_exec_policy = new SUNSyclThreadDirectExecPolicy(256);
+      SUNSyclExecPolicy* reduce_exec_policy = new SUNSyclBlockReduceExecPolicy(256, 0);
       if(sundials_alloc_type%2==0)
       {
                 if(sundials_alloc_type==0)
@@ -383,7 +389,7 @@ int Nyx::integrate_state_struct_mfin
 #endif
 // might need a cuda analog to setting exec policy
       }
-      N_VSetKernelExecPolicy_Sycl(u, &stream_exec_policy, &reduce_exec_policy);
+      N_VSetKernelExecPolicy_Sycl(u, stream_exec_policy, reduce_exec_policy);
 
 #endif
 #else  /* else for ndef AMREX_USE_GPU */
@@ -627,7 +633,7 @@ int Nyx::integrate_state_struct_mfin
               CVodeFree(&cvode_mem);  /* Free the integrator memory */
             //);
 
-#if defined(AMREX_USE_HIP)
+#if defined(AMREX_USE_GPU)
               delete stream_exec_policy;
               delete reduce_exec_policy;
 #endif

@@ -141,6 +141,7 @@ int Nyx::sundials_alloc_type = 4;
 #endif
 #endif
 #ifdef AMREX_USE_DPCPP
+int Nyx::sundials_atomic_reductions = -1; // not an option with DPCPP
 #ifdef AMREX_USE_SUNDIALS_SUNMEMORY
 int Nyx::sundials_alloc_type = 5;
 #else
