@@ -157,6 +157,7 @@ int Nyx::integrate_state_struct_mfin
    long int& old_max_steps, long int& new_max_steps,
    const int sdc_iter)
 {
+    BL_PROFILE("Nyx::integrate_state_struct_mfin");
     BL_PROFILE_VAR("Nyx::reactions_alloc",var1);
     auto atomic_rates = atomic_rates_glob;
     auto f_rhs_data = (RhsData*)The_Arena()->alloc(sizeof(RhsData));
