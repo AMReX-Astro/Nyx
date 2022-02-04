@@ -119,6 +119,7 @@ int Nyx::use_sundials_fused = 0;
 int Nyx::use_typical_steps = 0;
 #ifndef AMREX_USE_GPU
 int Nyx::sundials_alloc_type = 0;
+int Nyx::sundials_atomic_reductions = -1; // CUDA and HIP only
 #else
 #ifdef AMREX_USE_CUDA
 int Nyx::sundials_atomic_reductions = 1;
@@ -141,7 +142,7 @@ int Nyx::sundials_alloc_type = 4;
 #endif
 #endif
 #ifdef AMREX_USE_DPCPP
-int Nyx::sundials_atomic_reductions = -1; // not an option with DPCPP
+int Nyx::sundials_atomic_reductions = -1; // CUDA and HIP only
 #ifdef AMREX_USE_SUNDIALS_SUNMEMORY
 int Nyx::sundials_alloc_type = 5;
 #else
