@@ -207,11 +207,6 @@ int Nyx::integrate_state_struct_mfin
       //SUNProfiler_Reset(sun_profiler);
 #endif
 
-#ifdef AMREX_USE_SUNDIALS_SUNMEMORY
-#ifdef AMREX_USE_DPCPP
-      SUNMemoryHelper S = SUNMemoryHelper_Sycl(&amrex::Gpu::Device::streamQueue(), *amrex::sundials::The_Sundials_Context());
-#endif
-#endif
       long int neq = len.x*len.y*len.z;
       amrex::Gpu::streamSynchronize();
       int loop = 1;
@@ -284,7 +279,6 @@ int Nyx::integrate_state_struct_mfin
                 N_VSetKernelExecPolicy_Cuda(IR_vec, stream_exec_policy, reduce_exec_policy);
                 amrex::Gpu::streamSynchronize();
           }
-#ifdef AMREX_USE_SUNDIALS_SUNMEMORY
         else if(sundials_alloc_type==3)
           {
             u = N_VNewWithMemHelp_Cuda(neq, /*use_managed_mem=*/true, *amrex::sundials::The_SUNMemory_Helper(), *amrex::sundials::The_Sundials_Context());
@@ -293,7 +287,6 @@ int Nyx::integrate_state_struct_mfin
           {
             u = N_VNewWithMemHelp_Cuda(neq, /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper(), *amrex::sundials::The_Sundials_Context());
           }
-#endif
       }
       N_VSetKernelExecPolicy_Cuda(u, stream_exec_policy, reduce_exec_policy);
 
@@ -332,7 +325,6 @@ int Nyx::integrate_state_struct_mfin
           {
                   amrex::Abort("sundials_alloc_type=1 not implemented with Hip");
           }
-#ifdef AMREX_USE_SUNDIALS_SUNMEMORY
         else if(sundials_alloc_type==3)
           {
             u = N_VNewWithMemHelp_Hip(neq, /*use_managed_mem=*/true, *amrex::sundials::The_SUNMemory_Helper(), *amrex::sundials::The_Sundials_Context());
@@ -341,7 +333,6 @@ int Nyx::integrate_state_struct_mfin
           {
             u = N_VNewWithMemHelp_Hip(neq, /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper(), *amrex::sundials::The_Sundials_Context());
           }
-#endif
 // might need a cuda analog to setting exec policy
       }
       N_VSetKernelExecPolicy_Hip(u, stream_exec_policy, reduce_exec_policy);
@@ -376,7 +367,6 @@ int Nyx::integrate_state_struct_mfin
           {
                   amrex::Abort("sundials_alloc_type=1 not implemented with Sycl");
           }
-#ifdef AMREX_USE_SUNDIALS_SUNMEMORY
         else if(sundials_alloc_type==3)
           {
               u = N_VNewWithMemHelp_Sycl(neq, /*use_managed_mem=*/true, *amrex::sundials::The_SUNMemory_Helper(), &amrex::Gpu::Device::streamQueue(), *amrex::sundials::The_Sundials_Context());
@@ -387,7 +377,6 @@ int Nyx::integrate_state_struct_mfin
               u = N_VNewWithMemHelp_Sycl(neq, /*use_managed_mem=*/false, *amrex::sundials::The_SUNMemory_Helper(), &amrex::Gpu::Device::streamQueue(), *amrex::sundials::The_Sundials_Context());
          //              u = N_VNewWithMemHelp_Sycl(neq, /*use_managed_mem=*/false, S, &amrex::Gpu::Device::streamQueue(), *amrex::sundials::The_Sundials_Context());
           }
-#endif
 // might need a cuda analog to setting exec policy
       }
       N_VSetKernelExecPolicy_Sycl(u, stream_exec_policy, reduce_exec_policy);

@@ -126,28 +126,16 @@ int Nyx::sundials_atomic_reductions = 1;
 #ifndef _OPENMP
 int Nyx::sundials_alloc_type = 0; //consider changing to 5
 #else
-#ifdef AMREX_USE_SUNDIALS_SUNMEMORY
 int Nyx::sundials_alloc_type = 5;
-#else
-int Nyx::sundials_alloc_type = 2;
-#endif
 #endif
 #endif
 #ifdef AMREX_USE_HIP
 int Nyx::sundials_atomic_reductions = 0;
-#ifdef AMREX_USE_SUNDIALS_SUNMEMORY
 int Nyx::sundials_alloc_type = 5;
-#else
-int Nyx::sundials_alloc_type = 4;
-#endif
 #endif
 #ifdef AMREX_USE_DPCPP
 int Nyx::sundials_atomic_reductions = -1; // CUDA and HIP only
-#ifdef AMREX_USE_SUNDIALS_SUNMEMORY
 int Nyx::sundials_alloc_type = 5;
-#else
-int Nyx::sundials_alloc_type = 4;
-#endif
 #endif
 #endif
 

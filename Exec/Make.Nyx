@@ -99,7 +99,6 @@ endif
 
 
 ifeq ($(USE_SUNDIALS),TRUE)
-USE_SUNDIALS_SUNMEMORY = TRUE
 SUNDIALS_ROOT ?= $(TOP)/../sundials/instdir
 SUNDIALS_LIB_DIR ?= $(SUNDIALS_ROOT)/lib
 

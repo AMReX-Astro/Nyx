@@ -80,7 +80,6 @@ cmake_dependent_option(Nyx_GIMLET "" NO "Nyx_MPI;Nyx_OMP" NO)
 option( Nyx_CONST_SPECIES "Don't evolve H and He, treat them as constant" ON)
 option( Nyx_CGS   "Evolve quantities in CGS units instead of code units" NO)
 option( Nyx_REEBER             "" NO)
-option( Nyx_SUNDIALS_SUNMEMORY "Link AMReX SunMemoryHelper interface" OFF)
 
 #  These two are only really used by LyA_Neutrinos
 option( Nyx_NEUTRINO_PARTICLES "" NO)
