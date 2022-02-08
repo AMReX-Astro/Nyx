@@ -119,8 +119,10 @@ int Nyx::use_sundials_fused = 0;
 int Nyx::use_typical_steps = 0;
 #ifndef AMREX_USE_GPU
 int Nyx::sundials_alloc_type = 0;
+int Nyx::sundials_atomic_reductions = -1; // CUDA and HIP only
 #else
 #ifdef AMREX_USE_CUDA
+int Nyx::sundials_atomic_reductions = 1;
 #ifndef _OPENMP
 int Nyx::sundials_alloc_type = 0; //consider changing to 5
 #else
@@ -132,6 +134,7 @@ int Nyx::sundials_alloc_type = 2;
 #endif
 #endif
 #ifdef AMREX_USE_HIP
+int Nyx::sundials_atomic_reductions = 0;
 #ifdef AMREX_USE_SUNDIALS_SUNMEMORY
 int Nyx::sundials_alloc_type = 5;
 #else
@@ -139,6 +142,7 @@ int Nyx::sundials_alloc_type = 4;
 #endif
 #endif
 #ifdef AMREX_USE_DPCPP
+int Nyx::sundials_atomic_reductions = -1; // CUDA and HIP only
 #ifdef AMREX_USE_SUNDIALS_SUNMEMORY
 int Nyx::sundials_alloc_type = 5;
 #else
@@ -530,6 +534,7 @@ Nyx::read_hydro_params ()
     pp_nyx.query("use_sundials_constraint", use_sundials_constraint);
     pp_nyx.query("use_sundials_fused", use_sundials_fused);
     pp_nyx.query("nghost_state", nghost_state);
+    pp_nyx.query("sundials_atomic_reductions", sundials_atomic_reductions);
     pp_nyx.query("sundials_alloc_type", sundials_alloc_type);
     pp_nyx.query("sundials_reltol", sundials_reltol);
     pp_nyx.query("sundials_abstol", sundials_abstol);

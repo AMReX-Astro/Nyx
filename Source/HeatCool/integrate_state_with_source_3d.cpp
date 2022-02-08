@@ -1,3 +1,4 @@
+#include <AMReX_Config.H>
 #include <fstream>
 #include <iomanip>
 
@@ -157,6 +158,7 @@ int Nyx::integrate_state_struct_mfin
    long int& old_max_steps, long int& new_max_steps,
    const int sdc_iter)
 {
+    BL_PROFILE("Nyx::integrate_state_struct_mfin");
     BL_PROFILE_VAR("Nyx::reactions_alloc",var1);
     auto atomic_rates = atomic_rates_glob;
     auto f_rhs_data = (RhsData*)The_Arena()->alloc(sizeof(RhsData));
@@ -198,6 +200,13 @@ int Nyx::integrate_state_struct_mfin
       abstol_vec = NULL;
       cvode_mem = NULL;
 
+#ifdef SUNDIALS_BUILD_WITH_PROFILING
+      SUNProfiler sun_profiler = nullptr;
+      SUNContext_GetProfiler(*amrex::sundials::The_Sundials_Context(),
+                             &sun_profiler);
+      //SUNProfiler_Reset(sun_profiler);
+#endif
+
 #ifdef AMREX_USE_SUNDIALS_SUNMEMORY
 #ifdef AMREX_USE_DPCPP
       SUNMemoryHelper S = SUNMemoryHelper_Sycl(&amrex::Gpu::Device::streamQueue(), *amrex::sundials::The_Sundials_Context());
@@ -217,8 +226,14 @@ int Nyx::integrate_state_struct_mfin
       //     SUNCudaGridStrideExecPolicy grid_exec_policy(AMREX_GPU_MAX_THREADS, std::max((N + AMREX_GPU_MAX_THREADS - 1) / AMREX_GPU_MAX_THREADS, static_cast<Long>(1)), currentstream);
       //     SUNCudaBlockReduceExecPolicy reduce_exec_policy(AMREX_GPU_MAX_THREADS, std::max((N + AMREX_GPU_MAX_THREADS - 1) / AMREX_GPU_MAX_THREADS, static_cast<Long>(1)), currentstream);
 
-      SUNCudaThreadDirectExecPolicy stream_exec_policy(256, currentstream);
-      SUNCudaBlockReduceExecPolicy reduce_exec_policy(256, 0, currentstream);
+      SUNCudaExecPolicy* stream_exec_policy = new SUNCudaThreadDirectExecPolicy(256, currentstream);
+      SUNCudaExecPolicy* reduce_exec_policy;
+      if (sundials_atomic_reductions) {
+        reduce_exec_policy = new SUNCudaBlockReduceAtomicExecPolicy(256, 0, currentstream);
+      } else {
+        reduce_exec_policy = new SUNCudaBlockReduceExecPolicy(256, 0, currentstream);
+      }
+
       if(sundials_alloc_type%2==0)
       {
                 if(sundials_alloc_type==0)
@@ -237,12 +252,12 @@ int Nyx::integrate_state_struct_mfin
                 u = N_VMakeManaged_Cuda(neq,dptr, *amrex::sundials::The_Sundials_Context());  /* Allocate u vector */
                 eptr= (realtype*) The_Arena()->alloc(neq*sizeof(realtype));
                 e_orig = N_VMakeManaged_Cuda(neq,eptr, *amrex::sundials::The_Sundials_Context());  /* Allocate u vector */
-                N_VSetKernelExecPolicy_Cuda(e_orig, &stream_exec_policy, &reduce_exec_policy);
-                N_VSetKernelExecPolicy_Cuda(u, &stream_exec_policy, &reduce_exec_policy);
+                N_VSetKernelExecPolicy_Cuda(e_orig, stream_exec_policy, reduce_exec_policy);
+                N_VSetKernelExecPolicy_Cuda(u, stream_exec_policy, reduce_exec_policy);
 
                 abstol_ptr = (realtype*) The_Arena()->alloc(neq*sizeof(realtype));
                 abstol_vec = N_VMakeManaged_Cuda(neq,abstol_ptr, *amrex::sundials::The_Sundials_Context());
-                N_VSetKernelExecPolicy_Cuda(abstol_vec, &stream_exec_policy, &reduce_exec_policy);
+                N_VSetKernelExecPolicy_Cuda(abstol_vec, stream_exec_policy, reduce_exec_policy);
                 T_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
                 T_vec = N_VMakeManaged_Cuda(neq, T_vode, *amrex::sundials::The_Sundials_Context());
                 ne_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
@@ -259,14 +274,14 @@ int Nyx::integrate_state_struct_mfin
                 e_src_vec = N_VMakeManaged_Cuda(neq, e_src_vode, *amrex::sundials::The_Sundials_Context());
                 IR_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
                 IR_vec = N_VMakeManaged_Cuda(neq, IR_vode, *amrex::sundials::The_Sundials_Context());
-                N_VSetKernelExecPolicy_Cuda(T_vec, &stream_exec_policy, &reduce_exec_policy);
-                N_VSetKernelExecPolicy_Cuda(ne_vec, &stream_exec_policy, &reduce_exec_policy);
-                N_VSetKernelExecPolicy_Cuda(rho_vec, &stream_exec_policy, &reduce_exec_policy);
-                N_VSetKernelExecPolicy_Cuda(rho_init_vec, &stream_exec_policy, &reduce_exec_policy);
-                N_VSetKernelExecPolicy_Cuda(rho_src_vec, &stream_exec_policy, &reduce_exec_policy);
-                N_VSetKernelExecPolicy_Cuda(rhoe_src_vec, &stream_exec_policy, &reduce_exec_policy);
-                N_VSetKernelExecPolicy_Cuda(e_src_vec, &stream_exec_policy, &reduce_exec_policy);
-                N_VSetKernelExecPolicy_Cuda(IR_vec, &stream_exec_policy, &reduce_exec_policy);
+                N_VSetKernelExecPolicy_Cuda(T_vec, stream_exec_policy, reduce_exec_policy);
+                N_VSetKernelExecPolicy_Cuda(ne_vec, stream_exec_policy, reduce_exec_policy);
+                N_VSetKernelExecPolicy_Cuda(rho_vec, stream_exec_policy, reduce_exec_policy);
+                N_VSetKernelExecPolicy_Cuda(rho_init_vec, stream_exec_policy, reduce_exec_policy);
+                N_VSetKernelExecPolicy_Cuda(rho_src_vec, stream_exec_policy, reduce_exec_policy);
+                N_VSetKernelExecPolicy_Cuda(rhoe_src_vec, stream_exec_policy, reduce_exec_policy);
+                N_VSetKernelExecPolicy_Cuda(e_src_vec, stream_exec_policy, reduce_exec_policy);
+                N_VSetKernelExecPolicy_Cuda(IR_vec, stream_exec_policy, reduce_exec_policy);
                 amrex::Gpu::streamSynchronize();
           }
 #ifdef AMREX_USE_SUNDIALS_SUNMEMORY
@@ -280,7 +295,7 @@ int Nyx::integrate_state_struct_mfin
           }
 #endif
       }
-      N_VSetKernelExecPolicy_Cuda(u, &stream_exec_policy, &reduce_exec_policy);
+      N_VSetKernelExecPolicy_Cuda(u, stream_exec_policy, reduce_exec_policy);
 
       amrex::Gpu::Device::streamSynchronize();
 #elif defined(AMREX_USE_HIP)
@@ -292,8 +307,14 @@ int Nyx::integrate_state_struct_mfin
       //     SUNHipGridStrideExecPolicy grid_exec_policy(AMREX_GPU_MAX_THREADS, std::max((N + AMREX_GPU_MAX_THREADS - 1) / AMREX_GPU_MAX_THREADS, static_cast<Long>(1)), currentstream);
       //     SUNHipBlockReduceExecPolicy reduce_exec_policy(AMREX_GPU_MAX_THREADS, std::max((N + AMREX_GPU_MAX_THREADS - 1) / AMREX_GPU_MAX_THREADS, static_cast<Long>(1)), currentstream);
 
-      SUNHipThreadDirectExecPolicy stream_exec_policy(256, currentstream);
-      SUNHipBlockReduceExecPolicy reduce_exec_policy(256, 0, currentstream);
+      SUNHipExecPolicy* stream_exec_policy = new SUNHipThreadDirectExecPolicy(256, currentstream);
+      SUNHipExecPolicy* reduce_exec_policy;
+      if (sundials_atomic_reductions) {
+        reduce_exec_policy = new SUNHipBlockReduceAtomicExecPolicy(256, 0, currentstream);
+      } else {
+        reduce_exec_policy = new SUNHipBlockReduceExecPolicy(256, 0, currentstream);
+      }
+
       if(sundials_alloc_type%2==0)
       {
                 if(sundials_alloc_type==0)
@@ -323,7 +344,7 @@ int Nyx::integrate_state_struct_mfin
 #endif
 // might need a cuda analog to setting exec policy
       }
-      N_VSetKernelExecPolicy_Hip(u, &stream_exec_policy, &reduce_exec_policy);
+      N_VSetKernelExecPolicy_Hip(u, stream_exec_policy, reduce_exec_policy);
 
       amrex::Gpu::Device::streamSynchronize();
 #elif defined(AMREX_USE_DPCPP)
@@ -336,8 +357,8 @@ int Nyx::integrate_state_struct_mfin
       //     SUNSyclBlockReduceExecPolicy reduce_exec_policy(AMREX_GPU_MAX_THREADS, std::max((N + AMREX_GPU_MAX_THREADS - 1) / AMREX_GPU_MAX_THREADS, static_cast<Long>(1)));
 
       //Sycl version does not take a stream or queue
-      SUNSyclThreadDirectExecPolicy stream_exec_policy(256);
-      SUNSyclBlockReduceExecPolicy reduce_exec_policy(256, 0);
+      SUNSyclExecPolicy* stream_exec_policy = new SUNSyclThreadDirectExecPolicy(256);
+      SUNSyclExecPolicy* reduce_exec_policy = new SUNSyclBlockReduceExecPolicy(256, 0);
       if(sundials_alloc_type%2==0)
       {
                 if(sundials_alloc_type==0)
@@ -369,7 +390,7 @@ int Nyx::integrate_state_struct_mfin
 #endif
 // might need a cuda analog to setting exec policy
       }
-      N_VSetKernelExecPolicy_Sycl(u, &stream_exec_policy, &reduce_exec_policy);
+      N_VSetKernelExecPolicy_Sycl(u, stream_exec_policy, reduce_exec_policy);
 
 #endif
 #else  /* else for ndef AMREX_USE_GPU */
@@ -536,7 +557,7 @@ int Nyx::integrate_state_struct_mfin
             amrex::Gpu::streamSynchronize();
             BL_PROFILE_VAR_STOP(varsteps);
             BL_PROFILE_VAR("Nyx::reactions_cells_finalize",var6);
-	    if(verbose > 1)
+            if(verbose > 1)
                 PrintFinalStats(cvode_mem);
 #ifdef AMREX_USE_GPU
             AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
@@ -613,9 +634,19 @@ int Nyx::integrate_state_struct_mfin
               CVodeFree(&cvode_mem);  /* Free the integrator memory */
             //);
 
+#if defined(AMREX_USE_GPU)
+              delete stream_exec_policy;
+              delete reduce_exec_policy;
+#endif
+
     /* }
     }
     } */
+
+#ifdef SUNDIALS_BUILD_WITH_PROFILING
+              SUNProfiler_Print(sun_profiler, stdout);
+#endif
+
     amrex::Gpu::streamSynchronize();
     BL_PROFILE_VAR_STOP(var7);
     return 0;
@@ -667,32 +698,37 @@ static int f(realtype t, N_Vector u, N_Vector udot, void* user_data)
 
 static void PrintFinalStats(void *cvode_mem)
 {
-  long lenrw, leniw ;
-  long lenrwLS, leniwLS;
-  long int nst, nfe, nsetups, nni, ncfn, netf;
-  long int nli, npe, nps, ncfl, nfeLS;
+  long int nst, netf, nfe;
+  long int nni, ncfn;
+  long int nsetups, nje, ncfl, nfeLS;
   int retval;
 
-  retval = CVodeGetWorkSpace(cvode_mem, &lenrw, &leniw);
-  check_retval(&retval, "CVodeGetWorkSpace", 1);
+  // CVODE stats
   retval = CVodeGetNumSteps(cvode_mem, &nst);
   check_retval(&retval, "CVodeGetNumSteps", 1);
-  retval = CVodeGetNumRhsEvals(cvode_mem, &nfe);
-  check_retval(&retval, "CVodeGetNumRhsEvals", 1);
-  retval = CVodeGetNumLinSolvSetups(cvode_mem, &nsetups);
-  check_retval(&retval, "CVodeGetNumLinSolvSetups", 1);
   retval = CVodeGetNumErrTestFails(cvode_mem, &netf);
   check_retval(&retval, "CVodeGetNumErrTestFails", 1);
+  retval = CVodeGetNumRhsEvals(cvode_mem, &nfe);
+  check_retval(&retval, "CVodeGetNumRhsEvals", 1);
+  // Nonlinear solver stats
+  retval = CVodeGetNumNonlinSolvIters(cvode_mem, &nni);
+  check_retval(&retval, "CVodeGetNumNonlinSolvIters", 1);
+  retval = CVodeGetNumNonlinSolvConvFails(cvode_mem, &ncfn);
+  check_retval(&retval, "CVodeGetNumNonlinSolvConvFails", 1);
+  // Linear solver stats
+  retval = CVodeGetNumLinSolvSetups(cvode_mem, &nsetups);
+  check_retval(&retval, "CVodeGetNumLinSolvSetups", 1);
   retval = CVDiagGetNumRhsEvals(cvode_mem, &nfeLS);
+  check_retval(&retval, "CVodeGetNumLinRhsEvals", 1);
 
-  if (ParallelDescriptor::IOProcessor())
-    {
-  printf("\nFinal Statistics.. \n\n");
-  printf("lenrw   = %5ld     leniw   = %5ld\n"  , lenrw, leniw);
-  printf("nst     = %5ld\n"                     , nst);
-  printf("nfe     = %5ld     nfeLS   = %5ld\n"  , nfe, nfeLS);
-  printf("nsetups = %5ld     netf    = %5ld\n"  , nsetups, netf);
-    }
+  amrex::Print() << "\nFinal Statistics..\n";
+  amrex::Print() << "  Steps         = " << nst     << "\n";
+  amrex::Print() << "  Err test fail = " << netf    << "\n";
+  amrex::Print() << "  RHS evals     = " << nfe     << "\n";
+  amrex::Print() << "  NLS iters     = " << nni     << "\n";
+  amrex::Print() << "  NLS fails     = " << ncfn    << "\n";
+  amrex::Print() << "  LS setups     = " << nsetups << "\n";
+  amrex::Print() << "  LS RHS evals  = " << nfeLS   << "\n";
 
   return;
 }
