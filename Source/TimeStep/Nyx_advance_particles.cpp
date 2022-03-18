@@ -201,6 +201,11 @@ Nyx::advance_particles_only (Real time,
             // Miiiight need all Ghosts
             for (int i = 0; i < Nyx::theGhostParticles().size(); i++)
                 Nyx::theGhostParticles()[i]->moveKickDrift(grav_vec_old, lev, dt, a_new, a_half, where_width);
+
+#ifdef NEUTRINO_DARK_PARTICLES
+	    for (int i = 0; i < Nyx::theActiveParticles().size() && neutrino_cfl >= 1; i++)
+		Nyx::theActiveParticles()[i]->Redistribute();
+#endif
         }
     }
 

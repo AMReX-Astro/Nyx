@@ -11,6 +11,10 @@ Nyx::sdc_reactions (MultiFab& S_old, MultiFab& S_new, MultiFab& D_new,
 {
     BL_PROFILE("Nyx::sdc_reactions()");
 #ifdef HEATCOOL
+    if (verbose && amrex::ParallelDescriptor::IOProcessor()) {
+      amrex::Print() << "... Solving heating-cooling with SDC and CVode" << std::endl;
+    }
+
     const Real* dx = geom.CellSize();
 
     reset_internal_energy(S_new,D_new,reset_e_src);
@@ -41,7 +45,7 @@ Nyx::sdc_reactions (MultiFab& S_old, MultiFab& S_new, MultiFab& D_new,
         ParallelDescriptor::ReduceRealMax(run_time,IOProc);
 
         if (ParallelDescriptor::IOProcessor())
-          std::cout << "Nyx::strang_first_step() time = " << run_time << "\n" << "\n";
+          std::cout << "Nyx::sdc_reactions() time = " << run_time << "\n" << "\n";
 #ifdef BL_LAZY
         });
 #endif

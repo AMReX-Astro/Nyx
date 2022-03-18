@@ -152,6 +152,7 @@ public:
     //
     static void variable_setup();
     static void hydro_setup();
+    static void heatcool_setup();
     static void no_hydro_setup();
 
     //
@@ -467,6 +468,7 @@ public:
     virtual amrex::Real advance(amrex::Real time, amrex::Real dt, int iteration, int ncycle) override;
 
     amrex::Real advance_hydro(amrex::Real time, amrex::Real dt, int iteration, int ncycle);
+    amrex::Real advance_heatcool(amrex::Real time, amrex::Real dt, int iteration, int ncycle);
     amrex::Real advance_no_hydro(amrex::Real time, amrex::Real dt, int iteration, int ncycle);
     amrex::Real advance_hydro_plus_particles(amrex::Real time, amrex::Real dt, int iteration,
                                       int ncycle);
@@ -885,6 +887,7 @@ protected:
     static long particle_initrandom_count;
     static long particle_initrandom_count_per_box;
     static amrex::Real particle_initrandom_mass;
+    static amrex::Real particle_initrandom_mass_total;
     static int particle_initrandom_iseed;
     static int particle_skip_factor;
     static amrex::Real particle_inituniform_mass;
@@ -920,6 +923,9 @@ protected:
     // specifies the heating/cooling source term
     static int heat_cool_type;
 
+    // specifies the reduction type for snudials vectors
+    static int sundials_atomic_reductions;
+
     // specifies the allocation type for sundials vector
     static int sundials_alloc_type;
 
@@ -934,6 +940,16 @@ protected:
 
     // specifies whether we allow tiling when calling the SUNDIALS integrator
     static bool sundials_use_tiling;
+
+    // specifies tolerances when calling the SUNDIALS integrator
+    static amrex::Real sundials_reltol;
+    static amrex::Real sundials_abstol;
+
+    // specifies tile_size of advance_hydro for unsplit Godonuv hydro advance
+    static amrex::IntVect     hydro_tile_size;
+
+    // specifies tile_size of integrate_state for heating-cooling reactions
+    static amrex::IntVect      sundials_tile_size;
 
     // specifies the memory priority
     static int minimize_memory;

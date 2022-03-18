@@ -26,6 +26,8 @@ Nyx::advance (Real time,
 
 {
 
+  const std::string region_name = ncycle > 1 ? "R::Nyx::advance" : "R::Nyx::advance::STEP1";
+  BL_PROFILE_REGION(region_name);
   MultiFab::RegionTag amrlevel_tag("AmrLevel_Level_" + std::to_string(level));
 
 #ifdef NO_HYDRO
@@ -49,8 +51,10 @@ Nyx::advance (Real time,
            return advance_hydro(time, dt, iteration, ncycle);
         }
     }
-        else
+    else if(do_dm_particles)
         return advance_particles_only(time, dt, iteration, ncycle);
+    else
+	return advance_heatcool(time, dt, iteration, ncycle);
 #endif
     return 0;
 }
@@ -255,6 +259,10 @@ Nyx::advance_hydro_plus_particles (Real time,
             // Miiiight need all Ghosts
             for (int i = 0; i < Nyx::theGhostParticles().size(); i++)
                Nyx::theGhostParticles()[i]->moveKickDrift(grav_vec_old, lev, dt, a_old, a_half, where_width);
+#ifdef NEUTRINO_DARK_PARTICLES
+            for (int i = 0; i < Nyx::theActiveParticles().size() && neutrino_cfl >= 1; i++)
+                Nyx::theActiveParticles()[i]->Redistribute();
+#endif
         }
     } // if active particles
     } // lsg
@@ -425,6 +433,98 @@ Nyx::advance_hydro_plus_particles (Real time,
     return dt;
 }
 #endif
+
+Real
+Nyx::advance_heatcool (Real time,
+                       Real dt,
+                       int  iteration,
+                       int  ncycle)
+{
+    BL_PROFILE("Nyx::advance_heatcool()");
+#ifdef HEATCOOL
+    amrex::Print()<<"Using advance_heatcool since hydro and dm_particles are both off"<<std::endl;
+    /*      
+    for (int k = 0; k < NUM_STATE_TYPE; k++)
+    {
+        state[k].allocOldData();
+        state[k].swapTimeLevels(dt);
+    }
+    
+    const Real prev_time = state[State_Type].prevTime();
+    const Real cur_time  = state[State_Type].curTime();
+    const Real a_old     = get_comoving_a(prev_time);
+    const Real a_new     = get_comoving_a(cur_time);
+
+    MultiFab&  S_old        = get_old_data(State_Type);
+    MultiFab&  S_new        = get_new_data(State_Type);
+
+    MultiFab&  D_old        = get_old_data(DiagEOS_Type);
+    MultiFab&  D_new        = get_new_data(DiagEOS_Type);
+
+    MultiFab&  IR_old       = get_old_data(SDC_IR_Type);
+    MultiFab&  IR_new       = get_new_data(SDC_IR_Type);
+    */
+    amrex::ParmParse pp_nyx("nyx");
+    long writeProc = ParallelDescriptor::IOProcessor() ? ParallelDescriptor::MyProc() : -1;
+    int hctest_example_write = 0;
+    int hctest_example_read = 0;
+    int hctest_example_index = 0;
+    pp_nyx.query("hctest_example_write",hctest_example_write);
+    pp_nyx.query("hctest_example_write_proc",writeProc);
+    pp_nyx.query("hctest_example_index",hctest_example_index);
+    pp_nyx.query("hctest_example_read",hctest_example_read);
+    int loc_nStep = hctest_example_index;
+
+    //Default to these hard-coded values
+    std::string filename_inputs ="hctest/inputs."+std::to_string(loc_nStep);
+    std::string filename ="hctest/BADMAP."+std::to_string(loc_nStep);
+    std::string filename_chunk_prefix ="hctest/Chunk."+std::to_string(loc_nStep)+".";
+
+    pp_nyx.query("hctest_filename_inputs",filename_inputs);
+    pp_nyx.query("hctest_filename_badmap",filename);
+    pp_nyx.query("hctest_filename_chunk",filename_chunk_prefix);
+
+    std::ifstream ifs(filename.c_str());
+    grids.readFrom(ifs);
+    dmap.readFrom(ifs);
+
+    MultiFab S_old(grids, dmap, NUM_STATE, NUM_GROW);
+    MultiFab S_new(grids, dmap, NUM_STATE, NUM_GROW);
+    MultiFab D_old(grids, dmap, 2, NUM_GROW);
+    MultiFab IR_old(grids, dmap, 1, 0);
+    
+    MultiFab S_old_tmp(S_old.boxArray(), S_old.DistributionMap(), NUM_STATE, NUM_GROW);
+    //    FillPatch(*this, S_old_tmp, NUM_GROW, time, State_Type, 0, NUM_STATE);
+    S_old_tmp.setVal(0.);
+
+    MultiFab D_old_tmp(D_old.boxArray(), D_old.DistributionMap(), D_old.nComp(), NUM_GROW);
+    D_old_tmp.setVal(0.);
+    //    FillPatch(*this, D_old_tmp, NUM_GROW, time, DiagEOS_Type, 0, D_old.nComp());
+
+    MultiFab hydro_src(S_old.boxArray(), S_old.DistributionMap(), NUM_STATE, 0);
+    hydro_src.setVal(0.);
+
+    MultiFab reset_e_src(S_new.boxArray(), S_new.DistributionMap(), 1, NUM_GROW);
+    reset_e_src.setVal(0.0);
+
+    Real fixed_dt = dt;
+    pp_nyx.query("initial_z",initial_z);
+    pp_nyx.query("final_z",final_z);
+    pp_nyx.query("fixed_dt",fixed_dt);
+    Real a = 1/(initial_z+1);
+    Real a_end = 1/(final_z+1);
+    Real delta_time = fixed_dt;
+    int sdc_iter = 0;
+    integrate_state_struct(S_old_tmp, S_new,
+                           D_old, hydro_src,
+                           IR_old, reset_e_src,
+                           a, a_end,
+                           delta_time, sdc_iter);
+#else
+    amrex::Abort("Need USE_HEATCOOL=TRUE for advance_heatcool");
+#endif
+    return dt;
+}
 
 Real
 Nyx::advance_hydro (Real time,

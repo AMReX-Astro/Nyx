@@ -37,6 +37,9 @@ else
 ifeq ($(USE_HEATCOOL),TRUE)
 USE_SDC = TRUE
 USE_SUNDIALS = TRUE
+#ifeq ($(USE_HIP),TRUE)
+#USE_FUSED ?= $(USE_HIP)
+#endif
 USE_FUSED ?= $(USE_CUDA)
 else
 USE_SDC = FALSE
@@ -45,21 +48,16 @@ USE_FUSED = FALSE
 endif
 endif
 USE_CONST_SPECIES = TRUE
-NEUTRINO_PARTICLES = TRUE
-NEUTRINO_DARK_PARTICLES = TRUE
+NEUTRINO_PARTICLES = FALSE
+NEUTRINO_DARK_PARTICLES = FALSE
 
 USE_OWN_BCS = FALSE
+
+# Halo finder
+BOOST_INLUDE_DIR := ${OLCF_BOOST_ROOT}/include/boost
+REEBER = FALSE
 
 Bpack := ./Make.package
 Blocs := .
 
-ifeq ($(USE_FUSED),TRUE)
-ifeq ($(USE_CUDA),TRUE)
-     LIBRARIES += -L$(SUNDIALS_ROOT)/lib -lsundials_cvode_fused_cuda
-else
-     LIBRARIES += -L$(SUNDIALS_ROOT)/lib -lsundials_cvode_fused_stubs
-endif
-endif
-
 include $(TOP)/Exec/Make.Nyx
-

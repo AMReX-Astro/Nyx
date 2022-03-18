@@ -410,7 +410,7 @@ f_rhs_struct(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, Ato
     z_vode=1/(f_rhs_data->a)-1.0;;
     a=f_rhs_data->a;
     gamma_minus_1=f_rhs_data->gamma_minus_1;
-    if(e_in<=0 || std::isnan(e_in))     e_in=std::numeric_limits<amrex::Real>::min();
+    if(e_in<=0 || amrex::isnan(e_in))     e_in=std::numeric_limits<amrex::Real>::min();
 
     // Converts from code units to CGS
     rho = rho_vode * density_to_cgs * (1.0e0+amrex::Math::abs(z_vode))*(1.0e0+amrex::Math::abs(z_vode))*(1.0e0+amrex::Math::abs(z_vode));
@@ -515,4 +515,113 @@ f_rhs_struct(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, Ato
     return 0;
 }
 
+void sdc_writeOn(amrex::MultiFab &S_old,
+                 amrex::MultiFab &S_new,
+                 amrex::MultiFab &D_old,
+                 amrex::MultiFab &hydro_src,
+                 amrex::MultiFab &IR,
+                 amrex::MultiFab &reset_src,
+                 MFItInfo tiling,
+                 const Real& a, const amrex::Real& a_end, const Real& delta_time,
+                 long int& old_max_steps, long int& new_max_steps,
+                 const int sdc_iter, const int loc_nStep,
+                 std::string filename_inputs, std::string filename, std::string filename_chunk_prefix)
+{
+
+    //    if(ParallelDescriptor::IOProcessor())
+        {
+            {
+            std::ofstream ofs_inputs(filename_inputs.c_str());
+            ParmParse::dumpTable(ofs_inputs, true);
+            //      ofs_inputs << "nyx.initial_a = "<<a<<std::endl;
+            ofs_inputs << "nyx.initial_z = "<<1/a-1<<std::endl;
+            //              ofs_inputs << "nyx.final_a = "<<a_end<<std::endl;
+            ofs_inputs << "nyx.final_z = "<<1/a_end-1<<std::endl;
+            ofs_inputs << "nyx.fixed_dt = "<<delta_time<<std::endl;
+            ofs_inputs << "nyx.hctest_filename_inputs = "<<filename_inputs<<std::endl;
+            ofs_inputs << "nyx.hctest_filename_badmap = "<<filename<<std::endl;
+            ofs_inputs << "nyx.hctest_filename_chunk = "<<filename_chunk_prefix<<std::endl;
+            ofs_inputs << "nyx.hctest_endIndex = "<<(MFIter(S_old,tiling).length())<<std::endl;
+            ofs_inputs << "nyx.hctest_example_write = 0"<<std::endl;
+            ofs_inputs << "nyx.hctest_example_read = 1"<<std::endl;
+            ofs_inputs << "nyx.do_dm_particles = 0"<<std::endl;
+            ofs_inputs << "nyx.do_hydro = 0"<<std::endl;
+            ofs_inputs << "nyx.hctest_example_index = "<<loc_nStep<<std::endl;
+            }
+            {
+                std::ofstream ofs(filename.c_str());
+                (S_old.boxArray()).writeOn(ofs);
+                (S_old.DistributionMap()).writeOn(ofs);
+            }
+        }
+#ifdef _OPENMP
+#ifdef AMREX_USE_GPU
+#pragma omp parallel
+#endif
+#endif
+    for ( MFIter mfi(S_old, tiling); mfi.isValid(); ++mfi)
+    {
+      std::string filename_chunk = filename_chunk_prefix + std::to_string(mfi.index());
+      std::ofstream ofs(filename_chunk.c_str());
+
+      S_old[mfi].writeOn(ofs);
+      D_old[mfi].writeOn(ofs);
+      S_new[mfi].writeOn(ofs);
+      hydro_src[mfi].writeOn(ofs);
+      reset_src[mfi].writeOn(ofs);
+      IR[mfi].writeOn(ofs);
+
+      /*
+      S_old[mfi].setVal(0);                                                                           
+      D_old[mfi].setVal(0);                                                                           
+      S_new[mfi].setVal(0);                                                                           
+      hydro_src[mfi].setVal(0);                                                                       
+      reset_src[mfi].setVal(0);                                                                       
+      IR[mfi].setVal(0);
+      */
+    }
+}
+
+void sdc_readFrom(amrex::MultiFab &S_old,
+                  amrex::MultiFab &S_new,
+                  amrex::MultiFab &D_old,
+                  amrex::MultiFab &hydro_src,
+                  amrex::MultiFab &IR,
+                  amrex::MultiFab &reset_src,
+                  MFItInfo tiling,
+                  const Real& a, const amrex::Real& a_end, const Real& delta_time,
+                  long int& old_max_steps, long int& new_max_steps,
+                  const int sdc_iter, const int loc_nStep,
+                  std::string filename_inputs, std::string filename, std::string filename_chunk_prefix)
+{
+
+    BoxArray grids;
+    DistributionMapping dmap;
+
+    std::ifstream ifs(filename.c_str());
+    grids.readFrom(ifs);
+    dmap.readFrom(ifs);
+
+    //Sanity check that we're getting the same BoxArray and DistributionMapping
+    AMREX_ALWAYS_ASSERT(S_old.boxArray().CellEqual(grids) && dmap == S_old.DistributionMap());
+
+#ifdef _OPENMP
+#ifdef AMREX_USE_GPU
+#pragma omp parallel
+#endif
+#endif
+    for ( MFIter mfi(S_old, tiling); mfi.isValid(); ++mfi)
+    {
+      std::string filename_chunk = filename_chunk_prefix + std::to_string(mfi.index());
+      std::ifstream ifs(filename_chunk.c_str());
+    
+      S_old[mfi].readFrom(ifs);
+      D_old[mfi].readFrom(ifs);
+      S_new[mfi].readFrom(ifs);
+      hydro_src[mfi].readFrom(ifs);
+      reset_src[mfi].readFrom(ifs);
+      IR[mfi].readFrom(ifs);
+    }
+}
+        
 #endif

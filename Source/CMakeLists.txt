@@ -45,14 +45,6 @@ if (Nyx_SDC)
    target_compile_definitions( nyxcore PUBLIC SDC)
 endif()
 
-if (Nyx_SUNDIALS)
-   target_compile_definitions( nyxcore PUBLIC AMREX_USE_SUNDIALS)
-endif ()
-
-if (Nyx_SUNDIALS_SUNMEMORY)
-   target_compile_definitions( nyxcore PUBLIC AMREX_USE_SUNDIALS_SUNMEMORY)
-endif ()
-
 ##############################################################################
 #                                                                            #
 #                          Nyx  compile flags                                #
@@ -80,7 +72,7 @@ if (Nyx_SUNDIALS)
     endif ()
    if (Nyx_GPU_BACKEND STREQUAL HIP)
       target_link_libraries(nyxcore PUBLIC SUNDIALS::nvechip)
-#      target_link_libraries(nyxcore PUBLIC SUNDIALS::cvode_fused_hip)
+      target_link_libraries(nyxcore PUBLIC SUNDIALS::cvode_fused_hip)
    endif ()
    if (Nyx_GPU_BACKEND STREQUAL SYCL)
       target_link_libraries(nyxcore PUBLIC SUNDIALS::nvecsycl)

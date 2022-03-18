@@ -73,7 +73,7 @@ bool dmvars_on(std::string& fns) {
     // open file to search
     fileInput.open(fns.c_str());
     while(getline(fileInput, line)) {
-        if (line.find(search, 0) != string::npos) {
+        if (line.find(search, 0) != std::string::npos) {
             dmvars = true;
         }
     }
@@ -106,7 +106,7 @@ bool hydro_on(std::string& fns) {
     // open file to search
     fileInput.open(fns.c_str());
     while(getline(fileInput, line)) {
-        if (line.find(search, 0) != string::npos) {
+        if (line.find(search, 0) != std::string::npos) {
             hydro = true;
         }   
     }
@@ -123,7 +123,7 @@ bool append_on(std::string& fns) {
     // open file to search
     fileInput.open(fns.c_str());
     while(getline(fileInput, line)) {
-        if (line.find(search, 0) != string::npos) {
+        if (line.find(search, 0) != std::string::npos) {
             append = true;
         }
     }
@@ -472,7 +472,7 @@ int main(int argc, char **argv) {
     // Parameter parsing
     //
 
-    if (argc != 3) {
+    if (argc > 4 || argc < 3) {
         print_usage(argc, argv);
     }
 
@@ -489,6 +489,8 @@ int main(int argc, char **argv) {
     pp.get("input_path", input_path);
     std::string output_path;
     pp.get("output_path", output_path);
+    std::string params_file = input_path + "/the_parameters";
+    pp.query("params_file", params_file);
 
     //
     // Open input plotfile
@@ -532,21 +534,21 @@ int main(int argc, char **argv) {
     double z = 1.0/comoving_a - 1.0;
 
     // Read the_parameters
-    std::string params_file = input_path + "/the_parameters";
     double h = parseByName(params_file, "nyx.comoving_h");
     double omega_b = parseByName(params_file, "nyx.comoving_OmB");
     double omega_m = parseByName(params_file, "nyx.comoving_OmM");
     double omega_l = 1.0-omega_m;
     double domain_size = parseByName(params_file, "geometry.prob_hi") * h;
 
+    Print() << "Read file: " << params_file << std::endl;
+    Print() << "Parameters:  ";
+    Print() << "Om = " << omega_m << ";  " << "Ob = " << omega_b << ";  " 
+    << "h_0 = " << h << ";  " << "L = " << domain_size << std::endl;
+
     if (h < 0.0 || omega_b < 0.0 || omega_m < 0.0 || domain_size < 0.0) {
         Print() << "Error reading the_parameters file!" << std::endl;
         exit(-1);
     }
-
-    Print() << "Parameters:  ";
-    Print() << "Om = " << omega_m << ";  " << "Ob = " << omega_b << ";  " 
-    << "h_0 = " << h << ";  " << "L = " << domain_size << std::endl;
 
     // Parallel info... We might not need it.
     int MyPE = ParallelDescriptor::MyProc();
@@ -564,7 +566,7 @@ int main(int argc, char **argv) {
 
     // check if neutrinos are there:
     // NPC directory = neutrinos on
-    std:string fn=input_path+"/NPC";
+    std::string fn=input_path+"/NPC";
     bool neutrinos=neutrinos_on(fn);
 
     fn=input_path+"/job_info";
@@ -646,8 +648,8 @@ int main(int argc, char **argv) {
         val += 1;
     }
 
-    const Vector<string>& plotVarNames = amrData.PlotVarNames();
-    Vector<string> inVarNames(nComp);
+    const Vector<std::string>& plotVarNames = amrData.PlotVarNames();
+    Vector<std::string> inVarNames(nComp);
     Vector<int> destFillComps(nComp);
     if (ParallelDescriptor::IOProcessor()) {
         std::cout << std::endl << "Converting the following states: "

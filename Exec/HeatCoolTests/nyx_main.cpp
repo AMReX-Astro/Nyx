@@ -25,9 +25,7 @@
 #endif
 #endif
 
-#include <AMReX_PlotFileUtil.H>
 #include <Nyx_output.H>
-#include <Derive.H>
 
 std::string inputs_name = "";
 
@@ -52,10 +50,6 @@ const int quitSignal(-44);
 
 amrex::LevelBld* getLevelBld ();
 
-    const std::string dm_chk_particle_file("DM");
-    const std::string agn_chk_particle_file("AGN");
-    const std::string npc_chk_particle_file("NPC");
-
 void
 nyx_main (int argc, char* argv[])
 {
@@ -70,8 +64,15 @@ nyx_main (int argc, char* argv[])
     }
     BL_PROFILE_REGION_START("main()");
     BL_PROFILE_VAR("main()", pmain);
-    
+
+    //
+    // Don't start timing until all CPUs are ready to go.
+    //
     ParallelDescriptor::Barrier("Starting main.");
+
+    BL_COMM_PROFILE_NAMETAG("main TOP");
+
+    Real dRunTime1 = ParallelDescriptor::second();
 
     std::cout << std::setprecision(10);
 
@@ -90,30 +91,39 @@ nyx_main (int argc, char* argv[])
         amrex::Abort("**** Error: either max_step or stop_time has to be positive!");
     }
 
-    // Reeber has to do some initialization.
-#ifdef REEBER
-#ifdef REEBER_HIST
-    reeber_int = initReeberAnalysis();
-#endif
-#endif
-
     // We hard-wire the initial time to 0
     Real strt_time =  0.0;
 
-    Amr *amrptr = new Amr(getLevelBld());
-    amrptr->init(strt_time,stop_time);
+    Nyx *amrptr = new Nyx();
+
+    amrptr->variable_setup();
+    const Real time_before_main_loop = ParallelDescriptor::second();
+
+    //    ((Amr*) amrptr)->setLevelSteps(0,300);
+    //    amrptr->advance(((Amr*) amrptr)->startTime(),((Amr*) amrptr)->dtLevel(0),0,((Amr*) amrptr)->levelCount(0));
+    amrptr->advance(((Amr*) amrptr)->startTime(),((Amr*) amrptr)->dtLevel(0),0,0);
+
+    const Real time_without_init = ParallelDescriptor::second() - time_before_main_loop;
+    if (ParallelDescriptor::IOProcessor()) std::cout << "Time w/o init: " << time_without_init << std::endl;
+
+    //
+    // This MUST follow the above delete as ~Amr() may dump files to disk.
+    //
+    const int IOProc = ParallelDescriptor::IOProcessorNumber();
+
+    Real dRunTime2 = ParallelDescriptor::second() - dRunTime1;
+
+    ParallelDescriptor::ReduceRealMax(dRunTime2, IOProc);
+
+    if (ParallelDescriptor::IOProcessor())
+    {
+        std::cout << "Run time = " << dRunTime2 << std::endl;
+    }
 
     BL_PROFILE_VAR_STOP(pmain);
     BL_PROFILE_REGION_STOP("main()");
+    BL_PROFILE_SET_RUN_TIME(dRunTime2);
 
     }
     amrex::Finalize();
 }
-/*
-int
-main (int argc, char* argv[])
-{
-    nyx_main(argc, argv);
-    return 0;
-}
-*/

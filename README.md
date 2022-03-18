@@ -1,4 +1,7 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5059767.svg)](https://doi.org/10.5281/zenodo.5059767)
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.03068/status.svg)](https://doi.org/10.21105/joss.03068)
 [![AMReX](https://amrex-codes.github.io/badges/powered%20by-AMReX-red.svg)](https://amrex-codes.github.io)
+
 
 ![Nyx](https://github.com/AMReX-Astro/Nyx/blob/development/Util/banner.jpeg)
 

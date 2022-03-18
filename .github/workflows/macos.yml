@@ -1,0 +1,20 @@
+name: macos
+
+on: [push, pull_request]
+
+jobs:
+
+  nyx_macos:
+    name: AppleClang@11.0 GFortran@9.3
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Dependencies
+      run: .github/workflows/dependencies/dependencies_mac.sh
+    - name: Build & Install
+      run: |
+        cmake  -S . -B build                      \
+            -DNyx_HEATCOOL=yes                    \
+            -DNyx_HYDRO=yes                       \
+            -DCMAKE_CXX_COMPILER_LAUNCHER=$(which ccache)
+        cmake --build build --parallel 2

@@ -3,11 +3,11 @@
 
 .. _SUNDIALS:
 
-Compiling Nyx with SUNDIALS 5
+Compiling Nyx with SUNDIALS 6
 ===============================
 
 The following steps describe how to compile Nyx with
-SUNDIALS 5 support. This library is necessary for non-adiabatic
+SUNDIALS 6 support. This library is necessary for non-adiabatic
 heating-cooling Nyx runs, where ``USE_HEATCOOL=TRUE``, such as
 the ``Nyx/Exec/LyA`` directory.
 
@@ -80,7 +80,7 @@ In order to use SUNDIALS:
       make -j8
       make install -j8
 
-   To install with HIP support (with ROCm 4.0):
+   To install with HIP support (with ROCm 4.5):
 
    ::
 

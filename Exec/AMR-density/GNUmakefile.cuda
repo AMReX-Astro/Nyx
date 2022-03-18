@@ -1,5 +1,5 @@
 # AMREX_HOME defines the directory in which we will find all the AMReX code
-AMREX_HOME ?= ../../../amrex
+AMREX_HOME ?= ../../subprojects/amrex
 
 #This install location assumes modules: pgi/19.10 cuda/10.1.243
 INSTALL_PREFIX ?= /gpfs/alpine/proj-shared/ast160/software/sundials/instdir

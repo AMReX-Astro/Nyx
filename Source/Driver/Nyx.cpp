@@ -119,37 +119,49 @@ int Nyx::use_sundials_fused = 0;
 int Nyx::use_typical_steps = 0;
 #ifndef AMREX_USE_GPU
 int Nyx::sundials_alloc_type = 0;
+int Nyx::sundials_atomic_reductions = -1; // CUDA and HIP only
 #else
 #ifdef AMREX_USE_CUDA
+int Nyx::sundials_atomic_reductions = 1;
 #ifndef _OPENMP
 int Nyx::sundials_alloc_type = 0; //consider changing to 5
 #else
-#ifdef AMREX_USE_SUNDIALS_SUNMEMORY
 int Nyx::sundials_alloc_type = 5;
-#else
-int Nyx::sundials_alloc_type = 2;
-#endif
 #endif
 #endif
 #ifdef AMREX_USE_HIP
-#ifdef AMREX_USE_SUNDIALS_SUNMEMORY
+int Nyx::sundials_atomic_reductions = 0;
 int Nyx::sundials_alloc_type = 5;
-#else
-int Nyx::sundials_alloc_type = 4;
-#endif
 #endif
 #ifdef AMREX_USE_DPCPP
-#ifdef AMREX_USE_SUNDIALS_SUNMEMORY
+int Nyx::sundials_atomic_reductions = -1; // CUDA and HIP only
 int Nyx::sundials_alloc_type = 5;
-#else
-int Nyx::sundials_alloc_type = 4;
 #endif
 #endif
-#endif
+
+Real Nyx::sundials_reltol = 1e-4;
+Real Nyx::sundials_abstol = 1e-4;
+
 int Nyx::minimize_memory = 0;
 int Nyx::shrink_to_fit = 0;
 
 bool Nyx::sundials_use_tiling = true;
+
+#ifndef AMREX_USE_GPU
+IntVect      Nyx::hydro_tile_size(1024,16,16);
+#else
+IntVect      Nyx::hydro_tile_size(1048576,1048576,1048576);
+#endif
+
+#ifndef AMREX_USE_GPU
+IntVect      Nyx::sundials_tile_size(1024,16,16);
+#else
+#ifdef AMREX_USE_OMP
+IntVect      Nyx::sundials_tile_size(1024,16,16);
+#else
+IntVect      Nyx::sundials_tile_size(1048576,1048576,1048576);
+#endif
+#endif
 
 int Nyx::strang_split = 1;
 int Nyx::strang_grown_box = 1;
@@ -293,7 +305,7 @@ Nyx::read_params ()
     // Check phys_bc against possible periodic geometry
     // if periodic, must have internal BC marked.
     //
-    if (DefaultGeometry().isAnyPeriodic())
+    if (DefaultGeometry().isAnyPeriodic() || (!do_dm_particles && !do_hydro))
     {
         //
         // Do idiot check.  Periodic means interior in those directions.
@@ -358,8 +370,8 @@ Nyx::read_params ()
     if (!do_grav)
         amrex::Error("Dont know what to do with both hydro and gravity off");
 #endif
-
-    read_init_params();
+    if (do_dm_particles || do_hydro)
+        read_init_params();
 
     pp_nyx.query("runlog_precision",runlog_precision);
     pp_nyx.query("runlog_precision_terse",runlog_precision_terse);
@@ -510,7 +522,10 @@ Nyx::read_hydro_params ()
     pp_nyx.query("use_sundials_constraint", use_sundials_constraint);
     pp_nyx.query("use_sundials_fused", use_sundials_fused);
     pp_nyx.query("nghost_state", nghost_state);
+    pp_nyx.query("sundials_atomic_reductions", sundials_atomic_reductions);
     pp_nyx.query("sundials_alloc_type", sundials_alloc_type);
+    pp_nyx.query("sundials_reltol", sundials_reltol);
+    pp_nyx.query("sundials_abstol", sundials_abstol);
     pp_nyx.query("minimize_memory", minimize_memory);
     pp_nyx.query("shrink_to_fit", shrink_to_fit);
     pp_nyx.query("use_typical_steps", use_typical_steps);
@@ -520,6 +535,37 @@ Nyx::read_hydro_params ()
     pp_nyx.query("enforce_min_density_type", enforce_min_density_type);
 
     pp_nyx.query("sundials_use_tiling", sundials_use_tiling);
+
+    Vector<int> tilesize(AMREX_SPACEDIM);
+    if (pp_nyx.queryarr("hydro_tile_size", tilesize, 0, AMREX_SPACEDIM))
+    {
+        for (int i=0; i<AMREX_SPACEDIM; i++) {
+          hydro_tile_size[i] = tilesize[i];
+        }
+    }
+    else
+    {
+        amrex::Print()<<"Nyx::hydro_tile_size unset, using fabarray.mfiter_tile_size default: "<<
+            FabArrayBase::mfiter_tile_size<<
+            "\nSuggested default for currently compiled CPU / GPU: nyx.hydro_tile_size="<<
+            hydro_tile_size<<std::endl;
+        hydro_tile_size = FabArrayBase::mfiter_tile_size;
+    }
+
+    if (pp_nyx.queryarr("sundials_tile_size", tilesize, 0, AMREX_SPACEDIM))
+    {
+        for (int i=0; i<AMREX_SPACEDIM; i++) {
+          sundials_tile_size[i] = tilesize[i];
+        }
+    }
+    else
+    {
+        amrex::Print()<<"Nyx::sundials_tile_size unset, using fabarray.mfiter_tile_size default: "<<
+            FabArrayBase::mfiter_tile_size<<
+            "\nSuggested default for currently compiled CPU / GPU: nyx.sundials_tile_size="<<
+            sundials_tile_size<<std::endl;
+        sundials_tile_size = FabArrayBase::mfiter_tile_size;
+    }
 
     if (use_typical_steps != 0 && strang_grown_box == 0)
     {
@@ -1786,18 +1832,18 @@ Nyx::postCoarseTimeStep (Real cumtime)
         amrex::Gpu::Device::streamSynchronize();
         const DistributionMapping& newdmap = dm;
 
-	if(verbose > 2)
-	  amrex::Print()<<"Using ba: "<<parent->boxArray(lev)<<"\nUsing dm: "<<newdmap<<std::endl; 	  
+        if(verbose > 2)
+          amrex::Print()<<"Using ba: "<<parent->boxArray(lev)<<"\nUsing dm: "<<newdmap<<std::endl;        
         for (int i = 0; i < theActiveParticles().size(); i++)
         {
              if(lev > 0)
-	         amrex::Abort("Particle load balancing needs multilevel testing");
-	  /*
+                 amrex::Abort("Particle load balancing needs multilevel testing");
+          /*
              cs->theActiveParticles()[i]->Redistribute(lev,
                                                        theActiveParticles()[i]->finestLevel(),
                                                        1);
-	  */
-	     cs->theActiveParticles()[i]->Regrid(newdmap, parent->boxArray(lev), lev);
+          */
+             cs->theActiveParticles()[i]->Regrid(newdmap, parent->boxArray(lev), lev);
 
              if(shrink_to_fit)
                  cs->theActiveParticles()[i]->ShrinkToFit();
@@ -1870,7 +1916,7 @@ Nyx::post_regrid (int lbase,
             do_grav_solve_here = (level == lbase);
         }
 
-	//        if(parent->maxLevel() == 0)
+        //        if(parent->maxLevel() == 0)
         if(reuse_mlpoisson != 0)
           gravity->setup_Poisson(level,new_finest);
 

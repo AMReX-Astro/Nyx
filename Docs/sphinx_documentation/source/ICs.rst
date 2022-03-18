@@ -77,6 +77,19 @@ readers and increasing the number of particles per read::
   amr.nreaders
   amr.nparts_per_read
 
+
+Start from a plotfile or checkpoint
+-----------------------------------
+
+To enable this option, set::
+
+  nyx.particle_init_type = Restart
+  nyx.restart_particle_file = *plot_file*
+
+In this case the *plot_file* should contain particles in directory *DM*. Testing of this
+functionality is mainly for the current default *Version_Two_Dot_Zero_single*.
+
+
 Reading SPH particles
 ---------------------
 
@@ -111,7 +124,7 @@ To enable this option, set::
 There are then a number of parameters to set, for example::
   
   nyx.particle_initrandom_count = 100000
-  nyx.particle_initrandom_mass = 1
+  nyx.particle_initrandom_mass_total = 100000
   nyx.particle_initrandom_iseed = 15
   nyx.fix_random_seed = 0
 
@@ -128,6 +141,32 @@ Then only set the mass per particle::
 
 Note to increase the number of cells and keep the problem domain size 
 and total mass fixed, the mass per particle must decrease proportionally.
+An alternative is to set the total mass of all particles in the simulation.
+This will cause Nyx to scale the mass per particle to fit the number of cells.
+The following will all have the same total mass::
+
+  nyx.particle_initrandom_mass = 1
+  amr.n_cell = 64 64 64
+
+  nyx.particle_initrandom_mass = 1
+  nyx.particle_initrandom_mass_total = 262144
+  amr.n_cell = 64 64 64
+
+  nyx.particle_initrandom_mass = -1
+  nyx.particle_initrandom_mass_total = 262144
+  amr.n_cell = 64 64 64
+
+  nyx.particle_initrandom_mass = 0.125
+  amr.n_cell = 128 128 128
+
+  nyx.particle_initrandom_mass = 0.125
+  nyx.particle_initrandom_mass_total = 262144
+  amr.n_cell = 128 128 128
+
+  nyx.particle_initrandom_mass = -1
+  nyx.particle_initrandom_mass_total = 262144
+  amr.n_cell = 128 128 128
+
 
 Uniform placement
 ^^^^^^^^^^^^^^^^^

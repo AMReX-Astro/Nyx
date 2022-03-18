@@ -3,6 +3,7 @@
 #include <Gravity.H>
 
 #include <Prob.H>
+#include <AMReX_PlotFileUtil.H>
 
 using namespace amrex;
 
@@ -135,8 +136,7 @@ std::string Nyx::particle_init_type = "";
 //   in the checkpoint files.
 
 bool Nyx::particle_initrandom_serialize = false;
-Real Nyx::particle_initrandom_mass = -1;
-Real Nyx::particle_initrandom_mass_total = 869658119634944.0;
+Real Nyx::particle_initrandom_mass;
 long Nyx::particle_initrandom_count;
 long Nyx::particle_initrandom_count_per_box;
 int  Nyx::particle_initrandom_iseed;
@@ -264,8 +264,7 @@ Nyx::read_particle_params ()
 {
     ParmParse pp("nyx");
     pp.query("do_dm_particles", do_dm_particles);
-    if(!do_dm_particles)
-	return;
+
 #ifdef AGN
     pp.get("particle_init_type", particle_init_type);
 #else
@@ -280,7 +279,6 @@ Nyx::read_particle_params ()
     pp.query("particle_initrandom_count", particle_initrandom_count);
     pp.query("particle_initrandom_count_per_box", particle_initrandom_count_per_box);
     pp.query("particle_initrandom_mass", particle_initrandom_mass);
-    pp.query("particle_initrandom_mass_total", particle_initrandom_mass_total);
     pp.query("particle_initrandom_iseed", particle_initrandom_iseed);
     pp.query("particle_skip_factor", particle_skip_factor);
     pp.query("ascii_particle_file", ascii_particle_file);
@@ -352,13 +350,6 @@ Nyx::read_particle_params ()
 #endif
 
     pp.query("write_particle_density_at_init", write_particle_density_at_init);
-
-    if((particle_initrandom_mass <= 0 && particle_initrandom_mass_total <= 0)
-                                     && (particle_init_type == "Random" ||
-                                         particle_init_type == "RandomPerBox" ||
-                                         particle_init_type == "RandomPerCell"  ))
-      amrex::Abort("Starting random intialization with particles of non-positive mass");
-
     //
     // Control the verbosity of the Particle class
     //
@@ -410,30 +401,6 @@ Nyx::init_particles ()
         // 2 gives more stuff than 1.
         //
         DMPC->SetVerbose(particle_verbose);
-
-        // Check particle mass for random setups
-#ifdef AMREX_USE_SINGLE_PRECISION_PARTICLES
-        Real tol = 1e-6;
-#else
-        Real tol = 1e-12;
-#endif
-
-        Real number_of_cells = Geom().ProbLength(0)/Geom().CellSize(0) *
-                               Geom().ProbLength(1)/Geom().CellSize(1) *
-                               Geom().ProbLength(2)/Geom().CellSize(2);
-        if(particle_initrandom_mass <= 0) {
-            particle_initrandom_mass = particle_initrandom_mass_total / number_of_cells;
-            if(verbose)
-              amrex::Print()<<"... setting particle_initrandom_mass to "<<particle_initrandom_mass<<
-                " by dividing "<<particle_initrandom_mass_total<<" by "<< number_of_cells<<std::endl;
-        }
-
-        if(particle_initrandom_mass_total / number_of_cells - particle_initrandom_mass > tol
-                                                               && (particle_init_type == "Random" ||
-                                                                   particle_init_type == "RandomPerBox" ||
-                                                                   particle_init_type == "RandomPerCell"  ))
-            amrex::Abort("Starting random intialization with particle_initrandom_mass_total / (n_cell)^3 != particle_initrandom_mass");
-
 
         DarkMatterParticleContainer::ParticleInitData pdata = {{particle_initrandom_mass}, {}, {}, {}};
 
@@ -584,6 +551,73 @@ Nyx::init_particles ()
         else if (particle_init_type == "Restart")
         {
             DMPC->Restart(restart_particle_file, dm_chk_particle_file);
+
+            if (write_particle_density_at_init == 1)
+            {
+#ifdef NO_HYDRO
+                const Real cur_time = state[PhiGrav_Type].curTime();
+#else
+                const Real cur_time = state[State_Type].curTime();
+#endif
+
+                int cycle = nStep();
+                auto dir = restart_particle_file + "_gridDM";
+
+                Vector<std::string> varnames;
+                const int n_data_items = 4;
+                const int nGrow = 1;
+                const int lev = 0;
+                MultiFab plotMF(Nyx::theDMPC()->ParticleBoxArray(lev),
+                                Nyx::theDMPC()->ParticleDistributionMap(lev),
+                                n_data_items,
+                                nGrow);
+                varnames.push_back("particle_mass_density");
+                varnames.push_back("particle_x_velocity");
+                varnames.push_back("particle_y_velocity");
+                varnames.push_back("particle_z_velocity");
+
+                Nyx::theDMPC()->AssignDensitySingleLevel(plotMF,lev,4);
+
+                WriteSingleLevelPlotfile(dir,
+                                         plotMF,
+                                         varnames,
+                                         Nyx::theDMPC()->GetParGDB()->Geom(lev),
+                                         cur_time,
+                                         cycle);
+
+                if (ParallelDescriptor::IOProcessor())
+                {
+                  //Copy comoving_a file
+                  std::string FileName = restart_particle_file + "/comoving_a";
+                  std::ifstream FileIn;
+                  std::string line;
+                  FileIn.open(FileName.c_str(), std::ios::in);
+                  if ( ! FileIn.good()) {
+                    amrex::FileOpenFailed(FileName);
+                  }
+                  FileName = dir + "/comoving_a";
+                  std::ofstream File;
+                  File.open(FileName.c_str(), std::ios::out|std::ios::trunc);
+                  if ( ! File.good()) {
+                    amrex::FileOpenFailed(FileName);
+                  }
+                  File.precision(15);
+
+                  while(getline(FileIn, line)){
+                    File << line << std::endl;
+                  }
+                  File.close();
+                  FileIn.close();
+
+                }
+
+                if (ParallelDescriptor::IOProcessor())
+                {
+                  writeJobInfo(dir);
+                  write_parameter_file(dir);
+                }
+		amrex::Abort("Wrote at init: "+dir);
+            }
         }
         else
         {

@@ -3,6 +3,7 @@ EBASE     ?= Nyx
 USE_PARTICLES = TRUE
 USE_GRAV = TRUE
 BL_NO_FORT = TRUE
+AMREX_NO_PROBINIT = TRUE
 USE_RPATH = TRUE
 
 include $(AMREX_HOME)/Tools/GNUMake/Make.defs
@@ -104,7 +105,6 @@ SUNDIALS_LIB_DIR ?= $(SUNDIALS_ROOT)/lib
 USE_CVODE_LIBS ?= TRUE
 USE_ARKODE_LIBS ?= TRUE
 
-CPPFLAGS += -DAMREX_USE_SUNDIALS
 INCLUDE_LOCATIONS += $(SUNDIALS_ROOT)/include
 LIBRARY_LOCATIONS += $(SUNDIALS_LIB_DIR)
 
@@ -130,9 +130,11 @@ ifeq ($(USE_DPCPP),TRUE)
   LIBRARIES += -L$(SUNDIALS_LIB_DIR) -lsundials_nvecsycl
 endif
 
+ifneq ($(USE_GPU),TRUE)
 ifeq ($(USE_OMP),TRUE)
 ifneq ($(USE_HIP), TRUE)
   LIBRARIES += -L$(SUNDIALS_LIB_DIR) -lsundials_nvecopenmp
+endif
 endif
 endif
 
@@ -188,8 +190,7 @@ ifeq ($(USE_SENSEI_INSITU),TRUE)
     Pdirs += Extern/SENSEI
 endif
 
-ifeq ($(USE_SUNDIALS_SUNMEMORY),TRUE)
-    DEFINES += AMREX_USE_SUNDIALS_SUNMEMORY
+ifeq ($(USE_SUNDIALS),TRUE)
     Pdirs += Extern/SUNDIALS
 endif
 Ppack	+= $(foreach dir, $(Pdirs), $(AMREX_HOME)/Src/$(dir)/Make.package)

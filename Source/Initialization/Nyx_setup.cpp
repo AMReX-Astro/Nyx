@@ -124,16 +124,25 @@ Nyx::variable_setup()
     read_params();
 
 #ifdef NO_HYDRO
-    no_hydro_setup();
+    if (do_dm_particles)
+        no_hydro_setup();
+#ifdef HEATCOOL
+    else
+        heatcool_setup();
+#endif
 #else
     if (do_hydro == 1)
     {
        hydro_setup();
     }
-    else
+    else if (do_dm_particles)
     {
        no_hydro_setup();
     }
+#ifdef HEATCOOL
+    else
+        heatcool_setup();
+#endif
 #endif
 
     //
@@ -143,6 +152,19 @@ Nyx::variable_setup()
 }
 
 #ifndef NO_HYDRO
+#ifdef HEATCOOL
+void
+Nyx::heatcool_setup ()
+{
+    ParmParse pp_nyx("nyx");
+    std::string file_in;
+    pp_nyx.query("uvb_rates_file", file_in);
+    amrex::Real mean_rhob = comoving_OmB * 3.e0*(comoving_h*100.e0)*(comoving_h*100.e0) / (8.e0*M_PI*Gconst);
+    tabulate_rates(file_in, mean_rhob);
+    amrex::Gpu::streamSynchronize();
+}
+#endif
+
 void
 Nyx::hydro_setup()
 {
@@ -174,12 +196,7 @@ Nyx::hydro_setup()
 
 
 #ifdef HEATCOOL
-    ParmParse pp("nyx");
-    std::string file_in;
-    pp.query("uvb_rates_file", file_in);
-    amrex::Real mean_rhob = comoving_OmB * 3.e0*(comoving_h*100.e0)*(comoving_h*100.e0) / (8.e0*M_PI*Gconst);
-    tabulate_rates(file_in, mean_rhob);
-    amrex::Gpu::streamSynchronize();
+    heatcool_setup();
 #endif
 
     Interpolater* interp = &cell_cons_interp;
@@ -587,11 +604,7 @@ Nyx::no_hydro_setup()
     NUM_STATE = 1;
 
 #ifdef HEATCOOL
-    ParmParse pp("nyx");
-    std::string file_in;
-    pp.query("uvb_rates_file", file_in);
-    amrex::Real mean_rhob = comoving_OmB * 3.e0*(comoving_h*100.e0)*(comoving_h*100.e0) / (8.e0*M_PI*Gconst);
-    tabulate_rates(file_in, mean_rhob);
+    heatcool_setup();
 #endif
 
     // Note that the default is state_data_extrap = false,
