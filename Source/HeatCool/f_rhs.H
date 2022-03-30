@@ -182,10 +182,10 @@ f_rhs_rpar(amrex::Real const time, amrex::Real& e_in, amrex::Real& energy, amrex
     nhep  = nh * nhep;
     nhepp = nh * nhepp;
 
-    logT = ::log10(T_vode);
+    logT = std::log10(T_vode);
     if (logT >= TCOOLMAX) // Only free-free and Compton cooling are relevant
     {
-        lambda_ff = 1.42e-27 * ::sqrt(T_vode) * (1.1e0 + 0.34e0*::exp(-(5.5e0 - logT)*(5.5e0 - logT) / 3.0e0))
+        lambda_ff = 1.42e-27 * std::sqrt(T_vode) * (1.1e0 + 0.34e0*std::exp(-(5.5e0 - logT)*(5.5e0 - logT) / 3.0e0))
             * (nhp + 4.0e0*nhepp)*ne_vode;
         lambda_c  = compt_c*T_cmb*T_cmb*T_cmb*T_cmb * ne_vode * (T_vode - T_cmb*(1.0e0+amrex::Math::abs(z_vode)))*(1.0e0 + amrex::Math::abs(z_vode))*(1.0e0 + amrex::Math::abs(z_vode))*(1.0e0 + amrex::Math::abs(z_vode))*(1.0e0 + amrex::Math::abs(z_vode));
 

@@ -374,7 +374,7 @@ extern "C"
       [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
       {
 
-        der(i,j,k,0) = ::sqrt(dat(i,j,k,0)*dat(i,j,k,0) +
+        der(i,j,k,0) = std::sqrt(dat(i,j,k,0)*dat(i,j,k,0) +
                                  dat(i,j,k,1)*dat(i,j,k,1) +
                                  dat(i,j,k,2)*dat(i,j,k,2));
 

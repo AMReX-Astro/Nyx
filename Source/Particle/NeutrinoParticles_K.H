@@ -33,7 +33,7 @@ void neutrino_deposit_relativistic_cic (NeutrinoParticleContainer::ParticleType 
     amrex::Real vel_y = p.rdata(2);
     amrex::Real vel_z = p.rdata(3);
     amrex::Real vsq = vel_x*vel_x + vel_y*vel_y + vel_z*vel_z;
-    amrex::Real gamma = 1.0 / ::sqrt ( 1.0 - vsq/csq);
+    amrex::Real gamma = 1.0 / std::sqrt ( 1.0 - vsq/csq);
 
     for (int kk = 0; kk <= 1; ++kk) {
         for (int jj = 0; jj <= 1; ++jj) {

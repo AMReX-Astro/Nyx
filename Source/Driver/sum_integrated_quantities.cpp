@@ -67,8 +67,8 @@ Nyx::sum_integrated_quantities ()
             magvort_lev  = nyx_lev.vol_weight_squared_sum_level("magvort", time);
         }
 
-        rms_mach_lev = ::sqrt(rms_mach_lev);
-         magvort_lev = ::sqrt( magvort_lev);
+        rms_mach_lev = std::sqrt(rms_mach_lev);
+         magvort_lev = std::sqrt( magvort_lev);
 
         if (ParallelDescriptor::IOProcessor() && parent->NumDataLogs() >= num_global_data_logs + lev + 1) 
         {
@@ -107,9 +107,9 @@ Nyx::sum_integrated_quantities ()
     rho_e    /= box_vol;
     Temp     /= box_vol;
     rms_mach /= box_vol;
-    rms_mach = ::sqrt(rms_mach);
+    rms_mach = std::sqrt(rms_mach);
     magvort /= box_vol;
-    magvort = ::sqrt(magvort);
+    magvort = std::sqrt(magvort);
 
     if (verbose > 0) 
     {

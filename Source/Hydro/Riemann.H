@@ -52,8 +52,8 @@ riemann(
   rel = pl / (gamma -1.0);
   rer = pr / (gamma -1.0);
 
-  amrex::Real wl = amrex::max(::sqrt(gamma * pl * rl),wsmall);
-  amrex::Real wr = amrex::max(::sqrt(gamma * pr * rr),wsmall);
+  amrex::Real wl = amrex::max(std::sqrt(gamma * pl * rl),wsmall);
+  amrex::Real wr = amrex::max(std::sqrt(gamma * pr * rr),wsmall);
 
   amrex::Real cleft  = wl/rl;
   amrex::Real cright = wr/rr;
@@ -65,8 +65,8 @@ riemann(
   amrex::Real wlsq = (.5*(gamma-1.0)*(pstar+pl)+pstar) * rl;
   amrex::Real wrsq = (.5*(gamma-1.0)*(pstar+pr)+pstar) * rr;
 
-  wl = ::sqrt(wlsq);
-  wr = ::sqrt(wrsq);
+  wl = std::sqrt(wlsq);
+  wr = std::sqrt(wrsq);
 
   amrex::Real ustarp = ul - (pstar-pl)/wl;
   amrex::Real ustarm = ur + (pstar-pr)/wr;
@@ -120,7 +120,7 @@ riemann(
   po = mask ? 0.5 * (pl+pr) : po;
   reo = mask ? 0.5 * (rel + rer) : reo;
   ro = amrex::max(ro,small_dens);
-  const amrex::Real co = amrex::max(csmall,::sqrt(amrex::Math::abs(gamma * po / ro)));
+  const amrex::Real co = amrex::max(csmall,std::sqrt(amrex::Math::abs(gamma * po / ro)));
 
   //Is a max or limiter similar to the mask above needed for co?
   const amrex::Real drho = (pstar - po) / (co * co);
@@ -130,7 +130,7 @@ riemann(
   const amrex::Real entho = (reo + po)/(ro*co*co);
   const amrex::Real estar = reo + (pstar - po)*entho;
 
-  amrex::Real cstar = ::sqrt(amrex::Math::abs(gamma*pstar/rstar));
+  amrex::Real cstar = std::sqrt(amrex::Math::abs(gamma*pstar/rstar));
   cstar = amrex::max(cstar, csmall);
   const amrex::Real sgnm = amrex::Math::copysign(1.0, ustar);
 

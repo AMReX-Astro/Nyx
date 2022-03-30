@@ -102,7 +102,7 @@ Nyx::integrate_comoving_a_to_a(const Real old_a_local, const Real a_value, Real&
 
         // Compute the slope at the old time
         if (comoving_type > 0)
-            start_slope = H_0*::sqrt(comoving_OmM/start_a + comoving_OmR/(start_a*start_a) + OmL*start_a*start_a);
+            start_slope = H_0*std::sqrt(comoving_OmM/start_a + comoving_OmR/(start_a*start_a) + OmL*start_a*start_a);
         else
             start_slope = comoving_h;
 
@@ -111,7 +111,7 @@ Nyx::integrate_comoving_a_to_a(const Real old_a_local, const Real a_value, Real&
 
         // Compute the slope at the new time
         if (comoving_type > 0)
-            end_slope = H_0*::sqrt(comoving_OmM/end_a + comoving_OmR/(end_a*end_a) + OmL*end_a*end_a);
+            end_slope = H_0*std::sqrt(comoving_OmM/end_a + comoving_OmR/(end_a*end_a) + OmL*end_a*end_a);
         else
             end_slope = comoving_h;
 
@@ -161,7 +161,7 @@ Nyx::integrate_comoving_a_to_z(const Real old_a_local, const Real z_value, Real&
 
         // Compute the slope at the old time
         if (comoving_type > 0)
-            start_slope = H_0*::sqrt(comoving_OmM/start_a + comoving_OmR/(start_a*start_a) + OmL*start_a*start_a);
+            start_slope = H_0*std::sqrt(comoving_OmM/start_a + comoving_OmR/(start_a*start_a) + OmL*start_a*start_a);
         else
             start_slope = comoving_h;
 
@@ -170,7 +170,7 @@ Nyx::integrate_comoving_a_to_z(const Real old_a_local, const Real z_value, Real&
 
         // Compute the slope at the new time
         if (comoving_type > 0)
-            end_slope = H_0*::sqrt(comoving_OmM/end_a + comoving_OmR/(end_a*end_a) + OmL*end_a*end_a);
+            end_slope = H_0*std::sqrt(comoving_OmM/end_a + comoving_OmR/(end_a*end_a) + OmL*end_a*end_a);
         else
             end_slope = comoving_h;
 
@@ -205,7 +205,7 @@ Nyx::est_maxdt_comoving_a(const Real old_a_local, Real & dt)
     if (H_0 != 0.0)
     {
         if (comoving_type > 0)
-            max_dt = (0.05) / H_0 / ::sqrt( comoving_OmM/(old_a_local * old_a_local *old_a_local) 
+            max_dt = (0.05) / H_0 / std::sqrt( comoving_OmM/(old_a_local * old_a_local *old_a_local) 
                                               +comoving_OmR/(old_a_local * old_a_local *old_a_local * old_a_local) + OmL);
         else
             max_dt = (0.05) / std::abs(comoving_h);
@@ -585,7 +585,7 @@ Nyx::integrate_comoving_a (Real time,Real dt)
 Real invEz(Real H0, Real Om, Real Or, Real a)
 {
         //      invEz = 
-        return 1.0e0 / ( H0*::sqrt(Om/a + Or/(a*a) + (1.0e0-Om-Or)*a*a) );
+        return 1.0e0 / ( H0*std::sqrt(Om/a + Or/(a*a) + (1.0e0-Om-Or)*a*a) );
 }
 
 void
@@ -660,7 +660,7 @@ Nyx::integrate_comoving_a (const Real old_a_local, Real& new_a_local, const Real
 
             // Compute the slope at the old time
             if (comoving_type > 0)
-                start_slope = H_0*::sqrt(comoving_OmM/start_a + comoving_OmR/(start_a*start_a) + OmL*start_a*start_a);
+                start_slope = H_0*std::sqrt(comoving_OmM/start_a + comoving_OmR/(start_a*start_a) + OmL*start_a*start_a);
             else
                 start_slope = comoving_h;
 
@@ -669,7 +669,7 @@ Nyx::integrate_comoving_a (const Real old_a_local, Real& new_a_local, const Real
 
             // Compute the slope at the new time
             if (comoving_type > 0)
-                end_slope = H_0*::sqrt(comoving_OmM/end_a + comoving_OmR/(end_a*end_a) + OmL*end_a*end_a);
+                end_slope = H_0*std::sqrt(comoving_OmM/end_a + comoving_OmR/(end_a*end_a) + OmL*end_a*end_a);
             else
                 end_slope = comoving_h;
 
