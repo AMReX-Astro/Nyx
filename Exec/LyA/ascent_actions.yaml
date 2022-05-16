@@ -1,25 +1,35 @@
+--- 
 - 
-  action: "add_scenes"
-  scenes: 
-    scene1: 
-      image_prefix: "ascent_render_mesh_Xmom_"
-      plots: 
-        plt1: 
-          type: "pseudocolor"
-          field: "Xmom"
-    scene2: 
-      image_prefix: "ascent_render_particles_xvel_"
-      plots: 
-        plt1: 
-          type: "pseudocolor"
-          field: "particle_xvel"
-    scene3: 
-      image_prefix: "ascent_render_both_"
-      plots: 
-        plt1: 
-          type: "pseudocolor"
-          field: "Xmom"
-        plt2: 
-          type: "pseudocolor"
-          field: "particle_xvel"
-
+  action: add_pipelines
+  pipelines: 
+    slice: 
+      f1: 
+        params: 
+          normal: 
+            x: 0.0
+            ? "y"
+            : 0.0
+            z: 1.0
+          point: 
+            x: 0.0
+            ? "y"
+            : 0.0
+            z: 0.0
+          topology: topo
+        type: exaslice
+- 
+  action: add_extracts
+  extracts: 
+    e1: 
+      params: 
+        fields: 
+          - Density
+          - Xmom
+          - Ymom
+          - Zmom
+          - rho_E
+          - rho_e
+        path: the_slice
+        protocol: blueprint/mesh/hdf5
+      pipeline: slice
+      type: relay

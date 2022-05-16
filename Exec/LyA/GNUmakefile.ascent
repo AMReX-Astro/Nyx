@@ -1,0 +1,92 @@
+# AMREX_HOME defines the directory in which we will find all the AMReX code
+AMREX_HOME ?= ../../subprojects/amrex
+
+ASCENT_HOME ?=/global/cfs/cdirs/alpine/software/ascent/0.8.0/perlmutter/cuda/gnu/ascent-install/
+# TOP defines the directory in which we will find Source, Exec, etc
+TOP = ../..
+
+# compilation options
+COMP    = gnu
+USE_MPI = TRUE
+# Use with Async IO
+MPI_THREAD_MULTIPLE = FALSE
+USE_OMP = TRUE
+USE_CUDA = FALSE
+
+USE_SUNDIALS      = TRUE
+USE_FORT_ODE = FALSE
+SUNDIALS_ROOT ?=  ${CURDIR}/$(TOP)/../sundials/instdir
+
+PROFILE       = FALSE
+TRACE_PROFILE = FALSE
+COMM_PROFILE  = FALSE
+TINY_PROFILE  = TRUE
+
+PRECISION = DOUBLE
+USE_SINGLE_PRECISION_PARTICLES = TRUE
+DEBUG     = FALSE
+
+USE_ASCENT_INSITU = TRUE
+ifeq ($(USE_ASCENT_INSITU),TRUE)
+  ASCENT_HOME ?= NOT_SET
+  ifneq ($(ASCENT_HOME),NOT_SET)
+    include $(ASCENT_HOME)/share/ascent/ascent_config.mk
+  endif
+  USE_CONDUIT = TRUE
+  USE_ASCENT = TRUE
+endif
+
+# physics
+DIM      = 3
+USE_HEATCOOL = TRUE
+USE_AGN = FALSE
+ifeq ($(NO_HYDRO),TRUE)
+USE_SDC = FALSE
+USE_SUNDIALS = FALSE
+USE_FUSED = FALSE
+else
+ifeq ($(USE_HEATCOOL),TRUE)
+USE_SDC = TRUE
+USE_SUNDIALS = TRUE
+ifeq ($(USE_HIP),TRUE)
+USE_FUSED ?= $(USE_HIP)
+endif
+USE_FUSED ?= $(USE_CUDA)
+else
+USE_SDC = FALSE
+USE_SUNDIALS = FALSE
+USE_FUSED = FALSE
+endif
+endif
+USE_CONST_SPECIES = TRUE
+NEUTRINO_PARTICLES = FALSE
+NEUTRINO_DARK_PARTICLES = FALSE
+
+USE_OWN_BCS = FALSE
+
+# Halo finder
+BOOST_INLUDE_DIR := ${OLCF_BOOST_ROOT}/include/boost
+REEBER = FALSE
+
+Bpack := ./Make.package
+Blocs := .
+
+ifeq ($(USE_ASCENT_INSITU),TRUE)
+##ifneq ($(USE_CUDA),TRUE)
+     XTRAOBJS += $(ASCENT_DEVICE_OBJECT_MPI)
+#     LIBRARIES += $(ASCENT_MPI_LIB_FLAGS)
+#      LIBRARIES += -L $(ASCENT_DIR)/lib \
+#                       -lascent_mpi \
+#                       -lascent_flow \
+#                       -lascent_lodepng \
+#                       -lrover_mpi $(DRAY_LINK_RPATH) $(DRAY_LIB_FLAGS) $(ASCENT_VTKH_MPI_LIB_FLAGS) $(ASCENT_VTKM_LIB_FLAGS) $(ASCENT_CONDUIT_MPI_LIB_FLAGS) $(ASCENT_MFEM_LIB_FLAGS) $(ASCENT_PYTHON_LIBS) $(ASCENT_OPENMP_LINK_FLAGS) -L $(ASCENT_CUDA_LIB_FLAGS)
+	LIBRARIES += -L $(ASCENT_DIR)/lib \
+                       -lascent_mpi \
+                       -lascent_flow \
+                       -lascent_lodepng \
+                       -lrover_mpi $(DRAY_LINK_RPATH) $(DRAY_MPI_LIB_FLAGS) $(ASCENT_VTKH_MPI_LIB_FLAGS) $(ASCENT_VTKM_LIB_FLAGS) $(ASCENT_CONDUIT_MPI_LIB_FLAGS) $(ASCENT_MFEM_LIB_FLAGS) $(ASCENT_FIDES_LIB_FLAGS) $(ASCENT_ADIOS2_LIB_FLAGS) $(ASCENT_PMT_LIB_FLAGS) $(ASCENT_BABELFLOW_LIB_FLAGS) $(ASCENT_OCCA_LIB_FLAGS) $(ASCENT_GENTEN_LIB_FLAGS) $(ASCENT_UMPIRE_LIB_FLAGS) $(ASCENT_PYTHON_LIBS) $(ASCENT_OPENMP_LINK_FLAGS) -L $(ASCENT_CUDA_LIB_FLAGS)
+
+##endif
+endif
+
+include $(TOP)/Exec/Make.Nyx
