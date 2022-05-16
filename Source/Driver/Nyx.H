@@ -126,6 +126,7 @@ public:
     virtual void writePlotFilePre(const std::string& dir, ostream& os) override;
     virtual void writePlotFilePost(const std::string& dir, ostream& os) override;
 
+    static void writeBuildInfo ();
     void writeJobInfo (const std::string& dir);
 
 #ifdef AMREX_USE_CONDUIT
