@@ -23,7 +23,7 @@ void tabulate_rates(std::string file_in, amrex::Real mean_rhob)
         amrex::Abort("Treecool file does not exist at "+file_in);
 
     std::ifstream input_stream(file_in);
-        //    while ( !input_stream.eof() )
+        //    while 
     for(i = 1; i <= NCOOLFILE; i++)
     {
         input_stream >> atomic_rates_host.lzr(i);
@@ -33,6 +33,21 @@ void tabulate_rates(std::string file_in, amrex::Real mean_rhob)
                 input_stream >> atomic_rates_host.reh0(i);
                 input_stream >> atomic_rates_host.rehe0(i);
                 input_stream >> atomic_rates_host.rehep(i);
+    }
+    Real check_length[7];
+    auto count_length=0;
+    while (!input_stream.eof())
+    {
+        for(i=0;i<7;i++)
+	    input_stream>>check_length[i];
+        count_length++;
+    }
+
+    if(count_length>1)
+    {
+        std::string abort_message="Using TREECOOL file longer than NCOOLFILE, change NCOOLFILE in atomic_rates_data.H and recompile. ";
+	abort_message+="Use NCOOLFILE="+std::to_string(NCOOLFILE+count_length-1);
+        amrex::Abort(abort_message);
     }
 
     // Initialize cooling tables
