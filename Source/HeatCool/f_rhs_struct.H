@@ -49,6 +49,7 @@ ode_eos_setup(RhsData* f_rhs_data, amrex::Real gamma_minus_1, amrex::Real h_spec
     RhsData f_rhs_data_host;
     f_rhs_data_host.gamma_minus_1 = gamma_minus_1;
     f_rhs_data_host.h_species = h_species;
+    f_rhs_data_host.inhomogeneous_on=0;
     ParmParse pp_nyx("nyx");
     pp_nyx.query("inhomo_reion", f_rhs_data_host.inhomogeneous_on);
 
@@ -60,7 +61,6 @@ ode_eos_setup(RhsData* f_rhs_data, amrex::Real gamma_minus_1, amrex::Real h_spec
     f_rhs_data_host.T_zheii=0.0;
     f_rhs_data_host.flash_h=0;
     f_rhs_data_host.flash_he=0;
-    f_rhs_data_host.inhomogeneous_on=0;
     pp_nyx.query("uvb_density_A"            , f_rhs_data_host.uvb_density_A);
     pp_nyx.query("uvb_density_B"            , f_rhs_data_host.uvb_density_B);
     pp_nyx.query("reionization_zHI_flash"   , f_rhs_data_host.zhi_flash);

@@ -19,6 +19,9 @@ void tabulate_rates(std::string file_in, amrex::Real mean_rhob)
     atomic_rates_host.mean_rhob=mean_rhob;
     int i = 1;
 
+    if(!amrex::FileSystem::Exists(file_in))
+        amrex::Abort("Treecool file does not exist at "+file_in);
+
     std::ifstream input_stream(file_in);
         //    while ( !input_stream.eof() )
     for(i = 1; i <= NCOOLFILE; i++)
