@@ -105,12 +105,13 @@ int Nyx::integrate_state_struct
     directory_overwrite += pp_nyx.query("hctest_filename_badmap",filename);
     directory_overwrite += pp_nyx.query("hctest_filename_chunk",filename_chunk_prefix);
 
-    if(directory_overwrite == 0 && hctest_example_read==0 && hctest_example_write!=0)
-    {
-        amrex::UtilCreateCleanDirectory("hctest",true);
+    if(hctest_example_read==0 && hctest_example_write!=0)
+     {
+      if(directory_overwrite == 0)
+         amrex::UtilCreateCleanDirectory("hctest",true);
+      else
+        amrex::Print()<<"Using the following paths for hctest:\n"<<filename_inputs<<"\n"<<filename<<"\n"<<filename_chunk_prefix<<std::endl;
     }
-    else
-	amrex::Print()<<"Using the following paths for hctest:\n"<<filename_inputs<<"\n"<<filename<<"\n"<<filename_chunk_prefix<<std::endl;
 
     if(hctest_example_proc && hctest_example_write!=0)
     {
@@ -202,7 +203,7 @@ int Nyx::integrate_state_struct_mfin
       SUNProfiler sun_profiler = nullptr;
       SUNContext_GetProfiler(*amrex::sundials::The_Sundials_Context(),
                              &sun_profiler);
-      //SUNProfiler_Reset(sun_profiler);
+      SUNProfiler_Reset(sun_profiler);
 #endif
 
       long int neq = len.x*len.y*len.z;
