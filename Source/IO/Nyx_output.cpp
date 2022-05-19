@@ -430,6 +430,13 @@ Nyx::writeBuildInfo ()
 #ifdef AMREX_USE_SUNDIALS
   SUNDIALSGetVersionNumber(&major, &minor, &patch, label, len);
 #endif
+#ifdef AMREX_USE_CONDUIT
+    conduit::Node about;
+    ascent::about(about);
+    const std::string ascent_version = about["version"].to_json();
+    const std::string ascent_githash = about["git_sha1"].to_json();
+    //    about.print_detailed();
+#endif
   if (strlen(githash1) > 0) {
     std::cout << "Nyx          git describe: " << githash1 << "\n";
   }
@@ -441,6 +448,10 @@ Nyx::writeBuildInfo ()
   std::cout << "Sundials     int version:  v" <<major<<"."<<minor<<"."<<patch<< "\n";
 #endif
 
+#ifdef AMREX_USE_CONDUIT
+  std::cout << "Ascent       git version:   " << ascent_githash << "\n";
+  std::cout << "Ascent    string version:   " << ascent_version << "\n";
+#endif
   const char* buildgithash = buildInfoGetBuildGitHash();
   const char* buildgitname = buildInfoGetBuildGitName();
   if (strlen(buildgithash) > 0){
@@ -448,6 +459,18 @@ Nyx::writeBuildInfo ()
   }
 
   std::cout << "\n\n";
+  /*
+// Possibly put this into job_info
+#ifdef AMREX_USE_CONDUIT
+  std::cout << PrettyLine;
+  std::cout << " Ascent Build Information\n";
+  std::cout << PrettyLine;
+
+  std::cout << about.to_json();
+
+  std::cout << "\n\n";
+#endif
+  */
 }
 
 void
