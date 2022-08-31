@@ -222,6 +222,8 @@ ode_eos_finalize_struct(const int i, const int j, const int k, const int idx, At
     e_out = dptr[idx];
     e_orig = eptr[idx];
     rho_out = state_n4(i,j,k,Density_comp);
+    if (f_rhs_data->inhomogeneous_on)
+        f_rhs_data->H_reion_z = diag_eos4(i,j,k,Zhi_comp);
     //  int  idx= i+j*len.x+k*len.x*len.y-(lo.x+lo.y*len.x+lo.z*len.x*len.y);
     /////////////////   //update nyx_eos_T_given_Re
     diag_eos4(i,j,k,Temp_comp)=f_rhs_data->T_vode[idx];   //rpar(1)=T_vode
