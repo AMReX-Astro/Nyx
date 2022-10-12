@@ -556,8 +556,11 @@ void sdc_writeOn(amrex::MultiFab &S_old,
                 (S_old.DistributionMap()).writeOn(ofs);
             }
         }
-#ifdef _OPENMP
-#ifdef AMREX_USE_GPU
+
+    // Since this is writing as a fab, set fab.format=ASCII if you want ascii output
+    // The order is: old state data, old derived data, new state data, source terms from hydro, a correction term from enforcing conservation, the lagged IR term from old reactions
+#ifdef AMREX_USE_OMP
+#ifndef AMREX_USE_GPU
 #pragma omp parallel
 #endif
 #endif
@@ -607,8 +610,8 @@ void sdc_readFrom(amrex::MultiFab &S_old,
     //Sanity check that we're getting the same BoxArray and DistributionMapping
     AMREX_ALWAYS_ASSERT(S_old.boxArray().CellEqual(grids) && dmap == S_old.DistributionMap());
 
-#ifdef _OPENMP
-#ifdef AMREX_USE_GPU
+#ifdef AMREX_USE_OMP
+#ifndef AMREX_USE_GPU
 #pragma omp parallel
 #endif
 #endif
