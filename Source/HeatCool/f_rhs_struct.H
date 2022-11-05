@@ -212,6 +212,67 @@ ode_eos_initialize_arrays(const int i, const int j, const int k, const int idx, 
 AMREX_GPU_DEVICE
 AMREX_FORCE_INLINE
 void
+ode_eos_save_react_arrays(const int i, const int j, const int k, const int idx, AtomicRates* atomic_rates, RhsData* f_rhs_data,
+                          const amrex::Real a_end,
+			  amrex::Array4<const Real> const& state4, amrex::Array4<const Real> const& state_n4,
+                          amrex::Array4<const Real> const& reset_src, amrex::Array4<const Real> const& diag_eos4,
+			  amrex::Array4<const Real> const& I_R,
+                          amrex::Array4<Real> const& react_in_arr,
+                          amrex::Array4<Real> const& react_out_arr,
+                          amrex::Array4<Real> const& react_out_work_arr,
+                          amrex::Real* dptr, amrex::Real* eptr, amrex::Real* abstol_ptr, amrex::Real* abstol_achieve_ptr,
+                          const int sdc_iter, const amrex::Real delta_time, const amrex::Real time_in,
+			  long int nst, long int netf, long int nfe,
+			  long int nni, long int ncfn, long int nsetups, long int nje, long int ncfl, long int nfeLS)
+{
+    /*
+    e_out = dptr[idx];
+    e_orig = eptr[idx];
+    rho_out = state_n4(i,j,k,Density_comp);
+    rho_orig = f_rhs_data->rho_init_vode[idx];
+    rho_src = f_rhs_data->rho_src_vode[idx]; // used to construct rho during ode evolve, where time is given by sundials
+    //rho_vode=f_rhs_data->rho_init_vode[idx]+time*f_rhs_data->rho_src_vode[idx];
+    rhoe_src = f_rhs_data->rhoe_src_vode[idx]; // used to construct IR, this is A_{rhoe}
+    e_src = f_rhs_data->e_src_vode[idx]; // used as forcing in ode solve, where lambda_HC is modified with A_{e}
+    //energy  = energy / rho_vode * (1.0e0+amrex::Math::abs(z_vode)) + f_rhs_data->e_src_vode[idx];
+    //if called immediately after ode_eos_finalize_struct these are outputs, if called after ode_eos_initialize_struct these are inputs
+    T_out = f_rhs_data->T_vode[idx];
+    ne_out = f_rhs_data->ne_vode[idx];
+    abstol_request = abstol_ptr[idx];
+    abstol_achieve_est = abstol_achieve_ptr[idx];
+    */
+    int comp1=0;
+    int comp2=0;
+    int comp3=0;
+    react_in_arr(i,j,k,comp1++) = eptr[idx];
+    react_out_arr(i,j,k,comp2++) = dptr[idx];
+    react_in_arr(i,j,k,comp1++) = f_rhs_data->rho_init_vode[idx];
+    react_out_arr(i,j,k,comp2++) = f_rhs_data->rho_init_vode[idx] + delta_time*f_rhs_data->rho_src_vode[idx];
+    react_in_arr(i,j,k,comp1++) = f_rhs_data->rhoe_src_vode[idx];
+    react_in_arr(i,j,k,comp1++) = f_rhs_data->e_src_vode[idx];
+    react_out_arr(i,j,k,comp2++) = f_rhs_data->T_vode[idx];
+    react_out_arr(i,j,k,comp2++) = f_rhs_data->ne_vode[idx];
+    react_in_arr(i,j,k,comp1++) = abstol_ptr[idx];
+    react_out_arr(i,j,k,comp2++) = abstol_achieve_ptr[idx];
+    react_in_arr(i,j,k,comp1++) = f_rhs_data->a;
+    react_out_arr(i,j,k,comp2++) = a_end;
+    react_in_arr(i,j,k,comp1++) = time_in;
+    react_out_arr(i,j,k,comp2++) = delta_time;
+    react_out_work_arr(i,j,k,comp3++) = nst;
+    react_out_work_arr(i,j,k,comp3++) = netf;
+    react_out_work_arr(i,j,k,comp3++) = nfe;
+    react_out_work_arr(i,j,k,comp3++) = nni;
+    react_out_work_arr(i,j,k,comp3++) = ncfn;
+    react_out_work_arr(i,j,k,comp3++) = nsetups;
+    react_out_work_arr(i,j,k,comp3++) = nje;
+    react_out_work_arr(i,j,k,comp3++) = ncfl;
+    react_out_work_arr(i,j,k,comp3++) = nfeLS;
+
+}
+
+AMREX_GPU_DEVICE
+AMREX_FORCE_INLINE
+void
 ode_eos_finalize_struct(const int i, const int j, const int k, const int idx, AtomicRates* atomic_rates, RhsData* f_rhs_data,
                         const amrex::Real a_end, amrex::Array4<Real> const& state4, amrex::Array4<Real> const& state_n4,
                         amrex::Array4<Real> const& reset_src, amrex::Array4<Real> const& diag_eos4, amrex::Array4<Real> const& I_R,

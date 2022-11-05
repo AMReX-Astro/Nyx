@@ -41,6 +41,8 @@
 static int f(realtype t, N_Vector u, N_Vector udot, void *user_data);
 
 static void PrintFinalStats(void *cvode_mem);
+static void GetFinalStats(void *cvode_mem, N_Vector abstol_achieve, long int& nst, long int& netf, long int& nfe,
+			  long int& nni, long int& ncfn, long int& nsetups, long int& nje, long int& ncfl, long int& nfeLS);
 
 /* Private function to check function return values */
 static int check_retval(void *flagvalue, const char *funcname, int opt);
@@ -121,6 +123,13 @@ int Nyx::integrate_state_struct
     {
         sdc_readFrom(S_old,S_new, D_old, hydro_src, IR, reset_src, tiling, a, a_end, delta_time, store_steps, new_max_sundials_steps, sdc_iter, loc_nStep, filename_inputs, filename, filename_chunk_prefix);
     }
+#ifdef SAVE_REACT
+
+    MultiFab react_in(grids,dmap,ncomp1,NUM_GROW);
+    MultiFab react_out(grids,dmap,ncomp2,NUM_GROW);
+    MultiFab react_out_work(grids,dmap,ncomp3,NUM_GROW);
+#endif
+
 #ifdef _OPENMP
 #ifdef AMREX_USE_GPU
 #pragma omp parallel
@@ -138,10 +147,40 @@ int Nyx::integrate_state_struct
       Array4<Real> const& hydro_src4 = hydro_src.array(mfi);
       Array4<Real> const& reset_src4 = reset_src.array(mfi);
       Array4<Real> const& IR4 = IR.array(mfi);
-
+#ifdef SAVE_REACT
+      Array4<Real> const& react_in_arr = react_in.array(mfi);
+      Array4<Real> const& react_out_arr = react_out.array(mfi);
+      Array4<Real> const& react_out_work_arr = react_out_work.array(mfi);
+      integrate_state_struct_mfin(state4,diag_eos4,state_n4,hydro_src4,reset_src4,
+                                  IR4,react_in_arr,react_out_arr,react_out_work_arr,
+				  tbx,a,a_end,delta_time,store_steps,new_max_sundials_steps,sdc_iter);
+#else
       integrate_state_struct_mfin(state4,diag_eos4,state_n4,hydro_src4,reset_src4,
                                   IR4,tbx,a,a_end,delta_time,store_steps,new_max_sundials_steps,sdc_iter);
+#endif
     }
+#ifdef SAVE_REACT
+	const amrex::Vector<std::string> react_in_names {"eptr-idx", "f_rhs_data-ptr-rho_init_vode-idx", "f_rhs_data-ptr-rhoe_src_vode-idx", "f_rhs_data-ptr-e_src_vode-idx", "abstol_ptr-idx", "f_rhs_data-ptr-a", "time_in"};
+	const amrex::Vector<std::string> react_out_names {"dptr-idx", "f_rhs_data-ptr-rho_vode-idx", "f_rhs_data-ptr-T_vode-idx", "f_rhs_data-ptr-ne_vode-idx", "abstol_achieve_ptr-idx", "a_end", "delta_time"};
+	const amrex::Vector<std::string> react_out_work_names {"nst", "netf", "nfe", "nni", "ncfn", "nsetups", "nje", "ncfl", "nfeLS"};
+#ifdef NO_HYDRO
+        Real cur_time = state[PhiGrav_Type].curTime();
+#else
+        Real cur_time = state[State_Type].curTime();
+#endif
+	auto plotfilename = Concatenate("plt_react_in", istep[0], 5);
+        WriteSingleLevelPlotfile(plotfilename,
+				 react_in, react_in_names,
+				 Geom(), cur_time, nStep());
+	plotfilename = Concatenate("plt_react_out", istep[0], 5);
+        WriteSingleLevelPlotfile(plotfilename,
+				 react_out, react_out_names,
+				 Geom(), cur_time, nStep());
+	plotfilename = Concatenate("plt_react_out_work", istep[0], 5);
+        WriteSingleLevelPlotfile(plotfilename,
+				 react_out_work, react_out_work_names,
+				 Geom(), cur_time, nStep());
+#endif
     return 0;
 }
 
@@ -152,6 +191,11 @@ int Nyx::integrate_state_struct_mfin
    amrex::Array4<Real> const& hydro_src4,
    amrex::Array4<Real> const& reset_src4,
    amrex::Array4<Real> const& IR4,
+#ifdef SAVE_REACT
+   amrex::Array4<Real> const& react_in_arr,
+   amrex::Array4<Real> const& react_out_arr,
+   amrex::Array4<Real> const& react_out_work_arr,
+#endif
    const Box& tbx,
    const Real& a, const amrex::Real& a_end, const Real& delta_time,
    long int& old_max_steps, long int& new_max_steps,
@@ -179,6 +223,7 @@ int Nyx::integrate_state_struct_mfin
       N_Vector e_orig;
       N_Vector Data;
       N_Vector abstol_vec;
+      N_Vector abstol_achieve_vec;
       N_Vector T_vec;
       N_Vector ne_vec;
       N_Vector rho_vec;
@@ -189,7 +234,7 @@ int Nyx::integrate_state_struct_mfin
       N_Vector IR_vec;
 
       void *cvode_mem;
-      realtype *dptr, *eptr, *rpar, *rparh, *abstol_ptr;
+      realtype *dptr, *eptr, *rpar, *rparh, *abstol_ptr, *abstol_achieve_ptr;
       Real *T_vode, *ne_vode,*rho_vode,*rho_init_vode,*rho_src_vode,*rhoe_src_vode,*e_src_vode,*IR_vode;
       realtype t=0.0;
 
@@ -197,6 +242,7 @@ int Nyx::integrate_state_struct_mfin
       e_orig = NULL;
       Data = NULL;
       abstol_vec = NULL;
+      abstol_achieve_vec = NULL;
       cvode_mem = NULL;
 
 #ifdef SUNDIALS_BUILD_WITH_PROFILING
@@ -252,6 +298,9 @@ int Nyx::integrate_state_struct_mfin
                 abstol_ptr = (realtype*) The_Arena()->alloc(neq*sizeof(realtype));
                 abstol_vec = N_VMakeManaged_Cuda(neq,abstol_ptr, *amrex::sundials::The_Sundials_Context());
                 N_VSetKernelExecPolicy_Cuda(abstol_vec, stream_exec_policy, reduce_exec_policy);
+                abstol_achieve_ptr = (realtype*) The_Arena()->alloc(neq*sizeof(realtype));
+                abstol_achieve_vec = N_VMakeManaged_Cuda(neq,abstol_achieve_ptr, *amrex::sundials::The_Sundials_Context());
+                N_VSetKernelExecPolicy_Cuda(abstol_achieve_vec, stream_exec_policy, reduce_exec_policy);
                 T_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
                 T_vec = N_VMakeManaged_Cuda(neq, T_vode, *amrex::sundials::The_Sundials_Context());
                 ne_vode=(realtype*) The_Arena()->alloc(neq*sizeof(realtype));
@@ -392,6 +441,7 @@ int Nyx::integrate_state_struct_mfin
 
               e_orig = N_VClone(u);  /* Allocate u vector */
               abstol_vec = N_VClone(u);
+              abstol_achieve_vec = N_VClone(u);
               if(sdc_iter>=0)
               {
                   T_vec = N_VClone(u);
@@ -420,6 +470,7 @@ int Nyx::integrate_state_struct_mfin
               eptr=N_VGetDeviceArrayPointer(e_orig);
               dptr=N_VGetDeviceArrayPointer(u);
               abstol_ptr=N_VGetDeviceArrayPointer(abstol_vec);
+              abstol_achieve_ptr=N_VGetDeviceArrayPointer(abstol_achieve_vec);
               T_vode= N_VGetDeviceArrayPointer(T_vec);
               ne_vode=N_VGetDeviceArrayPointer(ne_vec);
               rho_vode=N_VGetDeviceArrayPointer(rho_vec);
@@ -432,6 +483,7 @@ int Nyx::integrate_state_struct_mfin
               eptr=N_VGetArrayPointer(e_orig);
               dptr=N_VGetArrayPointer(u);
               abstol_ptr=N_VGetArrayPointer(abstol_vec);
+              abstol_achieve_ptr=N_VGetArrayPointer(abstol_achieve_vec);
               T_vode= N_VGetArrayPointer(T_vec);
               ne_vode=N_VGetArrayPointer(ne_vec);
               rho_vode=N_VGetArrayPointer(rho_vec);
@@ -547,6 +599,12 @@ int Nyx::integrate_state_struct_mfin
             BL_PROFILE_VAR("Nyx::reactions_cells_finalize",var6);
             if(verbose > 1)
                 PrintFinalStats(cvode_mem);
+	    long int nst, netf, nfe;
+	    long int nni, ncfn;
+	    long int nsetups, nje, ncfl, nfeLS;
+	    GetFinalStats(&cvode_mem, abstol_achieve_vec, nst, netf, nfe,
+			  nni, ncfn, nsetups, nje, ncfl, nfeLS);
+
 #ifdef AMREX_USE_GPU
             AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
             {
@@ -564,6 +622,12 @@ int Nyx::integrate_state_struct_mfin
                 int  idx= i + j*len.x + k*len.x*len.y - (lo.x+lo.y*len.x+lo.z*len.x*len.y);
                 //                              for (int i= 0;i < neq; ++i) {
                 ode_eos_finalize_struct(i,j,k,idx,atomic_rates,f_rhs_data,a_end,state4,state_n4,reset_src4,diag_eos4,IR4,dptr,eptr,delta_time);
+#ifdef SAVE_REACT
+                ode_eos_save_react_arrays(i,j,k,idx,atomic_rates,f_rhs_data,a_end,state4,state_n4,reset_src4,diag_eos4,IR4,
+					  react_in_arr, react_out_arr, react_out_work_arr,
+					  dptr,eptr,abstol_ptr,abstol_achieve_ptr, sdc_iter, delta_time, 0.0, nst, netf, nfe,
+					  nni, ncfn, nsetups, nje, ncfl, nfeLS);
+#endif
 #ifdef AMREX_USE_GPU
                 });
             amrex::Gpu::Device::streamSynchronize();
@@ -578,6 +642,7 @@ int Nyx::integrate_state_struct_mfin
             amrex::Gpu::Device::streamSynchronize();
 #endif
 #endif
+
     amrex::Gpu::streamSynchronize();
     BL_PROFILE_VAR_STOP(var6);
     BL_PROFILE_VAR("Nyx::reactions_free",var7);
@@ -594,6 +659,7 @@ int Nyx::integrate_state_struct_mfin
           if(use_sundials_constraint)
               The_Arena()->free(constrain);*/
           The_Arena()->free(abstol_ptr);
+          The_Arena()->free(abstol_achieve_ptr);
           The_Arena()->free(T_vode);
           The_Arena()->free(ne_vode);
           The_Arena()->free(rho_vode);
@@ -609,6 +675,7 @@ int Nyx::integrate_state_struct_mfin
               if(use_sundials_constraint)
                 N_VDestroy(constrain);     /* Free the constrain vector */
               N_VDestroy(abstol_vec);      /* Free the u vector */
+              N_VDestroy(abstol_achieve_vec);      /* Free the u vector */
               N_VDestroy(T_vec);
               N_VDestroy(ne_vec);
               N_VDestroy(rho_vec);
@@ -718,6 +785,25 @@ static void PrintFinalStats(void *cvode_mem)
   amrex::Print() << "  LS setups     = " << nsetups << "\n";
   amrex::Print() << "  LS RHS evals  = " << nfeLS   << "\n";
 
+  return;
+}
+
+static void GetFinalStats(void *cvode_mem, N_Vector abstol_achieve, long int& nst, long int& netf, long int& nfe,
+			  long int& nni, long int& ncfn, long int& nsetups, long int& nje, long int& ncfl, long int& nfeLS)
+{
+
+  int retval;
+  // CVODE stats
+  retval = CVodeGetNumSteps(cvode_mem, &nst);
+  retval = CVodeGetNumErrTestFails(cvode_mem, &netf);
+  retval = CVodeGetNumRhsEvals(cvode_mem, &nfe);
+  // Nonlinear solver stats
+  retval = CVodeGetNumNonlinSolvIters(cvode_mem, &nni);
+  retval = CVodeGetNumNonlinSolvConvFails(cvode_mem, &ncfn);
+  // Linear solver stats
+  retval = CVodeGetNumLinSolvSetups(cvode_mem, &nsetups);
+  retval = CVDiagGetNumRhsEvals(cvode_mem, &nfeLS);
+  retval = CVodeGetEstLocalErrors(cvode_mem, abstol_achieve);
   return;
 }
 
