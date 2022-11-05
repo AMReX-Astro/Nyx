@@ -124,10 +124,13 @@ int Nyx::integrate_state_struct
         sdc_readFrom(S_old,S_new, D_old, hydro_src, IR, reset_src, tiling, a, a_end, delta_time, store_steps, new_max_sundials_steps, sdc_iter, loc_nStep, filename_inputs, filename, filename_chunk_prefix);
     }
 #ifdef SAVE_REACT
+	const amrex::Vector<std::string> react_in_names {"eptr-idx", "f_rhs_data-ptr-rho_init_vode-idx", "f_rhs_data-ptr-rhoe_src_vode-idx", "f_rhs_data-ptr-e_src_vode-idx", "abstol_ptr-idx", "f_rhs_data-ptr-a", "time_in"};
+	const amrex::Vector<std::string> react_out_names {"dptr-idx", "f_rhs_data-ptr-rho_vode-idx", "f_rhs_data-ptr-T_vode-idx", "f_rhs_data-ptr-ne_vode-idx", "abstol_achieve_ptr-idx", "a_end", "delta_time"};
+	const amrex::Vector<std::string> react_out_work_names {"nst", "netf", "nfe", "nni", "ncfn", "nsetups", "nje", "ncfl", "nfeLS"};
 
-    MultiFab react_in(grids,dmap,ncomp1,NUM_GROW);
-    MultiFab react_out(grids,dmap,ncomp2,NUM_GROW);
-    MultiFab react_out_work(grids,dmap,ncomp3,NUM_GROW);
+	MultiFab react_in(grids,dmap,react_in_names.size(),NUM_GROW);
+	MultiFab react_out(grids,dmap,react_out_names.size(),NUM_GROW);
+	MultiFab react_out_work(grids,dmap,react_out_work_names.size(),NUM_GROW);
 #endif
 
 #ifdef _OPENMP
@@ -160,23 +163,20 @@ int Nyx::integrate_state_struct
 #endif
     }
 #ifdef SAVE_REACT
-	const amrex::Vector<std::string> react_in_names {"eptr-idx", "f_rhs_data-ptr-rho_init_vode-idx", "f_rhs_data-ptr-rhoe_src_vode-idx", "f_rhs_data-ptr-e_src_vode-idx", "abstol_ptr-idx", "f_rhs_data-ptr-a", "time_in"};
-	const amrex::Vector<std::string> react_out_names {"dptr-idx", "f_rhs_data-ptr-rho_vode-idx", "f_rhs_data-ptr-T_vode-idx", "f_rhs_data-ptr-ne_vode-idx", "abstol_achieve_ptr-idx", "a_end", "delta_time"};
-	const amrex::Vector<std::string> react_out_work_names {"nst", "netf", "nfe", "nni", "ncfn", "nsetups", "nje", "ncfl", "nfeLS"};
 #ifdef NO_HYDRO
         Real cur_time = state[PhiGrav_Type].curTime();
 #else
         Real cur_time = state[State_Type].curTime();
 #endif
-	auto plotfilename = Concatenate("plt_react_in", istep[0], 5);
+	auto plotfilename = Concatenate("plt_react_in", nStep(), 5);
         WriteSingleLevelPlotfile(plotfilename,
 				 react_in, react_in_names,
 				 Geom(), cur_time, nStep());
-	plotfilename = Concatenate("plt_react_out", istep[0], 5);
+	plotfilename = Concatenate("plt_react_out", nStep(), 5);
         WriteSingleLevelPlotfile(plotfilename,
 				 react_out, react_out_names,
 				 Geom(), cur_time, nStep());
-	plotfilename = Concatenate("plt_react_out_work", istep[0], 5);
+	plotfilename = Concatenate("plt_react_out_work", nStep(), 5);
         WriteSingleLevelPlotfile(plotfilename,
 				 react_out_work, react_out_work_names,
 				 Geom(), cur_time, nStep());
@@ -599,12 +599,13 @@ int Nyx::integrate_state_struct_mfin
             BL_PROFILE_VAR("Nyx::reactions_cells_finalize",var6);
             if(verbose > 1)
                 PrintFinalStats(cvode_mem);
+#ifdef SAVE_REACT
 	    long int nst, netf, nfe;
 	    long int nni, ncfn;
 	    long int nsetups, nje, ncfl, nfeLS;
-	    GetFinalStats(&cvode_mem, abstol_achieve_vec, nst, netf, nfe,
+	    GetFinalStats(cvode_mem, abstol_achieve_vec, nst, netf, nfe,
 			  nni, ncfn, nsetups, nje, ncfl, nfeLS);
-
+#endif
 #ifdef AMREX_USE_GPU
             AMREX_PARALLEL_FOR_3D ( tbx, i,j,k,
             {

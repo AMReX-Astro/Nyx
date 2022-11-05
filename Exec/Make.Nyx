@@ -48,6 +48,10 @@ ifeq ($(USE_HEATCOOL), TRUE)
   DEFINES += -DHEATCOOL
 endif
 
+ifeq ($(USE_SAVE_REACT), TRUE)
+  DEFINES += -DSAVE_REACT
+endif
+
 endif
 
 ifeq ($(USE_CONST_SPECIES), TRUE)

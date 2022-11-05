@@ -568,6 +568,11 @@ int integrate_state_struct
    amrex::Array4<amrex::Real> const& hydro_src4,
    amrex::Array4<amrex::Real> const& reset_src4,
    amrex::Array4<amrex::Real> const& IR4,
+#ifdef SAVE_REACT
+   amrex::Array4<amrex::Real> const& react_in_arr,
+   amrex::Array4<amrex::Real> const& react_out_arr,
+   amrex::Array4<amrex::Real> const& react_out_work_arr,
+#endif
    const amrex::Box& tbx,
    const amrex::Real& a, const amrex::Real& a_end,
    const amrex::Real& delta_time,
