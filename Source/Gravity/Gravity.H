@@ -2,7 +2,7 @@
 #define _Gravity_H_
 
 #include <AMReX_AmrLevel.H>
-#include <AMReX_MacBndry.H>
+#include <AMReX_BndryData.H>
 #include <AMReX_FluxRegister.H>
 #include <AMReX_Particles.H>
 
