@@ -1,6 +1,6 @@
 .. _developers-amrex-basics:
 
-AMReX basics (excessively basic)
+AMReX basics
 ================================
 
 Nyx is built on the Adaptive Mesh Refinement (AMR) library `AMReX <https://github.com/AMReX-Codes/amrex>`__. This section provides a very sporadic description of the main AMReX classes and concepts relevant for Nyx.
@@ -20,12 +20,12 @@ Particles in a ``ParticleContainer`` are organized per ``Box``. Particles in a `
 (this feature is off when running on GPU). 
 Particles within a tile are stored in several structures, each being contiguous in memory: (i) an Array-Of-Struct (AoS) (often called `data`, they are the 3D position, the particle ID and the index of the CPU owning the particle), where the Struct is an ``amrex::Particle`` and (ii) Struct-Of-Arrays (SoA) for extra variables (often called ``attribs``).
 
-AMReX uses an ``owner computes`` rule.
-The simulation domain is typically decomposed into multiple ``Box``es, and each MPI rank owns, and performs operations on,
-the fields and particles defined on the ``Box``es assigned to that rank, but has the metadata of all of them.
-For convenience, AMReX provides iterators, to easily iterate over all the ``FArrayBox``es (or even tile-by-tile, optionally) 
+The simulation domain is typically decomposed into multiple boxes, and each MPI rank owns, and performs operations on,
+the fields and particles defined on the boxes assigned to that rank. However, every rank does have the full metadata, i.e
+the list of all boxes and which ranks the data on those boxes is assigned to (the ``DistributionMapping``).
+For convenience, AMReX provides iterators, to easily iterate over all the ``FArrayBox`` (with optional logical tiling)
 in a ``MultiFab`` that are owned by that MPI rank (``MFIter``), or over all particles in a ``ParticleContainer`` on a per-box basis (``ParIter``).
-These are respectively done in loops like:
+These are respectively done in loops such as:
 
 .. code-block:: cpp
 
