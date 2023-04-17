@@ -23,6 +23,7 @@ the simulations results.
    :maxdepth: 1
 
    Source directory overview <getting_started/Structure>
+   AMReX basics <getting_started/amrex_basics>
    Building Nyx with GNU Make <getting_started/BuildingGMake>
    Building Nyx with CMake <getting_started/BuildingCMake>
    Running the code <getting_started/RunningTheCode>
