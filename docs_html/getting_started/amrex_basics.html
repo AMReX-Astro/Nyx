@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html class="writer-html4" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AMReX basics (excessively basic) &mdash; Nyx  documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "tex2jax_ignore|mathjax_ignore|document", "processClass": "tex2jax_process|mathjax_process|math|output_area"}})</script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Building Nyx with GNU Make" href="BuildingGMake.html" />
+    <link rel="prev" title="Directory overview" href="Structure.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Nyx
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption"><span class="caption-text">Nyx basics</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../NyxPreface.html">Preface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../NyxCitation.html">Citation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../NyxGettingStarted.html">Getting Started</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="Structure.html">Source directory overview</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">AMReX basics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="BuildingGMake.html">Building Nyx with GNU Make</a></li>
+<li class="toctree-l2"><a class="reference internal" href="BuildingCMake.html">Building Nyx with CMake</a></li>
+<li class="toctree-l2"><a class="reference internal" href="RunningTheCode.html">Running the code</a></li>
+<li class="toctree-l2"><a class="reference internal" href="NyxSundials.html">Compiling Nyx with SUNDIALS 5</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../NyxUnits.html">Units and Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../NyxInputs.html">Inputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ICs.html">Initial conditions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Refinement.html">Refinement Criteria</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ManagingGridHierarchy_Chapter.html">Gridding and Load Balancing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../NyxGravity.html">Gravity</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../NyxEquations.html">Hydrodynamic Equations in Comoving Coordinates</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../NyxSplitting.html">Hydrodynamical and Heating-Cooling Splitting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../NyxHeatCool.html">Radiative Heating and Cooling</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../NyxForcing.html">Stochastic Forcing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Particles.html">Dark matter particles</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../InSitu.html">In situ Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../PostProcessing.html">Analyzing Outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../NightlyTests.html">Nightly Regression Tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Debugging.html">Debugging</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Development.html">Work in Progress</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Nyx</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../NyxGettingStarted.html">Getting Started</a></li>
+      <li class="breadcrumb-item active">AMReX basics (excessively basic)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/getting_started/amrex_basics.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="amrex-basics-excessively-basic">
+<span id="developers-amrex-basics"></span><h1>AMReX basics (excessively basic)<a class="headerlink" href="#amrex-basics-excessively-basic" title="Permalink to this headline">¶</a></h1>
+<p>Nyx is built on the Adaptive Mesh Refinement (AMR) library <a class="reference external" href="https://github.com/AMReX-Codes/amrex">AMReX</a>. This section provides a very sporadic description of the main AMReX classes and concepts relevant for Nyx.
+For more details, please visit
+the AMReX basics <a class="reference external" href="https://amrex-codes.github.io/amrex/docs_html/Basics.html">doc page</a>, and the rest of the AMReX documentation.</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">amrex::Box</span></code>: Dimension-dependent lower and upper indices defining a rectangular volume in 3D (or surface in 2D) in the index space. <code class="docutils literal notranslate"><span class="pre">Box</span></code> is a lightweight meta-data class, with useful member functions.</li>
+<li><code class="docutils literal notranslate"><span class="pre">amrex::BoxArray</span></code>: Collection of <code class="docutils literal notranslate"><span class="pre">Box</span></code> on a single AMR level. The information of which MPI rank owns which <code class="docutils literal notranslate"><span class="pre">Box</span></code> in a <code class="docutils literal notranslate"><span class="pre">BoxArray</span></code> is in <code class="docutils literal notranslate"><span class="pre">DistributionMapping</span></code>.</li>
+<li><code class="docutils literal notranslate"><span class="pre">amrex::FArrayBox</span></code>: Fortran-ordered array of floating-point <code class="docutils literal notranslate"><span class="pre">amrex::Real</span></code> elements defined on a <code class="docutils literal notranslate"><span class="pre">Box</span></code>. A <code class="docutils literal notranslate"><span class="pre">FArrayBox</span></code> can represent scalar data or vector data, with <code class="docutils literal notranslate"><span class="pre">ncomp</span></code> components.</li>
+<li><code class="docutils literal notranslate"><span class="pre">amrex::MultiFab</span></code>: Collection of <cite>FAB</cite> (= <code class="docutils literal notranslate"><span class="pre">FArrayBox</span></code>) on a single AMR level, distributed over MPI ranks. The concept of <cite>ghost cells</cite> is defined at the <code class="docutils literal notranslate"><span class="pre">MultiFab</span></code> level.</li>
+<li><code class="docutils literal notranslate"><span class="pre">amrex::ParticleContainer</span></code>: A collection of particles; in Nyx the main ParticleContainer contains dark matter particles.</li>
+</ul>
+<p>Particles in a <code class="docutils literal notranslate"><span class="pre">ParticleContainer</span></code> are organized per <code class="docutils literal notranslate"><span class="pre">Box</span></code>. Particles in a <code class="docutils literal notranslate"><span class="pre">Box</span></code> are organized per tile
+(this feature is off when running on GPU).
+Particles within a tile are stored in several structures, each being contiguous in memory: (i) an Array-Of-Struct (AoS) (often called <cite>data</cite>, they are the 3D position, the particle ID and the index of the CPU owning the particle), where the Struct is an <code class="docutils literal notranslate"><span class="pre">amrex::Particle</span></code> and (ii) Struct-Of-Arrays (SoA) for extra variables (often called <code class="docutils literal notranslate"><span class="pre">attribs</span></code>).</p>
+<p>AMReX uses an <code class="docutils literal notranslate"><span class="pre">owner</span> <span class="pre">computes</span></code> rule.
+The simulation domain is typically decomposed into multiple <code class="docutils literal notranslate"><span class="pre">Box``es,</span> <span class="pre">and</span> <span class="pre">each</span> <span class="pre">MPI</span> <span class="pre">rank</span> <span class="pre">owns,</span> <span class="pre">and</span> <span class="pre">performs</span> <span class="pre">operations</span> <span class="pre">on,</span>
+<span class="pre">the</span> <span class="pre">fields</span> <span class="pre">and</span> <span class="pre">particles</span> <span class="pre">defined</span> <span class="pre">on</span> <span class="pre">the</span> <span class="pre">``Box``es</span> <span class="pre">assigned</span> <span class="pre">to</span> <span class="pre">that</span> <span class="pre">rank,</span> <span class="pre">but</span> <span class="pre">has</span> <span class="pre">the</span> <span class="pre">metadata</span> <span class="pre">of</span> <span class="pre">all</span> <span class="pre">of</span> <span class="pre">them.</span>
+<span class="pre">For</span> <span class="pre">convenience,</span> <span class="pre">AMReX</span> <span class="pre">provides</span> <span class="pre">iterators,</span> <span class="pre">to</span> <span class="pre">easily</span> <span class="pre">iterate</span> <span class="pre">over</span> <span class="pre">all</span> <span class="pre">the</span> <span class="pre">``FArrayBox``es</span> <span class="pre">(or</span> <span class="pre">even</span> <span class="pre">tile-by-tile,</span> <span class="pre">optionally)</span>
+<span class="pre">in</span> <span class="pre">a</span> <span class="pre">``MultiFab</span></code> that are owned by that MPI rank (<code class="docutils literal notranslate"><span class="pre">MFIter</span></code>), or over all particles in a <code class="docutils literal notranslate"><span class="pre">ParticleContainer</span></code> on a per-box basis (<code class="docutils literal notranslate"><span class="pre">ParIter</span></code>).
+These are respectively done in loops like:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// mf is a MultiFab</span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="n">amrex</span><span class="o">::</span><span class="n">MFIter</span><span class="w"> </span><span class="n">mfi</span><span class="p">(</span><span class="n">mf</span><span class="p">,</span><span class="w"> </span><span class="n">TilingIfNotGpu</span><span class="p">());</span><span class="w"> </span><span class="n">mfi</span><span class="p">.</span><span class="n">isValid</span><span class="p">();</span><span class="w"> </span><span class="o">++</span><span class="n">mfi</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">}</span>
+</pre></div>
+</div>
+<p>and</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// *this is a pointer to a ParticleContainer</span>
+<span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">ParIter</span><span class="w"> </span><span class="n">pti</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">,</span><span class="w"> </span><span class="n">lev</span><span class="p">);</span><span class="w"> </span><span class="n">pti</span><span class="p">.</span><span class="n">isValid</span><span class="p">();</span><span class="w"> </span><span class="o">++</span><span class="n">pti</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Structure.html" class="btn btn-neutral float-left" title="Directory overview" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="BuildingGMake.html" class="btn btn-neutral float-right" title="Building Nyx with GNU Make" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Nyx development team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

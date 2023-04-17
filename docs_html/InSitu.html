@@ -29,11 +29,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> Nyx
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Nyx
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -80,7 +84,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">In situ Analysis</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/InSitu.rst.txt" rel="nofollow"> View page source</a>
@@ -91,31 +95,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  
-<style>
-/* CSS overrides for sphinx_rtd_theme */
-
-/* 24px margin */
-.nbinput.nblast.container,
-.nboutput.nblast.container {
-    margin-bottom: 19px;  /* padding has already 5px */
-}
-
-/* ... except between code cells! */
-.nblast.container + .nbinput.container {
-    margin-top: -19px;
-}
-
-.admonition > p:before {
-    margin-right: 4px;  /* make room for the exclamation icon */
-}
-
-/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
-.math {
-    text-align: unset;
-}
-</style>
-<div class="section" id="in-situ-analysis">
+  <div class="section" id="in-situ-analysis">
 <span id="insitu"></span><h1>In situ Analysis<a class="headerlink" href="#in-situ-analysis" title="Permalink to this headline">¶</a></h1>
 <p>Nyx supports in situ visualization using Ascent, and can leverage AMReX’s Sensei visualization pipeline. Additionally, Nyx supports in situ halo finding using Reeber2. This is useful both as
 in situ analysis tool, and for subgrid models, like AGN (under development).</p>

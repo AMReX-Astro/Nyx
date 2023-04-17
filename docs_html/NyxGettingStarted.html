@@ -29,11 +29,15 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="index.html" class="icon icon-home"> Nyx
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            Nyx
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -45,6 +49,7 @@
 <li class="toctree-l1"><a class="reference internal" href="NyxCitation.html">Citation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Getting Started</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="getting_started/Structure.html">Source directory overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started/amrex_basics.html">AMReX basics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="getting_started/BuildingGMake.html">Building Nyx with GNU Make</a></li>
 <li class="toctree-l2"><a class="reference internal" href="getting_started/BuildingCMake.html">Building Nyx with CMake</a></li>
 <li class="toctree-l2"><a class="reference internal" href="getting_started/RunningTheCode.html">Running the code</a></li>
@@ -82,7 +87,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home"></a></li>
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
       <li class="breadcrumb-item active">Getting Started</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/NyxGettingStarted.rst.txt" rel="nofollow"> View page source</a>
@@ -93,36 +98,12 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  
-<style>
-/* CSS overrides for sphinx_rtd_theme */
-
-/* 24px margin */
-.nbinput.nblast.container,
-.nboutput.nblast.container {
-    margin-bottom: 19px;  /* padding has already 5px */
-}
-
-/* ... except between code cells! */
-.nblast.container + .nbinput.container {
-    margin-top: -19px;
-}
-
-.admonition > p:before {
-    margin-right: 4px;  /* make room for the exclamation icon */
-}
-
-/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
-.math {
-    text-align: unset;
-}
-</style>
-<div class="section" id="getting-started">
+  <div class="section" id="getting-started">
 <span id="chap-gettingstartednew"></span><h1>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
 <p>The Nyx source code currently lives in a
 <a class="reference external" href="https://github.com/AMReX-Astro/Nyx.git">github repository</a> that
 can be cloned by using git:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt; git clone https://github.com/AMReX-Astro/Nyx.git --recursive
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>&gt;<span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/AMReX-Astro/Nyx.git<span class="w"> </span>--recursive
 </pre></div>
 </div>
 <div class="admonition note">
@@ -135,6 +116,7 @@ the simulations results.</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="getting_started/Structure.html">Source directory overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting_started/amrex_basics.html">AMReX basics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="getting_started/BuildingGMake.html">Building Nyx with GNU Make</a></li>
 <li class="toctree-l1"><a class="reference internal" href="getting_started/BuildingCMake.html">Building Nyx with CMake</a></li>
 <li class="toctree-l1"><a class="reference internal" href="getting_started/RunningTheCode.html">Running the code</a></li>
