@@ -38,7 +38,7 @@ jobs:
 
   nyx-cuda9:
     name: CUDA@10.2 GNU@6.5.0 C++14 Release
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     env: {CXXFLAGS: "-fno-operator-names"}
     steps:
     - uses: actions/checkout@v2
