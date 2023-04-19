@@ -53,7 +53,7 @@ class NyxParticleContainer
 {
 public:
 
-    using ParticleTileType = amrex::ParticleTile<NSR,NSI,NAR,NAI>;
+    using ParticleTileType = amrex::ParticleTile<amrex::Particle<NSR,NSI>,NAR,NAI>;
     using MyParIter = amrex::ParIter<NSR,NSI,NAR,NAI>;
     using MyConstParIter = amrex::ParConstIter<NSR,NSI,NAR,NAI>;
 
