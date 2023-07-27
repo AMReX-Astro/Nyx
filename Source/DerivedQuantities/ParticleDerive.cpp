@@ -67,16 +67,20 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
             {
                 const FArrayBox& ffab = temp_dat[mfi];
                 FArrayBox& cfab = ctemp_dat[mfi];
+                auto farr = temp_dat.array(mfi);
+                auto carr = ctemp_dat.array(mfi);
                 const Box& fbx = ffab.box();
 
                 BL_ASSERT(cfab.box() == amrex::coarsen(fbx, trr));
 
-                for (IntVect p = fbx.smallEnd(); p <= fbx.bigEnd(); fbx.next(p))
+                amrex::ParallelFor(fbx,
+                [=] AMREX_GPU_DEVICE (int i, int j, int k) noexcept
                 {
-                    const Real val = ffab(p);
+                    auto p = IntVect(AMREX_D_DECL(i,j,k));
+                    const Real val = farr(i,j,k);
                     if (val > 0)
-                        cfab(amrex::coarsen(p, trr)) += val;
-                }
+                        carr(amrex::coarsen(p, trr)) += val;
+                });
             }
 
             temp_dat.clear();
