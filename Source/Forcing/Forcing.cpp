@@ -47,6 +47,13 @@ StochasticForcing::StochasticForcing()
         modes_odd[dim]     = NULL;
     }
     mask = NULL;
+#ifdef AMREX_USE_GPU
+    auto* p = dynamic_cast<CArena*>(The_Arena());
+    if(p->isManaged())
+        amrex::Warning("Forcing setup uses managed memory which may be non-performant");
+    else
+        amrex::Abort("Forcing setup with The_Arena set to device memory is not implemented");
+#endif
 }
 
 //
