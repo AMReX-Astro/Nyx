@@ -82,12 +82,12 @@ void Nyx::ext_src_force(
   const amrex::Real dt)
 {
 	// Make a copy of the state so we can evolve it then throw it away
-    amrex::FArrayBox tmp_state_fab(bx, new_state.nComp());
+    amrex::FArrayBox tmp_state_fab(bx, QVAR);
     amrex::Elixir tmp_state_eli = tmp_state_fab.elixir();
 	auto const& tmp_state = tmp_state_fab.array();
 
 	//	tmp_state_fab.copy<RunOn::Device>(new_state);
-    amrex::ParallelFor(bx, new_state.nComp(), [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
+    amrex::ParallelFor(bx, QVAR, [=] AMREX_GPU_DEVICE(int i, int j, int k, int n) noexcept {
 			tmp_state(i,j,k,n) = new_state(i,j,k,n);
 		});
 	amrex::Real a = 1.0 / (1.0+z);
@@ -101,7 +101,7 @@ void Nyx::ext_src_force(
 	amrex::Real half_dt = 0.5 * dt;
     integrate_state_force(bx, tmp_state, new_diag,
 						  dx, time, a, half_dt);
-	amrex::Gpu::streamSynchronize();
+
 	// Recall that this routine is called from a tiled MFIter 
 	//  !   For old source: lo(:), hi(:) are the bounds of the growntilebox(src.nGrow9))
     //   For new source: lo(:), hi(:) are the bounds of the      tilebox, e.g. valid region only
@@ -113,7 +113,6 @@ void Nyx::ext_src_force(
 	src(i,j,k,Eint_comp) = (tmp_state(i,j,k,Eint_comp) - new_state(i,j,k,Eint_comp)) * a / half_dt;
 	src(i,j,k,Eden_comp) = (tmp_state(i,j,k,Eden_comp) - new_state(i,j,k,Eden_comp)) * a / half_dt;
     });
-	amrex::Gpu::streamSynchronize();
 }
 
 void

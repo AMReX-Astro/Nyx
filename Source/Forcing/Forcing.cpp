@@ -299,17 +299,19 @@ void StochasticForcing::integrate_state_force(
 
     int num_modes = NumNonZeroModes;
 
-    Gpu::ManagedVector<Real> buf(num_modes);
-    Gpu::ManagedVector<Real> phasefct_init_even(num_modes);
-    Gpu::ManagedVector<Real> phasefct_init_odd(num_modes);
+    Vector<Real> buf(num_modes);
+    Vector<Real> phasefct_init_even(num_modes);
+    Vector<Real> phasefct_init_odd(num_modes);
 
-    Gpu::ManagedVector<Real> phasefct_mult_even_x(num_modes);
-    Gpu::ManagedVector<Real> phasefct_mult_even_y(num_modes);
-    Gpu::ManagedVector<Real> phasefct_mult_even_z(num_modes);
+    Vector<Real> phasefct_mult_even_x(num_modes);
+    Vector<Real> phasefct_mult_even_y(num_modes);
+    Vector<Real> phasefct_mult_even_z(num_modes);
 
-    Gpu::ManagedVector<Real> phasefct_mult_odd_x(num_modes);
-    Gpu::ManagedVector<Real> phasefct_mult_odd_y(num_modes);
-    Gpu::ManagedVector<Real> phasefct_mult_odd_z(num_modes);
+    Vector<Real> phasefct_mult_odd_x(num_modes);
+    Vector<Real> phasefct_mult_odd_y(num_modes);
+    Vector<Real> phasefct_mult_odd_z(num_modes);
+    Vector<Real> phasefct_yz0(num_modes);
+    Vector<Real> phasefct_yz1(num_modes);
 
     Real *phasefct_even_x, *phasefct_even_y, *phasefct_even_z;
     Real *phasefct_odd_x, *phasefct_odd_y, *phasefct_odd_z;
@@ -440,21 +442,9 @@ void StochasticForcing::integrate_state_force(
        }
     }
 
-    auto bxD = bx;
-    bxD.makeSlab(0,0);
-//    amrex::Real **modes_even_local[3];
-//    amrex::Real **modes_odd_local[3];
-    auto modes_even_local = &modes_even;
-    auto modes_odd_local = &modes_odd;
-    auto SpectralRank_local = SpectralRank;
-
     // apply forcing in physical space
-    amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
-            int mi, mj, mk;
-            Real accel[MAX_DIMENSION];
-            Real phasefct_yz0[MAX_DIMENSION];
-            Real phasefct_yz1[MAX_DIMENSION];
-
+    for (int k = bx.smallEnd(2); k <= bx.bigEnd(2); k++) {
+        for (int j = bx.smallEnd(1); j <= bx.bigEnd(1); j++) {
             mj = (j-bx.smallEnd(1))*num_modes;
             mk = (k-bx.smallEnd(2))*num_modes;
 
@@ -473,16 +463,16 @@ void StochasticForcing::integrate_state_force(
                 accel[2] = 0.0;
 
                 // compute components of acceleration via inverse FT
-                for (int n = 0; n < SpectralRank_local; n++) {
+                for (int n = 0; n < SpectralRank; n++) {
                     mi = (i-bx.smallEnd(0))*num_modes;
 
                     for (int m = 0; m < num_modes; m++) {
                         // sum up even modes
                         accel[n] = accel[n] + (phasefct_even_x[mi] * phasefct_yz0[m] -
-                                               phasefct_odd_x[mi]  * phasefct_yz1[m]) * (*modes_even_local)[n][m];
+                                               phasefct_odd_x[mi]  * phasefct_yz1[m]) * modes_even[n][m];
                         // sum up odd modes
                         accel[n] = accel[n] - (phasefct_even_x[mi] * phasefct_yz1[m] +
-                                               phasefct_odd_x[mi]  * phasefct_yz0[m]) * (*modes_odd_local)[n][m];
+                                               phasefct_odd_x[mi]  * phasefct_yz0[m]) * modes_odd[n][m];
                         mi = mi + 1;
                     }
 
@@ -493,7 +483,8 @@ void StochasticForcing::integrate_state_force(
                 state(i,j,k,Ymom_comp) = state(i,j,k,Ymom_comp) + half_dt * state(i,j,k,Density_comp)*accel[1] / a;
                 state(i,j,k,Zmom_comp) = state(i,j,k,Zmom_comp) + half_dt * state(i,j,k,Density_comp)*accel[2] / a;
             }
-    });
+        }
+    }
 
     // update total energy
     amrex::ParallelFor(bx, [=] AMREX_GPU_DEVICE(int i, int j, int k) noexcept {
