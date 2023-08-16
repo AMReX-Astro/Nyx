@@ -145,38 +145,35 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     {
         amrex::ParticleLocData pld; 
         for (auto& kv : pmap) {
-            AoS&  pbox       = kv.second.GetArrayOfStructs();
-            const int   n    = pbox.size();
+            AoS&  particles = kv.second.GetArrayOfStructs();
+            ParticleType* pstruct = particles().data();
+            const long np = particles.size();
+            if (! m_particle_locator.isValid(GetParGDB())) m_particle_locator.build(GetParGDB());
+            m_particle_locator.setGeometry(GetParGDB());
+            AmrAssignGrid<DenseBinIteratorFactory<Box>> assign_grid = m_particle_locator.getGridAssignor();
 
-#ifdef _OPENMP
-#pragma omp parallel for private(pld) if (Gpu::notInLaunchRegion())
-#endif
-            for (int i = 0; i < n; i++)
-            {
-                ParticleType& p = pbox[i];
-                if (p.id() <= 0) continue;
-
-                // Move the particle to the proper ghost cell. 
-                //      and remove any *ghost* particles that have gone too far
-                // Note that this should only negate ghost particles, not real particles.
-                if (!this->Where(p, pld, lev, lev, where_width))
-                {
-                    // Assert that the particle being removed is a ghost particle;
-                    // the ghost particle is no longer in relevant ghost cells for this grid.
-                    if (p.id() == amrex::GhostParticleID)
-                    {
-                        p.id() = -1;
-                    }
-                    else
-                    {       
-                        int grid = kv.first.first;
-                        
-                        
-                        std::cout << "Oops -- removing particle " << p << " " << this->Index(p, lev) << " " << lev << " " << (this->m_gdb->ParticleBoxArray(lev))[grid] << " " << where_width << std::endl;
-                        amrex::Error("Trying to get rid of a non-ghost particle in moveKickDrift");
-                    }
-                }
-            }
+            amrex::ParallelFor(np,
+                           [=] AMREX_GPU_HOST_DEVICE ( long i)
+                           {
+                               //                              amrex::ParticleContainer<4, 0>::SuperParticleType&  p=pstruct[i];
+                               auto&  p=pstruct[i];
+                               const auto tup = assign_grid(p, lev, lev, where_width);
+                               auto p_boxes = amrex::get<0>(tup);
+                               auto p_levs  = amrex::get<1>(tup);
+                               if(p_boxes<0||p_levs<0) {
+                                   //printf("p:       %d\t%d\t%g %g %g %g %g %g %g id\n",p.id(),p.cpu(),p.pos(0),p.pos(1),p.pos(2),p.rdata(0),p.rdata(1),p.rdata(2),p.rdata(3));
+                                   //printf("tup:     %d\t%d\n",amrex::get<0>(tup),amrex::get<1>(tup));
+                                   if (p.id() == amrex::GhostParticleID)
+                                   {
+                                       p.id() = -1;
+                                   }
+                                   else
+                                   {
+                                       amrex::Error("Trying to get rid of a non-ghost particle in moveKickDrift");
+                                   }
+                               }
+                           });
+            Gpu::streamSynchronize();
         }
     }
 }
