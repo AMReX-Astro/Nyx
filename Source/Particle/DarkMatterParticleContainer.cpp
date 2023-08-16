@@ -143,20 +143,21 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     ParticleLevel&    pmap          = this->GetParticles(lev);
     if (lev > 0 && sub_cycle)
     {
+	if (! m_particle_locator.isValid(GetParGDB())) m_particle_locator.build(GetParGDB());
+        m_particle_locator.setGeometry(GetParGDB());
+        AmrAssignGrid<DenseBinIteratorFactory<Box>> assign_grid = m_particle_locator.getGridAssignor();
+
         amrex::ParticleLocData pld; 
         for (auto& kv : pmap) {
             AoS&  particles = kv.second.GetArrayOfStructs();
             ParticleType* pstruct = particles().data();
             const long np = particles.size();
-            if (! m_particle_locator.isValid(GetParGDB())) m_particle_locator.build(GetParGDB());
-            m_particle_locator.setGeometry(GetParGDB());
-            AmrAssignGrid<DenseBinIteratorFactory<Box>> assign_grid = m_particle_locator.getGridAssignor();
-
             amrex::ParallelFor(np,
                            [=] AMREX_GPU_HOST_DEVICE ( long i)
                            {
                                //                              amrex::ParticleContainer<4, 0>::SuperParticleType&  p=pstruct[i];
                                auto&  p=pstruct[i];
+			       if(p.id()>0) {
                                const auto tup = assign_grid(p, lev, lev, where_width);
                                auto p_boxes = amrex::get<0>(tup);
                                auto p_levs  = amrex::get<1>(tup);
@@ -172,6 +173,7 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
                                        amrex::Error("Trying to get rid of a non-ghost particle in moveKickDrift");
                                    }
                                }
+			       }
                            });
             Gpu::streamSynchronize();
         }
