@@ -202,7 +202,7 @@ ode_eos_initialize_arrays(const int i, const int j, const int k, const int idx, 
     if (f_rhs_data->inhomogeneous_on)
     {
         f_rhs_data->H_reion_z = diag_eos4(i,j,k,Zhi_comp);
-        if (z > f_rhs_data->H_reion_z)
+        if (z > diag_eos4(i,j,k,Zhi_comp))
             f_rhs_data->JH_vode_arr[idx] = 0;
         else
             f_rhs_data->JH_vode_arr[idx] = 1;
@@ -214,16 +214,16 @@ AMREX_FORCE_INLINE
 void
 ode_eos_save_react_arrays(const int i, const int j, const int k, const int idx, AtomicRates* atomic_rates, RhsData* f_rhs_data,
                           const amrex::Real a_end,
-			  amrex::Array4<const Real> const& state4, amrex::Array4<const Real> const& state_n4,
+                          amrex::Array4<const Real> const& state4, amrex::Array4<const Real> const& state_n4,
                           amrex::Array4<const Real> const& reset_src, amrex::Array4<const Real> const& diag_eos4,
-			  amrex::Array4<const Real> const& I_R,
+                          amrex::Array4<const Real> const& I_R,
                           amrex::Array4<Real> const& react_in_arr,
                           amrex::Array4<Real> const& react_out_arr,
                           amrex::Array4<Real> const& react_out_work_arr,
                           amrex::Real* dptr, amrex::Real* eptr, amrex::Real* abstol_ptr, amrex::Real* abstol_achieve_ptr,
                           const int sdc_iter, const amrex::Real delta_time, const amrex::Real time_in,
-			  long int nst, long int netf, long int nfe,
-			  long int nni, long int ncfn, long int nsetups, long int nje, long int ncfl, long int nfeLS)
+                          long int nst, long int netf, long int nfe,
+                          long int nni, long int ncfn, long int nsetups, long int nje, long int ncfl, long int nfeLS)
 {
     /*
     e_out = dptr[idx];
@@ -352,11 +352,17 @@ ode_eos_finalize_struct(const int i, const int j, const int k, const int idx, At
     Real z_end = 1/(a_end)-1.0;
 
     Real T_H = 0.0e0;
-    if (f_rhs_data->inhomogeneous_on || f_rhs_data->flash_h)
+    if (f_rhs_data->inhomogeneous_on)
+    {
+      if ((diag_eos4(i,j,k,Zhi_comp)  < z) && (diag_eos4(i,j,k,Zhi_comp) >= z_end))
+        T_H  = (1.0e0 - nhp)*amrex::max((f_rhs_data->T_zhi-f_rhs_data->T_vode[idx]), 0.0e0);
+    }
+    else if (f_rhs_data->flash_h)
     {
       if ((f_rhs_data->H_reion_z  < z) && (f_rhs_data->H_reion_z  >= z_end))
         T_H  = (1.0e0 - nhp)*amrex::max((f_rhs_data->T_zhi-f_rhs_data->T_vode[idx]), 0.0e0);
     }
+
     Real T_He = 0.0e0;
     if (f_rhs_data->flash_he)
     {
