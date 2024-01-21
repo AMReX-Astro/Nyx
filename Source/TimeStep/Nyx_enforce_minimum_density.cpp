@@ -164,7 +164,7 @@ Nyx::enforce_minimum_density_cons ( MultiFab& S_old, MultiFab& S_new)
             const Box& bx = mfi.growntilebox();
             for (int i = 0; i < S_new[mfi].nComp(); i++)
             {
-                IntVect p_nan(D_DECL(-10, -10, -10));
+                IntVect p_nan(AMREX_D_DECL(-10, -10, -10));
 //                if (ParallelDescriptor::IOProcessor())
 //                    std::cout << "enforce_minimum_density: testing component " << i << " for NaNs" << std::endl;
                 bool has_nan=S_new[mfi].contains_nan<RunOn::Device>(bx,Density_comp+i,1,p_nan);

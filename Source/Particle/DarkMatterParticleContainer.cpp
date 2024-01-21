@@ -334,7 +334,7 @@ DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
     Real         disp[AMREX_SPACEDIM];
     Real         vel[AMREX_SPACEDIM];
     
-    Real        mean_disp[AMREX_SPACEDIM]={D_DECL(0,0,0)};
+    Real        mean_disp[AMREX_SPACEDIM]={AMREX_D_DECL(0,0,0)};
 
 
     //
@@ -360,7 +360,7 @@ DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
             {
                 for (int ix = fab_lo[0]; ix <= fab_hi[0]; ix++)
                 {
-                    IntVect indices(D_DECL(ix, jx, kx));
+                    IntVect indices(AMREX_D_DECL(ix, jx, kx));
                     totalcount++;
                     if (baWhereNot.contains(indices)) 
                     {
