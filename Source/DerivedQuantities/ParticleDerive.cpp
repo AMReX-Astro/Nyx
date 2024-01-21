@@ -44,7 +44,7 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
         // We want the total particle count at this level or higher.
         //
         std::unique_ptr<MultiFab> derive_dat = particle_derive("particle_count", time, ngrow);
-        IntVect trr(D_DECL(1, 1, 1));
+        IntVect trr(1);
 
         // @todo: level vs. lev
         for (int lev = level + 1; lev <= parent->finestLevel(); lev++)

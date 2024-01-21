@@ -958,12 +958,12 @@ Gravity::make_mg_bc ()
             mlmg_lobc[idim] = MLLinOp::BCType::Periodic;
             mlmg_hibc[idim] = MLLinOp::BCType::Periodic;
         } else {
-            if (phys_bc->lo(idim) == Symmetry) {
+            if (phys_bc->lo(idim) == amrex::PhysBCType::symmetry) {
                 mlmg_lobc[idim] = MLLinOp::BCType::Neumann;
             } else {
                 mlmg_lobc[idim] = MLLinOp::BCType::Dirichlet;
             }
-            if (phys_bc->hi(idim) == Symmetry) {
+            if (phys_bc->hi(idim) == amrex::PhysBCType::symmetry) {
                 mlmg_hibc[idim] = MLLinOp::BCType::Neumann;
             } else {
                 mlmg_hibc[idim] = MLLinOp::BCType::Dirichlet;
@@ -1430,8 +1430,8 @@ Gravity::set_boundary(BndryData& bd, MultiFab& rhs, const Real* dx)
       //  across an interior boundary or a periodic boundary.
       {
         // Define the type of boundary conditions to be Dirichlet (even for periodic)
-        bd.setBoundCond(Orientation(n, Orientation::low) ,i,0,LO_DIRICHLET);
-        bd.setBoundCond(Orientation(n, Orientation::high),i,0,LO_DIRICHLET);
+        bd.setBoundCond(Orientation(n, Orientation::low) ,i,0,AMREX_LO_DIRICHLET);
+        bd.setBoundCond(Orientation(n, Orientation::high),i,0,AMREX_LO_DIRICHLET);
 
         // Set the boundary conditions to the cell centers outside the domain
         bd.setBoundLoc(Orientation(n, Orientation::low) ,i,0.5*dx[n]);

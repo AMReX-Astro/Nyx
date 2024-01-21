@@ -285,7 +285,7 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::sumParticleMomentum (int          lev,
 
     const ParticleLevel& pmap = this->GetParticles(lev);
 
-    D_TERM(mom[0] = 0;, mom[1] = 0;, mom[2] = 0;);
+    AMREX_D_TERM(mom[0] = 0;, mom[1] = 0;, mom[2] = 0;);
 
     for (typename ParticleLevel::const_iterator pmap_it = pmap.begin(), pmapEnd = pmap.end(); pmap_it != pmapEnd; ++pmap_it)
     {
@@ -303,13 +303,13 @@ NyxParticleContainer<NSR,NSI,NAR,NAI>::sumParticleMomentum (int          lev,
 
             if (p.id() > 0)
             {
-                D_TERM(mom_0 += p.rdata(0) * p.rdata(1);,
-                       mom_1 += p.rdata(0) * p.rdata(2);,
-                       mom_2 += p.rdata(0) * p.rdata(3););
+                AMREX_D_TERM(mom_0 += p.rdata(0) * p.rdata(1);,
+                             mom_1 += p.rdata(0) * p.rdata(2);,
+                             mom_2 += p.rdata(0) * p.rdata(3););
             }
         }
 
-        D_TERM(mom[0] += mom_0;, mom[1] += mom_1;, mom[2] += mom_2;);
+        AMREX_D_TERM(mom[0] += mom_0;, mom[1] += mom_1;, mom[2] += mom_2;);
     }
 
     amrex::ParallelDescriptor::ReduceRealSum(mom,AMREX_SPACEDIM);

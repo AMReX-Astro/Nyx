@@ -216,9 +216,9 @@ Nyx::agn_halo_find (Real dt)
        for (BoxIterator bit(vertBox); bit.ok(); ++bit)
          {
            IntVect vert = bit();
-           IntVect iv(D_DECL(vertices[vert[0]][0],
-                             vertices[vert[1]][1],
-                             vertices[vert[2]][2]));
+           IntVect iv(AMREX_D_DECL(vertices[vert[0]][0],
+                                   vertices[vert[1]][1],
+                                   vertices[vert[2]][2]));
            reeber_halos_pos.push_back(iv);
            reeber_halos_mass.push_back(haloMass);
          }

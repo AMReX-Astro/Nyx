@@ -36,17 +36,17 @@ typedef StateDescriptor::BndryFunc BndryFunc;
 //
 static int scalar_bc[] =
 {
-    INT_DIR, EXT_DIR, FOEXTRAP, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN
+    amrex::BCType::int_dir, amrex::BCType::ext_dir, amrex::BCType::foextrap, amrex::BCType::reflect_even, amrex::BCType::reflect_even, amrex::BCType::reflect_even
 };
 
 static int norm_vel_bc[] =
 {
-    INT_DIR, EXT_DIR, FOEXTRAP, REFLECT_ODD, REFLECT_ODD, REFLECT_ODD
+    amrex::BCType::int_dir, amrex::BCType::ext_dir, amrex::BCType::foextrap, amrex::BCType::reflect_odd, amrex::BCType::reflect_odd, amrex::BCType::reflect_odd
 };
 
 static int tang_vel_bc[] =
 {
-    INT_DIR, EXT_DIR, FOEXTRAP, REFLECT_EVEN, REFLECT_EVEN, REFLECT_EVEN
+    amrex::BCType::int_dir, amrex::BCType::ext_dir, amrex::BCType::foextrap, amrex::BCType::reflect_even, amrex::BCType::reflect_even, amrex::BCType::reflect_even
 };
 
 static
