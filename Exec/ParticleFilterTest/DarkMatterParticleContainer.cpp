@@ -295,7 +295,7 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
 
     }
 
-    auto dir="output";
+    auto dir=Concatenate("plt_light", int(100*(1/a_old-1)), 7);
     auto name="ShellPC";
     amrex::Vector<std::string> real_comp_names_shell;
     real_comp_names_shell.clear();
