@@ -94,6 +94,7 @@ struct ShellFilter
     bool operator() (const SrcData& src, int i) const noexcept
     {
         bool result=false;
+	if(src.m_aos[i].id()>0)
         for(int idir=0;idir<=1;idir++)
             for(int jdir=0;jdir<=1;jdir++)
                 for(int kdir=0;kdir<=1;kdir++)
@@ -103,6 +104,7 @@ struct ShellFilter
                         Real zlen = src.m_aos[i].pos(2)-kdir*(m_phi[2]-m_plo[2]) - m_center[2];
                         Real mag = sqrt(xlen*xlen+ylen*ylen+zlen*zlen);
                         result=result? true : mag>m_radius_inner && mag<m_radius_outer;
+			Print()<<xlen<<"\t"<<ylen<<"\t"<<zlen<<"\t"<<mag<<"\t"<<m_radius_inner<<"\t"<<m_radius_outer<<"\t"<<result<<std::endl;
                     }
         return (result);
     }
@@ -183,16 +185,20 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     auto pc= this;
     auto ShellPC = new ParticleContainer<7,0>(pc->Geom(lev), pc->ParticleDistributionMap(lev), pc->ParticleBoxArray(lev));
     ShellPC->resizeData();
+    ParticleContainer<7,0>::ParticleInitData pdata = {{}, {}, {}, {}};
+    ShellPC->InitNRandomPerCell(1,pdata);
     //    ShellPC->resize(pc.TotalNumberOfParticles());
     auto geom_test=pc->Geom(lev);
     const GpuArray<Real,AMREX_SPACEDIM> phi=geom_test.ProbHiArray();
     const GpuArray<Real,AMREX_SPACEDIM> center({AMREX_D_DECL(phi[0]-plo[0],phi[1]-plo[1],phi[2]-plo[2])});
-    Real radius_inner=(t)*c_light;
-    Real radius_outer=(t+dt)*c_light;
+    Real time_unit = 3.0856776e19 / 31557600.0; // conversion to Julian years
+    time_unit=10.0;
+    Real radius_inner=(t)*time_unit*c_light;
+    Real radius_outer=(t+dt)*time_unit*c_light;
     auto domain=geom_test.Domain();
     auto z=1/a_old-1;
     //From write_info.cpp
-    Real time_unit = 3.0856776e19 / 31557600.0; // conversion to Julian years
+
     ShellFilter shell_filter_test(plo, phi, center, radius_inner, radius_outer, z, t, dt, domain);
 
 #ifdef _OPENMP
@@ -218,24 +224,37 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
                            });
 
     }
+    /*
+    for (MFIter mfi(*ShellPC->m_dummy_mf[0], false); mfi.isValid(); ++mfi) {
+        Box grid = ParticleBoxArray(0)[mfi.index()];
+        auto ind = std::make_pair(mfi.index(), mfi.LocalTileIndex());
+        RealBox grid_box (grid,dx,geom.ProbLo());
+        ParticleTile<ParticleType, NArrayReal, NArrayInt, amrex::PinnedArenaAllocator> ptile_tmp;
 
+        Gpu::Device::streamSynchronize();
+	}*/
 #ifdef _OPENMP
 #pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif
     for (ParIter pti(*ShellPC, lev); pti.isValid(); ++pti) {
 
         AoS& particles = (this->ParticlesAt(lev,pti)).GetArrayOfStructs();
+	Print()<<"After particles"<<std::endl;
         ParticleType* pstruct = particles().data();
 	auto& ptile = ShellPC->ParticlesAt(lev,pti);
+	Print()<<"After shellparticles"<<std::endl;
         auto& particles2 = (pti).GetArrayOfStructs();
         auto* pstruct2 = particles2().data();
-        ptile.resize((this->ParticlesAt(lev,pti)).size());
+	Print()<<"After pstruct2 pointers"<<std::endl;
+	//        ptile.resize((this->ParticlesAt(lev,pti)).size());
+	Print()<<"After ptile resize"<<std::endl;
         auto ptile_tmp = ptile;
         ptile_tmp.resize((this->ParticlesAt(lev,pti)).size());
+	Print()<<"After ptile_tmp resize"<<std::endl;
         const long np = pti.numParticles();
         int grid    = pti.index();
 
-        const FArrayBox& accel_fab= ((*ac_ptr)[grid]);
+        const FArrayBox& accel_fab= ((*ac_ptr)[0]);
         Array4<amrex::Real const> accel= accel_fab.array();
 
         int nc=AMREX_SPACEDIM;
@@ -247,11 +266,14 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
                                                        plo,dxi,dt,a_old, a_half,do_move);
                            });
 
-	//        auto num_output = amrex::filterParticles(ptile_tmp, ptile, shell_filter_test);
-
-	//        ptile.swap(ptile_tmp);
-	//        ptile.resize(num_output);
+        auto num_output = amrex::filterParticles(ptile_tmp, ptile, shell_filter_test);
+	Print()<<"After filter"<<std::endl;
+        ptile.swap(ptile_tmp);
+	Print()<<"After swap"<<std::endl;
+        ptile.resize(num_output);
+	Print()<<"After resize"<<std::endl;
     }
+    Print()<<"After store iter"<<std::endl;
 #ifdef _OPENMP
 #pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif
@@ -277,7 +299,7 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
 
     }
     //    ShellPC->WriteBinaryParticleData("output");
-
+    Print()<<"After update"<<std::endl;
     auto dir="output";
     auto name="ShellPC";
     amrex::Vector<std::string> real_comp_names_shell;
@@ -290,7 +312,8 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     real_comp_names_shell.push_back("yposold");
     real_comp_names_shell.push_back("zposold");
     ShellPC->amrex::ParticleContainer<7,0>::WritePlotFile(dir, name, real_comp_names_shell);
-
+    amrex::ParallelDescriptor::Barrier();
+    Print()<<"After write"<<std::endl;
     if (ac_ptr != &acceleration) delete ac_ptr;
     
     ParticleLevel&    pmap          = this->GetParticles(lev);
