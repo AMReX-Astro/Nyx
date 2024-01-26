@@ -104,7 +104,7 @@ struct ShellFilter
                         Real zlen = src.m_aos[i].pos(2)-kdir*(m_phi[2]-m_plo[2]) - m_center[2];
                         Real mag = sqrt(xlen*xlen+ylen*ylen+zlen*zlen);
                         result=result? true : mag>m_radius_inner && mag<m_radius_outer;
-			Print()<<xlen<<"\t"<<ylen<<"\t"<<zlen<<"\t"<<mag<<"\t"<<m_radius_inner<<"\t"<<m_radius_outer<<"\t"<<result<<std::endl;
+//     	                Print()<<xlen<<"\t"<<ylen<<"\t"<<zlen<<"\t"<<mag<<"\t"<<m_radius_inner<<"\t"<<m_radius_outer<<"\t"<<result<<std::endl;
                     }
         return (result);
     }
@@ -239,18 +239,16 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     for (ParIter pti(*ShellPC, lev); pti.isValid(); ++pti) {
 
         auto& particles = (ShellPC->ParticlesAt(lev,pti)).GetArrayOfStructs();
-	Print()<<"After particles"<<std::endl;
+
         auto* pstruct = particles().data();
 	auto& ptile = ShellPC->ParticlesAt(lev,pti);
-	Print()<<"After shellparticles"<<std::endl;
+
         auto& particles2 = (pti).GetArrayOfStructs();
         auto* pstruct2 = particles2().data();
-	Print()<<"After pstruct2 pointers"<<std::endl;
-	//        ptile.resize((this->ParticlesAt(lev,pti)).size());
-	Print()<<"After ptile resize"<<std::endl;
+
         auto ptile_tmp = ptile;
         ptile_tmp.resize((ShellPC->ParticlesAt(lev,pti)).size());
-	Print()<<"After ptile_tmp resize"<<std::endl;
+
         const long np = pti.numParticles();
         int grid    = pti.index();
 
@@ -267,13 +265,11 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
                            });
 
         auto num_output = amrex::filterParticles(ptile_tmp, ptile, shell_filter_test);
-	Print()<<"After filter\t"<<num_output<<std::endl;
+
         ptile.swap(ptile_tmp);
-	Print()<<"After swap"<<std::endl;
         ptile.resize(num_output);
-	Print()<<"After resize"<<std::endl;
     }
-    Print()<<"After store iter"<<std::endl;
+
 #ifdef _OPENMP
 #pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif
@@ -298,7 +294,7 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
                            });
 
     }
-    Print()<<"After update\t"<<ShellPC->TotalNumberOfParticles()<<std::endl;
+
     auto dir="output";
     auto name="ShellPC";
     amrex::Vector<std::string> real_comp_names_shell;
@@ -312,8 +308,6 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     real_comp_names_shell.push_back("zposold");
     ShellPC->WritePlotFile(dir, name, real_comp_names_shell);
     //    ShellPC->amrex::ParticleContainer<7,0>::WritePlotFile(dir, name, real_comp_names_shell);
-    amrex::ParallelDescriptor::Barrier();
-    Print()<<"After write"<<std::endl;
     if (ac_ptr != &acceleration) delete ac_ptr;
     
     ParticleLevel&    pmap          = this->GetParticles(lev);
@@ -338,8 +332,6 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
                                auto p_boxes = amrex::get<0>(tup);
                                auto p_levs  = amrex::get<1>(tup);
                                if(p_boxes<0||p_levs<0) {
-                                   //printf("p:       %d\t%d\t%g %g %g %g %g %g %g id\n",p.id(),p.cpu(),p.pos(0),p.pos(1),p.pos(2),p.rdata(0),p.rdata(1),p.rdata(2),p.rdata(3));
-                                   //printf("tup:     %d\t%d\n",amrex::get<0>(tup),amrex::get<1>(tup));
                                    if (p.id() == amrex::GhostParticleID)
                                    {
                                        p.id() = -1;
