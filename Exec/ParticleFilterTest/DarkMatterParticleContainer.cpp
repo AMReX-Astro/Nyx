@@ -238,9 +238,9 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
 #endif
     for (ParIter pti(*ShellPC, lev); pti.isValid(); ++pti) {
 
-        AoS& particles = (this->ParticlesAt(lev,pti)).GetArrayOfStructs();
+        auto& particles = (ShellPC->ParticlesAt(lev,pti)).GetArrayOfStructs();
 	Print()<<"After particles"<<std::endl;
-        ParticleType* pstruct = particles().data();
+        auto* pstruct = particles().data();
 	auto& ptile = ShellPC->ParticlesAt(lev,pti);
 	Print()<<"After shellparticles"<<std::endl;
         auto& particles2 = (pti).GetArrayOfStructs();
@@ -249,7 +249,7 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
 	//        ptile.resize((this->ParticlesAt(lev,pti)).size());
 	Print()<<"After ptile resize"<<std::endl;
         auto ptile_tmp = ptile;
-        ptile_tmp.resize((this->ParticlesAt(lev,pti)).size());
+        ptile_tmp.resize((ShellPC->ParticlesAt(lev,pti)).size());
 	Print()<<"After ptile_tmp resize"<<std::endl;
         const long np = pti.numParticles();
         int grid    = pti.index();
@@ -267,7 +267,7 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
                            });
 
         auto num_output = amrex::filterParticles(ptile_tmp, ptile, shell_filter_test);
-	Print()<<"After filter"<<std::endl;
+	Print()<<"After filter\t"<<num_output<<std::endl;
         ptile.swap(ptile_tmp);
 	Print()<<"After swap"<<std::endl;
         ptile.resize(num_output);
@@ -298,8 +298,7 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
                            });
 
     }
-    //    ShellPC->WriteBinaryParticleData("output");
-    Print()<<"After update"<<std::endl;
+    Print()<<"After update\t"<<ShellPC->TotalNumberOfParticles()<<std::endl;
     auto dir="output";
     auto name="ShellPC";
     amrex::Vector<std::string> real_comp_names_shell;
@@ -311,7 +310,8 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     real_comp_names_shell.push_back("xposold");
     real_comp_names_shell.push_back("yposold");
     real_comp_names_shell.push_back("zposold");
-    ShellPC->amrex::ParticleContainer<7,0>::WritePlotFile(dir, name, real_comp_names_shell);
+    ShellPC->WritePlotFile(dir, name, real_comp_names_shell);
+    //    ShellPC->amrex::ParticleContainer<7,0>::WritePlotFile(dir, name, real_comp_names_shell);
     amrex::ParallelDescriptor::Barrier();
     Print()<<"After write"<<std::endl;
     if (ac_ptr != &acceleration) delete ac_ptr;
@@ -479,7 +479,7 @@ void update_dm_particle_single (amrex::ParticleContainer<1+AMREX_SPACEDIM, 0>::S
 }
 
 AMREX_GPU_HOST_DEVICE AMREX_INLINE
-void store_dm_particle_single (amrex::ParticleContainer<1+AMREX_SPACEDIM, 0>::SuperParticleType&  p,
+void store_dm_particle_single (amrex::ParticleContainer<1+AMREX_SPACEDIM+3, 0>::SuperParticleType&  p,
                                amrex::ParticleContainer<1+AMREX_SPACEDIM+3, 0>::SuperParticleType&  p2,
                                const int nc,
                                amrex::Array4<amrex::Real const> const& acc,
