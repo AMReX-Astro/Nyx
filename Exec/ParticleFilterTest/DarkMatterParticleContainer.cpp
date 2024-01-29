@@ -190,7 +190,7 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     //    ShellPC->resize(pc.TotalNumberOfParticles());
     auto geom_test=pc->Geom(lev);
     const GpuArray<Real,AMREX_SPACEDIM> phi=geom_test.ProbHiArray();
-    const GpuArray<Real,AMREX_SPACEDIM> center({AMREX_D_DECL(phi[0]-plo[0],phi[1]-plo[1],phi[2]-plo[2]});
+    const GpuArray<Real,AMREX_SPACEDIM> center({AMREX_D_DECL((phi[0]-plo[0])*0.5,(phi[1]-plo[1])*0.5,(phi[2]-plo[2])*0.5)});
     Real time_unit = 3.0856776e19 / 31557600.0; // conversion to Julian years
     time_unit=10.0;
     Real radius_inner=(t)*time_unit*c_light;
