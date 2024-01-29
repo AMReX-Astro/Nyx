@@ -190,7 +190,7 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     //    ShellPC->resize(pc.TotalNumberOfParticles());
     auto geom_test=pc->Geom(lev);
     const GpuArray<Real,AMREX_SPACEDIM> phi=geom_test.ProbHiArray();
-    const GpuArray<Real,AMREX_SPACEDIM> center({AMREX_D_DECL(phi[0]-plo[0],phi[1]-plo[1],phi[2]-plo[2])});
+    const GpuArray<Real,AMREX_SPACEDIM> center({AMREX_D_DECL(phi[0]-plo[0],phi[1]-plo[1],phi[2]-plo[2]});
     Real time_unit = 3.0856776e19 / 31557600.0; // conversion to Julian years
     time_unit=10.0;
     Real radius_inner=(t)*time_unit*c_light;
@@ -548,7 +548,7 @@ DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
     Real         disp[AMREX_SPACEDIM];
     Real         vel[AMREX_SPACEDIM];
     
-    Real        mean_disp[AMREX_SPACEDIM]={D_DECL(0,0,0)};
+    Real        mean_disp[AMREX_SPACEDIM]={AMREX_D_DECL(0,0,0)};
 
 
     //
@@ -574,7 +574,7 @@ DarkMatterParticleContainer::InitCosmo1ppcMultiLevel(
             {
                 for (int ix = fab_lo[0]; ix <= fab_hi[0]; ix++)
                 {
-                    IntVect indices(D_DECL(ix, jx, kx));
+                    IntVect indices(AMREX_D_DECL(ix, jx, kx));
                     totalcount++;
                     if (baWhereNot.contains(indices)) 
                     {

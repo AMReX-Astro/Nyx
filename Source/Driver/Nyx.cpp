@@ -314,14 +314,14 @@ Nyx::read_params ()
         {
             if (DefaultGeometry().isPeriodic(dir))
             {
-                if (lo_bc[dir] != Interior)
+                if (lo_bc[dir] != amrex::PhysBCType::interior)
                 {
                     std::cerr << "Nyx::read_params:periodic in direction "
                               << dir
                               << " but low BC is not Interior" << std::endl;
                     amrex::Error();
                 }
-                if (hi_bc[dir] != Interior)
+                if (hi_bc[dir] != amrex::PhysBCType::interior)
                 {
                     std::cerr << "Nyx::read_params:periodic in direction "
                               << dir
@@ -338,14 +338,14 @@ Nyx::read_params ()
         //
         for (int dir = 0; dir < AMREX_SPACEDIM; dir++)
         {
-            if (lo_bc[dir] == Interior)
+            if (lo_bc[dir] == amrex::PhysBCType::interior)
             {
                 std::cerr << "Nyx::read_params:interior bc in direction "
                           << dir
                           << " but not periodic" << std::endl;
                 amrex::Error();
             }
-            if (hi_bc[dir] == Interior)
+            if (hi_bc[dir] == amrex::PhysBCType::interior)
             {
                 std::cerr << "Nyx::read_params:interior bc in direction "
                           << dir

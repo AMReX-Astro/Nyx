@@ -156,7 +156,7 @@ Nyx::strang_hydro (Real time,
         const Box& bx = mfi.tilebox();
         for (int i = 0; i < S_new[mfi].nComp(); i++)
         {
-          IntVect p_nan(D_DECL(-10, -10, -10));
+          IntVect p_nan(AMREX_D_DECL(-10, -10, -10));
             if (ParallelDescriptor::IOProcessor())
                 std::cout << "strang_hydro: testing component " << i << " for NaNs" << std::endl;
             if (S_new[mfi].contains_nan(bx,Density+i,1,p_nan))
@@ -201,7 +201,7 @@ Nyx::strang_hydro (Real time,
       {
         for (int i = 0; i < S_new.nComp(); i++)
         {
-          IntVect p_nan(D_DECL(-10, -10, -10));
+          IntVect p_nan(AMREX_D_DECL(-10, -10, -10));
             if (ParallelDescriptor::IOProcessor())
                 std::cout << "strang_hydro: testing component " << i << " for NaNs" << std::endl;
             if (S_new.contains_nan(Density+i,1,0))
