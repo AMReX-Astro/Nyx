@@ -31,7 +31,7 @@ public:
 
     virtual void moveKickDrift (amrex::MultiFab& acceleration, int level, amrex::Real time,
                                 amrex::Real timestep,
-                                amrex::Real a_old = 1.0, amrex::Real a_half = 1.0, int where_width = 0);
+                                amrex::Real a_old = 1.0, amrex::Real a_half = 1.0, int where_width = 0, amrex::Real radius_inner = -1.e34, amrex::Real radius_outer = -1.e34);
     virtual void moveKick      (amrex::MultiFab& acceleration, int level, amrex::Real time,
                                 amrex::Real timestep,
                                 amrex::Real a_new = 1.0, amrex::Real a_half = 1.0);

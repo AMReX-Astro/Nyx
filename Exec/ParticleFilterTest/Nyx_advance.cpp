@@ -248,8 +248,15 @@ Nyx::advance_hydro_plus_particles (Real time,
             MultiFab grav_vec_old(ba, dm, AMREX_SPACEDIM, grav_n_grow);
             get_level(lev).gravity->get_old_grav_vector(lev, grav_vec_old, time);
             
-            for (int i = 0; i < Nyx::theActiveParticles().size(); i++)
-                Nyx::theActiveParticles()[i]->moveKickDrift(grav_vec_old, lev, time, dt, a_old, a_half, where_width);
+            for (int i = 0; i < Nyx::theActiveParticles().size(); i++) {
+                Real radius_inner = -1.e34;
+                Real radius_outer = -1.e34;
+                integrate_distance_given_a(a_old, 1.0, radius_outer);
+                integrate_distance_given_a(a_new, 1.0, radius_inner);
+                Print()<<radius_inner<<std::endl;
+                Print()<<radius_outer<<std::endl;
+                Nyx::theActiveParticles()[i]->moveKickDrift(grav_vec_old, lev, time, dt, a_old, a_half, where_width, radius_inner, radius_outer);
+            }
 
             // Only need the coarsest virtual particles here.
                 if (lev == level && level < finest_level)

@@ -145,7 +145,9 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
                                             amrex::Real            dt,
                                             amrex::Real            a_old,
                                             amrex::Real            a_half,
-                                            int                    where_width)
+                                            int                    where_width,
+                                            amrex::Real            radius_inner,
+                                            amrex::Real            radius_outer)
 {
     BL_PROFILE("DarkMatterParticleContainer::moveKickDrift()");
 
@@ -191,10 +193,8 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     auto geom_test=pc->Geom(lev);
     const GpuArray<Real,AMREX_SPACEDIM> phi=geom_test.ProbHiArray();
     const GpuArray<Real,AMREX_SPACEDIM> center({AMREX_D_DECL((phi[0]-plo[0])*0.5,(phi[1]-plo[1])*0.5,(phi[2]-plo[2])*0.5)});
-    Real time_unit = 3.0856776e19 / 31557600.0; // conversion to Julian years
-    time_unit=10.0;
-    Real radius_inner=(t)*time_unit*c_light;
-    Real radius_outer=(t+dt)*time_unit*c_light;
+    //const Real a_half = 0.5 * (a_old + a_new);
+
     auto domain=geom_test.Domain();
     auto z=1/a_old-1;
     //From write_info.cpp
@@ -307,6 +307,7 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     real_comp_names_shell.push_back("yposold");
     real_comp_names_shell.push_back("zposold");
     ShellPC->WritePlotFile(dir, name, real_comp_names_shell);
+    Print()<<"After write\t"<<ShellPC->TotalNumberOfParticles()<<std::endl;
     //    ShellPC->amrex::ParticleContainer<7,0>::WritePlotFile(dir, name, real_comp_names_shell);
     if (ac_ptr != &acceleration) delete ac_ptr;
     

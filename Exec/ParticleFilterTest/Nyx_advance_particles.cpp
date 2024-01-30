@@ -190,8 +190,13 @@ Nyx::advance_particles_only (Real time,
             MultiFab grav_vec_old(ba, dm, AMREX_SPACEDIM, grav_n_grow);
             get_level(lev).gravity->get_old_grav_vector(lev, grav_vec_old, time);
             
-            for (int i = 0; i < Nyx::theActiveParticles().size(); i++)
-                Nyx::theActiveParticles()[i]->moveKickDrift(grav_vec_old, lev, time, dt, a_old, a_half, where_width);
+            for (int i = 0; i < Nyx::theActiveParticles().size(); i++) {
+                Real radius_inner = -1.e34;
+                Real radius_outer = -1.e34;
+                integrate_distance_given_a(1.0, a_old, radius_inner);
+                integrate_distance_given_a(1.0, a_new, radius_outer);
+                Nyx::theActiveParticles()[i]->moveKickDrift(grav_vec_old, lev, time, dt, a_old, a_half, where_width, radius_inner, radius_outer);
+            }
 
             // Only need the coarsest virtual particles here.
             if (lev == level && level < finest_level)
