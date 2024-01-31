@@ -988,6 +988,8 @@ protected:
     // There can be only one forcing object (Fourier space):
     static class StochasticForcing *forcing;
 
+    static amrex::Real lightcone_start_z;
+    static amrex::Real lightcone_end_z;
 #ifdef REEBER
   //
   // Threshold for halo to create SMBH

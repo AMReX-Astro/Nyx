@@ -251,10 +251,13 @@ Nyx::advance_hydro_plus_particles (Real time,
             for (int i = 0; i < Nyx::theActiveParticles().size(); i++) {
                 Real radius_inner = -1.e34;
                 Real radius_outer = -1.e34;
+                Real z_old = 1/a_old-1;
+                if(z_old<lightcone_start_z&&z_old>=lightcone_end_z) {
                 integrate_distance_given_a(a_old, 1.0, radius_outer);
                 integrate_distance_given_a(a_new, 1.0, radius_inner);
                 Print()<<radius_inner<<std::endl;
                 Print()<<radius_outer<<std::endl;
+                }
                 Nyx::theActiveParticles()[i]->moveKickDrift(grav_vec_old, lev, time, dt, a_old, a_half, where_width, radius_inner, radius_outer);
             }
 
