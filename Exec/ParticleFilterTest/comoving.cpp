@@ -646,15 +646,15 @@ Nyx::integrate_distance_given_a(const Real a0, const Real a1, Real& dt)
         h = (a1-a0)/(n-1);
 
         if (a0 < 1.0e-10) // prevent division by zero in invEz
-            dt = 0.5*invEz(H0, OmM, OmR, a1);
+            dt = 0.5*invEz(H0, OmM, OmR, a1)/a1;
         else
-            dt = 0.5*(invEz(H0, OmM, OmR, a0) + invEz(H0, OmM, OmR, a1));
+            dt = 0.5*(invEz(H0, OmM, OmR, a0)/a0 + invEz(H0, OmM, OmR, a1)/a1);
 
         for(j = 1; j <= n-2; j++)
         {
             dt = dt + invEz(H0, OmM, OmR, a0+j*h)/(a0+j*h);
         }
-        dt = dt*h;
+        dt = dt*h*c_light;
 
         if (iter > 4)
             if (std::abs(dt-prev_soln) < small_dt_fac*std::abs(prev_soln))
