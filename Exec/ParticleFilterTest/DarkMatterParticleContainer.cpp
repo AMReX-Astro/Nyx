@@ -94,18 +94,39 @@ struct ShellFilter
     bool operator() (const SrcData& src, int i) const noexcept
     {
         bool result=false;
-	if(src.m_aos[i].id()>0)
-        for(int idir=0;idir<=1;idir++)
-            for(int jdir=0;jdir<=1;jdir++)
-                for(int kdir=0;kdir<=1;kdir++)
-                    {
-                        Real xlen = src.m_aos[i].pos(0)-idir*(m_phi[0]-m_plo[0]) - m_center[0];
-                        Real ylen = src.m_aos[i].pos(1)-jdir*(m_phi[1]-m_plo[1]) - m_center[1];
-                        Real zlen = src.m_aos[i].pos(2)-kdir*(m_phi[2]-m_plo[2]) - m_center[2];
+	if(src.m_aos[i].id()>0) {
+                        Real xlen = src.m_aos[i].pos(0) - m_center[0];
+                        Real ylen = src.m_aos[i].pos(1) - m_center[1];
+                        Real zlen = src.m_aos[i].pos(2) - m_center[2];
                         Real mag = sqrt(xlen*xlen+ylen*ylen+zlen*zlen);
-                        result=result? true : mag>m_radius_inner && mag<m_radius_outer;
-//     	                Print()<<xlen<<"\t"<<ylen<<"\t"<<zlen<<"\t"<<mag<<"\t"<<m_radius_inner<<"\t"<<m_radius_outer<<"\t"<<result<<std::endl;
+			Real theta = atan(ylen/xlen);
+			Real phi = acos(zlen/mag);
+			Real r1=m_radius_inner;
+			Real x1=r1*cos(theta)*sin(phi);
+			Real y1=r1*sin(theta)*sin(phi);
+			Real z1=r1*cos(phi);
+			Real r2=m_radius_inner;
+			Real x2=r2*cos(theta)*sin(phi);
+			Real y2=r2*sin(theta)*sin(phi);
+			Real z2=r2*cos(phi);
+			Real idirf = floor(x1/m_phi[0]);
+			Real jdirf = floor(y1/m_phi[1]);
+			Real kdirf = floor(z1/m_phi[2]);
+			Real idirc = ceil(x2/m_phi[0]);
+			Real jdirc = ceil(y2/m_phi[1]);
+			Real kdirc = ceil(z2/m_phi[2]);
+        for(int idir=idirf;idir<=idirc;idir++)
+            for(int jdir=jdirf;jdir<=jdirc;jdir++)
+                for(int kdir=kdirf;kdir<=kdirc;kdir++)
+                    {
+                        xlen = src.m_aos[i].pos(0)+(idir)*(m_phi[0]-m_plo[0]) - m_center[0];
+                        ylen = src.m_aos[i].pos(1)+(jdir)*(m_phi[1]-m_plo[1]) - m_center[1];
+                        zlen = src.m_aos[i].pos(2)+(kdir)*(m_phi[2]-m_plo[2]) - m_center[2];
+                        Real mag = sqrt(xlen*xlen+ylen*ylen+zlen*zlen);
+                        result=result? true : (mag>m_radius_inner && mag<m_radius_outer);
+			//     	                Print()<<xlen<<"\t"<<ylen<<"\t"<<zlen<<"\t"<<mag<<"\t"<<m_radius_inner<<"\t"<<m_radius_outer<<"\t"<<result<<std::endl;
                     }
+	}
         return (result);
     }
 };
@@ -306,6 +327,7 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     real_comp_names_shell.push_back("xposold");
     real_comp_names_shell.push_back("yposold");
     real_comp_names_shell.push_back("zposold");
+    if(ShellPC->TotalNumberOfParticles()>5)
     ShellPC->WritePlotFile(dir, name, real_comp_names_shell);
     Print()<<"After write\t"<<ShellPC->TotalNumberOfParticles()<<std::endl;
     //    ShellPC->amrex::ParticleContainer<7,0>::WritePlotFile(dir, name, real_comp_names_shell);
