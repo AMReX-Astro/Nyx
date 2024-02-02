@@ -97,9 +97,9 @@ struct ShellFilter
         if(m_radius_inner<=0 || m_radius_outer<=0)
             return false;
 	if(src.m_aos[i].id()>0) {
-                        Real xlen = src.m_aos[i].pos(0) - m_center[0];
-                        Real ylen = src.m_aos[i].pos(1) - m_center[1];
-                        Real zlen = src.m_aos[i].pos(2) - m_center[2];
+            Real xlen = src.m_aos[i].rdata(0+1+3) - m_center[0];
+            Real ylen = src.m_aos[i].rdata(1+1+3) - m_center[1];
+            Real zlen = src.m_aos[i].rdata(2+1+3) - m_center[2];
                         Real mag = sqrt(xlen*xlen+ylen*ylen+zlen*zlen);
 			Real theta = atan(ylen/xlen);
 			Real phi = acos(zlen/mag);
@@ -121,9 +121,9 @@ struct ShellFilter
             for(int jdir=jdirf;jdir<=jdirc;jdir++)
                 for(int kdir=kdirf;kdir<=kdirc;kdir++)
                     {
-                        xlen = src.m_aos[i].pos(0)+(idir)*(m_phi[0]-m_plo[0]) - m_center[0];
-                        ylen = src.m_aos[i].pos(1)+(jdir)*(m_phi[1]-m_plo[1]) - m_center[1];
-                        zlen = src.m_aos[i].pos(2)+(kdir)*(m_phi[2]-m_plo[2]) - m_center[2];
+                        xlen = src.m_aos[i].rdata(0+1+3)+(idir)*(m_phi[0]-m_plo[0]) - m_center[0];
+                        ylen = src.m_aos[i].rdata(1+1+3)+(jdir)*(m_phi[1]-m_plo[1]) - m_center[1];
+                        zlen = src.m_aos[i].rdata(2+1+3)+(kdir)*(m_phi[2]-m_plo[2]) - m_center[2];
                         Real mag = sqrt(xlen*xlen+ylen*ylen+zlen*zlen);
                         result=result? true : (mag>m_radius_inner && mag<m_radius_outer);
 			//     	                Print()<<xlen<<"\t"<<ylen<<"\t"<<zlen<<"\t"<<mag<<"\t"<<m_radius_inner<<"\t"<<m_radius_outer<<"\t"<<result<<std::endl;
@@ -553,13 +553,13 @@ void store_dm_particle_single (amrex::ParticleContainer<1+AMREX_SPACEDIM, 0>::Su
                         zlen = p.pos(2)+(kdir)*(phi[2]-plo[2]) - center[2];
                         Real mag = sqrt(xlen*xlen+ylen*ylen+zlen*zlen);
                         result=result? true : (mag>radius_inner && mag<radius_outer);
-			if(result) {
+			if((mag>radius_inner && mag<radius_outer)) {
 			    int comp=0;
-                            p2.rdata(comp+1+3+3) = p.pos(comp)+(idir)*(phi[comp]-plo[comp]);
+                            p2.pos(comp) = p.pos(comp)+(idir)*(phi[comp]-plo[comp]);
 			    comp=1;
-                            p2.rdata(comp+1+3+3) = p.pos(comp)+(jdir)*(phi[comp]-plo[comp]);
+                            p2.pos(comp) = p.pos(comp)+(jdir)*(phi[comp]-plo[comp]);
 			    comp=2;
-                            p2.rdata(comp+1+3+3) = p.pos(comp)+(kdir)*(phi[comp]-plo[comp]);
+                            p2.pos(comp) = p.pos(comp)+(kdir)*(phi[comp]-plo[comp]);
 			}
 			//     	                Print()<<xlen<<"\t"<<ylen<<"\t"<<zlen<<"\t"<<mag<<"\t"<<m_radius_inner<<"\t"<<m_radius_outer<<"\t"<<result<<std::endl;
                     }
@@ -567,7 +567,7 @@ void store_dm_particle_single (amrex::ParticleContainer<1+AMREX_SPACEDIM, 0>::Su
                p2.rdata(comp+1+3)=p.pos(comp);
 	       p2.rdata(comp+1+3+3) = p.pos(comp) + dt_a_cur_inv * p.rdata(comp+1);
                p2.rdata(comp+1)=p.rdata(comp+1);
-	       p2.pos(comp)=p.pos(comp);
+               //              p2.pos(comp)=p.pos(comp);
                p2.id()=p.id();
                p2.cpu()=p.cpu();
            }
