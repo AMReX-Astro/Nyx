@@ -124,7 +124,7 @@ struct ShellFilter
                         zlen = src.m_aos[i].pos(2)+(kdir)*(m_phi[2]-m_plo[2]) - m_center[2];
                         Real mag = sqrt(xlen*xlen+ylen*ylen+zlen*zlen);
                         result=result? true : (mag>m_radius_inner && mag<m_radius_outer);
-			//     	                Print()<<xlen<<"\t"<<ylen<<"\t"<<zlen<<"\t"<<mag<<"\t"<<m_radius_inner<<"\t"<<m_radius_outer<<"\t"<<result<<std::endl;
+     	                Print()<<xlen<<"\t"<<ylen<<"\t"<<zlen<<"\t"<<mag<<"\t"<<m_radius_inner<<"\t"<<m_radius_outer<<"\t"<<result<<std::endl;
                     }
 	}
         return (result);
@@ -209,8 +209,8 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     auto ShellPC = new ParticleContainer<7,0>(pc->Geom(lev), pc->ParticleDistributionMap(lev), pc->ParticleBoxArray(lev));
     ShellPC->resizeData();
     ParticleContainer<7,0>::ParticleInitData pdata = {{}, {}, {}, {}};
-    ShellPC->InitNRandomPerCell(1,pdata);
-    //    ShellPC->resize(pc.TotalNumberOfParticles());
+    //    ShellPC->InitNRandomPerCell(0,pdata);
+    //ShellPC->resize(pc.TotalNumberOfParticles());
     auto geom_test=pc->Geom(lev);
     const GpuArray<Real,AMREX_SPACEDIM> phi=geom_test.ProbHiArray();
     const GpuArray<Real,AMREX_SPACEDIM> center({AMREX_D_DECL((phi[0]-plo[0])*0.5,(phi[1]-plo[1])*0.5,(phi[2]-plo[2])*0.5)});
@@ -221,7 +221,7 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     //From write_info.cpp
 
     ShellFilter shell_filter_test(plo, phi, center, radius_inner, radius_outer, z, t, dt, domain);
-
+    
 #ifdef _OPENMP
 #pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif
@@ -231,6 +231,12 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
         ParticleType* pstruct = particles().data();
         const long np = pti.numParticles();
         int grid    = pti.index();
+
+	auto& ptile = ShellPC->DefineAndReturnParticleTile(lev, pti);
+	int old_np = ptile.size();
+	int num_to_add = np;
+	int new_np = old_np + num_to_add;
+	ptile.resize(new_np);
 
         const FArrayBox& accel_fab= ((*ac_ptr)[grid]);
         Array4<amrex::Real const> accel= accel_fab.array();
@@ -244,7 +250,7 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
                                                        plo,dxi,dt,a_old, a_half,do_move);
                            });
 
-    }
+   }
     /*
     for (MFIter mfi(*ShellPC->m_dummy_mf[0], false); mfi.isValid(); ++mfi) {
         Box grid = ParticleBoxArray(0)[mfi.index()];
@@ -257,18 +263,19 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
 #ifdef _OPENMP
 #pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif
-    for (ParIter pti(*ShellPC, lev); pti.isValid(); ++pti) {
+    for (ParIter pti(*this, lev); pti.isValid(); ++pti) {
 
-        auto& particles = (ShellPC->ParticlesAt(lev,pti)).GetArrayOfStructs();
+        auto& particles = (this->ParticlesAt(lev,pti)).GetArrayOfStructs();
 
         auto* pstruct = particles().data();
 	auto& ptile = ShellPC->ParticlesAt(lev,pti);
 
-        auto& particles2 = (pti).GetArrayOfStructs();
+        auto& particles2 = (ShellPC->ParticlesAt(lev,pti)).GetArrayOfStructs();
         auto* pstruct2 = particles2().data();
 
         auto ptile_tmp = ptile;
-        ptile_tmp.resize((ShellPC->ParticlesAt(lev,pti)).size());
+	//        ptile_tmp.resize((ShellPC->ParticlesAt(lev,pti)).size());
+        ptile_tmp.resize((this->ParticlesAt(lev,pti)).size());
 
         const long np = pti.numParticles();
         int grid    = pti.index();
@@ -494,7 +501,7 @@ void update_dm_particle_single (amrex::ParticleContainer<1+AMREX_SPACEDIM, 0>::S
 }
 
 AMREX_GPU_HOST_DEVICE AMREX_INLINE
-void store_dm_particle_single (amrex::ParticleContainer<1+AMREX_SPACEDIM+3, 0>::SuperParticleType&  p,
+void store_dm_particle_single (amrex::ParticleContainer<1+AMREX_SPACEDIM, 0>::SuperParticleType&  p,
                                amrex::ParticleContainer<1+AMREX_SPACEDIM+3, 0>::SuperParticleType&  p2,
                                const int nc,
                                amrex::Array4<amrex::Real const> const& acc,
