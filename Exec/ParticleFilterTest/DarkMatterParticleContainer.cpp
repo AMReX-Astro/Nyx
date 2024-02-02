@@ -94,6 +94,8 @@ struct ShellFilter
     bool operator() (const SrcData& src, int i) const noexcept
     {
         bool result=false;
+        if(m_radius_inner<=0 || m_radius_outer<=0)
+            return false;
 	if(src.m_aos[i].id()>0) {
                         Real xlen = src.m_aos[i].pos(0) - m_center[0];
                         Real ylen = src.m_aos[i].pos(1) - m_center[1];
@@ -124,7 +126,7 @@ struct ShellFilter
                         zlen = src.m_aos[i].pos(2)+(kdir)*(m_phi[2]-m_plo[2]) - m_center[2];
                         Real mag = sqrt(xlen*xlen+ylen*ylen+zlen*zlen);
                         result=result? true : (mag>m_radius_inner && mag<m_radius_outer);
-     	                Print()<<xlen<<"\t"<<ylen<<"\t"<<zlen<<"\t"<<mag<<"\t"<<m_radius_inner<<"\t"<<m_radius_outer<<"\t"<<result<<std::endl;
+			//     	                Print()<<xlen<<"\t"<<ylen<<"\t"<<zlen<<"\t"<<mag<<"\t"<<m_radius_inner<<"\t"<<m_radius_outer<<"\t"<<result<<std::endl;
                     }
 	}
         return (result);
@@ -206,11 +208,11 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     int do_move = 1;
 
     auto pc= this;
-    auto ShellPC = new ParticleContainer<7,0>(pc->Geom(lev), pc->ParticleDistributionMap(lev), pc->ParticleBoxArray(lev));
+    auto ShellPC = new ParticleContainer<10,0>(pc->Geom(lev), pc->ParticleDistributionMap(lev), pc->ParticleBoxArray(lev));
     ShellPC->resizeData();
-    ParticleContainer<7,0>::ParticleInitData pdata = {{}, {}, {}, {}};
-    //    ShellPC->InitNRandomPerCell(0,pdata);
-    //ShellPC->resize(pc.TotalNumberOfParticles());
+    ParticleContainer<10,0>::ParticleInitData pdata = {{}, {}, {}, {}};
+    ShellPC->InitNRandomPerCell(1,pdata);
+    //    ShellPC->resize(pc.TotalNumberOfParticles());
     auto geom_test=pc->Geom(lev);
     const GpuArray<Real,AMREX_SPACEDIM> phi=geom_test.ProbHiArray();
     const GpuArray<Real,AMREX_SPACEDIM> center({AMREX_D_DECL((phi[0]-plo[0])*0.5,(phi[1]-plo[1])*0.5,(phi[2]-plo[2])*0.5)});
@@ -288,12 +290,11 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
                            [=] AMREX_GPU_HOST_DEVICE ( long i)
                            {
                              store_dm_particle_single(pstruct[i],pstruct2[i],nc,
-                                                       accel,
-                                                       plo,dxi,dt,a_old, a_half,do_move);
+                                                      accel,plo,phi,dxi,dt,a_old,
+                                                      a_half,do_move, radius_inner, radius_outer);
                            });
 
         auto num_output = amrex::filterParticles(ptile_tmp, ptile, shell_filter_test);
-
         ptile.swap(ptile_tmp);
         ptile.resize(num_output);
     }
@@ -334,9 +335,12 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     real_comp_names_shell.push_back("xposold");
     real_comp_names_shell.push_back("yposold");
     real_comp_names_shell.push_back("zposold");
-    if(ShellPC->TotalNumberOfParticles()>5)
+    real_comp_names_shell.push_back("xposvalid");
+    real_comp_names_shell.push_back("yposvalid");
+    real_comp_names_shell.push_back("zposvalid");
+    if(radius_inner>0&&radius_outer>radius_inner)
     ShellPC->WritePlotFile(dir, name, real_comp_names_shell);
-    Print()<<"After write\t"<<ShellPC->TotalNumberOfParticles()<<std::endl;
+    Print()<<"After write\t"<<ShellPC->TotalNumberOfParticles()<<"\t"<<a_old<<"\t"<<do_move<<"\t"<<lev<<"\t"<<t<<"\t"<<dt<<"\t"<<a_half<<"\t"<<where_width<<"\t"<<radius_inner<<std::endl;
     //    ShellPC->amrex::ParticleContainer<7,0>::WritePlotFile(dir, name, real_comp_names_shell);
     if (ac_ptr != &acceleration) delete ac_ptr;
     
@@ -502,26 +506,70 @@ void update_dm_particle_single (amrex::ParticleContainer<1+AMREX_SPACEDIM, 0>::S
 
 AMREX_GPU_HOST_DEVICE AMREX_INLINE
 void store_dm_particle_single (amrex::ParticleContainer<1+AMREX_SPACEDIM, 0>::SuperParticleType&  p,
-                               amrex::ParticleContainer<1+AMREX_SPACEDIM+3, 0>::SuperParticleType&  p2,
+                               amrex::ParticleContainer<1+AMREX_SPACEDIM+6, 0>::SuperParticleType&  p2,
                                const int nc,
                                amrex::Array4<amrex::Real const> const& acc,
                                amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& plo,
+                               amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& phi,
                                amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& dxi,
                                const amrex::Real& dt, const amrex::Real& a_prev,
-                               const amrex::Real& a_cur, const int& do_move)
+                               const amrex::Real& a_cur, const int& do_move, const Real& radius_inner, const Real& radius_outer)
 {
     amrex::Real half_dt       = 0.5 * dt;
     amrex::Real a_cur_inv    = 1.0 / a_cur;
     amrex::Real dt_a_cur_inv = dt * a_cur_inv;
+    const GpuArray<Real,AMREX_SPACEDIM> center({AMREX_D_DECL((phi[0]-plo[0])*0.5,(phi[1]-plo[1])*0.5,(phi[2]-plo[2])*0.5)});
 
-       if (do_move == 1) 
+    if (do_move == 1) 
          {
            p2.rdata(0)=p.rdata(0);
-           for (int comp=0; comp < nc; ++comp) {               
+	   bool result=false;
+                        Real xlen = p.pos(0) - center[0];
+                        Real ylen = p.pos(1) - center[1];
+                        Real zlen = p.pos(2) - center[2];
+                        Real mag = sqrt(xlen*xlen+ylen*ylen+zlen*zlen);
+			Real theta = atan(ylen/xlen);
+			Real phiangle = acos(zlen/mag);
+			Real r1=radius_inner;
+			Real x1=center[0] + r1*cos(theta)*sin(phiangle);
+			Real y1=center[1] + r1*sin(theta)*sin(phiangle);
+			Real z1=center[2] + r1*cos(phiangle);
+			Real r2=radius_inner;
+			Real x2=center[0] + r2*cos(theta)*sin(phiangle);
+			Real y2=center[1] + r2*sin(theta)*sin(phiangle);
+			Real z2=center[2] + r2*cos(phiangle);
+			Real idirf = floor(x1/phi[0]);
+			Real jdirf = floor(y1/phi[1]);
+			Real kdirf = floor(z1/phi[2]);
+			Real idirc = ceil(x2/phi[0]);
+			Real jdirc = ceil(y2/phi[1]);
+			Real kdirc = ceil(z2/phi[2]);
+        for(int idir=idirf;idir<=idirc;idir++)
+            for(int jdir=jdirf;jdir<=jdirc;jdir++)
+                for(int kdir=kdirf;kdir<=kdirc;kdir++)
+                    {
+                        xlen = p.pos(0)+(idir)*(phi[0]-plo[0]) - center[0];
+                        ylen = p.pos(1)+(jdir)*(phi[1]-plo[1]) - center[1];
+                        zlen = p.pos(2)+(kdir)*(phi[2]-plo[2]) - center[2];
+                        Real mag = sqrt(xlen*xlen+ylen*ylen+zlen*zlen);
+                        result=result? true : (mag>radius_inner && mag<radius_outer);
+			if(result) {
+			    int comp=0;
+                            p2.rdata(comp+1+3+3) = p.pos(comp)+(idir)*(phi[comp]-plo[comp]);
+			    comp=1;
+                            p2.rdata(comp+1+3+3) = p.pos(comp)+(jdir)*(phi[comp]-plo[comp]);
+			    comp=2;
+                            p2.rdata(comp+1+3+3) = p.pos(comp)+(kdir)*(phi[comp]-plo[comp]);
+			}
+			//     	                Print()<<xlen<<"\t"<<ylen<<"\t"<<zlen<<"\t"<<mag<<"\t"<<m_radius_inner<<"\t"<<m_radius_outer<<"\t"<<result<<std::endl;
+                    }
+           for (int comp=0; comp < nc; ++comp) {
                p2.rdata(comp+1+3)=p.pos(comp);
+	       p2.rdata(comp+1+3+3) = p.pos(comp) + dt_a_cur_inv * p.rdata(comp+1);
                p2.rdata(comp+1)=p.rdata(comp+1);
-               p2.pos(comp) = p.pos(comp) + dt_a_cur_inv * p.rdata(comp+1);
+	       p2.pos(comp)=p.pos(comp);
                p2.id()=p.id();
+               p2.cpu()=p.cpu();
            }
          }
 

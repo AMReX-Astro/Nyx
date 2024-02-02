@@ -57,13 +57,14 @@ AMREX_GPU_HOST_DEVICE AMREX_INLINE void update_dm_particle_move_single (amrex::P
                                                                    const amrex::Real& a_cur, const int& do_move);
 
 AMREX_GPU_HOST_DEVICE AMREX_INLINE void store_dm_particle_single (amrex::ParticleContainer<1+AMREX_SPACEDIM, 0>::SuperParticleType&  p,
-                                                                       amrex::ParticleContainer<1+AMREX_SPACEDIM+3, 0>::SuperParticleType&  p2,
-                                                                   const int nc,
-                                                                   amrex::Array4<amrex::Real const> const& acc,
-                                                                   amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& plo,
-                                                                   amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& dxi,
-                                                                   const amrex::Real& dt, const amrex::Real& a_prev,
-                                                                   const amrex::Real& a_cur, const int& do_move);
+                                                                  amrex::ParticleContainer<1+AMREX_SPACEDIM+6, 0>::SuperParticleType&  p2,
+                                                                  const int nc,
+                                                                  amrex::Array4<amrex::Real const> const& acc,
+                                                                  amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& plo,
+                                                                  amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& phi,
+                                                                  amrex::GpuArray<amrex::Real,AMREX_SPACEDIM> const& dxi,
+                                                                  const amrex::Real& dt, const amrex::Real& a_prev,
+                                                                  const amrex::Real& a_cur, const int& do_move, const amrex::Real& radius_inner, const amrex::Real& radius_outer);
 
 #endif /* _DarkMatterParticleContainer_H_ */
 
