@@ -188,10 +188,8 @@ Parameter                           Definition                          Acceptab
 =================================== =================================== ===================================== =========
 **reeber.halo_int**                 timesteps between halo finder calls Integer                               -1 (none)
 **reeber.negate**                   allow negative values for analysis  0 if false, 1 if true                 1
-**reeber.halo_density_vars**        density variable list               density, particle_mass_density        “density”
-**reeber.halo_extrema_threshold**   extrema threshold for haloes        Real                                  200.
-**reeber.halo_component_threshold** component threshold for haloes      Real                                  82.
-**reeber.absolute_halo_thresholds** are halo thresholds absolute        0 if multiples of mean, 1 if absolute 0
+**reeber.halo_component_threshold** component threshold for haloes      Real                                  81.66
+**reeber.min_halo_n_cells**         min. number of halo cells           Integer                               10
 =================================== =================================== ===================================== =========
 
 [Table:Reeber-inputs]
