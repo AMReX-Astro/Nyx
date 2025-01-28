@@ -598,10 +598,7 @@ void Nyx::runReeberAnalysis(Vector<MultiFab*>& new_state,
 
     diy::DiscreteBounds diy_domain(3);
 
-    // TODO: take rho, min_halo_n_cells as parameters
-    Real min_halo_n_cells = 10;
-    Real rho = 81.66;
-
+    Real rho = halo_component_threshold;
     Real absolute_rho = (Nyx::average_dm_density + Nyx::average_gas_density) * rho;
     bool negate = true;  // sweep superlevel sets, highest density = root
     int finest_level = parent->finestLevel();

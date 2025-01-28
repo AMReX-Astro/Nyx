@@ -204,6 +204,9 @@ Real Nyx::he_species        = 0.24;
 #ifdef REEBER
 Real Nyx::mass_halo_min     = 1.e10;
 Real Nyx::mass_seed         = 1.e5;
+Real Nyx::halo_component_threshold = 81.66;
+int Nyx::min_halo_n_cells = 10;
+bool Nyx::halo_negate = true;
 #endif
 
 #ifdef _OPENMP
@@ -445,6 +448,11 @@ Nyx::read_params ()
 #ifdef REEBER
     pp_nyx.query("mass_halo_min", mass_halo_min);
     pp_nyx.query("mass_seed", mass_seed);
+
+    ParmParse pp_reeber("reeber");
+    pp_reeber.query("min_halo_n_cells", min_halo_n_cells);
+    pp_reeber.query("halo_component_threshold", halo_component_threshold);
+    pp_reeber.query("negate", halo_negate);
 #endif
 }
 
