@@ -1086,9 +1086,27 @@ Nyx::updateInSitu ()
 #endif
 
 #ifdef REEBER
-    amrex::Vector<Halo>& reeber_halos);
+    amrex::Vector<Halo> reeber_halos;
     halo_find(parent->dtLevel(level), reeber_halos);
     halo_print(reeber_halos);
+	const Real prev_time = state[State_Type].prevTime();
+    const Real cur_time  = state[State_Type].curTime();
+    const Real a_old     = get_comoving_a(prev_time);
+    const Real a_new     = get_comoving_a(cur_time);
+    Real z_old = 1/a_old-1;
+    if(z_old < lightcone_start_z && z_old >= lightcone_end_z) {
+        std::string filename=Concatenate("reeber_halos_", int(100*(1/a_old-1)), 7);
+        std::string filename_vtk="./Output/Halos/VTK/"+filename+".vtk";
+        std::string filename_bin="./Output/Halos/SimpleBinary/"+filename+".bin";
+        Real radius_outer, radius_inner;
+        integrate_distance_given_a(a_old, 1.0, radius_outer);
+        integrate_distance_given_a(a_new, 1.0, radius_inner);
+        if(ParallelDescriptor::IOProcessor()) {
+            std::cout << "Values of radius outer and inner are " << radius_outer << " " << radius_inner << std::endl;
+        }
+        writeHaloBinaryVTK(filename_vtk, reeber_halos, radius_outer, radius_inner);
+        writeHaloSimpleBinary(filename_bin, reeber_halos, radius_outer, radius_inner);
+    }
 #endif
 
 #endif
@@ -1271,3 +1289,256 @@ Nyx::blueprint_check_point ()
 
 }
 #endif
+
+void
+Nyx::SwapEnd(float& val)
+{
+    // Swap endianess if necessary
+    char* bytes = reinterpret_cast<char*>(&val);
+    std::swap(bytes[0], bytes[3]);
+    std::swap(bytes[1], bytes[2]);
+}
+
+void
+Nyx::writeHaloBinaryVTK(const std::string& filename_vtk,
+                        const amrex::Vector<Halo>& reeber_halos,
+                        const Real& radius_outer,
+                        const Real& radius_inner)
+{
+
+    int rank = amrex::ParallelDescriptor::MyProc();
+    int size = amrex::ParallelDescriptor::NProcs();
+
+    amrex::Real    halo_mass;
+    amrex::IntVect halo_pos ;
+    const auto dx = geom.CellSizeArray();
+
+    std::vector<float> data;
+    const Real* prob_lo = geom.ProbLo();
+    const Real* prob_hi = geom.ProbHi();
+
+    amrex::GpuArray<amrex::Real, 3> center;
+    for (int i = 0; i < 3; ++i) {
+        center[i] = 0.5 * (prob_lo[i] + prob_hi[i]);
+    }
+
+     Real lenx = prob_hi[0]-prob_lo[0];
+     Real leny = prob_hi[1]-prob_lo[1];
+     Real lenz = prob_hi[2]-prob_lo[2];
+     int maxind[3];
+     maxind[0] = floor((radius_outer+lenx*0.5)/lenx);
+     maxind[1] = floor((radius_outer+leny*0.5)/leny);
+     maxind[2] = floor((radius_outer+lenz*0.5)/lenz);
+
+     Real xlen, ylen, zlen;
+
+     for (const Halo& h : reeber_halos)
+     {
+        halo_mass = h.total_mass;
+        halo_pos  = h.position;
+
+        amrex::Real x = (halo_pos[0]+0.5) * dx[0];
+        amrex::Real y = (halo_pos[1]+0.5) * dx[1];
+        amrex::Real z = (halo_pos[2]+0.5) * dx[2];
+
+        for(int idir=-maxind[0];idir<=maxind[0];idir++) {
+            for(int jdir=-maxind[1];jdir<=maxind[1];jdir++) {
+                for(int kdir=-maxind[2];kdir<=maxind[2];kdir++) {
+                    xlen = x + idir*lenx - center[0];
+                    ylen = y + jdir*leny - center[1];
+                    zlen = z + kdir*lenz - center[2];
+                    Real rad = sqrt(xlen*xlen+ylen*ylen+zlen*zlen);
+
+                    if(rad < radius_inner or rad > radius_outer){
+                        continue;
+                    }
+                    std::cout << "Found one inside " << rad << " " << radius_inner << " " << radius_outer << std::endl;
+                        // Cast amrex::Real to float if needed (assuming amrex::Real is double)
+                    float xf = static_cast<float>(x + idir*lenx);
+                    float yf = static_cast<float>(y + jdir*leny);
+                    float zf = static_cast<float>(z + kdir*lenz);
+
+                    SwapEnd(xf);
+                    SwapEnd(yf);
+                    SwapEnd(zf);
+
+                    data.push_back(xf);
+                    data.push_back(yf);
+                    data.push_back(zf);
+                }
+            }
+        }
+    } // end of loop over creating new particles from halos
+
+    long int local_num_halos = data.size()/3;
+    long int total_num_halos = local_num_halos;
+
+    // Get total particles across all ranks
+    amrex::ParallelDescriptor::ReduceLongSum(total_num_halos);
+
+    // Compute offset for this rank's data
+    size_t offset = 0;
+    MPI_Exscan(&local_num_halos, &offset, 1, MPI_UNSIGNED_LONG, MPI_SUM, MPI_COMM_WORLD);
+
+    // Header handling
+    size_t header_size = 0;
+
+    if (rank == 0) {
+        std::ofstream file(filename_vtk, std::ios::binary);
+        if (!file) {
+            amrex::Abort("Error: Could not open file " + filename_vtk + "\n");
+        }
+
+        // Write the header
+        file << "# vtk DataFile Version 2.0\n";
+        file << "Reeber halos\n";
+        file << "BINARY\n";
+        file << "DATASET POLYDATA\n";
+        file << "POINTS " << total_num_halos << " float\n";
+
+        // Determine header size
+        file.seekp(0, std::ios::end);
+        header_size = file.tellp();
+        file.close();
+    }
+
+    // Broadcast the header size to all ranks
+    amrex::ParallelDescriptor::Bcast(&header_size, 1, 0);
+
+    // Use MPI collective I/O for binary data
+    MPI_File mpi_file;
+    MPI_File_open(MPI_COMM_WORLD, filename_vtk.c_str(),
+                  MPI_MODE_WRONLY | MPI_MODE_APPEND, MPI_INFO_NULL, &mpi_file);
+
+    // Compute byte offset for this rank
+    size_t byte_offset = header_size + sizeof(float) * 3 * offset;
+
+    // Write particle data collectively
+    MPI_File_write_at_all(mpi_file, byte_offset, data.data(), data.size(), MPI_FLOAT, MPI_STATUS_IGNORE);
+
+    MPI_File_close(&mpi_file);
+
+    if (rank == 0) {
+        std::cout << "Successfully wrote halo VTK file: " << filename_vtk << "\n";
+    }
+}
+
+void
+Nyx::writeHaloSimpleBinary(const std::string& filename_bin,
+                           const amrex::Vector<Halo>& reeber_halos,
+                           const Real& radius_outer,
+                           const Real& radius_inner)
+{
+    int rank = amrex::ParallelDescriptor::MyProc();
+    int size = amrex::ParallelDescriptor::NProcs();
+
+    amrex::Real    halo_mass;
+    amrex::IntVect halo_pos ;
+    const auto dx = geom.CellSizeArray();
+
+    std::vector<float> data;
+    const Real* prob_lo = geom.ProbLo();
+    const Real* prob_hi = geom.ProbHi();
+
+    amrex::GpuArray<amrex::Real, 3> center;
+    for (int i = 0; i < 3; ++i) {
+        center[i] = 0.5 * (prob_lo[i] + prob_hi[i]);
+    }
+
+     Real lenx = prob_hi[0]-prob_lo[0];
+     Real leny = prob_hi[1]-prob_lo[1];
+     Real lenz = prob_hi[2]-prob_lo[2];
+     int maxind[3];
+     maxind[0] = floor((radius_outer+lenx*0.5)/lenx);
+     maxind[1] = floor((radius_outer+leny*0.5)/leny);
+     maxind[2] = floor((radius_outer+lenz*0.5)/lenz);
+
+     Real xlen, ylen, zlen;
+
+     for (const Halo& h : reeber_halos)
+     {
+        halo_mass = h.total_mass;
+        halo_pos  = h.position;
+
+        amrex::Real x = (halo_pos[0]+0.5) * dx[0];
+        amrex::Real y = (halo_pos[1]+0.5) * dx[1];
+        amrex::Real z = (halo_pos[2]+0.5) * dx[2];
+
+        for(int idir=-maxind[0];idir<=maxind[0];idir++) {
+            for(int jdir=-maxind[1];jdir<=maxind[1];jdir++) {
+                for(int kdir=-maxind[2];kdir<=maxind[2];kdir++) {
+                    xlen = x + idir*lenx - center[0];
+                    ylen = y + jdir*leny - center[1];
+                    zlen = z + kdir*lenz - center[2];
+                    Real rad = sqrt(xlen*xlen+ylen*ylen+zlen*zlen);
+
+                    if(rad < radius_inner or rad > radius_outer){
+                        continue;
+                    }
+                    std::cout << "Found one inside " << rad << " " << radius_inner << " " << radius_outer << std::endl;
+                    // Cast amrex::Real to float if needed (assuming amrex::Real is double)
+                    float xf = static_cast<float>(x + idir*lenx);
+                    float yf = static_cast<float>(y + jdir*leny);
+                    float zf = static_cast<float>(z + kdir*lenz);
+                    float halo_mass = static_cast<float>(h.total_mass);
+
+                    SwapEnd(xf);
+                    SwapEnd(yf);
+                    SwapEnd(zf);
+                    SwapEnd(halo_mass);
+
+                    data.push_back(xf);
+                    data.push_back(yf);
+                    data.push_back(zf);
+                    data.push_back(halo_mass);
+                }
+            }
+        }
+    } // end of loop over creating new particles from halos
+
+    long int local_num_halos = data.size()/4;
+    long int total_num_halos = local_num_halos;
+
+    // Get total particles across all ranks
+    amrex::ParallelDescriptor::ReduceLongSum(total_num_halos);
+
+    // Compute offset for this rank's data
+    size_t offset = 0;
+    MPI_Exscan(&local_num_halos, &offset, 1, MPI_UNSIGNED_LONG, MPI_SUM, MPI_COMM_WORLD);
+
+    // Header handling
+    size_t header_size = 0;
+
+    // Broadcast the header size to all ranks
+    amrex::ParallelDescriptor::Bcast(&header_size, 1, 0);
+
+     if (rank == 0) {
+        std::ofstream file(filename_bin, std::ios::binary);
+        if (!file) {
+            amrex::Abort("Error: Could not open file " + filename_bin + "\n");
+        }
+
+        // Determine header size
+        file.seekp(0, std::ios::end);
+        header_size = file.tellp();
+        file.close();
+    }
+
+    // Use MPI collective I/O for binary data
+    MPI_File mpi_file;
+    MPI_File_open(MPI_COMM_WORLD, filename_bin.c_str(),
+                  MPI_MODE_WRONLY | MPI_MODE_APPEND, MPI_INFO_NULL, &mpi_file);
+
+    // Compute byte offset for this rank
+    size_t byte_offset = header_size + sizeof(float) * 4 * offset;
+
+    // Write particle data collectively
+    MPI_File_write_at_all(mpi_file, byte_offset, data.data(), data.size(), MPI_FLOAT, MPI_STATUS_IGNORE);
+
+    MPI_File_close(&mpi_file);
+
+   if (rank == 0) {
+        std::cout << "Successfully wrote SimpleBinary file for Halo: " << filename_bin << "\n";
+    }
+}
+

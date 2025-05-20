@@ -159,7 +159,7 @@ void prepare_master_reader(
         int finest_level,
         const Vector<IntVect>& level_refinements,
         const amrex::Geometry geom_in,
-        std::vector<std::unique_ptr<Real[]>>& pointers_to_copied_data)
+        std::vector<Real*>& pointers_to_copied_data)
 {
     std::vector<std::string> new_state_vars { "density", "xmom", "ymom", "zmom" };
     const size_t density_var_idx = 0;
@@ -227,7 +227,10 @@ void prepare_master_reader(
             gid_to_fab_size[gid] = core_fab_size;
 
             pointers_to_copied_data.emplace_back(new Real[core_fab_size]);
-            Real* core_fab_ptr = pointers_to_copied_data.back().get();
+            // Real* core_fab_ptr = pointers_to_copied_data.back().get();
+
+            // HACK: use raw pointer to avoid double free
+            Real* core_fab_ptr = pointers_to_copied_data.back();
 
             GridRef core_grid_ref(core_fab_ptr, core_shape, false);
 
@@ -266,7 +269,10 @@ void prepare_master_reader(
 
             // reserve memory for dm_density
             pointers_to_copied_data.emplace_back(new Real[core_fab_size]);
-            Real* extra_ptr_copy = pointers_to_copied_data.back().get();
+            // Real* extra_ptr_copy = pointers_to_copied_data.back().get();
+
+            // HACK: use raw pointer to avoid double free
+            Real* extra_ptr_copy = pointers_to_copied_data.back();
             extra_pointers.push_back(extra_ptr_copy);
 
             // reserve memory for variables in new_state
@@ -389,7 +395,8 @@ std::vector<Halo> compute_halos(diy::mpi::communicator& world,
                                 diy::DiscreteBounds diy_domain,
                                 Real absolute_rho,
                                 bool negate,
-                                Real min_halo_n_cells)
+                                Real min_halo_n_cells,
+								Real halo_extrema_threshold)
 {
     bool debug = false; //world.rank() == 0;
     std::string prefix = "./DIY.XXXXXX";
@@ -430,7 +437,7 @@ std::vector<Halo> compute_halos(diy::mpi::communicator& world,
                         new Block(b->fab, b->extra_names_, b->extra_fabs_, local_ref, local_lev, diy_domain,
                                 l->bounds(),
                                 l->core(), cp.gid(),
-                                new_link, absolute_rho, negate, /*absolute = */ true, cell_volume),
+                                new_link, absolute_rho, negate, /* wrap = */ true, /*absolute = */ true, cell_volume),
                         new_link);
 
                 //if (debug) fmt::print(std::cerr, "Added block gid = {}\n", cp.gid());
@@ -461,9 +468,9 @@ std::vector<Halo> compute_halos(diy::mpi::communicator& world,
 
     }
 
-    master.foreach([](Block* b, const diy::Master::ProxyWithLink& cp) {
+    master.foreach([halo_extrema_threshold](Block* b, const diy::Master::ProxyWithLink& cp) {
         b->compute_final_connected_components();
-        b->compute_local_integral();
+        b->compute_local_integral(halo_extrema_threshold);
     });
 
     //if (debug) fmt::print(std::cerr, "Local integrals computed");
@@ -571,7 +578,8 @@ void Nyx::runReeberAnalysis(Vector<MultiFab*>& new_state,
 
     // store pointers to all dynamically allocated arrays, so that
     // data will be freed automatically after exiting compute_halos
-    std::vector<std::unique_ptr<Real[]>> pointers_to_copied_data;
+    // std::vector<std::unique_ptr<Real[]>> pointers_to_copied_data;
+    std::vector<Real*> pointers_to_copied_data; // HACK: avoid double free
 
     diy::mpi::communicator world = ParallelDescriptor::Communicator();
 
@@ -591,9 +599,7 @@ void Nyx::runReeberAnalysis(Vector<MultiFab*>& new_state,
 
     diy::DiscreteBounds diy_domain(3);
 
-    // TODO: take rho, min_halo_n_cells as parameters
-    Real min_halo_n_cells = 10;
-    Real rho = 81.66;
+	Real rho = halo_component_threshold;
 
     Real absolute_rho = (Nyx::average_dm_density + Nyx::average_gas_density) * rho;
     bool negate = true;  // sweep superlevel sets, highest density = root
@@ -612,7 +618,7 @@ void Nyx::runReeberAnalysis(Vector<MultiFab*>& new_state,
 
     BL_PROFILE_VAR("Nyx::runReeberAnalysis()::compute_halos",compute_halos_var);
 
-    reeber_halos = compute_halos(world, master_reader, geom_in, threads, diy_domain, absolute_rho, negate, min_halo_n_cells);
+    reeber_halos = compute_halos(world, master_reader, geom_in, threads, diy_domain, absolute_rho, negate, min_halo_n_cells, halo_extrema_threshold);
     if (verbose and world.rank() == 0) fmt::print(std::cerr, "compute_halos finished, result.size = {}\n", reeber_halos.size());
 
     BL_PROFILE_VAR_STOP(compute_halos_var);

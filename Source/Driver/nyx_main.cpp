@@ -41,6 +41,9 @@ std::string inputs_name = "";
 #include <henson/data.h>
 #endif
 
+#include <filesystem>  // C++17
+namespace fs = std::filesystem;
+
 using namespace amrex;
 
 const int NyxHaloFinderSignal(42);
@@ -140,6 +143,18 @@ nyx_main (int argc, char* argv[])
            amrptr->RegridOnly(amrptr->cumTime());
        }
      }
+#ifdef REEBER
+	 fs::path output_dir("Output");
+
+    // Only create the directory structure if "output" does not exist
+    if (!fs::exists(output_dir)) {
+        // Create nested directory structure
+        fs::create_directories("Output/LightCones/VTK");
+        fs::create_directories("Output/LightCones/SimpleBinary");
+        fs::create_directories("Output/Halos/VTK");
+        fs::create_directories("Output/Halos/SimpleBinary");
+    }
+#endif
 
      if (amrptr->okToContinue()
           && (amrptr->levelSteps(0) < max_step || max_step < 0)
