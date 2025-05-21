@@ -1294,6 +1294,8 @@ Nyx::blueprint_check_point ()
 }
 #endif
 
+#ifdef REEBER
+
 void
 Nyx::SwapEnd(float& val)
 {
@@ -1545,4 +1547,4 @@ Nyx::writeHaloSimpleBinary(const std::string& filename_bin,
         std::cout << "Successfully wrote SimpleBinary file for Halo: " << filename_bin << "\n";
     }
 }
-
+#endif

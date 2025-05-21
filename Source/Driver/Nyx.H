@@ -599,12 +599,12 @@ int integrate_state_struct
 	void SwapEnd(float& val);
     void writeHaloBinaryVTK(const std::string& filename_vtk,
                             const amrex::Vector<Halo>& reeber_halos,
-                            const Real& radius_outer,
-                            const Real& radius_inner);
+                            const amrex::Real& radius_outer,
+                            const amrex::Real& radius_inner);
     void writeHaloSimpleBinary(const std::string& filename_bin,
                             const amrex::Vector<Halo>& reeber_halos,
-                            const Real& radius_outer,
-                            const Real& radius_inner);
+                            const amrex::Real& radius_outer,
+                            const amrex::Real& radius_inner);
 #endif
     void agn_halo_find(amrex::Real dt);
     void agn_halo_merge();
