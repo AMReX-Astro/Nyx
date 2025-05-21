@@ -1104,8 +1104,12 @@ Nyx::updateInSitu ()
         if(ParallelDescriptor::IOProcessor()) {
             std::cout << "Values of radius outer and inner are " << radius_outer << " " << radius_inner << std::endl;
         }
-        writeHaloBinaryVTK(filename_vtk, reeber_halos, radius_outer, radius_inner);
-        writeHaloSimpleBinary(filename_bin, reeber_halos, radius_outer, radius_inner);
+		if(write_lightcones_and_halos_vtk) {
+        	writeHaloBinaryVTK(filename_vtk, reeber_halos, radius_outer, radius_inner);
+		}
+		if(write_lightcones_and_halos_simplebinary) {
+			writeHaloSimpleBinary(filename_bin, reeber_halos, radius_outer, radius_inner);
+		}
     }
 #endif
 

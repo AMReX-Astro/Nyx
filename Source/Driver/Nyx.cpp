@@ -202,6 +202,8 @@ Real Nyx:: h_species        = 0.76;
 Real Nyx::he_species        = 0.24;
 Real Nyx::lightcone_start_z = 7;
 Real Nyx::lightcone_end_z   = 0;
+int Nyx::write_lightcones_and_halos_simplebinary = 0;
+int Nyx::write_lightcones_and_halos_vtk = 0;
 
 #ifdef REEBER
 Real Nyx::mass_halo_min     = 1.e10;
@@ -449,6 +451,8 @@ Nyx::read_params ()
     pp_nyx.query("gimlet_int", gimlet_int);
 	pp_nyx.query("lightcone_start_z", lightcone_start_z);
 	pp_nyx.query("lightcone_end_z", lightcone_end_z);
+	pp_nyx.query("write_lightcones_and_halos_simplebinary", write_lightcones_and_halos_simplebinary);
+	pp_nyx.query("write_lightcones_and_halos_vtk", write_lightcones_and_halos_vtk);
 #ifdef REEBER
     pp_nyx.query("mass_halo_min", mass_halo_min);
     pp_nyx.query("mass_seed", mass_seed);

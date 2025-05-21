@@ -251,6 +251,7 @@ public:
     //
     amrex::Real get_comoving_a(amrex::Real time);
     static void integrate_time_given_a(const amrex::Real a0, const amrex::Real a1, amrex::Real& dt);
+	static void integrate_distance_given_a(const amrex::Real a0, const amrex::Real a1, amrex::Real& dt);
     void integrate_comoving_a(const amrex::Real old_a, amrex::Real& new_a, const amrex::Real dt);
     void integrate_comoving_a(amrex::Real time, amrex::Real dt);
 
@@ -766,6 +767,7 @@ int integrate_state_struct
     static NeutrinoParticleContainer* theGhostNPC();
   #endif
 #endif
+    static DarkMatterParticleContainer* theShellPC();
 #endif
 
     static int NUM_STATE;
@@ -997,6 +999,8 @@ protected:
 
     static amrex::Real lightcone_start_z;
     static amrex::Real lightcone_end_z;
+    static int write_lightcones_and_halos_vtk;
+    static int write_lightcones_and_halos_simplebinary;
 
 #ifdef REEBER
   //
