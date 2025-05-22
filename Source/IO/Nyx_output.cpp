@@ -1487,22 +1487,25 @@ Nyx::writeHaloSimpleBinary(const std::string& filename_bin,
                     float yf = static_cast<float>(y + jdir*leny);
                     float zf = static_cast<float>(z + kdir*lenz);
                     float halo_mass = static_cast<float>(h.total_mass);
+					float halo_n_cells = static_cast<float>(h.n_cells);
 
                     SwapEnd(xf);
                     SwapEnd(yf);
                     SwapEnd(zf);
                     SwapEnd(halo_mass);
+					SwapEnd(halo_n_cells);
 
                     data.push_back(xf);
                     data.push_back(yf);
                     data.push_back(zf);
                     data.push_back(halo_mass);
+					data.push_back(halo_n_cells);
                 }
             }
         }
     } // end of loop over creating new particles from halos
 
-    long int local_num_halos = data.size()/4;
+    long int local_num_halos = data.size()/5;
     long int total_num_halos = local_num_halos;
 
     // Get total particles across all ranks
@@ -1536,7 +1539,7 @@ Nyx::writeHaloSimpleBinary(const std::string& filename_bin,
                   MPI_MODE_WRONLY | MPI_MODE_APPEND, MPI_INFO_NULL, &mpi_file);
 
     // Compute byte offset for this rank
-    size_t byte_offset = header_size + sizeof(float) * 4 * offset;
+    size_t byte_offset = header_size + sizeof(float) * 5 * offset;
 
     // Write particle data collectively
     MPI_File_write_at_all(mpi_file, byte_offset, data.data(), data.size(), MPI_FLOAT, MPI_STATUS_IGNORE);
