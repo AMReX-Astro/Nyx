@@ -36,7 +36,7 @@ def plot_points(x, y, z):
 
 
 # Example usage
-filename = "lightcone_0000030.bin"
+filename = "lightcone_0000010.bin"
 points, num_points = read_binary_points(filename)
 
 # Display the first few points
