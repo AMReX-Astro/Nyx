@@ -200,10 +200,17 @@ std::string Nyx::enforce_min_density_type = "floor";
 
 Real Nyx:: h_species        = 0.76;
 Real Nyx::he_species        = 0.24;
+Real Nyx::lightcone_start_z = 7;
+Real Nyx::lightcone_end_z   = 0;
+int Nyx::write_lightcones_and_halos_simplebinary = 0;
+int Nyx::write_lightcones_and_halos_vtk = 0;
 
 #ifdef REEBER
 Real Nyx::mass_halo_min     = 1.e10;
 Real Nyx::mass_seed         = 1.e5;
+Real Nyx::halo_component_threshold = 81.66;
+Real Nyx::halo_extrema_threshold = 160.0;
+int Nyx::min_halo_n_cells = 10;
 #endif
 
 #ifdef _OPENMP
@@ -442,9 +449,17 @@ Nyx::read_params ()
     }
 
     pp_nyx.query("gimlet_int", gimlet_int);
+	pp_nyx.query("lightcone_start_z", lightcone_start_z);
+	pp_nyx.query("lightcone_end_z", lightcone_end_z);
+	pp_nyx.query("write_lightcones_and_halos_simplebinary", write_lightcones_and_halos_simplebinary);
+	pp_nyx.query("write_lightcones_and_halos_vtk", write_lightcones_and_halos_vtk);
 #ifdef REEBER
     pp_nyx.query("mass_halo_min", mass_halo_min);
     pp_nyx.query("mass_seed", mass_seed);
+	ParmParse pp_reeber("reeber");
+    pp_reeber.query("min_halo_n_cells", min_halo_n_cells);
+    pp_reeber.query("halo_component_threshold", halo_component_threshold);
+    pp_reeber.query("halo_extrema_threshold", halo_extrema_threshold);
 #endif
 }
 

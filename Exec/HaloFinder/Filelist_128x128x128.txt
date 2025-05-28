@@ -1,0 +1,4 @@
+/global/cfs/cdirs/nyx/jmsexton/mockgen/shamik_output/output/mockgen4nyx_test_13579_Lbox-7700.0_N-128_proc-0
+/global/cfs/cdirs/nyx/jmsexton/mockgen/shamik_output/output/mockgen4nyx_test_13579_Lbox-7700.0_N-128_proc-1
+/global/cfs/cdirs/nyx/jmsexton/mockgen/shamik_output/output/mockgen4nyx_test_13579_Lbox-7700.0_N-128_proc-2
+/global/cfs/cdirs/nyx/jmsexton/mockgen/shamik_output/output/mockgen4nyx_test_13579_Lbox-7700.0_N-128_proc-3

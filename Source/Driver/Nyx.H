@@ -251,6 +251,7 @@ public:
     //
     amrex::Real get_comoving_a(amrex::Real time);
     static void integrate_time_given_a(const amrex::Real a0, const amrex::Real a1, amrex::Real& dt);
+	static void integrate_distance_given_a(const amrex::Real a0, const amrex::Real a1, amrex::Real& dt);
     void integrate_comoving_a(const amrex::Real old_a, amrex::Real& new_a, const amrex::Real dt);
     void integrate_comoving_a(amrex::Real time, amrex::Real dt);
 
@@ -595,6 +596,15 @@ int integrate_state_struct
 #ifdef REEBER
     void halo_find(amrex::Real dt,        amrex::Vector<Halo>& reeber_halos);
     void halo_print(amrex::Vector<Halo>& reeber_halos);
+	void SwapEnd(float& val);
+    void writeHaloBinaryVTK(const std::string& filename_vtk,
+                            const amrex::Vector<Halo>& reeber_halos,
+                            const amrex::Real& radius_outer,
+                            const amrex::Real& radius_inner);
+    void writeHaloSimpleBinary(const std::string& filename_bin,
+                            const amrex::Vector<Halo>& reeber_halos,
+                            const amrex::Real& radius_outer,
+                            const amrex::Real& radius_inner);
 #endif
     void agn_halo_find(amrex::Real dt);
     void agn_halo_merge();
@@ -757,6 +767,7 @@ int integrate_state_struct
     static NeutrinoParticleContainer* theGhostNPC();
   #endif
 #endif
+    static DarkMatterParticleContainer* theShellPC();
 #endif
 
     static int NUM_STATE;
@@ -986,6 +997,11 @@ protected:
     // There can be only one forcing object (Fourier space):
     static class StochasticForcing *forcing;
 
+    static amrex::Real lightcone_start_z;
+    static amrex::Real lightcone_end_z;
+    static int write_lightcones_and_halos_vtk;
+    static int write_lightcones_and_halos_simplebinary;
+
 #ifdef REEBER
   //
   // Threshold for halo to create SMBH
@@ -996,6 +1012,10 @@ protected:
   // Seed mass of SMBH
   //
   static amrex::Real mass_seed;
+
+  static int min_halo_n_cells;
+  static amrex::Real halo_component_threshold;
+  static amrex::Real halo_extrema_threshold;
 #endif
 
   // Previous maximum number of steps for sundials

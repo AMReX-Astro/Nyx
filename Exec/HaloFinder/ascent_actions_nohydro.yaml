@@ -1,0 +1,25 @@
+- 
+  action: "add_scenes"
+  scenes: 
+    scene1: 
+      image_prefix: "ascent_render_mesh_particle_x_velocity_"
+      plots: 
+        plt1: 
+          type: "pseudocolor"
+          field: "particle_x_velocity"
+    scene2: 
+      image_prefix: "ascent_render_particles_xvel_"
+      plots: 
+        plt1: 
+          type: "pseudocolor"
+          field: "particle_xvel"
+    scene3: 
+      image_prefix: "ascent_render_both_"
+      plots: 
+        plt1: 
+          type: "pseudocolor"
+          field: "particle_x_velocity"
+        plt2: 
+          type: "pseudocolor"
+          field: "particle_xvel"
+
