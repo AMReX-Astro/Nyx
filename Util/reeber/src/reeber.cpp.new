@@ -277,7 +277,6 @@ void prepare_master_reader(
 
             // reserve memory for variables in new_state
             for(int i = 0; i < new_state_vars.size(); ++i) {
-                Real* extra_ptr_copy = new Real[core_fab_size];
 				pointers_to_copied_data.emplace_back(new Real[core_fab_size]);
 				extra_ptr_copy = pointers_to_copied_data.back().get();
                 extra_pointers.push_back(extra_ptr_copy);
