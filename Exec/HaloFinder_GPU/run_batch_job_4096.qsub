@@ -1,0 +1,21 @@
+#!/bin/bash
+#!/bin/bash
+
+## specify your allocation (with the _g) and that you want GPU nodes
+#SBATCH -A m4749
+#SBATCH -C cpu
+#SBATCH -q regular
+
+#SBATCH -J NyxHalos
+#SBATCH -o nyx_dm.out
+#SBATCH -e nyx_dm_error.out
+
+## set the max walltime and memory
+#SBATCH -t 24:00:00
+#SBATCH --mem=0
+
+## specify the number of nodes you want
+#SBATCH -N 256
+#SBATCH --exclusive
+#srun -N 8 -n 1024 Nyx3d.gnu.x86-milan.MTMPI.ex inputs_768x768x768 nyx.lightcone_start_z=4.5
+srun -N 256 -n 32768 Nyx3d.gnu.x86-milan.MTMPI.ex inputs_4096x4096x4096 nyx.lightcone_start_z=4.5

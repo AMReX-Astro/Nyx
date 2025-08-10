@@ -1,6 +1,4 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
-max_step = 2
-
 nyx.ppm_type         = 1
 nyx.use_colglaz      = 0
 nyx.corner_coupling  = 1
@@ -126,7 +124,7 @@ amr.density.value_greater = 3.5e9
 amr.density.field_name = denvol
 
 # CHECKPOINT FILES
-amr.checkpoint_files_output = 1
+amr.checkpoint_files_output = -1
 amr.check_file        = chk
 amr.check_int         = 100
 amr.checkpoint_nfiles = 64
@@ -135,7 +133,6 @@ amr.checkpoint_nfiles = 64
 amr.plot_files_output = -1
 amr.plot_file       = plt
 amr.plot_int        = -1
-nyx.plot_z_values   = 7.0 6.0 5.0 4.0 3.0 2.0
 
 amr.plot_vars        = density xmom ymom zmom rho_e Temp phi_grav
 amr.derive_plot_vars = particle_mass_density particle_count
@@ -144,17 +141,17 @@ amr.derive_plot_vars = particle_mass_density particle_count
 #nyx.analysis_z_values = 150 10 5 4 3 2
 reeber.halo_int = 1
 reeber.negate = 1
-reeber.halo_density_vars = density particle_mass_density
-reeber.halo_extrema_threshold = 20
-reeber.halo_component_threshold = 10
-#nyx.mass_halo_min = 1.e11
+reeber.halo_density_vars = particle_mass_density
+reeber.halo_component_threshold = 3.0
+reeber.halo_extrema_threshold = 8.0
+#nyx.mass_halo_min = 1.e6
 #nyx.mass_seed = 1.e6
 
 # ANALYSIS in situ
 nyx.analysis_z_values   = 7.0 6.0 5.0 4.0 3.0 2.0
-insitu.int              = 100
+insitu.int              = 1
 insitu.start            = 0
-insitu.reeber_int       = 100
+insitu.reeber_int       = 1
 
 # SENSEI in situ
 sensei.enabled = 0
@@ -167,8 +164,7 @@ amr.probin_file = ""
 #TESTING FLAGS
 amrex.abort_on_out_of_gpu_memory=1
 amrex.async_out=1
-max_step=5
-amrex.the_arena_is_managed=1
+max_step=3
 nyx.minimize_memory=1
 nyx.hydro_tile_size=64 64 64
 nyx.sundials_tile_size=64 64 64
@@ -187,7 +183,7 @@ amr.max_grid_size=256
 tiny_profiler.device_synchronize_around_region=0
 amrex.use_profiler_syncs=0
 nyx.sundials_alloc_type=5
-amr.check_int=250
+amr.check_int=-1
 nyx.reuse_mlpoisson=1
 amrex.the_arena_release_threshold=35651584000
 amrex.the_pinned_arena_release_threshold=1258291200
@@ -199,10 +195,11 @@ amrex.async_out=1
 amr.n_cell=128 128 128
 amr.derive_plot_vars=particle_mass_density particle_count particle_x_velocity particle_y_velocity particle_z_velocity
 amr.plot_int=-1
-nyx.plot_z_values=200.0 8.0 7.5 7.0 6.6 6.3 6.0 5.8 5.6 5.4 5.2 5.0 4.8 4.6 4.4 4.2 4.0 3.8 3.6 3.4 3.2 3.0 2.8 2.6 2.4 2.2 2.0 1.0 0.5 0.0
+#nyx.plot_z_values=200.0 8.0 7.5 7.0 6.6 6.3 6.0 5.8 5.6 5.4 5.2 5.0 4.8 4.6 4.4 4.2 4.0 3.8 3.6 3.4 3.2 3.0 2.8 2.6 2.4 2.2 2.0 1.0 0.5 0.0
 nyx.binary_particle_file=Filelist_128x128x128.txt
 geometry.prob_hi=7700 7700 7700
-particles.nreaders=1
+particles.nreaders=32
+particles.nparts_per_read=2097152
 nyx.comoving_h=0.68
 nyx.comoving_OmB=0.0493890
 nyx.comoving_OmM=.31
@@ -212,7 +209,7 @@ amrex.max_gpu_streams=8
 nyx.sundials_reltol=1e-6
 nyx.sundials_abstol=1e-6
 DistributionMapping.strategy=ROUNDROBIN
-nyx.load_balance_start_z=12.0
+nyx.load_balance_start_z=0.0
 nyx.load_balance_int=100
 nyx.load_balance_wgt_strategy=1
 nyx.load_balance_strategy=KNAPSACK

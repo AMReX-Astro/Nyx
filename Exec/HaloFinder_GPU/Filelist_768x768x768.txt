@@ -1,0 +1,4 @@
+/global/cfs/cdirs/nyx/ics4nyx-lightcones/gridnside-768/mockgen4nyx_test_13579_Lbox-7700.0_N-768_proc-0
+/global/cfs/cdirs/nyx/ics4nyx-lightcones/gridnside-768/mockgen4nyx_test_13579_Lbox-7700.0_N-768_proc-1
+/global/cfs/cdirs/nyx/ics4nyx-lightcones/gridnside-768/mockgen4nyx_test_13579_Lbox-7700.0_N-768_proc-2
+/global/cfs/cdirs/nyx/ics4nyx-lightcones/gridnside-768/mockgen4nyx_test_13579_Lbox-7700.0_N-768_proc-3

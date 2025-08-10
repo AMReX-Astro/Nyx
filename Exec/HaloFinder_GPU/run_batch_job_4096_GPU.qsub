@@ -1,0 +1,20 @@
+#!/bin/bash
+
+## specify your allocation (with the _g) and that you want GPU nodes
+#SBATCH -A nyx_g
+#SBATCH -C gpu
+#SBATCH -q regular
+
+#SBATCH -J NyxHalos
+#SBATCH -o nyx_dm.out
+#SBATCH -e nyx_dm_error.out
+
+## set the max walltime and memory
+#SBATCH -t 2:00:00
+
+## specify the number of nodes you want
+#SBATCH -N 256
+#SBATCH --exclusive
+#SBATCH --gpus-per-node=4
+#SBATCH --ntasks-per-node=4
+srun Nyx3d.gnu.MTMPI.CUDA.ex inputs_4096x4096x4096 nyx.lightcone_start_z=4.5
