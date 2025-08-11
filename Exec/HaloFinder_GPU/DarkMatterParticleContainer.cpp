@@ -280,11 +280,9 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
     amrex::Gpu::copy(amrex::Gpu::deviceToHost, d_count, d_count + 1, &h_count);
     amrex::Gpu::streamSynchronize();
 
-    std::int64_t h_count_local = 0;   // local count on this rank
-
     // Count particles locally here, accumulate in h_count_local
 
-    std::int64_t h_count_global = h_count_local;
+    std::int64_t h_count_global = h_count;
     amrex::ParallelDescriptor::ReduceLongSum(h_count_global);  // MPI sum over all ranks
 
     if (amrex::ParallelDescriptor::IOProcessor()) {
@@ -294,7 +292,7 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
 
     if (shell_particles) {
         // Allocate ligthcone particles data on GPU 
-        amrex::Gpu::DeviceVector<LightConeParticle> d_shell_particles(h_count_local);
+        amrex::Gpu::DeviceVector<LightConeParticle> d_shell_particles(h_count);
         LightConeParticle* d_shell_particles_ptr = d_shell_particles.data();
 
         // Reset device counter
