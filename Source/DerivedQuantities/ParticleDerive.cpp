@@ -83,10 +83,12 @@ compute_matter_power_spectrum(const MultiFab& mf_od,
     Real* power_spec_mf_od_d_ptr = power_spec_mf_od_d.data();
     int* counts_d_ptr = counts_d.data();
     auto const& c_fft_pmd_arr = c_fft_pmd.const_arrays();
-
     Real Lx = geom.ProbLength(0);
     Real Ly = geom.ProbLength(1);
     Real Lz = geom.ProbLength(2);
+    Real dx = geom.CellSize(0);
+    Real dy = geom.CellSize(1);
+    Real dz = geom.CellSize(2);
     Real kfund = 2.0 * M_PI / Lx;
     ParallelFor(c_fft_pmd, [=] AMREX_GPU_DEVICE (int b, int i, int j, int k)
     {
@@ -95,6 +97,17 @@ compute_matter_power_spectrum(const MultiFab& mf_od,
         int kk = (k <= nz/2) ? k : nz-k;
         Real kmag = kfund * std::sqrt(ki*ki + kj*kj + kk*kk);
         int di = int(kmag / kfund);
+        Real kx = 2.0 * M_PI * ki / Lx;
+        Real ky = 2.0 * M_PI * kj / Ly;
+        Real kz = 2.0 * M_PI * kk / Lz;
+
+        Real wx = (kx == 0.0) ? 1.0 : sin(0.5*kx*dx)/(0.5*kx*dx);
+        Real wy = (ky == 0.0) ? 1.0 : sin(0.5*ky*dy)/(0.5*ky*dy);
+        Real wz = (kz == 0.0) ? 1.0 : sin(0.5*kz*dz)/(0.5*kz*dz);
+
+        // CIC window (note the square per direction)
+        Real W_CIC = (wx*wx) * (wy*wy) * (wz*wz);
+
         if (di < nk) {
         Real value = amrex::norm(c_fft_pmd_arr[b](i,j,k));
         // Account for Hermitian symmetry in x-direction
@@ -103,8 +116,10 @@ compute_matter_power_spectrum(const MultiFab& mf_od,
             // Multiply by 2 because we have +ki and -ki
             value *= Real(2.0);
         }
+        value /= (W_CIC * W_CIC);
+        int weight = ((i > 0) && (2*i != nx)) ? 2 : 1;
         HostDevice::Atomic::Add(power_spec_mf_od_d_ptr+di, value);
-        HostDevice::Atomic::Add(counts_d_ptr + di, 1);
+        HostDevice::Atomic::Add(counts_d_ptr + di, weight);
         }
     });
 
@@ -133,12 +148,14 @@ compute_matter_power_spectrum(const MultiFab& mf_od,
     }
 
     if (ParallelDescriptor::IOProcessor()) {
-        Real Lx = geom.ProbLength(0);
+       
+        Real dV = dx*dy*dz;
+        Real dom_vol = Lx*Ly*Lz;
         Real dk = 2.0 * M_PI / Lx;
         std::ofstream ofs("spectrum.txt");
         for (int i = 0; i < nk; ++i) {
             Real k = dk * (i + 0.5);
-            ofs << k << " " << power_spec_mf_od_h_ptr[i] << "\n";
+            ofs << k << " " << power_spec_mf_od_h_ptr[i]* dV*dV/dom_vol << "\n";
         }
     }
 }
