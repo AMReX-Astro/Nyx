@@ -28,10 +28,6 @@ public:
                                     int lev_max              =-1,
                                     int nGrow                = 0) = 0;
 
-    virtual void RedistributeGPU   (int lev_min              = 0,
-                                    int lev_max              =-1,
-                                    int nGrow                = 0) = 0;
-
     virtual int finestLevel() const = 0;
     virtual void ShrinkToFit() = 0;
     virtual void RemoveParticlesAtLevel (int level) = 0;
@@ -146,29 +142,6 @@ public:
         amrex::NeighborParticleContainer<NSR,NSI>
             ::Redistribute(lev_min, lev_max, nGrow, local);
 
-    }
-
-    virtual void RedistributeGPU   (int /*lev_min              = 0*/,
-                                    int /*lev_max              =-1*/,
-                                    int /*nGrow                = 0*/) override
-    {
-        AMREX_ASSERT(this->finestLevel() == 0);
-
-        int local = false;
-        const int lev_minal = 0;
-        const int lev_maxal = 0;
-        const int nGrowal = 0;
-
-        amrex::Gpu::synchronize();
-        local =         amrex::NeighborParticleContainer<NSR,NSI>
-          ::OK(lev_minal, lev_maxal);
-        //      amrex::Print()<<"local flag is: "<<local<<std::endl;
-        if(local)
-        amrex::NeighborParticleContainer<NSR,NSI>
-            ::RedistributeGPU(lev_minal, lev_maxal, nGrowal, local);
-        else
-        amrex::NeighborParticleContainer<NSR,NSI>
-            ::RedistributeCPU(lev_minal, lev_maxal, nGrowal, local);
     }
 
     virtual void RemoveParticlesAtLevel (int level) override
