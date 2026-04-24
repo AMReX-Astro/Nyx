@@ -9,6 +9,7 @@
 #include <cstdio>   // for sprintf
 
 using namespace amrex;
+namespace fs = std::filesystem;
 
 std::unique_ptr<MultiFab>
 Nyx::particle_derive (const std::string& name, Real time, int ngrow)
