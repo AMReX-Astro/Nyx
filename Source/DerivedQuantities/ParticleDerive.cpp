@@ -1,5 +1,12 @@
 #include <Nyx.H>
 #include <Gravity.H>
+#include <AMReX_FFT.H>
+#include <AMReX_MultiFab.H>
+#include <AMReX_ParallelDescriptor.H>
+#include <AMReX_Reduce.H>
+
+#include <filesystem>
+#include <cstdio>   // for sprintf
 
 using namespace amrex;
 
