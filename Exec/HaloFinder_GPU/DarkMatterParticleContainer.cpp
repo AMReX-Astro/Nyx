@@ -233,11 +233,17 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
 
         auto* pstruct = particles().data();
 
+        AMREX_ALWAYS_ASSERT(ac_ptr->boxArray() == this->ParticleBoxArray(lev));
+        AMREX_ALWAYS_ASSERT(ac_ptr->DistributionMap() == this->ParticleDistributionMap(lev));
+
         const long np = pti.numParticles();
         int grid    = pti.index();
 
-        const FArrayBox& accel_fab= ((*ac_ptr)[0]);
-        Array4<amrex::Real const> accel= accel_fab.array();
+        const FArrayBox& accel_fab = (*ac_ptr)[grid];
+        auto accel = accel_fab.array();
+
+        //const FArrayBox& accel_fab= ((*ac_ptr)[0]);
+        //Array4<amrex::Real const> accel= accel_fab.array();
 
         int nc=AMREX_SPACEDIM;
 
@@ -313,8 +319,8 @@ DarkMatterParticleContainer::moveKickDrift (amrex::MultiFab&       acceleration,
             const long np = pti.numParticles();
             int grid    = pti.index();
 
-            const FArrayBox& accel_fab= ((*ac_ptr)[0]);
-            Array4<amrex::Real const> accel= accel_fab.array();
+            const FArrayBox& accel_fab = (*ac_ptr)[grid];
+            auto accel = accel_fab.array();
 
             int nc=AMREX_SPACEDIM;
             const amrex::Box& box = pti.validbox();
