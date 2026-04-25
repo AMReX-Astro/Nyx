@@ -435,12 +435,12 @@ public:
     // 
     // Compute the overdensity field from the particle mass density field
     //
-    void compute_overdensity (const MultiFab& mf_pmd, MultiFab& mf_od);
+    void compute_overdensity (const amrex::MultiFab& mf_pmd, amrex::MultiFab& mf_od);
 
     //
     // Compute the matter power spectrum grom the overdensity field
     //
-    void compute_matter_power_spectrum(const MultiFab& mf_od);
+    void compute_matter_power_spectrum(const amrex::MultiFab& mf_od);
     
     //
     //Set time levels of state data.
