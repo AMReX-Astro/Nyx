@@ -436,6 +436,16 @@ public:
     //
     std::unique_ptr<amrex::MultiFab> particle_derive (const std::string& name, amrex::Real time, int ngrow);
 
+    // 
+    // Compute the overdensity field from the particle mass density field
+    //
+    void compute_overdensity (const amrex::MultiFab& mf_pmd, amrex::MultiFab& mf_od);
+
+    //
+    // Compute the matter power spectrum grom the overdensity field
+    //
+    void compute_matter_power_spectrum(const amrex::MultiFab& mf_od); 
+
     //
     //Set time levels of state data.
     //
