@@ -489,10 +489,9 @@ Nyx::compute_overdensity (const MultiFab& mf_pmd, MultiFab& mf_od)
     // 1. Compute global mean density
     // --------------------------------------------------
 
-    // FIX 1: correct signature is sum(comp, local) — no int nghost argument
     Real rho_sum = mf_pmd.sum(0, false);
 
-    // FIX 2: BoxArray is fully replicated on every rank, so this is already
+    // BoxArray is fully replicated on every rank, so this is already
     // the global cell count. ReduceLongSum is both wrong (returns void) and
     // unnecessary (would multiply the count by nprocs).
     Long ncells = mf_pmd.boxArray().numPts();
@@ -501,7 +500,6 @@ Nyx::compute_overdensity (const MultiFab& mf_pmd, MultiFab& mf_od)
 
     // --------------------------------------------------
     // 2. Compute overdensity on GPU
-    // δ = ρ / ρ̄ - 1
     // --------------------------------------------------
     for (MFIter mfi(mf_pmd, TilingIfNotGPU()); mfi.isValid(); ++mfi)
     {
