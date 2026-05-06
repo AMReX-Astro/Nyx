@@ -1,9 +1,12 @@
 #include <Nyx.H>
 #include <Gravity.H>
-#include <AMReX_FFT.H>
 #include <AMReX_MultiFab.H>
 #include <AMReX_ParallelDescriptor.H>
 #include <AMReX_Reduce.H>
+
+#ifdef AMREX_USE_FFT
+#include <AMReX_FFT.H>
+#endif
 
 #include <filesystem>
 #include <cstdio>   // for sprintf
@@ -121,6 +124,17 @@ Nyx::particle_derive (const std::string& name, Real time, int ngrow)
 
         derive_dat->ParallelCopy(*particle_mf[level], 0, 0, 1, 0, 0);
 
+#ifdef AMREX_USE_FFT 
+        if(parent->finestLevel()==0) {
+            amrex::Print() << "min = " << particle_mf[0]->min(0) << "\n";
+            amrex::Print() << "max = " << particle_mf[0]->max(0) << "\n";
+            amrex::Print() << "sum = " << particle_mf[0]->sum(0) << "\n";
+            MultiFab mf_od;
+            compute_overdensity(*particle_mf[0], mf_od);
+            compute_matter_power_spectrum(mf_od);
+
+        }
+#endif
         return derive_dat;
     }
     else if (Nyx::theDMPC() && name == "particle_x_velocity")
@@ -519,6 +533,7 @@ Nyx::compute_overdensity (const MultiFab& mf_pmd, MultiFab& mf_od)
     }
 }
 
+#ifdef AMREX_USE_FFT
 void
 Nyx::compute_matter_power_spectrum(const MultiFab& mf_od)
 {
@@ -643,3 +658,4 @@ Nyx::compute_matter_power_spectrum(const MultiFab& mf_od)
         }
     }
 }
+#endif
