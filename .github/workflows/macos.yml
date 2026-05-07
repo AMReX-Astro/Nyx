@@ -16,5 +16,6 @@ jobs:
         cmake  -S . -B build                      \
             -DNyx_HEATCOOL=yes                    \
             -DNyx_HYDRO=yes                       \
+            -DNyx_OMP=no                          \
             -DCMAKE_CXX_COMPILER_LAUNCHER=$(which ccache)
         cmake --build build --parallel 2
