@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     env: {CXXFLAGS: "-Werror -Woverloaded-virtual -Wunreachable-code"}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Dependencies
       run: .github/workflows/dependencies/dependencies.sh
     - name: Build & Install
@@ -23,7 +23,7 @@ jobs:
     name: Clang@6.0 Debug
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Dependencies
       run: .github/workflows/dependencies/dependencies_clang6.sh
     - name: Build & Install
@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-20.04
     env: {CXXFLAGS: "-fno-operator-names"}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: install dependencies
       run: .github/workflows/dependencies/dependencies_nvcc11.sh
     - name: build Nyx
@@ -85,7 +85,7 @@ jobs:
     runs-on: ubuntu-20.04
     env: {CXXFLAGS: "-fno-operator-names"}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Dependencies
       run: .github/workflows/dependencies/dependencies_dpcpp.sh
     - name: Build & Install
@@ -124,7 +124,7 @@ jobs:
     name: HIP ROCm@4.3 C++17
     runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Dependencies
       run: .github/workflows/dependencies/dependencies_hip.sh
     - name: Build & Install
