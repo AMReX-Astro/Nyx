@@ -37,7 +37,8 @@ sudo apt-get install -y \
     cuda-nvtx-$VERSION_DASHED               \
     libcufft-dev-$VERSION_DASHED            \
     libcurand-dev-$VERSION_DASHED           \
-    libcusparse-dev-$VERSION_DASHED
+    libcusparse-dev-$VERSION_DASHED         \
+    libcusolver-dev-$VERSION_DASHED
 
 sudo apt-get install -y --no-install-recommends libnvjitlink-dev-$VERSION_DASHED || true
 
