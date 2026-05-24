@@ -39,7 +39,7 @@ jobs:
 
   nyx-cuda11:
     name: NVCC 11.2 SP [Linux]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     env: {CXXFLAGS: "-fno-operator-names"}
     steps:
     - uses: actions/checkout@v4
@@ -82,7 +82,7 @@ jobs:
 
   nyx-dpcpp:
     name: DPCPP C++17
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     env: {CXXFLAGS: "-fno-operator-names"}
     steps:
     - uses: actions/checkout@v4
@@ -122,7 +122,7 @@ jobs:
 
   nyx-hip:
     name: HIP ROCm@4.3 C++17
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
     - name: Dependencies
@@ -132,7 +132,7 @@ jobs:
         source /etc/profile.d/rocm.sh
         hipcc --version
 
-        # "mpic++ --showme" forgets open-pal in Ubuntu 20.04 + OpenMPI 4.0.3
+        # "mpic++ --showme" forgets open-pal in Ubuntu 24.04 + OpenMPI 4.0.3
         #   https://bugs.launchpad.net/ubuntu/+source/openmpi/+bug/1941786
         #   https://github.com/open-mpi/ompi/issues/9317
         export LDFLAGS="-lopen-pal"
