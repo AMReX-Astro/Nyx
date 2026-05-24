@@ -44,7 +44,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: install dependencies
-      run: .github/workflows/dependencies/dependencies_nvcc11.sh
+      run: .github/workflows/dependencies/dependencies_nvcc_2404.sh
     - name: build Nyx
       run: |
         export PATH=/usr/local/nvidia/bin:/usr/local/cuda/bin:${PATH}
