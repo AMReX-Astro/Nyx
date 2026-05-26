@@ -96,7 +96,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#examples-of-usage-7">Examples of Usage</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#controlling-plotfile-generation">Controlling PlotFile Generation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#controlling-plotfile-and-generation">Controlling PlotFile and Generation</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#list-of-parameters-9">List of Parameters</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#notes-5">Notes</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#examples-of-usage-8">Examples of Usage</a></li>
@@ -128,6 +128,10 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#reionization-models">Reionization models</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#list-of-parameters-14">List of Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#dark-matter-halo-output-using-reeber">Dark matter halo output using Reeber</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#list-of-parameters-halos">List of Parameters</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#multigrid-inputs">Multigrid Inputs</a></li>
@@ -1038,6 +1042,21 @@ restarting</td>
 <td>0 or 1</td>
 <td>0</td>
 </tr>
+<tr class="row-odd"><td><strong>nyx.checkpoint_z_values</strong></td>
+<td>The redshift
+values at which
+checkpoint file
+should be
+written in
+addition to
+what is
+specified
+using
+<strong>check_int</strong></td>
+<td>list of
+redshift values</td>
+<td>NONE</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -1090,8 +1109,8 @@ directory names will be <em>chk_run00000</em>, <em>chk_run00043</em>,
 </ul>
 </div>
 </div>
-<div class="section" id="controlling-plotfile-generation">
-<span id="sec-plotfiles"></span><h2>Controlling PlotFile Generation<a class="headerlink" href="#controlling-plotfile-generation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="controlling-plotfile-and-generation">
+<span id="sec-plotfiles"></span><h2>Controlling PlotFile and Generation<a class="headerlink" href="#controlling-plotfile-and-generation" title="Permalink to this headline">¶</a></h2>
 <p>The main output from &nbsp;is in the form of plotfiles (which are really
 directories). The following options in the inputs file control the
 generation of plotfiles</p>
@@ -1190,6 +1209,19 @@ double or single
 precision</td>
 <td>NATIVE or IEEE32</td>
 <td>NATIVE</td>
+</tr>
+<tr class="row-even"><td><strong>nyx.plot_z_values</strong></td>
+<td>The redshift
+values at which
+plot files should
+be written in
+addition to what
+is specified
+using
+<strong>nyx.plot_int</strong></td>
+<td>list of redshift
+values</td>
+<td>NONE</td>
 </tr>
 </tbody>
 </table>
@@ -1875,6 +1907,48 @@ heat input</td>
 </table>
 </div>
 </div>
+<div class="section" id="dark-matter-halo-output-using-reeber">
+<h2>Dark matter halo output using Reeber<a class="headerlink" href="#dark-matter-halo-output-using-reeber" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="list-of-parameters-halos">
+<span id="id29"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-halos" title="Permalink to this headline">¶</a></h3>
+<table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="41%" />
+<col width="15%" />
+<col width="12%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Parameter</th>
+<th class="head">Definition</th>
+<th class="head">Acceptable
+Values</th>
+<th class="head">Default</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><strong>reeber.min_halo_n_cells</strong></td>
+<td>Minimum number of cells required for a halo
+to be considered a valid structure</td>
+<td>integer</td>
+<td>10</td>
+</tr>
+<tr class="row-odd"><td><strong>reeber.halo_component_threshold</strong></td>
+<td>Threshold for identifying connected
+components within a halo</td>
+<td>real</td>
+<td>81.66</td>
+</tr>
+<tr class="row-even"><td><strong>reeber.halo_extrema_threshold</strong></td>
+<td>Threshold for detecting local maxima or
+extrema in the density field</td>
+<td>real</td>
+<td>160.0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <div class="section" id="multigrid-inputs">
 <h2>Multigrid Inputs<a class="headerlink" href="#multigrid-inputs" title="Permalink to this headline">¶</a></h2>
 <p>The following inputs can be set directly in the AMReX solver classes but we set them via the Nyx gravity routines.</p>
@@ -1973,7 +2047,7 @@ continuing with V-cycles in a multigrid solve</td>
 <div class="section" id="memory-optimization">
 <h2>Memory Optimization<a class="headerlink" href="#memory-optimization" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="list-of-parameters-15">
-<span id="id29"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-15" title="Permalink to this headline">¶</a></h3>
+<span id="id30"></span><h3>List of Parameters<a class="headerlink" href="#list-of-parameters-15" title="Permalink to this headline">¶</a></h3>
 <table border="1" class="docutils">
 <colgroup>
 <col width="41%" />

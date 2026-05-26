@@ -27,7 +27,7 @@ the simulations results.
    Building Nyx with GNU Make <getting_started/BuildingGMake>
    Building Nyx with CMake <getting_started/BuildingCMake>
    Running the code <getting_started/RunningTheCode>
-   Compiling Nyx with SUNDIALS 5 <getting_started/NyxSundials>
+   Compiling Nyx with SUNDIALS 7 <getting_started/NyxSundials>
 
 Additional details about compiling Nyx in different environments can be found
 in the `AMReX build documentation <https://amrex-codes.github.io/amrex/docs_html/BuildingAMReX_Chapter.html>`_ .

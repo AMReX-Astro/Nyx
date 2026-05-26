@@ -626,6 +626,17 @@ List of Parameters
 |                                 | after          |                |                |
 |                                 | restarting     |                |                |
 +---------------------------------+----------------+----------------+----------------+
+| **nyx.checkpoint_z_values**     | The redshift   | list of        | NONE           |
+|                                 | values at which| redshift values|                |
+|                                 | checkpoint file|                |                |
+|                                 | should be      |                |                |
+|                                 | written in     |                |                |
+|                                 | addition to    |                |                |
+|                                 | what is        |                |                |
+|                                 | specified      |                |                |
+|                                 | using          |                |                |
+|                                 | **check_int**  |                |                |
++---------------------------------+----------------+----------------+----------------+
 
 .. _notes-4:
 
@@ -683,8 +694,8 @@ To restart from *chk_run00061*,for example, then set
 
 .. _sec:PlotFiles:
 
-Controlling PlotFile Generation
-===============================
+Controlling PlotFile and Generation
+================================================
 
 The main output from  is in the form of plotfiles (which are really
 directories). The following options in the inputs file control the
@@ -742,6 +753,15 @@ List of Parameters
 |                             | the plotfile in  |                  |         |
 |                             | double or single |                  |         |
 |                             | precision        |                  |         |
++-----------------------------+------------------+------------------+---------+
+| **nyx.plot_z_values**       | The redshift     | list of redshift | NONE    |
+|                             | values at which  | values           |         |
+|                             | plot files should|                  |         |
+|                             | be written in    |                  |         |
+|                             | addition to what |                  |         |
+|                             | is specified     |                  |         |
+|                             | using            |                  |         |
+|                             | **nyx.plot_int** |                  |         |
 +-----------------------------+------------------+------------------+---------+
 
 All the options for **amr.derive_plot_vars** are kept in ``derive_lst``
@@ -1137,7 +1157,27 @@ List of Parameters
 |                                  | heat input       |                 |             |
 +----------------------------------+------------------+-----------------+-------------+
 
+Dark matter halo output using Reeber
+====================================
 
+.. _list-of-parameters-halos:
+
+List of Parameters
+------------------
+
++-------------------------------------+----------------------------------------------+-----------------+-------------+
+| Parameter                           | Definition                                   | Acceptable      | Default     |
+|                                     |                                              | Values          |             |
++=====================================+==============================================+=================+=============+
+| **reeber.min_halo_n_cells**         | Minimum number of cells required for a halo  | integer         | 10          |
+|                                     | to be considered a valid structure           |                 |             |
++-------------------------------------+----------------------------------------------+-----------------+-------------+
+| **reeber.halo_component_threshold** | Threshold for identifying connected          | real            | 81.66       |
+|                                     | components within a halo                     |                 |             |
++-------------------------------------+----------------------------------------------+-----------------+-------------+
+| **reeber.halo_extrema_threshold**   | Threshold for detecting local maxima or      | real            | 160.0       |
+|                                     | extrema in the density field                 |                 |             |
++-------------------------------------+----------------------------------------------+-----------------+-------------+
 
 Multigrid Inputs
 ================

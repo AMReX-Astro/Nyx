@@ -3,7 +3,7 @@
 
 .. _SUNDIALS:
 
-Compiling Nyx with SUNDIALS 6
+Compiling Nyx with SUNDIALS 7
 ===============================
 
 The following steps describe how to compile Nyx with
@@ -46,7 +46,7 @@ In order to use SUNDIALS:
       -DOPENMP_ENABLE=ON   \
       -DF2003_INTERFACE_ENABLE=OFF   \
       -DSUNDIALS_INDEX_SIZE:INT=32   \
-      -DCUDA_ARCH=sm_70 ../
+      -DCUDA_ARCH=sm_80 ../
       make -j8
       make install -j8
 
@@ -80,7 +80,7 @@ In order to use SUNDIALS:
       make -j8
       make install -j8
 
-   To install with HIP support (with ROCm 4.5):
+   To install with HIP support (with ROCm 5.7.1):
 
    ::
 
@@ -94,10 +94,11 @@ In order to use SUNDIALS:
       -DCMAKE_INSTALL_PREFIX=$(pwd)/../instdir  \
       -DCMAKE_INSTALL_LIBDIR=lib \
       -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
-      -DCMAKE_C_COMPILER=$(which clang) \
+      -DCMAKE_C_COMPILER=$(which hipcc) \
       -DCMAKE_CXX_COMPILER=$(which hipcc) \
       -DEXAMPLES_INSTALL_PATH=$(pwd)/../instdir/examples \
       -DCMAKE_BUILD_TYPE=Release \
+      -DSUNDIALS_BUILD_PACKAGE_FUSED_KERNELS=ON \
       -DCMAKE_C_FLAGS_RELEASE=-O3 \
       -DCMAKE_CXX_FLAGS_RELEASE=-O3 \
       -DCUDA_ENABLE=OFF  \
