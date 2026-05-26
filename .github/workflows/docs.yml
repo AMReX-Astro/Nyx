@@ -1,18 +1,24 @@
 name: Build and Deploy
-on: [push, pull_request]
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: write
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v4 
-        with:
-          persist-credentials: false
+        uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.8'
+          python-version: "3.8"
 
       - name: Upgrade pip
         run: |
@@ -21,7 +27,7 @@ jobs:
 
       - name: Get pip cache dir
         id: pip-cache
-        run: echo "::set-output name=dir::$(pip cache dir)"
+        run: echo "dir=$(pip cache dir)" >> $GITHUB_OUTPUT
 
       - name: Cache dependencies
         uses: actions/cache@v4
@@ -32,7 +38,8 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Install dependencies
-        run: python3 -m pip install -r ./requirements.txt
+        run: |
+          python3 -m pip install -r ./requirements.txt
 
       - name: Dependencies
         run: |
@@ -44,11 +51,12 @@ jobs:
           ./build_docs.sh
 
       - name: Deploy
-        if: github.event_name == 'push' && github.repository == 'AMReX-Astro/Nyx' && github.ref == 'refs/heads/development'
-        uses: JamesIves/github-pages-deploy-action@3.7.1
+        if: github.event_name == 'push' &&
+            github.repository == 'AMReX-Astro/Nyx' &&
+            github.ref == 'refs/heads/development'
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          ACCESS_TOKEN: ${{ secrets.DEPLOY_DOCS }}
-          REPOSITORY_NAME: AMReX-Astro/Nyx
-          BRANCH: gh-pages # The branch the action should deploy to.
-          FOLDER: build # The folder the action should deploy.
-          CLEAN: false # Do not remove existing files from the deploy target.
+          branch: gh-pages
+          folder: build
+          clean: false
+          token: ${{ secrets.GITHUB_TOKEN }}
