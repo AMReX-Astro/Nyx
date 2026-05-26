@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     env: {CXXFLAGS: "-Werror -Woverloaded-virtual -Wunreachable-code"}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Dependencies
       run: .github/workflows/dependencies/dependencies.sh
     - name: Build & Install
@@ -23,7 +23,7 @@ jobs:
     name: Clang@6.0 Debug
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Dependencies
       run: .github/workflows/dependencies/dependencies_clang6.sh
     - name: Build & Install
@@ -39,12 +39,12 @@ jobs:
 
   nyx-cuda11:
     name: NVCC 11.2 SP [Linux]
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     env: {CXXFLAGS: "-fno-operator-names"}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: install dependencies
-      run: .github/workflows/dependencies/dependencies_nvcc11.sh
+      run: .github/workflows/dependencies/dependencies_nvcc.sh 12.6
     - name: build Nyx
       run: |
         export PATH=/usr/local/nvidia/bin:/usr/local/cuda/bin:${PATH}
@@ -82,10 +82,10 @@ jobs:
 
   nyx-dpcpp:
     name: DPCPP C++17
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     env: {CXXFLAGS: "-fno-operator-names"}
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Dependencies
       run: .github/workflows/dependencies/dependencies_dpcpp.sh
     - name: Build & Install
@@ -94,9 +94,6 @@ jobs:
         source /opt/intel/oneapi/setvars.sh
         set -e
         cmake  -S . -B build_adiabatic                     \
-            -DCMAKE_CXX_COMPILER_ID="Clang"                \
-            -DCMAKE_CXX_COMPILER_VERSION=12.0              \
-            -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT="17"     \
             -DNyx_HEATCOOL=no                              \
             -DNyx_HYDRO=yes                                \
             -DNyx_OMP=no                                   \
@@ -106,9 +103,6 @@ jobs:
         cmake --build build_adiabatic --parallel 2
 
         cmake  -S . -B build                               \
-            -DCMAKE_CXX_COMPILER_ID="Clang"                \
-            -DCMAKE_CXX_COMPILER_VERSION=12.0              \
-            -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT="17"     \
             -DNyx_HEATCOOL=yes                             \
             -DNyx_HYDRO=yes                                \
             -DNyx_OMP=no                                   \
@@ -122,9 +116,9 @@ jobs:
 
   nyx-hip:
     name: HIP ROCm@4.3 C++17
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Dependencies
       run: .github/workflows/dependencies/dependencies_hip.sh
     - name: Build & Install
@@ -132,7 +126,7 @@ jobs:
         source /etc/profile.d/rocm.sh
         hipcc --version
 
-        # "mpic++ --showme" forgets open-pal in Ubuntu 20.04 + OpenMPI 4.0.3
+        # "mpic++ --showme" forgets open-pal in Ubuntu 24.04 + OpenMPI 4.0.3
         #   https://bugs.launchpad.net/ubuntu/+source/openmpi/+bug/1941786
         #   https://github.com/open-mpi/ompi/issues/9317
         export LDFLAGS="-lopen-pal"
@@ -145,9 +139,6 @@ jobs:
             -DAMReX_AMD_ARCH=gfx908                        \
             -DCMAKE_C_COMPILER=$(which hipcc)              \
             -DCMAKE_CXX_COMPILER=$(which hipcc)            \
-            -DCMAKE_CXX_COMPILER_ID="Clang"                \
-            -DCMAKE_CXX_COMPILER_VERSION=12.0              \
-            -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT="17"     \
             -DCMAKE_CXX_STANDARD=17
         cmake --build build_adiabatic --parallel 2
 
@@ -159,8 +150,5 @@ jobs:
             -DAMReX_AMD_ARCH=gfx908                        \
             -DCMAKE_C_COMPILER=$(which hipcc)              \
             -DCMAKE_CXX_COMPILER=$(which hipcc)            \
-            -DCMAKE_CXX_COMPILER_ID="Clang"                \
-            -DCMAKE_CXX_COMPILER_VERSION=12.0              \
-            -DCMAKE_CXX_STANDARD_COMPUTED_DEFAULT="17"     \
             -DCMAKE_CXX_STANDARD=17
         cmake --build build --parallel 2

@@ -121,6 +121,7 @@ set(Nyx_PARTICLES YES CACHE INTERNAL "Enable particles (should always be on)")
 
 if (Nyx_GPU_BACKEND STREQUAL CUDA)
     enable_language(CUDA)
+    find_package(CUDAToolkit REQUIRED)
 endif ()
 
 ##############################################################################
