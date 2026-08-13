@@ -568,7 +568,7 @@ DarkMatterParticleContainer::InitFromBinaryMortonFile(const std::string& particl
 uint64_t
 DarkMatterParticleContainer::NumberOfParticles()
 {
-    std::int64_t total = 0;
+    Long total = 0;
 
     for (int lev = 0; lev <= finestLevel(); ++lev) {
         for (ParConstIter pti(*this, lev); pti.isValid(); ++pti) {
