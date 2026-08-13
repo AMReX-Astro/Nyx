@@ -8,6 +8,7 @@
 #include <Nyx_output.H>
 #include <AMReX_buildInfo.H>
 #include <Forcing.H>
+#include <Nyx_output.H>
 
 void mt_write(std::ofstream& output);
 
@@ -1271,3 +1272,104 @@ Nyx::blueprint_check_point ()
 
 }
 #endif
+
+// ------------------------------------------------------------
+// Write a Gadget block
+// ------------------------------------------------------------
+void write_block(std::ofstream& out,
+                 const void* data,
+                 uint32_t nbytes)
+{
+    out.write(reinterpret_cast<const char*>(&nbytes), sizeof(uint32_t));
+    out.write(reinterpret_cast<const char*>(data), nbytes);
+    out.write(reinterpret_cast<const char*>(&nbytes), sizeof(uint32_t));
+}
+
+void WriteGadgetFileBlock(const double comoving_OmM,
+                          const double comoving_h,
+                          const double comoving_a,
+                          const std::vector<float>& vec_pos,
+                          const std::vector<float>& vec_vel,
+                          const std::vector<int64_t>& vec_id,
+                          const int total_num_blocks,
+                          uint64_t num_particles_in_block,
+                          uint64_t total_num_particles,
+                          const double domain_size,
+                          const std::string filename_str)
+{
+    GadgetHeader hdr{};
+    std::memset(&hdr, 0, sizeof(hdr));
+
+    if (num_particles_in_block > std::numeric_limits<uint32_t>::max()) {
+        throw std::runtime_error(
+            "Too many particles in a single Gadget file: " +
+            std::to_string(num_particles_in_block) +
+            " (maximum supported is " +
+            std::to_string(std::numeric_limits<uint32_t>::max()) + ").");
+    }
+
+    if (vec_pos.size() != 3 * num_particles_in_block ||
+        vec_vel.size() != 3 * num_particles_in_block ||
+        vec_id.size()  != num_particles_in_block) {
+        throw std::runtime_error(
+            "Inconsistent particle data sizes when writing Gadget file.");
+    }
+
+    hdr.num_particles[1] =
+    static_cast<uint32_t>(num_particles_in_block);
+
+    hdr.num_total_particles[1] =
+    static_cast<uint32_t>(total_num_particles & 0xFFFFFFFFULL);
+
+    hdr.num_total_particles_hw[1] =
+    static_cast<uint32_t>(total_num_particles >> 32);
+
+    // Constant particle mass
+    hdr.particle_masses[1] = 1.0;
+
+    hdr.scale_factor = comoving_a;
+    hdr.redshift     = 1.0/comoving_a - 1.0;
+
+    hdr.flag_sfr      = 0;
+    hdr.flag_feedback = 0;
+    hdr.flag_cooling  = 0;
+
+    hdr.num_files_per_snapshot = total_num_blocks;
+
+    //hdr.box_size      = domain_size * comoving_h * 1.0/comoving_a;
+    hdr.box_size      = domain_size;
+    hdr.omega_0       = comoving_OmM;
+    hdr.omega_lambda  = 1.0 - comoving_OmM;
+    hdr.h_0           = comoving_h;
+
+    hdr.flag_stellarage   = 0;
+    hdr.flag_metals       = 0;
+    hdr.flag_entropy_ics  = 0;
+
+    std::ofstream out(filename_str, std::ios::binary);
+    if (!out) {
+        throw std::runtime_error(
+            "Failed to open Gadget file '" + filename_str + "' for writing.");
+    }
+
+    write_block(out,
+                &hdr,
+                sizeof(GadgetHeader));
+
+    write_block(out,
+                vec_pos.data(),
+                static_cast<uint32_t>(
+                vec_pos.size()*sizeof(float)));
+
+    write_block(out,
+                vec_vel.data(),
+                static_cast<uint32_t>(
+                vec_vel.size()*sizeof(float)));
+
+    write_block(out,
+                vec_id.data(),
+                static_cast<uint64_t>(
+                vec_id.size()*sizeof(int64_t)));
+
+    out.close();
+}

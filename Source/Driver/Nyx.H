@@ -482,6 +482,11 @@ public:
     //
     bool doAnalysisNow();
 
+    //
+    // Tell Nyx to write Gadget files now based on user specified z values
+    //
+    bool doWriteBasedOnRedshiftNow (const amrex::Vector<amrex::Real>& write_gadget_files_z_values);
+
     int updateInSitu();
 
     //
@@ -928,6 +933,8 @@ protected:
     static amrex::Vector<amrex::Real> plot_z_values;       // These are the value of "z" at which to dump plotfiles.
     static amrex::Vector<amrex::Real> checkpoint_z_values; // These are the value of "z" at which to dump checkpoint files.
     static amrex::Vector<amrex::Real> analysis_z_values;   // These are the value of "z" at which to perform analysis
+    static amrex::Vector<amrex::Real> write_gadget_files_z_values;  // These are the value of "z" at which to write gadget files
+
     static int insitu_int;
     static int insitu_start;
 

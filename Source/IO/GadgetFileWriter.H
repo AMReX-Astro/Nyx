@@ -1,6 +1,3 @@
-#ifndef Nyx_output_H_
-#define Nyx_output_H_
-
 #include <cassert>
 #include <cmath>
 #include <cstdint>
@@ -22,8 +19,6 @@
 #include <vector>
 #include <iomanip>
 #include <sstream>
-
-extern std::string inputs_name;
 
 // ------------------------------------------------------------
 // Gadget-2 header
@@ -98,4 +93,3 @@ void WriteGadgetFileBlock(const double comoving_OmM,
                           const uint64_t total_num_particles,
                           const double domain_size,
                           const std::string filename_str);
-#endif
