@@ -1983,7 +1983,7 @@ Nyx::postCoarseTimeStep (Real cumtime)
 
     int nstep = parent->levelSteps(0);
 
-    if(Nyx::theDMPC() and doWriteBasedOnRedshiftNow(write_gadget_files_z_values)) {
+    if(Nyx::theDMPC() && doWriteBasedOnRedshiftNow(write_gadget_files_z_values)) {
         Long total_num_particles = theDMPC()->NumberOfParticles();
 
         int total_num_blocks = 0;
