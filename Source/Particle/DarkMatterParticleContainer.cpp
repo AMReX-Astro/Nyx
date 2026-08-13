@@ -571,7 +571,7 @@ DarkMatterParticleContainer::NumberOfParticles()
     Long total = 0;
 
     for (int lev = 0; lev <= finestLevel(); ++lev) {
-        for (ParConstIter pti(*this, lev); pti.isValid(); ++pti) {
+        for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
             total += pti.numParticles();
         }
     }
