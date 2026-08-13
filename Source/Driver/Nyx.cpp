@@ -67,6 +67,7 @@ Real Nyx::new_a_time = -1.0;
 Vector<Real> Nyx::plot_z_values;
 Vector<Real> Nyx::checkpoint_z_values;
 Vector<Real> Nyx::analysis_z_values;
+Vector<Real> Nyx::write_gadget_files_z_values;
 int Nyx::insitu_start = 0;
 int Nyx::insitu_int = 0;
 
@@ -415,6 +416,13 @@ Nyx::read_params ()
       int num_z_values = pp_nyx.countval("analysis_z_values");
       analysis_z_values.resize(num_z_values);
       pp_nyx.queryarr("analysis_z_values",analysis_z_values,0,num_z_values);
+    }
+
+    if (pp_nyx.contains("write_gadget_files_z_values"))
+    {
+      int num_z_values = pp_nyx.countval("write_gadget_files_z_values");
+      write_gadget_files_z_values.resize(num_z_values);
+      pp_nyx.queryarr("write_gadget_files_z_values",write_gadget_files_z_values,0,num_z_values);
     }
 
     ParmParse pp_insitu("insitu");
@@ -1437,6 +1445,41 @@ Nyx::doAnalysisNow ()
     }
 }
 
+bool
+Nyx::doWriteBasedOnRedshiftNow (const Vector<Real>& write_gadget_files_z_values)
+{
+    BL_PROFILE("Nyx::doWriteBasedOnRedshiftNow()");
+    if (level > 0)
+        amrex::Error("Should only call doWriteBasedOnRedshiftNow at level 0!");
+
+     if (write_gadget_files_z_values.empty())
+        return false;
+
+#ifndef NO_HYDRO
+        Real prev_time = state[State_Type].prevTime();
+        Real  cur_time = state[State_Type].curTime();
+#else
+        Real prev_time = state[PhiGrav_Type].prevTime();
+        Real  cur_time = state[PhiGrav_Type].curTime();
+#endif
+
+        Real a_old = get_comoving_a(prev_time);
+        Real z_old = (1. / a_old) - 1.;
+
+        Real a_new = get_comoving_a( cur_time);
+        Real z_new = (1. / a_new) - 1.;
+
+        for (Real z_target : write_gadget_files_z_values)
+        {
+            if (z_old > z_target && z_new <= z_target)
+            {
+                return true;
+            }
+        }
+
+        return false;
+}
+
 void
 Nyx::do_energy_diagnostics ()
 {
@@ -1938,7 +1981,46 @@ Nyx::postCoarseTimeStep (Real cumtime)
    LyA_statistics();
 #endif
 
-   int nstep = parent->levelSteps(0);
+    int nstep = parent->levelSteps(0);
+
+    if(Nyx::theDMPC() && doWriteBasedOnRedshiftNow(write_gadget_files_z_values)) {
+        Long total_num_particles = theDMPC()->NumberOfParticles();
+
+        int total_num_blocks = 0;
+        for (int lev = 0; lev <= parent->finestLevel(); ++lev) {
+            total_num_blocks += parent->boxArray(lev).size();
+        }
+
+        Vector<uint64_t> level_offsets(parent->finestLevel() + 1);
+
+        level_offsets[0] = 0;
+        for (int lev = 1; lev <= parent->finestLevel(); ++lev) {
+            level_offsets[lev] =
+                level_offsets[lev-1] + parent->boxArray(lev-1).size();
+        }
+
+        ParallelDescriptor::ReduceIntSum(total_num_blocks);
+
+        const auto& lo = geom.ProbLoArray();
+        const auto& hi = geom.ProbHiArray();
+
+        Real domain_size = hi[0] - lo[0];
+
+        AMREX_ALWAYS_ASSERT_WITH_MESSAGE(
+            (hi[1]-lo[1]) == domain_size && (hi[2]-lo[2]) == domain_size,
+            "Non-cubic domain in Nyx!");
+
+        const Real cur_time = state[State_Type].curTime();
+        Real comoving_a = get_comoving_a(cur_time);
+        Nyx::theDMPC()->WriteParticleSnapshotAsGadgetFiles(level,
+                                                           domain_size,
+                                                           total_num_blocks,
+                                                           total_num_particles,
+                                                           level_offsets,
+                                                           comoving_OmM,
+                                                           comoving_h,
+                                                           comoving_a);
+    }
 
    if (verbose>1)
    {

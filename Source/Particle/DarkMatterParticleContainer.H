@@ -36,6 +36,17 @@ public:
 
     void InitFromBinaryMortonFile(const std::string& particle_directory, int nextra, int skip_factor);
 
+    void WriteParticleSnapshotAsGadgetFiles(const int lev,
+                                            const amrex::Real domain_size,
+                                            const int total_num_blocks,
+                                            const uint64_t total_num_particles,
+                                            const amrex::Vector<uint64_t>& level_offsets,
+                                            const amrex::Real comoving_OmM,
+                                            const amrex::Real comoving_h,
+                                            const amrex::Real comoving_a);
+
+    uint64_t NumberOfParticles();
+
 };
 
 AMREX_GPU_HOST_DEVICE AMREX_INLINE void update_dm_particle_single (amrex::ParticleContainer<4, 0>::SuperParticleType&  p,

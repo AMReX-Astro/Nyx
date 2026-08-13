@@ -1,8 +1,11 @@
 #include <stdint.h>
+#include <filesystem>
 
 #include <DarkMatterParticleContainer.H>
+#include <Nyx_output.H>
 
 using namespace amrex;
+namespace fs = std::filesystem;
 
 /// These are helper functions used when initializing from a morton-ordered
 /// binary particle file.
@@ -560,5 +563,134 @@ DarkMatterParticleContainer::InitFromBinaryMortonFile(const std::string& particl
   }
   
   Redistribute();
+}
+
+uint64_t
+DarkMatterParticleContainer::NumberOfParticles()
+{
+    Long total = 0;
+
+    for (int lev = 0; lev <= finestLevel(); ++lev) {
+        for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
+            total += pti.numParticles();
+        }
+    }
+
+    ParallelDescriptor::ReduceLongSum(total);
+
+    return total;
+}
+
+void
+DarkMatterParticleContainer::WriteParticleSnapshotAsGadgetFiles(const int lev,
+                                                                const Real domain_size,
+                                                                const int total_num_blocks,
+                                                                const uint64_t total_num_particles,
+                                                                const Vector<uint64_t>& level_offsets,
+                                                                const Real comoving_OmM,
+                                                                const Real comoving_h,
+                                                                const Real comoving_a)
+{
+
+    std::vector<long> local_counts(total_num_blocks, 0);
+    std::vector<long> global_counts(total_num_blocks, 0);
+
+    for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
+
+        const int grid = pti.index();
+
+        const uint64_t block_id = level_offsets[lev] + grid;
+
+        local_counts[block_id] = static_cast<long>(pti.numParticles());
+    }
+
+    global_counts = local_counts;
+
+    amrex::ParallelDescriptor::ReduceLongSum(global_counts.data(), total_num_blocks);
+
+    std::vector<uint64_t> block_offsets(total_num_blocks, 0);
+
+    uint64_t offset = 0;
+
+    for (int b = 0; b < total_num_blocks; ++b) {
+        block_offsets[b] = offset;
+        offset += static_cast<uint64_t>(global_counts[b]);
+    }
+
+    if (amrex::ParallelDescriptor::IOProcessor()) {
+    std::cout
+        << "Particle count from blocks = " << offset
+        << ", expected = " << total_num_particles
+        << "\n";
+    }
+
+    for (MyParIter pti(*this, lev); pti.isValid(); ++pti) {
+
+        auto& particles = (this->ParticlesAt(lev,pti)).GetArrayOfStructs();
+
+        auto* pstruct = particles().data();
+
+        const long np = pti.numParticles();
+        int grid    = pti.index();
+
+        int nc=AMREX_SPACEDIM;
+        const amrex::Box& box = pti.validbox();
+
+        std::vector<float> vec_pos;
+        std::vector<float> vec_vel;
+        std::vector<int64_t> vec_id;
+
+        const uint64_t block_id = level_offsets[lev] + static_cast<uint64_t>(grid);
+
+        const uint64_t particle_offset = block_offsets[block_id];
+
+        for(int i=0;i<np;i++) {
+
+            ParticleContainer<1+AMREX_SPACEDIM, 0>::SuperParticleType&  p = pstruct[i];
+
+            vec_pos.push_back(p.pos(0)*comoving_h);
+            vec_pos.push_back(p.pos(1)*comoving_h);
+            vec_pos.push_back(p.pos(2)*comoving_h);
+
+            vec_vel.push_back(p.rdata(1));
+            vec_vel.push_back(p.rdata(2));
+            vec_vel.push_back(p.rdata(3));
+
+            const uint64_t global_id = particle_offset + static_cast<uint64_t>(i) + 1;
+
+            vec_id.push_back(static_cast<int64_t>(global_id));
+        }
+
+        Real z_cur = 1.0/comoving_a - 1.0;
+
+        // Convert z to hundredths, rounded
+        int z_int = static_cast<int>(std::round(z_cur * 100.0));
+
+        // Format as 5 digits with leading zeros
+        std::ostringstream oss;
+        oss << "z_" << std::setw(5) << std::setfill('0') << z_int;
+
+        // Create directory GadgetFilesForRockstar/z_00257
+        fs::path dir = fs::path("GadgetFilesForRockstar") / oss.str();
+
+        if (!fs::exists(dir))
+        {
+            fs::create_directories(dir);
+        }
+
+        // 2. Build filename inside directory
+        std::ostringstream filename;
+        filename << "nyx_snapshot" << "."
+             << std::setw(3) << std::setfill('0') << 0
+             << "." << block_id;
+
+        fs::path full_path = dir / filename.str();
+
+        WriteGadgetFileBlock(comoving_OmM, comoving_h, comoving_a,
+                             vec_pos, vec_vel, vec_id,
+                             total_num_blocks, np, total_num_particles,
+                             domain_size*comoving_h,
+                             full_path.string());
+    }
 }
 
