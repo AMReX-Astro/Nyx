@@ -2010,7 +2010,12 @@ Nyx::postCoarseTimeStep (Real cumtime)
             (hi[1]-lo[1]) == domain_size && (hi[2]-lo[2]) == domain_size,
             "Non-cubic domain in Nyx!");
 
-        const Real cur_time = state[State_Type].curTime();
+        #ifndef NO_HYDRO
+            const Real cur_time = state[State_Type].curTime();
+        #else
+            const Real cur_time = state[PhiGrav_Type].curTime();
+        #endif
+
         Real comoving_a = get_comoving_a(cur_time);
         Nyx::theDMPC()->WriteParticleSnapshotAsGadgetFiles(level,
                                                            domain_size,
