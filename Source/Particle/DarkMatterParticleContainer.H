@@ -43,7 +43,8 @@ public:
                                             const amrex::Vector<uint64_t>& level_offsets,
                                             const amrex::Real comoving_OmM,
                                             const amrex::Real comoving_h,
-                                            const amrex::Real comoving_a);
+                                            const amrex::Real comoving_a,
+                                            const amrex::Vector<amrex::Real>& write_gadget_files_z_values);
 
     uint64_t NumberOfParticles();
 

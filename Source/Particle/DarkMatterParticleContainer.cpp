@@ -589,7 +589,8 @@ DarkMatterParticleContainer::WriteParticleSnapshotAsGadgetFiles(const int lev,
                                                                 const Vector<uint64_t>& level_offsets,
                                                                 const Real comoving_OmM,
                                                                 const Real comoving_h,
-                                                                const Real comoving_a)
+                                                                const Real comoving_a,
+                                                                const Vector<Real>& write_gadget_files_z_values)
 {
 
     std::vector<long> local_counts(total_num_blocks, 0);
@@ -663,25 +664,25 @@ DarkMatterParticleContainer::WriteParticleSnapshotAsGadgetFiles(const int lev,
 
         Real z_cur = 1.0/comoving_a - 1.0;
 
-        // Convert z to hundredths, rounded
-        int z_int = static_cast<int>(std::round(z_cur * 100.0));
-
-        // Format as 5 digits with leading zeros
-        std::ostringstream oss;
-        oss << "z_" << std::setw(5) << std::setfill('0') << z_int;
-
-        // Create directory GadgetFilesForRockstar/z_00257
-        fs::path dir = fs::path("GadgetFilesForRockstar") / oss.str();
+        fs::path dir = fs::path("GadgetFilesForRockstar");
 
         if (!fs::exists(dir))
         {
             fs::create_directories(dir);
         }
 
+        auto it = std::min_element(write_gadget_files_z_values.begin(),
+                                   write_gadget_files_z_values.end(),
+                                   [z_cur](Real a, Real b) {
+                  return std::abs(a - z_cur) < std::abs(b - z_cur);
+        });
+
+        std::size_t index = std::distance(write_gadget_files_z_values.begin(), it);
+
         // 2. Build filename inside directory
         std::ostringstream filename;
         filename << "nyx_snapshot" << "."
-             << std::setw(3) << std::setfill('0') << 0
+             << std::setw(3) << std::setfill('0') << index
              << "." << block_id;
 
         fs::path full_path = dir / filename.str();

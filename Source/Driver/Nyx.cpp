@@ -2019,7 +2019,8 @@ Nyx::postCoarseTimeStep (Real cumtime)
                                                            level_offsets,
                                                            comoving_OmM,
                                                            comoving_h,
-                                                           comoving_a);
+                                                           comoving_a,
+                                                           write_gadget_files_z_values);
     }
 
    if (verbose>1)
