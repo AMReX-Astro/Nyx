@@ -1,22 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html4" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nightly Regression Tests &mdash; Nyx  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "tex2jax_ignore|mathjax_ignore|document", "processClass": "tex2jax_process|mathjax_process|math|output_area"}})</script>
+  <title>Nightly Regression Tests &mdash; Nyx  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -43,7 +42,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Nyx basics</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Nyx basics</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="NyxPreface.html">Preface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxCitation.html">Citation</a></li>
@@ -90,428 +89,415 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="nightly-regression-tests">
-<span id="chap-nightlytesting"></span><h1>Nightly Regression Tests<a class="headerlink" href="#nightly-regression-tests" title="Permalink to this headline">¶</a></h1>
+  <section id="nightly-regression-tests">
+<span id="chap-nightlytesting"></span><h1>Nightly Regression Tests<a class="headerlink" href="#nightly-regression-tests" title="Link to this heading">¶</a></h1>
 <p>The following regression tests are run nightly with Nyx.   The plotfiles generated in each night’s test
-are compared with the benchmark plotfiles using the AMReX <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">fcompare</span></span></code> utility to compare the mesh data
-and <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">particle_compare</span></span></code> to compare the particle data.</p>
+are compared with the benchmark plotfiles using the AMReX <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">fcompare</span></code> utility to compare the mesh data
+and <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">particle_compare</span></code> to compare the particle data.</p>
 <p>The results of these tests can be found at <a class="reference external" href="https://ccse.lbl.gov/pub/RegressionTesting/Nyx">https://ccse.lbl.gov/pub/RegressionTesting/Nyx</a>.
 These tests are also run on an NVIDIA GPU and those results can be found at <a class="reference external" href="https://ccse.lbl.gov/pub/GpuRegressionTesting/Nyx">https://ccse.lbl.gov/pub/GpuRegressionTesting/Nyx</a>.</p>
 <p>We have a number of compile-time options – this chart summarizes which regression tests
 test which compile-time options.  (Note that the USE_GRAV and AMREX_USE_PARTICLES macros
 which are used in the code source are both set to TRUE in the build system.)</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="53%" />
-<col width="20%" />
-<col width="27%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Test</th>
-<th class="head">NO_HYDRO</th>
-<th class="head">USE_HEATCOOL</th>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Test</p></th>
+<th class="head"><p>NO_HYDRO</p></th>
+<th class="head"><p>USE_HEATCOOL</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>AMR-density</td>
-<td>FALSE</td>
-<td>TRUE</td>
+<tbody>
+<tr class="row-even"><td><p>AMR-density</p></td>
+<td><p>FALSE</p></td>
+<td><p>TRUE</p></td>
 </tr>
-<tr class="row-odd"><td>DR_restart</td>
-<td>FALSE</td>
-<td>FALSE</td>
+<tr class="row-odd"><td><p>DR_restart</p></td>
+<td><p>FALSE</p></td>
+<td><p>FALSE</p></td>
 </tr>
-<tr class="row-even"><td>DoubleRarefaction</td>
-<td>FALSE</td>
-<td>FALSE</td>
+<tr class="row-even"><td><p>DoubleRarefaction</p></td>
+<td><p>FALSE</p></td>
+<td><p>FALSE</p></td>
 </tr>
-<tr class="row-odd"><td>DrivenTurbulence</td>
-<td>FALSE</td>
-<td>FALSE</td>
+<tr class="row-odd"><td><p>DrivenTurbulence</p></td>
+<td><p>FALSE</p></td>
+<td><p>FALSE</p></td>
 </tr>
-<tr class="row-even"><td><dl class="first last docutils">
-<dt>DrivenTurbulence-OMP</dt>
-<dd>(CPU only)</dd>
+<tr class="row-even"><td><dl class="simple">
+<dt>DrivenTurbulence-OMP</dt><dd><p>(CPU only)</p>
+</dd>
 </dl>
 </td>
-<td>FALSE</td>
-<td>FALSE</td>
+<td><p>FALSE</p></td>
+<td><p>FALSE</p></td>
 </tr>
-<tr class="row-odd"><td>LyA</td>
-<td>FALSE</td>
-<td>TRUE</td>
+<tr class="row-odd"><td><p>LyA</p></td>
+<td><p>FALSE</p></td>
+<td><p>TRUE</p></td>
 </tr>
-<tr class="row-even"><td>LyA-adiabatic</td>
-<td>FALSE</td>
-<td>FALSE</td>
+<tr class="row-even"><td><p>LyA-adiabatic</p></td>
+<td><p>FALSE</p></td>
+<td><p>FALSE</p></td>
 </tr>
-<tr class="row-odd"><td><dl class="first last docutils">
-<dt>LyA-OMP</dt>
-<dd>(CPU only)</dd>
+<tr class="row-odd"><td><dl class="simple">
+<dt>LyA-OMP</dt><dd><p>(CPU only)</p>
+</dd>
 </dl>
 </td>
-<td>FALSE</td>
-<td>TRUE</td>
+<td><p>FALSE</p></td>
+<td><p>TRUE</p></td>
 </tr>
-<tr class="row-even"><td><dl class="first last docutils">
-<dt>LyA_Neutrinos</dt>
-<dd>(CPU only)</dd>
+<tr class="row-even"><td><dl class="simple">
+<dt>LyA_Neutrinos</dt><dd><p>(CPU only)</p>
+</dd>
 </dl>
 </td>
-<td>FALSE</td>
-<td>TRUE</td>
+<td><p>FALSE</p></td>
+<td><p>TRUE</p></td>
 </tr>
-<tr class="row-odd"><td>MiniSB</td>
-<td>FALSE</td>
-<td>FALSE</td>
+<tr class="row-odd"><td><p>MiniSB</p></td>
+<td><p>FALSE</p></td>
+<td><p>FALSE</p></td>
 </tr>
-<tr class="row-even"><td>MiniSB-ppm</td>
-<td>FALSE</td>
-<td>FALSE</td>
+<tr class="row-even"><td><p>MiniSB-ppm</p></td>
+<td><p>FALSE</p></td>
+<td><p>FALSE</p></td>
 </tr>
-<tr class="row-odd"><td>MiniSB-ref</td>
-<td>FALSE</td>
-<td>FALSE</td>
+<tr class="row-odd"><td><p>MiniSB-ref</p></td>
+<td><p>FALSE</p></td>
+<td><p>FALSE</p></td>
 </tr>
-<tr class="row-even"><td>MiniSB-ref-ppm</td>
-<td>FALSE</td>
-<td>FALSE</td>
+<tr class="row-even"><td><p>MiniSB-ref-ppm</p></td>
+<td><p>FALSE</p></td>
+<td><p>FALSE</p></td>
 </tr>
-<tr class="row-odd"><td>Part-2line</td>
-<td>FALSE</td>
-<td>FALSE</td>
+<tr class="row-odd"><td><p>Part-2line</p></td>
+<td><p>FALSE</p></td>
+<td><p>FALSE</p></td>
 </tr>
-<tr class="row-even"><td>Part-2line-nbody</td>
-<td>FALSE</td>
-<td>FALSE</td>
+<tr class="row-even"><td><p>Part-2line-nbody</p></td>
+<td><p>FALSE</p></td>
+<td><p>FALSE</p></td>
 </tr>
-<tr class="row-odd"><td>Part-2line-nomesh</td>
-<td>TRUE</td>
-<td>FALSE</td>
+<tr class="row-odd"><td><p>Part-2line-nomesh</p></td>
+<td><p>TRUE</p></td>
+<td><p>FALSE</p></td>
 </tr>
-<tr class="row-even"><td>Part-2line_restart</td>
-<td>FALSE</td>
-<td>FALSE</td>
+<tr class="row-even"><td><p>Part-2line_restart</p></td>
+<td><p>FALSE</p></td>
+<td><p>FALSE</p></td>
 </tr>
-<tr class="row-odd"><td>Part-2line_restart-nbody</td>
-<td>FALSE</td>
-<td>FALSE</td>
+<tr class="row-odd"><td><p>Part-2line_restart-nbody</p></td>
+<td><p>FALSE</p></td>
+<td><p>FALSE</p></td>
 </tr>
-<tr class="row-even"><td>Part-2line_restart-nomesh</td>
-<td>TRUE</td>
-<td>FALSE</td>
+<tr class="row-even"><td><p>Part-2line_restart-nomesh</p></td>
+<td><p>TRUE</p></td>
+<td><p>FALSE</p></td>
 </tr>
-<tr class="row-odd"><td>Part-mass.nosub</td>
-<td>FALSE</td>
-<td>FALSE</td>
+<tr class="row-odd"><td><p>Part-mass.nosub</p></td>
+<td><p>FALSE</p></td>
+<td><p>FALSE</p></td>
 </tr>
-<tr class="row-even"><td>Part-mass.nosub-nbody</td>
-<td>FALSE</td>
-<td>FALSE</td>
+<tr class="row-even"><td><p>Part-mass.nosub-nbody</p></td>
+<td><p>FALSE</p></td>
+<td><p>FALSE</p></td>
 </tr>
-<tr class="row-odd"><td>Part-mass.nosub-nomesh</td>
-<td>TRUE</td>
-<td>FALSE</td>
+<tr class="row-odd"><td><p>Part-mass.nosub-nomesh</p></td>
+<td><p>TRUE</p></td>
+<td><p>FALSE</p></td>
 </tr>
-<tr class="row-even"><td>Part-mass.sub</td>
-<td>FALSE</td>
-<td>FALSE</td>
+<tr class="row-even"><td><p>Part-mass.sub</p></td>
+<td><p>FALSE</p></td>
+<td><p>FALSE</p></td>
 </tr>
-<tr class="row-odd"><td>Part-mass.sub-nbody</td>
-<td>FALSE</td>
-<td>FALSE</td>
+<tr class="row-odd"><td><p>Part-mass.sub-nbody</p></td>
+<td><p>FALSE</p></td>
+<td><p>FALSE</p></td>
 </tr>
-<tr class="row-even"><td>Part-mass.sub-nbody</td>
-<td>FALSE</td>
-<td>FALSE</td>
+<tr class="row-even"><td><p>Part-mass.sub-nbody</p></td>
+<td><p>FALSE</p></td>
+<td><p>FALSE</p></td>
 </tr>
-<tr class="row-odd"><td>Part-mass.sub-nomesh</td>
-<td>TRUE</td>
-<td>FALSE</td>
+<tr class="row-odd"><td><p>Part-mass.sub-nomesh</p></td>
+<td><p>TRUE</p></td>
+<td><p>FALSE</p></td>
 </tr>
-<tr class="row-even"><td>Sedov</td>
-<td>FALSE</td>
-<td>FALSE</td>
+<tr class="row-even"><td><p>Sedov</p></td>
+<td><p>FALSE</p></td>
+<td><p>FALSE</p></td>
 </tr>
-<tr class="row-odd"><td>Sedov-ppm</td>
-<td>FALSE</td>
-<td>FALSE</td>
+<tr class="row-odd"><td><p>Sedov-ppm</p></td>
+<td><p>FALSE</p></td>
+<td><p>FALSE</p></td>
 </tr>
-<tr class="row-even"><td>Sod</td>
-<td>FALSE</td>
-<td>FALSE</td>
+<tr class="row-even"><td><p>Sod</p></td>
+<td><p>FALSE</p></td>
+<td><p>FALSE</p></td>
 </tr>
-<tr class="row-odd"><td>Sod-ppm</td>
-<td>FALSE</td>
-<td>FALSE</td>
+<tr class="row-odd"><td><p>Sod-ppm</p></td>
+<td><p>FALSE</p></td>
+<td><p>FALSE</p></td>
 </tr>
-<tr class="row-even"><td>StrongShockTube</td>
-<td>FALSE</td>
-<td>FALSE</td>
+<tr class="row-even"><td><p>StrongShockTube</p></td>
+<td><p>FALSE</p></td>
+<td><p>FALSE</p></td>
 </tr>
-<tr class="row-odd"><td>StrongShockTube-ppm</td>
-<td>FALSE</td>
-<td>FALSE</td>
+<tr class="row-odd"><td><p>StrongShockTube-ppm</p></td>
+<td><p>FALSE</p></td>
+<td><p>FALSE</p></td>
 </tr>
 </tbody>
 </table>
 <p>Below nx,ny,nz are the number of cells in each coordinate direction at the coarsest level;
 Npa = number of particles, Np = number of MPI ranks / number of OMP threads per rank.
 (If just a single number then pure MPI.)</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="36%" />
-<col width="13%" />
-<col width="5%" />
-<col width="11%" />
-<col width="7%" />
-<col width="29%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Test</th>
-<th class="head">nx ny nz</th>
-<th class="head">Nl</th>
-<th class="head">Npa</th>
-<th class="head">Np</th>
-<th class="head">What does this test?</th>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Test</p></th>
+<th class="head"><p>nx ny nz</p></th>
+<th class="head"><p>Nl</p></th>
+<th class="head"><p>Npa</p></th>
+<th class="head"><p>Np</p></th>
+<th class="head"><p>What does this test?</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>AMR-density</td>
-<td>64 64 64</td>
-<td>3</td>
-<td>262144</td>
-<td>4</td>
-<td>Start from chk00300</td>
+<tbody>
+<tr class="row-even"><td><p>AMR-density</p></td>
+<td><p>64 64 64</p></td>
+<td><p>3</p></td>
+<td><p>262144</p></td>
+<td><p>4</p></td>
+<td><p>Start from chk00300</p></td>
 </tr>
-<tr class="row-odd"><td>DR_restart</td>
-<td>32  4  4</td>
-<td>3</td>
-<td>0</td>
-<td>2/2</td>
-<td>Hydro only - restart</td>
+<tr class="row-odd"><td><p>DR_restart</p></td>
+<td><p>32  4  4</p></td>
+<td><p>3</p></td>
+<td><p>0</p></td>
+<td><p>2/2</p></td>
+<td><p>Hydro only - restart</p></td>
 </tr>
-<tr class="row-even"><td>DoubleRarefaction</td>
-<td>32  4  4</td>
-<td>3</td>
-<td>0</td>
-<td>2/2</td>
-<td>Hydro only</td>
+<tr class="row-even"><td><p>DoubleRarefaction</p></td>
+<td><p>32  4  4</p></td>
+<td><p>3</p></td>
+<td><p>0</p></td>
+<td><p>2/2</p></td>
+<td><p>Hydro only</p></td>
 </tr>
-<tr class="row-odd"><td>DrivenTurbulence</td>
-<td>32 32 32</td>
-<td>1</td>
-<td>0</td>
-<td>4</td>
-<td>Turbulent forcing</td>
+<tr class="row-odd"><td><p>DrivenTurbulence</p></td>
+<td><p>32 32 32</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+<td><p>4</p></td>
+<td><p>Turbulent forcing</p></td>
 </tr>
-<tr class="row-even"><td><dl class="first last docutils">
-<dt>DrivenTurbulence-OMP</dt>
-<dd>(CPU only)</dd>
+<tr class="row-even"><td><dl class="simple">
+<dt>DrivenTurbulence-OMP</dt><dd><p>(CPU only)</p>
+</dd>
 </dl>
 </td>
-<td>32 32 32</td>
-<td>1</td>
-<td>0</td>
-<td>1/4</td>
-<td>Turbulent forcing
-with OMP</td>
+<td><p>32 32 32</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+<td><p>1/4</p></td>
+<td><p>Turbulent forcing
+with OMP</p></td>
 </tr>
-<tr class="row-odd"><td>LyA</td>
-<td>32 32 32</td>
-<td>1</td>
-<td>32768</td>
-<td>4</td>
-<td>Includes h/c</td>
+<tr class="row-odd"><td><p>LyA</p></td>
+<td><p>32 32 32</p></td>
+<td><p>1</p></td>
+<td><p>32768</p></td>
+<td><p>4</p></td>
+<td><p>Includes h/c</p></td>
 </tr>
-<tr class="row-even"><td><dl class="first last docutils">
-<dt>Lya-OMP</dt>
-<dd>(CPU only)</dd>
+<tr class="row-even"><td><dl class="simple">
+<dt>Lya-OMP</dt><dd><p>(CPU only)</p>
+</dd>
 </dl>
 </td>
-<td>32 32 32</td>
-<td>1</td>
-<td>32768</td>
-<td>1/4</td>
-<td>LyA with OMP</td>
+<td><p>32 32 32</p></td>
+<td><p>1</p></td>
+<td><p>32768</p></td>
+<td><p>1/4</p></td>
+<td><p>LyA with OMP</p></td>
 </tr>
-<tr class="row-odd"><td>LyA-adiabatic</td>
-<td>32 32 32</td>
-<td>1</td>
-<td>32768</td>
-<td>4</td>
-<td>No h/c</td>
+<tr class="row-odd"><td><p>LyA-adiabatic</p></td>
+<td><p>32 32 32</p></td>
+<td><p>1</p></td>
+<td><p>32768</p></td>
+<td><p>4</p></td>
+<td><p>No h/c</p></td>
 </tr>
-<tr class="row-even"><td><dl class="first last docutils">
-<dt>LyA_Neutrinos</dt>
-<dd>(CPU only)</dd>
+<tr class="row-even"><td><dl class="simple">
+<dt>LyA_Neutrinos</dt><dd><p>(CPU only)</p>
+</dd>
 </dl>
 </td>
-<td>32 32 32</td>
-<td>1</td>
-<td>32768</td>
-<td>1</td>
-<td>LyA with OMP</td>
+<td><p>32 32 32</p></td>
+<td><p>1</p></td>
+<td><p>32768</p></td>
+<td><p>1</p></td>
+<td><p>LyA with OMP</p></td>
 </tr>
-<tr class="row-odd"><td>MiniSB</td>
-<td>32 32 32</td>
-<td>1</td>
-<td>2500</td>
-<td>2</td>
-<td>Small version of SB</td>
+<tr class="row-odd"><td><p>MiniSB</p></td>
+<td><p>32 32 32</p></td>
+<td><p>1</p></td>
+<td><p>2500</p></td>
+<td><p>2</p></td>
+<td><p>Small version of SB</p></td>
 </tr>
-<tr class="row-even"><td>MiniSB-ppm</td>
-<td>32 32 32</td>
-<td>1</td>
-<td>2500</td>
-<td>2</td>
-<td>Small version of SB</td>
+<tr class="row-even"><td><p>MiniSB-ppm</p></td>
+<td><p>32 32 32</p></td>
+<td><p>1</p></td>
+<td><p>2500</p></td>
+<td><p>2</p></td>
+<td><p>Small version of SB</p></td>
 </tr>
-<tr class="row-odd"><td>MiniSB-ref</td>
-<td>32 32 32</td>
-<td>2</td>
-<td>2500</td>
-<td>2</td>
-<td>Small version of SB
-with refinement</td>
+<tr class="row-odd"><td><p>MiniSB-ref</p></td>
+<td><p>32 32 32</p></td>
+<td><p>2</p></td>
+<td><p>2500</p></td>
+<td><p>2</p></td>
+<td><p>Small version of SB
+with refinement</p></td>
 </tr>
-<tr class="row-even"><td>MiniSB-ref-ppm</td>
-<td>32 32 32</td>
-<td>2</td>
-<td>2500</td>
-<td>2</td>
-<td>Small version of SB
-with refinement</td>
+<tr class="row-even"><td><p>MiniSB-ref-ppm</p></td>
+<td><p>32 32 32</p></td>
+<td><p>2</p></td>
+<td><p>2500</p></td>
+<td><p>2</p></td>
+<td><p>Small version of SB
+with refinement</p></td>
 </tr>
-<tr class="row-odd"><td>Part-2line</td>
-<td>16 16 16</td>
-<td>3</td>
-<td>16</td>
-<td>2/2</td>
-<td>Particle-only</td>
+<tr class="row-odd"><td><p>Part-2line</p></td>
+<td><p>16 16 16</p></td>
+<td><p>3</p></td>
+<td><p>16</p></td>
+<td><p>2/2</p></td>
+<td><p>Particle-only</p></td>
 </tr>
-<tr class="row-even"><td>Part-2line-nbody</td>
-<td>16 16 16</td>
-<td>3</td>
-<td>16</td>
-<td>2/2</td>
-<td>Particle-only</td>
+<tr class="row-even"><td><p>Part-2line-nbody</p></td>
+<td><p>16 16 16</p></td>
+<td><p>3</p></td>
+<td><p>16</p></td>
+<td><p>2/2</p></td>
+<td><p>Particle-only</p></td>
 </tr>
-<tr class="row-odd"><td>Part-2line-nomesh</td>
-<td>16 16 16</td>
-<td>3</td>
-<td>16</td>
-<td>2/2</td>
-<td>Particle-only</td>
+<tr class="row-odd"><td><p>Part-2line-nomesh</p></td>
+<td><p>16 16 16</p></td>
+<td><p>3</p></td>
+<td><p>16</p></td>
+<td><p>2/2</p></td>
+<td><p>Particle-only</p></td>
 </tr>
-<tr class="row-even"><td>Part-2line_restart</td>
-<td>16 16 16</td>
-<td>3</td>
-<td>16</td>
-<td>2/2</td>
-<td>Particle-only</td>
+<tr class="row-even"><td><p>Part-2line_restart</p></td>
+<td><p>16 16 16</p></td>
+<td><p>3</p></td>
+<td><p>16</p></td>
+<td><p>2/2</p></td>
+<td><p>Particle-only</p></td>
 </tr>
-<tr class="row-odd"><td>Part-2line_restart-nbody</td>
-<td>16 16 16</td>
-<td>3</td>
-<td>16</td>
-<td>2/2</td>
-<td>Particle-only</td>
+<tr class="row-odd"><td><p>Part-2line_restart-nbody</p></td>
+<td><p>16 16 16</p></td>
+<td><p>3</p></td>
+<td><p>16</p></td>
+<td><p>2/2</p></td>
+<td><p>Particle-only</p></td>
 </tr>
-<tr class="row-even"><td>Part-2line_restart-nomesh</td>
-<td>16 16 16</td>
-<td>3</td>
-<td>16</td>
-<td>2/2</td>
-<td>Particle-only</td>
+<tr class="row-even"><td><p>Part-2line_restart-nomesh</p></td>
+<td><p>16 16 16</p></td>
+<td><p>3</p></td>
+<td><p>16</p></td>
+<td><p>2/2</p></td>
+<td><p>Particle-only</p></td>
 </tr>
-<tr class="row-odd"><td>Part-mass.nosub</td>
-<td>16 16 16</td>
-<td>3</td>
-<td>8</td>
-<td>2/2</td>
-<td>Particle-only</td>
+<tr class="row-odd"><td><p>Part-mass.nosub</p></td>
+<td><p>16 16 16</p></td>
+<td><p>3</p></td>
+<td><p>8</p></td>
+<td><p>2/2</p></td>
+<td><p>Particle-only</p></td>
 </tr>
-<tr class="row-even"><td>Part-mass.nosub-nbody</td>
-<td>16 16 16</td>
-<td>3</td>
-<td>8</td>
-<td>2/2</td>
-<td>Particle-only</td>
+<tr class="row-even"><td><p>Part-mass.nosub-nbody</p></td>
+<td><p>16 16 16</p></td>
+<td><p>3</p></td>
+<td><p>8</p></td>
+<td><p>2/2</p></td>
+<td><p>Particle-only</p></td>
 </tr>
-<tr class="row-odd"><td>Part-mass.nosub-nomesh</td>
-<td>16 16 16</td>
-<td>3</td>
-<td>8</td>
-<td>2/2</td>
-<td>Particle-only</td>
+<tr class="row-odd"><td><p>Part-mass.nosub-nomesh</p></td>
+<td><p>16 16 16</p></td>
+<td><p>3</p></td>
+<td><p>8</p></td>
+<td><p>2/2</p></td>
+<td><p>Particle-only</p></td>
 </tr>
-<tr class="row-even"><td>Part-mass.sub</td>
-<td>16 16 16</td>
-<td>3</td>
-<td>8</td>
-<td>2/2</td>
-<td>Particle-only</td>
+<tr class="row-even"><td><p>Part-mass.sub</p></td>
+<td><p>16 16 16</p></td>
+<td><p>3</p></td>
+<td><p>8</p></td>
+<td><p>2/2</p></td>
+<td><p>Particle-only</p></td>
 </tr>
-<tr class="row-odd"><td>Part-mass.sub-nbody</td>
-<td>16 16 16</td>
-<td>3</td>
-<td>8</td>
-<td>2/2</td>
-<td>Particle-only</td>
+<tr class="row-odd"><td><p>Part-mass.sub-nbody</p></td>
+<td><p>16 16 16</p></td>
+<td><p>3</p></td>
+<td><p>8</p></td>
+<td><p>2/2</p></td>
+<td><p>Particle-only</p></td>
 </tr>
-<tr class="row-even"><td>Part-mass.sub-nomesh</td>
-<td>16 16 16</td>
-<td>3</td>
-<td>8</td>
-<td>2/2</td>
-<td>Particle-only</td>
+<tr class="row-even"><td><p>Part-mass.sub-nomesh</p></td>
+<td><p>16 16 16</p></td>
+<td><p>3</p></td>
+<td><p>8</p></td>
+<td><p>2/2</p></td>
+<td><p>Particle-only</p></td>
 </tr>
-<tr class="row-odd"><td>Sedov</td>
-<td>32 32 32</td>
-<td>1</td>
-<td>0</td>
-<td>1</td>
-<td>Hydro only (PLM)</td>
+<tr class="row-odd"><td><p>Sedov</p></td>
+<td><p>32 32 32</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>Hydro only (PLM)</p></td>
 </tr>
-<tr class="row-even"><td>Sedov-ppm</td>
-<td>32 32 32</td>
-<td>1</td>
-<td>0</td>
-<td>1</td>
-<td>Hydro only (PPM)</td>
+<tr class="row-even"><td><p>Sedov-ppm</p></td>
+<td><p>32 32 32</p></td>
+<td><p>1</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>Hydro only (PPM)</p></td>
 </tr>
-<tr class="row-odd"><td>Sod</td>
-<td>4  32 4</td>
-<td>3</td>
-<td>0</td>
-<td>1</td>
-<td>Hydro only (PLM)</td>
+<tr class="row-odd"><td><p>Sod</p></td>
+<td><p>4  32 4</p></td>
+<td><p>3</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>Hydro only (PLM)</p></td>
 </tr>
-<tr class="row-even"><td>Sod-ppm</td>
-<td>4  32 4</td>
-<td>3</td>
-<td>0</td>
-<td>1/2</td>
-<td>Hydro only (PPM)</td>
+<tr class="row-even"><td><p>Sod-ppm</p></td>
+<td><p>4  32 4</p></td>
+<td><p>3</p></td>
+<td><p>0</p></td>
+<td><p>1/2</p></td>
+<td><p>Hydro only (PPM)</p></td>
 </tr>
-<tr class="row-odd"><td>StrongShockTube</td>
-<td>32 4  4</td>
-<td>3</td>
-<td>0</td>
-<td>1/2</td>
-<td>Hydro only (PLM)</td>
+<tr class="row-odd"><td><p>StrongShockTube</p></td>
+<td><p>32 4  4</p></td>
+<td><p>3</p></td>
+<td><p>0</p></td>
+<td><p>1/2</p></td>
+<td><p>Hydro only (PLM)</p></td>
 </tr>
-<tr class="row-even"><td>StrongShockTube-ppm</td>
-<td>32 4  4</td>
-<td>3</td>
-<td>0</td>
-<td>1</td>
-<td>Hydro only (PPM)</td>
+<tr class="row-even"><td><p>StrongShockTube-ppm</p></td>
+<td><p>32 4  4</p></td>
+<td><p>3</p></td>
+<td><p>0</p></td>
+<td><p>1</p></td>
+<td><p>Hydro only (PPM)</p></td>
 </tr>
 </tbody>
 </table>
-</div>
+</section>
 
 
            </div>

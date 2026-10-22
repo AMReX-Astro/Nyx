@@ -1,22 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html4" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Running the Code &mdash; Nyx  documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "tex2jax_ignore|mathjax_ignore|document", "processClass": "tex2jax_process|mathjax_process|math|output_area"}})</script>
+  <title>Running the Code &mdash; Nyx  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -43,7 +42,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Nyx basics</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Nyx basics</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../NyxPreface.html">Preface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../NyxCitation.html">Citation</a></li>
@@ -99,14 +98,14 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="running-the-code">
-<h1>Running the Code<a class="headerlink" href="#running-the-code" title="Permalink to this headline">¶</a></h1>
-<p>The Nyx&nbsp;executable reads run-time information from an “inputs” file which you designate on the command line.
+  <section id="running-the-code">
+<h1>Running the Code<a class="headerlink" href="#running-the-code" title="Link to this heading">¶</a></h1>
+<p>The Nyx executable reads run-time information from an “inputs” file which you designate on the command line.
 Values can be specified either in the inputs file or on the command line.
 If a value is specified on the command line, that value will override a value specified in the inputs file.</p>
 <p>See the Inputs section for more detail about what parameters can be specified at run-time.</p>
 <ol class="arabic">
-<li><p class="first">From within the build directory type:</p>
+<li><p>From within the build directory type:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">executable</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">inputs</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span>
 </pre></div>
 </div>
@@ -117,23 +116,22 @@ and <code class="docutils literal notranslate"><span class="pre">inputs.rt</span
 for a larger problem, and an <code class="docutils literal notranslate"><span class="pre">inputs.rt</span></code> or <code class="docutils literal notranslate"><span class="pre">inputs.regtest</span></code> for regression-test
 sized problems.</p>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
+<p class="admonition-title">Note</p>
 <p>For certain HPC systems, you may want to have a run directory separate from your compile / build directory.</p>
-<p class="last">In that case, copy the executable and inputs file from the build directory to your run directory on scratch.
+<p>In that case, copy the executable and inputs file from the build directory to your run directory on scratch.
 Runs starting from a <code class="docutils literal notranslate"><span class="pre">binary_particle_file</span></code> need an absolute path in &lt;inputs-name&gt; or a symlink in the run directory.
 Runs with heating-cooling must have access to the TREECOOL_middle file in the run directory, and ascent in-situ runs
 need access to ascent_actions.yaml.</p>
 </div>
 </li>
-<li><p class="first">You will notice that running the code generates directories that look like
+<li><p>You will notice that running the code generates directories that look like
 plt00000, plt00020, etc.,
 and chk00000, chk00020, etc. These are “plotfiles” and
 “checkpoint” files. The plotfiles are used for visualization,
-and the checkpoint files for restarting the code.</p>
-</li>
+and the checkpoint files for restarting the code.</p></li>
 </ol>
 <p>See the Visualization chapter for how to visualize these plotfiles.</p>
-</div>
+</section>
 
 
            </div>

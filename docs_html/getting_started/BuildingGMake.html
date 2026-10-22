@@ -1,22 +1,23 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html4" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Building Nyx with GNU Make &mdash; Nyx  documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "tex2jax_ignore|mathjax_ignore|document", "processClass": "tex2jax_process|mathjax_process|math|output_area"}})</script>
+  <title>Building Nyx with GNU Make &mdash; Nyx  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "macros": {"kth": "{{k_\\mathrm{th}}}", "gcc": "{\\mathrm{g~cm^{-3}}}", "cms": "{\\mathrm{cm~s^{-1}}}", "presunit": "{\\mathrm{dyn~cm^{-2}}}", "accelunit": "{\\mathrm{cm~s^{-2}}}", "ergg": "{\\mathrm{erg~g^{-1}}}", "Ab": "{{\\bf A}}", "eb": "{{\\bf e}}", "Fb": "{{\\bf F}}", "gb": "{{\\bf g}}", "Hb": "{{\\bf H}}", "ib": "{{\\bf i}}", "Ib": "{{\\bf I}}", "Kb": "{{\\bf K}}", "lb": "{{\\bf l}}", "Lb": "{{\\bf L}}", "nb": "{{\\bf n}}", "Pb": "{{\\bf P}}", "Qb": "{{\\bf Q}}", "rb": "{{\\bf r}}", "Rb": "{{\\bf R}}", "Sb": "{{\\bf S}}", "ub": "{{\\bf u}}", "Ub": "{{\\bf U}}", "xb": "{{\\bf x}}", "dt": "{\\Delta t}", "omegadot": "{\\dot\\omega}", "inp": "{{\\rm in}}", "outp": "{{\\rm out}}", "sync": "{{\\rm sync}}", "half": "{\\frac{1}{2}}", "myhalf": "{\\half}", "nph": "{{n+\\myhalf}}", "kpp": "{\\ensuremath{\\kappa_{\\mathrm{P}}}}", "kpr": "{\\ensuremath{\\kappa_{\\mathrm{R}}}}", "kpf": "{\\ensuremath{\\kappa_{\\mathrm{F}}}}", "vb": "{\\boldsymbol{v}}", "vbt": "{\\widetilde{\\vb}}", "rbt": "{\\widetilde{\\rb}}", "ob": "{\\boldsymbol{\\omega}}", "nablab": "{\\boldsymbol{\\nabla}}"}}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -43,7 +44,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Nyx basics</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Nyx basics</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../NyxPreface.html">Preface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../NyxCitation.html">Citation</a></li>
@@ -99,12 +100,12 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="building-nyx-with-gnu-make">
-<h1>Building Nyx with GNU Make<a class="headerlink" href="#building-nyx-with-gnu-make" title="Permalink to this headline">¶</a></h1>
-<p>Nyx is built on top of the AMReX&nbsp;framework so you must
+  <section id="building-nyx-with-gnu-make">
+<h1>Building Nyx with GNU Make<a class="headerlink" href="#building-nyx-with-gnu-make" title="Link to this heading">¶</a></h1>
+<p>Nyx is built on top of the AMReX framework so you must
 download AMReX in order to build Nyx with GNU Make.</p>
 <ol class="arabic">
-<li><p class="first">Clone/fork the AMReX&nbsp;repository:</p>
+<li><p>Clone/fork the AMReX repository:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">AMReX</span><span class="o">-</span><span class="n">Codes</span><span class="o">/</span><span class="n">amrex</span>
 </pre></div>
 </div>
@@ -116,14 +117,14 @@ download AMReX in order to build Nyx with GNU Make.</p>
 </li>
 </ol>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">When you check out AMReX (and Nyx), you will get the development
+<p class="admonition-title">Note</p>
+<p>When you check out AMReX (and Nyx), you will get the development
 branch.  Active development is done on this branch; monthly
 tags are made of this version that are compatible with the same
 monthly tag of AMReX itself.</p>
 </div>
 <ol class="arabic">
-<li><p class="first">Set the environment variable <code class="docutils literal notranslate"><span class="pre">AMREX_HOME</span></code> to point to
+<li><p>Set the environment variable <code class="docutils literal notranslate"><span class="pre">AMREX_HOME</span></code> to point to
 your local copy of the AMReX repository.
 You can add this to your <code class="docutils literal notranslate"><span class="pre">.bashrc</span></code> as:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">AMREX_HOME</span><span class="o">=/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">amrex</span><span class="o">/</span>
@@ -136,7 +137,7 @@ You can add this to your <code class="docutils literal notranslate"><span class=
 <p>where <code class="docutils literal notranslate"><span class="pre">/path/to/amrex/</span></code> is the full path to the
 amrex directory.</p>
 </li>
-<li><p class="first">Clone/fork the Nyx repository:</p>
+<li><p>Clone/fork the Nyx repository:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">AMReX</span><span class="o">-</span><span class="n">Astro</span><span class="o">/</span><span class="n">Nyx</span>
 </pre></div>
 </div>
@@ -144,13 +145,13 @@ amrex directory.</p>
 <code class="docutils literal notranslate"><span class="pre">development</span></code> branch, so you should work there if you want
 the latest source.</p>
 </li>
-<li><p class="first">Choose which executable to compile, for example MiniSB or LyA.</p>
+<li><p>Choose which executable to compile, for example MiniSB or LyA.</p>
 <p>MiniSB is a small version of the Santa Barbara problem, and LyA is a Lyman-<span class="math notranslate nohighlight">\(\alpha\)</span>
 forest simulation for investigating the large-scale structure formation of the universe.</p>
 <p>For some executables, namely LyA, AMR-density, AMR-zoom, and LyA_Neutrinos, Nyx uses a more complicated model for the heating-cooling.
 This requires you to also install a matching sundials installation to support the ODE solve. To install a stand-alone copy of Sundials, see <a class="reference internal" href="NyxSundials.html#sundials"><span class="std std-ref">Compiling Nyx with SUNDIALS 5</span></a></p>
 </li>
-<li><p class="first">From the directory in which you checked out Nyx, change directory to your build directory by typing for the small Santa-Barbara problem:</p>
+<li><p>From the directory in which you checked out Nyx, change directory to your build directory by typing for the small Santa-Barbara problem:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">Nyx</span><span class="o">/</span><span class="n">Exec</span><span class="o">/</span><span class="n">MiniSB</span>
 </pre></div>
 </div>
@@ -159,7 +160,7 @@ This requires you to also install a matching sundials installation to support th
 </pre></div>
 </div>
 </li>
-<li><p class="first">In your build directory, edit the GNUmakefile, and set</p>
+<li><p>In your build directory, edit the GNUmakefile, and set</p>
 <p><code class="docutils literal notranslate"><span class="pre">COMP</span> <span class="pre">=</span> <span class="pre">your</span> <span class="pre">favorite</span> <span class="pre">compiler</span> <span class="pre">(e.g,</span> <span class="pre">gnu,</span> <span class="pre">Intel)</span></code></p>
 <p><code class="docutils literal notranslate"><span class="pre">DEBUG</span> <span class="pre">=</span> <span class="pre">FALSE</span></code></p>
 <p>We like <code class="docutils literal notranslate"><span class="pre">COMP</span> <span class="pre">=</span> <span class="pre">gnu</span></code>.</p>
@@ -168,20 +169,20 @@ This requires you to also install a matching sundials installation to support th
 <p>All executables should work with MPI+CUDA by setting <code class="docutils literal notranslate"><span class="pre">USE_MPI=TRUE</span> <span class="pre">USE_OMP=FALSE</span> <span class="pre">USE_CUDA=TRUE</span></code>.</p>
 <p>HIP and DPC++ builds are under development and can be tested by compiling with <code class="docutils literal notranslate"><span class="pre">USE_HIP=TRUE</span></code>  and <code class="docutils literal notranslate"><span class="pre">USE_DPCPP=TRUE</span></code>  respectively.</p>
 <div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">For executables with <code class="docutils literal notranslate"><span class="pre">USE_HEATCOOL=TRUE</span></code> in their GNUmakefile, a matching Sundials implementation is required. If Sundials is built with <code class="docutils literal notranslate"><span class="pre">-DSUNDIALS_BUILD_PACKAGE_FUSED_KERNELS=ON</span></code>, Nyx should be built with <code class="docutils literal notranslate"><span class="pre">USE_FUSED=TRUE</span></code>.
+<p class="admonition-title">Note</p>
+<p>For executables with <code class="docutils literal notranslate"><span class="pre">USE_HEATCOOL=TRUE</span></code> in their GNUmakefile, a matching Sundials implementation is required. If Sundials is built with <code class="docutils literal notranslate"><span class="pre">-DSUNDIALS_BUILD_PACKAGE_FUSED_KERNELS=ON</span></code>, Nyx should be built with <code class="docutils literal notranslate"><span class="pre">USE_FUSED=TRUE</span></code>.
 The flag <code class="docutils literal notranslate"><span class="pre">USE_FUSED</span></code> tells the Nyx compile whether you compiled Sundials with fused cuda kernels. The default assumption is that non-cuda Nyx compiles set <code class="docutils literal notranslate"><span class="pre">USE_FUSED=FALSE</span></code> to match Sundials being built without fused cuda kernels.
 Starting with Sundials version 5.7.0, set <code class="docutils literal notranslate"><span class="pre">USE_SUNDIALS_SUNMEMORY=TRUE</span></code> to compile the optional Sundials SunMemory to AMReX Arena interface for GPU memory reuse.</p>
 </div>
 </li>
-<li><p class="first">Now type “make”. The resulting executable will look something like
+<li><p>Now type “make”. The resulting executable will look something like
 “Nyx3d.Linux.gnu.ex”, which means this is a 3-d version of the code,
 made on a Linux machine, with <code class="docutils literal notranslate"><span class="pre">COMP</span> <span class="pre">=</span> <span class="pre">gnu</span></code>.</p>
 <p>Note that if you build with <code class="docutils literal notranslate"><span class="pre">USE_MPI</span> <span class="pre">=</span> <span class="pre">TRUE</span></code> in the GNUMakefile, then the
 name of the code will be something like “Nyx3d.Linux.gnu.MPI.ex”</p>
 </li>
 </ol>
-</div>
+</section>
 
 
            </div>

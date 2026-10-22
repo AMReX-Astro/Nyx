@@ -1,22 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html4" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AMReX basics &mdash; Nyx  documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "tex2jax_ignore|mathjax_ignore|document", "processClass": "tex2jax_process|mathjax_process|math|output_area"}})</script>
+  <title>AMReX basics &mdash; Nyx  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -43,7 +42,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Nyx basics</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Nyx basics</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../NyxPreface.html">Preface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../NyxCitation.html">Citation</a></li>
@@ -99,17 +98,17 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="amrex-basics">
-<span id="developers-amrex-basics"></span><h1>AMReX basics<a class="headerlink" href="#amrex-basics" title="Permalink to this headline">¶</a></h1>
+  <section id="amrex-basics">
+<span id="developers-amrex-basics"></span><h1>AMReX basics<a class="headerlink" href="#amrex-basics" title="Link to this heading">¶</a></h1>
 <p>Nyx is built on the Adaptive Mesh Refinement (AMR) library <a class="reference external" href="https://github.com/AMReX-Codes/amrex">AMReX</a>. This section provides a very sporadic description of the main AMReX classes and concepts relevant for Nyx.
 For more details, please visit
 the AMReX basics <a class="reference external" href="https://amrex-codes.github.io/amrex/docs_html/Basics.html">doc page</a>, and the rest of the AMReX documentation.</p>
 <ul class="simple">
-<li><code class="docutils literal notranslate"><span class="pre">amrex::Box</span></code>: Dimension-dependent lower and upper indices defining a rectangular volume in 3D (or surface in 2D) in the index space. <code class="docutils literal notranslate"><span class="pre">Box</span></code> is a lightweight meta-data class, with useful member functions.</li>
-<li><code class="docutils literal notranslate"><span class="pre">amrex::BoxArray</span></code>: Collection of <code class="docutils literal notranslate"><span class="pre">Box</span></code> on a single AMR level. The information of which MPI rank owns which <code class="docutils literal notranslate"><span class="pre">Box</span></code> in a <code class="docutils literal notranslate"><span class="pre">BoxArray</span></code> is in <code class="docutils literal notranslate"><span class="pre">DistributionMapping</span></code>.</li>
-<li><code class="docutils literal notranslate"><span class="pre">amrex::FArrayBox</span></code>: Fortran-ordered array of floating-point <code class="docutils literal notranslate"><span class="pre">amrex::Real</span></code> elements defined on a <code class="docutils literal notranslate"><span class="pre">Box</span></code>. A <code class="docutils literal notranslate"><span class="pre">FArrayBox</span></code> can represent scalar data or vector data, with <code class="docutils literal notranslate"><span class="pre">ncomp</span></code> components.</li>
-<li><code class="docutils literal notranslate"><span class="pre">amrex::MultiFab</span></code>: Collection of <cite>FAB</cite> (= <code class="docutils literal notranslate"><span class="pre">FArrayBox</span></code>) on a single AMR level, distributed over MPI ranks. The concept of <cite>ghost cells</cite> is defined at the <code class="docutils literal notranslate"><span class="pre">MultiFab</span></code> level.</li>
-<li><code class="docutils literal notranslate"><span class="pre">amrex::ParticleContainer</span></code>: A collection of particles; in Nyx the main ParticleContainer contains dark matter particles.</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">amrex::Box</span></code>: Dimension-dependent lower and upper indices defining a rectangular volume in 3D (or surface in 2D) in the index space. <code class="docutils literal notranslate"><span class="pre">Box</span></code> is a lightweight meta-data class, with useful member functions.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">amrex::BoxArray</span></code>: Collection of <code class="docutils literal notranslate"><span class="pre">Box</span></code> on a single AMR level. The information of which MPI rank owns which <code class="docutils literal notranslate"><span class="pre">Box</span></code> in a <code class="docutils literal notranslate"><span class="pre">BoxArray</span></code> is in <code class="docutils literal notranslate"><span class="pre">DistributionMapping</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">amrex::FArrayBox</span></code>: Fortran-ordered array of floating-point <code class="docutils literal notranslate"><span class="pre">amrex::Real</span></code> elements defined on a <code class="docutils literal notranslate"><span class="pre">Box</span></code>. A <code class="docutils literal notranslate"><span class="pre">FArrayBox</span></code> can represent scalar data or vector data, with <code class="docutils literal notranslate"><span class="pre">ncomp</span></code> components.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">amrex::MultiFab</span></code>: Collection of <cite>FAB</cite> (= <code class="docutils literal notranslate"><span class="pre">FArrayBox</span></code>) on a single AMR level, distributed over MPI ranks. The concept of <cite>ghost cells</cite> is defined at the <code class="docutils literal notranslate"><span class="pre">MultiFab</span></code> level.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">amrex::ParticleContainer</span></code>: A collection of particles; in Nyx the main ParticleContainer contains dark matter particles.</p></li>
 </ul>
 <p>Particles in a <code class="docutils literal notranslate"><span class="pre">ParticleContainer</span></code> are organized per <code class="docutils literal notranslate"><span class="pre">Box</span></code>. Particles in a <code class="docutils literal notranslate"><span class="pre">Box</span></code> are organized per tile
 (this feature is off when running on GPU).
@@ -129,7 +128,7 @@ These are respectively done in loops such as:</p>
 <span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">ParIter</span><span class="w"> </span><span class="n">pti</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">,</span><span class="w"> </span><span class="n">lev</span><span class="p">);</span><span class="w"> </span><span class="n">pti</span><span class="p">.</span><span class="n">isValid</span><span class="p">();</span><span class="w"> </span><span class="o">++</span><span class="n">pti</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">}</span>
 </pre></div>
 </div>
-</div>
+</section>
 
 
            </div>

@@ -1,22 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html4" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Analyzing Outputs &mdash; Nyx  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "tex2jax_ignore|mathjax_ignore|document", "processClass": "tex2jax_process|mathjax_process|math|output_area"}})</script>
+  <title>Analyzing Outputs &mdash; Nyx  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -43,7 +42,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Nyx basics</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Nyx basics</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="NyxPreface.html">Preface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxCitation.html">Citation</a></li>
@@ -96,84 +95,72 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="analyzing-outputs">
-<span id="postprocessing"></span><h1>Analyzing Outputs<a class="headerlink" href="#analyzing-outputs" title="Permalink to this headline">¶</a></h1>
+  <section id="analyzing-outputs">
+<span id="postprocessing"></span><h1>Analyzing Outputs<a class="headerlink" href="#analyzing-outputs" title="Link to this heading">¶</a></h1>
 <p>For analysis and visualizations purposes, Nyx outputs plotfiles with user-defined grid quantities and/or
 particle data.  This file format is native to the AMReX framework, but there is also an option to use HDF5
 outputs (this is implemented and is in a testing/optimization phase now).</p>
-<div class="section" id="visualization">
-<h2>Visualization<a class="headerlink" href="#visualization" title="Permalink to this headline">¶</a></h2>
+<section id="visualization">
+<h2>Visualization<a class="headerlink" href="#visualization" title="Link to this heading">¶</a></h2>
 <p>There are several visualization tools that can be used for AMReX plotfiles,
 specifically VisIt, ParaView, and yt.</p>
 <p>See the <a class="reference external" href="https://amrex-codes.github.io/amrex/docs_html/Visualization_Chapter.html">AMReX documentation</a> for
 guidance on how to use each of these tools.</p>
 <p>The following inputs control when plotfiles are written</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="21%" />
-<col width="59%" />
-<col width="11%" />
-<col width="9%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">&#160;</th>
-<th class="head">Description</th>
-<th class="head">Type</th>
-<th class="head">Default</th>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Default</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>amr.plot_int</td>
-<td>Frequency of plotfile output;
-if -1 then no plotfiles will be written</td>
-<td>Int</td>
-<td>-1</td>
+<tbody>
+<tr class="row-even"><td><p>amr.plot_int</p></td>
+<td><p>Frequency of plotfile output;
+if -1 then no plotfiles will be written</p></td>
+<td><p>Int</p></td>
+<td><p>-1</p></td>
 </tr>
-<tr class="row-odd"><td>amr.plotfile_on_restart</td>
-<td>Should we write a plotfile when we restart (only used if plot_int&gt;0)</td>
-<td>Bool</td>
-<td>False</td>
+<tr class="row-odd"><td><p>amr.plotfile_on_restart</p></td>
+<td><p>Should we write a plotfile when we restart (only used if plot_int&gt;0)</p></td>
+<td><p>Bool</p></td>
+<td><p>False</p></td>
 </tr>
-<tr class="row-even"><td>amr.plot_file</td>
-<td>Prefix to use for plotfile output</td>
-<td>String</td>
-<td>plt</td>
+<tr class="row-even"><td><p>amr.plot_file</p></td>
+<td><p>Prefix to use for plotfile output</p></td>
+<td><p>String</p></td>
+<td><p>plt</p></td>
 </tr>
 </tbody>
 </table>
 <p>and the following control which variables appear in the plotfile</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="27%" />
-<col width="50%" />
-<col width="12%" />
-<col width="11%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">&#160;</th>
-<th class="head">Description</th>
-<th class="head">Type</th>
-<th class="head">Default</th>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Default</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>amr.plot_vars</td>
-<td>Name of state variables to be in plotfiles</td>
-<td>Strings</td>
-<td>All</td>
+<tbody>
+<tr class="row-even"><td><p>amr.plot_vars</p></td>
+<td><p>Name of state variables to be in plotfiles</p></td>
+<td><p>Strings</p></td>
+<td><p>All</p></td>
 </tr>
-<tr class="row-odd"><td>amr.plot_dervive_plot_vars</td>
-<td>Name of derived variables to be in plotfiles</td>
-<td>Strings</td>
-<td>All</td>
+<tr class="row-odd"><td><p>amr.plot_dervive_plot_vars</p></td>
+<td><p>Name of derived variables to be in plotfiles</p></td>
+<td><p>Strings</p></td>
+<td><p>All</p></td>
 </tr>
 </tbody>
 </table>
 <p>Nyx also easily interfaces with two post-processing suites, Reeber used for halo finding
 and Gimlet, used for calculating different summary statistics.</p>
-</div>
-<div class="section" id="reeber">
-<h2>Reeber<a class="headerlink" href="#reeber" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="reeber">
+<h2>Reeber<a class="headerlink" href="#reeber" title="Link to this heading">¶</a></h2>
 <p>Reeber uses topological methods to construct merge trees of scalar fields.
 These trees are effectively parameter-independent and contain a complete
 description of the field topology. In the context of Nyx, the field of interest
@@ -182,24 +169,24 @@ runtime parameters in order to locate the volume-averaged center of dark matter
 halos. The same tree can be queried with any number of such parameters to find
 halos with different mass/density thresholds.  Reeber is publicly available on
 <a class="reference external" href="https://github.com/mrzv/reeber">GitHub</a>.</p>
-</div>
-<div class="section" id="gimlet">
-<h2>Gimlet<a class="headerlink" href="#gimlet" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="gimlet">
+<h2>Gimlet<a class="headerlink" href="#gimlet" title="Link to this heading">¶</a></h2>
 <p>Gimlet computes a variety of quantities about the simulation, including optical
 depths, Lyman-alpha fluxes, power spectra (both 1-D “line-of-sight” as well as
 fully 3-D), and probability distribution functions. These suites are fully
 MPI-parallel and can be run either “in situ” or “in-transit”, or with a
 combination of both. Gimlet code is not yet publicly available, but we are working
 on releasing it.</p>
-</div>
-<div class="section" id="do-it-yourself">
-<h2>Do It Yourself<a class="headerlink" href="#do-it-yourself" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="do-it-yourself">
+<h2>Do It Yourself<a class="headerlink" href="#do-it-yourself" title="Link to this heading">¶</a></h2>
 <p>Nyx and AMReX provide the capability for the user to execute an arbitrary
 post-processing workflow.  In <code class="docutils literal notranslate"><span class="pre">Util/Diagnostics/</span></code> we provide a simple example
 of opening an AMReX plotfile, reading and manipulating data in it.  That can be a
 starting place for building analysis tools for any specific need.</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

@@ -1,22 +1,23 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html4" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hydrodynamical and Heating-Cooling Splitting &mdash; Nyx  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "tex2jax_ignore|mathjax_ignore|document", "processClass": "tex2jax_process|mathjax_process|math|output_area"}})</script>
+  <title>Hydrodynamical and Heating-Cooling Splitting &mdash; Nyx  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "macros": {"kth": "{{k_\\mathrm{th}}}", "gcc": "{\\mathrm{g~cm^{-3}}}", "cms": "{\\mathrm{cm~s^{-1}}}", "presunit": "{\\mathrm{dyn~cm^{-2}}}", "accelunit": "{\\mathrm{cm~s^{-2}}}", "ergg": "{\\mathrm{erg~g^{-1}}}", "Ab": "{{\\bf A}}", "eb": "{{\\bf e}}", "Fb": "{{\\bf F}}", "gb": "{{\\bf g}}", "Hb": "{{\\bf H}}", "ib": "{{\\bf i}}", "Ib": "{{\\bf I}}", "Kb": "{{\\bf K}}", "lb": "{{\\bf l}}", "Lb": "{{\\bf L}}", "nb": "{{\\bf n}}", "Pb": "{{\\bf P}}", "Qb": "{{\\bf Q}}", "rb": "{{\\bf r}}", "Rb": "{{\\bf R}}", "Sb": "{{\\bf S}}", "ub": "{{\\bf u}}", "Ub": "{{\\bf U}}", "xb": "{{\\bf x}}", "dt": "{\\Delta t}", "omegadot": "{\\dot\\omega}", "inp": "{{\\rm in}}", "outp": "{{\\rm out}}", "sync": "{{\\rm sync}}", "half": "{\\frac{1}{2}}", "myhalf": "{\\half}", "nph": "{{n+\\myhalf}}", "kpp": "{\\ensuremath{\\kappa_{\\mathrm{P}}}}", "kpr": "{\\ensuremath{\\kappa_{\\mathrm{R}}}}", "kpf": "{\\ensuremath{\\kappa_{\\mathrm{F}}}}", "vb": "{\\boldsymbol{v}}", "vbt": "{\\widetilde{\\vb}}", "rbt": "{\\widetilde{\\rb}}", "ob": "{\\boldsymbol{\\omega}}", "nablab": "{\\boldsymbol{\\nabla}}"}}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -43,7 +44,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Nyx basics</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Nyx basics</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="NyxPreface.html">Preface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxCitation.html">Citation</a></li>
@@ -94,8 +95,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="hydrodynamical-and-heating-cooling-splitting">
-<h1>Hydrodynamical and Heating-Cooling Splitting<a class="headerlink" href="#hydrodynamical-and-heating-cooling-splitting" title="Permalink to this headline">¶</a></h1>
+  <section id="hydrodynamical-and-heating-cooling-splitting">
+<h1>Hydrodynamical and Heating-Cooling Splitting<a class="headerlink" href="#hydrodynamical-and-heating-cooling-splitting" title="Link to this heading">¶</a></h1>
 <p>We solve the equations of gas dynamics in a coordinate system that is comoving
 with the expanding universe, with expansion factor, <span class="math notranslate nohighlight">\(a,\)</span> related to the redshift, <span class="math notranslate nohighlight">\(z\)</span>, by <span class="math notranslate nohighlight">\(a = 1 / (1 + z).\)</span></p>
 <p>We describe the state of the gas
@@ -117,8 +118,8 @@ corner coupling.</p>
 <p>We track derived variables such as temperature and electron fraction ne based on the internal energy. The concentrations
 of different isotopes of hydrogen and helium then depend on a Newton solve of the heating/cooling equations of state, which
 are closely tied to the internal energy.</p>
-<div class="section" id="strang-splitting">
-<h2>Strang Splitting<a class="headerlink" href="#strang-splitting" title="Permalink to this headline">¶</a></h2>
+<section id="strang-splitting">
+<h2>Strang Splitting<a class="headerlink" href="#strang-splitting" title="Link to this heading">¶</a></h2>
 <p>The original splitting used in Nyx is Strang splitting, where a half-step of the heating-cooling
 is evolved, then a full step of the hydrodynamical terms, followed by a half-step of the heating-cooling.
 This algorithm is the classical Strang splitting, adapted to include gravity and other forcing terms.</p>
@@ -147,80 +148,72 @@ This algorithm is the classical Strang splitting, adapted to include gravity and
 <p>The algorithm at a single level of refinement begins by computing the time step, <span class="math notranslate nohighlight">\(\Delta t,\)</span>
 and advancing <span class="math notranslate nohighlight">\(a\)</span> from <span class="math notranslate nohighlight">\(t^n\)</span> to <span class="math notranslate nohighlight">\(t^{n+1} = t^n + \Delta t\)</span>. The rest of the time step is
 then composed of the following steps:</p>
-<dl class="docutils">
-<dt>Step 1:</dt>
-<dd><p class="first">Compute <span class="math notranslate nohighlight">\({\phi}^n\)</span> and <span class="math notranslate nohighlight">\({\bf g}^n\)</span> using <span class="math notranslate nohighlight">\(\rho_b^n\)</span> and <span class="math notranslate nohighlight">\(\rho_{dm}^n\)</span>,
+<dl>
+<dt>Step 1:</dt><dd><p>Compute <span class="math notranslate nohighlight">\({\phi}^n\)</span> and <span class="math notranslate nohighlight">\({\bf g}^n\)</span> using <span class="math notranslate nohighlight">\(\rho_b^n\)</span> and <span class="math notranslate nohighlight">\(\rho_{dm}^n\)</span>,
 where <span class="math notranslate nohighlight">\(\rho_{dm}^{n}\)</span> is computed from the particles at <span class="math notranslate nohighlight">\({\bf x}_i^{n}\)</span>.</p>
-<p class="last">We note that in the single-level algorithm we can instead use <span class="math notranslate nohighlight">\({\bf g}\)</span> as computed at the
+<p>We note that in the single-level algorithm we can instead use <span class="math notranslate nohighlight">\({\bf g}\)</span> as computed at the
 end of the previous step because there have been no changes to <span class="math notranslate nohighlight">\({\bf x}_i\)</span>
 or <span class="math notranslate nohighlight">\(\rho\)</span> since then.</p>
 </dd>
-<dt>Step 2:</dt>
-<dd><p class="first">Interpolate <span class="math notranslate nohighlight">\({\bf g}^n\)</span> from the grid to the particle locations, then
+<dt>Step 2:</dt><dd><p>Interpolate <span class="math notranslate nohighlight">\({\bf g}^n\)</span> from the grid to the particle locations, then
 advance the particle velocities by <span class="math notranslate nohighlight">\(\Delta t/ 2\)</span> and particle positions by <span class="math notranslate nohighlight">\(\Delta t\)</span>.</p>
-<div class="last math notranslate nohighlight">
+<div class="math notranslate nohighlight">
 \[\begin{split}\begin{aligned}
      {\bf u}_i^{{n+\frac{1}{2}}} &amp;=&amp; \frac{1}{a^{{n+\frac{1}{2}}}} ((a^n {\bf u}^n_i) + \frac{\Delta t}{2} \; {\bf g}^n_i) \\
      {\bf x}_i^{n+1}  &amp;=&amp; {\bf x}^n_i + \frac{\Delta t}{a^{{n+\frac{1}{2}}}} {\bf u}_i^{{n+\frac{1}{2}}}\end{aligned}\end{split}\]</div>
 </dd>
-<dt>Step 3:</dt>
-<dd><p class="first">Advance <span class="math notranslate nohighlight">\({\bf U}\)</span> by <span class="math notranslate nohighlight">\(\frac{1}{2}\Delta t\)</span> for first strang</p>
+<dt>Step 3:</dt><dd><p>Advance <span class="math notranslate nohighlight">\({\bf U}\)</span> by <span class="math notranslate nohighlight">\(\frac{1}{2}\Delta t\)</span> for first strang</p>
 <p>We advance <span class="math notranslate nohighlight">\(e\)</span> by integrating the source terms in time for <span class="math notranslate nohighlight">\(\frac{1}{2}\Delta t\)</span></p>
 <div class="math notranslate nohighlight">
 \[\begin{aligned}
      ( e)^{n,\ast} &amp;=&amp; ( e)^n +  \int \Lambda_{HC} \; dt^\prime  .\end{aligned}\]</div>
 <p>We update <span class="math notranslate nohighlight">\((\rho e)^{n,\ast}=(\rho e)^{n,\ast}+\rho^{n}\left((e)^{n,\ast}-(e)^{n}\right)\)</span></p>
-<p class="last">We update <span class="math notranslate nohighlight">\((\rho E)^{n,\ast}=(\rho E)^{n,\ast}+\rho^{n}\left((e)^{n,\ast}-(e)^{n}\right)\)</span></p>
+<p>We update <span class="math notranslate nohighlight">\((\rho E)^{n,\ast}=(\rho E)^{n,\ast}+\rho^{n}\left((e)^{n,\ast}-(e)^{n}\right)\)</span></p>
 </dd>
-<dt>Step 4:</dt>
-<dd><p class="first">Advance <span class="math notranslate nohighlight">\({\bf U}\)</span> by <span class="math notranslate nohighlight">\(\Delta t\)</span> for advective terms</p>
+<dt>Step 4:</dt><dd><p>Advance <span class="math notranslate nohighlight">\({\bf U}\)</span> by <span class="math notranslate nohighlight">\(\Delta t\)</span> for advective terms</p>
 <p>Advance the solution using time-centered fluxes and <span class="math notranslate nohighlight">\(S_e\)</span>
 and an explicit representation of <span class="math notranslate nohighlight">\(S_g\)</span> at time <span class="math notranslate nohighlight">\(t^n\)</span>:</p>
 <div class="math notranslate nohighlight">
 \[{\bf U}^{n+1,\ast} = {\bf U}^{n,\ast} + \Delta tA^{n+\frac{1}{2}}+ \Delta tS_g^n\]</div>
 <p>where <span class="math notranslate nohighlight">\(A^{n+\frac{1}{2}}\)</span> is computed by predicting from the <span class="math notranslate nohighlight">\({\bf U}^{n,\ast}\)</span> states.</p>
-<p class="last">After adding the advective update terms <span class="math notranslate nohighlight">\(A^{n+\frac{1}{2}}\)</span> and before calculating <span class="math notranslate nohighlight">\(S_{g}\)</span>, apply a correction to <span class="math notranslate nohighlight">\({\bf U}^{n+1,\ast}\)</span> to enforce <span class="math notranslate nohighlight">\(\rho &gt; 1.1 \times small_dense\)</span></p>
+<p>After adding the advective update terms <span class="math notranslate nohighlight">\(A^{n+\frac{1}{2}}\)</span> and before calculating <span class="math notranslate nohighlight">\(S_{g}\)</span>, apply a correction to <span class="math notranslate nohighlight">\({\bf U}^{n+1,\ast}\)</span> to enforce <span class="math notranslate nohighlight">\(\rho &gt; 1.1 \times small_dense\)</span></p>
 </dd>
-<dt>Step 5:</dt>
-<dd><p class="first">Second Strang step</p>
+<dt>Step 5:</dt><dd><p>Second Strang step</p>
 <p>We advance <span class="math notranslate nohighlight">\(e\)</span> by integrating the source terms in time for <span class="math notranslate nohighlight">\(\frac{1}{2}\Delta t\)</span></p>
 <div class="math notranslate nohighlight">
 \[\begin{aligned}
 ( e)^{n+1} &amp;=&amp; ( e)^{n+1,\ast } +  \int \Lambda_{HC} \; dt^\prime .\end{aligned}\]</div>
 <p>We update <span class="math notranslate nohighlight">\((\rho e)^{n+1}=(\rho e)^{n+1,\ast}+\rho^{n+1}\left((e)^{n+1}-(e)^{n+1,\ast}\right)\)</span></p>
 <p>We update <span class="math notranslate nohighlight">\((\rho E)^{n+1}=(\rho E)^{n+1,\ast}+\rho^{n+1}\left((e)^{n+1}-(e)^{n+1,\ast}\right)\)</span></p>
-<p class="last">We store Ne and Temp based on eos_ hc updates from <span class="math notranslate nohighlight">\((e)^{n+1}\)</span></p>
+<p>We store Ne and Temp based on eos_ hc updates from <span class="math notranslate nohighlight">\((e)^{n+1}\)</span></p>
 </dd>
-<dt>Step 6:</dt>
-<dd><p class="first">Compute <span class="math notranslate nohighlight">\({\phi}^{n+1}\)</span> and <span class="math notranslate nohighlight">\({\bf g}^{n+1}\)</span> using
+<dt>Step 6:</dt><dd><p>Compute <span class="math notranslate nohighlight">\({\phi}^{n+1}\)</span> and <span class="math notranslate nohighlight">\({\bf g}^{n+1}\)</span> using
 <span class="math notranslate nohighlight">\(\rho^{n+1,*}\)</span> and <span class="math notranslate nohighlight">\(\rho_{dm}^{n+1}\)</span>, where <span class="math notranslate nohighlight">\(\rho_{dm}^{n+1}\)</span>
 is computed from the particles at <span class="math notranslate nohighlight">\({\bf x}_i^{n+1}\)</span>.</p>
-<p class="last">Here we can use <span class="math notranslate nohighlight">\({\phi}^n\)</span> as an initial guess for <span class="math notranslate nohighlight">\({\phi}^{n+1}\)</span> in order to reduce the time
+<p>Here we can use <span class="math notranslate nohighlight">\({\phi}^n\)</span> as an initial guess for <span class="math notranslate nohighlight">\({\phi}^{n+1}\)</span> in order to reduce the time
 spent in multigrid to reach the specified tolerance.</p>
 </dd>
-<dt>Step 7:</dt>
-<dd><p class="first">Correct <span class="math notranslate nohighlight">\({\bf U}\)</span> with time-centered source terms, and replace <span class="math notranslate nohighlight">\(e\)</span> by
+<dt>Step 7:</dt><dd><p>Correct <span class="math notranslate nohighlight">\({\bf U}\)</span> with time-centered source terms, and replace <span class="math notranslate nohighlight">\(e\)</span> by
 <span class="math notranslate nohighlight">\(E - \frac{1}{2}U^2\)</span> as appropriate.</p>
 <p>We time-center the
 gravitational source terms only,</p>
-<div class="last math notranslate nohighlight">
+<div class="math notranslate nohighlight">
 \[{\bf U}^{n+1} = {\bf U}^{n+1} + \frac{\Delta t}{2} (S_g^{n+1} - S_g^n)\]</div>
 </dd>
-<dt>Step 8:</dt>
-<dd><p class="first">Interpolate <span class="math notranslate nohighlight">\({\bf g}^{n+1}\)</span> from the grid to the particle locations, then
+<dt>Step 8:</dt><dd><p>Interpolate <span class="math notranslate nohighlight">\({\bf g}^{n+1}\)</span> from the grid to the particle locations, then
 update the particle velocities, <span class="math notranslate nohighlight">\({\bf u}_i^{n+1}\)</span></p>
-<div class="last math notranslate nohighlight">
+<div class="math notranslate nohighlight">
 \[\begin{aligned}
     {\bf u}_i^{n+1} &amp;=&amp; \frac{1}{a^{n+1}}
                     \left( \left( a^{{n+\frac{1}{2}}} {\bf u}^{{n+\frac{1}{2}}}_i \right)
                          + \frac{\Delta t}{2} \; {\bf g}^{n+1}_i \right)  \end{aligned}\]</div>
 </dd>
-<dt>Step **:</dt>
-<dd>in post_ timestep, do a reset and compute_ new_ temp after syncing the gravity sources</dd>
+<dt>Step **:</dt><dd><p>in post_ timestep, do a reset and compute_ new_ temp after syncing the gravity sources</p>
+</dd>
 </dl>
-</div>
-<div class="section" id="deferred-correction-splitting-algorithm">
-<h2>Deferred-Correction Splitting Algorithm<a class="headerlink" href="#deferred-correction-splitting-algorithm" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="deferred-correction-splitting-algorithm">
+<h2>Deferred-Correction Splitting Algorithm<a class="headerlink" href="#deferred-correction-splitting-algorithm" title="Link to this heading">¶</a></h2>
 <p>This algorithm is based on the version of SDC introduced by Nonaka et. al. <code class="docutils literal notranslate"><span class="pre">\cite{Nonaka2012}</span></code></p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\frac{\partial \rho}{\partial t} = - \frac{1}{a} \nabla \cdot (\rho {\bf U}) , \\\end{split}\]</div>
@@ -245,25 +238,22 @@ update the particle velocities, <span class="math notranslate nohighlight">\({\b
 <p>The algorithm at a single level of refinement begins by computing the time step, <span class="math notranslate nohighlight">\(\Delta t,\)</span>
 and advancing <span class="math notranslate nohighlight">\(a\)</span> from <span class="math notranslate nohighlight">\(t^n\)</span> to <span class="math notranslate nohighlight">\(t^{n+1} = t^n + \Delta t\)</span>. The rest of the time step is
 then composed of the following steps:</p>
-<dl class="docutils">
-<dt>Step 1:</dt>
-<dd><p class="first">Compute <span class="math notranslate nohighlight">\({\phi}^n\)</span> and <span class="math notranslate nohighlight">\({\bf g}^n\)</span> using <span class="math notranslate nohighlight">\(\rho^n\)</span> and <span class="math notranslate nohighlight">\(\rho_{dm}^n\)</span>,
+<dl>
+<dt>Step 1:</dt><dd><p>Compute <span class="math notranslate nohighlight">\({\phi}^n\)</span> and <span class="math notranslate nohighlight">\({\bf g}^n\)</span> using <span class="math notranslate nohighlight">\(\rho^n\)</span> and <span class="math notranslate nohighlight">\(\rho_{dm}^n\)</span>,
 where <span class="math notranslate nohighlight">\(\rho_{dm}^{n}\)</span> is computed from the particles at <span class="math notranslate nohighlight">\({\bf x}_i^{n}\)</span>.</p>
-<p class="last">We note that in the single-level algorithm we can instead use <span class="math notranslate nohighlight">\({\bf g}\)</span> as computed at the
+<p>We note that in the single-level algorithm we can instead use <span class="math notranslate nohighlight">\({\bf g}\)</span> as computed at the
 end of the previous step because there have been no changes to <span class="math notranslate nohighlight">\({\bf x}_i\)</span>
 or <span class="math notranslate nohighlight">\(\rho\)</span> since then.</p>
 </dd>
-<dt>Step 2:</dt>
-<dd><p class="first">Interpolate <span class="math notranslate nohighlight">\({\bf g}^n\)</span> from the grid to the particle locations, then
+<dt>Step 2:</dt><dd><p>Interpolate <span class="math notranslate nohighlight">\({\bf g}^n\)</span> from the grid to the particle locations, then
 advance the particle velocities by <span class="math notranslate nohighlight">\(\Delta t/ 2\)</span> and particle positions by <span class="math notranslate nohighlight">\(\Delta t\)</span>.</p>
-<div class="last math notranslate nohighlight">
+<div class="math notranslate nohighlight">
 \[\begin{split}\begin{aligned}
      {\bf u}_i^{{n+\frac{1}{2}}} &amp;=&amp; \frac{1}{a^{{n+\frac{1}{2}}}} ((a^n {\bf u}^n_i) + \frac{\Delta t}{2} \; {\bf g}^n_i) \\
      {\bf x}_i^{n+1}  &amp;=&amp; {\bf x}^n_i + \frac{\Delta t}{a^{{n+\frac{1}{2}}}} {\bf u}_i^{{n+\frac{1}{2}}}\end{aligned}\end{split}\]</div>
 </dd>
-<dt>Step 3:</dt>
-<dd><p class="first">Construct advective update terms using <span class="math notranslate nohighlight">\(I_R\)</span> from last timestep as source</p>
-<div class="last math notranslate nohighlight">
+<dt>Step 3:</dt><dd><p>Construct advective update terms using <span class="math notranslate nohighlight">\(I_R\)</span> from last timestep as source</p>
+<div class="math notranslate nohighlight">
 \[\begin{split}\begin{aligned}
 A_{\rho} &amp; = &amp; -\frac{1}{a}\nabla\cdot(\rho{\bf U})\\
 A_{\rho u} &amp; = &amp; -\nabla\cdot\left(\rho uu\right)-\nabla p\\
@@ -272,8 +262,7 @@ A_{\rho e} &amp; = &amp; \frac{1}{a} \left[
 - \nabla \cdot (\rho_b {\bf U}e)
 - p \nabla \cdot {\bf U}) \right]\end{aligned}\end{split}\]</div>
 </dd>
-<dt>Step 4:</dt>
-<dd><p class="first">Update momentum and <span class="math notranslate nohighlight">\(\rho E\)</span></p>
+<dt>Step 4:</dt><dd><p>Update momentum and <span class="math notranslate nohighlight">\(\rho E\)</span></p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{aligned}
 S_{g} &amp; = &amp; \rho g\\
@@ -282,60 +271,54 @@ S_{g} &amp; = &amp; \rho g\\
 \[u^{n+1,\ast} = u^{n} + \Delta tA^{n+\frac{1}{2}}+ \Delta tS_g^n\]</div>
 <div class="math notranslate nohighlight">
 \[\left(\rho E\right)^{n+1,\ast }=\left(\rho E\right)^{n}+ \Delta tA_{\rho E}^{n+1/2} + \Delta tS_g\]</div>
-<p class="last">After adding the advective update terms <span class="math notranslate nohighlight">\(A_\ast\)</span> to the appropriate components of <span class="math notranslate nohighlight">\({\bf U}^{n+1,\ast}\)</span> and before calculating <span class="math notranslate nohighlight">\(S_{g}\)</span>, apply a correction to <span class="math notranslate nohighlight">\({\bf U}^{n+1,\ast}\)</span> and <cite>A_{rho}</cite> to enforce <span class="math notranslate nohighlight">\(\rho &gt; 1.1 \times small_dens\)</span></p>
+<p>After adding the advective update terms <span class="math notranslate nohighlight">\(A_\ast\)</span> to the appropriate components of <span class="math notranslate nohighlight">\({\bf U}^{n+1,\ast}\)</span> and before calculating <span class="math notranslate nohighlight">\(S_{g}\)</span>, apply a correction to <span class="math notranslate nohighlight">\({\bf U}^{n+1,\ast}\)</span> and <cite>A_{rho}</cite> to enforce <span class="math notranslate nohighlight">\(\rho &gt; 1.1 \times small_dens\)</span></p>
 </dd>
-<dt>Step 5:</dt>
-<dd><p class="first">Simultaneously solve heating-cooling:</p>
+<dt>Step 5:</dt><dd><p>Simultaneously solve heating-cooling:</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}\begin{aligned}
 \rho^{n+1,\ast} &amp; = &amp; \rho^{n}+\int_{t^{n}}^{t^{n+1}}A_{\rho}dt^{\prime}\\
 e^{n+1,\ast} &amp; = &amp; e^{n}+\int_{t^{n}}^{t^{n+1}} \left(A_{e}+\Lambda_{HC}\right) dt^{\prime}\end{aligned}\end{split}\]</div>
-<p class="last">where <span class="math notranslate nohighlight">\(A_{e}=\frac{1}{\Delta t}\left(\left(\left[\frac{1}{a^{n+1}}\right]^{2}\left(\left[a^{n}\right]^{2}\left(\rho e\right)^{n}+\Delta t*A_{\rho e}\right)+A_{reset}\right)/\left(\rho^{n}+\Delta tA_{\rho}\right)-e^{n}\right)\)</span></p>
+<p>where <span class="math notranslate nohighlight">\(A_{e}=\frac{1}{\Delta t}\left(\left(\left[\frac{1}{a^{n+1}}\right]^{2}\left(\left[a^{n}\right]^{2}\left(\rho e\right)^{n}+\Delta t*A_{\rho e}\right)+A_{reset}\right)/\left(\rho^{n}+\Delta tA_{\rho}\right)-e^{n}\right)\)</span></p>
 </dd>
-<dt>Step 6:</dt>
-<dd><p class="first">We define</p>
-<div class="last math notranslate nohighlight">
+<dt>Step 6:</dt><dd><p>We define</p>
+<div class="math notranslate nohighlight">
 \[\begin{split}\begin{aligned}
 I_{R_{\left(\rho e\right)}} &amp; = &amp; \left( \left[a^{n+1}\right]^{2}\rho^{n+1,\ast}e^{n+1,\ast}-\left(\left[a^{n}\right]^{2}\rho^{n}e^{n}+\Delta tA_{\rho e}\right)\right)/\left[\Delta t\left(\frac{a^{n}+a^{n+1}}{2}\right)\right]\\
 &amp; &amp; -\left[a^{n+1}\right]^{2}A_{reset}/\left[\Delta t\left(\frac{a^{n}+a^{n+1}}{2}\right)\right]\end{aligned}\end{split}\]</div>
 </dd>
-<dt>Step 7:</dt>
-<dd><p class="first">We update internal and total energy using this forcing:
+<dt>Step 7:</dt><dd><p>We update internal and total energy using this forcing:
 <span class="math notranslate nohighlight">\(\left(\rho e\right)^{n+1,\ast}=\left(\rho e\right)^{n+1,\ast} + \left(\frac{a^{n}+a^{n+1}}{2}\right) \left(\frac{1}{a^{n+1}}\right)^2 \Delta tI_{R_{\rho e}}\)</span></p>
 <p><span class="math notranslate nohighlight">\(\left(\rho E\right)^{n+1,\ast}=\left(\rho E\right)^{n+1,\ast} + \left(\frac{a^{n}+a^{n+1}}{2}\right) \left(\frac{1}{a^{n+1}}\right)^2 \Delta tI_{R_{\rho e}}\)</span></p>
-<p class="last">We store Ne and Temp based on eos_ hc updates from <span class="math notranslate nohighlight">\((e)^{n+1}\)</span></p>
+<p>We store Ne and Temp based on eos_ hc updates from <span class="math notranslate nohighlight">\((e)^{n+1}\)</span></p>
 </dd>
-<dt>Step 8:</dt>
-<dd>Repeat step 3-7</dd>
-<dt>Step 9:</dt>
-<dd><p class="first">Compute <span class="math notranslate nohighlight">\({\phi}^{n+1}\)</span> and <span class="math notranslate nohighlight">\({\bf g}^{n+1}\)</span> using
+<dt>Step 8:</dt><dd><p>Repeat step 3-7</p>
+</dd>
+<dt>Step 9:</dt><dd><p>Compute <span class="math notranslate nohighlight">\({\phi}^{n+1}\)</span> and <span class="math notranslate nohighlight">\({\bf g}^{n+1}\)</span> using
 <span class="math notranslate nohighlight">\(\rho^{n+1,*}\)</span> and <span class="math notranslate nohighlight">\(\rho_{dm}^{n+1}\)</span>, where <span class="math notranslate nohighlight">\(\rho_{dm}^{n+1}\)</span>
 is computed from the particles at <span class="math notranslate nohighlight">\({\bf x}_i^{n+1}\)</span>.</p>
-<p class="last">Here we can use <span class="math notranslate nohighlight">\({\phi}^n\)</span> as an initial guess for <span class="math notranslate nohighlight">\({\phi}^{n+1}\)</span> in order to reduce the time
+<p>Here we can use <span class="math notranslate nohighlight">\({\phi}^n\)</span> as an initial guess for <span class="math notranslate nohighlight">\({\phi}^{n+1}\)</span> in order to reduce the time
 spent in multigrid to reach the specified tolerance.</p>
 </dd>
-<dt>Step 10:</dt>
-<dd><p class="first">Correct <span class="math notranslate nohighlight">\({\bf U}\)</span> with time-centered source terms, and replace <span class="math notranslate nohighlight">\(e\)</span> by
+<dt>Step 10:</dt><dd><p>Correct <span class="math notranslate nohighlight">\({\bf U}\)</span> with time-centered source terms, and replace <span class="math notranslate nohighlight">\(e\)</span> by
 <span class="math notranslate nohighlight">\(E - \frac{1}{2}U^2\)</span> as appropriate.</p>
 <p>We time-center the
 gravitational source terms only,</p>
-<div class="last math notranslate nohighlight">
+<div class="math notranslate nohighlight">
 \[{\bf U}^{n+1} = {\bf U}^{n+1} + \frac{\Delta t}{2} (S_g^{n+1} - S_g^n)\]</div>
 </dd>
-<dt>Step 11:</dt>
-<dd><p class="first">Interpolate <span class="math notranslate nohighlight">\({\bf g}^{n+1}\)</span> from the grid to the particle locations, then
+<dt>Step 11:</dt><dd><p>Interpolate <span class="math notranslate nohighlight">\({\bf g}^{n+1}\)</span> from the grid to the particle locations, then
 update the particle velocities, <span class="math notranslate nohighlight">\({\bf u}_i^{n+1}\)</span></p>
-<div class="last math notranslate nohighlight">
+<div class="math notranslate nohighlight">
 \[\begin{aligned}
     {\bf u}_i^{n+1} &amp;=&amp; \frac{1}{a^{n+1}}
                     \left( \left( a^{{n+\frac{1}{2}}} {\bf u}^{{n+\frac{1}{2}}}_i \right)
                          + \frac{\Delta t}{2} \; {\bf g}^{n+1}_i \right)  \end{aligned}\]</div>
 </dd>
-<dt>Step **:</dt>
-<dd>in post_ timestep, do a reset and compute_ new_ temp after syncing the gravity sources</dd>
+<dt>Step **:</dt><dd><p>in post_ timestep, do a reset and compute_ new_ temp after syncing the gravity sources</p>
+</dd>
 </dl>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

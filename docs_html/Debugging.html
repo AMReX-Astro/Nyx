@@ -1,22 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html4" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Debugging &mdash; Nyx  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "tex2jax_ignore|mathjax_ignore|document", "processClass": "tex2jax_process|mathjax_process|math|output_area"}})</script>
+  <title>Debugging &mdash; Nyx  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -43,7 +42,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Nyx basics</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Nyx basics</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="NyxPreface.html">Preface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxCitation.html">Citation</a></li>
@@ -90,35 +89,35 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="debugging">
-<span id="chap-debugging"></span><h1>Debugging<a class="headerlink" href="#debugging" title="Permalink to this headline">¶</a></h1>
+  <section id="debugging">
+<span id="chap-debugging"></span><h1>Debugging<a class="headerlink" href="#debugging" title="Link to this heading">¶</a></h1>
 <p>Debugging is an art.  Everyone has their own favorite method.  Here we
 offer a few tips we have found to be useful.</p>
-<p>Compiling in debug mode (e.g., <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">make</span></span><span class="whitespace"> </span><span class="name"><span class="pre">DEBUG</span></span><span class="operator"><span class="pre">=</span></span><span class="name"><span class="pre">TRUE</span></span></code> for gmake users;
-<code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">cmake</span></span><span class="whitespace"> </span><span class="operator"><span class="pre">-</span></span><span class="name"><span class="pre">DDEBUG</span></span></code> for cmake users) and running with
-<code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">amrex</span></span><span class="punctuation"><span class="pre">.</span></span><span class="name"><span class="pre">fpe_trap_invalid</span></span><span class="operator"><span class="pre">=</span></span><span class="literal number integer"><span class="pre">1</span></span></code> in the inputs file can be helpful.
+<p>Compiling in debug mode (e.g., <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">make</span><span class="w"> </span><span class="n">DEBUG</span><span class="o">=</span><span class="n">TRUE</span></code> for gmake users;
+<code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">cmake</span><span class="w"> </span><span class="o">-</span><span class="n">DDEBUG</span></code> for cmake users) and running with
+<code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">amrex</span><span class="p">.</span><span class="n">fpe_trap_invalid</span><span class="o">=</span><span class="mi">1</span></code> in the inputs file can be helpful.
 In debug mode, many compiler debugging flags are turned on and all
-<code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">MultiFab</span></span></code> s are initialized to signaling NaNs.  The
-<code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">amrex</span></span><span class="punctuation"><span class="pre">.</span></span><span class="name"><span class="pre">fpe_trap_invalid</span></span></code> parameter will result in backtrace files
+<code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">MultiFab</span></code> s are initialized to signaling NaNs.  The
+<code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">amrex</span><span class="p">.</span><span class="n">fpe_trap_invalid</span></code> parameter will result in backtrace files
 when a floating point exception occurs.  One can then examine those
 files to track down the origin of the issue.</p>
 <p>Several other ways to look at the data include:</p>
 <ol class="arabic simple">
-<li>Writing a <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">MultiFab</span></span></code> to disk with</li>
+<li><p>Writing a <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">MultiFab</span></code> to disk with</p></li>
 </ol>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">VisMF</span><span class="o">::</span><span class="n">Write</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">FabArray</span><span class="o">&lt;</span><span class="n">FArrayBox</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">mf</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">name</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>and examining it with <code class="docutils literal notranslate"><span class="pre">Amrvis</span></code> (section <span class="xref std std-ref">sec:amrvis</span> in the AMReX documentation).</p>
 <ol class="arabic simple" start="2">
-<li>You can also use the <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">print_state</span></span></code> routine:</li>
+<li><p>You can also use the <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">print_state</span></code> routine:</p></li>
 </ol>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">print_state</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">MultiFab</span><span class="o">&amp;</span><span class="w"> </span><span class="n">mf</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">IntVect</span><span class="o">&amp;</span><span class="w"> </span><span class="n">cell</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="o">=</span><span class="mi">-1</span><span class="p">);</span>
 </pre></div>
 </div>
 <p>which outputs the data for a single cell.</p>
 <ol class="arabic simple" start="3">
-<li>If you want to compare old and new plotfiles,</li>
+<li><p>If you want to compare old and new plotfiles,</p></li>
 </ol>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">fcompare</span><span class="w"> </span><span class="o">--</span><span class="n">infile1</span><span class="w"> </span><span class="n">plt00000_run1</span><span class="w"> </span><span class="o">--</span><span class="n">infile2</span><span class="w"> </span><span class="n">plt00000_run2</span><span class="w"> </span><span class="o">--</span><span class="n">diffvar</span><span class="w"> </span><span class="n">u_g</span>
 </pre></div>
@@ -126,14 +125,14 @@ files to track down the origin of the issue.</p>
 <p>will print out the maximum absolute and relative differences between the two plotfiles
 for each variable and will also create a new plotfile “diffs” that contains the difference
 in u_g (in this case) between the two plotfiles.</p>
-<p>The <code class="code cpp c++ docutils literal notranslate"><span class="name"><span class="pre">fcompare</span></span></code> executable can be built in AMReX (go to amrex/Tools/Plotfile and type “make”).</p>
+<p>The <code class="code highlight cpp c++ docutils literal highlight-c++"><span class="n">fcompare</span></code> executable can be built in AMReX (go to amrex/Tools/Plotfile and type “make”).</p>
 <p>4) Valgrind is another useful debugging tool.  Note that for runs using
 more than one MPI process, one can tell valgrind to output to different
 files for different processes.  For example,</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">mpiexec -n 4 valgrind --leak-check=yes --track-origins=yes --log-file=vallog.%p ./Nyx3d.exe ...</span>
 </pre></div>
 </div>
-</div>
+</section>
 
 
            </div>

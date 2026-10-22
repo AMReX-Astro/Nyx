@@ -1,22 +1,21 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html4" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Compiling Nyx with SUNDIALS 7 &mdash; Nyx  documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-        <script type="text/javascript" src="../_static/jquery.js"></script>
-        <script type="text/javascript" src="../_static/underscore.js"></script>
-        <script type="text/javascript" src="../_static/doctools.js"></script>
-        <script type="text/javascript" src="../_static/language_data.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "tex2jax_ignore|mathjax_ignore|document", "processClass": "tex2jax_process|mathjax_process|math|output_area"}})</script>
+  <title>Compiling Nyx with SUNDIALS 7 &mdash; Nyx  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../_static/doctools.js?v=9a2dae69"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -43,7 +42,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Nyx basics</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Nyx basics</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../NyxPreface.html">Preface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../NyxCitation.html">Citation</a></li>
@@ -99,15 +98,15 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="compiling-nyx-with-sundials-7">
-<span id="sundials"></span><h1>Compiling Nyx with SUNDIALS 7<a class="headerlink" href="#compiling-nyx-with-sundials-7" title="Permalink to this headline">¶</a></h1>
+  <section id="compiling-nyx-with-sundials-7">
+<span id="sundials"></span><h1>Compiling Nyx with SUNDIALS 7<a class="headerlink" href="#compiling-nyx-with-sundials-7" title="Link to this heading">¶</a></h1>
 <p>The following steps describe how to compile Nyx with
 SUNDIALS 6 support. This library is necessary for non-adiabatic
 heating-cooling Nyx runs, where <code class="docutils literal notranslate"><span class="pre">USE_HEATCOOL=TRUE</span></code>, such as
 the <code class="docutils literal notranslate"><span class="pre">Nyx/Exec/LyA</span></code> directory.</p>
 <p>In order to use SUNDIALS:</p>
 <ol class="arabic">
-<li><p class="first">We suggest using the Github mirror:
+<li><p>We suggest using the Github mirror:
 <a class="reference external" href="https://github.com/LLNL/sundials">https://github.com/LLNL/sundials</a> and picking the type of
 parallelism that is appropriate for your architecture.</p>
 <p>To install with cuda and openmp support:</p>
@@ -127,10 +126,10 @@ cmake \
 -DCMAKE_CUDA_HOST_COMPILER=$(which g++)    \
 -DEXAMPLES_INSTALL_PATH=${INSTALL_PREFIX}/examples \
 -DCMAKE_BUILD_TYPE=Release \
--DCMAKE_CUDA_FLAGS=&quot;-DSUNDIALS_DEBUG_CUDA_LASTERROR&quot; \
+-DCMAKE_CUDA_FLAGS="-DSUNDIALS_DEBUG_CUDA_LASTERROR" \
 -DSUNDIALS_BUILD_PACKAGE_FUSED_KERNELS=ON \
--DCMAKE_C_FLAGS_RELEASE=&quot;-O3 -DNDEBUG&quot; \
--DCMAKE_CXX_FLAGS_RELEASE=&quot;-O3 -DNDEBUG&quot;  \
+-DCMAKE_C_FLAGS_RELEASE="-O3 -DNDEBUG" \
+-DCMAKE_CXX_FLAGS_RELEASE="-O3 -DNDEBUG"  \
 -DCUDA_ENABLE=ON  \
 -DMPI_ENABLE=OFF  \
 -DOPENMP_ENABLE=ON   \
@@ -158,8 +157,8 @@ cmake \
 -DCMAKE_CUDA_HOST_COMPILER=$(which g++)    \
 -DEXAMPLES_INSTALL_PATH=${INSTALL_PREFIX}/examples \
 -DCMAKE_BUILD_TYPE=Release \
--DCMAKE_C_FLAGS_RELEASE=&quot;-O3 -DNDEBUG&quot; \
--DCMAKE_CXX_FLAGS_RELEASE=&quot;-O3 -DNDEBUG&quot;  \
+-DCMAKE_C_FLAGS_RELEASE="-O3 -DNDEBUG" \
+-DCMAKE_CXX_FLAGS_RELEASE="-O3 -DNDEBUG"  \
 -DCUDA_ENABLE=OFF  \
 -DMPI_ENABLE=OFF  \
 -DOPENMP_ENABLE=ON   \
@@ -223,26 +222,21 @@ make install -j8
 </pre></div>
 </div>
 </li>
-<li><p class="first">Note that we give these examples for the gnu compiler or the appropriate parallel compiler.
+<li><p>Note that we give these examples for the gnu compiler or the appropriate parallel compiler.
 The compiler chosen needs to be consistent with Nyx’s GNUMakefile
-variable COMP to ensure matching OMP runtime libraries for use with the OpenMP NVector.</p>
-</li>
-<li><p class="first"><code class="docutils literal notranslate"><span class="pre">CUDA_ARCH</span></code> must be set to the appropriate value for the GPU being targeted</p>
-</li>
-<li><p class="first">For more detailed instructions for installing SUNDIALS with different flags and versions see
-the <a class="reference external" href="https://computing.llnl.gov/projects/sundials/sundials-software">SUNDIALS documentation</a>.</p>
-</li>
-<li><p class="first">In the <code class="docutils literal notranslate"><span class="pre">GNUmakefile</span></code> for the application which uses the interface to SUNDIALS, add
+variable COMP to ensure matching OMP runtime libraries for use with the OpenMP NVector.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CUDA_ARCH</span></code> must be set to the appropriate value for the GPU being targeted</p></li>
+<li><p>For more detailed instructions for installing SUNDIALS with different flags and versions see
+the <a class="reference external" href="https://computing.llnl.gov/projects/sundials/sundials-software">SUNDIALS documentation</a>.</p></li>
+<li><p>In the <code class="docutils literal notranslate"><span class="pre">GNUmakefile</span></code> for the application which uses the interface to SUNDIALS, add
 <code class="docutils literal notranslate"><span class="pre">USE_SUNDIALS</span> <span class="pre">=</span> <span class="pre">TRUE</span></code> and <code class="docutils literal notranslate"><span class="pre">SUNDIALS_ROOT=${INSTALL_PREFIX}</span></code>. Note that one must define the
 <code class="docutils literal notranslate"><span class="pre">SUNDIALS_LIB_DIR</span></code> make variable to point to the location where the libraries are installed
 if they are not installed in <code class="docutils literal notranslate"><span class="pre">${INSTALL_PREFIX}/lib</span></code>. Note the default location
-for 64 is <code class="docutils literal notranslate"><span class="pre">${INSTALL_PREFIX}/lib64</span></code>, which we override with <code class="docutils literal notranslate"><span class="pre">-DCMAKE_INSTALL_LIBDIR=lib</span></code>.</p>
-</li>
-<li><p class="first">If the application uses the SUNDIALS CVODE time integrator package, then the variable
+for 64 is <code class="docutils literal notranslate"><span class="pre">${INSTALL_PREFIX}/lib64</span></code>, which we override with <code class="docutils literal notranslate"><span class="pre">-DCMAKE_INSTALL_LIBDIR=lib</span></code>.</p></li>
+<li><p>If the application uses the SUNDIALS CVODE time integrator package, then the variable
 <code class="docutils literal notranslate"><span class="pre">USE_CVODE_LIBS</span> <span class="pre">=</span> <span class="pre">TRUE</span></code> should also be added in the <code class="docutils literal notranslate"><span class="pre">GNUmakefile</span></code> for the application.
 If the application used the SUNDIALS ARKode time integrator package, then the variable
-<code class="docutils literal notranslate"><span class="pre">USE_ARKODE_LIBS</span> <span class="pre">=</span> <span class="pre">TRUE</span></code> should be added.</p>
-</li>
+<code class="docutils literal notranslate"><span class="pre">USE_ARKODE_LIBS</span> <span class="pre">=</span> <span class="pre">TRUE</span></code> should be added.</p></li>
 </ol>
 <p>Note that SUNDIALS can also be installed via Spack:</p>
 <blockquote>
@@ -250,7 +244,7 @@ If the application used the SUNDIALS ARKode time integrator package, then the va
 </pre></div>
 </div>
 </div></blockquote>
-</div>
+</section>
 
 
            </div>

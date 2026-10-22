@@ -1,22 +1,23 @@
+
+
 <!DOCTYPE html>
-<html class="writer-html4" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>The AGN Model in Nyx &mdash; Nyx  documentation</title><link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-        <script type="text/javascript" src="_static/jquery.js"></script>
-        <script type="text/javascript" src="_static/underscore.js"></script>
-        <script type="text/javascript" src="_static/doctools.js"></script>
-        <script type="text/javascript" src="_static/language_data.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "tex2jax_ignore|mathjax_ignore|document", "processClass": "tex2jax_process|mathjax_process|math|output_area"}})</script>
+  <title>The AGN Model in Nyx &mdash; Nyx  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=fd3f3429" />
+
+  
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9a2dae69"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "macros": {"kth": "{{k_\\mathrm{th}}}", "gcc": "{\\mathrm{g~cm^{-3}}}", "cms": "{\\mathrm{cm~s^{-1}}}", "presunit": "{\\mathrm{dyn~cm^{-2}}}", "accelunit": "{\\mathrm{cm~s^{-2}}}", "ergg": "{\\mathrm{erg~g^{-1}}}", "Ab": "{{\\bf A}}", "eb": "{{\\bf e}}", "Fb": "{{\\bf F}}", "gb": "{{\\bf g}}", "Hb": "{{\\bf H}}", "ib": "{{\\bf i}}", "Ib": "{{\\bf I}}", "Kb": "{{\\bf K}}", "lb": "{{\\bf l}}", "Lb": "{{\\bf L}}", "nb": "{{\\bf n}}", "Pb": "{{\\bf P}}", "Qb": "{{\\bf Q}}", "rb": "{{\\bf r}}", "Rb": "{{\\bf R}}", "Sb": "{{\\bf S}}", "ub": "{{\\bf u}}", "Ub": "{{\\bf U}}", "xb": "{{\\bf x}}", "dt": "{\\Delta t}", "omegadot": "{\\dot\\omega}", "inp": "{{\\rm in}}", "outp": "{{\\rm out}}", "sync": "{{\\rm sync}}", "half": "{\\frac{1}{2}}", "myhalf": "{\\half}", "nph": "{{n+\\myhalf}}", "kpp": "{\\ensuremath{\\kappa_{\\mathrm{P}}}}", "kpr": "{\\ensuremath{\\kappa_{\\mathrm{R}}}}", "kpf": "{\\ensuremath{\\kappa_{\\mathrm{F}}}}", "vb": "{\\boldsymbol{v}}", "vbt": "{\\widetilde{\\vb}}", "rbt": "{\\widetilde{\\rb}}", "ob": "{\\boldsymbol{\\omega}}", "nablab": "{\\boldsymbol{\\nabla}}"}}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" /> 
@@ -41,7 +42,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption"><span class="caption-text">Nyx basics</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Nyx basics</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="NyxPreface.html">Preface</a></li>
 <li class="toctree-l1"><a class="reference internal" href="NyxCitation.html">Citation</a></li>
@@ -88,75 +89,69 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="the-agn-model-in-nyx">
-<h1>The AGN Model in Nyx<a class="headerlink" href="#the-agn-model-in-nyx" title="Permalink to this headline">¶</a></h1>
+  <section id="the-agn-model-in-nyx">
+<h1>The AGN Model in Nyx<a class="headerlink" href="#the-agn-model-in-nyx" title="Link to this heading">¶</a></h1>
 <p>In the AGN model, super-massive black hole (SMBH) particles are formed
 at <em>haloes</em>, where each halo is defined by a connected mass enclosed by
 a user-defined density isocontour. In order to find haloes, we use the
-Reeber package described in Section&nbsp;2. Each AGN
+Reeber package described in Section 2. Each AGN
 particle has the standard dark matter particle attributes of position,
 velocity, and mass, as well as two additional attributes, its stored
 accretion energy and its mass accretion rate.</p>
-<table border="1" class="docutils" id="id1">
-<caption><span class="caption-text">Parameters of the AGN model</span><a class="headerlink" href="#id1" title="Permalink to this table">¶</a></caption>
-<colgroup>
-<col width="14%" />
-<col width="25%" />
-<col width="22%" />
-<col width="39%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">In “probin” file</th>
-<th class="head">Parameter</th>
-<th class="head">Fiducial value</th>
-<th class="head">Explanation</th>
+<table class="docutils align-default" id="id1">
+<caption><span class="caption-text">Parameters of the AGN model</span><a class="headerlink" href="#id1" title="Link to this table">¶</a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>In “probin” file</p></th>
+<th class="head"><p>Parameter</p></th>
+<th class="head"><p>Fiducial value</p></th>
+<th class="head"><p>Explanation</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td>*</td>
-<td><span class="math notranslate nohighlight">\(M_{\rm h, min}\)</span></td>
-<td><span class="math notranslate nohighlight">\(10^{10}~ M_\odot\)</span></td>
-<td>Minimum halo mass for SMBH placement</td>
+<tbody>
+<tr class="row-even"><td><p>*</p></td>
+<td><p><span class="math notranslate nohighlight">\(M_{\rm h, min}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(10^{10}~ M_\odot\)</span></p></td>
+<td><p>Minimum halo mass for SMBH placement</p></td>
 </tr>
-<tr class="row-odd"><td>*</td>
-<td><span class="math notranslate nohighlight">\(M_{\rm seed}\)</span></td>
-<td><span class="math notranslate nohighlight">\(10^5~ M_\odot\)</span></td>
-<td>Seed mass of SMBH</td>
+<tr class="row-odd"><td><p>*</p></td>
+<td><p><span class="math notranslate nohighlight">\(M_{\rm seed}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(10^5~ M_\odot\)</span></p></td>
+<td><p>Seed mass of SMBH</p></td>
 </tr>
-<tr class="row-even"><td>T_min</td>
-<td><span class="math notranslate nohighlight">\(T_{\rm min}\)</span></td>
-<td><span class="math notranslate nohighlight">\(10^7\)</span> K</td>
-<td>Minimum heating of the surrounding gas</td>
+<tr class="row-even"><td><p>T_min</p></td>
+<td><p><span class="math notranslate nohighlight">\(T_{\rm min}\)</span></p></td>
+<td><p><span class="math notranslate nohighlight">\(10^7\)</span> K</p></td>
+<td><p>Minimum heating of the surrounding gas</p></td>
 </tr>
-<tr class="row-odd"><td>bondi_boost</td>
-<td><span class="math notranslate nohighlight">\(\alpha\)</span></td>
-<td>100</td>
-<td>Bondi accretion boost factor</td>
+<tr class="row-odd"><td><p>bondi_boost</p></td>
+<td><p><span class="math notranslate nohighlight">\(\alpha\)</span></p></td>
+<td><p>100</p></td>
+<td><p>Bondi accretion boost factor</p></td>
 </tr>
-<tr class="row-even"><td>max_frac_removed</td>
-<td><span class="math notranslate nohighlight">\(f_{\rm max, removed}\)</span></td>
-<td>0.5</td>
-<td>Maximum fraction of mass removed from gas</td>
+<tr class="row-even"><td><p>max_frac_removed</p></td>
+<td><p><span class="math notranslate nohighlight">\(f_{\rm max, removed}\)</span></p></td>
+<td><p>0.5</p></td>
+<td><p>Maximum fraction of mass removed from gas</p></td>
 </tr>
-<tr class="row-odd"><td>eps_rad</td>
-<td><span class="math notranslate nohighlight">\(\epsilon_{\rm r}\)</span></td>
-<td>0.1</td>
-<td>Radiation efficiency</td>
+<tr class="row-odd"><td><p>eps_rad</p></td>
+<td><p><span class="math notranslate nohighlight">\(\epsilon_{\rm r}\)</span></p></td>
+<td><p>0.1</p></td>
+<td><p>Radiation efficiency</p></td>
 </tr>
-<tr class="row-even"><td>eps_coupling</td>
-<td><span class="math notranslate nohighlight">\(\epsilon{\rm c}\)</span></td>
-<td>0.15</td>
-<td>Coupling efficiency</td>
+<tr class="row-even"><td><p>eps_coupling</p></td>
+<td><p><span class="math notranslate nohighlight">\(\epsilon{\rm c}\)</span></p></td>
+<td><p>0.15</p></td>
+<td><p>Coupling efficiency</p></td>
 </tr>
-<tr class="row-odd"><td>eps_kinetic</td>
-<td><span class="math notranslate nohighlight">\(\epsilon_{\rm kin}\)</span></td>
-<td>0.1</td>
-<td>Kinetic feedback efficiency</td>
+<tr class="row-odd"><td><p>eps_kinetic</p></td>
+<td><p><span class="math notranslate nohighlight">\(\epsilon_{\rm kin}\)</span></p></td>
+<td><p>0.1</p></td>
+<td><p>Kinetic feedback efficiency</p></td>
 </tr>
-<tr class="row-even"><td>frac_kinetic</td>
-<td><span class="math notranslate nohighlight">\(f_{\rm kin}\)</span></td>
-<td>0</td>
-<td>Fraction of feedback energy that is kinetic</td>
+<tr class="row-even"><td><p>frac_kinetic</p></td>
+<td><p><span class="math notranslate nohighlight">\(f_{\rm kin}\)</span></p></td>
+<td><p>0</p></td>
+<td><p>Fraction of feedback energy that is kinetic</p></td>
 </tr>
 </tbody>
 </table>
@@ -164,8 +159,8 @@ accretion energy and its mass accretion rate.</p>
 <p>* <span class="math notranslate nohighlight">\(M_{\rm h, min}\)</span> and <span class="math notranslate nohighlight">\(M_{\rm seed}\)</span> are not set in the
 “probin” file, but in the inputs file, by respectively Nyx.mass_halo_min
 and Nyx.mass_seed.</p>
-<div class="section" id="creating-agn-particles-from-haloes">
-<h2>Creating AGN Particles from Haloes<a class="headerlink" href="#creating-agn-particles-from-haloes" title="Permalink to this headline">¶</a></h2>
+<section id="creating-agn-particles-from-haloes">
+<h2>Creating AGN Particles from Haloes<a class="headerlink" href="#creating-agn-particles-from-haloes" title="Link to this heading">¶</a></h2>
 <p>Each halo with threshold mass of <span class="math notranslate nohighlight">\(M_h \geqslant M_{\rm h, min}\)</span>
 that does not already host a black hole particle is seeded with a black
 hole of mass <span class="math notranslate nohighlight">\(M_{\rm seed}\)</span>. The initial position of this AGN
@@ -175,15 +170,14 @@ halo.</p>
 the amount required for mass to be conserved, and the velocity of the
 AGN particle is initialized so that momentum is conserved. The accretion
 energy and mass accretion rate are initialized to zero.</p>
-</div>
-<div class="section" id="merging-agn-particles">
-<h2>Merging AGN Particles<a class="headerlink" href="#merging-agn-particles" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="merging-agn-particles">
+<h2>Merging AGN Particles<a class="headerlink" href="#merging-agn-particles" title="Link to this heading">¶</a></h2>
 <p>Two AGN particles merge when both of these conditions obtain:</p>
 <ol class="arabic">
-<li><p class="first">The distance between them, <span class="math notranslate nohighlight">\(l\)</span>, is less than the mesh spacing,
-<span class="math notranslate nohighlight">\(h\)</span>.</p>
-</li>
-<li><p class="first">[velocity-item] The difference of their velocities,
+<li><p>The distance between them, <span class="math notranslate nohighlight">\(l\)</span>, is less than the mesh spacing,
+<span class="math notranslate nohighlight">\(h\)</span>.</p></li>
+<li><p>[velocity-item] The difference of their velocities,
 <span class="math notranslate nohighlight">\(v_{\rm rel}\)</span>, is less than the circular velocity at distance
 <span class="math notranslate nohighlight">\(l\)</span>:</p>
 <div class="math notranslate nohighlight">
@@ -192,16 +186,16 @@ energy and mass accretion rate are initialized to zero.</p>
 pair, and <span class="math notranslate nohighlight">\(G\)</span> is the gravitational constant.</p>
 </li>
 </ol>
-<p>Criterion&nbsp;[velocity-item] above is necessary in
+<p>Criterion [velocity-item] above is necessary in
 order to prevent AGN particles from merging during a fly-through
 encounter of two haloes, as this could lead to AGN particles being
 quickly removed from the host halo due to momentum conservation.</p>
 <p>The merger of two AGN particles is implemented as the less massive one
 being removed, and its mass and momentum being transferred to the more
 massive one.</p>
-</div>
-<div class="section" id="accretion">
-<h2>Accretion<a class="headerlink" href="#accretion" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="accretion">
+<h2>Accretion<a class="headerlink" href="#accretion" title="Link to this heading">¶</a></h2>
 <p>For an AGN particle of mass <span class="math notranslate nohighlight">\(M_{\rm BH}\)</span>, the Bondi–Hoyle
 accretion rate is</p>
 <div class="math notranslate nohighlight">
@@ -234,24 +228,24 @@ of the particle. The momentum transfer can be computed by assuming the
 velocity of the gas is unchanged; thus the gas in each cell loses
 momentum in proportion to its mass loss, and the particle gains the sum
 of the gas momentum loss multiplied by <span class="math notranslate nohighlight">\((1-\epsilon_{\rm r})\)</span>.</p>
-</div>
-<div class="section" id="feedback-energy">
-<h2>Feedback Energy<a class="headerlink" href="#feedback-energy" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="feedback-energy">
+<h2>Feedback Energy<a class="headerlink" href="#feedback-energy" title="Link to this heading">¶</a></h2>
 <p>Feedback energy is stored in an AGN particle variable
 <span class="math notranslate nohighlight">\(E_{\rm AGN}\)</span>, and is accumulated over time until released. The
 fraction <span class="math notranslate nohighlight">\(f_{\rm kin}\)</span> goes to kinetic energy, and the rest to
 thermal energy.</p>
-<div class="section" id="thermal-feedback">
-<h3>Thermal Feedback<a class="headerlink" href="#thermal-feedback" title="Permalink to this headline">¶</a></h3>
+<section id="thermal-feedback">
+<h3>Thermal Feedback<a class="headerlink" href="#thermal-feedback" title="Link to this heading">¶</a></h3>
 <p>We increment <span class="math notranslate nohighlight">\(E_{\rm AGN}\)</span> by thermal feedback energy, calculated
 from the mass accretion rate as</p>
 <div class="math notranslate nohighlight">
 \[% high energy
 \Delta E_{\rm thermal} = (1 - f_{\rm kin})
 \epsilon_{\rm c} \epsilon_{\rm r} \dot{M}_{\rm acc} c^2 \Delta t .\]</div>
-</div>
-<div class="section" id="kinetic-momentum-feedback">
-<h3>Kinetic/Momentum Feedback<a class="headerlink" href="#kinetic-momentum-feedback" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="kinetic-momentum-feedback">
+<h3>Kinetic/Momentum Feedback<a class="headerlink" href="#kinetic-momentum-feedback" title="Link to this heading">¶</a></h3>
 <p>We increment <span class="math notranslate nohighlight">\(E_{\rm AGN}\)</span> by the kinetic feedback energy</p>
 <div class="math notranslate nohighlight">
 \[% low energy
@@ -267,9 +261,9 @@ vector. We add <span class="math notranslate nohighlight">\(\rho \vec{v}\)</span
 <span class="math notranslate nohighlight">\(\vec{p}\)</span> of the gas, and <span class="math notranslate nohighlight">\(\vec{v}_{\rm jet} \cdot \vec{p}\)</span>
 to its energy density, both of these weighted by the cloud-in-cell
 stencil of the particle.</p>
-</div>
-<div class="section" id="releasing-feedback-energy">
-<h3>Releasing Feedback Energy<a class="headerlink" href="#releasing-feedback-energy" title="Permalink to this headline">¶</a></h3>
+</section>
+<section id="releasing-feedback-energy">
+<h3>Releasing Feedback Energy<a class="headerlink" href="#releasing-feedback-energy" title="Link to this heading">¶</a></h3>
 <p>The accumulated energy is released when</p>
 <div class="math notranslate nohighlight">
 \[E_{\rm AGN} &gt; m_{\rm g} \overline{e}
@@ -279,68 +273,62 @@ the gas over the cloud-in-cell stencil, obtained from the equation of
 state using temperature <span class="math notranslate nohighlight">\(T_{\rm min}\)</span> and average density of the
 gas over the same stencil, and <span class="math notranslate nohighlight">\(m_{\rm g}\)</span> is the total gas mass
 inside the cloud-in-cell local environment.</p>
-</div>
-</div>
-</div>
-<div class="section" id="the-reeber-package">
-<span id="sec-reeber"></span><h1>The Reeber Package<a class="headerlink" href="#the-reeber-package" title="Permalink to this headline">¶</a></h1>
+</section>
+</section>
+</section>
+<section id="the-reeber-package">
+<span id="sec-reeber"></span><h1>The Reeber Package<a class="headerlink" href="#the-reeber-package" title="Link to this heading">¶</a></h1>
 <p>Reeber is a separate package with a halo finder. Here are the Reeber
 parameters that are assigned in the input file.</p>
-<table border="1" class="docutils">
-<colgroup>
-<col width="30%" />
-<col width="30%" />
-<col width="32%" />
-<col width="8%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head">Parameter</th>
-<th class="head">Definition</th>
-<th class="head">Acceptable Values</th>
-<th class="head">Default</th>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Definition</p></th>
+<th class="head"><p>Acceptable Values</p></th>
+<th class="head"><p>Default</p></th>
 </tr>
 </thead>
-<tbody valign="top">
-<tr class="row-even"><td><strong>reeber.halo_int</strong></td>
-<td>timesteps between halo finder calls</td>
-<td>Integer</td>
-<td>-1 (none)</td>
+<tbody>
+<tr class="row-even"><td><p><strong>reeber.halo_int</strong></p></td>
+<td><p>timesteps between halo finder calls</p></td>
+<td><p>Integer</p></td>
+<td><p>-1 (none)</p></td>
 </tr>
-<tr class="row-odd"><td><strong>reeber.negate</strong></td>
-<td>allow negative values for analysis</td>
-<td>0 if false, 1 if true</td>
-<td>1</td>
+<tr class="row-odd"><td><p><strong>reeber.negate</strong></p></td>
+<td><p>allow negative values for analysis</p></td>
+<td><p>0 if false, 1 if true</p></td>
+<td><p>1</p></td>
 </tr>
-<tr class="row-even"><td><strong>reeber.halo_density_vars</strong></td>
-<td>density variable list</td>
-<td>density, particle_mass_density</td>
-<td>“density”</td>
+<tr class="row-even"><td><p><strong>reeber.halo_density_vars</strong></p></td>
+<td><p>density variable list</p></td>
+<td><p>density, particle_mass_density</p></td>
+<td><p>“density”</p></td>
 </tr>
-<tr class="row-odd"><td><strong>reeber.halo_extrema_threshold</strong></td>
-<td>extrema threshold for haloes</td>
-<td>Real</td>
-<td><ol class="first last arabic simple" start="200">
+<tr class="row-odd"><td><p><strong>reeber.halo_extrema_threshold</strong></p></td>
+<td><p>extrema threshold for haloes</p></td>
+<td><p>Real</p></td>
+<td><ol class="arabic simple" start="200">
 <li></li>
 </ol>
 </td>
 </tr>
-<tr class="row-even"><td><strong>reeber.halo_component_threshold</strong></td>
-<td>component threshold for haloes</td>
-<td>Real</td>
-<td><ol class="first last arabic simple" start="82">
+<tr class="row-even"><td><p><strong>reeber.halo_component_threshold</strong></p></td>
+<td><p>component threshold for haloes</p></td>
+<td><p>Real</p></td>
+<td><ol class="arabic simple" start="82">
 <li></li>
 </ol>
 </td>
 </tr>
-<tr class="row-odd"><td><strong>reeber.absolute_halo_thresholds</strong></td>
-<td>are halo thresholds absolute</td>
-<td>0 if multiples of mean, 1 if absolute</td>
-<td>0</td>
+<tr class="row-odd"><td><p><strong>reeber.absolute_halo_thresholds</strong></p></td>
+<td><p>are halo thresholds absolute</p></td>
+<td><p>0 if multiples of mean, 1 if absolute</p></td>
+<td><p>0</p></td>
 </tr>
 </tbody>
 </table>
 <p>[Table:Reeber-inputs]</p>
-</div>
+</section>
 
 
            </div>
