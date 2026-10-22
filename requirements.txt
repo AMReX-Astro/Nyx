@@ -1,6 +1,6 @@
-Sphinx<2.0
+Sphinx>=5.0,<8
 sphinx_rtd_theme
-breathe<4.13
+breathe>=4.35
 sphinxcontrib_bibtex
 numpydoc
 more_itertools

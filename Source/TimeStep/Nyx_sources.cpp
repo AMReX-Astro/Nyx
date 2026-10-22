@@ -6,6 +6,7 @@ using namespace amrex;
 
 #ifndef AGN
 
+__attribute__((weak))
 void Nyx::integrate_state_force(
     amrex::Box const& bx,
     amrex::Array4<amrex::Real> const& state_arr,
@@ -18,6 +19,7 @@ void Nyx::integrate_state_force(
 
 }
 
+__attribute__((weak))
 void Nyx::ext_src_force(
     amrex::Box const& bx,
     amrex::Array4<const amrex::Real> const& /*old_state*/,
@@ -33,6 +35,7 @@ void Nyx::ext_src_force(
 {
 }
 
+__attribute__((weak))
 void
 Nyx::get_old_source (Real      old_time,
                      Real      /*dt*/,
@@ -77,6 +80,7 @@ Nyx::get_old_source (Real      old_time,
     ext_src.EnforcePeriodicity(0, NUM_STATE, geom.periodicity());
 }
 
+__attribute__((weak))
 void
 Nyx::get_new_source (Real      old_time,
                      Real      new_time,
