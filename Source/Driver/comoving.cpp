@@ -627,6 +627,44 @@ Nyx::integrate_time_given_a(const Real a0, const Real a1, Real& dt)
 }
 
 void
+Nyx::integrate_distance_given_a(const Real a0, const Real a1, Real& dt)
+{
+    const Real small_dt_fac = 1.0e-6;
+    Real H0, OmM, OmR, prev_soln, h;
+    int iter, n, j;
+
+    H0  = comoving_h*Hubble_const;
+    OmM = comoving_OmM;
+    OmR = comoving_OmR;
+
+    prev_soln = -1.0e0;
+    // trapezoidal integration
+    for(iter = 1; iter<= 20; iter++)
+    {
+        n  = static_cast<int>(std::round(std::pow(2,iter)));
+
+        h = (a1-a0)/(n-1);
+
+        if (a0 < 1.0e-10) // prevent division by zero in invEz
+            dt = 0.5*invEz(H0, OmM, OmR, a1)/a1;
+        else
+            dt = 0.5*(invEz(H0, OmM, OmR, a0)/a0 + invEz(H0, OmM, OmR, a1)/a1);
+
+        for(j = 1; j <= n-2; j++)
+        {
+            dt = dt + invEz(H0, OmM, OmR, a0+j*h)/(a0+j*h);
+        }
+        dt = dt*h*c_light;
+
+        if (iter > 4)
+            if (std::abs(dt-prev_soln) < small_dt_fac*std::abs(prev_soln))
+                return;
+
+        prev_soln = dt;
+    }
+}
+
+void
 Nyx::integrate_comoving_a (const Real old_a_local, Real& new_a_local, const Real dt)
 {
 
