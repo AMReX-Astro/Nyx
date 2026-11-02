@@ -163,6 +163,12 @@ nyx_main (int argc, char* argv[])
     const Real time_without_init = ParallelDescriptor::second() - time_before_main_loop;
     if (ParallelDescriptor::IOProcessor()) std::cout << "Time w/o init: " << time_without_init << std::endl;
 
+#ifndef NO_HYDRO
+    if (Nyx::write_lya_forest_file) {
+        Nyx::FinalizeLyAOpticalDepth();
+    }
+#endif
+
     // Write final checkpoint and plotfile
     if (amrptr->stepOfLastCheckPoint() < amrptr->levelSteps(0)) {
         amrptr->checkPoint();

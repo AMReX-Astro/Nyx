@@ -9,6 +9,7 @@ target_sources( nyxcore
    NyxBld.cpp
    comoving.cpp
    Nyx_error.cpp
+   Nyx_LyAForest.cpp
    )
 
 target_sources( nyxcore

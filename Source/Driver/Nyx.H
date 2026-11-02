@@ -251,6 +251,7 @@ public:
     //
     amrex::Real get_comoving_a(amrex::Real time);
     static void integrate_time_given_a(const amrex::Real a0, const amrex::Real a1, amrex::Real& dt);
+    static void integrate_distance_given_a(const amrex::Real a0, const amrex::Real a1, amrex::Real& dt);
     void integrate_comoving_a(const amrex::Real old_a, amrex::Real& new_a, const amrex::Real dt);
     void integrate_comoving_a(amrex::Real time, amrex::Real dt);
 
@@ -753,6 +754,16 @@ int integrate_state_struct
 #ifdef AUX_UPDATE
     void advance_aux(amrex::Real time, amrex::Real dt);
 #endif
+
+#ifndef NO_HYDRO
+    void ComputeLymanAlphaForestFractionvsWavelength();
+    void AccumulateLyAOpticalDepth(const amrex::Vector<amrex::Real>& ray_intersect_x,
+                                   const amrex::Vector<amrex::Real>& ray_intersect_y,
+                                   const amrex::Vector<amrex::Real>& ray_intersect_z);
+    void InitializeLyAOpticalDepth();
+    static void FinalizeLyAOpticalDepth();   // MPI-sum tau over ranks; call once at end of run
+#endif
+
 #ifdef AMREX_PARTICLES
     static amrex::Vector<NyxParticleContainerBase*>& theActiveParticles();
     static amrex::Vector<NyxParticleContainerBase*>& theVirtualParticles();
@@ -828,6 +839,8 @@ int integrate_state_struct
                               std::string &FullPath);
     //! Create the Level_ and other directories in checkpoint and plot files
     virtual void CreateLevelDirectory (const std::string &dir) override;
+
+    static bool write_lya_forest_file;   // nyx.write_lya_forest_file: enable Lyman-alpha optical depth accumulation
 
 protected:
 
@@ -934,6 +947,14 @@ protected:
     static amrex::Vector<amrex::Real> checkpoint_z_values; // These are the value of "z" at which to dump checkpoint files.
     static amrex::Vector<amrex::Real> analysis_z_values;   // These are the value of "z" at which to perform analysis
     static amrex::Vector<amrex::Real> write_gadget_files_z_values;  // These are the value of "z" at which to write gadget files
+
+#ifndef NO_HYDRO
+    static int lya_num_lambda;
+    static amrex::Real lya_lambda_min;    // emitted-wavelength grid [Angstrom]
+    static amrex::Real lya_lambda_max;
+    static amrex::Real lya_source_z;      // redshift of the background source
+    static amrex::Gpu::DeviceVector<amrex::Real> lya_tau_of_lambda;  // accumulated optical depth, num_rays*num_lambda
+#endif
 
     static int insitu_int;
     static int insitu_start;

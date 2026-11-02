@@ -5,6 +5,7 @@ CEXE_sources += Nyx.cpp
 CEXE_sources += NyxBld.cpp
 CEXE_sources += comoving.cpp
 CEXE_sources += Nyx_error.cpp
+CEXE_sources += Nyx_LyAForest.cpp
 
 CEXE_sources += sum_integrated_quantities.cpp
 CEXE_sources += sum_utils.cpp

@@ -65,6 +65,14 @@ Real Nyx::old_a_time = -1.0;
 Real Nyx::new_a_time = -1.0;
 
 Vector<Real> Nyx::plot_z_values;
+bool Nyx::write_lya_forest_file = false;
+#ifndef NO_HYDRO
+int Nyx::lya_num_lambda = 100;
+Real Nyx::lya_lambda_min = 1000.0;
+Real Nyx::lya_lambda_max = 1500.0;
+Real Nyx::lya_source_z   = 3.62;
+Gpu::DeviceVector<Real> Nyx::lya_tau_of_lambda;
+#endif
 Vector<Real> Nyx::checkpoint_z_values;
 Vector<Real> Nyx::analysis_z_values;
 Vector<Real> Nyx::write_gadget_files_z_values;
@@ -468,6 +476,12 @@ Nyx::read_params ()
     pp_reeber.query("min_halo_n_cells", min_halo_n_cells);
     pp_reeber.query("halo_component_threshold", halo_component_threshold);
     pp_reeber.query("halo_extrema_threshold", halo_extrema_threshold);
+#endif
+    pp_nyx.query("write_lya_forest_file", write_lya_forest_file);
+#ifdef NO_HYDRO
+    if (write_lya_forest_file) {
+        amrex::Abort("nyx.write_lya_forest_file = true requires a hydro build (NO_HYDRO is defined)");
+    }
 #endif
 }
 
@@ -1774,6 +1788,11 @@ Nyx::post_restart ()
     if (level == 0)
         typical_values_post_restart(parent->theRestartFile());
 
+#ifndef NO_HYDRO
+    if (level == 0 && write_lya_forest_file)
+        InitializeLyAOpticalDepth();
+#endif
+
     if (inhomo_reion) init_zhi();
 
 #ifndef NO_HYDRO
@@ -2028,6 +2047,13 @@ Nyx::postCoarseTimeStep (Real cumtime)
                                                            write_gadget_files_z_values);
     }
 
+#ifndef NO_HYDRO
+    if (write_lya_forest_file)
+    {
+        ComputeLymanAlphaForestFractionvsWavelength();
+    }
+#endif
+
    if (verbose>1)
    {
        amrex::Print() << "End of postCoarseTimeStep, printing:" <<std::endl;
@@ -2115,6 +2141,14 @@ Nyx::post_init (Real /*stop_time*/)
     if ( ! parent->theRestartPlotFile().empty()) {
         parent->setLevelSteps(0,nsteps_from_plotfile);
     }
+
+    // Zero the accumulated Lyman-alpha optical depth once, before time advancement
+#ifndef NO_HYDRO
+    if (write_lya_forest_file)
+    {
+        InitializeLyAOpticalDepth();
+    }
+#endif
 
     //
     // Average data down from finer levels
