@@ -466,7 +466,6 @@ Nyx::ComputeLymanAlphaForestFractionvsWavelength()
 
 #else // !HEATCOOL
 
-#include <AMReX_Abort.H>
 #include <Nyx.H>
 
 using namespace amrex;
