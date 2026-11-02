@@ -2,6 +2,10 @@
 // (and the atomic rates), so it is only built when hydro is present.
 #ifndef NO_HYDRO
 
+// The H I fraction comes from the heating/cooling network (eos_hc.H), which is only
+// available with HEATCOOL. Without it, the routines below are stubs that abort.
+#ifdef HEATCOOL
+
 #include <cmath>
 #include <cstddef>
 #include <fstream>
@@ -20,7 +24,7 @@
 #include <IndexDefines.H>        // Density_comp, Eint_comp
 #include <atomic_rates_data.H>   // AtomicRates, atomic_rates_glob, MPROTON
 #include <constants_cosmo.H>     // L_unit, density_to_cgs
-#include <eos_hc.H>              // nyx_eos_T_given_Re_device
+// nyx_eos_T_given_Re_device comes from eos_hc.H, included through Nyx.H under HEATCOOL.
 
 using namespace amrex;
 
@@ -459,5 +463,32 @@ Nyx::ComputeLymanAlphaForestFractionvsWavelength()
                               ray_intersect_y,
                               ray_intersect_z);
 }
+
+#else // !HEATCOOL
+
+#include <AMReX_Abort.H>
+#include <Nyx.H>
+
+using namespace amrex;
+
+namespace {
+    constexpr const char* lya_heatcool_msg =
+        "The Lyman-alpha forest (nyx.write_lya_forest_file) requires a build with USE_HEATCOOL = TRUE";
+}
+
+void Nyx::InitializeLyAOpticalDepth()  { amrex::Abort(lya_heatcool_msg); }
+
+void Nyx::AccumulateLyAOpticalDepth(const Vector<Real>&,
+                                    const Vector<Real>&,
+                                    const Vector<Real>&)
+{
+    amrex::Abort(lya_heatcool_msg);
+}
+
+void Nyx::FinalizeLyAOpticalDepth()    { amrex::Abort(lya_heatcool_msg); }
+
+void Nyx::ComputeLymanAlphaForestFractionvsWavelength() { amrex::Abort(lya_heatcool_msg); }
+
+#endif // HEATCOOL
 
 #endif // NO_HYDRO
