@@ -757,6 +757,7 @@ int integrate_state_struct
 
 #ifndef NO_HYDRO
     void ComputeLymanAlphaForestFractionvsWavelength();
+    amrex::Real ComputeVolumeWeightedNeutralHydrogenFraction();
     void AccumulateLyAOpticalDepth(const amrex::Vector<amrex::Real>& ray_intersect_x,
                                    const amrex::Vector<amrex::Real>& ray_intersect_y,
                                    const amrex::Vector<amrex::Real>& ray_intersect_z);

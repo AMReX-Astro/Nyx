@@ -464,6 +464,74 @@ Nyx::ComputeLymanAlphaForestFractionvsWavelength()
                               ray_intersect_z);
 }
 
+Real
+Nyx::ComputeVolumeWeightedNeutralHydrogenFraction()
+{
+    BL_PROFILE("Nyx::ComputeVolumeWeightedNeutralHydrogenFraction()");
+
+    const Real cur_time = state[State_Type].curTime();
+    const Real a        = get_comoving_a(cur_time);
+
+    const Real h_species_in     = Nyx::h_species;
+    const Real gamma_minus_1_in = Nyx::gamma - 1.0;
+    AtomicRates* atomic_rates   = atomic_rates_glob;
+
+    const MultiFab& S_new = get_new_data(State_Type);
+
+    // All cells on this level have the same volume, so the volume-weighted mean is
+    // sum(nh0) / (number of cells).
+    ReduceOps<ReduceOpSum> reduce_op;
+    ReduceData<Real> reduce_data(reduce_op);
+    using ReduceTuple = typename decltype(reduce_data)::Type;
+
+    for (MFIter mfi(S_new); mfi.isValid(); ++mfi)
+    {
+        const Box& bx = mfi.validbox();
+        const auto arr = S_new.const_array(mfi);
+
+        reduce_op.eval(bx, reduce_data,
+        [=] AMREX_GPU_DEVICE (int i, int j, int k) -> ReduceTuple
+        {
+            const Real rho = arr(i, j, k, Density_comp);
+            const Real eint_per_mass = arr(i, j, k, Eint_comp) / rho;
+
+            Real T = 0.0, Ne = 0.0;
+            Real nh0, nhp, nhe0, nhep, nhepp;
+            nyx_eos_T_given_Re_device(
+                atomic_rates, gamma_minus_1_in, h_species_in, 1, 1,
+                &T, &Ne, rho, eint_per_mass, a,
+                nh0, nhp, nhe0, nhep, nhepp);
+
+            return {nh0};
+        });
+    }
+
+    ReduceTuple hv = reduce_data.value(reduce_op);
+    Real sum_nh0 = amrex::get<0>(hv);
+    ParallelDescriptor::ReduceRealSum(sum_nh0);
+
+    const Real ncells = static_cast<Real>(geom.Domain().numPts());
+    const Real xHI_vw = sum_nh0 / ncells;
+
+    // Root processor rewrites the whole file each call (truncating any old contents)
+    // from the history accumulated during this run.
+    static std::vector<std::pair<Real,Real>> history;
+    history.emplace_back(1.0/a - 1.0, xHI_vw);
+
+    if (ParallelDescriptor::IOProcessor())
+    {
+        std::ofstream ofs("volume_weighted_neutral_hydrogen_fraction.txt",
+                          std::ios::out | std::ios::trunc);
+        ofs << "# redshift  volume_weighted_neutral_hydrogen_fraction\n";
+        ofs << std::scientific << std::setprecision(10);
+        for (const auto& h : history) {
+            ofs << h.first << "  " << h.second << "\n";
+        }
+    }
+
+    return xHI_vw;
+}
+
 #else // !HEATCOOL
 
 #include <Nyx.H>
