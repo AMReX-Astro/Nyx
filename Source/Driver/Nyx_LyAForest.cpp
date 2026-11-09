@@ -556,6 +556,12 @@ void Nyx::FinalizeLyAOpticalDepth()    { amrex::Abort(lya_heatcool_msg); }
 
 void Nyx::ComputeLymanAlphaForestFractionvsWavelength() { amrex::Abort(lya_heatcool_msg); }
 
+Real Nyx::ComputeVolumeWeightedNeutralHydrogenFraction()
+{
+    amrex::Abort(lya_heatcool_msg);
+    return 0.0;
+}
+
 #endif // HEATCOOL
 
 #endif // NO_HYDRO
