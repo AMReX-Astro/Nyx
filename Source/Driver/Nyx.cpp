@@ -2051,6 +2051,11 @@ Nyx::postCoarseTimeStep (Real cumtime)
     if (write_lya_forest_file)
     {
         ComputeLymanAlphaForestFractionvsWavelength();
+
+        if (level == 0 && (1.0/get_comoving_a(state[State_Type].curTime()) - 1.0) <= 20.0)
+        {
+            ComputeVolumeWeightedNeutralHydrogenFraction();
+        }
     }
 #endif
 
