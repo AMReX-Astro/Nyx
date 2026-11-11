@@ -343,9 +343,9 @@ ode_eos_finalize_struct(const int i, const int j, const int k, const int idx, At
     Real nh0, nhep, nhp, nhe0, nhepp;
     /////////////////   //update nyx_eos_T_given_Re
     if (f_rhs_data->inhomogeneous_on)
-      nyx_eos_T_given_Re_device(atomic_rates, f_rhs_data->gamma_minus_1, f_rhs_data->h_species, f_rhs_data->JH_vode_arr[idx], f_rhs_data->JHe_vode, &(f_rhs_data->T_vode[idx]), &(f_rhs_data->ne_vode[idx]), f_rhs_data->rho_vode[idx], e_out, f_rhs_data->a, nh0, nhep, nhp, nhe0, nhepp);
+      nyx_eos_T_given_Re_device(atomic_rates, f_rhs_data->gamma_minus_1, f_rhs_data->h_species, f_rhs_data->JH_vode_arr[idx], f_rhs_data->JHe_vode, &(f_rhs_data->T_vode[idx]), &(f_rhs_data->ne_vode[idx]), f_rhs_data->rho_vode[idx], e_out, f_rhs_data->a, nh0, nhp, nhe0, nhep, nhepp);
     else
-      nyx_eos_T_given_Re_device(atomic_rates, f_rhs_data->gamma_minus_1, f_rhs_data->h_species, f_rhs_data->JH_vode, f_rhs_data->JHe_vode, &(f_rhs_data->T_vode[idx]), &(f_rhs_data->ne_vode[idx]), f_rhs_data->rho_vode[idx], e_out, f_rhs_data->a, nh0, nhep, nhp, nhe0, nhepp);
+      nyx_eos_T_given_Re_device(atomic_rates, f_rhs_data->gamma_minus_1, f_rhs_data->h_species, f_rhs_data->JH_vode, f_rhs_data->JHe_vode, &(f_rhs_data->T_vode[idx]), &(f_rhs_data->ne_vode[idx]), f_rhs_data->rho_vode[idx], e_out, f_rhs_data->a, nh0, nhp, nhe0, nhep, nhepp);
 
     // Instanteneous heating from reionization:
     Real z = 1/(f_rhs_data->a)-1.0;
