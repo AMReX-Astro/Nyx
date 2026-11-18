@@ -117,16 +117,11 @@ else ()
 
    list(APPEND CMAKE_MODULE_PATH ${AMREX_SRC_DIR}/Tools/CMake)
 
-   # If CUDA is required, enable the language BEFORE adding the AMReX directory
-   # Since AMReX_SetupCUDA has an include guard, it will be included only once here.
-   # The reason for enabling CUDA before adding the AMReX subdirectory is that
-   # the top-most directory needs to setup the CUDA language before a CUDA-enabled target
-   # from a sub-project is included via add_subdirectory.
-   # IMPORTANT: if you don't do this, AMReX will perform this step in a sub-scope and therefore
-   # it will not setup CUDA here!
-   if(Nyx_GPU_BACKEND STREQUAL CUDA)
-      include(AMReX_SetupCUDA)
-   endif ()
+   # If CUDA is required, the CUDA language must be enabled in the top-most directory
+   # BEFORE adding the AMReX directory. Nyx does this in the top-level CMakeLists.txt
+   # (enable_language(CUDA)) before including this file. The AMReX_SetupCUDA module that
+   # used to be included here no longer exists in AMReX; AMReX now handles its CUDA
+   # setup itself (AMReXCUDAArchs, AMReXCUDAOptions) from its own CMakeLists.txt.
 
    add_subdirectory(${AMREX_SRC_DIR})
 #   include(AMReXGenerateConfigHeader)  # provides add_amrex_defines
