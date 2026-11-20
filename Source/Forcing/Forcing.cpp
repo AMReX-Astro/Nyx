@@ -2,6 +2,8 @@
 
 #include <Forcing.H>
 
+#include <AMReX_CArena.H>
+
 using namespace amrex;
 
 unsigned long int mt_random();
