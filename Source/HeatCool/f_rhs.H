@@ -4,6 +4,7 @@
 #include <atomic_rates_data.H>
 #include <constants_cosmo.H>
 #include <eos_hc.H>
+#include <AMReX_CArena.H>
 #include <AMReX_MultiFab.H>
 
 static amrex::Vector<void*> ptr_lst;
